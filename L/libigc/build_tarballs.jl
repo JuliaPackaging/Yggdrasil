@@ -7,7 +7,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "libigc"
-version = v"1.0.17537"#.20
+version = v"2.14.1"
 
 # IGC depends on LLVM, a custom Clang, and a Khronos tool. Instead of building these pieces
 # separately, taking care to match versions and apply Intel-specific patches where needed
@@ -27,13 +27,13 @@ version = v"1.0.17537"#.20
 #       see https://github.com/intel/intel-graphics-compiler/blob/master/.github/workflows/build-IGC.yml
 #
 sources = [
-    GitSource("https://github.com/intel/intel-graphics-compiler.git", "b6be9c780da71d4a6533eb02b54c6121527471c6"),
-    GitSource("https://github.com/intel/opencl-clang.git", "470cf0018e1ef6fc92eda1356f5f31f7da452abc" #= branch ocl-open-140 =#),
-    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "065a94408d01bacf2ee86443f56cfaa64fda1534" #= branch llvm_release_140 =#),
-    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "f0cc85efdbbe3a46eae90e0f915dc1509836d0fc" #= tag v2023.6.rc1 =#),
-    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "1c6bb2743599e6eb6f37b2969acc0aef812e32e3"), #= master =#
-    GitSource("https://github.com/intel/vc-intrinsics.git", "8d2e809368443305155370573f3c6db8279ed87d" #= latest version: v0.19.0 =#),
-    GitSource("https://github.com/llvm/llvm-project.git", "c12386ae247c0d46e1d513942e322e3a0510b126" #= branch llvmorg-14.0.5 =#),
+    GitSource("https://github.com/intel/intel-graphics-compiler.git", "8044f62975eafe840d09ed00560385dab0bf9854"),
+    GitSource("https://github.com/intel/opencl-clang.git", "7eef46576eca117685ae431735c2725ddb889260" #= branch ocl-open-150 =#),
+    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "b3d425c0b265ee9f583894892ae0b0a192a2137c" #= branch llvm_release_150 =#),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "f289d047f49fb60488301ec62bafab85573668cc" #= tag v2025.1.rc1 =#),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "0e710677989b4326ac974fd80c5308191ed80965"), #= main =#
+    GitSource("https://github.com/intel/vc-intrinsics.git", "46286b96fb9eee9fa4fcf8b8ecf74a8c01af4c1a" #= tag v0.23.1 =#),
+    GitSource("https://github.com/llvm/llvm-project.git", "8dfdcc7b7bf66834a761bd8de445840ef68e4d1a" #= tag llvmorg-15.0.7 =#),
     # patches
     DirectorySource("./bundled"),
 ]
@@ -42,6 +42,20 @@ sources = [
 function get_script(; debug::Bool)
     script = raw"""
         apk add py3-mako py3-yaml binutils
+        # We need a newer CMake > v3.22.1
+        # Build CMake
+        wget https://github.com/Kitware/CMake/releases/download/v3.28.1/cmake-3.28.1.tar.gz
+        tar -xzf cmake-3.28.1.tar.gz
+        cd cmake-3.28.1
+        ./bootstrap --prefix=/workspace/destdir --parallel=$(nproc) -- -DCMAKE_USE_OPENSSL=OFF
+        make -j$(nproc)
+        make install
+        cd ..
+
+        # Now use the new CMake
+        export PATH=/workspace/destdir/bin:$PATH
+
+        # Build the IGC
 
         # the build system uses git
         export HOME=$(pwd)
@@ -105,7 +119,6 @@ platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("GenX_IR", :GenX_IR),
     ExecutableProduct(["iga32", "iga64"], :iga),
     LibraryProduct(["libiga32", "libiga64"], :libiga),
     LibraryProduct("libigc", :libigc),
