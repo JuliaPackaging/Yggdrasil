@@ -469,7 +469,9 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+16")))
         push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.7.2+2"); platforms=filter(!Sys.isapple, platforms)))
         push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0"); platforms=filter(Sys.isapple, platforms)))
-        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"16.0.6+4")))
+        spec = get_addable_spec("LLVM_full_jll", v"16.0.6+4")
+        @info "LLVM_full_jll version for Julia 1.11 with 16.0.6+4" spec
+        push!(dependencies, BuildDependency(spec))
     elseif version.major == 1 && version.minor == 12
         push!(dependencies, BuildDependency("OpenSSL_jll")),
         push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"7.8.3+2")))
