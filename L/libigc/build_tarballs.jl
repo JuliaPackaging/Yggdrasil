@@ -42,8 +42,8 @@ sources = [
 function get_script(; debug::Bool)
     script = raw"""
         apk add py3-mako py3-yaml binutils
+        # Need newer CMake (>3.22.1), so use the JLL packaged one
         apk del cmake
-
 
         # Build the IGC
 
