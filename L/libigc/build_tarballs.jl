@@ -123,7 +123,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
-    HostDependency("CMake_jll"),
+    HostBuildDependency("CMake_jll"),
 ]
 
 augment_platform_block = raw"""
