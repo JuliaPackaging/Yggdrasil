@@ -44,8 +44,6 @@ function get_script(; debug::Bool)
         apk add py3-mako py3-yaml binutils
         apk del cmake
 
-        # Now use the new CMake
-        export PATH=/workspace/destdir/bin:$PATH
 
         # Build the IGC
 
