@@ -51,7 +51,7 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
         sed -i "s!/opt/$bb_target/$bb_target/sys-root!$apple_sdk_root!" /opt/bin/$bb_full_target/$target-clang++
 
         # OpenFHE's CMake config populates the build system with wrong path info for OpenMP
-        export LDFLAGS="$LDFLAGS -L$WORKSPACE/destdir/lib"
+        export LDFLAGS="$LDFLAGS -L$libdir"
         sed -i "s|\${OPENMP_INCLUDES}|\$ENV{includedir}|" CMakeLists.txt
         sed -i "s|\${OPENMP_LIBRARIES}|\$ENV{libdir}|" CMakeLists.txt
     fi
