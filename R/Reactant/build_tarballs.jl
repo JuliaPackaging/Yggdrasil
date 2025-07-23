@@ -9,7 +9,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.220"
 
 sources = [
-   GitSource(repo, "6318198704bd52db8f3851a3211178d7dfd1bcf6"),
+   GitSource(repo, "081a45041a6dc71d0ad2203fa0e49a43c55feee5"),
    ArchiveSource("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.7%2B6/OpenJDK21U-jdk_x64_alpine-linux_hotspot_21.0.7_6.tar.gz", "79ecc4b213d21ae5c389bea13c6ed23ca4804a45b7b076983356c28105580013"),
    ArchiveSource("https://github.com/JuliaBinaryWrappers/Bazel_jll.jl/releases/download/Bazel-v7.6.1+0/Bazel.v7.6.1.x86_64-linux-musl-cxx03.tar.gz", "01ac6c083551796f1f070b0dc9c46248e6c49e01e21040b0c158f6e613733345")
 ]
@@ -157,6 +157,17 @@ if [[ "${target}" == *-darwin* ]]; then
     BAZEL_BUILD_FLAGS+=(--nolegacy_whole_archive)
 fi
 
+if [[ "${target}" == *-mingw* ]]; then
+    if [[ "${target}" == x86_64* ]]; then
+        BAZEL_BUILD_FLAGS+=(--platforms=@//:win_x86_64)
+        BAZEL_BUILD_FLAGS+=(--cpu=${BAZEL_CPU})
+	# echo "register_toolchains(\\"//:cc_toolchain_for_ygg_darwin_x86\\")" >> WORKSPACE
+    elif [[ "${target}" == aarch64-* ]]; then
+        BAZEL_BUILD_FLAGS+=(--platforms=@//:win_arm64)
+        BAZEL_BUILD_FLAGS+=(--cpu=${BAZEL_CPU})
+	# echo "register_toolchains(\\"//:cc_toolchain_for_ygg_darwin_arm64\\")" >> WORKSPACE
+    fi
+fi
 
 if [[ "${target}" == *-linux-* ]]; then
     sed -i "s/getopts \\"/getopts \\"p/g" /sbin/ldconfig
@@ -345,7 +356,7 @@ platforms = filter(p -> !(arch(p) == "armv7l" && Sys.islinux(p)), platforms)
 platforms = filter(p -> !(libc(p) == "musl"), platforms)
 
 # Windows has a cuda configure issue, to investigate either fixing/disabling cuda
-platforms = filter(p -> !(Sys.iswindows(p)), platforms)
+platforms = filter(p -> (Sys.iswindows(p)), platforms)
 
 # NSync is picking up wrong stuff for cross compile, to deal with later
 # 02] ./external/nsync//platform/c++11.futex/platform.h:24:10: fatal error: 'linux/futex.h' file not found
