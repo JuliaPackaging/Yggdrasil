@@ -42,15 +42,7 @@ sources = [
 function get_script(; debug::Bool)
     script = raw"""
         apk add py3-mako py3-yaml binutils
-        # We need a newer CMake > v3.22.1
-        # Build CMake
-        wget https://github.com/Kitware/CMake/releases/download/v3.28.1/cmake-3.28.1.tar.gz
-        tar -xzf cmake-3.28.1.tar.gz
-        cd cmake-3.28.1
-        ./bootstrap --prefix=/workspace/destdir --parallel=$(nproc) -- -DCMAKE_USE_OPENSSL=OFF
-        make -j$(nproc)
-        make install
-        cd ..
+        apk del cmake
 
         # Now use the new CMake
         export PATH=/workspace/destdir/bin:$PATH
@@ -130,7 +122,9 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[]
+dependencies = Dependency[
+    HostDependency("CMake_jll"),
+]
 
 augment_platform_block = raw"""
     using Base.BinaryPlatforms
