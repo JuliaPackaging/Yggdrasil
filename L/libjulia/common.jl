@@ -490,6 +490,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     else
         error("Unsupported Julia version")
     end
+    @info "All dependencies" dependencies
 
     # gcc 7 and gcc 8 crash on aarch64-linux when encountering some bfloat16 intrinsics
     gcc_ver = version >= v"1.11.0-DEV" ? v"9" : v"7"
