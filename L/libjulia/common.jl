@@ -1,5 +1,3 @@
-@show get(ENV, "JULIA_DEPOT_PATH", nothing)
-
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
@@ -471,9 +469,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+16")))
         push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.7.2+2"); platforms=filter(!Sys.isapple, platforms)))
         push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0"); platforms=filter(Sys.isapple, platforms)))
-        spec = get_addable_spec("LLVM_full_jll", v"16.0.6+4")
-        @info "LLVM_full_jll version for Julia 1.11 with 16.0.6+4" spec
-        push!(dependencies, BuildDependency(spec))
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"16.0.6+4")))
     elseif version.major == 1 && version.minor == 12
         push!(dependencies, BuildDependency("OpenSSL_jll")),
         push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"7.8.3+2")))
@@ -492,9 +488,6 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     else
         error("Unsupported Julia version")
     end
-    @info "All dependencies"
-    println(repr(dependencies))
-    @info "Building Julia version $version for platforms: $(repr(platforms))" ARGS name jllversion sources script platforms products
 
     # gcc 7 and gcc 8 crash on aarch64-linux when encountering some bfloat16 intrinsics
     gcc_ver = version >= v"1.11.0-DEV" ? v"9" : v"7"

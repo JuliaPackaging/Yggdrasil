@@ -33,7 +33,6 @@ end
 end
 
 jllversion=v"1.10.19"
-# Only build more recent Julia versions to reduce number of builds
-for ver in filter(V -> V >= v"1.10" && V < v"1.12.0-0", julia_full_versions)
+for ver in julia_full_versions
     build_julia(ARGS, ver; jllversion)
 end
