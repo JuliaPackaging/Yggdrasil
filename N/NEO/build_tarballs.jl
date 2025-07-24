@@ -7,12 +7,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "NEO"
-version = v"24.26.30049"#.6
+version = v"25.27.34303"#.5
 
 # Collection of sources required to build this package.
 sources = [
     GitSource("https://github.com/intel/compute-runtime.git",
-              "e16f47e375e4324dae07aadbfe953002a1c45195"),
+              "d0fdeb0339afaa6db37411e10c41f291945aa727"),
 ]
 
 # Bash recipe for building across all platforms
@@ -34,7 +34,13 @@ function get_script(; debug::Bool)
         ## NO
         sed -i '/-Werror/d' CMakeLists.txt
 
+        # Fails because C header is used in C++ code
+        sed -i 's/inttypes\.h/cinttypes/g' level_zero/core/source/mutable_cmdlist/mutable_indirect_data.cpp
+
         CMAKE_FLAGS=()
+
+        # Need C++20
+        CMAKE_FLAGS+=(-DCMAKE_CXX_STANDARD=20)
 
         # Release build for best performance
         CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=""" * (debug ? "Debug" : "Release") * raw""")
@@ -87,9 +93,9 @@ products = [
 #       when using a non-public release, refer to the compiled manifest
 #       https://github.com/intel/compute-runtime/blob/master/manifests/manifest.yml.
 dependencies = [
-    Dependency("gmmlib_jll"; compat="=22.3.20"),
-    Dependency("libigc_jll"; compat="=1.0.17193"),
-    Dependency("oneAPI_Level_Zero_Headers_jll"; compat="=1.9.2"),
+    Dependency("gmmlib_jll"; compat="=22.8.1"),
+    Dependency("libigc_jll"; compat="=2.14.1"),
+    Dependency("oneAPI_Level_Zero_Headers_jll"; compat="=1.13"),
 ]
 
 augment_platform_block = raw"""
@@ -134,7 +140,9 @@ for platform in platforms, debug in (false, true)
 
     # GCC 4 has constexpr incompatibilities
     # GCC 7 triggers: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79929
+    # Needs at least GCC 10 for C++20 support of 'concepts'
+    # Needs GCC 11 for std::make_unique_for_overwrite
     build_tarballs(ARGS, name, version, sources, get_script(; debug), [augmented_platform],
-                   products, dependencies; preferred_gcc_version=v"8", julia_compat = "1.6",
+                   products, dependencies; preferred_gcc_version=v"11", julia_compat = "1.6",
                    augment_platform_block)
 end
