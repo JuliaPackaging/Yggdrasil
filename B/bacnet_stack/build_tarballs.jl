@@ -36,9 +36,10 @@ mkdir -p ${prefix}/share/licenses/bacnet_stack
 cp bacnet-stack/license/* ${prefix}/share/licenses/bacnet_stack
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = supported_platforms(; exclude=(p) -> !(Sys.islinux(p) || Sys.iswindows(p)))
+# Currently linux, windows and apple are supported, but FreeBSD fails because it cannot find #include <dispatch/dispatch.h>
+# According to ChatGPT, one would have to explicitely install the libdispatch port of Apple’s Grand Central Dispatch APIs.
+# If you require FreeBSD support, maybe this is the way to go (add another build script for libdispatch and add it as a dependency?)
+platforms = supported_platforms(; exclude=(p) -> Sys.isbsd(p))
 
 # The products that we will ensure are always built
 products = [
