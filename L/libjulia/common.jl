@@ -492,6 +492,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     end
     @info "All dependencies"
     println(repr(dependencies))
+    @info "Building Julia version $version for platforms: $(repr(platforms))" ARGS name jllversion sources script platforms products
 
     # gcc 7 and gcc 8 crash on aarch64-linux when encountering some bfloat16 intrinsics
     gcc_ver = version >= v"1.11.0-DEV" ? v"9" : v"7"
