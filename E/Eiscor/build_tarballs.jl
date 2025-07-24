@@ -7,12 +7,12 @@ version = v"0.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/andreasnoack/eiscor.git", "39b4f1e332eba4e9ef2efeb9248abfd4fb45e158")
+    GitSource("https://github.com/andreasnoack/eiscor.git", "618b5f9ae5a890e90910d520abb27866d3cc252f")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/eiscor*/
+cd $WORKSPACE/srcdir/eiscor/
 make
 make LIBDIR="${libdir}" install
 """
