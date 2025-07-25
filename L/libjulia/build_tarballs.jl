@@ -33,6 +33,6 @@ end
 end
 
 jllversion=v"1.10.19"
-for ver in filter(V -> V >= v"1.7" && V < v"1.9.0-0", julia_full_versions)
+for ver in julia_full_versions
     build_julia(ARGS, ver; jllversion)
 end
