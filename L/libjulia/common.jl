@@ -480,10 +480,10 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     elseif version.major == 1 && version.minor == 13
         push!(dependencies, BuildDependency("OpenSSL_jll")),
         push!(dependencies, BuildDependency("Zstd_jll")),
-        push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"7.10.1+0")))
-        push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+20")))
-        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.8.2+0"); platforms=filter(!Sys.isapple, platforms)))
-        push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"19.1.4+0"); platforms=filter(Sys.isapple, platforms)))
+        push!(dependencies, BuildDependency("SuiteSparse_jll"))
+        push!(dependencies, Dependency("LibUV_jll"))
+        push!(dependencies, Dependency("LibUnwind_jll"; platforms=filter(!Sys.isapple, platforms)))
+        push!(dependencies, Dependency("LLVMLibUnwind_jll"; platforms=filter(Sys.isapple, platforms)))
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"20.1.2+1")))
     else
         error("Unsupported Julia version")
