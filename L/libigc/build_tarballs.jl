@@ -65,6 +65,11 @@ function get_script(; debug::Bool)
         cd intel-graphics-compiler
         install_license LICENSE.md
 
+        # Need these device IDs
+        git cherry-pick 4185ee4c7eb49d09119884c63e88241a6715eb48
+        git cherry-pick 09046b0c259e46dfbdbfb1d548f18abc116ae512
+
+
         CMAKE_FLAGS=()
 
         # Select a build type
