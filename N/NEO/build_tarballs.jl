@@ -143,7 +143,7 @@ for platform in platforms, debug in (false, true)
     # Needs at least GCC 10 for C++20 support of 'concepts'
     # Needs GCC 11 for std::make_unique_for_overwrite
     build_tarballs(ARGS, name, version, sources, get_script(; debug), [augmented_platform],
-                   products, dependencies; preferred_gcc_version=v"11", julia_compat = "1.6",
+                   products, dependencies; preferred_gcc_version=v"13", julia_compat = "1.6",
                    augment_platform_block)
 end
 # bump
