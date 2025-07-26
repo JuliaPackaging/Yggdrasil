@@ -429,53 +429,53 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     # will work and allow people to build JLL binaries ready for Julia 1.7
     if version.major == 1 && version.minor == 6
         push!(dependencies, BuildDependency("MbedTLS_jll")),
-        push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"5.4.1+1")))
-        push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+5")))
-        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.3.2+6")))
+        push!(dependencies, BuildDependency("SuiteSparse_jll"))
+        push!(dependencies, Dependency("LibUV_jll"))
+        push!(dependencies, Dependency("LibUnwind_jll"))
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"11.0.1+3")))
-        push!(dependencies, BuildDependency(get_addable_spec("OpenBLAS_jll", v"0.3.10+10")))
-        push!(dependencies, BuildDependency(get_addable_spec("LibGit2_jll", v"1.2.3+0")))
+        push!(dependencies, BuildDependency("OpenBLAS_jll"))
+        push!(dependencies, BuildDependency("LibGit2_jll"))
     elseif version.major == 1 && version.minor == 7
         push!(dependencies, BuildDependency("MbedTLS_jll")),
         push!(dependencies, BuildDependency("SuiteSparse_jll"))
-        push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+5")))
-        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.3.2+6"); platforms=filter(!Sys.isapple, platforms)))
-        push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"11.0.1+1"); platforms=filter(Sys.isapple, platforms)))
+        push!(dependencies, Dependency("LibUV_jll"))
+        push!(dependencies, Dependency("LibUnwind_jll"; platforms=filter(!Sys.isapple, platforms)))
+        push!(dependencies, Dependency("LLVMLibUnwind_jll"; platforms=filter(Sys.isapple, platforms)))
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"12.0.1+3")))
     elseif version.major == 1 && version.minor == 8
         push!(dependencies, BuildDependency("MbedTLS_jll")),
         push!(dependencies, BuildDependency("SuiteSparse_jll"))
-        push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+11")))
-        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.5.0+1"); platforms=filter(!Sys.isapple, platforms)))
-        push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0"); platforms=filter(Sys.isapple, platforms)))
+        push!(dependencies, Dependency("LibUV_jll"))
+        push!(dependencies, Dependency("LibUnwind_jll"; platforms=filter(!Sys.isapple, platforms)))
+        push!(dependencies, Dependency("LLVMLibUnwind_jll"; platforms=filter(Sys.isapple, platforms)))
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"13.0.1+3")))
     elseif version.major == 1 && version.minor == 9
         push!(dependencies, BuildDependency("MbedTLS_jll")),
-        push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"5.10.1+6")))
-        push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+13")))
-        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.5.0+4"); platforms=filter(!Sys.isapple, platforms)))
-        push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0"); platforms=filter(Sys.isapple, platforms)))
+        push!(dependencies, BuildDependency("SuiteSparse_jll"))
+        push!(dependencies, Dependency("LibUV_jll"))
+        push!(dependencies, Dependency("LibUnwind_jll"; platforms=filter(!Sys.isapple, platforms)))
+        push!(dependencies, Dependency("LLVMLibUnwind_jll"; platforms=filter(Sys.isapple, platforms)))
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"14.0.6+2")))
     elseif version.major == 1 && version.minor == 10
         push!(dependencies, BuildDependency("MbedTLS_jll")),
-        push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"7.2.1+1")))
-        push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+14")))
-        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.5.0+5"); platforms=filter(!Sys.isapple, platforms)))
-        push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0"); platforms=filter(Sys.isapple, platforms)))
+        push!(dependencies, BuildDependency("SuiteSparse_jll"))
+        push!(dependencies, Dependency("LibUV_jll"))
+        push!(dependencies, Dependency("LibUnwind_jll"; platforms=filter(!Sys.isapple, platforms)))
+        push!(dependencies, Dependency("LLVMLibUnwind_jll"; platforms=filter(Sys.isapple, platforms)))
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"15.0.7+10")))
     elseif version.major == 1 && version.minor == 11
         push!(dependencies, BuildDependency("MbedTLS_jll")),
-        push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"7.7.0+0")))
-        push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+16")))
-        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.7.2+2"); platforms=filter(!Sys.isapple, platforms)))
-        push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0"); platforms=filter(Sys.isapple, platforms)))
+        push!(dependencies, BuildDependency("SuiteSparse_jll"))
+        push!(dependencies, Dependency("LibUV_jll"))
+        push!(dependencies, Dependency("LibUnwind_jll"; platforms=filter(!Sys.isapple, platforms)))
+        push!(dependencies, Dependency("LLVMLibUnwind_jll"; platforms=filter(Sys.isapple, platforms)))
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"16.0.6+4")))
     elseif version.major == 1 && version.minor == 12
         push!(dependencies, BuildDependency("OpenSSL_jll")),
-        push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"7.8.3+2")))
-        push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+20")))
-        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.8.1+2"); platforms=filter(!Sys.isapple, platforms)))
-        push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"19.1.4+0"); platforms=filter(Sys.isapple, platforms)))
+        push!(dependencies, BuildDependency("SuiteSparse_jll"))
+        push!(dependencies, Dependency("LibUV_jll"))
+        push!(dependencies, Dependency("LibUnwind_jll"; platforms=filter(!Sys.isapple, platforms)))
+        push!(dependencies, Dependency("LLVMLibUnwind_jll"; platforms=filter(Sys.isapple, platforms)))
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"18.1.7+4")))
     elseif version.major == 1 && version.minor == 13
         push!(dependencies, BuildDependency("OpenSSL_jll")),
