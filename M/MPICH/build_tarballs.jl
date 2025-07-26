@@ -36,6 +36,13 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pthread_np.patch
 #   x86_64 macOS. See
 #   <https://github.com/JuliaPackaging/Yggdrasil/pull/10249#discussion_r1975948816> for a brief
 #   discussion.
+
+if [[ ${target} == *-linux-* ]]; then
+    DEVICE="ch4:ucx"
+else
+    DEVICE="ch3"
+fi
+
 configure_flags=(
     --build=${MACHTYPE}
     --disable-dependency-tracking
@@ -44,7 +51,7 @@ configure_flags=(
     --enable-static=no
     --host=${target}
     --prefix=${prefix}
-    --with-device=ch3
+    --with-device=${DEVICE}
     --with-hwloc=${prefix}
 )
 
