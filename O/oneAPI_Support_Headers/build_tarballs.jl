@@ -3,19 +3,20 @@
 using BinaryBuilder, Pkg
 
 name = "oneAPI_Support_Headers"
-version = v"2025.1.0"
+version = v"2025.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    FileSource("https://files.pythonhosted.org/packages/44/5c/7bfaa300e5cdc6e50328c8e85f703a852a681db92c26aa31ee33ade51fd2/mkl_devel_dpcpp-2025.1.0-py2.py3-none-manylinux_2_28_x86_64.whl",
-               "92adbc773739a247b596844e8b6b2ec34adb3bb6e6de01e0889994cafd7ca5a9"; filename="oneapi-headers.whl"),
+    # https://pypi.org/project/mkl-devel-dpcpp
+    FileSource("https://files.pythonhosted.org/packages/08/30/a28cfc8f9a982a5998940b808288f58f4ba2607e50a18f97207b7428f602/mkl_devel_dpcpp-2025.2.0-py2.py3-none-manylinux_2_28_x86_64.whl",
+               "44ceb849a99f9bbe3ad89dac9dcdedb540b3996c69e699a40047d62d51934a0c"; filename="oneapi-headers.whl"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 unzip -d oneapi-headers oneapi-headers.whl
-cd oneapi-headers/mkl_devel_dpcpp-2025.1.0.data/data
+cd oneapi-headers/mkl_devel_dpcpp-2025.2.0.data/data
 
 mkdir $includedir
 cp -r include/oneapi $includedir
