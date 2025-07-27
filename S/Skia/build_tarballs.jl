@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "Skia"
-version = v"0.40.0+1"
+version = v"0.40.1"
 
 # Collection of sources required to complete build
 sources = [
