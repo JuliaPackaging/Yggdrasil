@@ -292,6 +292,7 @@ mkdir -p ${libdir}
 if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
     rm -rf bazel-bin/_solib_local/*stub*/*so*
     cp -v bazel-bin/_solib_local/*/*so* ${libdir}
+    cp -v deps/ReactantExtra/bazel-ReactantExtra/external/nvidia_nvshmem/lib/libnvshmem_device.bc ${libdir}
     find bazel-bin
     find ${libdir}
     # cp -v /workspace/bazel_root/*/external/cuda_nccl/lib/libnccl.so.2 ${libdir}
@@ -395,7 +396,8 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
 
     # if gpu == "cuda" && arch(platform) == "aarch64" && VersionNumber(cuda_version) < v"12.4"
     # Temporarily disable all CUDA builds up to v12.4
-    if gpu == "cuda" && arch(platform) == "aarch64" && VersionNumber(cuda_version) <= v"12.4"
+    if gpu == "cuda" && arch(platform) == "aarch64"
+    # if gpu == "cuda" && arch(platform) == "aarch64" && VersionNumber(cuda_version) <= v"12.4"
         # At the moment we can't build for CUDA 12.1 on aarch64, let's skip it
         continue
     end
@@ -506,6 +508,7 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
 	push!(products, ExecutableProduct(["ptxas"], :ptxas, "lib/cuda/bin"))
 	push!(products, ExecutableProduct(["fatbinary"], :fatbinary, "lib/cuda/bin"))
 	push!(products, FileProduct("lib/cuda/nvvm/libdevice/libdevice.10.bc", :libdevice))
+	push!(products, FileProduct("lib/libnvshmem_device.bc", :libnvshmem_device))
 
         if VersionNumber(cuda_version) < v"12.6"
             # For older versions of CUDA we need to use GCC 12:
