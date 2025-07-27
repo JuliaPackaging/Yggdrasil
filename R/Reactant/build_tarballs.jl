@@ -211,6 +211,7 @@ if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
             --action_env=CLANG_CUDA_COMPILER_PATH=$(which clang)
             --define=using_clang=true
             --repo_env=CUDA_REDIST_TARGET_PLATFORM="aarch64"
+	    --repo_env=NVSHMEM_REDIST_TARGET_PLATFORM="aarch64"
             --linkopt="-L${prefix}/libcxx/lib"
         )
     fi
@@ -396,8 +397,7 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
 
     # if gpu == "cuda" && arch(platform) == "aarch64" && VersionNumber(cuda_version) < v"12.4"
     # Temporarily disable all CUDA builds up to v12.4
-    if gpu == "cuda" && arch(platform) == "aarch64"
-    # if gpu == "cuda" && arch(platform) == "aarch64" && VersionNumber(cuda_version) <= v"12.4"
+    if gpu == "cuda" && arch(platform) == "aarch64" && VersionNumber(cuda_version) <= v"12.4"
         # At the moment we can't build for CUDA 12.1 on aarch64, let's skip it
         continue
     end
