@@ -293,7 +293,7 @@ mkdir -p ${libdir}
 if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
     rm -rf bazel-bin/_solib_local/*stub*/*so*
     cp -v bazel-bin/_solib_local/*/*so* ${libdir}
-    cp -v deps/ReactantExtra/bazel-ReactantExtra/external/nvidia_nvshmem/lib/libnvshmem_device.bc ${libdir}
+    cp -v bazel-ReactantExtra/external/nvidia_nvshmem/lib/libnvshmem_device.bc ${libdir}
     find bazel-bin
     find ${libdir}
     # cp -v /workspace/bazel_root/*/external/cuda_nccl/lib/libnccl.so.2 ${libdir}
