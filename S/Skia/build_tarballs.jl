@@ -8,7 +8,7 @@ version = v"0.40.1"
 # Collection of sources required to complete build
 sources = [
    GitSource("https://github.com/google/skia.git", "482de011c920d85fdbe21a81c45852655df6a809"),
-   GitSource("https://github.com/stensmo/cskia.git", "4372ad8f55f9a5a0f01d0bcc858936192fe83c6e"),
+   GitSource("https://github.com/stensmo/cskia.git", "7790e8f426cec7ad620cd04a04f28f604751e8d1"),
    DirectorySource("./bundled"),
    # Missing header ft2build.h for freetype2
    GitSource("https://chromium.googlesource.com/chromium/src/third_party/freetype2.git","5d4e649f740c675426fbe4cdaffc53ee2a4cb954"),
