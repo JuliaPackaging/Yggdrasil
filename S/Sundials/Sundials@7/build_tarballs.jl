@@ -16,7 +16,7 @@ cd $WORKSPACE/srcdir/sundials*
 
 # Note: The SundialsSetupCompilers patch for 64-bit integer support
 # is no longer needed in v7.4.0 as the Fortran name mangling has been
-# restructured in the newer version.
+# restructured in the newer version of SUNDIALS.
 
 # Set up CFLAGS
 cd $WORKSPACE/srcdir/sundials*/cmake/tpl
