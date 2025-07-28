@@ -22,14 +22,16 @@ fi
 # Set up CFLAGS
 cd $WORKSPACE/srcdir/sundials*/cmake/tpl
 if [[ "${target}" == *-mingw* ]]; then
-    LAPACK_NAME="-L${libdir} -lblastrampoline-5"
+    BLAS_NAME="${libdir}/libblastrampoline-5.${dlext}"
+    LAPACK_NAME="${libdir}/libblastrampoline-5.${dlext}"
     atomic_patch -p2 $WORKSPACE/srcdir/patches/Sundials_windows.patch
     # Work around https://github.com/LLNL/sundials/issues/29
     # When looking for KLU libraries, CMake searches only for import libraries,
     # this patch ensures we look also for shared libraries.
     atomic_patch -p2 $WORKSPACE/srcdir/patches/Sundials_findklu_suffixes.patch
 else
-    LAPACK_NAME="-L${libdir} -lblastrampoline"
+    BLAS_NAME="${libdir}/libblastrampoline.${dlext}"
+    LAPACK_NAME="${libdir}/libblastrampoline.${dlext}"
 fi
 
 # Build
@@ -44,7 +46,8 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DKLU_LIBRARY_DIR="${libdir}" \
     -DKLU_WORKS=ON \
     -DENABLE_LAPACK=ON \
-    -DLAPACK_LIBRARIES:STRING="${LAPACK_NAME}" \
+    -DBLAS_LIBRARIES="${BLAS_NAME}" \
+    -DLAPACK_LIBRARIES="${LAPACK_NAME}" \
     -DLAPACK_WORKS=ON \
     ..
 make -j${nproc}
