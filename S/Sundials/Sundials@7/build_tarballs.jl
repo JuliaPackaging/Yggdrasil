@@ -14,10 +14,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/sundials*
 
-if [[ ${nbits} == 64 ]]; then
-    cd $WORKSPACE/srcdir/sundials*/cmake
-    atomic_patch -p2 $WORKSPACE/srcdir/patches/SundialsSetupCompilers.patch
-fi
+# Note: The SundialsSetupCompilers patch for 64-bit integer support
+# is no longer needed in v7.4.0 as the Fortran name mangling has been
+# restructured in the newer version.
 
 # Set up CFLAGS
 cd $WORKSPACE/srcdir/sundials*/cmake/tpl
