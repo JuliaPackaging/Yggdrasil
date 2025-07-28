@@ -5,8 +5,8 @@ version = v"7.4.0"
 
 # Collection of sources required to build Sundials
 sources = [
-    ArchiveSource("https://github.com/LLNL/sundials/archive/refs/tags/v$(version).tar.gz",
-                  "3f84277b73922507beae83439b6a234d855fd53ba1f61728111968dea5fac29b"),
+    ArchiveSource("https://github.com/LLNL/sundials/releases/download/v$(version)/sundials-$(version).tar.gz",
+                  "679ddacdd77610110e613164e8297d6d0cd35bae8e9c3afc8e8ff6f99a1c2a7b"),
     DirectorySource("./bundled"),
 ]
 
