@@ -86,7 +86,7 @@ products = [
     LibraryProduct("libsundials_sunmatrixsparse", :libsundials_sunmatrixsparse),
     LibraryProduct("libsundials_sunnonlinsolfixedpoint", :libsundials_sunnonlinsolfixedpoint),
     LibraryProduct("libsundials_sunnonlinsolnewton", :libsundials_sunnonlinsolnewton),
-    LibraryProduct("libsundials_generic", :libsundials_generic),
+    # Note: libsundials_generic was renamed to libsundials_core in v7
     LibraryProduct("libsundials_core", :libsundials_core),
 ]
 
