@@ -2,16 +2,16 @@ using BinaryBuilder, Pkg
 
 # Collection of pre-build quarto binaries
 name = "quarto"
-quarto_ver = "1.7.31"
+quarto_ver = "1.7.32"
 version = VersionNumber(quarto_ver)
 
 url_prefix = "https://github.com/quarto-dev/quarto-cli/releases/download/v$(quarto_ver)/quarto-$(quarto_ver)"
 sources = [
-    ArchiveSource("$(url_prefix)-linux-amd64.tar.gz", "61149ee0c2dc2426aa0431b01e26313b100615c7a164b2150a45e34c4d1ecc57"; unpack_target="x86_64-linux-gnu"),
-    ArchiveSource("$(url_prefix)-linux-arm64.tar.gz", "0cec17c96ab8f3102a0d9863dfa828199f39cb0db5dbcb6e1385e0d05665af04"; unpack_target="aarch64-linux-gnu"),
-    ArchiveSource("$(url_prefix)-macos.tar.gz", "a247738c10a542e6b6a82cd3692bce114e7d4fc65194ffff0d1413613f530e47"; unpack_target="x86_64-apple-darwin14"),
-    ArchiveSource("$(url_prefix)-macos.tar.gz", "a247738c10a542e6b6a82cd3692bce114e7d4fc65194ffff0d1413613f530e47"; unpack_target="aarch64-apple-darwin20"),
-    ArchiveSource("$(url_prefix)-win.zip", "ec4807b0b4bb675ddd35a41f7143da1e0d9c03b70e6f4fec4df9bde2e6b5ee89"; unpack_target="x86_64-w64-mingw32"),
+    ArchiveSource("$(url_prefix)-linux-amd64.tar.gz", "262505e3d26459c64e66efefd4b9240eb755ea20dd6fe876d6aa64c7a7b13d27"; unpack_target="x86_64-linux-gnu"),
+    ArchiveSource("$(url_prefix)-linux-arm64.tar.gz", "87835e6ed965d865ee1cda367ff0316c7d52104c114f5f1962fdc9fe5da46cd0"; unpack_target="aarch64-linux-gnu"),
+    ArchiveSource("$(url_prefix)-macos.tar.gz", "b49912bbe2b507f03d0bac9089f0e97437a87226c59a371e4eff8712557b16e8"; unpack_target="x86_64-apple-darwin14"),
+    ArchiveSource("$(url_prefix)-macos.tar.gz", "b49912bbe2b507f03d0bac9089f0e97437a87226c59a371e4eff8712557b16e8"; unpack_target="aarch64-apple-darwin20"),
+    ArchiveSource("$(url_prefix)-win.zip", "956d5162377d0138c2d1972eb3aa6634b5369aa9286871a95f4f3989e673854a"; unpack_target="x86_64-w64-mingw32"),
     FileSource("https://raw.githubusercontent.com/quarto-dev/quarto-cli/v$(quarto_ver)/COPYRIGHT", "b99ec68b0ae2766380ecd177de507b799d1e3f6b7334d940a57021d3e4299721"),
     FileSource("https://raw.githubusercontent.com/quarto-dev/quarto-cli/v$(quarto_ver)/COPYING.md", "6b985ce085f33a39f96d12321cfbcee03aa2ad4249755f534537f38019dfa123"),
 ]
