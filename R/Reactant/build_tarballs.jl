@@ -6,10 +6,10 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.220"
+version = v"0.0.223"
 
 sources = [
-   GitSource(repo, "081a45041a6dc71d0ad2203fa0e49a43c55feee5"),
+   GitSource(repo, "951490fc91fc5ccd9351b83846da0cf8c966b4a2"),
    ArchiveSource("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.7%2B6/OpenJDK21U-jdk_x64_alpine-linux_hotspot_21.0.7_6.tar.gz", "79ecc4b213d21ae5c389bea13c6ed23ca4804a45b7b076983356c28105580013"),
    ArchiveSource("https://github.com/JuliaBinaryWrappers/Bazel_jll.jl/releases/download/Bazel-v7.6.1+0/Bazel.v7.6.1.x86_64-linux-musl-cxx03.tar.gz", "01ac6c083551796f1f070b0dc9c46248e6c49e01e21040b0c158f6e613733345")
 ]
@@ -222,6 +222,7 @@ if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
             --action_env=CLANG_CUDA_COMPILER_PATH=$(which clang)
             --define=using_clang=true
             --repo_env=CUDA_REDIST_TARGET_PLATFORM="aarch64"
+	    --repo_env=NVSHMEM_REDIST_TARGET_PLATFORM="aarch64"
             --linkopt="-L${prefix}/libcxx/lib"
         )
     fi
@@ -303,6 +304,7 @@ mkdir -p ${libdir}
 if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
     rm -rf bazel-bin/_solib_local/*stub*/*so*
     cp -v bazel-bin/_solib_local/*/*so* ${libdir}
+    cp -v bazel-ReactantExtra/external/nvidia_nvshmem/lib/libnvshmem_device.bc ${libdir}
     find bazel-bin
     find ${libdir}
     # cp -v /workspace/bazel_root/*/external/cuda_nccl/lib/libnccl.so.2 ${libdir}
@@ -390,8 +392,8 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     preferred_gcc_version = v"13"
     preferred_llvm_version = v"18.1.7"
 
-    # Temporarily disable debug builds also for macOS
-    if mode == "dbg" && !Sys.isapple(platform)
+    # Disable debug builds for cuda
+    if mode == "dbg" && gpu != "none"
         continue
     end
 
@@ -505,6 +507,9 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
 		# "libcuda",
 		"libcudnn_engines_runtime_compiled",
 		"libcusparse",
+		"libnvshmem_host",
+		"nvshmem_bootstrap_uid",
+		"nvshmem_transport_ibrc"
 	)
 	    san = replace(lib, "-" => "_")
 	    push!(products,
@@ -514,6 +519,7 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
 	push!(products, ExecutableProduct(["ptxas"], :ptxas, "lib/cuda/bin"))
 	push!(products, ExecutableProduct(["fatbinary"], :fatbinary, "lib/cuda/bin"))
 	push!(products, FileProduct("lib/cuda/nvvm/libdevice/libdevice.10.bc", :libdevice))
+	push!(products, FileProduct("lib/libnvshmem_device.bc", :libnvshmem_device))
 
         if VersionNumber(cuda_version) < v"12.6"
             # For older versions of CUDA we need to use GCC 12:
