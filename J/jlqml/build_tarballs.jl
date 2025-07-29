@@ -13,11 +13,11 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.13.0"), uuid)
 include("../../L/libjulia/common.jl")
 
 name = "jlqml"
-version = v"0.7.0"
+version = v"0.7.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/JuliaGraphics/jlqml.git", "5fbebe2a16afd20ddf758a052f0f86571ff383b4"),
+    GitSource("https://github.com/JuliaGraphics/jlqml.git", "fd70696b3b893fcc2f5005044c266ed49701d7b3"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
 ]
@@ -49,6 +49,7 @@ install_license $WORKSPACE/srcdir/jlqml*/LICENSE.md
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
+filter!(x -> x >= v"1.10.0",  julia_versions)
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 # Qt6Declarative_jll is not available for these architectures:
