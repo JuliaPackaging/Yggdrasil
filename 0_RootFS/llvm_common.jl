@@ -42,6 +42,8 @@ llvm_tags = Dict(
     v"16.0.6" => "7cbf1a2591520c2491aa35339f227775f4d3adf6",
     v"17.0.6" => "6009708b4367171ccdbf4b5905cb6a803753fe18",
     v"18.1.7" => "768118d1ad38bf13c545828f67bd6b474d61fc55",
+    v"19.1.7" => "cd708029e0b2869e80abe31ddb175f7c35361f90",
+    v"20.1.2" => "58df0ef89dd64126512e4ee27b4ac3fd8ddf6247",
 )
 
 function llvm_sources(;version = "v8.0.1", kwargs...)
@@ -74,6 +76,7 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
     # Then create the symlinks
     ln -s $(basename ${prefix}/${target}/lib64/libxml2.so.*) ${prefix}/${target}/lib64/libxml2.so
     ln -s $(basename ${prefix}/${target}/lib64/libxml2.so.*) ${prefix}/${target}/lib64/libxml2.so.2
+    ln -s $(basename ${prefix}/${target}/lib64/libxml2.so.*) ${prefix}/${target}/lib64/libxml2.so.16
     ln -s $(basename ${prefix}/${target}/lib64/libiconv.so.*) ${prefix}/${target}/lib64/libiconv.so
     ln -s $(basename ${prefix}/${target}/lib64/libiconv.so.*) ${prefix}/${target}/lib64/libiconv.so.2
     ln -s $(basename ${prefix}/${target}/lib64/libz.so.*) ${prefix}/${target}/lib64/libz.so
@@ -178,12 +181,11 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
     CMAKE_FLAGS+=(-DZLIB_ROOT="${prefix}")
 
     # Build!
-    cmake ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
-    cmake -LA || true
-    make -j${nproc} VERBOSE=1
+    cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
+    ninja -j${nproc} -vv
 
     # Install!
-    make install -j${nproc} VERBOSE=1
+    ninja install
     """
 end
 
@@ -204,7 +206,7 @@ function llvm_dependencies(; kwargs...)
     return [
         Dependency("Zlib_jll"),
         Dependency("XML2_jll"),
-	# transitive dependency libiconv
+	    # transitive dependency libiconv
     ]
 end
 
