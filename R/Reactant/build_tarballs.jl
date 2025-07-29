@@ -381,8 +381,8 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     preferred_gcc_version = v"13"
     preferred_llvm_version = v"18.1.7"
 
-    # Temporarily disable debug builds also for macOS
-    if mode == "dbg" && !Sys.isapple(platform)
+    # Disable debug builds for cuda
+    if mode == "dbg" && gpu != "none"
         continue
     end
 
