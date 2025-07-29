@@ -49,6 +49,7 @@ install_license $WORKSPACE/srcdir/jlqml*/LICENSE.md
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
+filter!(x -> x >= v"1.10.0",  julia_versions)
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 # Qt6Declarative_jll is not available for these architectures:
