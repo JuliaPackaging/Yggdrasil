@@ -3,35 +3,35 @@
 using BinaryBuilder
 
 name = "micromamba"
-version = v"1.5.8"
+version = v"1.5.12"
 build = "0"
 
 # Collection of sources required to build micromamba
 # These are actually just the conda packages for each platform
 sources = [
     FileSource("https://conda.anaconda.org/conda-forge/linux-64/micromamba-$version-$build.tar.bz2",
-        "3376ccb2ace4bb1549659067f9f1e332fdd34e92e3be85d5968c8f45cff2b467",
+        "c8d0e74cdf31349b98af7a57b0faed1468c9ebb908ca95fc8fb6df2597e8a76f",
         filename="micromamba-x86_64-linux-gnu.tar.bz2"),
     FileSource("https://conda.anaconda.org/conda-forge/linux-aarch64/micromamba-$version-$build.tar.bz2",
-        "1812fb419da96af894a9449aff36e5b319689596b87e8a0080321780a43fba19",
+        "85248cad98ea560de7dfdb98ed2e2f729c69150b59bedf0bdd62ff871b9c8a53",
         filename="micromamba-aarch64-linux-gnu.tar.bz2"),
     FileSource("https://conda.anaconda.org/conda-forge/linux-ppc64le/micromamba-$version-$build.tar.bz2",
-        "c8e90da6b2164d9416f7908d6707ea776d35126602985e5d47cf570e2bdc1dd2",
+        "7c263176667c5baf201cce54df5d41d4959ce00374cf9f19e601f864e42106ed",
         filename="micromamba-powerpc64le-linux-gnu.tar.bz2"),
     FileSource("https://conda.anaconda.org/conda-forge/osx-64/micromamba-$version-$build.tar.bz2",
-        "a520f5ae4ed6667c489f9b8635afe6632da73bdd3039d62ff91b47aeced3e4a3",
+        "ada5422d1aa75282a2028ff86005460351f73680ff3a38dd387296b86568e654",
         filename="micromamba-x86_64-apple-darwin14.tar.bz2"),
     FileSource("https://conda.anaconda.org/conda-forge/osx-arm64/micromamba-$version-$build.tar.bz2",
-        "d62bdc8179a485b931007d623f299ef307cdfba45438fc1f4a8d055ddc232ee1",
+        "6a0c105246f65ffd063e04c1f29aaebf8f3b07f06178de3a13993572e5b3ffa8",
         filename="micromamba-aarch64-apple-darwin20.tar.bz2"),
     FileSource("https://conda.anaconda.org/conda-forge/win-64/micromamba-$version-$build.tar.bz2",
-        "7fd3de2870db8f019b2655e907f9eb2f0e2a1488e339a5c1b85701da27faacf2",
+        "078a87f3f009586fed9450b085ed4801bf2aab552bb88da72d881db2cee40f89",
         filename="micromamba-x86_64-w64-mingw32.tar.bz2"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-# unpack the tarball (BinaryBuilder does not natively support bzip2 so we do this ourselves)
+# Unpack only the tarball for our target
 cd $WORKSPACE/srcdir
 mkdir micromamba
 cd micromamba
