@@ -172,6 +172,6 @@ for platform in platforms, debug in (false, true)
     # IGC only supports Ubuntu 18.04+, which uses GCC 7.4.
     # GCC <9 triggers: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86678 (for debug)
     build_tarballs(ARGS, name, version, sources, get_script(; debug), [augmented_platform],
-                   products, dependencies; preferred_gcc_version=v"9", augment_platform_block,
+                   products, dependencies; preferred_gcc_version=v"11", augment_platform_block,
                    julia_compat = "1.6", lock_microarchitecture=false)
 end
