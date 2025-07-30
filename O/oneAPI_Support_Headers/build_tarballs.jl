@@ -7,19 +7,21 @@ version = v"2025.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    # https://pypi.org/project/mkl-devel-dpcpp
-    FileSource("https://files.pythonhosted.org/packages/08/30/a28cfc8f9a982a5998940b808288f58f4ba2607e50a18f97207b7428f602/mkl_devel_dpcpp-2025.2.0-py2.py3-none-manylinux_2_28_x86_64.whl",
-               "44ceb849a99f9bbe3ad89dac9dcdedb540b3996c69e699a40047d62d51934a0c"; filename="oneapi-headers.whl"),
+    # https://pypi.org/project/onemkl-sycl-include
+    FileSource("https://files.pythonhosted.org/packages/67/60/183badc2d807be1abb95a20315e84a2075cb44a1d1ede104d42cb1ed3092/onemkl_sycl_include-2025.2.0-py2.py3-none-manylinux_2_28_x86_64.whl",
+               "4e995c02e5f43265aa830a06e538b2e5ada76b7c2785c26b788d6073ba605b0f"; filename="oneapi-headers.whl"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 unzip -d oneapi-headers oneapi-headers.whl
-cd oneapi-headers/mkl_devel_dpcpp-2025.2.0.data/data
+cd oneapi-headers/onemkl_sycl_include-2025.2.0.data/data
 
 mkdir $includedir
 cp -r include/oneapi $includedir
+
+install_license $WORKSPACE/srcdir/oneapi-headers/onemkl_sycl_include-2025.2.0.dist-info/LICENSE.txt
 """
 
 # These are the platforms we will build for by default, unless further
