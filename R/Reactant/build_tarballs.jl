@@ -382,8 +382,13 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     preferred_llvm_version = v"18.1.7"
 
     # Disable debug builds for cuda
-    if mode == "dbg" && gpu != "none"
+    if mode == "dbg"
+	if gpu != "none"
         continue
+		end
+	if !Sys.isapple(platform) && arch(platform) == "aarch64"
+		continue
+		end
     end
 
     if !((gpu == "cuda") ⊻ (cuda_version == "none"))
