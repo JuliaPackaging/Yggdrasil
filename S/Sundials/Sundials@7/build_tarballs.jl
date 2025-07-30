@@ -14,6 +14,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/sundials*
 
+apk del cmake
+
 # Note: The SundialsSetupCompilers patch for 64-bit integer support
 # is no longer needed in v7.4.0 as the Fortran name mangling has been
 # restructured in the newer version of SUNDIALS.
@@ -23,7 +25,7 @@ cd $WORKSPACE/srcdir/sundials*/cmake/tpl
 if [[ "${target}" == *-mingw* ]]; then
     BLAS_NAME="${libdir}/libblastrampoline-5.${dlext}"
     LAPACK_NAME="${libdir}/libblastrampoline-5.${dlext}"
-    atomic_patch -p2 $WORKSPACE/srcdir/patches/Sundials_windows.patch
+    #atomic_patch -p2 $WORKSPACE/srcdir/patches/Sundials_windows.patch
     # Work around https://github.com/LLNL/sundials/issues/29
     # When looking for KLU libraries, CMake searches only for import libraries,
     # this patch ensures we look also for shared libraries.
@@ -91,10 +93,12 @@ products = [
 ]
 
 dependencies = [
+    HostBuildDependency("CMake_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("libblastrampoline_jll"),
     Dependency("SuiteSparse_jll"),
 ]
 
 # Build the tarballs
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"6", julia_compat="1.10")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version = v"6", julia_compat="1.10")
