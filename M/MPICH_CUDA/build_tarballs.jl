@@ -110,7 +110,7 @@ install_license $WORKSPACE/srcdir/mpich*/COPYRIGHT
 """
 
 
-platforms = CUDA.supported_platforms()
+platforms = CUDA.supported_platforms(; min_version = v"11.8")
 platforms = filter!(p -> arch(p) == "x86_64" || arch(p) == "aarch64", platforms)
 platforms = expand_gfortran_versions(platforms)
 
