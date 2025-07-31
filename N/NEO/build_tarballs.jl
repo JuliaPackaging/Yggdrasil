@@ -13,11 +13,19 @@ version = v"25.27.34303"#.5
 sources = [
     GitSource("https://github.com/intel/compute-runtime.git",
               "d0fdeb0339afaa6db37411e10c41f291945aa727"),
+    # patches
+    DirectorySource("./patches"),
 ]
 
 # Bash recipe for building across all platforms
 function get_script(; debug::Bool)
     raw"""
+        # ocloc segfaults after successful build and before exiting. So we wrap
+        # a script around ocloc that detects when the build is reported
+        # successful and ignores the segfault.
+        atomic_patch -p0 ocloc.patch
+        cp ocloc_wrapper.sh compute-runtime/shared/source/built_ins/kernels/ocloc_wrapper.sh
+
         cd compute-runtime
         install_license LICENSE.md
 
@@ -96,6 +104,7 @@ dependencies = [
     Dependency("gmmlib_jll"; compat="=22.8.1"),
     Dependency("libigc_jll"; compat="=2.14.1"),
     Dependency("oneAPI_Level_Zero_Headers_jll"; compat="=1.13"),
+    Dependency("Glibc_jll"; compat="=2.34"),
 ]
 
 augment_platform_block = raw"""
@@ -146,4 +155,3 @@ for platform in platforms, debug in (false, true)
                    products, dependencies; preferred_gcc_version=v"11", julia_compat = "1.6",
                    augment_platform_block)
 end
-# bump
