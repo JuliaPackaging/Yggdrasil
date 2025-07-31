@@ -18,9 +18,9 @@ function blas_script(;blas32::Bool=false)
     cd $WORKSPACE/srcdir/lapack*
 
     if [[ ${nbits} == 64 ]] && [[ "${BLAS32}" != "true" ]]; then
-      BUILD_INDEX64="ON"
+      INDEX64="ON"
     else
-      BUILD_INDEX64="OFF"
+      INDEX64="OFF"
     fi
 
     # FortranCInterface_VERIFY fails on macOS, but it's not actually needed for the current build
@@ -43,7 +43,7 @@ function blas_script(;blas32::Bool=false)
     if [[ ${target} == *mingw* ]]; then
       rm ${prefix}/lib/liblapack.dll.a
     fi
-    rm ${libdir}/liblapack.${dlext}
+    rm ${libdir}/liblapack.*
     install_license $WORKSPACE/srcdir/lapack/LICENSE
 
     if [[ "${BLAS32}" == "true" ]]; then
