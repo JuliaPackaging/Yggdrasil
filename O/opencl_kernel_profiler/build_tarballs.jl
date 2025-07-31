@@ -3,14 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "opencl_kernel_profiler"
-version = v"0.0.109"
+version = v"0.0.100"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/rjodinchr/opencl-kernel-profiler",
-              "40e48f894bdce54866d2fb16d8cdb76c935f08df"),
-    GitSource("https://github.com/google/perfetto",
-              "2c4d2ffa7ff300e0b0feb8b8553e42afc7945870"),
+    GitSource(
+        "https://github.com/rjodinchr/opencl-kernel-profiler",
+        "19f658f19a7fdbd2b3ef3cec0ecd5fa7f2b8b293"
+    ),
+    GitSource(
+        "https://github.com/google/perfetto",
+        "2c4d2ffa7ff300e0b0feb8b8553e42afc7945870"
+    ),
 ]
 
 
@@ -23,7 +27,8 @@ cmake -B build \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DOPENCL_HEADER_PATH=${includedir}/CL \
-    -DPERFETTO_SDK_PATH=../perfetto/sdk
+    -DPERFETTO_SDK_PATH=../perfetto/sdk \
+    -DSPIRV_DISASSEMBLY=ON
 cmake --build build --parallel ${nproc}
 install -vm 644 build/libopencl-kernel-profiler.${dlext} "${libdir}/"
 install_license LICENSE
@@ -40,10 +45,14 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(; name="OpenCL_Headers_jll", version=v"2024.10.24")),
+    BuildDependency(PackageSpec(; name = "OpenCL_Headers_jll", version = v"2024.10.24")),
     Dependency("OpenCL_jll"),
-    HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.24.3")),
+    Dependency("SPIRV_Tools_jll"),
+    HostBuildDependency(PackageSpec(; name = "CMake_jll", version = v"3.24.3")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8")
+build_tarballs(
+    ARGS, name, version, sources, script, platforms, products, dependencies;
+    julia_compat = "1.6", preferred_gcc_version = v"9"
+)
