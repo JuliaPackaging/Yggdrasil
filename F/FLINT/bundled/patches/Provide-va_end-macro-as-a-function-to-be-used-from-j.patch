@@ -1,0 +1,50 @@
+From db864d5ced13df6f6e059b613a51be923eb5654d Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lars=20G=C3=B6ttgens?= <lars.goettgens@rwth-aachen.de>
+Date: Thu, 31 Jul 2025 17:50:25 +0200
+Subject: [PATCH] Provide `va_end` macro as a function to be used from julia
+
+This is needed to provide a `flint_set_throw` callback in Nemo.jl.
+---
+ src/flint.h.in                       |  6 ++++++
+ src/generic_files/macros_for_julia.c | 12 ++++++++++++
+ 2 files changed, 18 insertions(+)
+ create mode 100644 src/generic_files/macros_for_julia.c
+
+diff --git a/src/flint.h.in b/src/flint.h.in
+index a3149db2a..e5d58813c 100644
+--- a/src/flint.h.in
++++ b/src/flint.h.in
+@@ -399,6 +399,12 @@ void flint_sort(void * buf, slong len, slong size, int (* cmp) (const void *, co
+       __tmp_root = __tmp_root->next; \
+    }
+ 
++/* provide some macros as functions for use from julia ***********************/
++
++#ifdef FLINT_HAVE_VA_LIST
++void flint_va_end(va_list vlist);
++#endif
++
+ /* I/O ***********************************************************************/
+ 
+ int parse_fmt(int * floating, const char * fmt);
+diff --git a/src/generic_files/macros_for_julia.c b/src/generic_files/macros_for_julia.c
+new file mode 100644
+index 000000000..f2b4c4a88
+--- /dev/null
++++ b/src/generic_files/macros_for_julia.c
+@@ -0,0 +1,12 @@
++#include <stdarg.h>
++#include "flint.h"
++
++/* provide some macros as functions for use from julia ***********************/
++
++#ifdef FLINT_HAVE_VA_LIST
++void flint_va_end(va_list vlist)
++{
++    va_end(vlist);
++}
++
++#endif
+-- 
+2.49.0
+
