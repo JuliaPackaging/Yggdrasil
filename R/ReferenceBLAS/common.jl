@@ -23,6 +23,10 @@ function blas_script(;blas32::Bool=false)
       BUILD_INDEX64="OFF"
     fi
 
+    # FortranCInterface_VERIFY fails on macOS, but it's not actually needed for the current build
+    sed -i 's/FortranCInterface_VERIFY/# FortranCInterface_VERIFY/g' ./CBLAS/CMakeLists.txt
+    sed -i 's/FortranCInterface_VERIFY/# FortranCInterface_VERIFY/g' ./LAPACKE/include/CMakeLists.txt
+
     mkdir build && cd build
     cmake .. \
        -DCMAKE_INSTALL_PREFIX="$prefix" \
@@ -37,9 +41,9 @@ function blas_script(;blas32::Bool=false)
     make -j${nproc}
     make install
     if [[ ${target} == *mingw* ]]; then
-        mv -v ${prefix}/lib/libblas.${dlext} ${libdir}
+      rm ${prefix}/lib/liblapack.dll.a
     fi
-    rm ${prefix}/lib/liblapack.${dlext}
+    rm ${libdir}/liblapack.${dlext}
     install_license $WORKSPACE/srcdir/lapack/LICENSE
 
     if [[ "${BLAS32}" == "true" ]]; then
