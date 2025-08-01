@@ -11,6 +11,9 @@ name = "cupynumeric"
 version = v"25.5" # cupynumeric has 05, but Julia doesn't like that
 sources = [
     GitSource("https://github.com/nv-legate/cupynumeric.git","cbd9a098b32531d68f1b3007ef86bb8d3859174d"),
+    GitSource("https://github.com/MatthewsResearchGroup/tblis.git", "c4f81e08b2827e72335baa7bf91a245f72c43970"),
+    ArchiveSource("https://github.com/JuliaBinaryWrappers/CUTENSOR_jll.jl/releases/download/CUTENSOR-v2.2.0%2B0/CUTENSOR.v2.2.0.x86_64-linux-gnu-cuda+12.0.tar.gz",
+                     "1c243b48e189070fefcdd603f87c06fada2d71c911dea7028748ad7a4315b816")
 ]
 
 
@@ -18,12 +21,25 @@ sources = [
 MIN_CUDA_VERSION = v"12.2"
 MAX_CUDA_VERSION = v"12.8.999"
 
+# MIN_CUDA_VERSION = v"12.0"
+# MAX_CUDA_VERSION = v"12.1"
+
+# -DDYNAMIC_ARCH=ON
+# -DTARGET=GENERIC
+
 script = raw"""
+
+    # Build crashes without this
+    export TMPDIR=${WORKSPACE}/tmpdir
+    mkdir -p ${TMPDIR}
+
+    # Copy cuTensor archive to proper dirs
+    cd ${WORKSPACE}/srcdir
+    cp -a ./include/. ${includedir}
+    cp -a ./lib/. ${libdir}
 
     # Put new CMake first on path
     export PATH=${host_bindir}:$PATH
-
-    cd ${WORKSPACE}/srcdir/cupynumeric
 
     # Necessary operations to cross compile CUDA from x86_64 to aarch64
     if [[ "${target}" == aarch64-linux-* ]]; then
@@ -48,6 +64,39 @@ script = raw"""
 
     ln -s ${CUDA_HOME}/lib ${CUDA_HOME}/lib64
 
+    ## BUILD TBLIS ##
+    cd ${WORKSPACE}/srcdir/tblis
+
+    for i in ./Makefile.* ./configure*; do
+
+        # Building in container forbids -march options
+        sed -i "s/-march[^ ]*//g" $i
+
+    done
+
+    case ${target} in
+        *"x86_64"*"linux"*"gnu"*) 
+            export BLI_CONFIG=x86,reference
+            ;;
+        *"aarch64"*)
+            ;;
+        *)
+            ;;
+    esac
+
+    ./configure \
+        --prefix=$prefix \
+        --build=${MACHTYPE} \
+        --host=${target} \
+        --with-label-type=int32_t \
+        --with-length-type=int64_t \
+        --with-stride-type=int64_t \
+        --enable-thread-model=openmp \
+        --enable-config=${BLI_CONFIG}
+
+    make -j ${nproc} && make install
+
+    cd ${WORKSPACE}/srcdir/cupynumeric
 
     # COPIED FROM OpenBLAS_jll script
     if [[ ${target} == aarch64-* ]] && [[ ${bb_full_target} != *-libgfortran3* ]]; then
@@ -67,19 +116,19 @@ script = raw"""
         -Dcutensor_INCLUDE_DIR=${includedir} \
         -DBLAS_LIBRARIES=${libdir}/libopenblas.so \
 
-    # cmake --build build --parallel ${nproc} --verbose
-    # cmake --install build
+    cmake --build build --parallel ${nproc} --verbose
+    cmake --install build
 
-    # install_license $WORKSPACE/srcdir/cupynumeric*/LICENSE
+    install_license $WORKSPACE/srcdir/cupynumeric*/LICENSE
+    install_license $WORKSPACE/srcdir/share/licenses/CUTENSOR/LICENSE
 
-    # if [[ "${target}" == aarch64-linux-* ]]; then
-    #     # ensure products directory is clean
-    #     rm -rf ${prefix}/cuda
-    # fi
 
 """
 
 platforms = CUDA.supported_platforms(; min_version = MIN_CUDA_VERSION, max_version = MAX_CUDA_VERSION)
+
+# for now NO ARM support, tblis doesnt have docs on how to build for arm
+platforms = filter!(p -> arch(p) == "x86_64", platforms)
 
 platforms = expand_cxxstring_abis(platforms) 
 platforms = filter!(p -> cxxstring_abi(p) == "cxx11", platforms)
@@ -88,12 +137,12 @@ products = [
     LibraryProduct("libcupynumeric", :libcupynumeric)
 ] 
 
+platforms = [platforms[1]]
 
 dependencies = [
     Dependency("legate_jll"; compat = "=25.5"), # Legate versioning is Year.Month
-    Dependency("CUTENSOR_jll", compat = "2.2"),
+    # Dependency("CUTENSOR_jll", compat = "2.2"), # supplied via ArchiveSource
     Dependency("OpenBLAS32_jll"),
-    # Dependency("tblis_jll"),
     HostBuildDependency(PackageSpec(; name = "CMake_jll", version = v"3.30.2")),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")) 
 ]
@@ -119,7 +168,7 @@ for platform in platforms
         script, [platform], products, [dependencies; cuda_deps];
         julia_compat = "1.10", 
         preferred_gcc_version = v"11",
-        lazy_artifacts = true,
+        lazy_artifacts = true, dont_dlopen = true,
         augment_platform_block = CUDA.augment
     )
 
