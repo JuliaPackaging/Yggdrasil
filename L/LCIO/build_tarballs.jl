@@ -17,8 +17,10 @@ mkdir build && cd build
 
 cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DSSE_RUN_EXITCODE=0 \
+    -DSSE_RUN_EXITCODE__TRYRUN_OUTPUT= \
+    -D CMAKE_CXX_STANDARD=17 \
     -DBUILD_ROOTDICT=OFF \
-    -DCMAKE_CXX_STANDARD=17 \
     -DCMAKE_BUILD_TYPE=Release
 cmake --build . --target install
 """
@@ -43,4 +45,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, preferred_gcc_version=v"7", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, preferred_gcc_version=v"8", julia_compat="1.6")
