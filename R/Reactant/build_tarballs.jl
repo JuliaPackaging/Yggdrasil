@@ -6,10 +6,10 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.225"
+version = v"0.0.226"
 
 sources = [
-   GitSource(repo, "0ccbe239e7180c31ecf19f0aafd3e0e5ef68e250"),
+   GitSource(repo, "c91ed07508a670817d35a82f79c18000db5f47d3"),
    ArchiveSource("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.7%2B6/OpenJDK21U-jdk_x64_alpine-linux_hotspot_21.0.7_6.tar.gz", "79ecc4b213d21ae5c389bea13c6ed23ca4804a45b7b076983356c28105580013"),
    ArchiveSource("https://github.com/JuliaBinaryWrappers/Bazel_jll.jl/releases/download/Bazel-v7.6.1+0/Bazel.v7.6.1.x86_64-linux-musl-cxx03.tar.gz", "01ac6c083551796f1f070b0dc9c46248e6c49e01e21040b0c158f6e613733345")
 ]
@@ -358,7 +358,7 @@ platforms = filter(p -> !(arch(p) == "armv7l" && Sys.islinux(p)), platforms)
 platforms = filter(p -> !(libc(p) == "musl"), platforms)
 
 # Windows has a cuda configure issue, to investigate either fixing/disabling cuda
-platforms = filter(p -> (Sys.iswindows(p)), platforms)
+# platforms = filter(p -> (Sys.iswindows(p)), platforms)
 
 # NSync is picking up wrong stuff for cross compile, to deal with later
 # 02] ./external/nsync//platform/c++11.futex/platform.h:24:10: fatal error: 'linux/futex.h' file not found
