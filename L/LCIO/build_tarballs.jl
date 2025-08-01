@@ -3,11 +3,11 @@
 using BinaryBuilder
 
 name = "LCIO"
-version = v"02.17"
+version = v"02.22.6"
 
 # Collection of sources required to build LCIO
 sources = [
-    GitSource("https://github.com/iLCSoft/LCIO.git", "3511c1506e15517eb2532d5385cae4a51e4f13e3"),
+    GitSource("https://github.com/iLCSoft/LCIO.git", "bc62b7d1c3781541de8ad40875a7421c98bfc099"),
 ]
 
 # Bash recipe for building across all platforms
@@ -17,6 +17,11 @@ mkdir build && cd build
 
 cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DSSE_RUN_EXITCODE=0 \
+    -DSSE_RUN_EXITCODE__TRYRUN_OUTPUT= \
+    -DSIO_BUILTIN_ZLIB=OFF \
+    -DCMAKE_CXX_STANDARD=17 \
+    -DBUILD_ROOTDICT=OFF \
     -DCMAKE_BUILD_TYPE=Release
 cmake --build . --target install
 """
@@ -27,6 +32,7 @@ platforms = supported_platforms(; experimental=true)
 filter!(!Sys.isfreebsd, platforms)
 filter!(!Sys.iswindows, platforms)
 filter!(p -> arch(p) ∉ ("armv7l", "armv6l"), platforms)
+filter!(p -> libc(p) != "musl", platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -41,4 +47,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, preferred_gcc_version=v"7", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, preferred_gcc_version=v"8", julia_compat="1.6")
