@@ -27,6 +27,7 @@ function get_script(; debug::Bool)
         cp ocloc_wrapper.sh compute-runtime/shared/source/built_ins/kernels/ocloc_wrapper.sh
         mkdir -p tmpdir
         export TMPDIR=$(pwd)/tmpdir
+        export CCACHE_TEMPDIR=$(pwd)/tmpdir
         cd compute-runtime
         install_license LICENSE.md
 

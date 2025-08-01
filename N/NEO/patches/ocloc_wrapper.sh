@@ -1,17 +1,8 @@
 #!/bin/bash
 
-# ocloc_wrapper.sh - Wrapper script to handle ocloc segfaults gracefully
-# This script runs ocloc and detects successful compilation even if it segfaults during cleanup
-
-# Set up environment variables for ocloc
-export LD_LIBRARY_PATH="/workspace/x86_64-linux-gnu-libgfortran5-cxx11-debug+true/destdir/lib64:/opt/x86_64-linux-gnu/x86_64-linux-gnu/lib64:/workspace/x86_64-linux-gnu-libgfortran5-cxx11-debug+true/destdir/lib:/workspace/srcdir/compute-runtime/build/bin"
-
-# Get the actual ocloc binary path
-OCLOC_BIN="/workspace/srcdir/compute-runtime/build/bin/ocloc-25.27.1"
-
 # Run ocloc and capture output and exit code
 echo "Running ocloc with args: $@" >&2
-output=$(env LD_LIBRARY_PATH="$LD_LIBRARY_PATH" "$OCLOC_BIN" "$@" 2>&1)
+output=$("$@" 2>&1)
 exit_code=$?
 
 # Print the output for debugging
