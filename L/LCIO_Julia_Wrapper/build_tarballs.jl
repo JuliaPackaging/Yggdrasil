@@ -15,7 +15,7 @@ julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
 
 # Collection of sources required to build LCIOWrapBuilder
 sources = [
-	GitSource("https://github.com/jstrube/LCIO_Julia_Wrapper.git", "e28132bfdc0664faf9724a74b2ae33803c26dc5a")
+	GitSource("https://github.com/JuliaHEP/LCIO_Julia_Wrapper.git", "e28132bfdc0664faf9724a74b2ae33803c26dc5a")
 ]
 
 # Bash recipe for building across all platforms
@@ -35,7 +35,8 @@ include("../../L/libjulia/common.jl")
 platforms = expand_cxxstring_abis(vcat(libjulia_platforms.(julia_versions)...))
 filter!(!Sys.isfreebsd, platforms)
 filter!(!Sys.iswindows, platforms)
-filter!(p -> arch(p) ∉ ("armv6l", "armv7l") , platforms)
+filter!(p -> arch(p) ∉ ("armv6l", "armv7l", "i686") , platforms)
+filter!(p -> libc(p) != "musl" , platforms)
 	
 # The products that we will ensure are always built
 products = [
