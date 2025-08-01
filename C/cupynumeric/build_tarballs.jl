@@ -137,8 +137,6 @@ products = [
     LibraryProduct("libcupynumeric", :libcupynumeric)
 ] 
 
-platforms = [platforms[1]]
-
 dependencies = [
     Dependency("legate_jll"; compat = "=25.5"), # Legate versioning is Year.Month
     # Dependency("CUTENSOR_jll", compat = "2.2"), # supplied via ArchiveSource
@@ -157,8 +155,6 @@ for platform in platforms
 
     platform_sources = BinaryBuilder.AbstractSource[sources...]
 
-    # Add x86_64 CUDA_SDK, nvcc isn't actually used but CMake
-    # FindCUDAToolkit will get mad if its not present
     if arch(platform) == "aarch64"
         push!(platform_sources, CUDA.cuda_nvcc_redist_source(cuda_ver, "x86_64"))
     end
