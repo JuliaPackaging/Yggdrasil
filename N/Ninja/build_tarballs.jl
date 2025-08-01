@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/ninja
 shorttarget=$(echo $target | grep -o 'linux\|darwin\|mingw\|freebsd')
-env CXXFLAGS=-std=c++11 ./configure.py --host=linux --platform=$shorttarget
+env CXXFLAGS=-std=c++14 ./configure.py --host=linux --platform=$shorttarget
 ninja -j${nproc}
 mkdir -p ${bindir}
 install ninja${exeext} ${bindir}
@@ -33,4 +33,4 @@ products = [
 dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
