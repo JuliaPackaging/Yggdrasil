@@ -26,7 +26,7 @@ function get_script(; debug::Bool)
         atomic_patch -p0 ocloc.patch
         cp ocloc_wrapper.sh compute-runtime/shared/source/built_ins/kernels/ocloc_wrapper.sh
         mkdir -p tmpdir
-        export $TMPDIR=$(pwd)/tmpdir
+        export TMPDIR=$(pwd)/tmpdir
         cd compute-runtime
         install_license LICENSE.md
 
