@@ -3,10 +3,10 @@
 using BinaryBuilder
 
 name = "nlohmann_json"
-version = v"3.11.3"
+version = v"3.12.0"
 
 sources = [
-   GitSource("https://github.com/nlohmann/json/", "9cca280a4d0ccf0c08f47a99aa71d1b0e52f8d03")
+   GitSource("https://github.com/nlohmann/json/", "55f93686c01528224f448c19128836e7df245f72")
 ]
 
 script = raw"""

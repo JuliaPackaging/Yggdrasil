@@ -2,10 +2,10 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 include("../common.jl")
 
-gap_version = v"400.1400.0"
+gap_version = v"400.1400.5"
 name = "profiling"
 upstream_version = "2.6.0" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
+offset = v"0.0.1" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL
@@ -28,7 +28,8 @@ install_license COPYRIGHT
 """
 
 name = gap_pkg_name(name)
-platforms, dependencies = setup_gap_package(gap_version)
+dependencies = gap_pkg_dependencies(gap_version)
+platforms = gap_platforms()
 
 # The products that we will ensure are always built
 products = [

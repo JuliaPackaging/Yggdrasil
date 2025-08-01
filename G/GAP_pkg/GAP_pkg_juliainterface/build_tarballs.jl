@@ -9,15 +9,15 @@ using Pkg
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
-gap_version = v"400.1400.003"
+gap_version = v"400.1400.005"
 name = "JuliaInterface"
-upstream_version = "0.13.1" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.2" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
+upstream_version = "0.14.1" # when you increment this, reset offset to v"0.0.0"
+offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL
 sources = [
-    GitSource("https://github.com/oscar-system/GAP.jl", "c33287b416ca30fcc386a6b192d67c1955fdae8f"),
+    GitSource("https://github.com/oscar-system/GAP.jl", "93b12dd37e581320232e892c18db9048f8c9ad83"),
 ]
 
 # Bash recipe for building across all platforms
@@ -37,21 +37,8 @@ install_license ../../LICENSE
 """
 
 name = gap_pkg_name(name)
-platforms, dependencies = setup_gap_package(gap_version)
-
-# expand julia platforms
-include("../../../L/libjulia/common.jl")
-julia_platforms = []
-for p in platforms
-    for jv in julia_versions
-        if jv == v"1.6.3" && Sys.isapple(p) && arch(p) == "aarch64"
-            continue
-        end
-        p = deepcopy(p)
-        BinaryPlatforms.add_tag!(p.tags, "julia_version", string(jv))
-        push!(julia_platforms, p)
-    end
-end
+# dependencies = gap_pkg_dependencies(gap_version)
+platforms = gap_platforms(expand_julia_versions=true)
 
 # Unlike other GAP_pkg_* JLLs, we do *not* set a compat bound for GAP_jll and
 # GAP_lib_jll here. Instead GAP.jl is expected to make sure that it uses right
@@ -67,7 +54,7 @@ end
 # is easy as it only requires a change to GAP.jl, not to any JLLs.
 dependencies = [
     Dependency("GAP_jll", gap_version),
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.15")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.19")),
 ]
 
 # The products that we will ensure are always built
@@ -76,7 +63,7 @@ products = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, julia_platforms, products, dependencies;
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"7")
 
 # rebuild trigger: 0

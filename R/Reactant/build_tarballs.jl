@@ -6,17 +6,19 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.92"
+version = v"0.0.225"
 
 sources = [
-  GitSource(repo, "fa53f2c3abf80fa93153646b2bd4cc88447dfada"),
-  FileSource("https://github.com/wsmoses/binaries/releases/download/v0.0.1/bazel-dev",
-             "8b43ffdf519848d89d1c0574d38339dcb326b0a1f4015fceaa43d25107c3aade")
+   GitSource(repo, "0ccbe239e7180c31ecf19f0aafd3e0e5ef68e250"),
+   ArchiveSource("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.7%2B6/OpenJDK21U-jdk_x64_alpine-linux_hotspot_21.0.7_6.tar.gz", "79ecc4b213d21ae5c389bea13c6ed23ca4804a45b7b076983356c28105580013"),
+   ArchiveSource("https://github.com/JuliaBinaryWrappers/Bazel_jll.jl/releases/download/Bazel-v7.6.1+0/Bazel.v7.6.1.x86_64-linux-musl-cxx03.tar.gz", "01ac6c083551796f1f070b0dc9c46248e6c49e01e21040b0c158f6e613733345")
 ]
-
 
 # Bash recipe for building across all platforms
 script = raw"""
+export JAVA_HOME="`pwd`/jdk-21.0.7+6"
+export BAZEL="`pwd`/bin/bazel"
+
 cd Reactant.jl/deps/ReactantExtra
 
 echo Clang version: $(clang --version)
@@ -37,15 +39,13 @@ if [[ "${target}" == *-apple-darwin* ]]; then
     popd
 fi
 
-apk add openjdk11-jdk
-export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")
+if [[ "${bb_full_target}" == *cuda_version+12.1* ]] || [[ "${bb_full_target}" == *cuda_version+12.4* ]]; then
+   sed -i.bz "s/CUPTI_NEW +/CUPTI_OLD +/g" WORKSPACE
+fi
 
 mkdir -p .local/bin
 export LOCAL="`pwd`/.local/bin"
 export PATH="$LOCAL:$PATH"
-
-export BAZEL=$WORKSPACE/srcdir/bazel-dev
-chmod +x $BAZEL
 
 ln -s `which ar` /usr/bin/ar
 
@@ -80,6 +80,7 @@ BAZEL_BUILD_FLAGS+=(--cxxopt=-DTCP_USER_TIMEOUT=0)
 BAZEL_BUILD_FLAGS+=(--check_visibility=false)
 BAZEL_BUILD_FLAGS+=(--build_tag_filters=-jlrule)
 BAZEL_BUILD_FLAGS+=(--experimental_cc_shared_library)
+BAZEL_BUILD_FLAGS+=(--toolchain_resolution_debug='@bazel_tools//tools/cpp:toolchain_type')
 
 # Always link with lld
 BAZEL_BUILD_FLAGS+=(--linkopt=-fuse-ld=lld)
@@ -97,6 +98,7 @@ BAZEL_BUILD_FLAGS+=(--verbose_failures)
 
 BAZEL_BUILD_FLAGS+=(--action_env=TMP=$TMPDIR --action_env=TEMP=$TMPDIR --action_env=TMPDIR=$TMPDIR --sandbox_tmpfs_path=$TMPDIR)
 BAZEL_BUILD_FLAGS+=(--host_cpu=k8)
+BAZEL_BUILD_FLAGS+=(--host_platform=//:linux_x86_64)
 BAZEL_BUILD_FLAGS+=(--host_crosstool_top=@//:ygg_cross_compile_toolchain_suite)
 # BAZEL_BUILD_FLAGS+=(--extra_execution_platforms=@xla//tools/toolchains/cross_compile/config:linux_x86_64)
 
@@ -110,6 +112,8 @@ elif [[ "${target}" == aarch64-linux-* ]]; then
    BAZEL_CPU=aarch64
 fi
 
+echo "register_toolchains(\\"//:cc_toolchain_for_ygg_host\\")" >> WORKSPACE
+
 if [[ "${target}" == *-darwin* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=gcc_linux_x86_32_1=false)
     BAZEL_BUILD_FLAGS+=(--define=gcc_linux_x86_64_1=false)
@@ -122,16 +126,26 @@ if [[ "${target}" == *-darwin* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=build_with_mkl=false --define=enable_mkl=false --define=build_with_mkl_aarch64=false)
     BAZEL_BUILD_FLAGS+=(--@xla//xla/tsl/framework/contraction:disable_onednn_contraction_kernel=True)
 
+    rm /opt/*apple*/bin/clang-8
+    rm /opt/*apple*/bin/clang
+
+    sed -i.bak1 -e "/__cpp_lib_hardware_interference_size/d" \
+	            /opt/*apple*/*apple*/sys-root/usr/include/c++/v1/version
+
     if [[ "${target}" == x86_64* ]]; then
         BAZEL_BUILD_FLAGS+=(--platforms=@//:darwin_x86_64)
         BAZEL_BUILD_FLAGS+=(--cpu=${BAZEL_CPU})
+	echo "register_toolchains(\\"//:cc_toolchain_for_ygg_darwin_x86\\")" >> WORKSPACE
     elif [[ "${target}" == aarch64-* ]]; then
         BAZEL_BUILD_FLAGS+=(--platforms=@//:darwin_arm64)
         BAZEL_BUILD_FLAGS+=(--cpu=${BAZEL_CPU})
+	echo "register_toolchains(\\"//:cc_toolchain_for_ygg_darwin_arm64\\")" >> WORKSPACE
     fi
     BAZEL_BUILD_FLAGS+=(--linkopt=-twolevel_namespace)
-    # BAZEL_BUILD_FLAGS+=(--crosstool_top=@xla//tools/toolchains/cross_compile/cc:cross_compile_toolchain_suite)
+    BAZEL_BUILD_FLAGS+=(--crosstool_top=@//:ygg_cross_compile_toolchain_suite)
     BAZEL_BUILD_FLAGS+=(--define=clang_macos_x86_64=true)
+    # `using_clang` comes from Enzyme-JAX, to handle clang-specific options.
+    BAZEL_BUILD_FLAGS+=(--define=using_clang=true)
     BAZEL_BUILD_FLAGS+=(--define HAVE_LINK_H=0)
     export MACOSX_DEPLOYMENT_TARGET=11.3
     BAZEL_BUILD_FLAGS+=(--macos_minimum_os=${MACOSX_DEPLOYMENT_TARGET})
@@ -155,11 +169,13 @@ if [[ "${target}" == *-linux-* ]]; then
 
     if [[ "${target}" == x86_64-* ]]; then
         BAZEL_BUILD_FLAGS+=(--platforms=@//:linux_x86_64)
+	echo "register_toolchains(\\"//:cc_toolchain_for_ygg_x86\\")" >> WORKSPACE
     elif [[ "${target}" == aarch64-* ]]; then
         BAZEL_BUILD_FLAGS+=(--crosstool_top=@//:ygg_cross_compile_toolchain_suite)
         BAZEL_BUILD_FLAGS+=(--platforms=@//:linux_aarch64)
         BAZEL_BUILD_FLAGS+=(--cpu=${BAZEL_CPU})
         BAZEL_BUILD_FLAGS+=(--@xla//xla/tsl/framework/contraction:disable_onednn_contraction_kernel=True)
+	echo "register_toolchains(\\"//:cc_toolchain_for_ygg_aarch64\\")" >> WORKSPACE
     fi
 fi
 
@@ -193,7 +209,9 @@ if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
 
         BAZEL_BUILD_FLAGS+=(
             --action_env=CLANG_CUDA_COMPILER_PATH=$(which clang)
+            --define=using_clang=true
             --repo_env=CUDA_REDIST_TARGET_PLATFORM="aarch64"
+	    --repo_env=NVSHMEM_REDIST_TARGET_PLATFORM="aarch64"
             --linkopt="-L${prefix}/libcxx/lib"
         )
     fi
@@ -241,11 +259,12 @@ if [[ "${target}" == *-darwin* ]]; then
         sed -i 's/12.0.1-iains/12.1.0/' "/opt/bin/x86_64-linux-musl-cxx11/x86_64-linux-musl-clang"*
     fi
 
-    sed -i.bak1 -e "s/\\"k8|/\\"${BAZEL_CPU}\\": \\":cc-compiler-k8\\", \\"k8|/g" \
-                -e "s/cpu = \\"k8\\"/cpu = \\"${BAZEL_CPU}\\"/g" \
-                /workspace/bazel_root/*/external/local_config_cc/BUILD
-
-    cat /workspace/bazel_root/*/external/local_config_cc/BUILD
+    # sed -i.bak1 -e "s/\\"k8|/\\"${BAZEL_CPU}\\": \\":cc-compiler-k8\\", \\"k8|/g" \
+    #             -e "s/cpu = \\"k8\\"/cpu = \\"${BAZEL_CPU}\\"/g" \
+    #             /workspace/bazel_root/*/external/bazel_tools~cc_configure_extension~local_config_cc/BUILD
+   
+    # sed -i.bak2 -e "s/\\":cpu_aarch64\\":/\\"@platforms\/\/cpu:aarch64\\":/g" \
+    #             /workspace/bazel_root/*/external/xla/third_party/highwayhash/highwayhash.BUILD
 
     # We expect the following bazel build command to fail to link at the end, because the
     # build system insists on linking with `-whole_archive` also on macOS.  Until we figure
@@ -255,9 +274,9 @@ if [[ "${target}" == *-darwin* ]]; then
 
     # Manually remove `whole-archive` directive for the linker
     sed -i.bak1 -e "/whole-archive/d" \
-                -e "/lrt/d" \
+                -e "/gc-sections/d" \
                 bazel-bin/libReactantExtra.so-2.params
-
+    
     # # Show the params file for debugging, but convert newlines to spaces
     # cat bazel-bin/libReactantExtra.so-2.params | tr '\n' ' '
     # echo ""
@@ -274,12 +293,17 @@ mkdir -p ${libdir}
 if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
     rm -rf bazel-bin/_solib_local/*stub*/*so*
     cp -v bazel-bin/_solib_local/*/*so* ${libdir}
+    cp -v bazel-ReactantExtra/external/nvidia_nvshmem/lib/libnvshmem_device.bc ${libdir}
+    find bazel-bin
+    find ${libdir}
+    # cp -v /workspace/bazel_root/*/external/cuda_nccl/lib/libnccl.so.2 ${libdir}
 
     if [[ "${target}" == x86_64-linux-gnu ]]; then
         NVCC_DIR=(bazel-bin/libReactantExtra.so.runfiles/cuda_nvcc)
     else
         NVCC_DIR=(/workspace/srcdir/cuda_nvcc-*-archive)
     fi
+
     install -Dvm 644 "${NVCC_DIR[@]}/nvvm/libdevice/libdevice.10.bc" -t "${libdir}/cuda/nvvm/libdevice"
     install -Dvm 755 "${NVCC_DIR[@]}/bin/ptxas" -t "${libdir}/cuda/bin"
     install -Dvm 755 "${NVCC_DIR[@]}/bin/fatbinary" -t "${libdir}/cuda/bin"
@@ -287,6 +311,7 @@ if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
     # Simplify ridiculously long rpath of `libReactantExtra.so`,
     # we moved all deps in `${libdir}` anyway.
     patchelf --set-rpath '$ORIGIN' bazel-bin/libReactantExtra.so
+
 fi
 
 install -Dvm 755 bazel-bin/libReactantExtra.so "${libdir}/libReactantExtra.${dlext}"
@@ -345,7 +370,7 @@ augment_platform_block="""
     """
 
 # for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), platform in platforms
-for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "12.1", "12.4", "12.6"), platform in platforms
+for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "12.1", "12.4", "12.6", "12.8"), platform in platforms
 
     augmented_platform = deepcopy(platform)
     augmented_platform["mode"] = mode
@@ -356,8 +381,14 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     preferred_gcc_version = v"13"
     preferred_llvm_version = v"18.1.7"
 
-    if mode == "dbg" && !Sys.isapple(platform)
+    # Disable debug builds for cuda
+    if mode == "dbg"
+	if gpu != "none"
         continue
+		end
+	if !Sys.isapple(platform) && arch(platform) == "aarch64"
+		continue
+		end
     end
 
     if !((gpu == "cuda") ⊻ (cuda_version == "none"))
@@ -369,7 +400,9 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
         continue
     end
 
-    if gpu == "cuda" && arch(platform) == "aarch64" && VersionNumber(cuda_version) < v"12.4"
+    # if gpu == "cuda" && arch(platform) == "aarch64" && VersionNumber(cuda_version) < v"12.4"
+    # Temporarily disable all CUDA builds up to v12.4
+    if gpu == "cuda" && arch(platform) == "aarch64" && VersionNumber(cuda_version) <= v"12.4"
         # At the moment we can't build for CUDA 12.1 on aarch64, let's skip it
         continue
     end
@@ -384,6 +417,7 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
         "12.3" => "12.3.1",
         "12.4" => "12.4.1",
         "12.6" => "12.6.3",
+        "12.8" => "12.8.1"
     )
 
     prefix="""
@@ -402,7 +436,13 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     end
 
     if arch(platform) == "aarch64" && gpu == "cuda"
-        if hermetic_cuda_version_map[cuda_version] == "12.6.3"
+        if hermetic_cuda_version_map[cuda_version] == "12.8.1"
+            # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_12.8.1.json
+	    push!(platform_sources,
+                  ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-sbsa/cuda_nvcc-linux-sbsa-12.8.93-archive.tar.xz",
+				"dc0b713ce69fd921aa53ac68610717d126fc273a3c554b0465cf44d7e379f467"),
+		  )
+        elseif hermetic_cuda_version_map[cuda_version] == "12.6.3"
             # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_12.6.3.json
 	    push!(platform_sources,
                   ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-sbsa/cuda_nvcc-linux-sbsa-12.6.85-archive.tar.xz",
@@ -461,6 +501,9 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
 		# "libcuda",
 		"libcudnn_engines_runtime_compiled",
 		"libcusparse",
+		"libnvshmem_host",
+		"nvshmem_bootstrap_uid",
+		"nvshmem_transport_ibrc"
 	)
 	    san = replace(lib, "-" => "_")
 	    push!(products,
@@ -470,6 +513,7 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
 	push!(products, ExecutableProduct(["ptxas"], :ptxas, "lib/cuda/bin"))
 	push!(products, ExecutableProduct(["fatbinary"], :fatbinary, "lib/cuda/bin"))
 	push!(products, FileProduct("lib/cuda/nvvm/libdevice/libdevice.10.bc", :libdevice))
+	push!(products, FileProduct("lib/libnvshmem_device.bc", :libnvshmem_device))
 
         if VersionNumber(cuda_version) < v"12.6"
             # For older versions of CUDA we need to use GCC 12:
@@ -501,6 +545,7 @@ for (i,build) in enumerate(builds)
                    name, version, build.sources, build.script,
                    build.platforms, build.products, build.dependencies;
                    preferred_gcc_version=build.preferred_gcc_version, build.preferred_llvm_version, julia_compat="1.10",
+		   compression_format="xz",
                    # We use GCC 13, so we can't dlopen the library during audit
                    augment_platform_block, lazy_artifacts=true, lock_microarchitecture=false, dont_dlopen=true)
 end

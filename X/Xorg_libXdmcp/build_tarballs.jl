@@ -4,6 +4,8 @@ using BinaryBuilder
 
 name = "Xorg_libXdmcp"
 version = v"1.1.5"
+# We bumped the version number because we built for riscv64
+ygg_version = v"1.1.6"
 
 # Collection of sources required to build libXdmcp
 sources = [
@@ -13,11 +15,8 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libXdmcp-*/
-CPPFLAGS="-I${prefix}/include"
-# When compiling for things like ppc64le, we need newer `config.sub` files
-update_configure_scripts
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=no
+cd $WORKSPACE/srcdir/libXdmcp-*
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 """
@@ -37,5 +36,4 @@ dependencies = [
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
-# Build trigger: 1
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6")

@@ -3,16 +3,20 @@
 using BinaryBuilder
 
 name = "Git"
-version = v"2.47.1"
+version = v"2.50.1"
+
+# <https://github.com/git-for-windows/git/releases> says:
+# "Git for Windows v2.48.1 was the last version to ship with the i686 ("32-bit") variant of the installer, portable Git and archive."
+last_windows_32_bit_version = v"2.48.1"
 
 # Collection of sources required to build Git
 sources = [
     ArchiveSource("https://mirrors.edge.kernel.org/pub/software/scm/git/git-$(version).tar.xz",
-                  "f3d8f9bb23ae392374e91cd9d395970dabc5b9c5ee72f39884613cd84a6ed310"),
-    ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/Git-$(version)-32-bit.tar.bz2",
-                  "99a91af7a6a7a8791ebede7c0fd5339084853ec1a3c4f9dffdb91145ce934c1e"; unpack_target = "i686-w64-mingw32"),
+                  "7e3e6c36decbd8f1eedd14d42db6674be03671c2204864befa2a41756c5c8fc4"),
+    ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(last_windows_32_bit_version).windows.1/Git-$(last_windows_32_bit_version)-32-bit.tar.bz2",
+                  "41af3c80fd618855ad20b441f5f47763cece1ed07f6849ecbdb43066d0aa1dfd"; unpack_target = "i686-w64-mingw32"),
     ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/Git-$(version)-64-bit.tar.bz2",
-                  "45d2bdc96712b0ab785c307461429cf5bd744227108805edaaec7517432db54c"; unpack_target = "x86_64-w64-mingw32"),
+                  "9131f40e26985205432a1aa8583b3a90b5a64f3c6cc9324b2b63f05cb3448222"; unpack_target = "x86_64-w64-mingw32"),
 ]
 
 # Bash recipe for building across all platforms
@@ -48,6 +52,15 @@ else
     sed -i 's/cross_compiling=yes/cross_compiling=no/' configure
 fi
 
+# On Linux, we need at least glibc 2.25 or musl 1.1.20 to get `sys/random.h`.
+# Git does not check whether this file exists. Explicitly disable `getrandom` if this file doesn't exist.
+MAKE_VARIABLES=()
+if [[ "${target}" == *-linux-* ]]; then
+    if [ ! -e /opt/${target}/${target}/sys-root/usr/include/sys/random.h ]; then
+        MAKE_VARIABLES+=(CSPRNG_METHOD=/dev/urandom)
+    fi
+fi
+
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-curl \
     --with-expat \
@@ -55,9 +68,10 @@ fi
     --with-iconv=${prefix} \
     --with-libpcre2 \
     --with-zlib=${prefix} \
+    --with-tcltk=no \
     "${CACHE_VALUES[@]}"
-make -j${nproc}
-make install INSTALL_SYMLINKS="yes, please"
+make -j${nproc} "${MAKE_VARIABLES[@]}"
+make install INSTALL_SYMLINKS="yes, please" "${MAKE_VARIABLES[@]}"
 
 # Because of the System Integrity Protection (SIP), when running shell or Perl scripts, the
 # environment variable `DYLD_FALLBACK_LIBRARY_PATH` is reset.  We work around this
@@ -117,11 +131,11 @@ dependencies = [
     # Need a host gettext for msgfmt
     HostBuildDependency("Gettext_jll"),
     Dependency("LibCURL_jll"; compat="7.73.0,8"),
-    Dependency("Expat_jll"; compat="2.6.4"),
-    Dependency("OpenSSL_jll"; compat="3.0.15"),
+    Dependency("Expat_jll"; compat="2.6.5"),
+    Dependency("OpenSSL_jll"; compat="3.0.16"),
     Dependency("Libiconv_jll"),
-    Dependency("PCRE2_jll"),
-    Dependency("Zlib_jll"),
+    Dependency("PCRE2_jll"; compat="10.42.0"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

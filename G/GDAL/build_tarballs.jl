@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "GDAL"
-upstream_version = v"3.10.1"
+upstream_version = v"3.11.3"
 # The version offset is used for two purposes:
 # - If we need to release multiple jll packages for the same GDAL
 #   library (usually for weird packaging reasons) then we increase the
@@ -11,7 +11,7 @@ upstream_version = v"3.10.1"
 # - Minor versions of GDAL are usually binary incompatible because
 #   they increase the shared library soname. To encode this, we
 #   increase the major version number of the version offset.
-version_offset = v"2.0.0"
+version_offset = v"3.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -19,10 +19,10 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to build GDAL
 sources = [
     GitSource("https://github.com/OSGeo/gdal.git",
-        "9b7a7c8ffa7b7aff696974c432d4254a809b3efe"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+        "20be66345f7dd2d8e368684abb22b0f6355e8cf0"),
+    FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
         "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
-    DirectorySource("./bundled")
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -47,16 +47,9 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     # /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/include/c++/v1/variant:1394:22: note: 'get<arrow::FieldPath, arrow::FieldPath, std::basic_string<char>, std::vector<arrow::FieldRef>>' has been explicitly marked unavailable here
     export MACOSX_DEPLOYMENT_TARGET=10.15
     # ...and install a newer SDK
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    popd
+    tar --extract --file=${WORKSPACE}/srcdir/MacOSX10.15.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX10.15.sdk/System MacOSX10.15.sdk/usr
 fi
-
-# We cannot enable HDF4. Our HDF4_jll package provides a file `netcdf.h` that conflicts with NetCDF_jll.
-# -DGDAL_ENABLE_DRIVER_HDF4=ON
-# -DGDAL_USE_HDF4=ON
 
 CMAKE_FLAGS=(
     -B build
@@ -68,20 +61,21 @@ CMAKE_FLAGS=(
     -DBUILD_CSHARP_BINDINGS=OFF
     -DBUILD_JAVA_BINDINGS=OFF
     -DBUILD_PYTHON_BINDINGS=OFF
-    -DGDAL_USE_ARROW=ON
+    -DGDAL_ENABLE_DRIVER_HDF4=ON
     -DGDAL_USE_BLOSC=ON
     -DGDAL_USE_CURL=ON
     -DGDAL_USE_EXPAT=ON
+    -DGDAL_USE_HDF4=ON
     -DGDAL_USE_GEOS=ON
     -DGDAL_USE_GEOTIFF=ON
-    # TODO: Disable gif only on Windows
-    -DGDAL_USE_GIF=OFF   # Would break GDAL on Windows as of Giflib_jll v5.2.2 (#8781)
+    -DGDAL_USE_HDF4=ON
+    -DGDAL_USE_HDF5=ON
     -DGDAL_USE_LERC=ON
     -DGDAL_USE_LIBLZMA=ON
     -DGDAL_USE_LIBXML2=ON
     -DGDAL_USE_LZ4=ON
+    -DGDAL_USE_NETCDF=ON
     -DGDAL_USE_OPENJPEG=ON
-    -DGDAL_USE_PARQUET=ON
     -DGDAL_USE_PNG=ON
     -DGDAL_USE_POSTGRESQL=ON
     -DGDAL_USE_QHULL=ON
@@ -97,41 +91,35 @@ CMAKE_FLAGS=(
     -DPostgreSQL_LIBRARY=${libdir}/libpq.${dlext}
 )
 
-# NetCDF is the most restrictive dependency as far as platform availability, so we'll use it where applicable but disable it otherwise
-if ! find ${libdir} -name "libnetcdf*.${dlext}" -exec false '{}' +; then
-    CMAKE_FLAGS+=(-DGDAL_USE_NETCDF=ON)
-else
-    echo "Disabling NetCDF support"
-    CMAKE_FLAGS+=(-DGDAL_USE_NETCDF=OFF)
+# Use Arrow only if available
+if [ -e "${libdir}/libarrow.${dlext}" ]; then
+    CMAKE_FLAGS+=(
+        -DGDAL_USE_ARROW=ON
+        -DGDAL_USE_PARQUET=ON
+    )
 fi
 
-# HDF5 is also a restrictive dependency as far as platform availability, so we'll use it where applicable but disable it otherwise
-if ! find ${libdir} -name "libhdf5*.${dlext}" -exec false '{}' +; then
-    CMAKE_FLAGS+=(-DGDAL_USE_HDF5=ON)
-else
-    echo "Disabling HDF5 support"
-    CMAKE_FLAGS+=(-DGDAL_USE_HDF5=OFF)
+# Disable gif on Windows
+if [[ "${target}" == *mingw* ]]; then
+    CMAKE_FLAGS+=(-DGDAL_USE_GIF=OFF)   # Would break GDAL on Windows as of Giflib_jll v5.2.2 (#8781)
 fi
 
 cmake ${CMAKE_FLAGS[@]}
 cmake --build build --parallel ${nproc}
 cmake --install build
+
+install_license LICENSE.TXT
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
-# Disable until the dependencies are available for this platform
-filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
-
-# Disable riscv for now
-platforms = filter!(p -> arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libgdal", :libgdal),
 
-    # Using a `_path` suffix here is very confusing because BinaryBuilder already adds a `_path` suffix.
+    # Using a `_path` suffix here would be very confusing because BinaryBuilder already adds a `_path` suffix.
     ExecutableProduct("gdal_contour", :gdal_contour_exe),
     ExecutableProduct("gdal_create", :gdal_create_exe),
     ExecutableProduct("gdal_footprint", :gdal_footprint_exe),
@@ -183,52 +171,54 @@ products = [
     ExecutableProduct("ogrtindex", :ogrtindex_path),
 ]
 
-hdf5_platforms = [
-    Platform("x86_64", "linux"),
-    Platform("aarch64", "linux"),
-    Platform("armv6l", "linux"),
-    Platform("armv7l", "linux"),
-    Platform("i686", "linux"),
-    Platform("powerpc64le", "linux"),
-    Platform("x86_64", "macos"),
-    Platform("aarch64", "macos"),
-    Platform("x86_64", "windows"),
-    Platform("i686", "windows"),
-]
-hdf5_platforms = expand_cxxstring_abis(hdf5_platforms)
-
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(; name="OpenMPI_jll", version=v"4.1.6"); platforms=filter(p -> nbits(p)==32, platforms)),
-    Dependency("Arrow_jll"; compat="18.1.0"),
-    Dependency("Blosc_jll"; compat="1.21.1"),
-    Dependency("Expat_jll"; compat="2.2.10"),
-    Dependency("GEOS_jll"; compat="3.11.2"),
-    # Dependency("HDF4_jll"; compat="4.3.0"),
-    # We had to restrict compat with HDF5 because of ABI breakage:
-    # https://github.com/JuliaPackaging/Yggdrasil/pull/10347#issuecomment-2662923973
-    # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
-    Dependency("HDF5_jll"; compat="=1.14.3", platforms=hdf5_platforms),
-    Dependency("LERC_jll"; compat="4"),
+    BuildDependency(PackageSpec(; name="OpenMPI_jll", version=v"4.1.8"); platforms=filter(p -> nbits(p)==32, platforms)),
+    Dependency("Arrow_jll"; compat="19.0.0"),
+    Dependency("Blosc_jll"; compat="1.21.7"),
+    Dependency("Expat_jll"; compat="2.6.5"),
+    Dependency("GEOS_jll"; compat="3.13.1"),
+    Dependency("HDF4_jll"; compat="4.3.1"),
+    Dependency("HDF5_jll"; compat="~1.14.6"),
+    Dependency("LERC_jll"; compat="4.0.1"),
     Dependency("LibCURL_jll"; compat="7.73,8"),
-    Dependency("LibPQ_jll"; compat="16"),
-    Dependency("Libtiff_jll"; compat="4.7"),
-    Dependency("Lz4_jll"; compat="1.9.3"),
-    Dependency("NetCDF_jll"; compat="400.902.210", platforms=hdf5_platforms),
-    Dependency("OpenJpeg_jll"; compat="2.5"),
-    Dependency("PCRE2_jll"; compat="10.35.0"),
-    Dependency("PROJ_jll"; compat="902.500"),
-    Dependency("Qhull_jll"; compat="8.0.999"),
-    Dependency("SQLite_jll"; compat="3.45"),
-    Dependency("XML2_jll"; compat="2.9.11"),
-    Dependency("XZ_jll"; compat="5.2.5"),
+    Dependency("LibPQ_jll"; compat="16.8"),
+    Dependency("Libtiff_jll"; compat="4.7.1"),
+    Dependency("Lz4_jll"; compat="1.10.1"),
+    Dependency("NetCDF_jll"; compat="401.900.300"),
+    Dependency("OpenJpeg_jll"; compat="2.5.4"),
+    Dependency("PCRE2_jll"; compat="10.42.0"),
+    Dependency("PROJ_jll"; compat="902.500.100"),
+    Dependency("Qhull_jll"; compat="10008.0.1004"),
+    Dependency("SQLite_jll"; compat="3.48.0"),
+    Dependency("XML2_jll"; compat="~2.13.6"),
+    Dependency("XZ_jll"; compat="5.6.4"),
     Dependency("Zlib_jll"; compat="1.2.12"),
-    Dependency("Zstd_jll"; compat="1.5.6"),
-    Dependency("libgeotiff_jll"; compat="100.702.300"),
-    Dependency("libpng_jll"; compat="1.6.38"),
-    Dependency("libwebp_jll"; compat="1.2.4"),
+    Dependency("Zstd_jll"; compat="1.5.7"),
+    Dependency("libgeotiff_jll"; compat="100.702.400"),
+    Dependency("libpng_jll"; compat="1.6.47"),
+    Dependency("libwebp_jll"; compat="1.5.0"),
+    Dependency("muparser_jll"; compat="2.3.5"),
+    BuildDependency("exprtk_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
+#
+# NOTE: Building with GCC 12 fails on x86_64. GCC 12 enables compiler
+# support for float16, but would (apparently? hopefully?) use the
+# respective soft-fp emulation routines. These are only available in
+# `libcc` of GCC 12 and later, and thus this file isn't guaranteed to
+# be available. Therefore we need to disable compiler support for
+# float16 (on x86_64), e.g. by using GCC 11 or earlier.
+#
+# GDAL will then still support float16, but only via emulation, i.e.
+# converting from/to float32.
+#
+# We could enable compiler support for float16 if we can guarantee
+# that the CPU supports respective hardware instructions so that we
+# don't need soft-fp from libgcc.
+#
+# NOTE: Require at least Julia 1.9 because we use a PCRE2_jll that is
+# not available on earlier versions.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"8")
+               julia_compat="1.9", preferred_gcc_version=v"11")

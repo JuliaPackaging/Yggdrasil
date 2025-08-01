@@ -16,8 +16,8 @@
 # Build count: 1
 using BinaryBuilder
 
-HELICS_VERSION = v"3.6.0"
-HELICS_SHA = "e111ac5d92e808f27e330afd1f8b8ca4d86adf6ccd74e3280f2d40fb3e0e2ce9"
+HELICS_VERSION = v"3.6.1"
+HELICS_SHA = "d607c1b47dd5ae32f3076c4aa4aa584d37b6056a9bd049234494698ed95cd70f"
 
 sources = [
     DirectorySource("./bundled"),

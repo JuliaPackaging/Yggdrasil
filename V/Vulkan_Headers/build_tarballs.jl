@@ -1,18 +1,20 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "Vulkan_Headers"
-version = v"1.3.243"
+version = v"1.4.321"
 
 source = "https://github.com/KhronosGroup/Vulkan-Headers.git"
-commit = "65ad768d8603671fc1085fe115019e72a595ced8"
+commit = "2cd90f9d20df57eac214c148f3aed885372ddcfe"
 
 sources = [
     GitSource(source, commit)
 ]
 
 script = raw"""
+apk del cmake
+
 cd Vulkan-Headers
-install_license LICENSE.txt
+install_license LICENSE.md
 
 CMAKE_FLAGS=()
 
@@ -37,6 +39,8 @@ products = Product[
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[]
+dependencies = [
+    HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.31.6")),
+]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)

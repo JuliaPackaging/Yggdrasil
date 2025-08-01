@@ -7,8 +7,7 @@ upstream_version = "2.5.11" # when you increment this, reset offset to v"0.0.0"
 offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version
 version = offset_version(upstream_version, offset)
 
-# nq just produces a binary and does not need GAP for this at all.
-# So let's *not* use common.jl
+# This package only produces an executable and does not need GAP for this at all.
 
 # Collection of sources required to build this JLL
 sources = [
@@ -38,9 +37,7 @@ install_license LICENSE
 
 name = gap_pkg_name(name)
 
-platforms = supported_platforms()
-filter!(p -> nbits(p) == 64, platforms) # we only care about 64bit builds
-filter!(!Sys.iswindows, platforms)      # Windows is not supported
+platforms = gap_platforms()
 
 dependencies = [
     Dependency("GMP_jll", v"6.2.0"),

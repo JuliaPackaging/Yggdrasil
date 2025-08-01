@@ -3,18 +3,25 @@
 using BinaryBuilder, Pkg
 
 name = "oneAPI_Support_Headers"
-version = v"2025.0.0"
+version = v"2025.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://software.repos.intel.com/python/conda/linux-64/mkl-devel-dpcpp-2025.0.0-intel_939.tar.bz2",
-                  "149c3d52dcc7db2d30329e686f721dc3addc017ba19034b7517c9d287f29f7d6")
+    # https://pypi.org/project/onemkl-sycl-include
+    FileSource("https://files.pythonhosted.org/packages/67/60/183badc2d807be1abb95a20315e84a2075cb44a1d1ede104d42cb1ed3092/onemkl_sycl_include-2025.2.0-py2.py3-none-manylinux_2_28_x86_64.whl",
+               "4e995c02e5f43265aa830a06e538b2e5ada76b7c2785c26b788d6073ba605b0f"; filename="oneapi-headers.whl"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+cd $WORKSPACE/srcdir
+unzip -d oneapi-headers oneapi-headers.whl
+cd oneapi-headers/onemkl_sycl_include-2025.2.0.data/data
+
 mkdir $includedir
 cp -r include/oneapi $includedir
+
+install_license $WORKSPACE/srcdir/oneapi-headers/onemkl_sycl_include-2025.2.0.dist-info/LICENSE.txt
 """
 
 # These are the platforms we will build for by default, unless further

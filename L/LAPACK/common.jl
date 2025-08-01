@@ -2,13 +2,12 @@ using BinaryBuilder, Pkg
 
 # LAPACK mirrors the OpenBLAS build, whereas LAPACK32 mirrors the OpenBLAS32 build.
 
-version = v"3.12.0"
+version = v"3.12.1"
 
 # Collection of sources required to build lapack
 sources = [
     GitSource("https://github.com/Reference-LAPACK/lapack",
-              "04b044e020a3560ccfa9988c8a80a1fb7083fc2e"),
-    DirectorySource("../bundled"),
+              "6ec7f2bc4ecf4c4a93496aa2fa519575bc0e39ca"),
 ]
 
 # Bash recipe for building across all platforms
@@ -20,8 +19,6 @@ function lapack_script(;lapack32::Bool=false)
 
     script *= raw"""
     cd $WORKSPACE/srcdir/lapack*
-
-    atomic_patch -p1 $WORKSPACE/srcdir/patches/cmake.patch
 
     if [[ "${target}" == *-mingw* ]]; then
         BLAS="blastrampoline-5"
@@ -316,6 +313,9 @@ function lapack_script(;lapack32::Bool=false)
         SSYSV_AA_2STAGE SSYTRF_AA_2STAGE SSYTRS_AA_2STAGE
         ZHESV_AA_2STAGE ZHETRF_AA_2STAGE ZHETRS_AA_2STAGE
         ZSYSV_AA_2STAGE ZSYTRF_AA_2STAGE ZSYTRS_AA_2STAGE
+        SLARF1L DLARF1L CLARF1L ZLARF1L
+        SLARF1F DLARF1F CLARF1F ZLARF1F
+        SGEMMTR DGEMMTR CGEMMTR ZGEMMTR
       )
 
       for sym in ${syms[@]}; do
@@ -325,6 +325,10 @@ function lapack_script(;lapack32::Bool=false)
       CMAKE_FLAGS+=(-DCMAKE_Fortran_FLAGS=\"${FFLAGS[*]}\")
     fi
 
+    # TODO: LAPACK has a cmake option `BUILD_INDEX64_EXT_API`.
+    # This seems to be doing the same as we're doing manually.
+    # We should try using this option instead of our hand-rolled magic.
+
     mkdir build && cd build
     cmake .. "${CMAKE_FLAGS[@]}" \
        -DCMAKE_INSTALL_PREFIX="$prefix" \
@@ -332,8 +336,16 @@ function lapack_script(;lapack32::Bool=false)
        -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
        -DCMAKE_BUILD_TYPE=Release \
        -DBUILD_SHARED_LIBS=ON \
+       -DBUILD_INDEX64_EXT_API=OFF \
        -DTEST_FORTRAN_COMPILER=OFF \
        -DBLAS_LIBRARIES="-L${libdir} -l${BLAS}"
+
+    if [[ "${LAPACK32}" == "true" && "${bb_full_target}" == aarch64-linux-gnu-libgfortran4-cxx11 ]]; then
+        # The compiler segfaults at `SRC/claqhp.f:216:0`
+        # Build this file ahead of time with reduced optimization.
+        (cd /workspace/srcdir/lapack/build/SRC && /opt/bin/aarch64-linux-gnu-libgfortran4-cxx11/aarch64-linux-gnu-gfortran --sysroot=/opt/aarch64-linux-gnu/aarch64-linux-gnu/sys-root/   -O1 -DNDEBUG -O1 -fPIC -frecursive -cpp -c /workspace/srcdir/lapack/SRC/claqhp.f -o CMakeFiles/lapack_obj.dir/claqhp.f.o)
+        (cd /workspace/srcdir/lapack/build/SRC && /opt/bin/aarch64-linux-gnu-libgfortran4-cxx11/aarch64-linux-gnu-gfortran --sysroot=/opt/aarch64-linux-gnu/aarch64-linux-gnu/sys-root/   -O1 -DNDEBUG -O1 -fPIC -frecursive -cpp -c /workspace/srcdir/lapack/SRC/zlaqhp.f -o CMakeFiles/lapack_obj.dir/zlaqhp.f.o)
+    fi
 
     make -j${nproc}
     make install
@@ -373,5 +385,5 @@ platforms = expand_gfortran_versions(supported_platforms())
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
+    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.11.2"),
 ]

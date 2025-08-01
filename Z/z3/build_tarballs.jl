@@ -8,14 +8,14 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "z3"
-version = v"4.14.1"
+version = v"4.15.2"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/Z3Prover/z3/releases/download/z3-$(version)/z3_solver-$(version).0.tar.gz",
-                  "ddc6981d83205cbe6000b8fa71f78da496bbaa635fadaf776b6d129b80e7b113"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
+                  "6c304512105714c4235cbb8589bf0e1f44f7cb88f689534bc2389c4cb7463510"),
+    FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+               "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 macfix = raw"""
@@ -26,11 +26,9 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     #         symbol, zstring *, rational *, double, unsigned int>' is unavailable:
     #         introduced in macOS 10.14
     export MACOSX_DEPLOYMENT_TARGET=10.15
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    # ...and install a newer SDK
     rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    popd
+    tar --extract --file=${WORKSPACE}/srcdir/MacOSX10.15.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX10.15.sdk/System MacOSX10.15.sdk/usr
 fi
 """
 
@@ -71,9 +69,6 @@ install_license LICENSE.txt
 include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
-
-# libjulia_jll is not yet available for Julia 1.13
-filter!(p -> VersionNumber(p["julia_version"]) < v"1.13", platforms)
 
 # The products that we will ensure are always built
 products = [
