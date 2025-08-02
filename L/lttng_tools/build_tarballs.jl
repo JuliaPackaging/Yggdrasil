@@ -39,7 +39,10 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="URCU_jll", uuid="aa747835-a391-587f-982f-064ff03f7d29"))
     Dependency(PackageSpec(name="Popt_jll", uuid="e80236cf-ab1d-5f5d-8534-1d1285fe49e8"))
-    Dependency(PackageSpec(name="XML2_jll", uuid="02c8fc9c-b97f-50b9-bbe4-9be30ff0a78a"))
+    # We had to restrict compat with XML2 because of ABI breakage:
+    # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
+    # Updating to `compat="~2.14.1"` is likely possible without problems but requires rebuilding this package
+    Dependency(PackageSpec(name="XML2_jll", uuid="02c8fc9c-b97f-50b9-bbe4-9be30ff0a78a"); compat="~2.13.6")
     Dependency(PackageSpec(name="lttng_ust_jll", uuid="a2826780-45ff-53db-9dda-fd961bc58de1"))
 ]
 
