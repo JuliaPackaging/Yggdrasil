@@ -21,12 +21,6 @@ sources = [
 MIN_CUDA_VERSION = v"12.2"
 MAX_CUDA_VERSION = v"12.8.999"
 
-# MIN_CUDA_VERSION = v"12.0"
-# MAX_CUDA_VERSION = v"12.1"
-
-# -DDYNAMIC_ARCH=ON
-# -DTARGET=GENERIC
-
 script = raw"""
 
     # Build crashes without this
@@ -98,11 +92,6 @@ script = raw"""
 
     cd ${WORKSPACE}/srcdir/cupynumeric
 
-    # COPIED FROM OpenBLAS_jll script
-    if [[ ${target} == aarch64-* ]] && [[ ${bb_full_target} != *-libgfortran3* ]]; then
-        export TARGET=ARMV8
-    fi
-
     mkdir build
     cmake -S . -B build \
         -Dlegate_ROOT:STRING=${prefix} \
@@ -128,10 +117,10 @@ script = raw"""
 platforms = CUDA.supported_platforms(; min_version = MIN_CUDA_VERSION, max_version = MAX_CUDA_VERSION)
 
 # for now NO ARM support, tblis doesnt have docs on how to build for arm
-platforms = filter!(p -> arch(p) == "x86_64", platforms)
+filter!(p -> arch(p) == "x86_64", platforms)
 
 platforms = expand_cxxstring_abis(platforms) 
-platforms = filter!(p -> cxxstring_abi(p) == "cxx11", platforms)
+filter!(p -> cxxstring_abi(p) == "cxx11", platforms)
 
 products = [
     LibraryProduct("libcupynumeric", :libcupynumeric)
