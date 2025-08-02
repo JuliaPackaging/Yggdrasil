@@ -53,11 +53,6 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     ..
 make -j${nproc}
 make install
-
-# Move libraries to ${libdir} on Windows
-if [[ "${target}" == *-mingw* ]]; then
-    mv ${prefix}/lib/libsundials_*.${dlext} "${libdir}"
-fi
 """
 
 # We attempt to build for all defined platforms
