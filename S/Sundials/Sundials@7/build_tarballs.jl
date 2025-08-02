@@ -5,8 +5,8 @@ version = v"7.4.0"
 
 # Collection of sources required to build Sundials
 sources = [
-    ArchiveSource("https://github.com/LLNL/sundials/releases/download/v$(version)/sundials-$(version).tar.gz",
-                  "679ddacdd77610110e613164e8297d6d0cd35bae8e9c3afc8e8ff6f99a1c2a7b"),
+    GitSource("https://github.com/LLNL/sundials.git",
+              "8e17876d3b4d682b4098684b07a85b005a122f81"),
     DirectorySource("./bundled"),
 ]
 
@@ -15,10 +15,6 @@ script = raw"""
 cd $WORKSPACE/srcdir/sundials*
 
 apk del cmake
-
-# Note: The SundialsSetupCompilers patch for 64-bit integer support
-# is no longer needed in v7.4.0 as the Fortran name mangling has been
-# restructured in the newer version of SUNDIALS.
 
 # Set up CFLAGS
 cd $WORKSPACE/srcdir/sundials*/cmake/tpl
