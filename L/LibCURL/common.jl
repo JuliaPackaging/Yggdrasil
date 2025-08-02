@@ -22,7 +22,7 @@ const curl_hashes = Dict(
     v"8.15.0" => "d85cfc79dc505ff800cb1d321a320183035011fa08cb301356425d86be8fc53c",
 )
 
-function build_libcurl(ARGS, name::String, version::VersionNumber)
+function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=false)
     hash = curl_hashes[version]
 
     if name == "CURL"
@@ -59,9 +59,15 @@ function build_libcurl(ARGS, name::String, version::VersionNumber)
     end
     macos_use_openssl = version >= v"8.15"
 
+    config = "THIS_IS_CURL=$(this_is_curl_jll)\n"
+    config *= "MACOS_USE_OPENSSL=$(macos_use_openssl)\n" 
+    if with_zstd
+	config *= "HAVE_ZSTD=true\n"
+    end
+
 
     # Bash recipe for building across all platforms
-    script = "THIS_IS_CURL=$(this_is_curl_jll)\n" * "MACOS_USE_OPENSSL=$(macos_use_openssl)\n" * unpack_macosx_sdk * raw"""
+    script = config * unpack_macosx_sdk * raw"""
     cd $WORKSPACE/srcdir/curl-*
 
     # Address <https://github.com/curl/curl/issues/12849>
@@ -79,9 +85,13 @@ function build_libcurl(ARGS, name::String, version::VersionNumber)
         --without-brotli
 
         # A few things we actually enable
-        --with-libssh2=${prefix} --with-zlib=${prefix} --with-nghttp2=${prefix}
+	--with-libssh2=${prefix} --with-zlib=${prefix} --with-nghttp2=${prefix}
         --enable-versioned-symbols
     )
+
+    if [[ ${HAVE_ZSTD} == true ]]; then
+        FLAGS+=(--with-zstd=${prefix})
+    fi
 
     if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
         # Install msan runtime (for clang)
@@ -168,6 +178,10 @@ function build_libcurl(ARGS, name::String, version::VersionNumber)
         BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
                         platforms=filter(p -> sanitize(p)=="memory", platforms)),
     ]
+
+    if with_zstd
+        push!(dependencies, Dependency("Zstd_jll"))
+    end
 
     if this_is_curl_jll
         # Curl_jll depends on LibCURL_jll
