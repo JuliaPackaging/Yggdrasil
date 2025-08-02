@@ -28,7 +28,7 @@ if [[ "${target}" == *-mingw* ]]; then
     # Work around https://github.com/LLNL/sundials/issues/29
     # When looking for KLU libraries, CMake searches only for import libraries,
     # this patch ensures we look also for shared libraries.
-    atomic_patch -p2 $WORKSPACE/srcdir/patches/Sundials_findklu_suffixes.patch
+    atomic_patch -p3 $WORKSPACE/srcdir/patches/Sundials_findklu_suffixes.patch
 else
     BLAS_NAME="${libdir}/libblastrampoline.${dlext}"
     LAPACK_NAME="${libdir}/libblastrampoline.${dlext}"
