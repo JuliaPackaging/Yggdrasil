@@ -51,8 +51,9 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DLAPACK_WORKS=ON \
     -DBLA_VENDOR="${BLAS_NAME}" \
     ..
-make -j${nproc}
-make install
+
+cmake --build . --parallel ${nproc}
+cmake --install .
 """
 
 # We attempt to build for all defined platforms
