@@ -27,6 +27,8 @@ function blas_script(;blas32::Bool=false)
     sed -i 's/FortranCInterface_VERIFY/# FortranCInterface_VERIFY/g' ./CBLAS/CMakeLists.txt
     sed -i 's/FortranCInterface_VERIFY/# FortranCInterface_VERIFY/g' ./LAPACKE/include/CMakeLists.txt
 
+    # Use -fno-optimize-sibling-calls to guard against issues with Fortran ABI with character arguments
+    # Discussed in https://github.com/JuliaLang/LinearAlgebra.jl/issues/650
     mkdir build && cd build
     cmake .. \
        -DCMAKE_INSTALL_PREFIX="$prefix" \
