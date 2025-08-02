@@ -4,12 +4,12 @@ using BinaryBuilder, Pkg
 
 name = "Uno"
 
-version = v"2.0.0"
+version = v"2.0.1"
 
 sources = [
     GitSource(
         "https://github.com/cvanaret/Uno.git",
-        "8ea41fcd7250ad4489abe42e3ef1c924e2a323ee",
+        "9148111d6d163544bc00c0ad6e6aafb0ca84d1a6",
     ),
 ]
 
@@ -20,10 +20,10 @@ cd build
 
 if [[ "${target}" == *mingw* ]]; then
     LBT=blastrampoline-5
-    LIBHIGHS=${prefix}/lib/libhighs.dll.a
+    HIGHS_DIR=${prefix}/lib
 else
     LBT=blastrampoline
-    LIBHIGHS=${libdir}/libhighs.${dlext}
+    HIGHS_DIR=${libdir}
 fi
 
 if [[ "${target}" == *apple* ]] || [[ "${target}" == *freebsd* ]]; then
@@ -41,7 +41,7 @@ cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DAMPLSOLVER=${libdir}/libasl.${dlext} \
-    -DHIGHS=${LIBHIGHS} \
+    -DHIGHS_DIR=${HIGHS_DIR} \
     -DBQPD=${prefix}/lib/libbqpd.a \
     -DHSL=${libdir}/libhsl.${dlext} \
     -DBLA_VENDOR="libblastrampoline" \
@@ -53,17 +53,12 @@ cmake \
     -DMUMPS_MPISEQ_LIBRARY="${libdir}/libmpiseq.${dlext}" \
     -DBLAS_LIBRARIES="${libdir}/lib${LBT}.${dlext}" \
     -DLAPACK_LIBRARIES="${libdir}/lib${LBT}.${dlext}" \
+    -DBUILD_STATIC_LIBS=ON \
+    -DBUILD_SHARED_LIBS=ON \
     ..
 
-make -j${nproc}
-
-# Uno does not support `make install`. Manually copy for now.
-install -v -m 755 "uno_ampl${exeext}" -t "${bindir}"
-
-# Currently, Uno does not provide a shared library. This may be useful in the future once it has a C API.
-# We just check that we can generate it, but we don't include it in the tarballs.
-${CXX} -shared $(flagon -Wl,--whole-archive) libuno.a $(flagon -Wl,--no-whole-archive) -o libuno.${dlext} -L${prefix}/lib -lbqpd -L${libdir} -l${OMP} -l${LBT} -ldmumps -lmetis -lhsl -lhighs -lgfortran
-# cp libuno.${dlext} ${libdir}/libuno.${dlext}
+make uno_ampl -j${nproc}
+make install
 
 # Uno
 install_license ${WORKSPACE}/srcdir/Uno/LICENSE
@@ -77,12 +72,15 @@ platforms = supported_platforms()
 filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 filter!(p -> arch(p) != "riscv64", platforms)
 platforms = expand_cxxstring_abis(platforms)
+platforms = expand_gfortran_versions(platforms)
+platforms = filter(p -> libgfortran_version(p) != v"3", platforms)
+platforms = filter(p -> libgfortran_version(p) != v"4", platforms)
 
 products = [
-    # This LibraryProduct may be useful once Uno provides a C API. We omit it for now.
-    # LibraryProduct("libuno", :libuno),
     # We call this amplexe to match the convention of other JLL packages (like Ipopt_jll) that provide AMPL wrappers
     ExecutableProduct("uno_ampl", :amplexe),
+    LibraryProduct("libuno", :libuno),
+    FileProduct("lib/libuno.a", :libuno_a),
 ]
 
 dependencies = [
