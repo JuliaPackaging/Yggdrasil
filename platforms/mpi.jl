@@ -41,6 +41,20 @@ const augment = raw"""
     end
     """
 
+const augment_provider = augment * raw"""
+    function augment_mpi_provider!(platform)
+        platform = augment_mpi!(platform)
+
+        binary = get(preferences, "binary", Sys.iswindows(platform) ? "MicrosoftMPI_jll" : "MPICH_jll")
+        provider = binary == "system" ? "system" : "jll"
+
+        if !haskey(platform, "mpi_provider")
+            platform["mpi_provider"] = provider
+        end
+        return platform
+    end
+"""
+
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
