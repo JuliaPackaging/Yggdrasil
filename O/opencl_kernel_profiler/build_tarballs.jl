@@ -8,13 +8,10 @@ version = v"0.0.100"
 # Collection of sources required to complete build
 sources = [
     GitSource(
-        "https://github.com/rjodinchr/opencl-kernel-profiler",
-        "19f658f19a7fdbd2b3ef3cec0ecd5fa7f2b8b293"
+        "https://github.com/simeonschaub/opencl-kernel-profiler",
+        "78ca1b4d9fa21468186f6c94b0a1306b3c8d6723"
     ),
-    GitSource(
-        "https://github.com/google/perfetto",
-        "2c4d2ffa7ff300e0b0feb8b8553e42afc7945870"
-    ),
+    DirectorySource("./bundled"),
 ]
 
 
@@ -22,21 +19,26 @@ sources = [
 script = raw"""
 apk del cmake
 cd $WORKSPACE/srcdir/opencl-kernel-profiler
+# atomic_patch -p1 ../dlext.patch
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DOPENCL_HEADER_PATH=${includedir}/CL \
-    -DPERFETTO_SDK_PATH=../perfetto/sdk \
+    -DPERFETTO_SDK_PATH=${includedir} \
+    -DPERFETTO_LIBRARY=perfetto \
     -DSPIRV_DISASSEMBLY=ON
 cmake --build build --parallel ${nproc}
-install -vm 644 build/libopencl-kernel-profiler.${dlext} "${libdir}/"
+cmake --install build
 install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(filter(p -> libc(p) == "glibc", supported_platforms()))
+platforms = filter(p -> libc(p) == "glibc", supported_platforms())
+push!(platforms, Platform("x86_64", "Windows"))
+push!(platforms, Platform("aarch64", "macos"))
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -47,6 +49,7 @@ products = [
 dependencies = [
     BuildDependency(PackageSpec(; name = "OpenCL_Headers_jll", version = v"2024.10.24")),
     Dependency("OpenCL_jll"),
+    Dependency("perfetto_jll"),
     Dependency("SPIRV_Tools_jll"),
     HostBuildDependency(PackageSpec(; name = "CMake_jll", version = v"3.24.3")),
 ]
@@ -54,5 +57,5 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(
     ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat = "1.6", preferred_gcc_version = v"9"
+    julia_compat = "1.6", preferred_gcc_version = v"9",
 )

@@ -1,0 +1,11 @@
+index de50215..3e19ec8 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -16,6 +16,7 @@ cmake_minimum_required (VERSION 3.24)
+ project (opencl-kernel-profiler)
+
+ set(CMAKE_CXX_STANDARD 17)
++set(CMAKE_FIND_LIBRARY_SUFFIXES ".$ENV{dlext}" ${CMAKE_FIND_LIBRARY_SUFFIXES})
+
+ if (NOT PERFETTO_SDK_PATH)
+   message(FATAL_ERROR "PERFETTO_SDK_PATH not defined")
