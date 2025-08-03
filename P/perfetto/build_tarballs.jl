@@ -21,6 +21,7 @@ apk del cmake
 cd $WORKSPACE/srcdir/perfetto
 atomic_patch -p1 ../shared_lib.patch
 atomic_patch -p1 ../perfetto_mingw.patch
+atomic_patch -p1 ../header_mingw.patch
 
 mkdir build && cd build
 meson setup .. --cross-file="${MESON_TARGET_TOOLCHAIN}" --buildtype=release
