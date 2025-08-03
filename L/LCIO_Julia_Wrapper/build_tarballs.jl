@@ -3,13 +3,15 @@
 using BinaryBuilder
 using Pkg
 
+include("../../L/libjulia/common.jl")
 # See https://github.com/JuliaLang/Pkg.jl/issues/2942
 # Once this Pkg issue is resolved, this must be removed
 using Pkg
 
 name = "LCIO_Julia_Wrapper"
 version = v"0.13.4"
-julia_versions = [v"1.10", v"1.11"]
+julia_versions = filter(v -> !occursin("DEV", string(v)), julia_full_versions)
+julia_versions = filter(v -> v >= v"1.10", julia_versions)
 
 # Collection of sources required to build LCIOWrapBuilder
 sources = [
