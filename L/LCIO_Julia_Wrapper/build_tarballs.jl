@@ -11,7 +11,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "LCIO_Julia_Wrapper"
 version = v"0.13.4"
-julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
+julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10", v"1.11"]
 
 # Collection of sources required to build LCIOWrapBuilder
 sources = [
