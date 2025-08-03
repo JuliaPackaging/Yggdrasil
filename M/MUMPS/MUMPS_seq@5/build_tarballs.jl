@@ -116,7 +116,7 @@ cp lib/*.${dlext} ${libdir}
 platforms = supported_platforms()
 filter!(p -> arch(p) != "riscv64", platforms)
 platforms = expand_gfortran_versions(platforms)
-# filter!(p -> !(Sys.islinux(p) && libc(p) == "musl" && libgfortran_version(p) == v"4" && arch(p) == "aarch64"), platforms)
+filter!(p -> !(Sys.islinux(p) && libc(p) == "musl" && libgfortran_version(p) == v"4" && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [
