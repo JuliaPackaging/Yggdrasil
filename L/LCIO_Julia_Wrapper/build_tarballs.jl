@@ -10,8 +10,6 @@ using Pkg
 
 name = "LCIO_Julia_Wrapper"
 version = v"0.13.4"
-julia_versions = filter(v -> !occursin("DEV", string(v)), julia_full_versions)
-julia_versions = filter(v -> !occursin("-rc", string(v)), julia_versions)
 julia_versions = filter(v -> v >= v"1.10", julia_versions)
 
 # Collection of sources required to build LCIOWrapBuilder
