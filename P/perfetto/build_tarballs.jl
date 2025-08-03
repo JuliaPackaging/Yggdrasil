@@ -26,6 +26,7 @@ mkdir build && cd build
 meson setup .. --cross-file="${MESON_TARGET_TOOLCHAIN}" --buildtype=release
 ninja -j${nproc}
 ninja install
+install -Dvm 644 ../sdk/perfetto.h "${includedir}/perfetto.h"
 install_license ../LICENSE
 """
 
@@ -36,6 +37,7 @@ platforms = expand_cxxstring_abis(supported_platforms())
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libperfetto", :libperfetto),
+    FileProduct("include/perfetto.h", :perfetto_h),
 ]
 
 # Dependencies that must be installed before this package can be built
