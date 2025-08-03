@@ -6,12 +6,10 @@ using Pkg
 # See https://github.com/JuliaLang/Pkg.jl/issues/2942
 # Once this Pkg issue is resolved, this must be removed
 using Pkg
-uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
-delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "LCIO_Julia_Wrapper"
 version = v"0.13.4"
-julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10", v"1.11"]
+julia_versions = [v"1.10", v"1.11"]
 
 # Collection of sources required to build LCIOWrapBuilder
 sources = [
@@ -45,10 +43,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="libcxxwrap_julia_jll"), compat="0.14.3"),
+    Dependency(PackageSpec(name="libcxxwrap_julia_jll"), compat="0.14"),
     Dependency(PackageSpec(name="LCIO_jll"), compat="2.22.6"),
     BuildDependency(PackageSpec(name="libjulia_jll"))
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
-    preferred_gcc_version=v"8", julia_compat="1.6")
+    preferred_gcc_version=v"8", julia_compat="1.10")
