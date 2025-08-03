@@ -10,12 +10,12 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "LCIO_Julia_Wrapper"
-version = v"0.13.3"
+version = v"0.13.4"
 julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
 
 # Collection of sources required to build LCIOWrapBuilder
 sources = [
-	GitSource("https://github.com/JuliaHEP/LCIO_Julia_Wrapper.git", "e28132bfdc0664faf9724a74b2ae33803c26dc5a")
+	GitSource("https://github.com/JuliaHEP/LCIO_Julia_Wrapper.git", "7a526aefd572575a881519e44eda8701a87e749d")
 ]
 
 # Bash recipe for building across all platforms
@@ -45,7 +45,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="libcxxwrap_julia_jll"), compat="0.13.4"),
+    Dependency(PackageSpec(name="libcxxwrap_julia_jll"), compat="0.14.3"),
     Dependency(PackageSpec(name="LCIO_jll"), compat="2.22.6"),
     BuildDependency(PackageSpec(name="libjulia_jll"))
 ]
