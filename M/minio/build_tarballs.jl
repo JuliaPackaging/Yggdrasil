@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "minio"
-version = v"1.0.0"
+version = v"2.0.0"
 
 # Collection of sources
 sources = [
