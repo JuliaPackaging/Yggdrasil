@@ -29,7 +29,8 @@ cmake -B build \
     -DPERFETTO_LIBRARY=perfetto \
     -DSPIRV_DISASSEMBLY=ON
 cmake --build build --parallel ${nproc}
-cmake --install build
+# cmake --install build
+install -vm 644 build/libopencl-kernel-profiler.${dlext} "${libdir}/"
 install_license LICENSE
 """
 
