@@ -3,15 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "opencl_kernel_profiler"
-version = v"0.0.100"
+version = v"0.0.109"
 
 # Collection of sources required to complete build
 sources = [
     GitSource(
-        "https://github.com/simeonschaub/opencl-kernel-profiler",
-        "78ca1b4d9fa21468186f6c94b0a1306b3c8d6723"
+        "https://github.com/rjodinchr/opencl-kernel-profiler",
+        "0ba158cf3018f25d363ff181e9a769c7e1d86b77"
     ),
-    DirectorySource("./bundled"),
 ]
 
 
@@ -19,7 +18,6 @@ sources = [
 script = raw"""
 apk del cmake
 cd $WORKSPACE/srcdir/opencl-kernel-profiler
-# atomic_patch -p1 ../dlext.patch
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -29,8 +27,7 @@ cmake -B build \
     -DPERFETTO_LIBRARY=perfetto \
     -DSPIRV_DISASSEMBLY=ON
 cmake --build build --parallel ${nproc}
-# cmake --install build
-install -vm 644 build/libopencl-kernel-profiler.${dlext} "${libdir}/"
+cmake --install build
 install_license LICENSE
 """
 
