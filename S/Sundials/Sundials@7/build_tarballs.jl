@@ -19,15 +19,10 @@ apk del cmake
 # Set up CFLAGS
 cd $WORKSPACE/srcdir/sundials*/cmake/tpl
 if [[ "${target}" == *-mingw* ]]; then
-    BLAS_NAME="${libdir}/libblastrampoline-5.${dlext}"
-    LAPACK_NAME="${libdir}/libblastrampoline-5.${dlext}"
     # Work around https://github.com/LLNL/sundials/issues/29
     # When looking for KLU libraries, CMake searches only for import libraries,
     # this patch ensures we look also for shared libraries.
     atomic_patch -p3 $WORKSPACE/srcdir/patches/Sundials_findklu_suffixes.patch
-else
-    BLAS_NAME="${libdir}/libblastrampoline.${dlext}"
-    LAPACK_NAME="${libdir}/libblastrampoline.${dlext}"
 fi
 
 # Build
@@ -42,10 +37,8 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DKLU_LIBRARY_DIR="${libdir}" \
     -DKLU_WORKS=ON \
     -DENABLE_LAPACK=ON \
-    -DBLAS_LIBRARIES="${BLAS_NAME}" \
-    -DLAPACK_LIBRARIES="${LAPACK_NAME}" \
     -DLAPACK_WORKS=ON \
-    -DBLA_VENDOR="${BLAS_NAME}" \
+    -DBLA_VENDOR="libblastrampoline" \
     ..
 
 cmake --build . --parallel ${nproc}
