@@ -8,7 +8,7 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "Minuit2_Julia_Wrapper"
-version = v"0.3.1"
+version = v"0.3.2"
 
 sources = [
 	GitSource("https://github.com/JuliaHEP/Minuit2_Julia_Wrapper.git",
@@ -54,7 +54,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("libjulia_jll"),
-    Dependency("libcxxwrap_julia_jll"; compat="0.13.4"),
+    Dependency("libcxxwrap_julia_jll"; compat="0.14.3"),
     Dependency("Minuit2_jll"; compat = "~6.34.2",)
 ]
 
