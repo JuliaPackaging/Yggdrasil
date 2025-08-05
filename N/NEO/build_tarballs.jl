@@ -78,7 +78,17 @@ function get_script(; debug::Bool)
         export PKG_CONFIG_PATH=${prefix}/lib64/pkgconfig:${prefix}/lib/pkgconfig
 
         cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
-        ninja -C build -j ${nproc} install"""
+        ninja -C build -j ${nproc} install
+        # Create unversioned symlink for libze_intel_gpu
+        cd ${prefix}/lib
+        if [ -f libze_intel_gpu.so.1 ]; then
+            ln -sf libze_intel_gpu.so.1 libze_intel_gpu.so
+        fi
+        cd ${prefix}/bin
+        if [ -f ocloc-25.27.1 ]; then
+            ln -sf ocloc-25.27.1 ocloc
+        fi
+"""
 end
 
 # These are the platforms we will build for by default, unless further
