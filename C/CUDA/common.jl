@@ -22,12 +22,22 @@ function parse_sources(json::String, product::String, components::Vector{String}
         libc(platform) == "glibc" || error("Only glibc is supported on Linux")
         if arch(platform) == "x86_64"
             "linux-x86_64"
-        elseif arch(platform) == "aarch64" && platform["cuda_platform"] == "jetson"
-            "linux-aarch64"
-        elseif arch(platform) == "aarch64" && platform["cuda_platform"] == "sbsa"
-            "linux-sbsa"
         elseif arch(platform) == "powerpc64le"
             "linux-ppc64le"
+        elseif arch(platform) == "aarch64"
+            if VersionNumber(version) >= v"13"
+                haskey(platform, "cuda_platform") && error("CUDA 13 uses unified ARM platforms")
+                "linux-sbsa"
+            else
+                haskey(platform, "cuda_platform") || error("CUDA 12 and earlier require the 'cuda_platform' tag to be set")
+                if platform["cuda_platform"] == "jetson"
+                    "linux-aarch64"
+                elseif platform["cuda_platform"] == "sbsa"
+                    "linux-sbsa"
+                else
+                    error("Unknown cuda_platform $(platform["cuda_platform"])")
+                end
+            end
         else
             error("Unsupported Linux architecture $(arch(platform))")
         end
