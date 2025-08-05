@@ -25,16 +25,24 @@ install_license LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
+
 # Rust toolchain for i686 Windows is unusable
 filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
+
 # Rust toolchain 1.87.0 not available on platform aarch64-unknown-freebsd or riscv64-linux-gnu
 filter!(p -> !(arch(p) == "aarch64" && Sys.isfreebsd(p)), platforms)
 filter!(p -> !(arch(p) == "riscv64"), platforms)
+
 # Errors with "ld: library not found for -lclang_rt.osx"
 filter!(p -> !Sys.isapple(p), platforms)
-# # Has issue 
-# filter!(p -> arch(p) != "armv6l", platforms)
+
+# Audit warns: "Linked library bcryptprimitives.dll could not be resolved and could not be auto-mapped"
+filter!(p -> !Sys.iswindows(p), platforms)
+
+# Has issues with compiling openssl
+filter!(p -> arch(p) != "armv6l", platforms)
+filter!(p -> arch(p) != "powerpc64le", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -45,8 +53,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
-    # Dependency("OpenSSL_jll"; compat="3.0.15"),
+dependencies = [
     Dependency("CompilerSupportLibraries_jll")
 ]
 
