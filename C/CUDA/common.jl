@@ -149,6 +149,6 @@ fi"""
         build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                     name, version, build.sources, build.script,
                     build.platforms, build.products, [];
-                    skip_audit=true)
+                    skip_audit=true, julia_compat="1.6", compression_format="xz")
     end
 end
