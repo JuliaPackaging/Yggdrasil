@@ -14,7 +14,7 @@ sources = [
     GitSource("https://github.com/intel/compute-runtime.git",
               "d0fdeb0339afaa6db37411e10c41f291945aa727"),
     # patches
-    DirectorySource("./patches"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -23,7 +23,7 @@ function get_script(; debug::Bool)
         # ocloc segfaults after successful build and before exiting. So we wrap
         # a script around ocloc that detects when the build is reported
         # successful and ignores the segfault.
-        atomic_patch -p0 ocloc.patch
+        atomic_patch -p0 ./patches/ocloc.patch
         cp ocloc_wrapper.sh compute-runtime/shared/source/built_ins/kernels/ocloc_wrapper.sh
         mkdir -p tmpdir
         export TMPDIR=$(pwd)/tmpdir
@@ -79,15 +79,10 @@ function get_script(; debug::Bool)
 
         cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
         ninja -C build -j ${nproc} install
-        # Create unversioned symlink for libze_intel_gpu
-        cd ${prefix}/lib
-        if [ -f libze_intel_gpu.so.1 ]; then
-            ln -sf libze_intel_gpu.so.1 libze_intel_gpu.so
-        fi
-        cd ${prefix}/bin
-        if [ -f ocloc-25.27.1 ]; then
-            ln -sf ocloc-25.27.1 ocloc
-        fi
+        # Create unversioned symlinks
+        ln -s libze_intel_gpu.so.1 ${libdir}/libze_intel_gpu.so
+        ln -s ocloc-25.27.1 ${bindir}/ocloc
+
 """
 end
 
@@ -116,7 +111,6 @@ dependencies = [
     Dependency("gmmlib_jll"; compat="=22.8.1"),
     Dependency("libigc_jll"; compat="=2.14.1"),
     Dependency("oneAPI_Level_Zero_Headers_jll"; compat="=1.13"),
-    Dependency("Glibc_jll"; compat="=2.34"),
 ]
 
 augment_platform_block = raw"""
