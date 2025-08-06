@@ -15,7 +15,7 @@ sources = [
 script = raw"""
 cp $WORKSPACE/srcdir/Cargo.lock $WORKSPACE/srcdir/cargo-c/
 cd $WORKSPACE/srcdir/cargo-c/
-cargo build --release --locked --features=vendored-openssl
+cargo build --release --locked
 install -Dvm 755 "target/${rust_target}/release/cargo-capi${exeext}" "${bindir}/cargo-capi${exeext}"
 install -Dvm 755 "target/${rust_target}/release/cargo-cinstall${exeext}" "${bindir}/cargo-cinstall${exeext}"
 install -Dvm 755 "target/${rust_target}/release/cargo-cbuild${exeext}" "${bindir}/cargo-cbuild${exeext}"
@@ -34,12 +34,6 @@ filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
 filter!(p -> !(arch(p) == "aarch64" && Sys.isfreebsd(p)), platforms)
 filter!(p -> !(arch(p) == "riscv64"), platforms)
 
-# Errors with "ld: library not found for -lclang_rt.osx"
-filter!(p -> !Sys.isapple(p), platforms)
-
-# Audit warns: "Linked library bcryptprimitives.dll could not be resolved and could not be auto-mapped"
-filter!(p -> !Sys.iswindows(p), platforms)
-
 # Has issues with compiling openssl
 filter!(p -> arch(p) != "armv6l", platforms)
 filter!(p -> arch(p) != "powerpc64le", platforms)
@@ -53,11 +47,21 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
+llvm_version = v"17.0.6"
 dependencies = [
-    Dependency("CompilerSupportLibraries_jll")
+    Dependency("OpenSSL_jll"; compat="3.0.15"),
+    Dependency("CompilerSupportLibraries_jll"),
+    # adding LLVMCompilerRT_jll fixes the error "ld: library not found for -lclang_rt.osx"
+    BuildDependency(PackageSpec(name = "LLVMCompilerRT_jll",
+                                uuid = "4e17d02c-6bf5-513e-be62-445f41c75a11",
+                                version = llvm_version);
+                    platforms = filter(p -> Sys.isapple(p) && arch(p) == "aarch64", platforms))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-                compilers=[:c, :rust], julia_compat="1.6",
-                lock_microarchitecture=false)
+    compilers= [:c, :rust],
+    julia_compat= "1.6",
+    lock_microarchitecture= false,
+    preferred_llvm_version= llvm_version,
+)
