@@ -1,7 +1,7 @@
 diff --git before/power_grid_model-1.11.38/power_grid_model_c/CMakeLists.txt after/power_grid_model-1.11.39/power_grid_model_c/CMakeLists.txt
 index 6983513..2cd11e4 100644
---- before/power_grid_model-1.11.38/power_grid_model_c/CMakeLists.txt
-+++ after/power_grid_model-1.11.39/power_grid_model_c/CMakeLists.txt
+--- before/power_grid_model-1.11.39/power_grid_model_c/CMakeLists.txt
++++ after/power_grid_model-1.12.0/power_grid_model_c/CMakeLists.txt
 @@ -1,6 +1,51 @@
  # SPDX-FileCopyrightText: Contributors to the Power Grid Model project <powergridmodel@lfenergy.org>
  #
