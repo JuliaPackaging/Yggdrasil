@@ -1,0 +1,14 @@
+diff --git a/lib/scopehal/AlignedAllocator.h b/lib/scopehal/AlignedAllocator.h
+index ebd6365..ed2b49d 100644
+--- a/lib/scopehal/AlignedAllocator.h
++++ b/lib/scopehal/AlignedAllocator.h
+@@ -38,6 +38,9 @@
+ 
+ #ifdef _WIN32
+ #include <windows.h>
++#else
++extern "C" void* __libc_memalign(size_t, size_t);
++#define aligned_alloc(alignment, size) __libc_memalign(alignment, size)
+ #endif
+ 
+ /**
