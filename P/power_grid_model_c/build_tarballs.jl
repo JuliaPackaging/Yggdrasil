@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libpower_grid_model_c"
-version = v"1.11.39"
+version = v"1.12.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/PowerGridModel/power-grid-model/releases/download/v$(version)/power_grid_model-$(version).tar.gz", "96194abc29ff61db5cdaee32199f1e711ccf116523127d281e18cfab4cc72eab"),
+    ArchiveSource("https://github.com/PowerGridModel/power-grid-model/releases/download/v$(version)/power_grid_model-$(version).tar.gz", "b38be158af11541759b7b2c01e1baab099f8f22fe453237d7814a8698bb67745"),
     DirectorySource("./bundled")
 ]
 
@@ -18,26 +18,25 @@ cd $WORKSPACE/srcdir
 for f in ${WORKSPACE}/srcdir/patches/cmake-patch.patch; do
     atomic_patch -p1 ${f}
 done
-cd power_grid_model-1.11.39/power_grid_model_c
+cd power_grid_model-1.12.0/power_grid_model_c
 cmake -B build -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel ${nproc}
 cmake --install build
-install_license $WORKSPACE/srcdir/power_grid_model-1.11.39/LICENSE
+install_license $WORKSPACE/srcdir/power_grid_model-1.12.0/LICENSE
 """
 
 platforms = [
              Platform("x86_64", "linux"; libc = "glibc", cpu_target="x86_64_v2", cxxstring_abi=:cxx11),
              Platform("x86_64", "linux"; libc = "glibc", cpu_target="x86_64_v3", cxxstring_abi=:cxx11),
              Platform("aarch64", "linux"; libc = "glibc", cxxstring_abi=:cxx11),
-             Platform("x86_64", "linux"; libc = "musl", cpu_target="x86_64_v2", cxxstring_abi=:cxx11),
-             Platform("x86_64", "linux"; libc = "musl", cpu_target="x86_64_v3", cxxstring_abi=:cxx11),
+             Platform("x86_64", "linux"; libc = "musl", cxxstring_abi=:cxx11),
              Platform("aarch64", "linux"; libc = "musl", cxxstring_abi=:cxx11),
              Platform("x86_64", "windows"; cpu_target="x86_64_v2", cxxstring_abi=:cxx11, march="avx2"),
              Platform("x86_64", "windows"; cpu_target="x86_64_v3", cxxstring_abi=:cxx11, march="avx2"),
-             Platform("x86_64", "linux"; libc="musl", cpu_target="znver1", cxxstring_abi=:cxx11, march="avx2"),
-             Platform("x86_64", "linux"; libc="musl", cpu_target="znver2", cxxstring_abi=:cxx11, march="avx2"),
+             Platform("x86_64", "linux"; libc="musl", cxxstring_abi=:cxx11),
              Platform("x86_64", "linux"; libc="glibc", cpu_target="znver1", cxxstring_abi=:cxx11, march="avx2"),
-             Platform("x86_64", "linux"; libc="glibc", cpu_target="znver2", cxxstring_abi=:cxx11, march="avx2")
+             Platform("x86_64", "linux"; libc="glibc", cpu_target="znver2", cxxstring_abi=:cxx11, march="avx2"),
+             Platform("x86_64", "linux"; libc="glibc", cpu_target="znver3", cxxstring_abi=:cxx11, march="avx2")
             ]
 
 
@@ -58,6 +57,3 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.10", preferred_gcc_version = v"14.2.0")
-
-# julia +1.7 build_tarballs.jl --deploy-jll="local"
-# julia +1.7 build_tarballs.jl --deploy-jll="uwbanjoman/libpower_grid_model_c_jll.jl" # the github 'user/repository' names
