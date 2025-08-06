@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "libpower_grid_model_c"
+name = "power_grid_model_c"
 version = v"1.12.0"
 
 # Collection of sources required to complete build
