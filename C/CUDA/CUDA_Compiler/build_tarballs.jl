@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "CUDA_Compiler"
-version = v"0.1"
+version = v"0.2"
 
 augment_platform_block = read(joinpath(@__DIR__, "platform_augmentation.jl"), String)
 
