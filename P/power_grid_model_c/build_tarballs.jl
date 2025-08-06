@@ -7,9 +7,9 @@ version = v"1.12.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/PowerGridModel/power-grid-model/releases/download/v$(version)/power_grid_model-$(version).tar.gz", "b38be158af11541759b7b2c01e1baab099f8f22fe453237d7814a8698bb67745"),
-    DirectorySource("./bundled")
-]
+           ArchiveSource("https://github.com/PowerGridModel/power-grid-model/releases/download/v$(version)/power_grid_model-$(version).tar.gz", "b38be158af11541759b7b2c01e1baab099f8f22fe453237d7814a8698bb67745"),
+           DirectorySource("./bundled")
+          ]
 
 # Bash recipe for building across all platforms.
 script = raw"""
