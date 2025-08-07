@@ -110,6 +110,10 @@ elif [[ "${target}" == x86_64-linux-* ]]; then
    BAZEL_CPU=k8
 elif [[ "${target}" == aarch64-linux-* ]]; then
    BAZEL_CPU=aarch64
+elif [[ "${target}" == x86_64-w64-mingw32-* ]]; then
+   BAZEL_CPU=x64_windows
+elif [[ "${target}" == aarch64-mingw32-* ]]; then
+   BAZEL_CPU=arm64_windows
 fi
 
 echo "register_toolchains(\\"//:cc_toolchain_for_ygg_host\\")" >> WORKSPACE
@@ -358,7 +362,7 @@ platforms = filter(p -> !(arch(p) == "armv7l" && Sys.islinux(p)), platforms)
 platforms = filter(p -> !(libc(p) == "musl"), platforms)
 
 # Windows has a cuda configure issue, to investigate either fixing/disabling cuda
-# platforms = filter(p -> (Sys.iswindows(p)), platforms)
+platforms = filter(p -> (Sys.iswindows(p)), platforms)
 
 # NSync is picking up wrong stuff for cross compile, to deal with later
 # 02] ./external/nsync//platform/c++11.futex/platform.h:24:10: fatal error: 'linux/futex.h' file not found
