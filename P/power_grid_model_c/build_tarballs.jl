@@ -18,6 +18,14 @@ cd $WORKSPACE/srcdir
 for f in ${WORKSPACE}/srcdir/patches/cmake-patch.patch; do
     atomic_patch -p1 ${f}
 done
+# On intel processors, enable SSE2 and AVX2
+if [[ "${target}" == x86_64-*  ]]; then
+    FLAGS+=( --enable-sse2 --enable-avx2 )
+fi
+# Enable NEON on Aarch64
+if [[ "${target}" == aarch64-* ]]; then
+    FLAGS+=( --enable-neon )
+fi
 cd power_grid_model-1.12.0/power_grid_model_c
 cmake -B build -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel ${nproc}
@@ -26,17 +34,11 @@ install_license $WORKSPACE/srcdir/power_grid_model-1.12.0/LICENSE
 """
 
 platforms = [
-             Platform("x86_64", "linux"; libc = "glibc", cpu_target="x86_64_v2", cxxstring_abi=:cxx11),
-             Platform("x86_64", "linux"; libc = "glibc", cpu_target="x86_64_v3", cxxstring_abi=:cxx11),
-             Platform("aarch64", "linux"; libc = "glibc", cxxstring_abi=:cxx11),
+             Platform("x86_64", "linux"; libc = "glibc", cxxstring_abi=:cxx11),
              Platform("x86_64", "linux"; libc = "musl", cxxstring_abi=:cxx11),
+             Platform("aarch64", "linux"; libc = "glibc", cxxstring_abi=:cxx11),
              Platform("aarch64", "linux"; libc = "musl", cxxstring_abi=:cxx11),
-             Platform("x86_64", "windows"; cpu_target="x86_64_v2", cxxstring_abi=:cxx11, march="avx2"),
-             Platform("x86_64", "windows"; cpu_target="x86_64_v3", cxxstring_abi=:cxx11, march="avx2"),
-             Platform("x86_64", "linux"; libc="musl", cxxstring_abi=:cxx11),
-             Platform("x86_64", "linux"; libc="glibc", cpu_target="znver1", cxxstring_abi=:cxx11, march="avx2"),
-             Platform("x86_64", "linux"; libc="glibc", cpu_target="znver2", cxxstring_abi=:cxx11, march="avx2"),
-             Platform("x86_64", "linux"; libc="glibc", cpu_target="znver3", cxxstring_abi=:cxx11, march="avx2")
+             Platform("x86_64", "windows"; cxxstring_abi=:cxx11),
             ]
 
 
