@@ -191,6 +191,9 @@ dependencies = [
     Dependency("PROJ_jll"; compat="902.500.100"),
     Dependency("Qhull_jll"; compat="10008.0.1004"),
     Dependency("SQLite_jll"; compat="3.48.0"),
+    # We had to restrict compat with XML2 because of ABI breakage:
+    # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
+    # Updating to `compat="~2.14.1"` is likely possible without problems but requires rebuilding this package
     Dependency("XML2_jll"; compat="~2.13.6"),
     Dependency("XZ_jll"; compat="5.6.4"),
     Dependency("Zlib_jll"; compat="1.2.12"),

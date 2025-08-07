@@ -85,7 +85,7 @@ dependencies = [
     Dependency("Glib_jll"; compat="2.74.0"), # For GIO
     # We had to restrict compat with XML2 because of ABI breakage:
     # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
-    # Updating to a newer XML2 version is likely possible without problems but requires rebuilding this package
+    # Updating to `compat="~2.14.1"` is likely possible without problems but requires rebuilding this package
     Dependency("XML2_jll"; compat="2.9.14 - 2.13"),
 ]
 
