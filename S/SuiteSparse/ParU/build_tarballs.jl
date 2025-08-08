@@ -1,8 +1,8 @@
 include("../common.jl")
 
 name = "ParU"
-version = v"1.0.0"
-SS_version_str = "7.10.1"
+version = v"1.0.1"
+SS_version_str = "7.11.0"
 SS_version = VersionNumber(SS_version_str)
 
 sources = suitesparse_sources(SS_version)
@@ -32,5 +32,5 @@ products = [
 ]
 
 
-build_tarballs(ARGS, name, version, sources, script, platforms, 
+build_tarballs(ARGS, name, version, sources, script, platforms,
                products, dependencies; julia_compat="1.12",preferred_gcc_version=v"9")

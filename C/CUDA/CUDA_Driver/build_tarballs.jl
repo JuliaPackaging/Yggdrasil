@@ -9,19 +9,19 @@ using BinaryBuilder, Pkg
 include("../../../fancy_toys.jl")
 
 name = "CUDA_Driver"
-version = v"12.9"
+version = v"13.0"
 
 version_str = "$(version.major)-$(version.minor)"
-driver_str = "575.57.08"
+driver_str = "580.65.06"
 build = 1
 
 sources_linux_x86 = [
     FileSource("https://developer.download.nvidia.com/compute/cuda/repos/rhel8/x86_64/cuda-compat-$(version_str)-$(driver_str)-$(build).el8.x86_64.rpm",
-               "89855e5ce2b80ed5fc48368000e1d540a126e8f30e04cd98f9d0e1cb00fc660b", "compat.rpm")
+               "91690b17a70fe04a56aec463d18360b717c39ea8d23055b489919ae2c1255354", "compat.rpm")
 ]
 sources_linux_aarch64 = [
     FileSource("https://developer.download.nvidia.com/compute/cuda/repos/rhel8/sbsa/cuda-compat-$(version_str)-$(driver_str)-$(build).el8.aarch64.rpm",
-               "cf5226deebc4847d5fc92d84abab6a842877d94463f754cafb8439d7512094e3", "compat.rpm")
+               "a44a8cb23eae9b97f5a76dec2a50a3b695eb9a38ce7fc0bd68896dda2ac54530", "compat.rpm")
 ]
 
 dependencies = []
