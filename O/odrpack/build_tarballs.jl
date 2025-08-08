@@ -1,9 +1,8 @@
 using BinaryBuilder
 
-name = "Odrpack"
+name = "odrpack"
 version = v"2.0.1"
 
-# Collection of sources required to build ECOSBuilder
 sources = [
     GitSource("https://github.com/HugoMVale/odrpack95.git", "54e58ae7f56564e358fb097f2108e4112498fce9")
 ]
@@ -13,9 +12,7 @@ platforms = [
     Platform("x86_64", "linux"; libc="glibc")
 ]
 
-# Disable RISC-V
 filter!(p -> arch(p) != "riscv64", platforms)
-
 platforms = expand_gfortran_versions(platforms)
 # Disable old libgfortran builds - only use libgfortran5
 filter!(p -> !(any(libgfortran_version(p) .== (v"4.0.0", v"3.0.0"))), platforms)
