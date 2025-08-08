@@ -30,14 +30,11 @@ script = raw"""
 cd $WORKSPACE/srcdir/odrpack95
 
 # Set pkg-config path so Meson can find openblas.pc
-export PKG_CONFIG_PATH="${prefix}/lib/pkgconfig"
-
-# Optional: show what pkg-config sees
-pkg-config --list-all | grep blas || true
+# export PKG_CONFIG_PATH="${prefix}/lib/pkgconfig"
 
 # Configure Meson, build and install
 mkdir build && cd build
-meson .. --cross-file="${MESON_TARGET_TOOLCHAIN}" -Dbuild_shared=true
+meson setup .. --cross-file="${MESON_TARGET_TOOLCHAIN}" -Dbuild_shared=true
 ninja -j${nproc}
 ninja install
 """
