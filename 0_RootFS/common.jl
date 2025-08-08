@@ -3,6 +3,8 @@ using BinaryBuilder: CompilerShard, BinaryBuilderBase
 using BinaryBuilderBase: archive_artifact
 using squashfs_tools_jll
 
+ENV["JULIA_DEBUG"] = "BinarBuilderBase"
+
 host_platform = Platform("x86_64", "linux"; libc="musl")
 
 # Test if something is older than a reference, or doesn't exist
