@@ -6,14 +6,9 @@ const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "CUDA_Compiler"
-version = v"0.1"
+version = v"0.2"
 
 augment_platform_block = read(joinpath(@__DIR__, "platform_augmentation.jl"), String)
-
-platforms = [Platform("x86_64", "linux"),
-             Platform("aarch64", "linux"; cuda_platform="jetson"),
-             Platform("aarch64", "linux"; cuda_platform="sbsa"),
-             Platform("x86_64", "windows")]
 
 script = raw"""
 # rename directories, stripping the architecture and version suffix
@@ -33,7 +28,11 @@ if [[ ${target} == *-linux-gnu ]]; then
     mkdir ${prefix}/share/libdevice
     mv cuda_nvcc/bin/ptxas ${bindir}
     mv cuda_nvcc/bin/nvlink ${bindir}
-    mv cuda_nvcc/nvvm/libdevice/libdevice.10.bc ${prefix}/share/libdevice
+    if [[ -d cuda_nvcc/nvvm ]]; then
+        mv cuda_nvcc/nvvm/libdevice/libdevice.10.bc ${prefix}/share/libdevice
+    else
+        mv libnvvm/nvvm/libdevice/libdevice.10.bc ${prefix}/share/libdevice
+    fi
 
     mv cuda_nvdisasm/bin/nvdisasm ${bindir}
 elif [[ ${target} == x86_64-w64-mingw32 ]]; then
@@ -46,7 +45,11 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     mkdir ${prefix}/share/libdevice
     mv cuda_nvcc/bin/ptxas.exe ${bindir}
     mv cuda_nvcc/bin/nvlink.exe ${bindir}
-    mv cuda_nvcc/nvvm/libdevice/libdevice.10.bc ${prefix}/share/libdevice
+    if [[ -d cuda_nvcc/nvvm ]]; then
+        mv cuda_nvcc/nvvm/libdevice/libdevice.10.bc ${prefix}/share/libdevice
+    else
+        mv libnvvm/nvvm/libdevice/libdevice.10.bc ${prefix}/share/libdevice
+    fi
 
     mv cuda_nvdisasm/bin/nvdisasm.exe ${bindir}
 
@@ -56,22 +59,42 @@ fi
 """
 
 dependencies = [
-    Dependency("CUDA_Driver_jll", v"12.9"; compat="12")
+    Dependency("CUDA_Driver_jll", v"13.0"; compat="13")
+]
+
+products = [
+    FileProduct(["lib/libcudadevrt.a", "lib/cudadevrt.lib"], :libcudadevrt),
+    FileProduct("share/libdevice/libdevice.10.bc", :libdevice),
+    ExecutableProduct("ptxas", :ptxas),
+    ExecutableProduct("nvdisasm", :nvdisasm),
+    ExecutableProduct("nvlink", :nvlink),
 ]
 
 # determine exactly which tarballs we should build
 builds = []
-for version in [ v"11.8", v"12.9"]
-    include("build_$(version.major).jl")
-
+for version in [ v"11.8", v"12.9", v"13.0"]
     # CUDA_Compiler uses the following components
     components = [
         "cuda_cudart",
         "cuda_nvcc",
         "cuda_nvdisasm"
     ]
+    if version >= v"13"
+        push!(components, "libnvvm")
+    end
 
     init_block = "global cuda_version = v\"$(version.major).$(version.minor)\""
+
+    platforms = if version >= v"13"
+        [Platform("x86_64", "linux"),
+         Platform("aarch64", "linux"),
+         Platform("x86_64", "windows")]
+    else
+        [Platform("x86_64", "linux"),
+         Platform("aarch64", "linux"; cuda_platform="jetson"),
+         Platform("aarch64", "linux"; cuda_platform="sbsa"),
+         Platform("x86_64", "windows")]
+    end
 
     for platform in platforms
         augmented_platform = deepcopy(platform)
@@ -97,7 +120,7 @@ end
 for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    name, version, build.sources, build.script,
-                   build.platforms, build.products, dependencies;
+                   build.platforms, products, dependencies;
                    julia_compat="1.6", lazy_artifacts=true,
                    augment_platform_block, build.init_block)
 end

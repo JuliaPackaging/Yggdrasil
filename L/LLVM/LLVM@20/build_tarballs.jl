@@ -1,4 +1,4 @@
-name = "MLIR"
+name = "LLVM"
 llvm_full_version = v"20.1.8+0"
 libllvm_version = v"20.1.8+0"
 
