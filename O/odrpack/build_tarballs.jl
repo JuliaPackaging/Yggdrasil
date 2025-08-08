@@ -8,14 +8,18 @@ sources = [
 ]
 
 platforms = [
-    # Platform("x86_64", "windows")
-    Platform("x86_64", "linux"; libc="glibc")
+    Platform("i686",    "linux"; libc="glibc"),
+    Platform("aarch64", "linux"; libc="glibc"),
+    Platform("x86_64",  "linux"; libc="glibc"),
+    Platform("i686",    "windows"),
+    Platform("x86_64",  "windows"),
+    Platform("x86_64",  "macos"),
+    Platform("x86_64",  "freebsd")
 ]
 
-filter!(p -> arch(p) != "riscv64", platforms)
 platforms = expand_gfortran_versions(platforms)
 # Disable old libgfortran builds - only use libgfortran5
-filter!(p -> !(any(libgfortran_version(p) .== (v"4.0.0", v"3.0.0"))), platforms)
+# filter!(p -> !(any(libgfortran_version(p) .== (v"4.0.0", v"3.0.0"))), platforms)
 
 products = [
     LibraryProduct("libodrpack95", :libodrpack95)
@@ -29,10 +33,6 @@ dependencies = [
 script = raw"""
 cd $WORKSPACE/srcdir/odrpack95
 
-# Set pkg-config path so Meson can find openblas.pc
-# export PKG_CONFIG_PATH="${prefix}/lib/pkgconfig"
-
-# Configure Meson, build and install
 mkdir build && cd build
 meson setup .. --cross-file="${MESON_TARGET_TOOLCHAIN}" -Dbuild_shared=true
 ninja -j${nproc}
