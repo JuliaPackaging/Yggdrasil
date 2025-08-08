@@ -16,18 +16,12 @@ export LDFLAGS="-L${libdir}"
 
 make LIBINTL=NONE
 make LIBINTL=NONE DESTDIR=${prefix} prefix=/ install
-
-# Add .exe on Windows if it is missing
-if [[ -f ${bindir}/msgfmt ]]
-then
-    mv -n ${bindir}/msgfmt ${bindir}/msgfmt${exeext}
-    mv -n ${bindir}/msgmerge ${bindir}/msgmerge${exeext}
-fi
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+# Support for Windows is not ready yet.
+platforms = supported_platforms(; exclude=Sys.iswindows)
 
 # The products that we will ensure are always built
 products = [
