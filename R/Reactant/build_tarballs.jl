@@ -9,7 +9,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.226"
 
 sources = [
-   GitSource(repo, "916465a337e2dc488e9b0c55f83fa409d1aa3e8c"),
+   GitSource(repo, "84584fee051430086e0051899d700d66927dad54"),
    ArchiveSource("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.7%2B6/OpenJDK21U-jdk_x64_alpine-linux_hotspot_21.0.7_6.tar.gz", "79ecc4b213d21ae5c389bea13c6ed23ca4804a45b7b076983356c28105580013"),
    ArchiveSource("https://github.com/JuliaBinaryWrappers/Bazel_jll.jl/releases/download/Bazel-v7.6.1+0/Bazel.v7.6.1.x86_64-linux-musl-cxx03.tar.gz", "01ac6c083551796f1f070b0dc9c46248e6c49e01e21040b0c158f6e613733345")
 ]
@@ -162,6 +162,9 @@ if [[ "${target}" == *-darwin* ]]; then
 fi
 
 if [[ "${target}" == *-mingw* ]]; then
+    BAZEL_BUILD_FLAGS+=(--compiler=clang)
+    BAZEL_BUILD_FLAGS+=(--define=using_clang=true)
+    apk add --upgrade zlib --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
     if [[ "${target}" == x86_64* ]]; then
         BAZEL_BUILD_FLAGS+=(--platforms=@//:win_x86_64)
         BAZEL_BUILD_FLAGS+=(--cpu=${BAZEL_CPU})
@@ -297,6 +300,19 @@ if [[ "${target}" == *-darwin* ]]; then
     # echo ""
 
     cc @bazel-bin/libReactantExtra.so-2.params
+elif [[ "${target}" == *mingw32* ]]; then
+    $BAZEL ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
+    wget https://gist.githubusercontent.com/wsmoses/7797d0585dec494be1324bae146bf7bf/raw/2327e1a8da32555a964fffc8a9a3c0e3fd84e1d5/gistfile1.txt
+    cp gistfile1.txt /workspace/bazel_root/*/external/xla/third_party/stablehlo/workspace.bzl
+    $BAZEL ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage2
+    sed -i.bak1 -e "/start-lib/d" \
+		-e "/end-lib/d" \
+                bazel-bin/libReactantExtra.so-2.params
+
+    sed -i.bak1 -e "s/^ws2_32.lib/-ws2_32/g"
+		-e "/^ntdll.lib/-lntdll/g" \
+                bazel-bin/libReactantExtra.so-2.params
+    clang @bazel-bin/libReactantExtra.so-2.params
 else
     $BAZEL ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
 fi
