@@ -17,7 +17,7 @@ platforms = [
     Platform("x86_64",  "freebsd")
 ]
 
-platforms = expand_gfortran_versions(platforms)
+# platforms = expand_gfortran_versions(platforms)
 # Disable old libgfortran builds - only use libgfortran5
 # filter!(p -> !(any(libgfortran_version(p) .== (v"4.0.0", v"3.0.0"))), platforms)
 
