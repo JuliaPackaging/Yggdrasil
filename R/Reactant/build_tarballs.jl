@@ -302,7 +302,7 @@ if [[ "${target}" == *-darwin* ]]; then
     cc @bazel-bin/libReactantExtra.so-2.params
 elif [[ "${target}" == *mingw32* ]]; then
     $BAZEL ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
-    wget https://gist.githubusercontent.com/wsmoses/7797d0585dec494be1324bae146bf7bf/raw/2327e1a8da32555a964fffc8a9a3c0e3fd84e1d5/gistfile1.txt
+    wget https://gist.githubusercontent.com/wsmoses/7797d0585dec494be1324bae146bf7bf/raw/30c68bd531756f8f7a2c13c21128dfc6a2993b83/gistfile1.txt
     cp gistfile1.txt /workspace/bazel_root/*/external/xla/third_party/stablehlo/workspace.bzl
     $BAZEL ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage2
     sed -i.bak1 -e "/start-lib/d" \
