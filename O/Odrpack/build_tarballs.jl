@@ -1,6 +1,6 @@
 using BinaryBuilder
 
-name = "odrpack95"
+name = "Odrpack"
 version = v"2.0.1"
 
 # Collection of sources required to build ECOSBuilder
@@ -13,12 +13,20 @@ platforms = [
     Platform("x86_64", "linux"; libc="glibc")
 ]
 
+# Disable RISC-V
+filter!(p -> arch(p) != "riscv64", platforms)
+
+platforms = expand_gfortran_versions(platforms)
+# Disable old libgfortran builds - only use libgfortran5
+filter!(p -> !(any(libgfortran_version(p) .== (v"4.0.0", v"3.0.0"))), platforms)
+
 products = [
     LibraryProduct("libodrpack95", :libodrpack95)
 ]
 
 dependencies = [
-    Dependency("CompilerSupportLibraries_jll")
+    Dependency("CompilerSupportLibraries_jll"),
+    Dependency("OpenBLAS32_jll")
 ]
 
 script = raw"""
