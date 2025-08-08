@@ -46,7 +46,7 @@ gpu_products = [
 ]
 
 # Override the default platforms
-platforms = CUDA.supported_platforms(; max_version = v"12.9")   # Doesn't build with CUDA 13 right now
+platforms = CUDA.supported_platforms(; max_version = v"12.9.1")   # Doesn't build with CUDA 13 right now
 filter!(p -> arch(p) == "x86_64", platforms)
 
 # Add dependency on SuiteSparse_jll
