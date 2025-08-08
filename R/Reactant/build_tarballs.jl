@@ -162,7 +162,8 @@ if [[ "${target}" == *-darwin* ]]; then
 fi
 
 if [[ "${target}" == *-mingw* ]]; then
-    BAZEL_BUILD_FLAGS+=(--compiler=clang)
+    BAZEL_BUILD_FLAGS+=(--compiler=mingw-gcc)
+    # BAZEL_BUILD_FLAGS+=(--compiler=clang)
     BAZEL_BUILD_FLAGS+=(--define=using_clang=true)
     apk add --upgrade zlib --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
     if [[ "${target}" == x86_64* ]]; then
