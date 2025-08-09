@@ -7,7 +7,11 @@ sources = [
     GitSource("https://github.com/HugoMVale/odrpack95.git", "ca803f43108eedf6bc3581023327f3e4d8d30767")
 ]
 
-platforms = supported_platforms()
+# platforms = supported_platforms()
+platforms = [
+    Platform("x86_64",  "linux"; libc="glibc"),
+]
+
 platforms = filter(p -> !(libc(p) == "musl"), platforms)
 
 platforms = expand_gfortran_versions(platforms)
@@ -38,7 +42,7 @@ cmake ..\
       -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DBUILD_SHARED=ON
-make --build . --parallel ${nproc}
+cmake --build . --parallel ${nproc}
 cmake --install .
 """
 
