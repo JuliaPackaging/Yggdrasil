@@ -7,13 +7,16 @@ sources = [
     GitSource("https://github.com/HugoMVale/odrpack95.git", "6f5d1ff1541c29a6978eabaf60975ed5a8c68943")
 ]
 
-platforms = supported_platforms()
-# platforms = [
-#     Platform("x86_64",  "linux"; libc="glibc"),
-# ]
+# platforms = supported_platforms()
+platforms = [
+    Platform("x86_64",  "linux"; libc="glibc"),
+    Platform("x86_64",  "macos"),
+    Platform("aarch64", "macos"),
+    Platform("i686",    "windows"),
+    Platform("x86_64",  "windows"),
+]
 
 platforms = filter(p -> !(libc(p) == "musl"), platforms)
-
 platforms = expand_gfortran_versions(platforms)
 platforms = filter(p -> libgfortran_version(p).major ≥ 5, platforms)
 
@@ -47,4 +50,4 @@ cmake --install .
 """
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat="1.6", preferred_gcc_version=v"14")
+    julia_compat="1.6", preferred_gcc_version=v"12")
