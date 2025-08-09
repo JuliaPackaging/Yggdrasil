@@ -29,42 +29,25 @@ dependencies = [
     Dependency("OpenBLAS32_jll")
 ]
 
-# script = raw"""
-# cd $WORKSPACE/srcdir/odrpack95
-
-# mkdir build && cd build
-# meson setup .. --cross-file="${MESON_TARGET_TOOLCHAIN}" -Dbuild_shared=true
-# ninja -j${nproc}
-# ninja install
-# """
-
-# script = raw"""
-# cd $WORKSPACE/srcdir/odrpack95
-# mkdir build && cd build
-# cmake .. \
-#       -DCMAKE_INSTALL_PREFIX=${prefix} \
-#       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-#       -DBUILD_SHARED=ON
-# cmake --build . --parallel ${nproc}
-# cmake --install .
-# """
-
 script = raw"""
 cd $WORKSPACE/srcdir/odrpack95
-
-if [[ "${target}" == *-apple-* ]]; then
-  mkdir build && cd build
+mkdir build && cd build
+# if [[ "${target}" == *-apple-* ]]; then
   cmake .. \
         -DCMAKE_INSTALL_PREFIX=${prefix} \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
         -DBUILD_SHARED=ON
   cmake --build . --parallel ${nproc}
   cmake --install .
-else
-  meson setup builddir --cross-file="${MESON_TARGET_TOOLCHAIN}" -Dbuild_shared=true
-  meson compile -C builddir
-  meson compile -C builddir -j${nproc}
-fi
+  if [[ "${target}" == *-mingw* ]]; then
+    mv ${prefix}/lib/libodrpack95*.${dlext} "${libdir}"
+  fi
+# else
+#   # meson has linker issue in macos
+#   meson setup builddir --cross-file="${MESON_TARGET_TOOLCHAIN}" -Dbuild_shared=true
+#   ninja -j${nproc}
+#   ninja install
+# fi
 """
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
