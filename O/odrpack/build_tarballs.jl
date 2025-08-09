@@ -53,7 +53,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/odrpack95
 mkdir build && cd build
 
-if [[ "$PLATFORM" == *apple* ]]; then
+if [[ "${target}" == *-apple-* ]]; then
   echo "Detected Apple platform. Building with cmake..."
   cmake .. \
         -DCMAKE_INSTALL_PREFIX=${prefix} \
