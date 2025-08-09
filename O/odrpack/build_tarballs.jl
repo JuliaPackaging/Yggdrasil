@@ -33,12 +33,13 @@ dependencies = [
 
 script = raw"""
 cd $WORKSPACE/srcdir/odrpack95
-
-cmake -B build -DCMAKE_INSTALL_PREFIX=${prefix} \
+mkdir build && cd build
+cmake ..\
+      -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DBUILD_SHARED=ON
-cmake --build build --parallel ${nproc}
-cmake --install build
+make --build . --parallel ${nproc}
+cmake --install .
 """
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
