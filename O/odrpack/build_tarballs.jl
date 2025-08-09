@@ -4,25 +4,12 @@ name = "odrpack"
 version = v"2.0.1"
 
 sources = [
-    GitSource("https://github.com/HugoMVale/odrpack95.git", "54e58ae7f56564e358fb097f2108e4112498fce9")
+    GitSource("https://github.com/HugoMVale/odrpack95.git", "ca803f43108eedf6bc3581023327f3e4d8d30767")
 ]
 
-# platforms = [
-#     Platform("i686",        "linux"; libc="glibc"),
-#     Platform("aarch64",     "linux"; libc="glibc"),
-#     Platform("x86_64",      "linux"; libc="glibc"),
-#     Platform("powerpc64le", "linux"; libc="glibc"),
-#     Platform("i686",        "windows"),
-#     Platform("x86_64",      "windows"),
-#     Platform("x86_64",      "macos"),
-#     Platform("aarch64",     "macos"),
-#     Platform("x86_64",      "freebsd"),
-#     Platform("aarch64",     "freebsd")
-# ]
-
 platforms = supported_platforms()
-
 platforms = filter(p -> !(libc(p) == "musl"), platforms)
+
 platforms = expand_gfortran_versions(platforms)
 platforms = filter(p -> libgfortran_version(p).major ≥ 5, platforms)
 
@@ -35,13 +22,23 @@ dependencies = [
     Dependency("OpenBLAS32_jll")
 ]
 
+# script = raw"""
+# cd $WORKSPACE/srcdir/odrpack95
+
+# mkdir build && cd build
+# meson setup .. --cross-file="${MESON_TARGET_TOOLCHAIN}" -Dbuild_shared=true
+# ninja -j${nproc}
+# ninja install
+# """
+
 script = raw"""
 cd $WORKSPACE/srcdir/odrpack95
 
-mkdir build && cd build
-meson setup .. --cross-file="${MESON_TARGET_TOOLCHAIN}" -Dbuild_shared=true
-ninja -j${nproc}
-ninja install
+cmake -B build -DCMAKE_INSTALL_PREFIX=${prefix} \
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+      -DBUILD_SHARED=ON
+cmake --build build --parallel ${nproc}
+cmake --install build
 """
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
