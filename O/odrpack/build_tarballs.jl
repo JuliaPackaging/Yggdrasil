@@ -51,10 +51,9 @@ dependencies = [
 
 script = raw"""
 cd $WORKSPACE/srcdir/odrpack95
-mkdir build && cd build
 
 if [[ "${target}" == *-apple-* ]]; then
-  echo "Detected Apple platform. Building with cmake..."
+  mkdir build && cd build
   cmake .. \
         -DCMAKE_INSTALL_PREFIX=${prefix} \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -62,10 +61,9 @@ if [[ "${target}" == *-apple-* ]]; then
   cmake --build . --parallel ${nproc}
   cmake --install .
 else
-  echo "Non-Apple platform. Building with meson..."
-  meson setup .. --cross-file="${MESON_TARGET_TOOLCHAIN}" -Dbuild_shared=true
-  ninja -j${nproc}
-  ninja install
+  meson setup builddir --cross-file="${MESON_TARGET_TOOLCHAIN}" -Dbuild_shared=true
+  meson compile -C builddir
+  meson compile -C builddir -j${nproc}
 fi
 """
 
