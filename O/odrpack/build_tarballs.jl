@@ -7,10 +7,10 @@ sources = [
     GitSource("https://github.com/HugoMVale/odrpack95.git", "6f5d1ff1541c29a6978eabaf60975ed5a8c68943")
 ]
 
-# platforms = supported_platforms()
-platforms = [
-    Platform("x86_64",  "linux"; libc="glibc"),
-]
+platforms = supported_platforms()
+# platforms = [
+#     Platform("x86_64",  "linux"; libc="glibc"),
+# ]
 
 platforms = filter(p -> !(libc(p) == "musl"), platforms)
 
@@ -44,8 +44,6 @@ cmake .. \
       -DBUILD_SHARED=ON
 cmake --build . --parallel ${nproc}
 cmake --install .
-# ninja -j${nproc}
-# ninja install
 """
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
