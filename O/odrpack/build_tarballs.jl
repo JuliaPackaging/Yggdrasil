@@ -29,14 +29,14 @@ dependencies = [
     Dependency("OpenBLAS32_jll")
 ]
 
-script = raw"""
-cd $WORKSPACE/srcdir/odrpack95
+# script = raw"""
+# cd $WORKSPACE/srcdir/odrpack95
 
-mkdir build && cd build
-meson setup .. --cross-file="${MESON_TARGET_TOOLCHAIN}" -Dbuild_shared=true
-ninja -j${nproc}
-ninja install
-"""
+# mkdir build && cd build
+# meson setup .. --cross-file="${MESON_TARGET_TOOLCHAIN}" -Dbuild_shared=true
+# ninja -j${nproc}
+# ninja install
+# """
 
 # script = raw"""
 # cd $WORKSPACE/srcdir/odrpack95
@@ -49,5 +49,25 @@ ninja install
 # cmake --install .
 # """
 
+script = raw"""
+cd $WORKSPACE/srcdir/odrpack95
+mkdir build && cd build
+
+if [[ "$PLATFORM" == *apple* ]]; then
+  echo "Detected Apple platform. Building with cmake..."
+  cmake .. \
+        -DCMAKE_INSTALL_PREFIX=${prefix} \
+        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+        -DBUILD_SHARED=ON
+  cmake --build . --parallel ${nproc}
+  cmake --install .
+else
+  echo "Non-Apple platform. Building with meson..."
+  meson setup .. --cross-file="${MESON_TARGET_TOOLCHAIN}" -Dbuild_shared=true
+  ninja -j${nproc}
+  ninja install
+fi
+"""
+
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat="1.6", preferred_gcc_version=v"12")
+               julia_compat="1.6", preferred_gcc_version=v"12")
