@@ -7,14 +7,14 @@ sources = [
     GitSource("https://github.com/HugoMVale/odrpack95.git", "6f5d1ff1541c29a6978eabaf60975ed5a8c68943")
 ]
 
-# platforms = supported_platforms()
-platforms = [
-    Platform("x86_64",  "linux"; libc="glibc"),
-    Platform("x86_64",  "macos"),
-    Platform("aarch64", "macos"),
-    Platform("i686",    "windows"),
-    Platform("x86_64",  "windows"),
-]
+platforms = supported_platforms()
+# platforms = [
+#     Platform("x86_64",  "linux"; libc="glibc"),
+#     Platform("x86_64",  "macos"),
+#     Platform("aarch64", "macos"),
+#     Platform("i686",    "windows"),
+#     Platform("x86_64",  "windows"),
+# ]
 
 platforms = filter(p -> !(libc(p) == "musl"), platforms)
 platforms = expand_gfortran_versions(platforms)
@@ -32,22 +32,20 @@ dependencies = [
 script = raw"""
 cd $WORKSPACE/srcdir/odrpack95
 mkdir build && cd build
-# if [[ "${target}" == *-apple-* ]]; then
+if [[ "${target}" == *-apple-* ]]; then
+  # cmake has dll folder issue in windows
   cmake .. \
         -DCMAKE_INSTALL_PREFIX=${prefix} \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
         -DBUILD_SHARED=ON
   cmake --build . --parallel ${nproc}
   cmake --install .
-  if [[ "${target}" == *-mingw* ]]; then
-    mv ${prefix}/lib/libodrpack95*.${dlext} "${libdir}"
-  fi
-# else
-#   # meson has linker issue in macos
-#   meson setup builddir --cross-file="${MESON_TARGET_TOOLCHAIN}" -Dbuild_shared=true
-#   ninja -j${nproc}
-#   ninja install
-# fi
+else
+  # meson has linker issue in macos
+  meson setup builddir --cross-file="${MESON_TARGET_TOOLCHAIN}" -Dbuild_shared=true
+  ninja -j${nproc}
+  ninja install
+fi
 """
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
