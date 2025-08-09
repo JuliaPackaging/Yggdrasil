@@ -42,10 +42,10 @@ cmake .. \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DBUILD_SHARED=ON
-# cmake --build . --parallel ${nproc}
-# cmake --install .
-ninja -j${nproc}
-ninja install
+cmake --build . --parallel ${nproc}
+cmake --install .
+# ninja -j${nproc}
+# ninja install
 """
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
