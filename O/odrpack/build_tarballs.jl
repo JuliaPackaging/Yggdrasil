@@ -4,7 +4,7 @@ name = "odrpack"
 version = v"2.0.1"
 
 sources = [
-    GitSource("https://github.com/HugoMVale/odrpack95.git", "ca803f43108eedf6bc3581023327f3e4d8d30767")
+    GitSource("https://github.com/HugoMVale/odrpack95.git", "6f5d1ff1541c29a6978eabaf60975ed5a8c68943")
 ]
 
 # platforms = supported_platforms()
@@ -38,12 +38,14 @@ dependencies = [
 script = raw"""
 cd $WORKSPACE/srcdir/odrpack95
 mkdir build && cd build
-cmake ..\
+cmake .. \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DBUILD_SHARED=ON
-cmake --build . --parallel ${nproc}
-cmake --install .
+# cmake --build . --parallel ${nproc}
+# cmake --install .
+ninja -j${nproc}
+ninja install
 """
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
