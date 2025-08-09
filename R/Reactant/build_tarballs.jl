@@ -6,10 +6,10 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.229"
+version = v"0.0.230"
 
 sources = [
-   GitSource(repo, "38e0006f553b63704bd30a36cf1a680c2bcd661b"),
+   GitSource(repo, "90bf518adabb9ec8ddfa69da6e7e9258939753a3"),
    ArchiveSource("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.7%2B6/OpenJDK21U-jdk_x64_alpine-linux_hotspot_21.0.7_6.tar.gz", "79ecc4b213d21ae5c389bea13c6ed23ca4804a45b7b076983356c28105580013"),
    ArchiveSource("https://github.com/JuliaBinaryWrappers/Bazel_jll.jl/releases/download/Bazel-v7.6.1+0/Bazel.v7.6.1.x86_64-linux-musl-cxx03.tar.gz", "01ac6c083551796f1f070b0dc9c46248e6c49e01e21040b0c158f6e613733345")
 ]
@@ -110,6 +110,10 @@ elif [[ "${target}" == x86_64-linux-* ]]; then
    BAZEL_CPU=k8
 elif [[ "${target}" == aarch64-linux-* ]]; then
    BAZEL_CPU=aarch64
+elif [[ "${target}" == x86_64-w64-mingw32* ]]; then
+   BAZEL_CPU=x64_windows
+elif [[ "${target}" == aarch64-mingw32* ]]; then
+   BAZEL_CPU=arm64_windows
 fi
 
 echo "register_toolchains(\\"//:cc_toolchain_for_ygg_host\\")" >> WORKSPACE
@@ -157,6 +161,22 @@ if [[ "${target}" == *-darwin* ]]; then
     BAZEL_BUILD_FLAGS+=(--nolegacy_whole_archive)
 fi
 
+if [[ "${target}" == *-mingw* ]]; then
+        sed -i 's/noincompatible_enable_cc_toolchain_resolution/incompatible_enable_cc_toolchain_resolution/' .bazelrc
+    BAZEL_BUILD_FLAGS+=(--compiler=mingw-gcc)
+    # BAZEL_BUILD_FLAGS+=(--compiler=clang)
+    BAZEL_BUILD_FLAGS+=(--define=using_clang=true)
+    apk add --upgrade zlib --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
+    if [[ "${target}" == x86_64* ]]; then
+        BAZEL_BUILD_FLAGS+=(--platforms=@//:win_x86_64)
+        BAZEL_BUILD_FLAGS+=(--cpu=${BAZEL_CPU})
+	echo "register_toolchains(\\"//:cc_toolchain_for_ygg_win_x86\\")" >> WORKSPACE
+    elif [[ "${target}" == aarch64-* ]]; then
+        BAZEL_BUILD_FLAGS+=(--platforms=@//:win_arm64)
+        BAZEL_BUILD_FLAGS+=(--cpu=${BAZEL_CPU})
+	echo "register_toolchains(\\"//:cc_toolchain_for_ygg_win_arm64\\")" >> WORKSPACE
+    fi
+fi
 
 if [[ "${target}" == *-linux-* ]]; then
     sed -i "s/getopts \\"/getopts \\"p/g" /sbin/ldconfig
@@ -282,6 +302,16 @@ if [[ "${target}" == *-darwin* ]]; then
     # echo ""
 
     cc @bazel-bin/libReactantExtra.so-2.params
+elif [[ "${target}" == *mingw32* ]]; then
+    $BAZEL ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
+    sed -i.bak1 -e "/start-lib/d" \
+		-e "/end-lib/d" \
+                bazel-bin/libReactantExtra.so-2.params
+
+    sed -i.bak1 -e "s/^ws2_32.lib/-ws2_32/g"
+		-e "/^ntdll.lib/-lntdll/g" \
+                bazel-bin/libReactantExtra.so-2.params
+    clang @bazel-bin/libReactantExtra.so-2.params
 else
     $BAZEL ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
 fi
@@ -346,9 +376,6 @@ platforms = filter(p -> !(arch(p) == "armv7l" && Sys.islinux(p)), platforms)
 # [01:23:40]    29 | #include <execinfo.h>
 platforms = filter(p -> !(libc(p) == "musl"), platforms)
 
-# Windows has a cuda configure issue, to investigate either fixing/disabling cuda
-platforms = filter(p -> !(Sys.iswindows(p)), platforms)
-
 # NSync is picking up wrong stuff for cross compile, to deal with later
 # 02] ./external/nsync//platform/c++11.futex/platform.h:24:10: fatal error: 'linux/futex.h' file not found
 # [00:20:02] #include <linux/futex.h>
@@ -383,12 +410,12 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
 
     # Disable debug builds for cuda
     if mode == "dbg"
-	if gpu != "none"
+  	  if gpu != "none"
         continue
-		end
-	if !Sys.isapple(platform) && arch(platform) == "aarch64"
-		continue
-		end
+		  end
+	    if !Sys.isapple(platform)
+		    continue
+		  end
     end
 
     if !((gpu == "cuda") ⊻ (cuda_version == "none"))
@@ -397,6 +424,11 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
 
     # If you skip GPU builds here, remember to update also platform augmentation above.
     if gpu != "none" && Sys.isapple(platform)
+        continue
+    end
+
+    # If you skip GPU builds here, remember to update also platform augmentation above.
+    if gpu != "none" && Sys.iswindows(platform)
         continue
     end
 
