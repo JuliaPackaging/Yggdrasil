@@ -42,7 +42,7 @@ if [[ "${target}" == *-apple-* ]]; then
   cmake --install .
 else
   # meson has linker issue in macos
-  meson setup builddir --cross-file="${MESON_TARGET_TOOLCHAIN}" -Dbuild_shared=true
+  meson setup .. --cross-file="${MESON_TARGET_TOOLCHAIN}" -Dbuild_shared=true
   ninja -j${nproc}
   ninja install
 fi
