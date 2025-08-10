@@ -8,13 +8,6 @@ sources = [
 ]
 
 platforms = supported_platforms()
-# platforms = [
-#     Platform("x86_64",  "linux"; libc="glibc"),
-#     Platform("x86_64",  "macos"),
-#     Platform("aarch64", "macos"),
-#     Platform("i686",    "windows"),
-#     Platform("x86_64",  "windows"),
-# ]
 
 platforms = filter(p -> !(libc(p) == "musl"), platforms)
 platforms = expand_gfortran_versions(platforms)
@@ -32,21 +25,10 @@ dependencies = [
 script = raw"""
 cd $WORKSPACE/srcdir/odrpack95
 mkdir build && cd build
-# if [[ "${target}" == *-apple-* ]]; then
-#   # cmake has dll folder issue in windows
-#   cmake .. \
-#         -DCMAKE_INSTALL_PREFIX=${prefix} \
-#         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-#         -DBUILD_SHARED=ON
-#   cmake --build . --parallel ${nproc}
-#   cmake --install .
-# else
-# meson has linker issue in macos
 meson setup .. --cross-file="${MESON_TARGET_TOOLCHAIN}" -Dbuild_shared=true
 ninja -j${nproc}
 ninja install
-# fi
 """
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", clang_use_lld=false, preferred_gcc_version=v"12")
+               julia_compat="1.6", clang_use_lld=false, preferred_gcc_version=v"14")
