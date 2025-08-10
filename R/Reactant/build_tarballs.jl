@@ -308,8 +308,8 @@ elif [[ "${target}" == *mingw32* ]]; then
 		-e "/end-lib/d" \
                 bazel-bin/libReactantExtra.so-2.params
 
-    sed -i.bak1 -e "s/^ws2_32.lib/-ws2_32/g" \
-		-e "/^ntdll.lib/-lntdll/g" \
+    sed -i.bak1 -e "s/^ws2_32.lib/\-lws2_32/g" \
+		-e "/^ntdll.lib/\-lntdll/g" \
                 bazel-bin/libReactantExtra.so-2.params
     clang @bazel-bin/libReactantExtra.so-2.params
 else
@@ -382,7 +382,7 @@ platforms = filter(p -> !(libc(p) == "musl"), platforms)
 platforms = filter(p -> !(Sys.isfreebsd(p)), platforms)
 
 # Windows has a cuda configure issue, to investigate either fixing/disabling cuda
-platforms = filter(p -> !(Sys.iswindows(p)), platforms)
+# platforms = filter(p -> !(Sys.iswindows(p)), platforms)
 
 # platforms = filter(p -> (Sys.isapple(p)), platforms)
 # platforms = filter(p -> arch(p) != "x86_64", platforms)
