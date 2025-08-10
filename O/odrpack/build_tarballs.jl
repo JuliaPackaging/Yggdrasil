@@ -29,6 +29,6 @@ meson setup .. --cross-file="${MESON_TARGET_TOOLCHAIN}" -Dbuild_shared=true
 ninja -j${nproc}
 ninja install
 """
-
+# gcc-14 fails with x86_64-apple
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", clang_use_lld=false, preferred_gcc_version=v"14")
+               julia_compat="1.6", clang_use_lld=false, preferred_gcc_version=v"13")
