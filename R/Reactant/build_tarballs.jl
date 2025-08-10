@@ -308,7 +308,7 @@ elif [[ "${target}" == *mingw32* ]]; then
 		-e "/end-lib/d" \
                 bazel-bin/libReactantExtra.so-2.params
 
-    sed -i.bak1 -e "s/^ws2_32.lib/-ws2_32/g"
+    sed -i.bak1 -e "s/^ws2_32.lib/-ws2_32/g" \
 		-e "/^ntdll.lib/-lntdll/g" \
                 bazel-bin/libReactantExtra.so-2.params
     clang @bazel-bin/libReactantExtra.so-2.params
