@@ -7,14 +7,14 @@ sources = [
     GitSource("https://github.com/HugoMVale/odrpack95.git", "6f5d1ff1541c29a6978eabaf60975ed5a8c68943")
 ]
 
-# platforms = supported_platforms()
-platforms = [
-    Platform("x86_64",  "linux"; libc="glibc"),
-    Platform("x86_64",  "macos"),
-    Platform("aarch64", "macos"),
-    Platform("i686",    "windows"),
-    Platform("x86_64",  "windows"),
-]
+platforms = supported_platforms()
+# platforms = [
+#     Platform("x86_64",  "linux"; libc="glibc"),
+#     Platform("x86_64",  "macos"),
+#     Platform("aarch64", "macos"),
+#     Platform("i686",    "windows"),
+#     Platform("x86_64",  "windows"),
+# ]
 
 platforms = filter(p -> !(libc(p) == "musl"), platforms)
 platforms = expand_gfortran_versions(platforms)
@@ -41,10 +41,10 @@ mkdir build && cd build
 #   cmake --build . --parallel ${nproc}
 #   cmake --install .
 # else
-  # meson has linker issue in macos
-  meson setup .. --cross-file="${MESON_TARGET_TOOLCHAIN}" -Dbuild_shared=true
-  ninja -j${nproc}
-  ninja install
+# meson has linker issue in macos
+meson setup .. --cross-file="${MESON_TARGET_TOOLCHAIN}" -Dbuild_shared=true
+ninja -j${nproc}
+ninja install
 # fi
 """
 
