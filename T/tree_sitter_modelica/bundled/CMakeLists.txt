@@ -5,4 +5,5 @@ set(CMAKE_C_STANDARD 99)
 include_directories(tree-sitter/src)
 add_library(treesitter_modelica SHARED tree-sitter/src/parser.c)
 
-install(TARGETS treesitter_modelica DESTINATION lib CONFIGURATIONS Release)
+include(GNUInstallDirs)
+install(TARGETS treesitter_modelica DESTINATION "${CMAKE_INSTALL_LIBDIR}" CONFIGURATIONS Release)
