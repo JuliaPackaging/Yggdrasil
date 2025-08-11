@@ -9,7 +9,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.230"
 
 sources = [
-   GitSource(repo, "dda5a4455c7f0d69940d299dbaf585d10821df48"),
+   GitSource(repo, "3af6b59bc42d571d1789848ca88d92ffa30027a6"),
    ArchiveSource("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.7%2B6/OpenJDK21U-jdk_x64_alpine-linux_hotspot_21.0.7_6.tar.gz", "79ecc4b213d21ae5c389bea13c6ed23ca4804a45b7b076983356c28105580013"),
    ArchiveSource("https://github.com/JuliaBinaryWrappers/Bazel_jll.jl/releases/download/Bazel-v7.6.1+0/Bazel.v7.6.1.x86_64-linux-musl-cxx03.tar.gz", "01ac6c083551796f1f070b0dc9c46248e6c49e01e21040b0c158f6e613733345")
 ]
@@ -236,6 +236,7 @@ if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
             --linkopt="-L${prefix}/libcxx/lib"
 	)
     else
+        sed -i.bak1 -e "/nvcc/d" .bazelrc
         BAZEL_BUILD_FLAGS+=(
             --linkopt="-stdlib=libstdc++"
 	)
@@ -577,11 +578,11 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
             # <https://forums.developer.nvidia.com/t/strange-errors-after-system-gcc-upgraded-to-13-1-1/252441>.
             preferred_gcc_version = v"12"
         end
-        if VersionNumber(cuda_version) < v"12"
-            # For older versions of CUDA we need to use GCC 11:
-            # <https://stackoverflow.com/questions/72348456/error-when-compiling-a-cuda-program-invalid-type-argument-of-unary-have-i>.
-            preferred_gcc_version = v"11"
-        end
+        # if VersionNumber(cuda_version) < v"12"
+        #     # For older versions of CUDA we need to use GCC 11:
+        #     # <https://stackoverflow.com/questions/72348456/error-when-compiling-a-cuda-program-invalid-type-argument-of-unary-have-i>.
+        #     preferred_gcc_version = v"11"
+        # end
     end
 
     push!(builds, (;
