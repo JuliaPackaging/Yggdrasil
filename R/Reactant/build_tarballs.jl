@@ -231,14 +231,15 @@ if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
         rm -v "${prefix}/libcxx/lib/libc++.so"*
 
         BAZEL_BUILD_FLAGS+=(
-            --action_env=CLANG_CUDA_COMPILER_PATH=$(which clang)
-            --define=using_clang=true
             --repo_env=CUDA_REDIST_TARGET_PLATFORM="aarch64"
 	    --repo_env=NVSHMEM_REDIST_TARGET_PLATFORM="aarch64"
             --linkopt="-L${prefix}/libcxx/lib"
+	)
+        BAZEL_BUILD_FLAGS+=(
+            --action_env=CLANG_CUDA_COMPILER_PATH=$(which clang)
+            --define=using_clang=true
         )
     fi
-
 fi
 
 if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
@@ -329,6 +330,11 @@ echo "-luuid" >> bazel-bin/libReactantExtra.so-2.params
 
 
     clang @bazel-bin/libReactantExtra.so-2.params
+elif [[ "${target}" != "x86_64-linux-gnu" && "${bb_full_target}" == *gpu+cuda* && "${HERMETIC_CUDA_VERSION}" =~ ^(12.6.3|12.4.1|12.1.1)$ ]] ; then
+    $BAZEL ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so --keep_going || stage1
+    cp /workspace/srcdir/cuda_nvcc-*-archive/bin/cudafe++ /workspace/bazel_root/*/external/cuda_nvcc/bin/
+    cp /workspace/srcdir/cuda_nvcc-*-archive/bin/nvcc /workspace/bazel_root/*/external/cuda_nvcc/bin/
+    $BAZEL ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
 else
     $BAZEL ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
 fi
@@ -398,8 +404,8 @@ platforms = filter(p -> !(libc(p) == "musl"), platforms)
 # [00:20:02] #include <linux/futex.h>
 platforms = filter(p -> !(Sys.isfreebsd(p)), platforms)
 
-# Windows has a cuda configure issue, to investigate either fixing/disabling cuda
-# platforms = filter(p -> !(Sys.iswindows(p)), platforms)
+# Windows has an issue on ygg docker but not hydra docker, to investigate
+platforms = filter(p -> !(Sys.iswindows(p)), platforms)
 
 # platforms = filter(p -> (Sys.isapple(p)), platforms)
 # platforms = filter(p -> arch(p) != "x86_64", platforms)
@@ -523,6 +529,12 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
               # Build dependency because we statically link libc++
               BuildDependency(PackageSpec("LLVMLibcxx_jll", preferred_llvm_version)),
               )
+    elseif arch(platform) == "x86_64" && gpu == "cuda"
+            # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_12.8.1.json
+	    push!(platform_sources,
+                  ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-x86_64/cuda_nvcc-linux-x86_64-12.8.93-archive.tar.xz",
+				"9961b3484b6b71314063709a4f9529654f96782ad39e72bf1e00f070db8210d3"),
+		  )
     end
 
     should_build_platform(triplet(augmented_platform)) || continue
