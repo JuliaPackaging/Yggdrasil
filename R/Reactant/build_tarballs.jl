@@ -9,7 +9,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.230"
 
 sources = [
-   GitSource(repo, "ea444dbca7a0997149b0cfc5070fe0dec1acb7b5"),
+   GitSource(repo, "9986ac4a2d30c4e5db0b4795cdebd04eb2514828"),
    ArchiveSource("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.7%2B6/OpenJDK21U-jdk_x64_alpine-linux_hotspot_21.0.7_6.tar.gz", "79ecc4b213d21ae5c389bea13c6ed23ca4804a45b7b076983356c28105580013"),
    ArchiveSource("https://github.com/JuliaBinaryWrappers/Bazel_jll.jl/releases/download/Bazel-v7.6.1+0/Bazel.v7.6.1.x86_64-linux-musl-cxx03.tar.gz", "01ac6c083551796f1f070b0dc9c46248e6c49e01e21040b0c158f6e613733345")
 ]
@@ -400,7 +400,7 @@ platforms = filter(p -> !(libc(p) == "musl"), platforms)
 platforms = filter(p -> !(Sys.isfreebsd(p)), platforms)
 
 # Windows has an issue on ygg docker but not hydra docker, to investigate
-platforms = filter(p -> !(Sys.iswindows(p)), platforms)
+# platforms = filter(p -> !(Sys.iswindows(p)), platforms)
 
 # platforms = filter(p -> (Sys.isapple(p)), platforms)
 # platforms = filter(p -> arch(p) != "x86_64", platforms)
