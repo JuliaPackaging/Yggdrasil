@@ -27,9 +27,6 @@ make -j${nproc}
 make install LANGUAGE_NAME=libtreesitter_modelica
 
 cd ..
-if [ -d tree-sitter/queries ]; then
-   cp -r tree-sitter/queries $WORKSPACE/destdir/
-fi
 install_license tree-sitter/LICENSE
 """
 
