@@ -330,8 +330,8 @@ echo "-luuid" >> bazel-bin/libReactantExtra.so-2.params
 
 
     clang @bazel-bin/libReactantExtra.so-2.params
-elif [[ "${target}" != "x86_64-linux-gnu" && "${bb_full_target}" == *gpu+cuda* && "${HERMETIC_CUDA_VERSION}" =~ ^(12.6.3|12.4.1|12.1.1)$ ]] ; then
-    $BAZEL ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so --keep_going || stage1
+elif [[ "${target}" == "x86_64-linux-gnu" && "${bb_full_target}" == *gpu+cuda* && "${HERMETIC_CUDA_VERSION}" =~ ^(12.6.3|12.4.1|12.1.1)$ ]] ; then
+    $BAZEL ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so --keep_going || echo stage1
     cp /workspace/srcdir/cuda_nvcc-*-archive/bin/cudafe++ /workspace/bazel_root/*/external/cuda_nvcc/bin/
     cp /workspace/srcdir/cuda_nvcc-*-archive/bin/nvcc /workspace/bazel_root/*/external/cuda_nvcc/bin/
     $BAZEL ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
