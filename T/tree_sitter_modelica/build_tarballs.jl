@@ -30,9 +30,7 @@ cd ..
 if [ -d tree-sitter/queries ]; then
    cp -r tree-sitter/queries $WORKSPACE/destdir/
 fi
-if [ -f tree-sitter/LICENSE ]; then
-    install_license tree-sitter/LICENSE
-fi
+install_license tree-sitter/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
