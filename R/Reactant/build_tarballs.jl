@@ -162,7 +162,6 @@ if [[ "${target}" == *-darwin* ]]; then
 fi
 
 if [[ "${target}" == *-mingw* ]]; then
-	rm -rf /opt/x86_64-w64-mingw32/PlatformSupport*
         sed -i 's/noincompatible_enable_cc_toolchain_resolution/incompatible_enable_cc_toolchain_resolution/' .bazelrc
     cp -r $WORKSPACE/srcdir/x86_64-w64-mingw32/ /opt/x86_64-w64-mingw32/
     BAZEL_BUILD_FLAGS+=(--compiler=mingw-gcc)
@@ -315,8 +314,6 @@ if [[ "${target}" == *-darwin* ]]; then
     cc @bazel-bin/libReactantExtra.so-2.params
 elif [[ "${target}" == *mingw32* ]]; then
     $BAZEL ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
-    cd ${WORKSPACE}/bazel_root/097636303b1142f44508c1d8e3494e4b/execroot/__main__
-	/opt/bin/x86_64-w64-mingw32-libgfortran5-cxx11-cuda_version+none-gpu+none-mode+opt/clang -U_FORTIFY_SOURCE '-stdlib=libstdc++' -g0 -O2 '-D_FORTIFY_SOURCE=1' -DNDEBUG -ffunction-sections -fdata-sections -MD -MF bazel-out/x64_windows-opt/bin/external/llvm-project/llvm/_objs/Support/Path.pic.d '-frandom-seed=bazel-out/x64_windows-opt/bin/external/llvm-project/llvm/_objs/Support/Path.pic.o' -fPIC -D_CRT_SECURE_NO_DEPRECATE -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE -D_CRT_NONSTDC_NO_WARNINGS -D_SCL_SECURE_NO_DEPRECATE -D_SCL_SECURE_NO_WARNINGS -DUNICODE -D_UNICODE '-DLTDL_SHLIB_EXT=".dll"' '-DLLVM_PLUGIN_EXT=".dll"' '-DLLVM_NATIVE_ARCH="X86"' '-DLLVM_NATIVE_ASMPARSER=LLVMInitializeX86AsmParser' '-DLLVM_NATIVE_ASMPRINTER=LLVMInitializeX86AsmPrinter' '-DLLVM_NATIVE_DISASSEMBLER=LLVMInitializeX86Disassembler' '-DLLVM_NATIVE_TARGET=LLVMInitializeX86Target' '-DLLVM_NATIVE_TARGETINFO=LLVMInitializeX86TargetInfo' '-DLLVM_NATIVE_TARGETMC=LLVMInitializeX86TargetMC' '-DLLVM_NATIVE_TARGETMCA=LLVMInitializeX86TargetMCA' '-DLLVM_HOST_TRIPLE="x86_64-pc-win32"' '-DLLVM_DEFAULT_TARGET_TRIPLE="x86_64-pc-win32"' '-DLLVM_VERSION_MAJOR=22' '-DLLVM_VERSION_MINOR=0' '-DLLVM_VERSION_PATCH=0' '-DLLVM_VERSION_STRING="22.0.0git"' -DEXPERIMENTAL_KEY_INSTRUCTIONS -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS '-DLLVM_HAS_AMDGPU_TARGET=1' '-DLLVM_HAS_NVPTX_TARGET=1' '-DLLVM_HAS_AArch64_TARGET=1' '-DLLVM_HAS_X86_TARGET=1' '-DLLVM_HAS_ARM_TARGET=1' '-DBLAKE3_USE_NEON=0' -DBLAKE3_NO_AVX2 -DBLAKE3_NO_AVX512 -DBLAKE3_NO_SSE2 -DBLAKE3_NO_SSE41 -iquote external/llvm-project -iquote bazel-out/x64_windows-opt/bin/external/llvm-project -Ibazel-out/x64_windows-opt/bin/external/llvm-project/third-party/siphash/_virtual_includes/siphash -isystem external/llvm-project/llvm/include -isystem bazel-out/x64_windows-opt/bin/external/llvm-project/llvm/include -DGRPC_BAZEL_BUILD -D_USE_MATH_DEFINES -DWIN32_LEAN_AND_MEAN -DNOGDI '-std=c++17' -w '-std=c++17' '-DTCP_USER_TIMEOUT=0' '--sysroot=/opt/x86_64-w64-mingw32/x86_64-w64-mingw32/sys-root/' -no-canonical-prefixes -Wno-builtin-macro-redefined '-D__DATE__="redacted"' '-D__TIMESTAMP__="redacted"' '-D__TIME__="redacted"' -Wno-unused-command-line-argument -Wno-gnu-offsetof-extensions -mxsave -c external/llvm-project/llvm/lib/Support/Path.cpp -o bazel-out/x64_windows-opt/bin/external/llvm-project/llvm/_objs/Support/Path.pic.o -v
     sed -i.bak1 -e "s/PTHREADPOOL_WEAK//g" /workspace/bazel_root/*/external/pthreadpool/src/portable-api.c
     $BAZEL ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage2
     sed -i.bak1 -e "/start-lib/d" \
