@@ -164,6 +164,7 @@ fi
 if [[ "${target}" == *-mingw* ]]; then
 	rm -rf /opt/x86_64-w64-mingw32/PlatformSupport*
         sed -i 's/noincompatible_enable_cc_toolchain_resolution/incompatible_enable_cc_toolchain_resolution/' .bazelrc
+    cp -r $WORKSPACE/srcdir/x86_64-w64-mingw32/ /opt/x86_64-w64-mingw32/
     BAZEL_BUILD_FLAGS+=(--compiler=mingw-gcc)
     BAZEL_BUILD_FLAGS+=(--copt=-D_USE_MATH_DEFINES)
     BAZEL_BUILD_FLAGS+=(--copt=-DWIN32_LEAN_AND_MEAN)
@@ -491,6 +492,12 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
         push!(platform_sources,
               ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz",
                             "cd4f08a75577145b8f05245a2975f7c81401d75e9535dcffbb879ee1deefcbf4"))
+    end
+    if Sys.iswindows(platform)
+	push!(platform_sources,
+            ArchiveSource("https://github.com/JuliaPackaging/Yggdrasil/releases/download/GCCBootstrap-v13.2.0+2/GCCBootstrap-x86_64-w64-mingw32.v13.2.0.x86_64-linux-musl.unpacked.tar.gz",
+			  "c2c31fcceaf93dc9224dbfed0d055a6568cf62fe836bc7c6243f71a0221f8264")
+	)
     end
 
     if !Sys.isapple(platform)
