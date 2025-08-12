@@ -162,6 +162,7 @@ if [[ "${target}" == *-darwin* ]]; then
 fi
 
 if [[ "${target}" == *-mingw* ]]; then
+	rm -rf /opt/x86_64-w64-mingw32/PlatformSupport*
         sed -i 's/noincompatible_enable_cc_toolchain_resolution/incompatible_enable_cc_toolchain_resolution/' .bazelrc
     BAZEL_BUILD_FLAGS+=(--compiler=mingw-gcc)
     BAZEL_BUILD_FLAGS+=(--copt=-D_USE_MATH_DEFINES)
