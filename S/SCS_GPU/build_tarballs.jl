@@ -52,6 +52,6 @@ for platform in platforms
     cuda_deps = CUDA.required_dependencies(platform)
 
     build_tarballs(ARGS, name, version, sources, script, [platform], products,
-                   [dependencies; cuda_deps], julia_compat="1.6",
+                   [dependencies; cuda_deps], julia_compat="1.6", preferred_gcc_version=v"5",
                    augment_platform_block=CUDA.augment)
 end
