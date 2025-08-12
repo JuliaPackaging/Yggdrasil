@@ -2,11 +2,11 @@ using Pkg
 using BinaryBuilder
 
 name = "SCS"
-version = v"3.2.7"
+version = v"3.2.8"
 
 # Collection of sources required to build SCSBuilder
 sources = [
-    GitSource("https://github.com/cvxgrp/scs.git", "775a04634e40177573871c9cb6baae254342de39")
+    GitSource("https://github.com/cvxgrp/scs.git", "ef77ae11181f399ea3e35122944ba3091ee1a77f")
 ]
 
 # Bash recipe for building across all platforms
@@ -34,7 +34,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenBLAS32_jll", v"0.3.10"),
+    Dependency("OpenBLAS32_jll"),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae");
@@ -44,4 +44,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6", preferred_gcc_version=v"8")
