@@ -28,7 +28,7 @@ cp out/libscs*.${dlext} ${libdir}
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 
-platforms = CUDA.supported_platforms()
+platforms = CUDA.supported_platforms(max_version = v"12")
 filter!(p -> arch(p) == "x86_64", platforms)
 
 # The products that we will ensure are always built
