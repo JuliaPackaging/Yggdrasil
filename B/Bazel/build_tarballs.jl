@@ -53,7 +53,10 @@ source scripts/bootstrap/bootstrap.sh
 bazel_build "src:bazel_nojdk${EXE_EXT}" \
   --action_env=PATH \
   --host_platform=@platforms//host \
-  --platforms=@platforms//host
+  --platforms=@platforms//host \
+  --action_env=USE_CCACHE \
+  --action_env=CCACHE_DIR \
+  --action_env=CCACHE_NOHASHDIR=yes
 
 bazel_bin_path="$(get_bazel_bin_path)/src/bazel_nojdk${EXE_EXT}"
 cp -f "$bazel_bin_path" "output/bazel${EXE_EXT}"
