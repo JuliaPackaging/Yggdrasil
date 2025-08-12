@@ -1,10 +1,10 @@
 using BinaryBuilder
 
 name = "Bazel"
-version = v"7.6.1"
+version = v"8.3.1"
 sources = [
     ArchiveSource("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.7%2B6/OpenJDK21U-jdk_x64_alpine-linux_hotspot_21.0.7_6.tar.gz", "79ecc4b213d21ae5c389bea13c6ed23ca4804a45b7b076983356c28105580013"),
-    ArchiveSource("https://github.com/bazelbuild/bazel/releases/download/$(version)/bazel-$(version)-dist.zip", "c1106db93eb8a719a6e2e1e9327f41b003b6d7f7e9d04f206057990775a7760e"),
+    ArchiveSource("https://github.com/bazelbuild/bazel/releases/download/$(version)/bazel-$(version)-dist.zip", "79da863df05fa4de79a82c4f9d4e710766f040bc519fd8b184a4d4d51345d5ba"),
     
 ]
 
