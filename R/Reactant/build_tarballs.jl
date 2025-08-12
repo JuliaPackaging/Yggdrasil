@@ -250,6 +250,35 @@ fi
 
 if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
     BAZEL_BUILD_FLAGS+=(--config=rocm)
+
+    if [[ "${GCC_MAJOR_VERSION}" -le 12 && "${target}" == x86_64-* ]]; then
+        # Someone wants to compile some code which requires flags not understood by GCC 12.
+        BAZEL_BUILD_FLAGS+=(--define=xnn_enable_avxvnniint8=false)
+    fi
+    if [[ "${GCC_MAJOR_VERSION}" -le 11 && "${target}" == x86_64-* ]]; then
+        # Someone wants to compile some code which requires flags not understood by GCC 11.
+        BAZEL_BUILD_FLAGS+=(--define=xnn_enable_avx512fp16=false)
+    fi
+
+    if [[ "${target}" != x86_64-linux-gnu ]]; then
+        # This is the standard `LD_LIBRARY_PATH` we have in our environment + `/usr/lib/csl-glibc-x86_64` to be able to run host `nvcc`/`ptxas`/`fatbinary` during compilation.
+        export LD_LIBRARY_PATH="/usr/lib/csl-musl-x86_64:/usr/lib/csl-glibc-x86_64:/usr/local/lib64:/usr/local/lib:/usr/lib64:/usr/lib:/lib64:/lib:/workspace/x86_64-linux-musl-cxx11/destdir/lib:/workspace/x86_64-linux-musl-cxx11/destdir/lib64:/opt/x86_64-linux-musl/x86_64-linux-musl/lib64:/opt/x86_64-linux-musl/x86_64-linux-musl/lib:/opt/${target}/${target}/lib64:/opt/${target}/${target}/lib:/workspace/destdir/lib64"
+
+        # Delete shared libc++ to force statically linking to it.
+        rm -v "${prefix}/libcxx/lib/libc++.so"*
+
+        BAZEL_BUILD_FLAGS+=(
+            --linkopt="-L${prefix}/libcxx/lib"
+	)
+    else
+        BAZEL_BUILD_FLAGS+=(
+            --linkopt="-stdlib=libstdc++"
+	)
+    fi
+    BAZEL_BUILD_FLAGS+=(
+	    --action_env=CLANG_COMPILER_PATH=$(which clang)
+	    --define=using_clang=true
+    )
 fi
 
 if [[ "${target}" == *-freebsd* ]]; then
@@ -373,6 +402,20 @@ if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
 
 fi
 
+if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
+    rm -rf bazel-bin/_solib_local/*stub*/*so*
+    cp -v bazel-bin/_solib_local/*/*so* ${libdir}
+    find bazel-bin
+    find ${libdir}
+    # cp -v /workspace/bazel_root/*/external/cuda_nccl/lib/libnccl.so.2 ${libdir}
+
+    # Simplify ridiculously long rpath of `libReactantExtra.so`,
+    # we moved all deps in `${libdir}` anyway.
+    patchelf --set-rpath '$ORIGIN' bazel-bin/libReactantExtra.so
+
+fi
+
+
 install -Dvm 755 bazel-bin/libReactantExtra.so "${libdir}/libReactantExtra.${dlext}"
 install_license ../../LICENSE
 """
@@ -426,7 +469,7 @@ augment_platform_block="""
     """
 
 # for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), platform in platforms
-for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "12.6", "12.8", "13.0"), platform in platforms
+for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), cuda_version in ("none", "12.6", "12.8", "13.0"), platform in platforms
 
     augmented_platform = deepcopy(platform)
     augmented_platform["mode"] = mode
