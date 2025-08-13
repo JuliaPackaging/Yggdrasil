@@ -80,7 +80,6 @@ function get_script(; debug::Bool)
         cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
         ninja -C build -j ${nproc} install
         # Create unversioned symlinks
-        ln -s libze_intel_gpu.so.1 ${libdir}/libze_intel_gpu.so
         ln -s ocloc-25.27.1 ${bindir}/ocloc
 
 """
