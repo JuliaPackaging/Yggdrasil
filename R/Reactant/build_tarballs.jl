@@ -75,6 +75,7 @@ BAZEL_BUILD_FLAGS+=(--jobs ${nproc})
 # BAZEL_BUILD_FLAGS+=(--action_env=SUPER_VERBOSE=true)
 
 BAZEL_BUILD_FLAGS+=(--verbose_failures)
+BAZEL_BUILD_FLAGS+=(--strip=never)
 BAZEL_BUILD_FLAGS+=(--cxxopt=-std=c++17 --host_cxxopt=-std=c++17)
 BAZEL_BUILD_FLAGS+=(--cxxopt=-DTCP_USER_TIMEOUT=0)
 BAZEL_BUILD_FLAGS+=(--check_visibility=false)
