@@ -2,23 +2,49 @@ using Base.BinaryPlatforms
 
 using Libdl
 
-# before loading CUDA_Driver_jll, try to find out where the system driver is located.
-let
-    name = if Sys.iswindows()
-        Libdl.find_library("nvcuda")
+# re-use the CUDA_Runtime_jll preference to select the appropriate compiler
+const CUDA_Runtime_jll_uuid = Base.UUID("76a88914-d11a-5bdc-97e0-2f5a05c973a2")
+const preferences = Base.get_preferences(CUDA_Runtime_jll_uuid)
+Base.record_compiletime_preference(CUDA_Runtime_jll_uuid, "version")
+function parse_version_preference(key)
+    if haskey(preferences, key)
+        if isa(preferences[key], String)
+            version = tryparse(VersionNumber, preferences[key])
+            if version === nothing
+                @error "CUDA $key preference is not valid; expected a version number, but got '$(preferences[key])'"
+                missing
+            else
+                version
+            end
+        else
+            @error "CUDA $key preference is not valid; expected a version number, but got '$(preferences[key])'"
+            missing
+        end
     else
-        Libdl.find_library(["libcuda.so.1", "libcuda.so"])
+        missing
     end
+end
+const version_preference = parse_version_preference("version")
 
-    # if we've found a system driver, put a dependency on it,
-    # so that we get recompiled if the driver changes.
-    if name != ""
-        handle = Libdl.dlopen(name)
-        path = Libdl.dlpath(handle)
-        Libdl.dlclose(handle)
+if ismissing(version_preference)
+    # before loading CUDA_Driver_jll, try to find out where the system driver is located.
+    let
+        name = if Sys.iswindows()
+            Libdl.find_library("nvcuda")
+        else
+            Libdl.find_library(["libcuda.so.1", "libcuda.so"])
+        end
 
-        @debug "Adding include dependency on $path"
-        Base.include_dependency(path)
+        # if we've found a system driver, put a dependency on it,
+        # so that we get recompiled if the driver changes.
+        if name != ""
+            handle = Libdl.dlopen(name)
+            path = Libdl.dlpath(handle)
+            Libdl.dlclose(handle)
+
+            @debug "Adding include dependency on $path"
+            Base.include_dependency(path)
+        end
     end
 end
 
@@ -108,14 +134,19 @@ end
 # returns the value for the "cuda" tag we should use in the platform ("$MAJOR")
 # or nothing if no CUDA driver was found.
 function cuda_driver_tag()
-    cuda_driver = get_driver_version()
-    if cuda_driver === nothing
-        @debug "Failed to query CUDA driver version"
-        return nothing
-    end
-    @debug "CUDA driver version: $cuda_driver"
+    if version_preference !== missing
+        @debug "CUDA version override: $version_preference"
+        "$(version_preference.major)"
+    else
+        cuda_driver = get_driver_version()
+        if cuda_driver === nothing
+            @debug "Failed to query CUDA driver version"
+            return nothing
+        end
+        @debug "CUDA driver version: $cuda_driver"
 
-    "$(cuda_driver.major)"
+        "$(cuda_driver.major)"
+    end
 end
 
 function augment_platform!(platform::Platform)

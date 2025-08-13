@@ -8,14 +8,14 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 name = "Enzyme"
 repo = "https://github.com/EnzymeAD/Enzyme.git"
 
-auto_version = "refs/tags/v0.0.186"
+auto_version = "refs/tags/v0.0.188"
 version = VersionNumber(split(auto_version, "/")[end])
 
 llvm_versions = [v"15.0.7", v"16.0.6", v"17.0.6", v"18.1.7", v"19.1.1"]
 
 # Collection of sources required to build attr
 sources = [
-    GitSource(repo, "8c1a596158f6194f10e8ffd56a1660a61c54337e"),
+    GitSource(repo, "f1d60716acb06a56bab822b4828dc5774d2da4c5"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                   "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
 ]

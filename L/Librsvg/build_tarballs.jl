@@ -4,12 +4,12 @@ using BinaryBuilder
 using Pkg
 
 name = "Librsvg"
-version = v"2.54.7"
+version = v"2.58.5"
 
 # Collection of sources required to build librsvg
 sources = [
     ArchiveSource("https://download.gnome.org/sources/librsvg/$(version.major).$(version.minor)/librsvg-$(version).tar.xz",
-                  "29a183cc855544d8a90de50720d5358a488c22118fffcb541aa0e790005d0966"),
+                  "224233a0e347d38c415f15a49f0e0885313e3ecc18f3192055f9304dd2f3a27a"),
 ]
 
 # Bash recipe for building across all platforms
@@ -32,6 +32,17 @@ if [[ "${target}" == *-mingw* ]]; then
     # a combination host and RUST_TARGET that would work on all platforms.  If
     # you do, let me know!
     FLAGS=(--host=${target} RUST_TARGET="${rust_target}" LIBS="-luserenv -lbcrypt")
+fi
+
+# MUSL-specific Rust linking fix - force dynamic linking instead of static
+if [[ "${target}" == *-musl* ]]; then
+    export RUSTFLAGS="-C target-feature=-crt-static"
+fi
+
+if [[ ${target} == x86_64-linux-musl* ]]; then
+    # Remove host system libraries otherwise get "undefined reference to getrandom" error message on x86_64
+    rm /usr/lib/libexpat*
+    # For newer versions of librsvg `rm /usr/lib/libffi*`` may be needed to fix "undefined reference to `memfd_create'" error message
 fi
 
 ./configure \
@@ -65,6 +76,8 @@ products = [
     LibraryProduct("librsvg-2", :librsvg),
 
     # This is named `.so` even on darwin, so do it as a FileProduct.....sigh
+    # For future updaters, the name changed from `libpixbufloader-svg` to `libpixbufloader_svg`
+    # at some point between 2.58.5 and 2.60.0
     FileProduct(["lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-svg.so",
                  "lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-svg.dll"], :libpixbufloader_svg),
     #LibraryProduct("libpixbufloader-svg", :libpixbufloader_svg, ["lib/gdk-pixbuf-2.0/2.10.0/loaders"]),
@@ -79,13 +92,14 @@ dependencies = [
     HostBuildDependency(PackageSpec(; name="gdk_pixbuf_jll", version=v"2.42.8")),
     BuildDependency(PackageSpec(; name="Xorg_xorgproto_jll", version=v"2019.2.0+2")),
     Dependency("gdk_pixbuf_jll"; compat="2.42.8"),
-    Dependency("Pango_jll"; compat="1.47.0"),
-    Dependency("Cairo_jll"; compat="1.16.1"),
-    Dependency("FreeType2_jll"; compat="2.10.4"),
+    Dependency("Pango_jll"; compat="1.50.3"),
+    Dependency("Cairo_jll"; compat="1.18.0"),
+    Dependency("FreeType2_jll"; compat="2.13.1"),
     Dependency("Glib_jll"; compat="2.74.0"), # For GIO
     # We had to restrict compat with XML2 because of ABI breakage:
     # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
-    # Updating to a newer XML2 version is likely possible without problems but requires rebuilding this package
+    # Updating to ~2.14.1 is likely possible without problems but requires rebuilding this package
+    # Some rust things seem to as of 2025-08-07 be stuck on the old version of libxml2.
     Dependency("XML2_jll"; compat="2.9.14 - 2.13"),
 ]
 
@@ -93,5 +107,5 @@ dependencies = [
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     julia_compat="1.6",
     compilers=[:c, :rust],
-    preferred_rust_version=v"1.65.0",
+    preferred_rust_version=v"1.87.0",
 )

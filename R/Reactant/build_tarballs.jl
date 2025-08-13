@@ -6,10 +6,10 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.218"
+version = v"0.0.230"
 
 sources = [
-   GitSource(repo, "46effa67bacd9e0f2c36fa713f09b46c56d067e5"),
+   GitSource(repo, "3af6b59bc42d571d1789848ca88d92ffa30027a6"),
    ArchiveSource("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.7%2B6/OpenJDK21U-jdk_x64_alpine-linux_hotspot_21.0.7_6.tar.gz", "79ecc4b213d21ae5c389bea13c6ed23ca4804a45b7b076983356c28105580013"),
    ArchiveSource("https://github.com/JuliaBinaryWrappers/Bazel_jll.jl/releases/download/Bazel-v7.6.1+0/Bazel.v7.6.1.x86_64-linux-musl-cxx03.tar.gz", "01ac6c083551796f1f070b0dc9c46248e6c49e01e21040b0c158f6e613733345")
 ]
@@ -110,6 +110,10 @@ elif [[ "${target}" == x86_64-linux-* ]]; then
    BAZEL_CPU=k8
 elif [[ "${target}" == aarch64-linux-* ]]; then
    BAZEL_CPU=aarch64
+elif [[ "${target}" == x86_64-w64-mingw32* ]]; then
+   BAZEL_CPU=x64_windows
+elif [[ "${target}" == aarch64-mingw32* ]]; then
+   BAZEL_CPU=arm64_windows
 fi
 
 echo "register_toolchains(\\"//:cc_toolchain_for_ygg_host\\")" >> WORKSPACE
@@ -157,6 +161,25 @@ if [[ "${target}" == *-darwin* ]]; then
     BAZEL_BUILD_FLAGS+=(--nolegacy_whole_archive)
 fi
 
+if [[ "${target}" == *-mingw* ]]; then
+    sed -i 's/noincompatible_enable_cc_toolchain_resolution/incompatible_enable_cc_toolchain_resolution/' .bazelrc
+    BAZEL_BUILD_FLAGS+=(--compiler=mingw-gcc)
+    BAZEL_BUILD_FLAGS+=(--copt=-D_USE_MATH_DEFINES)
+    BAZEL_BUILD_FLAGS+=(--copt=-DWIN32_LEAN_AND_MEAN)
+    BAZEL_BUILD_FLAGS+=(--copt=-DNOGDI)
+    # BAZEL_BUILD_FLAGS+=(--compiler=clang)
+    BAZEL_BUILD_FLAGS+=(--define=using_clang=true)
+    apk add --upgrade zlib --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
+    if [[ "${target}" == x86_64* ]]; then
+        BAZEL_BUILD_FLAGS+=(--platforms=@//:win_x86_64)
+        BAZEL_BUILD_FLAGS+=(--cpu=${BAZEL_CPU})
+	echo "register_toolchains(\\"//:cc_toolchain_for_ygg_win_x86\\")" >> WORKSPACE
+    elif [[ "${target}" == aarch64-* ]]; then
+        BAZEL_BUILD_FLAGS+=(--platforms=@//:win_arm64)
+        BAZEL_BUILD_FLAGS+=(--cpu=${BAZEL_CPU})
+	echo "register_toolchains(\\"//:cc_toolchain_for_ygg_win_arm64\\")" >> WORKSPACE
+    fi
+fi
 
 if [[ "${target}" == *-linux-* ]]; then
     sed -i "s/getopts \\"/getopts \\"p/g" /sbin/ldconfig
@@ -208,13 +231,20 @@ if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
         rm -v "${prefix}/libcxx/lib/libc++.so"*
 
         BAZEL_BUILD_FLAGS+=(
-            --action_env=CLANG_CUDA_COMPILER_PATH=$(which clang)
-            --define=using_clang=true
             --repo_env=CUDA_REDIST_TARGET_PLATFORM="aarch64"
+	    --repo_env=NVSHMEM_REDIST_TARGET_PLATFORM="aarch64"
             --linkopt="-L${prefix}/libcxx/lib"
-        )
+	)
+    else
+        sed -i.bak1 -e "/nvcc/d" .bazelrc
+        BAZEL_BUILD_FLAGS+=(
+            --linkopt="-stdlib=libstdc++"
+	)
     fi
-
+    BAZEL_BUILD_FLAGS+=(
+	    --action_env=CLANG_CUDA_COMPILER_PATH=$(which clang)
+	    --define=using_clang=true
+    )
 fi
 
 if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
@@ -281,6 +311,30 @@ if [[ "${target}" == *-darwin* ]]; then
     # echo ""
 
     cc @bazel-bin/libReactantExtra.so-2.params
+elif [[ "${target}" == *mingw32* ]]; then
+    $BAZEL ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
+    sed -i.bak1 -e "s/PTHREADPOOL_WEAK//g" /workspace/bazel_root/*/external/pthreadpool/src/portable-api.c
+    $BAZEL ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage2
+    sed -i.bak1 -e "/start-lib/d" \
+		-e "/end-lib/d" \
+                bazel-bin/libReactantExtra.so-2.params
+
+    sed -i.bak1 -e "s/^ws2_32.lib/-lws2_32/g" \
+		-e "s/^ntdll.lib/-lntdll/g" \
+                bazel-bin/libReactantExtra.so-2.params
+
+		echo "-lole32" >> bazel-bin/libReactantExtra.so-2.params
+echo "-lshlwapi" >> bazel-bin/libReactantExtra.so-2.params
+echo "-lshell32" >> bazel-bin/libReactantExtra.so-2.params
+echo "-lshdocvw" >> bazel-bin/libReactantExtra.so-2.params
+echo "-lshcore" >> bazel-bin/libReactantExtra.so-2.params
+echo "-lcrypt32" >> bazel-bin/libReactantExtra.so-2.params
+echo "-lbcrypt" >> bazel-bin/libReactantExtra.so-2.params
+echo "-lmsvcrt" >> bazel-bin/libReactantExtra.so-2.params
+echo "-luuid" >> bazel-bin/libReactantExtra.so-2.params
+
+
+    clang @bazel-bin/libReactantExtra.so-2.params
 else
     $BAZEL ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
 fi
@@ -292,6 +346,7 @@ mkdir -p ${libdir}
 if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
     rm -rf bazel-bin/_solib_local/*stub*/*so*
     cp -v bazel-bin/_solib_local/*/*so* ${libdir}
+    cp -v bazel-ReactantExtra/external/nvidia_nvshmem/lib/libnvshmem_device.bc ${libdir}
     find bazel-bin
     find ${libdir}
     # cp -v /workspace/bazel_root/*/external/cuda_nccl/lib/libnccl.so.2 ${libdir}
@@ -344,9 +399,6 @@ platforms = filter(p -> !(arch(p) == "armv7l" && Sys.islinux(p)), platforms)
 # [01:23:40]    29 | #include <execinfo.h>
 platforms = filter(p -> !(libc(p) == "musl"), platforms)
 
-# Windows has a cuda configure issue, to investigate either fixing/disabling cuda
-platforms = filter(p -> !(Sys.iswindows(p)), platforms)
-
 # NSync is picking up wrong stuff for cross compile, to deal with later
 # 02] ./external/nsync//platform/c++11.futex/platform.h:24:10: fatal error: 'linux/futex.h' file not found
 # [00:20:02] #include <linux/futex.h>
@@ -368,7 +420,7 @@ augment_platform_block="""
     """
 
 # for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), platform in platforms
-for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "12.1", "12.4", "12.6", "12.8"), platform in platforms
+for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "12.4", "12.6", "12.8"), platform in platforms
 
     augmented_platform = deepcopy(platform)
     augmented_platform["mode"] = mode
@@ -379,9 +431,14 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     preferred_gcc_version = v"13"
     preferred_llvm_version = v"18.1.7"
 
-    # Temporarily disable debug builds also for macOS
-    if mode == "dbg" && !Sys.isapple(platform)
+    # Disable debug builds for cuda
+    if mode == "dbg"
+  	  if gpu != "none"
         continue
+		  end
+	    if !Sys.isapple(platform)
+		    continue
+		  end
     end
 
     if !((gpu == "cuda") ⊻ (cuda_version == "none"))
@@ -390,6 +447,11 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
 
     # If you skip GPU builds here, remember to update also platform augmentation above.
     if gpu != "none" && Sys.isapple(platform)
+        continue
+    end
+
+    # If you skip GPU builds here, remember to update also platform augmentation above.
+    if gpu != "none" && Sys.iswindows(platform)
         continue
     end
 
@@ -407,6 +469,7 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
         "none" => "none",
         "11.8" => "11.8",
         "12.1" => "12.1.1",
+        "12.2" => "12.2.0",
         "12.3" => "12.3.1",
         "12.4" => "12.4.1",
         "12.6" => "12.6.3",
@@ -494,6 +557,9 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
 		# "libcuda",
 		"libcudnn_engines_runtime_compiled",
 		"libcusparse",
+		"libnvshmem_host",
+		"nvshmem_bootstrap_uid",
+		"nvshmem_transport_ibrc"
 	)
 	    san = replace(lib, "-" => "_")
 	    push!(products,
@@ -503,17 +569,18 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
 	push!(products, ExecutableProduct(["ptxas"], :ptxas, "lib/cuda/bin"))
 	push!(products, ExecutableProduct(["fatbinary"], :fatbinary, "lib/cuda/bin"))
 	push!(products, FileProduct("lib/cuda/nvvm/libdevice/libdevice.10.bc", :libdevice))
+	push!(products, FileProduct("lib/libnvshmem_device.bc", :libnvshmem_device))
 
         if VersionNumber(cuda_version) < v"12.6"
             # For older versions of CUDA we need to use GCC 12:
             # <https://forums.developer.nvidia.com/t/strange-errors-after-system-gcc-upgraded-to-13-1-1/252441>.
             preferred_gcc_version = v"12"
         end
-        if VersionNumber(cuda_version) < v"12"
-            # For older versions of CUDA we need to use GCC 11:
-            # <https://stackoverflow.com/questions/72348456/error-when-compiling-a-cuda-program-invalid-type-argument-of-unary-have-i>.
-            preferred_gcc_version = v"11"
-        end
+        # if VersionNumber(cuda_version) < v"12"
+        #     # For older versions of CUDA we need to use GCC 11:
+        #     # <https://stackoverflow.com/questions/72348456/error-when-compiling-a-cuda-program-invalid-type-argument-of-unary-have-i>.
+        #     preferred_gcc_version = v"11"
+        # end
     end
 
     push!(builds, (;

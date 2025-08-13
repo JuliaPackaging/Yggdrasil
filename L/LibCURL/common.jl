@@ -19,9 +19,10 @@ const curl_hashes = Dict(
     v"8.12.1" => "7b40ea64947e0b440716a4d7f0b7aa56230a5341c8377d7b609649d4aea8dbcf",
     v"8.13.0" => "c261a4db579b289a7501565497658bbd52d3138fdbaccf1490fa918129ab45bc",
     v"8.14.1" => "6766ada7101d292b42b8b15681120acd68effa4a9660935853cf6d61f0d984d4",
+    v"8.15.0" => "d85cfc79dc505ff800cb1d321a320183035011fa08cb301356425d86be8fc53c",
 )
 
-function build_libcurl(ARGS, name::String, version::VersionNumber)
+function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=false)
     hash = curl_hashes[version]
 
     if name == "CURL"
@@ -56,10 +57,17 @@ function build_libcurl(ARGS, name::String, version::VersionNumber)
     else
         unpack_macosx_sdk = ""
     end
+    macos_use_openssl = version >= v"8.15"
+
+    config = "THIS_IS_CURL=$(this_is_curl_jll)\n"
+    config *= "MACOS_USE_OPENSSL=$(macos_use_openssl)\n" 
+    if with_zstd
+	config *= "HAVE_ZSTD=true\n"
+    end
 
 
     # Bash recipe for building across all platforms
-    script = "THIS_IS_CURL=$(this_is_curl_jll)\n" * unpack_macosx_sdk * raw"""
+    script = config * unpack_macosx_sdk * raw"""
     cd $WORKSPACE/srcdir/curl-*
 
     # Address <https://github.com/curl/curl/issues/12849>
@@ -77,9 +85,13 @@ function build_libcurl(ARGS, name::String, version::VersionNumber)
         --without-brotli
 
         # A few things we actually enable
-        --with-libssh2=${prefix} --with-zlib=${prefix} --with-nghttp2=${prefix}
+	--with-libssh2=${prefix} --with-zlib=${prefix} --with-nghttp2=${prefix}
         --enable-versioned-symbols
     )
+
+    if [[ ${HAVE_ZSTD} == true ]]; then
+        FLAGS+=(--with-zstd=${prefix})
+    fi
 
     if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
         # Install msan runtime (for clang)
@@ -92,8 +104,8 @@ function build_libcurl(ARGS, name::String, version::VersionNumber)
 
         # We also need to tell it to link against schannel (native TLS library)
         FLAGS+=(--with-schannel)
-    elif [[ ${target} == *darwin* ]]; then
-        # On Darwin, we need to use SecureTransport (native TLS library)
+    elif [[ ${MACOS_USE_OPENSSL} == false && ${target} == *darwin* ]]; then
+        # On Darwin, we need to use SecureTransport (native TLS library) for pre-8.15 versions of CURL
         FLAGS+=(--with-secure-transport)
 
         # We need to explicitly request a higher `-mmacosx-version-min` here, so that it doesn't
@@ -151,15 +163,25 @@ function build_libcurl(ARGS, name::String, version::VersionNumber)
 
     llvm_version = v"13.0.1+1"
 
+    openssl_platforms = if macos_use_openssl
+        filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)
+    else
+        filter(p->!Sys.iswindows(p), platforms)
+    end
+
     # Dependencies that must be installed before this package can be built
     dependencies = [
         Dependency("LibSSH2_jll"),
         Dependency("Zlib_jll"),
         Dependency("nghttp2_jll"),
-        Dependency("OpenSSL_jll"; compat="3.0.16", platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
+        Dependency("OpenSSL_jll"; compat="3.0.16", platforms=openssl_platforms),
         BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
                         platforms=filter(p -> sanitize(p)=="memory", platforms)),
     ]
+
+    if with_zstd
+        push!(dependencies, Dependency("Zstd_jll"))
+    end
 
     if this_is_curl_jll
         # Curl_jll depends on LibCURL_jll
