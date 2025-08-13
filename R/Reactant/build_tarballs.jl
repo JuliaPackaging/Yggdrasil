@@ -405,9 +405,6 @@ platforms = filter(p -> !(libc(p) == "musl"), platforms)
 # [00:20:02] #include <linux/futex.h>
 platforms = filter(p -> !(Sys.isfreebsd(p)), platforms)
 
-# Windows has an issue on ygg docker but not hydra docker, to investigate
-platforms = filter(p -> (Sys.iswindows(p)), platforms)
-
 # platforms = filter(p -> (Sys.isapple(p)), platforms)
 # platforms = filter(p -> arch(p) != "x86_64", platforms)
 
