@@ -76,7 +76,7 @@ function augment_platform!(platform::Platform)
 
     # Don't do GPU discovery on platforms for which we don't have GPU builds.
     # Keep this in sync with list of platforms for which we actually build with GPU support.
-    if !Sys.isapple(platform)
+    if !Sys.isapple(platform) && !Sys.iswindows()
 
         cuname = if Sys.iswindows()
             Libdl.find_library("nvcuda")
