@@ -422,6 +422,11 @@ augment_platform_block="""
 # for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), platform in platforms
 for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "12.4", "12.6", "12.8"), platform in platforms
 
+    if !(Sys.isapple(platform) && arch(platform) == "aarch64" && mode == "opt")
+        # Build only one platform for testing ccache
+        continue
+    end
+
     augmented_platform = deepcopy(platform)
     augmented_platform["mode"] = mode
     augmented_platform["gpu"] = gpu
