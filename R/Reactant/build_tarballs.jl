@@ -615,10 +615,12 @@ for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), cuda_version in ("n
 	if gpu == "rocm"
 		rocm_version = v"5.4.4"
 		append!(dependencies,
+			[
 		        BuildDependency(PackageSpec(; name="ROCmLLVM_jll", version=rocm_version)),
 		        BuildDependency(PackageSpec(; name="rocm_cmake_jll", version=rocm_version)),
 		        Dependency("HIP_jll"; compat=string(rocm_version)),
 		        Dependency("rocBLAS_jll"; compat=string(rocm_version))
+			]
 		)
 	end
 
