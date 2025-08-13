@@ -269,9 +269,6 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
         # This is the standard `LD_LIBRARY_PATH` we have in our environment + `/usr/lib/csl-glibc-x86_64` to be able to run host `nvcc`/`ptxas`/`fatbinary` during compilation.
         export LD_LIBRARY_PATH="/usr/lib/csl-musl-x86_64:/usr/lib/csl-glibc-x86_64:/usr/local/lib64:/usr/local/lib:/usr/lib64:/usr/lib:/lib64:/lib:/workspace/x86_64-linux-musl-cxx11/destdir/lib:/workspace/x86_64-linux-musl-cxx11/destdir/lib64:/opt/x86_64-linux-musl/x86_64-linux-musl/lib64:/opt/x86_64-linux-musl/x86_64-linux-musl/lib:/opt/${target}/${target}/lib64:/opt/${target}/${target}/lib:/workspace/destdir/lib64"
 
-        # Delete shared libc++ to force statically linking to it.
-        rm -v "${prefix}/libcxx/lib/libc++.so"*
-
         BAZEL_BUILD_FLAGS+=(
             --linkopt="-L${prefix}/libcxx/lib"
 	)
@@ -280,7 +277,14 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
             --linkopt="-stdlib=libstdc++"
 	)
     fi
+
     BAZEL_BUILD_FLAGS+=(
+		--action_env=ROCM_PATH=${prefix}
+		--action_env=HIP_PATH=${prefix}/hip
+		--action_env=HSA_PATH=${prefix}
+		--action_env=HIP_CLANG_PATH=${prefix}/llvm/bin
+		--action_env=HIP_LIB_PATH=${prefix}/hip/lib
+		--action_env=DEVICE_LIB_PATH=${prefix}/amdgcn/bitcode
 	    --action_env=CLANG_COMPILER_PATH=$(which clang)
 	    --define=using_clang=true
     )
@@ -608,6 +612,15 @@ for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), cuda_version in ("n
               BuildDependency(PackageSpec(; name="LLVMLibcxx_jll", version=string(preferred_llvm_version))),
               )
     end
+	if gpu == "rocm"
+		version = v"5.4.4"
+		append!(dependencies,
+		        BuildDependency(PackageSpec(; name="ROCmLLVM_jll", version)),
+		        BuildDependency(PackageSpec(; name="rocm_cmake_jll", version)),
+		        Dependency("HIP_jll"; compat=string(version)),
+		        Dependency("rocBLAS_jll"; compat=string(version))
+		)
+	end
 
     should_build_platform(triplet(augmented_platform)) || continue
 
