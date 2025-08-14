@@ -9,7 +9,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.230"
 
 sources = [
-   GitSource(repo, "3af6b59bc42d571d1789848ca88d92ffa30027a6"),
+   GitSource(repo, "d0b647196184018b54a5d1476d0d293d459d4600"),
    ArchiveSource("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.7%2B6/OpenJDK21U-jdk_x64_alpine-linux_hotspot_21.0.7_6.tar.gz", "79ecc4b213d21ae5c389bea13c6ed23ca4804a45b7b076983356c28105580013"),
    ArchiveSource("https://github.com/JuliaBinaryWrappers/Bazel_jll.jl/releases/download/Bazel-v7.6.1+0/Bazel.v7.6.1.x86_64-linux-musl-cxx03.tar.gz", "01ac6c083551796f1f070b0dc9c46248e6c49e01e21040b0c158f6e613733345")
 ]
@@ -249,6 +249,39 @@ fi
 
 if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
     BAZEL_BUILD_FLAGS+=(--config=rocm)
+
+    if [[ "${GCC_MAJOR_VERSION}" -le 12 && "${target}" == x86_64-* ]]; then
+        # Someone wants to compile some code which requires flags not understood by GCC 12.
+        BAZEL_BUILD_FLAGS+=(--define=xnn_enable_avxvnniint8=false)
+    fi
+    if [[ "${GCC_MAJOR_VERSION}" -le 11 && "${target}" == x86_64-* ]]; then
+        # Someone wants to compile some code which requires flags not understood by GCC 11.
+        BAZEL_BUILD_FLAGS+=(--define=xnn_enable_avx512fp16=false)
+    fi
+
+    if [[ "${target}" != x86_64-linux-gnu ]]; then
+        # This is the standard `LD_LIBRARY_PATH` we have in our environment + `/usr/lib/csl-glibc-x86_64` to be able to run host `nvcc`/`ptxas`/`fatbinary` during compilation.
+        export LD_LIBRARY_PATH="/usr/lib/csl-musl-x86_64:/usr/lib/csl-glibc-x86_64:/usr/local/lib64:/usr/local/lib:/usr/lib64:/usr/lib:/lib64:/lib:/workspace/x86_64-linux-musl-cxx11/destdir/lib:/workspace/x86_64-linux-musl-cxx11/destdir/lib64:/opt/x86_64-linux-musl/x86_64-linux-musl/lib64:/opt/x86_64-linux-musl/x86_64-linux-musl/lib:/opt/${target}/${target}/lib64:/opt/${target}/${target}/lib:/workspace/destdir/lib64"
+
+        BAZEL_BUILD_FLAGS+=(
+            --linkopt="-L${prefix}/libcxx/lib"
+	)
+    else
+        BAZEL_BUILD_FLAGS+=(
+            --linkopt="-stdlib=libstdc++"
+	)
+    fi
+
+    BAZEL_BUILD_FLAGS+=(
+		--action_env=ROCM_PATH=${prefix}
+		--action_env=HIP_PATH=${prefix}/hip
+		--action_env=HSA_PATH=${prefix}
+		--action_env=HIP_CLANG_PATH=${prefix}/llvm/bin
+		--action_env=HIP_LIB_PATH=${prefix}/hip/lib
+		--action_env=DEVICE_LIB_PATH=${prefix}/amdgcn/bitcode
+	    --action_env=CLANG_COMPILER_PATH=$(which clang)
+	    --define=using_clang=true
+    )
 fi
 
 if [[ "${target}" == *-freebsd* ]]; then
@@ -367,6 +400,20 @@ if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
 
 fi
 
+if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
+    rm -rf bazel-bin/_solib_local/*stub*/*so*
+    cp -v bazel-bin/_solib_local/*/*so* ${libdir}
+    find bazel-bin
+    find ${libdir}
+    # cp -v /workspace/bazel_root/*/external/cuda_nccl/lib/libnccl.so.2 ${libdir}
+
+    # Simplify ridiculously long rpath of `libReactantExtra.so`,
+    # we moved all deps in `${libdir}` anyway.
+    patchelf --set-rpath '$ORIGIN' bazel-bin/libReactantExtra.so
+
+fi
+
+
 install -Dvm 755 bazel-bin/libReactantExtra.so "${libdir}/libReactantExtra.${dlext}"
 install_license ../../LICENSE
 """
@@ -420,8 +467,8 @@ augment_platform_block="""
     """
 
 # for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), platform in platforms
-for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "12.4", "12.6", "12.8"), platform in platforms
-
+for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), cuda_version in ("none", "12.4", "12.6", "12.8"), platform in platforms
+    gpu != "rocm" && continue
     augmented_platform = deepcopy(platform)
     augmented_platform["mode"] = mode
     augmented_platform["gpu"] = gpu
@@ -528,6 +575,17 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
               BuildDependency(PackageSpec("LLVMLibcxx_jll", preferred_llvm_version)),
               )
     end
+	if gpu == "rocm"
+		rocm_version = v"5.4.4"
+		append!(dependencies,
+			[
+		        BuildDependency(PackageSpec(; name="ROCmLLVM_jll", version=rocm_version)),
+		        BuildDependency(PackageSpec(; name="rocm_cmake_jll", version=rocm_version)),
+		        Dependency("HIP_jll"; compat=string(rocm_version)),
+		        Dependency("rocBLAS_jll"; compat=string(rocm_version))
+			]
+		)
+	end
 
     should_build_platform(triplet(augmented_platform)) || continue
 	
