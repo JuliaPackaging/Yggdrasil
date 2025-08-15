@@ -24,6 +24,8 @@ function get_script(; debug::Bool)
         # a script around ocloc that detects when the build is reported
         # successful and ignores the segfault.
         atomic_patch -p0 ./patches/ocloc.patch
+        # Fix OpenCL ICD installation to use prefix instead of /etc
+        atomic_patch -p0 ./patches/install_to_prefix.patch
         cp ocloc_wrapper.sh compute-runtime/shared/source/built_ins/kernels/ocloc_wrapper.sh
         mkdir -p tmpdir
         export TMPDIR=$(pwd)/tmpdir
