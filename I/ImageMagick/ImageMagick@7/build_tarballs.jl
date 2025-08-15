@@ -67,9 +67,10 @@ dependencies = [
     Dependency("libzip_jll"),
     Dependency("Bzip2_jll"),
     Dependency("Zstd_jll"),
+    Dependency("libheif_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # Using GCC 6 to get a newer libc, required by OpenJpeg that is pulled in by Libtiff
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"7")
+               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"9")
