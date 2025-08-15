@@ -6,7 +6,7 @@ upstream_version = v"7.1.2-1"
 version = VersionNumber(
     upstream_version.major,
     upstream_version.minor,
-    upstream_version.patch * 1000 + upstream_version.prerelease[1]
+    upstream_version.patch * 1000 + upstream_version.prerelease[1] + 1
 )
 
 # Collection of sources required to build imagemagick
@@ -67,7 +67,6 @@ dependencies = [
     Dependency("libzip_jll"),
     Dependency("Bzip2_jll"),
     Dependency("Zstd_jll"),
-    Dependency("libheif_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
