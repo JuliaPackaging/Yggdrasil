@@ -9,9 +9,9 @@ using Pkg
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
-gap_version = v"400.1400.005"
+gap_version = v"400.1401.5"
 name = "JuliaInterface"
-upstream_version = "0.14.2" # when you increment this, reset offset to v"0.0.0"
+upstream_version = "0.15.0" # when you increment this, reset offset to v"0.0.0"
 offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
@@ -64,6 +64,6 @@ products = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"7")
+               julia_compat="1.10", preferred_gcc_version=v"7")
 
 # rebuild trigger: 1
