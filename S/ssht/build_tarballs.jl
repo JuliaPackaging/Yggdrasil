@@ -3,18 +3,19 @@
 using BinaryBuilder, Pkg
 
 name = "ssht"
-ssht_version = v"1.5.2"
-# We bumped the version because we rebuilt for new architectures
 version = v"1.5.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/astro-informatics/ssht.git", "c83fb2a07e1869e875e819523d2e19d91bc8a4bf"),
+    GitSource("https://github.com/astro-informatics/ssht.git", "7e9c1f91995ebb02687be5a8d498774ab02dfc1e"),
     DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+# below needed to use CMake_jll
+apk del cmake
+
 cd ${WORKSPACE}/srcdir/ssht
 
 # Add missing declarations for certain complex long double functions.
@@ -64,6 +65,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="FFTW_jll"); compat="3.3.11"),
+    HostBuildDependency("CMake_jll"),   # Need CMake > 3.24
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
