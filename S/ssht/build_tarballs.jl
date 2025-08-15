@@ -32,7 +32,6 @@ cmake \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_SYSTEM_LIBRARY_PATH=/opt/${target}/${target}/sys-root/usr/lib64/lp64d \
     -DBUILD_TESTING=OFF \
     ..
 cmake --build . --parallel ${nproc}
