@@ -2,11 +2,11 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-version = v"1.0.0"
+version = v"1.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/flame/blis.git", "6d0ab74f6975fdf4d19cee06d946b09b6ca89656"),
+    GitSource("https://github.com/flame/blis.git", "464180ff28e6a3f74f7c754ec01ed8a6a2f978df"),
     DirectorySource("../bundled")
 ]
 
@@ -32,21 +32,25 @@ function blis_script(;blis32::Bool=false)
 
     case ${target} in
 
-        *"x86_64"*"linux"*) 
+        *"x86_64"*"linux"*)
             export BLI_CONFIG=x86_64
             export BLI_THREAD=openmp
             ;;
-        *"x86_64"*"w64"*) 
+        *"aarch64"*"linux"*)
+            export BLI_CONFIG=arm64
+            export BLI_THREAD=openmp
+            ;;
+        *"arm"*"linux"*)
+            export BLI_CONFIG=arm32
+            export BLI_THREAD=none
+            ;;
+        *"x86_64"*"w64"*)
             # MinGW doesn't support savexmm instructions
             # Build only for AMD processors.
             export BLI_CONFIG=amd64
             export BLI_THREAD=openmp
             ;;
-        *"x86_64"*"apple"*) 
-            export BLI_CONFIG=x86_64
-            export BLI_THREAD=openmp
-            ;;
-        *"x86_64"*"freebsd"*) 
+        *"x86_64"*"apple"*)
             export BLI_CONFIG=x86_64
             export BLI_THREAD=openmp
             ;;
@@ -56,19 +60,19 @@ function blis_script(;blis32::Bool=false)
             export BLI_CONFIG=firestorm
             export BLI_THREAD=openmp
             ;;
-        *"aarch64"*"linux"*) 
-            export BLI_CONFIG=arm64
+        *"x86_64"*"freebsd"*)
+            export BLI_CONFIG=x86_64
             export BLI_THREAD=openmp
             ;;
-        *"arm"*"linux"*) 
-            export BLI_CONFIG=arm32
-            export BLI_THREAD=none
+        *"aarch64"*"freebsd"*)
+            export BLI_CONFIG=arm64
+            export BLI_THREAD=openmp
             ;;
         *)
             # Default (Generic) configuration without optimized kernel.
             export BLI_CONFIG=generic
             export BLI_THREAD=none
-            ;; 
+            ;;
 
     esac
 
@@ -80,18 +84,18 @@ function blis_script(;blis32::Bool=false)
     fi
 
     # Include A64FX in Arm64 metaconfig.
-    if [ ${BLI_CONFIG} = arm64 ]; then
+    #if [ ${BLI_CONFIG} = arm64 ]; then
         # Add A64FX to the registry.
-        patch config_registry ${WORKSPACE}/srcdir/patches/config_registry.metaconfig+a64fx.patch
+        #patch config_registry ${WORKSPACE}/srcdir/patches/config_registry.metaconfig+a64fx.patch
 
         # Unscreen Arm SVE code for metaconfig.
-        atomic_patch -p1 ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_arm_sve_h.patch
-        atomic_patch -p1 ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_armsve512_int_12xk.patch
-        atomic_patch -p1 ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_armsve256_int_8x10.patch
+        #atomic_patch -p1 ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_arm_sve_h.patch
+        #atomic_patch -p1 ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_armsve512_int_12xk.patch
+        #atomic_patch -p1 ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_armsve256_int_8x10.patch
 
         # Screen out A64FX sector cache.
-        patch config/a64fx/bli_cntx_init_a64fx.c ${WORKSPACE}/srcdir/patches/a64fx_config_screen_sector_cache.patch
-    fi
+        #patch config/a64fx/bli_cntx_init_a64fx.c ${WORKSPACE}/srcdir/patches/a64fx_config_screen_sector_cache.patch
+    #fi
 
     # Import libblastrampoline-style nthreads setter.
     cp ${WORKSPACE}/srcdir/nthreads64_.c frame/compat/nthreads64_.c
@@ -106,7 +110,7 @@ function blis_script(;blis32::Bool=false)
     make install
 
     # Static library is not needed.
-    rm ${prefix}/lib/libblis.a
+    rm -f ${prefix}/lib/libblis.a
 
     # Rename .dll for Windows targets.
     if [[ "${target}" == *"x86_64"*"w64"* ]]; then
@@ -147,13 +151,17 @@ end
 # platforms are passed in on the command line
 platforms = [
     Platform("x86_64", "linux"; libc="musl"),
-    Platform("armv7l", "linux"; libc="glibc"),
+    Platform("x86_64", "linux"; libc="glibc"),
     Platform("x86_64", "windows"),
     Platform("x86_64", "macos"),
-    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("x86_64", "freebsd"),
+    Platform("i686", "linux"; libc="glibc"),
     Platform("aarch64", "linux"; libc="glibc"),
     Platform("aarch64", "macos"),
-    Platform("x86_64", "freebsd")
+    Platform("aarch64", "freebsd"),
+    Platform("armv7l", "linux"; libc="glibc"),
+    Platform("riscv64", "linux"; libc="glibc"),
+    Platform("powerpc64le", "linux"; libc="glibc"),
 ]
 
 # Dependencies that must be installed before this package can be built
