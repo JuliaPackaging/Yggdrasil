@@ -106,10 +106,11 @@ products = [
 dependencies = [
     Dependency("JpegTurbo_jll"; compat="3.0.4"),
     Dependency("XZ_jll"; compat="5.6.3"),
-    Dependency("Zlib_jll"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
     Dependency("Zstd_jll"; compat="1.5.6"),
     Dependency("libdeflate_jll"; compat="1.20.0"),
     Dependency("libwebp_jll"; compat="1.4.0"),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
+               preferred_gcc_version=v"6", julia_compat="1.6")
