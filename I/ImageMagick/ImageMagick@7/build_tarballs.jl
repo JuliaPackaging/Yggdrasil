@@ -57,7 +57,16 @@ dependencies = [
     Dependency("Libtiff_jll"; compat="4.7.1"),
     Dependency("OpenJpeg_jll"),
     Dependency("Zlib_jll"; compat="1.2.12"),
+    Dependency("Librsvg_jll"),
+    Dependency("FFTW_jll"),
+    Dependency("Fontconfig_jll"),
+    Dependency("FreeType2_jll"),
+    Dependency("Pango_jll"),
     Dependency("libpng_jll"),
+    Dependency("libwebp_jll"),
+    Dependency("libzip_jll"),
+    Dependency("Bzip2_jll"),
+    Dependency("Zstd_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
