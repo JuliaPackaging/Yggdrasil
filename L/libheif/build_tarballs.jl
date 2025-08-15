@@ -1,14 +1,14 @@
 using BinaryBuilder, Pkg
 
 name = "libheif"
-version = v"1.20.1"
+version = v"1.20.2"
 ygg_build = 0  # NOTE: increment on rebuild of the same upstream version, reset on new libheifversion
 ygg_version = VersionNumber(version.major, version.minor, 1_000 * version.patch + ygg_build)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/strukturag/libheif/releases/download/v$(version)/libheif-$(version).tar.gz",
-                  "55cc76b77c533151fc78ba58ef5ad18562e84da403ed749c3ae017abaf1e2090"),
+    GitSource("https://github.com/strukturag/libheif.git",
+              "35dad50a9145332a7bfdf1ff6aef6801fb613d68"),
 ]
 
 # Bash recipe for building across all platforms
@@ -47,7 +47,7 @@ dependencies = [
     # Dependency("libpng_jll"),  # examples
     Dependency("brotli_jll"),
     Dependency("LERC_jll"),
-    Dependency("Zlib_jll"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
