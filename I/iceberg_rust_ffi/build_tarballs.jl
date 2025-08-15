@@ -4,8 +4,7 @@ name = "iceberg_rust_ffi"
 version = v"0.1.0"
 
 sources = [
-    # GitSource("https://github.com/RelationalAI/iceberg_rust_ffi.git", "bebf0f4244b522e3b7412f895d28e00675bbedb2"),
-    DirectorySource("/Users/vstefanovic/ws/iceberg_rust_ffi/"; target="iceberg_rust_ffi"),
+    GitSource("https://github.com/RelationalAI/iceberg_rust_ffi.git", "583c8f2c2cc5cb5f92100ad8eae32f22b7a76c09"),
 ]
 
 # Bash recipe for building across all platforms
@@ -22,10 +21,10 @@ install -Dvm 755 "target/${rust_target}/release/libiceberg_rust_ffi.${dlext}" "$
 # We could potentially support more platforms, if required.
 # Except perhaps i686 Windows and Musl systems.
 platforms = [
-    # Platform("aarch64", "macos"),
+    Platform("aarch64", "macos"),
     Platform("x86_64",  "linux"),
-    # Platform("x86_64",  "macos"),
-    # Platform("aarch64", "linux"),
+    Platform("x86_64",  "macos"),
+    Platform("aarch64", "linux"),
 ]
 
 # The products that we will ensure are always built
@@ -34,9 +33,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
-    #Dependency("OpenSSL_jll"; compat="3.0.14")
-]
+dependencies = Dependency[]
 
 # Build the tarballs
 build_tarballs(
