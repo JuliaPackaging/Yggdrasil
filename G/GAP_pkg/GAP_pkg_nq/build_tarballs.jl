@@ -40,7 +40,7 @@ name = gap_pkg_name(name)
 platforms = gap_platforms()
 
 dependencies = [
-    Dependency("GMP_jll", v"6.2.0"),
+    Dependency("GMP_jll", v"6.2.1"),
 ]
 
 # The products that we will ensure are always built
