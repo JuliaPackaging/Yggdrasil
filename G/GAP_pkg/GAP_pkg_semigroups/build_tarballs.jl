@@ -48,6 +48,7 @@ install_license LICENSE
 name = gap_pkg_name(name)
 dependencies = gap_pkg_dependencies(gap_version)
 platforms = gap_platforms()
+filter!(p -> arch(p) != "riscv64", platforms) # TODO: remove again
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
