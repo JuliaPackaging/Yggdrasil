@@ -45,8 +45,6 @@ export SHARE_ZLIB=1
     --disable-contrib \
     --disable-cups \
     --without-tesseract
-    --without-tesseract \
-    --without-x
 
 # create the binaries
 make -j${nproc} so
