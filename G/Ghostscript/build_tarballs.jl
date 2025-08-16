@@ -4,6 +4,7 @@ using BinaryBuilder
 
 name = "Ghostscript"
 version = v"9.55.0"
+ygg_version = v"9.55.1" # Bump patch level for Yggdrasil since JLLWrappers has upgraded
 
 # Collection of sources required to build
 sources = [
@@ -29,16 +30,23 @@ autoreconf -v
 # Specify the native compiler for the programs that need to be run on the host
 export CCAUX=${CC_BUILD}
 
+# Use our provided Zlib and not the vendored one
+rm -fr ./zlib
+export SHARE_ZLIB=1
+
 # configure the Makefiles.  Note we disable Tesseract because we don't need it
 # at the moment, it requires a C++17 compiler, and configure for Windows fails
 # because it doesn't find "threading".
-./configure --prefix=${prefix} \
+./configure \
+    --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
     --without-x \
     --disable-contrib \
     --disable-cups \
     --without-tesseract
+    --without-tesseract \
+    --without-x
 
 # create the binaries
 make -j${nproc} so
@@ -103,8 +111,15 @@ products = [
 ]
 
 dependencies = Dependency[
+    Dependency("JpegTurbo_jll"; compat="3.0.4"),
+    Dependency("XZ_jll"; compat="5.6.3"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
+    Dependency("Zstd_jll"; compat="1.5.6"),
+    Dependency("libdeflate_jll"; compat="1.20.0"),
+    Dependency("libwebp_jll"; compat="1.4.0"),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; 
+               julia_compat="1.6")
 
 # build trigger: 1
