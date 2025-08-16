@@ -6,7 +6,7 @@ upstream_version = v"7.1.2-1"
 version = VersionNumber(
     upstream_version.major,
     upstream_version.minor,
-    upstream_version.patch * 1000 + upstream_version.prerelease[1]
+    upstream_version.patch * 1000 + upstream_version.prerelease[1] + 1
 )
 
 # Collection of sources required to build imagemagick
@@ -57,10 +57,19 @@ dependencies = [
     Dependency("Libtiff_jll"; compat="4.7.1"),
     Dependency("OpenJpeg_jll"),
     Dependency("Zlib_jll"; compat="1.2.12"),
+    Dependency("Librsvg_jll"),
+    Dependency("FFTW_jll"),
+    Dependency("Fontconfig_jll"),
+    Dependency("FreeType2_jll"),
+    Dependency("Pango_jll"),
     Dependency("libpng_jll"),
+    Dependency("libwebp_jll"),
+    Dependency("libzip_jll"),
+    Dependency("Bzip2_jll"),
+    Dependency("Zstd_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # Using GCC 6 to get a newer libc, required by OpenJpeg that is pulled in by Libtiff
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"7")
+               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"9")
