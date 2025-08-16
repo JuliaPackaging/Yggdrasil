@@ -30,7 +30,7 @@ autoreconf -v
 export CCAUX=${CC_BUILD}
 
 # Use our provided Zlib and not the vendored one
-rm -fr 
+rm -fr ./zlib
 export SHARE_ZLIB=1
 
 # configure the Makefiles.  Note we disable Tesseract because we don't need it
