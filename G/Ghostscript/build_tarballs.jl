@@ -117,11 +117,7 @@ products = [
 
 dependencies = Dependency[
     Dependency("JpegTurbo_jll"; compat="3.0.4"),
-    Dependency("XZ_jll"; compat="5.6.3"),
     Dependency("Zlib_jll"; compat="1.2.12"),
-    Dependency("Zstd_jll"; compat="1.5.6"),
-    Dependency("libdeflate_jll"; compat="1.20.0"),
-    Dependency("libwebp_jll"; compat="1.4.0"),
 ]
 
 build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; 
