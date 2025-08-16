@@ -29,6 +29,10 @@ autoreconf -v
 # Specify the native compiler for the programs that need to be run on the host
 export CCAUX=${CC_BUILD}
 
+# Use our provided Zlib and not the vendored one
+rm -fr 
+export SHARE_ZLIB=1
+
 # configure the Makefiles.  Note we disable Tesseract because we don't need it
 # at the moment, it requires a C++17 compiler, and configure for Windows fails
 # because it doesn't find "threading".
@@ -113,4 +117,4 @@ dependencies = [
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
-               preferred_gcc_version=v"6", julia_compat="1.6")
+               julia_compat="1.6")
