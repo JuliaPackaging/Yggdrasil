@@ -40,7 +40,8 @@ script = raw"""
     export PATH=$PATH:$CUDA_HOME/bin
     export CUDACXX=$CUDA_HOME/bin/nvcc
     export CUDA_LIB=${CUDA_HOME}/lib
-    ln -s ${CUDA_HOME}/lib ${CUDA_HOME}/lib64
+    #ln -s ${CUDA_HOME}/lib ${CUDA_HOME}/lib64
+    
     mkdir build
     cd build
     cmake \
@@ -68,8 +69,9 @@ for p in cuda_platforms
     end
 end
 
+filter!(p -> arch(p) == "x86_64", platforms)
 platforms = expand_cxxstring_abis(platforms) 
-platforms = filter!(p -> cxxstring_abi(p) == "cxx11", platforms)
+filter!(p -> cxxstring_abi(p) == "cxx11", platforms)
 
 products = [
     LibraryProduct("cunumeric_jl_wrapper", :cunumeric_jl_wrapper),
