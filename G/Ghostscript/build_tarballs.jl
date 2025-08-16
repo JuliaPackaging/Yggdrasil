@@ -25,6 +25,9 @@ if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 ../patches/001-mingw-build.patch
     atomic_patch -p1 ../patches/003-libspectre.patch
 fi
+if [[ "${target}" == *apple* ]]; then                                                                                    
+   atomic_patch -p1 ../patches/libpng-math_h.patch
+fi
 autoreconf -v
 
 # Specify the native compiler for the programs that need to be run on the host
@@ -33,6 +36,9 @@ export CCAUX=${CC_BUILD}
 # Use our provided Zlib and not the vendored one
 rm -fr ./zlib
 export SHARE_ZLIB=1
+
+# Fix include path
+export CPPFLAGS="$CPPFLAGS -I${includedir}"
 
 # configure the Makefiles.  Note we disable Tesseract because we don't need it
 # at the moment, it requires a C++17 compiler, and configure for Windows fails
@@ -44,7 +50,8 @@ export SHARE_ZLIB=1
     --without-x \
     --disable-contrib \
     --disable-cups \
-    --without-tesseract
+    --without-tesseract \
+    --with-system-libpng
 
 # create the binaries
 make -j${nproc} so
@@ -118,6 +125,6 @@ dependencies = Dependency[
 ]
 
 build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; 
-               julia_compat="1.6")
+               preferred_gcc_version=v"7", julia_compat="1.6")
 
 # build trigger: 1
