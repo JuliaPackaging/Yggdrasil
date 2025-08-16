@@ -109,7 +109,8 @@ for platform in platforms
         julia_compat = "1.10", 
         preferred_gcc_version = v"11",
         lazy_artifacts = true,
-        augment_platform_block = CUDA.augment
+        augment_platform_block = CUDA.augment,
+        dont_dlopen = true,
     )
 
 
