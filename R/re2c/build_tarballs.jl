@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "re2c"
-version_string = "3.1"
+version_string = "4.3"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/skvadrik/re2c/releases/download/$(version_string)/re2c-$(version_string).tar.xz",
-                  "0ac299ad359e3f512b06a99397d025cfff81d3be34464ded0656f8a96676c029")
+                  "51e88d6d6b6ab03eb7970276aca7e0db4f8e29c958b84b561d2fdcb8351c7150"),
 ]
 
 # Bash recipe for building across all platforms
@@ -27,9 +27,18 @@ platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
+    ExecutableProduct("re2c", :re2c),
+    ExecutableProduct("re2d", :re2d),
     ExecutableProduct("re2go", :re2go),
+    ExecutableProduct("re2hs", :re2hs),
+    # ExecutableProduct("re2java", :re2java),
+    ExecutableProduct("re2js", :re2js),
+    ExecutableProduct("re2ocaml", :re2ocaml),
+    ExecutableProduct("re2py", :re2py),
     ExecutableProduct("re2rust", :re2rust),
-    ExecutableProduct("re2c", :re2c)
+    ExecutableProduct("re2swift", :re2swift),
+    ExecutableProduct("re2v", :re2v),
+    # ExecutableProduct("re2zig", :re2zig),
 ]
 
 # Dependencies that must be installed before this package can be built
