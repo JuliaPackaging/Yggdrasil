@@ -74,8 +74,8 @@ platforms = expand_cxxstring_abis(platforms)
 filter!(p -> cxxstring_abi(p) == "cxx11", platforms)
 
 products = [
-    LibraryProduct("cunumeric_jl_wrapper", :cunumeric_jl_wrapper),
-    LibraryProduct("cunumeric_c_wrapper", :cunumeric_c_wrapper),
+    LibraryProduct("libcunumeric_jl_wrapper", :libcunumeric_jl_wrapper),
+    LibraryProduct("libcunumeric_c_wrapper", :libcunumeric_c_wrapper),
 ] 
 
 
