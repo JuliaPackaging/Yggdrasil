@@ -50,8 +50,7 @@ export CPPFLAGS="$CPPFLAGS -I${includedir}"
     --without-x \
     --disable-contrib \
     --disable-cups \
-    --without-tesseract \
-    --with-system-libpng
+    --without-tesseract
 
 # create the binaries
 make -j${nproc} so
@@ -121,6 +120,6 @@ dependencies = Dependency[
 ]
 
 build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; 
-               preferred_gcc_version=v"6", clang_use_lld=false, julia_compat="1.6")
+               preferred_gcc_version=v"7", clang_use_lld=false, julia_compat="1.6")
 
 # build trigger: 1
