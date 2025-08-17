@@ -613,7 +613,7 @@ for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), cuda_version in ("n
               )
     end
 	if gpu == "rocm"
-		rocm_version = v"5.4.4"
+		rocm_version = v"5.2.3"
 		append!(dependencies,
 			[
 		        BuildDependency(PackageSpec(; name="ROCmLLVM_jll", version=rocm_version)),
