@@ -110,7 +110,6 @@ for platform in platforms
         preferred_gcc_version = v"11",
         lazy_artifacts = true,
         augment_platform_block = CUDA.augment,
-        dont_dlopen = true,
     )
 
 
