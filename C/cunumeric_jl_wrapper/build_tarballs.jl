@@ -19,8 +19,10 @@ MIN_CUDA_VERSION = v"12.2"
 MAX_CUDA_VERSION = v"12.8.999"
 
 script = raw"""
-    # Put new CMake first on path
+    # Put new CMake first on path & delete old one
+    apk del cmake
     export PATH=${host_bindir}:$PATH
+    
     cd ${WORKSPACE}/srcdir/
     # Necessary operations to cross compile CUDA from x86_64 to aarch64
     if [[ "${target}" == aarch64-linux-* ]]; then
