@@ -19,8 +19,12 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/ImageMagick*/
+
 atomic_patch -p1 ../patches/check-have-clock-realtime.patch
 atomic_patch -p1 ../patches/urlmon.patch
+
+export LDFLAGS="${LDFLAGS} -L${libdir}"
+
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
