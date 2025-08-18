@@ -8,12 +8,12 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "z3"
-version = v"4.15.2"
+version = v"4.15.3"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/Z3Prover/z3/releases/download/z3-$(version)/z3_solver-$(version).0.tar.gz",
-                  "6c304512105714c4235cbb8589bf0e1f44f7cb88f689534bc2389c4cb7463510"),
+                  "78f69aebda5519bfd8af146a129f36cf4721a3c2667e80d9fe35cc9bb4d214a6"),
     FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
