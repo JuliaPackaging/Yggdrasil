@@ -53,10 +53,10 @@ export SHARE_ZLIB=1
     --without-x \
     --disable-contrib \
     --disable-cups \
-    --without-tesseract
+    --without-tesseract \
+    --enable-dynamic
 
 # create the binaries
-make -j${nproc} so
 make -j${nproc}
 
 # install to prefixes
