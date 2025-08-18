@@ -12,7 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/expat*/
+cd $WORKSPACE/srcdir/libexpat*/
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static
 make -j${nproc}
 make install
