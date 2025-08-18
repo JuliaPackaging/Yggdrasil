@@ -52,10 +52,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Ghostscript_jll"),
-    Dependency("JpegTurbo_jll"),
+    Dependency("Ghostscript_jll"; compat="9.55.1"),
     Dependency("Libtiff_jll"; compat="4.7.1"),
     Dependency("OpenJpeg_jll"),
+    Dependency("JpegTurbo_jll"; compat="3.0.4"),
     Dependency("Zlib_jll"; compat="1.2.12"),
     Dependency("Librsvg_jll"),
     Dependency("FFTW_jll"),
