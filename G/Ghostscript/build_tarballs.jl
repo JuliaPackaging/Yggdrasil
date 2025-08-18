@@ -33,12 +33,15 @@ autoreconf -v
 # Specify the native compiler for the programs that need to be run on the host
 export CCAUX=${CC_BUILD}
 
+# Fix include path
+export CPPFLAGS="$CPPFLAGS -I${includedir}"
+
+# Add the path for our own zlib
+export LDFLAGS="$LDFLAGS -L${libdir}"
+
 # Use our provided Zlib and not the vendored one
 rm -fr ./zlib
 export SHARE_ZLIB=1
-
-# Fix include path
-export CPPFLAGS="$CPPFLAGS -I${includedir}"
 
 # configure the Makefiles.  Note we disable Tesseract because we don't need it
 # at the moment, it requires a C++17 compiler, and configure for Windows fails
