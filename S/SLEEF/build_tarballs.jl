@@ -66,7 +66,7 @@ install_license $WORKSPACE/srcdir/sleef/LICENSE.txt
 # platforms are passed in on the command line
 platforms = supported_platforms()
 # 32-bit platforms are not supported any more
-filter!(p -> arch(p) ∉ ("armv6l", "armv7l", "i686"), platforms)
+filter!(p -> nbits(p) > 32, platforms)
 # On Windows there is a problem with exception handling. SLEEF wants
 # to use sjlj, but GCC doesn't provide the respective run-time
 # functions.
