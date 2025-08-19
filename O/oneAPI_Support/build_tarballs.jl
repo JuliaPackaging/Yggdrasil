@@ -1,11 +1,11 @@
 using BinaryBuilder, Pkg
 
 name = "oneAPI_Support"
-version = v"0.8.0"
+version = v"0.9.0"
 
 generic_sources = [
     GitSource("https://github.com/JuliaGPU/oneAPI.jl",
-              "1c4121c8f9fea661c5c7fc2aa8a64ae04bf03ce7")
+              "a0ee7059c75c7df2a3c6e68c58b7753357e85cad")
 ]
 
 platform_sources = Dict(
