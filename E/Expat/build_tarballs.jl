@@ -7,12 +7,13 @@ version = v"2.7.1"
 
 # Collection of sources required to build Expat
 sources = [
-    GitSource("https://github.com/libexpat/libexpat.git", "f9a3eeb3e09fbea04b1c451ffc422ab2f1e45744"),
+    ArchiveSource("https://github.com/libexpat/libexpat/releases/download/R_$(version.major)_$(version.minor)_$(version.patch)/expat-$(version).tar.xz",
+                  "354552544b8f99012e5062f7d570ec77f14b412a3ff5c7d8d0dae62c0d217c30"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libexpat*/
+cd $WORKSPACE/srcdir/expat*/
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static
 make -j${nproc}
 make install
@@ -33,4 +34,5 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6")
