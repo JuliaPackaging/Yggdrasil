@@ -70,6 +70,7 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
+# SLEEF uses modern C++ features and requires at least GCC 11
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    preferred_gcc_version=v"7.4",
+    preferred_gcc_version=v"11",
     julia_compat="1.6")
