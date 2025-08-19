@@ -7,12 +7,12 @@ version = v"3.1.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/openbabel/openbabel/archive/refs/tags/openbabel-3-1-1.tar.gz", "c97023ac6300d26176c97d4ef39957f06e68848d64f1a04b0b284ccff2744f02")
+    GitSource("https://github.com/openbabel/openbabel.git", "cbd4db43f8908b874864280fdc03bf92569eebc1")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/openbabel-*
+cd $WORKSPACE/srcdir/openbabel
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
