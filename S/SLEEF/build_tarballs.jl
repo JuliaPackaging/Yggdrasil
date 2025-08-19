@@ -8,12 +8,24 @@ version = v"3.9.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/shibatch/sleef.git", "906ca7512ee483296780a81a21b9ca715d40dfe1"),
-    DirectorySource("bundled")
+    #TODO FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz",
+    #TODO            "cd4f08a75577145b8f05245a2975f7c81401d75e9535dcffbb879ee1deefcbf4"),
+    DirectorySource("bundled"),
 ]
+
+There are problems on 32-bit systems, on 64-bit Windows, and on MacOS.
+On MacOS we probably need the MacOSX12 SDK and we don't know how to download it.
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/sleef
+
+#TODO if [[ "${target}" == *-apple-darwin* ]]; then
+#TODO     rm -rf /opt/${target}/${target}/sys-root/System
+#TODO     tar --extract --file=${WORKSPACE}/srcdir/MacOSX11.3.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX11.3.sdk/System MacOSX11.3.sdk/usr
+#TODO     export MACOSX_DEPLOYMENT_TARGET=11.3
+#TODO fi
+
 if [[ $target == arm-* ]]; then
     atomic_patch -p1 ../patches/arm-neon32vfpv4.patch
 fi
@@ -72,5 +84,4 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 # SLEEF uses modern C++ features and requires at least GCC 11
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    preferred_gcc_version=v"11",
-    julia_compat="1.6")
+               julia_compat="1.6", preferred_gcc_version=v"11")
