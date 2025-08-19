@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "SLEEF"
-version = v"3.7.0"
+version = v"3.9.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/shibatch/sleef.git", "c5494730bf601599a55f4e77f357b51ba590585e"),
+    GitSource("https://github.com/shibatch/sleef.git", "906ca7512ee483296780a81a21b9ca715d40dfe1"),
     DirectorySource("bundled")
 ]
 
@@ -17,6 +17,7 @@ cd $WORKSPACE/srcdir/sleef
 if [[ $target == arm-* ]]; then
     atomic_patch -p1 ../patches/arm-neon32vfpv4.patch
 fi
+
 mkdir build-native
 cd build-native
 cmake \
@@ -66,8 +67,6 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency("MPFR_jll"),
-    Dependency("OpenSSL_jll"; compat="3.0.15"), # we need 3.0.15 for aarch64-unknown-freebsd
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
