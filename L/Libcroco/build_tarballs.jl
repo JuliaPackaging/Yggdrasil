@@ -28,7 +28,34 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+# Experimental platforms cannot be used with Julia v1.5-.
+# Change `julia_compat` to require at least Julia v1.6
+# platforms = supported_platforms()
+# Remove this when we build a newer version for which we can target the former
+# experimental platforms
+platforms = [
+    # glibc Linuces
+    Platform("i686", "linux"),
+    Platform("x86_64", "linux"),
+    Platform("aarch64", "linux"),
+    Platform("armv7l", "linux"),
+    Platform("powerpc64le", "linux"),
+
+    # musl Linuces
+    Platform("i686", "linux"; libc="musl"),
+    Platform("x86_64", "linux"; libc="musl"),
+    Platform("aarch64", "linux"; libc="musl"),
+    Platform("armv7l", "linux"; libc="musl"),
+
+    # BSDs
+    Platform("x86_64", "macos"),
+    Platform("x86_64", "freebsd"),
+
+    # Windows
+    Platform("i686", "windows"),
+    Platform("x86_64", "windows"),
+]
+
 
 # The products that we will ensure are always built
 products = [

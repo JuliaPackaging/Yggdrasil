@@ -23,10 +23,27 @@ install_license COPYING
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms =  filter!(!Sys.iswindows, supported_platforms())
+# platforms =  filter!(!Sys.iswindows, supported_platforms())
 # Remove this when we build a newer version for which we can target the former
 # experimental platforms
-filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64") && arch(p) != "armv6l", platforms)
+platforms = [
+    # glibc Linuces
+    Platform("i686", "linux"),
+    Platform("x86_64", "linux"),
+    Platform("aarch64", "linux"),
+    Platform("armv7l", "linux"),
+    Platform("powerpc64le", "linux"),
+
+    # musl Linuces
+    Platform("i686", "linux"; libc="musl"),
+    Platform("x86_64", "linux"; libc="musl"),
+    Platform("aarch64", "linux"; libc="musl"),
+    Platform("armv7l", "linux"; libc="musl"),
+
+    # BSDs
+    Platform("x86_64", "macos"),
+    Platform("x86_64", "freebsd"),
+]
 
 # The products that we will ensure are always built
 products = [
