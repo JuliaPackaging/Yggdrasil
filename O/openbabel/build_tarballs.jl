@@ -7,7 +7,7 @@ version = v"3.1.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/openbabel/openbabel.git", "cbd4db43f8908b874864280fdc03bf92569eebc1")
+    GitSource("https://github.com/openbabel/openbabel.git", "cbd4db43f8908b874864280fdc03bf92569eebc1"),
 ]
 
 # Bash recipe for building across all platforms
