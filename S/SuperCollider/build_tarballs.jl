@@ -23,7 +23,7 @@ cmake -G Ninja \
     -DSC_IDE=OFF \
     -DSC_QT=OFF \
     -DSC_USE_QTWEBENGINE=OFF \
-    -DSUPERNOVA=OFF \
+    -DSUPERNOVA=ON \
     -DNO_X11=ON \
     -DSCLANG_SERVER=OFF \
     -DSC_ABLETON_LINK=OFF
