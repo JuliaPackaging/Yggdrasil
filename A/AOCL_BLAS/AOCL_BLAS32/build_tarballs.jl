@@ -1,4 +1,4 @@
-name = "AOCL_BLAS"
+name = "AOCL_BLAS32"
 
 include("../common.jl")
 
