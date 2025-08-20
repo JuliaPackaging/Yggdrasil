@@ -12,11 +12,12 @@ cd ${WORKSPACE}/srcdir/supercollider
 git submodule update --init --recursive
 
 EXTRA_CMAKE_ARGS=()
-if [[ "${target}" == *-apple-* ]]; then
-    EXTRA_CMAKE_ARGS+=(-DAUDIOAPI=coreaudio)
-else
+# NOTE supernova does not support coreaudio on Apple platforms yet, so we force portaudio
+# if [[ "${target}" == *-apple-* ]]; then
+#     EXTRA_CMAKE_ARGS+=(-DAUDIOAPI=coreaudio)
+# else
     EXTRA_CMAKE_ARGS+=(-DAUDIOAPI=portaudio)
-fi
+# fi
 
 $host_bindir/cmake -G Ninja \
     -S . \
