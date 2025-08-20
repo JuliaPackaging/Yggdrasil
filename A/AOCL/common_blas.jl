@@ -30,8 +30,8 @@ function blis_script(; blis32::Bool=false)
         sed -i "s/-funsafe-math-optimizations//g" $i
     done
 
-    # For 64-bit builds, add _64 suffix to exported BLAS routines.
-    # This corresponds to ILP64 handling of OpenBLAS thus Julia.
+    # For 64-bit builds, add _64 suffix to exported BLAS routines
+    # This corresponds to ILP64 handling of OpenBLAS thus Julia
     # if [[ ${nbits} == 64 ]] && [[ "${BLIS32}" != "true" ]]; then
         # atomic_patch -p1 ${WORKSPACE}/srcdir/patches/suffix64.patch
     # fi
@@ -42,7 +42,7 @@ function blis_script(; blis32::Bool=false)
         atomic_patch -p1 ${WORKSPACE}/srcdir/patches/blis_tls_type-mingw32.patch
     fi
 
-    # Import libblastrampoline-style nthreads setter.
+    # Import libblastrampoline-style nthreads setter
     cp ${WORKSPACE}/srcdir/nthreads64_.c frame/compat/nthreads64_.c
 
     if [[ "${BLIS32}" == "true" ]]; then
@@ -50,27 +50,24 @@ function blis_script(; blis32::Bool=false)
     else
         export BLIS_F77BITS=${nbits}
     fi
-    ./configure --enable-cblas -p ${prefix} -t ${BLIS_THREAD} -b ${BLIS_F77BITS} --enable-aocl-dynamic ${BLIS_CONFIG}
+    ./configure --enable-cblas --disable-static --enable-aocl-dynamic -p ${prefix} -t ${BLIS_THREAD} -b ${BLIS_F77BITS} ${BLIS_CONFIG}
     make -j${nproc}
     make install
-
-    # Static library is not needed
-    rm ${prefix}/lib/libblis-mt.a
 
     # Rename .dll for Windows targets.
     if [[ "${target}" == *"x86_64"*"w64"* ]]; then
         mkdir -p ${libdir}
-        mv ${prefix}/lib/libblis-mt.5.dll ${libdir}/libblis-mt.5.dll
+        mv ${prefix}/lib/libblis-mt.5.dll ${libdir}/libblis-mt-5.dll
     fi
 
     if [[ "${BLIS32}" == "true" ]]; then
         # Rename libblis-mt.${dlext} into libblis32-mt.${dlext}
         if [[ "${target}" == *"x86_64"*"w64"* ]]; then
-            mv -v ${libdir}/libblis-mt.5.dll ${libdir}/libblis32-mt.5.dll
+            mv -v ${libdir}/libblis-mt-5.dll ${libdir}/libblis32-mt-5.dll
         else
             mv -v ${libdir}/libblis-mt.${dlext} ${libdir}/libblis32-mt.${dlext}
         fi
-        # If there were links that are now broken, fix 'em up
+        # If there were links that are now broken, fix them
         for l in $(find ${prefix}/lib -xtype l); do
             if [[ $(basename $(readlink ${l})) == libblis ]]; then
                 ln -vsf libblis32-mt.${dlext} ${l}
