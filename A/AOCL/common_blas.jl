@@ -25,7 +25,7 @@ function blis_script(; blis32::Bool=false)
     export BLIS_THREAD=openmp
 
     for i in ./config/*/*.mk; do
-        # Building in container forbids unsafe optimization.
+        # Prevent any unsafe optimization
         sed -i "s/-ffast-math//g" $i
         sed -i "s/-funsafe-math-optimizations//g" $i
     done
@@ -65,8 +65,11 @@ function blis_script(; blis32::Bool=false)
 
     if [[ "${BLIS32}" == "true" ]]; then
         # Rename libblis-mt.${dlext} into libblis32-mt.${dlext}
-        mv -v ${libdir}/libblis-mt.${dlext} ${libdir}/libblis32-mt.${dlext}
-
+        if [[ "${target}" == *"x86_64"*"w64"* ]]; then
+            mv -v ${libdir}/libblis-mt.5.dll ${libdir}/libblis32-mt.5.dll
+        else
+            mv -v ${libdir}/libblis-mt.${dlext} ${libdir}/libblis32-mt.${dlext}
+        fi
         # If there were links that are now broken, fix 'em up
         for l in $(find ${prefix}/lib -xtype l); do
             if [[ $(basename $(readlink ${l})) == libblis ]]; then
