@@ -17,20 +17,12 @@ if [[ ${target} == x86_64-linux-musl ]]; then
     rm /usr/lib/libnghttp2.*
 fi
 
-# Correct HDF5 compiler wrappers
-perl -pi -e 's+-I/workspace/srcdir/hdf5-1.14.0/src/H5FDsubfiling++' $(which h5pcc)
-
-H5LIB=""
-if [[ "${target}" == *-mingw* ]]; then
-    H5LIB="-DHDF5_hdf5_LIBRARY_RELEASE=$(ls ${WORKSPACE}/destdir/bin/libhdf5-*.${dlext})"
-fi
 cmake -Bbuild -GNinja \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
-    -DCGNS_ENABLE_SHARED_LIB=YES \
-    -DCGNS_ENABLE_STATIC_LIB=NO \
-    ${H5LIB}
+    -DCGNS_ENABLE_SHARED_LIB=ON \
+    -DCGNS_ENABLE_STATIC_LIB=OFF
 cmake --build build --parallel ${nproc}
 cmake --install build
 """
@@ -53,4 +45,6 @@ dependencies = [
     Dependency("HDF5_jll"; compat="~1.14.6"),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+# We need at least GCC 5 for the HDF5 libraries
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"5")
