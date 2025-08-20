@@ -9,10 +9,9 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 name = "CUDA_SDK_static"
 version = CUDA.full_version(v"10.2")
 
-platforms = [Platform("aarch64", "linux"),
+platforms = [Platform("x86_64", "linux"),
              Platform("powerpc64le", "linux"),
-             Platform("x86_64", "linux"),
-             Platform("x86_64", "macos"),
+             Platform("aarch64", "linux"; cuda_platform="jetson"),
              Platform("x86_64", "windows")]
 
 build_sdk(name, version, platforms; static=true)

@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "OpenCL_Headers"
-version = v"2023.12.14"
+version = v"2025.06.13"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/KhronosGroup/OpenCL-Headers.git",
-              "2368105c0531069fe927989505de7d125ec58c55"),
+              "2e30669d48718fd460f085b4b35b160dad51ce9d"),
 ]
 
 # Bash recipe for building across all platforms

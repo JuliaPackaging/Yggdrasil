@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "telnet"
-version = v"2.2.0"
+version = v"2.6.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://ftp.gnu.org/gnu/inetutils/inetutils-$(version.major).$(version.minor).tar.xz",
-                  "d547f69172df73afef691a0f7886280fd781acea28def4ff4b4b212086a89d80")
+                  "68bedbfeaf73f7d86be2a7d99bcfbd4093d829f52770893919ae174c0b2357ca")
 ]
 
 # Bash recipe for building across all platforms
@@ -37,7 +37,8 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="Ncurses_jll", uuid="68e3532b-a499-55ff-9963-d1c0c0748b3a"))
     Dependency(PackageSpec(name="Readline_jll", uuid="05236dd9-4125-5232-aa7c-9ec0c9b2c25a"))
-    Dependency(PackageSpec(name="libxcrypt_legacy_jll", uuid="5ef642bb-a58b-5208-ae37-583168b2c491"); platforms=filter(p -> libc(p) == "glibc", platforms))
+    Dependency(PackageSpec(name="libxcrypt_legacy_jll", uuid="5ef642bb-a58b-5208-ae37-583168b2c491");
+               compat="4.4.38", platforms=filter(p -> libc(p) == "glibc", platforms))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

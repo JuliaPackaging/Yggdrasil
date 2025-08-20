@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libssh"
-version = v"0.10.6"
+version = v"0.11.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.libssh.org/files/$(version.major).$(version.minor)/libssh-$(version).tar.xz", "1861d498f5b6f1741b6abc73e608478491edcf9c9d4b6630eef6e74596de9dc1")
+    ArchiveSource("https://www.libssh.org/files/$(version.major).$(version.minor)/libssh-$(version).tar.xz", "14b7dcc72e91e08151c58b981a7b570ab2663f630e7d2837645d5a9c612c1b79")
 ]
 
 # Bash recipe for building across all platforms
@@ -35,8 +35,8 @@ fi
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
                                      -DCMAKE_BUILD_TYPE=Release \
                                      -DWITH_GSSAPI=${GSSAPI_ENABLED} \
-                                     -DWITH_EXAMPLES=OFF \
-                                     -DDOXYGEN_GENERATE_TAGFILE='tags.xml' ..
+                                     -DWITH_EXAMPLES=OFF ..
+
 make -j${nproc}
 make docs install
 
@@ -61,7 +61,7 @@ dependencies = [
     HostBuildDependency("Doxygen_jll"),
     Dependency("Kerberos_krb5_jll"; compat="1.19.3"),
     Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="3.0.8"),
-    Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"); compat="1.2.12")
+    Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"); compat="1.2.13")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

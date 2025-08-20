@@ -22,23 +22,25 @@ using BinaryBuilder, Pkg
 #
 
 # WARNING WARNING WARNING: any change to the the version of this JLL should be carefully
-# coordinated with corresponding changes to Singular_jll.jl, Nemo.jl and polymake_jll
+# coordinated with corresponding changes to Singular_jll.jl, Nemo.jl and polymake_jll.jl
 # and possibly other packages.
 name = "FLINT"
-upstream_version = v"3.1.1"
-version_offset = v"0.0.0"
+upstream_version = v"3.3.1"
+version_offset = v"1.0.1"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
 
 # Collection of sources required to build FLINT
 sources = [
-    GitSource("https://github.com/flintlib/flint.git", "f1ec31e79c1923823f87afa524a060a880da6afa"), # v3.1.1
+   ArchiveSource("https://github.com/flintlib/flint/releases/download/v$(upstream_version)/flint-$(upstream_version).tar.gz",
+                 "64d70e513076cfa971e0410b58c1da5d35112913e9a56b44e2c681b459d3eafb"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/flint*
+cd ${WORKSPACE}/srcdir/flint*
+
 if [[ ${target} == *musl* ]]; then
    # because of some ordering issue with pthread.h and sched.h includes
    export CFLAGS=-D_GNU_SOURCE
@@ -54,7 +56,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental = true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -65,12 +67,12 @@ products = [
 dependencies = [
     Dependency("GMP_jll", v"6.2.1"),
     Dependency("MPFR_jll", v"4.1.1"),
-    Dependency("OpenBLAS32_jll", v"0.3.10"),
+    Dependency("OpenBLAS32_jll", v"0.3.29"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat = "1.6", preferred_gcc_version=v"6",
+               julia_compat = "1.6", preferred_gcc_version=v"8",
                init_block = """
   if !Sys.iswindows() && !(get(ENV, "NEMO_THREADED", "") == "1")
     #to match the global gmp ones

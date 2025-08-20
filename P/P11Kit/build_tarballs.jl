@@ -3,32 +3,41 @@
 using BinaryBuilder, Pkg
 
 name = "P11Kit"
-version = v"0.24.1"
+version = v"0.25.5"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/p11-glue/p11-kit/releases/download/$(version)/p11-kit-$(version).tar.xz", "d8be783efd5cd4ae534cee4132338e3f40f182c3205d23b200094ec85faaaef8")
+    ArchiveSource("https://github.com/p11-glue/p11-kit/releases/download/$(version)/p11-kit-$(version).tar.xz",
+                  "04d0a86450cdb1be018f26af6699857171a188ac6d5b8c90786a60854e1198e5"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-meson --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release p11-kit-*
+cd ${WORKSPACE}/srcdir/p11-kit-*
 
-# Meson beautifully forces thin archives, without checking whether the dynamic linker
-# actually supports them: <https://github.com/mesonbuild/meson/issues/10823>.  Let's remove
-# the (deprecated...) `T` option to `ar`
-sed -i.bak 's/csrDT/csrD/' build.ninja
+# Update our compiler wrappers.
+# (This prevents compiler warnings that are later treated as errors.)
+# - Only pass linker arguments when linking.
+if [[ ${target} = aarch64-apple-darwin* ]]; then
+    pushd /
+    atomic_patch -p0 ${WORKSPACE}/srcdir/patches/aarch64-apple-clang.patch
+    popd
+fi
+if [[ ${target} = x86_64-apple-darwin* ]]; then
+    pushd /
+    atomic_patch -p0 ${WORKSPACE}/srcdir/patches/x86_64-apple-clang.patch
+    popd
+fi
 
-ninja -j${nproc}
-ninja install
-install_license p11-kit-*/COPYING
+meson setup --cross-file="${MESON_TARGET_TOOLCHAIN}" --buildtype=release builddir
+meson compile -C builddir
+meson install -C builddir
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-
 
 # The products that we will ensure are always built
 products = [
@@ -39,8 +48,11 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    Dependency("Libffi_jll"; compat="~3.2.2"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+# Prefer GCC 6 to define `memcpy@GLIBC_2.14'`
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"6")

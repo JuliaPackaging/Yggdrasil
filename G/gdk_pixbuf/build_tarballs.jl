@@ -1,31 +1,34 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "gdk_pixbuf"
-version = v"2.42.10"
+version = v"2.42.12"
+# We bumped the version because we updated the dependencies to build for riscv64
+ygg_version = v"2.42.13"
 
 # Collection of sources required to build gdk-pixbuf
 sources = [
     ArchiveSource("https://gitlab.gnome.org/GNOME/gdk-pixbuf/-/archive/$(version)/gdk-pixbuf-$(version).tar.bz2",
-                  "efb6110873a94bddc2ab09a0e1c81acadaac014d2e622869529e0042c0e81d9b"),
+                  "c608eb59eb3a697de108961c7d64303e5bcd645c2a95da9a9fe60419dfaa56f6"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/gdk-pixbuf-*/
+cd $WORKSPACE/srcdir/gdk-pixbuf-*
 mkdir build && cd build
 
-FLAGS=()
-if [[ "${target}" == x86_64-linux-gnu ]]; then
-    FLAGS+=(-Dintrospection=enabled)
-fi
+# Correct pkgconfig entries for host build dependencies, i.e. for
+# scripts that need to run at build time. These pkgconfig entries
+# would otherwise point to non-existing files, making meson fail.
+sed -i 's+glib_genmarshal=${bindir}+'"glib_genmarshal=${host_bindir}"'+' ${host_libdir}/pkgconfig/glib-2.0.pc
+sed -i 's+gobject_query=${bindir}+'"gobject_query=${host_bindir}"'+' ${host_libdir}/pkgconfig/glib-2.0.pc
+sed -i 's+glib_mkenums=${bindir}+'"glib_mkenums=${host_bindir}"'+' ${host_libdir}/pkgconfig/glib-2.0.pc
 
 meson .. \
     -Dman=false \
     -Dinstalled_tests=false \
     -Dgio_sniffing=false \
-    "${FLAGS[@]}" \
     --cross-file="${MESON_TARGET_TOOLCHAIN}"
 ninja -j${nproc}
 ninja install
@@ -48,25 +51,21 @@ products = [
 # Some dependencies are needed only on Linux and FreeBSD
 linux_freebsd = filter(p->Sys.islinux(p)||Sys.isfreebsd(p), platforms)
 
-# gobject_introspection is needed only on x86_64-linux-gnu
-introspect_platform = filter(p -> Sys.islinux(p) && libc(p) == "glibc" && arch(p) == "x86_64", platforms)
-
 # Dependencies that must be installed before this package can be built
 dependencies = [
     # Need a host gettext for msgfmt
     HostBuildDependency("Gettext_jll"),
     # Need a host glib for glib-compile-resources
-    HostBuildDependency("Glib_jll"),
-    Dependency("Glib_jll"; compat="2.76.5"),
-    Dependency("JpegTurbo_jll"),
-    Dependency("libpng_jll"),
-    Dependency("Libtiff_jll"; compat="4.5.1"),
+    HostBuildDependency(PackageSpec(; name="Glib_jll", version=v"2.84.0")),
+    Dependency("Glib_jll"; compat="2.84.0"),
+    Dependency("JpegTurbo_jll"; compat="3.1.1"),
+    Dependency("libpng_jll"; compat="1.6.47"),
+    Dependency("Libtiff_jll"; compat="4.7.1"),
     Dependency("Xorg_libX11_jll"; platforms=linux_freebsd),
     BuildDependency("Xorg_xproto_jll"; platforms=linux_freebsd),
     BuildDependency("Xorg_kbproto_jll"; platforms=linux_freebsd),
-    BuildDependency("gobject_introspection_jll"; platforms=introspect_platform)
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat="1.6", clang_use_lld=false)
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"6")

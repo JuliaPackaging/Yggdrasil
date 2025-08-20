@@ -3,27 +3,27 @@
 using BinaryBuilder
 
 name = "Objconv"
-version = v"2.53.0"
+version = v"2.54.0"
 
 # Collection of sources required to build objconv
 sources = [
     GitSource("https://github.com/staticfloat/objconv",
-              "ae54df67e0c4ac2c78f3a7ece486ed4e92d098af")
+              "c68e441d2b93074b01ea193cb17e944ed751750f")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/objconv*/
 
-mkdir -p ${prefix}/bin
-${CXX} ${CPPFLAGS} ${CXXFLAGS} ${LDFLAGS} -O2 -o ${prefix}/bin/objconv${exeext} src/*.cpp
+mkdir -p "${bindir}"
+${CXX} ${CPPFLAGS} ${CXXFLAGS} ${LDFLAGS} -O2 -o "${bindir}/objconv${exeext}" src/*.cpp
 
 install_license /usr/share/licenses/GPL-3.0+
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -31,7 +31,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

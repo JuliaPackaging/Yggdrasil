@@ -6,15 +6,15 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "AMReX"
-version_string = "24.03"
+version_string = "25.07"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/AMReX-Codes/amrex/releases/download/$(version_string)/amrex-$(version_string).tar.gz",
-                  "024876fe65838d1021fcbf8530b992bff8d9be1d3f08a1723c4e2e5f7c28b427"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-                  "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
+                  "19b9e5271451c202610f9c6569189c28fc05bcd655d53525df9169efeb5ee66f"),
+    FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
+               "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
 ]
 
 # Bash recipe for building across all platforms
@@ -22,12 +22,9 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/amrex
 
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
+    tar --extract --file=${WORKSPACE}/srcdir/MacOSX10.14.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX10.14.sdk/System MacOSX10.14.sdk/usr
     export MACOSX_DEPLOYMENT_TARGET=10.14
-    popd
 fi
 
 # Correct HDF5 compiler wrappers
@@ -57,6 +54,10 @@ if [[ "${target}" == *-mingw32* ]]; then
 else
     hdf5opts="-DAMReX_HDF5=ON"
 fi
+
+export MPITRAMPOLINE_CC=${CC}
+export MPITRAMPOLINE_CXX=${CXX}
+export MPITRAMPOLINE_FC=${FC}
 
 cmake \
     -B build \
@@ -105,14 +106,9 @@ platforms = filter(p -> libgfortran_version(p).major ≥ 5, platforms)
 # We cannot build with musl since AMReX requires the `fegetexcept` GNU API
 platforms = filter(p -> libc(p) ≠ "musl", platforms)
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.0", OpenMPI_compat="4.1.6, 5")
-# Avoid platforms where the MPI implementation isn't supported
-# OpenMPI
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
-# MPItrampoline
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && (Sys.iswindows(p) || libc(p) == "musl")), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
+# Windows does not supported parallel HDF5
 hdf5_platforms = filter(!Sys.iswindows, platforms)
 
 # Dependencies that must be installed before this package can be built
@@ -121,7 +117,7 @@ dependencies = [
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else. 
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae");
                platforms=filter(!Sys.isbsd, platforms)),
-    Dependency(PackageSpec(name="HDF5_jll"); compat="~1.14", platforms=hdf5_platforms),
+    Dependency(PackageSpec(name="HDF5_jll"); compat="~1.14.6", platforms=hdf5_platforms),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
                platforms=filter(Sys.isbsd, platforms)),
 ]
@@ -133,4 +129,4 @@ append!(dependencies, platform_dependencies)
 # - AMReX requires C++17, and at least GCC 8 to provide the <filesystem> header
 # - GCC 8.1.0 suffers from an ICE, so we use GCC 9 instead
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"9", clang_use_lld=false)
+               augment_platform_block, clang_use_lld=false, julia_compat="1.6", preferred_gcc_version = v"9")

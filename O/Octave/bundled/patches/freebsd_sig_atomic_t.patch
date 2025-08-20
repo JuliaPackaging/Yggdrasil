@@ -1,0 +1,11 @@
+--- liboctave/util/quit.h.orig	2025-02-22 05:49:55.536960056 +0000
++++ liboctave/util/quit.h	2025-02-22 05:53:11.370493713 +0000
+@@ -224,7 +224,7 @@
+ 
+ #if defined (__cplusplus)
+ 
+-extern OCTAVE_API std::atomic<int> octave_interrupt_state;
++extern OCTAVE_API std::atomic<sig_atomic_t> octave_interrupt_state;
+ 
+ extern OCTAVE_API volatile std::atomic<bool> octave_signal_caught;
+ 

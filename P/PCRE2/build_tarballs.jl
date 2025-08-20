@@ -4,12 +4,19 @@ using BinaryBuilder, Pkg
 using BinaryBuilderBase: sanitize
 
 name = "PCRE2"
-version_string = "10.43"
+
+# We are temporarily switching back to building version 10.42 to build
+# this version for newer architectures.
+version_string = "10.42"
+# version_string = "10.45"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/PCRE2Project/pcre2", "3864abdb713f78831dd12d898ab31bbb0fa630b6"),
+    # We use an archive because (a) the archives are signed, hence
+    # presumably immutable, and (b) the git source uses submodules.
+    ArchiveSource("https://github.com/PCRE2Project/pcre2/releases/download/pcre2-$(version.major).$(version.minor)/pcre2-$(version.major).$(version.minor).tar.bz2",
+                  "8d36cd8cb6ea2a4c2bb358ff6411b0c788633a2a45dabbf1aeb4b701d1b5e840"),
 ]
 
 # Bash recipe for building across all platforms
@@ -20,11 +27,6 @@ if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     # Install msan runtime (for clang)
     cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
 fi
-
-./autogen.sh
-
-# Update configure scripts
-update_configure_scripts
 
 # Force optimization
 export CFLAGS="${CFLAGS} -O3"
@@ -61,10 +63,14 @@ llvm_version = v"13.0.1"
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
+    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll",
+                                uuid="4e17d02c-6bf5-513e-be62-445f41c75a11",
+                                version=llvm_version);
                     platforms=filter(p -> sanitize(p)=="memory", platforms)),
 
 ]
 
+# Need at least GCC XXX for asm instructions on i686
+# (We could instead patch the asm instructions.)
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.9", preferred_llvm_version=llvm_version)
+               julia_compat="1.9", preferred_gcc_version=v"5", preferred_llvm_version=llvm_version)

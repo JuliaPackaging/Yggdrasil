@@ -1,7 +1,9 @@
 using BinaryBuilder
 
 name = "ZeroMQ"
-version = v"4.3.5"
+# We bumped the version number to build for riscv64
+zeromq_version = v"4.3.5"
+version = v"4.3.6"
 
 # Collection of sources required to build ZMQ
 sources = [
@@ -37,7 +39,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -45,8 +47,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
-    Dependency("libsodium_jll")
+dependencies = [
+    Dependency("libsodium_jll"; compat="1.0.21")
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;

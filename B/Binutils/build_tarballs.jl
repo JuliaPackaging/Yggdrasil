@@ -1,16 +1,16 @@
 using BinaryBuilder
 
 name = "Binutils"
-version = v"2.41"
+version = v"2.44"
 
 sources = [
     ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-$(version.major).$(version.minor).tar.xz",
-                  "ae9a5789e23459e59606e6714723f2d3ffc31c03174191ef0d015bdf06007450"),
+                  "ce2017e059d63e67ddb9240e9d4ec49c2893605035cd60e92ad53177f4377237"),
     DirectorySource("bundled"),
 ]
 
 script = raw"""
-cd ${WORKSPACE}/srcdir/binutils-*/
+cd ${WORKSPACE}/srcdir/binutils-*
 
 ./configure --prefix=${prefix} \
     --target=${target} \
@@ -48,7 +48,7 @@ else
 fi
 """
 
-platforms = supported_platforms(; exclude=!Sys.islinux)
+platforms = supported_platforms(; exclude = p -> !(Sys.islinux(p) || Sys.isfreebsd(p)))
 
 products = [
     ExecutableProduct("addr2line", :addr2line),
@@ -77,4 +77,5 @@ products = [
 
 dependencies = Dependency[]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"5")

@@ -3,27 +3,24 @@
 using BinaryBuilder
 
 name = "CMake"
-version = v"3.28.1"
+version = v"3.31.6"
 
 # Collection of sources required to build CMake
 sources = [
-    GitSource("https://github.com/Kitware/CMake", "1eed682d7cca9bb2c2b0709a6c3202a3b08613b2"),
+    GitSource("https://github.com/Kitware/CMake", "859ca5c4d7396a011a462878179bc173e1283731"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/CMake
 
-cmake \
+cmake -B build -G Ninja \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_BUILD_TYPE:STRING=Release \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DBUILD_TESTING:BOOL=OFF \
-    -GNinja
-
-ninja
-ninja -j${nproc}
-ninja install
+    -DBUILD_TESTING:BOOL=OFF
+cmake --build build --parallel ${nproc}
+cmake --install build
 """
 
 # Build for all supported platforms.
@@ -36,7 +33,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenSSL_jll"; compat="3.0.12")
+    Dependency("OpenSSL_jll"; compat="3.0.16")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

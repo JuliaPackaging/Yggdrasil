@@ -3,21 +3,23 @@
 using BinaryBuilder, Pkg
 
 name = "GMT"
-version = v"6.5.1"
+version = v"6.5.4"
 GSHHG_VERSION="2.3.7"
-DCW_VERSION="2.1.2"
+DCW_VERSION="2.2.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/GenericMappingTools/gmt", 
-    "f46befb54715bd17b29b8e995f0c797855d10911"),
+    "1ed5e1bf4be46714e4124f9c1935e5bb14a6fb99"),
     
     ArchiveSource("https://github.com/GenericMappingTools/gshhg-gmt/releases/download/$GSHHG_VERSION/gshhg-gmt-$GSHHG_VERSION.tar.gz",
         "9bb1a956fca0718c083bef842e625797535a00ce81f175df08b042c2a92cfe7f"),
 
-    ArchiveSource("https://github.com/GenericMappingTools/dcw-gmt/releases/download/$DCW_VERSION/dcw-gmt-$DCW_VERSION.tar.gz",
-        "4bb840d075c8ba3e14aeb41cf17c24236bff787566314f9ff758ab9977745d99")
+    ArchiveSource("https://github.com/GenericMappingTools/DCW-type-files/releases/download/new/dcw-gmt-$(DCW_VERSION)_plus.tar.gz",
+        "096E64535A7E3CC1F870A9D6A569B5BAC63040B602D04F4077D41B62EC0F7BBB")
 ]
+
+#     ArchiveSource("https://github.com/GenericMappingTools/dcw-gmt/releases/download/$DCW_VERSION/dcw-gmt-$DCW_VERSION.tar.gz",
 
 # Bash recipe for building across all platforms
 script = """
@@ -72,14 +74,13 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="LibCURL_jll", uuid="deac9b47-8bc7-5906-a0fe-35ac56dc84c0"); compat="7.73.0, 8.0.1")
-    Dependency("NetCDF_jll", compat="400.902.5")
-    Dependency("PROJ_jll", compat="900.100.0")
-    Dependency(PackageSpec(name="GDAL_jll", uuid="a7073274-a066-55f0-b90d-d619367d196c"); compat="301.600.200")
+    Dependency("NetCDF_jll", compat="401.900.300")
+    Dependency("PROJ_jll", compat="902.600")
+    Dependency(PackageSpec(name="GDAL_jll", uuid="a7073274-a066-55f0-b90d-d619367d196c"); compat="303.1100")
     Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a"))
     Dependency(PackageSpec(name="PCRE_jll", uuid="2f80f16e-611a-54ab-bc61-aa92de5b98fc"))
     Dependency(PackageSpec(name="LAPACK32_jll", uuid="17f450c3-bd24-55df-bb84-8c51b4b939e3"))
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"))
-    Dependency(PackageSpec(name="FFMPEG_jll", uuid="b22a6f82-2f65-5046-a5b2-351ab43fb4e5"); compat="4.4.0")
     Dependency(PackageSpec(name="Glib_jll", uuid="7746bdde-850d-59dc-9ae8-88ece973131d"))
     Dependency(PackageSpec(name="Ghostscript_jll", uuid="61579ee1-b43e-5ca0-a5da-69d92c66a64b"))
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms))
@@ -87,4 +88,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"7.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"11")

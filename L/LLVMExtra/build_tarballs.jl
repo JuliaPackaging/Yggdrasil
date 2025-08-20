@@ -7,12 +7,12 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "LLVMExtra"
 repo = "https://github.com/maleadt/LLVM.jl.git"
-version = v"0.0.29"
+version = v"0.0.37"
 
-llvm_versions = [v"13.0.1", v"14.0.6", v"15.0.7", v"16.0.6", v"17.0.6"]
+llvm_versions = [v"15.0.7", v"16.0.6", v"17.0.6", v"18.1.7", v"19.1.7", v"20.1.2"]
 
 sources = [
-    GitSource(repo, "c36d8434f10e5726acaa24446d0d4a9719608ca3")
+    GitSource(repo, "764cc59dec8f2f90c16a39e9a3087cb9b366183b"),
 ]
 
 # Bash recipe for building across all platforms
@@ -46,6 +46,8 @@ CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
 
 ninja -C build -j ${nproc} install
+
+install_license LICENSE-APACHE LICENSE-MIT
 """
 
 augment_platform_block = """
@@ -75,10 +77,17 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
     # These are the platforms we will build for by default, unless further
     # platforms are passed in on the command line
     platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
-
+    ## we don't build LLVM 15 for i686-linux-musl.
     if llvm_version >= v"15"
-        # We don't build LLVM 15 for i686-linux-musl.
         filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
+    end
+    ## We only have LLVM builds for AArch64 BSD starting from LLVM 18
+    if version < v"18"
+        filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+    end
+    ## We only have LLVM builds for RISC-V starting from LLVM 19
+    if llvm_version < v"19"
+        filter!(p -> !(arch(p) == "riscv64"), platforms)
     end
 
     for platform in platforms

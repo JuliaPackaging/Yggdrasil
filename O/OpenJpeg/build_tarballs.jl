@@ -3,25 +3,29 @@
 using BinaryBuilder, Pkg
 
 name = "OpenJpeg"
-version = v"2.5.0"
+ygg_version = v"2.5.4" # Bump version to build for riscv
+version = v"2.5.3"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/uclouvain/openjpeg.git",
-              "a5891555eb49ed7cc26b2901ea680acda136d811"),
+              "210a8a5690d0da66f02d49420d7176a21ef409dc"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/openjpeg/
+
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
+
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_STATIC_LIBS=OFF
+
 make -j${nproc}
 make install
 """
@@ -40,10 +44,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("LittleCMS_jll")
-    Dependency("libpng_jll")
+    Dependency("LittleCMS_jll"; compat="2.15.0")
+    Dependency("libpng_jll"; compat="1.6.38")
     Dependency("Libtiff_jll"; compat="4.5.1")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"6")

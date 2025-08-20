@@ -3,12 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_event_stream"
-version = v"0.3.2"
+version = v"0.5.6"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-event-stream.git",
-              "08f24e384e5be20bcffa42b49213d24dad7881ae"),
+    GitSource("https://github.com/awslabs/aws-c-event-stream.git", "2a0f7c9fe656c4789fa762a4ff04d06401abd282"),
 ]
 
 # Bash recipe for building across all platforms
@@ -37,9 +36,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("aws_c_common_jll"; compat="0.9.3"),
-    Dependency("aws_c_io_jll"; compat="0.13.32"),
-    Dependency("aws_checksums_jll"; compat="0.1.17"),
+    Dependency("aws_c_common_jll"; compat="0.12.4"),
+    Dependency("aws_c_io_jll"; compat="0.21.2"),
+    Dependency("aws_checksums_jll"; compat="0.2.8"),
     BuildDependency("aws_lc_jll"),
 ]
 

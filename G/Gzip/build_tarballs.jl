@@ -3,21 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "Gzip"
-version = v"1.13.0"
+version = v"1.14.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://ftp.gnu.org/gnu/gzip/gzip-$(version.major).$(version.minor).tar.xz",
-                  "7454eb6935db17c6655576c2e1b0fabefd38b4d0936e0f87f48cd062ce91a057"),
+                  "01a7b881bd220bfdf615f97b8718f80bdfd3f6add385b993dcf6efd14e8c0ac6"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/gzip-*/
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-if [[ "$target" == *-mingw* ]]; then
-    sed "s/LIBS =/LIBS = -lssp/g" -i Makefile
-fi
 make -j${nproc}
 make install
 install_license COPYING

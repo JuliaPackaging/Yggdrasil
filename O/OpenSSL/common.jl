@@ -26,6 +26,8 @@ function translate_target()
         echo darwin64-arm64-cc
     elif [[ ${target} == x86_64-unknown-freebsd* ]]; then
         echo BSD-x86_64
+    elif [[ ${target} == aarch64-unknown-freebsd* ]]; then
+        echo BSD-aarch64
     elif [[ ${target} == x86_64*mingw* ]]; then
         echo mingw64
     elif [[ ${target} == i686*mingw* ]]; then
@@ -50,7 +52,7 @@ rm -v ${libdir}/lib{crypto,ssl}.a
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[

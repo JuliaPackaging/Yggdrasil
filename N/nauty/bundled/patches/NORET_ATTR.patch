@@ -1,0 +1,55 @@
+From 05d4308e49341b5acbb9d0953f77d50ce8a91a27 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lars=20G=C3=B6ttgens?= <lars.goettgens@rwth-aachen.de>
+Date: Mon, 17 Mar 2025 12:32:40 +0100
+Subject: [PATCH] Try to fix building with C++
+
+Proposed in https://mailman.anu.edu.au/pipermail/nauty/2025-February/000992.html
+---
+ gtools.h   | 2 +-
+ nauty-h.in | 8 +++-----
+ 2 files changed, 4 insertions(+), 6 deletions(-)
+
+diff --git a/gtools.h b/gtools.h
+index 193fc87..aee97b8 100644
+--- a/gtools.h
++++ b/gtools.h
+@@ -302,7 +302,7 @@ extern void arg_sequence(char**,char*,long*,int,int*,char*);
+ extern void arg_sequence_min(char**,char*,long*,int,int,int*,char*);
+ 
+ extern void writerange(FILE*,int,long,long);
+-extern void NORET_ATTR gt_abort(const char*);
++NORET_ATTR extern void gt_abort(const char*);
+ extern char *stringcopy(char*);
+ extern boolean strhaschar(char*,int);
+ 
+diff --git a/nauty-h.in b/nauty-h.in
+index 289831d..9e25d6d 100644
+--- a/nauty-h.in
++++ b/nauty-h.in
+@@ -53,12 +53,10 @@ it is necessary to check they are correct.
+ #endif
+ 
+ /* Function noreturn attribute, if any */
+-#define C_NORET_ATTR @ac_cv_noret@   /* Only for C */
+-#if (defined(__cplusplus) && __cplusplus >= 202302L) \
++#define C_NORET_ATTR _Noreturn   /* Only for C */
++#if (defined(__cplusplus) && __cplusplus >= 201103L) \
+         || (!defined(__cplusplus) && __STDC_VERSION__ >= 202311L)
+ #define NORET_ATTR [[noreturn]]
+-#elif defined(__cplusplus) && __cplusplus >= 201103L
+-#define NORET_ATTR [[_Noreturn]]
+ #elif !defined(__cplusplus) && __STDC_VERSION__ >= 201112L
+ #define NORET_ATTR _Noreturn
+ #elif defined(__GNUC__)
+@@ -1464,7 +1462,7 @@ int leftbit[] =   {8,7,6,6,5,5,5,5,4,4,4,4,4,4,4,4,
+ extern "C" {
+ #endif
+ 
+-extern void NORET_ATTR alloc_error(const char*);
++NORET_ATTR extern void alloc_error(const char*);
+ extern void breakout(int*,int*,int,int,int,set*,int);
+ extern boolean cheapautom(int*,int,boolean,int);
+ extern void doref(graph*,int*,int*,int,int*,int*,int*,set*,int*,
+-- 
+2.48.1
+

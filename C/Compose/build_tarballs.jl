@@ -63,7 +63,10 @@ dependencies = [
                platforms=filter(!Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
                platforms=filter(Sys.isbsd, platforms)),
-    Dependency(PackageSpec(name="HDF5_jll"); compat="~1.14"),
+    # We had to restrict compat with HDF5 because of ABI breakage:
+    # https://github.com/JuliaPackaging/Yggdrasil/pull/10347#issuecomment-2662923973
+    # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
+    Dependency(PackageSpec(name="HDF5_jll"); compat="1.14.0 - 1.14.3"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

@@ -3,23 +3,24 @@
 using BinaryBuilder
 
 name = "Xorg_xcb_util_image"
-version = v"0.4.0"
+version = v"0.4.1"
 
 # Collection of sources required to build libxcb
 sources = [
-    ArchiveSource("https://xcb.freedesktop.org/dist/xcb-util-image-$(version).tar.bz2",
-                  "2db96a37d78831d643538dd1b595d7d712e04bdccf8896a5e18ce0f398ea2ffc"),
+    ArchiveSource("https://xcb.freedesktop.org/dist/xcb-util-image-$(version).tar.xz",
+                  "ccad8ee5dadb1271fd4727ad14d9bd77a64e505608766c4e98267d9aede40d3d"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/xcb-util-image-*/
-CPPFLAGS="-I${prefix}/include"
 
 # When compiling for things like ppc64le, we need newer `config.sub` files
 update_configure_scripts
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=no
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
+    --enable-malloc0returnsnull=no \
+    --with-pic
 make -j${nproc}
 make install
 """
@@ -39,4 +40,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

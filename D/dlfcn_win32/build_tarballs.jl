@@ -3,15 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "dlfcn_win32"
-version = v"1.3.1"
+version = v"1.4.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/dlfcn-win32/dlfcn-win32.git", "9d0ef119d9fcb9139f831adc224857b791c81140")
+    GitSource("https://github.com/dlfcn-win32/dlfcn-win32.git", "057dcdd6899b5a9c5abf6c47607cb95816e053a2")
 ]
 
-dependencies = [
-
+dependencies = Dependency[
 ]
 
 # Bash recipe for building across all platforms

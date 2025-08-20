@@ -3,19 +3,23 @@
 using BinaryBuilder, Pkg
 
 name = "GTPSA"
-version = v"1.2.1"
+version = v"1.6.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/mattsignorelli/gtpsa.git", "b2889d45f0546dbddcfc3a345c3e43d657e9acb3")
+    GitSource("https://github.com/mattsignorelli/gtpsa.git", "6147f1ce0977cfcb79c3225108c32594faad9047")
 ]
 
 # Bash recipe for building across all platforms
+# GCC >=11 is necessary because the source code uses the two-argument version
+# of the attribute malloc, see https://github.com/mattsignorelli/gtpsa/blob/394a20847b869a842c6a89f2af1a889c3a1c2813/code/mad_mem.h#L73-L75 (also unsupported by clang)
+# Furthermore, GCC >= 12.1 is also required because 11.1.0 throws an internal compiler error
+# when trying to compile GTPSA_jll  >= v1.6.1
 script = raw"""
 cd $WORKSPACE/srcdir
 cd gtpsa/
 cmake . -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release
-make
+make -j${nproc}
 make install
 """
 
@@ -33,8 +37,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"))
-    Dependency(PackageSpec(name="LAPACK32_jll", uuid="17f450c3-bd24-55df-bb84-8c51b4b939e3"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"11.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"12.1.0")

@@ -3,12 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "s2n_tls"
-version = v"1.4.12"
+version = v"1.5.24"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/aws/s2n-tls.git",
-              "9774bd7f3fa1388b0652a29ba09924284e3abf24"),
+    GitSource("https://github.com/aws/s2n-tls.git", "418313c274d9cb72984dcd6e5e917740bc180664"),
 ]
 
 # Bash recipe for building across all platforms
@@ -43,3 +42,5 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"7")
+
+# build trigger: 1

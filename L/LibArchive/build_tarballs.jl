@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "LibArchive"
-version = v"3.5.2"
+version = v"3.8.1"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://www.libarchive.org/downloads/libarchive-$(version).tar.xz",
-                  "f0b19ff39c3c9a5898a219497ababbadab99d8178acc980155c7e1271089b5a0"),
+                  "19f917d42d530f98815ac824d90c7eaf648e9d9a50e4f309c812457ffa5496b5"),
 ]
 
 # Bash recipe for building across all platforms
@@ -43,11 +43,11 @@ products = [
 dependencies = [
     Dependency("acl_jll"; platforms=filter(Sys.islinux, platforms)),
     Dependency("Attr_jll"; platforms=filter(Sys.islinux, platforms)),
-    Dependency("Bzip2_jll"; compat="1.0.8"),
-    Dependency("Expat_jll"; compat="2.2.10"),
+    Dependency("Bzip2_jll"; compat="1.0.9"),
+    Dependency("Expat_jll"; compat="2.6.5"),
     Dependency("Libiconv_jll"),
     Dependency("Lz4_jll"),
-    Dependency("OpenSSL_jll"; compat="1.1.10"),
+    Dependency("OpenSSL_jll"; compat="3.0.16"),
     Dependency("XZ_jll"),
     Dependency("Zlib_jll"),
     Dependency("Zstd_jll"),

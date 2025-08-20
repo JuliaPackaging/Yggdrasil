@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "oneTBB"
-version = v"2021.9.0"
+version = v"2022.0.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/oneapi-src/oneTBB.git",
-              "a00cc3b8b5fb4d8115e9de56bf713157073ed68c"),
+              "0c0ff192a2304e114bc9e6557582dfba101360ff"),
     DirectorySource("./bundled"),
 ]
 
@@ -24,20 +24,31 @@ if [[ ${target} == *mingw* ]]; then
     export CXXFLAGS="-D_WIN32_WINNT=0x0600"
 fi
 
-mkdir build && cd build/
+if [[ ${target} == i686-linux-musl* ]]; then
+    # Disable strong stack protection. Our musl version doesn't
+    # provide the symbol `__stack_chk_fail_local` in the way GCC expects.
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/i686-musl.patch"
+fi
 
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+if [[ "${target}" == *-freebsd* ]]; then
+    # Follow oneTBB makefile fix for missing symbols error: https://cgit.freebsd.org/ports/commit/?id=3677983542cc09a0e5f085e463a895e9e4dce9aa
+    export LDFLAGS="${LDFLAGS} -Wl,--undefined-version"
+fi
+
+cmake -B build -G Ninja \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DTBB_STRICT=OFF \
     -DTBB_TEST=OFF \
-    -DTBB_EXAMPLES=OFF \
-    ..
-make -j${nproc}
-make install
+    -DTBB_EXAMPLES=OFF
+cmake --build build --parallel ${nproc}
+cmake --install build
 """
 
-platforms = expand_cxxstring_abis(supported_platforms())
+
+platforms = supported_platforms()
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [

@@ -1,0 +1,125 @@
+--- a/src/runtime_src/core/common/config.h
++++ b/src/runtime_src/core/common/config.h
+@@ -21,13 +21,13 @@
+ //------------------Enable dynamic linking on windows-------------------------//
+ 
+ #ifdef _WIN32
+-# ifdef XRT_CORE_COMMON_SOURCE
+-#  define XRT_CORE_COMMON_EXPORT __declspec(dllexport)
+-# else
+-#  define XRT_CORE_COMMON_EXPORT __declspec(dllimport)
+-# endif
++#ifdef XRT_CORE_COMMON_SOURCE
++#define XRT_CORE_COMMON_EXPORT __declspec(dllexport)
++#else
++#define XRT_CORE_COMMON_EXPORT __declspec(dllimport)
++#endif
+ #endif
+-#ifdef __GNUC__
++#ifndef _WIN32
+ # ifdef XRT_CORE_COMMON_SOURCE
+ #  define XRT_CORE_COMMON_EXPORT __attribute__ ((visibility("default")))
+ # else
+@@ -36,15 +36,15 @@
+ #endif
+ 
+ #ifndef XRT_CORE_COMMON_EXPORT
+-# define XRT_CORE_COMMON_EXPORT
++#define XRT_CORE_COMMON_EXPORT
+ #endif
+ 
+-#ifdef __GNUC__
++#ifndef _WIN32
+ # define XRT_CORE_UNUSED __attribute__((unused))
+ #endif
+ 
+ #ifdef _WIN32
+-# define XRT_CORE_UNUSED
++#define XRT_CORE_UNUSED
+ #endif
+ 
+ #endif
+--- a/src/runtime_src/core/include/xrt/detail/config.h
++++ b/src/runtime_src/core/include/xrt/detail/config.h
+@@ -12,7 +12,7 @@
+ #  define XRT_API_EXPORT __declspec(dllimport)
+ # endif
+ #endif
+-#ifdef __GNUC__
++#ifdef __linux__
+ # ifdef XRT_API_SOURCE
+ #  define XRT_API_EXPORT __attribute__ ((visibility("default")))
+ # else
+--- a/src/runtime_src/core/pcie/noop/config.h
++++ b/src/runtime_src/core/pcie/noop/config.h
+@@ -27,7 +27,7 @@
+ #  define XRT_CORE_PCIE_NOOP_EXPORT __declspec(dllimport)
+ # endif
+ #endif
+-#ifdef __GNUC__
++#ifdef __linux__
+ # ifdef XRT_CORE_PCIE_NOOP_SOURCE
+ #  define XRT_CORE_PCIE_NOOP_EXPORT __attribute__ ((visibility("default")))
+ # else
+--- a/src/runtime_src/core/pcie/windows/alveo/config.h
++++ b/src/runtime_src/core/pcie/windows/alveo/config.h
+@@ -14,7 +14,7 @@
+ #  define XRT_CORE_PCIE_WINDOWS_EXPORT __declspec(dllimport)
+ # endif
+ #endif
+-#ifdef __GNUC__
++#ifdef __linux__
+ # ifdef XRT_CORE_PCIE_WINDOWS_SOURCE
+ #  define XRT_CORE_PCIE_WINDOWS_EXPORT __attribute__ ((visibility("default")))
+ # else
+--- a/src/runtime_src/xdp/config.h
++++ b/src/runtime_src/xdp/config.h
+@@ -28,7 +28,7 @@
+     #define XDP_CORE_EXPORT __declspec(dllimport)
+   #endif  
+ #endif
+-#ifdef __GNUC__
++#ifndef _WIN32
+   #ifdef XDP_CORE_SOURCE
+     #define XDP_CORE_EXPORT __attribute__ ((visibility("default")))
+   #else
+@@ -47,7 +47,7 @@
+     #define XDP_PLUGIN_EXPORT __declspec(dllimport)
+   #endif  
+ #endif
+-#ifdef __GNUC__
++#ifndef _WIN32
+   #ifdef XDP_PLUGIN_SOURCE
+     #define XDP_PLUGIN_EXPORT __attribute__ ((visibility("default")))
+   #else
+--- a/src/runtime_src/xocl/config.h
++++ b/src/runtime_src/xocl/config.h
+@@ -29,7 +29,7 @@
+ # endif
+ #endif
+ 
+-#ifdef __GNUC__
++#ifndef _WIN32
+ # ifdef XRT_XOCL_SOURCE
+ #  define XRT_XOCL_EXPORT __attribute__ ((visibility("default")))
+ # else
+--- a/src/runtime_src/xrt/config.h
++++ b/src/runtime_src/xrt/config.h
+@@ -26,7 +26,7 @@
+ #  define XRT_EXPORT __declspec(dllimport)
+ # endif
+ #endif
+-#ifdef __GNUC__
++#ifdef __linux__
+ # ifdef XRT_SOURCE
+ #  define XRT_EXPORT __attribute__ ((visibility("default")))
+ # else
+@@ -38,7 +38,7 @@
+ # define XRT_EXPORT
+ #endif
+ 
+-#ifdef __GNUC__
++#ifdef __linux__
+ # define XRT_UNUSED __attribute__((unused))
+ #endif
+ 

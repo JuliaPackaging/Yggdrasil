@@ -1,0 +1,16 @@
+--- a/configure
++++ b/configure
+@@ -14032,11 +14032,6 @@
+ fi
+ 
+- if test x$bwin32 = xtrue || test x$cygwin = xtrue || test x$midipix = xtrue; then
+-  BUILD_WITH_NO_UNDEFINED_TRUE=
+-  BUILD_WITH_NO_UNDEFINED_FALSE='#'
+-else
+-  BUILD_WITH_NO_UNDEFINED_TRUE='#'
+-  BUILD_WITH_NO_UNDEFINED_FALSE=
+-fi
++BUILD_WITH_NO_UNDEFINED_TRUE=
++BUILD_WITH_NO_UNDEFINED_FALSE='#'
+ 
+ 

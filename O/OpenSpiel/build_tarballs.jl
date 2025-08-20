@@ -8,11 +8,11 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "OpenSpiel"
-version = v"1.2"
+version = v"1.5.1" # bump for compat bounds changes
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/deepmind/open_spiel.git", "9e4559bd1d794aa0b6476013464b58329d8f2b51"), # v1.2.0
+    GitSource("https://github.com/deepmind/open_spiel.git", "82b5aac85c577b6911f9a912544e2a589dacc2f1"), # v1.5.0
     GitSource("https://github.com/findmyway/dds.git", "091ea94358a4016d4fb6069dea5c452cdc98d0bd"), # v0.1.1
     GitSource("https://github.com/abseil/abseil-cpp.git", "b971ac5250ea8de900eae9f95e06548d14cd95fe"), # 20230125.2
     GitSource("https://github.com/findmyway/hanabi-learning-environment.git", "b31c973e3930804b9e27d1a20874e08d8643e533"), # v0.1.0
@@ -77,7 +77,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("libcxxwrap_julia_jll"; compat = "~0.11.2"),
+    Dependency("libcxxwrap_julia_jll"; compat = "~0.13.2"),
     BuildDependency("libjulia_jll")
 ]
 

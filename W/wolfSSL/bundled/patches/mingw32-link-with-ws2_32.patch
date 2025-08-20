@@ -1,0 +1,14 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 4e6f05fc6..5b1c3cd74 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -2385,8 +2385,7 @@ target_link_libraries(wolfssl PUBLIC ${WOLFSSL_LINK_LIBS})
+ 
+ if(WIN32)
+     # For Windows link ws2_32
+-    target_link_libraries(wolfssl PUBLIC
+-        $<$<PLATFORM_ID:Windows>:ws2_32 crypt32>)
++    target_link_libraries(wolfssl PUBLIC ws2_32 crypt32)
+ elseif(APPLE)
+     if(WOLFSSL_SYS_CA_CERTS)
+         target_link_libraries(wolfssl PUBLIC

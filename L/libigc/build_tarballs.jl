@@ -7,7 +7,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "libigc"
-version = v"1.0.16238"#.4
+version = v"2.14.1"
 
 # IGC depends on LLVM, a custom Clang, and a Khronos tool. Instead of building these pieces
 # separately, taking care to match versions and apply Intel-specific patches where needed
@@ -27,13 +27,13 @@ version = v"1.0.16238"#.4
 #       see https://github.com/intel/intel-graphics-compiler/blob/master/.github/workflows/build-IGC.yml
 #
 sources = [
-    GitSource("https://github.com/intel/intel-graphics-compiler.git", "3e5856539819d7c0c65ff38218528bc6495f01c3"),
-    GitSource("https://github.com/intel/opencl-clang.git", "980f1691c5babcf824ee10375a04a0d0c5d7d44a" #= branch ocl-open-140 =#),
-    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "e60319207a24715a67534a1e4fd9727d37abf515" #= branch llvm_release_140 =#),
-    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "04896c462d9f3f504c99a4698605b6524af813c1" #= tag v2024.1.rc1 =#),
-    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "4f7b471f1a66b6d06462cd4ba57628cc0cd087d7"), #= master =#
-    GitSource("https://github.com/intel/vc-intrinsics.git", "f9c34404d0ea9abad83875a10bd48d88cea90ebd" #= latest version: v0.18.0 =#),
-    GitSource("https://github.com/llvm/llvm-project.git", "c12386ae247c0d46e1d513942e322e3a0510b126" #= branch llvmorg-14.0.5 =#),
+    GitSource("https://github.com/intel/intel-graphics-compiler.git", "8044f62975eafe840d09ed00560385dab0bf9854"),
+    GitSource("https://github.com/intel/opencl-clang.git", "7eef46576eca117685ae431735c2725ddb889260" #= branch ocl-open-150 =#),
+    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "b3d425c0b265ee9f583894892ae0b0a192a2137c" #= branch llvm_release_150 =#),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "f289d047f49fb60488301ec62bafab85573668cc" #= tag v2025.1.rc1 =#),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "0e710677989b4326ac974fd80c5308191ed80965"), #= main =#
+    GitSource("https://github.com/intel/vc-intrinsics.git", "46286b96fb9eee9fa4fcf8b8ecf74a8c01af4c1a" #= tag v0.23.1 =#),
+    GitSource("https://github.com/llvm/llvm-project.git", "8dfdcc7b7bf66834a761bd8de445840ef68e4d1a" #= tag llvmorg-15.0.7 =#),
     # patches
     DirectorySource("./bundled"),
 ]
@@ -41,7 +41,11 @@ sources = [
 # Bash recipe for building across all platforms
 function get_script(; debug::Bool)
     script = raw"""
-        apk add py3-mako
+        apk add py3-mako py3-yaml binutils
+        # Need newer CMake (>3.22.1), so use the JLL packaged one
+        apk del cmake
+
+        # Build the IGC
 
         # the build system uses git
         export HOME=$(pwd)
@@ -60,6 +64,11 @@ function get_script(; debug::Bool)
 
         cd intel-graphics-compiler
         install_license LICENSE.md
+
+        # Need these device IDs
+        git cherry-pick 4185ee4c7eb49d09119884c63e88241a6715eb48
+        git cherry-pick 09046b0c259e46dfbdbfb1d548f18abc116ae512
+
 
         CMAKE_FLAGS=()
 
@@ -105,7 +114,6 @@ platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("GenX_IR", :GenX_IR),
     ExecutableProduct(["iga32", "iga64"], :iga),
     LibraryProduct(["libiga32", "libiga64"], :libiga),
     LibraryProduct("libigc", :libigc),
@@ -117,7 +125,9 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[]
+dependencies = [
+    HostBuildDependency("CMake_jll"),
+]
 
 augment_platform_block = raw"""
     using Base.BinaryPlatforms
@@ -162,6 +172,6 @@ for platform in platforms, debug in (false, true)
     # IGC only supports Ubuntu 18.04+, which uses GCC 7.4.
     # GCC <9 triggers: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86678 (for debug)
     build_tarballs(ARGS, name, version, sources, get_script(; debug), [augmented_platform],
-                   products, dependencies; preferred_gcc_version=v"9", augment_platform_block,
+                   products, dependencies; preferred_gcc_version=v"11", augment_platform_block,
                    julia_compat = "1.6", lock_microarchitecture=false)
 end

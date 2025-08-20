@@ -3,18 +3,17 @@
 using BinaryBuilder
 
 name = "libwebp"
-version = v"1.3.2"
+version = v"1.6.0"
 
 # Collection of sources required to build libwebp
 sources = [
     GitSource("https://chromium.googlesource.com/webm/libwebp",
-                  "ca332209cb5567c9b249c86788cb2dbf8847e760"),
+              "4fa21912338357f89e4fd51cf2368325b59e9bd9"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libwebp
-export CFLAGS="-std=c99"
 export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
 ./autogen.sh
@@ -50,9 +49,11 @@ dependencies = [
     Dependency("Giflib_jll"),
     Dependency("JpegTurbo_jll"),
     Dependency("libpng_jll"),
-    Dependency("Libtiff_jll"; compat="4.3.0"),
-    Dependency("Libglvnd_jll"),
+    Dependency("Libtiff_jll"; compat="4.7.1"),
+    Dependency("Libglvnd_jll"; platforms=filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+# We need at least GCC 10 for aarch64-linux-gnu
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"10")

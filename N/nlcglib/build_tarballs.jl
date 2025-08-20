@@ -6,10 +6,10 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "nlcglib"
-version = v"1.0.2" #technically v1.0b, but format not allowed
+version = v"1.1.0"
 
 sources = [
-   GitSource("https://github.com/simonpintarelli/nlcglib/", "de851f03b403f33cbe0bae8aac013194f8de3ff4")
+   GitSource("https://github.com/simonpintarelli/nlcglib/", "674039fd2b131ce12d46d105b437265419999197")
 ]
 
 script = raw"""

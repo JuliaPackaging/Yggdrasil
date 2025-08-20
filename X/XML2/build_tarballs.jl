@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "XML2"
-version = v"2.12.6"
+version = v"2.14.4"
 
 # Collection of sources required to build XML2
 sources = [
     ArchiveSource("https://download.gnome.org/sources/libxml2/$(version.major).$(version.minor)/libxml2-$(version).tar.xz",
-                  "889c593a881a3db5fdd96cc9318c87df34eb648edfc458272ad46fd607353fbb"),
+                  "24175ec30a97cfa86bdf9befb7ccf4613f8f4b2713c5103e0dd0bc9c711a2773"),
 ]
 
 # Bash recipe for building across all platforms
@@ -19,8 +19,7 @@ cd ${WORKSPACE}/srcdir/libxml2-*
     --without-python \
     --disable-static \
     --with-zlib=${prefix} \
-    --with-iconv=${prefix} \
-    "${EXTRA_ARGS[@]}"
+    --with-iconv=${prefix}
 make -j${nproc}
 make install
 

@@ -7,12 +7,12 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "mlir_jl_tblgen"
 repo = "https://github.com/JuliaLabs/MLIR.jl.git"
-version = v"0.0.6"
+version = v"0.0.10"
 
-llvm_versions = [v"14.0.6", v"15.0.7", v"16.0.6"]
+llvm_versions = [v"14.0.6", v"15.0.7", v"16.0.6", v"17.0.6", v"18.1.7", v"19.1.1"]
 
 sources = [
-    GitSource(repo, "3527e24046b808a6224ff700e373e9f6dc46e86b")
+    GitSource(repo, "1e5e8a2b7b43ec79ec2132cf7a90a5f96d97b4da"),
 ]
 
 # Bash recipe for building across all platforms
@@ -80,6 +80,8 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
         # We don't build LLVM 15 for i686-linux-musl.
         filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
     end
+
+    filter!(p -> !(arch(p) == "aarch64" && os(p) == "freebsd"), platforms)
 
     for platform in platforms
         augmented_platform = deepcopy(platform)

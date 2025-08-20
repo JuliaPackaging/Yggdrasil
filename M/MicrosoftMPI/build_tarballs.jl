@@ -114,4 +114,5 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+# We use GCC 5 to ensure Fortran module files are readable by all `libgfortran3` architectures. GCC 4 would use an older format.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, preferred_gcc_version=v"5")

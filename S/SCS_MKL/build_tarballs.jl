@@ -2,11 +2,11 @@ using Pkg
 using BinaryBuilder
 
 name = "SCS_MKL"
-version = v"3.2.4"
+version = v"3.2.8"
 
 # Collection of sources required to build SCSBuilder
 sources = [
-    GitSource("https://github.com/cvxgrp/scs.git", "9024b8ccc1bba6ee797440fb22354cadb9c81839")
+    GitSource("https://github.com/cvxgrp/scs.git", "ef77ae11181f399ea3e35122944ba3091ee1a77f")
 ]
 
 # Bash recipe for building across all platforms
@@ -48,4 +48,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6", preferred_gcc_version=v"5")

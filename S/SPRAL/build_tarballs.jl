@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "SPRAL"
-version = v"2024.1.18"
+version = v"2025.5.20"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ralna/spral.git", "c1dfe13538c621ede929bb13bbaa54070b63e02e")
+    GitSource("https://github.com/ralna/spral.git", "ccc2c2478ca568d7c5886769cdce7399804c4d8e")
 ]
 
 # Bash recipe for building across all platforms
@@ -39,6 +39,7 @@ meson install -C builddir
 # platforms are passed in on the command line
 platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
+filter!(p -> arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [
