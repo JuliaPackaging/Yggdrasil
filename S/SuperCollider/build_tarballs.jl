@@ -42,7 +42,17 @@ $host_bindir/cmake --build build --parallel ${nproc} --target scsynth supernova 
 $host_bindir/cmake --build build --target install
 """
 
-platforms = supported_platforms()
+platforms = [
+    Linux(:i686, libc=:glibc),
+    Linux(:x86_64, libc=:glibc),
+    Linux(:aarch64, libc=:glibc),
+    Linux(:powerpc64le, libc=:glibc),
+    Linux(:i686, libc=:musl),
+    Linux(:x86_64, libc=:musl),
+    Linux(:aarch64, libc=:musl),
+    MacOS(:x86_64),
+    MacOS(:aarch64),
+]
 
 products = [
     ExecutableProduct("scsynth", :scsynth),
