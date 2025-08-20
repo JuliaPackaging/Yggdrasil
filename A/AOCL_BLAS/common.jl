@@ -59,6 +59,9 @@ function blis_script(; blis32::Bool=false)
     make -j${nproc}
     make install
 
+    # Static library is not needed
+    rm ${prefix}/lib/libblis-mt.a
+
     # Rename .dll for Windows targets.
     if [[ "${target}" == *"x86_64"*"w64"* ]]; then
         mkdir -p ${libdir}
