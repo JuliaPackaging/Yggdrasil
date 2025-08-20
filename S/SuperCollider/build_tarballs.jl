@@ -37,7 +37,7 @@ $host_bindir/cmake -G Ninja \
     -DSC_HIDAPI=OFF \
     "${EXTRA_CMAKE_ARGS[@]}"
 
-$host_bindir/cmake --build build --parallel ${nproc} --target scsynth supernova
+$host_bindir/cmake --build build --parallel ${nproc} --target scsynth supernova sclang
 $host_bindir/cmake --build build --target install
 """
 
@@ -47,6 +47,7 @@ products = [
     ExecutableProduct("scsynth", :scsynth),
     LibraryProduct("libscsynth", :libscsynth),
     ExecutableProduct("supernova", :supernova),
+    ExecutableProduct("sclang", :sclang),
 ]
 
 dependencies = [
