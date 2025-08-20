@@ -72,7 +72,7 @@ function blis_script(; blis32::Bool=false)
 
         PATCHELF_FLAGS=()
 
-        if [[ ${target} == *linux* ]] || [[ ${target} == *freebsd* ]]; then
+        if [[ "${target}" == *linux* ]] || [[ "${target}" == *freebsd* ]]; then
             patchelf ${PATCHELF_FLAGS[@]} --set-soname libblis32.${dlext} ${libdir}/libblis32.${dlext}
         fi
     fi
