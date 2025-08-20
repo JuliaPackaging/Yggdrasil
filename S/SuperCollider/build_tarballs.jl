@@ -11,7 +11,7 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/supercollider
 git submodule update --init --recursive
 
-cmake -G Ninja \
+$host_bindir/cmake -G Ninja \
     -S . \
     -B build \
     -DCMAKE_BUILD_TYPE=Release \
@@ -30,8 +30,8 @@ cmake -G Ninja \
     -DSC_HIDAPI=OFF \
     -DAUDIOAPI=portaudio
 
-cmake --build build --parallel ${nproc} --target scsynth supernova
-cmake --build build --target install
+$host_bindir/cmake --build build --parallel ${nproc} --target scsynth supernova
+$host_bindir/cmake --build build --target install
 """
 
 platforms = supported_platforms()
@@ -43,6 +43,7 @@ products = [
 ]
 
 dependencies = [
+    HostBuildDependency("CMake_jll"),
     Dependency("libportaudio_jll", v"19.7.0"),
     Dependency("libsndfile_jll", v"1.1.0"),
 ]
