@@ -41,9 +41,10 @@ function blis_script(; blis32::Bool=false)
         # atomic_patch -p1 ${WORKSPACE}/srcdir/patches/suffix64.patch
     # fi
 
-    # Fix the errors for Windows
+    # Fix the unnecessary branching for Windows that caused errors/warnings
     if [[ "${target}" == *"x86_64"*"w64"* ]]; then
         atomic_patch -p1 ${WORKSPACE}/srcdir/patches/aocltpdef-mingw32.patch
+        atomic_patch -p1 ${WORKSPACE}/srcdir/patches/blis_tls_type-mingw32.patch
     fi
 
     # Import libblastrampoline-style nthreads setter.
