@@ -1,4 +1,4 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "CGNS"
 version = v"4.5.0"
@@ -48,6 +48,8 @@ products = [
 ]
 
 dependencies = [
+    # Without OpenMPI as build dependency the build fails on 32-bit platforms
+    BuildDependency(PackageSpec(; name="OpenMPI_jll", version=v"4.1.8"); platforms=filter(p -> nbits(p)==32, platforms)),
     Dependency("HDF5_jll"; compat="~1.14.6"),
 ]
 
