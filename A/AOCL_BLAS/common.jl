@@ -38,7 +38,7 @@ function blis_script(; blis32::Bool=false)
     # For 64-bit builds, add _64 suffix to exported BLAS routines.
     # This corresponds to ILP64 handling of OpenBLAS thus Julia.
     if [[ ${nbits} == 64 ]] && [[ "${BLIS32}" != "true" ]]; then
-        atomic_patch -p1 ${WORKSPACE}/srcdir/patches/suffix64.patch
+        # atomic_patch -p1 ${WORKSPACE}/srcdir/patches/suffix64.patch
     fi
 
     # Import libblastrampoline-style nthreads setter.
@@ -52,9 +52,6 @@ function blis_script(; blis32::Bool=false)
     ./configure --enable-cblas -p ${prefix} -t ${BLI_THREAD} -b ${BLI_F77BITS} --enable-aocl-dynamic ${BLI_CONFIG}
     make -j${nproc}
     make install
-
-    # Static library is not needed.
-    rm ${prefix}/lib/libblis.a
 
     # Rename .dll for Windows targets.
     if [[ "${target}" == *"x86_64"*"w64"* ]]; then
