@@ -30,7 +30,7 @@ cmake -G Ninja \
     -DSC_HIDAPI=OFF \
     -DAUDIOAPI=portaudio
 
-cmake --build build --parallel ${nproc} --target all
+cmake --build build --parallel ${nproc} --target scsynth supernova
 cmake --build build --target install
 """
 
