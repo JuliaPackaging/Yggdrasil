@@ -41,6 +41,11 @@ function blis_script(; blis32::Bool=false)
         # atomic_patch -p1 ${WORKSPACE}/srcdir/patches/suffix64.patch
     # fi
 
+    # Fix the errors for Windows
+    if [[ "${target}" == *"x86_64"*"w64"* ]]; then
+        atomic_patch -p1 ${WORKSPACE}/srcdir/patches/aocltpdef-mingw32.patch
+    fi
+
     # Import libblastrampoline-style nthreads setter.
     cp ${WORKSPACE}/srcdir/nthreads64_.c frame/compat/nthreads64_.c
 
@@ -56,7 +61,7 @@ function blis_script(; blis32::Bool=false)
     # Rename .dll for Windows targets.
     if [[ "${target}" == *"x86_64"*"w64"* ]]; then
         mkdir -p ${libdir}
-        mv ${prefix}/lib/libblis-mt.4.dll ${libdir}/libblis-mt.dll
+        mv ${prefix}/lib/libblis-mt.*.dll ${libdir}/libblis-mt.dll
     fi
 
     if [[ "${BLIS32}" == "true" ]]; then
