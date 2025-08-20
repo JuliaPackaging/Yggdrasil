@@ -1,6 +1,6 @@
 name = "AOCL_BLAS32"
 
-include("../common.jl")
+include("../common_blas.jl")
 
 script = blis_script(blis32=true)
 
