@@ -56,24 +56,24 @@ function blis_script(; blis32::Bool=false)
     # Rename .dll for Windows targets.
     if [[ "${target}" == *"x86_64"*"w64"* ]]; then
         mkdir -p ${libdir}
-        mv ${prefix}/lib/libblis.4.dll ${libdir}/libblis.dll
+        mv ${prefix}/lib/libblis-mt.4.dll ${libdir}/libblis-mt.dll
     fi
 
     if [[ "${BLIS32}" == "true" ]]; then
-        # Rename libblis.${dlext} into libblis32.${dlext}
-        mv -v ${libdir}/libblis.${dlext} ${libdir}/libblis32.${dlext}
+        # Rename libblis-mt.${dlext} into libblis32-mt.${dlext}
+        mv -v ${libdir}/libblis-mt.${dlext} ${libdir}/libblis32-mt.${dlext}
 
         # If there were links that are now broken, fix 'em up
         for l in $(find ${prefix}/lib -xtype l); do
             if [[ $(basename $(readlink ${l})) == libblis ]]; then
-                ln -vsf libblis32.${dlext} ${l}
+                ln -vsf libblis32-mt.${dlext} ${l}
             fi
         done
 
         PATCHELF_FLAGS=()
 
         if [[ "${target}" == *linux* ]] || [[ "${target}" == *freebsd* ]]; then
-            patchelf ${PATCHELF_FLAGS[@]} --set-soname libblis32.${dlext} ${libdir}/libblis32.${dlext}
+            patchelf ${PATCHELF_FLAGS[@]} --set-soname libblis32-mt.${dlext} ${libdir}/libblis32-mt.${dlext}
         fi
     fi
 
