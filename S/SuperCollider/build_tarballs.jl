@@ -1,10 +1,10 @@
 using BinaryBuilder, Pkg
 
 name = "SuperCollider"
-version = v"3.13.0"
+version = v"3.14.0"
 
 sources = [
-    GitSource("https://github.com/supercollider/supercollider.git", "31885032db394f4d2b7d39eaf90e17927383e39d")
+    GitSource("https://github.com/supercollider/supercollider.git", "d263b8cc9905302bb6cfc26e8e68f22bb43092e9")
 ]
 
 script = raw"""
