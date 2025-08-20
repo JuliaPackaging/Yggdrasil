@@ -37,9 +37,9 @@ function blis_script(; blis32::Bool=false)
 
     # For 64-bit builds, add _64 suffix to exported BLAS routines.
     # This corresponds to ILP64 handling of OpenBLAS thus Julia.
-    if [[ ${nbits} == 64 ]] && [[ "${BLIS32}" != "true" ]]; then
+    # if [[ ${nbits} == 64 ]] && [[ "${BLIS32}" != "true" ]]; then
         # atomic_patch -p1 ${WORKSPACE}/srcdir/patches/suffix64.patch
-    fi
+    # fi
 
     # Import libblastrampoline-style nthreads setter.
     cp ${WORKSPACE}/srcdir/nthreads64_.c frame/compat/nthreads64_.c
