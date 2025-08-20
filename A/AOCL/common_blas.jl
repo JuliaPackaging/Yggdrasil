@@ -41,6 +41,8 @@ function blis_script(; blis32::Bool=false)
         atomic_patch -p1 ${WORKSPACE}/srcdir/patches/aocltpdef-mingw32.patch
         atomic_patch -p1 ${WORKSPACE}/srcdir/patches/blis_tls_type-mingw32.patch
     fi
+    # Fix the format specifiers
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/aoclflist_format_specifier.patch
 
     # Import libblastrampoline-style nthreads setter
     cp ${WORKSPACE}/srcdir/nthreads64_.c frame/compat/nthreads64_.c
@@ -54,7 +56,7 @@ function blis_script(; blis32::Bool=false)
     make -j${nproc}
     make install
 
-    # Rename .dll for Windows targets.
+    # Rename .dll for Windows targets
     if [[ "${target}" == *"x86_64"*"w64"* ]]; then
         mkdir -p ${libdir}
         mv ${prefix}/lib/libblis-mt.5.dll ${libdir}/libblis-mt-5.dll
