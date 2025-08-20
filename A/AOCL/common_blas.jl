@@ -24,6 +24,12 @@ function blis_script(; blis32::Bool=false)
     export BLIS_CONFIG=amdzen
     export BLIS_THREAD=openmp
 
+    for i in ./config/*/*.mk; do
+        # Building in container forbids unsafe optimization.
+        sed -i "s/-ffast-math//g" $i
+        sed -i "s/-funsafe-math-optimizations//g" $i
+    done
+
     # For 64-bit builds, add _64 suffix to exported BLAS routines.
     # This corresponds to ILP64 handling of OpenBLAS thus Julia.
     # if [[ ${nbits} == 64 ]] && [[ "${BLIS32}" != "true" ]]; then
