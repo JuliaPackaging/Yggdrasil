@@ -1,0 +1,21 @@
+diff --git a/frame/include/blis.h b/frame/include/blis.h
+index f44fffaea..bfcf8965d 100644
+--- a/frame/include/blis.h
++++ b/frame/include/blis.h
+@@ -51,6 +51,8 @@ extern "C" {
+ 
+ // -- configure definitions --
+ 
++#define BLIS_ENABLE_NO_UNDERSCORE_API 1
++
+ // NOTE: bli_config.h header must be included before any BLIS header.
+ // It is bootstrapped by ./configure and does not depend on later
+ // headers. Moreover, these configuration variables are necessary to change
+@@ -71,7 +73,6 @@ extern "C" {
+ 
+ 
+ // -- Common BLIS definitions --
+-
+ #include "bli_type_defs.h"
+ #include "bli_macro_defs.h"
+ 

@@ -1,0 +1,112 @@
+diff --git a/frame/compat/bla_imatcopy.c b/frame/compat/bla_imatcopy.c
+index 13e59e28e..eba8d6f24 100644
+--- a/frame/compat/bla_imatcopy.c
++++ b/frame/compat/bla_imatcopy.c
+@@ -513,7 +513,7 @@ static dim_t bli_siMatCopy_cn(dim_t rows,dim_t cols,const float alpha,float* a,d
+         else
+         {
+             f77_int mem_fail_info = -10;
+-            xerbla_(MKSTR(bli_siMatCopy_cn), &mem_fail_info, (f77_int)16);
++            xerbla_64(MKSTR(bli_siMatCopy_cn), &mem_fail_info, (f77_int)16);
+         }
+     }
+ 
+@@ -596,7 +596,7 @@ static dim_t bli_diMatCopy_cn(dim_t rows,dim_t cols,const double alpha,double* a
+         else
+         {
+             f77_int mem_fail_info = -10;
+-            xerbla_(MKSTR(bli_diMatCopy_cn), &mem_fail_info, (f77_int)16);
++            xerbla_64(MKSTR(bli_diMatCopy_cn), &mem_fail_info, (f77_int)16);
+         }
+     }
+ 
+@@ -683,7 +683,7 @@ static dim_t bli_ciMatCopy_cn(dim_t rows,dim_t cols,const scomplex alpha,scomple
+         else
+         {
+             f77_int mem_fail_info = -10;
+-            xerbla_(MKSTR(bli_ciMatCopy_cn), &mem_fail_info, (f77_int)16);
++            xerbla_64(MKSTR(bli_ciMatCopy_cn), &mem_fail_info, (f77_int)16);
+         }
+     }
+ 
+@@ -770,7 +770,7 @@ static dim_t bli_ziMatCopy_cn(dim_t rows,dim_t cols,const dcomplex alpha,dcomple
+         else
+         {
+             f77_int mem_fail_info = -10;
+-            xerbla_(MKSTR(bli_ziMatCopy_cn), &mem_fail_info, (f77_int)16);
++            xerbla_64(MKSTR(bli_ziMatCopy_cn), &mem_fail_info, (f77_int)16);
+         }
+     }
+ 
+@@ -851,7 +851,7 @@ static dim_t bli_siMatCopy_ct(dim_t rows,dim_t cols,const float alpha,float* a,d
+     else
+     {
+         f77_int mem_fail_info = -10;
+-        xerbla_(MKSTR(bli_siMatCopy_ct), &mem_fail_info, (f77_int)16);
++        xerbla_64(MKSTR(bli_siMatCopy_ct), &mem_fail_info, (f77_int)16);
+     }
+ 
+     AOCL_DTL_TRACE_EXIT(AOCL_DTL_LEVEL_TRACE_2);
+@@ -931,7 +931,7 @@ static dim_t bli_diMatCopy_ct(dim_t rows,dim_t cols,const double alpha,double* a
+     else
+     {
+         f77_int mem_fail_info = -10;
+-        xerbla_(MKSTR(bli_diMatCopy_ct), &mem_fail_info, (f77_int)16);
++        xerbla_64(MKSTR(bli_diMatCopy_ct), &mem_fail_info, (f77_int)16);
+     }
+ 
+     AOCL_DTL_TRACE_EXIT(AOCL_DTL_LEVEL_TRACE_2);
+@@ -1013,7 +1013,7 @@ static dim_t bli_ciMatCopy_ct(dim_t rows,dim_t cols,const scomplex alpha,scomple
+     else
+     {
+         f77_int mem_fail_info = -10;
+-        xerbla_(MKSTR(bli_ciMatCopy_ct), &mem_fail_info, (f77_int)16);
++        xerbla_64(MKSTR(bli_ciMatCopy_ct), &mem_fail_info, (f77_int)16);
+     }
+ 
+     AOCL_DTL_TRACE_EXIT(AOCL_DTL_LEVEL_TRACE_2);
+@@ -1095,7 +1095,7 @@ static dim_t bli_ziMatCopy_ct(dim_t rows,dim_t cols,const dcomplex alpha,dcomple
+     else
+     {
+         f77_int mem_fail_info = -10;
+-        xerbla_(MKSTR(bli_ziMatCopy_ct), &mem_fail_info, (f77_int)16);
++        xerbla_64(MKSTR(bli_ziMatCopy_ct), &mem_fail_info, (f77_int)16);
+     }
+ 
+     AOCL_DTL_TRACE_EXIT(AOCL_DTL_LEVEL_TRACE_2);
+@@ -1178,7 +1178,7 @@ static dim_t bli_ciMatCopy_cr(dim_t rows,dim_t cols,const scomplex alpha,scomple
+         else
+         {
+             f77_int mem_fail_info = -10;
+-            xerbla_(MKSTR(bli_ciMatCopy_cr), &mem_fail_info, (f77_int)16);
++            xerbla_64(MKSTR(bli_ciMatCopy_cr), &mem_fail_info, (f77_int)16);
+         }
+     }
+ 
+@@ -1262,7 +1262,7 @@ static dim_t bli_ziMatCopy_cr(dim_t rows,dim_t cols,const dcomplex alpha,dcomple
+         else
+         {
+             f77_int mem_fail_info = -10;
+-            xerbla_(MKSTR(bli_ziMatCopy_cr), &mem_fail_info, (f77_int)16);
++            xerbla_64(MKSTR(bli_ziMatCopy_cr), &mem_fail_info, (f77_int)16);
+         }
+     }
+ 
+@@ -1331,7 +1331,7 @@ static dim_t bli_ciMatCopy_cc(dim_t rows,dim_t cols,const scomplex alpha,scomple
+     else
+     {
+         f77_int mem_fail_info = -10;
+-        xerbla_(MKSTR(bli_ciMatCopy_ct), &mem_fail_info, (f77_int)16);
++        xerbla_64(MKSTR(bli_ciMatCopy_ct), &mem_fail_info, (f77_int)16);
+     }
+ 
+     AOCL_DTL_TRACE_EXIT(AOCL_DTL_LEVEL_TRACE_2);
+@@ -1399,7 +1399,7 @@ static dim_t bli_ziMatCopy_cc(dim_t rows,dim_t cols,const dcomplex alpha,dcomple
+     else
+     {
+         f77_int mem_fail_info = -10;
+-        xerbla_(MKSTR(bli_ziMatCopy_ct), &mem_fail_info, (f77_int)16);
++        xerbla_64(MKSTR(bli_ziMatCopy_ct), &mem_fail_info, (f77_int)16);
+     }
+ 
+     AOCL_DTL_TRACE_EXIT(AOCL_DTL_LEVEL_TRACE_2);
