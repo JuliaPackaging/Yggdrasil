@@ -26,7 +26,9 @@ cmake -G Ninja \
     -DSUPERNOVA=ON \
     -DNO_X11=ON \
     -DSCLANG_SERVER=OFF \
-    -DSC_ABLETON_LINK=OFF
+    -DSC_ABLETON_LINK=OFF \
+    -DSC_HIDAPI=OFF \
+    -DAUDIOAPI=portaudio
 
 cmake --build build --parallel ${nproc} --target all
 cmake --build build --target install
