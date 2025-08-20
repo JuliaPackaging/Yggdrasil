@@ -20,20 +20,9 @@ function blis_script(; blis32::Bool=false)
     script *= raw"""
     cd $WORKSPACE/srcdir/blis
 
-    for i in ./config/*/*.mk; do
-
-        # Building in container forbids -march options <<< Settings overriden.
-        # sed -i "s/-march[^ ]*//g" $i
-
-        # Building in container forbids unsafe optimization.
-        sed -i "s/-ffast-math//g" $i
-        sed -i "s/-funsafe-math-optimizations//g" $i
-
-    done
-
     # Only consider AMD Zen CPUs
-    export BLI_CONFIG=amdzen
-    export BLI_THREAD=openmp
+    export BLIS_CONFIG=amdzen
+    export BLIS_THREAD=openmp
 
     # For 64-bit builds, add _64 suffix to exported BLAS routines.
     # This corresponds to ILP64 handling of OpenBLAS thus Julia.
@@ -51,11 +40,11 @@ function blis_script(; blis32::Bool=false)
     cp ${WORKSPACE}/srcdir/nthreads64_.c frame/compat/nthreads64_.c
 
     if [[ "${BLIS32}" == "true" ]]; then
-        export BLI_F77BITS=32
+        export BLIS_F77BITS=32
     else
-        export BLI_F77BITS=${nbits}
+        export BLIS_F77BITS=${nbits}
     fi
-    ./configure --enable-cblas -p ${prefix} -t ${BLI_THREAD} -b ${BLI_F77BITS} --enable-aocl-dynamic ${BLI_CONFIG}
+    ./configure --enable-cblas -p ${prefix} -t ${BLIS_THREAD} -b ${BLIS_F77BITS} --enable-aocl-dynamic ${BLIS_CONFIG}
     make -j${nproc}
     make install
 
@@ -65,7 +54,7 @@ function blis_script(; blis32::Bool=false)
     # Rename .dll for Windows targets.
     if [[ "${target}" == *"x86_64"*"w64"* ]]; then
         mkdir -p ${libdir}
-        mv ${prefix}/lib/libblis-mt.*.dll ${libdir}/libblis-mt.dll
+        mv ${prefix}/lib/libblis-mt.5.dll ${libdir}/libblis-mt.5.dll
     fi
 
     if [[ "${BLIS32}" == "true" ]]; then
@@ -78,12 +67,6 @@ function blis_script(; blis32::Bool=false)
                 ln -vsf libblis32-mt.${dlext} ${l}
             fi
         done
-
-        PATCHELF_FLAGS=()
-
-        if [[ "${target}" == *linux* ]] || [[ "${target}" == *freebsd* ]]; then
-            patchelf ${PATCHELF_FLAGS[@]} --set-soname libblis32-mt.${dlext} ${libdir}/libblis32-mt.${dlext}
-        fi
     fi
 
     install_license LICENSE
@@ -91,12 +74,7 @@ function blis_script(; blis32::Bool=false)
 end
 
 # Only platforms relevant to AMD Zen CPUs
-platforms = [
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("x86_64", "linux"; libc="musl"),
-    Platform("x86_64", "windows"),
-    Platform("x86_64", "freebsd")
-]
+platforms = supported_platforms(; exclude=p -> !(arch(p) == "x86_64" && !Sys.isapple(p)))
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
