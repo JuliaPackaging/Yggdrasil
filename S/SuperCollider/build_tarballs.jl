@@ -11,6 +11,13 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/supercollider
 git submodule update --init --recursive
 
+EXTRA_CMAKE_ARGS=()
+if [[ "${target}" == *-apple-* ]]; then
+    EXTRA_CMAKE_ARGS+=(-DAUDIOAPI=coreaudio)
+else
+    EXTRA_CMAKE_ARGS+=(-DAUDIOAPI=portaudio)
+fi
+
 $host_bindir/cmake -G Ninja \
     -S . \
     -B build \
@@ -28,7 +35,7 @@ $host_bindir/cmake -G Ninja \
     -DSCLANG_SERVER=OFF \
     -DSC_ABLETON_LINK=OFF \
     -DSC_HIDAPI=OFF \
-    -DAUDIOAPI=portaudio
+    "${EXTRA_CMAKE_ARGS[@]}"
 
 $host_bindir/cmake --build build --parallel ${nproc} --target scsynth supernova
 $host_bindir/cmake --build build --target install
