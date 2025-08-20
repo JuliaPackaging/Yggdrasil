@@ -63,6 +63,7 @@ To deal with the above sources of incompatibility, we compile the following shar
     | 11.1.0 | 2.36     | libgfortran.so.5   | libstdc++.so.6.0.29 | cxx11      |
     | 12.1.0 | 2.38     | libgfortran.so.5   | libstdc++.so.6.0.30 | cxx11      |
     | 13.2.0 | 2.41     | libgfortran.so.5   | libstdc++.so.6.0.32 | cxx11      |
+    | 14.2.0 | 2.43.1   | libgfortran.so.5   | libstdc++.so.6.0.33 | cxx11      |
 
 Our GCC version selection is informed by two requirements: the `libgfortran` and `cxx11` incompatibilities.  First off, we must select compiler versions that span the three `libgfortran` SONAMEs we support, and we choose the oldest possible compilers within each SONAME bucket, yielding GCC `4.8.5`, `7.1.0` and `8.1.0`.  We choose the oldest possible GCC version so as to maximize the chance that C++ code compiled via this shard will be portable on other user's systems even without Julia's bundled `libstdc++.so`.  Next, we must provide a way for a user that is on a system with cxx11-defaulted strings but still using `libgfortran.so.3` (this would be the case if they were using GCC 5.3.1, for example, as Ubuntu 16.04 does) to link against our C++ code, so we add `5.2.0` in as the oldest 5.X.0 version that compiles on all our platforms, links against `libgfortran.so.3`, and defaults to `cxx11` string ABI.
 
