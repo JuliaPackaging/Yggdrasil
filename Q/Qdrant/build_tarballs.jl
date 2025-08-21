@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 # Collection of pre-build quarto binaries
-name = "qdrant"
+name = "Qdrant"
 qdrant_ver = "1.15.3"
 version = VersionNumber(qdrant_ver)
 
