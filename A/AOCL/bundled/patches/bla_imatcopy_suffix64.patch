@@ -1,5 +1,5 @@
 diff --git a/frame/compat/bla_imatcopy.c b/frame/compat/bla_imatcopy.c
-index 13e59e28e..eba8d6f24 100644
+index 13e59e28e..fcb2eb4dd 100644
 --- a/frame/compat/bla_imatcopy.c
 +++ b/frame/compat/bla_imatcopy.c
 @@ -513,7 +513,7 @@ static dim_t bli_siMatCopy_cn(dim_t rows,dim_t cols,const float alpha,float* a,d
@@ -7,7 +7,7 @@ index 13e59e28e..eba8d6f24 100644
          {
              f77_int mem_fail_info = -10;
 -            xerbla_(MKSTR(bli_siMatCopy_cn), &mem_fail_info, (f77_int)16);
-+            xerbla_64(MKSTR(bli_siMatCopy_cn), &mem_fail_info, (f77_int)16);
++            xerbla_64_(MKSTR(bli_siMatCopy_cn), &mem_fail_info, (f77_int)16);
          }
      }
  
@@ -16,7 +16,7 @@ index 13e59e28e..eba8d6f24 100644
          {
              f77_int mem_fail_info = -10;
 -            xerbla_(MKSTR(bli_diMatCopy_cn), &mem_fail_info, (f77_int)16);
-+            xerbla_64(MKSTR(bli_diMatCopy_cn), &mem_fail_info, (f77_int)16);
++            xerbla_64_(MKSTR(bli_diMatCopy_cn), &mem_fail_info, (f77_int)16);
          }
      }
  
@@ -25,7 +25,7 @@ index 13e59e28e..eba8d6f24 100644
          {
              f77_int mem_fail_info = -10;
 -            xerbla_(MKSTR(bli_ciMatCopy_cn), &mem_fail_info, (f77_int)16);
-+            xerbla_64(MKSTR(bli_ciMatCopy_cn), &mem_fail_info, (f77_int)16);
++            xerbla_64_(MKSTR(bli_ciMatCopy_cn), &mem_fail_info, (f77_int)16);
          }
      }
  
@@ -34,7 +34,7 @@ index 13e59e28e..eba8d6f24 100644
          {
              f77_int mem_fail_info = -10;
 -            xerbla_(MKSTR(bli_ziMatCopy_cn), &mem_fail_info, (f77_int)16);
-+            xerbla_64(MKSTR(bli_ziMatCopy_cn), &mem_fail_info, (f77_int)16);
++            xerbla_64_(MKSTR(bli_ziMatCopy_cn), &mem_fail_info, (f77_int)16);
          }
      }
  
@@ -43,7 +43,7 @@ index 13e59e28e..eba8d6f24 100644
      {
          f77_int mem_fail_info = -10;
 -        xerbla_(MKSTR(bli_siMatCopy_ct), &mem_fail_info, (f77_int)16);
-+        xerbla_64(MKSTR(bli_siMatCopy_ct), &mem_fail_info, (f77_int)16);
++        xerbla_64_(MKSTR(bli_siMatCopy_ct), &mem_fail_info, (f77_int)16);
      }
  
      AOCL_DTL_TRACE_EXIT(AOCL_DTL_LEVEL_TRACE_2);
@@ -52,7 +52,7 @@ index 13e59e28e..eba8d6f24 100644
      {
          f77_int mem_fail_info = -10;
 -        xerbla_(MKSTR(bli_diMatCopy_ct), &mem_fail_info, (f77_int)16);
-+        xerbla_64(MKSTR(bli_diMatCopy_ct), &mem_fail_info, (f77_int)16);
++        xerbla_64_(MKSTR(bli_diMatCopy_ct), &mem_fail_info, (f77_int)16);
      }
  
      AOCL_DTL_TRACE_EXIT(AOCL_DTL_LEVEL_TRACE_2);
@@ -61,7 +61,7 @@ index 13e59e28e..eba8d6f24 100644
      {
          f77_int mem_fail_info = -10;
 -        xerbla_(MKSTR(bli_ciMatCopy_ct), &mem_fail_info, (f77_int)16);
-+        xerbla_64(MKSTR(bli_ciMatCopy_ct), &mem_fail_info, (f77_int)16);
++        xerbla_64_(MKSTR(bli_ciMatCopy_ct), &mem_fail_info, (f77_int)16);
      }
  
      AOCL_DTL_TRACE_EXIT(AOCL_DTL_LEVEL_TRACE_2);
@@ -70,7 +70,7 @@ index 13e59e28e..eba8d6f24 100644
      {
          f77_int mem_fail_info = -10;
 -        xerbla_(MKSTR(bli_ziMatCopy_ct), &mem_fail_info, (f77_int)16);
-+        xerbla_64(MKSTR(bli_ziMatCopy_ct), &mem_fail_info, (f77_int)16);
++        xerbla_64_(MKSTR(bli_ziMatCopy_ct), &mem_fail_info, (f77_int)16);
      }
  
      AOCL_DTL_TRACE_EXIT(AOCL_DTL_LEVEL_TRACE_2);
@@ -79,7 +79,7 @@ index 13e59e28e..eba8d6f24 100644
          {
              f77_int mem_fail_info = -10;
 -            xerbla_(MKSTR(bli_ciMatCopy_cr), &mem_fail_info, (f77_int)16);
-+            xerbla_64(MKSTR(bli_ciMatCopy_cr), &mem_fail_info, (f77_int)16);
++            xerbla_64_(MKSTR(bli_ciMatCopy_cr), &mem_fail_info, (f77_int)16);
          }
      }
  
@@ -88,7 +88,7 @@ index 13e59e28e..eba8d6f24 100644
          {
              f77_int mem_fail_info = -10;
 -            xerbla_(MKSTR(bli_ziMatCopy_cr), &mem_fail_info, (f77_int)16);
-+            xerbla_64(MKSTR(bli_ziMatCopy_cr), &mem_fail_info, (f77_int)16);
++            xerbla_64_(MKSTR(bli_ziMatCopy_cr), &mem_fail_info, (f77_int)16);
          }
      }
  
@@ -97,7 +97,7 @@ index 13e59e28e..eba8d6f24 100644
      {
          f77_int mem_fail_info = -10;
 -        xerbla_(MKSTR(bli_ciMatCopy_ct), &mem_fail_info, (f77_int)16);
-+        xerbla_64(MKSTR(bli_ciMatCopy_ct), &mem_fail_info, (f77_int)16);
++        xerbla_64_(MKSTR(bli_ciMatCopy_ct), &mem_fail_info, (f77_int)16);
      }
  
      AOCL_DTL_TRACE_EXIT(AOCL_DTL_LEVEL_TRACE_2);
@@ -106,7 +106,7 @@ index 13e59e28e..eba8d6f24 100644
      {
          f77_int mem_fail_info = -10;
 -        xerbla_(MKSTR(bli_ziMatCopy_ct), &mem_fail_info, (f77_int)16);
-+        xerbla_64(MKSTR(bli_ziMatCopy_ct), &mem_fail_info, (f77_int)16);
++        xerbla_64_(MKSTR(bli_ziMatCopy_ct), &mem_fail_info, (f77_int)16);
      }
  
      AOCL_DTL_TRACE_EXIT(AOCL_DTL_LEVEL_TRACE_2);
