@@ -1,3 +1,10 @@
+# ==============================================================================
+# CODEOWNERS
+#
+# Please ping the following people in the PR if you make changes to this file:
+#  * @odow
+# ==============================================================================
+
 include("../coin-or-common.jl")
 
 sources = [

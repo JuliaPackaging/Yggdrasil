@@ -1,3 +1,11 @@
+# ==============================================================================
+# CODEOWNERS
+#
+# Please ping the following people in the PR if you make changes to this file:
+#  * @kalmarek
+#  * @odow
+# ==============================================================================
+
 using Pkg
 using BinaryBuilder
 

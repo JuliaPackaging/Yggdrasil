@@ -1,3 +1,10 @@
+# ==============================================================================
+# CODEOWNERS
+#
+# Please ping the following people in the PR if you make changes to this file:
+#  * @odow
+# ==============================================================================
+
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg

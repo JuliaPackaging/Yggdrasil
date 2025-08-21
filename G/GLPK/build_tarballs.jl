@@ -1,3 +1,10 @@
+# ==============================================================================
+# CODEOWNERS
+#
+# Please ping the following people in the PR if you make changes to this file:
+#  * @odow
+# ==============================================================================
+
 using BinaryBuilder, Pkg
 
 name = "GLPK"
@@ -39,7 +46,7 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # Use the same preferred_gcc_version as GMP.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                preferred_gcc_version=v"6", julia_compat="1.6")
 
 # Build trigger: 1

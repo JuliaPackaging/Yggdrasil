@@ -1,3 +1,10 @@
+# ==============================================================================
+# CODEOWNERS
+#
+# Please ping the following people in the PR if you make changes to this file:
+#  * @odow
+# ==============================================================================
+
 #Changes made to build tarballs for v1. 8.9
 include("../coin-or-common.jl")
 

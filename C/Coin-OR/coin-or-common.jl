@@ -1,3 +1,10 @@
+# ==============================================================================
+# CODEOWNERS
+#
+# Please ping the following people in the PR if you make changes to this file:
+#  * @odow
+# ==============================================================================
+
 # The C/Coin-OR directory contains a number of inter-related packages. Their
 # dependency graph has the following topological order. Because we use strict
 # equality compat bounds (relaxing to SemVer has caused compatibility issues in

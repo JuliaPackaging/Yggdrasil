@@ -1,3 +1,10 @@
+# ==============================================================================
+# CODEOWNERS
+#
+# Please ping the following people in the PR if you make changes to this file:
+#  * @odow
+# ==============================================================================
+
 include("../coin-or-common.jl")
 
 version = offset_version(v"6.2.0", v"0.0.1")

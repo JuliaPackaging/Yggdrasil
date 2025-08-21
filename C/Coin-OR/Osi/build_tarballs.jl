@@ -1,3 +1,10 @@
+# ==============================================================================
+# CODEOWNERS
+#
+# Please ping the following people in the PR if you make changes to this file:
+#  * @odow
+# ==============================================================================
+
 # In addition to coin-or-common.jl, we need to modify this file to trigger a
 # rebuild.
 #
