@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "PDAL"
-version = v"2.8.4"
+version = v"2.9.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/PDAL/PDAL.git", "2c90d6fb90214381ebfcf0998512c0d697a8daf6"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
+    GitSource("https://github.com/PDAL/PDAL.git", "795f0d9858dba72074fa3a4736282b1d2635620b"),
+    FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+               "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 # Bash recipe for building across all platforms
@@ -18,12 +18,9 @@ script = raw"""
 cd $WORKSPACE/srcdir/PDAL*
 
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    # Install a newer SDK which supports `std::filesystem`, taken from HELICS build_tarballs.jl
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    popd
+    # Install a newer SDK which supports `std::filesystem`
+    rm -rf /opt/${target}/${target}/sys-root/System /opt/${target}/${target}/sys-root/usr/include/libxml2
+    tar --extract --file=${WORKSPACE}/srcdir/MacOSX14.5.tar.xz --directory=/opt/${target}/${target}/sys-root/. --strip-components=1 MacOSX14.5.sdk/System MacOSX14.5.sdk/usr
     export MACOSX_DEPLOYMENT_TARGET=10.15
 fi
 
@@ -80,7 +77,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="GDAL_jll", uuid="a7073274-a066-55f0-b90d-d619367d196c"); compat="302.1000.200"),
+    Dependency(PackageSpec(name="GDAL_jll", uuid="a7073274-a066-55f0-b90d-d619367d196c"); compat="303.1100.300"),
     Dependency(PackageSpec(name="LibCURL_jll"); compat="7.73,8"),
     Dependency(PackageSpec(name="libgeotiff_jll", uuid="06c338fa-64ff-565b-ac2f-249532af990e"); compat="100.702.400"),
     # From GDAL recipe, for 32-bit platforms, when we need to link to OpenMPI we need version 4,
