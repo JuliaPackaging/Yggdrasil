@@ -19,6 +19,9 @@ cd $WORKSPACE/srcdir/xcb-proto-*/
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
+
+# Remove compiled Python files; we do not want to distribute them
+find ${libdir}/python2.7/site-packages -name '*.py[co]' -delete
 """
 
 # These are the platforms we will build for by default, unless further
