@@ -38,9 +38,6 @@ function blis_script(; blis32::Bool=false)
     # Fix the format specifiers
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/aoclflist_format_specifier.patch
 
-    # Import libblastrampoline-style nthreads setter
-    cp ${WORKSPACE}/srcdir/nthreads64_.c frame/compat/nthreads64_.c
-
     if [[ "${BLIS32}" == "true" ]]; then
         export BLIS_F77BITS=32
     else
