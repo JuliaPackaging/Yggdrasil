@@ -39,11 +39,11 @@ function blis_script(; blis32::Bool=false)
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/aoclflist_format_specifier.patch
 
     if [[ "${BLIS32}" == "true" ]]; then
-        export BLIS_F77BITS=32
+        export BLIS_BITS=32
     else
-        export BLIS_F77BITS=${nbits}
+        export BLIS_BITS=${nbits}
     fi
-    ./configure --enable-cblas --disable-static --enable-aocl-dynamic -p ${prefix} -t ${BLIS_THREAD} -b ${BLIS_F77BITS} ${BLIS_CONFIG}
+    ./configure --enable-cblas --disable-static --enable-aocl-dynamic -p ${prefix} -t ${BLIS_THREAD} -i ${BLIS_BITS} -b ${BLIS_BITS} ${BLIS_CONFIG}
     make -j${nproc}
     make install
 
