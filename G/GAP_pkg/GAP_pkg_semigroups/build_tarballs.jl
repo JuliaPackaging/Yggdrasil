@@ -5,7 +5,7 @@ include("../common.jl")
 gap_version = v"400.1401.5"
 name = "semigroups"
 upstream_version = "5.4.0" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.3" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
+offset = v"0.0.4" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL
@@ -48,7 +48,6 @@ install_license LICENSE
 name = gap_pkg_name(name)
 dependencies = gap_pkg_dependencies(gap_version)
 platforms = gap_platforms()
-filter!(p -> arch(p) != "riscv64", platforms) # TODO: remove again
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
