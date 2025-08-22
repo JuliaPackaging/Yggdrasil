@@ -38,7 +38,9 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DKLU_WORKS=ON \
     -DENABLE_LAPACK=ON \
     -DLAPACK_WORKS=ON \
-    -DBLA_VENDOR="libblastrampoline" \
+    -DBLA_VENDOR="libopenblas" \
+    -DBLAS_LIBRARIES="${libdir}/libopenblas.${dlext}" \
+    -DLAPACK_LIBRARIES="${libdir}/libopenblas.${dlext}" \
     ..
 
 cmake --build . --parallel ${nproc}
@@ -80,8 +82,8 @@ products = [
 dependencies = [
     HostBuildDependency("CMake_jll"),
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("libblastrampoline_jll"),
-    Dependency("SuiteSparse_jll"),
+    Dependency("OpenBLAS32_jll"),
+    Dependency("SuiteSparse32_jll"),
 ]
 
 # Build the tarballs
