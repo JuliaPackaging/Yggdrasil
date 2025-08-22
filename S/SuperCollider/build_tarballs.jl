@@ -60,7 +60,6 @@ platforms = [
 
 products = [
     ExecutableProduct("scsynth", :scsynth),
-    LibraryProduct("libscsynth", :libscsynth),
     ExecutableProduct("supernova", :supernova),
     # ExecutableProduct("sclang", :sclang),
 ]
