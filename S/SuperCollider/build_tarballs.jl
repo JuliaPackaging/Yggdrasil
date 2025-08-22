@@ -44,6 +44,14 @@ $host_bindir/cmake -G Ninja \
 # $host_bindir/cmake --build build --parallel ${nproc} --target sclang
 
 $host_bindir/cmake --build build --target server/install
+
+if [[ "${target}" == *-apple-* ]]; then
+    mv ${prefix}/SuperCollider/SuperCollider.app/Contents/Resources/scsynth ${bindir}
+    mv ${prefix}/SuperCollider/SuperCollider.app/Contents/Resources/supernova ${bindir}
+
+    mkdir ${libdir}/SuperCollider/
+    mv ${prefix}/SuperCollider/SuperCollider.app/Contents/Resources/plugins ${libdir}/SuperCollider/
+fi
 """
 
 platforms = [
