@@ -48,7 +48,7 @@ cmake --install .
 """
 
 # We attempt to build for all defined platforms
-platforms = supported_platforms()
+platforms = filter!(p -> arch(p) != "powerpc64le", supported_platforms())
 platforms = expand_gfortran_versions(platforms)
 
 products = [
@@ -88,4 +88,4 @@ dependencies = [
 
 # Build the tarballs
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
-               preferred_gcc_version = v"6", julia_compat="1.10")
+               preferred_gcc_version = v"6", julia_compat="1.6")
