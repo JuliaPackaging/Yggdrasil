@@ -7,17 +7,29 @@ version = v"0.3.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/plutoprint/plutobook.git", "b4e621203ca345ceba73b19fb526eeb77dde8472")
+    GitSource("https://github.com/plutoprint/plutobook.git", "b4e621203ca345ceba73b19fb526eeb77dde8472"),
+    # We need C++20
+    FileSource("https://github.com/alexey-lysiuk/macos-sdk/releases/download/14.5/MacOSX14.5.tar.xz",
+               "f6acc6209db9d56b67fcaf91ec1defe48722e9eb13dc21fb91cfeceb1489e57e"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/plutobook/
+
+if [[ "${target}" == *-apple-darwin* ]]; then
+    rm -rf /opt/${target}/${target}/sys-root/System /opt/${target}/${target}/sys-root/usr/include/libxml2
+    tar --extract --file=${WORKSPACE}/srcdir/MacOSX14.5.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX14.5.sdk/System MacOSX14.5.sdk/usr
+    export MACOSX_DEPLOYMENT_TARGET=14.5
+fi
+
 mkdir build
 cd build/
 meson setup .. --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release
 ninja -j${nproc}
 ninja install
+
+install_license ${WORKSPACE}/srcdir/plutobook/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
@@ -40,6 +52,9 @@ platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = Product[
+	LibraryProduct("libplutobook", :libplutobook),
+	ExecutableProduct("html2pdf", :html2pdf), 
+	ExecutableProduct("html2png", :html2png)
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -61,4 +76,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version = v"12.1.0", dont_dlopen=true, clang_use_lld = false)
+               julia_compat="1.10", preferred_gcc_version = v"12.1.0", dont_dlopen=true, clang_use_lld = false)
