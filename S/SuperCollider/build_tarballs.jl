@@ -28,18 +28,22 @@ $host_bindir/cmake -G Ninja \
     -DBUILD_TESTING=OFF \
     -DENABLE_TESTSUITE=OFF \
     -DLIBSCSYNTH=ON \
-    -DSC_IDE=OFF \
     -DSC_QT=OFF \
-    -DSC_USE_QTWEBENGINE=OFF \
+    -DSC_IDE=OFF \
+    -DSC_ABLETON_LINK=OFF \
+    -DSC_HIDAPI=OFF \
     -DSUPERNOVA=ON \
     -DNO_X11=ON \
     -DSCLANG_SERVER=OFF \
-    -DSC_ABLETON_LINK=OFF \
-    -DSC_HIDAPI=OFF \
+    -DINSTALL_HELP=OFF \
     "${EXTRA_CMAKE_ARGS[@]}"
 
-$host_bindir/cmake --build build --parallel ${nproc} --target scsynth supernova sclang
-$host_bindir/cmake --build build --target install
+# $host_bindir/cmake --build build --parallel ${nproc} --target scsynth supernova
+
+# NOTE sclang fails to build on cross-compiled macOS
+# $host_bindir/cmake --build build --parallel ${nproc} --target sclang
+
+$host_bindir/cmake --build build --target server/install
 """
 
 platforms = [
@@ -58,7 +62,7 @@ products = [
     ExecutableProduct("scsynth", :scsynth),
     LibraryProduct("libscsynth", :libscsynth),
     ExecutableProduct("supernova", :supernova),
-    ExecutableProduct("sclang", :sclang),
+    # ExecutableProduct("sclang", :sclang),
 ]
 
 dependencies = [
