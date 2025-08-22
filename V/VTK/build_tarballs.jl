@@ -32,6 +32,10 @@ cd ${WORKSPACE}/srcdir/VTK-*
 #      set(SQLITE3_VERSION 3.36.0) # Might be out-of-sync; update as needed.
 #      endif ()
 
+if [[ ${target} == *mingw* ]]; then
+    apk add sqlite
+fi
+
 # Build the tools for building VTK
 cmake -Bhost_build -GNinja \
     -DCMAKE_BUILD_TYPE=Release \
@@ -61,6 +65,10 @@ cmake -Bbuild -GNinja \
     -DVTK_GENERATE_SPDX=ON \
     -DVTK_REQUIRE_LARGE_FILE_SUPPORT=OFF \
     -DVTK_USE_MPI=ON \
+    -D_vtk_thread_impl_output=win32 \
+    -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON \
+    -DCMAKE_CXX_VISIBILITY_PRESET=default \
+    -DCMAKE_VISIBILITY_INLINES_HIDDEN=OFF \
     -DTEST_LFS_WORKS_RUN:STRING=0 \
     -DVTK_MODULE_USE_EXTERNAL_VTK_cgns=ON \
     -DVTK_MODULE_USE_EXTERNAL_VTK_expat=ON \
@@ -227,8 +235,8 @@ vtk_modules = [
     "IOImport",
     # "cgns",
     "exodusII",
-    "ioss",
-    "IOIOSS",
+    # "ioss",
+    # "IOIOSS",
     # "IOHDFTools",
     "FiltersTemporal",
     "IOHDF",
@@ -256,7 +264,7 @@ vtk_modules = [
     # "libproj",
     "IOCesium3DTiles",
     "IOCONVERGECFD",
-    "IOCGNSReader",
+    # "IOCGNSReader",
     "IOAsynchronous",
     "FiltersAMR",
     "IOAMR",
@@ -277,7 +285,7 @@ vtk_modules = [
     "FiltersGeometryPreview",
     "FiltersGeneric",
     "FiltersFlowPaths",
-    "DomainsChemistryOpenGL2",
+    # [there but not found on darwin?] "DomainsChemistryOpenGL2",
 ]
 
 # The products that we will ensure are always built
@@ -374,4 +382,7 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 # Build the tarballs.
 # VTK requires GCC 8
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"8")
+               augment_platform_block, julia_compat="1.6",
+               #TODO preferred_gcc_version=v"8",
+               preferred_gcc_version=v"13",
+               )
