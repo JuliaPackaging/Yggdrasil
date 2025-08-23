@@ -74,7 +74,7 @@ dependencies = Dependency[
     # Note: Crystal has its own runtime and standard library,
     # but we may need these for linking
     Dependency("OpenSSL_jll"; compat="3.0.8"),
-    Dependency("LibEvent_jll"),
+    Dependency("libevent_jll"),
     Dependency("PCRE2_jll"),
     Dependency("Zlib_jll"),
     Dependency("CompilerSupportLibraries_jll"),
