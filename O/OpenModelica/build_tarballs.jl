@@ -1,17 +1,23 @@
 using BinaryBuilder, Pkg
 
 name = "OpenModelica"
-version = v"1.25.0"
+version = v"1.25.1"
 
 sources = [
    GitSource("https://github.com/OpenModelica/OpenModelica.git",
-             "25d97cae0c27d49286af2bdc95420d01f67ea064"),
+             "66757f39f530bc032d5c1a71c105bd568207444a"),
    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/OpenModelica*
+
+# Build writes to /tmp, which is a small tmpfs in our sandbox.
+# make it use the workspace instead
+mkdir -p ${TMPDIR}
+export TMPDIR=${WORKSPACE}/tmpdir
+
 cp ../patches/git-config ./.git/config
 git submodule update --force --init --recursive
 
@@ -68,4 +74,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.10", clang_use_lld=false, preferred_gcc_version=v"9")
+               julia_compat="1.6", clang_use_lld=false, preferred_gcc_version=v"9")
