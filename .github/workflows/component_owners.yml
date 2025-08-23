@@ -13,14 +13,13 @@ on:
   pull_request_target:
 permissions:
   contents: read          # to read changed files
-  issues: write           # to read/write issue assignees
   pull-requests: write    # to read/write PR reviewers
 jobs:
   run_self:
     runs-on: ubuntu-latest
     name: Auto Assign Owners
     steps:
-      - uses: dyladan/component-owners@main
+      - uses: dyladan/component-owners@ 58bd86e9814d23f1525d0a970682cead459fa783 # v0.1.0
         with:
           config-file: .github/component_owners.yml
           repo-token: ${{ github.token }} 
