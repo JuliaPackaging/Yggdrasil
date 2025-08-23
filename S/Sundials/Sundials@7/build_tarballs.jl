@@ -39,9 +39,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DKLU_WORKS=ON \
     -DENABLE_LAPACK=ON \
     -DLAPACK_WORKS=ON \
-    -DBLA_VENDOR="libopenblas" \
-    -DBLAS_LIBRARIES="${libdir}/libopenblas.${dlext}" \
-    -DLAPACK_LIBRARIES="${libdir}/libopenblas.${dlext}" \
+    -DBLA_VENDOR="OpenBLAS" \
     ..
 
 cmake --build . --parallel ${nproc}
@@ -88,5 +86,5 @@ dependencies = [
 ]
 
 # Build the tarballs
-build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; 
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                preferred_gcc_version = v"6", julia_compat="1.6")
