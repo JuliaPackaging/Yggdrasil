@@ -46,9 +46,9 @@ cmake --build . --parallel ${nproc}
 cmake --install .
 """
 
-# We attempt to build for all defined platforms
-platforms = filter!(p -> arch(p) != "powerpc64le", supported_platforms())
-platforms = expand_gfortran_versions(platforms)
+# We attempt to build for all the platforms OpenBLAS32_jll is available for
+platforms = expand_gfortran_versions(supported_platforms())
+filter!(p -> !(arch(p) == "powerpc64le" && libgfortran_version(p) < v"5"), platforms)
 
 products = [
     LibraryProduct("libsundials_arkode", :libsundials_arkode),
