@@ -15,8 +15,9 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/coverage-reporter
 
 # Update package database and install Crystal compiler
+echo '@edge https://dl-cdn.alpinelinux.org/alpine/edge/community' >> /etc/apk/repositories
 apk update
-apk add --no-cache crystal shards
+apk add --no-cache crystal@edge shards@edge
 
 # Install development dependencies needed for Crystal compilation
 apk add --no-cache \
