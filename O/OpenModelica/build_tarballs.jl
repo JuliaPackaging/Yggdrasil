@@ -6,7 +6,7 @@ version = v"1.25.0"
 sources = [
    GitSource("https://github.com/OpenModelica/OpenModelica.git",
              "25d97cae0c27d49286af2bdc95420d01f67ea064"),
-   DirectorySource("./bundled"),	     
+   DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -15,15 +15,13 @@ cd $WORKSPACE/srcdir/OpenModelica*
 cp ../patches/git-config ./.git/config
 git submodule update --force --init --recursive
 
+apk del cmake
 apk --update --no-chown add openjdk17-jdk
-apk add flex
 
 cmake -S . -B build_cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_BUILD_TYPE=Release \
-      -DBLA_VENDOR=libopenblas \
-      -DBLAS_LIBRARIES="-L${libdir} -lopenblas" \
-      -DLAPACK_LIBRARIES="-L${libdir} -lopenblas" \
+      -DBLA_VENDOR=OpenBLAS \
       -DOM_ENABLE_GUI_CLIENTS=OFF \
       -DOM_OMSHELL_ENABLE_TERMINAL=ON \
       -DOM_OMC_ENABLE_IPOPT=OFF \
@@ -50,6 +48,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    HostBuildDependency("CMake_jll"),
     HostBuildDependency("flex_jll"),
     BuildDependency("OpenCL_Headers_jll"),
     Dependency("CompilerSupportLibraries_jll"),
