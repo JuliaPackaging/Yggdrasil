@@ -17,7 +17,7 @@ cd ${WORKSPACE}/srcdir/coverage-reporter
 # Update package database and install Crystal compiler
 echo '@edge https://dl-cdn.alpinelinux.org/alpine/edge/community' >> /etc/apk/repositories
 apk update
-apk add --no-cache crystal@edge shards@edge
+apk add --no-cache 'crystal=1.3.0-r0'@edge 'shards=1.3.0-r0'@edge
 
 # Install development dependencies needed for Crystal compilation
 apk add --no-cache \
