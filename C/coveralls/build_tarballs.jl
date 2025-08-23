@@ -19,7 +19,7 @@ apk update
 apk add --no-cache \
   -X https://dl-cdn.alpinelinux.org/alpine/edge/main \
   -X https://dl-cdn.alpinelinux.org/alpine/edge/community \
-  'crystal>1.8.0' shards
+  'crystal>1.8.0' shards libstdc++
 
 # Install development dependencies needed for Crystal compilation
 apk add --no-cache \
