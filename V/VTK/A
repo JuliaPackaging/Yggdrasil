@@ -9,8 +9,6 @@ version = v"9.5.0"
 sources = [
     ArchiveSource("https://vtk.org/files/release/9.5/VTK-9.5.0.tar.gz",
                   "04ae86246b9557c6b61afbc534a6df099244fbc8f3937f82e6bc0570953af87d"),
-    FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-               "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
 ]
 
 # Bash recipe for building across all platforms
@@ -33,19 +31,6 @@ cd ${WORKSPACE}/srcdir/VTK-*
 #      set(SQLITE3_FOUND 1)
 #      set(SQLITE3_VERSION 3.36.0) # Might be out-of-sync; update as needed.
 #      endif ()
-
-# We need a newer libc++
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    rm -rf /opt/${target}/${target}/sys-root/System
-    tar \
-        --extract \
-        --file=${WORKSPACE}/srcdir/MacOSX10.14.sdk.tar.xz \
-        --directory=/opt/${target}/${target}/sys-root/. \
-        --strip-components=1 \
-        MacOSX10.14.sdk/System \
-        MacOSX10.14.sdk/usr
-    export MACOSX_DEPLOYMENT_TARGET=10.14
-fi
 
 if [[ ${target} == *mingw* ]]; then
     apk add sqlite
@@ -126,15 +111,8 @@ augment_platform_block = """
 # platforms are passed in on the command line
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
+
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
-
-# To cross-build VTK we need a host architecture with the same bit width as the target architecture.
-# Since our host is always a 64-bit architecture we can currently only build for 64-bit target platforms.
-# (I guess we could install a 32-bit toolchain on our host if we really wanted to?)
-filter!(p -> nbits(p) == 64, platforms)
-
-# We don't support MPItrampoline quite yet
-filter!(p -> p["mpi"] != "MPItrampoline", platforms)
 
 # These are all the VTK modules; most have associated shared libraries
 vtk_modules = [
@@ -314,7 +292,7 @@ vtk_modules = [
     "FiltersParallelImaging",
     "FiltersGeometryPreview",
     "FiltersGeneric",
-    # "FiltersFlowPaths",
+    "FiltersFlowPaths",
     # [there but not found on darwin?] "DomainsChemistryOpenGL2",
 ]
 
