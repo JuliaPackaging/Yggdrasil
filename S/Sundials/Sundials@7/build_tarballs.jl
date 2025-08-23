@@ -2,6 +2,7 @@ using BinaryBuilder
 
 name = "Sundials"
 version = v"7.4.0"
+ygg_version = v"7.4.1" # Fake version since we are changing deps
 
 # Collection of sources required to build Sundials
 sources = [
@@ -87,5 +88,5 @@ dependencies = [
 ]
 
 # Build the tarballs
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; 
                preferred_gcc_version = v"6", julia_compat="1.6")
