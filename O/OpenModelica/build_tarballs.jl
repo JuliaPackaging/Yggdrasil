@@ -15,8 +15,8 @@ cd $WORKSPACE/srcdir/OpenModelica*
 
 # Build writes to /tmp, which is a small tmpfs in our sandbox.
 # make it use the workspace instead
-mkdir -p ${TMPDIR}
 export TMPDIR=${WORKSPACE}/tmpdir
+mkdir ${TMPDIR}
 
 cp ../patches/git-config ./.git/config
 git submodule update --force --init --recursive
