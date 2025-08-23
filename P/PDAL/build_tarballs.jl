@@ -20,7 +20,7 @@ cd $WORKSPACE/srcdir/PDAL*
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
     # Install a newer SDK which supports `std::filesystem`
     rm -rf /opt/${target}/${target}/sys-root/System /opt/${target}/${target}/sys-root/usr/include/libxml2
-    tar --extract --file=${WORKSPACE}/srcdir/MacOSX14.5.tar.xz --directory=/opt/${target}/${target}/sys-root/. --strip-components=1 MacOSX14.5.sdk/System MacOSX14.5.sdk/usr
+    tar --extract --file=${WORKSPACE}/srcdir/MacOSX10.5.tar.xz --directory=/opt/${target}/${target}/sys-root/. --strip-components=1 MacOSX10.5.sdk/System MacOSX10.5.sdk/usr
     export MACOSX_DEPLOYMENT_TARGET=10.15
 fi
 
