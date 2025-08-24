@@ -34,8 +34,7 @@ apk add --no-cache \
     libevent-dev \
     libevent-static \
     gc-dev \
-    libxml2-dev \
-    libxml2-static
+    libxml2-dev
 
 # Set environment variables for static linking
 export CRYSTAL_CACHE_DIR=${WORKSPACE}/crystal_cache
