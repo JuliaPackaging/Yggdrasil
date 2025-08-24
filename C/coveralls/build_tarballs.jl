@@ -33,7 +33,9 @@ apk add --no-cache \
     pcre2-dev \
     libevent-dev \
     libevent-static \
-    gc-dev
+    gc-dev \
+    libxml2-dev \
+    libxml2-static
 
 # Set environment variables for static linking
 export CRYSTAL_CACHE_DIR=${WORKSPACE}/crystal_cache
