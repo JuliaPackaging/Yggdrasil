@@ -3,21 +3,18 @@
 using BinaryBuilder
 
 name = "Xorg_libXft"
-version = v"2.3.3"
+version = v"2.3.9"
 
 # Collection of sources required to build libXft
 sources = [
-    ArchiveSource("https://www.x.org/archive/individual/lib/libXft-$(version).tar.bz2",
-                  "225c68e616dd29dbb27809e45e9eadf18e4d74c50be43020ef20015274529216"),
+    ArchiveSource("https://www.x.org/archive/individual/lib/libXft-$(version).tar.xz",
+                  "60a25b78945ed6932635b3bb1899a517d31df7456e69867ffba27f89ff3976f5"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libXft-*/
-CPPFLAGS="-I${prefix}/include"
-# When compiling for things like ppc64le, we need newer `config.sub` files
-update_configure_scripts
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=no
+cd $WORKSPACE/srcdir/libXft-*
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-static=no
 make -j${nproc}
 make install
 """
@@ -33,10 +30,11 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("Xorg_kbproto_jll"),
+    BuildDependency("Xorg_renderproto_jll"),
+    BuildDependency("Xorg_xproto_jll"),
     Dependency("Fontconfig_jll"),
     Dependency("Xorg_libXrender_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
