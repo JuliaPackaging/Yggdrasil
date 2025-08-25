@@ -4,11 +4,12 @@
 # See https://github.com/dyladan/component-owners for the file format.
 #
 # Please keep the list of components and reviewers in alphabetical order.
+#
+# Note that users MUST be collaborators on the JuliaPackaging/Yggdrasil
+# repository, but they do not need write access.
 components:
   C/Coin-OR/:
     - odow
-  C/Coin-OR/Ipopt/:
-    - amontoison
   G/GLPK/:
     - odow
   H/HiGHS/:
@@ -18,14 +19,10 @@ components:
   S/SCIP_PaPILO/:
     - odow
   S/SCS/:
-    - kalmarek
     - odow
   S/SCS_GPU/:
-    - kalmarek
     - odow
   S/SCS_MKL/:
-    - kalmarek
     - odow
   S/SDPA/:
-    - blegat
     - odow
