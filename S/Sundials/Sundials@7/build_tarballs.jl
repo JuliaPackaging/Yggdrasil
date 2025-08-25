@@ -2,6 +2,7 @@ using BinaryBuilder
 
 name = "Sundials"
 version = v"7.4.0"
+ygg_version = v"7.4.1" # Fake version since we are changing deps
 
 # Collection of sources required to build Sundials
 sources = [
@@ -38,16 +39,16 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DKLU_WORKS=ON \
     -DENABLE_LAPACK=ON \
     -DLAPACK_WORKS=ON \
-    -DBLA_VENDOR="libblastrampoline" \
+    -DBLA_VENDOR="OpenBLAS" \
     ..
 
 cmake --build . --parallel ${nproc}
 cmake --install .
 """
 
-# We attempt to build for all defined platforms
-platforms = supported_platforms()
-platforms = expand_gfortran_versions(platforms)
+# We attempt to build for all the platforms OpenBLAS32_jll is available for
+platforms = expand_gfortran_versions(supported_platforms())
+filter!(p -> !(arch(p) == "powerpc64le" && libgfortran_version(p) < v"5"), platforms)
 
 products = [
     LibraryProduct("libsundials_arkode", :libsundials_arkode),
@@ -80,10 +81,10 @@ products = [
 dependencies = [
     HostBuildDependency("CMake_jll"),
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("libblastrampoline_jll"),
-    Dependency("SuiteSparse_jll"),
+    Dependency("OpenBLAS32_jll"),
+    Dependency("SuiteSparse32_jll"),
 ]
 
 # Build the tarballs
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
-               preferred_gcc_version = v"6", julia_compat="1.10")
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version = v"6", julia_compat="1.6")
