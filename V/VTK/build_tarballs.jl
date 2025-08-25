@@ -324,9 +324,10 @@ vtk_modules = [
 
 # The products that we will ensure are always built
 products = [
+    # The MacOS library names we specify here cannot end in `.digit`. These are interpreted as soversion by BinaryBuilder.
     # The Windows library names we specify here cannot end in `-digit.digit`. These are interpreted as soversion by BinaryBuilder.
     # Note: When the auditor fails on x86_64-linux because GCC 13 is too new then we can work around this via `dont_dlopen=true`.
-    [LibraryProduct(["libvtk$(mod)-$(version.major).$(version.minor)", "libvtk$(mod)"],
+    [LibraryProduct(["libvtk$(mod)-$(version.major).$(version.minor)", "libvtk$(mod)-$(version.major)", "libvtk$(mod)"],
                     Symbol("libvtk$(mod)")) for mod in vtk_modules];
 ]
 
