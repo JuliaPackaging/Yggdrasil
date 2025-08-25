@@ -136,6 +136,10 @@ filter!(p -> nbits(p) == 64, platforms)
 # We don't support MPItrampoline quite yet
 filter!(p -> p["mpi"] != "mpitrampoline", platforms)
 
+# Building on Windows requires GCC 13, and that leads to many follow-up issues.
+# Let's try again later.
+filter(!Sys.iswindows, platoforms)
+
 # These are all the VTK modules; most have associated shared libraries
 vtk_modules = [
     "WrappingTools",
@@ -314,13 +318,14 @@ vtk_modules = [
     "FiltersParallelImaging",
     "FiltersGeometryPreview",
     "FiltersGeneric",
-    # [x86_64-linux-gnu-cxx11 is missing `GLIBCXX_3.4.32` in the auditor] "FiltersFlowPaths",
+    "FiltersFlowPaths",
     # [there but not found on darwin?] "DomainsChemistryOpenGL2",
 ]
 
 # The products that we will ensure are always built
 products = [
     # The Windows library names we specify here cannot end in `-digit.digit`. These are interpreted as soversion by BinaryBuilder.
+    # Note: When the auditor fails on x86_64-linux because GCC 13 is too new then we can work around this via `dont_dlopen=true`.
     [LibraryProduct(["libvtk$(mod)-$(version.major).$(version.minor)", "libvtk$(mod)"],
                     Symbol("libvtk$(mod)")) for mod in vtk_modules];
 ]
@@ -413,6 +418,6 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # Build the tarballs.
 # VTK requires GCC 8
-# We need GCC 13 on Windows for the new `[[...]]`` attribute syntax.
+# We would need GCC 13 on Windows for the new `[[...]]`` attribute syntax.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"13")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"8")
