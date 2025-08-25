@@ -10,6 +10,7 @@ sources = [
     GitSource("https://github.com/PDAL/PDAL.git", "795f0d9858dba72074fa3a4736282b1d2635620b"),
     FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -39,6 +40,11 @@ mkdir -p build/dimbuilder && cd build/dimbuilder
 
 #make sure we're back in source dir
 cd $WORKSPACE/srcdir/PDAL*
+
+# `time_t` and `struct stat` are inconsistent on 32-bit Windows
+if [[ "${target}" == i686-w64* ]]; then
+   atomic_patch -p1 ${WORKSPACE}/srcdir/patches/time_t.patch
+fi
 
 cmake -B build -G Ninja \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
