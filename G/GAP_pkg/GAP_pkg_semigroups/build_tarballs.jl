@@ -29,6 +29,10 @@ elif [[ "${target}" == *-freebsd* ]]; then
     EXTRA_FLAGS+=(--disable-backward)
 fi
 
+# not enough space in /tmp on buildkite
+export TMPDIR=$WORKSPACE/tmp
+mkdir $TMPDIR
+
 ./configure \
     --build=${MACHTYPE} \
     --host=${target} \
