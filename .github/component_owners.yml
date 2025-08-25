@@ -1,0 +1,31 @@
+# The purpose of this file is to control which reviewers are assigned as part of
+# the `.github/workflows/component_owners.yml` workflow.
+#
+# See https://github.com/dyladan/component-owners for the file format.
+#
+# Please keep the list of components and reviewers in alphabetical order.
+components:
+  C/Coin-OR/:
+    - odow
+  C/Coin-OR/Ipopt/:
+    - amontoison
+  G/GLPK/:
+    - odow
+  H/HiGHS/:
+    - odow
+  S/SCIP/:
+    - odow
+  S/SCIP_PaPILO/:
+    - odow
+  S/SCS/:
+    - kalmarek
+    - odow
+  S/SCS_GPU/:
+    - kalmarek
+    - odow
+  S/SCS_MKL/:
+    - kalmarek
+    - odow
+  S/SDPA/:
+    - blegat
+    - odow

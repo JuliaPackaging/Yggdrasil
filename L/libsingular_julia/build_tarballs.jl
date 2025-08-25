@@ -3,13 +3,8 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
-# See https://github.com/JuliaLang/Pkg.jl/issues/2942
-# Once this Pkg issue is resolved, this must be removed
-uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
-delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
-
 name = "libsingular_julia"
-version = v"0.47.5"
+version = v"0.47.6"
 
 # Collection of sources required to build libsingular-julia
 sources = [
@@ -39,6 +34,7 @@ install_license ../../LICENSE.md
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl")
+filter!(>=(v"1.10"), julia_versions)
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 filter!(!Sys.iswindows, platforms) # Singular does not support Windows
 
@@ -63,11 +59,11 @@ dependencies = [
     # Singular.jl to ensure the right versions of libsingular_julia_jll and
     # Singular_jll are paired. This gives us flexibility in the development
     # setup there.
-    Dependency("Singular_jll", v"404.100.100"),
+    Dependency("Singular_jll", v"404.100.300"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    preferred_gcc_version=v"8", julia_compat="1.6")
+    preferred_gcc_version=v"8", julia_compat="1.10")
 
 # rebuild trigger: 0
