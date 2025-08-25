@@ -110,6 +110,7 @@ meson setup builddir \
     -Dbuild-examples=false \
     -Dbuild-tests=false \
     -Dbuild-testsuite=false \
+    -Dbroadway-backend=true \
     "${FLAGS[@]}"
 meson compile -C builddir
 meson install -C builddir
