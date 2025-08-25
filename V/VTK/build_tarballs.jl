@@ -134,7 +134,7 @@ platforms, platform_dependencies = MPI.augment_platforms(platforms)
 filter!(p -> nbits(p) == 64, platforms)
 
 # We don't support MPItrampoline quite yet
-filter!(p -> p["mpi"] != "MPItrampoline", platforms)
+filter!(p -> p["mpi"] != "mpitrampoline", platforms)
 
 # These are all the VTK modules; most have associated shared libraries
 vtk_modules = [
@@ -314,7 +314,7 @@ vtk_modules = [
     "FiltersParallelImaging",
     "FiltersGeometryPreview",
     "FiltersGeneric",
-    "FiltersFlowPaths",
+    # [x86_64-linux-gnu-cxx11 is missing `GLIBCXX_3.4.32` in the auditor] "FiltersFlowPaths",
     # [there but not found on darwin?] "DomainsChemistryOpenGL2",
 ]
 
