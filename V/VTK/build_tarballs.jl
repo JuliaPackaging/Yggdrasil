@@ -314,13 +314,15 @@ vtk_modules = [
     "FiltersParallelImaging",
     "FiltersGeometryPreview",
     "FiltersGeneric",
-    # "FiltersFlowPaths",
+    "FiltersFlowPaths",
     # [there but not found on darwin?] "DomainsChemistryOpenGL2",
 ]
 
 # The products that we will ensure are always built
 products = [
-    [LibraryProduct("libvtk$(mod)-$(version.major).$(version.minor)", Symbol("libvtk$(mod)")) for mod in vtk_modules];
+    # The Windows library names we specify here cannot end in `-digit.digit`. These are interpreted as soversion by BinaryBuilder.
+    [LibraryProduct(["libvtk$(mod)-$(version.major).$(version.minor)", "libvtk$(mod)"],
+                    Symbol("libvtk$(mod)")) for mod in vtk_modules];
 ]
 
 # Dependencies that must be installed before this package can be built
