@@ -138,7 +138,7 @@ filter!(p -> p["mpi"] != "mpitrampoline", platforms)
 
 # Building on Windows requires GCC 13, and that leads to many follow-up issues.
 # Let's try again later.
-filter(!Sys.iswindows, platoforms)
+filter(!Sys.iswindows, platforms)
 
 # These are all the VTK modules; most have associated shared libraries
 vtk_modules = [
