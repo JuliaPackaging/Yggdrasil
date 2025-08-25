@@ -19,6 +19,11 @@ EXTRA_CMAKE_ARGS=()
     EXTRA_CMAKE_ARGS+=(-DAUDIOAPI=portaudio)
 # fi
 
+# it requires macOS 10.13
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    EXTRA_CMAKE_ARGS+=(-DCMAKE_CXX_FLAGS="-fno-aligned-allocation")
+fi
+
 $host_bindir/cmake -G Ninja \
     -S . \
     -B build \
