@@ -22,7 +22,7 @@ meson install -C builddir
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-filter!(Sys.isunix, platforms)
+filter!(p -> Sys.islinux(p) || Sys.isbsd(p), platforms)
 
 # The products that we will ensure are always built
 products = [
