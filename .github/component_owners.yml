@@ -8,10 +8,22 @@
 # Note that users MUST be collaborators on the JuliaPackaging/Yggdrasil
 # repository, but they do not need write access.
 components:
+  A/ADIOS2/:
+    - eschnett
+  A/AMReX/:
+    - eschnett
+  A/asdf_cxx/:
+    - eschnett
   B/basiclu/:
     - amontoison
+  B/bitshuffle/:
+    - eschnett
   B/blis/:
     - imciner2
+  B/Blosc/:
+    - eschnett
+  B/Blosc2/:
+    - eschnett
   B/bsdiff_classic:
     - StefanKarpinski
   B/bsdiff_endsley:
@@ -32,6 +44,8 @@ components:
   C/cupynumeric/:
     - ejmeitz
     - krasow
+  E/EinsteinToolkit/:
+    - eschnett
   F/f4ncgb/:
     - benlorenz
   F/FLINT:
@@ -49,14 +63,22 @@ components:
   G/GAP_pkg/:
     - fingolfin
     - lgoettgens
+  G/GDAL/:
+    - eschnett
   G/GLPK/:
     - odow
   G/GRAMPC/:
     - imciner2
+  H/HDF5/:
+    - eschnett
+  H/HighFive/:
+    - eschnett
   H/HiGHS/:
     - odow
   H/HSL/:
     - amontoison
+  H/Hwloc/:
+    - eschnett
   I/IntelOpenMP/:
     - amontoison
   I/igraph/:
@@ -74,6 +96,8 @@ components:
   L/legate_jl_wrapper/:
     - ejmeitz
     - krasow
+  L/libaec/:
+    - eschnett
   L/LibGit2:
     - StefanKarpinski
   L/libblastrampoline/:
@@ -85,6 +109,8 @@ components:
     - benlorenz
   L/libsingular_julia/:
     - fingolfin
+  L/libsixel/:
+    - eschnett
   M/METIS/:
     - amontoison
   M/MKL/:
@@ -93,16 +119,28 @@ components:
   M/MKL_Headers/:
     - amontoison
     - imciner2
+  M/MPICH/:
+    - eschnett
+  M/MPItrampoline/:
+    - eschnett
   M/MUMPS/:
     - amontoison
+  N/Ncurses/:
+    - eschnett
   N/NOMAD/:
     - amontoison
+  N/Notcurses/:
+    - eschnett
   O/oneAPI_support/:
     - amontoison
   O/oneAPI_support_Headers/:
     - amontoison
   O/OpenBLAS/:
     - imciner2
+  O/OpenMPI/:
+    - eschnett
+  O/openPMD_api/:
+    - eschnett
   O/OpenSSH:
     - giordano
     - StefanKarpinski
@@ -113,6 +151,8 @@ components:
     - amontoison
   P/PaStiX/:
     - amontoison
+  P/PDAL/:
+    - eschnett
   P/PicoSAT:
     - StefanKarpinski
   P/polymake:
@@ -121,6 +161,8 @@ components:
     - benlorenz
   P/PRIMA/:
     - amontoison
+  P/PROJ/:
+    - eschnett
   P/ProxTV/:
     - amontoison
   P/PROPACK/:
@@ -131,6 +173,8 @@ components:
     - imciner2
   Q/qr_mumps/:
     - amontoison
+  R/rclone/:
+    - eschnett
   R/ReferenceBLAS/:
     - amontoison
     - imciner2
@@ -152,6 +196,8 @@ components:
     - odow
   S/SDPA/:
     - odow
+  S/SHTOOLS/:
+    - eschnett
   S/SIFDecode/:
     - amontoison
   S/Singular:
