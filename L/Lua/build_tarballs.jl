@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "Lua"
-version = v"5.4.7"
-ygg_version = v"5.4.8" # version increment to pick up riscv
+version = v"5.4.8"
+ygg_version = v"5.4.9" # Got out of sync when RISC-V was added
 
 sources = [
     ArchiveSource("https://www.lua.org/ftp/lua-$(version).tar.gz",
-                  "9fbf5e28ef86c69858f6d3d34eccc32e911c1a28b4120ff3e84aaa70cfbf1e30"),
+                  "4f18ddae154e793e46eeab727c59ef1c0c0c2b744e7b94219710d76f530629ae"),
     DirectorySource("./bundled"),
 ]
 
