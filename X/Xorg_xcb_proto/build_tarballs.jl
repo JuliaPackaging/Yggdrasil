@@ -26,7 +26,8 @@ find ${libdir}/python2.7/site-packages -name '*.py[co]' -delete
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [AnyPlatform()]
+#TODO platforms = [AnyPlatform()]
+platforms = supported_platforms()
 
 products = Product[
 ]
