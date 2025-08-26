@@ -10,6 +10,8 @@
 components:
   B/basiclu/:
     - amontoison
+  B/blis/:
+    - imciner2
   C/ColPack/:
     - amontoison
   C/Coin-OR/:
@@ -45,6 +47,8 @@ components:
     - lgoettgens
   G/GLPK/:
     - odow
+  G/GRAMPC/:
+    - imciner2
   H/HiGHS/:
     - odow
   H/HSL/:
@@ -57,6 +61,7 @@ components:
     - amontoison
   L/LAPACK/:
     - amontoison
+    - imciner2
   L/LEMON/:
     - Krastanov
   L/legate/:
@@ -67,6 +72,7 @@ components:
     - krasow
   L/libblastrampoline/:
     - amontoison
+    - imciner2
   L/libpolymake_julia/:
     - benlorenz
   L/libsingular_julia/:
@@ -75,8 +81,10 @@ components:
     - amontoison
   M/MKL/:
     - amontoison
+    - imciner2
   M/MKL_Headers/:
     - amontoison
+    - imciner2
   M/MUMPS/:
     - amontoison
   N/NOMAD/:
@@ -85,6 +93,10 @@ components:
     - amontoison
   O/oneAPI_support_Headers/:
     - amontoison
+  O/OpenBLAS/:
+    - imciner2
+  O/OSQP/:
+    - imciner2
   P/PARMETIS/:
     - amontoison
   P/PaStiX/:
@@ -101,10 +113,13 @@ components:
     - amontoison
   P/PTSCOTCH/:
     - amontoison
+  Q/QDLDL/:
+    - imciner2
   Q/qr_mumps/:
     - amontoison
   R/ReferenceBLAS/:
     - amontoison
+    - imciner2
   S/SCALAPACK/:
     - amontoison
   S/SCALAPACK32/:
@@ -135,6 +150,10 @@ components:
     - amontoison
   S/STYRENE/:
     - amontoison
+  S/SuiteSparse/:
+    - imciner2
+  S/Sundials/:
+    - imciner2
   T/TDEP/:
     - ejmeitz
   U/Uno/:
