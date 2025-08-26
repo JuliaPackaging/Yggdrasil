@@ -38,12 +38,21 @@ done
 
 # We could enable more drivers and/or build with LLVM enabled
 
+options=()
+if [[ "${target}" == *-apple-* ]]; then
+    options+=(
+        -Dplatforms=macos
+        -Dglx=disabled
+    )
+fi
+
 meson setup builddir \
     --buildtype=release \
     --cross-file="${MESON_TARGET_TOOLCHAIN}" \
     -Dllvm=disabled \
     -Dgallium-drivers=softpipe \
-    -Dvulkan-drivers=
+    -Dvulkan-drivers= \
+    ${options[@]}
 meson compile -C builddir
 meson install -C builddir
 
@@ -56,60 +65,47 @@ popd
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-# darwin: we need X11, but we only build X11 for Linux and FreeBSD
-# freebsd: libdrm is not built
+# We don't know how to build for Apple platforms. We don't have X11
+# libraries available, and all other build options seem cumbersome.
+filter!(!Sys.isapple, platforms)
 
 # The products that we will ensure are always built
 products = [
-    # Products on Linux:
-    # libEGL
-    # libEGL_mesa
-    # libGLESv1_CM
-    # libGLESv2
-    # libGLX
-    # libGLX_mesa
-    # libGLdispatch
-    # libOpenGL
-
-    # Products on Windows:
-    # libEGL
-    # libGLESv1_CM
-    # libGLESv2
-    # libgallium_wgl
-    # opengl32
-
     LibraryProduct(["libGL", "opengl32"], :libGL),
-
-    #TODO LibraryProduct("opengl32sw", :opengl32sw; dont_dlopen=true),
+    LibraryProduct("libEGL", :libEGL),
+    LibraryProduct("libGLESv1_CM", :libGLESv1_CM),
+    LibraryProduct("libGLESv2", :libGLESv2),
 ]
+
+x11_platforms = filter(p -> !Sys.isapple(p) && !Sys.iswindows(p), platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    HostBuildDependency("Wayland_jll"),
+    HostBuildDependency("Wayland_jll"; platforms=x11_platforms),
 
-    BuildDependency("Xorg_glproto_jll"),
-    BuildDependency("Xorg_kbproto_jll"),
-    BuildDependency("Xorg_randrproto_jll"),
-    BuildDependency("Xorg_renderproto_jll"),
-    BuildDependency("Xorg_xextproto_jll"),
-    BuildDependency("Xorg_xf86vidmodeproto_jll"),
-    BuildDependency("Xorg_xproto_jll"),
+    BuildDependency("Xorg_glproto_jll"; platforms=x11_platforms),
+    BuildDependency("Xorg_kbproto_jll"; platforms=x11_platforms),
+    BuildDependency("Xorg_randrproto_jll"; platforms=x11_platforms),
+    BuildDependency("Xorg_renderproto_jll"; platforms=x11_platforms),
+    BuildDependency("Xorg_xextproto_jll"; platforms=x11_platforms),
+    BuildDependency("Xorg_xf86vidmodeproto_jll"; platforms=x11_platforms),
+    BuildDependency("Xorg_xproto_jll"; platforms=x11_platforms),
 
     Dependency("Expat_jll"; compat="2.7.1"),
     Dependency("LibUnwind_jll"), # no compat entry to support all architectures and Julia versions
-    Dependency("Libglvnd_jll"; compat="1.7.1"),
-    Dependency("Wayland_jll"; compat="1.24.0"),
-    Dependency("Xorg_libX11_jll"),
-    Dependency("Xorg_libXau_jll"),
-    Dependency("Xorg_libXdmcp_jll"),
-    Dependency("Xorg_libXext_jll"),
-    Dependency("Xorg_libXrandr_jll"),
-    Dependency("Xorg_libXxf86vm_jll"),
-    Dependency("Xorg_libxcb_jll"),
-    Dependency("Xorg_libxshmfence_jll"),
+    Dependency("Libglvnd_jll"; compat="1.7.1"; platforms=x11_platforms),
+    Dependency("Wayland_jll"; compat="1.24.0"; platforms=x11_platforms),
+    Dependency("Xorg_libX11_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libXau_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libXdmcp_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libXext_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libXrandr_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libXxf86vm_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libxcb_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libxshmfence_jll"; platforms=x11_platforms),
     Dependency("Zlib_jll"; compat="1.2.12"),
     Dependency("Zstd_jll"; compat="1.5.7"),
-    Dependency("libdrm_jll"; compat="2.4.125"),
+    Dependency("libdrm_jll"; compat="2.4.125", platforms=x11_platforms),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
