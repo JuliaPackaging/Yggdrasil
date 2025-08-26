@@ -51,10 +51,14 @@ components:
     - amontoison
   I/IntelOpenMP/:
     - amontoison
+  I/igraph/:
+    - Krastanov
   I/ipx/:
     - amontoison
   L/LAPACK/:
     - amontoison
+  L/LEMON/:
+    - Krastanov
   L/legate/:
     - ejmeitz
     - krasow
@@ -135,3 +139,5 @@ components:
     - ejmeitz
   U/Uno/:
     - amontoison
+  V/very_nauty/:
+    - Krastanov
