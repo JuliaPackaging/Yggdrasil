@@ -9,10 +9,22 @@ components:
     - odow
   C/Coin-OR/Ipopt/:
     - amontoison
+  C/cunumeric_jl_warpper/:
+    - ejmeitz
+    - krasow
+  C/cupynumeric/:
+    - ejmeitz
+    - krasow
   G/GLPK/:
     - odow
   H/HiGHS/:
     - odow
+  L/legate/:
+    - ejmeitz
+    - krasow
+  L/legate_jl_wrapper/:
+    -ejmeitz
+    - krasow
   S/SCIP/:
     - odow
   S/SCIP_PaPILO/:
@@ -29,3 +41,5 @@ components:
   S/SDPA/:
     - blegat
     - odow
+  T/TDEP/:
+    - ejmeitz
