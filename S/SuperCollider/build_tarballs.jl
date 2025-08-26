@@ -4,7 +4,9 @@ name = "SuperCollider"
 version = v"3.14.0"
 
 sources = [
-    GitSource("https://github.com/supercollider/supercollider.git", "d263b8cc9905302bb6cfc26e8e68f22bb43092e9")
+    GitSource("https://github.com/supercollider/supercollider.git", "d263b8cc9905302bb6cfc26e8e68f22bb43092e9"),
+    # ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+    #     "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 script = raw"""
@@ -20,9 +22,16 @@ EXTRA_CMAKE_ARGS=()
 # fi
 
 # it requires macOS 10.13
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    EXTRA_CMAKE_ARGS+=(-DCMAKE_CXX_FLAGS="-fno-aligned-allocation")
-fi
+# if [[ "${target}" == x86_64-apple-darwin* ]]; then
+#     EXTRA_CMAKE_ARGS+=(-DCMAKE_CXX_FLAGS="-fno-aligned-allocation")
+
+#     pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
+#     rm -rf /opt/${target}/${target}/sys-root/System
+#     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+#     cp -ra System "/opt/${target}/${target}/sys-root/."
+#     export MACOSX_DEPLOYMENT_TARGET=10.15
+#     popd
+# fi
 
 $host_bindir/cmake -G Ninja \
     -S . \
@@ -67,7 +76,7 @@ platforms = [
     Platform("i686", "linux"; libc="musl"),
     Platform("x86_64", "linux"; libc="musl"),
     Platform("aarch64", "linux"; libc="musl"),
-    Platform("x86_64", "macos"),
+    # Platform("x86_64", "macos"),
     Platform("aarch64", "macos"),
 ]
 
