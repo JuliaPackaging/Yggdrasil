@@ -1,12 +1,11 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "CGNS"
-cgns_version = v"4.3.0"
-version = v"4.3.1"
+version = v"4.5.0"
 
 sources = [
     GitSource("https://github.com/CGNS/CGNS.git",
-              "ec538ac11dbaff510464a831ef094b0d6bf7216c"),
+              "c64b4abf7f5e9ca28c1afa3a4609efca961cee02"),
 ]
 
 script = raw"""
@@ -18,20 +17,14 @@ if [[ ${target} == x86_64-linux-musl ]]; then
     rm /usr/lib/libnghttp2.*
 fi
 
-# Correct HDF5 compiler wrappers
-perl -pi -e 's+-I/workspace/srcdir/hdf5-1.14.0/src/H5FDsubfiling++' $(which h5pcc)
-
-mkdir build && cd build
-H5LIB=""
-if [[ "${target}" == *-mingw* ]]; then
-    H5LIB="-DHDF5_hdf5_LIBRARY_RELEASE=$(ls ${WORKSPACE}/destdir/bin/libhdf5-*.${dlext})"
-fi
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-      -DCMAKE_BUILD_TYPE=Release \
-      -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
-      ${H5LIB} ..
-make -j${nproc}
-make install
+cmake -Bbuild -GNinja \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
+    -DCGNS_ENABLE_SHARED_LIB=ON \
+    -DCGNS_ENABLE_STATIC_LIB=OFF
+cmake --build build --parallel ${nproc}
+cmake --install build
 """
 
 platforms = supported_platforms()
@@ -47,10 +40,11 @@ products = [
 ]
 
 dependencies = [
-    # We had to restrict compat with HDF5 because of ABI breakage:
-    # https://github.com/JuliaPackaging/Yggdrasil/pull/10347#issuecomment-2662923973
-    # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
-    Dependency("HDF5_jll"; compat="1.14.0 - 1.14.3"),
+    # Without OpenMPI as build dependency the build fails on 32-bit platforms
+    BuildDependency(PackageSpec(; name="OpenMPI_jll", version=v"4.1.8"); platforms=filter(p -> nbits(p)==32, platforms)),
+    Dependency("HDF5_jll"; compat="~1.14.6"),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+# We need at least GCC 5 for the HDF5 libraries
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"5")
