@@ -59,7 +59,8 @@ fi
 """
 
 dependencies = [
-    Dependency("CUDA_Driver_jll", v"13.0"; compat="13")
+    Dependency("CUDA_Driver_jll"; compat="13"),
+    RuntimeDependency("CUDA_Runtime_jll"),
 ]
 
 products = [
