@@ -12,6 +12,10 @@ components:
     - amontoison
   B/blis/:
     - imciner2
+  B/bsdiff_classic:
+    - StefanKarpinski
+  B/bsdiff_endsley:
+    - StefanKarpinski
   C/ColPack/:
     - amontoison
   C/Coin-OR/:
@@ -70,9 +74,13 @@ components:
   L/legate_jl_wrapper/:
     - ejmeitz
     - krasow
+  L/LibGit2:
+    - StefanKarpinski
   L/libblastrampoline/:
     - amontoison
     - imciner2
+  L/libpicosat/:
+    - StefanKarpinski
   L/libpolymake_julia/:
     - benlorenz
   L/libsingular_julia/:
@@ -95,12 +103,18 @@ components:
     - amontoison
   O/OpenBLAS/:
     - imciner2
+  O/OpenSSH:
+    - giordano
+    - StefanKarpinski
+    - viralbshah
   O/OSQP/:
     - imciner2
   P/PARMETIS/:
     - amontoison
   P/PaStiX/:
     - amontoison
+  P/PicoSAT:
+    - StefanKarpinski
   P/polymake:
     - benlorenz
   P/polymake_oscarnumber:
@@ -160,3 +174,5 @@ components:
     - amontoison
   V/very_nauty/:
     - Krastanov
+  Z/zrl:
+    - StefanKarpinski
