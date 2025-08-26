@@ -5,7 +5,6 @@ using Libdl
 # re-use the CUDA_Runtime_jll preference to select the appropriate compiler
 const CUDA_Runtime_jll_uuid = Base.UUID("76a88914-d11a-5bdc-97e0-2f5a05c973a2")
 const preferences = Base.get_preferences(CUDA_Runtime_jll_uuid)
-Base.record_compiletime_preference(CUDA_Runtime_jll_uuid, "version")
 function parse_version_preference(key)
     if haskey(preferences, key)
         if isa(preferences[key], String)
