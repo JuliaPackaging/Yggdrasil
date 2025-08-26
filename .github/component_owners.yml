@@ -20,6 +20,12 @@ components:
     - amontoison
   C/CUDA/CUDSS/:
     - amontoison
+  C/cunumeric_jl_warpper/:
+    - ejmeitz
+    - krasow
+  C/cupynumeric/:
+    - ejmeitz
+    - krasow
   F/f4ncgb/:
     - benlorenz
   F/FLINT:
@@ -49,6 +55,12 @@ components:
     - amontoison
   L/LAPACK/:
     - amontoison
+  L/legate/:
+    - ejmeitz
+    - krasow
+  L/legate_jl_wrapper/:
+    - ejmeitz
+    - krasow
   L/libblastrampoline/:
     - amontoison
   L/libpolymake_julia/:
@@ -119,5 +131,7 @@ components:
     - amontoison
   S/STYRENE/:
     - amontoison
+  T/TDEP/:
+    - ejmeitz
   U/Uno/:
     - amontoison
