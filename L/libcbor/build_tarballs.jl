@@ -18,7 +18,10 @@ cmake -S .. -B . \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_PREFIX_PATH=${prefix} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DBUILD_SHARED_LIBS=ON
+    -DCMAKE_INSTALL_LIBDIR=${libdir} \
+    -DCMAKE_INSTALL_INCLUDEDIR=${includedir} \
+    -DBUILD_SHARED_LIBS=ON \
+    -DWITH_EXAMPLES=OFF
 
 make -j${nproc} install
 """
