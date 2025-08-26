@@ -20,8 +20,29 @@ components:
     - amontoison
   C/CUDA/CUDSS/:
     - amontoison
+  C/cunumeric_jl_warpper/:
+    - ejmeitz
+    - krasow
+  C/cupynumeric/:
+    - ejmeitz
+    - krasow
+  F/f4ncgb/:
+    - benlorenz
+  F/FLINT:
+    - benlorenz
+    - fingolfin
+    - lgoettgens
   G/GALAHAD/:
     - amontoison
+  G/GAP/:
+    - fingolfin
+    - lgoettgens
+  G/GAP_lib/:
+    - fingolfin
+    - lgoettgens
+  G/GAP_pkg/:
+    - fingolfin
+    - lgoettgens
   G/GLPK/:
     - odow
   H/HiGHS/:
@@ -38,8 +59,18 @@ components:
     - amontoison
   L/LEMON/:
     - Krastanov
+  L/legate/:
+    - ejmeitz
+    - krasow
+  L/legate_jl_wrapper/:
+    - ejmeitz
+    - krasow
   L/libblastrampoline/:
     - amontoison
+  L/libpolymake_julia/:
+    - benlorenz
+  L/libsingular_julia/:
+    - fingolfin
   M/METIS/:
     - amontoison
   M/MKL/:
@@ -58,6 +89,10 @@ components:
     - amontoison
   P/PaStiX/:
     - amontoison
+  P/polymake:
+    - benlorenz
+  P/polymake_oscarnumber:
+    - benlorenz
   P/PRIMA/:
     - amontoison
   P/ProxTV/:
@@ -90,6 +125,8 @@ components:
     - odow
   S/SIFDecode/:
     - amontoison
+  S/Singular:
+    - fingolfin
   S/SOLAR/:
     - amontoison
   S/SPRAL/:
@@ -98,6 +135,8 @@ components:
     - amontoison
   S/STYRENE/:
     - amontoison
+  T/TDEP/:
+    - ejmeitz
   U/Uno/:
     - amontoison
   V/very_nauty/:
