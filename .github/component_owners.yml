@@ -13,6 +13,10 @@ components:
     - odow
   H/HiGHS/:
     - odow
+  I/igraph/:
+    - Krastanov
+  L/LEMON/:
+    - Krastanov
   S/SCIP/:
     - odow
   S/SCIP_PaPILO/:
@@ -29,3 +33,5 @@ components:
   S/SDPA/:
     - blegat
     - odow
+  V/very_nauty/:
+    - Krastanov
