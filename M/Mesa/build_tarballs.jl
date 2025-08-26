@@ -56,6 +56,9 @@ popd
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
+# darwin: we need X11, but we only build X11 for Linux and FreeBSD
+# freebsd: libdrm is not built
+
 # The products that we will ensure are always built
 products = [
     # Products on Linux:
@@ -111,4 +114,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"8")
+               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"8")
