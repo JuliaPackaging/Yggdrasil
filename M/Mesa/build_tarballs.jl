@@ -93,8 +93,8 @@ dependencies = [
 
     Dependency("Expat_jll"; compat="2.7.1"),
     Dependency("LibUnwind_jll"), # no compat entry to support all architectures and Julia versions
-    Dependency("Libglvnd_jll"; compat="1.7.1"; platforms=x11_platforms),
-    Dependency("Wayland_jll"; compat="1.24.0"; platforms=x11_platforms),
+    Dependency("Libglvnd_jll"; compat="1.7.1", platforms=x11_platforms),
+    Dependency("Wayland_jll"; compat="1.24.0", platforms=x11_platforms),
     Dependency("Xorg_libX11_jll"; platforms=x11_platforms),
     Dependency("Xorg_libXau_jll"; platforms=x11_platforms),
     Dependency("Xorg_libXdmcp_jll"; platforms=x11_platforms),
