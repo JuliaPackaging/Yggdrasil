@@ -10,6 +10,8 @@
 components:
   C/Coin-OR/:
     - odow
+  C/Coin-OR/Ipopt/:
+    - amontoison
   G/GLPK/:
     - odow
   H/HiGHS/:
