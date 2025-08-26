@@ -1,0 +1,143 @@
+# The purpose of this file is to control which reviewers are assigned as part of
+# the `.github/workflows/component_owners.yml` workflow.
+#
+# See https://github.com/dyladan/component-owners for the file format.
+#
+# Please keep the list of components and reviewers in alphabetical order.
+#
+# Note that users MUST be collaborators on the JuliaPackaging/Yggdrasil
+# repository, but they do not need write access.
+components:
+  B/basiclu/:
+    - amontoison
+  C/ColPack/:
+    - amontoison
+  C/Coin-OR/:
+    - odow
+  C/Coin-OR/Ipopt/:
+    - amontoison
+  C/CUTEst/:
+    - amontoison
+  C/CUDA/CUDSS/:
+    - amontoison
+  C/cunumeric_jl_warpper/:
+    - ejmeitz
+    - krasow
+  C/cupynumeric/:
+    - ejmeitz
+    - krasow
+  F/f4ncgb/:
+    - benlorenz
+  F/FLINT:
+    - benlorenz
+    - fingolfin
+    - lgoettgens
+  G/GALAHAD/:
+    - amontoison
+  G/GAP/:
+    - fingolfin
+    - lgoettgens
+  G/GAP_lib/:
+    - fingolfin
+    - lgoettgens
+  G/GAP_pkg/:
+    - fingolfin
+    - lgoettgens
+  G/GLPK/:
+    - odow
+  H/HiGHS/:
+    - odow
+  H/HSL/:
+    - amontoison
+  I/IntelOpenMP/:
+    - amontoison
+  I/igraph/:
+    - Krastanov
+  I/ipx/:
+    - amontoison
+  L/LAPACK/:
+    - amontoison
+  L/LEMON/:
+    - Krastanov
+  L/legate/:
+    - ejmeitz
+    - krasow
+  L/legate_jl_wrapper/:
+    - ejmeitz
+    - krasow
+  L/libblastrampoline/:
+    - amontoison
+  L/libpolymake_julia/:
+    - benlorenz
+  L/libsingular_julia/:
+    - fingolfin
+  M/METIS/:
+    - amontoison
+  M/MKL/:
+    - amontoison
+  M/MKL_Headers/:
+    - amontoison
+  M/MUMPS/:
+    - amontoison
+  N/NOMAD/:
+    - amontoison
+  O/oneAPI_support/:
+    - amontoison
+  O/oneAPI_support_Headers/:
+    - amontoison
+  P/PARMETIS/:
+    - amontoison
+  P/PaStiX/:
+    - amontoison
+  P/polymake:
+    - benlorenz
+  P/polymake_oscarnumber:
+    - benlorenz
+  P/PRIMA/:
+    - amontoison
+  P/ProxTV/:
+    - amontoison
+  P/PROPACK/:
+    - amontoison
+  P/PTSCOTCH/:
+    - amontoison
+  Q/qr_mumps/:
+    - amontoison
+  R/ReferenceBLAS/:
+    - amontoison
+  S/SCALAPACK/:
+    - amontoison
+  S/SCALAPACK32/:
+    - amontoison
+  S/SCIP/:
+    - odow
+  S/SCIP_PaPILO/:
+    - odow
+  S/SCS/:
+    - odow
+  S/SCOTCH/:
+    - amontoison
+  S/SCS_GPU/:
+    - odow
+  S/SCS_MKL/:
+    - odow
+  S/SDPA/:
+    - odow
+  S/SIFDecode/:
+    - amontoison
+  S/Singular:
+    - fingolfin
+  S/SOLAR/:
+    - amontoison
+  S/SPRAL/:
+    - amontoison
+  S/StarPU/:
+    - amontoison
+  S/STYRENE/:
+    - amontoison
+  T/TDEP/:
+    - ejmeitz
+  U/Uno/:
+    - amontoison
+  V/very_nauty/:
+    - Krastanov
