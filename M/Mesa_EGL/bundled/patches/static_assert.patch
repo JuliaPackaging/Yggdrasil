@@ -1,0 +1,10 @@
+--- a/meson.build
++++ b/meson.build
+@@ -56,6 +56,7 @@
+   '-D__STDC_LIMIT_MACROS',
+   '-DPACKAGE_VERSION="@0@"'.format(meson.project_version()),
+   '-DPACKAGE_BUGREPORT="https://gitlab.freedesktop.org/mesa/mesa/-/issues"',
++  '-Dstatic_assert(...)=',
+ ]
+ c_args = []
+ cpp_args = []
