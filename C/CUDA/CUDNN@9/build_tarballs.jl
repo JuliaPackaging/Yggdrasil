@@ -66,17 +66,10 @@ platforms = [Platform("x86_64", "linux"),
              Platform("x86_64", "windows")]
 
 builds = []
-for cuda_version in [v"11", v"12", v"13"], platform in platforms
+for cuda_version in [v"12", v"13"], platform in platforms
     augmented_platform = deepcopy(platform)
     augmented_platform["cuda"] = CUDA.platform(cuda_version)
     should_build_platform(triplet(augmented_platform)) || continue
-
-    if arch(platform) == "aarch64"
-        # Tegra binaries are only provided for CUDA 12.x
-        if platform["cuda_platform"] == "jetson" && cuda_version == v"11"
-            continue
-        end
-    end
 
     sources = get_sources("cudnn", ["cudnn"]; version, platform,
                            variant="cuda$(cuda_version.major)")
