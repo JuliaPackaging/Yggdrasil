@@ -23,6 +23,7 @@ cmake -S .. -B . \
     -DBUILD_SHARED_LIBS=ON \
     -DWITH_EXAMPLES=OFF
 
+make -j${nproc}
 make -j${nproc} install
 """
 
