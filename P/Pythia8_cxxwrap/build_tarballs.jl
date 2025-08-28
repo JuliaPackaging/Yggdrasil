@@ -54,7 +54,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("libjulia_jll"),
-    Dependency("libcxxwrap_julia_jll"; compat="0.14"),
+    Dependency("libcxxwrap_julia_jll"; compat="0.14.4"),
     Dependency("PYTHIA_jll"; compat = "8.312.0"),
 ]
 
