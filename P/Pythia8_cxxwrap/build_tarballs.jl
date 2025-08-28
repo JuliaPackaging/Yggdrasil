@@ -43,7 +43,7 @@ filter!(x -> x >= v"1.10", julia_versions)
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 
 # platforms supported by Pythia8
-platforms = filter(p -> libc(p) != "musl" && os(p) != "freebsd" && os(p) != "windows", platforms) |> expand_cxxstring_abis
+platforms = filter(p -> libc(p) != "musl" && os(p) != "freebsd" && os(p) != "windows" && arch(p) != "riscv64", platforms) |> expand_cxxstring_abis
 
 # The products that we will ensure are always built
 products = [
