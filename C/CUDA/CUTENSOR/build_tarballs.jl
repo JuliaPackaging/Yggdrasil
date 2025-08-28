@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUTENSOR"
-version = v"2.3.0.6"
+version = v"2.3.0"
 
 scripts = Dict()
 scripts[v"12"] = raw"""
