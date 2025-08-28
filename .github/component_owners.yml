@@ -186,13 +186,16 @@ components:
     - odow
   S/SCIP_PaPILO/:
     - odow
-  S/SCS/:
-    - odow
   S/SCOTCH/:
     - amontoison
+  S/SCS/:
+    - kalmarek
+    - odow
   S/SCS_GPU/:
+    - kalmarek
     - odow
   S/SCS_MKL/:
+    - kalmarek
     - odow
   S/SDPA/:
     - odow
