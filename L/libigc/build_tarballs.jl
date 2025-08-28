@@ -64,6 +64,11 @@ function get_script(; debug::Bool)
         # https://reviews.llvm.org/D64388
         sed -i '/add_subdirectory/i add_definitions(-D__STDC_FORMAT_MACROS)' intel-graphics-compiler/external/llvm/llvm.cmake
 
+        # Avoid "No space left on device"
+        mkdir -p tmpdir
+        export TMPDIR=$(pwd)/tmpdir
+        export CCACHE_TEMPDIR=$(pwd)/tmpdir
+
         cd intel-graphics-compiler
         install_license LICENSE.md
 
