@@ -37,7 +37,7 @@ include("../../L/libjulia/common.jl")
 
 # Filter Julia versions:
 # - Remove versions below current LTS (1.10)
-filter!(x >= v"1.10", julia_versions)
+filter!(x -> x >= v"1.10", julia_versions)
 
 # platforms supported by libjulia
 platforms = vcat(libjulia_platforms.(julia_versions)...)
