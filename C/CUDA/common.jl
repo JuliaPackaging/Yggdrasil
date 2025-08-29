@@ -25,7 +25,8 @@ function parse_sources(json::String, product::String, components::Vector{String}
         elseif arch(platform) == "powerpc64le"
             "linux-ppc64le"
         elseif arch(platform) == "aarch64"
-            if VersionNumber(version) >= v"13"
+            vn_version = version isa VersionNumber ? version : VersionNumber(version)
+            if vn_version >= v"13"
                 haskey(platform, "cuda_platform") && error("CUDA 13 uses unified ARM platforms")
                 "linux-sbsa"
             else
@@ -57,6 +58,9 @@ function parse_sources(json::String, product::String, components::Vector{String}
             error("No $architecture binaries for $component in $product $version")
         end
         data = data[architecture]
+        if product == "cutensor" && version >= v"2.3.0"
+            data = data["cuda" * platform["cuda"]]
+        end
 
         if variant !== nothing
             if !haskey(data, variant)
@@ -64,10 +68,9 @@ function parse_sources(json::String, product::String, components::Vector{String}
             end
             data = data[variant]
         end
-
-        push!(sources, ArchiveSource(
-            "$root/$(data["relative_path"])", data["sha256"]
-        ))
+        archive_src = "$root/$(data["relative_path"])"
+        println(archive_src)
+        push!(sources, ArchiveSource(archive_src, data["sha256"]))
     end
     sources
 end
