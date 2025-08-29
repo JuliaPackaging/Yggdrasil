@@ -7,12 +7,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "NEO"
-version = v"25.27.34303"#.5
+version = v"25.31.34666"#.3
 
 # Collection of sources required to build this package.
 sources = [
     GitSource("https://github.com/intel/compute-runtime.git",
-              "d0fdeb0339afaa6db37411e10c41f291945aa727"),
+              "bbc72778b447a8dd6c02f6fe499147fef79bf0e0"),
     # patches
     DirectorySource("./bundled"),
 ]
@@ -82,7 +82,7 @@ function get_script(; debug::Bool)
         cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
         ninja -C build -j ${nproc} install
         # Create unversioned symlinks
-        ln -s ocloc-25.27.1 ${bindir}/ocloc
+        ln -s ocloc-25.31.1 ${bindir}/ocloc
 
 """
 end
@@ -110,7 +110,7 @@ products = [
 #       https://github.com/intel/compute-runtime/blob/master/manifests/manifest.yml.
 dependencies = [
     Dependency("gmmlib_jll"; compat="=22.8.1"),
-    Dependency("libigc_jll"; compat="=2.14.1"),
+    Dependency("libigc_jll"; compat="=2.16.0"),
     Dependency("oneAPI_Level_Zero_Headers_jll"; compat="=1.13"),
 ]
 
@@ -162,4 +162,3 @@ for platform in platforms, debug in (false, true)
                    products, dependencies; preferred_gcc_version=v"11", julia_compat = "1.6",
                    augment_platform_block)
 end
-# bump
