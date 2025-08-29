@@ -10,38 +10,36 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 name = "CUTENSOR"
 version = v"2.3.0"
 
-script_builder(version::String) = """
-mkdir -p \${libdir} \${prefix}/include
+script = raw"""
+mkdir -p ${libdir} ${prefix}/include
 
-cd \${WORKSPACE}/srcdir
-if [[ \${target} == *-linux-gnu ]]; then
+cd ${WORKSPACE}/srcdir
+if [[ ${target} == *-linux-gnu ]]; then
     cd libcutensor*
     find .
 
     install_license LICENSE
 
-    mv lib/libcutensor.so* \${libdir}
-    mv lib/libcutensorMg.so* \${libdir}
-    mv include/* \${prefix}/include
-elif [[ \${target} == x86_64-w64-mingw32 ]]; then
+    mv lib/libcutensor.so* ${libdir}
+    mv lib/libcutensorMg.so* ${libdir}
+    mv include/* ${prefix}/include
+elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     cd libcutensor*
     find .
 
     install_license LICENSE
 
-    mv bin/cutensor.dll \${libdir}
-    mv bin/cutensorMg.dll \${libdir}
-    mv lib/cutensor.lib \${libdir}
-    mv lib/cutensorMg.lib \${libdir}
-    mv include/* \${prefix}/include
+    mv bin/cutensor.dll ${libdir}
+    mv bin/cutensorMg.dll ${libdir}
+    mv lib/cutensor.lib ${libdir}
+    mv lib/cutensorMg.lib ${libdir}
+    mv include/* ${prefix}/include
 
     # fixup
-    chmod +x \${libdir}/*.dll
+    chmod +x ${libdir}/*.dll
 fi"""
 
-scripts = Dict(v"12"=>script_builder("12"),
-               v"13"=>script_builder("13"),
-              )
+scripts = Dict(v"12"=>script, v"13"=>script)
 
 augment_platform_block = CUDA.augment
 
