@@ -1,0 +1,11 @@
+--- a/src/XrdOssStats/XrdOssStatsFileSystem.cc
++++ b/src/XrdOssStats/XrdOssStatsFileSystem.cc
+@@ -7,7 +7,7 @@
+ #include "XrdSys/XrdSysPthread.hh"
+ #include "XrdXrootd/XrdXrootdGStream.hh"
+ 
+-#include <inttypes.h>
++#include <cinttypes>
+ #include <stdexcept>
+ #include <thread>
+ 

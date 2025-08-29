@@ -8,12 +8,14 @@ version = v"5.8.4"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/xrootd/xrootd/releases/download/v$(version)/xrootd-$(version).tar.gz", 
-                  "d8716bf764a7e8103aab83fbf4906ea2cc157646b1a633d99f91edbf204ff632")
+                  "d8716bf764a7e8103aab83fbf4906ea2cc157646b1a633d99f91edbf204ff632"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
+atomic_patch -p1 ../patches/compilation-fixes.patch
 mkdir build && cd build
 install_license ../xrootd-*/LICENSE
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
