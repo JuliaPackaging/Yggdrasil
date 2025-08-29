@@ -15,7 +15,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-atomic_patch -p1 ../patches/compilation-fixes.patch
+atomic_patch patches/compilation-fixes.patch
 mkdir build && cd build
 install_license ../xrootd-*/LICENSE
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
