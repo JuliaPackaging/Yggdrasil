@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "XRootD"
-version = v"5.7.2"
+version = v"5.8.4"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/xrootd/xrootd/releases/download/v$(version)/xrootd-$(version).tar.gz", 
-                  "c14c537edc66824ad3ca3c610240f9386c68993cbbcd28473ad3b42c8d14ba67")
+                  "d8716bf764a7e8103aab83fbf4906ea2cc157646b1a633d99f91edbf204ff632")
 ]
 
 # Bash recipe for building across all platforms
