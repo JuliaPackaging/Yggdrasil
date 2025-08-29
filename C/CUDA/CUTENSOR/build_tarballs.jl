@@ -29,8 +29,10 @@ elif [[ \${target} == x86_64-w64-mingw32 ]]; then
 
     install_license LICENSE
 
-    mv lib/cutensor.dll \${libdir}
-    mv lib/cutensorMg.dll \${libdir}
+    mv bin/cutensor.dll \${libdir}
+    mv bin/cutensorMg.dll \${libdir}
+    mv lib/cutensor.lib \${libdir}
+    mv lib/cutensorMg.lib \${libdir}
     mv include/* \${prefix}/include
 
     # fixup
