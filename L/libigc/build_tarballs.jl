@@ -7,7 +7,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "libigc"
-version = v"2.14.1"
+version = v"2.16.0"
 
 # IGC depends on LLVM, a custom Clang, and a Khronos tool. Instead of building these pieces
 # separately, taking care to match versions and apply Intel-specific patches where needed
@@ -27,11 +27,11 @@ version = v"2.14.1"
 #       see https://github.com/intel/intel-graphics-compiler/blob/master/.github/workflows/build-IGC.yml
 #
 sources = [
-    GitSource("https://github.com/intel/intel-graphics-compiler.git", "8044f62975eafe840d09ed00560385dab0bf9854"),
+    GitSource("https://github.com/intel/intel-graphics-compiler.git", "420b632df9ea2d645bafbd258789baf7c34e6f55"),
     GitSource("https://github.com/intel/opencl-clang.git", "7eef46576eca117685ae431735c2725ddb889260" #= branch ocl-open-150 =#),
-    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "b3d425c0b265ee9f583894892ae0b0a192a2137c" #= branch llvm_release_150 =#),
+    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "6fd7ff4e76b344dd17cca735af60ee613f322440" #= branch llvm_release_150 =#),
     GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "f289d047f49fb60488301ec62bafab85573668cc" #= tag v2025.1.rc1 =#),
-    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "0e710677989b4326ac974fd80c5308191ed80965"), #= main =#
+    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "aa6cef192b8e693916eb713e7a9ccadf06062ceb"), #= main =#
     GitSource("https://github.com/intel/vc-intrinsics.git", "46286b96fb9eee9fa4fcf8b8ecf74a8c01af4c1a" #= tag v0.23.1 =#),
     GitSource("https://github.com/llvm/llvm-project.git", "8dfdcc7b7bf66834a761bd8de445840ef68e4d1a" #= tag llvmorg-15.0.7 =#),
     # patches
@@ -59,16 +59,18 @@ function get_script(; debug::Bool)
         # Work around compilation failures
         # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86678
         atomic_patch -p0 patches/gcc-constexpr_assert_bug.patch
+        # Fix iterator ambiguity with C++20 and LLVM 15
+        atomic_patch -p0 patches/fix-iterator-ambiguity.patch
         # https://reviews.llvm.org/D64388
         sed -i '/add_subdirectory/i add_definitions(-D__STDC_FORMAT_MACROS)' intel-graphics-compiler/external/llvm/llvm.cmake
 
+        # Avoid "No space left on device"
+        mkdir -p tmpdir
+        export TMPDIR=$(pwd)/tmpdir
+        export CCACHE_TEMPDIR=$(pwd)/tmpdir
+
         cd intel-graphics-compiler
         install_license LICENSE.md
-
-        # Need these device IDs
-        git cherry-pick 4185ee4c7eb49d09119884c63e88241a6715eb48
-        git cherry-pick 09046b0c259e46dfbdbfb1d548f18abc116ae512
-
 
         CMAKE_FLAGS=()
 
