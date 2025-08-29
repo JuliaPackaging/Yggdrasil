@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "Binutils"
-version = v"2.44"
+version = v"2.45"
 
 sources = [
     ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-$(version.major).$(version.minor).tar.xz",
-                  "ce2017e059d63e67ddb9240e9d4ec49c2893605035cd60e92ad53177f4377237"),
+                  "c50c0e7f9cb188980e2cc97e4537626b1672441815587f1eab69d2a1bfbef5d2"),
     DirectorySource("bundled"),
 ]
 
@@ -32,7 +32,9 @@ cd ${WORKSPACE}/srcdir/binutils-*
     --disable-nls \
     --enable-64-bit-bfd \
     --disable-static \
-    --enable-shared
+    --enable-shared \
+    --with-system-zlib=no \
+    --with-zstd=yes
 
 make -j${nproc}
 make install
@@ -75,7 +77,10 @@ products = [
     LibraryProduct("libopcodes", :libopcodes),
 ]
 
-dependencies = Dependency[]
+dependencies = [
+    Dependency("Zlib_jll"; compat="1.2.12"),
+    Dependency("Zstd_jll"; compat="1.5.7"),
+]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"5")
