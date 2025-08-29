@@ -20,8 +20,8 @@ if [[ \${target} == *-linux-gnu ]]; then
 
     install_license LICENSE
 
-    mv lib/$version/libcutensor.so* \${libdir}
-    mv lib/$version/libcutensorMg.so* \${libdir}
+    mv lib/libcutensor.so* \${libdir}
+    mv lib/libcutensorMg.so* \${libdir}
     mv include/* \${prefix}/include
 elif [[ \${target} == x86_64-w64-mingw32 ]]; then
     cd libcutensor*
@@ -29,8 +29,8 @@ elif [[ \${target} == x86_64-w64-mingw32 ]]; then
 
     install_license LICENSE
 
-    mv lib/$version/cutensor.dll \${libdir}
-    mv lib/$version/cutensorMg.dll \${libdir}
+    mv lib/cutensor.dll \${libdir}
+    mv lib/cutensorMg.dll \${libdir}
     mv include/* \${prefix}/include
 
     # fixup
