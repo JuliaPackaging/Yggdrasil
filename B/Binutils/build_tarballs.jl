@@ -32,7 +32,9 @@ cd ${WORKSPACE}/srcdir/binutils-*
     --disable-nls \
     --enable-64-bit-bfd \
     --disable-static \
-    --enable-shared
+    --enable-shared \
+    --with-system-zlib=no \
+    --with-zstd=yes
 
 make -j${nproc}
 make install
@@ -75,7 +77,10 @@ products = [
     LibraryProduct("libopcodes", :libopcodes),
 ]
 
-dependencies = Dependency[]
+dependencies = [
+    Dependency("Zlib_jll"; compat="1.2.12"),
+    Dependency("Zstd_jll"; compat="1.5.7"),
+]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"5")
