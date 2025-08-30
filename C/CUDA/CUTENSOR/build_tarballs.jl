@@ -8,11 +8,9 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUTENSOR"
-version = v"2.2.0"
+version = v"2.3.0"
 
-
-scripts = Dict()
-scripts[v"11"] = raw"""
+script = raw"""
 mkdir -p ${libdir} ${prefix}/include
 
 cd ${WORKSPACE}/srcdir
@@ -22,8 +20,8 @@ if [[ ${target} == *-linux-gnu ]]; then
 
     install_license LICENSE
 
-    mv lib/11/libcutensor.so* ${libdir}
-    mv lib/11/libcutensorMg.so* ${libdir}
+    mv lib/libcutensor.so* ${libdir}
+    mv lib/libcutensorMg.so* ${libdir}
     mv include/* ${prefix}/include
 elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     cd libcutensor*
@@ -31,39 +29,17 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
 
     install_license LICENSE
 
-    mv lib/11/cutensor.dll ${libdir}
-    mv lib/11/cutensorMg.dll ${libdir}
+    mv bin/cutensor.dll ${libdir}
+    mv bin/cutensorMg.dll ${libdir}
+    mv lib/cutensor.lib ${libdir}
+    mv lib/cutensorMg.lib ${libdir}
     mv include/* ${prefix}/include
 
     # fixup
     chmod +x ${libdir}/*.dll
 fi"""
-scripts[v"12"] = raw"""
-mkdir -p ${libdir} ${prefix}/include
 
-cd ${WORKSPACE}/srcdir
-if [[ ${target} == *-linux-gnu ]]; then
-    cd libcutensor*
-    find .
-
-    install_license LICENSE
-
-    mv lib/12/libcutensor.so* ${libdir}
-    mv lib/12/libcutensorMg.so* ${libdir}
-    mv include/* ${prefix}/include
-elif [[ ${target} == x86_64-w64-mingw32 ]]; then
-    cd libcutensor*
-    find .
-
-    install_license LICENSE
-
-    mv lib/12/cutensor.dll ${libdir}
-    mv lib/12/cutensorMg.dll ${libdir}
-    mv include/* ${prefix}/include
-
-    # fixup
-    chmod +x ${libdir}/*.dll
-fi"""
+scripts = Dict(v"12"=>script, v"13"=>script)
 
 augment_platform_block = CUDA.augment
 
@@ -83,11 +59,12 @@ platforms = [Platform("x86_64", "linux"),
     Platform("x86_64", "windows")]
 
 builds = []
-for cuda_version in [v"11", v"12"], platform in platforms
+for cuda_version in [v"12", v"13"], platform in platforms
     augmented_platform = deepcopy(platform)
     augmented_platform["cuda"] = CUDA.platform(cuda_version)
     should_build_platform(triplet(augmented_platform)) || continue
 
+    platform["cuda"] = string(cuda_version.major)
     sources = get_sources("cutensor", ["libcutensor"]; version, platform)
     script = scripts[cuda_version]
 
