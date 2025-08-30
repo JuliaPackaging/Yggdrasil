@@ -22,14 +22,22 @@ apk add texinfo
 # implicit function declarations.
 
 ./autogen.sh
-./configure --enable-cxx --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static --enable-shared CC_FOR_BUILD="${CC_FOR_BUILD} -Wno-error=implicit-function-declaration" CFLAGS="-Wno-error=implicit-int -Wno-error=implicit-function-declaration"
+./configure \
+    --enable-cxx \
+    --prefix=${prefix} \
+    --build=${MACHTYPE} \
+    --host=${target} \
+    --disable-static \
+    --enable-shared \
+    CC_FOR_BUILD="${CC_FOR_BUILD} \
+    -Wno-error=implicit-function-declaration" \
+    CFLAGS="-Wno-error=implicit-int -Wno-error=implicit-function-declaration"
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-#TODO platforms = supported_platforms(; exclude=p -> arch(p) != "x86_64" || Sys.isfreebsd(p))
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
