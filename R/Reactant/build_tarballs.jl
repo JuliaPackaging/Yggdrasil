@@ -6,10 +6,10 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.236"
+version = v"0.0.237"
 
 sources = [
-   GitSource(repo, "6e00425f3a5ff03fe66f58574d74f61c4fd0860e"),
+   GitSource(repo, "ce9246a1501676c133652eeee16e33e369dd8d3a"),
    ArchiveSource("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.7%2B6/OpenJDK21U-jdk_x64_alpine-linux_hotspot_21.0.7_6.tar.gz", "79ecc4b213d21ae5c389bea13c6ed23ca4804a45b7b076983356c28105580013"),
    ArchiveSource("https://github.com/JuliaBinaryWrappers/Bazel_jll.jl/releases/download/Bazel-v7.6.1+0/Bazel.v7.6.1.x86_64-linux-musl-cxx03.tar.gz", "01ac6c083551796f1f070b0dc9c46248e6c49e01e21040b0c158f6e613733345")
 ]
@@ -213,6 +213,11 @@ fi
 if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
     BAZEL_BUILD_FLAGS+=(--config=cuda)
     BAZEL_BUILD_FLAGS+=(--repo_env=HERMETIC_CUDA_VERSION="${HERMETIC_CUDA_VERSION}")
+    if [[ "${HERMETIC_CUDA_VERSION}" == *13.* ]]; then
+	BAZEL_BUILD_FLAGS+=(--repo_env=HERMETIC_CUDNN_VERSION="9.12.0")
+	BAZEL_BUILD_FLAGS+=(--repo_env=HERMETIC_NVSHMEM_VERSION="3.3.20")
+	BAZEL_BUILD_FLAGS+=(--repo_env HERMETIC_CUDA_COMPUTE_CAPABILITIES="sm_75,sm_80,sm_90,sm_100,compute_120")
+    fi
 
     if [[ "${GCC_MAJOR_VERSION}" -le 12 && "${target}" == x86_64-* ]]; then
         # Someone wants to compile some code which requires flags not understood by GCC 12.
@@ -357,7 +362,12 @@ if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
         NVCC_DIR=(/workspace/srcdir/cuda_nvcc-*-archive)
     fi
 
-    install -Dvm 644 "${NVCC_DIR[@]}/nvvm/libdevice/libdevice.10.bc" -t "${libdir}/cuda/nvvm/libdevice"
+    if [ -f "${NVCC_DIR[@]}/nvvm/libdevice/libdevice.10.bc" ]; then
+        install -Dvm 644 "${NVCC_DIR[@]}/nvvm/libdevice/libdevice.10.bc" -t "${libdir}/cuda/nvvm/libdevice"
+    else
+    	install -Dvm 644 bazel-bin/libReactantExtra.so.runfiles/cuda_nvvm/nvvm/libdevice/libdevice.10.bc -t "${libdir}/cuda/nvvm/libdevice"
+    fi
+
     install -Dvm 755 "${NVCC_DIR[@]}/bin/ptxas" -t "${libdir}/cuda/bin"
     install -Dvm 755 "${NVCC_DIR[@]}/bin/fatbinary" -t "${libdir}/cuda/bin"
 
@@ -420,7 +430,7 @@ augment_platform_block="""
     """
 
 # for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), platform in platforms
-for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "12.4", "12.6", "12.8"), platform in platforms
+for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "12.4", "12.6", "12.8", "13.0"), platform in platforms
 
     augmented_platform = deepcopy(platform)
     augmented_platform["mode"] = mode
@@ -473,7 +483,8 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
         "12.3" => "12.3.1",
         "12.4" => "12.4.1",
         "12.6" => "12.6.3",
-        "12.8" => "12.8.1"
+        "12.8" => "12.8.1",
+	"13.0" => "13.0.0"
     )
 
     prefix="""
@@ -492,7 +503,16 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     end
 
     if arch(platform) == "aarch64" && gpu == "cuda"
-        if hermetic_cuda_version_map[cuda_version] == "12.8.1"
+        if hermetic_cuda_version_map[cuda_version] == "13.0.0"
+	    # bazel currentlty tries to run  external/cuda_nvcc/bin/../nvvm/bin/cicc: line 1: ELF
+	     continue
+
+            # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_13.0.0.json
+	    push!(platform_sources,
+                  ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-sbsa/cuda_nvcc-linux-sbsa-13.0.48-archive.tar.xz",
+				"3146cee5148535cb06ea5727b6cc1b0d97a85838d1d98514dc6a589ca38e1495"),
+		  )
+	elseif hermetic_cuda_version_map[cuda_version] == "12.8.1"
             # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_12.8.1.json
 	    push!(platform_sources,
                   ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-sbsa/cuda_nvcc-linux-sbsa-12.8.93-archive.tar.xz",
