@@ -6,9 +6,9 @@ include(joinpath(YGGDRASIL_DIR, "L", "libjulia", "common.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "cunumeric_jl_wrapper"
-version = v"25.5" # cupynumeric has 05, but Julia doesn't like that
+version = v"25.5.1" # cupynumeric has 05, but Julia doesn't like that
 sources = [
-    GitSource("https://github.com/JuliaLegate/cunumeric_jl_wrapper.git","3fc2eb462d7bb5d66a9a6e2272039093a5323564"),
+    GitSource("https://github.com/JuliaLegate/cunumeric_jl_wrapper.git","37c076f8f08afb61a83ca68cf3529a96f9bacb55"),
 ]
 
 MIN_JULIA_VERSION = v"1.10"
