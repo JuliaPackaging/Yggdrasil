@@ -31,8 +31,7 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms(exclude = p -> libc(p) == "musl" || 
                                                os(p) == "freebsd" || 
-                                               os(p) == "windows" ||
-                                               arch(p) == "riscv64") |> expand_cxxstring_abis
+                                               os(p) == "windows" ) |> expand_cxxstring_abis
 
 # The products that we will ensure are always built
 products = [
