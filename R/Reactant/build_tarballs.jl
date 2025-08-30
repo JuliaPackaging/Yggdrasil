@@ -504,6 +504,9 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
 
     if arch(platform) == "aarch64" && gpu == "cuda"
         if hermetic_cuda_version_map[cuda_version] == "13.0.0"
+	    # bazel currentlty tries to run  external/cuda_nvcc/bin/../nvvm/bin/cicc: line 1: ELF
+	     continue
+
             # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_13.0.0.json
 	    push!(platform_sources,
                   ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-sbsa/cuda_nvcc-linux-sbsa-13.0.48-archive.tar.xz",
