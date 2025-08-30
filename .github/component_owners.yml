@@ -67,6 +67,8 @@ components:
     - eschnett
   G/GLPK/:
     - odow
+  G/gmmlib/:
+    - amontoison
   G/GRAMPC/:
     - imciner2
   H/HDF5/:
@@ -103,6 +105,8 @@ components:
   L/libblastrampoline/:
     - amontoison
     - imciner2
+  L/libigc/:
+    - amontoison
   L/libpicosat/:
     - StefanKarpinski
   L/libpolymake_julia/:
@@ -127,10 +131,14 @@ components:
     - amontoison
   N/Ncurses/:
     - eschnett
+  N/NEO/:
+    - amontoison
   N/NOMAD/:
     - amontoison
   N/Notcurses/:
     - eschnett
+  O/oneAPI_Level_Zero_Loader/:
+    - amontoison
   O/oneAPI_support/:
     - amontoison
   O/oneAPI_support_Headers/:
