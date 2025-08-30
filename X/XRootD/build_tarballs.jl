@@ -29,7 +29,10 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(exclude= p->libc(p) == "musl" || os(p) == "freebsd" || os(p) == "windows") |> expand_cxxstring_abis
+platforms = supported_platforms(exclude = p -> libc(p) == "musl" || 
+                                               os(p) == "freebsd" || 
+                                               os(p) == "windows" ||
+                                               arch(p) == "riscv64") |> expand_cxxstring_abis
 
 # The products that we will ensure are always built
 products = [
