@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "odrpack"
-version = v"2.0.3"
+version = v"2.1.0"
 
 sources = [
     GitSource("https://github.com/HugoMVale/odrpack95.git", 
-    "6f5d1ff1541c29a6978eabaf60975ed5a8c68943") # tag=v2.0.3
+    "89f4b1432da8bf316faf8628b4fb2f9ad6499b6a") # tag=v2.1.0
 ]
 
 platforms = supported_platforms()
