@@ -65,6 +65,8 @@ components:
     - lgoettgens
   G/GDAL/:
     - eschnett
+  G/Git_LFS/:
+    - cgarling
   G/GLPK/:
     - odow
   G/GRAMPC/:
