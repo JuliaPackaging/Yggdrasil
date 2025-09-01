@@ -23,8 +23,6 @@ chmod 666 /workspace/destdir/lib/pkgconfig/mxml4.pc
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-filter!(p -> (Sys.islinux(p) || Sys.isapple(p)), platforms)
-
 
 # The products that we will ensure are always built
 products = [
