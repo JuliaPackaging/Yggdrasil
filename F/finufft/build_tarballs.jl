@@ -6,8 +6,8 @@ using BinaryBuilderBase
 include(joinpath(@__DIR__, "..", "..", "platforms", "microarchitectures.jl"))
 
 name = "finufft"
-version = v"2.4.0"
-commit_hash = "30adfd3939ce0c804e304dd38e9955e761a17410" # v2.4.0-rc1
+version = v"2.4.1"
+commit_hash = "e7144a5c08cbaf3e3b344a4fdd92bc3c7e468ff2" # v2.4.1
 
 # Collection of sources required to complete build
 sources = [
