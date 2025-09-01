@@ -127,7 +127,8 @@ const cuda_full_versions = [
     v"12.5.1",
     v"12.6.3",
     v"12.8.1",
-    v"12.9.0",
+    v"12.9.1",
+    v"13.0.0",
 ]
 
 function full_version(ver::VersionNumber)
@@ -286,7 +287,7 @@ function cuda_nvcc_redist_source(cuda_ver, arch)
         else
             error("No CUDA redist available for CUDA version $cuda_ver on arch $arch")
         end
-    else 
+    else
         error("No CUDA redist available for arch $arch")
     end
 end

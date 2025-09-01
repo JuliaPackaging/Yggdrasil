@@ -3,7 +3,7 @@ include("../common.jl")
 using Base.BinaryPlatforms: arch, os
 
 name = "SuiteSparse_GPU"
-version_str = "7.10.1"
+version_str = "7.11.0"
 version = VersionNumber(version_str)
 
 sources = suitesparse_sources(version)
@@ -46,7 +46,7 @@ gpu_products = [
 ]
 
 # Override the default platforms
-platforms = CUDA.supported_platforms()
+platforms = CUDA.supported_platforms(; max_version = v"12.9.1")   # Doesn't build with CUDA 13 right now
 filter!(p -> arch(p) == "x86_64", platforms)
 
 # Add dependency on SuiteSparse_jll

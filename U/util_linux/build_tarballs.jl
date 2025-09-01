@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "util_linux"
-version_string = "2.41"
+version_string = "2.41.1"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v$(version.major).$(version.minor)/util-linux-$(version_string).tar.xz",
-                  "81ee93b3cfdfeb7d7c4090cedeba1d7bbce9141fd0b501b686b3fe475ddca4c6"),
+                  "be9ad9a276f4305ab7dd2f5225c8be1ff54352f565ff4dede9628c1aaa7dec57"),
 ]
 
 # Bash recipe for building across all platforms

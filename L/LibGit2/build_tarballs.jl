@@ -2,11 +2,11 @@ using BinaryBuilder, Pkg
 using BinaryBuilderBase: sanitize, get_addable_spec
 
 name = "LibGit2"
-version = v"1.9.0"
+version = v"1.9.1"
 
 # Collection of sources required to build libgit2
 sources = [
-    GitSource("https://github.com/libgit2/libgit2.git", "338e6fb681369ff0537719095e22ce9dc602dbf0")
+    GitSource("https://github.com/libgit2/libgit2.git", "0060d9cf5666f015b1067129bd874c6cc4c9c7ac")
 ]
 
 # Bash recipe for building across all platforms
@@ -15,12 +15,14 @@ cd $WORKSPACE/srcdir/libgit2*
 
 BUILD_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release
-    -DUSE_THREADS=ON
-    -DUSE_BUNDLED_ZLIB=ON
-    -DUSE_SSH=ON
+    -DCMAKE_INSTALL_PREFIX="${prefix}"
+    -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}"
     -DBUILD_CLI=OFF
-    "-DCMAKE_INSTALL_PREFIX=${prefix}"
-    "-DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}""
+    -DBUILD_TESTS=OFF
+    -DUSE_BUNDLED_ZLIB=OFF
+    -DUSE_SSH=ON
+    -DUSE_THREADS=ON
+    -DREGEX_BACKEND=pcre2
 )
 
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
@@ -30,7 +32,7 @@ fi
 
 if [[ ${target} == *-mingw* ]]; then
     # Special Windows flags
-    BUILD_FLAGS+=(-DWIN32=ON -DMINGW=ON -DBUILD_TESTS=OFF)
+    BUILD_FLAGS+=(-DWIN32=ON -DMINGW=ON)
     if [[ ${target} == i686-* ]]; then
         BUILD_FLAGS+=(-DCMAKE_C_FLAGS="-mincoming-stack-boundary=2")
     fi
@@ -62,9 +64,9 @@ llvm_version = v"13.0.1"
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("LibSSH2_jll"; compat="1.11.3"),
-    # Until we have a new version of OpenSSL built for riscv64 we need to use the
-    # `get_addable_spec` hack.  From v3.0.16 we should be able to remove it here.
-    Dependency(get_addable_spec("OpenSSL_jll", v"3.0.15+2"); compat="3.0.15", platforms=filter(p -> !(Sys.iswindows(p) || Sys.isapple(p)), platforms)),
+    Dependency("OpenSSL_jll"; compat="3.0.16", platforms=filter(p -> !(Sys.iswindows(p) || Sys.isapple(p)), platforms)),
+    Dependency("PCRE2_jll"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
     BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
                     platforms=filter(p -> sanitize(p)=="memory", platforms)),
 ]
@@ -72,5 +74,3 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.9", preferred_llvm_version=llvm_version)
-
-# Build trigger: 1

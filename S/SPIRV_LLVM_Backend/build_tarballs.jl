@@ -18,7 +18,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-mv llvm-* llvm
+mv llvm-*.src llvm
 mv cmake-* cmake
 mv third-party-* third-party
 
@@ -26,6 +26,8 @@ cd llvm
 LLVM_SRCDIR=$(pwd)
 
 atomic_patch -p1 $WORKSPACE/srcdir/patches/avoid_builtin_available.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/fix_insertvalue.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/atomic_cmpxchg_64bit.patch
 
 install_license LICENSE.TXT
 
@@ -70,7 +72,8 @@ CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD=SPIRV)
 
 # Turn on ZLIB
 CMAKE_FLAGS+=(-DLLVM_ENABLE_ZLIB=ON)
-# Turn off XML2
+# Turn off XML2 and ZSTD to avoid unnecessary dependencies
+CMAKE_FLAGS+=(-DLLVM_ENABLE_ZSTD=OFF)
 CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBXML2=OFF)
 
 # Disable useless things like docs, terminfo, etc....

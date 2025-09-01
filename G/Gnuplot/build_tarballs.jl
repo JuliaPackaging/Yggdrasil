@@ -1,38 +1,68 @@
-
 using BinaryBuilder, Pkg
 
+function yggdrasil_version(version::VersionNumber, offset::VersionNumber)
+    max_offset = v"10.100.1000"
+    @assert offset < max_offset
+    VersionNumber(
+        max_offset.major * version.major + offset.major,
+        max_offset.minor * version.minor + offset.minor,
+        max_offset.patch * version.patch + offset.patch
+    )
+end
+
 name = "Gnuplot"
-version = v"5.4.5"
+version = v"6.0.3"
+ygg_offset = v"0.0.3"  # NOTE: increase on new build, reset on new upstream version
+ygg_version = yggdrasil_version(version, ygg_offset)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://downloads.sourceforge.net/project/gnuplot/gnuplot/$(version)/gnuplot-$(version).tar.gz",
-                  "66f679115dd30559e110498fc94d926949d4d370b4999a042e724b8e910ee478"),
+                  "ec52e3af8c4083d4538152b3f13db47f6d29929a3f6ecec5365c834e77f251ab"),
     DirectorySource("./bundled"),
 ]
 
+libexec_path = joinpath("libexec", "gnuplot", "$(version.major).$(version.minor)")
+
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/gnuplot-*/
-
+cd $WORKSPACE/srcdir/gnuplot-*
 
 if [[ "${target}" == "${MACHTYPE}" ]]; then
     # Delete system libexpat to avoid confusion
     rm /usr/lib/libexpat.so*
 elif [[ "${target}" == *-mingw* ]]; then
-    # This is needed because otherwise we get unusable binaries (error "The specified executable is not a valid application for this OS platform"). These come from CompilerSupportLibraries_jll:
-    rm $prefix/lib/libgcc* $prefix/lib/libmsvcrt*
     # Apply patch from https://github.com/msys2/MINGW-packages/blob/5dcff9fd637714972b113c6d3fbf6db17e9b707a/mingw-w64-gnuplot/01-gnuplot.patch
     atomic_patch -p1 ../patches/01-gnuplot.patch
     autoreconf -fiv
 fi
 
-export CPPFLAGS="$(pkg-config --cflags glib-2.0) $(pkg-config --cflags cairo) $(pkg-config --cflags pango) -I$(realpath term)"
-export LDFLAGS="-liconv"
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-cd src
-make -j${nproc}
-make install
+export LIBS='-liconv -lffi'
+if [[ ${target} == aarch64-apple-* ]]; then  # FIXES the undefined symbol: __divdc3 error
+    export LDFLAGS="-L${libdir}/darwin -lclang_rt.osx"
+fi
+
+unset args
+args+=(--with-bitmap-terminals)
+args+=(--disable-wxwidgets)
+
+# FIXME: no Qt Tools artifacts available for these platforms (missing either uic or lrelease)
+case "$target" in
+    *-musl*|*-freebsd*|riscv64-linux-gnu*|aarch64-apple-darwin*|arm-linux-gnueabihf*)
+        args+=(--with-qt=no);;
+esac
+
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ${args[@]}
+
+make -C src -j${nproc}
+make -C src install
+""" * """
+# add a fake `gnuplot_fake` executable, in order to determine `GNUPLOT_DRIVER_DIR` in `Gaston.jl`
+dn="\$prefix/$libexec_path"
+""" * raw"""
+mkdir -p $dn
+touch $dn/gnuplot_fake$exeext
+chmod +x $dn/gnuplot_fake$exeext
 """
 
 # These are the platforms we will build for by default, unless further
@@ -42,19 +72,33 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("gnuplot", :gnuplot),
-    #ExecutableProduct("gnuplot_qt", :gnuplot_qt, "$libexecdir")
+    ExecutableProduct("gnuplot_fake", :gnuplot_fake, libexec_path),
+    # ExecutableProduct("gnuplot_x11", :gnuplot_x11, libexec_path),
+    # ExecutableProduct("gnuplot_qt", :gnuplot_qt, libexec_path),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(name="Xorg_xorgproto_jll", uuid = "c4d99508-4286-5418-9131-c86396af500b")),
-    Dependency(PackageSpec(name="Libcerf_jll", uuid="af83a40a-c4c4-57a0-81df-2309fbd279e3")),
-    Dependency(PackageSpec(name="LibGD_jll", uuid="16339573-6216-525a-b38f-30b6f6b71b5f")),
-    BuildDependency(PackageSpec(name="Qt5Tools_jll", uuid="a9c6e4b1-b2fb-56d5-96a9-25f276f13840")),
-    Dependency(PackageSpec(name="Qt5Svg_jll", uuid="3af4ccab-a251-578e-a514-ea85a0ba79ee")),
-    Dependency(PackageSpec(name="Cairo_jll", uuid="83423d85-b0ee-5818-9007-b63ccbeb887a")),
-    Dependency(PackageSpec(name="Libiconv_jll", uuid="94ce4f54-9a6c-5748-9c1c-f9c7231a4531")),
+    # libclang_rt.osx.a is required on aarch64-macos to provide `__divdc3`.
+    BuildDependency("LLVMCompilerRT_jll"; platforms = filter(p -> Sys.isapple(p) && arch(p) == "aarch64", platforms)),
+    BuildDependency("Xorg_xorgproto_jll"),
+    Dependency("libwebp_jll"),
+    Dependency("Libcerf_jll"),
+    Dependency("LibGD_jll"),
+    Dependency("Cairo_jll"),
+    Dependency("Pango_jll"),
+    Dependency("Libffi_jll"),
+    Dependency("Libiconv_jll"),
+    Dependency("Readline_jll"),
+    BuildDependency("Qt5Tools_jll"),
+    Dependency("Qt5Svg_jll"),
+    # FIXME: build with Qt6 fails, must probably add a `Qt6Tools_jll` recipe
+    # Dependency("Qt6Base_jll"),
+    # Dependency("Qt6Svg_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"8")
+build_tarballs(
+    ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+    julia_compat="1.6", preferred_gcc_version = v"8"
+)

@@ -5,13 +5,13 @@ using BinaryBuilder
 include("../../fancy_toys.jl")  # for `should_build_platform`
 
 name = "GR"
-version = v"0.73.16"
+version = v"0.73.17"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sciapp/gr.git", "a31792ee21340a137bba477c6149d87be8b508ad"),
+    GitSource("https://github.com/sciapp/gr.git", "c8a8395aa194deec8c87575ba4238972bbdf6c40"),
     FileSource("https://github.com/sciapp/gr/releases/download/v$version/gr-$version.js",
-               "4b330a80b1c24f579f9800430ea85efe66c11f28d046378435ff30f8299d1d6b", "gr.js"),
+               "a449b886d4ea28445ff3d1b345b35edd91d1d807ca65fa9f82805bd6e0f448c0", "gr.js"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49")
 ]
@@ -91,7 +91,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Bzip2_jll"; compat="1.0.9"),
-    Dependency("Cairo_jll", compat="1.16.1"),
+    Dependency("Cairo_jll"; compat="1.16.1"),
     Dependency("FFMPEG_jll"),
     Dependency("Fontconfig_jll"),
     Dependency("FreeType2_jll"; compat="2.13.4"),
