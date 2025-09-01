@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "cuQuantum"
-version_str = "25.03.0"
+version_str = "25.06.0"
 version = VersionNumber(version_str)
 
 # Bash recipe for building across all platforms
