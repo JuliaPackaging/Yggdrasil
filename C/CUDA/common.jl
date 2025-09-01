@@ -25,8 +25,7 @@ function parse_sources(json::String, product::String, components::Vector{String}
         elseif arch(platform) == "powerpc64le"
             "linux-ppc64le"
         elseif arch(platform) == "aarch64"
-            vn_version = version isa VersionNumber ? version : VersionNumber(version)
-            if vn_version >= v"13"
+            if VersionNumber(version) >= v"13"
                 haskey(platform, "cuda_platform") && error("CUDA 13 uses unified ARM platforms")
                 "linux-sbsa"
             else
