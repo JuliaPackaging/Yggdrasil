@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "libmxml"
+name = "mxml"
 version = v"4.0.4"
 
 # Collection of sources required to complete build
