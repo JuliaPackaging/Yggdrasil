@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "slope"
-version = v"2.6.0"
+version = v"5.1.1"
 
 # See https://github.com/JuliaLang/Pkg.jl/issues/2942
 # Once this Pkg issue is resolved, this must be removed
@@ -9,7 +9,7 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 sources = [
-    GitSource("https://github.com/jolars/libslope.git", "f489854a9a778ba5e8efaf566d3c6e8b9cdcca8b"),
+    GitSource("https://github.com/jolars/libslope.git", "e668b0891ff744cad2d1b3fbf13bf2ec534f1518"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz", "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
 ]
 
@@ -44,6 +44,7 @@ install_license $WORKSPACE/srcdir/libslope/LICENSE
 """
 
 include("../../L/libjulia/common.jl")
+julia_versions = filter(v -> v >= v"1.10", julia_versions)
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
@@ -56,8 +57,8 @@ dependencies = [
     BuildDependency("libjulia_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("LLVMOpenMP_jll", platforms=filter(Sys.isapple, platforms)),
-    Dependency("libcxxwrap_julia_jll"; compat="0.14.2"),
+    Dependency("libcxxwrap_julia_jll"; compat="0.14.3"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    preferred_gcc_version=v"11", julia_compat="1.6")
+    preferred_gcc_version=v"11", julia_compat="1.10")

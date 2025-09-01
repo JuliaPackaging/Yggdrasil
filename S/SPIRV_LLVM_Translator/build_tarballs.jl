@@ -14,12 +14,14 @@ llvm_version = v"20.1.2"
 sources = [
     GitSource(
         "https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git",
-        "dee371987a59ed8654083c09c5f1d5c54f5db318")
+        "dee371987a59ed8654083c09c5f1d5c54f5db318"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 get_script(llvm_version) = raw"""
 cd SPIRV-LLVM-Translator
+atomic_patch -p1 ../addrspacecast_null.patch
 install_license LICENSE.TXT
 
 if [[ ("${target}" == x86_64-apple-darwin*) ]]; then

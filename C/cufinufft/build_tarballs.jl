@@ -12,7 +12,6 @@ include(joinpath(@__DIR__, "..", "..", "platforms", "cuda.jl"))
 name = "cufinufft"
 version = v"2.4.1"
 commit_hash = "e7144a5c08cbaf3e3b344a4fdd92bc3c7e468ff2" # v2.4.1
-
 preferred_gcc_version=v"11"
 
 # Collection of sources required to complete build
@@ -51,8 +50,7 @@ platforms = expand_cxxstring_abis(CUDA.supported_platforms(min_version=v"11.0"))
 # Cmake toolchain breaks on aarch64, so only x86_64 for now
 filter!(p -> arch(p)=="x86_64", platforms)
 
-# Latest version of cuFINUFFT does not compile with CUDA 12.5, so exclude
-# NOTE: Works in v2.3.1 but will break in v2.4
+# cuFINUFFT does not compile with CUDA 12.5, so exclude
 filter!(p -> VersionNumber(p["cuda"]) != v"12.5", platforms)
 
 # CUDA 12.9 doesn't seem to build yet

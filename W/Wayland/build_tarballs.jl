@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Wayland"
-version = v"1.23.1"
+version = v"1.24.0"
 
 # Collection of sources required to build Wayland
 sources = [
     ArchiveSource("https://gitlab.freedesktop.org/wayland/wayland/-/releases/$(version)/downloads/wayland-$(version).tar.xz",
-                  "864fb2a8399e2d0ec39d56e9d9b753c093775beadc6022ce81f441929a81e5ed"),
+                  "82892487a01ad67b334eca83b54317a7c86a03a89cfadacfef5211f11a5d0536"),
 ]
 
 # Bash recipe for building across all platforms
@@ -26,7 +26,8 @@ mv $prefix/lib $prefix/lib_
 meson .. \
     --native-file="${MESON_HOST_TOOLCHAIN}" \
     --prefix ${host_prefix} --pkg-config-path ${host_prefix}/lib/pkgconfig \
-    -Ddocumentation=false
+    -Ddocumentation=false \
+    -Ddtd_validation=false
 ninja -j${nproc}
 ninja install
 rm /workspace/destdir/workspace
@@ -37,16 +38,18 @@ mv $prefix/lib_ $prefix/lib
 mkdir build-wayland
 
 cd build-wayland
+# setting dtd_validation=false to avoid requiring libxml2
 CMAKE=/usr/bin/cmake meson .. \
     --cross-file="${MESON_TARGET_TOOLCHAIN}" \
-    -Ddocumentation=false
+    -Ddocumentation=false \
+    -Ddtd_validation=false
 ninja -j${nproc}
 ninja install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(p -> arch(p) != "armv6l" && (Sys.islinux(p) || Sys.isfreebsd(p)), supported_platforms())
+platforms = filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -61,15 +64,11 @@ products = [
 dependencies = [
     Dependency("Expat_jll"; compat="2.6.5"),
     Dependency("Libffi_jll"; compat="~3.4.7"),
-    Dependency("XML2_jll"),
-    Dependency("EpollShim_jll"),
+    Dependency("EpollShim_jll"; platforms=filter(Sys.isfreebsd, platforms)),
     HostBuildDependency(PackageSpec("Expat_jll", v"2.6.5")),
     HostBuildDependency(PackageSpec("Libffi_jll", v"3.4.7")),
-    HostBuildDependency("XML2_jll"),
-    HostBuildDependency("EpollShim_jll"),
-
+    HostBuildDependency("EpollShim_jll"; platforms=filter(Sys.isfreebsd, platforms)),
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6")
-# Build trigger: 1
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"5", julia_compat="1.6")

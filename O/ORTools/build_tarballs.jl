@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "ORTools"
-version = v"9.12.0"
+version = v"9.14.0"
 
 # Collection of sources required to build this package
 sources = [
     GitSource("https://github.com/google/or-tools.git",
-              "b8e881fbde473a9e33e0dac475e498559eb0459d")
+              "0d60e8afe450ec817f510aae965ab8898310cb41")
 ]
 
 # Bash recipe for building across all platforms
@@ -63,6 +63,7 @@ install -Dvm 644 ortools/constraint_solver/search_limit.proto ${prefix}/include/
 install -Dvm 644 ortools/constraint_solver/search_stats.proto ${prefix}/include/ortools/constraint_solver/search_stats.proto
 install -Dvm 644 ortools/constraint_solver/solver_parameters.proto ${prefix}/include/ortools/constraint_solver/solver_parameters.proto
 install -Dvm 644 ortools/constraint_solver/routing_enums.proto ${prefix}/include/ortools/constraint_solver/routing_enums.proto
+install -Dvm 644 ortools/constraint_solver/routing_ils.proto ${prefix}/include/ortools/constraint_solver/routing_ils.proto
 install -Dvm 644 ortools/constraint_solver/routing_parameters.proto ${prefix}/include/ortools/constraint_solver/routing_parameters.proto
 install -Dvm 644 ortools/glop/parameters.proto ${prefix}/include/ortools/glop/parameters.proto
 install -Dvm 644 ortools/graph/flow_problem.proto ${prefix}/include/ortools/graph/flow_problem.proto
@@ -79,6 +80,7 @@ install -Dvm 644 ortools/math_opt/parameters.proto ${prefix}/include/ortools/mat
 install -Dvm 644 ortools/math_opt/solvers/glpk.proto ${prefix}/include/ortools/math_opt/solvers/glpk.proto
 install -Dvm 644 ortools/math_opt/solvers/gurobi.proto ${prefix}/include/ortools/math_opt/solvers/gurobi.proto
 install -Dvm 644 ortools/math_opt/solvers/highs.proto ${prefix}/include/ortools/math_opt/solvers/highs.proto
+install -Dvm 644 ortools/math_opt/solvers/osqp.proto ${prefix}/include/ortools/math_opt/solvers/osqp.proto
 install -Dvm 644 ortools/math_opt/sparse_containers.proto ${prefix}/include/ortools/math_opt/sparse_containers.proto
 install -Dvm 644 ortools/packing/multiple_dimensions_bin_packing.proto ${prefix}/include/ortools/packing/multiple_dimensions_bin_packing.proto
 install -Dvm 644 ortools/packing/vector_bin_packing.proto ${prefix}/include/ortools/packing/vbp/vector_bin_packing.proto
@@ -122,6 +124,7 @@ products = [
     FileProduct("include/ortools/constraint_solver/search_stats.proto", :proto_constraint_solver_search_stats),
     FileProduct("include/ortools/constraint_solver/solver_parameters.proto", :proto_constraint_solver_solver_parameters),
     FileProduct("include/ortools/constraint_solver/routing_enums.proto", :proto_constraint_solver_routing_enums),
+    FileProduct("include/ortools/constraint_solver/routing_ils.proto", :proto_constraint_solver_routing_ils),
     FileProduct("include/ortools/constraint_solver/routing_parameters.proto", :proto_constraint_solver_routing_parameters),
     # - From glop/
     FileProduct("include/ortools/glop/parameters.proto", :ortools_glop_parameters),
@@ -142,6 +145,7 @@ products = [
     FileProduct("include/ortools/math_opt/solvers/glpk.proto", :proto_math_opt_solvers_glpk),
     FileProduct("include/ortools/math_opt/solvers/gurobi.proto", :proto_math_opt_solvers_gurobi),
     FileProduct("include/ortools/math_opt/solvers/highs.proto", :proto_math_opt_solvers_highs),
+    FileProduct("include/ortools/math_opt/solvers/osqp.proto", :proto_math_opt_solvers_osqp),
     FileProduct("include/ortools/math_opt/sparse_containers.proto", :proto_math_opt_sparse_containers),
     FileProduct("include/ortools/math_opt/infeasible_subsystem.proto", :proto_math_opt_infeasible_subsystem),
     # - From packing/

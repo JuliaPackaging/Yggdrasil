@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "mpg123"
-version = v"1.29.3"
+version = v"1.33.2"
 
 # Collection of sources required to build mpg123
 sources = [
     ArchiveSource("https://downloads.sourceforge.net/sourceforge/mpg123/mpg123-$(version).tar.bz2",
-                  "963885d8cc77262f28b77187c7d189e32195e64244de2530b798ddf32183e847"),
+                  "2c54fabbfa696dce8f9b137c8ef7a429a061f8fe633cd7d0a511809855f2c219"),
 ]
 
 # Bash recipe for building across all platforms

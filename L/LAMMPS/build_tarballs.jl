@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "LAMMPS"
-version = v"2.8.0" # Equivalent to patch_2Apr2025
+version = v"2.9.0" # Equivalent to patch_12Jun2025
 
 # Version table
 # 1.0.0 -> https://github.com/lammps/lammps/releases/tag/stable_29Oct2020
@@ -25,6 +25,7 @@ version = v"2.8.0" # Equivalent to patch_2Apr2025
 # 2.6.1 -- BLAS & Openmp
 # 2.7.0 -- Enables CUDA
 # 2.8.0 -> https://github.com/lammps/lammps/releases/tag/patch_2Apr2025
+# 2.9.0 -> https://github.com/lammps/lammps/releases/tag/patch_12Jun2025
 
 # https://docs.lammps.org/Manual_version.html
 # We have "stable" releases and we have feature/patch releases
@@ -34,7 +35,7 @@ version = v"2.8.0" # Equivalent to patch_2Apr2025
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/lammps/lammps.git", "7b4c33630d544953d2abe12eccdf0fab5ba0e7d1"),
+    GitSource("https://github.com/lammps/lammps.git", "0d2f47ddd46907520a087ec0618734d82ae02d0f"),
 ]
 
 # Bash recipe for building across all platforms
@@ -218,7 +219,7 @@ for platform in all_platforms
     end
     build_tarballs(ARGS, name, version, _sources, script, [platform],
                    products, _dependencies;
-                   preferred_gcc_version=v"8",
+                   preferred_gcc_version=v"9",
                    julia_compat="1.7",
                    augment_platform_block=augment_platform_block,
                    lazy_artifacts=true
