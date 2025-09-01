@@ -57,9 +57,6 @@ function parse_sources(json::String, product::String, components::Vector{String}
             error("No $architecture binaries for $component in $product $version")
         end
         data = data[architecture]
-        if product == "cutensor" && version >= v"2.3.0"
-            data = data["cuda" * platform["cuda"]]
-        end
 
         if variant !== nothing
             if !haskey(data, variant)
@@ -67,9 +64,10 @@ function parse_sources(json::String, product::String, components::Vector{String}
             end
             data = data[variant]
         end
-        archive_src = "$root/$(data["relative_path"])"
-        println(archive_src)
-        push!(sources, ArchiveSource(archive_src, data["sha256"]))
+
+        push!(sources, ArchiveSource(
+            "$root/$(data["relative_path"])", data["sha256"]
+        ))
     end
     sources
 end

@@ -39,8 +39,6 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     chmod +x ${libdir}/*.dll
 fi"""
 
-scripts = Dict(v"12"=>script, v"13"=>script)
-
 augment_platform_block = CUDA.augment
 
 products = [
@@ -64,11 +62,10 @@ for cuda_version in [v"12", v"13"], platform in platforms
     augmented_platform["cuda"] = CUDA.platform(cuda_version)
     should_build_platform(triplet(augmented_platform)) || continue
 
-    platform["cuda"] = string(cuda_version.major)
-    sources = get_sources("cutensor", ["libcutensor"]; version, platform)
-    script = scripts[cuda_version]
+    sources = get_sources("cutensor", ["libcutensor"]; version, platform,
+                          variant="cuda$(cuda_version.major)")
 
-    push!(builds, (; platforms=[augmented_platform], sources, script))
+    push!(builds, (; platforms=[augmented_platform], sources))
 end
 
 # don't allow `build_tarballs` to override platform selection based on ARGS.
@@ -80,7 +77,7 @@ non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
 
 for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
-                   name, version, build.sources, build.script,
+                   name, version, build.sources, script,
                    build.platforms, products, dependencies;
                    julia_compat="1.6", augment_platform_block, dont_dlopen=true)
 end
