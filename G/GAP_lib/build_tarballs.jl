@@ -28,16 +28,16 @@ version = v"400.1500.000"
 sources = [
     ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/gap-$(upstream_version).tar.gz",
                   "f1f5df884598300fb3a0c6fae83af5f44077ad145784bc1a76923aa61ee20934"),
-    DirectorySource("./bundled"),
+    # DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/gap*
 
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
+#for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+#    atomic_patch -p1 ${f}
+#done
 
 # compress group database
 gzip -n grp/*.grp
