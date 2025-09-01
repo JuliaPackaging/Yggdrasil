@@ -53,8 +53,11 @@ filter!(p -> arch(p)=="x86_64", platforms)
 # cuFINUFFT does not compile with CUDA 12.5, so exclude
 filter!(p -> VersionNumber(p["cuda"]) != v"12.5", platforms)
 
-# CUDA 12.9 doesn't seem to build yet
+# CUDA 12.9 doesn't seem to build
 filter!(p -> VersionNumber(p["cuda"]) != v"12.9", platforms)
+
+# CUDA 13.0 doesn't build either
+filter!(p -> VersionNumber(p["cuda"]) < v"13", platforms)
 
 # The products that we will ensure are always built
 products = [
