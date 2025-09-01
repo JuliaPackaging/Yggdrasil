@@ -8,7 +8,6 @@ version = v"0.21.3"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/awslabs/aws-c-io.git", "eab7c64a5485b3f2a30877ad854d0c48726c64ec"),
-    DirectorySource("./bundled"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
@@ -35,8 +34,6 @@ find . -type f -exec sed -i -e 's/Windows.h/windows.h/g' \
      '{}' \;
 # Lowercase names for MinGW
 sed -i -e 's/Secur32/secur32/g' -e 's/Crypt32/crypt32/g' CMakeLists.txt
-# MinGW is missing some macros in sspi.h
-atomic_patch -p1 ../patches/win32_sspi_h_missing_macros.patch
 
 install_license LICENSE NOTICE
 
