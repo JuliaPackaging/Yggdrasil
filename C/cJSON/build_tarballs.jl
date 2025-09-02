@@ -13,7 +13,11 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/cJSON/
-cmake -B build -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DENABLE_CJSON_TEST=Off -DCMAKE_BUILD_TYPE=Release
+cmake -B build \
+   -DCMAKE_INSTALL_PREFIX=$prefix \
+   -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+   -DENABLE_CJSON_TEST=Off \
+   -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel ${nproc}
 cmake --install build
 """
