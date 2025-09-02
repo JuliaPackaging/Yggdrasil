@@ -14,10 +14,11 @@ end
 # XXX: split, for now, so that we can use this with manual JSON
 function parse_sources(json::String, product::String, components::Vector{String};
                        version::Union{VersionNumber,String}, platform::Platform,
-                       variant::Union{String}="")
+                       variant::Union{Nothing,String}=nothing)
     root = "https://developer.download.nvidia.com/compute/$product/redist"
 
     redist = JSON3.read(json)
+    cuda_version = platform["cuda"]
     architecture = if Sys.islinux(platform)
         libc(platform) == "glibc" || error("Only glibc is supported on Linux")
         if arch(platform) == "x86_64"
@@ -25,7 +26,7 @@ function parse_sources(json::String, product::String, components::Vector{String}
         elseif arch(platform) == "powerpc64le"
             "linux-ppc64le"
         elseif arch(platform) == "aarch64"
-            if VersionNumber(replace(variant, "cuda"=>"")) >= v"13"
+            if VersionNumber(cuda_version) >= v"13"
                 haskey(platform, "cuda_platform") && error("CUDA 13 uses unified ARM platforms")
                 "linux-sbsa"
             else
