@@ -39,7 +39,9 @@ include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 
 # platforms supported by XRootD
-platforms = filter(p -> libc(p) != "musl" && os(p) != "freebsd" && os(p) != "windows", platforms) |> expand_cxxstring_abis
+platforms = filter(p -> libc(p) != "musl" && 
+                        os(p) != "freebsd" && 
+                        os(p) != "windows", platforms) |> expand_cxxstring_abis
 
 # The products that we will ensure are always built
 products = [
@@ -51,7 +53,7 @@ products = [
 dependencies = [
     BuildDependency("libjulia_jll"),
     Dependency("libcxxwrap_julia_jll"; compat="0.14.4"),
-    Dependency("XRootD_jll"; compat = "~5.7.1"),
+    Dependency("XRootD_jll"; compat = "~5.8.4"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
