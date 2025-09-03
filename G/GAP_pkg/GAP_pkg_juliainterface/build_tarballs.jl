@@ -17,7 +17,7 @@ version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL
 sources = [
-    GitSource("https://github.com/oscar-system/GAP.jl", "43ec515a9c5e8f087e32c87e5412c600b8329a85"),
+    GitSource("https://github.com/oscar-system/GAP.jl", "26e001ad3de107eec866090e59916ec46abdcda1"), # DO NOT MERGE, this commit is on a temporary branch
 ]
 
 # Bash recipe for building across all platforms
