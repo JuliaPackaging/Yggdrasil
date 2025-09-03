@@ -12,6 +12,9 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/binutils-*
 
+# Don't use `ln` (hard links), use `cp` (copy) to "duplicate" installed files
+sed -i 's/ ln / cp /' binutils/Makefile.am binutils/Makefile.in
+
 ./configure --prefix=${prefix} \
     --target=${target} \
     --build=${MACHTYPE} \
