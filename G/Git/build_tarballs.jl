@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "Git"
-version = v"2.51.0"
+version = v"2.51.1"
 
 # <https://github.com/git-for-windows/git/releases> says:
 # "Git for Windows v2.48.1 was the last version to ship with the i686 ("32-bit") variant of the installer, portable Git and archive."
