@@ -18,6 +18,9 @@ function parse_sources(json::String, product::String, components::Vector{String}
     root = "https://developer.download.nvidia.com/compute/$product/redist"
 
     redist = JSON3.read(json)
+    if !haskey(platform, "cuda")
+        error("Please provide a platform that has the 'cuda' tag set, indicating which CUDA toolkit version this product is to be used with.")
+    end
     cuda_version = platform["cuda"]
     architecture = if Sys.islinux(platform)
         libc(platform) == "glibc" || error("Only glibc is supported on Linux")

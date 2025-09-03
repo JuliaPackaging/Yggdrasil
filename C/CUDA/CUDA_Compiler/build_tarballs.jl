@@ -104,7 +104,7 @@ for version in [ v"11.8", v"12.9", v"13.0"]
 
         push!(builds,
             (; script, platforms=[augmented_platform], products, init_block,
-               sources=get_sources("cuda", components; version, platform),
+               sources=get_sources("cuda", components; version, platform=augmented_platform),
         ))
     end
 end
