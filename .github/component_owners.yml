@@ -105,6 +105,11 @@ components:
   L/libblastrampoline/:
     - amontoison
     - imciner2
+  L/libjulia:
+    - barche
+    - benlorenz
+    - fingolfin
+    - lgoettgens
   L/libpicosat/:
     - StefanKarpinski
   L/libpolymake_julia/:
