@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 name = "ImageMagick"
-upstream_version = v"7.1.1-47" # TODO: re-sync with upstream next release (+ 1 below was to update compat)
+upstream_version = v"7.1.2-1"
 version = VersionNumber(
     upstream_version.major,
     upstream_version.minor,
@@ -12,15 +12,19 @@ version = VersionNumber(
 # Collection of sources required to build imagemagick
 sources = [
     GitSource("https://github.com/ImageMagick/ImageMagick",
-              "82572afc879b439cbf8c9c6f3a9ac7626adf98fb"),
+              "83b6fc338ae1d38602eb5f6b307393adc3a0e1a7"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/ImageMagick*/
+
 atomic_patch -p1 ../patches/check-have-clock-realtime.patch
 atomic_patch -p1 ../patches/urlmon.patch
+
+export LDFLAGS="${LDFLAGS} -L${libdir}"
+
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
@@ -52,15 +56,24 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Ghostscript_jll"),
-    Dependency("JpegTurbo_jll"),
-    Dependency("Libtiff_jll"; compat="~4.5.1"),
+    Dependency("Ghostscript_jll"; compat="9.55.1"),
+    Dependency("Libtiff_jll"; compat="4.7.1"),
     Dependency("OpenJpeg_jll"),
+    Dependency("JpegTurbo_jll"; compat="3.0.4"),
     Dependency("Zlib_jll"; compat="1.2.12"),
+    Dependency("FFTW_jll"),
     Dependency("libpng_jll"),
+    Dependency("libwebp_jll"),
+    Dependency("libzip_jll"),
+    Dependency("Bzip2_jll"),
+    Dependency("Zstd_jll"),
+#    Dependency("Fontconfig_jll"),
+#    Dependency("FreeType2_jll"),
+#    Dependency("Pango_jll"),
+#    Dependency("Librsvg_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # Using GCC 6 to get a newer libc, required by OpenJpeg that is pulled in by Libtiff
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"7")
+               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"9")

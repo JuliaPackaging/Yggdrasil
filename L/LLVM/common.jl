@@ -21,7 +21,7 @@ const llvm_tags = Dict(
     v"17.0.6" => "0007e48608221f440dce2ea0d3e4f561fc10d3c6", # julia-17.0.6-5
     v"18.1.7" => "32719222d3ea71ed0b19c2cb75fa6f76713fda20", # julia-18.1.7-4
     v"19.1.7" => "ccda9ec62497d9de88ca7090a749e52a89f62132", # julia-19.1.7-2
-    v"20.1.2" => "6fe525631430a9cca35e564f90752ac6b7d9d951", # julia-20.1.2-1
+    v"20.1.8" => "5b9f96366ce26dfc8ca91697ef0a57894791d95e", # julia-20.1.8-0
     v"21.0.0" => "2d3406d7b2a6e12bae0ba428f87c3aa7446391fe", # julia-21.0.0-0
 )
 

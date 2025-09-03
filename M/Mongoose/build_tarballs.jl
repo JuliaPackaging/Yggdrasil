@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Mongoose"
-version = v"7.18.0"
+version = v"7.19.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/cesanta/mongoose.git", "ccfe7e0724dd9bd4a6c447c84552e0ca47767ce8")
+    GitSource("https://github.com/cesanta/mongoose.git", "739d78a45a8fa6595498df67d11cac3e39af8c0e")
 ]
 
 # Bash recipe for building across all platforms

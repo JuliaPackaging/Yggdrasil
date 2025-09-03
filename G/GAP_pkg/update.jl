@@ -8,7 +8,7 @@ using SHA
 using GZip
 
 upstream_version = v"4.14.0"
-gap_version = v"400.1400.005"
+gap_version = v"400.1401.005"
 gap_lib_version = v"400.1400.000"
 
 function download_with_sha256(url)
@@ -64,7 +64,7 @@ function update_gap_pkg_recipe(dir)
 
     # new metadata from the GAP package registry
     if pkgname == "juliainterface"
-        upstream_version = "0.13.1"
+        upstream_version = "0.15.0"
         sha256 = "DUMMY"
     else
         meta = pkginfo[pkgname]

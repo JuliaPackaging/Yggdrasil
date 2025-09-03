@@ -50,6 +50,7 @@ fi
     --build=${MACHTYPE} \
     --host=${target} \
     --libdir=${libdir} \
+    --enable-debug_frame \
     --enable-minidebuginfo \
     --enable-zlibdebuginfo \
     --disable-tests \
