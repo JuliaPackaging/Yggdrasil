@@ -71,6 +71,7 @@ components:
     - odow
   G/gmmlib/:
     - amontoison
+    - michel2323
   G/GRAMPC/:
     - imciner2
   H/HDF5/:
@@ -109,6 +110,7 @@ components:
     - imciner2
   L/libigc/:
     - amontoison
+    - michel2323
   L/libpicosat/:
     - StefanKarpinski
   L/libpolymake_julia/:
@@ -135,16 +137,20 @@ components:
     - eschnett
   N/NEO/:
     - amontoison
+    - michel2323
   N/NOMAD/:
     - amontoison
   N/Notcurses/:
     - eschnett
   O/oneAPI_Level_Zero_Loader/:
     - amontoison
+    - michel2323
   O/oneAPI_support/:
     - amontoison
+    - michel2323
   O/oneAPI_support_Headers/:
     - amontoison
+    - michel2323
   O/OpenBLAS/:
     - imciner2
   O/OpenMPI/:
