@@ -22,6 +22,7 @@ const llvm_tags = Dict(
     v"18.1.7" => "32719222d3ea71ed0b19c2cb75fa6f76713fda20", # julia-18.1.7-4
     v"19.1.7" => "ccda9ec62497d9de88ca7090a749e52a89f62132", # julia-19.1.7-2
     v"20.1.2" => "6fe525631430a9cca35e564f90752ac6b7d9d951", # julia-20.1.2-1
+    v"21.0.0" => "2d3406d7b2a6e12bae0ba428f87c3aa7446391fe", # julia-21.0.0-0
 )
 
 const buildscript = raw"""
@@ -156,6 +157,9 @@ if [[ "${LLVM_MAJ_VER}" -gt "14" ]] && [[ "${LLVM_MAJ_VER}" -le "19" ]]; then
 fi
 if [[ "${LLVM_MAJ_VER}" -ge "19" ]]; then
     ninja -j${nproc} mlir-src-sharder
+fi
+if [[ "${LLVM_MAJ_VER}" -ge "21" ]]; then
+    ninja -j${nproc} mlir-irdl-to-cpp
 fi
 popd
 
