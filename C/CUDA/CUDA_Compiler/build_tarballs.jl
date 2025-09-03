@@ -60,7 +60,7 @@ fi
 
 dependencies = [
     Dependency("CUDA_Driver_jll"; compat="13"),
-    RuntimeDependency("CUDA_Runtime_jll"),
+    RuntimeDependency("CUDA_Runtime_jll", top_level=true), # top_level so that preference changes invalidate
 ]
 
 products = [
