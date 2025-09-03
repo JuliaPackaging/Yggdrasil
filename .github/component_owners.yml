@@ -69,6 +69,9 @@ components:
     - cgarling
   G/GLPK/:
     - odow
+  G/gmmlib/:
+    - amontoison
+    - michel2323
   G/GRAMPC/:
     - imciner2
   H/HDF5/:
@@ -105,6 +108,9 @@ components:
   L/libblastrampoline/:
     - amontoison
     - imciner2
+  L/libigc/:
+    - amontoison
+    - michel2323
   L/libjulia:
     - barche
     - benlorenz
@@ -134,14 +140,22 @@ components:
     - amontoison
   N/Ncurses/:
     - eschnett
+  N/NEO/:
+    - amontoison
+    - michel2323
   N/NOMAD/:
     - amontoison
   N/Notcurses/:
     - eschnett
+  O/oneAPI_Level_Zero_Loader/:
+    - amontoison
+    - michel2323
   O/oneAPI_support/:
     - amontoison
+    - michel2323
   O/oneAPI_support_Headers/:
     - amontoison
+    - michel2323
   O/OpenBLAS/:
     - imciner2
   O/OpenMPI/:
