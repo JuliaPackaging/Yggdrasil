@@ -858,13 +858,13 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
     if assert
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_assert_jll", LLVM_full_version)))
         if !augmentation
-            if name in ("Clang", "LLVM", "MLIR", "LLD, "LLVM_utils")
+            if name in ("Clang", "LLVM", "MLIR", "LLD", "LLVM_utils")
                 push!(dependencies, Dependency("libLLVM_assert_jll", libLLVM_version, compat=compat_version))
             end
 
             name = "$(name)_assert"
         else
-            if name in ("Clang", "LLVM", "MLIR", "LLD, "LLVM_utils")
+            if name in ("Clang", "LLVM", "MLIR", "LLD", "LLVM_utils")
                 push!(dependencies, Dependency("libLLVM_jll", libLLVM_version, compat=compat_version))
             end
         end
