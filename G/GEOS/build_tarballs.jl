@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "GEOS"
-version = v"3.13.1"
+version = v"3.14.0"
 
 # Collection of sources required to build GEOS
 sources = [
     ArchiveSource("http://download.osgeo.org/geos/geos-$version.tar.bz2",
-                  "df2c50503295f325e7c8d7b783aca8ba4773919cde984193850cf9e361dfd28c")
+                  "fe85286b1977121894794b36a7464d05049361bedabf972e70d8f9bf1e3ce928")
 ]
 
 # Bash recipe for building across all platforms
@@ -20,6 +20,7 @@ CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
 CMAKE_FLAGS+=(-DLLVM_HOST_TRIPLE=${MACHTYPE})
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
+CMAKE_FLAGS+=(-DBUILD_TESTING=OFF)
 CMAKE_FLAGS+=(-S.) # source
 
 # arm complains about duplicate symbols unless we disable inlining
@@ -34,7 +35,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
