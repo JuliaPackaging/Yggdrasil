@@ -621,6 +621,26 @@ rm -vrf ${prefix}/lib/lld
 rm -vrf {prefix}/lib/objects-Release
 """
 
+const llvm_utils_script = raw"""
+# First, find (true) LLVM library directory in ~/.artifacts somewhere
+LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
+
+# Clear out our `${prefix}`
+rm -rf ${prefix}/*
+
+# Copy over everything, but we are only keeping the small tools
+mv -v ${LLVM_ARTIFACT_DIR}/* ${prefix}/
+rm -vrf ${prefix}/include
+rm -vrf ${prefix}/bin
+rm -vrf ${prefix}/lib
+rm -vrf ${prefix}/libexec
+rm -vrf ${prefix}/share
+rm -vrf ${prefix}/tools/{*lld,wasm-ld,dsymutil,clang,llvm-config,mlir,c-index-test,llvm-exegesis}*
+# Windows has dlls in tools as well so remove them too
+rm -vrf ${prefix}/tools/*.${dlext}*
+
+"""
+
 function configure_build(ARGS, version; experimental_platforms=false, assert=false,
     git_path="https://github.com/JuliaLang/llvm-project.git",
     git_ver=llvm_tags[version], custom_name=nothing,
@@ -785,6 +805,12 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
             push!(products, ExecutableProduct("ld64.lld", :ld64_lld, "tools"))
             push!(products, ExecutableProduct("lld-link", :lld_link, "tools"))
             push!(products, ExecutableProduct("wasm-ld", :wasm_ld, "tools"))
+        end
+    elseif name == "LLVM_utils"
+        script = llvm_utils_script
+        products = []
+        for tool in tools_list
+            push!(products, ExecutableProduct(tool, Symbol(tool), "tools"))
         end
     end
 
