@@ -12,7 +12,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 sources = [
     GitSource("https://github.com/dmlc/xgboost.git","62e7923619352c4079b24303b367134486b1c84f"), # v2.1.4
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-    "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62")
+        "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62")
 ]
 
 # Bash recipe for building across all platforms
@@ -52,15 +52,17 @@ fi
 
 install_license LICENSE
 """
-
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libxgboost", "xgboost"], :libxgboost)
+    LibraryProduct(["libxgboost", "xgboost"], :libxgboost),
 ]
 
-platforms = expand_cxxstring_abis(supported_platforms())
+# platforms = expand_cxxstring_abis(supported_platforms())
+platforms = expand_cxxstring_abis([Platform("aarch64", "macOS")])
 
 for platform in platforms
+    
+    should_build_platform(triplet(platform)) || continue
 
     dependencies = AbstractDependency[
         # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
