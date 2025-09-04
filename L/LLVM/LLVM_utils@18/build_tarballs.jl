@@ -8,6 +8,16 @@ using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
+
+function normalize_symbol(str)
+    str = replace(str, "-"=>"_")
+    if startswith(str,"ll") || str == "opt"
+        return Symbol(str)
+    else
+        return Symbol("llvm_"*str)
+    end
+end
+
 const tools_list = [
   "amdgpu-arch",
   "analyze-build",

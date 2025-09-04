@@ -810,7 +810,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
         script = llvm_utils_script
         products = []
         for tool in tools_list
-            push!(products, ExecutableProduct(tool, Symbol(tool), "tools"))
+            push!(products, ExecutableProduct(tool, normalize_symbol(tool), "tools"))
         end
     end
 
