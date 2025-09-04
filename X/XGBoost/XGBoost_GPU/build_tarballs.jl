@@ -28,11 +28,11 @@ mkdir build && cd build
 export TMPDIR=${WORKSPACE}/tmpdir
 mkdir ${TMPDIR}
 
-export CUDA_HOME=${WORKSPACE}/destdir/cuda
+export CUDA_HOME=${prefix}/cuda
 export PATH=$PATH:$CUDA_HOME/bin
 cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
         -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
-        -DCUDA_TOOLKIT_ROOT_DIR=${WORKSPACE}/destdir/cuda \
+        -DCUDA_TOOLKIT_ROOT_DIR=${prefix}/cuda \
         -DUSE_CUDA=ON \
         -DBUILD_WITH_CUDA_CUB=ON
 make -j${nproc}
@@ -51,7 +51,7 @@ install_license LICENSE
 augment_platform_block = CUDA.augment
 
 versions_to_build = [
-    v"11.4",
+    v"11.8",
     v"12.2",
     v"12.8",
 ]
@@ -85,9 +85,10 @@ for cuda_version in versions_to_build, platform in platforms
             platforms=filter(!Sys.isbsd, [augmented_platform])),
         Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); 
             platforms=filter(Sys.isbsd, [augmented_platform])),
-        BuildDependency(PackageSpec(name="CUDA_full_jll", version=CUDA.full_version(cuda_version))),
-        RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")),
+        BuildDependency(PackageSpec(name="CUDA_full_jll", version=CUDA.full_version(cuda_version)))
     ]
+
+    append!(dependencies, CUDA.required_dependencies(augmented_platform))
 
     build_tarballs(ARGS, name, version, sources,  script, [augmented_platform], products, dependencies;
                     preferred_gcc_version=v"9",
