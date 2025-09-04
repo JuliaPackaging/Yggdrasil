@@ -200,17 +200,18 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         else
             LLVMLINK="-L${prefix}/bin -lLLVM-${LLVMVERMAJOR}jl"
         fi
-        if [[ $LLVMVERMAJOR -ge 20 ]] && [[ "$nbits" == "32" ]]; then
-            # this seems to be needed for https://github.com/JuliaLang/julia/pull/58344
-            # since we are overriding RT_LLVMLINK
-            LLVMLINK="${LLVMLINK} -lz"
-        fi
         LLVM_LDFLAGS="-L${prefix}/bin"
         LDFLAGS="-L${prefix}/bin"
     elif [[ "${target}" == *apple* ]]; then
         LLVMLINK="-L${prefix}/lib -lLLVM"
     else
         LLVMLINK="-L${prefix}/lib -lLLVM-${LLVMVERMAJOR}jl"
+    fi
+
+    if [[ $LLVMVERMAJOR -ge 20 ]]; then
+        # this seems to be needed for https://github.com/JuliaLang/julia/pull/58344 and https://github.com/JuliaLang/julia/pull/59227
+        # TODO: try to remove this again once https://github.com/JuliaLang/julia/pull/59475 is merged
+        LLVMLINK="${LLVMLINK} -lz -lzstd"
     fi
 
     if [[ "${version}" == 1.[6-9].* ]] || [[ "${version}" == 1.1[0-1].* ]]; then
