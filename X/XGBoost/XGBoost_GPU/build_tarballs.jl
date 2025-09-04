@@ -11,7 +11,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 # Collection of sources required to build XGBoost
 sources = [
-    GitSource("https://github.co- m/dmlc/xgboost.git","62e7923619352c4079b24303b367134486b1c84f"),
+    GitSource("https://github.com/dmlc/xgboost.git","62e7923619352c4079b24303b367134486b1c84f"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
     "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62")
 ]
