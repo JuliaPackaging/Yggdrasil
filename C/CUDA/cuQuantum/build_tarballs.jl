@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "cuQuantum"
-version_str = "25.03.0"
+version_str = "25.06.0"
 version = VersionNumber(version_str)
 
 # Bash recipe for building across all platforms
@@ -45,7 +45,7 @@ for cuda_version in [v"11", v"12"], platform in platforms
     augmented_platform["cuda"] = CUDA.platform(cuda_version)
     should_build_platform(triplet(augmented_platform)) || continue
 
-    sources = get_sources("cuquantum", ["cuquantum"]; version=version_str, platform,
+    sources = get_sources("cuquantum", ["cuquantum"]; version=version_str, platform=augmented_platform,
         variant="cuda$(cuda_version.major)")
 
     push!(builds, (; platforms=[augmented_platform], sources))
