@@ -57,8 +57,7 @@ products = [
     LibraryProduct(["libxgboost", "xgboost"], :libxgboost),
 ]
 
-# platforms = expand_cxxstring_abis(supported_platforms())
-platforms = expand_cxxstring_abis([Platform("aarch64", "macOS")])
+platforms = expand_cxxstring_abis(supported_platforms())
 
 for platform in platforms
     
