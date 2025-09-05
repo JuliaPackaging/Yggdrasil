@@ -8,12 +8,26 @@ version = v"3.14.0"
 # Collection of sources required to build GEOS
 sources = [
     ArchiveSource("http://download.osgeo.org/geos/geos-$version.tar.bz2",
-                  "fe85286b1977121894794b36a7464d05049361bedabf972e70d8f9bf1e3ce928")
+                  "fe85286b1977121894794b36a7464d05049361bedabf972e70d8f9bf1e3ce928"),
+    FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz",
+               "cd4f08a75577145b8f05245a2975f7c81401d75e9535dcffbb879ee1deefcbf4"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/geos-*/
+
+# We need a newer C++ library
+if [[ "${target}" == *-apple-darwin* ]]; then
+    rm -rf /opt/${target}/${target}/sys-root/System
+    rm -rf /opt/${target}/${target}/sys-root/usr/include/libxml2/libxml
+    tar --extract --file=${WORKSPACE}/srcdir/MacOSX11.3.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX11.3.sdk/System MacOSX11.3.sdk/usr
+    export MACOSX_DEPLOYMENT_TARGET=11.3
+fi
+
+# Reported as <https://github.com/libgeos/geos/issues/1302>
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/unordered_map.patch
 
 CMAKE_FLAGS=()
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
