@@ -23,7 +23,7 @@ make
 mkdir -p $bindir
 find . -name *.exe -exec cp {} $bindir \;
 cd $WORKSPACE/srcdir/ORCA_Mode_modelling_gfortran/src
-atomic_patch -p1 $WORKSPACE/srcdir/bundled/patches/cw_modes.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/cw_modes.patch
 rm -f *.o *.mod ../bin/*
 make
 cp ../bin/orca90* $bindir/orca90.exe
