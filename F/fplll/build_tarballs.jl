@@ -34,6 +34,9 @@ make install
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
+# Windows is not supported
+filter!(!Sys.iswindows, platforms)
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libfplll", :libfplll),
