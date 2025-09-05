@@ -12,7 +12,7 @@ sources = [
     GitSource("https://codeberg.org/gumbo-parser/gumbo-parser.git", "322c54c178590ba42b8b04e8c0e4840595a1f717"),
 
     # Vendor Autoconf 2.72 only to run autoreconf
-    ArchiveSource("https://ftp.gnu.org/gnu/autoconf/autoconf-2.72.tar.xz",
+    ArchiveSource("https://mirrors.kernel.org/gnu/autoconf/autoconf-2.72.tar.xz",
                   "ba885c1319578d6c94d46e9b0dceb4014caafe2490e437a0dbca3f270a223f5a"),
 ]
 
