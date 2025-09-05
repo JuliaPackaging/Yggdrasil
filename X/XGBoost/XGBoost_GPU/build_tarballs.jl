@@ -52,8 +52,7 @@ augment_platform_block = CUDA.augment
 
 versions_to_build = [
     v"11.8",
-    v"12.2",
-    v"12.8",
+    v"12.0"
 ]
 
 # The products that we will ensure are always built
