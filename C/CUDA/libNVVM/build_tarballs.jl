@@ -39,7 +39,7 @@ for platform in platforms
     should_build_platform(triplet(platform)) || continue
 
     augmented_platform = deepcopy(platform)
-    augmented_platform["cuda"] = "$(version.major)"
+    augmented_platform["cuda"] = "$(cuda_version.major)"
     
     sources = get_sources("cuda", ["libnvvm"]; version=cuda_version, platform=augmented_platform)
     push!(builds, (; platforms=[augmented_platform], sources))
