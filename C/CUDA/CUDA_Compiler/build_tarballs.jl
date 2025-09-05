@@ -73,7 +73,7 @@ products = [
 
 # determine exactly which tarballs we should build
 builds = []
-for version in [ v"11.8", v"12.9", v"13.0", v"13.0.1"]
+for version in [ v"11.8", v"12.9", v"13.0"]
     # CUDA_Compiler uses the following components
     components = [
         "cuda_cudart",
