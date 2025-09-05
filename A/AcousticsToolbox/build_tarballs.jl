@@ -10,6 +10,7 @@ version = VersionNumber("2025.09.05")
 sources = [
     ArchiveSource("http://oalib.hlsresearch.com/AcousticsToolbox/at_2024_12_25.zip", "7b57e80bded7f71ea9536e541029615f3f430e390651d697a2212569cbafd85c")
     ArchiveSource("https://oalib-acoustics.org/website_resources/Modes/orca/mac_linux/ORCA_Mode_modelling_gfortran.zip", "4ac15c1374e08bedd0dd03fd5f79612a8f84899ebf529237e662d7efb1dfb10a")
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
@@ -22,17 +23,7 @@ make
 mkdir -p $bindir
 find . -name *.exe -exec cp {} $bindir \;
 cd $WORKSPACE/srcdir/ORCA_Mode_modelling_gfortran/src
-cat > patch << EOF
-c: HACK: dump mode functions and acoustic pressure to a file
-               open(67,file='modes_tlc.bin',form='unformatted')
-               write(67) nzsr, nmode, nrec, nsrc
-               write(67) ((phi(j,jm), j=1,nzsr), jm=1,nmode)
-               write(67) ((tlc(jrec,jsrc), jrec=1,nrec), jsrc=1,nsrc)
-               close(67)
-EOF
-head -106 cw_modes.f > tmp1
-tail -216 cw_modes.f > tmp2
-cat tmp1 patch tmp2 > cw_modes.f
+atomic_patch -p1 $WORKSPACE/srcdir/bundled/patches/cw_modes.patch
 rm -f *.o *.mod ../bin/*
 make
 cp ../bin/orca90* $bindir/orca90.exe
