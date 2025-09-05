@@ -38,8 +38,11 @@ builds = []
 for platform in platforms
     should_build_platform(triplet(platform)) || continue
 
-    sources = get_sources("cuda", ["libnvvm"]; version=cuda_version, platform)
-    push!(builds, (; platforms=[platform], sources))
+    augmented_platform = deepcopy(platform)
+    augmented_platform["cuda"] = "$(version.major)"
+    
+    sources = get_sources("cuda", ["libnvvm"]; version=cuda_version, augmented_platform)
+    push!(builds, (; platforms=[augmented_platform], sources))
 end
 
 # don't allow `build_tarballs` to override platform selection based on ARGS.
