@@ -71,7 +71,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
 
     if version == v"1.13.0-DEV"
         sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "1367b3d7ad79d87a6bc0f0aabb4fd05905636c26"),
+            GitSource("https://github.com/JuliaLang/julia.git", "b2f8ee82e80a02153d8e0e04726b2a48b3029997"),
             DirectorySource("./bundled"),
         ]
     else
@@ -200,17 +200,18 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         else
             LLVMLINK="-L${prefix}/bin -lLLVM-${LLVMVERMAJOR}jl"
         fi
-        if [[ $LLVMVERMAJOR -ge 20 ]] && [[ "$nbits" == "32" ]]; then
-            # this seems to be needed for https://github.com/JuliaLang/julia/pull/58344
-            # since we are overriding RT_LLVMLINK
-            LLVMLINK="${LLVMLINK} -lz"
-        fi
         LLVM_LDFLAGS="-L${prefix}/bin"
         LDFLAGS="-L${prefix}/bin"
     elif [[ "${target}" == *apple* ]]; then
         LLVMLINK="-L${prefix}/lib -lLLVM"
     else
         LLVMLINK="-L${prefix}/lib -lLLVM-${LLVMVERMAJOR}jl"
+    fi
+
+    if [[ $LLVMVERMAJOR -ge 20 ]]; then
+        # this seems to be needed for https://github.com/JuliaLang/julia/pull/58344 and https://github.com/JuliaLang/julia/pull/59227
+        # TODO: try to remove this again once https://github.com/JuliaLang/julia/pull/59475 is merged
+        LLVMLINK="${LLVMLINK} -lz -lzstd"
     fi
 
     if [[ "${version}" == 1.[6-9].* ]] || [[ "${version}" == 1.1[0-1].* ]]; then
@@ -482,9 +483,9 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         push!(dependencies, BuildDependency("Zstd_jll")),
         push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"7.10.1+0")))
         push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+20")))
-        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.8.2+0"); platforms=filter(!Sys.isapple, platforms)))
+        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.8.2+1"); platforms=filter(!Sys.isapple, platforms)))
         push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"19.1.4+0"); platforms=filter(Sys.isapple, platforms)))
-        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"20.1.2+1")))
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"20.1.8+0")))
     else
         error("Unsupported Julia version")
     end
