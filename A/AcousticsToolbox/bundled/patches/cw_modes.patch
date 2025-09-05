@@ -1,5 +1,5 @@
---- cw_modes.f	2025-09-05 02:35:20
-+++ cw_modes.f1	2025-09-05 11:29:28
+--- before/cw_modes.f	2025-09-05 02:35:20
++++ after/cw_modes.f	2025-09-05 11:29:28
 @@ -104,6 +104,12 @@
              do jzs=1,nzs
                 call mode_field(phi,dpsi,exp_gbs,tlc,tli,tl,jzs)
