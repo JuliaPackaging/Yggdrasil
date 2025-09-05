@@ -78,7 +78,7 @@ dependencies = [
     Dependency("FLINT_jll", compat = "~301.300.0"),
     Dependency("TOPCOM_jll"; compat = "~0.17.8"),
     Dependency("lib4ti2_jll"; compat = "^1.6.10"),
-    Dependency("libcxxwrap_julia_jll"; compat = "~0.14.3"),
+    Dependency("libcxxwrap_julia_jll"; compat = "~0.14.4"),
     Dependency("polymake_jll"; compat = "~400.1400.0"),
 
     HostBuildDependency(PackageSpec(name="Perl_jll", version=v"5.34.1")),
