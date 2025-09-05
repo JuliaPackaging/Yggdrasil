@@ -41,7 +41,7 @@ for platform in platforms
     augmented_platform = deepcopy(platform)
     augmented_platform["cuda"] = "$(version.major)"
     
-    sources = get_sources("cuda", ["libnvvm"]; version=cuda_version, augmented_platform)
+    sources = get_sources("cuda", ["libnvvm"]; version=cuda_version, platform=augmented_platform)
     push!(builds, (; platforms=[augmented_platform], sources))
 end
 
