@@ -54,7 +54,7 @@ dependencies = [
     BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.20")),
     BuildDependency("GMP_jll"),
     BuildDependency("MPFR_jll"),
-    Dependency("libcxxwrap_julia_jll"; compat = "~0.14.3"),
+    Dependency("libcxxwrap_julia_jll"; compat = "~0.14.4"),
     # we do not set a compat entry for Singular_jll -- instead we leave it to
     # Singular.jl to ensure the right versions of libsingular_julia_jll and
     # Singular_jll are paired. This gives us flexibility in the development
