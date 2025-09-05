@@ -20,7 +20,6 @@ end
 
 const tools_list = [
   "amdgpu-arch",
-  "analyze-build",
   "bugpoint",
   "count",
   "diagtool",
