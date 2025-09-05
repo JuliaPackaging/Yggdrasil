@@ -1,0 +1,10 @@
+--- a/general.c
++++ b/general.c
+@@ -78,6 +78,7 @@
+ 
+ #define _POSIX_SOURCE
+ #define _POSIX_C_SOURCE 200112L
++#define _XOPEN_SOURCE 700   // POSIX.1-2008 with XSI
+ 
+ #include <sys/types.h>
+ #include <gmp.h>
