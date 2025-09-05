@@ -11,9 +11,9 @@ sources = [
     # Build from the tag in the active upstream
     GitSource("https://codeberg.org/gumbo-parser/gumbo-parser.git", "322c54c178590ba42b8b04e8c0e4840595a1f717"),
 
-    # Vendor Autoconf 2.72e only to run autoreconf
-    ArchiveSource("https://alpha.gnu.org/gnu/autoconf/autoconf-2.72e.tar.gz",
-                  "f3478d3b597d51f5d61596fb2f6f6aba49cdd974b4b05ff0bac57f56b5cfdb39"),
+    # Vendor Autoconf 2.72 only to run autoreconf
+    ArchiveSource("https://ftp.gnu.org/gnu/autoconf/autoconf-2.72.tar.xz",
+                  "ba885c1319578d6c94d46e9b0dceb4014caafe2490e437a0dbca3f270a223f5a"),
 ]
 
 # Bash recipe for building across all platforms
@@ -21,8 +21,8 @@ sources = [
 script = raw"""
 set -eux
 
-# Build Autoconf 2.72e for the host inside the container
-cd ${WORKSPACE}/srcdir/autoconf-2.72e
+# Build Autoconf 2.72 for the host inside the container
+cd ${WORKSPACE}/srcdir/autoconf-2.72*
 ./configure --prefix=/opt/autoconf272
 make -j${nproc}
 make install
