@@ -111,6 +111,11 @@ components:
   L/libigc/:
     - amontoison
     - michel2323
+  L/libjulia:
+    - barche
+    - benlorenz
+    - fingolfin
+    - lgoettgens
   L/libpicosat/:
     - StefanKarpinski
   L/libpolymake_julia/:
