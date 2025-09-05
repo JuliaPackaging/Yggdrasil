@@ -19,7 +19,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.12.0"), uuidopenssl)
 delete!(Pkg.Types.get_last_stdlibs(v"1.13.0"), uuidopenssl)
 
 name = "libpolymake_julia"
-version = v"0.14.0"
+version = v"0.14.1"
 
 # reminder: change the above version when changing the supported julia versions
 # julia_versions is now taken from libjulia/common.jl and filtered
@@ -69,7 +69,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.19")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.20")),
     BuildDependency("GMP_jll"),
     BuildDependency("MPFR_jll"),
     # this version matches the one in Ipopt_jll (needed by polymake -> SCIP)
