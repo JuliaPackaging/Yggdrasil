@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "libNVVM"
 version = v"4.0.5"
-cuda_version = v"13.0.0"
+cuda_version = v"13.0.1"
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/libnvvm-*
