@@ -26,7 +26,8 @@ cd $WORKSPACE/srcdir/ORCA_Mode_modelling_gfortran/src
 perl -p -i -e 's/\r\n/\n/g;' cw_modes.f
 atomic_patch -p1 $WORKSPACE/srcdir/patches/cw_modes.patch
 rm -f *.o *.mod ../bin/*
-make -j${nproc}
+# don't add -j as it fails
+make
 install -Dvm 755 "../bin/orca90${exeext}" "${bindir}/orca90.exe"
 install_license $WORKSPACE/srcdir/at/LICENSE
 install_license $WORKSPACE/srcdir/licenses/LICENSE-orca.txt
