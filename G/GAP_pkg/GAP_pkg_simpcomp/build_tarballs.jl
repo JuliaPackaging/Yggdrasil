@@ -4,7 +4,7 @@ include("../common.jl")
 
 name = "simpcomp"
 upstream_version = "2.1.14" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.1" # increment this when rebuilding with unchanged upstream_version
+offset = v"1.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # This package only produces an executable and does not need GAP for this at all.
@@ -45,3 +45,4 @@ products = [
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.10", preferred_gcc_version=v"7")
 
+# rebuild trigger: 1
