@@ -28,6 +28,8 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/cw_modes.patch
 rm -f *.o *.mod ../bin/*
 make
 cp ../bin/orca90* $bindir/orca90.exe
+install_license $WORKSPACE/srcdir/at/LICENSE
+install_license $WORKSPACE/srcdir/bundled/licenses/LICENSE-orca.txt
 """
 
 # These are the platforms we will build for by default, unless further
