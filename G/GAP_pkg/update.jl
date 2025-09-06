@@ -7,9 +7,9 @@ import Downloads
 using SHA
 using GZip
 
-upstream_version = v"4.14.0"
-gap_version = v"400.1401.005"
-gap_lib_version = v"400.1400.000"
+upstream_version = v"4.15.0-beta1"
+gap_version = v"400.1500.000"
+gap_lib_version = v"400.1500.000"
 
 function download_with_sha256(url)
     io = IOBuffer()
@@ -95,12 +95,10 @@ function update_gap_pkg_recipe(dir)
     elseif old_upstream_version != upstream_version
         _old_upstream_version = VersionNumber(replace(old_upstream_version, "-" => "."))
         _upstream_version = VersionNumber(replace(upstream_version, "-" => "."))
-        if old_upstream_version.major != upstream_version.major
+        if _old_upstream_version.major != _upstream_version.major
             offset = v"0.0.0"
-        elseif old_upstream_version.minor != upstream_version.minor
-            offset = VersionNumber(offset.major, 0, 0)
         else
-            offset = VersionNumber(offset.major, offset.minor, 0)
+            offset = VersionNumber(offset.major, 0, 0)
         end
     else
         offset = VersionNumber(offset.major, offset.minor, offset.patch + 1)
