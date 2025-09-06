@@ -96,7 +96,7 @@ dependencies = [
     # this version matches the one in Ipopt_jll (needed by polymake -> SCIP)
     BuildDependency(PackageSpec(;name="libblastrampoline_jll", version = v"5.4.0")),
 
-    Dependency("libcxxwrap_julia_jll"; compat = "~0.14.3"),
+    Dependency("libcxxwrap_julia_jll"; compat = "~0.14.4"),
     Dependency("libpolymake_julia_jll", compat = "=0.14.1"),
     Dependency("polymake_jll", compat = "~400.1400.0"),
 ]
