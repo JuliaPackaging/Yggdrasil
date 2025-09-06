@@ -35,13 +35,15 @@ if [[ "${target}" == *musl* ]]; then
     export LDFLAGS=-liconv
 fi
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
+mkdir build && cd build
+../configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --enable-shared \
     --disable-static \
     "${FLAGS[@]}"
 
 make -j${nproc} V=1
 make install V=1
+cd ..
 """
 
 # These are the platforms we will build for by default, unless further
