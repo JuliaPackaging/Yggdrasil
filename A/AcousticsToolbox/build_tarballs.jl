@@ -4,7 +4,7 @@
 using BinaryBuilder, Pkg
 
 name = "AcousticsToolbox"
-version = VersionNumber("2025.09.05")
+version = VersionNumber("2025.9.6")
 
 # Collection of sources required to complete build
 sources = [
