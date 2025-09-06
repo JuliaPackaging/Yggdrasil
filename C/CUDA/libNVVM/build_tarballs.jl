@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "libNVVM"
 version = v"4.0.5"
-cuda_version = v"13.0.0"
+cuda_version = v"13.0"
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/libnvvm-*
@@ -38,8 +38,11 @@ builds = []
 for platform in platforms
     should_build_platform(triplet(platform)) || continue
 
-    sources = get_sources("cuda", ["libnvvm"]; version=cuda_version, platform)
-    push!(builds, (; platforms=[platform], sources))
+    augmented_platform = deepcopy(platform)
+    augmented_platform["cuda"] = "$(cuda_version.major)"
+    
+    sources = get_sources("cuda", ["libnvvm"]; version=cuda_version, platform=augmented_platform)
+    push!(builds, (; platforms=[augmented_platform], sources))
 end
 
 # don't allow `build_tarballs` to override platform selection based on ARGS.
