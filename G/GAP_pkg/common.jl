@@ -36,6 +36,6 @@ include("../GAP/common.jl") # make gap_platforms available
 
 function gap_pkg_dependencies(gap_version::VersionNumber)
     return BinaryBuilder.AbstractDependency[
-        Dependency("GAP_jll", gap_version; compat="~$(gap_version)"),
+        Dependency(PackageSpec(; name="GAP_jll", url="http://github.com/lgoettgens/GAP_jll.jl")), # DO NOT MERGE, this line has to be reverted
     ]
 end
