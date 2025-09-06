@@ -4,7 +4,7 @@
 using BinaryBuilder, Pkg
 
 name = "AcousticsToolbox"
-version = VersionNumber("2025.09.05")
+version = VersionNumber("2025.9.6")
 
 # Collection of sources required to complete build
 sources = [
@@ -26,8 +26,13 @@ cd $WORKSPACE/srcdir/ORCA_Mode_modelling_gfortran/src
 perl -p -i -e 's/\r\n/\n/g;' cw_modes.f
 atomic_patch -p1 $WORKSPACE/srcdir/patches/cw_modes.patch
 rm -f *.o *.mod ../bin/*
+# don't add -j as it fails
 make
-cp ../bin/orca90* $bindir/orca90.exe
+# install script fails on libfortran3 and libfortran4 on w64 where .exe is not added during compilation
+# install -Dvm 755 "../bin/orca90${exeext}" "${bindir}/orca90.exe"
+install -Dvm 755 ../bin/orca90* "${bindir}/orca90.exe"
+install_license $WORKSPACE/srcdir/at/LICENSE
+install_license $WORKSPACE/srcdir/licenses/LICENSE-orca.txt
 """
 
 # These are the platforms we will build for by default, unless further
