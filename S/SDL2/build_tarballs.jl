@@ -3,19 +3,21 @@
 using BinaryBuilder, Pkg
 
 name = "SDL2"
-version = v"2.24.2"
+version = v"2.32.10"
 
 # Collection of sources required to build SDL2
 sources = [
     GitSource("https://github.com/libsdl-org/SDL.git",
-              "55b03c7493a7abed33cf803d1380a40fa8af903f"),
+              "5d249570393f7a37e037abf22cd6012a4cc56a71"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/SDL*/
 mkdir build && cd build
-FLAGS=()
+FLAGS=(
+    CFLAGS=-Wno-error=incompatible-pointer-types
+)
 if [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
     FLAGS+=(--with-x)
     if [[ "${target}" == *-freebsd* ]]; then
