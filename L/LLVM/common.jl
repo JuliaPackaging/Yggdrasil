@@ -621,6 +621,26 @@ rm -vrf ${prefix}/lib/lld
 rm -vrf {prefix}/lib/objects-Release
 """
 
+const llvm_utils_script = raw"""
+# First, find (true) LLVM library directory in ~/.artifacts somewhere
+LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
+
+# Clear out our `${prefix}`
+rm -rf ${prefix}/*
+
+# Copy over everything, but we are only keeping the small tools
+mv -v ${LLVM_ARTIFACT_DIR}/* ${prefix}/
+rm -vrf ${prefix}/include
+rm -vrf ${prefix}/bin
+rm -vrf ${prefix}/lib
+rm -vrf ${prefix}/libexec
+rm -vrf ${prefix}/share
+rm -vrf ${prefix}/tools/{*lld,wasm-ld,dsymutil,clang,llvm-config,mlir,c-index-test,llvm-exegesis}*
+# Windows has dlls in tools as well so remove them too
+rm -vrf ${prefix}/tools/*.${dlext}*
+
+"""
+
 function configure_build(ARGS, version; experimental_platforms=false, assert=false,
     git_path="https://github.com/JuliaLang/llvm-project.git",
     git_ver=llvm_tags[version], custom_name=nothing,
@@ -786,6 +806,12 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
             push!(products, ExecutableProduct("lld-link", :lld_link, "tools"))
             push!(products, ExecutableProduct("wasm-ld", :wasm_ld, "tools"))
         end
+    elseif name == "LLVM_utils"
+        script = llvm_utils_script
+        products = ExecutableProduct[]
+        for tool in tools_list
+            push!(products, ExecutableProduct(tool, normalize_symbol(tool), "tools"))
+        end
     end
 
     platforms = supported_platforms(; experimental=experimental_platforms)
@@ -832,19 +858,19 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
     if assert
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_assert_jll", LLVM_full_version)))
         if !augmentation
-            if name in ("Clang", "LLVM", "MLIR", "LLD")
+            if name in ("Clang", "LLVM", "MLIR", "LLD", "LLVM_utils")
                 push!(dependencies, Dependency("libLLVM_assert_jll", libLLVM_version, compat=compat_version))
             end
 
             name = "$(name)_assert"
         else
-            if name in ("Clang", "LLVM", "MLIR", "LLD")
+            if name in ("Clang", "LLVM", "MLIR", "LLD", "LLVM_utils")
                 push!(dependencies, Dependency("libLLVM_jll", libLLVM_version, compat=compat_version))
             end
         end
     else
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", LLVM_full_version)))
-        if name in ("Clang", "LLVM", "MLIR", "LLD")
+        if name in ("Clang", "LLVM", "MLIR", "LLD", "LLVM_utils")
             push!(dependencies, Dependency("libLLVM_jll", libLLVM_version, compat=compat_version))
         end
     end
