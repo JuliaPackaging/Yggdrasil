@@ -9,8 +9,6 @@ sources = [
 ]
 
 platforms = supported_platforms()
-
-platforms = filter(p -> !(libc(p) == "musl"), platforms)
 platforms = expand_gfortran_versions(platforms)
 platforms = filter(p -> libgfortran_version(p).major ≥ 5, platforms)
 
