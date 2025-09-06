@@ -44,6 +44,8 @@ mkdir build && cd build
 make -j${nproc} V=1
 make install V=1
 cd ..
+
+install_license LICENSE.txt
 """
 
 # These are the platforms we will build for by default, unless further
