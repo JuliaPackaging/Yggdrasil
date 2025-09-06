@@ -4,12 +4,13 @@
 using BinaryBuilder, Pkg
 
 name = "AcousticsToolbox"
-version = VersionNumber("2025.06.18")
+version = VersionNumber("2025.09.05")
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("http://oalib.hlsresearch.com/AcousticsToolbox/at_2024_12_25.zip", "7b57e80bded7f71ea9536e541029615f3f430e390651d697a2212569cbafd85c")
     ArchiveSource("https://oalib-acoustics.org/website_resources/Modes/orca/mac_linux/ORCA_Mode_modelling_gfortran.zip", "4ac15c1374e08bedd0dd03fd5f79612a8f84899ebf529237e662d7efb1dfb10a")
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
@@ -22,6 +23,8 @@ make
 mkdir -p $bindir
 find . -name *.exe -exec cp {} $bindir \;
 cd $WORKSPACE/srcdir/ORCA_Mode_modelling_gfortran/src
+perl -p -i -e 's/\r\n/\n/g;' cw_modes.f
+atomic_patch -p1 $WORKSPACE/srcdir/patches/cw_modes.patch
 rm -f *.o *.mod ../bin/*
 make
 cp ../bin/orca90* $bindir/orca90.exe
