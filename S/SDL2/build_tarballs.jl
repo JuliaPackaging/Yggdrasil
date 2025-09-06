@@ -15,9 +15,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/SDL*/
 mkdir build && cd build
-FLAGS=(
-    CFLAGS=-Wno-error=incompatible-pointer-types
-)
+FLAGS=()
 if [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
     FLAGS+=(--with-x)
     if [[ "${target}" == *-freebsd* ]]; then
@@ -28,6 +26,9 @@ elif [[ "${target}" == aarch64-apple-* ]]; then
     # Link to libclang_rt.osx to resolve the symbol `___isPlatformVersionAtLeast`:
     # <https://github.com/libsdl-org/SDL/issues/6491>.
     export LDFLAGS="-L${libdir}/darwin -lclang_rt.osx"
+fi
+if [[ "${target}" == riscv64-* ]]; then
+    FLAGS+=(CFLAGS=-Wno-error=incompatible-pointer-types)
 fi
 ../configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --enable-shared \
