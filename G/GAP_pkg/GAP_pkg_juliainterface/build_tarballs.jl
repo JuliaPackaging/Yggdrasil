@@ -53,7 +53,7 @@ platforms = gap_platforms(expand_julia_versions=true)
 # that's a small risk, usually immediately detected in CI test, and fixing it
 # is easy as it only requires a change to GAP.jl, not to any JLLs.
 dependencies = [
-    Dependency("GAP_jll", gap_version),
+    Dependency(PackageSpec(; name="GAP_jll", url="http://github.com/lgoettgens/GAP_jll.jl")), # DO NOT MERGE, this line has to be reverted
     BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.20")),
 ]
 
