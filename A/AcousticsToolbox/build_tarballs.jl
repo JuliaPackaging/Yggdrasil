@@ -30,7 +30,7 @@ rm -f *.o *.mod ../bin/*
 make
 # install script fails on libfortran3 and libfortran4 on w64 where .exe is not added during compilation
 # install -Dvm 755 "../bin/orca90${exeext}" "${bindir}/orca90.exe"
-cp ../bin/orca90* $bindir/orca90.exe
+install -Dvm 755 ../bin/orca90* "${bindir}/orca90.exe"
 install_license $WORKSPACE/srcdir/at/LICENSE
 install_license $WORKSPACE/srcdir/licenses/LICENSE-orca.txt
 """
