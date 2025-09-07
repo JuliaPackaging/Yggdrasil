@@ -11,10 +11,10 @@ index 22a17b3..ac18c85 100644
  M4_DEBUGFILE = @M4_DEBUGFILE@
  M4_GNU = @M4_GNU@
  MAKEINFO = @MAKEINFO@
-diff --git a/autoconf-2.72/bin/autoconf.in b/autoconf-2.72-patched/bin/autoconf.in
+diff --git a/bin/autoconf.in b/bin/autoconf.in
 index 421154a..d645be8 100644
---- a/autoconf-2.72/bin/autoconf.in
-+++ b/autoconf-2.72-patched/bin/autoconf.in
+--- a/bin/autoconf.in
++++ b/bin/autoconf.in
 @@ -43,9 +43,18 @@ use Autom4te::ChannelDefs;
  use Autom4te::Channels qw(msg);
  use Autom4te::General;
@@ -36,10 +36,10 @@ index 421154a..d645be8 100644
  
  # $HELP
  # -----
-diff --git a/autoconf-2.72/bin/autoheader.in b/autoconf-2.72-patched/bin/autoheader.in
+diff --git a/bin/autoheader.in b/bin/autoheader.in
 index 6ca6048..56777e6 100644
---- a/autoconf-2.72/bin/autoheader.in
-+++ b/autoconf-2.72-patched/bin/autoheader.in
+--- a/bin/autoheader.in
++++ b/bin/autoheader.in
 @@ -29,10 +29,14 @@ eval 'case $# in 0) exec @PERL@ -S "$0";; *) exec @PERL@ -S "$0" "$@";; esac'
  use 5.006;
  use strict;
@@ -67,10 +67,10 @@ index 6ca6048..56777e6 100644
  my $config_h_in;
  my @prepend_include;
  my @include;
-diff --git a/autoconf-2.72/bin/autom4te.in b/autoconf-2.72-patched/bin/autom4te.in
+diff --git a/bin/autom4te.in b/bin/autom4te.in
 index 475221a..5a5924a 100644
---- a/autoconf-2.72/bin/autom4te.in
-+++ b/autoconf-2.72-patched/bin/autom4te.in
+--- a/bin/autom4te.in
++++ b/bin/autom4te.in
 @@ -22,13 +22,18 @@ eval 'case $# in 0) exec @PERL@ -S "$0";; *) exec @PERL@ -S "$0" "$@";; esac'
  # You should have received a copy of the GNU General Public License
  # along with this program.  If not, see <https://www.gnu.org/licenses/>.
@@ -124,10 +124,10 @@ index 475221a..5a5924a 100644
        my $type = shift @words;
        if ($type eq 'begin-language:')
  	{
-diff --git a/autoconf-2.72/bin/autoreconf.in b/autoconf-2.72-patched/bin/autoreconf.in
+diff --git a/bin/autoreconf.in b/bin/autoreconf.in
 index 98ebab6..078bea0 100644
---- a/autoconf-2.72/bin/autoreconf.in
-+++ b/autoconf-2.72-patched/bin/autoreconf.in
+--- a/bin/autoreconf.in
++++ b/bin/autoreconf.in
 @@ -28,11 +28,15 @@ eval 'case $# in 0) exec @PERL@ -S "$0";; *) exec @PERL@ -S "$0" "$@";; esac'
  use 5.006;
  use strict;
@@ -160,10 +160,10 @@ index 98ebab6..078bea0 100644
  my $automake    = $ENV{'AUTOMAKE'}    || 'automake';
  my $aclocal     = $ENV{'ACLOCAL'}     || 'aclocal';
  my $libtoolize  = $ENV{'LIBTOOLIZE'}  || 'libtoolize';
-diff --git a/autoconf-2.72/bin/autoscan.in b/autoconf-2.72-patched/bin/autoscan.in
+diff --git a/bin/autoscan.in b/bin/autoscan.in
 index 779b7d2..ddbc722 100644
---- a/autoconf-2.72/bin/autoscan.in
-+++ b/autoconf-2.72-patched/bin/autoscan.in
+--- a/bin/autoscan.in
++++ b/bin/autoscan.in
 @@ -27,10 +27,14 @@ eval 'case $# in 0) exec @PERL@ -S "$0";; *) exec @PERL@ -S "$0" "$@";; esac'
  use 5.006;
  use strict;
@@ -191,10 +191,10 @@ index 779b7d2..ddbc722 100644
  my $autoconf = "$autom4te --language=autoconf";
  my @prepend_include;
  my @include = ('@pkgdatadir@');
-diff --git a/autoconf-2.72/bin/autoupdate.in b/autoconf-2.72-patched/bin/autoupdate.in
+diff --git a/bin/autoupdate.in b/bin/autoupdate.in
 index 1ec84f7..c7c6207 100644
---- a/autoconf-2.72/bin/autoupdate.in
-+++ b/autoconf-2.72-patched/bin/autoupdate.in
+--- a/bin/autoupdate.in
++++ b/bin/autoupdate.in
 @@ -28,10 +28,14 @@ eval 'case $# in 0) exec @PERL@ -S "$0";; *) exec @PERL@ -S "$0" "$@";; esac'
  use 5.006;
  use strict;
@@ -230,10 +230,10 @@ index 1ec84f7..c7c6207 100644
  
  
  # $HELP
-diff --git a/autoconf-2.72/bin/ifnames.in b/autoconf-2.72-patched/bin/ifnames.in
+diff --git a/bin/ifnames.in b/bin/ifnames.in
 index 1d6e363..4c3a304 100644
---- a/autoconf-2.72/bin/ifnames.in
-+++ b/autoconf-2.72-patched/bin/ifnames.in
+--- a/bin/ifnames.in
++++ b/bin/ifnames.in
 @@ -32,10 +32,14 @@ eval 'case $# in 0) exec @PERL@ -S "$0";; *) exec @PERL@ -S "$0" "$@";; esac'
  use 5.006;
  use strict;
@@ -250,10 +250,10 @@ index 1d6e363..4c3a304 100644
    unshift @INC, $pkgdatadir;
  
    # Override SHELL.  On DJGPP SHELL may not be set to a shell
-diff --git a/autoconf-2.72/lib/autom4te.in b/autoconf-2.72-patched/lib/autom4te.in
+diff --git a/lib/autom4te.in b/lib/autom4te.in
 index ae8bfb6..bee05f1 100644
---- a/autoconf-2.72/lib/autom4te.in
-+++ b/autoconf-2.72-patched/lib/autom4te.in
+--- a/lib/autom4te.in
++++ b/lib/autom4te.in
 @@ -115,7 +115,7 @@ end-language: "Autoreconf-preselections"
  # This intermediate language is used by aclocal to build aclocal.m4.
  
