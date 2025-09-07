@@ -120,6 +120,8 @@ fi
 
 # We disable OpenSSL to avoid MinGW resolution issues
 cmake -S .. -B . -G Ninja \
+cmake -B build -DCMAKE_INSTALL_PREFIX=${prefix} \
+  -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
   -DBUILD_SHARED_LIBS=ON \
   -DOQS_BUILD_ONLY_LIB=ON \
   -DOQS_USE_OPENSSL=OFF \
@@ -134,8 +136,8 @@ cmake -S .. -B . -G Ninja \
   "${APPLE_FLAGS[@]}" \
   "${EXTRA_FLAGS[@]}"
 
-ninja
-ninja install
+cmake --build build --parallel ${nproc}
+cmake --install build
 """
 
 products = [LibraryProduct("liboqs", :liboqs)]
