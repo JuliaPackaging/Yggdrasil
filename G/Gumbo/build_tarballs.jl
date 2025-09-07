@@ -3,13 +3,14 @@
 using BinaryBuilder
 
 name = "Gumbo"
-version = v"0.13.2" # <-- This version number is a lie to build for experimental platforms
+version = v"0.13.2"
 
 # Collection of sources required to complete build
 # v0.13.2 is the last release, so we keep that version number.
 sources = [
     # Build from the tag in the active upstream
-    GitSource("https://codeberg.org/gumbo-parser/gumbo-parser.git", "322c54c178590ba42b8b04e8c0e4840595a1f717"),
+    GitSource("https://codeberg.org/gumbo-parser/gumbo-parser.git",
+              "322c54c178590ba42b8b04e8c0e4840595a1f717"),
 
     # Vendor Autoconf 2.72 only to run autoreconf
     ArchiveSource("https://mirrors.kernel.org/gnu/autoconf/autoconf-2.72.tar.xz",
