@@ -125,13 +125,14 @@ function inspect_driver(driver, deps=String[]; inspect_devices=false)
 
     # run the command
     out = Pipe()
-    proc = run(pipeline(cmd, stdout=out, stderr=stdout), wait=false)
+    proc = run(pipeline(cmd, stdin=devnull, stdout=out), wait=false)
     close(out.in)
-    t = wait(proc)
+    out_reader = Threads.@spawn String(readlines(out))
+    wait(proc)
     success(proc) || return nothing
 
     # parse the versions
-    version_strings = readlines(out)
+    version_strings = fetch(out_reader)
     driver_version = parse(VersionNumber, version_strings[1])
     if inspect_devices
         device_capabilities = map(str -> parse(VersionNumber, str), version_strings[2:end])

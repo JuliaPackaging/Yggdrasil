@@ -6,10 +6,10 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.237"
+version = v"0.0.239"
 
 sources = [
-   GitSource(repo, "ce9246a1501676c133652eeee16e33e369dd8d3a"),
+   GitSource(repo, "6eaa03612cec900521960fed83c8686d76b645df"),
    ArchiveSource("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.7%2B6/OpenJDK21U-jdk_x64_alpine-linux_hotspot_21.0.7_6.tar.gz", "79ecc4b213d21ae5c389bea13c6ed23ca4804a45b7b076983356c28105580013"),
    ArchiveSource("https://github.com/JuliaBinaryWrappers/Bazel_jll.jl/releases/download/Bazel-v7.6.1+0/Bazel.v7.6.1.x86_64-linux-musl-cxx03.tar.gz", "01ac6c083551796f1f070b0dc9c46248e6c49e01e21040b0c158f6e613733345")
 ]
@@ -496,10 +496,6 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
         push!(platform_sources,
               ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz",
                             "cd4f08a75577145b8f05245a2975f7c81401d75e9535dcffbb879ee1deefcbf4"))
-    end
-
-    if !Sys.isapple(platform)
-      push!(dependencies, Dependency(PackageSpec(; name="CUDA_Driver_jll")))
     end
 
     if arch(platform) == "aarch64" && gpu == "cuda"
