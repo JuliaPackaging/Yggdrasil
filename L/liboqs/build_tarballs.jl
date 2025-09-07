@@ -171,9 +171,7 @@ platforms = [
 ]
 
 dependencies = [
-    HostBuildDependency(
-        PackageSpec(name = "Ninja_jll", uuid = "76642167-d241-5cee-8c94-7a494e8cb7b7"),
-    ),
+    Dependency("OpenSSL_jll"; compat="3.0.8"),
 ]
 
 # preferred_gcc_version=v"11" is required to build on Platform("aarch64", "linux"; libc = "musl")
