@@ -11,8 +11,6 @@ index 22a17b3..ac18c85 100644
  M4_DEBUGFILE = @M4_DEBUGFILE@
  M4_GNU = @M4_GNU@
  MAKEINFO = @MAKEINFO@
-diff --git a/bin/autoconf.in b/bin/autoconf.in
-index 421154a..d645be8 100644
 --- a/bin/autoconf.in
 +++ b/bin/autoconf.in
 @@ -43,9 +43,18 @@ use Autom4te::ChannelDefs;
@@ -37,16 +35,15 @@ index 421154a..d645be8 100644
  # $HELP
  # -----
 diff --git a/bin/autoheader.in b/bin/autoheader.in
-index 6ca6048..56777e6 100644
+index 6ca6048..d7024ae 100644
 --- a/bin/autoheader.in
 +++ b/bin/autoheader.in
-@@ -29,10 +29,14 @@ eval 'case $# in 0) exec @PERL@ -S "$0";; *) exec @PERL@ -S "$0" "$@";; esac'
+@@ -29,10 +29,13 @@ eval 'case $# in 0) exec @PERL@ -S "$0";; *) exec @PERL@ -S "$0" "$@";; esac'
  use 5.006;
  use strict;
  use warnings FATAL => 'all';
 +use Cwd 'abs_path';
 +use File::Basename;
-+
  
  BEGIN
  {
@@ -56,11 +53,10 @@ index 6ca6048..56777e6 100644
    unshift @INC, "$pkgdatadir";
  
    # Override SHELL.  On DJGPP SHELL may not be set to a shell
-@@ -53,8 +57,8 @@ use Autom4te::XFile;
- # evaluated via 'do FILE', below.
+@@ -54,7 +57,8 @@ use Autom4te::XFile;
  our ($config_h, %symbol, %verbatim);
  
--# Lib files.
+ # Lib files.
 -my $autom4te = $ENV{'AUTOM4TE'} || '@bindir@/@autom4te-name@';
 +my $scriptpath = abs_path(dirname(__FILE__));
 +my $autom4te = $ENV{'AUTOM4TE'} || "$scriptpath/@autom4te-name@";
@@ -68,20 +64,15 @@ index 6ca6048..56777e6 100644
  my @prepend_include;
  my @include;
 diff --git a/bin/autom4te.in b/bin/autom4te.in
-index 475221a..5a5924a 100644
+index 475221a..9c4ed1a 100644
 --- a/bin/autom4te.in
 +++ b/bin/autom4te.in
-@@ -22,13 +22,18 @@ eval 'case $# in 0) exec @PERL@ -S "$0";; *) exec @PERL@ -S "$0" "$@";; esac'
- # You should have received a copy of the GNU General Public License
- # along with this program.  If not, see <https://www.gnu.org/licenses/>.
- 
-+
+@@ -25,10 +25,13 @@ eval 'case $# in 0) exec @PERL@ -S "$0";; *) exec @PERL@ -S "$0" "$@";; esac'
  use 5.006;
  use strict;
  use warnings FATAL => 'all';
 +use Cwd 'abs_path';
 +use File::Basename;
-+
  
  BEGIN
  {
@@ -91,7 +82,7 @@ index 475221a..5a5924a 100644
    unshift @INC, $pkgdatadir;
  
    # Override SHELL.  On DJGPP SHELL may not be set to a shell
-@@ -48,7 +53,8 @@ use Autom4te::General;
+@@ -48,7 +51,8 @@ use Autom4te::General;
  use Autom4te::XFile;
  
  # Data directory.
@@ -101,7 +92,7 @@ index 475221a..5a5924a 100644
  
  # $LANGUAGE{LANGUAGE} -- Automatic options for LANGUAGE.
  my %language;
-@@ -91,7 +97,7 @@ my @include;
+@@ -91,7 +95,7 @@ my @include;
  my $freeze = 0;
  
  # $M4.
@@ -110,7 +101,7 @@ index 475221a..5a5924a 100644
  # Some non-GNU m4's don't reject the --help option, so give them /dev/null.
  fatal "need GNU m4 1.4 or later: $m4"
    if system "$m4 --help </dev/null 2>&1 | grep reload-state >/dev/null";
-@@ -320,7 +326,13 @@ sub load_configuration ($)
+@@ -320,7 +324,13 @@ sub load_configuration ($)
        next
  	if /^\s*(\#.*)?$/;
  
@@ -125,7 +116,7 @@ index 475221a..5a5924a 100644
        if ($type eq 'begin-language:')
  	{
 diff --git a/bin/autoreconf.in b/bin/autoreconf.in
-index 98ebab6..078bea0 100644
+index 98ebab6..76327dc 100644
 --- a/bin/autoreconf.in
 +++ b/bin/autoreconf.in
 @@ -28,11 +28,15 @@ eval 'case $# in 0) exec @PERL@ -S "$0";; *) exec @PERL@ -S "$0" "$@";; esac'
@@ -145,11 +136,10 @@ index 98ebab6..078bea0 100644
    unshift @INC, $pkgdatadir;
  
    $buildauxdir = $ENV{'autom4te_buildauxdir'} || $pkgdatadir . '/build-aux';
-@@ -115,10 +119,10 @@ There is NO WARRANTY, to the extent permitted by law.
- Written by David J. MacKenzie and Akim Demaille.
+@@ -116,9 +120,10 @@ Written by David J. MacKenzie and Akim Demaille.
  ";
  
--# Lib files.
+ # Lib files.
 -my $autoconf    = $ENV{'AUTOCONF'}    || '@bindir@/@autoconf-name@';
 -my $autoheader  = $ENV{'AUTOHEADER'}  || '@bindir@/@autoheader-name@';
 -my $autom4te    = $ENV{'AUTOM4TE'}    || '@bindir@/@autom4te-name@';
@@ -161,16 +151,15 @@ index 98ebab6..078bea0 100644
  my $aclocal     = $ENV{'ACLOCAL'}     || 'aclocal';
  my $libtoolize  = $ENV{'LIBTOOLIZE'}  || 'libtoolize';
 diff --git a/bin/autoscan.in b/bin/autoscan.in
-index 779b7d2..ddbc722 100644
+index 779b7d2..9de80d9 100644
 --- a/bin/autoscan.in
 +++ b/bin/autoscan.in
-@@ -27,10 +27,14 @@ eval 'case $# in 0) exec @PERL@ -S "$0";; *) exec @PERL@ -S "$0" "$@";; esac'
+@@ -27,10 +27,13 @@ eval 'case $# in 0) exec @PERL@ -S "$0";; *) exec @PERL@ -S "$0" "$@";; esac'
  use 5.006;
  use strict;
  use warnings FATAL => 'all';
 +use Cwd 'abs_path';
 +use File::Basename;
-+
  
  BEGIN
  {
@@ -180,11 +169,10 @@ index 779b7d2..ddbc722 100644
    unshift @INC, $pkgdatadir;
  
    # Override SHELL.  On DJGPP SHELL may not be set to a shell
-@@ -94,8 +98,8 @@ my %needed_macros =
- 
+@@ -95,7 +98,8 @@ my %needed_macros =
  my $log;
  
--# Autoconf and lib files.
+ # Autoconf and lib files.
 -my $autom4te = $ENV{'AUTOM4TE'} || '@bindir@/@autom4te-name@';
 +my $scriptpath = abs_path(dirname(__FILE__));
 +my $autom4te = $ENV{'AUTOM4TE'} || "$scriptpath/@autom4te-name@";
@@ -192,16 +180,15 @@ index 779b7d2..ddbc722 100644
  my @prepend_include;
  my @include = ('@pkgdatadir@');
 diff --git a/bin/autoupdate.in b/bin/autoupdate.in
-index 1ec84f7..c7c6207 100644
+index 1ec84f7..cc1f770 100644
 --- a/bin/autoupdate.in
 +++ b/bin/autoupdate.in
-@@ -28,10 +28,14 @@ eval 'case $# in 0) exec @PERL@ -S "$0";; *) exec @PERL@ -S "$0" "$@";; esac'
+@@ -28,10 +28,13 @@ eval 'case $# in 0) exec @PERL@ -S "$0";; *) exec @PERL@ -S "$0" "$@";; esac'
  use 5.006;
  use strict;
  use warnings FATAL => 'all';
 +use Cwd 'abs_path';
 +use File::Basename;
-+
  
  BEGIN
  {
@@ -211,11 +198,10 @@ index 1ec84f7..c7c6207 100644
    unshift @INC, $pkgdatadir;
  
    # Override SHELL.  On DJGPP SHELL may not be set to a shell
-@@ -50,15 +54,15 @@ use Autom4te::FileUtils;
- use Autom4te::General;
+@@ -51,14 +54,15 @@ use Autom4te::General;
  use Autom4te::XFile;
  
--# Lib files.
+ # Lib files.
 -my $autom4te = $ENV{'AUTOM4TE'} || '@bindir@/@autom4te-name@';
 +my $scriptpath = abs_path(dirname(__FILE__));
 +my $autom4te = $ENV{'AUTOM4TE'} || "$scriptpath/@autom4te-name@";
@@ -231,16 +217,15 @@ index 1ec84f7..c7c6207 100644
  
  # $HELP
 diff --git a/bin/ifnames.in b/bin/ifnames.in
-index 1d6e363..4c3a304 100644
+index 1d6e363..eafc0a4 100644
 --- a/bin/ifnames.in
 +++ b/bin/ifnames.in
-@@ -32,10 +32,14 @@ eval 'case $# in 0) exec @PERL@ -S "$0";; *) exec @PERL@ -S "$0" "$@";; esac'
+@@ -32,10 +32,13 @@ eval 'case $# in 0) exec @PERL@ -S "$0";; *) exec @PERL@ -S "$0" "$@";; esac'
  use 5.006;
  use strict;
  use warnings FATAL => 'all';
 +use Cwd 'abs_path';
 +use File::Basename;
-+
  
  BEGIN
  {
