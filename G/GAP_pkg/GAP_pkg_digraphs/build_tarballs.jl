@@ -4,14 +4,14 @@ include("../common.jl")
 
 gap_version = v"400.1500.0"
 name = "digraphs"
-upstream_version = "1.11.0" # when you increment this, reset offset to v"0.0.0"
+upstream_version = "1.12.0" # when you increment this, reset offset to v"0.0.0"
 offset = v"1.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL
 sources = [
     ArchiveSource("https://github.com/digraphs/Digraphs/releases/download/v$(upstream_version)/digraphs-$(upstream_version).tar.gz",
-                  "e1968f3bc2ffccd99fb407836e9f67c8916aa8e3362ffec9e0d9c653efbfb1e8"),
+                  "c6a16647437a17d6cfe76cd53f33e6e35e118f57e1e732f4fc147167657eabc4"),
 ]
 
 # Bash recipe for building across all platforms
