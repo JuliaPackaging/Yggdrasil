@@ -7,7 +7,7 @@ version = v"0.1.6"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/qoco-org/qoco.git", "6b38149481dffb431077396244403f3077686df1")
+    GitSource("https://github.com/qoco-org/qoco.git", "bcd90673e9d5db372152f8ec726ae80d99831550")
 ]
 
 # Bash recipe for building across all platforms
