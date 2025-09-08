@@ -62,7 +62,7 @@ for cuda_version in [v"12", v"13"], platform in platforms
     augmented_platform["cuda"] = CUDA.platform(cuda_version)
     should_build_platform(triplet(augmented_platform)) || continue
 
-    sources = get_sources("cutensor", ["libcutensor"]; version, augmented_platform,
+    sources = get_sources("cutensor", ["libcutensor"]; version, platform=augmented_platform,
                           variant="cuda$(cuda_version.major)")
 
     push!(builds, (; platforms=[augmented_platform], sources))
