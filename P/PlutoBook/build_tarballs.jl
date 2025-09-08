@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "PlutoBook"
-version = v"0.3.0"
+version = v"0.7.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/plutoprint/plutobook.git", "b4e621203ca345ceba73b19fb526eeb77dde8472"),
+    GitSource("https://github.com/plutoprint/plutobook.git", "e92ca22cd43ae83331c3b27ff4ba8ba276bc4f0e"),
     # We need C++20
     FileSource("https://github.com/alexey-lysiuk/macos-sdk/releases/download/14.5/MacOSX14.5.tar.xz",
                "f6acc6209db9d56b67fcaf91ec1defe48722e9eb13dc21fb91cfeceb1489e57e"),
