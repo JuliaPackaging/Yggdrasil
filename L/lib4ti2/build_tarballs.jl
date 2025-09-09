@@ -5,7 +5,8 @@ using BinaryBuilder
 # Julia does not allow identifiers starting with a digit, so we can't
 # call this just "4ti2"
 name = "lib4ti2"
-version = v"1.6.10" # <-- This is a lie, we're bumping from 1.6.9 to 1.6.10 to create a Julia v1.6+ release with experimental platforms
+upstream_version = v"1.6.9"
+version = v"1.6.11"
 
 # Collection of sources required to build 4ti2
 sources = [
@@ -59,7 +60,7 @@ fi
 """
 
 # Build for all platforms
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 
 # 4ti2 contains std::string values; to avoid incompatibilities across
 # the GCC 4/5 version boundary, we need the following:
