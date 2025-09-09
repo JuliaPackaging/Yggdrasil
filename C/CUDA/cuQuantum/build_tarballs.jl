@@ -40,7 +40,7 @@ platforms = [Platform("x86_64", "linux"),
     Platform("aarch64", "linux"; cuda_platform="sbsa")]
 
 builds = []
-for cuda_version in [v"11", v"12"], platform in platforms
+for cuda_version in [v"12", v"13"], platform in platforms
     augmented_platform = deepcopy(platform)
     augmented_platform["cuda"] = CUDA.platform(cuda_version)
     should_build_platform(triplet(augmented_platform)) || continue
