@@ -1,9 +1,10 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, Pkg
+using BinaryBuilder
 
 name = "bliss"
-version = v"0.77.0"
+upstream_version = v"0.77"
+version = v"0.77.1"
 
 # Collection of sources required to complete build
 sources = [
@@ -36,7 +37,7 @@ install_license ../COPYING.LESSER
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
