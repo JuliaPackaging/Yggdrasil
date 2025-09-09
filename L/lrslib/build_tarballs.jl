@@ -1,9 +1,9 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, Pkg
+using BinaryBuilder
 
 name = "lrslib"
-version = v"0.3.3"
+version = v"0.3.4"
 
 # Collection of sources required to complete build
 sources = [
@@ -53,7 +53,7 @@ ${CC} -shared ${cflags} -o "${libdir}/liblrsnash.${dlext}" lrsnashlib.c -L${libd
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
