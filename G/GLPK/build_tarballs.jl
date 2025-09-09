@@ -26,6 +26,7 @@ make install
 
 # Build for all platforms
 platforms = supported_platforms()
+filter!(p -> !(arch(p) == "riscv64"), platforms) # GLPK does not support RISC-V
 
 # The products that we will ensure are always built
 products = [
