@@ -20,24 +20,18 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/xgboost
 git submodule update --init
 
-# https://github.com/JuliaPackaging/BinaryBuilderBase.jl/pull/193
-# error: 'any_cast<std::shared_ptr<xgboost::data::CSRArrayAdapter>>' 
-# is unavailable: introduced in macOS 10.14
-# `std::filesystem` support was introduced in macOS 10.15
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    export MACOSX_DEPLOYMENT_TARGET=10.15
-    popd
-fi
-
 # builds on MacOS seem to fail with Clang - use gcc instead
 # see https://github.com/dmlc/xgboost/issues/11676
+export TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}"
+if [[ "${target}" == *-apple-* ]]; then
+    export TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake"
+fi
+
+echo $TOOLCHAIN_FILE
+
 mkdir build && cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
-        -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake"
+        -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN_FILE
 make -j${nproc}
 
 # Manual installation, to avoid installing dmlc
