@@ -1,11 +1,12 @@
-using BinaryBuilder, Pkg
+using BinaryBuilder
 
 name = "GLPK"
-version = v"5.0.1" # <-- This is a lie, we're bumping from 5.0 to 5.0.1 to create a Julia v1.6+ release with experimental platforms
+upstream_version = v"5.0"
+version = v"5.0.2"
 
 # Collection of sources required to build GLPK
 sources = [
-    ArchiveSource("http://ftpmirror.gnu.org/gnu/glpk/glpk-$(version.major).$(version.minor).tar.gz",
+    ArchiveSource("http://ftpmirror.gnu.org/gnu/glpk/glpk-$(upstream_version.major).$(upstream_version.minor).tar.gz",
                   "4a1013eebb50f728fc601bdd833b0b2870333c3b3e5a816eeba921d95bec6f15"),
 ]
 
@@ -24,7 +25,7 @@ make install
 """
 
 # Build for all platforms
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
