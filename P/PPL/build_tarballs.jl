@@ -1,14 +1,16 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, Pkg
+using BinaryBuilder
+
+name = "PPL"
+upstream_version = "1.2"
+version = v"1.2.2"
 
 # Collection of sources required to build pplBuilder
 sources = [
     ArchiveSource("http://www.bugseng.com/products/ppl/download/ftp/releases/1.2/ppl-1.2.tar.bz2", "2d470b0c262904f190a19eac57fb5c2387b1bfc3510de25a08f3c958df62fdf1"),
     DirectorySource("./bundled")
 ]
-name = "PPL"
-version = v"1.2.1" # <-- This is a lie, we're bumping from 1.2 to 1.2.1 to create a Julia v1.6+ release with experimental platforms
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -25,7 +27,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(;experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
