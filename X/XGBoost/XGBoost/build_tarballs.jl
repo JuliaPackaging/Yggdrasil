@@ -33,9 +33,11 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     popd
 fi
 
+# builds on MacOS seem to fail with Clang - use gcc instead
+# see https://github.com/dmlc/xgboost/issues/11676
 mkdir build && cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
-        -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" 
+        -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake"
 make -j${nproc}
 
 # Manual installation, to avoid installing dmlc
