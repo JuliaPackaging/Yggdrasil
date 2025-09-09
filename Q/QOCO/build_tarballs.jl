@@ -26,10 +26,10 @@ cmake --install build
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+platforms = filter!(!Sys.isfreebsd, platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libqdldl", :qdldl),
     LibraryProduct("libqoco", :qoco)
 ]
 
