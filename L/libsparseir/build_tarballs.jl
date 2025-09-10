@@ -7,7 +7,7 @@ version = v"0.4.2"
 sources = [
     # libsparseir v0.4.2
     GitSource(
-        "https://github.com/SpM-lab/libsparseir.git", 
+        "https://github.com/SpM-lab/libsparseir.git",
         "bb5147da806c82e82695da7701b9421182105765",
     ),
     # libxprec v0.7.0
@@ -31,7 +31,10 @@ ${CXX} -O3 -fPIC -shared -std=c++11 -I${includedir}/eigen3/ -Iinclude -I../libxp
 cp include/sparseir/sparseir.h include/sparseir/spir_status.h include/sparseir/version.h ${includedir}
 """
 
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = supported_platforms()
+filter!(p -> arch(p) != "powerpc64le", platforms)
+filter!(p -> !(arch(p) == "riscv64"), platforms)
+platforms = expand_cxxstring_abis(platforms)
 
 products = [
     LibraryProduct("libsparseir", :libsparseir),
