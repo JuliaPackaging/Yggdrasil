@@ -23,7 +23,7 @@ options=(
 
 # Disable LTO on macOS. It gives an error about trying to use an LLVM 18 file with an LLVM 8 linker:
 # 'Invalid value (Producer: 'LLVM18.1.7' Reader: 'LLVM 8.0.0svn')', using libLTO version 'LLVM version 8.0.0svn' file 'CMakeFiles/cbor.dir/cbor.c.o'
-if [[ "${target}" == "x86_64-apple-darwin" ]]; then
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
     options+=(-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF)
 fi
 
