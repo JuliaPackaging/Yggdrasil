@@ -20,6 +20,7 @@ const curl_hashes = Dict(
     v"8.13.0" => "c261a4db579b289a7501565497658bbd52d3138fdbaccf1490fa918129ab45bc",
     v"8.14.1" => "6766ada7101d292b42b8b15681120acd68effa4a9660935853cf6d61f0d984d4",
     v"8.15.0" => "d85cfc79dc505ff800cb1d321a320183035011fa08cb301356425d86be8fc53c",
+    v"8.16.0" => "a21e20476e39eca5a4fc5cfb00acf84bbc1f5d8443ec3853ad14c26b3c85b970",
 )
 
 function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=false)
