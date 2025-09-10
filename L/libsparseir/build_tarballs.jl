@@ -31,35 +31,7 @@ ${CXX} -O3 -fPIC -shared -std=c++11 -I${includedir}/eigen3/ -Iinclude -I../libxp
 cp include/sparseir/sparseir.h include/sparseir/spir_status.h include/sparseir/version.h ${includedir}
 """
 
-platforms = [
-        # glibc Linuces
-        Platform("i686", "linux"),
-        Platform("x86_64", "linux"),
-        Platform("aarch64", "linux"),
-        Platform("armv6l", "linux"),
-        Platform("armv7l", "linux"),
-        # Platform("powerpc64le", "linux"), # Build fails in this environment
-        # Platform("riscv64", "linux"), # Build fails in this environment
-
-        # musl Linuces
-        # Platform("i686", "linux"; libc="musl"), # Build fails in this environment
-        Platform("x86_64", "linux"; libc="musl"),
-        Platform("aarch64", "linux"; libc="musl"),
-        Platform("armv6l", "linux"; libc="musl"),
-        Platform("armv7l", "linux"; libc="musl"),
-
-        # BSDs
-        Platform("x86_64", "macos"),
-        Platform("aarch64", "macos"),
-        Platform("x86_64", "freebsd"),
-        Platform("aarch64", "freebsd"),
-
-        # Windows
-        Platform("i686", "windows"),
-        Platform("x86_64", "windows"),
-]
-
-platforms = expand_cxxstring_abis(platforms)
+platforms = expand_cxxstring_abis(supported_platforms())
 
 products = [
     LibraryProduct("libsparseir", :libsparseir),
