@@ -70,18 +70,28 @@ products = [
 
 dependencies = [
     HostBuildDependency("coreutils_jll"), # requires fmt
+    BuildDependency(PackageSpec(name="CUDA_Runtime_jll")),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
 builds = []
-for cuda_version in [v"12", v"13"]
+
+# platforms = CUDA.supported_platforms(min_version = MIN_CUDA_VERSION)
+# filter!(p -> arch(p) == "x86_64" || arch(p) == "aarch64", platforms)
+
+# for cuda_version in [v"12", v"13"]
+for cuda_version in [v"13"]
     if cuda_version == v"12"
-        platforms = [Platform("x86_64", "linux"),
+        platforms = [
+            Platform("x86_64", "linux"),
             Platform("aarch64", "linux"; cuda_platform="jetson"),
-            Platform("aarch64", "linux"; cuda_platform="sbsa")]
+            Platform("aarch64", "linux"; cuda_platform="sbsa")
+        ]
     elseif cuda_version == v"13"
-        platforms = [Platform("x86_64", "linux"),
-            Platform("aarch64", "linux")]
+        platforms = [
+            Platform("x86_64", "linux"),
+            # Platform("aarch64", "linux")
+        ]
     end
 
     for platform in platforms
