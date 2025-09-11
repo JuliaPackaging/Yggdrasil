@@ -4,16 +4,17 @@ using BinaryBuilder, Pkg
 using Base.BinaryPlatforms: arch, os, tags
 
 const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "C/CUDA/common.jl"))
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "NCCL"
-version = v"2.26.5"
+version = v"2.28.3"
 
-MIN_CUDA_VERSION = v"11.8" # doesnt quite match NCCL actual support
+MIN_CUDA_VERSION = v"12.0" # doesnt quite match NCCL actual support
 
 sources = [
-    GitSource("https://github.com/NVIDIA/nccl.git", "3000e3c797b4b236221188c07aa09c1f3a0170d4"),
+    GitSource("https://github.com/NVIDIA/nccl.git", "e11d7f77c126561e35909407a5bd1461a437322b"),
 ]
 
 
@@ -63,11 +64,6 @@ if [[ "${target}" == aarch64-linux-* ]]; then
 fi
 """
 
-
-platforms = CUDA.supported_platforms(min_version = MIN_CUDA_VERSION)
-filter!(p -> arch(p) == "x86_64" || arch(p) == "aarch64", platforms)
-
-
 products = [
     LibraryProduct("libnccl", :libnccl),
 ]
@@ -77,23 +73,37 @@ dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
-# Build for all supported CUDA toolkits
-for platform in platforms
-    should_build_platform(triplet(platform)) || continue
-
-    cuda_deps = CUDA.required_dependencies(platform)
-
-    cuda_ver = platform["cuda"]
-
-    platform_sources = BinaryBuilder.AbstractSource[sources...]
-
-    if arch(platform) == "aarch64"
-        push!(platform_sources, CUDA.cuda_nvcc_redist_source(cuda_ver, "x86_64"))
+builds = []
+for cuda_version in [v"12", v"13"]
+    if cuda_version == v"12"
+        platforms = [Platform("x86_64", "linux"),
+            Platform("aarch64", "linux"; cuda_platform="jetson"),
+            Platform("aarch64", "linux"; cuda_platform="sbsa")]
+    elseif cuda_version == v"13"
+        platforms = [Platform("x86_64", "linux"),
+            Platform("aarch64", "linux")]
     end
 
-    build_tarballs(ARGS, name, version, platform_sources, script, [platform],
-                   products, [dependencies; cuda_deps];
-                   lazy_artifacts=true, julia_compat="1.10",
-                   preferred_gcc_version = v"10",
-                   augment_platform_block = CUDA.augment)
+    for platform in platforms
+        augmented_platform = deepcopy(platform)
+        augmented_platform["cuda"] = CUDA.platform(cuda_version)
+        should_build_platform(triplet(augmented_platform)) || continue
+
+        push!(builds, (; platforms=[augmented_platform]))
+    end
+end
+
+# don't allow `build_tarballs` to override platform selection based on ARGS.
+# we handle that ourselves by calling `should_build_platform`
+non_platform_ARGS = filter(arg -> startswith(arg, "--"), ARGS)
+
+# `--register` should only be passed to the latest `build_tarballs` invocation
+non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
+
+for (i, build) in enumerate(builds)
+    build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
+        name, version, BinaryBuilder.AbstractSource[sources...], script,
+        build.platforms, products, dependencies;
+        julia_compat="1.10", augment_platform_block=CUDA.augment,
+        preferred_gcc_version=v"10")
 end
