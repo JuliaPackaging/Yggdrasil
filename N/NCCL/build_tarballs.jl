@@ -28,12 +28,12 @@ if [[ "${target}" == aarch64-linux-* ]]; then
 
    # Add /usr/lib/csl-musl-x86_64 to LD_LIBRARY_PATH to be able to use host nvcc
    export LD_LIBRARY_PATH="/usr/lib/csl-musl-x86_64:/usr/lib/csl-glibc-x86_64:${LD_LIBRARY_PATH}"
-   
+
    # Make sure we use host CUDA executable by copying from the x86_64 CUDA redist
    NVCC_DIR=(/workspace/srcdir/cuda_nvcc-*-archive)
    rm -rf ${prefix}/cuda/bin
    cp -r ${NVCC_DIR}/bin ${prefix}/cuda/bin
-   
+
    rm -rf ${prefix}/cuda/nvvm/bin
    cp -r ${NVCC_DIR}/nvvm/bin ${prefix}/cuda/nvvm/bin
 
@@ -92,8 +92,8 @@ for platform in platforms
     end
 
     build_tarballs(ARGS, name, version, platform_sources, script, [platform],
-                   products, [dependencies; cuda_deps]; 
-                   lazy_artifacts=true, julia_compat="1.10", 
+                   products, [dependencies; cuda_deps];
+                   lazy_artifacts=true, julia_compat="1.10",
                    preferred_gcc_version = v"10",
                    augment_platform_block = CUDA.augment)
 end
