@@ -42,33 +42,9 @@ cmake --install build
 
 products = [LibraryProduct("liboqs", :liboqs)]
 
-platforms = [
-    # glibc Linuces
-    Platform("i686", "linux"), # OK
-    Platform("x86_64", "linux"), # OK
-    Platform("aarch64", "linux"), # OK
-    Platform("armv6l", "linux"), # OK
-    Platform("armv7l", "linux"), # OK
-    # Platform("powerpc64le", "linux"), # Builds fail on this platform.
-    # Platform("riscv64", "linux"), # Builds fail on this platform.
-
-    # musl Linuces
-    Platform("i686", "linux"; libc = "musl"), # OK
-    Platform("x86_64", "linux"; libc = "musl"), # OK
-    Platform("aarch64", "linux"; libc = "musl"), # OK
-    Platform("armv6l", "linux"; libc = "musl"), # OK
-    Platform("armv7l", "linux"; libc = "musl"), # OK
-
-    # BSDs
-    Platform("x86_64", "macos"), # OK
-    Platform("aarch64", "macos"), # OK
-    Platform("x86_64", "freebsd"), # OK
-    Platform("aarch64", "freebsd"), # OK
-
-    # Windows
-    Platform("i686", "windows"), # OK
-    Platform("x86_64", "windows"), # OK
-]
+platforms = supported_platforms()
+filter!(p -> !(arch(p) == "powerpc64le"), platforms)
+filter!(p -> !(arch(p) == "riscv64"), platforms)
 
 dependencies = [
     Dependency("OpenSSL_jll"; compat="3.0.8"),
