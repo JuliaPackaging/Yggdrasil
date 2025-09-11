@@ -32,7 +32,6 @@ cp include/sparseir/sparseir.h include/sparseir/spir_status.h include/sparseir/v
 """
 
 platforms = supported_platforms()
-filter!(p -> arch(p) != "powerpc64le", platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
@@ -46,4 +45,4 @@ dependencies = [
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat="1.10", compilers=[:c, :cxx])
+    julia_compat="1.10", compilers=[:c, :cxx], preferred_gcc_version=v"8")
