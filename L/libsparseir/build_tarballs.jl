@@ -33,7 +33,6 @@ cp include/sparseir/sparseir.h include/sparseir/spir_status.h include/sparseir/v
 
 platforms = supported_platforms()
 filter!(p -> arch(p) != "powerpc64le", platforms)
-filter!(p -> !(arch(p) == "riscv64"), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
