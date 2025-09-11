@@ -6,18 +6,24 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
+reactant_commit = "20c6a4cf3ad4a51c3dd6a2cd1c4513a8a5832a95"
 version = v"0.0.240"
 
 sources = [
-   GitSource(repo, "20c6a4cf3ad4a51c3dd6a2cd1c4513a8a5832a95"),
-   ArchiveSource("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.7%2B6/OpenJDK21U-jdk_x64_alpine-linux_hotspot_21.0.7_6.tar.gz", "79ecc4b213d21ae5c389bea13c6ed23ca4804a45b7b076983356c28105580013"),
-   ArchiveSource("https://github.com/JuliaBinaryWrappers/Bazel_jll.jl/releases/download/Bazel-v7.6.1+0/Bazel.v7.6.1.x86_64-linux-musl-cxx03.tar.gz", "01ac6c083551796f1f070b0dc9c46248e6c49e01e21040b0c158f6e613733345")
+   GitSource(repo, reactant_commit),
+   FileSource("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.7%2B6/OpenJDK21U-jdk_x64_alpine-linux_hotspot_21.0.7_6.tar.gz", "79ecc4b213d21ae5c389bea13c6ed23ca4804a45b7b076983356c28105580013"),
+   FileSource("https://github.com/JuliaBinaryWrappers/Bazel_jll.jl/releases/download/Bazel-v7.6.1+0/Bazel.v7.6.1.x86_64-linux-musl-cxx03.tar.gz", "01ac6c083551796f1f070b0dc9c46248e6c49e01e21040b0c158f6e613733345")
 ]
+
+# When we run CI in Enzyme-JAX repository we need to be able to change the commit to check out.
+enzyme_jax_commit = get(ENV, "ENZYME_JAX_COMMIT", "")
 
 # Bash recipe for building across all platforms
 script = raw"""
-export JAVA_HOME="`pwd`/jdk-21.0.7+6"
-export BAZEL="`pwd`/bin/bazel"
+tar xzf OpenJDK21U-jdk_x64_alpine-linux_hotspot_21.0.7_6.tar.gz
+tar xzf Bazel.v7.6.1.x86_64-linux-musl-cxx03.tar.gz
+export JAVA_HOME="${PWD}/jdk-21.0.7+6"
+export BAZEL="${PWD}/bin/bazel"
 
 cd Reactant.jl/deps/ReactantExtra
 
@@ -27,16 +33,18 @@ echo GCC version: $(gcc --version)
 GCC_VERSION=$(gcc --version | head -1 | awk '{ print $3 }')
 GCC_MAJOR_VERSION=$(echo "${GCC_VERSION}" | cut -d. -f1)
 
+# Change Enzyme-JAX commit, necessary in CI of that repository.
+if [[ -n "${ENZYME_JAX_COMMIT}" ]]; then
+   sed -i.bak 's/ENZYMEXLA_COMMIT = ".*"/ENZYMEXLA_COMMIT = "'${ENZYME_JAX_COMMIT}'"/' WORKSPACE
+fi
+
 if [[ "${target}" == *-apple-darwin* ]]; then
     # Compiling LLVM components within XLA requires macOS SDK 10.14
     # and then we use `std::reinterpret_pointer_cast` in ReactantExtra
     # which requires macOS SDK 11.3.
-    pushd $WORKSPACE/srcdir/MacOSX11.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
     rm -rf /opt/${target}/${target}/sys-root/usr/include/libxml2
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    popd
+    tar --extract --file=${WORKSPACE}/srcdir/MacOSX11.3.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX11.3.sdk/System MacOSX11.3.sdk/usr
 fi
 
 if [[ "${bb_full_target}" == *cuda_version+12.1* ]] || [[ "${bb_full_target}" == *cuda_version+12.4* ]]; then
@@ -67,9 +75,9 @@ BAZEL_FLAGS+=(--server_javabase=$JAVA_HOME)
 
 BAZEL_BUILD_FLAGS+=(--jobs ${nproc})
 
-# # Use ccache to speedup re-builds
-# BAZEL_BUILD_FLAGS+=(--action_env=USE_CCACHE=${USE_CCACHE} --action_env=CCACHE_DIR=/root/.ccache)
-# BAZEL_BUILD_FLAGS+=(--action_env=CCACHE_NOHASHDIR=yes)
+# Use ccache to speedup re-builds
+BAZEL_BUILD_FLAGS+=(--action_env=USE_CCACHE=${USE_CCACHE} --action_env=CCACHE_DIR=${CCACHE_DIR})
+BAZEL_BUILD_FLAGS+=(--action_env=CCACHE_NOHASHDIR=yes)
 # # Set `SUPER_VERBOSE` to a non empty string to make the compiler wrappers more
 # # verbose. Useful for debugging.
 # BAZEL_BUILD_FLAGS+=(--action_env=SUPER_VERBOSE=true)
@@ -169,7 +177,6 @@ if [[ "${target}" == *-mingw* ]]; then
     BAZEL_BUILD_FLAGS+=(--copt=-DNOGDI)
     # BAZEL_BUILD_FLAGS+=(--compiler=clang)
     BAZEL_BUILD_FLAGS+=(--define=using_clang=true)
-    apk add --upgrade zlib --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
     if [[ "${target}" == x86_64* ]]; then
         BAZEL_BUILD_FLAGS+=(--platforms=@//:win_x86_64)
         BAZEL_BUILD_FLAGS+=(--cpu=${BAZEL_CPU})
@@ -296,7 +303,7 @@ if [[ "${target}" == *-darwin* ]]; then
     # sed -i.bak1 -e "s/\\"k8|/\\"${BAZEL_CPU}\\": \\":cc-compiler-k8\\", \\"k8|/g" \
     #             -e "s/cpu = \\"k8\\"/cpu = \\"${BAZEL_CPU}\\"/g" \
     #             /workspace/bazel_root/*/external/bazel_tools~cc_configure_extension~local_config_cc/BUILD
-   
+
     # sed -i.bak2 -e "s/\\":cpu_aarch64\\":/\\"@platforms\/\/cpu:aarch64\\":/g" \
     #             /workspace/bazel_root/*/external/xla/third_party/highwayhash/highwayhash.BUILD
 
@@ -310,7 +317,7 @@ if [[ "${target}" == *-darwin* ]]; then
     sed -i.bak1 -e "/whole-archive/d" \
                 -e "/gc-sections/d" \
                 bazel-bin/libReactantExtra.so-2.params
-    
+
     # # Show the params file for debugging, but convert newlines to spaces
     # cat bazel-bin/libReactantExtra.so-2.params | tr '\n' ' '
     # echo ""
@@ -443,12 +450,12 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
 
     # Disable debug builds for cuda
     if mode == "dbg"
-  	  if gpu != "none"
-        continue
-		  end
-	    if !Sys.isapple(platform)
-		    continue
-		  end
+  	if gpu != "none"
+            continue
+	end
+	if !Sys.isapple(platform)
+	    continue
+	end
     end
 
     if !((gpu == "cuda") ⊻ (cuda_version == "none"))
@@ -472,6 +479,13 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
         continue
     end
 
+    # When we're running CI for Enzyme-JAX, only build few platforms
+    if !isempty(enzyme_jax_commit)
+        if !((Sys.islinux(platform) && gpu == "cuda") || (Sys.isapple(platform) && mode == "opt") || (Sys.iswindows(platform)))
+            continue
+        end
+    end
+
     hermetic_cuda_version_map = Dict(
         # Our platform tags use X.Y version scheme, but for some CUDA versions we need to
         # pass Bazel a full version number X.Y.Z.  See `CUDA_REDIST_JSON_DICT` in
@@ -490,12 +504,13 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     prefix="""
     MODE=$(mode)
     HERMETIC_CUDA_VERSION=$(hermetic_cuda_version_map[cuda_version])
+    ENZYME_JAX_COMMIT=$(enzyme_jax_commit)
     """
     platform_sources = BinaryBuilder.AbstractSource[sources...]
     if Sys.isapple(platform)
         push!(platform_sources,
-              ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz",
-                            "cd4f08a75577145b8f05245a2975f7c81401d75e9535dcffbb879ee1deefcbf4"))
+              FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz",
+                         "cd4f08a75577145b8f05245a2975f7c81401d75e9535dcffbb879ee1deefcbf4"))
     end
 
     if arch(platform) == "aarch64" && gpu == "cuda"
@@ -546,12 +561,12 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     end
 
     should_build_platform(triplet(augmented_platform)) || continue
-	
+
     # The products that we will ensure are always built
     products = Product[
         LibraryProduct(["libReactantExtra", "libReactantExtra"], :libReactantExtra)
     ]
-	
+
     if gpu == "cuda"
     	for lib in (
 		"libnccl",
@@ -619,5 +634,9 @@ for (i,build) in enumerate(builds)
                    preferred_gcc_version=build.preferred_gcc_version, build.preferred_llvm_version, julia_compat="1.10",
 		   compression_format="xz",
                    # We use GCC 13, so we can't dlopen the library during audit
-                   augment_platform_block, lazy_artifacts=true, lock_microarchitecture=false, dont_dlopen=true)
+                   augment_platform_block, lazy_artifacts=true, lock_microarchitecture=false, dont_dlopen=true,
+                   # When we're running CI for Enzyme-JAX (i.e. when the commit is
+                   # non-empty), don't run the audit to save time, we don't need it.
+                   skip_audit=!isempty(enzyme_jax_commit),
+                   )
 end
