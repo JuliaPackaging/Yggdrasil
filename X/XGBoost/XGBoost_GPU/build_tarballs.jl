@@ -27,7 +27,7 @@ cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
         -DUSE_CUDA=ON \
         -DBUILD_WITH_CUDA_CUB=ON
 make -j${nproc}
-
+cd ..
 """ * install_script
 
 augment_platform_block = CUDA.augment
