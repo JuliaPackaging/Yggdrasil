@@ -1,6 +1,6 @@
 include("../common.jl")
 name = "XGBoost_GPU"
-version = v"2.1.4+0"
+version = v"2.1.5"
 
 include(normpath(joinpath(YGGDRASIL_DIR, "..", "platforms", "cuda.jl")))
 

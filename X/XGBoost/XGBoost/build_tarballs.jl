@@ -1,7 +1,7 @@
 include("../common.jl")
 
 name = "XGBoost"
-version = v"2.1.4+0"
+version = v"2.1.5"
 
 # Collection of sources required to build XGBoost
 sources = get_sources()
