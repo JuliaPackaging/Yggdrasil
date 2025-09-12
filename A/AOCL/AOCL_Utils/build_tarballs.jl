@@ -7,7 +7,7 @@ version = v"5.1.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/amd/aocl-utils.git", "aaa5a385032a05973745cef9e8d7349fb5ba6cda"),
-    DirectorySource("../bundled")
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
