@@ -1,28 +1,30 @@
 include("../common.jl")
 
 name = "XGBoost"
-version = v"2.1.4"
+version = v"2.1.4+0"
 
 # Collection of sources required to build XGBoost
 sources = get_sources()
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/xgboost
-git submodule update --init
+cd ${WORKSPACE}/srcdir/
 
-# builds on MacOS seem to fail with Clang - use gcc instead
-# see https://github.com/dmlc/xgboost/issues/11676
-export TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}"
-if [[ "${target}" == *-apple-* ]]; then
-    export TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake"
+# we can't seem to build from source for Apple, so install the pre-built binaries directly instead
+# see https://github.com/dmlc/xgboost/issues/11676 for details
+if [[ "${target}" == *apple-darwin* ]]; then
+    unzip -d xgboost-${target} xgboost-${target}.whl
+    cd xgboost-${target}/xgboost
+    cp ../../xgboost/LICENSE .
+else
+    cd xgboost
+    git submodule update --init
+    mkdir build && cd build
+    cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
+            -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+    make -j${nproc}
+    cd ..
 fi
-
-mkdir build && cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
-        -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN_FILE
-make -j${nproc}
-
 """ * install_script
 
 # The products that we will ensure are always built
