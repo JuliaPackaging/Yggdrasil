@@ -5,19 +5,21 @@ using BinaryBuilder, Pkg
 name = "tree_sitter_mlir"
 version = v"0.0.1"
 
+llvm_version = v"21.1.1"
+
 # Collection of sources required to complete build
-# v0.1.0 is the only release, but it is slightly older; we use a newer commit that contains several fixes
 sources = [
-    GitSource(
-        "https://github.com/llvm/llvm-project.git",
-        "3327a4c8f63b37301eaed2b9af8c0c696dff13fb"
+    ArchiveSource(
+        "https://github.com/llvm/llvm-project/releases/download/llvmorg-$(llvm_version)/mlir-$(llvm_version).src.tar.xz",
+        "75086853150ffe559a747559644c5c4b619b93f6fefc2bb2bfc3b143c97ae1ea"
     ),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-mv $WORKSPACE/srcdir/llvm-project/mlir/utils/tree-sitter-mlir tree-sitter
+mv mlir-* mlir
+mv mlir/utils/tree-sitter-mlir tree-sitter
 
 # Install nodejs and npm
 apk add --update nodejs npm
@@ -35,7 +37,7 @@ cmake .. "${BUILD_FLAGS[@]}"
 make -j${nproc}
 make install LANGUAGE_NAME=libtreesitter_mlir
 
-install_license $WORKSPACE/srcdir/llvm-project/mlir/LICENSE.TXT
+install_license $WORKSPACE/srcdir/mlir/LICENSE.TXT
 """
 
 # These are the platforms we will build for by default, unless further
