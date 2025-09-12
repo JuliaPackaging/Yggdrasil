@@ -11,17 +11,54 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 name = "NCCL"
 version = v"2.28.3"
 
+sources = [
+    GitSource("https://github.com/NVIDIA/nccl.git", "f1308997d0420148b1be1c24d63f19d902ae589b"),
+]
+
 script = raw"""
-mkdir -p ${libdir} ${prefix}/include
+cd $WORKSPACE/srcdir
 
-cd ${WORKSPACE}/srcdir
-cd nccl*
-find .
+export TMPDIR=${WORKSPACE}/tmpdir # we need a lot of tmp space
+mkdir -p ${TMPDIR}
 
-install_license LICENSE.txt
+# Necessary operations to cross compile CUDA from x86_64 to aarch64
+if [[ "${target}" == aarch64-linux-* ]]; then
 
-mv lib/libnccl*.so* ${libdir}
-mv include/* ${prefix}/include
+   # Add /usr/lib/csl-musl-x86_64 to LD_LIBRARY_PATH to be able to use host nvcc
+   export LD_LIBRARY_PATH="/usr/lib/csl-musl-x86_64:/usr/lib/csl-glibc-x86_64:${LD_LIBRARY_PATH}"
+
+   # Make sure we use host CUDA executable by copying from the x86_64 CUDA redist
+   NVCC_DIR=(/workspace/srcdir/cuda_nvcc-*-archive)
+   rm -rf ${prefix}/cuda/bin
+   cp -r ${NVCC_DIR}/bin ${prefix}/cuda/bin
+
+   rm -rf ${prefix}/cuda/nvvm/bin
+   cp -r ${NVCC_DIR}/nvvm/bin ${prefix}/cuda/nvvm/bin
+
+   export NVCC_PREPEND_FLAGS="-ccbin='${CXX}'"
+fi
+
+export CXXFLAGS='-D__STDC_FORMAT_MACROS'
+export CUDARTLIB=cudart # link against dynamic library
+
+export CUDA_HOME=${prefix}/cuda;
+export PATH=$PATH:$CUDA_HOME/bin
+export CUDACXX=$CUDA_HOME/bin/nvcc
+export CUDA_LIB=${CUDA_HOME}/lib
+
+cd nccl
+make -j ${nproc} src.build CUDA_HOME=${CUDA_HOME} PREFIX=${prefix}
+
+make install PREFIX=${prefix}
+
+rm -f ${WORKSPACE}/srcdir/nccl/build/lib/libnccl_static.a
+
+install_license ${WORKSPACE}/srcdir/nccl/LICENSE.txt
+
+if [[ "${target}" == aarch64-linux-* ]]; then
+   # ensure products directory is clean
+   rm -rf ${prefix}/cuda
+fi
 """
 
 products = [
@@ -34,39 +71,28 @@ dependencies = [
 ]
 
 builds = []
-for cuda_version in [v"12.9", v"13.0"]
-    platforms = [
-        Platform("x86_64", "linux"),
-        Platform("aarch64", "linux")
-    ]
+# for cuda_version in [
+#     v"12.0", v"12.1", v"12.2", v"12.3", v"12.4", v"12.5", v"12.6", v"12.8", v"12.9",
+#     v"13.0"
+# ]
+#     platforms = [
+#         Platform("x86_64", "linux"),
+#         Platform("aarch64", "linux")
+#     ]
 
-    for platform in platforms
-        augmented_platform = deepcopy(platform)
-        augmented_platform["cuda"] = CUDA.platform(cuda_version)
-        should_build_platform(triplet(augmented_platform)) || continue
+#     for platform in platforms
+#         augmented_platform = deepcopy(platform)
+#         augmented_platform["cuda"] = CUDA.platform(cuda_version)
+#         should_build_platform(triplet(augmented_platform)) || continue
 
-        if cuda_version == v"12.9"
-            if arch(platform) == "aarch64"
-                hash = "c51b970bb26a0d3afd676048923fc404ed1d1131441558a7d346940e93d6ab54"
-            elseif arch(platform) == "x86_64"
-                hash = "98f7abd2f505ba49f032052f3f36b14e28798a6e16ca783fe293e351e9376546"
-            end
-        else
-            if arch(platform) == "aarch64"
-                hash = "2b5961c4c4bcbc16148d8431c7b65525d00f386105ab1b9fa82051b7c05f6fd0"
-            elseif arch(platform) == "x86_64"
-                hash = "3117db0efe13e1336dbe32e8b98eab943ad5baa69518189918d4aca9e3ce3270"
-            end
-        end
+#         push!(builds, (; platforms=[augmented_platform]))
+#     end
+# end
 
-        sources = [
-            ArchiveSource("https://developer.download.nvidia.com/compute/redist/nccl/v$(version)/nccl_$(version)-1+cuda$(cuda_version.major).$(cuda_version.minor)_$(arch(platform)).txz", hash)
-        ]
-
-        push!(builds, (; platforms=[augmented_platform], sources))
-    end
+for platform in CUDA.supported_platforms(; min_version=v"12")
+    should_build_platform(triplet(platform)) || continue
+    push!(builds, (; platforms=[platform]))
 end
-
 
 # don't allow `build_tarballs` to override platform selection based on ARGS.
 # we handle that ourselves by calling `should_build_platform`
@@ -77,8 +103,9 @@ non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
 
 for (i, build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
-        name, version, build.sources, script,
-        build.platforms, products, dependencies;
+        name, version, sources, script,
+        build.platforms, products,
+        [dependencies; CUDA.required_dependencies(build.platforms[1])];
         julia_compat="1.10", augment_platform_block=CUDA.augment,
         preferred_gcc_version=v"10")
 end
