@@ -29,7 +29,7 @@ products = [
 ]
 
 dependencies = [
-    HostBuildDependency("coreutils_jll"), # requires fmt,
+    HostBuildDependency("coreutils_jll"), # requires fmt
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
@@ -67,7 +67,6 @@ for cuda_version in [v"12.9", v"13.0"]
     end
 end
 
-# error("stop")
 
 # don't allow `build_tarballs` to override platform selection based on ARGS.
 # we handle that ourselves by calling `should_build_platform`
