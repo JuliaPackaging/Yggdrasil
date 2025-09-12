@@ -13,10 +13,14 @@ version = v"2.28.3"
 
 sources = [
     GitSource("https://github.com/NVIDIA/nccl.git", "f1308997d0420148b1be1c24d63f19d902ae589b"),
+    DirectorySource("./bundled/")
 ]
 
 script = raw"""
 cd $WORKSPACE/srcdir
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 ${f}
+done
 
 export TMPDIR=${WORKSPACE}/tmpdir # we need a lot of tmp space
 mkdir -p ${TMPDIR}
@@ -38,7 +42,8 @@ if [[ "${target}" == aarch64-linux-* ]]; then
    export NVCC_PREPEND_FLAGS="-ccbin='${CXX}'"
 fi
 
-export CXXFLAGS='-D__STDC_FORMAT_MACROS'
+export CXXFLAGS='-D__STDC_FORMAT_MACROS -D_GNU_SOURCE -Wno-unused-parameter -Wno-type-limits -Wno-error -Wno-missing-field-initializers -Wno-implicit-fallthrough'
+export NVCCFLAGS="$NVCCFLAGS -Wno-unused-parameter"
 export CUDARTLIB=cudart # link against dynamic library
 
 export CUDA_HOME=${prefix}/cuda;
@@ -71,25 +76,7 @@ dependencies = [
 ]
 
 builds = []
-# for cuda_version in [
-#     v"12.0", v"12.1", v"12.2", v"12.3", v"12.4", v"12.5", v"12.6", v"12.8", v"12.9",
-#     v"13.0"
-# ]
-#     platforms = [
-#         Platform("x86_64", "linux"),
-#         Platform("aarch64", "linux")
-#     ]
-
-#     for platform in platforms
-#         augmented_platform = deepcopy(platform)
-#         augmented_platform["cuda"] = CUDA.platform(cuda_version)
-#         should_build_platform(triplet(augmented_platform)) || continue
-
-#         push!(builds, (; platforms=[augmented_platform]))
-#     end
-# end
-
-for platform in CUDA.supported_platforms(; min_version=v"12")
+for platform in CUDA.supported_platforms(; min_version=v"12.9")
     should_build_platform(triplet(platform)) || continue
     push!(builds, (; platforms=[platform]))
 end
