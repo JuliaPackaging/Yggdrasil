@@ -92,7 +92,7 @@ dependencies = [
 
 builds = []
 
-for platform in CUDA.supported_platforms(; min_version=v"12", max_version=v"12.8")
+for platform in CUDA.supported_platforms(; min_version=v"12", max_version=v"12.9")
     should_build_platform(triplet(platform)) || continue
 
     platform_sources = BinaryBuilder.AbstractSource[git_sources...]
@@ -104,7 +104,7 @@ for platform in CUDA.supported_platforms(; min_version=v"12", max_version=v"12.8
 end
 
 # redist for sources that are available
-for cuda_version in [v"12.9", v"13.0"]
+for cuda_version in [v"13.0"]
     platforms = [
         Platform("x86_64", "linux"),
         Platform("aarch64", "linux")
