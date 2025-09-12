@@ -2,16 +2,16 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 include("../common.jl")
 
-gap_version = v"400.1401.5"
+gap_version = v"400.1500.0"
 name = "crypting"
-upstream_version = "0.10.5" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.2" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
+upstream_version = "0.10.6" # when you increment this, reset offset to v"0.0.0"
+offset = v"1.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL
 sources = [
     ArchiveSource("https://github.com/gap-packages/crypting/releases/download/v$(upstream_version)/crypting-$(upstream_version).tar.gz",
-                  "bbb8d321bc1e616a975960a7ecdddb8478f70e9ccc3d6e77c7c30283153aafc5"),
+                  "946b05c75e877de8aea71b5bf0af74f79b392064793fda7322e4895073e7cf6a"),
 ]
 
 # Bash recipe for building across all platforms
