@@ -67,17 +67,18 @@ fi
 """
 
 redist_script = raw"""
-mkdir -p ${libdir} ${prefix}/include
 
-cd ${WORKSPACE}/srcdir
-cd nccl*
-find .
+cd ${WORKSPACE}/srcdir/nccl*
 
 install_license LICENSE.txt
 
-mv lib/libnccl*.so* ${libdir}
+for file in lib/libnccl*.${dlext}*; do
+    install -Dvm 755 "${file}" -t "${libdir}"
+done
 
-mv include/* ${prefix}/include
+for file in include/*; do
+    install -Dvm 644 "${file}" -t "${includedir}"
+done
 """
 
 products = [
