@@ -93,7 +93,13 @@ builds = []
 
 for platform in CUDA.supported_platforms(; min_version=v"12", max_version=v"12.8")
     should_build_platform(triplet(platform)) || continue
-    push!(builds, (; platforms=[platform], sources=git_sources, script=build_script, req_deps=true))
+
+    platform_sources = BinaryBuilder.AbstractSource[git_sources...]
+    if arch(platform) == "aarch64"
+        push!(platform_sources, CUDA.cuda_nvcc_redist_source(platform["cuda"], "x86_64"))
+    end
+
+    push!(builds, (; platforms=[platform], sources=platform_sources, script=build_script, req_deps=true))
 end
 
 # redist for sources that are available
@@ -104,7 +110,7 @@ for cuda_version in [v"12.9", v"13.0"]
     ]
     for platform in platforms
         augmented_platform = deepcopy(platform)
-        augmented_platform["cuda"] = "13"
+        augmented_platform["cuda"] = CUDA.platform(cuda_version)
         should_build_platform(triplet(augmented_platform)) || continue
 
         if cuda_version == v"12.9"
