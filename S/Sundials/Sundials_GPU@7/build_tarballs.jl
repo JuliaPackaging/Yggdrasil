@@ -3,37 +3,49 @@ name = "Sundials_GPU"
 
 include(normpath(joinpath(YGGDRASIL_DIR, "..", "platforms", "cuda.jl")))
 
-# Collection of sources required to build XGBoost
 sources = get_sources()
 
-# Bash recipe for building across all platforms
-script = install_script
-
-augment_platform_block = CUDA.augment
-
-# The products that we will ensure are always built
+# Add the GPU products
 products = get_products()
+push!(products, LibraryProduct("libsundials_nveccuda", :libsundials_nveccuda))
 
-platforms = [
-    Platform("x86_64", "linux"),
-]
+# Pick all the standard depedencies  
+dependencies = get_dependencies()
+
+# Override the default platforms
+platforms = CUDA.supported_platforms(; max_version = v"12.9.1")   # Doesn't build with CUDA 13 right now
+filter!(p -> (os(p) == "linux") && arch(p) == "x86_64", platforms)
 platforms = expand_gfortran_versions(platforms)
 
-for cuda_version in [v"12.0"], platform in platforms
+script = install_script * raw"""
+    # nvcc writes to /tmp, which is a small tmpfs in our sandbox.
+    # make it use the workspace instead
+    export TMPDIR=${WORKSPACE}/tmpdir
+    mkdir ${TMPDIR}
 
-    # For platforms we can't create cuda builds on, we want to avoid adding cuda=none
-    # https://github.com/JuliaPackaging/Yggdrasil/issues/6911#issuecomment-1599350319
-    augmented_platform = Platform(arch(platform), os(platform);
-                                  libgfortran_version = libgfortran_version(platform),
-                                  cuda=CUDA.platform(cuda_version)
-    )
-    should_build_platform(triplet(augmented_platform)) || continue
+    export CUDA_HOME=${WORKSPACE}/destdir/cuda
+    export PATH=$PATH:$CUDA_HOME/bin
 
-    dependencies = get_dependencies(augmented_platform; cuda = true, cuda_version = cuda_version)
-    
-    build_tarballs(ARGS, name, ygg_version, sources,  script, [augmented_platform], products, dependencies;
-                   preferred_gcc_version=v"9",
-                   julia_compat="1.6",
-                   augment_platform_block)
+    cmake "${CMAKE_FLAGS[@]}" -DENABLE_CUDA=ON ..
+    cmake --build . --parallel ${nproc}
+    cmake --install .
+"""
+
+# Build for all supported CUDA toolkits 
+for platform in platforms
+
+    should_build_platform(triplet(platform)) || continue
+
+    # Need the static SDK to let CMake detect the compiler properly
+    cuda_deps = CUDA.required_dependencies(platform)
+    push!(cuda_deps,
+          BuildDependency(PackageSpec(name="CUDA_full_jll",
+                                      version=CUDA.full_version(VersionNumber(platform.tags["cuda"]))))
+          )
+
+    build_tarballs(ARGS, name, ygg_version, sources, script, [platform], products,
+                   [dependencies; cuda_deps];
+                   preferred_gcc_version=v"9", julia_compat="1.6",
+                   augment_platform_block=CUDA.augment)
 
 end

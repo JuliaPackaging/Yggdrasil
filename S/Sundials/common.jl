@@ -25,20 +25,13 @@ function get_platforms()
     return platforms
 end
 
-function get_dependencies(platform::Platform; cuda::Bool = false, cuda_version::VersionNumber = v"12.0")
+function get_dependencies()
     dependencies = [
         HostBuildDependency("CMake_jll"),
         Dependency("CompilerSupportLibraries_jll"),
         Dependency("OpenBLAS32_jll"),
         Dependency("SuiteSparse32_jll"),
     ]
-
-    # dependencies necessary to build CUDA support
-    if cuda
-        push!(dependencies, BuildDependency(PackageSpec(name="CUDA_full_jll", version=CUDA.full_version(cuda_version))))
-        append!(dependencies, CUDA.required_dependencies(platform))
-    end
-
     return dependencies
 end
 
@@ -76,11 +69,8 @@ end
 
 # common install component of the script across both CPU and GPU builds
 const install_script = raw"""
-cd $WORKSPACE/srcdir/sundials*
-
 apk del cmake
 
-# Set up CFLAGS
 cd $WORKSPACE/srcdir/sundials*/cmake/tpl
 if [[ "${target}" == *-mingw* ]]; then
     # Work around https://github.com/LLNL/sundials/issues/29
@@ -94,21 +84,4 @@ cd $WORKSPACE/srcdir/sundials*
 mkdir build && cd build
 
 CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" -DEXAMPLES_ENABLE_C=OFF -DENABLE_KLU=ON -DKLU_INCLUDE_DIR="${includedir}/suitesparse" -DKLU_LIBRARY_DIR="${libdir}" -DKLU_WORKS=ON -DENABLE_LAPACK=ON -DLAPACK_WORKS=ON -DBLA_VENDOR="OpenBLAS")
-
-if  [[ $bb_full_target == *-linux*cuda+1* ]]; then
-    # nvcc writes to /tmp, which is a small tmpfs in our sandbox.
-    # make it use the workspace instead
-    export TMPDIR=${WORKSPACE}/tmpdir
-    mkdir ${TMPDIR}
-
-    export CUDA_HOME=${WORKSPACE}/destdir/cuda
-    export PATH=$PATH:$CUDA_HOME/bin
-
-    cmake "${CMAKE_FLAGS[@]}" -DENABLE_CUDA=ON ..
-else
-    cmake "${CMAKE_FLAGS[@]}" ..
-fi
-
-cmake --build . --parallel ${nproc}
-cmake --install .
 """
