@@ -1,6 +1,6 @@
 include("../common.jl")
 name = "XGBoost_GPU"
-version = v"2.1.4"
+version = v"2.1.5"
 
 include(normpath(joinpath(YGGDRASIL_DIR, "..", "platforms", "cuda.jl")))
 
@@ -27,7 +27,7 @@ cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
         -DUSE_CUDA=ON \
         -DBUILD_WITH_CUDA_CUB=ON
 make -j${nproc}
-
+cd ..
 """ * install_script
 
 augment_platform_block = CUDA.augment
