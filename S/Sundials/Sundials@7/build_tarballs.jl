@@ -1,4 +1,6 @@
 using BinaryBuilder
+using BinaryBuilderBase
+using Pkg
 
 name = "Sundials"
 version = v"7.4.0"
@@ -44,10 +46,14 @@ if  [[ $bb_full_target == *-linux*cuda+1* ]]; then
 
     export CUDA_HOME=${WORKSPACE}/destdir/cuda
     export PATH=$PATH:$CUDA_HOME/bin
+
+    cmake "${CMAKE_FLAGS}" -DENABLE_CUDA=ON ..
+else
+    cmake "${CMAKE_FLAGS}" ..
 fi
 
-cmake "${CMAKE_FLAGS}" --build . --parallel ${nproc}
-cmake "${CMAKE_FLAGS}" --install .
+cmake --build . --parallel ${nproc}
+cmake --install .
 rm -f ${libdir}/*.a
 """
 
