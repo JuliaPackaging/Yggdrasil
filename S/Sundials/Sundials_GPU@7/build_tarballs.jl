@@ -2,13 +2,12 @@ using BinaryBuilder
 using BinaryBuilderBase
 using Pkg
 
-name = "Sundials"
+name = "Sundials_GPU"
 version = v"7.4.0"
 ygg_version = v"7.4.1" # Fake version since we are changing deps
 
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
-include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 # Collection of sources required to build Sundials
 sources = [
