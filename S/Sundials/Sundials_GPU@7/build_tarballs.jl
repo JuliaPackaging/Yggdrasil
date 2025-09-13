@@ -11,22 +11,17 @@ script = install_script
 
 augment_platform_block = CUDA.augment
 
-versions_to_build = [
-    v"12",
-]
-
 # The products that we will ensure are always built
 products = get_products()
 
-platforms = get_platforms()[5:6]
+platforms = [
+    Platform("x86_64", "linux"),
+    Platform("x86_64", "windows"),
+]
+platforms = expand_gfortran_versions(platforms)
 
-for cuda_version in versions_to_build, platform in platforms
+for cuda_version in [v"12.0"], platform in platforms
 
-    cuda_platform = (os(platform) == "linux") && (arch(platform) in ["x86_64"])
-    if !cuda_platform
-        continue
-    end
-    
     # For platforms we can't create cuda builds on, we want to avoid adding cuda=none
     # https://github.com/JuliaPackaging/Yggdrasil/issues/6911#issuecomment-1599350319
     augmented_platform = Platform(arch(platform), os(platform);
