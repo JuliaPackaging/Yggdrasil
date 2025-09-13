@@ -38,7 +38,7 @@ platforms = filter(p -> !Sys.isapple(p), platforms)
 
 # cmake reprts "Could NOT find Boost (missing: Boost_INCLUDE_DIR)",
 # on aarch64-unknown-freebsd, remove
-platforms = filter!(p -> !(os(p) == "freebsd"), platforms)
+platforms = filter!(p -> !Sys.isfreebsd(p), platforms)
 
 # cmake reports "note: parameter passing for argument of type ‘struct format_args’ changed in GCC 9.1", remove
 platforms = filter!(p -> cxxstring_abi(p) != "cxx03" && arch(p) != "armv6l", platforms)
