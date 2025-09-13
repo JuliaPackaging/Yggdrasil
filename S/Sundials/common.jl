@@ -111,5 +111,7 @@ fi
 
 cmake --build . --parallel ${nproc}
 cmake --install .
-rm -f ${libdir}/*.a
+
+# Clean up .a files on windows
+rm -f ${WORKSPACE}/destdir/lib/*.a
 """
