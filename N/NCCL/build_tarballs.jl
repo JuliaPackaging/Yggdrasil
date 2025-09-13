@@ -76,8 +76,9 @@ for file in lib/libnccl*.${dlext}*; do
     install -Dvm 755 "${file}" -t "${libdir}"
 done
 
-for file in include/*; do
-    install -Dvm 644 "${file}" -t "${includedir}"
+find include -type f -print0 | while IFS= read -r -d '' file; do
+    relpath="${file#include/}"
+    install -Dvm644 "$file" "${includedir}${relpath}"
 done
 """
 
@@ -91,17 +92,6 @@ dependencies = [
 ]
 
 builds = []
-
-for platform in CUDA.supported_platforms(; min_version=v"12", max_version=v"12.9.999")
-    should_build_platform(triplet(platform)) || continue
-
-    platform_sources = BinaryBuilder.AbstractSource[git_sources...]
-    if arch(platform) == "aarch64"
-        push!(platform_sources, CUDA.cuda_nvcc_redist_source(platform["cuda"], "x86_64"))
-    end
-
-    push!(builds, (; platforms=[platform], sources=platform_sources, script=build_script, req_deps=true))
-end
 
 # redist for sources that are available
 for cuda_version in [v"13.0"]
@@ -132,8 +122,25 @@ for cuda_version in [v"13.0"]
             ArchiveSource("https://developer.download.nvidia.com/compute/redist/nccl/v$(version)/nccl_$(version)-1+cuda$(cuda_version.major).$(cuda_version.minor)_$(arch(platform)).txz", hash)
         ]
 
-        push!(builds, (; platforms=[augmented_platform], sources, script=redist_script, req_deps=false))
+        push!(
+            builds,
+            (; platforms=[augmented_platform], sources, script=redist_script, req_deps=false)
+        )
     end
+end
+
+for platform in CUDA.supported_platforms(; min_version=v"12", max_version=v"12.9.999")
+    should_build_platform(triplet(platform)) || continue
+
+    platform_sources = BinaryBuilder.AbstractSource[git_sources...]
+    if arch(platform) == "aarch64"
+        push!(platform_sources, CUDA.cuda_nvcc_redist_source(platform["cuda"], "x86_64"))
+    end
+
+    push!(
+        builds,
+        (; platforms=[platform], sources=platform_sources, script=build_script, req_deps=true)
+    )
 end
 
 # don't allow `build_tarballs` to override platform selection based on ARGS.
@@ -147,7 +154,7 @@ for (i, build) in enumerate(builds)
     if build.req_deps
         deps = [dependencies; CUDA.required_dependencies(build.platforms[1])]
     else
-        deps = dependencies
+        deps = []
     end
 
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
