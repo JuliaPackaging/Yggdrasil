@@ -25,6 +25,9 @@ script = install_script * raw"""
 
     export CUDA_HOME=${WORKSPACE}/destdir/cuda
     export PATH=$PATH:$CUDA_HOME/bin
+    
+    # nvcc thinks the libraries are located inside lib64, but the SDK actually has them in lib
+    ln -s ${CUDA_HOME}/lib ${CUDA_HOME}/lib64
 
     cmake "${CMAKE_FLAGS[@]}" -DENABLE_CUDA=ON ..
     cmake --build . --parallel ${nproc}
@@ -37,11 +40,7 @@ for platform in platforms
     should_build_platform(triplet(platform)) || continue
 
     # Need the static SDK to let CMake detect the compiler properly
-    cuda_deps = CUDA.required_dependencies(platform)
-    push!(cuda_deps,
-          BuildDependency(PackageSpec(name="CUDA_full_jll",
-                                      version=CUDA.full_version(VersionNumber(platform.tags["cuda"]))))
-          )
+    cuda_deps = CUDA.required_dependencies(platform; static_sdk=true)
 
     build_tarballs(ARGS, name, ygg_version, sources, script, [platform], products,
                    [dependencies; cuda_deps];

@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 const version = v"7.4.0"
 const ygg_version = v"7.4.1" # Fake version since we are changing deps
 
-# Collection of sources required to build XGBoost
+# Collection of sources required to build Sundials
 function get_sources()
     return [
         GitSource("https://github.com/LLNL/sundials.git",
