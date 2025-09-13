@@ -16,7 +16,6 @@ products = get_products()
 
 platforms = [
     Platform("x86_64", "linux"),
-    Platform("x86_64", "windows"),
 ]
 platforms = expand_gfortran_versions(platforms)
 
