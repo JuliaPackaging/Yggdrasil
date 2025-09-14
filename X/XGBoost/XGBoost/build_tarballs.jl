@@ -8,23 +8,13 @@ sources = get_sources()
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/
-
-# we can't seem to build from source for Apple, so install the pre-built binaries directly instead
-# see https://github.com/dmlc/xgboost/issues/11676 for details
-if [[ "${target}" == *apple-darwin* ]]; then
-    unzip -d xgboost-${target} xgboost-${target}.whl
-    cd xgboost-${target}/xgboost
-    cp ../../xgboost/LICENSE .
-else
-    cd xgboost
-    git submodule update --init
-    mkdir build && cd build
-    cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
-            -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
-    make -j${nproc}
-    cd ..
-fi
+cd ${WORKSPACE}/srcdir/xgboost
+git submodule update --init
+mkdir build && cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
+        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+make -j${nproc}
+cd ..
 """ * install_script
 
 # The products that we will ensure are always built

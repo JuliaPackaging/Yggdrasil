@@ -9,13 +9,8 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 function get_sources()
     return [
         GitSource("https://github.com/dmlc/xgboost.git","62e7923619352c4079b24303b367134486b1c84f"), # v2.1.4
-        # for apple systems, we can't build from source - instead, use pre-built wheels from XGBoost itself
-        FileSource("https://files.pythonhosted.org/packages/b6/fe/7a1d2342c2e93f22b41515e02b73504c7809247b16ae395bd2ee7ef11e19/xgboost-2.1.4-py3-none-macosx_10_15_x86_64.macosx_11_0_x86_64.macosx_12_0_x86_64.whl",
-                    "78d88da184562deff25c820d943420342014dd55e0f4c017cc4563c2148df5ee";
-                    filename = "xgboost-x86_64-apple-darwin14.whl"),
-        FileSource("https://files.pythonhosted.org/packages/f5/b6/653a70910739f127adffbefb688ebc22b51139292757de7c22b1e04ce792/xgboost-2.1.4-py3-none-macosx_12_0_arm64.whl",
-                    "523db01d4e74b05c61a985028bde88a4dd380eadc97209310621996d7d5d14a7";
-                    filename = "xgboost-aarch64-apple-darwin20.whl")
+        ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz",
+                    "cd4f08a75577145b8f05245a2975f7c81401d75e9535dcffbb879ee1deefcbf4")
     ]
 end
 
