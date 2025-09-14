@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Aravis"
-version = v"0.8.33"
+version = v"0.8.35"
 
 sources = [
     GitSource("https://github.com/AravisProject/aravis.git",
-              "99081fbda9e820a171d2aaccea0bc95ba5f8c37b")
+              "ea4f3c47cb387d81b63444887f3e0efda7918d50")
 ]
 
 # Bash recipe for building across all platforms
