@@ -39,7 +39,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Glib_jll"; compat="2.82.2"),
+    Dependency("Glib_jll"; compat="2.84.3"),
     Dependency("libusb_jll"),
     # We had to restrict compat with XML2 because of ABI breakage:
     # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
