@@ -26,7 +26,7 @@ function get_platforms()
     return expand_cxxstring_abis(supported_platforms())
 end
 
-function get_dependencies(platform::Platform; cuda::Bool = false, cuda_version::VersionNumber = v"12.0")
+function get_dependencies(platform::Platform)
     dependencies = AbstractDependency[
         # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
         # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
@@ -37,13 +37,6 @@ function get_dependencies(platform::Platform; cuda::Bool = false, cuda_version::
         # builds are done in XGBoost using cmake v3.31 - this turns out to be necessary to include libomp via CompilerSupportLibraries_jll with the newer SDK
         HostBuildDependency(PackageSpec(name="CMake_jll"))
     ]
-
-    # dependencies necessary to build CUDA support
-    if cuda
-        push!(dependencies, BuildDependency(PackageSpec(name="CUDA_full_jll", version=CUDA.full_version(cuda_version))))
-        append!(dependencies, CUDA.required_dependencies(platform))
-    end
-
     return dependencies
 end
 

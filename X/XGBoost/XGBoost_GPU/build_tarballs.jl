@@ -9,6 +9,9 @@ sources = get_sources()
 
 # Bash recipe for building across all platforms
 script = raw"""
+# remove default cmake to use newer version from build dependency
+apk del cmake
+
 cd ${WORKSPACE}/srcdir/xgboost
 git submodule update --init
 
@@ -32,34 +35,26 @@ cd ..
 
 augment_platform_block = CUDA.augment
 
-versions_to_build = [
-    v"11.8",
-    v"12.0"
-]
-
 # The products that we will ensure are always built
 products = get_products()
 
-platforms = get_platforms()[3:4]
+# XGBoost v2.1 doesn't support only has CUDA support for linux builds
+# we also rely on CUDA_full_jll so can only build up to CUDA v12.2.1 for now
+platforms = expand_cxxstring_abis(filter(Sys.islinux, CUDA.supported_platforms(; min_version = v"11.8", max_version = v"12.2.1")))
 
-for cuda_version in versions_to_build, platform in platforms
 
-    cuda_platform = (os(platform) == "linux") && (arch(platform) in ["x86_64"])
-    if !cuda_platform
-        continue
-    end
+for platform ∈ platforms
     
     # For platforms we can't create cuda builds on, we want to avoid adding cuda=none
     # https://github.com/JuliaPackaging/Yggdrasil/issues/6911#issuecomment-1599350319
-    augmented_platform = Platform(arch(platform), os(platform);
-        cxxstring_abi = cxxstring_abi(platform),
-        cuda=CUDA.platform(cuda_version)
-    )
-    should_build_platform(triplet(augmented_platform)) || continue
+    should_build_platform(triplet(platform)) || continue
 
-    dependencies = get_dependencies(augmented_platform; cuda = true, cuda_version = cuda_version)
+    dependencies = get_dependencies(platform)
+    # add dependencies necessary to build CUDA support
+    push!(dependencies, BuildDependency(PackageSpec(name="CUDA_full_jll", version=CUDA.full_version(VersionNumber(platform.tags["cuda"])))))
+    append!(dependencies, CUDA.required_dependencies(platform))
     
-    build_tarballs(ARGS, name, version, sources,  script, [augmented_platform], products, dependencies;
+    build_tarballs(ARGS, name, version, sources,  script, [platform], products, dependencies;
                     preferred_gcc_version=v"9",
                     julia_compat="1.6",
                     augment_platform_block)
