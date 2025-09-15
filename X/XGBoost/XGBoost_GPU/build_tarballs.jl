@@ -22,8 +22,14 @@ mkdir build && cd build
 export TMPDIR=${WORKSPACE}/tmpdir
 mkdir ${TMPDIR}
 
-export CUDA_HOME=${prefix}/cuda
+# Ensure CUDA is on the path
+export CUDA_HOME=${WORKSPACE}/destdir/cuda;
 export PATH=$PATH:$CUDA_HOME/bin
+export CUDACXX=$CUDA_HOME/bin/nvcc
+
+# nvcc thinks the libraries are located inside lib64, but the SDK actually has them in lib
+ln -s ${CUDA_HOME}/lib ${CUDA_HOME}/lib64
+
 cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
         -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
         -DCUDA_TOOLKIT_ROOT_DIR=${prefix}/cuda \
@@ -41,8 +47,8 @@ products = get_products()
 # XGBoost v2.1 doesn't support only has CUDA support for linux builds
 # we also rely on CUDA_full_jll so can only build up to CUDA v12.2.1 for now
 platforms = expand_cxxstring_abis(
-    filter!(p -> arch(p) == "x86_64" && Sys.islinux(p), 
-        CUDA.supported_platforms(; min_version = v"11.8", max_version = v"12.2.1")
+    filter!(p -> arch(p) == "x86_64" && os(p) == "linux", 
+        CUDA.supported_platforms(; min_version = v"11.8", max_version = v"12.9.1")
     )
 )
 
@@ -54,11 +60,10 @@ for platform ∈ platforms
     should_build_platform(triplet(platform)) || continue
 
     dependencies = get_dependencies(platform)
-    # add dependencies necessary to build CUDA support
-    push!(dependencies, BuildDependency(PackageSpec(name="CUDA_full_jll", version=CUDA.full_version(VersionNumber(platform.tags["cuda"])))))
-    append!(dependencies, CUDA.required_dependencies(platform))
+
+    cuda_deps = CUDA.required_dependencies(platform, static_sdk=true)
     
-    build_tarballs(ARGS, name, version, sources,  script, [platform], products, dependencies;
+    build_tarballs(ARGS, name, version, sources,  script, [platform], products, [dependencies; cuda_deps];
                     preferred_gcc_version=v"9",
                     julia_compat="1.6",
                     augment_platform_block)
