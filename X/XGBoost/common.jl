@@ -9,8 +9,8 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 function get_sources()
     return [
         GitSource("https://github.com/dmlc/xgboost.git","62e7923619352c4079b24303b367134486b1c84f"), # v2.1.4
-        ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz",
-                    "cd4f08a75577145b8f05245a2975f7c81401d75e9535dcffbb879ee1deefcbf4")
+        ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
+                  "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49")
     ]
 end
 
@@ -33,7 +33,9 @@ function get_dependencies(platform::Platform; cuda::Bool = false, cuda_version::
         Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); 
             platforms=filter(!Sys.isbsd, [platform])),
         Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); 
-            platforms=filter(Sys.isbsd, [platform]))
+            platforms=filter(Sys.isbsd, [platform])),
+        # builds are done in XGBoost using cmake v3.31 - this turns out to be necessary to include libomp via CompilerSupportLibraries_jll with the newer SDK
+        HostBuildDependency(PackageSpec(name="CMake_jll"))
     ]
 
     # dependencies necessary to build CUDA support
@@ -48,11 +50,9 @@ end
 # common install component of the script across both CPU and GPU builds
 const install_script = raw"""
 # Manual installation, to avoid installing dmlc
-if [[ "${target}" != *apple-darwin* ]]; then
     for header in include/xgboost/*.h; do
         install -Dv "${header}" "${includedir}/xgboost/$(basename ${header})"
     done
-fi
 
 if [[ ${target} == *mingw* ]]; then
     install -Dvm 0755 lib/xgboost.dll ${libdir}/xgboost.dll
