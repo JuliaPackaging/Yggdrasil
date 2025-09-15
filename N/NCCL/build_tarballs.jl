@@ -78,7 +78,7 @@ done
 
 find include -type f -print0 | while IFS= read -r -d '' file; do
     relpath="${file#include/}"
-    install -Dvm644 "$file" "${includedir}${relpath}"
+    install -Dvm644 "$file" "${includedir}/${relpath}"
 done
 """
 
