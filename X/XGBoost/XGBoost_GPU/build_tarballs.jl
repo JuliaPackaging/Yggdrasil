@@ -40,7 +40,11 @@ products = get_products()
 
 # XGBoost v2.1 doesn't support only has CUDA support for linux builds
 # we also rely on CUDA_full_jll so can only build up to CUDA v12.2.1 for now
-platforms = expand_cxxstring_abis(filter(Sys.islinux, CUDA.supported_platforms(; min_version = v"11.8", max_version = v"12.2.1")))
+platforms = expand_cxxstring_abis(
+    filter!(p -> arch(p) == "x86_64" && Sys.islinux(p), 
+        CUDA.supported_platforms(; min_version = v"11.8", max_version = v"12.2.1")
+    )
+)
 
 
 for platform ∈ platforms
