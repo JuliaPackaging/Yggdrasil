@@ -45,12 +45,20 @@ augment_platform_block = CUDA.augment
 products = get_products()
 
 # XGBoost v2.1 doesn't support only has CUDA support for linux builds
-# we also rely on CUDA_full_jll so can only build up to CUDA v12.2.1 for now
+# note also builds don't work for CUDA v12.5 and v12.6 due to a bug in CCCL (the patch fix for this is 
+# not available in the shipped CUDA SDK)
+# see the following issues: https://github.com/dmlc/xgboost/issues/10555, https://github.com/dmlc/xgboost/issues/11640
 platforms = expand_cxxstring_abis(
-    filter!(p -> arch(p) == "x86_64" && os(p) == "linux", 
+    filter!(p -> all([
+            arch(p) == "x86_64", 
+            os(p) == "linux",
+            platforms[1].tags["cuda"] ∉ ["12.5", "12.6"]
+        ]),
         CUDA.supported_platforms(; min_version = v"11.8", max_version = v"12.9.1")
     )
 )
+
+platforms = [Platform("x86_64", "linux"; cxxstring_abi="cxx11", cuda = "12.5")]
 
 
 for platform ∈ platforms
