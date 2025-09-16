@@ -30,7 +30,7 @@ else
 end
 
 const cuda_version_preference = if haskey(preferences, "cuda_version")
-    expected = ("none", "12.4", "12.6", "12.8", "13.0")
+    expected = ("none", "12.6", "12.8", "13.0")
     if isa(preferences["cuda_version"], String) && preferences["cuda_version"] in expected
         preferences["cuda_version"]
     else
@@ -94,7 +94,7 @@ function augment_platform!(platform::Platform)
 
             if cuda_version_tag == "none" && current_cuda_version isa VersionNumber
                 if v"12.4" <= current_cuda_version < v"12.6"
-                    cuda_version_tag = "12.4"
+                    cuda_version_tag = "12.6"
                 elseif v"12.6" <= current_cuda_version < v"12.8"
                     cuda_version_tag = "12.6"
                 elseif v"12.8" <= current_cuda_version < v"13"
