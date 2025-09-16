@@ -52,7 +52,7 @@ platforms = expand_cxxstring_abis(
     filter!(p -> all([
             arch(p) == "x86_64", 
             os(p) == "linux",
-            platforms[1].tags["cuda"] ∉ ["12.5", "12.6"]
+            p.tags["cuda"] ∉ ["12.5", "12.6"]
         ]),
         CUDA.supported_platforms(; min_version = v"11.8", max_version = v"12.9.1")
     )
