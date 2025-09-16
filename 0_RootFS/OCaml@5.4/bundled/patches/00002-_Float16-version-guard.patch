@@ -1,0 +1,21 @@
+commit a08e30cf5f3f156893fca360efc4dff22247ce09
+Author: Cody Tapscott <topolarity@tapscott.me>
+Date:   Thu May 8 19:17:14 2025 -0400
+
+    Avoid using `_Float16` in older GCC
+    
+    This was not introduced until GCC 7, even for AArch64.
+
+diff --git a/runtime/bigarray.c b/runtime/bigarray.c
+index bd3ce896eb..ec77a16c57 100644
+--- a/runtime/bigarray.c
++++ b/runtime/bigarray.c
+@@ -37,7 +37,7 @@
+ 
+ /* Half-precision floating point numbers */
+ 
+-#if defined(__GNUC__) && defined(__aarch64__)
++#if defined(__GNUC__) && defined(__aarch64__) && (__GNUC__ >= 7)
+ 
+ union float16_bits { uint16_t i; _Float16 f; };
+ 

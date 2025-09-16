@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "libpng"
-version = v"1.6.46"
+version = v"1.6.50"
 
 # Collection of sources required to build libpng
 sources = [
     ArchiveSource("https://sourceforge.net/projects/libpng/files/libpng16/$(version)/libpng-$(version).tar.gz",
-                  "c2b8ffb46f48331416e01f9e5c7169c7a2e08ad766b742742644e5fdf192e4a1"),
+                  "708f4398f996325819936d447f982e0db90b6b8212b7507e7672ea232210949a"),
 ]
 
 # Bash recipe for building across all platforms

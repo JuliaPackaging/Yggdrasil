@@ -145,9 +145,6 @@ products = [
     LibraryProduct(["Qt6Xml", "libQt6Xml", "QtXml"], :libqt6xml),
 ]
 
-# We must use the same version of LLVM for the build toolchain and LLVMCompilerRT_jll
-llvm_version = v"16.0.6"
-
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("libinput_jll"),
@@ -184,4 +181,4 @@ if !host_build
 end
 
 # From Qt6Base/common.jl
-build_qt(name, version, sources, script, products, dependencies; preferred_llvm_version=llvm_version)
+build_qt(name, version, sources, script, products, dependencies)

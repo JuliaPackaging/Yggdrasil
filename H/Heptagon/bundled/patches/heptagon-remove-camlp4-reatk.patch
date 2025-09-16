@@ -1,0 +1,467 @@
+From 514607f84d09d85c203f9074528ab2d3fc06c293 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Mon, 7 Jul 2025 15:09:20 +0200
+Subject: [PATCH] Remove the camlp4 dependency.
+
+It is only used for some very simple source preprocessing to define two variables, so simply inline their definitions.
+This simplifies cross-compilation, which camlp4 does not support (heavily relying on executing its own binaries during the build).
+
+In addition, the run-time expansion of the `STDLIB` variable now looks relative to the
+path of the `heptagon` binary, instead of the current working directory.
+---
+ README.md                                     |  1 -
+ compiler/_tags.in                             |  4 +-
+ compiler/main/mls2seq.ml                      |  5 --
+ compiler/minils/main/mls_compiler.ml          | 35 +-------
+ compiler/myocamlbuild.ml                      | 57 ------------
+ compiler/myocamlbuild_config.ml               | 72 ---------------
+ compiler/preproc.ml                           | 89 -------------------
+ compiler/utilities/global/_tags               |  1 -
+ compiler/utilities/global/compiler_options.ml | 27 +++++-
+ configure.in                                  | 12 ---
+ heptagon.opam                                 |  1 -
+ 11 files changed, 25 insertions(+), 279 deletions(-)
+ delete mode 100644 compiler/myocamlbuild.ml
+ delete mode 100644 compiler/myocamlbuild_config.ml
+ delete mode 100644 compiler/preproc.ml
+ delete mode 100644 compiler/utilities/global/_tags
+
+diff --git a/README.md b/README.md
+index 6b13fee9..396c4451 100644
+--- a/README.md
++++ b/README.md
+@@ -81,7 +81,6 @@ To manually compile and install the Heptagon compiler, the following tools and l
+ - ocamlfind
+ - The *menhir* tool
+ - The *ocamlgraph* library
+-- *camlp4*
+ - The *lablgtk* library (optional, for the graphical simulator)
+ - The *reatk* library (optional, for the backend towards the ReaX controller synthesis too)
+ 
+diff --git a/compiler/_tags.in b/compiler/_tags.in
+index 7b839c4e..a2b50aec 100644
+--- a/compiler/_tags.in
++++ b/compiler/_tags.in
+@@ -1,6 +1,5 @@
+ <global> or <utilities> or <minils> or <heptagon> or <main> or <obc>:include
+ <**/*.ml*>: dtypes, use_unix, package(ocamlgraph)
+-<preproc.ml>: camlp4of, package(camlp4)
+ true: use_menhir
+ true: annot, bin_annot
+ true: debug
+@@ -10,5 +9,4 @@ true: debug
+ <main/hepts.{ml,byte,native,[dp].byte,[dp].native}>: package(lablgtk2), thread
+ "heptagon/parsing/hept_parser.mli": package(menhirLib)
+ 
+-<**/*.ml*> or <**/{heptc,ctrl2ept}.{byte,native,[dp].byte,[dp].native}>: @package_reatk_ctrlNbac@
+-"minils/main/mls_compiler.ml" or "main/mls2seq.ml": pp(camlp4o pa_macro.cmo @ctrln_pp@)
++<**/*.ml*> or <**/{heptc,ctrl2ept}.{byte,native,[dp].byte,[dp].native}>: ocaml
+diff --git a/compiler/main/mls2seq.ml b/compiler/main/mls2seq.ml
+index 3d88924c..baf74bbe 100644
+--- a/compiler/main/mls2seq.ml
++++ b/compiler/main/mls2seq.ml
+@@ -77,13 +77,8 @@ let java_conf () =
+   Compiler_options.do_scalarize := true;
+   ()
+ 
+-;; IFDEF ENABLE_CTRLN THEN
+-let ctrln_targets =
+-  [ mk_target "ctrln" (Minils_no_params ignore) ]
+-;; ELSE
+ let ctrln_targets =
+   [ mk_target "ctrln" Disabled_target ]
+-;; ENDIF
+ 
+ let targets =
+   [ mk_target ~interface:(IObc Cmain.interface) "c" (Obc_no_params Cmain.program);
+diff --git a/compiler/minils/main/mls_compiler.ml b/compiler/minils/main/mls_compiler.ml
+index 13a06b37..9dedcbe1 100644
+--- a/compiler/minils/main/mls_compiler.ml
++++ b/compiler/minils/main/mls_compiler.ml
+@@ -32,42 +32,9 @@ open Compiler_options
+ 
+ let pp out p = if !verbose then Mls_printer.print out p
+ 
+-;; IFDEF ENABLE_CTRLN THEN
+-
+-(* NB: I localize file name determination logics for CtrlNbac output into this
+-   module, because its place is not in CtrlNbacGen... *)
+-(** [gen_n_output_ctrln p] translates the Minils program [p] into
+-    Controllable-Nbac format, and then output its nodes separately in files
+-    under a specific directory; typically, a node ["n"] in file ["f.ept"] is
+-    output into a file called "f_ctrln/n.nbac" *)
+-let gen_n_output_ctrln p =
+-
+-  (* Main generation procedure. *)
+-  let nodes, p = CtrlNbacGen.gen p in
+-
+-  (* Save the controller module. *)
+-  Ctrln_utils.save_controller_modul_for p.Minils.p_modname;
+-
+-  (* Output Controllable-Nbac contoller. *)
+-  ignore (clean_dir (Ctrln_utils.dirname_for_modul p.Minils.p_modname));
+-  List.iter begin fun (node_name, node) ->
+-    let oc = open_out (Ctrln_utils.ctrln_for_node node_name) in
+-    let fmt = Format.formatter_of_out_channel oc in
+-    CtrlNbac.AST.print_node ~print_header:print_header_info fmt node;
+-    close_out oc
+-  end nodes;
+-  p
+-
+-let maybe_ctrln_pass p pp =
+-  let ctrln = List.mem "ctrln" !target_languages in
+-  pass "Controllable Nbac generation" ctrln gen_n_output_ctrln p pp
+-
+-;; ELSE
+-
++(* CTRLN support disabled in this build *)
+ let maybe_ctrln_pass p pp = p
+ 
+-;; END
+-
+ let compile_program p log_c =
+ 
+   let pp p = pp log_c p in
+diff --git a/compiler/myocamlbuild.ml b/compiler/myocamlbuild.ml
+deleted file mode 100644
+index 506019a2..00000000
+--- a/compiler/myocamlbuild.ml
++++ /dev/null
+@@ -1,57 +0,0 @@
+-(***********************************************************************)
+-(*                                                                     *)
+-(*                             Heptagon                                *)
+-(*                                                                     *)
+-(* Gwenael Delaval, LIG/INRIA, UJF                                     *)
+-(* Leonard Gerard, Parkas, ENS                                         *)
+-(* Adrien Guatto, Parkas, ENS                                          *)
+-(* Cedric Pasteur, Parkas, ENS                                         *)
+-(* Marc Pouzet, Parkas, ENS                                            *)
+-(*                                                                     *)
+-(* Copyright 2012 ENS, INRIA, UJF                                      *)
+-(*                                                                     *)
+-(* This file is part of the Heptagon compiler.                         *)
+-(*                                                                     *)
+-(* Heptagon is free software: you can redistribute it and/or modify it *)
+-(* under the terms of the GNU General Public License as published by   *)
+-(* the Free Software Foundation, either version 3 of the License, or   *)
+-(* (at your option) any later version.                                 *)
+-(*                                                                     *)
+-(* Heptagon is distributed in the hope that it will be useful,         *)
+-(* but WITHOUT ANY WARRANTY; without even the implied warranty of      *)
+-(* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the       *)
+-(* GNU General Public License for more details.                        *)
+-(*                                                                     *)
+-(* You should have received a copy of the GNU General Public License   *)
+-(* along with Heptagon.  If not, see <http://www.gnu.org/licenses/>    *)
+-(*                                                                     *)
+-(***********************************************************************)
+-open Ocamlbuild_plugin
+-open Ocamlbuild_plugin.Options
+-open Myocamlbuild_config
+-
+-let df = function
+-  | After_rules ->
+-      ocamlfind_after_rules ();
+-
+-      (* Tell ocamlbuild about the camlp4 library. *)
+-      ocaml_lib ~extern:true ~dir:(ocamlfind_query "camlp4") "camlp4";
+-
+-      (* Add preproc.cmo to the ocaml pre-processor when use_preproc is set *)
+-      flag ["ocaml"; "pp"; "use_preproc"] (A "preproc.cmo");
+-
+-      (* Running ocamldep on ocaml code that is tagged with use_preproc will
+-         require the cmo.  Note that you only need this declaration when the
+-         syntax extension is part of the sources to be compiled with
+-         ocamlbuild. *)
+-      dep ["ocaml"; "ocamldep"; "use_preproc"] ["preproc.cmo"];
+-
+-      flag ["ocaml"; "parser" ; "menhir" ; "use_menhir"] (S[A"--explain";
+-                                                            A"--table"]);
+-
+-      flag ["ocaml"; "compile" ] (S[A"-w"; A"+A-e"; A"-warn-error"; A"+P+U";
+-                                    A"-w"; A"-9-48"]);
+-
+-  | _ -> ()
+-
+-let _ = dispatch df
+diff --git a/compiler/myocamlbuild_config.ml b/compiler/myocamlbuild_config.ml
+deleted file mode 100644
+index c3349d48..00000000
+--- a/compiler/myocamlbuild_config.ml
++++ /dev/null
+@@ -1,72 +0,0 @@
+-(***********************************************************************)
+-(*                                                                     *)
+-(*                             Heptagon                                *)
+-(*                                                                     *)
+-(* Gwenael Delaval, LIG/INRIA, UJF                                     *)
+-(* Leonard Gerard, Parkas, ENS                                         *)
+-(* Adrien Guatto, Parkas, ENS                                          *)
+-(* Cedric Pasteur, Parkas, ENS                                         *)
+-(* Marc Pouzet, Parkas, ENS                                            *)
+-(*                                                                     *)
+-(* Copyright 2012 ENS, INRIA, UJF                                      *)
+-(*                                                                     *)
+-(* This file is part of the Heptagon compiler.                         *)
+-(*                                                                     *)
+-(* Heptagon is free software: you can redistribute it and/or modify it *)
+-(* under the terms of the GNU General Public License as published by   *)
+-(* the Free Software Foundation, either version 3 of the License, or   *)
+-(* (at your option) any later version.                                 *)
+-(*                                                                     *)
+-(* Heptagon is distributed in the hope that it will be useful,         *)
+-(* but WITHOUT ANY WARRANTY; without even the implied warranty of      *)
+-(* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the       *)
+-(* GNU General Public License for more details.                        *)
+-(*                                                                     *)
+-(* You should have received a copy of the GNU General Public License   *)
+-(* along with Heptagon.  If not, see <http://www.gnu.org/licenses/>    *)
+-(*                                                                     *)
+-(***********************************************************************)
+-open Ocamlbuild_plugin
+-
+-(* this is supposed to list available syntaxes, but I don't know how to do it. *)
+-let find_syntaxes () = ["camlp4o"; "camlp4r"]
+-
+-let ocamlfind_query pkg =
+-  let cmd = Printf.sprintf "ocamlfind query %s" (Filename.quote pkg) in
+-  Ocamlbuild_pack.My_unix.run_and_open cmd (fun ic -> input_line ic)
+-
+-let ocamlfind_after_rules () =
+-
+-  (* Like -package but for extensions syntax. Morover -syntax is useless
+-   * when linking. *)
+-  List.iter begin fun syntax ->
+-    flag ["ocaml"; "compile";  "syntax_"^syntax] & S[A"-syntax"; A syntax];
+-    flag ["ocaml"; "ocamldep"; "syntax_"^syntax] & S[A"-syntax"; A syntax];
+-    flag ["ocaml"; "doc";      "syntax_"^syntax] & S[A"-syntax"; A syntax];
+-    flag ["ocaml"; "infer_interface"; "syntax_"^syntax] & S[A"-syntax"; A syntax];
+-  end (find_syntaxes ());
+-
+-  flag ["ocaml"; "doc"; "thread"] & S[A"-I"; A"+threads"];
+-
+-  (* Use both ml and mli files to build documentation: *)
+-  rule "ocaml: ml & mli -> odoc"
+-    ~insert:`top
+-    ~prod:"%.odoc"
+-    (* "%.cmo" so that cmis of ml dependencies are already built: *)
+-    ~deps:["%.ml"; "%.mli"; "%.cmo"]
+-    begin fun env build ->
+-      let mli = env "%.mli" and ml = env "%.ml" and odoc = env "%.odoc" in
+-      let tags =
+-        (Tags.union (tags_of_pathname mli) (tags_of_pathname ml))
+-        ++"doc_use_interf_n_implem"++"ocaml"++"doc" in
+-      let include_dirs = Pathname.include_dirs_of (Pathname.dirname ml) in
+-      let include_flags =
+-        List.fold_right (fun p acc -> A"-I" :: A p :: acc) include_dirs [] in
+-      Cmd (S [!Options.ocamldoc; A"-dump"; Px odoc;
+-              T (tags++"doc"++"pp"); S (include_flags);
+-              A"-intf"; P mli; A"-impl"; P ml])
+-    end;
+-
+-  (* Specifying merge options. *)
+-  pflag ["ocaml"; "doc"; "doc_use_interf_n_implem"] "merge"
+-    (fun s -> S[A"-m"; A s]);
+diff --git a/compiler/preproc.ml b/compiler/preproc.ml
+deleted file mode 100644
+index f65c772a..00000000
+--- a/compiler/preproc.ml
++++ /dev/null
+@@ -1,89 +0,0 @@
+-(***********************************************************************)
+-(*                                                                     *)
+-(*                             Heptagon                                *)
+-(*                                                                     *)
+-(* Gwenael Delaval, LIG/INRIA, UJF                                     *)
+-(* Leonard Gerard, Parkas, ENS                                         *)
+-(* Adrien Guatto, Parkas, ENS                                          *)
+-(* Cedric Pasteur, Parkas, ENS                                         *)
+-(* Marc Pouzet, Parkas, ENS                                            *)
+-(* Marc Pouzet, Parkas, ENS                                            *)
+-(*                                                                     *)
+-(* Copyright 2012 ENS, INRIA, UJF                                      *)
+-(*                                                                     *)
+-(* This file is part of the Heptagon compiler.                         *)
+-(*                                                                     *)
+-(* Heptagon is free software: you can redistribute it and/or modify it *)
+-(* under the terms of the GNU General Public License as published by   *)
+-(* the Free Software Foundation, either version 3 of the License, or   *)
+-(* (at your option) any later version.                                 *)
+-(*                                                                     *)
+-(* Heptagon is distributed in the hope that it will be useful,         *)
+-(* but WITHOUT ANY WARRANTY; without even the implied warranty of      *)
+-(* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the       *)
+-(* GNU General Public License for more details.                        *)
+-(*                                                                     *)
+-(* You should have received a copy of the GNU General Public License   *)
+-(* along with Heptagon.  If not, see <http://www.gnu.org/licenses/>    *)
+-(*                                                                     *)
+-(***********************************************************************)
+-(** {1 Micro pre-processor for Heptagon}
+-
+-    This module uses camlp4 to replace some fixed strings by string literals at
+-    compile-time. At the moment, we only replace DATE by the current date and
+-    STDLIB by "../../lib". Each pseudo-variable can be overriden by the
+-    environment variable of the same name. *)
+-
+-open Camlp4.PreCast
+-open Unix
+-
+-(** {2 Compile-time strings} *)
+-
+-(** [date] is a string denoting the current date. *)
+-let date =
+-  let days = [| "sunday"; "monday"; "tuesday"; "wednesday"; "thursday";
+-                "friday"; "saturday" |]
+-  and months = [| "january"; "february"; "march"; "april"; "may"; "june";
+-                  "july"; "august"; "september"; "october"; "november";
+-                  "december" |] in
+-
+-  let tm = Unix.localtime (Unix.gettimeofday ()) in
+-
+-  let (day, month) =
+-    let prefix s = String.sub s 0 3 in
+-    (prefix days.(tm.tm_wday), prefix months.(tm.tm_mon)) in
+-
+-  Format.sprintf "%s. %s. %d %d:%d:%d CET %d"
+-    day month tm.tm_mday tm.tm_hour tm.tm_min tm.tm_sec (1900 + tm.tm_year)
+-
+-
+-(** [stdlib] is the location of the standard Heptagon library. *)
+-let stdlib =
+-  try
+-    Unix.getenv "STDLIB"
+-  with
+-    | Not_found ->
+-      let wd = Unix.getcwd () in
+-      Filename.concat (Filename.dirname (Filename.dirname wd)) "lib"
+-
+-(** Association list defining bindings between constant and our "compile-time
+-    constants". *)
+-let env = [("DATE", date); ("STDLIB", stdlib)]
+-
+-(** {2 Camlp4 hook} *)
+-
+-(** Our home-grown super-duper syntax filter. Looks for string constants present
+-    in [subst] and replaces them according to the couple found in the
+-    environment defined above. *)
+-let filter =
+-object
+-  inherit Ast.map
+-  method! expr e = match e with
+-    | <:expr< $str:s$ >> when List.mem_assoc s env ->
+-      let repl = try Sys.getenv s with Not_found -> List.assoc s env in
+-      <:expr@here< $str:repl$ >>
+-    | x -> x
+-end;;
+-
+-(** Tell Camlp4 about it. *)
+-AstFilters.register_str_item_filter filter#str_item
+diff --git a/compiler/utilities/global/_tags b/compiler/utilities/global/_tags
+deleted file mode 100644
+index d4221714..00000000
+--- a/compiler/utilities/global/_tags
++++ /dev/null
+@@ -1 +0,0 @@
+-<compiler_options.ml>: camlp4o, use_preproc
+diff --git a/compiler/utilities/global/compiler_options.ml b/compiler/utilities/global/compiler_options.ml
+index c9a03ebe..c5622d84 100644
+--- a/compiler/utilities/global/compiler_options.ml
++++ b/compiler/utilities/global/compiler_options.ml
+@@ -33,12 +33,31 @@ open Names
+ 
+ (* version of the compiler *)
+ let version = "1.05.00"
+-let date = "DATE"
++let date =
++  let open Unix in
++  let tm = localtime (gettimeofday ()) in
++  let days = [| "sunday"; "monday"; "tuesday"; "wednesday"; "thursday";
++                "friday"; "saturday" |] in
++  let months = [| "january"; "february"; "march"; "april"; "may"; "june";
++                  "july"; "august"; "september"; "october"; "november";
++                  "december" |] in
++  let day = String.sub days.(tm.tm_wday) 0 3 in
++  let month = String.sub months.(tm.tm_mon) 0 3 in
++  Printf.sprintf "%s. %s. %d %d:%d:%d CET %d"
++    day month tm.tm_mday tm.tm_hour tm.tm_min tm.tm_sec (1900 + tm.tm_year)
+ 
+ (* standard module *)
+ let pervasives_module = Pervasives
+-let standard_lib = "STDLIB"
+-let standard_lib = try Sys.getenv "HEPTLIB" with Not_found -> standard_lib
++let standard_lib =
++  try Sys.getenv "HEPTLIB"
++  with Not_found ->
++    try Sys.getenv "STDLIB"
++    with Not_found ->
++      let bindir = Filename.dirname Sys.executable_name in
++      Filename.concat
++        (Filename.concat bindir "..")
++        (Filename.concat (Filename.concat "lib" "ocaml") "heptagon")
++
+ 
+ (* list of modules initially opened *)
+ let default_used_modules = ref [pervasives_module]
+@@ -55,7 +74,7 @@ and add_include d =
+ 
+ (* where is the standard library *)
+ let locate_stdlib () =
+-  print_string (try Sys.getenv "HEPTLIB" with Not_found -> standard_lib);
++  print_string (standard_lib);
+   print_newline ();
+   exit 0
+ 
+diff --git a/configure.in b/configure.in
+index 30a89b2d..bf09deb5 100644
+--- a/configure.in
++++ b/configure.in
+@@ -34,11 +34,6 @@ case "$OCAMLVERSION" in
+      AC_MSG_ERROR(You need Objective Caml 4.00 or higher);;
+ esac
+ 
+-AC_PROG_CAMLP4
+-if test "$CAMLP4OF" = "no"; then
+-  AC_MSG_ERROR([Please install Camlp4 with extensions (camlp4of command)])
+-fi
+-
+ AC_PROG_FINDLIB
+ if test "$OCAMLFIND" = "no"; then
+   AC_MSG_ERROR([Please install OCaml findlib (the ocamlfind command)])
+@@ -74,13 +69,8 @@ AC_CHECK_OCAML_PKG([lablgtk2])
+ dnl version should be >= 0.14
+ AC_CHECK_OCAML_PKG([reatk.ctrlNbac])
+  if test "${OCAML_PKG_reatk_ctrlNbac}" = "no"; then
+-   package_reatk_ctrlNbac="ocaml"; #dummy flag
+-   ctrln_pp="-UENABLE_CTRLN"
+    enable_ctrl2ept=no
+    AC_MSG_WARN([Controllable-Nbac backend and translators disabled.])
+- else
+-   package_reatk_ctrlNbac="package(reatk.ctrlNbac)"
+-   ctrln_pp="-DENABLE_CTRLN"
+  fi
+ 
+ if test "$enable_local_stdlib" = "yes"; then
+@@ -103,6 +93,4 @@ AC_SUBST(targets)
+ 
+ AC_OUTPUT(config)
+ 
+-AC_SUBST(package_reatk_ctrlNbac)
+-AC_SUBST(ctrln_pp)
+ AC_OUTPUT(compiler/_tags)
+diff --git a/heptagon.opam b/heptagon.opam
+index 3e0911f4..cc052be8 100644
+--- a/heptagon.opam
++++ b/heptagon.opam
+@@ -26,7 +26,6 @@ depends: [
+   "ocamlfind"  {build}
+   "menhir"     {build & >= "20141215"}
+   "ocamlgraph" {build}
+-  "camlp4"     {build}
+   "ocamlbuild" {build}
+ ]
+ depopts: [
+-- 
+2.50.0
+

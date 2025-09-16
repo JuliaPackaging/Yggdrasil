@@ -9,4 +9,4 @@ build_tarballs(ARGS, configure(version, llvm_version)...;
                clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"6",
                preferred_llvm_version=llvm_version)
 
-# Build trigger: 1
+# Build trigger: 2

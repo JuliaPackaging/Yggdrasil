@@ -22,8 +22,8 @@ import Pkg.Types: VersionSpec
 # to all components.
 
 name = "polymake"
-upstream_version = v"4.13"
-version_offset = v"0.0.2"
+upstream_version = v"4.14"
+version_offset = v"0.0.0"
 version = VersionNumber(upstream_version.major*100+version_offset.major,
                         upstream_version.minor*100+version_offset.minor,
                         version_offset.patch)
@@ -31,7 +31,7 @@ version = VersionNumber(upstream_version.major*100+version_offset.major,
 # Collection of sources required to build polymake
 sources = [
     ArchiveSource("https://polymake.org/lib/exe/fetch.php/download/polymake-$(upstream_version.major).$(upstream_version.minor).tar.bz2",
-                  "2bce8b3680ef007c9b760a19821c22f1299403cf5b1c67d1a61d3533e23ac7dc"),
+                  "d9e71420c65adda127d7bf06e5c888562f3358c13fc04955954ccaca8f968ec6"),
     DirectorySource("./bundled")
 ]
 
@@ -133,6 +133,8 @@ platforms = filter!(p -> !Sys.iswindows(p) &&
                     supported_platforms())
 # filter aarch64 freebsd until supported by all dependencies
 filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+# filter riscv64 until supported by all dependencies
+filter!(p -> arch(p) != "riscv64", platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -148,26 +150,26 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     HostBuildDependency(PackageSpec(name="Perl_jll", version=v"5.34.1")),
-    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
-    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD systems),
+    # and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
 
-    Dependency("GMP_jll", v"6.2.0"),
+    Dependency("GMP_jll", v"6.2.1"),
     Dependency("MPFR_jll", v"4.1.1"),
-    Dependency("FLINT_jll", compat = "~300.100.300"),
+    Dependency("FLINT_jll", compat = "~301.300.0"),
     Dependency("MongoC_jll", compat = "~1.28.1"),
     Dependency("PPL_jll", compat = "~1.2.1"),
     Dependency("Perl_jll", compat = "=5.34.1"),
-    Dependency("SCIP_jll", compat = "~800.0.301"),
+    Dependency("SCIP_jll", compat = "~900.200.200"),
     Dependency("bliss_jll", compat = "~0.77.0"),
-    Dependency("boost_jll", compat = "=1.76.0"),
-    Dependency("cddlib_jll", compat = "~0.94.14"),
+    Dependency("boost_jll", compat = "=1.87.0"),
+    Dependency("cddlib_jll", compat = "~0.94.15"),
     Dependency("lrslib_jll", compat = "~0.3.3"),
-    Dependency("normaliz_jll", compat = "~300.1000.200"),
+    Dependency("normaliz_jll", compat = "~300.1001.501"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6",
-               preferred_gcc_version=v"7")
+               julia_compat="1.10",
+               preferred_gcc_version=v"11")

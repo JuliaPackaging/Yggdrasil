@@ -3,11 +3,13 @@
 using BinaryBuilder
 
 name = "CoolProp"
-version = v"6.6.0"
+version = v"7.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://sourceforge.net/projects/coolprop/files/CoolProp/$version/source/CoolProp_sources.zip", "ba3077ad24b36617fd7ab24310ce646a65bcbc8fde47f8de128cde2c72124b84"),
+    ArchiveSource("https://sourceforge.net/projects/coolprop/files/CoolProp/$version/source/CoolProp_sources.zip", "10686adf06780d24a9d5dbccbf7b8f8a8abb84801b51f3f17e620a37cffedcd7"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.0.sdk.tar.xz",
+                  "d3feee3ef9c6016b526e1901013f264467bb927865a03422a9cb925991cc9783"),
 ]
 
 # Bash recipe for building across all platforms
@@ -18,6 +20,12 @@ sed -i 's/Windows/windows/' source/dev/Tickets/60.cpp
 sed -i 's/Windows/windows/' source/src/CPfilepaths.cpp
 # Do not add `-m32`/`-m64` flags
 sed -i 's/-m${BITNESS}//' source/CMakeLists.txt
+
+if [[ "${target}" == *apple-darwin* ]]; then
+    apple_sdk_root=$WORKSPACE/srcdir/MacOSX11.0.sdk
+    sed -i "s!/opt/$target/$target/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
+    export MACOSX_DEPLOYMENT_TARGET=10.14
+fi
 
 mkdir build
 cd build
@@ -43,4 +51,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"10", julia_compat="1.6")

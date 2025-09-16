@@ -30,7 +30,7 @@ else
 end
 
 const cuda_version_preference = if haskey(preferences, "cuda_version")
-    expected = ("none", "12.1", "12.4", "12.6")
+    expected = ("none", "12.4", "12.6", "12.8", "13.0")
     if isa(preferences["cuda_version"], String) && preferences["cuda_version"] in expected
         preferences["cuda_version"]
     else
@@ -76,7 +76,7 @@ function augment_platform!(platform::Platform)
 
     # Don't do GPU discovery on platforms for which we don't have GPU builds.
     # Keep this in sync with list of platforms for which we actually build with GPU support.
-    if !Sys.isapple(platform)
+    if !Sys.isapple(platform) && !Sys.iswindows()
 
         cuname = if Sys.iswindows()
             Libdl.find_library("nvcuda")
@@ -93,12 +93,14 @@ function augment_platform!(platform::Platform)
             Libdl.dlclose(handle)
 
             if cuda_version_tag == "none" && current_cuda_version isa VersionNumber
-                if v"12.1" <= current_cuda_version < v"12.4" && arch(platform) == "x86_64"
-                    cuda_version_tag = "12.1"
-                elseif v"12.4" <= current_cuda_version < v"12.6"
+                if v"12.4" <= current_cuda_version < v"12.6"
                     cuda_version_tag = "12.4"
-                elseif v"12.6" <= current_cuda_version < v"13"
+                elseif v"12.6" <= current_cuda_version < v"12.8"
                     cuda_version_tag = "12.6"
+                elseif v"12.8" <= current_cuda_version < v"13"
+                    cuda_version_tag = "12.8"
+                elseif v"13.0" <= current_cuda_version < v"14" && arch(platform) == "x86_64"
+                    cuda_version_tag = "13.0"
                 else
                     @debug "CUDA version $(current_cuda_version) in $(path) not supported with this version of Reactant"
                 end
@@ -137,7 +139,7 @@ function augment_platform!(platform::Platform)
         platform["gpu"] = gpu
     end
 
-    gpu = get(ENV, "REACTANT_CUDA_VERSION", cuda_version_tag)
+    cuda_version_tag = get(ENV, "REACTANT_CUDA_VERSION", cuda_version_tag)
     if !haskey(platform, "cuda_version")
         platform["cuda_version"] = cuda_version_tag
     end

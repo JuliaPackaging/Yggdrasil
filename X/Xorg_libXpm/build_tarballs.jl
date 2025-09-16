@@ -3,20 +3,20 @@
 using BinaryBuilder, Pkg
 
 name = "Xorg_libXpm"
-version = v"3.5.13"
+version = v"3.5.17"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.x.org/archive/individual/lib/libXpm-$(version).tar.bz2",
-                  "9cd1da57588b6cb71450eff2273ef6b657537a9ac4d02d0014228845b935ac25"),
+    ArchiveSource("https://www.x.org/archive/individual/lib/libXpm-$(version).tar.xz",
+                  "64b31f81019e7d388c822b0b28af8d51c4622b83f1f0cb6fa3fc95e271226e43"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libXpm-*/
+cd $WORKSPACE/srcdir/libXpm-*
 # We need a native xgettext
 apk add gettext
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-static=no
 make -j${nproc}
 make install
 """
@@ -32,11 +32,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(name="Xorg_xorgproto_jll", uuid="c4d99508-4286-5418-9131-c86396af500b")),
-    Dependency(PackageSpec(name="Xorg_libX11_jll", uuid="4f6342f7-b3d2-589e-9d20-edeb45f2b2bc")),
-    # TOOD: verify Gettext is actually needed at runtime
-    Dependency(PackageSpec(name="Gettext_jll", uuid="78b55507-aeef-58d4-861c-77aaff3498b1"), v"0.20.1"; compat="=0.20.1"),
+    BuildDependency("Xorg_util_macros_jll"),
+    BuildDependency("Xorg_xorgproto_jll"),
+    Dependency("Xorg_libX11_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

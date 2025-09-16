@@ -6,8 +6,9 @@ using BinaryBuilderBase
 include(joinpath(@__DIR__, "..", "..", "platforms", "microarchitectures.jl"))
 
 name = "finufft"
-version = v"2.3.1"
-commit_hash = "1fea25405c174e34d2ddb793666060c3d79a43d1" # v2.3.1
+version = v"2.4.1"
+commit_hash = "e7144a5c08cbaf3e3b344a4fdd92bc3c7e468ff2" # v2.4.1
+
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/flatironinstitute/finufft.git", commit_hash)
@@ -33,6 +34,8 @@ cmake --install .
 platforms = supported_platforms()
 # xsimd library does not work with armv6, armv7, powerpc
 filter!(p -> !(contains(arch(p), "armv") || contains(arch(p), "powerpc")), platforms)
+# riscv64 does not build, remove for now
+filter!(p -> !(contains(arch(p), "riscv64")), platforms)
 # FreeBSD aarch64 does not build, remove for now
 filter!(p -> !(p["os"]=="freebsd" && p["arch"]=="aarch64"), platforms)
 # Expand for microarchitectures on x86_64 (library doesn't have CPU dispatching)

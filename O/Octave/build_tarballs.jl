@@ -1,18 +1,20 @@
 using BinaryBuilder, Pkg
 
 name = "Octave"
-version = v"9.3.0" 
-bb_ver = v"9.3.1" # Bump patch level to have a new version for Ygg compat
+version = v"9.4.0"
 
 # Collection of sources required to build Octave
 sources = [
-   ArchiveSource("https://ftpmirror.gnu.org/octave/octave-$(version).tar.gz",
-                  "809fa39a7acc84815bf4dc4d2d7e6b228ce75a07f3b2413f3313aa8e0aaa3287"),
+  ArchiveSource("https://ftpmirror.gnu.org/octave/octave-$(version).tar.gz",
+                "da9481205bfa717660b7d4a16732d8b2d58aadceab4993d41242a8e2848ea6c1"),
+  DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/octave*
+
+atomic_patch -p0 ../patches/freebsd_sig_atomic_t.patch
 
 apk add texinfo
 
@@ -42,11 +44,13 @@ make -j${nproc}
 make install
 """
 
-# build on all supported platforms
 platforms = supported_platforms()
-filter!(!Sys.isfreebsd, platforms)
+# Disable RISC-V
 filter!(p -> arch(p) != "riscv64", platforms)
 platforms = expand_cxxstring_abis(platforms)
+platforms = expand_gfortran_versions(platforms)
+# Disable old libgfortran builds - only use libgfortran5
+filter!(p -> !(any(libgfortran_version(p) .== (v"4.0.0", v"3.0.0"))), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -58,10 +62,9 @@ products = [
 dependencies = [
     HostBuildDependency("flex_jll"),
     HostBuildDependency("Bison_jll"),
+    HostBuildDependency("gperf_jll"),
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"),
-               v"5.12.0";  # build version
-               compat="5.8.0"),
+    Dependency("libblastrampoline_jll"; compat="5.11.0"),
     Dependency("OpenBLAS32_jll"),
     Dependency("SuiteSparse32_jll"),
     Dependency("Arpack32_jll"),
@@ -81,10 +84,9 @@ dependencies = [
     Dependency("HDF5_jll"),
     Dependency("rapidjson_jll"),
     Dependency("libsndfile_jll"),
-#    Dependency("GraphicsMagick_jll"),
-
+    Dependency("GraphicsMagick_jll"),
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, bb_ver, sources, script, platforms, products, dependencies;
-               julia_compat="1.8", clang_use_lld=false, preferred_gcc_version=v"10")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.10", clang_use_lld=false, preferred_gcc_version=v"10")

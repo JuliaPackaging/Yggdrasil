@@ -6,18 +6,18 @@ const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "libNVVM"
-version = v"4.0.3"
-cuda_version = v"12.5.0"
+version = v"4.0.5"
+cuda_version = v"13.0"
 
 script = raw"""
-cd ${WORKSPACE}/srcdir/cuda_nvcc-*
+cd ${WORKSPACE}/srcdir/libnvvm-*
 install_license LICENSE
 
 mkdir -p ${bindir} ${libdir} ${prefix}/include ${prefix}/share
 if [[ ${target} == *-linux-gnu ]]; then
     mv nvvm/lib64/libnvvm.so* ${libdir}
 elif [[ ${target} == x86_64-w64-mingw32 ]]; then
-    mv nvvm/bin/nvvm64_*.dll ${bindir}
+    mv nvvm/bin/x64/nvvm64_*.dll ${bindir}
     chmod +x ${bindir}/*.dll
 fi
 mv nvvm/include/* ${prefix}/include/
@@ -25,8 +25,7 @@ mv nvvm/libdevice ${prefix}/share/
 """
 
 platforms = [Platform("x86_64", "linux"),
-             Platform("aarch64", "linux"; cuda_platform="jetson"),
-             Platform("aarch64", "linux"; cuda_platform="sbsa"),
+             Platform("aarch64", "linux"),
              Platform("x86_64", "windows")]
 
 products = [
@@ -39,8 +38,11 @@ builds = []
 for platform in platforms
     should_build_platform(triplet(platform)) || continue
 
-    sources = get_sources("cuda", ["cuda_nvcc"]; version=cuda_version, platform)
-    push!(builds, (; platforms=[platform], sources))
+    augmented_platform = deepcopy(platform)
+    augmented_platform["cuda"] = "$(cuda_version.major)"
+    
+    sources = get_sources("cuda", ["libnvvm"]; version=cuda_version, platform=augmented_platform)
+    push!(builds, (; platforms=[augmented_platform], sources))
 end
 
 # don't allow `build_tarballs` to override platform selection based on ARGS.

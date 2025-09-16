@@ -2,11 +2,11 @@ using BinaryBuilder, Pkg
 
 # Collection of sources required to build Pixman
 name = "Pixman"
-version = v"0.44.2"
+version = v"0.46.4"
 
 sources = [
     ArchiveSource("https://www.cairographics.org/releases/pixman-$(version).tar.gz",
-                  "6349061ce1a338ab6952b92194d1b0377472244208d47ff25bef86fc71973466"),
+                  "d09c44ebc3bd5bee7021c79f922fe8fb2fb57f7320f55e97ff9914d2346a591c"),
     DirectorySource("bundled"),
 ]
 
@@ -24,6 +24,8 @@ mkdir build && cd build
 meson setup --cross-file="${MESON_TARGET_TOOLCHAIN}" --buildtype=release -Dtests=disabled -Ddemos=disabled ..
 ninja -j${nproc}
 ninja install
+
+install_license ../COPYING
 """
 
 # These are the platforms we will build for by default, unless further
@@ -48,5 +50,3 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"6")
-
-# Build trigger: 1
