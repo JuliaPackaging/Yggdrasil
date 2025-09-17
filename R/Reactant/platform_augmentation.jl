@@ -29,12 +29,12 @@ else
     nothing
 end
 
-const cuda_version_preference = if haskey(preferences, "cuda_version")
-    expected = ("none", "12.9", "13.0")
-    if isa(preferences["cuda_version"], String) && preferences["cuda_version"] in expected
-        preferences["cuda_version"]
+const cuda_version_preference = if haskey(preferences, "gpu_version")
+    expected = ("none", "12.9", "13.0", "7.0")
+    if isa(preferences["gpu_version"], String) && preferences["gpu_version"] in expected
+        preferences["gpu_version"]
     else
-        @error "CUDA version preference is not valid; expected $(join(expected, ", ", ", or ")), but got '$(preferences["cuda_version"])'"
+        @error "GPU version preference is not valid; expected $(join(expected, ", ", ", or ")), but got '$(preferences["gpu_version"])'"
         nothing
     end
 else
@@ -72,7 +72,7 @@ function augment_platform!(platform::Platform)
     # user explicitly asked for no GPU in the preferences.
     gpu = something(gpu_preference, "undecided")
 
-    cuda_version_tag = something(cuda_version_preference, "none")
+    gpu_version_tag = something(gpu_version_preference, "none")
 
     # Don't do GPU discovery on platforms for which we don't have GPU builds.
     # Keep this in sync with list of platforms for which we actually build with GPU support.
@@ -102,7 +102,7 @@ function augment_platform!(platform::Platform)
                 end
             end
 
-            if cuda_version_tag != "none"
+            if gpu_version_tag != "none"
                 @debug "Adding include dependency on $(path)"
                 Base.include_dependency(path)
                 gpu = "cuda"
@@ -135,9 +135,9 @@ function augment_platform!(platform::Platform)
         platform["gpu"] = gpu
     end
 
-    cuda_version_tag = get(ENV, "REACTANT_CUDA_VERSION", cuda_version_tag)
-    if !haskey(platform, "cuda_version")
-        platform["cuda_version"] = cuda_version_tag
+    gpu_version_tag = get(ENV, "REACTANT_GPU_VERSION", gpu_version_tag)
+    if !haskey(platform, "gpu_version")
+        platform["gpu_version"] = gpu_version_tag
     end
 
     return platform
