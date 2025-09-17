@@ -298,6 +298,7 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
 		# anything before 942 hits a 128-bit error
 		--action_env=TF_ROCM_AMDGPU_TARGETS="gfx942,gfx1030,gfx1100,gfx1200,gfx1201"
 
+                --linkopt="-L$ROCM_PATH/lib/rocm_sysdeps/lib"
 
 		#--repo_env="OS=ubuntu_22.04"
 		#--repo_env="ROCM_VERSION=$HERMETIC_ROCM_VERSION"
