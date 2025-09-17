@@ -294,7 +294,11 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
     BAZEL_BUILD_FLAGS+=(
 		--action_env=ROCM_PATH=$ROCM_PATH
 		--repo_env=ROCM_PATH=$ROCM_PATH
-		
+	
+		# anything before 942 hits a 128-bit error
+		--action_env=TF_ROCM_AMDGPU_TARGETS="gfx942,gfx1030,gfx1100,gfx1200,gfx1201"
+
+
 		#--repo_env="OS=ubuntu_22.04"
 		#--repo_env="ROCM_VERSION=$HERMETIC_ROCM_VERSION"
 		#--@local_config_rocm//rocm:rocm_path_type=hermetic
