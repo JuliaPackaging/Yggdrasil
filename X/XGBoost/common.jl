@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 # Collection of sources required to build XGBoost
 function get_sources()
     return [
-        GitSource("https://github.com/dmlc/xgboost.git","62e7923619352c4079b24303b367134486b1c84f"), # v2.1.4
+        GitSource("https://github.com/dmlc/xgboost.git","62e7923619352c4079b24303b367134486b1c84f"),
         ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49")
     ]

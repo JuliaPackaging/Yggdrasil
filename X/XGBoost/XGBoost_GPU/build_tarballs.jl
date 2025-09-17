@@ -44,7 +44,7 @@ augment_platform_block = CUDA.augment
 # The products that we will ensure are always built
 products = get_products()
 
-# XGBoost v2.1 doesn't support only has CUDA support for linux builds
+# XGBoost v2.1 only has CUDA support for linux builds and doesn't support CUDA v13
 # note also builds don't work for CUDA v12.5 and v12.6 due to a bug in CCCL (the patch fix for this is 
 # not available in the shipped CUDA SDK)
 # see the following issues: https://github.com/dmlc/xgboost/issues/10555, https://github.com/dmlc/xgboost/issues/11640
