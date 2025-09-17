@@ -32,6 +32,7 @@ else
     rm -f /lib/libcrypto.so*
     rm -f /usr/lib/libcrypto.so*
 
+    # Including https://github.com/openssl/openssl/issues/28575#issuecomment-3300220951 to avoid compatibility issues with OpenSSL
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/version-check.patch
 
     conf_args=()
