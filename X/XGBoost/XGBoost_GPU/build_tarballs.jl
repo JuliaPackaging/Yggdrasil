@@ -58,8 +58,6 @@ platforms = expand_cxxstring_abis(
     )
 )
 
-platforms = [Platform("x86_64", "linux"; cxxstring_abi="cxx11", cuda = "12.5")]
-
 
 for platform ∈ platforms
     
