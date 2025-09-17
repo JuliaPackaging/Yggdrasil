@@ -6,7 +6,7 @@ upstream_version = v"7.1.2-3"
 version = VersionNumber(
     upstream_version.major,
     upstream_version.minor,
-    upstream_version.patch * 1000 + upstream_version.prerelease[1] + 1
+    upstream_version.patch * 1000 + upstream_version.prerelease[1] + 2
 )
 
 # Collection of sources required to build imagemagick
@@ -50,6 +50,7 @@ products = [
     LibraryProduct(["libMagickWand", "libMagickWand-7.Q16HDRI"], :libwand),
     ExecutableProduct("convert", :imagemagick_convert),
     ExecutableProduct("identify", :identify),
+    ExecutableProduct("magick", :magick),
     ExecutableProduct("montage", :montage),
     ExecutableProduct("mogrify", :mogrify),
 ]
