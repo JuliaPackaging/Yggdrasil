@@ -301,11 +301,11 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
 
 		--copt=--sysroot=/opt/x86_64-linux-gnu/x86_64-linux-gnu/sys-root
 		--copt=--gcc-install-dir=/opt/x86_64-linux-gnu/lib/gcc/x86_64-linux-gnu/13.2.0
-		--copt=-isystem=/opt/x86_64-linux-gnu/x86_64-linux-gnu/include/c++/13.2.0
-		--copt=-isystem=/opt/x86_64-linux-gnu/x86_64-linux-gnu/include/c++/13.2.0/x86_64-linux-gnu
-		--copt=-isystem=/opt/x86_64-linux-gnu/x86_64-linux-gnu/include/c++/13.2.0/backward
-		--copt=-isystem=/opt/x86_64-linux-gnu/x86_64-linux-gnu/include
-		--copt=-isystem=/opt/x86_64-linux-gnu/x86_64-linux-gnu/sys-root/include
+		--copt=-isystem-after=/opt/x86_64-linux-gnu/x86_64-linux-gnu/include/c++/13.2.0
+		--copt=-isystem-after=/opt/x86_64-linux-gnu/x86_64-linux-gnu/include/c++/13.2.0/x86_64-linux-gnu
+		--copt=-isystem-after=/opt/x86_64-linux-gnu/x86_64-linux-gnu/include/c++/13.2.0/backward
+		--copt=-isystem-after=/opt/x86_64-linux-gnu/x86_64-linux-gnu/include
+		--copt=-isystem-after=/opt/x86_64-linux-gnu/x86_64-linux-gnu/sys-root/include
 	    --action_env=CLANG_COMPILER_PATH=$(which clang)
 	    --define=using_clang=true
     )
