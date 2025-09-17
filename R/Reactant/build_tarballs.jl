@@ -53,6 +53,12 @@ if [[ "${target}" == *-apple-darwin* ]]; then
     export MACOSX_DEPLOYMENT_TARGET=12.3
 fi
 
+if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
+    export ROCM_PATH=$WORKSPACE/srcdir
+    ln -s $ROCM_PATH/lib/llvm/amdgcn $ROCM_PATH/amdgcn
+    apk add coreutils
+fi
+
 mkdir -p .local/bin
 export LOCAL="`pwd`/.local/bin"
 export PATH="$LOCAL:$PATH"
@@ -277,14 +283,26 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
             --linkopt="-stdlib=libstdc++"
 	)
     fi
+    
+    BAZEL_BUILD_FLAGS+=(--copt=-stdlib=libstdc++)
 
+    export HIPCC_ENV="--sysroot=/opt/x86_64-linux-gnu/x86_64-linux-gnu/sys-root;-D_GLIBCXX_USE_CXX11_ABI=1;-stdlib=libstdc++;--gcc-install-dir=/opt/x86_64-linux-gnu/lib/gcc/x86_64-linux-gnu/13.2.0;-isystem/opt/x86_64-linux-gnu/x86_64-linux-gnu/include/c++/13.2.0"
+
+	# 	--action_env=HIP_PATH=${prefix}/hip
+	# 	--action_env=HSA_PATH=${prefix}
+	# 	--action_env=HIP_CLANG_PATH=${prefix}/llvm/bin
+	# 	--action_env=HIP_LIB_PATH=${prefix}/hip/lib
+	# 	--action_env=DEVICE_LIB_PATH=${prefix}/amdgcn/bitcode
     BAZEL_BUILD_FLAGS+=(
-		--action_env=ROCM_PATH=${prefix}
-		--action_env=HIP_PATH=${prefix}/hip
-		--action_env=HSA_PATH=${prefix}
-		--action_env=HIP_CLANG_PATH=${prefix}/llvm/bin
-		--action_env=HIP_LIB_PATH=${prefix}/hip/lib
-		--action_env=DEVICE_LIB_PATH=${prefix}/amdgcn/bitcode
+		--action_env=ROCM_PATH=$ROCM_PATH
+		--repo_env=ROCM_PATH=$ROCM_PATH
+		--copt=--sysroot=/opt/x86_64-linux-gnu/x86_64-linux-gnu/sys-root
+		--copt=--gcc-install-dir=/opt/x86_64-linux-gnu/lib/gcc/x86_64-linux-gnu/13.2.0
+		--copt=-isystem=/opt/x86_64-linux-gnu/x86_64-linux-gnu/include/c++/13.2.0
+		--copt=-isystem=/opt/x86_64-linux-gnu/x86_64-linux-gnu/include/c++/13.2.0/x86_64-linux-gnu
+		--copt=-isystem=/opt/x86_64-linux-gnu/x86_64-linux-gnu/include/c++/13.2.0/backward
+		--copt=-isystem=/opt/x86_64-linux-gnu/x86_64-linux-gnu/include
+		--copt=-isystem=/opt/x86_64-linux-gnu/x86_64-linux-gnu/sys-root/include
 	    --action_env=CLANG_COMPILER_PATH=$(which clang)
 	    --define=using_clang=true
     )
@@ -413,8 +431,9 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
     cp -v bazel-bin/_solib_local/*/*so* ${libdir}
     find bazel-bin
     find ${libdir}
-    # cp -v /workspace/bazel_root/*/external/cuda_nccl/lib/libnccl.so.2 ${libdir}
 
+    install -Dvm 644 $ROCM_PATH/amdgcn ${libdir}/amdgcn
+    
     # Simplify ridiculously long rpath of `libReactantExtra.so`,
     # we moved all deps in `${libdir}` anyway.
     patchelf --set-rpath '$ORIGIN' bazel-bin/libReactantExtra.so
@@ -475,13 +494,41 @@ augment_platform_block="""
     """
 
 # for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), platform in platforms
-for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), cuda_version in ("none", "12.9", "13.0"), platform in platforms
+for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), cuda_version in ("none", "12.9", "13.0"), rocm_version in ("none", "6.5", "7.0"), platform in platforms
 
     gpu != "rocm" && continue
+    
     augmented_platform = deepcopy(platform)
     augmented_platform["mode"] = mode
     augmented_platform["gpu"] = gpu
-    augmented_platform["cuda_version"] = cuda_version
+    
+    gpu_version = "none"
+    if gpu == "none"
+	 if cuda_version != "none"
+	     continue
+	 end
+	 if rocm_version != "none"
+	     continue
+	 end
+    elseif gpu == "rocm"
+	 if cuda_version != "none"
+	     continue
+	 end
+	 if rocm_version == "none"
+	     continue
+	 end
+	gpu_version = rocm_version
+    else 
+	 @assert gpu == "cuda"
+	 if cuda_version == "none"
+	     continue
+	 end
+	 if rocm_version != "none"
+	     continue
+	 end
+	gpu_version = rocm_version
+    end
+    augmented_platform["gpu_version"] = gpu_version
     dependencies = []
 
     preferred_gcc_version = v"13"
@@ -495,10 +542,6 @@ for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), cuda_version in ("n
         if !Sys.isapple(platform)
             continue
         end
-    end
-
-    if !((gpu == "cuda") ⊻ (cuda_version == "none"))
-        continue
     end
 
     # If you skip GPU builds here, remember to update also platform augmentation above.
@@ -613,15 +656,17 @@ for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), cuda_version in ("n
               )
     end
 	if gpu == "rocm"
-		rocm_version = v"5.2.3"
-		append!(dependencies,
-			[
-		        BuildDependency(PackageSpec(; name="ROCmLLVM_jll", version=rocm_version)),
-		        BuildDependency(PackageSpec(; name="rocm_cmake_jll", version=rocm_version)),
-		        Dependency("HIP_jll"; compat=string(rocm_version)),
-		        Dependency("rocBLAS_jll"; compat=string(rocm_version))
-			]
-		)
+	      if rocm_version == "6.5"
+	       push!(platform_sources,
+                  ArchiveSource("https://github.com/ROCm/TheRock/releases/download/nightly-tarball/therock-dist-linux-gfx94X-dcgpu-6.5.0rc20250610.tar.gz",
+				"113e44dcd7868ffab92193bbcb8653a374494f0c5b393545f08551ea835a1ee5")
+                  )
+	       elseif rocm_version == "7.0"
+	       push!(platform_sources,
+                  ArchiveSource("https://github.com/ROCm/TheRock/releases/tag/nightly-tarball#:~:text=therock%2Ddist%2Dlinux%2Dgfx950%2Ddcgpu%2D7.0.0rc20250714.tar.gz",
+				"278d2f6747c4fa397e93c4fa5640912b76fd052cc8628fca37e93aa79b1858f6"),
+                  )
+	       end
 	end
 
     should_build_platform(triplet(augmented_platform)) || continue
