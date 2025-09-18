@@ -34,6 +34,8 @@ components:
     - odow
   C/Coin-OR/Ipopt/:
     - amontoison
+  C/Conduit/:
+    - eschnett
   C/CUTEst/:
     - amontoison
   C/CUDA/CUDSS/:
