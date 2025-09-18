@@ -60,12 +60,17 @@ function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=fal
     end
     macos_use_openssl = version >= v"8.15"
 
+    # Disable nss only for CURL < 8.16
+    without_nss = version < v"8.16.0"
+
     config = "THIS_IS_CURL=$(this_is_curl_jll)\n"
     config *= "MACOS_USE_OPENSSL=$(macos_use_openssl)\n" 
     if with_zstd
 	config *= "HAVE_ZSTD=true\n"
     end
-
+    if without_nss
+        config *= "WITHOUT_NSS=true\n"
+    end
 
     # Bash recipe for building across all platforms
     script = config * unpack_macosx_sdk * raw"""
@@ -79,7 +84,7 @@ function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=fal
         # Disable....almost everything
         --without-gnutls
         --without-libidn2 --without-librtmp
-        --without-nss --without-libpsl
+        --without-libpsl
         --disable-ares --disable-manual
         --disable-ldap --disable-ldaps --without-zsh-functions-dir
         --disable-static --without-libgsasl
@@ -92,6 +97,10 @@ function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=fal
 
     if [[ ${HAVE_ZSTD} == true ]]; then
         FLAGS+=(--with-zstd=${prefix})
+    fi
+
+    if [[ ${WITHOUT_NSS} == true ]]; then
+        FLAGS+=(--without-nss)
     fi
 
     if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
