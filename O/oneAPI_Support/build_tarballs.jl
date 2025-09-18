@@ -180,7 +180,7 @@ cp -r include/* ${includedir}
 for lib in sycl svml irng imf intlc ur_loader ur_adapter \
            mkl_cdft_core mkl_core mkl_intel_ilp64 mkl_sequential mkl_sycl \
            mkl_avx mkl_def umf tcm; do
-    cp -a lib/lib${lib}*.so* ${libdir}
+    install -Dvm 755 lib/lib${lib}*.so* -t ${libdir}
 done
 
 install_license "info/licenses/license.txt"
