@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "KaHyPar"
-version = v"1.3.3"
+version = v"1.3.4"
 
 # Collection of sources required to complete build
 sources = [
@@ -48,7 +48,7 @@ products = [
 dependencies = [
     # Boost breaks ABI in every single version because they embed the full version number in
     # the SONAME, so we're compatible with one and only one version at a time.
-    Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"); compat="=1.76.0")
+    Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"); compat="=v1.87.0")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
