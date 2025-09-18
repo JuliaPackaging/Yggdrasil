@@ -39,6 +39,12 @@ if [[ "${target}" == *-apple-darwin* ]]; then
     popd
 fi
 
+if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
+    export ROCM_PATH=$WORKSPACE/srcdir
+    ln -s $ROCM_PATH/lib/llvm/amdgcn $ROCM_PATH/amdgcn
+    apk add coreutils
+fi
+
 mkdir -p .local/bin
 export LOCAL="`pwd`/.local/bin"
 export PATH="$LOCAL:$PATH"
@@ -250,6 +256,66 @@ fi
 
 if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
     BAZEL_BUILD_FLAGS+=(--config=rocm)
+
+    if [[ "${GCC_MAJOR_VERSION}" -le 12 && "${target}" == x86_64-* ]]; then
+        # Someone wants to compile some code which requires flags not understood by GCC 12.
+        BAZEL_BUILD_FLAGS+=(--define=xnn_enable_avxvnniint8=false)
+    fi
+    if [[ "${GCC_MAJOR_VERSION}" -le 11 && "${target}" == x86_64-* ]]; then
+        # Someone wants to compile some code which requires flags not understood by GCC 11.
+        BAZEL_BUILD_FLAGS+=(--define=xnn_enable_avx512fp16=false)
+    fi
+
+    if [[ "${target}" != x86_64-linux-gnu ]]; then
+        # This is the standard `LD_LIBRARY_PATH` we have in our environment + `/usr/lib/csl-glibc-x86_64` to be able to run host `nvcc`/`ptxas`/`fatbinary` during compilation.
+        export LD_LIBRARY_PATH="/usr/lib/csl-musl-x86_64:/usr/lib/csl-glibc-x86_64:/usr/local/lib64:/usr/local/lib:/usr/lib64:/usr/lib:/lib64:/lib:/workspace/x86_64-linux-musl-cxx11/destdir/lib:/workspace/x86_64-linux-musl-cxx11/destdir/lib64:/opt/x86_64-linux-musl/x86_64-linux-musl/lib64:/opt/x86_64-linux-musl/x86_64-linux-musl/lib:/opt/${target}/${target}/lib64:/opt/${target}/${target}/lib:/workspace/destdir/lib64"
+
+        BAZEL_BUILD_FLAGS+=(
+            --linkopt="-L${prefix}/libcxx/lib"
+	)
+    else
+        BAZEL_BUILD_FLAGS+=(
+            --linkopt="-stdlib=libstdc++"
+	)
+    fi
+    
+    BAZEL_BUILD_FLAGS+=(--copt=-stdlib=libstdc++)
+
+    # export HIPCC_ENV="--sysroot=/opt/x86_64-linux-gnu/x86_64-linux-gnu/sys-root;-D_GLIBCXX_USE_CXX11_ABI=1;-stdlib=libstdc++;--gcc-install-dir=/opt/x86_64-linux-gnu/lib/gcc/x86_64-linux-gnu/13.2.0;-isystem/opt/x86_64-linux-gnu/x86_64-linux-gnu/include/c++/13.2.0"
+
+	# 	--action_env=HIP_PATH=${prefix}/hip
+	# 	--action_env=HSA_PATH=${prefix}
+	# 	--action_env=HIP_CLANG_PATH=${prefix}/llvm/bin
+	# 	--action_env=HIP_LIB_PATH=${prefix}/hip/lib
+	# 	--action_env=DEVICE_LIB_PATH=${prefix}/amdgcn/bitcode
+    # for hermetic rocm
+    # apk add zlib
+
+    BAZEL_BUILD_FLAGS+=(
+		--action_env=ROCM_PATH=$ROCM_PATH
+		--repo_env=ROCM_PATH=$ROCM_PATH
+	
+		# anything before 942 hits a 128-bit error
+		--action_env=TF_ROCM_AMDGPU_TARGETS="gfx942,gfx1030,gfx1100,gfx1200,gfx1201"
+
+                --linkopt="-L$ROCM_PATH/lib/rocm_sysdeps/lib"
+
+		#--repo_env="OS=ubuntu_22.04"
+		#--repo_env="ROCM_VERSION=$HERMETIC_ROCM_VERSION"
+		#--@local_config_rocm//rocm:rocm_path_type=hermetic
+
+		--copt=--sysroot=/opt/x86_64-linux-gnu/x86_64-linux-gnu/sys-root
+		--copt=--gcc-install-dir=/opt/x86_64-linux-gnu/lib/gcc/x86_64-linux-gnu/13.2.0
+		--copt=-isystem=/workspace/bazel_root/097636303b1142f44508c1d8e3494e4b/external/local_config_rocm/rocm/rocm_dist/lib/llvm/lib/clang/20/include/cuda_wrappers
+ 		--copt=-isystem=/workspace/bazel_root/097636303b1142f44508c1d8e3494e4b/external/local_config_rocm/rocm/rocm_dist/lib/llvm/lib/clang/20/include
+		--copt=-isystem=/opt/x86_64-linux-gnu/x86_64-linux-gnu/include/c++/13.2.0
+		--copt=-isystem=/opt/x86_64-linux-gnu/x86_64-linux-gnu/include/c++/13.2.0/x86_64-linux-gnu
+		--copt=-isystem=/opt/x86_64-linux-gnu/x86_64-linux-gnu/include/c++/13.2.0/backward
+		--copt=-isystem=/opt/x86_64-linux-gnu/x86_64-linux-gnu/include
+		--copt=-isystem=/opt/x86_64-linux-gnu/x86_64-linux-gnu/sys-root/include
+	    --action_env=CLANG_COMPILER_PATH=$(which clang)
+	    --define=using_clang=true
+    )
 fi
 
 if [[ "${target}" == *-freebsd* ]]; then
@@ -373,6 +439,21 @@ if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
 
 fi
 
+if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
+    rm -rf bazel-bin/_solib_local/*stub*/*so*
+    cp -v bazel-bin/_solib_local/*/*so* ${libdir}
+    find bazel-bin
+    find ${libdir}
+
+    install -Dvm 644 $ROCM_PATH/amdgcn ${libdir}/amdgcn
+    
+    # Simplify ridiculously long rpath of `libReactantExtra.so`,
+    # we moved all deps in `${libdir}` anyway.
+    patchelf --set-rpath '$ORIGIN' bazel-bin/libReactantExtra.so
+
+fi
+
+
 install -Dvm 755 bazel-bin/libReactantExtra.so "${libdir}/libReactantExtra.${dlext}"
 install_license ../../LICENSE
 """
@@ -426,12 +507,41 @@ augment_platform_block="""
     """
 
 # for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), platform in platforms
-for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "12.6", "12.8", "13.0"), platform in platforms
+for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), cuda_version in ("none", "12.6", "12.8", "13.0"), rocm_version in ("none", "7.0",), platform in platforms
 
+    gpu != "rocm" && continue
+    
     augmented_platform = deepcopy(platform)
     augmented_platform["mode"] = mode
     augmented_platform["gpu"] = gpu
-    augmented_platform["cuda_version"] = cuda_version
+    
+    gpu_version = "none"
+    if gpu == "none"
+	 if cuda_version != "none"
+	     continue
+	 end
+	 if rocm_version != "none"
+	     continue
+	 end
+    elseif gpu == "rocm"
+	 if cuda_version != "none"
+	     continue
+	 end
+	 if rocm_version == "none"
+	     continue
+	 end
+	gpu_version = rocm_version
+    else 
+	 @assert gpu == "cuda"
+	 if cuda_version == "none"
+	     continue
+	 end
+	 if rocm_version != "none"
+	     continue
+	 end
+	gpu_version = rocm_version
+    end
+    augmented_platform["gpu_version"] = gpu_version
     dependencies = []
 
     preferred_gcc_version = v"13"
@@ -445,10 +555,6 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
 	    if !Sys.isapple(platform)
 		    continue
 		  end
-    end
-
-    if !((gpu == "cuda") ⊻ (cuda_version == "none"))
-        continue
     end
 
     # If you skip GPU builds here, remember to update also platform augmentation above.
@@ -480,10 +586,22 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
         "12.8" => "12.8.1",
 	"13.0" => "13.0.0"
     )
+    
+    hermetic_rocm_version_map = Dict(
+        # Our platform tags use X.Y version scheme, but for some CUDA versions we need to
+        # pass Bazel a full version number X.Y.Z.  See `CUDA_REDIST_JSON_DICT` in
+        # <https://github.com/openxla/xla/blob/main/third_party/tsl/third_party/gpus/cuda/hermetic/cuda_redist_versions.bzl>.
+        "none" => "none",
+        "6.4" => "6.4.1",
+        "6.5" => "6.5.1",
+        "7.0" => "7.0.0",
+    )
+
 
     prefix="""
     MODE=$(mode)
     HERMETIC_CUDA_VERSION=$(hermetic_cuda_version_map[cuda_version])
+    HERMETIC_ROCM_VERSION=$(hermetic_rocm_version_map[rocm_version])
     """
     platform_sources = BinaryBuilder.AbstractSource[sources...]
     if Sys.isapple(platform)
@@ -538,6 +656,24 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
               BuildDependency(PackageSpec("LLVMLibcxx_jll", preferred_llvm_version)),
               )
     end
+	if gpu == "rocm"
+	      if rocm_version == "6.4"
+	       push!(platform_sources,
+                  ArchiveSource("https://github.com/ROCm/TheRock/releases/download/nightly-tarball/therock-dist-linux-gfx94X-dcgpu-6.4.0rc20250520.tar.gz",
+				"b3d64777a79f33e8d1b50230f26ac769bd77d5bc11bd850ec111933c842914e9")
+                  )
+	       elseif rocm_version == "6.5"
+	       push!(platform_sources,
+                  ArchiveSource("https://github.com/ROCm/TheRock/releases/download/nightly-tarball/therock-dist-linux-gfx94X-dcgpu-6.5.0rc20250610.tar.gz",
+				"113e44dcd7868ffab92193bbcb8653a374494f0c5b393545f08551ea835a1ee5")
+                  )
+	       elseif rocm_version == "7.0"
+	       push!(platform_sources,
+                  ArchiveSource("https://github.com/ROCm/TheRock/releases/download/nightly-tarball/therock-dist-linux-gfx110X-dgpu-7.0.0rc20250714.tar.gz",
+				"8c64dd2045736a18322756c52dccf11370e9efd04d29dd58f156491b27156e3c")
+                  )
+	       end
+	end
 
     should_build_platform(triplet(augmented_platform)) || continue
 	
@@ -580,17 +716,22 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
 	push!(products, ExecutableProduct(["fatbinary"], :fatbinary, "lib/cuda/bin"))
 	push!(products, FileProduct("lib/cuda/nvvm/libdevice/libdevice.10.bc", :libdevice))
 	push!(products, FileProduct("lib/libnvshmem_device.bc", :libnvshmem_device))
+    end
+    
+    if gpu == "rocm"
+    	for lib in (
+		"libnccl",
+	)
+	    san = replace(lib, "-" => "_")
+	    push!(products,
+                  LibraryProduct([lib, lib], Symbol(san);
+                                 dont_dlopen=true, dlopen_flags=[:RTLD_LOCAL]))
+	end
+	push!(products, ExecutableProduct(["ptxas"], :ptxas, "lib/cuda/bin"))
+	push!(products, ExecutableProduct(["fatbinary"], :fatbinary, "lib/cuda/bin"))
+	push!(products, FileProduct("lib/cuda/nvvm/libdevice/libdevice.10.bc", :libdevice))
+	push!(products, FileProduct("lib/libnvshmem_device.bc", :libnvshmem_device))
 
-        if VersionNumber(cuda_version) < v"12.6"
-            # For older versions of CUDA we need to use GCC 12:
-            # <https://forums.developer.nvidia.com/t/strange-errors-after-system-gcc-upgraded-to-13-1-1/252441>.
-            preferred_gcc_version = v"12"
-        end
-        # if VersionNumber(cuda_version) < v"12"
-        #     # For older versions of CUDA we need to use GCC 11:
-        #     # <https://stackoverflow.com/questions/72348456/error-when-compiling-a-cuda-program-invalid-type-argument-of-unary-have-i>.
-        #     preferred_gcc_version = v"11"
-        # end
     end
 
     push!(builds, (;
