@@ -1,6 +1,6 @@
 include("../common.jl")
 name = "XGBoost_GPU"
-version = v"2.1.4"
+version = v"2.1.5"
 
 include(normpath(joinpath(YGGDRASIL_DIR, "..", "platforms", "cuda.jl")))
 
@@ -9,6 +9,9 @@ sources = get_sources()
 
 # Bash recipe for building across all platforms
 script = raw"""
+# remove default cmake to use newer version from build dependency
+apk del cmake
+
 cd ${WORKSPACE}/srcdir/xgboost
 git submodule update --init
 
@@ -19,47 +22,54 @@ mkdir build && cd build
 export TMPDIR=${WORKSPACE}/tmpdir
 mkdir ${TMPDIR}
 
-export CUDA_HOME=${prefix}/cuda
+# Ensure CUDA is on the path
+export CUDA_HOME=${WORKSPACE}/destdir/cuda;
 export PATH=$PATH:$CUDA_HOME/bin
+export CUDACXX=$CUDA_HOME/bin/nvcc
+
+# nvcc thinks the libraries are located inside lib64, but the SDK actually has them in lib
+ln -s ${CUDA_HOME}/lib ${CUDA_HOME}/lib64
+
 cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
         -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
         -DCUDA_TOOLKIT_ROOT_DIR=${prefix}/cuda \
         -DUSE_CUDA=ON \
         -DBUILD_WITH_CUDA_CUB=ON
 make -j${nproc}
-
+cd ..
 """ * install_script
 
 augment_platform_block = CUDA.augment
 
-versions_to_build = [
-    v"11.8",
-    v"12.0"
-]
-
 # The products that we will ensure are always built
 products = get_products()
 
-platforms = get_platforms()[3:4]
+# XGBoost v2.1 only has CUDA support for linux builds and doesn't support CUDA v13
+# note also builds don't work for CUDA v12.5 and v12.6 due to a bug in CCCL (the patch fix for this is 
+# not available in the shipped CUDA SDK)
+# see the following issues: https://github.com/dmlc/xgboost/issues/10555, https://github.com/dmlc/xgboost/issues/11640
+platforms = expand_cxxstring_abis(
+    filter!(p -> all([
+            arch(p) == "x86_64", 
+            os(p) == "linux",
+            p.tags["cuda"] ∉ ["12.5", "12.6"]
+        ]),
+        CUDA.supported_platforms(; min_version = v"11.8", max_version = v"12.9.1")
+    )
+)
 
-for cuda_version in versions_to_build, platform in platforms
 
-    cuda_platform = (os(platform) == "linux") && (arch(platform) in ["x86_64"])
-    if !cuda_platform
-        continue
-    end
+for platform ∈ platforms
     
     # For platforms we can't create cuda builds on, we want to avoid adding cuda=none
     # https://github.com/JuliaPackaging/Yggdrasil/issues/6911#issuecomment-1599350319
-    augmented_platform = Platform(arch(platform), os(platform);
-        cxxstring_abi = cxxstring_abi(platform),
-        cuda=CUDA.platform(cuda_version)
-    )
-    should_build_platform(triplet(augmented_platform)) || continue
+    should_build_platform(triplet(platform)) || continue
 
-    dependencies = get_dependencies(augmented_platform; cuda = true, cuda_version = cuda_version)
+    dependencies = get_dependencies(platform)
+
+    cuda_deps = CUDA.required_dependencies(platform, static_sdk=true)
     
-    build_tarballs(ARGS, name, version, sources,  script, [augmented_platform], products, dependencies;
+    build_tarballs(ARGS, name, version, sources,  script, [platform], products, [dependencies; cuda_deps];
                     preferred_gcc_version=v"9",
                     julia_compat="1.6",
                     augment_platform_block)
