@@ -25,8 +25,6 @@ cmake --install build
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
 
-versionstr = "$(version.major).$(version.minor)"
-
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libgeoarrow", :libgeoarrow),
@@ -34,6 +32,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency("CompilerSupportLibraries_jll"; platforms=filter(p -> Sys.islinux(p),  platforms))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
