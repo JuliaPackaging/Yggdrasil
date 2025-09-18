@@ -39,6 +39,8 @@ dependencies = [
     Dependency("aws_checksums_jll"; compat="0.2.8"),
     Dependency("aws_c_http_jll"; compat="0.10.4"),
     Dependency("aws_c_auth_jll"; compat="0.9.1"),
+    Dependency("aws_c_common_jll"; compat="0.12.5"),
+    Dependency("s2n_tls_jll"; compat="1.5.26"),    
     BuildDependency("aws_lc_jll"),
 ]
 
