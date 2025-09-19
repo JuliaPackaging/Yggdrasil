@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "PlutoBook"
-version = v"0.3.0"
+version = v"0.8.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/plutoprint/plutobook.git", "b4e621203ca345ceba73b19fb526eeb77dde8472"),
+    GitSource("https://github.com/plutoprint/plutobook.git", "9b9112dd9a2079f555e5173ec4d6d9297a378bc0"),
     # We need C++20
     FileSource("https://github.com/alexey-lysiuk/macos-sdk/releases/download/14.5/MacOSX14.5.tar.xz",
                "f6acc6209db9d56b67fcaf91ec1defe48722e9eb13dc21fb91cfeceb1489e57e"),
@@ -76,4 +76,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.10", preferred_gcc_version = v"12.1.0", dont_dlopen=true, clang_use_lld = false)
+               julia_compat="1.10", preferred_gcc_version = v"13.2.0", dont_dlopen=true, clang_use_lld = false)
