@@ -96,4 +96,4 @@ append!(dependencies, platform_dependencies)
 ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
-	       julia_compat="1.6", preferred_gcc_version=v"5")
+	       augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"5")
