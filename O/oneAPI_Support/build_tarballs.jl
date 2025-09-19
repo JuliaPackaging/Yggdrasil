@@ -1,11 +1,11 @@
 using BinaryBuilder, Pkg
 
 name = "oneAPI_Support"
-version = v"0.9.1"
+version = v"0.9.2"
 
 generic_sources = [
     GitSource("https://github.com/JuliaGPU/oneAPI.jl",
-              "cf05fb58f46de8968e209a96807c930ea0b8c301")
+              "3d3278d0af29cd8bb3204f8352c2326722b32dff")
 ]
 
 platform_sources = Dict(
@@ -178,9 +178,9 @@ done
 mkdir -p ${libdir} ${includedir}
 cp -r include/* ${includedir}
 for lib in sycl svml irng imf intlc ur_loader ur_adapter \
-           mkl_core mkl_intel_ilp64 mkl_sequential mkl_sycl \
+           mkl_cdft_core mkl_core mkl_intel_ilp64 mkl_sequential mkl_sycl \
            mkl_avx mkl_def umf tcm; do
-    cp -a lib/lib${lib}*.so* ${libdir}
+    install -Dvm 755 lib/lib${lib}*.so* -t ${libdir}
 done
 
 install_license "info/licenses/license.txt"
