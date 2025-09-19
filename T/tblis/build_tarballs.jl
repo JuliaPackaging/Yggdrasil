@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "tblis"
-version = v"1.2.0"
+version = v"1.3.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/devinamatthews/tblis.git", "3e4c4b82943726c443b6f408c9c9791dcad7a847")
+    GitSource("https://github.com/devinamatthews/tblis.git", "c4f81e08b2827e72335baa7bf91a245f72c43970")
     DirectorySource("./bundled")
 ]
 
