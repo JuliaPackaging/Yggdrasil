@@ -26,13 +26,13 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "GAP"
-upstream_version = v"4.15.0-beta1"
+upstream_version = v"4.15.0-beta2"
 version = v"400.1500.000"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/gap-$(upstream_version)-core.tar.gz",
-                  "be946f182faaece85c6a8c26ced8530b30ac6fa188e74271af2a7f226631abae"),
+                  "cb3aa7502b7094ba0e830f4be275db4c85d07546534b7fdb14c453d6eb7fd7c2"),
     DirectorySource("./bundled"),
 ]
 
