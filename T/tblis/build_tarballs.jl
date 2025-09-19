@@ -30,12 +30,6 @@ case ${target} in
         export BLI_CONFIG=x86,reference
         export BLI_THREAD=openmp
         ;;
-    *"x86_64"*"linux"*"musl"*)
-        export BLI_CONFIG=x86,reference
-        export BLI_THREAD=pthreads
-        export CC=clang
-        export CXX=clang++
-        ;;
     *"x86_64"*"w64"*)
         # Windows lacks support for some instructions.
         # Building only for AMD processors.
@@ -83,7 +77,6 @@ install_license LICENSE
 # platforms are passed in on the command line
 platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
-    Platform("x86_64", "linux"; libc="musl", cxxstring_abi = "cxx11"),
     Platform("x86_64", "macos"),
     Platform("x86_64", "freebsd"),
     Platform("x86_64", "windows")
