@@ -63,9 +63,9 @@ BAZEL_FLAGS+=(--server_javabase=$JAVA_HOME)
 
 BAZEL_BUILD_FLAGS+=(--jobs ${nproc})
 
-# # Use ccache to speedup re-builds
-# BAZEL_BUILD_FLAGS+=(--action_env=USE_CCACHE=${USE_CCACHE} --action_env=CCACHE_DIR=/root/.ccache)
-# BAZEL_BUILD_FLAGS+=(--action_env=CCACHE_NOHASHDIR=yes)
+# Use ccache to speedup re-builds
+BAZEL_BUILD_FLAGS+=(--action_env=USE_CCACHE=${USE_CCACHE} --action_env=CCACHE_DIR=/root/.ccache)
+BAZEL_BUILD_FLAGS+=(--action_env=CCACHE_NOHASHDIR=yes)
 # # Set `SUPER_VERBOSE` to a non empty string to make the compiler wrappers more
 # # verbose. Useful for debugging.
 # BAZEL_BUILD_FLAGS+=(--action_env=SUPER_VERBOSE=true)
@@ -484,6 +484,8 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     prefix="""
     MODE=$(mode)
     HERMETIC_CUDA_VERSION=$(hermetic_cuda_version_map[cuda_version])
+    # Don't use ccache on Yggdrasil, doesn't seem to work.
+    USE_CCACHE=$(!BinaryBuilder.is_yggdrasil())
     """
     platform_sources = BinaryBuilder.AbstractSource[sources...]
     if Sys.isapple(platform)
