@@ -487,6 +487,10 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
         $ROCM_PATH/lib/librocblas.so* \
         -t ${libdir}
     
+    install -Dvm 755 \
+        $ROCM_PATH/lib/libhiprtc.so.6* \
+        -t ${libdir}
+    
      install -Dvm 755 \
         $ROCM_PATH/lib/host-math/lib/libcholmod.so* \
        -t ${libdir}/host-math/lib
