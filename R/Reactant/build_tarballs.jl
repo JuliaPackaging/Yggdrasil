@@ -467,7 +467,7 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
        -t ${libdir}
     
      install -Dvm 755 \
-        $ROCM_PATH/lib/llvm/lib/libLLVM.so.20.0git
+        $ROCM_PATH/lib/llvm/lib/libLLVM.so.20.0git \
        -t ${libdir}/llvm/lib
 
     # Simplify ridiculously long rpath of `libReactantExtra.so`,
