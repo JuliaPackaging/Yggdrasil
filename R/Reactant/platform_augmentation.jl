@@ -100,7 +100,7 @@ function augment_platform!(platform::Platform)
                 elseif v"13.0" <= current_cuda_version < v"14" && arch(platform) == "x86_64"
                     cuda_version_tag = "13.0"
                 else
-                    @debug "CUDA version $(current_cuda_version) in $(path) not supported with this version of Reactant"
+                    @warn "CUDA version $(current_cuda_version) in $(path) not supported with this version of Reactant (min supported: 12.6)"
                 end
             end
 
