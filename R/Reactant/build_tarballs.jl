@@ -495,7 +495,8 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
         $ROCM_PATH/lib/llvm/lib/libLLVM.so.20.0git \
        -t ${libdir}/llvm/lib
     
-     cp -r -v $ROCM_PATH/lib/llvm/amdgcn ${libdir}/lib/llvm/amdgcn
+     mkdir ${libdir}/llvm
+     cp -r -v $ROCM_PATH/lib/llvm/amdgcn ${libdir}/llvm/amdgcn
 
     # Simplify ridiculously long rpath of `libReactantExtra.so`,
     # we moved all deps in `${libdir}` anyway.
