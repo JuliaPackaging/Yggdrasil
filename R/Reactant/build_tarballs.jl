@@ -456,6 +456,10 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
         -t ${libdir}/rocm_sysdeps/lib
 
     install -Dvm 755 \
+        $ROCM_PATH/lib/rocm_sysdeps/lib/librocm_sysdeps_bz2.so* \
+        -t ${libdir}/rocm_sysdeps/lib
+
+    install -Dvm 755 \
         $ROCM_PATH/lib/rocm_sysdeps/lib/librocm_sysdeps_zstd.so* \
         -t ${libdir}/rocm_sysdeps/lib
 
@@ -491,9 +495,39 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
         $ROCM_PATH/lib/libhiprtc.so.6* \
         -t ${libdir}
     
+    install -Dvm 755 \
+        $ROCM_PATH/lib/libhipblaslt.so.6* \
+        -t ${libdir}
+    
      install -Dvm 755 \
         $ROCM_PATH/lib/host-math/lib/libcholmod.so* \
        -t ${libdir}/host-math/lib
+     
+     install -Dvm 755 \
+        $ROCM_PATH/lib/host-math/lib/libamd.so* \
+       -t ${libdir}/host-math/lib
+     
+     install -Dvm 755 \
+        $ROCM_PATH/lib/host-math/lib/libcamd.so* \
+       -t ${libdir}/host-math/lib
+     
+     install -Dvm 755 \
+        $ROCM_PATH/lib/host-math/lib/libccolamd.so* \
+       -t ${libdir}/host-math/lib
+     
+     install -Dvm 755 \
+        $ROCM_PATH/lib/host-math/lib/librocm-openblas.so* \
+       -t ${libdir}/host-math/lib
+     
+     install -Dvm 755 \
+        $ROCM_PATH/lib/host-math/lib/libsuitesparseconfig.so* \
+       -t ${libdir}/host-math/lib
+     
+     install -Dvm 755 \
+        $ROCM_PATH/lib/host-math/lib/libsuitesparseconfig.so* \
+       -t ${libdir}/host-math/lib
+
+
 
      install -Dvm 755 \
         $ROCM_PATH/lib/llvm/lib/libLLVM.so.20.0git \
