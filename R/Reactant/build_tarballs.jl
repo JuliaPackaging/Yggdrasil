@@ -447,7 +447,7 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
     find bazel-bin
     find ${libdir}
 
-    cp -r -v $ROCM_PATH/amdgcn ${libdir}/amdgcn
+    cp -r -v $ROCM_PATH/lib/llvm/amdgcn ${libdir}/amdgcn
     
     # Simplify ridiculously long rpath of `libReactantExtra.so`,
     # we moved all deps in `${libdir}` anyway.

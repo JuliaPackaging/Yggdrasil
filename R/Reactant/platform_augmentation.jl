@@ -61,6 +61,32 @@ function cuDriverGetVersion(library_handle)
     return version
 end
 
+function amdDriverInitialized()::Bool
+    amdgpu_module_path = "/sys/module/amdgpu"
+
+    # First, check if the driver's module directory exists.
+    if isdir(amdgpu_module_path)
+        initstate_path = joinpath(amdgpu_module_path, "initstate")
+
+        if isfile(initstate_path)
+            # Case 1: The driver is a loadable module.
+            # We need to read its state to see if it's 'live'.
+            # The `open...do` block ensures the file is closed automatically.
+            return open(initstate_path) do file
+                contains(read(file, String), "live")
+            end
+        else
+            # Case 2: The directory exists but `initstate` does not.
+            # This implies the driver is built into the kernel and is active.
+            return true
+        end
+    end
+
+    # If the directory doesn't exist, the driver isn't available.
+    return false
+end
+
+
 function augment_platform!(platform::Platform)
 
     mode = get(ENV, "REACTANT_MODE", something(mode_preference, "opt"))
@@ -109,13 +135,14 @@ function augment_platform!(platform::Platform)
             end
         end
 
-        roname = ""
         # if we've found a system driver, put a dependency on it,
         # so that we get recompiled if the driver changes.
-        if roname != "" && gpu == "undecided"
-            handle = Libdl.dlopen(roname)
-            path = Libdl.dlpath(handle)
-            Libdl.dlclose(handle)
+	if amdDriverInitialized() && gpu == "undecided"
+            #roname = ""
+            #handle = Libdl.dlopen(roname)
+            #path = Libdl.dlpath(handle)
+            #Libdl.dlclose(handle)
+	    gpu_version_tag = "7.0"
 
             @debug "Adding include dependency on $(path)"
             Base.include_dependency(path)
