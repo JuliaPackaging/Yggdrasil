@@ -448,7 +448,28 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
     find ${libdir}
 
     cp -r -v $ROCM_PATH/lib/llvm/amdgcn ${libdir}/amdgcn
+
+
+    install -Dvm 755 \
+        $ROCM_PATH/lib/librocm_sysdeps_numa.so* \
+        $ROCM_PATH/lib/libroctx64.so* \
+        $ROCM_PATH/lib/librocfft.so* \
+        $ROCM_PATH/lib/librocsparse.so* \
+        $ROCM_PATH/lib/libcholmod.so* \
+        $ROCM_PATH/lib/librocblas.so* \
+        $ROCM_PATH/lib/librocm_sysdeps_numa.so* \
+        $ROCM_PATH/lib/librocm_sysdeps_z.*so \
+        $ROCM_PATH/lib/librocm_sysdeps_zstd.so* \
+        $ROCM_PATH/lib/librocm_sysdeps_elf.so* \
+        $ROCM_PATH/lib/librocm_sysdeps_drm.so* \
+        $ROCM_PATH/lib/librocm_sysdeps_drm_amdgpu.so* \
+        $ROCM_PATH/lib/librocm_sysdeps_numa.so* \
+       -t ${libdir}
     
+     install -Dvm 755 \
+        $ROCM_PATH/lib/llvm/lib/libLLVM.so.20.0git
+       -t ${libdir}/llvm/lib
+
     # Simplify ridiculously long rpath of `libReactantExtra.so`,
     # we moved all deps in `${libdir}` anyway.
     patchelf --set-rpath '$ORIGIN' bazel-bin/libReactantExtra.so
