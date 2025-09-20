@@ -447,7 +447,7 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
     find bazel-bin
     find ${libdir}
 
-    install -Dvm 644 $ROCM_PATH/amdgcn ${libdir}/amdgcn
+    cp -r -v $ROCM_PATH/amdgcn ${libdir}/amdgcn
     
     # Simplify ridiculously long rpath of `libReactantExtra.so`,
     # we moved all deps in `${libdir}` anyway.
@@ -571,6 +571,11 @@ for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), cuda_version in ("n
 
     if gpu == "cuda" && arch(platform) == "aarch64" && VersionNumber(cuda_version) < v"12.4"
         # At the moment we can't build for CUDA 12.1 on aarch64, let's skip it
+        continue
+    end
+    
+    if gpu == "rocm" && arch(platform) == "aarch64"
+        # At the moment we can't build for ROCM on aarch64, let's skip it
         continue
     end
 
@@ -763,17 +768,22 @@ for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), cuda_version in ("n
     
     if gpu == "rocm"
     	for lib in (
-		"libnccl",
+		"libamd_comgr",
+		"libamdhip64",
+		"libhipfft",
+		"libhipsolver",
+		"libhipsolver_fortran",
+		"libhsa-runtime64",
+		"librccl",
+		"librocm_smi64",
+		"librocprofiler-register",
+		"librocsolver",
 	)
 	    san = replace(lib, "-" => "_")
 	    push!(products,
                   LibraryProduct([lib, lib], Symbol(san);
                                  dont_dlopen=true, dlopen_flags=[:RTLD_LOCAL]))
 	end
-	push!(products, ExecutableProduct(["ptxas"], :ptxas, "lib/cuda/bin"))
-	push!(products, ExecutableProduct(["fatbinary"], :fatbinary, "lib/cuda/bin"))
-	push!(products, FileProduct("lib/cuda/nvvm/libdevice/libdevice.10.bc", :libdevice))
-	push!(products, FileProduct("lib/libnvshmem_device.bc", :libnvshmem_device))
     end
 
     push!(builds, (;
