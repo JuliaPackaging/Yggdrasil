@@ -93,16 +93,14 @@ function augment_platform!(platform::Platform)
             Libdl.dlclose(handle)
 
             if cuda_version_tag == "none" && current_cuda_version isa VersionNumber
-                if v"12.4" <= current_cuda_version < v"12.6"
-                    cuda_version_tag = "12.6"
-                elseif v"12.6" <= current_cuda_version < v"12.8"
+                if v"12.6" <= current_cuda_version < v"12.8"
                     cuda_version_tag = "12.6"
                 elseif v"12.8" <= current_cuda_version < v"13"
                     cuda_version_tag = "12.8"
                 elseif v"13.0" <= current_cuda_version < v"14" && arch(platform) == "x86_64"
                     cuda_version_tag = "13.0"
                 else
-                    @debug "CUDA version $(current_cuda_version) in $(path) not supported with this version of Reactant"
+                    @warn "CUDA version $(current_cuda_version) in $(path) not supported with this version of Reactant (min supported: 12.6)"
                 end
             end
 
