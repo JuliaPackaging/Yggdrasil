@@ -38,7 +38,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
     HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.31.6"))  # Need CMake > 3.25
 ]
 
