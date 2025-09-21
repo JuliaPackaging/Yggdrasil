@@ -12,6 +12,9 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+# Needs CMake >= 3.25 provided via HostBuildDependency
+apk del cmake
+
 cd $WORKSPACE/srcdir/spglib
 args=""
 if [[ ! -z "${CMAKE_TARGET_TOOLCHAIN}" ]]; then
@@ -36,6 +39,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
+    HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.31.6"))  # Need CMake > 3.25
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
