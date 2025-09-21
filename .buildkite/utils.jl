@@ -94,7 +94,9 @@ function build_step(NAME, PLATFORM, PROJECT)
         :plugins => build_plugins,
         :timeout_in_minutes => 240,
         :priority => -1,
-        :concurrency => 12,
+        # Reduce concurrency for Reactant builds, which are extremely intensive and grind
+        # the system to a halt when run with several parallel jobs.
+        :concurrency => NAME == "Reactant" ? 8 : 12,
         :concurrency_group => "yggdrasil/build/$NAME", # Could use ENV["BUILDKITE_JOB_ID"]
         :commands => [script],
         :env => build_env,
