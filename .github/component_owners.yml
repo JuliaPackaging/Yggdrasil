@@ -36,6 +36,9 @@ components:
     - amontoison
   C/Conduit/:
     - eschnett
+  C/CoolProp/:
+    - barche
+    - longemen3000
   C/CUTEst/:
     - amontoison
   C/CUDA/CUDSS/:
