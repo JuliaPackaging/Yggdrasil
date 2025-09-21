@@ -492,11 +492,11 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
         -t ${libdir}
     
     install -Dvm 755 \
-        $ROCM_PATH/lib/libhiprtc.so.6* \
+        $ROCM_PATH/lib/libhiprtc.so* \
         -t ${libdir}
     
     install -Dvm 755 \
-        $ROCM_PATH/lib/libhipblaslt.so.6* \
+        $ROCM_PATH/lib/libhipblaslt.so* \
         -t ${libdir}
     
      install -Dvm 755 \
