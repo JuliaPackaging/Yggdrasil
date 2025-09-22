@@ -7,8 +7,7 @@ generic_sources = [
     GitSource("https://github.com/JuliaGPU/oneAPI.jl",
               "719d893822f736af58589dfb46444c56f83519cb")
 ]
-@show platforms = [Platform("x86_64", "linux"; libc="glibc")]
-@show platforms = expand_cxxstring_abis(platforms)
+platforms = expand_cxxstring_abis([Platform("x86_64", "linux"; libc="glibc")])
 platform_sources = Dict(
     # these are the deps installed by Anaconda for dpcpp_linux-64 and mkl-devel-dpcpp
     # https://conda.anaconda.org/intel/linux-64
