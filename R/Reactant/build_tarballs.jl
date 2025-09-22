@@ -59,6 +59,29 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
     apk add coreutils
 fi
 
+if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
+    git clone https://github.com/ROCm/TheRock
+    cd TheRock
+
+
+    apk del cmake
+
+    bash ${WORKSPACE}/srcdir/miniconda.sh -b -p ${host_bindir}/miniconda
+    ${host_bindir}/miniconda/bin/python -m venv .venv && source .venv/bin/activate
+    # pip install -r requirements.txt
+    
+    python ./build_tools/fetch_sources.py
+
+    export CCACHE_DIR=/root/.ccache
+    export CCACHE_NOHASHDIR=yes
+    
+    sed -i.bak1 -e "s/_extra_llvm_cmake_args}/_extra_llvm_cmake_args} -DCOMGR_BUILD_SHARED_LIBS=OFF/g" compiler/CMakeLists.txt
+
+    cmake -B build -GNinja .  -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DTHEROCK_AMDGPU_TARGETS="gfx942;gfx1030;gfx1100;gfx1200;gfx1201" -DTHEROCK_AMDGPU_DIST_BUNDLE_NAME=reactant -DTHEROCK_ENABLE_ROCPROF_TRACE_DECODER_BINARY=OFF -DCMAKE_C_COMPILER=$HOSTCC -DCMAKE_CXX_COMPILER=$HOSTCXX
+    cmake --build build
+    cd ..
+fi
+
 mkdir -p .local/bin
 export LOCAL="`pwd`/.local/bin"
 export PATH="$LOCAL:$PATH"
@@ -346,11 +369,13 @@ sed -i -e "s/BB_TARGET/${bb_target}/g" \
 
 export HERMETIC_PYTHON_VERSION=3.12
 
+rm -f /workspace/srcdir/lib/libamd_comgr.so*
 
 $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]}
 
 sed -i "s/^cc_library(/cc_library(linkstatic=True,/g" /workspace/bazel_root/*/external/llvm-raw/utils/bazel/llvm-project-overlay/mlir/BUILD.bazel
 sed -i "s/name = \\"protoc\\"/name = \\"protoc\\", features=[\\"fully_static_link\\"]/g" /workspace/bazel_root/*/external/com_google_protobuf/BUILD.bazel
+
 if [[ "${target}" == *-darwin* ]]; then
     $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
     if [[ "${target}" == aarch64-* ]]; then
@@ -790,6 +815,12 @@ for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), cuda_version in ("n
               )
     end
 	if gpu == "rocm"
+		push!(dependencies, HostBuildDependency(PackageSpec("CMake_jll", v"3.30.2")))
+
+		push!(platform_sources, 
+		    FileSource("https://repo.anaconda.com/miniconda/Miniconda3-py311_24.3.0-0-Linux-x86_64.sh",
+			       "4da8dde69eca0d9bc31420349a204851bfa2a1c87aeb87fe0c05517797edaac4", "miniconda.sh"))
+
 	      if rocm_version == "6.4"
 	       push!(platform_sources,
                   ArchiveSource("https://github.com/ROCm/TheRock/releases/download/nightly-tarball/therock-dist-linux-gfx94X-dcgpu-6.4.0rc20250520.tar.gz",
