@@ -116,3 +116,4 @@ OpenBLAS32_version = v"0.3.26"
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
 platforms = filter!(!Sys.isfreebsd, platforms)
+filter!(p -> arch(p) != "riscv64", platforms)
