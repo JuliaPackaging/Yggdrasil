@@ -2,12 +2,12 @@
 # Execute from the G/GAP_pkg/ directory, e.g.:
 # julia --project=. update.jl
 
-using JSON
 import Downloads
-using SHA
 using GZip
+using JSON
+using SHA
 
-upstream_version = v"4.15.0-beta1"
+upstream_version = v"4.15.0-beta2"
 gap_version = v"400.1500.000"
 gap_lib_version = v"400.1500.000"
 
