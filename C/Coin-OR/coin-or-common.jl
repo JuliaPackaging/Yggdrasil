@@ -64,8 +64,8 @@ Couenne_gitsha = "7154f7a9b3cd84be378d02b483d090b76fc79ce8"
 Cbc_version = offset_version(v"2.10.8", v"0.0.0")
 Cbc_gitsha = "3c1d759619f38bbd5916380df292cfc1dafba7f5"
 
-Cgl_version = offset_version(v"0.60.6", v"0.0.0")
-Cgl_gitsha = "8952b9e737e434b730fab5967cd28180b43d7234"
+Cgl_version = offset_version(v"0.60.9", v"0.0.0")
+Cgl_gitsha = "1d91b9ccb57eafbb7c07e994089a0f124358ffbd"
 
 Clp_version = offset_version(v"1.17.10", v"0.0.0")
 Clp_gitsha = "9a3efaa9ecefeb2a6088a447c9f66c6f31edbed9"
