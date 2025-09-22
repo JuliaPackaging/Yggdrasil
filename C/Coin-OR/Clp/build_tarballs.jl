@@ -31,10 +31,6 @@ elif [[ ${target} == *linux* ]]; then
     export LDFLAGS="-ldl -lrt"
 fi
 
-if [[ ${target} == *aarch64* ]] || [[ ${target} == *arm* ]]; then
-   export CPPFLAGS="${CPPFLAGS} -D__arm__"
-fi
-
 # BLAS and LAPACK
 if [[ "${target}" == *mingw* ]]; then
   LBT="-lblastrampoline-5"

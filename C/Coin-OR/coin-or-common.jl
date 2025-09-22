@@ -67,8 +67,8 @@ Cbc_gitsha = "3c1d759619f38bbd5916380df292cfc1dafba7f5"
 Cgl_version = offset_version(v"0.60.6", v"0.0.0")
 Cgl_gitsha = "8952b9e737e434b730fab5967cd28180b43d7234"
 
-Clp_version = offset_version(v"1.17.9", v"0.0.1")
-Clp_gitsha = "7b9daa62d4c2710a368a17385913ce59d8c67b68"
+Clp_version = offset_version(v"1.17.10", v"0.0.0")
+Clp_gitsha = "9a3efaa9ecefeb2a6088a447c9f66c6f31edbed9"
 
 Osi_version = offset_version(v"0.108.11", v"0.0.0")
 Osi_gitsha = "d979b7b890a32a7e69c53920bb39eef17bd599b8"
