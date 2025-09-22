@@ -7,11 +7,12 @@ generic_sources = [
     GitSource("https://github.com/JuliaGPU/oneAPI.jl",
               "3d3278d0af29cd8bb3204f8352c2326722b32dff")
 ]
-
+@show platforms = [Platform("x86_64", "linux"; libc="glibc")]
+@show platforms = expand_cxxstring_abis(platforms)
 platform_sources = Dict(
     # these are the deps installed by Anaconda for dpcpp_linux-64 and mkl-devel-dpcpp
     # https://conda.anaconda.org/intel/linux-64
-    Platform("x86_64", "linux"; libc="glibc") => [
+    platform => [
         FileSource(
             "https://software.repos.intel.com/python/conda/linux-64/compiler_shared-2025.2.0-intel_766.conda",
             "5adbaa605f2fb1d1abc01b3bb92b15dd3b0a2d17d83e10632267b7c2db81f96d",
@@ -153,6 +154,7 @@ platform_sources = Dict(
             filename="umf",
         ),
     ]
+    for platform in platforms
 )
 
 script = raw"""
