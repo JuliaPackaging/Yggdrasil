@@ -73,10 +73,8 @@ Clp_gitsha = "7b9daa62d4c2710a368a17385913ce59d8c67b68"
 Osi_version = offset_version(v"0.108.10", v"0.0.0")
 Osi_gitsha = "2997cda8e85ccc6712c4b05404e7aa70500e422f"
 
-CoinUtils_upstream_version = v"2.11.11"
-CoinUtils_version = offset_version(CoinUtils_upstream_version, v"0.0.0")
-CoinUtils_gitsha = "15a819b7e8763b2557e4bf440f8cb62ee6734f36"
-CoinUtils_hash = "27da344479f38c82112d738501643dcb229e4ee96a5f87d4f406456bdc1b2cb4"
+CoinUtils_version = offset_version(v"2.11.12", v"0.0.0")
+CoinUtils_gitsha = "cc644574ef1899f14b7318e6cdb7f460bbee5212"
 
 Ipopt_upstream_version = v"3.14.19"
 Ipopt_gitsha = "2695946fa79d2e84f3034e065e788933a81466eb"
