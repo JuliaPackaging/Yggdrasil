@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "igraph"
-version = v"0.10.15"
+version = v"1.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/igraph/igraph/releases/download/$(version)/igraph-$(version).tar.gz", "03ba01db0544c4e32e51ab66f2356a034394533f61b4e14d769b9bbf5ad5e52c")
+    ArchiveSource("https://github.com/igraph/igraph/releases/download/$(version)/igraph-$(version).tar.gz", "91e23e080634393dec4dfb02c2ae53ac4e3837172bb9047d32e39380b16c0bb0")
 ]
 
 # Bash recipe for building across all platforms
@@ -73,4 +73,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.9", preferred_gcc_version = v"8") # early gcc versions cause problems with std::isnan
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.10", preferred_gcc_version = v"8") # early gcc versions cause problems with std::isnan
