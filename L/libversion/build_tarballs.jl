@@ -19,7 +19,8 @@ cmake -B build \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_C_FLAGS="-std=gnu99"
+    -DCMAKE_C_STANDARD=99 \
+    -DCMAKE_C_EXTENSIONS=ON
 cmake --build build
 cmake --install build
 install_license ${WORKSPACE}/srcdir/libversion/COPYING
