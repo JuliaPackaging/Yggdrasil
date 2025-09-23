@@ -32,6 +32,7 @@ install_license COPYING
 name = gap_pkg_name(name)
 
 platforms = gap_platforms()
+platforms = expand_cxxstring_abis(platforms)
 
 dependencies = Dependency[
 ]
