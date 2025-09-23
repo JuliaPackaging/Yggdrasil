@@ -44,8 +44,6 @@ cmake --install build
 products = [LibraryProduct("liboqs", :liboqs)]
 
 platforms = supported_platforms()
-filter!(p -> !(arch(p) == "powerpc64le"), platforms)
-filter!(p -> !(arch(p) == "riscv64"), platforms)
 
 dependencies = []
 
