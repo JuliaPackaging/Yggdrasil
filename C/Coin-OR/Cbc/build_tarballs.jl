@@ -86,7 +86,7 @@ build_tarballs(
     Cbc_version,
     sources,
     script,
-    expand_gfortran_versions(platforms),
+    platforms,
     products,
     dependencies;
     preferred_gcc_version = gcc_version,
