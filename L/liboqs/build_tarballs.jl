@@ -29,6 +29,12 @@ if [[ ${target} == *aarch64-apple* ]]; then
   EXTRA_FLAGS+=(-DOQS_DIST_BUILD=OFF)
 fi
 
+if [[ ${target} == *aarch64-linux* ]]; then
+  # Disable AES-NI optimizations to avoid target specific option mismatch
+  EXTRA_FLAGS+=(-DOQS_DIST_BUILD=OFF)
+  EXTRA_FLAGS+=(-DOQS_USE_AES_INSTRUCTIONS=OFF)
+fi
+
 cmake -B build -DCMAKE_INSTALL_PREFIX=${prefix} \
   -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
   -DOQS_USE_OPENSSL=OFF \
