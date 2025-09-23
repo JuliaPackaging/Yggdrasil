@@ -31,6 +31,7 @@ fi
 
 cmake -B build -DCMAKE_INSTALL_PREFIX=${prefix} \
   -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+  -DOQS_USE_OPENSSL=OFF \
   -DBUILD_SHARED_LIBS=ON \
   -DOQS_BUILD_ONLY_LIB=ON \
   -DCMAKE_BUILD_TYPE=Release \
@@ -46,9 +47,7 @@ platforms = supported_platforms()
 filter!(p -> !(arch(p) == "powerpc64le"), platforms)
 filter!(p -> !(arch(p) == "riscv64"), platforms)
 
-dependencies = [
-    Dependency("OpenSSL_jll"; compat="3.0.8"),
-]
+dependencies = []
 
 # preferred_gcc_version=v"11" is required to build on Platform("aarch64", "linux"; libc = "musl")
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.10", preferred_gcc_version=v"11")
