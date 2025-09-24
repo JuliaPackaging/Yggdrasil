@@ -58,7 +58,7 @@ Bonmin_gitsha = "030d111af16a0f30b6fff851ba7f983bea14f982"
 Bonmin_version_offset = v"0.0.2"
 Bonmin_version = offset_version(Bonmin_upstream_version, Bonmin_version_offset)
 
-Couenne_version = offset_version(v"0.5.8", v"0.0.1")
+Couenne_version = offset_version(v"0.5.8", v"0.0.2")
 Couenne_gitsha = "7154f7a9b3cd84be378d02b483d090b76fc79ce8"
 
 Cbc_version = offset_version(v"2.10.12", v"0.0.0")
