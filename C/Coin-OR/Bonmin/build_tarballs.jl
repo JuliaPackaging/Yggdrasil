@@ -1,4 +1,5 @@
-#Changes made to build tarballs for v1. 8.9
+# Last updated: 24 September, 2025
+
 include("../coin-or-common.jl")
 
 sources = [
