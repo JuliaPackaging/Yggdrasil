@@ -42,5 +42,6 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
+# We need GCC 5 for C99
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", clang_use_lld=false)
+               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"5")
