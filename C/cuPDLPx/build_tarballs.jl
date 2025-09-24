@@ -8,25 +8,27 @@ name = "cuPDLPx"
 version = v"0.1.0"
 
 sources = [
+    DirectorySource("./bundled"),
     GitSource(
-        "https://github.com/ZedongPeng/cuPDLPx.git",
-        "6c9c99472023aae268c2dae690eadd1a3d37733c",
+        "https://github.com/odow/cuPDLPx.git",
+        "2e8501703c243cc465f8069840062f6973f8818d",
     ),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/cuPDLPx
+install_license LICENSE
 export CUDA_HOME="${prefix}/cuda"
 export PATH=${PATH}:${CUDA_HOME}/bin
-ln -s ${CUDA_HOME}/lib ${CUDA_HOME}/lib64
 make install PREFIX=$prefix
 """
 
 products = [
     LibraryProduct("libcupdlpx", :libcupdlpx),
+    # ExecutableProduct("cupdlpx", :cupdlpx),
 ]
 
-platforms = CUDA.supported_platforms(; min_version = v"12.4")
+platforms = CUDA.supported_platforms(; min_version = v"12.4", max_version = v"12.999")
 filter!(p -> arch(p) == "x86_64", platforms)
 
 for platform in platforms
@@ -36,7 +38,7 @@ for platform in platforms
     dependencies = [
         Dependency("Zlib_jll"),
         Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-        CUDA.required_dependencies(platform; static_sdk = true)...,
+        CUDA.required_dependencies(platform)...,
     ]
     build_tarballs(
         ARGS,
