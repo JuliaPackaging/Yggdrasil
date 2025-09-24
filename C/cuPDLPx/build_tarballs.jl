@@ -8,7 +8,6 @@ name = "cuPDLPx"
 version = v"0.1.0"
 
 sources = [
-    DirectorySource("./bundled"),
     GitSource(
         "https://github.com/odow/cuPDLPx.git",
         "2e8501703c243cc465f8069840062f6973f8818d",
