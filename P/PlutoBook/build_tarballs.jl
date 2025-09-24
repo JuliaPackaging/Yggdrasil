@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "PlutoBook"
-version = v"0.3.0"
+version = v"0.9.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/plutoprint/plutobook.git", "b4e621203ca345ceba73b19fb526eeb77dde8472"),
+    GitSource("https://github.com/plutoprint/plutobook.git", "d18e317a76da51816240c203253bfabb72208011"),
     # We need C++20
     FileSource("https://github.com/alexey-lysiuk/macos-sdk/releases/download/14.5/MacOSX14.5.tar.xz",
                "f6acc6209db9d56b67fcaf91ec1defe48722e9eb13dc21fb91cfeceb1489e57e"),
@@ -48,6 +48,7 @@ platforms = [
     Platform("x86_64", "windows"; )
 ]
 platforms = expand_cxxstring_abis(platforms)
+filter!(p -> cxxstring_abi(p) == "cxx11", platforms)
 
 
 # The products that we will ensure are always built
