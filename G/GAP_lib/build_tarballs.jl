@@ -21,13 +21,13 @@ using BinaryBuilder, Pkg
 # to all components.
 
 name = "GAP_lib"
-upstream_version = v"4.15.0-beta2"
+upstream_version = v"4.15.0-beta3"
 version = v"400.1500.000"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/gap-$(upstream_version).tar.gz",
-                  "d185beced0d168bb566e654983637582bb6a84351a9d11efc4a029872b6c8e9d"),
+                  "cb87a9efb0c6ba8e0e4d7a25a99320a9d32a762116981ae1c31724e83ec642bc"),
     # DirectorySource("./bundled"),
 ]
 
