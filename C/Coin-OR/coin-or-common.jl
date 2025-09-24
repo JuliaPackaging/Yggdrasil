@@ -55,7 +55,7 @@ llvm_version = v"13.0.1"
 
 Bonmin_upstream_version = v"1.8.9"
 Bonmin_gitsha = "030d111af16a0f30b6fff851ba7f983bea14f982"
-Bonmin_version_offset = v"0.0.1"
+Bonmin_version_offset = v"0.0.2"
 Bonmin_version = offset_version(Bonmin_upstream_version, Bonmin_version_offset)
 
 Couenne_version = offset_version(v"0.5.8", v"0.0.1")
