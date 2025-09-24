@@ -40,6 +40,13 @@ elif [[ ${target} == *apple* ]]; then
     export CPPFLAGS="${CPPFLAGS} -Wno-deprecated-register"
 fi
 
+# BLAS and LAPACK
+if [[ "${target}" == *mingw* ]]; then
+  LBT="-lblastrampoline-5"
+else
+  LBT="-lblastrampoline"
+fi
+
 ./configure \
     --prefix=$prefix \
     --build=${MACHTYPE} \
@@ -48,7 +55,7 @@ fi
     --enable-shared \
     lt_cv_deplibs_check_method=pass_all \
     --with-asl-lib="-lasl -lipoptamplinterface" \
-    --with-bonmin-lib="-lbonminampl -lbonmin -lipoptamplinterface -lipopt -lCbc -lCgl -lOsiClp -lClp -lOsi -lCoinUtils -lasl"
+    --with-bonmin-lib="-lbonminampl -lbonmin -lipoptamplinterface -lipopt -lCbc -lCgl -lOsiClp -lClp -lOsi -lCoinUtils -lasl ${LBT}"
 
 make -j${nproc}
 make install
@@ -68,6 +75,7 @@ dependencies = [
     Dependency("Bonmin_jll", compat="$(Bonmin_version)"),
     Dependency("Cbc_jll", compat="$(Cbc_version)"),
     Dependency("Ipopt_jll", compat="$(Ipopt_version)"),
+    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
 ]
 
 build_tarballs(
