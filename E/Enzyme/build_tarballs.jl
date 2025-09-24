@@ -8,16 +8,16 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 name = "Enzyme"
 repo = "https://github.com/EnzymeAD/Enzyme.git"
 
-auto_version = "refs/tags/v0.0.194"
+auto_version = "refs/tags/v0.0.201"
 version = VersionNumber(split(auto_version, "/")[end])
 
 llvm_versions = [v"15.0.7", v"16.0.6", v"17.0.6", v"18.1.7", v"19.1.1"]
 
 # Collection of sources required to build attr
 sources = [
-    GitSource(repo, "37c884a9bf04a00fa2e0eea8d14a44a750c2bcfd"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-                  "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
+    GitSource(repo, "e083956dbb1a81c4b14ccae6a137bda255edc407"),
+    FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
+               "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
 ]
 
 # These are the platforms we will build for by default, unless further
@@ -32,15 +32,13 @@ platforms = filter!(p -> arch(p) != "riscv64", platforms)
 # Bash recipe for building across all platforms
 script = raw"""
 cd Enzyme
+install_license LICENSE
 
 if [[ "${bb_full_target}" == x86_64-apple-darwin*llvm_version+15* ]] || [[ "${bb_full_target}" == x86_64-apple-darwin*llvm_version+16* ]]; then
     # LLVM 15 requires macOS SDK 10.14.
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
+    tar --extract --file=${WORKSPACE}/srcdir/MacOSX10.14.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX10.14.sdk/System MacOSX10.14.sdk/usr
     export MACOSX_DEPLOYMENT_TARGET=10.14
-    popd
 fi
 
 # 1. Build HOST

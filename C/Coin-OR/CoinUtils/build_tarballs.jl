@@ -10,10 +10,7 @@ version = CoinUtils_version
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource(
-        "https://github.com/coin-or/CoinUtils/archive/refs/tags/releases/$(CoinUtils_upstream_version).tar.gz",
-        CoinUtils_hash,
-    ),
+    GitSource("https://github.com/coin-or/CoinUtils.git", CoinUtils_gitsha),
 ]
 
 # Bash recipe for building across all platforms

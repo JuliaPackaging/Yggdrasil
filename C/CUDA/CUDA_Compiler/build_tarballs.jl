@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "CUDA_Compiler"
-version = v"0.2"
+version = v"0.2.1"
 
 augment_platform_block = read(joinpath(@__DIR__, "platform_augmentation.jl"), String)
 
@@ -60,7 +60,7 @@ fi
 
 dependencies = [
     Dependency("CUDA_Driver_jll"; compat="13"),
-    RuntimeDependency("CUDA_Runtime_jll"),
+    RuntimeDependency("CUDA_Runtime_jll", top_level=true), # top_level so that preference changes invalidate
 ]
 
 products = [
@@ -104,7 +104,7 @@ for version in [ v"11.8", v"12.9", v"13.0"]
 
         push!(builds,
             (; script, platforms=[augmented_platform], products, init_block,
-               sources=get_sources("cuda", components; version, platform),
+               sources=get_sources("cuda", components; version, platform=augmented_platform),
         ))
     end
 end

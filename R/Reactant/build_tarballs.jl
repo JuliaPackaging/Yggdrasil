@@ -6,10 +6,10 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.237"
+version = v"0.0.243"
 
 sources = [
-   GitSource(repo, "ce9246a1501676c133652eeee16e33e369dd8d3a"),
+   GitSource(repo, "e4bb34f6a34189d503cb11804a0b930e15adabfa"),
    ArchiveSource("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.7%2B6/OpenJDK21U-jdk_x64_alpine-linux_hotspot_21.0.7_6.tar.gz", "79ecc4b213d21ae5c389bea13c6ed23ca4804a45b7b076983356c28105580013"),
    ArchiveSource("https://github.com/JuliaBinaryWrappers/Bazel_jll.jl/releases/download/Bazel-v7.6.1+0/Bazel.v7.6.1.x86_64-linux-musl-cxx03.tar.gz", "01ac6c083551796f1f070b0dc9c46248e6c49e01e21040b0c158f6e613733345")
 ]
@@ -39,10 +39,6 @@ if [[ "${target}" == *-apple-darwin* ]]; then
     popd
 fi
 
-if [[ "${bb_full_target}" == *cuda_version+12.1* ]] || [[ "${bb_full_target}" == *cuda_version+12.4* ]]; then
-   sed -i.bz "s/CUPTI_NEW +/CUPTI_OLD +/g" WORKSPACE
-fi
-
 mkdir -p .local/bin
 export LOCAL="`pwd`/.local/bin"
 export PATH="$LOCAL:$PATH"
@@ -67,9 +63,9 @@ BAZEL_FLAGS+=(--server_javabase=$JAVA_HOME)
 
 BAZEL_BUILD_FLAGS+=(--jobs ${nproc})
 
-# # Use ccache to speedup re-builds
-# BAZEL_BUILD_FLAGS+=(--action_env=USE_CCACHE=${USE_CCACHE} --action_env=CCACHE_DIR=/root/.ccache)
-# BAZEL_BUILD_FLAGS+=(--action_env=CCACHE_NOHASHDIR=yes)
+# Use ccache to speedup re-builds
+BAZEL_BUILD_FLAGS+=(--action_env=USE_CCACHE=${USE_CCACHE} --action_env=CCACHE_DIR=/root/.ccache)
+BAZEL_BUILD_FLAGS+=(--action_env=CCACHE_NOHASHDIR=yes)
 # # Set `SUPER_VERBOSE` to a non empty string to make the compiler wrappers more
 # # verbose. Useful for debugging.
 # BAZEL_BUILD_FLAGS+=(--action_env=SUPER_VERBOSE=true)
@@ -430,7 +426,7 @@ augment_platform_block="""
     """
 
 # for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), platform in platforms
-for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "12.4", "12.6", "12.8", "13.0"), platform in platforms
+for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "12.6", "12.8", "13.0"), platform in platforms
 
     augmented_platform = deepcopy(platform)
     augmented_platform["mode"] = mode
@@ -465,9 +461,7 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
         continue
     end
 
-    # if gpu == "cuda" && arch(platform) == "aarch64" && VersionNumber(cuda_version) < v"12.4"
-    # Temporarily disable all CUDA builds up to v12.4
-    if gpu == "cuda" && arch(platform) == "aarch64" && VersionNumber(cuda_version) <= v"12.4"
+    if gpu == "cuda" && arch(platform) == "aarch64" && VersionNumber(cuda_version) < v"12.4"
         # At the moment we can't build for CUDA 12.1 on aarch64, let's skip it
         continue
     end
@@ -490,16 +484,14 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     prefix="""
     MODE=$(mode)
     HERMETIC_CUDA_VERSION=$(hermetic_cuda_version_map[cuda_version])
+    # Don't use ccache on Yggdrasil, doesn't seem to work.
+    USE_CCACHE=$(!BinaryBuilder.is_yggdrasil())
     """
     platform_sources = BinaryBuilder.AbstractSource[sources...]
     if Sys.isapple(platform)
         push!(platform_sources,
               ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz",
                             "cd4f08a75577145b8f05245a2975f7c81401d75e9535dcffbb879ee1deefcbf4"))
-    end
-
-    if !Sys.isapple(platform)
-      push!(dependencies, Dependency(PackageSpec(; name="CUDA_Driver_jll")))
     end
 
     if arch(platform) == "aarch64" && gpu == "cuda"
