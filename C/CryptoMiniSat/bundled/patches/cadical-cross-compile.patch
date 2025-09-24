@@ -1,0 +1,59 @@
+--- a/configure
++++ b/configure
+@@ -333,10 +333,7 @@
+ EOF
+ if $CXX $CXXFLAGS $WERROR -o $feature.exe $feature.cpp 2>>configure.log
+ then
+-  if [ ! "`$feature.exe 2>>configure.log|tr -d '\r'`" = "hello world" ]
+-  then
+-    die "execution of '$feature.exe' failed"
+-  fi
++  msg "skipping execution of '$feature.exe' for cross-compilation"
+ else
+   die "test compilation '$feature.cpp'"
+ fi
+@@ -378,22 +375,12 @@
+ EOF
+ if $CXX $CXXFLAGS $WERROR -o $feature.exe $feature.cpp 2>>configure.log
+ then
+-  if [ "`$feature.exe 2>>configure.log|tr -d '\r'`" = 42 ]
+-  then
+-    msg "compiler supports all required C99/C++11 extensions"
+-  else
+-    die "checking compilation without '-std=c++11' failed"
+-  fi
++  msg "assuming C99/C++11 extensions for cross-compilation"
+ else
+   CXXFLAGS="$CXXFLAGS -std=c++11"
+   if $CXX $CXXFLAGS -o $feature.exe $feature.cpp 2>>configure.log
+   then
+-    if [ "`$feature.exe 2>>configure.log|tr -d '\r'`" = 42 ]
+-    then
+-      msg "using '-std=c++11' for all required C99/C++11 extensions"
+-    else
+-      die "checking compilation with '-std=c++11' failed"
+-    fi
++    msg "using '-std=c++11' for all required C99/C++11 extensions"
+   else
+     die "compiler does not support C99/C++11 even with '-std=c++11'"
+   fi
+@@ -428,7 +415,8 @@
+ EOF
+   if $CXX $CXXFLAGS -o $feature.exe $feature.cpp 2>>configure.log
+   then
+-    if $feature.exe
++    # Bypassed for cross-compilation. Assume flexible arrays are supported.
++    if true
+     then
+       msg "compiler configuration supports flexible array members"
+     else
+@@ -469,7 +457,8 @@
+ EOF
+   if $CXX $CXXFLAGS -o $feature.exe $feature.cpp 2>>configure.log
+   then
+-    if $feature.exe
++    # Bypassed for cross-compilation. Unlocked IO is a glibc/Linux feature.
++    if [[ "${target}" == *-linux-* ]]
+     then
+       msg "unlocked IO with '{putc,getc}_unlocked' seems to work"
+     else
