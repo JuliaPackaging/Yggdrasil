@@ -28,6 +28,8 @@ components:
     - StefanKarpinski
   B/bsdiff_endsley:
     - StefanKarpinski
+  C/Chuffed/:
+    - odow
   C/ColPack/:
     - amontoison
   C/Coin-OR/:
@@ -131,6 +133,8 @@ components:
     - eschnett
   M/METIS/:
     - amontoison
+  M/MiniZinc/:
+    - odow
   M/MKL/:
     - amontoison
     - imciner2
