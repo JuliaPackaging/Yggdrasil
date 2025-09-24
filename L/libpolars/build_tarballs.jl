@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "libpolars"
-version = v"0.1.1"
+version = v"0.2.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource(
         "https://github.com/Pangoraw/Polars.jl/",
-        "1860f4dd5a8750ffe2ab78268b72e7008cfe169d",
+        "a79eaab4a0c47423df137b48335e42a2d94ab566",
     ),
     ArchiveSource(
         "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
