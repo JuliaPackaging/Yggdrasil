@@ -31,6 +31,9 @@ fi
 # Build CaDiCaL
 cd ${WORKSPACE}/srcdir/cadical
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cadical-cross-compile.patch
+if [[ "${target}" == *-freebsd* ]]; then
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cadical-freebsd-headers.patch
+fi
 CXXFLAGS="-fPIC" ./configure --competition
 make -j${nproc}
 install -D -m755 build/libcadical.so "${prefix}/lib/libcadical.${dlext}"
@@ -49,6 +52,7 @@ cd ..
 # Build CryptoMiniSat
 cd $WORKSPACE/srcdir/cryptominisat
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cadiback-include.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cryptominisat-disable-fpu-check.patch
 mkdir build && cd build
 cmake \
 -DCMAKE_INSTALL_PREFIX=${prefix} \
