@@ -21,7 +21,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-
 # For C++20 support on macOS
 if [[ "${target}" == *-apple-darwin* ]]; then
     rm -rf /opt/${target}/${target}/sys-root/System /opt/${target}/${target}/sys-root/usr/include/libxml2
@@ -98,5 +97,6 @@ platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), plat
 append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
+# gcc version 10 is needed for the ranges library
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"11")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"10")
