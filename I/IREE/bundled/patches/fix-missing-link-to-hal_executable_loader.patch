@@ -1,0 +1,12 @@
+diff --git a/runtime/src/iree/hal/local/CMakeLists.txt b/runtime/src/iree/hal/local/CMakeLists.txt
+index 2a2c65775..8ee76bc80 100644
+--- a/runtime/src/iree/hal/local/CMakeLists.txt
++++ b/runtime/src/iree/hal/local/CMakeLists.txt
+@@ -146,6 +146,7 @@ iree_cc_library(
+   DEPS
+     ::executable_environment
+     ::executable_library
++    ::executable_loader
+     iree::base
+     iree::base::internal
+     iree::base::internal::cpu
