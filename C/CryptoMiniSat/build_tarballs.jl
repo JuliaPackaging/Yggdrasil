@@ -43,6 +43,9 @@ cd ..
 
 # Build CaDiBack
 cd ${WORKSPACE}/srcdir/cadiback
+if [[ "${target}" == *-mingw* ]]; then
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cadiback-windows-link-order.patch
+fi
 CXX=c++ ./configure
 make -j${nproc}
 install -D -m755 libcadiback.so "${prefix}/lib/libcadiback.${dlext}"
