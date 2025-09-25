@@ -8,7 +8,7 @@ min_jl_version = v"1.9"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://lemon.cs.elte.hu/pub/sources/lemon-$(version).tar.gz", "71b7c725f4c0b4a8ccb92eb87b208701586cf7a96156ebd821ca3ed855bad3c8")
+    ArchiveSource("http://lemon.cs.elte.hu/pub/sources/lemon-$(version).tar.gz", "71b7c725f4c0b4a8ccb92eb87b208701586cf7a96156ebd821ca3ed855bad3c8"),
     DirectorySource("./bundled") # for the Julia wrapper
 ]
 
@@ -17,7 +17,7 @@ script = raw"""
 export CXXFLAGS="${CXXFLAGS} -Wno-register" # cland C++17 expects the `register` storage class to be written as `REGISTER`
 
 # build LEMON
-cd $WORKSPACE/srcdir/lemon-*/
+cd $WORKSPACE/srcdir/lemon*/
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \

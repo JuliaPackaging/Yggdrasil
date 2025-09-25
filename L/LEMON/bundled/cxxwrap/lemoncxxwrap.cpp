@@ -2,6 +2,7 @@
 
 #include <lemon/list_graph.h>
 #include <lemon/matching.h>
+#include <lemon/network_simplex.h>
 
 #include <functional>
 
@@ -29,7 +30,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
   mod.add_type<ListGraph::Node>("ListGraphNode");
   mod.add_type<ListDigraph::Node>("ListDigraphNode");
   mod.add_type<ListGraph::Edge>("ListGraphEdge");
-  mod.add_type<ListDigraph::Arc>("ListDigraphArc");
+  // mod.add_type<ListDigraph::Arc>("ListDigraphArc");
 
   mod.method("id", static_cast<int(*)(ListGraph::Node)>(&ListGraph::id));
   mod.method("id", static_cast<int(*)(ListGraph::Edge)>(&ListGraph::id));
@@ -66,6 +67,9 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
   mod.add_type<ListGraph::EdgeMap<int>>("ListGraphEdgeMapInt")
     .constructor<const ListGraph&>()
     .method("set", &ListGraph::EdgeMap<int>::set);
+  mod.add_type<ListDigraph::ArcMap<int>>("ListDigraphArcMapInt")
+    .constructor<const ListDigraph&>()
+    .method("set", &ListDigraph::ArcMap<int>::set);
 
   mod.add_type<MaxWeightedPerfectMatching<ListGraph, ListGraph::EdgeMap<int>>>("MaxWeightedPerfectMatchingListGraphInt")
     .constructor<const ListGraph&, const ListGraph::EdgeMap<int>&>()
@@ -73,5 +77,12 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
     .method("run", &MaxWeightedPerfectMatching<ListGraph, ListGraph::EdgeMap<int>>::run)
     .method("matchingWeight", &MaxWeightedPerfectMatching<ListGraph, ListGraph::EdgeMap<int>>::matchingWeight);
 
-}
+  mod.add_type<NetworkSimplex<ListDigraph>("NetworkSimplexListDigraphInt")
+    .constructor<const ListDigraph&>()
+    .method("costMap", &NetworkSimplex<ListDigraph>::costMap)
+    .method("upperMap", &NetworkSimplex<ListDigraph>::upperMap)
+    .method("stSupply", &NetworkSimplex<ListDigraph>::stSupply)
+    .method("run", &NetworkSimplex<ListDigraph>::run)
+    .method("flowMap", &NetworkSimplex<ListDigraph>::flowMap);
 
+}
