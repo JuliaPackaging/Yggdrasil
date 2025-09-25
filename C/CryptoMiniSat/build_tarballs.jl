@@ -59,7 +59,7 @@ cmake \
 -DIPASIR=ON \
 -DSTATICCOMPILE=OFF \
 -S ..
-cmake --build . --config Release -v
+cmake --build . --config Release --parallel ${nproc}
 cmake --install .
 
 install_license ${WORKSPACE}/srcdir/cryptominisat/LICENSE.txt
