@@ -19,7 +19,6 @@ function normalize_symbol(str)
 end
 
 const tools_list = [
-  "amdgpu-arch",
   "bugpoint",
   "count",
   "diagtool",
@@ -41,7 +40,6 @@ const tools_list = [
   "llvm-cxxdump",
   "llvm-cxxfilt",
   "llvm-cxxmap",
-  "llvm-debuginfo-analyzer",
   "llvm-debuginfod",
   "llvm-debuginfod-find",
   "llvm-diff",
@@ -80,9 +78,7 @@ const tools_list = [
   "llvm-rc",
   "llvm-readelf",
   "llvm-readobj",
-  "llvm-readtapi",
   "llvm-reduce",
-  "llvm-remarkutil",
   "llvm-rtdyld",
   "llvm-sim",
   "llvm-size",
@@ -98,7 +94,6 @@ const tools_list = [
   "llvm-xray",
   "modularize",
   "not",
-  "nvptx-arch",
   "obj2yaml",
   "opt",
   "pp-trace",
