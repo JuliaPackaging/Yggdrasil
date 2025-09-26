@@ -3,8 +3,8 @@
 include("../common.jl")
 
 name = "anupq"
-upstream_version = "3.3.1" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.1" # increment this when rebuilding with unchanged upstream_version
+upstream_version = "3.3.2" # when you increment this, reset offset to v"0.0.0"
+offset = v"1.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # This package only produces an executable and does not need GAP for this at all.
@@ -13,7 +13,7 @@ version = offset_version(upstream_version, offset)
 # Collection of sources required to build this JLL
 sources = [
     ArchiveSource("https://github.com/gap-packages/anupq/releases/download/v$(upstream_version)/anupq-$(upstream_version).tar.gz",
-                  "fba1526f9e904e13ee7a9b980c795fbf27a8276c6734d684c1f91ebb3a1926b6"),
+                  "2ee92fc2314ad139cc6800a8a21e5dfbde04a6182f4867dc32c20024b2ac3bca"),
 ]
 
 # Bash recipe for building across all platforms
