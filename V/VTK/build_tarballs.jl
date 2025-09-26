@@ -3,12 +3,12 @@ using Base.BinaryPlatforms
 include(joinpath("..", "..", "platforms", "mpi.jl"))
 
 name = "VTK"
-version = v"9.5.1"
+version = v"9.5.2"
 
 # No sources, we're just building the testsuite
 sources = [
     ArchiveSource("https://vtk.org/files/release/$(version.major).$(version.minor)/VTK-$(version).tar.gz",
-                  "14443661c7b095d05b4e376fb3f40613f173e34fc9d4658234e9ec1d624a618f"),
+                  "cee64b98d270ff7302daf1ef13458dff5d5ac1ecb45d47723835f7f7d562c989"),
     FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
 ]
