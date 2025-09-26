@@ -4,12 +4,12 @@ using BinaryBuilder, Pkg
 
 name = "Uno"
 
-version = v"2.0.3"
+version = v"2.1.0"
 
 sources = [
     GitSource(
         "https://github.com/cvanaret/Uno.git",
-        "b365cac52ab4b9cafcc83769ecd2f0bdadb956b0",
+        "c612783923f2f0a09926450a8a8e5c1ad2d5cef5",
     ),
 ]
 
@@ -24,12 +24,6 @@ if [[ "${target}" == *mingw* ]]; then
 else
     LBT=blastrampoline
     HIGHS_DIR=${libdir}
-fi
-
-if [[ "${target}" == *apple* ]] || [[ "${target}" == *freebsd* ]]; then
-    OMP=omp
-else
-    OMP=gomp
 fi
 
 # FortranCInterface_VERIFY fails on macOS, but it's not actually needed for the current build
