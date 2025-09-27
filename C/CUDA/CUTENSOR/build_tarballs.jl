@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUTENSOR"
-version = v"2.3.0"
+version = v"2.3.1"
 
 script = raw"""
 mkdir -p ${libdir} ${prefix}/include
@@ -53,16 +53,19 @@ dependencies = [
 ]
 
 platforms = [Platform("x86_64", "linux"),
-    Platform("aarch64", "linux"; cuda_platform="sbsa"),
+    Platform("aarch64", "linux"),
     Platform("x86_64", "windows")]
 
 builds = []
 for cuda_version in [v"12", v"13"], platform in platforms
     augmented_platform = deepcopy(platform)
+    if cuda_version == v"12" && arch(platform) == "aarch64"
+        augmented_platform["cuda_platform"] = "sbsa"
+    end
     augmented_platform["cuda"] = CUDA.platform(cuda_version)
     should_build_platform(triplet(augmented_platform)) || continue
 
-    sources = get_sources("cutensor", ["libcutensor"]; version, platform,
+    sources = get_sources("cutensor", ["libcutensor"]; version, platform=augmented_platform,
                           variant="cuda$(cuda_version.major)")
 
     push!(builds, (; platforms=[augmented_platform], sources))

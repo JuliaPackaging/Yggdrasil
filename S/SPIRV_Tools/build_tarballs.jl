@@ -15,7 +15,8 @@ sources = [
     GitSource("https://github.com/google/effcee.git", "12241cbc30f20730b656db7fd5a3fa36cd420843"),
     GitSource("https://github.com/google/googletest", "c00fd25b71a17e645e4567fcb465c3fa532827d2"),
     GitSource("https://github.com/google/re2.git", "6dcd83d60f7944926bfd308cc13979fc53dd69ca"),
-    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "09913f088a1197aba4aefd300a876b2ebbaa3391")
+    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "09913f088a1197aba4aefd300a876b2ebbaa3391"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -39,6 +40,7 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
 fi
 
 cd SPIRV-Tools
+atomic_patch -p1 ../SPV_INTEL_masked_gather_scatter.patch
 install_license LICENSE
 
 CMAKE_FLAGS=()

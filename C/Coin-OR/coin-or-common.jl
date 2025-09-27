@@ -55,28 +55,26 @@ llvm_version = v"13.0.1"
 
 Bonmin_upstream_version = v"1.8.9"
 Bonmin_gitsha = "030d111af16a0f30b6fff851ba7f983bea14f982"
-Bonmin_version_offset = v"0.0.1"
+Bonmin_version_offset = v"0.0.2"
 Bonmin_version = offset_version(Bonmin_upstream_version, Bonmin_version_offset)
 
-Couenne_version = offset_version(v"0.5.8", v"0.0.1")
+Couenne_version = offset_version(v"0.5.8", v"0.0.2")
 Couenne_gitsha = "7154f7a9b3cd84be378d02b483d090b76fc79ce8"
 
-Cbc_version = offset_version(v"2.10.8", v"0.0.0")
-Cbc_gitsha = "3c1d759619f38bbd5916380df292cfc1dafba7f5"
+Cbc_version = offset_version(v"2.10.12", v"0.0.0")
+Cbc_gitsha = "782d275a8efa569eb818551561b424948e19653c"
 
-Cgl_version = offset_version(v"0.60.6", v"0.0.0")
-Cgl_gitsha = "8952b9e737e434b730fab5967cd28180b43d7234"
+Cgl_version = offset_version(v"0.60.9", v"0.0.0")
+Cgl_gitsha = "1d91b9ccb57eafbb7c07e994089a0f124358ffbd"
 
-Clp_version = offset_version(v"1.17.9", v"0.0.1")
-Clp_gitsha = "7b9daa62d4c2710a368a17385913ce59d8c67b68"
+Clp_version = offset_version(v"1.17.10", v"0.0.0")
+Clp_gitsha = "9a3efaa9ecefeb2a6088a447c9f66c6f31edbed9"
 
-Osi_version = offset_version(v"0.108.10", v"0.0.0")
-Osi_gitsha = "2997cda8e85ccc6712c4b05404e7aa70500e422f"
+Osi_version = offset_version(v"0.108.11", v"0.0.0")
+Osi_gitsha = "d979b7b890a32a7e69c53920bb39eef17bd599b8"
 
-CoinUtils_upstream_version = v"2.11.11"
-CoinUtils_version = offset_version(CoinUtils_upstream_version, v"0.0.0")
-CoinUtils_gitsha = "15a819b7e8763b2557e4bf440f8cb62ee6734f36"
-CoinUtils_hash = "27da344479f38c82112d738501643dcb229e4ee96a5f87d4f406456bdc1b2cb4"
+CoinUtils_version = offset_version(v"2.11.12", v"0.0.0")
+CoinUtils_gitsha = "cc644574ef1899f14b7318e6cdb7f460bbee5212"
 
 Ipopt_upstream_version = v"3.14.19"
 Ipopt_gitsha = "2695946fa79d2e84f3034e065e788933a81466eb"
@@ -118,3 +116,4 @@ OpenBLAS32_version = v"0.3.26"
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
 platforms = filter!(!Sys.isfreebsd, platforms)
+filter!(p -> arch(p) != "riscv64", platforms)

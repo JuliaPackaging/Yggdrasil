@@ -1,0 +1,18 @@
+diff --git a/openbsd-compat/openssl-compat.c b/openbsd-compat/openssl-compat.c
+index 14865077e..5bc00b7f0 100644
+--- a/openbsd-compat/openssl-compat.c
++++ b/openbsd-compat/openssl-compat.c
+@@ -49,10 +49,10 @@ ssh_compatible_openssl(long headerver, long libver)
+ 		return 1;
+ 
+ 	/*
+-	 * For versions >= 3.0, only the major and status must match.
++	 * For versions >= 3.0, only the major must match.
+ 	 */
+-	if (headerver >= 0x3000000f) {
+-		mask = 0xf000000fL; /* major,status */
++	if (headerver >= 0x30000000) {
++		mask = 0xf0000000L; /* major */
+ 		return (headerver & mask) == (libver & mask);
+ 	}
+ 

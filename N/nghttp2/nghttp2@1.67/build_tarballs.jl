@@ -1,4 +1,4 @@
-version = v"1.67.0"
+version = v"1.67.1"
 
 include("../common.jl")
 
