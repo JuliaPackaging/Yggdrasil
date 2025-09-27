@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Xorg_libXScrnSaver"
-version = v"1.2.4"
+version = v"1.2.5"
 
 # Collection of sources required to build libXScrnSaver
 sources = [
     ArchiveSource("https://www.x.org/archive/individual/lib/libXScrnSaver-$(version).tar.xz",
-                  "75cd2859f38e207a090cac980d76bc71e9da99d48d09703584e00585abc920fe"),
+                  "5057365f847253e0e275871441e10ff7846c8322a5d88e1e187d326de1cd8d00"),
 ]
 
 # Bash recipe for building across all platforms
