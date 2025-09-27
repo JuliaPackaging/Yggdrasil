@@ -3,19 +3,19 @@
 using BinaryBuilder
 
 name = "Xorg_xcb_util_cursor"
-version = v"0.1.5"
+version = v"0.1.6"
 
 # Collection of sources required to build libxcb
 sources = [
-    ArchiveSource("https://xcb.freedesktop.org/dist/xcb-util-cursor-$(version).tar.xz",
-                  "0caf99b0d60970f81ce41c7ba694e5eaaf833227bb2cbcdb2f6dc9666a663c57"),
+    ArchiveSource("https://www.x.org/archive/individual/lib/xcb-util-cursor-0.1.6.tar.xz",
+                  "fdeb8bd127873519be5cc70dcd0d3b5d33b667877200f9925a59fdcad8f7a933"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/xcb-util-cursor-*
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-static=no
 make -j${nproc}
 make install
 """
