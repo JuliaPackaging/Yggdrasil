@@ -9,9 +9,9 @@ version = v"0.1.1"
 
 
 sources = [
-    ArchiveSource(
-        "https://github.com/MIT-Lu-Lab/cuPDLPx/archive/refs/tags/v$(version).tar.gz",
-        "b3384b27180fe52e58943cd6961c87a39806c19a8a0b48d076f7d543dfd2dbbd",
+    GitSource(
+        "https://github.com/MIT-Lu-Lab/cuPDLPx.git",
+        "3a6d5b142dc8e77f7ef1d21a586afa71fefd5119",
     ),
 ]
 
