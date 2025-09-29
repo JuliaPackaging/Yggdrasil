@@ -90,9 +90,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Elfutils_jll"),
-    Dependency("Zlib_jll"),
-    Dependency("Zstd_jll"),
+    Dependency("Elfutils_jll"),  # Required for libelf.h in ElfCXX.cpp
+    Dependency("Zlib_jll"),      # Required for zlib.h in ElfCXX.cpp
+    Dependency("Zstd_jll"),      # Required for zstd.h in ElfCXX.cpp
     # Clang includes LLVM
     Dependency("Clang_jll"),
 ]
