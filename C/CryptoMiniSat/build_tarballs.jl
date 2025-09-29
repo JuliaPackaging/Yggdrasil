@@ -90,7 +90,7 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GMP_jll"),
+    Dependency("GMP_jll"; compat="6.2.1"),
     Dependency("Zlib_jll"),
 ]
 
