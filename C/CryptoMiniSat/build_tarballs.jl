@@ -58,13 +58,13 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cadiback-include.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cryptominisat-disable-fpu-check.patch
 mkdir build && cd build
 cmake \
--DCMAKE_INSTALL_PREFIX=${prefix} \
--DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
--DENABLE_TESTING=OFF \
--DCMAKE_BUILD_TYPE=Release \
--DIPASIR=ON \
--DSTATICCOMPILE=OFF \
--S ..
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DENABLE_TESTING=OFF \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DIPASIR=ON \
+    -DSTATICCOMPILE=OFF \
+    -S ..
 cmake --build . --config Release --parallel ${nproc}
 cmake --install .
 
