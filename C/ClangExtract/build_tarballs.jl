@@ -14,6 +14,9 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/clang-extract
 
+# Fix destructor declaration issue
+sed -i 's/~ElfObject(void);/~ElfObject();/g' libcextract/ElfCXX.hh
+
 # Find all C++ source files
 MAIN_SOURCES="Main.cpp"
 INLINE_SOURCES="Inline.cpp"
