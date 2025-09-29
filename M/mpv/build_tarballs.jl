@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "mpv"
-version = v"0.39.0"
+version = v"0.40.0"
 
 # Collection of sources required to complete build #
 sources = [
-    GitSource("https://github.com/mpv-player/mpv.git", "a0fba7be57f3822d967b04f0f6b6d6341e7516e7")
+    GitSource("https://github.com/mpv-player/mpv.git", "e48ac7ce08462f5e33af6ef9deeac6fa87eef01e")
 ]
 
 # Bash recipe for building across all platforms
@@ -26,9 +26,9 @@ meson install -C build
 
 # We pick the same platforms FFMPEG_jll does 
 platforms = supported_platforms()
-filter!(p -> arch(p) != "armv6l", platforms)
-filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
-filter!(p -> arch(p) != "riscv64", platforms)
+#filter!(p -> arch(p) != "armv6l", platforms)
+#filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+#filter!(p -> arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -42,7 +42,7 @@ dependencies = [
     Dependency("Libiconv_jll"),
     Dependency("SDL2_jll"),
     Dependency("Zlib_jll"),
-    Dependency("FFMPEG_jll"),
+    Dependency("FFMPEG_jll"; compat="7.1"),
     Dependency("Lua_jll"),
     Dependency("JpegTurbo_jll"),
     Dependency("Xorg_libXrandr_jll"),
