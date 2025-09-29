@@ -1,14 +1,14 @@
 using BinaryBuilder, Pkg
 
 name = "libsparseir"
-version = v"0.5.2"
+version = v"0.6.0"
 
 # Collection of sources required to complete build
 sources = [
-    # libsparseir v0.5.2
+    # libsparseir v0.6.0
     GitSource(
         "https://github.com/SpM-lab/libsparseir.git",
-        "095391fc2a6244e532e9bcecfb5f203d33f97bdb",
+        "ae7d8330b7e452cb31b5ded76c5a656f336906a4",
     ),
     # libxprec v0.7.0
     GitSource(
