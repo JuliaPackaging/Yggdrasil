@@ -2,6 +2,10 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
+
 name = "ClangExtract"
 version = v"0.1.0"
 
@@ -28,14 +32,10 @@ LIB_SOURCES=$(find libcextract -name "*.cpp" | tr '\n' ' ')
 
 # Set up compiler flags - use c++2a for GCC 9 C++20 support
 export CXXFLAGS="-std=c++2a -O3 -fPIC"
-export CXXFLAGS="${CXXFLAGS} -I${host_prefix}/include"
+export CXXFLAGS="${CXXFLAGS} -I${destdir}/include"
 export CXXFLAGS="${CXXFLAGS} -Ilibcextract"
 export CXXFLAGS="${CXXFLAGS} -D_GNU_SOURCE"
 export CXXFLAGS="${CXXFLAGS} -DLLVM_VERSION_MAJOR=20"
-
-# Add LLVM includes
-LLVM_CXXFLAGS=$(${host_prefix}/bin/llvm-config --cxxflags 2>/dev/null || echo "")
-export CXXFLAGS="${CXXFLAGS} ${LLVM_CXXFLAGS}"
 
 # Set up linker flags
 export LDFLAGS="-L${host_prefix}/lib -L${libdir}"
@@ -47,13 +47,16 @@ export LDFLAGS="${LDFLAGS} -lpthread -ldl"
 export CXX="g++"
 
 echo "Building libcextract static library..."
+echo $nproc
 # First compile all library sources into object files
 mkdir -p build_objs
 for src in ${LIB_SOURCES}; do
     obj_file="build_objs/$(basename ${src%.cpp}.o)"
     echo "Compiling $src -> $obj_file"
-    ${CXX} ${CXXFLAGS} -c $src -o $obj_file
+    ${CXX} ${CXXFLAGS} -c $src -o $obj_file &
+    ((i=i%nproc)) || true; ((i++==0)) && wait
 done
+wait
 
 # Create static library
 echo "Creating static library..."
@@ -95,18 +98,50 @@ products = [
     ExecutableProduct("ce-inline", :ce_inline),
 ]
 
-# Dependencies that must be installed before this package can be built
-dependencies = [
-    Dependency("Elfutils_jll"),  # Required for libelf.h in ElfCXX.cpp
-    Dependency("Zlib_jll"),      # Required for zlib.h in ElfCXX.cpp
-    Dependency("Zstd_jll"),      # Required for zstd.h in ElfCXX.cpp
-    # Clang includes LLVM
-    Dependency("Clang_jll"),
-]
+llvm_versions = [v"20.1.8+0"]
 
-# Build the tarballs, and possibly a `build.jl` as well.
-# Use GCC 9 which has full C++20 support
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6",
-               preferred_llvm_version=v"20",
-               preferred_gcc_version=v"9")
+augment_platform_block = """
+    using Base.BinaryPlatforms
+    $(LLVM.augment)
+    function augment_platform!(platform::Platform)
+        augment_llvm!(platform)
+    end"""
+
+# determine exactly which tarballs we should build
+builds = []
+for llvm_version in llvm_versions, llvm_assertions in (false, true)
+    llvm_name = llvm_assertions ? "LLVM_full_assert_jll" : "LLVM_full_jll"
+    dependencies = [
+        Dependency("Elfutils_jll"),
+        Dependency("Zlib_jll"),
+        Dependency("Zstd_jll"),
+        # LLVM jlls are complicated - sigh - don't ask
+        RuntimeDependency("Clang_jll"),
+        BuildDependency(PackageSpec(name=llvm_name, version=llvm_version))
+    ]
+    for platform in platforms
+        augmented_platform = deepcopy(platform)
+        augmented_platform[LLVM.platform_name] = LLVM.platform(llvm_version, llvm_assertions)
+
+        should_build_platform(triplet(augmented_platform)) || continue
+        push!(builds, (;
+            dependencies,
+            platforms=[augmented_platform],
+        ))
+    end
+end
+
+# don't allow `build_tarballs` to override platform selection based on ARGS.
+# we handle that ourselves by calling `should_build_platform`
+non_platform_ARGS = filter(arg -> startswith(arg, "--"), ARGS)
+
+# `--register` should only be passed to the latest `build_tarballs` invocation
+non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
+
+for (i,build) in enumerate(builds)
+    build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
+                   name, version, sources, script,
+                   build.platforms, products, build.dependencies;
+                   preferred_gcc_version=v"9", julia_compat="1.6",
+                   augment_platform_block)
+end
