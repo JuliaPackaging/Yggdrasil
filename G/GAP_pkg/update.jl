@@ -7,7 +7,7 @@ using GZip
 using JSON
 using SHA
 
-upstream_version = v"4.15.0-beta3"
+upstream_version = v"4.15.0"
 gap_version = v"400.1500.000"
 gap_lib_version = v"400.1500.000"
 
