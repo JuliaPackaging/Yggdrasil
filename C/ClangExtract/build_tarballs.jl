@@ -14,8 +14,12 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/clang-extract
 
-# Fix destructor declaration issue
-sed -i 's/~ElfObject(void);/~ElfObject();/g' libcextract/ElfCXX.hh
+# Fix destructor syntax issues
+# 1. Remove (void) from destructor declaration and definition
+sed -i 's/~ElfObject(void)/~ElfObject()/g' libcextract/ElfCXX.hh
+sed -i 's/~ElfObject(void)/~ElfObject()/g' libcextract/ElfCXX.cpp
+# 2. Fix explicit destructor calls to use this->
+sed -i 's/ElfObject::~ElfObject();/this->~ElfObject();/g' libcextract/ElfCXX.cpp
 
 # Find all C++ source files
 MAIN_SOURCES="Main.cpp"
