@@ -22,7 +22,7 @@ const llvm_tags = Dict(
     v"18.1.7" => "32719222d3ea71ed0b19c2cb75fa6f76713fda20", # julia-18.1.7-4
     v"19.1.7" => "ccda9ec62497d9de88ca7090a749e52a89f62132", # julia-19.1.7-2
     v"20.1.8" => "5b9f96366ce26dfc8ca91697ef0a57894791d95e", # julia-20.1.8-0
-    v"21.0.0" => "2d3406d7b2a6e12bae0ba428f87c3aa7446391fe", # julia-21.0.0-0
+    v"21.1.2" => "e01e3e96a51b18afc66b6b4ef358b3d72b51dc68", # julia-21.1.2-0
 )
 
 const buildscript = raw"""
