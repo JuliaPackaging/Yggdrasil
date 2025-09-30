@@ -64,11 +64,11 @@ ar rcs libcextract.a build_objs/*.o
 
 # Build clang-extract executable
 echo "Building clang-extract..."
-${CXX} ${CXXFLAGS} ${MAIN_SOURCES} libcextract.a ${LDFLAGS} -o clang-extract
+${CXX} ${CXXFLAGS} ${MAIN_SOURCES} -Wl,--start-group libcextract.a ${LDFLAGS} -Wl,--end-group -o clang-extract
 
 # Build ce-inline executable
 echo "Building ce-inline..."
-${CXX} ${CXXFLAGS} ${INLINE_SOURCES} libcextract.a ${LDFLAGS} -o ce-inline
+${CXX} ${CXXFLAGS} ${INLINE_SOURCES} -Wl,--start-group libcextract.a ${LDFLAGS} -Wl,--end-group -o ce-inline
 
 # Install binaries
 install -Dm755 clang-extract ${bindir}/clang-extract
