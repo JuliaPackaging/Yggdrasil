@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Mesa"
-version = v"25.2.1"
+version = v"25.2.3"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://archive.mesa3d.org/mesa-$(version).tar.xz",
-                  "c124372189d35f48e049ee503029171c68962c580971cb86d968a6771c965ba4"),
+                  "f2d6b28562f1d6cb9c17ee8e58eeade7aa5faf927ae71065eadb41e17f92b4f8"),
 ]
 
 # Bash recipe for building across all platforms
