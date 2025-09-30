@@ -88,7 +88,7 @@ platforms = supported_platforms()
 
 # Only build for platforms where we have LLVM_full_jll available
 # LLVM_full_jll doesn't have i686-linux-musl binaries
-filter!(p -> !(Sys.islinux(p) && Sys.ismusl(p) && arch(p) == "i686"), platforms)
+filter!(p -> !(Sys.islinux(p) && libc(p) == "musl" && arch(p) == "i686"), platforms)
 filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 filter!(p -> arch(p) != "riscv64", platforms)
 
