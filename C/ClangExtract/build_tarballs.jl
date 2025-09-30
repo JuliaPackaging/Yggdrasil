@@ -25,6 +25,10 @@ sed -i 's/~ElfObject(void)/~ElfObject()/g' libcextract/ElfCXX.cpp
 # 2. Fix explicit destructor calls to use this->
 sed -i 's/ElfObject::~ElfObject();/this->~ElfObject();/g' libcextract/ElfCXX.cpp
 
+# Fix ArrayRef ambiguous overload on i686 (32-bit)
+# Change 0UL to 0 to match size_t type correctly
+sed -i 's/ArrayRef<Decl \*>(nullptr, 0UL)/ArrayRef<Decl *>(nullptr, size_t(0))/g' libcextract/LLVMMisc.cpp
+
 # Find all C++ source files
 MAIN_SOURCES="Main.cpp"
 INLINE_SOURCES="Inline.cpp"
