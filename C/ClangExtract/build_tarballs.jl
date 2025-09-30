@@ -86,7 +86,9 @@ install_license LICENSE.TXT
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-# Only build for platforms where we have LLVM and Clang available
+# Only build for platforms where we have LLVM_full_jll available
+# LLVM_full_jll doesn't have musl binaries
+filter!(p -> !Sys.ismusl(p), platforms)
 filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 filter!(p -> arch(p) != "riscv64", platforms)
 
