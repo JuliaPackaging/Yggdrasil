@@ -36,13 +36,13 @@ LIB_SOURCES=$(find libcextract -name "*.cpp" | tr '\n' ' ')
 
 # Set up compiler flags - use c++2a for GCC 9 C++20 support
 export CXXFLAGS="-std=c++2a -O3 -fPIC"
-export CXXFLAGS="${CXXFLAGS} -I${destdir}/include"
+export CXXFLAGS="${CXXFLAGS} -I${prefix}/include"
 export CXXFLAGS="${CXXFLAGS} -Ilibcextract"
 export CXXFLAGS="${CXXFLAGS} -D_GNU_SOURCE"
 export CXXFLAGS="${CXXFLAGS} -DLLVM_VERSION_MAJOR=20"
 
 # Set up linker flags
-export LDFLAGS="-L${host_prefix}/lib -L${libdir}"
+export LDFLAGS="-L${prefix}/lib -L${libdir}"
 export LDFLAGS="${LDFLAGS} -lclang-cpp -lLLVM"
 export LDFLAGS="${LDFLAGS} -lelf -lz -lzstd"
 export LDFLAGS="${LDFLAGS} -lpthread -ldl"
@@ -87,8 +87,6 @@ install_license LICENSE.TXT
 platforms = supported_platforms()
 
 # Only build for platforms where we have LLVM and Clang available
-# Clang_jll is not available for musl platforms
-filter!(p -> !Sys.ismusl(p), platforms)
 filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 filter!(p -> arch(p) != "riscv64", platforms)
 
