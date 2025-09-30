@@ -9,9 +9,9 @@ using Pkg
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
-gap_version = v"400.1401.5"
+gap_version = v"400.1500.0"
 name = "JuliaInterface"
-upstream_version = "0.15.3" # when you increment this, reset offset to v"0.0.0"
+upstream_version = "0.16.0" # when you increment this, reset offset to v"0.0.0"
 offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
@@ -54,7 +54,7 @@ platforms = gap_platforms(expand_julia_versions=true)
 # is easy as it only requires a change to GAP.jl, not to any JLLs.
 dependencies = [
     Dependency("GAP_jll", gap_version),
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.19")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.20")),
 ]
 
 # The products that we will ensure are always built
