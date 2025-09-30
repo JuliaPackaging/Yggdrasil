@@ -7,7 +7,7 @@ version = v"4.4.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/warmcat/libwebsockets.git", "e7fbdac39154c7bdfd42dd73c5cf25e4fd2e190d"),
+    GitSource("https://github.com/warmcat/libwebsockets.git", "e636b7bd133c4c0bfbdbf0d77afebdb20e09a5a2"),
 ]
 
 # Bash recipe for building across all platforms
@@ -18,7 +18,6 @@ cmake -B build \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DGENCERTS=OFF \
-    -DOPENSSL_EXECUTABLE="$(command -v openssl || echo /usr/bin/openssl)" \
     -DCMAKE_C_FLAGS="${CFLAGS} -Duv_poll_init_socket=uv_poll_init" \
     -DZLIB_LIBRARY=${libdir}/libz.${dlext} \
     -DZLIB_INCLUDE_DIR=${includedir} \
@@ -54,4 +53,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"15.2.0")
