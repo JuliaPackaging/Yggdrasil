@@ -2,11 +2,11 @@ using BinaryBuilder
 
 # Collection of sources required to build OpenSSL
 name = "OpenSSL"
-version = v"3.5.3"
+version = v"3.5.4"
 
 sources = [
     ArchiveSource("https://github.com/openssl/openssl/releases/download/openssl-$version/openssl-$version.tar.gz",
-                  "c9489d2abcf943cdc8329a57092331c598a402938054dc3a22218aea8a8ec3bf"),
+                  "967311f84955316969bdb1d8d4b983718ef42338639c621ec4c34fddef355e99"),
 ]
 
 include("../common.jl")
