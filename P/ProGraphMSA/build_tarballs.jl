@@ -8,7 +8,8 @@ version = v"2020.09.29"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/acg-team/ProGraphMSA.git", "51cf68a58f2e8900b3cfb40d24d335f7405abbed"),
-    ArchiveSource("https://sourceforge.net/projects/tclap/files/tclap-1.2.2.tar.gz", "f5013be7fcaafc69ba0ce2d1710f693f61e9c336b6292ae4f57554f59fde5837")
+    ArchiveSource("https://sourceforge.net/projects/tclap/files/tclap-1.2.2.tar.gz", "f5013be7fcaafc69ba0ce2d1710f693f61e9c336b6292ae4f57554f59fde5837"),
+    DirectorySource(joinpath(@__DIR__, "patches"))
 ]
 
 # Bash recipe for building across all platforms
@@ -46,6 +47,10 @@ for f in CMakeLists.txt src/CMakeLists.txt; do
   fi
 done
 
+# Provide std::char_traits specializations so libc++ can handle custom alphabets.
+atomic_patch -p1 "${WORKSPACE}/srcdir/char_traits.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/fix_codon_table.patch"
+
 popd
 
 ##########
@@ -54,9 +59,24 @@ popd
 pushd "${PG_DIR}"
 
 # Eigen headers: typically provided by Eigen_jll at ${prefix}/include/eigen3
-EXTRA_INC="-I${prefix}/include/eigen3"
+EXTRA_INC="-I${prefix}/include -I${prefix}/include/eigen3"
+
+if [[ "${target}" == *-apple-darwin* ]]; then
+  sed -i "s/${target}-clang++/${target}-g++/g" "${CMAKE_TARGET_TOOLCHAIN}"
+  sed -i "s/${target}-gcc++/${target}-g++/g" "${CMAKE_TARGET_TOOLCHAIN}"
+  sed -i "s/${target}-clang/${target}-gcc/g" "${CMAKE_TARGET_TOOLCHAIN}"
+  sed -i "s/${target}-gccclang/${target}-gcc/g" "${CMAKE_TARGET_TOOLCHAIN}"
+fi
 
 rm -rf build
+cmake_extra=()
+if [[ "${target}" == *-apple-darwin* ]]; then
+  cmake_extra+=(
+    -DCMAKE_C_COMPILER="${target}-gcc"
+    -DCMAKE_CXX_COMPILER="${target}-g++"
+  )
+fi
+
 cmake -S . -B build -G "${GEN}" \
   -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
   -DCMAKE_INSTALL_PREFIX="${prefix}" \
@@ -65,11 +85,15 @@ cmake -S . -B build -G "${GEN}" \
   -DCMAKE_CXX_EXTENSIONS=ON \
   -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
   -DWITH_SSE=OFF \
-  -DCMAKE_CXX_FLAGS="${EXTRA_INC} ${COMMON_EIGEN_DEFS}"
+  -DCMAKE_CXX_FLAGS="${EXTRA_INC} ${COMMON_EIGEN_DEFS}" \
+  ${cmake_extra[@]}
 
 cmake --build build --parallel "${nproc}"
 
 cmake --install build
+
+mkdir -p "${prefix}/share/licenses/ProGraphMSA"
+install -m 0644 LICENSE "${prefix}/share/licenses/ProGraphMSA/LICENSE"
 
 popd
 """
@@ -77,17 +101,19 @@ popd
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc"),
+    Platform("aarch64", "macos"),
     Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("i686", "linux"; libc = "musl"),
-    Platform("x86_64", "linux"; libc = "musl"),
     Platform("aarch64", "linux"; libc = "musl"),
+    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
     Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl")
+    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
+    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
+    Platform("i686", "linux"; libc = "glibc"),
+    Platform("i686", "linux"; libc = "musl"),
+    Platform("powerpc64le", "linux"; libc = "glibc"),
+    Platform("x86_64", "macos"),
+    Platform("x86_64", "linux"; libc = "glibc"),
+    Platform("x86_64", "linux"; libc = "musl")
 ]
 
 platforms = expand_cxxstring_abis(platforms)
