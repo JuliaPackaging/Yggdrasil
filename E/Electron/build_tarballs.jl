@@ -24,6 +24,25 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/${target}
 
+# Function to copy critical resource files required for Electron to function
+copy_electron_resources() {
+    local dest_dir="$1"
+    for file in icudtl.dat v8_context_snapshot.bin snapshot_blob.bin *.pak; do
+        if [[ -f "$file" ]]; then
+            cp "$file" "${dest_dir}/$file"
+        fi
+    done
+}
+
+# Function to copy license files
+copy_licenses() {
+    if [[ -f "LICENSE" ]]; then
+        install_license LICENSE
+    elif [[ -f "LICENSES.chromium.html" ]]; then
+        install_license LICENSES.chromium.html
+    fi
+}
+
 if [[ "${target}" == *-mingw* ]]; then
     # Windows structure
     install -Dvm 0755 "electron.exe" "${bindir}/electron${exeext}"
@@ -36,17 +55,17 @@ if [[ "${target}" == *-mingw* ]]; then
         fi
     done
 
-    # Copy additional files
-    if [[ -f "LICENSE" ]]; then
-        install_license LICENSE
-    elif [[ -f "LICENSES.chromium.html" ]]; then
-        install_license LICENSES.chromium.html
-    fi
+    copy_electron_resources "${bindir}"
+
+    copy_licenses
     if [[ -f "version" ]]; then
         cp "version" "${prefix}/version"
     fi
 elif [[ "${target}" == *-apple-* ]]; then
     # macOS structure - Electron.app bundle
+    # Note: All resource files (icudtl.dat, v8_context_snapshot.bin, snapshot_blob.bin, *.pak)
+    # are already included in the .app bundle at
+    # Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/
     if [[ -d "Electron.app" ]]; then
         cp -r Electron.app "${prefix}/Electron.app"
         # Create a wrapper script
@@ -59,11 +78,7 @@ EOF
         chmod +x "${bindir}/electron"
     fi
 
-    if [[ -f "LICENSE" ]]; then
-        install_license LICENSE
-    elif [[ -f "LICENSES.chromium.html" ]]; then
-        install_license LICENSES.chromium.html
-    fi
+    copy_licenses
 else
     # Linux structure
     install -Dvm 0755 "electron" "${bindir}/electron${exeext}"
@@ -76,12 +91,9 @@ else
         fi
     done
 
-    # Copy additional files
-    if [[ -f "LICENSE" ]]; then
-        install_license LICENSE
-    elif [[ -f "LICENSES.chromium.html" ]]; then
-        install_license LICENSES.chromium.html
-    fi
+    copy_electron_resources "${bindir}"
+
+    copy_licenses
     if [[ -f "version" ]]; then
         cp "version" "${prefix}/version"
     fi
