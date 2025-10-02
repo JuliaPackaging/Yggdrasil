@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libinput"
-version = v"1.18.0"
+version = v"1.28.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://gitlab.freedesktop.org/libinput/libinput", "2599b0d89935631176a2d6a3626e30c6bc1040db"),
+    GitSource("https://gitlab.freedesktop.org/libinput/libinput", "4f7b4ef0e4eb5d569df36be387579858eba349bb"),
 ]
 
 # Bash recipe for building across all platforms
@@ -16,7 +16,7 @@ cd $WORKSPACE/srcdir/libinput/
 mkdir build
 cd build
 
-meson -D libwacom=false -D tests=false -D documentation=false -D debug-gui=false ../ --cross-file="${MESON_TARGET_TOOLCHAIN}"
+meson setup -D libwacom=false -D tests=false -D documentation=false -D debug-gui=false ../ --cross-file="${MESON_TARGET_TOOLCHAIN}"
 ninja -j${nproc}
 ninja install
 """

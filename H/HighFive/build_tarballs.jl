@@ -3,28 +3,23 @@
 using BinaryBuilder, BinaryBuilderBase, Pkg
 
 name = "HighFive"
-version = v"2.9.0"
+version = v"3.1.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/BlueBrain/HighFive", "0d0259e823a0e8aee2f036ba738c703ac4a0721c"),
+    GitSource("https://github.com/highfive-devs/highfive", "1a5ef376f6ceb5ca111a02c936f9918699a7a0b0"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/HighFive
+cd $WORKSPACE/srcdir/highfive
 cmake -B build -G Ninja \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DHIGHFIVE_UNIT_TESTS=OFF \
     -DHIGHFIVE_EXAMPLES=OFF \
-    -DHIGHFIVE_BUILD_DOCS=off \
-    -DHIGHFIVE_TEST_BOOST=ON \
-    -DHIGHFIVE_TEST_EIGEN=ON \
-    -DHIGHFIVE_TEST_HALF_FLOAT=ON \
-    -DHIGHFIVE_TEST_XTENSOR=ON
-# -DHIGHFIVE_TEST_OPENCV=ON
+    -DHIGHFIVE_BUILD_DOCS=OFF
 cmake --build build --parallel ${nproc}
 cmake --install build
 """
@@ -41,11 +36,7 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("Eigen_jll"),
-    BuildDependency("xtensor_jll"),
-    Dependency("HDF5_jll"; compat="~1.14.0"),
-    # Dependency("OpenCV_jll"),
-    Dependency("boost_jll"; compat="1.76.0"),
+    Dependency("HDF5_jll"; compat="~1.14.6"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

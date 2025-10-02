@@ -10,12 +10,14 @@ function lbt_sources(version::VersionNumber; kwargs...)
     lbt_version_commit = Dict(
         v"5.4.0"  => "d00e6ca235bb747faae4c9f3a297016cae6959ed",
         v"5.11.2" => "c48da8a1225c2537ff311c28ef395152fb879eae",
+        v"5.12.0" => "b127bc8dd4758ffc064340fff2aef4ead552f386",
+        v"5.13.1" => "f26278e83ddc9035ae7695da597f1a5b26a4c62b",
+        v"5.14.0" => "4cca50aa5101a4ed5f2c85e4760090a23d4aa5a5",
     )
 
     return [
         GitSource("https://github.com/JuliaLinearAlgebra/libblastrampoline.git",
                   lbt_version_commit[version]),
-        DirectorySource("./bundled/")
     ]
 end
 
@@ -29,9 +31,6 @@ if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
 fi
 
 make -j${nproc} prefix=${prefix} install
-
-install -Dvm644 ../../cmake/yggdrasilenv.cmake ${libdir}/cmake/blastrampoline/yggdrasilenv.cmake
-install_license ../LICENSE
 """
 
 # These are the platforms we will build for by default, unless further

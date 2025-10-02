@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "open62541"
-version = v"1.4.6"
+version = v"1.4.13"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/open62541/open62541.git",
-              "50ae40d3c98a5ff0458ee2b5ae92bea53e11af4e")
+              "484348f3076da13a9d0971f3d66ffe57ab3b7a90")
 ]
 
 # Bash recipe for building across all platforms
@@ -59,8 +59,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenSSL_jll"; compat="3.0.8")
+    Dependency("OpenSSL_jll"; compat="3.0.16")
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
+# Build the tarballs
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"7")

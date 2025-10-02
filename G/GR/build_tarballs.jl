@@ -2,16 +2,18 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
+include("../../fancy_toys.jl")  # for `should_build_platform`
+
 name = "GR"
-version = v"0.73.8"
+version = v"0.73.17"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sciapp/gr.git", "23937754fa7c8e943cda49ff493f464dfa98f976"),
+    GitSource("https://github.com/sciapp/gr.git", "c8a8395aa194deec8c87575ba4238972bbdf6c40"),
     FileSource("https://github.com/sciapp/gr/releases/download/v$version/gr-$version.js",
-               "55c2bad5787304548a819de220cb32eeffed69466d3f3b1be69cb0ef35c4b6a5", "gr.js"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-                  "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
+               "a449b886d4ea28445ff3d1b345b35edd91d1d807ca65fa9f82805bd6e0f448c0", "gr.js"),
+    ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
+                  "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49")
 ]
 
 # Bash recipe for building across all platforms
@@ -30,9 +32,9 @@ else
 fi
 
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    apple_sdk_root=$WORKSPACE/srcdir/MacOSX10.14.sdk
+    apple_sdk_root=$WORKSPACE/srcdir/MacOSX14.0.sdk
     sed -i "s!/opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
-    export MACOSX_DEPLOYMENT_TARGET=10.14
+    export MACOSX_DEPLOYMENT_TARGET=12
 fi
 
 if [[ "${target}" == *apple* ]]; then
@@ -78,34 +80,44 @@ platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libGR", :libGR, dont_dlopen=true),
-    LibraryProduct("libGR3", :libGR3, dont_dlopen=true),
-    LibraryProduct("libGRM", :libGRM, dont_dlopen=true),
-    LibraryProduct("libGKS", :libGKS, dont_dlopen=true),
+    LibraryProduct("libGR", :libGR; dont_dlopen=true),
+    LibraryProduct("libGR3", :libGR3; dont_dlopen=true),
+    LibraryProduct("libGRM", :libGRM; dont_dlopen=true),
+    LibraryProduct("libGKS", :libGKS; dont_dlopen=true),
     ExecutableProduct("gksqt", :gksqt),
     ExecutableProduct("grplot", :grplot),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Bzip2_jll"; compat="1.0.8"),
+    Dependency("Bzip2_jll"; compat="1.0.9"),
     Dependency("Cairo_jll"; compat="1.16.1"),
     Dependency("FFMPEG_jll"),
     Dependency("Fontconfig_jll"),
-    Dependency("FreeType2_jll"; compat="2.10.4"),
+    Dependency("FreeType2_jll"; compat="2.13.4"),
     Dependency("GLFW_jll"),
     Dependency("JpegTurbo_jll"),
     Dependency("libpng_jll"),
-    Dependency("Libtiff_jll"; compat="4.7.0"),
+    Dependency("Libtiff_jll"; compat="4.7.1"),
     Dependency("Pixman_jll"),
     HostBuildDependency("Qt6Base_jll"),
-    Dependency("Qt6Base_jll"; compat="~6.7.1"), # Never allow upgrading more than the minor version without recompilation
+    Dependency("Qt6Base_jll"; compat="~6.8.2"), # Never allow upgrading more than the minor version without recompilation
     BuildDependency("Xorg_libX11_jll"),
     BuildDependency("Xorg_xproto_jll"),
     Dependency("Zlib_jll"),
 ]
 
+platforms_win = filter(Sys.iswindows, platforms)
+platforms_rest = setdiff(platforms, platforms_win)
+
 # Build the tarballs, and possibly a `build.jl` as well.
 # GCC version 10 because of Qt6.7
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version = v"10", julia_compat="1.6")
+if any(should_build_platform.(triplet.(platforms_win)))
+    # GCC 12 and before fail with internal compiler error on mingw
+    build_tarballs(ARGS, name, version, sources, script, platforms_win, products, dependencies;
+                   preferred_gcc_version=v"13", julia_compat="1.6")
+end
+if any(should_build_platform.(triplet.(platforms_rest)))
+    build_tarballs(ARGS, name, version, sources, script, platforms_rest, products, dependencies;
+                   preferred_gcc_version=v"10", julia_compat="1.6")
+end

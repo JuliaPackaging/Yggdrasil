@@ -3,18 +3,18 @@
 using BinaryBuilder
 
 name = "Fontconfig"
-version = v"2.13.96"
+version = v"2.17.1"
 
 # Collection of sources required to build FriBidi
 sources = [
-    ArchiveSource("https://www.freedesktop.org/software/fontconfig/release/fontconfig-$(version).tar.xz",
-                  "d816a920384aa91bc0ebf20c3b51c59c2153fdf65de0b5564bf9e8473443d637"),
-    DirectorySource("./bundled"),
+    ArchiveSource("https://gitlab.freedesktop.org/api/v4/projects/890/packages/generic/fontconfig/$(version)/fontconfig-$(version).tar.xz",
+                  "9f5cae93f4fffc1fbc05ae99cdfc708cd60dfd6612ffc0512827025c026fa541"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/fontconfig-*/
+cd $WORKSPACE/srcdir/fontconfig-*
 
 FLAGS=()
 if [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
@@ -29,7 +29,6 @@ elif [[ "${target}" == *-apple-* ]]; then
 fi
 
 # Apply MinGW patches: https://github.com/msys2/MINGW-packages/tree/33f847297fe429d145cd9d72cb1fbbc574431cc5/mingw-w64-fontconfig
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0001-fix-config-linking.all.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0002-fix-mkdir.mingw.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0004-fix-mkdtemp.mingw.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0005-fix-setenv.mingw.patch"
@@ -65,18 +64,19 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     HostBuildDependency("gperf_jll"),
-    Dependency("FreeType2_jll"; compat="2.10.4"),
-    Dependency("Bzip2_jll"; compat="1.0.8"),
-    Dependency("Zlib_jll"),
-    Dependency("Libuuid_jll"),
-    Dependency("Expat_jll"; compat="2.2.10"),
+    Dependency("FreeType2_jll"; compat="2.13.4"),
+    Dependency("Bzip2_jll"; compat="1.0.9"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
+    Dependency("Libuuid_jll"; compat="2.41.0"),
+    Dependency("Expat_jll"; compat="2.6.5"),
 ]
+
+# @giordano: "I know this looks funky, but it makes code in the JLL indented correctly"
+init_block = """
+get!(ENV, "FONTCONFIG_FILE", fonts_conf)
+    get!(ENV, "FONTCONFIG_PATH", dirname(ENV["FONTCONFIG_FILE"]))
+"""
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6",
-               preferred_gcc_version=v"6",
-               init_block = """
-get!(ENV, "FONTCONFIG_FILE", fonts_conf)
-    get!(ENV, "FONTCONFIG_PATH", dirname(ENV["FONTCONFIG_FILE"]))
-""")
+               init_block=init_block, julia_compat="1.6", preferred_gcc_version=v"6")

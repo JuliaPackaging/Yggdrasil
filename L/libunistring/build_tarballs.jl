@@ -3,12 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "libunistring"
-version = v"1.2"
+version = v"1.3"
+ygg_version = v"1.3.1"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://ftp.gnu.org/gnu/libunistring/libunistring-$(version.major).$(version.minor).tar.gz",
-                  "fd6d5662fa706487c48349a758b57bc149ce94ec6c30624ec9fdc473ceabbc8e")
+                  "8ea8ccf86c09dd801c8cac19878e804e54f707cf69884371130d20bde68386b7")
 ]
 
 # Bash recipe for building across all platforms
@@ -40,4 +41,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6")

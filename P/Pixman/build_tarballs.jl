@@ -2,12 +2,12 @@ using BinaryBuilder, Pkg
 
 # Collection of sources required to build Pixman
 name = "Pixman"
-version = v"0.43.4"
+version = v"0.46.4"
 
 sources = [
     ArchiveSource("https://www.cairographics.org/releases/pixman-$(version).tar.gz",
-                  "a0624db90180c7ddb79fc7a9151093dc37c646d8c38d3f232f767cf64b85a226"),
-    DirectorySource("./bundled"),
+                  "d09c44ebc3bd5bee7021c79f922fe8fb2fb57f7320f55e97ff9914d2346a591c"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -24,6 +24,8 @@ mkdir build && cd build
 meson setup --cross-file="${MESON_TARGET_TOOLCHAIN}" --buildtype=release -Dtests=disabled -Ddemos=disabled ..
 ninja -j${nproc}
 ninja install
+
+install_license ../COPYING
 """
 
 # These are the platforms we will build for by default, unless further

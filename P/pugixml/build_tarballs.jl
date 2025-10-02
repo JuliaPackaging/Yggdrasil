@@ -3,12 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "pugixml"
-version = v"1.14.0"
+version_string = "1.15"
+version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://github.com/zeux/pugixml/releases/download/v1.14/pugixml-1.14.tar.gz",
-                  "2f10e276870c64b1db6809050a75e11a897a8d7456c4be5c6b2e35a11168a015")
+    ArchiveSource("http://github.com/zeux/pugixml/releases/download/v$(version_string)/pugixml-$(version_string).tar.gz",
+                  "655ade57fa703fb421c2eb9a0113b5064bddb145d415dd1f88c79353d90d511a")
 ]
 
 # Bash recipe for building across all platforms

@@ -3,17 +3,12 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
-# See https://github.com/JuliaLang/Pkg.jl/issues/2942
-# Once this Pkg issue is resolved, this must be removed
-uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
-delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
-
 name = "libsingular_julia"
-version = v"0.46.0"
+version = v"0.47.6"
 
 # Collection of sources required to build libsingular-julia
 sources = [
-    GitSource("https://github.com/oscar-system/Singular.jl.git", "14c4df209ce853183c43e5950c48ab829ee2fcfb"),
+    GitSource("https://github.com/oscar-system/Singular.jl.git", "d6d93960bb14da2f67b380c0fe229aaf376bbfa3"),
 ]
 
 # Bash recipe for building across all platforms
@@ -39,8 +34,14 @@ install_license ../../LICENSE.md
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl")
+filter!(>=(v"1.10"), julia_versions)
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 filter!(!Sys.iswindows, platforms) # Singular does not support Windows
+
+# Exclude aarch64 FreeBSD for the time being
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+filter!(p -> !(arch(p) == "riscv64"), platforms)
+
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -50,19 +51,19 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.11")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.19")),
     BuildDependency("GMP_jll"),
     BuildDependency("MPFR_jll"),
-    Dependency("libcxxwrap_julia_jll"; compat = "~0.13.2"),
+    Dependency("libcxxwrap_julia_jll"; compat = "~0.14.3"),
     # we do not set a compat entry for Singular_jll -- instead we leave it to
     # Singular.jl to ensure the right versions of libsingular_julia_jll and
     # Singular_jll are paired. This gives us flexibility in the development
     # setup there.
-    Dependency("Singular_jll", v"404.000.606"),
+    Dependency("Singular_jll", v"404.100.300"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    preferred_gcc_version=v"8", julia_compat="1.6")
+    preferred_gcc_version=v"8", julia_compat="1.10")
 
 # rebuild trigger: 0

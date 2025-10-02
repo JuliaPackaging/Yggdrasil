@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_mqtt"
-version = v"0.10.6"
+version = v"0.13.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-mqtt.git", "77d6f00e89b10e3263d8a17576ec8e91c45b4606"),
+    GitSource("https://github.com/awslabs/aws-c-mqtt.git", "1d512d92709f60b74e2cafa018e69a2e647f28e9"),
 ]
 
 # Bash recipe for building across all platforms
@@ -28,7 +28,6 @@ cmake --build . -j${nproc} --target install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms)
-filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -37,11 +36,13 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("aws_c_http_jll"; compat="0.8.1"),
-    Dependency("aws_c_io_jll"; compat="0.14.7"),
+    Dependency("aws_c_http_jll"; compat="0.10.4"),
+    Dependency("aws_c_io_jll"; compat="0.21.2"),
     BuildDependency("aws_lc_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version = v"5")
+    julia_compat="1.6", preferred_gcc_version = v"5")
+
+# build trigger: 1

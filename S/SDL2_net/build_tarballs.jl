@@ -3,29 +3,17 @@
 using BinaryBuilder, Pkg
 
 name = "SDL2_net"
-version = v"2.0.1"
+version = v"2.2.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://libsdl.org/projects/SDL_net/release/SDL2_net-$(version).tar.gz",
-                  "15ce8a7e5a23dafe8177c8df6e6c79b6749a03fff1e8196742d3571657609d21"),
-    DirectorySource("./bundled"),
+                  "4e4a891988316271974ff4e9585ed1ef729a123d22c08bd473129179dc857feb"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/SDL*/
-
-if [[ "${target}" == powerpc64le-* ]] || [[ "${target}" == *-freebsd* ]]; then
-    # We need to regenerate `configure` for this platforms
-
-    # Include directory with M4 macros
-    atomic_patch -p1 ../patches/configure-add-macro-dir.patch
-    # Create absolutely important files
-    touch AUTHORS NEWS README ChangeLog
-    # Regnerate `configure` script
-    autoreconf -fiv
-fi
 
 mkdir build && cd build
 ../configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
@@ -36,6 +24,9 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+# Missing dep at the moment
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+filter!(p -> arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -48,4 +39,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"5")

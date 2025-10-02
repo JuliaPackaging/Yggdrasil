@@ -3,13 +3,12 @@
 using BinaryBuilder
 
 name = "Pango"
-fakeversion = v"1.54.1" # <-- Fake version to rebuild for new HarfBuzz version
-version = v"1.54.0"
+version = v"1.56.4"
 
 # Collection of sources required to build Pango: https://download.gnome.org/sources/pango/
 sources = [
     ArchiveSource("http://ftp.gnome.org/pub/GNOME/sources/pango/$(version.major).$(version.minor)/pango-$(version).tar.xz",
-                  "8a9eed75021ee734d7fc0fdf3a65c3bba51dfefe4ae51a9b414a60c70b2d1ed8"),
+                  "17065e2fcc5f5a5bdbffc884c956bfc7c451a96e8c4fb2f8ad837c6413cb5a01"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v11.0.0.tar.bz2",
                   "bd0ea1633bd830204cc23a696889335e9d4a32b8619439ee17f22188695fcc5f"),
 ]
@@ -69,14 +68,16 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Cairo_jll"; compat="1.18.0"),
-    Dependency("Fontconfig_jll"),
-    Dependency("FreeType2_jll"; compat="2.13.1"),
-    Dependency("FriBidi_jll"; compat="1.0.10"),
-    Dependency("Glib_jll"; compat="2.74.0"),
-    Dependency("HarfBuzz_jll"; compat="8.3.1"),
-    BuildDependency("Xorg_xorgproto_jll"; platforms=filter(p->Sys.islinux(p)||Sys.isfreebsd(p), platforms)),
+    HostBuildDependency("gperf_jll"),
+    Dependency("Cairo_jll"; compat="1.18.5"),
+    Dependency("Fontconfig_jll"; compat="2.16.0"),
+    Dependency("FreeType2_jll"; compat="2.13.4"),
+    Dependency("FriBidi_jll"; compat="1.0.17"),
+    Dependency("Glib_jll"; compat="2.84.0"),
+    Dependency("HarfBuzz_jll"; compat="8.5.1"),
+    BuildDependency("Xorg_xorgproto_jll"; platforms=filter(p -> Sys.isfreebsd(p) || Sys.islinux(p), platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, fakeversion, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"6", clang_use_lld=false)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"6")

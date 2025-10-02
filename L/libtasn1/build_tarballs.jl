@@ -7,7 +7,8 @@ version = v"4.19.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/libtasn1/libtasn1-$(version).tar.gz", "1613f0ac1cf484d6ec0ce3b8c06d56263cc7242f1c23b30d82d23de345a63f7a")
+    ArchiveSource("https://ftp.gnu.org/gnu/libtasn1/libtasn1-$(version).tar.gz",
+                  "1613f0ac1cf484d6ec0ce3b8c06d56263cc7242f1c23b30d82d23de345a63f7a")
 ]
 
 # Bash recipe for building across all platforms

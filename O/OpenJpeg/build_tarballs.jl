@@ -3,25 +3,29 @@
 using BinaryBuilder, Pkg
 
 name = "OpenJpeg"
-version = v"2.5.2"
+ygg_version = v"2.5.4" # Bump version to build for riscv
+version = v"2.5.3"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/uclouvain/openjpeg.git",
-              "39e8c50a2f9bdcf36810ee3d41bcbf1cc78968ae"),
+              "210a8a5690d0da66f02d49420d7176a21ef409dc"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/openjpeg/
+
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
+
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_STATIC_LIBS=OFF
+
 make -j${nproc}
 make install
 """
@@ -46,4 +50,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"6")

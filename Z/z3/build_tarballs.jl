@@ -8,14 +8,14 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "z3"
-version = v"4.13.3"
+version = v"4.15.2"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/Z3Prover/z3/releases/download/z3-$(version)/z3_solver-$(version).0.tar.gz",
-                  "4c27466455bac65d3c512f4bb4841ac79e05e121d3f98ddc99ac27ab4bc27e05"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
+                  "6c304512105714c4235cbb8589bf0e1f44f7cb88f689534bc2389c4cb7463510"),
+    FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+               "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 macfix = raw"""
@@ -26,11 +26,9 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     #         symbol, zstring *, rational *, double, unsigned int>' is unavailable:
     #         introduced in macOS 10.14
     export MACOSX_DEPLOYMENT_TARGET=10.15
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    # ...and install a newer SDK
     rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    popd
+    tar --extract --file=${WORKSPACE}/srcdir/MacOSX10.15.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX10.15.sdk/System MacOSX10.15.sdk/usr
 fi
 """
 
@@ -72,10 +70,6 @@ include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
-# GMP isn't found for aarch64-unknown-freebsd-julia_version+1.12.0
-# FreeBSD on 64bit ARM 64 is not supported for older Julia versions.
-filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
-
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libz3", :libz3),
@@ -92,6 +86,5 @@ dependencies = [
 ]
 
 # Use GCC 10 to avoid compile errors on Windows
-build_tarballs(ARGS, name, version, sources, script, platforms,
-               products, dependencies; preferred_gcc_version=v"10",
-               julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"10")

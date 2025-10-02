@@ -3,21 +3,20 @@
 using BinaryBuilder
 
 name = "Xorg_libXrandr"
-version = v"1.5.2"
+version = v"1.5.4"
+# We bumped the version number to build for riscv64
+ygg_version = v"1.5.5"
 
 # Collection of sources required to build libXrandr
 sources = [
-    ArchiveSource("https://www.x.org/archive/individual/lib/libXrandr-$(version).tar.bz2",
-                  "8aea0ebe403d62330bb741ed595b53741acf45033d3bda1792f1d4cc3daee023"),
+    ArchiveSource("https://www.x.org/archive/individual/lib/libXrandr-$(version).tar.gz",
+                  "c72c94dc3373512ceb67f578952c5d10915b38cc9ebb0fd176a49857b8048e22"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libXrandr-*/
-CPPFLAGS="-I${prefix}/include"
-# When compiling for things like ppc64le, we need newer `config.sub` files
-update_configure_scripts
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=no
+cd $WORKSPACE/srcdir/libXrandr-*
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=yes
 make -j${nproc}
 make install
 """
@@ -39,4 +38,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6")

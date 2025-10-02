@@ -3,16 +3,22 @@
 using BinaryBuilder
 
 name = "Git"
-version = v"2.46.2"
+version = v"2.51.1"
+upstream_version = v"2.51.0"
+
+# <https://github.com/git-for-windows/git/releases> says:
+# "Git for Windows v2.48.1 was the last version to ship with the i686 ("32-bit") variant of the installer, portable Git and archive."
+# But v2.50.1 was made available "after warranty" to address critical vulnerabilities: https://github.com/git-for-windows/git/releases/tag/v2.50.1.windows.1
+last_windows_32_bit_version = v"2.50.1"
 
 # Collection of sources required to build Git
 sources = [
-    ArchiveSource("https://mirrors.edge.kernel.org/pub/software/scm/git/git-$(version).tar.xz",
-                  "5ee8a1c68536094a4f7f9515edc154b12a275b8a57dda4c21ecfbf1afbae2ca3"),
-    ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/Git-$(version)-32-bit.tar.bz2",
-                  "6fe9c7faf1e088b4be37945fa81bbc5252a8a7cb38c617925d5cc6c269cbc3dd"; unpack_target = "i686-w64-mingw32"),
-    ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/Git-$(version)-64-bit.tar.bz2",
-                  "f05cf325a8bfaad6da2411e03065b5a4f2a1a69b9d1f9a258db1404524613610"; unpack_target = "x86_64-w64-mingw32"),
+    ArchiveSource("https://mirrors.edge.kernel.org/pub/software/scm/git/git-$(upstream_version).tar.xz",
+                  "60a7c2251cc2e588d5cd87bae567260617c6de0c22dca9cdbfc4c7d2b8990b62"),
+    ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(last_windows_32_bit_version).windows.1/Git-$(last_windows_32_bit_version)-32-bit.tar.bz2",
+                  "796d8f4fdd19c668e348d04390a3528df61cfc9864d1f276d9dc585a8a0ac82c"; unpack_target = "i686-w64-mingw32"),
+    ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(upstream_version).windows.1/Git-$(upstream_version)-64-bit.tar.bz2",
+                  "151bddf70e1115631e62bb05535b5e6726b3813e1f363953ad6b4e6697d96933"; unpack_target = "x86_64-w64-mingw32"),
 ]
 
 # Bash recipe for building across all platforms
@@ -29,7 +35,7 @@ if [[ "${target}" == *-mingw* ]]; then
     exit
 fi
 
-cd $WORKSPACE/srcdir/git-*/
+cd $WORKSPACE/srcdir/git-*
 
 # We need a native "tclsh" to cross-compile
 apk update
@@ -48,6 +54,15 @@ else
     sed -i 's/cross_compiling=yes/cross_compiling=no/' configure
 fi
 
+# On Linux, we need at least glibc 2.25 or musl 1.1.20 to get `sys/random.h`.
+# Git does not check whether this file exists. Explicitly disable `getrandom` if this file doesn't exist.
+MAKE_VARIABLES=()
+if [[ "${target}" == *-linux-* ]]; then
+    if [ ! -e /opt/${target}/${target}/sys-root/usr/include/sys/random.h ]; then
+        MAKE_VARIABLES+=(CSPRNG_METHOD=/dev/urandom)
+    fi
+fi
+
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-curl \
     --with-expat \
@@ -55,9 +70,10 @@ fi
     --with-iconv=${prefix} \
     --with-libpcre2 \
     --with-zlib=${prefix} \
+    --with-tcltk=no \
     "${CACHE_VALUES[@]}"
-make -j${nproc}
-make install INSTALL_SYMLINKS="yes, please"
+make -j${nproc} "${MAKE_VARIABLES[@]}"
+make install INSTALL_SYMLINKS="yes, please" "${MAKE_VARIABLES[@]}"
 
 # Because of the System Integrity Protection (SIP), when running shell or Perl scripts, the
 # environment variable `DYLD_FALLBACK_LIBRARY_PATH` is reset.  We work around this
@@ -117,13 +133,11 @@ dependencies = [
     # Need a host gettext for msgfmt
     HostBuildDependency("Gettext_jll"),
     Dependency("LibCURL_jll"; compat="7.73.0,8"),
-    Dependency("Expat_jll"; compat="2.2.10"),
-    Dependency("OpenSSL_jll"; compat="3.0.8"),
+    Dependency("Expat_jll"; compat="2.6.5"),
+    Dependency("OpenSSL_jll"; compat="3.0.16"),
     Dependency("Libiconv_jll"),
-    Dependency("PCRE2_jll"; compat="10.35.0"),
-    Dependency("Zlib_jll"),
+    Dependency("PCRE2_jll"; compat="10.42.0"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
-
-# Build trigger: 1

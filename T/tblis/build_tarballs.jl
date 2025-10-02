@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "tblis"
-version = v"1.2.0"
+version = v"1.3.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/devinamatthews/tblis.git", "3e4c4b82943726c443b6f408c9c9791dcad7a847")
+    GitSource("https://github.com/devinamatthews/tblis.git", "c4f81e08b2827e72335baa7bf91a245f72c43970")
     DirectorySource("./bundled")
 ]
 
@@ -29,12 +29,6 @@ case ${target} in
     *"x86_64"*"linux"*"gnu"*) 
         export BLI_CONFIG=x86,reference
         export BLI_THREAD=openmp
-        ;;
-    *"x86_64"*"linux"*"musl"*)
-        export BLI_CONFIG=x86,reference
-        export BLI_THREAD=pthreads
-        export CC=clang
-        export CXX=clang++
         ;;
     *"x86_64"*"w64"*)
         # Windows lacks support for some instructions.
@@ -83,7 +77,6 @@ install_license LICENSE
 # platforms are passed in on the command line
 platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
-    Platform("x86_64", "linux"; libc="musl", cxxstring_abi = "cxx11"),
     Platform("x86_64", "macos"),
     Platform("x86_64", "freebsd"),
     Platform("x86_64", "windows")
@@ -109,4 +102,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"7.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"7.1.0", clang_use_lld=false)

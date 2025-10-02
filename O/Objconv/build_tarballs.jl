@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Objconv"
-version = v"2.53.0"
+version = v"2.55.0"
 
 # Collection of sources required to build objconv
 sources = [
     GitSource("https://github.com/staticfloat/objconv",
-              "ae54df67e0c4ac2c78f3a7ece486ed4e92d098af")
+              "ac833602033f71481c82b9d4b4c2bf69b66c235e")
 ]
 
 # Bash recipe for building across all platforms
@@ -35,4 +35,7 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               clang_use_lld=false, julia_compat="1.6")
+
+# Build trigger: 1

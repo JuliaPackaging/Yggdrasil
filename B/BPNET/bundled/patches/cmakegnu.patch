@@ -1,0 +1,24 @@
+diff --git before/BPNET/src/CMakeLists.txt after/BPNET/src/CMakeLists.txt
+index 1432b8e..ef76801 100644
+--- before/BPNET/src/CMakeLists.txt
++++ after/BPNET/src/CMakeLists.txt
+@@ -55,7 +55,7 @@ install(FILES ${SOURCES} DESTINATION include)
+ export(EXPORT bpnetConfig FILE bpnetConfig.cmake)
+ 
+ #set(CMAKE_Fortran_FLAGS "-g -fcheck=all -Wall -fbacktrace")# -finit-real=nan -finit-integer=-999")
+-set(CMAKE_Fortran_FLAGS "-O3 -pedantic")# -finit-real=nan -finit-integer=-999")
++set(CMAKE_Fortran_FLAGS "-O3 -pedantic -ffree-line-length-none")# -finit-real=nan -finit-integer=-999")
+ 
+ 
+ add_executable(bpnet_generate.x ${bpnet_dir}/bpnet_generate.f90)
+@@ -71,6 +71,11 @@ target_link_libraries(nnASCII2bin.x PRIVATE bpnet)
+ add_executable(trainbin2ASCII.x ${bpnet_dir}/trainbin2ASCII.f90)
+ target_link_libraries(trainbin2ASCII.x PRIVATE bpnet)
+ 
++install(TARGETS bpnet_generate.x bpnet_predict.x nnASCII2bin.x trainbin2ASCII.x
++        RUNTIME DESTINATION bin
++        )
++
++
+ # math_utils module
+ add_library(math_utils math_utils.f90)

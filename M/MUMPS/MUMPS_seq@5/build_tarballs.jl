@@ -14,15 +14,15 @@ using BinaryBuilder, Pkg
 # map a prerelease of 2.7.0 to 200.690.000.
 
 name = "MUMPS_seq"
-upstream_version = v"5.7.3"
-version_offset = v"0.0.1" # reset to 0.0.0 once the upstream version changes
+upstream_version = v"5.8.1"
+version_offset = v"0.0.0" # reset to 0.0.0 once the upstream version changes
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
 
 sources = [
   ArchiveSource("https://mumps-solver.org/MUMPS_$(upstream_version).tar.gz",
-                "84a47f7c4231b9efdf4d4f631a2cae2bdd9adeaabc088261d15af040143ed112")
+                "e91b6dcd93597a34c0d433b862cf303835e1ea05f12af073b06c32f652f3edd8")
 ]
 
 # Bash recipe for building across all platforms
@@ -113,7 +113,10 @@ make -j${nproc} allshared "${make_args_64[@]}"
 cp lib/*.${dlext} ${libdir}
 """
 
-platforms = expand_gfortran_versions(supported_platforms())
+platforms = supported_platforms()
+filter!(p -> arch(p) != "riscv64", platforms)
+platforms = expand_gfortran_versions(platforms)
+filter!(p -> !(Sys.islinux(p) && libc(p) == "musl" && libgfortran_version(p) == v"4" && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [

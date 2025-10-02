@@ -80,7 +80,10 @@ dependencies = [
     #Using either MKL or OPENBLAS32
     Dependency("libblastrampoline_jll"; compat="5.4.0"),
     Dependency("Libxc_jll"),
-    Dependency("HDF5_jll"; compat="~1.14.3"),
+    # We had to restrict compat with HDF5 because of ABI breakage:
+    # https://github.com/JuliaPackaging/Yggdrasil/pull/10347#issuecomment-2662923973
+    # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
+    Dependency("HDF5_jll"; compat="=1.14.3"),
     Dependency("spglib_jll"),
     Dependency("spla_jll"),
     Dependency("SpFFT_jll"),

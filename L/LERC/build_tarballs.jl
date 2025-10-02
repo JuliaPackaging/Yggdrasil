@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "LERC"
-version = v"4.0.0"
+version = v"4.0.1" # Corresponds to upstream v4.0.0
 
 # Collection of sources required to complete build
 sources = [
@@ -40,3 +40,5 @@ dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+
+# Build trigger: 2

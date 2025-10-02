@@ -3,22 +3,30 @@
 using BinaryBuilder, BinaryBuilderBase, Pkg
 
 name = "libaom"
-version = v"3.9.0"
+version = v"3.12.1"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://storage.googleapis.com/aom-releases/libaom-$(version).tar.gz",
-                  "a662e22299752547488c8e1412c0b41981efa8dbb1a25c696ded7ba9c472e919")
+                  "9e9775180dec7dfd61a79e00bda3809d43891aee6b2e331ff7f26986207ea22e"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libaom-*
+cd ${WORKSPACE}/srcdir/libaom-*
+
+# Add missing stdint.h includes
+# Reported upstream as <https://aomedia.issues.chromium.org/u/1/issues/432730317>
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/inttypes.patch
 
 CMAKE_FLAGS=()
 if [[ ${target} = arm-* ]]; then
-   # Not even GCC 13 can compile for 32-bit ARM
-   CMAKE_FLAGS+=(-DAOM_TARGET_CPU=generic)
+    # Not even GCC 13 can compile for 32-bit ARM
+    CMAKE_FLAGS+=(-DAOM_TARGET_CPU=generic)
+elif [[ ${target} = aarch64-*-freebsd* ]]; then
+    # Runtime CPU detection doesn't work
+    CMAKE_FLAGS+=(-DCONFIG_RUNTIME_CPU_DETECT=0)
 fi
 
 cmake -B build-dir -G Ninja \
@@ -57,4 +65,4 @@ dependencies = [
 # We need at least GCC 9 for proper support of Intel SIMD intrinsics
 # We need at least GCC 10 for proper support of 64-bit ARM SIMD intrinsics
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"10")
+               julia_compat="1.6", lock_microarchitecture=false, preferred_gcc_version=v"10")

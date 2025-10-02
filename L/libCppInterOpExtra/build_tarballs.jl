@@ -7,12 +7,12 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "libCppInterOpExtra"
 repo = "https://github.com/Gnimuc/CppInterOp.jl.git"
-version = v"0.0.1"
+version = v"0.0.4"
 
-llvm_versions = [v"17.0.6"]
+llvm_versions = [v"18.1.7"]
 
 sources = [
-    GitSource(repo, "229b23ab50ee18da39cab0267af0d3dadc6858b5")
+    GitSource(repo, "f5c30f9bcb4846e72d8a3a1e0366dcd11e4b9066")
 ]
 
 # Bash recipe for building across all platforms
@@ -31,9 +31,6 @@ fi
 
 mkdir build && cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-     -DCMAKE_CROSSCOMPILING:BOOL=ON \
-     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-     -DBUILD_SHARED_LIBS=ON \
      -DLLVM_DIR=${prefix}/lib/cmake/llvm \
      -DClang_DIR=${prefix}/lib/cmake/clang \
      -DCppInterOp_DIR=${prefix}/lib/cmake/CppInterOp \
@@ -74,6 +71,10 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
     # These are the platforms we will build for by default, unless further
     # platforms are passed in on the command line
     platforms = expand_cxxstring_abis(supported_platforms())
+    # disable riscv64
+    filter!(p -> arch(p) != "riscv64", platforms)
+    # disable aarch64 freebsd
+    filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
     if llvm_version >= v"15"
         # We don't build LLVM 15 for i686-linux-musl.

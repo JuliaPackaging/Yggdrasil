@@ -4,13 +4,13 @@ using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
 name = "Netpbm"
-version_string = "10.86.42"
+version_string = "10.86.47"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://sourceforge.net/projects/netpbm/files/super_stable/$(version_string)/netpbm-$(version_string).tgz",
-                  "d4d2ca69d82b8d8518aee1d0a2f400664324afa8237859386764a41784d497f6"),
+                  "4c7575dc0f38521e75917438835f19c07651523fa87f6d63492fa2a97d1ab21f"),
     GitSource("https://github.com/win32ports/sys_wait_h", "229dee8de9cb4c29a3a31115112a4175df84a8eb"),
     DirectorySource("bundled"),
 ]
@@ -442,21 +442,18 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("JpegTurbo_jll"; compat="3.0.1"),
-    Dependency("Libtiff_jll"; compat="4.0.10"),
-    # Need at least XML2 v2.9.11 for armv6l support
-    Dependency("XML2_jll"; compat="2.9.11"),
-    Dependency("Xorg_kbproto_jll"; compat="1.0.7"),
+    BuildDependency("Xorg_kbproto_jll"), # compat="1.0.7"
+    BuildDependency("Xorg_xproto_jll"),  # compat="7.0.31"
+    Dependency("JpegTurbo_jll"; compat="3.1.1"),
+    Dependency("Libtiff_jll"; compat="4.7.1"),
+    Dependency("XML2_jll"; compat="~2.13.6"),
     # Need at least Xorg_libX11 v1.8.6 for armv6l support
     Dependency("Xorg_libX11_jll"; compat="1.8.6"),
-    Dependency("Xorg_xproto_jll"; compat="7.0.31"),
-    # Need at least Zlib v1.2.12; older versions don't work with libpng
     Dependency("Zlib_jll"; compat="1.2.12"),
-    # Need at least libpng v1.8.6 for armv6l support
-    Dependency("libpng_jll"; compat="1.6.38"),
-    RuntimeDependency("Ghostscript_jll"; compat="9.53.3"),
+    Dependency("libpng_jll"; compat="1.6.50"),
+    RuntimeDependency("Ghostscript_jll"; compat="9.55.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6")
+               julia_compat="1.6", preferred_gcc_version=v"5")
