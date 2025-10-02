@@ -8,8 +8,8 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDSS"
-version = v"0.6.0"
-full_version = "0.6.0.5"
+version = v"0.7.0"
+full_version = "0.7.0.20"
 
 script = raw"""
 mkdir -p ${libdir} ${prefix}/include
@@ -53,7 +53,7 @@ platforms = [Platform("x86_64", "linux"),
              Platform("x86_64", "windows")]
 
 builds = []
-for cuda_version in [v"12"], platform in platforms
+for cuda_version in [v"12", v"13"], platform in platforms
     augmented_platform = deepcopy(platform)
     augmented_platform["cuda"] = CUDA.platform(cuda_version)
     should_build_platform(triplet(augmented_platform)) || continue
