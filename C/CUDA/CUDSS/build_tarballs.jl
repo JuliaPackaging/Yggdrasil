@@ -68,6 +68,7 @@ for cuda_version in [v"12", v"13"]
                               variant="cuda$(cuda_version.major)")
 
         push!(builds, (; platforms=[augmented_platform], sources))
+    end
 end
 
 # don't allow `build_tarballs` to override platform selection based on ARGS.
