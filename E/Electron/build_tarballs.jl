@@ -144,5 +144,4 @@ dependencies = [
     Dependency("xkbcommon_jll"; platforms=linux_platforms),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.10", dont_dlopen=false)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.10")
