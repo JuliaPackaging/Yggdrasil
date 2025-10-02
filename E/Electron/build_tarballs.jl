@@ -112,10 +112,37 @@ products = Product[
     ExecutableProduct("electron", :electron),
 ]
 
-# Electron prebuilt binaries are self-contained and bundle all necessary libraries.
-# They only link to OS-provided system libraries that are available on all target systems.
-# No JLL dependencies are needed.
-dependencies = Dependency[]
+# macOS and Windows: Self-contained, only link to OS frameworks/DLLs
+# Linux: Requires X11, GTK3, audio, and other GUI libraries
+linux_platforms = filter(Sys.islinux, platforms)
+
+dependencies = [
+    # X11 dependencies (Linux only)
+    Dependency("Xorg_libX11_jll"; platforms=linux_platforms),
+    Dependency("Xorg_libXext_jll"; platforms=linux_platforms),
+    Dependency("Xorg_libXfixes_jll"; platforms=linux_platforms),
+    Dependency("Xorg_libXdamage_jll"; platforms=linux_platforms),
+    Dependency("Xorg_libXrandr_jll"; platforms=linux_platforms),
+    Dependency("Xorg_libXcomposite_jll"; platforms=linux_platforms),
+    Dependency("Xorg_libxcb_jll"; platforms=linux_platforms),
+
+    # GTK and related (Linux only)
+    Dependency("GTK3_jll"; platforms=linux_platforms),
+    Dependency("Glib_jll"; platforms=linux_platforms),
+    Dependency("Pango_jll"; platforms=linux_platforms),
+    Dependency("Cairo_jll"; platforms=linux_platforms),
+    Dependency("at_spi2_atk_jll"; platforms=linux_platforms),
+    Dependency("at_spi2_core_jll"; platforms=linux_platforms),
+    Dependency("ATK_jll"; platforms=linux_platforms),
+
+    # Audio (Linux only)
+    Dependency("alsa_jll"; platforms=linux_platforms),
+
+    # Other Linux dependencies
+    Dependency("Dbus_jll"; platforms=linux_platforms),
+    Dependency("Expat_jll"; platforms=linux_platforms),
+    Dependency("xkbcommon_jll"; platforms=linux_platforms),
+]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.10", dont_dlopen=true)
+               julia_compat="1.10", dont_dlopen=false)
