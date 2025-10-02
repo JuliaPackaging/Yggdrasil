@@ -47,21 +47,27 @@ dependencies = [
     RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll", uuid="76a88914-d11a-5bdc-97e0-2f5a05c973a2"))
 ]
 
-platforms = [Platform("x86_64", "linux"),
-             Platform("aarch64", "linux"; cuda_platform="jetson"),
-             Platform("aarch64", "linux"; cuda_platform="sbsa"),
-             Platform("x86_64", "windows")]
-
 builds = []
-for cuda_version in [v"12", v"13"], platform in platforms
-    augmented_platform = deepcopy(platform)
-    augmented_platform["cuda"] = CUDA.platform(cuda_version)
-    should_build_platform(triplet(augmented_platform)) || continue
+for cuda_version in [v"12", v"13"]
+    if cuda_version == v"12"
+        platforms = [Platform("x86_64", "linux"),
+                     Platform("aarch64", "linux"; cuda_platform="jetson"),
+                     Platform("aarch64", "linux"; cuda_platform="sbsa"),
+                     Platform("x86_64", "windows")]
+    elseif cuda_version == v"13"
+        platforms = [Platform("x86_64", "linux"),
+                     Platform("aarch64", "linux"),
+                     Platform("x86_64", "windows")]
+    end
+    for platform in platforms
+        augmented_platform = deepcopy(platform)
+        augmented_platform["cuda"] = CUDA.platform(cuda_version)
+        should_build_platform(triplet(augmented_platform)) || continue
 
-    sources = get_sources("cudss", ["libcudss"]; version=version, platform,
-                          variant="cuda$(cuda_version.major)")
+        sources = get_sources("cudss", ["libcudss"]; version=version, platform=augmented_platform,
+                              variant="cuda$(cuda_version.major)")
 
-    push!(builds, (; platforms=[augmented_platform], sources))
+        push!(builds, (; platforms=[augmented_platform], sources))
 end
 
 # don't allow `build_tarballs` to override platform selection based on ARGS.
