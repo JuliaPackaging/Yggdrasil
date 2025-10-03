@@ -24,16 +24,6 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/${target}
 
-# Function to copy critical resource files required for Electron to function
-copy_electron_resources() {
-    local dest_dir="$1"
-    for file in icudtl.dat v8_context_snapshot.bin snapshot_blob.bin *.pak; do
-        if [[ -f "$file" ]]; then
-            cp "$file" "${dest_dir}/$file"
-        fi
-    done
-}
-
 # Function to copy license files
 copy_licenses() {
     if [[ -f "LICENSE" ]]; then
@@ -46,28 +36,23 @@ copy_licenses() {
 if [[ "${target}" == *-mingw* ]]; then
     # Windows structure - preserve Electron's directory layout
     # Electron expects resources to be in the same directory as the executable
-    mkdir -p "${prefix}/lib/electron"
-    
-    # Copy all files preserving structure
-    cp -r * "${prefix}/lib/electron/"
-    
-    # Create wrapper batch script in bin/
+    # All resource files must be co-located with electron.exe:
+    # - locales/ directory with .pak files for internationalization
+    # - resources/ directory with default_app.asar
+    # - icudtl.dat for ICU (International Components for Unicode)
+    # - v8_context_snapshot.bin and snapshot_blob.bin for V8 engine
+    # - *.pak files for UI resources
+    # - vk_swiftshader_icd.json for Vulkan software rendering
+    # - All DLL files
+
+    # Install everything to bindir to keep electron.exe with its resources
     mkdir -p "${bindir}"
-    cat > "${bindir}/electron.bat" <<'EOF'
-@echo off
-set ELECTRON_DIR=%~dp0..\lib\electron
-"%ELECTRON_DIR%\electron.exe" %*
-EOF
-    
-    # Also create a direct executable link for convenience
-    install -Dvm 0755 "electron.exe" "${bindir}/electron${exeext}"
-    
-    # Copy DLLs to bin for runtime linking
-    for dll in *.dll; do
-        if [[ -f "$dll" ]]; then
-            install -Dvm 0755 "$dll" "${bindir}/$dll"
-        fi
-    done
+
+    # Copy all files to bindir, preserving directory structure
+    cp -r * "${bindir}/"
+
+    # Ensure electron.exe is executable
+    chmod +x "${bindir}/electron.exe"
 
     copy_licenses
     if [[ -f "version" ]]; then
@@ -95,11 +80,11 @@ else
     # Linux structure - preserve Electron's directory layout
     # Electron expects resources to be in the same directory as the executable
     mkdir -p "${prefix}/lib/electron"
-    
+
     # Copy all files preserving structure
     cp -r * "${prefix}/lib/electron/"
     chmod +x "${prefix}/lib/electron/electron"
-    
+
     # Create wrapper script in bin/ that sets up environment
     mkdir -p "${bindir}"
     cat > "${bindir}/electron" <<'EOF'
@@ -109,7 +94,7 @@ export LD_LIBRARY_PATH="${ELECTRON_DIR}:${LD_LIBRARY_PATH}"
 exec "${ELECTRON_DIR}/electron" "$@"
 EOF
     chmod +x "${bindir}/electron"
-    
+
     # Also symlink shared libraries to libdir for other packages that might need them
     for so in "${prefix}/lib/electron"/*.so*; do
         if [[ -f "$so" ]]; then
