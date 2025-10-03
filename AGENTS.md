@@ -302,7 +302,7 @@ Before merging a Yggdrasil PR, you should test the generated JLL package locally
 For faster local testing, build only for your current platform by passing it as an argument to the build script:
 
 ```bash
-julia +1.7 --project=/path/to/Yggdrasil build_tarballs.jl --verbose x86_64-linux-gnu
+julia +1.7 --project=/path/to/Yggdrasil build_tarballs.jl --verbose --debug x86_64-linux-gnu
 # Or for your current platform:
 # x86_64-apple-darwin20 (macOS x86_64)
 # aarch64-apple-darwin20 (macOS ARM64)  
