@@ -44,18 +44,30 @@ copy_licenses() {
 }
 
 if [[ "${target}" == *-mingw* ]]; then
-    # Windows structure
+    # Windows structure - preserve Electron's directory layout
+    # Electron expects resources to be in the same directory as the executable
+    mkdir -p "${prefix}/lib/electron"
+    
+    # Copy all files preserving structure
+    cp -r * "${prefix}/lib/electron/"
+    
+    # Create wrapper batch script in bin/
+    mkdir -p "${bindir}"
+    cat > "${bindir}/electron.bat" <<'EOF'
+@echo off
+set ELECTRON_DIR=%~dp0..\lib\electron
+"%ELECTRON_DIR%\electron.exe" %*
+EOF
+    
+    # Also create a direct executable link for convenience
     install -Dvm 0755 "electron.exe" "${bindir}/electron${exeext}"
-
-    # Copy all necessary DLLs and resources
-    cp -r resources "${prefix}/resources"
+    
+    # Copy DLLs to bin for runtime linking
     for dll in *.dll; do
         if [[ -f "$dll" ]]; then
             install -Dvm 0755 "$dll" "${bindir}/$dll"
         fi
     done
-
-    copy_electron_resources "${bindir}"
 
     copy_licenses
     if [[ -f "version" ]]; then
@@ -70,7 +82,7 @@ elif [[ "${target}" == *-apple-* ]]; then
         cp -r Electron.app "${prefix}/Electron.app"
         # Create a wrapper script
         mkdir -p "${bindir}"
-        cat > "${bindir}/electron" << 'EOF'
+        cat > "${bindir}/electron" <<'EOF'
 #!/bin/bash
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 exec "$DIR/Electron.app/Contents/MacOS/Electron" "$@"
@@ -80,25 +92,34 @@ EOF
 
     copy_licenses
 else
-    # Linux structure
-    install -Dvm 0755 "electron" "${bindir}/electron${exeext}"
-
-    # Copy all necessary shared libraries and resources
-    cp -r resources "${prefix}/resources"
-    for so in *.so*; do
+    # Linux structure - preserve Electron's directory layout
+    # Electron expects resources to be in the same directory as the executable
+    mkdir -p "${prefix}/lib/electron"
+    
+    # Copy all files preserving structure
+    cp -r * "${prefix}/lib/electron/"
+    chmod +x "${prefix}/lib/electron/electron"
+    
+    # Create wrapper script in bin/ that sets up environment
+    mkdir -p "${bindir}"
+    cat > "${bindir}/electron" <<'EOF'
+#!/bin/bash
+ELECTRON_DIR="$(cd "$(dirname "$0")/../lib/electron" && pwd)"
+export LD_LIBRARY_PATH="${ELECTRON_DIR}:${LD_LIBRARY_PATH}"
+exec "${ELECTRON_DIR}/electron" "$@"
+EOF
+    chmod +x "${bindir}/electron"
+    
+    # Also symlink shared libraries to libdir for other packages that might need them
+    for so in "${prefix}/lib/electron"/*.so*; do
         if [[ -f "$so" ]]; then
-            install -Dvm 0755 "$so" "${libdir}/$so"
+            ln -sf "$so" "${libdir}/$(basename "$so")"
         fi
     done
-
-    copy_electron_resources "${bindir}"
 
     copy_licenses
     if [[ -f "version" ]]; then
         cp "version" "${prefix}/version"
-    fi
-    if [[ -d "locales" ]]; then
-        cp -r locales "${prefix}/locales"
     fi
 fi
 """
