@@ -58,9 +58,9 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
 
 ### Naming
 
-- **Name**: Must be a valid Julia identifier. Replace spaces/dashes with underscores. Match upstream casing.
+- **Name**: Must be a valid Julia identifier. Replace spaces/dashes with underscores. Generally match upstream casing, but use what makes most sense.
 - **Version**: Only `X.Y.Z` format. Truncate any `-alpha`, `+build`, or 4+ level versions.
-- **Products**: Export symbols match the library/executable names (as symbols: `:libname`).
+- **Products**: Export symbols should match the library/executable names (as symbols: `:libname`), but use what makes sense for the package.
 
 ### Sources
 
@@ -92,7 +92,7 @@ make -j${nproc}
 make install
 ```
 
-Use `update_configure_scripts` first if `config.sub` is old.
+Call `update_configure_scripts` before `./configure` if the package's `config.sub`/`config.guess` files don't recognize newer platforms.
 
 **CMake**:
 
@@ -158,15 +158,15 @@ fi
 
 ### Dependencies
 
-- **Dependency**: Runtime dependency (will be in JLL package)
-- **BuildDependency**: Build-time only (not in final JLL)
-- **HostBuildDependency**: Runs on build host, not target
+- **Dependency**: Runtime dependency (will be a dependency of the generated JLL package)
+- **BuildDependency**: Build-time only (not a dependency for the final JLL)
+- **HostBuildDependency**: Build-time only dependency that needs to run on the build host, not target (not a dependency for the final JLL)
 
 Always add `_jll` suffix: `Dependency("Zlib_jll")`
 
 ### GCC Version Selection
 
-Use `preferred_gcc_version=v"X"` for:
+Use `preferred_gcc_version=v"X"` for (see [available GCC versions](https://github.com/JuliaPackaging/Yggdrasil/blob/master/RootFS.md#compiler-shards)):
 
 - **C++ code**: Use oldest GCC that compiles (≤10 for Julia v1.6 compatibility)
 - **Dependencies built with newer GCC**: Match or exceed their GCC version
@@ -207,10 +207,13 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fix.patch
 
 ```julia
 # Only 64-bit platforms
-platforms = filter(p -> arch(p) != "i686" && arch(p) != "armv7l", supported_platforms())
+platforms = filter(p -> nbits(p) == 64, supported_platforms())
 
 # Expand C++ string ABI variants
 platforms = expand_cxxstring_abis(platforms)
+
+# Expand Fortran library versions (only for Fortran codes)
+platforms = expand_gfortran_versions(platforms)
 
 # Specific platforms
 platforms = [Platform("x86_64", "linux"), Platform("x86_64", "macos")]
@@ -224,7 +227,7 @@ export LDFLAGS="-L${libdir}"
 export PKG_CONFIG_PATH="${prefix}/lib/pkgconfig:${PKG_CONFIG_PATH}"
 ```
 
-### Multiple Source Directories
+### Out-of-Source Builds
 
 ```bash
 cd ${WORKSPACE}/srcdir
@@ -296,17 +299,17 @@ Before merging a Yggdrasil PR, you should test the generated JLL package locally
 
 ### Step 0: Speed Up Testing (Optional)
 
-For faster local testing, build only for your current platform by filtering the platforms list. Add this line after the `platforms = [...]` definition:
+For faster local testing, build only for your current platform by passing it as an argument to the build script:
 
-```julia
-# For local testing, only build for the current platform
-platforms = filter(p -> Sys.isapple() && arch(p) == "aarch64", platforms)  # macOS ARM64
-# platforms = filter(p -> Sys.isapple() && arch(p) == "x86_64", platforms)  # macOS x86_64
-# platforms = filter(p -> Sys.islinux() && arch(p) == "x86_64", platforms)  # Linux x86_64
-# platforms = filter(p -> Sys.iswindows() && arch(p) == "x86_64", platforms)  # Windows x86_64
+```bash
+julia +1.7 --project=/path/to/Yggdrasil build_tarballs.jl --verbose x86_64-linux-gnu
+# Or for your current platform:
+# x86_64-apple-darwin20 (macOS x86_64)
+# aarch64-apple-darwin20 (macOS ARM64)  
+# x86_64-w64-mingw32 (Windows x86_64)
 ```
 
-**Important**: Remove this filter before committing to ensure all platforms are built in CI.
+**Important**: Don't commit platform-specific builds - this is for local testing only.
 
 ### Step 1: Build the Package Locally
 
