@@ -1,31 +1,13 @@
-From 6980bd2490f64a54e90ae6d7d90739bda4105513 Mon Sep 17 00:00:00 2001
+From b26c74aeb853c82fc96c65f9c402c798e68690d3 Mon Sep 17 00:00:00 2001
 From: Keno Fischer <Keno@users.noreply.github.com>
 Date: Fri, 3 Oct 2025 12:21:39 +0000
-Subject: [PATCH] Replace POSIX basename() with
+Subject: [PATCH] Replace POSIX/GNU basename() with
  std::filesystem::path::filename()
 
-The POSIX basename() function has inconsistent behavior between GNU and
-POSIX implementations, causing build issues on musl libc systems.
-
-Build error on musl:
-  In file included from libcextract/ArgvParser.cpp:27:
-  /usr/include/string.h:(.text+0x...): multiple definition of 'basename'
-
-The GNU version in <string.h> modifies the input string, while the POSIX
-version in <libgen.h> uses a static buffer. This creates conflicts and
-portability issues.
-
-Replace with C++17 std::filesystem::path::filename(), which:
-- Is standardized and portable across all platforms
-- Has consistent behavior (returns last path component)
-- Doesn't modify input or use static buffers
-- Returns a std::filesystem::path that can be converted to string
-
-Changes:
-- libcextract/ArgvParser.cpp: Remove <string.h> include and comment about
-  basename, use std::filesystem::path().filename().string()
-- libcextract/SymversParser.cpp: Remove <libgen.h> include, use
-  std::filesystem::path().filename().string().c_str()
+There are two versions of C basename (one POSIX, one GNU) with incompatible semantics.
+The existing version is inconsistent, selecting the GNU version in one case, and making no specific selection
+in the other (causing build failures on musl). Just avoid this mess entirely by using std::filesystem which has
+well defined semantics and should be available since this project already requires C++20.
 ---
  libcextract/ArgvParser.cpp    | 5 ++---
  libcextract/SymversParser.cpp | 4 ++--

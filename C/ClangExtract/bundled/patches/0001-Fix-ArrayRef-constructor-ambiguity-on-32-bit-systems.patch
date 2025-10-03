@@ -1,19 +1,28 @@
-From 7afd25deb5506f8d9b4ac1603df2fff16bb974ce Mon Sep 17 00:00:00 2001
+From 615d76b78ae6c0fe50836d67d4fd5557f637bdaf Mon Sep 17 00:00:00 2001
 From: Keno Fischer <Keno@users.noreply.github.com>
 Date: Fri, 3 Oct 2025 12:19:59 +0000
 Subject: [PATCH] Fix ArrayRef constructor ambiguity on 32-bit systems
 
-On 32-bit systems (i686), size_t is 'unsigned int', not 'unsigned long'.
-The literal 0UL causes ambiguity between these two ArrayRef constructors:
-  - ArrayRef(const T *data, size_t length)
-  - ArrayRef(const T *begin, const T *end)
-
-Build error on i686-linux-gnu:
-  libcextract/LLVMMisc.cpp:236:39: error: call of overloaded 'ArrayRef(std::nullptr_t, long unsigned int)' is ambiguous
-    236 |   return ArrayRef<Decl *>(nullptr, 0UL);
-        |                                       ^
-
-Fix by explicitly casting to size_t(0) to match the expected parameter type.
+Fixes the following build error on 32bit systems:
+```
+[12:53:45] libcextract/LLVMMisc.cpp: In function 'llvm::ArrayRef<clang::Decl*> Get_Toplev_Decls_With_Same_Beginloc(clang::ASTUnit*, const clang::SourceLocation&)':
+[12:53:45] libcextract/LLVMMisc.cpp:236:39: error: call of overloaded 'ArrayRef(std::nullptr_t, long unsigned int)' is ambiguous
+[12:53:45]   236 |   return ArrayRef<Decl *>(nullptr, 0UL);
+[12:53:45]       |                                       ^
+[12:53:45] In file included from /opt/i686-linux-gnu/bin/../i686-linux-gnu/sys-root/usr/local/include/llvm/Support/Format.h:25,
+[12:53:45]                  from /opt/i686-linux-gnu/bin/../i686-linux-gnu/sys-root/usr/local/include/llvm/Support/Error.h:24,
+[12:53:45]                  from /opt/i686-linux-gnu/bin/../i686-linux-gnu/sys-root/usr/local/include/llvm/Support/FileSystem.h:34,
+[12:53:45]                  from /opt/i686-linux-gnu/bin/../i686-linux-gnu/sys-root/usr/local/include/clang/Basic/FileManager.h:29,
+[12:53:45]                  from /opt/i686-linux-gnu/bin/../i686-linux-gnu/sys-root/usr/local/include/clang/Tooling/Tooling.h:33,
+[12:53:45]                  from libcextract/LLVMMisc.hh:20,
+[12:53:45]                  from libcextract/LLVMMisc.cpp:17:
+[12:53:45] /opt/i686-linux-gnu/bin/../i686-linux-gnu/sys-root/usr/local/include/llvm/ADT/ArrayRef.h:82:15: note: candidate: 'constexpr llvm::ArrayRef<T>::ArrayRef(const T*, const T*) [with T = clang::Decl*]'
+[12:53:45]    82 |     constexpr ArrayRef(const T *begin LLVM_LIFETIME_BOUND, const T *end)
+[12:53:45]       |               ^~~~~~~~
+[12:53:45] /opt/i686-linux-gnu/bin/../i686-linux-gnu/sys-root/usr/local/include/llvm/ADT/ArrayRef.h:77:28: note: candidate: 'constexpr llvm::ArrayRef<T>::ArrayRef(const T*, size_t) [with T = clang::Decl*; size_t = unsigned int]'
+[12:53:45]    77 |     constexpr /*implicit*/ ArrayRef(const T *data LLVM_LIFETIME_BOUND,
+[12:53:45]       |                            ^~~~~~~~
+```
 ---
  libcextract/LLVMMisc.cpp | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
