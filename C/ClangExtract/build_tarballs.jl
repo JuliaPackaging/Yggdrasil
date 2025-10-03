@@ -12,11 +12,17 @@ version = v"0.1.0"
 # Collection of sources required to build ClangExtract
 sources = [
     GitSource("https://github.com/SUSE/clang-extract.git", "ac81bbb8f95e6409da2eeee8ef41cc9d7d970241"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/clang-extract
+
+# Apply patches from bundled/patches/
+for patch in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 "${patch}"
+done
 
 # Fix destructor syntax issues
 # 1. Remove (void) from destructor declaration and definition
@@ -24,10 +30,6 @@ sed -i 's/~ElfObject(void)/~ElfObject()/g' libcextract/ElfCXX.hh
 sed -i 's/~ElfObject(void)/~ElfObject()/g' libcextract/ElfCXX.cpp
 # 2. Fix explicit destructor calls to use this->
 sed -i 's/ElfObject::~ElfObject();/this->~ElfObject();/g' libcextract/ElfCXX.cpp
-
-# Fix ArrayRef ambiguous overload on i686 (32-bit)
-# Change 0UL to 0 to match size_t type correctly
-sed -i 's/ArrayRef<Decl \*>(nullptr, 0UL)/ArrayRef<Decl *>(nullptr, size_t(0))/g' libcextract/LLVMMisc.cpp
 
 # Find all C++ source files
 MAIN_SOURCES="Main.cpp"

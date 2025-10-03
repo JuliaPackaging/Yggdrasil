@@ -1,0 +1,92 @@
+From 6980bd2490f64a54e90ae6d7d90739bda4105513 Mon Sep 17 00:00:00 2001
+From: Keno Fischer <Keno@users.noreply.github.com>
+Date: Fri, 3 Oct 2025 12:21:39 +0000
+Subject: [PATCH] Replace POSIX basename() with
+ std::filesystem::path::filename()
+
+The POSIX basename() function has inconsistent behavior between GNU and
+POSIX implementations, causing build issues on musl libc systems.
+
+Build error on musl:
+  In file included from libcextract/ArgvParser.cpp:27:
+  /usr/include/string.h:(.text+0x...): multiple definition of 'basename'
+
+The GNU version in <string.h> modifies the input string, while the POSIX
+version in <libgen.h> uses a static buffer. This creates conflicts and
+portability issues.
+
+Replace with C++17 std::filesystem::path::filename(), which:
+- Is standardized and portable across all platforms
+- Has consistent behavior (returns last path component)
+- Doesn't modify input or use static buffers
+- Returns a std::filesystem::path that can be converted to string
+
+Changes:
+- libcextract/ArgvParser.cpp: Remove <string.h> include and comment about
+  basename, use std::filesystem::path().filename().string()
+- libcextract/SymversParser.cpp: Remove <libgen.h> include, use
+  std::filesystem::path().filename().string().c_str()
+---
+ libcextract/ArgvParser.cpp    | 5 ++---
+ libcextract/SymversParser.cpp | 4 ++--
+ 2 files changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/libcextract/ArgvParser.cpp b/libcextract/ArgvParser.cpp
+index eaa3d1b..8c68f9b 100644
+--- a/libcextract/ArgvParser.cpp
++++ b/libcextract/ArgvParser.cpp
+@@ -16,14 +16,13 @@
+ #include "ArgvParser.hh"
+ #include "NonLLVMMisc.hh"
+ #include "Error.hh"
++#include <filesystem>
+ 
+ #include <clang/Basic/Version.h>
+ 
+ #ifndef _GNU_SOURCE
+ #define _GNU_SOURCE
+ #endif
+-/* Use the basename version that doesn't change the input string */
+-#include <string.h>
+ 
+ #ifndef CLANG_VERSION_MAJOR
+ # error "Unable to find clang version"
+@@ -99,7 +98,7 @@ ArgvParser::ArgvParser(int argc, char **argv)
+    * are not the same, it means that the module from PatchObject is builtin, so
+    * assign vmlinux to PatchObject. */
+   if (Kernel && DebuginfoPath) {
+-    std::string obj_path = basename(DebuginfoPath);
++    std::string obj_path = std::filesystem::path(DebuginfoPath).filename().string();
+     /* As the DebugInfo can point to a file with suffix (btrfs.ko for example),
+      * check the substring */
+     if (obj_path.find(PatchObject) == std::string::npos)
+diff --git a/libcextract/SymversParser.cpp b/libcextract/SymversParser.cpp
+index 89c5b8a..3f35d43 100644
+--- a/libcextract/SymversParser.cpp
++++ b/libcextract/SymversParser.cpp
+@@ -14,12 +14,12 @@
+ /* Author: Marcos de Paulo Souza  */
+ 
+ #include "SymversParser.hh"
++#include <filesystem>
+ 
+ #include <iostream>
+ #include <fstream>
+ #include <string>
+ #include <sstream>
+-#include <libgen.h>
+ 
+ Symvers::Symvers(const std::string &path)
+     : Parser(path)
+@@ -64,7 +64,7 @@ void Symvers::Parse()
+     std::getline(ss, sym_mod, '\t');
+ 
+     // Only get the name of the module, instead of the path to it
+-    Symbol sym(sym_name, basename(sym_mod.data()));
++    Symbol sym(sym_name, std::filesystem::path(sym_mod).filename().string().c_str());
+     Insert_Symbols_Into_Hash(sym);
+   }
+ }
+-- 
+2.50.1
+

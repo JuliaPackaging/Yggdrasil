@@ -1,0 +1,36 @@
+From 7afd25deb5506f8d9b4ac1603df2fff16bb974ce Mon Sep 17 00:00:00 2001
+From: Keno Fischer <Keno@users.noreply.github.com>
+Date: Fri, 3 Oct 2025 12:19:59 +0000
+Subject: [PATCH] Fix ArrayRef constructor ambiguity on 32-bit systems
+
+On 32-bit systems (i686), size_t is 'unsigned int', not 'unsigned long'.
+The literal 0UL causes ambiguity between these two ArrayRef constructors:
+  - ArrayRef(const T *data, size_t length)
+  - ArrayRef(const T *begin, const T *end)
+
+Build error on i686-linux-gnu:
+  libcextract/LLVMMisc.cpp:236:39: error: call of overloaded 'ArrayRef(std::nullptr_t, long unsigned int)' is ambiguous
+    236 |   return ArrayRef<Decl *>(nullptr, 0UL);
+        |                                       ^
+
+Fix by explicitly casting to size_t(0) to match the expected parameter type.
+---
+ libcextract/LLVMMisc.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/libcextract/LLVMMisc.cpp b/libcextract/LLVMMisc.cpp
+index 9fff9f7..2ca7ca6 100644
+--- a/libcextract/LLVMMisc.cpp
++++ b/libcextract/LLVMMisc.cpp
+@@ -233,7 +233,7 @@ ArrayRef<Decl *> Get_Toplev_Decls_With_Same_Beginloc(ASTUnit *ast, const SourceL
+     }
+   }
+ 
+-  return ArrayRef<Decl *>(nullptr, 0UL);
++  return ArrayRef<Decl *>(nullptr, size_t(0));
+ }
+ 
+ std::string Build_CE_Location_Comment(SourceManager &sm, const SourceLocation &loc)
+-- 
+2.50.1
+
