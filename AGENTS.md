@@ -305,7 +305,7 @@ For faster local testing, build only for your current platform by passing it as 
 julia +1.7 --project=/path/to/Yggdrasil build_tarballs.jl --verbose --debug x86_64-linux-gnu
 # Or for your current platform:
 # x86_64-apple-darwin20 (macOS x86_64)
-# aarch64-apple-darwin20 (macOS ARM64)  
+# aarch64-apple-darwin20 (macOS ARM64)
 # x86_64-w64-mingw32 (Windows x86_64)
 ```
 
