@@ -14,9 +14,9 @@ Some dependencies require special handling:
 
 - **LLVM packages**: Must use `LLVM_full_jll` and match the version used by the Julia version. Requires careful ABI compatibility.
 - **MPI packages**: Need `MPIPreferences.jl` configuration and must use `MPItrampoline_jll` for cross-implementation compatibility.
-- **CUDA packages**: Require `CUDA_Runtime_jll` and must handle different CUDA versions. GPU code needs special compilation flags.
+- **CUDA packages**: Use `CUDA.required_dependencies` to get the necessary runtime dependencies. Must handle different CUDA versions. GPU code needs special compilation flags.
 
-For these complex dependencies, consult existing recipes in the repository (search for `LLVM_full_jll`, `MPItrampoline_jll`, or `CUDA_Runtime_jll`).
+For these complex dependencies, consult existing recipes in the repository (search for `LLVM_full_jll`, `MPItrampoline_jll`, or `CUDA.required_dependencies`).
 
 ## Essential Structure
 
