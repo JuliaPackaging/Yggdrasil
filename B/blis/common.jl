@@ -2,11 +2,12 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-version = v"1.1.0"
+version = v"2.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/flame/blis.git", "464180ff28e6a3f74f7c754ec01ed8a6a2f978df"),
+    GitSource("https://github.com/flame/blis.git",
+              "e8566eb3e773fb54d11b33e371d13f22d2941e50"),
     DirectorySource("../bundled")
 ]
 
@@ -84,18 +85,18 @@ function blis_script(;blis32::Bool=false)
     fi
 
     # Include A64FX in Arm64 metaconfig.
-    #if [ ${BLI_CONFIG} = arm64 ]; then
+    if [ ${BLI_CONFIG} = arm64 ]; then
         # Add A64FX to the registry.
-        #patch config_registry ${WORKSPACE}/srcdir/patches/config_registry.metaconfig+a64fx.patch
+        patch config_registry ${WORKSPACE}/srcdir/patches/config_registry.metaconfig+a64fx.patch
 
         # Unscreen Arm SVE code for metaconfig.
-        #atomic_patch -p1 ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_arm_sve_h.patch
-        #atomic_patch -p1 ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_armsve512_int_12xk.patch
-        #atomic_patch -p1 ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_armsve256_int_8x10.patch
+        atomic_patch -p1 ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_arm_sve_h.patch
+        atomic_patch -p1 ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_armsve512_int_12xk.patch
+        atomic_patch -p1 ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_armsve256_int_8x10.patch
 
         # Screen out A64FX sector cache.
-        #patch config/a64fx/bli_cntx_init_a64fx.c ${WORKSPACE}/srcdir/patches/a64fx_config_screen_sector_cache.patch
-    #fi
+        patch config/a64fx/bli_cntx_init_a64fx.c ${WORKSPACE}/srcdir/patches/a64fx_config_screen_sector_cache.patch
+    fi
 
     # Import libblastrampoline-style nthreads setter.
     cp ${WORKSPACE}/srcdir/nthreads64_.c frame/compat/nthreads64_.c
@@ -149,6 +150,8 @@ end
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
+platforms = supported_platforms()
+#=
 platforms = [
     Platform("x86_64", "linux"; libc="musl"),
     Platform("x86_64", "linux"; libc="glibc"),
@@ -163,6 +166,7 @@ platforms = [
     Platform("riscv64", "linux"; libc="glibc"),
     Platform("powerpc64le", "linux"; libc="glibc"),
 ]
+=#
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
