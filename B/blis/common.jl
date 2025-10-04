@@ -71,6 +71,7 @@ function blis_script(;blis32::Bool=false)
             ;;
         *)
             # Default (Generic) configuration without optimized kernel.
+            # For now, RISC-V uses the generic kernels here until upstream implements a meta target: https://github.com/flame/blis/issues/902
             export BLI_CONFIG=generic
             export BLI_THREAD=none
             ;;
