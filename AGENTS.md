@@ -186,6 +186,27 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
 )
 ```
 
+### Unsupported Build Flags
+
+Products should not force using certain CPUs or instruction sets (e.g., the `march` or `mcpu` flags), unless they perform their own selection of the appropriate code for the current processor at runtime.
+They also should not use unsafe math operations or the "fast math" mode in compilters.
+
+To remove the `march` and `mcpu` flags in a list of files:
+```bash
+for i in ${files}
+    sed -i "s/-march[^ ]*//g" $i
+    sed -i "s/-mcpu[^ ]*//g" $i
+done
+```
+
+To remove the fast math and unsafe math optimizations in a list of files:
+```bash
+for i in ${files}
+    sed -i "s/-ffast-math//g" $i
+    sed -i "s/-funsafe-math-optimizations//g" $i
+done
+```
+
 ## Common Patterns
 
 ### Applying Patches
