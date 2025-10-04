@@ -45,7 +45,7 @@ function blis_script(;blis32::Bool=false)
             export BLI_CONFIG=arm32
             export BLI_THREAD=none
             ;;
-        *"x86_64"*"w64"*)
+        *"mingw"*)
             # MinGW doesn't support savexmm instructions
             # Build only for AMD processors.
             export BLI_CONFIG=amd64
@@ -114,7 +114,7 @@ function blis_script(;blis32::Bool=false)
     rm -f ${prefix}/lib/libblis.a
 
     # Rename .dll for Windows targets.
-    if [[ "${target}" == *"x86_64"*"w64"* ]]; then
+    if [[ "${target}" == *mingw* ]]; then
         mkdir -p ${libdir}
         mv ${prefix}/lib/libblis.4.dll ${libdir}/libblis.dll
     fi
@@ -151,22 +151,6 @@ end
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-#=
-platforms = [
-    Platform("x86_64", "linux"; libc="musl"),
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("x86_64", "windows"),
-    Platform("x86_64", "macos"),
-    Platform("x86_64", "freebsd"),
-    Platform("i686", "linux"; libc="glibc"),
-    Platform("aarch64", "linux"; libc="glibc"),
-    Platform("aarch64", "macos"),
-    Platform("aarch64", "freebsd"),
-    Platform("armv7l", "linux"; libc="glibc"),
-    Platform("riscv64", "linux"; libc="glibc"),
-    Platform("powerpc64le", "linux"; libc="glibc"),
-]
-=#
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
