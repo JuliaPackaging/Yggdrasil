@@ -45,7 +45,7 @@ function blis_script(;blis32::Bool=false)
             export BLI_CONFIG=arm32
             export BLI_THREAD=none
             ;;
-        *"mingw"*)
+        *"x86_64"*"w64"*)
             # MinGW doesn't support savexmm instructions
             # Build only for AMD processors.
             export BLI_CONFIG=amd64
