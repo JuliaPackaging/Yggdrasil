@@ -61,10 +61,28 @@ are not descriptive (virtually all pull requests update a file called `build_tar
 
 #### Special keywords in commit messages
 
-Anywhere in a commit message you can use the special keyword `[skip build]`, which has a two-fold effect:
+There are two special keywords in commit messages, `[skip build]` and `[skip ci]`. These keywords can be anywhere in a commit message. Do not put these keywords into the first line (the header) since these instructions are a technical detail that isn't relevant when looking at a summary of many commit messages.
 
-* in pull requests, a build of the touched packages will not be performed
-* for commits pushed to the default branch, a new build of the touched packages will not be performed but a new version of the correspoding JLL packages will be published, using as artifacts those from the latest registered versions of the packages (the build number will be increased by one).
+These keywords are examined by Github for every push made to the repository. They can be in any of the commit messages that make up a push. Keywords in existing, earlier commits are ignored when examining a push. That is, when making several pushes, each push needs to contain a commit that contains these keywords.
+ 
+`[skip build]` has two following effects:
+* in pull requests, the touched packages will not be built.
+* for commits pushed to the default (`master`) branch, including merging a branch to the default branch: Although the touched packages will not be built, a new version of the correspoding JLL packages will be published, using as artifacts those from the latest registered versions of the packages. The build number will be increased by one. (This is only interesting for maintainers when merging a branch into the master branch; see section "Information for maintainers" below.)
+
+`[skip ci]` has the following effect (this keyword is only interesting for maintainers when merging a branch into the master branch; see section "Information for maintainers" below):
+* in pull requests, this has no effect.
+* for commits pushed to the default (`master`) branch, including merging a branch to the default branch: CI will not be run at all.
+
+##### How to make a single change to a pull request without triggering a build
+
+* Use `[skip build]` in the commit message
+
+##### How to change a package without releasing a new version (and without building the package)
+
+* Create a pull request
+* Use `[skip build]` in every commit message for the pull request
+* The maintainer must merge with `[skip ci]`
+
 
 ### Understanding build cache on Yggdrasil
 
@@ -115,5 +133,5 @@ Here are some recommendations for Yggdrasil maintainers:
   There is little need to preserve full history of individual pull requests.
   This also makes sure special keywords in commit messages are part of the commit which triggers the CI workflow and so they can have effect
 * use special commit message keywords as appropriate:
-  * `[skip ci]` to not run CI at all when merging a pull request
   * `[skip build]` to only update the JLL wrapper of a package without rebuilding the package once again
+  * `[skip ci]` to not run CI at all when merging a pull request. This keyword has no effect when pushing to a branch; it is only relevant when merging a pull request.
