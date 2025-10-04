@@ -9,6 +9,8 @@ julia_full_versions = [v"1.6.3", v"1.7.0", v"1.8.2", v"1.9.0", v"1.10.0", v"1.11
 if ! @isdefined julia_versions
     julia_versions = Base.thispatch.(julia_full_versions)
 end
+# currently supported versions for which we want to build by default
+supported_julia_versions = filter(>=(v"1.10"), julia_versions)
 
 # return the platforms supported by libjulia
 function julia_supported_platforms(julia_version)
