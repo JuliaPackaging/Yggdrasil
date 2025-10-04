@@ -56,9 +56,7 @@ function blis_script(;blis32::Bool=false)
             export BLI_THREAD=openmp
             ;;
         *"aarch64"*"apple"*)
-            # Metaconfig arm64 is not needed here.
-            # All Mac processors should have equal or higher specs then firestorm
-            export BLI_CONFIG=firestorm
+            export BLI_CONFIG=arm64
             export BLI_THREAD=openmp
             ;;
         *"x86_64"*"freebsd"*)
@@ -68,11 +66,11 @@ function blis_script(;blis32::Bool=false)
         *"aarch64"*"freebsd"*)
             export BLI_CONFIG=arm64
             export BLI_THREAD=openmp
-           ;;
+            ;;
        *"powerpc64le"*)
-           export BLI_CONFIG=power
-           export BLI_THREAD=openmp
-           ;;
+            export BLI_CONFIG=power
+            export BLI_THREAD=openmp
+            ;;
        *)
             # Default (Generic) configuration without optimized kernel.
             # For now, RISC-V uses the generic kernels here until upstream implements a meta target: https://github.com/flame/blis/issues/902
