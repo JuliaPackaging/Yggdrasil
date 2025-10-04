@@ -1,0 +1,106 @@
+diff --git a/src/Alphabet.h b/src/Alphabet.h
+index edf2333..d05e442 100644
+--- a/src/Alphabet.h
++++ b/src/Alphabet.h
+@@ -5,6 +5,10 @@
+ #include "debug.h"
+ #include <string>
+ #include <assert.h>
++#include <cstddef>
++#include <cwchar>
++#include <ios>
++#include <type_traits>
+ 
+ class Alphabet {
+ protected:
+@@ -117,6 +121,90 @@ public:
+ };
+ 
+ 
++namespace detail {
++    template <class AlphabetT>
++    struct alphabet_char_traits {
++        using char_type = AlphabetT;
++        using int_type = int;
++        using off_type = std::streamoff;
++        using pos_type = std::streampos;
++        using state_type = std::mbstate_t;
++
++        static void assign(char_type &c1, const char_type &c2) noexcept { c1 = c2; }
++        static char_type *assign(char_type *s, std::size_t n, const char_type &a) {
++            for (std::size_t i = 0; i < n; ++i) {
++                s[i] = a;
++            }
++            return s;
++        }
++        static constexpr bool eq(const char_type &c1, const char_type &c2) noexcept { return c1 == c2; }
++        static constexpr bool lt(const char_type &c1, const char_type &c2) noexcept { return c1 < c2; }
++        static int compare(const char_type *s1, const char_type *s2, std::size_t n) {
++            for (std::size_t i = 0; i < n; ++i) {
++                if (lt(s1[i], s2[i])) {
++                    return -1;
++                }
++                if (lt(s2[i], s1[i])) {
++                    return 1;
++                }
++            }
++            return 0;
++        }
++        static std::size_t length(const char_type *s) {
++            std::size_t i = 0;
++            char_type terminator;
++            while (!eq(s[i], terminator)) {
++                ++i;
++            }
++            return i;
++        }
++        static const char_type *find(const char_type *s, std::size_t n, const char_type &a) {
++            for (std::size_t i = 0; i < n; ++i) {
++                if (eq(s[i], a)) {
++                    return s + i;
++                }
++            }
++            return nullptr;
++        }
++        static char_type *move(char_type *dest, const char_type *src, std::size_t n) {
++            if (dest == src) {
++                return dest;
++            }
++            if (dest < src) {
++                for (std::size_t i = 0; i < n; ++i) {
++                    dest[i] = src[i];
++                }
++            } else {
++                for (std::size_t i = n; i-- > 0;) {
++                    dest[i] = src[i];
++                }
++            }
++            return dest;
++        }
++        static char_type *copy(char_type *dest, const char_type *src, std::size_t n) {
++            for (std::size_t i = 0; i < n; ++i) {
++                dest[i] = src[i];
++            }
++            return dest;
++        }
++        static int_type eof() noexcept { return -1; }
++        static char_type to_char_type(const int_type &c) { return char_type(static_cast<int>(c)); }
++        static int_type to_int_type(const char_type &c) noexcept { return c.value(); }
++        static bool eq_int_type(const int_type &c1, const int_type &c2) noexcept { return c1 == c2; }
++        static int_type not_eof(const int_type &c) noexcept { return c == eof() ? 0 : c; }
++    };
++}
++
++namespace std {
++    template <> struct char_traits<AA> : detail::alphabet_char_traits<AA> {};
++    template <> struct char_traits<DNA> : detail::alphabet_char_traits<DNA> {};
++    template <> struct char_traits<Codon> : detail::alphabet_char_traits<Codon> {};
++
++    template <> struct is_trivial<AA> : true_type {};
++    template <> struct is_trivial<DNA> : true_type {};
++    template <> struct is_trivial<Codon> : true_type {};
++}
++
+ #define sequence_t std::basic_string
+ 
+ template<class T>
