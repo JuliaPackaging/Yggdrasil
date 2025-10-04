@@ -15,7 +15,7 @@ version = v"7.0.0"
 sources = [
     DirectorySource("./bundled"),
     GitSource("https://github.com/juliagpu/pocl",
-              "ebd70398005f9e2fd93b0627ad467e006f5ddacd")
+              "514d74b00aab14ec811f6f16be877421748582ca")
 ]
 
 #=
@@ -92,11 +92,7 @@ for platform in platforms
 
     # on Windows, we need to use a version of GCC that supports `.drectve -exclude-symbols`
     # or we run into export ordinal limits
-    preferred_gcc_version = if Sys.iswindows(platform)
-        v"13"
-    else
-        v"10"
-    end
+    preferred_gcc_version = v"13"
 
     push!(builds, (; platform,
                      preferred_gcc_version,
