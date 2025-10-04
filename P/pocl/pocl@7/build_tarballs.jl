@@ -92,11 +92,7 @@ for platform in platforms
 
     # on Windows, we need to use a version of GCC that supports `.drectve -exclude-symbols`
     # or we run into export ordinal limits
-    preferred_gcc_version = if Sys.iswindows(platform)
-        v"13"
-    else
-        v"12"
-    end
+    preferred_gcc_version = v"13"
 
     push!(builds, (; platform,
                      preferred_gcc_version,
