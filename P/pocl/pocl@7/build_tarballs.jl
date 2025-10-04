@@ -95,7 +95,7 @@ for platform in platforms
     preferred_gcc_version = if Sys.iswindows(platform)
         v"13"
     else
-        v"10"
+        v"12"
     end
 
     push!(builds, (; platform,
