@@ -63,11 +63,11 @@ are not descriptive (virtually all pull requests update a file called `build_tar
 
 There are two special keywords in commit messages, `[skip build]` and `[skip ci]`. These keywords can be anywhere in a commit message. Do not put these keywords into the first line (the header) since these instructions are a technical detail that isn't relevant when looking at a summary of many commit messages.
 
-These keywords are examined by Github for every push made to the repository. They can be in any of the commit messages that make up a push. Keywords in existing, earlier commits are ignored when examining a push. That is, when making several pushes, each push needs to contain a commit that contains these keywords.
+These keywords are examined by our build system for every push made to the repository. They can be in any of the commit messages that make up a push. Keywords in existing, earlier commits are ignored when examining a push. That is, when making several pushes, each push needs to contain a commit that contains these keywords.
  
 `[skip build]` has two following effects:
 * in pull requests, the touched packages will not be built.
-* for commits pushed to the default (`master`) branch, including merging a branch to the default branch: Although the touched packages will not be built, a new version of the correspoding JLL packages will be published, using as artifacts those from the latest registered versions of the packages. The build number will be increased by one. (This is only interesting for maintainers when merging a branch into the master branch; see section "Information for maintainers" below.)
+* for commits pushed to the default (`master`) branch, including merging a branch to the default branch: Although the touched packages will not be built, a new version of the correspoding JLL packages will be published, using as artifacts those of the previous build with the same `x.y.z` version number. The build number will be increased by one. (This is only interesting for maintainers when merging a branch into the master branch; see section "Information for maintainers" below.)
 
 `[skip ci]` has the following effect (this keyword is only interesting for maintainers when merging a branch into the master branch; see section "Information for maintainers" below):
 * in pull requests, this has no effect.
