@@ -75,6 +75,7 @@ if [[ ${target} != *x86_64* ]]; then
     # The configure test incorrectly enables AVX on arm64 architectures.
     # (There is still a run-time CPU check, so this option is fine in principle.)
     configure_flags+=(
+        pac_cv_found_avx=no
         pac_cv_found_avx512f=no
     )
 fi
