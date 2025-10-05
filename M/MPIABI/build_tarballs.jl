@@ -3,28 +3,47 @@ using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
-name = "MPICH_MPIABI"
-version_str = "4.3.1"
-version = VersionNumber(version_str)
+name = "MPIABI"
+# version_str = "4.3.1"
+# version = VersionNumber(version_str)
+# version_str = "4.3.2rc2"
+# version = v"4.3.2"
+version = v"5.0.0"
 
 sources = [
-    # MPICH source
-    ArchiveSource("https://www.mpich.org/static/downloads/$(version)/mpich-$(version).tar.gz",
-                  "acc11cb2bdc69678dc8bba747c24a28233c58596f81f03785bf2b7bb7a0ef7dc"),
     # The official MPI ABI C bindings.
     # There are no released versions. We choose a recent commit.
     # This corresponds to the MPI standard 5.0, MPI ABI 1.0.
     GitSource("https://github.com/mpi-forum/mpi-abi-stubs", "e4583674e6898da1fac6953da71bb1a205d74b37"),
+
+    # MPICH source, implementing the C bindings
+    # ArchiveSource("https://www.mpich.org/static/downloads/$(version_str)/mpich-$(version_str).tar.gz",
+    #               "acc11cb2bdc69678dc8bba747c24a28233c58596f81f03785bf2b7bb7a0ef7dc"),
+    # ArchiveSource("https://www.mpich.org/static/downloads/$(version_str)/mpich-$(version_str).tar.gz",
+    #               "2d738c70b0e45b787d5931b6ddfd0189e586773188e93c7fd1d934a99a9cc55d"),
+    GitSource("https://github.com/pmodels/mpich.git", "f47908fa4a74bf4ac29997202fb2967c8c59b0c9"),
+
+    # Patches
     DirectorySource("bundled"),
 ]
 
 script = raw"""
+################################################################################
+# Build MPICH.
+#
+# MPICH is our default implementation.
+# In the future we will introduce a mechanism to swap out MPICH for another MPI implementation.
+
 cd ${WORKSPACE}/srcdir/mpich*
 
 # MPICH does not include `<pthread_np.h>` on FreeBSD: <https://github.com/pmodels/mpich/issues/6821>.
 # (The MPICH developers say that this is a bug in MPICH and that
 # `<pthread_np.h>` should not actually be used on FreeBSD.)
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pthread_np.patch
+
+git submodule update --init
+
+./autogen.sh
 
 # - Do not install doc and man files which contain files which clashing names on
 #   case-insensitive file systems:
@@ -47,53 +66,59 @@ configure_flags=(
     --enable-static=no
     --enable-mpi-abi
     --host=${target}
-    --prefix=${prefix}
+    --prefix=${prefix}/mpich
     --with-device=ch3
     --with-hwloc=${prefix}
 )
+
+# Use these options to enable accelerators:
+# --with-cuda=
+# --with-hip=
+# --with-ze=
 
 ./configure "${configure_flags[@]}"
 
 # Build the library
 make -j${nproc}
 
-# Install the library
+# Install the library into a tempoary directory ${prefix}/mpich.
+# We are going to pick-and-choose only those installed files that we actually want.
 make install
 
-# We don't want or need the non-ABI MPI include files, libraries, or binaries
-ls -l ${includedir}
-rm ${includedir}/mpi_abi.h
-rm ${includedir}/mpi_proto.h
-rm ${includedir}/mpi.h
-rm ${includedir}/mpio.h
-rm ${includedir}/mpiof.h
+# Install the shared libraries
+mv ${prefix}/mpich/lib/libmpi_abi.* ${libdir}
 
-ls -l ${libdir}
-rm ${libdir}/libmpi.*
-rm ${libdir}/libmpich.*
-rm ${libdir}/libmpichcxx.*
-rm ${libdir}/libmpl.*
-rm ${libdir}/libopa.*
-rm -f ${libdir}/libpmpi.*
-rm ${libdir}/pkgconfig/mpich.pc
+# Install all binaries (why not?)
+mv ${prefix}/mpich/bin/* ${bindir}
 
-ls -l ${bindir}
-rm ${bindir}/mpic++
-
-# Fix symlinks
+# Switch compiler wrappers to using the MPI ABI, and correct the install directory
 rm ${bindir}/mpicc_abi
 rm ${bindir}/mpicxx_abi
-mv ${bindir}/mpicc ${bindir}/mpicc_abi
-mv ${bindir}/mpicxx ${bindir}/mpicxx_abi
+sed -i -e 's/mpi_abi=no/mpi_abi=yes/' ${bindir}/mpicc
+sed -i -e 's/mpi_abi=no/mpi_abi=yes/' ${bindir}/mpicxx
+sed -i -e "s+${prefix}/mpich+${prefix}+" ${bindir}/mpicc
+sed -i -e "s+${prefix}/mpich+${prefix}+" ${bindir}/mpicxx
+
+# Remove the temporary full install
+rm -rf ${prefix}/mpich
 
 # Install license
 install_license COPYRIGHT
 
 
 
+################################################################################
+# C bindings for MPI ABI
+
 cd ${WORKSPACE}/srcdir/mpi-abi-stubs
 
-# Install the official header file
+# Add the C bindings for C/Fortran interoperability.
+#
+# MPI programs may expect it, but the MPI ABI standard intentionally excludes it.
+# We choose to provide a Fortran ABI as well, and therefore we need to define it here.
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fortran.patch
+
+# Install the official MPI ABI header file
 install -Dvm 644 mpi.h ${includedir}/mpi.h
 
 # Install the license
@@ -111,12 +136,11 @@ platforms = supported_platforms()
 filter!(!Sys.iswindows, platforms)
 
 # Add `mpi+mpiabi` platform tag
-for p in platforms
+foreach(platforms) do p
     p["mpi"] = "MPIABI"
 end
 
 products = [
-    # MPICH
     LibraryProduct("libmpi_abi", :libmpi),
     ExecutableProduct("mpiexec", :mpiexec),
 ]
