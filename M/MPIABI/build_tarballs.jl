@@ -62,7 +62,7 @@ configure_flags=(
     --disable-doc
     --disable-fortran
     --enable-cxx=no
-    --enable-fast=ndebug,O3
+    --enable-fast=O3,ndebug,alwaysinline
     --enable-static=no
     --enable-mpi-abi
     --host=${target}
@@ -70,6 +70,14 @@ configure_flags=(
     --with-device=ch3
     --with-hwloc=${prefix}
 )
+
+if [[ ${target} != *x86_64* ]]; then
+    # The configure test incorrectly enables AVX on arm64 architectures.
+    # (There is still a run-time CPU check, so this option is fine in principle.)
+    configure_flags+=(
+        pac_cv_found_avx512f=no
+    )
+fi
 
 # Use these options to enable accelerators:
 # --with-cuda=
@@ -88,8 +96,10 @@ make install
 # Install the shared libraries
 mv ${prefix}/mpich/lib/libmpi_abi.* ${libdir}
 
-# Install all binaries (why not?)
+# Install almost all binaries (why not?)
 mv ${prefix}/mpich/bin/* ${bindir}
+rm ${bindir}/mpichversion       # needs libmpi.so
+rm ${bindir}/mpivars            # needs libmpi.so
 
 # Switch compiler wrappers to using the MPI ABI, and correct the install directory
 rm ${bindir}/mpicc_abi
