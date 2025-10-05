@@ -118,7 +118,7 @@ for (i,build) in enumerate(builds)
                    name, version, build.sources, build_script(),
                    [build.platform], products, build.dependencies;
                    build.preferred_gcc_version, preferred_llvm_version=v"20",
-                   julia_compat="1.6", init_block=init_block())
+                   julia_compat="1.6", init_block=init_block(), dont_dlopen=true)
 end
 
 # bump
