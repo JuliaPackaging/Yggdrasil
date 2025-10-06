@@ -92,8 +92,7 @@ cmake --build build --parallel "${nproc}"
 
 cmake --install build
 
-mkdir -p "${prefix}/share/licenses/ProGraphMSA"
-install -m 0644 LICENSE "${prefix}/share/licenses/ProGraphMSA/LICENSE"
+install_license ./LICENSE
 
 popd
 """
