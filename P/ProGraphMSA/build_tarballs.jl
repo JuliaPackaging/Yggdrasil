@@ -39,13 +39,6 @@ cp -av "${TCLAP_DIR}/include/tclap/"*.h "${prefix}/include/tclap/"
 ##########
 pushd "${PG_DIR}"
 
-# Strip problematic SSE flag for non-x86 targets
-for f in CMakeLists.txt src/CMakeLists.txt; do
-  if [ -f "$f" ]; then
-    sed -i -E 's/[[:space:]]*-msse2[[:space:]]*/ /g' "$f" || true
-  fi
-done
-
 # Provide std::char_traits specializations so libc++ can handle custom alphabets.
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/char_traits.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/fix_codon_table.patch"
