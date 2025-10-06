@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "PRIMA"
-version = v"0.7.1"
+version = v"0.7.2"  # <-- Release 0.7.1 recompiled with "-Wl,-z,noexecstack"
 
 # Collection of sources required to complete build
 sources = [
