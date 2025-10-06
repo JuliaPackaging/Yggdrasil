@@ -38,12 +38,12 @@ function julia_supported_platforms(julia_version)
     filter!(p -> arch(p) != "armv7l", platforms)
 
     # FreeBSD on 64bit ARM 64 is not supported for older Julia versions
-    if julia_version < v"1.12"
+    if julia_version < v"1.12.0-0"
         filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
     end
 
     # RISC-V is not supported for older Julia versions
-    if julia_version < v"1.13"
+    if julia_version < v"1.13.0-0"
         filter!(p -> arch(p) != "riscv64", platforms)
     end
 
