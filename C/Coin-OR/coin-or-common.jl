@@ -81,11 +81,8 @@ Ipopt_gitsha = "2695946fa79d2e84f3034e065e788933a81466eb"
 Ipopt_verson_offset = v"0.0.0"
 Ipopt_version = offset_version(Ipopt_upstream_version, Ipopt_verson_offset)
 
-ALPS_upstream_version = v"1.5.7"
-# This is not the exact 1.5.7 tag, but a few commits later on stable/1.5
-ALPS_gitsha = "5b1a0b524979764d6ca929446762762712c035bb"
-ALPS_version_offset = v"0.0.2"
-ALPS_version = offset_version(ALPS_upstream_version, ALPS_version_offset)
+ALPS_version = offset_version(v"1.5.12", v"0.0.0")
+ALPS_gitsha = "c90858e4ca11c7f81168cd14dc137742fa3510f0"
 
 BiCePS_version = offset_version(v"0.94.4", v"0.0.0")
 BiCePS_gitsha = "8e41545a3b1a36ca1d306b3af96f3804dc57e61f"
