@@ -94,8 +94,8 @@ CHiPPS_BLIS_version = offset_version(v"0.94.8", v"0.0.2")
 # This is not the exact 0.94.8 tag, but a few commits later on releases/0.94.8
 CHiPPS_BLIS_gitsha = "0ad6d4530d48e3b5f417a3407f5f2e8605145b50"
 
-SYMPHONY_version = offset_version(v"5.6.19", v"0.0.0")
-SYMPHONY_gitsha = "28adc89185be98780b1ab6528ab270e569561b87"
+SYMPHONY_version = offset_version(v"5.7.3", v"0.0.0")
+SYMPHONY_gitsha = "03006fc6dcf77da9becc7e55e8a0879201905b96"
 
 MibS_version = offset_version(v"1.1.3", v"0.0.1")
 MibS_gitsha = "4b7ec93c4bd1d6a978deff9987cf1df74f6598d3"
