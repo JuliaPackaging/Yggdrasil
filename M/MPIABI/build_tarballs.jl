@@ -4,11 +4,16 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MPIABI"
-# version_str = "4.3.1"
-# version = VersionNumber(version_str)
-# version_str = "4.3.2rc2"
-# version = v"4.3.2"
-version = v"5.0.0"
+# We use semver for this package. Since this represents and ABI, and
+# not a package, it doesn't make sense to follow e.g. MPI's or
+# OpenMPI's released versions.
+version = v"1.0.0"
+
+# The MPI ABI does not provide Fortran bindings. Packages using this
+# ABI should use a different package, e.g.
+# [mpif](https://github.com/eschnett/mpif) or
+# [vapaa](https://github.com/jeffhammond/vapaa), to provide Fortran
+# bindings on top of this MPIABI.
 
 sources = [
     # The official MPI ABI C bindings.
@@ -21,6 +26,7 @@ sources = [
     #               "acc11cb2bdc69678dc8bba747c24a28233c58596f81f03785bf2b7bb7a0ef7dc"),
     # ArchiveSource("https://www.mpich.org/static/downloads/$(version_str)/mpich-$(version_str).tar.gz",
     #               "2d738c70b0e45b787d5931b6ddfd0189e586773188e93c7fd1d934a99a9cc55d"),
+    # This is the main branch as of 2025-10-05. This will likely turn into MPICH 5.0.
     GitSource("https://github.com/pmodels/mpich.git", "f47908fa4a74bf4ac29997202fb2967c8c59b0c9"),
 
     # Patches
