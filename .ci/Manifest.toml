@@ -2,7 +2,7 @@
 
 julia_version = "1.12.1"
 manifest_format = "2.0"
-project_hash = "eb281049837da2b091ec667863c8824a57a70708"
+project_hash = "307630b5433268691f0cd1ef7f1c6c820417465f"
 
 [[deps.ArgParse]]
 deps = ["Logging", "TextWrap"]
@@ -183,10 +183,10 @@ uuid = "9fb69e20-1954-56bb-a84f-559cc56a8ff7"
 version = "0.2.2"
 
 [[deps.HistoricalStdlibVersions]]
-deps = ["Pkg"]
-git-tree-sha1 = "7e72d0ce251105cebeab1e156977af2346cbe558"
+deps = ["Pkg", "PrecompileTools"]
+git-tree-sha1 = "3a167a57ca85255f532ae75bd3f0fc2062ae58c4"
 uuid = "6df8b67a-e8a0-4029-b4b7-ac196fe72102"
-version = "2.0.2"
+version = "2.0.5"
 
 [[deps.InlineStrings]]
 git-tree-sha1 = "8f3d257792a522b4601c24a577954b0a8cd7334d"
