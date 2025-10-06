@@ -9,7 +9,7 @@ version = v"2020.09.29"
 sources = [
     GitSource("https://github.com/acg-team/ProGraphMSA.git", "51cf68a58f2e8900b3cfb40d24d335f7405abbed"),
     ArchiveSource("https://sourceforge.net/projects/tclap/files/tclap-1.2.2.tar.gz", "f5013be7fcaafc69ba0ce2d1710f693f61e9c336b6292ae4f57554f59fde5837"),
-    DirectorySource(joinpath(@__DIR__, "patches"))
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
