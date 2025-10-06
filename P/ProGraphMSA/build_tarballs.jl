@@ -39,11 +39,10 @@ cp -av "${TCLAP_DIR}/include/tclap/"*.h "${prefix}/include/tclap/"
 ##########
 pushd "${PG_DIR}"
 
-# Strip problematic flags if present (SSE on non-x86, unsafe fast-math)
+# Strip problematic SSE flag for non-x86 targets
 for f in CMakeLists.txt src/CMakeLists.txt; do
   if [ -f "$f" ]; then
     sed -i -E 's/[[:space:]]*-msse2[[:space:]]*/ /g' "$f" || true
-    sed -i -E 's/[[:space:]]*-ffast-math[[:space:]]*/ /g' "$f" || true
   fi
 done
 
