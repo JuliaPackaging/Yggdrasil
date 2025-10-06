@@ -48,8 +48,8 @@ for f in CMakeLists.txt src/CMakeLists.txt; do
 done
 
 # Provide std::char_traits specializations so libc++ can handle custom alphabets.
-atomic_patch -p1 "${WORKSPACE}/srcdir/char_traits.patch"
-atomic_patch -p1 "${WORKSPACE}/srcdir/fix_codon_table.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/char_traits.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/fix_codon_table.patch"
 
 popd
 
