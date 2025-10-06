@@ -13,7 +13,10 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd prima
-cmake -S . -B build -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
+cmake -S . -B build -DCMAKE_INSTALL_PREFIX=$prefix \
+                    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+                    -DCMAKE_BUILD_TYPE=Release \
+                    -DCMAKE_SHARED_LINKER_FLAGS="-Wl,-z,noexecstack"
 cmake --build build --target install
 """
 
