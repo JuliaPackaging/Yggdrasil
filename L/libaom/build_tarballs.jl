@@ -9,11 +9,16 @@ version = v"3.13.1"
 sources = [
     ArchiveSource("https://storage.googleapis.com/aom-releases/libaom-$(version).tar.gz",
                   "19e45a5a7192d690565229983dad900e76b513a02306c12053fb9a262cbeca7d"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/libaom-*
+
+# Add missing stdint.h includes
+# Reported upstream as <https://aomedia.issues.chromium.org/u/1/issues/432730317>
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/inttypes.patch
 
 CMAKE_FLAGS=()
 if [[ ${target} = arm-* ]]; then
