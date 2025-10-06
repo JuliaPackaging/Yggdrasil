@@ -22,10 +22,7 @@ cd cmake-build/
 cmake -S ${WORKSPACE}/srcdir/gridlab-d -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_BUILD_TYPE=Release
 cmake --build . -j${nproc} --target install
 
-mkdir ${prefix}/share/licenses
-cp ${WORKSPACE}/srcdir/gridlab-d/LICENSE ${prefix}/share/licenses/
-
-exit
+install_license ${WORKSPACE}/srcdir/gridlab-d/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
