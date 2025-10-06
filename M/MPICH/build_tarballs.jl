@@ -29,9 +29,6 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pthread_np.patch
 #   case-insensitive file systems:
 #   * https://github.com/JuliaPackaging/Yggdrasil/pull/315
 #   * https://github.com/JuliaPackaging/Yggdrasil/issues/6344
-# - `--enable-fast=all,O3` leads to very long compile times for the
-#   file `src/mpi/coll/mpir_coll.c`. It seems we need to avoid
-#   `alwaysinline`.
 # - We need to use `ch3` because `ch4` breaks on some systems, e.g. on
 #   x86_64 macOS. See
 #   <https://github.com/JuliaPackaging/Yggdrasil/pull/10249#discussion_r1975948816> for a brief
