@@ -3,7 +3,6 @@
 #
 # Last updated: 2025-10-07
 
-
 include("../coin-or-common.jl")
 
 # Collection of sources required to build SYMPHONY
@@ -66,7 +65,7 @@ build_tarballs(
     SYMPHONY_version,
     sources,
     script,
-    expand_gfortran_versions(platforms),
+    platforms,
     products,
     dependencies;
     preferred_gcc_version = gcc_version,
