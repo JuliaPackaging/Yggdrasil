@@ -116,10 +116,6 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
-    Dependency(PackageSpec(name="mpif_jll",
-                           uuid="9aeb927a-4695-514f-a259-621a69f20ec0",
-                           path="/home/eschnetter/.julia/dev/mpif_jll");
-               platforms=filter(p -> p["mpi"] == "mpiabi", platforms)),
 ]
 append!(dependencies, platform_dependencies)
 
