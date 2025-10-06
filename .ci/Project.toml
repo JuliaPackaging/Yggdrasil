@@ -13,7 +13,7 @@ ghr_jll = "07c12ed4-43bc-5495-8a2a-d5838ef8d533"
 squashfs_tools_jll = "eed32e3e-a7c5-5bf9-9121-5cf3ab653887"
 
 [compat]
-HistoricalStdlibVersions = "=2.0.2"
+HistoricalStdlibVersions = "2"
 ghr_jll = "0.14.0"
 
 [sources]
