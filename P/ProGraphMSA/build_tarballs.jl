@@ -24,10 +24,6 @@ TCLAP_DIR="${ROOT}/tclap-1.2.2"
 # Disable Eigen vectorization/asserts for portability
 COMMON_EIGEN_DEFS="-DEIGEN_DONT_VECTORIZE -DEIGEN_DISABLE_UNALIGNED_ARRAY_ASSERT"
 
-# # Prefer Ninja if available
-# GEN="Unix Makefiles"
-# command -v ninja >/dev/null 2>&1 && GEN="Ninja"
-
 ##########
 # 1) Install TCLAP (header-only)
 ##########
