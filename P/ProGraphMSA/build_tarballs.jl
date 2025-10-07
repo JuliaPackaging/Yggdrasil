@@ -69,7 +69,7 @@ if [[ "${target}" == *-apple-darwin* ]]; then
   )
 fi
 
-cmake -S . -B build -G "${GEN}" \
+cmake -S . -B build \
   -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
   -DCMAKE_INSTALL_PREFIX="${prefix}" \
   -DCMAKE_BUILD_TYPE=Release \
