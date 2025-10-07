@@ -107,6 +107,9 @@ platforms = expand_gfortran_versions(supported_platforms())
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
+# OpenBLAS is not built for powerpc64le-*-libgfortran[34]
+filter!(p -> !(arch(p) == "powerpc64le" &&  libgfortran_version(p) < v"5"), platforms)
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libscalapack32", :libscalapack32),
