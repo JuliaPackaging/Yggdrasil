@@ -143,6 +143,9 @@ fi"""
         # available earlier, but not for aarch64
         push!(components, "libnvjpeg")
     end
+    if version >= v"13"
+        push!(components, "cuda_crt")
+    end
     for platform in platforms
         should_build_platform(triplet(platform)) || continue
 
