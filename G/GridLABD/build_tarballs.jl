@@ -32,13 +32,13 @@ install_license ${WORKSPACE}/srcdir/gridlab-d/LICENSE
 # platforms are passed in on the command line
 # platforms = supported_platforms()
 platforms = [
-    # Platform("i686", "Linux"; libc="glibc"),
-    # Platform("x86_64", "Linux"; libc="glibc"),
-    # Platform("aarch64", "Linux"; libc="glibc"),
-    # Platform("armv6l", "Linux"; call_abi="eabihf", libc="glibc"),
-    # Platform("armv7l", "Linux"; call_abi="eabihf", libc="glibc"),
-    # Platform("powerpc64le", "Linux"; libc="glibc"),
-    # Platform("riscv64", "Linux"; libc="glibc"),
+    Platform("i686", "Linux"; libc="glibc"),
+    Platform("x86_64", "Linux"; libc="glibc"),
+    Platform("aarch64", "Linux"; libc="glibc"),
+    Platform("armv6l", "Linux"; call_abi="eabihf", libc="glibc"),
+    Platform("armv7l", "Linux"; call_abi="eabihf", libc="glibc"),
+    Platform("powerpc64le", "Linux"; libc="glibc"),
+    Platform("riscv64", "Linux"; libc="glibc"),
     Platform("i686", "Linux"; libc="musl"),
     Platform("x86_64", "Linux"; libc="musl"),
     Platform("aarch64", "Linux"; libc="musl"),
