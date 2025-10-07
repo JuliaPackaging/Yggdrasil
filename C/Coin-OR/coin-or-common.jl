@@ -87,9 +87,8 @@ ALPS_gitsha = "c90858e4ca11c7f81168cd14dc137742fa3510f0"
 BiCePS_version = offset_version(v"0.94.4", v"0.0.0")
 BiCePS_gitsha = "8e41545a3b1a36ca1d306b3af96f3804dc57e61f"
 
-CHiPPS_BLIS_version = offset_version(v"0.94.8", v"0.0.2")
-# This is not the exact 0.94.8 tag, but a few commits later on releases/0.94.8
-CHiPPS_BLIS_gitsha = "0ad6d4530d48e3b5f417a3407f5f2e8605145b50"
+CHiPPS_BLIS_version = offset_version(v"0.94.9", v"0.0.0")
+CHiPPS_BLIS_gitsha = "0b60a72f7b52b2bae813dedd0e08aab5579e0218"
 
 SYMPHONY_version = offset_version(v"5.7.3", v"0.0.0")
 SYMPHONY_gitsha = "03006fc6dcf77da9becc7e55e8a0879201905b96"
