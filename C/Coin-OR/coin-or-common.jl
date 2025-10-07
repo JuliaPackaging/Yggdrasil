@@ -84,11 +84,11 @@ Ipopt_version = offset_version(Ipopt_upstream_version, Ipopt_verson_offset)
 ALPS_version = offset_version(v"1.5.12", v"0.0.0")
 ALPS_gitsha = "c90858e4ca11c7f81168cd14dc137742fa3510f0"
 
-BiCePS_version = offset_version(v"0.94.4", v"0.0.0")
-BiCePS_gitsha = "8e41545a3b1a36ca1d306b3af96f3804dc57e61f"
+BiCePS_version = offset_version(v"0.94.9", v"0.0.0")
+BiCePS_gitsha = "0b60a72f7b52b2bae813dedd0e08aab5579e0218"
 
-CHiPPS_BLIS_version = offset_version(v"0.94.9", v"0.0.0")
-CHiPPS_BLIS_gitsha = "0b60a72f7b52b2bae813dedd0e08aab5579e0218"
+CHiPPS_BLIS_version = offset_version(v"0.94.13", v"0.0.0")
+CHiPPS_BLIS_gitsha = "0262763cdd8f77f1ea6ec506c4b5ccae19b4451c"
 
 SYMPHONY_version = offset_version(v"5.7.3", v"0.0.0")
 SYMPHONY_gitsha = "03006fc6dcf77da9becc7e55e8a0879201905b96"
