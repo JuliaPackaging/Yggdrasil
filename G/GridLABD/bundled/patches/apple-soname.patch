@@ -1,0 +1,28 @@
+--- CMakeLists.txt	2025-10-07 18:13:40
++++ CMakeLists.txt	2025-10-07 18:15:42
+@@ -109,6 +109,13 @@
+ 
+ # Compiler/Linker flags for all build types
+ add_compile_options(${FORCE_ERROR} ${DISABLED_OPTIMIZATIONS})
++
++# Detect MacOSX
++if (APPLE OR "${CMAKE_SYSTEM_NAME}" MATCHES "Darwin")
++    set(MACOSX TRUE)
++else ()
++    set(MACOSX FALSE)
++endif ()
+ 
+ ## Set up platform specific library linking and platform identification
+ if (WIN32 OR MSYS OR MINGW OR CYGWIN)
+@@ -127,9 +134,10 @@
+     add_compile_options(-static-libgcc -static-libstdc++ -static)
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libgcc -static-libstdc++ -static")
+     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++ -static")
+-elseif (APPLE)
++elseif (MACOSX)
+     set(OS_SPECIFIC_LIBRARIES ${CMAKE_DL_LIBS})
+     set(FOUND_MACOS yes CACHE INTERNAL "Tell script generator we're MacOS")
++    string(REPLACE "-soname" "-install_name" CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
+ else ()
+     set(OS_SPECIFIC_LIBRARIES ${CMAKE_DL_LIBS})
+ endif ()
