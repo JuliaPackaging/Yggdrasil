@@ -93,8 +93,8 @@ CHiPPS_BLIS_gitsha = "0262763cdd8f77f1ea6ec506c4b5ccae19b4451c"
 SYMPHONY_version = offset_version(v"5.7.3", v"0.0.0")
 SYMPHONY_gitsha = "03006fc6dcf77da9becc7e55e8a0879201905b96"
 
-MibS_version = offset_version(v"1.1.3", v"0.0.1")
-MibS_gitsha = "4b7ec93c4bd1d6a978deff9987cf1df74f6598d3"
+MibS_version = offset_version(v"1.2.2", v"0.0.0")
+MibS_gitsha = "956d5dbfa0482c5d10b7ee40fea58cbae484dd46"
 
 SHOT_gitsha = "11fda1ecb84af9718f1e0c0ebf7ae5ae8c45041a"
 SHOT_version = offset_version(v"1.1.0", v"0.0.0")
