@@ -30,7 +30,7 @@ filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 platforms = filter!(p -> arch(p) != "riscv64", platforms)
 
 # Exclude i686-linux-musl.
-platforms =filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
+platforms = filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
 
 # skip CXX03 string ABI to reduce number of platforms
 platforms = filter!(p -> cxxstring_abi(p) != "cxx03", platforms)
@@ -40,7 +40,10 @@ script = raw"""
 cd Enzyme
 install_license LICENSE
 
-if [[ "${bb_full_target}" == x86_64-apple-darwin*llvm_version+15* ]] || [[ "${bb_full_target}" == x86_64-apple-darwin*llvm_version+16* ]]; then
+LLVM_MAJ_VER=${bb_full_target#*llvm_version+}
+echo "Detected LLVM_MAJ_VER=${LLVM_MAJ_VER}"
+
+if [[ "${bb_full_target}" == x86_64-apple-darwin* && "${LLVM_MAJ_VER}" -ge "15" ]] ; then
     # LLVM 15 requires macOS SDK 10.14.
     rm -rf /opt/${target}/${target}/sys-root/System
     tar --extract --file=${WORKSPACE}/srcdir/MacOSX10.14.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX10.14.sdk/System MacOSX10.14.sdk/usr
@@ -79,7 +82,7 @@ CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=RelWithDebInfo)
 # Install things into $prefix
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
 # Explicitly use our cmake toolchain file and tell CMake we're cross-compiling
-if [[ "${target}" == *mingw* && "${bb_full_target}" == *llvm_version+16* ]]; then
+if [[ "${target}" == *mingw* && "${LLVM_MAJ_VER}" -ge "16" ]]; then
     CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake)
 else
     CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
