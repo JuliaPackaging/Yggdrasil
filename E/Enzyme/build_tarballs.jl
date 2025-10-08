@@ -40,9 +40,6 @@ script = raw"""
 cd Enzyme
 install_license LICENSE
 
-LLVM_MAJ_VER=${bb_full_target#*llvm_version+}
-echo "Detected LLVM_MAJ_VER=${LLVM_MAJ_VER}"
-
 if [[ "${bb_full_target}" == x86_64-apple-darwin* && "${LLVM_MAJ_VER}" -ge "15" ]] ; then
     # LLVM 15 requires macOS SDK 10.14.
     rm -rf /opt/${target}/${target}/sys-root/System
@@ -143,6 +140,10 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
         LibraryProduct(["libEnzymeBCLoad-$(llvm_version.major)", "libEnzymeBCLoad"], :libEnzymeBCLoad, dont_dlopen=true),
     ]
 
+    prefix = """
+    LLVM_MAJ_VER=$(llvm_version.major)
+    """
+
     for platform in platforms
         augmented_platform = deepcopy(platform)
         augmented_platform[LLVM.platform_name] = LLVM.platform(llvm_version, llvm_assertions)
@@ -152,6 +153,7 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
             dependencies, products,
             platforms=[augmented_platform],
             gcc_version,
+            script=prefix*script,
         ))
     end
 end
@@ -165,7 +167,7 @@ non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
 
 for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
-                   name, version, sources, script,
+                   name, version, sources, build.script,
                    build.platforms, build.products, build.dependencies;
                    preferred_gcc_version=build.gcc_version, julia_compat="1.10",
                    augment_platform_block, lazy_artifacts=true) # drop when julia_compat >= 1.7
