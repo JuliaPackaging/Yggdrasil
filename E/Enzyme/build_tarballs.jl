@@ -29,6 +29,12 @@ filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 # Disable riscv for now
 platforms = filter!(p -> arch(p) != "riscv64", platforms)
 
+# Exclude i686-linux-musl.
+platforms =filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
+
+# skip CXX03 string ABI to reduce number of platforms
+platforms = filter!(p -> cxxstring_abi(p) != "cxx03", platforms)
+
 # Bash recipe for building across all platforms
 script = raw"""
 cd Enzyme
@@ -133,11 +139,6 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
         LibraryProduct(["libEnzyme-$(llvm_version.major)", "libEnzyme"], :libEnzyme, dont_dlopen=true),
         LibraryProduct(["libEnzymeBCLoad-$(llvm_version.major)", "libEnzymeBCLoad"], :libEnzymeBCLoad, dont_dlopen=true),
     ]
-
-    if llvm_version >= v"15"
-        # We don't build LLVM 15 for i686-linux-musl.
-        filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
-    end
 
     for platform in platforms
         augmented_platform = deepcopy(platform)
