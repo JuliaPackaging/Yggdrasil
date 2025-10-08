@@ -166,7 +166,7 @@ dependencies = [
     Dependency("OpenSSL_jll"; compat="3.0.8"),
     Dependency("Vulkan_Loader_jll"),
     BuildDependency(PackageSpec(name="LLVM_full_jll", version=qt_llvm_version)),
-    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
+    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=qt_llvm_version);
                     platforms=filter(p -> Sys.isapple(p), platforms_macos)),
     BuildDependency("Xorg_libX11_jll"),
     BuildDependency("Xorg_kbproto_jll"),
