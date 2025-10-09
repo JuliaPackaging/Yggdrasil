@@ -63,9 +63,9 @@ if [[ "${target}" == *mingw* ]]; then
     NATIVE_CMAKE_FLAGS+=(-DCMAKE_C_FLAGS=-pthread)
 fi
 # Force the specific libzstd and libz to use.
-NATIVE_CMAKE_FLAGS+=(-DZLIB_LIBRARY_RELEASE="${WORKSPACE}/x86_64-linux-musl-cxx11/destdir/lib/libz.so")
+NATIVE_CMAKE_FLAGS+=(-DZLIB_LIBRARY_RELEASE="${host_libdir}/libz.so")
 if [[ "${LLVM_MAJ_VER}" -ge "20" ]]; then
-    NATIVE_CMAKE_FLAGS+=(-Dzstd_LIBRARY="${WORKSPACE}/x86_64-linux-musl-cxx11/destdir/lib/libzstd.so")
+    NATIVE_CMAKE_FLAGS+=(-Dzstd_LIBRARY="${host_libdir}/libzstd.so")
 fi
 
 cmake -B build-native -S enzyme -GNinja "${NATIVE_CMAKE_FLAGS[@]}"
