@@ -73,6 +73,18 @@ cmake -B build-native -S enzyme -GNinja "${NATIVE_CMAKE_FLAGS[@]}"
 # Only build blasheaders and tblgen
 ninja -C build-native -j ${nproc} blasheaders enzyme-tblgen
 
+# On aarch64-apple we build the host tools with GCC 12 and we need to set the library path
+# to include the host compilers libstc++ instead of the CSL default.
+if [[ "${target}" == aarch64-apple* ]]; then
+    mv build-native/tools/enzyme-tblgen/enzyme-tblgen build-native/tools/enzyme-tblgen/enzyme-tblgen_actual
+    cat > build-native/tools/enzyme-tblgen/enzyme-tblgen << EOF
+#!/bin/bash
+export LD_LIBRARY_PATH=/opt/x86_64-linux-musl/x86_64-linux-musl/lib64:\$LD_LIBRARY_PATH
+`pwd`/build-native/tools/enzyme-tblgen/enzyme-tblgen_actual "\$@"
+EOF
+    chmod +x build-native/tools/enzyme-tblgen/enzyme-tblgen
+fi
+
 # Check that we can execute enzyme-tblgen
 build-native/tools/enzyme-tblgen/enzyme-tblgen --version
 
