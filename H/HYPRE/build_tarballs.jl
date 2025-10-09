@@ -6,18 +6,17 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "HYPRE"
-version = v"2.23.1"
-hypre_version = v"2.23.0"
+version = v"3.0.0"
+hypre_version = v"3.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/hypre-space/hypre/archive/refs/tags/v$(hypre_version).tar.gz",
-                  "8a9f9fb6f65531b77e4c319bf35bfc9d34bf529c36afe08837f56b635ac052e2")
+    GitSource("https://github.com/hypre-space/hypre.git", "da9f93f8d698f4caaaff35fe81655b8ad7bb91f9") # Tag v3.0.0
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/hypre-*
+cd $WORKSPACE/srcdir/hypre
 cd src
 
 mkdir build
@@ -48,6 +47,7 @@ cmake .. \
 -DHYPRE_ENABLE_CUDA_STREAMS=OFF \
 -DHYPRE_ENABLE_CUSPARSE=OFF \
 -DHYPRE_ENABLE_CURAND=OFF \
+-DHYPRE_ENABLE_OPENMP=ON \
 "${CMAKE_FLAGS[@]}"
 
 make -j${nproc}
