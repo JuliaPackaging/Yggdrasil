@@ -8,7 +8,7 @@ version = v"6.8.2"
 # Set this to true first when updating the version. It will build only for the host (linux musl).
 # After that JLL is in the registry, set this to false to build for the other platforms, using
 # this same package as host build dependency.
-const host_build = true
+const host_build = false
 
 # Collection of sources required to build qt6
 sources = [
