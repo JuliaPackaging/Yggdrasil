@@ -1,0 +1,26 @@
+--- fallthrough.h	2025-05-06 08:40:51.000000000 +0200
++++ fallthrough.h	2025-10-09 12:34:42.090506618 +0200
+@@ -5,17 +5,18 @@
+  * SPDX-License-Identifier: BSD-2-Clause
+  */
+ 
++#ifndef __has_attribute
++#define __has_attribute(x) 0
++#endif
++
+ #ifndef _FALLTHROUGH_H
+ #define _FALLTHROUGH_H
+-
+ #if defined(__GNUC__)
+ #if __has_attribute(fallthrough)
+-#define FALLTHROUGH	__attribute__((fallthrough));
++#define FALLTHROUGH __attribute__((fallthrough));
+ #endif
+ #endif /* __GNUC__ */
+-
+ #ifndef FALLTHROUGH
+-#define FALLTHROUGH	/* FALLTHROUGH */
++#define FALLTHROUGH /* FALLTHROUGH */
+ #endif
+-
+ #endif /* !_FALLTHROUGH_H */
