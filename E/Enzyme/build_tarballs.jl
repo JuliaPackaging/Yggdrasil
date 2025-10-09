@@ -92,7 +92,7 @@ CMAKE_FLAGS+=(-DLLVM_LINK_LLVM_DYLIB=ON)
 # Build the library
 CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
 
-if [[ "${bb_full_target}" == x86_64-apple-darwin*" && "${LLVM_MAJ_VER}" -ge "15" ]]; then
+if [[ "${bb_full_target}" == "x86_64-apple-darwin*" && "${LLVM_MAJ_VER}" -ge "15" ]]; then
 if [[ "${target}" == x86_64-apple* ]]; then
   CMAKE_FLAGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.14)
 fi
