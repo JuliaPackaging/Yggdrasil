@@ -35,7 +35,12 @@ if gfortran -c -fcray-pointer empty.f >/dev/null 2>&1; then
 fi
 rm -f empty.*
 
-OPENBLAS=(-lopenblas)
+if [[ "${target}" == *mingw* ]]; then
+  LBT=(-lblastrampoline-5)
+else
+  LBT=(-lblastrampoline)
+fi
+
 if [[ ${nbits} == 64 ]]; then
     CPPFLAGS+=(-DInt=long)
     FFLAGS+=(-fdefault-integer-8)
@@ -45,7 +50,6 @@ if [[ ${nbits} == 64 ]]; then
         CPPFLAGS+=("-D${sym}_=${sym}_64_")   # due to some evil #defines in SCALAPACK
         CPPFLAGS+=("-D${sym^^}=${sym}_64")
     done
-    OPENBLAS=(-lopenblas64_)
 fi
 
 # We need to specify the MPI libraries explicitly because the
@@ -69,8 +73,8 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
              -DCMAKE_Fortran_FLAGS="${CPPFLAGS[*]} ${FFLAGS[*]}"
              -DCMAKE_C_FLAGS="${CPPFLAGS[*]} ${CFLAGS[*]}"
              -DCMAKE_BUILD_TYPE=Release
-             -DBLAS_LIBRARIES="${OPENBLAS[*]} ${MPILIBS[*]}"
-             -DLAPACK_LIBRARIES="${OPENBLAS[*]}"
+             -DBLAS_LIBRARIES="${LBT[*]} ${MPILIBS[*]}"
+             -DLAPACK_LIBRARIES="${LBT[*]}"
              -DSCALAPACK_BUILD_TESTS=OFF
              -DBUILD_SHARED_LIBS=ON
              ${MPI_SETTINGS[*]}
@@ -93,9 +97,6 @@ augment_platform_block = """
 platforms = expand_gfortran_versions(supported_platforms())
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
-
-# OpenBLAS is not built for powerpc64le-*-libgfortran[34]
-filter!(p -> !(arch(p) == "powerpc64le" &&  libgfortran_version(p) < v"5"), platforms)
 
 # Internal compiler error for v2.2.2 for:
 filter!(p -> !(arch(p) == "aarch64" && Sys.islinux(p) && libgfortran_version(p) == v"4" && p["mpi"] == "mpich"), platforms)
