@@ -11,7 +11,7 @@ version = v"0.1.0"
 
 # Collection of sources required to build ClangExtract
 sources = [
-    GitSource("https://github.com/SUSE/clang-extract.git", "ac81bbb8f95e6409da2eeee8ef41cc9d7d970241"),
+    GitSource("https://github.com/SUSE/clang-extract.git", "5da361949c64396943b2911ed1867a0e2734d1e4"),
     DirectorySource("./bundled"),
 ]
 
@@ -94,10 +94,10 @@ filter!(p -> !(Sys.islinux(p) && libc(p) == "musl" && arch(p) == "i686"), platfo
 filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 filter!(p -> arch(p) != "riscv64", platforms)
 
-# Expand for C++ string ABIs - use cxx11 for newer C++ standard
-platforms = expand_cxxstring_abis(platforms)
+# We don't have ElfUtils for this
+filter!(p -> !Sys.iswindows(p), platforms)
 
-# Filter to only cxx11 platforms which have newer C++ support
+platforms = expand_cxxstring_abis(platforms)
 filter!(p -> cxxstring_abi(p) == "cxx11", platforms)
 
 # The products that we will ensure are always built
