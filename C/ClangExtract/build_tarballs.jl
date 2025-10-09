@@ -20,9 +20,9 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/clang-extract
 
 # Apply patches from bundled/patches/
-for patch in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 "${patch}"
-done
+#for patch in ${WORKSPACE}/srcdir/patches/*.patch; do
+#    atomic_patch -p1 "${patch}"
+#done
 
 # Fix destructor syntax issues
 # 1. Remove (void) from destructor declaration and definition
