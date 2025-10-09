@@ -119,7 +119,7 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
         BuildDependency(PackageSpec(name=llvm_name, version=llvm_version))
     ]
     if !host_build
-        push!(dependencies, HostBuildDependency("Qt6LinguistTools_jll"))
+        push!(dependencies, HostBuildDependency("Qt6Tools_jll"))
     end
 
     for platform in platforms
