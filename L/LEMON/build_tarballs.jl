@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "LEMON"
-version = v"1.3.1"
+version = v"1.3.1-1"
 min_jl_version = v"1.9"
 
 # Collection of sources required to complete build
@@ -58,7 +58,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("libcxxwrap_julia_jll"; compat = "~0.14.3"),
+    Dependency("libcxxwrap_julia_jll"; compat = "~0.14.4"),
     BuildDependency("libjulia_jll")
 ]
 
