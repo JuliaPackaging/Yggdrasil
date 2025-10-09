@@ -95,6 +95,8 @@ augment_platform_block = """
 """
 
 platforms = expand_gfortran_versions(supported_platforms())
+# Don't know how to configure MPI for Windows
+platforms = filter(p -> !Sys.iswindows(p), platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
