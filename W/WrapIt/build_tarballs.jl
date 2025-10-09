@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 name = "WrapIt"
-version = v"1.5.0"
+version = v"1.7.0"
 
 #Clang_jll version used for the build. Required clang libraries will be shipped with the package.
 clang_vers=v"19.1.7+0"
