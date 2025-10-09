@@ -91,8 +91,6 @@ augment_platform_block = """
 """
 
 platforms = expand_gfortran_versions(supported_platforms())
-# Don't know how to configure MPI for Windows
-platforms = filter(p -> !Sys.iswindows(p), platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
@@ -109,8 +107,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("CompilerSupportLibraries_jll"),
-    Dependency("OpenBLAS_jll"),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
 ]
 append!(dependencies, platform_dependencies)
 
