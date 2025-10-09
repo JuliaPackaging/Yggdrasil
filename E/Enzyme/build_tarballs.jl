@@ -62,11 +62,20 @@ if [[ "${target}" == *mingw* ]]; then
     NATIVE_CMAKE_FLAGS+=(-DCMAKE_CPP_FLAGS=-pthread)
     NATIVE_CMAKE_FLAGS+=(-DCMAKE_C_FLAGS=-pthread)
 fi
+# Force the specific libzstd and libz to use.
+if [[ "${LLVM_MAJ_VER}" -ge "20" ]]; then
+    NATIVE_CMAKE_FLAGS+=(-Dzstd_LIBRARY="${WORKSPACE}/x86_64-linux-musl-cxx11/destdir/lib/libzstd.so")
+    NATIVE_CMAKE_FLAGS+=(-DZLIB_LIBRARY_RELEASE="${WORKSPACE}/x86_64-linux-musl-cxx11/destdir/lib/libz.so")
+fi
 
 cmake -B build-native -S enzyme -GNinja "${NATIVE_CMAKE_FLAGS[@]}"
 
 # Only build blasheaders and tblgen
 ninja -C build-native -j ${nproc} blasheaders enzyme-tblgen
+
+# Check that we can execute enzyme-tblgen
+build-native/tools/enzyme-tblgen/enzyme-tblgen --version
+
 # 2. Cross-compile
 CMAKE_FLAGS=()
 CMAKE_FLAGS+=(-DENZYME_EXTERNAL_SHARED_LIB=ON)
@@ -133,6 +142,11 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
         HostBuildDependency(PackageSpec(name=llvm_name, version=llvm_version)),
         BuildDependency(PackageSpec(name=llvm_name, version=llvm_version))
     ]
+
+    # enzyme-tblgen
+    if llvm_version >= v"20"
+        push!(dependencies, HostBuildDependency("Zstd_jll")) # for debuginfo
+    end
 
     # The products that we will ensure are always built
     products = Product[
