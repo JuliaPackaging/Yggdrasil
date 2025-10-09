@@ -54,12 +54,12 @@ case "$bb_full_target" in
         sed -i 's/#exit 1/exit 1/' $HOSTCXX
     ;;
 
-    *mingw*)        
+    *mingw*)
         cd $WORKSPACE/srcdir/mingw*/mingw-w64-headers
         ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target
         make install
-        
-        
+
+
         cd ../mingw-w64-crt/
         if [ ${target} == "i686-w64-mingw32" ]; then
             _crt_configure_args="--disable-lib64 --enable-lib32"
@@ -69,7 +69,7 @@ case "$bb_full_target" in
         ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target --enable-wildcard ${_crt_configure_args}
         make -j${nproc}
         make install
-        
+
         cd ../mingw-w64-libraries/winpthreads
         ./configure --prefix=/opt/$target/$target/sys-root --host=$target --enable-static --enable-shared
         make -j${nproc}
@@ -89,12 +89,14 @@ case "$bb_full_target" in
         export OBJCFLAGS="-D__ENVIRONMENT_OS_VERSION_MIN_REQUIRED__=120000"
         export OBJCXXFLAGS=$OBJCFLAGS
         export CXXFLAGS=$OBJCFLAGS
+        # Override SDK root of BB tooling, which Qt queries
+        export SDKROOT=$apple_sdk_root
         sed -i 's/exit 1/#exit 1/' /opt/bin/$bb_full_target/$target-clang++
         ../qtbase-everywhere-src-*/configure -prefix $prefix $commonoptions -- $commoncmakeoptions \
             -DQT_INTERNAL_APPLE_SDK_VERSION=14 -DQT_INTERNAL_XCODE_VERSION=15 -DCMAKE_SYSROOT=$apple_sdk_root \
             -DCMAKE_FRAMEWORK_PATH=$apple_sdk_root/System/Library/Frameworks $deployarg \
             -DCUPS_INCLUDE_DIR=$apple_sdk_root/usr/include -DCUPS_LIBRARIES=$apple_sdk_root/usr/lib/libcups.tbd \
-            -DQT_FEATURE_vulkan=OFF 
+            -DQT_FEATURE_vulkan=OFF
         sed -i 's/#exit 1/exit 1/' /opt/bin/$bb_full_target/$target-clang++
     ;;
 
@@ -165,8 +167,8 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("OpenSSL_jll"; compat="3.0.8"),
     Dependency("Vulkan_Loader_jll"),
-    BuildDependency(PackageSpec(name="LLVM_full_jll", version=llvm_version)),
-    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
+    BuildDependency(PackageSpec(name="LLVM_full_jll", version=qt_llvm_version)),
+    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=qt_llvm_version);
                     platforms=filter(p -> Sys.isapple(p), platforms_macos)),
     BuildDependency("Xorg_libX11_jll"),
     BuildDependency("Xorg_kbproto_jll"),
