@@ -40,7 +40,7 @@ script = raw"""
 cd Enzyme
 install_license LICENSE
 
-if [[ "${bb_full_target}" == "x86_64-apple-darwin*" && "${LLVM_MAJ_VER}" -ge "15" ]] ; then
+if [[ "${bb_full_target}" == x86_64-apple-darwin* && "${LLVM_MAJ_VER}" -ge "15" ]] ; then
     # LLVM 15 requires macOS SDK 10.14.
     rm -rf /opt/${target}/${target}/sys-root/System
     tar --extract --file=${WORKSPACE}/srcdir/MacOSX10.14.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX10.14.sdk/System MacOSX10.14.sdk/usr
