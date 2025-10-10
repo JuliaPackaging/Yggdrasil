@@ -1,0 +1,11 @@
+--- a/makefile.in
++++ b/makefile.in
+@@ -4,7 +4,7 @@
+ libcadiback.a: cadiback.o ../cadical/build/libcadical.a makefile
+ 	$(LINK) rcs $@ cadiback.o
+ libcadiback.so: cadiback.o ../cadical/build/libcadical.so makefile
+-	$(COMPILE) -shared -o $@ -L../cadical/build/ -lcadical cadiback.o
++	$(COMPILE) -shared -o $@ cadiback.o -L../cadical/build/ -lcadical
+ cadiback.o: cadiback.cpp config.hpp ../cadical/src/cadical.hpp makefile
+ 	$(COMPILE) -c $< -I../cadical/src
+ config.hpp: generate VERSION makefile
