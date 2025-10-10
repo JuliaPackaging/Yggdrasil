@@ -24,7 +24,8 @@ make -j${nproc}
 make install
 
 # Remove heavy doc directories
-rm -r ${prefix}/share/{doc/libxml2,man}
+rm -rf ${prefix}/share/doc/libxml2
+rm -rf ${prefix}/share/man
 """
 
 # These are the platforms we will build for by default, unless further
