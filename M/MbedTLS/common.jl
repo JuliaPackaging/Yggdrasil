@@ -58,7 +58,7 @@ shopt -s nullglob
 cd $WORKSPACE/srcdir/mbedtls
 
 # llvm-ranlib gets confused, use the binutils one
-if [[ "${target}" == *apple* ]]; then
+if [[ "${target}" == *apple* && -f "${WORKSPACE}/srcdir/patches/conditional/0001-Remove-flags-not-supported-by-ranlib.patch"]]; then
     ln -sf /opt/${target}/bin/${target}-ranlib /opt/bin/ranlib
     ln -sf /opt/${target}/bin/${target}-ranlib /opt/bin/${target}-ranlib
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/conditional/0001-Remove-flags-not-supported-by-ranlib.patch"
