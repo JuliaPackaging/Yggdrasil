@@ -15,7 +15,7 @@ version = v"7.0.0"
 sources = [
     DirectorySource("./bundled"),
     GitSource("https://github.com/juliagpu/pocl",
-              "ebd70398005f9e2fd93b0627ad467e006f5ddacd")
+              "514d74b00aab14ec811f6f16be877421748582ca")
 ]
 
 #=
@@ -95,7 +95,7 @@ for platform in platforms
     preferred_gcc_version = if Sys.iswindows(platform)
         v"13"
     else
-        v"10"
+        v"12"
     end
 
     push!(builds, (; platform,
@@ -118,7 +118,7 @@ for (i,build) in enumerate(builds)
                    name, version, build.sources, build_script(),
                    [build.platform], products, build.dependencies;
                    build.preferred_gcc_version, preferred_llvm_version=v"20",
-                   julia_compat="1.6", init_block=init_block())
+                   julia_compat="1.6", init_block=init_block(), dont_dlopen=true)
 end
 
 # bump
