@@ -51,13 +51,13 @@ products = [
 dependencies = [
   Dependency("libusb_jll"),
   Dependency("OpenSSL_jll"),
-  #Dependency("libcbor_jll"),
-  Dependency(
-    PackageSpec(; 
-      name="libcbor_jll",
-      uuid="5d4dba4b-0609-5411-86b8-155d70b59700",
-      path="/home/andre/.julia/dev/libcbor_jll"
-    )
+  Dependency("libcbor_jll"),
+  #Dependency(
+  #  PackageSpec(; 
+  #    name="libcbor_jll",
+  #    uuid="5d4dba4b-0609-5411-86b8-155d70b59700",
+  #    path="/home/andre/.julia/dev/libcbor_jll"
+  #  )
   ),
   Dependency("Zlib_jll"),
   Dependency("eudev_jll"),
