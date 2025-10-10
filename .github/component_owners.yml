@@ -167,6 +167,18 @@ components:
     - michel2323
   O/OpenBLAS/:
     - imciner2
+  O/OpenFHE/:
+    - sloede
+    - MaxGruebmeyer
+  O/OpenFHE_int128/:
+    - sloede
+    - MaxGruebmeyer
+  O/openfhe_julia/:
+    - sloede
+    - MaxGruebmeyer
+  O/openfhe_julia_int128/:
+    - sloede
+    - MaxGruebmeyer
   O/OpenMPI/:
     - eschnett
   O/openPMD_api/:

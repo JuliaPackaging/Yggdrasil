@@ -3,12 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "LEMON"
-version = v"1.3.1"
+version = v"1.3.2"
+upstreamversion = v"1.3.1"
 min_jl_version = v"1.9"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://lemon.cs.elte.hu/pub/sources/lemon-$(version).tar.gz", "71b7c725f4c0b4a8ccb92eb87b208701586cf7a96156ebd821ca3ed855bad3c8")
+    ArchiveSource("https://web.archive.org/web/20240805201231if_/http://lemon.cs.elte.hu/pub/sources/lemon-$(upstreamversion).tar.gz", "71b7c725f4c0b4a8ccb92eb87b208701586cf7a96156ebd821ca3ed855bad3c8")
     DirectorySource("./bundled") # for the Julia wrapper
 ]
 
@@ -58,7 +59,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("libcxxwrap_julia_jll"; compat = "~0.14.3"),
+    Dependency("libcxxwrap_julia_jll"; compat = "~0.14.4"),
     BuildDependency("libjulia_jll")
 ]
 
