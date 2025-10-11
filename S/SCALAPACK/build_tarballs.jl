@@ -15,8 +15,6 @@ script = raw"""
 mkdir -p ${libdir}
 cd $WORKSPACE/srcdir/scalapack
 
-#TODO For BLAS and LAPACK, it would be great to start linking to -lblastrampoline.
-
 CPPFLAGS=()
 CFLAGS=(-Wno-error=implicit-function-declaration)
 FFLAGS=(-cpp -ffixed-line-length-none)
