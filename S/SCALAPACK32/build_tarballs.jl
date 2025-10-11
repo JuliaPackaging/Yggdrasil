@@ -22,7 +22,7 @@ cp ${WORKSPACE}/srcdir/files/SLmake.inc SLmake.inc
 
 if [[ "${target}" == *mingw* ]]; then
     make lib
-    $FC -shared $(flagon -Wl,--whole-archive) libscalapack32.a $(flagon -Wl,--no-whole-archive) -lopenblas -L$libdir -lmsmpi -o ${libdir}/libscalapack32.${dlext}
+    $FC -shared $(flagon -Wl,--whole-archive) libscalapack32.a $(flagon -Wl,--no-whole-archive) -lblastrampoline-5 -L$libdir -lmsmpi -o ${libdir}/libscalapack32.${dlext}
 else
     CPPFLAGS=()
     CFLAGS=(-Wno-error=implicit-function-declaration)
@@ -42,8 +42,7 @@ else
     fi
     rm -f empty.*
 
-    OPENBLAS=(-lopenblas)
-
+    LBT=(-lblastrampoline)
     MPILIBS=()
     if [[ ${bb_full_target} == *mpich* ]]; then
         MPILIBS=(-lmpifort -lmpi)
@@ -59,8 +58,8 @@ else
                  -DCMAKE_Fortran_FLAGS="${CPPFLAGS[*]} ${FFLAGS[*]}"
                  -DCMAKE_C_FLAGS="${CPPFLAGS[*]} ${CFLAGS[*]}"
                  -DCMAKE_BUILD_TYPE=Release
-                 -DBLAS_LIBRARIES="${OPENBLAS[*]} ${MPILIBS[*]}"
-                 -DLAPACK_LIBRARIES="${OPENBLAS[*]}"
+                 -DBLAS_LIBRARIES="${LBT[*]} ${MPILIBS[*]}"
+                 -DLAPACK_LIBRARIES="${LBT[*]}"
                  -DSCALAPACK_BUILD_TESTS=OFF
                  -DBUILD_SHARED_LIBS=ON
                  -DMPI_BASE_DIR="${prefix}"
@@ -107,9 +106,6 @@ platforms = expand_gfortran_versions(supported_platforms())
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
-# OpenBLAS is not built for powerpc64le-*-libgfortran[34]
-filter!(p -> !(arch(p) == "powerpc64le" &&  libgfortran_version(p) < v"5"), platforms)
-
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libscalapack32", :libscalapack32),
@@ -118,11 +114,11 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
+    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
 ]
 append!(dependencies, platform_dependencies)
 
 # Build the tarballs.
 # We need at least GCC 5 for MPICH
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"5")
+               augment_platform_block, julia_compat="1.9", preferred_gcc_version=v"5")
