@@ -44,6 +44,10 @@ sources_by_version = Dict(
                   "3a91dad9dceb484eea8b41f8941facafc4520021"),
         DirectorySource("./bundled"; follow_symlinks=true),
     ],
+    v"2.28.10" => [
+        GitSource("https://github.com/Mbed-TLS/mbedtls.git",
+                  "2fc8413bfcb51354c8e679141b17b3f1a5942561"),
+    ],
 )
 sources = sources_by_version[version]
 
@@ -53,7 +57,7 @@ shopt -s nullglob
 cd $WORKSPACE/srcdir/mbedtls
 
 # llvm-ranlib gets confused, use the binutils one
-if [[ "${target}" == *apple* ]]; then
+if [[ "${target}" == *apple* && -f "${WORKSPACE}/srcdir/patches/conditional/0001-Remove-flags-not-supported-by-ranlib.patch" ]]; then
     ln -sf /opt/${target}/bin/${target}-ranlib /opt/bin/ranlib
     ln -sf /opt/${target}/bin/${target}-ranlib /opt/bin/${target}-ranlib
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/conditional/0001-Remove-flags-not-supported-by-ranlib.patch"
