@@ -107,6 +107,7 @@ platforms = [
     Platform("x86_64", "linux";  libc="glibc"),
     Platform("aarch64", "macos"),
 ]
+platforms = expand_cxxstring_abis(platforms)
 # TODO: support additional platforms
 # - musl: sys/random.h: No such file or directory
 # - riscv64: no Rust toolchain
