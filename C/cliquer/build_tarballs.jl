@@ -13,8 +13,8 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdircliquer-1.21/
-cc -Wall -O3 -fomit-frame-pointer -funroll-loops -shared -fPIC -o "libcliquer.${dlext}" cliquer.c graph.c reorder.c  $WORKSPACE/srcdir/wrappers_for_julia.c
+cd $WORKSPACE/srcdir/cliquer-1.21/
+cc -Wall -O3 -fomit-frame-pointer -funroll-loops -shared -fPIC -I. -o "libcliquer.${dlext}" cliquer.c graph.c reorder.c  $WORKSPACE/srcdir/wrappers_for_julia.c
 install -Dvm 755 "libcliquer.${dlext}" -t "${libdir}"
 install_license LICENSE
 """
