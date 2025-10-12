@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 const version = v"7.5.0"
-[
+
 # Collection of sources required to build Sundials
 function get_sources()
     return [
