@@ -13,14 +13,10 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd cliquer-1.21/
-cp $WORKSPACE/srcdir/wrappers_for_julia.c .
-$CC -Wall -O3 -fomit-frame-pointer -funroll-loops -shared -fPIC -o libcliquer.so cliquer.c graph.c reorder.c wrappers_for_julia.c
-mkdir $prefix/lib
-cp libcliquer.so $prefix/lib/
-mkdir -p $prefix/share/licenses/cliquer
-cp LICENSE $prefix/share/licenses/cliquer/
+cd $WORKSPACE/srcdircliquer-1.21/
+cc -Wall -O3 -fomit-frame-pointer -funroll-loops -shared -fPIC -o "libcliquer.${dlext}" cliquer.c graph.c reorder.c  $WORKSPACE/srcdir/wrappers_for_julia.c
+install -Dvm 755 "libcliquer.${dlext}" -t "${libdir}"
+install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
