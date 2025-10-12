@@ -15,12 +15,13 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/gridlab-d/
 
-atomic_patch ../patches/apple-soname.patch
-
 git submodule update --init
 
-mkdir cmake-build
-cd cmake-build/
+atomic_patch     ../patches/apple-soname.patch
+atomic_patch -p0 ../patches/gldcore-platform-unistd.patch
+atomic_patch -p0 ../patches/gldcore-exec-wait.patch
+
+mkdir cmake-build && cd cmake-build
 
 if [[ ${target} == *apple* ]]; then
     cmake -S ${WORKSPACE}/srcdir/gridlab-d -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_NAME=Darwin
@@ -35,27 +36,27 @@ install_license ${WORKSPACE}/srcdir/gridlab-d/LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-# platforms = supported_platforms()
-platforms = [
-    Platform("i686", "Linux"; libc="glibc"),
-    Platform("x86_64", "Linux"; libc="glibc"),
-    Platform("aarch64", "Linux"; libc="glibc"),
-    Platform("armv6l", "Linux"; call_abi="eabihf", libc="glibc"),
-    Platform("armv7l", "Linux"; call_abi="eabihf", libc="glibc"),
-    Platform("powerpc64le", "Linux"; libc="glibc"),
-    Platform("riscv64", "Linux"; libc="glibc"),
-    Platform("i686", "Linux"; libc="musl"),
-    Platform("x86_64", "Linux"; libc="musl"),
-    Platform("aarch64", "Linux"; libc="musl"),
-    Platform("armv6l", "Linux"; call_abi="eabihf", libc="musl"),
-    Platform("armv7l", "Linux"; call_abi="eabihf", libc="musl"),
-    Platform("x86_64", "macOS"),
-    Platform("aarch64", "macOS"),
-    Platform("x86_64", "FreeBSD"),
-    Platform("aarch64", "FreeBSD"),
-    Platform("i686", "Windows"),
-    Platform("x86_64", "Windows"),
-]
+platforms = supported_platforms()
+# platforms = [
+#     # Platform("i686", "Linux"; libc="glibc"),
+#     # Platform("x86_64", "Linux"; libc="glibc"),
+#     # Platform("aarch64", "Linux"; libc="glibc"),
+#     # Platform("armv6l", "Linux"; call_abi="eabihf", libc="glibc"),
+#     # Platform("armv7l", "Linux"; call_abi="eabihf", libc="glibc"),
+#     # Platform("powerpc64le", "Linux"; libc="glibc"),
+#     # Platform("riscv64", "Linux"; libc="glibc"),
+#     Platform("i686", "Linux"; libc="musl"),
+#     Platform("x86_64", "Linux"; libc="musl"),
+#     Platform("aarch64", "Linux"; libc="musl"),
+#     Platform("armv6l", "Linux"; call_abi="eabihf", libc="musl"),
+#     Platform("armv7l", "Linux"; call_abi="eabihf", libc="musl"),
+#     Platform("x86_64", "macOS"),
+#     # Platform("aarch64", "macOS"),
+#     # Platform("x86_64", "FreeBSD"),
+#     # Platform("aarch64", "FreeBSD"),
+#     Platform("i686", "Windows"),
+#     Platform("x86_64", "Windows"),
+# ]
 
 # The products that we will ensure are always built
 products = [

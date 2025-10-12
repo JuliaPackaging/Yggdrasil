@@ -1,5 +1,5 @@
---- CMakeLists.txt	2025-10-07 18:13:40
-+++ CMakeLists.txt	2025-10-07 18:15:42
+--- CMakeLists.txt
++++ CMakeLists.txt
 @@ -109,6 +109,13 @@
  
  # Compiler/Linker flags for all build types
