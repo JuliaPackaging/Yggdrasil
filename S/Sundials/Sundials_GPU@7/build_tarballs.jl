@@ -9,7 +9,7 @@ sources = get_sources()
 products = get_products()
 push!(products, LibraryProduct("libsundials_nveccuda", :libsundials_nveccuda))
 
-# Pick all the standard depedencies  
+# Pick all the standard depedencies
 dependencies = get_dependencies()
 
 # Override the default platforms
@@ -25,7 +25,7 @@ script = install_script * raw"""
 
     export CUDA_HOME=${WORKSPACE}/destdir/cuda
     export PATH=$PATH:$CUDA_HOME/bin
-    
+
     # nvcc thinks the libraries are located inside lib64, but the SDK actually has them in lib
     ln -s ${CUDA_HOME}/lib ${CUDA_HOME}/lib64
 
@@ -34,7 +34,7 @@ script = install_script * raw"""
     cmake --install .
 """
 
-# Build for all supported CUDA toolkits 
+# Build for all supported CUDA toolkits
 for platform in platforms
 
     should_build_platform(triplet(platform)) || continue
@@ -42,7 +42,7 @@ for platform in platforms
     # Need the static SDK to let CMake detect the compiler properly
     cuda_deps = CUDA.required_dependencies(platform; static_sdk=true)
 
-    build_tarballs(ARGS, name, ygg_version, sources, script, [platform], products,
+    build_tarballs(ARGS, name, version, sources, script, [platform], products,
                    [dependencies; cuda_deps];
                    preferred_gcc_version=v"9", julia_compat="1.6",
                    augment_platform_block=CUDA.augment)
