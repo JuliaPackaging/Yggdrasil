@@ -15,3 +15,7 @@ squashfs_tools_jll = "eed32e3e-a7c5-5bf9-9121-5cf3ab653887"
 [compat]
 HistoricalStdlibVersions = "=2.0.2"
 ghr_jll = "0.14.0"
+
+[sources]
+BinaryBuilder = {rev = "master", url = "https://github.com/JuliaPackaging/BinaryBuilder.jl.git"}
+BinaryBuilderBase = {rev = "master", url = "https://github.com/JuliaPackaging/BinaryBuilderBase.jl.git"}
