@@ -42,11 +42,9 @@ for platform in platforms
     # Need the static SDK to let CMake detect the compiler properly
     cuda_deps = CUDA.required_dependencies(platform; static_sdk=true)
 
-    build_tarballs(ARGS, name, ygg_version, sources, script, [platform], products,
+    build_tarballs(ARGS, name, version, sources, script, [platform], products,
                    [dependencies; cuda_deps];
                    preferred_gcc_version=v"9", julia_compat="1.6",
                    augment_platform_block=CUDA.augment)
 
 end
-
-# Build trigger: 1
