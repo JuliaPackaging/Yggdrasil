@@ -5,14 +5,12 @@ using Pkg
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
-const version = v"7.4.0"
-const ygg_version = v"7.4.1" # Fake version since we are changing deps
-
+const version = v"7.5.0"
+[
 # Collection of sources required to build Sundials
 function get_sources()
     return [
-        GitSource("https://github.com/LLNL/sundials.git",
-                  "8e17876d3b4d682b4098684b07a85b005a122f81"),
+        GitSource("https://github.com/LLNL/sundials.git", "c8dabcea90ca8bf195474da120e4f3dd39aa711f"),
         DirectorySource("./bundled"),
     ]
 end

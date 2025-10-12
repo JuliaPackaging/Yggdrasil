@@ -18,3 +18,5 @@ for platform in platforms
     build_tarballs(ARGS, name, ygg_version, sources, script, [platform], products, dependencies;
                    preferred_gcc_version=v"6", julia_compat="1.6")
 end
+
+# Build trigger: 1
