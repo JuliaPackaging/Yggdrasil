@@ -20,4 +20,5 @@ for platform in platforms
     push!(full_platforms, augmented_platform)
 end
 
+# bump
 build_sdk(name, version, full_platforms; static=false)
