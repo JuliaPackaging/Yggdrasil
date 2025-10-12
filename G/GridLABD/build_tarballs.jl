@@ -22,7 +22,12 @@ git submodule update --init
 mkdir cmake-build
 cd cmake-build/
 
-cmake -S ${WORKSPACE}/srcdir/gridlab-d -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_BUILD_TYPE=Release
+if [[ ${target} == *apple* ]]; then
+    cmake -S ${WORKSPACE}/srcdir/gridlab-d -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_NAME=Darwin
+else
+    cmake -S ${WORKSPACE}/srcdir/gridlab-d -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_BUILD_TYPE=Release
+fi
+
 cmake --build . -j${nproc} --target install
 
 install_license ${WORKSPACE}/srcdir/gridlab-d/LICENSE
