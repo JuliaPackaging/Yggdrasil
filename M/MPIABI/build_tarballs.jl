@@ -158,7 +158,7 @@ foreach(platforms) do p
 end
 
 products = [
-    LibraryProduct("libmpi_abi", :libmpi),
+    LibraryProduct("libmpi_abi", :libmpi; dont_dlopen=true),
     ExecutableProduct("mpiexec", :mpiexec),
 ]
 
@@ -169,7 +169,17 @@ dependencies = [
                       compat="0.1", top_level=true),
 ]
 
+init_block = """
+
+    # MPIABI init block
+    let
+        path = get(ENV, "MPIABI_PATH", libmpi_path)
+        global libmpi_handle = dlopen(path, RTLD_LAZY | RTLD_DEEPBIND)
+        push!(LIBPATH_list, dirname(path))
+    end
+"""
+
 # Build the tarballs.
 # We need GCC 5 for C99
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"5")
+               augment_platform_block, clang_use_lld=false, init_block, julia_compat="1.6", preferred_gcc_version=v"5")
