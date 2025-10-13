@@ -7,7 +7,8 @@ version = v"1.6.0"
 
 # Collection of sources required to build sba
 sources = [
-    GitSource("https://github.com/mlourakis/sba.git", "d0a29e03f1f9631d141fbba18534e41eec9f2f97")
+    GitSource("https://github.com/mlourakis/sba.git", "d0a29e03f1f9631d141fbba18534e41eec9f2f97"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -19,6 +20,8 @@ else
 fi
 
 cd $WORKSPACE/srcdir/sba
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/use-isfinite.patch
+
 mkdir -p ${libdir}
 ${CC} -shared -o ${libdir}/libsba.${dlext} -fPIC sba_chkjac.c sba_crsm.c sba_lapack.c sba_levmar.c sba_levmar_wrap.c -l${LBT}
 mkdir -p ${includedir}
