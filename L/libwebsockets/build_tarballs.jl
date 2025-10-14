@@ -9,6 +9,7 @@ version = v"4.4.0"
 sources = [
     GitSource("https://github.com/warmcat/libwebsockets.git", "e636b7bd133c4c0bfbdbf0d77afebdb20e09a5a2"),
 ]
+julia_versions = [v"1.8", v"1.9", v"1.10", v"1.11"]
 
 # Bash recipe for building across all platforms
 script = raw"""
