@@ -3,12 +3,15 @@
 using BinaryBuilder, Pkg
 
 name = "libwebsockets"
-version = v"4.4.0"
+version = v"4.4.1"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/warmcat/libwebsockets.git", "e636b7bd133c4c0bfbdbf0d77afebdb20e09a5a2"),
 ]
+
+include("../../L/libjulia/common.jl")
+julia_versions = [v"1.8", v"1.9", v"1.10", v"1.11"]
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -41,7 +44,8 @@ cmake --install build
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(exclude = Sys.iswindows)
+platforms = vcat(libjulia_platforms.(julia_versions)...)
+platforms = filter(!Sys.iswindows, platforms)
 # The products that we will ensure are always built
 products = [
     LibraryProduct(["libwebsockets"], :libwebsockets)
