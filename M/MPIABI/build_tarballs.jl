@@ -158,12 +158,13 @@ foreach(platforms) do p
 end
 
 products = [
-    LibraryProduct("libmpi_abi", :libmpi; dont_dlopen=true),
+    LibraryProduct("libmpi_abi", :libmpi),
     ExecutableProduct("mpiexec", :mpiexec),
 ]
 
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae");
+               compat="1.3.1"),
     Dependency("Hwloc_jll"; compat="2.12.2"),
     RuntimeDependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267");
                       compat="0.1", top_level=true),
