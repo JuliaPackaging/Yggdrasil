@@ -7,16 +7,11 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDA_Runtime"
-version = v"0.18.0"
+version = v"0.19.1"
 
 augment_platform_block = """
     $(read(joinpath(@__DIR__, "platform_augmentation.jl"), String))
     const cuda_toolkits = $(CUDA.cuda_full_versions)"""
-
-platforms = [Platform("x86_64", "linux"),
-             Platform("aarch64", "linux"; cuda_platform="jetson"),
-             Platform("aarch64", "linux"; cuda_platform="sbsa"),
-             Platform("x86_64", "windows")]
 
 script = raw"""
 # rename directories, stripping the architecture and version suffix
@@ -37,7 +32,11 @@ if [[ ${target} == *-linux-gnu ]]; then
     mv cuda_cupti/lib/libnvperf_host.so* ${libdir}
     mv cuda_cupti/lib/libnvperf_target.so* ${libdir}
 
-    mv cuda_nvcc/nvvm/lib64/libnvvm.so* ${libdir}
+    if [[ -d cuda_nvcc/nvvm ]]; then
+        mv cuda_nvcc/nvvm/lib64/libnvvm.so* ${libdir}
+    else
+        mv libnvvm/nvvm/lib64/libnvvm.so* ${libdir}
+    fi
 
     mv cuda_nvrtc/lib/libnvrtc.so* ${libdir}
     mv cuda_nvrtc/lib/libnvrtc-builtins.so* ${libdir}
@@ -56,6 +55,9 @@ if [[ ${target} == *-linux-gnu ]]; then
 
     mv libcurand/lib/libcurand.so* ${libdir}
 elif [[ ${target} == x86_64-w64-mingw32 ]]; then
+    # starting with CUDA 13, there's an additionally `x64` subdirectory. remove it.
+    find . -name x64 -type d -execdir sh -c 'mv x64/* .' \;
+
     # older versions of the redist binaries had DLLs in the lib folder; correct that
     for dir in */; do
         mkdir -p $dir/bin $dir/lib
@@ -68,7 +70,11 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     mv cuda_cupti/bin/nvperf_host.dll* ${libdir}
     mv cuda_cupti/bin/nvperf_target.dll* ${libdir}
 
-    mv cuda_nvcc/nvvm/bin/nvvm64_*.dll ${bindir}
+    if [[ -d cuda_nvcc/nvvm ]]; then
+        mv cuda_nvcc/nvvm/bin/nvvm64_*.dll ${bindir}
+    else
+        mv libnvvm/nvvm/bin/nvvm64_*.dll ${bindir}
+    fi
 
     mv cuda_nvrtc/bin/nvrtc64_* ${bindir}
     mv cuda_nvrtc/bin/nvrtc-builtins64_* ${bindir}
@@ -94,7 +100,7 @@ fi
 
 # determine exactly which tarballs we should build
 builds = []
-for version in CUDA.cuda_full_versions
+for version in reverse(CUDA.cuda_full_versions)
     include("build_$(version.major).$(version.minor).jl")
 
     # CUDA_Runtime contains all of the following components
@@ -113,6 +119,20 @@ for version in CUDA.cuda_full_versions
     ]
     if version >= v"12"
         push!(components, "libnvjitlink")
+    end
+    if version >= v"13"
+        push!(components, "libnvvm")
+    end
+
+    platforms = if version >= v"13"
+        [Platform("x86_64", "linux"),
+         Platform("aarch64", "linux"),
+         Platform("x86_64", "windows")]
+    else
+        [Platform("x86_64", "linux"),
+         Platform("aarch64", "linux"; cuda_platform="jetson"),
+         Platform("aarch64", "linux"; cuda_platform="sbsa"),
+         Platform("x86_64", "windows")]
     end
 
     for platform in platforms
@@ -140,16 +160,16 @@ for version in CUDA.cuda_full_versions
 
         if Base.thisminor(version) == v"10.2"
             push!(builds,
-                (; dependencies=[Dependency("CUDA_Driver_jll", v"12.9"; compat="12"),
+                (; dependencies=[Dependency("CUDA_Driver_jll", v"13.0"; compat="13"),
                                  BuildDependency(PackageSpec(name="CUDA_SDK_jll", version=v"10.2.89"))],
                    script=get_script(), platforms=[augmented_platform], products=get_products(platform),
                    sources=[]
             ))
         else
             push!(builds,
-                (; dependencies=[Dependency("CUDA_Driver_jll", v"12.9"; compat="12")],
+                (; dependencies=[Dependency("CUDA_Driver_jll", v"13.0"; compat="13")],
                    script, platforms=[augmented_platform], products=get_products(platform),
-                   sources=get_sources("cuda", components; version, platform)
+                   sources=get_sources("cuda", components; version, platform=augmented_platform)
             ))
         end
     end

@@ -3,17 +3,23 @@
 using BinaryBuilder
 
 name = "at_spi2_core"
-version = v"2.56.2"
+version = v"2.57.1"
 
 # Collection of sources required to build at-spi2-core
 sources = [
     ArchiveSource("http://ftp.gnome.org/pub/gnome/sources/at-spi2-core/$(version.major).$(version.minor)/at-spi2-core-$(version).tar.xz",
-                  "e1b1c9836a8947852f7440c32e23179234c76bd98cd9cc4001f376405f8b783b"),
+                  "5d1eac51ede2bf0d438b6ee69654ab0baa8c3ce183a5aaf450255eabc0d88da6"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/at-spi2-core-*/
+cd $WORKSPACE/srcdir/at-spi2-core-*
+
+# Old versions of glibc need help before they define `timersub`:
+# Reported as <https://gitlab.gnome.org/GNOME/at-spi2-core/-/issues/200>
+atomic_patch -p1 $WORKSPACE/srcdir/patches/timersub.patch
+
 mkdir build && cd build
 
 # Get a local gettext for msgfmt cross-building

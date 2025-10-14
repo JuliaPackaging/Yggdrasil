@@ -18,7 +18,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-mv llvm-* llvm
+mv llvm-*.src llvm
 mv cmake-* cmake
 mv third-party-* third-party
 
@@ -27,6 +27,7 @@ LLVM_SRCDIR=$(pwd)
 
 atomic_patch -p1 $WORKSPACE/srcdir/patches/avoid_builtin_available.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/fix_insertvalue.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/atomic_cmpxchg_64bit.patch
 
 install_license LICENSE.TXT
 

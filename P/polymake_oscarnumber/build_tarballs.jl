@@ -19,7 +19,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.13.0"), uuidopenssl)
 
 # reminder: change the version when changing the supported julia versions
 name = "polymake_oscarnumber"
-version = v"0.3.9"
+version = v"0.3.11"
 
 # julia_versions is now taken from libjulia/common.jl
 julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
@@ -27,7 +27,7 @@ julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* 
 # Collection of sources required to build polymake
 sources = [
     GitSource("https://github.com/benlorenz/oscarnumber",
-              "e322cfc84f014f8df698a512203d3747e7428cc9")
+              "bd0b7735250d9a0b29f33f668d7fc53c3701b99c")
     DirectorySource("./bundled")
 ]
 
@@ -91,14 +91,14 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
     Dependency("LLVMOpenMP_jll"; platforms=filter(Sys.isbsd, platforms)),
 
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.19")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.20")),
 
     # this version matches the one in Ipopt_jll (needed by polymake -> SCIP)
     BuildDependency(PackageSpec(;name="libblastrampoline_jll", version = v"5.4.0")),
 
-    Dependency("libcxxwrap_julia_jll"; compat = "~0.14.3"),
-    Dependency("libpolymake_julia_jll", compat = "=0.14.0"),
-    Dependency("polymake_jll", compat = "~400.1400.0"),
+    Dependency("libcxxwrap_julia_jll"; compat = "~0.14.4"),
+    Dependency("libpolymake_julia_jll", compat = "=0.14.2"),
+    Dependency("polymake_jll", compat = "~400.1500.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

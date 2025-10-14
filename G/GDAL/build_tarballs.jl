@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "GDAL"
-upstream_version = v"3.11.3"
+upstream_version = v"3.11.4"
 # The version offset is used for two purposes:
 # - If we need to release multiple jll packages for the same GDAL
 #   library (usually for weird packaging reasons) then we increase the
@@ -19,7 +19,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to build GDAL
 sources = [
     GitSource("https://github.com/OSGeo/gdal.git",
-        "20be66345f7dd2d8e368684abb22b0f6355e8cf0"),
+        "dde6141aeec6e3e823b8af9a930f9bb096bfbda2"),
     FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
         "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
     DirectorySource("./bundled"),
@@ -191,6 +191,9 @@ dependencies = [
     Dependency("PROJ_jll"; compat="902.500.100"),
     Dependency("Qhull_jll"; compat="10008.0.1004"),
     Dependency("SQLite_jll"; compat="3.48.0"),
+    # We had to restrict compat with XML2 because of ABI breakage:
+    # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
+    # Updating to `compat="~2.14.1"` is likely possible without problems but requires rebuilding this package
     Dependency("XML2_jll"; compat="~2.13.6"),
     Dependency("XZ_jll"; compat="5.6.4"),
     Dependency("Zlib_jll"; compat="1.2.12"),

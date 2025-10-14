@@ -26,13 +26,13 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "GAP"
-upstream_version = v"4.14.0"
-version = v"400.1400.005"
+upstream_version = v"4.15.0"
+version = v"400.1500.000"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/gap-$(upstream_version)-core.tar.gz",
-                  "81ecfc6f6df044739ba34ec306cc25e847967d94f1c645b093cc21749ccc1e49"),
+                  "5f299fe8ae092a0ed85033f348b1df031cf0e2fb4fb9184c21e92210303c125c"),
     DirectorySource("./bundled"),
 ]
 
@@ -129,20 +129,11 @@ dependencies = [
     Dependency("GMP_jll"),
     Dependency("Readline_jll"; compat="8.2.13"),
     Dependency("Zlib_jll"),
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.19")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.20")),
 ]
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"7", julia_compat="1.6", init_block="""
-
-    try
-        cglobal(:jl_reinit_foreign_type)
-    catch
-        # no jl_reinit_foreign_type -> fall back to old behavior
-        sym = dlsym(libgap_handle, :GAP_InitJuliaMemoryInterface)
-        ccall(sym, Nothing, (Any, Ptr{Nothing}), @__MODULE__, C_NULL)
-    end
-""")
+               preferred_gcc_version=v"7", julia_compat="1.10")
 
 # rebuild trigger: 1

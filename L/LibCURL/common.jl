@@ -20,9 +20,10 @@ const curl_hashes = Dict(
     v"8.13.0" => "c261a4db579b289a7501565497658bbd52d3138fdbaccf1490fa918129ab45bc",
     v"8.14.1" => "6766ada7101d292b42b8b15681120acd68effa4a9660935853cf6d61f0d984d4",
     v"8.15.0" => "d85cfc79dc505ff800cb1d321a320183035011fa08cb301356425d86be8fc53c",
+    v"8.16.0" => "a21e20476e39eca5a4fc5cfb00acf84bbc1f5d8443ec3853ad14c26b3c85b970",
 )
 
-function build_libcurl(ARGS, name::String, version::VersionNumber)
+function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=false)
     hash = curl_hashes[version]
 
     if name == "CURL"
@@ -59,9 +60,20 @@ function build_libcurl(ARGS, name::String, version::VersionNumber)
     end
     macos_use_openssl = version >= v"8.15"
 
+    # Disable nss only for CURL < 8.16
+    without_nss = version < v"8.16.0"
+
+    config = "THIS_IS_CURL=$(this_is_curl_jll)\n"
+    config *= "MACOS_USE_OPENSSL=$(macos_use_openssl)\n" 
+    if with_zstd
+	config *= "HAVE_ZSTD=true\n"
+    end
+    if without_nss
+        config *= "WITHOUT_NSS=true\n"
+    end
 
     # Bash recipe for building across all platforms
-    script = "THIS_IS_CURL=$(this_is_curl_jll)\n" * "MACOS_USE_OPENSSL=$(macos_use_openssl)\n" * unpack_macosx_sdk * raw"""
+    script = config * unpack_macosx_sdk * raw"""
     cd $WORKSPACE/srcdir/curl-*
 
     # Address <https://github.com/curl/curl/issues/12849>
@@ -72,16 +84,24 @@ function build_libcurl(ARGS, name::String, version::VersionNumber)
         # Disable....almost everything
         --without-gnutls
         --without-libidn2 --without-librtmp
-        --without-nss --without-libpsl
+        --without-libpsl
         --disable-ares --disable-manual
         --disable-ldap --disable-ldaps --without-zsh-functions-dir
         --disable-static --without-libgsasl
         --without-brotli
 
         # A few things we actually enable
-        --with-libssh2=${prefix} --with-zlib=${prefix} --with-nghttp2=${prefix}
+	--with-libssh2=${prefix} --with-zlib=${prefix} --with-nghttp2=${prefix}
         --enable-versioned-symbols
     )
+
+    if [[ ${HAVE_ZSTD} == true ]]; then
+        FLAGS+=(--with-zstd=${prefix})
+    fi
+
+    if [[ ${WITHOUT_NSS} == true ]]; then
+        FLAGS+=(--without-nss)
+    fi
 
     if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
         # Install msan runtime (for clang)
@@ -168,6 +188,10 @@ function build_libcurl(ARGS, name::String, version::VersionNumber)
         BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
                         platforms=filter(p -> sanitize(p)=="memory", platforms)),
     ]
+
+    if with_zstd
+        push!(dependencies, Dependency("Zstd_jll"))
+    end
 
     if this_is_curl_jll
         # Curl_jll depends on LibCURL_jll
