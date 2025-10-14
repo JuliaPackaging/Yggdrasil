@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "libwebsockets"
-version = v"4.4.0"
+version = v"4.4.1"
 
 # Collection of sources required to complete build
 sources = [
