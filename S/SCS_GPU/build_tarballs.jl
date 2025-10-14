@@ -6,18 +6,23 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "SCS_GPU"
-version = v"3.2.8"
+version = v"3.2.9"
 
 # Collection of sources required to build SCSBuilder
 sources = [
-    GitSource("https://github.com/cvxgrp/scs.git", "ef77ae11181f399ea3e35122944ba3091ee1a77f")
+    GitSource("https://github.com/cvxgrp/scs.git", "c8297172633bcb3a10d4781a19d4769ce5282d29")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/scs*
 flags="DLONG=0 USE_OPENMP=1"
-blasldflags="-L${libdir} -lopenblas"
+if [[ "${target}" == *-mingw* ]]; then
+    LBT=blastrampoline-5
+else
+    LBT=blastrampoline
+fi
+blasldflags="-L${prefix}/lib -l${LBT}"
 
 CUDA_PATH=$prefix/cuda make BLASLDFLAGS="${blasldflags}" ${flags} out/libscsgpuindir.${dlext}
 
@@ -37,7 +42,7 @@ products = [
 ]
 
 dependencies = [
-    Dependency("OpenBLAS32_jll", v"0.3.10"),
+    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae");
@@ -52,6 +57,6 @@ for platform in platforms
     cuda_deps = CUDA.required_dependencies(platform)
 
     build_tarballs(ARGS, name, version, sources, script, [platform], products,
-                   [dependencies; cuda_deps], julia_compat="1.6", preferred_gcc_version=v"5",
+                   [dependencies; cuda_deps], julia_compat="1.10", preferred_gcc_version=v"5",
                    augment_platform_block=CUDA.augment)
 end
