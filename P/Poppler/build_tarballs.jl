@@ -77,6 +77,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
+# https://gitlab.freedesktop.org/poppler/poppler/-/blob/poppler-25.10.0/CMakeLists.txt?ref_type=tags#L146-157
 dependencies = [
     HostBuildDependency(PackageSpec("CMake_jll", v"3.22.2")), # we need 3.22.0
     BuildDependency("Xorg_xorgproto_jll"),
@@ -85,7 +86,7 @@ dependencies = [
     Dependency("FreeType2_jll"; compat="2.13.1"),   # we need 2.11
     Dependency("Glib_jll"; compat="2.74.0"),        # we need 2.72
     Dependency("JpegTurbo_jll"; compat="3.0.1"),
-    Dependency("LibCURL_jll"; compat="7.73,8"), # we need 7.68
+    Dependency("LibCURL_jll"; compat="7.81,8"), # we need 7.81
     Dependency("Libtiff_jll"; compat="4.6.0"),  # we need 4.3
     Dependency("OpenJpeg_jll";compat="2.5.0"),
     Dependency("libpng_jll"; compat="1.6.38"),
