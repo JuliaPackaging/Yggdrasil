@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "unzip"
-version = v"6.0.2"
+version = v"6.0.3"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/madler/unzip.git",
-              "3bee0689f7dc6afb88bda09ffb71b6b15623ff92"),
+              "0b82c20ac7375b522215b567174f370be89a4b12"),
     DirectorySource("./bundled"),
 ]
 
