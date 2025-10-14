@@ -52,7 +52,7 @@ install_license ../LICENSE
 """
 
 platforms = supported_platforms(
-    exclude = p -> Sys.iswindows(p) || (proc_family(p) != "intel" && proc_family(p) != "arm")
+    exclude = p -> Sys.iswindows(p) || (proc_family(p) != "intel" && proc_family(p) != "arm") || p == Platform("aarch64", "freebsd")
 )
 
 products = [
