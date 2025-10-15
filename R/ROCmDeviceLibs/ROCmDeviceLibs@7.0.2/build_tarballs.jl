@@ -19,6 +19,7 @@ function configure_build(version)
     apk update
     apk add rpm2cpio
 
+    prefix = ${WORKSPACE}/destdir
     echo ${prefix}
 
     cd ${WORKSPACE}/srcdir/
