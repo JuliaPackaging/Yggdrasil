@@ -15,7 +15,7 @@ version = v"7.1.0"
 sources = [
     DirectorySource("./bundled"),
     GitSource("https://github.com/juliagpu/pocl",
-              "893558a2f98fcda83ce43def9d3b7896787809e4")
+              "afa068265c1c63b8eb92bfabdf3e232491e6c3b6")
 ]
 
 #=
