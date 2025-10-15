@@ -3,20 +3,19 @@ using BinaryBuilder, Pkg
 name = "LlamaCppOutlines"
 version = v"1.1.0"
 
-# Pre-built binaries - BinaryBuilder will only download the matching platform
 sources = [
     ArchiveSource("https://github.com/krishnaveti/LlamaCppOutlines_jll.jl/releases/download/v1.1.0/x86_64-linux-gnu-cpu.tar.gz",
-                  "5f13842471815f9eec77e688df1285edbfd59b4f6fcf32a9b1a5e7e431bf26c4"; unpack_target="x86_64-linux-gnu"),
+                  "5f13842471815f9eec77e688df1285edbfd59b4f6fcf32a9b1a5e7e431bf26c4"),
     ArchiveSource("https://github.com/krishnaveti/LlamaCppOutlines_jll.jl/releases/download/v1.1.0/x86_64-linux-gnu-cuda.tar.gz",
-                  "d2f88f47f7326ef5f9eb4d576a7c39548eb01248f4823029779b067b3f4cef9d"; unpack_target="x86_64-linux-gnu-cuda+12"),
+                  "d2f88f47f7326ef5f9eb4d576a7c39548eb01248f4823029779b067b3f4cef9d"),
     ArchiveSource("https://github.com/krishnaveti/LlamaCppOutlines_jll.jl/releases/download/v1.1.0/x86_64-w64-mingw32-cpu.zip",
-                  "08034e8747293d0fcaaa0ab2d5d6f0328b0c38bb7e79174927403b31602e4f0d"; unpack_target="x86_64-w64-mingw32"),
+                  "08034e8747293d0fcaaa0ab2d5d6f0328b0c38bb7e79174927403b31602e4f0d"),
     ArchiveSource("https://github.com/krishnaveti/LlamaCppOutlines_jll.jl/releases/download/v1.1.0/x86_64-w64-mingw32-cuda.zip",
-                  "a54c8832d1fd53aa94a4d1640f7c13d251b7387f4a86619e1e1e06db6bd7a7ea"; unpack_target="x86_64-w64-mingw32-cuda+12"),
+                  "a54c8832d1fd53aa94a4d1640f7c13d251b7387f4a86619e1e1e06db6bd7a7ea"),
     ArchiveSource("https://github.com/krishnaveti/LlamaCppOutlines_jll.jl/releases/download/v1.1.0/x86_64-apple-darwin-metal.tar.gz",
-                  "4f5a35cbfd2a960749ce429d600c1f991419eb174e3684181fb01dbaf6ea2194"; unpack_target="x86_64-apple-darwin"),
+                  "4f5a35cbfd2a960749ce429d600c1f991419eb174e3684181fb01dbaf6ea2194"),
     ArchiveSource("https://github.com/krishnaveti/LlamaCppOutlines_jll.jl/releases/download/v1.1.0/aarch64-apple-darwin-metal.tar.gz",
-                  "0d8b0173e2005e32948d1a7d2b4135600181c14cf0af8bbcda6c452182f82ec0"; unpack_target="aarch64-apple-darwin"),
+                  "0d8b0173e2005e32948d1a7d2b4135600181c14cf0af8bbcda6c452182f82ec0"),
 ]
 
 script = raw"""
@@ -49,9 +48,6 @@ SOFTWARE.
 EOL
 fi
 install_license LICENSE
-
-# Navigate to the platform-specific directory
-cd ${target}
 
 # Create destination directories
 mkdir -p ${libdir}
