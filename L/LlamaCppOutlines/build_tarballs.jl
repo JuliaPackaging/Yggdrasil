@@ -3,19 +3,26 @@ using BinaryBuilder, Pkg
 name = "LlamaCppOutlines"
 version = v"1.1.0"
 
+# Platform-specific sources - BinaryBuilder will only use the matching one
 sources = [
     ArchiveSource("https://github.com/krishnaveti/LlamaCppOutlines_jll.jl/releases/download/v1.1.0/x86_64-linux-gnu-cpu.tar.gz",
-                  "5f13842471815f9eec77e688df1285edbfd59b4f6fcf32a9b1a5e7e431bf26c4"),
+                  "5f13842471815f9eec77e688df1285edbfd59b4f6fcf32a9b1a5e7e431bf26c4";
+                  platform=Platform("x86_64", "linux"; libc="glibc")),
     ArchiveSource("https://github.com/krishnaveti/LlamaCppOutlines_jll.jl/releases/download/v1.1.0/x86_64-linux-gnu-cuda.tar.gz",
-                  "d2f88f47f7326ef5f9eb4d576a7c39548eb01248f4823029779b067b3f4cef9d"),
+                  "d2f88f47f7326ef5f9eb4d576a7c39548eb01248f4823029779b067b3f4cef9d";
+                  platform=Platform("x86_64", "linux"; libc="glibc", cuda="12")),
     ArchiveSource("https://github.com/krishnaveti/LlamaCppOutlines_jll.jl/releases/download/v1.1.0/x86_64-w64-mingw32-cpu.zip",
-                  "08034e8747293d0fcaaa0ab2d5d6f0328b0c38bb7e79174927403b31602e4f0d"),
+                  "08034e8747293d0fcaaa0ab2d5d6f0328b0c38bb7e79174927403b31602e4f0d";
+                  platform=Platform("x86_64", "windows")),
     ArchiveSource("https://github.com/krishnaveti/LlamaCppOutlines_jll.jl/releases/download/v1.1.0/x86_64-w64-mingw32-cuda.zip",
-                  "a54c8832d1fd53aa94a4d1640f7c13d251b7387f4a86619e1e1e06db6bd7a7ea"),
+                  "a54c8832d1fd53aa94a4d1640f7c13d251b7387f4a86619e1e1e06db6bd7a7ea";
+                  platform=Platform("x86_64", "windows"; cuda="12")),
     ArchiveSource("https://github.com/krishnaveti/LlamaCppOutlines_jll.jl/releases/download/v1.1.0/x86_64-apple-darwin-metal.tar.gz",
-                  "4f5a35cbfd2a960749ce429d600c1f991419eb174e3684181fb01dbaf6ea2194"),
+                  "4f5a35cbfd2a960749ce429d600c1f991419eb174e3684181fb01dbaf6ea2194";
+                  platform=Platform("x86_64", "macos")),
     ArchiveSource("https://github.com/krishnaveti/LlamaCppOutlines_jll.jl/releases/download/v1.1.0/aarch64-apple-darwin-metal.tar.gz",
-                  "0d8b0173e2005e32948d1a7d2b4135600181c14cf0af8bbcda6c452182f82ec0"),
+                  "0d8b0173e2005e32948d1a7d2b4135600181c14cf0af8bbcda6c452182f82ec0";
+                  platform=Platform("aarch64", "macos")),
 ]
 
 script = raw"""
@@ -26,7 +33,7 @@ if [ ! -f LICENSE ]; then
     cat > LICENSE << 'EOL'
 MIT License
 
-Copyright (c) 2025 LlamaCppOutlines Contributors
+Copyright (c) 2024 LlamaCppOutlines Contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
