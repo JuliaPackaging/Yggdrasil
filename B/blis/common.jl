@@ -87,6 +87,20 @@ function blis_script(;blis32::Bool=false)
         atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cblas_f77suffix64.patch
     fi
 
+    # Replace cblas function names to have _64 suffixes
+    if [[ "${BLIS32}" != "true" ]]; then
+       cd frame/compat/cblas/src
+       sed -i -E "s/cblas_([a-zA-Z0-9_]+)/cblas_\164_/g" cblas.h
+       for fname in *.c extra/*.c; do
+           sed -i -E "/^#/!s/cblas_([a-zA-Z0-9_]+)\(/cblas_\164_\(/g" $fname
+       done
+       for fname in extra/*.c; do
+           sed -i -E "/^#s/cblas_([a-zA-Z0-9_]+)\"/cblas_\164_\"/g" $fname
+           sed -i -E "/attribute/s/cblas_([a-zA-Z0-9_]+)/cblas_\164_/g" $fname
+       done
+       cd ../../../..
+    fi   
+
     # Include A64FX in Arm64 metaconfig.
     if [ ${BLI_CONFIG} = arm64 ]; then
         # Add A64FX to the registry.
@@ -109,6 +123,7 @@ function blis_script(;blis32::Bool=false)
     else
         export BLI_F77BITS=${nbits}
     fi
+
     ./configure --enable-cblas -p ${prefix} -t ${BLI_THREAD} -b ${BLI_F77BITS} ${BLI_CONFIG}
     make -j${nproc}
     make install
