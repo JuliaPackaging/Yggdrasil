@@ -3,20 +3,26 @@ using BinaryBuilder, Pkg
 name = "LlamaCppOutlines"
 version = v"1.1.0"
 
-# Download all archives but only process the matching one
+# Use unpack_target to extract each archive into its own subdirectory
 sources = [
     ArchiveSource("https://github.com/krishnaveti/LlamaCppOutlines_jll.jl/releases/download/v1.1.0/x86_64-linux-gnu-cpu.tar.gz",
-                  "5f13842471815f9eec77e688df1285edbfd59b4f6fcf32a9b1a5e7e431bf26c4"),
+                  "5f13842471815f9eec77e688df1285edbfd59b4f6fcf32a9b1a5e7e431bf26c4";
+                  unpack_target="linux-cpu"),
     ArchiveSource("https://github.com/krishnaveti/LlamaCppOutlines_jll.jl/releases/download/v1.1.0/x86_64-linux-gnu-cuda.tar.gz",
-                  "d2f88f47f7326ef5f9eb4d576a7c39548eb01248f4823029779b067b3f4cef9d"),
+                  "d2f88f47f7326ef5f9eb4d576a7c39548eb01248f4823029779b067b3f4cef9d";
+                  unpack_target="linux-cuda"),
     ArchiveSource("https://github.com/krishnaveti/LlamaCppOutlines_jll.jl/releases/download/v1.1.0/x86_64-w64-mingw32-cpu.zip",
-                  "08034e8747293d0fcaaa0ab2d5d6f0328b0c38bb7e79174927403b31602e4f0d"),
+                  "08034e8747293d0fcaaa0ab2d5d6f0328b0c38bb7e79174927403b31602e4f0d";
+                  unpack_target="windows-cpu"),
     ArchiveSource("https://github.com/krishnaveti/LlamaCppOutlines_jll.jl/releases/download/v1.1.0/x86_64-w64-mingw32-cuda.zip",
-                  "a54c8832d1fd53aa94a4d1640f7c13d251b7387f4a86619e1e1e06db6bd7a7ea"),
+                  "a54c8832d1fd53aa94a4d1640f7c13d251b7387f4a86619e1e1e06db6bd7a7ea";
+                  unpack_target="windows-cuda"),
     ArchiveSource("https://github.com/krishnaveti/LlamaCppOutlines_jll.jl/releases/download/v1.1.0/x86_64-apple-darwin-metal.tar.gz",
-                  "4f5a35cbfd2a960749ce429d600c1f991419eb174e3684181fb01dbaf6ea2194"),
+                  "4f5a35cbfd2a960749ce429d600c1f991419eb174e3684181fb01dbaf6ea2194";
+                  unpack_target="macos-x86"),
     ArchiveSource("https://github.com/krishnaveti/LlamaCppOutlines_jll.jl/releases/download/v1.1.0/aarch64-apple-darwin-metal.tar.gz",
-                  "0d8b0173e2005e32948d1a7d2b4135600181c14cf0af8bbcda6c452182f82ec0"),
+                  "0d8b0173e2005e32948d1a7d2b4135600181c14cf0af8bbcda6c452182f82ec0";
+                  unpack_target="macos-arm"),
 ]
 
 script = raw"""
@@ -50,33 +56,24 @@ EOL
 fi
 install_license LICENSE
 
-# BinaryBuilder extracts all archives - we need to clean up the ones we don't need
-# Keep only the directories for the current platform
-echo "Current target: ${target}"
-echo "Contents before cleanup:"
-ls -la
-
-# Remove archives and directories we don't need for this platform
+# Determine which subdirectory to use based on target
+SOURCE_DIR=""
 if [[ "${target}" == "x86_64-linux-gnu" ]] && [[ "${target}" != *"cuda"* ]]; then
-    rm -rf *cuda* *mingw* *darwin* 2>/dev/null || true
-elif [[ "${target}" == "x86_64-linux-gnu-cuda"* ]]; then
-    rm -rf *mingw* *darwin* 2>/dev/null || true
-    # Remove CPU version if both exist
-    [ -d "x86_64-linux-gnu-cpu" ] && rm -rf x86_64-linux-gnu-cpu
+    SOURCE_DIR="linux-cpu"
+elif [[ "${target}" == *"linux"* ]] && [[ "${target}" == *"cuda"* ]]; then
+    SOURCE_DIR="linux-cuda"
 elif [[ "${target}" == "x86_64-w64-mingw32" ]] && [[ "${target}" != *"cuda"* ]]; then
-    rm -rf *linux* *darwin* *cuda* 2>/dev/null || true
-elif [[ "${target}" == "x86_64-w64-mingw32-cuda"* ]]; then
-    rm -rf *linux* *darwin* 2>/dev/null || true
-    # Remove CPU version if both exist  
-    [ -d "x86_64-w64-mingw32-cpu" ] && rm -rf x86_64-w64-mingw32-cpu
+    SOURCE_DIR="windows-cpu"
+elif [[ "${target}" == *"mingw"* ]] && [[ "${target}" == *"cuda"* ]]; then
+    SOURCE_DIR="windows-cuda"
 elif [[ "${target}" == "x86_64-apple-darwin"* ]]; then
-    rm -rf *linux* *mingw* aarch64* 2>/dev/null || true
+    SOURCE_DIR="macos-x86"
 elif [[ "${target}" == "aarch64-apple-darwin"* ]]; then
-    rm -rf *linux* *mingw* x86_64-apple* 2>/dev/null || true
+    SOURCE_DIR="macos-arm"
 fi
 
-echo "Contents after cleanup:"
-ls -la
+echo "Using source directory: ${SOURCE_DIR}"
+cd ${SOURCE_DIR}
 
 # Create destination directories
 mkdir -p ${libdir}
