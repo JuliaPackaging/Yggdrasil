@@ -56,7 +56,7 @@ function blis_script(;blis32::Bool=false)
             export BLI_THREAD=openmp
             ;;
         *"aarch64"*"apple"*)
-            export BLI_CONFIG=arm64
+            export BLI_CONFIG=firestorm
             export BLI_THREAD=openmp
             ;;
         *"x86_64"*"freebsd"*)
