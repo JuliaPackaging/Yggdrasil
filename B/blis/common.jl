@@ -88,16 +88,18 @@ function blis_script(;blis32::Bool=false)
     fi
 
     # Replace cblas function names to have _64 suffixes
-    cd frame/compat/cblas/src
-
-    find . -type f -name "*.c" | while read -r file; do
-       sed -i.bak -E "s/cblas_([a-zA-Z0-9_]+)\(/cblas_\1_64\(/g" "$file"
-    done
-
-    sed -i.bak -E "s/cblas_([a-zA-Z0-9_]+)/cblas_\1${SUFFIX}/g" cblas.h
-    rm -f *.bak
-
-    cd ../../../..
+    if [[ "${BLIS32}" != "true" ]]; then
+       cd frame/compat/cblas/src
+       sed -i -E "s/cblas_([a-zA-Z0-9_]+)/cblas_\1_64/g" cblas.h
+       for fname in *.c extra/*.c; do
+           sed -i -E "/^#/!s/cblas_([a-zA-Z0-9_]+)\(/cblas_\1_64\(/g" $fname
+       done
+       for fname in extra/*.c; do
+           sed -i -E "/^#s/cblas_([a-zA-Z0-9_]+)\"/cblas_\1_64\"/g" $fname
+           sed -i -E "/attribute/s/cblas_([a-zA-Z0-9_]+)/cblas_\1_64/g" $fname
+       done
+       cd ../../../..
+    fi   
 
     # Include A64FX in Arm64 metaconfig.
     if [ ${BLI_CONFIG} = arm64 ]; then
@@ -121,12 +123,6 @@ function blis_script(;blis32::Bool=false)
     else
         export BLI_F77BITS=${nbits}
     fi
-
-    
-
-
-
-
 
     ./configure --enable-cblas -p ${prefix} -t ${BLI_THREAD} -b ${BLI_F77BITS} ${BLI_CONFIG}
     make -j${nproc}
