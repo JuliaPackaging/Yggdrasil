@@ -90,13 +90,13 @@ function blis_script(;blis32::Bool=false)
     # Replace cblas function names to have _64 suffixes
     if [[ "${BLIS32}" != "true" ]]; then
        cd frame/compat/cblas/src
-       sed -i -E "s/cblas_([a-zA-Z0-9_]+)/cblas_\1_64/g" cblas.h
+       sed -i -E "s/cblas_([a-zA-Z0-9_]+)/cblas_\164_/g" cblas.h
        for fname in *.c extra/*.c; do
-           sed -i -E "/^#/!s/cblas_([a-zA-Z0-9_]+)\(/cblas_\1_64\(/g" $fname
+           sed -i -E "/^#/!s/cblas_([a-zA-Z0-9_]+)\(/cblas_\164_\(/g" $fname
        done
        for fname in extra/*.c; do
-           sed -i -E "/^#s/cblas_([a-zA-Z0-9_]+)\"/cblas_\1_64\"/g" $fname
-           sed -i -E "/attribute/s/cblas_([a-zA-Z0-9_]+)/cblas_\1_64/g" $fname
+           sed -i -E "/^#s/cblas_([a-zA-Z0-9_]+)\"/cblas_\164_\"/g" $fname
+           sed -i -E "/attribute/s/cblas_([a-zA-Z0-9_]+)/cblas_\164_/g" $fname
        done
        cd ../../../..
     fi   
