@@ -28,6 +28,10 @@ if [[ ${target} == *mingw* ]]; then
     make ${MFLAGS[@]} -j${nproc}
     mkdir -p ${bindir}
     mv *.exe ${bindir}/
+elif [[ ${target} == *riscv* ]]; then
+    cp unix/Makefile Makefile
+    make generic1 ${MFLAGS[@]} -j${nproc}
+    make install ${MFLAGS[@]}
 else
     cp unix/Makefile Makefile
     make generic ${MFLAGS[@]} -j${nproc}
