@@ -3,26 +3,20 @@ using BinaryBuilder, Pkg
 name = "LlamaCppOutlines"
 version = v"1.1.0"
 
-# Platform-specific sources - BinaryBuilder will only use the matching one
+# Download all archives but only process the matching one
 sources = [
     ArchiveSource("https://github.com/krishnaveti/LlamaCppOutlines_jll.jl/releases/download/v1.1.0/x86_64-linux-gnu-cpu.tar.gz",
-                  "5f13842471815f9eec77e688df1285edbfd59b4f6fcf32a9b1a5e7e431bf26c4";
-                  platform=Platform("x86_64", "linux"; libc="glibc")),
+                  "5f13842471815f9eec77e688df1285edbfd59b4f6fcf32a9b1a5e7e431bf26c4"),
     ArchiveSource("https://github.com/krishnaveti/LlamaCppOutlines_jll.jl/releases/download/v1.1.0/x86_64-linux-gnu-cuda.tar.gz",
-                  "d2f88f47f7326ef5f9eb4d576a7c39548eb01248f4823029779b067b3f4cef9d";
-                  platform=Platform("x86_64", "linux"; libc="glibc", cuda="12")),
+                  "d2f88f47f7326ef5f9eb4d576a7c39548eb01248f4823029779b067b3f4cef9d"),
     ArchiveSource("https://github.com/krishnaveti/LlamaCppOutlines_jll.jl/releases/download/v1.1.0/x86_64-w64-mingw32-cpu.zip",
-                  "08034e8747293d0fcaaa0ab2d5d6f0328b0c38bb7e79174927403b31602e4f0d";
-                  platform=Platform("x86_64", "windows")),
+                  "08034e8747293d0fcaaa0ab2d5d6f0328b0c38bb7e79174927403b31602e4f0d"),
     ArchiveSource("https://github.com/krishnaveti/LlamaCppOutlines_jll.jl/releases/download/v1.1.0/x86_64-w64-mingw32-cuda.zip",
-                  "a54c8832d1fd53aa94a4d1640f7c13d251b7387f4a86619e1e1e06db6bd7a7ea";
-                  platform=Platform("x86_64", "windows"; cuda="12")),
+                  "a54c8832d1fd53aa94a4d1640f7c13d251b7387f4a86619e1e1e06db6bd7a7ea"),
     ArchiveSource("https://github.com/krishnaveti/LlamaCppOutlines_jll.jl/releases/download/v1.1.0/x86_64-apple-darwin-metal.tar.gz",
-                  "4f5a35cbfd2a960749ce429d600c1f991419eb174e3684181fb01dbaf6ea2194";
-                  platform=Platform("x86_64", "macos")),
+                  "4f5a35cbfd2a960749ce429d600c1f991419eb174e3684181fb01dbaf6ea2194"),
     ArchiveSource("https://github.com/krishnaveti/LlamaCppOutlines_jll.jl/releases/download/v1.1.0/aarch64-apple-darwin-metal.tar.gz",
-                  "0d8b0173e2005e32948d1a7d2b4135600181c14cf0af8bbcda6c452182f82ec0";
-                  platform=Platform("aarch64", "macos")),
+                  "0d8b0173e2005e32948d1a7d2b4135600181c14cf0af8bbcda6c452182f82ec0"),
 ]
 
 script = raw"""
@@ -33,7 +27,7 @@ if [ ! -f LICENSE ]; then
     cat > LICENSE << 'EOL'
 MIT License
 
-Copyright (c) 2024 LlamaCppOutlines Contributors
+Copyright (c) 2025 LlamaCppOutlines Contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -55,6 +49,34 @@ SOFTWARE.
 EOL
 fi
 install_license LICENSE
+
+# BinaryBuilder extracts all archives - we need to clean up the ones we don't need
+# Keep only the directories for the current platform
+echo "Current target: ${target}"
+echo "Contents before cleanup:"
+ls -la
+
+# Remove archives and directories we don't need for this platform
+if [[ "${target}" == "x86_64-linux-gnu" ]] && [[ "${target}" != *"cuda"* ]]; then
+    rm -rf *cuda* *mingw* *darwin* 2>/dev/null || true
+elif [[ "${target}" == "x86_64-linux-gnu-cuda"* ]]; then
+    rm -rf *mingw* *darwin* 2>/dev/null || true
+    # Remove CPU version if both exist
+    [ -d "x86_64-linux-gnu-cpu" ] && rm -rf x86_64-linux-gnu-cpu
+elif [[ "${target}" == "x86_64-w64-mingw32" ]] && [[ "${target}" != *"cuda"* ]]; then
+    rm -rf *linux* *darwin* *cuda* 2>/dev/null || true
+elif [[ "${target}" == "x86_64-w64-mingw32-cuda"* ]]; then
+    rm -rf *linux* *darwin* 2>/dev/null || true
+    # Remove CPU version if both exist  
+    [ -d "x86_64-w64-mingw32-cpu" ] && rm -rf x86_64-w64-mingw32-cpu
+elif [[ "${target}" == "x86_64-apple-darwin"* ]]; then
+    rm -rf *linux* *mingw* aarch64* 2>/dev/null || true
+elif [[ "${target}" == "aarch64-apple-darwin"* ]]; then
+    rm -rf *linux* *mingw* x86_64-apple* 2>/dev/null || true
+fi
+
+echo "Contents after cleanup:"
+ls -la
 
 # Create destination directories
 mkdir -p ${libdir}
