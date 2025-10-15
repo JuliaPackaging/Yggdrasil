@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "libwebsockets"
-version = v"4.4.0"
+version = v"4.5.0"
 
 # Collection of sources required to complete build
 sources = [
@@ -31,10 +31,23 @@ cmake -B build \
     -DLWS_WITH_STATIC=OFF \
     -DLWS_WITH_SSL=ON \
     -DLWS_WITH_ZLIB=ON \
+    -DLWS_STATIC_PIC=ON \
     -DLWS_WITH_MINIMAL_EXAMPLES=OFF \
+    -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++" \
+    -DLWS_LINK_TESTAPPS_DYNAMIC=OFF \
+    -DCMAKE_FIND_LIBRARY_SUFFIXES=".a" \
+    -DUV_LIBRARY=${libdir}/libuv.a \
+    -DUV_INCLUDE_DIR=${includedir} \
+    -DLIBUV_LIBRARIES=${libdir}/libuv.a \
+    -DLIBUV_INCLUDE_DIRS=${includedir} \
     -DLWS_IPV6=ON \
     -DLWS_WITH_HTTP2=ON \
     -DLWS_WITH_SOCKS5=ON
+
+if [[ "${target}" == *linux* ]]; then
+    export CMAKE_SHARED_LINKER_FLAGS="${LDFLAGS} -pthread -ldl -lrt"
+fi
+
 cmake --build build --parallel ${nproc}
 cmake --install build
 """ 
