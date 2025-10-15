@@ -28,13 +28,19 @@ if [[ ${target} == *mingw* ]]; then
     make ${MFLAGS[@]} -j${nproc}
     mkdir -p ${bindir}
     mv *.exe ${bindir}/
-elif [[ ${target} == *riscv* ]]; then
-    cp unix/Makefile Makefile
-    make generic1 ${MFLAGS[@]} -j${nproc}
-    make install ${MFLAGS[@]}
 else
-    cp unix/Makefile Makefile
-    make generic ${MFLAGS[@]} -j${nproc}
+    cp unix/Makefile Makefile        
+
+    if [[ ${target} == *riscv* ]]; then
+       make generic1 ${MFLAGS[@]} -j${nproc}
+    elif [[ ${target} == *darwin* ]]; then
+       make macosx ${MFLAGS[@]} -j${nproc}
+    elif [[ ${target} == *freebsd* ]]; then
+       make bsd ${MFLAGS[@]} -j${nproc}
+    else
+       make generic ${MFLAGS[@]} -j${nproc}
+    fi
+
     make install ${MFLAGS[@]}
 fi
 install_license LICENSE
