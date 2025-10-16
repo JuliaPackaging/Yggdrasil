@@ -16,7 +16,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/scs*
-flags="DLONG=0 USE_OPENMP=1"
+flags="DLONG=0 USE_OPENMP=1 USE_SPECTRAL_CONES=1"
 if [[ "${target}" == *-mingw* ]]; then
     LBT=blastrampoline-5
 else
