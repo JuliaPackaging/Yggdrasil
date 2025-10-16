@@ -82,7 +82,7 @@ function get_script(; debug::Bool)
         cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
         ninja -C build -j ${nproc} install
         # Create unversioned symlinks
-        ln -s ocloc-25.35.3 ${bindir}/ocloc
+        ln -s ocloc-25.35.1 ${bindir}/ocloc
 
 """
 end
