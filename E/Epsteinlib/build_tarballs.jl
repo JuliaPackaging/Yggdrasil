@@ -40,6 +40,7 @@ platforms = [
     Platform("aarch64", "freebsd"; ),
     Platform("i686", "windows"; ),
     Platform("x86_64", "windows"; )
+    #Platform("aarch64", "macos";), # Does not compile because meson is unable to detect linker
 ]
 
 
