@@ -21,7 +21,7 @@ function configure_build(version)
 
     cd ${WORKSPACE}/srcdir/
 
-    prefix = "${WORKSPACE}/destdir"
+    prefix="${WORKSPACE}/destdir"
 
     rpm2cpio rocm-device-libs-20-4.rocm7.0.2.fc44.x86_64.rpm | cpio -idmv
     mv usr/lib64/rocm/llvm/lib/clang/20/amdgcn ${WORKSPACE}/destdir
