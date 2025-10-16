@@ -7,12 +7,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "NEO"
-version = v"25.31.34666"#.3
+version = v"25.35.35096"#.9
 
 # Collection of sources required to build this package.
 sources = [
     GitSource("https://github.com/intel/compute-runtime.git",
-              "bbc72778b447a8dd6c02f6fe499147fef79bf0e0"),
+              "06099fa8b4da8281809931ebdc08c634621e3203"),
     # patches
     DirectorySource("./bundled"),
 ]
@@ -110,7 +110,7 @@ products = [
 #       https://github.com/intel/compute-runtime/blob/master/manifests/manifest.yml.
 dependencies = [
     Dependency("gmmlib_jll"; compat="=22.8.1"),
-    Dependency("libigc_jll"; compat="=2.16.0"),
+    Dependency("libigc_jll"; compat="=2.18.5"),
     Dependency("oneAPI_Level_Zero_Headers_jll"; compat="=1.13"),
 ]
 
