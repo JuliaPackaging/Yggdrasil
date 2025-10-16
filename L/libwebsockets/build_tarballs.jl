@@ -52,9 +52,6 @@ cmake -B build \
     -DLWS_IPV6=ON \
     -DLWS_WITH_HTTP2=ON \
     -DLWS_WITH_SOCKS5=ON
-
-
-
 cmake --build build --parallel ${nproc}
 cmake --install build
 """ 
