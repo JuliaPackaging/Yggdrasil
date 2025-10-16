@@ -13,6 +13,15 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libwebsockets
+export PKG_CONFIG_ALL_STATIC=1
+export PKG_CONFIG_PATH=${libdir}/pkgconfig:${prefix}/lib/pkgconfig:${PKG_CONFIG_PATH}
+EXTRA_SHARED_LDFLAGS=""
+if [[ "${target}" == *linux* ]]; then
+    EXTRA_SHARED_LDFLAGS="${LDFLAGS} -pthread -ldl -lrt"
+elif [[ "${target}" == *apple-darwin* ]]; then
+    EXTRA_SHARED_LDFLAGS="${LDFLAGS}"
+fi
+export CMAKE_SHARED_LINKER_FLAGS="${EXTRA_SHARED_LDFLAGS}"
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -44,9 +53,7 @@ cmake -B build \
     -DLWS_WITH_HTTP2=ON \
     -DLWS_WITH_SOCKS5=ON
 
-if [[ "${target}" == *linux* ]]; then
-    export CMAKE_SHARED_LINKER_FLAGS="${LDFLAGS} -pthread -ldl -lrt"
-fi
+
 
 cmake --build build --parallel ${nproc}
 cmake --install build
