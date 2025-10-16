@@ -19,14 +19,11 @@ function configure_build(version)
     apk update
     apk add rpm2cpio
 
-    prefix = ${WORKSPACE}/destdir
-    echo ${prefix}
-
     cd ${WORKSPACE}/srcdir/
 
     rpm2cpio rocm-device-libs-20-4.rocm7.0.2.fc44.x86_64.rpm | cpio -idmv
-    mv usr/lib64/rocm/llvm/lib/clang/20/amdgcn ${prefix}
-    mv usr/share/licenses/rocm-device-libs/LICENSE.TXT ${prefix}
+    mv usr/lib64/rocm/llvm/lib/clang/20/amdgcn ${WORKSPACE}/destdir
+    mv usr/share/licenses/rocm-device-libs/LICENSE.TXT ${WORKSPACE}/destdir
     """
 
     sources = [FileSource(URLS[version]...)]
