@@ -42,7 +42,6 @@ cmake -B build \
     -DLWS_WITH_ZLIB=ON \
     -DLWS_STATIC_PIC=ON \
     -DLWS_WITH_MINIMAL_EXAMPLES=OFF \
-    -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++" \
     -DLWS_LINK_TESTAPPS_DYNAMIC=OFF \
     -DCMAKE_FIND_LIBRARY_SUFFIXES=".a" \
     -DUV_LIBRARY=${libdir}/libuv.a \
