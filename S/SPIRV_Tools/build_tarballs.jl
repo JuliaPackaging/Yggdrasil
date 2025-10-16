@@ -6,16 +6,16 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "SPIRV_Tools"
-version = v"2025.1"
+version = v"2025.4"
 
 # Collection of sources required to build SPIRV-Tools
 sources = [
-    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "f289d047f49fb60488301ec62bafab85573668cc"),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "7f2d9ee926f98fc77a3ed1e1e0f113b8c9c49458"),
     # vendored dependencies, see the DEPS file
-    GitSource("https://github.com/google/effcee.git", "12241cbc30f20730b656db7fd5a3fa36cd420843"),
-    GitSource("https://github.com/google/googletest", "c00fd25b71a17e645e4567fcb465c3fa532827d2"),
-    GitSource("https://github.com/google/re2.git", "6dcd83d60f7944926bfd308cc13979fc53dd69ca"),
-    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "09913f088a1197aba4aefd300a876b2ebbaa3391"),
+    GitSource("https://github.com/google/effcee.git", "514b52ec61609744d7e587d93a7ef9b60407ab45"),
+    GitSource("https://github.com/google/googletest", "50b8600c63c5487e901e2845a0f64d384a65f75d"),
+    GitSource("https://github.com/google/re2.git", "6569a9a3df256f4c0c3813cb8ee2f8eef6e2c1fb"),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "01e0577914a75a2569c846778c2f93aa8e6feddd"),
     DirectorySource("./bundled"),
 ]
 
