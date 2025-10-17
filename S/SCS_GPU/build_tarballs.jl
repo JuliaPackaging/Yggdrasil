@@ -6,7 +6,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "SCS_GPU"
-version = v"3.2.9"
+version = v"300.200.900"
 
 # Collection of sources required to build SCSBuilder
 sources = [
@@ -16,7 +16,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/scs*
-flags="DLONG=0 USE_OPENMP=1"
+flags="DLONG=0 USE_OPENMP=1 USE_SPECTRAL_CONES=1"
 if [[ "${target}" == *-mingw* ]]; then
     LBT=blastrampoline-5
 else

@@ -2,7 +2,7 @@ using Pkg
 using BinaryBuilder
 
 name = "SCS_MKL"
-version = v"3.2.9"
+version = v"300.200.900"
 
 # Collection of sources required to build SCSBuilder
 sources = [
@@ -12,7 +12,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/scs*
-scsflags="DLONG=1 USE_OPENMP=1 BLAS32=1 NOBLASSUFFIX=1"
+scsflags="DLONG=1 USE_OPENMP=1 BLAS32=1 NOBLASSUFFIX=1 USE_SPECTRAL_CONES=1"
 mklflags="-L${prefix}/lib -Wl,--no-as-needed -lmkl_rt -lmkl_core -lpthread -lm -ldl"
 
 make ${scsflags} MKLFLAGS="${mklflags}" out/libscsmkl.${dlext}
