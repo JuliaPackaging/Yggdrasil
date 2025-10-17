@@ -9,9 +9,9 @@ version = VersionNumber(upstream_version.major * 100, upstream_version.minor * 1
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource(
-        "https://www.scipopt.org/download/release/scipoptsuite-$(upstream_version).tgz",
-        "9cb8278ce40b59939a200a36bd1ee3b9a7923b3c6df5c31b135a5a42ecabac5a"
+    GitSource(
+        "https://github.com/scipopt/scip.git",
+        "5e2fb2354b5476a605c4b904111c77603cb8af78"
     ),
     ArchiveSource(
         "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
