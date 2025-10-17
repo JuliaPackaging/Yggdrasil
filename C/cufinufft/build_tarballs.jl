@@ -11,7 +11,7 @@ include(joinpath(@__DIR__, "..", "..", "platforms", "cuda.jl"))
 # needed for CUDA cuda, and would produce a giant amount of artifacts)
 name = "cufinufft"
 version = v"2.4.1"
-commit_hash = "e7144a5c08cbaf3e3b344a4fdd92bc3c7e468ff2" # v2.4.1
+commit_hash = "7919db50853f9933004d7c61e54b5782f7d8b00e" # current master
 preferred_gcc_version=v"11"
 
 # Collection of sources required to complete build
@@ -22,8 +22,10 @@ sources = [
 # Build script: cufinufft, all possible archs available for each CUDA version
 # - CMake toolchain looks for compiler in CUDA_PATH/bin/nvcc
 #   and libs in CUDA_PATH/lib64, so create link.
+# - Need higher version of CMake, so remove existing
 script = raw"""
 cd $WORKSPACE/srcdir/finufft*/
+apk del cmake
 
 export CUDA_PATH="$prefix/cuda"
 ln -s $prefix/cuda/lib $prefix/cuda/lib64
@@ -47,14 +49,12 @@ unlink $prefix/cuda/lib64
 
 # Build for all supported CUDA > v11
 platforms = expand_cxxstring_abis(CUDA.supported_platforms(min_version=v"11.0"))
+
 # Cmake toolchain breaks on aarch64, so only x86_64 for now
 filter!(p -> arch(p)=="x86_64", platforms)
 
 # cuFINUFFT does not compile with CUDA 12.5, so exclude
 filter!(p -> VersionNumber(p["cuda"]) != v"12.5", platforms)
-
-# CUDA 13 doesn't seem to build (yet)
-filter!(p -> VersionNumber(p["cuda"]) < v"13", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -63,7 +63,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 # NVTX_jll is needed for nvToolsExt. (tested with v3.1.0+2)
-dependencies = [Dependency("NVTX_jll")]
+# CMake needs higher version than what is bundled
+dependencies = [Dependency("NVTX_jll"),
+                HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.24.3"))]
 
 for platform in platforms
     should_build_platform(triplet(platform)) || continue
