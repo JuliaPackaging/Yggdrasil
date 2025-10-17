@@ -17,6 +17,7 @@ cd $WORKSPACE/srcdir/epsteinlib
 meson setup build --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release -Dbuild_python=false
 ninja -C build -j${nproc}
 ninja -C build install
+install_license LICENSES/*
 """
 
 # These are the platforms we will build for by default, unless further
