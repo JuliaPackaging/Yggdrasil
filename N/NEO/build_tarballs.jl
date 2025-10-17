@@ -112,6 +112,7 @@ dependencies = [
     Dependency("gmmlib_jll"; compat="=22.8.1"),
     Dependency("libigc_jll"; compat="=2.18.5"),
     Dependency("oneAPI_Level_Zero_Headers_jll"; compat="=1.13"),
+    Dependency("oneAPI_Level_Zero_Loader_jll"; compat="=1.24.3"),
 ]
 
 augment_platform_block = raw"""
