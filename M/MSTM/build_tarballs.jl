@@ -45,7 +45,7 @@ else
         # TODO: Implement this. We need to store the mpi.f90 that is generated when MPICH is built.
         ;;
     mpitrampoline)
-        wget https://raw.githubusercontent.com/eschnett/MPItrampoline/v5.0.1/include/mpi.F90
+        wget https://raw.githubusercontent.com/eschnett/MPItrampoline/v5.5.0/include/mpi.F90
         # gfortran -DGCC_ATTRIBUTES_NO_ARG_CHECK= -fallow-argument-mismatch -fcray-pointer -O2 -c mpi.F90
         gfortran -DGCC_ATTRIBUTES_NO_ARG_CHECK= -fcray-pointer -O2 -c mpi.F90
         ;;
@@ -77,7 +77,6 @@ platforms, platform_dependencies = MPI.augment_platforms(platforms)
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
 # Disable MPICH + libgfortran3 because `mpi.mod` is incompatible:
 platforms = filter(p -> !(p["mpi"] == "mpich" && libgfortran_version(p) == v"3"), platforms)

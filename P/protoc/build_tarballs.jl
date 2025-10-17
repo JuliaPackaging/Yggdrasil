@@ -43,7 +43,8 @@ cmake -B build -G Ninja \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -Dprotobuf_BUILD_LIBPROTOC=ON \
-    -Dprotobuf_BUILD_TESTS=OFF
+    -Dprotobuf_BUILD_TESTS=OFF \
+    -Dprotobuf_WITH_ZLIB=ON
 cmake --build build --parallel ${nproc}
 cmake --install build
 install_license LICENSE
@@ -155,6 +156,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
+    Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

@@ -76,7 +76,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("Glib_jll"),
-    BuildDependency("PCRE2_jll"),
+    BuildDependency("PCRE2_jll"; compat="10.42.0"),
     BuildDependency("Libiconv_jll"),
 
     # qemu needs glibc >=2.14 for CLOCK_BOOTTIME

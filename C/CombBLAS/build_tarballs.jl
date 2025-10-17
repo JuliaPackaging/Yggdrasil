@@ -37,7 +37,7 @@ platforms = filter(
     p -> !(Sys.iswindows(p) || Sys.isfreebsd(p) || libc(p) == "musl"),
     supported_platforms())
 platforms, platform_dependencies =
-    MPI.augment_platforms(platforms; MPItrampoline_compat = "5.2.1")
+    MPI.augment_platforms(platforms; MPItrampoline_compat = "5.5.0")
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
@@ -47,7 +47,6 @@ platforms = filter(
 )
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 platforms = expand_cxxstring_abis(platforms; skip = Returns(false))
 
 # The products that we will ensure are always built

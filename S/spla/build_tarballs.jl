@@ -79,7 +79,7 @@ dependencies = [
     Dependency("LLVMOpenMP_jll", platforms=filter(Sys.isapple, platforms))
 ]
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1", 
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.5.0", 
                                                          OpenMPI_compat="4.1.6, 5")
 
 # Avoid platforms where the MPI implementation isn't supported
@@ -88,7 +88,6 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p
 
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
 append!(dependencies, platform_dependencies)
 

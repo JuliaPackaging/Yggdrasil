@@ -10,7 +10,7 @@ version = v"8.2.1"
 superlu_dist_version = v"8.2.1"
 
 OpenMPI_version="4.1.6, 5.0"    # adding 4.1.6 to ensure that 32bit builds still work
-MPItrampoline_version="5.2.1"
+MPItrampoline_version="5.5.0"
 
 # Collection of sources required to complete build
 sources = [
@@ -110,7 +110,6 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && Sys.iswindows(p) ), platforms
 
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
 # The products that we will ensure are always built
 products = [

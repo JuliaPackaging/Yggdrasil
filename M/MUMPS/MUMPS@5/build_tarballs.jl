@@ -105,7 +105,7 @@ augment_platform_block = """
 
 platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.5.0")
 
 # Remove platforms where some dependencies are missing
 filter!(p -> arch(p) != "riscv64", platforms)
@@ -123,7 +123,6 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "x86_64" && os(p) 
 
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
 # The products that we will ensure are always built
 products = [

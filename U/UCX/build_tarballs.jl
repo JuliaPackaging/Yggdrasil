@@ -6,13 +6,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "UCX"
-version = v"1.18.0"
+version = v"1.18.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/openucx/ucx.git",
-                  "693d02837894b9c346c9f91b105e4aff6f259c09"),
-    ]
+    GitSource("https://github.com/openucx/ucx.git", "d9aa5650d4cbcbb00d61af980614dbe9dd27a1f2"),
+]
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -43,7 +42,7 @@ FLAGS+=(--enable-frame-pointer)
 FLAGS+=(--enable-cma)
 FLAGS+=(--with-rdmacm=${prefix})
 
-if [[ "${target}" != *aarch64* ]]; then
+if [[ "${target}" == *ppc64le* || "${target}" == *x86_64* ]]; then
     FLAGS+=(--with-cuda=${prefix}/cuda)
 fi
 
@@ -64,9 +63,9 @@ install_license LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Platform("x86_64", "linux"; libc="glibc"),
     Platform("aarch64", "linux"; libc="glibc"),
     Platform("powerpc64le", "linux"; libc="glibc"),
+    Platform("x86_64", "linux"; libc="glibc"),
 ]
 
 
@@ -103,4 +102,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"5")
+               julia_compat="1.6", preferred_gcc_version=v"5")

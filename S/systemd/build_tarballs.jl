@@ -85,7 +85,7 @@ dependencies = [
     #Dependency("Bzip2_jll"),
     #Dependency("Zlib_jll"),
     #Dependency("acl_jll"),
-    #Dependency("PCRE2_jll"),
+    #Dependency("PCRE2_jll"; compat="10.42.0"),
     #Dependency("Glib_jll"),
     #Dependency("Dbus_jll"),
     #Dependency("xkbcommon_jll"),

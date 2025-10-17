@@ -58,7 +58,7 @@ platforms = supported_platforms(; experimental=true)
 # p4est with MPI enabled does not compile for 32 bit Windows
 platforms = filter(p -> !(Sys.iswindows(p) && nbits(p) == 32), platforms)
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.5.0")
 
 # Disable OpenMPI since it doesn't build. This could probably be fixed
 # via more explicit MPI configuraiton options.
@@ -69,7 +69,6 @@ platforms = filter(p -> p["mpi"] ≠ "openmpi", platforms)
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
 # The products that we will ensure are always built
 products = [

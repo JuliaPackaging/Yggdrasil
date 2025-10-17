@@ -3,13 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "SZ3"
-SZ3_version = v"3.1.7"
-version = v"3.1.8"
+version = v"3.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/szcompressor/SZ3/releases/download/v$(SZ3_version)/SZ3-$(SZ3_version).zip",
-                  "cf3ba7fae82f9483c4089963b9951ba9bf6b9eca5f712727fb92f2390b778aa8"),
+    ArchiveSource("https://github.com/szcompressor/SZ3/releases/download/v$(version)/SZ3-v$(version).zip",
+                  "772da1fd63ed317181190bedd83dff1408f76f7a98457e42a6a67fd9cb436f7a"),
 ]
 
 # Bash recipe for building across all platforms
@@ -29,22 +28,20 @@ else
     install -Dvm 755 "libhdf5sz3.${dlext}" "${libdir}/libhdf5sz3.${dlext}"
 fi
 
-mkdir build
-cd build
-cmake \
+cmake -B build -G Ninja \
+    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DBUILD_MDZ=ON \
-    ${hdf5_options} \
-    ..
-cmake --build . --config RelWithDebInfo --parallel ${nproc}
+    ${hdf5_options}
+cmake --build build
 
 # Fix permissions on generated file (chmod does not work)
 cat SZ3ConfigVersion.cmake >SZ3ConfigVersion.cmake.tmp
 mv SZ3ConfigVersion.cmake.tmp SZ3ConfigVersion.cmake
 
-cmake --build . --config RelWithDebInfo --parallel ${nproc} --target install
+cmake --install build
 install_license ../copyright-and-BSD-license.txt
 """
 
@@ -53,12 +50,12 @@ install_license ../copyright-and-BSD-license.txt
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
-# SZ3 requires a 64-bit architecture (and Windows uses 32-bit size_t?)
-filter!(p -> nbits(p) ≥ 64 && !Sys.iswindows(p), platforms)
+#TODO # SZ3 requires a 64-bit architecture (and Windows uses 32-bit size_t?)
+#TODO filter!(p -> nbits(p) ≥ 64 && !Sys.iswindows(p), platforms)
 
-# There are C++ build errors with musl: the type `uint` is not declared.
-# Try re-enabling this for version > 3.1.7.
-filter!(p -> libc(p) ≠ "musl", platforms)
+#TODO # There are C++ build errors with musl: the type `uint` is not declared.
+#TODO # Try re-enabling this for version > 3.1.7.
+#TODO filter!(p -> libc(p) ≠ "musl", platforms)
 
 # The products that we will ensure are always built
 products = [

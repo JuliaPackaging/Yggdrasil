@@ -48,7 +48,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Zlib_jll"),
-    Dependency("Bzip2_jll"; compat="1.0.8"),
+    Dependency("Bzip2_jll"; compat="1.0.9"),
     Dependency("XZ_jll"; compat="5.2.5"),
     Dependency("LibCURL_jll"; compat="7.73,8"),
     Dependency("OpenSSL_jll"; compat="3.0.8"),

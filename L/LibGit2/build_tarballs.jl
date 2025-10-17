@@ -65,7 +65,7 @@ llvm_version = v"13.0.1"
 dependencies = [
     Dependency("LibSSH2_jll"; compat="1.11.3"),
     Dependency("OpenSSL_jll"; compat="3.0.16", platforms=filter(p -> !(Sys.iswindows(p) || Sys.isapple(p)), platforms)),
-    Dependency("PCRE2_jll"),
+    Dependency("PCRE2_jll"; compat="10.42.0"),
     Dependency("Zlib_jll"; compat="1.2.12"),
     BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
                     platforms=filter(p -> sanitize(p)=="memory", platforms)),

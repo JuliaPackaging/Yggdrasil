@@ -3,103 +3,140 @@
 using BinaryBuilder, Pkg
 
 name = "GRASS"
-version = v"7.8.5"
+version = v"8.4.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://grass.osgeo.org/grass78/source/grass-$version.tar.gz", "a359bb665524ecccb643335d70f5436b1c84ffb6a0e428b78dffebacd983ff37"),
-    DirectorySource("./bundled")
+    ArchiveSource("https://github.com/OSGeo/grass/releases/download/$(version)/grass-$(version).tar.xz",
+                  "050d470134b29352aaffd2e93621d04705b816a7ca40c0be2c65cf9d62e624a0"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+#TODO cd $WORKSPACE/srcdir/grass-*
 
-cd $WORKSPACE/srcdir/grass-*/
+#TODO export LDFLAGS="-L${libdir}"
 
-export LDFLAGS="-L${libdir}"
+#TODO #patch remove g.proj from general/Makefile for right now, throws a segmentation fault
+#TODO for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+#TODO     atomic_patch -p1 ${f}
+#TODO done
 
-#patch remove g.proj from general/Makefile for right now, throws a segmentation fault
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
+#TODO if [[ "${target}" == "${MACHTYPE}" ]]; then
+#TODO     # Remove system libexpat to avoid confusion
+#TODO     rm /usr/lib/libexpat.so*
+#TODO fi
 
-if [[ "${target}" == "${MACHTYPE}" ]]; then
-    # Remove system libexpat to avoid confusion
-    rm /usr/lib/libexpat.so*
-fi
+#TODO # Force linking to libiconv with `-liconv`
+#TODO sed -i 's/ICONVLIB=.*/ICONVLIB=-liconv/' configure
 
-# Force linking to libiconv with `-liconv`
-sed -i 's/ICONVLIB=.*/ICONVLIB=-liconv/' configure
+#TODO # Need a posix regex for Windows
+#TODO if [[ "${target}" == *-mingw* ]]; then
+#TODO     cp "${includedir}/pcreposix.h" "${includedir}/regex.h"
+#TODO     # Force linking to libregex with `-lpcreposix-0`
+#TODO     sed -i 's/-lregex/-lpcreposix-0/' configure
+#TODO fi
 
-# Need a posix regex for Windows
-if [[ "${target}" == *-mingw* ]]; then
-    cp "${includedir}/pcreposix.h" "${includedir}/regex.h"
-    # Force linking to libregex with `-lpcreposix-0`
-    sed -i 's/-lregex/-lpcreposix-0/' configure
-fi
+#TODO ./configure \
+#TODO     --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
+#TODO     --enable-shared \
+#TODO     --with-python=no \
+#TODO     --with-cxx \
+#TODO     --with-lapack --with-lapack-includes=${includedir} \
+#TODO     --with-tiff --with-tiff-includes=${includedir} \
+#TODO     --with-png --with-png-includes=${includedir} \
+#TODO     --with-sqlite --with-sqlite-includes=${includedir} \
+#TODO     --with-opengl=no \
+#TODO     --with-fftw --with-fftw-includes=${includedir} \
+#TODO     --with-cairo --with-cairo-includes=${includedir}/cairo --with-cairo-ldflags=-lfontconfig \
+#TODO     --with-freetype --with-freetype-includes=${includedir}/freetype2 \
+#TODO     --with-regex \
+#TODO     --with-zstd --with-zstd-includes=${includedir} \
+#TODO     --with-geos=${bindir}/geos-config \
+#TODO     --with-gdal \
+#TODO     --with-proj --with-proj-share=${prefix}/share/proj --with-proj-includes=${includedir}
+#TODO 
+#TODO # Build only the libraries
+#TODO DIRS=(
+#TODO     include
+#TODO     tools
+#TODO     lib/external/shapelib
+#TODO     lib/datetime
+#TODO     lib/gis
+#TODO     lib/linkm
+#TODO     lib/db
+#TODO     lib/btree2
+#TODO     lib/vector
+#TODO     db/drivers
+#TODO     lib
+#TODO     imagery/i.ortho.photo/lib
+#TODO     vector/v.lrs/lib
+#TODO     raster/r.li/r.li.daemon
+#TODO     raster/r.sim/simlib
+#TODO )
+#TODO 
+#TODO for dir in "${DIRS[@]}"; do
+#TODO     make -j${nproc} -C "${dir}"
+#TODO done
+#TODO 
+#TODO # Manually install libraries and header files
+#TODO cp dist.*/lib/*.${dlext}* ${libdir}/.
+#TODO cp -r dist.*/include/grass ${includedir}/.
+#TODO 
+#TODO if [[ "${target}" == *-mingw* ]]; then
+#TODO     # Cover up the traces of the hack
+#TODO     rm "${includedir}/regex.h"
+#TODO fi
+#TODO 
+#TODO install_license COPYING GPL.TXT
+
+
+
+cd ${WORKSPACE}/srcdir/grass-*
+
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/configure.patch
 
 ./configure \
-    --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
+    --build=${MACHTYPE} \
+    --host=${target} \
+    --prefix=${prefix} \
     --enable-shared \
-    --with-python=no \
+    --with-cairo \
+    --with-cairo-includes=${includedir}/cairo --with-cairo-ldflags=-lfontconfig \
     --with-cxx \
-    --with-lapack --with-lapack-includes=${includedir} \
-    --with-tiff --with-tiff-includes=${includedir} \
-    --with-png --with-png-includes=${includedir} \
-    --with-sqlite --with-sqlite-includes=${includedir} \
-    --with-opengl=no \
-    --with-fftw --with-fftw-includes=${includedir} \
-    --with-cairo --with-cairo-includes=${includedir}/cairo --with-cairo-ldflags=-lfontconfig \
-    --with-freetype --with-freetype-includes=${includedir}/freetype2 \
-    --with-regex \
-    --with-zstd --with-zstd-includes=${includedir} \
-    --with-geos=${bindir}/geos-config \
+    --with-fftw \
+    --with-fftw-includes=${includedir} \
+    --with-freetype \
+    --with-freetype-includes=${includedir}/freetype2 \
     --with-gdal \
-    --with-proj --with-proj-share=${prefix}/share/proj --with-proj-includes=${includedir}
+    --with-geos=${bindir}/geos-config \
+    --with-lapack \
+    --with-lapack-includes=${includedir} \
+    --with-opengl=no \
+    --with-png \
+    --with-png-includes=${includedir} \
+    --with-proj \
+    --with-proj-share=${prefix}/share/proj --with-proj-includes=${includedir} \
+    --with-python=no \
+    --with-regex \
+    --with-sqlite \
+    --with-sqlite-includes=${includedir} \
+    --with-tiff \
+    --with-tiff-includes=${includedir} \
+    --with-zstd \
+    --with-zstd-includes=${includedir}
 
-# Build only the libraries
-DIRS=(
-    include
-    tools
-    lib/external/shapelib
-    lib/datetime
-    lib/gis
-    lib/linkm
-    lib/db
-    lib/btree2
-    lib/vector
-    db/drivers
-    lib
-    imagery/i.ortho.photo/lib
-    vector/v.lrs/lib
-    raster/r.li/r.li.daemon
-    raster/r.sim/simlib
-)
-
-for dir in "${DIRS[@]}"; do
-    make -j${nproc} -C "${dir}"
-done
-
-# Manually install libraries and header files
-cp dist.*/lib/*.${dlext}* ${libdir}/.
-cp -r dist.*/include/grass ${includedir}/.
-
-if [[ "${target}" == *-mingw* ]]; then
-    # Cover up the traces of the hack
-    rm "${includedir}/regex.h"
-fi
-
-install_license COPYING GPL.TXT
+make -j${nproc}
+make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
 
-
 # The products that we will ensure are always built
 products = [
-
     LibraryProduct(["libgrass_lidar", "libgrass_lidar.7.8"], :libgrass_lidar),
     LibraryProduct(["libgrass_neta", "libgrass_neta.7.8"], :libgrass_neta),
     LibraryProduct(["libgrass_htmldriver", "libgrass_htmldriver.7.8"], :libgrass_htmldriver),
@@ -559,20 +596,30 @@ products = [
     # ExecutableProduct("ram", :ram, "grass78/etc/r.watershed"),
     # ExecutableProduct("vector", :vector, "grass78/etc/lister"),
     # ExecutableProduct("cell", :cell, "grass78/etc/lister")
-
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="GDAL_jll", uuid="a7073274-a066-55f0-b90d-d619367d196c"))
-    Dependency(PackageSpec(name="PROJ_jll", uuid="58948b4f-47e0-5654-a9ad-f609743f8632"))
-    Dependency(PackageSpec(name="Cairo_jll", uuid="83423d85-b0ee-5818-9007-b63ccbeb887a"))
-    Dependency(PackageSpec(name="FreeType2_jll", uuid="d7e528f0-a631-5988-bf34-fe36492bcfd7"); compat="2.10.4")
-    Dependency(PackageSpec(name="LAPACK_jll", uuid="51474c39-65e3-53ba-86ba-03b1b862ec14"))
-    Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a"))
-    Dependency(PackageSpec(name="Libiconv_jll", uuid="94ce4f54-9a6c-5748-9c1c-f9c7231a4531"))
-    BuildDependency(PackageSpec(name="Xorg_xorgproto_jll", uuid="c4d99508-4286-5418-9131-c86396af500b"))
+    BuildDependency(PackageSpec(name="Xorg_xorgproto_jll", uuid="c4d99508-4286-5418-9131-c86396af500b")),
+
+    Dependency(PackageSpec(name="Cairo_jll", uuid="83423d85-b0ee-5818-9007-b63ccbeb887a"); compat="1.18.5"),
+    Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a"); compat="3.3.11"),
+    Dependency(PackageSpec(name="FreeType2_jll", uuid="d7e528f0-a631-5988-bf34-fe36492bcfd7"); compat="2.13.4"),
+    Dependency(PackageSpec(name="GDAL_jll", uuid="a7073274-a066-55f0-b90d-d619367d196c"); compat="303.1100.300"),
+    Dependency(PackageSpec(name="LAPACK_jll", uuid="51474c39-65e3-53ba-86ba-03b1b862ec14"); compat="3.12.0"),
+    Dependency(PackageSpec(name="Libiconv_jll", uuid="94ce4f54-9a6c-5748-9c1c-f9c7231a4531"); compat="1.18.0"),
+    Dependency(PackageSpec(name="PROJ_jll", uuid="58948b4f-47e0-5654-a9ad-f609743f8632"); compat="902.600.200"),
+    Dependency("GEOS_jll"; compat="3.13.1"),
+    Dependency("Libtiff_jll"; compat="4.7.1"),
+    Dependency("PDAL_jll"; compat="~2.9.0"),
+    Dependency("Zstd_jll"; compat="1.5.7"),
+    Dependency("libpng_jll"; compat="1.6.50"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"7.1.0", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6",
+               #TODO preferred_gcc_version=v"7.1.0",
+               #TODO preferred_gcc_version=v"9",
+               preferred_gcc_version=v"11",
+               )

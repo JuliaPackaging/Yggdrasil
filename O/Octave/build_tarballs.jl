@@ -71,7 +71,7 @@ dependencies = [
     Dependency("Sundials32_jll"),
     Dependency("QRupdate_ng_jll"),
     Dependency("CXSparse_jll"; compat="400.400.100"),
-    Dependency("PCRE2_jll"),
+    Dependency("PCRE2_jll"; compat="10.42.0"),
     Dependency("Readline_jll"),
     Dependency("Libiconv_jll"),
     Dependency("Zlib_jll"),

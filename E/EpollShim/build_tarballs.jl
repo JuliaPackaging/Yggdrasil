@@ -3,29 +3,45 @@
 using BinaryBuilder, Pkg
 
 name = "EpollShim"
-version = v"0.0.20230411"
+version = v"0.0.20240608"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/jiixyj/epoll-shim.git",
-              "538cf422ee062eca456c5455f666ae5c41c3c519"),
+              "5187f4b51316f61ca78c74db117071607a98069c"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/epoll-shim
-mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_PREFIX_PATH=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} .. || true
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_PREFIX_PATH=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_TESTING=OFF \
-    -DALLOWS_ONESHOT_TIMERS_WITH_TIMEOUT_ZERO_EXITCODE=0 HAVE_POLLRDHUP_RUN_RESULT=0 \
-    ..
 
-sed -i 's/PLEASE_FILL_OUT-NOTFOUND/0x2000/' install-include/sys/epoll.h
-cmake --build . -j${nproc} --target install
+# mkdir build && cd build
+# cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_PREFIX_PATH=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} .. || true
+# cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+#     -DCMAKE_PREFIX_PATH=${prefix} \
+#     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+#     -DCMAKE_BUILD_TYPE=Release \
+#     -DBUILD_TESTING=OFF \
+#     -DALLOWS_ONESHOT_TIMERS_WITH_TIMEOUT_ZERO_EXITCODE=0 HAVE_POLLRDHUP_RUN_RESULT=0 \
+#     ..
+# 
+# sed -i 's/PLEASE_FILL_OUT-NOTFOUND/0x2000/' install-include/sys/epoll.h
+# cmake --build . -j${nproc} --target install
+
+options=(
+    -DCMAKE_INSTALL_PREFIX=${prefix}
+    -DCMAKE_PREFIX_PATH=${prefix}
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+    -DCMAKE_BUILD_TYPE=Release
+    -DBUILD_TESTING=OFF
+    -DALLOWS_ONESHOT_TIMERS_WITH_TIMEOUT_ZERO_EXITCODE=0
+    -DHAVE_POLLRDHUP_RUN_RESULT=0
+)
+
+cmake -Bbuilddir "${options[@]}"
+cmake --build builddir -j${nproc}
+cmake --install builddir
+false
 """
 
 # These are the platforms we will build for by default, unless further
@@ -44,4 +60,3 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version = v"8", lock_microarchitecture=false)
-# Build trigger: 1

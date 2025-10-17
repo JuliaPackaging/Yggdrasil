@@ -117,7 +117,9 @@ CMAKE_FLAGS=()
 CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING=host)
 CMAKE_FLAGS+=(-DLLVM_HOST_TRIPLE=${MACHTYPE})
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
-if [[ "${LLVM_MAJ_VER}" -gt "11" ]]; then
+if [[ "${LLVM_MAJ_VER}" -ge "20" ]]; then
+    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang;clang-tools-extra;flang;mlir')
+elif [[ "${LLVM_MAJ_VER}" -gt "11" ]]; then
     CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang;clang-tools-extra;mlir')
 else
     CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang;clang-tools-extra')
@@ -198,8 +200,8 @@ fi
 LLVM_TARGETS=$(IFS=';' ; echo "${TARGETS[*]}")
 CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING=$LLVM_TARGETS)
 
-# We mostly care about clang and LLVM
-PROJECTS=(llvm clang clang-tools-extra compiler-rt lld)
+# We mostly care about clang, flang, and LLVM
+PROJECTS=(llvm clang clang-tools-extra flang compiler-rt lld)
 # Note: we disable building MLIR dylib on 32-bit archs because of <https://github.com/llvm/llvm-project/issues/61581>.
 if [[ ("${LLVM_MAJ_VER}" -eq "12" && "${LLVM_PATCH_VER}" -gt "0") || "${LLVM_MAJ_VER}" -gt "12" ]]; then
     PROJECTS+=(mlir)
@@ -489,6 +491,30 @@ mv -v ${LLVM_ARTIFACT_DIR}/lib/cmake/clang ${prefix}/lib/cmake/clang
 install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
 """
 
+const flangscript = raw"""
+# First, find (true) LLVM library directory in ~/.artifacts somewhere
+LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
+
+# Clear out our `${prefix}`
+rm -rf ${prefix}/*
+
+# Copy over `flang`, `libflang` and `include`, specifically.
+mkdir -p ${prefix}/include ${prefix}/bin ${libdir} ${prefix}/lib ${prefix}/tools ${prefix}/lib/cmake
+mv -v ${LLVM_ARTIFACT_DIR}/include/flang* ${prefix}/include/
+
+# LLVM isn't very reliable in choosing tools over bin even if we tell it to
+# mv -v ${LLVM_ARTIFACT_DIR}/tools/flang* ${prefix}/tools/ ; true
+# mv -v ${LLVM_ARTIFACT_DIR}/bin/flang* ${prefix}/tools/ ; true
+find ${LLVM_ARTIFACT_DIR}/tools/ -maxdepth 1 -type f -name "flang*" -print0 -o -type l -name "flang*" -print0 | xargs -0r mv -v -t "${prefix}/tools/"
+find ${LLVM_ARTIFACT_DIR}/bin/ -maxdepth 1 -type f -name "flang*" -print0 -o -type l -name "flang*" -print0 | xargs -0r mv -v -t "${prefix}/tools/"
+
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/libflang*.${dlext}* ${libdir}/
+mv -v ${LLVM_ARTIFACT_DIR}/lib/libflang*.a ${prefix}/lib
+mv -v ${LLVM_ARTIFACT_DIR}/lib/flang ${prefix}/lib/flang
+mv -v ${LLVM_ARTIFACT_DIR}/lib/cmake/flang ${prefix}/lib/cmake/flang
+install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
+"""
+
 const mlirscript_v13 = raw"""
 # First, find (true) LLVM library directory in ~/.artifacts somewhere
 LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
@@ -762,6 +788,12 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
             LibraryProduct("libclang-cpp", :libclang_cpp; dont_dlopen),
             ExecutableProduct(["clang", "clang-$(version.major)"], :clang, "tools"),
         ]
+    elseif name == "Flang"
+        script = flangscript
+        products = [
+            LibraryProduct("libflang", :libflang; dont_dlopen),
+            ExecutableProduct(["flang", "flang-$(version.major)"], :flang, "tools"),
+        ]
     elseif name == "MLIR"
         script = if version < v"14"
             mlirscript_v13
@@ -862,19 +894,19 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
     if assert
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_assert_jll", LLVM_full_version)))
         if !augmentation
-            if name in ("Clang", "LLVM", "MLIR", "LLD", "LLVM_utils")
+            if name in ("Clang", "Flang", "LLVM", "MLIR", "LLD", "LLVM_utils")
                 push!(dependencies, Dependency("libLLVM_assert_jll", libLLVM_version, compat=compat_version))
             end
 
             name = "$(name)_assert"
         else
-            if name in ("Clang", "LLVM", "MLIR", "LLD", "LLVM_utils")
+            if name in ("Clang", "Flang", "LLVM", "MLIR", "LLD", "LLVM_utils")
                 push!(dependencies, Dependency("libLLVM_jll", libLLVM_version, compat=compat_version))
             end
         end
     else
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", LLVM_full_version)))
-        if name in ("Clang", "LLVM", "MLIR", "LLD", "LLVM_utils")
+        if name in ("Clang", "Flang", "LLVM", "MLIR", "LLD", "LLVM_utils")
             push!(dependencies, Dependency("libLLVM_jll", libLLVM_version, compat=compat_version))
         end
     end

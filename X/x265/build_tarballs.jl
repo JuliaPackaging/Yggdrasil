@@ -33,6 +33,7 @@ sed -i 's/-m\(arch\|cpu\)=[-+.0-9A-Za-z_]*//g' $(dirname $(which gcc))/*
 # Remove `-march=native` and `-mcpu=native` flags in x265
 sed -i 's/-m\(arch\|cpu\)=native//g' source/CMakeLists.txt source/dynamicHDR10/CMakeLists.txt
 
+# See <https://bitbucket.org/multicoreware/x265_git/issues/977>
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/neon.patch
 
 cmake -S source -B build \

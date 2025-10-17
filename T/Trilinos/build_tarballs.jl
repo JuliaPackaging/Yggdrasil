@@ -253,7 +253,7 @@ dependencies = [
 # Manually set a feasible version.
 for (i, dep) in enumerate(platform_dependencies)
     if dep.pkg.name == "MPItrampoline_jll"
-        platform_dependencies[i] = Dependency(dep.pkg; compat="5.3.1", platforms=dep.platforms)
+        platform_dependencies[i] = Dependency(dep.pkg; compat="5.5.0", platforms=dep.platforms)
     end
 end
 

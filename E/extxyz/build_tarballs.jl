@@ -30,7 +30,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="PCRE2_jll", uuid="efcefdf7-47ab-520b-bdef-62a2eaa19f15")),
+    Dependency(PackageSpec(name="PCRE2_jll", uuid="efcefdf7-47ab-520b-bdef-62a2eaa19f15"); compat="10.42.0"),
     Dependency(PackageSpec(name="libcleri_jll", uuid="cdc7adba-bef8-5cba-a7ee-c792dee3081e"))
 ]
 

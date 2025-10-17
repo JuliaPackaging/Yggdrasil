@@ -20,7 +20,7 @@ cd $WORKSPACE/srcdir/libXt-*
 # (Already fixed upstream.)
 atomic_patch -p1 $WORKSPACE/srcdir/patches/Xtos.h.patch
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-static=no
 make -j${nproc}
 make install
 """

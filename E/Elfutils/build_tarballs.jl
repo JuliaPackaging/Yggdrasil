@@ -77,7 +77,7 @@ dependencies = [
     Dependency("Zlib_jll"),
     # Future versions of bzip2 should allow a more relaxed compat because the
     # soname of the macOS library shouldn't change at every patch release.
-    Dependency("Bzip2_jll"; compat="1.0.8"),
+    Dependency("Bzip2_jll"; compat="1.0.9"),
     Dependency("XZ_jll"),
     Dependency("argp_standalone_jll"),
     Dependency("fts_jll"),

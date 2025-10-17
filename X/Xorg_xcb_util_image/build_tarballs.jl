@@ -20,7 +20,7 @@ update_configure_scripts
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --enable-malloc0returnsnull=no \
-    --with-pic
+    --with-pic --enable-static=no
 make -j${nproc}
 make install
 """

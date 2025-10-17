@@ -5,17 +5,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "PETSc"
-version = v"3.22.0"
-petsc_version = v"3.22.0"
-
-MPItrampoline_compat_version="5.5.0"
-MicrosoftMPI_compat_version="10.1.4" 
-MPICH_compat_version="4.2.3"    
+version = v"3.23.0"
 
 # Collection of sources required to build PETSc. 
 sources = [
-    ArchiveSource("https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-$(petsc_version).tar.gz",
-                  "2c03f7c0f7ad2649240d4989355cf7fb7f211b75156cd7d424e1d9dd7dfb290b"),
+    ArchiveSource("https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-$(version).tar.gz",
+                  "aeebd7094f4d583fd04700e73779caa7d9a3d54742e95eff2c3dd87768a79063"),
     DirectorySource("./bundled"),
 ]
 
@@ -61,17 +56,17 @@ if [[ "${target}" == *-mingw* ]]; then
     USE_MPI=0
 
 else
-    if grep -q MPICH_NAME $prefix/include/mpi.h; then
+    if [[ ${bb_full_target} = *mpich* ]]; then
         USE_MPI=1
         MPI_FFLAGS=""
         MPI_LIBS=--with-mpi-lib="[${libdir}/libmpifort.${dlext},${libdir}/libmpi.${dlext}]"
         MPI_INC=--with-mpi-include=${includedir}
-    elif grep -q MPItrampoline $prefix/include/mpi.h; then
+    elif [[ ${bb_full_target} = *mpitrampoline* ]]; then
         USE_MPI=1
         MPI_FFLAGS="-fcray-pointer"
         MPI_LIBS=--with-mpi-lib="[${libdir}/libmpitrampoline.${dlext}]"
         MPI_INC=--with-mpi-include=${includedir}
-    elif grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
+    elif [[ ${bb_full_target} = *openmpi* ]]; then
         USE_MPI=1
         MPI_FFLAGS=""
         MPI_LIBS=--with-mpi-lib="[${libdir}/libmpi_usempif08.${dlext},${libdir}/libmpi_usempi_ignore_tkr.${dlext},${libdir}/libmpi_mpifh.${dlext},${libdir}/libmpi.${dlext}]"
@@ -406,35 +401,7 @@ platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686
                                                                   Platform("aarch64","linux"; libc="musl")]))
 
 # a few, but not all, platforms with libgfortran 3.0.0 are excluded
-platforms, platform_dependencies = MPI.augment_platforms(platforms; 
-                                        MPItrampoline_compat = MPItrampoline_compat_version,
-                                        MPICH_compat         = MPICH_compat_version,
-                                        MicrosoftMPI_compat  = MicrosoftMPI_compat_version )
-
-# mpitrampoline and libgfortran 3 don't seem to work
-platforms = filter(p -> !(libgfortran_version(p) == v"3" && p.tags["mpi"]=="mpitrampoline"), platforms)
-
-# aarch64-linux-gnu-libgfortran3-mpi+mpich fails to build with a compile time segfault
-platforms = filter(p -> !(libgfortran_version(p) == v"3" && arch(p) == "aarch64" && Sys.islinux(p) && p["mpi"] == "mpich"), platforms)
-
-# aarch64-linux-gnu-libgfortran4-mpi+mpitrampoline fails to build with a compile time segfault
-platforms = filter(p -> !(libgfortran_version(p) == v"4" && arch(p) == "aarch64" && Sys.islinux(p) && p["mpi"] == "mpitrampoline"), platforms)
-
-# Avoid platforms where the MPI implementation isn't supported
-# OpenMPI
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv7l" && libc(p) == "glibc"), platforms)
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "x86_64" && libc(p) == "musl"), platforms)
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "i686"), platforms)
-
-# this excludes only aarch64-unknown-freebsd;  can be removed once OpenMPI has been built for this platforms.
-platforms = filter(p -> !(p["mpi"] == "openmpi" && Sys.isfreebsd(p) && arch(p) == "aarch64"),  platforms)   
-
-# MPItrampoline
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl" ), platforms)
-
-# MPICH
-platforms = filter(p -> !(p["mpi"] == "mpich" && Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)  # can be removed once MPICH has been built for aarch64-unknown-freebsd
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 products = [
     ExecutableProduct("ex4", :ex4)

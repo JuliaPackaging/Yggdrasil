@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 name = "zbar"
 version = v"0.23.93"
 
-# Collection of sources required to build imagemagick
+# Collection of sources required to build zbar
 sources = [
     GitSource("https://github.com/mchehab/zbar.git", "bb05ec54eec57f8397cb13fb9161372a281a1219"),
 ]

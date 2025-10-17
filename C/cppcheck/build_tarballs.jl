@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "cppcheck"
-version = v"2.13.0"
+version = v"2.16.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/danmar/cppcheck.git", "da29903ffcbde465b6c2b47e8dc38277743f47ec"),
+    GitSource("https://github.com/danmar/cppcheck.git", "02be7e6e0c35a8b2e46df30b0387beff5c58acb0"),
 ]
 
 # Bash recipe for building across all platforms

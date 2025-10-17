@@ -93,7 +93,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 # Comparison of size without Qt and without GLFW, on a depot containing only the JLL and dependencies:
 dependencies = [
-    Dependency("Bzip2_jll"; compat="1.0.8"),
+    Dependency("Bzip2_jll"; compat="1.0.9"),
     Dependency("Cairo_jll"; compat="1.16.1"),
     Dependency("FFMPEG_jll"),
     Dependency("Fontconfig_jll"),

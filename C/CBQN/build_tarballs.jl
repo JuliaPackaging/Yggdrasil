@@ -43,7 +43,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="Libffi_jll", uuid="e9f186c6-92d2-5b65-8a66-fee21dc1b490"); compat="3.4.4"),
+    Dependency(PackageSpec(name="Libffi_jll", uuid="e9f186c6-92d2-5b65-8a66-fee21dc1b490"); compat="~3.4.4"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

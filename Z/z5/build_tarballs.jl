@@ -51,7 +51,7 @@ dependencies = [
     BuildDependency("xtensor_jll"),
     BuildDependency("xtl_jll"),
     Dependency("Blosc_jll"; compat="1.21.1"),
-    Dependency("Bzip2_jll"; compat="1.0.8"),
+    Dependency("Bzip2_jll"; compat="1.0.9"),
     Dependency("Lz4_jll"; compat="1.9.3"),
     Dependency("XZ_jll"; compat="5.2.5"),
     Dependency("Zlib_jll"; compat="1.2.12"),

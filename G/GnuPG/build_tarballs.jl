@@ -71,7 +71,7 @@ dependencies = [
     Dependency("Zlib_jll"),
     Dependency("Libassuan_jll"),
     Dependency("OpenLDAPClient_jll"),
-    Dependency("Bzip2_jll"; compat="1.0.8"),
+    Dependency("Bzip2_jll"; compat="1.0.9"),
     Dependency("SQLite_jll"),
     Dependency("libusb_jll"),
     Dependency("Nettle_jll"; compat="~3.10.0"),

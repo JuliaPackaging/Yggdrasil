@@ -76,13 +76,13 @@ dependencies = [
     # `CompilerSupportLibraries_jll` everywhere else.
     # Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
     # Dependency("LLVMOpenMP_jll"; platforms=filter(Sys.isbsd, platforms)),
-    Dependency("Bzip2_jll"; compat="1.0.8"),
+    Dependency("Bzip2_jll"; compat="1.0.9"),
     Dependency("FreeType2_jll"; compat="2.10.4"),
     # Dependency("Ghostscript_jll"),
     Dependency("Graphviz_jll"),
     Dependency("JasPer_jll"),
     Dependency("JpegTurbo_jll"),
-    Dependency("Libtiff_jll"; compat="~4.5.1"),
+    Dependency("Libtiff_jll"; compat="4.5.1"),
     # We had to restrict compat with XML2 because of ABI breakage:
     # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
     # Updating to `compat="~2.14.1"` is likely possible without problems but requires rebuilding this package

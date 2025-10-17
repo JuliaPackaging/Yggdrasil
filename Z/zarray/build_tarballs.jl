@@ -35,7 +35,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("nlohmann_json_jll"),
+    BuildDependency("nlohmann_json_jll"),
     Dependency("xsimd_jll"),
     Dependency("xtensor_jll"),
 ]

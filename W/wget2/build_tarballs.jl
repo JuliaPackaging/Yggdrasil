@@ -69,10 +69,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Bzip2_jll"; compat="1.0.8"),
+    Dependency("Bzip2_jll"; compat="1.0.9"),
     Dependency("Gettext_jll"; compat="=0.21.0"),
     Dependency("OpenSSL_jll"; compat="3.0.15"),
-    Dependency("PCRE2_jll"),
+    Dependency("PCRE2_jll"; compat="10.42.0"),
     Dependency("XZ_jll"; compat="5.6.3"),
     Dependency("Zlib_jll"),
     # Zstd seems to define the function `mbrtowc` on Windows (it shouldn't)

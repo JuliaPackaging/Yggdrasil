@@ -108,7 +108,7 @@ platforms = filter(p -> libc(p) ≠ "musl", platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
-# Windows does not supported parallel HDF5
+# Windows does not support parallel HDF5
 hdf5_platforms = filter(!Sys.iswindows, platforms)
 
 # Dependencies that must be installed before this package can be built
