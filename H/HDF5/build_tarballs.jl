@@ -41,7 +41,7 @@ direct_vfd=$(if [[ ${target} == *-apple-* || ${target} == *-w64-* ]]; then echo 
 ros3_vdf=$(if [[ ${target} == i686-w64-* ]]; then echo OFF; else echo ON; fi)
 
 # MPI does not support Fortran
-parallel=$(if [[ ${target} == x86_64-w64-* ]]; then echo OFF; else echo ON; fi)
+parallel=$(if [[ ${target} == *-w64-* ]]; then echo OFF; else echo ON; fi)
 
 cmake_options=(
     -DCMAKE_BUILD_TYPE=Release
