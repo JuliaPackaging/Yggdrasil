@@ -2,13 +2,13 @@ diff --git a/config/BuildSystem/config/packages/BlasLapack.py b/config/BuildSyst
 index bbae50c096..9ad0a994eb 100644
 --- a/config/BuildSystem/config/packages/BlasLapack.py
 +++ b/config/BuildSystem/config/packages/BlasLapack.py
-@@ -121,7 +121,8 @@ class Configure(config.package.Package):
-     foundLapack = 0
-     self.f2c    = 0
+@@ -128,7 +128,8 @@ class Configure(config.package.Package):
+       blasLibrary   = [blasLibrary]
+ 
      # allow a user-specified suffix to be appended to BLAS/LAPACK symbols
 -    self.suffix = self.argDB.get('with-blaslapack-suffix', '')
 +    # argDB return a list when with-blaslapack-suffix is used
 +    self.suffix = self.argDB.get('with-blaslapack-suffix', '')[0]
-     mangleFunc = self.compilers.fortranMangling
-     self.logPrint('Checking for Fortran name mangling '+mangleFunc+' on BLAS/LAPACK')
-     foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), mangleFunc,'dot')
+     # allow user to dictate which BLAS/LAPACK mangling to use (some BLAS/LAPACK libraries, like on Apple, provide several)
+     if 'known-blaslapack-mangling' in self.argDB:
+       mangling = self.argDB['known-blaslapack-mangling']
