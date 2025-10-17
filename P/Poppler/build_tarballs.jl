@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "Poppler"
-version_str = "24.06.0"
+version_str = "25.07.0"
 version = VersionNumber(version_str)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://poppler.freedesktop.org/poppler-$(version_str).tar.xz",
-                  "0cdabd495cada11f6ee9e75c793f80daf46367b66c25a63ee8c26d0f9ec40c76"),
+                  "c504a9066dbdfebe377ad53cec641fd971ee96c4e1e8ca74e6c9c03d46d817ae"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
