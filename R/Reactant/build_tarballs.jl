@@ -6,8 +6,8 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-reactant_commit = "d4ce6a0911ce7607146bd7213eb780969c1d8156"
-version = v"0.0.251"
+reactant_commit = "3bd7508e7b3141397dd945c3a7600e151c566df1"
+version = v"0.0.253"
 
 sources = [
    GitSource(repo, reactant_commit),
@@ -170,6 +170,7 @@ if [[ "${target}" == *-mingw* ]]; then
     sed -i 's/noincompatible_enable_cc_toolchain_resolution/incompatible_enable_cc_toolchain_resolution/' .bazelrc
     BAZEL_BUILD_FLAGS+=(--compiler=mingw-gcc)
     BAZEL_BUILD_FLAGS+=(--copt=-D_USE_MATH_DEFINES)
+    BAZEL_BUILD_FLAGS+=(--copt=-DPTHREADPOOL_USE_PTHREADS=1)
     BAZEL_BUILD_FLAGS+=(--copt=-DWIN32_LEAN_AND_MEAN)
     BAZEL_BUILD_FLAGS+=(--copt=-DNOGDI)
     # BAZEL_BUILD_FLAGS+=(--compiler=clang)
