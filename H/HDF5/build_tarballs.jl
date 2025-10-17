@@ -11,7 +11,7 @@ version = v"2.0.0"
 # Collection of sources required to complete build
 sources = [
     # This is some time after the prerelease 2.0.0-4
-    GitSource("https://github.com/HDFGroup/hdf5", "2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1"),
+    GitSource("https://github.com/HDFGroup/hdf5", "92ca55cb3b1bbd9da1877ee2bf004a245d408ceb"),
     DirectorySource("bundled"),
 ]
 
@@ -22,13 +22,18 @@ cd ${WORKSPACE}/srcdir/hdf5*
 # Make our own, more modern cmake visible
 apk del cmake
 
+if [[ ${bb_full_target} == *-mpitrampoline* ]]; then
+    atomic_patch -p1 ../patches/mpi.patch
+fi
+
+direct_vfd=$(if [[ ${target} == *-apple-* || ${target} == *-w64-* ]]; then echo OFF; else echo ON; fi)
+
 cmake_options=(
     -DCMAKE_BUILD_TYPE=Release
     -DCMAKE_INSTALL_PREFIX=${prefix}
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
     -DBUILD_SHARED_LIBS=ON
     -DBUILD_STATIC_LIBS=OFF
-    -DALLOW_UNSUPPORTED=ON
     -DHDF5_ALLOW_UNSUPPORTED=ON
     -DHDF5_BUILD_CPP_LIB=ON
     -DHDF5_BUILD_DOC=OFF
@@ -39,7 +44,7 @@ cmake_options=(
     -DHDF5_BUILD_PARALLEL_TOOLS=OFF    # would require MFU (<https://github.com/hpc/mpifileutils>?)
     -DHDF5_BUILD_TOOLS=ON
     -DHDF5_ENABLE_CONCURRENCY=ON       # superset of THREADSAFE
-    -DHDF5_ENABLE_DIRECT_VFD=ON
+    -DHDF5_ENABLE_DIRECT_VFD=${direct_vfd}
     -DHDF5_ENABLE_HDFS=OFF             # would require Java
     -DHDF5_ENABLE_MAP_API=ON
     -DHDF5_ENABLE_MIRROR_VFD=ON
@@ -109,7 +114,7 @@ case ${target} in
         ;;
     i686-linux-*|i686-w64-mingw32)
         cmake_options+=(
-            -DHDF5_USE_PREGEN_DIR=${WORKSPACE}/srcdir/files/pregen_dir=debian-i386
+            -DHDF5_USE_PREGEN_DIR=${WORKSPACE}/srcdir/files/debian-i386
             -DPAC_FORTRAN_NUM_INTEGER_KINDS=4
             -DPAC_FC_ALL_INTEGER_KINDS='{1,2,4,8}'
             -DPAC_FC_ALL_INTEGER_KINDS_SIZEOF='{1,2,4,8}'
@@ -526,7 +531,14 @@ platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 
+# `qsort_r` is not available. (HDF5 should use `qsort` or `qsort_s`.)
+# <https://github.com/HDFGroup/hdf5/issues/5923>
+filter!(p -> libc(p) != "musl", platforms)
+
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
+
+# MPI initializers are not constant (need to apply patch)
+filter!(p -> p["mpi"] != "mpitrampoline", platforms)
 
 # The products that we will ensure are always built
 products = [
