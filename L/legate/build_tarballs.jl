@@ -100,7 +100,7 @@ for platform in all_platforms
         end
 
         push!(_dependencies, Dependency("NCCL_jll"; compat="2.26.5"))
-        push!(_dependencies, CUDA.required_dependencies(platform, static_sdk=true))
+        append!(_dependencies, CUDA.required_dependencies(platform, static_sdk=true))
 
         augment_platform_block = CUDA.augment
 
