@@ -12,12 +12,20 @@ version = v"2.0.0"
 sources = [
     # This is some time after the prerelease 2.0.0-4
     GitSource("https://github.com/HDFGroup/hdf5", "92ca55cb3b1bbd9da1877ee2bf004a245d408ceb"),
+    FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
+               "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
     DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/hdf5*
+
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    rm -rf /opt/${target}/${target}/sys-root/System
+    tar --extract --file=${WORKSPACE}/srcdir/MacOSX10.14.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX10.14.sdk/System MacOSX10.14.sdk/usr
+    export MACOSX_DEPLOYMENT_TARGET=10.14
+fi
 
 # Make our own, more modern cmake visible
 apk del cmake
@@ -26,7 +34,14 @@ if [[ ${bb_full_target} == *-mpitrampoline* ]]; then
     atomic_patch -p1 ../patches/mpi.patch
 fi
 
+# OS does not support `O_DIRECT`
 direct_vfd=$(if [[ ${target} == *-apple-* || ${target} == *-w64-* ]]; then echo OFF; else echo ON; fi)
+
+# `aws_c_s3_jll` has not been built
+ros3_vdf=$(if [[ ${target} == i686-w64-* ]]; then echo OFF; else echo ON; fi)
+
+# MPI does not support Fortran
+parallel=$(if [[ ${target} == x86_64-w64-* ]]; then echo OFF; else echo ON; fi)
 
 cmake_options=(
     -DCMAKE_BUILD_TYPE=Release
@@ -48,9 +63,9 @@ cmake_options=(
     -DHDF5_ENABLE_HDFS=OFF             # would require Java
     -DHDF5_ENABLE_MAP_API=ON
     -DHDF5_ENABLE_MIRROR_VFD=ON
-    -DHDF5_ENABLE_PARALLEL=ON
+    -DHDF5_ENABLE_PARALLEL=${parallel}
     -DHDF5_ENABLE_PLUGIN_SUPPORT=OFF   # would require PLUGIN
-    -DHDF5_ENABLE_ROS3_VFD=ON
+    -DHDF5_ENABLE_ROS3_VFD=${ros3_vfd}
     -DHDF5_ENABLE_SUBFILING_VFD=ON
     -DHDF5_ENABLE_SZIP_SUPPORT=ON
     -DHDF5_ENABLE_ZLIB_SUPPORT=ON
