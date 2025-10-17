@@ -7,14 +7,14 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "SPIRV_LLVM_Translator"
-version = v"20.1"
-llvm_version = v"20.1.2"
+version = v"20.7"
+llvm_version = v"20.1.8"
 
 # Collection of sources required to build the package
 sources = [
     GitSource(
         "https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git",
-        "dee371987a59ed8654083c09c5f1d5c54f5db318"),
+        "7d32213c0508e5f79bf5fb7ed798536f9eddfbc2"),
     DirectorySource("./bundled"),
 ]
 
