@@ -14,8 +14,7 @@ sources = [
 script = raw"""
 pip install cython
 cd $WORKSPACE/srcdir/epsteinlib
-perl -0777 -i -pe 's/true/false/' meson.options
-meson setup build --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release
+meson setup build --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release -Dbuild_python=false
 ninja -C build -j${nproc}
 ninja -C build install
 """
