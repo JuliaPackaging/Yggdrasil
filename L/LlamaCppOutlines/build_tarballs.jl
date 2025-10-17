@@ -71,12 +71,7 @@ elif [[ "${target}" == "aarch64-apple-darwin"* ]]; then
     SOURCE_DIR="macos-arm"
 fi
 
-echo "Target: ${target}"
-echo "Using source directory: ${SOURCE_DIR}"
 cd ${SOURCE_DIR}
-
-echo "Contents of source directory:"
-ls -la
 
 # Create destination directories
 mkdir -p ${libdir}
@@ -97,14 +92,10 @@ if [[ "${target}" == *"mingw"* ]]; then
 else
     # Linux and macOS: Standard layout
     if [ -d lib ]; then
-        echo "Copying libraries from lib/:"
-        ls -la lib/
-        # Copy .so and .dylib files individually to avoid subdirectories
         find lib -maxdepth 1 -name "*.so*" -exec cp {} ${libdir}/ \;
         find lib -maxdepth 1 -name "*.dylib" -exec cp {} ${libdir}/ \;
     fi
     if [ -d bin ]; then
-        echo "Copying binaries from bin/:"
         cp bin/* ${bindir}/
     fi
 fi
@@ -117,11 +108,6 @@ fi
 # Set permissions
 chmod +x ${libdir}/* 2>/dev/null || true
 chmod +x ${bindir}/* 2>/dev/null || true
-
-echo "Final libdir contents:"
-ls -la ${libdir}
-echo "Final bindir contents:"
-ls -la ${bindir}
 """
 
 platforms = [
@@ -145,9 +131,9 @@ products = [
     ExecutableProduct("llama-gguf", :llama_gguf),
     ExecutableProduct("llama-tokenize", :llama_tokenize),
     ExecutableProduct("llama-imatrix", :llama_imatrix),
-    LibraryProduct(["libggml", "ggml"], :libggml),
-    LibraryProduct(["libllama", "llama"], :libllama),
-    LibraryProduct(["liboutlines_core", "outlines_core"], :liboutlines_core),
+    LibraryProduct(["libggml", "ggml"], :libggml; dont_dlopen=true),
+    LibraryProduct(["libllama", "llama"], :libllama; dont_dlopen=true),
+    LibraryProduct(["liboutlines_core", "outlines_core"], :liboutlines_core; dont_dlopen=true),
 ]
 
 dependencies = Dependency[]
