@@ -16,10 +16,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/at-spi2-core-*
 
-#TODO # Old versions of glibc need help before they define `timersub`:
-#TODO # Reported as <https://gitlab.gnome.org/GNOME/at-spi2-core/-/issues/200>
-#TODO atomic_patch -p1 $WORKSPACE/srcdir/patches/timersub.patch
-
 mkdir build && cd build
 
 # Get a local gettext for msgfmt cross-building
