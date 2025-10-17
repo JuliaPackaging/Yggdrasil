@@ -2,7 +2,7 @@ using Pkg
 using BinaryBuilder
 
 name = "SCS"
-version = v"3.2.9"
+version = v"300.200.900"
 
 # Collection of sources required to build SCSBuilder
 sources = [

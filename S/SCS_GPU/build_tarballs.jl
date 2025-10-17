@@ -6,7 +6,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "SCS_GPU"
-version = v"3.2.9"
+version = v"300.200.900"
 
 # Collection of sources required to build SCSBuilder
 sources = [
