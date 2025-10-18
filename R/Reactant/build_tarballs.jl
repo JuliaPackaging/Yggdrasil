@@ -110,6 +110,13 @@ BAZEL_BUILD_FLAGS+=(--action_env=TMP=$TMPDIR --action_env=TEMP=$TMPDIR --action_
 BAZEL_BUILD_FLAGS+=(--host_cpu=k8)
 BAZEL_BUILD_FLAGS+=(--host_platform=//:linux_x86_64)
 BAZEL_BUILD_FLAGS+=(--host_crosstool_top=@//:ygg_cross_compile_toolchain_suite)
+
+if [[ "${bb_full_target}" == *gpu+none* ]]; then
+    BAZEL_BUILD_FLAGS+=(--crosstool_top=@//:ygg_cross_compile_toolchain_suite)
+    BAZEL_BUILD_FLAGS+=(--copt=-D__caddr_t=char*)
+    BAZEL_BUILD_FLAGS+=(--copt=-D_GNU_SOURCE)
+fi
+
 # BAZEL_BUILD_FLAGS+=(--extra_execution_platforms=@xla//tools/toolchains/cross_compile/config:linux_x86_64)
 
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
@@ -156,7 +163,6 @@ if [[ "${target}" == *-darwin* ]]; then
         echo "register_toolchains(\\"//:cc_toolchain_for_ygg_darwin_arm64\\")" >> WORKSPACE
     fi
     BAZEL_BUILD_FLAGS+=(--linkopt=-twolevel_namespace)
-    BAZEL_BUILD_FLAGS+=(--crosstool_top=@//:ygg_cross_compile_toolchain_suite)
     BAZEL_BUILD_FLAGS+=(--define=clang_macos_x86_64=true)
     # `using_clang` comes from Enzyme-JAX, to handle clang-specific options.
     BAZEL_BUILD_FLAGS+=(--define=using_clang=true)
@@ -203,7 +209,6 @@ if [[ "${target}" == *-linux-* ]]; then
         BAZEL_BUILD_FLAGS+=(--platforms=@//:linux_x86_64)
         echo "register_toolchains(\\"//:cc_toolchain_for_ygg_x86\\")" >> WORKSPACE
     elif [[ "${target}" == aarch64-* ]]; then
-        BAZEL_BUILD_FLAGS+=(--crosstool_top=@//:ygg_cross_compile_toolchain_suite)
         BAZEL_BUILD_FLAGS+=(--platforms=@//:linux_aarch64)
         BAZEL_BUILD_FLAGS+=(--cpu=${BAZEL_CPU})
         BAZEL_BUILD_FLAGS+=(--@xla//xla/tsl/framework/contraction:disable_onednn_contraction_kernel=True)
@@ -287,7 +292,8 @@ sed -i -e "s/BB_TARGET/${bb_target}/g" \
        BUILD
     
 unset CC
-rm `which gcc`
+#rm `which cc`
+#rm `which gcc`
 
 export HERMETIC_PYTHON_VERSION=3.12
 
