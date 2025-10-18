@@ -285,6 +285,8 @@ sed -i -e "s/BB_TARGET/${bb_target}/g" \
        -e "s/GCC_VERSION/${GCC_VERSION}/g" \
        -e "s/BAZEL_CPU/${BAZEL_CPU}/g" \
        BUILD
+    
+unset CC
 
 export HERMETIC_PYTHON_VERSION=3.12
 
@@ -326,9 +328,9 @@ if [[ "${target}" == *-darwin* ]]; then
 
     cc @bazel-bin/libReactantExtra.so-2.params
 elif [[ "${target}" == *mingw32* ]]; then
-    $BAZEL ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
+    $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
     sed -i.bak1 -e "s/PTHREADPOOL_WEAK//g" /workspace/bazel_root/*/external/pthreadpool/src/portable-api.c
-    $BAZEL ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage2
+    $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage2
     sed -i.bak1 -e "/start-lib/d" \
                 -e "/end-lib/d" \
                 bazel-bin/libReactantExtra.so-2.params
@@ -350,7 +352,7 @@ echo "-luuid" >> bazel-bin/libReactantExtra.so-2.params
 
     clang @bazel-bin/libReactantExtra.so-2.params
 else
-    $BAZEL ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
+    $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
 fi
 
 rm -f bazel-bin/libReactantExtraLib*
