@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "libwebsockets"
-version = v"4.5.0"
+version = v"4.4.0"
 
 # Collection of sources required to complete build
 sources = [
@@ -13,8 +13,6 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libwebsockets
-export PKG_CONFIG_ALL_STATIC=1
-export PKG_CONFIG_PATH=${libdir}/pkgconfig:${prefix}/lib/pkgconfig:${PKG_CONFIG_PATH}
 EXTRA_SHARED_LDFLAGS=""
 if [[ "${target}" == *linux* ]]; then
     EXTRA_SHARED_LDFLAGS="${LDFLAGS} -pthread -ldl -lrt"
