@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "Poppler"
-version_str = "24.06.0"
+version_str = "25.10.0"
 version = VersionNumber(version_str)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://poppler.freedesktop.org/poppler-$(version_str).tar.xz",
-                  "0cdabd495cada11f6ee9e75c793f80daf46367b66c25a63ee8c26d0f9ec40c76"),
+                  "6b5e9bb64dabb15787a14db1675291c7afaf9387438cc93a4fb7f6aec4ee6fe0"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
@@ -35,7 +35,7 @@ fi
 export PATH=${host_bindir}:${PATH}
 
 # cmake doesn't find FreeType2 without help
-export FREETYPE_DIR=${prefix}
+#export FREETYPE_DIR=${prefix}
 
 cmake -B build -G Ninja \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -54,7 +54,8 @@ cmake -B build -G Ninja \
     -DENABLE_QT5=OFF \
     -DENABLE_QT6=OFF \
     -DENABLE_UNSTABLE_API_ABI_HEADERS=ON \
-    -DWITH_GObjectIntrospection=OFF
+    -DWITH_GObjectIntrospection=OFF \
+    -DFREETYPE_DIR=${prefix}
 cmake --build build --parallel ${nproc}
 cmake --install build
 """
@@ -83,6 +84,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
+# https://gitlab.freedesktop.org/poppler/poppler/-/blob/poppler-25.10.0/CMakeLists.txt?ref_type=tags#L146-157
 dependencies = [
     HostBuildDependency(PackageSpec("CMake_jll", v"3.22.2")), # we need 3.22.0
     BuildDependency("Xorg_xorgproto_jll"),
@@ -91,13 +93,13 @@ dependencies = [
     Dependency("FreeType2_jll"; compat="2.13.1"),   # we need 2.11
     Dependency("Glib_jll"; compat="2.74.0"),        # we need 2.72
     Dependency("JpegTurbo_jll"; compat="3.0.1"),
-    Dependency("LibCURL_jll"; compat="7.73,8"), # we need 7.68
+    Dependency("LibCURL_jll"; compat="7.81,8"), # we need 7.81
     Dependency("Libtiff_jll"; compat="4.6.0"),  # we need 4.3
     Dependency("OpenJpeg_jll";compat="2.5.0"),
     Dependency("libpng_jll"; compat="1.6.38"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# We use GCC 10 since we need modern C++17 (`std::string_view`, `<charconv>`, and `<span>`)
+# We use GCC 11 since we need modern C++20 (including `std::ranges`)
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"10")
+               julia_compat="1.6", preferred_gcc_version=v"11")
