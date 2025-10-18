@@ -6,7 +6,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-reactant_commit = "0803c28d67a39a245f3d469d68cd11e3a7d0836c"
+reactant_commit = "d3cee1ac27e3dd9f90779c84e0a6848a802b6878"
 version = v"0.0.252"
 
 sources = [
@@ -109,12 +109,13 @@ BAZEL_BUILD_FLAGS+=(--verbose_failures)
 BAZEL_BUILD_FLAGS+=(--action_env=TMP=$TMPDIR --action_env=TEMP=$TMPDIR --action_env=TMPDIR=$TMPDIR --sandbox_tmpfs_path=$TMPDIR)
 BAZEL_BUILD_FLAGS+=(--host_cpu=k8)
 BAZEL_BUILD_FLAGS+=(--host_platform=//:linux_x86_64)
-BAZEL_BUILD_FLAGS+=(--host_crosstool_top=@//:ygg_cross_compile_toolchain_suite)
+BAZEL_BUILD_FLAGS+=(--host_crosstool_top=@//:ygg_host_toolchain_suite)
+    
+# `using_clang` comes from Enzyme-JAX, to handle clang-specific options.
+BAZEL_BUILD_FLAGS+=(--define=using_clang=true)
 
 if [[ "${bb_full_target}" == *gpu+none* ]]; then
     BAZEL_BUILD_FLAGS+=(--crosstool_top=@//:ygg_cross_compile_toolchain_suite)
-    BAZEL_BUILD_FLAGS+=(--copt=-D__caddr_t=char*)
-    BAZEL_BUILD_FLAGS+=(--copt=-D_GNU_SOURCE)
 fi
 
 # BAZEL_BUILD_FLAGS+=(--extra_execution_platforms=@xla//tools/toolchains/cross_compile/config:linux_x86_64)
@@ -164,8 +165,6 @@ if [[ "${target}" == *-darwin* ]]; then
     fi
     BAZEL_BUILD_FLAGS+=(--linkopt=-twolevel_namespace)
     BAZEL_BUILD_FLAGS+=(--define=clang_macos_x86_64=true)
-    # `using_clang` comes from Enzyme-JAX, to handle clang-specific options.
-    BAZEL_BUILD_FLAGS+=(--define=using_clang=true)
     BAZEL_BUILD_FLAGS+=(--define HAVE_LINK_H=0)
     BAZEL_BUILD_FLAGS+=(--macos_minimum_os=${MACOSX_DEPLOYMENT_TARGET})
     BAZEL_BUILD_FLAGS+=(--action_env=MACOSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET})
@@ -183,8 +182,6 @@ if [[ "${target}" == *-mingw* ]]; then
     BAZEL_BUILD_FLAGS+=(--copt=-DPTHREADPOOL_USE_PTHREADS=1)
     BAZEL_BUILD_FLAGS+=(--copt=-DWIN32_LEAN_AND_MEAN)
     BAZEL_BUILD_FLAGS+=(--copt=-DNOGDI)
-    # BAZEL_BUILD_FLAGS+=(--compiler=clang)
-    BAZEL_BUILD_FLAGS+=(--define=using_clang=true)
     if [[ "${target}" == x86_64* ]]; then
         BAZEL_BUILD_FLAGS+=(--platforms=@//:win_x86_64)
         BAZEL_BUILD_FLAGS+=(--cpu=${BAZEL_CPU})
@@ -228,18 +225,9 @@ if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
     BAZEL_BUILD_FLAGS+=(--config=cuda)
     BAZEL_BUILD_FLAGS+=(--repo_env=HERMETIC_CUDA_VERSION="${HERMETIC_CUDA_VERSION}")
     if [[ "${HERMETIC_CUDA_VERSION}" == *13.* ]]; then
-        BAZEL_BUILD_FLAGS+=(--repo_env=HERMETIC_CUDNN_VERSION="9.12.0")
-        BAZEL_BUILD_FLAGS+=(--repo_env=HERMETIC_NVSHMEM_VERSION="3.3.20")
-        BAZEL_BUILD_FLAGS+=(--repo_env HERMETIC_CUDA_COMPUTE_CAPABILITIES="sm_75,sm_80,sm_90,sm_100,compute_120")
-    fi
-
-    if [[ "${GCC_MAJOR_VERSION}" -le 12 && "${target}" == x86_64-* ]]; then
-        # Someone wants to compile some code which requires flags not understood by GCC 12.
-        BAZEL_BUILD_FLAGS+=(--define=xnn_enable_avxvnniint8=false)
-    fi
-    if [[ "${GCC_MAJOR_VERSION}" -le 11 && "${target}" == x86_64-* ]]; then
-        # Someone wants to compile some code which requires flags not understood by GCC 11.
-        BAZEL_BUILD_FLAGS+=(--define=xnn_enable_avx512fp16=false)
+    	BAZEL_BUILD_FLAGS+=(--config=cuda13)
+    else
+    	BAZEL_BUILD_FLAGS+=(--config=cuda12)
     fi
 
     if [[ "${target}" != x86_64-linux-gnu ]]; then
@@ -262,7 +250,6 @@ if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
     fi
     BAZEL_BUILD_FLAGS+=(
             --action_env=CLANG_CUDA_COMPILER_PATH=$(which clang)
-            --define=using_clang=true
     )
 fi
 
@@ -290,10 +277,6 @@ sed -i -e "s/BB_TARGET/${bb_target}/g" \
        -e "s/GCC_VERSION/${GCC_VERSION}/g" \
        -e "s/BAZEL_CPU/${BAZEL_CPU}/g" \
        BUILD
-    
-unset CC
-#rm `which cc`
-#rm `which gcc`
 
 export HERMETIC_PYTHON_VERSION=3.12
 
@@ -311,13 +294,6 @@ if [[ "${target}" == *-darwin* ]]; then
         sed -i 's/12.0.1-iains/12.1.0/' "/opt/bin/x86_64-linux-musl-cxx11/x86_64-linux-musl-clang"*
     fi
 
-    # sed -i.bak1 -e "s/\\"k8|/\\"${BAZEL_CPU}\\": \\":cc-compiler-k8\\", \\"k8|/g" \
-    #             -e "s/cpu = \\"k8\\"/cpu = \\"${BAZEL_CPU}\\"/g" \
-    #             /workspace/bazel_root/*/external/bazel_tools~cc_configure_extension~local_config_cc/BUILD
-
-    # sed -i.bak2 -e "s/\\":cpu_aarch64\\":/\\"@platforms\/\/cpu:aarch64\\":/g" \
-    #             /workspace/bazel_root/*/external/xla/third_party/highwayhash/highwayhash.BUILD
-
     # We expect the following bazel build command to fail to link at the end, because the
     # build system insists on linking with `-whole_archive` also on macOS.  Until we figure
     # out how to make it stop doing this we have to manually do this.  Any other error
@@ -328,10 +304,6 @@ if [[ "${target}" == *-darwin* ]]; then
     sed -i.bak1 -e "/whole-archive/d" \
                 -e "/gc-sections/d" \
                 bazel-bin/libReactantExtra.so-2.params
-
-    # # Show the params file for debugging, but convert newlines to spaces
-    # cat bazel-bin/libReactantExtra.so-2.params | tr '\n' ' '
-    # echo ""
 
     cc @bazel-bin/libReactantExtra.so-2.params
 elif [[ "${target}" == *mingw32* ]]; then
@@ -346,15 +318,15 @@ elif [[ "${target}" == *mingw32* ]]; then
                 -e "s/^ntdll.lib/-lntdll/g" \
                 bazel-bin/libReactantExtra.so-2.params
 
-                echo "-lole32" >> bazel-bin/libReactantExtra.so-2.params
-echo "-lshlwapi" >> bazel-bin/libReactantExtra.so-2.params
-echo "-lshell32" >> bazel-bin/libReactantExtra.so-2.params
-echo "-lshdocvw" >> bazel-bin/libReactantExtra.so-2.params
-echo "-lshcore" >> bazel-bin/libReactantExtra.so-2.params
-echo "-lcrypt32" >> bazel-bin/libReactantExtra.so-2.params
-echo "-lbcrypt" >> bazel-bin/libReactantExtra.so-2.params
-echo "-lmsvcrt" >> bazel-bin/libReactantExtra.so-2.params
-echo "-luuid" >> bazel-bin/libReactantExtra.so-2.params
+    echo "-lole32" >> bazel-bin/libReactantExtra.so-2.params
+    echo "-lshlwapi" >> bazel-bin/libReactantExtra.so-2.params
+    echo "-lshell32" >> bazel-bin/libReactantExtra.so-2.params
+    echo "-lshdocvw" >> bazel-bin/libReactantExtra.so-2.params
+    echo "-lshcore" >> bazel-bin/libReactantExtra.so-2.params
+    echo "-lcrypt32" >> bazel-bin/libReactantExtra.so-2.params
+    echo "-lbcrypt" >> bazel-bin/libReactantExtra.so-2.params
+    echo "-lmsvcrt" >> bazel-bin/libReactantExtra.so-2.params
+    echo "-luuid" >> bazel-bin/libReactantExtra.so-2.params
 
 
     clang @bazel-bin/libReactantExtra.so-2.params
@@ -372,7 +344,6 @@ if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
     cp -v bazel-ReactantExtra/external/nvidia_nvshmem/lib/libnvshmem_device.bc ${libdir}
     find bazel-bin
     find ${libdir}
-    # cp -v /workspace/bazel_root/*/external/cuda_nccl/lib/libnccl.so.2 ${libdir}
 
     if [[ "${target}" == x86_64-linux-gnu ]]; then
         NVCC_DIR=(bazel-bin/libReactantExtra.so.runfiles/cuda_nvcc)
