@@ -287,6 +287,7 @@ sed -i -e "s/BB_TARGET/${bb_target}/g" \
        BUILD
     
 unset CC
+rm `which gcc`
 
 export HERMETIC_PYTHON_VERSION=3.12
 
