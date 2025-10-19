@@ -21,9 +21,8 @@ script = raw"""
 apk del cmake
 
 cd $WORKSPACE/srcdir/petsc*
-atomic_patch -p1 $WORKSPACE/srcdir/patches/petsc_name_mangle.patch
 
-# TODO: MPITrampoline embeds the wrong CC. https://github.com/JuliaPackaging/Yggdrasil/issues/7420
+# MPITrampoline embeds the wrong CC. https://github.com/JuliaPackaging/Yggdrasil/issues/7420
 export MPITRAMPOLINE_CC="$(which $CC)"
 export MPITRAMPOLINE_CXX="$(which $CXX)"
 export MPITRAMPOLINE_FC="$(which $FC)"
@@ -80,8 +79,12 @@ else
 
 fi
 
-atomic_patch -p1 $WORKSPACE/srcdir/patches/mingw-version.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi-constants.patch
+if [[ ${target} == *mingw* ]]; then
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/mingw-version.patch
+fi
+if [[ ${bb_full_target} == *mpitrampoline* ]]; then
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi-constants.patch
+fi
 
 mkdir $libdir/petsc
 build_petsc()
@@ -247,7 +250,7 @@ build_petsc()
         --with-blaslapack-lib=${BLAS_LAPACK_LIB}  \
         --with-blaslapack-suffix="" \
         --CFLAGS='-fno-stack-protector'  \
-        --FFLAGS="${MPI_FFLAGS} ${FFLAGS[*]}"  \
+        --FFLAGS="${MPI_FFLAGS} ${FFLAGS[*]} -ffree-line-length-999" \
         --LDFLAGS="${LIBFLAGS}"  \
         --CC_LINKER_FLAGS="${CLINK_FLAGS}" \
         --with-64-bit-indices=${USE_INT64}  \
@@ -264,7 +267,6 @@ build_petsc()
         --with-scalapack-lib=${libdir}/libscalapack32.${dlext} \
         --with-scalapack-include=${includedir} \
         --download-suitesparse=${USE_SUITESPARSE} \
-        --download-suitesparse-shared=0 \
         --download-superlu_dist=${USE_SUPERLU_DIST} \
         --download-superlu_dist-shared=0 \
         --download-hypre=${USE_HYPRE} \
