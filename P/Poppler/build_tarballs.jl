@@ -19,6 +19,8 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/poppler-*
 
+apk del cmake
+
 if [[ "${target}" == "${MACHTYPE}" ]]; then
     # When building for the host platform, the system libexpat is picked up
     rm /usr/lib/libexpat.so*
