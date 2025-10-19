@@ -27,7 +27,7 @@ fi
 export PATH=${host_bindir}:${PATH}
 
 # cmake doesn't find FreeType2 without help
-#export FREETYPE_DIR=${prefix}
+export FREETYPE_DIR=${prefix}
 
 cmake -B build -G Ninja \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -46,8 +46,7 @@ cmake -B build -G Ninja \
     -DENABLE_QT5=OFF \
     -DENABLE_QT6=OFF \
     -DENABLE_UNSTABLE_API_ABI_HEADERS=ON \
-    -DWITH_GObjectIntrospection=OFF \
-    -DFREETYPE_DIR=${prefix}
+    -DWITH_GObjectIntrospection=OFF
 cmake --build build --parallel ${nproc}
 cmake --install build
 """
