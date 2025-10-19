@@ -6,8 +6,8 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-reactant_commit = "d4ce6a0911ce7607146bd7213eb780969c1d8156"
-version = v"0.0.251"
+reactant_commit = "c3255d4e49fc12c2804d6a72d1b2e99129dbbfea"
+version = v"0.0.252"
 
 sources = [
    GitSource(repo, reactant_commit),
@@ -43,9 +43,14 @@ if [[ "${target}" == *-apple-darwin* ]]; then
     # Compiling LLVM components within XLA requires macOS SDK 10.14
     # and then we use `std::reinterpret_pointer_cast` in ReactantExtra
     # which requires macOS SDK 11.3.
+    # Install a newer SDK which supports C++20
+    pushd $WORKSPACE/srcdir/MacOSX12.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
-    rm -rf /opt/${target}/${target}/sys-root/usr/include/libxml2
-    tar --extract --file=${WORKSPACE}/srcdir/MacOSX11.3.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX11.3.sdk/System MacOSX11.3.sdk/usr
+    rm -rf /opt/${target}/${target}/sys-root/usr/*
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    popd
+    export MACOSX_DEPLOYMENT_TARGET=12.3
 fi
 
 mkdir -p .local/bin
@@ -104,7 +109,15 @@ BAZEL_BUILD_FLAGS+=(--verbose_failures)
 BAZEL_BUILD_FLAGS+=(--action_env=TMP=$TMPDIR --action_env=TEMP=$TMPDIR --action_env=TMPDIR=$TMPDIR --sandbox_tmpfs_path=$TMPDIR)
 BAZEL_BUILD_FLAGS+=(--host_cpu=k8)
 BAZEL_BUILD_FLAGS+=(--host_platform=//:linux_x86_64)
-BAZEL_BUILD_FLAGS+=(--host_crosstool_top=@//:ygg_cross_compile_toolchain_suite)
+BAZEL_BUILD_FLAGS+=(--host_crosstool_top=@//:ygg_host_toolchain_suite)
+    
+# `using_clang` comes from Enzyme-JAX, to handle clang-specific options.
+BAZEL_BUILD_FLAGS+=(--define=using_clang=true)
+
+if [[ "${bb_full_target}" == *gpu+none* ]]; then
+    BAZEL_BUILD_FLAGS+=(--crosstool_top=@//:ygg_cross_compile_toolchain_suite)
+fi
+
 # BAZEL_BUILD_FLAGS+=(--extra_execution_platforms=@xla//tools/toolchains/cross_compile/config:linux_x86_64)
 
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
@@ -151,12 +164,8 @@ if [[ "${target}" == *-darwin* ]]; then
         echo "register_toolchains(\\"//:cc_toolchain_for_ygg_darwin_arm64\\")" >> WORKSPACE
     fi
     BAZEL_BUILD_FLAGS+=(--linkopt=-twolevel_namespace)
-    BAZEL_BUILD_FLAGS+=(--crosstool_top=@//:ygg_cross_compile_toolchain_suite)
     BAZEL_BUILD_FLAGS+=(--define=clang_macos_x86_64=true)
-    # `using_clang` comes from Enzyme-JAX, to handle clang-specific options.
-    BAZEL_BUILD_FLAGS+=(--define=using_clang=true)
     BAZEL_BUILD_FLAGS+=(--define HAVE_LINK_H=0)
-    export MACOSX_DEPLOYMENT_TARGET=11.3
     BAZEL_BUILD_FLAGS+=(--macos_minimum_os=${MACOSX_DEPLOYMENT_TARGET})
     BAZEL_BUILD_FLAGS+=(--action_env=MACOSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET})
     BAZEL_BUILD_FLAGS+=(--host_action_env=MACOSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET})
@@ -170,10 +179,9 @@ if [[ "${target}" == *-mingw* ]]; then
     sed -i 's/noincompatible_enable_cc_toolchain_resolution/incompatible_enable_cc_toolchain_resolution/' .bazelrc
     BAZEL_BUILD_FLAGS+=(--compiler=mingw-gcc)
     BAZEL_BUILD_FLAGS+=(--copt=-D_USE_MATH_DEFINES)
+    BAZEL_BUILD_FLAGS+=(--copt=-DPTHREADPOOL_USE_PTHREADS=1)
     BAZEL_BUILD_FLAGS+=(--copt=-DWIN32_LEAN_AND_MEAN)
     BAZEL_BUILD_FLAGS+=(--copt=-DNOGDI)
-    # BAZEL_BUILD_FLAGS+=(--compiler=clang)
-    BAZEL_BUILD_FLAGS+=(--define=using_clang=true)
     if [[ "${target}" == x86_64* ]]; then
         BAZEL_BUILD_FLAGS+=(--platforms=@//:win_x86_64)
         BAZEL_BUILD_FLAGS+=(--cpu=${BAZEL_CPU})
@@ -198,7 +206,6 @@ if [[ "${target}" == *-linux-* ]]; then
         BAZEL_BUILD_FLAGS+=(--platforms=@//:linux_x86_64)
         echo "register_toolchains(\\"//:cc_toolchain_for_ygg_x86\\")" >> WORKSPACE
     elif [[ "${target}" == aarch64-* ]]; then
-        BAZEL_BUILD_FLAGS+=(--crosstool_top=@//:ygg_cross_compile_toolchain_suite)
         BAZEL_BUILD_FLAGS+=(--platforms=@//:linux_aarch64)
         BAZEL_BUILD_FLAGS+=(--cpu=${BAZEL_CPU})
         BAZEL_BUILD_FLAGS+=(--@xla//xla/tsl/framework/contraction:disable_onednn_contraction_kernel=True)
@@ -218,18 +225,9 @@ if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
     BAZEL_BUILD_FLAGS+=(--config=cuda)
     BAZEL_BUILD_FLAGS+=(--repo_env=HERMETIC_CUDA_VERSION="${HERMETIC_CUDA_VERSION}")
     if [[ "${HERMETIC_CUDA_VERSION}" == *13.* ]]; then
-        BAZEL_BUILD_FLAGS+=(--repo_env=HERMETIC_CUDNN_VERSION="9.12.0")
-        BAZEL_BUILD_FLAGS+=(--repo_env=HERMETIC_NVSHMEM_VERSION="3.3.20")
-        BAZEL_BUILD_FLAGS+=(--repo_env HERMETIC_CUDA_COMPUTE_CAPABILITIES="sm_75,sm_80,sm_90,sm_100,compute_120")
-    fi
-
-    if [[ "${GCC_MAJOR_VERSION}" -le 12 && "${target}" == x86_64-* ]]; then
-        # Someone wants to compile some code which requires flags not understood by GCC 12.
-        BAZEL_BUILD_FLAGS+=(--define=xnn_enable_avxvnniint8=false)
-    fi
-    if [[ "${GCC_MAJOR_VERSION}" -le 11 && "${target}" == x86_64-* ]]; then
-        # Someone wants to compile some code which requires flags not understood by GCC 11.
-        BAZEL_BUILD_FLAGS+=(--define=xnn_enable_avx512fp16=false)
+    	BAZEL_BUILD_FLAGS+=(--config=cuda13)
+    else
+    	BAZEL_BUILD_FLAGS+=(--config=cuda12)
     fi
 
     if [[ "${target}" != x86_64-linux-gnu ]]; then
@@ -252,7 +250,6 @@ if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
     fi
     BAZEL_BUILD_FLAGS+=(
             --action_env=CLANG_CUDA_COMPILER_PATH=$(which clang)
-            --define=using_clang=true
     )
 fi
 
@@ -297,13 +294,6 @@ if [[ "${target}" == *-darwin* ]]; then
         sed -i 's/12.0.1-iains/12.1.0/' "/opt/bin/x86_64-linux-musl-cxx11/x86_64-linux-musl-clang"*
     fi
 
-    # sed -i.bak1 -e "s/\\"k8|/\\"${BAZEL_CPU}\\": \\":cc-compiler-k8\\", \\"k8|/g" \
-    #             -e "s/cpu = \\"k8\\"/cpu = \\"${BAZEL_CPU}\\"/g" \
-    #             /workspace/bazel_root/*/external/bazel_tools~cc_configure_extension~local_config_cc/BUILD
-
-    # sed -i.bak2 -e "s/\\":cpu_aarch64\\":/\\"@platforms\/\/cpu:aarch64\\":/g" \
-    #             /workspace/bazel_root/*/external/xla/third_party/highwayhash/highwayhash.BUILD
-
     # We expect the following bazel build command to fail to link at the end, because the
     # build system insists on linking with `-whole_archive` also on macOS.  Until we figure
     # out how to make it stop doing this we have to manually do this.  Any other error
@@ -315,15 +305,11 @@ if [[ "${target}" == *-darwin* ]]; then
                 -e "/gc-sections/d" \
                 bazel-bin/libReactantExtra.so-2.params
 
-    # # Show the params file for debugging, but convert newlines to spaces
-    # cat bazel-bin/libReactantExtra.so-2.params | tr '\n' ' '
-    # echo ""
-
     cc @bazel-bin/libReactantExtra.so-2.params
 elif [[ "${target}" == *mingw32* ]]; then
-    $BAZEL ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
+    $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
     sed -i.bak1 -e "s/PTHREADPOOL_WEAK//g" /workspace/bazel_root/*/external/pthreadpool/src/portable-api.c
-    $BAZEL ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage2
+    $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage2
     sed -i.bak1 -e "/start-lib/d" \
                 -e "/end-lib/d" \
                 bazel-bin/libReactantExtra.so-2.params
@@ -332,20 +318,20 @@ elif [[ "${target}" == *mingw32* ]]; then
                 -e "s/^ntdll.lib/-lntdll/g" \
                 bazel-bin/libReactantExtra.so-2.params
 
-                echo "-lole32" >> bazel-bin/libReactantExtra.so-2.params
-echo "-lshlwapi" >> bazel-bin/libReactantExtra.so-2.params
-echo "-lshell32" >> bazel-bin/libReactantExtra.so-2.params
-echo "-lshdocvw" >> bazel-bin/libReactantExtra.so-2.params
-echo "-lshcore" >> bazel-bin/libReactantExtra.so-2.params
-echo "-lcrypt32" >> bazel-bin/libReactantExtra.so-2.params
-echo "-lbcrypt" >> bazel-bin/libReactantExtra.so-2.params
-echo "-lmsvcrt" >> bazel-bin/libReactantExtra.so-2.params
-echo "-luuid" >> bazel-bin/libReactantExtra.so-2.params
+    echo "-lole32" >> bazel-bin/libReactantExtra.so-2.params
+    echo "-lshlwapi" >> bazel-bin/libReactantExtra.so-2.params
+    echo "-lshell32" >> bazel-bin/libReactantExtra.so-2.params
+    echo "-lshdocvw" >> bazel-bin/libReactantExtra.so-2.params
+    echo "-lshcore" >> bazel-bin/libReactantExtra.so-2.params
+    echo "-lcrypt32" >> bazel-bin/libReactantExtra.so-2.params
+    echo "-lbcrypt" >> bazel-bin/libReactantExtra.so-2.params
+    echo "-lmsvcrt" >> bazel-bin/libReactantExtra.so-2.params
+    echo "-luuid" >> bazel-bin/libReactantExtra.so-2.params
 
 
     clang @bazel-bin/libReactantExtra.so-2.params
 else
-    $BAZEL ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
+    $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
 fi
 
 rm -f bazel-bin/libReactantExtraLib*
@@ -358,7 +344,6 @@ if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
     cp -v bazel-ReactantExtra/external/nvidia_nvshmem/lib/libnvshmem_device.bc ${libdir}
     find bazel-bin
     find ${libdir}
-    # cp -v /workspace/bazel_root/*/external/cuda_nccl/lib/libnccl.so.2 ${libdir}
 
     if [[ "${target}" == x86_64-linux-gnu ]]; then
         NVCC_DIR=(bazel-bin/libReactantExtra.so.runfiles/cuda_nvcc)
@@ -506,8 +491,8 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     platform_sources = BinaryBuilder.AbstractSource[sources...]
     if Sys.isapple(platform)
         push!(platform_sources,
-              FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz",
-                         "cd4f08a75577145b8f05245a2975f7c81401d75e9535dcffbb879ee1deefcbf4"))
+    ArchiveSource("https://github.com/realjf/MacOSX-SDKs/releases/download/v0.0.1/MacOSX12.3.sdk.tar.xz",
+		  "a511c1cf1ebfe6fe3b8ec005374b9c05e89ac28b3d4eb468873f59800c02b030"))
     end
 
     if arch(platform) == "aarch64" && gpu == "cuda"
