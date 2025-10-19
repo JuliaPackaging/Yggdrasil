@@ -13,6 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libwebsockets
+export PKG_CONFIG_ALL_STATIC=1
 EXTRA_SHARED_LDFLAGS=""
 if [[ "${target}" == *linux* ]]; then
     EXTRA_SHARED_LDFLAGS="${LDFLAGS} -pthread -ldl -lrt"
