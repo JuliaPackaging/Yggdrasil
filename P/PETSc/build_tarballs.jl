@@ -237,7 +237,6 @@ build_petsc()
     
     mkdir $libdir/petsc/${PETSC_CONFIG}
         
-   
     # Step 1: build static libraries of external packages (happens during configure)    
     # Note that mpicc etc. should be indicated rather than ${CC} to compile external packages 
     ./configure --prefix=${libdir}/petsc/${PETSC_CONFIG} \
@@ -246,21 +245,22 @@ build_petsc()
         --CXX=${MPI_CXX} \
         --COPTFLAGS=${_COPTFLAGS} \
         --CXXOPTFLAGS=${_CXXOPTFLAGS} \
-        --FOPTFLAGS=${_FOPTFLAGS}  \
-        --with-blaslapack-lib=${BLAS_LAPACK_LIB}  \
+        --FOPTFLAGS=${_FOPTFLAGS} \
+        --with-blaslapack-lib=${BLAS_LAPACK_LIB} \
         --with-blaslapack-suffix="" \
-        --CFLAGS='-fno-stack-protector'  \
+        --CFLAGS='-fno-stack-protector' \
         --FFLAGS="${MPI_FFLAGS} ${FFLAGS[*]} -ffree-line-length-999" \
-        --LDFLAGS="${LIBFLAGS}"  \
+        --LDFLAGS="${LIBFLAGS}" \
         --CC_LINKER_FLAGS="${CLINK_FLAGS}" \
-        --with-64-bit-indices=${USE_INT64}  \
-        --with-debugging=${DEBUG_FLAG}  \
+        --with-64-bit-indices=${USE_INT64} \
+        --with-debugging=${DEBUG_FLAG} \
+        --disable-cxx \
         --with-batch \
         --with-mpi=${USE_MPI} \
         ${MPI_LIBS} \
         ${MPI_INC} \
         --with-sowing=0 \
-        --with-precision=${1}  \
+        --with-precision=${1} \
         --with-scalar-type=${2} \
         --with-pthread=0 \
         --PETSC_ARCH=${target}_${PETSC_CONFIG} \
@@ -276,7 +276,7 @@ build_petsc()
         --download-mumps-shared=0 \
         --download-tetgen=${USE_TETGEN} \
         --download-triangle=${USE_TRIANGLE} \
-        --with-library-name-suffix=${PETSC_CONFIG} \
+        --with-library-name-suffix=_${PETSC_CONFIG} \
         --with-shared-libraries=1 \
         --with-clean=1
 
@@ -377,12 +377,12 @@ build_petsc()
 build_petsc double real Int64 opt
 build_petsc double real Int64 deb       # compile at least one debug version
 build_petsc double real Int32 opt
-build_petsc single real Int32 opt
-build_petsc double complex Int32 opt
-build_petsc single complex Int32 opt
-build_petsc single real Int64 opt
 build_petsc double complex Int64 opt
+build_petsc double complex Int32 opt
+build_petsc single real Int64 opt
+build_petsc single real Int32 opt
 build_petsc single complex Int64 opt
+build_petsc single complex Int32 opt
 """
 
 augment_platform_block = """
@@ -393,13 +393,13 @@ augment_platform_block = """
 
 # We attempt to build for all defined platforms
 platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686", "windows"),
-                                                                  Platform("i686","linux"; libc="musl"),
-                                                                  Platform("i686","linux"; libc="gnu"),
-                                                                  Platform("x86_64","freebsd"),
-                                                                  Platform("armv6l","linux"; libc="musl"),
-                                                                  Platform("armv7l","linux"; libc="musl"),
-                                                                  Platform("armv7l","linux"; libc="gnu"),
-                                                                  Platform("aarch64","linux"; libc="musl")]))
+                                                                  Platform("i686", "linux"; libc="musl"),
+                                                                  Platform("i686", "linux"; libc="gnu"),
+                                                                  Platform("x86_64", "freebsd"),
+                                                                  Platform("armv6l", "linux"; libc="musl"),
+                                                                  Platform("armv7l", "linux"; libc="musl"),
+                                                                  Platform("armv7l", "linux"; libc="gnu"),
+                                                                  Platform("aarch64", "linux"; libc="musl")]))
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
@@ -410,16 +410,16 @@ products = [
     ExecutableProduct("ex19_int64_deb", :ex19_int64_deb)
     ExecutableProduct("ex19_int32", :ex19_int32)
 
-    # Current default build, equivalent to Float64_Real_Int32
+    # Current default build, equivalent to Float64_Real_Int64
     LibraryProduct("libpetsc_double_real_Int64", :libpetsc, "\$libdir/petsc/double_real_Int64/lib")
     LibraryProduct("libpetsc_double_real_Int64", :libpetsc_Float64_Real_Int64, "\$libdir/petsc/double_real_Int64/lib")
     LibraryProduct("libpetsc_double_real_Int64_deb", :libpetsc_Float64_Real_Int64_deb, "\$libdir/petsc/double_real_Int64_deb/lib")
     LibraryProduct("libpetsc_double_real_Int32", :libpetsc_Float64_Real_Int32, "\$libdir/petsc/double_real_Int32/lib")
-    LibraryProduct("libpetsc_single_real_Int32", :libpetsc_Float32_Real_Int32, "\$libdir/petsc/single_real_Int32/lib")
-    LibraryProduct("libpetsc_double_complex_Int32", :libpetsc_Float64_Complex_Int32, "\$libdir/petsc/double_complex_Int32/lib")
-    LibraryProduct("libpetsc_single_complex_Int32", :libpetsc_Float32_Complex_Int32, "\$libdir/petsc/single_complex_Int32/lib")
-    LibraryProduct("libpetsc_single_real_Int64", :libpetsc_Float32_Real_Int64, "\$libdir/petsc/single_real_Int64/lib")
     LibraryProduct("libpetsc_double_complex_Int64", :libpetsc_Float64_Complex_Int64, "\$libdir/petsc/double_complex_Int64/lib")
+    LibraryProduct("libpetsc_double_complex_Int32", :libpetsc_Float64_Complex_Int32, "\$libdir/petsc/double_complex_Int32/lib")
+    LibraryProduct("libpetsc_single_real_Int64", :libpetsc_Float32_Real_Int64, "\$libdir/petsc/single_real_Int64/lib")
+    LibraryProduct("libpetsc_single_real_Int32", :libpetsc_Float32_Real_Int32, "\$libdir/petsc/single_real_Int32/lib")
+    LibraryProduct("libpetsc_single_complex_Int32", :libpetsc_Float32_Complex_Int32, "\$libdir/petsc/single_complex_Int32/lib")
     LibraryProduct("libpetsc_single_complex_Int64", :libpetsc_Float32_Complex_Int64, "\$libdir/petsc/single_complex_Int64/lib")
 ]
 
