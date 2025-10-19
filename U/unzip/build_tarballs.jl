@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "unzip"
-version = v"6.0.3"
+version = v"6.0.4"
 
 # Collection of sources required to complete build
 sources = [
@@ -49,7 +49,11 @@ install_license WHERE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+# Unicode support is broken on Windows.
+# Ref https://github.com/JuliaPackaging/Yggdrasil/issues/7679
+# Upstream is uninterested in fixing this: https://github.com/madler/unzip/issues/5
+# Windows users will have a better time using `p7zip_jll`.
+platforms = supported_platforms(; exclude=Sys.iswindows)
 
 # The products that we will ensure are always built
 products = [
