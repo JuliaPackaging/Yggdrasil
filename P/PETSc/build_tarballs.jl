@@ -79,6 +79,9 @@ else
 
 fi
 
+# Fixed on main branch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/demangle.patch
+
 if [[ ${target} == *mingw* ]]; then
     atomic_patch -p1 $WORKSPACE/srcdir/patches/mingw-version.patch
 fi
@@ -212,6 +215,22 @@ build_petsc()
          USE_TETGEN=1
     fi
 
+    # Define our toolchain for PETSc and all the other packages it configures recursively
+    #
+    # Don't know how to properly pass `CMAKE_INSTALL_PREFIX` to
+    # SuiteSparse. Apparently the definition in our target toolchain
+    # overrides whatever we pass by command line or via environment
+    # variable. So we copy and modify our target toolchain.
+    export CMAKE_INSTALL_PREFIX=${libdir}/petsc/${PETSC_CONFIG}
+    export CMAKE_TOOLCHAIN_FILE=$(pwd)/cmake.toolchain.file
+    sed -e 's+set(CMAKE_INSTALL_PREFIX $ENV{prefix})+set(CMAKE_INSTALL_PREFIX $ENV{CMAKE_INSTALL_PREFIX})+' <${CMAKE_TARGET_TOOLCHAIN} >${CMAKE_TOOLCHAIN_FILE}
+    echo CMAKE_INSTALL_PREFIX:
+    echo ${CMAKE_INSTALL_PREFIX}
+    echo CMAKE_TOOLCHAIN_FILE:
+    echo ${CMAKE_TOOLCHAIN_FILE}
+    echo CMAKE_TOOLCHAIN_FILE:
+    cat ${CMAKE_TOOLCHAIN_FILE}
+
     echo "USE_SUPERLU_DIST="$USE_SUPERLU_DIST
     echo "USE_SUITESPARSE="$USE_SUITESPARSE
     echo "USE_MUMPS="$USE_MUMPS
@@ -234,7 +253,7 @@ build_petsc()
     echo "MPI_FC="$MPI_FC
     echo "MPI_CXX="$MPI_CXX
 
-    mkdir $libdir/petsc/${PETSC_CONFIG}
+    mkdir ${libdir}/petsc/${PETSC_CONFIG}
 
     # Step 1: build static libraries of external packages (happens during configure)
     # Note that mpicc etc. should be indicated rather than ${CC} to compile external packages
@@ -408,34 +427,34 @@ filter!(p -> cxxstring_abi(p) ≠ "cxx03", platforms)
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 products = [
-    ExecutableProduct("ex4", :ex4)
-    ExecutableProduct("ex42", :ex42)
-    ExecutableProduct("ex19", :ex19)
-    ExecutableProduct("ex19_int64_deb", :ex19_int64_deb)
-    ExecutableProduct("ex19_int32", :ex19_int32)
+    ExecutableProduct("ex4", :ex4),
+    ExecutableProduct("ex42", :ex42),
+    ExecutableProduct("ex19", :ex19),
+    ExecutableProduct("ex19_int64_deb", :ex19_int64_deb),
+    ExecutableProduct("ex19_int32", :ex19_int32),
 
     # Current default build, equivalent to Float64_Real_Int64
-    LibraryProduct("libpetsc_double_real_Int64", :libpetsc, "\$libdir/petsc/double_real_Int64/lib")
-    LibraryProduct("libpetsc_double_real_Int64", :libpetsc_Float64_Real_Int64, "\$libdir/petsc/double_real_Int64/lib")
-    LibraryProduct("libpetsc_double_real_Int64_deb", :libpetsc_Float64_Real_Int64_deb, "\$libdir/petsc/double_real_Int64_deb/lib")
-    LibraryProduct("libpetsc_double_real_Int32", :libpetsc_Float64_Real_Int32, "\$libdir/petsc/double_real_Int32/lib")
-    LibraryProduct("libpetsc_double_complex_Int64", :libpetsc_Float64_Complex_Int64, "\$libdir/petsc/double_complex_Int64/lib")
-    LibraryProduct("libpetsc_double_complex_Int32", :libpetsc_Float64_Complex_Int32, "\$libdir/petsc/double_complex_Int32/lib")
-    LibraryProduct("libpetsc_single_real_Int64", :libpetsc_Float32_Real_Int64, "\$libdir/petsc/single_real_Int64/lib")
-    LibraryProduct("libpetsc_single_real_Int32", :libpetsc_Float32_Real_Int32, "\$libdir/petsc/single_real_Int32/lib")
-    LibraryProduct("libpetsc_single_complex_Int64", :libpetsc_Float32_Complex_Int64, "\$libdir/petsc/single_complex_Int64/lib")
-    LibraryProduct("libpetsc_single_complex_Int32", :libpetsc_Float32_Complex_Int32, "\$libdir/petsc/single_complex_Int32/lib")
+    LibraryProduct("libpetsc_double_real_Int64", :libpetsc, "\$libdir/petsc/double_real_Int64/lib"),
+    LibraryProduct("libpetsc_double_real_Int64", :libpetsc_Float64_Real_Int64, "\$libdir/petsc/double_real_Int64/lib"),
+    LibraryProduct("libpetsc_double_real_Int64_deb", :libpetsc_Float64_Real_Int64_deb, "\$libdir/petsc/double_real_Int64_deb/lib"),
+    LibraryProduct("libpetsc_double_real_Int32", :libpetsc_Float64_Real_Int32, "\$libdir/petsc/double_real_Int32/lib"),
+    LibraryProduct("libpetsc_double_complex_Int64", :libpetsc_Float64_Complex_Int64, "\$libdir/petsc/double_complex_Int64/lib"),
+    LibraryProduct("libpetsc_double_complex_Int32", :libpetsc_Float64_Complex_Int32, "\$libdir/petsc/double_complex_Int32/lib"),
+    LibraryProduct("libpetsc_single_real_Int64", :libpetsc_Float32_Real_Int64, "\$libdir/petsc/single_real_Int64/lib"),
+    LibraryProduct("libpetsc_single_real_Int32", :libpetsc_Float32_Real_Int32, "\$libdir/petsc/single_real_Int32/lib"),
+    LibraryProduct("libpetsc_single_complex_Int64", :libpetsc_Float32_Complex_Int64, "\$libdir/petsc/single_complex_Int64/lib"),
+    LibraryProduct("libpetsc_single_complex_Int32", :libpetsc_Float32_Complex_Int32, "\$libdir/petsc/single_complex_Int32/lib"),
 ]
 
 dependencies = [
+    HostBuildDependency(PackageSpec(; name="CMake_jll")),
+
+    BuildDependency("LLVMCompilerRT_jll"; platforms=filter(p -> os(p) == "macos", platforms)),
+
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
     Dependency(PackageSpec(name="SCALAPACK32_jll", uuid="aabda75e-bfe4-5a37-92e3-ffe54af3c273"); compat="2.2.2"),
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
-
-    BuildDependency("LLVMCompilerRT_jll"; platforms=[Platform("aarch64", "macos")]),
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-
-    HostBuildDependency(PackageSpec(; name="CMake_jll"))
 ]
 append!(dependencies, platform_dependencies)
 
