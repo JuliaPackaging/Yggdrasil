@@ -19,20 +19,23 @@ cd ${WORKSPACE}/srcdir/Silo
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pdb_detect.patch
 
 # We cannot enable hzip nor fpzip because these are not BSD licenced
-cmake -Bbuild \
-      -DCMAKE_INSTALL_PREFIX=${prefix} \
-      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-      -DCMAKE_BUILD_TYPE=Release \
-      -DSILO_BUILD_FOR_BSD_LICENSE=ON \
-      -DSILO_ENABLE_BROWSER=OFF \
-      -DSILO_ENABLE_FORTRAN=OFF \
-      -DSILO_ENABLE_HDF5=ON \
-      -DSILO_ENABLE_JSON=ON \
-      -DSILO_ENABLE_PYTHON_MODULE=OFF \
-      -DSILO_ENABLE_SHARED=ON \
-      -DSILO_ENABLE_SILEX=OFF \
-      -DSILO_ENABLE_SILOCK=ON \
-      -DSILO_ENABLE_TESTS=OFF
+cmake_options=(
+    -DCMAKE_INSTALL_PREFIX=${prefix}
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+    -DCMAKE_BUILD_TYPE=Release
+    -DSILO_BUILD_FOR_BSD_LICENSE=ON
+    -DSILO_ENABLE_BROWSER=OFF
+    -DSILO_ENABLE_FORTRAN=OFF
+    -DSILO_ENABLE_HDF5=ON
+    -DSILO_ENABLE_JSON=ON
+    -DSILO_ENABLE_PYTHON_MODULE=OFF
+    -DSILO_ENABLE_SHARED=ON
+    -DSILO_ENABLE_SILEX=OFF
+    -DSILO_ENABLE_SILOCK=ON
+    -DSILO_ENABLE_TESTS=OFF
+)
+
+cmake -Bbuild ${cmake_options[@]}
 
 # Provide generated header file
 case ${target} in
@@ -49,6 +52,9 @@ install_license COPYRIGHT
 
 platforms = expand_cxxstring_abis(supported_platforms())
 
+# szip support is broken for Windows, and we need szip support for HDF5
+filter!(!Sys.iswindows, platforms)
+
 products = [
     LibraryProduct("libsiloh5", :libsilo),
 ]
@@ -62,5 +68,4 @@ dependencies = [
     Dependency("libaec_jll"; compat="1.1.4"), # This is the successor of szlib
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
-	       julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
