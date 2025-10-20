@@ -60,8 +60,6 @@ dependencies = [
     HostBuildDependency(PackageSpec(; name = "CMake_jll", version = v"3.30.2")),
 ]
 
-# append!(dependencies, mpi_dependencies)
-
 for platform in all_platforms
 
     should_build_platform(triplet(platform)) || continue

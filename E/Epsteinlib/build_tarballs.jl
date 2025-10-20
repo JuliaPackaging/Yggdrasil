@@ -1,22 +1,23 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
-name = "Expat"
-version = v"2.7.3"
+name = "Epsteinlib"
+version = v"0.1.0"
 
-# Collection of sources required to build Expat
+# Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/libexpat/libexpat/releases/download/R_$(version.major)_$(version.minor)_$(version.patch)/expat-$(version).tar.xz",
-                  "71df8f40706a7bb0a80a5367079ea75d91da4f8c65c58ec59bcdfbf7decdab9f"),
+    GitSource("https://github.com/epsteinlib/epsteinlib.git", "2a367d46d5f6a843858fc1b48beee9ce8eb4483d")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/expat*/
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static
-make -j${nproc}
-make install
+pip install cython
+cd $WORKSPACE/srcdir/epsteinlib
+meson setup build --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release -Dbuild_python=false
+ninja -C build -j${nproc}
+ninja -C build install
+install_license LICENSES/*
 """
 
 # These are the platforms we will build for by default, unless further
@@ -25,8 +26,8 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libexpat", :libexpat),
-    ExecutableProduct("xmlwf", :xmlwf)
+    LibraryProduct("libepstein", :libepstein),
+    ExecutableProduct("epsteinlib_c-lattice_sum", :epsteinlib_c_lattice_sum)
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -35,4 +36,4 @@ dependencies = Dependency[
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6")
+    julia_compat="1.6", clang_use_lld=false)

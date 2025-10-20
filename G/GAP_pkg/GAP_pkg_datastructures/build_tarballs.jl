@@ -4,14 +4,14 @@ include("../common.jl")
 
 gap_version = v"400.1500.0"
 name = "datastructures"
-upstream_version = "0.3.3" # when you increment this, reset offset to v"0.0.0"
+upstream_version = "0.4.0" # when you increment this, reset offset to v"0.0.0"
 offset = v"1.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL
 sources = [
     ArchiveSource("https://github.com/gap-packages/datastructures/releases/download/v$(upstream_version)/datastructures-$(upstream_version).tar.gz",
-                  "c0231ad18ae23a4da6c62373df5032c3bd284dae922e05362551fe55a6a14c0d"),
+                  "c6ba1b9a43973e085b9f2b6bc70c216b1b297957cf59bde904e98387acf2cb3f"),
 ]
 
 # Bash recipe for building across all platforms
