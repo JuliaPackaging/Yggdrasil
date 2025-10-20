@@ -1,6 +1,9 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using Base.BinaryPlatforms
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "Silo"
 version = v"4.11.1"
@@ -50,7 +53,14 @@ cmake --install build
 install_license COPYRIGHT
 """
 
+augment_platform_block = """
+    using Base.BinaryPlatforms
+    $(MPI.augment)
+    augment_platform!(platform::Platform) = augment_mpi!(platform)
+"""
+
 platforms = expand_cxxstring_abis(supported_platforms())
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # szip support is broken for Windows, and we need szip support for HDF5
 filter!(!Sys.iswindows, platforms)
@@ -60,12 +70,14 @@ products = [
 ]
 
 dependencies = [
-    # Without OpenMPI as build dependency the build fails on 32-bit platforms
-    BuildDependency(PackageSpec(; name="OpenMPI_jll", version=v"4.1.8"); platforms=filter(p -> nbits(p)==32, platforms)),
-
     Dependency("HDF5_jll"; compat="~1.14.6"),
     Dependency("Zlib_jll"; compat="1.2.12"),
     Dependency("libaec_jll"; compat="1.1.4"), # This is the successor of szlib
 ]
+append!(dependencies, platform_dependencies)
+
+# Don't look for `mpiwrapper.so` when BinaryBuilder examines and `dlopen`s the shared libraries.
+# (MPItrampoline will skip its automatic initialization.)
+ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
