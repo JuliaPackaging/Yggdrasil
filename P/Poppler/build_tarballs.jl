@@ -25,12 +25,12 @@ if [[ "${target}" == "${MACHTYPE}" ]]; then
     rm /usr/lib/libexpat.so*
 fi
 
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
+if [[ "${target}" == *-apple-darwin* ]]; then
     pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
     cp -ra System "/opt/${target}/${target}/sys-root/."
-    export MACOSX_DEPLOYMENT_TARGET=10.14
+    export MACOSX_DEPLOYMENT_TARGET=10.15
     popd
 fi
 
