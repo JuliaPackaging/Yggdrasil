@@ -26,7 +26,7 @@ elif [[ "${target}" == *-mingw* ]]; then
    export LDFLAGS=-L${libdir}
 fi
 
-cd scipoptsuite*
+cd scip*
 
 mkdir build
 cd build/
