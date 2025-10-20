@@ -247,7 +247,8 @@ build_petsc()
         --FOPTFLAGS=${_FOPTFLAGS} \
         --with-blaslapack-lib=${BLAS_LAPACK_LIB} \
         --with-blaslapack-suffix="" \
-        --CFLAGS='-fno-stack-protector' \
+        --CFLAGS="-fno-stack-protector" \
+        --CXXFLAGS="-fno-stack-protector" \
         --FFLAGS="${MPI_FFLAGS} ${FFLAGS[*]} -ffree-line-length-999" \
         --LDFLAGS="${LIBFLAGS}" \
         --CC_LINKER_FLAGS="${CLINK_FLAGS}" \
@@ -373,14 +374,13 @@ build_petsc()
 }
 
 build_petsc double real Int64 opt
-# TODO: Speed up build time while debugging
-#TODO build_petsc double real Int64 deb       # compile at least one debug version
-#TODO build_petsc double real Int32 opt
-#TODO build_petsc double complex Int64 opt
-#TODO build_petsc double complex Int32 opt
-#TODO build_petsc single real Int64 opt
-#TODO build_petsc single real Int32 opt
-#TODO build_petsc single complex Int64 opt
+build_petsc double real Int64 deb       # compile at least one debug version
+build_petsc double real Int32 opt
+build_petsc double complex Int64 opt
+build_petsc double complex Int32 opt
+build_petsc single real Int64 opt
+build_petsc single real Int32 opt
+build_petsc single complex Int64 opt
 build_petsc single complex Int32 opt
 """
 
@@ -391,41 +391,41 @@ augment_platform_block = """
 """
 
 # We attempt to build for all defined platforms
-#TODO platforms = supported_platforms(exclude=[Platform("i686", "windows"),
-#TODO                                          Platform("i686", "linux"; libc="gnu"),
-#TODO                                          Platform("i686", "linux"; libc="musl"),
-#TODO                                          Platform("x86_64", "freebsd"),
-#TODO                                          Platform("armv6l", "linux"; libc="musl"),
-#TODO                                          Platform("armv7l", "linux"; libc="gnu"),
-#TODO                                          Platform("armv7l", "linux"; libc="musl"),
-#TODO                                          Platform("aarch64", "linux"; libc="musl")])
+platforms = supported_platforms(exclude=[Platform("i686", "windows"),
+                                         Platform("i686", "linux"; libc="gnu"),
+                                         Platform("i686", "linux"; libc="musl"),
+                                         Platform("x86_64", "freebsd"),
+                                         Platform("armv6l", "linux"; libc="musl"),
+                                         Platform("armv7l", "linux"; libc="gnu"),
+                                         Platform("armv7l", "linux"; libc="musl"),
+                                         Platform("aarch64", "linux"; libc="musl")])
 platforms = supported_platforms()
-platforms = expand_cxxstring_abis(expand_gfortran_versions(platforms))
+platforms = expand_gfortran_versions(platforms)
+
+# PETSc uses C++ internally, in particular `std::to_string`.
+# (This is only used for debugging, and it would be straightforward to
+# replace this by calls to `malloc`, `realloc`, and `snprintf`.)
+platforms = expand_cxxstring_abis(platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
-# TODO: Speed up build time while debugging
-filter!(p -> cxxstring_abi(p) == "cxx11", platforms)
-filter!(p -> libgfortran_version(p).major == 5, platforms)
-filter!(p -> p["mpi"] == "mpich", platforms)
-
 products = [
-    #TODO ExecutableProduct("ex4", :ex4)
-    #TODO ExecutableProduct("ex42", :ex42)
-    #TODO ExecutableProduct("ex19", :ex19)
-    #TODO ExecutableProduct("ex19_int64_deb", :ex19_int64_deb)
-    #TODO ExecutableProduct("ex19_int32", :ex19_int32)
+    ExecutableProduct("ex4", :ex4)
+    ExecutableProduct("ex42", :ex42)
+    ExecutableProduct("ex19", :ex19)
+    ExecutableProduct("ex19_int64_deb", :ex19_int64_deb)
+    ExecutableProduct("ex19_int32", :ex19_int32)
 
     # Current default build, equivalent to Float64_Real_Int64
     LibraryProduct("libpetsc_double_real_Int64", :libpetsc, "\$libdir/petsc/double_real_Int64/lib")
     LibraryProduct("libpetsc_double_real_Int64", :libpetsc_Float64_Real_Int64, "\$libdir/petsc/double_real_Int64/lib")
-    #TODO LibraryProduct("libpetsc_double_real_Int64_deb", :libpetsc_Float64_Real_Int64_deb, "\$libdir/petsc/double_real_Int64_deb/lib")
-    #TODO LibraryProduct("libpetsc_double_real_Int32", :libpetsc_Float64_Real_Int32, "\$libdir/petsc/double_real_Int32/lib")
-    #TODO LibraryProduct("libpetsc_double_complex_Int64", :libpetsc_Float64_Complex_Int64, "\$libdir/petsc/double_complex_Int64/lib")
-    #TODO LibraryProduct("libpetsc_double_complex_Int32", :libpetsc_Float64_Complex_Int32, "\$libdir/petsc/double_complex_Int32/lib")
-    #TODO LibraryProduct("libpetsc_single_real_Int64", :libpetsc_Float32_Real_Int64, "\$libdir/petsc/single_real_Int64/lib")
-    #TODO LibraryProduct("libpetsc_single_real_Int32", :libpetsc_Float32_Real_Int32, "\$libdir/petsc/single_real_Int32/lib")
-    #TODO LibraryProduct("libpetsc_single_complex_Int64", :libpetsc_Float32_Complex_Int64, "\$libdir/petsc/single_complex_Int64/lib")
+    LibraryProduct("libpetsc_double_real_Int64_deb", :libpetsc_Float64_Real_Int64_deb, "\$libdir/petsc/double_real_Int64_deb/lib")
+    LibraryProduct("libpetsc_double_real_Int32", :libpetsc_Float64_Real_Int32, "\$libdir/petsc/double_real_Int32/lib")
+    LibraryProduct("libpetsc_double_complex_Int64", :libpetsc_Float64_Complex_Int64, "\$libdir/petsc/double_complex_Int64/lib")
+    LibraryProduct("libpetsc_double_complex_Int32", :libpetsc_Float64_Complex_Int32, "\$libdir/petsc/double_complex_Int32/lib")
+    LibraryProduct("libpetsc_single_real_Int64", :libpetsc_Float32_Real_Int64, "\$libdir/petsc/single_real_Int64/lib")
+    LibraryProduct("libpetsc_single_real_Int32", :libpetsc_Float32_Real_Int32, "\$libdir/petsc/single_real_Int32/lib")
+    LibraryProduct("libpetsc_single_complex_Int64", :libpetsc_Float32_Complex_Int64, "\$libdir/petsc/single_complex_Int64/lib")
     LibraryProduct("libpetsc_single_complex_Int32", :libpetsc_Float32_Complex_Int32, "\$libdir/petsc/single_complex_Int32/lib")
 ]
 
