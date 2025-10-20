@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 name = "PETSc"
 version = v"3.24.0"
 
-# Collection of sources required to build PETSc. 
+# Collection of sources required to build PETSc.
 sources = [
     ArchiveSource("https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-$(version).tar.gz",
                   "cc9063d80cae3ca87dd34586a92bac49613818a0689d9eac1bd91a799c5d0983"),
@@ -29,20 +29,20 @@ export MPITRAMPOLINE_FC="$(which $FC)"
 
 if [[ "${target}" == *-mingw* ]]; then
     # On windows, it compiles fine but we obtain a following runtime error:
-    # 
+    #
     # Mingw-w64 runtime failure:
     # 32 bit pseudo relocation at 00000000093934AA out of range, targeting 00007FF8B7756530, yielding the value 00007FF8AE3C3082.
     #
     # (see https://github.com/boriskaus/test_PETSc_jll/actions/runs/7444842322/job/20251986258#step:7:236)
     #
     # Interestingly, this error does NOT occur if we use the originally compiled PETSc_jll version 3.18.6 from May 2023.
-    # (e.g., https://github.com/boriskaus/test_PETSc_jll/actions/runs/7444942534/job/20252261704#step:6:49). 
+    # (e.g., https://github.com/boriskaus/test_PETSc_jll/actions/runs/7444942534/job/20252261704#step:6:49).
     #
     # If we recompile it using the same versions of all packages (while fixing llvm to version 13, as was used in May 2023 for compilation), we have the runtime error above
     #
     # The same issue occured in HDF5_jll (https://github.com/eschnett/Yggdrasil/pull/6)
     #
-    # Interestingly, SuperLU_Dist_jll does not have this issue and runs fine in serial & parallel on windows 
+    # Interestingly, SuperLU_Dist_jll does not have this issue and runs fine in serial & parallel on windows
     # (see e.g. https://github.com/boriskaus/test_SuperLU_DIST_jll/actions/runs/7595261750/job/20687625690#step:7:181)
     #
     # Despite a significant time-effort from my side, I have been unable to fix the issue, so I deactivate MPI on windows as a workaround.
@@ -107,9 +107,9 @@ build_petsc()
     fi
 
     # A SuperLU_DIST build is (now) available on most systems, but only works for double precision
-    USE_SUPERLU_DIST=0    
+    USE_SUPERLU_DIST=0
     if [ "${1}" == "double" ]; then
-        USE_SUPERLU_DIST=1    
+        USE_SUPERLU_DIST=1
     fi
     if [[ "${target}" == *-mingw* ]]; then
         USE_SUPERLU_DIST=0
@@ -118,58 +118,57 @@ build_petsc()
     # install suitesparse if available - note that this shipped with julia and therefore linked to specific julia versions
     USE_SUITESPARSE=0
     if [ "${1}" == "double" ]; then
-        USE_SUITESPARSE=1    
+        USE_SUITESPARSE=1
     fi
     if [[ "${target}" == *-mingw* ]]; then
         USE_SUITESPARSE=0
     fi
 
     # See if we can install MUMPS
-    USE_MUMPS=0  
+    USE_MUMPS=0
     if [[ "${target}" == *-mingw* ]]; then
         # try static
         USE_MUMPS=0
-    elif [ "${1}" == "double" ] && [ "${2}" == "real" ]; then 
-        USE_MUMPS=1      
+    elif [ "${1}" == "double" ] && [ "${2}" == "real" ]; then
+        USE_MUMPS=1
     else
-        USE_MUMPS=0      
+        USE_MUMPS=0
     fi
-    if [[ "${target}" == powerpc64le-linux-* ]] || [[ "${target}" == aarch64-linux-* ]] || [[ "${target}" == arm-linux-* ]]; then        
+    if [[ "${target}" == powerpc64le-linux-* ]] || [[ "${target}" == aarch64-linux-* ]] || [[ "${target}" == arm-linux-* ]]; then
         USE_MUMPS=0
     fi
 
-    LIBFLAGS="-L${libdir}" 
+    LIBFLAGS="-L${libdir}"
     if [[ "${target}" == *-mingw* ]]; then
-        LIBFLAGS="-L${libdir} -lssp -lmsmpi" 
+        LIBFLAGS="-L${libdir} -lssp -lmsmpi"
     fi
 
-    # use LBT - to be activated @ a later stage
-    #if [[ "${target}" == aarch64-apple-* ]]; then    
-    #    LIBFLAGS="-L${libdir}" 
-    #    # Linking requires the function `__divdc3`, which is implemented in
-    #    # `libclang_rt.osx.a` from LLVM compiler-rt.
-    #    BLAS_LAPACK_LIB="${libdir}/libblastrampoline.${dlext}"
-    #    CLINK_FLAGS="-L${libdir}/darwin -lclang_rt.osx"
-    #elif [[ "${target}" == *-mingw* ]]; then
-    #    # BLAS_LAPACK_LIB="${libdir}/libblastrampoline-5.${dlext}"
-    #    BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"            # LBT doesn't seem to work on windows
-    #    CLINK_FLAGS=""
-    
-    #else
-    #    BLAS_LAPACK_LIB="${libdir}/libblastrampoline.${dlext}"
-    #    CLINK_FLAGS=""
-    #fi
+    # Use libblastrampoline
+    if [[ "${target}" == aarch64-apple-* ]]; then
+        LIBFLAGS="-L${libdir}"
+        # Linking requires the function `__divdc3`, which is implemented in
+        # `libclang_rt.osx.a` from LLVM compiler-rt.
+        BLAS_LAPACK_LIB="${libdir}/libblastrampoline.${dlext}"
+        CLINK_FLAGS="-L${libdir}/darwin -lclang_rt.osx"
+    #TODO elif [[ "${target}" == *-mingw* ]]; then
+    #TODO     # BLAS_LAPACK_LIB="${libdir}/libblastrampoline-5.${dlext}"
+    #TODO     BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"            # libblastrampoline doesn't seem to work on windows
+    #TODO     CLINK_FLAGS=""
+    else
+        BLAS_LAPACK_LIB="${libdir}/libblastrampoline.${dlext}"
+        CLINK_FLAGS=""
+    fi
 
     BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"
 
     if  [ ${DEBUG_FLAG} == 1 ]; then
         _COPTFLAGS='-O0 -g'
         _CXXOPTFLAGS='-O0 -g'
-        _FOPTFLAGS='-O0' 
+        _FOPTFLAGS='-O0'
     else
         _COPTFLAGS='-O3 -g'
         _CXXOPTFLAGS='-O3 -g'
-        _FOPTFLAGS='-O3' 
+        _FOPTFLAGS='-O3'
     fi
 
     # hypre
@@ -201,7 +200,7 @@ build_petsc()
         USE_SUITESPARSE=0
         USE_HYPRE=0
     fi
-    if [[ "${target}" == powerpc64le-linux-* || "${target}" == aarch64-linux-* || "${target}" == arm-linux-* ]]; then        
+    if [[ "${target}" == powerpc64le-linux-* || "${target}" == aarch64-linux-* || "${target}" == arm-linux-* ]]; then
         USE_MUMPS=0
     fi
 
@@ -234,11 +233,11 @@ build_petsc()
     echo "MPI_CC="$MPI_CC
     echo "MPI_FC="$MPI_FC
     echo "MPI_CXX="$MPI_CXX
-    
+
     mkdir $libdir/petsc/${PETSC_CONFIG}
-        
-    # Step 1: build static libraries of external packages (happens during configure)    
-    # Note that mpicc etc. should be indicated rather than ${CC} to compile external packages 
+
+    # Step 1: build static libraries of external packages (happens during configure)
+    # Note that mpicc etc. should be indicated rather than ${CC} to compile external packages
     ./configure --prefix=${libdir}/petsc/${PETSC_CONFIG} \
         --CC=${MPI_CC} \
         --FC=${MPI_FC} \
@@ -254,7 +253,6 @@ build_petsc()
         --CC_LINKER_FLAGS="${CLINK_FLAGS}" \
         --with-64-bit-indices=${USE_INT64} \
         --with-debugging=${DEBUG_FLAG} \
-        --disable-cxx \
         --with-batch \
         --with-mpi=${USE_MPI} \
         ${MPI_LIBS} \
@@ -297,7 +295,7 @@ build_petsc()
     rm ${libdir}/petsc/${PETSC_CONFIG}/lib/pkgconfig/PETSc.pc
     if  [[ "${1}" == "double" && "${2}" == "real" &&  "${3}" == "Int64" && "${4}" == "opt" ]]; then
 
-        # Compile examples (to allow testing the installation). 
+        # Compile examples (to allow testing the installation).
         # This can later be run with:
         # julia> run(`$(PETSc_jll.ex42()) -stokes_ksp_monitor -log_view` )
         workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/ksp/ksp/tutorials/
@@ -310,7 +308,7 @@ build_petsc()
         fi
         install -Dvm 755 ${workdir}/ex42${exeext} "${bindir}/ex42${exeext}"
 
-        # This is a staggered grid Stokes example, as discussed in https://joss.theoj.org/papers/10.21105/joss.04531 
+        # This is a staggered grid Stokes example, as discussed in https://joss.theoj.org/papers/10.21105/joss.04531
         # This can later be run with:
         # julia> run(`$(PETSc_jll.ex4()) -ksp_monitor -log_view` )
         workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/dm/impls/stag/tutorials/
@@ -323,7 +321,7 @@ build_petsc()
         fi
         install -Dvm 755 ${workdir}/ex4${exeext} "${bindir}/ex4${exeext}"
 
-        # this is the example that PETSc uses to test the correct installation        
+        # this is the example that PETSc uses to test the correct installation
         workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/snes/tutorials/
         make --directory=$workdir PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex19
         file=${workdir}/ex19
@@ -337,8 +335,8 @@ build_petsc()
     fi
 
     if [[ "${1}" == "double" && "${2}" == "real" && "${3}" == "Int64" && "${4}" == "deb" ]]; then
-        
-        # this is the example that PETSc uses to test the correct installation        
+
+        # this is the example that PETSc uses to test the correct installation
         # We compile it with debug flags (helpful to catch issues)
         workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/snes/tutorials/
         make --directory=$workdir PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex19
@@ -354,9 +352,9 @@ build_petsc()
     fi
 
     if [[ "${1}" == "double" && "${2}" == "real" && "${3}" == "Int32" && "${4}" == "opt" ]]; then
-        
-        # this is the example that PETSc uses to test the correct installation        
-        # We compile it with debug flags (helpful to catch issues)
+
+        # this is the example that PETSc uses to test the correct installation
+~        # We compile it with debug flags (helpful to catch issues)
         workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/snes/tutorials/
         make --directory=$workdir PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex19
         file=${workdir}/ex19
@@ -375,13 +373,14 @@ build_petsc()
 }
 
 build_petsc double real Int64 opt
-build_petsc double real Int64 deb       # compile at least one debug version
-build_petsc double real Int32 opt
-build_petsc double complex Int64 opt
-build_petsc double complex Int32 opt
-build_petsc single real Int64 opt
-build_petsc single real Int32 opt
-build_petsc single complex Int64 opt
+# TODO: Speed up build time while debugging
+#TODO build_petsc double real Int64 deb       # compile at least one debug version
+#TODO build_petsc double real Int32 opt
+#TODO build_petsc double complex Int64 opt
+#TODO build_petsc double complex Int32 opt
+#TODO build_petsc single real Int64 opt
+#TODO build_petsc single real Int32 opt
+#TODO build_petsc single complex Int64 opt
 build_petsc single complex Int32 opt
 """
 
@@ -392,40 +391,48 @@ augment_platform_block = """
 """
 
 # We attempt to build for all defined platforms
-platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686", "windows"),
-                                                                  Platform("i686", "linux"; libc="musl"),
-                                                                  Platform("i686", "linux"; libc="gnu"),
-                                                                  Platform("x86_64", "freebsd"),
-                                                                  Platform("armv6l", "linux"; libc="musl"),
-                                                                  Platform("armv7l", "linux"; libc="musl"),
-                                                                  Platform("armv7l", "linux"; libc="gnu"),
-                                                                  Platform("aarch64", "linux"; libc="musl")]))
+#TODO platforms = supported_platforms(exclude=[Platform("i686", "windows"),
+#TODO                                          Platform("i686", "linux"; libc="gnu"),
+#TODO                                          Platform("i686", "linux"; libc="musl"),
+#TODO                                          Platform("x86_64", "freebsd"),
+#TODO                                          Platform("armv6l", "linux"; libc="musl"),
+#TODO                                          Platform("armv7l", "linux"; libc="gnu"),
+#TODO                                          Platform("armv7l", "linux"; libc="musl"),
+#TODO                                          Platform("aarch64", "linux"; libc="musl")])
+platforms = supported_platforms()
+platforms = expand_cxxstring_abis(expand_gfortran_versions(platforms))
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
+# TODO: Speed up build time while debugging
+filter!(p -> cxxstring_abi(p) == "cxx11", platforms)
+filter!(p -> libgfortran_version(p).major == 5, platforms)
+filter!(p -> p["mpi"] == "mpich", platforms)
+
 products = [
-    ExecutableProduct("ex4", :ex4)
-    ExecutableProduct("ex42", :ex42)
-    ExecutableProduct("ex19", :ex19)
-    ExecutableProduct("ex19_int64_deb", :ex19_int64_deb)
-    ExecutableProduct("ex19_int32", :ex19_int32)
+    #TODO ExecutableProduct("ex4", :ex4)
+    #TODO ExecutableProduct("ex42", :ex42)
+    #TODO ExecutableProduct("ex19", :ex19)
+    #TODO ExecutableProduct("ex19_int64_deb", :ex19_int64_deb)
+    #TODO ExecutableProduct("ex19_int32", :ex19_int32)
 
     # Current default build, equivalent to Float64_Real_Int64
     LibraryProduct("libpetsc_double_real_Int64", :libpetsc, "\$libdir/petsc/double_real_Int64/lib")
     LibraryProduct("libpetsc_double_real_Int64", :libpetsc_Float64_Real_Int64, "\$libdir/petsc/double_real_Int64/lib")
-    LibraryProduct("libpetsc_double_real_Int64_deb", :libpetsc_Float64_Real_Int64_deb, "\$libdir/petsc/double_real_Int64_deb/lib")
-    LibraryProduct("libpetsc_double_real_Int32", :libpetsc_Float64_Real_Int32, "\$libdir/petsc/double_real_Int32/lib")
-    LibraryProduct("libpetsc_double_complex_Int64", :libpetsc_Float64_Complex_Int64, "\$libdir/petsc/double_complex_Int64/lib")
-    LibraryProduct("libpetsc_double_complex_Int32", :libpetsc_Float64_Complex_Int32, "\$libdir/petsc/double_complex_Int32/lib")
-    LibraryProduct("libpetsc_single_real_Int64", :libpetsc_Float32_Real_Int64, "\$libdir/petsc/single_real_Int64/lib")
-    LibraryProduct("libpetsc_single_real_Int32", :libpetsc_Float32_Real_Int32, "\$libdir/petsc/single_real_Int32/lib")
+    #TODO LibraryProduct("libpetsc_double_real_Int64_deb", :libpetsc_Float64_Real_Int64_deb, "\$libdir/petsc/double_real_Int64_deb/lib")
+    #TODO LibraryProduct("libpetsc_double_real_Int32", :libpetsc_Float64_Real_Int32, "\$libdir/petsc/double_real_Int32/lib")
+    #TODO LibraryProduct("libpetsc_double_complex_Int64", :libpetsc_Float64_Complex_Int64, "\$libdir/petsc/double_complex_Int64/lib")
+    #TODO LibraryProduct("libpetsc_double_complex_Int32", :libpetsc_Float64_Complex_Int32, "\$libdir/petsc/double_complex_Int32/lib")
+    #TODO LibraryProduct("libpetsc_single_real_Int64", :libpetsc_Float32_Real_Int64, "\$libdir/petsc/single_real_Int64/lib")
+    #TODO LibraryProduct("libpetsc_single_real_Int32", :libpetsc_Float32_Real_Int32, "\$libdir/petsc/single_real_Int32/lib")
+    #TODO LibraryProduct("libpetsc_single_complex_Int64", :libpetsc_Float32_Complex_Int64, "\$libdir/petsc/single_complex_Int64/lib")
     LibraryProduct("libpetsc_single_complex_Int32", :libpetsc_Float32_Complex_Int32, "\$libdir/petsc/single_complex_Int32/lib")
-    LibraryProduct("libpetsc_single_complex_Int64", :libpetsc_Float32_Complex_Int64, "\$libdir/petsc/single_complex_Int64/lib")
 ]
 
 dependencies = [
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
-    Dependency(PackageSpec(name="SCALAPACK32_jll", uuid="aabda75e-bfe4-5a37-92e3-ffe54af3c273"); compat="2.2.1 - 2.2.1"),
+    Dependency(PackageSpec(name="SCALAPACK32_jll", uuid="aabda75e-bfe4-5a37-92e3-ffe54af3c273"); compat="2.2.2"),
+    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
 
     BuildDependency("LLVMCompilerRT_jll"; platforms=[Platform("aarch64", "macos")]),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
@@ -440,6 +447,6 @@ append!(dependencies, platform_dependencies)
 ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # Build the tarballs.
-# NOTE: llvm16 seems to have an issue with PETSc 3.18.x as on apple architectures it doesn't know how to create dynamic libraries  
+# NOTE: llvm16 seems to have an issue with PETSc 3.18.x as on apple architectures it doesn't know how to create dynamic libraries
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, clang_use_lld=false, julia_compat="1.9", preferred_gcc_version=v"9")
