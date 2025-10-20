@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_http"
-version = v"0.10.4"
+version = v"0.10.5"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-http.git", "ce0d65623bff28f03204756d9d1b3366bd0b387d"),
+    GitSource("https://github.com/awslabs/aws-c-http.git", "bbfc5a7bcf1a6c238205abcac62d5d14dd0da7ef"),
 ]
 
 # Bash recipe for building across all platforms
@@ -36,7 +36,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("aws_c_compression_jll"; compat="0.3.2"),
-    Dependency("aws_c_io_jll"; compat="0.21.2"),
+    Dependency("aws_c_io_jll"; compat="0.23.2"),
     BuildDependency("aws_lc_jll"),
 ]
 

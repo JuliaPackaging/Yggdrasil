@@ -28,6 +28,7 @@ LLVM_SRCDIR=$(pwd)
 atomic_patch -p1 $WORKSPACE/srcdir/patches/avoid_builtin_available.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/fix_insertvalue.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/atomic_cmpxchg_64bit.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/alloca_aggregate_type.patch
 
 install_license LICENSE.TXT
 
