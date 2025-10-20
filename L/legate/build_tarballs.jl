@@ -23,22 +23,6 @@ sources = [
 MIN_CUDA_VERSION = v"12.2"
 MAX_CUDA_VERSION = v"12.8.999" #12.9?
 
-
-# augment_platform_block = 
-# """
-# using Base.BinaryPlatforms
-# module __CUDA
-#     $(CUDA.augment)
-# end
-
-# $(MPI.augment)
-
-# function augment_platform!(platform::Platform)
-#     augment_mpi!(platform)
-#     __CUDA.augment_platform!(platform)
-# end
-# """
-
 # Just so I can do CPU only tests on GitHub runners
 cpu_platform = [Platform("x86_64", "linux")]
 
@@ -84,7 +68,6 @@ for platform in all_platforms
 
     platform_sources = BinaryBuilder.AbstractSource[sources...]
     clang_ver = v"17"
-    augment_platform_block = ""
 
     _dependencies = copy(dependencies)
     script = get_script(Val{false}())
@@ -102,8 +85,6 @@ for platform in all_platforms
         push!(_dependencies, Dependency("NCCL_jll"; compat="2.26.5"))
         append!(_dependencies, CUDA.required_dependencies(platform, static_sdk=true))
 
-        augment_platform_block = CUDA.augment
-
         script = get_script(Val{true}())
     end # else CPU only build
 
@@ -111,8 +92,7 @@ for platform in all_platforms
                     products, _dependencies;
                     julia_compat = "1.10", preferred_gcc_version = v"11",
                     preferred_llvm_version = clang_ver,
-                    augment_platform_block=augment_platform_block,
+                    augment_platform_block=CUDA.augment,
                     lazy_artifacts = true, dont_dlopen = true
                 )
 end
-
