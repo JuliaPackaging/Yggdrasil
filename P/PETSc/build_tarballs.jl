@@ -289,6 +289,7 @@ build_petsc()
     make -j${nproc} \
         CPPFLAGS="${CPPFLAGS}" \
         CFLAGS="${CFLAGS}" \
+        CXXFLAGS="${CXXFLAGS}" \
         FFLAGS="${FFLAGS}"
     make install
 
@@ -355,7 +356,7 @@ build_petsc()
     if [[ "${1}" == "double" && "${2}" == "real" && "${3}" == "Int32" && "${4}" == "opt" ]]; then
 
         # this is the example that PETSc uses to test the correct installation
-~        # We compile it with debug flags (helpful to catch issues)
+        # We compile it with debug flags (helpful to catch issues)
         workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/snes/tutorials/
         make --directory=$workdir PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex19
         file=${workdir}/ex19
