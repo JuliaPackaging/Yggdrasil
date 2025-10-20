@@ -32,7 +32,7 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     popd
 fi
 
-cd scipoptsuite*
+cd scip*
 
 # for soplex threadlocal
 export CXXFLAGS="-DTHREADLOCAL=''"
