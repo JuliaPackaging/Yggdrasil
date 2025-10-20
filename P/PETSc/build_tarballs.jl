@@ -391,14 +391,6 @@ augment_platform_block = """
 """
 
 # We attempt to build for all defined platforms
-platforms = supported_platforms(exclude=[Platform("i686", "windows"),
-                                         Platform("i686", "linux"; libc="gnu"),
-                                         Platform("i686", "linux"; libc="musl"),
-                                         Platform("x86_64", "freebsd"),
-                                         Platform("armv6l", "linux"; libc="musl"),
-                                         Platform("armv7l", "linux"; libc="gnu"),
-                                         Platform("armv7l", "linux"; libc="musl"),
-                                         Platform("aarch64", "linux"; libc="musl")])
 platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
 
@@ -406,6 +398,10 @@ platforms = expand_gfortran_versions(platforms)
 # (This is only used for debugging, and it would be straightforward to
 # replace this by calls to `malloc`, `realloc`, and `snprintf`.)
 platforms = expand_cxxstring_abis(platforms)
+
+# Anticipate planned BinaryBuilder changes to remove old architectures:
+filter!(p -> libgfortran_version(p) >= v"5", platforms)
+filter!(p -> cxxstring_abi(p) != "cxx03", platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
