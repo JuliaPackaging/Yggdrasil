@@ -1,4 +1,4 @@
-# PETSc 3.22.0 with OpenBLAS and static compilations of SuperLU_Dist, SuiteSparse, MUMPS, Hypre, triangle and TetGen on machines that support it
+# PETSc with OpenBLAS and static compilations of SuperLU_Dist, SuiteSparse, MUMPS, Hypre, triangle and TetGen on machines that support it
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
@@ -11,7 +11,7 @@ version = v"3.24.0"
 sources = [
     ArchiveSource("https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-$(version).tar.gz",
                   "cc9063d80cae3ca87dd34586a92bac49613818a0689d9eac1bd91a799c5d0983"),
-    DirectorySource("./bundled"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -268,7 +268,7 @@ build_petsc()
         --with-blaslapack-suffix="" \
         --CFLAGS="-fno-stack-protector" \
         --CXXFLAGS="-fno-stack-protector" \
-        --FFLAGS="${MPI_FFLAGS} ${FFLAGS[*]} -ffree-line-length-999" \
+        --FFLAGS="${MPI_FFLAGS} -ffree-line-length-999" \
         --LDFLAGS="${LIBFLAGS}" \
         --CC_LINKER_FLAGS="${CLINK_FLAGS}" \
         --with-64-bit-indices=${USE_INT64} \
@@ -300,7 +300,7 @@ build_petsc()
 
     if [[ "${target}" == *-mingw* ]]; then
         export CPPFLAGS="-Dpetsc_EXPORTS"
-    elif [[ "${target}" == powerpc64le-* ]]; then
+    else
         export CFLAGS="-fPIC"
         export FFLAGS="-fPIC"
     fi
