@@ -63,16 +63,6 @@ install_license LICENSE
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-filter!(p -> arch(p) != "i686", platforms)
-filter!(p -> arch(p) != "armv7l", platforms)
-filter!(p -> arch(p) != "armv6l", platforms)
-filter!(p -> arch(p) != "powerpc64le", platforms)
-filter!(p -> arch(p) != "powerpc64le", platforms)
-filter!(p -> os(p)   != "macos", platforms)
-
-# Enable the following line if trying to link against Fortran code:
-# platforms = expand_gfortran_versions(platforms)
-
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.8"),

@@ -3,11 +3,11 @@
 using BinaryBuilder, BinaryBuilderBase, Pkg
 
 name = "HighFive"
-version = v"3.1.1"
+version = v"3.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/highfive-devs/highfive", "1a5ef376f6ceb5ca111a02c936f9918699a7a0b0"),
+    GitSource("https://github.com/highfive-devs/highfive", "b8d21eb39d4c6c66a72646ddd338d4c552b1a645"),
 ]
 
 # Bash recipe for building across all platforms
