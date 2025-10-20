@@ -13,21 +13,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cat > CMakeLists.txt <<EOF
-cmake_minimum_required(VERSION 3.10)
-project(picohttpparser C)
-
-add_library(picohttpparser SHARED picohttpparser/picohttpparser.c)
-
-install(TARGETS picohttpparser
-        LIBRARY DESTINATION $libdir
-        ARCHIVE DESTINATION $libdir
-        RUNTIME DESTINATION $bindir)
-EOF
-
-cmake -B build      -DCMAKE_INSTALL_PREFIX=${prefix}      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}      -DCMAKE_BUILD_TYPE=Release      -S .
-cmake --build build --parallel ${nproc}
-cmake --install build
+mkdir -p ${libdir}
+${CC} -shared -O2 -o ${libdir}/libpicohttpparser.${dlext} -fPIC picohttpparser/picohttpparser.c
 """
 
 # These are the platforms we will build for by default, unless further
