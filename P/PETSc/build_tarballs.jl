@@ -266,9 +266,9 @@ build_petsc()
         --FOPTFLAGS=${_FOPTFLAGS} \
         --with-blaslapack-lib=${BLAS_LAPACK_LIB} \
         --with-blaslapack-suffix="" \
-        --CFLAGS="-fno-stack-protector" \
-        --CXXFLAGS="-fno-stack-protector" \
-        --FFLAGS="${MPI_FFLAGS} -ffree-line-length-999" \
+        --CFLAGS="-fPIC -fno-stack-protector" \
+        --CXXFLAGS="-fPIC -fno-stack-protector" \
+        --FFLAGS="${MPI_FFLAGS} -fPIC -ffree-line-length-999" \
         --LDFLAGS="${LIBFLAGS}" \
         --CC_LINKER_FLAGS="${CLINK_FLAGS}" \
         --with-64-bit-indices=${USE_INT64} \
