@@ -6,7 +6,8 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "CryptoMiniSat"
-version = v"5.13.0"
+version = v"6.0.0"
+cryptominisat_version = v"5.13.0"
 
 # Collection of sources required to complete build
 sources = [
@@ -43,6 +44,7 @@ cd ..
 
 # Build CaDiBack
 cd ${WORKSPACE}/srcdir/cadiback
+# remove this patch when updating CaDiBack to a newer version that fixes this
 if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cadiback-windows-link-order.patch
 fi
