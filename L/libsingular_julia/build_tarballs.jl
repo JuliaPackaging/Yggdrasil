@@ -59,7 +59,7 @@ dependencies = [
     # Singular.jl to ensure the right versions of libsingular_julia_jll and
     # Singular_jll are paired. This gives us flexibility in the development
     # setup there.
-    Dependency("Singular_jll", v"404.101.301"),
+    Dependency("Singular_jll", v"404.101.400"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
