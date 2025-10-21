@@ -15,7 +15,7 @@ Base.record_compiletime_preference(CUDA_Runtime_jll_uuid, "local")
 
 function augment_platform!(platform::Platform)
     platform["cuda"] = if @isdefined(CUDA_Runtime_jll)
-        cuda = cuda_toolkit_tag()
+        cuda = CUDA_Runtime_jll.cuda_toolkit_tag()
         if cuda === nothing
             "none"
         else
