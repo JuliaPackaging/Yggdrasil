@@ -60,7 +60,7 @@ exit
 
 # Exclude windows, casacore needs pread and pwrite, which are POSIX-only
 # Also exclude FreeBSD, lots of upstream bugs that seem not worth fixing ourself
-platforms = supported_platforms(exclude=(platform) -> Sys.iswindows(platform) || Sys.isfreebsd(platform))
+platforms = supported_platforms(exclude=(platform) -> Sys.iswindows(platform) || Sys.isfreebsd(platform) || arch(platform) == "riscv64")
 # Deal with the fact that we have std::string values, which causes issues across the gcc 4/5 boundary
 platforms = expand_cxxstring_abis(platforms)
 # expand gfortran versions as well
@@ -109,15 +109,15 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    HostBuildDependency(PackageSpec(; name="CMake_jll")) # For a version of CMake where Find_BLAS can find LBT
     Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a"); compat="3.3.10");
     Dependency(PackageSpec(name="CFITSIO_jll", uuid="b3e40c51-02ae-5482-8a39-3ace5868dcf4"); compat="4.4.0");
     Dependency(PackageSpec(name="WCS_jll", uuid="550c8279-ae0e-5d1b-948f-937f2608a23e"); compat="7.7.0");
-    Dependency(PackageSpec(name="Readline_jll", uuid="05236dd9-4125-5232-aa7c-9ec0c9b2c25a"); compat="8.1.1");
+    Dependency(PackageSpec(name="Readline_jll", uuid="05236dd9-4125-5232-aa7c-9ec0c9b2c25a"));
     Dependency(PackageSpec(name="GSL_jll", uuid="1b77fbbe-d8ee-58f0-85f9-836ddc23a7a4"); compat="~2.7.2");
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"); compat="5.4");
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"));
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"));
-    HostBuildDependency(PackageSpec(; name="CMake_jll", version=v"3.30.2")) # For a version of CMake where Find_BLAS can find LBT
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
