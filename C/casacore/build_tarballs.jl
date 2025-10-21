@@ -15,6 +15,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/casacore
 
+apk del cmake
+
 mkdir build && cd build
 CMAKE_FLAGS=()
 
@@ -114,8 +116,9 @@ dependencies = [
     Dependency(PackageSpec(name="GSL_jll", uuid="1b77fbbe-d8ee-58f0-85f9-836ddc23a7a4"); compat="~2.7.2");
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"); compat="5.4");
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"));
+    Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"));
     HostBuildDependency(PackageSpec(; name="CMake_jll", version=v"3.30.2")) # For a version of CMake where Find_BLAS can find LBT
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.9", preferred_gcc_version=v"5.2")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.9", preferred_gcc_version=v"5")
