@@ -145,6 +145,7 @@ fi"""
     end
     if version >= v"13"
         push!(components, "cuda_crt")
+        push!(components, "libnvvm")
     end
     for platform in platforms
         should_build_platform(triplet(platform)) || continue
