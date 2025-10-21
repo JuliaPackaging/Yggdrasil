@@ -4,11 +4,11 @@
 using BinaryBuilder, Pkg
 
 name = "casacore"
-version = v"3.6.1"
+version = v"3.7.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/casacore/casacore.git", "976b6456a4c1e80284492bc9e4d83dccb8faac97"),
+    GitSource("https://github.com/casacore/casacore.git", "67b7d63dc333c5d4fce5d92f125c1e0ce0e3514a"),
 ]
 
 # Bash recipe for building across all platforms
