@@ -419,7 +419,7 @@ augment_platform_block="""
     """
 
 # for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), platform in platforms
-for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "12.6", "12.8", "13.0"), platform in platforms
+for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "12.8", "13.0"), platform in platforms
 
     augmented_platform = deepcopy(platform)
     augmented_platform["mode"] = mode
@@ -498,7 +498,7 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     if arch(platform) == "aarch64" && gpu == "cuda"
         if hermetic_cuda_version_map[cuda_version] == "13.0.0"
             # bazel currentlty tries to run  external/cuda_nvcc/bin/../nvvm/bin/cicc: line 1: ELF
-             continue
+            # continue
 
             # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_13.0.0.json
             push!(platform_sources,
@@ -552,24 +552,7 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     if gpu == "cuda"
         for lib in (
                 "libnccl",
-                "libcufft",
-                "libcudnn_engines_precompiled",
-                "libcudart",
-                "libcublasLt",
-                "libcudnn_heuristic",
-                "libcudnn_cnn",
-                "libnvrtc",
-                "libcudnn_adv",
-                "libcudnn",
-                "libnvJitLink",
-                "libcublas",
-                "libcudnn_ops",
-                "libnvrtc-builtins",
-                "libcudnn_graph",
-                "libcusolver",
                 # "libcuda",
-                "libcudnn_engines_runtime_compiled",
-                "libcusparse",
                 "libnvshmem_host",
                 "nvshmem_bootstrap_uid",
                 "nvshmem_transport_ibrc"
