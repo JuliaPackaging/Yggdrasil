@@ -57,7 +57,7 @@ for platform in all_platforms
 
     should_build_platform(triplet(platform)) || continue
 
-    platform_sources = BinaryBuilder.AbstractSource[]
+    platform_sources = BinaryBuilder.AbstractSource[sources...]
 
     _dependencies = copy(dependencies)
     script = get_script(Val{false}())
@@ -65,10 +65,9 @@ for platform in all_platforms
     if haskey(platform, "cuda") && platform["cuda"] != "none" 
 
         # cuTensor dependency
-        push!(sources, ArchiveSource("https://github.com/JuliaBinaryWrappers/CUTENSOR_jll.jl/releases/download/CUTENSOR-v2.2.0%2B0/CUTENSOR.v2.2.0.x86_64-linux-gnu-cuda+12.0.tar.gz",
+        push!(platform_sources, ArchiveSource("https://github.com/JuliaBinaryWrappers/CUTENSOR_jll.jl/releases/download/CUTENSOR-v2.2.0%2B0/CUTENSOR.v2.2.0.x86_64-linux-gnu-cuda+12.0.tar.gz",
                      "1c243b48e189070fefcdd603f87c06fada2d71c911dea7028748ad7a4315b816")
         )
-        platform_sources = BinaryBuilder.AbstractSource[sources...]
 
         append!(_dependencies, CUDA.required_dependencies(platform, static_sdk=true))
 
@@ -79,9 +78,7 @@ for platform in all_platforms
         end
 
         script = get_script(Val{true}())
-    else # CPU build
-        platform_sources = BinaryBuilder.AbstractSource[sources...]
-    end
+    end # else CPU build
 
     build_tarballs(
         ARGS, name, version, platform_sources, 
