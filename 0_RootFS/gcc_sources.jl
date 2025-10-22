@@ -178,6 +178,18 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
             ArchiveSource("https://mirrors.kernel.org/gnu/gmp/gmp-6.2.0.tar.xz",
                           "258e6cd51b3fbdfc185c716d55f82c08aff57df0c6fbd143cf6ed561267a1526"),
         ]
+        gcc_version_sources[v"15.1.0-iains"] = [
+            GitSource("https://github.com/iains/gcc-15-branch.git",
+                      "845fee6ec56db98b84888f782fe7daea99b4b358"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/gmp/gmp-6.3.0.tar.xz",
+                          "a3c2b80201b89e68616f4ad30bc66aee4927c3ce50e33929ca819d5c43538898"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/mpfr/mpfr-4.2.2.tar.xz",
+                          "b67ba0383ef7e8a8563734e2e889ef5ec3c3b898a01d00fa0a6869ad81c6ce01"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/mpc/mpc-1.3.1.tar.gz",
+                          "ab642492f5cf882b74aa0cb730cd410a81edcdbec895183ce930e706c1c759b8"),
+            ArchiveSource("https://libisl.sourceforge.io/isl-0.27.tar.xz",
+                          "6d8babb59e7b672e8cb7870e874f3f7b813b6e00e6af3f8b04f7579965643d5c"),
+        ]
         # MacOS doesn't actually use binutils, it uses cctools
         if gcc_version < v"14"
             binutils_sources = [
