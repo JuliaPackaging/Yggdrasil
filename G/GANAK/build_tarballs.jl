@@ -162,6 +162,7 @@ install_license ${WORKSPACE}/srcdir/ganak/LICENSE.txt
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = filter(!Sys.iswindows, supported_platforms())
+platforms = filter(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)  # excluded by mlpack_jll
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
