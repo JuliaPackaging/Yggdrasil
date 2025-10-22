@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "TracyProfiler"
-version = v"0.9.1"
+version = v"0.11.1"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/wolfpld/tracy.git",
-              "897aec5b062664d2485f4f9a213715d2e527e0ca"), # v0.9.1
+              "5d542dc09f3d9378d005092a4ad446bd405f819a"), # v0.11.1
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.0.sdk.tar.xz",
                   "d3feee3ef9c6016b526e1901013f264467bb927865a03422a9cb925991cc9783"),
     DirectorySource("./bundled"),
@@ -41,30 +41,33 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     popd
 fi
 
-atomic_patch -p1 ../patches/TracyProfiler-nfd-extended-1.0.2.patch
-atomic_patch -p1 ../patches/TracyProfiler-filter-user-text.patch
-atomic_patch -p1 ../patches/TracyProfiler-no-divide-zero.patch
-atomic_patch -p1 ../patches/TracyProfiler-rr-nopl-seq.patch
-
 # Build / install the profiler GUI
-make -e -j${nproc} -C profiler/build/unix LEGACY=1 IMAGE=tracy release
-cp -v ./profiler/build/unix/tracy* $bindir
+cmake -B profiler/build -S profiler \
+    -DLEGACY=1 \
+    -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
+    -DCMAKE_BUILD_TYPE=Release
+cmake --build profiler/build --config Release --parallel ${nproc}
+cp -v ./profiler/build/tracy* $bindir
 
 # Build / install the update utility
-make -e -j${nproc} -C update/build/unix IMAGE=tracy-update release
-cp -v ./update/build/unix/tracy* $bindir
+cmake -B update/build -S update -DCMAKE_BUILD_TYPE=Release
+cmake --build update/build --config Release --parallel
+cp -v ./update/build/tracy* $bindir
 
 # Build / install the capture utility
-make -e -j${nproc} -C capture/build/unix IMAGE=tracy-capture release
-cp -v ./capture/build/unix/tracy* $bindir
+cmake -B capture/build -S capture -DCMAKE_BUILD_TYPE=Release
+cmake --build capture/build --config Release --parallel
+cp -v ./capture/build/tracy* $bindir
 
 # Build / install the csvexport utility
-make -e -j${nproc} -C csvexport/build/unix IMAGE=tracy-csvexport release
-cp -v ./csvexport/build/unix/tracy* $bindir
+cmake -B csvexport/build -S csvexport -DCMAKE_BUILD_TYPE=Release
+cmake --build csvexport/build --config Release --parallel
+cp -v ./csvexport/build/tracy* $bindir
 
 # Build / install the import-chrome utility
-make -e -j${nproc} -C import-chrome/build/unix IMAGE=tracy-import-chrome release
-cp -v ./import-chrome/build/unix/tracy* $bindir
+cmake -B import-chrome/build -S import-chrome -DCMAKE_BUILD_TYPE=Release
+cmake --build import-chrome/build --config Release --parallel
+cp -v ./import-chrome/build/tracy* $bindir
 
 install_license LICENSE
 """
@@ -93,8 +96,8 @@ dependencies = [
     Dependency("Dbus_jll", platforms=filter(Sys.islinux, platforms)),
     Dependency("GLFW_jll"),
     # Needed for `pkg-config glfw3`
-    Dependency("Xorg_xproto_jll", platforms=x11_platforms),
-    Dependency("Xorg_kbproto_jll", platforms=x11_platforms),
+    BuildDependency("Xorg_xproto_jll", platforms=x11_platforms),
+    BuildDependency("Xorg_kbproto_jll", platforms=x11_platforms),
 ]
 
 # requires std-c++17, full support in gcc 7+, clang 8+
