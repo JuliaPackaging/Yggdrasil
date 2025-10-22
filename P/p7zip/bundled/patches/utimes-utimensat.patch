@@ -1,0 +1,66 @@
+--- a/CPP/Windows/FileDir.cpp
++++ b/CPP/Windows/FileDir.cpp
+@@ -14,6 +14,7 @@
+ #include <fcntl.h>
+ #include <sys/stat.h>
+ #include <sys/types.h>
++#include <sys/time.h>
+ 
+ #include "../Common/C_FileIO.h"
+ #include "../Common/MyBuffer2.h"
+@@ -34,28 +35,17 @@
+ 
+ #ifndef _WIN32
+ 
+-static bool FiTime_To_timespec(const CFiTime *ft, timespec &ts)
++static bool FiTime_To_timeval(const CFiTime *ft, timeval &tv)
+ {
+   if (ft)
+   {
+-#if defined(_AIX)
+-    ts.tv_sec  = ft->tv_sec;
+-    ts.tv_nsec = ft->tv_nsec;
+-#else
+-    ts = *ft;
+-#endif
++    tv.tv_sec  = ft->tv_sec;
++    tv.tv_usec = ft->tv_nsec / 1000;
+     return true;
+   }
+   // else
+   {
+-    ts.tv_sec = 0;
+-    ts.tv_nsec =
+-    #ifdef UTIME_OMIT
+-      UTIME_OMIT; // -2 keep old timesptamp
+-    #else
+-      // UTIME_NOW; -1 // set to the current time
+-      0;
+-    #endif
++    gettimeofday(&tv, NULL);
+     return false;
+   }
+ }
+@@ -1218,15 +1208,18 @@
+   */
+ 
+   // if (!aTime && !mTime) return true;
+-  struct timespec times[2];
++  struct timeval times[2];
+   UNUSED_VAR(cTime)
+   bool needChange;
+-  needChange  = FiTime_To_timespec(aTime, times[0]);
+-  needChange |= FiTime_To_timespec(mTime, times[1]);
++  needChange  = FiTime_To_timeval(aTime, times[0]);
++  needChange |= FiTime_To_timeval(mTime, times[1]);
+   // if (mTime) { printf("\n time = %ld.%9ld\n", mTime->tv_sec, mTime->tv_nsec);  }
+   if (!needChange)
+     return true;
+-  return utimensat(AT_FDCWD, path, times, flags) == 0;
++  if (flags)
++    // flags is nonzero, update the times for the symlink itself
++    return lutimes(path, times) == 0;
++  return utimes(path, times) == 0;
+ }
+ 
+ bool SetDirTime(CFSTR path, const CFiTime *cTime, const CFiTime *aTime, const CFiTime *mTime)
