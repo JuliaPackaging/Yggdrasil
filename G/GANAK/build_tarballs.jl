@@ -40,12 +40,10 @@ if [[ "${target}" == *-freebsd* ]]; then
 fi
 CXXFLAGS="-fPIC" ./configure --competition
 make -j${nproc}
-
 # For apple, fix the dylib ID
 if [[ "${target}" == *-apple-* ]]; then
     install_name_tool -id "@rpath/libcadical.dylib" build/libcadical.so
 fi
-
 install -D -m755 build/libcadical.so "${prefix}/lib/libcadical.${dlext}"
 install -D -m644 src/cadical.hpp "${prefix}/include/cadical.hpp"
 install -D -m644 src/ccadical.h "${prefix}/include/ccadical.h"
@@ -54,13 +52,11 @@ install -D -m644 src/ccadical.h "${prefix}/include/ccadical.h"
 cd ${WORKSPACE}/srcdir/cadiback
 CXX=c++ ./configure
 make -j${nproc}
-
 # For apple, fix the dylib ID and the libcadical dependency
 if [[ "${target}" == *-apple-* ]]; then
     install_name_tool -id "@rpath/libcadiback.dylib" libcadiback.so
     install_name_tool -change libcadical.so "@rpath/libcadical.dylib" libcadiback.so
 fi
-
 install -D -m755 libcadiback.so "${prefix}/lib/libcadiback.${dlext}"
 install -D -m644 include/cadiback.h "${prefix}/include/cadiback.h"
 
