@@ -47,14 +47,23 @@ cmake --install .
 unlink $prefix/cuda/lib64
 """
 
-# Build for all supported CUDA > v11
-platforms = expand_cxxstring_abis(CUDA.supported_platforms(min_version=v"11.0"))
+# Build for all supported CUDA >= v11.6 (highest that builds)
+platforms = expand_cxxstring_abis(CUDA.supported_platforms(min_version=v"11.6"))
 
 # Cmake toolchain breaks on aarch64, so only x86_64 for now
 filter!(p -> arch(p)=="x86_64", platforms)
 
 # cuFINUFFT does not compile with CUDA 12.5, so exclude
 filter!(p -> VersionNumber(p["cuda"]) != v"12.5", platforms)
+
+# Build process fails (why??) when specifying minor versions of CUDA 13, so don't
+for platform in platforms
+    cuda_version = VersionNumber(platform["cuda"])
+    if cuda_version.major==13
+        platform["cuda"] = "13"
+    end
+end
+unique!(platforms) # Remove duplicates if there were multiple 13.x
 
 # The products that we will ensure are always built
 products = [
@@ -75,14 +84,18 @@ for platform in platforms
 
     # Build for all major archs supported by SDK
     # See https://en.wikipedia.org/wiki/CUDA
-    # sm_90 works for CUDA v12.1 and up, due to use of atomic operaitons
-    # sm_52 required for alloca from CUDA v12.0 and up
-    if VersionNumber(platform["cuda"]) < v"12.0"
-        cuda_archs = "50;60;70;80"
-    elseif VersionNumber(platform["cuda"]) < v"12.1"
-        cuda_archs = "60;70;80"
-    else
+    cuda_ver = VersionNumber(platform["cuda"])
+    if cuda_ver >= v"13" # 13.0+
+        # Skip 110,121 to not run out of space
+        cuda_archs = "75;80;90;100;120"
+    elseif cuda_ver >= v"12.1" # 12.1-12.9
+        # sm_90 works for CUDA v12.1 and up, due to use of atomic operations
         cuda_archs = "60;70;80;90"
+    elseif cuda_ver >= v"12.0" # 12.0
+        # sm_52 required for alloca from CUDA v12.0 and up
+        cuda_archs = "60;70;80"
+    else # < 12.0
+        cuda_archs = "50;60;70;80"
     end
     arch_line = "export CUDA_ARCHS=\"$cuda_archs\"\n"
     platform_script = arch_line * script
