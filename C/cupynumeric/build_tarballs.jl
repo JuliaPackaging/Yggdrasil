@@ -57,7 +57,6 @@ for platform in all_platforms
 
     should_build_platform(triplet(platform)) || continue
 
-    augment_platform_block = ""
     platform_sources = BinaryBuilder.AbstractSource[]
 
     _dependencies = copy(dependencies)
@@ -79,7 +78,6 @@ for platform in all_platforms
             push!(platform_sources, CUDA.cuda_nvcc_redist_source(cuda_ver, "x86_64"))
         end
 
-        augment_platform_block = CUDA.augment
         script = get_script(Val{true}())
     else # CPU build
         platform_sources = BinaryBuilder.AbstractSource[sources...]
@@ -91,10 +89,8 @@ for platform in all_platforms
         julia_compat = "1.10", 
         preferred_gcc_version = v"11",
         lazy_artifacts = true, dont_dlopen = true,
-        augment_platform_block = augment_platform_block
+        augment_platform_block = CUDA.augment
     )
 
 
 end
-
-

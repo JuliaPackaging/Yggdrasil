@@ -152,7 +152,6 @@ function get_script(cuda::Val{false})
         cmake --install build
 
         install_license $WORKSPACE/srcdir/cupynumeric*/LICENSE
-        install_license $WORKSPACE/srcdir/share/licenses/CUTENSOR/LICENSE
     """
 
     return script
