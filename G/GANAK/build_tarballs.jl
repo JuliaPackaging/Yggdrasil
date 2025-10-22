@@ -62,6 +62,7 @@ install -D -m644 include/cadiback.h "${prefix}/include/cadiback.h"
 
 # Build BreakID
 cd ${WORKSPACE}/srcdir/breakid
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/breakid-cstdint.patch
 mkdir build && cd build
 cmake \
     -DCMAKE_PREFIX_PATH=${prefix} \
@@ -94,6 +95,9 @@ cmake --install .
 
 # Build SBVA
 cd ${WORKSPACE}/srcdir/SBVA
+if [[ "${target}" == *-linux-musl* ]]; then
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/sbva-musl-feenableexcept.patch
+fi
 mkdir build && cd build
 ln -s ../scripts/*.sh .
 cmake \
@@ -110,6 +114,9 @@ cmake --install .
 
 # Build Arjun
 cd ${WORKSPACE}/srcdir/arjun
+if [[ "${target}" == *-linux-musl* ]]; then
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/arjun-musl-feenableexcept.patch
+fi
 mkdir build && cd build
 cmake \
     -DCMAKE_CXX_FLAGS="-I${prefix}/include" \
@@ -126,6 +133,9 @@ cmake --install .
 
 # Build ApproxMC
 cd ${WORKSPACE}/srcdir/approxmc
+if [[ "${target}" == *-linux-musl* ]]; then
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/approxmc-musl-feenableexcept.patch
+fi
 mkdir build && cd build
 cmake \
     -DCMAKE_PREFIX_PATH=${prefix} \
@@ -141,6 +151,9 @@ cmake --install .
 
 # Build Ganak
 cd ${WORKSPACE}/srcdir/ganak
+if [[ "${target}" == *-linux-musl* ]]; then
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/ganak-musl-feenableexcept.patch
+fi
 mkdir build && cd build
 cmake \
     -DCMAKE_PREFIX_PATH=${prefix} \
