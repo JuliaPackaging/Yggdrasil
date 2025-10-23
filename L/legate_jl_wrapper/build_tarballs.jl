@@ -92,5 +92,4 @@ for platform in platforms
         augment_platform_block = CUDA.augment
     )
 
-
 end
