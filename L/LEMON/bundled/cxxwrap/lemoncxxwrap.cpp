@@ -68,14 +68,15 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
     .method("set", &ListGraph::EdgeMap<int>::set);
 
   using MWPM = MaxWeightedPerfectMatching<ListGraph, ListGraph::EdgeMap<int>>;
+  using MWPMmatchingedge_ptr = bool (MWPM::*)(const Edge&) const; // used to resolve the overloads of `matching`
   //using MWPMmatchingedge_ptr = bool (MWPM::*)(const Edge&) const; // used to resolve the overloads of `matching`
-  //using MWPMmatchingedge_ptr = bool (MWPM::*)(const Edge&) const; // used to resolve the overloads of `matching`
+  MWPMmatchingedge_ptr matchingedge = &MWPM::matching;
   mod.add_type<MWPM>("MaxWeightedPerfectMatchingListGraphInt")
     .constructor<const ListGraph&, const ListGraph::EdgeMap<int>&>()
     .method("mate", &MWPM::mate)
     .method("run", &MWPM::run)
     .method("matchingWeight", &MWPM::matchingWeight)
-    //.method("matching", &MWPM::matching)
+    .method("matching", matchingedge)
     .method("dualValue", &MWPM::dualValue)
     .method("nodeValue", &MWPM::nodeValue)
     .method("blossomNum", &MWPM::blossomNum)
