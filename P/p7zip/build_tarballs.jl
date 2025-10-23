@@ -1,99 +1,93 @@
 using BinaryBuilder, Pkg
+using BinaryBuilderBase: sanitize
 
 name = "p7zip"
-# Upstream uses CalVer
-upstream_version = "25.01"
-compact_version = replace(upstream_version, "."=>"")
-version = v"17.7.0"
+version_string = "17.06"
+version = VersionNumber(version_string)
 
 # Collection of sources required to build p7zip
 sources = [
-    ArchiveSource("https://downloads.sourceforge.net/project/sevenzip/7-Zip/$(upstream_version)/7z$(compact_version)-src.tar.xz",
-                  "ed087f83ee789c1ea5f39c464c55a5c9d4008deb0efe900814f2df262b82c36e";
-                  unpack_target="7z"),
-    DirectorySource("./bundled"),
-    # FileSource(
-    #     "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
-    #     "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4"
-    # ),
+    GitSource("https://github.com/p7zip-project/p7zip",
+              "d9c3d157c62e842897d4447db717f813810e1423"),
+    FileSource("https://downloads.sourceforge.net/project/sevenzip/7-Zip/25.01/7z2501.exe",
+               "b96831eec5928384f0543d6b57c1f802952a0f2668e662882c0a785a2b52fb3b"),
+    FileSource("https://downloads.sourceforge.net/project/sevenzip/7-Zip/25.01/7z2501-x64.exe",
+               "78afa2a1c773caf3cf7edf62f857d2a8a5da55fb0fff5da416074c0d28b2b55f"),
 ]
-
-# 7zip uses utimensat to set file access and modification times.
-# x86_64-apple-darwin doesn't support this function.
-# Options:
-# 1. Build for MacOS 10.13 or later.
-#   - No changes to the source code needed.
-# 2. Patch 7zip to use `lutimes` and `utimes` instead.
-#   - Uses 1 microsecond precision instead of 1 ns or 100 ns
-#   - Current patch doesn't implement UTIME_OMIT no change behavior.
-#   - Hard to test.
-# 3. Patch 7zip to not set file access and modification times.
-#   - Fine for what p7zip is used for in Pkg.jl
-#   - May break some archival workflows.
 
 # Bash recipe for building across all platforms
 script = raw"""
-# Uncomment to require MacOS 10.13 or later.
-# if [[ "${target}" == x86_64-apple-darwin* ]]; then
-#     # need to run with BINARYBUILDER_RUNNER="privileged" for this rm to work
-#     rm -rf /opt/${target}/${target}/sys-root/System
-#     tar --extract --file=${WORKSPACE}/srcdir/MacOSX10.13.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX10.13.sdk/System MacOSX10.13.sdk/usr
-#     export MACOSX_DEPLOYMENT_TARGET=10.13
-# fi
+cd $WORKSPACE/srcdir/p7zip*/
 
-cd 7z/CPP/7zip/Bundles/Alone
-
-# Lowercase names for MinGW
-sed -i "s/NTSecAPI.h/ntsecapi.h/" ../../../Windows/SecurityUtils.h
-sed -i 's/-lUser32/-luser32/g' ../../7zip_gcc.mak
-sed -i 's/-lOle32/-lole32/g' ../../7zip_gcc.mak
-sed -i 's/-lGdi32/-lgdi32/g' ../../7zip_gcc.mak
-sed -i 's/-lComctl32/-lcomctl32/g' ../../7zip_gcc.mak
-sed -i 's/-lComdlg32/-lcomdlg32/g' ../../7zip_gcc.mak
-sed -i 's/-lShell32/-lshell32/g' ../../7zip_gcc.mak
-
-# RAR has a custom license
-export DISABLE_RAR=1
-
-if [[ "${target}" == *-mingw* ]]; then
-    export IS_MINGW=1
-    export RC=windres
+if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
+    # Install msan runtime (for clang)
+    cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
 fi
 
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    cd ../../../..
-    # atomic_patch -p1 --binary ${WORKSPACE}/srcdir/patches/utimes-utimensat.patch
-    atomic_patch -p1 --binary ${WORKSPACE}/srcdir/patches/no-utimensat.patch
-    cd CPP/7zip/Bundles/Alone
-    make -j${nproc} -f makefile.gcc
-else
-    if [[ "${target}" == x86_64-* ]]; then
-        make -j${nproc} -f makefile.gcc IS_X64=1 USE_ASM=1 MY_ASM="uasm"
-    elif [[ "${target}" == aarch64-* ]]; then
-        make -j${nproc} -f makefile.gcc IS_ARM64=1 USE_ASM=1
+if [[ ${target} == *mingw* ]]; then
+    # It's incredibly frustrating to build p7zip on mingw, so instead we just redistribute 7z
+    apk add p7zip
+
+    if [[ ${target} == i686* ]]; then
+        7z x -y ${WORKSPACE}/srcdir/7z2501.exe 7z.exe 7z.dll License.txt
     else
-        make -j${nproc} -f makefile.gcc
+        7z x -y ${WORKSPACE}/srcdir/7z2501-x64.exe 7z.exe 7z.dll License.txt
     fi
-fi
 
-install -Dvm 755 _o/7za${exeext} "${bindir}/7z${exeext}"
-install_license ../../../../DOC/copying.txt
-install_license ../../../../DOC/License.txt
+    install_license License.txt
+
+    chmod +x 7z.exe 7z.dll
+    mkdir ${prefix}/bin
+    cp -a 7z.exe 7z.dll ${prefix}/bin
+else
+    # Build requirements
+    apk add nasm yasm
+
+    # Convert from target to makefile
+    target_makefile()
+    {
+        case "${target}" in
+            x86_64-linux*)       echo makefile.linux_amd64_asm;;
+            i686-linux*)         echo makefile.linux_x86_asm_gcc_4.X;;
+            powerpc64le*linux*)  echo makefile.linux_cross_ppc64le;;
+            aarch64*linux*)      echo makefile.linux_cross_aarch64;;
+            arm-*linux*)         echo makefile.linux_cross_arm;;
+            riscv64-linux*)      echo makefile.linux_any_cpu;;
+            x86_64-*freebsd*)    echo makefile.freebsd6+;;
+            aarch64-*freebsd*)   echo makefile.freebsd6+;;
+            x86_64-*darwin*)     echo makefile.macosx_llvm_64bits;;
+            aarch64-*darwin*)    echo makefile.macosx_llvm_64bits;;
+        esac
+    }
+    cp -v $(target_makefile) makefile.machine
+
+    # clang doesn't like this c++11 narrowing, so we disable the error
+    if [[ "${target}" == *darwin* ]] || [[ "${target}" == *freebsd* ]]; then
+        CXXFLAGS="${CXXFLAGS} -Wno-c++11-narrowing"
+    fi
+
+    install_license DOC/License.txt
+
+    make -j${nproc} 7za CC="${CC} ${CFLAGS}" CXX="${CXX} ${CXXFLAGS}"
+    install -Dvm 755 bin/7za "${bindir}/7z"
+fi
 """
 
-platforms = supported_platforms()
+# We enable experimental platforms as this is a core Julia dependency
+platforms = supported_platforms(;experimental=true)
+push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("7z", :p7zip),
 ]
 
+llvm_version = v"13.0.1"
+
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    HostBuildDependency(PackageSpec(name="UASM_jll", uuid="bbf38c07-751d-5a2b-a7fc-5c0acd9bd57e")),
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
+                    platforms=filter(p -> sanitize(p)=="memory", platforms)),
 ]
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat="1.6",                    # Minimum Julia version
-    preferred_gcc_version=v"8",            # GCC version
-)
+
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_llvm_version=llvm_version)
