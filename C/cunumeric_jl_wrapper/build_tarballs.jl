@@ -4,6 +4,7 @@ using BinaryBuilder, Pkg
 const YGGDRASIL_DIR = "../../"
 include(joinpath(YGGDRASIL_DIR, "L", "libjulia", "common.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
+include("make_script.jl")
 
 name = "cunumeric_jl_wrapper"
 version = v"25.5.1" # cupynumeric has 05, but Julia doesn't like that
