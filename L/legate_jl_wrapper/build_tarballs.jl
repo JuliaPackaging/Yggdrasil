@@ -36,7 +36,7 @@ for p in all_platforms
     end
 end
 
-for platform in all_platforms
+for platform in platforms
     if CUDA.is_supported(platform) && !haskey(platform, "cuda")
         platform["cuda"] = "none"
     end
