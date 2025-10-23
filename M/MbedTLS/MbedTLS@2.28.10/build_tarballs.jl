@@ -1,4 +1,4 @@
-version = v"2.28.10"
+version = v"2.28.11"
 include("../common.jl")
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
