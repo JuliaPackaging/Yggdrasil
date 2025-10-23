@@ -34,6 +34,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
 
   mod.method("id", static_cast<int(*)(ListGraph::Node)>(&ListGraph::id));
   mod.method("id", static_cast<int(*)(ListGraph::Edge)>(&ListGraph::id));
+  mod.method("id", static_cast<int(*)(ListGraph::Arc)>(&ListGraph::id));
   mod.method("id", static_cast<int(*)(ListDigraph::Node)>(&ListDigraph::id));
   mod.method("id", static_cast<int(*)(ListDigraph::Arc)>(&ListDigraph::id));
 
