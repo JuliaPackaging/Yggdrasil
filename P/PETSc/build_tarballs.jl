@@ -419,11 +419,6 @@ platforms = expand_gfortran_versions(platforms)
 # replace this by calls to `malloc`, `realloc`, and `snprintf`.)
 platforms = expand_cxxstring_abis(platforms)
 
-# Anticipate planned BinaryBuilder changes to remove old architectures:
-filter!(p -> arch(p) ∉ ("armv6l", "armv7l"), platforms)
-filter!(p -> libgfortran_version(p) ≥ v"5", platforms)
-filter!(p -> cxxstring_abi(p) ≠ "cxx03", platforms)
-
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 products = [
