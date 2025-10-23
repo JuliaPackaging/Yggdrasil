@@ -29,6 +29,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
   mod.add_type<ListGraph::Node>("ListGraphNode");
   mod.add_type<ListDigraph::Node>("ListDigraphNode");
   mod.add_type<ListGraph::Edge>("ListGraphEdge");
+  mod.add_type<ListGraph::Arc>("ListGraphArc");
   mod.add_type<ListDigraph::Arc>("ListDigraphArc");
 
   mod.method("id", static_cast<int(*)(ListGraph::Node)>(&ListGraph::id));
@@ -69,7 +70,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
 
   using MWPM = MaxWeightedPerfectMatching<ListGraph, ListGraph::EdgeMap<int>>;
   using MWPMmatchingedge_ptr = bool (MWPM::*)(const ListGraph::Edge&) const; // used to resolve the overloads of `matching`
-  using MWPMmatchingnode_ptr = ListGraph::Edge (MWPM::*)(const ListGraph::Node&) const; // used to resolve the overloads of `matching`
+  using MWPMmatchingnode_ptr = ListGraph::Arc (MWPM::*)(const ListGraph::Node&) const; // used to resolve the overloads of `matching`
   MWPMmatchingedge_ptr matchingedge = &MWPM::matching;
   MWPMmatchingnode_ptr matchingnode = &MWPM::matching;
   mod.add_type<MWPM>("MaxWeightedPerfectMatchingListGraphInt")
