@@ -71,7 +71,12 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
     .constructor<const ListGraph&, const ListGraph::EdgeMap<int>&>()
     .method("mate", &MaxWeightedPerfectMatching<ListGraph, ListGraph::EdgeMap<int>>::mate)
     .method("run", &MaxWeightedPerfectMatching<ListGraph, ListGraph::EdgeMap<int>>::run)
-    .method("matchingWeight", &MaxWeightedPerfectMatching<ListGraph, ListGraph::EdgeMap<int>>::matchingWeight);
-
+    .method("matchingWeight", &MaxWeightedPerfectMatching<ListGraph, ListGraph::EdgeMap<int>>::matchingWeight)
+    .method("matching", &MaxWeightedPerfectMatching<ListGraph, ListGraph::EdgeMap<int>>::matching)
+    .method("dualValue", &MaxWeightedPerfectMatching<ListGraph, ListGraph::EdgeMap<int>>::dualValue)
+    .method("nodeValue", &MaxWeightedPerfectMatching<ListGraph, ListGraph::EdgeMap<int>>::nodeValue)
+    .method("blossomNum", &MaxWeightedPerfectMatching<ListGraph, ListGraph::EdgeMap<int>>::blossomNum)
+    .method("blossomSize", &MaxWeightedPerfectMatching<ListGraph, ListGraph::EdgeMap<int>>::blossomSize)
+    .method("blossomValue", &MaxWeightedPerfectMatching<ListGraph, ListGraph::EdgeMap<int>>::blossomValue);
 }
 
