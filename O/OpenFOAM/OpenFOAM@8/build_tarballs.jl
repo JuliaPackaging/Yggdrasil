@@ -2,95 +2,66 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
-const YGGDRASIL_DIR = "../.."
+const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
-name = "OpenFOAM_com"
-version = v"2312.0.0"
+name = "OpenFOAM"
+version = v"8.0.20210316"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://develop.openfoam.com/Development/openfoam.git", "1d8f0d55f79e6488dae75e4b839e358a88af77b5")
+    GitSource("https://github.com/OpenFOAM/OpenFOAM-8.git",
+              "1c9b5879390b09ea0320e98800aca0974dfcdc41"),
+    DirectorySource("./bundled"),
 ]
 
 # In order to set up OpenFOAM, we need to know the version of some of the
 # dependencies.
-const SCOTCH_VERSION = "6.1.3"
-const FFTW_VERSION = "3.3.10"
+const SCOTCH_VERSION = "6.1.0"
+const SCOTCH_COMPAT_VERSION = "6.1.3"
 
 # Bash recipe for building across all platforms
-script = raw"""
+script = "SCOTCH_VERSION=$(SCOTCH_VERSION)\n" * raw"""
+cd ${WORKSPACE}/srcdir/OpenFOAM*
+atomic_patch -p1 ../patches/etc-bashrc.patch
 
-cd ${WORKSPACE}/srcdir/openfoam
-git submodule update --init modules/cfmesh modules/avalanche
-
-# Adding -rpath-links #TODO need to automate for other platforms
-## For linux64
+# Set rpath-link in all C/C++ compilers
 LDFLAGS=""
 for dir in "" "/dummy" "/mpi-system"; do
     LDFLAGS="${LDFLAGS} -Wl,-rpath-link=${PWD}/platforms/linux64GccDPInt32Opt/lib${dir}"
 done
-LDFLAGS="${LDFLAGS} -Wl,-rpath-link=${libdir}"
+sed -i "s?-m64?-m64 ${LDFLAGS}?g" wmake/rules/*/c*
 
-# Set rpath-link in all C/C++ compilers
-sed -i "s|cc         := gcc\$(COMPILER_VERSION)|cc         := cc\$(COMPILER_VERSION) ${LDFLAGS}|" wmake/rules/General/Gcc/c
-sed -i "s|CC         := g++\$(COMPILER_VERSION) -std=c++14|CC         := c++\$(COMPILER_VERSION) -std=c++14 ${LDFLAGS}|" wmake/rules/General/Gcc/c++
+# Set version of Scotch
+echo "export SCOTCH_VERSION=${SCOTCH_VERSION}" > etc/config.sh/scotch
+echo "export SCOTCH_ARCH_PATH=${prefix}"      >> etc/config.sh/scotch
 
-cat wmake/rules/General/Gcc/c
-cat wmake/rules/General/Gcc/c++
-
-# Setup Scotch
-sed -i "s|SCOTCH_VERSION=scotch_6.1.0|SCOTCH_VERSION=scotch-system|" etc/config.sh/scotch
-sed -i "s|export SCOTCH_ARCH_PATH=\$WM_THIRD_PARTY_DIR/platforms/\$WM_ARCH\$WM_COMPILER\$WM_PRECISION_OPTION\$WM_LABEL_OPTION/\$SCOTCH_VERSION|export SCOTCH_ARCH_PATH=${prefix}|" etc/config.sh/scotch
-cat etc/config.sh/scotch
-
-# Setup METIS
-sed -i "s|METIS_VERSION=metis-5.1.0|METIS_VERSION=metis-system|" etc/config.sh/metis
-sed -i "s|export METIS_ARCH_PATH=\$WM_THIRD_PARTY_DIR/platforms/\$WM_ARCH\$WM_COMPILER\$WM_PRECISION_OPTION\$WM_LABEL_OPTION/\$METIS_VERSION|export METIS_ARCH_PATH=${prefix}|" etc/config.sh/metis
-cat etc/config.sh/metis
-
-# Setup FFTW
-sed -i "s|fftw_version=fftw-3.3.10|fftw_version=fftw-system|" etc/config.sh/FFTW
-sed -i "s|export FFTW_ARCH_PATH=\$WM_THIRD_PARTY_DIR/platforms/\$WM_ARCH\$WM_COMPILER/\$fftw_version|export FFTW_ARCH_PATH=${prefix}|" etc/config.sh/FFTW
-cat etc/config.sh/FFTW
-
-# Setup CGAL, BOOST
-sed -i "s|boost_version=boost_1_74_0|boost_version=boost-system|" etc/config.sh/CGAL
-sed -i "s|cgal_version=CGAL-4.14.3|cgal_version=cgal-system|" etc/config.sh/CGAL
-sed -i "s|export BOOST_ARCH_PATH=|export BOOST_ARCH_PATH=${prefix} #|" etc/config.sh/CGAL
-sed -i "s|export CGAL_ARCH_PATH=|export CGAL_ARCH_PATH=${prefix} #|" etc/config.sh/CGAL
-sed -i "s|# export GMP_ARCH_PATH=...|export GMP_ARCH_PATH=${prefix}|" etc/config.sh/CGAL
-sed -i "s|# export MPFR_ARCH_PATH=...|export MPFR_ARCH_PATH=${prefix}|" etc/config.sh/CGAL
-cat etc/config.sh/CGAL
-
-
-# Setup to use our MPI
-sed -i "s|WM_MPLIB=SYSTEMOPENMPI|WM_MPLIB=SYSTEMMPI|" etc/bashrc
-cat etc/bashrc
-
+# Set up to use our MPI
+sed -i 's/WM_MPLIB=SYSTEMOPENMPI/WM_MPLIB=SYSTEMMPI/g' etc/bashrc
 export MPI_ROOT="${prefix}"
 export MPI_ARCH_FLAGS=""
 export MPI_ARCH_INC="-I${includedir}"
-
 if grep -q MPICH_NAME $prefix/include/mpi.h; then
-    export MPI_ARCH_LIBS="-L${libdir} -lmpi";  
+    export MPI_ARCH_LIBS="-L${libdir} -lmpi"
 elif grep -q MPItrampoline $prefix/include/mpi.h; then
-    export MPI_ARCH_LIBS="-L${libdir} -lmpitrampoline";  
+    export MPI_ARCH_LIBS="-L${libdir} -lmpitrampoline"
 elif grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
-    export MPI_ARCH_LIBS="-L${libdir} -lmpi";  
+    export MPI_ARCH_LIBS="-L${libdir} -lmpi"
 fi
 
-# Setup the environment. Failures allowed
+# Set up the environment.  Note, this script may internally have some failing command, which
+# would spring our traps, so we have to allow failures, sigh
 source etc/bashrc || true
 
 # Build!
-./Allwmake -j${nproc} -q -s
+./Allwmake -j${nproc}
 
-# Copying the binaries and etc to the correct directories
-mkdir -p "${libdir}" "${bindir}"
-cp platforms/linux64GccDPInt32Opt/lib/{,dummy/,sys-mpi/}*.${dlext}* "${libdir}/."
+# Highly advanced installation process (inspired by Debian:
+# https://salsa.debian.org/science-team/openfoam/-/tree/master/debian)
+mkdir -p "${libdir}" "${bindir}" "${prefix}/share/openfoam"
+cp platforms/linux64GccDPInt32Opt/lib/{,dummy/,mpi-system/}*.${dlext}* "${libdir}/."
 cp platforms/linux64GccDPInt32Opt/bin/* "${bindir}/."
-cp -r etc/ "${prefix}/."
+cp -r etc/ "${prefix}/share/openfoam/."
 """
 
 augment_platform_block = """
@@ -102,7 +73,7 @@ augment_platform_block = """
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Platform("x86_64", "linux"; libc = "glibc")
+    Platform("x86_64", "linux"; libc="glibc"),
 ]
 platforms = expand_cxxstring_abis(platforms)
 
@@ -117,191 +88,143 @@ platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), plat
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libadjointOptimisation", :libadjointOptimisation; dont_dlopen=true),
-    LibraryProduct("libalphaFieldFunctions", :libalphaFieldFunctions; dont_dlopen=true),
     LibraryProduct("libatmosphericModels", :libatmosphericModels; dont_dlopen=true),
     LibraryProduct("libbarotropicCompressibilityModel", :libbarotropicCompressibilityModel; dont_dlopen=true),
     LibraryProduct("libblockMesh", :libblockMesh; dont_dlopen=true),
     LibraryProduct("libchemistryModel", :libchemistryModel; dont_dlopen=true),
     LibraryProduct("libcoalCombustion", :libcoalCombustion; dont_dlopen=true),
     LibraryProduct("libcombustionModels", :libcombustionModels; dont_dlopen=true),
-    LibraryProduct("libcompressibleMultiPhaseTurbulenceModels", :libcompressibleMultiPhaseTurbulenceModels; dont_dlopen=true),
-    LibraryProduct("libcompressibleTransportModels", :libcompressibleTransportModels; dont_dlopen=true),
-    LibraryProduct("libcompressibleTurbulenceModels", :libcompressibleTurbulenceModels; dont_dlopen=true),
-    LibraryProduct("libcompressibleTwoPhaseMixtureTurbulenceModels", :libcompressibleTwoPhaseMixtureTurbulenceModels; dont_dlopen=true),
-    LibraryProduct("libcompressibleTwoPhaseSystem", :libcompressibleTwoPhaseSystem; dont_dlopen=true),
-    LibraryProduct("libconformalVoronoiMesh", :libconformalVoronoiMesh; dont_dlopen=true),
     LibraryProduct("libconversion", :libconversion; dont_dlopen=true),
-    LibraryProduct("libcv2DMesh", :libcv2DMesh; dont_dlopen=true),
     LibraryProduct("libdecompose", :libdecompose; dont_dlopen=true),
     LibraryProduct("libdecompositionMethods", :libdecompositionMethods; dont_dlopen=true),
     LibraryProduct("libdistributed", :libdistributed; dont_dlopen=true),
     LibraryProduct("libdistributionModels", :libdistributionModels; dont_dlopen=true),
-    LibraryProduct("libDPMTurbulenceModels", :libDPMTurbulenceModels; dont_dlopen=true),
+    LibraryProduct("libDPMMomentumTransportModels", :libDPMMomentumTransportModels; dont_dlopen=true),
     LibraryProduct("libdriftFluxRelativeVelocityModels", :libdriftFluxRelativeVelocityModels; dont_dlopen=true),
     LibraryProduct("libdriftFluxTransportModels", :libdriftFluxTransportModels; dont_dlopen=true),
     LibraryProduct("libDSMC", :libDSMC; dont_dlopen=true),
     LibraryProduct("libdynamicFvMesh", :libdynamicFvMesh; dont_dlopen=true),
     LibraryProduct("libdynamicMesh", :libdynamicMesh; dont_dlopen=true),
     LibraryProduct("libengine", :libengine; dont_dlopen=true),
+    LibraryProduct("libeulerianInterfacialCompositionModels", :libeulerianInterfacialCompositionModels; dont_dlopen=true),
+    LibraryProduct("libeulerianInterfacialModels", :libeulerianInterfacialModels; dont_dlopen=true),
     LibraryProduct("libextrude2DMesh", :libextrude2DMesh; dont_dlopen=true),
     LibraryProduct("libextrudeModel", :libextrudeModel; dont_dlopen=true),
-    LibraryProduct("libfaAvalanche", :libfaAvalanche; dont_dlopen=true),
-    LibraryProduct("libfaDecompose", :libfaDecompose; dont_dlopen=true),
-    LibraryProduct("libfaOptions", :libfaOptions; dont_dlopen=true),
-    LibraryProduct("libfaReconstruct", :libfaReconstruct; dont_dlopen=true),
     LibraryProduct("libfieldFunctionObjects", :libfieldFunctionObjects; dont_dlopen=true),
     LibraryProduct("libfileFormats", :libfileFormats; dont_dlopen=true),
-    LibraryProduct("libfiniteArea", :libfiniteArea; dont_dlopen=true),
     LibraryProduct("libfiniteVolume", :libfiniteVolume; dont_dlopen=true),
+    LibraryProduct("libfluidThermoMomentumTransportModels", :libfluidThermoMomentumTransportModels; dont_dlopen=true),
     LibraryProduct("libfluidThermophysicalModels", :libfluidThermophysicalModels; dont_dlopen=true),
+    LibraryProduct("libfoamToVTK", :libfoamToVTK; dont_dlopen=true),
     LibraryProduct("libforces", :libforces; dont_dlopen=true),
     LibraryProduct("libfvMotionSolvers", :libfvMotionSolvers; dont_dlopen=true),
     LibraryProduct("libfvOptions", :libfvOptions; dont_dlopen=true),
     LibraryProduct("libgenericPatchFields", :libgenericPatchFields; dont_dlopen=true),
-    LibraryProduct("libgeometricVoF", :libgeometricVoF; dont_dlopen=true),
-    LibraryProduct("libhelpTypes", :libhelpTypes; dont_dlopen=true),
     LibraryProduct("libimmiscibleIncompressibleTwoPhaseMixture", :libimmiscibleIncompressibleTwoPhaseMixture; dont_dlopen=true),
-    LibraryProduct("libincompressibleInterPhaseTransportModels", :libincompressibleInterPhaseTransportModels; dont_dlopen=true),
-    LibraryProduct("libincompressibleMultiphaseSystems", :libincompressibleMultiphaseSystems; dont_dlopen=true),
+    LibraryProduct("libincompressibleMomentumTransportModels", :libincompressibleMomentumTransportModels; dont_dlopen=true),
     LibraryProduct("libincompressibleTransportModels", :libincompressibleTransportModels; dont_dlopen=true),
-    LibraryProduct("libincompressibleTurbulenceModels", :libincompressibleTurbulenceModels; dont_dlopen=true),
-    LibraryProduct("libinitialisationFunctionObjects", :libinitialisationFunctionObjects; dont_dlopen=true),
+    LibraryProduct("libincompressibleTwoPhaseMixture", :libincompressibleTwoPhaseMixture; dont_dlopen=true),
     LibraryProduct("libinterfaceProperties", :libinterfaceProperties; dont_dlopen=true),
-    LibraryProduct("libinterfaceTrackingFvMesh", :libinterfaceTrackingFvMesh; dont_dlopen=true),
-    LibraryProduct("libkahipDecomp", :libkahipDecomp; dont_dlopen=true),
-    LibraryProduct("liblagrangian", :liblagrangian; dont_dlopen=true),
     LibraryProduct("liblagrangianFunctionObjects", :liblagrangianFunctionObjects; dont_dlopen=true),
     LibraryProduct("liblagrangianIntermediate", :liblagrangianIntermediate; dont_dlopen=true),
+    LibraryProduct("liblagrangian", :liblagrangian; dont_dlopen=true),
     LibraryProduct("liblagrangianSpray", :liblagrangianSpray; dont_dlopen=true),
     LibraryProduct("liblagrangianTurbulence", :liblagrangianTurbulence; dont_dlopen=true),
     LibraryProduct("liblaminarFlameSpeedModels", :liblaminarFlameSpeedModels; dont_dlopen=true),
-    LibraryProduct("liblaserDTRM", :liblaserDTRM; dont_dlopen=true),
-    LibraryProduct("liblumpedPointMotion", :liblumpedPointMotion; dont_dlopen=true),
-    LibraryProduct("libmeshLibrary", :libmeshLibrary; dont_dlopen=true),
     LibraryProduct("libmeshTools", :libmeshTools; dont_dlopen=true),
     LibraryProduct("libmetisDecomp", :libmetisDecomp; dont_dlopen=true),
     LibraryProduct("libMGridGen", :libMGridGen; dont_dlopen=true),
     LibraryProduct("libmolecularMeasurements", :libmolecularMeasurements; dont_dlopen=true),
     LibraryProduct("libmolecule", :libmolecule; dont_dlopen=true),
+    LibraryProduct("libmomentumTransportModels", :libmomentumTransportModels; dont_dlopen=true),
+    LibraryProduct("libmultiphaseEulerFoamFunctionObjects", :libmultiphaseEulerFoamFunctionObjects; dont_dlopen=true),
     LibraryProduct("libmultiphaseInterFoam", :libmultiphaseInterFoam; dont_dlopen=true),
     LibraryProduct("libmultiphaseMixtureThermo", :libmultiphaseMixtureThermo; dont_dlopen=true),
-    LibraryProduct("libmultiphaseSystem", :libmultiphaseSystem; dont_dlopen=true),
+    LibraryProduct("libmultiphaseMomentumTransportModels", :libmultiphaseMomentumTransportModels; dont_dlopen=true),
+    LibraryProduct("libmultiphaseSystems", :libmultiphaseSystems; dont_dlopen=true),
+    LibraryProduct("libmultiphaseThermophysicalTransportModels", :libmultiphaseThermophysicalTransportModels; dont_dlopen=true),
     LibraryProduct("libODE", :libODE; dont_dlopen=true),
     LibraryProduct("libOpenFOAM", :libOpenFOAM; dont_dlopen=true),
-    LibraryProduct("liboverset", :liboverset; dont_dlopen=true),
     LibraryProduct("libpairPatchAgglomeration", :libpairPatchAgglomeration; dont_dlopen=true),
-    LibraryProduct("libpdrFields", :libpdrFields; dont_dlopen=true),
     LibraryProduct("libphaseChangeTwoPhaseMixtures", :libphaseChangeTwoPhaseMixtures; dont_dlopen=true),
-    LibraryProduct("libphaseCompressibleTurbulenceModels", :libphaseCompressibleTurbulenceModels; dont_dlopen=true),
-    LibraryProduct("libphaseFunctionObjects", :libphaseFunctionObjects; dont_dlopen=true),
-    LibraryProduct("libphaseTemperatureChangeTwoPhaseMixtures", :libphaseTemperatureChangeTwoPhaseMixtures; dont_dlopen=true),
-    LibraryProduct("libPolyhedronReader", :libPolyhedronReader; dont_dlopen=true),
+    LibraryProduct("libphaseSystem", :libphaseSystem; dont_dlopen=true),
     LibraryProduct("libpotential", :libpotential; dont_dlopen=true),
+    LibraryProduct("libpsiReactionThermophysicalTransportModels", :libpsiReactionThermophysicalTransportModels; dont_dlopen=true),
     LibraryProduct("libPstream", :libPstream; dont_dlopen=true),
     LibraryProduct("libptscotchDecomp", :libptscotchDecomp; dont_dlopen=true),
-    LibraryProduct("libpyrolysisModels", :libpyrolysisModels; dont_dlopen=true),
     LibraryProduct("libradiationModels", :libradiationModels; dont_dlopen=true),
     LibraryProduct("librandomProcesses", :librandomProcesses; dont_dlopen=true),
-    LibraryProduct("librandomProcessesFunctionObjects", :librandomProcessesFunctionObjects; dont_dlopen=true),
-    LibraryProduct("libreactingMultiphaseSystem", :libreactingMultiphaseSystem; dont_dlopen=true),
-    LibraryProduct("libreactingTwoPhaseSystem", :libreactingTwoPhaseSystem; dont_dlopen=true),
     LibraryProduct("libreactionThermophysicalModels", :libreactionThermophysicalModels; dont_dlopen=true),
     LibraryProduct("libreconstruct", :libreconstruct; dont_dlopen=true),
-    LibraryProduct("libregionCoupling", :libregionCoupling; dont_dlopen=true),
-    LibraryProduct("libregionFaModels", :libregionFaModels; dont_dlopen=true),
     LibraryProduct("libregionModels", :libregionModels; dont_dlopen=true),
     LibraryProduct("librenumberMethods", :librenumberMethods; dont_dlopen=true),
     LibraryProduct("librhoCentralFoam", :librhoCentralFoam; dont_dlopen=true),
+    LibraryProduct("librhoReactionThermophysicalTransportModels", :librhoReactionThermophysicalTransportModels; dont_dlopen=true),
     LibraryProduct("librigidBodyDynamics", :librigidBodyDynamics; dont_dlopen=true),
     LibraryProduct("librigidBodyMeshMotion", :librigidBodyMeshMotion; dont_dlopen=true),
+    LibraryProduct("librigidBodyState", :librigidBodyState; dont_dlopen=true),
     LibraryProduct("libsampling", :libsampling; dont_dlopen=true),
-    LibraryProduct("libsaturationModel", :libsaturationModel; dont_dlopen=true),
     LibraryProduct("libscotchDecomp", :libscotchDecomp; dont_dlopen=true),
     LibraryProduct("libsixDoFRigidBodyMotion", :libsixDoFRigidBodyMotion; dont_dlopen=true),
     LibraryProduct("libsixDoFRigidBodyState", :libsixDoFRigidBodyState; dont_dlopen=true),
     LibraryProduct("libSLGThermo", :libSLGThermo; dont_dlopen=true),
-    LibraryProduct("libSloanRenumber", :libSloanRenumber; dont_dlopen=true),
     LibraryProduct("libsnappyHexMesh", :libsnappyHexMesh; dont_dlopen=true),
-    LibraryProduct("libsolidChemistryModel", :libsolidChemistryModel; dont_dlopen=true),
+    LibraryProduct("libsolidDisplacementThermo", :libsolidDisplacementThermo; dont_dlopen=true),
     LibraryProduct("libsolidParticle", :libsolidParticle; dont_dlopen=true),
-    LibraryProduct("libsolidSpecie", :libsolidSpecie; dont_dlopen=true),
     LibraryProduct("libsolidThermo", :libsolidThermo; dont_dlopen=true),
     LibraryProduct("libsolverFunctionObjects", :libsolverFunctionObjects; dont_dlopen=true),
     LibraryProduct("libspecie", :libspecie; dont_dlopen=true),
-    LibraryProduct("libsurfaceFeatureExtract", :libsurfaceFeatureExtract; dont_dlopen=true),
+    LibraryProduct("libspecieTransfer", :libspecieTransfer; dont_dlopen=true),
     LibraryProduct("libsurfaceFilmDerivedFvPatchFields", :libsurfaceFilmDerivedFvPatchFields; dont_dlopen=true),
     LibraryProduct("libsurfaceFilmModels", :libsurfaceFilmModels; dont_dlopen=true),
     LibraryProduct("libsurfMesh", :libsurfMesh; dont_dlopen=true),
     LibraryProduct("libtabulatedWallFunctions", :libtabulatedWallFunctions; dont_dlopen=true),
     LibraryProduct("libthermalBaffleModels", :libthermalBaffleModels; dont_dlopen=true),
     LibraryProduct("libthermophysicalProperties", :libthermophysicalProperties; dont_dlopen=true),
-    LibraryProduct("libthermoTools", :libthermoTools; dont_dlopen=true),
+    LibraryProduct("libthermophysicalTransportModels", :libthermophysicalTransportModels; dont_dlopen=true),
     LibraryProduct("libtopoChangerFvMesh", :libtopoChangerFvMesh; dont_dlopen=true),
-    LibraryProduct("libturbulenceModels", :libturbulenceModels; dont_dlopen=true),
-    LibraryProduct("libturbulenceModelSchemes", :libturbulenceModelSchemes; dont_dlopen=true),
+    LibraryProduct("libtriSurface", :libtriSurface; dont_dlopen=true),
     LibraryProduct("libtwoPhaseMixture", :libtwoPhaseMixture; dont_dlopen=true),
     LibraryProduct("libtwoPhaseMixtureThermo", :libtwoPhaseMixtureThermo; dont_dlopen=true),
     LibraryProduct("libtwoPhaseProperties", :libtwoPhaseProperties; dont_dlopen=true),
-    LibraryProduct("libtwoPhaseReactingTurbulenceModels", :libtwoPhaseReactingTurbulenceModels; dont_dlopen=true),
     LibraryProduct("libtwoPhaseSurfaceTension", :libtwoPhaseSurfaceTension; dont_dlopen=true),
+    LibraryProduct("libuserd-foam", :libuserd_foam; dont_dlopen=true),
     LibraryProduct("libutilityFunctionObjects", :libutilityFunctionObjects; dont_dlopen=true),
-    LibraryProduct("libVoFphaseCompressibleTurbulenceModels", :libVoFphaseCompressibleTurbulenceModels; dont_dlopen=true),
-    LibraryProduct("libVoFphaseTurbulentTransportModels", :libVoFphaseTurbulentTransportModels; dont_dlopen=true),
-    LibraryProduct("libwaveModels", :libwaveModels; dont_dlopen=true),
-    
-    ExecutableProduct("acousticFoam", :acousticFoam),
+    LibraryProduct("libVoFphaseCompressibleMomentumTransportModels", :libVoFphaseCompressibleMomentumTransportModels; dont_dlopen=true),
+    LibraryProduct("libwaves", :libwaves; dont_dlopen=true),
     ExecutableProduct("adiabaticFlameT", :adiabaticFlameT),
-    ExecutableProduct("adjointOptimisationFoam", :adjointOptimisationFoam),
     ExecutableProduct("adjointShapeOptimizationFoam", :adjointShapeOptimizationFoam),
     ExecutableProduct("ansysToFoam", :ansysToFoam),
     ExecutableProduct("applyBoundaryLayer", :applyBoundaryLayer),
     ExecutableProduct("attachMesh", :attachMesh),
     ExecutableProduct("autoPatch", :autoPatch),
+    ExecutableProduct("autoRefineMesh", :autoRefineMesh),
     ExecutableProduct("blockMesh", :blockMesh),
     ExecutableProduct("boundaryFoam", :boundaryFoam),
     ExecutableProduct("boxTurb", :boxTurb),
-    ExecutableProduct("buoyantBoussinesqPimpleFoam", :buoyantBoussinesqPimpleFoam),
-    ExecutableProduct("buoyantBoussinesqSimpleFoam", :buoyantBoussinesqSimpleFoam),
     ExecutableProduct("buoyantPimpleFoam", :buoyantPimpleFoam),
     ExecutableProduct("buoyantSimpleFoam", :buoyantSimpleFoam),
-    ExecutableProduct("cartesian2DMesh", :cartesian2DMesh),
-    ExecutableProduct("cartesianMesh", :cartesianMesh),
-    ExecutableProduct("cavitatingDyMFoam", :cavitatingDyMFoam),
     ExecutableProduct("cavitatingFoam", :cavitatingFoam),
     ExecutableProduct("cfx4ToFoam", :cfx4ToFoam),
     ExecutableProduct("changeDictionary", :changeDictionary),
-    ExecutableProduct("checkFaMesh", :checkFaMesh),
     ExecutableProduct("checkMesh", :checkMesh),
-    ExecutableProduct("checkSurfaceMesh", :checkSurfaceMesh),
     ExecutableProduct("chemFoam", :chemFoam),
     ExecutableProduct("chemkinToFoam", :chemkinToFoam),
     ExecutableProduct("chtMultiRegionFoam", :chtMultiRegionFoam),
-    ExecutableProduct("chtMultiRegionSimpleFoam", :chtMultiRegionSimpleFoam),
-    ExecutableProduct("chtMultiRegionTwoPhaseEulerFoam", :chtMultiRegionTwoPhaseEulerFoam),
     ExecutableProduct("coalChemistryFoam", :coalChemistryFoam),
     ExecutableProduct("coldEngineFoam", :coldEngineFoam),
     ExecutableProduct("collapseEdges", :collapseEdges),
     ExecutableProduct("combinePatchFaces", :combinePatchFaces),
-    ExecutableProduct("compressibleInterDyMFoam", :compressibleInterDyMFoam),
     ExecutableProduct("compressibleInterFilmFoam", :compressibleInterFilmFoam),
     ExecutableProduct("compressibleInterFoam", :compressibleInterFoam),
-    ExecutableProduct("compressibleInterIsoFoam", :compressibleInterIsoFoam),
     ExecutableProduct("compressibleMultiphaseInterFoam", :compressibleMultiphaseInterFoam),
-    ExecutableProduct("computeSensitivities", :computeSensitivities),
-    ExecutableProduct("copySurfaceParts", :copySurfaceParts),
     ExecutableProduct("createBaffles", :createBaffles),
-    ExecutableProduct("createBoxTurb", :createBoxTurb),
     ExecutableProduct("createExternalCoupledPatchGeometry", :createExternalCoupledPatchGeometry),
     ExecutableProduct("createPatch", :createPatch),
-    ExecutableProduct("createROMfields", :createROMfields),
-    ExecutableProduct("createZeroDirectory", :createZeroDirectory),
-    ExecutableProduct("cumulativeDisplacement", :cumulativeDisplacement),
     ExecutableProduct("datToFoam", :datToFoam),
     ExecutableProduct("decomposePar", :decomposePar),
     ExecutableProduct("deformedGeom", :deformedGeom),
     ExecutableProduct("dnsFoam", :dnsFoam),
-    ExecutableProduct("DPMDyMFoam", :DPMDyMFoam),
     ExecutableProduct("DPMFoam", :DPMFoam),
     ExecutableProduct("driftFluxFoam", :driftFluxFoam),
     ExecutableProduct("dsmcFoam", :dsmcFoam),
@@ -310,73 +233,41 @@ products = [
     ExecutableProduct("engineCompRatio", :engineCompRatio),
     ExecutableProduct("engineFoam", :engineFoam),
     ExecutableProduct("engineSwirl", :engineSwirl),
-    ExecutableProduct("ensightToFoam", :ensightToFoam),
     ExecutableProduct("equilibriumCO", :equilibriumCO),
     ExecutableProduct("equilibriumFlameT", :equilibriumFlameT),
     ExecutableProduct("extrude2DMesh", :extrude2DMesh),
-    ExecutableProduct("extrudeEdgesInto2DSurface", :extrudeEdgesInto2DSurface),
     ExecutableProduct("extrudeMesh", :extrudeMesh),
     ExecutableProduct("extrudeToRegionMesh", :extrudeToRegionMesh),
     ExecutableProduct("faceAgglomerate", :faceAgglomerate),
-    ExecutableProduct("faParkerFukushimaFoam", :faParkerFukushimaFoam),
-    ExecutableProduct("faSavageHutterFoam", :faSavageHutterFoam),
-    ExecutableProduct("faTwoLayerAvalancheFoam", :faTwoLayerAvalancheFoam),
     ExecutableProduct("financialFoam", :financialFoam),
     ExecutableProduct("fireFoam", :fireFoam),
-    ExecutableProduct("fireToFoam", :fireToFoam),
     ExecutableProduct("flattenMesh", :flattenMesh),
-    ExecutableProduct("FLMAToSurface", :FLMAToSurface),
     ExecutableProduct("fluent3DMeshToFoam", :fluent3DMeshToFoam),
     ExecutableProduct("fluentMeshToFoam", :fluentMeshToFoam),
-    ExecutableProduct("FMSToSurface", :FMSToSurface),
-    ExecutableProduct("FMSToVTK", :FMSToVTK),
     ExecutableProduct("foamDataToFluent", :foamDataToFluent),
     ExecutableProduct("foamDictionary", :foamDictionary),
     ExecutableProduct("foamFormatConvert", :foamFormatConvert),
-    ExecutableProduct("foamHasLibrary", :foamHasLibrary),
-    ExecutableProduct("foamHelp", :foamHelp),
-    ExecutableProduct("foamListRegions", :foamListRegions),
     ExecutableProduct("foamListTimes", :foamListTimes),
     ExecutableProduct("foamMeshToFluent", :foamMeshToFluent),
-    ExecutableProduct("foamRestoreFields", :foamRestoreFields),
+    ExecutableProduct("foamSetupCHT", :foamSetupCHT),
     ExecutableProduct("foamToEnsight", :foamToEnsight),
-    ExecutableProduct("foamToFireMesh", :foamToFireMesh),
+    ExecutableProduct("foamToEnsightParts", :foamToEnsightParts),
     ExecutableProduct("foamToGMV", :foamToGMV),
     ExecutableProduct("foamToStarMesh", :foamToStarMesh),
     ExecutableProduct("foamToSurface", :foamToSurface),
     ExecutableProduct("foamToTetDualMesh", :foamToTetDualMesh),
     ExecutableProduct("foamToVTK", :foamToVTK),
-    ExecutableProduct("foamUpgradeCyclics", :foamUpgradeCyclics),
-    ExecutableProduct("foamyHexMesh", :foamyHexMesh),
-    ExecutableProduct("foamyQuadMesh", :foamyQuadMesh),
     ExecutableProduct("gambitToFoam", :gambitToFoam),
-    ExecutableProduct("generateBoundaryLayers", :generateBoundaryLayers),
     ExecutableProduct("gmshToFoam", :gmshToFoam),
-    ExecutableProduct("gridToSTL", :gridToSTL),
     ExecutableProduct("icoFoam", :icoFoam),
-    ExecutableProduct("icoReactingMultiphaseInterFoam", :icoReactingMultiphaseInterFoam),
-    ExecutableProduct("icoUncoupledKinematicParcelDyMFoam", :icoUncoupledKinematicParcelDyMFoam),
-    ExecutableProduct("icoUncoupledKinematicParcelFoam", :icoUncoupledKinematicParcelFoam),
     ExecutableProduct("ideasUnvToFoam", :ideasUnvToFoam),
-    ExecutableProduct("importSurfaceAsSubset", :importSurfaceAsSubset),
-    ExecutableProduct("improveMeshQuality", :improveMeshQuality),
-    ExecutableProduct("improveSymmetryPlanes", :improveSymmetryPlanes),
     ExecutableProduct("insideCells", :insideCells),
-    ExecutableProduct("interCondensatingEvaporatingFoam", :interCondensatingEvaporatingFoam),
     ExecutableProduct("interFoam", :interFoam),
-    ExecutableProduct("interIsoFoam", :interIsoFoam),
     ExecutableProduct("interMixingFoam", :interMixingFoam),
-    ExecutableProduct("interPhaseChangeDyMFoam", :interPhaseChangeDyMFoam),
     ExecutableProduct("interPhaseChangeFoam", :interPhaseChangeFoam),
-    ExecutableProduct("kinematicParcelFoam", :kinematicParcelFoam),
     ExecutableProduct("kivaToFoam", :kivaToFoam),
     ExecutableProduct("laplacianFoam", :laplacianFoam),
-    ExecutableProduct("liquidFilmFoam", :liquidFilmFoam),
-    ExecutableProduct("lumpedPointForces", :lumpedPointForces),
-    ExecutableProduct("lumpedPointMovement", :lumpedPointMovement),
-    ExecutableProduct("lumpedPointZones", :lumpedPointZones),
     ExecutableProduct("magneticFoam", :magneticFoam),
-    ExecutableProduct("makeFaMesh", :makeFaMesh),
     ExecutableProduct("mapFields", :mapFields),
     ExecutableProduct("mapFieldsPar", :mapFieldsPar),
     ExecutableProduct("mdEquilibrationFoam", :mdEquilibrationFoam),
@@ -384,8 +275,6 @@ products = [
     ExecutableProduct("mdInitialise", :mdInitialise),
     ExecutableProduct("mergeMeshes", :mergeMeshes),
     ExecutableProduct("mergeOrSplitBaffles", :mergeOrSplitBaffles),
-    ExecutableProduct("mergeSurfacePatches", :mergeSurfacePatches),
-    ExecutableProduct("meshToFPMA", :meshToFPMA),
     ExecutableProduct("mhdFoam", :mhdFoam),
     ExecutableProduct("mirrorMesh", :mirrorMesh),
     ExecutableProduct("mixtureAdiabaticFlameT", :mixtureAdiabaticFlameT),
@@ -393,9 +282,7 @@ products = [
     ExecutableProduct("moveDynamicMesh", :moveDynamicMesh),
     ExecutableProduct("moveEngineMesh", :moveEngineMesh),
     ExecutableProduct("moveMesh", :moveMesh),
-    ExecutableProduct("MPPICDyMFoam", :MPPICDyMFoam),
     ExecutableProduct("MPPICFoam", :MPPICFoam),
-    ExecutableProduct("MPPICInterFoam", :MPPICInterFoam),
     ExecutableProduct("mshToFoam", :mshToFoam),
     ExecutableProduct("multiphaseEulerFoam", :multiphaseEulerFoam),
     ExecutableProduct("multiphaseInterFoam", :multiphaseInterFoam),
@@ -404,42 +291,23 @@ products = [
     ExecutableProduct("nonNewtonianIcoFoam", :nonNewtonianIcoFoam),
     ExecutableProduct("objToVTK", :objToVTK),
     ExecutableProduct("orientFaceZone", :orientFaceZone),
-    ExecutableProduct("overBuoyantPimpleDyMFoam", :overBuoyantPimpleDyMFoam),
-    ExecutableProduct("overCompressibleInterDyMFoam", :overCompressibleInterDyMFoam),
-    ExecutableProduct("overInterDyMFoam", :overInterDyMFoam),
-    ExecutableProduct("overInterPhaseChangeDyMFoam", :overInterPhaseChangeDyMFoam),
-    ExecutableProduct("overLaplacianDyMFoam", :overLaplacianDyMFoam),
-    ExecutableProduct("overPimpleDyMFoam", :overPimpleDyMFoam),
-    ExecutableProduct("overPotentialFoam", :overPotentialFoam),
-    ExecutableProduct("overRhoPimpleDyMFoam", :overRhoPimpleDyMFoam),
-    ExecutableProduct("overRhoSimpleFoam", :overRhoSimpleFoam),
-    ExecutableProduct("overSimpleFoam", :overSimpleFoam),
+    ExecutableProduct("particleFoam", :particleFoam),
     ExecutableProduct("particleTracks", :particleTracks),
-    ExecutableProduct("patchesToSubsets", :patchesToSubsets),
     ExecutableProduct("patchSummary", :patchSummary),
     ExecutableProduct("pdfPlot", :pdfPlot),
-    ExecutableProduct("PDRblockMesh", :PDRblockMesh),
     ExecutableProduct("PDRFoam", :PDRFoam),
     ExecutableProduct("PDRMesh", :PDRMesh),
-    ExecutableProduct("PDRsetFields", :PDRsetFields),
     ExecutableProduct("pimpleFoam", :pimpleFoam),
     ExecutableProduct("pisoFoam", :pisoFoam),
     ExecutableProduct("plot3dToFoam", :plot3dToFoam),
-    ExecutableProduct("pMesh", :pMesh),
     ExecutableProduct("polyDualMesh", :polyDualMesh),
     ExecutableProduct("porousSimpleFoam", :porousSimpleFoam),
     ExecutableProduct("postChannel", :postChannel),
     ExecutableProduct("postProcess", :postProcess),
     ExecutableProduct("potentialFoam", :potentialFoam),
-    ExecutableProduct("potentialFreeSurfaceDyMFoam", :potentialFreeSurfaceDyMFoam),
     ExecutableProduct("potentialFreeSurfaceFoam", :potentialFreeSurfaceFoam),
-    ExecutableProduct("preparePar", :preparePar),
-    ExecutableProduct("profilingSummary", :profilingSummary),
     ExecutableProduct("reactingFoam", :reactingFoam),
-    ExecutableProduct("reactingHeterogenousParcelFoam", :reactingHeterogenousParcelFoam),
-    ExecutableProduct("reactingMultiphaseEulerFoam", :reactingMultiphaseEulerFoam),
     ExecutableProduct("reactingParcelFoam", :reactingParcelFoam),
-    ExecutableProduct("reactingTwoPhaseEulerFoam", :reactingTwoPhaseEulerFoam),
     ExecutableProduct("reconstructPar", :reconstructPar),
     ExecutableProduct("reconstructParMesh", :reconstructParMesh),
     ExecutableProduct("redistributePar", :redistributePar),
@@ -447,81 +315,62 @@ products = [
     ExecutableProduct("refinementLevel", :refinementLevel),
     ExecutableProduct("refineMesh", :refineMesh),
     ExecutableProduct("refineWallLayer", :refineWallLayer),
-    ExecutableProduct("releaseAreaMapping", :releaseAreaMapping),
     ExecutableProduct("removeFaces", :removeFaces),
-    ExecutableProduct("removeSurfaceFacets", :removeSurfaceFacets),
     ExecutableProduct("renumberMesh", :renumberMesh),
     ExecutableProduct("rhoCentralFoam", :rhoCentralFoam),
-    ExecutableProduct("rhoPimpleAdiabaticFoam", :rhoPimpleAdiabaticFoam),
+    ExecutableProduct("rhoParticleFoam", :rhoParticleFoam),
     ExecutableProduct("rhoPimpleFoam", :rhoPimpleFoam),
     ExecutableProduct("rhoPorousSimpleFoam", :rhoPorousSimpleFoam),
     ExecutableProduct("rhoReactingBuoyantFoam", :rhoReactingBuoyantFoam),
     ExecutableProduct("rhoReactingFoam", :rhoReactingFoam),
     ExecutableProduct("rhoSimpleFoam", :rhoSimpleFoam),
     ExecutableProduct("rotateMesh", :rotateMesh),
+    ExecutableProduct("sammToFoam", :sammToFoam),
     ExecutableProduct("scalarTransportFoam", :scalarTransportFoam),
-    ExecutableProduct("scaleMesh", :scaleMesh),
-    ExecutableProduct("scaleSurfaceMesh", :scaleSurfaceMesh),
     ExecutableProduct("selectCells", :selectCells),
-    ExecutableProduct("setAlphaField", :setAlphaField),
-    ExecutableProduct("setExprBoundaryFields", :setExprBoundaryFields),
-    ExecutableProduct("setExprFields", :setExprFields),
     ExecutableProduct("setFields", :setFields),
     ExecutableProduct("setSet", :setSet),
     ExecutableProduct("setsToZones", :setsToZones),
-    ExecutableProduct("setTurbulenceFields", :setTurbulenceFields),
+    ExecutableProduct("setWaves", :setWaves),
     ExecutableProduct("shallowWaterFoam", :shallowWaterFoam),
-    ExecutableProduct("simpleCoalParcelFoam", :simpleCoalParcelFoam),
     ExecutableProduct("simpleFoam", :simpleFoam),
     ExecutableProduct("simpleReactingParcelFoam", :simpleReactingParcelFoam),
-    ExecutableProduct("simpleSprayFoam", :simpleSprayFoam),
     ExecutableProduct("singleCellMesh", :singleCellMesh),
-    ExecutableProduct("slopeMesh", :slopeMesh),
     ExecutableProduct("smapToFoam", :smapToFoam),
-    ExecutableProduct("smoothSurfaceData", :smoothSurfaceData),
     ExecutableProduct("snappyHexMesh", :snappyHexMesh),
-    ExecutableProduct("snappyRefineMesh", :snappyRefineMesh),
     ExecutableProduct("solidDisplacementFoam", :solidDisplacementFoam),
     ExecutableProduct("solidEquilibriumDisplacementFoam", :solidEquilibriumDisplacementFoam),
-    ExecutableProduct("solidFoam", :solidFoam),
-    ExecutableProduct("sonicDyMFoam", :sonicDyMFoam),
-    ExecutableProduct("sonicFoam", :sonicFoam),
-    ExecutableProduct("sonicLiquidFoam", :sonicLiquidFoam),
-    ExecutableProduct("sphereSurfactantFoam", :sphereSurfactantFoam),
     ExecutableProduct("splitCells", :splitCells),
     ExecutableProduct("splitMesh", :splitMesh),
     ExecutableProduct("splitMeshRegions", :splitMeshRegions),
-    ExecutableProduct("sprayDyMFoam", :sprayDyMFoam),
     ExecutableProduct("sprayFoam", :sprayFoam),
     ExecutableProduct("SRFPimpleFoam", :SRFPimpleFoam),
     ExecutableProduct("SRFSimpleFoam", :SRFSimpleFoam),
+    ExecutableProduct("star3ToFoam", :star3ToFoam),
     ExecutableProduct("star4ToFoam", :star4ToFoam),
     ExecutableProduct("steadyParticleTracks", :steadyParticleTracks),
     ExecutableProduct("stitchMesh", :stitchMesh),
     ExecutableProduct("subsetMesh", :subsetMesh),
-    ExecutableProduct("subsetToPatch", :subsetToPatch),
     ExecutableProduct("surfaceAdd", :surfaceAdd),
+    ExecutableProduct("surfaceAutoPatch", :surfaceAutoPatch),
     ExecutableProduct("surfaceBooleanFeatures", :surfaceBooleanFeatures),
     ExecutableProduct("surfaceCheck", :surfaceCheck),
     ExecutableProduct("surfaceClean", :surfaceClean),
     ExecutableProduct("surfaceCoarsen", :surfaceCoarsen),
     ExecutableProduct("surfaceConvert", :surfaceConvert),
     ExecutableProduct("surfaceFeatureConvert", :surfaceFeatureConvert),
-    ExecutableProduct("surfaceFeatureEdges", :surfaceFeatureEdges),
-    ExecutableProduct("surfaceFeatureExtract", :surfaceFeatureExtract),
+    ExecutableProduct("surfaceFeatures", :surfaceFeatures),
     ExecutableProduct("surfaceFind", :surfaceFind),
-    ExecutableProduct("surfaceGenerateBoundingBox", :surfaceGenerateBoundingBox),
     ExecutableProduct("surfaceHookUp", :surfaceHookUp),
     ExecutableProduct("surfaceInertia", :surfaceInertia),
-    ExecutableProduct("surfaceInflate", :surfaceInflate),
     ExecutableProduct("surfaceLambdaMuSmooth", :surfaceLambdaMuSmooth),
     ExecutableProduct("surfaceMeshConvert", :surfaceMeshConvert),
+    ExecutableProduct("surfaceMeshConvertTesting", :surfaceMeshConvertTesting),
     ExecutableProduct("surfaceMeshExport", :surfaceMeshExport),
-    ExecutableProduct("surfaceMeshExtract", :surfaceMeshExtract),
     ExecutableProduct("surfaceMeshImport", :surfaceMeshImport),
     ExecutableProduct("surfaceMeshInfo", :surfaceMeshInfo),
+    ExecutableProduct("surfaceMeshTriangulate", :surfaceMeshTriangulate),
     ExecutableProduct("surfaceOrient", :surfaceOrient),
-    ExecutableProduct("surfacePatch", :surfacePatch),
     ExecutableProduct("surfacePointMerge", :surfacePointMerge),
     ExecutableProduct("surfaceRedistributePar", :surfaceRedistributePar),
     ExecutableProduct("surfaceRefineRedGreen", :surfaceRefineRedGreen),
@@ -529,47 +378,34 @@ products = [
     ExecutableProduct("surfaceSplitByTopology", :surfaceSplitByTopology),
     ExecutableProduct("surfaceSplitNonManifolds", :surfaceSplitNonManifolds),
     ExecutableProduct("surfaceSubset", :surfaceSubset),
-    ExecutableProduct("surfaceToFMS", :surfaceToFMS),
     ExecutableProduct("surfaceToPatch", :surfaceToPatch),
     ExecutableProduct("surfaceTransformPoints", :surfaceTransformPoints),
-    ExecutableProduct("surfactantFoam", :surfactantFoam),
     ExecutableProduct("temporalInterpolate", :temporalInterpolate),
     ExecutableProduct("tetgenToFoam", :tetgenToFoam),
-    ExecutableProduct("tetMesh", :tetMesh),
     ExecutableProduct("thermoFoam", :thermoFoam),
     ExecutableProduct("topoSet", :topoSet),
     ExecutableProduct("transformPoints", :transformPoints),
     ExecutableProduct("twoLiquidMixingFoam", :twoLiquidMixingFoam),
-    ExecutableProduct("twoPhaseEulerFoam", :twoPhaseEulerFoam),
-    ExecutableProduct("uncoupledKinematicParcelDyMFoam", :uncoupledKinematicParcelDyMFoam),
-    ExecutableProduct("uncoupledKinematicParcelFoam", :uncoupledKinematicParcelFoam),
     ExecutableProduct("viewFactorsGen", :viewFactorsGen),
     ExecutableProduct("vtkUnstructuredToFoam", :vtkUnstructuredToFoam),
     ExecutableProduct("wallFunctionTable", :wallFunctionTable),
     ExecutableProduct("writeMeshObj", :writeMeshObj),
-    ExecutableProduct("writeMorpherCPs", :writeMorpherCPs),
-    ExecutableProduct("XiDyMFoam", :XiDyMFoam),
     ExecutableProduct("XiEngineFoam", :XiEngineFoam),
     ExecutableProduct("XiFoam", :XiFoam),
     ExecutableProduct("zipUpMesh", :zipUpMesh),
-    
-    FileProduct("etc", :openfoam_etc), 
+    FileProduct("share/openfoam/etc", :openfoam_etc),
 ]
 
-init_block = raw"""ENV["WM_PROJECT_DIR"] = artifact_dir"""
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="flex_jll", uuid="48a596b8-cc7a-5e48-b182-65f75e8595d0"))
-    BuildDependency(PackageSpec(name="CGAL_jll", uuid="8fcd9439-76b0-55f4-a525-bad0597c05d8"))
-    Dependency(PackageSpec(name="SCOTCH_jll", uuid="a8d0f55d-b80e-548d-aff6-1a04c175f0f9"); compat=SCOTCH_VERSION)
-    Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a"); compat=FFTW_VERSION)
-    Dependency(PackageSpec(name="PTSCOTCH_jll", uuid="b3ec0f5a-9838-5c9b-9e77-5f2c6a4b089f"))
-    Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70"))
-    Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+    Dependency("flex_jll"),
+    Dependency("SCOTCH_jll"; compat=SCOTCH_COMPAT_VERSION),
+    Dependency("PTSCOTCH_jll"),
+    Dependency("METIS_jll"),
+    Dependency("Zlib_jll"),
 ]
 append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
-    preferred_gcc_version = v"9", init_block)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"5")
