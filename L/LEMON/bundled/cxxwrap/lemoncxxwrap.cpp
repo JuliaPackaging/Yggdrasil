@@ -67,16 +67,19 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
     .constructor<const ListGraph&>()
     .method("set", &ListGraph::EdgeMap<int>::set);
 
-  mod.add_type<MaxWeightedPerfectMatching<ListGraph, ListGraph::EdgeMap<int>>>("MaxWeightedPerfectMatchingListGraphInt")
+  using MWPM = MaxWeightedPerfectMatching<ListGraph, ListGraph::EdgeMap<int>>;
+  //using MWPMmatchingedge_ptr = bool (MWPM::*)(const Edge&) const; // used to resolve the overloads of `matching`
+  //using MWPMmatchingedge_ptr = bool (MWPM::*)(const Edge&) const; // used to resolve the overloads of `matching`
+  mod.add_type<MWPM>("MaxWeightedPerfectMatchingListGraphInt")
     .constructor<const ListGraph&, const ListGraph::EdgeMap<int>&>()
-    .method("mate", &MaxWeightedPerfectMatching<ListGraph, ListGraph::EdgeMap<int>>::mate)
-    .method("run", &MaxWeightedPerfectMatching<ListGraph, ListGraph::EdgeMap<int>>::run)
-    .method("matchingWeight", &MaxWeightedPerfectMatching<ListGraph, ListGraph::EdgeMap<int>>::matchingWeight)
-    .method("matching", &(bool (MaxWeightedPerfectMatching<ListGraph, ListGraph::EdgeMap<int>>::*)(const Edge &)))
-    .method("dualValue", &MaxWeightedPerfectMatching<ListGraph, ListGraph::EdgeMap<int>>::dualValue)
-    .method("nodeValue", &MaxWeightedPerfectMatching<ListGraph, ListGraph::EdgeMap<int>>::nodeValue)
-    .method("blossomNum", &MaxWeightedPerfectMatching<ListGraph, ListGraph::EdgeMap<int>>::blossomNum)
-    .method("blossomSize", &MaxWeightedPerfectMatching<ListGraph, ListGraph::EdgeMap<int>>::blossomSize)
-    .method("blossomValue", &MaxWeightedPerfectMatching<ListGraph, ListGraph::EdgeMap<int>>::blossomValue);
+    .method("mate", &MWPM::mate)
+    .method("run", &MWPM::run)
+    .method("matchingWeight", &MWPM::matchingWeight)
+    //.method("matching", &MWPM::matching)
+    .method("dualValue", &MWPM::dualValue)
+    .method("nodeValue", &MWPM::nodeValue)
+    .method("blossomNum", &MWPM::blossomNum)
+    .method("blossomSize", &MWPM::blossomSize)
+    .method("blossomValue", &MWPM::blossomValue);
 }
 
