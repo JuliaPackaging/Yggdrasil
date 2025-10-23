@@ -32,7 +32,6 @@ RUN tar xzf hdf5-${commit}.tar.gz
 WORKDIR hdf5-${commit}
 RUN if [ ${cpuarch} = arm64v8 ]; then sed -i -e 's/__float128/__float129/g' config/HDFTests.c; fi
 RUN sed -i -e 's/__float128/__float129/g' config/HDFTests.c
-# We need to enable testing so that the file `tf_gen.F90` is generated.
 RUN cmake -Bbuilddir -GNinja \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_C_COMPILER=gcc-${gccversion} \
@@ -41,7 +40,7 @@ RUN cmake -Bbuilddir -GNinja \
         -DCMAKE_INSTALL_PREFIX=/hdf5 \
         -DBUILD_SHARED_LIBS=ON \
         -DBUILD_STATIC_LIBS=OFF \
-        -DBUILD_TESTING=ON \
+        -DBUILD_TESTING=OFF \
         -DHDF5_BUILD_CPP_LIB=ON \
         -DHDF5_BUILD_DOC=OFF \
         -DHDF5_BUILD_EXAMPLES=OFF \

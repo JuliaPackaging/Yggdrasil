@@ -51,7 +51,6 @@ for item in "${cpuarchs[@]}"; do
             fortran/H5_gen.F90 \
             fortran/H5f90i_gen.h \
             fortran/H5fortran_types.F90 \
-            fortran/test/tf_gen.F90 \
             hl/fortran/H5LTff_gen.F90 \
             hl/fortran/H5TBff_gen.F90
         do

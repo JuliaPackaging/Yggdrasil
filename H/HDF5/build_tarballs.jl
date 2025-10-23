@@ -49,6 +49,7 @@ cmake_options=(
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
     -DBUILD_SHARED_LIBS=ON
     -DBUILD_STATIC_LIBS=OFF
+    -DBUILD_TESTING=OFF
     -DHDF5_ALLOW_UNSUPPORTED=ON
     -DHDF5_BUILD_CPP_LIB=ON
     -DHDF5_BUILD_DOC=OFF
@@ -607,6 +608,4 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, clang_use_lld=false, julia_compat="1.6",
-               #FAIL preferred_gcc_version=v"6",
-               preferred_gcc_version=v"12",
-)
+               preferred_gcc_version=v"6")
