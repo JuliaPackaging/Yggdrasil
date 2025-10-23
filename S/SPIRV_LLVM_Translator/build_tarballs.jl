@@ -68,7 +68,11 @@ sed -i '/add_llvm_tool(/a DISABLE_LLVM_LINK_LLVM_DYLIB' tools/llvm-spirv/CMakeLi
 # Use our LLVM version
 CMAKE_FLAGS+=(-DBASE_LLVM_VERSION=""" * string(Base.thisminor(llvm_version)) * raw""")
 
-cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
+if [[ "${target}" == *-apple-darwin* ]]; then
+    cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]} -DCMAKE_CXX_FLAGS="-Wno-error=enum-constexpr-conversion -include vector"
+else
+    cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
+fi
 ninja -C build -j ${nproc} llvm-spirv install
 """
 
