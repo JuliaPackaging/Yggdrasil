@@ -15,11 +15,10 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/sdl2-doom/src
 if [[ "${target}" == *-mingw* ]]; then
     make -f makefile.mingw -j${nproc}
-    cp sdl2-doom.exe ${bindir}/doom.exe
 else
     make -j${nproc}
-    cp sdl2-doom ${bindir}/doom
 fi
+install -Dvm 755 "sdl2-doom${exeext}" -t "${bindir}"
 """
 
 # These are the platforms we will build for by default, unless further restrictions are
