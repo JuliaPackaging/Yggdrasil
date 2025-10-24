@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/sdl2-doom/src
 if [[ "${target}" == *-mingw* ]]; then
-    make -f makefile.mingw -j${nproc}
+    make -f makefile.mingw -j${nproc} CC="${CC}"
 else
     make -j${nproc}
 fi
