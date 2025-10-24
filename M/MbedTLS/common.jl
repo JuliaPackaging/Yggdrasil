@@ -48,7 +48,7 @@ sources_by_version = Dict(
         GitSource("https://github.com/Mbed-TLS/mbedtls.git",
                   "2fc8413bfcb51354c8e679141b17b3f1a5942561"),
     ],
-    v"2.28.11" => [
+    v"2.28.1010" => [
         GitSource("https://github.com/Mbed-TLS/mbedtls.git",
                   "2fc8413bfcb51354c8e679141b17b3f1a5942561"), # still upstream 2.28.10
         DirectorySource("./bundled"; follow_symlinks=true),
