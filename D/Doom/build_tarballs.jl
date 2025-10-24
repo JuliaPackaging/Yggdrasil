@@ -18,7 +18,7 @@ if [[ "${target}" == *-mingw* ]]; then
 else
     make -j${nproc}
 fi
-install -Dvm 755 "sdl2-doom${exeext}" -t "${bindir}"
+install -Dvm 755 "sdl2-doom${exeext}" "${bindir}/doom"
 """
 
 # These are the platforms we will build for by default, unless further restrictions are
