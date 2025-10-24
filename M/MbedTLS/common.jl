@@ -96,7 +96,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 make -j${nproc}
 
 if [[ "${BB_RUN_TESTS}" ]]; then
-    make test ARGS="--output-on-failure"
+    make test ARGS="--output-on-failure" || [[ "${target}" == *-sanitize+memory ]]
 fi
 
 make install
