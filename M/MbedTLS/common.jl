@@ -79,23 +79,24 @@ done
 # enable MD4
 sed "s|//#define MBEDTLS_MD4_C|#define MBEDTLS_MD4_C|" -i include/mbedtls/config.h
 
+# Only x86 Linux targets can actually execute the test suite
+if [[ "${target}" == *86*-linux-* ]]
+    BB_RUN_TESTS="On"
+fi
+
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
     -DCMAKE_C_STANDARD=99 \
     -DUSE_SHARED_MBEDTLS_LIBRARY=On \
     -DMBEDTLS_FATAL_WARNINGS=OFF \
-    -DENABLE_TESTING=OFF \
+    -DENABLE_TESTING=${BB_RUN_TESTS:-Off} \
     -DCMAKE_BUILD_TYPE=Release \
     ..
 make -j${nproc}
 
-if [[ "${target}" == *86*-linux-* ]]; then
-    # Run tests when we can
-    make tests
-    make selftest
-    ./programs/test/selftest
-    ./tests/scripts/all.sh
+if [[ "${BB_RUN_TESTS}" ]]; then
+    make check
 fi
 
 make install
