@@ -89,6 +89,15 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_BUILD_TYPE=Release \
     ..
 make -j${nproc}
+
+if [[ "${platform}" == *86*-linux-* ]]; then
+    # Run tests when we can
+    make tests
+    make selfcheck
+    ./programs/test/selftest
+    ./tests/scripts/all.sh
+fi
+
 make install
 
 if [[ "${target}" == *mingw* ]]; then
