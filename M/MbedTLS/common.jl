@@ -90,10 +90,10 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     ..
 make -j${nproc}
 
-if [[ "${platform}" == *86*-linux-* ]]; then
+if [[ "${target}" == *86*-linux-* ]]; then
     # Run tests when we can
     make tests
-    make selfcheck
+    make selftest
     ./programs/test/selftest
     ./tests/scripts/all.sh
 fi
