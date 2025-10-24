@@ -80,7 +80,7 @@ done
 sed "s|//#define MBEDTLS_MD4_C|#define MBEDTLS_MD4_C|" -i include/mbedtls/config.h
 
 # Only x86 Linux targets can actually execute the test suite
-if [[ "${target}" == *86*-linux-* ]]
+if [[ "${target}" == *86*-linux-* ]]; then
     BB_RUN_TESTS="On"
 fi
 
