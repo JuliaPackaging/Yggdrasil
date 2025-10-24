@@ -7,18 +7,24 @@ version = v"0.2.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/AlexOberhofer/sdl2-doom.git",
-              "da7732ee6318371db2ee04ec4702c6064245846b")
+              "da7732ee6318371db2ee04ec4702c6064245846b"),
+    FileSource("https://distro.ibiblio.org/slitaz/sources/packages/d/doom1.wad",
+               "1d7d43be501e67d927e415e0b8f3e29c3bf33075e859721816f652a526cac771"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/sdl2-doom/src
+cd ${WORKSPACE}/srcdir/sdl2-doom
+cd src
 if [[ "${target}" == *-mingw* ]]; then
     make -f makefile.mingw -j${nproc} CC="${CC}"
 else
     make -j${nproc}
 fi
-install -Dvm 755 "sdl2-doom${exeext}" "${bindir}/doom"
+install -Dvm 755 "sdl2-doom${exeext}" "${bindir}/doom${exeext}"
+cd ..
+install -Dvm 644 "${WORKSPACE}/srcdir/doom1.wad" -t "${prefix}/share/doom"
+install_license License.md
 """
 
 # These are the platforms we will build for by default, unless further restrictions are
