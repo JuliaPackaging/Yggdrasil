@@ -70,7 +70,7 @@ if [[ "${target}" == *-darwin* ]]; then
     EXTRA_FLAGS+=(--objcc="${CC} -x objective-c")
 fi
 if [[ "${FFPLAY}" == "true" ]]; then
-    EXTRA_FLAGS+=("--enable-ffplay")
+    EXTRA_FLAGS+=("--enable-ffplay" "--enable-sdl2")
 fi
 # On Windows, use Schannel instead of OpenSSL
 if [[ "${target}" == *-mingw* ]]; then
