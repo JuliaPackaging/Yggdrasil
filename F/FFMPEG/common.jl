@@ -72,6 +72,12 @@ fi
 if [[ "${FFPLAY}" == "true" ]]; then
     EXTRA_FLAGS+=("--enable-ffplay")
 fi
+# On Windows, use Schannel instead of OpenSSL
+if [[ "${target}" == *-mingw* ]]; then
+    EXTRA_FLAGS+=("--disable-openssl" "--enable-schannel")
+else
+    EXTRA_FLAGS+=("--enable-openssl" "--disable-schannel")
+fi
 
 # Remove `-march` flags
 sed -i 's/cpuflags="-march=$cpu"/cpuflags=""/g' configure
@@ -116,8 +122,6 @@ sed -i 's/cpuflags="-march=$cpu"/cpuflags=""/g' configure
   --enable-muxers      \
   --enable-demuxers    \
   --enable-parsers     \
-  --enable-openssl     \
-  --disable-schannel   \
   --extra-cflags="-I${prefix}/include" \
   --extra-ldflags="-L${libdir}" ${CUDA_ARGS} \
   "${EXTRA_FLAGS[@]}"
