@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "LEMON"
-version = v"1.3.2"
+version = v"1.3.3"
 upstreamversion = v"1.3.1"
 min_jl_version = v"1.9"
 
