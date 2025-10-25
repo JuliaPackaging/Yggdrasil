@@ -146,21 +146,21 @@ build_petsc()
         LIBFLAGS="-L${libdir} -lssp -lmsmpi"
     fi
 
-    # Use libblastrampoline
-    if [[ "${target}" == aarch64-apple-* ]]; then
-        LIBFLAGS="-L${libdir}"
-        # Linking requires the function `__divdc3`, which is implemented in
-        # `libclang_rt.osx.a` from LLVM compiler-rt.
-        BLAS_LAPACK_LIB="${libdir}/libblastrampoline.${dlext}"
-        CLINK_FLAGS="-L${libdir}/darwin -lclang_rt.osx"
-    #TODO elif [[ "${target}" == *-mingw* ]]; then
-    #TODO     # BLAS_LAPACK_LIB="${libdir}/libblastrampoline-5.${dlext}"
-    #TODO     BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"            # libblastrampoline doesn't seem to work on windows
-    #TODO     CLINK_FLAGS=""
-    else
-        BLAS_LAPACK_LIB="${libdir}/libblastrampoline.${dlext}"
-        CLINK_FLAGS=""
-    fi
+    # # Use libblastrampoline
+    # if [[ "${target}" == aarch64-apple-* ]]; then
+    #     LIBFLAGS="-L${libdir}"
+    #     # Linking requires the function `__divdc3`, which is implemented in
+    #     # `libclang_rt.osx.a` from LLVM compiler-rt.
+    #     BLAS_LAPACK_LIB="${libdir}/libblastrampoline.${dlext}"
+    #     CLINK_FLAGS="-L${libdir}/darwin -lclang_rt.osx"
+    # elif [[ "${target}" == *-mingw* ]]; then
+    #     # BLAS_LAPACK_LIB="${libdir}/libblastrampoline-5.${dlext}"
+    #     BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"            # libblastrampoline doesn't seem to work on windows
+    #     CLINK_FLAGS=""
+    # else
+    #     BLAS_LAPACK_LIB="${libdir}/libblastrampoline.${dlext}"
+    #     CLINK_FLAGS=""
+    # fi
 
     BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"
 
@@ -448,8 +448,8 @@ dependencies = [
 
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
-    Dependency(PackageSpec(name="SCALAPACK32_jll", uuid="aabda75e-bfe4-5a37-92e3-ffe54af3c273"); compat="2.2.2"),
-    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
+    Dependency(PackageSpec(name="SCALAPACK32_jll", uuid="aabda75e-bfe4-5a37-92e3-ffe54af3c273"); compat="2.2.1 - 2.2.1"),
+    # Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
 ]
 append!(dependencies, platform_dependencies)
 
