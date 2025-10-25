@@ -1,10 +1,10 @@
 include("common.jl")
 
+if v"1.7" <= VERSION < v"1.8"
 # HACK HACK HACK: modify Pkg.jl in Julia 1.7 to allow us to install stdlib JLLs
 # different from what was bundled with the Julia running this script.
 # If/when we upgrade Yggdrasil to a newer version of Julia, this hack must be
 # adjusted (ideally, with a new Pkg.jl it could be removed)
-@assert v"1.7" <= VERSION < v"1.8"
 function Pkg.Types.is_stdlib(uuid::Base.UUID, julia_version::VersionNumber)
 
     # Only use the cache if we are asking for stdlibs in a custom Julia version
@@ -29,6 +29,7 @@ function Pkg.Types.is_stdlib(uuid::Base.UUID, julia_version::VersionNumber)
     # Note that if the user asks for something like `julia_version = 0.7.0`, we'll
     # fall through with an empty `last_stdlibs`, which will always return `false`.
     return false
+end
 end
 
 jllversion=v"1.10.20"
