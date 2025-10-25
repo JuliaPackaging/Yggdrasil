@@ -9,19 +9,24 @@ sources = [
     GitSource("https://github.com/AlexOberhofer/sdl2-doom.git",
               "da7732ee6318371db2ee04ec4702c6064245846b"),
     DirectorySource("bundled"),
+    FileSource("https://distro.ibiblio.org/slitaz/sources/packages/d/doom1.wad",
+               "1d7d43be501e67d927e415e0b8f3e29c3bf33075e859721816f652a526cac771"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/sdl2-doom/src
-atomic_patch -p2 ../../patches/11.diff
+cd ${WORKSPACE}/srcdir/sdl2-doom
+atomic_patch -p1 ../patches/11.diff
+cd src
 if [[ "${target}" == *-mingw* ]]; then
-    make -f makefile.mingw -j${nproc}
-    cp sdl2-doom.exe ${bindir}/doom.exe
+    make -f makefile.mingw -j${nproc} CC="${CC}"
 else
     make -j${nproc}
-    cp sdl2-doom ${bindir}/doom
 fi
+install -Dvm 755 "sdl2-doom${exeext}" "${bindir}/doom${exeext}"
+cd ..
+install -Dvm 644 "${WORKSPACE}/srcdir/doom1.wad" -t "${prefix}/share/doom"
+install_license License.md
 """
 
 # These are the platforms we will build for by default, unless further restrictions are
@@ -41,4 +46,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` file.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", clang_use_lld=false, preferred_gcc_version=v"5")
+               julia_compat="1.6", preferred_gcc_version=v"5")
