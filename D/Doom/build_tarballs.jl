@@ -7,12 +7,14 @@ version = v"0.2.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/AlexOberhofer/sdl2-doom.git",
-              "da7732ee6318371db2ee04ec4702c6064245846b")
+              "da7732ee6318371db2ee04ec4702c6064245846b"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/sdl2-doom/src
+atomic_patch -p2 ../../patches/11.diff
 if [[ "${target}" == *-mingw* ]]; then
     make -f makefile.mingw -j${nproc}
     cp sdl2-doom.exe ${bindir}/doom.exe
