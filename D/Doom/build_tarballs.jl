@@ -35,7 +35,8 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("doom", :doom)
+    ExecutableProduct("doom", :doom),
+    FileProduct("share/doom/doom1.wad", :doom1_wad),
 ]
 
 # Dependencies that must be installed before this package can be built
