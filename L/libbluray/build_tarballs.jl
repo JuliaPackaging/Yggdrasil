@@ -23,10 +23,27 @@ install_license COPYING
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms =  filter!(!Sys.iswindows, supported_platforms())
+# platforms =  filter!(!Sys.iswindows, supported_platforms())
 # Remove this when we build a newer version for which we can target the former
 # experimental platforms
-filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64") && arch(p) != "armv6l", platforms)
+platforms = [
+    # glibc Linuces
+    Platform("i686", "linux"),
+    Platform("x86_64", "linux"),
+    Platform("aarch64", "linux"),
+    Platform("armv7l", "linux"),
+    Platform("powerpc64le", "linux"),
+
+    # musl Linuces
+    Platform("i686", "linux"; libc="musl"),
+    Platform("x86_64", "linux"; libc="musl"),
+    Platform("aarch64", "linux"; libc="musl"),
+    Platform("armv7l", "linux"; libc="musl"),
+
+    # BSDs
+    Platform("x86_64", "macos"),
+    Platform("x86_64", "freebsd"),
+]
 
 # The products that we will ensure are always built
 products = [
@@ -38,7 +55,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="XML2_jll", uuid="02c8fc9c-b97f-50b9-bbe4-9be30ff0a78a"))
+    # We had to restrict compat with XML2 because of ABI breakage:
+    # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
+    # Updating to `compat="~2.14.1"` is likely possible without problems but requires rebuilding this package
+    Dependency(PackageSpec(name="XML2_jll", uuid="02c8fc9c-b97f-50b9-bbe4-9be30ff0a78a"); compat="~2.13.6")
     Dependency(PackageSpec(name="FreeType2_jll", uuid="d7e528f0-a631-5988-bf34-fe36492bcfd7"); compat="2.10.4")
     Dependency(PackageSpec(name="Fontconfig_jll", uuid="a3f928ae-7b40-5064-980b-68af3947d34b"))
     Dependency(PackageSpec(name="libudfread_jll", uuid="037e6697-03b9-52b7-b841-7aee0d773eb5"))

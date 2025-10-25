@@ -3,18 +3,18 @@
 using BinaryBuilder
 
 name = "Xorg_libXfixes"
-version = v"6.0.1"
+version = v"6.0.2"
 
 # Collection of sources required to build libXfixes
 sources = [
     ArchiveSource("https://www.x.org/archive/individual/lib/libXfixes-$(version).tar.xz",
-                  "b695f93cd2499421ab02d22744458e650ccc88c1d4c8130d60200213abc02d58"),
+                  "39f115d72d9c5f8111e4684164d3d68cc1fd21f9b27ff2401b08fddfc0f409ba"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libXfixes-*
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-static=no
 make -j${nproc}
 make install
 """

@@ -135,7 +135,10 @@ dependencies = [
     Dependency("Binutils_jll"; compat="~2.41"),
     Dependency("LibUnwind_jll"),
     Dependency("PAPI_jll"; compat="~7.1"),
-    Dependency("XML2_jll"; compat="2.12.0"),
+    # We had to restrict compat with XML2 because of ABI breakage:
+    # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
+    # Updating to `compat="~2.14.1"` is likely possible without problems but requires rebuilding this package
+    Dependency("XML2_jll"; compat="~2.12.0, ~2.13"),
     RuntimeDependency("CUDA_Runtime_jll"; platforms=cuda_platforms),
 ]
 

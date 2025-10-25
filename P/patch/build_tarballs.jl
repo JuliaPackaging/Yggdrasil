@@ -1,18 +1,24 @@
 using BinaryBuilder
 
 name = "patch"
-version = v"2.7.6"
+version_string = "2.8"
+version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/patch/patch-$(version).tar.xz",
-                  "ac610bda97abe0d9f6b7c963255a11dcb196c25e337c61f94e4778d632f1d8fd"),
+    ArchiveSource("https://ftp.gnu.org/gnu/patch/patch-$(version_string).tar.xz",
+                  "f87cee69eec2b4fcbf60a396b030ad6aa3415f192aa5f7ee84cad5e11f7f5ae3"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/patch*
-./configure --prefix=${prefix} --host=${target}
+configure_flags=()
+if [[ ${nbits} == 32 ]]; then
+   # We disable the year 2038 check because we don't have an alternative on the affected systems
+   configure_flags+=(--disable-year2038)
+fi
+./configure --prefix=${prefix} --host=${target} ${configure_flags[@]}
 make -j${nproc}
 make install
 """

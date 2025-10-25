@@ -1,0 +1,10 @@
+--- a/nprocessors_compat.c
++++ b/nprocessors_compat.c
+@@ -42,6 +42,7 @@
+                 return processors = sysconf(_SC_NPROCESSORS_ONLN);
+ }
+ #else
++#include <stdlib.h>
+ #include <sys/sysctl.h>
+ #include "error.h"
+ 

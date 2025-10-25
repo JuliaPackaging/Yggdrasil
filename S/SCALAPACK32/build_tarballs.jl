@@ -4,12 +4,11 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "SCALAPACK32"
-version = v"2.2.1"
-scalapack_version = v"2.2.0"
+version = v"2.2.2"
 
 sources = [
-  GitSource("https://github.com/Reference-ScaLAPACK/scalapack", "0128dc24c6d018b61ceaac080640014e1d5ec344"),
-  DirectorySource("./bundled")
+  GitSource("https://github.com/Reference-ScaLAPACK/scalapack", "25935e1a7e022ede9fd71bd86dcbaa7a3f1846b7"),
+  DirectorySource("bundled")
 ]
 
 # Bash recipe for building across all platforms
@@ -17,22 +16,16 @@ script = raw"""
 mkdir -p ${libdir}
 cd $WORKSPACE/srcdir/scalapack
 
-# the patch prevents running foreign executables, which fails on most platforms
-# we instead set CDEFS manually below
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-  atomic_patch -p1 ${f}
-done
-
 # use Make instead of CMake to compile SCALAPACK on Windows platforms
 # CMake is unable to detect Microsoft-MPI
-cp ${WORKSPACE}/srcdir/patches/SLmake.inc SLmake.inc
+cp ${WORKSPACE}/srcdir/files/SLmake.inc SLmake.inc
 
 if [[ "${target}" == *mingw* ]]; then
     make lib
-    $FC -shared $(flagon -Wl,--whole-archive) libscalapack32.a $(flagon -Wl,--no-whole-archive) -lopenblas -L$libdir -lmsmpi -o ${libdir}/libscalapack32.${dlext}
+    $FC -shared $(flagon -Wl,--whole-archive) libscalapack32.a $(flagon -Wl,--no-whole-archive) -lblastrampoline-5 -L$libdir -lmsmpi -o ${libdir}/libscalapack32.${dlext}
 else
     CPPFLAGS=()
-    CFLAGS=()
+    CFLAGS=(-Wno-error=implicit-function-declaration)
     FFLAGS=(-ffixed-line-length-none)
 
     # Add `-fallow-argument-mismatch` if supported
@@ -42,14 +35,20 @@ else
     fi
     rm -f empty.*
 
-    OPENBLAS=(-lopenblas)
+    # Add `-fcray-pointer` if supported
+    : >empty.f
+    if gfortran -c -fcray-pointer empty.f >/dev/null 2>&1; then
+        FFLAGS+=(-fcray-pointer)
+    fi
+    rm -f empty.*
 
+    LBT=(-lblastrampoline)
     MPILIBS=()
-    if grep -q MPICH "${prefix}/include/mpi.h"; then
+    if [[ ${bb_full_target} == *mpich* ]]; then
         MPILIBS=(-lmpifort -lmpi)
-    elif grep -q MPItrampoline "${prefix}/include/mpi.h"; then
+    elif [[ ${bb_full_target} == *mpitrampoline* ]]; then
         MPILIBS=(-lmpitrampoline)
-    elif grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
+    elif [[ ${bb_full_target} == *openmpi* ]]; then
         MPILIBS=(-lmpi_usempif08 -lmpi_usempi_ignore_tkr -lmpi_mpifh -lmpi)
     fi
 
@@ -59,13 +58,12 @@ else
                  -DCMAKE_Fortran_FLAGS="${CPPFLAGS[*]} ${FFLAGS[*]}"
                  -DCMAKE_C_FLAGS="${CPPFLAGS[*]} ${CFLAGS[*]}"
                  -DCMAKE_BUILD_TYPE=Release
-                 -DBLAS_LIBRARIES="${OPENBLAS[*]} ${MPILIBS[*]}"
-                 -DLAPACK_LIBRARIES="${OPENBLAS[*]}"
+                 -DBLAS_LIBRARIES="${LBT[*]} ${MPILIBS[*]}"
+                 -DLAPACK_LIBRARIES="${LBT[*]}"
                  -DSCALAPACK_BUILD_TESTS=OFF
                  -DBUILD_SHARED_LIBS=ON
-                 -DMPI_BASE_DIR="${prefix}")
-
-    export CDEFS="Add_"
+                 -DMPI_BASE_DIR="${prefix}"
+                 -DCDEFS=Add_)
 
     mkdir build
     cd build
@@ -106,14 +104,7 @@ augment_platform_block = """
 
 platforms = expand_gfortran_versions(supported_platforms())
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
-
-# Avoid platforms where the MPI implementation isn't supported
-# OpenMPI
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
-# MPItrampoline
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -123,10 +114,11 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"))
+    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
 ]
 append!(dependencies, platform_dependencies)
 
 # Build the tarballs.
+# We need at least GCC 5 for MPICH
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6")
+               augment_platform_block, julia_compat="1.9", preferred_gcc_version=v"5")

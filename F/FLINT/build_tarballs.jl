@@ -26,7 +26,7 @@ using BinaryBuilder, Pkg
 # and possibly other packages.
 name = "FLINT"
 upstream_version = v"3.3.1"
-version_offset = v"1.0.1"
+version_offset = v"1.0.2"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -35,11 +35,16 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 sources = [
    ArchiveSource("https://github.com/flintlib/flint/releases/download/v$(upstream_version)/flint-$(upstream_version).tar.gz",
                  "64d70e513076cfa971e0410b58c1da5d35112913e9a56b44e2c681b459d3eafb"),
+   DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/flint*
+
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+   atomic_patch -p1 ${f}
+done
 
 if [[ ${target} == *musl* ]]; then
    # because of some ordering issue with pthread.h and sched.h includes

@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "KaHyPar"
-version = v"1.3.3"
+version = v"1.3.5"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/kahypar/kahypar.git", "c1efa28379c3c8ddc5df2ed24f30f42567190478"),
+    GitSource("https://github.com/kahypar/kahypar.git", "3eafe9202808a4552a832aba07cd1618a5c2b483"),
     DirectorySource(joinpath(@__DIR__, "bundled"))
 ]
 
@@ -48,7 +48,7 @@ products = [
 dependencies = [
     # Boost breaks ABI in every single version because they embed the full version number in
     # the SONAME, so we're compatible with one and only one version at a time.
-    Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"); compat="=1.76.0")
+    Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"); compat="=v1.87.0")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

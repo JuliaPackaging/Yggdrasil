@@ -21,23 +21,23 @@ using BinaryBuilder, Pkg
 # to all components.
 
 name = "GAP_lib"
-upstream_version = v"4.14.0"
-version = v"400.1400.004"
+upstream_version = v"4.15.1"
+version = v"400.1500.100"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/gap-$(upstream_version).tar.gz",
-                  "845f5272c26feb1b8eb9ef294bf0545f264c1fe5a19b0601bbc65d79d9506487"),
-    DirectorySource("./bundled"),
+                  "6049d53e99b12e25c2d848db21ac4a06380a46fe4c4157243d556fe06930042c"),
+    # DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/gap*
 
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
+#for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+#    atomic_patch -p1 ${f}
+#done
 
 # compress group database
 gzip -n grp/*.grp
@@ -77,6 +77,7 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version=v"7", julia_compat="1.10")
 
 # Build trigger: 1

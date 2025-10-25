@@ -7,17 +7,29 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "NEO"
-version = v"24.26.30049"#.6
+version = v"25.35.35096"#.9
 
 # Collection of sources required to build this package.
 sources = [
     GitSource("https://github.com/intel/compute-runtime.git",
-              "e16f47e375e4324dae07aadbfe953002a1c45195"),
+              "06099fa8b4da8281809931ebdc08c634621e3203"),
+    # patches
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 function get_script(; debug::Bool)
     raw"""
+        # ocloc segfaults after successful build and before exiting. So we wrap
+        # a script around ocloc that detects when the build is reported
+        # successful and ignores the segfault.
+        atomic_patch -p0 ./patches/ocloc.patch
+        # Fix OpenCL ICD installation to use prefix instead of /etc
+        atomic_patch -p0 ./patches/install_to_prefix.patch
+        cp ocloc_wrapper.sh compute-runtime/shared/source/built_ins/kernels/ocloc_wrapper.sh
+        mkdir -p tmpdir
+        export TMPDIR=$(pwd)/tmpdir
+        export CCACHE_TEMPDIR=$(pwd)/tmpdir
         cd compute-runtime
         install_license LICENSE.md
 
@@ -34,7 +46,13 @@ function get_script(; debug::Bool)
         ## NO
         sed -i '/-Werror/d' CMakeLists.txt
 
+        # Fails because C header is used in C++ code
+        sed -i 's/inttypes\.h/cinttypes/g' level_zero/core/source/mutable_cmdlist/mutable_indirect_data.cpp
+
         CMAKE_FLAGS=()
+
+        # Need C++20
+        CMAKE_FLAGS+=(-DCMAKE_CXX_STANDARD=20)
 
         # Release build for best performance
         CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=""" * (debug ? "Debug" : "Release") * raw""")
@@ -62,7 +80,11 @@ function get_script(; debug::Bool)
         export PKG_CONFIG_PATH=${prefix}/lib64/pkgconfig:${prefix}/lib/pkgconfig
 
         cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
-        ninja -C build -j ${nproc} install"""
+        ninja -C build -j ${nproc} install
+        # Create unversioned symlinks
+        ln -s ocloc-25.35.1 ${bindir}/ocloc
+
+"""
 end
 
 # These are the platforms we will build for by default, unless further
@@ -87,9 +109,9 @@ products = [
 #       when using a non-public release, refer to the compiled manifest
 #       https://github.com/intel/compute-runtime/blob/master/manifests/manifest.yml.
 dependencies = [
-    Dependency("gmmlib_jll"; compat="=22.3.20"),
-    Dependency("libigc_jll"; compat="=1.0.17193"),
-    Dependency("oneAPI_Level_Zero_Headers_jll"; compat="=1.9.2"),
+    Dependency("gmmlib_jll"; compat="=22.8.1"),
+    Dependency("libigc_jll"; compat="=2.18.5"),
+    Dependency("oneAPI_Level_Zero_Headers_jll"; compat="=1.13"),
 ]
 
 augment_platform_block = raw"""
@@ -134,7 +156,10 @@ for platform in platforms, debug in (false, true)
 
     # GCC 4 has constexpr incompatibilities
     # GCC 7 triggers: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79929
+    # Needs at least GCC 10 for C++20 support of 'concepts'
+    # Needs GCC 11 for std::make_unique_for_overwrite
     build_tarballs(ARGS, name, version, sources, get_script(; debug), [augmented_platform],
-                   products, dependencies; preferred_gcc_version=v"8", julia_compat = "1.6",
+                   products, dependencies; preferred_gcc_version=v"11", julia_compat = "1.6",
                    augment_platform_block)
 end
+# bump

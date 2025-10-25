@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Fontconfig"
-version = v"2.16.0"
+version = v"2.17.1"
 
 # Collection of sources required to build FriBidi
 sources = [
-    ArchiveSource("https://www.freedesktop.org/software/fontconfig/release/fontconfig-$(version).tar.xz",
-                  "6a33dc555cc9ba8b10caf7695878ef134eeb36d0af366041f639b1da9b6ed220"),
+    ArchiveSource("https://gitlab.freedesktop.org/api/v4/projects/890/packages/generic/fontconfig/$(version)/fontconfig-$(version).tar.xz",
+                  "9f5cae93f4fffc1fbc05ae99cdfc708cd60dfd6612ffc0512827025c026fa541"),
     DirectorySource("bundled"),
 ]
 

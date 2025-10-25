@@ -1,0 +1,269 @@
+# The purpose of this file is to control which reviewers are assigned as part of
+# the `.github/workflows/component_owners.yml` workflow.
+#
+# See https://github.com/dyladan/component-owners for the file format.
+#
+# Please keep the list of components and reviewers in alphabetical order.
+#
+# Note that users MUST be collaborators on the JuliaPackaging/Yggdrasil
+# repository, but they do not need write access.
+components:
+  A/ADIOS2/:
+    - eschnett
+  A/AMReX/:
+    - eschnett
+  A/asdf_cxx/:
+    - eschnett
+  B/basiclu/:
+    - amontoison
+  B/bitshuffle/:
+    - eschnett
+  B/blis/:
+    - imciner2
+  B/Blosc/:
+    - eschnett
+  B/Blosc2/:
+    - eschnett
+  B/bsdiff_classic:
+    - StefanKarpinski
+  B/bsdiff_endsley:
+    - StefanKarpinski
+  C/Chuffed/:
+    - odow
+  C/ColPack/:
+    - amontoison
+  C/Coin-OR/:
+    - odow
+  C/Coin-OR/Ipopt/:
+    - amontoison
+  C/Conduit/:
+    - eschnett
+  C/CoolProp/:
+    - barche
+    - longemen3000
+  C/CUTEst/:
+    - amontoison
+  C/CUDA/CUDSS/:
+    - amontoison
+  C/cunumeric_jl_warpper/:
+    - ejmeitz
+    - krasow
+  C/cupynumeric/:
+    - ejmeitz
+    - krasow
+  E/EinsteinToolkit/:
+    - eschnett
+  F/f4ncgb/:
+    - benlorenz
+  F/FLINT:
+    - benlorenz
+    - fingolfin
+    - lgoettgens
+  G/GALAHAD/:
+    - amontoison
+  G/GAP/:
+    - fingolfin
+    - lgoettgens
+  G/GAP_lib/:
+    - fingolfin
+    - lgoettgens
+  G/GAP_pkg/:
+    - fingolfin
+    - lgoettgens
+  G/GDAL/:
+    - eschnett
+  G/Git_LFS/:
+    - cgarling
+  G/GLPK/:
+    - odow
+  G/gmmlib/:
+    - amontoison
+    - michel2323
+  G/GRAMPC/:
+    - imciner2
+  H/HDF5/:
+    - eschnett
+  H/HighFive/:
+    - eschnett
+  H/HiGHS/:
+    - odow
+  H/HSL/:
+    - amontoison
+  H/Hwloc/:
+    - eschnett
+  I/IntelOpenMP/:
+    - amontoison
+  I/igraph/:
+    - Krastanov
+  I/ipx/:
+    - amontoison
+  L/LAPACK/:
+    - amontoison
+    - imciner2
+  L/LEMON/:
+    - Krastanov
+  L/legate/:
+    - ejmeitz
+    - krasow
+  L/legate_jl_wrapper/:
+    - ejmeitz
+    - krasow
+  L/libaec/:
+    - eschnett
+  L/LibGit2:
+    - StefanKarpinski
+  L/libblastrampoline/:
+    - amontoison
+    - imciner2
+  L/libigc/:
+    - amontoison
+    - michel2323
+  L/libjulia:
+    - barche
+    - benlorenz
+    - fingolfin
+    - lgoettgens
+  L/libpicosat/:
+    - StefanKarpinski
+  L/libpolymake_julia/:
+    - benlorenz
+  L/libsingular_julia/:
+    - fingolfin
+  L/libsixel/:
+    - eschnett
+  M/METIS/:
+    - amontoison
+  M/MiniZinc/:
+    - odow
+  M/MKL/:
+    - amontoison
+    - imciner2
+  M/MKL_Headers/:
+    - amontoison
+    - imciner2
+  M/MPICH/:
+    - eschnett
+  M/MPItrampoline/:
+    - eschnett
+  M/MUMPS/:
+    - amontoison
+  N/Ncurses/:
+    - eschnett
+  N/NEO/:
+    - amontoison
+    - michel2323
+  N/NOMAD/:
+    - amontoison
+  N/Notcurses/:
+    - eschnett
+  O/oneAPI_Level_Zero_Loader/:
+    - amontoison
+    - michel2323
+  O/oneAPI_support/:
+    - amontoison
+    - michel2323
+  O/oneAPI_support_Headers/:
+    - amontoison
+    - michel2323
+  O/OpenBLAS/:
+    - imciner2
+  O/OpenFHE/:
+    - sloede
+    - MaxGruebmeyer
+  O/OpenFHE_int128/:
+    - sloede
+    - MaxGruebmeyer
+  O/openfhe_julia/:
+    - sloede
+    - MaxGruebmeyer
+  O/openfhe_julia_int128/:
+    - sloede
+    - MaxGruebmeyer
+  O/OpenMPI/:
+    - eschnett
+  O/openPMD_api/:
+    - eschnett
+  O/OpenSSH:
+    - giordano
+    - StefanKarpinski
+    - viralbshah
+  O/OSQP/:
+    - imciner2
+  P/PARMETIS/:
+    - amontoison
+  P/PaStiX/:
+    - amontoison
+  P/PDAL/:
+    - eschnett
+  P/PicoSAT:
+    - StefanKarpinski
+  P/polymake:
+    - benlorenz
+  P/polymake_oscarnumber:
+    - benlorenz
+  P/PRIMA/:
+    - amontoison
+  P/PROJ/:
+    - eschnett
+  P/ProxTV/:
+    - amontoison
+  P/PROPACK/:
+    - amontoison
+  P/PTSCOTCH/:
+    - amontoison
+  Q/QDLDL/:
+    - imciner2
+  Q/qr_mumps/:
+    - amontoison
+  R/rclone/:
+    - eschnett
+  R/ReferenceBLAS/:
+    - amontoison
+    - imciner2
+  S/SCALAPACK/:
+    - amontoison
+  S/SCALAPACK32/:
+    - amontoison
+  S/SCIP/:
+    - odow
+  S/SCIP_PaPILO/:
+    - odow
+  S/SCOTCH/:
+    - amontoison
+  S/SCS/:
+    - kalmarek
+    - odow
+  S/SCS_GPU/:
+    - kalmarek
+    - odow
+  S/SCS_MKL/:
+    - kalmarek
+    - odow
+  S/SDPA/:
+    - odow
+  S/SHTOOLS/:
+    - eschnett
+  S/SIFDecode/:
+    - amontoison
+  S/Singular:
+    - fingolfin
+  S/SOLAR/:
+    - amontoison
+  S/SPRAL/:
+    - amontoison
+  S/StarPU/:
+    - amontoison
+  S/STYRENE/:
+    - amontoison
+  S/SuiteSparse/:
+    - imciner2
+  S/Sundials/:
+    - imciner2
+  T/TDEP/:
+    - ejmeitz
+  U/Uno/:
+    - amontoison
+  V/very_nauty/:
+    - Krastanov
+  Z/zrl:
+    - StefanKarpinski

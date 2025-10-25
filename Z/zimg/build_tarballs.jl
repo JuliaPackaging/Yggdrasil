@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "zimg"
-version = v"3.0.5"
+version = v"3.0.6"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sekrit-twc/zimg", "e5b0de6bebbcbc66732ed5afaafef6b2c7dfef87"),
+    GitSource("https://github.com/sekrit-twc/zimg", "f819b14e8f39d1282400b0d9543e8ef73c1b2bbd"),
 ]
 
 # Bash recipe for building across all platforms

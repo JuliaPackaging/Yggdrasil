@@ -1,0 +1,21 @@
+
+ COPYRIGHT (c) 2008
+ 
+ Applied Research Laboratories, The University of Texas at Austin
+ (ARL:UT)
+ All rights reserved.
+ 
+ This material may be reproduced by or for the U.S. Government
+ only. This notice must appear in all copies of this file and its
+ derivatives. Further distribution outside the U.S. Government is
+ prohibited without the explicit written authorization from the
+ Director of the Environmental Sciences Laboratory, ARL:UT.
+ 
+ THIS SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ PURPOSE, OR NONINFRINGEMENT.
+ 
+ IN NO EVENT WILL ARL:UT BE LIABLE FOR ANY DAMAGES WHATSOEVER ARISING
+ OUT OF THE USE OR INABILITY TO USE THIS SOFTWARE, EVEN IF ARL:UT HAS
+ BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.

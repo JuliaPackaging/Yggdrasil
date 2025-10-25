@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 name = "WrapIt"
-version = v"1.5.0"
+version = v"1.7.0"
 
 #Clang_jll version used for the build. Required clang libraries will be shipped with the package.
 clang_vers=v"19.1.7+0"
@@ -12,7 +12,7 @@ clang_patch="$(clang_vers.major).$(clang_vers.minor).$(clang_vers.patch)"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/grasph/wrapit.git", "930ecdc8fd5d595b504c42d938bcc2f7fa3a97d4")
+    GitSource("https://github.com/grasph/wrapit.git", "21062724bdb8590db9cfd9d44c58d0382db6e74f")
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62")
 ]

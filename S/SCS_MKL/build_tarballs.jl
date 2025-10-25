@@ -2,17 +2,17 @@ using Pkg
 using BinaryBuilder
 
 name = "SCS_MKL"
-version = v"3.2.7"
+version = v"300.200.900"
 
 # Collection of sources required to build SCSBuilder
 sources = [
-    GitSource("https://github.com/cvxgrp/scs.git", "775a04634e40177573871c9cb6baae254342de39")
+    GitSource("https://github.com/cvxgrp/scs.git", "c8297172633bcb3a10d4781a19d4769ce5282d29")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/scs*
-scsflags="DLONG=1 USE_OPENMP=1 BLAS32=1 NOBLASSUFFIX=1"
+scsflags="DLONG=1 USE_OPENMP=1 BLAS32=1 NOBLASSUFFIX=1 USE_SPECTRAL_CONES=1"
 mklflags="-L${prefix}/lib -Wl,--no-as-needed -lmkl_rt -lmkl_core -lpthread -lm -ldl"
 
 make ${scsflags} MKLFLAGS="${mklflags}" out/libscsmkl.${dlext}
@@ -38,7 +38,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("MKL_jll"; compat = "=2023.2.0"),
+    Dependency("MKL_jll"; compat = "=2025.2.0"),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae");
@@ -48,4 +48,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6", preferred_gcc_version=v"5")

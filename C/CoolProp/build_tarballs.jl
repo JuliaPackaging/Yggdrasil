@@ -3,11 +3,11 @@
 using BinaryBuilder
 
 name = "CoolProp"
-version = v"6.8.0"
+version = v"7.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://sourceforge.net/projects/coolprop/files/CoolProp/$version/source/CoolProp_sources.zip", "316fd20508b4d0ec3b2264b5393149ba2993ba3577dce7cf86f062835b449687"),
+    ArchiveSource("https://sourceforge.net/projects/coolprop/files/CoolProp/$version/source/CoolProp_sources.zip", "cfcdaf02042e693ed5329ea444704ab1765a24502beb83adb657a92da53b66d5"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.0.sdk.tar.xz",
                   "d3feee3ef9c6016b526e1901013f264467bb927865a03422a9cb925991cc9783"),
 ]

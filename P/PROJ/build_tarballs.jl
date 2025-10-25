@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 using BinaryBuilderBase: get_addable_spec
 name = "PROJ"
-upstream_version = v"9.6.2"
+upstream_version = v"9.7.0"
 version_offset = v"2.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
@@ -12,7 +12,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://download.osgeo.org/proj/proj-$upstream_version.tar.gz",
-                  "53d0cafaee3bb2390264a38668ed31d90787de05e71378ad7a8f35bb34c575d1")
+                  "65705ecd987b50bf63e15820ce6bd17c042feaabda981249831bd230f6689709")
 ]
 
 # Bash recipe for building across all platforms

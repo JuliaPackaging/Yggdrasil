@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Aravis"
-version = v"0.8.33"
+version = v"0.8.35"
 
 sources = [
     GitSource("https://github.com/AravisProject/aravis.git",
-              "99081fbda9e820a171d2aaccea0bc95ba5f8c37b")
+              "ea4f3c47cb387d81b63444887f3e0efda7918d50")
 ]
 
 # Bash recipe for building across all platforms
@@ -39,9 +39,12 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Glib_jll"; compat="2.82.2"),
+    Dependency("Glib_jll"; compat="2.84.3"),
     Dependency("libusb_jll"),
-    Dependency("XML2_jll")
+    # We had to restrict compat with XML2 because of ABI breakage:
+    # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
+    # Updating to `compat="~2.14.1"` is likely possible without problems but requires rebuilding this package
+    Dependency("XML2_jll"; compat="~2.13.6")
     ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

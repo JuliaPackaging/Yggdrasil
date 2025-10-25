@@ -2,6 +2,10 @@
 # Fail on error
 set -e
 
+# Clear secrets from environment
+export BUILDKITE_PLUGIN_CRYPTIC_BASE64_SIGNED_JOB_ID_SECRET=""
+export AWS_SECRET_ACCESS_KEY=""
+
 export JULIA_PROJECT="${BUILDKITE_BUILD_CHECKOUT_PATH}/.ci"
 
 # Add our shared depot cache to the end of JULIA_DEPOT_PATH which is already

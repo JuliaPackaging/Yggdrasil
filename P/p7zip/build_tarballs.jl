@@ -2,17 +2,17 @@ using BinaryBuilder, Pkg
 using BinaryBuilderBase: sanitize
 
 name = "p7zip"
-version_string = "17.05"
+version_string = "17.06"
 version = VersionNumber(version_string)
 
 # Collection of sources required to build p7zip
 sources = [
     GitSource("https://github.com/p7zip-project/p7zip",
-              "a45b8830cafda25e76d7120b0462daa82c382a7a"),
-    FileSource("https://downloads.sourceforge.net/project/sevenzip/7-Zip/23.01/7z2301.exe",
-               "9b6682255bed2e415bfa2ef75e7e0888158d1aaf79370defaa2e2a5f2b003a59"),
-    FileSource("https://downloads.sourceforge.net/project/sevenzip/7-Zip/23.01/7z2301-x64.exe",
-               "26cb6e9f56333682122fafe79dbcdfd51e9f47cc7217dccd29ac6fc33b5598cd"),
+              "d9c3d157c62e842897d4447db717f813810e1423"),
+    FileSource("https://downloads.sourceforge.net/project/sevenzip/7-Zip/25.01/7z2501.exe",
+               "b96831eec5928384f0543d6b57c1f802952a0f2668e662882c0a785a2b52fb3b"),
+    FileSource("https://downloads.sourceforge.net/project/sevenzip/7-Zip/25.01/7z2501-x64.exe",
+               "78afa2a1c773caf3cf7edf62f857d2a8a5da55fb0fff5da416074c0d28b2b55f"),
 ]
 
 # Bash recipe for building across all platforms
@@ -29,9 +29,9 @@ if [[ ${target} == *mingw* ]]; then
     apk add p7zip
 
     if [[ ${target} == i686* ]]; then
-        7z x -y ${WORKSPACE}/srcdir/7z2301.exe 7z.exe 7z.dll License.txt
+        7z x -y ${WORKSPACE}/srcdir/7z2501.exe 7z.exe 7z.dll License.txt
     else
-        7z x -y ${WORKSPACE}/srcdir/7z2301-x64.exe 7z.exe 7z.dll License.txt
+        7z x -y ${WORKSPACE}/srcdir/7z2501-x64.exe 7z.exe 7z.dll License.txt
     fi
 
     install_license License.txt
@@ -91,5 +91,3 @@ dependencies = [
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_llvm_version=llvm_version)
-
-# Build trigger: 1

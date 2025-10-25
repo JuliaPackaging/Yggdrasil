@@ -3,11 +3,11 @@
 using BinaryBuilder
 
 name = "f4ncgb"
-version = v"0.3.0"
+version = v"0.3.2"
 
 sources = [
     GitSource("https://gitlab.sai.jku.at/f4ncgb/f4ncgb.git",
-              "0a3942dd2403ee682d2c0bf82099a230fafd8ec2"),
+              "34131635fcef568f2a426cb00f1777433e7b5a56"),
     ArchiveSource("https://github.com/joseluisq/MacOSX-SDKs/releases/download/15.0/MacOSX15.0.sdk.tar.xz",
                   "9df0293776fdc8a2060281faef929bf2fe1874c1f9368993e7a4ef87b1207f98"),
 ]

@@ -7,12 +7,12 @@ version = v"3.1.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/openbabel/openbabel/archive/refs/tags/openbabel-3-1-1.tar.gz", "c97023ac6300d26176c97d4ef39957f06e68848d64f1a04b0b284ccff2744f02")
+    GitSource("https://github.com/openbabel/openbabel.git", "cbd4db43f8908b874864280fdc03bf92569eebc1"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/openbabel-*
+cd $WORKSPACE/srcdir/openbabel
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
@@ -53,7 +53,10 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency(PackageSpec(name="Eigen_jll", uuid="bc6bbf8a-a594-5541-9c57-10b0d0312c70"))
-    Dependency(PackageSpec(name="XML2_jll", uuid="02c8fc9c-b97f-50b9-bbe4-9be30ff0a78a"))
+    # We had to restrict compat with XML2 because of ABI breakage:
+    # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
+    # Updating to `compat="~2.14.1"` is likely possible without problems but requires rebuilding this package
+    Dependency(PackageSpec(name="XML2_jll", uuid="02c8fc9c-b97f-50b9-bbe4-9be30ff0a78a"); compat="~2.13.6")
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
 ]
 

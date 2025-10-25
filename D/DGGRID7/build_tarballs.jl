@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "DGGRID7"
-version = v"0.9.1"
+version = v"1.8.42"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sahrk/DGGRID.git", "4f24e9de46f9e669af4cba94d9d148b557a1de11")
+    GitSource("https://github.com/sahrk/DGGRID.git", "893d185b928d81ba4b16cb514048369453e25944")
 ]
 
 # Bash recipe for building across all platforms
@@ -35,9 +35,12 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
+# mpi error on built 686-linux, copied from GDAL because GDAL_jll is a dependency
 dependencies = [
-    Dependency(PackageSpec(name="GDAL_jll", uuid="a7073274-a066-55f0-b90d-d619367d196c"); compat="~v301.600.200")
+    BuildDependency(PackageSpec(; name="OpenMPI_jll", version=v"4.1.8"); platforms=filter(p -> nbits(p)==32, platforms)),
+    Dependency(PackageSpec(name="GDAL_jll", uuid="a7073274-a066-55f0-b90d-d619367d196c"); compat="~v303.1100.100")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8.1.0", julia_compat="v1.6.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+    preferred_gcc_version=v"11", julia_compat="v1.9")

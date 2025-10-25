@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "juliaup"
-version = v"1.17.19"
+version = v"1.18.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/JuliaLang/juliaup.git", "c4c4659d09938a6472a44f45246eb2d69deb6a9b")
+    GitSource("https://github.com/JuliaLang/juliaup.git", "014eb5826fe8321653a99221b6acac312b9079a8")
 ]
 
 # Bash recipe for building across all platforms

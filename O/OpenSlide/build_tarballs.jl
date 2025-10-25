@@ -21,7 +21,32 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(!Sys.isapple, supported_platforms())
+# Experimental platforms cannot be used with Julia v1.5-.
+# Change `julia_compat` to require at least Julia v1.6
+# platforms = filter(!Sys.isapple, supported_platforms())
+# Remove this when we build a newer version for which we can target the former
+# experimental platforms
+platforms = [
+    # glibc Linuces
+    Platform("i686", "linux"),
+    Platform("x86_64", "linux"),
+    Platform("aarch64", "linux"),
+    Platform("armv7l", "linux"),
+    Platform("powerpc64le", "linux"),
+
+    # musl Linuces
+    Platform("i686", "linux"; libc="musl"),
+    Platform("x86_64", "linux"; libc="musl"),
+    Platform("aarch64", "linux"; libc="musl"),
+    Platform("armv7l", "linux"; libc="musl"),
+
+    # BSDs
+    Platform("x86_64", "freebsd"),
+
+    # Windows
+    Platform("i686", "windows"),
+    Platform("x86_64", "windows"),
+]
 
 
 # The products that we will ensure are always built
@@ -38,7 +63,10 @@ dependencies = [
     Dependency("Libtiff_jll"; compat="4.1.0")
     Dependency(PackageSpec(name="OpenJpeg_jll", uuid="643b3616-a352-519d-856d-80112ee9badc"))
     Dependency(PackageSpec(name="gdk_pixbuf_jll", uuid="da03df04-f53b-5353-a52f-6a8b0620ced0"))
-    Dependency(PackageSpec(name="XML2_jll", uuid="02c8fc9c-b97f-50b9-bbe4-9be30ff0a78a"))
+    # We had to restrict compat with XML2 because of ABI breakage:
+    # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
+    # Updating to `compat="~2.14.1"` is likely possible without problems but requires rebuilding this package
+    Dependency(PackageSpec(name="XML2_jll", uuid="02c8fc9c-b97f-50b9-bbe4-9be30ff0a78a"); compat="~2.13.6")
     Dependency(PackageSpec(name="SQLite_jll", uuid="76ed43ae-9a5d-5a62-8c75-30186b810ce8"))
     Dependency(PackageSpec(name="Cairo_jll", uuid="83423d85-b0ee-5818-9007-b63ccbeb887a"))
     Dependency("Glib_jll"; compat="2.59")

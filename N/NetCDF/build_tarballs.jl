@@ -128,7 +128,10 @@ dependencies = [
     Dependency("Bzip2_jll"; compat="1.0.9"),
     Dependency("HDF5_jll"; compat="~1.14.6"),
     Dependency("LibCURL_jll"; compat="7.73.0,8"),
-    Dependency("XML2_jll"; compat="2.13.6"),
+    # We had to restrict compat with XML2 because of ABI breakage:
+    # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
+    # Updating to `compat="~2.14.1"` is likely possible without problems but requires rebuilding this package
+    Dependency("XML2_jll"; compat="~2.13.6"),
     Dependency("Zlib_jll"; compat="1.2.12"),
     Dependency("Zstd_jll"; compat="1.5.7"),
     Dependency("libaec_jll"; compat="1.1.3"), # This is the successor of szlib

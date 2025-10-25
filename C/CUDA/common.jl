@@ -18,16 +18,30 @@ function parse_sources(json::String, product::String, components::Vector{String}
     root = "https://developer.download.nvidia.com/compute/$product/redist"
 
     redist = JSON3.read(json)
+    if !haskey(platform, "cuda")
+        error("Please provide a platform that has the 'cuda' tag set, indicating which CUDA toolkit version this product is to be used with.")
+    end
+    cuda_version = platform["cuda"]
     architecture = if Sys.islinux(platform)
         libc(platform) == "glibc" || error("Only glibc is supported on Linux")
         if arch(platform) == "x86_64"
             "linux-x86_64"
-        elseif arch(platform) == "aarch64" && platform["cuda_platform"] == "jetson"
-            "linux-aarch64"
-        elseif arch(platform) == "aarch64" && platform["cuda_platform"] == "sbsa"
-            "linux-sbsa"
         elseif arch(platform) == "powerpc64le"
             "linux-ppc64le"
+        elseif arch(platform) == "aarch64"
+            if VersionNumber(cuda_version) >= v"13"
+                haskey(platform, "cuda_platform") && error("CUDA 13 uses unified ARM platforms")
+                "linux-sbsa"
+            else
+                haskey(platform, "cuda_platform") || error("CUDA 12 and earlier require the 'cuda_platform' tag to be set")
+                if platform["cuda_platform"] == "jetson"
+                    "linux-aarch64"
+                elseif platform["cuda_platform"] == "sbsa"
+                    "linux-sbsa"
+                else
+                    error("Unknown cuda_platform $(platform["cuda_platform"])")
+                end
+            end
         else
             error("Unsupported Linux architecture $(arch(platform))")
         end
@@ -129,6 +143,10 @@ fi"""
         # available earlier, but not for aarch64
         push!(components, "libnvjpeg")
     end
+    if version >= v"13"
+        push!(components, "cuda_crt")
+        push!(components, "libnvvm")
+    end
     for platform in platforms
         should_build_platform(triplet(platform)) || continue
 
@@ -149,6 +167,6 @@ fi"""
         build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                     name, version, build.sources, build.script,
                     build.platforms, build.products, [];
-                    skip_audit=true)
+                    skip_audit=true, julia_compat="1.6", compression_format="xz")
     end
 end

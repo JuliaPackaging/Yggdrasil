@@ -3,28 +3,23 @@
 using BinaryBuilder, BinaryBuilderBase, Pkg
 
 name = "HighFive"
-version = v"2.10.1"
+version = v"3.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/BlueBrain/HighFive", "ede97c8d51905c1640038561d12d41da173012ac"),
+    GitSource("https://github.com/highfive-devs/highfive", "b8d21eb39d4c6c66a72646ddd338d4c552b1a645"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/HighFive
+cd $WORKSPACE/srcdir/highfive
 cmake -B build -G Ninja \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DHIGHFIVE_UNIT_TESTS=OFF \
     -DHIGHFIVE_EXAMPLES=OFF \
-    -DHIGHFIVE_BUILD_DOCS=off \
-    -DHIGHFIVE_TEST_BOOST=ON \
-    -DHIGHFIVE_TEST_EIGEN=ON \
-    -DHIGHFIVE_TEST_HALF_FLOAT=ON \
-    -DHIGHFIVE_TEST_XTENSOR=ON
-# -DHIGHFIVE_TEST_OPENCV=ON
+    -DHIGHFIVE_BUILD_DOCS=OFF
 cmake --build build --parallel ${nproc}
 cmake --install build
 """
@@ -41,14 +36,7 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("Eigen_jll"),
-    BuildDependency("xtensor_jll"),
-    # We had to restrict compat with HDF5 because of ABI breakage:
-    # https://github.com/JuliaPackaging/Yggdrasil/pull/10347#issuecomment-2662923973
-    # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
-    Dependency("HDF5_jll"; compat="1.14.0 - 1.14.3"),
-    # Dependency("OpenCV_jll"),
-    Dependency("boost_jll"; compat="=1.79.0"),
+    Dependency("HDF5_jll"; compat="~1.14.6"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

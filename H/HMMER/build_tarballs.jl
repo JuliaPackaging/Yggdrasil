@@ -52,7 +52,7 @@ install_license ../LICENSE
 """
 
 platforms = supported_platforms(
-    exclude = p -> Sys.iswindows(p) || (proc_family(p) != "intel" && proc_family(p) != "arm")
+    exclude = p -> Sys.iswindows(p) || (proc_family(p) != "intel" && proc_family(p) != "arm") || p == Platform("aarch64", "freebsd")
 )
 
 products = [
@@ -102,7 +102,7 @@ products = [
 ]
 
 dependencies = [
-    Dependency(PackageSpec(name="GSL_jll", uuid="1b77fbbe-d8ee-58f0-85f9-836ddc23a7a4"))
+    Dependency(PackageSpec(name="GSL_jll", uuid="1b77fbbe-d8ee-58f0-85f9-836ddc23a7a4"); compat="2.7.2")
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;

@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "iso_codes"
-version = v"4.17.0"
+version = v"4.18.0"
 
 # Collection of sources required to build iso-codes
 sources = [
     ArchiveSource("https://salsa.debian.org/iso-codes-team/iso-codes/-/archive/v$(version)/iso-codes-v$(version).tar.bz2",
-                  "6d178ef4cea44e55f02eb546b29dcf68d88e9f7a68e0dd7913f5465dbaf8fc14"),
+                  "e6351276de5bb5c91c17546c4d3f53bee9494f3f14f5db7594a19d6cdd01d0f3"),
 ]
 
 # Bash recipe for building across all platforms

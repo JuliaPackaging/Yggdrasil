@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "quickfixc"
-version = v"0.1.0"
+version = v"0.1.1"
 
 # Collection of sources required to build CMake
 sources = [
-    GitSource("https://github.com/AlexKlo/quickfixc.git", "e3fb26940b4a5291dd1cb8da4c7329b38b1c97d6"),
+    GitSource("https://github.com/AlexKlo/quickfixc.git", "77eb7cd5ba60b2b0acedfea377f516c1d2c7a60c"),
     DirectorySource("./bundled")
 ]
 
