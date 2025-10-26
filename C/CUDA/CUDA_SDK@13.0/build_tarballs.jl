@@ -21,3 +21,5 @@ for platform in platforms
 end
 
 build_sdk(name, version, full_platforms; static=false)
+
+# bump

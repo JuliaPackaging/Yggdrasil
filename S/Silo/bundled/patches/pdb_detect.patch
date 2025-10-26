@@ -1,0 +1,25 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index a2d0676..0dc6b41 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -393,13 +393,13 @@ target_include_directories(pdb_detect PUBLIC ${silo_build_include_dir})
+ # use pdb_detect to create pdform.h
+ # Add it as a post-build to pdb_detect
+ ##
+-add_custom_command(TARGET pdb_detect POST_BUILD
+-    COMMAND  $<TARGET_FILE:pdb_detect> > pdform.h
+-    BYPRODUCTS ${silo_build_include_dir}/pdform.h
+-    WORKING_DIRECTORY ${silo_build_include_dir}
+-    COMMENT "Creating pdform.h using pdb_detect"
+-    VERBATIM
+-    USES_TERMINAL)
++# add_custom_command(TARGET pdb_detect POST_BUILD
++#     COMMAND  $<TARGET_FILE:pdb_detect> > pdform.h
++#     BYPRODUCTS ${silo_build_include_dir}/pdform.h
++#     WORKING_DIRECTORY ${silo_build_include_dir}
++#     COMMENT "Creating pdform.h using pdb_detect"
++#     VERBATIM
++#     USES_TERMINAL)
+
+ ##
+ # Use perl to create lite_pdb.h and lite_score.h

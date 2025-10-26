@@ -102,7 +102,7 @@ These rebuilds are also completely useless, as the build artifacts will in most 
 
 ### Branch naming
 
-This is not specific to contributing to Yggdrasil, but as a general remark working with Git and GitHub, opening a PR from a branch with the same name as the target branch is an [anti-pattern](https://blog.jasonmeridth.com/posts/do-not-issue-pull-requests-from-your-master-branch/).
+This is not specific to contributing to Yggdrasil, but as a general remark working with Git and GitHub, opening a PR from a branch with the same name as the target branch is an [anti-pattern](https://jmeridth.com/posts/do-not-issue-pull-requests-from-your-master-branch/).
 You should always keep the target branch (e.g. `main`, `master`) in your fork in-sync with the branch with the same name in the upstream repository, and then create a new branch out of the target branch for each pull request you want to open.
 This is particularly important to keep history of your pull requests simple and readable and avoid creating noise which unnecessarily complicates the review process.
 

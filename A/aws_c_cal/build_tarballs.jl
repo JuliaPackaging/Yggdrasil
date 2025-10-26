@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_cal"
-version = v"0.9.4"
+version = v"0.9.5"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-cal.git", "3c6d901abf536928cd3775e46ea6bec5d47f4d51"),
+    GitSource("https://github.com/awslabs/aws-c-cal.git", "c5858e4d6b1a2faeeb551ad6acc06059a7d6f9cf"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
