@@ -17,8 +17,9 @@ sources = [
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-# Disable riscv for now
+# Disable riscv and powerpc for now
 platforms = filter!(p -> arch(p) != "riscv64", platforms)
+platforms = filter!(p -> arch(p) != "powerpc64le", platforms)
 
 function build_script(; shared_libs::String)
     build_static = shared_libs == "OFF" ? "ON" : "OFF"
