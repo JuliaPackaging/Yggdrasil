@@ -4,12 +4,12 @@ using BinaryBuilder, Pkg
 
 name = "HiGHS"
 
-version = v"1.11.0"
+version = v"1.12.0"
 
 sources = [
     GitSource(
         "https://github.com/ERGO-Code/HiGHS.git",
-        "364c83a51e44ba6c27def9c8fc1a49b1daf5ad5c",
+        "755a8e027a99a8d4ecf153a8dde4b2a767cdf384",
     ),
 ]
 
@@ -41,7 +41,10 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=${BUILD_SHARED} \
     -DZLIB_USE_STATIC_LIBS=${BUILD_STATIC} \
-    -DFAST_BUILD=ON ..
+    -DHIPO=ON \
+    -DBLAS_LIBRARIES="${libdir}/libopenblas.${dlext}" \
+    -DMETIS_ROOT=${prefix} \
+    ..
 
 if [[ "${target}" == *-linux-* ]]; then
         make -j ${nproc}
