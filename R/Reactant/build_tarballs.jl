@@ -419,7 +419,7 @@ augment_platform_block="""
     """
 
 # for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), platform in platforms
-for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "12.8", "13.0"), platform in platforms
+for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "12.9", "13.0"), platform in platforms
 
     augmented_platform = deepcopy(platform)
     augmented_platform["mode"] = mode
@@ -478,6 +478,7 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
         "12.4" => "12.4.1",
         "12.6" => "12.6.3",
         "12.8" => "12.8.1",
+        "12.9" => "12.9.1",
         "13.0" => "13.0.0"
     )
 
@@ -498,7 +499,7 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     if arch(platform) == "aarch64" && gpu == "cuda"
         if hermetic_cuda_version_map[cuda_version] == "13.0.0"
             # bazel currentlty tries to run  external/cuda_nvcc/bin/../nvvm/bin/cicc: line 1: ELF
-            # continue
+            continue
 
             # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_13.0.0.json
             push!(platform_sources,
@@ -597,7 +598,7 @@ for (i,build) in enumerate(builds)
                    name, version, build.sources, build.script,
                    build.platforms, build.products, build.dependencies;
                    preferred_gcc_version=build.preferred_gcc_version, build.preferred_llvm_version, julia_compat="1.10",
-                   compression_format="xz",
+                   # compression_format="xz",
                    # We use GCC 13, so we can't dlopen the library during audit
                    augment_platform_block, lazy_artifacts=true, lock_microarchitecture=false, dont_dlopen=true,
                    # When we're running CI for Enzyme-JAX (i.e. when the commit is
