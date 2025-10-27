@@ -4,11 +4,11 @@ const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MUMPS"
-version = v"5.7.3"
+version = v"5.8.1"
 
 sources = [
   ArchiveSource("https://mumps-solver.org/MUMPS_$(version).tar.gz",
-                "84a47f7c4231b9efdf4d4f631a2cae2bdd9adeaabc088261d15af040143ed112")
+                "e91b6dcd93597a34c0d433b862cf303835e1ea05f12af073b06c32f652f3edd8")
 ]
 
 # Bash recipe for building across all platforms
@@ -52,15 +52,18 @@ if [[ "${target}" == *mingw32* ]]; then
     MPICC=gcc
     MPIFC=gfortran
     MPIFL=gfortran
-    LSCOTCH="-L${libdir} -lesmumps -lscotch -lscotcherr"
-    FSCOTCH="-Dscotch"
 else
     MPICC=mpicc
     MPIFC=mpifort
     MPIFL=mpifort
-    LSCOTCH="-L${libdir} -lesmumps -lscotch -lscotcherr -lptesmumps -lptscotch -lptscotcherr"
-    FSCOTCH="-Dscotch -Dptscotch"
 fi
+
+LSCOTCH="-L${libdir} -lesmumps -lscotch"
+FSCOTCH="-Dscotch"
+
+### PTSCOTCH ###
+# LSCOTCH="-lptesmumps -lptscotch -lptscotcherr"
+# FSCOTCH="-Dptscotch"
 
 make_args+=(PLAT="par" \
             OPTF="-O3 -fopenmp" \
@@ -77,8 +80,8 @@ make_args+=(PLAT="par" \
             LIBEXT_SHARED=".${dlext}" \
             SHARED_OPT="-shared" \
             SONAME="${SONAME}" \
-            CC="${MPICC} ${CFLAGS[@]} -DSCOTCH_VERSION_NUM=7" \
-            FC="${MPIFC} ${FFLAGS[@]} -DSCOTCH_VERSION_NUM=7" \
+            CC="${MPICC} ${CFLAGS[@]}" \
+            FC="${MPIFC} ${FFLAGS[@]}" \
             FL="${MPIFL}" \
             RANLIB="echo" \
             LPORD="-L./PORD/lib -lpordpar" \
@@ -104,6 +107,13 @@ platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
 
+# Remove platforms where some dependencies are missing
+filter!(p -> arch(p) != "riscv64", platforms)
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+
+# OpenBLAS >= 0.3.29 doesn't support GCC < v11 on powerpc64le
+filter!(p -> !(arch(p) == "powerpc64le" && libgfortran_version(p) < v"5"), platforms)
+
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
 platforms = filter(p -> !(p["mpi"] == "openmpi" && nbits(p) == 32), platforms)
@@ -128,10 +138,10 @@ dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70")),
     Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa")),
-    Dependency(PackageSpec(name="SCOTCH_jll", uuid="a8d0f55d-b80e-548d-aff6-1a04c175f0f9"); compat="7.0.4"),
-    Dependency(PackageSpec(name="PTSCOTCH_jll", uuid="b3ec0f5a-9838-5c9b-9e77-5f2c6a4b089f"); compat="7.0.4", platforms=filter(!Sys.iswindows, platforms)),
-    Dependency(PackageSpec(name="SCALAPACK32_jll", uuid="aabda75e-bfe4-5a37-92e3-ffe54af3c273")),
-    Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"))
+    Dependency(PackageSpec(name="SCOTCH_jll", uuid="a8d0f55d-b80e-548d-aff6-1a04c175f0f9"); compat="~7.0.6"),
+    # Dependency(PackageSpec(name="PTSCOTCH_jll", uuid="b3ec0f5a-9838-5c9b-9e77-5f2c6a4b089f"); compat="~7.0.6"),
+    Dependency(PackageSpec(name="SCALAPACK32_jll", uuid="aabda75e-bfe4-5a37-92e3-ffe54af3c273"); compat="2.1.0 - 2.2.1"),
+    Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
 ]
 append!(dependencies, platform_dependencies)
 

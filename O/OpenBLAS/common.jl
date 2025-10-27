@@ -255,7 +255,7 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     if [[ ${target} == *linux* ]] || [[ ${target} == *freebsd* ]]; then
         patchelf ${PATCHELF_FLAGS[@]} --set-soname ${LIBPREFIX}.${dlext} ${prefix}/lib/${LIBPREFIX}.${dlext}
     elif [[ ${target} == *apple* ]]; then
-        install_name_tool -id ${LIBPREFIX}.${dlext} ${prefix}/lib/${LIBPREFIX}.${dlext}
+        install_name_tool -id ${LIBPREFIX}.${dlext} $(realpath ${prefix}/lib/${LIBPREFIX}.${dlext})
     fi
     """
 

@@ -2,12 +2,12 @@
 using BinaryBuilder, Pkg
 
 name = "jinja2cppwrapper"
-version = v"1.0.0"
+version = v"1.1.0"
 # Collection of sources required to build jinja2cppwrapper
 sources = [
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
     "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/AlexKlo/Jinja2C.git", "a4b461b0b5d71750d6f29c65060766e6caa75848")
 ]
 
 # Once this Pkg issue is resolved, this must be removed
@@ -16,8 +16,13 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 # needed for libjulia_platforms and julia_versions
 include("../../L/libjulia/common.jl")
 
+#filter julia versions to include only Julia >= 1.9 for LTS
+julia_versions = filter(v-> v >= v"1.9", julia_versions)
+
 # Bash recipe for building across all platforms
 script = raw"""
+cd ${WORKSPACE}/srcdir/Jinja2C
+
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
     # Install a newer SDK which supports `shared_timed_mutex` and `std::filesystem`
     pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
@@ -58,4 +63,4 @@ dependencies = [
 ]
 
 # Build the tarballs
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"10")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.9", preferred_gcc_version=v"10")

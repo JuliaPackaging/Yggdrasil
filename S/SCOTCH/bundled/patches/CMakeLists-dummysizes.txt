@@ -11,6 +11,16 @@ if (NOT DEFINED SCOTCH_PATCHLEVEL)
   message(FATAL_ERROR "must define SCOTCH_PATCHLEVEL")
 endif()
 
+if(INTSIZE STREQUAL "32")
+  message(STATUS "Integer size is 32 bits")
+  add_definitions(-DINTSIZE32)
+elseif(INTSIZE STREQUAL "64")
+  message(STATUS "Integer size is 64 bits")
+  add_definitions(-DINTSIZE64)
+else()
+  message(FATAL_ERROR "Invalid integer size value ${INTSIZE}")
+endif()
+
 add_definitions(-DSCOTCH_VERSION_NUM=${SCOTCH_VERSION}
   -DSCOTCH_RELEASE_NUM=${SCOTCH_RELEASE}
   -DSCOTCH_PATCHLEVEL_NUM=${SCOTCH_PATCHLEVEL})

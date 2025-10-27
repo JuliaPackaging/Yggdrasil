@@ -3,16 +3,37 @@
 using BinaryBuilder, Pkg
 
 name = "DuckDB"
-version = v"1.2.0"
+version = v"1.4.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/duckdb/duckdb.git", "5f5512b827df6397afd31daedb4bbdee76520019"),
+    GitSource("https://github.com/duckdb/duckdb.git", "b390a7c3760bd95926fe8aefde20d04b349b472e"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/duckdb/
+
+export DUCKDB_TARGET="${target}"
+if [[ "${target}" == "x86_64-linux-gnu" ]]; then
+    export DUCKDB_TARGET="linux_amd64"
+elif [[ "${target}" == aarch64-linux-gnu ]]; then
+    export DUCKDB_TARGET="linux_arm64"
+elif [[ "${target}" == "x86_64-linux-musl" ]]; then
+    export DUCKDB_TARGET="linux_amd64_musl"
+elif [[ "${target}" == "x86_64-w64-mingw32" ]]; then
+    export DUCKDB_TARGET="windows_amd64_mingw"
+elif [[ "${target}" == x86_64-apple-* ]]; then
+    export DUCKDB_TARGET="osx_amd64"
+elif [[ "${target}" == aarch64-apple-* ]]; then
+    export DUCKDB_TARGET="osx_arm64"
+fi
+
+if [[ "${bb_full_target}" == *-cxx03* ]]; then
+    export DUCKDB_TARGET="${DUCKDB_TARGET}_gcc4"
+fi
+
+echo "Compiling for DuckDB Target - $DUCKDB_TARGET"
 
 cmake -B build \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -25,7 +46,7 @@ cmake -B build \
       -DENABLE_EXTENSION_AUTOINSTALL=1 \
       -DBUILD_UNITTESTS=FALSE \
       -DBUILD_SHELL=TRUE \
-      -DDUCKDB_EXPLICIT_PLATFORM="${target}"
+      -DDUCKDB_EXPLICIT_PLATFORM=${DUCKDB_TARGET}
 cmake --build build --parallel ${nproc}
 cmake --install build
 

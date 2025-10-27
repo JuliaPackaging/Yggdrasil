@@ -1,14 +1,15 @@
 using BinaryBuilder, Pkg
 
 name = "MKL"
-version = v"2025.0.1"
-version_intel_openmp = v"2025.0.4"
+version = v"2025.2.0"
+version_intel_openmp = v"2025.2.0"
 
 sources = [
-    FileSource("https://files.pythonhosted.org/packages/82/af/17d96670517ce773521ddd10c6f7752b4a2ffe34609dc367d5bd79425948/mkl-2025.0.1-py2.py3-none-win_amd64.whl",
-               "5b7ee0dd14038ea1e1b0eb484f3a883b50aa0130da5d31e8734b960218eb4255"; filename="mkl-x86_64-w64-mingw32.whl"),
-    FileSource("https://files.pythonhosted.org/packages/bd/d7/a86e897657596eaadc0f76b1dcde823451cdc4877fc39a8211a47f862202/mkl-2025.0.1-py2.py3-none-manylinux_2_28_x86_64.whl",
-               "581b3de496bd004ab2d2bd38775bbcc885303270687940848a19747cce45d47b"; filename="mkl-x86_64-linux-gnu.whl"),
+    # Files from the PyPi package https://pypi.org/project/mkl/#files
+    FileSource("https://files.pythonhosted.org/packages/91/ae/025174ee141432b974f97ecd2aea529a3bdb547392bde3dd55ce48fe7827/mkl-2025.2.0-py2.py3-none-win_amd64.whl",
+               "b6ec153e4a073421dbb52ef99c7be97e66cde0272e4a1e3569b090b6f0130253"; filename="mkl-x86_64-w64-mingw32.whl"),
+    FileSource("https://files.pythonhosted.org/packages/46/7b/f5b1b84eb0a2a6e145fc31b4e6b1c59690dcb088734197da8f299caf7c67/mkl-2025.2.0-py2.py3-none-manylinux_2_28_x86_64.whl",
+               "974b4e222cc94e8d3b67213a361c8ac25d432cc4fccc5f2f00aa15c4e67cc203"; filename="mkl-x86_64-linux-gnu.whl"),
 ]
 
 # Bash recipe for building across all platforms

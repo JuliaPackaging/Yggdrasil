@@ -37,7 +37,7 @@ case "$bb_full_target" in
 
 esac
 
-cmake --build . --parallel 1
+cmake --build . --parallel ${nproc}
 cmake --install .
 install_license $WORKSPACE/srcdir/qt*-src-*/LICENSES/LGPL-3.0-only.txt
 """
@@ -48,6 +48,10 @@ include("../Qt6Base/common.jl")
 # No Wayland on Windows and macOS
 empty!(platforms_macos)
 empty!(platforms_win)
+
+# It seems Qt 6.8 Wayland doesn't compile out of the box on freeBSD and when forced requires
+# proper support in Qt6Base. To be investigated on version upgrade.
+filter!(!Sys.isfreebsd, platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -73,4 +77,4 @@ ENV["QT_PLUGIN_PATH"] = qt6plugins_dir
 ENV["__EGL_VENDOR_LIBRARY_DIRS"] = get(ENV, "__EGL_VENDOR_LIBRARY_DIRS", "/usr/share/glvnd/egl_vendor.d")
 """
 
-build_qt(name, version, sources, script, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"10", preferred_llvm_version=qt_llvm_version, julia_compat="1.6", init_block)

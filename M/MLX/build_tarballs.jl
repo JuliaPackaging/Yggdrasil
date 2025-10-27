@@ -3,50 +3,37 @@
 using BinaryBuilder, Pkg
 
 name = "MLX"
-version = v"0.22.1"
+version = v"0.25.1"
 
 sources = [
-    GitSource("https://github.com/ml-explore/mlx.git", "1a1b2108ecfedfb8ccbfd63eadcc1c5f098fefee"),
+    GitSource("https://github.com/ml-explore/mlx.git", "eaf709b83e559079e212699bfc9dd2f939d25c9a"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
-    ArchiveSource("http://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/arm64/14.1-RELEASE/base.txz",
-                  "b25830252e0dce0161004a5b69a159cbbd92d5e92ae362b06158dbb3f2568d32";
-                  unpack_target="freebsd-base-aarch64"),
-    ArchiveSource("http://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/amd64/13.4-RELEASE/base.txz",
-                  "8e13b0a93daba349b8d28ad246d7beb327659b2ef4fe44d89f447392daec5a7c";
-                  unpack_target="freebsd-base-x86_64"),
     # Using the PyPI wheel for aarch64-apple-darwin to get the metal backend, which would otherwise require the `metal` compiler to build (which is practically impossible to use from the BinaryBuilder build env.)
-    FileSource("https://files.pythonhosted.org/packages/bb/14/a4e312129cca10acef484f0a370461cca785fdc821deaf9dbd61c5abb136/mlx-$(version)-cp313-cp313-macosx_13_0_arm64.whl", "9fd0c4695e2afa388d6b436317e55f402f2aaef47aa748ba98b1590057a42563"; filename = "mlx-aarch64-apple-darwin20.whl"),
-    DirectorySource("./bundled"),
+    FileSource("https://files.pythonhosted.org/packages/02/1b/7da8f1d224a4287cdd5eda77d878a73ff13c22e2c89097bc6effcc5c318a/mlx-$(version)-cp313-cp313-macosx_13_0_arm64.whl", "f2ca5c2f60804bbb3968ee3e087ce4cf5789065f4c927f76b025b3f5f122a63a"; filename = "mlx-aarch64-apple-darwin20.whl"),
 ]
 
 script = raw"""
-apk del cmake # Need CMake >= 3.30
+apk del cmake # Need CMake >= 3.30 for BLA_VENDOR=libblastrampoline
 
 if [[ "$target" == *-apple-darwin* ]]; then
     sdk_root=$WORKSPACE/srcdir/MacOSX14.0.sdk
     sed -i "s#/opt/$bb_target/$bb_target/sys-root#$sdk_root#" $CMAKE_TARGET_TOOLCHAIN
     sed -i "s#/opt/$bb_target/$bb_target/sys-root#$sdk_root#" /opt/bin/$bb_full_target/$target-clang*
-elif [[ "$target" == *-unknown-freebsd* ]]; then
-    sdk_root=$WORKSPACE/srcdir/freebsd-base-$(echo $target | cut -d - -f1)
-    sed -i "s#/opt/$bb_target/$bb_target/sys-root#$sdk_root#" $CMAKE_TARGET_TOOLCHAIN
-    sed -i "s#/opt/$bb_target/$bb_target/sys-root#$sdk_root#" /opt/bin/$bb_full_target/$target-clang*
-    sed -i "s#/opt/$bb_target/$bb_target/lib#$sdk_root/usr/lib#" /opt/bin/$bb_full_target/$target-clang*
 fi
 
 cd $WORKSPACE/srcdir/mlx
 
-if [[ "$target" == *-freebsd* ]]; then
-    atomic_patch -p1 ../patches/freebsd-backend-cpu-quantized.patch
-fi
-
 CMAKE_EXTRA_OPTIONS=()
 if [[ "$target" == x86_64-apple-darwin* ]]; then
-    CMAKE_EXTRA_OPTIONS+=("-DMLX_ENABLE_X64_MAC=ON")
+    CMAKE_EXTRA_OPTIONS+=(
+        -DCMAKE_CXX_FLAGS=-Wno-psabi # Disabled psabi warnings, due to a lot being produced for mlx/backend/cpu/simd/accelerate_simd.h
+        -DMLX_ENABLE_X64_MAC=ON
+    )
     export MACOSX_DEPLOYMENT_TARGET=13.3
 elif [[ "$target" == *-w64-mingw32* ]]; then
     CMAKE_EXTRA_OPTIONS+=(
-        "-DMLX_BUILD_GGUF=OFF" # Disabled gguf, due to `gguflib-src/gguflib.c:4:10: fatal error: sys/mman.h: No such file or directory`
+        -DMLX_BUILD_GGUF=OFF # Disabled gguf, due to `gguflib-src/gguflib.c:4:10: fatal error: sys/mman.h: No such file or directory`
     )
 fi
 
@@ -58,9 +45,9 @@ if [[ "$target" != *-apple-darwin* &&
         libblastrampoline_target=$rust_target
     fi
     CMAKE_EXTRA_OPTIONS+=(
-        "-DBLA_VENDOR=libblastrampoline"
-        "-DBLAS_INCLUDE_DIRS=$includedir/libblastrampoline/LP64/$libblastrampoline_target"
-        "-DLAPACK_INCLUDE_DIRS=$includedir/libblastrampoline/LP64/$libblastrampoline_target"
+        -DBLA_VENDOR=libblastrampoline
+        -DBLAS_INCLUDE_DIRS=$includedir/libblastrampoline/LP64/$libblastrampoline_target
+        -DLAPACK_INCLUDE_DIRS=$includedir/libblastrampoline/LP64/$libblastrampoline_target
     )
 fi
 
@@ -68,6 +55,7 @@ install_license LICENSE
 
 if [[ "$target" != aarch64-apple-darwin* ]]; then
     cmake \
+        --compile-no-warning-as-error \
         -B build \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=$prefix \
@@ -112,10 +100,11 @@ products = Product[
 dependencies = [
     Dependency("libblastrampoline_jll"; compat="5.4", platforms = libblastrampoline_platforms),
     Dependency("OpenBLAS32_jll"; platforms = openblas_platforms),
-    HostBuildDependency(PackageSpec(name="CMake_jll")),  # Need CMake >= 3.30 for BLA_VENDOR=libblastrampoline
+    Dependency("OpenMPI_jll"; compat="4.1.8, 5"), # OpenMPI 5 is ABI compatible with OpenMPI 4
+    HostBuildDependency(PackageSpec(name="CMake_jll")), # Need CMake >= 3.30 for BLA_VENDOR=libblastrampoline
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     julia_compat="1.9",
-    preferred_gcc_version = v"10", # C++-17, with std::reduce, required
+    preferred_gcc_version = v"10", # v10: C++-17, with std::reduce, required
 )

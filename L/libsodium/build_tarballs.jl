@@ -6,7 +6,7 @@ name = "libsodium"
 # Note: upstream stopped giving version numbers to new releases.  "Releases" are
 # commits to the "stable" branch.  Here we just invent new versions numbers
 # because we need having different versions.
-version = v"1.0.20"
+version = v"1.0.21"
 
 # Collection of sources required to complete build
 sources = [
@@ -38,5 +38,3 @@ dependencies = Dependency[
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6")
-
-# Build trigger: 1

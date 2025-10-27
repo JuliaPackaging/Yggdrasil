@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Libtool"
-version = v"2.4.7"
+version = v"2.5.4"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://ftpmirror.gnu.org/libtool/libtool-$(version).tar.gz",
-                  "04e96c2404ea70c590c546eba4202a4e12722c640016c12b9b2f1ce3d481e9a8"),
+                  "da8ebb2ce4dcf46b90098daf962cffa68f4b4f62ea60f798d0ef12929ede6adf"),
     DirectorySource("./bundled"),
 ]
 
@@ -42,5 +42,3 @@ dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
-
-# build count: 2

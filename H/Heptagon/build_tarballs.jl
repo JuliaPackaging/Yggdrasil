@@ -6,80 +6,134 @@ version = v"1.05.00"
 sources = [
     DirectorySource("./bundled"),
 
-    ArchiveSource("http://download.camlcity.org/download/findlib-1.9.6.tar.gz",
-                  "2df996279ae16b606db5ff5879f93dbfade0898db9f1a3e82f7f845faa2930a2"),
-    FileSource("https://github.com/backtracking/ocamlgraph/releases/download/2.1.0/ocamlgraph-2.1.0.tbz",
-               "0f962c36f9253df2393955af41b074b6a426b2f92a9def795b2005b57d302d65"),
-    GitSource("https://github.com/ocaml/camlp-streams.git",
-              "567fa15f32192a6a7cd12e6c9e804fec43460126"),
-    GitSource("https://github.com/camlp4/camlp4.git",
-              "47e8a7c1082ce4e3004794931fd48259a364a5e4"),
-    # GitSource("https://github.com/garrigue/lablgtk.git", # needed for simulator (disabled for now, due to Gtk2 dependency)
-    #           "e38c8478493b76ab906ec916c24f8f38a67b0702"),
-    ArchiveSource("https://gitlab.inria.fr/fpottier/menhir/-/archive/20240715/archive.tar.gz",
-                  "ef488644aaaacbfaada7ebf08d499d64ce31e15494297c3dc8f58725fc9ac030"),
-    FileSource("https://github.com/ocaml/stdlib-shims/releases/download/0.3.0/stdlib-shims-0.3.0.tbz",
-               "babf72d3917b86f707885f0c5528e36c63fccb698f4b46cf2bab5c7ccdd6d84a"),
-    GitSource("https://gitlab.inria.fr/synchrone/heptagon.git",
+    GitSource("https://github.com/ocaml/stdlib-shims",
+              "fb6815e5d745f07fd567c11671149de6ef2e74c8"),  # 0.3.0
+    GitSource("https://github.com/backtracking/ocamlgraph",
+              "710007690fb2286f9f2ce10e19fa47a67b634670"),  # 2.2.0
+    #GitSource("https://github.com/garrigue/lablgtk",       # needed for simulator (disabled for now, due to Gtk2 dependency)
+    #          "e38c8478493b76ab906ec916c24f8f38a67b0702"), # 2.18.14
+    GitSource("https://gitlab.inria.fr/fpottier/menhir",
+              "d71051f500c4f34c9faf93192a593cdf4903b0c0"),  # 20240715
+
+    GitSource("https://gitlab.inria.fr/synchrone/heptagon",
               "af93d1f0916b7ff37cb88beb8744ecb976d53ae0")
 ]
 
 script = raw"""
 apk add ncurses # needed for tput
 
-cd ${WORKSPACE}/srcdir/findlib*
-prefix="" ./configure -no-topfind
-prefix="" make -j ${nproc}
-prefix="" make install
+# XXX: define this variable upstream?
+host=$MACHTYPE
+host_full=$(ls /opt/bin | grep $host)
 
-tar -C ${WORKSPACE}/srcdir/ -xf ${WORKSPACE}/srcdir/stdlib-shims*.tbz && rm ${WORKSPACE}/srcdir/stdlib-shims*.tbz
-cd ${WORKSPACE}/srcdir/stdlib-shims*
+
+# dependency: stdlib-shims
+
+cd ${WORKSPACE}/srcdir/stdlib-shims
 dune build -j ${nproc}
-dune install --prefix $prefix --libdir=$prefix/lib/ocaml/
+dune install --libdir=$OCAMLLIB
 
-tar -C ${WORKSPACE}/srcdir/ -xf ${WORKSPACE}/srcdir/ocamlgraph*.tbz && rm ${WORKSPACE}/srcdir/ocamlgraph*.tbz
-cd ${WORKSPACE}/srcdir/ocamlgraph*
-dune build -p ocamlgraph -j ${nproc} @install
-dune install ocamlgraph --prefix $prefix --libdir=$prefix/lib/ocaml/
 
-cd ${WORKSPACE}/srcdir/camlp-streams
-dune build -j ${nproc}
-dune install --prefix=$prefix --libdir=$prefix/lib/ocaml/
+# dependency: ocamlgraph
 
-cd ${WORKSPACE}/srcdir/camlp4*
-./configure --libdir=$prefix/lib/ocaml
-make -j ${nproc}
-make install install-META
+cd ${WORKSPACE}/srcdir/ocamlgraph
+dune build -p ocamlgraph -j ${nproc}
+dune install ocamlgraph --libdir=$OCAMLLIB
 
-cd ${WORKSPACE}/srcdir/menhir*
-dune build -j ${nproc}
-dune install --prefix=$prefix --libdir=$prefix/lib/ocaml/
+# also build it for the host, as we'll need it to build heptagon for the host
+(
+    export OCAMLLIB=/opt/$host/lib/ocaml PATH=/opt/bin/$host_full:/opt/$host/bin:$PATH
+    dune build -p ocamlgraph -j ${nproc}
+    dune install ocamlgraph --libdir=$OCAMLLIB --prefix=$host_prefix
+)
+
+
+# dependency: menhir
+
+cd ${WORKSPACE}/srcdir/menhir
+
+# generate the menhir binary for the host
+(
+    export OCAMLLIB=/opt/$host/lib/ocaml PATH=/opt/bin/$host_full:/opt/$host/bin:$PATH
+    dune build -j ${nproc}
+    dune install --libdir=$OCAMLLIB --prefix=$host_prefix
+)
+rm -rf _build
+
+# make menhir use bytecode binaries so that the multi-stage build works by interpretation
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/menhir-compile-bytecode.patch
+
+# compile the menhir library for the target
+dune build -j ${nproc} -p menhirLib
+dune install --libdir=$OCAMLLIB -p menhirLib
+
+
+# heptagon
 
 cd ${WORKSPACE}/srcdir/heptagon
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
-./configure --prefix=${prefix} --libdir=$prefix/lib/ocaml/ --enable-native
-make # (-j${nproc} not supported by lib/Makefile)
-make install
 install_license COPYING
+
+# get rid of the camlp4 dependency, which is hard to cross-compile
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/heptagon-remove-camlp4-reatk.patch
+autoconf
+
+# first, generate a host compiler we can execute here
+(
+    export OCAMLLIB=/opt/$host/lib/ocaml PATH=/opt/bin/$host_full:/opt/$host/bin:$PATH
+    ./configure --prefix=$prefix --libdir=$OCAMLLIB
+    make -C compiler native
+)
+cp compiler/heptc.native /tmp
+make clean
+
+# XXX: get rid of the host stdlibs, because they get accidentally picked up...
+#      Error: Files "utilities/misc.cmx"
+#             and "/opt/x86_64-linux-musl/lib/ocaml/str/str.cmxa"
+#             make inconsistent assumptions over interface "Str"
+rm -rf /opt/$host/lib/ocaml
+ln -s /opt/$target/lib/ocaml /opt/$host/lib/ocaml
+
+# then, configure the build for the target
+./configure --prefix=$prefix --libdir=$prefix/lib/ocaml --enable-native
+make || true
+
+# the build fails because it cannot execute the target compiler to generate the stdlib.
+# swap in the previously built host compiler and build the standard library
+cp /tmp/heptc.native compiler/heptc.native
+make -C lib
+
+# finally, re-build the compiler for the target so that we can distribute it
+rm compiler/heptc.native
+make -C compiler native
+
+make install
+if [[ ${target} == *mingw* ]]; then
+    mv $prefix/bin/heptc $prefix/bin/heptc.exe
+fi
 """
 
-platforms = [
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("x86_64", "linux"; libc="musl"),
-]
+platforms = filter(supported_platforms()) do p
+    if nbits(p) == 32
+        # OCaml 5+ only supports 64-bit
+        return false
+    end
+    if Sys.isfreebsd(p)
+        # Our OCaml shards don't support FreeBSD
+        return false
+    end
+    if arch(p) == "x86_64" && libc(p) == "musl"
+        # This recipe only supports cross-compilation, so exclude x86_64-linux-musl
+        return false
+    end
+    return true
+end
 
 products = [
     ExecutableProduct("heptc", :heptc),
     # ExecutableProduct("hepts", :hepts), # disabled for now (due to Gtk2 dependency)
 ]
 
-dependencies = [
-    BuildDependency(PackageSpec("OCaml_jll", v"5.3.0")),
-    BuildDependency("Dune_jll"),
-    BuildDependency("OCamlbuild_jll"),
-]
+dependencies = []
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies,
-               preferred_gcc_version=v"6", julia_compat="1.6")
+               compilers=[:c, :ocaml], julia_compat="1.6", preferred_ocaml_version=v"5.3")

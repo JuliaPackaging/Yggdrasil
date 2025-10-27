@@ -1,13 +1,15 @@
 # Update the GAP_pkg_* recipes to match GAP / GAP_lib
+# Execute from the G/GAP_pkg/ directory, e.g.:
+# julia --project=. update.jl
 
-using JSON
 import Downloads
-using SHA
 using GZip
+using JSON
+using SHA
 
-upstream_version = v"4.14.0"
-gap_version = v"400.1400.000"
-gap_lib_version = v"400.1400.000"
+upstream_version = v"4.15.1"
+gap_version = v"400.1500.000"
+gap_lib_version = v"400.1500.000"
 
 function download_with_sha256(url)
     io = IOBuffer()
@@ -62,7 +64,7 @@ function update_gap_pkg_recipe(dir)
 
     # new metadata from the GAP package registry
     if pkgname == "juliainterface"
-        upstream_version = "0.13.1"
+        upstream_version = "0.16.0"
         sha256 = "DUMMY"
     else
         meta = pkginfo[pkgname]
@@ -91,7 +93,13 @@ function update_gap_pkg_recipe(dir)
         @info "skipping $pkgname"
         return
     elseif old_upstream_version != upstream_version
-        offset = v"0.0.0"
+        _old_upstream_version = VersionNumber(replace(old_upstream_version, "-" => "."))
+        _upstream_version = VersionNumber(replace(upstream_version, "-" => "."))
+        if _old_upstream_version.major != _upstream_version.major
+            offset = v"0.0.0"
+        else
+            offset = VersionNumber(offset.major, 0, 0)
+        end
     else
         offset = VersionNumber(offset.major, offset.minor, offset.patch + 1)
     end

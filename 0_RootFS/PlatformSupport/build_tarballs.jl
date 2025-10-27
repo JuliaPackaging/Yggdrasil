@@ -5,7 +5,7 @@
 # ```
 # using BinaryBuilder
 # using BinaryBuilder: aatriplet
-# for platform in supported_platforms(; experimental=true)
+# for platform in supported_platforms()
 #     # Append version numbers for BSD systems
 #     if Sys.isapple(platform)
 #         suffix = arch(platform) == "aarch64" ? "20" : "14"
@@ -15,7 +15,7 @@
 #         suffix = ""
 #     end
 #     target = aatriplet(platform) * suffix
-#     run(`julia build_tarballs.jl --debug --verbose --deploy $target`)
+#     run(`$(Base.julia_cmd()) build_tarballs.jl --debug --verbose --deploy $target`)
 # end
 # ```
 # (Note that `--deploy` requires a GitHub personal access token in a `GITHUB_TOKEN`
@@ -26,6 +26,7 @@
 # PlatformSupport version to use in `choose_shards` to be `v<today's date>`.
 
 using BinaryBuilder, Dates, Pkg, Base.BinaryPlatforms
+using BinaryBuilderBase: AbstractSource
 include("../common.jl")
 
 # Don't mount any shards that you don't need to
@@ -46,34 +47,40 @@ if (Sys.isapple(compiler_target) || Sys.isfreebsd(compiler_target)) && os_versio
     error("Compiler target $(triplet(compiler_target)) does not have an `os_version` tag!")
 end
 
-sources = [
-    ArchiveSource("https://mirrors.edge.kernel.org/pub/linux/kernel/v4.x/linux-4.20.9.tar.xz",
-                  "b5de28fd594a01edacd06e53491ad0890293e5fbf98329346426cf6030ef1ea6"),
-    ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v7.0.0.tar.bz2",
-                  "aa20dfff3596f08a7f427aab74315a6cb80c2b086b4a107ed35af02f9496b628"),
-    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-8.0.1/libcxx-8.0.1.src.tar.xz",
-                  "7f0652c86a0307a250b5741ab6e82bb10766fb6f2b5a5602a63f30337e629b78"),
-]
+sources = AbstractSource[]
 
-freebsd_base = if Sys.isfreebsd(compiler_target) && arch(compiler_target) == "aarch64"
-    ArchiveSource("http://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/arm64/14.1-RELEASE/base.txz",
-                  "b25830252e0dce0161004a5b69a159cbbd92d5e92ae362b06158dbb3f2568d32")
-else
-    ArchiveSource("http://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/amd64/13.4-RELEASE/base.txz",
-                  "8e13b0a93daba349b8d28ad246d7beb327659b2ef4fe44d89f447392daec5a7c")
+if Sys.islinux(compiler_target)
+    push!(sources,
+          ArchiveSource("https://mirrors.edge.kernel.org/pub/linux/kernel/v4.x/linux-4.20.9.tar.xz",
+                        "b5de28fd594a01edacd06e53491ad0890293e5fbf98329346426cf6030ef1ea6"))
 end
 
-push!(sources, freebsd_base)
-
-macos_sdk = if Sys.isapple(compiler_target) && arch(compiler_target) == "aarch64"
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.0-11.1/MacOSX11.1.sdk.tar.xz",
-                  "9b86eab03176c56bb526de30daa50fa819937c54b280364784ce431885341bf6")
-else
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.12.sdk.tar.xz",
-                  "6852728af94399193599a55d00ae9c4a900925b6431534a3816496b354926774")
+if Sys.isfreebsd(compiler_target)
+    if arch(compiler_target) == "aarch64"
+        push!(sources,
+              ArchiveSource("http://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/arm64/14.1-RELEASE/base.txz",
+                            "b25830252e0dce0161004a5b69a159cbbd92d5e92ae362b06158dbb3f2568d32"))
+    else
+        push!(sources,
+              ArchiveSource("http://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/amd64/13.4-RELEASE/base.txz",
+                            "8e13b0a93daba349b8d28ad246d7beb327659b2ef4fe44d89f447392daec5a7c"))
+    end
 end
 
-push!(sources, macos_sdk)
+if Sys.isapple(compiler_target)
+    push!(sources,
+          ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-8.0.1/libcxx-8.0.1.src.tar.xz",
+                        "7f0652c86a0307a250b5741ab6e82bb10766fb6f2b5a5602a63f30337e629b78"))
+    if arch(compiler_target) == "aarch64"
+    push!(sources,
+          ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.0-11.1/MacOSX11.1.sdk.tar.xz",
+                        "9b86eab03176c56bb526de30daa50fa819937c54b280364784ce431885341bf6"))
+    else
+        push!(sources,
+              ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.12.sdk.tar.xz",
+                            "6852728af94399193599a55d00ae9c4a900925b6431534a3816496b354926774"))
+    end
+end
 
 script = "COMPILER_TARGET=$(BinaryBuilder.aatriplet(compiler_target))\n" * raw"""
 ## Function to take in a target such as `aarch64-linux-gnu`` and spit out a
@@ -133,13 +140,6 @@ case "${COMPILER_TARGET}" in
         ;;
 
     *-mingw*)
-        cd $WORKSPACE/srcdir/mingw-*/mingw-w64-headers
-        ./configure --prefix=/ \
-            --enable-sdk=all \
-            --enable-secure-api \
-            --host=${COMPILER_TARGET}
-
-        make install DESTDIR=${sysroot}
         ;;
 
     *-freebsd*)

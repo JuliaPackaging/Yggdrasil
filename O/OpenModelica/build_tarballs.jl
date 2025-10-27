@@ -1,29 +1,33 @@
 using BinaryBuilder, Pkg
 
 name = "OpenModelica"
-version = v"1.24.4"
+version = v"1.25.1"
 
 sources = [
    GitSource("https://github.com/OpenModelica/OpenModelica.git",
-             "1fcd964f50824f82fd36d536804b0d80234131c9"),
-   DirectorySource("./bundled"),	     
+             "66757f39f530bc032d5c1a71c105bd568207444a"),
+   DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/OpenModelica*
+
+# Build writes to /tmp, which is a small tmpfs in our sandbox.
+# make it use the workspace instead
+export TMPDIR=${WORKSPACE}/tmpdir
+mkdir ${TMPDIR}
+
 cp ../patches/git-config ./.git/config
 git submodule update --force --init --recursive
 
+apk del cmake
 apk --update --no-chown add openjdk17-jdk
-apk add flex
 
 cmake -S . -B build_cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_BUILD_TYPE=Release \
-      -DBLA_VENDOR=libopenblas \
-      -DBLAS_LIBRARIES="-L${libdir} -lopenblas" \
-      -DLAPACK_LIBRARIES="-L${libdir} -lopenblas" \
+      -DBLA_VENDOR=OpenBLAS \
       -DOM_ENABLE_GUI_CLIENTS=OFF \
       -DOM_OMSHELL_ENABLE_TERMINAL=ON \
       -DOM_OMC_ENABLE_IPOPT=OFF \
@@ -39,6 +43,7 @@ install_license OSMC-License.txt
 # platforms are passed in on the command line
 platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
+    Platform("i686",   "linux"; libc="glibc"),
 ]
 platforms = expand_cxxstring_abis(platforms)
 
@@ -50,6 +55,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    HostBuildDependency("CMake_jll"),
     HostBuildDependency("flex_jll"),
     BuildDependency("OpenCL_Headers_jll"),
     Dependency("CompilerSupportLibraries_jll"),
@@ -68,4 +74,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.10", clang_use_lld=false, preferred_gcc_version=v"9")
+               julia_compat="1.6", clang_use_lld=false, preferred_gcc_version=v"9")

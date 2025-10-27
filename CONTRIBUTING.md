@@ -61,10 +61,28 @@ are not descriptive (virtually all pull requests update a file called `build_tar
 
 #### Special keywords in commit messages
 
-Anywhere in a commit message you can use the special keyword `[skip build]`, which has a two-fold effect:
+There are two special keywords in commit messages, `[skip build]` and `[skip ci]`. These keywords can be anywhere in a commit message. Do not put these keywords into the first line (the header) since these instructions are a technical detail that isn't relevant when looking at a summary of many commit messages.
 
-* in pull requests, a build of the touched packages will not be performed
-* for commits pushed to the default branch, a new build of the touched packages will not be performed but a new version of the correspoding JLL packages will be published, using as artifacts those from the latest registered versions of the packages (the build number will be increased by one).
+These keywords are examined by our build system for every push made to the repository. They can be in any of the commit messages that make up a push. Keywords in existing, earlier commits are ignored when examining a push. That is, when making several pushes, each push needs to contain a commit that contains these keywords.
+ 
+`[skip build]` has two following effects:
+* in pull requests, the touched packages will not be built.
+* for commits pushed to the default (`master`) branch, including merging a branch to the default branch: Although the touched packages will not be built, a new version of the correspoding JLL packages will be published, using as artifacts those of the previous build with the same `x.y.z` version number. The build number will be increased by one. (This is only interesting for maintainers when merging a branch into the master branch; see section "Information for maintainers" below.)
+
+`[skip ci]` has the following effect (this keyword is only interesting for maintainers when merging a branch into the master branch; see section "Information for maintainers" below):
+* in pull requests, this has no effect.
+* for commits pushed to the default (`master`) branch, including merging a branch to the default branch: CI will not be run at all.
+
+##### How to make a single change to a pull request without triggering a build
+
+* Use `[skip build]` in the commit message
+
+##### How to change a package without releasing a new version (and without building the package)
+
+* Create a pull request
+* Use `[skip build]` in every commit message for the pull request
+* The maintainer must merge with `[skip ci]`
+
 
 ### Understanding build cache on Yggdrasil
 
@@ -84,9 +102,22 @@ These rebuilds are also completely useless, as the build artifacts will in most 
 
 ### Branch naming
 
-This is not specific to contributing to Yggdrasil, but as a general remark working with Git and GitHub, opening a PR from a branch with the same name as the target branch is an [anti-pattern](https://blog.jasonmeridth.com/posts/do-not-issue-pull-requests-from-your-master-branch/).
+This is not specific to contributing to Yggdrasil, but as a general remark working with Git and GitHub, opening a PR from a branch with the same name as the target branch is an [anti-pattern](https://jmeridth.com/posts/do-not-issue-pull-requests-from-your-master-branch/).
 You should always keep the target branch (e.g. `main`, `master`) in your fork in-sync with the branch with the same name in the upstream repository, and then create a new branch out of the target branch for each pull request you want to open.
 This is particularly important to keep history of your pull requests simple and readable and avoid creating noise which unnecessarily complicates the review process.
+
+### Changing compat bounds of a package
+
+If after release of a package you realise compat bounds of some of the dependencies, or julia itself via the `julia_compat` keyword argument to `build_tarballs()`, are incorrect and cause problems to users, you have to fix them.
+There are two situations:
+
+* the problematic dependendency _**does not have**_ a dependency yet: in this case you may open a new PR to Yggdrasil to _add_ an appropriate compat bound for the package in question;
+* the problematic dependency _**already has**_ a compat bound, which turned out to be incorrect (perhaps too loose or too restrictive): in this case, you first _**must correct the problem in the [General registry](https://github.com/JuliaRegistries/General)**_.
+  This is due to a limitation of Pkg which can't handle different compat bounds for the same package within releases which only differ by the build number.
+  Opening a PR to Yggdrasil to cut a new release of the package with the same X.Y.Z version number but different compat bounds will not achieve anything apart from being rejected by the General registry.
+  What you can do, _**after**_ the PR in General has been accepted and merged, is to open a PR to Yggdrasil and update the compat bounds accordingly to ensure that future releases will be consistent with the compat bound now in the registry, but _**without releasing a new useless and wasteful version**_.
+  Use the `[skip build]` keyword in the commit message, as described above.
+  A maintainer must then merge this PR with `[skip ci]`, as described below.
 
 ## Information for maintainers
 
@@ -102,5 +133,5 @@ Here are some recommendations for Yggdrasil maintainers:
   There is little need to preserve full history of individual pull requests.
   This also makes sure special keywords in commit messages are part of the commit which triggers the CI workflow and so they can have effect
 * use special commit message keywords as appropriate:
-  * `[skip ci]` to not run CI at all when merging a pull request
   * `[skip build]` to only update the JLL wrapper of a package without rebuilding the package once again
+  * `[skip ci]` to not run CI at all when merging a pull request. This keyword has no effect when pushing to a branch; it is only relevant when merging a pull request.

@@ -1,39 +1,40 @@
-diff --color -ur flexpart-orig/src/makefile flexpart/src/makefile
---- flexpart-orig/src/makefile	2024-06-28 12:00:25.488456542 +0200
-+++ flexpart/src/makefile	2024-06-28 12:08:25.775123497 +0200
-@@ -91,13 +91,9 @@
- 	F90	  = gfortran
- 	MPIF90    = mpifort
+diff --git a/src/makefile_gfortran b/src/makefile_gfortran
+index f08f9bd..bb83caa 100644
+--- a/src/makefile_gfortran
++++ b/src/makefile_gfortran
+@@ -37,6 +37,8 @@ FLEXPART-ETA-BIN = FLEXPART_ETA_BIN
  
--	INCPATH1  = /usr/include/
-+	INCPATH1  = ${includedir}
- 	INCPATH2  = ./
--	LIBPATH1  = /usr/lib/
--
--	INCPATH2  = /opt/eccodes/include/
--#	INCPATH2  = ./
--	LIBPATH2  = /opt/eccodes/lib/
-+	LIBPATH1  = ${libdir}
+ export OMP_NESTED=FALSE
  
- # the following works on a Debian buster (and probably newer) machine
- #	F90	  = gfortran
-@@ -128,9 +124,7 @@
- #LIBS = -lgrib_api_f90 -lgrib_api -lm -ljasper $(NCOPT)
- LIBS = -leccodes_f90 -leccodes -lm -ljasper $(NCOPT)
++CPATH = ${includedir}
++LIBRARY_PATH = ${libdir}
+ ROOT_DIR = . #MD
  
--FFLAGS   = -I$(INCPATH1) -I$(INCPATH2) -O$(O_LEV) -g -cpp -m64 -mcmodel=medium \
--           -fconvert=little-endian -frecord-marker=4 -fmessage-length=0 \
--           -flto=jobserver -O$(O_LEV) $(NCOPT) $(FUSER)  #-Warray-bounds -fcheck=all # -march=native
-+FFLAGS   = -I$(INCPATH1) -O$(O_LEV) -cpp -mcmodel=large -fconvert=little-endian -frecord-marker=4 -fmessage-length=0 -O$(O_LEV) $(NCOPT) $(FUSER)
+ #F90 = /usr/bin/gfortran
+@@ -87,13 +89,13 @@ O_LEV_DBG = g # [0,g]
+ # (defined by the machine where you are compiling it)
+ #
+ ifeq ($(arch), generic)
+-	FUSER = -g -fopenmp -march=core-avx2
++	FUSER = -fopenmp
+ else ifeq ($(arch), x86-64)
+-	FUSER = -g -fopenmp -march=x86-64
++	FUSER = -fopenmp
+ else ifeq ($(arch), skylake)
+-	FUSER = -g -fopenmp -march=skylake-avx512
++	FUSER = -fopenmp
+ else
+-	FUSER = -g -fopenmp -march=native -mtune=native
++	FUSER = -fopenmp
+ endif
  
- DBGFLAGS = -I$(INCPATH1) -I$(INCPATH2) -O$(O_LEV_DBG) -g3 -ggdb3 -cpp \
-            -m64 -mcmodel=medium -fconvert=little-endian -frecord-marker=4  \
-@@ -138,7 +134,7 @@
-            -fbacktrace   -Wall  -fdump-core $(FUSER) -fcheck=all #\
-             #  -ffpe-trap=invalid,overflow,denormal,underflow,zero 
+ # To compile in serial
+@@ -103,7 +105,7 @@ mpi: FUSER := $(FUSER) -Dusempi #-MM -MT -MD
+ ## LIBRARIES
+ LIBS = -leccodes -leccodes_f90 -lm $(NCOPT) $(ETAOPT) #MD -ljasper
  
--LDFLAGS  = $(FFLAGS) -L$(LIBPATH1) -L$(LIBPATH2) -Wl,-rpath,$(LIBPATH1) $(LIBS)
-+LDFLAGS  = $(FFLAGS) -L$(LIBPATH1) -Wl,-rpath,$(LIBPATH1) $(LIBS)
- LDDEBUG  = $(DBGFLAGS) -L$(LIBPATH1) $(LIBS)
+-FFLAGS   = $(INC) -O$(O_LEV) -m64 -cpp -mcmodel=large $(NCOPT) $(ETAOPT) $(FUSER)  #-convert little_endian -fpp -WB -check all
++FFLAGS   = $(INC) -O$(O_LEV) -cpp -mcmodel=large $(NCOPT) $(ETAOPT) $(FUSER)  #-convert little_endian -fpp -WB -check all
  
- MODOBJS = \
+ DBGFLAGS = $(INC) -O$(O_LEV_DBG) -g3 -ggdb3 -cpp -m64 -mcmodel=large -fconvert=little-endian -frecord-marker=4 -fmessage-length=0 -flto=jobserver -O$(O_LEV_DBG) $(NCOPT) $(ETAOPT) -fbacktrace   -Wall  -fdump-core $(FUSER)  #  -ffpe-trap=invalid,overflow,denormal,underflow,zero  -Warray-bounds -fcheck=all
+ 

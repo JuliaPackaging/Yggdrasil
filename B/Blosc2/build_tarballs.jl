@@ -4,18 +4,20 @@ using BinaryBuilder, Pkg
 
 name = "Blosc2"
 
-upstream_version = v"2.16.0"
+upstream_version = v"2.21.3"
 # We add a version offset because:
 # - Blosc2 2.15 is not ABI-compatible with Blosc2 2.14
 #   (see the release notes <https://github.com/Blosc/c-blosc2/releases/tag/v2.15.0>)
-version_offset = v"1.0.0"
+# - Blosc2 2.20 is not ABI-compatible with Blosc2 2.18
+#   (the shared library SOVERSION was increased)
+version_offset = v"2.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
 
 # Collection of sources required to build Blosc2
 sources = [
-    GitSource("https://github.com/Blosc/c-blosc2.git", "5fc02a0009c7eac0f30a0a6e48ae9b4c08c8a09c"),
+    GitSource("https://github.com/Blosc/c-blosc2.git", "0c853a639ba97997e33e29db9eed202459ebc6f0"),
     DirectorySource("bundled"),
 ]
 
@@ -63,7 +65,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Lz4_jll"; compat="1.10.1"),
-    Dependency("Zlib_jll"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
     Dependency("Zstd_jll"; compat="1.5.7"),
 ]
 

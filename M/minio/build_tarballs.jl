@@ -1,11 +1,12 @@
 using BinaryBuilder
 
 name = "minio"
-version = v"1.0.0"
+version = v"2.0.0"
 
 # Collection of sources
 sources = [
-    GitSource("https://github.com/minio/minio", "20c89ebbb30f44bbd0eba4e462846a89ab3a56fa"),
+    # RELEASE.2025-07-23T15-54-02Z
+    GitSource("https://github.com/minio/minio", "7ced9663e6a791fef9dc6be798ff24cda9c730ac"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]

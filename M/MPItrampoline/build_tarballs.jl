@@ -24,8 +24,8 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 name = "MPItrampoline"
 
 mpitrampoline_version = v"5.5.0"
-version = v"5.5.2"
-mpich_version = "4.3.0"
+version = v"5.5.4"
+mpich_version = "4.3.1"
 mpiconstants_version = v"1.5.0"
 mpiwrapper_version = v"2.11.1"
 
@@ -34,7 +34,7 @@ sources = [
     GitSource("https://github.com/eschnett/MPItrampoline", "67292e8b1ac40aa5bd6d0a5dab669da32405a2d7"),
     GitSource("https://github.com/eschnett/MPIconstants", "d2763908c4d69c03f77f5f9ccc546fe635d068cb"),
     ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version)/mpich-$(mpich_version).tar.gz",
-                  "5e04132984ad83cab9cc53f76072d2b5ef5a6d24b0a9ff9047a8ff96121bcc63"),
+                  "acc11cb2bdc69678dc8bba747c24a28233c58596f81f03785bf2b7bb7a0ef7dc"),
     GitSource("https://github.com/eschnett/MPIwrapper", "070c4e1b8a98fbe63ea8f84d046effb813c9febb"),
 ]
 
@@ -293,8 +293,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267");
-               compat="0.1", top_level=true),
+    RuntimeDependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267");
+                      compat="0.1", top_level=true),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

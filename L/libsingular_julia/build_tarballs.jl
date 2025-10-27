@@ -3,17 +3,12 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
-# See https://github.com/JuliaLang/Pkg.jl/issues/2942
-# Once this Pkg issue is resolved, this must be removed
-uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
-delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
-
 name = "libsingular_julia"
-version = v"0.47.2"
+version = v"0.47.7"
 
 # Collection of sources required to build libsingular-julia
 sources = [
-    GitSource("https://github.com/oscar-system/Singular.jl.git", "71f83e866727fa91b1dfb823dfa35753bb4cbeca"),
+    GitSource("https://github.com/oscar-system/Singular.jl.git", "c3e4bb2e857918a4f023443ef5c7958ad46e42ee"),
 ]
 
 # Bash recipe for building across all platforms
@@ -39,6 +34,7 @@ install_license ../../LICENSE.md
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl")
+filter!(>=(v"1.10"), julia_versions)
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 filter!(!Sys.iswindows, platforms) # Singular does not support Windows
 
@@ -55,19 +51,19 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.15")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.19")),
     BuildDependency("GMP_jll"),
     BuildDependency("MPFR_jll"),
-    Dependency("libcxxwrap_julia_jll"; compat = "~0.13.4"),
+    Dependency("libcxxwrap_julia_jll"; compat = "~0.14.3"),
     # we do not set a compat entry for Singular_jll -- instead we leave it to
     # Singular.jl to ensure the right versions of libsingular_julia_jll and
     # Singular_jll are paired. This gives us flexibility in the development
     # setup there.
-    Dependency("Singular_jll", v"404.100.100"),
+    Dependency("Singular_jll", v"404.101.400"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    preferred_gcc_version=v"8", julia_compat="1.6")
+    preferred_gcc_version=v"8", julia_compat="1.10")
 
 # rebuild trigger: 0

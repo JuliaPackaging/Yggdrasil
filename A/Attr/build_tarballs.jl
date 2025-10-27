@@ -4,6 +4,8 @@ using BinaryBuilder
 
 name = "Attr"
 version = v"2.5.2"
+# We bumped the version number to support new architectures
+ygg_version = v"2.5.3"
 
 # Collection of sources required to build attr
 sources = [
@@ -21,8 +23,7 @@ install_license doc/COPYING*
 """
 
 # These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line.  We are manually disabling
-# many platforms that do not seem to work.
+# platforms are passed in on the command line
 platforms = supported_platforms()
 filter!(Sys.islinux, platforms)
 
@@ -36,4 +37,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6")

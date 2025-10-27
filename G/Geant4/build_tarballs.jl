@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Geant4"
-version = v"11.3.0"
+version = v"11.3.2"
 
 # Collection of sources required to build
 sources = [
     ArchiveSource("https://gitlab.cern.ch/geant4/geant4/-/archive/v$(version)/geant4-v$(version).tar.gz",
-                  "d9d71daff8890a7b5e0e33ea9a65fe6308ad6713000b43ba6705af77078e7ead"),
+                  "077edca6aa3b3940f351cf9a948457cad3fb117f215b88c52cce315e1a07fd7a"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
     DirectorySource("./bundled")
@@ -110,6 +110,7 @@ dependencies = [
     Dependency("Xorg_libXmu_jll"),
     Dependency("Libglvnd_jll"),
     Dependency("Xerces_jll"),
+    Dependency("Zlib_jll"; compat="1.2.12", platforms=filter(Sys.isapple, platforms)),
     BuildDependency("Xorg_xorgproto_jll"),
 ]
 

@@ -4,6 +4,8 @@ using BinaryBuilder
 
 name = "Libglvnd"
 version = v"1.7.0"
+# We bumped the version number to build for riscv64
+ygg_version = v"1.7.1"
 
 # Collection of sources required to build Libglvnd
 sources = [
@@ -42,8 +44,6 @@ install_license ../README.md
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = filter!(p ->Sys.islinux(p) || Sys.isfreebsd(p), supported_platforms())
-# Remove when X11 stack will support armv6l and aarch64-freebsd
-filter!(p -> (arch(p) != "armv6l") && !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = Product[
@@ -64,5 +64,5 @@ dependencies = [
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                julia_compat="1.6")

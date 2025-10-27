@@ -3,16 +3,19 @@
 using BinaryBuilder, Pkg
 
 name = "Exodus"
-version = v"8.19.1"
+version = v"9.4.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/gsjaardema/seacas.git", "cfc1edd1e1602fd1edc8da90053b66e92499c8e9"),
+    GitSource("https://github.com/gsjaardema/seacas.git", "2f0c364b145df6fb8ac5cb29f80a72b24732b7f4"),
     DirectorySource("bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+# below needed to use CMake_jll
+apk del cmake
+
 cd $WORKSPACE/srcdir/seacas
 
 for p in ../patches/*.patch; do
@@ -92,22 +95,20 @@ platforms = expand_cxxstring_abis(platforms)
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libexodus", :libexodus)
+    ExecutableProduct("epu", :epu_exe)
+    ExecutableProduct("exodiff", :exodiff_exe)
     ExecutableProduct("nem_slice", :nem_slice_exe)
     ExecutableProduct("nem_spread", :nem_spread_exe)
-    ExecutableProduct("exodiff", :exodiff_exe)
-    ExecutableProduct("epu", :epu_exe)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="Fmt_jll", uuid="5dc1e892-f187-50dd-85f3-7dff85c47fc5"))
-    # We had to restrict compat with HDF5 because of ABI breakage:
-    # https://github.com/JuliaPackaging/Yggdrasil/pull/10347#issuecomment-2662923973
-    # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
-    Dependency(PackageSpec(name="HDF5_jll", uuid="0234f1f7-429e-5d53-9886-15a909be8d59"); compat="1.14.0 - 1.14.3")
+    Dependency(PackageSpec(name="HDF5_jll", uuid="0234f1f7-429e-5d53-9886-15a909be8d59"); compat="1.14.6 - 1.14")
     Dependency(PackageSpec(name="NetCDF_jll", uuid="7243133f-43d8-5620-bbf4-c2c921802cf3"))
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
+    HostBuildDependency(PackageSpec(name="CMake_jll", uuid="3f4e10e2-61f2-5801-8945-23b9d642d0e6"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"5")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"9")

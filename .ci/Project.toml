@@ -3,6 +3,7 @@ BinaryBuilder = "12aac903-9f7c-5d81-afc2-d9565ea332ae"
 BinaryBuilderBase = "7f725544-6523-48cd-82d1-3fa08ff4056e"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
+HistoricalStdlibVersions = "6df8b67a-e8a0-4029-b4b7-ac196fe72102"
 JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
 Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 Registrator = "4418983a-e44d-11e8-3aec-9789530b3b3e"
@@ -12,4 +13,5 @@ ghr_jll = "07c12ed4-43bc-5495-8a2a-d5838ef8d533"
 squashfs_tools_jll = "eed32e3e-a7c5-5bf9-9121-5cf3ab653887"
 
 [compat]
+HistoricalStdlibVersions = "=2.0.2"
 ghr_jll = "0.14.0"

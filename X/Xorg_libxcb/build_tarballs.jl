@@ -5,6 +5,8 @@ using BinaryBuilder
 name = "Xorg_libxcb"
 version_string = "1.17.0"
 version = VersionNumber(version_string)
+# We bumped the version number because we built for riscv64
+ygg_version = v"1.17.1"
 
 # Collection of sources required to build libxcb
 sources = [
@@ -14,11 +16,8 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libxcb-*/
-CPPFLAGS="-I${prefix}/include"
-# When compiling for things like ppc64le, we need newer `config.sub` files
-update_configure_scripts
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=no
+cd $WORKSPACE/srcdir/libxcb-*
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 """
@@ -56,13 +55,13 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    BuildDependency("Xorg_libpthread_stubs_jll"),
     BuildDependency("Xorg_util_macros_jll"),
     BuildDependency("Xorg_xproto_jll"),
     BuildDependency("Xorg_xcb_proto_jll"),
     Dependency("Xorg_libXau_jll"),
     Dependency("Xorg_libXdmcp_jll"),
-    Dependency("Xorg_libpthread_stubs_jll"),
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6")

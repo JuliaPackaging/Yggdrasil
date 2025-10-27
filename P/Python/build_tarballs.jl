@@ -3,12 +3,14 @@
 using BinaryBuilder
 
 name = "Python"
-version = v"3.10.16"
+version = v"3.11.12"
 
 # Collection of sources required to build Python
 sources = [
     ArchiveSource("https://www.python.org/ftp/python/$(version)/$(name)-$(version).tar.xz",
-                  "bfb249609990220491a1b92850a07135ed0831e41738cf681d63cf01b2a8fbd1"),
+                  "849da87af4df137710c1796e276a955f7a85c9f971081067c8f565d15c352a09"),
+    FileSource("https://repo.anaconda.com/miniconda/Miniconda3-py311_24.3.0-0-Linux-x86_64.sh", 
+                "4da8dde69eca0d9bc31420349a204851bfa2a1c87aeb87fe0c05517797edaac4", "miniconda.sh"),
     DirectorySource("./bundled"),
 ]
 
@@ -19,6 +21,12 @@ apk add autoconf-archive
 
 # Having a global `python3` screws things up a bit, so get rid of that
 rm -f $(which python3)
+
+# Install miniconda to get python 3.11 necessary for cross-compilation
+# This requriement is new in Python 3.11
+cd ${WORKSPACE}/srcdir
+bash miniconda.sh -b -p ${host_bindir}/miniconda
+
 
 # We need these for the host python build
 apk update
@@ -44,10 +52,6 @@ if [[ "${target}" == *-freebsd* || ${target} == *darwin* ]]; then
     sed -i 's|^MULTIARCH=.*|MULTIARCH=|' configure.ac
 fi
 
-# Don't link against libcrypt, because we provide libcrypt.so.1 while most systems will
-# have libcrypt.so.2 (backported from Python 3.11)
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libcrypt.patch
-
 autoreconf -i
 
 # Next, build host version
@@ -67,6 +71,7 @@ export LDFLAGS="${LDFLAGS} -L${prefix}/lib -L${prefix}/lib64"
 export PATH=$(echo ${WORKSPACE}/srcdir/Python-*/build_host):$PATH
 
 conf_args=()
+conf_args+=(--with-build-python=${host_bindir}/miniconda/bin/python)
 conf_args+=(--enable-shared)
 conf_args+=(--disable-ipv6)
 conf_args+=(--with-ensurepip=no)
@@ -83,6 +88,8 @@ conf_args+=(ac_cv_have_chflags=no)
 
 make -j${nproc}
 make install
+
+install_license ${WORKSPACE}/srcdir/Python-*/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
@@ -106,7 +113,7 @@ dependencies = [
     Dependency("Bzip2_jll"; compat="1.0.9"),
     Dependency("Libffi_jll"; compat="~3.4.6"),
     Dependency("SQLite_jll"),
-    Dependency("LibMPDec_jll"),
+    Dependency("LibMPDec_jll"; compat="2.5.1"),
     Dependency("Zlib_jll"),
     Dependency("XZ_jll"),
     Dependency("OpenSSL_jll"; compat="3.0.16"),

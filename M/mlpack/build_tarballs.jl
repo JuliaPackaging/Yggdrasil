@@ -6,11 +6,11 @@ using BinaryBuilder
 
 # Set sources and other environment variables.
 name = "mlpack"
-source_version = v"4.5.1"
+source_version = v"4.6.2"
 version = source_version
 sources = [
     ArchiveSource("https://www.mlpack.org/files/mlpack-$(source_version).tar.gz",
-                  "58059b911a78b8bda91eef4cfc6278383b24e71865263c2e0569cf5faa59dda3"),
+                  "2fe772da383a935645ced07a07b51942ca178d38129df3bf685890bc3c1752cf"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                   "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
 ]
@@ -189,8 +189,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("armadillo_jll"; compat="12.2.0"),
-    Dependency("OpenBLAS_jll", v"0.3.13"),
+    Dependency("armadillo_jll"; compat="14.4.1"),
+    Dependency("OpenBLAS_jll"),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),

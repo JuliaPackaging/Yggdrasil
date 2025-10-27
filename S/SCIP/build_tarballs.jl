@@ -3,14 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "SCIP"
-upstream_version = v"9.2.1"
+upstream_version = v"9.2.2"
 version = VersionNumber(upstream_version.major * 100, upstream_version.minor * 100, upstream_version.patch * 100)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource(
         "https://scipopt.org/download/release/scipoptsuite-$(upstream_version).tgz",
-        "41b71a57af773403e9a6724f78c37d8396ac4b6b270a9bbf3716d67f1af12edf"
+        "1a6d5b2bceb99faf1facbd6cd79e4a3eb8de60ed1d480281f12ae5c540d4a8a4"
     ),
 ]
 
@@ -26,14 +26,7 @@ elif [[ "${target}" == *-mingw* ]]; then
    export LDFLAGS=-L${libdir}
 fi
 
-if [[ "${target}" == *w64* ]]; then
-    export CFLAGS="-O0"
-fi
-
 cd scipoptsuite*
-
-# for soplex threadlocal
-export CXXFLAGS="-DTHREADLOCAL=''"
 
 mkdir build
 cd build/
@@ -77,7 +70,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"); compat="=1.79.0"),
+    Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"); compat="=1.87.0"),
     Dependency(PackageSpec(name="Bzip2_jll", uuid="6e34b625-4abd-537c-b88f-471c36dfa7a0"); compat="1.0.9"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d"), v"6.2.1"),
@@ -87,4 +80,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"6", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"12", julia_compat="1.6")
