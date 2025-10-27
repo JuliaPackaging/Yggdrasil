@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 reactant_commit = "362265733f4ca0b664d60c6523219821681edc5d"
-version = v"0.0.253"
+version = v"0.0.254"
 
 sources = [
    GitSource(repo, reactant_commit),
@@ -137,6 +137,7 @@ fi
 echo "register_toolchains(\\"//:cc_toolchain_for_ygg_host\\")" >> WORKSPACE
 
 if [[ "${target}" == *-darwin* ]]; then
+    BAZEL_BUILD_FLAGS+=(--config=macos)
     BAZEL_BUILD_FLAGS+=(--define=gcc_linux_x86_32_1=false)
     BAZEL_BUILD_FLAGS+=(--define=gcc_linux_x86_64_1=false)
     BAZEL_BUILD_FLAGS+=(--define=gcc_linux_x86_64_2=false)
@@ -222,7 +223,6 @@ if [[ "${target}" == aarch64-* ]]; then
 fi
 
 if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
-    BAZEL_BUILD_FLAGS+=(--config=cuda)
     BAZEL_BUILD_FLAGS+=(--repo_env=HERMETIC_CUDA_VERSION="${HERMETIC_CUDA_VERSION}")
     if [[ "${HERMETIC_CUDA_VERSION}" == *13.* ]]; then
     	BAZEL_BUILD_FLAGS+=(--config=cuda13)
