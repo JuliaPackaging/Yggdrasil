@@ -149,6 +149,9 @@ filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 filter!(p -> libgfortran_version(p) >= v"5", platforms)
+# Temporarily disable Julia@1.13 until https://github.com/JuliaPackaging/Yggdrasil/pull/11683
+# is fixed.
+filter!(p -> VersionNumber(p["julia_version"]) < v"1.13", platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
