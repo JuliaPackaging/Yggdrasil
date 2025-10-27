@@ -31,7 +31,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to build SDPABuilder
 sources = [
     ArchiveSource("https://sourceforge.net/projects/sdpa/files/sdpa/sdpa_$(upstream_version).orig.tar.gz",
-                  "3340a25516543c27237a462272a70b9e634f6f12f92a73e748ff7f346831de84")
+                  "f6ad68f18d1f03bb6e71f8c81d209a0fba99cbb918ceb260a5dc4b9b0f343ee9")
     DirectorySource("./bundled")
 ]
 
