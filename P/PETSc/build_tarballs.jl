@@ -401,6 +401,15 @@ build_petsc single complex Int64 opt
 build_petsc single complex Int32 opt
 """
 
+init_block = raw"""
+    # Setup libblastrampoline forwarding
+    using LinearAlgebra
+    using OpenBLAS32_jll
+    if !any(lib -> lib.interface == :lp64, LinearAlgebra.BLAS.lbt_get_config().loaded_libs)
+        LinearAlgebra.BLAS.lbt_forward(OpenBLAS32_jll.libopenblas_path)
+    end
+"""
+
 augment_platform_block = """
     using Base.BinaryPlatforms
     $(MPI.augment)
