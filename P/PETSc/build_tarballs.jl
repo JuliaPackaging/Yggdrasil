@@ -159,8 +159,6 @@ build_petsc()
     #     BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"            # libblastrampoline doesn't seem to work on windows
     fi
 
-    BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"
-
     if  [ ${DEBUG_FLAG} == 1 ]; then
         _COPTFLAGS='-O0 -g'
         _CXXOPTFLAGS='-O0 -g'
