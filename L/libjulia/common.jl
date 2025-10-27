@@ -11,6 +11,18 @@ if ! @isdefined julia_versions
     julia_versions = Base.thispatch.(julia_full_versions)
 end
 
+# History of supported julia versions:
+# "pre-v1.10.0" means that it already existed prior to libjulia v1.10.0,
+# and we didn't track down the exact PRs when compiling this list.
+# julia v1.6:  pre-v1.10.0 - v1.10.20 (dropped in https://github.com/JuliaPackaging/Yggdrasil/pull/12378)
+# julia v1.7:  pre-v1.10.0 - v1.10.20 (dropped in https://github.com/JuliaPackaging/Yggdrasil/pull/12378)
+# julia v1.8:  pre-v1.10.0 - v1.10.20 (dropped in https://github.com/JuliaPackaging/Yggdrasil/pull/12378)
+# julia v1.9:  pre-v1.10.0 - v1.10.20 (dropped in https://github.com/JuliaPackaging/Yggdrasil/pull/12378)
+# julia v1.10: v1.10.0  - today
+# julia v1.11: v1.10.4  - today
+# julia v1.12: v1.10.9  - today
+# julia v1.13: v1.10.15 - today
+
 # return the platforms supported by libjulia
 function julia_supported_platforms(julia_version)
     platforms = supported_platforms()
