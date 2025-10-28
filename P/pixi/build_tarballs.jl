@@ -1,10 +1,10 @@
 using BinaryBuilder
 
 name = "pixi"
-version = v"0.41.3"
+version = v"0.50.2"
 
 sources = [
-    GitSource("https://github.com/prefix-dev/pixi.git", "fc3e1a861deac099e51f7f0c3eaa2f64e217d4bf"),
+    GitSource("https://github.com/prefix-dev/pixi.git", "99dc7563c9ce1276e8b7a96d00533c0481afce99"),
 ]
 
 # Bash recipe for building across all platforms
@@ -26,19 +26,20 @@ install -Dvm 755 "target/${rust_target}/release/pixi${exeext}" "${bindir}/pixi${
 """
 
 # Supported platforms from https://github.com/prefix-dev/pixi/releases/latest
-platforms = [
-    # apple
-    Platform("aarch64", "macos"),
-    Platform("x86_64", "macos"),
-    # windows
-    # Platform("aarch64", "windows"),  # not supported by julia
-    Platform("x86_64", "windows"),
-    # linux
-    Platform("aarch64", "linux"; libc="glibc"),
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("x86_64", "linux"; libc="musl"),  # also happens to build
-    Platform("powerpc64le", "linux"; libc="glibc"),  # also happens to build
-]
+#TODO platforms = [
+#TODO     # apple
+#TODO     Platform("aarch64", "macos"),
+#TODO     Platform("x86_64", "macos"),
+#TODO     # windows
+#TODO     # Platform("aarch64", "windows"),  # not supported by julia
+#TODO     Platform("x86_64", "windows"),
+#TODO     # linux
+#TODO     Platform("aarch64", "linux"; libc="glibc"),
+#TODO     Platform("x86_64", "linux"; libc="glibc"),
+#TODO     Platform("x86_64", "linux"; libc="musl"),  # also happens to build
+#TODO     Platform("powerpc64le", "linux"; libc="glibc"),  # also happens to build
+#TODO ]
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
