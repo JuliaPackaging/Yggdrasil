@@ -8,7 +8,7 @@ version = v"0.1.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/simeonschaub/gfxinfo_c_bindings.git",
-              "5bf3af77d5591eb790030a4b90b35b0a97b1108c"),
+              "5c2be51a8d87625ab171926abe573bf4ff808030"),
 ]
 
 # Bash recipe for building across all platforms
