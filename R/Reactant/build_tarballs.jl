@@ -226,6 +226,10 @@ if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
     BAZEL_BUILD_FLAGS+=(--repo_env=HERMETIC_CUDA_VERSION="${HERMETIC_CUDA_VERSION}")
     if [[ "${HERMETIC_CUDA_VERSION}" == *13.* ]]; then
     	BAZEL_BUILD_FLAGS+=(--config=cuda13)
+        if [[ "${target}" == x86_64-linux-gnu ]]; then
+	    BAZEL_BUILD_FLAGS+=(--copt=-mcmodel=large)
+	    BAZEL_BUILD_FLAGS+=(--linkopt=-mcmodel=large)
+	fi
     else
     	BAZEL_BUILD_FLAGS+=(--config=cuda12)
     fi
