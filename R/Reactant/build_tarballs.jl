@@ -334,6 +334,10 @@ elif [[ "${target}" == aarch64-* ]] && [[ "${HERMETIC_CUDA_VERSION}" == *13.* ]]
     $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
     cp /workspace/srcdir/libnvvm-linux-x86_64-*/nvvm/bin/cicc /workspace/bazel_root/*/external/cuda_nvvm/nvvm/bin/cicc
     $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
+elif [[ "${target}" == aarch64-* ]] && [[ "${HERMETIC_CUDA_VERSION}" == *12.* ]]; then
+    $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
+    cp /workspace/srcdir/cuda_nvcc-linux-sbsa*-archive/lib/*.a /workspace/bazel_root/*/external/cuda_nvcc/lib/
+    $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
 else
     $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
 fi
