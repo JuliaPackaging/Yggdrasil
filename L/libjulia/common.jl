@@ -257,6 +257,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         USE_SYSTEM_LAPACK=1
         LIBLAPACKNAME=libopenblas
     EOM
+    fi
 
     if [[ "${version}" == 1.1[0-1].* ]]; then
         if [[ "${target}" == *apple* ]]; then
@@ -274,7 +275,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
             cat << EOM >>Make.user
             OSLIBS+=-Wl,--undefined-version
     EOM
-       fi
+        fi
     fi
 
     # avoid linker errors related to atomic support in 32bit ARM builds
