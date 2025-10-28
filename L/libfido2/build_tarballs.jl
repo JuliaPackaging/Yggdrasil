@@ -12,7 +12,7 @@ sources = [
 ]
 
 script = raw"""
-cd ${WORKSPACE}/srcdir/src/libfido2-1.16.0
+cd ${WORKSPACE}/srcdir/src/libfido2-*
 find . -type f -name 'CMakeLists.txt' | xargs sed -i -e 's/-Werror[^\ ]*//g' -e '/-Werror/d' -e '/Werror/d'
 find . -type f -name 'CMakeLists.txt' -exec sed -i '/-Wno-cast-function-type/d' {} +
 find . -type f -name 'CMakeLists.txt' -exec sed -i 's/-D_WIN32_WINNT=0x0600//g' {} +
