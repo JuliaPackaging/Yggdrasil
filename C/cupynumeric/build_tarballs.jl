@@ -13,19 +13,20 @@ version = v"25.8" # cupynumeric has 08, but Julia doesn't like that
 sources = [
     GitSource("https://github.com/nv-legate/cupynumeric.git","7146e78b6da693a2c576f8a9ef98291be334f280"),
     GitSource("https://github.com/MatthewsResearchGroup/tblis.git", "c4f81e08b2827e72335baa7bf91a245f72c43970"),
+    FileSource("https://repo.anaconda.com/miniconda/Miniconda3-py311_24.3.0-0-Linux-x86_64.sh", 
+                "4da8dde69eca0d9bc31420349a204851bfa2a1c87aeb87fe0c05517797edaac4", "miniconda.sh")
 ]
 
 
 # These should match the legate_jll build_tarballs script
 MIN_CUDA_VERSION = v"12.2"
-MAX_CUDA_VERSION = v"12.3.999"
+MAX_CUDA_VERSION = v"12.8.999"
 
 
 cpu_platform = [Platform("x86_64", "linux")]
 cuda_platforms = CUDA.supported_platforms(; min_version = MIN_CUDA_VERSION, max_version = MAX_CUDA_VERSION)
 
 all_platforms = [cpu_platform; cuda_platforms]
-
 
 # for now NO ARM support, tblis doesnt have docs on how to build for arm
 filter!(p -> arch(p) == "x86_64", all_platforms)

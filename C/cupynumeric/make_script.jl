@@ -36,6 +36,16 @@ function get_script(cuda::Val{true})
 
         ln -s ${CUDA_HOME}/lib ${CUDA_HOME}/lib64
 
+        # Install cuSolverMp + Python
+        cd ${WORKSPACE}/srcdir
+        bash miniconda.sh -b -p ${host_bindir}/miniconda
+
+        # Create venv and install configure script dependencies
+        ${host_bindir}/miniconda/bin/python -m venv ./venv
+        source ./venv/bin/activate
+        pip install --upgrade pip
+        pip install nvidia-cusolvermp-cu12
+
         ## BUILD TBLIS ##
         cd ${WORKSPACE}/srcdir/tblis
 
@@ -81,8 +91,8 @@ function get_script(cuda::Val{true})
             -DNCCL_INCLUDE_DIR=${includedir} \
             -Dcutensor_LIBRARY=${libdir}/libcutensor.so \
             -Dcutensor_INCLUDE_DIR=${includedir} \
-            -DCUSOLVERMP_LIBRARY=${libdir}/libcusolvermp.so \
-            -DCUSOLVERMP_INCLUDE_DIR=${includedir} \
+            -DCUSOLVERMP_LIBRARY=${WORKSPACE}/srcdir/venv/lib/python3.11/site-packages/nvidia/cu12/lib/libcusolverMp.so \
+            -DCUSOLVERMP_INCLUDE_DIR=${WORKSPACE}/srcdir/venv/lib/python3.11/site-packages/nvidia/cu12/include \
             -DBLAS_LIBRARIES=${libdir}/libopenblas.so \
 
         cmake --build build --parallel ${nproc} --verbose
