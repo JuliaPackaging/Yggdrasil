@@ -12,9 +12,9 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 include("make_script.jl")
 
 name = "legate"
-version = v"25.5" # Year.Month
+version = v"25.8" # Year.Month
 sources = [
-    GitSource("https://github.com/nv-legate/legate.git","8a619fa468a73f9766f59ac9a614c0ee084ecbdd"),
+    GitSource("https://github.com/nv-legate/legate.git","47132dace5c2bb6cd16ba605eeaa37aea67c564b"),
     DirectorySource("./bundled"),
     FileSource("https://repo.anaconda.com/miniconda/Miniconda3-py311_24.3.0-0-Linux-x86_64.sh", 
                 "4da8dde69eca0d9bc31420349a204851bfa2a1c87aeb87fe0c05517797edaac4", "miniconda.sh")
@@ -57,7 +57,7 @@ dependencies = [
     Dependency("MPICH_jll"; compat="4.3.0"),
     Dependency("Zlib_jll"; compat="1.2.12"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    HostBuildDependency(PackageSpec(; name = "CMake_jll", version = v"3.30.2")),
+    HostBuildDependency(PackageSpec(; name = "CMake_jll", version = v"3.31.9")),
 ]
 
 for platform in all_platforms
