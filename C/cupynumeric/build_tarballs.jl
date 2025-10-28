@@ -9,16 +9,16 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 include("make_script.jl")
 
 name = "cupynumeric"
-version = v"25.5" # cupynumeric has 05, but Julia doesn't like that
+version = v"25.8" # cupynumeric has 08, but Julia doesn't like that
 sources = [
-    GitSource("https://github.com/nv-legate/cupynumeric.git","cbd9a098b32531d68f1b3007ef86bb8d3859174d"),
+    GitSource("https://github.com/nv-legate/cupynumeric.git","7146e78b6da693a2c576f8a9ef98291be334f280"),
     GitSource("https://github.com/MatthewsResearchGroup/tblis.git", "c4f81e08b2827e72335baa7bf91a245f72c43970"),
 ]
 
 
 # These should match the legate_jll build_tarballs script
 MIN_CUDA_VERSION = v"12.2"
-MAX_CUDA_VERSION = v"12.8.999"
+MAX_CUDA_VERSION = v"12.3.999"
 
 
 cpu_platform = [Platform("x86_64", "linux")]
@@ -46,10 +46,10 @@ products = [
 ] 
 
 dependencies = [
-    Dependency("legate_jll"; compat = "=25.5"), # Legate versioning is Year.Month
+    Dependency("legate_jll"; compat = "=25.8"), # Legate versioning is Year.Month
     # Dependency("CUTENSOR_jll", compat = "2.2"), # supplied via ArchiveSource
     Dependency("OpenBLAS32_jll"),
-    HostBuildDependency(PackageSpec(; name = "CMake_jll", version = v"3.30.2")),
+    HostBuildDependency(PackageSpec(; name = "CMake_jll", version = v"3.31.9")),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")) 
 ]
 

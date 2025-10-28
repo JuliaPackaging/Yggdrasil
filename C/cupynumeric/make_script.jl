@@ -81,6 +81,8 @@ function get_script(cuda::Val{true})
             -DNCCL_INCLUDE_DIR=${includedir} \
             -Dcutensor_LIBRARY=${libdir}/libcutensor.so \
             -Dcutensor_INCLUDE_DIR=${includedir} \
+            -DCUSOLVERMP_LIBRARY=${libdir}/libcusolvermp.so \
+            -DCUSOLVERMP_INCLUDE_DIR=${includedir} \
             -DBLAS_LIBRARIES=${libdir}/libopenblas.so \
 
         cmake --build build --parallel ${nproc} --verbose
