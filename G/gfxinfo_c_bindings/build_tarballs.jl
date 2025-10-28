@@ -15,19 +15,31 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/gfxinfo_c_bindings/
 cargo build --release
-install -Dm755 target/${rust_target}/release/libgfxinfo_c_bindings.${dlext} ${libdir}/libgfxinfo_c_bindings.${dlext}
+if [ "$dlext" = "dll" ]; then
+    export libname=gfxinfo_c_bindings.dll
+else
+    export libname=libgfxinfo_c_bindings.${dlext}
+fi
+install -Dm755 target/${rust_target}/release/${libname} ${libdir}/${libname}
 install_license /usr/share/licenses/MIT /usr/share/licenses/APL2
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-# Our Rust toolchain for i686 Windows is unusable
-filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
+
+# nvml_wrapper crate doesn't support freebsd
+filter!(p -> !Sys.isfreebsd(p), platforms)
+
+# We don't have rust for these platforms
+filter!(p -> arch(p) != "riscv64", platforms)
+
+# Rust cross compile is broken for this platform (https://github.com/rust-lang/rust/issues/79609)
+filter!(p-> p != Platform("i686", "windows"), platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libgfxinfo_c_bindings", :libgfxinfo_c_bindings),
+    LibraryProduct(["libgfxinfo_c_bindings", "gfxinfo_c_bindings"], :libgfxinfo_c_bindings),
 ]
 
 # Dependencies that must be installed before this package can be built
