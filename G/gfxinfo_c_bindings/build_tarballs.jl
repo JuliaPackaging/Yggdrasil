@@ -8,20 +8,15 @@ version = v"0.1.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/simeonschaub/gfxinfo_c_bindings.git",
-              "a5c3d4a6aeab6937ec57976660ee8114f5f9af88"),
+              "5bf3af77d5591eb790030a4b90b35b0a97b1108c"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/gfxinfo_c_bindings/
 cargo build --release
-if [ "$dlext" = "dll" ]; then
-    export libname=gfxinfo_c_bindings.dll
-else
-    export libname=libgfxinfo_c_bindings.${dlext}
-fi
-install -Dm755 target/${rust_target}/release/${libname} ${libdir}/${libname}
-install_license /usr/share/licenses/MIT /usr/share/licenses/APL2
+install -Dvm 755 target/${rust_target}/release/*gfxinfo_c_bindings.${dlext} -t "${libdir}"
+install_license LICENSE /usr/share/licenses/APL2
 """
 
 # These are the platforms we will build for by default, unless further
@@ -46,7 +41,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
     Dependency("libdrm_jll"),
 ]
 
