@@ -34,6 +34,9 @@ filter!(p -> !Sys.isfreebsd(p), platforms)
 # We don't have rust for these platforms
 filter!(p -> arch(p) != "riscv64", platforms)
 
+# Cannot produce cdylib on musl
+filter!(p -> libc(p) != "musl", platforms)
+
 # Rust cross compile is broken for this platform (https://github.com/rust-lang/rust/issues/79609)
 filter!(p-> p != Platform("i686", "windows"), platforms)
 
