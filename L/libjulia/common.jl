@@ -192,6 +192,11 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         LLVMLINK="${LLVMLINK} -lz -lzstd"
     fi
 
+    if [[ "${target}" == *mingw* ]] && [[ "${version}" == 1.1[3-4].* ]]; then
+        # Help the linker to find the winternl.h symbols introduced in https://github.com/JuliaLang/julia/pull/59877
+        LLVMLINK="${LLVMLINK} -lntdll"
+    fi
+
     if [[ "${version}" == 1.1[0-1].* ]]; then
         MBEDTLS_OR_OPENSSL="USE_SYSTEM_MBEDTLS=1"
     else
