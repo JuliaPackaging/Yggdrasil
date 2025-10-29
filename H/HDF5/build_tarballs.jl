@@ -11,7 +11,7 @@ version = v"2.0.0"
 # Collection of sources required to complete build
 sources = [
     # This is some time after the prerelease 2.0.0-4
-    GitSource("https://github.com/HDFGroup/hdf5", "92ca55cb3b1bbd9da1877ee2bf004a245d408ceb"),
+    GitSource("https://github.com/HDFGroup/hdf5", "e5f526b62d3ca81ee281a68626beb5c3edd8dcc3"),
     FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
     DirectorySource("bundled"),
@@ -607,5 +607,4 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, clang_use_lld=false, julia_compat="1.6",
-               preferred_gcc_version=v"6")
+               augment_platform_block, clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"6")
