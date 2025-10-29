@@ -5,7 +5,7 @@ using BinaryBuilderBase: sanitize
 
 name = "PCRE2"
 
-version_string = "10.46"
+version_string = "10.47"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
@@ -13,7 +13,7 @@ sources = [
     # We use an archive because (a) the archives are signed, hence
     # presumably immutable, and (b) the git source uses submodules.
     ArchiveSource("https://github.com/PCRE2Project/pcre2/releases/download/pcre2-$(version.major).$(version.minor)/pcre2-$(version.major).$(version.minor).tar.bz2",
-                  "15fbc5aba6beee0b17aecb04602ae39432393aba1ebd8e39b7cabf7db883299f"),
+                  "47fe8c99461250d42f89e6e8fdaeba9da057855d06eb7fc08d9ca03fd08d7bc7"),
 ]
 
 # Bash recipe for building across all platforms
@@ -29,6 +29,7 @@ fi
 export CFLAGS="${CFLAGS} -O3"
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
+    --disable-symvers \
     --enable-jit \
     --enable-pcre2-16 \
     --enable-pcre2-32

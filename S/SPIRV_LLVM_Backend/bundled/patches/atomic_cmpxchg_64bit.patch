@@ -13,13 +13,13 @@ Tests were written with some help from Copilot
  create mode 100644 llvm/test/CodeGen/SPIRV/AtomicCompareExchange64BitPhiNode.ll
 
 diff --git a/lib/Target/SPIRV/SPIRVBuiltins.cpp b/lib/Target/SPIRV/SPIRVBuiltins.cpp
-index 95fa7bc3894f..4bc5c4ab377b 100644
+index 6ec7544767c5..93c21b948bc6 100644
 --- a/lib/Target/SPIRV/SPIRVBuiltins.cpp
 +++ b/lib/Target/SPIRV/SPIRVBuiltins.cpp
-@@ -791,10 +791,9 @@ static bool buildAtomicCompareExchangeInst(
+@@ -799,10 +799,9 @@ static bool buildAtomicCompareExchangeInst(
      MRI->setRegClass(Tmp, GR->getRegClass(SpvDesiredTy));
    GR->assignSPIRVTypeToVReg(SpvDesiredTy, Tmp, MIRBuilder.getMF());
- 
+
 -  SPIRVType *IntTy = GR->getOrCreateSPIRVIntegerType(32, MIRBuilder);
    MIRBuilder.buildInstr(Opcode)
        .addDef(Tmp)
@@ -69,6 +69,6 @@ index 000000000000..63023c63958d
 +  %1 = call i64 @_Z14atomic_cmpxchgPU8CLglobalVlll(ptr addrspace(1) %ptr, i64 %value_phi, i64 0)
 +  br label %L6
 +}
--- 
+--
 2.50.1
 

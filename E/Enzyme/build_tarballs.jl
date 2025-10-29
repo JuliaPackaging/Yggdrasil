@@ -8,14 +8,14 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 name = "Enzyme"
 repo = "https://github.com/EnzymeAD/Enzyme.git"
 
-auto_version = "refs/tags/v0.0.203"
+auto_version = "refs/tags/v0.0.205"
 version = VersionNumber(split(auto_version, "/")[end])
 
 llvm_versions = [v"15.0.7", v"16.0.6", v"18.1.7", v"20.1.8"]
 
 # Collection of sources required to build attr
 sources = [
-    GitSource(repo, "476c8e3193a8577ba24ff845ae2294109225f83a"),
+    GitSource(repo, "63c81877e73b019745ebff33f6dc2e13a5003a17"),
     FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
 ]
@@ -40,7 +40,7 @@ script = raw"""
 cd Enzyme
 install_license LICENSE
 
-if [[ "${bb_full_target}" == x86_64-apple-darwin* && "${LLVM_MAJ_VER}" -ge "15" ]] ; then
+if [[ "${bb_full_target}" == x86_64-apple-darwin* &&  "${LLVM_MAJ_VER}" -ge "15" ]]; then
     # LLVM 15 requires macOS SDK 10.14.
     rm -rf /opt/${target}/${target}/sys-root/System
     tar --extract --file=${WORKSPACE}/srcdir/MacOSX10.14.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX10.14.sdk/System MacOSX10.14.sdk/usr
