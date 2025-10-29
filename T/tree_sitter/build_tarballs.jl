@@ -7,9 +7,9 @@ version = v"0.25.10"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource(
-        "https://github.com/tree-sitter/tree-sitter/archive/refs/tags/v$(version).tar.gz",
-        "ad5040537537012b16ef6e1210a572b927c7cdc2b99d1ee88d44a7dcdc3ff44c"
+    GitSource(
+        "https://github.com/tree-sitter/tree-sitter.git",
+        "da6fe9beb4f7f67beb75914ca8e0d48ae48d6406"
     ),
     DirectorySource("./bundled")
 ]
