@@ -187,8 +187,8 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     fi
 
     if [[ $LLVMVERMAJOR -ge 20 ]]; then
-        # this seems to be needed for https://github.com/JuliaLang/julia/pull/58344 and https://github.com/JuliaLang/julia/pull/59227
-        # TODO: try to remove this again once https://github.com/JuliaLang/julia/pull/59475 is merged
+        # this seems to be needed for https://github.com/JuliaLang/julia/pull/58344 and https://github.com/JuliaLang/julia/pull/59227.
+        # https://github.com/JuliaLang/julia/pull/59475 tried to upstream this workaround, but that doesn't not seem to be enough.
         LLVMLINK="${LLVMLINK} -lz -lzstd"
     fi
 
