@@ -1,0 +1,58 @@
+From 01ddd6655495b6110a11513fa1a29f76ad895ecd Mon Sep 17 00:00:00 2001
+From: Max Horn <max@quendi.de>
+Date: Tue, 29 Oct 2025 15:02:00 +0100
+Subject: [PATCH] Drop compile-database.json target
+
+Remove the `compile-database.json` target from the `release` targets
+due to build problems in Yggdrasil (see https://github.com/JuliaPackaging/Yggdrasil/pull/12406#issuecomment-3457169292).
+https://github.com/JuliaLang/julia/pull/59980 tries to address this properly.
+---
+ src/Makefile         | 2 +-
+ src/flisp/Makefile   | 2 +-
+ src/support/Makefile | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/src/Makefile b/src/Makefile
+index 18e9a4a639..f92cd73a10 100644
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -259,7 +259,7 @@ endif
+ default: $(JULIA_BUILD_MODE) # contains either "debug" or "release"
+ all: debug release
+ 
+-release debug: %: libjulia-internal-% libjulia-codegen-% $(BUILDDIR)/compile_commands.json
++release debug: %: libjulia-internal-% libjulia-codegen-%
+ 
+ $(BUILDDIR):
+ 	mkdir -p $(BUILDDIR)
+diff --git a/src/flisp/Makefile b/src/flisp/Makefile
+index 135859eacb..98b336fb14 100644
+--- a/src/flisp/Makefile
++++ b/src/flisp/Makefile
+@@ -61,9 +61,9 @@ DEBUGFLAGS_COMMON += $(FLAGS_COMMON)
+ 
+ default: release
+ 
+-release: $(BUILDDIR)/$(EXENAME)$(EXE) $(BUILDDIR)/compile_commands.json
++release: $(BUILDDIR)/$(EXENAME)$(EXE)
+ 
+-debug: $(BUILDDIR)/$(EXENAME)-debug$(EXE) $(BUILDDIR)/compile_commands.json
++debug: $(BUILDDIR)/$(EXENAME)-debug$(EXE)
+ 
+ $(BUILDDIR):
+ 	mkdir -p $(BUILDDIR)
+diff --git a/src/support/Makefile b/src/support/Makefile
+index 2b48a20bbc..3c1dba17f8 100644
+--- a/src/support/Makefile
++++ b/src/support/Makefile
+@@ -53,8 +53,8 @@ $(BUILDDIR)/host/Makefile:
+ 	@printf "%s\n" 'BUILDING_HOST_TOOLS=1' >> $@
+ 	@printf "%s\n" 'include $(SRCDIR)/Makefile' >> $@
+ 
+-release: $(BUILDDIR)/libsupport.a $(BUILDDIR)/compile_commands.json
+-debug: $(BUILDDIR)/libsupport-debug.a $(BUILDDIR)/compile_commands.json
++release: $(BUILDDIR)/libsupport.a
++debug: $(BUILDDIR)/libsupport-debug.a
+ 
+ $(BUILDDIR)/libsupport.a: $(OBJS) | $(BUILDIR)
+ 	rm -rf $@
