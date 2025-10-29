@@ -2,18 +2,16 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
-const YGGDRASIL_DIR = "../.."
+const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "OpenFOAM"
-version = v"8.0.1"
-openfoam_version = v"8.0"
+version = v"13.0.20250911"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/OpenFOAM/OpenFOAM-8/archive/version-8.tar.gz",
-                  "94ba11cbaaa12fbb5b356e01758df403ac8832d69da309a5d79f76f42eb008fc"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/OpenFOAM/OpenFOAM-13.git",
+              "cde978a97c939b1d5c8f2efce4e12f9b9ec460a9"),
 ]
 
 # In order to set up OpenFOAM, we need to know the version of some of the
@@ -24,7 +22,8 @@ const SCOTCH_COMPAT_VERSION = "6.1.3"
 # Bash recipe for building across all platforms
 script = "SCOTCH_VERSION=$(SCOTCH_VERSION)\n" * raw"""
 cd ${WORKSPACE}/srcdir/OpenFOAM*
-atomic_patch -p1 ../patches/etc-bashrc.patch
+
+ln -sf /proc/self/fd /dev/fd
 
 # Set rpath-link in all C/C++ compilers
 LDFLAGS=""
@@ -399,14 +398,14 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("flex_jll"),
+    HostBuildDependency("flex_jll"),
     Dependency("SCOTCH_jll"; compat=SCOTCH_COMPAT_VERSION),
     Dependency("PTSCOTCH_jll"),
     Dependency("METIS_jll"),
-    Dependency("Zlib_jll"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
 ]
 append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"5")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"6")
