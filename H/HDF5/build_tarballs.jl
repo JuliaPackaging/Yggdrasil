@@ -596,7 +596,7 @@ dependencies = [
     Dependency("OpenSSL_jll"; compat="3.0.16"),
     Dependency("Zlib_jll"; compat="1.2.12"),
     Dependency("aws_c_s3_jll"; compat="0.9.2"),
-    # Dependency("dlfcn_win32_jll"; platforms=filter(Sys.iswindows, platforms)),
+    Dependency("dlfcn_win32_jll"; platforms=filter(Sys.iswindows, platforms)),
     Dependency("libaec_jll"; compat="1.1.4"), # This is the successor of szlib
 ]
 append!(dependencies, platform_dependencies)
