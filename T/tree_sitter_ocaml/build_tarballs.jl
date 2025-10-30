@@ -41,6 +41,8 @@ platforms = expand_cxxstring_abis(supported_platforms())
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libtreesitter_ocaml", :libtreesitter_ocaml),
+    LibraryProduct("libtreesitter_ocaml_interface", :libtreesitter_ocaml_interface),
+    LibraryProduct("libtreesitter_ocaml_type", :libtreesitter_ocaml_type),
 ]
 
 # Dependencies that must be installed before this package can be built
