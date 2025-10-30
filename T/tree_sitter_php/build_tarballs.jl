@@ -41,6 +41,7 @@ platforms = expand_cxxstring_abis(supported_platforms())
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libtreesitter_php", :libtreesitter_php),
+    LibraryProduct("libtreesitter_php_only", :libtreesitter_php_only),
 ]
 
 # Dependencies that must be installed before this package can be built
