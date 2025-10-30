@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "tree_sitter_php"
-version = v"0.16.2"
+version = v"0.24.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource(
-        "https://github.com/tree-sitter/tree-sitter-php/archive/v$(version).tar.gz",
-        "0cb8882348528ae4b86e6673f00fa6725439bb08d8c6d7896dd6a888a58d1c03"
+    GitSource(
+        "https://github.com/tree-sitter/tree-sitter-php.git",
+        "5b5627faaa290d89eb3d01b9bf47c3bb9e797dea"
     ),
     DirectorySource("./bundled")
 ]
@@ -48,4 +48,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
