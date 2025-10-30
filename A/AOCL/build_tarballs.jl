@@ -19,8 +19,8 @@ cd ${WORKSPACE}/srcdir/
 
 # install the LP64 binaries (renamed to avoid soname collision)
 # ------------------------------------------------------------------------------
-cp amd-blis/lib/LP64/libblis-mt.so.5.1.0 ${libdir}/libblis-mt32.so
-cp amd-libflame/lib/LP64/libflame.so ${libdir}/libflame32.so
+install -Dvm 755 amd-blis/lib/LP64/libblis-mt.so.5.1.0 ${libdir}/libblis-mt32.so
+install -Dvm 755 amd-libflame/lib/LP64/libflame.so ${libdir}/libflame32.so
 
 # change the LP64 binaries' soname
 # ------------------------------------------------------------------------------
