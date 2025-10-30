@@ -3,7 +3,7 @@ using BinaryBuilder, Pkg
 name = "AOCL"
 version = v"5.1.0"
 sources = [
-    ArchiveSource("https://download.amd.com/developer/eula/blas/blas-5-1/aocl-blis-linux-gcc-5.1.0.tar.gz",
+    ArchiveSource("https://download.amd.com/developer/eula/blas/blas-$(version.major)-$(version.minor)/aocl-blis-linux-gcc-$(version).tar.gz",
                   "43dcc5efe9a73d7065e4a5faf9071f92624d71a033fa56f2d74e775df3ab100a"),
     ArchiveSource("https://download.amd.com/developer/eula/libflame/libflame-5-1/aocl-libflame-linux-gcc-5.1.0.tar.gz",
                   "95da66503c2b2160552824109d51a6fc24f1d176a7bdcec3e25f866ce080c777"),
