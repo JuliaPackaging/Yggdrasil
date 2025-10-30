@@ -43,17 +43,6 @@ diff -ru libaom-3.12.1.orig/av1/common/av1_txfm.c libaom-3.12.1/av1/common/av1_t
  #include "config/aom_dsp_rtcd.h"
  #include "config/av1_rtcd.h"
  
-diff -ru libaom-3.12.1.orig/av1/encoder/encoder.c libaom-3.12.1/av1/encoder/encoder.c
---- libaom-3.12.1.orig/av1/encoder/encoder.c	2025-04-11 16:37:49
-+++ libaom-3.12.1/av1/encoder/encoder.c	2025-07-18 12:14:17
-@@ -11,6 +11,7 @@
- 
- #include <assert.h>
- #include <float.h>
-+#include <inttypes.h>
- #include <limits.h>
- #include <math.h>
- #include <stdbool.h>
 diff -ru libaom-3.12.1.orig/av1/encoder/partition_search.c libaom-3.12.1/av1/encoder/partition_search.c
 --- libaom-3.12.1.orig/av1/encoder/partition_search.c	2025-04-11 16:37:49
 +++ libaom-3.12.1/av1/encoder/partition_search.c	2025-07-18 12:13:29

@@ -8,15 +8,14 @@ sources = [
     DirectorySource("./bundled"),
     GitSource("https://gitlab.freedesktop.org/mesa/mesa",
               "bac51d2931199a1e9048c7acdae155865732ad01"),  # HEAD, before Rusticl required VK_EXT_robustness2
+    GitSource("https://github.com/mesonbuild/meson",
+              "082917b40c8416bde925c64d22a2e60b2c059120"),
+    GitSource("https://github.com/KhronosGroup/MoltenVK",
+              "458870543b9bcf6b0edd6f90aaa776707b310d96"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-# we need meson 1.7+
-#apk add --upgrade meson --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
-# XXX: upgrading via apk doesn't work due to python version mismatches
-pip install -U meson
-
 apk add py3-mako py3-yaml
 
 # build bindgen. this is tricky for multiple reasons:
@@ -69,6 +68,12 @@ MESON_FLAGS+=(-Dgallium-drivers=zink)
 # Embed libclc
 MESON_FLAGS+=(-Dstatic-libclc=all)
 
+# MoltenVK for macOS
+if [[ $target == *-apple-* ]]; then
+    MESON_FLAGS+=(-Dmoltenvk-dir=$WORKSPACE/srcdir/MoltenVK)
+    MESON_FLAGS+=(-Dplatforms=macos)
+fi
+
 # point Meson to the right `rustc` binaries
 # XXX: fix this upstream (JuliaPackaging/Yggdrasil#11679)
 host=$MACHTYPE
@@ -79,9 +84,18 @@ sed -i "/^\[binaries\]/a rust = '$target_rustc'" "${MESON_TARGET_TOOLCHAIN}"
 
 # meson doesn't forward the target environment to bindgen
 export BINDGEN_EXTRA_CLANG_ARGS="--sysroot=/opt/$target/$target/sys-root"
+if [[ $target == *-apple-* ]]; then
+    # For macOS, we need to point to the correct sysroot and include paths
+    clang_version=$(ls /opt/x86_64-linux-musl/lib/clang/ | head -n1)
+    export BINDGEN_EXTRA_CLANG_ARGS="$BINDGEN_EXTRA_CLANG_ARGS -I/opt/x86_64-linux-musl/lib/clang/$clang_version/include"
+    # Add target-specific defines for macOS
+    export BINDGEN_EXTRA_CLANG_ARGS="$BINDGEN_EXTRA_CLANG_ARGS -DUTIL_ARCH_LITTLE_ENDIAN=1 -DUTIL_ARCH_BIG_ENDIAN=0"
+fi
 
-meson .. "${MESON_FLAGS[@]}"
+# we need meson 1.7+, so use the sources directly
+../../meson/meson.py .. "${MESON_FLAGS[@]}"
 
+LIBCLANG_PATH=/opt/x86_64-linux-musl/lib/libclang.so \
 ninja -j${nproc}
 ninja install
 """
@@ -91,14 +105,15 @@ ninja install
 platforms = [
     Platform("aarch64", "linux"; libc="glibc"),
     Platform("x86_64", "linux";  libc="glibc"),
+    Platform("aarch64", "macos"),
 ]
+platforms = expand_cxxstring_abis(platforms)
 # TODO: support additional platforms
 # - musl: sys/random.h: No such file or directory
 # - riscv64: no Rust toolchain
 # - armv6 & armv7: invalid `host_rustc`
 # - ppc64: gnu/stubs-32.h not found (bindgen)
 # - i686-linux: gnu/stubs-64.h not found (bindgen)
-# - darwin: Unable to detect linker (ld: unknown option: --version)
 # - windows: lol
 
 # The products that we will ensure are always built
@@ -123,5 +138,5 @@ init_block = raw"""
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", compilers=[:c, :rust], preferred_gcc_version=v"8",
+               julia_compat="1.6", compilers=[:c, :rust], preferred_gcc_version=v"8", clang_use_lld = false,
                init_block)

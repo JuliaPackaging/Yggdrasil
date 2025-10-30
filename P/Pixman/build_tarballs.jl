@@ -2,11 +2,11 @@ using BinaryBuilder, Pkg
 
 # Collection of sources required to build Pixman
 name = "Pixman"
-version = v"0.46.2"
+version = v"0.46.4"
 
 sources = [
     ArchiveSource("https://www.cairographics.org/releases/pixman-$(version).tar.gz",
-                  "3e0de5ba6e356916946a3d958192f15505dcab85134771bfeab4ce4e29bbd733"),
+                  "d09c44ebc3bd5bee7021c79f922fe8fb2fb57f7320f55e97ff9914d2346a591c"),
     DirectorySource("bundled"),
 ]
 

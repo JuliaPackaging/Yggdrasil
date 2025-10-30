@@ -19,6 +19,8 @@ dependencies = [
     # is a build-only dependency, in the other cases it's also a runtime one.
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.iswindows, platforms)),
     BuildDependency("CompilerSupportLibraries_jll"; platforms=filter(Sys.iswindows, platforms)),
+    Dependency("METIS_jll"),
+    Dependency("OpenBLAS32_jll"),
     HostBuildDependency(PackageSpec(; name="CMake_jll")),
     Dependency("Zlib_jll"),
 ]

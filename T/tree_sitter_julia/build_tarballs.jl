@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "tree_sitter_julia"
-version = v"0.19.0"
+version = v"0.23.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource(
-        "https://github.com/tree-sitter/tree-sitter-julia/archive/v$(version).tar.gz",
-        "005b2206116012bc3bf8315818e7e269580467899d77a24f0c7fc8223e78387b"
+    GitSource(
+        "https://github.com/tree-sitter/tree-sitter-julia.git",
+        "a8e1262997d5a45520a06cbe1b86c0737d507054"
     ),
     DirectorySource("./bundled")
 ]

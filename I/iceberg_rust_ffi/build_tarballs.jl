@@ -1,10 +1,10 @@
 using BinaryBuilder
 
 name = "iceberg_rust_ffi"
-version = v"0.1.0"
+version = v"0.2.0"
 
 sources = [
-    GitSource("https://github.com/RelationalAI/iceberg_rust_ffi.git", "583c8f2c2cc5cb5f92100ad8eae32f22b7a76c09"),
+    GitSource("https://github.com/RelationalAI/iceberg_rust_ffi.git", "e7bb4368f0355e4f0a15b3c8ad14d8c136bca38a"),
 ]
 
 # Bash recipe for building across all platforms
@@ -33,7 +33,9 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[]
+dependencies = Dependency[
+    Dependency("OpenSSL_jll"; compat="3.0.14")
+]
 
 # Build the tarballs
 build_tarballs(

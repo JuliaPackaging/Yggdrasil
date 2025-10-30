@@ -10,8 +10,8 @@ include(joinpath(@__DIR__, "..", "..", "platforms", "cuda.jl"))
 # Builds for all compatible CUDA platforms, but without microarchitecture expansion (not
 # needed for CUDA cuda, and would produce a giant amount of artifacts)
 name = "cufinufft"
-version = v"2.4.0"
-commit_hash = "cbda17905ce0b52590b7fa2fbd73eb7f1845217e" # v2.4.0
+version = v"2.4.1"
+commit_hash = "e7144a5c08cbaf3e3b344a4fdd92bc3c7e468ff2" # v2.4.1
 preferred_gcc_version=v"11"
 
 # Collection of sources required to complete build
@@ -53,8 +53,8 @@ filter!(p -> arch(p)=="x86_64", platforms)
 # cuFINUFFT does not compile with CUDA 12.5, so exclude
 filter!(p -> VersionNumber(p["cuda"]) != v"12.5", platforms)
 
-# CUDA 12.9 doesn't seem to build yet
-filter!(p -> VersionNumber(p["cuda"]) != v"12.9", platforms)
+# CUDA 13 doesn't seem to build (yet)
+filter!(p -> VersionNumber(p["cuda"]) < v"13", platforms)
 
 # The products that we will ensure are always built
 products = [
