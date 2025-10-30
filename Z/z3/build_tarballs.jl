@@ -65,6 +65,10 @@ include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
+# libcxxwrap_julia_jll 0.14.4 supports only Julia 1.13.x
+strip_prerelease(v::VersionNumber) = VersionNumber(v.major, v.minor, v.patch)
+filter!(p -> strip_prerelease(VersionNumber(p["julia_version"])) < v"1.14", platforms)
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libz3", :libz3),
@@ -76,7 +80,7 @@ products = [
 dependencies = [
     BuildDependency("libjulia_jll"),
     Dependency("GMP_jll"; compat="6.2.1"),
-    Dependency("libcxxwrap_julia_jll"),
+    Dependency("libcxxwrap_julia_jll"; compat="0.14.4"),
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isapple, platforms)),
 ]
 
