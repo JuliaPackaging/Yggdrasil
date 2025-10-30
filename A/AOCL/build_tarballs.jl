@@ -42,7 +42,7 @@ patchelf --replace-needed libblis-mt.so.5 libblis-mt.so ${libdir}/libflame.so
 
 # install the AOCL-UTILS library
 # ------------------------------------------------------------------------------
-cp amd-utils/lib/libaoclutils.so ${libdir}/libaoclutils.so
+install -Dvm 755 amd-utils/lib/libaoclutils.so ${libdir}/libaoclutils.so
 
 cd ${WORKSPACE}/srcdir/AOCL_jll.jl/recipe/bundled/licenses
 install_license 'LICENSE File for AOCL-BLIS v.5.1.pdf'
