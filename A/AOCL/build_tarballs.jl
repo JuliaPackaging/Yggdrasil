@@ -14,7 +14,6 @@ sources = [
 ]
 
 script = raw"""
-mkdir -p ${libdir}
 cd ${WORKSPACE}/srcdir/
 
 # install the LP64 binaries (renamed to avoid soname collision)
