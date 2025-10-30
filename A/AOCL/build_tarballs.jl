@@ -33,8 +33,8 @@ patchelf --replace-needed libblis-mt.so.5 libblis-mt32.so ${libdir}/libflame32.s
 
 # install the ILP64 binaries
 # ------------------------------------------------------------------------------
-cp amd-blis/lib/ILP64/libblis-mt.so.5.1.0 ${libdir}/libblis-mt.so
-cp amd-libflame/lib/ILP64/libflame.so ${libdir}/libflame.so
+install -Dvm 755 amd-blis/lib/ILP64/libblis-mt.so.5.1.0 ${libdir}/libblis-mt.so
+install -Dvm 755 amd-libflame/lib/ILP64/libflame.so ${libdir}/libflame.so
 
 # change the soname for blis for consistency (and update libflame)
 patchelf --set-soname libblis-mt.so ${libdir}/libblis-mt.so
