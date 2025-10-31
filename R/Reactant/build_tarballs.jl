@@ -598,13 +598,13 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
 	if nvrtc
         append!(libs, String[
                 "libnvrtc",
-                "libnvJitLink",
                 "libnvrtc-builtins",
 		])
 	end
 	if others
             append!(libs, String[
 				"libcufft",
+                "libnvJitLink",
                 "libcudart",
                 "libcublasLt",
                 "libcublas",
