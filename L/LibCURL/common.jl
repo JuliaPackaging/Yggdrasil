@@ -64,8 +64,12 @@ function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=fal
     # Disable nss only for CURL < 8.16
     without_nss = version < v"8.16.0"
 
+    # Apply eventfd patch only for v8+ (USE_EVENTFD doesn't exist in v7)
+    apply_eventfd_patch = version >= v"8"
+
     config = "THIS_IS_CURL=$(this_is_curl_jll)\n"
     config *= "MACOS_USE_OPENSSL=$(macos_use_openssl)\n"
+    config *= "APPLY_EVENTFD_PATCH=$(apply_eventfd_patch)\n"
     if with_zstd
 	config *= "HAVE_ZSTD=true\n"
     end
@@ -80,8 +84,10 @@ function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=fal
     # Address <https://github.com/curl/curl/issues/12849>
     atomic_patch -p1 $WORKSPACE/srcdir/memdup.patch
 
-    # Address <https://github.com/curl/curl/issues/15725>
-    atomic_patch -p1 $WORKSPACE/srcdir/eventfd-double-close.patch
+    # Address <https://github.com/curl/curl/issues/15725> (only for v8+)
+    if [[ "${APPLY_EVENTFD_PATCH}" == "true" ]]; then
+        atomic_patch -p1 $WORKSPACE/srcdir/eventfd-double-close.patch
+    fi
 
     # Holy crow we really configure the bitlets out of this thing
     FLAGS=(
