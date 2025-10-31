@@ -80,6 +80,9 @@ function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=fal
     # Address <https://github.com/curl/curl/issues/12849>
     atomic_patch -p1 $WORKSPACE/srcdir/memdup.patch
 
+    # Address <https://github.com/curl/curl/issues/15725>
+    atomic_patch -p1 $WORKSPACE/srcdir/eventfd-double-close.patch
+
     # Holy crow we really configure the bitlets out of this thing
     FLAGS=(
         # Disable....almost everything
