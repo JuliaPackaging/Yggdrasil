@@ -12,13 +12,13 @@ products = [
 # Dependencies that must be installed before this package can be built
 # TODO: Theora once it's available
 dependencies = [
-    HostBuildDependency("YASM_jll"),
+    HostBuildDependency("NASM_jll"),
     BuildDependency("nv_codec_headers_jll"),
     BuildDependency("Xorg_xorgproto_jll"),
     BuildDependency("LibVPX_jll"), # We use the static archive
     Dependency("FFMPEG_jll"; compat=string(version)),
     Dependency("SDL2_jll"),
-    Dependency("OpenSSL_jll"; compat="3.5.0"),
+    Dependency("OpenSSL_jll"; compat="3.5.0", platforms=filter(!Sys.iswindows, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

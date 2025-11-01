@@ -57,11 +57,11 @@ else
     export ccARCH="x86_64"
 fi
 
-if [[ "${target}" == x86_64-apple-darwin* ]]; then 
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
     rm -rf /opt/${target}/${target}/sys-root/System
     tar --extract --file=${WORKSPACE}/srcdir/MacOSX10.13.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX10.13.sdk/System MacOSX10.13.sdk/usr
     export MACOSX_DEPLOYMENT_TARGET=10.13
-fi 
+fi
 
 export CUDA_ARGS=""
 
@@ -81,6 +81,9 @@ fi
 
 # Remove `-march` flags
 sed -i 's/cpuflags="-march=$cpu"/cpuflags=""/g' configure
+
+# Ensure pkg-config can find SDL2
+export PKG_CONFIG_PATH="${prefix}/lib/pkgconfig:${prefix}/share/pkgconfig:${PKG_CONFIG_PATH}"
 
 ./configure            \
   --enable-cross-compile \
