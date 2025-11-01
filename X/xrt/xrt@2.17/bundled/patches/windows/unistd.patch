@@ -1,0 +1,11 @@
+--- a/src/runtime_src/core/common/unistd.h
++++ b/src/runtime_src/core/common/unistd.h
+@@ -20,7 +20,7 @@
+ #ifndef _WIN32
+ #include <unistd.h>
+ #else
+-#include <Shlobj.h>
++#include <shlobj.h>
+ #endif
+ 
+ namespace xrt_core {
