@@ -17,7 +17,7 @@ git_repo = "https://github.com/JuliaInterop/libcxxwrap-julia.git"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource(git_repo, "d89218478bdaa9f8f8aacaa63adf8d05f056d129"),
+    GitSource(git_repo, "007ef98595326833706404518ed13af780ec113b"),
 ]
 
 # Bash recipe for building across all platforms
