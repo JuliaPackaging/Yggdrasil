@@ -8,8 +8,7 @@
 # This separate package provides the CLI tool for users who need it.
 #
 # Rationale: OpenSSL's build system does not support building the CLI application
-# separately from the libraries. The `build_apps` make target has hard dependencies
-# that trigger a full library rebuild. Since OpenSSL builds are time-consuming
+# separately from the libraries. Since OpenSSL builds are time-consuming
 # (typically several minutes even on modern hardware), and OpenSSL_jll already
 # provides a complete build including the executable, we simply extract and
 # repackage the CLI tool rather than rebuilding everything from source.
