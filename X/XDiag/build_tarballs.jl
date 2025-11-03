@@ -15,7 +15,7 @@ include("../../L/libjulia/common.jl")
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awietek/xdiag.git", "d07da64950168da7b7de785e75dea3cb0fc3d21a")
+    GitSource("https://github.com/awietek/xdiag.git", "f29365a99481d6a548d99a56bb5811f9e4f64948")
 ]
 
 
@@ -68,7 +68,7 @@ cmake --install build
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
-filter!(p -> (nbits(p) != 32) && p.tags["julia_version"] !="1.6.3", platforms)
+filter!(p -> (nbits(p) != 32) && p.tags["julia_version"] !="1.14.0", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -77,8 +77,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.17")),
-    Dependency(PackageSpec(name="libcxxwrap_julia_jll", uuid="3eaa8342-bff7-56a5-9981-c04077f7cee7"); compat="0.14.3"),
+    BuildDependency(PackageSpec(;name="libjulia_version", jll=v"1.10.20")),
+    Dependency(PackageSpec(name="libcxxwrap_julia_jll", uuid="3eaa8342-bff7-56a5-9981-c04077f7cee7"); compat="0.14.5"),
     Dependency(PackageSpec(name="OpenBLAS_jll", uuid="4536629a-c528-5b80-bd46-f80d51c5b363")),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")), 
