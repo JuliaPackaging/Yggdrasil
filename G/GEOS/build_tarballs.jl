@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "GEOS"
-version = v"3.14.0"
+version = v"3.14.1"
 
 # Collection of sources required to build GEOS
 sources = [
     ArchiveSource("http://download.osgeo.org/geos/geos-$version.tar.bz2",
-                  "fe85286b1977121894794b36a7464d05049361bedabf972e70d8f9bf1e3ce928"),
+                  "3c20919cda9a505db07b5216baa980bacdaa0702da715b43f176fb07eff7e716"),
     FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz",
                "cd4f08a75577145b8f05245a2975f7c81401d75e9535dcffbb879ee1deefcbf4"),
     DirectorySource("bundled"),
