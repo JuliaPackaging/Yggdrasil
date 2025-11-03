@@ -19,11 +19,10 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.12.0"), uuidopenssl)
 delete!(Pkg.Types.get_last_stdlibs(v"1.13.0"), uuidopenssl)
 
 name = "libpolymake_julia"
-version = v"0.14.2"
+version = v"0.14.3"
 
-# reminder: change the above version when changing the supported julia versions
-# julia_versions is now taken from libjulia/common.jl and filtered
-julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
+# we want to get notified of any changes to julia_compat, and adapt `version` accordingly
+@assert libjulia_julia_compat <= v"1.10.0"
 
 # Collection of sources required to build libpolymake_julia
 sources = [
@@ -69,7 +68,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.20")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.11.0")),
     BuildDependency("GMP_jll"),
     BuildDependency("MPFR_jll"),
     # this version matches the one in Ipopt_jll (needed by polymake -> SCIP)
@@ -91,6 +90,6 @@ dependencies = [
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     preferred_gcc_version=v"8",
     clang_use_lld=false,
-    julia_compat = julia_compat)
+    julia_compat=string(libjulia_julia_compat))
 
 # rebuild trigger: 1
