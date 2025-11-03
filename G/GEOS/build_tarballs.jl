@@ -26,9 +26,6 @@ if [[ "${target}" == *-apple-darwin* ]]; then
     export MACOSX_DEPLOYMENT_TARGET=11.3
 fi
 
-# Reported as <https://github.com/libgeos/geos/issues/1302>
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/unordered_map.patch
-
 CMAKE_FLAGS=()
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
