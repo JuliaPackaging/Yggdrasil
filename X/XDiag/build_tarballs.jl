@@ -9,13 +9,13 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 
 name = "XDiag"
-version = v"0.3.3"
+version = v"0.4.0"
 
 include("../../L/libjulia/common.jl")
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awietek/xdiag.git", "a5f50e367e60c739360ad4f81d47ae1759d2e045")
+    GitSource("https://github.com/awietek/xdiag.git", "d07da64950168da7b7de785e75dea3cb0fc3d21a")
 ]
 
 
@@ -68,14 +68,7 @@ cmake --install build
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
-filter!(p -> (
-    (os(p) == "linux" && libc(p) != "musl" && arch(p) == "x86_64") ||
-    (os(p) == "linux" && libc(p) != "musl" && arch(p) == "aarch64") ||
-    (os(p) == "macos" && arch(p) == "x86_64") ||
-    (os(p) == "macos" && arch(p) == "aarch64") ||
-    (os(p) == "windows" && arch(p) == "x86_64")) &&
-    p.tags["julia_version"] !="1.6.3", platforms)
-
+filter!(p -> (nbits(p) != 32) && p.tags["julia_version"] !="1.6.3", platforms)
 
 # The products that we will ensure are always built
 products = [
