@@ -68,9 +68,9 @@ func AddBuiltinLicense(name *C.char) {
 }
 
 //export AddLicense
-func AddLicense(cID *C.char, cLRE *C.char, cURL *C.char) {
+func AddLicense(cID *C.char, cLRE *C.char) {
 	_licenses = append(_licenses, licensecheck.License{
-		C.GoString(cID), licensecheck.Unknown, C.GoString(cLRE), C.GoString(cURL)})
+		C.GoString(cID), licensecheck.Unknown, C.GoString(cLRE), ""})
 	rebuildScanner()
 }
 
