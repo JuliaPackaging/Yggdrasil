@@ -19,10 +19,10 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.13.0"), uuidopenssl)
 
 # reminder: change the version when changing the supported julia versions
 name = "polymake_oscarnumber"
-version = v"0.3.11"
+version = v"0.3.12"
 
-# julia_versions is now taken from libjulia/common.jl
-julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
+# we want to get notified of any changes to julia_compat, and adapt `version` accordingly
+@assert libjulia_julia_compat <= v"1.10.0"
 
 # Collection of sources required to build polymake
 sources = [
@@ -91,17 +91,17 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
     Dependency("LLVMOpenMP_jll"; platforms=filter(Sys.isbsd, platforms)),
 
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.20")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.11.0")),
 
     # this version matches the one in Ipopt_jll (needed by polymake -> SCIP)
     BuildDependency(PackageSpec(;name="libblastrampoline_jll", version = v"5.4.0")),
 
     Dependency("libcxxwrap_julia_jll"; compat = "~0.14.4"),
-    Dependency("libpolymake_julia_jll", compat = "=0.14.2"),
+    Dependency("libpolymake_julia_jll", compat = "=0.14.3"),
     Dependency("polymake_jll", compat = "~400.1500.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat=julia_compat,
+               julia_compat=string(libjulia_julia_compat),
                preferred_gcc_version=v"8")
