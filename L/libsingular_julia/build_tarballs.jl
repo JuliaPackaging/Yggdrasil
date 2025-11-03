@@ -51,10 +51,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.19")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.11.0")),
     BuildDependency("GMP_jll"),
     BuildDependency("MPFR_jll"),
-    Dependency("libcxxwrap_julia_jll"; compat = "~0.14.3"),
+    Dependency("libcxxwrap_julia_jll"; compat = "~0.14.5"),
     # we do not set a compat entry for Singular_jll -- instead we leave it to
     # Singular.jl to ensure the right versions of libsingular_julia_jll and
     # Singular_jll are paired. This gives us flexibility in the development
@@ -62,8 +62,11 @@ dependencies = [
     Dependency("Singular_jll", v"404.101.400"),
 ]
 
+# we want to get notified of any changes to julia_compat, and adapt `version` accordingly
+@assert libjulia_julia_compat <= v"1.10.0"
+
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    preferred_gcc_version=v"8", julia_compat="1.10")
+    preferred_gcc_version=v"8", julia_compat=string(libjulia_julia_compat))
 
 # rebuild trigger: 0
