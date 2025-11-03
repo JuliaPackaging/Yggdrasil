@@ -21,8 +21,9 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.13.0"), uuidopenssl)
 name = "libpolymake_julia"
 version = v"0.14.3"
 
-# we want to get notified of any changes to julia_compat, and adapt `version` accordingly
-@assert libjulia_julia_compat <= v"1.10.0"
+# reminder: change the above version when changing the supported julia versions
+# julia_versions is now taken from libjulia/common.jl and filtered
+julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
 
 # Collection of sources required to build libpolymake_julia
 sources = [
@@ -90,6 +91,6 @@ dependencies = [
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     preferred_gcc_version=v"8",
     clang_use_lld=false,
-    julia_compat=string(libjulia_julia_compat))
+    julia_compat=julia_compat)
 
 # rebuild trigger: 1
