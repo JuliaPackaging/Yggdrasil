@@ -66,6 +66,8 @@ func rebuildScanner() {
 	}
 }
 
-func main() {
+func init() {
 	ResetToBuiltinLicences()
 }
+
+func main() {}
