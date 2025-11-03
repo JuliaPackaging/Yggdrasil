@@ -68,7 +68,7 @@ cmake --install build
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
-filter!(p -> (nbits(p) != 32) && p.tags["julia_version"] !="1.14.0", platforms)
+filter!(p -> (nbits(p) != 32 && os(p) != "freebsd") && p.tags["julia_version"] !="1.14.0", platforms)
 
 # The products that we will ensure are always built
 products = [
