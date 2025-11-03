@@ -31,7 +31,7 @@ CGO_ENABLED=1 go build -buildmode=c-shared -o ${libdir}/licensecheck.${dlext} cl
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(exclude=[Platform("aarch64", "freebsd")])
 
 # The products that we will ensure are always built
 products = [
