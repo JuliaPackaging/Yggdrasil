@@ -55,32 +55,34 @@ fi
 
 if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
     export ROCM_PATH=$WORKSPACE/srcdir
+    mv /workspace/srcdir/lib/libhiprtc-builtins.so.6.5.25281-42077334f /workspace/srcdir/lib/libhiprtc-builtins.so.6.5.25281
+    mv /workspace/srcdir/lib/libhiprtc.so.6.5.25281-42077334f /workspace/srcdir/lib/libhiprtc.so.6.5.25281
     ln -s $ROCM_PATH/lib/llvm/amdgcn $ROCM_PATH/amdgcn
     apk add coreutils
 fi
 
-if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
-    git clone https://github.com/ROCm/TheRock
-    cd TheRock
-
-
-    apk del cmake
-
-    bash ${WORKSPACE}/srcdir/miniconda.sh -b -p ${host_bindir}/miniconda
-    ${host_bindir}/miniconda/bin/python -m venv .venv && source .venv/bin/activate
-    # pip install -r requirements.txt
-    
-    python ./build_tools/fetch_sources.py
-
-    export CCACHE_DIR=/root/.ccache
-    export CCACHE_NOHASHDIR=yes
-    
-    sed -i.bak1 -e "s/_extra_llvm_cmake_args}/_extra_llvm_cmake_args} -DCOMGR_BUILD_SHARED_LIBS=OFF/g" compiler/CMakeLists.txt
-
-    cmake -B build -GNinja .  -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DTHEROCK_AMDGPU_TARGETS="gfx942;gfx1030;gfx1100;gfx1200;gfx1201" -DTHEROCK_AMDGPU_DIST_BUNDLE_NAME=reactant -DTHEROCK_ENABLE_ROCPROF_TRACE_DECODER_BINARY=OFF -DCMAKE_C_COMPILER=$HOSTCC -DCMAKE_CXX_COMPILER=$HOSTCXX
-    cmake --build build
-    cd ..
-fi
+# if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
+#     git clone https://github.com/ROCm/TheRock
+#     cd TheRock
+# 
+# 
+#     apk del cmake
+# 
+#     bash ${WORKSPACE}/srcdir/miniconda.sh -b -p ${host_bindir}/miniconda
+#     ${host_bindir}/miniconda/bin/python -m venv .venv && source .venv/bin/activate
+#     # pip install -r requirements.txt
+#     
+#     python ./build_tools/fetch_sources.py
+# 
+#     export CCACHE_DIR=/root/.ccache
+#     export CCACHE_NOHASHDIR=yes
+#     
+#     sed -i.bak1 -e "s/_extra_llvm_cmake_args}/_extra_llvm_cmake_args} -DCOMGR_BUILD_SHARED_LIBS=OFF/g" compiler/CMakeLists.txt
+# 
+#     cmake -B build -GNinja .  -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DTHEROCK_AMDGPU_TARGETS="gfx942;gfx1030;gfx1100;gfx1200;gfx1201" -DTHEROCK_AMDGPU_DIST_BUNDLE_NAME=reactant -DTHEROCK_ENABLE_ROCPROF_TRACE_DECODER_BINARY=OFF -DCMAKE_C_COMPILER=$HOSTCC -DCMAKE_CXX_COMPILER=$HOSTCXX
+#     cmake --build build
+#     cd ..
+# fi
 
 mkdir -p .local/bin
 export LOCAL="`pwd`/.local/bin"
@@ -815,7 +817,7 @@ for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), cuda_version in ("n
               )
     end
 	if gpu == "rocm"
-		push!(dependencies, HostBuildDependency(PackageSpec("CMake_jll", v"3.30.2")))
+		# push!(dependencies, HostBuildDependency(PackageSpec("CMake_jll", v"3.30.2")))
 
 		push!(platform_sources, 
 		    FileSource("https://repo.anaconda.com/miniconda/Miniconda3-py311_24.3.0-0-Linux-x86_64.sh",
