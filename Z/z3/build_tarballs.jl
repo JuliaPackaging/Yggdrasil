@@ -66,8 +66,7 @@ platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
 # libcxxwrap_julia_jll 0.14.4 supports only Julia 1.13.x
-strip_prerelease(v::VersionNumber) = VersionNumber(v.major, v.minor, v.patch)
-filter!(p -> strip_prerelease(VersionNumber(p["julia_version"])) < v"1.14", platforms)
+filter!(p -> VersionNumber(p["julia_version"]) < v"1.14-", platforms)
 
 # The products that we will ensure are always built
 products = [
