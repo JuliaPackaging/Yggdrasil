@@ -28,7 +28,7 @@ fi
 
 make C_CARGO_TARGET_DIR=target/${rust_target}/release -j${nproc} c
 install -Dvm 755 "dist/c/lib/libqiskit.${dlext}" "${libdir}/libqiskit.${dlext}"
-cp -vr "dist/c/include/*" "${includedir}"
+cp -vr dist/c/include/* "${includedir}"
 """
 
 # These are the platforms we will build for by default, unless further
