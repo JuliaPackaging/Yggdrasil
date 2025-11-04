@@ -12,10 +12,9 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-export PYTHONHOME=${prefix}
-cd qiskit
+cd $WORKSPACE/srcdir/qiskit
 mkdir -p target
+export PYTHONHOME=${prefix}
 export PYO3_PYTHON=/workspace/destdir/bin/python3
 export RUSTFLAGS="-L ${libdir}"
 
@@ -29,6 +28,7 @@ fi
 make C_CARGO_TARGET_DIR=target/${rust_target}/release -j${nproc} c
 install -Dvm 755 "dist/c/lib/libqiskit.${dlext}" "${libdir}/libqiskit.${dlext}"
 cp -vr dist/c/include/* "${includedir}"
+install_license LICENSE.txt
 """
 
 # These are the platforms we will build for by default, unless further
