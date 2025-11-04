@@ -46,8 +46,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="Python_jll", uuid="93d3a430-8e7c-50da-8e8d-3dfcfb3baf05"))
     BuildDependency(PackageSpec(name="cbindgen_jll", uuid="a52b955f-5256-5bb0-8795-313e28591558"))
+    # libpython is required at run time until
+    # https://github.com/Qiskit/qiskit/issues/14240 is fixed, which is
+    # currently targeted for Qiskit 2.3.0.
+    Dependency(PackageSpec(name="Python_jll", uuid="93d3a430-8e7c-50da-8e8d-3dfcfb3baf05"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
