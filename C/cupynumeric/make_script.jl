@@ -68,6 +68,7 @@ function get_script(cuda::Val{true})
 
         make -j ${nproc} && make install
 
+        ## Install cuPyNumeric ##
         cd ${WORKSPACE}/srcdir/cupynumeric
 
         mkdir build
@@ -82,6 +83,8 @@ function get_script(cuda::Val{true})
             -Dcutensor_LIBRARY=${libdir}/libcutensor.so \
             -Dcutensor_INCLUDE_DIR=${includedir} \
             -DBLAS_LIBRARIES=${libdir}/libopenblas.so \
+            -Dcupynumeric_USE_CUSOLVERMP=0 
+            
 
         cmake --build build --parallel ${nproc} --verbose
         cmake --install build
@@ -92,6 +95,19 @@ function get_script(cuda::Val{true})
 
     return script
 end
+
+# Install cuSolverMp + Python
+# cd ${WORKSPACE}/srcdir
+# bash miniconda.sh -b -p ${host_bindir}/miniconda
+
+# # Create venv and install configure script dependencies
+# ${host_bindir}/miniconda/bin/python -m venv ./venv
+# source ./venv/bin/activate
+# pip install --upgrade pip
+# pip install nvidia-cusolvermp-cu12
+# -DCUSOLVERMP_LIBRARY=${WORKSPACE}/srcdir/venv/lib/python3.11/site-packages/nvidia/cu12/lib/libcusolverMp.so \
+# -DCUSOLVERMP_INCLUDE_DIR=${WORKSPACE}/srcdir/venv/lib/python3.11/site-packages/nvidia/cu12/include \
+
 
 function get_script(cuda::Val{false})
         script = raw"""
