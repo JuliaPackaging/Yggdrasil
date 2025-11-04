@@ -27,7 +27,8 @@ if [[ "${target}" == *-musl* ]]; then
 fi
 
 make C_CARGO_TARGET_DIR=target/${rust_target}/release -j${nproc} c
-cp -a dist/c/* ${prefix}
+install -Dvm 755 "dist/c/lib/libqiskit.${dlext}" "${libdir}/libqiskit.${dlext}"
+cp -vr "dist/c/include/*" "${includedir}"
 """
 
 # These are the platforms we will build for by default, unless further
@@ -40,7 +41,7 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libqiskit", :libqiskit_so)
+    LibraryProduct("libqiskit", :libqiskit)
 ]
 
 # Dependencies that must be installed before this package can be built
