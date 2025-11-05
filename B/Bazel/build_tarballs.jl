@@ -17,6 +17,7 @@ mkdir .tmp
 export TMPDIR=`pwd`/.tmp
 export TMP=$TMPDIR
 export TEMP=$TMPDIR
+export BAZEL_DEV_VERSION_OVERRIDE="7.7.0"
 
 # Set the default verbose mode in buildenv.sh so that we do not display command
 # output unless there is a failure.  We do this conditionally to offer the user
