@@ -155,6 +155,7 @@ BAZEL_BUILD_FLAGS+=(--define=llvm_enable_zlib=false)
 BAZEL_BUILD_FLAGS+=(--verbose_failures)
 
 BAZEL_BUILD_FLAGS+=(--action_env=TMP=$TMPDIR --action_env=TEMP=$TMPDIR --action_env=TMPDIR=$TMPDIR --sandbox_tmpfs_path=$TMPDIR)
+BAZEL_BUILD_FLAGS+=(--host_action_env=TMP=$TMPDIR --host_action_env=TEMP=$TMPDIR --host_action_env=TMPDIR=$TMPDIR)
 BAZEL_BUILD_FLAGS+=(--host_cpu=k8)
 BAZEL_BUILD_FLAGS+=(--host_platform=//:linux_x86_64)
 BAZEL_BUILD_FLAGS+=(--host_crosstool_top=@//:ygg_host_toolchain_suite)
