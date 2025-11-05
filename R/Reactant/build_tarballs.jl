@@ -58,6 +58,7 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
     apk add zlib-dev
     mv /workspace/srcdir/lib/libhiprtc-builtins.so.6.5.25281-42077334f /workspace/srcdir/lib/libhiprtc-builtins.so.6.5.25281
     mv /workspace/srcdir/lib/libhiprtc.so.6.5.25281-42077334f /workspace/srcdir/lib/libhiprtc.so.6.5.25281
+    mv $ROCM_PATH/lib/libamdhip64.so.6.5.25281-42077334f $ROCM_PATH/lib/libamdhip64.so.6.5.25281
     ln -s $ROCM_PATH/lib/llvm/amdgcn $ROCM_PATH/amdgcn
     mv $ROCM_PATH/bin/hipcc{,.real}
     cp `which clang` $ROCM_PATH/bin/hipcc
