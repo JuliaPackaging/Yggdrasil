@@ -4,7 +4,7 @@ name = "iceberg_rust_ffi"
 version = v"0.3.0"
 
 sources = [
-    GitSource("https://github.com/RelationalAI/RustyIceberg.jl.git", "5628293c7b8c5d5b5732465ca8f78825ed9e3e0f"),
+    GitSource("https://github.com/RelationalAI/RustyIceberg.jl.git", "a23022e750770ddb983dbaa7f3f103753f2813aa"),
 ]
 
 # Bash recipe for building across all platforms
@@ -40,5 +40,5 @@ dependencies = Dependency[
 # Build the tarballs
 build_tarballs(
     ARGS, name, version, sources, script, platforms, products, dependencies;
-    compilers=[:c, :rust], julia_compat="1.10", preferred_gcc_version=v"5", dont_dlopen=true, preferred_rust_version=v"1.91"
+    compilers=[:c, :rust], julia_compat="1.10", preferred_gcc_version=v"5", dont_dlopen=true,
 )
