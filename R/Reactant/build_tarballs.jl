@@ -55,9 +55,15 @@ fi
 
 if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
     export ROCM_PATH=$WORKSPACE/srcdir
+    apk add zlib-dev
     mv /workspace/srcdir/lib/libhiprtc-builtins.so.6.5.25281-42077334f /workspace/srcdir/lib/libhiprtc-builtins.so.6.5.25281
     mv /workspace/srcdir/lib/libhiprtc.so.6.5.25281-42077334f /workspace/srcdir/lib/libhiprtc.so.6.5.25281
     ln -s $ROCM_PATH/lib/llvm/amdgcn $ROCM_PATH/amdgcn
+    mv $ROCM_PATH/bin/hipcc{,.real}
+    cp `which clang` $ROCM_PATH/bin/hipcc
+    sed -i "s,/opt/x86_64-linux-musl/bin/clang,$ROCM_PATH/bin/hipcc.real,g" $ROCM_PATH/bin/hipcc
+    sed -i -e "s,PRE_FLAGS+=( -nostdinc++ ),PRE_FLAGS+=( -nostdinc++ -isystem/workspace/bazel_root/097636303b1142f44508c1d8e3494e4b/external/local_config_rocm/rocm/rocm_dist/lib/llvm/lib/clang/20/include/cuda_wrappers -isystem/workspace/bazel_root/097636303b1142f44508c1d8e3494e4b/external/local_config_rocm/rocm/rocm_dist/lib/llvm/lib/clang/20/include),g" $ROCM_PATH/bin/hipcc
+    sed -i -e "s,export LD_LIBRARY_PATH,POST_FLAGS+=( --rocm-path=$ROCM_PATH -B $ROCM_PATH/lib/llvm/bin); export LD_LIBRARY_PATH,g" $ROCM_PATH/bin/hipcc 
     apk add coreutils
 fi
 
@@ -334,15 +340,20 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
 		#--repo_env="ROCM_VERSION=$HERMETIC_ROCM_VERSION"
 		#--@local_config_rocm//rocm:rocm_path_type=hermetic
 
-		--copt=--sysroot=/opt/x86_64-linux-gnu/x86_64-linux-gnu/sys-root
-		--copt=--gcc-install-dir=/opt/x86_64-linux-gnu/lib/gcc/x86_64-linux-gnu/13.2.0
-		--copt=-isystem=/workspace/bazel_root/097636303b1142f44508c1d8e3494e4b/external/local_config_rocm/rocm/rocm_dist/lib/llvm/lib/clang/20/include/cuda_wrappers
- 		--copt=-isystem=/workspace/bazel_root/097636303b1142f44508c1d8e3494e4b/external/local_config_rocm/rocm/rocm_dist/lib/llvm/lib/clang/20/include
-		--copt=-isystem=/opt/x86_64-linux-gnu/x86_64-linux-gnu/include/c++/13.2.0
-		--copt=-isystem=/opt/x86_64-linux-gnu/x86_64-linux-gnu/include/c++/13.2.0/x86_64-linux-gnu
-		--copt=-isystem=/opt/x86_64-linux-gnu/x86_64-linux-gnu/include/c++/13.2.0/backward
-		--copt=-isystem=/opt/x86_64-linux-gnu/x86_64-linux-gnu/include
-		--copt=-isystem=/opt/x86_64-linux-gnu/x86_64-linux-gnu/sys-root/include
+		# --copt=--sysroot=/opt/x86_64-linux-gnu/x86_64-linux-gnu/sys-root
+		# --copt=--gcc-install-dir=/opt/x86_64-linux-gnu/lib/gcc/x86_64-linux-gnu/13.2.0
+		# --copt=-isystem/workspace/bazel_root/097636303b1142f44508c1d8e3494e4b/external/local_config_rocm/rocm/rocm_dist/lib/llvm/lib/clang/20/include/cuda_wrappers
+ 		# --copt=-isystem/workspace/bazel_root/097636303b1142f44508c1d8e3494e4b/external/local_config_rocm/rocm/rocm_dist/lib/llvm/lib/clang/20/include
+		# --copt=-isystem
+		# --copt=/opt/x86_64-linux-gnu/x86_64-linux-gnu/include/c++/13.2.0
+		# --copt=-isystem
+		# --copt=/opt/x86_64-linux-gnu/x86_64-linux-gnu/include/c++/13.2.0/x86_64-linux-gnu
+		# --copt=-isystem
+		# --copt=/opt/x86_64-linux-gnu/x86_64-linux-gnu/include/c++/13.2.0/backward
+		# --copt=-isystem
+		# --copt=/opt/x86_64-linux-gnu/x86_64-linux-gnu/include
+		# --copt=-isystem
+		# --copt=/opt/x86_64-linux-gnu/x86_64-linux-gnu/sys-root/include
 	    --action_env=CLANG_COMPILER_PATH=$(which clang)
 	    --define=using_clang=true
     )
