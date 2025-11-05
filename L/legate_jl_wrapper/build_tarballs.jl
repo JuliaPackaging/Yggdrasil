@@ -51,7 +51,7 @@ products = [
 
 
 dependencies = [
-    Dependency("legate_jll"; compat = "=28"), # Legate versioning is Year.Month
+    Dependency("legate_jll"; compat = "=25.8"), # Legate versioning is Year.Month
     Dependency("libcxxwrap_julia_jll"; compat="0.14.3"),
     BuildDependency("libjulia_jll"),
     HostBuildDependency(PackageSpec(; name = "CMake_jll", version = v"3.31.9")),
