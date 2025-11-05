@@ -1,0 +1,109 @@
+--- lseos_v2.7.f~	1995-09-14 21:17:13
++++ lseos_v2.7.f	2025-11-03 13:00:27
+@@ -1708,7 +1708,8 @@
+ C
+ C                    Leptons & Photons
+ C
+-      CALL EL_EOS(T,YE,BRYDNS)
++      CALL EL_EOS(T,YE,BRYDNS,SSFLAG)
++      IF (SSFLAG .EQ. 0) RETURN
+ C
+ C
+ C
+@@ -3084,7 +3085,8 @@
+ C
+ C
+ C                           Leptons & Photons
+-      CALL EL_EOS(T,YE,BRYDNS)
++      CALL EL_EOS(T,YE,BRYDNS,SSFLAG)
++      IF (SSFLAG .EQ. 0) RETURN
+ C
+ C
+ C
+@@ -3760,7 +3762,8 @@
+ C
+ C                   Call electron EOS to determine the
+ C                   electron chemical potential
+-      CALL EL_EOS(T,YE,BRYDNS)
++      CALL EL_EOS(T,YE,BRYDNS,SSFLAG)
++      IF (SSFLAG .EQ. 0) RETURN
+ C
+ C
+       MUHAT = MUSUBE+(1.0-PHASEF)*(MUHLOW-MUELOW)+PHASEF*(MUHHI-MUEHI)
+@@ -6638,11 +6647,12 @@
+ C***********************************************************************
+ C23456789012345678901234567890123456789012345678901234567890123456789012
+ C
+-      SUBROUTINE EL_EOS(T,YE,BRYDNS)
++      SUBROUTINE EL_EOS(T,YE,BRYDNS,SSFLAG)
+ C
+       IMPLICIT NONE
+ C
+       DOUBLE PRECISION T, YE, BRYDNS
++      INTEGER SSFLAG
+ C
+       INCLUDE 'el_eos.inc'
+ C
+@@ -6658,12 +6668,15 @@
+       PARAMETER(OVR3=0.33333333, MOVR3=-0.33333333, OVR23=0.66666667)
+ C
+ C
++      SSFLAG = 1
++C
+       IF( ((BRYDNS*YE).GT.1.0D-4).OR.(T.GT.5.0D0) ) THEN
+ C                      Assume that the electrons are relativistic
+         CALL EL_REL(T,YE,BRYDNS)
+       ELSE
+ C                      Otherwise call the Gauss-Laguerre version
+-        CALL EL_IMT(T,YE,BRYDNS)
++        CALL EL_IMT(T,YE,BRYDNS,SSFLAG)
++        IF (SSFLAG .EQ. 0) RETURN
+ C                      If the stuff is really degenerate call the
+ C                      relativistic version anyway
+         IF((MUSUBE/T).GT.2.0D3) THEN
+@@ -6909,11 +6922,12 @@
+ C***********************************************************************
+ C23456789012345678901234567890123456789012345678901234567890123456789012
+ C
+-      SUBROUTINE EL_IMT(T,YE,BRYDNS)
++      SUBROUTINE EL_IMT(T,YE,BRYDNS,SSFLAG)
+ C
+       IMPLICIT NONE
+ C
+       DOUBLE PRECISION T, YE, BRYDNS
++      INTEGER SSFLAG
+ C
+       INCLUDE 'el_eos.inc'
+ C
+@@ -6964,9 +6978,11 @@
+ C
+ C-----------------------------------------------------------------------
+ C
++      SSFLAG = 1
+ C
+ C
+ C
++C
+ C                    Electron number density
+       NSUBE = BRYDNS*YE
+ C
+@@ -7128,7 +7144,8 @@
+ C                                      N-R iteration didn't converge
+       WRITE(*,*) ' EL_EOS: N-R iteration didnt converge!'
+       WRITE(*,*) ' EL_EOS: TRY = ',T,BRYDNS,YE
+-      STOP
++      SSFLAG = 0
++      RETURN
+ C
+ C               If we reached this point then the N-R iteration has
+ C               converged.
+@@ -7138,7 +7155,8 @@
+ C                     density?
+       IF(DABS((NE_CHK-NSUBE)/NSUBE).GT.1.0D-5) THEN
+         WRITE(*,*) ' EL_EOS: Gaussian quadrature converged badly!'
+-        STOP
++        SSFLAG = 0
++        RETURN
+       ENDIF
+ C
+ C             Calculate thermodynamic quantities...
