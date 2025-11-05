@@ -30,7 +30,7 @@ else
 end
 
 const cuda_version_preference = if haskey(preferences, "gpu_version")
-    expected = ("none", "12.9", "13.0", "7.0")
+    expected = ("none", "12.9", "13.0", "7.1")
     if isa(preferences["gpu_version"], String) && preferences["gpu_version"] in expected
         preferences["gpu_version"]
     else
@@ -142,7 +142,7 @@ function augment_platform!(platform::Platform)
             #handle = Libdl.dlopen(roname)
             #path = Libdl.dlpath(handle)
             #Libdl.dlclose(handle)
-	    gpu_version_tag = "7.0"
+	    gpu_version_tag = "7.1"
 
             @debug "Adding include dependency on $(path)"
             Base.include_dependency(path)

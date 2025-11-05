@@ -56,16 +56,24 @@ fi
 if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
     export ROCM_PATH=$WORKSPACE/srcdir
     apk add zlib-dev
-    mv /workspace/srcdir/lib/libhiprtc-builtins.so.6.5.25281-42077334f /workspace/srcdir/lib/libhiprtc-builtins.so.6.5.25281
-    mv /workspace/srcdir/lib/libhiprtc.so.6.5.25281-42077334f /workspace/srcdir/lib/libhiprtc.so.6.5.25281
-    rm /workspace/srcdir/lib/libamdhip64.so.6
-    mv $ROCM_PATH/lib/libamdhip64.so.6.5.25281-42077334f $ROCM_PATH/lib/libamdhip64.so.6.5.25281
-    ln -s $ROCM_PATH/lib/libamdhip64.so.6.5.25281 /workspace/srcdir/lib/libamdhip64.so.6
+    
+    mv $ROCM_PATH/lib/libhiprtc-builtins.so.7.1.25442-19ae9ff849 $ROCM_PATH/lib/libhiprtc-builtins.so.7.1.25442
+    mv $ROCM_PATH/lib/libhiprtc.so.7.1.25442-19ae9ff849 $ROCM_PATH/lib/libhiprtc.so.7.1.25442
+    mv $ROCM_PATH/lib/libamdhip64.so.7.1.25442-19ae9ff849 $ROCM_PATH/lib/libamdhip64.so.7.1.25442
+    rm $ROCM_PATH/lib/libamdhip64.so.7
+    ln -s $ROCM_PATH/lib/libamdhip64.so.7.1.25442 $ROCM_PATH/lib/libamdhip64.so.7
+
+    # mv /workspace/srcdir/lib/libhiprtc-builtins.so.6.5.25281-42077334f /workspace/srcdir/lib/libhiprtc-builtins.so.6.5.25281
+    # mv /workspace/srcdir/lib/libhiprtc.so.6.5.25281-42077334f /workspace/srcdir/lib/libhiprtc.so.6.5.25281
+    # rm /workspace/srcdir/lib/libamdhip64.so.6
+    # mv $ROCM_PATH/lib/libamdhip64.so.6.5.25281-42077334f $ROCM_PATH/lib/libamdhip64.so.6.5.25281
+    # ln -s $ROCM_PATH/lib/libamdhip64.so.6.5.25281 /workspace/srcdir/lib/libamdhip64.so.6
+    
     ln -s $ROCM_PATH/lib/llvm/amdgcn $ROCM_PATH/amdgcn
     mv $ROCM_PATH/bin/hipcc{,.real}
     cp `which clang` $ROCM_PATH/bin/hipcc
     sed -i "s,/opt/x86_64-linux-musl/bin/clang,$ROCM_PATH/bin/hipcc.real,g" $ROCM_PATH/bin/hipcc
-    sed -i -e "s,PRE_FLAGS+=( -nostdinc++ ),PRE_FLAGS+=( -nostdinc++ -isystem/workspace/bazel_root/097636303b1142f44508c1d8e3494e4b/external/local_config_rocm/rocm/rocm_dist/lib/llvm/lib/clang/20/include/cuda_wrappers -isystem/workspace/bazel_root/097636303b1142f44508c1d8e3494e4b/external/local_config_rocm/rocm/rocm_dist/lib/llvm/lib/clang/20/include),g" $ROCM_PATH/bin/hipcc
+    sed -i -e "s,PRE_FLAGS+=( -nostdinc++ ),PRE_FLAGS+=( -nostdinc++ -isystem/workspace/bazel_root/097636303b1142f44508c1d8e3494e4b/external/local_config_rocm/rocm/rocm_dist/lib/llvm/lib/clang/22/include/cuda_wrappers -isystem/workspace/bazel_root/097636303b1142f44508c1d8e3494e4b/external/local_config_rocm/rocm/rocm_dist/lib/llvm/lib/clang/22/include),g" $ROCM_PATH/bin/hipcc
     sed -i -e "s,export LD_LIBRARY_PATH,POST_FLAGS+=( --rocm-path=$ROCM_PATH -B $ROCM_PATH/lib/llvm/bin); export LD_LIBRARY_PATH,g" $ROCM_PATH/bin/hipcc 
     apk add coreutils
 fi
@@ -339,24 +347,6 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
 
                 --linkopt="-L$ROCM_PATH/lib/rocm_sysdeps/lib"
 
-		#--repo_env="OS=ubuntu_22.04"
-		#--repo_env="ROCM_VERSION=$HERMETIC_ROCM_VERSION"
-		#--@local_config_rocm//rocm:rocm_path_type=hermetic
-
-		# --copt=--sysroot=/opt/x86_64-linux-gnu/x86_64-linux-gnu/sys-root
-		# --copt=--gcc-install-dir=/opt/x86_64-linux-gnu/lib/gcc/x86_64-linux-gnu/13.2.0
-		# --copt=-isystem/workspace/bazel_root/097636303b1142f44508c1d8e3494e4b/external/local_config_rocm/rocm/rocm_dist/lib/llvm/lib/clang/20/include/cuda_wrappers
- 		# --copt=-isystem/workspace/bazel_root/097636303b1142f44508c1d8e3494e4b/external/local_config_rocm/rocm/rocm_dist/lib/llvm/lib/clang/20/include
-		# --copt=-isystem
-		# --copt=/opt/x86_64-linux-gnu/x86_64-linux-gnu/include/c++/13.2.0
-		# --copt=-isystem
-		# --copt=/opt/x86_64-linux-gnu/x86_64-linux-gnu/include/c++/13.2.0/x86_64-linux-gnu
-		# --copt=-isystem
-		# --copt=/opt/x86_64-linux-gnu/x86_64-linux-gnu/include/c++/13.2.0/backward
-		# --copt=-isystem
-		# --copt=/opt/x86_64-linux-gnu/x86_64-linux-gnu/include
-		# --copt=-isystem
-		# --copt=/opt/x86_64-linux-gnu/x86_64-linux-gnu/sys-root/include
 	    --action_env=CLANG_COMPILER_PATH=$(which clang)
 	    --define=using_clang=true
     )
@@ -652,7 +642,7 @@ augment_platform_block="""
     """
 
 # for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), platform in platforms
-for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), cuda_version in ("none", "12.9", "13.0"), rocm_version in ("none", "7.0",), platform in platforms
+for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), cuda_version in ("none", "12.9", "13.0"), rocm_version in ("none", "7.1",), platform in platforms
 
     gpu != "rocm" && continue
     
@@ -752,7 +742,7 @@ for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), cuda_version in ("n
         "none" => "none",
         "6.4" => "6.4.1",
         "6.5" => "6.5.1",
-        "7.0" => "7.0.0",
+        "7.1" => "7.1.0",
     )
 
 
@@ -847,10 +837,10 @@ for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), cuda_version in ("n
                   ArchiveSource("https://github.com/ROCm/TheRock/releases/download/nightly-tarball/therock-dist-linux-gfx94X-dcgpu-6.5.0rc20250610.tar.gz",
 				"113e44dcd7868ffab92193bbcb8653a374494f0c5b393545f08551ea835a1ee5")
                   )
-	       elseif rocm_version == "7.0"
+	       elseif rocm_version == "7.1"
 	       push!(platform_sources,
-                  ArchiveSource("https://github.com/ROCm/TheRock/releases/download/nightly-tarball/therock-dist-linux-gfx110X-dgpu-7.0.0rc20250714.tar.gz",
-				"8c64dd2045736a18322756c52dccf11370e9efd04d29dd58f156491b27156e3c")
+                  ArchiveSource("https://therock-nightly-tarball.s3.amazonaws.com/therock-dist-linux-gfx120X-all-7.10.0a20251103.tar.gz",
+				"3cffe4ced6ba1defa526cb7b9d3cbad48791842d585eae48e614835355d9fd8b")
                   )
 	       end
 	end
