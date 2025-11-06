@@ -22,6 +22,16 @@ function prepare_openfhe_build(name::String, git_hash::String)
       atomic_patch -p1 "${WORKSPACE}/srcdir/patches/windows-fix-cmake-libdir.patch"
     fi
 
+    # Install newer SDK which supports `std::filesystem`
+    if [[ "${target}" == x86_64-apple-darwin* ]]; then
+        pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+        rm -rf /opt/${target}/${target}/sys-root/System
+        cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+        cp -ra System "/opt/${target}/${target}/sys-root/."
+        export MACOSX_DEPLOYMENT_TARGET=10.15
+        popd
+    fi
+
     mkdir build && cd build
 
     cmake .. \
@@ -33,7 +43,6 @@ function prepare_openfhe_build(name::String, git_hash::String)
       -DBUILD_UNITTESTS=OFF \
       -DBUILD_BENCHMARKS=OFF \
       -DNATIVE_SIZE=""" * "$native_size" * raw""" \
-      -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -stdlib=libc++"
     
     make -j${nproc}
     make install
