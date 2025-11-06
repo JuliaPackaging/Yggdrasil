@@ -32,8 +32,8 @@ function prepare_openfhe_build(name::String, git_hash::String)
       -DWITH_BE4=ON \
       -DBUILD_UNITTESTS=OFF \
       -DBUILD_BENCHMARKS=OFF \
-      -DNATIVE_SIZE=""" * "$native_size" *
-    raw"""
+      -DNATIVE_SIZE=""" * "$native_size" * raw""" \
+      $([[ "${target}" == *apple-darwin* ]] && echo "-DCMAKE_EXE_LINKER_FLAGS=-lc++fs")
     
     make -j${nproc}
     make install
