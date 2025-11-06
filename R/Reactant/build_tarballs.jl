@@ -6,7 +6,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-reactant_commit = "e9ffb9f277846d2852b7774dbdc679c405799856"
+reactant_commit = "29497a41d0d34982241c5fe7b8ecc855714a948b"
 version = v"0.0.257"
 
 sources = [
@@ -55,8 +55,7 @@ fi
 
 if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
     export ROCM_PATH=$WORKSPACE/srcdir
-    apk add zlib-dev
-    
+
     mv $ROCM_PATH/lib/libhiprtc-builtins.so.7.1.25442-19ae9ff849 $ROCM_PATH/lib/libhiprtc-builtins.so.7.1.25442
     mv $ROCM_PATH/lib/libhiprtc.so.7.1.25442-19ae9ff849 $ROCM_PATH/lib/libhiprtc.so.7.1.25442
     mv $ROCM_PATH/lib/libamdhip64.so.7.1.25442-19ae9ff849 $ROCM_PATH/lib/libamdhip64.so.7.1.25442
@@ -68,34 +67,41 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
     # rm /workspace/srcdir/lib/libamdhip64.so.6
     # mv $ROCM_PATH/lib/libamdhip64.so.6.5.25281-42077334f $ROCM_PATH/lib/libamdhip64.so.6.5.25281
     # ln -s $ROCM_PATH/lib/libamdhip64.so.6.5.25281 /workspace/srcdir/lib/libamdhip64.so.6
-    
+
     ln -s $ROCM_PATH/lib/llvm/amdgcn $ROCM_PATH/amdgcn
     mv $ROCM_PATH/bin/hipcc{,.real}
+    mv $ROCM_PATH/lib/llvm/bin/llvm-link{,.real}
+    mv $ROCM_PATH/lib/llvm/bin/opt{,.real}
+    echo "#!/bin/bash" > $ROCM_PATH/lib/llvm/bin/llvm-link
+    echo "#!/bin/bash" > $ROCM_PATH/lib/llvm/bin/opt
+    echo "LD_LIBRARY_PATH=\\\"$LD_LIBRARY_PATH\\\" $ROCM_PATH/lib/llvm/bin/llvm-link.real \$@" >> $ROCM_PATH/lib/llvm/bin/llvm-link
+    echo "LD_LIBRARY_PATH=\\\"$LD_LIBRARY_PATH\\\" $ROCM_PATH/lib/llvm/bin/opt.real \$@" >> $ROCM_PATH/lib/llvm/bin/opt
+    chmod +x $ROCM_PATH/lib/llvm/bin/opt
+    chmod +x $ROCM_PATH/lib/llvm/bin/llvm-link
     cp `which clang` $ROCM_PATH/bin/hipcc
     sed -i "s,/opt/x86_64-linux-musl/bin/clang,$ROCM_PATH/bin/hipcc.real,g" $ROCM_PATH/bin/hipcc
     sed -i -e "s,PRE_FLAGS+=( -nostdinc++ ),PRE_FLAGS+=( -nostdinc++ -isystem/workspace/bazel_root/097636303b1142f44508c1d8e3494e4b/external/local_config_rocm/rocm/rocm_dist/lib/llvm/lib/clang/22/include/cuda_wrappers -isystem/workspace/bazel_root/097636303b1142f44508c1d8e3494e4b/external/local_config_rocm/rocm/rocm_dist/lib/llvm/lib/clang/22/include),g" $ROCM_PATH/bin/hipcc
-    sed -i -e "s,export LD_LIBRARY_PATH,POST_FLAGS+=( --rocm-path=$ROCM_PATH -B $ROCM_PATH/lib/llvm/bin); export LD_LIBRARY_PATH,g" $ROCM_PATH/bin/hipcc 
-    apk add coreutils
+    sed -i -e "s,export LD_LIBRARY_PATH,POST_FLAGS+=( --rocm-path=$ROCM_PATH -B $ROCM_PATH/lib/llvm/bin); export LD_LIBRARY_PATH,g" $ROCM_PATH/bin/hipcc
 fi
 
 # if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
 #     git clone https://github.com/ROCm/TheRock
 #     cd TheRock
-# 
-# 
+#
+#
 #     apk del cmake
-# 
+#
 #     bash ${WORKSPACE}/srcdir/miniconda.sh -b -p ${host_bindir}/miniconda
 #     ${host_bindir}/miniconda/bin/python -m venv .venv && source .venv/bin/activate
 #     # pip install -r requirements.txt
-#     
+#
 #     python ./build_tools/fetch_sources.py
-# 
+#
 #     export CCACHE_DIR=/root/.ccache
 #     export CCACHE_NOHASHDIR=yes
-#     
+#
 #     sed -i.bak1 -e "s/_extra_llvm_cmake_args}/_extra_llvm_cmake_args} -DCOMGR_BUILD_SHARED_LIBS=OFF/g" compiler/CMakeLists.txt
-# 
+#
 #     cmake -B build -GNinja .  -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DTHEROCK_AMDGPU_TARGETS="gfx942;gfx1030;gfx1100;gfx1200;gfx1201" -DTHEROCK_AMDGPU_DIST_BUNDLE_NAME=reactant -DTHEROCK_ENABLE_ROCPROF_TRACE_DECODER_BINARY=OFF -DCMAKE_C_COMPILER=$HOSTCC -DCMAKE_CXX_COMPILER=$HOSTCXX
 #     cmake --build build
 #     cd ..
@@ -159,7 +165,7 @@ BAZEL_BUILD_FLAGS+=(--host_action_env=TMP=$TMPDIR --host_action_env=TEMP=$TMPDIR
 BAZEL_BUILD_FLAGS+=(--host_cpu=k8)
 BAZEL_BUILD_FLAGS+=(--host_platform=//:linux_x86_64)
 BAZEL_BUILD_FLAGS+=(--host_crosstool_top=@//:ygg_host_toolchain_suite)
-    
+
 # `using_clang` comes from Enzyme-JAX, to handle clang-specific options.
 BAZEL_BUILD_FLAGS+=(--define=using_clang=true)
 
@@ -304,7 +310,7 @@ fi
 
 if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
     BAZEL_BUILD_FLAGS+=(--config=rocm)
-
+    rm /usr/bin/realpath
     if [[ "${GCC_MAJOR_VERSION}" -le 12 && "${target}" == x86_64-* ]]; then
         # Someone wants to compile some code which requires flags not understood by GCC 12.
         BAZEL_BUILD_FLAGS+=(--define=xnn_enable_avxvnniint8=false)
@@ -326,7 +332,7 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
             --linkopt="-stdlib=libstdc++"
 	)
     fi
-    
+
     BAZEL_BUILD_FLAGS+=(--copt=-stdlib=libstdc++)
 
     # export HIPCC_ENV="--sysroot=/opt/x86_64-linux-gnu/x86_64-linux-gnu/sys-root;-D_GLIBCXX_USE_CXX11_ABI=1;-stdlib=libstdc++;--gcc-install-dir=/opt/x86_64-linux-gnu/lib/gcc/x86_64-linux-gnu/13.2.0;-isystem/opt/x86_64-linux-gnu/x86_64-linux-gnu/include/c++/13.2.0"
@@ -342,7 +348,7 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
     BAZEL_BUILD_FLAGS+=(
 		--action_env=ROCM_PATH=$ROCM_PATH
 		--repo_env=ROCM_PATH=$ROCM_PATH
-	
+
 		# anything before 942 hits a 128-bit error
 		--action_env=TF_ROCM_AMDGPU_TARGETS="gfx942,gfx1030,gfx1100,gfx1200,gfx1201"
 
@@ -524,51 +530,51 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
     install -Dvm 755 \
         $ROCM_PATH/lib/librocblas.so* \
         -t ${libdir}
-    
+
     install -Dvm 755 \
         $ROCM_PATH/lib/libhiprtc.so* \
         -t ${libdir}
-    
+
     install -Dvm 755 \
         $ROCM_PATH/lib/libhipblaslt.so* \
         -t ${libdir}
-    
+
     install -Dvm 755 \
         $ROCM_PATH/lib/libamdhip64.so* \
         -t ${libdir}
-    
+
     install -Dvm 755 \
         $ROCM_PATH/lib/librocroller.so* \
         -t ${libdir}
-    
+
      install -Dvm 755 \
         $ROCM_PATH/lib/host-math/lib/libcholmod.so* \
        -t ${libdir}/host-math/lib
-     
+
      install -Dvm 755 \
         $ROCM_PATH/lib/host-math/lib/libamd.so* \
        -t ${libdir}/host-math/lib
-     
+
      install -Dvm 755 \
         $ROCM_PATH/lib/host-math/lib/libcamd.so* \
        -t ${libdir}/host-math/lib
-     
+
      install -Dvm 755 \
         $ROCM_PATH/lib/host-math/lib/libccolamd.so* \
        -t ${libdir}/host-math/lib
-     
+
      install -Dvm 755 \
         $ROCM_PATH/lib/host-math/lib/libcolamd.so* \
        -t ${libdir}/host-math/lib
-     
+
      install -Dvm 755 \
         $ROCM_PATH/lib/host-math/lib/librocm-openblas.so* \
        -t ${libdir}/host-math/lib
-     
+
      install -Dvm 755 \
         $ROCM_PATH/lib/host-math/lib/libsuitesparseconfig.so* \
        -t ${libdir}/host-math/lib
-     
+
      install -Dvm 755 \
         $ROCM_PATH/lib/host-math/lib/libsuitesparseconfig.so* \
        -t ${libdir}/host-math/lib
@@ -578,7 +584,7 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
      install -Dvm 755 \
         $ROCM_PATH/lib/llvm/lib/libLLVM.so.20.0git \
        -t ${libdir}/llvm/lib
-    
+
      install -Dvm 755 \
         $ROCM_PATH/lib/llvm/amdgcn/bitcode/* \
        -t ${libdir}/llvm/amdgcn/bitcode
@@ -648,7 +654,7 @@ for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), cuda_version in ("n
     augmented_platform = deepcopy(platform)
     augmented_platform["mode"] = mode
     augmented_platform["gpu"] = gpu
-    
+
     gpu_version = "none"
     if gpu == "none"
 	 if cuda_version != "none"
@@ -665,7 +671,7 @@ for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), cuda_version in ("n
 	     continue
 	 end
 	gpu_version = rocm_version
-    else 
+    else
 	 @assert gpu == "cuda"
 	 if cuda_version == "none"
 	     continue
@@ -705,7 +711,7 @@ for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), cuda_version in ("n
         # At the moment we can't build for CUDA 12.1 on aarch64, let's skip it
         continue
     end
-    
+
     if gpu == "rocm" && arch(platform) == "aarch64"
         # At the moment we can't build for ROCM on aarch64, let's skip it
         continue
@@ -733,7 +739,7 @@ for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), cuda_version in ("n
         "12.9" => "12.9.1",
         "13.0" => "13.0.1"
     )
-    
+
     hermetic_rocm_version_map = Dict(
         # Our platform tags use X.Y version scheme, but for some CUDA versions we need to
         # pass Bazel a full version number X.Y.Z.  See `CUDA_REDIST_JSON_DICT` in
@@ -821,8 +827,9 @@ for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), cuda_version in ("n
     end
 	if gpu == "rocm"
 		# push!(dependencies, HostBuildDependency(PackageSpec("CMake_jll", v"3.30.2")))
+		push!(dependencies, HostBuildDependency("coreutils_jll"))
 
-		push!(platform_sources, 
+		push!(platform_sources,
 		    FileSource("https://repo.anaconda.com/miniconda/Miniconda3-py311_24.3.0-0-Linux-x86_64.sh",
 			       "4da8dde69eca0d9bc31420349a204851bfa2a1c87aeb87fe0c05517797edaac4", "miniconda.sh"))
 
@@ -903,7 +910,7 @@ for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), cuda_version in ("n
         push!(products, FileProduct("lib/cuda/nvvm/libdevice/libdevice.10.bc", :libdevice))
         push!(products, FileProduct("lib/libnvshmem_device.bc", :libnvshmem_device))
     end
-    
+
     if gpu == "rocm"
     	for lib in (
 		"libamd_comgr",
