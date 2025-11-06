@@ -6,13 +6,13 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-reactant_commit = "25a8795b2f789d1e5cbb0a6cf65a73f95b431172"
+reactant_commit = "e9ffb9f277846d2852b7774dbdc679c405799856"
 version = v"0.0.257"
 
 sources = [
    GitSource(repo, reactant_commit),
    FileSource("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.7%2B6/OpenJDK21U-jdk_x64_alpine-linux_hotspot_21.0.7_6.tar.gz", "79ecc4b213d21ae5c389bea13c6ed23ca4804a45b7b076983356c28105580013"),
-   FileSource("https://github.com/JuliaBinaryWrappers/Bazel_jll.jl/releases/download/Bazel-v7.6.1+0/Bazel.v7.6.1.x86_64-linux-musl-cxx03.tar.gz", "01ac6c083551796f1f070b0dc9c46248e6c49e01e21040b0c158f6e613733345")
+   FileSource("https://github.com/JuliaBinaryWrappers/Bazel_jll.jl/releases/download/Bazel-v7.7.0%2B0/Bazel.v7.7.0.x86_64-linux-musl-cxx11.tar.gz", "3ec8875de9a99ffdb239b6b4cde3239f58e5fadcbc261da0173769f42420a43d")
 ]
 
 # When we run CI in Enzyme-JAX repository we need to be able to change the commit to check out.
@@ -22,7 +22,7 @@ enzyme_jax_commit = get(ENV, "ENZYME_JAX_COMMIT", "")
 script = raw"""
 cd ${WORKSPACE}/srcdir
 tar xzf OpenJDK21U-jdk_x64_alpine-linux_hotspot_21.0.7_6.tar.gz
-tar xzf Bazel.v7.6.1.x86_64-linux-musl-cxx03.tar.gz
+tar xzf Bazel.v*.tar.gz
 export JAVA_HOME="${PWD}/jdk-21.0.7+6"
 export BAZEL="${PWD}/bin/bazel"
 
