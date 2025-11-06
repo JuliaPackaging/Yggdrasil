@@ -7,6 +7,8 @@ function prepare_openfhe_build(name::String, git_hash::String)
     sources = [
         GitSource("https://github.com/openfheorg/openfhe-development.git",
                   git_hash),
+        ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
         DirectorySource("../OpenFHE/bundled")
     ]
 
