@@ -491,6 +491,10 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
     install -Dvm 755 \
         $ROCM_PATH/lib/rocm_sysdeps/lib/librocm_sysdeps_drm_amdgpu.so* \
         -t ${libdir}/rocm_sysdeps/lib
+
+    install -Dvm 755 \
+        $ROCM_PATH/lib/rocm_sysdeps/lib/librocm_sysdeps_liblzma.so* \
+        -t ${libdir}/rocm_sysdeps/lib
     
     install -Dvm 755 \
         $ROCM_PATH/lib/librccl.so* \
@@ -546,6 +550,10 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
 
     install -Dvm 755 \
         $ROCM_PATH/lib/librocsolver.so* \
+        -t ${libdir}
+
+    install -Dvm 755 \
+        $ROCM_PATH/lib/libhipfft*.so* \
         -t ${libdir}
 
     install -Dvm 755 \
@@ -837,6 +845,7 @@ for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), cuda_version in ("n
 	if gpu == "rocm"
 		# push!(dependencies, HostBuildDependency(PackageSpec("CMake_jll", v"3.30.2")))
 		push!(dependencies, HostBuildDependency("coreutils_jll"))
+		push!(dependencies, Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")))
 
 		push!(platform_sources,
 		    FileSource("https://repo.anaconda.com/miniconda/Miniconda3-py311_24.3.0-0-Linux-x86_64.sh",
@@ -931,9 +940,8 @@ for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), cuda_version in ("n
 		"libhiprtc",
 		"librocm_smi64",
 		"librocprofiler-register",
-		"librocm_sysdeps_numa",
+		#"librocm_sysdeps_numa",
 
-		"libamd_comgr",
 		"libhipfft",
 		"libhipsolver",
 		"libhipsolver_fortran",
