@@ -545,6 +545,10 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
         -t ${libdir}
 
     install -Dvm 755 \
+        $ROCM_PATH/lib/librocsolver.so* \
+        -t ${libdir}
+
+    install -Dvm 755 \
         $ROCM_PATH/lib/libhipsolver_fortran.so* \
         -t ${libdir}
 
