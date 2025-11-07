@@ -504,10 +504,6 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
         $ROCM_PATH/lib/librocprofiler-register.so* \
         -t ${libdir}
     
-    install -Dvm 755 \
-        $ROCM_PATH/lib/librocm_sysdeps_numa.so* \
-        -t ${libdir}
-    
    install -Dvm 755 \
         $ROCM_PATH/lib/librocm-core.so* \
         -t ${libdir}
