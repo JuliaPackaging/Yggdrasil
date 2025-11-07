@@ -23,6 +23,13 @@ script = raw"""
 cd ${WORKSPACE}/srcdir
 tar xzf OpenJDK21U-jdk_x64_alpine-linux_hotspot_21.0.7_6.tar.gz
 tar xzf Bazel.v*.tar.gz
+
+if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
+    if [[ "${target}" == aarch64-linux-gnu ]]; then
+       tar xf cuda_nvcc*tar.xz
+    fi
+fi
+
 export JAVA_HOME="${PWD}/jdk-21.0.7+6"
 export BAZEL="${PWD}/bin/bazel"
 
@@ -40,6 +47,9 @@ if [[ -n "${ENZYME_JAX_COMMIT}" ]]; then
 fi
 
 if [[ "${target}" == *-apple-darwin* ]]; then
+    cd ${WORKSPACE}/srcdir
+    tar xf MacOSX*.sdk.tar.xz
+    cd -
     # Compiling LLVM components within XLA requires macOS SDK 10.14
     # and then we use `std::reinterpret_pointer_cast` in ReactantExtra
     # which requires macOS SDK 11.3.
@@ -54,6 +64,10 @@ if [[ "${target}" == *-apple-darwin* ]]; then
 fi
 
 if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
+    cd ${WORKSPACE}/srcdir
+    tar zvf therock-dist-linux-*.tar.gz
+    cd -
+
     export ROCM_PATH=$WORKSPACE/srcdir
 
     mv $ROCM_PATH/lib/libhiprtc-builtins.so.7.1.25442-19ae9ff849 $ROCM_PATH/lib/libhiprtc-builtins.so.7.1.25442
@@ -438,6 +452,11 @@ elif [[ "${target}" == *mingw32* ]]; then
     clang @bazel-bin/libReactantExtra.so-2.params
 elif [[ "${target}" == aarch64-* ]] && [[ "${HERMETIC_CUDA_VERSION}" == *13.* ]]; then
     $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
+
+    cd ${WORKSPACE}/srcdir
+    tar xf libnvvm*.tar.xz
+    cd -
+
     cp /workspace/srcdir/libnvvm-linux-x86_64-*/nvvm/bin/cicc /workspace/bazel_root/*/external/cuda_nvvm/nvvm/bin/cicc
     $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
 elif [[ "${target}" == aarch64-* ]] && [[ "${HERMETIC_CUDA_VERSION}" == *12.* ]]; then
@@ -487,6 +506,7 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
     find bazel-bin
     find ${libdir}
 
+    
     install -Dvm 755 \
         $ROCM_PATH/lib/rocm_sysdeps/lib/librocm_sysdeps_numa.so* \
         -t ${libdir}/rocm_sysdeps/lib
@@ -514,6 +534,26 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
     install -Dvm 755 \
         $ROCM_PATH/lib/rocm_sysdeps/lib/librocm_sysdeps_drm_amdgpu.so* \
         -t ${libdir}/rocm_sysdeps/lib
+    
+    install -Dvm 755 \
+        $ROCM_PATH/lib/librccl.so* \
+        -t ${libdir}
+    
+    install -Dvm 755 \
+        $ROCM_PATH/lib/librocm_smi64.so* \
+        -t ${libdir}
+    
+    install -Dvm 755 \
+        $ROCM_PATH/lib/librocprofiler-register.so* \
+        -t ${libdir}
+    
+    install -Dvm 755 \
+        $ROCM_PATH/lib/librocm_sysdeps_numa.so* \
+        -t ${libdir}
+    
+   install -Dvm 755 \
+        $ROCM_PATH/lib/librocm-core.so* \
+        -t ${libdir}
 
     install -Dvm 755 \
         $ROCM_PATH/lib/libroctx64.so* \
@@ -533,6 +573,10 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
 
     install -Dvm 755 \
         $ROCM_PATH/lib/libhiprtc.so* \
+        -t ${libdir}
+    
+    install -Dvm 755 \
+        $ROCM_PATH/lib/libhiprtc-builtins.so* \
         -t ${libdir}
 
     install -Dvm 755 \
@@ -762,7 +806,7 @@ for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), cuda_version in ("n
     platform_sources = BinaryBuilder.AbstractSource[sources...]
     if Sys.isapple(platform)
         push!(platform_sources,
-    ArchiveSource("https://github.com/realjf/MacOSX-SDKs/releases/download/v0.0.1/MacOSX12.3.sdk.tar.xz",
+    	FileSource("https://github.com/realjf/MacOSX-SDKs/releases/download/v0.0.1/MacOSX12.3.sdk.tar.xz",
 		  "a511c1cf1ebfe6fe3b8ec005374b9c05e89ac28b3d4eb468873f59800c02b030"))
     end
 
@@ -770,53 +814,53 @@ for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), cuda_version in ("n
         if hermetic_cuda_version_map[cuda_version] == "13.0.1"
             # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_13.0.0.json
             push!(platform_sources,
-		  ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/libnvvm/linux-x86_64/libnvvm-linux-x86_64-13.0.88-archive.tar.xz",
+		  FileSource("https://developer.download.nvidia.com/compute/cuda/redist/libnvvm/linux-x86_64/libnvvm-linux-x86_64-13.0.88-archive.tar.xz",
 				"17ef1665b63670887eeba7d908da5669fa8c66bb73b5b4c1367f49929c086353"),
 		  )
 	    push!(platform_sources,
-                  ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-sbsa/cuda_nvcc-linux-sbsa-13.0.88-archive.tar.xz",
+                  FileSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-sbsa/cuda_nvcc-linux-sbsa-13.0.88-archive.tar.xz",
                                 "01b01e10aa2662ad1b3aeab3317151d7d6d4a650eeade55ded504f6b7fced18e"),
                   )
 	elseif hermetic_cuda_version_map[cuda_version] == "13.0.0"
             # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_13.0.0.json
             push!(platform_sources,
-                  ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-sbsa/cuda_nvcc-linux-sbsa-13.0.48-archive.tar.xz",
+                  FileSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-sbsa/cuda_nvcc-linux-sbsa-13.0.48-archive.tar.xz",
                                 "3146cee5148535cb06ea5727b6cc1b0d97a85838d1d98514dc6a589ca38e1495"),
                   )
         elseif hermetic_cuda_version_map[cuda_version] == "12.9.1"
             # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_12.8.1.json
             push!(platform_sources,
-                  ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-sbsa/cuda_nvcc-linux-sbsa-12.9.86-archive.tar.xz",
+                  FileSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-sbsa/cuda_nvcc-linux-sbsa-12.9.86-archive.tar.xz",
                                 "0aa1fce92dbae76c059c27eefb9d0ffb58e1291151e44ff7c7f1fc2dd9376c0d"),
                   )
         elseif hermetic_cuda_version_map[cuda_version] == "12.8.1"
             # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_12.8.1.json
             push!(platform_sources,
-                  ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-sbsa/cuda_nvcc-linux-sbsa-12.8.93-archive.tar.xz",
+                  FileSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-sbsa/cuda_nvcc-linux-sbsa-12.8.93-archive.tar.xz",
                                 "dc0b713ce69fd921aa53ac68610717d126fc273a3c554b0465cf44d7e379f467"),
                   )
         elseif hermetic_cuda_version_map[cuda_version] == "12.6.3"
             # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_12.6.3.json
             push!(platform_sources,
-                  ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-sbsa/cuda_nvcc-linux-sbsa-12.6.85-archive.tar.xz",
+                  FileSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-sbsa/cuda_nvcc-linux-sbsa-12.6.85-archive.tar.xz",
                                 "1b834df41cb071884f33b1e4ffc185e4799975057baca57d80ba7c4591e67950"),
                   )
         elseif hermetic_cuda_version_map[cuda_version] == "12.3.1"
             # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_12.3.1.json
             push!(platform_sources,
-                  ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-sbsa/cuda_nvcc-linux-sbsa-12.3.103-archive.tar.xz",
+                  FileSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-sbsa/cuda_nvcc-linux-sbsa-12.3.103-archive.tar.xz",
                                 "1bb1faac058a1e122adad09dabaa378ee9591762b7787a9144de845f99e03aed"),
                   )
         elseif hermetic_cuda_version_map[cuda_version] == "12.4.1"
             # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_12.4.1.json
             push!(platform_sources,
-                  ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-sbsa/cuda_nvcc-linux-sbsa-12.4.131-archive.tar.xz",
+                  FileSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-sbsa/cuda_nvcc-linux-sbsa-12.4.131-archive.tar.xz",
                                 "83f130dab0325e12b90fdf1279c0cbbd88acf638ef0a7e0cad72d50855a4f44a"),
                   )
         elseif hermetic_cuda_version_map[cuda_version] == "12.1.1"
             # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_12.1.1.json
             push!(platform_sources,
-                  ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-sbsa/cuda_nvcc-linux-sbsa-12.1.105-archive.tar.xz",
+                  FileSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-sbsa/cuda_nvcc-linux-sbsa-12.1.105-archive.tar.xz",
                                 "6e795ec791241e9320ec300657408cbfafbe7e79ceda0da46522cc85ced358f4"),
                   )
         end
@@ -835,17 +879,17 @@ for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), cuda_version in ("n
 
 	      if rocm_version == "6.4"
 	       push!(platform_sources,
-                  ArchiveSource("https://github.com/ROCm/TheRock/releases/download/nightly-tarball/therock-dist-linux-gfx94X-dcgpu-6.4.0rc20250520.tar.gz",
+                    FileSource("https://github.com/ROCm/TheRock/releases/download/nightly-tarball/therock-dist-linux-gfx94X-dcgpu-6.4.0rc20250520.tar.gz",
 				"b3d64777a79f33e8d1b50230f26ac769bd77d5bc11bd850ec111933c842914e9")
                   )
 	       elseif rocm_version == "6.5"
 	       push!(platform_sources,
-                  ArchiveSource("https://github.com/ROCm/TheRock/releases/download/nightly-tarball/therock-dist-linux-gfx94X-dcgpu-6.5.0rc20250610.tar.gz",
+                  FileSource("https://github.com/ROCm/TheRock/releases/download/nightly-tarball/therock-dist-linux-gfx94X-dcgpu-6.5.0rc20250610.tar.gz",
 				"113e44dcd7868ffab92193bbcb8653a374494f0c5b393545f08551ea835a1ee5")
                   )
 	       elseif rocm_version == "7.1"
 	       push!(platform_sources,
-                  ArchiveSource("https://therock-nightly-tarball.s3.amazonaws.com/therock-dist-linux-gfx120X-all-7.10.0a20251103.tar.gz",
+                  FileSource("https://therock-nightly-tarball.s3.amazonaws.com/therock-dist-linux-gfx120X-all-7.10.0a20251103.tar.gz",
 				"3cffe4ced6ba1defa526cb7b9d3cbad48791842d585eae48e614835355d9fd8b")
                   )
 	       end
@@ -912,16 +956,23 @@ for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), cuda_version in ("n
     end
 
     if gpu == "rocm"
+
+
     	for lib in (
-		"libamd_comgr",
+		"librccl",
+		"librocm-core",
 		"libamdhip64",
+		"libhiprtc-builtins",
+		"libhiprtc",
+		"librocm_smi64",
+		"librocprofiler-register",
+		"librocm_sysdeps_numa",
+
+		"libamd_comgr",
 		"libhipfft",
 		"libhipsolver",
 		"libhipsolver_fortran",
 		"libhsa-runtime64",
-		"librccl",
-		"librocm_smi64",
-		"librocprofiler-register",
 		"librocsolver",
 	)
 	    san = replace(lib, "-" => "_")
