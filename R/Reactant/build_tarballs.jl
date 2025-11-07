@@ -559,6 +559,10 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
     install -Dvm 755 \
         $ROCM_PATH/lib/libhipsolver_fortran.so* \
         -t ${libdir}
+    
+    install -Dvm 755 \
+        $ROCM_PATH/lib/libhipsolver.so* \
+        -t ${libdir}
 
     install -Dvm 755 \
         $ROCM_PATH/lib/libamd_comgr_loader.so* \
