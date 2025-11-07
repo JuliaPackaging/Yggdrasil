@@ -16,6 +16,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 
+apk add glib-dev
+
 if [[ "${target}" == *-mingw* ]]; then
     cd $WORKSPACE/srcdir/mingw*/mingw-w64-headers
     ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target
@@ -32,7 +34,7 @@ if [[ "${target}" == *-mingw* ]]; then
     make install
 fi
 
-cd $WORKSPACE/srcdir/pango*/
+cd $WORKSPACE/srcdir/pango*
 
 if [[ "${target}" == "${MACHTYPE}" ]]; then
     # When building for the host platform, the system libexpat is picked up
