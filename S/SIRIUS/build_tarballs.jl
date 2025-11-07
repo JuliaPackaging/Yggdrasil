@@ -6,11 +6,11 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "SIRIUS"
-version = v"7.6.1"
+version = v"7.9.0"
 
 sources = [
    GitSource("https://github.com/electronic-structure/SIRIUS.git",
-             "63202622b85f0c5ac5d7a6d66ab21adb6dd573cd")
+             "9c06388717b2a835a931cc5100cb5c450ee8e2f7")
 ]
 
 
@@ -88,6 +88,7 @@ dependencies = [
     Dependency("spla_jll"),
     Dependency("SpFFT_jll"),
     Dependency("COSTA_jll"),
+    Dependency("Fmt_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("LLVMOpenMP_jll", platforms=filter(Sys.isapple, platforms)),
     HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.28.1"))
