@@ -73,14 +73,15 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    HostBuildDependency("Gettext_jll"),
     HostBuildDependency("gperf_jll"),
+    BuildDependency("Xorg_xorgproto_jll"; platforms=filter(p -> Sys.isfreebsd(p) || Sys.islinux(p), platforms)),
     Dependency("Cairo_jll"; compat="1.18.5"),
     Dependency("Fontconfig_jll"; compat="2.16.0"),
     Dependency("FreeType2_jll"; compat="2.13.4"),
     Dependency("FriBidi_jll"; compat="1.0.17"),
     Dependency("Glib_jll"; compat="2.84.0"),
     Dependency("HarfBuzz_jll"; compat="8.5.1"),
-    BuildDependency("Xorg_xorgproto_jll"; platforms=filter(p -> Sys.isfreebsd(p) || Sys.islinux(p), platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
