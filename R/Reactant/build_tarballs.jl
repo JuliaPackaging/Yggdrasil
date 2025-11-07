@@ -6,7 +6,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-reactant_commit = "db8e3ef03f4de49070bc8304e11606d5fc61f5de"
+reactant_commit = "2a979f8d5c0895523395fa72a29e1fc97e517af3"
 version = v"0.0.257"
 
 sources = [
@@ -65,7 +65,7 @@ fi
 
 if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
     cd ${WORKSPACE}/srcdir
-    tar zvf therock-dist-linux-*.tar.gz
+    tar xzf therock-dist-linux-*.tar.gz
     cd -
 
     export ROCM_PATH=$WORKSPACE/srcdir
