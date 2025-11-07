@@ -71,16 +71,14 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
     export ROCM_PATH=$WORKSPACE/srcdir
 
     mv $ROCM_PATH/lib/libhiprtc-builtins.so.7.1.25442-19ae9ff849 $ROCM_PATH/lib/libhiprtc-builtins.so.7.1.25442
+    rm $ROCM_PATH/lib/libhiprtc-builtins.so.7
+    ln -s $ROCM_PATH/lib/libhiprtc-builtins.so.7.1.25442 $ROCM_PATH/lib/libhiprtc-builtins.so.7
     mv $ROCM_PATH/lib/libhiprtc.so.7.1.25442-19ae9ff849 $ROCM_PATH/lib/libhiprtc.so.7.1.25442
+    rm $ROCM_PATH/lib/libhiprtc.so.7
+    ln -s $ROCM_PATH/lib/libhiprtc.so.7.1.25442 $ROCM_PATH/lib/libhiprtc.so.7
     mv $ROCM_PATH/lib/libamdhip64.so.7.1.25442-19ae9ff849 $ROCM_PATH/lib/libamdhip64.so.7.1.25442
     rm $ROCM_PATH/lib/libamdhip64.so.7
     ln -s $ROCM_PATH/lib/libamdhip64.so.7.1.25442 $ROCM_PATH/lib/libamdhip64.so.7
-
-    # mv /workspace/srcdir/lib/libhiprtc-builtins.so.6.5.25281-42077334f /workspace/srcdir/lib/libhiprtc-builtins.so.6.5.25281
-    # mv /workspace/srcdir/lib/libhiprtc.so.6.5.25281-42077334f /workspace/srcdir/lib/libhiprtc.so.6.5.25281
-    # rm /workspace/srcdir/lib/libamdhip64.so.6
-    # mv $ROCM_PATH/lib/libamdhip64.so.6.5.25281-42077334f $ROCM_PATH/lib/libamdhip64.so.6.5.25281
-    # ln -s $ROCM_PATH/lib/libamdhip64.so.6.5.25281 /workspace/srcdir/lib/libamdhip64.so.6
 
     ln -s $ROCM_PATH/lib/llvm/amdgcn $ROCM_PATH/amdgcn
     mv $ROCM_PATH/bin/hipcc{,.real}
@@ -97,29 +95,6 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
     sed -i -e "s,PRE_FLAGS+=( -nostdinc++ ),PRE_FLAGS+=( -nostdinc++ -isystem/workspace/bazel_root/097636303b1142f44508c1d8e3494e4b/external/local_config_rocm/rocm/rocm_dist/lib/llvm/lib/clang/22/include/cuda_wrappers -isystem/workspace/bazel_root/097636303b1142f44508c1d8e3494e4b/external/local_config_rocm/rocm/rocm_dist/lib/llvm/lib/clang/22/include),g" $ROCM_PATH/bin/hipcc
     sed -i -e "s,export LD_LIBRARY_PATH,POST_FLAGS+=( --rocm-path=$ROCM_PATH -B $ROCM_PATH/lib/llvm/bin); export LD_LIBRARY_PATH,g" $ROCM_PATH/bin/hipcc
 fi
-
-# if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
-#     git clone https://github.com/ROCm/TheRock
-#     cd TheRock
-#
-#
-#     apk del cmake
-#
-#     bash ${WORKSPACE}/srcdir/miniconda.sh -b -p ${host_bindir}/miniconda
-#     ${host_bindir}/miniconda/bin/python -m venv .venv && source .venv/bin/activate
-#     # pip install -r requirements.txt
-#
-#     python ./build_tools/fetch_sources.py
-#
-#     export CCACHE_DIR=/root/.ccache
-#     export CCACHE_NOHASHDIR=yes
-#
-#     sed -i.bak1 -e "s/_extra_llvm_cmake_args}/_extra_llvm_cmake_args} -DCOMGR_BUILD_SHARED_LIBS=OFF/g" compiler/CMakeLists.txt
-#
-#     cmake -B build -GNinja .  -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DTHEROCK_AMDGPU_TARGETS="gfx942;gfx1030;gfx1100;gfx1200;gfx1201" -DTHEROCK_AMDGPU_DIST_BUNDLE_NAME=reactant -DTHEROCK_ENABLE_ROCPROF_TRACE_DECODER_BINARY=OFF -DCMAKE_C_COMPILER=$HOSTCC -DCMAKE_CXX_COMPILER=$HOSTCXX
-#     cmake --build build
-#     cd ..
-# fi
 
 mkdir -p .local/bin
 export LOCAL="`pwd`/.local/bin"
@@ -325,14 +300,6 @@ fi
 if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
     BAZEL_BUILD_FLAGS+=(--config=rocm)
     rm /usr/bin/realpath
-    if [[ "${GCC_MAJOR_VERSION}" -le 12 && "${target}" == x86_64-* ]]; then
-        # Someone wants to compile some code which requires flags not understood by GCC 12.
-        BAZEL_BUILD_FLAGS+=(--define=xnn_enable_avxvnniint8=false)
-    fi
-    if [[ "${GCC_MAJOR_VERSION}" -le 11 && "${target}" == x86_64-* ]]; then
-        # Someone wants to compile some code which requires flags not understood by GCC 11.
-        BAZEL_BUILD_FLAGS+=(--define=xnn_enable_avx512fp16=false)
-    fi
 
     if [[ "${target}" != x86_64-linux-gnu ]]; then
         # This is the standard `LD_LIBRARY_PATH` we have in our environment + `/usr/lib/csl-glibc-x86_64` to be able to run host `nvcc`/`ptxas`/`fatbinary` during compilation.
@@ -348,16 +315,6 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
     fi
 
     BAZEL_BUILD_FLAGS+=(--copt=-stdlib=libstdc++)
-
-    # export HIPCC_ENV="--sysroot=/opt/x86_64-linux-gnu/x86_64-linux-gnu/sys-root;-D_GLIBCXX_USE_CXX11_ABI=1;-stdlib=libstdc++;--gcc-install-dir=/opt/x86_64-linux-gnu/lib/gcc/x86_64-linux-gnu/13.2.0;-isystem/opt/x86_64-linux-gnu/x86_64-linux-gnu/include/c++/13.2.0"
-
-	# 	--action_env=HIP_PATH=${prefix}/hip
-	# 	--action_env=HSA_PATH=${prefix}
-	# 	--action_env=HIP_CLANG_PATH=${prefix}/llvm/bin
-	# 	--action_env=HIP_LIB_PATH=${prefix}/hip/lib
-	# 	--action_env=DEVICE_LIB_PATH=${prefix}/amdgcn/bitcode
-    # for hermetic rocm
-    # apk add zlib
 
     BAZEL_BUILD_FLAGS+=(
 		--action_env=ROCM_PATH=$ROCM_PATH
@@ -626,7 +583,7 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
 
 
      install -Dvm 755 \
-        $ROCM_PATH/lib/llvm/lib/libLLVM.so.20.0git \
+        $ROCM_PATH/lib/llvm/lib/libLLVM.so*git \
        -t ${libdir}/llvm/lib
 
      install -Dvm 755 \
