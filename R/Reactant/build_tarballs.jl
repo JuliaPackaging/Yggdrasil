@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 reactant_commit = "e2f5c8c8c77f0f936d856486e4dd207161f81bf7"
-version = v"0.0.257"
+version = v"0.0.258"
 
 sources = [
    GitSource(repo, reactant_commit),
