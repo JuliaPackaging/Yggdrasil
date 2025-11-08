@@ -6,7 +6,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-reactant_commit = "2a979f8d5c0895523395fa72a29e1fc97e517af3"
+reactant_commit = "e2f5c8c8c77f0f936d856486e4dd207161f81bf7"
 version = v"0.0.257"
 
 sources = [
@@ -700,7 +700,7 @@ for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), cuda_version in ("n
 	 if rocm_version != "none"
 	     continue
 	 end
-	gpu_version = rocm_version
+	gpu_version = cuda_version
     end
     augmented_platform["gpu_version"] = gpu_version
     dependencies = []
