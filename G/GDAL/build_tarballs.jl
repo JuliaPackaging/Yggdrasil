@@ -18,8 +18,10 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 
 # Collection of sources required to build GDAL
 sources = [
+    # The actual release commit b5a9fab4df12cb9e2d1b7db95a5d9902f1cc4720 does not exist in the repository.
+    # We use the previous commit instead. The missing commit is inconsequential for a source build.
     GitSource("https://github.com/OSGeo/gdal.git",
-        "b5a9fab4df12cb9e2d1b7db95a5d9902f1cc4720"),
+        "6d3d306c07e0146859364d7ec6e9e0225fc98208"),
     FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
         "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
     DirectorySource("./bundled"),
