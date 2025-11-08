@@ -1,15 +1,15 @@
 using BinaryBuilder
 
 name = "iceberg_rust_ffi"
-version = v"0.2.0"
+version = v"0.3.0"
 
 sources = [
-    GitSource("https://github.com/RelationalAI/iceberg_rust_ffi.git", "e7bb4368f0355e4f0a15b3c8ad14d8c136bca38a"),
+    GitSource("https://github.com/RelationalAI/RustyIceberg.jl.git", "a23022e750770ddb983dbaa7f3f103753f2813aa"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/iceberg_rust_ffi/
+cd ${WORKSPACE}/srcdir/RustyIceberg.jl/iceberg_rust_ffi/
 
 # Build the library with native compilation
 cargo rustc --release --lib --crate-type=cdylib

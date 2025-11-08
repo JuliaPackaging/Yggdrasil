@@ -23,6 +23,10 @@ function blas_script(;blas32::Bool=false)
       INDEX64="OFF"
     fi
 
+    # Remove the stop command from the xerbla function to prevent
+    # us from exiting Julia on bad arguments
+    sed -i '/^[ \t]*STOP/d' SRC/xerbla.f
+
     # FortranCInterface_VERIFY fails on macOS, but it's not actually needed for the current build
     sed -i 's/FortranCInterface_VERIFY/# FortranCInterface_VERIFY/g' ./CBLAS/CMakeLists.txt
     sed -i 's/FortranCInterface_VERIFY/# FortranCInterface_VERIFY/g' ./LAPACKE/include/CMakeLists.txt

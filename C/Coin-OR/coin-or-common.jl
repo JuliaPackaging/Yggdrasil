@@ -81,24 +81,20 @@ Ipopt_gitsha = "2695946fa79d2e84f3034e065e788933a81466eb"
 Ipopt_verson_offset = v"0.0.0"
 Ipopt_version = offset_version(Ipopt_upstream_version, Ipopt_verson_offset)
 
-ALPS_upstream_version = v"1.5.7"
-# This is not the exact 1.5.7 tag, but a few commits later on stable/1.5
-ALPS_gitsha = "5b1a0b524979764d6ca929446762762712c035bb"
-ALPS_version_offset = v"0.0.2"
-ALPS_version = offset_version(ALPS_upstream_version, ALPS_version_offset)
+ALPS_version = offset_version(v"1.5.12", v"0.0.0")
+ALPS_gitsha = "c90858e4ca11c7f81168cd14dc137742fa3510f0"
 
-BiCePS_version = offset_version(v"0.94.4", v"0.0.0")
-BiCePS_gitsha = "8e41545a3b1a36ca1d306b3af96f3804dc57e61f"
+BiCePS_version = offset_version(v"0.94.9", v"0.0.0")
+BiCePS_gitsha = "0b60a72f7b52b2bae813dedd0e08aab5579e0218"
 
-CHiPPS_BLIS_version = offset_version(v"0.94.8", v"0.0.2")
-# This is not the exact 0.94.8 tag, but a few commits later on releases/0.94.8
-CHiPPS_BLIS_gitsha = "0ad6d4530d48e3b5f417a3407f5f2e8605145b50"
+CHiPPS_BLIS_version = offset_version(v"0.94.13", v"0.0.0")
+CHiPPS_BLIS_gitsha = "0262763cdd8f77f1ea6ec506c4b5ccae19b4451c"
 
-SYMPHONY_version = offset_version(v"5.6.19", v"0.0.0")
-SYMPHONY_gitsha = "28adc89185be98780b1ab6528ab270e569561b87"
+SYMPHONY_version = offset_version(v"5.7.3", v"0.0.0")
+SYMPHONY_gitsha = "03006fc6dcf77da9becc7e55e8a0879201905b96"
 
-MibS_version = offset_version(v"1.1.3", v"0.0.1")
-MibS_gitsha = "4b7ec93c4bd1d6a978deff9987cf1df74f6598d3"
+MibS_version = offset_version(v"1.2.2", v"0.0.0")
+MibS_gitsha = "956d5dbfa0482c5d10b7ee40fea58cbae484dd46"
 
 SHOT_gitsha = "11fda1ecb84af9718f1e0c0ebf7ae5ae8c45041a"
 SHOT_version = offset_version(v"1.1.0", v"0.0.0")

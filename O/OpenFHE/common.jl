@@ -7,6 +7,8 @@ function prepare_openfhe_build(name::String, git_hash::String)
     sources = [
         GitSource("https://github.com/openfheorg/openfhe-development.git",
                   git_hash),
+        FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
         DirectorySource("../OpenFHE/bundled")
     ]
 
@@ -24,6 +26,13 @@ function prepare_openfhe_build(name::String, git_hash::String)
 
     mkdir build && cd build
 
+    # Install newer SDK which supports `std::filesystem`
+    if [[ "${target}" == x86_64-apple-darwin* ]]; then
+        export MACOSX_DEPLOYMENT_TARGET=10.15
+        rm -rf /opt/${target}/${target}/sys-root/System
+        tar --extract --file=${WORKSPACE}/srcdir/MacOSX10.15.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX10.15.sdk/System MacOSX10.15.sdk/usr
+    fi
+
     cmake .. \
       -DCMAKE_INSTALL_PREFIX=$prefix \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -39,12 +48,7 @@ function prepare_openfhe_build(name::String, git_hash::String)
     make install
     """
     
-    # These are the platforms we will build for by default, unless further
-    # platforms are passed in on the command line
-    # Required Julia version is 1.10, exclude not released versions
-    julia_versions = filter(v -> !occursin("DEV", string(v)), julia_full_versions)
-    julia_versions = filter(v -> v >= v"1.10", julia_versions)
-    platforms = vcat(libjulia_platforms.(julia_versions)...)
+    platforms = supported_platforms()
 
     # We cannot build with musl since OpenFHE requires the `execinfo.h` header for `backtrace`
     platforms = filter(p -> libc(p) != "musl", platforms)
