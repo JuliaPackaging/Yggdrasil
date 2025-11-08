@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "GDAL"
-upstream_version = v"3.11.5"
+upstream_version = v"3.12.0"
 # The version offset is used for two purposes:
 # - If we need to release multiple jll packages for the same GDAL
 #   library (usually for weird packaging reasons) then we increase the
@@ -11,7 +11,7 @@ upstream_version = v"3.11.5"
 # - Minor versions of GDAL are usually binary incompatible because
 #   they increase the shared library soname. To encode this, we
 #   increase the major version number of the version offset.
-version_offset = v"3.0.0"
+version_offset = v"4.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -19,7 +19,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to build GDAL
 sources = [
     GitSource("https://github.com/OSGeo/gdal.git",
-        "6720262e3f40ca27d8cb4bc099fdf5c7786ac2df"),
+        "b5a9fab4df12cb9e2d1b7db95a5d9902f1cc4720"),
     FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
         "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
     DirectorySource("./bundled"),
@@ -120,6 +120,7 @@ products = [
     LibraryProduct("libgdal", :libgdal),
 
     # Using a `_path` suffix here would be very confusing because BinaryBuilder already adds a `_path` suffix.
+    ExecutableProduct("gdal", :gdal_exe),
     ExecutableProduct("gdal_contour", :gdal_contour_exe),
     ExecutableProduct("gdal_create", :gdal_create_exe),
     ExecutableProduct("gdal_footprint", :gdal_footprint_exe),
