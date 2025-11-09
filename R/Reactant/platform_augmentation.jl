@@ -29,7 +29,7 @@ else
     nothing
 end
 
-const cuda_version_preference = if haskey(preferences, "gpu_version")
+const gpu_version_preference = if haskey(preferences, "gpu_version")
     expected = ("none", "12.9", "13.0", "7.1")
     if isa(preferences["gpu_version"], String) && preferences["gpu_version"] in expected
         preferences["gpu_version"]
