@@ -26,8 +26,10 @@ sources = [
     #               "acc11cb2bdc69678dc8bba747c24a28233c58596f81f03785bf2b7bb7a0ef7dc"),
     # ArchiveSource("https://www.mpich.org/static/downloads/$(version_str)/mpich-$(version_str).tar.gz",
     #               "2d738c70b0e45b787d5931b6ddfd0189e586773188e93c7fd1d934a99a9cc55d"),
-    # This is the main branch as of 2025-10-05. This will likely turn into MPICH 5.0.
-    GitSource("https://github.com/pmodels/mpich.git", "f47908fa4a74bf4ac29997202fb2967c8c59b0c9"),
+    # # This is the main branch as of 2025-10-05. This will likely turn into MPICH 5.0.
+    # GitSource("https://github.com/pmodels/mpich.git", "f47908fa4a74bf4ac29997202fb2967c8c59b0c9"),
+    ArchiveSource("https://www.mpich.org/static/downloads/5.0.0b1/mpich-5.0.0b1.tar.gz",
+                  "fb862b0c733c004477ba95ee879b90b17940726ed11a9427b68d90fb86888412"),
 
     # Patches
     DirectorySource("bundled"),
@@ -47,9 +49,9 @@ cd ${WORKSPACE}/srcdir/mpich*
 # `<pthread_np.h>` should not actually be used on FreeBSD.)
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pthread_np.patch
 
-git submodule update --init
+# git submodule update --init
 
-./autogen.sh
+# ./autogen.sh
 
 # - Do not install doc and man files which contain files which clashing names on
 #   case-insensitive file systems:
