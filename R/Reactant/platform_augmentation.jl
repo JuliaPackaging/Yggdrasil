@@ -118,11 +118,11 @@ function augment_platform!(platform::Platform)
             path = Libdl.dlpath(handle)
             Libdl.dlclose(handle)
 
-            if cuda_version_tag == "none" && current_cuda_version isa VersionNumber
+            if gpu_version_tag == "none" && current_cuda_version isa VersionNumber
                 if v"12" <= current_cuda_version < v"13"
-                    cuda_version_tag = "12.9"
+                    gpu_version_tag = "12.9"
                 elseif v"13.0" <= current_cuda_version < v"14"
-                    cuda_version_tag = "13.0"
+                    gpu_version_tag = "13.0"
                 else
                     @warn "CUDA version $(current_cuda_version) in $(path) not supported with this version of Reactant (min supported: 12)"
                 end
@@ -144,8 +144,8 @@ function augment_platform!(platform::Platform)
             #Libdl.dlclose(handle)
 	    gpu_version_tag = "7.1"
 
-            @debug "Adding include dependency on $(path)"
-            Base.include_dependency(path)
+            #@debug "Adding include dependency on $(path)"
+            #Base.include_dependency(path)
             gpu = "rocm"
         end
 
