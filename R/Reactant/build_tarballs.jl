@@ -6,8 +6,8 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-reactant_commit = "e2f5c8c8c77f0f936d856486e4dd207161f81bf7"
-version = v"0.0.258"
+reactant_commit = "182c9fdc2b8b029af43f84d23a1de64b0a737fa1"
+version = v"0.0.259"
 
 sources = [
    GitSource(repo, reactant_commit),
@@ -463,6 +463,9 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
     find bazel-bin
     find ${libdir}
 
+    install -Dvm 755 \
+        $ROCM_PATH/lib/rocm_sysdeps/lib/librocm_sysdeps_dw.so* \
+        -t ${libdir}/rocm_sysdeps/lib
     
     install -Dvm 755 \
         $ROCM_PATH/lib/rocm_sysdeps/lib/librocm_sysdeps_numa.so* \
