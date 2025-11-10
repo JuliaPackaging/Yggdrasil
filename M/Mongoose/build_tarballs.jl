@@ -19,7 +19,7 @@ LIBS=""
 if [[ "${target}" == *mingw* ]]; then
     LIBS="-lws2_32"
 fi
-cc -fPIC -O2 -shared mongoose/mongoose.c -o ${libdir}/libmongoose.${dlext} "${LIBS}"
+cc -fPIC -O2 -shared mongoose/mongoose.c -o ${libdir}/libmongoose.${dlext} ${LIBS}
 
 install_license mongoose/LICENSE
 """
