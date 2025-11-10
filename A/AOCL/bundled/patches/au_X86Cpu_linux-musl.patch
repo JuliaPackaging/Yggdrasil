@@ -1,0 +1,20 @@
+diff --git a/Library/Cpuid/X86Cpu.cc b/Library/Cpuid/X86Cpu.cc
+index a65f906..283bada 100644
+--- a/Library/Cpuid/X86Cpu.cc
++++ b/Library/Cpuid/X86Cpu.cc
+@@ -68,7 +68,14 @@ X86Cpu::X86Cpu(CpuNumT num)
+         cpu_set_t currentMask;
+         cpu_set_t newMask;
+         cpu_set_t testMask;
+-        auto      tid = gettid();
++        #if defined(__GLIBC__)
++            auto tid = gettid();
++        #else
++            #ifndef SYS_gettid
++                #define SYS_gettid 186  // x86_64 Linux syscall number for gettid
++            #endif
++            auto tid = syscall(SYS_gettid);
++        #endif
+         int result    = sched_getaffinity(tid, sizeof(cpu_set_t), &currentMask);
+ 
+         AUD_ASSERT(result == 0, "Failed to get thread affinity.");
