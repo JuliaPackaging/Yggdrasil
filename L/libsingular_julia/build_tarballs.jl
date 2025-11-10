@@ -63,10 +63,10 @@ dependencies = [
 ]
 
 # we want to get notified of any changes to julia_compat, and adapt `version` accordingly
-@assert libjulia_julia_compat <= v"1.10.0"
+@assert libjulia_min_julia_version <= v"1.10.0"
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    preferred_gcc_version=v"8", julia_compat=string(libjulia_julia_compat))
+    preferred_gcc_version=v"8", julia_compat=string(libjulia_min_julia_version))
 
 # rebuild trigger: 0
