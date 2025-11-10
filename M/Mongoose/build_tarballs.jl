@@ -15,6 +15,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 mkdir -p ${libdir}
+LIBS=""
 if [[ "${target}" == *mingw* ]]; then
     LIBS="-lws2_32"
 fi
