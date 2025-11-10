@@ -1,6 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, Pkg
+using BinaryBuilder
 
 name = "libzenohc"
 version = v"1.6.2"
@@ -48,7 +48,7 @@ filter!(p -> arch(p) != "riscv64", platforms)
 filter!(p -> os(p) != "freebsd", platforms)
 
 # The products that we will ensure are always built
-products = [
+products = Product[
     LibraryProduct("libzenohc", :libzenohc)
 ]
 
