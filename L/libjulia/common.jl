@@ -59,6 +59,10 @@ function libjulia_platforms(julia_version)
     return platforms
 end
 
+function libjulia_julia_compat(julia_versions=julia_versions)
+    return join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
+end
+
 # Collection of sources required to build Julia
 function build_julia(ARGS, version::VersionNumber; jllversion=version)
     name = "libjulia"
@@ -433,6 +437,6 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     if any(should_build_platform.(triplet.(platforms)))
         build_tarballs(ARGS, name, jllversion, sources, script, platforms, products, dependencies;
                    preferred_gcc_version=gcc_ver, preferred_llvm_version=v"17",
-                   lock_microarchitecture=false, julia_compat=string(libjulia_min_julia_version))
+                   lock_microarchitecture=false, julia_compat=libjulia_julia_compat(julia_versions))
     end
 end

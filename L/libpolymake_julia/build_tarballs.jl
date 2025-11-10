@@ -23,7 +23,7 @@ version = v"0.14.3"
 
 # reminder: change the above version when changing the supported julia versions
 # julia_versions is now taken from libjulia/common.jl and filtered
-julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
+julia_compat = libjulia_julia_compat(julia_versions)
 
 # Collection of sources required to build libpolymake_julia
 sources = [

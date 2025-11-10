@@ -67,6 +67,6 @@ products = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"7", julia_compat=string(libjulia_min_julia_version))
+               preferred_gcc_version=v"7", julia_compat=libjulia_julia_compat(julia_versions))
 
 # rebuild trigger: 1
