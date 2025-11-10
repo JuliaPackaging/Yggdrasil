@@ -6,11 +6,11 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "OpenFOAM_com"
-version = v"2312.0.0"
+version = v"2506.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://develop.openfoam.com/Development/openfoam.git", "1d8f0d55f79e6488dae75e4b839e358a88af77b5")
+    GitSource("https://gitlab.com/openfoam/openfoam.git", "615aae61d7e95e110ca842ca105c799d10f59178")
 ]
 
 # In order to set up OpenFOAM, we need to know the version of some of the
@@ -24,11 +24,16 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/openfoam
 git submodule update --init modules/cfmesh modules/avalanche
 
-# Adding -rpath-links #TODO need to automate for other platforms
-## For linux64
+if [[ "${target}" == *x86_64-linux* ]]; then
+    BUILD_FOLDER="linux64GccDPInt32Opt"
+elif [[ "${target}" == *aarch64-linux* ]]; then
+    BUILD_FOLDER="linuxARM64GccDPInt32Opt"    
+fi
+
+# Adding -rpath-links 
 LDFLAGS=""
 for dir in "" "/dummy" "/mpi-system"; do
-    LDFLAGS="${LDFLAGS} -Wl,-rpath-link=${PWD}/platforms/linux64GccDPInt32Opt/lib${dir}"
+    LDFLAGS="${LDFLAGS} -Wl,-rpath-link=${PWD}/platforms/${BUILD_FOLDER}/lib${dir}"
 done
 LDFLAGS="${LDFLAGS} -Wl,-rpath-link=${libdir}"
 
@@ -83,14 +88,19 @@ fi
 # Setup the environment. Failures allowed
 source etc/bashrc || true
 
+echo ${WM_ARCH}
+echo ${WM_COMPILER}
 # Build!
-./Allwmake -j${nproc} -q -s
+echo [ "${WM_COMPILER%Mingw}" != "$WM_COMPILER" ] && [ "$WM_ARCH" != win64 ]
+wmake/src/Allmake -j${nproc}
+applications/test/00-dummy/Allwmake
+# ./Allwmake -j${nproc} -q -s
 
 # Copying the binaries and etc to the correct directories
-mkdir -p "${libdir}" "${bindir}"
-cp platforms/linux64GccDPInt32Opt/lib/{,dummy/,sys-mpi/}*.${dlext}* "${libdir}/."
-cp platforms/linux64GccDPInt32Opt/bin/* "${bindir}/."
-cp -r etc/ "${prefix}/."
+# mkdir -p "${libdir}" "${bindir}"
+# cp platforms/${BUILD_FOLDER}/lib/{,dummy/,sys-mpi/}*.${dlext}* "${libdir}/."
+# cp platforms/${BUILD_FOLDER}/bin/* "${bindir}/."
+# cp -r etc/ "${prefix}/."
 """
 
 augment_platform_block = """
@@ -102,7 +112,8 @@ augment_platform_block = """
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Platform("x86_64", "linux"; libc = "glibc")
+    # Platform("x86_64", "linux"; libc = "glibc"),
+    Platform("aarch64", "linux"; libc = "glibc")
 ]
 platforms = expand_cxxstring_abis(platforms)
 
@@ -559,17 +570,17 @@ products = [
 init_block = raw"""ENV["WM_PROJECT_DIR"] = artifact_dir"""
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="flex_jll", uuid="48a596b8-cc7a-5e48-b182-65f75e8595d0"))
+    HostBuildDependency(PackageSpec(name="flex_jll", uuid="48a596b8-cc7a-5e48-b182-65f75e8595d0"))
     BuildDependency(PackageSpec(name="CGAL_jll", uuid="8fcd9439-76b0-55f4-a525-bad0597c05d8"))
     Dependency(PackageSpec(name="SCOTCH_jll", uuid="a8d0f55d-b80e-548d-aff6-1a04c175f0f9"); compat=SCOTCH_VERSION)
     Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a"); compat=FFTW_VERSION)
     Dependency(PackageSpec(name="PTSCOTCH_jll", uuid="b3ec0f5a-9838-5c9b-9e77-5f2c6a4b089f"))
     Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70"))
-    Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
+    Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"); compat="1.2.11")
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
-    preferred_gcc_version = v"9", init_block)
+    preferred_gcc_version = v"10", julia_compat="1.6", init_block)
