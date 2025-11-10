@@ -14,22 +14,19 @@ script = raw"""
 if [[ "${target}" == *-apple-darwin* ]]; then
     actual_lib_dir="${WORKSPACE}/$(readlink ${WORKSPACE}/destdir)/lib"
     export LDFLAGS="-L${actual_lib_dir} -lz"
-else
-    export LDFLAGS="-L${libdir}"
 fi
-cd $WORKSPACE/srcdir
-atomic_patch -p1 fix_cmakelists_for_slow5lib.patch
-cd slow5lib/
+cd $WORKSPACE/srcdir/slow5lib
+atomic_patch -p1 ../fix_cmakelists_for_slow5lib.patch
 cmake -B build -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel ${nproc}
-cmake --install build
-cp $WORKSPACE/srcdir/slow5lib/build/libslow5.${dlext} $WORKSPACE/destdir/lib
+install -Dvm 755 $WORKSPACE/srcdir/slow5lib/build/libslow5.${dlext} ${libdir}/libslow5.${dlext}
 cp -r $WORKSPACE/srcdir/slow5lib/include/slow5 $WORKSPACE/destdir/include
 install_license ${WORKSPACE}/srcdir/slow5lib/LICENSE
 """
 
-platforms = filter(plt -> plt.tags["os"] != "windows" && plt.tags["arch"] != "riscv64",
-                   supported_platforms())
+platforms = supported_platforms()
+filter!(!Sys.iswindows, platforms)
+filter!(p -> arch(p) != "riscv64", platforms)
 
 
 products = [
