@@ -15,12 +15,10 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 mkdir -p ${libdir}
-CFLAGS="-fPIC -O2"
 if [[ "${target}" == *mingw* ]]; then
-    ${CC} ${CFLAGS} -shared mongoose/mongoose.c -o ${libdir}/libmongoose.${dlext} -lws2_32;
-else
-    ${CC} ${CFLAGS} -shared mongoose/mongoose.c -o ${libdir}/libmongoose.${dlext};
+    LIBS="-lws2_32"
 fi
+cc -fPIC -O2 -shared mongoose/mongoose.c -o ${libdir}/libmongoose.${dlext} "${LIBS}"
 
 install_license mongoose/LICENSE
 """
