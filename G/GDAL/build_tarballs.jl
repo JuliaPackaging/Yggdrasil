@@ -32,6 +32,8 @@ script = raw"""
 cd $WORKSPACE/srcdir/gdal
 
 atomic_patch -p1 ../patches/bsd-environ-undefined-fix.patch
+# Some of our Linux build environments are too old to define `O_TMPFILE`; define it manually
+atomic_patch -p1 ../patches/tmpfile.patch
 
 if [[ "${target}" == *-freebsd* ]]; then
     # Our FreeBSD libc has `environ` as undefined symbol, so the linker will
@@ -205,7 +207,8 @@ dependencies = [
     Dependency("libpng_jll"; compat="1.6.47"),
     Dependency("libwebp_jll"; compat="1.5.0"),
     Dependency("muparser_jll"; compat="2.3.5"),
-    BuildDependency("exprtk_jll"),
+    # Disable exprtk on Windows, it exports too many symbols (21086, with at most 65535 allowed)
+    BuildDependency("exprtk_jll", platforms=filter(!Sys.iswindows, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
