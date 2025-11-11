@@ -5,22 +5,32 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "cuPDLPx"
-version = v"0.1.1"
+version = v"0.1.2"
 
 
 sources = [
     GitSource(
         "https://github.com/MIT-Lu-Lab/cuPDLPx.git",
-        "e98e56594f5edca01a9c807d626c398346b5076c",
+        "e4026316e3d23ddccd3a3ba7ba41faee40797c05",
     ),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/cuPDLPx
 install_license LICENSE
+
 export CUDA_HOME="${prefix}/cuda"
 export PATH=${PATH}:${CUDA_HOME}/bin
-make install PREFIX=$prefix
+
+cmake -B build -S . \
+    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_HOME \
+
+cmake --build build --config Release -j${nproc}
+
+cmake --install build
 """
 
 products = [
