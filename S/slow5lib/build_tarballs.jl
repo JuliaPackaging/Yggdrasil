@@ -12,8 +12,7 @@ sources = [
 
 script = raw"""
 if [[ "${target}" == *-apple-darwin* ]]; then
-    actual_lib_dir="${WORKSPACE}/$(readlink ${WORKSPACE}/destdir)/lib"
-    export LDFLAGS="-L${actual_lib_dir} -lz"
+    export LDFLAGS="-lz"
 fi
 cd $WORKSPACE/srcdir/slow5lib
 atomic_patch -p1 ../fix_cmakelists_for_slow5lib.patch
