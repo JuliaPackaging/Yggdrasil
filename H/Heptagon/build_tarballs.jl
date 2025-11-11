@@ -16,7 +16,7 @@ sources = [
               "d71051f500c4f34c9faf93192a593cdf4903b0c0"),  # 20240715
 
     GitSource("https://github.com/JuliaComputing/heptagon",
-              "788812e81ddb7856db9f3c2544c5c8c771ab7ae3")
+              "43b7bb6f28905892aaafdddf38a3520b50ee8d73")
 ]
 
 script = raw"""
