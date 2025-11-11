@@ -13,15 +13,18 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
+cd $WORKSPACE/srcdir/mongoose
 mkdir -p ${libdir}
+
+atomic_patch -p1 ../patches/add-mg_conn_get_fn_data-helper.patch
+
 LIBS=""
 if [[ "${target}" == *mingw* ]]; then
     LIBS="-lws2_32"
 fi
-cc -fPIC -O2 -shared mongoose/mongoose.c -o ${libdir}/libmongoose.${dlext} ${LIBS}
+cc -fPIC -O2 -shared mongoose.c -o ${libdir}/libmongoose.${dlext} ${LIBS}
 
-install_license mongoose/LICENSE
+install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
