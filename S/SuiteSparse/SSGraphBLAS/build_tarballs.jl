@@ -3,7 +3,7 @@ include("../common.jl")
 name = "SSGraphBLAS"
 version = v"10.2.0"
 
-SS_version_str = "7.12.1"
+SS_version_str = "7.12.0"
 SS_version = VersionNumber(SS_version_str)
 
 sources = suitesparse_sources(SS_version)
