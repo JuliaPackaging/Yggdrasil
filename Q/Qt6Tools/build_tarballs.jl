@@ -99,9 +99,8 @@ products = [
 augment_platform_block = """
     using Base.BinaryPlatforms
     $(LLVM.augment)
-    function augment_platform!(platform::Platform)
-        augment_llvm!(platform)
-    end"""
+    augment_platform!(platform::Platform) = augment_llvm!(platform)
+    """
 
 # determine exactly which tarballs we should build
 llvm_versions = [v"20.1.8+0"]
