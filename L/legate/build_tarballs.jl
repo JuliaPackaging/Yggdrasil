@@ -12,9 +12,9 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 include("make_script.jl")
 
 name = "legate"
-version = v"25.8" # Year.Month
+version = v"25.10" # Year.Month
 sources = [
-    GitSource("https://github.com/nv-legate/legate.git","47132dace5c2bb6cd16ba605eeaa37aea67c564b"),
+    GitSource("https://github.com/nv-legate/legate.git","b0a20719ce9c5f63e8b1c3ddd1e592af5e7a3df6"),
     DirectorySource("./bundled"),
     FileSource("https://repo.anaconda.com/miniconda/Miniconda3-py311_24.3.0-0-Linux-x86_64.sh", 
                 "4da8dde69eca0d9bc31420349a204851bfa2a1c87aeb87fe0c05517797edaac4", "miniconda.sh")
@@ -29,7 +29,7 @@ cpu_platform = [Platform("x86_64", "linux")]
 cuda_platforms = CUDA.supported_platforms(; min_version = MIN_CUDA_VERSION, max_version = MAX_CUDA_VERSION)
 all_platforms = [cpu_platform; cuda_platforms]
 
-filter!(p -> arch(p) == "x86_64" || arch(p) == "aarch64", all_platforms)
+filter!(p -> arch(p) == "x86_64", all_platforms)
 
 all_platforms = expand_cxxstring_abis(all_platforms)
 filter!(p -> cxxstring_abi(p) == "cxx11", all_platforms)
