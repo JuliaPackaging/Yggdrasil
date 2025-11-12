@@ -7,7 +7,10 @@ version = v"1.6.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/eclipse-zenoh/zenoh-c.git", "f376456ccf75ed837a21a186bdf5191cba50eb3b")
+    GitSource(
+        "https://github.com/eclipse-zenoh/zenoh-c.git",
+        "f376456ccf75ed837a21a186bdf5191cba50eb3b",
+    ),
 ]
 
 # Bash recipe for building across all platforms
@@ -48,15 +51,23 @@ filter!(p -> arch(p) != "riscv64", platforms)
 filter!(p -> os(p) != "freebsd", platforms)
 
 # The products that we will ensure are always built
-products = Product[
-    LibraryProduct("libzenohc", :libzenohc)
-]
+products = Product[LibraryProduct(["libzenohc", "zenohc"], :libzenohc)]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
-]
+dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat="1.6", compilers=[:rust, :c],
-    preferred_gcc_version=v"14.2.0", lock_microarchitecture=false)
+build_tarballs(
+    ARGS,
+    name,
+    version,
+    sources,
+    script,
+    platforms,
+    products,
+    dependencies;
+    julia_compat = "1.6",
+    compilers = [:rust, :c],
+    preferred_gcc_version = v"8.1.0",
+    lock_microarchitecture = false,
+)
