@@ -10,8 +10,8 @@ version = v"2.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    # This is some time after the prerelease 2.0.0-4
-    GitSource("https://github.com/HDFGroup/hdf5", "e5f526b62d3ca81ee281a68626beb5c3edd8dcc3"),
+    ArchiveSource("https://github.com/HDFGroup/hdf5/releases/download/$(version)/hdf5-$(version).tar.gz",
+                  "f4c2edc5668fb846627182708dbe1e16c60c467e63177a75b0b9f12c19d7efed"),
     FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
     DirectorySource("bundled"),
