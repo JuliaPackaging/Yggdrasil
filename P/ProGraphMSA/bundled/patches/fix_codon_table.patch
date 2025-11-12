@@ -1,0 +1,40 @@
+diff --git a/src/Alphabet.cpp b/src/Alphabet.cpp
+index 6f95142..37aea50 100644
+--- a/src/Alphabet.cpp
++++ b/src/Alphabet.cpp
+@@ -3,7 +3,7 @@
+ 
+ #define GAP_CHAR '-'
+ 
+-const char aa_translation_table[256] = { -1, -1, -1, -1, -1, -1, -1, -1, -1,
++const signed char aa_translation_table[256] = { -1, -1, -1, -1, -1, -1, -1, -1, -1,
+ 		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+ 		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+ 		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+@@ -19,7 +19,7 @@ const char aa_translation_table[256] = { -1, -1, -1, -1, -1, -1, -1, -1, -1,
+ 		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+ 		-1, -1, -1, -1, -1, -1, -1, -1, -1 };
+ 
+-const char dna_translation_table[256] = { -1, -1, -1, -1, -1, -1, -1, -1, -1,
++const signed char dna_translation_table[256] = { -1, -1, -1, -1, -1, -1, -1, -1, -1,
+ 		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+ 		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+ 		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+@@ -48,7 +48,7 @@ const char* codon_inv_translation_table[62] = { "TTT", "TTC", "TTA",
+ 		"AGA", "AGG", "GTT", "GTC", "GTA", "GTG", "GCT", "GCC", "GCA", "GCG",
+ 		"GAT", "GAC", "GAA", "GAG", "GGT", "GGC", "GGA", "GGG", "XXX" };
+ 
+-const char codon_from_product_table[64] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, -1,
++const signed char codon_from_product_table[64] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, -1,
+ 		-1, 10, 11, -1, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
+ 		26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43,
+ 		44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60 };
+@@ -59,7 +59,7 @@ const char codon_inv2_translation_table[63] = {
+ const char codon_inv3_translation_table[63] = {
+ 		"FFLLSSSSYYCCWLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGGX" };
+ 
+-const char codon_translation_table[256] = { -1, -1, -1, -1, -1, -1, -1, -1, -1,
++const signed char codon_translation_table[256] = { -1, -1, -1, -1, -1, -1, -1, -1, -1,
+ 		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+ 		-1, -1, -1, -1, -1, -1, 31, -1, -1, 7, -1, 60, -1, -1, -1, -1, 36, -1,
+ 		-1, -1, -1, -1, 15, -1, -1, 51, 6, 59, 35, -1, -1, 43, 44, -1, -1, -1,
