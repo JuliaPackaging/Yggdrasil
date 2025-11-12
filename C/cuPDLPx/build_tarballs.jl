@@ -24,12 +24,14 @@ install_license LICENSE
 export CUDA_HOME="${prefix}/cuda"
 export PATH=${PATH}:${CUDA_HOME}/bin
 
+# nvcc thinks the libraries are located inside lib64, but the SDK actually has them in lib
+ln -s ${CUDA_HOME}/lib ${CUDA_HOME}/lib64
+
 cmake -B build -S . \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_HOME \
-    -DCMAKE_CUDA_RUNTIME_LIBRARY=Static \
 
 cmake --build build --config Release -j${nproc}
 
