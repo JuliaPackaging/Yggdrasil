@@ -48,7 +48,7 @@ for platform in platforms
     dependencies = [
         Dependency("Zlib_jll"),
         Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-        CUDA.required_dependencies(platform)...,
+        CUDA.required_dependencies(platform, static_sdk=true)...,
     ]
     build_tarballs(
         ARGS,
