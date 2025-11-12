@@ -20,17 +20,26 @@ var (
 
 //export License
 func License(msg *C.char) (**C.char, int, float64) {
-	_mu.Lock()
-	defer _mu.Unlock()
+    _mu.Lock()
+    if len(_licenses) == 0 {
+        _mu.Unlock()
+        return (**C.char)(nil), 0, 0.0
+    }
+    scanner := _scanner            // copy pointer under lock
+    _mu.Unlock()
 
-	if len(_licenses) == 0 {
-		// _scanner do now work if there are no licenses, work-around such case
-		return (**C.char)(nil), 0, 0.0
-	}
+    if scanner == nil {
+        // shouldn't happen if you keep invariants, but be defensive
+        return (**C.char)(nil), 0, 0.0
+    }
 
 	bytes := []byte(C.GoString(msg))
 	cov := _scanner.Scan(bytes)
 
+    n := len(cov.Match)
+    if n == 0 {
+        return (**C.char)(nil), 0, cov.Percent
+    }
 	// Collect IDs from each match into a slice of *C.char
 	cArray := C.malloc(C.size_t(len(cov.Match)) * C.size_t(unsafe.Sizeof(uintptr(0))))
 
@@ -44,7 +53,7 @@ func License(msg *C.char) (**C.char, int, float64) {
 
 //export FreeLicenseResult
 func FreeLicenseResult(result **C.char, length C.int) {
-	if result == nil {
+	if result == nil || length <= 0 {
 		return
 	}
 	// Convert **C.char to a slice so we can index it
