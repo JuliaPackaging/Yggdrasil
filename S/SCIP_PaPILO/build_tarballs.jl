@@ -4,14 +4,14 @@ using BinaryBuilder, Pkg
 
 name = "SCIP_PaPILO"
 
-upstream_version = v"9.2.2"
+upstream_version = v"10.0.0"
 version = VersionNumber(upstream_version.major * 100, upstream_version.minor * 100, upstream_version.patch * 100)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource(
         "https://scipopt.org/download/release/scipoptsuite-$(upstream_version).tgz",
-        "1a6d5b2bceb99faf1facbd6cd79e4a3eb8de60ed1d480281f12ae5c540d4a8a4"
+        "0f80e2bad1d9668361eca2142687b5a7d583593bfd28e70e8912e9d7f98a51b6"
     ),
     ArchiveSource(
         "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
