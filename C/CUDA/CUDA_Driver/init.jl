@@ -127,7 +127,12 @@ function inspect_driver(driver, deps=String[]; inspect_devices=false)
     out = Pipe()
     proc = run(pipeline(cmd, stdin=devnull, stdout=out), wait=false)
     close(out.in)
-    out_reader = Threads.@spawn String.(readlines(out))
+    out_reader = @static if VERSION >= v"1.12-"
+        # XXX: avoid concurrent compilation (JuliaLang/julia#59834)
+        Threads.@spawn :samepool String.(readlines(out))
+    else
+        Threads.@spawn String.(readlines(out))
+    end
     wait(proc)
     success(proc) || return nothing
 
@@ -143,8 +148,18 @@ function inspect_driver(driver, deps=String[]; inspect_devices=false)
 end
 
 # fetch driver details
-compat_driver_task = Threads.@spawn inspect_driver(libcuda_compat, libcuda_deps)
-system_driver_task = Threads.@spawn inspect_driver(libcuda_system; inspect_devices=true)
+    compat_driver_task = @static if VERSION >= v"1.12-"
+        # XXX: avoid concurrent compilation (JuliaLang/julia#59834)
+        Threads.@spawn :samepool inspect_driver(libcuda_compat, libcuda_deps)
+    else
+        Threads.@spawn inspect_driver(libcuda_compat, libcuda_deps)
+    end
+    system_driver_task = @static if VERSION >= v"1.12-"
+        # XXX: avoid concurrent compilation (JuliaLang/julia#59834)
+        Threads.@spawn :samepool inspect_driver(libcuda_system; inspect_devices=true)
+    else
+        Threads.@spawn inspect_driver(libcuda_system; inspect_devices=true)
+    end
 compat_driver_details = fetch(compat_driver_task)
 if compat_driver_details === nothing
     @debug "Failed to load forwards-compatible driver."

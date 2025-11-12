@@ -3,15 +3,14 @@
 using BinaryBuilder
 
 name = "GEOS"
-version = v"3.14.0"
+version = v"3.14.1"
 
 # Collection of sources required to build GEOS
 sources = [
     ArchiveSource("http://download.osgeo.org/geos/geos-$version.tar.bz2",
-                  "fe85286b1977121894794b36a7464d05049361bedabf972e70d8f9bf1e3ce928"),
+                  "3c20919cda9a505db07b5216baa980bacdaa0702da715b43f176fb07eff7e716"),
     FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz",
                "cd4f08a75577145b8f05245a2975f7c81401d75e9535dcffbb879ee1deefcbf4"),
-    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -25,9 +24,6 @@ if [[ "${target}" == *-apple-darwin* ]]; then
     tar --extract --file=${WORKSPACE}/srcdir/MacOSX11.3.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX11.3.sdk/System MacOSX11.3.sdk/usr
     export MACOSX_DEPLOYMENT_TARGET=11.3
 fi
-
-# Reported as <https://github.com/libgeos/geos/issues/1302>
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/unordered_map.patch
 
 CMAKE_FLAGS=()
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})

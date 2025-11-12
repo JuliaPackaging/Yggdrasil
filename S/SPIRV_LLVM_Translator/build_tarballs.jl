@@ -7,14 +7,14 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "SPIRV_LLVM_Translator"
-version = v"20.1"
-llvm_version = v"20.1.2"
+version = v"21.1.1"
+llvm_version = v"21.1.2"
 
 # Collection of sources required to build the package
 sources = [
     GitSource(
         "https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git",
-        "dee371987a59ed8654083c09c5f1d5c54f5db318"),
+        "29758b55816c14abb3e4142d42aca7a95bf46710"),
     DirectorySource("./bundled"),
 ]
 
@@ -68,7 +68,11 @@ sed -i '/add_llvm_tool(/a DISABLE_LLVM_LINK_LLVM_DYLIB' tools/llvm-spirv/CMakeLi
 # Use our LLVM version
 CMAKE_FLAGS+=(-DBASE_LLVM_VERSION=""" * string(Base.thisminor(llvm_version)) * raw""")
 
-cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
+if [[ "${target}" == *-apple-darwin* ]]; then
+    cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]} -DCMAKE_CXX_FLAGS="-Wno-error=enum-constexpr-conversion -include vector"
+else
+    cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
+fi
 ninja -C build -j ${nproc} llvm-spirv install
 """
 

@@ -26,13 +26,13 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "GAP"
-upstream_version = v"4.15.0"
-version = v"400.1500.000"
+upstream_version = v"4.15.1"
+version = v"400.1500.100"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/gap-$(upstream_version)-core.tar.gz",
-                  "5f299fe8ae092a0ed85033f348b1df031cf0e2fb4fb9184c21e92210303c125c"),
+                  "2a81d008e1638f638a035b1cd981ca39436bdabbef8c29b15b24fceb2af678e4"),
     DirectorySource("./bundled"),
 ]
 
@@ -129,11 +129,14 @@ dependencies = [
     Dependency("GMP_jll"),
     Dependency("Readline_jll"; compat="8.2.13"),
     Dependency("Zlib_jll"),
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.20")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.11.0")),
 ]
+
+# we want to get notified of any changes to julia_compat, and adapt `version` accordingly
+@assert libjulia_julia_compat <= v"1.10.0"
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"7", julia_compat="1.10")
+               preferred_gcc_version=v"7", julia_compat=string(libjulia_julia_compat))
 
 # rebuild trigger: 1

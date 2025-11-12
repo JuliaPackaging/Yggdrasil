@@ -4,6 +4,7 @@ using BinaryBuilder, Pkg
 using BinaryBuilderBase: sanitize, get_addable_spec
 
 const curl_hashes = Dict(
+    v"7.81.0" => "ac8e1087711084548d788ef18b9b732c8de887457b81f616fc681d1044b32f98",
     v"7.88.1" => "cdb38b72e36bc5d33d5b8810f8018ece1baa29a8f215b4495e495ded82bbf3c7",
     v"8.2.1"  => "f98bdb06c0f52bdd19e63c4a77b5eb19b243bcbbd0f5b002b9f3cba7295a3a42",
     v"8.4.0"  => "816e41809c043ff285e8c0f06a75a1fa250211bbfb2dc0a037eeef39f1a9e427",
@@ -64,7 +65,7 @@ function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=fal
     without_nss = version < v"8.16.0"
 
     config = "THIS_IS_CURL=$(this_is_curl_jll)\n"
-    config *= "MACOS_USE_OPENSSL=$(macos_use_openssl)\n" 
+    config *= "MACOS_USE_OPENSSL=$(macos_use_openssl)\n"
     if with_zstd
 	config *= "HAVE_ZSTD=true\n"
     end
