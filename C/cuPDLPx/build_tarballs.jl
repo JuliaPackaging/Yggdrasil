@@ -29,6 +29,7 @@ cmake -B build -S . \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_HOME \
+    -DCMAKE_CUDA_RUNTIME_LIBRARY=Static \
 
 cmake --build build --config Release -j${nproc}
 
