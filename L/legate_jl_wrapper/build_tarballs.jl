@@ -25,6 +25,8 @@ cpu_platform = [Platform("x86_64", "linux")]
 cuda_platforms = CUDA.supported_platforms(; min_version = MIN_CUDA_VERSION, max_version = MAX_CUDA_VERSION)
 all_platforms = [cpu_platform; cuda_platforms]
 
+filter!(p -> arch(p) == "x86_64", all_platforms)
+
 platforms = AbstractPlatform[]
 
 # Create all combos of CUDA + Julia Versions...so many builds :( 
