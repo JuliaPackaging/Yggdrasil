@@ -16,6 +16,12 @@ sources = [
 ]
 
 script = raw"""
+# check if we need to use a more recent glibc
+if [[ -f "$prefix/usr/include/sched.h" ]]; then
+    GLIBC_ARTIFACT_DIR=$(dirname $(dirname $(dirname $(realpath $prefix/usr/include/sched.h))))
+    rsync --archive ${GLIBC_ARTIFACT_DIR}/ /opt/${target}/${target}/sys-root/
+fi
+
 apk del cmake
 
 cd ${WORKSPACE}/srcdir/cuPDLPx
