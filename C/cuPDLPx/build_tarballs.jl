@@ -51,8 +51,8 @@ for platform in platforms
         continue
     end
     dependencies = [
+        BuildDependency(PackageSpec(name = "Glibc_jll")),
         HostBuildDependency(PackageSpec(; name="CMake_jll")),
-        HostBuildDependency(PackageSpec(; name="Glibc_jll")),
         Dependency("Zlib_jll"),
         Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
         CUDA.required_dependencies(platform, static_sdk=true)...,
