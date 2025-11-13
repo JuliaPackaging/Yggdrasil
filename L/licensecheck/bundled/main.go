@@ -34,7 +34,7 @@ func License(msg *C.char) (**C.char, int, float64) {
     }
 
 	bytes := []byte(C.GoString(msg))
-	cov := _scanner.Scan(bytes)
+	cov := scanner.Scan(bytes)
 
     n := len(cov.Match)
     if n == 0 {
@@ -43,7 +43,7 @@ func License(msg *C.char) (**C.char, int, float64) {
 	// Collect IDs from each match into a slice of *C.char
 	cArray := C.malloc(C.size_t(len(cov.Match)) * C.size_t(unsafe.Sizeof(uintptr(0))))
 
-	ids := (*[1<<30 - 1]*C.char)(cArray)[0:len(cov.Match)]
+    ids := (*[1<<29 - 1]*C.char)(cArray)[:n:n]
 	for i, m := range cov.Match {
 		ids[i] = C.CString(m.ID)
 	}
@@ -57,7 +57,7 @@ func FreeLicenseResult(result **C.char, length C.int) {
 		return
 	}
 	// Convert **C.char to a slice so we can index it
-	slice := (*[1<<30 - 1]*C.char)(unsafe.Pointer(result))[0:int(length)]
+    slice := (*[1<<29 - 1]*C.char)(unsafe.Pointer(result))[:int(length):int(length)]
 	for i := 0; i < int(length); i++ {
 		C.free(unsafe.Pointer(slice[i]))
 	}
@@ -69,8 +69,8 @@ func ClearLicenseList() {
 	_mu.Lock()
 	defer _mu.Unlock()
 
-	_licenses = []licensecheck.License{}
-	rebuildScanner()
+    _licenses = nil
+    _scanner = nil
 }
 
 //export ResetToBuiltinLicences
@@ -109,11 +109,15 @@ func AddLicense(cID *C.char, cLRE *C.char) {
 }
 
 func rebuildScanner() {
-	var err any
-	_scanner, err = licensecheck.NewScanner(_licenses)
-	if err != nil {
-		log.Fatal(err)
-	}
+    if len(_licenses) == 0 {
+        _scanner = nil
+        return
+    }
+    sc, err := licensecheck.NewScanner(_licenses)
+    if err != nil {
+        log.Fatal(err)
+    }
+    _scanner = sc
 }
 
 func init() {
