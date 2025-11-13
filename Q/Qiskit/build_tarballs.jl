@@ -13,9 +13,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/qiskit
-mkdir -p target
-export PYTHONHOME=${prefix}
-export PYO3_PYTHON=/workspace/destdir/bin/python3
+export PYO3_PYTHON=/usr/bin/python3
+export PYO3_CROSS_LIB_DIR=$WORKSPACE/destdir/lib
 export RUSTFLAGS="-L ${libdir}"
 
 # avoid 'cannot create cdylib' error on musl targets
@@ -25,9 +24,15 @@ if [[ "${target}" == *-musl* ]]; then
     export RUSTFLAGS="${RUSTFLAGS} -C target-feature=-crt-static"
 fi
 
-make C_CARGO_TARGET_DIR=target/${rust_target}/release -j${nproc} c
-install -Dvm 755 "dist/c/lib/libqiskit.${dlext}" "${libdir}/libqiskit.${dlext}"
-cp -vr dist/c/include/* "${includedir}"
+# The current Qiskit C API build instructions say to use a Makefile that is
+# improperly formed and not suitable for cross compilation.  So, instead,
+# we invoke Cargo directly and copy the handful of files that result to their
+# proper location.
+cargo rustc --release --crate-type cdylib -p qiskit-cext
+install -Dvm 755 "target/${rust_target}/release/libqiskit_cext.${dlext}" "${libdir}/libqiskit.${dlext}"
+mkdir -p "${includedir}/qiskit"
+cp -v target/qiskit.h "${includedir}"
+cp -v crates/cext/include/complex.h "${includedir}/qiskit"
 install_license LICENSE.txt
 """
 
@@ -36,6 +41,10 @@ install_license LICENSE.txt
 platforms = [
     Platform("x86_64", "linux"; libc = "glibc"),
     Platform("x86_64", "linux"; libc = "musl"),
+    Platform("aarch64", "linux"; libc = "glibc"),
+    Platform("aarch64", "linux"; libc = "musl"),
+    Platform("x86_64", "macos"),
+    Platform("aarch64", "macos"),
 ]
 
 
