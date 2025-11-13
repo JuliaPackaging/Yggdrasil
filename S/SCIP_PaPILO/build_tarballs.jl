@@ -10,7 +10,8 @@ version = VersionNumber(upstream_version.major * 100, upstream_version.minor * 1
 # Collection of sources required to complete build
 sources = [
     ArchiveSource(
-        "https://scipopt.org/download/release/scipoptsuite-$(upstream_version).tgz",
+        # "https://scipopt.org/download/release/scipoptsuite-$(upstream_version).tgz",
+        "https://www.gams.com/~svigerske/scipoptsuite-10.0.0.tgz",
         "0f80e2bad1d9668361eca2142687b5a7d583593bfd28e70e8912e9d7f98a51b6"
     ),
     ArchiveSource(
