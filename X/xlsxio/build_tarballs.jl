@@ -20,7 +20,7 @@ cmake -B build \
     -DBUILD_STATIC:BOOL=OFF \
     -DBUILD_TOOLS:BOOL=ON \
     -DBUILD_EXAMPLES:BOOL=OFF \
-    -DWITH_LIBZIP:BOOL=OFF \
+    -DWITH_LIBZIP:BOOL=ON \
     -DEXPAT_INCLUDE_DIR=${includedir} \
     -DEXPAT_LIBRARY=${libdir}
 make -j${nproc}
