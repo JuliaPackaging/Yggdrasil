@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "brotli"
-version = v"1.1.1" # Building v1.1.0, version bump to pick up riscv
+version = v"1.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/google/brotli", "ed738e842d2fbdf2d6459e39267a633c4a9b2f5d"),
+    GitSource("https://github.com/google/brotli", "028fb5a23661f123017c060daa546b55cf4bde29"),
 ]
 
 # Bash recipe for building across all platforms
