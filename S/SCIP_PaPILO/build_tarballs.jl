@@ -57,6 +57,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
   -DAMPL=0\
   -DGCG=0\
   -DBOOST=ON\
+  -DMPFR=OFF\
   -DSYM=snauty\
   -DTPI=tny\
   -DIPOPT_DIR=${prefix} \
