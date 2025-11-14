@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 
 name = "SCIP_PaPILO"
 
-upstream_version = v"9.2.2"
+upstream_version = v"9.2.4"
 version = VersionNumber(upstream_version.major * 100, upstream_version.minor * 100, upstream_version.patch * 100)
 
 # Collection of sources required to complete build
