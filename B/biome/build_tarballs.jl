@@ -40,6 +40,9 @@ install_license LICENSE-APACHE LICENSE-MIT
 platforms = supported_platforms(; experimental=true)
 # Rust toolchain for i686 Windows is unusable
 filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
+# We don't have rust for these platforms
+filter!(p -> !(arch(p) == "aarch64" && Sys.isfreebsd(p)), platforms)
+filter!(p -> !(arch(p) == "riscv64"), platforms)
 
 # The products that we will ensure are always built
 products = [
