@@ -5,22 +5,22 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "cuPDLPx"
-version = v"0.1.2"
+version = v"0.1.3"
 
 
 sources = [
     GitSource(
-        "https://github.com/MIT-Lu-Lab/cuPDLPx.git",
-        "43c7958bf4de5056d12763081e35b7f6a1fbe0b4",
+        "https://github.com/ZedongPeng/cuPDLPx.git",
+        "52fdd54735e7fb6a3727e88274950ce45da6be67",
     ),
 ]
 
 script = raw"""
 # check if we need to use a more recent glibc
-if [[ -f "$prefix/usr/include/sched.h" ]]; then
-    GLIBC_ARTIFACT_DIR=$(dirname $(dirname $(dirname $(realpath $prefix/usr/include/sched.h))))
-    rsync --archive ${GLIBC_ARTIFACT_DIR}/ /opt/${target}/${target}/sys-root/
-fi
+# if [[ -f "$prefix/usr/include/sched.h" ]]; then
+#     GLIBC_ARTIFACT_DIR=$(dirname $(dirname $(dirname $(realpath $prefix/usr/include/sched.h))))
+#     rsync --archive ${GLIBC_ARTIFACT_DIR}/ /opt/${target}/${target}/sys-root/
+# fi
 
 apk del cmake
 
@@ -38,6 +38,11 @@ cmake -B build -S . \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_HOME \
+    -DCUPDLPX_BUILD_SHARED_LIB=ON \
+    -DCUPDLPX_BUILD_STATIC_LIB=OFF \
+    -DCUPDLPX_BUILD_CLI=OFF \
+    -DCUPDLPX_BUILD_TESTS=OFF \
+    -DCUPDLPX_BUILD_PYTHON=OFF
 
 cmake --build build --config Release -j${nproc}
 
@@ -57,7 +62,7 @@ for platform in platforms
         continue
     end
     dependencies = [
-        BuildDependency(PackageSpec(name = "Glibc_jll")),
+        # BuildDependency(PackageSpec(name = "Glibc_jll")),
         HostBuildDependency(PackageSpec(; name="CMake_jll")),
         Dependency("Zlib_jll"),
         Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
