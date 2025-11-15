@@ -3,12 +3,15 @@
 using BinaryBuilder, Pkg
 
 name = "biome"
-version = v"2.3.5"
+#version = v"2.3.5"
+version = v"2.0.6"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/biomejs/biome/archive/refs/tags/@biomejs/biome@2.3.5.tar.gz",
-                  "39c685ea028d5dd8db101b93c96a0956fb6f7846da93caa49231a62c612daa77"),
+    # ArchiveSource("https://github.com/biomejs/biome/archive/refs/tags/@biomejs/biome@2.3.5.tar.gz",
+    #               "39c685ea028d5dd8db101b93c96a0956fb6f7846da93caa49231a62c612daa77"),
+    ArchiveSource("https://github.com/biomejs/biome/archive/refs/tags/@biomejs/biome@2.0.6.tar.gz",
+                  "52d5e449346bfb15855a3bac85ba5d43b81d0fb1a99be9d4b7dca8c51521404c"),
 ]
 
 # Bash recipe for building across all platforms
@@ -48,5 +51,6 @@ dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               compilers=[:c, :rust], julia_compat="1.6", preferred_rust_version=v"1.91",
+               #compilers=[:c, :rust], julia_compat="1.6", preferred_rust_version=v"1.91",
+               compilers=[:c, :rust], julia_compat="1.6", preferred_rust_version=v"1.87",
                lock_microarchitecture=false)
