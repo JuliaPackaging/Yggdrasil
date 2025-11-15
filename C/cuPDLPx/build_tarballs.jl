@@ -10,18 +10,12 @@ version = v"0.1.3"
 
 sources = [
     GitSource(
-        "https://github.com/ZedongPeng/cuPDLPx.git",
-        "52fdd54735e7fb6a3727e88274950ce45da6be67",
+        "https://github.com/MIT-Lu-Lab/cuPDLPx.git",
+        "c2e7bb42da5bc5bb4826f6cad87f7d8a63be9404",
     ),
 ]
 
 script = raw"""
-# check if we need to use a more recent glibc
-# if [[ -f "$prefix/usr/include/sched.h" ]]; then
-#     GLIBC_ARTIFACT_DIR=$(dirname $(dirname $(dirname $(realpath $prefix/usr/include/sched.h))))
-#     rsync --archive ${GLIBC_ARTIFACT_DIR}/ /opt/${target}/${target}/sys-root/
-# fi
-
 apk del cmake
 
 cd ${WORKSPACE}/srcdir/cuPDLPx
@@ -62,7 +56,6 @@ for platform in platforms
         continue
     end
     dependencies = [
-        # BuildDependency(PackageSpec(name = "Glibc_jll")),
         HostBuildDependency(PackageSpec(; name="CMake_jll")),
         Dependency("Zlib_jll"),
         Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
