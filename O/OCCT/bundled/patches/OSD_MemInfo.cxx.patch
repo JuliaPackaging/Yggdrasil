@@ -1,39 +1,40 @@
 --- /dev/null
 +++ b/src/OSD/OSD_MemInfo.cxx
 @@ -143,20 +143,20 @@
+@@ -143,20 +143,20 @@
    #elif defined(__EMSCRIPTEN__)
    if (IsActive(MemHeapUsage) || IsActive(MemWorkingSet) || IsActive(MemWorkingSetPeak))
    {
 -    // /proc/%d/status is not emulated - get more info from mallinfo()
 -    const struct mallinfo aMI = mallinfo();
--    if (IsActive (MemHeapUsage))
+-    if (IsActive(MemHeapUsage))
 -    {
 -      myCounters[MemHeapUsage] = aMI.uordblks;
 -    }
--    if (IsActive (MemWorkingSet))
+-    if (IsActive(MemWorkingSet))
 -    {
 -      myCounters[MemWorkingSet] = aMI.uordblks;
 -    }
--    if (IsActive (MemWorkingSetPeak))
+-    if (IsActive(MemWorkingSetPeak))
 -    {
 -      myCounters[MemWorkingSetPeak] = aMI.usmblks;
 -    }
 +    //// /proc/%d/status is not emulated - get more info from mallinfo()
 +    //const struct mallinfo aMI = mallinfo();
-+    //if (IsActive (MemHeapUsage))
++    //if (IsActive(MemHeapUsage))
 +    //{
 +    //  myCounters[MemHeapUsage] = aMI.uordblks;
 +    //}
-+    //if (IsActive (MemWorkingSet))
++    //if (IsActive(MemWorkingSet))
 +    //{
 +    //  myCounters[MemWorkingSet] = aMI.uordblks;
 +    //}
-+    //if (IsActive (MemWorkingSetPeak))
++    //if (IsActive(MemWorkingSetPeak))
 +    //{
 +    //  myCounters[MemWorkingSetPeak] = aMI.usmblks;
 +    //}
    }
-   if (IsActive (MemVirtual))
+   if (IsActive(MemVirtual))
    {
 @@ -172,16 +172,16 @@
        #endif
@@ -62,4 +63,3 @@
    }
 
    if (!IsActive(MemVirtual) && !IsActive(MemWorkingSet) && !IsActive(MemWorkingSetPeak)
-   
