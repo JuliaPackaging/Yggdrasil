@@ -1,0 +1,10 @@
+--- solve_cpu.inl	2025-11-16 14:01:07.023523100 -0600
++++ solve_cpu_new.inl	2025-11-16 14:03:31.044885188 -0600
+@@ -16,6 +16,7 @@
+ 
+ #pragma once
+ 
++#include <cstring>
+ #include "cupynumeric/utilities/blas_lapack.h"
+ 
+ namespace cupynumeric {
