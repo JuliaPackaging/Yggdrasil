@@ -1,0 +1,10 @@
+--- a/src/runtime_src/core/pcie/windows/alveo/CMakeLists.txt
++++ b/src/runtime_src/core/pcie/windows/alveo/CMakeLists.txt
+@@ -34,6 +34,7 @@ add_library(xrt_core_static STATIC
+ target_link_libraries(xrt_core
+   PRIVATE
+   xrt_coreutil
++  setupapi
+   )
+ 
+ # For DLL platforms the DLL part of a shared library is treated as a

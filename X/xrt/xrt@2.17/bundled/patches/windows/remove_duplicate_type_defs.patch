@@ -1,0 +1,13 @@
+--- a/src/runtime_src/core/include/windows/types.h
++++ b/src/runtime_src/core/include/windows/types.h
+@@ -19,7 +19,7 @@
+ 
+ #include <stdint.h>
+ 
+-typedef int64_t ssize_t;
+-typedef int pid_t;
++// typedef int64_t ssize_t;
++// typedef int pid_t;
+ 
+ #endif
+ 
