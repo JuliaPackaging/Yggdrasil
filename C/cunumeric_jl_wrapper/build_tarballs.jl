@@ -51,7 +51,6 @@ products = [
     LibraryProduct("libcunumeric_c_wrapper", :libcunumeric_c_wrapper),
 ] 
 
-
 dependencies = [
     Dependency("cupynumeric_jll"; compat = "=25.10"), # versioning is Year.Month
     Dependency("legate_jll"; compat = "=25.10"),
