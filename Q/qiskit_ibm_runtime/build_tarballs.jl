@@ -51,7 +51,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency(PackageSpec(name="cbindgen_jll", uuid="a52b955f-5256-5bb0-8795-313e28591558"))
-    Dependency(PackageSpec(name="Qiskit_jll", uuid="b54e8e98-f244-53b3-a8e8-4727a4907f76", compat="~2.2.3"))
+    Dependency(PackageSpec(name="Qiskit_jll", uuid="b54e8e98-f244-53b3-a8e8-4727a4907f76"); compat="~2.2.3")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
