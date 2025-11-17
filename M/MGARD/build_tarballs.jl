@@ -2,15 +2,11 @@ using BinaryBuilder
 using Pkg
 
 name = "MGARD"
-version = v"1.5.2"
+version = v"1.6.0"
 
 # Collection of sources required to build MGARD
 sources = [
-    # GitSource("https://github.com/CODARcode/MGARD", "208b0c42af6ba552387aec321664d5cbb757b2e2"),
-    # This is PR 233 for MGARD
-    # <https://github.com/CODARcode/MGARD/pull/233>, later than 1.5.2.
-    # It includes corrections to support musl.
-    GitSource("https://github.com/JieyangChen7/MGARD", "70281b1f3a150ba07f5054c100adf1c2f324f6fd"),
+    GitSource("https://github.com/CODARcode/MGARD", "024ccc2b8ca4a787cfc6f227a6d14e7fd9cb76cb"),
 ]
 
 # Bash recipe for building across all platforms
@@ -70,5 +66,3 @@ dependencies = [
 # We need at least GCC 8 for C++17
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"8")
-
-# Build trigger: 1
