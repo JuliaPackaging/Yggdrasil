@@ -9,7 +9,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 include("make_script.jl")
 
 name = "cupynumeric"
-version = v"25.10" # cupynumeric has 08, but Julia doesn't like that
+version = v"25.10"
 sources = [
     GitSource("https://github.com/nv-legate/cupynumeric.git","66d872d22d66d78f42e91778a6b1c731e796d1f4"),
     GitSource("https://github.com/MatthewsResearchGroup/tblis.git", "c4f81e08b2827e72335baa7bf91a245f72c43970"),
