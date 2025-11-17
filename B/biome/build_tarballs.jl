@@ -30,16 +30,15 @@ cd $WORKSPACE/srcdir/biome--biomejs-biome-*/
 #
 # <https://github.com/biomejs/biome/blob/main/CONTRIBUTING.md#production-binaries>
 BIOME_VERSION=0.0.1 cargo build --bin biome --release
-mkdir -p "${bindir}"
-cp "target/${rust_target}/release/biome${exeext}" "${bindir}/."
+install -Dvm 755 "target/${rust_target}/release/biome${exeext}" "${bindir}/biome${exeext}"
 install_license LICENSE-APACHE LICENSE-MIT
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 # Rust toolchain for i686 Windows is unusable
-filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
+filter!(p -> !(arch(p) != "i686" && Sys.iswindows(p)), platforms)
 # We don't have rust for these platforms
 filter!(p -> !(arch(p) == "aarch64" && Sys.isfreebsd(p)), platforms)
 filter!(p -> !(arch(p) == "riscv64"), platforms)
