@@ -1,7 +1,7 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
-using BinaryBuilderBase: sanitize, get_addable_spec
+using BinaryBuilderBase: sanitize
 
 const curl_hashes = Dict(
     v"7.81.0" => "ac8e1087711084548d788ef18b9b732c8de887457b81f616fc681d1044b32f98",
