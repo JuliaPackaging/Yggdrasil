@@ -5,12 +5,6 @@ ARG osversion=13.1
 
 FROM ${cpuarch}/debian:${osversion}-slim
 
-# RUN { \
-#         echo 'deb http://archive.debian.org/debian buster main contrib non-free' && \
-#         echo 'deb http://archive.debian.org/debian-security buster/updates main contrib non-free'; \
-#     } >/etc/apt/sources.list && \
-#     echo 'Acquire::Check-Valid-Until "false";' >/etc/apt/apt.conf.d/99no-check-valid-until && \
-
 # Install packages
 ENV DEBIAN_FRONTEND=noninteractive
 ARG gccversion=14
@@ -30,6 +24,8 @@ ARG commit
 ADD https://github.com/HDFGroup/hdf5/archive/${commit}.tar.gz hdf5-${commit}.tar.gz
 RUN tar xzf hdf5-${commit}.tar.gz
 WORKDIR hdf5-${commit}
+# Our arm64v8 would detect that `__float128` is supported. However, our Yggdrasil build system does not.
+# Sabotage the `__float128` detection to ensure it fails.
 RUN if [ ${cpuarch} = arm64v8 ]; then sed -i -e 's/__float128/__float129/g' config/HDFTests.c; fi
 RUN sed -i -e 's/__float128/__float129/g' config/HDFTests.c
 RUN cmake -Bbuilddir -GNinja \

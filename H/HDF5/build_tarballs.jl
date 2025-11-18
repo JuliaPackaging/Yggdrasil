@@ -65,7 +65,6 @@ cmake_options=(
     -DHDF5_ENABLE_MAP_API=ON
     -DHDF5_ENABLE_MIRROR_VFD=ON
     -DHDF5_ENABLE_PARALLEL=${parallel}
-    -DHDF5_ENABLE_PLUGIN_SUPPORT=OFF   # would require PLUGIN
     -DHDF5_ENABLE_ROS3_VFD=${ros3_vfd}
     -DHDF5_ENABLE_SUBFILING_VFD=ON
     -DHDF5_ENABLE_SZIP_SUPPORT=ON
@@ -82,7 +81,8 @@ cmake_options=(
 #     -DH5_LDOUBLE_TO_FLOAT16_CORRECT=ON
 
 # We have pregenerated the Fortran configurations for Linux.
-# We assume that Darwin and Mingw use the same configurations.
+# (See <https://github.com/HDFGroup/hdf5/issues/6042>.)
+# We assume that Darwin and mingw use the same configurations.
 case ${target} in
     aarch64-linux-*|aarch64-apple-darwin*|aarch64-*-freebsd*)
         cmake_options+=(
@@ -553,8 +553,8 @@ filter!(p -> libc(p) != "musl", platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
-# MPI initializers are not constant (need to apply patch)
-filter!(p -> p["mpi"] != "mpitrampoline", platforms)
+# We do not yet have a patch to support MPItrampoline, so disable it for now
+# filter!(p -> p["mpi"] != "mpitrampoline", platforms)
 
 # The products that we will ensure are always built
 products = [
