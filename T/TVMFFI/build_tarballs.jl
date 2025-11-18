@@ -14,7 +14,14 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/tvm-ffi
 git submodule update --init
-cmake -B ../../build -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DTVM_FFI_ATTACH_DEBUG_SYMBOLS=ON -DTVM_FFI_BUILD_TESTS=OFF -DTVM_FFI_BUILD_PYTHON_MODULE=OFF
+cmake \
+    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DTVM_FFI_ATTACH_DEBUG_SYMBOLS=ON \
+    -DTVM_FFI_BUILD_TESTS=OFF \
+    -DTVM_FFI_BUILD_PYTHON_MODULE=OFF \
+    -B ../../build
 cmake --build ../../build
 cmake --install ../../build
 install_license LICENSE
