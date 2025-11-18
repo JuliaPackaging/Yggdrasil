@@ -9,10 +9,14 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 include("make_script.jl")
 
 name = "cupynumeric"
-version = v"25.5" # cupynumeric has 05, but Julia doesn't like that
+version = v"25.10"
 sources = [
-    GitSource("https://github.com/nv-legate/cupynumeric.git","cbd9a098b32531d68f1b3007ef86bb8d3859174d"),
+    GitSource("https://github.com/nv-legate/cupynumeric.git","66d872d22d66d78f42e91778a6b1c731e796d1f4"),
     GitSource("https://github.com/MatthewsResearchGroup/tblis.git", "c4f81e08b2827e72335baa7bf91a245f72c43970"),
+    FileSource("https://repo.anaconda.com/miniconda/Miniconda3-py311_24.3.0-0-Linux-x86_64.sh", 
+                "4da8dde69eca0d9bc31420349a204851bfa2a1c87aeb87fe0c05517797edaac4", "miniconda.sh"),
+    DirectorySource("./bundled")
+    
 ]
 
 
@@ -25,7 +29,6 @@ cpu_platform = [Platform("x86_64", "linux")]
 cuda_platforms = CUDA.supported_platforms(; min_version = MIN_CUDA_VERSION, max_version = MAX_CUDA_VERSION)
 
 all_platforms = [cpu_platform; cuda_platforms]
-
 
 # for now NO ARM support, tblis doesnt have docs on how to build for arm
 filter!(p -> arch(p) == "x86_64", all_platforms)
@@ -46,10 +49,10 @@ products = [
 ] 
 
 dependencies = [
-    Dependency("legate_jll"; compat = "=25.5"), # Legate versioning is Year.Month
+    Dependency("legate_jll"; compat = "=25.10"), # Legate versioning is Year.Month
     # Dependency("CUTENSOR_jll", compat = "2.2"), # supplied via ArchiveSource
     Dependency("OpenBLAS32_jll"),
-    HostBuildDependency(PackageSpec(; name = "CMake_jll", version = v"3.30.2")),
+    HostBuildDependency(PackageSpec(; name = "CMake_jll", version = v"3.31.9")),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")) 
 ]
 

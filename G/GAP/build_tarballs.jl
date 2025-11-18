@@ -129,11 +129,14 @@ dependencies = [
     Dependency("GMP_jll"),
     Dependency("Readline_jll"; compat="8.2.13"),
     Dependency("Zlib_jll"),
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.20")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.11.0")),
 ]
+
+# we want to get notified of any changes to julia_compat, and adapt `version` accordingly
+@assert libjulia_min_julia_version <= v"1.10.0"
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"7", julia_compat="1.10")
+               preferred_gcc_version=v"7", julia_compat=libjulia_julia_compat(julia_versions))
 
 # rebuild trigger: 1

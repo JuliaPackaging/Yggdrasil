@@ -3,7 +3,7 @@ using BinaryBuilderBase: sanitize
 
 name = "p7zip"
 version_string = "17.06"
-version = VersionNumber(version_string)
+version = v"17.6.1"
 
 # Collection of sources required to build p7zip
 sources = [
@@ -13,11 +13,15 @@ sources = [
                "b96831eec5928384f0543d6b57c1f802952a0f2668e662882c0a785a2b52fb3b"),
     FileSource("https://downloads.sourceforge.net/project/sevenzip/7-Zip/25.01/7z2501-x64.exe",
                "78afa2a1c773caf3cf7edf62f857d2a8a5da55fb0fff5da416074c0d28b2b55f"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/p7zip*/
+
+# Fix <https://github.com/p7zip-project/p7zip/issues/112> by reverting <https://github.com/p7zip-project/p7zip/pull/64>
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/zipitem.patch
 
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     # Install msan runtime (for clang)

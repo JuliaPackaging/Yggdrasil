@@ -106,8 +106,8 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
 
     # Dependencies that must be installed before this package can be built
     dependencies = [
-        BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.9")),
-        Dependency(PackageSpec(name="libcxxwrap_julia_jll", uuid="3eaa8342-bff7-56a5-9981-c04077f7cee7"); compat="0.13.0"),
+        BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.11.0")),
+        Dependency("libcxxwrap_julia_jll"; compat="0.14.4"),
         # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
         # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
         Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae");
