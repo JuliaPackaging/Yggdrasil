@@ -1,0 +1,21 @@
+diff --git a/cmake/FindRust.cmake b/cmake/FindRust.cmake
+index 9079c46..4b31126 100644
+--- a/cmake/FindRust.cmake
++++ b/cmake/FindRust.cmake
+@@ -260,11 +260,11 @@ else()
+         RESULT_VARIABLE _RUSTC_VERSION_RESULT
+     )
+
+-    if(NOT (_RUSTC_VERSION_RESULT EQUAL "0"))
+-        _findrust_failed("`${_Rust_COMPILER_TEST} --version` failed with ${_RUSTC_VERSION_RESULT}\n"
+-            "rustc stderr:\n${_RUSTC_VERSION_STDERR}"
+-            )
+-    endif()
++    # if(NOT (_RUSTC_VERSION_RESULT EQUAL "0"))
++    #     _findrust_failed("`${_Rust_COMPILER_TEST} --version` failed with ${_RUSTC_VERSION_RESULT}\n"
++    #         "rustc stderr:\n${_RUSTC_VERSION_STDERR}"
++    #         )
++    # endif()
+
+     if (_RUSTC_VERSION_RAW MATCHES "rustup [0-9\\.]+")
+         if (_USER_SPECIFIED_RUSTC)
