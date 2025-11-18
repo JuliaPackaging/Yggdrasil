@@ -8,7 +8,7 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "OpenCV"
-version = v"4.10.0"
+version = v"4.12.0"
 version_collapsed_str = replace(string(version), "." => "")
 
 include("../../L/libjulia/common.jl")
@@ -133,11 +133,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Qt6Base_jll"; compat="~6.7.1"),
+    Dependency("Qt6Base_jll"; compat="~6.8.2"),
     HostBuildDependency("Qt6Base_jll"),
     Dependency(PackageSpec(name="Libglvnd_jll", uuid="7e76a0d4-f3c7-5321-8279-8d96eeed0f29")),
     BuildDependency(PackageSpec(name="libjulia_jll")),
-    Dependency(PackageSpec(name="libcxxwrap_julia_jll", uuid="3eaa8342-bff7-56a5-9981-c04077f7cee7"); compat="0.13"),
+    Dependency(PackageSpec(name="libcxxwrap_julia_jll", uuid="3eaa8342-bff7-56a5-9981-c04077f7cee7"); compat="0.14"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
