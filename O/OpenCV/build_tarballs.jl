@@ -15,8 +15,8 @@ include("../../L/libjulia/common.jl")
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/opencv/opencv.git", "71d3237a093b60a27601c20e9ee6c3e52154e8b1"),
-    GitSource("https://github.com/opencv/opencv_contrib.git", "1ed3dd2c53888e3289afdb22ec4e9ebbff3dba87"),
+    GitSource("https://github.com/opencv/opencv.git", "49486f61fb25722cbcf586b7f4320921d46fb38e"),
+    GitSource("https://github.com/opencv/opencv_contrib.git", "d943e1d61c8bc556a13783e1546ee7c1a9e0b1cf"),
     ArchiveSource(
         "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
         "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4",
