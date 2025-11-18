@@ -2,6 +2,9 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+
 name = "GlibNetworking"
 version = v"2.74.0"
 
@@ -61,8 +64,6 @@ dependencies = [
     Dependency("OpenSSL_jll"; compat="1.1.10")
     Dependency("Glib_jll"; compat="2.74.0")
 ]
-
-include("../../fancy_toys.jl")
 
 # Build the tarballs, and possibly a `build.jl` as well.
 if any(should_build_platform.(triplet.(platforms_windows)))
