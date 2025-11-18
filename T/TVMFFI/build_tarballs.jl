@@ -36,7 +36,7 @@ platforms = expand_cxxstring_abis(platforms)
 # The products that we will ensure are always built
 products = Product[
     LibraryProduct("libtvm_ffi", :libtvm_ffi),
-	LibraryProduct("libtvm_ffi_testing", :libtvm_ffi_testing),
+    LibraryProduct("libtvm_ffi_testing", :libtvm_ffi_testing),
 ]
 
 # Dependencies that must be installed before this package can be built
