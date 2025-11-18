@@ -12,10 +12,17 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd MGARD
+
 # We installed a `protoc` executable both as a build- and a host-build-dependency.
 # Delete the non-host-build `protoc` executable so that cmake won't try to run it.
 rm ${bindir}/protoc${exeext}
 ls -l ${host_bindir}/protoc
+
+# pkg-config is very slow because `abseil_cpp` installed about 200 `*.pc` files.
+# Pretend that `protobuf` does not require `abseil_cpp`.
+mv /workspace/destdir/lib/pkgconfig/protobuf.pc /workspace/destdir/lib/pkgconfig/protobuf.pc.orig
+sed -e 's/Requires/# Requires/' /workspace/destdir/lib/pkgconfig/protobuf.pc.orig >/workspace/destdir/lib/pkgconfig/protobuf.pc
+
 cmake -B build \
     -DBUILD_TESTING=OFF \
     -DCMAKE_BUILD_TYPE=Release \
@@ -27,16 +34,13 @@ cmake -B build \
     -DMGARD_ENABLE_SERIAL=ON
 cmake --build build --parallel ${nproc}
 cmake --install build
+
+# Restore files
+mv /workspace/destdir/lib/pkgconfig/protobuf.pc.orig /workspace/destdir/lib/pkgconfig/protobuf.pc
 """
 
 # We enable all platforms
 platforms = expand_cxxstring_abis(supported_platforms())
-
-# All BSD (FreeBSD and Apple) builds fail in the cmake stage:
-# Finding `protobuf` via pkg-config takes a very long time and times
-# out on CI after 4 hours. This might be a bug in pkg-config, its
-# executable is running for a very long time.
-filter!(!Sys.isbsd, platforms)
 
 # Windows build fail because `CLOCK_REALTIME` is not declared.
 # See `N/Notcurses/bundled/headers/pthread_time.h` for a possible fix.
