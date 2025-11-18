@@ -5,13 +5,13 @@ using BinaryBuilder
 include("../../fancy_toys.jl")  # for `should_build_platform`
 
 name = "GR"
-version = v"0.73.18"
+version = v"0.73.19"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sciapp/gr.git", "e495bada9e993664a8e680e574a1db1f49aef64f"),
+    GitSource("https://github.com/sciapp/gr.git", "0709a84ad918ce687e80664bc7ab34b6217fda85"),
     FileSource("https://github.com/sciapp/gr/releases/download/v$version/gr-$version.js",
-               "bb027f21ba968ceea8b0c70a5259223d8c9572918e80deb3e047370c04bd91c4", "gr.js"),
+               "c430aff7cd19d01754530a57378c3fa583a1d23168677f802ccae00de8d654c5", "gr.js"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49")
 ]
