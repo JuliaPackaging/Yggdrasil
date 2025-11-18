@@ -7,11 +7,19 @@ version = v"1.6.0"
 # Collection of sources required to build MGARD
 sources = [
     GitSource("https://github.com/CODARcode/MGARD", "024ccc2b8ca4a787cfc6f227a6d14e7fd9cb76cb"),
+    FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
+               "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd MGARD
+
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    rm -rf /opt/${target}/${target}/sys-root/System
+    tar --extract --file=${WORKSPACE}/srcdir/MacOSX10.13.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX10.13.sdk/System MacOSX10.13.sdk/usr
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+fi
 
 # We installed a `protoc` executable both as a build- and a host-build-dependency.
 # Delete the non-host-build `protoc` executable so that cmake won't try to run it.
