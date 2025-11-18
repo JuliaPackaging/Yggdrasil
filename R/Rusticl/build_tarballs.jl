@@ -124,7 +124,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("libclc_jll"),
-    Dependency("SPIRV_Tools_jll"),
+    Dependency("SPIRV_Tools_jll"; compat = "~2025.4"),
     Dependency("libdrm_jll"),       # XXX: can we get rid of this?
     Dependency("OpenCL_jll"),
 ]

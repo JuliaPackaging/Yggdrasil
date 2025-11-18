@@ -3,18 +3,20 @@
 using BinaryBuilder
 
 name = "Pango"
-version = v"1.56.4"
+version = v"1.57.0"
 
 # Collection of sources required to build Pango: https://download.gnome.org/sources/pango/
 sources = [
     ArchiveSource("http://ftp.gnome.org/pub/GNOME/sources/pango/$(version.major).$(version.minor)/pango-$(version).tar.xz",
-                  "17065e2fcc5f5a5bdbffc884c956bfc7c451a96e8c4fb2f8ad837c6413cb5a01"),
+                  "890640c841dae77d3ae3d8fe8953784b930fa241b17423e6120c7bfdf8b891e7"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v11.0.0.tar.bz2",
                   "bd0ea1633bd830204cc23a696889335e9d4a32b8619439ee17f22188695fcc5f"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+
+apk add glib-dev
 
 if [[ "${target}" == *-mingw* ]]; then
     cd $WORKSPACE/srcdir/mingw*/mingw-w64-headers
@@ -32,7 +34,7 @@ if [[ "${target}" == *-mingw* ]]; then
     make install
 fi
 
-cd $WORKSPACE/srcdir/pango*/
+cd $WORKSPACE/srcdir/pango*
 
 if [[ "${target}" == "${MACHTYPE}" ]]; then
     # When building for the host platform, the system libexpat is picked up
@@ -42,7 +44,12 @@ fi
 # If we want libpangoft2 on Windows we need to explicitly enable fontconfig and freetype
 # See <https://gitlab.gnome.org/GNOME/pango/-/blob/main/README.win32.md>.
 
+# We need to update pip
+python3 -m pip install --upgrade pip setuptools wheel
 pip3 install gi-docgen
+# We need a newer meson
+python3 -m pip install --upgrade meson
+
 mkdir build && cd build
 meson --cross-file="${MESON_TARGET_TOOLCHAIN}" \
     -Dintrospection=disabled \
@@ -68,14 +75,15 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    HostBuildDependency("Gettext_jll"),
     HostBuildDependency("gperf_jll"),
+    BuildDependency("Xorg_xorgproto_jll"; platforms=filter(p -> Sys.isfreebsd(p) || Sys.islinux(p), platforms)),
     Dependency("Cairo_jll"; compat="1.18.5"),
     Dependency("Fontconfig_jll"; compat="2.16.0"),
     Dependency("FreeType2_jll"; compat="2.13.4"),
     Dependency("FriBidi_jll"; compat="1.0.17"),
     Dependency("Glib_jll"; compat="2.84.0"),
     Dependency("HarfBuzz_jll"; compat="8.5.1"),
-    BuildDependency("Xorg_xorgproto_jll"; platforms=filter(p -> Sys.isfreebsd(p) || Sys.islinux(p), platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

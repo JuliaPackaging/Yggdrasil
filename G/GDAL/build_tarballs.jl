@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "GDAL"
-upstream_version = v"3.11.4"
+upstream_version = v"3.12.0"
 # The version offset is used for two purposes:
 # - If we need to release multiple jll packages for the same GDAL
 #   library (usually for weird packaging reasons) then we increase the
@@ -11,15 +11,17 @@ upstream_version = v"3.11.4"
 # - Minor versions of GDAL are usually binary incompatible because
 #   they increase the shared library soname. To encode this, we
 #   increase the major version number of the version offset.
-version_offset = v"3.0.0"
+version_offset = v"4.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
 
 # Collection of sources required to build GDAL
 sources = [
+    # The actual release commit b5a9fab4df12cb9e2d1b7db95a5d9902f1cc4720 does not exist in the repository.
+    # We use the previous commit instead. The missing commit is inconsequential for a source build.
     GitSource("https://github.com/OSGeo/gdal.git",
-        "dde6141aeec6e3e823b8af9a930f9bb096bfbda2"),
+        "6d3d306c07e0146859364d7ec6e9e0225fc98208"),
     FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
         "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
     DirectorySource("./bundled"),
@@ -30,6 +32,8 @@ script = raw"""
 cd $WORKSPACE/srcdir/gdal
 
 atomic_patch -p1 ../patches/bsd-environ-undefined-fix.patch
+# Some of our Linux build environments are too old to define `O_TMPFILE`; define it manually
+atomic_patch -p1 ../patches/tmpfile.patch
 
 if [[ "${target}" == *-freebsd* ]]; then
     # Our FreeBSD libc has `environ` as undefined symbol, so the linker will
@@ -120,6 +124,7 @@ products = [
     LibraryProduct("libgdal", :libgdal),
 
     # Using a `_path` suffix here would be very confusing because BinaryBuilder already adds a `_path` suffix.
+    ExecutableProduct("gdal", :gdal_exe),
     ExecutableProduct("gdal_contour", :gdal_contour_exe),
     ExecutableProduct("gdal_create", :gdal_create_exe),
     ExecutableProduct("gdal_footprint", :gdal_footprint_exe),
@@ -202,7 +207,8 @@ dependencies = [
     Dependency("libpng_jll"; compat="1.6.47"),
     Dependency("libwebp_jll"; compat="1.5.0"),
     Dependency("muparser_jll"; compat="2.3.5"),
-    BuildDependency("exprtk_jll"),
+    # Disable exprtk on Windows, it exports too many symbols (21086, with at most 65535 allowed)
+    BuildDependency("exprtk_jll", platforms=filter(!Sys.iswindows, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
