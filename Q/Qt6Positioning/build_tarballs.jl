@@ -14,8 +14,6 @@ sources = [
                   "5c2b0d46b8d35126e97c8efe22264b2de7ac1273a5ec38a0314731bb02804f53"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/13.3/MacOSX13.3.sdk.tar.xz",
                   "e5d0f958a079106234b3a840f93653308a76d3dcea02d3aa8f2841f8df33050c"),
-    ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
-                  "ba6b430aed72c63a3768531f6a3ffc2b0fde2c57a3b251450dcf489a894f0894")
 ]
 
 script = raw"""
@@ -32,26 +30,6 @@ case "$bb_full_target" in
     ;;
 
     *mingw*)        
-        cd $WORKSPACE/srcdir/mingw*/mingw-w64-headers
-        ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target
-        make install
-        
-        cd ../mingw-w64-crt/
-        if [ ${target} == "i686-w64-mingw32" ]; then
-            _crt_configure_args="--disable-lib64 --enable-lib32"
-        elif [ ${target} == "x86_64-w64-mingw32" ]; then
-            _crt_configure_args="--disable-lib32 --enable-lib64"
-        fi
-        ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target --enable-wildcard ${_crt_configure_args}
-        make -j${nproc}
-        make install
-        
-        cd ../mingw-w64-libraries/winpthreads
-        ./configure --prefix=/opt/$target/$target/sys-root --host=$target --enable-static --enable-shared
-        make -j${nproc}
-        make install
-
-        cd $WORKSPACE/srcdir/build
         cmake -DQT_HOST_PATH=$host_prefix \
             -DPython_ROOT_DIR=/usr \
             -DCMAKE_INSTALL_PREFIX=${prefix} \
