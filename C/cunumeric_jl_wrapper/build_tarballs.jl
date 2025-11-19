@@ -9,7 +9,7 @@ include("make_script.jl")
 name = "cunumeric_jl_wrapper"
 version = v"25.10" 
 sources = [
-    GitSource("https://github.com/JuliaLegate/cunumeric_jl_wrapper.git","6b123fb391f49afcfe2e9927075f62d5d5632d86"),
+    GitSource("https://github.com/JuliaLegate/cunumeric_jl_wrapper.git","01cbfd3116feaac20bbcec848520dd91571459cc"),
 ]
 
 MIN_JULIA_VERSION = v"1.10"
