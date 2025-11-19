@@ -9,7 +9,7 @@ version = v"0.73.19"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sciapp/gr.git", "0709a84ad918ce687e80664bc7ab34b6217fda85"),
+    GitSource("https://github.com/sciapp/gr.git", "b6d2030c0ee661bcead1b8c6c3b3ea26fdfdc2fa"),
     FileSource("https://github.com/sciapp/gr/releases/download/v$version/gr-$version.js",
                "c430aff7cd19d01754530a57378c3fa583a1d23168677f802ccae00de8d654c5", "gr.js"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
