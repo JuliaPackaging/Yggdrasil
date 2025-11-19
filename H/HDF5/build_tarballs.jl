@@ -554,7 +554,7 @@ filter!(p -> libc(p) != "musl", platforms)
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # We do not yet have a patch to support MPItrampoline, so disable it for now
-# filter!(p -> p["mpi"] != "mpitrampoline", platforms)
+filter!(p -> p["mpi"] != "mpitrampoline", platforms)
 
 # The products that we will ensure are always built
 products = [
