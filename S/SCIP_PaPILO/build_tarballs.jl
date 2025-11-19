@@ -2,6 +2,9 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "SCIP_PaPILO"
 
 upstream_version = v"9.2.4"
@@ -13,25 +16,11 @@ sources = [
         "https://github.com/scipopt/scip/releases/download/v924/scipoptsuite-$(upstream_version).tgz",
         "4327736efa07a83eb08580d339409936dfe40864a1670dc5fc75d3e3df78d290"
     ),
-    ArchiveSource(
-        "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
-        "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4"
-    ),
     DirectorySource("./bundled/")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-# This requires macOS 10.13
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    export MACOSX_DEPLOYMENT_TARGET=10.13
-    popd
-fi
-
 cd scipoptsuite*
 
 # for soplex threadlocal
@@ -76,6 +65,9 @@ for dir in scip soplex gcg; do
 done
 cp $WORKSPACE/srcdir/scipoptsuite*/papilo/COPYING ${prefix}/share/licenses/SCIP_PaPILO/LICENSE_papilo
 """
+
+# This requires macOS 10.13
+sources, script = require_macos_sdk("10.13", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
