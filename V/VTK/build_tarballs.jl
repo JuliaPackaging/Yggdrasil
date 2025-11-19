@@ -1,6 +1,8 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
-include(joinpath("..", "..", "platforms", "mpi.jl"))
+
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "VTK"
 version = v"9.5.2"

@@ -3,7 +3,8 @@
 using BinaryBuilder, Pkg
 using BinaryBuilderBase
 
-include(joinpath(@__DIR__, "..", "..", "platforms", "microarchitectures.jl"))
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "microarchitectures.jl"))
 
 name = "finufft"
 version = v"2.4.1"

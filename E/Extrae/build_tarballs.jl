@@ -3,9 +3,10 @@ using BinaryBuilderBase
 using Base.BinaryPlatforms
 using Pkg
 
-include(joinpath(dirname(dirname(@__DIR__)), "fancy_toys.jl"))
-include(joinpath(dirname(dirname(@__DIR__)), "platforms", "cuda.jl"))
-include(joinpath(dirname(dirname(@__DIR__)), "platforms", "mpi.jl"))
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 
 name = "Extrae"
