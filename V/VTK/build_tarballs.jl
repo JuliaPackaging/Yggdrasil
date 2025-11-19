@@ -3,6 +3,7 @@ using Base.BinaryPlatforms
 
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "VTK"
 version = v"9.5.2"
@@ -11,8 +12,6 @@ version = v"9.5.2"
 sources = [
     ArchiveSource("https://vtk.org/files/release/$(version.major).$(version.minor)/VTK-$(version).tar.gz",
                   "cee64b98d270ff7302daf1ef13458dff5d5ac1ecb45d47723835f7f7d562c989"),
-    FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-               "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
 ]
 
 # Bash recipe for building across all platforms
@@ -35,19 +34,6 @@ cd ${WORKSPACE}/srcdir/VTK-*
 #      set(SQLITE3_FOUND 1)
 #      set(SQLITE3_VERSION 3.36.0) # Might be out-of-sync; update as needed.
 #      endif ()
-
-# We need a newer libc++
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    rm -rf /opt/${target}/${target}/sys-root/System
-    tar \
-        --extract \
-        --file=${WORKSPACE}/srcdir/MacOSX10.14.sdk.tar.xz \
-        --directory=/opt/${target}/${target}/sys-root/. \
-        --strip-components=1 \
-        MacOSX10.14.sdk/System \
-        MacOSX10.14.sdk/usr
-    export MACOSX_DEPLOYMENT_TARGET=10.14
-fi
 
 if [[ ${target} == *mingw* ]]; then
     apk add sqlite
@@ -117,6 +103,9 @@ cmake -Bbuild -GNinja ${opts[@]}
 cmake --build build --parallel ${nproc}
 cmake --install build
 """
+
+# We need a newer libc++
+sources, script = require_macos_sdk("10.14", sources, script)
 
 augment_platform_block = """
     using Base.BinaryPlatforms
