@@ -13,16 +13,13 @@ sources = [
         "b2751fccb6cc4c77708113cd78b561059b6fa904b24162fa0be2d60273d27b8e",
     ),
     ## FFmpeg 6.1.1 does not work with macos 10.13 or earlier.
-    FileSource(
-        "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
-        "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4",
-    ),
+    get_macos_sdk_sources("10.13")...
 ]
 
 # Bash recipe for building across all platforms
 # TODO: Theora once it's available
 function script(; ffplay=false)
-    "FFPLAY=$(ffplay)\n" * raw"""
+    "FFPLAY=$(ffplay)\n" * get_macos_sdk_script("10.13") * raw"""
 cd $WORKSPACE/srcdir
 cd ffmpeg-*/
 sed -i 's/-lflite"/-lflite -lasound"/' configure
@@ -56,12 +53,6 @@ elif [[ "${target}" == riscv64-* ]]; then
 else
     export ccARCH="x86_64"
 fi
-
-if [[ "${target}" == x86_64-apple-darwin* ]]; then 
-    rm -rf /opt/${target}/${target}/sys-root/System
-    tar --extract --file=${WORKSPACE}/srcdir/MacOSX10.13.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX10.13.sdk/System MacOSX10.13.sdk/usr
-    export MACOSX_DEPLOYMENT_TARGET=10.13
-fi 
 
 export CUDA_ARGS=""
 

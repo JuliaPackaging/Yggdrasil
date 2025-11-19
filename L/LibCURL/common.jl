@@ -1,7 +1,10 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
-using BinaryBuilderBase: sanitize, get_addable_spec
+using BinaryBuilderBase: sanitize
+
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 const curl_hashes = Dict(
     v"7.81.0" => "ac8e1087711084548d788ef18b9b732c8de887457b81f616fc681d1044b32f98",
@@ -43,20 +46,8 @@ function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=fal
         DirectorySource("../patches"),
     ]
     if version == v"8.13"
-        append!(sources, [
-            ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
-                          "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4")
-                ])
-        unpack_macosx_sdk = raw"""
-        if [[ "${target}" == x86_64-apple-darwin* ]]; then
-            export MACOSX_DEPLOYMENT_TARGET=10.13
-            pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
-            rm -rf /opt/${target}/${target}/sys-root/System
-            cp -a usr/* "/opt/${target}/${target}/sys-root/usr/"
-            cp -a System "/opt/${target}/${target}/sys-root/"
-            popd
-        fi
-        """
+        unpack_macosx_sdk = get_macos_sdk_script("10.13")
+        append!(sources, get_macos_sdk_sources("10.13"))
     else
         unpack_macosx_sdk = ""
     end
