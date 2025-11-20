@@ -68,7 +68,6 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
     # The products that we will ensure are always built
     products = [
         LibraryProduct("libtvm", :libtvm),
-        LibraryProduct("libtvm_runtime", :libtvm_runtime),
     ]
 
     platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
