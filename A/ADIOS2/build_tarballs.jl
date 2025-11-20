@@ -154,7 +154,7 @@ filter!(p -> nbits(p) ≠ 32, platforms)
 
 # There are build errors on Windows
 # toolkit/transport/file/FilePOSIX.cpp:448:35: error: ‘pread’ was not declared in this scope
-filter!(!Sys.iswinsows, platforms)
+filter!(!Sys.iswindows, platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
