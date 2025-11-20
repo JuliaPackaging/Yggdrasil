@@ -36,6 +36,8 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/htons.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/ffs.patch
 # Correct library dependencies
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cmakelists.patch
+# Correct C includes
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cinttypes.patch
 
 if [[ ${target} == x86_64-linux-musl ]]; then
     # HDF5 needs libcurl, and it needs to be the BinaryBuilder libcurl, not the system libcurl.
@@ -217,5 +219,6 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 # GCC 5 is too old for FreeBSD; it doesn't have `std::to_string`
 # GCC 6 is too old; it doesn't have `std::optional`
 # GCC 7 is too old; it doesn't handle `std::thread(std::memcpy, ...)`
+# GCC 8 is too old; it requires explicitly linking for using `std::filesystem`
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"8")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"9")
