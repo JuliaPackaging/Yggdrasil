@@ -14,14 +14,15 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/u-config*
 
 case ${target} in
-    aarch64-linux*) cc -Os -o pkg-config${exeext} main_linux_aarch64.c;;
-    x86_64-linux*)  cc -Os -o pkg-config${exeext} main_linux_amd64.c;;
-    i686-linux*)    cc -Os -o pkg-config${exeext} main_linux_i686.c;;
+    # These specific main files do not work
+    # aarch64-linux*) cc -Os -o pkg-config${exeext} main_linux_aarch64.c;;
+    # x86_64-linux*)  cc -Os -o pkg-config${exeext} main_linux_amd64.c;;
+    # i686-linux*)    cc -Os -o pkg-config${exeext} main_linux_i686.c;;
     *-w64-*)        cc -Os -nostartfiles -o pkg-config${exeext} main_windows.c;;
     *)              cc -Os -o pkg-config${exeext} main_posix.c;;
 esac
 
-install -Dvm 755 pkg-config${exeext} ${bindir}/pkg-config
+install -Dvm 755 pkg-config${exeext} ${bindir}/pkg-config${exeext}
 
 install_license UNLICENSE
 """
