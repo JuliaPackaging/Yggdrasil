@@ -67,18 +67,14 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
     # The products that we will ensure are always built
     products = [
         LibraryProduct("libtvm", :libtvm),
+        LibraryProduct("libtvm_ffi", :libtvm_ffi),
+        LibraryProduct("libtvm_ffi_testing", :libtvm_ffi_testing),
         LibraryProduct("libtvm_runtime", :libtvm_runtime),
     ]
 
     platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
-    ## we don't build LLVM 15 for i686-linux-musl.
-    if llvm_version >= v"15"
-        filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
-    end
-    ## We only have LLVM builds for AArch64 BSD starting from LLVM 18
-    if version < v"18"
-        filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
-    end
+    ## Filter out musl, FreeBSD and Windows
+    filter!(p -> !(libc(p) == "musl" || Sys.isfreebsd(p) || Sys.iswindows(p)), platforms)
     ## We only have LLVM builds for RISC-V starting from LLVM 19
     if llvm_version < v"19"
         filter!(p -> !(arch(p) == "riscv64"), platforms)
