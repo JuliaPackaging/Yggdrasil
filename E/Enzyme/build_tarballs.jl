@@ -4,19 +4,20 @@ using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
-include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "Enzyme"
 repo = "https://github.com/EnzymeAD/Enzyme.git"
 
-auto_version = "refs/tags/v0.0.216"
+auto_version = "refs/tags/v0.0.217"
 version = VersionNumber(split(auto_version, "/")[end])
 
 llvm_versions = [v"15.0.7", v"16.0.6", v"18.1.7", v"20.1.8"]
 
 # Collection of sources required to build attr
 sources = [
-    GitSource(repo, "ef96c3d7cc967a5ef6c5d620d85b00f4a1e56f24"),
+    GitSource(repo, "7c521437a9ffeea730e843d48da06f40824b0c71"),
+    FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
+               "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
 ]
 
 # These are the platforms we will build for by default, unless further
@@ -38,6 +39,13 @@ platforms = filter!(p -> cxxstring_abi(p) != "cxx03", platforms)
 script = raw"""
 cd Enzyme
 install_license LICENSE
+
+if [[ "${bb_full_target}" == x86_64-apple-darwin* &&  "${LLVM_MAJ_VER}" -ge "15" ]]; then
+    # LLVM 15 requires macOS SDK 10.14.
+    rm -rf /opt/${target}/${target}/sys-root/System
+    tar --extract --file=${WORKSPACE}/srcdir/MacOSX10.14.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX10.14.sdk/System MacOSX10.14.sdk/usr
+    export MACOSX_DEPLOYMENT_TARGET=10.14
+fi
 
 # 1. Build HOST
 NATIVE_CMAKE_FLAGS=()
@@ -126,9 +134,6 @@ cmake -B build -S enzyme -GNinja ${CMAKE_FLAGS[@]}
 
 ninja -C build -j ${nproc} install
 """
-
-# LLVM requires at least macOS SDK 10.14
-sources, script = require_macos_sdk("10.14", sources, script)
 
 augment_platform_block = """
     using Base.BinaryPlatforms
