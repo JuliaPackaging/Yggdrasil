@@ -39,13 +39,6 @@ cmake -B ../../build -DCMAKE_INSTALL_PREFIX=${prefix} \
          -G Ninja
 ninja -C ../../build
 ninja -C ../../build install
-if [[ "$target" == *mingw* ]]; then
-    mkdir -p ${prefix}/bin
-    cp ../../build/lib/* ${prefix}/bin/
-else
-    mkdir -p ${prefix}/lib
-    cp ../../build/lib/* ${prefix}/lib/
-fi
 """
 
 # LLVM 15+ requires macOS SDK 10.14.
@@ -67,16 +60,14 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
         Dependency(PackageSpec(name="Zlib_jll")),
         Dependency(PackageSpec(name="XML2_jll")),
         Dependency(PackageSpec(name="libLLVM_jll")),
+        Dependency(PackageSpec(name="TVMFFI_jll")),
         BuildDependency(PackageSpec(name=llvm_name, version=llvm_version)),
         BuildDependency(PackageSpec(name="MLIR_jll", version=llvm_version)),
     ]
 
     # The products that we will ensure are always built
     products = [
-        LibraryProduct("libtvm_ffi", :libtvm_ffi),
-        LibraryProduct("libtvm_ffi_testing", :libtvm_ffi_testing),
         LibraryProduct("libtvm", :libtvm),
-        LibraryProduct("libtvm_runtime", :libtvm_runtime),
     ]
 
     platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
