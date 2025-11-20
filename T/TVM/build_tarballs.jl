@@ -24,11 +24,11 @@ install_license LICENSE
 git submodule update --init --recursive
 # setup LLVM_LIBS manually for non-Linux OS
 if [[ "$target" == *darwin* ]]; then
-    export LLVM_LIBS="${libdir}/libLLVM-#LLVM_VER#.0.dylib"
+    export LLVM_LIBS="${libdir}/libLLVM-#LLVM_MAJOR#.#LLVM_MINOR#.dylib"
 elif [[ "$target" == *mingw* ]]; then
-    export LLVM_LIBS="${bindir}/libLLVM-#LLVM_VER#jl.dll"
+    export LLVM_LIBS="${bindir}/libLLVM-#LLVM_MAJOR#jl.dll"
 else
-    export LLVM_LIBS="${libdir}/libLLVM-#LLVM_VER#jl.so"
+    export LLVM_LIBS="${libdir}/libLLVM-#LLVM_MAJOR#jl.so"
 fi
 cmake -B ../../build -DCMAKE_INSTALL_PREFIX=${prefix} \
          -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -89,7 +89,8 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
             dependencies, products,
             sources=platform_sources,
             platforms=[augmented_platform],
-            script=replace(script, "#LLVM_VER#" => string(llvm_version.major))
+            script=replace(script, "#LLVM_MAJOR#" => string(llvm_version.major), 
+                                   "#LLVM_MINOR#" => string(llvm_version.minor))
         ))
     end
 end
