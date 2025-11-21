@@ -3,6 +3,7 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "ADIOS2"
@@ -52,6 +53,8 @@ fi
 mv /workspace/destdir/lib/pkgconfig/protobuf.pc /workspace/destdir/lib/pkgconfig/protobuf.pc.orig
 sed -e 's/Requires/# Requires/' /workspace/destdir/lib/pkgconfig/protobuf.pc.orig >/workspace/destdir/lib/pkgconfig/protobuf.pc
 
+# Fortran is not supported with Clang
+# We need `-DADIOS2_Blosc2_PREFER_SHARED=ON` because of <https://github.com/ornladios/ADIOS2/issues/3924>.
 cmakeopts=(
     -DCMAKE_BUILD_TYPE=Release
     -DCMAKE_FIND_ROOT_PATH=${prefix}
@@ -101,7 +104,7 @@ if [[ ${bb_full_target} == *microsoftmpi* ]]; then
     )
 fi
 
-if [[ "${target}" == *-mingw* ]]; then
+if [[ ${target} == *-mingw* ]]; then
     # Windows: Some options do not build
     # Enabling HDF5 leads to the error: `H5VolReadWrite.c:(.text+0x5eb): undefined reference to `H5Pget_fapl_mpio'`
     cmakeopts+=(
@@ -115,12 +118,28 @@ else
         -DADIOS2_USE_DataMan=ON
         -DADIOS2_USE_HDF5=ON
         -DADIOS2_USE_SST=ON
+    )
+fi
+
+if [[ ${target} == *-mingw-* || ${target} == *-musl-* ]]; then
+    # DP is not supported on Windows or musl
+    cmakeopts+=(
+        -DADIOS2_SST_HAVE_MPI_DP_HEURISTICS_PASSED_EXITCODE=1
+        -DADIOS2_SST_HAVE_MPI_DP_HEURISTICS_PASSED_EXITCODE__TRYRUN_OUTPUT=
+    )
+else
+    cmakeopts+=(
         -DADIOS2_SST_HAVE_MPI_DP_HEURISTICS_PASSED_EXITCODE=0
         -DADIOS2_SST_HAVE_MPI_DP_HEURISTICS_PASSED_EXITCODE__TRYRUN_OUTPUT=
     )
 fi
 
-if [[ "${target}" == *-mingw* ]]; then
+# undefined symbol: ffi_closure_free:
+# x86_64-apple-darwin-mpi+mpich
+# x86_64-apple-darwin-mpi+mpitrampoline
+# x86_64-apple-darwin-mpi+openmpi
+
+if [[ ${target} == *-mingw* ]]; then
     # MGARD is not available on Windows
     cmakeopts+=(-DADIOS2_USE_MGARD=OFF)
 else
@@ -131,13 +150,19 @@ export MPITRAMPOLINE_CC=${CC}
 export MPITRAMPOLINE_CXX=${CXX}
 export MPITRAMPOLINE_FC=${FC}
 
-# Fortran is not supported with Clang
-# We need `-DADIOS2_Blosc2_PREFER_SHARED=ON` because of <https://github.com/ornladios/ADIOS2/issues/3924>.
 cmake -Bbuild -GNinja ${cmakeopts[@]}
+
+# Something is wrong with the generated `build.ninja` file on Darwin, don't know why
+if [[ ${target} == *-darwin* ]]; then
+    sed -i -e 's+-lffi+-L/workspace/destdir/lib -lffi+' build/build.ninja
+fi
+
 cmake --build build --parallel ${nproc}
 cmake --install build
 install_license Copyright.txt LICENSE
 """
+
+sources, script = require_macos_sdk("11.0", sources, script)
 
 augment_platform_block = """
     using Base.BinaryPlatforms
@@ -154,7 +179,7 @@ platforms = expand_cxxstring_abis(platforms)
 # <https://github.com/ornladios/ADIOS2/issues/2704>
 filter!(p -> nbits(p) ≠ 32, platforms)
 
-# There are build errors on Windows
+# There are build errors on Windows, probably fixable
 # toolkit/transport/file/FilePOSIX.cpp:448:35: error: ‘pread’ was not declared in this scope
 filter!(!Sys.iswindows, platforms)
 
@@ -220,5 +245,6 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 # GCC 6 is too old; it doesn't have `std::optional`
 # GCC 7 is too old; it doesn't handle `std::thread(std::memcpy, ...)`
 # GCC 8 is too old; it requires explicitly linking for using `std::filesystem`
+# We need MacOS SDK 11.0 for `std::filesystem`
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"9")
