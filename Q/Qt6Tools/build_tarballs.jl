@@ -60,6 +60,8 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "Q", "Qt6Base", "common.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
+filter!(Sys.iswindows, platforms) # HACK HACK HACK
+
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("assistant", :assistant),

@@ -11,6 +11,7 @@ platforms = host_build ? [Platform("x86_64", "linux",cxxstring_abi=:cxx11,libc="
 filter!(p -> !(arch(p) == "aarch64" && Sys.isfreebsd(p)), platforms) # No OpenGL on aarch64 freeBSD
 filter!(p -> arch(p) != "armv6l", platforms) # No OpenGL on armv6
 filter!(p -> arch(p) != "riscv64", platforms) # No OpenGL on riscv64
+filter!(Sys.iswindows, platforms) # HACK HACK HACK
 platforms_macos = filter(Sys.isapple, platforms)
 platforms_win = filter(Sys.iswindows, platforms)
 platforms = setdiff(platforms, platforms_macos, platforms_win)

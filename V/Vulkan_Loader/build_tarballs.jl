@@ -61,4 +61,6 @@ dependencies = [
     BuildDependency("Xorg_xorgproto_jll"; platforms=linux_freebsd),
 ]
 
+filter!(Sys.iswindows, platforms) # HACK HACK HACK
+
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

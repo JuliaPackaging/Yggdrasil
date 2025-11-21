@@ -106,6 +106,7 @@ rm ${bindir}/gdk-pixbuf-pixdata ${bindir}/glib-compile-{resources,schemas}
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+filter!(Sys.iswindows, platforms) # HACK HACK HACK
 
 # There is a linker error:
 # The symbol `g_libintl_bindtextdomain`, required by `gdk_pixbuf_jll`, is not defined.

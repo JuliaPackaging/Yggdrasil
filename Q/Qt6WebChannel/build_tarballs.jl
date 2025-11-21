@@ -76,6 +76,7 @@ install_license $WORKSPACE/srcdir/qt*-src-*/LICENSES/LGPL-3.0-only.txt
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(filter(!Sys.isapple, supported_platforms()))
+filter!(Sys.iswindows, platforms) # HACK HACK HACK
 filter!(p -> arch(p) != "armv6l", platforms) # No OpenGL on armv6
 platforms_macos = [ Platform("x86_64", "macos"), Platform("aarch64", "macos") ]
 
