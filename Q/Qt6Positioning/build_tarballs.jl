@@ -26,18 +26,22 @@ qtsrcdir=`ls -d ../qtpositioning-*`
 case "$bb_full_target" in
 
     x86_64-linux-musl-libgfortran5-cxx11)
-        cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_FIND_ROOT_PATH=$prefix -DCMAKE_BUILD_TYPE=Release $qtsrcdir
+        cmake \
+            -DCMAKE_INSTALL_PREFIX=${prefix} \
+            -DCMAKE_FIND_ROOT_PATH=$prefix \
+            -DCMAKE_BUILD_TYPE=Release $qtsrcdir
     ;;
 
     *mingw*)        
-        cmake -DQT_HOST_PATH=$host_prefix \
+        cmake \
+            -DQT_HOST_PATH=$host_prefix \
             -DPython_ROOT_DIR=/usr \
             -DCMAKE_INSTALL_PREFIX=${prefix} \
             -DCMAKE_PREFIX_PATH=$host_prefix \
             -DCMAKE_FIND_ROOT_PATH=$prefix \
             -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
             -DCMAKE_BUILD_TYPE=Release \
-        $qtsrcdir
+            $qtsrcdir
     ;;
 
     *apple-darwin*)
@@ -45,27 +49,31 @@ case "$bb_full_target" in
         sed -i "s!/opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
         export LDFLAGS="-L${libdir}/darwin -lclang_rt.osx"
         deployarg="-DCMAKE_OSX_DEPLOYMENT_TARGET=10.14"
-        cmake -G Ninja -DQT_HOST_PATH=$host_prefix \
-        -DPython_ROOT_DIR=/usr \
-        -DCMAKE_INSTALL_PREFIX=${prefix} \
-        -DCMAKE_PREFIX_PATH=$host_prefix \
-        -DCMAKE_FIND_ROOT_PATH=$prefix \
-        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-        -DCMAKE_SYSROOT=$apple_sdk_root -DCMAKE_FRAMEWORK_PATH=$apple_sdk_root/System/Library/Frameworks -DCMAKE_OSX_DEPLOYMENT_TARGET=11 \
-        -DQT_NO_APPLE_SDK_AND_XCODE_CHECK=ON \
-        -DCMAKE_BUILD_TYPE=Release \
+        cmake -G Ninja \
+            -DQT_HOST_PATH=$host_prefix \
+            -DPython_ROOT_DIR=/usr \
+            -DCMAKE_INSTALL_PREFIX=${prefix} \
+            -DCMAKE_PREFIX_PATH=$host_prefix \
+            -DCMAKE_FIND_ROOT_PATH=$prefix \
+            -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+            -DCMAKE_SYSROOT=$apple_sdk_root \
+            -DCMAKE_FRAMEWORK_PATH=$apple_sdk_root/System/Library/Frameworks \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=11 \
+            -DQT_NO_APPLE_SDK_AND_XCODE_CHECK=ON \
+            -DCMAKE_BUILD_TYPE=Release \
         $qtsrcdir
     ;;
 
     *)
-        cmake -DQT_HOST_PATH=$host_prefix \
-        -DPython_ROOT_DIR=/usr \
-        -DCMAKE_INSTALL_PREFIX=${prefix} \
-        -DCMAKE_PREFIX_PATH=$host_prefix \
-        -DCMAKE_FIND_ROOT_PATH=$prefix \
-        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-        -DCMAKE_BUILD_TYPE=Release \
-        $qtsrcdir
+        cmake \
+            -DQT_HOST_PATH=$host_prefix \
+            -DPython_ROOT_DIR=/usr \
+            -DCMAKE_INSTALL_PREFIX=${prefix} \
+            -DCMAKE_PREFIX_PATH=$host_prefix \
+            -DCMAKE_FIND_ROOT_PATH=$prefix \
+            -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+            -DCMAKE_BUILD_TYPE=Release \
+            $qtsrcdir
     ;;
 
 esac
