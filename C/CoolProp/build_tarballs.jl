@@ -2,14 +2,15 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "CoolProp"
 version = v"7.2.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://sourceforge.net/projects/coolprop/files/CoolProp/$version/source/CoolProp_sources.zip", "2bd601b5e06b8765ab77fa121e2b0f4087b249c721ddb8745fd3e65952329689"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.0.sdk.tar.xz",
-                  "d3feee3ef9c6016b526e1901013f264467bb927865a03422a9cb925991cc9783"),
 ]
 
 # Bash recipe for building across all platforms
@@ -21,12 +22,6 @@ sed -i 's/Windows/windows/' source/src/CPfilepaths.cpp
 # Do not add `-m32`/`-m64` flags
 sed -i 's/-m${BITNESS}//' source/CMakeLists.txt
 
-if [[ "${target}" == *apple-darwin* ]]; then
-    apple_sdk_root=$WORKSPACE/srcdir/MacOSX11.0.sdk
-    sed -i "s!/opt/$target/$target/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
-    export MACOSX_DEPLOYMENT_TARGET=10.14
-fi
-
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_FIND_ROOT_PATH=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DCOOLPROP_SHARED_LIBRARY=ON ../source/
@@ -34,6 +29,8 @@ VERBOSE=ON cmake --build . --config Release --target CoolProp -- -j${nproc}
 install -Dvm 0755 "libCoolProp.${dlext}" "${libdir}/libCoolProp.${dlext}"
 install_license $WORKSPACE/srcdir/source/LICENSE
 """
+
+sources, script = require_macos_sdk("11.0", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
