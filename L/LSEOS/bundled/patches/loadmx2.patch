@@ -1,0 +1,42 @@
+$ diff -u lseos_v2.7.f~ lseos_v2.7.f
+--- lseos_v2.7.f~       1995-09-14 21:17:13
++++ lseos_v2.7.f        2025-11-02 19:36:49
+@@ -4406,6 +4406,10 @@
+ C23456789012345678901234567890123456789012345678901234567890123456789012
+ C
+       SUBROUTINE LOADMX()
++      CALL LOADMX2('maxwel.atb', 'bound.atb')
++      END
++C
++      SUBROUTINE LOADMX2(FNAME1, FNAME2)
+ C
+       IMPLICIT NONE
+ C
+@@ -4419,7 +4423,7 @@
+ C
+ C
+       INTEGER FNML1, FNML2
+-      CHARACTER*60 FNAME1, FNAME2
++      CHARACTER*(*) FNAME1, FNAME2
+ C
+       DOUBLE PRECISION N_SM, SYMM_M, COMP_M, BINDEM, SYM_SM, SIG_SM
+       DOUBLE PRECISION N_SB, SYMM_B, COMP_B, BINDEB, SYM_SB, SIG_SB
+@@ -4430,12 +4434,14 @@
+ C
+ C
+ cc      CALL GETFNM(FNAME1,FNML1,'Enter ASCII Maxwell fname:',26)
+-      FNAME1 = 'maxwel.atb'
+-      FNML1=10
++C       FNAME1 = 'maxwel.atb'
++C       FNML1=10
++      FNML1=LEN_TRIM(FNAME1)
+ C
+ cc      CALL GETFNM(FNAME2,FNML2,'Enter ASCII boundary fname:',27)
+-      FNAME2 = 'bound.atb'
+-      FNML2=9
++C       FNAME2 = 'bound.atb'
++C       FNML2=9
++      FNML2=LEN_TRIM(FNAME2)
+ C
+ C
+ C
