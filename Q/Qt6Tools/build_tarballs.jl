@@ -101,7 +101,7 @@ augment_platform_block = """
 llvm_versions = [v"20.1.8+0"]
 builds = []
 
-filter!(Sys.iswindows, platforms) # HACK HACK HACK
+#filter!(Sys.iswindows, platforms) # HACK HACK HACK
 for llvm_version in llvm_versions, llvm_assertions in (false, true)
     llvm_name = llvm_assertions ? "LLVM_full_assert_jll" : "LLVM_full_jll"
     dependencies = [
