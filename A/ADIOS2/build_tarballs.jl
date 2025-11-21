@@ -79,6 +79,18 @@ cmakeopts=(
     -DMPI_HOME=${prefix}
 )
 
+if [[ ${bb_full_target} == *microsoftmpi* ]]; then
+    # Microsoft MPI need special care
+    cmakeopts+=(
+        -DMPI_C_ADDITIONAL_INCLUDE_DIRS=
+        -DMPI_C_LIBRARIES=$l{ibdir}/msmpi.dll
+        -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS=
+        -DMPI_CXX_LIBRARIES=${libdir}/msmpi.dll
+        -DMPI_Fortran_ADDITIONAL_INCLUDE_DIRS=
+        -DMPI_Fortran_LIBRARIES=${libdir}/msmpi.dll
+    )
+fi
+
 if [[ ${bb_full_target} == *mpich* ]]; then
     # This feature only works with MPICH
     cmakeopts+=(
@@ -92,58 +104,31 @@ else
     )
 fi
 
-if [[ ${bb_full_target} == *microsoftmpi* ]]; then
-    # Microsoft MPI
-    cmakeopts+=(
-        -DMPI_C_ADDITIONAL_INCLUDE_DIRS=
-        -DMPI_C_LIBRARIES=$l{ibdir}/msmpi.dll
-        -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS=
-        -DMPI_CXX_LIBRARIES=${libdir}/msmpi.dll
-        -DMPI_Fortran_ADDITIONAL_INCLUDE_DIRS=
-        -DMPI_Fortran_LIBRARIES=${libdir}/msmpi.dll
-    )
+# DataMan
+if [[ ${target} != *-mingw* ]]; then
+    cmakeopts+=(-DADIOS2_USE_DataMan=ON)
 fi
 
-if [[ ${target} == *-mingw* ]]; then
-    # Windows: Some options do not build
+# HDF5
+if [[ ${target} != *-mingw* ]]; then
     # Enabling HDF5 leads to the error: `H5VolReadWrite.c:(.text+0x5eb): undefined reference to `H5Pget_fapl_mpio'`
-    cmakeopts+=(
-        -DADIOS2_USE_DataMan=OFF
-        -DADIOS2_USE_HDF5=OFF
-        -DADIOS2_USE_SST=OFF
-        -DEVPATH_TRANSPORT_MODULES=OFF
-    )
-else
-    cmakeopts+=(
-        -DADIOS2_USE_DataMan=ON
-        -DADIOS2_USE_HDF5=ON
-        -DADIOS2_USE_SST=ON
-    )
+    cmakeopts+=(-DADIOS2_USE_HDF5=ON)
 fi
 
-if [[ ${target} == *-mingw* || ${target} == *-musl* ]]; then
-    # DP is not supported on Windows or musl
-    cmakeopts+=(
-        -DADIOS2_SST_HAVE_MPI_DP_HEURISTICS_PASSED_EXITCODE=1
-        -DADIOS2_SST_HAVE_MPI_DP_HEURISTICS_PASSED_EXITCODE__TRYRUN_OUTPUT=
-    )
-else
-    cmakeopts+=(
-        -DADIOS2_SST_HAVE_MPI_DP_HEURISTICS_PASSED_EXITCODE=0
-        -DADIOS2_SST_HAVE_MPI_DP_HEURISTICS_PASSED_EXITCODE__TRYRUN_OUTPUT=
-    )
-fi
-
-# undefined symbol: ffi_closure_free:
-# x86_64-apple-darwin-mpi+mpich
-# x86_64-apple-darwin-mpi+mpitrampoline
-# x86_64-apple-darwin-mpi+openmpi
-
-if [[ ${target} == *-mingw* ]]; then
-    # MGARD is not available on Windows
-    cmakeopts+=(-DADIOS2_USE_MGARD=OFF)
-else
+# MGARD
+if [[ ${target} != *-mingw* ]]; then
     cmakeopts+=(-DADIOS2_USE_MGARD=ON)
+fi
+
+# SST
+if [[ ${target} != *-mingw* && ${target} != *-musl* ]]; then
+    cmakeopts+=(
+        -DADIOS2_USE_SST=ON
+        -DADIOS2_SST_HAVE_MPI_DP_HEURISTICS_PASSED_EXITCODE=1   # we assume it fails
+        -DADIOS2_SST_HAVE_MPI_DP_HEURISTICS_PASSED_EXITCODE__TRYRUN_OUTPUT=
+    )
+else
+    cmakeopts+=(-DADIOS2_USE_SST=OFF)
 fi
 
 export MPITRAMPOLINE_CC=${CC}
