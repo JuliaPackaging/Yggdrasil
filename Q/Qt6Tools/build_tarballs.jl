@@ -8,7 +8,7 @@ version = v"6.8.2"
 # Set this to true first when updating the version. It will build only for the host (linux musl).
 # After that JLL is in the registry, set this to false to build for the other platforms, using
 # this same package as host build dependency.
-const host_build = true
+const host_build = false
 
 # Collection of sources required to build qt6
 sources = [
@@ -39,7 +39,7 @@ fi
 case "$bb_full_target" in
 
     x86_64-linux-musl*)
-        cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_FIND_ROOT_PATH=$prefix -DCMAKE_BUILD_TYPE=Release $qtsrcdir
+        cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_FIND_ROOT_PATH=$prefix -DQT_FORCE_BUILD_TOOLS=ON -DQT_BUILD_TOOLS_BY_DEFAULT=ON -DCMAKE_BUILD_TYPE=Release $qtsrcdir
     ;;
 
     *mingw*)
@@ -63,11 +63,11 @@ case "$bb_full_target" in
         make install
 
         cd $WORKSPACE/srcdir/build
-        cmake -DQT_HOST_PATH=$host_prefix -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_FIND_ROOT_PATH=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release $qtsrcdir
+        cmake -DQT_HOST_PATH=$host_prefix -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_FIND_ROOT_PATH=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DQT_FORCE_BUILD_TOOLS=ON -DQT_BUILD_TOOLS_BY_DEFAULT=ON $qtsrcdir
     ;;
 
     *)
-        cmake -G Ninja -DQT_HOST_PATH=$host_prefix -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_FIND_ROOT_PATH=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DQT_NO_APPLE_SDK_AND_XCODE_CHECK=ON -DCMAKE_BUILD_TYPE=Release $qtsrcdir
+        cmake -G Ninja -DQT_HOST_PATH=$host_prefix -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_FIND_ROOT_PATH=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DQT_NO_APPLE_SDK_AND_XCODE_CHECK=ON -DCMAKE_BUILD_TYPE=Release -DQT_FORCE_BUILD_TOOLS=ON -DQT_BUILD_TOOLS_BY_DEFAULT=ON $qtsrcdir
     ;;
 
 esac
@@ -118,7 +118,7 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
         BuildDependency(PackageSpec(name=llvm_name, version=llvm_version))
     ]
     if !host_build
-        push!(dependencies, HostBuildDependency("Qt6LinguistTools_jll"))
+        push!(dependencies, HostBuildDependency("Qt6Tools_jll"))
     end
 
     for platform in platforms
