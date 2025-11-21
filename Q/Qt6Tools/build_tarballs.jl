@@ -77,8 +77,6 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "Q", "Qt6Base", "common.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
-filter!(Sys.iswindows, platforms) # HACK HACK HACK
-
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("assistant", :assistant),
@@ -102,6 +100,8 @@ augment_platform_block = """
 # determine exactly which tarballs we should build
 llvm_versions = [v"20.1.8+0"]
 builds = []
+
+filter!(Sys.iswindows, platforms) # HACK HACK HACK
 for llvm_version in llvm_versions, llvm_assertions in (false, true)
     llvm_name = llvm_assertions ? "LLVM_full_assert_jll" : "LLVM_full_jll"
     dependencies = [
