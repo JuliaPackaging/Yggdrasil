@@ -121,7 +121,7 @@ else
     )
 fi
 
-if [[ ${target} == *-mingw-* || ${target} == *-musl-* ]]; then
+if [[ ${target} == *-mingw* || ${target} == *-musl* ]]; then
     # DP is not supported on Windows or musl
     cmakeopts+=(
         -DADIOS2_SST_HAVE_MPI_DP_HEURISTICS_PASSED_EXITCODE=1
