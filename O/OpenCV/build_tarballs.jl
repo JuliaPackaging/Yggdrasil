@@ -32,6 +32,7 @@ cd $WORKSPACE/srcdir
 cd opencv_contrib
 git apply ../patches/opencv-julia-cmake.patch
 git apply ../patches/opencv-julia-code.patch
+git apply ../patches/opencv-gen.patch
 cd ..
 
 mkdir build && cd build
@@ -107,10 +108,11 @@ install_license ../opencv/{LICENSE,COPYRIGHT}
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = vcat(libjulia_platforms.(julia_versions)...)
-
-# We don't have Qt5 for Musl platforms
-filter!(p -> libc(p) != "musl", platforms)
 platforms = expand_cxxstring_abis(platforms)
+# Filter out platforms that don't have Qt
+filter!(p -> !(arch(p) == "aarch64" && Sys.isfreebsd(p)), platforms) # No OpenGL on aarch64 freeBSD
+filter!(p -> arch(p) != "armv6l", platforms) # No OpenGL on armv6
+filter!(p -> arch(p) != "riscv64", platforms) # No OpenGL on riscv64
 
 # The products that we will ensure are always built
 products = [
@@ -141,4 +143,6 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"10")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+    julia_compat = libjulia_julia_compat(julia_versions),
+    preferred_gcc_version = v"10")
