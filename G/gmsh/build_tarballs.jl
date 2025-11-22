@@ -57,6 +57,7 @@ dependencies = [
     Dependency("Cairo_jll"; compat="1.18.0"),
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
     Dependency("FLTK_jll"),
+    Dependency("Fontconfig_jll"; compat="2.16.0"),
     Dependency("FreeType2_jll"; compat="2.13.4"),
     Dependency("GLU_jll"; platforms=x11_platforms),
     Dependency("GMP_jll"; compat="6.2"),
