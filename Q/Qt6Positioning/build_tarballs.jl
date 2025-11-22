@@ -2,6 +2,9 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+
 name = "Qt6Positioning"
 version = v"6.7.1"
 
@@ -125,8 +128,6 @@ dependencies = [
     Dependency("Qt6Base_jll"; compat="="*string(version)),
     Dependency("Qt6Declarative_jll"; compat="="*string(version)),
 ]
-
-include("../../fancy_toys.jl")
 
 if any(should_build_platform.(triplet.(platforms_macos)))
     build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"10", julia_compat="1.6")

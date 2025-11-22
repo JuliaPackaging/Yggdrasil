@@ -2,27 +2,19 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "aws_c_io"
 version = v"0.23.3"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/awslabs/aws-c-io.git", "9cf142c08c28d5b1195aae09d2c05a6d17502e09"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    export MACOSX_DEPLOYMENT_TARGET=10.14
-    popd
-fi
-
 cd $WORKSPACE/srcdir/aws-c-io
 
 # Patch for MinGW toolchain
@@ -47,6 +39,8 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     ..
 cmake --build . -j${nproc} --target install
 """
+
+sources, script = require_macos_sdk("10.15", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line

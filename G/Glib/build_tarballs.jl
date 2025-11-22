@@ -1,5 +1,8 @@
 using BinaryBuilder
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "Glib"
 version = v"2.86.0"
 
@@ -7,8 +10,6 @@ version = v"2.86.0"
 sources = [
     ArchiveSource("https://ftp.gnome.org/pub/gnome/sources/glib/$(version.major).$(version.minor)/glib-$(version).tar.xz",
                   "b5739972d737cfb0d6fd1e7f163dfe650e2e03740bb3b8d408e4d1faea580d6d"),
-    FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
-               "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4"),
     FileSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
                "ba6b430aed72c63a3768531f6a3ffc2b0fde2c57a3b251450dcf489a894f0894"),
     DirectorySource("bundled"),
@@ -16,12 +17,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    rm -rf /opt/${target}/${target}/sys-root/System
-    tar --extract --file=${WORKSPACE}/srcdir/MacOSX10.13.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX10.13.sdk/System MacOSX10.13.sdk/usr
-    export MACOSX_DEPLOYMENT_TARGET=10.13
-fi
-
 if [[ "${target}" == *-mingw* ]]; then
     cd $WORKSPACE/srcdir
     tar xjf ${WORKSPACE}/srcdir/mingw-w64-v10.0.0.tar.bz2
@@ -85,6 +80,8 @@ sed -i.bak 's/csrDT/csrD/' build.ninja
 ninja -j${nproc} --verbose
 ninja install
 """
+
+sources, script = require_macos_sdk("10.13", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
