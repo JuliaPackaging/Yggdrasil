@@ -17,6 +17,11 @@ cd ${WORKSPACE}/srcdir/gmsh-*
 if [[ "${target}" == *linux* ]] || [[ "${target}" == *freebsd* ]]; then
     OPENGL_FLAGS="-DOpenGL_GL_PREFERENCE=LEGACY"
 fi
+if [[ "${target}" == *mingw* ]]; then
+    # Use pkg-config to collect all required library paths (-L flags) from all JLLs
+    # and explicitly add them to the linker flags environment variable.
+    export LDFLAGS="${LDFLAGS} $(/opt/bin/pkg-config --libs-only-L --static --cflags --libs $(echo $(find ${prefix} -name "*.pc" -print0 | xargs -0 grep -l "Libs:") | sed 's/\.pc//g') )"
+fi
 mkdir build
 cd build
 cmake .. \
