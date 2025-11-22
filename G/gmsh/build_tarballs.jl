@@ -29,12 +29,13 @@ cmake .. \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DENABLE_BUILD_DYNAMIC=1 \
-    -DDEFAULT=1 \
+#    -DDEFAULT=1 \
     -DENABLE_SYSTEM_FREETYPE=1 \
     -DENABLE_SYSTEM_FONTCONFIG=1 \
     -DENABLE_SYSTEM_LIBPNG=1 \
     -DENABLE_SYSTEM_FLTK=1 \
     -DENABLE_SYSTEM_CAIRO=1 \
+    -DEXTRA_LINK_LIBRARIES="-lpng -lfontconfig -lfreetype -lcairo" \
     ${OPENGL_FLAGS}
 make -j${nproc}
 make install
