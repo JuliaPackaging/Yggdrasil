@@ -25,6 +25,9 @@ cmake .. \
     -DCMAKE_BUILD_TYPE=Release \
     -DENABLE_BUILD_DYNAMIC=1 \
     -DDEFAULT=1 \
+    -DENABLE_SYSTEM_FREETYPE=1 \
+    -DENABLE_SYSTEM_FONTCONFIG=1 \
+    -DENABLE_SYSTEM_LIBPNG=1 \
     ${OPENGL_FLAGS}
 make -j${nproc}
 make install
