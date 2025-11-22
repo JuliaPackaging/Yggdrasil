@@ -12,7 +12,7 @@ sources = [
     ArchiveSource(
         # "https://scipopt.org/download/release/scipoptsuite-$(upstream_version).tgz",
         "https://www.gams.com/~svigerske/scipoptsuite-10.0.0.tgz",
-        "0f80e2bad1d9668361eca2142687b5a7d583593bfd28e70e8912e9d7f98a51b6"
+        "8db40ec1dec0875d353bcad0b6d148dfa5dcbf0206c457c8d3ded2443ef8417d"
     ),
     ArchiveSource(
         "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
@@ -57,7 +57,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
   -DAMPL=0\
   -DGCG=0\
   -DBOOST=ON\
-  -DMPFR=OFF\
+  -DMPFR=ON\
   -DSYM=snauty\
   -DTPI=tny\
   -DIPOPT_DIR=${prefix} \
