@@ -31,7 +31,7 @@ install -Dvm 0755 "libCoolProp.${dlext}" "${libdir}/libCoolProp.${dlext}"
 install_license $WORKSPACE/srcdir/source/LICENSE
 """
 
-sources, script = require_macos_sdk("11.0", sources, script)
+sources, script = require_macos_sdk("11.0", sources, script; deployment_target="10.14")
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
