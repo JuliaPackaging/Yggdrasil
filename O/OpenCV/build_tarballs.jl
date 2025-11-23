@@ -23,6 +23,7 @@ sources = [
         "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
         "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4",
     ),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -33,9 +34,9 @@ mkdir build && cd build
 export USE_QT="ON"
 
 # Patch a minor clang issue
-# if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-freebsd* ]]; then
-#     atomic_patch -p1 -d../opencv ../patches/atomic_fix.patch
-# fi
+if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-freebsd* ]]; then
+    atomic_patch -p1 -d../opencv ../patches/atomic_fix.patch
+fi
 
 if [[ "${target}" == *-apple-* ]]; then
     # Newer SDK for recent video codecs
@@ -59,9 +60,7 @@ if [[ "${target}" == *-apple-* ]]; then
         # Rename LAPACK symbols for ILP64
         CXXFLAGS="${CXXFLAGS} -D${symbol}=${symbol}64_"
     done
-    # Apply patch to help CMake find our 64-bit OpenBLAS
-    atomic_patch -p1 -d../opencv ../patches/find-openblas64.patch
-
+    
     # Disable QT
     export USE_QT="OFF"
 elif [[ "${target}" == *-w64-* ]]; then
@@ -73,7 +72,7 @@ fi
 cmake -DCMAKE_FIND_ROOT_PATH=${prefix} \
       -DJulia_PREFIX=${prefix} \
       -DWITH_JULIA=ON -DJulia_FOUND=ON -DHAVE_JULIA=ON -DJulia_WORD_SIZE=${nbits} \
-      -DJulia_INCLUDE_DIRS=${includedir}/julia -DJulia_LIBRARY_DIR=${libdir} -DJulia_LIBRARY=${libdir}/libjulia.so \
+      -DJulia_INCLUDE_DIRS=${includedir}/julia -DJulia_LIBRARY_DIR=${libdir} -DJulia_LIBRARY=${libdir}/libjulia.${dlext} \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_BUILD_TYPE=Release \
