@@ -18,17 +18,10 @@ if [[ "${target}" == *linux* ]] || [[ "${target}" == *freebsd* ]]; then
     OPENGL_FLAGS="-DOpenGL_GL_PREFERENCE=LEGACY"
 fi
 
-# Initialize extra flags variable
-EXTRA_CMAKE_FLAGS=""
-
+# We strictly define the -L path to ensure the linker finds the .dll.a files in ${prefix}/lib
+MINGW_LINK_FLAGS=""
 if [[ "${target}" == *mingw* ]]; then
-    # 1. Capture the -L flags (Library search paths) using pkg-config
-    # This finds where libpng.dll.a, libfontconfig.dll.a, etc., are located.
-    MINGW_LINK_PATHS=$(/opt/bin/pkg-config --libs-only-L --static $(echo $(find ${prefix} -name "*.pc" -print0 | xargs -0 grep -l "Libs:") | sed 's/\.pc//g'))
-    
-    # 2. Force these paths into CMAKE_SHARED_LINKER_FLAGS. 
-    # This ensures that when linking gmsh.dll, it knows where to look.
-    EXTRA_CMAKE_FLAGS="-DCMAKE_SHARED_LINKER_FLAGS='${MINGW_LINK_PATHS}' -DCMAKE_MODULE_LINKER_FLAGS='${MINGW_LINK_PATHS}' -DCMAKE_EXE_LINKER_FLAGS='${MINGW_LINK_PATHS}'"
+    MINGW_LINK_FLAGS="-L${prefix}/lib"
 fi
 
 mkdir build
@@ -38,13 +31,11 @@ cmake .. \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DENABLE_BUILD_DYNAMIC=1 \
-    -DENABLE_SYSTEM_FREETYPE=1 \
-    -DENABLE_SYSTEM_FONTCONFIG=1 \
-    -DENABLE_SYSTEM_LIBPNG=1 \
-    -DENABLE_SYSTEM_FLTK=1 \
-    -DENABLE_SYSTEM_CAIRO=1 \
+    -DDEFAULT=1 \
     -DEXTRA_LINK_LIBRARIES="-lpng -lfontconfig -lfreetype -lcairo" \
-    ${EXTRA_CMAKE_FLAGS} \
+    -DCMAKE_SHARED_LINKER_FLAGS="${MINGW_LINK_FLAGS}" \
+    -DCMAKE_MODULE_LINKER_FLAGS="${MINGW_LINK_FLAGS}" \
+    -DCMAKE_EXE_LINKER_FLAGS="${MINGW_LINK_FLAGS}" \
     ${OPENGL_FLAGS}
 make -j${nproc}
 make install
@@ -77,7 +68,6 @@ dependencies = [
     Dependency("Cairo_jll"; compat="1.18.0"),
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
     Dependency("FLTK_jll"),
-    Dependency("Fontconfig_jll"; compat="2.16.0"),
     Dependency("FreeType2_jll"; compat="2.13.4"),
     Dependency("GLU_jll"; platforms=x11_platforms),
     Dependency("GMP_jll"; compat="6.2"),
