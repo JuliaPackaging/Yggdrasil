@@ -6,6 +6,8 @@ using BinaryBuilder, Pkg
 # Once this Pkg issue is resolved, this must be removed
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
+uuid = Base.UUID("458c3c95-2e84-50aa-8efc-19380b2a3a95")
+delete!(Pkg.Types.get_last_stdlibs(v"1.13.0"), uuid)
 
 name = "OpenCV"
 version = v"4.12.0"
@@ -16,32 +18,24 @@ include("../../L/libjulia/common.jl")
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/opencv/opencv.git", "49486f61fb25722cbcf586b7f4320921d46fb38e"),
-    GitSource("https://github.com/opencv/opencv_contrib.git", "d943e1d61c8bc556a13783e1546ee7c1a9e0b1cf"),
+    GitSource("https://github.com/barche/opencv_contrib.git","40080954a3afcc331463c2d40c6809de29fde50d"),
     ArchiveSource(
         "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
         "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4",
     ),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 
-# Apply patch for BB specific CMake changes
-cd opencv_contrib
-git apply ../patches/opencv-julia-cmake.patch
-git apply ../patches/opencv-julia-code.patch
-git apply ../patches/opencv-gen.patch
-cd ..
-
 mkdir build && cd build
 export USE_QT="ON"
 
 # Patch a minor clang issue
-if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-freebsd* ]]; then
-    atomic_patch -p1 -d../opencv ../patches/atomic_fix.patch
-fi
+# if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-freebsd* ]]; then
+#     atomic_patch -p1 -d../opencv ../patches/atomic_fix.patch
+# fi
 
 if [[ "${target}" == *-apple-* ]]; then
     # Newer SDK for recent video codecs
@@ -78,7 +72,8 @@ fi
 
 cmake -DCMAKE_FIND_ROOT_PATH=${prefix} \
       -DJulia_PREFIX=${prefix} \
-      -DWITH_JULIA=ON \
+      -DWITH_JULIA=ON -DJulia_FOUND=ON -DHAVE_JULIA=ON -DJulia_WORD_SIZE=${nbits} \
+      -DJulia_INCLUDE_DIRS=${includedir}/julia -DJulia_LIBRARY_DIR=${libdir} -DJulia_LIBRARY=${libdir}/libjulia.so \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_BUILD_TYPE=Release \
