@@ -9,7 +9,8 @@ version = v"4.15.0"
 sources = [
     ArchiveSource("https://gmsh.info/src/gmsh-$(version)-source.tgz",
                   "abb2632715bd7d0130ded7144fd6263635cd7dea883b8df61ba4da58ce6a1dfe"),
-]
+    DirectorySource("./bundled")
+    ]
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -18,8 +19,8 @@ if [[ "${target}" == *linux* ]] || [[ "${target}" == *freebsd* ]]; then
     OPENGL_FLAGS="-DOpenGL_GL_PREFERENCE=LEGACY"
 fi
 
-if [[ "${target}" == *mingw* ]]; then
-    export LDFLAGS="$LDFLAGS -L${libdir}/../lib -L${libdir}"
+if [[ ${target} == *mingw* ]]; then
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/CMakeLists.txt.patch"
 fi
 
 mkdir build
