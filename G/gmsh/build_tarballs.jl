@@ -17,11 +17,20 @@ cd ${WORKSPACE}/srcdir/gmsh-*
 if [[ "${target}" == *linux* ]] || [[ "${target}" == *freebsd* ]]; then
     OPENGL_FLAGS="-DOpenGL_GL_PREFERENCE=LEGACY"
 fi
+
+# Initialize extra flags variable
+EXTRA_CMAKE_FLAGS=""
+
 if [[ "${target}" == *mingw* ]]; then
-    # Use pkg-config to collect all required library paths (-L flags) from all JLLs
-    # and explicitly add them to the linker flags environment variable.
-    export LDFLAGS="${LDFLAGS} $(/opt/bin/pkg-config --libs-only-L --static --cflags --libs $(echo $(find ${prefix} -name "*.pc" -print0 | xargs -0 grep -l "Libs:") | sed 's/\.pc//g') )"
+    # 1. Capture the -L flags (Library search paths) using pkg-config
+    # This finds where libpng.dll.a, libfontconfig.dll.a, etc., are located.
+    MINGW_LINK_PATHS=$(/opt/bin/pkg-config --libs-only-L --static $(echo $(find ${prefix} -name "*.pc" -print0 | xargs -0 grep -l "Libs:") | sed 's/\.pc//g'))
+    
+    # 2. Force these paths into CMAKE_SHARED_LINKER_FLAGS. 
+    # This ensures that when linking gmsh.dll, it knows where to look.
+    EXTRA_CMAKE_FLAGS="-DCMAKE_SHARED_LINKER_FLAGS='${MINGW_LINK_PATHS}' -DCMAKE_MODULE_LINKER_FLAGS='${MINGW_LINK_PATHS}' -DCMAKE_EXE_LINKER_FLAGS='${MINGW_LINK_PATHS}'"
 fi
+
 mkdir build
 cd build
 cmake .. \
@@ -35,6 +44,7 @@ cmake .. \
     -DENABLE_SYSTEM_FLTK=1 \
     -DENABLE_SYSTEM_CAIRO=1 \
     -DEXTRA_LINK_LIBRARIES="-lpng -lfontconfig -lfreetype -lcairo" \
+    ${EXTRA_CMAKE_FLAGS} \
     ${OPENGL_FLAGS}
 make -j${nproc}
 make install
