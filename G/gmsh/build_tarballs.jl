@@ -18,10 +18,8 @@ if [[ "${target}" == *linux* ]] || [[ "${target}" == *freebsd* ]]; then
     OPENGL_FLAGS="-DOpenGL_GL_PREFERENCE=LEGACY"
 fi
 
-# We strictly define the -L path to ensure the linker finds the .dll.a files in ${prefix}/lib
-MINGW_LINK_FLAGS=""
 if [[ "${target}" == *mingw* ]]; then
-    MINGW_LINK_FLAGS="-L${libdir}"
+    export LDFLAGS="$LDFLAGS -L${libdir}/../lib -L${libdir}"
 fi
 
 mkdir build
@@ -32,10 +30,6 @@ cmake .. \
     -DCMAKE_BUILD_TYPE=Release \
     -DENABLE_BUILD_DYNAMIC=1 \
     -DDEFAULT=1 \
-    -DEXTRA_LINK_LIBRARIES="-lpng -lfontconfig -lfreetype -lcairo" \
-    -DCMAKE_SHARED_LINKER_FLAGS="${MINGW_LINK_FLAGS}" \
-    -DCMAKE_MODULE_LINKER_FLAGS="${MINGW_LINK_FLAGS}" \
-    -DCMAKE_EXE_LINKER_FLAGS="${MINGW_LINK_FLAGS}" \
     ${OPENGL_FLAGS}
 make -j${nproc}
 make install
