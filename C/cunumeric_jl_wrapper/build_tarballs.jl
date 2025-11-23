@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 include("make_script.jl")
 
 name = "cunumeric_jl_wrapper"
-version = v"25.08" 
+version = v"25.8" 
 sources = [
     GitSource("https://github.com/JuliaLegate/cuNumeric.jl.git","68cb00cb9fe84e9a21ebeddd86f39ef482ebafe7"),
 ]
