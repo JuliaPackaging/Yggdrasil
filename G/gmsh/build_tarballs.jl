@@ -21,7 +21,7 @@ fi
 # We strictly define the -L path to ensure the linker finds the .dll.a files in ${prefix}/lib
 MINGW_LINK_FLAGS=""
 if [[ "${target}" == *mingw* ]]; then
-    MINGW_LINK_FLAGS="-L${prefix}/lib"
+    MINGW_LINK_FLAGS="-L${libdir}"
 fi
 
 mkdir build
