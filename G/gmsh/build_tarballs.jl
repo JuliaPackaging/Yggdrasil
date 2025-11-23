@@ -19,7 +19,8 @@ if [[ "${target}" == *linux* ]] || [[ "${target}" == *freebsd* ]]; then
     OPENGL_FLAGS="-DOpenGL_GL_PREFERENCE=LEGACY"
 fi
 
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/CMakeLists.txt.patch" # remove -static linker option from mingw builds
+# remove -static linker option from mingw builds, otherwise linker errors with "cannot find -lpng", "cannot find -lfontconfig" 
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/CMakeLists.txt.patch" 
 
 mkdir build
 cd build
