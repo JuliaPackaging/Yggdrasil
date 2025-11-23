@@ -19,9 +19,7 @@ if [[ "${target}" == *linux* ]] || [[ "${target}" == *freebsd* ]]; then
     OPENGL_FLAGS="-DOpenGL_GL_PREFERENCE=LEGACY"
 fi
 
-if [[ ${target} == *mingw* ]]; then
-    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/CMakeLists.txt.patch"
-fi
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/CMakeLists.txt.patch" # remove -static linker option from mingw builds
 
 mkdir build
 cd build
