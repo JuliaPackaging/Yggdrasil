@@ -1,5 +1,6 @@
 """
-    require_macos_sdk(version::String, sources::Vector, script::String)
+    require_macos_sdk(version::String, sources::Vector, script::String;
+                      deployment_target::String = version)
 
 Augment `sources` and `script` to ensure the macOS SDK with the indicated
 `version` is available when building for macOS. Returns a new `sources` and
@@ -9,8 +10,9 @@ Currently this only has an effect when building for macOS on Intel hardware,
 as the ARM builder already uses a recent SDK. In the future this may also gain
 support for installing newer SDK versions on ARM as well.
 """
-function require_macos_sdk(version::String, sources::Vector, script::String)
-    return vcat(sources, get_macos_sdk_sources(version)), get_macos_sdk_script(version) * script
+function require_macos_sdk(version::String, sources::Vector, script::String; deployment_target::String = version)
+    return vcat(sources, get_macos_sdk_sources(version)),
+           get_macos_sdk_script(version; deployment_target) * script
 end
 
 """
@@ -92,24 +94,31 @@ Normally using `require_macos_sdk` should be preferred over this, so that the
 SDK version is specified in a single place. But when necessary it is useful to
 have this low-level alternative.
 """
-function get_macos_sdk_script(version::String)
+function get_macos_sdk_script(version::String; deployment_target::String = version)
     # on ARM, the default macOS SDK we use is 11.1; so if the requested SDK
     # version is older or equal to that, we can restrict to intel
     arch = VersionNumber(version) <= v"11.1" ? "x86_64" : "*"
-    return raw"""
+    return """
+        macos_sdk_version=$version
+        macosx_deployment_target=$deployment_target
+        """ *
+    raw"""
     if [[ "${target}" == """*arch*raw"""-apple-darwin* ]]; then
-        macos_sdk="""*version*"\n"*
-        raw"""
-        echo "Extracting MacOSX${macos_sdk}.sdk.tar.xz (this may take a while)"
+        echo "Extracting MacOSX${macos_sdk_version}.sdk.tar.xz (this may take a while)"
         rm -rf /opt/${target}/${target}/sys-root/System
         rm -rf /opt/${target}/${target}/sys-root/usr/include/libxml2/libxml
         tar --extract \
-            --file=${WORKSPACE}/srcdir/MacOSX${macos_sdk}.sdk.tar.xz \
+            --file=${WORKSPACE}/srcdir/MacOSX${macos_sdk_version}.sdk.tar.xz \
             --directory="/opt/${target}/${target}/sys-root/." \
             --strip-components=1 \
-            MacOSX${macos_sdk}.sdk/System \
-            MacOSX${macos_sdk}.sdk/usr
-        export MACOSX_DEPLOYMENT_TARGET=${macos_sdk}
+            MacOSX${macos_sdk_version}.sdk/System \
+            MacOSX${macos_sdk_version}.sdk/usr
+        if [[ "${target}" == aarch64-apple-darwin* ]] &&
+           [[ "${macosx_deployment_target}" == 10.* ]]; then
+            export MACOSX_DEPLOYMENT_TARGET=11.0
+        else
+            export MACOSX_DEPLOYMENT_TARGET=${macosx_deployment_target}
+        fi
     fi
     """
 end
