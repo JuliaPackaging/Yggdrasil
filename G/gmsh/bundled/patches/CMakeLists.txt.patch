@@ -9,3 +9,12 @@
    if(HAVE_FLTK)
      set(APPFLAGS "${FLAGS} -municode -mwindows")
      if(HAVE_64BIT_SIZE_T)
+@@ -2304,7 +2304,7 @@
+       add_executable(${TEST} WIN32 ${TESTFILE})
+       target_link_libraries(${TEST} shared)
+       if(WIN32 AND NOT MSVC)
+-        set(FLAGS "-static")
++#        set(FLAGS "-static")
+         if(HAVE_FLTK)
+           set(FLAGS "${FLAGS} -mwindows")
+         else()
