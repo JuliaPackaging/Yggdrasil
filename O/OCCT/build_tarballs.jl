@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "OCCT"
-version = v"7.7.2"
+version = v"7.9.2"
 
 # Collection of sources required to build Open CASCADE Technology (OCCT)
 sources = [
     GitSource("https://github.com/Open-Cascade-SAS/OCCT.git",
-              "cec1ecd0c9f3b3d2572c47035d11949e8dfa85e2"), # V7_7_2 @ Aug 11, 2023
+              "c5f20409c52bf8f658314d205a0e5d6f0be0969c"), # V7_9_2 @ Oct 18, 2025
     DirectorySource("./bundled")
 ]
 
@@ -55,6 +55,13 @@ products = [
     LibraryProduct("libTKBool", :libTKBool),
     LibraryProduct("libTKCAF", :libTKCAF),
     LibraryProduct("libTKCDF", :libTKCDF),
+    LibraryProduct("libTKDEIGES", :libTKDEIGES),
+    LibraryProduct("libTKDEGLTF", :libTKDEGLTF),
+    LibraryProduct("libTKDEOBJ", :libTKDEOBJ),
+    LibraryProduct("libTKDEPLY", :libTKDEPLY),
+    LibraryProduct("libTKDESTEP", :libTKDESTEP),
+    LibraryProduct("libTKDESTL", :libTKDESTL),
+    LibraryProduct("libTKDEVRML", :libTKDEVRML),
     LibraryProduct("libTKFeat", :libTKFeat),
     LibraryProduct("libTKFillet", :libTKFillet),
     LibraryProduct("libTKG2d", :libTKG2d),
@@ -62,27 +69,18 @@ products = [
     LibraryProduct("libTKGeomAlgo", :libTKGeomAlgo),
     LibraryProduct("libTKGeomBase", :libTKGeomBase),
     LibraryProduct("libTKHLR", :libTKHLR),
-    LibraryProduct("libTKIGES", :libTKIGES),
     LibraryProduct("libTKLCAF", :libTKLCAF),
     LibraryProduct("libTKMath", :libTKMath),
     LibraryProduct("libTKMesh", :libTKMesh),
     LibraryProduct("libTKOffset", :libTKOffset),
     LibraryProduct("libTKPrim", :libTKPrim),
     LibraryProduct("libTKRWMesh", :libTKRWMesh),
-    LibraryProduct("libTKSTEP", :libTKSTEP),
-    LibraryProduct("libTKSTEP209", :libTKSTEP209),
-    LibraryProduct("libTKSTEPAttr", :libTKSTEPAttr),
-    LibraryProduct("libTKSTEPBase", :libTKSTEPBase),
-    LibraryProduct("libTKSTL", :libTKSTL),
     LibraryProduct("libTKService", :libTKService),
     LibraryProduct("libTKShHealing", :libTKShHealing),
     LibraryProduct("libTKTopAlgo", :libTKTopAlgo),
     LibraryProduct("libTKV3d", :libTKV3d),
     LibraryProduct("libTKVCAF", :libTKVCAF),
-    LibraryProduct("libTKVRML", :libTKVRML),
     LibraryProduct("libTKXCAF", :libTKXCAF),
-    LibraryProduct("libTKXDEIGES", :libTKXDEIGES),
-    LibraryProduct("libTKXDESTEP", :libTKXDESTEP),
     LibraryProduct("libTKXMesh", :libTKXMesh),
     LibraryProduct("libTKXSBase", :libTKXSBase),
     LibraryProduct("libTKXml", :libTKXml),
@@ -97,7 +95,7 @@ x11_platforms = filter(p ->Sys.islinux(p) || Sys.isfreebsd(p), platforms)
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("Xorg_xorgproto_jll"; platforms=x11_platforms),
-    Dependency("FreeType2_jll"; compat="2.10.4"),
+    Dependency("FreeType2_jll"; compat="2.13.4"),
     Dependency("Libglvnd_jll"; platforms=x11_platforms),
     Dependency("Xorg_libX11_jll"; platforms=x11_platforms),
     Dependency("Xorg_libXext_jll"; platforms=x11_platforms),

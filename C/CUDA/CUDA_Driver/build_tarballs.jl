@@ -6,7 +6,8 @@
 
 using BinaryBuilder, Pkg
 
-include("../../../fancy_toys.jl")
+const YGGDRASIL_DIR = "../../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "CUDA_Driver"
 version = v"13.0.2"
