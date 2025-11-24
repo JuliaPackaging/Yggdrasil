@@ -22,22 +22,16 @@ mkdir build
 cd build/
 qtsrcdir=`ls -d ../qtpositioning-*`
 
-case "$bb_full_target" in
-
-    *)
-        cmake -G Ninja \
-            -DQT_HOST_PATH=$host_prefix \
-            -DPython_ROOT_DIR=/usr \
-            -DCMAKE_INSTALL_PREFIX=${prefix} \
-            -DCMAKE_PREFIX_PATH=$host_prefix \
-            -DCMAKE_FIND_ROOT_PATH=$prefix \
-            -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-            -DQT_NO_APPLE_SDK_AND_XCODE_CHECK=ON \
-            -DCMAKE_BUILD_TYPE=Release \
-            $qtsrcdir
-    ;;
-
-esac
+cmake -G Ninja \
+    -DQT_HOST_PATH=$host_prefix \
+    -DPython_ROOT_DIR=/usr \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_PREFIX_PATH=$host_prefix \
+    -DCMAKE_FIND_ROOT_PATH=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DQT_NO_APPLE_SDK_AND_XCODE_CHECK=ON \
+    -DCMAKE_BUILD_TYPE=Release \
+    $qtsrcdir
 
 cmake --build . --parallel ${nproc}
 cmake --install .
@@ -54,10 +48,6 @@ products = [
     LibraryProduct(["Qt6Positioning", "libQt6Positioning", "QtPositioning"], :libqt6positioning),
     LibraryProduct(["Qt6PositioningQuick", "libQt6PositioningQuick", "QtPositioningQuick"], :libqt6positioningquick),
 ]
-
-# We must use the same version of LLVM for the build toolchain and LLVMCompilerRT_jll
-# LLVM is needed for __isPlatformVersionAtLeast on mac
-llvm_version = v"16.0.6"
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
