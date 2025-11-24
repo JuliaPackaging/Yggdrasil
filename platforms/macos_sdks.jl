@@ -113,12 +113,7 @@ function get_macos_sdk_script(version::String; deployment_target::String = versi
             --strip-components=1 \
             MacOSX${macos_sdk_version}.sdk/System \
             MacOSX${macos_sdk_version}.sdk/usr
-        if [[ "${target}" == aarch64-apple-darwin* ]] &&
-           [[ "${macosx_deployment_target}" == 10.* ]]; then
-            export MACOSX_DEPLOYMENT_TARGET=11.0
-        else
-            export MACOSX_DEPLOYMENT_TARGET=${macosx_deployment_target}
-        fi
+        export MACOSX_DEPLOYMENT_TARGET=${macosx_deployment_target}
     fi
     """
 end
