@@ -37,7 +37,7 @@ fi
 case "$bb_full_target" in
 
     x86_64-linux-musl*)
-        cmake \
+        cmake -G Ninja \
             -DCMAKE_INSTALL_PREFIX=${prefix} \
             -DCMAKE_FIND_ROOT_PATH=$prefix \
             -DCMAKE_BUILD_TYPE=Release \
@@ -45,7 +45,7 @@ case "$bb_full_target" in
     ;;
 
     *mingw*)
-        cmake \
+        cmake -G Ninja \
             -DQT_HOST_PATH=$host_prefix \
             -DCMAKE_INSTALL_PREFIX=${prefix} \
             -DCMAKE_FIND_ROOT_PATH=$prefix \

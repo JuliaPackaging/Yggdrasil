@@ -28,7 +28,7 @@ qtsrcdir=`ls -d ../qtdeclarative-*`
 case "$bb_full_target" in
 
     x86_64-linux-musl-libgfortran5-cxx11)
-        cmake \
+        cmake -G Ninja \
             -DCMAKE_INSTALL_PREFIX=${prefix} \
             -DCMAKE_FIND_ROOT_PATH=$prefix \
             -DCMAKE_BUILD_TYPE=Release \
@@ -59,7 +59,7 @@ case "$bb_full_target" in
     ;;
 
     *)
-        cmake \
+        cmake -G Ninja \
             -DQT_HOST_PATH=$host_prefix \
             -DPython_ROOT_DIR=/usr \
             -DCMAKE_INSTALL_PREFIX=${prefix} \

@@ -26,7 +26,7 @@ qtsrcdir=`ls -d ../qtwebsockets-*`
 case "$bb_full_target" in
 
     x86_64-linux-musl-libgfortran5-cxx11)
-        cmake \
+        cmake -G Ninja \
             -DCMAKE_INSTALL_PREFIX=${prefix} \
             -DCMAKE_FIND_ROOT_PATH=$prefix \
             -DCMAKE_BUILD_TYPE=Release \
@@ -37,7 +37,7 @@ case "$bb_full_target" in
         apple_sdk_root=$WORKSPACE/srcdir/MacOSX11.1.sdk
         sed -i "s!/opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
         deployarg="-DCMAKE_OSX_DEPLOYMENT_TARGET=10.14"
-        cmake \
+        cmake -G Ninja \
             -DQT_HOST_PATH=$host_prefix \
             -DPython_ROOT_DIR=/usr \
             -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -52,7 +52,7 @@ case "$bb_full_target" in
     ;;
 
     *)
-        cmake \
+        cmake -G Ninja \
             -DQT_HOST_PATH=$host_prefix \
             -DPython_ROOT_DIR=/usr \
             -DCMAKE_INSTALL_PREFIX=${prefix} \
