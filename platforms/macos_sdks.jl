@@ -112,10 +112,14 @@ function get_macos_sdk_script(version::String; deployment_target::String = versi
         echo "Extracting MacOSX${macos_sdk_version}.sdk.tar.xz (this may take a while)"
         rm -rf /opt/${target}/${target}/sys-root/System
         rm -rf /opt/${target}/${target}/sys-root/usr/include/libxml2/libxml
+        # extract the tarball into the sys-root so all compilers pick it up
+        # automatically, and use --warning=no-unknown-keyword to hide harmless
+        # warnings about unsupported pax header keywords like "SCHILY.fflags"
         tar --extract \
             --file=${WORKSPACE}/srcdir/MacOSX${macos_sdk_version}.sdk.tar.xz \
             --directory="/opt/${target}/${target}/sys-root/." \
             --strip-components=1 \
+            --warning=no-unknown-keyword \
             MacOSX${macos_sdk_version}.sdk/System \
             MacOSX${macos_sdk_version}.sdk/usr
         export MACOSX_DEPLOYMENT_TARGET=${macosx_deployment_target}
