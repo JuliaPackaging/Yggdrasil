@@ -35,15 +35,32 @@ fi
 case "$bb_full_target" in
 
     x86_64-linux-musl-libgfortran5-cxx11)
-        cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_FIND_ROOT_PATH=$prefix -DCMAKE_BUILD_TYPE=Release $qtsrcdir
+        cmake \
+            -DCMAKE_INSTALL_PREFIX=${prefix} \
+            -DCMAKE_FIND_ROOT_PATH=$prefix \
+            -DCMAKE_BUILD_TYPE=Release \
+            $qtsrcdir
     ;;
 
     *mingw*)        
-        cmake -DQT_HOST_PATH=$host_prefix -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_FIND_ROOT_PATH=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release $qtsrcdir
+        cmake \
+            -DQT_HOST_PATH=$host_prefix \
+            -DCMAKE_INSTALL_PREFIX=${prefix} \
+            -DCMAKE_FIND_ROOT_PATH=$prefix \
+            -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+            -DCMAKE_BUILD_TYPE=Release \
+            $qtsrcdir
     ;;
 
     *)
-        cmake -G Ninja -DQT_HOST_PATH=$host_prefix -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_FIND_ROOT_PATH=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DQT_NO_APPLE_SDK_AND_XCODE_CHECK=ON -DCMAKE_BUILD_TYPE=Release $qtsrcdir
+        cmake -G Ninja \
+            -DQT_HOST_PATH=$host_prefix \
+            -DCMAKE_INSTALL_PREFIX=${prefix} \
+            -DCMAKE_FIND_ROOT_PATH=$prefix \
+            -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+            -DQT_NO_APPLE_SDK_AND_XCODE_CHECK=ON \
+            -DCMAKE_BUILD_TYPE=Release \
+            $qtsrcdir
     ;;
 
 esac

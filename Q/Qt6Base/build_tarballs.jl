@@ -48,12 +48,24 @@ case "$bb_full_target" in
 
     x86_64-linux-musl-libgfortran5-cxx11)
         sed -i 's/exit 1/#exit 1/' $HOSTCXX
-        ../qtbase-everywhere-src-*/configure -prefix $prefix $commonoptions -fontconfig -- -DCMAKE_PREFIX_PATH=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} -DQT_FEATURE_xcb=ON
+        ../qtbase-everywhere-src-*/configure -prefix $prefix \
+            $commonoptions \
+            -fontconfig \
+            -- \
+            -DCMAKE_PREFIX_PATH=${prefix} \
+            -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} \
+            -DQT_FEATURE_xcb=ON
         sed -i 's/#exit 1/exit 1/' $HOSTCXX
     ;;
 
     *mingw*)
-        ../qtbase-everywhere-src-*/configure -prefix $prefix -opensource -confirm-license -nomake examples -release -opengl dynamic -- -DCMAKE_PREFIX_PATH=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DQT_HOST_PATH=$host_prefix
+        ../qtbase-everywhere-src-*/configure -prefix $prefix \
+            -opensource -confirm-license \
+            -nomake examples -release \
+            -opengl dynamic \
+            -- -DCMAKE_PREFIX_PATH=${prefix} \
+            -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+            -DQT_HOST_PATH=$host_prefix
     ;;
 
     *apple-darwin*)
@@ -69,10 +81,16 @@ case "$bb_full_target" in
         # Override SDK root of BB tooling, which Qt queries
         export SDKROOT=$apple_sdk_root
         sed -i 's/exit 1/#exit 1/' /opt/bin/$bb_full_target/$target-clang++
-        ../qtbase-everywhere-src-*/configure -prefix $prefix $commonoptions -- $commoncmakeoptions \
-            -DQT_INTERNAL_APPLE_SDK_VERSION=14 -DQT_INTERNAL_XCODE_VERSION=15 -DCMAKE_SYSROOT=$apple_sdk_root \
-            -DCMAKE_FRAMEWORK_PATH=$apple_sdk_root/System/Library/Frameworks $deployarg \
-            -DCUPS_INCLUDE_DIR=$apple_sdk_root/usr/include -DCUPS_LIBRARIES=$apple_sdk_root/usr/lib/libcups.tbd \
+        ../qtbase-everywhere-src-*/configure -prefix $prefix \
+            $commonoptions \
+            -- $commoncmakeoptions \
+            -DQT_INTERNAL_APPLE_SDK_VERSION=14 \
+            -DQT_INTERNAL_XCODE_VERSION=15 \
+            -DCMAKE_SYSROOT=$apple_sdk_root \
+            -DCMAKE_FRAMEWORK_PATH=$apple_sdk_root/System/Library/Frameworks \
+            $deployarg \
+            -DCUPS_INCLUDE_DIR=$apple_sdk_root/usr/include \
+            -DCUPS_LIBRARIES=$apple_sdk_root/usr/lib/libcups.tbd \
             -DQT_FEATURE_vulkan=OFF
         sed -i 's/#exit 1/exit 1/' /opt/bin/$bb_full_target/$target-clang++
     ;;
@@ -81,19 +99,35 @@ case "$bb_full_target" in
         sed -i 's/-Wl,--no-undefined//' $qtsrcdir/mkspecs/freebsd-clang/qmake.conf
         sed -i 's/-Wl,--no-undefined//' $qtsrcdir/cmake/QtFlagHandlingHelpers.cmake
         sed -i 's/exit 1/#exit 1/' /opt/bin/$bb_full_target/$target-clang++
-        ../qtbase-everywhere-src-*/configure -prefix $prefix $commonoptions -fontconfig -- $commoncmakeoptions -DQT_PLATFORM_DEFINITION_DIR=$host_prefix/mkspecs/freebsd-clang -DQT_FEATURE_xcb=ON
+        ../qtbase-everywhere-src-*/configure -prefix $prefix \
+            $commonoptions \
+            -fontconfig \
+            -- $commoncmakeoptions \
+            -DQT_PLATFORM_DEFINITION_DIR=$host_prefix/mkspecs/freebsd-clang \
+            -DQT_FEATURE_xcb=ON
         sed -i 's/#exit 1/exit 1/' /opt/bin/$bb_full_target/$target-clang++
     ;;
 
     *i686-linux-musl*)
-        ../qtbase-everywhere-src-*/configure -verbose -prefix $prefix $commonoptions -fontconfig -no-stack-protector -- $commoncmakeoptions -DQT_FEATURE_xcb=ON
+        ../qtbase-everywhere-src-*/configure -prefix $prefix \
+            $commonoptions \
+             -verbose \
+            -fontconfig \
+            -no-stack-protector \
+            -- $commoncmakeoptions \
+            -DQT_FEATURE_xcb=ON
     ;;
 
     *)
         echo "#define ELFOSABI_GNU 3" >> /opt/$target/$target/sys-root/usr/include/elf.h
         echo "#define EM_AARCH64 183" >> /opt/$target/$target/sys-root/usr/include/elf.h
         echo "#define EM_BLACKFIN 106" >> /opt/$target/$target/sys-root/usr/include/elf.h
-        ../qtbase-everywhere-src-*/configure -verbose -prefix $prefix $commonoptions -fontconfig -- $commoncmakeoptions -DQT_FEATURE_xcb=ON
+        ../qtbase-everywhere-src-*/configure -prefix $prefix \
+            -verbose \
+            $commonoptions \
+            -fontconfig \
+            -- $commoncmakeoptions \
+            -DQT_FEATURE_xcb=ON
     ;;
 esac
 
