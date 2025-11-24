@@ -24,13 +24,6 @@ qtsrcdir=`ls -d ../qtpositioning-*`
 
 case "$bb_full_target" in
 
-    x86_64-linux-musl-libgfortran5-cxx11)
-        cmake -G Ninja \
-            -DCMAKE_INSTALL_PREFIX=${prefix} \
-            -DCMAKE_FIND_ROOT_PATH=$prefix \
-            -DCMAKE_BUILD_TYPE=Release $qtsrcdir
-    ;;
-
     *)
         cmake -G Ninja \
             -DQT_HOST_PATH=$host_prefix \
