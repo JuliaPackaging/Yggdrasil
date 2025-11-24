@@ -3,6 +3,9 @@
 using BinaryBuilder
 using BinaryBuilderBase: get_addable_spec
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "GTK4"
 version = v"4.18.6"
 
@@ -10,8 +13,6 @@ version = v"4.18.6"
 sources = [
     ArchiveSource("https://download.gnome.org/sources/gtk/$(version.major).$(version.minor)/gtk-$(version).tar.xz",
                   "e1817c650ddc3261f9a8345b3b22a26a5d80af154630dedc03cc7becefffd0fa"),
-    FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-               "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 # Bash recipe for building across all platforms
@@ -58,13 +59,6 @@ for destdir in /workspace/x86_64-linux-musl*/destdir; do
     fi
 done
 
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    # macOS SDK 10.15 or newer is required to build GTK
-    export MACOSX_DEPLOYMENT_TARGET=10.15
-    rm -rf /opt/${target}/${target}/sys-root/System
-    tar --extract --file=${WORKSPACE}/srcdir/MacOSX10.15.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX10.15.sdk/System MacOSX10.15.sdk/usr
-fi
-
 FLAGS=()
 if [[ "${target}" == *-apple-* ]]; then
     FLAGS+=(-Dx11-backend=false -Dwayland-backend=false)
@@ -102,6 +96,9 @@ glib-compile-schemas ${prefix}/share/glib-2.0/schemas
 # Remove temporary links
 rm ${bindir}/gdk-pixbuf-pixdata ${bindir}/glib-compile-{resources,schemas}
 """
+
+# macOS SDK 10.15 or newer is required to build GTK
+sources, script = require_macos_sdk("10.15", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line

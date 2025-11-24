@@ -2,6 +2,9 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "z3"
 version = v"4.15.4"
 
@@ -9,26 +12,10 @@ version = v"4.15.4"
 sources = [
     ArchiveSource("https://github.com/Z3Prover/z3/releases/download/z3-$(version)/z3_solver-$(version).0.tar.gz",
                   "928c29b58c4eb62106da51c1914f6a4a55d0441f8f48a81b9da07950434a8946"),
-    FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-               "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
-macfix = raw"""
-# See https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/1185
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    # work around macOS SDK issue
-    #     /workspace/srcdir/z3/src/ast/ast.h:: 189error:: 47:'get<unsigned int, int, ast *,
-    #         symbol, zstring *, rational *, double, unsigned int>' is unavailable:
-    #         introduced in macOS 10.14
-    export MACOSX_DEPLOYMENT_TARGET=10.15
-    # ...and install a newer SDK
-    rm -rf /opt/${target}/${target}/sys-root/System
-    tar --extract --file=${WORKSPACE}/srcdir/MacOSX10.15.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX10.15.sdk/System MacOSX10.15.sdk/usr
-fi
-"""
-
 # Bash recipe for building across all platforms
-script = macfix * raw"""
+script = raw"""
 cd $WORKSPACE/srcdir/z3*/core
 
 # Patches Z3 to work around https://github.com/ahumenberger/Z3.jl/issues/28
@@ -58,6 +45,14 @@ cmake --build build --parallel ${nproc}
 cmake --install build
 install_license LICENSE.txt
 """
+
+# See https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/1185
+# work around macOS SDK issue
+#     /workspace/srcdir/z3/src/ast/ast.h:: 189error:: 47:'get<unsigned int, int, ast *,
+#         symbol, zstring *, rational *, double, unsigned int>' is unavailable:
+#         introduced in macOS 10.14
+# ...and install a newer SDK
+sources, script = require_macos_sdk("10.15", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
