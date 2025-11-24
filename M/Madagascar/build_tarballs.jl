@@ -8,7 +8,7 @@ version = v"1.0.1"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/ahay/src.git", "87b34bd9928438bbdaf0f1e96d2ce343f267fb21"),
-    DirectorySource("./bundled")
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
