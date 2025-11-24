@@ -13,13 +13,8 @@ version = VersionNumber(upstream_version.major * 100, upstream_version.minor * 1
 # Collection of sources required to complete build
 sources = [
     ArchiveSource(
-        # "https://scipopt.org/download/release/scipoptsuite-$(upstream_version).tgz",
-        "https://www.gams.com/~svigerske/scipoptsuite-10.0.0.tgz",
-        "8db40ec1dec0875d353bcad0b6d148dfa5dcbf0206c457c8d3ded2443ef8417d"
-    ),
-    ArchiveSource(
-        "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
-        "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4"
+        "https://github.com/scipopt/scip/releases/download/v$(upstream_version)/scipoptsuite-$(upstream_version).tgz",
+        "44877ca34f3d5f7e09dfed4738cf52046a20950417060f844f1ca37a77a60d1c",
     ),
     DirectorySource("./bundled/")
 ]
@@ -66,10 +61,9 @@ make install
 cp bin/papilo${exeext} "${bindir}/papilo${exeext}"
 
 mkdir -p ${prefix}/share/licenses/SCIP_PaPILO
-for dir in scip soplex gcg; do
+for dir in scip soplex gcg papilo; do
     cp $WORKSPACE/srcdir/scipoptsuite*/${dir}/LICENSE ${prefix}/share/licenses/SCIP_PaPILO/LICENSE_${dir}
 done
-cp $WORKSPACE/srcdir/scipoptsuite*/papilo/LICENSE ${prefix}/share/licenses/SCIP_PaPILO/LICENSE_papilo
 """
 
 # This requires macOS 10.13
