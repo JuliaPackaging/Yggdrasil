@@ -7,13 +7,13 @@ version = v"14.4.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/theogf/sox.git", "6c0b78e6f6735085d7379ac2b9499f47bfda94ea")
+    ArchiveSource("https://sourceforge.net/projects/sox/files/sox/$(version)/sox-$(version).tar.bz2",
+                  "81a6956d4330e75b5827316e44ae381e6f1e8928003c6aa45896da9041ea149c"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/sox/
-autoreconf -i
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
