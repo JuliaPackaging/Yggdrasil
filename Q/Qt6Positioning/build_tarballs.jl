@@ -31,19 +31,6 @@ case "$bb_full_target" in
             -DCMAKE_BUILD_TYPE=Release $qtsrcdir
     ;;
 
-    *apple-darwin*)
-        cmake -G Ninja \
-            -DQT_HOST_PATH=$host_prefix \
-            -DPython_ROOT_DIR=/usr \
-            -DCMAKE_INSTALL_PREFIX=${prefix} \
-            -DCMAKE_PREFIX_PATH=$host_prefix \
-            -DCMAKE_FIND_ROOT_PATH=$prefix \
-            -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-            -DQT_NO_APPLE_SDK_AND_XCODE_CHECK=ON \
-            -DCMAKE_BUILD_TYPE=Release \
-            $qtsrcdir
-    ;;
-
     *)
         cmake -G Ninja \
             -DQT_HOST_PATH=$host_prefix \
@@ -52,6 +39,7 @@ case "$bb_full_target" in
             -DCMAKE_PREFIX_PATH=$host_prefix \
             -DCMAKE_FIND_ROOT_PATH=$prefix \
             -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+            -DQT_NO_APPLE_SDK_AND_XCODE_CHECK=ON \
             -DCMAKE_BUILD_TYPE=Release \
             $qtsrcdir
     ;;
