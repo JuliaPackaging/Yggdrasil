@@ -10,7 +10,8 @@ version = v"2.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/sandialabs/parsegen-cpp/archive/refs/tags/v$(version).tar.gz", "c6c7c4958d1c6ab77bf0970b5aacae4b63603f702666492638ee8c0bdf3125c8"),
+    GitSource("https://github.com/sandialabs/parsegen-cpp.git",
+              "3da1e0d1aef608eb2a6abeb84638bfd8327612e1"),
 ]
 
 # Bash recipe for building across all platforms
