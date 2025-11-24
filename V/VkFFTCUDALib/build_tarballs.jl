@@ -9,7 +9,7 @@ version = v"0.1.1"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/PaulVirally/VkFFTCUDALib.git", "9c8cf2eae261b363e185e5043599ca2726f5aafd"),
-    FileSource("http://us.download.nvidia.com/XFree86/Linux-x86_64/410.66/NVIDIA-Linux-x86_64-410.66.run", "8fb6ad857fa9a93307adf3f44f5decddd0bf8587a7ad66c6bfb33e07e4feb217"),
+    FileSource("https://us.download.nvidia.com/XFree86/Linux-x86_64/410.66/NVIDIA-Linux-x86_64-410.66.run", "8fb6ad857fa9a93307adf3f44f5decddd0bf8587a7ad66c6bfb33e07e4feb217"),
 ]
 
 script = raw"""
