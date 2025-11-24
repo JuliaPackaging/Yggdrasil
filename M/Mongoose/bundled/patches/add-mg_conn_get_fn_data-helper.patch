@@ -1,0 +1,26 @@
+diff --git a/mongoose.c b/mongoose.c
+index 8326cdce..4195f2b8 100644
+--- a/mongoose.c
++++ b/mongoose.c
+@@ -1457,6 +1457,9 @@ struct mg_fs mg_fs_posix = {p_stat,  p_list, p_open,   p_close,  p_read,
+ 
+ 
+ 
++void *mg_conn_get_fn_data(struct mg_connection *c) {
++    return c->fn_data;
++}
+ 
+ static int mg_ncasecmp(const char *s1, const char *s2, size_t len) {
+   int diff = 0;
+diff --git a/mongoose.h b/mongoose.h
+index 5592d83d..8e358709 100644
+--- a/mongoose.h
++++ b/mongoose.h
+@@ -1758,6 +1758,7 @@ struct mg_connection *mg_connect_svc(struct mg_mgr *mgr, const char *url,
+                                      mg_event_handler_t fn, void *fn_data,
+                                      mg_event_handler_t pfn, void *pfn_data);
+ 
++void *mg_conn_get_fn_data(struct mg_connection *c);
+ 
+ 
+ 

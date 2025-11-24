@@ -2,20 +2,15 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-# See https://github.com/JuliaLang/Pkg.jl/issues/2942
-# Once this Pkg issue is resolved, this must be removed
-uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
-delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
-
 name = "z3"
-version = v"4.14.1"
+version = v"4.15.4"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/Z3Prover/z3/releases/download/z3-$(version)/z3_solver-$(version).0.tar.gz",
-                  "ddc6981d83205cbe6000b8fa71f78da496bbaa635fadaf776b6d129b80e7b113"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
+                  "928c29b58c4eb62106da51c1914f6a4a55d0441f8f48a81b9da07950434a8946"),
+    FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+               "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 macfix = raw"""
@@ -26,11 +21,9 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     #         symbol, zstring *, rational *, double, unsigned int>' is unavailable:
     #         introduced in macOS 10.14
     export MACOSX_DEPLOYMENT_TARGET=10.15
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    # ...and install a newer SDK
     rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    popd
+    tar --extract --file=${WORKSPACE}/srcdir/MacOSX10.15.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX10.15.sdk/System MacOSX10.15.sdk/usr
 fi
 """
 
@@ -72,8 +65,8 @@ include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
-# libjulia_jll is not yet available for Julia 1.13
-filter!(p -> VersionNumber(p["julia_version"]) < v"1.13", platforms)
+# libcxxwrap_julia_jll 0.14.4 supports only Julia 1.13.x
+filter!(p -> VersionNumber(p["julia_version"]) < v"1.14-", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -86,7 +79,7 @@ products = [
 dependencies = [
     BuildDependency("libjulia_jll"),
     Dependency("GMP_jll"; compat="6.2.1"),
-    Dependency("libcxxwrap_julia_jll"),
+    Dependency("libcxxwrap_julia_jll"; compat="0.14.4"),
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isapple, platforms)),
 ]
 

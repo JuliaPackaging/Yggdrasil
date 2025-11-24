@@ -3,10 +3,10 @@
 using BinaryBuilder, Pkg
 
 name = "MLX_C"
-version = v"0.1.2"
+version = v"0.2.0"
 
 sources = [
-    GitSource("https://github.com/ml-explore/mlx-c.git", "6e5e13036532a513c37a84a29cb8a11dd915b7c9"),
+    GitSource("https://github.com/ml-explore/mlx-c.git", "9ebe155864eab06d94ba18e01f9cb2666b2975a7"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
 ]
@@ -49,10 +49,10 @@ products = Product[
 ]
 
 dependencies = [
-     # MLX_C 0.1.2 is not completely compatible with MLX 0.22, but MLX_C
-     # skipped releasing a version compatible with 0.22, so adding a
-     # slightly artificial compat for MLX to allow use of 0.22.
-    Dependency("MLX_jll", v"0.23.1"; compat = "0.22, 0.23")
+     # MLX_C 0.2.0 is not completely compatible with MLX 0.24, but MLX_C
+     # skipped releasing a version compatible with 0.24, so adding a
+     # slightly artificial compat for MLX to allow use of 0.24.
+    Dependency("MLX_jll", v"0.25.1"; compat = "0.24, 0.25")
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;

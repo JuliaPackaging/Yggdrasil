@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_compression"
-version = v"0.3.1"
+version = v"0.3.2"
 
 # Collection of sources required to complete build
 sources = [
@@ -36,7 +36,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("aws_c_common_jll"; compat="0.11.1"),
+    Dependency("aws_c_common_jll"; compat="0.12.3"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

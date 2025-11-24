@@ -1,5 +1,3 @@
-# Note that this script can accept some limited command-line arguments, run
-# `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
 """
@@ -8,6 +6,11 @@ using BinaryBuilder
 Compute a version that allows distinguishing between changes in the upstream
 version and changes to the JLL which retain the same upstream version.
 
+To match the gap code of a package with its kernel extension jll, we need to
+make sure that any change to the upstream version is reflected at least
+as a minor version change. Patch versions are just for changes in jll
+dependencies, updated gap version etc.
+
 When the `upstream` version is changed, `offset` version numbers should be reset
 to `v"0.0.0"` and incremented following semantic versioning.
 """
@@ -15,8 +18,8 @@ function offset_version(upstream_str, offset)
     upstream = VersionNumber(replace(upstream_str, "-" => "."))
     return VersionNumber(
         upstream.major * 100 + offset.major,
-        upstream.minor * 100 + offset.minor,
-        upstream.patch * 100 + offset.patch,
+        upstream.minor * 10000 + upstream.patch * 100 + offset.minor,
+        offset.patch,
     )
 end
 
@@ -29,20 +32,10 @@ function gap_pkg_name(name::String)
     return "GAP_pkg_$(lowercase(name))"
 end
 
-function setup_gap_package(gap_version::VersionNumber)
+include("../GAP/common.jl") # make gap_platforms available
 
-    platforms = supported_platforms()
-    filter!(p -> nbits(p) == 64, platforms) # we only care about 64bit builds
-    filter!(!Sys.iswindows, platforms)      # Windows is not supported
-
-    filter!(p -> arch(p) != "riscv64", platforms) # riscv64 is not supported atm
-
-    # TODO: re-enable FreeBSD aarch64 support once GAP_jll supports it
-    filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
-
-    dependencies = BinaryBuilder.AbstractDependency[
+function gap_pkg_dependencies(gap_version::VersionNumber)
+    return BinaryBuilder.AbstractDependency[
         Dependency("GAP_jll", gap_version; compat="~$(gap_version)"),
     ]
-
-    return platforms, dependencies
 end

@@ -1,5 +1,5 @@
 include("../common.jl")
 
-build_libcurl(ARGS, "LibCURL", v"8.12.1")
+build_libcurl(ARGS, "LibCURL", v"8.17.0"; with_zstd=true)
 
-# trigger
+# Build trigger: 2

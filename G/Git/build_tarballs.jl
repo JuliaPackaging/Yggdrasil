@@ -3,20 +3,22 @@
 using BinaryBuilder
 
 name = "Git"
-version = v"2.49.0"
+version = v"2.51.3"
+upstream_version = v"2.51.2"
 
 # <https://github.com/git-for-windows/git/releases> says:
 # "Git for Windows v2.48.1 was the last version to ship with the i686 ("32-bit") variant of the installer, portable Git and archive."
-last_windows_32_bit_version = v"2.48.1"
+# But v2.50.1 was made available "after warranty" to address critical vulnerabilities: https://github.com/git-for-windows/git/releases/tag/v2.50.1.windows.1
+last_windows_32_bit_version = v"2.50.1"
 
 # Collection of sources required to build Git
 sources = [
-    ArchiveSource("https://mirrors.edge.kernel.org/pub/software/scm/git/git-$(version).tar.xz",
-                  "618190cf590b7e9f6c11f91f23b1d267cd98c3ab33b850416d8758f8b5a85628"),
+    ArchiveSource("https://mirrors.edge.kernel.org/pub/software/scm/git/git-$(upstream_version).tar.xz",
+                  "233d7143a2d58e60755eee9b76f559ec73ea2b3c297f5b503162ace95966b4e3"),
     ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(last_windows_32_bit_version).windows.1/Git-$(last_windows_32_bit_version)-32-bit.tar.bz2",
-                  "41af3c80fd618855ad20b441f5f47763cece1ed07f6849ecbdb43066d0aa1dfd"; unpack_target = "i686-w64-mingw32"),
-    ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/Git-$(version)-64-bit.tar.bz2",
-                  "6c5d66e3dd6cd44e50ba7892e9e24ace57934f277a3424c9702a400b3fedc1eb"; unpack_target = "x86_64-w64-mingw32"),
+                  "796d8f4fdd19c668e348d04390a3528df61cfc9864d1f276d9dc585a8a0ac82c"; unpack_target = "i686-w64-mingw32"),
+    ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(upstream_version).windows.1/Git-$(upstream_version)-64-bit.tar.bz2",
+                  "79b257dd677ed2c18bec0b5357fcd68cdd6cfa32bce4d379ad06e32a15a4b31f"; unpack_target = "x86_64-w64-mingw32"),
 ]
 
 # Bash recipe for building across all platforms
@@ -52,6 +54,15 @@ else
     sed -i 's/cross_compiling=yes/cross_compiling=no/' configure
 fi
 
+# On Linux, we need at least glibc 2.25 or musl 1.1.20 to get `sys/random.h`.
+# Git does not check whether this file exists. Explicitly disable `getrandom` if this file doesn't exist.
+MAKE_VARIABLES=()
+if [[ "${target}" == *-linux-* ]]; then
+    if [ ! -e /opt/${target}/${target}/sys-root/usr/include/sys/random.h ]; then
+        MAKE_VARIABLES+=(CSPRNG_METHOD=/dev/urandom)
+    fi
+fi
+
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-curl \
     --with-expat \
@@ -59,9 +70,10 @@ fi
     --with-iconv=${prefix} \
     --with-libpcre2 \
     --with-zlib=${prefix} \
+    --with-tcltk=no \
     "${CACHE_VALUES[@]}"
-make -j${nproc}
-make install INSTALL_SYMLINKS="yes, please"
+make -j${nproc} "${MAKE_VARIABLES[@]}"
+make install INSTALL_SYMLINKS="yes, please" "${MAKE_VARIABLES[@]}"
 
 # Because of the System Integrity Protection (SIP), when running shell or Perl scripts, the
 # environment variable `DYLD_FALLBACK_LIBRARY_PATH` is reset.  We work around this
@@ -124,7 +136,7 @@ dependencies = [
     Dependency("Expat_jll"; compat="2.6.5"),
     Dependency("OpenSSL_jll"; compat="3.0.16"),
     Dependency("Libiconv_jll"),
-    Dependency("PCRE2_jll"),
+    Dependency("PCRE2_jll"; compat="10.42.0"),
     Dependency("Zlib_jll"; compat="1.2.12"),
 ]
 

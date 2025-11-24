@@ -31,7 +31,7 @@ function Pkg.Types.is_stdlib(uuid::Base.UUID, julia_version::VersionNumber)
     return false
 end
 
-jllversion=v"1.10.15"
+jllversion=v"1.11.0"
 for ver in julia_full_versions
     build_julia(ARGS, ver; jllversion)
 end

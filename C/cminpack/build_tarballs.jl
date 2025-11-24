@@ -4,6 +4,8 @@ using BinaryBuilder, Pkg
 
 name = "cminpack"
 version = v"1.3.11"
+# We bumped the version number because we changed the dependencies
+ygg_version = v"1.3.12"
 
 # Collection of sources required to complete build
 sources = [
@@ -12,10 +14,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-
-# We need a newer version of CMake to support libblastrampoline
-apk del cmake
-
 cd $WORKSPACE/srcdir/cminpack
 
 options=(
@@ -24,7 +22,7 @@ options=(
     -DCMAKE_BUILD_TYPE=Release
     -DBUILD_SHARED_LIBS=ON
     -DBUILD_EXAMPLES=OFF
-    -DBLA_VENDOR=libblastrampoline
+    -DBLA_VENDOR=OpenBLAS
     -DUSE_BLAS=ON
 )
 
@@ -52,6 +50,13 @@ install_license CopyrightMINPACK.txt
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
+# OpenBLAS 0.3.29 doesn't support GCC < v11 on powerpc64le:
+# <https://github.com/OpenMathLib/OpenBLAS/issues/5068#issuecomment-2585836284>.
+# Also, we did not build OpenBLAS <0.3.29 for riscv64.
+# To address this we need expand gfortran versions so that we can filter on them.
+platforms = expand_gfortran_versions(platforms)
+filter!(p -> !(arch(p) == "powerpc64le" && libgfortran_version(p) < v"5"), platforms)
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libcminpack", :libcminpack),
@@ -60,12 +65,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("libblastrampoline_jll"; compat="5.4"),
-    # We need at least 3.29 (Ygg version), or 3.30 upstream version
-    # for LBT support, so always pull the most recent CMake version.
-    HostBuildDependency(PackageSpec(; name="CMake_jll")),
+    Dependency("OpenBLAS32_jll"),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.9")
+# We need at least GCC 5 for OpenBLAS32's `memcpy` calls on x86_64
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"5")

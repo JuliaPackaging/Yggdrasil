@@ -3,16 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "msolve"
-upstream_version = v"0.7.5"
+upstream_version = v"0.9.2"
 
-version_offset = v"0.0.1"
+version_offset = v"0.0.0"
 version = VersionNumber(upstream_version.major*100+version_offset.major,
                         upstream_version.minor*100+version_offset.minor,
                         upstream_version.patch*100+version_offset.patch)
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/algebraic-solving/msolve.git", "1d0d10971467d83985b2f1197e5fe7e4ed4be24f")
+    GitSource("https://github.com/algebraic-solving/msolve.git", "7b8fb9e1b2e474efd86d480e7e15bf7169c0b6ad")
 ]
 
 # Bash recipe for building across all platforms
@@ -30,8 +30,6 @@ make install
 platforms = supported_platforms()
 filter!(!Sys.iswindows, platforms)   # not POSIX
 
-filter!(p -> arch(p) != "riscv64", platforms)  # missing FLINT
-
 # At the moment we cannot add optimized versions for specific architectures
 # since the logic of artifact selection when loading the package is not
 # working well.
@@ -46,9 +44,9 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("GMP_jll", v"6.2.1"),
-    Dependency("FLINT_jll", compat = "~300.200.0"),
+    Dependency("FLINT_jll", compat = "~301.300.101"),
     Dependency("MPFR_jll", v"4.1.1"),
-    Dependency("OpenBLAS32_jll", v"0.3.28"),
+    Dependency("OpenBLAS32_jll", v"0.3.29"),
 
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
@@ -58,4 +56,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-  julia_compat="1.6", preferred_gcc_version = v"6")
+  julia_compat="1.6", preferred_gcc_version = v"8")

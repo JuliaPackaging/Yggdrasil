@@ -16,8 +16,6 @@ sources = [
                   "012043ce6d411e6e8a91fdc4e05e6bedcfa10fcb1347d3c33908f7fdd10dfe05"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
-    ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v11.0.1.tar.bz2",
-                  "3f66bce069ee8bed7439a1a13da7cb91a5e67ea6170f21317ac7f5794625ee10"),
     DirectorySource("./bundled"),
 ]
 
@@ -54,28 +52,7 @@ case "$bb_full_target" in
         sed -i 's/#exit 1/exit 1/' $HOSTCXX
     ;;
 
-    *mingw*)        
-        cd $WORKSPACE/srcdir/mingw*/mingw-w64-headers
-        ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target
-        make install
-        
-        
-        cd ../mingw-w64-crt/
-        if [ ${target} == "i686-w64-mingw32" ]; then
-            _crt_configure_args="--disable-lib64 --enable-lib32"
-        elif [ ${target} == "x86_64-w64-mingw32" ]; then
-            _crt_configure_args="--disable-lib32 --enable-lib64"
-        fi
-        ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target --enable-wildcard ${_crt_configure_args}
-        make -j${nproc}
-        make install
-        
-        cd ../mingw-w64-libraries/winpthreads
-        ./configure --prefix=/opt/$target/$target/sys-root --host=$target --enable-static --enable-shared
-        make -j${nproc}
-        make install
-
-        cd $WORKSPACE/srcdir/build
+    *mingw*)
         ../qtbase-everywhere-src-*/configure -prefix $prefix -opensource -confirm-license -nomake examples -release -opengl dynamic -- -DCMAKE_PREFIX_PATH=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DQT_HOST_PATH=$host_prefix
     ;;
 
@@ -89,12 +66,14 @@ case "$bb_full_target" in
         export OBJCFLAGS="-D__ENVIRONMENT_OS_VERSION_MIN_REQUIRED__=120000"
         export OBJCXXFLAGS=$OBJCFLAGS
         export CXXFLAGS=$OBJCFLAGS
+        # Override SDK root of BB tooling, which Qt queries
+        export SDKROOT=$apple_sdk_root
         sed -i 's/exit 1/#exit 1/' /opt/bin/$bb_full_target/$target-clang++
         ../qtbase-everywhere-src-*/configure -prefix $prefix $commonoptions -- $commoncmakeoptions \
             -DQT_INTERNAL_APPLE_SDK_VERSION=14 -DQT_INTERNAL_XCODE_VERSION=15 -DCMAKE_SYSROOT=$apple_sdk_root \
             -DCMAKE_FRAMEWORK_PATH=$apple_sdk_root/System/Library/Frameworks $deployarg \
             -DCUPS_INCLUDE_DIR=$apple_sdk_root/usr/include -DCUPS_LIBRARIES=$apple_sdk_root/usr/lib/libcups.tbd \
-            -DQT_FEATURE_vulkan=OFF 
+            -DQT_FEATURE_vulkan=OFF
         sed -i 's/#exit 1/exit 1/' /opt/bin/$bb_full_target/$target-clang++
     ;;
 
@@ -165,8 +144,8 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("OpenSSL_jll"; compat="3.0.8"),
     Dependency("Vulkan_Loader_jll"),
-    BuildDependency(PackageSpec(name="LLVM_full_jll", version=llvm_version)),
-    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
+    BuildDependency(PackageSpec(name="LLVM_full_jll", version=qt_llvm_version)),
+    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=qt_llvm_version);
                     platforms=filter(p -> Sys.isapple(p), platforms_macos)),
     BuildDependency("Xorg_libX11_jll"),
     BuildDependency("Xorg_kbproto_jll"),

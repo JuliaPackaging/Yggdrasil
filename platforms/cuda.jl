@@ -127,6 +127,8 @@ const cuda_full_versions = [
     v"12.5.1",
     v"12.6.3",
     v"12.8.1",
+    v"12.9.1",
+    v"13.0.2",
 ]
 
 function full_version(ver::VersionNumber)
@@ -278,6 +280,10 @@ function cuda_nvcc_redist_source(cuda_ver, arch)
             # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_12.8.1.json
             ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-x86_64/cuda_nvcc-linux-x86_64-12.8.93-archive.tar.xz",
                          "9961b3484b6b71314063709a4f9529654f96782ad39e72bf1e00f070db8210d3")
+        elseif cuda_ver == "12.9"
+            # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_12.9.0.json
+            ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-x86_64/cuda_nvcc-linux-x86_64-12.9.41-archive.tar.xz",
+                            "b3a0e115840e04c0cfa559263cbbe8b78a2455788e12605732aff68abc50dd34")
         else
             error("No CUDA redist available for CUDA version $cuda_ver on arch $arch")
         end

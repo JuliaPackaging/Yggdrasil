@@ -1,21 +1,21 @@
 using BinaryBuilder
 
 name = "OpenSSH"
-version = v"9.9.2"
+version = v"10.2.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-9.9p2.tar.gz",
-                  "91aadb603e08cc285eddf965e1199d02585fa94d994d6cae5b41e1721e215673"),
-    ArchiveSource("https://github.com/PowerShell/Win32-OpenSSH/releases/download/v9.5.0.0p1-Beta/OpenSSH-Win32.zip",
+    ArchiveSource("https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-10.2p1.tar.gz",
+                  "ccc42c0419937959263fa1dbd16dafc18c56b984c03562d2937ce56a60f798b2"),
+    ArchiveSource("https://github.com/PowerShell/Win32-OpenSSH/releases/download/v9.8.3.0p2-Preview/OpenSSH-Win32.zip",
                   "9245c9ff62d6d11708cb3125097f8cd5627e995c225d0469cf2c3c6be4014952"; unpack_target = "i686-w64-mingw32"),
-    ArchiveSource("https://github.com/PowerShell/Win32-OpenSSH/releases/download/v9.5.0.0p1-Beta/OpenSSH-Win64.zip",
+    ArchiveSource("https://github.com/PowerShell/Win32-OpenSSH/releases/download/v9.8.3.0p2-Preview/OpenSSH-Win64.zip",
                   "bd48fe985d400402c278c485db20e6a82bc4c7f7d8e0ef5a81128f523096530c"; unpack_target = "x86_64-w64-mingw32"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
+cd ${WORKSPACE}/srcdir
 
 install_license openssh-*/LICENCE
 PRODUCTS=(ssh ssh-add ssh-keygen ssh-keyscan ssh-agent scp sftp)

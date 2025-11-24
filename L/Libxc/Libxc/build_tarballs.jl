@@ -18,7 +18,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_SHARED_LIBS=ON \
       -DENABLE_XHOST=OFF \
-      -DENABLE_FORTRAN=OFF \
+      -DENABLE_FORTRAN=ON \
       -DDISABLE_KXC=ON ..
 
 make -j${nproc}
@@ -28,10 +28,13 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+platforms = expand_gfortran_versions(platforms)
+platforms = remove_unsupported_platforms(platforms)
 
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libxc", :libxc)
+    LibraryProduct("libxcf03", :libxcf03)
 ]
 
 # Dependencies that must be installed before this package can be built

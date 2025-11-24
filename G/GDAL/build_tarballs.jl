@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "GDAL"
-upstream_version = v"3.10.2"
+upstream_version = v"3.12.0"
 # The version offset is used for two purposes:
 # - If we need to release multiple jll packages for the same GDAL
 #   library (usually for weird packaging reasons) then we increase the
@@ -11,18 +11,20 @@ upstream_version = v"3.10.2"
 # - Minor versions of GDAL are usually binary incompatible because
 #   they increase the shared library soname. To encode this, we
 #   increase the major version number of the version offset.
-version_offset = v"2.0.0"
+version_offset = v"4.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
 
 # Collection of sources required to build GDAL
 sources = [
+    # The actual release commit b5a9fab4df12cb9e2d1b7db95a5d9902f1cc4720 does not exist in the repository.
+    # We use the previous commit instead. The missing commit is inconsequential for a source build.
     GitSource("https://github.com/OSGeo/gdal.git",
-        "e31053b64d9db2e0dc6f8eec0982908a2087eedf"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+        "6d3d306c07e0146859364d7ec6e9e0225fc98208"),
+    FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
         "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
-    DirectorySource("./bundled")
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -30,6 +32,8 @@ script = raw"""
 cd $WORKSPACE/srcdir/gdal
 
 atomic_patch -p1 ../patches/bsd-environ-undefined-fix.patch
+# Some of our Linux build environments are too old to define `O_TMPFILE`; define it manually
+atomic_patch -p1 ../patches/tmpfile.patch
 
 if [[ "${target}" == *-freebsd* ]]; then
     # Our FreeBSD libc has `environ` as undefined symbol, so the linker will
@@ -47,11 +51,8 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     # /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/include/c++/v1/variant:1394:22: note: 'get<arrow::FieldPath, arrow::FieldPath, std::basic_string<char>, std::vector<arrow::FieldRef>>' has been explicitly marked unavailable here
     export MACOSX_DEPLOYMENT_TARGET=10.15
     # ...and install a newer SDK
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    popd
+    tar --extract --file=${WORKSPACE}/srcdir/MacOSX10.15.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX10.15.sdk/System MacOSX10.15.sdk/usr
 fi
 
 CMAKE_FLAGS=(
@@ -122,7 +123,8 @@ platforms = expand_cxxstring_abis(supported_platforms())
 products = [
     LibraryProduct("libgdal", :libgdal),
 
-    # Using a `_path` suffix here is very confusing because BinaryBuilder already adds a `_path` suffix.
+    # Using a `_path` suffix here would be very confusing because BinaryBuilder already adds a `_path` suffix.
+    ExecutableProduct("gdal", :gdal_exe),
     ExecutableProduct("gdal_contour", :gdal_contour_exe),
     ExecutableProduct("gdal_create", :gdal_create_exe),
     ExecutableProduct("gdal_footprint", :gdal_footprint_exe),
@@ -177,12 +179,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency(PackageSpec(; name="OpenMPI_jll", version=v"4.1.8"); platforms=filter(p -> nbits(p)==32, platforms)),
-    # We cannot build with Arrow 19.0.0. There are undefined
-    # references to many GLIBC symbols from Arrow_jll. It might be
-    # that we would need to switch to a newer GCC when building;
-    # Arrow_jll uses GCC 11.1
-    # Dependency("Arrow_jll"; compat="19.0.0"),
-    Dependency("Arrow_jll"; compat="18.1.1"),
+    Dependency("Arrow_jll"; compat="19.0.0"),
     Dependency("Blosc_jll"; compat="1.21.7"),
     Dependency("Expat_jll"; compat="2.6.5"),
     Dependency("GEOS_jll"; compat="3.13.1"),
@@ -195,21 +192,42 @@ dependencies = [
     Dependency("Lz4_jll"; compat="1.10.1"),
     Dependency("NetCDF_jll"; compat="401.900.300"),
     Dependency("OpenJpeg_jll"; compat="2.5.4"),
-    # No compat bound so that things work for riscv64
-    # Dependency("PCRE2_jll"; compat="10.35.0"),
-    Dependency("PCRE2_jll"),
+    Dependency("PCRE2_jll"; compat="10.42.0"),
     Dependency("PROJ_jll"; compat="902.500.100"),
     Dependency("Qhull_jll"; compat="10008.0.1004"),
     Dependency("SQLite_jll"; compat="3.48.0"),
-    Dependency("XML2_jll"; compat="2.13.6"),
+    # We had to restrict compat with XML2 because of ABI breakage:
+    # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
+    # Updating to `compat="~2.14.1"` is likely possible without problems but requires rebuilding this package
+    Dependency("XML2_jll"; compat="~2.13.6"),
     Dependency("XZ_jll"; compat="5.6.4"),
     Dependency("Zlib_jll"; compat="1.2.12"),
     Dependency("Zstd_jll"; compat="1.5.7"),
     Dependency("libgeotiff_jll"; compat="100.702.400"),
     Dependency("libpng_jll"; compat="1.6.47"),
     Dependency("libwebp_jll"; compat="1.5.0"),
+    Dependency("muparser_jll"; compat="2.3.5"),
+    # Disable exprtk on Windows, it exports too many symbols (21086, with at most 65535 allowed)
+    BuildDependency("exprtk_jll", platforms=filter(!Sys.iswindows, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
+#
+# NOTE: Building with GCC 12 fails on x86_64. GCC 12 enables compiler
+# support for float16, but would (apparently? hopefully?) use the
+# respective soft-fp emulation routines. These are only available in
+# `libcc` of GCC 12 and later, and thus this file isn't guaranteed to
+# be available. Therefore we need to disable compiler support for
+# float16 (on x86_64), e.g. by using GCC 11 or earlier.
+#
+# GDAL will then still support float16, but only via emulation, i.e.
+# converting from/to float32.
+#
+# We could enable compiler support for float16 if we can guarantee
+# that the CPU supports respective hardware instructions so that we
+# don't need soft-fp from libgcc.
+#
+# NOTE: Require at least Julia 1.9 because we use a PCRE2_jll that is
+# not available on earlier versions.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"8")
+               julia_compat="1.9", preferred_gcc_version=v"11")

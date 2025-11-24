@@ -2,36 +2,25 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "SCIP_PaPILO"
 
-upstream_version = v"9.2.1"
+upstream_version = v"9.2.4"
 version = VersionNumber(upstream_version.major * 100, upstream_version.minor * 100, upstream_version.patch * 100)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource(
-        "https://scipopt.org/download/release/scipoptsuite-$(upstream_version).tgz",
-        "41b71a57af773403e9a6724f78c37d8396ac4b6b270a9bbf3716d67f1af12edf"
-    ),
-    ArchiveSource(
-        "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
-        "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4"
+        "https://github.com/scipopt/scip/releases/download/v924/scipoptsuite-$(upstream_version).tgz",
+        "4327736efa07a83eb08580d339409936dfe40864a1670dc5fc75d3e3df78d290"
     ),
     DirectorySource("./bundled/")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-# This requires macOS 10.13
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    export MACOSX_DEPLOYMENT_TARGET=10.13
-    popd
-fi
-
 cd scipoptsuite*
 
 # for soplex threadlocal
@@ -77,16 +66,21 @@ done
 cp $WORKSPACE/srcdir/scipoptsuite*/papilo/COPYING ${prefix}/share/licenses/SCIP_PaPILO/LICENSE_papilo
 """
 
+# This requires macOS 10.13
+sources, script = require_macos_sdk("10.13", sources, script)
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_gfortran_versions(expand_cxxstring_abis(supported_platforms(; experimental=true)))
+platforms = supported_platforms(; experimental=true)
+platforms = expand_cxxstring_abis(platforms)
+platforms = expand_gfortran_versions(platforms)
 
 # Filter out the aarch64 FreeBSD and RISC-V architectures because oneTBB isn't available there yet.
 filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 filter!(p -> !(Sys.islinux(p) && arch(p) == "riscv64"), platforms)
 
 filter!(platforms) do p
-    libgfortran_version(p) >= v"4"
+    libgfortran_version(p) >= v"5"
 end
 
 
@@ -99,7 +93,7 @@ products = [
 
 dependencies = [
     Dependency(PackageSpec(name="bliss_jll", uuid="508c9074-7a14-5c94-9582-3d4bc1871065"), compat="=0.77.0"),
-    Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"); compat="=1.79.0"),
+    Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"); compat="=1.87.0"),
     Dependency(PackageSpec(name="Bzip2_jll", uuid="6e34b625-4abd-537c-b88f-471c36dfa7a0"); compat="1.0.9"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d"); compat="6.2.1"),
@@ -120,7 +114,7 @@ build_tarballs(
     platforms,
     products,
     dependencies;
-    preferred_gcc_version=v"10",
+    preferred_gcc_version=v"12",
     julia_compat="1.6",
     clang_use_lld=false,
 )

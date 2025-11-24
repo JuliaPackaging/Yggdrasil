@@ -3,6 +3,8 @@
 using BinaryBuilder
 name = "Cairo"
 version = v"1.18.4"
+# We bumped the version number because we updated the dependencies (for new architectures)
+ygg_version = v"1.18.5"
 
 sources = [
     ArchiveSource("https://cairographics.org/releases/cairo-1.18.4.tar.xz",
@@ -56,9 +58,6 @@ ninja install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-# Many dependencies for riscv64 are missing
-filter!(p -> arch(p) != "riscv64", platforms)
-
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libcairo-gobject", :libcairo_gobject),
@@ -72,11 +71,11 @@ linux_freebsd = filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("Xorg_xorgproto_jll"; platforms=linux_freebsd),
-    Dependency("Glib_jll"; compat="2.82.4"),
+    Dependency("Glib_jll"; compat="2.84.0"),
     Dependency("Pixman_jll"; compat="0.44.2"),
     Dependency("libpng_jll"; compat="1.6.47"),
-    Dependency("Fontconfig_jll"; compat="2.15.0"),
-    Dependency("FreeType2_jll"; compat="2.13.3"),
+    Dependency("Fontconfig_jll"; compat="2.16.0"),
+    Dependency("FreeType2_jll"; compat="2.13.4"),
     Dependency("Bzip2_jll"; compat="1.0.9"),
     Dependency("Xorg_libXext_jll"; platforms=linux_freebsd),
     Dependency("Xorg_libXrender_jll"; platforms=linux_freebsd),
@@ -91,4 +90,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6", clang_use_lld=false)
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"8")

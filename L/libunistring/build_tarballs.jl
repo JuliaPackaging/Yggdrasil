@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "libunistring"
-version = v"1.3"
+version = v"1.4"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/libunistring/libunistring-$(version.major).$(version.minor).tar.gz",
-                  "8ea8ccf86c09dd801c8cac19878e804e54f707cf69884371130d20bde68386b7")
+    ArchiveSource("https://ftpmirror.gnu.org/gnu/libunistring/libunistring-$(version.major).$(version.minor).tar.gz",
+                  "f7e39ddeca18858ecdd02c60d1d5374fcdcbbcdb6b68a391f8497cb1cb2cf3f7")
 ]
 
 # Bash recipe for building across all platforms

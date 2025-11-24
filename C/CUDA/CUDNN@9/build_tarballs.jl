@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDNN"
-version = v"9.7.0"
+version = v"9.13.0"
 
 script = raw"""
 mkdir -p ${libdir} ${prefix}/include
@@ -60,34 +60,34 @@ products = [
 
 dependencies = [RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll"))]
 
-platforms = [Platform("x86_64", "linux"),
-             Platform("aarch64", "linux"; cuda_platform="jetson"),
-             Platform("aarch64", "linux"; cuda_platform="sbsa"),
-             Platform("x86_64", "windows")]
-
 builds = []
-for cuda_version in [v"11", v"12"], platform in platforms
-    augmented_platform = deepcopy(platform)
-    augmented_platform["cuda"] = CUDA.platform(cuda_version)
-    should_build_platform(triplet(augmented_platform)) || continue
+for cuda_version in [v"12", v"13"]
+    if cuda_version == v"12"
+        platforms = [Platform("x86_64", "linux"),
+                     Platform("aarch64", "linux"; cuda_platform="jetson"),
+                     Platform("aarch64", "linux"; cuda_platform="sbsa"),
+                     Platform("x86_64", "windows")]
+    elseif cuda_version == v"13"
+        platforms = [Platform("x86_64", "linux"),
+                     Platform("aarch64", "linux"),
+                     Platform("x86_64", "windows")]
+    end
+    for platform in platforms
+        augmented_platform = deepcopy(platform)
+        augmented_platform["cuda"] = CUDA.platform(cuda_version)
+        should_build_platform(triplet(augmented_platform)) || continue
 
-    if arch(platform) == "aarch64"
-        # Tegra binaries are only provided for CUDA 12.x
-        if platform["cuda_platform"] == "jetson" && cuda_version == v"11"
-            continue
+        sources = get_sources("cudnn", ["cudnn"]; version, platform=augmented_platform,
+                               variant="cuda$(cuda_version.major)")
+
+        if platform == Platform("x86_64", "windows")
+            push!(sources,
+                ArchiveSource("http://www.winimage.com/zLibDll/zlib123dllx64.zip",
+                                "fd324c6923aa4f45a60413665e0b68bb34a7779d0861849e02d2711ff8efb9a4"))
         end
+
+        push!(builds, (; platforms=[augmented_platform], sources))
     end
-
-    sources = get_sources("cudnn", ["cudnn"]; version, platform,
-                           variant="cuda$(cuda_version.major)")
-
-    if platform == Platform("x86_64", "windows")
-        push!(sources,
-            ArchiveSource("http://www.winimage.com/zLibDll/zlib123dllx64.zip",
-                            "fd324c6923aa4f45a60413665e0b68bb34a7779d0861849e02d2711ff8efb9a4"))
-    end
-
-    push!(builds, (; platforms=[augmented_platform], sources))
 end
 
 # don't allow `build_tarballs` to override platform selection based on ARGS.
