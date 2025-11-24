@@ -1,9 +1,10 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using BinaryBuilderBase: get_addable_spec
 
 const YGGDRASIL_DIR = "../.."
-include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl")) # for get_addable_spec and should_build_platform
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 # list of supported Julia versions
 julia_full_versions = [v"1.10.0", v"1.11.1", v"1.12.0", v"1.13.0-DEV", v"1.14.0-DEV"]
