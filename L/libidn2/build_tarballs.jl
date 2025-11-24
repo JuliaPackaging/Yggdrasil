@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "libidn2"
-version = v"2.3.2"
+version = v"2.3.7"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/libidn/libidn2-$(version).tar.gz", "76940cd4e778e8093579a9d195b25fff5e936e9dc6242068528b437a76764f91")
+    ArchiveSource("https://ftp.gnu.org/gnu/libidn/libidn2-$(version).tar.gz",
+                  "4c21a791b610b9519b9d0e12b8097bf2f359b12f8dd92647611a929e6bfd7d64"),
 ]
 
 # Bash recipe for building across all platforms
@@ -40,8 +41,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="Libiconv_jll", uuid="94ce4f54-9a6c-5748-9c1c-f9c7231a4531"))
-    Dependency(PackageSpec(name="libunistring_jll", uuid="6db05002-db9d-53dd-a359-17d4854bdf22"))
+    Dependency(PackageSpec(name="Libiconv_jll", uuid="94ce4f54-9a6c-5748-9c1c-f9c7231a4531")),
+    Dependency(PackageSpec(name="libunistring_jll", uuid="6db05002-db9d-53dd-a359-17d4854bdf22")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

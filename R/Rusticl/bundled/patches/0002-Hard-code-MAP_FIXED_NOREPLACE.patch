@@ -1,0 +1,26 @@
+From 027163b428182b12043eb827b0632bdec7adca1f Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Wed, 16 Jul 2025 12:22:25 +0200
+Subject: [PATCH 2/3] Hard-code MAP_FIXED_NOREPLACE.
+
+---
+ src/gallium/frontends/rusticl/core/context.rs | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/src/gallium/frontends/rusticl/core/context.rs b/src/gallium/frontends/rusticl/core/context.rs
+index 5643f54e196..f615cffdd06 100644
+--- a/src/gallium/frontends/rusticl/core/context.rs
++++ b/src/gallium/frontends/rusticl/core/context.rs
+@@ -306,6 +306,9 @@ impl Context {
+             #[cfg(target_os = "linux")]
+             fn os_flags() -> u32 {
+                 // MAP_FIXED_NOREPLACE needs 4.17
++                // Define constant for older kernel headers that don't have it
++                const MAP_FIXED_NOREPLACE: u32 = 0x100000;
++                
+                 MAP_FIXED_NOREPLACE | MAP_NORESERVE
+             }
+ 
+-- 
+2.50.1
+

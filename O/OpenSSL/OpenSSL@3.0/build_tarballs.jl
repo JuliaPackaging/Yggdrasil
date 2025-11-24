@@ -2,11 +2,11 @@ using BinaryBuilder
 
 # Collection of sources required to build OpenSSL
 name = "OpenSSL"
-version = v"3.0.14"
+version = v"3.0.16"
 
 sources = [
-    ArchiveSource("https://www.openssl.org/source/openssl-$version.tar.gz",
-                  "eeca035d4dd4e84fc25846d952da6297484afa0650a6f84c682e39df3a4123ca"),
+    ArchiveSource("https://github.com/openssl/openssl/releases/download/openssl-$version/openssl-$version.tar.gz",
+                  "57e03c50feab5d31b152af2b764f10379aecd8ee92f16c985983ce4a99f7ef86"),
 ]
 
 include("../common.jl")
@@ -21,4 +21,4 @@ products = [
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
 
-# Build trigger: 2
+# Build trigger: 4

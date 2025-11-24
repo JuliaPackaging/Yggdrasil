@@ -6,10 +6,10 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "spla"
-version = v"1.5.5"
+version = v"1.6.1"
 
 sources = [
-   GitSource("https://github.com/eth-cscs/spla/", "6fe85e49069ae287e5ec3cfe5487720d85ebe97a")
+   GitSource("https://github.com/eth-cscs/spla/", "2bf5544f054401808ea477444f2235a1c87cde94")
 ]
 
 script = raw"""

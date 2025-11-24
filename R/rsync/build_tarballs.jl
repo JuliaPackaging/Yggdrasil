@@ -1,22 +1,23 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using BinaryBuilderBase: get_addable_spec
 
 name = "rsync"
-version = v"3.3.0"
+version = v"3.4.1"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://download.samba.org/pub/rsync/src/rsync-$(version).tar.gz",
-                  "7399e9a6708c32d678a72a63219e96f23be0be2336e50fd1348498d07041df90")
+                  "2924bcb3a1ed8b551fc101f740b9f0fe0a202b115027647cf69850d65fd88c52"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
+cd $WORKSPACE/srcdir/rsync-*
 
-cd rsync-*
-install_license COPYING
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/strlcpy.patch
 
 CONFIGURE_FLAGS=(--prefix=${prefix} --build=${MACHTYPE} --host=${target})
 # prefer to use JLLs instead of included deps
@@ -51,7 +52,10 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="Lz4_jll", uuid="5ced341a-0733-55b8-9ab6-a4889d929147")),
-    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="3.0.13"),
+    # Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="3.0.13"),
+    # Until we have a new version of OpenSSL built for riscv64 we need to use the
+    # `get_addable_spec` hack.  From v3.0.16 we should be able to remove it here.
+    Dependency(get_addable_spec("OpenSSL_jll", v"3.0.15+2"); compat="3.0.15"),
     Dependency(PackageSpec(name="Popt_jll", uuid="e80236cf-ab1d-5f5d-8534-1d1285fe49e8")),
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
     Dependency(PackageSpec(name="Zstd_jll", uuid="3161d3a3-bdf6-5164-811a-617609db77b4")),

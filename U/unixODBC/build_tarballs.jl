@@ -3,18 +3,27 @@
 using BinaryBuilder, Pkg
 
 name = "unixODBC"
-version = v"2.3.9"
+version = v"2.3.12"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://www.unixodbc.org/unixODBC-$(version).tar.gz",
-                  "52833eac3d681c8b0c9a5a65f2ebd745b3a964f208fc748f977e44015a31b207"),
+    GitSource("https://github.com/lurcher/unixODBC.git",
+              "c335dbf3fa25b524e935e98cf26b96a2e13f5c81"),
+    DirectorySource("./bundled"),	      
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/unixODBC-*/
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-libiconv-prefix=${prefix}
+cd $WORKSPACE/srcdir/unixODBC*
+
+# Don't use `clock_realtime` if it isn't available
+cd DriverManager
+atomic_patch -p0 ../../patches/clock_gettime.patch
+cd ..
+autoreconf -fiv
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
+    --with-libiconv-prefix=${prefix} \
+    --enable-readline
 make -j${nproc}
 make install
 """
@@ -39,7 +48,9 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Libiconv_jll"),
+    Dependency("Readline_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6")

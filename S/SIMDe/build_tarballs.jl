@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "SIMDe"
-version = v"0.7.6"
+version = v"0.8.2"
 
 # Collection of sources required to complete build
 sources = [
     GitSource(
         "https://github.com/simd-everywhere/simde.git",
-        "fefc7857ff3e785b988a61a8f5f3c5bd5eb24342",
+        "71fd833d9666141edcd1d3c109a80e228303d8d7",
     ),
 ]
 

@@ -2,7 +2,7 @@ using BinaryBuilder
 
 name = "SwiftShader"
 
-version = v"0.1.0" # there are no official versions yet
+version = v"0.1.1" # there are no official versions yet
 source = "https://github.com/google/swiftshader.git"
 commit = "6c1ab2e3638260721c19b33017925f6deb9e30ac" # March 14th, 2023
 
@@ -70,6 +70,7 @@ install_license LICENSE.txt
 platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
     Platform("x86_64", "macos"),
+    Platform("aarch64", "macos"),
     # TODO: Build on Windows.
     # Might want to take some inspiration from https://github.com/google/gfbuild-swiftshader/blob/master/build.sh
     # Platform("x86_64", "windows"),

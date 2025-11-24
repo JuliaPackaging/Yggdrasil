@@ -2,17 +2,22 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "wolfSSL"
-version = v"4.8.1"
+version = v"5.7.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/wolfSSL/wolfssl/archive/refs/tags/v$(version)-stable.tar.gz", "50db45f348f47e00c93dd244c24108220120cb3cc9d01434789229c32937c444")
+    GitSource("https://github.com/wolfSSL/wolfssl.git", "00e42151ca061463ba6a95adb2290f678cbca472"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/wolfssl*
+atomic_patch -p1 ../patches/mingw32-link-with-ws2_32.patch
 
 mkdir build && cd build
 
@@ -29,9 +34,11 @@ make install
 
 """
 
+sources, script = require_macos_sdk("10.14", sources, script)
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental = true)
+platforms = supported_platforms()
 
 
 # The products that we will ensure are always built

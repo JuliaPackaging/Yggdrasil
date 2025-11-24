@@ -6,23 +6,23 @@
 
 using BinaryBuilder, Pkg
 
-include("../../../fancy_toys.jl")
+const YGGDRASIL_DIR = "../../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "CUDA_Driver"
-version = v"0.9.0"
+version = v"13.0.2"
 
-cuda_version = v"12.5"
-cuda_version_str = "$(cuda_version.major)-$(cuda_version.minor)"
-driver_version_str = "555.42.02"
+version_str = "$(version.major)-$(version.minor)"
+driver_str = "580.95.05"
 build = 1
 
 sources_linux_x86 = [
-    FileSource("https://developer.download.nvidia.com/compute/cuda/repos/rhel8/x86_64/cuda-compat-$(cuda_version_str)-$(driver_version_str)-$(build).x86_64.rpm",
-               "b5f70dfd2149ef41a3decda1a398b805430d7129e487f17e9a4f154384be660e", "compat.rpm")
+    FileSource("https://developer.download.nvidia.com/compute/cuda/repos/rhel8/x86_64/cuda-compat-$(version_str)-$(driver_str)-$(build).el8.x86_64.rpm",
+               "81cfb0e12c2ccf94e992e75cd15d830080b7b47a53b25fe3d14896c9c2478c76", "compat.rpm")
 ]
 sources_linux_aarch64 = [
-    FileSource("https://developer.download.nvidia.com/compute/cuda/repos/rhel8/sbsa/cuda-compat-$(cuda_version_str)-$(driver_version_str)-$(build).aarch64.rpm",
-               "bce9fe958f8e0811bb5cc40cc0235de8453c6a4e89b12e8c0458d78768af908a", "compat.rpm")
+    FileSource("https://developer.download.nvidia.com/compute/cuda/repos/rhel8/sbsa/cuda-compat-$(version_str)-$(driver_str)-$(build).el8.aarch64.rpm",
+               "7e393079b34023f8fc7a648d9cf943f0d4ea34a9261050ba3c8c620bafb28eb5", "compat.rpm")
 ]
 
 dependencies = []
@@ -46,8 +46,7 @@ script = raw"""
 # CUDA_Driver.jl), but that complicates depending on it from other JLLs (like
 # CUDA_Runtime_jll). This will also simplify moving the logic into CUDA_Runtime_jll, which
 # we will have to at some point (because its pkg hooks shouldn't depend on CUDA_Driver_jll).
-init_block = "\nglobal compat_version = $(repr(cuda_version))\n" *
-             read(joinpath(@__DIR__, "init.jl"), String)
+init_block = read(joinpath(@__DIR__, "init.jl"), String)
 init_block = map(eachline(IOBuffer(init_block))) do line
         # indent non-empty lines
         (isempty(line) ? "" : "    ") * line * "\n"
@@ -65,11 +64,11 @@ non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
 if should_build_platform("x86_64-linux-gnu")
     build_tarballs(non_reg_ARGS, name, version, sources_linux_x86, script,
                    [Platform("x86_64", "linux")], products, dependencies;
-                   lazy_artifacts=true, skip_audit=true, init_block)
+                   skip_audit=true, init_block)
 end
 
 if should_build_platform("aarch64-linux-gnu")
     build_tarballs(ARGS, name, version, sources_linux_aarch64, script,
                    [Platform("aarch64", "linux")], products, dependencies;
-                   lazy_artifacts=true, skip_audit=true, init_block)
+                   skip_audit=true, init_block)
 end

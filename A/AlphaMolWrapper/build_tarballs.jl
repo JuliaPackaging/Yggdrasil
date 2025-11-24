@@ -1,12 +1,11 @@
 using BinaryBuilder, Pkg
 
 name = "AlphaMolWrapper"
-version = v"0.3.0"
-julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10"]
-julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
+version = v"0.5.0"
+julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10", v"1.11"]
 
 sources = [
-    GitSource("https://github.com/IvanSpirandelli/AlphaMolWrapper", "f39cd994f28ada4a41479a1bca82e549e94b543f"),    
+    GitSource("https://github.com/IvanSpirandelli/AlphaMolWrapper", "e3e0dd706b6bad98d5c58b96e0a9fc6b5fb7a2a3"),    
 ]
 
 script = raw"""
@@ -19,6 +18,7 @@ cmake .. \
 VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
 """
 include("../../L/libjulia/common.jl")
+julia_compat = libjulia_julia_compat(julia_versions)
 platforms = expand_cxxstring_abis(vcat(libjulia_platforms.(julia_versions)...))
 
 products = [

@@ -1,0 +1,35 @@
+diff -ru a/LIBRARY/makefile.iml_head b/LIBRARY/makefile.iml_head
+--- a/LIBRARY/makefile.iml_head	2024-05-07 19:30:17
++++ b/LIBRARY/makefile.iml_head	2025-10-26 15:00:23
+@@ -490,10 +490,10 @@
+ 
+ FLS        := $(call CselOs,FLS,       $(_OS_CHOICE),       :,           ;)
+ RM         := $(call CselOs, RM,       $(_OS_CHOICE),   rm -f, del        )
+-AR_CMD     := $(call CselOsName,AR_CMD,$(_OS_CHOICE),   ar rv, ar rv, libtool, lib -nologo)
+-AR_OUT     := $(call CselOsName,AR_OUT,$(_OS_CHOICE),        ,      ,      -o, /out:)$($(IML_TARGET_OS)__space)
++AR_CMD     := $(call CselOsName,AR_CMD,$(_OS_CHOICE),   ar rv, ar rv, libtool, ar rv)
++AR_OUT     := $(call CselOsName,AR_OUT,$(_OS_CHOICE),        ,      ,      -o, )$($(IML_TARGET_OS)__space)
+ LD_CMD     := $(call CselOsName,LD_CMD,$(_OS_CHOICE),icc,icc,libtool,link /nologo)
+-LD_OUT     := $(call CselOs, LD_OUT,   $(_OS_CHOICE),      -o,       /out:)$($(IML_TARGET_OS)__space)
++LD_OUT     := $(call CselOs, LD_OUT,   $(_OS_CHOICE),      -o,       )$($(IML_TARGET_OS)__space)
+ LD_FLAGS   := $(call CselOs, LD_FLAGS, $(_OS_CHOICE),   -shared -nostdlib,)
+ RC         := $(call CselOs, RC,       $(_OS_CHOICE), RC_not_to_be_used_with_linux,rc)
+ RC_FLAGS   := $(call CselOs, RC_FLAGS, $(_OS_CHOICE), RC_FLAGS_not_to_be_used_with_linux,)
+diff -ru a/LIBRARY/makefile.mak b/LIBRARY/makefile.mak
+--- a/LIBRARY/makefile.mak	2024-05-07 19:30:17
++++ b/LIBRARY/makefile.mak	2025-10-26 10:57:55
+@@ -225,12 +225,12 @@
+ 
+ !IF ("$(_USE_NATIVE_128b)"=="FALSE")
+ $(BID_LIB): $(BID_OBJS) $(FLOAT128_OBJS) $(FLOAT53_OBJS)
+-   $(AR) $(AOPT) /out:$(BID_LIB) $(BID_OBJS) $(FLOAT128_OBJS) $(FLOAT53_OBJS)
++   $(AR) $(AOPT) $(BID_LIB) $(BID_OBJS) $(FLOAT128_OBJS) $(FLOAT53_OBJS)
+ 
+ !ELSE
+ #Use native 128b data types
+ $(BID_LIB): $(BID_OBJS)
+-   $(AR) $(AOPT) /out:$(BID_LIB) $(BID_OBJS) 
++   $(AR) $(AOPT) $(BID_LIB) $(BID_OBJS) 
+ 
+ !ENDIF
+ 

@@ -1,29 +1,33 @@
 using BinaryBuilder
 
 name = "EDFlib"
-version = v"1.16.0"
+version = v"1.26.0"
 
 sources = [
-    ArchiveSource("https://www.teuniz.net/edflib/edflib_116.tar.gz",
-                  "cc9f9cc63869fa5742a7dd7e1aa3ff69fedcd4547f2c56ada43d4a4bfa4c6a4e";
-                  unpack_target="edflib")
+    ArchiveSource("https://www.teuniz.net/edflib/edflib_126.tar.gz",
+                  "e9e37aa561fa094cb759b4da6d4741f0092d7851a375ee877c18f993150443a8"),
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
-cd ${WORKSPACE}/srcdir/edflib
-mkdir ${libdir}
-${CC} edflib.c -shared -fPIC -D_LARGEFILE64_SOURCE -D_LARGEFILE_SOURCE -o ${libdir}/libedflib.${dlext}
-# No separate license file, it just lives in the README and in the source files
-install_license README.md
+cd ${WORKSPACE}/srcdir/edflib*
+mkdir -p ${libdir}
+mkdir -p ${includedir}
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/freebsd.patch"
+${CC} edflib.c -shared -fPIC -D_LARGEFILE64_SOURCE -D_LARGEFILE_SOURCE -DEDFLIB_SO_DLL -DEDFLIB_BUILD -o ${libdir}/libedf.${dlext}
+install -Dvm 644 edflib.h ${includedir}/edflib.h
+install_license LICENSE
 """
 
 platforms = supported_platforms()
 
 products = [
-    LibraryProduct("libedflib", :libedflib)
+    LibraryProduct("libedf", :libedf),
+    FileProduct("include/edflib.h", :edflib_h),
 ]
 
 dependencies = [
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6")

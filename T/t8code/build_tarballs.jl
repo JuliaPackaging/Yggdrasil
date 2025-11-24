@@ -2,65 +2,48 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
+
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "t8code"
-version = v"2.0.0"
+version = v"3.0.1"
 
-tarball = "https://github.com/DLR-AMR/t8code/releases/download/v$(version)/t8-$(version).tar.gz"
-sha256sum = "b83f6c204cdb663cec7e0c1059406afc4c06df236b71d7b190fb698bec44c1e0"
+tarball = "https://github.com/DLR-AMR/t8code/releases/download/v$(version)/T8CODE-$(version)-Source.tar.gz"
+sha256sum = "71732ac0f898feed1af8a81c2deac2e5031e37e94384d3e5b10d1b5861be24d0"
 
-# Collection of sources required to complete build
 sources = [ArchiveSource(tarball, sha256sum), DirectorySource("./bundled")]
 
-# Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/t8*
+cd $WORKSPACE/srcdir/T8CODE*
+
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi-constants.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/p4est.patch"
 
-# Set default preprocessor and linker flags
-# Note: This is *crucial* for Windows builds as otherwise the wrong libraries are picked up!
-export CPPFLAGS="-I${includedir}"
-export LDFLAGS="-L${libdir}"
-export CFLAGS="-O3"
-export CXXFLAGS="-O3"
-
-# Set necessary flags for FreeBSD
-if [[ "${target}" == *-freebsd* ]]; then
-  export LIBS="${LIBS} -lm"
-fi
-
-# Set necessary flags for Windows and non-Windodws systems
-FLAGS=()
+# Show CMake where to find `mpiexec`.
 if [[ "${target}" == *-mingw* ]]; then
-  # Pass -lmsmpi explicitly to linker as the absolute library path specified in LIBS below is not always propagated properly
-  export LDFLAGS="$LDFLAGS -Wl,-lmsmpi"
-  # Set linker flags only at build time (see https://docs.binarybuilder.org/v0.3/troubleshooting/#Windows)
-  FLAGS+=(LDFLAGS="$LDFLAGS -no-undefined")
-  # Link against ws2_32 to use the htonl function from winsock2.h
-  export LIBS="${LIBS} ${libdir}/msmpi.dll -lws2_32"
-  # Disable MPI I/O on Windows since it causes p4est to crash
-  mpiopts="--enable-mpi --disable-mpiio"
-else
-  # Use MPI including MPI I/O on all other platforms
-  export CC="mpicc"
-  export CXX="mpicxx"
-  mpiopts="--enable-mpi"
+  ln -s $(which mpiexec.exe) /workspace/destdir/bin/mpiexec
 fi
 
-# Run configure
-./configure \
-  --prefix="${prefix}" \
-  --build=${MACHTYPE} \
-  --host=${target} \
-  --disable-static \
-  --without-blas \
-  ${mpiopts}
+cmake . \
+      -B build \
+      -DCMAKE_INSTALL_PREFIX=${prefix} \
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_TESTING=OFF \
+      -DP4EST_BUILD_TESTING=OFF \
+      -DSC_BUILD_TESTING=OFF \
+      -DT8CODE_BUILD_BENCHMARKS=OFF \
+      -DT8CODE_BUILD_DOCUMENTATION=OFF \
+      -DT8CODE_BUILD_EXAMPLES=OFF \
+      -DT8CODE_BUILD_EXAMPLES=OFF \
+      -DT8CODE_BUILD_TESTS=OFF \
+      -DT8CODE_BUILD_TUTORIALS=OFF \
+      -DT8CODE_ENABLE_MPI=ON \
+      -DP4EST_ENABLE_MPIIO=OFF
 
-# Build & install
-make -j${nproc} "${FLAGS[@]}" 
-make install
+make -C build -j ${nproc}
+make -C build -j ${nproc} install
 """
 
 augment_platform_block = """

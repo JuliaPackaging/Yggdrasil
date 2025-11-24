@@ -1,0 +1,13 @@
+diff --git a/edflib.c b/edflib.c
+index 097e32d..8652060 100644
+--- a/edflib.c
++++ b/edflib.c
+@@ -38,7 +38,7 @@
+ #define EDFLIB_VERSION  (126)
+ #define EDFLIB_MAXFILES  (64)
+ 
+-#if defined(__APPLE__) || defined(__MACH__) || defined(__APPLE_CC__) || defined(__HAIKU__) || defined(__ANDROID__)
++#if defined(__APPLE__) || defined(__MACH__) || defined(__APPLE_CC__) || defined(__HAIKU__) || defined(__ANDROID__) || defined(__FreeBSD__)
+ 
+ #define fopeno fopen
+ 

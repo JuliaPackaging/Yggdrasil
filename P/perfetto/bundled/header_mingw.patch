@@ -1,0 +1,15 @@
+diff --git a/sdk/perfetto.h b/sdk/perfetto.h
+index 51c0edfdbd..29646b503c 100644
+--- a/sdk/perfetto.h
++++ b/sdk/perfetto.h
+@@ -72864,6 +72864,10 @@ class NetworkPacketBundle : public ::protozero::Message {
+   }
+ };
+ 
++#ifdef interface
++#undef interface
++#endif
++
+ class NetworkPacketEvent_Decoder : public ::protozero::TypedProtoDecoder</*MAX_FIELD_ID=*/11, /*HAS_NONPACKED_REPEATED_FIELDS=*/false> {
+  public:
+   NetworkPacketEvent_Decoder(const uint8_t* data, size_t len) : TypedProtoDecoder(data, len) {}
