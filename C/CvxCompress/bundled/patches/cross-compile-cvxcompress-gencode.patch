@@ -1,16 +1,21 @@
 diff --git a/makefile b/makefile
-index 620d241..a7f08a9 100644
+index 07e31ab..e02bf7e 100644
 --- a/makefile
 +++ b/makefile
-@@ -1,5 +1,6 @@
- CC = gcc
- CXX = g++
+@@ -1,9 +1,10 @@
+ CC ?= gcc
+ CXX ?= g++
 +CXX_BUILD = $(CXX)
- CFLAGS=-fopenmp -O3 -fPIC -mavx -g
- LDFLAGS=-fopenmp -lm -lrt
  
-@@ -19,8 +20,8 @@ CvxCompress_Test: CvxCompress_Test.o $(OBJECTS)
- CvxCompress_Test_Dyn: CvxCompress_Test.o libcvxcompress.so
+ CFLAGS=-fopenmp -O3 -fPIC -g -Wno-unused-result
+ # Check if we're on an x86 architecture and if CC supports -mavx
+-ifeq ($(shell uname -m), x86_64)
++ifeq ($(TARGETARCH), amd64)
+     CFLAGS += -mavx
+ endif
+ 
+@@ -38,8 +39,8 @@ CvxCompress_Test: CvxCompress_Test.o $(OBJECTS)
+ CvxCompress_Test_Dyn: CvxCompress_Test.o libcvxcompress.$(LIB_EXT)
  	$(CXX) $(LDFLAGS) CvxCompress_Test.o  -L. -lcvxcompress -o $@
  
 -CvxCompress_GenCode: CvxCompress_GenCode.o CvxCompress.hxx Wavelet_Transform_Slow.o
@@ -19,4 +24,4 @@ index 620d241..a7f08a9 100644
 +	$(CXX_BUILD) -O2 Wavelet_Transform_Slow.cpp CvxCompress_GenCode.cpp -o $@
  
  Test_Compression: Test_Compression.o $(OBJECTS)
- 	$(CXX) $(LDFLAGS) $(OBJECTS)  Test_Compression.o -o Test_Compression
+ 	$(CXX) $(LDFLAGS) $(TFLAG) $(OBJECTS)  Test_Compression.o -o Test_Compression

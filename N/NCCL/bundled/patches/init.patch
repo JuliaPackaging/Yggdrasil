@@ -1,0 +1,14 @@
+--- a/nccl/src/init.cc
++++ b/nccl/src/init.cc
+@@ -106,7 +106,11 @@
+       // Change the default pthread stack size (via a nonportable API, which will become necessary if we switch
+       // to C++ threads).
+       PTHREADCHECK(pthread_attr_setstacksize(&attr, SAFE_STACK_SIZE), "pthread_attr_setstacksize");
++#if defined(__GLIBC__) && __GLIBC__ >= 2 && __GLIBC_MINOR__ >= 34
+       PTHREADCHECK(pthread_setattr_default_np(&attr), "pthread_setattr_default_np");
++#else
++      // pthread_setattr_default_np not available on this system
++#endif
+     }
+ 
+     PTHREADCHECK(pthread_attr_destroy(&attr), "pthread_attr_destroy");

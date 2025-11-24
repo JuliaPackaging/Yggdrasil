@@ -1,0 +1,23 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -482,11 +482,13 @@
+     NAMES cadiback
+     REQUIRED)
+ 
+-include(CheckFloatPrecision)
+-check_float_precision()
+-if (HAVE__FPU_SETCW)
+-    add_definitions(-DYALSAT_FPU)
+-    message(STATUS "Found FPU code for yalsat: fpu_control.h, _FPU_SINGLE, _FPU_DOUBLE")
+-endif()
++if(NOT CMAKE_CROSSCOMPILING)
++    include(CheckFloatPrecision)
++    check_float_precision()
++    if (HAVE__FPU_SETCW)
++        add_definitions(-DYALSAT_FPU)
++        message(STATUS "Found FPU code for yalsat: fpu_control.h, _FPU_SINGLE, _FPU_DOUBLE")
++    endif()
++endif()
+ 
+ # -----------------------------------------------------------------------------
+ # MIT option

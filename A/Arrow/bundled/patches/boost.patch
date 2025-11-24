@@ -1,0 +1,13 @@
+We don't have Boost 1.81 built yet, and using 1.76 seems to work fine.
+
+--- a/cpp/cmake_modules/ThirdpartyToolchain.cmake
++++ b/cpp/cmake_modules/ThirdpartyToolchain.cmake
+@@ -146,7 +146,7 @@ if(Thrift_FOUND)
+                                               15)
+   # GH-34094 Older versions of Boost use the deprecated std::unary_function in
+   # boost/container_hash/hash.hpp and support for that was removed in clang 16
+-  set(ARROW_BOOST_REQUIRED_VERSION "1.81")
++  set(ARROW_BOOST_REQUIRED_VERSION "1.79")
+ elseif(ARROW_BUILD_TESTS)
+   set(ARROW_BOOST_REQUIRED_VERSION "1.64")
+ else()

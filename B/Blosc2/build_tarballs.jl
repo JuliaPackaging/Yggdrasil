@@ -1,22 +1,24 @@
-1# Note that this script can accept some limited command-line arguments, run
+# Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
 name = "Blosc2"
 
-upstream_version = v"2.15.1"
+upstream_version = v"2.22.0"
 # We add a version offset because:
 # - Blosc2 2.15 is not ABI-compatible with Blosc2 2.14
 #   (see the release notes <https://github.com/Blosc/c-blosc2/releases/tag/v2.15.0>)
-version_offset = v"1.0.0"
+# - Blosc2 2.20 is not ABI-compatible with Blosc2 2.18
+#   (the shared library SOVERSION was increased)
+version_offset = v"2.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
 
 # Collection of sources required to build Blosc2
 sources = [
-    GitSource("https://github.com/Blosc/c-blosc2.git", "841c6ae7200c88f73b2825da27fed2a83360ad4c"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/Blosc/c-blosc2.git", "cb44a44122947c38d41da1edaa1e84dd72f852ab"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -62,9 +64,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Lz4_jll"; compat="1.9.3"),
-    Dependency("Zlib_jll"),
-    Dependency("Zstd_jll"; compat="1.5.0"),
+    Dependency("Lz4_jll"; compat="1.10.1"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
+    Dependency("Zstd_jll"; compat="1.5.7"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

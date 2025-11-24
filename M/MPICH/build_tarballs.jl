@@ -4,14 +4,11 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MPICH"
-version_str = "4.2.2"
-version = VersionNumber(version_str)
-
-# build trigger: 1
+version = v"4.3.2"
 
 sources = [
-    ArchiveSource("https://www.mpich.org/static/downloads/$(version_str)/mpich-$(version_str).tar.gz",
-                  "883f5bb3aeabf627cb8492ca02a03b191d09836bbe0f599d8508351179781d41"),
+    ArchiveSource("https://www.mpich.org/static/downloads/$(version)/mpich-$(version).tar.gz",
+                  "47d774587a7156a53752218c811c852e70ac44db9c502dc3f399b4cb817e3818"),
     DirectorySource("bundled"),
 ]
 
@@ -28,7 +25,26 @@ cd ${WORKSPACE}/srcdir/mpich*
 # `<pthread_np.h>` should not actually be used on FreeBSD.)
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pthread_np.patch
 
-EXTRA_FLAGS=()
+# - Do not install doc and man files which contain files which clashing names on
+#   case-insensitive file systems:
+#   * https://github.com/JuliaPackaging/Yggdrasil/pull/315
+#   * https://github.com/JuliaPackaging/Yggdrasil/issues/6344
+# - We need to use `ch3` because `ch4` breaks on some systems, e.g. on
+#   x86_64 macOS. See
+#   <https://github.com/JuliaPackaging/Yggdrasil/pull/10249#discussion_r1975948816> for a brief
+#   discussion.
+configure_flags=(
+    --build=${MACHTYPE}
+    --disable-dependency-tracking
+    --disable-doc
+    --enable-fast=alwaysinline,ndebug,O3
+    --enable-static=no
+    --host=${target}
+    --prefix=${prefix}
+    --with-device=ch3
+    --with-hwloc=${prefix}
+)
+
 # Define some obscure undocumented variables needed for cross compilation of
 # the Fortran bindings.  See for example
 # * https://stackoverflow.com/q/56759636/2442087
@@ -62,28 +78,17 @@ if [[ "${target}" == i686-linux-musl ]]; then
     # Small hack: edit `configure` script to force `cross_compiling` to be
     # always "yes".
     sed -i 's/cross_compiling=no/cross_compiling=yes/g' configure
-    EXTRA_FLAGS+=(ac_cv_sizeof_bool="1")
+    configure_flags+=(ac_cv_sizeof_bool="1")
 fi
 
 if [[ "${target}" == aarch64-apple-* ]]; then
-    EXTRA_FLAGS+=(
+    configure_flags+=(
         FFLAGS=-fallow-argument-mismatch
         FCFLAGS=-fallow-argument-mismatch
     )
 fi
 
-# Do not install doc and man files which contain files which clashing names on
-# case-insensitive file systems:
-# * https://github.com/JuliaPackaging/Yggdrasil/pull/315
-# * https://github.com/JuliaPackaging/Yggdrasil/issues/6344
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-    --disable-dependency-tracking \
-    --disable-doc \
-    --enable-fast=all,O3 \
-    --enable-static=no \
-    --with-device=ch3 \
-    --with-hwloc=${prefix} \
-    "${EXTRA_FLAGS[@]}"
+./configure "${configure_flags[@]}"
 
 # Remove empty `-l` flags from libtool
 # (Why are they there? They should not be.)
@@ -98,10 +103,7 @@ make -j${nproc}
 # Install the library
 make install
 
-################################################################################
-# Install licenses
-################################################################################
-
+# Install the license
 install_license $WORKSPACE/srcdir/mpich*/COPYRIGHT
 """
 
@@ -113,6 +115,7 @@ augment_platform_block = """
 
 platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
+
 filter!(!Sys.iswindows, platforms)
 
 # Add `mpi+mpich` platform tag
@@ -130,9 +133,9 @@ products = [
 
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency("Hwloc_jll"; compat="2.10"),
-    Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267");
-               compat="0.1", top_level=true),
+    Dependency("Hwloc_jll"; compat="2.12.0"),
+    RuntimeDependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267");
+                      compat="0.1", top_level=true),
 ]
 
 # Build the tarballs.

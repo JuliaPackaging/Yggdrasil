@@ -1,27 +1,11 @@
-From 2c4d2acc03ee2ce9ad5f9dfa208a021027485158 Mon Sep 17 00:00:00 2001
-From: Valentin Churavy <v.churavy@gmail.com>
-Date: Tue, 7 Feb 2023 16:08:34 -0500
-Subject: [PATCH] Don't build examples
-
----
- CMakeLists.txt | 4 ----
- 1 file changed, 4 deletions(-)
-
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 37a938d..8b0a308 100644
+index 7bc0f1b..d72738c 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -388,10 +388,6 @@ install(TARGETS amgxsh DESTINATION "lib")
- #export(TARGETS amgxsh FILE ${CMAKE_SOURCE_DIR}/amgxsh.cmake)
+@@ -313,6 +313,3 @@ install(TARGETS amgxsh DESTINATION "lib")
  
- # build examples
+ #export(TARGETS amgxsh FILE ${CMAKE_CURRENT_SOURCE_DIR}/amgxsh.cmake)
+ 
+-# build examples
 -add_subdirectory(examples)
--if(EXISTS ${CMAKE_SOURCE_DIR}/eigen_examples)
--  add_subdirectory(eigen_examples)
--endif(EXISTS ${CMAKE_SOURCE_DIR}/eigen_examples)
- 
- # build unit tests
- if(EXISTS ${CMAKE_SOURCE_DIR}/tests)
--- 
-2.37.2
-
+-

@@ -5,19 +5,20 @@ using BinaryBuilder, Pkg
 name = "tmux"
 # Upstream uses version numbers like 3.1, 3.1a, 3.1b, 3.1c, we convert the
 # letter into the patch number
-version = v"3.3.0"
-# 3.3-rc is a Release Candidate, but for stable ones you'll need to remote the -rc
-tmux_tag = "$(version.major).$(version.minor)" * (version.patch > 0 ? Char('a' - 1 + version.patch) : "") * "-rc"
+version = v"3.5.1"
+# 3.3-rc is a Release Candidate, but for stable ones you'll need to remove the -rc
+# tmux_tag = "$(version.major).$(version.minor)" * (version.patch > 0 ? Char('a' - 1 + version.patch) : "") * "-rc"
+tmux_tag = "$(version.major).$(version.minor)" * (version.patch > 0 ? Char('a' - 1 + version.patch) : "")
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/tmux/tmux/releases/download/$(tmux_tag)/tmux-$(tmux_tag).tar.gz",
-                  "c2f2314feab0d10868d15c5cb2eb6f4b0c30973fa98782b678e8ae94cf6ca268"),
+                  "16216bd0877170dfcc64157085ba9013610b12b082548c7c9542cc0103198951"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/tmux-*/
+cd $WORKSPACE/srcdir/tmux-*
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-TERM=screen --enable-utf8proc
 make -j${nproc}
 make install

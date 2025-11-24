@@ -3,21 +3,38 @@
 using BinaryBuilder, Pkg
 
 name = "Tasmanian"
-version = v"8.0.1"
+version = v"8.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ORNL/TASMANIAN.git", "10a762e036c58b2aee4dbf21137aff8401acf0a3")
+    GitSource("https://github.com/ORNL/TASMANIAN.git", "86046564a0d3da9a98aae5111d617bcad09de8d0")
+    DirectorySource("./bundled") 
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 apk del cmake
 cd $WORKSPACE/srcdir/TASMANIAN
+
+# ILP64 patches
+if [[ "${target}" == *x86_64-* ]] ; then
+  atomic_patch -p1 $WORKSPACE/srcdir/patches/0001-add-ILP64-interface-for-Julia-libblastrampoline.patch
+  cp $WORKSPACE/srcdir/files/tsgJuliaTrampolineWrappers.hpp InterfaceTPL/ 
+fi
+
+# Tasmanian tests require finding libgfortran when linking with C linkers,
+# and gcc doesn't automatically add that search path.  So we do it for it with `rpath-link`.
+EXE_LINK_FLAGS=()
+if [[ ${target} != *darwin* ]]; then
+    EXE_LINK_FLAGS+=("-Wl,-rpath-link,/opt/${target}/${target}/lib")
+    EXE_LINK_FLAGS+=("-Wl,-rpath-link,/opt/${target}/${target}/lib64")
+fi
+
 mkdir build && cd build
 if [[ "${target}" == *-freebsd* ]]; then
     export LDFLAGS="-lpthread"
 fi
+
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
@@ -48,7 +65,7 @@ dependencies = [
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
-    Dependency("libblastrampoline_jll"; compat="5.4"),
+    Dependency("libblastrampoline_jll"; compat="5.4.0"),
     HostBuildDependency("CMake_jll"),
 ]
 

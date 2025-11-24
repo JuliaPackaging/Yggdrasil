@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Typst"
-version = v"0.11.1"
+version = v"0.14.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/typst/typst.git", "5011510270c2c23f0ab019af486b26db0d62261b")
+    GitSource("https://github.com/typst/typst.git", "dd1e6e94f73db6a257a5ac34a6320e00410a2534")
 ]
 
 # Bash recipe for building across all platforms
@@ -21,7 +21,7 @@ install_license LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = filter(supported_platforms()) do p
-    !((Sys.iswindows(p) && arch(p) == "i686") || (arch(p) == "powerpc64le"))
+    !((Sys.iswindows(p) && arch(p) == "i686") || (arch(p) == "powerpc64le") || (Sys.isfreebsd(p) && arch(p) == "aarch64") || (arch(p) == "riscv64"))
 end
 
 # The products that we will ensure are always built

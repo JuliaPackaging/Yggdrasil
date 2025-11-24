@@ -26,13 +26,13 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "GAP"
-upstream_version = v"4.13.1"
-version = v"400.1300.102"
+upstream_version = v"4.15.1"
+version = v"400.1500.100"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/gap-$(upstream_version)-core.tar.gz",
-                  "3bd0b5e52ea6984c22d6f6003b2a5805a843659ddbfd8da6ee50609338703451"),
+                  "2a81d008e1638f638a035b1cd981ca39436bdabbef8c29b15b24fceb2af678e4"),
     DirectorySource("./bundled"),
 ]
 
@@ -64,6 +64,9 @@ julia_version=$(./julia_version)
 # configure GAP
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     JULIA_VERSION="$julia_version" \
+    JULIA_CFLAGS="-I/workspace/destdir/include/julia -fPIC" \
+    JULIA_LDFLAGS="-L/workspace/destdir/lib -L/workspace/destdir/lib/julia" \
+    JULIA_LIBS="-Wl,-rpath,/workspace/destdir/lib -Wl,-rpath,/workspace/destdir/lib/julia -ljulia" \
     CPPFLAGS="$CPPFLAGS -DUSE_GAP_INSIDE_JULIA=1" \
     --with-gmp=${prefix} \
     --with-readline=${prefix} \
@@ -108,14 +111,8 @@ install_license LICENSE
 # independent artifact to ship them to the user.
 """
 
-include("../../L/libjulia/common.jl")
-platforms = vcat(libjulia_platforms.(julia_versions)...)
-
-# we only care about 64bit builds
-filter!(p -> nbits(p) == 64, platforms)
-
-# Windows is not supported
-filter!(!Sys.iswindows, platforms)
+include("common.jl")
+platforms = gap_platforms(expand_julia_versions=true)
 
 # The products that we will ensure are always built
 products = [
@@ -130,22 +127,16 @@ dependencies = [
     HostBuildDependency("Zlib_jll"),
 
     Dependency("GMP_jll"),
-    Dependency("Readline_jll", v"8.1.1"),
+    Dependency("Readline_jll"; compat="8.2.13"),
     Dependency("Zlib_jll"),
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.11")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.11.0")),
 ]
+
+# we want to get notified of any changes to julia_compat, and adapt `version` accordingly
+@assert libjulia_min_julia_version <= v"1.10.0"
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"7", julia_compat="1.6", init_block="""
+               preferred_gcc_version=v"7", julia_compat=libjulia_julia_compat(julia_versions))
 
-    try
-        cglobal(:jl_reinit_foreign_type)
-    catch
-        # no jl_reinit_foreign_type -> fall back to old behavior
-        sym = dlsym(libgap_handle, :GAP_InitJuliaMemoryInterface)
-        ccall(sym, Nothing, (Any, Ptr{Nothing}), @__MODULE__, C_NULL)
-    end
-""")
-
-# rebuild trigger: 0
+# rebuild trigger: 1

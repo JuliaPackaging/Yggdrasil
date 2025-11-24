@@ -2,11 +2,11 @@ using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
 name = "proxTV"
-version = v"3.3.1"
+version = v"3.5.0"
 
 # Collection of sources required to build proxTV.
 sources = [
-    GitSource("https://github.com/amontoison/proxTV", "6f7ad7e1048a6d97aa1e92ec35937ae4f155b1a0"),
+    GitSource("https://github.com/amontoison/proxTV", "ac21e5be697504ccd800bab5f3672578a2d0a6f0"),
 ]
 
 # Bash recipe for building across all platforms

@@ -1,11 +1,12 @@
 using BinaryBuilder
 
 name = "Lua"
-version = v"5.4.6"
+version = v"5.4.8"
+ygg_version = v"5.4.9" # Got out of sync when RISC-V was added
 
 sources = [
     ArchiveSource("https://www.lua.org/ftp/lua-$(version).tar.gz",
-                  "7d5ea1b9cb6aa0b59ca3dde1c6adcb57ef83a1ba8e5432c0ecd06bf439b3ad88"),
+                  "4f18ddae154e793e46eeab727c59ef1c0c0c2b744e7b94219710d76f530629ae"),
     DirectorySource("./bundled"),
 ]
 
@@ -55,5 +56,5 @@ dependencies = [
     Dependency("Readline_jll"),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                julia_compat="1.6")

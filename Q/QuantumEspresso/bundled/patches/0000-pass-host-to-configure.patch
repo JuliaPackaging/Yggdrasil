@@ -1,28 +1,13 @@
-diff --git a/install/extlibs_makefile b/install/extlibs_makefile
-index 103f8644e..9e5013b05 100644
---- a/install/extlibs_makefile
-+++ b/install/extlibs_makefile
-@@ -59,7 +59,8 @@ libfox:
-         mkdir ../FoX; \
- 	(gzip -dc ../archive/fox.tgz | (cd ../FoX; tar -xvf -)); \
- 	cd ../FoX/fox/; export FC=$(F90); export FCFLAGS="$(FOX_FLAGS)"; \
--	./configure --prefix=$(TOPDIR)/FoX ;\
-+	update_configure_scripts; \
-+	./configure --build=$(MACHTYPE) --host=$(target) --prefix=$(TOPDIR)/FoX ;\
+diff -ru q-e-qe-7.1.old/install/extlibs_makefile q-e-qe-7.1.new/install/extlibs_makefile
+--- q-e-qe-7.1.old/install/extlibs_makefile	2022-06-14 12:16:48.000000000 -0400
++++ q-e-qe-7.1.new/install/extlibs_makefile	2022-08-01 10:35:45.000000000 -0400
+@@ -38,7 +38,8 @@
+ 	$(call update_submodule,external,fox)
+ 	if test ! -d ../FoX ; then \
+   cd $(TOPDIR)/external/fox; \
+-    ./configure --prefix=$(TOPDIR)/FoX FC=$(F90) FCFLAGS="$(FOX_FLAGS)"; \
++    update_configure_scripts; \
++    ./configure --build=$(MACHTYPE) --host=$(target) --prefix=$(TOPDIR)/FoX FC=$(F90) FCFLAGS="$(FOX_FLAGS)"; \
      touch cp_test; \
      if cp -p cp_test cp_test_1; then \
-         echo "cp -p works"; \
-@@ -100,11 +101,13 @@ libcuda_devxlib :
-     touch make.inc; \
-     $(MAKE) clean; \
-     export F90FLAGS="$(FOX_FLAGS)"; \
-+    update_configure_scripts; \
-     ./configure FC=$(F90) F90=$(F90) CC=$(CC) \
-                 --with-cuda=$(CUDA_PATH) \
-                 --with-cuda-cc=$(GPU_ARCH) \
-                 --with-cuda-runtime=$(CUDA_RUNTIME) \
-                 --disable-parallel \
-+                --build=$(MACHTYPE) --host=$(target) \
-                 --enable-cuda-env-check=no; \
-     make all
- 	touch ../install/libcuda_devxlib # do not download and configure again
+         rm cp_test_1; \

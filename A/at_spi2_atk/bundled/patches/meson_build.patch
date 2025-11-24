@@ -1,8 +1,0 @@
---- a/meson.build
-+++ b/meson.build
-@@ -61,4 +61,4 @@
- 
- subdir('droute')
- subdir('atk-adaptor')
--subdir('tests')
-+# subdir('tests')

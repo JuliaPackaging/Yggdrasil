@@ -1,0 +1,27 @@
+From 6a87f8e807150f0903ee22cd279e2a8a1060c4ae Mon Sep 17 00:00:00 2001
+From: Max Horn <max@quendi.de>
+Date: Tue, 17 Dec 2024 00:45:25 +0100
+Subject: [PATCH] Add missing include on macOS
+
+---
+ functions/Datei/get_data_dir.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/functions/Datei/get_data_dir.c b/functions/Datei/get_data_dir.c
+index 76cbf79..b8e50e2 100644
+--- a/functions/Datei/get_data_dir.c
++++ b/functions/Datei/get_data_dir.c
+@@ -9,6 +9,10 @@
+ 
+ #include <sys/stat.h>
+ 
++#if defined(__APPLE__) && defined(__MACH__)
++#include <mach-o/dyld.h>
++#endif
++
+ #define CARAT_PATH_MAX 4096
+ 
+ // location of the current executable
+-- 
+2.47.0
+

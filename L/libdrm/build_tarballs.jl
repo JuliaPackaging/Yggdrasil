@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "libdrm"
-version = v"2.4.110"
+version = v"2.4.125"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://dri.freedesktop.org/libdrm/libdrm-$version.tar.xz", "eecee4c4b47ed6d6ce1a9be3d6d92102548ea35e442282216d47d05293cf9737"),
+    ArchiveSource("https://dri.freedesktop.org/libdrm/libdrm-$version.tar.xz",
+                  "d4bae92797a50f81a93524762e0410a49cd84cfa0f997795bc0172ac8fb1d96a"),
     DirectorySource("./bundled"),
 ]
 
@@ -16,16 +17,16 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd libdrm-*
 atomic_patch -p1 ../no_stress.patch
-meson --cross-file=${MESON_TARGET_TOOLCHAIN} -Dudev=false -Dvalgrind=false build
-ninja -C build install
+meson setup builddir --buildtype=release --cross-file=${MESON_TARGET_TOOLCHAIN} -Dudev=false -Dvalgrind=disabled
+meson compile -C builddir
+meson install -C builddir
 # taken from https://salsa.debian.org/xorg-team/lib/libdrm/-/blob/libdrm-2.4.105-3/debian/copyright
 install_license ../copyright
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(Sys.islinux, supported_platforms())
-
+platforms = filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), supported_platforms())
 
 # The products that we will ensure are always built
 products = [

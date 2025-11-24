@@ -14,7 +14,7 @@ cd $WORKSPACE/srcdir/jansson
 
 autoreconf -fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make -j
+make -j${nproc}
 make install
 """
 

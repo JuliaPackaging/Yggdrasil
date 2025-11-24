@@ -1,13 +1,17 @@
 using BinaryBuilder
 
 name = "algoim"
-version = v"0.1.0"
+version = v"0.1.1"
 sources = [
-    GitSource("https://github.com/algoim/algoim.git", "979cb3b7860b53751291352a929754d525b7fde1"),
+    GitSource("https://github.com/algoim/algoim.git", "da1d81499608e1d499695d255f0233140b8c81e8"),
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/algoim
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 ${f}
+done
 install_license LICENSE
 mkdir -p "${includedir}"
 cp -vr algoim "${includedir}/."
