@@ -1,6 +1,6 @@
 name = "LLD"
-llvm_full_version = v"16.0.6+4"
-libllvm_version = v"16.0.6+4"
+llvm_full_version = v"16.0.6+6"
+libllvm_version = v"16.0.6+6"
 
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
@@ -14,9 +14,8 @@ include("../common.jl")
 augment_platform_block = """
     using Base.BinaryPlatforms
     $(LLVM.augment)
-    function augment_platform!(platform::Platform)
-        augment_llvm!(platform)
-    end"""
+    augment_platform!(platform::Platform) = augment_llvm!(platform)
+"""
 
 # determine exactly which tarballs we should build
 builds = []
@@ -37,3 +36,5 @@ for (i, build) in enumerate(builds)
                    skip_audit=true, julia_compat="1.11",
                    augment_platform_block)
 end
+
+# bump

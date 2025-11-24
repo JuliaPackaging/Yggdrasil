@@ -60,6 +60,7 @@ CXX ?= $(target)-c++
 FC ?= $(target)-f77
 GO ?= $(target)-go
 RUSTC ?= $(target)-rustc
+OCAMLOPT ?= $(target)-ocamlopt
 
 # Create default rule for that directory so it can be created, if need be:
 $(PROJECT_BUILD):

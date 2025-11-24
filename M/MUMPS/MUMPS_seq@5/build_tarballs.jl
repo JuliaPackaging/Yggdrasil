@@ -14,7 +14,7 @@ using BinaryBuilder, Pkg
 # map a prerelease of 2.7.0 to 200.690.000.
 
 name = "MUMPS_seq"
-upstream_version = v"5.7.3"
+upstream_version = v"5.8.1"
 version_offset = v"0.0.0" # reset to 0.0.0 once the upstream version changes
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
@@ -22,7 +22,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 
 sources = [
   ArchiveSource("https://mumps-solver.org/MUMPS_$(upstream_version).tar.gz",
-                "84a47f7c4231b9efdf4d4f631a2cae2bdd9adeaabc088261d15af040143ed112")
+                "e91b6dcd93597a34c0d433b862cf303835e1ea05f12af073b06c32f652f3edd8")
 ]
 
 # Bash recipe for building across all platforms
@@ -78,42 +78,45 @@ cp include/*.h ${includedir}
 cp libseq/*.h ${includedir}/libseq
 cp lib/*.${dlext} ${libdir}
 
-# Uncomment these lines if one day we need the 64-bit integer version of MUMPS
-# make clean
-# for sym in isamax idamax ilaenv slamch dlamch \
-#            saxpy scopy sgemm sgemv sgesvd slarfg sorgqr sormqr sscal sswap strsv strsm strtrs snrm2 \
-#            daxpy dcopy dgemm dgemv dgesvd dlarfg dorgqr dormqr dscal dswap dtrsv dtrsm dtrtrs dnrm2 \
-#            caxpy ccopy cgemm cgemv cgesvd clarfg cungqr cunmqr cscal cswap ctrsv ctrsm ctrtrs scnrm2 \
-#            zaxpy zcopy zgemm zgemv zgesvd zlarfg zungqr zunmqr zscal zswap ztrsv ztrsm ztrtrs dznrm2
-# do
-#     FFLAGS+=("-D${sym}=${sym}_64")
-# done
-# FFLAG="${FFLAGS[@]}"
-# make_args_64+=(PLAT="64"
-#                OPTF="-O3 -fdefault-integer-8 -ffixed-line-length-none"
-#                OPTL="-O3"
-#                OPTC="-O3 -DINTSIZE64"
-#                CDEFS=-DAdd_
-#                LMETISDIR="${libdir}/metis/metis_Int64_Real32/lib"
-#                IMETIS="-I${libdir}/metis_Int64_Real32/include"
-#                LMETIS="-L${libdir}/metis/metis_Int64_Real32/lib -lmetis_Int64_Real32"
-#                ORDERINGSF="-Dpord -Dmetis"
-#                LIBEXT_SHARED=".${dlext}"
-#                SHARED_OPT="-shared"
-#                SONAME="${SONAME}"
-#                CC="$CC ${CFLAGS[@]}"
-#                FC="gfortran $FFLAG"
-#                FL="gfortran"
-#                RANLIB="echo"
-#                LPORD="-L./PORD/lib -lpord64"
-#                LIBBLAS="${BLAS_LAPACK}"
-#                LAPACK="${BLAS_LAPACK}")
+# 64-bit integer version of MUMPS
+make clean
+for sym in isamax idamax ilaenv slamch dlamch \
+           saxpy scopy sgemm sgemv sgesvd slarfg sorgqr sormqr sscal sswap strsv strsm strtrs snrm2 \
+           daxpy dcopy dgemm dgemv dgesvd dlarfg dorgqr dormqr dscal dswap dtrsv dtrsm dtrtrs dnrm2 \
+           caxpy ccopy cgemm cgemv cgesvd clarfg cungqr cunmqr cscal cswap ctrsv ctrsm ctrtrs scnrm2 \
+           zaxpy zcopy zgemm zgemv zgesvd zlarfg zungqr zunmqr zscal zswap ztrsv ztrsm ztrtrs dznrm2
+do
+    FFLAGS+=("-D${sym}=${sym}_64")
+done
+FFLAG="${FFLAGS[@]}"
+make_args_64+=(PLAT="64"
+               OPTF="-O3 -fdefault-integer-8 -ffixed-line-length-none"
+               OPTL="-O3"
+               OPTC="-O3 -DINTSIZE64"
+               CDEFS=-DAdd_
+               LMETISDIR="${libdir}/metis/metis_Int64_Real32/lib"
+               IMETIS="-I${libdir}/metis_Int64_Real32/include"
+               LMETIS="-L${libdir}/metis/metis_Int64_Real32/lib -lmetis_Int64_Real32"
+               ORDERINGSF="-Dpord -Dmetis"
+               LIBEXT_SHARED=".${dlext}"
+               SHARED_OPT="-shared"
+               SONAME="${SONAME}"
+               CC="$CC ${CFLAGS[@]}"
+               FC="gfortran $FFLAG"
+               FL="gfortran"
+               RANLIB="echo"
+               LPORD="-L./PORD/lib -lpord64"
+               LIBBLAS="${BLAS_LAPACK}"
+               LAPACK="${BLAS_LAPACK}")
 
-# make -j${nproc} allshared "${make_args_64[@]}"
-# cp lib/*.${dlext} ${libdir}
+make -j${nproc} allshared "${make_args_64[@]}"
+cp lib/*.${dlext} ${libdir}
 """
 
-platforms = expand_gfortran_versions(supported_platforms())
+platforms = supported_platforms()
+filter!(p -> arch(p) != "riscv64", platforms)
+platforms = expand_gfortran_versions(platforms)
+filter!(p -> !(Sys.islinux(p) && libc(p) == "musl" && libgfortran_version(p) == v"4" && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -121,10 +124,10 @@ products = [
     LibraryProduct("libdmumps", :libdmumps),
     LibraryProduct("libcmumps", :libcmumps),
     LibraryProduct("libzmumps", :libzmumps),
-    # LibraryProduct("libsmumps64", :libsmumps64),
-    # LibraryProduct("libdmumps64", :libdmumps64),
-    # LibraryProduct("libcmumps64", :libcmumps64),
-    # LibraryProduct("libzmumps64", :libzmumps64),
+    LibraryProduct("libsmumps64", :libsmumps64),
+    LibraryProduct("libdmumps64", :libdmumps64),
+    LibraryProduct("libcmumps64", :libcmumps64),
+    LibraryProduct("libzmumps64", :libzmumps64),
 ]
 
 # Dependencies that must be installed before this package can be built

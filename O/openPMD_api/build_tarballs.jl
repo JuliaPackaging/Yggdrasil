@@ -2,8 +2,10 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
+
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "openPMD_api"
 version = v"0.16.3" # This is really the branch `eschnett/julia-bindings` before version 0.16.0
@@ -15,8 +17,6 @@ julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10", v"1.11"]
 sources = [
     # We use a feature branch instead of a released version because the Julia bindings are not released yet
     GitSource("https://github.com/eschnett/openPMD-api.git", "cac948869a45b1b5ebeebccc930a805a7ab337a7"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 # Bash recipe for building across all platforms
@@ -32,23 +32,6 @@ cd openPMD-api
 
 mkdir build
 cd build
-
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    # Work around the issue
-    #     /workspace/srcdir/SHOT/src/Model/../Model/Simplifications.h:1370:26: error: 'value' is unavailable: introduced in macOS 10.14
-    #                     optional.value()->coefficient *= -1.0;
-    #                              ^
-    #     /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/include/c++/v1/optional:947:27: note: 'value' has been explicitly marked unavailable here
-    #         constexpr value_type& value() &
-    #                               ^
-    export MACOSX_DEPLOYMENT_TARGET=10.15
-    # ...and install a newer SDK which supports `std::filesystem`
-    pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -a usr/* "/opt/${target}/${target}/sys-root/usr/"
-    cp -a System "/opt/${target}/${target}/sys-root/"
-    popd
-fi
 
 archopts=()
 if [[ "${target}" == x86_64-w64-mingw32 ]]; then
@@ -85,6 +68,16 @@ cmake --build . --config RelWithDebInfo --parallel ${nproc} --target install
 install_license ../COPYING*
 """
 
+# Work around the issue
+#     /workspace/srcdir/SHOT/src/Model/../Model/Simplifications.h:1370:26: error: 'value' is unavailable: introduced in macOS 10.14
+#                     optional.value()->coefficient *= -1.0;
+#                              ^
+#     /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/include/c++/v1/optional:947:27: note: 'value' has been explicitly marked unavailable here
+#         constexpr value_type& value() &
+#                               ^
+# ...and install a newer SDK which supports `std::filesystem`
+sources, script = require_macos_sdk("10.15", sources, script)
+
 augment_platform_block = """
     using Base.BinaryPlatforms
     $(MPI.augment)
@@ -118,7 +111,10 @@ dependencies = [
     Dependency(PackageSpec(name="ADIOS2_jll"); platforms=filter(p -> nbits(p) ≠ 32, platforms)),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     # Parallel HDF5 is not available on Windows
-    Dependency(PackageSpec(name="HDF5_jll"); compat="~1.14", platforms=filter(!Sys.iswindows, platforms)),
+    # We had to restrict compat with HDF5 because of ABI breakage:
+    # https://github.com/JuliaPackaging/Yggdrasil/pull/10347#issuecomment-2662923973
+    # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
+    Dependency(PackageSpec(name="HDF5_jll"); compat="1.14.0 - 1.14.3", platforms=filter(!Sys.iswindows, platforms)),
     Dependency(PackageSpec(name="libcxxwrap_julia_jll")),
 ]
 

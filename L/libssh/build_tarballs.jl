@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libssh"
-version = v"0.11.0"
+version = v"0.11.3"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.libssh.org/files/$(version.major).$(version.minor)/libssh-$(version).tar.xz", "860e814579e7606f3fc3db98c5807bef2ab60f793ec871d81bcd23acdcdd3e91")
+    ArchiveSource("https://www.libssh.org/files/$(version.major).$(version.minor)/libssh-$(version).tar.xz", "7d8a1361bb094ec3f511964e78a5a4dba689b5986e112afabe4f4d0d6c6125c3")
 ]
 
 # Bash recipe for building across all platforms
@@ -60,9 +60,9 @@ products = [
 dependencies = [
     HostBuildDependency("Doxygen_jll"),
     Dependency("Kerberos_krb5_jll"; compat="1.19.3"),
-    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="3.0.8"),
-    Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"); compat="1.2.13")
+    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="3.0.16"),
+    Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"); compat="1.2.12")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"5", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

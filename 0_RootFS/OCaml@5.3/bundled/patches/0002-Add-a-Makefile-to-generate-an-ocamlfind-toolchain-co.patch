@@ -1,0 +1,48 @@
+From 6a35790d3170235c471db2040ae8bc7057c7e071 Mon Sep 17 00:00:00 2001
+From: Samuel Hym <samuel@tarides.com>
+Date: Wed, 8 Jan 2025 13:09:40 +0100
+Subject: [PATCH 2/6] Add a Makefile to generate an ocamlfind toolchain
+ configuration
+
+---
+ Makefile.ocamlfindconf | 28 ++++++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
+ create mode 100644 Makefile.ocamlfindconf
+
+diff --git a/Makefile.ocamlfindconf b/Makefile.ocamlfindconf
+new file mode 100644
+index 0000000000..e560fa067d
+--- /dev/null
++++ b/Makefile.ocamlfindconf
+@@ -0,0 +1,28 @@
++# Generate an ocamlfind toolchain configuration
++
++# This will drop the ocaml-, ocaml-cross- and cross- prefixes of the generated
++# file name, so that the opam install instructions can simply use the package
++# name (probably using such a prefix) to generate the toolchain configuration
++
++%.conf:
++	mkdir -p $(@D)
++	$(MAKE) --no-print-directory --quiet -f Makefile.ocamlfindconf \
++	  print-$(patsubst cross-%,%,$(patsubst ocaml-%,%,$(*F))) \
++	  > $(@D)/$(patsubst cross-%,%,$(patsubst ocaml-%,%,$(@F)))
++
++# To get $(prefix) and $(EXE)
++include Makefile.config
++
++# Phony but generic rule, so without a `.PHONY` declaration
++# Fail if `prefix` is empty (but still display the content)
++print-%:
++	@test -n "$(prefix:%=x)"
++	$(info path($*) = "$(prefix)/lib/ocaml:$(prefix)/lib")
++	$(info destdir($*) = "$(prefix)/lib")
++	$(info stdlib($*) = "$(prefix)/lib/ocaml")
++	$(info ocamlopt($*) = "$(prefix)/bin/ocamlopt.opt$(EXE)")
++	$(info ocamlc($*) = "$(prefix)/bin/ocamlc.opt$(EXE)")
++	$(info ocamlmklib($*) = "$(prefix)/bin/ocamlmklib$(EXE)")
++	$(info ocamldep($*) = "$(prefix)/bin/ocamldep.opt$(EXE)")
++	$(info ocamlcp($*) = "$(prefix)/bin/ocamlcp$(EXE)")
++	$(info ldconf($*) = "$(prefix)/lib/ocaml/ld.conf")
+-- 
+2.50.0
+

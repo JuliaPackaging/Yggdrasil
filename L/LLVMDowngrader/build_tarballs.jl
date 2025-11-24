@@ -6,18 +6,17 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "LLVMDowngrader"
-repo = "https://github.com/JuliaGPU/llvm-downgrade"
-version = v"0.3"
+repo = "https://github.com/JuliaLLVM/llvm-downgrade"
+version = v"0.6"
 
-llvm_versions = [v"13.0.1", v"14.0.6", v"15.0.7", v"16.0.6", v"17.0.6"]
+llvm_versions = [v"15.0.7", v"16.0.6", v"18.1.7", v"20.1.2"]
 
 # Collection of sources required to build LLVMDowngrader
 sources = Dict(
-    v"13.0.1" => [GitSource(repo, "5538d5106dd4779c9aa475a78cfbe9f70053f44c")],
-    v"14.0.6" => [GitSource(repo, "07810b82a167176a9e81f59435a6ac551dfd52e9")],
-    v"15.0.7" => [GitSource(repo, "cbfa9715397a7707b6c1ff94ab325af1fab99220")],
-    v"16.0.6" => [GitSource(repo, "c74dc63cd74b1e92919d8f9df1ce7897a9db4e7f")],
-    v"17.0.6" => [GitSource(repo, "c09ff8ef76ddc5adb4169a12e3e5ceb1b1a23df5")],
+    v"15.0.7" => [GitSource(repo, "aba82137dde7a0e5e5f2d8a44d7daf750e51fd30")],
+    v"16.0.6" => [GitSource(repo, "079c50a3cb88053b54db312710347db298407806")],
+    v"18.1.7" => [GitSource(repo, "7995dec609d994ae0a9a99f8f3776da5439749c9")],
+    v"20.1.2" => [GitSource(repo, "655eb609daad4fe04b80644828de3769a33c748f")],
 )
 
 # These are the platforms we will build for by default, unless further
@@ -45,6 +44,7 @@ CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm')
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=False)
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN})
+CMAKE_FLAGS+=(-DLLVM_ENABLE_ZSTD=OFF)
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
 ninja -j${nproc} llvm-tblgen llvm-config
 popd
@@ -69,7 +69,8 @@ CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 
 # Turn on ZLIB
 CMAKE_FLAGS+=(-DLLVM_ENABLE_ZLIB=ON)
-# Turn off XML2
+# Turn off XML2 and ZSTD to avoid unnecessary dependencies
+CMAKE_FLAGS+=(-DLLVM_ENABLE_ZSTD=OFF)
 CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBXML2=OFF)
 
 # Disable useless things like docs, terminfo, etc....
@@ -89,12 +90,9 @@ products = Product[
 
 augment_platform_block = """
     using Base.BinaryPlatforms
-
     $(LLVM.augment)
-
-    function augment_platform!(platform::Platform)
-        augment_llvm!(platform)
-    end"""
+    augment_platform!(platform::Platform) = augment_llvm!(platform)
+"""
 
 # determine exactly which tarballs we should build
 builds = []
@@ -124,8 +122,10 @@ end
 # we handle that ourselves by calling `should_build_platform`
 non_platform_ARGS = filter(arg -> startswith(arg, "--"), ARGS)
 
-# `--register` should only be passed to the latest `build_tarballs` invocation
-non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
+# `--register` and `--deploy` should only be passed to the final `build_tarballs` invocation
+non_reg_ARGS = filter(non_platform_ARGS) do arg
+    arg != "--register" && !startswith(arg, "--deploy")
+end
 
 for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,

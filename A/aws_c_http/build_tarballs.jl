@@ -3,19 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_http"
-version = v"0.8.8"
+version = v"0.10.7"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-http.git", "4e74ab1e3702763e0b87bd1752f5a37c2f0400ac"),
+    GitSource("https://github.com/awslabs/aws-c-http.git", "07302aa4a2892adbbf95ee6d458db3bb240030d3"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/aws-c-http
-
-# Patch for MinGW toolchain
-find . -type f -exec sed -i 's/WS2tcpip.h/ws2tcpip.h/g' '{}' \;
 
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -28,8 +25,6 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 cmake --build . -j${nproc} --target install
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
 platforms = supported_platforms()
 filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms)
 
@@ -40,8 +35,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("aws_c_compression_jll"; compat="0.2.17"),
-    Dependency("aws_c_io_jll"; compat="0.14.11"),
+    Dependency("aws_c_compression_jll"; compat="0.3.2"),
+    Dependency("aws_c_io_jll"; compat="0.23.2"),
     BuildDependency("aws_lc_jll"),
 ]
 

@@ -1,7 +1,5 @@
-diff --git before/pastix/.git/config after/pastix/.git/config
-index eae54bc..c657784 100644
---- before/pastix/.git/config
-+++ after/pastix/.git/config
+--- a/.git/config
++++ b/.git/config
 @@ -9,3 +9,11 @@
  [branch "master"]
  	remote = origin
@@ -14,10 +12,8 @@ index eae54bc..c657784 100644
 +	active = true
 +	url = https://gitlab.inria.fr/solverstack/spm.git
 +	update = checkout
-diff --git before/pastix/.gitmodules after/pastix/.gitmodules
-index 3dac0d4..e40502d 100644
---- before/pastix/.gitmodules
-+++ after/pastix/.gitmodules
+--- a/.gitmodules
++++ b/.gitmodules
 @@ -1,12 +1,12 @@
  [submodule "cmake_modules/morse_cmake"]
  	path = cmake_modules/morse_cmake
@@ -33,52 +29,3 @@ index 3dac0d4..e40502d 100644
  	fetchRecurseSubmodules = true
  	ignored = untracked
  	update = checkout
-diff --git before/pastix/CMakeLists.txt after/pastix/CMakeLists.txt
-index fb526d2..cc7416e 100644
---- before/pastix/CMakeLists.txt
-+++ after/pastix/CMakeLists.txt
-@@ -837,9 +837,9 @@ add_library( pastix
-   ${PASTIX_LIB_SRCS}
-   )
- 
--set_target_properties( pastix PROPERTIES
--  VERSION ${PASTIX_VERSION}
--  SOVERSION ${PASTIX_VERSION_MAJOR}.${PASTIX_VERSION_MINOR} )
-+# set_target_properties( pastix PROPERTIES
-+#   VERSION ${PASTIX_VERSION}
-+#   SOVERSION ${PASTIX_VERSION_MAJOR}.${PASTIX_VERSION_MINOR} )
- 
- add_dependencies(pastix
-   kernels_headers_tgt
-@@ -945,12 +945,12 @@ install(TARGETS pastix
-         PUBLIC_HEADER DESTINATION include )
- 
- ## Executable and tests
--enable_testing()
--include(CTest)
-+# enable_testing()
-+# include(CTest)
- # Examples executables
--add_subdirectory(example)
-+# add_subdirectory(example)
- # Testing executables
--add_subdirectory(test)
-+# add_subdirectory(test)
- 
- ### Wrappers
- add_subdirectory(wrappers)
-diff --git before/pastix/wrappers/fortran90/CMakeLists.txt after/pastix/wrappers/fortran90/CMakeLists.txt
-index 2b4de1e..4570462 100644
---- before/pastix/wrappers/fortran90/CMakeLists.txt
-+++ after/pastix/wrappers/fortran90/CMakeLists.txt
-@@ -46,8 +46,8 @@ target_include_directories(pastixf INTERFACE
-   $<INSTALL_INTERFACE:include>
-   )
- 
--set_target_properties( pastixf PROPERTIES VERSION ${PASTIX_VERSION} )
--set_target_properties( pastixf PROPERTIES SOVERSION ${PASTIX_VERSION_MAJOR} )
-+# set_target_properties( pastixf PROPERTIES VERSION ${PASTIX_VERSION} )
-+# set_target_properties( pastixf PROPERTIES SOVERSION ${PASTIX_VERSION_MAJOR} )
- 
- target_link_libraries( pastixf PRIVATE pastix SPM::spmf )
- 

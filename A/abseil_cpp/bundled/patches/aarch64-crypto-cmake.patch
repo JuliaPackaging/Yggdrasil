@@ -1,0 +1,12 @@
+diff --git a/absl/copts/GENERATED_AbseilCopts.cmake b/absl/copts/GENERATED_AbseilCopts.cmake
+index 430916f7..257b9806 100644
+--- a/absl/copts/GENERATED_AbseilCopts.cmake
++++ b/absl/copts/GENERATED_AbseilCopts.cmake
+@@ -217,7 +217,6 @@ list(APPEND ABSL_RANDOM_HWAES_ARM32_FLAGS
+ )
+ 
+ list(APPEND ABSL_RANDOM_HWAES_ARM64_FLAGS
+-    "-march=armv8-a+crypto"
+ )
+ 
+ list(APPEND ABSL_RANDOM_HWAES_MSVC_X64_FLAGS

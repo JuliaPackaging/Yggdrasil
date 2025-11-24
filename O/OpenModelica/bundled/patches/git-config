@@ -1,0 +1,23 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+[submodule]
+	active = .
+[remote "origin"]
+	url = https://github.com/OpenModelica/OpenModelica.git
+	fetch = +refs/heads/*:refs/remotes/origin/*
+[branch "master"]
+	remote = origin
+	merge = refs/heads/master
+[submodule "OMCompiler/3rdParty"]
+	url = https://github.com/OpenModelica/OMCompiler-3rdParty
+[submodule "OMOptim"]
+	url = https://github.com/OpenModelica/OMOptim.git
+[submodule "OMSens"]
+	url = https://github.com/OpenModelica/OMSens.git
+[submodule "OMSens_Qt"]
+	url = https://github.com/OpenModelica/OMSens_Qt.git
+[submodule "OMSimulator"]
+	url = https://github.com/OpenModelica/OMSimulator.git

@@ -1,10 +1,10 @@
 using BinaryBuilder
 
 name = "Wasmtime"
-version = v"22.0.0"
+version = v"39.0.0"
 
 sources = [GitSource("https://github.com/bytecodealliance/wasmtime.git",
-                     "761f044efbb6d7465b88d723619168919b30ce0b")]
+                     "56b81c98a2b4bfea4e7b1d6ac8f2e4196dc83fc1")]
 
 # Based on `wasmtime/ci/build-release-artifacts.sh
 script = raw"""
@@ -47,6 +47,9 @@ fi
 """
 
 platforms = supported_platforms(; exclude=(p -> !(arch(p) in ("x86_64", "aarch64"))))
+
+# Filter aarch64 FreeBSD because no Rust toolchain is available there yet
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
 # NOTE: Headers get installed too but we aren't explicitly listing them as `FileProduct`s
 products = [LibraryProduct("libwasmtime", :libwasmtime),

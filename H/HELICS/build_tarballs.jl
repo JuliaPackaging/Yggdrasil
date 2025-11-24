@@ -13,30 +13,28 @@
 #
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+# Build count: 1
 using BinaryBuilder
 
-HELICS_VERSION = v"3.5.3"
-HELICS_SHA = "f9ace240510b18caf642f55d08f9009a9babb203fbc032ec7d7d8aa6fd5e1553"
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
+HELICS_VERSION = v"3.6.1"
+HELICS_SHA = "d607c1b47dd5ae32f3076c4aa4aa584d37b6056a9bd049234494698ed95cd70f"
 
 sources = [
+    DirectorySource("./bundled"),
     ArchiveSource("https://github.com/GMLC-TDC/HELICS/releases/download/v$HELICS_VERSION/Helics-v$HELICS_VERSION-source.tar.gz",
                   "$HELICS_SHA"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 script = raw"""
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    # Install a newer SDK which supports `std::filesystem`
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    popd
-    export MACOSX_DEPLOYMENT_TARGET=10.15
-fi
+# Need newer CMake than provided by the default image (currently requires at least 3.22)
+apk del cmake
 
 cd $WORKSPACE/srcdir
+
+atomic_patch -p1 $WORKSPACE/srcdir/patches/link-atomic.patch
 
 cmake -B build \
    -DCMAKE_FIND_ROOT_PATH="${prefix}" \
@@ -54,6 +52,9 @@ if [[ "${target}" == *-mingw* ]]; then
 fi
 """
 
+# Install a newer SDK which supports `std::filesystem`
+sources, script = require_macos_sdk("10.15", sources, script)
+
 products = [
     LibraryProduct("libhelics", :libhelics),
 ]
@@ -64,6 +65,7 @@ platforms = expand_cxxstring_abis(supported_platforms())
 dependencies = [
     Dependency("ZeroMQ_jll"),
     BuildDependency("boost_jll"),
+    HostBuildDependency("CMake_jll"),
 ]
 
 # Build 'em!

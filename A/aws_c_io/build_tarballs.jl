@@ -2,13 +2,15 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "aws_c_io"
-version = v"0.14.17"
+version = v"0.23.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-io.git", "b561534fd08af5dd19dcffbc84fddc065c3cecb2"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/awslabs/aws-c-io.git", "9cf142c08c28d5b1195aae09d2c05a6d17502e09"),
 ]
 
 # Bash recipe for building across all platforms
@@ -24,8 +26,8 @@ find . -type f -exec sed -i -e 's/Windows.h/windows.h/g' \
      '{}' \;
 # Lowercase names for MinGW
 sed -i -e 's/Secur32/secur32/g' -e 's/Crypt32/crypt32/g' CMakeLists.txt
-# MinGW is missing some macros in sspi.h
-atomic_patch -p1 ../patches/win32_sspi_h_missing_macros.patch
+
+install_license LICENSE NOTICE
 
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -37,6 +39,8 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     ..
 cmake --build . -j${nproc} --target install
 """
+
+sources, script = require_macos_sdk("10.15", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
@@ -50,9 +54,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("s2n_tls_jll"; compat="1.3.51"),
-    Dependency("aws_c_cal_jll"; compat="0.7.1"),
-    Dependency("aws_c_common_jll"; compat="0.9.3"),
+    Dependency("s2n_tls_jll"; compat="1.6.0", platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
+    Dependency("aws_c_cal_jll"; compat="0.9.8"),
+    Dependency("aws_c_common_jll"; compat="0.12.5"),
     BuildDependency("aws_lc_jll"),
 ]
 

@@ -3,29 +3,26 @@
 using BinaryBuilder
 
 name = "libcap"
-version = v"2.51"
-
-# NOTE: v2.52 and higher requires objcopy with --dump-sections support
-# (but also doesn't require -std=c99 anymore, so remove that below when upgrading)
+version = v"2.76"
 
 # Collection of sources required to build libcap
 sources = [
-    ArchiveSource("https://mirrors.kernel.org/pub/linux/libs/security/linux-privs/libcap2/libcap-$(version.major).$(version.minor).tar.gz",
-                  "f146cf1fa282483673df969b76ccd392697b903ac27ab7924c0fda103f5a0d26")
+    ArchiveSource("https://mirrors.kernel.org/pub/linux/libs/security/linux-privs/libcap2/libcap-$(version.major).$(version.minor).tar.xz",
+                  "629da4ab29900d0f7fcc36227073743119925fd711c99a1689bbf5c9b40c8e6f")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libcap-*/
 
-make -j${nproc} BUILD_CC=${BUILD_CC} COPTS="-O2 -std=c99"
+make -j${nproc}
 make install DESTDIR=${prefix} prefix=/ lib=lib
 """
 
 # These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line.  We are manually disabling
-# many platforms that do not seem to work.
-platforms = [p for p in supported_platforms() if Sys.islinux(p)]
+# platforms are passed in on the command line.
+# Only Linux is supported.
+platforms = supported_platforms(; exclude=!Sys.islinux)
 
 # The products that we will ensure are always built
 products = [
@@ -39,4 +36,5 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6")
+               julia_compat="1.6", preferred_gcc_version=v"8")
+# GCC bump for an objcopy with --dump-sections support

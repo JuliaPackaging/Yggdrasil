@@ -1,0 +1,243 @@
+diff -ru hdf5-1.14.5.orig/config/cmake/HDF5UseFortran.cmake hdf5-1.14.5/config/cmake/HDF5UseFortran.cmake
+--- hdf5-1.14.5.orig/config/cmake/HDF5UseFortran.cmake	2024-09-30 12:07:53
++++ hdf5-1.14.5/config/cmake/HDF5UseFortran.cmake	2025-01-25 15:24:55
+@@ -140,32 +140,34 @@
+ #-----------------------------------------------------------------------------
+ # Determine the available KINDs for REALs and INTEGERs
+ #-----------------------------------------------------------------------------
+-if (${HAVE_ISO_FORTRAN_ENV})
+-  READ_SOURCE ("PROGRAM FC08_AVAIL_KINDS" "END PROGRAM FC08_AVAIL_KINDS" SOURCE_CODE)
+-else ()
+-  READ_SOURCE ("PROGRAM FC_AVAIL_KINDS" "END PROGRAM FC_AVAIL_KINDS" SOURCE_CODE)
+-endif ()
++# if (${HAVE_ISO_FORTRAN_ENV})
++#   READ_SOURCE ("PROGRAM FC08_AVAIL_KINDS" "END PROGRAM FC08_AVAIL_KINDS" SOURCE_CODE)
++# else ()
++#   READ_SOURCE ("PROGRAM FC_AVAIL_KINDS" "END PROGRAM FC_AVAIL_KINDS" SOURCE_CODE)
++# endif ()
++# 
++# FORTRAN_RUN ("REAL and INTEGER KINDs"
++#     "${SOURCE_CODE}"
++#     XX
++#     YY
++#     FC_AVAIL_KINDS_RESULT
++#     PROG_OUTPUT
++# )
++# # dnl The output from the above program will be:
++# # dnl    -- LINE 1 --  valid integer kinds (comma separated list)
++# # dnl    -- LINE 2 --  valid real kinds (comma separated list)
++# # dnl    -- LINE 3 --  max decimal precision for reals
++# # dnl    -- LINE 4 --  number of valid integer kinds
++# # dnl    -- LINE 5 --  number of valid real kinds
++# # dnl    -- LINE 6 --  number of valid logical kinds
++# # dnl    -- LINE 7 --  valid logical kinds (comma separated list)
++# 
++# #
++# # Convert the string to a list of strings by replacing the carriage return with a semicolon
++# string (REGEX REPLACE "[\r\n]+" ";" PROG_OUTPUT "${PROG_OUTPUT}")
+ 
+-FORTRAN_RUN ("REAL and INTEGER KINDs"
+-    "${SOURCE_CODE}"
+-    XX
+-    YY
+-    FC_AVAIL_KINDS_RESULT
+-    PROG_OUTPUT
+-)
+-# dnl The output from the above program will be:
+-# dnl    -- LINE 1 --  valid integer kinds (comma separated list)
+-# dnl    -- LINE 2 --  valid real kinds (comma separated list)
+-# dnl    -- LINE 3 --  max decimal precision for reals
+-# dnl    -- LINE 4 --  number of valid integer kinds
+-# dnl    -- LINE 5 --  number of valid real kinds
+-# dnl    -- LINE 6 --  number of valid logical kinds
+-# dnl    -- LINE 7 --  valid logical kinds (comma separated list)
++set (PROG_OUTPUT "${FC_AVAIL_KINDS_RESULT}")
+ 
+-#
+-# Convert the string to a list of strings by replacing the carriage return with a semicolon
+-string (REGEX REPLACE "[\r\n]+" ";" PROG_OUTPUT "${PROG_OUTPUT}")
+-
+ list (GET PROG_OUTPUT 0 pac_validIntKinds)
+ list (GET PROG_OUTPUT 1 pac_validRealKinds)
+ list (GET PROG_OUTPUT 2 ${HDF_PREFIX}_PAC_FC_MAX_REAL_PRECISION)
+@@ -261,19 +263,20 @@
+ string (REGEX REPLACE "," ";" VAR "${pac_validIntKinds}")
+ 
+ foreach (KIND ${VAR})
+-  set (PROG_SRC_${KIND}
+-  "
+-       PROGRAM main
+-          USE ISO_C_BINDING
+-          USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY : stdout=>OUTPUT_UNIT
+-          IMPLICIT NONE
+-          INTEGER (KIND=${KIND}) a
+-          WRITE(stdout,'(I0)') ${FC_SIZEOF_A}
+-       END
+-   "
+-  )
+-  FORTRAN_RUN("INTEGER KIND SIZEOF" ${PROG_SRC_${KIND}} XX YY VALIDINTKINDS_RESULT_${KIND} PROG_OUTPUT1)
+-  string (REGEX REPLACE "[\r\n]+" "" PROG_OUTPUT1 "${PROG_OUTPUT1}")
++  # set (PROG_SRC_${KIND}
++  # "
++  #      PROGRAM main
++  #         USE ISO_C_BINDING
++  #         USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY : stdout=>OUTPUT_UNIT
++  #         IMPLICIT NONE
++  #         INTEGER (KIND=${KIND}) a
++  #         WRITE(stdout,'(I0)') ${FC_SIZEOF_A}
++  #      END
++  #  "
++  # )
++  # FORTRAN_RUN("INTEGER KIND SIZEOF" ${PROG_SRC_${KIND}} XX YY VALIDINTKINDS_RESULT_${KIND} PROG_OUTPUT1)
++  # string (REGEX REPLACE "[\r\n]+" "" PROG_OUTPUT1 "${PROG_OUTPUT1}")
++  set (PROG_OUTPUT1 "${VALIDINTKINDS_RESULT_${KIND}}")
+   set (pack_int_sizeof "${pack_int_sizeof} ${PROG_OUTPUT1},")
+ endforeach ()
+ 
+@@ -302,19 +305,20 @@
+ list (GET VAR ${_LEN} max_real_fortran_kind)
+ 
+ foreach (KIND ${VAR} )
+-  set (PROG_SRC2_${KIND}
+-  "
+-       PROGRAM main
+-          USE ISO_C_BINDING
+-          USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY : stdout=>OUTPUT_UNIT
+-          IMPLICIT NONE
+-          REAL (KIND=${KIND}) a
+-          WRITE(stdout,'(I0)') ${FC_SIZEOF_A}
+-       END
+-  "
+-  )
+-  FORTRAN_RUN ("REAL KIND SIZEOF" ${PROG_SRC2_${KIND}} XX YY VALIDREALKINDS_RESULT_${KIND} PROG_OUTPUT2)
+-  string (REGEX REPLACE "[\r\n]+" "" PROG_OUTPUT2 "${PROG_OUTPUT2}")
++  # set (PROG_SRC2_${KIND}
++  # "
++  #      PROGRAM main
++  #         USE ISO_C_BINDING
++  #         USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY : stdout=>OUTPUT_UNIT
++  #         IMPLICIT NONE
++  #         REAL (KIND=${KIND}) a
++  #         WRITE(stdout,'(I0)') ${FC_SIZEOF_A}
++  #      END
++  # "
++  # )
++  # FORTRAN_RUN ("REAL KIND SIZEOF" ${PROG_SRC2_${KIND}} XX YY VALIDREALKINDS_RESULT_${KIND} PROG_OUTPUT2)
++  # string (REGEX REPLACE "[\r\n]+" "" PROG_OUTPUT2 "${PROG_OUTPUT2}")
++  set (PROG_OUTPUT2 "${VALIDREALKINDS_RESULT_${KIND}}")
+   set (pack_real_sizeof "${pack_real_sizeof} ${PROG_OUTPUT2},")
+ endforeach ()
+ 
+@@ -344,35 +348,37 @@
+ #-----------------------------------------------------------------------------
+ # Find sizeof of native kinds
+ #-----------------------------------------------------------------------------
+-set (PROG_SRC3
+-  "
+-       PROGRAM main
+-          USE ISO_C_BINDING
+-          USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY : stdout=>OUTPUT_UNIT
+-          IMPLICIT NONE
+-          INTEGER a
+-          REAL b
+-          DOUBLE PRECISION c
+-          WRITE(stdout,*) ${FC_SIZEOF_A}
+-          WRITE(stdout,*) kind(a)
+-          WRITE(stdout,*) ${FC_SIZEOF_B}
+-          WRITE(stdout,*) kind(b)
+-          WRITE(stdout,*) ${FC_SIZEOF_C}
+-          WRITE(stdout,*) kind(c)
+-       END
+-  "
+-)
+-FORTRAN_RUN ("SIZEOF NATIVE KINDs" ${PROG_SRC3} XX YY PAC_SIZEOF_NATIVE_KINDS_RESULT PROG_OUTPUT3)
+-# The output from the above program will be:
+-#    -- LINE 1 --  sizeof INTEGER
+-#    -- LINE 2 --  kind of INTEGER
+-#    -- LINE 3 --  sizeof REAL
+-#    -- LINE 4 --  kind of REAL
+-#    -- LINE 5 --  sizeof DOUBLE PRECISION
+-#    -- LINE 6 --  kind of DOUBLE PRECISION
+-#
+-# Convert the string to a list of strings by replacing the carriage return with a semicolon
+-string (REGEX REPLACE "[\r\n]+" ";" PROG_OUTPUT3 "${PROG_OUTPUT3}")
++# set (PROG_SRC3
++#   "
++#        PROGRAM main
++#           USE ISO_C_BINDING
++#           USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY : stdout=>OUTPUT_UNIT
++#           IMPLICIT NONE
++#           INTEGER a
++#           REAL b
++#           DOUBLE PRECISION c
++#           WRITE(stdout,*) ${FC_SIZEOF_A}
++#           WRITE(stdout,*) kind(a)
++#           WRITE(stdout,*) ${FC_SIZEOF_B}
++#           WRITE(stdout,*) kind(b)
++#           WRITE(stdout,*) ${FC_SIZEOF_C}
++#           WRITE(stdout,*) kind(c)
++#        END
++#   "
++# )
++# FORTRAN_RUN ("SIZEOF NATIVE KINDs" ${PROG_SRC3} XX YY PAC_SIZEOF_NATIVE_KINDS_RESULT PROG_OUTPUT3)
++# # The output from the above program will be:
++# #    -- LINE 1 --  sizeof INTEGER
++# #    -- LINE 2 --  kind of INTEGER
++# #    -- LINE 3 --  sizeof REAL
++# #    -- LINE 4 --  kind of REAL
++# #    -- LINE 5 --  sizeof DOUBLE PRECISION
++# #    -- LINE 6 --  kind of DOUBLE PRECISION
++# #
++# # Convert the string to a list of strings by replacing the carriage return with a semicolon
++# string (REGEX REPLACE "[\r\n]+" ";" PROG_OUTPUT3 "${PROG_OUTPUT3}")
++
++set (PROG_OUTPUT3 "${PAC_SIZEOF_NATIVE_KINDS_RESULT}")
+ 
+ list (GET PROG_OUTPUT3 0 PAC_FORTRAN_NATIVE_INTEGER_SIZEOF)
+ list (GET PROG_OUTPUT3 1 PAC_FORTRAN_NATIVE_INTEGER_KIND)
+diff -ru hdf5-1.14.5.orig/fortran/src/CMakeLists.txt hdf5-1.14.5/fortran/src/CMakeLists.txt
+--- hdf5-1.14.5.orig/fortran/src/CMakeLists.txt	2024-09-30 12:07:53
++++ hdf5-1.14.5/fortran/src/CMakeLists.txt	2025-01-25 17:12:34
+@@ -131,7 +131,8 @@
+ 
+ add_custom_command (TARGET H5match_types POST_BUILD
+     BYPRODUCTS ${HDF5_F90_BINARY_DIR}/H5f90i_gen.h ${HDF5_F90_BINARY_DIR}/H5fortran_types.F90
+-    COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:H5match_types>
++    # COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:H5match_types>
++    COMMAND cp ${HDF5_SRC_SOURCE_DIR}/../saved/H5fortran_types.F90 ${HDF5_SRC_SOURCE_DIR}/../saved/H5f90i_gen.h .
+     WORKING_DIRECTORY ${HDF5_F90_BINARY_DIR}
+     DEPENDS H5match_types
+ )
+@@ -284,7 +285,8 @@
+ )
+ add_custom_command (TARGET H5_buildiface POST_BUILD
+     BYPRODUCTS ${HDF5_F90_BINARY_DIR}/H5_gen.F90
+-    COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:H5_buildiface>
++    # COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:H5_buildiface>
++    COMMAND cp ${HDF5_SRC_SOURCE_DIR}/../saved/H5_gen.F90 .
+     WORKING_DIRECTORY ${HDF5_F90_BINARY_DIR}
+     DEPENDS H5_buildiface ${f90_F_GEN_SOURCES}
+     COMMENT "Generating the H5_gen.F90 file"
+diff -ru hdf5-1.14.5.orig/hl/fortran/src/CMakeLists.txt hdf5-1.14.5/hl/fortran/src/CMakeLists.txt
+--- hdf5-1.14.5.orig/hl/fortran/src/CMakeLists.txt	2024-09-30 12:07:53
++++ hdf5-1.14.5/hl/fortran/src/CMakeLists.txt	2025-01-25 17:12:28
+@@ -114,7 +114,8 @@
+ if (BUILD_STATIC_LIBS)
+   add_custom_command (TARGET H5HL_buildiface POST_BUILD
+       BYPRODUCTS ${HDF5_HL_F90_BINARY_DIR}/static/H5LTff_gen.F90 ${HDF5_HL_F90_BINARY_DIR}/static/H5TBff_gen.F90
+-      COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:H5HL_buildiface>
++      # COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:H5HL_buildiface>
++      COMMAND cp ${HDF5_SRC_SOURCE_DIR}/../saved/H5LTff_gen.F90 ${HDF5_SRC_SOURCE_DIR}/../saved/H5TBff_gen.F90 .
+       WORKING_DIRECTORY ${HDF5_HL_F90_BINARY_DIR}/static
+       DEPENDS ${HDF5_HL_F90_F_BASE_SOURCES}
+       COMMENT "Generating the H5LTff_gen.F90, H5TBff_gen.F90 files"
+@@ -131,7 +132,8 @@
+ if (BUILD_SHARED_LIBS)
+   add_custom_command (TARGET H5HL_buildiface POST_BUILD
+       BYPRODUCTS ${HDF5_HL_F90_BINARY_DIR}/shared/H5LTff_gen.F90 ${HDF5_HL_F90_BINARY_DIR}/shared/H5TBff_gen.F90
+-      COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:H5HL_buildiface>
++      # COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:H5HL_buildiface>
++      COMMAND cp ${HDF5_SRC_SOURCE_DIR}/../saved/H5LTff_gen.F90 ${HDF5_SRC_SOURCE_DIR}/../saved/H5TBff_gen.F90 .
+       WORKING_DIRECTORY ${HDF5_HL_F90_BINARY_DIR}/shared
+       DEPENDS ${HDF5_HL_F90_F_BASE_SOURCES}
+       COMMENT "Generating the H5LTff_gen.F90, H5TBff_gen.F90 shared files"
