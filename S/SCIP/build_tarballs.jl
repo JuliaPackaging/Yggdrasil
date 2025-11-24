@@ -58,6 +58,9 @@ for dir in scip soplex; do
 done
 """
 
+# This requires macOS 10.13
+sources, script = require_macos_sdk("10.13", sources, script)
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
