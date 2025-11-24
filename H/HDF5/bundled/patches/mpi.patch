@@ -15,7 +15,7 @@ index 3e0fc3abf4..65c9be2522 100644
  static subfiling_context_t **sf_context_cache  = NULL;
  static sf_topology_t       **sf_topology_cache = NULL;
 diff --git a/src/H5Pfapl.c b/src/H5Pfapl.c
-index 118196ea47..56d7c0d284 100644
+index 942cc67324..62d5909c71 100644
 --- a/src/H5Pfapl.c
 +++ b/src/H5Pfapl.c
 @@ -523,8 +523,12 @@ static const H5P_coll_md_read_flag_t H5F_def_coll_md_read_flag_g =
