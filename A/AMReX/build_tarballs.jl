@@ -2,8 +2,10 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
+
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "AMReX"
 version_string = "25.11"
@@ -13,19 +15,11 @@ version = VersionNumber(version_string)
 sources = [
     ArchiveSource("https://github.com/AMReX-Codes/amrex/releases/download/$(version_string)/amrex-$(version_string).tar.gz",
                   "be9e5f04e1f3e2252a14e5bb817fb4f2c231e0901ef85ee4e14341616f6b1ba6"),
-    FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-               "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/amrex
-
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    rm -rf /opt/${target}/${target}/sys-root/System
-    tar --extract --file=${WORKSPACE}/srcdir/MacOSX10.14.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX10.14.sdk/System MacOSX10.14.sdk/usr
-    export MACOSX_DEPLOYMENT_TARGET=10.14
-fi
 
 # Correct HDF5 compiler wrappers
 perl -pi -e 's+-I/workspace/srcdir/hdf5-1[.]14[.]./src/H5FDsubfiling++' $(which h5pcc)
@@ -82,6 +76,8 @@ fi
 
 install_license LICENSE
 """
+
+sources, script = require_macos_sdk("10.14", sources, script)
 
 augment_platform_block = """
     using Base.BinaryPlatforms

@@ -1,6 +1,7 @@
 using BinaryBuilder, Pkg
 
-include("../../fancy_toys.jl") # for should_build_platform
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 if !@isdefined host_build
   host_build = false

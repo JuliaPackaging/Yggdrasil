@@ -3,14 +3,15 @@
 using BinaryBuilder, Pkg
 
 name = "SCIP"
-upstream_version = v"9.2.2"
+
+upstream_version = v"9.2.4"
 version = VersionNumber(upstream_version.major * 100, upstream_version.minor * 100, upstream_version.patch * 100)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource(
-        "https://scipopt.org/download/release/scipoptsuite-$(upstream_version).tgz",
-        "1a6d5b2bceb99faf1facbd6cd79e4a3eb8de60ed1d480281f12ae5c540d4a8a4"
+        "https://github.com/scipopt/scip/releases/download/v924/scipoptsuite-$(upstream_version).tgz",
+        "4327736efa07a83eb08580d339409936dfe40864a1670dc5fc75d3e3df78d290"
     ),
 ]
 

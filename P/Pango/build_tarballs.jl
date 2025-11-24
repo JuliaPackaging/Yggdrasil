@@ -9,30 +9,12 @@ version = v"1.57.0"
 sources = [
     ArchiveSource("http://ftp.gnome.org/pub/GNOME/sources/pango/$(version.major).$(version.minor)/pango-$(version).tar.xz",
                   "890640c841dae77d3ae3d8fe8953784b930fa241b17423e6120c7bfdf8b891e7"),
-    ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v11.0.0.tar.bz2",
-                  "bd0ea1633bd830204cc23a696889335e9d4a32b8619439ee17f22188695fcc5f"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 
 apk add glib-dev
-
-if [[ "${target}" == *-mingw* ]]; then
-    cd $WORKSPACE/srcdir/mingw*/mingw-w64-headers
-    ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target
-    make install
-
-    cd ../mingw-w64-crt/
-    if [ ${target} == "i686-w64-mingw32" ]; then
-        _crt_configure_args="--disable-lib64 --enable-lib32"
-    elif [ ${target} == "x86_64-w64-mingw32" ]; then
-        _crt_configure_args="--disable-lib32 --enable-lib64"
-    fi
-    ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target --enable-wildcard ${_crt_configure_args}
-    make -j${nproc}
-    make install
-fi
 
 cd $WORKSPACE/srcdir/pango*
 
