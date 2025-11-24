@@ -2,14 +2,15 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "ParseGen"
 version = v"2.0.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/sandialabs/parsegen-cpp/archive/refs/tags/v$(version).tar.gz", "c6c7c4958d1c6ab77bf0970b5aacae4b63603f702666492638ee8c0bdf3125c8"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-    "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 # Bash recipe for building across all platforms
@@ -18,16 +19,6 @@ cd $WORKSPACE/srcdir/parsegen-cpp*/
 
 install_license LICENSE
 mkdir build && cd build
-
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    export MACOSX_DEPLOYMENT_TARGET=10.15
-    #install a newer SDK which supports `std::filesystem`
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    popd
-fi
 
 cmake .. \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -38,6 +29,9 @@ cmake .. \
 make -j${nproc}
 make install
 """
+
+# install a newer SDK which supports `std::filesystem`
+sources, script = require_macos_sdk("10.15", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
