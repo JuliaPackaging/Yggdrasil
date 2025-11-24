@@ -6,12 +6,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Qt6Positioning"
-version = v"6.7.1"
+version = v"6.8.2"
 
 # Collection of sources required to build qt6
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtpositioning-everywhere-src-$version.tar.xz",
-                  "5c2b0d46b8d35126e97c8efe22264b2de7ac1273a5ec38a0314731bb02804f53"),
+                  "df30664f4e936466a7e1157ff26abc61efb5e94c9eb8750e1bcdffeec95db8e5"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/13.3/MacOSX13.3.sdk.tar.xz",
                   "e5d0f958a079106234b3a840f93653308a76d3dcea02d3aa8f2841f8df33050c"),
 ]
