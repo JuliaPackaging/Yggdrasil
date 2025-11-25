@@ -92,10 +92,10 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
     Dependency("LLVMOpenMP_jll"; platforms=filter(Sys.isbsd, platforms)),
 
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.11.0")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version="1.11.0")),
 
     # this version matches the one in Ipopt_jll (needed by polymake -> SCIP)
-    BuildDependency(PackageSpec(;name="libblastrampoline_jll", version = v"5.4.0")),
+    BuildDependency(PackageSpec(;name="libblastrampoline_jll", version = "5.4.0")),
 
     Dependency("libcxxwrap_julia_jll"; compat = "~0.14.5"),
     Dependency("libpolymake_julia_jll", compat = "=0.14.4"),

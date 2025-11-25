@@ -52,7 +52,7 @@ dependencies = [
     Dependency("legate_jll"; compat = "=25.10"), # Legate versioning is Year.Month
     # Dependency("CUTENSOR_jll", compat = "2.2"), # supplied via ArchiveSource
     Dependency("OpenBLAS32_jll"),
-    HostBuildDependency(PackageSpec(; name = "CMake_jll", version = v"3.31.9")),
+    HostBuildDependency(PackageSpec(; name = "CMake_jll", version = "3.31.9")),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")) 
 ]
 

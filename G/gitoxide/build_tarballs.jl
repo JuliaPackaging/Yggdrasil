@@ -47,7 +47,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     # We need libclang_rt.osx.a for linking the program.
-    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=v"12.0.0");
+    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version="12.0.0");
                     platforms=filter(Sys.isapple, platforms)),
     Dependency("OpenSSL_jll"; compat="3.0.16"),
 ]
