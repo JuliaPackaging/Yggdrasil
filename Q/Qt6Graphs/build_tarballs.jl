@@ -2,9 +2,6 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-const YGGDRASIL_DIR = "../.."
-include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
-
 name = "Qt6Graphs"
 version = v"6.8.2"
 
@@ -36,8 +33,6 @@ cmake --build . --parallel ${nproc}
 cmake --install .
 install_license $WORKSPACE/srcdir/qt*-src-*/LICENSES/GPL-3.0-only.txt
 """
-
-sources, script = require_macos_sdk("14.0", sources, script; deployment_target="12")
 
 # Get the common Qt platforms
 include("../Qt6Base/common.jl")
