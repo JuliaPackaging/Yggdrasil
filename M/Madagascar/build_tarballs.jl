@@ -3,42 +3,72 @@
 using BinaryBuilder, Pkg
 
 name = "Madagascar"
-version = v"1.0.0"
+version = v"1.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ahay/src.git", "3a10302c63c69317df3f6f741347e7f77a2f3d58")
+    GitSource("https://github.com/ahay/src.git", "87b34bd9928438bbdaf0f1e96d2ce343f267fb21"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/src
+cd $WORKSPACE/srcdir/
+
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 -l ${f}
+done
+
+cd src
+
+export SCONSFLAGS="-j ${nproc}"
+
+platform_config=()
+
+if [[ "${target}" == aarch64-apple-* ]]; then
+    platform_config+=(LINKFLAGS="-L${libdir}/darwin -lclang_rt.osx")
+fi
+
+platform="linux"
+
+if [[ "${target}" == *-apple-* ]]; then 
+    platform="darwin"
+fi
+
+blas="blastrampoline"
+
+if [[ "${target}" == *-freebsd* ]]; then
+    CC=gcc
+    CXX=g++
+fi
 
 # install_license
 install_license COPYING.txt
 
-./configure --prefix=${prefix} CC=$(which gcc) CXX=$(which g++) CAIROPATH=${includedir}/cairo FFMPEGPATH=${includedir}/libavcodec/ AR=$(which ar) CPPPATH=${includedir} LIBPATH=${libdir} BLAS=openblas
+./configure --prefix=${prefix} CC=$CC CXX=$CXX \
+            FFMPEGPATH=${includedir}/libavcodec/ \
+            CAIROPATH=${includedir}/cairo \
+            CPPPATH=${includedir} \
+            LIBPATH=${libdir} \
+            BLAS=${blas} \
+            PLATFORM="${platform}" \
+            "${platform_config[@]}" \
+            ..
 
-make -j ${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc")
-]
-
+platforms = expand_cxxstring_abis(supported_platforms())
+platforms = filter(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libdrsf++", :libdrsfpp),
     LibraryProduct("libdrsfpwd", :libdrsfpwd),
     LibraryProduct("libdrsf", :libdrsf),
     LibraryProduct("libdsu", :libdsu),
     LibraryProduct("libdrsfplot", :libdrsfplot),
-    LibraryProduct("libdrsfgee", :libdrsfgee),
     ExecutableProduct("sfpdr2d", :sfpdr2d),
     ExecutableProduct("sfpldb", :sfpldb),
     ExecutableProduct("sfisaac2", :sfisaac2),
@@ -406,7 +436,7 @@ products = [
     ExecutableProduct("sfkarman2", :sfkarman2),
     ExecutableProduct("sfmiss43", :sfmiss43),
     ExecutableProduct("sfwindow", :sfwindow),
-    ExecutableProduct("sfclfdc1-bak", :sfclfdc1bak),
+    ExecutableProduct("sfclfdc1-bak", :sfclfdc1_bak),
     ExecutableProduct("sfopame2dckxx", :sfopame2dckxx),
     ExecutableProduct("sfpwarp", :sfpwarp),
     ExecutableProduct("sfconvert0eq", :sfconvert0eq),
@@ -485,7 +515,7 @@ products = [
     ExecutableProduct("sffowler2", :sffowler2),
     ExecutableProduct("sfsyntop", :sfsyntop),
     ExecutableProduct("sfplanesignoi", :sfplanesignoi),
-    ExecutableProduct("sfpathmin-mov", :sfpathminmov),
+    ExecutableProduct("sfpathmin-mov", :sfpathmin_mov),
     ExecutableProduct("sftkirmig", :sftkirmig),
     ExecutableProduct("sffourbreg2", :sffourbreg2),
     ExecutableProduct("sfdsr2", :sfdsr2),
@@ -501,7 +531,7 @@ products = [
     ExecutableProduct("sfmiss2", :sfmiss2),
     ExecutableProduct("sfresamplextnd", :sfresamplextnd),
     ExecutableProduct("sfcicop3d", :sfcicop3d),
-    ExecutableProduct("sfsurface-consistent", :sfsurfaceconsistent),
+    ExecutableProduct("sfsurface-consistent", :sfsurface_consistent),
     ExecutableProduct("sffxspfint2", :sffxspfint2),
     ExecutableProduct("sfzomig", :sfzomig),
     ExecutableProduct("sftwodip2", :sftwodip2),
@@ -521,7 +551,7 @@ products = [
     ExecutableProduct("sflmo", :sflmo),
     ExecutableProduct("sfapefsignoi", :sfapefsignoi),
     ExecutableProduct("sfcompare", :sfcompare),
-    ExecutableProduct("sfdespike2-ed", :sfdespike2ed),
+    ExecutableProduct("sfdespike2-ed", :sfdespike2_ed),
     ExecutableProduct("sfthreshold2", :sfthreshold2),
     ExecutableProduct("sfitrace", :sfitrace),
     ExecutableProduct("sfatm1", :sfatm1),
@@ -720,7 +750,7 @@ products = [
     ExecutableProduct("sftti3delrsepSH", :sftti3delrsepSH),
     ExecutableProduct("sfinmo3gma", :sfinmo3gma),
     ExecutableProduct("sfdvscan2d", :sfdvscan2d),
-    ExecutableProduct("sfdtw-apply", :sfdtwapply),
+    ExecutableProduct("sfdtw-apply", :sfdtw_apply),
     ExecutableProduct("sfffdtti2", :sfffdtti2),
     ExecutableProduct("sfxcor2", :sfxcor2),
     ExecutableProduct("sfepfbe", :sfepfbe),
@@ -815,7 +845,7 @@ products = [
     ExecutableProduct("sfsrmig3", :sfsrmig3),
     ExecutableProduct("sfbin2rsf", :sfbin2rsf),
     ExecutableProduct("sfmmssrc", :sfmmssrc),
-    ExecutableProduct("sfdtw-flatten", :sfdtwflatten),
+    ExecutableProduct("sfdtw-flatten", :sfdtw_flatten),
     ExecutableProduct("sfpsefd", :sfpsefd),
     ExecutableProduct("sftti2delrsep2p", :sftti2delrsep2p),
     ExecutableProduct("pngpen", :pngpen),
@@ -966,7 +996,7 @@ products = [
     ExecutableProduct("sfgammapick2d", :sfgammapick2d),
     ExecutableProduct("sfbil1", :sfbil1),
     ExecutableProduct("sfcramdd", :sfcramdd),
-    ExecutableProduct("sfdtw-accumulate", :sfdtwaccumulate),
+    ExecutableProduct("sfdtw-accumulate", :sfdtw_accumulate),
     ExecutableProduct("sfacd2d", :sfacd2d),
     ExecutableProduct("sfpwdtensorh", :sfpwdtensorh),
     ExecutableProduct("sfsegyheader", :sfsegyheader),
@@ -988,7 +1018,7 @@ products = [
     ExecutableProduct("sfcic3d_ditthara", :sfcic3d_ditthara),
     ExecutableProduct("sfduffing1", :sfduffing1),
     ExecutableProduct("sfnhelicon", :sfnhelicon),
-    ExecutableProduct("sfdespike1-ed", :sfdespike1ed),
+    ExecutableProduct("sfdespike1-ed", :sfdespike1_ed),
     ExecutableProduct("sfshape", :sfshape),
     ExecutableProduct("sfmms1dexp", :sfmms1dexp),
     ExecutableProduct("sfosam2dckxxzz", :sfosam2dckxxzz),
@@ -1092,7 +1122,7 @@ products = [
     ExecutableProduct("sfpseudodepth", :sfpseudodepth),
     ExecutableProduct("sfpwcascade3", :sfpwcascade3),
     ExecutableProduct("sfsparsify", :sfsparsify),
-    ExecutableProduct("sfdtw-errors", :sfdtwerrors),
+    ExecutableProduct("sfdtw-errors", :sfdtw_errors),
     ExecutableProduct("sfcovariance2d", :sfcovariance2d),
     ExecutableProduct("sftti2dpseudoplrsep", :sftti2dpseudoplrsep),
     ExecutableProduct("sfseislet1", :sfseislet1),
@@ -1691,7 +1721,7 @@ products = [
     ExecutableProduct("sfmpifwi", :sfmpifwi),
     ExecutableProduct("sfortholr3", :sfortholr3),
     ExecutableProduct("sftti3delrsepP", :sftti3delrsepP),
-    ExecutableProduct("sfcfftexpa-dev", :sfcfftexpadev),
+    ExecutableProduct("sfcfftexpa-dev", :sfcfftexpa_dev),
     ExecutableProduct("sfescst3", :sfescst3),
     ExecutableProduct("sfthreads", :sfthreads),
     ExecutableProduct("sflosignoi", :sflosignoi),
@@ -1710,7 +1740,7 @@ products = [
     ExecutableProduct("sfcfftwave1in", :sfcfftwave1in),
     ExecutableProduct("sffftwave2p", :sffftwave2p),
     ExecutableProduct("sfwaveab", :sfwaveab),
-    ExecutableProduct("sfdtw-interp", :sfdtwinterp),
+    ExecutableProduct("sfdtw-interp", :sfdtw_interp),
     ExecutableProduct("sfwlslfdc1", :sfwlslfdc1),
     ExecutableProduct("sfefd3dmt", :sfefd3dmt),
     ExecutableProduct("sfshot2cmp", :sfshot2cmp),
@@ -1793,7 +1823,7 @@ products = [
     ExecutableProduct("sflocalsnr", :sflocalsnr),
     ExecutableProduct("sfmandelbrot", :sfmandelbrot),
     ExecutableProduct("sfmake", :sfmake),
-    ExecutableProduct("sfdtw-track", :sfdtwtrack),
+    ExecutableProduct("sfdtw-track", :sfdtw_track),
     ExecutableProduct("sfxcor2d", :sfxcor2d),
     ExecutableProduct("sfdsmooth", :sfdsmooth),
     ExecutableProduct("sfreciprocity", :sfreciprocity),
@@ -1875,10 +1905,14 @@ dependencies = [
     Dependency(PackageSpec(name="FFMPEG_jll", uuid="b22a6f82-2f65-5046-a5b2-351ab43fb4e5"))
     Dependency(PackageSpec(name="Cairo_jll", uuid="83423d85-b0ee-5818-9007-b63ccbeb887a"))
     Dependency(PackageSpec(name="MPICH_jll", uuid="7cb0a576-ebde-5e09-9194-50597f1243b4"))
-    Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"))
-    Dependency(PackageSpec(name="LAPACK32_jll", uuid="17f450c3-bd24-55df-bb84-8c51b4b939e3"))
+    Dependency(PackageSpec(name="OpenBLAS_jll", uuid="4536629a-c528-5b80-bd46-f80d51c5b363"))
+    Dependency(PackageSpec(name="LAPACK_jll", uuid="51474c39-65e3-53ba-86ba-03b1b862ec14"))
     Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a"))
+    Dependency(PackageSpec(name="Libtiff_jll", uuid="89763e89-9b03-5906-acba-b20f662cd828"))
+    Dependency(PackageSpec(name="LibGD_jll", uuid="16339573-6216-525a-b38f-30b6f6b71b5f"))
+    Dependency(PackageSpec(name="JpegTurbo_jll", uuid="aacddb02-875f-59d6-b918-886e6ef4fbf8"))
+    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11"); platforms=[Platform("aarch64", "macos")])
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"10.2.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"10")
