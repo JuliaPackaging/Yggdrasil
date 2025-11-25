@@ -3,11 +3,12 @@ using Base.BinaryPlatforms
 
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-reactant_commit = "d5c3001d07368d6ef56c4177d58c713e21c23fae"
-version = v"0.0.262"
+reactant_commit = "100135872d2a0793f7726de06bf46bc1871f4567"
+version = v"0.0.265"
 
 sources = [
    GitSource(repo, reactant_commit),
@@ -44,23 +45,6 @@ GCC_MAJOR_VERSION=$(echo "${GCC_VERSION}" | cut -d. -f1)
 # Change Enzyme-JAX commit, necessary in CI of that repository.
 if [[ -n "${ENZYME_JAX_COMMIT}" ]]; then
    sed -i.bak 's/ENZYMEXLA_COMMIT = ".*"/ENZYMEXLA_COMMIT = "'${ENZYME_JAX_COMMIT}'"/' WORKSPACE
-fi
-
-if [[ "${target}" == *-apple-darwin* ]]; then
-    cd ${WORKSPACE}/srcdir
-    tar xf MacOSX*.sdk.tar.xz
-    cd -
-    # Compiling LLVM components within XLA requires macOS SDK 10.14
-    # and then we use `std::reinterpret_pointer_cast` in ReactantExtra
-    # which requires macOS SDK 11.3.
-    # Install a newer SDK which supports C++20
-    pushd $WORKSPACE/srcdir/MacOSX12.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    rm -rf /opt/${target}/${target}/sys-root/usr/*
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    popd
-    export MACOSX_DEPLOYMENT_TARGET=12.3
 fi
 
 if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
@@ -624,6 +608,13 @@ install -Dvm 755 bazel-bin/libReactantExtra.so "${libdir}/libReactantExtra.${dle
 install_license ../../LICENSE
 """
 
+# Compiling LLVM components within XLA requires macOS SDK 10.14
+# and then we use `std::reinterpret_pointer_cast` in ReactantExtra
+# which requires macOS SDK 11.3.
+# Install a newer SDK which supports C++20
+sources, script = require_macos_sdk("12.3", sources, script)
+
+
 # determine exactly which tarballs we should build
 builds = []
 
@@ -784,11 +775,6 @@ for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), cuda_version in ("n
     HERMETIC_ROCM_VERSION=$(hermetic_rocm_version_map[rocm_version])
     """
     platform_sources = BinaryBuilder.AbstractSource[sources...]
-    if Sys.isapple(platform)
-        push!(platform_sources,
-    	FileSource("https://github.com/realjf/MacOSX-SDKs/releases/download/v0.0.1/MacOSX12.3.sdk.tar.xz",
-		  "a511c1cf1ebfe6fe3b8ec005374b9c05e89ac28b3d4eb468873f59800c02b030"))
-    end
 
     if arch(platform) == "aarch64" && gpu == "cuda"
         if hermetic_cuda_version_map[cuda_version] == "13.0.1"

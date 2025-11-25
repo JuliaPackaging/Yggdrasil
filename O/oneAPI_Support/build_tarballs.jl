@@ -1,5 +1,8 @@
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+
 name = "oneAPI_Support"
 version = v"0.9.2"
 
@@ -224,7 +227,7 @@ dependencies = [
 ]
 
 non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
-include("../../fancy_toys.jl")
+
 filter!(platform_sources) do (platform, sources)
     should_build_platform(triplet(platform))
 end

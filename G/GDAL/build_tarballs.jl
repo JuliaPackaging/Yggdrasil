@@ -2,6 +2,9 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "GDAL"
 upstream_version = v"3.12.0"
 # The version offset is used for two purposes:
@@ -22,8 +25,6 @@ sources = [
     # We use the previous commit instead. The missing commit is inconsequential for a source build.
     GitSource("https://github.com/OSGeo/gdal.git",
         "6d3d306c07e0146859364d7ec6e9e0225fc98208"),
-    FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-        "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
     DirectorySource("./bundled"),
 ]
 
@@ -41,18 +42,6 @@ if [[ "${target}" == *-freebsd* ]]; then
     # be a problem at runtime. The flag `-undefined` allows having undefined symbols.
     # The flag `-lexecinfo` fixes "undefined reference to `backtrace'".
     export LDFLAGS="-lexecinfo -undefined"
-fi
-
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    # Work around the issue
-    # /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/local/include/arrow/type.h:1745:36: error: 'get<arrow::FieldPath, arrow::FieldPath, std::basic_string<char>, std::vector<arrow::FieldRef>>' is unavailable: introduced in macOS 10.14
-    #     if (IsFieldPath()) return std::get<FieldPath>(impl_).indices().size() > 1;
-    #                                    ^
-    # /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/include/c++/v1/variant:1394:22: note: 'get<arrow::FieldPath, arrow::FieldPath, std::basic_string<char>, std::vector<arrow::FieldRef>>' has been explicitly marked unavailable here
-    export MACOSX_DEPLOYMENT_TARGET=10.15
-    # ...and install a newer SDK
-    rm -rf /opt/${target}/${target}/sys-root/System
-    tar --extract --file=${WORKSPACE}/srcdir/MacOSX10.15.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX10.15.sdk/System MacOSX10.15.sdk/usr
 fi
 
 CMAKE_FLAGS=(
@@ -114,6 +103,14 @@ cmake --install build
 
 install_license LICENSE.TXT
 """
+
+# Work around the issue
+# /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/local/include/arrow/type.h:1745:36: error: 'get<arrow::FieldPath, arrow::FieldPath, std::basic_string<char>, std::vector<arrow::FieldRef>>' is unavailable: introduced in macOS 10.14
+#     if (IsFieldPath()) return std::get<FieldPath>(impl_).indices().size() > 1;
+#                                    ^
+# /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/include/c++/v1/variant:1394:22: note: 'get<arrow::FieldPath, arrow::FieldPath, std::basic_string<char>, std::vector<arrow::FieldRef>>' has been explicitly marked unavailable here
+# ...and install a newer SDK
+sources, script = require_macos_sdk("10.15", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line

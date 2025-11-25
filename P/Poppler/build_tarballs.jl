@@ -2,6 +2,9 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "Poppler"
 version_str = "24.06.0"
 version = VersionNumber(version_str)
@@ -10,8 +13,6 @@ version = VersionNumber(version_str)
 sources = [
     ArchiveSource("https://poppler.freedesktop.org/poppler-$(version_str).tar.xz",
                   "0cdabd495cada11f6ee9e75c793f80daf46367b66c25a63ee8c26d0f9ec40c76"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 # Bash recipe for building across all platforms
@@ -21,15 +22,6 @@ cd ${WORKSPACE}/srcdir/poppler-*
 if [[ "${target}" == "${MACHTYPE}" ]]; then
     # When building for the host platform, the system libexpat is picked up
     rm /usr/lib/libexpat.so*
-fi
-
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    export MACOSX_DEPLOYMENT_TARGET=10.14
-    popd
 fi
 
 export PATH=${host_bindir}:${PATH}
@@ -58,6 +50,8 @@ cmake -B build -G Ninja \
 cmake --build build --parallel ${nproc}
 cmake --install build
 """
+
+sources, script = require_macos_sdk("10.15", sources, script; deployment_target="10.14")
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
