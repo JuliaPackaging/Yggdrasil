@@ -12,11 +12,7 @@ sources = [
 ]
 
 script = raw"""
-cd $WORKSPACE/srcdir
-
-mkdir build
-cd build/
-qtsrcdir=`ls -d ../qtgraphs-*`
+cd $WORKSPACE/srcdir/qt*
 
 cmake -G Ninja \
     -DQT_HOST_PATH=$host_prefix \
@@ -27,11 +23,12 @@ cmake -G Ninja \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DQT_NO_APPLE_SDK_AND_XCODE_CHECK=ON \
     -DCMAKE_BUILD_TYPE=Release \
-    $qtsrcdir
+    -B build
 
-cmake --build . --parallel ${nproc}
-cmake --install .
-install_license $WORKSPACE/srcdir/qt*-src-*/LICENSES/GPL-3.0-only.txt
+cmake --build build --parallel ${nproc}
+cmake --install build
+
+install_license LICENSES/GPL-3.0-only.txt
 """
 
 # Get the common Qt platforms
