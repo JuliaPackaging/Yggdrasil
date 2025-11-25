@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "SIFDecode"
-version = v"2.6.1"
+version = v"3.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ralna/SIFDecode.git", "109022d949019b50c16703ec97289b6d28ed77b4")
+    GitSource("https://github.com/ralna/SIFDecode.git", "01fd4455c7d4e2b97f2992035208ebdf432ac46e")
 ]
 
 # Bash recipe for building across all platforms
@@ -16,7 +16,7 @@ script = raw"""
 cp ${host_prefix}/bin/ninja /usr/bin/ninja
 
 cd ${WORKSPACE}/srcdir/SIFDecode
-meson setup builddir --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson --prefix=$prefix -Ddefault_library=shared
+meson setup builddir --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson --prefix=$prefix
 meson compile -C builddir
 meson install -C builddir
 """
@@ -26,11 +26,13 @@ meson install -C builddir
 platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
 platforms = filter(p -> libgfortran_version(p) != v"3", platforms)
+platforms = filter(p -> libgfortran_version(p) != v"4", platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libsifdecode", :libsifdecode),
-    ExecutableProduct("sifdecoder_standalone", :sifdecoder_standalone),
+    ExecutableProduct("sifdecoder", :sifdecoder),
+    ExecutableProduct("clsf", :clsf),
+    ExecutableProduct("slct", :slct),
 ]
 
 # Dependencies that must be installed before this package can be built

@@ -4,6 +4,7 @@ using BinaryBuilder
 
 name = "Ncurses"
 version = v"6.5.0"
+ygg_version = v"6.5.1" # Bump to build riscv, and will pull in new version of JLLWrappers
 
 # Collection of sources required to build Ncurses
 sources = [
@@ -101,4 +102,4 @@ end
 """
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", init_block)
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6", init_block)

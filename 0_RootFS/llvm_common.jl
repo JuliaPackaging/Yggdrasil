@@ -10,13 +10,17 @@
 #
 #      for p in ../../../LLVMBootstrap@X-1/bundled/patches/*.patch; do if [[ -L "${p}" ]]; then cp -a "${p}" .; else ln -s "${p}" .; fi; done
 #
+# * adapt the recipe as necessary, but try to make changes in a backward
+#   compatible way.  If you introduce steps that are necessary only with
+#   specific versions of LLVM, guard them with appropriate conditionals.  We may
+#   need to use the same recipe to rebuild older versions of LLVM at a later
+#   point and being able to rerun it as-is is extremely important
 # * you only need to build the platform `x86_64-linux-musl`. To deploy the shard
 #   and automatically update your BinaryBuilderBase's `Artifacts.toml`, use the
 #   `--deploy` flag to the `build_tarballs.jl` script.  You can build & deploy
 #   by running:
 #
 #      julia build_tarballs.jl --debug --verbose --deploy
-#
 
 include("./common.jl")
 
@@ -199,7 +203,10 @@ end
 function llvm_dependencies(; kwargs...)
     return [
         Dependency("Zlib_jll"),
-        Dependency("XML2_jll"),
+        # We had to restrict compat with XML2 because of ABI breakage:
+        # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
+        # Updating to `compat="~2.14.1"` is likely possible without problems but requires rebuilding this package
+        Dependency("XML2_jll"; compat="~2.13.6"),
 	# transitive dependency libiconv
     ]
 end

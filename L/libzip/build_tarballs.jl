@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libzip"
-version = v"1.11.2"
+version = v"1.11.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/nih-at/libzip.git", "64b62d6b1a686a1b0bac1b6b9dcb635be0499afb")
+    GitSource("https://github.com/nih-at/libzip.git", "f30f5290de485348442d168cd7b2eb714d1f20f9")
 ]
 
 # Bash recipe for building across all platforms
@@ -45,5 +45,3 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"6")
-
-# Build trigger: 1

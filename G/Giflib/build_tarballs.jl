@@ -3,11 +3,12 @@
 using BinaryBuilder
 
 name = "Giflib"
-version = v"5.2.2"
+upstream_version = v"5.2.2"
+version = v"5.2.3" # Needed to change version number to bump compat bounds, next time can go back to follow upstream
 
 # Collection of sources required to build Giflib
 sources = [
-    ArchiveSource("https://downloads.sourceforge.net/project/giflib/giflib-$(version).tar.gz",
+    ArchiveSource("https://downloads.sourceforge.net/project/giflib/giflib-$(upstream_version).tar.gz",
                   "be7ffbd057cadebe2aa144542fd90c6838c6a083b5e8a9048b8ee3b66b29d5fb"),
     DirectorySource("./bundled"),
 ]

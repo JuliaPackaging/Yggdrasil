@@ -3,21 +3,18 @@
 using BinaryBuilder
 
 name = "Xorg_libxkbfile"
-version = v"1.1.2"
+version = v"1.1.3"
 
 # Collection of sources required to build libxkbfile
 sources = [
     ArchiveSource("https://www.x.org/archive/individual/lib/libxkbfile-$(version).tar.xz",
-                  "b8a3784fac420b201718047cfb6c2d5ee7e8b9481564c2667b4215f6616644b1"),
+                  "a9b63eea997abb9ee6a8b4fbb515831c841f471af845a09de443b28003874bec"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libxkbfile-*/
-CPPFLAGS="-I${prefix}/include"
-# When compiling for things like ppc64le, we need newer `config.sub` files
-update_configure_scripts
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=no
+cd $WORKSPACE/srcdir/libxkbfile-*
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 """
@@ -39,4 +36,3 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
-# Build trigger: 1

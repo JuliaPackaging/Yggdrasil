@@ -1,20 +1,19 @@
 using BinaryBuilder
 
 name = "METIS"
-version = v"5.1.2" # <-- This is a lie, we're bumping to 5.1.1 to create a Julia v1.6+ release with experimental platforms
+version = v"5.1.3" # <-- This is a lie, we're bumping to 5.1.1 to create a Julia v1.6+ release with experimental platforms
 
 # Collection of sources required to build METIS
 sources = [
     # The official link to METIS 5.1.0 (http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/metis-5.1.0.tar.gz) is currently down.
-    ArchiveSource("https://github.com/xijunke/METIS-1/raw/refs/heads/master/metis-5.1.0.tar.gz",
-                  "76faebe03f6c963127dbb73c13eab58c9a3faeae48779f049066a21c087c5db2"),
+    GitSource("https://github.com/amontoison/METIS.git", "e827ffed17d56a4ac1add9cc33342c453a06c209"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 # Patches from https://github.com/msys2/MINGW-packages/tree/master/mingw-w64-metis
 script = raw"""
-cd $WORKSPACE/srcdir/metis-*
+cd $WORKSPACE/srcdir/METIS
 if [ $target = "x86_64-w64-mingw32" ] || [ $target = "i686-w64-mingw32" ]; then
     atomic_patch -p1 $WORKSPACE/srcdir/patches/0001-mingw-w64-does-not-have-sys-resource-h.patch
     atomic_patch -p1 $WORKSPACE/srcdir/patches/0002-mingw-w64-do-not-use-reserved-double-underscored-names.patch
@@ -31,11 +30,11 @@ build_metis()
 {
     METIS_PREFIX=${4:-${libdir}/metis/${1}}
     mkdir -p ${METIS_PREFIX}
-    cmake $WORKSPACE/srcdir/metis-5.1.0/ \
+    cmake $WORKSPACE/srcdir/METIS/ \
         -DCMAKE_INSTALL_PREFIX=${METIS_PREFIX} \
         -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
         -DCMAKE_VERBOSE_MAKEFILE=1 \
-        -DGKLIB_PATH=$WORKSPACE/srcdir/metis-5.1.0/GKlib \
+        -DGKLIB_PATH=$WORKSPACE/srcdir/METIS/GKlib \
         -DSHARED=1 \
         -DCMAKE_C_FLAGS="-DIDXTYPEWIDTH=${2} -DREALTYPEWIDTH=${3}" \
         -DBINARY_NAME="${1}"
@@ -69,4 +68,4 @@ dependencies = Dependency[]
 # Build the tarballs
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
 
-# Build trigger: 1
+# Build trigger: 2

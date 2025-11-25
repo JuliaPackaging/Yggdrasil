@@ -4,7 +4,7 @@ using BinaryBuilder
 
 name = "Libgpg_error"
 version_string = "1.51"
-version = VersionNumber(version_string)
+version = VersionNumber("1.51.1") # We had to change the version number to change compat bounds, but from next version we can go back to follow upstream version number
 
 # Collection of sources required to build Libgpg-Error
 sources = [

@@ -19,5 +19,6 @@ steps:
                 - .buildkite/Manifest.toml
                 - .buildkite/path_processors/per-project
                 - .buildkite/init.sh
+                - .buildkite/build.sh
                 - .buildkite/register.sh
     command: "true"

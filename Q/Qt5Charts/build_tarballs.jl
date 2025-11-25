@@ -2,6 +2,9 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+
 name = "Qt5Charts"
 version = v"5.15.2"
 
@@ -76,8 +79,6 @@ products_macos = [
 dependencies = [
     Dependency("Qt5Declarative_jll"),
 ]
-
-include("../../fancy_toys.jl")
 
 if any(should_build_platform.(triplet.(platforms_linux)))
     build_tarballs(ARGS, name, version, sources, script, platforms_linux, products, dependencies; preferred_gcc_version = v"7")

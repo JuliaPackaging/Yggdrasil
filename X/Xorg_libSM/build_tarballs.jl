@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Xorg_libSM"
-version = v"1.2.4"
+version = v"1.2.6"
 
 # Collection of sources required to build libSM
 sources = [
     ArchiveSource("https://www.x.org/archive/individual/lib/libSM-$(version).tar.xz",
-                  "fdcbe51e4d1276b1183da77a8a4e74a137ca203e0bcfb20972dd5f3347e97b84"),
+                  "be7c0abdb15cbfd29ac62573c1c82e877f9d4047ad15321e7ea97d1e43d835be"),
 ]
 
 # Bash recipe for building across all platforms
@@ -34,7 +34,7 @@ dependencies = [
     BuildDependency("Xorg_xtrans_jll"),
     BuildDependency("Xorg_xproto_jll"),
     BuildDependency("Xorg_util_macros_jll"),
-    Dependency("Xorg_libICE_jll"; compat="1.1.1"),
+    Dependency("Xorg_libICE_jll"; compat="1.1.2"),
 ]
 
 # Build the tarballs.

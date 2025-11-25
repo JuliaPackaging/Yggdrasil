@@ -3,54 +3,51 @@
 using BinaryBuilder, Pkg
 
 name = "MLX"
-version = v"0.21.1"
+version = v"0.25.1"
 
 sources = [
-    GitSource("https://github.com/ml-explore/mlx.git", "50fa7051259d31da0778133bc7456dc029471bff"),
+    GitSource("https://github.com/ml-explore/mlx.git", "eaf709b83e559079e212699bfc9dd2f939d25c9a"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
-    # Using the PyPI wheel for aarch64-apple-darwin to get the metal backend, which requires the `metal` compiler to build (which is practically impossible to use from the BinaryBuilder build env.)
-    FileSource("https://files.pythonhosted.org/packages/72/1f/267d7fb06eb257feb7c281f73472bcae9735c9a7c09fe86d9362069c85a7/mlx-0.21.1-cp313-cp313-macosx_13_0_arm64.whl", "88328c058f4765b0376ac908b49e6711d25f93e02b972b8e68b73a9e1c358eab"; filename = "mlx-aarch64-apple-darwin20.whl"),
-    DirectorySource("./bundled"),
+    # Using the PyPI wheel for aarch64-apple-darwin to get the metal backend, which would otherwise require the `metal` compiler to build (which is practically impossible to use from the BinaryBuilder build env.)
+    FileSource("https://files.pythonhosted.org/packages/02/1b/7da8f1d224a4287cdd5eda77d878a73ff13c22e2c89097bc6effcc5c318a/mlx-$(version)-cp313-cp313-macosx_13_0_arm64.whl", "f2ca5c2f60804bbb3968ee3e087ce4cf5789065f4c927f76b025b3f5f122a63a"; filename = "mlx-aarch64-apple-darwin20.whl"),
 ]
 
 script = raw"""
-apk del cmake # Need CMake >= 3.24
+apk del cmake # Need CMake >= 3.30 for BLA_VENDOR=libblastrampoline
 
 if [[ "$target" == *-apple-darwin* ]]; then
-    apple_sdk_root=$WORKSPACE/srcdir/MacOSX14.0.sdk
-    sed -i "s!/opt/$bb_target/$bb_target/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
-    sed -i "s!/opt/$bb_target/$bb_target/sys-root!$apple_sdk_root!" /opt/bin/$bb_full_target/$target-clang++
+    sdk_root=$WORKSPACE/srcdir/MacOSX14.0.sdk
+    sed -i "s#/opt/$bb_target/$bb_target/sys-root#$sdk_root#" $CMAKE_TARGET_TOOLCHAIN
+    sed -i "s#/opt/$bb_target/$bb_target/sys-root#$sdk_root#" /opt/bin/$bb_full_target/$target-clang*
 fi
 
 cd $WORKSPACE/srcdir/mlx
 
-if [[ "$target" == *-w64-mingw32* ]]; then
-    atomic_patch -p1 ../patches/cmake-win32-io.patch
-fi
-
 CMAKE_EXTRA_OPTIONS=()
 if [[ "$target" == x86_64-apple-darwin* ]]; then
-    CMAKE_EXTRA_OPTIONS+=("-DMLX_ENABLE_X64_MAC=ON")
-    export MACOSX_DEPLOYMENT_TARGET=13.3
-elif [[ "$target" == *-freebsd* ||
-        "$target" == *-w64-mingw32* ]]; then
     CMAKE_EXTRA_OPTIONS+=(
-        "-DMLX_BUILD_GGUF=OFF" # Disabled gguf, due to `gguflib-src/gguflib.c:4:10: fatal error: sys/mman.h: No such file or directory`
-        "-DMLX_BUILD_SAFETENSORS=OFF" # Disabled safetensors, due to `mlx/io/safetensors.cpp.obj:safetensors.cpp:(.rdata$.refptr._ZTVN3mlx4core2io18ParallelFileReaderE[.refptr._ZTVN3mlx4core2io18ParallelFileReaderE]+0x0): undefined reference to `vtable for mlx::core::io::ParallelFileReader'`
+        -DCMAKE_CXX_FLAGS=-Wno-psabi # Disabled psabi warnings, due to a lot being produced for mlx/backend/cpu/simd/accelerate_simd.h
+        -DMLX_ENABLE_X64_MAC=ON
+    )
+    export MACOSX_DEPLOYMENT_TARGET=13.3
+elif [[ "$target" == *-w64-mingw32* ]]; then
+    CMAKE_EXTRA_OPTIONS+=(
+        -DMLX_BUILD_GGUF=OFF # Disabled gguf, due to `gguflib-src/gguflib.c:4:10: fatal error: sys/mman.h: No such file or directory`
     )
 fi
 
 libblastrampoline_target=$(echo $bb_full_target | cut -d- -f 1-3)
 if [[ "$target" != *-apple-darwin* &&
-      "$libblastrampoline_target" != armv6l-linux-* &&
-      "$bb_full_target" != i686-linux-gnu-cxx11 ]]; then
+      "$target" != aarch64-unknown-freebsd* &&
+      "$libblastrampoline_target" != armv6l-linux-* ]]; then
     if [[ "$target" == *-freebsd* ]]; then
         libblastrampoline_target=$rust_target
     fi
     CMAKE_EXTRA_OPTIONS+=(
-        "-DBLAS_INCLUDE_DIRS=$includedir/libblastrampoline/LP64/$libblastrampoline_target"
-        "-DLAPACK_INCLUDE_DIRS=$includedir/libblastrampoline/LP64/$libblastrampoline_target"
+        -DBLA_VENDOR=libblastrampoline
+        -DBLAS_INCLUDE_DIRS=$includedir/libblastrampoline/LP64/$libblastrampoline_target
+        -DLAPACK_INCLUDE_DIRS=$includedir/libblastrampoline/LP64/$libblastrampoline_target
     )
 fi
 
@@ -58,6 +55,7 @@ install_license LICENSE
 
 if [[ "$target" != aarch64-apple-darwin* ]]; then
     cmake \
+        --compile-no-warning-as-error \
         -B build \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=$prefix \
@@ -88,9 +86,8 @@ platforms = expand_cxxstring_abis(platforms)
 
 accelerate_platforms = filter(Sys.isapple, platforms)
 openblas_platforms = filter(p ->
-    arch(p) == "armv6l" ||
-    p == Platform("i686", "Linux"; libc = "glibc", cxxstring_abi = "cxx11") ||
-    Sys.isfreebsd(p) && arch(p) == "aarch64",
+    arch(p) == "aarch64" && Sys.isfreebsd(p) || # aarch64-unknown-freebsd using libblastrampoline fails to compile: mlx/backend/common/lapack.h:17:10: fatal error: 'cblas.h' file not found
+    arch(p) == "armv6l", # armv6l-linux using libblastrampoline fails to compile: mlx/backend/common/lapack.h:17:10: fatal error: cblas.h: No such file or directory
     filter(p -> p ∉ accelerate_platforms, platforms)
 )
 libblastrampoline_platforms = filter(p -> p ∉ union(accelerate_platforms, openblas_platforms), platforms)
@@ -101,13 +98,13 @@ products = Product[
 ]
 
 dependencies = [
-    Dependency("dlfcn_win32_jll"; platforms = filter(Sys.iswindows, platforms)),
     Dependency("libblastrampoline_jll"; compat="5.4", platforms = libblastrampoline_platforms),
     Dependency("OpenBLAS32_jll"; platforms = openblas_platforms),
-    HostBuildDependency(PackageSpec(name="CMake_jll")),  # Need CMake >= 3.24
+    Dependency("OpenMPI_jll"; compat="4.1.8, 5"), # OpenMPI 5 is ABI compatible with OpenMPI 4
+    HostBuildDependency(PackageSpec(name="CMake_jll")), # Need CMake >= 3.30 for BLA_VENDOR=libblastrampoline
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     julia_compat="1.9",
-    preferred_gcc_version = v"10", # C++-17, with std::reduce, required
+    preferred_gcc_version = v"10", # v10: C++-17, with std::reduce, required
 )

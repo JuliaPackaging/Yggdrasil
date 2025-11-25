@@ -2,12 +2,12 @@ using BinaryBuilder
 
 # Collection of sources required to build Libiconv
 name = "Libiconv"
-version_string = "1.17"
+version_string = "1.18"
 version = VersionNumber(version_string)
 
 sources = [
     ArchiveSource("https://ftp.gnu.org/pub/gnu/libiconv/libiconv-$(version_string).tar.gz",
-               "8f74213b56238c85a50a5329f77e06198771e70dd9a739779f4c02f65d971313"),
+                  "3b08f5f4f9b4eb82f151a7040bfd6fe6c6fb922efe4b1659c66ea933276965e8"),
 ]
 
 # Bash recipe for building across all platforms

@@ -4,6 +4,8 @@ using BinaryBuilder, Pkg
 
 name = "LLVMOpenMP"
 version = v"18.1.7"
+# We bumped the version number to build for riscv64
+ygg_version = v"18.1.8"
 
 sources = [
     ArchiveSource(
@@ -74,7 +76,7 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                # Note: GCC 9 is needed to work around https://github.com/llvm/llvm-project/issues/55006
                # (failing compilation for i686 platforms with GCC 8).
                julia_compat="1.6", preferred_gcc_version=v"9", preferred_llvm_version=llvm_version)

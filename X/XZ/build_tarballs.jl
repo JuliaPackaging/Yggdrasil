@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "XZ"
-version = v"5.6.3"
+version = v"5.8.1"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/tukaani-project/xz",
-              "9331ce4009ddc839f5191d234cc41b2d4797376d")
+              "a522a226545730551f7e7c2685fab27cf567746c")
 ]
 
 # Bash recipe for building across all platforms
@@ -73,5 +73,3 @@ dependencies = Dependency[
 # Build the tarballs, and possibly a `build.jl` as well!
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6")
-
-# Build trigger: 1

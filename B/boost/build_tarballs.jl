@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "boost"
-version = v"1.79.0"
+version = v"1.87.0"
 
 # Collection of sources required to build boost
 sources = [
     ArchiveSource(
-        "https://boostorg.jfrog.io/artifactory/main/release/$(version)/source/boost_$(version.major)_$(version.minor)_$(version.patch).tar.bz2",
-        "475d589d51a7f8b3ba2ba4eda022b170e562ca3b760ee922c146b6c65856ef39"),
+        "https://archives.boost.io/release/$version/source/boost_$(version.major)_$(version.minor)_$(version.patch).tar.bz2",
+        "af57be25cb4c4f4b413ed692fe378affb4352ea50fbe294a11ef548f4d527d89"),
 ]
 
 # Bash recipe for building across all platforms
@@ -44,12 +44,17 @@ if [[ $target == *apple* ]]; then
         # See https://github.com/boostorg/context/issues/170#issuecomment-863669877
         extraargs="abi=aapcs ${extraargs}"
     fi
-elif [[ $target == x86_64*mingw* ]]; then
+elif [[ $target == *mingw* ]]; then
     targetos=windows
-    extraargs="address-model=64 define=_WIN32_WINNT=0x0602 binary-format=pe abi=ms link=shared"
-elif [[ $target == i686*mingw* ]]; then
-    targetos=windows
-    extraargs="address-model=32 define=_WIN32_WINNT=0x0602 binary-format=pe abi=ms link=shared"
+    echo "using gcc : 11.1 : $CXX : <cxxflags>\\"-DWINVER=0x0603 -DBOOST_USE_WINAPI_VERSION=0x0603 -D_WIN32_WINNT=0x0603 -DBOOST_STACKTRACE_USE_WINDBG=1\\" <linkflags>\\"-DBOOST_STACKTRACE_USE_WINDBG=1 -ldl -lstdc++\\" ;" > project-config.jam
+
+    if [[ $target == x86_64*mingw* ]]; then
+        extraargs="address-model=64 binary-format=pe abi=ms link=shared threadapi=win32"
+    elif [[ $target == i686*mingw* ]]; then
+        extraargs="address-model=32 binary-format=pe abi=ms link=shared threadapi=win32"
+    fi
+elif [[ $target == i686*linux* ]]; then
+    extraargs='cxxflags="-DBOOST_STACKTRACE_LIBCXX_RUNTIME_MAY_CAUSE_MEMORY_LEAK=1"'
 elif [[ $target == *freebsd* ]]; then
     targetos=freebsd
     toolset=clang-6.0
@@ -58,15 +63,37 @@ elif [[ $target == *freebsd* ]]; then
         extraargs="abi=aapcs ${extraargs}"
     fi
     echo "using clang : 6.0 : $CXX : <cxxflags>\\"-Wno-enum-constexpr-conversion\\" <linkflags>\\"$LDFLAGS\\" ;" > project-config.jam
+elif [[ $target == armv* ]]; then
+    extraargs="abi=aapcs ${extraargs}"
 fi
-./b2 -j${nproc} toolset=$toolset target-os=$targetos $extraargs variant=release --prefix=$prefix --without-python --layout=system --debug-configuration install
+
+b2_args=(
+    -j${nproc}
+    toolset=$toolset
+    target-os=$targetos
+    $extraargs
+    variant=release
+    --prefix=$prefix
+    --without-python
+    --layout=system
+    --debug-configuration install
+    -d0 # Limit logging output
+    --libdir=${libdir}
+    --includedir=${includedir}
+    -sZLIB_INCLUDE=${includedir}
+    -sZLIB_LIBPATH=${libdir}
+    -sBZIP2_INCLUDE=${includedir}
+    -sBZIP2_LIBPATH=${libdir}
+)
+
+./b2 "${b2_args[@]}"
 
 install_license LICENSE_1_0.txt
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -81,7 +108,7 @@ products = [
     LibraryProduct("libboost_graph", :libboost_graph),
     LibraryProduct("libboost_iostreams", :libboost_iostreams),
     # boost_locale segfaults on windows, see https://github.com/benlorenz/boostBuilder/issues/2
-    #LibraryProduct("libboost_locale", :libboost_locale),
+    # LibraryProduct("libboost_locale", :libboost_locale),
     LibraryProduct("libboost_log", :libboost_log),
     LibraryProduct("libboost_log_setup", :libboost_log_setup),
     LibraryProduct("libboost_prg_exec_monitor", :libboost_prg_exec_monitor),
@@ -103,9 +130,11 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
+    Dependency(PackageSpec(name="Bzip2_jll")),
+    BuildDependency("dlfcn_win32_jll"; platforms = filter(Sys.iswindows, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"11.1", julia_compat="1.6")
 
 # Build trigger: 1

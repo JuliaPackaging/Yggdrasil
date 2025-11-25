@@ -4,7 +4,7 @@ using BinaryBuilder
 
 name = "LZO"
 version_string = "2.10"
-version = v"2.10.2"
+version = v"2.10.3"
 
 # Collection of sources required to build LZO
 sources = [

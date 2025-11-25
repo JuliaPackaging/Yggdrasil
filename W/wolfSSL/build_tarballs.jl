@@ -2,14 +2,15 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "wolfSSL"
 version = v"5.7.2"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/wolfSSL/wolfssl.git", "00e42151ca061463ba6a95adb2290f678cbca472"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-                  "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
     DirectorySource("./bundled"),
 ]
 
@@ -17,15 +18,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/wolfssl*
 atomic_patch -p1 ../patches/mingw32-link-with-ws2_32.patch
-
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    export MACOSX_DEPLOYMENT_TARGET=10.14
-    popd
-fi
 
 mkdir build && cd build
 
@@ -41,6 +33,8 @@ make -j${nproc}
 make install
 
 """
+
+sources, script = require_macos_sdk("10.14", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line

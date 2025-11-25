@@ -22,16 +22,13 @@ import Pkg.Types: VersionSpec
 # to all components.
 
 name = "normaliz"
-version = v"300.1000.200"
-upstream_version = v"3.10.2"
+version = v"300.1001.502"
+upstream_version = v"3.10.5"
 
 # Collection of sources required to complete build
 sources = [
-    #ArchiveSource("https://github.com/Normaliz/Normaliz/releases/download/v$(upstream_version)/normaliz-$(upstream_version).tar.gz",
-    #              "365e1d1e2a338dc4df1947a440e606bb66dd261307e617905e8eca64eaafcf6e"),
-    # this is basically 3.10.1 + flint3 support
-    GitSource("https://github.com/Normaliz/Normaliz.git",
-              "3bc242209e82488886eada17006e372fd89aa032"),
+    ArchiveSource("https://github.com/Normaliz/Normaliz/releases/download/v$(upstream_version)/normaliz-$(upstream_version).tar.gz",
+                  "58492cfbfebb2ee5702969a03c3c73a2cebcbca2262823416ca36e7b77356a44"),
 ]
 
 # Bash recipe for building across all platforms
@@ -69,15 +66,16 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GMP_jll", v"6.2.0"),
+    Dependency("GMP_jll", v"6.2.1"),
     Dependency("MPFR_jll", v"4.1.1"),
-    Dependency("FLINT_jll"; compat = "~300.100.300"),
-    Dependency("nauty_jll"; compat = "~2.6.13"),
-    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
-    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency("OpenBLAS32_jll", v"0.3.29"),
+    Dependency("FLINT_jll"; compat = "~301.300.101"),
+    Dependency("nauty_jll"; compat = "~2.8.10"),
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD systems),
+    # and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"6", clang_use_lld=false)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8", clang_use_lld=false)

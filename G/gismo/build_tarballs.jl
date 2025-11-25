@@ -2,10 +2,10 @@ using BinaryBuilder
 using Pkg
 
 name = "gismo"
-version = v"24.08.0"
+version = v"25.07.0"
 sources = [
     GitSource("https://github.com/gismo/gismo.git",       # The URL of the git repository
-              "fac4a95e60825bbc34014a524759e1178c9be646") # The commit hash to checkout
+              "3cd33adc2e957aeaaa1ab7acc5104e4e3e17ffe3") # The commit hash to checkout
 ]
 
 # NOTE: to control nproc, use the environment variable BINARYBUILDER_NPROC=<number of processors>
@@ -15,10 +15,9 @@ cmake -B build                                      \
   -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}  \
   -DCMAKE_BUILD_TYPE=Release                        \
   -DGISMO_OPTIONAL="gsCInterface"                   \
-  -DGISMO_gsCInterface_HEAD=""                      \
+  -DGISMO_gsCInterface_HEAD="f17f28b32cd4bcbe1fdf76dbafedf2858f2c8a02" \
   -DGISMO_WITH_OPENMP=ON                            \
   -DTARGET_ARCHITECTURE=none                        \
-  -DNOFORTRAN=ON                                    \
   gismo/
 
 cmake --build build --target install -- -j$nproc gismo

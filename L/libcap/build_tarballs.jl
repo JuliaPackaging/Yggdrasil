@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "libcap"
-version = v"2.70"
+version = v"2.76"
 
 # Collection of sources required to build libcap
 sources = [
-    ArchiveSource("https://mirrors.kernel.org/pub/linux/libs/security/linux-privs/libcap2/libcap-$(version.major).$(version.minor).tar.gz",
-                  "d3b777ed413c9fafface03b917e171854709b5e4be38dbfb9219aaf7dfd4eea6")
+    ArchiveSource("https://mirrors.kernel.org/pub/linux/libs/security/linux-privs/libcap2/libcap-$(version.major).$(version.minor).tar.xz",
+                  "629da4ab29900d0f7fcc36227073743119925fd711c99a1689bbf5c9b40c8e6f")
 ]
 
 # Bash recipe for building across all platforms
@@ -20,9 +20,9 @@ make install DESTDIR=${prefix} prefix=/ lib=lib
 """
 
 # These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line.  We are manually disabling
-# many platforms that do not seem to work.
-platforms = [p for p in supported_platforms() if Sys.islinux(p)]
+# platforms are passed in on the command line.
+# Only Linux is supported.
+platforms = supported_platforms(; exclude=!Sys.islinux)
 
 # The products that we will ensure are always built
 products = [
