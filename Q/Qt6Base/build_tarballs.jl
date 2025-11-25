@@ -67,14 +67,15 @@ case "$bb_full_target" in
     ;;
 
     *apple-darwin*)
-        #export LDFLAGS="-L${libdir}/darwin -lclang_rt.osx"
-        #export OBJCFLAGS="-D__ENVIRONMENT_OS_VERSION_MIN_REQUIRED__=120000"
-        #export OBJCXXFLAGS=$OBJCFLAGS
-        #export CXXFLAGS=$OBJCFLAGS
+        export LDFLAGS="-L${libdir}/darwin -lclang_rt.osx"
+        export OBJCFLAGS="-D__ENVIRONMENT_OS_VERSION_MIN_REQUIRED__=120000"
+        export OBJCXXFLAGS=$OBJCFLAGS
+        export CXXFLAGS=$OBJCFLAGS
         ../qtbase-everywhere-src-*/configure -prefix $prefix \
             $commonoptions \
             -- $commoncmakeoptions \
-            -DQT_NO_APPLE_SDK_AND_XCODE_CHECK=ON \
+            -DQT_INTERNAL_APPLE_SDK_VERSION=14 \
+            -DQT_INTERNAL_XCODE_VERSION=15 \
             -DQT_FEATURE_vulkan=OFF
         sed -i 's/#exit 1/exit 1/' /opt/bin/$bb_full_target/$target-clang++
     ;;
