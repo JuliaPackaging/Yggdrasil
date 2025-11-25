@@ -6,13 +6,12 @@ version = v"1.16.0"
 sources = [
     ArchiveSource(
         "https://developers.yubico.com/libfido2/Releases/libfido2-$(version).tar.gz",
-        "8c2b6fb279b5b42e9ac92ade71832e485852647b53607c43baaafbbcecea04e4",
-        unpack_target="src",
+        "8c2b6fb279b5b42e9ac92ade71832e485852647b53607c43baaafbbcecea04e4"
     ),
 ]
 
 script = raw"""
-cd ${WORKSPACE}/srcdir/src/libfido2-*
+cd ${WORKSPACE}/srcdir/libfido2-*
 find . -type f -name 'CMakeLists.txt' | xargs sed -i -e 's/-Werror[^\ ]*//g' -e '/-Werror/d' -e '/Werror/d'
 find . -type f -name 'CMakeLists.txt' -exec sed -i '/-Wno-cast-function-type/d' {} +
 find . -type f -name 'CMakeLists.txt' -exec sed -i 's/-D_WIN32_WINNT=0x0600//g' {} +
