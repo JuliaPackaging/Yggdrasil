@@ -6,10 +6,10 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "Conduit"
-version = v"0.9.4"
+version = v"0.9.5"
 sources = [
     ArchiveSource("https://github.com/LLNL/conduit/releases/download/v$(version)/conduit-v$(version)-src-with-blt.tar.gz",
-		  "c9edfb2ff09890084313ad9c2d83bfb7c10e70b696980762d1ae1488f9f08e6c"),
+		  "d93294efbf0936da5a27941e13486aa1a04a74a59285786a2303eed19a24265a"),
     DirectorySource("bundled"),
 ]
 
@@ -71,10 +71,11 @@ products = [
     LibraryProduct("libconduit_relay", :libconduit_relay),
 ]
 
-# We could additional depend on
-# - ADIOS (would require MPI)
+# We could additionally depend on
+# - ADIOS1 (not an Yggdrasil package)
+# - ADIOS2 (not yet supported by Conduit)
 # - Silo (not an Yggdrasil package)
-# - Parmetis (would require MPI)
+# - Parmetis
 # - Python
 
 dependencies = [
@@ -95,4 +96,4 @@ append!(dependencies, platform_dependencies)
 ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
-	       julia_compat="1.6", preferred_gcc_version=v"5")
+	       augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"5")

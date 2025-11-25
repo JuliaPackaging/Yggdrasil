@@ -4,13 +4,13 @@ using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
 name = "Netpbm"
-version_string = "10.86.47"
+version_string = "10.86.48"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://sourceforge.net/projects/netpbm/files/super_stable/$(version_string)/netpbm-$(version_string).tgz",
-                  "4c7575dc0f38521e75917438835f19c07651523fa87f6d63492fa2a97d1ab21f"),
+                  "709a98e871aeae892437274d68833c804dd41a4b8daf8fd978cac2782da4148a"),
     GitSource("https://github.com/win32ports/sys_wait_h", "229dee8de9cb4c29a3a31115112a4175df84a8eb"),
     DirectorySource("bundled"),
 ]
@@ -447,8 +447,7 @@ dependencies = [
     Dependency("JpegTurbo_jll"; compat="3.1.1"),
     Dependency("Libtiff_jll"; compat="4.7.1"),
     Dependency("XML2_jll"; compat="~2.13.6"),
-    # Need at least Xorg_libX11 v1.8.6 for armv6l support
-    Dependency("Xorg_libX11_jll"; compat="1.8.6"),
+    Dependency("Xorg_libX11_jll"; compat="1.8.12"),
     Dependency("Zlib_jll"; compat="1.2.12"),
     Dependency("libpng_jll"; compat="1.6.50"),
     RuntimeDependency("Ghostscript_jll"; compat="9.55.0"),

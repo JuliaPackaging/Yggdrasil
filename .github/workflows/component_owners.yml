@@ -24,4 +24,6 @@ jobs:
           config-file: .github/component_owners.yml
           repo-token: ${{ github.token }} 
           assign-owners: "true"
-          request-owner-reviews: "true"
+          # We only use this system to notify people about the proposed changes,
+          # not as a way of delegating a review.
+          request-owner-reviews: "false"

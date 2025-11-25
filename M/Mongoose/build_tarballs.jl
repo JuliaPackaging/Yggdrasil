@@ -3,40 +3,28 @@
 using BinaryBuilder, Pkg
 
 name = "Mongoose"
-version = v"7.18.0"
+version = v"7.19.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/cesanta/mongoose.git", "ccfe7e0724dd9bd4a6c447c84552e0ca47767ce8")
+    GitSource("https://github.com/cesanta/mongoose.git", "739d78a45a8fa6595498df67d11cac3e39af8c0e"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cat > CMakeLists.txt <<EOF
-cmake_minimum_required(VERSION 3.10)
-project(mongoose C)
+cd $WORKSPACE/srcdir/mongoose
+mkdir -p ${libdir}
 
-add_library(mongoose SHARED mongoose/mongoose.c)
+atomic_patch -p1 ../patches/add-mg_conn_get_fn_data-helper.patch
 
-if(WIN32)
-    target_link_libraries(mongoose PRIVATE ws2_32)
-endif()
+LIBS=""
+if [[ "${target}" == *mingw* ]]; then
+    LIBS="-lws2_32"
+fi
+cc -fPIC -O2 -shared mongoose.c -o ${libdir}/libmongoose.${dlext} ${LIBS}
 
-install(TARGETS mongoose
-        LIBRARY DESTINATION $libdir
-        ARCHIVE DESTINATION $libdir
-        RUNTIME DESTINATION $bindir)
-EOF
-
-cmake -B build  \
-    -DCMAKE_INSTALL_PREFIX=${prefix}  \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}  \
-    -DCMAKE_BUILD_TYPE=Release  \
-    -S .
-cmake --build build --parallel ${nproc}
-cmake --install build
-install_license mongoose/LICENSE
+install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further

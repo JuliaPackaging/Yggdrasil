@@ -1,15 +1,15 @@
 using BinaryBuilder
 
 name = "iceberg_rust_ffi"
-version = v"0.1.0"
+version = v"0.4.2"
 
 sources = [
-    GitSource("https://github.com/RelationalAI/iceberg_rust_ffi.git", "583c8f2c2cc5cb5f92100ad8eae32f22b7a76c09"),
+    GitSource("https://github.com/RelationalAI/RustyIceberg.jl.git", "996294c95f93305d5758f508846e30560bfcb7f5"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/iceberg_rust_ffi/
+cd ${WORKSPACE}/srcdir/RustyIceberg.jl/iceberg_rust_ffi/
 
 # Build the library with native compilation
 cargo rustc --release --lib --crate-type=cdylib
@@ -33,7 +33,9 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[]
+dependencies = Dependency[
+    Dependency("OpenSSL_jll"; compat="3.0.14")
+]
 
 # Build the tarballs
 build_tarballs(

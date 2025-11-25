@@ -1,6 +1,6 @@
-From 64f0c59db8da6f9cf245c4ccfcc6c33f728ac67e Mon Sep 17 00:00:00 2001
+From 7a92caaa6d83a1a9227c8de749404d22a1a2c102 Mon Sep 17 00:00:00 2001
 From: Max Horn <max@quendi.de>
-Date: Mon, 9 Dec 2024 22:14:26 +0100
+Date: Mon, 1 Sep 2025 15:04:15 +0200
 Subject: [PATCH] gac: use -lgap when bulding kernel extensions
 
 ---
@@ -8,18 +8,17 @@ Subject: [PATCH] gac: use -lgap when bulding kernel extensions
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/Makefile.rules b/Makefile.rules
-index 3da46a54f..88567c798 100644
+index 1213125bb..c031e3f6e 100644
 --- a/Makefile.rules
 +++ b/Makefile.rules
-@@ -670,7 +670,7 @@ install-gaproot: CITATION
+@@ -671,7 +671,7 @@ install-gaproot: install-dirs CITATION
  
  # the following lines adjust variables for the installed sysinfo.gap
- install-sysinfo: SYSINFO_CPPFLAGS = -I${includedir}/gap -I${includedir} $(GAP_DEFINES)
+ install-sysinfo: SYSINFO_CPPFLAGS = -I${includedir}/gap/extra $(GAP_DEFINES)
 -install-sysinfo: SYSINFO_LDFLAGS = $(ABI_CFLAGS)
 +install-sysinfo: SYSINFO_LDFLAGS = $(ABI_CFLAGS) -L$(libdir) -lgap
  install-sysinfo: SYSINFO_GAP = $(bindir)/gap
  install-sysinfo: SYSINFO_GAC = $(bindir)/gac
  install-sysinfo: GMP_PREFIX =
 -- 
-2.47.0
-
+2.50.1

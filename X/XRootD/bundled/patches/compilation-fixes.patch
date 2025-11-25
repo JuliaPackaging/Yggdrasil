@@ -1,0 +1,42 @@
+--- xrootd-5.8.4/src/XrdOssStats/XrdOssStatsFileSystem.cc
++++ xrootd-5.8.4/src/XrdOssStats/XrdOssStatsFileSystem.cc
+@@ -7,7 +7,7 @@
+ #include "XrdSys/XrdSysPthread.hh"
+ #include "XrdXrootd/XrdXrootdGStream.hh"
+ 
+-#include <inttypes.h>
++#include <cinttypes>
+ #include <stdexcept>
+ #include <thread>
+ 
+--- xrootd-5.8.4/src/XrdPfc/XrdPfcFile.cc.orig
++++ xrootd-5.8.4/src/XrdPfc/XrdPfcFile.cc
+@@ -33,6 +33,7 @@
+ #include <sstream>
+ #include <fcntl.h>
+ #include <cassert>
++#include <unordered_map>
+ 
+ 
+ using namespace XrdPfc;
+--- xrootd-5.8.4/src/XrdPfc/XrdPfcBlacklistDecision.cc.orig
++++ xrootd-5.8.4/src/XrdPfc/XrdPfcBlacklistDecision.cc
+@@ -23,6 +23,7 @@
+ #include <fcntl.h>
+ #include <cstdio>
+ #include <fnmatch.h>
++#include <errno.h>
+ 
+ class BlacklistDecision : public XrdPfc::Decision
+ {
+--- xrootd-5.8.4/cmake/XRootDOSDefs.cmake
++++ xrootd-5.8.4/cmake/XRootDOSDefs.cmake
+@@ -35,7 +35,7 @@ add_compile_options(
+   -Wall
+   -Wextra
+   $<$<NOT:$<BOOL:${APPLE}>>:-Wdeprecated>
+-  -Werror=null-dereference
++  -Wnull-dereference
+   -Wno-unused-parameter
+   -Wno-vla
+ )

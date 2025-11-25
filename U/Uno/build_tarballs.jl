@@ -4,12 +4,12 @@ using BinaryBuilder, Pkg
 
 name = "Uno"
 
-version = v"2.0.2"
+version = v"2.3.1"
 
 sources = [
     GitSource(
         "https://github.com/cvanaret/Uno.git",
-        "7094e2d8dbf98056a462a9e96b4c1c3300e58ab7",
+        "607e08952037d74e8cb7ad8c9ec6e5b96149f3c7",
     ),
 ]
 
@@ -24,12 +24,6 @@ if [[ "${target}" == *mingw* ]]; then
 else
     LBT=blastrampoline
     HIGHS_DIR=${libdir}
-fi
-
-if [[ "${target}" == *apple* ]] || [[ "${target}" == *freebsd* ]]; then
-    OMP=omp
-else
-    OMP=gomp
 fi
 
 # FortranCInterface_VERIFY fails on macOS, but it's not actually needed for the current build
@@ -85,7 +79,7 @@ products = [
 
 dependencies = [
     BuildDependency(PackageSpec(name="BQPD_jll", uuid="1325ac01-0a49-589f-8355-43321054aaab")),
-    Dependency(PackageSpec(name="HiGHS_jll", uuid="8fd58aa0-07eb-5a78-9b36-339c94fd15ea"), compat="1.11.0"),
+    Dependency(PackageSpec(name="HiGHS_jll", uuid="8fd58aa0-07eb-5a78-9b36-339c94fd15ea"), compat="1.12.0"),
     Dependency(PackageSpec(name="HSL_jll", uuid="017b0a0e-03f4-516a-9b91-836bbd1904dd")),
     Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70")),
     Dependency(PackageSpec(name="ASL_jll", uuid="ae81ac8f-d209-56e5-92de-9978fef736f9"), compat="0.1.3"),

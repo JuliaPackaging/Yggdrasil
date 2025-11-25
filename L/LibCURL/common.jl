@@ -1,9 +1,13 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
-using BinaryBuilderBase: sanitize, get_addable_spec
+using BinaryBuilderBase: sanitize
+
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 const curl_hashes = Dict(
+    v"7.81.0" => "ac8e1087711084548d788ef18b9b732c8de887457b81f616fc681d1044b32f98",
     v"7.88.1" => "cdb38b72e36bc5d33d5b8810f8018ece1baa29a8f215b4495e495ded82bbf3c7",
     v"8.2.1"  => "f98bdb06c0f52bdd19e63c4a77b5eb19b243bcbbd0f5b002b9f3cba7295a3a42",
     v"8.4.0"  => "816e41809c043ff285e8c0f06a75a1fa250211bbfb2dc0a037eeef39f1a9e427",
@@ -20,6 +24,8 @@ const curl_hashes = Dict(
     v"8.13.0" => "c261a4db579b289a7501565497658bbd52d3138fdbaccf1490fa918129ab45bc",
     v"8.14.1" => "6766ada7101d292b42b8b15681120acd68effa4a9660935853cf6d61f0d984d4",
     v"8.15.0" => "d85cfc79dc505ff800cb1d321a320183035011fa08cb301356425d86be8fc53c",
+    v"8.16.0" => "a21e20476e39eca5a4fc5cfb00acf84bbc1f5d8443ec3853ad14c26b3c85b970",
+    v"8.17.0" => "e8e74cdeefe5fb78b3ae6e90cd542babf788fa9480029cfcee6fd9ced42b7910",
 )
 
 function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=false)
@@ -40,31 +46,24 @@ function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=fal
         DirectorySource("../patches"),
     ]
     if version == v"8.13"
-        append!(sources, [
-            ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
-                          "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4")
-                ])
-        unpack_macosx_sdk = raw"""
-        if [[ "${target}" == x86_64-apple-darwin* ]]; then
-            export MACOSX_DEPLOYMENT_TARGET=10.13
-            pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
-            rm -rf /opt/${target}/${target}/sys-root/System
-            cp -a usr/* "/opt/${target}/${target}/sys-root/usr/"
-            cp -a System "/opt/${target}/${target}/sys-root/"
-            popd
-        fi
-        """
+        unpack_macosx_sdk = get_macos_sdk_script("10.13")
+        append!(sources, get_macos_sdk_sources("10.13"))
     else
         unpack_macosx_sdk = ""
     end
     macos_use_openssl = version >= v"8.15"
 
+    # Disable nss only for CURL < 8.16
+    without_nss = version < v"8.16.0"
+
     config = "THIS_IS_CURL=$(this_is_curl_jll)\n"
-    config *= "MACOS_USE_OPENSSL=$(macos_use_openssl)\n" 
+    config *= "MACOS_USE_OPENSSL=$(macos_use_openssl)\n"
     if with_zstd
 	config *= "HAVE_ZSTD=true\n"
     end
-
+    if without_nss
+        config *= "WITHOUT_NSS=true\n"
+    end
 
     # Bash recipe for building across all platforms
     script = config * unpack_macosx_sdk * raw"""
@@ -78,7 +77,7 @@ function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=fal
         # Disable....almost everything
         --without-gnutls
         --without-libidn2 --without-librtmp
-        --without-nss --without-libpsl
+        --without-libpsl
         --disable-ares --disable-manual
         --disable-ldap --disable-ldaps --without-zsh-functions-dir
         --disable-static --without-libgsasl
@@ -91,6 +90,10 @@ function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=fal
 
     if [[ ${HAVE_ZSTD} == true ]]; then
         FLAGS+=(--with-zstd=${prefix})
+    fi
+
+    if [[ ${WITHOUT_NSS} == true ]]; then
+        FLAGS+=(--without-nss)
     fi
 
     if [[ ${bb_full_target} == *-sanitize+memory* ]]; then

@@ -2,14 +2,15 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "PDAL"
 version = v"2.9.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/PDAL/PDAL.git", "795f0d9858dba72074fa3a4736282b1d2635620b"),
-    FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-               "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
     DirectorySource("bundled"),
 ]
 
@@ -17,13 +18,6 @@ sources = [
 script = raw"""
 
 cd $WORKSPACE/srcdir/PDAL*
-
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    # Install a newer SDK which supports `std::filesystem`
-    rm -rf /opt/${target}/${target}/sys-root/System /opt/${target}/${target}/sys-root/usr/include/libxml2
-    tar --extract --file=${WORKSPACE}/srcdir/MacOSX10.15.sdk.tar.xz --directory=/opt/${target}/${target}/sys-root/. --strip-components=1 MacOSX10.15.sdk/System MacOSX10.15.sdk/usr
-    export MACOSX_DEPLOYMENT_TARGET=10.15
-fi
 
 mkdir -p build/dimbuilder && cd build/dimbuilder
 
@@ -71,6 +65,9 @@ cmake --install build
 
 install_license LICENSE.txt
 """
+
+# Install a newer SDK which supports `std::filesystem`
+sources, script = require_macos_sdk("10.15", sources, script)
 
 platforms = expand_cxxstring_abis(supported_platforms())
 

@@ -2,16 +2,17 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
-include("../../fancy_toys.jl")  # for `should_build_platform`
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "GR"
-version = v"0.73.17"
+version = v"0.73.19"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sciapp/gr.git", "c8a8395aa194deec8c87575ba4238972bbdf6c40"),
+    GitSource("https://github.com/sciapp/gr.git", "b6d2030c0ee661bcead1b8c6c3b3ea26fdfdc2fa"),
     FileSource("https://github.com/sciapp/gr/releases/download/v$version/gr-$version.js",
-               "a449b886d4ea28445ff3d1b345b35edd91d1d807ca65fa9f82805bd6e0f448c0", "gr.js"),
+               "c430aff7cd19d01754530a57378c3fa583a1d23168677f802ccae00de8d654c5", "gr.js"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49")
 ]

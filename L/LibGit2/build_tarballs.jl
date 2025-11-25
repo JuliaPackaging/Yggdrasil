@@ -1,5 +1,5 @@
 using BinaryBuilder, Pkg
-using BinaryBuilderBase: sanitize, get_addable_spec
+using BinaryBuilderBase: sanitize
 
 name = "LibGit2"
 version = v"1.9.1"

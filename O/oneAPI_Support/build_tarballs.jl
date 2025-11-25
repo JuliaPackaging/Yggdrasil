@@ -1,17 +1,20 @@
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+
 name = "oneAPI_Support"
-version = v"0.9.1"
+version = v"0.9.2"
 
 generic_sources = [
     GitSource("https://github.com/JuliaGPU/oneAPI.jl",
-              "cf05fb58f46de8968e209a96807c930ea0b8c301")
+              "719d893822f736af58589dfb46444c56f83519cb")
 ]
-
+platforms = expand_cxxstring_abis([Platform("x86_64", "linux"; libc="glibc")])
 platform_sources = Dict(
     # these are the deps installed by Anaconda for dpcpp_linux-64 and mkl-devel-dpcpp
     # https://conda.anaconda.org/intel/linux-64
-    Platform("x86_64", "linux"; libc="glibc") => [
+    platform => [
         FileSource(
             "https://software.repos.intel.com/python/conda/linux-64/compiler_shared-2025.2.0-intel_766.conda",
             "5adbaa605f2fb1d1abc01b3bb92b15dd3b0a2d17d83e10632267b7c2db81f96d",
@@ -153,6 +156,7 @@ platform_sources = Dict(
             filename="umf",
         ),
     ]
+    for platform in platforms
 )
 
 script = raw"""
@@ -178,9 +182,9 @@ done
 mkdir -p ${libdir} ${includedir}
 cp -r include/* ${includedir}
 for lib in sycl svml irng imf intlc ur_loader ur_adapter \
-           mkl_core mkl_intel_ilp64 mkl_sequential mkl_sycl \
+           mkl_cdft_core mkl_core mkl_intel_ilp64 mkl_sequential mkl_sycl \
            mkl_avx mkl_def umf tcm; do
-    cp -a lib/lib${lib}*.so* ${libdir}
+    install -Dvm 755 lib/lib${lib}*.so* -t ${libdir}
 done
 
 install_license "info/licenses/license.txt"
@@ -223,7 +227,7 @@ dependencies = [
 ]
 
 non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
-include("../../fancy_toys.jl")
+
 filter!(platform_sources) do (platform, sources)
     should_build_platform(triplet(platform))
 end

@@ -2,17 +2,17 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 name = "ImageMagick"
-upstream_version = v"7.1.2-1"
+upstream_version = v"7.1.2-3"
 version = VersionNumber(
     upstream_version.major,
     upstream_version.minor,
-    upstream_version.patch * 1000 + upstream_version.prerelease[1] + 1
+    upstream_version.patch * 1000 + upstream_version.prerelease[1] + 2
 )
 
 # Collection of sources required to build imagemagick
 sources = [
     GitSource("https://github.com/ImageMagick/ImageMagick",
-              "83b6fc338ae1d38602eb5f6b307393adc3a0e1a7"),
+              "147bc9c12ce8fbc1e94af5b5f6f0643ca410103a"),
     DirectorySource("./bundled"),
 ]
 
@@ -50,6 +50,7 @@ products = [
     LibraryProduct(["libMagickWand", "libMagickWand-7.Q16HDRI"], :libwand),
     ExecutableProduct("convert", :imagemagick_convert),
     ExecutableProduct("identify", :identify),
+    ExecutableProduct("magick", :magick),
     ExecutableProduct("montage", :montage),
     ExecutableProduct("mogrify", :mogrify),
 ]

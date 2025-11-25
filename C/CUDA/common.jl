@@ -18,6 +18,10 @@ function parse_sources(json::String, product::String, components::Vector{String}
     root = "https://developer.download.nvidia.com/compute/$product/redist"
 
     redist = JSON3.read(json)
+    if !haskey(platform, "cuda")
+        error("Please provide a platform that has the 'cuda' tag set, indicating which CUDA toolkit version this product is to be used with.")
+    end
+    cuda_version = platform["cuda"]
     architecture = if Sys.islinux(platform)
         libc(platform) == "glibc" || error("Only glibc is supported on Linux")
         if arch(platform) == "x86_64"
@@ -25,7 +29,7 @@ function parse_sources(json::String, product::String, components::Vector{String}
         elseif arch(platform) == "powerpc64le"
             "linux-ppc64le"
         elseif arch(platform) == "aarch64"
-            if VersionNumber(version) >= v"13"
+            if VersionNumber(cuda_version) >= v"13"
                 haskey(platform, "cuda_platform") && error("CUDA 13 uses unified ARM platforms")
                 "linux-sbsa"
             else
@@ -138,6 +142,10 @@ fi"""
     if version >= v"12.2"
         # available earlier, but not for aarch64
         push!(components, "libnvjpeg")
+    end
+    if version >= v"13"
+        push!(components, "cuda_crt")
+        push!(components, "libnvvm")
     end
     for platform in platforms
         should_build_platform(triplet(platform)) || continue
