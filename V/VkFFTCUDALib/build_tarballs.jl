@@ -60,7 +60,7 @@ rm $prefix/lib/libubsan.so*
 install_license ../LICENSE
 """
 
-j# Build for 13.0 > CUDA >= 11.0
+# Build for 13.0 > CUDA >= 11.0
 # NOTE: CUDA 13 is not yet supported because the CUDA_SDK_jlls are not available yet
 #       (specifically for x86_64-linux-gnu-libgfortran5-cxx11-cuda+13.0)
 platforms = CUDA.supported_platforms(min_version=v"11.0", max_version=v"12.9")
