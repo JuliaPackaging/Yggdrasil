@@ -27,16 +27,16 @@ const macos_sdk_sources = Dict{String,FileSource}(
                    "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
     "11.0" =>
         FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.0-11.1/MacOSX11.0.sdk.tar.xz",
-                    "d3feee3ef9c6016b526e1901013f264467bb927865a03422a9cb925991cc9783"),
+                   "c8a9ff16196be43c35b699dd293f0c0563f1239c99caa6b3d53882e556a209bd"),
     "11.1" =>
         FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.0-11.1/MacOSX11.1.sdk.tar.xz",
-                    "9b86eab03176c56bb526de30daa50fa819937c54b280364784ce431885341bf6"),
+                   "9b86eab03176c56bb526de30daa50fa819937c54b280364784ce431885341bf6"),
     "11.3" =>
         FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz",
                    "cd4f08a75577145b8f05245a2975f7c81401d75e9535dcffbb879ee1deefcbf4"),
     "12.3" =>
         FileSource("https://github.com/realjf/MacOSX-SDKs/releases/download/v0.0.1/MacOSX12.3.sdk.tar.xz",
-                    "a511c1cf1ebfe6fe3b8ec005374b9c05e89ac28b3d4eb468873f59800c02b030"),
+                   "a511c1cf1ebfe6fe3b8ec005374b9c05e89ac28b3d4eb468873f59800c02b030"),
     "14.0" =>
         FileSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                    "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
@@ -45,7 +45,7 @@ const macos_sdk_sources = Dict{String,FileSource}(
                    "f6acc6209db9d56b67fcaf91ec1defe48722e9eb13dc21fb91cfeceb1489e57e"),
     "15.0" =>
         FileSource("https://github.com/joseluisq/MacOSX-SDKs/releases/download/15.0/MacOSX15.0.sdk.tar.xz",
-                    "9df0293776fdc8a2060281faef929bf2fe1874c1f9368993e7a4ef87b1207f98"),
+                   "9df0293776fdc8a2060281faef929bf2fe1874c1f9368993e7a4ef87b1207f98"),
 )
 
 """
