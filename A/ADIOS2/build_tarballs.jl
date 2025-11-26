@@ -205,7 +205,7 @@ dependencies = [
     Dependency(PackageSpec(name="Blosc2_jll"); compat="202.2000.0"),
     Dependency(PackageSpec(name="Bzip2_jll"); compat="1.0.9"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency(PackageSpec(name="HDF5_jll"); compat="~1.14.6", platforms=hdf5_platforms),
+    Dependency(PackageSpec(name="HDF5_jll"); compat="2.0.0", platforms=hdf5_platforms),
     Dependency(PackageSpec(name="Libffi_jll"); compat="~3.4.7"),
     Dependency(PackageSpec(name="MGARD_jll"); compat="1.6.0"),
     Dependency(PackageSpec(name="ZeroMQ_jll"); compat="4.3.6"),
