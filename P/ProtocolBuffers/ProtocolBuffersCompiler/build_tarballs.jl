@@ -8,18 +8,12 @@ name = "ProtocolBuffersCompiler"
 # Cf. https://github.com/protocolbuffers/protobuf/blob/v22.0/version.json
 version = base_version
 
-script = raw"""
-export BB_PROTOBUF_BUILD_SHARED_LIBS=ON
-export BB_PROTOBUF_PRODUCT=protoc
+script = """
+export BB_PROTOBUF_PRODUCT=$name
 """ *
 script
 
-products = vcat([
-    LibraryProduct("libprotoc", :libprotoc),
-    ExecutableProduct("protoc", :protoc),
-], [
-    LibraryProduct(name, symbol) for (symbol, name) in library_symbols
-])
+products = products_map[name]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat, preferred_gcc_version)

@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 
 include(joinpath(@__DIR__, "..", "common.jl"))
 
-name = "ProtocolBuffersSDK"
+name = "ProtocolBuffersLite"
 # Cf. https://github.com/protocolbuffers/protobuf/blob/v22.0/version.json
 version = VersionNumber(4, base_version.major, base_version.minor)
 
