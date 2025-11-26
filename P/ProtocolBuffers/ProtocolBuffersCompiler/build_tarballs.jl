@@ -5,7 +5,6 @@ using BinaryBuilder, Pkg
 include(joinpath(@__DIR__, "..", "common.jl"))
 
 name = "ProtocolBuffersCompiler"
-# Cf. https://github.com/protocolbuffers/protobuf/blob/v22.0/version.json
 version = base_version
 
 script = """

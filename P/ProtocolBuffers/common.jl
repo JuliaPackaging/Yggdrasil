@@ -26,7 +26,9 @@ References:
 * https://protobuf.dev/news/2022-05-06/#versioning
 * https://github.com/protocolbuffers/protobuf/blob/v21.0/version.json
 """
-base_version = v"22.0" # Cf. https://github.com/protocolbuffers/protobuf/blob/v22.0/version.json
+base_version = v"22.0"
+# Cf. https://github.com/protocolbuffers/protobuf/blob/v22.0/version.json
+cpp_library_version = VersionNumber(4, base_version.major, base_version.minor)
 
 sources = [
     GitSource("https://github.com/protocolbuffers/protobuf.git", "a847a8dc4ba1d99e7ba917146c84438b4de7d085"),
