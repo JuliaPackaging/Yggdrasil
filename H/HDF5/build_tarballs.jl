@@ -221,6 +221,10 @@ export MPITRAMPOLINE_FC="${FC}"
 
 cmake -Bbuilddir "${cmake_options[@]}"
 
+# Remove stray `-llibname-NOTFOUND` from `hdf5.pc`:
+# (Reported as <https://github.com/HDFGroup/hdf5/issues/6059>)
+sed -i -e 's/-llibname-NOTFOUND//g' builddir/CMakeFiles/hdf5.pc
+
 cmake --build builddir --parallel ${nproc}
 cmake --install builddir
 
