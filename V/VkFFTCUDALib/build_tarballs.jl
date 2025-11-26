@@ -60,8 +60,10 @@ rm $prefix/lib/libubsan.so*
 install_license ../LICENSE
 """
 
-# Build for CUDA >= 11.0
-platforms = expand_cxxstring_abis(CUDA.supported_platforms(min_version=v"11.0"))
+j# Build for 13.0 > CUDA >= 11.0
+# NOTE: CUDA 13 is not yet supported because the CUDA_SDK_jlls are not available yet
+#       (specifically for x86_64-linux-gnu-libgfortran5-cxx11-cuda+13.0)
+platforms = CUDA.supported_platforms(min_version=v"11.0", max_version=v"12.9")
 # Cmake toolchain breaks on aarch64, so only x86_64 for now
 filter!(p -> arch(p)=="x86_64", platforms)
 
