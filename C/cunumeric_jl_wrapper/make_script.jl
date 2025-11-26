@@ -34,9 +34,9 @@ function get_script(cuda::Val{true})
             -DCMAKE_INSTALL_PREFIX=${prefix} \
             -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
             -DJulia_PREFIX=${prefix} \
-            ../cunumeric_jl_wrapper/
+            ../cuNumeric.jl/lib/cunumeric_jl_wrapper/
         VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
-        install_license $WORKSPACE/srcdir/cunumeric_jl_wrapper*/LICENSE
+        install_license $WORKSPACE/srcdir/cuNumeric.jl/lib/cunumeric_jl_wrapper*/LICENSE
     """
     return script
 end
@@ -59,9 +59,9 @@ function get_script(cuda::Val{false})
             -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
             -DJulia_PREFIX=${prefix} \
             -DNOCUDA=ON \
-            ../cunumeric_jl_wrapper/
+            ../cuNumeric.jl/lib/cunumeric_jl_wrapper/
         VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
-        install_license $WORKSPACE/srcdir/cunumeric_jl_wrapper*/LICENSE
+        install_license $WORKSPACE/srcdir/cuNumeric.jl/lib/cunumeric_jl_wrapper*/LICENSE
     """
     return script
 end

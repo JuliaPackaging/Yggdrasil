@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "TVMFFI"
-version = v"0.1.2"
+version = v"0.1.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/apache/tvm-ffi.git", "c1df05f3555d4e2a9e1a32822c0f41ccb8467251")
+    GitSource("https://github.com/apache/tvm-ffi.git", "7cd2e500f5f17079ac6bdf7bf4f79681c885714a")
 ]
 
 # Bash recipe for building across all platforms
@@ -29,8 +29,7 @@ install_license LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
-platforms = filter(!Sys.iswindows, platforms)
+platforms = supported_platforms(exclude=Sys.iswindows)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
