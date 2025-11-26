@@ -1,3 +1,53 @@
+# The natural way to handle installation of a new macOS SDK would be to
+# add an ArchiveSource for the SDK and then moving it to the right place
+# for the later build steps to find it.
+#
+# But this has the drawback of always extracting this (big) SDK, even on
+# platforms that don't need it, which of course is most of them. Moreover,
+# it floods the logs with the gargantuan list of files in these SDKs.
+#
+# Thus instead we use a FileSource. This way, the SDK is still always
+# downloaded, but at least we can choose to only unpack it when we really
+# need it. Plus we can directly unpack it in its final location; and
+# suppress the full list of files being unpackaged
+const macos_sdk_sources = Dict{String,FileSource}(
+    # this is the default SDK we use, so there is normally no need to request this;
+    # but we include it here to make this function also usable in the rootfs
+    "10.12" =>
+        FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.12.sdk.tar.xz",
+                   "6852728af94399193599a55d00ae9c4a900925b6431534a3816496b354926774"),
+    "10.13" =>
+        FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
+                   "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4"),
+    "10.14" =>
+        FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
+                   "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
+    "10.15" =>
+        FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
+    "11.0" =>
+        FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.0-11.1/MacOSX11.0.sdk.tar.xz",
+                   "c8a9ff16196be43c35b699dd293f0c0563f1239c99caa6b3d53882e556a209bd"),
+    "11.1" =>
+        FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.0-11.1/MacOSX11.1.sdk.tar.xz",
+                   "9b86eab03176c56bb526de30daa50fa819937c54b280364784ce431885341bf6"),
+    "11.3" =>
+        FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz",
+                   "cd4f08a75577145b8f05245a2975f7c81401d75e9535dcffbb879ee1deefcbf4"),
+    "12.3" =>
+        FileSource("https://github.com/realjf/MacOSX-SDKs/releases/download/v0.0.1/MacOSX12.3.sdk.tar.xz",
+                   "a511c1cf1ebfe6fe3b8ec005374b9c05e89ac28b3d4eb468873f59800c02b030"),
+    "14.0" =>
+        FileSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
+                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
+    "14.5" =>
+        FileSource("https://github.com/alexey-lysiuk/macos-sdk/releases/download/14.5/MacOSX14.5.tar.xz",
+                   "f6acc6209db9d56b67fcaf91ec1defe48722e9eb13dc21fb91cfeceb1489e57e"),
+    "15.0" =>
+        FileSource("https://github.com/joseluisq/MacOSX-SDKs/releases/download/15.0/MacOSX15.0.sdk.tar.xz",
+                   "9df0293776fdc8a2060281faef929bf2fe1874c1f9368993e7a4ef87b1207f98"),
+)
+
 """
     require_macos_sdk(version::String, sources::Vector, script::String;
                       deployment_target::String = version)
@@ -30,55 +80,10 @@ SDK version is specified in a single place. But when necessary it is useful to
 have this low-level alternative.
 """
 function get_macos_sdk_sources(version::String)
-    # The natural way to handle installation of a new macOS SDK would be to
-    # add an ArchiveSource for the SDK and then moving it to the right place
-    # for the later build steps to find it.
-    #
-    # But this has the drawback of always extracting this (big) SDK, even on
-    # platforms that don't need it, which of course is most of them. Moreover,
-    # it floods the logs with the gargantuan list of files in these SDKs.
-    #
-    # Thus instead we use a FileSource. This way, the SDK is still always
-    # downloaded, but at least we can choose to only unpack it when we really
-    # need it. Plus we can directly unpack it in its final location; and
-    # suppress the full list of files being unpackaged
-    sdk_source =
-        if version == "10.13"
-            FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
-                       "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4")
-        elseif version == "10.14"
-            FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-                       "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
-        elseif version == "10.15"
-            FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-                       "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62")
-        elseif version == "11.0"
-            FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.0-11.1/MacOSX11.0.sdk.tar.xz",
-                        "d3feee3ef9c6016b526e1901013f264467bb927865a03422a9cb925991cc9783")
-        elseif version == "11.1"
-            FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.0-11.1/MacOSX11.1.sdk.tar.xz",
-                        "9b86eab03176c56bb526de30daa50fa819937c54b280364784ce431885341bf6")
-        elseif version == "11.3"
-            FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz",
-                       "cd4f08a75577145b8f05245a2975f7c81401d75e9535dcffbb879ee1deefcbf4")
-        elseif version == "12.3"
-            FileSource("https://github.com/realjf/MacOSX-SDKs/releases/download/v0.0.1/MacOSX12.3.sdk.tar.xz",
-                        "a511c1cf1ebfe6fe3b8ec005374b9c05e89ac28b3d4eb468873f59800c02b030")
-        elseif version == "14.0"
-            FileSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
-                       "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49")
-        elseif version == "14.5"
-            FileSource("https://github.com/alexey-lysiuk/macos-sdk/releases/download/14.5/MacOSX14.5.tar.xz",
-                       "f6acc6209db9d56b67fcaf91ec1defe48722e9eb13dc21fb91cfeceb1489e57e")
-        elseif version == "15.0"
-            FileSource("https://github.com/joseluisq/MacOSX-SDKs/releases/download/15.0/MacOSX15.0.sdk.tar.xz",
-                        "9df0293776fdc8a2060281faef929bf2fe1874c1f9368993e7a4ef87b1207f98")
-        else
-            error("unsupported macOS SDK version $version")
-        end
+    haskey(macos_sdk_sources, version) || error("unsupported macOS SDK version $version")
 
-    # we return a vector just in case in the future we might need more than one source
-    return [sdk_source]
+    # return a vector just in case in the future we might need more than one source
+    return [ macos_sdk_sources[version] ]
 end
 
 """
@@ -107,10 +112,14 @@ function get_macos_sdk_script(version::String; deployment_target::String = versi
         echo "Extracting MacOSX${macos_sdk_version}.sdk.tar.xz (this may take a while)"
         rm -rf /opt/${target}/${target}/sys-root/System
         rm -rf /opt/${target}/${target}/sys-root/usr/include/libxml2/libxml
+        # extract the tarball into the sys-root so all compilers pick it up
+        # automatically, and use --warning=no-unknown-keyword to hide harmless
+        # warnings about unsupported pax header keywords like "SCHILY.fflags"
         tar --extract \
             --file=${WORKSPACE}/srcdir/MacOSX${macos_sdk_version}.sdk.tar.xz \
             --directory="/opt/${target}/${target}/sys-root/." \
             --strip-components=1 \
+            --warning=no-unknown-keyword \
             MacOSX${macos_sdk_version}.sdk/System \
             MacOSX${macos_sdk_version}.sdk/usr
         export MACOSX_DEPLOYMENT_TARGET=${macosx_deployment_target}
