@@ -40,14 +40,6 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cmakelists.patch
 # Correct C includes
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cinttypes.patch
 
-if [[ ${target} == x86_64-linux-musl ]]; then
-    # HDF5 needs libcurl, and it needs to be the BinaryBuilder libcurl, not the system libcurl.
-    # MPI needs libevent, and it needs to be the BinaryBuilder libevent, not the system libevent.
-    rm /usr/lib/libcurl.*
-    rm /usr/lib/libevent*
-    rm /usr/lib/libnghttp2.*
-fi
-
 # pkg-config is very slow because `abseil_cpp` installed about 200 `*.pc` files.
 # Pretend that `protobuf` does not require `abseil_cpp`.
 mv /workspace/destdir/lib/pkgconfig/protobuf.pc /workspace/destdir/lib/pkgconfig/protobuf.pc.orig
