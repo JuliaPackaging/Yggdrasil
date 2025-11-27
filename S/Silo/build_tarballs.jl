@@ -48,6 +48,10 @@ if [[ ${target} != *-musl* ]]; then
         -DSILO_ENABLE_HDF5=ON
         -DSILO_HDF5_SZIP_DIR=${prefix}
     )
+else
+    cmake_options+=(
+        -DSILO_ENABLE_HDF5=OFF
+    )
 fi
 
 cmake -Bbuild ${cmake_options[@]}
