@@ -110,8 +110,9 @@ if [[ ${target} != *-mingw* ]]; then
 fi
 
 # HDF5
-if [[ ${target} != *-mingw* ]]; then
-    # Enabling HDF5 leads to the error: `H5VolReadWrite.c:(.text+0x5eb): undefined reference to `H5Pget_fapl_mpio'`
+if [[ ${target} != *-mingw* &&  ${target} != *-musl* ]]; then
+    # On Windows, enabling HDF5 leads to the error: `H5VolReadWrite.c:(.text+0x5eb): undefined reference to `H5Pget_fapl_mpio'`
+    # We do not build HDF5 for musl
     cmakeopts+=(-DADIOS2_USE_HDF5=ON)
 fi
 
