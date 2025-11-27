@@ -25,7 +25,7 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/windows.patch
 # Do not run target exectutables at build time
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pdb_detect.patch
 
-# We cannot enable hzip nor fpzip because these are not BSD licenced
+# We cannot enable hzip nor fpzip because these are not BSD licensed
 cmake_options=(
     -DCMAKE_INSTALL_PREFIX=${prefix}
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
@@ -33,15 +33,22 @@ cmake_options=(
     -DSILO_BUILD_FOR_BSD_LICENSE=ON
     -DSILO_ENABLE_BROWSER=OFF
     -DSILO_ENABLE_FORTRAN=OFF
-    -DSILO_ENABLE_HDF5=ON
     -DSILO_ENABLE_JSON=ON
     -DSILO_ENABLE_PYTHON_MODULE=OFF
     -DSILO_ENABLE_SHARED=ON
     -DSILO_ENABLE_SILEX=OFF
     -DSILO_ENABLE_SILOCK=ON
     -DSILO_ENABLE_TESTS=OFF
-    -DSILO_HDF5_SZIP_DIR=${prefix}
 )
+
+# HDF5
+if [[ ${target} != *-musl* ]]; then
+    # We do not build HDF5 for musl
+    cmake_options+=(
+        -DSILO_ENABLE_HDF5=ON
+        -DSILO_HDF5_SZIP_DIR=${prefix}
+    )
+fi
 
 cmake -Bbuild ${cmake_options[@]}
 
