@@ -79,7 +79,7 @@ platforms = expand_cxxstring_abis(supported_platforms())
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 products = [
-    LibraryProduct("libsiloh5", :libsilo),
+    LibraryProduct(["libsiloh5", "libsilo"], :libsilo),
 ]
 
 dependencies = [
