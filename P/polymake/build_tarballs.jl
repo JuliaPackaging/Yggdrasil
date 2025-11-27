@@ -166,7 +166,7 @@ dependencies = [
     Dependency("boost_jll", compat = "=1.87.0"),
     Dependency("cddlib_jll", compat = "~0.94.15"),
     Dependency("lrslib_jll", compat = "~0.3.3"),
-    Dependency("normaliz_jll", compat = "~300.1001.501"),
+    Dependency("normaliz_jll", compat = "~300.1001.503"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
