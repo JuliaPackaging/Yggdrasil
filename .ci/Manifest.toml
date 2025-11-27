@@ -45,8 +45,8 @@ version = "0.6.5"
 
 [[deps.BinaryBuilderBase]]
 deps = ["Bzip2_jll", "CodecZlib", "Downloads", "Gzip_jll", "HistoricalStdlibVersions", "InteractiveUtils", "JLLWrappers", "JSON", "LibGit2", "LibGit2_jll", "Libdl", "Logging", "OrderedCollections", "OutputCollectors", "Pkg", "Printf", "ProgressMeter", "REPL", "Random", "SHA", "Scratch", "SimpleBufferStream", "TOML", "Tar", "Tar_jll", "UUIDs", "XZ_jll", "Zstd_jll", "p7zip_jll", "pigz_jll", "unzip_jll"]
-git-tree-sha1 = "b0d610852483382d19de2d2db7df8c214aab3fd1"
-repo-rev = "master"
+git-tree-sha1 = "2f4da66d73b3f409dda4759480b8d4794bcf81fe"
+repo-rev = "eph/rustc-wrapper-respects-CARGO_BUILD_TARGET"
 repo-url = "https://github.com/JuliaPackaging/BinaryBuilderBase.jl.git"
 uuid = "7f725544-6523-48cd-82d1-3fa08ff4056e"
 version = "1.42.0"
