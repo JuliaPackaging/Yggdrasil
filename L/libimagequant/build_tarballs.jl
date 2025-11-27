@@ -10,7 +10,7 @@ version = v"4.3.4"
 sources = [
     GitSource(
         "https://github.com/ImageOptim/libimagequant.git",
-        "b7340db2ac06bcdb36eec11f6251eee2c6d480b1"),
+        "26edfc4992a9b5c63c32945f676617c394ed1e31"),
 ]
 
 # following https://github.com/ImageOptim/libimagequant/tree/main/imagequant-sys#building-for-c
