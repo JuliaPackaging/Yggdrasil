@@ -6,17 +6,21 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "Silo"
-version = v"4.11.1"
+version = v"4.12.0"
 sources = [
-    # ArchiveSource("https://github.com/LLNL/Silo/releases/download/$(version)/silo-$(version)-bsd-smalltest.tar.xz",
-    #               "be05f205180c62443b6f203a48b4e31ed1a3a856bef7bde8e62beb3b6e31ceea"),
-    # This isn't quite 4.11.1, it's a few commits later so that we can have `CMakeLists.txt`
-    GitSource("https://github.com/LLNL/Silo", "c2414603797c24afb14e9c932707c290003a4bc8"),
+    ArchiveSource("https://github.com/LLNL/Silo/releases/download/$(version)/Silo-$(version).tar.xz",
+                  "bde1685e4547d5dd7416bd6215b41f837efef0e4934d938ba776957afbebdff0"),
     DirectorySource("bundled"),
 ]
 
 script = raw"""
-cd ${WORKSPACE}/srcdir/Silo
+cd ${WORKSPACE}/srcdir/Silo*
+
+# Correct HDF5 compatibility
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/505.patch
+
+# Correct Windows support
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/windows.patch
 
 # Do not run target exectutables at build time
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pdb_detect.patch
@@ -36,6 +40,7 @@ cmake_options=(
     -DSILO_ENABLE_SILEX=OFF
     -DSILO_ENABLE_SILOCK=ON
     -DSILO_ENABLE_TESTS=OFF
+    -DSILO_HDF5_SZIP_DIR=${prefix}
 )
 
 cmake -Bbuild ${cmake_options[@]}
@@ -62,17 +67,13 @@ augment_platform_block = """
 platforms = expand_cxxstring_abis(supported_platforms())
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
-# szip support is broken for Windows, and we need szip support for HDF5
-filter!(!Sys.iswindows, platforms)
-
 products = [
     LibraryProduct("libsiloh5", :libsilo),
 ]
 
 dependencies = [
-    Dependency("HDF5_jll"; compat="~1.14.6"),
+    Dependency("HDF5_jll"; compat="2.0.0"),
     Dependency("Zlib_jll"; compat="1.2.12"),
-    Dependency("libaec_jll"; compat="1.1.4"), # This is the successor of szlib
 ]
 append!(dependencies, platform_dependencies)
 
