@@ -5,7 +5,7 @@ using BinaryBuilder, Pkg
 name = "msolve"
 upstream_version = v"0.9.2"
 
-version_offset = v"0.0.0"
+version_offset = v"0.0.1"
 version = VersionNumber(upstream_version.major*100+version_offset.major,
                         upstream_version.minor*100+version_offset.minor,
                         upstream_version.patch*100+version_offset.patch)
@@ -44,7 +44,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("GMP_jll", v"6.2.1"),
-    Dependency("FLINT_jll", compat = "~301.300.101"),
+    Dependency("FLINT_jll", compat = "~301.400.000"),
     Dependency("MPFR_jll", v"4.1.1"),
     Dependency("OpenBLAS32_jll", v"0.3.29"),
 
