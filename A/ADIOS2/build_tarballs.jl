@@ -171,7 +171,8 @@ filter!(!Sys.iswindows, platforms)
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # We don't need HDF5 on Windows (see above)
-hdf5_platforms = filter(!Sys.iswindows, platforms)
+# HDF5 is not available on musl platforms
+hdf5_platforms = filter(p -> !(libc(p) == "musl" || Sys.iswindows(p)), platforms)
 
 # The products that we will ensure are always built
 products = [
