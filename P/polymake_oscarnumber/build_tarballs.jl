@@ -19,7 +19,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.13.0"), uuidopenssl)
 
 # reminder: change the version when changing the supported julia versions
 name = "polymake_oscarnumber"
-version = v"0.3.12"
+version = v"0.3.13"
 
 # reminder: change the above version when changing the supported julia versions
 # julia_versions is now taken from libjulia/common.jl and filtered
@@ -98,8 +98,8 @@ dependencies = [
     BuildDependency(PackageSpec(;name="libblastrampoline_jll", version = v"5.4.0")),
 
     Dependency("libcxxwrap_julia_jll"; compat = "~0.14.5"),
-    Dependency("libpolymake_julia_jll", compat = "=0.14.3"),
-    Dependency("polymake_jll", compat = "~400.1500.0"),
+    Dependency("libpolymake_julia_jll", compat = "=0.14.4"),
+    Dependency("polymake_jll", compat = "~400.1500.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
