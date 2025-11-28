@@ -40,9 +40,6 @@ cmake .. \
 cmake --build . --parallel $nproc
 cmake --install .
 
-# Cleanup
-unlink $prefix/cuda/lib64
-
 # We need a license file
 install_license ../LICENSE
 """
