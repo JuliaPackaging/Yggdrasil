@@ -22,7 +22,7 @@ export PATH="$CARGO_HOME/bin:$PATH"
 cd $WORKSPACE/srcdir/libimagequant/imagequant-sys
 
 # avoid the compiler wrappers so we can compile cargo-c for the host, not the target
-/opt/$(rust_host)/bin/cargo install --locked cargo-c
+/opt/x86_64-linux-musl/bin/cargo install --locked cargo-c
 cargo cinstall --destdir=${sysroot} --prefix=${prefix} --libdir=${libdir}
 install_license ./COPYRIGHT
 """
