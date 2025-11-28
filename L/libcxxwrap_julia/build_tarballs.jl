@@ -53,7 +53,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.11.0")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version="1.11.0")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

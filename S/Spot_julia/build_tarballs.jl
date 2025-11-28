@@ -94,7 +94,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.16")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version="1.10.16")),
     Dependency("libcxxwrap_julia_jll"; compat="0.14.3")
 ]
 

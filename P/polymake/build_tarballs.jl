@@ -149,7 +149,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    HostBuildDependency(PackageSpec(name="Perl_jll", version=v"5.34.1")),
+    HostBuildDependency(PackageSpec(name="Perl_jll", version="5.34.1")),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD systems),
     # and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),

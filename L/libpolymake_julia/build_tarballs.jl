@@ -69,11 +69,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.11.0")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version="1.11.0")),
     BuildDependency("GMP_jll"),
     BuildDependency("MPFR_jll"),
     # this version matches the one in Ipopt_jll (needed by polymake -> SCIP)
-    BuildDependency(PackageSpec(;name="libblastrampoline_jll", version = v"5.4.0")),
+    BuildDependency(PackageSpec(;name="libblastrampoline_jll", version = "5.4.0")),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("FLINT_jll", compat = "~301.400.0"),
     Dependency("TOPCOM_jll"; compat = "~0.17.8"),
@@ -81,10 +81,10 @@ dependencies = [
     Dependency("libcxxwrap_julia_jll"; compat = "~0.14.5"),
     Dependency("polymake_jll"; compat = "~400.1500.1"),
 
-    HostBuildDependency(PackageSpec(name="Perl_jll", version=v"5.34.1")),
-    HostBuildDependency(PackageSpec(name="polymake_jll", version=v"400.1500.1")),
-    HostBuildDependency(PackageSpec(name="lib4ti2_jll", version=v"1.6.10")),
-    HostBuildDependency(PackageSpec(name="TOPCOM_jll", version=v"0.17.8")),
+    HostBuildDependency(PackageSpec(name="Perl_jll", version="5.34.1")),
+    HostBuildDependency(PackageSpec(name="polymake_jll", version="400.1500.1")),
+    HostBuildDependency(PackageSpec(name="lib4ti2_jll", version="1.6.10")),
+    HostBuildDependency(PackageSpec(name="TOPCOM_jll", version="0.17.8")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
