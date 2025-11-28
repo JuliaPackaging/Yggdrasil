@@ -53,8 +53,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    HostBuildDependency(PackageSpec(name="LLVM_full_jll", version=v"20.1.2")),
-    BuildDependency(PackageSpec(name="LLVM_full_jll", version=v"20.1.2")),
+    HostBuildDependency(PackageSpec(name="LLVM_full_jll", version="20.1.2")),
+    BuildDependency(PackageSpec(name="LLVM_full_jll", version="20.1.2")),
     Dependency("OpenCL_jll"),
     Dependency("OpenCL_Headers_jll"),
     Dependency("Hwloc_jll"),
