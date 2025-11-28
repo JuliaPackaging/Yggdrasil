@@ -72,6 +72,7 @@ for platform in platforms
                    products, [dependencies; cuda_deps];
                    preferred_gcc_version=v"11",
                    julia_compat="1.7",
-                   augment_platform_block=CUDA.augment
+                   augment_platform_block=CUDA.augment,
+                   ignore_audit_errors = true
                    )
 end
