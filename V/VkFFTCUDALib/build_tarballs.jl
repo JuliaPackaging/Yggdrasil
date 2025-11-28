@@ -40,6 +40,9 @@ install_license ../LICENSE
 #       (specifically for x86_64-linux-gnu-libgfortran5-cxx11-cuda+13.0)
 platforms = CUDA.supported_platforms(min_version=v"11.0", max_version=v"12.9")
 filter!(p -> arch(p)=="x86_64", platforms) # Cmake toolchain breaks on aarch64, so only x86_64 for now
+# Drop CUDA versions that are currently busted in CI
+bad_cuda_versions = Set((v"12.0", v"12.8", v"13.0"))
+filter!(p -> VersionNumber(p["cuda"]) ∉ bad, platforms)
 
 # The products that we will ensure are always built
 products = [LibraryProduct("libVkFFTCUDA", :libVkFFTCUDA, dont_dlopen=true)]
