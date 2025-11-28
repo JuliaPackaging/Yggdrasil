@@ -3,8 +3,8 @@
 using BinaryBuilder
 
 name = "Git"
-version = v"2.51.3"
-upstream_version = v"2.51.2"
+version = v"2.52.0"
+upstream_version = version
 
 # <https://github.com/git-for-windows/git/releases> says:
 # "Git for Windows v2.48.1 was the last version to ship with the i686 ("32-bit") variant of the installer, portable Git and archive."
@@ -14,11 +14,11 @@ last_windows_32_bit_version = v"2.50.1"
 # Collection of sources required to build Git
 sources = [
     ArchiveSource("https://mirrors.edge.kernel.org/pub/software/scm/git/git-$(upstream_version).tar.xz",
-                  "233d7143a2d58e60755eee9b76f559ec73ea2b3c297f5b503162ace95966b4e3"),
+                  "3cd8fee86f69a949cb610fee8cd9264e6873d07fa58411f6060b3d62729ed7c5"),
     ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(last_windows_32_bit_version).windows.1/Git-$(last_windows_32_bit_version)-32-bit.tar.bz2",
                   "796d8f4fdd19c668e348d04390a3528df61cfc9864d1f276d9dc585a8a0ac82c"; unpack_target = "i686-w64-mingw32"),
     ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(upstream_version).windows.1/Git-$(upstream_version)-64-bit.tar.bz2",
-                  "79b257dd677ed2c18bec0b5357fcd68cdd6cfa32bce4d379ad06e32a15a4b31f"; unpack_target = "x86_64-w64-mingw32"),
+                  "4c05716ec90806b29d6392e6190e2277a6687688f889f0039d7ae3ca53ed433f"; unpack_target = "x86_64-w64-mingw32"),
 ]
 
 # Bash recipe for building across all platforms
