@@ -39,8 +39,8 @@ install_license ../LICENSE
 # NOTE: CUDA 13 is not yet supported because the CUDA_SDK_jlls are not available yet
 #       (specifically for x86_64-linux-gnu-libgfortran5-cxx11-cuda+13.0)
 platforms = CUDA.supported_platforms(min_version=v"11.0", max_version=v"12.9")
-# Cmake toolchain breaks on aarch64, so only x86_64 for now
-filter!(p -> arch(p)=="x86_64", platforms)
+filter!(p -> arch(p)=="x86_64", platforms) # Cmake toolchain breaks on aarch64, so only x86_64 for now
+filter!(p -> VersionNumber(p["cuda"]) != v"12.0", platforms) # CUDA 12.0 breaks for some reason
 
 # The products that we will ensure are always built
 products = [LibraryProduct("libVkFFTCUDA", :libVkFFTCUDA, dont_dlopen=true)]
