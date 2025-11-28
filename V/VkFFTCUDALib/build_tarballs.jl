@@ -9,21 +9,12 @@ version = v"0.1.1"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/PaulVirally/VkFFTCUDALib.git", "9c8cf2eae261b363e185e5043599ca2726f5aafd"),
-    FileSource("https://us.download.nvidia.com/XFree86/Linux-x86_64/410.66/NVIDIA-Linux-x86_64-410.66.run", "8fb6ad857fa9a93307adf3f44f5decddd0bf8587a7ad66c6bfb33e07e4feb217"),
 ]
 
 script = raw"""
 # Setup some necessary CUDA annoyingness
 export CUDA_PATH="$prefix/cuda"
 ln -s $prefix/cuda/lib $prefix/cuda/lib64
-
-# Install CUDA driver libraries (all of this is to get libcuda.so to exist and work)
-mkdir -p ${prefix}/lib
-chmod +x NVIDIA-Linux-x86_64-*.run
-./NVIDIA-Linux-x86_64-*.run -x
-cp NVIDIA-Linux-x86_64-*/libcuda.so.* $prefix/lib/
-ln -s $(cd $prefix/lib; echo libcuda.so*) $prefix/lib/libcuda.so.1
-cp NVIDIA-Linux-x86_64-*/libnvidia-fatbinaryloader.so.* $prefix/lib/
 
 # Download and install VkFFTCUDALib
 cd $WORKSPACE/srcdir/VkFFTCUDALib
@@ -52,7 +43,7 @@ platforms = CUDA.supported_platforms(min_version=v"11.0", max_version=v"12.9")
 filter!(p -> arch(p)=="x86_64", platforms)
 
 # The products that we will ensure are always built
-products = [LibraryProduct("libVkFFTCUDA", :libVkFFTCUDA)]
+products = [LibraryProduct("libVkFFTCUDA", :libVkFFTCUDA, dont_dlopen=true)]
 
 # We need cmake >= 3.18 to build with CUDA
 # CompilerSupportLibraries_jll is needed for gcc dynamic linking
