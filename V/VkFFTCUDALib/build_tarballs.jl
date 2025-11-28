@@ -73,7 +73,7 @@ products = [LibraryProduct("libVkFFTCUDA", :libVkFFTCUDA)]
 # We need cmake >= 3.18 to build with CUDA
 # CompilerSupportLibraries_jll is needed for gcc dynamic linking
 dependencies = [
-    HostBuildDependency(PackageSpec(; name="CMake_jll", version=v"3.28.1")),
+    HostBuildDependency(PackageSpec(; name="CMake_jll", version="3.28.1")),
     Dependency("CompilerSupportLibraries_jll")
 ]
 
