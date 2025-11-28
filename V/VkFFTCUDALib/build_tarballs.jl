@@ -42,18 +42,6 @@ cmake --install .
 
 # Cleanup
 unlink $prefix/cuda/lib64
-rm $prefix/lib/libasan.so*
-rm $prefix/lib/libatomic.so*
-rm $prefix/lib/libgfortran.so*
-rm $prefix/lib/libgomp.so*
-rm $prefix/lib/libhwasan.so*
-rm $prefix/lib/libitm.so*
-rm $prefix/lib/liblsan.so*
-rm $prefix/lib/libobjc.so*
-rm $prefix/lib/libquadmath.so*
-rm $prefix/lib/libssp.so*
-rm $prefix/lib/libtsan.so*
-rm $prefix/lib/libubsan.so*
 
 # We need a license file
 install_license ../LICENSE
