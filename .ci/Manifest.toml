@@ -40,8 +40,8 @@ uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 version = "1.11.0"
 
 [[deps.BinaryBuilder]]
-deps = ["ArgParse", "BinaryBuilderBase", "Binutils_jll", "Dates", "Downloads", "GitHub", "HTTP", "JLD2", "JSON", "LibGit2", "Libdl", "Logging", "LoggingExtras", "ObjectFile", "OutputCollectors", "Patchelf_jll", "Pkg", "PkgLicenses", "REPL", "Random", "Registrator", "RegistryTools", "SHA", "Scratch", "Sockets", "TOML", "UUIDs", "ghr_jll"]
-git-tree-sha1 = "5caeb4f25ead6a04742d9d3140c8d699ceea1fe3"
+deps = ["ArgParse", "BinaryBuilderBase", "Binutils_jll", "Dates", "Downloads", "GitHub", "HTTP", "JLD2", "JSON", "LibGit2", "Libdl", "Logging", "LoggingExtras", "ObjectFile", "Patchelf_jll", "Pkg", "PkgLicenses", "REPL", "Random", "Registrator", "RegistryTools", "SHA", "Scratch", "Sockets", "TOML", "UUIDs", "ghr_jll"]
+git-tree-sha1 = "2a504552d7a9d054885481e4cb4329840387be21"
 repo-rev = "master"
 repo-url = "https://github.com/JuliaPackaging/BinaryBuilder.jl.git"
 uuid = "12aac903-9f7c-5d81-afc2-d9565ea332ae"
@@ -49,7 +49,7 @@ version = "0.6.5"
 
 [[deps.BinaryBuilderBase]]
 deps = ["Bzip2_jll", "CodecZlib", "Downloads", "Gzip_jll", "HistoricalStdlibVersions", "InteractiveUtils", "JLLWrappers", "JSON", "LibGit2", "LibGit2_jll", "Libdl", "Logging", "OrderedCollections", "OutputCollectors", "Pkg", "Printf", "ProgressMeter", "REPL", "Random", "SHA", "Scratch", "SimpleBufferStream", "TOML", "Tar", "Tar_jll", "UUIDs", "XZ_jll", "Zstd_jll", "p7zip_jll", "pigz_jll", "unzip_jll"]
-git-tree-sha1 = "b0d610852483382d19de2d2db7df8c214aab3fd1"
+git-tree-sha1 = "56ae51da480a8156ae3112f61da6506409912b72"
 repo-rev = "master"
 repo-url = "https://github.com/JuliaPackaging/BinaryBuilderBase.jl.git"
 uuid = "7f725544-6523-48cd-82d1-3fa08ff4056e"
@@ -389,9 +389,9 @@ uuid = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 version = "1.8.1"
 
 [[deps.OutputCollectors]]
-git-tree-sha1 = "5d3f2b3b2e2a9d7d6f1774c78e94530ac7f360cc"
+git-tree-sha1 = "d5e1ff7302df52d4bae4115b2dc093856f216e99"
 uuid = "6c11c7d4-943b-4e2b-80de-f2cfc2930a8c"
-version = "0.1.1"
+version = "0.1.2"
 
 [[deps.Parsers]]
 deps = ["Dates", "PrecompileTools", "UUIDs"]
@@ -584,9 +584,9 @@ version = "0.3.0"
 
 [[deps.TimeZones]]
 deps = ["Artifacts", "Dates", "Downloads", "InlineStrings", "Mocking", "Printf", "Scratch", "TZJData", "Unicode", "p7zip_jll"]
-git-tree-sha1 = "06f4f1f3e8ff09e42e59b043a747332e88e01aba"
+git-tree-sha1 = "d422301b2a1e294e3e4214061e44f338cafe18a2"
 uuid = "f269a46b-ccf7-5d73-abea-4c690281aa53"
-version = "1.22.1"
+version = "1.22.2"
 
     [deps.TimeZones.extensions]
     TimeZonesRecipesBaseExt = "RecipesBase"
