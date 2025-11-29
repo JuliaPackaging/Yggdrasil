@@ -26,7 +26,9 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cdylib.patch
 
 cd $WORKSPACE/srcdir/libimagequant/imagequant-sys
 
-cargo build --release
+# Disable Rayon-threading (which apparently has large perf cost), because
+# I can't get it to build on non-gnu
+cargo build --release --no-default-features
 install_license COPYRIGHT
 
 # Install the shared library (note: _sys on the source path)
