@@ -22,6 +22,13 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cdylib.patch
 
 cd $WORKSPACE/srcdir/libimagequant/imagequant-sys
 
+# avoid 'cannot create cdylib' error on musl targets
+# see https://github.com/rust-lang/cargo/issues/8607
+#     https://github.com/rust-lang/rust/issues/59302
+if [[ "${target}" == *-musl* ]]; then
+    export RUSTFLAGS="-C target-feature=-crt-static"
+fi
+
 cargo build --release
 install_license COPYRIGHT
 
