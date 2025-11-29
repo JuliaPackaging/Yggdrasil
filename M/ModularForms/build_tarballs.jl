@@ -1,11 +1,10 @@
 using BinaryBuilder, Pkg
-import Pkg.Types: VersionSpec
 
 name = "ModularForms"
-version = v"0.1.0"
+version = v"0.2.1"
 
 sources = [GitSource("https://gitlab.com/mraum/ModularForms_jll_src.git",
-                     "4d81d41e625fde3e36dc86df5061313a8447cacd")]
+                     "e7596c82d1a6f4a95325f387c0cd054473a9734e")]
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -13,7 +12,12 @@ cd $WORKSPACE/srcdir/ModularForms_jll_src
 if [[ ${target} == *musl* ]]; then
    export CFLAGS=-D_GNU_SOURCE
 fi
-./configure --prefix=$prefix --disable-static --enable-shared --with-gmp=$prefix --with-mpfr=$prefix --with-flint=$prefix --with-arb=$prefix
+./configure --prefix=$prefix           \
+    --disable-static --enable-shared   \
+    --with-gmp=$prefix                 \
+    --with-mpfr=$prefix                \
+    --with-flint=$prefix               \
+    ${extraflags}
 make -j${nproc}
 make install LIBDIR=$(basename ${libdir})
 """
@@ -29,8 +33,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="Arb_jll"), compat = "~200.2200.0"),
-    Dependency(PackageSpec(name="FLINT_jll"), compat = "^200.800.401")
+    Dependency(PackageSpec(name="FLINT_jll"), compat = "~301.300")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
