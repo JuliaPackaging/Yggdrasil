@@ -27,7 +27,7 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cdylib.patch
 cd $WORKSPACE/srcdir/libimagequant/imagequant-sys
 
 cargo build --release
-install_license LICENSE
+install_license COPYRIGHT
 
 # Install the shared library
 install -Dvm 755 target/${rust_target}/release/libimagequant.${dlext} \
