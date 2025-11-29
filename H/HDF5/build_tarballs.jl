@@ -245,10 +245,6 @@ platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 
-# `qsort_r` is not available. (HDF5 should use `qsort` or `qsort_s`.)
-# <https://github.com/HDFGroup/hdf5/issues/5923>
-filter!(p -> libc(p) != "musl", platforms)
-
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # The products that we will ensure are always built
