@@ -15,21 +15,14 @@ sources = [
 
 # following https://github.com/ImageOptim/libimagequant/tree/main/imagequant-sys#building-for-c
 script = raw"""
-export CARGO_HOME="$WORKSPACE/cargo"
-export PATH="$CARGO_HOME/bin:$PATH"
-
 cd $WORKSPACE/srcdir/libimagequant/
 
-# patch to create a dynamic library & disable no-opt build-script
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cross-compile.patch
+# patch to create a dynamic library
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cdylib.patch
 
 cd $WORKSPACE/srcdir/libimagequant/imagequant-sys
 
-rm build.rs
-
-# Disable Rayon-threading (which apparently has large perf cost), because
-# I can't get it to build on non-gnu
-cargo build --release --no-default-features
+cargo build --release
 install_license COPYRIGHT
 
 # Install the shared library (note: _sys on the source path)
