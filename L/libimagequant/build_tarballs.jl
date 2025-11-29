@@ -18,11 +18,13 @@ script = raw"""
 export CARGO_HOME="$WORKSPACE/cargo"
 export PATH="$CARGO_HOME/bin:$PATH"
 
-cd $WORKSPACE/srcdir/libimagequant/imagequant-sys
+cd $WORKSPACE/srcdir/libimagequant/
 
 # patch to create a dynamic library as mentioned here:
 # https://github.com/ImageOptim/libimagequant/tree/main?tab=readme-ov-file#c-dynamic-library-for-package-maintainers
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cdylib.patch
+
+cd $WORKSPACE/srcdir/libimagequant/imagequant-sys
 
 cargo build --release
 install_license LICENSE
