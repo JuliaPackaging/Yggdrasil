@@ -3,13 +3,13 @@
 using BinaryBuilder, BinaryBuilderBase
 
 name = "libimagequant"
-version = v"4.3.4"
+version = v"4.4.1"
 
 # Collection of sources required to complete build
 sources = [
     GitSource(
         "https://github.com/ImageOptim/libimagequant.git",
-        "26edfc4992a9b5c63c32945f676617c394ed1e31"),
+        "24e2956a37cd7ad1f4b81c0e20318e3239eb71dc"),
         DirectorySource("./bundled"),
 ]
 
