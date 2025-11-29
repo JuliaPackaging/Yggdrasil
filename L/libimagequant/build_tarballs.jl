@@ -32,15 +32,8 @@ fi
 cargo build --release
 install_license COPYRIGHT
 
-# Pick the right filename depending on platform
-if [[ "${dlext}" == "dll" ]]; then
-    src="../target/${rust_target}/release/imagequant_sys.${dlext}"
-else
-    src="../target/${rust_target}/release/libimagequant_sys.${dlext}"
-fi
-
 # Install under a consistent name
-install -Dvm 755 "${src}" "${libdir}/libimagequant.${dlext}"
+install -Dvm 755 ../target/${rust_target}/release/*imagequant_sys.${dlext} "${libdir}/libimagequant.${dlext}"
 
 # Install the C header
 install -Dvm 644 libimagequant.h ${includedir}/libimagequant.h
