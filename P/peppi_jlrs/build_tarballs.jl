@@ -5,30 +5,27 @@ using BinaryBuilder, Pkg
 name = "peppi_jlrs"
 version = v"0.1.0"
 julia_versions = [v"1.10", v"1.11", v"1.12"]
-ENV["CARGO_PROFILE_RELEASE_STRIP"] = "debuginfo"
+
 sources = [
     GitSource("https://github.com/jph6366/peppi-jlrs.git",
-              "0f0e02ddd062b1ecc00a8409a30be5abce43bb17"),
+        "0f0e02ddd062b1ecc00a8409a30be5abce43bb17"),
 ]
 
 script = raw"""
 cd $WORKSPACE/srcdir/peppi-jlrs
-cargo build --release --verbose
+cargo build --release
 install_license LICENSE
-install -Dvm 0755 "target/${rust_target}/release/"*peppi_jlrs".${dlext}" "${libdir}/libpeppi_jlrs.${dlext}"
+install -Dvm 0755 "target/${rust_target}/release/"*peppi_jlrs.${dlext} "${libdir}/libpeppi_jlrs.${dlext}"
 """
 
 include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
-# Filter out platforms where Rust toolchain is not available
-platforms = filter(platforms) do p
-    # FreeBSD on aarch64 doesn't have Rust 1.91.0 available
-    !(Sys.isfreebsd(p) && arch(p) == "aarch64")
-end
 # Rust toolchain for i686 Windows is unusable
+filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms)
+# Rust toolchain 1.91.0 not available for aarch64-freebsd
+filter!(p -> !(os(p) == "freebsd" && arch(p) == "aarch64"), platforms)
 # zstd-sys has assembly issues on 32-bit platforms
-is_excluded(p) = nbits(p) == 32
-filter!(!is_excluded, platforms)
+filter!(p -> nbits(p) != 32, platforms)
 
 products = [
     LibraryProduct("libpeppi_jlrs", :libpeppi_jlrs),
@@ -41,4 +38,4 @@ dependencies = [
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"10", julia_compat="1.10", compilers=[:c, :rust])
+    julia_compat="1.10", compilers=[:c, :rust])
