@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "abseil_cpp"
-version = v"20230125.0"
+version = v"20211102.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/abseil/abseil-cpp", "78be63686ba732b25052be15f8d6dee891c05749"),
+    GitSource("https://github.com/abseil/abseil-cpp", "215105818dfde3174fe799600bb0f3cae233d0bf"),
     DirectorySource("./bundled"),
 ]
 
@@ -72,13 +72,8 @@ products = [
     LibraryProduct("libabsl_cordz_handle", :libabsl_cordz_handle),
     LibraryProduct("libabsl_cordz_info", :libabsl_cordz_info),
     LibraryProduct("libabsl_cordz_sample_token", :libabsl_cordz_sample_token),
-    LibraryProduct("libabsl_crc32c", :libabsl_crc32c),
-    LibraryProduct("libabsl_crc_cord_state", :libabsl_crc_cord_state),
-    LibraryProduct("libabsl_crc_cpu_detect", :libabsl_crc_cpu_detect),
-    LibraryProduct("libabsl_crc_internal", :libabsl_crc_internal),
     LibraryProduct("libabsl_debugging_internal", :libabsl_debugging_internal),
     LibraryProduct("libabsl_demangle_internal", :libabsl_demangle_internal),
-    LibraryProduct("libabsl_die_if_null", :libabsl_die_if_null),
     LibraryProduct("libabsl_examine_stack", :libabsl_examine_stack),
     LibraryProduct("libabsl_exponential_biased", :libabsl_exponential_biased),
     LibraryProduct("libabsl_failure_signal_handler", :libabsl_failure_signal_handler),
@@ -99,20 +94,8 @@ products = [
     LibraryProduct("libabsl_hashtablez_sampler", :libabsl_hashtablez_sampler),
     LibraryProduct("libabsl_int128", :libabsl_int128),
     LibraryProduct("libabsl_leak_check", :libabsl_leak_check),
-    LibraryProduct("libabsl_log_entry", :libabsl_log_entry),
-    LibraryProduct("libabsl_log_flags", :libabsl_log_flags),
-    LibraryProduct("libabsl_log_globals", :libabsl_log_globals),
-    LibraryProduct("libabsl_log_initialize", :libabsl_log_initialize),
-    LibraryProduct("libabsl_log_internal_check_op", :libabsl_log_internal_check_op),
-    LibraryProduct("libabsl_log_internal_conditions", :libabsl_log_internal_conditions),
-    LibraryProduct("libabsl_log_internal_format", :libabsl_log_internal_format),
-    LibraryProduct("libabsl_log_internal_globals", :libabsl_log_internal_globals),
-    LibraryProduct("libabsl_log_internal_log_sink_set", :libabsl_log_internal_log_sink_set),
-    LibraryProduct("libabsl_log_internal_message", :libabsl_log_internal_message),
-    LibraryProduct("libabsl_log_internal_nullguard", :libabsl_log_internal_nullguard),
-    LibraryProduct("libabsl_log_internal_proto", :libabsl_log_internal_proto),
+    LibraryProduct("libabsl_leak_check_disable", :libabsl_leak_check_disable),
     LibraryProduct("libabsl_log_severity", :libabsl_log_severity),
-    LibraryProduct("libabsl_log_sink", :libabsl_log_sink),
     LibraryProduct("libabsl_low_level_hash", :libabsl_low_level_hash),
     LibraryProduct("libabsl_malloc_internal", :libabsl_malloc_internal),
     LibraryProduct("libabsl_periodic_sampler", :libabsl_periodic_sampler),
@@ -146,7 +129,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    Dependency("CompilerSupportLibraries_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
