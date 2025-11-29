@@ -30,7 +30,7 @@ cargo build --release
 install_license COPYRIGHT
 
 # Install the shared library (note: _sys on the source path)
-install -Dvm 755 target/${rust_target}/release/libimagequant_sys.${dlext} \
+install -Dvm 755 ../target/${rust_target}/release/libimagequant_sys.${dlext} \
     ${libdir}/libimagequant.${dlext}
 
 
