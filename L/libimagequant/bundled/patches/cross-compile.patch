@@ -1,0 +1,27 @@
+diff --git a/imagequant-sys/Cargo.toml b/imagequant-sys/Cargo.toml
+index f77e05e..9c19d58 100644
+--- a/imagequant-sys/Cargo.toml
++++ b/imagequant-sys/Cargo.toml
+@@ -13,7 +13,7 @@ include = ["COPYRIGHT", "src/*.rs", "build.rs", "*.h", "README.md", "Cargo.toml"
+ readme = "README.md"
+ edition = "2021"
+ links = "imagequant"
+-build = "build.rs"
++# build = "build.rs" # disabled for BinaryBuilder
+ rust-version = "1.64"
+
+ [features]
+@@ -33,7 +33,7 @@ no_std_global_handlers = ["no_std"]
+ capi = []
+
+ [lib]
+-crate-type = ["staticlib", "lib"]
++crate-type = ["staticlib", "lib", "cdylib"]
+ doctest = false
+ path = "src/ffi.rs"
+ name = "imagequant_sys"
+@@ -74,3 +74,4 @@ tag-message = ""
+ tag-prefix = ""
+ tag-name = "{{version}}"
+
++

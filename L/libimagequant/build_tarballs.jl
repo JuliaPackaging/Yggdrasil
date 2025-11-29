@@ -20,9 +20,8 @@ export PATH="$CARGO_HOME/bin:$PATH"
 
 cd $WORKSPACE/srcdir/libimagequant/
 
-# patch to create a dynamic library as mentioned here:
-# https://github.com/ImageOptim/libimagequant/tree/main?tab=readme-ov-file#c-dynamic-library-for-package-maintainers
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cdylib.patch
+# patch to create a dynamic library & disable no-opt build-script
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cross-compile.patch
 
 cd $WORKSPACE/srcdir/libimagequant/imagequant-sys
 
