@@ -5,10 +5,10 @@ using BinaryBuilder, Pkg
 name = "peppi_jlrs"
 version = v"0.1.0"
 julia_versions = [v"1.10", v"1.11", v"1.12"]
-
+ENV["CARGO_PROFILE_RELEASE_STRIP"] = "debuginfo"
 sources = [
     GitSource("https://github.com/jph6366/peppi-jlrs.git",
-              "65ba889ba10d386bbbd11258aea51b32081ede71"),
+              "0f0e02ddd062b1ecc00a8409a30be5abce43bb17"),
 ]
 
 script = raw"""
