@@ -40,15 +40,12 @@ install -Dvm 644 libimagequant.h ${includedir}/libimagequant.h
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-# platforms = supported_platforms()
+platforms = supported_platforms()
 # # Rust toolchain for i686 Windows is unusable
-# filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
+filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
 # # Rust toolchain seems to not be available for RISC-V or FreeBSD/aarch64
-# filter!(p -> arch(p) != "riscv64", platforms)
-# filter!(p -> os(p) != "freebsd" || arch(p) != "aarch64", platforms)
-
-# let's not waste CI until we get one platform working
-platforms = [Platform("x86_64", "linux")]
+filter!(p -> arch(p) != "riscv64", platforms)
+filter!(p -> os(p) != "freebsd" || arch(p) != "aarch64", platforms)
 
 # The products that we will ensure are always built
 products = [
