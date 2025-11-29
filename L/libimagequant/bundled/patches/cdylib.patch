@@ -1,0 +1,10 @@
+diff --git a/imagequant-sys/Cargo.toml b/imagequant-sys/Cargo.toml
+--- a/imagequant-sys/Cargo.toml
++++ b/imagequant-sys/Cargo.toml
+@@ -1,6 +1,6 @@
+ [lib]
+-crate-type = ["staticlib", "lib"]
++crate-type = ["staticlib", "lib", "cdylib"]
+ doctest = false
+ path = "src/ffi.rs"
+ name = "imagequant_sys"

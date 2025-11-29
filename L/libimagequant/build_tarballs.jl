@@ -6,25 +6,33 @@ name = "libimagequant"
 version = v"4.3.4"
 
 # Collection of sources required to complete build
-#
 sources = [
     GitSource(
         "https://github.com/ImageOptim/libimagequant.git",
         "26edfc4992a9b5c63c32945f676617c394ed1e31"),
+        DirectorySource("./bundled"),
 ]
 
 # following https://github.com/ImageOptim/libimagequant/tree/main/imagequant-sys#building-for-c
-# we use cargo-c to install the library
 script = raw"""
 export CARGO_HOME="$WORKSPACE/cargo"
 export PATH="$CARGO_HOME/bin:$PATH"
 
 cd $WORKSPACE/srcdir/libimagequant/imagequant-sys
 
-# avoid the compiler wrappers so we can compile cargo-c for the host, not the target
-/opt/x86_64-linux-musl/bin/cargo install --locked cargo-c
-cargo cinstall --destdir=${sysroot} --prefix=${prefix} --libdir=${libdir}
-install_license ./COPYRIGHT
+# patch to create a dynamic library as mentioned here:
+# https://github.com/ImageOptim/libimagequant/tree/main?tab=readme-ov-file#c-dynamic-library-for-package-maintainers
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cdylib.patch
+
+cargo build --release
+install_license LICENSE
+
+# Install the shared library
+install -Dvm 755 target/${rust_target}/release/libimagequant.${dlext} \
+    ${libdir}/libimagequant.${dlext}
+
+# Install the C header
+install -Dvm 644 ../libimagequant.h ${includedir}/libimagequant.h
 """
 
 # These are the platforms we will build for by default, unless further
