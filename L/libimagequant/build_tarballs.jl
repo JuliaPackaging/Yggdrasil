@@ -29,12 +29,13 @@ cd $WORKSPACE/srcdir/libimagequant/imagequant-sys
 cargo build --release
 install_license COPYRIGHT
 
-# Install the shared library
-install -Dvm 755 target/${rust_target}/release/libimagequant.${dlext} \
+# Install the shared library (note: _sys on the source path)
+install -Dvm 755 target/${rust_target}/release/libimagequant_sys.${dlext} \
     ${libdir}/libimagequant.${dlext}
 
+
 # Install the C header
-install -Dvm 644 ../libimagequant.h ${includedir}/libimagequant.h
+install -Dvm 644 libimagequant.h ${includedir}/libimagequant.h
 """
 
 # These are the platforms we will build for by default, unless further
