@@ -22,7 +22,8 @@ include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 
 # Rust toolchain for i686 Windows is unusable
-is_excluded(p) = Sys.iswindows(p) && nbits(p) == 32
+# zstd-sys has assembly issues on 32-bit platforms
+is_excluded(p) = nbits(p) == 32
 filter!(!is_excluded, platforms)
 
 products = [
@@ -32,6 +33,7 @@ products = [
 dependencies = [
     BuildDependency("libjulia_jll"),
     Dependency("Libiconv_jll"; platforms=filter(Sys.isapple, platforms)),
+    Dependency("Zstd_jll"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
