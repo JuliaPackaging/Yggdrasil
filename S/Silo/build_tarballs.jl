@@ -33,26 +33,15 @@ cmake_options=(
     -DSILO_BUILD_FOR_BSD_LICENSE=ON
     -DSILO_ENABLE_BROWSER=OFF
     -DSILO_ENABLE_FORTRAN=OFF
+    -DSILO_ENABLE_HDF5=ON
     -DSILO_ENABLE_JSON=ON
     -DSILO_ENABLE_PYTHON_MODULE=OFF
     -DSILO_ENABLE_SHARED=ON
     -DSILO_ENABLE_SILEX=OFF
     -DSILO_ENABLE_SILOCK=ON
     -DSILO_ENABLE_TESTS=OFF
+    -DSILO_HDF5_SZIP_DIR=${prefix}
 )
-
-# HDF5
-if [[ ${target} != *-musl* ]]; then
-    # We do not build HDF5 for musl
-    cmake_options+=(
-        -DSILO_ENABLE_HDF5=ON
-        -DSILO_HDF5_SZIP_DIR=${prefix}
-    )
-else
-    cmake_options+=(
-        -DSILO_ENABLE_HDF5=OFF
-    )
-fi
 
 cmake -Bbuild ${cmake_options[@]}
 
