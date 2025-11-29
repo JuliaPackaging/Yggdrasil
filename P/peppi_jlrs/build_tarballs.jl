@@ -2,18 +2,13 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-# See https://github.com/JuliaLang/Pkg.jl/issues/2942
-# Once this Pkg issue is resolved, this must be removed
-uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
-delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
-
 name = "peppi_jlrs"
 version = v"0.1.0"
 julia_versions = [v"1.10", v"1.11", v"1.12"]
 
 sources = [
     GitSource("https://github.com/jph6366/peppi-jlrs.git",
-              "20c8b4b50729b90a395d8e798a2c5827b1da6b82"),
+              "65ba889ba10d386bbbd11258aea51b32081ede71"),
 ]
 
 script = raw"""
