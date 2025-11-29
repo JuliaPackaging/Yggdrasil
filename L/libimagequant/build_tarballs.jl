@@ -25,6 +25,8 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cross-compile.patch
 
 cd $WORKSPACE/srcdir/libimagequant/imagequant-sys
 
+rm build.rs
+
 # Disable Rayon-threading (which apparently has large perf cost), because
 # I can't get it to build on non-gnu
 cargo build --release --no-default-features
