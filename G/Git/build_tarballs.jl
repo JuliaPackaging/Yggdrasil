@@ -15,23 +15,25 @@ last_windows_32_bit_version = v"2.50.1"
 sources = [
     ArchiveSource("https://mirrors.edge.kernel.org/pub/software/scm/git/git-$(upstream_version).tar.xz",
                   "3cd8fee86f69a949cb610fee8cd9264e6873d07fa58411f6060b3d62729ed7c5"),
-    ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(last_windows_32_bit_version).windows.1/Git-$(last_windows_32_bit_version)-32-bit.tar.bz2",
-                  "796d8f4fdd19c668e348d04390a3528df61cfc9864d1f276d9dc585a8a0ac82c"; unpack_target = "i686-w64-mingw32"),
-    ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(upstream_version).windows.1/Git-$(upstream_version)-64-bit.tar.bz2",
-                  "4c05716ec90806b29d6392e6190e2277a6687688f889f0039d7ae3ca53ed433f"; unpack_target = "x86_64-w64-mingw32"),
+    # Use FileSources instead of ArchiveSources because unpacking archives takes a long time and is not necessary on most platforms
+    FileSource("https://github.com/git-for-windows/git/releases/download/v$(last_windows_32_bit_version).windows.1/Git-$(last_windows_32_bit_version)-32-bit.tar.bz2",
+               "796d8f4fdd19c668e348d04390a3528df61cfc9864d1f276d9dc585a8a0ac82c"),
+    FileSource("https://github.com/git-for-windows/git/releases/download/v$(upstream_version).windows.1/Git-$(upstream_version)-64-bit.tar.bz2",
+               "4c05716ec90806b29d6392e6190e2277a6687688f889f0039d7ae3ca53ed433f"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 install_license ${WORKSPACE}/srcdir/git-*/COPYING
 
-if [[ "${target}" == *-mingw* ]]; then
-    cd ${WORKSPACE}/srcdir/${target}
+if [[ ${target} == *-mingw* ]]; then
+    # Fast path for Windows: just unpack the tarballs in the prefix
+    cd ${prefix}
+    tar xjf ${WORKSPACE}/srcdir/Git-*-${nbits}-bit.tar.bz2
     # Delete symbolic links, which can't be created on Windows
     echo "Deleting symbolic links..."
     find . -type l -print -delete
-    # Fast path for Windows: just copy the content of the tarball to the prefix
-    cp -r * ${prefix}
+    mv * ${prefix}
     exit
 fi
 
