@@ -1,5 +1,5 @@
 diff --git a/imagequant-sys/Cargo.toml b/imagequant-sys/Cargo.toml
-index 50cb6e9..a71ab09 100644
+index 50cb6e9..aa56ead 100644
 --- a/imagequant-sys/Cargo.toml
 +++ b/imagequant-sys/Cargo.toml
 @@ -9,15 +9,15 @@ repository = "https://github.com/ImageOptim/libimagequant"
@@ -10,8 +10,9 @@ index 50cb6e9..a71ab09 100644
 +include = ["COPYRIGHT", "src/*.rs", "*.h", "README.md", "Cargo.toml"]
  readme = "README.md"
  edition = "2021"
- links = "imagequant"
+-links = "imagequant"
 -build = "build.rs"
++# links = "imagequant"
 +# build = "build.rs" # Disable for BB cross compilation
  rust-version = "1.63"
 
