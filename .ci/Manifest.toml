@@ -2,7 +2,7 @@
 
 julia_version = "1.12.2"
 manifest_format = "2.0"
-project_hash = "307630b5433268691f0cd1ef7f1c6c820417465f"
+project_hash = "d783ddceda39db921e5b36638adecf82bccaf166"
 
 [[deps.ArgParse]]
 deps = ["Logging", "TextWrap"]
@@ -41,7 +41,7 @@ version = "1.11.0"
 
 [[deps.BinaryBuilder]]
 deps = ["ArgParse", "BinaryBuilderBase", "Binutils_jll", "Dates", "Downloads", "GitHub", "HTTP", "JLD2", "JSON", "LibGit2", "Libdl", "Logging", "LoggingExtras", "ObjectFile", "OutputCollectors", "Patchelf_jll", "Pkg", "PkgLicenses", "REPL", "Random", "Registrator", "RegistryTools", "SHA", "Scratch", "Sockets", "TOML", "UUIDs", "ghr_jll"]
-git-tree-sha1 = "a2df0374afb5d0fd71098817e5c625049a370584"
+git-tree-sha1 = "1f631b888c12e912c0838fa683d037a08aeb85c7"
 repo-rev = "ib/show_subprocess_io"
 repo-url = "https://github.com/JuliaPackaging/BinaryBuilder.jl.git"
 uuid = "12aac903-9f7c-5d81-afc2-d9565ea332ae"
@@ -389,9 +389,11 @@ uuid = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 version = "1.8.1"
 
 [[deps.OutputCollectors]]
-git-tree-sha1 = "5d3f2b3b2e2a9d7d6f1774c78e94530ac7f360cc"
+git-tree-sha1 = "d5e1ff7302df52d4bae4115b2dc093856f216e99"
+repo-rev = "ib/fix"
+repo-url = "https://github.com/JuliaPackaging/OutputCollectors.jl.git"
 uuid = "6c11c7d4-943b-4e2b-80de-f2cfc2930a8c"
-version = "0.1.1"
+version = "0.1.2"
 
 [[deps.Parsers]]
 deps = ["Dates", "PrecompileTools", "UUIDs"]
