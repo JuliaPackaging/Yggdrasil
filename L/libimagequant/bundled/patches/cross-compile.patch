@@ -7,7 +7,8 @@ index 50cb6e9..54d5769 100644
  edition = "2021"
  links = "imagequant"
 -build = "build.rs"
-+# build = "build.rs" # disabled for BinaryBuilder rust-version = "1.63"
++# build = "build.rs" # disabled for BinaryBuilder
+ rust-version = "1.63"
 
  [lib]
 -crate-type = ["staticlib", "lib"]
