@@ -1,7 +1,10 @@
 diff --git a/imagequant-sys/Cargo.toml b/imagequant-sys/Cargo.toml
+index f77e05e..ea3c7b3 100644
 --- a/imagequant-sys/Cargo.toml
 +++ b/imagequant-sys/Cargo.toml
-@@ -1,6 +1,6 @@
+@@ -33,7 +33,7 @@ no_std_global_handlers = ["no_std"]
+ capi = []
+
  [lib]
 -crate-type = ["staticlib", "lib"]
 +crate-type = ["staticlib", "lib", "cdylib"]
