@@ -48,8 +48,8 @@ install -Dvm 644 libimagequant.h ${includedir}/libimagequant.h
 # filter!(p -> arch(p) != "riscv64", platforms)
 # filter!(p -> os(p) != "freebsd" || arch(p) != "aarch64", platforms)
 
-# let's not waste CI until we get one platform working
-platforms = [Platform("x86_64", "linux")]
+# let's not waste CI until we get two platforms working
+platforms = [Platform("x86_64", "linux"), Platform("aarch64", "macos")]
 
 # The products that we will ensure are always built
 products = [
