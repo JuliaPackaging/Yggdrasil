@@ -20,7 +20,11 @@ install -Dvm 0755 "target/${rust_target}/release/"*peppi_jlrs".${dlext}" "${libd
 
 include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
-
+# Filter out platforms where Rust toolchain is not available
+platforms = filter(platforms) do p
+    # FreeBSD on aarch64 doesn't have Rust 1.91.0 available
+    !(Sys.isfreebsd(p) && arch(p) == "aarch64")
+end
 # Rust toolchain for i686 Windows is unusable
 # zstd-sys has assembly issues on 32-bit platforms
 is_excluded(p) = nbits(p) == 32
