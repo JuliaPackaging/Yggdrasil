@@ -13,7 +13,7 @@ julia_versions = [v"1.10", v"1.11", v"1.12"]
 
 sources = [
     GitSource("https://github.com/jph6366/peppi-jlrs.git",
-              "7c81e872564835ca43510c04c55d03d39a152b8d"),
+              "20c8b4b50729b90a395d8e798a2c5827b1da6b82"),
 ]
 
 script = raw"""
