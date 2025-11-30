@@ -25,38 +25,44 @@ additional_library_symbols = Dict{Symbol,String}()
 all_include_symbols = merge(include_symbols, additional_include_symbols)
 all_library_symbols = merge(library_symbols, additional_library_symbols)
 
-products_map = Dict(
+products_map = Dict{String, Vector{Product}}(
     "ProtocolBuffers" => [
         LibraryProduct("lib$name", symbol) for (symbol, name) in protobuf_library_symbols
     ],
-    "ProtocolBuffersCompiler" => vcat(
-        [
-            LibraryProduct("lib$name", symbol) for (symbol, name) in protoc_library_symbols
-        ], [
-            ExecutableProduct("$binary_symbol", :binary_symbol) for binary_symbol in binary_symbols
-        ]
-    ),
     "ProtocolBuffersLite" => [
         LibraryProduct("lib$name", symbol) for (symbol, name) in protobuf_lite_library_symbols
     ],
-    "ProtocolBuffersSDK" => vcat(
-        [
-            FileProduct("include/$name", symbol) for (symbol, name) in all_include_symbols
-        ],[
-            FileProduct("lib/lib$name.a", symbol) for (symbol, name) in additional_library_symbols
-        ],[
-            FileProduct("lib/pkgconfig/$name.pc", Symbol(symbol, :_pkgconfig)) for (symbol, name) in library_symbols
-        ]
-    ),
-    "ProtocolBuffersSDK_static" => vcat(
-        [
-            FileProduct("include/$name", symbol) for (symbol, name) in all_include_symbols
-        ],[
-            FileProduct("lib/lib$name.a", symbol) for (symbol, name) in all_library_symbols
-        ],[
-            FileProduct("lib/pkgconfig/$name.pc", Symbol(symbol, :_pkgconfig)) for (symbol, name) in library_symbols
-        ]
-    ),
+)
+products_map["ProtocolBuffersCompiler"] = vcat(
+    products_map["ProtocolBuffers"],
+    [
+        LibraryProduct("lib$name", symbol) for (symbol, name) in protoc_library_symbols
+    ], [
+        ExecutableProduct("$binary_symbol", :binary_symbol) for binary_symbol in binary_symbols
+    ]
+)
+products_map["ProtocolBuffersSDK"] = vcat(
+    products_map["ProtocolBuffersCompiler"],
+    products_map["ProtocolBuffersLite"],
+    [
+        FileProduct("include/$name", symbol) for (symbol, name) in all_include_symbols
+    ],[
+        FileProduct("lib/lib$name.a", symbol) for (symbol, name) in additional_library_symbols
+    ],[
+        FileProduct("lib/pkgconfig/$name.pc", Symbol(symbol, :_pkgconfig)) for (symbol, name) in library_symbols
+    ]
+)
+products_map["ProtocolBuffersSDK_static"] = vcat(
+    [
+        ExecutableProduct("$binary_symbol", :binary_symbol) for binary_symbol in binary_symbols
+    ],
+    [
+        FileProduct("include/$name", symbol) for (symbol, name) in all_include_symbols
+    ],[
+        FileProduct("lib/lib$name.a", symbol) for (symbol, name) in merge(all_library_symbols, protoc_library_symbols)
+    ],[
+        FileProduct("lib/pkgconfig/$name.pc", Symbol(symbol, :_pkgconfig)) for (symbol, name) in library_symbols
+    ]
 )
 
 script = raw"""
@@ -81,7 +87,7 @@ else
     )
 fi
 
-if [[ "$BB_PROTOBUF_PRODUCT" == ProtocolBuffersCompiler ]]; then
+if [[ "$BB_PROTOBUF_PRODUCT" == ProtocolBuffersCompiler ]] || [[ "$BB_PROTOBUF_PRODUCT" == ProtocolBuffersSDK* ]]; then
     cmake_extra_args+=(
         -Dprotobuf_BUILD_PROTOC_BINARIES=ON
     )
