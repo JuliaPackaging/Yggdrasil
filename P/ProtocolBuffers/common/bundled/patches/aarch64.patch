@@ -1,0 +1,14 @@
+diff --git a/src/google/protobuf/parse_context.h b/src/google/protobuf/parse_context.h
+index e5b13a027..4b82927a7 100644
+--- a/src/google/protobuf/parse_context.h
++++ b/src/google/protobuf/parse_context.h
+@@ -617,7 +617,9 @@ inline const char* VarintParseSlow(const char* p, uint32_t res, uint64_t* out) {
+ }
+ 
+ #ifdef __aarch64__
++PROTOBUF_EXPORT
+ const char* VarintParseSlowArm64(const char* p, uint64_t* out, uint64_t first8);
++PROTOBUF_EXPORT
+ const char* VarintParseSlowArm32(const char* p, uint32_t* out, uint64_t first8);
+ 
+ inline const char* VarintParseSlowArm(const char* p, uint32_t* out,
