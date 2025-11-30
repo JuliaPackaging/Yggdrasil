@@ -33,7 +33,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="FLINT_jll"), compat = "~301.300")
+    Dependency(PackageSpec(name="FLINT_jll"), compat = "~301.400")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
