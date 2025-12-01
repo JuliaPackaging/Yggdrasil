@@ -13,7 +13,7 @@ sources = [
 ]
 
 # TODO: brotli and highway are dependencies. I think by default this builds them as shared libraries.
-# brotli is already a JLL so we should probably depend on that instead and ask to use the system one.
+# switched to using brotli_jll
 # for highway, maybe we can distribute the shared lib here, or get it to bake in statically(?)
 script = raw"""
 cd $WORKSPACE/srcdir/libjxl/
@@ -22,7 +22,7 @@ $WORKSPACE/srcdir/libjxl/deps.sh
 mkdir build
 cd build
 
-cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF ..
+cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DJPEGXL_FORCE_SYSTEM_BROTLI=ON ..
 cmake --build . -- -j$(nproc)
 cmake --install .
 install_license ../LICENSE
@@ -43,8 +43,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
+    Dependency("brotli_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", compilers=[:c], lock_microarchitecture=false)
+               julia_compat="1.6", compilers=[:c], lock_microarchitecture=false,
+               # SIMD instructions in highway
+               preferred_gcc_version=v"6")
