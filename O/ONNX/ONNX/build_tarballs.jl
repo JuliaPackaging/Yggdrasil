@@ -7,7 +7,7 @@ common_path = normpath(@__DIR__, "..", "common")
 include(joinpath(common_path, "common.jl"))
 
 common_tree_hash = join(string.(Pkg.GitTools.tree_hash(common_path); base=16, pad=2))
-common_tree_hash !== "e6057c1c2adee2fec7f6c59f1dedcc8501ea3fe5" && error("Tree hash mismatch for $common_path; got: $common_tree_hash")
+common_tree_hash !== "348720760d1beedf68155e628119ee4fe5e9d466" && error("Tree hash mismatch for $common_path; got: $common_tree_hash")
 
 name = "ONNX"
 
