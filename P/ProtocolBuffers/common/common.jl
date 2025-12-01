@@ -38,7 +38,7 @@ products_map["ProtocolBuffersCompiler"] = vcat(
     [
         LibraryProduct("lib$name", symbol) for (symbol, name) in protoc_library_symbols
     ], [
-        ExecutableProduct("$binary_symbol", :binary_symbol) for binary_symbol in binary_symbols
+        ExecutableProduct("$binary_symbol", binary_symbol) for binary_symbol in binary_symbols
     ]
 )
 products_map["ProtocolBuffersSDK"] = vcat(
@@ -54,7 +54,7 @@ products_map["ProtocolBuffersSDK"] = vcat(
 )
 products_map["ProtocolBuffersSDK_static"] = vcat(
     [
-        ExecutableProduct("$binary_symbol", :binary_symbol) for binary_symbol in binary_symbols
+        ExecutableProduct("$binary_symbol", binary_symbol) for binary_symbol in binary_symbols
     ],
     [
         FileProduct("include/$name", symbol) for (symbol, name) in all_include_symbols
