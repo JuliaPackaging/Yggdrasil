@@ -205,6 +205,7 @@ dependencies = [
     Dependency(PackageSpec(name="libpng_jll"); compat="1.6.47"),
     BuildDependency(PackageSpec(name="nlohmann_json_jll")),
     Dependency(PackageSpec(name="protoc_jll")),
+    #TODO Dependency(PackageSpec(name="ProtocolBuffers_jll"); compat="3.16.0"),
     Dependency(PackageSpec(name="pugixml_jll"); compat="1.14.1"),
     Dependency(PackageSpec(name="yaml_cpp_jll"); compat="0.8.1"),
     Dependency(PackageSpec(name="zfp_jll"); compat="1.0.2"),
