@@ -17,6 +17,7 @@ export BB_RECIPE_NAME=$name
 script
 
 products = products_map[name]
+dependenices = dependencies_map[name]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat, preferred_gcc_version)

@@ -56,11 +56,18 @@ products_map = Dict(
     ],
 )
 
-dependencies = [
+shared_dependencies = [
     BuildDependency(PackageSpec(name="ProtocolBuffersSDK_static_jll", version="3.16.0")),
     HostBuildDependency(PackageSpec(name="ProtocolBuffersCompiler_jll", version="3.16.0")),
-    RuntimeDependency("CompilerSupportLibraries_jll"),
 ]
+
+dependencies_map = Dict(
+    "ONNX" => [
+        shared_dependencies...,
+        RuntimeDependency("CompilerSupportLibraries_jll"),
+    ],
+    "ONNX_static" => shared_dependencies,
+)
 
 julia_compat = "1.6"
 preferred_gcc_version = v"9"
