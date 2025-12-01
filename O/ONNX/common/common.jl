@@ -41,19 +41,18 @@ platforms = expand_cxxstring_abis(supported_platforms())
 shared_products = [
     LibraryProduct("libonnxifi", :libonnxifi),
     LibraryProduct("libonnxifi_dummy", :libonnxifi_dummy),
+    FileProduct("lib/libonnxifi_loader.a", :libonnxifi_loader),
 ]
 
 products_map = Dict(
     "ONNX" => [
         LibraryProduct("libonnx", :libonnx),
         LibraryProduct("libonnx_proto", :libonnx_proto),
-        LibraryProduct("libonnxifi_loader", :libonnxifi_loader),
         shared_products...,
     ],
     "ONNX_static" => [
         FileProduct("lib/libonnx.a", :libonnx),
         FileProduct("lib/libonnx_proto.a", :libonnx_proto),
-        FileProduct("lib/libonnxifi_loader.a", :libonnxifi_loader),
         shared_products...,
     ],
 )
