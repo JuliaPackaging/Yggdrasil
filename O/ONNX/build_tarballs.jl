@@ -15,23 +15,21 @@ cd onnx*
 
 atomic_patch -p1 ../patches/onnx-mingw32.patch
 
-mkdir build
-cd build
 cmake \
+    -B build \
     -DBUILD_ONNX_PYTHON=OFF \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DONNX_USE_LITE_PROTO=ON \
-    -DONNX_USE_PROTOBUF_SHARED_LIBS=ON \
+    -DONNX_USE_PROTOBUF_SHARED_LIBS=OFF \
     -DProtobuf_PROTOC_EXECUTABLE=$host_bindir/protoc \
-    -DPYTHON_EXECUTABLE=$(which python3) \
-    ..
-cmake --build . --config Release --target install -- -j${nproc}
+    -DPYTHON_EXECUTABLE=$(which python3)
+cmake --build build --parallel ${nproc}
+cmake --install build
 """
 
 platforms = expand_cxxstring_abis(supported_platforms())
-filter!(p -> !(arch(p) == "aarch64" && os(p) == "freebsd"), platforms) # protoc_jll does not provide an artifact for freebsd on aarch64
 
 products = [
     FileProduct("lib/libonnx.a", :libonnx),
@@ -40,8 +38,8 @@ products = [
 ]
 
 dependencies = [
-    HostBuildDependency(PackageSpec(name="protoc_jll", version=v"3.16.1")), # TODO should v3.16.0
-    Dependency("protoc_jll", v"3.16.1"), # TODO should v3.16.0
+    BuildDependency(PackageSpec(name="ProtocolBuffersSDK_static_jll", version="3.16.0")),
+    HostBuildDependency(PackageSpec(name="ProtocolBuffersCompiler_jll", version="3.16.0")),
 ]
 
 build_tarballs(
