@@ -22,11 +22,7 @@ $WORKSPACE/srcdir/libjxl/deps.sh
 mkdir build
 cd build
 
-cmake -B build \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DBUILD_TESTING=OFF \
-   ..
-
+cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF ..
 cmake --build . -- -j$(nproc)
 cmake --install .
 install_license ../LICENSE
