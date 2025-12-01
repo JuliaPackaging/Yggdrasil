@@ -14,25 +14,28 @@ script = raw"""
 cd onnx*
 
 atomic_patch -p1 ../patches/onnx-mingw32.patch
+atomic_patch -p1 ../patches/onnx-mingw32-linking.patch
 
 cmake \
     -B build \
     -DBUILD_ONNX_PYTHON=OFF \
+    -DBUILD_SHARED_LIBS=ON \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TARGET_TOOLCHAIN \
     -DONNX_USE_LITE_PROTO=ON \
     -DONNX_USE_PROTOBUF_SHARED_LIBS=OFF \
     -DProtobuf_PROTOC_EXECUTABLE=$host_bindir/protoc \
     -DPYTHON_EXECUTABLE=$(which python3)
-cmake --build build --parallel ${nproc}
+cmake --build build --parallel $nproc
 cmake --install build
 """
 
 platforms = expand_cxxstring_abis(supported_platforms())
 
 products = [
-    FileProduct("lib/libonnx.a", :libonnx),
+    LibraryProduct("libonnx", :libonnx),
+    LibraryProduct("libonnx_proto", :libonnx_proto),
     LibraryProduct("libonnxifi", :libonnxifi),
     LibraryProduct("libonnxifi_dummy", :libonnxifi_dummy),
 ]
@@ -40,6 +43,7 @@ products = [
 dependencies = [
     BuildDependency(PackageSpec(name="ProtocolBuffersSDK_static_jll", version="3.16.0")),
     HostBuildDependency(PackageSpec(name="ProtocolBuffersCompiler_jll", version="3.16.0")),
+    RuntimeDependency("CompilerSupportLibraries_jll"),
 ]
 
 build_tarballs(
