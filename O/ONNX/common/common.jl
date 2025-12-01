@@ -1,13 +1,8 @@
-# Note that this script can accept some limited command-line arguments, run
-# `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, Pkg
-
-name = "ONNX"
 version = v"1.11.0"
 
 sources = [
     GitSource("https://github.com/onnx/onnx.git", "96046b8ccfb8e6fa82f6b2b34b3d56add2e8849c"),
-    DirectorySource("./bundled"),
+    DirectorySource(joinpath(@__DIR__, "bundled")),
 ]
 
 script = raw"""
@@ -16,29 +11,50 @@ cd onnx*
 atomic_patch -p1 ../patches/onnx-mingw32.patch
 atomic_patch -p1 ../patches/onnx-mingw32-linking.patch
 
+cmake_args=()
+if [[ "$BB_RECIPE_NAME" == ONNX ]]; then
+    cmake_args+=("-DBUILD_SHARED_LIBS=ON")
+elif [[ "$BB_RECIPE_NAME" == ONNX_static ]]; then
+    cmake_args+=("-DBUILD_SHARED_LIBS=OFF")
+else
+    echo "Unknown BB_RECIPE_NAME: $BB_RECIPE_NAME"
+    exit 1
+fi
+
 cmake \
     -B build \
     -DBUILD_ONNX_PYTHON=OFF \
-    -DBUILD_SHARED_LIBS=ON \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TARGET_TOOLCHAIN \
     -DONNX_USE_LITE_PROTO=ON \
     -DONNX_USE_PROTOBUF_SHARED_LIBS=OFF \
     -DProtobuf_PROTOC_EXECUTABLE=$host_bindir/protoc \
-    -DPYTHON_EXECUTABLE=$(which python3)
+    -DPYTHON_EXECUTABLE=$(which python3) \
+    ${cmake_args[@]}
 cmake --build build --parallel $nproc
 cmake --install build
 """
 
 platforms = expand_cxxstring_abis(supported_platforms())
 
-products = [
-    LibraryProduct("libonnx", :libonnx),
-    LibraryProduct("libonnx_proto", :libonnx_proto),
+shared_products = [
     LibraryProduct("libonnxifi", :libonnxifi),
     LibraryProduct("libonnxifi_dummy", :libonnxifi_dummy),
 ]
+
+products_map = Dict(
+    "ONNX" => [
+        LibraryProduct("libonnx", :libonnx),
+        LibraryProduct("libonnx_proto", :libonnx_proto),
+        shared_products...,
+    ],
+    "ONNX_static" => [
+        FileProduct("lib/libonnx.a", :libonnx),
+        FileProduct("lib/libonnx_proto.a", :libonnx_proto),
+        shared_products...,
+    ],
+)
 
 dependencies = [
     BuildDependency(PackageSpec(name="ProtocolBuffersSDK_static_jll", version="3.16.0")),
@@ -46,15 +62,5 @@ dependencies = [
     RuntimeDependency("CompilerSupportLibraries_jll"),
 ]
 
-build_tarballs(
-    ARGS,
-    name,
-    version,
-    sources,
-    script,
-    platforms,
-    products,
-    dependencies;
-    preferred_gcc_version = v"9",
-    julia_compat = "1.6",
-)
+julia_compat = "1.6"
+preferred_gcc_version = v"9"
