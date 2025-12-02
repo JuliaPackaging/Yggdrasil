@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "P11Kit"
-version = v"0.25.5"
+version = v"0.25.6"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/p11-glue/p11-kit/releases/download/$(version)/p11-kit-$(version).tar.xz",
-                  "04d0a86450cdb1be018f26af6699857171a188ac6d5b8c90786a60854e1198e5"),
+                  "304b4b25e4ad87fe838f7c4eedce36bbe8ad7b0042e866a084ebcec5e3e3b54b"),
     DirectorySource("bundled"),
 ]
 
@@ -49,7 +49,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Libffi_jll"; compat="~3.2.2"),
+    Dependency("Libffi_jll"; compat="3.4.7"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
