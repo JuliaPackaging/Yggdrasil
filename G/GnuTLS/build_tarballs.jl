@@ -59,7 +59,7 @@ products = Product[
 dependencies = [
     Dependency("Zlib_jll"),
     Dependency("GMP_jll", v"6.2.1"),
-    Dependency("Nettle_jll"; compat="~3.7.2"),
+    Dependency("Nettle_jll"; compat="3.10.1"),
     Dependency("P11Kit_jll"; compat="0.24.1"),
 ]
 
