@@ -5,8 +5,8 @@ using BinaryBuilder
 name = "f4ncgb"
 upstream_version = v"0.3.3"
 version_offset = v"0.0.0"
-version = VersionNumber(upstream_version.major,
-                        upstream_version.minor,
+version = VersionNumber(upstream_version.major*100+version_offset.major,
+                        upstream_version.minor*100+version_offset.minor,
                         upstream_version.patch*100+version_offset.patch)
 
 sources = [
