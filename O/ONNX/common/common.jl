@@ -71,4 +71,4 @@ dependencies_map = Dict(
 )
 
 julia_compat = "1.6"
-preferred_gcc_version = v"8"
+preferred_gcc_version = v"6"
