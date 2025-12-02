@@ -6,8 +6,9 @@ sources = [
 ]
 
 script = raw"""
-cd onnx*
+cd onnx
 
+atomic_patch -p1 ../patches/onnx-onnxifi_dummy.patch
 atomic_patch -p1 ../patches/onnx-mingw32.patch
 atomic_patch -p1 ../patches/onnx-mingw32-linking.patch
 
