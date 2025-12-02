@@ -31,7 +31,7 @@ if [[ ${target} = x86_64-apple-darwin* ]]; then
 fi
 
 meson setup --cross-file="${MESON_TARGET_TOOLCHAIN}" --buildtype=release builddir
-meson compile -C builddir
+meson compile -C builddir -Dzsh_completion=disabled
 meson install -C builddir
 """
 
