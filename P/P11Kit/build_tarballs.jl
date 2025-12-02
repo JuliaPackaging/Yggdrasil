@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "P11Kit"
-version = v"0.25.6"
+version = v"0.25.10"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/p11-glue/p11-kit/releases/download/$(version)/p11-kit-$(version).tar.xz",
-                  "304b4b25e4ad87fe838f7c4eedce36bbe8ad7b0042e866a084ebcec5e3e3b54b"),
+                  "a62a137a966fb3a9bbfa670b4422161e369ddea216be51425e3be0ab2096e408"),
     DirectorySource("bundled"),
 ]
 
