@@ -42,10 +42,6 @@ if [[ "${target}" == x86_64-apple-* ]]; then
     export MACOSX_DEPLOYMENT_TARGET=10.14
 fi
 
-if [[ "${target}" == x86_64-unknown-freebsd ]]; then
-    export BSD_DEFINES="-DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_STANDARD_REQUIRED=ON -DCMAKE_CXX_EXTENSIONS=OFF"
-fi
-
 # if [[ "${target}" == *-apple-* ]]; then
 #     OMP_DEFINES=(-DOpenMP_libgomp_LIBRARY=${libdir}/libgomp.dylib -DOpenMP_ROOT=${libdir} -DOpenMP_CXX_LIB_NAMES="libgomp" -DOpenMP_CXX_FLAGS="-fopenmp=libgomp -Wno-unused-command-line-argument")
 # fi
@@ -61,7 +57,7 @@ cmake -S . \
     -DCMAKE_PREFIX_PATH=$prefix \
     -DBLAS_LIBRARIES=${libdir}/libopenblas64_.${dlext} \
     -DLAPACK_LIBRARIES=${libdir}/libopenblas64_.${dlext} \
-    "${OMP_DEFINES[@]}" $BSD_DEFINES
+    "${OMP_DEFINES[@]}"
 
 cmake --build build -j${nproc}
 cmake --install build
@@ -72,8 +68,7 @@ cmake --install build
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
-# filter!(p -> (nbits(p) != 32 && os(p) != "freebsd") && p.tags["julia_version"] !="1.14.0", platforms)
-filter!(p -> (nbits(p) != 32 && os(p) == "freebsd") && p.tags["julia_version"] !="1.14.0", platforms)
+filter!(p -> (nbits(p) != 32 && os(p) != "freebsd") && p.tags["julia_version"] !="1.14.0", platforms)
 
 # The products that we will ensure are always built
 products = [
