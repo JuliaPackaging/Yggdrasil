@@ -42,6 +42,10 @@ if [[ "${target}" == x86_64-apple-* ]]; then
     export MACOSX_DEPLOYMENT_TARGET=10.14
 fi
 
+if [[ "${target}" == x86_64-unknown-freebsd ]]; then
+    export CXXFLAGS="$CXXFLAGS -stdlib=libstdc++"
+fi
+
 # if [[ "${target}" == *-apple-* ]]; then
 #     OMP_DEFINES=(-DOpenMP_libgomp_LIBRARY=${libdir}/libgomp.dylib -DOpenMP_ROOT=${libdir} -DOpenMP_CXX_LIB_NAMES="libgomp" -DOpenMP_CXX_FLAGS="-fopenmp=libgomp -Wno-unused-command-line-argument")
 # fi
