@@ -1,0 +1,80 @@
+diff --git a/c_api/gpu/CMakeLists.txt b/c_api/gpu/CMakeLists.txt
+index 5fdfc34df..46eda50fd 100644
+--- a/c_api/gpu/CMakeLists.txt
++++ b/c_api/gpu/CMakeLists.txt
+@@ -3,7 +3,10 @@
+ # This source code is licensed under the MIT license found in the
+ # LICENSE file in the root directory of this source tree.
+ 
+-target_sources(faiss_c PRIVATE
++add_library(faiss_gpu_c)
++target_link_libraries(faiss_gpu_c PRIVATE faiss_gpu)
++
++target_sources(faiss_gpu_c PRIVATE
+   DeviceUtils_c.cpp
+   GpuAutoTune_c.cpp
+   GpuClonerOptions_c.cpp
+@@ -16,11 +19,11 @@ file(GLOB FAISS_C_API_GPU_HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.h")
+ faiss_install_headers("${FAISS_C_API_GPU_HEADERS}" c_api/gpu)
+ 
+ if (FAISS_ENABLE_ROCM)
+-  target_link_libraries(faiss_c PUBLIC hip::host roc::hipblas)
++  target_link_libraries(faiss_gpu_c PUBLIC hip::host roc::hipblas)
+ else()
+   find_package(CUDAToolkit REQUIRED)
+-  target_link_libraries(faiss_c PUBLIC CUDA::cudart CUDA::cublas $<$<BOOL:${FAISS_ENABLE_CUVS}>:cuvs::cuvs>)
++  target_link_libraries(faiss_gpu_c PUBLIC CUDA::cudart CUDA::cublas $<$<BOOL:${FAISS_ENABLE_CUVS}>:cuvs::cuvs>)
+ endif()
+ 
+ add_executable(example_gpu_c EXCLUDE_FROM_ALL example_gpu_c.c)
+-target_link_libraries(example_gpu_c PRIVATE faiss_c)
++target_link_libraries(example_gpu_c PRIVATE faiss_gpu_c)
+diff --git a/faiss/gpu/CMakeLists.txt b/faiss/gpu/CMakeLists.txt
+index 04d28907d..d7886e410 100644
+--- a/faiss/gpu/CMakeLists.txt
++++ b/faiss/gpu/CMakeLists.txt
+@@ -258,7 +258,7 @@ if(FAISS_ENABLE_CUVS)
+           utils/CuvsUtils.cu)
+ endif()
+ 
+-add_library(faiss_gpu STATIC ${FAISS_GPU_SRC})
++add_library(faiss_gpu SHARED ${FAISS_GPU_SRC})
+ set_target_properties(faiss_gpu PROPERTIES
+   POSITION_INDEPENDENT_CODE ON
+   WINDOWS_EXPORT_ALL_SYMBOLS ON
+@@ -308,12 +308,6 @@ endif()
+ # Export FAISS_GPU_HEADERS variable to parent scope.
+ set(FAISS_GPU_HEADERS ${FAISS_GPU_HEADERS} PARENT_SCOPE)
+ 
+-target_link_libraries(faiss PRIVATE  "$<LINK_LIBRARY:WHOLE_ARCHIVE,faiss_gpu>")
+-target_link_libraries(faiss_avx2 PRIVATE "$<LINK_LIBRARY:WHOLE_ARCHIVE,faiss_gpu>")
+-target_link_libraries(faiss_avx512 PRIVATE "$<LINK_LIBRARY:WHOLE_ARCHIVE,faiss_gpu>")
+-target_link_libraries(faiss_avx512_spr PRIVATE "$<LINK_LIBRARY:WHOLE_ARCHIVE,faiss_gpu>")
+-target_link_libraries(faiss_sve PRIVATE "$<LINK_LIBRARY:WHOLE_ARCHIVE,faiss_gpu>")
+-
+ foreach(header ${FAISS_GPU_HEADERS})
+   get_filename_component(dir ${header} DIRECTORY )
+   install(FILES ${header}
+@@ -325,22 +319,6 @@ if (FAISS_ENABLE_ROCM)
+   target_link_libraries(faiss_gpu PRIVATE hip::host roc::hipblas)
+   target_compile_options(faiss_gpu PRIVATE)
+ else()
+-  # Prepares a host linker script and enables host linker to support
+-  # very large device object files.
+-  # This is what CUDA 11.5+ `nvcc -hls=gen-lcs -aug-hls` would generate
+-  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/fatbin.ld"
+-  [=[
+-  SECTIONS
+-  {
+-    .nvFatBinSegment : { *(.nvFatBinSegment) }
+-    __nv_relfatbin : { *(__nv_relfatbin) }
+-    .nv_fatbin : { *(.nv_fatbin) }
+-  }
+-  ]=]
+-  )
+-  target_link_options(faiss_gpu PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/fatbin.ld")
+-
+-
+   find_package(CUDAToolkit REQUIRED)
+   target_link_libraries(faiss_gpu PRIVATE CUDA::cudart CUDA::cublas $<$<BOOL:${FAISS_ENABLE_CUVS}>:cuvs::cuvs> $<$<BOOL:${FAISS_ENABLE_CUVS}>:OpenMP::OpenMP_CXX>)
+   target_compile_options(faiss_gpu PRIVATE
