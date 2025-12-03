@@ -60,7 +60,7 @@ dependencies = [
     Dependency("Zlib_jll"),
     Dependency("GMP_jll", v"6.2.1"),
     Dependency("Nettle_jll"; compat="3.10.1"),
-    Dependency("P11Kit_jll"; compat="0.24.1"),
+    Dependency("P11Kit_jll"; compat="0.25.10"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
