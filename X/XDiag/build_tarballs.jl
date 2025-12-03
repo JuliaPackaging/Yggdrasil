@@ -43,8 +43,7 @@ if [[ "${target}" == x86_64-apple-* ]]; then
 fi
 
 if [[ "${target}" == x86_64-unknown-freebsd ]]; then
-    export CXXFLAGS="$CXXFLAGS -stdlib=libstdc++"
-    export LDFLAGS="$LDFLAGS -stdlib=libstdc++"
+    export BSD_DEFINES="-DCMAKE_CXX_COMPILE_OPTIONS="-stdlib=libstdc++""
 fi
 
 # if [[ "${target}" == *-apple-* ]]; then
@@ -62,7 +61,7 @@ cmake -S . \
     -DCMAKE_PREFIX_PATH=$prefix \
     -DBLAS_LIBRARIES=${libdir}/libopenblas64_.${dlext} \
     -DLAPACK_LIBRARIES=${libdir}/libopenblas64_.${dlext} \
-    "${OMP_DEFINES[@]}"
+    "${OMP_DEFINES[@]}" $BSD_DEFINES
 
 cmake --build build -j${nproc}
 cmake --install build
