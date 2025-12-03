@@ -20,8 +20,8 @@ sources = [
                 "4da8dde69eca0d9bc31420349a204851bfa2a1c87aeb87fe0c05517797edaac4", "miniconda.sh")
 ]
 
-MIN_CUDA_VERSION = v"12.2"
-MAX_CUDA_VERSION = v"12.8.999" #12.9?
+MIN_CUDA_VERSION = v"13.0"
+MAX_CUDA_VERSION = nothing
 
 # Just so I can do CPU only tests on GitHub runners
 cpu_platform = [Platform("x86_64", "linux")]
