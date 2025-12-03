@@ -55,7 +55,7 @@ cmake -S . \
     -DCMAKE_BUILD_TYPE=Release \
     -DXDIAG_JULIA_WRAPPER=On \
     -DCMAKE_PREFIX_PATH=$prefix \
-    -DCMAKE_CXX_FLAGS="-std=c++17" \
+    -DCMAKE_CXX_FLAGS="-std=c++20" \
     -DBLAS_LIBRARIES=${libdir}/libopenblas64_.${dlext} \
     -DLAPACK_LIBRARIES=${libdir}/libopenblas64_.${dlext} \
     "${OMP_DEFINES[@]}"
