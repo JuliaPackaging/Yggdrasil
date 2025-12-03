@@ -57,7 +57,7 @@ dependencies = [
     Dependency("MPICH_jll"; compat="4.3.0"),
     Dependency("Zlib_jll"; compat="1.2.12"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    HostBuildDependency(PackageSpec(; name = "CMake_jll", version = v"3.31.9")),
+    HostBuildDependency(PackageSpec(; name = "CMake_jll", version = "3.31.9")),
 ]
 
 for platform in all_platforms
