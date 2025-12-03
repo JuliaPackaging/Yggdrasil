@@ -4,8 +4,7 @@ name = "Binutils"
 version = v"2.45.1"
 
 sources = [
-    # Use our cache because ftp.gnu.org is very trigger-happy when it suspects abuse
-    ArchiveSource("https://cache.julialang.org/https://ftp.gnu.org/gnu/binutils/binutils-$(version).tar.xz",
+    ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-$(version).tar.xz",
                   "5fe101e6fe9d18fdec95962d81ed670fdee5f37e3f48f0bef87bddf862513aa5"),
     DirectorySource("bundled"),
 ]
