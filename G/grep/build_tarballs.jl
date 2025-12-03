@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "grep"
-version = v"3.11.0"
+version = v"3.12.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/grep/grep-3.11.tar.xz",
-                  "1db2aedde89d0dea42b16d9528f894c8d15dae4e190b59aecc78f5a951276eab")
+    ArchiveSource("https://ftp.gnu.org/gnu/grep/grep-$(version.major).$(version.minor).tar.xz",
+                  "2649b27c0e90e632eadcd757be06c6e9a4f48d941de51e7c0f83ff76408a07b9")
 ]
 
 
