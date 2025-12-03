@@ -26,6 +26,11 @@ if [[ ${target} == *darwin* ]]; then
     fi
 fi
 
+if [[ ${target} == ${MACHTYPE} ]]; then
+    # Remove libffi from the system to avoid confusion.
+    rm /usr/lib/libffi.so*
+fi
+
 # Checks from macros `AC_FUNC_MALLOC` and `AC_FUNC_REALLOC` may fail when cross-compiling,
 # which can cause configure to remap `malloc` and `realloc` to replacement functions
 # `rpl_malloc` and `rpl_realloc`, which will cause a linking error.  For more information,
