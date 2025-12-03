@@ -43,7 +43,7 @@ if [[ "${target}" == x86_64-apple-* ]]; then
 fi
 
 if [[ "${target}" == x86_64-unknown-freebsd ]]; then
-    export BSD_DEFINES="-DCMAKE_CXX_COMPILE_OPTIONS=-stdlib=libstdc++"
+    export BSD_DEFINES="-DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_STANDARD_REQUIRED=ON -DCMAKE_CXX_EXTENSIONS=OFF"
 fi
 
 # if [[ "${target}" == *-apple-* ]]; then
