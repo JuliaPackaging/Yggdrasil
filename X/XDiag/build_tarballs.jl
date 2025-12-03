@@ -43,8 +43,8 @@ if [[ "${target}" == x86_64-apple-* ]]; then
 fi
 
 if [[ "${target}" == x86_64-unknown-freebsd ]]; then
-    echo "iamonbsd"
     export CXXFLAGS="$CXXFLAGS -stdlib=libstdc++"
+    export LDFLAGS="$LDFLAGS -stdlib=libstdc++"
 fi
 
 # if [[ "${target}" == *-apple-* ]]; then
