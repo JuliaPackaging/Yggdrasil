@@ -5,7 +5,8 @@ version = v"5.3.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/gawk/gawk-$(version).tar.xz",
+    # Use our cache because ftp.gnu.org is easily displeased by us downloading each package several times simultaneously
+    ArchiveSource("https://cache.julialang.org/https://ftp.gnu.org/gnu/gawk/gawk-$(version).tar.xz",
                   "f8c3486509de705192138b00ef2c00bbbdd0e84c30d5c07d23fc73a9dc4cc9cc")
 ]
 
