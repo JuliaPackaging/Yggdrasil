@@ -3,16 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "msolve"
-upstream_version = v"0.9.2"
+upstream_version = v"0.9.3"
 
-version_offset = v"0.0.1"
+version_offset = v"0.0.0"
 version = VersionNumber(upstream_version.major*100+version_offset.major,
                         upstream_version.minor*100+version_offset.minor,
                         upstream_version.patch*100+version_offset.patch)
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/algebraic-solving/msolve.git", "7b8fb9e1b2e474efd86d480e7e15bf7169c0b6ad")
+    GitSource("https://github.com/algebraic-solving/msolve.git", "f0d2b627390a064d07e1bab77f11d656826ea58f")
 ]
 
 # Bash recipe for building across all platforms
@@ -30,10 +30,7 @@ make install
 platforms = supported_platforms()
 filter!(!Sys.iswindows, platforms)   # not POSIX
 
-# At the moment we cannot add optimized versions for specific architectures
-# since the logic of artifact selection when loading the package is not
-# working well.
-# platforms = expand_microarchitectures(platforms)
+platforms = expand_microarchitectures(platforms)
 
 # The products that we will ensure are always built
 products = [
