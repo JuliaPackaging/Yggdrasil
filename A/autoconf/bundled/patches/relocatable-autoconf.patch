@@ -1,5 +1,5 @@
 diff --git a/Makefile.in b/Makefile.in
-index 22a17b3..ac18c85 100644
+index c8d6425..c94fe4c 100644
 --- a/Makefile.in
 +++ b/Makefile.in
 @@ -427,7 +427,7 @@ INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
@@ -11,24 +11,32 @@ index 22a17b3..ac18c85 100644
  M4_DEBUGFILE = @M4_DEBUGFILE@
  M4_GNU = @M4_GNU@
  MAKEINFO = @MAKEINFO@
+diff --git a/bin/autoconf.in b/bin/autoconf.in
+index 421154a..ef697e3 100644
 --- a/bin/autoconf.in
 +++ b/bin/autoconf.in
-@@ -43,9 +43,18 @@ use Autom4te::ChannelDefs;
- use Autom4te::Channels qw(msg);
+@@ -26,10 +26,13 @@ eval 'case $# in 0) exec @PERL@ -S "$0";; *) exec @PERL@ -S "$0" "$@";; esac'
+ use 5.006;
+ use strict;
+ use warnings FATAL => 'all';
++use Cwd 'abs_path';
++use File::Basename;
+ 
+ BEGIN
+ {
+-  my $pkgdatadir = $ENV{'autom4te_perllibdir'} || '@pkgdatadir@';
++  my $scriptpath = abs_path(dirname(__FILE__));
++  my $pkgdatadir = $ENV{'autom4te_perllibdir'} || "$scriptpath/../share/autoconf";
+   unshift @INC, $pkgdatadir;
+ 
+   # Override SHELL.  On DJGPP SHELL may not be set to a shell
+@@ -44,8 +47,9 @@ use Autom4te::Channels qw(msg);
  use Autom4te::General;
  
-+# Locate autom4ate and support files relative to current script inside package
-+SCRIPT_DIR=$(dirname "$as_myself")
-+SHARE_DIR="$SCRIPT_DIR/../share/autoconf"
-+if [[ ! -d "$SHARE_DIR" ]]
-+then
-+    echo "Autoconf package error, unable to locate resource directory at $SHARE_DIR\n"
-+    exit 1
-+fi
-+
  # Lib files.
 -my $autom4te = $ENV{'AUTOM4TE'} || '@bindir@/@autom4te-name@';
 -my $trailer_m4 = $ENV{'trailer_m4'} || '@pkgdatadir@/autoconf/trailer.m4';
++my $scriptpath = abs_path(dirname(__FILE__));
 +my $autom4te = $ENV{'AUTOM4TE'} || "$scriptpath/autom4te";
 +my $trailer_m4 = $ENV{'trailer_m4'} || "$scriptpath/../share/autoconf/autoconf/trailer.m4";
  
@@ -64,7 +72,7 @@ index 6ca6048..d7024ae 100644
  my @prepend_include;
  my @include;
 diff --git a/bin/autom4te.in b/bin/autom4te.in
-index 475221a..9c4ed1a 100644
+index 475221a..85815c0 100644
 --- a/bin/autom4te.in
 +++ b/bin/autom4te.in
 @@ -25,10 +25,13 @@ eval 'case $# in 0) exec @PERL@ -S "$0";; *) exec @PERL@ -S "$0" "$@";; esac'
@@ -88,7 +96,7 @@ index 475221a..9c4ed1a 100644
  # Data directory.
 -my $pkgdatadir = $ENV{'AC_MACRODIR'} || '@pkgdatadir@';
 +my $scriptpath = abs_path(dirname(__FILE__));
-+my $pkgdatadir = $ENV{'AC_MACRODIR'} || "$scriptpath/../res/autoconf";
++my $pkgdatadir = $ENV{'AC_MACRODIR'} || "$scriptpath/../share/autoconf";
  
  # $LANGUAGE{LANGUAGE} -- Automatic options for LANGUAGE.
  my %language;
@@ -151,7 +159,7 @@ index 98ebab6..76327dc 100644
  my $aclocal     = $ENV{'ACLOCAL'}     || 'aclocal';
  my $libtoolize  = $ENV{'LIBTOOLIZE'}  || 'libtoolize';
 diff --git a/bin/autoscan.in b/bin/autoscan.in
-index 779b7d2..9de80d9 100644
+index 779b7d2..7b70adb 100644
 --- a/bin/autoscan.in
 +++ b/bin/autoscan.in
 @@ -27,10 +27,13 @@ eval 'case $# in 0) exec @PERL@ -S "$0";; *) exec @PERL@ -S "$0" "$@";; esac'
@@ -169,7 +177,7 @@ index 779b7d2..9de80d9 100644
    unshift @INC, $pkgdatadir;
  
    # Override SHELL.  On DJGPP SHELL may not be set to a shell
-@@ -95,7 +98,8 @@ my %needed_macros =
+@@ -95,10 +98,11 @@ my %needed_macros =
  my $log;
  
  # Autoconf and lib files.
@@ -178,9 +186,13 @@ index 779b7d2..9de80d9 100644
 +my $autom4te = $ENV{'AUTOM4TE'} || "$scriptpath/@autom4te-name@";
  my $autoconf = "$autom4te --language=autoconf";
  my @prepend_include;
- my @include = ('@pkgdatadir@');
+-my @include = ('@pkgdatadir@');
++my @include = ("$scriptpath/../share/autoconf");
+ 
+ # $help
+ # -----
 diff --git a/bin/autoupdate.in b/bin/autoupdate.in
-index 1ec84f7..cc1f770 100644
+index 1ec84f7..cc671bf 100644
 --- a/bin/autoupdate.in
 +++ b/bin/autoupdate.in
 @@ -28,10 +28,13 @@ eval 'case $# in 0) exec @PERL@ -S "$0";; *) exec @PERL@ -S "$0" "$@";; esac'
@@ -208,7 +220,8 @@ index 1ec84f7..cc1f770 100644
  my $autoconf = "$autom4te --language=autoconf";
  # We need to find m4sugar.
  my @prepend_include;
- my @include = ('@pkgdatadir@');
+-my @include = ('@pkgdatadir@');
++my @include = ("$scriptpath/../share/autoconf");
  my $force = 0;
  # m4.
 -my $m4 = $ENV{"M4"} || '@M4@';
