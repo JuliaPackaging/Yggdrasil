@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Typst"
-version = v"0.14.0"
+version = v"0.14.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/typst/typst.git", "dd1e6e94f73db6a257a5ac34a6320e00410a2534")
+    GitSource("https://github.com/typst/typst.git", "eb2027e55f17a91cc2025c7a71674a2c5ea3a363")
 ]
 
 # Bash recipe for building across all platforms
@@ -18,11 +18,12 @@ install -Dvm 755 "target/${rust_target}/release/typst${exeext}" "${bindir}/typst
 install_license LICENSE
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = filter(supported_platforms()) do p
-    !((Sys.iswindows(p) && arch(p) == "i686") || (arch(p) == "powerpc64le") || (Sys.isfreebsd(p) && arch(p) == "aarch64") || (arch(p) == "riscv64"))
-end
+platforms = supported_platforms()
+#TODO # These are the platforms we will build for by default, unless further
+#TODO # platforms are passed in on the command line
+#TODO platforms = filter(supported_platforms()) do p
+#TODO     !((Sys.iswindows(p) && arch(p) == "i686") || (arch(p) == "powerpc64le") || (Sys.isfreebsd(p) && arch(p) == "aarch64") || (arch(p) == "riscv64"))
+#TODO end
 
 # The products that we will ensure are always built
 products = [
@@ -31,7 +32,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenSSL_jll"; compat="3.0.8"),
+    Dependency("OpenSSL_jll"; compat="3.0.16"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
