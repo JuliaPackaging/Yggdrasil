@@ -1,0 +1,85 @@
+From 32cf61466f55982a1c35b98ea1795d93d39e3d77 Mon Sep 17 00:00:00 2001
+From: Fredrik Johansson <fredrik.johansson@gmail.com>
+Date: Wed, 3 Dec 2025 22:29:11 +0100
+Subject: [PATCH] Merge pull request #2511 from fredrik-johansson/lll7
+
+Fix bug in gr_mat_move_row
+---
+ src/fmpz_lll/test/t-lll.c | 34 ++++++++++++++++++++++++++++++++++
+ src/fmpz_mat/is_reduced.c |  5 +++++
+ src/gr_mat/move_row.c     |  2 +-
+ 3 files changed, 40 insertions(+), 1 deletion(-)
+
+diff --git a/src/fmpz_lll/test/t-lll.c b/src/fmpz_lll/test/t-lll.c
+index bbefb1b98..c8f232a16 100644
+--- a/src/fmpz_lll/test/t-lll.c
++++ b/src/fmpz_lll/test/t-lll.c
+@@ -435,5 +435,39 @@ TEST_FUNCTION_START(fmpz_lll, state)
+         fmpz_mat_clear(mat);
+     }
+ 
++    /* Rectangular, rank-deficient matrix bug, #2510 */
++    {
++        static const signed char testmat[] = {-1, -1, 0, 1, -1, 1, -2, -1, 2, 1,
++          0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 2, 1, 0, -1, 0, 0, 0, 1,
++          2, -1, 0, 0, 0, 0, 1, 0, 0, 0, -1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0 };
++        slong i, j;
++
++        fmpz_mat_t A, Atop, Abot;
++        fmpz_mat_init(A, 9, 6);
++        for (i = 0; i < 9; i++)
++            for (j = 0; j < 6; j++)
++                fmpz_set_si(fmpz_mat_entry(A, i, j), testmat[i * 6 + j]);
++
++        fmpz_lll_t fl;
++        fmpz_lll_context_init_default(fl);
++        /* This used to crash. */
++        fmpz_lll(A, NULL, fl);
++
++        fmpz_mat_window_init(Atop, A, 0, 0, 5, 6);
++        fmpz_mat_window_init(Abot, A, 5, 0, 9, 6);
++
++        /* By the current definition of fmpz_mat_is_reduced,
++           A is not reduced. Fixme? */
++        if (fmpz_mat_is_reduced(A, fl->delta, fl->eta) ||
++            !fmpz_mat_is_zero(Atop) ||
++            !fmpz_mat_is_reduced(Abot, fl->delta, fl->eta))
++        {
++            flint_printf("FAIL: rank-deficient example\n");
++            flint_abort();
++        }
++
++        fmpz_mat_clear(A);
++    }
++
+     TEST_FUNCTION_END(state);
+ }
+diff --git a/src/fmpz_mat/is_reduced.c b/src/fmpz_mat/is_reduced.c
+index ab3eac52c..87a64b64c 100644
+--- a/src/fmpz_mat/is_reduced.c
++++ b/src/fmpz_mat/is_reduced.c
+@@ -57,6 +57,11 @@ fmpz_mat_is_reduced(const fmpz_mat_t A, double delta, double eta)
+ 
+         if (is_reduced != T_UNKNOWN)
+             break;
++        /* Failure with the fmpq context implied that we attempted to divide
++           by an exactly zero GS norm; by the current definition, this
++           matrix is not reduced. */
++        if (prec >= exact_cutoff)
++            break;
+     }
+ 
+     return (is_reduced == T_TRUE);
+diff --git a/src/gr_mat/move_row.c b/src/gr_mat/move_row.c
+index 431103948..c8c06232c 100644
+--- a/src/gr_mat/move_row.c
++++ b/src/gr_mat/move_row.c
+@@ -16,7 +16,7 @@
+ int gr_mat_move_row(gr_mat_t A, slong i, slong new_i, gr_ctx_t ctx)
+ {
+     gr_ptr tmp;
+-    slong c = A->c, r = A->c;
++    slong c = A->c, r = A->r;
+     slong sz = ctx->sizeof_elem;
+     slong j;
+ 
