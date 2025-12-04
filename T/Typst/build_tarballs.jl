@@ -18,12 +18,24 @@ install -Dvm 755 "target/${rust_target}/release/typst${exeext}" "${bindir}/typst
 install_license LICENSE
 """
 
-platforms = supported_platforms()
-#TODO # These are the platforms we will build for by default, unless further
-#TODO # platforms are passed in on the command line
-#TODO platforms = filter(supported_platforms()) do p
-#TODO     !((Sys.iswindows(p) && arch(p) == "i686") || (arch(p) == "powerpc64le") || (Sys.isfreebsd(p) && arch(p) == "aarch64") || (arch(p) == "riscv64"))
-#TODO end
+# Things don't work on musl. The OpenSSL libraries `ssl` and `crypto`
+# are not found. The reason is that rust wants to link statically and
+# is looking for static libraries which we do not provide.
+#
+# We can tell rust to use dynamic linking via
+# `export RUSTFLAGS="-C target-feature=-crt-static"`
+# but then we run into the undefined symbol
+# `posix_spawn_file_actions_addchdir_np` because our musl library is
+# too old.
+#
+# Therefore we disable musl. Maybe we can switch to a newer musl at some point.
+
+platforms = supported_platforms(; exclude = p ->
+    arch(p) == "riscv64" ||     # rust not available
+    (Sys.isfreebsd(p) && arch(p) == "aarch64") || # rust not available
+    (Sys.iswindows(p) && arch(p) == "i686") || # rust linker fails
+    libc(p) == "musl" # see above
+)
 
 # The products that we will ensure are always built
 products = [
