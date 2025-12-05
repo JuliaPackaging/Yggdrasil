@@ -38,10 +38,10 @@ function build_qt(name, version, sources, script, products, dependencies; produc
       build_tarballs(ARGS, name, version, sources_macos, script_macos, platforms_macos, products_macos, dependencies; preferred_llvm_version, julia_compat)
   end
   # GCC 12 and before fail with internal compiler error on mingw
-  if any(should_build_platform.(triplet.(platforms_win)))
-    build_tarballs(ARGS, name, version, sources, script, platforms_win, products_win, dependencies; preferred_gcc_version = v"13", preferred_llvm_version, julia_compat)
-  end
-  if any(should_build_platform.(triplet.(platforms)))
-      build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"10", preferred_llvm_version, julia_compat)
-  end
+#  if any(should_build_platform.(triplet.(platforms_win)))
+#    build_tarballs(ARGS, name, version, sources, script, platforms_win, products_win, dependencies; preferred_gcc_version = v"13", preferred_llvm_version, julia_compat)
+#  end
+#  if any(should_build_platform.(triplet.(platforms)))
+#      build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"10", preferred_llvm_version, julia_compat)
+#  end
 end
