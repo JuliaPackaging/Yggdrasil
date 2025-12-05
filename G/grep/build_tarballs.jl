@@ -7,16 +7,13 @@ version = v"3.12.0"
 
 # Collection of sources required to complete build
 sources = [
-    # ArchiveSource("https://ftp.gnu.org/gnu/grep/grep-$(version.major).$(version.minor).tar.xz",
-    #               "2649b27c0e90e632eadcd757be06c6e9a4f48d941de51e7c0f83ff76408a07b9"),
-    GitSource("https://git.savannah.gnu.org/git/grep.git", "3f8c09ec197a2ced82855f9ecd2cbc83874379ab"),
+    ArchiveSource("https://ftpmirror.gnu.org/gnu/grep/grep-$(version.major).$(version.minor).tar.xz",
+                  "2649b27c0e90e632eadcd757be06c6e9a4f48d941de51e7c0f83ff76408a07b9"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/grep*
-apk add gettext texinfo
-./bootstrap
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
