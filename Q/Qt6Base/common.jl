@@ -2,6 +2,7 @@ using BinaryBuilder, Pkg
 
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 if !@isdefined host_build
   host_build = false
@@ -33,7 +34,8 @@ function build_qt(name, version, sources, script, products, dependencies; produc
   preferred_llvm_version = qt_llvm_version
   julia_compat="1.6"
   if any(should_build_platform.(triplet.(platforms_macos)))
-      build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_llvm_version, julia_compat)
+      sources_macos, script_macos = require_macos_sdk("14.0", sources, script; deployment_target="12")
+      build_tarballs(ARGS, name, version, sources_macos, script_macos, platforms_macos, products_macos, dependencies; preferred_llvm_version, julia_compat)
   end
   # GCC 12 and before fail with internal compiler error on mingw
   if any(should_build_platform.(triplet.(platforms_win)))
