@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "cuQuantum"
-version_str = "25.09.0"
+version_str = "25.11.0"
 version = VersionNumber(version_str)
 
 # Bash recipe for building across all platforms
@@ -34,6 +34,8 @@ products = [
     LibraryProduct("libcustatevec", :libcustatevec),
     LibraryProduct("libcutensornet", :libcutensornet),
     LibraryProduct("libcudensitymat", :libcudensitymat),
+    LibraryProduct("libcupauliprop", :libcupauliprop),
+    LibraryProduct("libcustabilizer", :libcustabilizer),
 ]
 
 platforms = [Platform("x86_64", "linux"),
