@@ -20,6 +20,7 @@ sources = [
                 "4da8dde69eca0d9bc31420349a204851bfa2a1c87aeb87fe0c05517797edaac4", "miniconda.sh")
 ]
 
+# Essentially only CUDA 13
 MIN_CUDA_VERSION = v"13.0"
 MAX_CUDA_VERSION = nothing
 
@@ -42,6 +43,8 @@ filter!(p -> cxxstring_abi(p) == "cxx11", all_platforms)
 for platform in all_platforms
     if CUDA.is_supported(platform) && !haskey(platform, "cuda")
         platform["cuda"] = "none"
+    else # only other build is 13.0 right now
+        platform["cuda"] = "13" #! THIS IS SUPERRRR SKETCHY BUT THE .0 BREAKS THINGS
     end
 end
 
