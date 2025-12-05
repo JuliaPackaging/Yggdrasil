@@ -71,6 +71,7 @@ case "$bb_full_target" in
         export OBJCFLAGS="-D__ENVIRONMENT_OS_VERSION_MIN_REQUIRED__=120000"
         export OBJCXXFLAGS=$OBJCFLAGS
         export CXXFLAGS=$OBJCFLAGS
+        sed -i 's/exit 1/#exit 1/' /opt/bin/$bb_full_target/$target-clang++
         ../qtbase-everywhere-src-*/configure -prefix $prefix \
             $commonoptions \
             -- $commoncmakeoptions \
