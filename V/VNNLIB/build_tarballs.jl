@@ -38,6 +38,7 @@ products = [
 dependencies = [
     Dependency("libcxxwrap_julia_jll"; compat="0.14.7"),
     Dependency("libjulia_jll"; compat="1.11"),
+    Dependency("CompilerSupportLibraries_jll"),
     HostBuildDependency("Bison_jll"),
     HostBuildDependency("flex_jll")
 ]
