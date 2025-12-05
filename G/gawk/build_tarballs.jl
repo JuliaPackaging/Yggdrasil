@@ -5,13 +5,14 @@ version = v"5.3.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://cgit.git.savannah.gnu.org/cgit/gawk.git/snapshot/gawk-5.3.2.tar.gz",
-                  "056d6a63faf1ec88639c2d33cf604e880b1bb80a164fbcd9fa8303b5f8822181")
+    GitSource("https://git.savannah.gnu.org/git/gawk.git", "027ebff56b83600d88fd303b98c36201116a7560"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/gawk*/
+
+apk add texinfo
 
 CONFIGURE_ARGS=()
 if [[ ${target} == aarch64-apple-darwin* ]]; then
