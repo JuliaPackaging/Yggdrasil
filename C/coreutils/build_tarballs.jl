@@ -1,6 +1,9 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using Base.BinaryPlatforms
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "coreutils"
 version = v"9.9"
@@ -16,7 +19,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/coreutils*
 
-apk add gettext gperf texinfo
+apk add gperf texinfo
 
 ./bootstrap
 
@@ -47,6 +50,8 @@ if [[ "${dlext}" != "so" ]]; then
     mv ${prefix}/libexec/coreutils/libstdbuf.so ${prefix}/libexec/coreutils/libstdbuf.${dlext}
 fi
 """
+
+sources, script = require_macos_sdk("11.0", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
@@ -169,7 +174,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    HostBuildDependency("Gettext_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
