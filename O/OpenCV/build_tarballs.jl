@@ -2,6 +2,9 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 # See https://github.com/JuliaLang/Pkg.jl/issues/2942
 # Once this Pkg issue is resolved, this must be removed
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
@@ -19,10 +22,6 @@ include("../../L/libjulia/common.jl")
 sources = [
     GitSource("https://github.com/opencv/opencv.git", "49486f61fb25722cbcf586b7f4320921d46fb38e"),
     GitSource("https://github.com/barche/opencv_contrib.git","40080954a3afcc331463c2d40c6809de29fde50d"),
-    ArchiveSource(
-        "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
-        "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4",
-    ),
     DirectorySource("./bundled"),
 ]
 
@@ -39,15 +38,6 @@ if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-freebsd* ]]; then
 fi
 
 if [[ "${target}" == *-apple-* ]]; then
-    # Newer SDK for recent video codecs
-    if [[ "${target}" == x86_64-apple-* ]]; then
-        export MACOSX_DEPLOYMENT_TARGET=10.13 
-        pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk 
-        rm -rf /opt/${target}/${target}/sys-root/System 
-        cp -a usr/* "/opt/${target}/${target}/sys-root/usr/" 
-        cp -a System "/opt/${target}/${target}/sys-root/" 
-        popd
-    fi
     # We want to use OpenBLAS over Accelerate framework...
     export OpenBLAS_HOME=${prefix}
     export CXXFLAGS=""
@@ -98,6 +88,10 @@ cp -R OpenCV ${prefix}
 
 install_license ../opencv/{LICENSE,COPYRIGHT}
 """
+
+
+# Newer macOS SDK is needed for recent video codecs
+sources, script = require_macos_sdk("10.13", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line

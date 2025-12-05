@@ -2,29 +2,20 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "osmium"
 version = v"1.17.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/osmcode/osmium-tool.git", "02b70f2c0df142f09ca24ffa633b6d3d1ec1e3eb"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/osmium-tool
-
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    # Install a newer SDK to work around compilation failures
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    popd
-    export MACOSX_DEPLOYMENT_TARGET=10.15
-fi
 
 mkdir build && cd build
 
@@ -42,6 +33,8 @@ make install
 install_license ../LICENSE.txt
 """
 
+# Install a newer SDK to work around compilation failures
+sources, script = require_macos_sdk("10.15", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line

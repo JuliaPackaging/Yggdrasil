@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "ROOT_julia"
-version = v"1.0.0"
+version = v"1.1.0"
 
 # Collection of sources required to complete build
 sources = [
-   GitSource("https://github.com/JuliaHEP/ROOT.jl.git", "26217370e35ab78c56d87f36cc14778eb798c5be")
+   GitSource("https://github.com/JuliaHEP/ROOT.jl.git", "cf68f4ec3409f3fd37805726fb7f7180acfbf62e")
 ]
 
 # See https://github.com/JuliaLang/Pkg.jl/issues/2942
@@ -44,6 +44,9 @@ END_OF_SCRIPT
 chmod a+x "\$WORKSPACE/recipe.sh"
 $script
 """
+
+#Does not compile with these versions yet
+filter!(x->x ∉ [v"1.13.0", v"1.14.0"], julia_versions)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line

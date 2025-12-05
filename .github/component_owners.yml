@@ -124,6 +124,8 @@ components:
   L/libblastrampoline/:
     - amontoison
     - imciner2
+  L/licensecheck/:
+    - ericphanson
   L/libigc/:
     - amontoison
     - michel2323

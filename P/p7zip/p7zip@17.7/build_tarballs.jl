@@ -1,5 +1,8 @@
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "p7zip"
 # Upstream uses CalVer
 upstream_version = "25.01"
@@ -11,22 +14,10 @@ sources = [
     ArchiveSource("https://downloads.sourceforge.net/project/sevenzip/7-Zip/$(upstream_version)/7z$(compact_version)-src.tar.xz",
                   "ed087f83ee789c1ea5f39c464c55a5c9d4008deb0efe900814f2df262b82c36e";
                   unpack_target="7z"),
-    FileSource(
-        "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
-        "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4"
-    ),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-# Require MacOS 10.13 or later to support utimensat
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    # need to run with BINARYBUILDER_RUNNER="privileged" for this rm to work
-    rm -rf /opt/${target}/${target}/sys-root/System
-    tar --extract --file=${WORKSPACE}/srcdir/MacOSX10.13.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX10.13.sdk/System MacOSX10.13.sdk/usr
-    export MACOSX_DEPLOYMENT_TARGET=10.13
-fi
-
 cd 7z/CPP/7zip/Bundles/Alone
 
 # Lowercase names for MinGW
@@ -63,6 +54,9 @@ install -Dvm 755 _o/7za${exeext} "${bindir}/7z${exeext}"
 install_license ../../../../DOC/copying.txt
 install_license ../../../../DOC/License.txt
 """
+
+# Require MacOS 10.13 or later to support utimensat
+sources, script = require_macos_sdk("10.13", sources, script)
 
 platforms = supported_platforms()
 
