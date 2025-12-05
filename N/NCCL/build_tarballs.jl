@@ -97,7 +97,7 @@ builds = []
 for cuda_version in [v"13.0"]
     platforms = [
         Platform("x86_64", "linux"),
-        Platform("aarch64", "linux")
+        # Platform("aarch64", "linux")
     ]
     for platform in platforms
         augmented_platform = deepcopy(platform)
@@ -129,19 +129,19 @@ for cuda_version in [v"13.0"]
     end
 end
 
-for platform in CUDA.supported_platforms(; min_version=v"12", max_version=v"12.9.999")
-    should_build_platform(triplet(platform)) || continue
+# for platform in CUDA.supported_platforms(; min_version=v"12", max_version=v"12.9.999")
+#     should_build_platform(triplet(platform)) || continue
 
-    platform_sources = BinaryBuilder.AbstractSource[git_sources...]
-    if arch(platform) == "aarch64"
-        push!(platform_sources, CUDA.cuda_nvcc_redist_source(platform["cuda"], "x86_64"))
-    end
+#     platform_sources = BinaryBuilder.AbstractSource[git_sources...]
+#     if arch(platform) == "aarch64"
+#         push!(platform_sources, CUDA.cuda_nvcc_redist_source(platform["cuda"], "x86_64"))
+#     end
 
-    push!(
-        builds,
-        (; platforms=[platform], sources=platform_sources, script=build_script, req_deps=true)
-    )
-end
+#     push!(
+#         builds,
+#         (; platforms=[platform], sources=platform_sources, script=build_script, req_deps=true)
+#     )
+# end
 
 # don't allow `build_tarballs` to override platform selection based on ARGS.
 # we handle that ourselves by calling `should_build_platform`
