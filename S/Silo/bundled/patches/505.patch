@@ -1,0 +1,299 @@
+From dcbd85d203d480ba83f5a6cac0ea1d3e763eee51 Mon Sep 17 00:00:00 2001
+From: "Mark C. Miller" <5720676+markcmiller86@users.noreply.github.com>
+Date: Sun, 23 Nov 2025 13:24:54 -0800
+Subject: [PATCH 1/5] Fix link for release notes in releases.md
+
+---
+ tests/testall.c | 33 ++++++++++++---------------------
+ 1 file changed, 12 insertions(+), 21 deletions(-)
+
+diff --git a/tests/testall.c b/tests/testall.c
+index 77afdcd8..adcff15f 100644
+--- a/tests/testall.c
++++ b/tests/testall.c
+@@ -74,6 +74,7 @@ be used for advertising or product endorsement purposes.
+  *
+  */
+ 
++#include <assert.h>
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <fcntl.h>
+@@ -1415,6 +1416,7 @@ build_rect3d(DBfile * dbfile, int size, int order)
+     double         dist;
+ 
+     int            binf;
++    ssize_t        wrsz;
+ 
+     switch (size) {
+         case 1:
+@@ -1645,11 +1647,13 @@ build_rect3d(DBfile * dbfile, int size, int order)
+ 
+     DBPutQuadvar1(dbfile, var1name, meshname, d, zdims, ndims, NULL, 0,
+                   DB_FLOAT, DB_ZONECENT, optlist);
+-    write(binf, d, zdims[0]*zdims[1]*zdims[2]*sizeof(float));
++    wrsz = write(binf, d, zdims[0]*zdims[1]*zdims[2]*sizeof(float));
++    assert(wrsz==zdims[0]*zdims[1]*zdims[2]*sizeof(float));
+ 
+     DBPutQuadvar1(dbfile, var2name, meshname, p, zdims, ndims, NULL, 0,
+                   DB_FLOAT, DB_ZONECENT, optlist);
+-    write(binf, p, zdims[0]*zdims[1]*zdims[2]*sizeof(float));
++    wrsz = write(binf, p, zdims[0]*zdims[1]*zdims[2]*sizeof(float));
++    assert(wrsz==zdims[0]*zdims[1]*zdims[2]*sizeof(float));
+     close(binf);
+     printf("zsize = nz=%d, ny=%d, nx=%d\n", zdims[2], zdims[1], zdims[0]);
+ 
+@@ -1661,31 +1665,18 @@ build_rect3d(DBfile * dbfile, int size, int order)
+ 
+     DBPutQuadvar1(dbfile, var3name, meshname, u, dims, ndims, NULL, 0,
+                   DB_FLOAT, DB_NODECENT, optlist);
+-    write(binf, u, dims[0]*dims[1]*dims[2]*sizeof(float));
++    wrsz = write(binf, u, dims[0]*dims[1]*dims[2]*sizeof(float));
++    assert(wrsz==dims[0]*dims[1]*dims[2]*sizeof(float));
+ 
+     DBPutQuadvar1(dbfile, var4name, meshname, v, dims, ndims, NULL, 0,
+                   DB_FLOAT, DB_NODECENT, optlist);
+-    /*write(binf, v, dims[0]*dims[1]*dims[2]*sizeof(float));*/
++    wrsz = write(binf, v, dims[0]*dims[1]*dims[2]*sizeof(float));
++    assert(wrsz==dims[0]*dims[1]*dims[2]*sizeof(float));
+ 
+     DBPutQuadvar1(dbfile, var5name, meshname, w, dims, ndims, NULL, 0,
+                   DB_FLOAT, DB_NODECENT, optlist);
+-    /*write(binf, w, dims[0]*dims[1]*dims[2]*sizeof(float));*/
+-#if 0
+-    { int i, j, k;
+-        for (k = 0; k < dims[2]; k++)
+-        {
+-            for (j = 0; j < dims[1]; j++)
+-            {
+-                for (i = 0; i < dims[0]; i++)
+-                {
+-                    write(binf, &u[k*dims[1]*dims[0]+j*dims[0]+i], sizeof(float));
+-                    write(binf, &v[k*dims[1]*dims[0]+j*dims[0]+i], sizeof(float));
+-                    write(binf, &w[k*dims[1]*dims[0]+j*dims[0]+i], sizeof(float));
+-                }
+-            }
+-        }
+-    }
+-#endif
++    wrsz = write(binf, w, dims[0]*dims[1]*dims[2]*sizeof(float));
++    assert(wrsz==dims[0]*dims[1]*dims[2]*sizeof(float));
+     close(binf);
+     printf("size = nz=%d, ny=%d, nx=%d\n", dims[2], dims[1], dims[0]);
+ 
+
+From 529776e33848e4c5a5aa53ad83837296b08d83d2 Mon Sep 17 00:00:00 2001
+From: "Mark C. Miller" <5720676+markcmiller86@users.noreply.github.com>
+Date: Sun, 23 Nov 2025 18:26:09 -0800
+Subject: [PATCH 3/5] fix snprintf sizes
+
+---
+ tests/test_mat_compression.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/tests/test_mat_compression.c b/tests/test_mat_compression.c
+index 1e48e3d3..5277111a 100644
+--- a/tests/test_mat_compression.c
++++ b/tests/test_mat_compression.c
+@@ -249,9 +249,9 @@ main(int argc, char *argv[])
+             int nchars;
+             vfrac_varnames[i] = (char *) malloc(256*sizeof(char));
+             if (mat->matnames && mat->matnames[i])
+-                nchars = snprintf(vfrac_varnames[i], 256, "%s_%s_%d_vfracs", omat, mat->matnames[i], mat->matnos[i]); 
++                nchars = snprintf(vfrac_varnames[i], 256, "%.163s_%.64s_%d_vfracs", omat, mat->matnames[i], mat->matnos[i]); 
+             else
+-                nchars = snprintf(vfrac_varnames[i], 256, "%s_%d_vfracs", omat, mat->matnos[i]); 
++                nchars = snprintf(vfrac_varnames[i], 256, "%.227s_%0d_vfracs", omat, mat->matnos[i]); 
+             assert(nchars > 0 && nchars < 256);
+             DBWrite(outfile, vfrac_varnames[i], vfracs[i], mat->dims, mat->ndims, mat->datatype);
+             total_file_bytes += DBGetVarByteLengthInFile(outfile, vfrac_varnames[i]);
+
+From 6e3bc3823d00a7bd41c303ac2dcec4b1140d0bff Mon Sep 17 00:00:00 2001
+From: "Mark C. Miller" <5720676+markcmiller86@users.noreply.github.com>
+Date: Sun, 23 Nov 2025 18:26:24 -0800
+Subject: [PATCH 4/5] fix int/hsize_t confusion
+
+---
+ src/hdf5_drv/silo_hdf5.c | 28 ++++++++++++++--------------
+ 1 file changed, 14 insertions(+), 14 deletions(-)
+
+diff --git a/src/hdf5_drv/silo_hdf5.c b/src/hdf5_drv/silo_hdf5.c
+index eec5fed9..efdbae3b 100644
+--- a/src/hdf5_drv/silo_hdf5.c
++++ b/src/hdf5_drv/silo_hdf5.c
+@@ -1889,7 +1889,7 @@ db_hdf5_get_obj_dsnames(DBfile *_dbfile, char const *name, int *dscount, char **
+  */
+ PRIVATE hid_t
+ db_hdf5_get_cmemb(hid_t compound_type, int membno, int *ndims/*out*/,
+-                  int size[3]/*out*/)
++                  hsize_t size[3]/*out*/)
+ {
+     hid_t       type;
+ 
+@@ -1897,12 +1897,10 @@ db_hdf5_get_cmemb(hid_t compound_type, int membno, int *ndims/*out*/,
+     
+ #if (H5_VERS_MAJOR==1 && H5_VERS_MINOR>=4) || H5_VERS_MAJOR>1
+     if (H5T_ARRAY==H5Tget_class(type)) {
+-        hsize_t bigdims[3];
+         int i;
+         *ndims = H5Tget_array_ndims(type);
+         assert(*ndims<=3);
+-        H5Tget_array_dims(type, bigdims);
+-        for (i=0; i<*ndims; i++) size[i] = bigdims[i];
++        H5Tget_array_dims(type, size);
+         type = H5Tget_super(type);
+     } else {
+         *ndims = 0;
+@@ -1931,16 +1929,14 @@ db_hdf5_get_cmemb(hid_t compound_type, int membno, int *ndims/*out*/,
+  */
+ PRIVATE int
+ db_hdf5_put_cmemb(hid_t compound_type, char const *name, size_t offset,
+-                  int ndims, int const *dim, hid_t type)
++                  int ndims, hsize_t const *dim, hid_t type)
+ {
+     int         retval;
+     
+ #if (H5_VERS_MAJOR==1 && H5_VERS_MINOR>=4) || H5_VERS_MAJOR>1
+     if (ndims) {
+-        hsize_t bigdims[16];
+         int i;
+-        for (i=0; i<ndims; i++) bigdims[i] = dim[i];
+-        type = H5Tarray_create(type, ndims, bigdims);
++        type = H5Tarray_create(type, ndims, dim);
+     }
+     retval = H5Tinsert(compound_type, name, offset, type);
+     if (ndims) H5Tclose(type);
+@@ -3805,10 +3801,11 @@ db_hdf5_get_comp_var(DBfile *_dbfile, char const *name, hsize_t *nelmts,
+                 break;
+             case H5T_ARRAY:
+                 {
+-                    int i, ndims, size[3], len = 1;
++                    int i, ndims, len = 1;
++                    hsize_t size[3];
+                     comptype = db_hdf5_get_cmemb(stypeid, membno, &ndims, size);
+                     for (i = 0; i < ndims; i++)
+-                        len *= size[i];
++                        len *= (int) size[i];
+                     numvals = len;
+                     break;
+                 }
+@@ -6616,7 +6613,8 @@ copy_obj(hid_t hobj, char const *name, void *op_data)
+         s1024 = H5Tcopy(H5T_C_S1);
+         H5Tset_size(s1024, 1024);
+         for (i=0; i<nmembs; i++) {
+-            int ndims, j, memb_size[4];
++            int ndims, j;
++            hsize_t memb_size[4];
+             hid_t member_type = db_hdf5_get_cmemb(atype, i, &ndims, memb_size);
+             
+             if (H5Tget_class(member_type) == H5T_STRING)
+@@ -7075,7 +7073,8 @@ db_hdf5_GetComponentStuff(DBfile *_dbfile, char const *objname, char const *comp
+     DBfile_hdf5 *dbfile = (DBfile_hdf5*)_dbfile;
+     static char *me = "db_hdf5_GetComponent";
+     hid_t       o=-1, attr=-1, atype=-1, ftype=-1, mtype=-1, dset=-1;
+-    int         datatype, mno, n, ndims, i, dim[3], mult, complen, mnof=-1, mnofidx=-1;
++    int         datatype, mno, n, ndims, i, mult, complen, mnof=-1, mnofidx=-1;
++    hsize_t     dim[3];
+     char        *mnofname=0;
+     void        *retval=NULL;
+     
+@@ -7185,7 +7184,7 @@ db_hdf5_GetComponentStuff(DBfile *_dbfile, char const *objname, char const *comp
+                 UNWIND();
+             }
+ 
+-            for (i=0, mult=1; i<ndims; i++) mult *= dim[i];
++            for (i=0, mult=1; i<ndims; i++) mult *= (int) dim[i];
+ 
+             if (just_get_datatype == 0)
+             {
+@@ -8821,7 +8820,8 @@ db_hdf5_GetObject(DBfile *_dbfile, char const *name)
+     hid_t       o=-1, attr=-1, atype=-1, h5str=-1;
+     char        *file_value=NULL, *mem_value=NULL, *bkg=NULL, bigname[1024];
+     DBObjectType objtype;
+-    int         _objtype, nmembs, i, j, memb_size[4];
++    int         _objtype, nmembs, i, j;
++    hsize_t     memb_size[4];
+     DBobject    *obj=NULL;
+     size_t      asize, nelmts, msize;
+ 
+
+From e554a4ea6d46bb93f80d3f3a5f21d32bbc47bd87 Mon Sep 17 00:00:00 2001
+From: "Mark C. Miller" <5720676+markcmiller86@users.noreply.github.com>
+Date: Sun, 23 Nov 2025 18:26:37 -0800
+Subject: [PATCH 5/5] fix snprintf sizes
+
+---
+ src/taurus/silo_taurus.c | 20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/src/taurus/silo_taurus.c b/src/taurus/silo_taurus.c
+index 57fa53d4..70fc9e32 100644
+--- a/src/taurus/silo_taurus.c
++++ b/src/taurus/silo_taurus.c
+@@ -484,10 +484,10 @@ db_taur_NewToc(DBfile *_dbfile)
+                 toc->dir_names[i] = ALLOC_N(char, 12);
+ 
+                 if (taurus->nstates < 100) {
+-                    snprintf(toc->dir_names[i], 12, "state%02d", i);
++                    snprintf(toc->dir_names[i], 12, "state%02d", i%100);
+                 }
+                 else {
+-                    snprintf(toc->dir_names[i], 12, "state%03d", i);
++                    snprintf(toc->dir_names[i], 12, "state%03d", i%1000);
+                 }
+             }
+             toc->ndir = taurus->nstates;
+@@ -1455,9 +1455,9 @@ db_taur_InqMeshname(DBfile *_dbfile, char const *var_name, char *mesh_name)
+              */
+             if (strcmp(var_name, "mat1") == 0) {
+                 if (taurus->nstates < 100)
+-                    snprintf(mesh_name, 14, "/state%02d/mesh1", taurus->state);
++                    snprintf(mesh_name, 16, "/state%02d/mesh1", taurus->state%100);
+                 else
+-                    snprintf(mesh_name, 15, "/state%03d/mesh1", taurus->state);
++                    snprintf(mesh_name, 17, "/state%03d/mesh1", taurus->state%1000);
+                 return (0);
+             }
+         }
+@@ -1776,7 +1776,7 @@ db_taur_cd(TAURUSfile *taurus, char const *path)
+     int            state;
+     char          *dir;
+     char           opath[160];
+-    char           npath[160];
++    char           npath[256];
+ 
+     /*
+      * Form the new path.
+@@ -1786,7 +1786,7 @@ db_taur_cd(TAURUSfile *taurus, char const *path)
+     }
+     else {
+         db_taur_pwd(taurus, opath);
+-        snprintf(npath, 256, "%s/%s", opath, path);
++        snprintf(npath, 256, "%.160s/%.95s", opath, path);
+     }
+     reduce_path(npath);
+ 
+@@ -1873,19 +1873,19 @@ db_taur_pwd(TAURUSfile *taurus, char *path)
+     else {
+         if (taurus->idir == -1) {
+             if (taurus->nstates < 100) {
+-                snprintf(path, 7, "/state%02d", taurus->state);
++                snprintf(path, 10, "/state%02d", taurus->state%100);
+             }
+             else {
+-                snprintf(path, 8, "/state%03d", taurus->state);
++                snprintf(path, 11, "/state%03d", taurus->state%1000);
+             }
+         }
+         else {
+             if (taurus->nstates < 100) {
+-                snprintf(path, 256, "/state%02d/%s", taurus->state,
++                snprintf(path, 256, "/state%02d/%.245s", taurus->state%100,
+                         dir_names[taurus->idir]);
+             }
+             else {
+-                snprintf(path, 256, "/state%03d/%s", taurus->state,
++                snprintf(path, 256, "/state%03d/%.244s", taurus->state%1000,
+                         dir_names[taurus->idir]);
+             }
+         }
