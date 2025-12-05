@@ -5,9 +5,8 @@ version = v"5.3.2"
 
 # Collection of sources required to complete build
 sources = [
-    # Use our cache because ftp.gnu.org is easily displeased by us downloading each package several times simultaneously
-    ArchiveSource("https://cache.julialang.org/https://ftp.gnu.org/gnu/gawk/gawk-$(version).tar.xz",
-                  "f8c3486509de705192138b00ef2c00bbbdd0e84c30d5c07d23fc73a9dc4cc9cc")
+    ArchiveSource("https://cgit.git.savannah.gnu.org/cgit/gawk.git/snapshot/gawk-5.3.2.tar.gz",
+                  "056d6a63faf1ec88639c2d33cf604e880b1bb80a164fbcd9fa8303b5f8822181")
 ]
 
 # Bash recipe for building across all platforms
