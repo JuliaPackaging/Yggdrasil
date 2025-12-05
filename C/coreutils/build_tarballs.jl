@@ -7,13 +7,18 @@ version = v"9.9"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/coreutils/coreutils-$(version.major).$(version.minor).tar.xz",
-                  "19bcb6ca867183c57d77155eae946c5eced88183143b45ca51ad7d26c628ca75")
+    # ArchiveSource("https://ftp.gnu.org/gnu/coreutils/coreutils-$(version.major).$(version.minor).tar.xz",
+    #               "19bcb6ca867183c57d77155eae946c5eced88183143b45ca51ad7d26c628ca75"),
+    GitSource("https://git.savannah.gnu.org/git/coreutils.git", "0ae5bdc7a8311efd3efe43363050710d6ea1c367"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/coreutils*
+
+apk add gettext gperf texinfo
+
+./bootstrap
 
 # Fix `configure: error: you should not run configure as root (set FORCE_UNSAFE_CONFIGURE=1 in environment to bypass this check)`
 if [[ ${target} == x86_64-linux-musl* ]]; then
