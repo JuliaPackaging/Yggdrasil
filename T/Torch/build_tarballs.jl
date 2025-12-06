@@ -285,8 +285,8 @@ dependencies = [
     Dependency("PThreadPool_jll"; compat = "0.0.20210414"),
     Dependency("SLEEF_jll", v"3.5.2"; compat = "3"),
     Dependency("XNNPACK_jll"; compat = "0.0.20210622"),
-    Dependency(PackageSpec("protoc_jll", Base.UUID("c7845625-083e-5bbe-8504-b32d602b7110")); compat="~3.13.0"),
-    HostBuildDependency(PackageSpec("protoc_jll", Base.UUID("c7845625-083e-5bbe-8504-b32d602b7110"), v"3.13.0")),
+    BuildDependency(PackageSpec(name="ProtocolBuffersSDK_static_jll", version="3.16.0")),
+    HostBuildDependency(PackageSpec(name="ProtocolBuffersCompiler_jll", version="3.16.0")),
     HostBuildDependency(PackageSpec(name="CMake_jll")), # Need CMake >= 3.30 for BLA_VENDOR=libblastrampoline
 ]
 
