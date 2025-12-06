@@ -3,7 +3,11 @@
 using BinaryBuilder
 
 name = "f4ncgb"
-version = v"0.3.3"
+upstream_version = v"0.3.3"
+version_offset = v"0.0.0"
+version = VersionNumber(upstream_version.major*100+version_offset.major,
+                        upstream_version.minor*100+version_offset.minor,
+                        upstream_version.patch*100+version_offset.patch)
 
 sources = [
     GitSource("https://gitlab.sai.jku.at/f4ncgb/f4ncgb.git",
@@ -67,7 +71,7 @@ products = [
 dependencies = [
     Dependency("GMP_jll", v"6.2.1"),
     Dependency("MPFR_jll", v"4.2.0"),
-    Dependency("FLINT_jll", compat = "~301.300.101"),
+    Dependency("FLINT_jll", compat = "~301.400.000"),
     Dependency("boost_jll", compat = "=1.87.0"),
 ]
 

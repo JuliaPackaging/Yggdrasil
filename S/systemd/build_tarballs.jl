@@ -67,7 +67,7 @@ dependencies = [
     # systemd requires glibc 2.16. we only package glibc 2.17,
     # which isn't compatible with current Linux kernel headers,
     # so use the next packaged version
-    BuildDependency(PackageSpec(name = "Glibc_jll", version = v"2.19");
+    BuildDependency(PackageSpec(name = "Glibc_jll", version = "2.19");
                     platforms=glibc_platforms),
 
     HostBuildDependency("gperf_jll"),

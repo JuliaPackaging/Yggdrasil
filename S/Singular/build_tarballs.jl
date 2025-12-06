@@ -29,7 +29,7 @@ import Pkg.Types: VersionSpec
 name = "Singular"
 
 upstream_version = v"4.4.1-5" # 4.4.1p5
-version_offset = v"0.1.1"
+version_offset = v"0.1.3"
 
 version = VersionNumber(upstream_version.major * 100 + upstream_version.minor + version_offset.major,
                         upstream_version.patch * 100 + version_offset.minor,
@@ -37,7 +37,7 @@ version = VersionNumber(upstream_version.major * 100 + upstream_version.minor + 
 
 # Collection of sources required to build Singular
 sources = [
-    GitSource("https://github.com/Singular/Singular.git", "bceb01c7426b42d1f0a176b6f3e2af31196ca070"),
+    GitSource("https://github.com/Singular/Singular.git", "468dc00116177cf69f3d487010005ebfb51686cc"),
     #ArchiveSource("https://www.mathematik.uni-kl.de/ftp/pub/Math/Singular/SOURCES/$(upstream_version.major)-$(upstream_version.minor)-$(upstream_version.patch)/singular-$(upstream_version).tar.gz",
     #              "5b0f6c036b4a6f58bf620204b004ec6ca3a5007acc8352fec55eade2fc9d63f6"),
     #DirectorySource("./bundled")
@@ -109,7 +109,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("cddlib_jll"),
-    Dependency(PackageSpec(name="FLINT_jll"), compat = "~301.300.101"),
+    Dependency(PackageSpec(name="FLINT_jll"), compat = "~301.400.000"),
     Dependency("GMP_jll", v"6.2.1"),
     Dependency("MPFR_jll", v"4.1.1"),
 ]
