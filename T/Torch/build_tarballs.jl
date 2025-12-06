@@ -214,6 +214,8 @@ configure() {
         -DPYTHON_EXECUTABLE=$(which python3) \
         -DBUILD_SHARED_LIBS=ON \
         -DHAVE_SOVERSION=ON \
+        -DUSE_GFLAGS=ON \
+        -DUSE_GLOG=ON \
         -DUSE_LITE_PROTO=ON \
         -DUSE_METAL=OFF \
         -DUSE_MPI=OFF \
@@ -279,6 +281,8 @@ dependencies = [
 
     Dependency("CPUInfo_jll"; compat = "0.0.20201217"),
     Dependency("Gloo_jll";  compat = "0.0.20210521", platforms = filter(p -> nbits(p) == 64, platforms)),
+    Dependency("gflags_jll"; compat = "2.2.2"),
+    Dependency("glog_jll"), # TODO should be 0.5.0
     Dependency("libblastrampoline_jll"; compat="5.4", platforms = libblastrampoline_platforms),
 
     # libtorch, libtorch_cuda, and libtorch_global_deps all link with `libnvToolsExt`
