@@ -75,6 +75,7 @@ micromamba install -y python=3.9 pyyaml typing_extensions -c conda-forge
 cd $WORKSPACE/srcdir/pytorch
 
 atomic_patch -p1 ../patches/pytorch-aten-qnnpack-cmake-windows.patch
+atomic_patch -p1 ../patches/pytorch-c10-mingw32.patch
 atomic_patch -p1 ../patches/pytorch-cmake-blas-default.patch
 
 cmake_extra_args=()

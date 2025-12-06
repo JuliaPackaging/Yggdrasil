@@ -1,0 +1,22 @@
+diff --git a/c10/core/impl/alloc_cpu.cpp b/c10/core/impl/alloc_cpu.cpp
+index 2570316f42c..5dbb2259a7f 100644
+--- a/c10/core/impl/alloc_cpu.cpp
++++ b/c10/core/impl/alloc_cpu.cpp
+@@ -58,7 +58,7 @@ void* alloc_cpu(size_t nbytes) {
+   void* data;
+ #ifdef __ANDROID__
+   data = memalign(gAlignment, nbytes);
+-#elif defined(_MSC_VER)
++#elif defined(_WIN32)
+   data = _aligned_malloc(nbytes, gAlignment);
+ #else
+   int err = posix_memalign(&data, gAlignment, nbytes);
+@@ -96,7 +96,7 @@ void* alloc_cpu(size_t nbytes) {
+ }
+ 
+ void free_cpu(void* data) {
+-#ifdef _MSC_VER
++#ifdef _WIN32
+   _aligned_free(data);
+ #else
+   // NOLINTNEXTLINE(cppcoreguidelines-no-malloc)
