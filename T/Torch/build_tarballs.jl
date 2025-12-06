@@ -178,6 +178,9 @@ else
     cmake_extra_args+=(-DUSE_CUDA=OFF -DUSE_MAGMA=OFF)
 fi
 
+# https://github.com/pytorch/pytorch/tree/v1.11.0/third_party/breakpad points to https://github.com/driazati/breakpad which has moved to https://github.com/google/breakpad
+git submodule set-url third_party/breakpad https://github.com/google/breakpad.git
+
 git submodule update --init --depth 1 \
     third_party/FP16 \
     third_party/FXdiv \
