@@ -296,7 +296,7 @@ for platform in platforms
     if haskey(platform, "cuda") && platform["cuda"] != "none"
         if platform["cuda"] == "11.3"
             additional_deps = BinaryBuilder.AbstractDependency[
-                BuildDependency(PackageSpec("CUDA_full_jll", v"11.3.1")),
+                BuildDependency(PackageSpec(name = "CUDA_full_jll", version = "11.3.1")),
                 Dependency("CUDA_Runtime_jll", v"0.7.0"), # Using v"0.7.0" to get support for cuda = "11.3" - using Dependency rather than RuntimeDependency to be sure to pass audit
             ]
         else
