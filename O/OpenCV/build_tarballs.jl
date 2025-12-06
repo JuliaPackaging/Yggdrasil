@@ -5,13 +5,6 @@ using BinaryBuilder, Pkg
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
-# See https://github.com/JuliaLang/Pkg.jl/issues/2942
-# Once this Pkg issue is resolved, this must be removed
-uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
-delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
-uuid = Base.UUID("458c3c95-2e84-50aa-8efc-19380b2a3a95")
-delete!(Pkg.Types.get_last_stdlibs(v"1.13.0"), uuid)
-
 name = "OpenCV"
 version = v"4.12.0"
 version_collapsed_str = replace(string(version), "." => "")
@@ -61,8 +54,13 @@ fi
 
 cmake -DCMAKE_FIND_ROOT_PATH=${prefix} \
       -DJulia_PREFIX=${prefix} \
-      -DWITH_JULIA=ON -DJulia_FOUND=ON -DHAVE_JULIA=ON -DJulia_WORD_SIZE=${nbits} \
-      -DJulia_INCLUDE_DIRS=${includedir}/julia -DJulia_LIBRARY_DIR=${libdir} -DJulia_LIBRARY=${libdir}/libjulia.${dlext} \
+      -DWITH_JULIA=ON \
+      -DJulia_FOUND=ON \
+      -DHAVE_JULIA=ON \
+      -DJulia_WORD_SIZE=${nbits} \
+      -DJulia_INCLUDE_DIRS=${includedir}/julia \
+      -DJulia_LIBRARY_DIR=${libdir} \
+      -DJulia_LIBRARY=${libdir}/libjulia.${dlext} \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_BUILD_TYPE=Release \
@@ -127,7 +125,7 @@ dependencies = [
     HostBuildDependency("Qt6Base_jll"),
     Dependency(PackageSpec(name="Libglvnd_jll", uuid="7e76a0d4-f3c7-5321-8279-8d96eeed0f29")),
     BuildDependency(PackageSpec(name="libjulia_jll")),
-    Dependency(PackageSpec(name="libcxxwrap_julia_jll", uuid="3eaa8342-bff7-56a5-9981-c04077f7cee7"); compat="0.14"),
+    Dependency(PackageSpec(name="libcxxwrap_julia_jll", uuid="3eaa8342-bff7-56a5-9981-c04077f7cee7"); compat="0.14.7"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
