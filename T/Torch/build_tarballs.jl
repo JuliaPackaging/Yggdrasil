@@ -284,7 +284,7 @@ dependencies = [
     # maleadt: `libnvToolsExt is not shipped by CUDA anymore, so the best solution is definitely static linking. CUDA 10.2 shipped it, later it became a header-only library which we do compile into a dynamic one for use with NVTX.jl, but there's no guarantees that the library we build has the same symbols as the "old" libnvToolsExt shipped by CUDA 10.2
     RuntimeDependency("NVTX_jll"), # TODO: Replace RuntimeDependency with static linking.
 
-    Dependency("ONNX_jll"),
+    BuildDependency(PackageSpec(name = "ONNX_static_jll", version = "1.10.2")),
     Dependency("OpenBLAS32_jll"; platforms = openblas_platforms),
     Dependency("PThreadPool_jll"; compat = "0.0.20210414"),
     Dependency("SLEEF_jll", v"3.5.2"; compat = "3"),
