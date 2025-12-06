@@ -17,7 +17,7 @@ platforms_win = filter(Sys.iswindows, platforms)
 platforms = setdiff(platforms, platforms_macos, platforms_win)
 
 # We must use the same version of LLVM for the build toolchain and LLVMCompilerRT_jll
-qt_llvm_version = v"16.0.6"
+qt_llvm_version = "16.0.6"
 
 make_mac_product(p::Product) = p
 function make_mac_product(lp::LibraryProduct)
