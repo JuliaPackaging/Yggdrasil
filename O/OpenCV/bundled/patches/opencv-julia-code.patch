@@ -228,19 +228,6 @@ index 0fac6bc9..a05476fd 100644
    }
  };
  
-diff --git a/modules/julia/gen/gen3_cpp.py b/modules/julia/gen/gen3_cpp.py
-index 5019585f..9cbc2107 100644
---- a/modules/julia/gen/gen3_cpp.py
-+++ b/modules/julia/gen/gen3_cpp.py
-@@ -74,7 +74,7 @@ class ClassInfo(ClassInfo):
-     def get_cpp_code_header(self):
-         if self.ismap:
-             return 'mod.map_type<%s>("%s");\n'%(self.name, self.mapped_name)
--        if not self.base:
-+        elif not self.base:
-             return 'mod.add_type<%s>("%s");\n' % (self.name, self.mapped_name)
-         else:
-             return 'mod.add_type<%s>("%s", jlcxx::julia_base_type<%s>());\n' % (self.name, self.mapped_name, self.base)
 diff --git a/modules/julia/gen/jl_cxx_files/OpenCV.jl b/modules/julia/gen/jl_cxx_files/OpenCV.jl
 index 448d0055..7f2d0fd8 100644
 --- a/modules/julia/gen/jl_cxx_files/OpenCV.jl
@@ -278,22 +265,3 @@ index 948b22ac..2177eae1 100644
  function __init__()
      @initcxx
  
-diff --git a/modules/julia/gen/parse_tree.py b/modules/julia/gen/parse_tree.py
-index 5b044bf1..9b375f4b 100644
---- a/modules/julia/gen/parse_tree.py
-+++ b/modules/julia/gen/parse_tree.py
-@@ -116,11 +116,13 @@ class ClassProp(object):
-         if "/RW" in decl[3]:
-             self.readonly = False
- 
-+mapped_types = {"cv::RotatedRect"}  # Global variable
-+
- class ClassInfo(object):
-     def __init__(self, name, decl=None):
-         self.name = name
-         self.mapped_name = normalize_class_name(name)
--        self.ismap = False  #CV_EXPORTS_W_MAP
-+        self.ismap = (name in mapped_types)  #CV_EXPORTS_W_MAP
-         self.isalgorithm = False    #if class inherits from cv::Algorithm
-         self.methods = {}   #Dictionary of methods
-         self.props = []     #Collection of ClassProp associated with this class
