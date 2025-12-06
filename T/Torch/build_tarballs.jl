@@ -214,6 +214,7 @@ configure() {
         -DPYTHON_EXECUTABLE=$(which python3) \
         -DBUILD_SHARED_LIBS=ON \
         -DHAVE_SOVERSION=ON \
+        -DUSE_LITE_PROTO=ON \
         -DUSE_METAL=OFF \
         -DUSE_MPI=OFF \
         -DUSE_NCCL=OFF \
