@@ -59,7 +59,7 @@ products = [
     LibraryProduct("libgit2", :libgit2),
 ]
 
-llvm_version = v"13.0.1+0"
+llvm_version = v"13.0.1"
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
@@ -67,7 +67,7 @@ dependencies = [
     Dependency("OpenSSL_jll"; compat="3.0.16", platforms=filter(p -> !(Sys.iswindows(p) || Sys.isapple(p)), platforms)),
     Dependency("PCRE2_jll"),
     Dependency("Zlib_jll"; compat="1.2.12"),
-    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
+    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=string(llvm_version));
                     platforms=filter(p -> sanitize(p)=="memory", platforms)),
 ]
 
