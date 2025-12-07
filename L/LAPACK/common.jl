@@ -20,6 +20,10 @@ function lapack_script(;lapack32::Bool=false)
     script *= raw"""
     cd $WORKSPACE/srcdir/lapack*
 
+    # Remove the stop command from the xerbla function to prevent
+    # us from exiting Julia on bad arguments
+    sed -i '/^[ \t]*STOP/d' SRC/xerbla.f
+
     if [[ "${target}" == *-mingw* ]]; then
         BLAS="blastrampoline-5"
     else
@@ -313,8 +317,9 @@ function lapack_script(;lapack32::Bool=false)
         SSYSV_AA_2STAGE SSYTRF_AA_2STAGE SSYTRS_AA_2STAGE
         ZHESV_AA_2STAGE ZHETRF_AA_2STAGE ZHETRS_AA_2STAGE
         ZSYSV_AA_2STAGE ZSYTRF_AA_2STAGE ZSYTRS_AA_2STAGE
-        DLARF1F
-        CGEMMTR DGEMMTR SGEMMTR ZGEMMTR
+        SLARF1L DLARF1L CLARF1L ZLARF1L
+        SLARF1F DLARF1F CLARF1F ZLARF1F
+        SGEMMTR DGEMMTR CGEMMTR ZGEMMTR
       )
 
       for sym in ${syms[@]}; do

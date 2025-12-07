@@ -6,23 +6,23 @@
 
 using BinaryBuilder, Pkg
 
-include("../../../fancy_toys.jl")
+const YGGDRASIL_DIR = "../../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "CUDA_Driver"
-version = v"0.13.1"
+version = v"13.0.2"
 
-cuda_version = v"12.9"
-cuda_version_str = "$(cuda_version.major)-$(cuda_version.minor)"
-driver_version_str = "575.57.08"
+version_str = "$(version.major)-$(version.minor)"
+driver_str = "580.95.05"
 build = 1
 
 sources_linux_x86 = [
-    FileSource("https://developer.download.nvidia.com/compute/cuda/repos/rhel8/x86_64/cuda-compat-$(cuda_version_str)-$(driver_version_str)-$(build).el8.x86_64.rpm",
-               "89855e5ce2b80ed5fc48368000e1d540a126e8f30e04cd98f9d0e1cb00fc660b", "compat.rpm")
+    FileSource("https://developer.download.nvidia.com/compute/cuda/repos/rhel8/x86_64/cuda-compat-$(version_str)-$(driver_str)-$(build).el8.x86_64.rpm",
+               "81cfb0e12c2ccf94e992e75cd15d830080b7b47a53b25fe3d14896c9c2478c76", "compat.rpm")
 ]
 sources_linux_aarch64 = [
-    FileSource("https://developer.download.nvidia.com/compute/cuda/repos/rhel8/sbsa/cuda-compat-$(cuda_version_str)-$(driver_version_str)-$(build).el8.aarch64.rpm",
-               "cf5226deebc4847d5fc92d84abab6a842877d94463f754cafb8439d7512094e3", "compat.rpm")
+    FileSource("https://developer.download.nvidia.com/compute/cuda/repos/rhel8/sbsa/cuda-compat-$(version_str)-$(driver_str)-$(build).el8.aarch64.rpm",
+               "7e393079b34023f8fc7a648d9cf943f0d4ea34a9261050ba3c8c620bafb28eb5", "compat.rpm")
 ]
 
 dependencies = []

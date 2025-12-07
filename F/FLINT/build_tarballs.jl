@@ -25,8 +25,8 @@ using BinaryBuilder, Pkg
 # coordinated with corresponding changes to Singular_jll.jl, Nemo.jl and polymake_jll.jl
 # and possibly other packages.
 name = "FLINT"
-upstream_version = v"3.3.0"
-version_offset = v"1.0.0"
+upstream_version = v"3.4.0"
+version_offset = v"1.0.1"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -34,12 +34,17 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to build FLINT
 sources = [
    ArchiveSource("https://github.com/flintlib/flint/releases/download/v$(upstream_version)/flint-$(upstream_version).tar.gz",
-                 "d9ae0f1318253727068270dbfa3c4b55155e3f4b7be6ca9c056e58f2838f15b3"),
+                 "9497679804dead926e3affeb8d4c58739d1c7684d60c2c12827550d28e454a33"),
+   DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/flint*
+
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+   atomic_patch -p1 ${f}
+done
 
 if [[ ${target} == *musl* ]]; then
    # because of some ordering issue with pthread.h and sched.h includes
@@ -58,9 +63,6 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-# Currently skipped due to the following error: `configure: error: Could not find mpfr.h`
-filter!(p -> arch(p) != "riscv64", platforms)
-
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libflint", :libflint)
@@ -70,12 +72,12 @@ products = [
 dependencies = [
     Dependency("GMP_jll", v"6.2.1"),
     Dependency("MPFR_jll", v"4.1.1"),
-    Dependency("OpenBLAS32_jll", v"0.3.28"),
+    Dependency("OpenBLAS32_jll", v"0.3.29"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat = "1.6", preferred_gcc_version=v"6",
+               julia_compat = "1.6", preferred_gcc_version=v"8",
                init_block = """
   if !Sys.iswindows() && !(get(ENV, "NEMO_THREADED", "") == "1")
     #to match the global gmp ones

@@ -2,16 +2,17 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
-include("../../fancy_toys.jl")  # for `should_build_platform`
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "GR"
-version = v"0.73.16"
+version = v"0.73.19"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sciapp/gr.git", "a31792ee21340a137bba477c6149d87be8b508ad"),
+    GitSource("https://github.com/sciapp/gr.git", "b6d2030c0ee661bcead1b8c6c3b3ea26fdfdc2fa"),
     FileSource("https://github.com/sciapp/gr/releases/download/v$version/gr-$version.js",
-               "4b330a80b1c24f579f9800430ea85efe66c11f28d046378435ff30f8299d1d6b", "gr.js"),
+               "c430aff7cd19d01754530a57378c3fa583a1d23168677f802ccae00de8d654c5", "gr.js"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49")
 ]
@@ -91,7 +92,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Bzip2_jll"; compat="1.0.9"),
-    Dependency("Cairo_jll", compat="1.16.1"),
+    Dependency("Cairo_jll"; compat="1.16.1"),
     Dependency("FFMPEG_jll"),
     Dependency("Fontconfig_jll"),
     Dependency("FreeType2_jll"; compat="2.13.4"),

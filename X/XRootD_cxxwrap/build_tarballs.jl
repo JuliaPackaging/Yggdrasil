@@ -7,13 +7,18 @@ using BinaryBuilder, Pkg
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
+# Workaround for the Pkg issue above, also remove openssl stdlib
+openssl = Base.UUID("458c3c95-2e84-50aa-8efc-19380b2a3a95")
+delete!(Pkg.Types.get_last_stdlibs(v"1.12.0"), openssl)
+delete!(Pkg.Types.get_last_stdlibs(v"1.13.0"), openssl  )
+
 name = "XRootD_cxxwrap"
-version = v"0.2.0"
+version = v"0.3.0"
 
 # Collection of sources required to build XRootD_julia
 sources = [
     GitSource("https://github.com/peremato/XRootD_cxxwrap.git",
-              "17bd088e2cd5a1a225afc2e4206183f46a416ece"),
+              "4af0b18f344941bd3795a89a237f9bf69e54d993"),
 ]
 
 # Bash recipe for building across all platforms
@@ -39,7 +44,9 @@ include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 
 # platforms supported by XRootD
-platforms = filter(p -> libc(p) != "musl" && os(p) != "freebsd" && os(p) != "windows", platforms) |> expand_cxxstring_abis
+platforms = filter(p -> libc(p) != "musl" && 
+                        os(p) != "freebsd" && 
+                        os(p) != "windows", platforms) |> expand_cxxstring_abis
 
 # The products that we will ensure are always built
 products = [
@@ -50,8 +57,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("libjulia_jll"),
-    Dependency("libcxxwrap_julia_jll"; compat="0.13.2"),
-    Dependency("XRootD_jll"; compat = "~5.7.1"),
+    Dependency("libcxxwrap_julia_jll"; compat="0.14.4"),
+    Dependency("XRootD_jll"; compat = "~5.8.4"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

@@ -2,27 +2,27 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "FFMPEG"
-version_string = "7.1"   # when patch number is zero, they use X.Y format
+version_string = "8.0"   # when patch number is zero, they use X.Y format
 version = VersionNumber(version_string)
 
 # Collection of sources required to build FFMPEG
 sources = [
     ArchiveSource(
         "https://ffmpeg.org/releases/ffmpeg-$(version_string).tar.xz",
-        "40973d44970dbc83ef302b0609f2e74982be2d85916dd2ee7472d30678a7abe6",
+        "b2751fccb6cc4c77708113cd78b561059b6fa904b24162fa0be2d60273d27b8e",
     ),
     ## FFmpeg 6.1.1 does not work with macos 10.13 or earlier.
-    ArchiveSource(
-        "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
-        "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4",
-    ),
+    get_macos_sdk_sources("10.13")...
 ]
 
 # Bash recipe for building across all platforms
 # TODO: Theora once it's available
 function script(; ffplay=false)
-    "FFPLAY=$(ffplay)\n" * raw"""
+    "FFPLAY=$(ffplay)\n" * get_macos_sdk_script("10.13") * raw"""
 cd $WORKSPACE/srcdir
 cd ffmpeg-*/
 sed -i 's/-lflite"/-lflite -lasound"/' configure
@@ -51,18 +51,11 @@ elif [[ "${target}" == aarch64-* ]]; then
     export ccARCH="aarch64"
 elif [[ "${target}" == powerpc64le-* ]]; then
     export ccARCH="powerpc64le"
+elif [[ "${target}" == riscv64-* ]]; then
+    export ccARCH="riscv64"
 else
     export ccARCH="x86_64"
 fi
-
-if [[ "${target}" == x86_64-apple-darwin* ]]; then 
-    export MACOSX_DEPLOYMENT_TARGET=10.13 
-    pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk 
-    rm -rf /opt/${target}/${target}/sys-root/System 
-    cp -a usr/* "/opt/${target}/${target}/sys-root/usr/" 
-    cp -a System "/opt/${target}/${target}/sys-root/" 
-    popd
-fi 
 
 export CUDA_ARGS=""
 
@@ -72,6 +65,12 @@ if [[ "${target}" == *-darwin* ]]; then
 fi
 if [[ "${FFPLAY}" == "true" ]]; then
     EXTRA_FLAGS+=("--enable-ffplay")
+fi
+# On Windows, use Schannel instead of OpenSSL
+if [[ "${target}" == *-mingw* ]]; then
+    EXTRA_FLAGS+=("--disable-openssl" "--enable-schannel")
+else
+    EXTRA_FLAGS+=("--enable-openssl" "--disable-schannel")
 fi
 
 # Remove `-march` flags
@@ -84,6 +83,7 @@ sed -i 's/cpuflags="-march=$cpu"/cpuflags=""/g' configure
   --target-os=${ccOS}  \
   --cc="${CC}"         \
   --cxx="${CXX}"       \
+  --host-cc="${CC_BUILD}" \
   --dep-cc="${CC}"     \
   --ar=ar              \
   --nm=nm              \
@@ -116,8 +116,6 @@ sed -i 's/cpuflags="-march=$cpu"/cpuflags=""/g' configure
   --enable-muxers      \
   --enable-demuxers    \
   --enable-parsers     \
-  --enable-openssl     \
-  --disable-schannel   \
   --extra-cflags="-I${prefix}/include" \
   --extra-ldflags="-L${libdir}" ${CUDA_ARGS} \
   "${EXTRA_FLAGS[@]}"
@@ -136,11 +134,5 @@ end
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-# `libass_jll` is missing
-filter!(p -> arch(p) != "armv6l", platforms)
-# `libass_jll` is missing
-filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
-# `OpenSSL_jll` is missing
-filter!(p -> arch(p) != "riscv64", platforms)
 
 preferred_gcc_version = v"8"

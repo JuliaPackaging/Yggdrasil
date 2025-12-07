@@ -1,0 +1,505 @@
+From e2add29897f1fd7fe05273b343926513f0a4c48e Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Wed, 16 Jul 2025 20:01:51 +0200
+Subject: [PATCH 3/3] Allow building without LLVM.
+
+---
+ meson.build                                   | 10 ++-
+ meson.options                                 |  7 ++
+ src/compiler/clc/clc_helpers.cpp              | 48 ++++++++++++
+ src/compiler/clc/meson.build                  | 21 ++++--
+ src/gallium/frontends/rusticl/core/device.rs  | 55 +++++++++-----
+ src/gallium/frontends/rusticl/core/program.rs |  8 ++
+ .../rusticl/mesa/compiler/clc/spirv.rs        |  8 ++
+ src/gallium/frontends/rusticl/meson.build     | 73 ++++++++++---------
+ 8 files changed, 169 insertions(+), 61 deletions(-)
+
+diff --git a/meson.build b/meson.build
+index 622406a7747..0e40c4e0110 100644
+--- a/meson.build
++++ b/meson.build
+@@ -802,6 +802,10 @@ else
+              with_drivers_clc or with_driver_using_cl
+ endif
+ 
++# Allow rusticl to build without LLVM when OpenCL C is disabled
++rusticl_needs_opencl_c = with_gallium_rusticl and get_option('rusticl-enable-opencl-c')
++clc_needs_llvm = with_clc and not (with_gallium_rusticl and not rusticl_needs_opencl_c)
++
+ dep_clc = null_dep
+ if with_clc
+   dep_clc = dependency('libclc')
+@@ -1796,7 +1800,7 @@ elif with_swrast_vk
+   error('lavapipe requires LLVM and is enabled, but LLVM is disabled.')
+ elif with_any_llvmpipe
+   error('llvmpipe requires LLVM and is enabled, but LLVM is disabled.')
+-elif with_clc
++elif with_clc and clc_needs_llvm
+   error('The CLC compiler requires LLVM, but LLVM is disabled.')
+ else
+   draw_with_llvm = false
+@@ -1807,7 +1811,7 @@ pre_args += '-DDRAW_LLVM_AVAILABLE=@0@'.format((with_llvm and draw_with_llvm).to
+ pre_args += '-DAMD_LLVM_AVAILABLE=@0@'.format(amd_with_llvm.to_int())
+ pre_args += '-DGALLIVM_USE_ORCJIT=@0@'.format((with_llvm and llvm_with_orcjit).to_int())
+ 
+-if with_clc
++if with_clc and clc_needs_llvm and dep_llvm.found()
+   chosen_llvm_version_array = dep_llvm.version().split('.')
+   chosen_llvm_version_major = chosen_llvm_version_array[0].to_int()
+   chosen_llvm_version_minor = chosen_llvm_version_array[1].to_int()
+@@ -1845,7 +1849,7 @@ if dep_spirv_tools.found()
+ endif
+ 
+ dep_clang = null_dep
+-if with_clc
++if with_clc and clc_needs_llvm and dep_llvm.found()
+   llvm_libdir = dep_llvm.get_variable(cmake : 'LLVM_LIBRARY_DIR', configtool: 'libdir')
+ 
+   dep_clang = cpp.find_library('clang-cpp', dirs : llvm_libdir, required : false)
+diff --git a/meson.options b/meson.options
+index 3f9fd67704c..cd4a5b3d748 100644
+--- a/meson.options
++++ b/meson.options
+@@ -152,6 +152,13 @@ option(
+   description : 'build gallium "rusticl" OpenCL frontend.',
+ )
+ 
++option(
++  'rusticl-enable-opencl-c',
++  type : 'boolean',
++  value : true,
++  description : 'Enable OpenCL C compilation support in rusticl (requires LLVM)',
++)
++
+ option(
+   'gallium-rusticl-enable-drivers',
+   type : 'array',
+diff --git a/src/compiler/clc/clc_helpers.cpp b/src/compiler/clc/clc_helpers.cpp
+index 8bc2dedc55b..ea3de570363 100644
+--- a/src/compiler/clc/clc_helpers.cpp
++++ b/src/compiler/clc/clc_helpers.cpp
+@@ -27,9 +27,13 @@
+ #include <filesystem>
+ #include <sstream>
+ #include <mutex>
++#include <map>
++#include <algorithm>
+ 
+ #include "util/ralloc.h"
+ #include "util/set.h"
++
++#if HAVE_LLVM
+ #include <llvm/ADT/ArrayRef.h>
+ #include <llvm/IR/DiagnosticPrinter.h>
+ #include <llvm/IR/DiagnosticInfo.h>
+@@ -54,6 +58,7 @@
+ #include <clang/Frontend/TextDiagnosticPrinter.h>
+ #include <clang/Frontend/Utils.h>
+ #include <clang/Basic/TargetInfo.h>
++#endif
+ 
+ #include <spirv-tools/libspirv.h>
+ #include <spirv-tools/libspirv.hpp>
+@@ -89,6 +94,7 @@ namespace fs = std::filesystem;
+ /* Use the highest version of SPIRV supported by SPIRV-Tools. */
+ constexpr spv_target_env spirv_target = SPV_ENV_UNIVERSAL_1_6;
+ 
++#if HAVE_LLVM
+ constexpr SPIRV::VersionNumber invalid_spirv_trans_version = static_cast<SPIRV::VersionNumber>(0);
+ 
+ using ::llvm::Function;
+@@ -121,6 +127,7 @@ llvm_log_handler(const ::llvm::DiagnosticInfo &di, void *data) {
+ 
+    clc_error(logger, "%s", log.c_str());
+ }
++#endif
+ 
+ class SPIRVKernelArg {
+ public:
+@@ -785,6 +792,7 @@ clc_free_kernels_info(const struct clc_kernel_info *kernels,
+    free((void *)kernels);
+ }
+ 
++#if HAVE_LLVM
+ static std::unique_ptr<::llvm::Module>
+ clc_compile_to_llvm_module(LLVMContext &llvm_ctx,
+                            const struct clc_compile_args *args,
+@@ -1204,7 +1212,9 @@ llvm_mod_to_spirv(std::unique_ptr<::llvm::Module> mod,
+ 
+    return 0;
+ }
++#endif
+ 
++#if HAVE_LLVM
+ int
+ clc_c_to_spir(const struct clc_compile_args *args,
+               const struct clc_logger *logger,
+@@ -1231,7 +1241,19 @@ clc_c_to_spir(const struct clc_compile_args *args,
+ 
+    return 0;
+ }
++#else
++int
++clc_c_to_spir(const struct clc_compile_args *args,
++              const struct clc_logger *logger,
++              struct clc_binary *out_spir,
++              struct set *dependencies)
++{
++   clc_error(logger, "OpenCL C compilation is not supported in this build");
++   return -1;
++}
++#endif
+ 
++#if HAVE_LLVM
+ int
+ clc_c_to_spirv(const struct clc_compile_args *args,
+                const struct clc_logger *logger,
+@@ -1250,7 +1272,19 @@ clc_c_to_spirv(const struct clc_compile_args *args,
+ 
+    return llvm_mod_to_spirv(std::move(mod), llvm_ctx, args, logger, out_spirv);
+ }
++#else
++int
++clc_c_to_spirv(const struct clc_compile_args *args,
++               const struct clc_logger *logger,
++               struct clc_binary *out_spirv,
++               struct set *dependencies)
++{
++   clc_error(logger, "OpenCL C compilation is not supported in this build");
++   return -1;
++}
++#endif
+ 
++#if HAVE_LLVM
+ int
+ clc_spir_to_spirv(const struct clc_binary *in_spir,
+                   const struct clc_logger *logger,
+@@ -1269,6 +1303,16 @@ clc_spir_to_spirv(const struct clc_binary *in_spir,
+ 
+    return llvm_mod_to_spirv(std::move(mod.get()), llvm_ctx, NULL, logger, out_spirv);
+ }
++#else
++int
++clc_spir_to_spirv(const struct clc_binary *in_spir,
++                  const struct clc_logger *logger,
++                  struct clc_binary *out_spirv)
++{
++   clc_error(logger, "SPIR-V to SPIR compilation is not supported in this build");
++   return -1;
++}
++#endif
+ 
+ class SPIRVMessageConsumer {
+ public:
+@@ -1426,6 +1470,7 @@ clc_spirv_specialize(const struct clc_binary *in_spirv,
+    return true;
+ }
+ 
++#if HAVE_LLVM
+ static void
+ clc_dump_llvm(const llvm::Module *mod, FILE *f)
+ {
+@@ -1437,6 +1482,7 @@ clc_dump_llvm(const llvm::Module *mod, FILE *f)
+ 
+    fwrite(out.c_str(), out.size(), 1, f);
+ }
++#endif
+ 
+ void
+ clc_dump_spirv(const struct clc_binary *spvbin, FILE *f)
+@@ -1466,11 +1512,13 @@ clc_free_spirv_binary(struct clc_binary *spvbin)
+ void
+ initialize_llvm_once(void)
+ {
++#if HAVE_LLVM
+    LLVMInitializeAllTargets();
+    LLVMInitializeAllTargetInfos();
+    LLVMInitializeAllTargetMCs();
+    LLVMInitializeAllAsmParsers();
+    LLVMInitializeAllAsmPrinters();
++#endif
+ }
+ 
+ std::once_flag initialize_llvm_once_flag;
+diff --git a/src/compiler/clc/meson.build b/src/compiler/clc/meson.build
+index 9ff61440f0d..bf45a253c52 100644
+--- a/src/compiler/clc/meson.build
++++ b/src/compiler/clc/meson.build
+@@ -8,11 +8,22 @@ files_libmesaclc = files(
+ )
+ 
+ _libmesaclc_c_args = []
+-_libmesaclc_cpp_args = ['-DLLVM_LIB_DIR="@0@"'.format(llvm_libdir)]
++_libmesaclc_cpp_args = []
+ _libmesaclc_sources = []
+ 
+-if not _shared_llvm or \
+-    get_option('mesa-clc-bundle-headers') == 'enabled'
++# Determine if we're building with LLVM support
++_rusticl_needs_opencl_c = get_option('gallium-rusticl') and get_option('rusticl-enable-opencl-c')
++_clc_has_llvm = dep_llvm.found() and not (get_option('gallium-rusticl') and not _rusticl_needs_opencl_c)
++
++if _clc_has_llvm
++  _libmesaclc_cpp_args += ['-DLLVM_LIB_DIR="@0@"'.format(llvm_libdir)]
++  _libmesaclc_cpp_args += ['-DHAVE_LLVM=1']
++else
++  _libmesaclc_cpp_args += ['-DHAVE_LLVM=0']
++endif
++
++if _clc_has_llvm and (not _shared_llvm or \
++    get_option('mesa-clc-bundle-headers') == 'enabled')
+   # LLVM 16 moved clang header path from using full version to only major version
+   if dep_llvm.version().version_compare('< 16')
+     # Prior to LLVM 16, this path used a full version
+@@ -106,8 +117,8 @@ _libmesaclc = static_library(
+   include_directories : [inc_include, inc_src, inc_spirv],
+   c_args : _libmesaclc_c_args,
+   cpp_args : [_libmesaclc_cpp_args, _libmesaclc_c_args],
+-  dependencies: [idep_nir, dep_clang, dep_llvm, dep_llvmspirvlib,
+-                 idep_mesautil, dep_spirv_tools, idep_vtn, dep_version]
++  dependencies: [idep_nir, idep_mesautil, dep_spirv_tools, idep_vtn, dep_version] +
++                (_clc_has_llvm ? [dep_clang, dep_llvm, dep_llvmspirvlib] : [])
+ )
+ 
+ _idep_mesaclc_link_args = []
+diff --git a/src/gallium/frontends/rusticl/core/device.rs b/src/gallium/frontends/rusticl/core/device.rs
+index 6d4831a70b7..8c69bd59efc 100644
+--- a/src/gallium/frontends/rusticl/core/device.rs
++++ b/src/gallium/frontends/rusticl/core/device.rs
+@@ -17,6 +17,7 @@ use mesa_rust::pipe::transfer::PipeTransfer;
+ use mesa_rust_gen::*;
+ use mesa_rust_util::math::SetBitIndices;
+ use mesa_rust_util::static_assert;
++#[cfg(opencl_c_support)]
+ use rusticl_llvm_gen::*;
+ use rusticl_opencl_gen::*;
+ 
+@@ -814,29 +815,37 @@ impl DeviceBase {
+     }
+ 
+     pub fn linkonce_supported(&self) -> bool {
+-        let version = unsafe {
+-            match CStr::from_ptr(clc_spirv_tools_version()).to_str() {
+-                Ok(v) => v,
+-                Err(_) => return false,
+-            }
+-        };
++        #[cfg(opencl_c_support)]
++        {
++            let version = unsafe {
++                match CStr::from_ptr(clc_spirv_tools_version()).to_str() {
++                    Ok(v) => v,
++                    Err(_) => return false,
++                }
++            };
+ 
+-        // check format and compare to "v2025.1"
+-        if !version.starts_with('v') {
+-            return false;
+-        }
++            // check format and compare to "v2025.1"
++            if !version.starts_with('v') {
++                return false;
++            }
+ 
+-        let version = &version[1..];
+-        if let Some((year_str, minor_version_str)) = version.split_once('.') {
+-            let year = year_str.parse::<u32>();
+-            let minor_version = minor_version_str.parse::<u32>();
++            let version = &version[1..];
++            if let Some((year_str, minor_version_str)) = version.split_once('.') {
++                let year = year_str.parse::<u32>();
++                let minor_version = minor_version_str.parse::<u32>();
+ 
+-            if year_str.len() == 4 && year.is_ok() && minor_version.is_ok() {
+-                return version >= "2025.1";
++                if year_str.len() == 4 && year.is_ok() && minor_version.is_ok() {
++                    return version >= "2025.1";
++                }
+             }
+-        }
+ 
+-        false
++            false
++        }
++        #[cfg(not(opencl_c_support))]
++        {
++            // Without OpenCL C support, we can't use linkonce
++            false
++        }
+     }
+ 
+     pub fn fp16_supported(&self) -> bool {
+@@ -1137,7 +1146,15 @@ impl DeviceBase {
+     }
+ 
+     pub fn kernel_clock_supported(&self) -> bool {
+-        self.screen.caps().shader_clock && LLVM_VERSION_MAJOR >= 19
++        #[cfg(opencl_c_support)]
++        {
++            self.screen.caps().shader_clock && LLVM_VERSION_MAJOR >= 19
++        }
++        #[cfg(not(opencl_c_support))]
++        {
++            // Without OpenCL C support, we can't use kernel clock
++            false
++        }
+     }
+ 
+     pub fn subgroups_supported(&self) -> bool {
+diff --git a/src/gallium/frontends/rusticl/core/program.rs b/src/gallium/frontends/rusticl/core/program.rs
+index a8fb0b9d706..5a78c7716f7 100644
+--- a/src/gallium/frontends/rusticl/core/program.rs
++++ b/src/gallium/frontends/rusticl/core/program.rs
+@@ -10,6 +10,7 @@ use mesa_rust::compiler::clc::*;
+ use mesa_rust::compiler::nir::*;
+ use mesa_rust::util::disk_cache::*;
+ use mesa_rust_gen::*;
++#[cfg(opencl_c_support)]
+ use rusticl_llvm_gen::*;
+ use rusticl_opencl_gen::*;
+ 
+@@ -48,6 +49,7 @@ static mut DISK_CACHE: Option<DiskCache> = None;
+ static DISK_CACHE_ONCE: Once = Once::new();
+ 
+ fn get_disk_cache() -> &'static Option<DiskCache> {
++    #[cfg(opencl_c_support)]
+     let func_ptrs = [
+         // ourselves
+         get_disk_cache as _,
+@@ -58,6 +60,12 @@ fn get_disk_cache() -> &'static Option<DiskCache> {
+         // SPIRV-LLVM-Translator
+         llvm_writeSpirv1 as _,
+     ];
++    
++    #[cfg(not(opencl_c_support))]
++    let func_ptrs = [
++        // ourselves
++        get_disk_cache as _,
++    ];
+     unsafe {
+         DISK_CACHE_ONCE.call_once(|| {
+             DISK_CACHE = DiskCache::new(c"rusticl", &func_ptrs, 0);
+diff --git a/src/gallium/frontends/rusticl/mesa/compiler/clc/spirv.rs b/src/gallium/frontends/rusticl/mesa/compiler/clc/spirv.rs
+index 7a7059a4651..14835eeb44d 100644
+--- a/src/gallium/frontends/rusticl/mesa/compiler/clc/spirv.rs
++++ b/src/gallium/frontends/rusticl/mesa/compiler/clc/spirv.rs
+@@ -97,6 +97,13 @@ impl SPIRVBin {
+         spirv_extensions: &[&CStr],
+         address_bits: u32,
+     ) -> (Option<Self>, String) {
++        #[cfg(not(opencl_c_support))]
++        {
++            return (None, "OpenCL C compilation is not supported in this build".to_string());
++        }
++        
++        #[cfg(opencl_c_support)]
++        {
+         let mut hash_key = None;
+         let has_includes = args.iter().any(|a| a.as_bytes()[0..2] == *b"-I");
+ 
+@@ -179,6 +186,7 @@ impl SPIRVBin {
+         };
+ 
+         (res, msgs.join(""))
++        } // end of #[cfg(opencl_c_support)]
+     }
+ 
+     // TODO cache linking, parsing is around 25% of link time
+diff --git a/src/gallium/frontends/rusticl/meson.build b/src/gallium/frontends/rusticl/meson.build
+index 426b0a9b993..ce4c51fe079 100644
+--- a/src/gallium/frontends/rusticl/meson.build
++++ b/src/gallium/frontends/rusticl/meson.build
+@@ -168,39 +168,45 @@ rusticl_opencl_gen = static_library(
+   rust_abi : 'rust',
+ )
+ 
+-rusticl_llvm_bindings_rs = rust.bindgen(
+-  input : 'rusticl_llvm_bindings.hpp',
+-  output : 'rusticl_llvm_bindings.rs',
+-  c_args : [
+-    rusticl_bindgen_c_args,
+-    pre_args,
+-  ],
+-  dependencies : [
+-    dep_clang,
+-    dep_llvm,
+-    dep_llvmspirvlib,
+-  ],
+-  args : [
+-    bindgen_output_args,
+-    # we want to limit what to generate bindings for
+-    '--generate', 'constructors,functions,types,vars',
+-    # and all types will be opaque
+-    '--opaque-type', '.*',
+-    # LLVM/Clang/Translator stuff, only used for build-id
+-    # also only use functions from very basic header files, otherwise bindgen might crash :')
+-    '--allowlist-function', 'clang::getClangFullVersion',
+-    '--allowlist-function', 'llvm::LLVMContext::LLVMContext',
+-    '--allowlist-function', 'llvm::writeSpirv',
+-    '--allowlist-var', 'LLVM_VERSION_.*'
+-  ],
+-)
++# LLVM bindings are only needed when LLVM is enabled
++rusticl_llvm_libraries = []
++if get_option('llvm').enabled()
++  rusticl_llvm_bindings_rs = rust.bindgen(
++    input : 'rusticl_llvm_bindings.hpp',
++    output : 'rusticl_llvm_bindings.rs',
++    c_args : [
++      rusticl_bindgen_c_args,
++      pre_args,
++    ],
++    dependencies : [
++      dep_clang,
++      dep_llvm,
++      dep_llvmspirvlib,
++    ],
++    args : [
++      bindgen_output_args,
++      # we want to limit what to generate bindings for
++      '--generate', 'constructors,functions,types,vars',
++      # and all types will be opaque
++      '--opaque-type', '.*',
++      # LLVM/Clang/Translator stuff, only used for build-id
++      # also only use functions from very basic header files, otherwise bindgen might crash :')
++      '--allowlist-function', 'clang::getClangFullVersion',
++      '--allowlist-function', 'llvm::LLVMContext::LLVMContext',
++      '--allowlist-function', 'llvm::writeSpirv',
++      '--allowlist-var', 'LLVM_VERSION_.*'
++    ],
++  )
+ 
+-rusticl_llvm_gen = static_library(
+-  'rusticl_llvm_gen',
+-  rusticl_llvm_bindings_rs,
+-  gnu_symbol_visibility : 'hidden',
+-  rust_abi : 'rust',
+-)
++  rusticl_llvm_gen = static_library(
++    'rusticl_llvm_gen',
++    rusticl_llvm_bindings_rs,
++    gnu_symbol_visibility : 'hidden',
++    rust_abi : 'rust',
++  )
++
++  rusticl_llvm_libraries = [rusticl_llvm_gen]
++endif
+ 
+ rusticl_libc_bindings_rs = rust.bindgen(
+   input : 'rusticl_libc_bindings.h',
+@@ -423,10 +429,9 @@ librusticl = static_library(
+     libmesa_rust,
+     libmesa_rust_gen,
+     libmesa_rust_util,
+-    rusticl_llvm_gen,
+     rusticl_opencl_gen,
+     rusticl_proc_macros,
+-  ],
++  ] + rusticl_llvm_libraries,
+   dependencies : [
+     idep_rusticl_gen,
+   ],
+-- 
+2.50.1
+

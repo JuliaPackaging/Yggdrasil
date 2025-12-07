@@ -7,7 +7,7 @@ const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "pocl"
-version = v"7.0.0"
+version = v"7.1.0"
 
 # Build
 
@@ -15,7 +15,7 @@ version = v"7.0.0"
 sources = [
     DirectorySource("./bundled"),
     GitSource("https://github.com/juliagpu/pocl",
-              "ebd70398005f9e2fd93b0627ad467e006f5ddacd")
+              "d05646955f60741a2c05f867209012a17ebd2872")
 ]
 
 #=
@@ -53,8 +53,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    HostBuildDependency(PackageSpec(name="LLVM_full_jll", version=v"20.1.2")),
-    BuildDependency(PackageSpec(name="LLVM_full_jll", version=v"20.1.2")),
+    HostBuildDependency(PackageSpec(name="LLVM_full_jll", version="20.1.2")),
+    BuildDependency(PackageSpec(name="LLVM_full_jll", version="20.1.2")),
     Dependency("OpenCL_jll"),
     Dependency("OpenCL_Headers_jll"),
     Dependency("Hwloc_jll"),

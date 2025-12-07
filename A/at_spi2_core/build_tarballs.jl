@@ -3,17 +3,18 @@
 using BinaryBuilder
 
 name = "at_spi2_core"
-version = v"2.56.2"
+version = v"2.58.2"
 
 # Collection of sources required to build at-spi2-core
 sources = [
     ArchiveSource("http://ftp.gnome.org/pub/gnome/sources/at-spi2-core/$(version.major).$(version.minor)/at-spi2-core-$(version).tar.xz",
-                  "e1b1c9836a8947852f7440c32e23179234c76bd98cd9cc4001f376405f8b783b"),
+                  "a2823b962ed16cdd5cb1fc5365029fd218394d852acd4098b321854bd6692f6e"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/at-spi2-core-*/
+cd $WORKSPACE/srcdir/at-spi2-core-*
+
 mkdir build && cd build
 
 # Get a local gettext for msgfmt cross-building

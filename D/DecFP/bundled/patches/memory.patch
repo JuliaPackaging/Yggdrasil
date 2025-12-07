@@ -1,0 +1,24 @@
+diff -ru a/LIBRARY/src/bid_strtod.h b/LIBRARY/src/bid_strtod.h
+--- a/LIBRARY/src/bid_strtod.h	2024-05-07 19:30:18
++++ b/LIBRARY/src/bid_strtod.h	2025-10-13 16:53:43
+@@ -198,7 +198,7 @@
+    }
+ 
+    *ps = L'\0';
+-   ps0_c = malloc(k*sizeof(char));
++   ps0_c = malloc((k+1)*sizeof(char));
+    if(!ps0_c)
+    { free(ps0); return NULL;}
+    for(i=0; i<=k; i++)
+diff -ru a/TESTS/readtest.c b/TESTS/readtest.c
+--- a/TESTS/readtest.c	2024-05-07 19:30:18
++++ b/TESTS/readtest.c	2025-10-06 17:22:53
+@@ -578,7 +578,7 @@
+ void strRemoveTrailingSpaces(char* s) {
+     int i=0;
+     while( s[i]!=0 ) i++; i--;
+-    while( (s[i]==' ') && (i>=0) ) { s[i]=0; i--; }
++    while( (i>=0) && (s[i]==' ') ) { s[i]=0; i--; }
+ }
+ 
+ int

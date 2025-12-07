@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "unzip"
-version = v"6.0.2"
+version = v"6.0.3"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/madler/unzip.git",
-              "3bee0689f7dc6afb88bda09ffb71b6b15623ff92"),
+              "0b82c20ac7375b522215b567174f370be89a4b12"),
     DirectorySource("./bundled"),
 ]
 
@@ -29,8 +29,18 @@ if [[ ${target} == *mingw* ]]; then
     mkdir -p ${bindir}
     mv *.exe ${bindir}/
 else
-    cp unix/Makefile Makefile
-    make generic ${MFLAGS[@]} -j${nproc}
+    cp unix/Makefile Makefile        
+
+    if [[ ${target} == *riscv* ]]; then
+       make generic1 ${MFLAGS[@]} -j${nproc}
+    elif [[ ${target} == *darwin* ]]; then
+       make macosx ${MFLAGS[@]} -j${nproc}
+    elif [[ ${target} == *freebsd* ]]; then
+       make bsd ${MFLAGS[@]} -j${nproc}
+    else
+       make generic ${MFLAGS[@]} -j${nproc}
+    fi
+
     make install ${MFLAGS[@]}
 fi
 install_license LICENSE

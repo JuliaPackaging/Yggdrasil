@@ -9,13 +9,13 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 
 name = "XDiag"
-version = v"0.3.3"
+version = v"0.4.1"
 
 include("../../L/libjulia/common.jl")
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awietek/xdiag.git", "a5f50e367e60c739360ad4f81d47ae1759d2e045")
+    GitSource("https://github.com/awietek/xdiag.git", "6344e10f8bdd6d4287c962e11eefc44b845e4a4a")
 ]
 
 
@@ -68,14 +68,7 @@ cmake --install build
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
-filter!(p -> (
-    (os(p) == "linux" && libc(p) != "musl" && arch(p) == "x86_64") ||
-    (os(p) == "linux" && libc(p) != "musl" && arch(p) == "aarch64") ||
-    (os(p) == "macos" && arch(p) == "x86_64") ||
-    (os(p) == "macos" && arch(p) == "aarch64") ||
-    (os(p) == "windows" && arch(p) == "x86_64")) &&
-    p.tags["julia_version"] !="1.6.3", platforms)
-
+filter!(p -> (nbits(p) != 32 && os(p) != "freebsd") && p.tags["julia_version"] !="1.14.0", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -84,8 +77,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.17")),
-    Dependency(PackageSpec(name="libcxxwrap_julia_jll", uuid="3eaa8342-bff7-56a5-9981-c04077f7cee7"); compat="0.14.3"),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version="1.10.20")),
+    Dependency(PackageSpec(name="libcxxwrap_julia_jll", uuid="3eaa8342-bff7-56a5-9981-c04077f7cee7"); compat="0.14.5"),
     Dependency(PackageSpec(name="OpenBLAS_jll", uuid="4536629a-c528-5b80-bd46-f80d51c5b363")),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")), 

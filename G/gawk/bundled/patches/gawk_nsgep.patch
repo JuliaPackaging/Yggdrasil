@@ -1,0 +1,13 @@
+--- a/posix/gawkmisc.c
++++ b/posix/gawkmisc.c
+@@ -35,6 +35,10 @@
+ #include <sys/param.h>
+ #endif
+ 
++#ifdef __APPLE__
++#include <mach-o/dyld.h>
++#endif
++
+ /* gawk_name --- pull out the "gawk" part from how the OS called us */
+ 
+ void

@@ -5,36 +5,10 @@ version = v"1.3.243"
 
 sources = [
     GitSource("https://github.com/KhronosGroup/Vulkan-Loader.git",
-              "22407d7804f111fbc0e31fa0db592d658e19ae8b")
-    ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
-                  "ba6b430aed72c63a3768531f6a3ffc2b0fde2c57a3b251450dcf489a894f0894")
+              "22407d7804f111fbc0e31fa0db592d658e19ae8b"),
 ]
 
 script = raw"""
-
-if [[ "${target}" == *-mingw* ]]; then
-    cd $WORKSPACE/srcdir/mingw*/mingw-w64-headers
-    ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target
-    make install
-
-    cd ../mingw-w64-crt/
-    if [ ${target} == "i686-w64-mingw32" ]; then
-        _crt_configure_args="--disable-lib64 --enable-lib32"
-    elif [ ${target} == "x86_64-w64-mingw32" ]; then
-        _crt_configure_args="--disable-lib32 --enable-lib64"
-    fi
-    ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target --enable-wildcard ${_crt_configure_args}
-    make -j${nproc}
-    make install
-
-    cd ../mingw-w64-libraries/winpthreads
-    ./configure --prefix=/opt/$target/$target/sys-root --host=$target --enable-static --enable-shared
-    make -j${nproc}
-    make install
-
-    cd $WORKSPACE/srcdir
-fi
-
 cd Vulkan-Loader
 
 install_license LICENSE.txt

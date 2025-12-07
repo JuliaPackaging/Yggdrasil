@@ -1,3 +1,8 @@
+# In addition to coin-or-common.jl, we need to modify this file to trigger a
+# rebuild.
+#
+# Last updated: 2025-10-07
+
 include("../coin-or-common.jl")
 
 sources = [
@@ -61,5 +66,6 @@ build_tarballs(
     products,
     dependencies;
     preferred_gcc_version = gcc_version,
-    julia_compat = "1.6",
+    preferred_llvm_version = llvm_version,
+    julia_compat = "1.9",
 )

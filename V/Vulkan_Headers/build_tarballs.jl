@@ -1,10 +1,10 @@
 using BinaryBuilder, Pkg
 
 name = "Vulkan_Headers"
-version = v"1.4.312"
+version = v"1.4.321"
 
 source = "https://github.com/KhronosGroup/Vulkan-Headers.git"
-commit = "5ceb9ed481e58e705d0d9b5326537daedd06b97d"
+commit = "2cd90f9d20df57eac214c148f3aed885372ddcfe"
 
 sources = [
     GitSource(source, commit)
@@ -40,7 +40,7 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.31.6")),
+    HostBuildDependency(PackageSpec(; name="CMake_jll", version = "3.31.6")),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)

@@ -4,6 +4,7 @@ using BinaryBuilder
 
 name = "Xorg_renderproto"
 version = v"0.11.1"
+ygg_version = v"0.11.2"         # we converted to AnyPlatform
 
 # Collection of sources required to build renderproto
 sources = [
@@ -13,18 +14,17 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/renderproto-*/
-CPPFLAGS="-I${prefix}/include"
+cd $WORKSPACE/srcdir/renderproto-*
 # When compiling for things like ppc64le, we need newer `config.sub` files
 update_configure_scripts
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=no
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if Sys.islinux(p) || Sys.isfreebsd(p)]
+platforms = [AnyPlatform()]
 
 products = Product[
 ]
@@ -34,4 +34,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6")
