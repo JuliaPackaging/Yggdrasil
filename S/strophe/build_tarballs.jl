@@ -21,7 +21,7 @@ make -j${nproc}
 make install
 """
 
-platforms = [p for p in supported_platforms() if !(triplet(p) in ["x86_64-w64-mingw32", "i686-w64-mingw32"])]
+platforms = supported_platforms(; exclude=Sys.iswindows)
 
 products = [
     LibraryProduct("libstrophe", :libstrophe)
@@ -29,7 +29,7 @@ products = [
 
 dependencies = [
     Dependency("Expat_jll")
-    Dependency("OpenSSL_jll")
+    Dependency("OpenSSL_jll"; compat="3.0.16")
     Dependency("Zlib_jll")
 ]
 
