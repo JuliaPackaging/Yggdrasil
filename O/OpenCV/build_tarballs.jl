@@ -72,7 +72,7 @@ install_license ../opencv/{LICENSE,COPYRIGHT}
 
 
 # Newer macOS SDK is needed for recent video codecs
-sources, script = require_macos_sdk("10.13", sources, script)
+sources, script = require_macos_sdk("12.3", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
