@@ -21,6 +21,7 @@ cmake \
     -DTVM_FFI_ATTACH_DEBUG_SYMBOLS=ON \
     -DTVM_FFI_BUILD_TESTS=OFF \
     -DTVM_FFI_BUILD_PYTHON_MODULE=OFF \
+    -DTVM_FFI_BACKTRACE_ON_SEGFAULT=OFF \
     -B ../../build
 cmake --build ../../build
 cmake --install ../../build

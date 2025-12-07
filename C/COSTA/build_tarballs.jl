@@ -73,7 +73,7 @@ products = [
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"), 
     Dependency("LLVMOpenMP_jll", platforms=filter(Sys.isapple, platforms)),
-    HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.28.1"))
+    HostBuildDependency(PackageSpec(; name="CMake_jll", version = "3.28.1"))
 ]
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1", 

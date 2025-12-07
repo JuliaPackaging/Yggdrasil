@@ -39,7 +39,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.31.6"))  # Need CMake > 3.25
+    HostBuildDependency(PackageSpec(; name="CMake_jll", version = "3.31.6"))  # Need CMake > 3.25
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

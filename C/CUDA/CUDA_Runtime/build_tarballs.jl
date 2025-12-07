@@ -161,7 +161,7 @@ for version in reverse(CUDA.cuda_full_versions)
         if Base.thisminor(version) == v"10.2"
             push!(builds,
                 (; dependencies=[Dependency("CUDA_Driver_jll", v"13.0"; compat="13"),
-                                 BuildDependency(PackageSpec(name="CUDA_SDK_jll", version=v"10.2.89"))],
+                                 BuildDependency(PackageSpec(name="CUDA_SDK_jll", version="10.2.89"))],
                    script=get_script(), platforms=[augmented_platform], products=get_products(platform),
                    sources=[]
             ))
