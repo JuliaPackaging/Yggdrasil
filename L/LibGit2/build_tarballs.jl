@@ -59,7 +59,7 @@ products = [
     LibraryProduct("libgit2", :libgit2),
 ]
 
-llvm_version = v"13.0.1"
+llvm_version = v"13.0.1+0"
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
