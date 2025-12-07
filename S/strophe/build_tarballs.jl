@@ -11,8 +11,6 @@ sources = [
 ]
 
 # Script template (structure is the same for all platforms, directory for make differs)
-# We need to do some plumbing with _MSC_VER because it is not defined when using mingw.
-# We also cherry-pick a commit that fixes Windows builds.
 script = raw"""
 cd $WORKSPACE/srcdir/libstrophe
 ./bootstrap.sh
