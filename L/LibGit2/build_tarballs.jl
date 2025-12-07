@@ -2,11 +2,11 @@ using BinaryBuilder, Pkg
 using BinaryBuilderBase: sanitize
 
 name = "LibGit2"
-version = v"1.9.1"
+version = v"1.9.2"
 
 # Collection of sources required to build libgit2
 sources = [
-    GitSource("https://github.com/libgit2/libgit2.git", "0060d9cf5666f015b1067129bd874c6cc4c9c7ac")
+    GitSource("https://github.com/libgit2/libgit2.git", "ca225744b992bf2bf24e9a2eb357ddef78179667")
 ]
 
 # Bash recipe for building across all platforms
