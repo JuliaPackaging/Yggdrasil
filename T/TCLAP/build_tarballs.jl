@@ -4,15 +4,16 @@ name    = "TCLAP"
 version = v"1.2.2"
 
 sources = [
-    ArchiveSource("https://sourceforge.net/projects/tclap/files/tclap-1.2.2.tar.gz",
+    ArchiveSource("https://sourceforge.net/projects/tclap/files/tclap-$(version).tar.gz",
                   "f5013be7fcaafc69ba0ce2d1710f693f61e9c336b6292ae4f57554f59fde5837"),
 ]
 
 script = raw"""
-./tclap-1.2.2/configure --prefix=${prefix} --host=${target} --build=${MACHTYPE}
+cd tclap*
+./configure --prefix=${prefix} --host=${target} --build=${MACHTYPE}
 make -j${nproc}
 make install
-install_license ./tclap-1.2.2/COPYING
+install_license COPYING
 """
 
 platforms = [AnyPlatform()] # header-only
