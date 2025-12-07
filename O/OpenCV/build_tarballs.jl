@@ -30,26 +30,9 @@ if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-freebsd* ]]; then
     atomic_patch -p1 -d../opencv ../patches/atomic_fix.patch
 fi
 
-if [[ "${target}" == *-apple-* ]]; then
-    # We want to use OpenBLAS over Accelerate framework...
-    export OpenBLAS_HOME=${prefix}
-    export CXXFLAGS=""
-    # ...but we also need to rename quite a few symbols
-    for symbol in sgemm dgemm cgemm zgemm; do
-        # Rename CBLAS symbols for ILP64
-        CXXFLAGS="${CXXFLAGS} -Dcblas_${symbol}=cblas_${symbol}64_"
-    done
-    for symbol in sgesv_ sposv_ spotrf_ sgesdd_ sgeqrf_ sgels_ dgeqrf_ dgesdd_ sgetrf_ dgesv_ dposv_ dgels_ dgetrf_ dpotrf_ dgeev_; do
-        # Rename LAPACK symbols for ILP64
-        CXXFLAGS="${CXXFLAGS} -D${symbol}=${symbol}64_"
-    done
-    
-    # Disable QT
-    export USE_QT="OFF"
-elif [[ "${target}" == *-w64-* ]]; then
+if [[ "${target}" == *-w64-* ]]; then
     # Needed for mingw compilation of big files
     export CXXFLAGS="-Wa,-mbig-obj"
-    export USE_QT="OFF"
 fi
 
 cmake -DCMAKE_FIND_ROOT_PATH=${prefix} \
@@ -126,6 +109,7 @@ dependencies = [
     Dependency(PackageSpec(name="Libglvnd_jll", uuid="7e76a0d4-f3c7-5321-8279-8d96eeed0f29")),
     BuildDependency(PackageSpec(name="libjulia_jll")),
     Dependency(PackageSpec(name="libcxxwrap_julia_jll", uuid="3eaa8342-bff7-56a5-9981-c04077f7cee7"); compat="0.14.7"),
+    Dependency("OpenBLAS32_jll"; compat="0.3.24"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
