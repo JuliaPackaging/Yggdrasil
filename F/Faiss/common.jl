@@ -6,8 +6,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-# Needs CMake >= 3.23.1 provided via HostBuildDependency
-apk del cmake
+apk del cmake # Need CMake >= 3.30 for BLA_VENDOR=libblastrampoline
 
 cd faiss
 
