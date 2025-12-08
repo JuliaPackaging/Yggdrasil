@@ -7,7 +7,9 @@ name = "MPIABI"
 # We use semver for this package. Since this represents and ABI, and
 # not a package, it doesn't make sense to follow e.g. MPI's or
 # OpenMPI's released versions.
-version = v"1.0.0"
+#
+# We are currently at version 0.1 because some details of the ABI are still being hashed out, e.g. the library SOVERSION.
+version = v"0.1.0"
 
 # The MPI ABI does not provide Fortran bindings. Packages using this
 # ABI should use a different package, e.g.
@@ -165,8 +167,6 @@ products = [
 ]
 
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae");
-               compat="1.3.1"),
     Dependency("Hwloc_jll"; compat="2.12.2"),
     RuntimeDependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267");
                       compat="0.1", top_level=true),
