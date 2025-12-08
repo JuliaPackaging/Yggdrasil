@@ -3,7 +3,6 @@
 using BinaryBuilder, Pkg
 
 include(joinpath("..", "..", "platforms", "macos_sdks.jl"))
-const SDK_VERSION = "14.5"
 
 name = "OSRM"
 version = v"6.0.0"
@@ -11,7 +10,7 @@ version = v"6.0.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/Project-OSRM/osrm-backend.git", "01605f7589e6fe68df3fc690ad001b687128aba7"),
-    get_macos_sdk_sources(SDK_VERSION)...
+    get_macos_sdk_sources("14.5")...
 ]
 
 script = raw"""
@@ -48,13 +47,13 @@ fi
 # Apple specific handling
 if [[ "${target}" == *-apple-darwin* ]]; then
     ### SDK extraction
-    apple_sdk_root=$WORKSPACE/srcdir/MacOSX$(SDK_VERSION).sdk
+    apple_sdk_root=$WORKSPACE/srcdir/MacOSX14.5.sdk
     mkdir -p "$apple_sdk_root"
-    echo "Extracting MacOSX$(SDK_VERSION).tar.xz (this may take a while)"
-    tar --extract --file=${WORKSPACE}/srcdir/MacOSX$(SDK_VERSION).tar.xz --directory="$apple_sdk_root" --strip-components=1 --warning=no-unknown-keyword MacOSX$(SDK_VERSION).sdk/System MacOSX$(SDK_VERSION).sdk/usr
+    echo "Extracting MacOSX14.5.tar.xz (this may take a while)"
+    tar --extract --file=${WORKSPACE}/srcdir/MacOSX14.5.tar.xz --directory="$apple_sdk_root" --strip-components=1 --warning=no-unknown-keyword MacOSX14.5.sdk/System MacOSX14.5.sdk/usr
     sed -i "s!/opt/$target/$target/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
     sed -i "s!/opt/$target/$target/sys-root!$apple_sdk_root!" /opt/bin/$bb_full_target/$target-clang++
-    export MACOSX_DEPLOYMENT_TARGET=$(SDK_VERSION)
+    export MACOSX_DEPLOYMENT_TARGET=14.5
 
     ### OSRM-backend Patching
     # Exclude duplicate intersection files from GUIDANCE for platforms that link to EXTRACTOR
