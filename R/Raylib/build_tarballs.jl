@@ -59,7 +59,6 @@ products = [
 x11_platforms = filter(p ->Sys.islinux(p) || Sys.isfreebsd(p), platforms)
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    HostBuildDependency(PackageSpec(name="CMake_jll"))
     Dependency(PackageSpec(name="alsa_jll", uuid="45378030-f8ea-5b20-a7c7-1a9d95efb90e"); platforms=filter(Sys.islinux, platforms))
     Dependency(PackageSpec(name="Mesa_jll", uuid="78dcde23-ec64-5e07-a917-6fe22bbc0f45"); platforms=filter(Sys.iswindows, platforms))
     Dependency(PackageSpec(name="Xorg_libX11_jll", uuid="4f6342f7-b3d2-589e-9d20-edeb45f2b2bc"); platforms=x11_platforms)
