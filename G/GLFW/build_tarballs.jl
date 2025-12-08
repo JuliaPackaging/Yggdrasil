@@ -12,7 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/glfw-*/
+cd $WORKSPACE/srcdir/glfw*/
 mkdir build && cd build
 
 # Building with Wayland fails on FreeBSD because it's missing some headers (e.g. linux/input.h)
