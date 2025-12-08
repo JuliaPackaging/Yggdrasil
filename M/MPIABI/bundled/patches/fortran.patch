@@ -1,0 +1,80 @@
+--- a/mpi.h
++++ b/mpi.h
+@@ -37,6 +37,8 @@
+ typedef MPI_ABI_Count MPI_Count;
+ #undef  MPI_ABI_Count
+ 
++typedef int MPI_Fint;
++
+ typedef struct {
+     int MPI_SOURCE;
+     int MPI_TAG;
+@@ -561,7 +563,7 @@
+ typedef void (MPI_T_event_dropped_cb_function)(MPI_Count count, MPI_T_event_registration event_registration, int source_index, MPI_T_cb_safety cb_safety, void *user_data);
+ 
+ /* MPI functions */
+-int MPI_Abi_get_fortran_booleans(int logical_size, void *logical_true, void *logical_false);
++int MPI_Abi_get_fortran_booleans(int logical_size, void *logical_true, void *logical_false, int *is_set);
+ int MPI_Abi_get_fortran_info(MPI_Info *info);
+ int MPI_Abi_get_info(MPI_Info *info);
+ int MPI_Abi_get_version(int *abi_major, int *abi_minor);
+@@ -1177,6 +1179,29 @@
+ MPI_Win MPI_Win_fromint(int win);
+ int MPI_Win_toint(MPI_Win win);
+ 
++MPI_Comm MPI_Comm_f2c(int comm);
++int MPI_Comm_c2f(MPI_Comm comm);
++MPI_Errhandler MPI_Errhandler_f2c(int errhandler);
++int MPI_Errhandler_c2f(MPI_Errhandler errhandler);
++MPI_File MPI_File_f2c(int file);
++int MPI_File_c2f(MPI_File file);
++MPI_Group MPI_Group_f2c(int group);
++int MPI_Group_c2f(MPI_Group group);
++MPI_Info MPI_Info_f2c(int info);
++int MPI_Info_c2f(MPI_Info info);
++MPI_Message MPI_Message_f2c(int message);
++int MPI_Message_c2f(MPI_Message message);
++MPI_Op MPI_Op_f2c(int op);
++int MPI_Op_c2f(MPI_Op op);
++MPI_Request MPI_Request_f2c(int request);
++int MPI_Request_c2f(MPI_Request request);
++MPI_Session MPI_Session_f2c(int session);
++int MPI_Session_c2f(MPI_Session session);
++MPI_Datatype MPI_Type_f2c(int datatype);
++int MPI_Type_c2f(MPI_Datatype datatype);
++MPI_Win MPI_Win_f2c(int win);
++int MPI_Win_c2f(MPI_Win win);
++
+ /* MPI_T functions */
+ int MPI_T_category_changed(int *update_number);
+ int MPI_T_category_get_categories(int cat_index, int len, int indices[]);
+@@ -1847,6 +1870,29 @@
+ MPI_Win PMPI_Win_fromint(int win);
+ int PMPI_Win_c2f(MPI_Win win);
+ 
++MPI_Comm PMPI_Comm_f2c(int comm);
++int PMPI_Comm_c2f(MPI_Comm comm);
++MPI_Errhandler PMPI_Errhandler_f2c(int errhandler);
++int PMPI_Errhandler_c2f(MPI_Errhandler errhandler);
++MPI_File PMPI_File_f2c(int file);
++int PMPI_File_c2f(MPI_File file);
++MPI_Group PMPI_Group_f2c(int group);
++int PMPI_Group_c2f(MPI_Group group);
++MPI_Info PMPI_Info_f2c(int info);
++int PMPI_Info_c2f(MPI_Info info);
++MPI_Message PMPI_Message_f2c(int message);
++int PMPI_Message_c2f(MPI_Message message);
++MPI_Op PMPI_Op_f2c(int op);
++int PMPI_Op_c2f(MPI_Op op);
++MPI_Request PMPI_Request_f2c(int request);
++int PMPI_Request_c2f(MPI_Request request);
++MPI_Session PMPI_Session_f2c(int session);
++int PMPI_Session_c2f(MPI_Session session);
++MPI_Datatype PMPI_Type_f2c(int datatype);
++int PMPI_Type_c2f(MPI_Datatype datatype);
++MPI_Win PMPI_Win_f2c(int win);
++int PMPI_Win_c2f(MPI_Win win);
++
+ /* PMPI_T functions */
+ int PMPI_T_category_changed(int *update_number);
+ int PMPI_T_category_get_categories(int cat_index, int len, int indices[]);
