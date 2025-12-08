@@ -9,12 +9,14 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 include("make_script.jl")
 
 name = "cupynumeric"
-version = v"25.8" # cupynumeric has 08, but Julia doesn't like that
+version = v"25.10"
 sources = [
-    GitSource("https://github.com/nv-legate/cupynumeric.git","7146e78b6da693a2c576f8a9ef98291be334f280"),
+    GitSource("https://github.com/nv-legate/cupynumeric.git","66d872d22d66d78f42e91778a6b1c731e796d1f4"),
     GitSource("https://github.com/MatthewsResearchGroup/tblis.git", "c4f81e08b2827e72335baa7bf91a245f72c43970"),
     FileSource("https://repo.anaconda.com/miniconda/Miniconda3-py311_24.3.0-0-Linux-x86_64.sh", 
-                "4da8dde69eca0d9bc31420349a204851bfa2a1c87aeb87fe0c05517797edaac4", "miniconda.sh")
+                "4da8dde69eca0d9bc31420349a204851bfa2a1c87aeb87fe0c05517797edaac4", "miniconda.sh"),
+    DirectorySource("./bundled")
+    
 ]
 
 
@@ -47,10 +49,10 @@ products = [
 ] 
 
 dependencies = [
-    Dependency("legate_jll"; compat = "=25.8"), # Legate versioning is Year.Month
+    Dependency("legate_jll"; compat = "=25.10"), # Legate versioning is Year.Month
     # Dependency("CUTENSOR_jll", compat = "2.2"), # supplied via ArchiveSource
     Dependency("OpenBLAS32_jll"),
-    HostBuildDependency(PackageSpec(; name = "CMake_jll", version = v"3.31.9")),
+    HostBuildDependency(PackageSpec(; name = "CMake_jll", version = "3.31.9")),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")) 
 ]
 

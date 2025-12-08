@@ -1,5 +1,8 @@
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "llama_cpp"
 version = v"0.0.17"  # fake version number
 
@@ -57,20 +60,9 @@ version = v"0.0.17"  # fake version number
 
 sources = [
     GitSource("https://github.com/ggerganov/llama.cpp.git", "eb5c3dc64bd967f2e23c87d9dec195f45468de60"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 script = raw"""
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    # Install a newer SDK which supports `std::filesystem`
-    pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -a usr/* "/opt/${target}/${target}/sys-root/usr/"
-    cp -a System "/opt/${target}/${target}/sys-root/"
-    popd
-fi
-
 cd $WORKSPACE/srcdir/llama.cpp*
 
 # remove compiler flags forbidden in BinaryBuilder
@@ -109,6 +101,9 @@ cmake --build build
 cmake --install build
 install_license LICENSE
 """
+
+# Install a newer SDK which supports `std::filesystem`
+sources, script = require_macos_sdk("10.15", sources, script)
 
 platforms = supported_platforms()
 

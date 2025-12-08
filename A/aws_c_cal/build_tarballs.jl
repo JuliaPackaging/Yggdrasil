@@ -2,27 +2,19 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "aws_c_cal"
-version = v"0.9.9"
+version = v"0.9.13"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-cal.git", "918ed33dd1b09ddef973d39c017739cfc253fc40"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
+    GitSource("https://github.com/awslabs/aws-c-cal.git", "1cb9412158890201a6ffceed779f90fe1f48180c"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    export MACOSX_DEPLOYMENT_TARGET=10.15
-    popd
-fi
-
 cd $WORKSPACE/srcdir/aws-c-cal
 # Lowercase names for MinGW
 sed -i -e 's/BCrypt/bcrypt/g' -e 's/NCrypt/ncrypt/g' CMakeLists.txt
@@ -37,6 +29,8 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 cmake --build . -j${nproc} --target install
 """
 
+sources, script = require_macos_sdk("10.15", sources, script)
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
@@ -49,7 +43,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("aws_c_common_jll"; compat="0.12.5"),
+    Dependency("aws_c_common_jll"; compat="0.12.6"),
     BuildDependency("aws_lc_jll"),
 ]
 

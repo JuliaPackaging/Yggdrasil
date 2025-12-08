@@ -32,8 +32,8 @@ agent() = Dict(
 plugins() = Pair{String, Union{Nothing, Dict}}[
     "JuliaCI/julia#v1" => Dict(
         "persist_depot_dirs" => "packages,artifacts,compiled",
-        "version" => "1.7",
-        "artifacts_size_limit" => string(150 << 30), # 150 GiB
+        "version" => "1.12.2",
+        "artifacts_size_limit" => string(120 << 30), # 120 GiB
     ),
     "JuliaCI/merge-commit" => nothing
 ]
@@ -41,6 +41,7 @@ plugins() = Pair{String, Union{Nothing, Dict}}[
 env(NAME, PROJECT) = Dict(
     "JULIA_PKG_SERVER" => "us-east.pkg.julialang.org",
     "JULIA_PKG_SERVER_REGISTRY_PREFERENCE" => "eager",
+    "JULIA_REGISTRYCI_AUTOMERGE" => "true",
     "NAME" => NAME,
     "PROJECT" => PROJECT,
     "YGGDRASIL" => "true",

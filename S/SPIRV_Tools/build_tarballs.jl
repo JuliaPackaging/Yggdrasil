@@ -4,6 +4,8 @@ using BinaryBuilder, Pkg
 
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 
 name = "SPIRV_Tools"
 version = v"2025.4"
@@ -28,15 +30,6 @@ mv effcee SPIRV-Tools/external/effcee
 mv re2 SPIRV-Tools/external/re2
 mv googletest SPIRV-Tools/external/googletest
 mv SPIRV-Headers SPIRV-Tools/external/spirv-headers
-
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    export MACOSX_DEPLOYMENT_TARGET=10.15
-    popd
-fi
 
 cd SPIRV-Tools
 install_license LICENSE
@@ -69,6 +62,8 @@ ninja -C build -j ${nproc} install
 rm -f $prefix/lib/*.a
 """
 
+sources, script = require_macos_sdk("10.15", sources, script)
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
@@ -100,17 +95,7 @@ dependencies = [
 builds = []
 for platform in platforms
     should_build_platform(triplet(platform)) || continue
-
-    # On macOS, we need to use a newer SDK which supports `std::filesystem`
-    platform_sources = if Sys.isapple(platform)
-        [sources;
-         ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-                       "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62")]
-    else
-        sources
-    end
-
-    push!(builds, (; platform, sources=platform_sources))
+    push!(builds, (; platform, sources))
 end
 
 # don't allow `build_tarballs` to override platform selection based on ARGS.

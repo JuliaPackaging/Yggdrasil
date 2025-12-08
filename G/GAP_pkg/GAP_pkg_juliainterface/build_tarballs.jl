@@ -54,7 +54,7 @@ platforms = gap_platforms(expand_julia_versions=true)
 # is easy as it only requires a change to GAP.jl, not to any JLLs.
 dependencies = [
     Dependency("GAP_jll", gap_version),
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.11.0")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version="1.11.0")),
 ]
 
 # The products that we will ensure are always built
@@ -63,10 +63,10 @@ products = [
 ]
 
 # we want to get notified of any changes to julia_compat, and adapt `version` accordingly
-@assert libjulia_julia_compat <= v"1.10.0"
+@assert libjulia_min_julia_version <= v"1.10.0"
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"7", julia_compat=string(libjulia_julia_compat))
+               preferred_gcc_version=v"7", julia_compat=libjulia_julia_compat(julia_versions))
 
 # rebuild trigger: 1

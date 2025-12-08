@@ -1,6 +1,10 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "WrapIt"
 version = v"1.7.0"
 
@@ -12,25 +16,12 @@ clang_patch="$(clang_vers.major).$(clang_vers.minor).$(clang_vers.patch)"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/grasph/wrapit.git", "21062724bdb8590db9cfd9d44c58d0382db6e74f")
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62")
+    GitSource("https://github.com/grasph/wrapit.git", "21062724bdb8590db9cfd9d44c58d0382db6e74f"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 set -x
-# Default binarybuilder darwin chaintools miss support for filesytem
-# Install a newer SDK which supports following the recipee from
-# https://github.com/JuliaPackaging/Yggdrasil/pull/2741
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -rp usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -rp System "/opt/${target}/${target}/sys-root/."
-    export MACOSX_DEPLOYMENT_TARGET=10.15
-    popd
-fi
 
 # Search for libcrypto.$dlext which can be in /workspace/destdir/lib ($libdir) or /workspace/destdir/lib64
 if [ -f "$libdir/libcrypto.$dlext" ]; then
@@ -139,6 +130,11 @@ cp -p "../artifacts/$llvm_uuid/lib/$llvmlib" lib/
 
 install_license "${WORKSPACE}/srcdir/wrapit/LICENSE"
 """
+
+# Default binarybuilder darwin chaintools miss support for filesytem
+# Install a newer SDK which supports following the recipee from
+# https://github.com/JuliaPackaging/Yggdrasil/pull/2741
+sources, script = require_macos_sdk("10.15", sources, script)
 
 # Windows is not supported.
 # 2025-03-03: following arch vetoed because of validation failure:

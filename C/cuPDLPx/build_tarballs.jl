@@ -5,22 +5,42 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "cuPDLPx"
-version = v"0.1.1"
+version = v"0.1.4"
 
 
 sources = [
     GitSource(
         "https://github.com/MIT-Lu-Lab/cuPDLPx.git",
-        "e98e56594f5edca01a9c807d626c398346b5076c",
+        "31fedcd2f46dfb2723721b02ebd17426a22c5db1",
     ),
 ]
 
 script = raw"""
+apk del cmake
+
 cd ${WORKSPACE}/srcdir/cuPDLPx
 install_license LICENSE
+
 export CUDA_HOME="${prefix}/cuda"
 export PATH=${PATH}:${CUDA_HOME}/bin
-make install PREFIX=$prefix
+
+# nvcc thinks the libraries are located inside lib64, but the SDK actually has them in lib
+ln -s ${CUDA_HOME}/lib ${CUDA_HOME}/lib64
+
+cmake -B build -S . \
+    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_HOME \
+    -DCUPDLPX_BUILD_SHARED_LIB=ON \
+    -DCUPDLPX_BUILD_STATIC_LIB=OFF \
+    -DCUPDLPX_BUILD_CLI=OFF \
+    -DCUPDLPX_BUILD_TESTS=OFF \
+    -DCUPDLPX_BUILD_PYTHON=OFF
+
+cmake --build build --config Release -j${nproc}
+
+cmake --install build
 """
 
 products = [
@@ -36,9 +56,10 @@ for platform in platforms
         continue
     end
     dependencies = [
+        HostBuildDependency(PackageSpec(; name="CMake_jll")),
         Dependency("Zlib_jll"),
         Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-        CUDA.required_dependencies(platform)...,
+        CUDA.required_dependencies(platform, static_sdk=true)...,
     ]
     build_tarballs(
         ARGS,
@@ -49,7 +70,7 @@ for platform in platforms
         [platform],
         products,
         dependencies;
-        preferred_gcc_version = v"8",
+        preferred_gcc_version = v"9",
         julia_compat = "1.10",
         augment_platform_block = CUDA.augment,
     )
