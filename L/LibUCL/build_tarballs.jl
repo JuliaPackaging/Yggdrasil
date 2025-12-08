@@ -5,8 +5,7 @@ version = v"0.9.2"
 
 sources = [
     GitSource("https://github.com/vstakhov/libucl.git",
-              "16498fcfb0148963feecf0401dc6d2d5089cebdf"),
-    DirectorySource("./bundled"),
+              "16498fcfb0148963feecf0401dc6d2d5089cebdf")
 ]
 
 script = raw"""
