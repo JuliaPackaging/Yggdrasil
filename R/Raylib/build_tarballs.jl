@@ -32,8 +32,10 @@ CFLAGS="${CFLAGS} -DSUPPORT_EVENTS_AUTOMATION -DSUPPORT_FILEFORMAT_BMP -DSUPPORT
 
 FLAGS=()
 if [[ "${target}" == *-mingw* ]]; then
-   # raylib.rc.data is broken for x64, remove it from compilation
-   #sed -i 's+$(RAYLIB_RES_FILE)+ +g' Makefile
+   if [[ ${nbits} == 32 ]]; then
+      # raylib.rc.data is broken for 32-bit, remove it from compilation
+      sed -i 's+$(RAYLIB_RES_FILE)+ +g' Makefile
+   fi   
    # we need to specify the OS in the flags to make for Windows
    FLAGS+=(OS=Windows_NT)
    FLAGS+=(LDLIBS=\"-L${libdir} -lglfw3 -lwinmm\")
