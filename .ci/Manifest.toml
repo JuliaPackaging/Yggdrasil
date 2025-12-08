@@ -57,9 +57,9 @@ version = "1.42.0"
 
 [[deps.Binutils_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Zlib_jll", "Zstd_jll"]
-git-tree-sha1 = "603339925f4f0e6d3a3969a7aa391ec80f8a3ad5"
+git-tree-sha1 = "d35dde1c7201e7a1d7ca4ce4d62499a3a220539a"
 uuid = "489e263e-5428-50b0-a723-147a141b401e"
-version = "2.45.0+0"
+version = "2.45.1+0"
 
 [[deps.BitFlags]]
 git-tree-sha1 = "0691e34b3bb8be9307330f88d1a3c3f25466c24d"
@@ -379,9 +379,9 @@ version = "0.4.4"
 
 [[deps.OpenSSL]]
 deps = ["BitFlags", "Dates", "MozillaCACerts_jll", "NetworkOptions", "OpenSSL_jll", "Sockets"]
-git-tree-sha1 = "386b47442468acfb1add94bf2d85365dea10cbab"
+git-tree-sha1 = "1d1aaa7d449b58415f97d2839c318b70ffb525a0"
 uuid = "4d8831e6-92b7-49fb-bdf8-b643e874388c"
-version = "1.6.0"
+version = "1.6.1"
 
 [[deps.OpenSSL_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -483,9 +483,9 @@ version = "0.1.0"
 
 [[deps.RegistryTools]]
 deps = ["LibGit2", "Pkg", "SHA", "UUIDs"]
-git-tree-sha1 = "3087a02cf7baffe55fc5d26573bfd9ab8833c613"
+git-tree-sha1 = "3ccf9d64e95b4a02a707f57f4032a4c3d58f23ba"
 uuid = "d1eb7eb1-105f-429d-abf5-b0f65cb9e2c4"
-version = "2.4.1"
+version = "2.4.2"
 
 [[deps.Requires]]
 deps = ["UUIDs"]
