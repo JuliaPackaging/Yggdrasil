@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "unixODBC"
-version = v"2.3.12"
+version = v"2.3.14"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/lurcher/unixODBC.git",
-              "c335dbf3fa25b524e935e98cf26b96a2e13f5c81"),
+              "9a81415f03f4736f11283d69282330f95183359d"),
     DirectorySource("./bundled"),	      
 ]
 
