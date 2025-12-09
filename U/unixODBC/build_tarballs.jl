@@ -8,19 +8,15 @@ version = v"2.3.14"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/lurcher/unixODBC.git",
-              "9a81415f03f4736f11283d69282330f95183359d"),
-    DirectorySource("./bundled"),	      
+              "9a814155d60c44632b23d7b1bb47b17206e21db0"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/unixODBC*
 
-# Don't use `clock_realtime` if it isn't available
-cd DriverManager
-atomic_patch -p0 ../../patches/clock_gettime.patch
-cd ..
 autoreconf -fiv
+export CFLAGS="-D_POSIX_C_SOURCE='200809L'"
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-libiconv-prefix=${prefix} \
     --enable-readline
