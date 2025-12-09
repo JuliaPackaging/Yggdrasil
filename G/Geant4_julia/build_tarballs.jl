@@ -56,7 +56,7 @@ products = [
 dependencies = [
     BuildDependency("libjulia_jll"),
     BuildDependency("Xorg_xorgproto_jll"),
-    Dependency("libcxxwrap_julia_jll"; compat="0.14.4"),
+    Dependency("libcxxwrap_julia_jll"; compat="0.14.7"),
     Dependency("Geant4_jll"; compat="11.3.2")
 ]
 
