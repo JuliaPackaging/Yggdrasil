@@ -16,7 +16,6 @@ script = raw"""
 cd $WORKSPACE/srcdir/unixODBC*
 
 autoreconf -fiv
-#export CFLAGS="-D_POSIX_C_SOURCE='200809L' -D__BSD_VISIBLE"
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-libiconv-prefix=${prefix} \
     --enable-readline
