@@ -4,7 +4,7 @@ This guide helps AI agents generate correct `build_tarballs.jl` recipes for Bina
 
 ## Prerequisites
 
-- **BinaryBuilder.jl**: Requires Julia 1.7 specifically (use `julia +1.7` if juliaup is installed)
+- **BinaryBuilder.jl**: Requires at least Julia 1.12.
 - **Supported Platforms**: Linux (glibc and musl for x86_64, i686, aarch64, armv7l, armv6l, ppc64le, riscv64), Windows (x86_64, i686), macOS (x86_64, aarch64), FreeBSD (x86_64, aarch64)
 - Use `supported_platforms()` to get all available platforms
 
@@ -259,10 +259,10 @@ cmake ../package-source
 ## Testing Locally
 
 ```bash
-julia +1.7 --project=/path/to/Yggdrasil build_tarballs.jl --verbose --debug
+julia --project=/path/to/Yggdrasil build_tarballs.jl --verbose --debug
 ```
 
-Use `--debug` to get interactive shell on failure. If you have juliaup installed, use `julia +1.7` to ensure Julia 1.7 is used.
+Use `--debug` to get interactive shell on failure.
 
 **Note**: On macOS, you need Docker installed for local testing.
 
@@ -323,7 +323,7 @@ Before merging a Yggdrasil PR, you should test the generated JLL package locally
 For faster local testing, build only for your current platform by passing it as an argument to the build script:
 
 ```bash
-julia +1.7 --project=/path/to/Yggdrasil build_tarballs.jl --verbose --debug x86_64-linux-gnu
+julia --project=/path/to/Yggdrasil build_tarballs.jl --verbose --debug x86_64-linux-gnu
 # Or for your current platform:
 # x86_64-apple-darwin20 (macOS x86_64)
 # aarch64-apple-darwin20 (macOS ARM64)
@@ -336,7 +336,7 @@ julia +1.7 --project=/path/to/Yggdrasil build_tarballs.jl --verbose --debug x86_
 
 ```bash
 cd PackageName
-julia +1.7 --project=/path/to/Yggdrasil build_tarballs.jl --verbose
+julia --project=/path/to/Yggdrasil build_tarballs.jl --verbose
 ```
 
 This creates tarballs in the `products/` directory.
@@ -352,13 +352,13 @@ using BinaryBuilder
 cd("E/Electron")
 
 # Run the build script to generate JLLs
-run(`julia +1.7 --project=/path/to/Yggdrasil build_tarballs.jl --deploy=local`)
+run(`julia --project=/path/to/Yggdrasil build_tarballs.jl --deploy=local`)
 ```
 
 Or directly from the command line:
 
 ```bash
-julia +1.7 --project=/path/to/Yggdrasil build_tarballs.jl --deploy=local
+julia --project=/path/to/Yggdrasil build_tarballs.jl --deploy=local
 ```
 
 This generates a local JLL package in `~/.julia/dev/PackageName_jll/`.
