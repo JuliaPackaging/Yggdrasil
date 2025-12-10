@@ -8,8 +8,7 @@ sources = [
 ]
 
 script = raw"""
-cd ${WORKSPACE}/srcdir
-[[ -d "libosrmc/libosrmc" ]] && cd libosrmc/libosrmc || cd libosrmc
+cd ${WORKSPACE}/srcdir/libosrmc/libosrmc
 
 # Set PKG_CONFIG_PATH for OSRM discovery
 export PKG_CONFIG_PATH="${prefix}/lib/pkgconfig:${PKG_CONFIG_PATH}"
