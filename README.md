@@ -11,7 +11,7 @@ For detailed information about contributing, go to ["CONTRIBUTING.md"](https://g
 To update the version to build for an existing recipe, simply open a PR to this repository making the required tweaks. This can be as simple as updating the version number and the source (e.g. for github-hosted resources, update the URL and hash for an archive, or the revision for a repository) of the relevant `build_tarballs.jl` file. Note that in some cases more changes may be needed. A real example for updating the version of a github-hosted resource, see [this PR](https://github.com/JuliaPackaging/Yggdrasil/pull/8833). The version number should be easy to find, and the URL + hash can be found by clicking the release, clicking the final commit in the release, and copying the information from the URL bar.
 
 To contribute a new recipe, you can either
-* use `BinaryBuilder.run_wizard()`, which will automatically open a pull request to this repository after a successfull build for all requested platforms
+* use `BinaryBuilder.run_wizard()`, which will automatically open a pull request to this repository after a successful build for all requested platforms
 * Copy another build recipe using it as a template, and then open a manual pull request to this repository
 
 Yggdrasil builds the tarballs using `master` version of BinaryBuilder.jl, which requires Julia 1.3.0 or later versions.  Note that this BinaryBuilder.jl version has some differences compared to v0.1.4 and the builders generated are slightly different.  You are welcome to contribute builders written for  BinaryBuilder.jl v0.1.4, but they will likely need minor adjustements.
