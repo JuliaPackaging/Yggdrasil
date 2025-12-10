@@ -3,6 +3,8 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
+BinaryBuilder.versioninfo()
+
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
@@ -41,7 +43,7 @@ cmake . \
       -DT8CODE_BUILD_TUTORIALS=OFF \
       -DT8CODE_ENABLE_MPI=ON \
       -DP4EST_ENABLE_MPIIO=OFF \
-      -DCMAKE_CXX_STANDARD=17 \
+      -DCMAKE_CXX_STANDARD=20 \
       -DCMAKE_CXX_STANDARD_REQUIRED=ON \
       -DCMAKE_CXX_FLAGS="-stdlib=libc++
 
