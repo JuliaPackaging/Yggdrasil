@@ -39,7 +39,8 @@ cmake . \
       -DT8CODE_BUILD_TESTS=OFF \
       -DT8CODE_BUILD_TUTORIALS=OFF \
       -DT8CODE_ENABLE_MPI=ON \
-      -DP4EST_ENABLE_MPIIO=OFF
+      -DP4EST_ENABLE_MPIIO=OFF \
+      -DCMAKE_CXX_FLAGS="-stdlib=libc++
 
 make -C build -j ${nproc}
 make -C build -j ${nproc} install
