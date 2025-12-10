@@ -7,10 +7,10 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "t8code"
-version = v"3.0.1"
+version = v"4.0.0"
 
 tarball = "https://github.com/DLR-AMR/t8code/releases/download/v$(version)/T8CODE-$(version)-Source.tar.gz"
-sha256sum = "71732ac0f898feed1af8a81c2deac2e5031e37e94384d3e5b10d1b5861be24d0"
+sha256sum = "668536f82730a23fc6fd96ff13e64762b6b0890d04e99a7a38d66341332d5770"
 
 sources = [ArchiveSource(tarball, sha256sum), DirectorySource("./bundled")]
 
@@ -70,6 +70,13 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
+
+
+cmake_args = [
+    "-DCMAKE_CXX_STANDARD=17",
+    "-DCMAKE_CXX_STANDARD_REQUIRED=ON",
+]
+
 
 # The products that we will ensure are always built
 products = [
