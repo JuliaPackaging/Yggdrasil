@@ -56,8 +56,10 @@ augment_platform_block = """
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
+
 # p4est with MPI enabled does not compile for 32 bit Windows
-platforms = filter(p -> !(Sys.iswindows(p) && nbits(p) == 32), platforms)
+# newer t8code version require MPI 3 where only 2 seems available
+platforms = filter(p -> !(Sys.iswindows(p)), platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
 
