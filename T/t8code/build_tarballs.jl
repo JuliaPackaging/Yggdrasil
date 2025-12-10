@@ -40,7 +40,10 @@ cmake . \
       -DT8CODE_BUILD_TESTS=OFF \
       -DT8CODE_BUILD_TUTORIALS=OFF \
       -DT8CODE_ENABLE_MPI=ON \
-      -DP4EST_ENABLE_MPIIO=OFF
+      -DP4EST_ENABLE_MPIIO=OFF \
+      -DCMAKE_CXX_STANDARD=17 \
+      -DCMAKE_CXX_STANDARD_REQUIRED=ON \
+      -DCMAKE_CXX_FLAGS="-stdlib=libc++
 
 make -C build -j ${nproc}
 make -C build -j ${nproc} install
@@ -70,12 +73,6 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
-
-
-cmake_args = [
-    "-DCMAKE_CXX_STANDARD=17",
-    "-DCMAKE_CXX_STANDARD_REQUIRED=ON",
-]
 
 
 # The products that we will ensure are always built
