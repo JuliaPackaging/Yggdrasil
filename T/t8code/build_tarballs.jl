@@ -57,8 +57,11 @@ augment_platform_block = """
 platforms = supported_platforms(; experimental=true)
 
 # p4est with MPI enabled does not compile for 32 bit Windows
-# newer t8code version require MPI 3 where only 2 seems available
+# newer t8code versions require MPI 3 whereas only 2 seems available for Windows
 platforms = filter(p -> !(Sys.iswindows(p)), platforms)
+
+# likewise for riscv64 only MPI 2 is available
+platforms = filter(p -> (arch(p) != "riscv64"), platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
 
