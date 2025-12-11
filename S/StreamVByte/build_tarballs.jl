@@ -9,7 +9,7 @@ sources = [
 ]
 
 script = raw"""
-cd ${WORKSPACE}/streamvbyte*
+cd ${WORKSPACE}/srcdir/streamvbyte*
 
 mkdir build
 cmake \
