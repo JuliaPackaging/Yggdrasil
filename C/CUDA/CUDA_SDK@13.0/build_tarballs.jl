@@ -16,7 +16,7 @@ platforms = [Platform("x86_64", "linux"),
 full_platforms = Platform[]
 for platform in platforms
     augmented_platform = deepcopy(platform)
-    augmented_platform["cuda"] = "$(version.major).(version.minor)"
+    augmented_platform["cuda"] = "$(version.major).$(version.minor)"
     push!(full_platforms, augmented_platform)
 end
 
