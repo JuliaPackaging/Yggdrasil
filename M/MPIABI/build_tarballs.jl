@@ -9,7 +9,7 @@ name = "MPIABI"
 # OpenMPI's released versions.
 #
 # We are currently at version 0.1 because some details of the ABI are still being hashed out, e.g. the library SOVERSION.
-version = v"0.1.0"
+version = v"0.1.1"
 
 # The MPI ABI does not provide Fortran bindings. Packages using this
 # ABI should use a different package, e.g.
@@ -21,15 +21,9 @@ sources = [
     # The official MPI ABI C bindings.
     # There are no released versions. We choose a recent commit.
     # This corresponds to the MPI standard 5.0, MPI ABI 1.0.
-    GitSource("https://github.com/mpi-forum/mpi-abi-stubs", "e4583674e6898da1fac6953da71bb1a205d74b37"),
+    GitSource("https://github.com/mpi-forum/mpi-abi-stubs", "a1183ce6e048341cc65414fd21d928b8cfc9709f"),
 
     # MPICH source, implementing the C bindings
-    # ArchiveSource("https://www.mpich.org/static/downloads/$(version_str)/mpich-$(version_str).tar.gz",
-    #               "acc11cb2bdc69678dc8bba747c24a28233c58596f81f03785bf2b7bb7a0ef7dc"),
-    # ArchiveSource("https://www.mpich.org/static/downloads/$(version_str)/mpich-$(version_str).tar.gz",
-    #               "2d738c70b0e45b787d5931b6ddfd0189e586773188e93c7fd1d934a99a9cc55d"),
-    # # This is the main branch as of 2025-10-05. This will likely turn into MPICH 5.0.
-    # GitSource("https://github.com/pmodels/mpich.git", "f47908fa4a74bf4ac29997202fb2967c8c59b0c9"),
     ArchiveSource("https://www.mpich.org/static/downloads/5.0.0b1/mpich-5.0.0b1.tar.gz",
                   "fb862b0c733c004477ba95ee879b90b17940726ed11a9427b68d90fb86888412"),
 
@@ -51,9 +45,8 @@ cd ${WORKSPACE}/srcdir/mpich*
 # `<pthread_np.h>` should not actually be used on FreeBSD.)
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pthread_np.patch
 
-# git submodule update --init
-
-# ./autogen.sh
+# See <https://github.com/pmodels/mpich/issues/7690> and <https://github.com/pmodels/mpich/issues/7691>
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mpich.patch
 
 # - Do not install doc and man files which contain files which clashing names on
 #   case-insensitive file systems:
@@ -66,20 +59,65 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pthread_np.patch
 #   x86_64 macOS. See
 #   <https://github.com/JuliaPackaging/Yggdrasil/pull/10249#discussion_r1975948816> for a brief
 #   discussion.
+# - We configure with Fortran although we do not provide any Fortran
+#   bindings. This ensures that the C API still supports Fortran types.
 configure_flags=(
     --build=${MACHTYPE}
     --disable-dependency-tracking
     --disable-doc
-    --disable-fortran
+    --enable-fortran
     --enable-cxx=no
     --enable-fast=O3,ndebug,alwaysinline
     --enable-static=no
     --enable-mpi-abi
     --host=${target}
-    --prefix=${prefix}/mpich
+    --prefix=${prefix}
     --with-device=ch3
     --with-hwloc=${prefix}
 )
+
+# Define some obscure undocumented variables needed for cross compilation of
+# the Fortran bindings.  See for example
+# * https://stackoverflow.com/q/56759636/2442087
+# * https://github.com/pmodels/mpich/blob/d10400d7a8238dc3c8464184238202ecacfb53c7/doc/installguide/cfile
+export CROSS_F77_SIZEOF_INTEGER=4
+export CROSS_F77_SIZEOF_REAL=4
+export CROSS_F77_SIZEOF_DOUBLE_PRECISION=8
+export CROSS_F77_SIZEOF_LOGICAL=4
+export CROSS_F77_TRUE_VALUE=1
+export CROSS_F77_FALSE_VALUE=0
+
+if [[ ${nbits} == 32 ]]; then
+    export CROSS_F90_ADDRESS_KIND=4
+else
+    export CROSS_F90_ADDRESS_KIND=8
+fi
+export CROSS_F90_OFFSET_KIND=8
+export CROSS_F90_INTEGER_KIND=4
+export CROSS_F90_INTEGER_MODEL=9
+export CROSS_F90_REAL_MODEL=6,37
+export CROSS_F90_DOUBLE_MODEL=15,307
+export CROSS_F90_ALL_INTEGER_MODELS=2,1,4,2,9,4,18,8,
+export CROSS_F90_INTEGER_MODEL_MAP={2,1,1},{4,2,2},{9,4,4},{18,8,8},
+
+if [[ "${target}" == i686-linux-musl ]]; then
+    # Our `i686-linux-musl` platform is a bit rotten: it can run C programs,
+    # but not C++ or Fortran.  `configure` runs a C program to determine
+    # whether it's cross-compiling or not, but when it comes to running
+    # Fortran programs, it fails.  In addition, `configure` ignores the
+    # above exported variables if it believes it's doing a native build.
+    # Small hack: edit `configure` script to force `cross_compiling` to be
+    # always "yes".
+    sed -i 's/cross_compiling=no/cross_compiling=yes/g' configure
+    configure_flags+=(ac_cv_sizeof_bool="1")
+fi
+
+if [[ "${target}" == aarch64-apple-* ]]; then
+    configure_flags+=(
+        FFLAGS=-fallow-argument-mismatch
+        FCFLAGS=-fallow-argument-mismatch
+    )
+fi
 
 if [[ ${target} != *x86_64* ]]; then
     # The configure test incorrectly enables AVX on arm64 architectures.
@@ -97,31 +135,65 @@ fi
 
 ./configure "${configure_flags[@]}"
 
-# Build the library
-make -j${nproc}
+# Remove empty `-l` flags from libtool
+# (Why are they there? They should not be.)
+# Run the command several times to handle multiple (overlapping) occurrences.
+sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
+sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
+sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
 
-# Install the library into a tempoary directory ${prefix}/mpich.
-# We are going to pick-and-choose only those installed files that we actually want.
+# Build and install the library
+make -j${nproc}
 make install
 
-# Install the shared libraries
-mv ${prefix}/mpich/lib/libmpi_abi.* ${libdir}
+# Remove all that provide the MPICH ABI (instead of the MPI ABI)
 
-# Install almost all binaries (why not?)
-mv ${prefix}/mpich/bin/* ${bindir}
-rm ${bindir}/mpichversion       # needs libmpi.so
-rm ${bindir}/mpivars            # needs libmpi.so
+ls -lR ${prefix}
 
-# Switch compiler wrappers to using the MPI ABI, and correct the install directory
 rm ${bindir}/mpicc_abi
+rm ${bindir}/mpichversion       # needs libmpi.so
 rm ${bindir}/mpicxx_abi
+rm ${bindir}/mpif77
+rm ${bindir}/mpif90
+rm ${bindir}/mpifort
+rm ${bindir}/mpivars            # needs libmpi.so
+# Switch compiler wrappers to using the MPI ABI, and correct the install directory
 sed -i -e 's/mpi_abi=no/mpi_abi=yes/' ${bindir}/mpicc
 sed -i -e 's/mpi_abi=no/mpi_abi=yes/' ${bindir}/mpicxx
-sed -i -e "s+${prefix}/mpich+${prefix}+" ${bindir}/mpicc
-sed -i -e "s+${prefix}/mpich+${prefix}+" ${bindir}/mpicxx
 
-# Remove the temporary full install
-rm -rf ${prefix}/mpich
+rm ${includedir}/mpi.h
+rm ${includedir}/mpi.mod
+rm ${includedir}/mpi_abi.h
+rm ${includedir}/mpi_base.mod
+rm -f ${includedir}/mpi_c_interface.mod
+rm -f ${includedir}/mpi_c_interface_cdesc.mod
+rm -f ${includedir}/mpi_c_interface_glue.mod
+rm -f ${includedir}/mpi_c_interface_nobuf.mod
+rm -f ${includedir}/mpi_c_interface_types.mod
+rm ${includedir}/mpi_constants.mod
+rm -f ${includedir}/mpi_f08.mod
+rm -f ${includedir}/mpi_f08_callbacks.mod
+rm -f ${includedir}/mpi_f08_compile_constants.mod
+rm -f ${includedir}/mpi_f08_link_constants.mod
+rm -f ${includedir}/mpi_f08_types.mod
+rm ${includedir}/mpi_proto.h
+rm ${includedir}/mpi_sizeofs.mod
+rm ${includedir}/mpif.h
+rm ${includedir}/pmpi_base.mod
+rm -f ${includedir}/pmpi_f08.mod
+
+rm ${libdir}/libfmpich.*
+rm ${libdir}/libmpi.*
+rm ${libdir}/libmpich.*
+rm ${libdir}/libmpichcxx.*
+rm ${libdir}/libmpichf90.*
+rm ${libdir}/libmpifort.*
+rm ${libdir}/libmpl.*
+rm ${libdir}/libopa.*
+rm -f ${libdir}/libpmpi.*
+rm ${libdir}/pkgconfig/mpich.pc
+
+ls -lR ${prefix}
 
 # Install license
 install_license COPYRIGHT
