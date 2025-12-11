@@ -148,6 +148,8 @@ make install
 
 # Remove all that provide the MPICH ABI (instead of the MPI ABI)
 
+ls -lR ${prefix}
+
 rm ${bindir}/mpicc_abi
 rm ${bindir}/mpichversion       # needs libmpi.so
 rm ${bindir}/mpicxx_abi
@@ -163,22 +165,22 @@ rm ${includedir}/mpi.h
 rm ${includedir}/mpi.mod
 rm ${includedir}/mpi_abi.h
 rm ${includedir}/mpi_base.mod
-rm ${includedir}/mpi_c_interface.mod
-rm ${includedir}/mpi_c_interface_cdesc.mod
-rm ${includedir}/mpi_c_interface_glue.mod
-rm ${includedir}/mpi_c_interface_nobuf.mod
-rm ${includedir}/mpi_c_interface_types.mod
+rm -f ${includedir}/mpi_c_interface.mod
+rm -f ${includedir}/mpi_c_interface_cdesc.mod
+rm -f ${includedir}/mpi_c_interface_glue.mod
+rm -f ${includedir}/mpi_c_interface_nobuf.mod
+rm -f ${includedir}/mpi_c_interface_types.mod
 rm ${includedir}/mpi_constants.mod
-rm ${includedir}/mpi_f08.mod
-rm ${includedir}/mpi_f08_callbacks.mod
-rm ${includedir}/mpi_f08_compile_constants.mod
-rm ${includedir}/mpi_f08_link_constants.mod
-rm ${includedir}/mpi_f08_types.mod
+rm -f ${includedir}/mpi_f08.mod
+rm -f ${includedir}/mpi_f08_callbacks.mod
+rm -f ${includedir}/mpi_f08_compile_constants.mod
+rm -f ${includedir}/mpi_f08_link_constants.mod
+rm -f ${includedir}/mpi_f08_types.mod
 rm ${includedir}/mpi_proto.h
 rm ${includedir}/mpi_sizeofs.mod
 rm ${includedir}/mpif.h
 rm ${includedir}/pmpi_base.mod
-rm ${includedir}/pmpi_f08.mod
+rm -f ${includedir}/pmpi_f08.mod
 
 rm ${libdir}/libfmpich.*
 rm ${libdir}/libmpi.*
@@ -188,8 +190,10 @@ rm ${libdir}/libmpichf90.*
 rm ${libdir}/libmpifort.*
 rm ${libdir}/libmpl.*
 rm ${libdir}/libopa.*
-rm ${libdir}/libpmpi.* || true   # File does not exist on all architectures
+rm -f ${libdir}/libpmpi.*
 rm ${libdir}/pkgconfig/mpich.pc
+
+ls -lR ${prefix}
 
 # Install license
 install_license COPYRIGHT
