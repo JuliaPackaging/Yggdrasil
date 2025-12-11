@@ -43,7 +43,7 @@ products = [
     LibraryProduct("libuv", :libuv),
 ]
 
-llvm_version = v"13.0.1"
+llvm_version = v"13.0.1+1"
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
