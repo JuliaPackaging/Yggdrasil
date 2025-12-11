@@ -22,4 +22,4 @@ end
 
 build_sdk(name, version, full_platforms; static=true)
 
-# bump
+# bump!
