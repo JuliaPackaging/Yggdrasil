@@ -25,7 +25,7 @@ script *= raw"""
 cd ${WORKSPACE}/srcdir/arpack-ng*
 
 SYMBOL_DEFS=()
-if [[ ${ARPACK32} == true ]]; then
+if [[ ${ARPACK32} == false ]]; then
    # Symbols that have float32, float64, complexf32, and complexf64 support
    SDCZ_SYMBOLS=(
         axpy copy gemv geqr2 lacpy lahqr lanhs larnv lartg
@@ -77,7 +77,7 @@ fi
 mkdir build
 cd build
 export LDFLAGS="-L${libdir} -lpthread"
-cmake .. -DCMAKE_INSTALL_PREFIX="$prefix" \
+cmake .. -DCMAKE_INSTALL_PREFIX="${prefix}" \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" -DCMAKE_BUILD_TYPE=Release \
     -DEXAMPLES=OFF \
     -DBUILD_SHARED_LIBS=ON \
@@ -87,32 +87,6 @@ cmake .. -DCMAKE_INSTALL_PREFIX="$prefix" \
 
 make -j${nproc} VERBOSE=1
 make install VERBOSE=1
-
-# For now, we'll have to adjust the name of the Lbt library on macOS and FreeBSD.
-# Eventually, this should be fixed upstream
-if [[ ${target} == *-apple-* ]] || [[ ${target} == *freebsd* ]]; then
-    echo "-- Modifying library name for Lbt"
-
-    for nm in libarpack; do
-        # Figure out what version it probably latched on to:
-        if [[ ${target} == *-apple-* ]]; then
-            LBT_LINK=$(otool -L ${libdir}/${nm}.dylib | grep lib${LBT} | awk '{ print $1 }')
-            install_name_tool -change ${LBT_LINK} @rpath/lib${LBT}.dylib ${libdir}/${nm}.dylib
-        elif [[ ${target} == *freebsd* ]]; then
-            LBT_LINK=$(readelf -d ${libdir}/${nm}.so | grep lib${LBT} | sed -e 's/.*\[\(.*\)\].*/\1/')
-            patchelf --replace-needed ${LBT_LINK} lib${LBT}.so ${libdir}/${nm}.so
-        elif [[ ${target} == *linux* ]]; then
-            LBT_LINK=$(readelf -d ${libdir}/${nm}.so | grep lib${LBT} | sed -e 's/.*\[\(.*\)\].*/\1/')
-            patchelf --replace-needed ${LBT_LINK} lib${LBT}.so ${libdir}/${nm}.so
-        fi
-    done
-fi
-
-# Delete the extra soversion libraries built. https://github.com/JuliaPackaging/Yggdrasil/issues/7
-if [[ "${target}" == *-mingw* ]]; then
-    rm -f ${libdir}/lib*.*.${dlext}
-    rm -f ${libdir}/lib*.*.*.${dlext}
-fi
 """
 end # function build_script(...)
 
@@ -125,5 +99,5 @@ platforms = expand_gfortran_versions(supported_platforms())
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
+    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.12"),
 ]
