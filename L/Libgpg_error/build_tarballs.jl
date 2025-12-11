@@ -26,6 +26,8 @@ cp -iv src/syscfg/lock-obj-pub.i686-unknown-linux-gnu.h src/syscfg/lock-obj-pub.
 cp -iv src/syscfg/lock-obj-pub.aarch64-unknown-linux-gnu.h src/syscfg/lock-obj-pub.aarch64-unknown-linux-musl.h
 cp -iv src/syscfg/lock-obj-pub.arm-unknown-linux-gnueabi.h src/syscfg/lock-obj-pub.arm-unknown-linux-musleabihf.h
 cp -iv src/syscfg/lock-obj-pub.x86_64-unknown-linux-gnu.h src/syscfg/lock-obj-pub.freebsd13.2.h
+cp -iv src/syscfg/lock-obj-pub.x86_64-unknown-linux-gnu.h src/syscfg/lock-obj-pub.freebsd13.4.h
+cp -iv src/syscfg/lock-obj-pub.x86_64-unknown-linux-gnu.h src/syscfg/lock-obj-pub.freebsd14.1.h
 
 # Use libgpg-specific mapping for triplets
 TARGET="${target}"
