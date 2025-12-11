@@ -13,6 +13,7 @@ cd ${WORKSPACE}/srcdir/streamvbyte*
 
 mkdir build
 cmake \
+    -DBUILD_SHARED_LIBS=ON \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
