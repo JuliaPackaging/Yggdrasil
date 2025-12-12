@@ -5,6 +5,10 @@ function arpack_sources(version::VersionNumber; kwargs...)
     arpack_version_sources = Dict(
         v"3.9.1" => [
 	    GitSource("https://github.com/opencollab/arpack-ng.git",
+		      "9233f7f86f063ca6ca3793cb54dec590eb146e10"),
+        ],
+        v"3.9.1" => [
+	    GitSource("https://github.com/opencollab/arpack-ng.git",
 		      "40329031ae8deb7c1e26baf8353fa384fc37c251"),
         ]
     )
@@ -99,5 +103,5 @@ platforms = expand_gfortran_versions(supported_platforms())
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.12"),
+    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
 ]
