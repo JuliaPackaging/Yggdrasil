@@ -11,27 +11,23 @@ version = v"5.7.2"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/wolfSSL/wolfssl.git", "00e42151ca061463ba6a95adb2290f678cbca472"),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/wolfssl*
-atomic_patch -p1 ../patches/mingw32-link-with-ws2_32.patch
 
-mkdir build && cd build
-
-cmake .. \
--DCMAKE_INSTALL_PREFIX=${prefix} \
--DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
--DCMAKE_BUILD_TYPE=Release \
--DWOLFSSL_EXAMPLES=no \
--DWOLFSSL_CRYPT_TESTS=no \
--DBUILD_SHARED_LIBS=ON
+./autogen.sh
+CFLAGS="-msse4.2" ./configure \
+    --disable-crypttests \
+    --disable-examples \
+    --enable-maxfragment \
+    --enable-aesni \
+    --enable-intelasm \
+    --prefix=${prefix}
 
 make -j${nproc}
 make install
-
 """
 
 sources, script = require_macos_sdk("10.14", sources, script)
