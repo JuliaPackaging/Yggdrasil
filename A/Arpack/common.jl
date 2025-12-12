@@ -66,7 +66,7 @@ fi
 # Set up not only lowercase symbol remappings, but uppercase as well:
 SYMBOL_DEFS+=(${SYMBOL_DEFS[@]^^})
 
-FFLAGS="${FFLAGS} -O3 -fPIE -ffixed-line-length-none -fno-optimize-sibling-calls -cpp"
+FFLAGS="${FFLAGS} -O3 -fPIE -ffixed-line-length-none -fno-optimize-sibling-calls -fallow-argument-mismatch -cpp"
 
 if [[ "${target}" == *-mingw* ]]; then
     LBT=blastrampoline-5
