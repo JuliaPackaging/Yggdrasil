@@ -16,10 +16,10 @@ platforms = [Platform("x86_64", "linux"),
 full_platforms = Platform[]
 for platform in platforms
     augmented_platform = deepcopy(platform)
-    augmented_platform["cuda"] = "$(version.major)"
+    augmented_platform["cuda"] = "$(version.major).$(version.minor)"
     push!(full_platforms, augmented_platform)
 end
 
 build_sdk(name, version, full_platforms; static=true)
 
-# bump
+# bump!
