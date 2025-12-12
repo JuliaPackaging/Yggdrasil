@@ -19,11 +19,11 @@ cd $WORKSPACE/srcdir/wolfssl*
 
 ./autogen.sh
 
-ARCH=`echo ${target} | cut -f1 -d-`
-if [ $ARCH == "x86_64" ] ; then
+# NOTE: some non-x86_64 CPUs support AES-NI as well, but I don't know how to detect them
+# NOTE: assembly code has some ELF-specific instructions and doesn't compile for Windows
+if [ ${target} == x86_64-* ] && [ ${target} != *-w64-* ]; then
     ARCHFLAGS="--enable-aesni --enable-intelasm"
 else
-    # NOTE: some other CPUs support AES-NI as well, but I don't know how to detect them
     ARCHFLAGS=""
 fi
 ./configure \
@@ -37,6 +37,9 @@ fi
 
 make -j${nproc}
 make install
+
+mkdir -p ${prefix}/share/licenses/wolfSSL
+cp LICENSING ${prefix}/share/licenses/wolfSSL
 """
 
 sources, script = require_macos_sdk("10.14", sources, script)
