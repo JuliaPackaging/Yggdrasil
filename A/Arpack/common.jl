@@ -3,7 +3,7 @@ using Pkg
 # Collection of sources required to build Arpack
 function arpack_sources(version::VersionNumber; kwargs...)
     arpack_version_sources = Dict(
-        v"3.9.1" => [
+        v"3.5.0" => [
 	    GitSource("https://github.com/opencollab/arpack-ng.git",
 		      "9233f7f86f063ca6ca3793cb54dec590eb146e10"),
         ],
