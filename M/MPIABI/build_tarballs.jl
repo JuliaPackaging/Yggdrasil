@@ -254,7 +254,7 @@ augment_platform_block = """
         elseif binary == "OpenMPI_jll"
             "OpenMPI"
         else
-            error("Unknown binary: $binary")
+            error("Unknown binary: ", binary)
         end
 
         if !haskey(platform, "mpi")
