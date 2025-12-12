@@ -7,10 +7,10 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "t8code"
-version = v"3.0.1"
+version = v"4.0.0"
 
 tarball = "https://github.com/DLR-AMR/t8code/releases/download/v$(version)/T8CODE-$(version)-Source.tar.gz"
-sha256sum = "71732ac0f898feed1af8a81c2deac2e5031e37e94384d3e5b10d1b5861be24d0"
+sha256sum = "668536f82730a23fc6fd96ff13e64762b6b0890d04e99a7a38d66341332d5770"
 
 sources = [ArchiveSource(tarball, sha256sum), DirectorySource("./bundled")]
 
@@ -18,7 +18,6 @@ script = raw"""
 cd $WORKSPACE/srcdir/T8CODE*
 
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi-constants.patch"
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/p4est.patch"
 
 # Show CMake where to find `mpiexec`.
 if [[ "${target}" == *-mingw* ]]; then
@@ -28,7 +27,7 @@ fi
 cmake . \
       -B build \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
-      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake \
       -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_TESTING=OFF \
       -DP4EST_BUILD_TESTING=OFF \
@@ -37,6 +36,7 @@ cmake . \
       -DT8CODE_BUILD_DOCUMENTATION=OFF \
       -DT8CODE_BUILD_EXAMPLES=OFF \
       -DT8CODE_BUILD_EXAMPLES=OFF \
+      -DT8CODE_BUILD_FORTRAN_INTERFACE=ON \
       -DT8CODE_BUILD_TESTS=OFF \
       -DT8CODE_BUILD_TUTORIALS=OFF \
       -DT8CODE_ENABLE_MPI=ON \
@@ -55,8 +55,13 @@ augment_platform_block = """
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
+
 # p4est with MPI enabled does not compile for 32 bit Windows
-platforms = filter(p -> !(Sys.iswindows(p) && nbits(p) == 32), platforms)
+# newer t8code versions require MPI 3 whereas only 2 seems available for Windows
+platforms = filter(p -> !(Sys.iswindows(p)), platforms)
+
+# likewise for riscv64 only MPI 2 is available
+platforms = filter(p -> (arch(p) != "riscv64"), platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
 
