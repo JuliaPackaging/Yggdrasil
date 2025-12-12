@@ -28,7 +28,7 @@ cp -Rv inc/* "${includedir}"
 
 # TODO, can we add centos7?
 platforms = [
-    Platform("x86_64", "linux"),
+    Platform("x86_64", "linux"; libc_version=v"2.34"),
     Platform("x86_64", "macos"),
     Platform("aarch64", "macos"),
     Platform("x86_64", "windows")
@@ -72,4 +72,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.10")
