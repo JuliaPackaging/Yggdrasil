@@ -18,13 +18,22 @@ script = raw"""
 cd $WORKSPACE/srcdir/wolfssl*
 
 ./autogen.sh
-CFLAGS="-msse4.2" ./configure \
+
+ARCH=`echo ${target} | cut -f1 -d-`
+if [ $ARCH == "x86_64" ] ; then
+    ARCHFLAGS="--enable-aesni --enable-intelasm"
+else
+    # NOTE: some other CPUs support AES-NI as well, but I don't know how to detect them
+    ARCHFLAGS=""
+fi
+./configure \
+    --prefix=${prefix} \
+    --build=${MACHTYPE} \
+    --host=${target} \
     --disable-crypttests \
     --disable-examples \
     --enable-maxfragment \
-    --enable-aesni \
-    --enable-intelasm \
-    --prefix=${prefix}
+    $ARCHFLAGS
 
 make -j${nproc}
 make install
@@ -46,4 +55,5 @@ products = [
 dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+# NOTE: recent gcc produces faster code than ancient ones, pick something fresh
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"14.2.0")
