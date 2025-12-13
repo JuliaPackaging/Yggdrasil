@@ -134,6 +134,13 @@ platforms = expand_cxxstring_abis(supported_platforms(; exclude=[
     # and tries to use D-Bus, which isn't available on FreeBSD
     Platform("x86_64", "freebsd"),
     Platform("aarch64", "freebsd"),
+    # Windows excluded: Tracy v0.13's CMake build + CPM dependencies have multiple
+    # MinGW cross-compilation issues:
+    # - x86_64: __lzcnt64 intrinsic requires -mlzcnt flag (TracyPopcnt.hpp)
+    # - i686: usearch library uses case-sensitive #include <Windows.h> (should be windows.h)
+    # - i686: PE/COFF "too many sections" error (needs -Wa,-mbig-obj)
+    Platform("x86_64", "windows"),
+    Platform("i686", "windows"),
 ]))
 
 products = [
