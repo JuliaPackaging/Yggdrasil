@@ -3,36 +3,40 @@
 using BinaryBuilder, Pkg
 
 name = "TracyProfiler"
-version = v"0.9.1"
+version = v"0.13.1"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/wolfpld/tracy.git",
-              "897aec5b062664d2485f4f9a213715d2e527e0ca"), # v0.9.1
+              "05cceee0df3b8d7c6fa87e9638af311dbabc63cb"), # v0.13.1
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.0.sdk.tar.xz",
                   "d3feee3ef9c6016b526e1901013f264467bb927865a03422a9cb925991cc9783"),
-    DirectorySource("./bundled"),
 ]
 
 script = raw"""
-mkdir -vp $bindir
-
 cd $WORKSPACE/srcdir/tracy*/
 
-export TRACY_NO_ISA_EXTENSIONS=1
-export DEFINES="-D__STDC_FORMAT_MACROS -DNO_PARALLEL_SORT"
+# Common CMake flags
+CMAKE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_INSTALL_PREFIX=${prefix}
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+    -DNO_ISA_EXTENSIONS=ON
+    -DLEGACY=ON
+    -DTRACY_PATCHABLE_NOPSLEDS=ON
+    -DDOWNLOAD_CAPSTONE=OFF
+)
+
+# Platform-specific settings
 if [[ "${target}" == *-mingw* ]]; then
-    export TRACY_NO_LTO=1
-    export DEFINES="-DWINVER=0x0601 -D_WIN32_WINNT=0x0601 -DNO_PARALLEL_SORT"
-    atomic_patch -p1 ../patches/TracyProfiler-mingw32-win.patch
+    # Windows-specific flags
+    CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="-DWINVER=0x0601 -D_WIN32_WINNT=0x0601")
 elif [[ "${target}" == *-apple-darwin* ]]; then
-    export TRACY_NO_LTO=1
-    export MACOSX_DEPLOYMENT_TARGET=11.0
+    export MACOSX_DEPLOYMENT_TARGET=13.3
 fi
 
+# Install newer macOS SDK for x86_64 darwin
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    echo "Installing newer MacOS 11.0 SDK"
-
     pushd $WORKSPACE/srcdir/MacOSX11.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
     rm -rf /opt/${target}/${target}/sys-root/usr/include/libxml2/libxml
@@ -41,30 +45,30 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     popd
 fi
 
-atomic_patch -p1 ../patches/TracyProfiler-nfd-extended-1.0.2.patch
-atomic_patch -p1 ../patches/TracyProfiler-filter-user-text.patch
-atomic_patch -p1 ../patches/TracyProfiler-no-divide-zero.patch
-atomic_patch -p1 ../patches/TracyProfiler-rr-nopl-seq.patch
+# Build profiler
+cmake -S profiler -B build/profiler "${CMAKE_FLAGS[@]}"
+cmake --build build/profiler --parallel ${nproc}
+install -Dm755 build/profiler/tracy-profiler${exeext} ${bindir}/tracy${exeext}
 
-# Build / install the profiler GUI
-make -e -j${nproc} -C profiler/build/unix LEGACY=1 IMAGE=tracy release
-cp -v ./profiler/build/unix/tracy* $bindir
+# Build capture utility
+cmake -S capture -B build/capture "${CMAKE_FLAGS[@]}"
+cmake --build build/capture --parallel ${nproc}
+install -Dm755 build/capture/tracy-capture${exeext} ${bindir}/tracy-capture${exeext}
 
-# Build / install the update utility
-make -e -j${nproc} -C update/build/unix IMAGE=tracy-update release
-cp -v ./update/build/unix/tracy* $bindir
+# Build update utility
+cmake -S update -B build/update "${CMAKE_FLAGS[@]}"
+cmake --build build/update --parallel ${nproc}
+install -Dm755 build/update/tracy-update${exeext} ${bindir}/tracy-update${exeext}
 
-# Build / install the capture utility
-make -e -j${nproc} -C capture/build/unix IMAGE=tracy-capture release
-cp -v ./capture/build/unix/tracy* $bindir
+# Build csvexport utility
+cmake -S csvexport -B build/csvexport "${CMAKE_FLAGS[@]}"
+cmake --build build/csvexport --parallel ${nproc}
+install -Dm755 build/csvexport/tracy-csvexport${exeext} ${bindir}/tracy-csvexport${exeext}
 
-# Build / install the csvexport utility
-make -e -j${nproc} -C csvexport/build/unix IMAGE=tracy-csvexport release
-cp -v ./csvexport/build/unix/tracy* $bindir
-
-# Build / install the import-chrome utility
-make -e -j${nproc} -C import-chrome/build/unix IMAGE=tracy-import-chrome release
-cp -v ./import-chrome/build/unix/tracy* $bindir
+# Build import utilities
+cmake -S import -B build/import "${CMAKE_FLAGS[@]}"
+cmake --build build/import --parallel ${nproc}
+install -Dm755 build/import/tracy-import-chrome${exeext} ${bindir}/tracy-import-chrome${exeext}
 
 install_license LICENSE
 """
@@ -85,17 +89,18 @@ products = [
     ExecutableProduct("tracy-import-chrome", :import_chrome),
 ]
 
-x11_platforms = filter(p ->Sys.islinux(p) || Sys.isfreebsd(p), platforms)
+x11_platforms = filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)
 
 dependencies = [
     Dependency("Capstone_jll"),
     Dependency("FreeType2_jll"; compat="2.10.4"),
-    Dependency("Dbus_jll", platforms=filter(Sys.islinux, platforms)),
+    Dependency("Dbus_jll"; platforms=filter(Sys.islinux, platforms)),
     Dependency("GLFW_jll"),
     # Needed for `pkg-config glfw3`
-    Dependency("Xorg_xproto_jll", platforms=x11_platforms),
-    Dependency("Xorg_kbproto_jll", platforms=x11_platforms),
+    Dependency("Xorg_xproto_jll"; platforms=x11_platforms),
+    Dependency("Xorg_kbproto_jll"; platforms=x11_platforms),
 ]
 
-# requires std-c++17, full support in gcc 7+, clang 8+
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8")
+# Tracy v0.13+ requires C++20, which needs GCC 10+
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"10")
