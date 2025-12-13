@@ -36,6 +36,12 @@ if [[ "${target}" == *-mingw* ]]; then
     CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="-DWINVER=0x0601 -D_WIN32_WINNT=0x0601")
 elif [[ "${target}" == *-apple-darwin* ]]; then
     export MACOSX_DEPLOYMENT_TARGET=13.3
+elif [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
+    # Help CMake find X11 in BinaryBuilder environment
+    CMAKE_FLAGS+=(
+        -DX11_X11_INCLUDE_PATH=${includedir}
+        -DX11_X11_LIB=${libdir}/libX11.${dlext}
+    )
 fi
 
 # Install newer macOS SDK for x86_64 darwin
