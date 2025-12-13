@@ -71,6 +71,9 @@ fi
 # Apply patch to skip ExternalProject for embed if pre-built binary exists
 atomic_patch -p1 ../patches/cross-compile-embed.patch
 
+# Apply patch to fix MSVC-specific /MP flag on MinGW
+atomic_patch -p1 ../patches/mingw-no-msvc-flags.patch
+
 # Pre-build the 'embed' helper tool with the host compiler.
 # This tool embeds fonts/manual/prompts into C++ source during the build.
 # CMake's ExternalProject would build it for the target architecture, which fails
