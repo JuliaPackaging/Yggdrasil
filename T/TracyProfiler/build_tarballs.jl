@@ -39,15 +39,24 @@ elif [[ "${target}" == *-apple-darwin* ]]; then
     export MACOSX_DEPLOYMENT_TARGET=13.3
     # Disable LTO on macOS - Tracy enables it by default in Release mode, but it causes
     # CMAKE_C_COMPILER_AR-NOTFOUND errors in BinaryBuilder cross-compilation because
-    # CPM-downloaded dependencies (zstd, tidy) don't respect the toolchain file properly
+    # CPM-downloaded dependencies (zstd, tidy) don't respect the toolchain file properly.
+    # We need to:
+    # 1. Disable LTO via CMake flag
+    # 2. Also disable LTO via compiler flags (for CPM deps that ignore CMake settings)
+    # 3. Export AR/RANLIB as env vars (CMake cache vars don't propagate to ExternalProject)
+    export AR="${AR}"
+    export RANLIB="${RANLIB}"
+    export CFLAGS="${CFLAGS} -fno-lto"
+    export CXXFLAGS="${CXXFLAGS} -fno-lto"
+    export LDFLAGS="${LDFLAGS} -fno-lto"
     CMAKE_FLAGS+=(
         -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF
-        -DCMAKE_AR=${AR}
-        -DCMAKE_C_COMPILER_AR=${AR}
-        -DCMAKE_CXX_COMPILER_AR=${AR}
-        -DCMAKE_RANLIB=${RANLIB}
-        -DCMAKE_C_COMPILER_RANLIB=${RANLIB}
-        -DCMAKE_CXX_COMPILER_RANLIB=${RANLIB}
+        -DCMAKE_AR="${AR}"
+        -DCMAKE_C_COMPILER_AR="${AR}"
+        -DCMAKE_CXX_COMPILER_AR="${AR}"
+        -DCMAKE_RANLIB="${RANLIB}"
+        -DCMAKE_C_COMPILER_RANLIB="${RANLIB}"
+        -DCMAKE_CXX_COMPILER_RANLIB="${RANLIB}"
     )
 elif [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
     # Help CMake find X11 in BinaryBuilder environment
