@@ -42,9 +42,9 @@ elif [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
         -DX11_X11_INCLUDE_PATH=${includedir}
         -DX11_X11_LIB=${libdir}/libX11.${dlext}
     )
-    # Add X11 include path via environment variables (CMake picks these up)
-    export CXXFLAGS="-I${includedir} ${CXXFLAGS}"
-    export CFLAGS="-I${includedir} ${CFLAGS}"
+    # Add X11 include path and __STDC_FORMAT_MACROS for PRIu64 etc.
+    export CXXFLAGS="-I${includedir} -D__STDC_FORMAT_MACROS ${CXXFLAGS}"
+    export CFLAGS="-I${includedir} -D__STDC_FORMAT_MACROS ${CFLAGS}"
 fi
 
 # Install newer macOS SDK for x86_64 darwin
