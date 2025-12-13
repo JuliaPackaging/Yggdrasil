@@ -33,8 +33,17 @@ CMAKE_FLAGS=(
 
 # Platform-specific settings
 if [[ "${target}" == *-mingw* ]]; then
-    # Windows-specific flags
-    CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="-DWINVER=0x0601 -D_WIN32_WINNT=0x0601")
+    # Windows-specific flags - note WINVER/WIN32_WINNT may already be defined by toolchain
+    MINGW_CFLAGS="-DWINVER=0x0601 -D_WIN32_WINNT=0x0601"
+
+    # i686 needs -Wa,-mbig-obj to handle large object files (PE/COFF section limit)
+    if [[ "${target}" == i686-* ]]; then
+        MINGW_CFLAGS="${MINGW_CFLAGS} -Wa,-mbig-obj"
+        # Create Windows.h symlink for case-sensitive includes (usearch library uses <Windows.h>)
+        ln -sf windows.h /opt/${target}/${target}/sys-root/include/Windows.h
+    fi
+
+    CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="${MINGW_CFLAGS}" -DCMAKE_C_FLAGS="${MINGW_CFLAGS}")
 elif [[ "${target}" == *-apple-darwin* ]]; then
     export MACOSX_DEPLOYMENT_TARGET=13.3
     # Disable LTO on macOS - Tracy enables it by default in Release mode, but it causes
@@ -92,6 +101,9 @@ atomic_patch -p1 ../patches/cross-compile-embed.patch
 # Apply patch to fix MSVC-specific /MP flag on MinGW
 atomic_patch -p1 ../patches/mingw-no-msvc-flags.patch
 
+# Apply patch to fix TracyPopcnt.hpp for MinGW (use GCC builtins instead of MSVC intrinsics)
+atomic_patch -p1 ../patches/mingw-popcnt.patch
+
 # Pre-build the 'embed' helper tool with the host compiler.
 # This tool embeds fonts/manual/prompts into C++ source during the build.
 # CMake's ExternalProject would build it for the target architecture, which fails
@@ -143,13 +155,6 @@ platforms = expand_cxxstring_abis(supported_platforms(; exclude=[
     # and tries to use D-Bus, which isn't available on FreeBSD
     Platform("x86_64", "freebsd"),
     Platform("aarch64", "freebsd"),
-    # Windows excluded: Tracy v0.13's CMake build + CPM dependencies have multiple
-    # MinGW cross-compilation issues:
-    # - x86_64: __lzcnt64 intrinsic requires -mlzcnt flag (TracyPopcnt.hpp)
-    # - i686: usearch library uses case-sensitive #include <Windows.h> (should be windows.h)
-    # - i686: PE/COFF "too many sections" error (needs -Wa,-mbig-obj)
-    Platform("x86_64", "windows"),
-    Platform("i686", "windows"),
 ]))
 
 products = [
