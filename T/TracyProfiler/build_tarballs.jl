@@ -109,6 +109,6 @@ dependencies = [
     BuildDependency("OpenSSL_jll"),
 ]
 
-# Tracy v0.13+ requires C++20, which needs GCC 10+
+# Tracy v0.13+ requires C++20 with <latch> support, which needs GCC 11+
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"10")
+               julia_compat="1.6", preferred_gcc_version=v"11")
