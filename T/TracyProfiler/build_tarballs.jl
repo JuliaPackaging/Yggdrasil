@@ -45,6 +45,8 @@ elif [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
     # Add X11 include path and __STDC_FORMAT_MACROS for PRIu64 etc.
     export CXXFLAGS="-I${includedir} -D__STDC_FORMAT_MACROS ${CXXFLAGS}"
     export CFLAGS="-I${includedir} -D__STDC_FORMAT_MACROS ${CFLAGS}"
+    # Link against libdl for dlclose/dlopen on glibc
+    export LDFLAGS="-ldl ${LDFLAGS}"
 fi
 
 # Install newer macOS SDK for x86_64 darwin
