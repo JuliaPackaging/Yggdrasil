@@ -101,9 +101,12 @@ dependencies = [
     Dependency("Dbus_jll"; platforms=filter(Sys.islinux, platforms)),
     Dependency("GLFW_jll"),
     Dependency("LibCURL_jll"),
-    # Needed for `pkg-config glfw3`
-    Dependency("Xorg_xproto_jll"; platforms=x11_platforms),
-    Dependency("Xorg_kbproto_jll"; platforms=x11_platforms),
+    # X11 dependencies for GLFW on Linux (needed for imgui_impl_glfw.cpp)
+    Dependency("Xorg_libX11_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libXrandr_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libXinerama_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libXcursor_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libXi_jll"; platforms=x11_platforms),
     # Tracy v0.13+ requires CMake 3.25+
     HostBuildDependency(PackageSpec(; name="CMake_jll")),
 ]
