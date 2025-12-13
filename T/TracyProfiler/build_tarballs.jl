@@ -99,6 +99,8 @@ dependencies = [
     # Needed for `pkg-config glfw3`
     Dependency("Xorg_xproto_jll"; platforms=x11_platforms),
     Dependency("Xorg_kbproto_jll"; platforms=x11_platforms),
+    # Tracy v0.13+ requires CMake 3.25+
+    HostBuildDependency(PackageSpec(; name="CMake_jll")),
 ]
 
 # Tracy v0.13+ requires C++20, which needs GCC 10+
