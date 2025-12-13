@@ -41,6 +41,7 @@ elif [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
     CMAKE_FLAGS+=(
         -DX11_X11_INCLUDE_PATH=${includedir}
         -DX11_X11_LIB=${libdir}/libX11.${dlext}
+        -DCMAKE_CXX_FLAGS="-I${includedir}"
     )
 fi
 
