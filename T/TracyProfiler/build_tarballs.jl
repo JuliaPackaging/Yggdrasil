@@ -116,6 +116,8 @@ dependencies = [
     Dependency("Xorg_libXinerama_jll"; platforms=x11_platforms),
     Dependency("Xorg_libXcursor_jll"; platforms=x11_platforms),
     Dependency("Xorg_libXi_jll"; platforms=x11_platforms),
+    # X11 protocol headers (provides X11/Xatom.h, etc.)
+    BuildDependency("Xorg_xorgproto_jll"; platforms=x11_platforms),
     # Tracy v0.13+ requires CMake 3.25+
     HostBuildDependency(PackageSpec(; name="CMake_jll")),
 ]
