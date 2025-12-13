@@ -104,6 +104,9 @@ dependencies = [
     Dependency("Xorg_kbproto_jll"; platforms=x11_platforms),
     # Tracy v0.13+ requires CMake 3.25+
     HostBuildDependency(PackageSpec(; name="CMake_jll")),
+    # OpenSSL needed because Tracy downloads and builds libcurl from source (via CPM)
+    # for its LLM features, and libcurl requires OpenSSL
+    BuildDependency("OpenSSL_jll"),
 ]
 
 # Tracy v0.13+ requires C++20, which needs GCC 10+
