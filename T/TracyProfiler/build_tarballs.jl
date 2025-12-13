@@ -16,6 +16,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/tracy*/
 
+# Use CMake >= 3.25 from CMake_jll instead of system cmake
+apk del cmake
+
 # Common CMake flags
 CMAKE_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release
