@@ -37,9 +37,18 @@ if [[ "${target}" == *-mingw* ]]; then
     CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="-DWINVER=0x0601 -D_WIN32_WINNT=0x0601")
 elif [[ "${target}" == *-apple-darwin* ]]; then
     export MACOSX_DEPLOYMENT_TARGET=13.3
-    # Disable LTO on macOS - Tracy enables it by default in Release mode, but it
-    # causes CMAKE_CXX_COMPILER_AR-NOTFOUND errors in BinaryBuilder cross-compilation
-    CMAKE_FLAGS+=(-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF)
+    # Disable LTO on macOS - Tracy enables it by default in Release mode, but it causes
+    # CMAKE_C_COMPILER_AR-NOTFOUND errors in BinaryBuilder cross-compilation because
+    # CPM-downloaded dependencies (zstd, tidy) don't respect the toolchain file properly
+    CMAKE_FLAGS+=(
+        -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF
+        -DCMAKE_AR=${AR}
+        -DCMAKE_C_COMPILER_AR=${AR}
+        -DCMAKE_CXX_COMPILER_AR=${AR}
+        -DCMAKE_RANLIB=${RANLIB}
+        -DCMAKE_C_COMPILER_RANLIB=${RANLIB}
+        -DCMAKE_CXX_COMPILER_RANLIB=${RANLIB}
+    )
 elif [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
     # Help CMake find X11 in BinaryBuilder environment
     CMAKE_FLAGS+=(
@@ -121,7 +130,10 @@ platforms = expand_cxxstring_abis(supported_platforms(; exclude=[
     Platform("armv6l", "linux"; libc=:musl),
     Platform("armv7l", "linux"),
     Platform("armv7l", "linux"; libc=:musl),
+    # FreeBSD excluded: NFD (Native File Dialog) misdetects FreeBSD as Linux
+    # and tries to use D-Bus, which isn't available on FreeBSD
     Platform("x86_64", "freebsd"),
+    Platform("aarch64", "freebsd"),
 ]))
 
 products = [

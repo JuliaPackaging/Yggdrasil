@@ -3,7 +3,7 @@ index 2216a8b..1234567 100644
 --- a/cmake/config.cmake
 +++ b/cmake/config.cmake
 @@ -35,7 +35,10 @@ endif()
- 
+
  if(WIN32)
      add_definitions(-DNOMINMAX -DWIN32_LEAN_AND_MEAN -D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR)
 -    add_compile_options(/MP)
@@ -12,6 +12,5 @@ index 2216a8b..1234567 100644
 +        add_compile_options(/MP)
 +    endif()
  endif()
- 
- if(EMSCRIPTEN)
 
+ if(EMSCRIPTEN)
