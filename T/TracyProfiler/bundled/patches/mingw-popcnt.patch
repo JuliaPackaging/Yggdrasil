@@ -1,9 +1,9 @@
 --- a/server/TracyPopcnt.hpp
 +++ b/server/TracyPopcnt.hpp
-@@ -4,16 +4,16 @@
+@@ -4,11 +4,7 @@
  #include <limits.h>
  #include <stdint.h>
-
+ 
 -#if defined _WIN64
 -#  include <intrin.h>
 -#  define TracyCountBits __popcnt64
@@ -13,8 +13,7 @@
  static inline uint64_t TracyCountBits( uint64_t i )
  {
      return uint64_t( __builtin_popcountll( i ) );
- }
- static inline uint64_t TracyLzcnt( uint64_t i )
+@@ -17,6 +13,10 @@
  {
      return uint64_t( __builtin_clzll( i ) );
  }
