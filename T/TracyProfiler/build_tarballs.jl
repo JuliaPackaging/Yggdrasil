@@ -59,6 +59,22 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     popd
 fi
 
+# Pre-build the 'embed' helper tool with the host compiler
+# This tool is used during the build to embed fonts/manual/prompts into C++ source.
+# CMake's ExternalProject_Add would build it for the target, which fails during cross-compilation.
+echo "Building embed helper for host..."
+mkdir -p build/embed-host
+${CXX_BUILD:-c++} -std=c++20 -O2 \
+    -I public/common \
+    public/common/tracy_lz4.cpp \
+    public/common/tracy_lz4hc.cpp \
+    profiler/helpers/embed.cpp \
+    -o build/embed-host/embed
+
+# Create the directory structure CMake expects and copy the pre-built embed
+mkdir -p build/profiler
+cp build/embed-host/embed build/profiler/embed
+
 # Build profiler
 cmake -S profiler -B build/profiler "${CMAKE_FLAGS[@]}"
 cmake --build build/profiler --parallel ${nproc}
