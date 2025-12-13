@@ -4,15 +4,10 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "slope"
-version = v"5.1.1"
-
-# See https://github.com/JuliaLang/Pkg.jl/issues/2942
-# Once this Pkg issue is resolved, this must be removed
-uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
-delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
+version = v"6.2.1"
 
 sources = [
-    GitSource("https://github.com/jolars/libslope.git", "e668b0891ff744cad2d1b3fbf13bf2ec534f1518"),
+    GitSource("https://github.com/jolars/libslope.git", "5736dcf59ddb483dd89198d949ec0c12779346db"),
 ]
 
 # Bash recipe for building across all platforms
