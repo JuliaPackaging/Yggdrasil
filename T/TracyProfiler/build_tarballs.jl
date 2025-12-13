@@ -43,6 +43,11 @@ elif [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
         -DX11_X11_INCLUDE_PATH=${includedir}
         -DX11_X11_LIB=${libdir}/libX11.${dlext}
     )
+    # Disable Wayland in GLFW when built from source (via CPM).
+    # wayland-scanner is a host tool not available in cross-compilation.
+    # This is needed because pkg-config often can't find GLFW_jll, causing CPM
+    # to download and build GLFW from source.
+    CMAKE_FLAGS+=(-DGLFW_BUILD_WAYLAND=OFF)
     # Add X11 include path and __STDC_FORMAT_MACROS for PRIu64 etc.
     export CXXFLAGS="-I${includedir} -D__STDC_FORMAT_MACROS ${CXXFLAGS}"
     export CFLAGS="-I${includedir} -D__STDC_FORMAT_MACROS ${CFLAGS}"
