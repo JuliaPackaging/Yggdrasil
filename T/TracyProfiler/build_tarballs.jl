@@ -27,7 +27,7 @@ CMAKE_FLAGS=(
     -DNO_ISA_EXTENSIONS=ON
     -DLEGACY=ON
     -DTRACY_PATCHABLE_NOPSLEDS=ON
-    -DDOWNLOAD_CAPSTONE=OFF
+    -DDOWNLOAD_LIBCURL=OFF
 )
 
 # Platform-specific settings
@@ -95,18 +95,17 @@ products = [
 x11_platforms = filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)
 
 dependencies = [
-    Dependency("Capstone_jll"),
+    # Note: Tracy v0.13+ needs Capstone 6.x (AARCH64 naming), but Capstone_jll is 4.x
+    # So we let Tracy download Capstone 6.x via CPM instead
     Dependency("FreeType2_jll"; compat="2.10.4"),
     Dependency("Dbus_jll"; platforms=filter(Sys.islinux, platforms)),
     Dependency("GLFW_jll"),
+    Dependency("LibCURL_jll"),
     # Needed for `pkg-config glfw3`
     Dependency("Xorg_xproto_jll"; platforms=x11_platforms),
     Dependency("Xorg_kbproto_jll"; platforms=x11_platforms),
     # Tracy v0.13+ requires CMake 3.25+
     HostBuildDependency(PackageSpec(; name="CMake_jll")),
-    # OpenSSL needed because Tracy downloads and builds libcurl from source (via CPM)
-    # for its LLM features, and libcurl requires OpenSSL
-    BuildDependency("OpenSSL_jll"),
 ]
 
 # Tracy v0.13+ requires C++20 with <latch> support, which needs GCC 11+
