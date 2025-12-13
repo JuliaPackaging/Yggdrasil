@@ -37,6 +37,9 @@ if [[ "${target}" == *-mingw* ]]; then
     CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="-DWINVER=0x0601 -D_WIN32_WINNT=0x0601")
 elif [[ "${target}" == *-apple-darwin* ]]; then
     export MACOSX_DEPLOYMENT_TARGET=13.3
+    # Disable LTO on macOS - Tracy enables it by default in Release mode, but it
+    # causes CMAKE_CXX_COMPILER_AR-NOTFOUND errors in BinaryBuilder cross-compilation
+    CMAKE_FLAGS+=(-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF)
 elif [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
     # Help CMake find X11 in BinaryBuilder environment
     CMAKE_FLAGS+=(
