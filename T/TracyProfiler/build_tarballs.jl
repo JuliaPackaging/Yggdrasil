@@ -33,17 +33,13 @@ CMAKE_FLAGS=(
 
 # Platform-specific settings
 if [[ "${target}" == *-mingw* ]]; then
-    # Windows-specific flags - note WINVER/WIN32_WINNT may already be defined by toolchain
-    MINGW_CFLAGS="-DWINVER=0x0601 -D_WIN32_WINNT=0x0601"
-
     # i686 needs -Wa,-mbig-obj to handle large object files (PE/COFF section limit)
     if [[ "${target}" == i686-* ]]; then
-        MINGW_CFLAGS="${MINGW_CFLAGS} -Wa,-mbig-obj"
+        CMAKE_FLAGS+=(-DCMAKE_C_FLAGS="-Wa,-mbig-obj" -DCMAKE_CXX_FLAGS="-Wa,-mbig-obj")
         # Create Windows.h symlink for case-sensitive includes (usearch library uses <Windows.h>)
         ln -sf windows.h /opt/${target}/${target}/sys-root/include/Windows.h
     fi
-
-    CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="${MINGW_CFLAGS}" -DCMAKE_C_FLAGS="${MINGW_CFLAGS}")
+    # Note: WINVER/_WIN32_WINNT are already defined by BinaryBuilder toolchain, don't redefine
 elif [[ "${target}" == *-apple-darwin* ]]; then
     export MACOSX_DEPLOYMENT_TARGET=13.3
     # Disable LTO on macOS - Tracy enables it by default in Release mode, but it causes
