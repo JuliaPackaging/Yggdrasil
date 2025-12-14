@@ -3,7 +3,7 @@
 @@ -4,11 +4,7 @@
  #include <limits.h>
  #include <stdint.h>
-
+ 
 -#if defined _WIN64
 -#  include <intrin.h>
 -#  define TracyCountBits __popcnt64
