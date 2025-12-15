@@ -19,7 +19,7 @@ cmake --build build --parallel ${nprocs}
 cmake --install build
 """
 
-platforms = supported_platforms()
+platforms = [AnyPlatform()]
 
 # This is a header-only library with no build products
 products = Product[]
