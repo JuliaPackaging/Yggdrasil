@@ -19,9 +19,7 @@ cmake --build build --parallel ${nprocs}
 cmake --install build
 """
 
-platforms = supported_platforms()
-# platforms = expand_cxxstring_abis(platforms)
-# platforms = expand_gfortran_versions(platforms)
+platforms = [AnyPlatform()]
 
 # This is a header-only library with no build products
 products = Product[]
