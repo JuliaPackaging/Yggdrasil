@@ -144,6 +144,9 @@ platforms = expand_cxxstring_abis(supported_platforms(; exclude=[
     Platform("armv6l", "linux"; libc=:musl),
     Platform("armv7l", "linux"),
     Platform("armv7l", "linux"; libc=:musl),
+    # riscv64 excluded: LibCURL_jll doesn't appear to be available for this platform
+    Platform("riscv64", "linux"),
+    Platform("riscv64", "linux"; libc=:musl),
     # FreeBSD excluded: NFD (Native File Dialog) misdetects FreeBSD as Linux
     # and tries to use D-Bus, which isn't available on FreeBSD
     Platform("x86_64", "freebsd"),
