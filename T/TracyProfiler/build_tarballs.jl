@@ -52,10 +52,13 @@ if [[ "${target}" == *-mingw* ]]; then
     CMAKE_FLAGS+=(
         -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF
         -DCMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE=OFF
-        # Link against Winsock2 for socket functions - must use CMAKE_CXX_STANDARD_LIBRARIES
+        # Link against Windows libraries - must use CMAKE_CXX_STANDARD_LIBRARIES
         # which gets appended at the END of the link line (GCC linker order matters)
-        "-DCMAKE_CXX_STANDARD_LIBRARIES=-lws2_32"
-        "-DCMAKE_C_STANDARD_LIBRARIES=-lws2_32"
+        # - ws2_32: Winsock2 for socket functions
+        # - ole32: COM functions (CoInitializeEx, CoCreateInstance, etc.) for NFD
+        # - uuid: COM GUIDs (CLSID_FileOpenDialog, IID_IFileSaveDialog, etc.) for NFD
+        "-DCMAKE_CXX_STANDARD_LIBRARIES=-lws2_32 -lole32 -luuid"
+        "-DCMAKE_C_STANDARD_LIBRARIES=-lws2_32 -lole32 -luuid"
     )
     # Note: WINVER/_WIN32_WINNT are already defined by BinaryBuilder toolchain, don't redefine
 elif [[ "${target}" == *-apple-darwin* ]]; then
