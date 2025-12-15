@@ -2,6 +2,8 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+include("../../platforms/macos_sdks.jl")
+
 name = "TracyProfiler"
 version = v"0.13.1"
 
@@ -9,10 +11,10 @@ version = v"0.13.1"
 sources = [
     GitSource("https://github.com/wolfpld/tracy.git",
               "05cceee0df3b8d7c6fa87e9638af311dbabc63cb"), # v0.13.1
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.0.sdk.tar.xz",
-                  "d3feee3ef9c6016b526e1901013f264467bb927865a03422a9cb925991cc9783"),
     DirectorySource("./bundled"),
 ]
+# Add macOS 14.0 SDK for C++20 <ranges> support (needed by ppqsort)
+append!(sources, get_macos_sdk_sources("14.0"))
 
 script = raw"""
 cd $WORKSPACE/srcdir/tracy*/
@@ -82,14 +84,18 @@ elif [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
     export LDFLAGS="-ldl ${LDFLAGS}"
 fi
 
-# Install newer macOS SDK for x86_64 darwin
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    pushd $WORKSPACE/srcdir/MacOSX11.*.sdk
+# Install macOS 14.0 SDK for C++20 <ranges> support (needed by ppqsort)
+if [[ "${target}" == *-apple-darwin* ]]; then
+    echo "Extracting MacOSX14.0.sdk.tar.xz (this may take a while)"
     rm -rf /opt/${target}/${target}/sys-root/System
     rm -rf /opt/${target}/${target}/sys-root/usr/include/libxml2/libxml
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    popd
+    tar --extract \
+        --file=${WORKSPACE}/srcdir/MacOSX14.0.sdk.tar.xz \
+        --directory="/opt/${target}/${target}/sys-root/." \
+        --strip-components=1 \
+        --warning=no-unknown-keyword \
+        MacOSX14.0.sdk/System \
+        MacOSX14.0.sdk/usr
 fi
 
 # Apply patch to skip ExternalProject for embed if pre-built binary exists
