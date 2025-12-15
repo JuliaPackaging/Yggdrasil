@@ -122,6 +122,9 @@ atomic_patch -p1 ../patches/mingw-no-msvc-flags.patch
 # Apply patch to fix TracyPopcnt.hpp for MinGW (use GCC builtins instead of MSVC intrinsics)
 atomic_patch -p1 ../patches/mingw-popcnt.patch
 
+# Apply patch to fix 32-bit MinGW build (IMAGEHLP_LINE -> IMAGEHLP_LINE64 for SymGetLineFromAddr64)
+atomic_patch -p1 ../patches/mingw-imagehlp-line64.patch
+
 # Pre-build the 'embed' helper tool with the host compiler.
 # This tool embeds fonts/manual/prompts into C++ source during the build.
 # CMake's ExternalProject would build it for the target architecture, which fails
