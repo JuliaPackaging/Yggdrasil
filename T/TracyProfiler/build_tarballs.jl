@@ -49,8 +49,13 @@ elif [[ "${target}" == *-apple-darwin* ]]; then
     # 1. Disable LTO via CMake flag
     # 2. Also disable LTO via compiler flags (for CPM deps that ignore CMake settings)
     # 3. Export AR/RANLIB as env vars (CMake cache vars don't propagate to ExternalProject)
+    # 4. Export CC/CXX explicitly (CPM deps may not inherit toolchain compiler settings)
+    # 5. Disable ccache (it fails to find compiler in CPM sub-builds)
     export AR="${AR}"
     export RANLIB="${RANLIB}"
+    export CC="${CC}"
+    export CXX="${CXX}"
+    export CCACHE_DISABLE=1
     export CFLAGS="${CFLAGS} -fno-lto"
     export CXXFLAGS="${CXXFLAGS} -fno-lto"
     export LDFLAGS="${LDFLAGS} -fno-lto"
