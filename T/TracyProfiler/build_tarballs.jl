@@ -50,6 +50,15 @@ elif [[ "${target}" == *-apple-darwin* ]]; then
     # Disable LTO on macOS - Tracy enables it by default in Release mode, but it causes
     # CMAKE_C_COMPILER_AR-NOTFOUND errors in BinaryBuilder cross-compilation because
     # CPM-downloaded dependencies (zstd, tidy) don't respect the toolchain file properly.
+    # The CMake flag alone isn't enough - CPM sub-projects ignore it. We need to:
+    # 1. Hide ccache so CMake can't find it (Tracy wraps AR with ccache via RULE_LAUNCH)
+    # 2. Disable LTO via compiler flags (for CPM deps that ignore CMake settings)
+    if command -v ccache &> /dev/null; then
+        mv "$(which ccache)" "$(which ccache).disabled" 2>/dev/null || true
+    fi
+    export CFLAGS="${CFLAGS} -fno-lto"
+    export CXXFLAGS="${CXXFLAGS} -fno-lto"
+    export LDFLAGS="${LDFLAGS} -fno-lto"
     CMAKE_FLAGS+=(
         -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF
     )
