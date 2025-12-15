@@ -11,17 +11,19 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/eigen
-mkdir build && cd build
 
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_Fortran_COMPILER=/opt/${MACHTYPE}/bin/${MACHTYPE}-gfortran \
-    ..
-make -j${nproc}
-make install
-cd ..
-install_license COPYING.*
+# We want to build Eigen as header-only library, and we thus have to disable BLAS and LAPACK which are not header-only.
+cmakeflags=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_INSTALL_PREFIX=${prefix}
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN}
+    -DEIGEN_BUILD_BLAS=OFF
+    -DEIGEN_BUILD_DEMOS=OFF
+    -DEIGEN_BUILD_LAPACK=OFF
+)
+cmake -Bbuild "${cmakeflags[@]}"
+cmake --build build --parallel ${nprocs}
+cmake --install build
 """
 
 # These are the platforms we will build for by default, unless further
