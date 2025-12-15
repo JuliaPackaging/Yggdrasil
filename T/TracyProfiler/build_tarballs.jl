@@ -29,6 +29,11 @@ CMAKE_FLAGS=(
     -DLEGACY=ON
     -DTRACY_PATCHABLE_NOPSLEDS=ON
     -DDOWNLOAD_LIBCURL=OFF
+    # Explicitly tell CMake where libcurl is - pkg-config often fails to find JLLs in cross-compilation.
+    # These cache vars are checked by Tracy's vendor.cmake before pkg_check_modules runs.
+    -DLIBCURL_FOUND=TRUE
+    -DLIBCURL_INCLUDE_DIRS=${includedir}
+    -DLIBCURL_LINK_LIBRARIES=${libdir}/libcurl.${dlext}
 )
 
 # Platform-specific settings
@@ -45,28 +50,8 @@ elif [[ "${target}" == *-apple-darwin* ]]; then
     # Disable LTO on macOS - Tracy enables it by default in Release mode, but it causes
     # CMAKE_C_COMPILER_AR-NOTFOUND errors in BinaryBuilder cross-compilation because
     # CPM-downloaded dependencies (zstd, tidy) don't respect the toolchain file properly.
-    # We need to:
-    # 1. Disable LTO via CMake flag
-    # 2. Also disable LTO via compiler flags (for CPM deps that ignore CMake settings)
-    # 3. Export AR/RANLIB as env vars (CMake cache vars don't propagate to ExternalProject)
-    # 4. Export CC/CXX explicitly (CPM deps may not inherit toolchain compiler settings)
-    # 5. Disable ccache (it fails to find compiler in CPM sub-builds)
-    export AR="${AR}"
-    export RANLIB="${RANLIB}"
-    export CC="${CC}"
-    export CXX="${CXX}"
-    export CCACHE_DISABLE=1
-    export CFLAGS="${CFLAGS} -fno-lto"
-    export CXXFLAGS="${CXXFLAGS} -fno-lto"
-    export LDFLAGS="${LDFLAGS} -fno-lto"
     CMAKE_FLAGS+=(
         -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF
-        -DCMAKE_AR="${AR}"
-        -DCMAKE_C_COMPILER_AR="${AR}"
-        -DCMAKE_CXX_COMPILER_AR="${AR}"
-        -DCMAKE_RANLIB="${RANLIB}"
-        -DCMAKE_C_COMPILER_RANLIB="${RANLIB}"
-        -DCMAKE_CXX_COMPILER_RANLIB="${RANLIB}"
     )
 elif [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
     # Help CMake find X11 in BinaryBuilder environment
