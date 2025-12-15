@@ -40,12 +40,19 @@ CMAKE_FLAGS=(
 
 # Platform-specific settings
 if [[ "${target}" == *-mingw* ]]; then
-    # i686 needs -Wa,-mbig-obj to handle large object files (PE/COFF section limit)
-    if [[ "${target}" == i686-* ]]; then
-        CMAKE_FLAGS+=(-DCMAKE_C_FLAGS="-Wa,-mbig-obj" -DCMAKE_CXX_FLAGS="-Wa,-mbig-obj")
-        # Create Windows.h symlink for case-sensitive includes (usearch library uses <Windows.h>)
-        ln -sf windows.h /opt/${target}/${target}/sys-root/include/Windows.h
-    fi
+    # Create Windows.h symlink for case-sensitive includes (usearch library uses <Windows.h>)
+    ln -sf windows.h /opt/${target}/${target}/sys-root/include/Windows.h
+    # -Wa,-mbig-obj needed for large object files (PE/COFF section limit) - Tracy has huge template-heavy files
+    export CFLAGS="${CFLAGS} -Wa,-mbig-obj"
+    export CXXFLAGS="${CXXFLAGS} -Wa,-mbig-obj"
+    # Disable LTO on MinGW - causes "plugin needed to handle lto object" errors
+    export CFLAGS="${CFLAGS} -fno-lto"
+    export CXXFLAGS="${CXXFLAGS} -fno-lto"
+    export LDFLAGS="${LDFLAGS} -fno-lto"
+    CMAKE_FLAGS+=(
+        -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF
+        -DCMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE=OFF
+    )
     # Note: WINVER/_WIN32_WINNT are already defined by BinaryBuilder toolchain, don't redefine
 elif [[ "${target}" == *-apple-darwin* ]]; then
     export MACOSX_DEPLOYMENT_TARGET=13.3
