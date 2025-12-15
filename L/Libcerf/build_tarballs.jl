@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Libcerf"
-version = v"1.17"
+version = v"2.5"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://jugit.fz-juelich.de/mlz/libcerf/-/archive/v$(version.major).$(version.minor)/libcerf-v$(version.major).$(version.minor).tar.gz",
-                  "b1916b292cb37f2d0d0b699fbcf0fe260cca97ec7266ea20ff0c5cd8ef2eaab4")
+                  "b3a5e68a30bdbd3a58e9e7c038bd0aa2586b90bbb1c809f76665e176b2d42cdc")
 ]
 
 # Bash recipe for building across all platforms
