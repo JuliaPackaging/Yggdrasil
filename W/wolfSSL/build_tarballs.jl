@@ -26,7 +26,7 @@ if [ ${target} == x86_64-* ] && [ ${target} != *-w64-* ]; then
 else
     ARCHFLAGS=""
 fi
-./configure \
+CFLAGS=-DLARGE_STATIC_BUFFERS ./configure \
     --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
