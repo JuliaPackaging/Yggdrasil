@@ -159,7 +159,8 @@ dependencies = [
     Dependency("FreeType2_jll"; compat="2.10.4"),
     Dependency("Dbus_jll"; platforms=filter(Sys.islinux, platforms)),
     Dependency("GLFW_jll"),
-    Dependency("LibCURL_jll"; compat="7.73,8"),
+    # Tracy v0.13+ requires libcurl >= 7.87.0 for CURLOPT_CA_CACHE_TIMEOUT, CURL_WRITEFUNC_ERROR
+    Dependency("LibCURL_jll"; compat="7.87,8"),
     # X11 dependencies for GLFW on Linux (needed for imgui_impl_glfw.cpp)
     Dependency("Xorg_libX11_jll"; platforms=x11_platforms),
     Dependency("Xorg_libXrandr_jll"; platforms=x11_platforms),
