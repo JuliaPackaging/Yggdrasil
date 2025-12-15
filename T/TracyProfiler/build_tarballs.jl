@@ -57,8 +57,9 @@ if [[ "${target}" == *-mingw* ]]; then
         # - ws2_32: Winsock2 for socket functions
         # - ole32: COM functions (CoInitializeEx, CoCreateInstance, etc.) for NFD
         # - uuid: COM GUIDs (CLSID_FileOpenDialog, IID_IFileSaveDialog, etc.) for NFD
-        "-DCMAKE_CXX_STANDARD_LIBRARIES=-lws2_32 -lole32 -luuid"
-        "-DCMAKE_C_STANDARD_LIBRARIES=-lws2_32 -lole32 -luuid"
+        # - dbghelp: Debug symbol functions (SymInitialize, SymFromAddr, etc.) for tracy-update
+        "-DCMAKE_CXX_STANDARD_LIBRARIES=-lws2_32 -lole32 -luuid -ldbghelp"
+        "-DCMAKE_C_STANDARD_LIBRARIES=-lws2_32 -lole32 -luuid -ldbghelp"
     )
     # Note: WINVER/_WIN32_WINNT are already defined by BinaryBuilder toolchain, don't redefine
 elif [[ "${target}" == *-apple-darwin* ]]; then
