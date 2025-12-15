@@ -1,12 +1,11 @@
 --- a/update/src/OfflineSymbolResolverDbgHelper.cpp
 +++ b/update/src/OfflineSymbolResolverDbgHelper.cpp
-@@ -71,7 +71,7 @@ bool SymbolResolver::ResolveSymbolsForModule( const std::string& modulePath, con
-     for ( size_t i = 0; i < inputEntries.size(); ++i )
-     {
-         const uint64_t address = inputEntries[i].symbolAddress + loadAddress;
--        IMAGEHLP_LINE lineInfo;
-+        IMAGEHLP_LINE64 lineInfo;
-         lineInfo.SizeOfStruct = sizeof( lineInfo );
-         DWORD displaceMent = 0;
+@@ -73,7 +73,7 @@ class SymbolResolver
+                 newEntry.name = "[unknown] + " + std::to_string(offset);
+             }
  
-
+-            IMAGEHLP_LINE lineInfo = { 0 };
++            IMAGEHLP_LINE64 lineInfo = { 0 };
+             lineInfo.SizeOfStruct = sizeof(IMAGEHLP_LINE64);
+             DWORD displaceMent = 0;
+             if ( SymGetLineFromAddr64( m_procHandle, address, &displaceMent, &lineInfo ) )
