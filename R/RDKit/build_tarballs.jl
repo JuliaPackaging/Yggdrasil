@@ -33,6 +33,10 @@ cmake \
     -DRDK_BUILD_CPP_TESTS=OFF \
     -DRDK_BUILD_SLN_SUPPORT=OFF \
     -DRDK_TEST_MULTITHREADED=OFF \
+    -DRDK_BUILD_COORDGEN_SUPPORT=OFF \
+    -DRDK_BUILD_MAEPARSER_SUPPORT=OFF \
+    -DRDK_BUILD_CHEMDRAW_SUPPORT=OFF \
+    -DRDK_USE_URF=OFF \
     "${FLAGS[@]}" \
     ..
 make -j${nproc}
@@ -56,11 +60,10 @@ products = [
 
 dependencies = [
     Dependency("FreeType2_jll"; compat="2.10.4"),
-    Dependency("boost_jll"; compat="=1.76.0"),
+    Dependency("boost_jll"; compat="=1.87.0"),
     BuildDependency("Eigen_jll"),
     Dependency("Zlib_jll"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               # GCC 8 is needed for `std::from_chars`
-               preferred_gcc_version=v"8", julia_compat="1.6")
+               preferred_gcc_version=v"11", julia_compat="1.6")
