@@ -1,0 +1,22 @@
+--- a/src/binding/abi/c_binding_abi.c.orig	2025-12-11 09:51:20
++++ b/src/binding/abi/c_binding_abi.c	2025-12-11 10:37:56
+@@ -60,10 +60,6 @@
+         /* do we leave other outputs unset? */
+     } else {
+         *is_set = 1;
+-        int exp_logical_size = MPIR_Datatype_get_basic_size(type);
+-        if (logical_size != exp_logical_size) {
+-            MPIR_ERR_SETANDJUMP1(mpi_errno, MPI_ERR_ABI, "**logical_size_wrong", "**logical_size_wrong %d", exp_logical_size);
+-        }
+         switch(logical_size) {
+             case 1:
+                 *(int8_t *) logical_true = MPIR_fortran_true;
+@@ -153,7 +149,7 @@
+ #endif /* HAVE_ERROR_CHECKING */
+ 
+     /* ... body of routine ... */
+-#ifdef HAVE_FORTRAN_BINDING
++#if 1
+     MPIR_Info *info_ptr;
+     mpi_errno = MPIR_Info_alloc(&info_ptr);
+     MPIR_ERR_CHECK(mpi_errno);
