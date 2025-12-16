@@ -57,6 +57,6 @@ products = [
 dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# NOTE: recent gcc produces faster code than ancient ones, pick something fresh
+# NOTE: gcc 11+ produces faster code than older ones
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat="1.6", preferred_gcc_version = v"14.2.0")
+    julia_compat="1.6", preferred_gcc_version = v"11")
