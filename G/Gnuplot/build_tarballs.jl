@@ -96,7 +96,7 @@ dependencies = [
     BuildDependency("Qt6Tools_jll"),
     Dependency("Qt6Base_jll"),
     Dependency("Qt6Svg_jll"),
-    Dependency("Qt65Compat"),
+    Dependency("Qt65Compat_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
