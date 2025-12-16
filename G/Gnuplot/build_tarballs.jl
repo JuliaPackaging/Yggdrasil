@@ -93,7 +93,7 @@ dependencies = [
     #BuildDependency("Qt5Tools_jll"),
     #Dependency("Qt5Svg_jll"),
     # Build against Qt6
-    BuildDependency("Qt6Tools_jll")
+    BuildDependency("Qt6Tools_jll"),
     Dependency("Qt6Base_jll"),
     Dependency("Qt6Svg_jll"),
 ]
