@@ -19,9 +19,9 @@ cd $WORKSPACE/srcdir/wolfssl*
 
 ./autogen.sh
 
-# NOTE: some non-x86_64 CPUs support AES-NI as well, but I don't know how to detect them
+# NOTE: some non-x86_64 CPUs support AES-NI as well, but provided assembly seems x86_64-specific
 # NOTE: assembly code has some ELF-specific instructions and doesn't compile for Windows
-if [ ${target} == x86_64-* ] && [ ${target} != *-w64-* ]; then
+if [[ ${target} == x86_64-* ]] && [[ ${target} != *-w64-* ]]; then
     ARCHFLAGS="--enable-aesni --enable-intelasm"
 else
     ARCHFLAGS=""
