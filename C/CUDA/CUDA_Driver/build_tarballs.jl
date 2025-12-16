@@ -10,19 +10,19 @@ const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "CUDA_Driver"
-version = v"13.0.2"
+version = v"13.1.0"
 
 version_str = "$(version.major)-$(version.minor)"
-driver_str = "580.95.05"
+driver_str = "590.44.01"
 build = 1
 
 sources_linux_x86 = [
     FileSource("https://developer.download.nvidia.com/compute/cuda/repos/rhel8/x86_64/cuda-compat-$(version_str)-$(driver_str)-$(build).el8.x86_64.rpm",
-               "81cfb0e12c2ccf94e992e75cd15d830080b7b47a53b25fe3d14896c9c2478c76", "compat.rpm")
+               "a1c9f934c6c5b4a566c907f9cc55e8505b17b00b35163fdb5342c4811cd33798", "compat.rpm")
 ]
 sources_linux_aarch64 = [
     FileSource("https://developer.download.nvidia.com/compute/cuda/repos/rhel8/sbsa/cuda-compat-$(version_str)-$(driver_str)-$(build).el8.aarch64.rpm",
-               "7e393079b34023f8fc7a648d9cf943f0d4ea34a9261050ba3c8c620bafb28eb5", "compat.rpm")
+               "e7233912d7a2f4529673a70702f3dd5a1350228db51e31c0f160468fde2663bf", "compat.rpm")
 ]
 
 dependencies = []
