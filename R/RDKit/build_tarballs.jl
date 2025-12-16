@@ -11,8 +11,10 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/rdkit
 
-# Windows build fails to link a test, despite the fact we don't want tests.
+# Apply patches
 atomic_patch -p1 ../patches/do-not-build-cffi-test.patch
+atomic_patch -p1 ../patches/disable-catch2.patch
+atomic_patch -p1 ../patches/fix-windows-zlib.patch
 
 FLAGS=()
 if [[ "${target}" == *-mingw* ]]; then
