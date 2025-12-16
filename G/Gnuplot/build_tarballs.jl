@@ -52,6 +52,9 @@ case "$target" in
         args+=(--with-qt=no);;
 esac
 
+# Qt6 requires c++17
+export CXXFLAGS="-std=c++17"
+
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ${args[@]}
 
 make -C src -j${nproc}
