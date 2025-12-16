@@ -12,7 +12,7 @@ end
 
 name = "Gnuplot"
 version = v"6.0.3"
-ygg_offset = v"0.0.3"  # NOTE: increase on new build, reset on new upstream version
+ygg_offset = v"0.0.4"  # NOTE: increase on new build, reset on new upstream version
 ygg_version = yggdrasil_version(version, ygg_offset)
 
 # Collection of sources required to complete build
@@ -90,11 +90,12 @@ dependencies = [
     Dependency("Libffi_jll"),
     Dependency("Libiconv_jll"),
     Dependency("Readline_jll"),
-    BuildDependency("Qt5Tools_jll"),
-    Dependency("Qt5Svg_jll"),
-    # FIXME: build with Qt6 fails, must probably add a `Qt6Tools_jll` recipe
-    # Dependency("Qt6Base_jll"),
-    # Dependency("Qt6Svg_jll"),
+    #BuildDependency("Qt5Tools_jll"),
+    #Dependency("Qt5Svg_jll"),
+    # Build against Qt6
+    BuildDependency("Qt6Tools_jll")
+    Dependency("Qt6Base_jll"),
+    Dependency("Qt6Svg_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
