@@ -38,8 +38,7 @@ CFLAGS=-DLARGE_STATIC_BUFFERS ./configure \
 make -j${nproc}
 make install
 
-mkdir -p ${prefix}/share/licenses/wolfSSL
-cp LICENSING ${prefix}/share/licenses/wolfSSL
+install_license LICENSING
 """
 
 sources, script = require_macos_sdk("10.14", sources, script)
