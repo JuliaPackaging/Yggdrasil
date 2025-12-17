@@ -20,6 +20,8 @@ FLAGS=()
 if [[ "${target}" == *-mingw* ]]; then
     FLAGS+=(-DRDK_BUILD_THREADSAFE_SSS=OFF)
     FLAGS+=(-DBoost_USE_STATIC_LIBS=OFF)
+    FLAGS+=(-DBoost_INCLUDE_DIR=${prefix}/include)
+    FLAGS+=(-DBoost_LIBRARY_DIR=${prefix}/lib)
 fi
 
 mkdir build
@@ -28,6 +30,7 @@ cmake \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_PREFIX_PATH=${prefix} \
     -DRDK_INSTALL_INTREE=OFF \
     -DRDK_BUILD_INCHI_SUPPORT=ON \
     -DRDK_BUILD_PYTHON_WRAPPERS=OFF \
@@ -46,7 +49,7 @@ cmake \
     "${FLAGS[@]}" \
     ..
 
-make -j2 # ${nproc_build}
+make -j${nproc}
 make install
 """
 
