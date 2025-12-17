@@ -132,7 +132,7 @@ atomic_patch -p1 ../patches/mingw-imagehlp-line64.patch
 # The patch we applied makes CMake skip ExternalProject if embed already exists.
 echo "Building embed helper for host..."
 mkdir -p build/profiler
-${CXX_BUILD:-c++} -std=c++20 -O2 \
+${CXX_BUILD} -std=c++20 -O2 \
     -I public/common \
     public/common/tracy_lz4.cpp \
     public/common/tracy_lz4hc.cpp \
