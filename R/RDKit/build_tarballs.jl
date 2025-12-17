@@ -19,6 +19,7 @@ atomic_patch -p1 ../patches/fix-windows-zlib.patch
 FLAGS=()
 if [[ "${target}" == *-mingw* ]]; then
     FLAGS+=(-DRDK_BUILD_THREADSAFE_SSS=OFF)
+    FLAGS+=(-DBoost_USE_STATIC_LIBS=OFF)
 fi
 
 mkdir build
@@ -39,9 +40,13 @@ cmake \
     -DRDK_BUILD_MAEPARSER_SUPPORT=OFF \
     -DRDK_BUILD_CHEMDRAW_SUPPORT=OFF \
     -DRDK_USE_URF=OFF \
+    -DBoost_ROOT=${prefix} \
+    -DBoost_NO_BOOST_CMAKE=ON \
+    -DBoost_NO_SYSTEM_PATHS=ON \
     "${FLAGS[@]}" \
     ..
-make -j${nproc}
+
+make -j2 # ${nproc_build}
 make install
 """
 
@@ -49,7 +54,7 @@ platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
     Platform("i686", "linux"; libc="glibc"),
     Platform("aarch64", "linux"; libc="glibc"),
-    Platform("x86_64", "macos"),
+    Platform("x86_64", "macos"; os_version="10.14"),
     Platform("aarch64", "macos"),
     Platform("x86_64", "windows"),
 ]
