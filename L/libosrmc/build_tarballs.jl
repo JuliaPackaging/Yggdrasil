@@ -4,7 +4,7 @@ name = "libosrmc"
 version = v"6.0.0"
 
 sources = [
-    GitSource("https://github.com/moviro-hub/libosrmc.git", "8ba3109261c1d30b06b1ef7f9741eb04fcc3aad7"),
+    GitSource("https://github.com/moviro-hub/libosrmc.git", "c288319ee34b4132033dd149cc3655ed74621151"),
 ]
 
 script = raw"""
@@ -20,7 +20,6 @@ if [[ "${target}" == *-apple-* ]]; then
 fi
 
 # Build using Makefile
-make clean
 make -j${nproc} PREFIX=${prefix}
 make install PREFIX=${prefix}
 """
@@ -37,8 +36,7 @@ products = [
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    # TODO: change to OSRM_jll.jl once released
-    Dependency(PackageSpec(name="OSRM_jll", url="https://github.com/jrklasen/OSRM_jll.jl", rev="main")),
+    Dependency("OSRM_jll"; compat="6.0.0"),
     Dependency("boost_jll"; compat="=1.87.0"),
     Dependency("Expat_jll"; compat="2.6.5"),
     Dependency("Zlib_jll"),
