@@ -9,18 +9,18 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "NCCL"
-version = v"2.28.3"
+version = v"2.27.7"
 
 git_sources = [
-    GitSource("https://github.com/NVIDIA/nccl.git", "f1308997d0420148b1be1c24d63f19d902ae589b"),
+    GitSource("https://github.com/NVIDIA/nccl.git", "593de54e52679b51428571c13271e2ea9f91b1b1"),
     DirectorySource("./bundled/")
 ]
 
 build_script = raw"""
 cd $WORKSPACE/srcdir
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
+#for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+#    atomic_patch -p1 ${f}
+#done
 
 export TMPDIR=${WORKSPACE}/tmpdir # we need a lot of tmp space
 mkdir -p ${TMPDIR}
@@ -104,18 +104,10 @@ for cuda_version in [v"13.0"]
         augmented_platform["cuda"] = CUDA.platform(cuda_version)
         should_build_platform(triplet(augmented_platform)) || continue
 
-        if cuda_version == v"12.9"
-            if arch(platform) == "aarch64"
-                hash = "c51b970bb26a0d3afd676048923fc404ed1d1131441558a7d346940e93d6ab54"
-            elseif arch(platform) == "x86_64"
-                hash = "98f7abd2f505ba49f032052f3f36b14e28798a6e16ca783fe293e351e9376546"
-            end
-        else
-            if arch(platform) == "aarch64"
-                hash = "2b5961c4c4bcbc16148d8431c7b65525d00f386105ab1b9fa82051b7c05f6fd0"
-            elseif arch(platform) == "x86_64"
-                hash = "3117db0efe13e1336dbe32e8b98eab943ad5baa69518189918d4aca9e3ce3270"
-            end
+        if arch(platform) == "aarch64"
+            hash = "42b4e213d17ffc2e9b9dd6f50a9086cb940087b1fec197cd9fd53403e35209ca"
+        elseif arch(platform) == "x86_64"
+            hash = "38cbc471f3058d5147f8112417fc24ea7dbe02bb94a6ab294d0b2a08d520eb60"
         end
 
         sources = [
