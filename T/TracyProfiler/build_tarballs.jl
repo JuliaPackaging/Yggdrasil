@@ -174,8 +174,8 @@ platforms = expand_cxxstring_abis(supported_platforms(; exclude=[
     Platform("armv7l", "linux"; libc=:musl),
     # FreeBSD excluded: NFD (Native File Dialog) misdetects FreeBSD as Linux
     # and tries to use D-Bus, which isn't available on FreeBSD
-    # Platform("x86_64", "freebsd"),
-    # Platform("aarch64", "freebsd"),
+    Platform("x86_64", "freebsd"),
+    Platform("aarch64", "freebsd"),
 ]))
 
 products = [
