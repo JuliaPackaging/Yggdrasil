@@ -1,10 +1,10 @@
 using BinaryBuilder, Pkg
 
 name = "libosrmc"
-version = v"6.0.0"
+version = v"6.0.1"
 
 sources = [
-    GitSource("https://github.com/moviro-hub/libosrmc.git", "c288319ee34b4132033dd149cc3655ed74621151"),
+    GitSource("https://github.com/moviro-hub/libosrmc.git", "08ae197fec79dc2f16ee9fa6370f14b8dc052aca"),
 ]
 
 script = raw"""
