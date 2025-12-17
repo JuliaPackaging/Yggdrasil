@@ -18,9 +18,9 @@ git_sources = [
 
 build_script = raw"""
 cd $WORKSPACE/srcdir
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
+#for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+#    atomic_patch -p1 ${f}
+#done
 
 export TMPDIR=${WORKSPACE}/tmpdir # we need a lot of tmp space
 mkdir -p ${TMPDIR}
