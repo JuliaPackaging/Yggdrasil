@@ -13,8 +13,6 @@ sources = [
               "05cceee0df3b8d7c6fa87e9638af311dbabc63cb"), # v0.13.1
     DirectorySource("./bundled"),
 ]
-# Add macOS 14.0 SDK for C++20 <ranges> support (needed by ppqsort)
-append!(sources, get_macos_sdk_sources("14.0"))
 
 script = raw"""
 cd $WORKSPACE/srcdir/tracy*/
@@ -63,7 +61,6 @@ if [[ "${target}" == *-mingw* ]]; then
     )
     # Note: WINVER/_WIN32_WINNT are already defined by BinaryBuilder toolchain, don't redefine
 elif [[ "${target}" == *-apple-darwin* ]]; then
-    export MACOSX_DEPLOYMENT_TARGET=13.3
     # Disable LTO on macOS - Tracy enables it by default in Release mode, but it causes
     # CMAKE_C_COMPILER_AR-NOTFOUND errors in BinaryBuilder cross-compilation because
     # CPM-downloaded dependencies (zstd, tidy, pugixml) don't respect the toolchain file.
@@ -97,20 +94,6 @@ elif [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
     export CFLAGS="-I${includedir} -D__STDC_FORMAT_MACROS ${CFLAGS}"
     # Link against libdl for dlclose/dlopen on glibc
     export LDFLAGS="-ldl ${LDFLAGS}"
-fi
-
-# Install macOS 14.0 SDK for C++20 <ranges> support (needed by ppqsort)
-if [[ "${target}" == *-apple-darwin* ]]; then
-    echo "Extracting MacOSX14.0.sdk.tar.xz (this may take a while)"
-    rm -rf /opt/${target}/${target}/sys-root/System
-    rm -rf /opt/${target}/${target}/sys-root/usr/include/libxml2/libxml
-    tar --extract \
-        --file=${WORKSPACE}/srcdir/MacOSX14.0.sdk.tar.xz \
-        --directory="/opt/${target}/${target}/sys-root/." \
-        --strip-components=1 \
-        --warning=no-unknown-keyword \
-        MacOSX14.0.sdk/System \
-        MacOSX14.0.sdk/usr
 fi
 
 # Apply patch to skip ExternalProject for embed if pre-built binary exists
@@ -209,5 +192,6 @@ dependencies = [
 ]
 
 # Tracy v0.13+ requires C++20 with <latch> support, which needs GCC 11+
+sources, script = require_macos_sdk("14.0", sources, script; deployment_target="13.3")
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"11")
