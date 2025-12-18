@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "GDAL"
-upstream_version = v"3.12.0"
+upstream_version = v"3.12.1"
 # The version offset is used for two purposes:
 # - If we need to release multiple jll packages for the same GDAL
 #   library (usually for weird packaging reasons) then we increase the
@@ -21,10 +21,8 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 
 # Collection of sources required to build GDAL
 sources = [
-    # The actual release commit b5a9fab4df12cb9e2d1b7db95a5d9902f1cc4720 does not exist in the repository.
-    # We use the previous commit instead. The missing commit is inconsequential for a source build.
     GitSource("https://github.com/OSGeo/gdal.git",
-        "6d3d306c07e0146859364d7ec6e9e0225fc98208"),
+        "21882def44a088a6a1d5b2d6235b0083cfe6bada"),
     DirectorySource("./bundled"),
 ]
 
