@@ -4,6 +4,7 @@ using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
 const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "t8code"
