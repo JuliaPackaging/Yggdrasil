@@ -83,4 +83,4 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # We need to use at least GCC 8 to ensure that we get at least libgfortran5, which we need for HDF5.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"8")
+               augment_platform_block, julia_compat="1.10", preferred_gcc_version=v"8")

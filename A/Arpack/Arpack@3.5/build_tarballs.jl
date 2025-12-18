@@ -3,8 +3,8 @@ using BinaryBuilder
 # Collection of sources required to build Arpack
 name = "Arpack"
 
-version = v"3.9.1"
-ygg_version = v"3.9.2"
+version = v"3.5.0"
+ygg_version = v"3.5.2"
 
 include("../common.jl")
 
@@ -16,6 +16,6 @@ products = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, ygg_version, arpack_sources(version), build_script(build_32bit=false),
                platforms, products, dependencies;
-	       julia_compat="1.10")
+	       julia_compat="1.6")
 
 # Build Trigger: 1
