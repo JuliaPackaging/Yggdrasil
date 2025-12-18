@@ -21,7 +21,7 @@ sources = [
 ]
 
 MIN_CUDA_VERSION = v"13.0"
-MAX_CUDA_VERSION = nothing
+MAX_CUDA_VERSION = v"13.0.999" # none of the dependency JLLs have 13.1 builds rn
 
 # Just so I can do CPU only tests on GitHub runners
 cpu_platform = [Platform("x86_64", "linux")]
