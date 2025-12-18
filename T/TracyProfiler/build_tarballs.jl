@@ -10,7 +10,7 @@ version = v"0.13.1"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/wolfpld/tracy.git",
-              "05cceee0df3b8d7c6fa87e9638af311dbabc63cb"), # v0.13.1
+              "6cd7751479d4efd5c35f39e856891570a89dd060"), # v0.13.1 plus necessary patches
     DirectorySource("./bundled"),
 ]
 
@@ -98,15 +98,6 @@ fi
 
 # Apply patch to skip ExternalProject for embed if pre-built binary exists
 atomic_patch -p1 ../patches/cross-compile-embed.patch
-
-# Apply patch to fix MSVC-specific /MP flag on MinGW
-atomic_patch -p1 ../patches/mingw-no-msvc-flags.patch
-
-# Apply patch to fix TracyPopcnt.hpp for MinGW (use GCC builtins instead of MSVC intrinsics)
-atomic_patch -p1 ../patches/mingw-popcnt.patch
-
-# Apply patch to fix 32-bit MinGW build (IMAGEHLP_LINE -> IMAGEHLP_LINE64 for SymGetLineFromAddr64)
-atomic_patch -p1 ../patches/mingw-imagehlp-line64.patch
 
 # Pre-build the 'embed' helper tool with the host compiler.
 # This tool embeds fonts/manual/prompts into C++ source during the build.
