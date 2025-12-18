@@ -17,5 +17,5 @@ HistoricalStdlibVersions = "2"
 ghr_jll = "0.14.0"
 
 [sources]
-BinaryBuilder = {rev = "master", url = "https://github.com/JuliaPackaging/BinaryBuilder.jl.git"}
-BinaryBuilderBase = {rev = "master", url = "https://github.com/JuliaPackaging/BinaryBuilderBase.jl.git"}
+BinaryBuilder = {rev = "ib/timeroutputs", url = "https://github.com/JuliaPackaging/BinaryBuilder.jl.git"}
+BinaryBuilderBase = {rev = "ib/timeroutputs", url = "https://github.com/JuliaPackaging/BinaryBuilderBase.jl.git"}
