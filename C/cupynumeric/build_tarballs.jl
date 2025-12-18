@@ -21,8 +21,8 @@ sources = [
 
 
 # These should match the legate_jll build_tarballs script
-MIN_CUDA_VERSION = v"12.2"
-MAX_CUDA_VERSION = v"12.8.999"
+MIN_CUDA_VERSION = v"13.0"
+MAX_CUDA_VERSION = v"13.0.999" # none of the dependency JLLs have 13.1 builds rn
 
 
 cpu_platform = [Platform("x86_64", "linux")]
@@ -68,8 +68,8 @@ for platform in all_platforms
     if haskey(platform, "cuda") && platform["cuda"] != "none" 
 
         # cuTensor dependency
-        push!(platform_sources, ArchiveSource("https://github.com/JuliaBinaryWrappers/CUTENSOR_jll.jl/releases/download/CUTENSOR-v2.2.0%2B0/CUTENSOR.v2.2.0.x86_64-linux-gnu-cuda+12.0.tar.gz",
-                     "1c243b48e189070fefcdd603f87c06fada2d71c911dea7028748ad7a4315b816")
+        push!(platform_sources, ArchiveSource("https://github.com/JuliaBinaryWrappers/CUTENSOR_jll.jl/releases/download/CUTENSOR-v2.3.1%2B0/CUTENSOR.v2.3.1.x86_64-linux-gnu-cuda+13.0.tar.gz",
+                     "bb9d29e92522d4867dcd5124dfb9151cc40eb87f8a7772dd0509bd344e393abf")
         )
 
         append!(_dependencies, CUDA.required_dependencies(platform, static_sdk=true))
