@@ -20,8 +20,8 @@ sources = [
                 "4da8dde69eca0d9bc31420349a204851bfa2a1c87aeb87fe0c05517797edaac4", "miniconda.sh")
 ]
 
-MIN_CUDA_VERSION = v"12.2"
-MAX_CUDA_VERSION = v"12.8.999" #12.9?
+MIN_CUDA_VERSION = v"13.0"
+MAX_CUDA_VERSION = v"13.0.999" # none of the dependency JLLs have 13.1 builds rn
 
 # Just so I can do CPU only tests on GitHub runners
 cpu_platform = [Platform("x86_64", "linux")]
@@ -45,11 +45,9 @@ for platform in all_platforms
     end
 end
 
-
 products = [
     LibraryProduct("liblegate", :liblegate)
 ] 
-
 
 # Dependencies that do not need CUDA
 dependencies = [
@@ -80,7 +78,7 @@ for platform in all_platforms
             push!(platform_sources, CUDA.cuda_nvcc_redist_source(cuda_ver, "x86_64"))
         end
 
-        push!(_dependencies, Dependency("NCCL_jll"; compat="2.26.5"))
+        push!(_dependencies, Dependency("NCCL_jll"; compat="2.27.7"))
         append!(_dependencies, CUDA.required_dependencies(platform, static_sdk=true))
 
         script = get_script(Val{true}())
