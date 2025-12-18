@@ -52,9 +52,6 @@ case "$target" in
         args+=(--with-qt=no);;
 esac
 
-# Qt6 requires c++17
-export CXXFLAGS="-std=c++17"
-
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ${args[@]}
 
 make -C src -j${nproc}
@@ -96,10 +93,12 @@ dependencies = [
     #BuildDependency("Qt5Tools_jll"),
     #Dependency("Qt5Svg_jll"),
     # Build against Qt6
-    BuildDependency("Qt6Tools_jll"),
     Dependency("Qt6Base_jll"),
     Dependency("Qt6Svg_jll"),
     Dependency("Qt65Compat_jll"),
+    BuildDependency("Qt6Tools_jll"),
+    BuildDependency("Qt5Base_jll"),
+    BuildDependency("Qt6Declarative_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
