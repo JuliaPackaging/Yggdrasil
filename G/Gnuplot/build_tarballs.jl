@@ -97,7 +97,6 @@ dependencies = [
     Dependency("Qt6Svg_jll"),
     Dependency("Qt65Compat_jll"),
     BuildDependency("Qt6Tools_jll"),
-    BuildDependency("Qt5Base_jll"),
     BuildDependency("Qt6Declarative_jll"),
 ]
 
