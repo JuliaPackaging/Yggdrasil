@@ -133,10 +133,15 @@ cmake -S csvexport -B build/csvexport "${CMAKE_FLAGS[@]}"
 cmake --build build/csvexport --parallel ${nproc}
 install -Dvm755 build/csvexport/tracy-csvexport${exeext} ${bindir}/tracy-csvexport${exeext}
 
-# Build import utilities
+# Build import-chrome utility
 cmake -S import -B build/import "${CMAKE_FLAGS[@]}"
 cmake --build build/import --parallel ${nproc}
 install -Dvm755 build/import/tracy-import-chrome${exeext} ${bindir}/tracy-import-chrome${exeext}
+
+# Build import-fuchsia utility
+cmake -S import -B build/import "${CMAKE_FLAGS[@]}"
+cmake --build build/import --parallel ${nproc}
+install -Dvm755 build/import/tracy-import-fuchsia${exeext} ${bindir}/tracy-import-fuchsia${exeext}
 
 install_license LICENSE
 """
