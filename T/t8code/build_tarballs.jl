@@ -47,8 +47,8 @@ make -C build -j ${nproc}
 make -C build -j ${nproc} install
 """
 
-# We need a newer libc++
-sources, script = require_macos_sdk("10.14", sources, script)
+# We need some C++20
+sources, script = require_macos_sdk("12.3", sources, script)
 
 augment_platform_block = """
     using Base.BinaryPlatforms
