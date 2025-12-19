@@ -21,7 +21,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/sequentialknn/
 cargo build --release
-echo "TARGET = ${target}"
 case "${target}" in
     *apple-darwin*)
         ext=dylib
