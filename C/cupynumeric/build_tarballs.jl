@@ -81,7 +81,7 @@ for platform in all_platforms
         end
 
         script = get_script(Val{true}())
-    end # else CPU build
+    end # else CPU-only build
 
     build_tarballs(
         ARGS, name, version, platform_sources, 
