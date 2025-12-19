@@ -32,7 +32,6 @@ case "${target}" in
         ext=dll
         ;;
 esac
-outlibname="libsequentialknn.${ext}"
 install -Dvm 0644 "target/${rust_target}/release/${libname}" "${libdir}/${outlibname}"
 install_license LICENSE
 """
