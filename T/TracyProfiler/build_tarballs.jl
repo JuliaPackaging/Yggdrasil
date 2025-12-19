@@ -183,6 +183,6 @@ dependencies = [
 ]
 
 # Tracy v0.13+ requires C++20 with <latch> support, which needs GCC 11+
-sources, script = require_macos_sdk("14.0", sources, script; deployment_target="13.3")
+sources, script = require_macos_sdk("14.0", sources, script; deployment_target="14.0")
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"11")
