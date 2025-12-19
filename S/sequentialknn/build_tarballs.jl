@@ -32,7 +32,7 @@ case "${target}" in
         ext=dll
         ;;
 esac
-install -Dvm 0644 "target/${rust_target}/release/${libname}" "${libdir}/${outlibname}"
+install -Dvm 755 "target/${rust_target}/release"/*sequentialknn.${dlext} -t "${libdir}"
 install_license LICENSE
 """
 
