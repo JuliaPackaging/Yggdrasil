@@ -20,8 +20,6 @@ sources = [
 # the file names exist as expected.
 script = raw"""
 cd $WORKSPACE/srcdir/sequentialknn/
-export LIBRARY_PATH="${libdir}:${LIBRARY_PATH}"
-export DYLD_FALLBACK_LIBRARY_PATH="${libdir}"
 export CPATH="${includedir}:${CPATH}"
 cargo build --release
 echo "TARGET = ${target}"
