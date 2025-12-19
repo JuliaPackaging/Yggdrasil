@@ -4,7 +4,6 @@ using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
 const YGGDRASIL_DIR = "../.."
-include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "t8code"
@@ -29,7 +28,7 @@ fi
 cmake . \
       -B build \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
-      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake \
       -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_TESTING=OFF \
       -DP4EST_BUILD_TESTING=OFF \
@@ -47,9 +46,6 @@ cmake . \
 make -C build -j ${nproc}
 make -C build -j ${nproc} install
 """
-
-# We need some C++20
-sources, script = require_macos_sdk("14.5", sources, script)
 
 augment_platform_block = """
     using Base.BinaryPlatforms
