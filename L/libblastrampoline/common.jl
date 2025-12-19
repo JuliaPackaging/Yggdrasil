@@ -3,6 +3,8 @@
 using BinaryBuilder, Pkg
 using BinaryBuilderBase: sanitize
 
+Pkg.status()
+
 name = "libblastrampoline"
 
 # Collection of sources required to build libblastrampoline
@@ -50,6 +52,6 @@ llvm_version = v"13.0.1"
 dependencies = [
     BuildDependency(PackageSpec(name="LLVMCompilerRT_jll",
                                 uuid="4e17d02c-6bf5-513e-be62-445f41c75a11",
-                                version=llvm_version);
+                                version=string(llvm_version));
     platforms=filter(p -> sanitize(p)=="memory", platforms)),
 ]
