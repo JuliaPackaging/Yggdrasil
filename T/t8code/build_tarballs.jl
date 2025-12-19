@@ -14,7 +14,6 @@ sha256sum = "668536f82730a23fc6fd96ff13e64762b6b0890d04e99a7a38d66341332d5770"
 
 sources = [ArchiveSource(tarball, sha256sum), DirectorySource("./bundled")]
 
-
 script = raw"""
 cd $WORKSPACE/srcdir/T8CODE*
 
