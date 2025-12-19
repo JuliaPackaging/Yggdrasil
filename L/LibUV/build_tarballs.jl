@@ -27,9 +27,7 @@ fi
 
 # `--with-pic` isn't enough; we really really need -fPIC and -DPIC everywhere...
 # everywhere, especially on FreeBSD. In the end, isn't FreeBSD all that matters?
-CFLAGS="${CFLAGS} -DPIC -fPIC"
-CXXFLAGS="${CXXFLAGS} -DPIC -fPIC"
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-pic
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-pic CFLAGS="${CFLAGS} -DPIC -fPIC -g -O2" CXXFLAGS="${CXXFLAGS} -DPIC -fPIC -g -O2"
 make -j${nproc} V=1
 make install
 """
