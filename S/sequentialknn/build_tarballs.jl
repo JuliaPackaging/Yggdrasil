@@ -20,7 +20,6 @@ sources = [
 # the file names exist as expected.
 script = raw"""
 cd $WORKSPACE/srcdir/sequentialknn/
-export CPATH="${includedir}:${CPATH}"
 cargo build --release
 echo "TARGET = ${target}"
 case "${target}" in
