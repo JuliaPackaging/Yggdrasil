@@ -3,8 +3,6 @@
 using BinaryBuilder, Pkg
 using BinaryBuilderBase: sanitize
 
-Pkg.status()
-
 name = "libblastrampoline"
 
 # Collection of sources required to build libblastrampoline
