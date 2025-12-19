@@ -32,12 +32,6 @@ case "${target}" in
         ext=dll
         ;;
 esac
-# Determine target-specific library names
-if [[ "$target" == *w64* ]]; then
-    libname="sequentialknn.dll"
-else
-    libname="libsequentialknn.${ext}"
-fi
 outlibname="libsequentialknn.${ext}"
 install -Dvm 0644 "target/${rust_target}/release/${libname}" "${libdir}/${outlibname}"
 install_license LICENSE
