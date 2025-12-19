@@ -15,6 +15,7 @@ sha256sum = "668536f82730a23fc6fd96ff13e64762b6b0890d04e99a7a38d66341332d5770"
 
 sources = [ArchiveSource(tarball, sha256sum), DirectorySource("./bundled")]
 
+
 script = raw"""
 cd $WORKSPACE/srcdir/T8CODE*
 
@@ -48,7 +49,7 @@ make -C build -j ${nproc} install
 """
 
 # We need some C++20
-sources, script = require_macos_sdk("12.3", sources, script)
+sources, script = require_macos_sdk("14.5", sources, script)
 
 augment_platform_block = """
     using Base.BinaryPlatforms
