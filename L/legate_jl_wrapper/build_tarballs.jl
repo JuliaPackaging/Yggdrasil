@@ -16,8 +16,8 @@ MIN_JULIA_VERSION = v"1.10"
 MAX_JULIA_VERSION = v"1.11.999"
 
 # These should match the legate_jll build_tarballs script
-MIN_CUDA_VERSION = v"12.2"
-MAX_CUDA_VERSION = v"12.8.999"
+MIN_CUDA_VERSION = v"13.0"
+MAX_CUDA_VERSION = v"13.0.999" # none of the dependency JLLs have 13.1 builds rn
 
 
 julia_versions = filter!(v -> v >= MIN_JULIA_VERSION && v <= MAX_JULIA_VERSION , julia_versions)
