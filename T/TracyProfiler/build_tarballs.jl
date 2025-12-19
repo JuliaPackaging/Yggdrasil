@@ -121,7 +121,7 @@ install -Dm755 build/profiler/tracy-profiler${exeext} ${bindir}/tracy${exeext}
 # Build capture utility
 cmake -S capture -B build/capture "${CMAKE_FLAGS[@]}"
 cmake --build build/capture --parallel ${nproc}
-install -Dm755 build/capture/tracy-capture${exeext} ${bindir}/tracy-capture${exeext}
+install -Dvm755 build/capture/tracy-capture${exeext} ${bindir}/tracy-capture${exeext}
 
 # Build update utility
 cmake -S update -B build/update "${CMAKE_FLAGS[@]}"
