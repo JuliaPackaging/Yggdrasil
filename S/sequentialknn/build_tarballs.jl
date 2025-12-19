@@ -12,12 +12,6 @@ sources = [
         "ef59da866a14ff5a53e27295cfd6f8d9ca2999c3"),
 ]
 
-# Bash recipe for building across all platforms.
-#
-# CG: this is kind of gross looking, but I just had a lot of issues with the
-# ${libext} and stuff not working. And on windows, rust doesn't put lib in front
-# of the library name. So there is some manual tinkering here just to make all
-# the file names exist as expected.
 script = raw"""
 cd $WORKSPACE/srcdir/sequentialknn/
 cargo build --release
