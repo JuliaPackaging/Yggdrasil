@@ -29,7 +29,7 @@ platforms = [
             ]
 
 # The products that we will ensure are always built
-products = [LibraryProduct("libsequentialknn", :libsequentialknn)]
+products = [LibraryProduct(["libsequentialknn", "sequentialknn"], :libsequentialknn)]
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[Dependency("Libiconv_jll")]
