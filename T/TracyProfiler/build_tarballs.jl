@@ -136,7 +136,7 @@ install -Dm755 build/csvexport/tracy-csvexport${exeext} ${bindir}/tracy-csvexpor
 # Build import utilities
 cmake -S import -B build/import "${CMAKE_FLAGS[@]}"
 cmake --build build/import --parallel ${nproc}
-install -Dm755 build/import/tracy-import-chrome${exeext} ${bindir}/tracy-import-chrome${exeext}
+install -Dvm755 build/import/tracy-import-chrome${exeext} ${bindir}/tracy-import-chrome${exeext}
 
 install_license LICENSE
 """
