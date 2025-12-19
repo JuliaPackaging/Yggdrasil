@@ -21,17 +21,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/sequentialknn/
 cargo build --release
-case "${target}" in
-    *apple-darwin*)
-        ext=dylib
-        ;;
-    *linux*)
-        ext=so
-        ;;
-    *w64*)
-        ext=dll
-        ;;
-esac
 install -Dvm 755 "target/${rust_target}/release"/*sequentialknn.${dlext} -t "${libdir}"
 install_license LICENSE
 """
