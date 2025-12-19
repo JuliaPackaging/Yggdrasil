@@ -126,7 +126,7 @@ install -Dm755 build/capture/tracy-capture${exeext} ${bindir}/tracy-capture${exe
 # Build update utility
 cmake -S update -B build/update "${CMAKE_FLAGS[@]}"
 cmake --build build/update --parallel ${nproc}
-install -Dm755 build/update/tracy-update${exeext} ${bindir}/tracy-update${exeext}
+install -Dvm755 build/update/tracy-update${exeext} ${bindir}/tracy-update${exeext}
 
 # Build csvexport utility
 cmake -S csvexport -B build/csvexport "${CMAKE_FLAGS[@]}"
