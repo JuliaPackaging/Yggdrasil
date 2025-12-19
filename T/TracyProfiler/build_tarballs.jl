@@ -131,7 +131,7 @@ install -Dm755 build/update/tracy-update${exeext} ${bindir}/tracy-update${exeext
 # Build csvexport utility
 cmake -S csvexport -B build/csvexport "${CMAKE_FLAGS[@]}"
 cmake --build build/csvexport --parallel ${nproc}
-install -Dm755 build/csvexport/tracy-csvexport${exeext} ${bindir}/tracy-csvexport${exeext}
+install -Dvm755 build/csvexport/tracy-csvexport${exeext} ${bindir}/tracy-csvexport${exeext}
 
 # Build import utilities
 cmake -S import -B build/import "${CMAKE_FLAGS[@]}"
