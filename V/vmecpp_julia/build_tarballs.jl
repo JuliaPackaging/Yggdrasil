@@ -6,22 +6,17 @@ using Base.BinaryPlatforms
 # Include libjulia common.jl FIRST to get julia_versions
 include("../../L/libjulia/common.jl")
 
-# Temporarily test with only Julia 1.12 to debug Pkg.jl haskey issue
-# TODO: Re-enable 1.10, 1.11 after resolving the cross-version build bug
-filter!(==(v"1.12.0"), julia_versions)
+# Filter to supported Julia versions (1.10, 1.11, 1.12 only)
+# Julia 1.13+ not yet tested/supported
+filter!(>=(v"1.10"), julia_versions)
+filter!(<=(v"1.12"), julia_versions)
 
 # See https://github.com/JuliaLang/Pkg.jl/issues/2942
-# Once this Pkg issue is resolved, these workarounds must be removed
-uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
-delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
-
-# libblastrampoline workaround - remove from all julia versions
-# (prevents BinaryBuilder from trying to install incompatible versions)
+# Once this Pkg issue is resolved, this must be removed
+# without this binarybuilder tries to install libblastrampoline 3.0.4 for all julia targets
 uuidblastramp = Base.UUID("8e850b90-86db-534c-a0d3-1478176c7d93")
 delete!.(Pkg.Types.get_last_stdlibs.(julia_versions), uuidblastramp)
 
-# OpenSSL stdlib workaround for Julia 1.12+
-# (OpenSSL was added as stdlib in 1.12, but causes resolution issues)
 uuidopenssl = Base.UUID("458c3c95-2e84-50aa-8efc-19380b2a3a95")
 delete!(Pkg.Types.get_last_stdlibs(v"1.12.0"), uuidopenssl)
 delete!(Pkg.Types.get_last_stdlibs(v"1.13.0"), uuidopenssl)
