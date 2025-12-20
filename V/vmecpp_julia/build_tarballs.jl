@@ -1,14 +1,18 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using Base.BinaryPlatforms
+
+# Include libjulia common.jl FIRST to get julia_versions
+include("../../L/libjulia/common.jl")
+
+# Filter to supported Julia versions (1.10+)
+filter!(>=(v"1.10"), julia_versions)
 
 # See https://github.com/JuliaLang/Pkg.jl/issues/2942
 # Once this Pkg issue is resolved, these workarounds must be removed
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
-
-# Julia versions to support (define early for workarounds)
-julia_versions = [v"1.10", v"1.11", v"1.12"]
 
 # libblastrampoline workaround - remove from all julia versions
 # (prevents BinaryBuilder from trying to install incompatible versions)
@@ -24,8 +28,8 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.13.0"), uuidopenssl)
 name = "vmecpp_julia"
 version = v"0.4.11"
 
-# julia_compat string for build_tarballs (julia_versions defined above for workarounds)
-julia_compat = join(map(julia_versions) do v "~$(v.major).$(v.minor)" end, ", ")
+# julia_compat string for build_tarballs
+julia_compat = libjulia_julia_compat(julia_versions)
 
 # Collection of sources required to build vmecpp_julia
 sources = [
@@ -154,8 +158,7 @@ make install
 install_license ${WORKSPACE}/srcdir/vmecpp/LICENSE
 """
 
-# Platforms - use Yggdrasil's common.jl for proper Julia platform triplets
-include("../../L/libjulia/common.jl")
+# Platforms - use libjulia_platforms from common.jl (already included above)
 platforms = reduce(vcat, libjulia_platforms.(julia_versions))
 
 # Filter out unsupported platforms
