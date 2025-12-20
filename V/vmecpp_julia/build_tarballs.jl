@@ -96,6 +96,7 @@ sed -i '/pybind11_add_module/,/install.*_vmecpp/d' vmecpp/CMakeLists.txt
 mkdir -p vmecpp-build && cd vmecpp-build
 
 # Configure vmecpp with vendored dependencies
+# Set BLAS/LAPACK to use OpenBLAS from JLL
 cmake ../vmecpp \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
@@ -107,7 +108,10 @@ cmake ../vmecpp \
     -DFETCHCONTENT_SOURCE_DIR_ABSCAB=${WORKSPACE}/srcdir/abscab-cpp \
     -DFETCHCONTENT_SOURCE_DIR_INDATA2JSON=${WORKSPACE}/srcdir/indata2json \
     -DFETCHCONTENT_FULLY_DISCONNECTED=ON \
-    -Dabsl_DIR=${prefix}/lib/cmake/absl
+    -Dabsl_DIR=${prefix}/lib/cmake/absl \
+    -DBLA_VENDOR=OpenBLAS \
+    -DLAPACK_LIBRARIES="${libdir}/libopenblas.${dlext}" \
+    -DBLAS_LIBRARIES="${libdir}/libopenblas.${dlext}"
 
 # Build only the core library (not Python bindings or standalone)
 make -j${nproc} vmecpp_core
