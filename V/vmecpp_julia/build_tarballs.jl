@@ -162,7 +162,7 @@ dependencies = [
     BuildDependency("libjulia_jll"),
 
     # Runtime dependencies
-    Dependency("libcxxwrap_julia_jll"; compat="~0.12"),
+    Dependency("libcxxwrap_julia_jll"; compat="~0.14"),
     Dependency("HDF5_jll"),
     Dependency("NetCDF_jll"),
     Dependency("OpenBLAS_jll"),
