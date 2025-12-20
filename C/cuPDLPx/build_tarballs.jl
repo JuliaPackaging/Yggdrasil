@@ -5,13 +5,13 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "cuPDLPx"
-version = v"0.1.4"
+version = v"0.1.5"
 
 
 sources = [
     GitSource(
         "https://github.com/MIT-Lu-Lab/cuPDLPx.git",
-        "31fedcd2f46dfb2723721b02ebd17426a22c5db1",
+        "f4dd88dd0583c2804f99fed0073582f3c97867d1",
     ),
 ]
 
@@ -48,7 +48,7 @@ products = [
     # ExecutableProduct("cupdlpx", :cupdlpx),
 ]
 
-platforms = CUDA.supported_platforms(; min_version = v"12.4", max_version = v"12.999")
+platforms = CUDA.supported_platforms(; min_version = v"12.4", max_version = v"13.0.999")
 filter!(p -> arch(p) == "x86_64", platforms)
 
 for platform in platforms
