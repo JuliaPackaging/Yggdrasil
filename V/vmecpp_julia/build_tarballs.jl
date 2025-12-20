@@ -91,20 +91,20 @@ echo "Contents of json-fortran directory:"
 ls -la json-fortran/
 
 # LIBSTELL and json-fortran are submodules of indata2json
-# With unpack_target, GitSource creates LIBSTELL/LIBSTELL/Sources/... (double-nested)
-# Copy the CONTENTS of the outer directory to get the inner directory in the right place
-cp -r LIBSTELL/* indata2json/
-cp -r json-fortran/* indata2json/
+# With unpack_target, GitSource creates nested structure: LIBSTELL/LIBSTELL/Sources/...
+# Copy contents of outer dir to place inner dir at indata2json/indata2json/{LIBSTELL,json-fortran}
+cp -r LIBSTELL/* indata2json/indata2json/
+cp -r json-fortran/* indata2json/indata2json/
 
 # List the indata2json directory to verify
-echo "Contents of indata2json/:"
-ls -la indata2json/
-echo "Contents of indata2json/LIBSTELL:"
-ls -la indata2json/LIBSTELL/ || echo "LIBSTELL dir not found"
-echo "Contents of indata2json/LIBSTELL/Sources (should exist):"
-ls -la indata2json/LIBSTELL/Sources/ || echo "LIBSTELL/Sources dir not found"
-echo "Contents of indata2json/json-fortran:"
-ls -la indata2json/json-fortran/ || echo "json-fortran dir not found"
+echo "Contents of indata2json/indata2json/:"
+ls -la indata2json/indata2json/
+echo "Contents of indata2json/indata2json/LIBSTELL:"
+ls -la indata2json/indata2json/LIBSTELL/ || echo "LIBSTELL dir not found"
+echo "Contents of indata2json/indata2json/LIBSTELL/Sources (should exist):"
+ls -la indata2json/indata2json/LIBSTELL/Sources/ || echo "LIBSTELL/Sources dir not found"
+echo "Contents of indata2json/indata2json/json-fortran:"
+ls -la indata2json/indata2json/json-fortran/ || echo "json-fortran dir not found"
 
 # ============================================
 # Step 1: Build Abseil as static libraries
@@ -113,13 +113,14 @@ echo "Building Abseil..."
 
 # Patch Abseil to remove architecture-specific flags that BinaryBuilder doesn't allow
 # These flags are in GENERATED_AbseilCopts.cmake for hardware AES acceleration
-sed -i 's/"-march=armv8-a+crypto"//g' abseil-cpp/absl/copts/GENERATED_AbseilCopts.cmake
-sed -i 's/"-maes"//g' abseil-cpp/absl/copts/GENERATED_AbseilCopts.cmake
-sed -i 's/"-msse4.1"//g' abseil-cpp/absl/copts/GENERATED_AbseilCopts.cmake
-sed -i 's/"-mfpu=neon"//g' abseil-cpp/absl/copts/GENERATED_AbseilCopts.cmake
+# Note: unpack_target creates nested directory structure (abseil-cpp/abseil-cpp/)
+sed -i 's/"-march=armv8-a+crypto"//g' abseil-cpp/abseil-cpp/absl/copts/GENERATED_AbseilCopts.cmake
+sed -i 's/"-maes"//g' abseil-cpp/abseil-cpp/absl/copts/GENERATED_AbseilCopts.cmake
+sed -i 's/"-msse4.1"//g' abseil-cpp/abseil-cpp/absl/copts/GENERATED_AbseilCopts.cmake
+sed -i 's/"-mfpu=neon"//g' abseil-cpp/abseil-cpp/absl/copts/GENERATED_AbseilCopts.cmake
 
 mkdir -p abseil-build && cd abseil-build
-cmake ../abseil-cpp \
+cmake ../abseil-cpp/abseil-cpp \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
@@ -153,11 +154,11 @@ cmake ../vmecpp \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_CXX_STANDARD=20 \
     -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-    -DFETCHCONTENT_SOURCE_DIR_EIGEN=${WORKSPACE}/srcdir/eigen \
+    -DFETCHCONTENT_SOURCE_DIR_EIGEN=${WORKSPACE}/srcdir/eigen/eigen \
     -DFETCHCONTENT_SOURCE_DIR_NLOHMANN_JSON=${WORKSPACE}/srcdir/nlohmann_json/json \
-    "-DFETCHCONTENT_SOURCE_DIR_ABSEIL-CPP=${WORKSPACE}/srcdir/abseil-cpp" \
-    "-DFETCHCONTENT_SOURCE_DIR_ABSCAB-CPP=${WORKSPACE}/srcdir/abscab-cpp" \
-    -DFETCHCONTENT_SOURCE_DIR_INDATA2JSON=${WORKSPACE}/srcdir/indata2json \
+    "-DFETCHCONTENT_SOURCE_DIR_ABSEIL-CPP=${WORKSPACE}/srcdir/abseil-cpp/abseil-cpp" \
+    "-DFETCHCONTENT_SOURCE_DIR_ABSCAB-CPP=${WORKSPACE}/srcdir/abscab-cpp/abscab-cpp" \
+    -DFETCHCONTENT_SOURCE_DIR_INDATA2JSON=${WORKSPACE}/srcdir/indata2json/indata2json \
     -DFETCHCONTENT_FULLY_DISCONNECTED=ON \
     -Dabsl_DIR=${prefix}/lib/cmake/absl \
     -DBLA_VENDOR=OpenBLAS \
@@ -181,7 +182,7 @@ cmake ../bundled \
     -DJulia_PREFIX=${prefix} \
     -DVMECPP_SOURCE_DIR=${WORKSPACE}/srcdir/vmecpp \
     -DVMECPP_BUILD_DIR=${WORKSPACE}/srcdir/vmecpp-build \
-    -DEIGEN_DIR=${WORKSPACE}/srcdir/eigen \
+    -DEIGEN_DIR=${WORKSPACE}/srcdir/eigen/eigen \
     -Dabsl_DIR=${prefix}/lib/cmake/absl
 make -j${nproc}
 make install
