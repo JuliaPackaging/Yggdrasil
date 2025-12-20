@@ -7,6 +7,12 @@ using BinaryBuilder, Pkg
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
+# OpenSSL stdlib workaround for Julia 1.12+
+# (OpenSSL was added as stdlib in 1.12, but causes resolution issues)
+uuidopenssl = Base.UUID("458c3c95-2e84-50aa-8efc-19380b2a3a95")
+delete!(Pkg.Types.get_last_stdlibs(v"1.12.0"), uuidopenssl)
+delete!(Pkg.Types.get_last_stdlibs(v"1.13.0"), uuidopenssl)
+
 name = "vmecpp_julia"
 version = v"0.4.11"
 
