@@ -89,9 +89,11 @@ cd ..
 echo "Building vmecpp core..."
 
 # Patch vmecpp CMakeLists.txt to remove Python bindings (pybind11)
-# We only need vmecpp_core, not the Python module
+# We only need vmecpp_core, not the Python module or indata2json executable
 sed -i '/FetchContent_Declare.*pybind11/,/FetchContent_MakeAvailable.*pybind11/d' vmecpp/CMakeLists.txt
 sed -i '/pybind11_add_module/,/install.*_vmecpp/d' vmecpp/CMakeLists.txt
+# Also remove install target for indata2json (we only build vmecpp_core)
+sed -i '/install.*TARGETS.*indata2json/d' vmecpp/CMakeLists.txt
 
 mkdir -p vmecpp-build && cd vmecpp-build
 
