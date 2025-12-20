@@ -3,6 +3,9 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
+# Include macOS SDK helper for using newer SDKs
+include("../../platforms/macos_sdks.jl")
+
 # Workarounds for Pkg.jl bugs with stdlibs
 # See https://github.com/JuliaLang/Pkg.jl/issues/2942
 
@@ -79,10 +82,17 @@ sources = [
 
     # Julia wrapper sources (bundled)
     DirectorySource("./bundled"),
+
+    # macOS SDK 12.3 for C++20 support (default darwin14 sysroot lacks C++20 features)
+    # SDK 12.3 provides std::construct_at, std::filesystem, etc.
+    get_macos_sdk_sources("12.3")...,
 ]
 
 # Bash recipe for building across all platforms
-script = raw"""
+# Prepend macOS SDK extraction script for C++20 support
+# Use SDK 12.3 for C++20 headers (std::construct_at, std::filesystem, etc.)
+# Deployment target 10.15 for Fortran compiler compatibility (gfortran's clang-8 doesn't understand 11.x+)
+script = get_macos_sdk_script("12.3"; deployment_target="10.15") * raw"""
 cd $WORKSPACE/srcdir
 
 # Clean up macOS resource fork files (._*) that can corrupt CMake modules
@@ -130,14 +140,6 @@ sed -i 's/"-maes"//g' abseil-cpp/abseil-cpp/absl/copts/GENERATED_AbseilCopts.cma
 sed -i 's/"-msse4.1"//g' abseil-cpp/abseil-cpp/absl/copts/GENERATED_AbseilCopts.cmake
 sed -i 's/"-mfpu=neon"//g' abseil-cpp/abseil-cpp/absl/copts/GENERATED_AbseilCopts.cmake
 
-# On macOS, the old libc++ doesn't fully support C++20 three-way comparison operators
-# Build Abseil with C++17 on macOS to avoid std::strong_ordering issues
-ABSEIL_CXX_STANDARD=20
-if [[ "${target}" == *-apple-* ]]; then
-    echo "macOS detected: using C++17 for Abseil to avoid libc++ three-way comparison issues"
-    ABSEIL_CXX_STANDARD=17
-fi
-
 mkdir -p abseil-build && cd abseil-build
 cmake ../abseil-cpp/abseil-cpp \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -145,7 +147,7 @@ cmake ../abseil-cpp/abseil-cpp \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=OFF \
     -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-    -DCMAKE_CXX_STANDARD=${ABSEIL_CXX_STANDARD} \
+    -DCMAKE_CXX_STANDARD=20 \
     -DABSL_PROPAGATE_CXX_STD=ON \
     -DABSL_BUILD_TESTING=OFF
 make -j${nproc}
@@ -166,12 +168,12 @@ sed -i '/install.*TARGETS.*indata2json/d' vmecpp/CMakeLists.txt
 
 mkdir -p vmecpp-build && cd vmecpp-build
 
-# On macOS, disable Abseil's three-way comparison to avoid libc++ issues
-# This needs to be passed to vmecpp's cmake because it FetchContent's Abseil
-VMECPP_CXX_FLAGS=""
+# macOS: SDK 12.3 has full C++20 support, but we need to disable availability annotations
+# since we're targeting deployment_target=10.15 but using features from SDK 12.3
+MACOS_CXX_FLAGS=""
 if [[ "${target}" == *-apple-* ]]; then
-    echo "macOS detected: disabling three-way comparison for vmecpp's Abseil"
-    VMECPP_CXX_FLAGS="-DABSL_INTERNAL_HAVE_THREE_WAY_COMPARE=0"
+    echo "macOS detected: disabling availability annotations (using SDK 12.3 with deployment target 10.15)"
+    MACOS_CXX_FLAGS="-D_LIBCPP_DISABLE_AVAILABILITY"
 fi
 
 # Configure vmecpp with vendored dependencies
@@ -183,7 +185,7 @@ cmake ../vmecpp \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_CXX_STANDARD=20 \
-    -DCMAKE_CXX_FLAGS="${VMECPP_CXX_FLAGS}" \
+    -DCMAKE_CXX_FLAGS="${MACOS_CXX_FLAGS}" \
     -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
     -DFETCHCONTENT_SOURCE_DIR_EIGEN=${WORKSPACE}/srcdir/eigen/eigen \
     -DFETCHCONTENT_SOURCE_DIR_NLOHMANN_JSON=${WORKSPACE}/srcdir/nlohmann_json/json \
@@ -212,6 +214,7 @@ cmake .. \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_CXX_STANDARD=20 \
+    -DCMAKE_CXX_FLAGS="${MACOS_CXX_FLAGS}" \
     -DJulia_PREFIX=${prefix} \
     -DVMECPP_SOURCE_DIR=${WORKSPACE}/srcdir/vmecpp \
     -DVMECPP_BUILD_DIR=${WORKSPACE}/srcdir/vmecpp-build \
@@ -232,7 +235,7 @@ filter!(p -> arch(p) != "armv7l", platforms)  # ARM32 often problematic
 filter!(p -> arch(p) != "armv6l", platforms)  # Experimental
 filter!(p -> !Sys.iswindows(p), platforms)    # Windows not supported yet
 filter!(p -> !Sys.isfreebsd(p), platforms)    # FreeBSD not tested
-filter!(p -> !Sys.isapple(p), platforms)      # macOS: libc++ (darwin14) lacks C++20 <compare> support
+# macOS enabled: using MacOSX12.3.sdk for proper C++20 support
 filter!(p -> arch(p) != "i686", platforms)    # i686: 32-bit not needed
 filter!(p -> arch(p) != "powerpc64le", platforms)  # ppc64le: not a target platform
 

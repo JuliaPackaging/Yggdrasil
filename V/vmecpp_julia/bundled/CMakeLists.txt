@@ -60,19 +60,37 @@ find_package(OpenMP REQUIRED)
 # Get the directory where netCDF was found and use it for OpenBLAS
 get_filename_component(NETCDF_LIB_DIR "${NETCDF_LIBRARY}" DIRECTORY)
 message(STATUS "Searching for OpenBLAS in: ${NETCDF_LIB_DIR}")
-find_library(OPENBLAS_LIBRARY NAMES openblas
+
+# On macOS, also check for .dylib extension explicitly
+find_library(OPENBLAS_LIBRARY
+    NAMES openblas libopenblas
     HINTS "${NETCDF_LIB_DIR}"
     NO_DEFAULT_PATH)
 if(NOT OPENBLAS_LIBRARY)
-    # Fall back to searching normally
-    find_library(OPENBLAS_LIBRARY NAMES openblas)
+    # Fall back to searching normally with PATHS
+    find_library(OPENBLAS_LIBRARY
+        NAMES openblas libopenblas
+        PATHS "${NETCDF_LIB_DIR}" "${CMAKE_PREFIX_PATH}/lib" "$ENV{prefix}/lib"
+        PATH_SUFFIXES lib lib64)
 endif()
-if(OPENBLAS_LIBRARY)
+
+# On macOS, also try to find the Accelerate framework as fallback
+if(NOT OPENBLAS_LIBRARY AND APPLE)
+    find_library(ACCELERATE_FRAMEWORK Accelerate)
+    if(ACCELERATE_FRAMEWORK)
+        message(STATUS "Using macOS Accelerate framework for BLAS/LAPACK")
+        set(BLAS_LIBRARIES ${ACCELERATE_FRAMEWORK})
+        set(LAPACK_LIBRARIES ${ACCELERATE_FRAMEWORK})
+    else()
+        message(WARNING "Could not find OpenBLAS or Accelerate framework")
+        set(BLAS_LIBRARIES "")
+        set(LAPACK_LIBRARIES "")
+    endif()
+elseif(OPENBLAS_LIBRARY)
     message(STATUS "Found OpenBLAS library: ${OPENBLAS_LIBRARY}")
     set(BLAS_LIBRARIES ${OPENBLAS_LIBRARY})
     set(LAPACK_LIBRARIES ${OPENBLAS_LIBRARY})
 else()
-    # If still not found, check if maybe it doesn't exist and we need to not link to it
     # vmecpp_core doesn't actually require OpenBLAS at link time if BLAS is built into system
     message(WARNING "Could not find OpenBLAS library, trying to skip BLAS/LAPACK linking")
     set(BLAS_LIBRARIES "")
