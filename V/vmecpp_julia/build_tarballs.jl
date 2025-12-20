@@ -155,7 +155,7 @@ dependencies = [
 
     # Runtime dependencies
     Dependency("libcxxwrap_julia_jll"; compat="~0.12"),
-    Dependency("HDF5_jll"; compat="~1.14"),
+    Dependency("HDF5_jll"),
     Dependency("NetCDF_jll"),
     Dependency("OpenBLAS_jll"),
     Dependency("LLVMOpenMP_jll"),
