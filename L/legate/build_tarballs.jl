@@ -12,7 +12,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 include("make_script.jl")
 
 name = "legate"
-version = v"25.10" # Year.Month
+version = v"25.10.1" # Year.Month
 sources = [
     GitSource("https://github.com/nv-legate/legate.git","b0a20719ce9c5f63e8b1c3ddd1e592af5e7a3df6"),
     DirectorySource("./bundled"),
