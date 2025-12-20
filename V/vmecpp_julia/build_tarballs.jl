@@ -144,6 +144,9 @@ filter!(p -> arch(p) != "armv7l", platforms)  # ARM32 often problematic
 filter!(p -> arch(p) != "armv6l", platforms)  # Experimental
 filter!(p -> !Sys.iswindows(p), platforms)    # Windows not supported yet
 filter!(p -> !Sys.isfreebsd(p), platforms)    # FreeBSD not tested
+filter!(p -> !Sys.isapple(p), platforms)      # macOS: Abseil C++20 <=> issue with libc++
+filter!(p -> arch(p) != "i686", platforms)    # i686: 32-bit not needed
+filter!(p -> arch(p) != "powerpc64le", platforms)  # ppc64le: not a target platform
 
 # Expand C++ string ABIs
 platforms = expand_cxxstring_abis(platforms)
