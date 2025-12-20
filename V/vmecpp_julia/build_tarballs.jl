@@ -62,6 +62,11 @@ sources = [
               "f59e3ddd66486b63536f141a786d39c23d654c77",
               unpack_target="indata2json"),
 
+    # LIBSTELL (submodule of indata2json)
+    GitSource("https://github.com/ORNL-Fusion/LIBSTELL.git",
+              "92ac5c339b31e29d9d734c20eae3e7571de8f490",
+              unpack_target="LIBSTELL"),
+
     # Julia wrapper sources (bundled)
     DirectorySource("./bundled"),
 ]
@@ -73,6 +78,13 @@ cd $WORKSPACE/srcdir
 # Debug: List source directories
 echo "Listing srcdir contents:"
 ls -la
+
+# ============================================
+# Step 0: Setup submodules that weren't cloned recursively
+# ============================================
+echo "Setting up LIBSTELL in indata2json..."
+# LIBSTELL is a submodule of indata2json - copy it to the expected location
+cp -r LIBSTELL/LIBSTELL indata2json/indata2json/LIBSTELL
 
 # ============================================
 # Step 1: Build Abseil as static libraries
@@ -121,10 +133,10 @@ cmake ../vmecpp \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_CXX_STANDARD=20 \
     -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-    -DFETCHCONTENT_SOURCE_DIR_EIGEN3=${WORKSPACE}/srcdir/eigen \
+    -DFETCHCONTENT_SOURCE_DIR_EIGEN=${WORKSPACE}/srcdir/eigen/eigen \
     -DFETCHCONTENT_SOURCE_DIR_NLOHMANN_JSON=${WORKSPACE}/srcdir/nlohmann_json/json \
-    -DFETCHCONTENT_SOURCE_DIR_ABSEIL=${WORKSPACE}/srcdir/abseil-cpp/abseil-cpp \
-    -DFETCHCONTENT_SOURCE_DIR_ABSCAB=${WORKSPACE}/srcdir/abscab-cpp/abscab-cpp \
+    -DFETCHCONTENT_SOURCE_DIR_ABSEIL_CPP=${WORKSPACE}/srcdir/abseil-cpp/abseil-cpp \
+    -DFETCHCONTENT_SOURCE_DIR_ABSCAB_CPP=${WORKSPACE}/srcdir/abscab-cpp/abscab-cpp \
     -DFETCHCONTENT_SOURCE_DIR_INDATA2JSON=${WORKSPACE}/srcdir/indata2json/indata2json \
     -DFETCHCONTENT_FULLY_DISCONNECTED=ON \
     -Dabsl_DIR=${prefix}/lib/cmake/absl \
