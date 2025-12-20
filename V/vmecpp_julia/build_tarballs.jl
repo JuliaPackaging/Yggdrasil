@@ -91,20 +91,19 @@ echo "Contents of json-fortran directory:"
 ls -la json-fortran/
 
 # LIBSTELL and json-fortran are submodules of indata2json
-# With unpack_target, GitSource creates nested structure: LIBSTELL/LIBSTELL/Sources/...
-# Copy contents of outer dir to place inner dir at indata2json/indata2json/{LIBSTELL,json-fortran}
-cp -r LIBSTELL/* indata2json/indata2json/
-cp -r json-fortran/* indata2json/indata2json/
+# With unpack_target, content is in nested directory (LIBSTELL/LIBSTELL, json-fortran/json-fortran)
+# Remove any existing placeholder directories from the submodule declarations, then move our content
+rm -rf indata2json/indata2json/LIBSTELL indata2json/indata2json/json-fortran
+mv LIBSTELL/LIBSTELL indata2json/indata2json/LIBSTELL
+mv json-fortran/json-fortran indata2json/indata2json/json-fortran
 
 # List the indata2json directory to verify
-echo "Contents of indata2json/indata2json/:"
+echo "Contents of indata2json/indata2json:"
 ls -la indata2json/indata2json/
 echo "Contents of indata2json/indata2json/LIBSTELL:"
 ls -la indata2json/indata2json/LIBSTELL/ || echo "LIBSTELL dir not found"
 echo "Contents of indata2json/indata2json/LIBSTELL/Sources (should exist):"
 ls -la indata2json/indata2json/LIBSTELL/Sources/ || echo "LIBSTELL/Sources dir not found"
-echo "Contents of indata2json/indata2json/json-fortran:"
-ls -la indata2json/indata2json/json-fortran/ || echo "json-fortran dir not found"
 
 # ============================================
 # Step 1: Build Abseil as static libraries
@@ -113,7 +112,6 @@ echo "Building Abseil..."
 
 # Patch Abseil to remove architecture-specific flags that BinaryBuilder doesn't allow
 # These flags are in GENERATED_AbseilCopts.cmake for hardware AES acceleration
-# Note: unpack_target creates nested directory structure (abseil-cpp/abseil-cpp/)
 sed -i 's/"-march=armv8-a+crypto"//g' abseil-cpp/abseil-cpp/absl/copts/GENERATED_AbseilCopts.cmake
 sed -i 's/"-maes"//g' abseil-cpp/abseil-cpp/absl/copts/GENERATED_AbseilCopts.cmake
 sed -i 's/"-msse4.1"//g' abseil-cpp/abseil-cpp/absl/copts/GENERATED_AbseilCopts.cmake
@@ -156,8 +154,8 @@ cmake ../vmecpp \
     -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
     -DFETCHCONTENT_SOURCE_DIR_EIGEN=${WORKSPACE}/srcdir/eigen/eigen \
     -DFETCHCONTENT_SOURCE_DIR_NLOHMANN_JSON=${WORKSPACE}/srcdir/nlohmann_json/json \
-    "-DFETCHCONTENT_SOURCE_DIR_ABSEIL-CPP=${WORKSPACE}/srcdir/abseil-cpp/abseil-cpp" \
-    "-DFETCHCONTENT_SOURCE_DIR_ABSCAB-CPP=${WORKSPACE}/srcdir/abscab-cpp/abscab-cpp" \
+    -DFETCHCONTENT_SOURCE_DIR_ABSEIL_CPP=${WORKSPACE}/srcdir/abseil-cpp/abseil-cpp \
+    -DFETCHCONTENT_SOURCE_DIR_ABSCAB_CPP=${WORKSPACE}/srcdir/abscab-cpp/abscab-cpp \
     -DFETCHCONTENT_SOURCE_DIR_INDATA2JSON=${WORKSPACE}/srcdir/indata2json/indata2json \
     -DFETCHCONTENT_FULLY_DISCONNECTED=ON \
     -Dabsl_DIR=${prefix}/lib/cmake/absl \
@@ -182,7 +180,7 @@ cmake ../bundled \
     -DJulia_PREFIX=${prefix} \
     -DVMECPP_SOURCE_DIR=${WORKSPACE}/srcdir/vmecpp \
     -DVMECPP_BUILD_DIR=${WORKSPACE}/srcdir/vmecpp-build \
-    -DEIGEN_DIR=${WORKSPACE}/srcdir/eigen/eigen \
+    -DEIGEN_DIR=${WORKSPACE}/srcdir/eigen \
     -Dabsl_DIR=${prefix}/lib/cmake/absl
 make -j${nproc}
 make install
