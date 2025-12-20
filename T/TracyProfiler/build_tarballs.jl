@@ -116,7 +116,8 @@ ${CXX_BUILD} -std=c++20 -O2 \
 # Build profiler
 cmake -S profiler -B build/profiler "${CMAKE_FLAGS[@]}"
 cmake --build build/profiler --parallel ${nproc}
-install -Dvm755 build/profiler/tracy-profiler${exeext} ${bindir}/tracy-profiler${exeext}
+# NOTE — the divergence in naming (`tracy`, not `tracy-profiler`) is necessary for Tracy.jl et al.
+install -Dvm755 build/profiler/tracy-profiler${exeext} ${bindir}/tracy${exeext}
 
 # Build capture utility
 cmake -S capture -B build/capture "${CMAKE_FLAGS[@]}"
