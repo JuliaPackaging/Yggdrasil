@@ -130,6 +130,14 @@ sed -i 's/"-maes"//g' abseil-cpp/abseil-cpp/absl/copts/GENERATED_AbseilCopts.cma
 sed -i 's/"-msse4.1"//g' abseil-cpp/abseil-cpp/absl/copts/GENERATED_AbseilCopts.cmake
 sed -i 's/"-mfpu=neon"//g' abseil-cpp/abseil-cpp/absl/copts/GENERATED_AbseilCopts.cmake
 
+# On macOS, the old libc++ doesn't fully support C++20 three-way comparison operators
+# Build Abseil with C++17 on macOS to avoid std::strong_ordering issues
+ABSEIL_CXX_STANDARD=20
+if [[ "${target}" == *-apple-* ]]; then
+    echo "macOS detected: using C++17 for Abseil to avoid libc++ three-way comparison issues"
+    ABSEIL_CXX_STANDARD=17
+fi
+
 mkdir -p abseil-build && cd abseil-build
 cmake ../abseil-cpp/abseil-cpp \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -137,7 +145,7 @@ cmake ../abseil-cpp/abseil-cpp \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=OFF \
     -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-    -DCMAKE_CXX_STANDARD=20 \
+    -DCMAKE_CXX_STANDARD=${ABSEIL_CXX_STANDARD} \
     -DABSL_PROPAGATE_CXX_STD=ON \
     -DABSL_BUILD_TESTING=OFF
 make -j${nproc}
@@ -158,6 +166,14 @@ sed -i '/install.*TARGETS.*indata2json/d' vmecpp/CMakeLists.txt
 
 mkdir -p vmecpp-build && cd vmecpp-build
 
+# On macOS, disable Abseil's three-way comparison to avoid libc++ issues
+# This needs to be passed to vmecpp's cmake because it FetchContent's Abseil
+VMECPP_CXX_FLAGS=""
+if [[ "${target}" == *-apple-* ]]; then
+    echo "macOS detected: disabling three-way comparison for vmecpp's Abseil"
+    VMECPP_CXX_FLAGS="-DABSL_INTERNAL_HAVE_THREE_WAY_COMPARE=0"
+fi
+
 # Configure vmecpp with vendored dependencies
 # Set BLAS/LAPACK to use OpenBLAS from JLL
 # Note: FetchContent variable names use the EXACT name from FetchContent_Declare
@@ -167,6 +183,7 @@ cmake ../vmecpp \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_CXX_STANDARD=20 \
+    -DCMAKE_CXX_FLAGS="${VMECPP_CXX_FLAGS}" \
     -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
     -DFETCHCONTENT_SOURCE_DIR_EIGEN=${WORKSPACE}/srcdir/eigen/eigen \
     -DFETCHCONTENT_SOURCE_DIR_NLOHMANN_JSON=${WORKSPACE}/srcdir/nlohmann_json/json \
@@ -215,7 +232,7 @@ filter!(p -> arch(p) != "armv7l", platforms)  # ARM32 often problematic
 filter!(p -> arch(p) != "armv6l", platforms)  # Experimental
 filter!(p -> !Sys.iswindows(p), platforms)    # Windows not supported yet
 filter!(p -> !Sys.isfreebsd(p), platforms)    # FreeBSD not tested
-filter!(p -> !Sys.isapple(p), platforms)      # macOS: Abseil C++20 <=> issue with libc++
+filter!(p -> !Sys.isapple(p), platforms)      # macOS: libc++ (darwin14) lacks C++20 <compare> support
 filter!(p -> arch(p) != "i686", platforms)    # i686: 32-bit not needed
 filter!(p -> arch(p) != "powerpc64le", platforms)  # ppc64le: not a target platform
 
