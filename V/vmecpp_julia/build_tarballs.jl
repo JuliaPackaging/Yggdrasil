@@ -6,7 +6,8 @@ name = "vmecpp_julia"
 version = v"0.4.11"
 
 # Julia versions to support
-julia_versions = [v"1.10", v"1.11", v"1.12"]
+# Note: Julia 1.12 temporarily disabled due to BinaryBuilder/Pkg compatibility issue
+julia_versions = [v"1.10", v"1.11"]
 julia_compat = join(map(julia_versions) do v "~$(v.major).$(v.minor)" end, ", ")
 
 # Collection of sources required to build vmecpp_julia
