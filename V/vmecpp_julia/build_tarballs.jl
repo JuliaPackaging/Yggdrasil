@@ -91,10 +91,10 @@ echo "Contents of json-fortran directory:"
 ls -la json-fortran/
 
 # LIBSTELL and json-fortran are submodules of indata2json
-# With unpack_target, content goes directly into the named directory (no double-nesting)
-# Copy them into the indata2json directory where CMakeLists.txt expects them
-cp -r LIBSTELL indata2json/LIBSTELL
-cp -r json-fortran indata2json/json-fortran
+# With unpack_target, GitSource creates LIBSTELL/LIBSTELL/Sources/... (double-nested)
+# Copy the CONTENTS of the outer directory to get the inner directory in the right place
+cp -r LIBSTELL/* indata2json/
+cp -r json-fortran/* indata2json/
 
 # List the indata2json directory to verify
 echo "Contents of indata2json/:"
