@@ -199,10 +199,10 @@ products = [
 # Dependencies
 dependencies = [
     # Build dependencies
-    BuildDependency("libjulia_jll"),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version="1.11.0")),
 
     # Runtime dependencies
-    Dependency("libcxxwrap_julia_jll"; compat="~0.14"),
+    Dependency("libcxxwrap_julia_jll"; compat="~0.14.7"),
     Dependency("HDF5_jll"),
     Dependency("NetCDF_jll"),
     Dependency("OpenBLAS_jll"),
