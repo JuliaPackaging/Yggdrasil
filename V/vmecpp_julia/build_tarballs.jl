@@ -3,9 +3,17 @@
 using BinaryBuilder, Pkg
 
 # See https://github.com/JuliaLang/Pkg.jl/issues/2942
-# Once this Pkg issue is resolved, this must be removed
+# Once this Pkg issue is resolved, these workarounds must be removed
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
+
+# Julia versions to support (define early for workarounds)
+julia_versions = [v"1.10", v"1.11", v"1.12"]
+
+# libblastrampoline workaround - remove from all julia versions
+# (prevents BinaryBuilder from trying to install incompatible versions)
+uuidblastramp = Base.UUID("8e850b90-86db-534c-a0d3-1478176c7d93")
+delete!.(Pkg.Types.get_last_stdlibs.(julia_versions), uuidblastramp)
 
 # OpenSSL stdlib workaround for Julia 1.12+
 # (OpenSSL was added as stdlib in 1.12, but causes resolution issues)
@@ -16,8 +24,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.13.0"), uuidopenssl)
 name = "vmecpp_julia"
 version = v"0.4.11"
 
-# Julia versions to support
-julia_versions = [v"1.10", v"1.11", v"1.12"]
+# julia_compat string for build_tarballs (julia_versions defined above for workarounds)
 julia_compat = join(map(julia_versions) do v "~$(v.major).$(v.minor)" end, ", ")
 
 # Collection of sources required to build vmecpp_julia
