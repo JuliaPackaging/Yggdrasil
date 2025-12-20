@@ -3,23 +3,32 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
-# Include libjulia common.jl FIRST to get julia_versions
-include("../../L/libjulia/common.jl")
-
-# Filter to supported Julia versions (1.10, 1.11, 1.12 only)
-# Julia 1.13+ not yet tested/supported
-filter!(>=(v"1.10"), julia_versions)
-filter!(<=(v"1.12"), julia_versions)
-
+# Workarounds for Pkg.jl bugs with stdlibs
 # See https://github.com/JuliaLang/Pkg.jl/issues/2942
-# Once this Pkg issue is resolved, this must be removed
-# without this binarybuilder tries to install libblastrampoline 3.0.4 for all julia targets
-uuidblastramp = Base.UUID("8e850b90-86db-534c-a0d3-1478176c7d93")
-delete!.(Pkg.Types.get_last_stdlibs.(julia_versions), uuidblastramp)
 
+# Delete OpenSSL_jll stdlib to avoid conflicts during dependency resolution
 uuidopenssl = Base.UUID("458c3c95-2e84-50aa-8efc-19380b2a3a95")
 delete!(Pkg.Types.get_last_stdlibs(v"1.12.0"), uuidopenssl)
 delete!(Pkg.Types.get_last_stdlibs(v"1.13.0"), uuidopenssl)
+
+# Workaround for haskey bug in Julia 1.12: Empty weakdeps from Pkg stdlib
+# The bug is triggered when a stdlib (like Pkg) has weakdeps and gets resolved
+# as part of the dependency graph. The code tries to call haskey(p.deps, name)
+# where p.deps is a Vector{UUID} but the code expects a Dict.
+# By emptying weakdeps, we avoid the buggy code path in Pkg.Operations.fixups_from_projectfile!
+uuidpkg = Base.UUID("44cfe95a-1eb2-52ea-b672-e2afdf69b78f")
+for v in [v"1.12.0", v"1.13.0"]
+    stdlibs = Pkg.Types.get_last_stdlibs(v)
+    if haskey(stdlibs, uuidpkg)
+        empty!(stdlibs[uuidpkg].weakdeps)
+    end
+end
+
+# Include libjulia common.jl to get julia_versions and libjulia_platforms
+include("../../L/libjulia/common.jl")
+
+# Filter to supported Julia versions (only 1.12 for now)
+filter!(==(v"1.12"), julia_versions)
 
 name = "vmecpp_julia"
 version = v"0.4.11"
@@ -75,6 +84,10 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
+
+# Clean up macOS resource fork files (._*) that can corrupt CMake modules
+# These files end up in the Docker container and cause parse errors
+find /usr/share/cmake -name '._*' -delete 2>/dev/null || true
 
 # Debug: List source directories
 echo "Listing srcdir contents:"
@@ -147,6 +160,9 @@ mkdir -p vmecpp-build && cd vmecpp-build
 
 # Configure vmecpp with vendored dependencies
 # Set BLAS/LAPACK to use OpenBLAS from JLL
+# Note: FetchContent variable names use the EXACT name from FetchContent_Declare
+# For packages with hyphens, CMake converts them to underscores in cache variables
+# BUT we also need to try the hyphenated form for compatibility
 cmake ../vmecpp \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
@@ -154,8 +170,8 @@ cmake ../vmecpp \
     -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
     -DFETCHCONTENT_SOURCE_DIR_EIGEN=${WORKSPACE}/srcdir/eigen/eigen \
     -DFETCHCONTENT_SOURCE_DIR_NLOHMANN_JSON=${WORKSPACE}/srcdir/nlohmann_json/json \
-    -DFETCHCONTENT_SOURCE_DIR_ABSEIL_CPP=${WORKSPACE}/srcdir/abseil-cpp/abseil-cpp \
-    -DFETCHCONTENT_SOURCE_DIR_ABSCAB_CPP=${WORKSPACE}/srcdir/abscab-cpp/abscab-cpp \
+    -DFETCHCONTENT_SOURCE_DIR_ABSEIL-CPP=${WORKSPACE}/srcdir/abseil-cpp/abseil-cpp \
+    -DFETCHCONTENT_SOURCE_DIR_ABSCAB-CPP=${WORKSPACE}/srcdir/abscab-cpp/abscab-cpp \
     -DFETCHCONTENT_SOURCE_DIR_INDATA2JSON=${WORKSPACE}/srcdir/indata2json/indata2json \
     -DFETCHCONTENT_FULLY_DISCONNECTED=ON \
     -Dabsl_DIR=${prefix}/lib/cmake/absl \
@@ -171,8 +187,10 @@ cd ..
 # Step 3: Build Julia wrapper (shared library)
 # ============================================
 echo "Building Julia wrapper..."
+# Note: DirectorySource("./bundled") copies contents to srcdir root, not to srcdir/bundled/
+# So the CMakeLists.txt and vmecpp_julia.cpp are at ${WORKSPACE}/srcdir/
 mkdir -p julia-build && cd julia-build
-cmake ../bundled \
+cmake .. \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
@@ -180,13 +198,13 @@ cmake ../bundled \
     -DJulia_PREFIX=${prefix} \
     -DVMECPP_SOURCE_DIR=${WORKSPACE}/srcdir/vmecpp \
     -DVMECPP_BUILD_DIR=${WORKSPACE}/srcdir/vmecpp-build \
-    -DEIGEN_DIR=${WORKSPACE}/srcdir/eigen \
+    -DEIGEN_DIR=${WORKSPACE}/srcdir/eigen/eigen \
     -Dabsl_DIR=${prefix}/lib/cmake/absl
 make -j${nproc}
 make install
 
 # Install license
-install_license ${WORKSPACE}/srcdir/vmecpp/LICENSE
+install_license ${WORKSPACE}/srcdir/vmecpp/LICENSE.txt
 """
 
 # Platforms - use libjulia_platforms from common.jl (already included above)

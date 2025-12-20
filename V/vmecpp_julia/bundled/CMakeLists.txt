@@ -35,10 +35,49 @@ message(STATUS "VMECPP build directory: ${VMECPP_BUILD_DIR}")
 # Find dependencies from JLL packages
 # ============================================
 find_package(HDF5 REQUIRED COMPONENTS CXX)
-find_package(netCDF REQUIRED)
+
+# netCDF: Try find_package first, fall back to finding the library directly
+find_package(netCDF QUIET CONFIG)
+if(NOT netCDF_FOUND)
+    # NetCDF_jll doesn't provide cmake config files, find library directly
+    find_library(NETCDF_LIBRARY NAMES netcdf REQUIRED)
+    find_path(NETCDF_INCLUDE_DIR netcdf.h REQUIRED)
+    message(STATUS "Found netCDF library: ${NETCDF_LIBRARY}")
+    message(STATUS "Found netCDF include: ${NETCDF_INCLUDE_DIR}")
+    # Create an imported target for consistency
+    add_library(netCDF::netcdf UNKNOWN IMPORTED)
+    set_target_properties(netCDF::netcdf PROPERTIES
+        IMPORTED_LOCATION "${NETCDF_LIBRARY}"
+        INTERFACE_INCLUDE_DIRECTORIES "${NETCDF_INCLUDE_DIR}"
+    )
+else()
+    message(STATUS "Found netCDF via cmake config")
+endif()
+
 find_package(OpenMP REQUIRED)
-find_package(BLAS REQUIRED)
-find_package(LAPACK REQUIRED)
+
+# BLAS/LAPACK: Find OpenBLAS in the sysroot (same location as netCDF)
+# Get the directory where netCDF was found and use it for OpenBLAS
+get_filename_component(NETCDF_LIB_DIR "${NETCDF_LIBRARY}" DIRECTORY)
+message(STATUS "Searching for OpenBLAS in: ${NETCDF_LIB_DIR}")
+find_library(OPENBLAS_LIBRARY NAMES openblas
+    HINTS "${NETCDF_LIB_DIR}"
+    NO_DEFAULT_PATH)
+if(NOT OPENBLAS_LIBRARY)
+    # Fall back to searching normally
+    find_library(OPENBLAS_LIBRARY NAMES openblas)
+endif()
+if(OPENBLAS_LIBRARY)
+    message(STATUS "Found OpenBLAS library: ${OPENBLAS_LIBRARY}")
+    set(BLAS_LIBRARIES ${OPENBLAS_LIBRARY})
+    set(LAPACK_LIBRARIES ${OPENBLAS_LIBRARY})
+else()
+    # If still not found, check if maybe it doesn't exist and we need to not link to it
+    # vmecpp_core doesn't actually require OpenBLAS at link time if BLAS is built into system
+    message(WARNING "Could not find OpenBLAS library, trying to skip BLAS/LAPACK linking")
+    set(BLAS_LIBRARIES "")
+    set(LAPACK_LIBRARIES "")
+endif()
 
 # Find Abseil (installed by build script)
 find_package(absl REQUIRED)
