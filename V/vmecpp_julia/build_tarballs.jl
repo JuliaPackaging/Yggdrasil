@@ -91,18 +91,20 @@ echo "Contents of json-fortran directory:"
 ls -la json-fortran/
 
 # LIBSTELL and json-fortran are submodules of indata2json
-# With unpack_target, content is in nested directory (LIBSTELL/LIBSTELL, json-fortran/json-fortran)
-# Use mv to move the inner directory to the expected location
-mv LIBSTELL/LIBSTELL indata2json/indata2json/LIBSTELL
-mv json-fortran/json-fortran indata2json/indata2json/json-fortran
+# With unpack_target, content goes directly into the named directory (no double-nesting)
+# Copy them into the indata2json directory where CMakeLists.txt expects them
+cp -r LIBSTELL indata2json/LIBSTELL
+cp -r json-fortran indata2json/json-fortran
 
 # List the indata2json directory to verify
-echo "Contents of indata2json/indata2json:"
-ls -la indata2json/indata2json/
-echo "Contents of indata2json/indata2json/LIBSTELL:"
-ls -la indata2json/indata2json/LIBSTELL/ || echo "LIBSTELL dir not found"
-echo "Contents of indata2json/indata2json/LIBSTELL/Sources (should exist):"
-ls -la indata2json/indata2json/LIBSTELL/Sources/ || echo "LIBSTELL/Sources dir not found"
+echo "Contents of indata2json/:"
+ls -la indata2json/
+echo "Contents of indata2json/LIBSTELL:"
+ls -la indata2json/LIBSTELL/ || echo "LIBSTELL dir not found"
+echo "Contents of indata2json/LIBSTELL/Sources (should exist):"
+ls -la indata2json/LIBSTELL/Sources/ || echo "LIBSTELL/Sources dir not found"
+echo "Contents of indata2json/json-fortran:"
+ls -la indata2json/json-fortran/ || echo "json-fortran dir not found"
 
 # ============================================
 # Step 1: Build Abseil as static libraries
@@ -111,13 +113,13 @@ echo "Building Abseil..."
 
 # Patch Abseil to remove architecture-specific flags that BinaryBuilder doesn't allow
 # These flags are in GENERATED_AbseilCopts.cmake for hardware AES acceleration
-sed -i 's/"-march=armv8-a+crypto"//g' abseil-cpp/abseil-cpp/absl/copts/GENERATED_AbseilCopts.cmake
-sed -i 's/"-maes"//g' abseil-cpp/abseil-cpp/absl/copts/GENERATED_AbseilCopts.cmake
-sed -i 's/"-msse4.1"//g' abseil-cpp/abseil-cpp/absl/copts/GENERATED_AbseilCopts.cmake
-sed -i 's/"-mfpu=neon"//g' abseil-cpp/abseil-cpp/absl/copts/GENERATED_AbseilCopts.cmake
+sed -i 's/"-march=armv8-a+crypto"//g' abseil-cpp/absl/copts/GENERATED_AbseilCopts.cmake
+sed -i 's/"-maes"//g' abseil-cpp/absl/copts/GENERATED_AbseilCopts.cmake
+sed -i 's/"-msse4.1"//g' abseil-cpp/absl/copts/GENERATED_AbseilCopts.cmake
+sed -i 's/"-mfpu=neon"//g' abseil-cpp/absl/copts/GENERATED_AbseilCopts.cmake
 
 mkdir -p abseil-build && cd abseil-build
-cmake ../abseil-cpp/abseil-cpp \
+cmake ../abseil-cpp \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
@@ -151,11 +153,11 @@ cmake ../vmecpp \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_CXX_STANDARD=20 \
     -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-    -DFETCHCONTENT_SOURCE_DIR_EIGEN=${WORKSPACE}/srcdir/eigen/eigen \
+    -DFETCHCONTENT_SOURCE_DIR_EIGEN=${WORKSPACE}/srcdir/eigen \
     -DFETCHCONTENT_SOURCE_DIR_NLOHMANN_JSON=${WORKSPACE}/srcdir/nlohmann_json/json \
-    "-DFETCHCONTENT_SOURCE_DIR_ABSEIL-CPP=${WORKSPACE}/srcdir/abseil-cpp/abseil-cpp" \
-    "-DFETCHCONTENT_SOURCE_DIR_ABSCAB-CPP=${WORKSPACE}/srcdir/abscab-cpp/abscab-cpp" \
-    -DFETCHCONTENT_SOURCE_DIR_INDATA2JSON=${WORKSPACE}/srcdir/indata2json/indata2json \
+    "-DFETCHCONTENT_SOURCE_DIR_ABSEIL-CPP=${WORKSPACE}/srcdir/abseil-cpp" \
+    "-DFETCHCONTENT_SOURCE_DIR_ABSCAB-CPP=${WORKSPACE}/srcdir/abscab-cpp" \
+    -DFETCHCONTENT_SOURCE_DIR_INDATA2JSON=${WORKSPACE}/srcdir/indata2json \
     -DFETCHCONTENT_FULLY_DISCONNECTED=ON \
     -Dabsl_DIR=${prefix}/lib/cmake/absl \
     -DBLA_VENDOR=OpenBLAS \
