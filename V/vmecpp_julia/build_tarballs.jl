@@ -56,6 +56,14 @@ ls -la
 # Step 1: Build Abseil as static libraries
 # ============================================
 echo "Building Abseil..."
+
+# Patch Abseil to remove -march flags that BinaryBuilder doesn't allow
+# The ABSL_RANDOM_RANDEN_COPTS variable sets architecture-specific flags
+# for hardware AES acceleration which breaks cross-compilation
+sed -i 's/-march=armv8-a+crypto//g' abseil-cpp/abseil-cpp/absl/random/CMakeLists.txt
+sed -i 's/-maes//g' abseil-cpp/abseil-cpp/absl/random/CMakeLists.txt
+sed -i 's/-msse4.1//g' abseil-cpp/abseil-cpp/absl/random/CMakeLists.txt
+
 mkdir -p abseil-build && cd abseil-build
 cmake ../abseil-cpp/abseil-cpp \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -65,8 +73,7 @@ cmake ../abseil-cpp/abseil-cpp \
     -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
     -DCMAKE_CXX_STANDARD=20 \
     -DABSL_PROPAGATE_CXX_STD=ON \
-    -DABSL_BUILD_TESTING=OFF \
-    -DABSL_RANDOM_RANDEN_COPTS=""
+    -DABSL_BUILD_TESTING=OFF
 make -j${nproc}
 make install
 cd ..
