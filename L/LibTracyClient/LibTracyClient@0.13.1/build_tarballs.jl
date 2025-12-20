@@ -15,18 +15,44 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/tracy*/
+
+# Common CMake flags
+CMAKE_FLAGS=(
+    -DCMAKE_INSTALL_PREFIX=$prefix
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+    -DCMAKE_BUILD_TYPE=Release
+    -DTRACY_FIBERS=ON
+    -DTRACY_ONLY_LOCALHOST=ON
+    -DTRACY_NO_CODE_TRANSFER=ON
+    -DTRACY_NO_FRAME_IMAGE=ON
+    -DTRACY_NO_CRASH_HANDLER=ON
+    -DTRACY_ON_DEMAND=ON
+    -DTRACY_NO_SAMPLING=ON
+    -DTRACY_TIMER_FALLBACK=ON
+    -DTRACY_PATCHABLE_NOPSLEDS=ON
+)
+
 if [[ "${target}" != *-mingw* ]]; then
+    # Non-Windows: add __STDC_FORMAT_MACROS for PRIu64 etc.
     echo "target_compile_definitions(TracyClient PUBLIC __STDC_FORMAT_MACROS)" >> CMakeLists.txt
 else
-    echo "target_compile_definitions(TracyClient PUBLIC WINVER=0x0602 _WIN32_WINNT=0x0602)" >> CMakeLists.txt
+    # Windows/MinGW: Apply ETW compatibility patches for missing Windows 10+ SDK definitions
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libTracyClient-mingw-etw-compat.patch
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libTracyClient-mingw-vsync-32bit.patch
 fi
+
+# FreeBSD ElfW compatibility
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libTracyClient-freebsd-elfw.patch
-cmake -B static -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DTRACY_FIBERS=ON -DTRACY_ONLY_LOCALHOST=ON -DTRACY_NO_CODE_TRANSFER=ON -DTRACY_NO_FRAME_IMAGE=ON -DTRACY_NO_CRASH_HANDLER=ON -DTRACY_ON_DEMAND=ON -DTRACY_NO_SAMPLING=ON -DTRACY_TIMER_FALLBACK=ON -DTRACY_PATCHABLE_NOPSLEDS=ON .
+
+# Build static library
+cmake -B static "${CMAKE_FLAGS[@]}" -DBUILD_SHARED_LIBS=OFF .
 cd static
 make -j${nproc}
 make install
 cd ..
-cmake -B shared -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DTRACY_FIBERS=ON -DTRACY_ONLY_LOCALHOST=ON -DTRACY_NO_CODE_TRANSFER=ON -DTRACY_NO_FRAME_IMAGE=ON -DTRACY_NO_CRASH_HANDLER=ON -DTRACY_ON_DEMAND=ON -DTRACY_NO_SAMPLING=ON -DTRACY_TIMER_FALLBACK=ON -DTRACY_PATCHABLE_NOPSLEDS=ON .
+
+# Build shared library
+cmake -B shared "${CMAKE_FLAGS[@]}" -DBUILD_SHARED_LIBS=ON .
 cd shared
 make -j${nproc}
 make install
