@@ -57,12 +57,12 @@ ls -la
 # ============================================
 echo "Building Abseil..."
 
-# Patch Abseil to remove -march flags that BinaryBuilder doesn't allow
-# The ABSL_RANDOM_RANDEN_COPTS variable sets architecture-specific flags
-# for hardware AES acceleration which breaks cross-compilation
-sed -i 's/-march=armv8-a+crypto//g' abseil-cpp/abseil-cpp/absl/random/CMakeLists.txt
-sed -i 's/-maes//g' abseil-cpp/abseil-cpp/absl/random/CMakeLists.txt
-sed -i 's/-msse4.1//g' abseil-cpp/abseil-cpp/absl/random/CMakeLists.txt
+# Patch Abseil to remove architecture-specific flags that BinaryBuilder doesn't allow
+# These flags are in GENERATED_AbseilCopts.cmake for hardware AES acceleration
+sed -i 's/"-march=armv8-a+crypto"//g' abseil-cpp/abseil-cpp/absl/copts/GENERATED_AbseilCopts.cmake
+sed -i 's/"-maes"//g' abseil-cpp/abseil-cpp/absl/copts/GENERATED_AbseilCopts.cmake
+sed -i 's/"-msse4.1"//g' abseil-cpp/abseil-cpp/absl/copts/GENERATED_AbseilCopts.cmake
+sed -i 's/"-mfpu=neon"//g' abseil-cpp/abseil-cpp/absl/copts/GENERATED_AbseilCopts.cmake
 
 mkdir -p abseil-build && cd abseil-build
 cmake ../abseil-cpp/abseil-cpp \
