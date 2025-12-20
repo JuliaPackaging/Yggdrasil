@@ -79,9 +79,6 @@ else
 
 fi
 
-# Fixed on main branch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/demangle.patch
-
 if [[ ${target} == *mingw* ]]; then
     atomic_patch -p1 $WORKSPACE/srcdir/patches/mingw-version.patch
 fi
