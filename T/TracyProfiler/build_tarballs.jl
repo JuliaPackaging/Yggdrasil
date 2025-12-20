@@ -159,11 +159,11 @@ platforms = expand_cxxstring_abis(supported_platforms(; exclude=[
 ]))
 
 products = [
+    ExecutableProduct("tracy", :tracy),
     ExecutableProduct("tracy-capture", :tracy_capture),
     ExecutableProduct("tracy-csvexport", :tracy_csvexport),
     ExecutableProduct("tracy-import-chrome", :tracy_import_chrome),
     ExecutableProduct("tracy-import-fuchsia", :tracy_import_fuchsia),
-    ExecutableProduct("tracy-profiler", :tracy_profiler),
     ExecutableProduct("tracy-update", :tracy_update),
 ]
 
