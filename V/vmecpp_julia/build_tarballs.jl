@@ -84,13 +84,22 @@ ls -la
 # Step 0: Setup submodules that weren't cloned recursively
 # ============================================
 echo "Setting up indata2json submodules..."
-# LIBSTELL and json-fortran are submodules of indata2json - copy them to expected locations
-cp -r LIBSTELL/LIBSTELL indata2json/indata2json/LIBSTELL
-cp -r json-fortran/json-fortran indata2json/indata2json/json-fortran
+# Debug: Show what's in the source directories
+echo "Contents of LIBSTELL directory:"
+ls -la LIBSTELL/
+echo "Contents of json-fortran directory:"
+ls -la json-fortran/
+
+# LIBSTELL and json-fortran are submodules of indata2json
+# With unpack_target, content is directly in the named directory
+cp -r LIBSTELL indata2json/indata2json/LIBSTELL
+cp -r json-fortran indata2json/indata2json/json-fortran
 
 # List the indata2json directory to verify
 echo "Contents of indata2json/indata2json:"
 ls -la indata2json/indata2json/
+echo "Contents of indata2json/indata2json/LIBSTELL:"
+ls -la indata2json/indata2json/LIBSTELL/ || echo "LIBSTELL dir not found"
 
 # ============================================
 # Step 1: Build Abseil as static libraries
