@@ -6,10 +6,9 @@ using Base.BinaryPlatforms
 # Include libjulia common.jl FIRST to get julia_versions
 include("../../L/libjulia/common.jl")
 
-# Filter to supported Julia versions (1.10, 1.11, 1.12 only)
-# Julia 1.13+ not yet tested/supported
-filter!(>=(v"1.10"), julia_versions)
-filter!(<=(v"1.12"), julia_versions)
+# Temporarily test with only Julia 1.12 to debug Pkg.jl haskey issue
+# TODO: Re-enable 1.10, 1.11 after resolving the cross-version build bug
+filter!(==(v"1.12.0"), julia_versions)
 
 # See https://github.com/JuliaLang/Pkg.jl/issues/2942
 # Once this Pkg issue is resolved, these workarounds must be removed
