@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "LASzip"
-version = v"3.4.3000"
+version = v"3.4.4000"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/LASzip/LASzip.git", "1ab671e42ff1f086e29d5b7e300a5026e7b8d69b")
+    GitSource("https://github.com/LASzip/LASzip.git", "b6412aa4ac3f1fd44874c862de8e3eb7f672d495")
 ]
 
 # Bash recipe for building across all platforms
