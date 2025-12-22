@@ -23,7 +23,8 @@ CMAKE_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release
 )
 
-# Avoid Mingw runtime failure: 32 bit pseudo relocation out of range
+# Prevents Mingw-w64 runtime failure:
+# 32 bit pseudo relocation at 000000006A2417D2 out of range, targeting 00007FF91B307DD0, yielding the value 00007FF8B10C65FA
 if [[ "${target}" == *-mingw* ]]; then
     CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="-fno-gnu-unique")
 fi
