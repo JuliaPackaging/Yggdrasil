@@ -14,18 +14,21 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 
-# Patch to find unordered_map from tr1, logic there doesn't work for MINGW32.
-if [[ "${target}" == *-mingw* ]]; then
-    sed -i '/add_definitions(-DUNORDERED)/d' LASzip/src/CMakeLists.txt;  
-fi
-
 mkdir LASzip/build
 cd LASzip/build/
 
-cmake -DCMAKE_INSTALL_PREFIX=$prefix \
-      -DCMAKE_CXX_FLAGS="-fno-gnu-unique" \
-      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-      -DCMAKE_BUILD_TYPE=Release ..
+CMAKE_FLAGS=(
+    -DCMAKE_INSTALL_PREFIX=$prefix
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+    -DCMAKE_BUILD_TYPE=Release
+)
+
+# Avoid Mingw runtime failure: 32 bit pseudo relocation out of range
+if [[ "${target}" == *-mingw* ]]; then
+    CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="-fno-gnu-unique")
+fi
+
+cmake ${CMAKE_FLAGS[@]} ..
 cmake --build . --parallel ${nproc}
 cmake --install .
 """
