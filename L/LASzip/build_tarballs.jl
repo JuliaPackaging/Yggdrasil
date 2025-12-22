@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "LASzip"
-version = v"3.4.4000"
+version = v"3.4.4001"
 
 # Collection of sources required to complete build
 sources = [
@@ -21,8 +21,14 @@ fi
 
 mkdir LASzip/build
 cd LASzip/build/
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_CXX_FLAGS="-std=c++11" -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_VERBOSE_MAKEFILE=OFF ..
-cmake --build . --target install --config Release
+
+cmake -DCMAKE_INSTALL_PREFIX=$prefix \
+      -DCMAKE_CXX_STANDARD=17 \
+      -DCMAKE_CXX_FLAGS="-fno-gnu-unique" \
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+      -DCMAKE_BUILD_TYPE=Release ..
+cmake --build . --parallel ${nproc}
+cmake --install .
 """
 
 
