@@ -23,7 +23,6 @@ mkdir LASzip/build
 cd LASzip/build/
 
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
-      -DCMAKE_CXX_STANDARD=17 \
       -DCMAKE_CXX_FLAGS="-fno-gnu-unique" \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_BUILD_TYPE=Release ..
