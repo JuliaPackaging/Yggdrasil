@@ -17,7 +17,7 @@ dependencies = [
     BuildDependency("Xorg_xorgproto_jll"),
     BuildDependency("LibVPX_jll"), # We use the static archive
     Dependency("FFMPEG_jll"; compat=string(version)),
-    Dependency("SDL2_jll"),
+    Dependency("SDL2_jll"; compat="2.32.10"),
     Dependency("OpenSSL_jll"; compat="3.5.0"),
 ]
 
