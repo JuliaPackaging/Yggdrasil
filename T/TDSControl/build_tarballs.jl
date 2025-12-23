@@ -21,11 +21,10 @@ cmake --install build
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("x86_64", "windows"; ),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "musl")
-]
+include("../../L/libjulia/common.jl")
+platforms = vcat(libjulia_platforms.(julia_versions)...)
+filter!((p) -> arch(p) == "x86_64", platforms)
+filter!((p) -> os(p) == "linux" || os(p) == "windows", platforms)
 
 
 # The products that we will ensure are always built
@@ -41,4 +40,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"12.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.7", preferred_gcc_version = v"12.1.0")
