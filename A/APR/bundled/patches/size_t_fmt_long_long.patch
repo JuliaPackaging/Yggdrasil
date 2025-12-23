@@ -1,0 +1,19 @@
+--- a/configure.in
++++ b/configure.in
+@@ -1864,10 +1864,14 @@
+ 
+ dnl I would expect much of the above to go away with new compile test
+ APR_CHECK_TYPES_FMT_COMPATIBLE(ssize_t, long, ld, [ssize_t_fmt="ld"], [
+-APR_CHECK_TYPES_FMT_COMPATIBLE(ssize_t, int, d, [ssize_t_fmt="d"])
++APR_CHECK_TYPES_FMT_COMPATIBLE(ssize_t, int, d, [ssize_t_fmt="d"],
++APR_CHECK_TYPES_FMT_COMPATIBLE(ssize_t, long long, d, [ssize_t_fmt="zd"])
++)
+ ])
+ APR_CHECK_TYPES_FMT_COMPATIBLE(size_t, unsigned long, lu, [size_t_fmt="lu"], [
+-APR_CHECK_TYPES_FMT_COMPATIBLE(size_t, unsigned int, u, [size_t_fmt="u"])
++APR_CHECK_TYPES_FMT_COMPATIBLE(size_t, unsigned int, u, [size_t_fmt="u"],
++APR_CHECK_TYPES_FMT_COMPATIBLE(size_t, unsigned long long, u, [size_t_fmt="zu"])
++)
+ ])
+ 
+ APR_CHECK_SIZEOF_EXTENDED([#include <sys/types.h>], ssize_t, 8)
