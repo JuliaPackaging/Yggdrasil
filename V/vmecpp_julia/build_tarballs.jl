@@ -45,17 +45,13 @@ sources = [
     GitSource("https://github.com/proximafusion/vmecpp.git",
               "04f16f531ead8995b1f4a5a5f92024e82f83f86a"),  # v0.4.11
 
-    # Eigen 3.4.0 (header-only)
-    GitSource("https://gitlab.com/libeigen/eigen.git",
-              "3147391d946bb4b6c68edd901f2add6ac1f31f8c",  # 3.4.0
-              unpack_target="eigen"),
-
-    # Abseil-cpp (specific commit used by vmecpp)
+    # Abseil-cpp (vendored - cannot use abseil_cpp_jll due to C++20 requirement)
+    # abseil_cpp_jll is built with C++14, vmecpp requires C++20 + static linking
     GitSource("https://github.com/abseil/abseil-cpp.git",
               "4447c7562e3bc702ade25105912dce503f0c4010",
               unpack_target="abseil-cpp"),
 
-    # nlohmann_json v3.11.3
+    # nlohmann_json v3.11.3 (vendored for FetchContent cmake integration)
     ArchiveSource("https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz",
                   "d6c65aca6b1ed68e7a182f4757257b107ae403032760ed6ef121c9d55e81757d",
                   unpack_target="nlohmann_json"),
@@ -81,6 +77,8 @@ sources = [
               unpack_target="json-fortran"),
 
     # Julia wrapper sources (bundled)
+    # These are CxxWrap bindings adapted for cross-compilation from:
+    # https://github.com/proximafusion/VMECPP.jl/tree/main/deps/src
     DirectorySource("./bundled"),
 
     # macOS SDK 12.3 for C++20 support (default darwin14 sysroot lacks C++20 features)
@@ -187,7 +185,7 @@ cmake ../vmecpp \
     -DCMAKE_CXX_STANDARD=20 \
     -DCMAKE_CXX_FLAGS="${MACOS_CXX_FLAGS}" \
     -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-    -DFETCHCONTENT_SOURCE_DIR_EIGEN=${WORKSPACE}/srcdir/eigen/eigen \
+    -DFETCHCONTENT_SOURCE_DIR_EIGEN=${prefix}/include/eigen3 \
     -DFETCHCONTENT_SOURCE_DIR_NLOHMANN_JSON=${WORKSPACE}/srcdir/nlohmann_json/json \
     -DFETCHCONTENT_SOURCE_DIR_ABSEIL-CPP=${WORKSPACE}/srcdir/abseil-cpp/abseil-cpp \
     -DFETCHCONTENT_SOURCE_DIR_ABSCAB-CPP=${WORKSPACE}/srcdir/abscab-cpp/abscab-cpp \
@@ -218,7 +216,7 @@ cmake .. \
     -DJulia_PREFIX=${prefix} \
     -DVMECPP_SOURCE_DIR=${WORKSPACE}/srcdir/vmecpp \
     -DVMECPP_BUILD_DIR=${WORKSPACE}/srcdir/vmecpp-build \
-    -DEIGEN_DIR=${WORKSPACE}/srcdir/eigen/eigen \
+    -DEIGEN_DIR=${prefix}/include/eigen3 \
     -Dabsl_DIR=${prefix}/lib/cmake/absl
 make -j${nproc}
 make install
@@ -251,10 +249,11 @@ products = [
 dependencies = [
     # Build dependencies
     BuildDependency(PackageSpec(;name="libjulia_jll", version="1.11.0")),
+    BuildDependency("Eigen_jll"),
 
     # Runtime dependencies
     Dependency("libcxxwrap_julia_jll"; compat="~0.14.7"),
-    Dependency("HDF5_jll"),
+    Dependency("HDF5_jll"; compat="~1.14.6"),
     Dependency("NetCDF_jll"),
     Dependency("OpenBLAS_jll"),
     Dependency("LLVMOpenMP_jll"),
