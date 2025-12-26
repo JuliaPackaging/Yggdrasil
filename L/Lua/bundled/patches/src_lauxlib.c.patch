@@ -1,5 +1,5 @@
 diff --git a/src/lauxlib.c b/src/lauxlib.c
-index 4ca6c65..146cb75 100644
+index 0000000..0000001 100644
 --- a/src/lauxlib.c
 +++ b/src/lauxlib.c
 @@ -1199,3 +1199,13 @@ LUALIB_API void luaL_checkversion_ (lua_State *L, lua_Number ver, size_t sz) {
