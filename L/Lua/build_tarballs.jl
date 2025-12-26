@@ -2,7 +2,7 @@ using BinaryBuilder
 
 name = "Lua"
 version = v"5.5.0"
-ygg_version = v"5.5.0" # Got out of sync when RISC-V was added
+ygg_version = v"5.5.0"
 
 sources = [
     ArchiveSource("https://www.lua.org/ftp/lua-$(version).tar.gz",
