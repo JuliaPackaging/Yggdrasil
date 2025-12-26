@@ -32,7 +32,7 @@ fi
 # XXX: Work around Lua apparently not understanding its own Windows setup
 if [[ ${target} == *-mingw* ]]; then
     TO_BIN="lua.exe luac.exe"
-    TO_LIB="lua54.dll"
+    TO_LIB="lua55.dll"
 else
     TO_BIN="lua luac"
     TO_LIB="liblua.${dlext}"
@@ -49,7 +49,7 @@ platforms = supported_platforms()
 products = [
     ExecutableProduct("lua", :lua),
     ExecutableProduct("luac", :luac),
-    LibraryProduct(["liblua", "lua54"], :liblua),
+    LibraryProduct(["liblua", "lua55"], :liblua),
 ]
 
 dependencies = [
