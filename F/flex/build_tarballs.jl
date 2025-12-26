@@ -27,7 +27,7 @@ if [[ "${target}" == *-apple-* ]]; then
 fi
 
 ./autogen.sh
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static --enable-shared ac_cv_func_reallocarray=no
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static --enable-shared
 make -j${nproc}
 cd src && make install
 install -Dvm 0755 ${bindir}/flex ${bindir}/flex++
