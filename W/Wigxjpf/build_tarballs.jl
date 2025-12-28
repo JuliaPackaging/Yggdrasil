@@ -37,12 +37,14 @@ cmake --install build
 
 # On platforms without quadmath (non-x86 or macOS), create a symlink
 # so that libwigxjpf_quadmath_shared "exists" for product validation
-if [[ ! -f "${libdir}/libwigxjpf_quadmath_shared."* ]]; then
-    # Quadmath library wasn't built (expected on non-x86 or macOS)
-    # Create symlink to base library to satisfy product validation
-    if [[ -f "${libdir}/libwigxjpf_shared.dylib" ]]; then
+if [ "$(uname)" = "Darwin" ]; then
+    # macOS
+    if [ ! -f "${libdir}/libwigxjpf_quadmath_shared.dylib" ]; then
         ln -s libwigxjpf_shared.dylib "${libdir}/libwigxjpf_quadmath_shared.dylib"
-    elif [[ -f "${libdir}/libwigxjpf_shared.so" ]]; then
+    fi
+else
+    # Linux/Windows
+    if [ ! -f "${libdir}/libwigxjpf_quadmath_shared.so" ]; then
         ln -s libwigxjpf_shared.so "${libdir}/libwigxjpf_quadmath_shared.so"
     fi
 fi
