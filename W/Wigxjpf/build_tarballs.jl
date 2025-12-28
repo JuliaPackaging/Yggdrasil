@@ -18,6 +18,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/wigxjpf-*
+find /usr/share/cmake -name "._*" -delete 2>/dev/null
 
 # Fix and enhance CMakeLists.txt
 atomic_patch -p1 ../patches/cmake_build.patch
@@ -60,37 +61,42 @@ platforms_without_quadmath = filter(platforms) do p
     !(arch(p) in ["i686", "x86_64"] && (Sys.islinux(p) || Sys.iswindows(p)))
 end
 
-# Products for platforms WITH quadmath
+# Products for platforms WITH quadmath (x86 Linux/Windows)
 products_with_quadmath = [
     LibraryProduct("libwigxjpf_shared", :libwigxjpf),
     LibraryProduct("libwigxjpf_quadmath_shared", :libwigxjpf_quadmath),
 ]
 
-# Products for platforms WITHOUT quadmath
+# Products for platforms WITHOUT quadmath (all others)
 products_without_quadmath = [LibraryProduct("libwigxjpf_shared", :libwigxjpf)]
 
-# Build for x86/x86_64 platforms (with quadmath support)
-build_tarballs(
-    ARGS,
-    name,
-    version,
-    sources,
-    script,
-    platforms_with_quadmath,
-    products_with_quadmath,
-    dependencies;
-    julia_compat = "1.6",
-)
 
-# Build for other platforms (without quadmath)
-build_tarballs(
-    ARGS,
-    name,
-    version,
-    sources,
-    script,
-    platforms_without_quadmath,
-    products_without_quadmath,
-    dependencies;
-    julia_compat = "1.6",
-)
+# Build for platforms with quadmath support
+if !isempty(platforms_with_quadmath)
+    build_tarballs(
+        ARGS,
+        name,
+        version,
+        sources,
+        script,
+        platforms_with_quadmath,
+        products_with_quadmath,
+        dependencies;
+        julia_compat = "1.6",
+    )
+end
+
+# Build for platforms without quadmath support
+if !isempty(platforms_without_quadmath)
+    build_tarballs(
+        ARGS,
+        name,
+        version,
+        sources,
+        script,
+        platforms_without_quadmath,
+        products_without_quadmath,
+        dependencies;
+        julia_compat = "1.6",
+    )
+end
