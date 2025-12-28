@@ -35,17 +35,21 @@ cmake -S . -B build -G Ninja \
 cmake --build build
 cmake --install build
 
-# On platforms without quadmath (non-x86 or macOS), create a symlink
-# so that libwigxjpf_quadmath_shared "exists" for product validation
-if [ "$(uname)" = "Darwin" ]; then
-    # macOS
-    if [ ! -f "${libdir}/libwigxjpf_quadmath_shared.dylib" ]; then
-        ln -s libwigxjpf_shared.dylib "${libdir}/libwigxjpf_quadmath_shared.dylib"
-    fi
-else
-    # Linux/Windows
-    if [ ! -f "${libdir}/libwigxjpf_quadmath_shared.so" ]; then
-        ln -s libwigxjpf_shared.so "${libdir}/libwigxjpf_quadmath_shared.so"
+# On platforms without quadmath (non-x86 or macOS), build a stub library
+# that provides error messages instead of undefined symbols
+if [ ! -f "${libdir}/libwigxjpf_quadmath_shared.so" ] && [ ! -f "${libdir}/libwigxjpf_quadmath_shared.dylib" ]; then
+    echo "Building stub quadmath library for platform without quadmath support..."
+    
+    # Compile stub
+    ${CC} -fPIC -O2 -Wno-unused-parameter -c ../bundled/quadmath_stub.c -o quadmath_stub.o
+    
+    # Link stub with base library to create a self-contained quadmath stub
+    if [ "$(uname)" = "Darwin" ]; then
+        ${CC} -dynamiclib quadmath_stub.o -L"${libdir}" -lwigxjpf_shared \
+              -o "${libdir}/libwigxjpf_quadmath_shared.dylib"
+    else
+        ${CC} -shared quadmath_stub.o -L"${libdir}" -lwigxjpf_shared \
+              -o "${libdir}/libwigxjpf_quadmath_shared.so"
     fi
 fi
 
