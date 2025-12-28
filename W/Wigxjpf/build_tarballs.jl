@@ -46,13 +46,19 @@ dependencies = [
 ]
 
 # Split platforms based on quadmath support
+# libquadmath is available on x86/x86_64 Linux and Windows (MinGW)
+# NOT available on macOS (Apple Clang doesn't provide it)
 platforms = supported_platforms(; experimental = true)
 
-# Platforms with quadmath support: x86 and x86_64
-platforms_with_quadmath = filter(p -> arch(p) in [:i686, :x86_64], platforms)
+# Platforms with quadmath support: x86/x86_64 on Linux and Windows
+platforms_with_quadmath = filter(platforms) do p
+    arch(p) in ["i686", "x86_64"] && (Sys.islinux(p) || Sys.iswindows(p))
+end
 
 # Platforms without quadmath support: all others
-platforms_without_quadmath = filter(p -> !(arch(p) in [:i686, :x86_64]), platforms)
+platforms_without_quadmath = filter(platforms) do p
+    !(arch(p) in ["i686", "x86_64"] && (Sys.islinux(p) || Sys.iswindows(p)))
+end
 
 # Products for platforms WITH quadmath
 products_with_quadmath = [
