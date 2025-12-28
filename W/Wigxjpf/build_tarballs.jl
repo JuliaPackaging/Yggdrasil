@@ -39,10 +39,10 @@ cmake --install build
 # that provides error messages instead of undefined symbols
 if [ ! -f "${libdir}/libwigxjpf_quadmath_shared.so" ] && [ ! -f "${libdir}/libwigxjpf_quadmath_shared.dylib" ]; then
     echo "Building stub quadmath library for platform without quadmath support..."
-    
+
     # Compile stub
-    ${CC} -fPIC -O2 -Wno-unused-parameter -c ../bundled/quadmath_stub.c -o quadmath_stub.o
-    
+    ${CC} -fPIC -O2 -Wno-unused-parameter -c ../quadmath_stub.c -o quadmath_stub.o
+
     # Link stub with base library to create a self-contained quadmath stub
     if [ "$(uname)" = "Darwin" ]; then
         ${CC} -dynamiclib quadmath_stub.o -L"${libdir}" -lwigxjpf_shared \
