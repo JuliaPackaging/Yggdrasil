@@ -16,7 +16,9 @@ cd $WORKSPACE/srcdir
 cd DASKR
 install_license LICENSE
 mkdir -p "${libdir}"
-gfortran -shared -fPIC -o $libdir/libdaskr.${dlext} solver/d*.f
+
+# GCC 10+ requires -fallow-argument-mismatch for legacy Fortran code with type mismatches
+gfortran -shared -fPIC -fallow-argument-mismatch -o $libdir/libdaskr.${dlext} solver/d*.f
 """
 
 # These are the platforms we will build for by default, unless further
