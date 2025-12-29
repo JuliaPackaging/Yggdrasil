@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "Libassuan"
-version = v"2.5.7"
+version = v"3.0.2"
 
 # Collection of sources required to build libgcrypt
 sources = [
@@ -38,7 +38,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Libgpg_error_jll"; compat="1.50.0"),
+    Dependency("Libgpg_error_jll"; compat="1.58"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
