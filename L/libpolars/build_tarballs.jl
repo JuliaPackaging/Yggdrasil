@@ -6,13 +6,13 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "libpolars"
-version = v"0.1.1"
+version = v"0.2.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource(
         "https://github.com/Pangoraw/Polars.jl/",
-        "1860f4dd5a8750ffe2ab78268b72e7008cfe169d",
+        "e5a8b9f4219f19cd3a1f919545eeb17d60df149d",
     ),
 ]
 
