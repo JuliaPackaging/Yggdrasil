@@ -18,7 +18,13 @@ install_license LICENSE
 mkdir -p "${libdir}"
 
 # GCC 10+ requires -fallow-argument-mismatch for legacy Fortran code with type mismatches
-gfortran -shared -fPIC -fallow-argument-mismatch -o $libdir/libdaskr.${dlext} solver/d*.f
+# Check if the flag is supported (GCC 10+)
+EXTRA_FFLAGS=""
+if gfortran -fallow-argument-mismatch -E - < /dev/null > /dev/null 2>&1; then
+    EXTRA_FFLAGS="-fallow-argument-mismatch"
+fi
+
+gfortran -shared -fPIC ${EXTRA_FFLAGS} -o $libdir/libdaskr.${dlext} solver/d*.f
 """
 
 # These are the platforms we will build for by default, unless further
