@@ -47,5 +47,6 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # We need at least GCC 6 on aarch64 to support assembler intrinsics there
+# We need at least GCC 8 for the <filesystem> header
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat = "1.6", preferred_gcc_version = v"6")
+               julia_compat="1.6", preferred_gcc_version=v"8")
