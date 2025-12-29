@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "OpenEXR"
-version = v"3.2.4"
+version = v"3.4.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/AcademySoftwareFoundation/openexr.git", "a1a00ffeecf627bbbc010d40700720bee48b2af7"),
+    GitSource("https://github.com/AcademySoftwareFoundation/openexr.git", "741ecb82ccdb291ce5b04713fc6c03208753575e"),
 ]
 
 
@@ -31,16 +31,17 @@ platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libOpenEXRUtil-3_2", :libOpenEXRUtil),
-    LibraryProduct("libOpenEXRCore-3_2", :libOpenEXRCore),
-    LibraryProduct("libOpenEXR-3_2", :libOpenEXR),
-    LibraryProduct("libIlmThread-3_2", :libIlmThread),
-    LibraryProduct("libIex-3_2", :libIex),
+    LibraryProduct("libOpenEXRUtil-3_4", :libOpenEXRUtil),
+    LibraryProduct("libOpenEXRCore-3_4", :libOpenEXRCore),
+    LibraryProduct("libOpenEXR-3_4", :libOpenEXR),
+    LibraryProduct("libIlmThread-3_4", :libIlmThread),
+    LibraryProduct("libIex-3_4", :libIex),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Imath_jll"; compat="=3.1.11"),
+    # Minor releases of `Imath_jll` are breaking, patch releases are not
+    Dependency("Imath_jll"; compat="~3.2.2"),
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
 ]
 
