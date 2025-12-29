@@ -35,6 +35,24 @@ cmake -S . -B build -G Ninja \
 cmake --build build
 cmake --install build
 
+# On platforms without quadmath (non-x86 or macOS), build a stub library
+# that provides error messages instead of undefined symbols
+if [ ! -f "${libdir}/libwigxjpf_quadmath_shared.so" ] && [ ! -f "${libdir}/libwigxjpf_quadmath_shared.dylib" ]; then
+    echo "Building stub quadmath library for platform without quadmath support..."
+
+    # Compile stub
+    ${CC} -fPIC -O2 -Wno-unused-parameter -c ../quadmath_stub.c -o quadmath_stub.o
+
+    # Link stub with base library to create a self-contained quadmath stub
+    if [ "$(uname)" = "Darwin" ]; then
+        ${CC} -dynamiclib quadmath_stub.o -L"${libdir}" -lwigxjpf_shared \
+              -o "${libdir}/libwigxjpf_quadmath_shared.dylib"
+    else
+        ${CC} -shared quadmath_stub.o -L"${libdir}" -lwigxjpf_shared \
+              -o "${libdir}/libwigxjpf_quadmath_shared.so"
+    fi
+fi
+
 install_license COPYING COPYING.LESSER
 """
 
@@ -48,6 +66,9 @@ dependencies = [
     ),
 ]
 
+# All platforms get both products
+# On x86/x86_64 Linux/Windows: real quadmath library
+# On others: symlink for compatibility
 platforms = supported_platforms(; experimental = true)
 
 products = [
