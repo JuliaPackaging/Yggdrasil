@@ -8,6 +8,7 @@ version = v"3.4.4"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/AcademySoftwareFoundation/openexr.git", "741ecb82ccdb291ce5b04713fc6c03208753575e"),
+    DirectorySource("bundled"),
 ]
 
 
@@ -21,9 +22,14 @@ cmake -B build -G Ninja \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release
+# We are building with old kernel headers that do not define `HWCAP_SVE2`
+atomic_patch -p1 $WORKSPACE/srcdir/patches/sve2.patch
 cmake --build build --parallel ${nproc}
 cmake --install build
 """
+
+# We need macos 10.14 for `std::any_cast`
+sources, script = require_macos_sdk("10.14", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
