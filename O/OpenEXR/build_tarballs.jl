@@ -28,6 +28,8 @@ cmake -B build -G Ninja \
 atomic_patch -p1 $WORKSPACE/srcdir/patches/sve2.patch
 cmake --build build --parallel ${nproc}
 cmake --install build
+install_license LICENSE.md
+install_license PATENTS
 """
 
 # We need macos 10.14 for `std::any_cast`
@@ -57,5 +59,6 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 # We need at least GCC 6 on aarch64 to support assembler intrinsics there
 # We need at least GCC 9 for `std::filesystem`
+# We need at least GCC 10 to avoid a GCC `.seh_savexmm` bug on mingw
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"9")
+               julia_compat="1.6", preferred_gcc_version=v"10")
