@@ -116,6 +116,6 @@ build_tarballs(
     products,
     dependencies;
     preferred_gcc_version=v"12",
-    julia_compat="1.6",
+    julia_compat="1.9",
     clang_use_lld=false,
 )
