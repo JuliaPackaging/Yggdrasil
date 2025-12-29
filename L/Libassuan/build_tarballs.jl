@@ -8,7 +8,7 @@ version = v"3.0.2"
 # Collection of sources required to build libgcrypt
 sources = [
     ArchiveSource("https://gnupg.org/ftp/gcrypt/libassuan/libassuan-$(version).tar.bz2",
-                  "0103081ffc27838a2e50479153ca105e873d3d65d8a9593282e9c94c7e6afb76"),
+                  "d2931cdad266e633510f9970e1a2f346055e351bb19f9b78912475b8074c36f6"),
     DirectorySource("./bundled"),
 ]
 
