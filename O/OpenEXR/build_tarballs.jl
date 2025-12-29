@@ -1,6 +1,8 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "OpenEXR"
 version = v"3.4.4"
@@ -29,7 +31,8 @@ cmake --install build
 """
 
 # We need macos 10.14 for `std::any_cast`
-sources, script = require_macos_sdk("10.14", sources, script)
+# We need macos 10.15 for `aligned_alloc`
+sources, script = require_macos_sdk("11.0", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
