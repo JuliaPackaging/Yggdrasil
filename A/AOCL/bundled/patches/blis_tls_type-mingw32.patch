@@ -1,0 +1,17 @@
+diff --git a/frame/include/bli_config_macro_defs.h b/frame/include/bli_config_macro_defs.h
+index b4b2d3c55..92903e680 100644
+--- a/frame/include/bli_config_macro_defs.h
++++ b/frame/include/bli_config_macro_defs.h
+@@ -261,11 +261,7 @@
+ #endif
+ 
+ 
+-#ifdef BLIS_OS_WINDOWS
+-  #define BLIS_TLS_TYPE __declspec(thread)
+-#else
+-  #define BLIS_TLS_TYPE __thread
+-#endif
++#define BLIS_TLS_TYPE __thread
+ 
+ #endif
+ 
