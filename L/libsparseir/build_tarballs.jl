@@ -1,14 +1,14 @@
 using BinaryBuilder, Pkg
 
 name = "libsparseir"
-version = v"0.7.5"
+version = v"0.8.0"
 
 # Collection of sources required to complete build
 sources = [
-    # sparse-ir-rs v0.7.5
+    # sparse-ir-rs v0.8.0
     GitSource(
         "https://github.com/SpM-lab/sparse-ir-rs.git",
-        "a4bb6ac11de440f0ef1b1b83525ae2c39a45da98",
+        "993365de9ec4cfb8fe187cf719e28d3f6eb9d59d",
     ),
 ]
 
