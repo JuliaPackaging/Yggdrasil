@@ -1,6 +1,8 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "OpenColorIO"
 version = v"2.5.0"
@@ -34,13 +36,15 @@ if [[ ${target} == aarch64*darwin* ]]; then
    args+=(-DCMAKE_STRIP=aarch64-apple-darwin20-strip)
 elif [[ ${target} == x86_64*darwin* ]]; then
    # On Darwin, cmake picks `llvm-strip` which doesn't understand the Mach-O format.
-   args+=(-DCMAKE_STRIP=x86_64-apple-darwin20-strip)
+   args+=(-DCMAKE_STRIP=x86_64-apple-darwin14-strip)
 fi
 cmake -B build -G Ninja "${args[@]}"
 cmake --build build --parallel ${nproc}
 cmake --install build
 install_license LICENSE
 """
+
+sources, script = require_macos_sdk("11.0", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
@@ -74,4 +78,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"9")
+               julia_compat="1.6", preferred_gcc_version=v"10")
