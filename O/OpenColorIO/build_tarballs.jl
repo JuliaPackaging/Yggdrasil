@@ -8,22 +8,38 @@ version = v"2.5.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/AcademySoftwareFoundation/OpenColorIO", "592a122b37467c3376f2387fbbdbe7b571fad39f"),
+    DirectorySource("bundled"),
 ]
-
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/OpenColorIO*
-cmake -B build -G Ninja \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DOCIO_BUILD_GPU_TESTS=OFF \
-    -DOCIO_BUILD_PYTHON=OFF \
-    -DOCIO_BUILD_TESTS=OFF \
+
+if [[ ${target} == *mingw* ]]; then
+   # Our mingw is too old and doesn't know how to create an `ifstream` from a `wstring`
+   atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw.patch
+fi
+
+args=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_INSTALL_PREFIX=${prefix}
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+    -DOCIO_BUILD_GPU_TESTS=OFF
+    -DOCIO_BUILD_PYTHON=OFF
+    -DOCIO_BUILD_TESTS=OFF
     -DOCIO_USE_HEADLESS=ON
+)
+if [[ ${target} == aarch64*darwin* ]]; then
+   # On Darwin, cmake picks `llvm-strip` which doesn't understand the Mach-O format.
+   args+=(-DCMAKE_STRIP=aarch64-apple-darwin20-strip)
+elif [[ ${target} == x86_64*darwin* ]]; then
+   # On Darwin, cmake picks `llvm-strip` which doesn't understand the Mach-O format.
+   args+=(-DCMAKE_STRIP=x86_64-apple-darwin20-strip)
+fi
+cmake -B build -G Ninja "${args[@]}"
 cmake --build build --parallel ${nproc}
 cmake --install build
+install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
@@ -43,7 +59,7 @@ products = [
     ExecutableProduct("ociowrite"       , :ociowrite       ),
     ExecutableProduct("ociolutimage"    , :ociolutimage    ),
     ExecutableProduct("ocioconvert"     , :ocioconvert     ),
-    LibraryProduct("libOpenColorIO", :libOpenColorIO),
+    LibraryProduct(["libOpenColorIO", "libOpenColorIO_2_5"], :libOpenColorIO),
 ]
 
 # Dependencies that must be installed before this package can be built
