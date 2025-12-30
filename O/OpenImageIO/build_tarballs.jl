@@ -1,6 +1,8 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, BinaryBuilderBase, Pkg
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "OpenImageIO"
 version = v"3.1.8"              # This is 3.1.8.0
@@ -24,6 +26,8 @@ cmake -B build-dir -G Ninja \
 cmake --build build-dir --parallel ${nproc}
 cmake --install build-dir
 """
+
+sources, script = require_macos_sdk("11.0", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
