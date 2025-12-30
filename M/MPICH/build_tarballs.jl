@@ -4,11 +4,11 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MPICH"
-version = v"4.3.0"
+version = v"4.3.2"
 
 sources = [
     ArchiveSource("https://www.mpich.org/static/downloads/$(version)/mpich-$(version).tar.gz",
-                  "5e04132984ad83cab9cc53f76072d2b5ef5a6d24b0a9ff9047a8ff96121bcc63"),
+                  "47d774587a7156a53752218c811c852e70ac44db9c502dc3f399b4cb817e3818"),
     DirectorySource("bundled"),
 ]
 
@@ -29,9 +29,6 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pthread_np.patch
 #   case-insensitive file systems:
 #   * https://github.com/JuliaPackaging/Yggdrasil/pull/315
 #   * https://github.com/JuliaPackaging/Yggdrasil/issues/6344
-# - `--enable-fast=all,O3` leads to very long compile times for the
-#   file `src/mpi/coll/mpir_coll.c`. It seems we need to avoid
-#   `alwaysinline`.
 # - We need to use `ch3` because `ch4` breaks on some systems, e.g. on
 #   x86_64 macOS. See
 #   <https://github.com/JuliaPackaging/Yggdrasil/pull/10249#discussion_r1975948816> for a brief
@@ -40,7 +37,7 @@ configure_flags=(
     --build=${MACHTYPE}
     --disable-dependency-tracking
     --disable-doc
-    --enable-fast=ndebug,O3
+    --enable-fast=alwaysinline,ndebug,O3
     --enable-static=no
     --host=${target}
     --prefix=${prefix}

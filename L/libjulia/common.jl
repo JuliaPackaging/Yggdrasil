@@ -1,14 +1,30 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using BinaryBuilderBase: get_addable_spec
 
-include("../../fancy_toys.jl") # for get_addable_spec and should_build_platform
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 # list of supported Julia versions
-julia_full_versions = [v"1.6.3", v"1.7.0", v"1.8.2", v"1.9.0", v"1.10.0", v"1.11.1", v"1.12.0-beta3", v"1.13.0-DEV"]
+julia_full_versions = [v"1.10.0", v"1.11.1", v"1.12.0", v"1.13.0-DEV", v"1.14.0-DEV"]
+libjulia_min_julia_version = Base.thispatch(minimum(julia_full_versions))
 if ! @isdefined julia_versions
     julia_versions = Base.thispatch.(julia_full_versions)
 end
+
+# History of supported julia versions:
+# "pre-v1.10.0" means that it already existed prior to libjulia v1.10.0,
+# and we didn't track down the exact PRs when compiling this list.
+# julia v1.6:  pre-v1.10.0 - v1.10.20 (dropped in https://github.com/JuliaPackaging/Yggdrasil/pull/12378)
+# julia v1.7:  pre-v1.10.0 - v1.10.20 (dropped in https://github.com/JuliaPackaging/Yggdrasil/pull/12378)
+# julia v1.8:  pre-v1.10.0 - v1.10.20 (dropped in https://github.com/JuliaPackaging/Yggdrasil/pull/12378)
+# julia v1.9:  pre-v1.10.0 - v1.10.20 (dropped in https://github.com/JuliaPackaging/Yggdrasil/pull/12378)
+# julia v1.10: v1.10.0  - today
+# julia v1.11: v1.10.4  - today
+# julia v1.12: v1.10.9  - today
+# julia v1.13: v1.10.15 - today
+# julia v1.14: v1.11.0  - today
 
 # return the platforms supported by libjulia
 function julia_supported_platforms(julia_version)
@@ -18,25 +34,17 @@ function julia_supported_platforms(julia_version)
     #    libunwind.so.8: undefined reference to `setcontext'
     filter!(p -> !(Sys.islinux(p) && libc(p) == "musl" && arch(p) == "i686"), platforms)
 
-    if julia_version < v"1.7"
-        # In Julia <= 1.6, skip macOS on ARM and Linux on armv6l
-        filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)
-        filter!(p -> arch(p) != "armv6l", platforms)
-    end
-
-    if julia_version >= v"1.9.0"
-        # 32bit ARM seems broken, see https://github.com/JuliaLang/julia/issues/47345
-        filter!(p -> arch(p) != "armv6l", platforms)
-        filter!(p -> arch(p) != "armv7l", platforms)
-    end
+    # 32bit ARM seems broken, see https://github.com/JuliaLang/julia/issues/47345
+    filter!(p -> arch(p) != "armv6l", platforms)
+    filter!(p -> arch(p) != "armv7l", platforms)
 
     # FreeBSD on 64bit ARM 64 is not supported for older Julia versions
-    if julia_version < v"1.12"
+    if julia_version < v"1.12.0-0"
         filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
     end
 
     # RISC-V is not supported for older Julia versions
-    if julia_version < v"1.13"
+    if julia_version < v"1.13.0-0"
         filter!(p -> arch(p) != "riscv64", platforms)
     end
 
@@ -53,6 +61,10 @@ function libjulia_platforms(julia_version)
     return platforms
 end
 
+function libjulia_julia_compat(julia_versions=julia_versions)
+    return join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
+end
+
 # Collection of sources required to build Julia
 function build_julia(ARGS, version::VersionNumber; jllversion=version)
     name = "libjulia"
@@ -60,22 +72,19 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     @assert version in julia_full_versions
 
     checksums = Dict(
-        v"1.6.3" => "2593def8cc9ef81663d1c6bfb8addc3f10502dd9a1d5a559728316a11dea2594",
-        v"1.7.0" => "8e870dbef71bc72469933317a1a18214fd1b4b12f1080784af7b2c56177efcb4",
-        v"1.8.2" => "3e2cea35bf5df963ed7b75a83e8febfc000acf1e664ecd657a0772508eb1fb5d",
-        v"1.9.0" => "48f4c8a7d5f33d0bc6ce24226df20ab49e385c2d0c3767ec8dfdb449602095b2",
         v"1.10.0" => "a4136608265c5d9186ae4767e94ddc948b19b43f760aba3501a161290852054d",
         v"1.11.1" => "895549f40b21dee66b6380e30811f40d2d938c2baba0750de69c9a183cccd756",
+        v"1.12.0" => "c4f84dd858c36fbad010ebc4a73700f0dbb8c0f573c0734b9f7ae3f8fed0bba8",
     )
 
-    if version == v"1.12.0-beta3"
+    if version == v"1.13.0-DEV"
         sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "faca79b503ae4fb47483e3e8d9acb2f3eb151a5b"),
+            GitSource("https://github.com/JuliaLang/julia.git", "abd8457ca85370eefe3788cfa13a6233773ea16f"),
             DirectorySource("./bundled"),
         ]
-    elseif version == v"1.13.0-DEV"
+    elseif version == v"1.14.0-DEV"
         sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "3e9f486430a254dd766bcd7f185fc21147d44345"),
+            GitSource("https://github.com/JuliaLang/julia.git", "b63991c5b0aaf83b40603503457baa1ef98e7b98"),
             DirectorySource("./bundled"),
         ]
     else
@@ -83,14 +92,6 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
             ArchiveSource("https://github.com/JuliaLang/julia/releases/download/v$(version)/julia-$(version).tar.gz", checksums[version]),
             DirectorySource("./bundled"),
         ]
-
-        if version == v"1.6.3"
-            # WORKAROUND
-            push!(sources, ArchiveSource("https://github.com/JuliaBinaryWrappers/LibOSXUnwind_jll.jl/releases/download/LibOSXUnwind-v0.0.7%2B0/LibOSXUnwind.v0.0.7.x86_64-apple-darwin.tar.gz",
-                                         "e2ea6ecae13c0f2666d1b3020098feeab92affae1614f6b2a992dde0af88ec2f",
-                                         unpack_target="LibOSXUnwind_jll"))
-        end
-
     end
 
     # Bash recipe for building across all platforms
@@ -117,21 +118,9 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     done
     fi
 
-    if [[ "${version}" == 1.9.* ]] || [[ "${version}" == 1.1[0-9].* ]]; then
-        if [[ "${target}" == *mingw* ]]; then
-            sed -i -e 's/-lblastrampoline"/-lblastrampoline-5"/g' deps/libsuitesparse.mk
-            sed -i -e 's/libblastrampoline\./libblastrampoline-5./g' deps/libsuitesparse.mk
-        fi
-    fi
-
-    # HACK to allow building Julia 1.6 in Julia >= 1.7, as we can't install an old
-    # LibOSXUnwind_jll for it (due to it becoming a stdlib in Julia 1.7).
-    # See also <https://github.com/JuliaPackaging/Yggdrasil/pull/4320>
-    if [[ "${target}" == *apple* ]] && [[ "${version}" == 1.6.* ]]; then
-        cp $WORKSPACE/srcdir/LibOSXUnwind_jll/include/*.h ${includedir}
-        mkdir -p ${includedir}/mach-o
-        cp $WORKSPACE/srcdir/LibOSXUnwind_jll/include/mach-o/*.h ${includedir}/mach-o
-        cp $WORKSPACE/srcdir/LibOSXUnwind_jll/lib/libosxunwind.* ${libdir}
+    if [[ "${target}" == *mingw* ]]; then
+        sed -i -e 's/-lblastrampoline"/-lblastrampoline-5"/g' deps/libsuitesparse.mk
+        sed -i -e 's/libblastrampoline\./libblastrampoline-5./g' deps/libsuitesparse.mk
     fi
 
     case ${target} in
@@ -168,15 +157,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
 
     # so far this holds for most versions:
     LLVMVERMINOR=0
-    if [[ "${version}" == 1.6.* ]]; then
-        LLVMVERMAJOR=11
-    elif [[ "${version}" == 1.7.* ]]; then
-        LLVMVERMAJOR=12
-    elif [[ "${version}" == 1.8.* ]]; then
-        LLVMVERMAJOR=13
-    elif [[ "${version}" == 1.9.* ]]; then
-        LLVMVERMAJOR=14
-    elif [[ "${version}" == 1.10.* ]]; then
+    if [[ "${version}" == 1.10.* ]]; then
         LLVMVERMAJOR=15
     elif [[ "${version}" == 1.11.* ]]; then
         LLVMVERMAJOR=16
@@ -184,6 +165,9 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         LLVMVERMAJOR=18
         LLVMVERMINOR=1
     elif [[ "${version}" == 1.13.* ]]; then
+        LLVMVERMAJOR=20
+        LLVMVERMINOR=1
+    elif [[ "${version}" == 1.14.* ]]; then
         LLVMVERMAJOR=20
         LLVMVERMINOR=1
     else
@@ -199,16 +183,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     LDFLAGS="-L${prefix}/lib"
     CFLAGS="-I${prefix}/include"
     if [[ "${target}" == *mingw* ]]; then
-        if [[ "${version}" == 1.[0-7].* ]]; then
-            LLVMLINK="-L${prefix}/bin -lLLVM"
-        else
-            LLVMLINK="-L${prefix}/bin -lLLVM-${LLVMVERMAJOR}jl"
-        fi
-        if [[ $LLVMVERMAJOR -ge 20 ]] && [[ "$nbits" == "32" ]]; then
-            # this seems to be needed for https://github.com/JuliaLang/julia/pull/58344
-            # since we are overriding RT_LLVMLINK
-            LLVMLINK="${LLVMLINK} -lz"
-        fi
+        LLVMLINK="-L${prefix}/bin -lLLVM-${LLVMVERMAJOR}jl"
         LLVM_LDFLAGS="-L${prefix}/bin"
         LDFLAGS="-L${prefix}/bin"
     elif [[ "${target}" == *apple* ]]; then
@@ -217,7 +192,18 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         LLVMLINK="-L${prefix}/lib -lLLVM-${LLVMVERMAJOR}jl"
     fi
 
-    if [[ "${version}" == 1.[6-9].* ]] || [[ "${version}" == 1.1[0-1].* ]]; then
+    if [[ $LLVMVERMAJOR -ge 20 ]]; then
+        # this seems to be needed for https://github.com/JuliaLang/julia/pull/58344 and https://github.com/JuliaLang/julia/pull/59227.
+        # https://github.com/JuliaLang/julia/pull/59475 tried to upstream this workaround, but that doesn't not seem to be enough.
+        LLVMLINK="${LLVMLINK} -lz -lzstd"
+    fi
+
+    if [[ "${target}" == *mingw* ]] && [[ "${version}" == 1.1[3-4].* ]]; then
+        # Help the linker to find the winternl.h symbols introduced in https://github.com/JuliaLang/julia/pull/59877
+        LLVMLINK="${LLVMLINK} -lntdll"
+    fi
+
+    if [[ "${version}" == 1.1[0-1].* ]]; then
         MBEDTLS_OR_OPENSSL="USE_SYSTEM_MBEDTLS=1"
     else
         MBEDTLS_OR_OPENSSL="USE_SYSTEM_OPENSSL=1"
@@ -258,9 +244,8 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     override BUILD_OS=Linux
 
     #llvm-config-host is not available
-    override LLVMLINK=${LLVMLINK}    # For Julia <= 1.7
-    override RT_LLVMLINK=${LLVMLINK} # For Julia >= 1.8
-    override CG_LLVMLINK=${LLVMLINK} # For Julia >= 1.8
+    override RT_LLVMLINK=${LLVMLINK}
+    override CG_LLVMLINK=${LLVMLINK}
     override LLVM_CXXFLAGS=${LLVM_CXXFLAGS}
     override LLVM_LDFLAGS=${LLVM_LDFLAGS}
     override LLVM_SHLIB_SYMBOL_VERSION=${LLVMSYMVER}
@@ -292,19 +277,9 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         USE_SYSTEM_LAPACK=1
         LIBLAPACKNAME=libopenblas
     EOM
-    elif [[ "${version}" == 1.[0-6].* ]]; then
-        cat << EOM >>Make.user
-        USECLANG=1
-
-        # link against libosxunwind, see https://github.com/JuliaPackaging/Yggdrasil/pull/2164
-        # and https://github.com/JuliaPackaging/Yggdrasil/pull/2190
-        LIBUNWIND:=-losxunwind
-        JCPPFLAGS+=-DLIBOSXUNWIND
-    EOM
     fi
 
-    if [[ "${version}" == 1.[7-9].* ]] ||
-       [[ "${version}" == 1.1[0-1].* ]]; then
+    if [[ "${version}" == 1.1[0-1].* ]]; then
         if [[ "${target}" == *apple* ]]; then
             # Always define LLVMLIBUNWIND for apple and julia 1.6 to 1.11 to work
             # around issues in old versions of the Julia build system which did
@@ -320,13 +295,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
             cat << EOM >>Make.user
             OSLIBS+=-Wl,--undefined-version
     EOM
-       fi
-    fi
-
-    # lld is too strict about some libraries that were built a long time ago
-    # (libLLVM-11jl.so for julia 1.6 on freebsd)
-    if [[ "${version}" == 1.6.* ]] && [[ "${target}" == *freebsd* ]]; then
-        LDFLAGS="${LDFLAGS} -fuse-ld=bfd"
+        fi
     fi
 
     # avoid linker errors related to atomic support in 32bit ARM builds
@@ -374,14 +343,6 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     # environment results in a segfault.
     make USE_CROSS_FLISP=1 NO_GIT=1 LDFLAGS="${LDFLAGS}" CFLAGS="${CFLAGS}" CXXFLAGS="${CXXFLAGS}" -j${nproc} VERBOSE=1 ${MAKE_TARGET} DSYMUTIL=true
 
-    # HACK to avoid runtime dependency on LibOSXUnwind_jll with Julia 1.6: it
-    # disables the `#include <libunwind.h>` statements in two header files,
-    # and all code directly depending on them; luckily all of that is internal
-    # and should not affect external code using the Julia kernel "API"
-    if [[ "${version}" == 1.6.* ]]; then
-        atomic_patch -p1 $WORKSPACE/srcdir/libunwind-julia-1.6.patch
-    fi
-
     # 'manually' install libraries and headers
     mkdir -p ${libdir}
     mkdir -p ${includedir}/julia
@@ -422,83 +383,41 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         BuildDependency("MPFR_jll"),
         BuildDependency("GMP_jll"),
         BuildDependency("Objconv_jll"),
+        BuildDependency("SuiteSparse_jll"),
+        Dependency("LibUV_jll"),
+        Dependency("LibUnwind_jll"; platforms=filter(!Sys.isapple, platforms)),
+        Dependency("LLVMLibUnwind_jll"; platforms=filter(Sys.isapple, platforms)),
         # needed for suitesparse >= 7.2.0
-        HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.24.3"))
+        HostBuildDependency(PackageSpec(; name="CMake_jll", version = "3.24.3"))
     ]
 
-    # HACK: we can't install LLVM 12 JLLs for Julia 1.7 from within Julia 1.6. Similar
-    # for several other standard JLLs.
-    # So we use get_addable_spec below to "fake it" for now.
-    # This means the resulting package has fewer dependencies declared, but at least it
-    # will work and allow people to build JLL binaries ready for Julia 1.7
-    if version.major == 1 && version.minor == 6
+    if version.major == 1 && version.minor == 10
         push!(dependencies, BuildDependency("MbedTLS_jll")),
-        push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"5.4.1+1")))
-        push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+5")))
-        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.3.2+6")))
-        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"11.0.1+3")))
-        push!(dependencies, BuildDependency(get_addable_spec("OpenBLAS_jll", v"0.3.10+10")))
-        push!(dependencies, BuildDependency(get_addable_spec("LibGit2_jll", v"1.2.3+0")))
-    elseif version.major == 1 && version.minor == 7
-        push!(dependencies, BuildDependency("MbedTLS_jll")),
-        push!(dependencies, BuildDependency("SuiteSparse_jll"))
-        push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+5")))
-        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.3.2+6"); platforms=filter(!Sys.isapple, platforms)))
-        push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"11.0.1+1"); platforms=filter(Sys.isapple, platforms)))
-        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"12.0.1+3")))
-    elseif version.major == 1 && version.minor == 8
-        push!(dependencies, BuildDependency("MbedTLS_jll")),
-        push!(dependencies, BuildDependency("SuiteSparse_jll"))
-        push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+11")))
-        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.5.0+1"); platforms=filter(!Sys.isapple, platforms)))
-        push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0"); platforms=filter(Sys.isapple, platforms)))
-        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"13.0.1+3")))
-    elseif version.major == 1 && version.minor == 9
-        push!(dependencies, BuildDependency("MbedTLS_jll")),
-        push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"5.10.1+6")))
-        push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+13")))
-        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.5.0+4"); platforms=filter(!Sys.isapple, platforms)))
-        push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0"); platforms=filter(Sys.isapple, platforms)))
-        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"14.0.6+2")))
-    elseif version.major == 1 && version.minor == 10
-        push!(dependencies, BuildDependency("MbedTLS_jll")),
-        push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"7.2.1+1")))
-        push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+14")))
-        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.5.0+5"); platforms=filter(!Sys.isapple, platforms)))
-        push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0"); platforms=filter(Sys.isapple, platforms)))
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"15.0.7+10")))
     elseif version.major == 1 && version.minor == 11
         push!(dependencies, BuildDependency("MbedTLS_jll")),
-        push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"7.7.0+0")))
-        push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+16")))
-        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.7.2+2"); platforms=filter(!Sys.isapple, platforms)))
-        push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0"); platforms=filter(Sys.isapple, platforms)))
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"16.0.6+4")))
     elseif version.major == 1 && version.minor == 12
         push!(dependencies, BuildDependency("OpenSSL_jll")),
-        push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"7.8.3+2")))
-        push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+20")))
-        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.8.1+2"); platforms=filter(!Sys.isapple, platforms)))
-        push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"19.1.4+0"); platforms=filter(Sys.isapple, platforms)))
-        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"18.1.7+3")))
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"18.1.7+4")))
     elseif version.major == 1 && version.minor == 13
         push!(dependencies, BuildDependency("OpenSSL_jll")),
         push!(dependencies, BuildDependency("Zstd_jll")),
-        push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"7.10.1+0")))
-        push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+20")))
-        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.8.2+0"); platforms=filter(!Sys.isapple, platforms)))
-        push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"19.1.4+0"); platforms=filter(Sys.isapple, platforms)))
-        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"20.1.2+1")))
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"20.1.8+0")))
+    elseif version.major == 1 && version.minor == 14
+        push!(dependencies, BuildDependency("OpenSSL_jll")),
+        push!(dependencies, BuildDependency("Zstd_jll")),
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"20.1.8+0")))
     else
         error("Unsupported Julia version")
     end
 
     # gcc 7 and gcc 8 crash on aarch64-linux when encountering some bfloat16 intrinsics
-    gcc_ver = version >= v"1.11.0-DEV" ? v"9" : v"7"
+    gcc_ver = version >= v"1.11.0-" ? v"9" : v"7"
 
     if any(should_build_platform.(triplet.(platforms)))
         build_tarballs(ARGS, name, jllversion, sources, script, platforms, products, dependencies;
                    preferred_gcc_version=gcc_ver, preferred_llvm_version=v"17",
-                   lock_microarchitecture=false, julia_compat="1.6")
+                   lock_microarchitecture=false, julia_compat=libjulia_julia_compat(julia_versions))
     end
 end

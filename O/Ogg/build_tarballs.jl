@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "Ogg"
-version = v"1.3.5"
+version = v"1.3.6"
 
 sources = [
     ArchiveSource("https://ftp.osuosl.org/pub/xiph/releases/ogg/libogg-$(version).tar.xz",
-                  "c4d91be36fc8e54deae7575241e03f4211eb102afb3fc0775fbbc1b740016705"),
+                  "5c8253428e181840cd20d41f3ca16557a9cc04bad4a3d04cce84808677fa1061"),
 ]
 
 # Bash recipe for building across all platforms

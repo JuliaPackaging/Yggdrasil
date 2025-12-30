@@ -1,7 +1,7 @@
 # In addition to coin-or-common.jl, we need to modify this file to trigger a
 # rebuild.
 #
-# Last updated: 2024-07-24
+# Last updated: 2025-09-23 (again)
 
 include("../coin-or-common.jl")
 
@@ -29,10 +29,6 @@ if [[ ${target} == *mingw* ]]; then
     export LDFLAGS="-L${libdir}"
 elif [[ ${target} == *linux* ]]; then
     export LDFLAGS="-ldl -lrt"
-fi
-
-if [[ ${target} == *aarch64* ]] || [[ ${target} == *arm* ]]; then
-   export CPPFLAGS="${CPPFLAGS} -D__arm__"
 fi
 
 # BLAS and LAPACK

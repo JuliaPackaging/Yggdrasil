@@ -2,33 +2,24 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
+
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "AMReX"
-version_string = "25.04"
+version_string = "25.11"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/AMReX-Codes/amrex/releases/download/$(version_string)/amrex-$(version_string).tar.gz",
-                  "71c3f01a9cfbf3aff7f0a5dd66c2ac99a606334f1910052194c2520df3f7b7be"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-                  "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
+                  "be9e5f04e1f3e2252a14e5bb817fb4f2c231e0901ef85ee4e14341616f6b1ba6"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/amrex
-
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    export MACOSX_DEPLOYMENT_TARGET=10.14
-    popd
-fi
 
 # Correct HDF5 compiler wrappers
 perl -pi -e 's+-I/workspace/srcdir/hdf5-1[.]14[.]./src/H5FDsubfiling++' $(which h5pcc)
@@ -86,6 +77,8 @@ fi
 install_license LICENSE
 """
 
+sources, script = require_macos_sdk("10.14", sources, script)
+
 augment_platform_block = """
     using Base.BinaryPlatforms
     $(MPI.augment)
@@ -111,7 +104,7 @@ platforms = filter(p -> libc(p) ≠ "musl", platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
-# Windows does not supported parallel HDF5
+# Windows does not support parallel HDF5
 hdf5_platforms = filter(!Sys.iswindows, platforms)
 
 # Dependencies that must be installed before this package can be built

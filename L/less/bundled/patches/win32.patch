@@ -1,0 +1,105 @@
+diff --git a/configure.ac b/configure.ac
+index 41cc8b2..2cc5607 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -604,9 +604,18 @@ AH_TOP([
+ #define	LESSKEYINFILE_SYS	SYSDIR "/syslesskey"
+ #define LESSHISTFILE		".lesshst"
+ 
++/* Autodetect mingw */
++#if defined(__MINGW32__)
++/*
++ * Define MSDOS_COMPILER if compiling under Microsoft C.
++ */
++#define	MSDOS_COMPILER	WIN32C
+ 
+-/* Settings always true on Unix.  */
+-
++/*
++ * Pathname separator character.
++ */
++#define	PATHNAME_SEP	"\\"
++#else
+ /*
+  * Define MSDOS_COMPILER if compiling under Microsoft C.
+  */
+@@ -616,6 +625,9 @@ AH_TOP([
+  * Pathname separator character.
+  */
+ #define	PATHNAME_SEP	"/"
++#endif
++
++/* Settings always true on Unix.  */
+ 
+ /*
+  * The value returned from tgetent on success.
+diff --git a/less.h b/less.h
+index 7b2d2c2..1c92079 100644
+--- a/less.h
++++ b/less.h
+@@ -216,7 +216,7 @@ void free();
+  * Special types and constants.
+  */
+ typedef unsigned long LWCHAR;
+-#if defined(MINGW) || (defined(_MSC_VER) && _MSC_VER >= 1500)
++#if defined(__MINGW32__) || (defined(_MSC_VER) && _MSC_VER >= 1500)
+ typedef long long less_off_t;  /* __int64 */
+ typedef struct _stat64 less_stat_t;
+ #define less_fstat _fstat64
+diff --git a/lglob.h b/lglob.h
+index d54315a..af261fb 100644
+--- a/lglob.h
++++ b/lglob.h
+@@ -56,7 +56,7 @@
+                                         char ext[_MAX_EXT];     \
+                                         int handle;
+ #else
+-#if MSDOS_COMPILER==WIN32C && (defined(_MSC_VER) || defined(MINGW))
++#if MSDOS_COMPILER==WIN32C && (defined(_MSC_VER) || defined(__MINGW32__))
+ 
+ #define GLOB_FIRST_NAME(filename,fndp,h) h = _findfirst(filename, fndp)
+ #define GLOB_FIRST_FAILED(handle)       ((handle) == -1)
+diff --git a/lsystem.c b/lsystem.c
+index c32d5d5..9addc5c 100644
+--- a/lsystem.c
++++ b/lsystem.c
+@@ -19,7 +19,7 @@
+ 
+ #if MSDOS_COMPILER
+ #include <dos.h>
+-#if MSDOS_COMPILER==WIN32C && defined(MINGW)
++#if MSDOS_COMPILER==WIN32C && defined(__MINGW32__)
+ #include <direct.h>
+ #define setdisk(n) _chdrive((n)+1)
+ #else
+diff --git a/main.c b/main.c
+index 5647c2b..5af246b 100644
+--- a/main.c
++++ b/main.c
+@@ -17,7 +17,7 @@
+ #define WIN32_LEAN_AND_MEAN
+ #include <windows.h>
+ 
+-#if defined(MINGW) || defined(_MSC_VER)
++#if defined(__MINGW32__) || defined(_MSC_VER)
+ #include <locale.h>
+ #include <shellapi.h>
+ #endif
+@@ -78,7 +78,7 @@ extern int      redraw_on_quit;
+ extern int      term_init_done;
+ extern lbool    first_time;
+ 
+-#if MSDOS_COMPILER==WIN32C && (defined(MINGW) || defined(_MSC_VER))
++#if MSDOS_COMPILER==WIN32C && (defined(__MINGW32__) || defined(_MSC_VER))
+ /* malloc'ed 0-terminated utf8 of 0-terminated wide ws, or null on errors */
+ static char *utf8_from_wide(constant wchar_t *ws)
+ {
+@@ -248,7 +248,7 @@ int main(int argc, constant char *argv[])
+ 	IFILE ifile;
+ 	constant char *s;
+ 
+-#if MSDOS_COMPILER==WIN32C && (defined(MINGW) || defined(_MSC_VER))
++#if MSDOS_COMPILER==WIN32C && (defined(__MINGW32__) || defined(_MSC_VER))
+ 	if (GetACP() != CP_UTF8)  /* not using a UTF-8 manifest */
+ 		try_utf8_locale(&argc, &argv);
+ #endif

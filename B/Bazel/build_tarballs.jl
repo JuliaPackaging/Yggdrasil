@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "Bazel"
-version = v"7.6.1"
+version = v"7.7.0"
 sources = [
     ArchiveSource("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.7%2B6/OpenJDK21U-jdk_x64_alpine-linux_hotspot_21.0.7_6.tar.gz", "79ecc4b213d21ae5c389bea13c6ed23ca4804a45b7b076983356c28105580013"),
-    ArchiveSource("https://github.com/bazelbuild/bazel/releases/download/$(version)/bazel-$(version)-dist.zip", "c1106db93eb8a719a6e2e1e9327f41b003b6d7f7e9d04f206057990775a7760e"),
-    
+    ArchiveSource("https://github.com/bazelbuild/bazel/releases/download/$(version)/bazel-$(version)-dist.zip", "277946818c77fff70be442864cecc41faac862b6f2d0d37033e2da0b1fee7e0f"),
+
 ]
 
 script = raw"""
@@ -17,6 +17,7 @@ mkdir .tmp
 export TMPDIR=`pwd`/.tmp
 export TMP=$TMPDIR
 export TEMP=$TMPDIR
+export BAZEL_DEV_VERSION_OVERRIDE="7.7.0"
 
 # Set the default verbose mode in buildenv.sh so that we do not display command
 # output unless there is a failure.  We do this conditionally to offer the user
@@ -45,7 +46,7 @@ if [ "${EMBED_LABEL-x}" = "x" ]; then
   EMBED_LABEL="$(get_last_version) (@${git_sha1:-non-git})"
 fi
 
-export EXTRA_BAZEL_ARGS="--tool_java_runtime_version=local_jdk --jobs ${nproc}" 
+export EXTRA_BAZEL_ARGS="--tool_java_runtime_version=local_jdk --jobs ${nproc}"
 set -o xtrace
 
 source scripts/bootstrap/bootstrap.sh
@@ -53,7 +54,10 @@ source scripts/bootstrap/bootstrap.sh
 bazel_build "src:bazel_nojdk${EXE_EXT}" \
   --action_env=PATH \
   --host_platform=@platforms//host \
-  --platforms=@platforms//host
+  --platforms=@platforms//host \
+  --action_env=USE_CCACHE \
+  --action_env=CCACHE_DIR \
+  --action_env=CCACHE_NOHASHDIR=yes
 
 bazel_bin_path="$(get_bazel_bin_path)/src/bazel_nojdk${EXE_EXT}"
 cp -f "$bazel_bin_path" "output/bazel${EXE_EXT}"

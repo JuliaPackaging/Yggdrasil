@@ -2,28 +2,19 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "aws_c_io"
-version = v"0.20.1"
+version = v"0.24.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-io.git", "ee7925a345c336b9a9c2f6843422297c5f2a7b0f"),
-    DirectorySource("./bundled"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
+    GitSource("https://github.com/awslabs/aws-c-io.git", "e9fa33228e7417e1af22a9cee0361abc00d8c426"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    export MACOSX_DEPLOYMENT_TARGET=10.14
-    popd
-fi
-
 cd $WORKSPACE/srcdir/aws-c-io
 
 # Patch for MinGW toolchain
@@ -35,8 +26,6 @@ find . -type f -exec sed -i -e 's/Windows.h/windows.h/g' \
      '{}' \;
 # Lowercase names for MinGW
 sed -i -e 's/Secur32/secur32/g' -e 's/Crypt32/crypt32/g' CMakeLists.txt
-# MinGW is missing some macros in sspi.h
-atomic_patch -p1 ../patches/win32_sspi_h_missing_macros.patch
 
 install_license LICENSE NOTICE
 
@@ -51,6 +40,8 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 cmake --build . -j${nproc} --target install
 """
 
+sources, script = require_macos_sdk("10.15", sources, script)
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
@@ -63,9 +54,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("s2n_tls_jll"; compat="1.5.21", platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
-    Dependency("aws_c_cal_jll"; compat="0.9.2"),
-    Dependency("aws_c_common_jll"; compat="0.12.3"),
+    Dependency("s2n_tls_jll"; compat="1.6.3", platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
+    Dependency("aws_c_cal_jll"; compat="0.9.13"),
+    Dependency("aws_c_common_jll"; compat="0.12.6"),
     BuildDependency("aws_lc_jll"),
 ]
 

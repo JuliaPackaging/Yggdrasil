@@ -5,6 +5,7 @@ using BinaryBuilder
 name = "nPth"
 version_string = "1.8"
 version = VersionNumber(version_string)
+ygg_version = v"1.8.1"          # Rebuilt for new architectures
 
 # Collection of sources required to build libgcrypt
 sources = [
@@ -36,5 +37,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                julia_compat="1.6")

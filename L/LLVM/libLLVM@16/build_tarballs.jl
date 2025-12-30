@@ -1,5 +1,5 @@
 name = "libLLVM"
-version = v"16.0.6+5"
+version = v"16.0.6+6"
 
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
@@ -13,9 +13,8 @@ include("../common.jl")
 augment_platform_block = """
     using Base.BinaryPlatforms
     $(LLVM.augment)
-    function augment_platform!(platform::Platform)
-        augment_llvm!(platform)
-    end"""
+    augment_platform!(platform::Platform) = augment_llvm!(platform)
+"""
 
 # determine exactly which tarballs we should build
 builds = []

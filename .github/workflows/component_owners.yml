@@ -1,0 +1,29 @@
+# The purpose of this workflow is to automaticallly assign reviewers for PRs
+# which modify different parts of Yggdrasil.
+#
+# The file that controls the reviewers is at `.github/component_owners.yml`
+#
+# See https://github.com/dyladan/component-owners for more details of this
+# action.
+name: 'Component Owners'
+on:
+  # pull_request_target is suggested for projects where pull requests will be
+  # made from forked repositories. If pull_request is used in these cases,
+  # the github token will not have sufficient permission to update the PR.
+  pull_request_target:
+permissions:
+  contents: read          # to read changed files
+  pull-requests: write    # to read/write PR reviewers
+jobs:
+  run_self:
+    runs-on: ubuntu-latest
+    name: Auto Assign Owners
+    steps:
+      - uses: dyladan/component-owners@58bd86e9814d23f1525d0a970682cead459fa783 # v0.1.0
+        with:
+          config-file: .github/component_owners.yml
+          repo-token: ${{ github.token }} 
+          assign-owners: "true"
+          # We only use this system to notify people about the proposed changes,
+          # not as a way of delegating a review.
+          request-owner-reviews: "false"

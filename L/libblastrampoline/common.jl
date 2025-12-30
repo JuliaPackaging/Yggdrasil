@@ -12,6 +12,8 @@ function lbt_sources(version::VersionNumber; kwargs...)
         v"5.11.2" => "c48da8a1225c2537ff311c28ef395152fb879eae",
         v"5.12.0" => "b127bc8dd4758ffc064340fff2aef4ead552f386",
         v"5.13.1" => "f26278e83ddc9035ae7695da597f1a5b26a4c62b",
+        v"5.14.0" => "4cca50aa5101a4ed5f2c85e4760090a23d4aa5a5",
+        v"5.15.0" => "072b5f67895bec0b92f8c83194567c1c48e9833d",
     )
 
     return [
@@ -48,6 +50,6 @@ llvm_version = v"13.0.1"
 dependencies = [
     BuildDependency(PackageSpec(name="LLVMCompilerRT_jll",
                                 uuid="4e17d02c-6bf5-513e-be62-445f41c75a11",
-                                version=llvm_version);
+                                version=string(llvm_version));
     platforms=filter(p -> sanitize(p)=="memory", platforms)),
 ]
