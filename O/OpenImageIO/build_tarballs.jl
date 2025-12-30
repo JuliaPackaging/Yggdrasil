@@ -25,6 +25,7 @@ cmake -B build-dir -G Ninja \
     -DUSE_PYTHON=0
 cmake --build build-dir --parallel ${nproc}
 cmake --install build-dir
+install_license LICENSE.md RELICENSING.md
 """
 
 sources, script = require_macos_sdk("11.0", sources, script)
