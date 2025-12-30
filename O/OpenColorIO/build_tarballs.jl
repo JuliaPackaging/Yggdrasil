@@ -31,12 +31,9 @@ args=(
     -DOCIO_BUILD_TESTS=OFF
     -DOCIO_USE_HEADLESS=ON
 )
-if [[ ${target} == aarch64*darwin* ]]; then
+if [[ ${target} == *darwin* ]]; then
    # On Darwin, cmake picks `llvm-strip` which doesn't understand the Mach-O format.
-   args+=(-DCMAKE_STRIP=aarch64-apple-darwin20-strip)
-elif [[ ${target} == x86_64*darwin* ]]; then
-   # On Darwin, cmake picks `llvm-strip` which doesn't understand the Mach-O format.
-   args+=(-DCMAKE_STRIP=x86_64-apple-darwin14-strip)
+   args+=(-DCMAKE_STRIP=${target}-strip)
 fi
 cmake -B build -G Ninja "${args[@]}"
 cmake --build build --parallel ${nproc}
