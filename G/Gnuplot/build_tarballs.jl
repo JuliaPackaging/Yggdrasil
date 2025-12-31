@@ -60,7 +60,7 @@ esac
 
 make -C src -j${nproc}
 make -C src install
-""" * """
+""" * raw"""
 # add a fake `gnuplot_fake` executable, in order to determine `GNUPLOT_DRIVER_DIR` in `Gaston.jl`
 dn="\$prefix/$libexec_path"
 """ * raw"""
@@ -73,18 +73,7 @@ chmod +x $dn/gnuplot_fake$exeext
 # platforms are passed in on the command line
 # platforms = supported_platforms()
 # Do not build for Mac
-platforms = [
-    Linux(:i686, libc=:glibc),
-    Linux(:x86_64, libc=:glibc),
-    Linux(:aarch64, libc=:glibc),
-    Linux(:i686, libc=:musl),
-    Linux(:x86_64, libc=:musl),
-    Linux(:aarch64, libc=:musl),
-    FreeBSD(:aarch64),
-    FreeBSD(:x86_64),
-    Windows(:i686),
-    Windows(:x86_64),
-]
+platforms = [p for p in supported_platforms() if !contains(string(p), "macOS")]
 
 # The products that we will ensure are always built
 products = [
