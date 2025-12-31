@@ -26,7 +26,11 @@ libexec_path = joinpath("libexec", "gnuplot", "$(version.major).$(version.minor)
 
 # Bash recipe for building across all platforms
 script = raw"""
+
 cd $WORKSPACE/srcdir/gnuplot-*
+
+# Needed for system to find uic et al
+export PATH=$PATH:$host_prefix/libexec
 
 if [[ "${target}" == "${MACHTYPE}" ]]; then
     # Delete system libexpat to avoid confusion
@@ -67,7 +71,20 @@ chmod +x $dn/gnuplot_fake$exeext
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+# platforms = supported_platforms()
+# Do not build for Mac
+platforms = [
+    Linux(:i686, libc=:glibc),
+    Linux(:x86_64, libc=:glibc),
+    Linux(:aarch64, libc=:glibc),
+    Linux(:i686, libc=:musl),
+    Linux(:x86_64, libc=:musl),
+    Linux(:aarch64, libc=:musl),
+    FreeBSD(:aarch64),
+    FreeBSD(:x86_64),
+    Windows(:i686),
+    Windows(:x86_64),
+]
 
 # The products that we will ensure are always built
 products = [
