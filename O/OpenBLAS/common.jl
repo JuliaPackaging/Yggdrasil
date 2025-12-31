@@ -224,6 +224,9 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
         atomic_patch -p1 ${f}
     done
 
+    # Choose our make parallelism
+    flags+=(-j${nproc})
+
     # Print the flags for posterity
     echo "Build flags: ${flags[@]}"
 
