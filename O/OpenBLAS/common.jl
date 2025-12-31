@@ -129,7 +129,14 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
 
     # Build BFLOAT16 kernels
     if [[ "${BFLOAT16}" == "true" ]]; then
-        flags+=(BUILD_BFLOAT16=1)
+        if [[ "${target}" == aarch64-*-darwin* || "${target}" == aarch64-*-freebsd* ]]; then
+            # Bfloat16 support is broken on aarch64 darwin and freebsd.
+            # Clang 13 ... 16 report internal compiler errors such as:
+            # `fatal error: error in backend: Cannot select: 0x1555483de020: bf16,ch = load<(load (s16) from %ir.917, !tbaa !17)> 0x15554822e090, 0x1555483e1830, undef:i64`
+            flags+=(BUILD_BFLOAT16=0)
+        else
+            flags+=(BUILD_BFLOAT16=1)
+        fi
     fi
 
     # We are cross-compiling
@@ -209,7 +216,6 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
         export LDFLAGS="${LDFLAGS} -Wl,-rpath,@loader_path/"
     fi
 
-
     # Enter the fun zone
     cd ${WORKSPACE}/srcdir/OpenBLAS*/
 
@@ -269,7 +275,7 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
 end
 
 function openblas_platforms(;experimental::Bool=true, version::Union{Nothing,VersionNumber}=nothing, kwargs...)
-    platforms = expand_gfortran_versions(supported_platforms(;experimental))
+    platforms = expand_gfortran_versions(supported_platforms())
     # OpenBLAS 0.3.29 doesn't support GCC < v11 on powerpc64le:
     # <https://github.com/OpenMathLib/OpenBLAS/issues/5068#issuecomment-2585836284>.
     # This means we can't build it at all for libgfortran 3 and 4.
