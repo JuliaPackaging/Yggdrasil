@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 name = "SCIP_PaPILO"
 
 upstream_version = v"10.0.0"
-version = VersionNumber(upstream_version.major * 100, upstream_version.minor * 100, upstream_version.patch * 100)
+version = VersionNumber(upstream_version.major * 100, upstream_version.minor * 100, upstream_version.patch * 100 + 1)
 
 # Collection of sources required to complete build
 sources = [
