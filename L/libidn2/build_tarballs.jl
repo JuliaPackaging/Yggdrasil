@@ -7,7 +7,7 @@ version = v"2.3.8"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/libidn/libidn2-$(version).tar.gz",
+    ArchiveSource("https://ftpmirror.gnu.org/gnu/libidn/libidn2-$(version).tar.gz",
                   "f557911bf6171621e1f72ff35f5b1825bb35b52ed45325dcdee931e5d3c0787a"),
 ]
 
