@@ -30,8 +30,10 @@ if [[ ${target} == *-linux-gnu ]]; then
     mv cuda_nvcc/bin/nvlink ${bindir}
     if [[ -d cuda_nvcc/nvvm ]]; then
         mv cuda_nvcc/nvvm/libdevice/libdevice.10.bc ${prefix}/share/libdevice
+        mv cuda_nvcc/nvvm/lib64/libnvvm.so.* ${libdir}
     else
         mv libnvvm/nvvm/libdevice/libdevice.10.bc ${prefix}/share/libdevice
+        mv libnvvm/nvvm/lib64/libnvvm.so.* ${libdir}
     fi
 
     mv cuda_nvdisasm/bin/nvdisasm ${bindir}
@@ -50,8 +52,10 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     mv cuda_nvcc/bin/nvlink.exe ${bindir}
     if [[ -d cuda_nvcc/nvvm ]]; then
         mv cuda_nvcc/nvvm/libdevice/libdevice.10.bc ${prefix}/share/libdevice
+        mv cuda_nvcc/nvvm/bin/nvvm*.dll ${libdir}
     else
         mv libnvvm/nvvm/libdevice/libdevice.10.bc ${prefix}/share/libdevice
+        mv libnvvm/nvvm/bin/x64/nvvm*.dll ${libdir}
     fi
 
     mv cuda_nvdisasm/bin/nvdisasm.exe ${bindir}
@@ -86,6 +90,7 @@ function get_products(version::VersionNumber)
     products = [
         FileProduct(["lib/libcudadevrt.a", "lib/cudadevrt.lib"], :libcudadevrt),
         FileProduct("share/libdevice/libdevice.10.bc", :libdevice),
+        LibraryProduct(["libnvvm", "nvvm64_40_0"], :libnvvm),
         ExecutableProduct("ptxas", :ptxas),
         ExecutableProduct("nvdisasm", :nvdisasm),
         ExecutableProduct("nvlink", :nvlink),
