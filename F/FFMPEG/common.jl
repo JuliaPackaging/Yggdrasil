@@ -117,7 +117,8 @@ sed -i 's/cpuflags="-march=$cpu"/cpuflags=""/g' configure
   --enable-demuxers    \
   --enable-parsers     \
   --extra-cflags="-I${prefix}/include" \
-  --extra-ldflags="-L${libdir}" ${CUDA_ARGS} \
+  --extra-ldflags="-L${libdir}" \
+  ${CUDA_ARGS} \
   "${EXTRA_FLAGS[@]}"
 make -j${nproc}
 if [[ "${FFPLAY}" == "true" ]]; then
