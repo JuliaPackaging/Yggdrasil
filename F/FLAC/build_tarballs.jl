@@ -4,6 +4,7 @@ using BinaryBuilder
 
 name = "FLAC"
 version = v"1.4.3"
+ygg_version = v"1.4.4"          # built for new architectures
 
 # Collection of sources required to build FLAC
 sources = [
@@ -51,5 +52,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"5")
