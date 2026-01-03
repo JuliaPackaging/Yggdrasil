@@ -21,8 +21,8 @@ script = raw"""
 
 cd $WORKSPACE/srcdir/llvm-project
 
-mkdir build
-cd build
+mkdir native_build
+cd native_build
 
 CMAKE_FLAGS=()
 
@@ -40,23 +40,25 @@ CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 # (see https://github.com/NVIDIA/cuda-tile/blob/main/cmake/IncludeLLVM.cmake)
 ## Set LLVM options
 CMAKE_FLAGS+=(-DLLVM_HOST_TRIPLE=${MACHTYPE})
+CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD=host)
 CMAKE_FLAGS+=(-DLLVM_INCLUDE_EXAMPLES=OFF)
 CMAKE_FLAGS+=(-DLLVM_INCLUDE_TESTS=OFF)
 CMAKE_FLAGS+=(-DLLVM_INCLUDE_BENCHMARKS=OFF)
 CMAKE_FLAGS+=(-DLLVM_BUILD_EXAMPLES=OFF)
 CMAKE_FLAGS+=(-DLLVM_ENABLE_ASSERTIONS=OFF)
 CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS="mlir")
-CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD="")
 ## Set MLIR options
 CMAKE_FLAGS+=(-DMLIR_BUILD_EXAMPLES=OFF)
 CMAKE_FLAGS+=(-DMLIR_ENABLE_BINDINGS_PYTHON=OFF)
 
-cmake -GNinja ../llvm ${CMAKE_FLAGS[@]}
+# Disable dependencies the native tools don't need
+CMAKE_FLAGS+=(-DLLVM_ENABLE_ZLIB=OFF)
+CMAKE_FLAGS+=(-DLLVM_ENABLE_ZSTD=OFF)
+CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBXML2=OFF)
 
-ninja -j${nproc} install
+cmake ../llvm ${CMAKE_FLAGS[@]}
 
-cd ..
-rm -rf build
+make -j${nproc} install
 
 
 # Phase 2: cross-compile LLVM+MLIR
@@ -68,9 +70,16 @@ cd build
 
 CMAKE_FLAGS=()
 
-# Tell LLVM where our pre-built tblgen tools are
-CMAKE_FLAGS+=(-DLLVM_TABLEGEN=${WORKSPACE}/srcdir/llvm-project/native_install/bin/llvm-tblgen)
-CMAKE_FLAGS+=(-DLLVM_CONFIG_PATH=${WORKSPACE}/srcdir/llvm-project/native_install/bin/llvm-config)
+# Point to native tools directory
+CMAKE_FLAGS+=(-DLLVM_NATIVE_TOOL_DIR=${WORKSPACE}/srcdir/llvm-project/native_build/bin)
+
+# Also set individual tool paths explicitly
+CMAKE_FLAGS+=(-DLLVM_TABLEGEN=${WORKSPACE}/srcdir/llvm-project/native_build/bin/llvm-tblgen)
+CMAKE_FLAGS+=(-DLLVM_CONFIG_PATH=${WORKSPACE}/srcdir/llvm-project/native_build/bin/llvm-config)
+CMAKE_FLAGS+=(-DLLVM_HEADERS_TABLEGEN=${WORKSPACE}/srcdir/llvm-project/native_build/bin/llvm-min-tblgen)
+CMAKE_FLAGS+=(-DMLIR_TABLEGEN=${WORKSPACE}/srcdir/llvm-project/native_build/bin/mlir-tblgen)
+CMAKE_FLAGS+=(-DMLIR_LINALG_ODS_YAML_GEN=${WORKSPACE}/srcdir/llvm-project/native_build/bin/mlir-linalg-ods-yaml-gen)
+CMAKE_FLAGS+=(-DMLIR_PDLL_TABLEGEN=${WORKSPACE}/srcdir/llvm-project/native_build/bin/mlir-pdll)
 
 # Install things into a temporary prefix
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=$WORKSPACE/srcdir/llvm-project/install)
@@ -81,6 +90,9 @@ CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=ON)
 
 # Release build for best performance
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
+
+# Also install utils, since CUDA Tile's install target depends on it
+CMAKE_FLAGS+=(-DLLVM_INSTALL_UTILS=True)
 
 # Match CUDA Tile build options
 # (see https://github.com/NVIDIA/cuda-tile/blob/main/cmake/IncludeLLVM.cmake)
@@ -96,11 +108,12 @@ CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD="")
 CMAKE_FLAGS+=(-DMLIR_BUILD_EXAMPLES=OFF)
 CMAKE_FLAGS+=(-DMLIR_ENABLE_BINDINGS_PYTHON=OFF)
 
-cmake -GNinja ../llvm ${CMAKE_FLAGS[@]}
-ninja -j${nproc} install
+cmake ../llvm ${CMAKE_FLAGS[@]}
 
-cd ..
-rm -rf build
+# For some reason, LLVM doesn't build the necessary tablegen files...
+make llvm-headers mlir-generic-headers vt_gen
+
+make -j${nproc} install
 
 
 # Phase 3: build CUDA Tile
@@ -124,6 +137,10 @@ CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=ON)
 
+# Point CUDA Tile to our host compilers
+CMAKE_FLAGS+=(-DNATIVE_C_COMPILER=$HOSTCC)
+CMAKE_FLAGS+=(-DNATIVE_CXX_COMPILER=$HOSTCXX)
+
 # Release build for best performance
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 
@@ -131,14 +148,11 @@ CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 CMAKE_FLAGS+=(-DCUDA_TILE_USE_LLVM_INSTALL_DIR=${WORKSPACE}/srcdir/llvm-project/install)
 CMAKE_FLAGS+=(-DCUDA_TILE_USE_NATIVE_LLVM_INSTALL_DIR=${WORKSPACE}/srcdir/llvm-project/native_install)
 
-cmake -GNinja .. ${CMAKE_FLAGS[@]}
-ninja -j${nproc}
+cmake .. ${CMAKE_FLAGS[@]}
+make -j${nproc} install
 
-# XXX: `ninja install` doesn't work
-mkdir -p ${bindir}
-mv bin/cuda-tile-tblgen ${bindir}
-mv bin/cuda-tile-opt ${bindir}
-mv bin/cuda-tile-translate ${bindir}
+# XXX: remove third-party tools that aren't needed at run time
+rm -rf ${prefix}/third_party
 """
 
 # These are the platforms we will build for by default, unless further
