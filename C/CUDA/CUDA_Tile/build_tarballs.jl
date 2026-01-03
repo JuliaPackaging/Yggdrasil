@@ -85,7 +85,16 @@ CMAKE_FLAGS+=(-DMLIR_PDLL_TABLEGEN=${WORKSPACE}/srcdir/llvm-project/native_build
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=$WORKSPACE/srcdir/llvm-project/install)
 
 # Explicitly use our cmake toolchain file and tell CMake we're cross-compiling
-CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+if [[ "${target}" == *mingw* ]]; then
+    # using Clang works around several (string table and eport symbol) limits on Windows
+    CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake)
+
+    # using Clang necessitates forcing pthread though
+    CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS=-pthread)
+    CMAKE_FLAGS+=(-DCMAKE_C_FLAGS=-pthread)
+else
+    CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+fi
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=ON)
 
 # Release build for best performance
@@ -181,5 +190,5 @@ dependencies = Dependency[]
 build_tarballs(
     ARGS, name, version, sources, script, platforms, products, dependencies;
     julia_compat="1.6",
-    preferred_gcc_version=v"10",
+    preferred_gcc_version=v"13", # actually v10, but on Windows we use `.drectve -exclude-symbols`
     preferred_llvm_version=v"16")
