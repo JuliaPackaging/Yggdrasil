@@ -12,7 +12,7 @@ end
 
 name = "Gnuplot"
 version = v"6.0.3"
-ygg_offset = v"0.0.3"  # NOTE: increase on new build, reset on new upstream version
+ygg_offset = v"0.0.4"  # NOTE: increase on new build, reset on new upstream version
 ygg_version = yggdrasil_version(version, ygg_offset)
 
 # Collection of sources required to complete build
@@ -26,7 +26,11 @@ libexec_path = joinpath("libexec", "gnuplot", "$(version.major).$(version.minor)
 
 # Bash recipe for building across all platforms
 script = raw"""
+
 cd $WORKSPACE/srcdir/gnuplot-*
+
+# Needed for system to find uic et al
+export PATH=$PATH:$host_prefix/libexec
 
 if [[ "${target}" == "${MACHTYPE}" ]]; then
     # Delete system libexpat to avoid confusion
@@ -56,7 +60,7 @@ esac
 
 make -C src -j${nproc}
 make -C src install
-""" * """
+""" * raw"""
 # add a fake `gnuplot_fake` executable, in order to determine `GNUPLOT_DRIVER_DIR` in `Gaston.jl`
 dn="\$prefix/$libexec_path"
 """ * raw"""
@@ -67,7 +71,9 @@ chmod +x $dn/gnuplot_fake$exeext
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+# platforms = supported_platforms()
+# Do not build for Mac
+platforms = [p for p in supported_platforms() if !contains(string(p), "macOS")]
 
 # The products that we will ensure are always built
 products = [
@@ -90,11 +96,14 @@ dependencies = [
     Dependency("Libffi_jll"),
     Dependency("Libiconv_jll"),
     Dependency("Readline_jll"),
-    BuildDependency("Qt5Tools_jll"),
-    Dependency("Qt5Svg_jll"),
-    # FIXME: build with Qt6 fails, must probably add a `Qt6Tools_jll` recipe
-    # Dependency("Qt6Base_jll"),
-    # Dependency("Qt6Svg_jll"),
+    #BuildDependency("Qt5Tools_jll"),
+    #Dependency("Qt5Svg_jll"),
+    # Build against Qt6
+    Dependency("Qt6Base_jll"),
+    Dependency("Qt6Svg_jll"),
+    Dependency("Qt65Compat_jll"),
+    BuildDependency("Qt6Tools_jll"),
+    BuildDependency("Qt6Declarative_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
