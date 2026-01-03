@@ -131,8 +131,12 @@ cd $WORKSPACE/srcdir/cuda-tile
 
 install_license LICENSE.txt
 
-# Force linking against -pthread, which our llvm-config doesn't report
+# Patches
+## Force linking against -pthread, which our llvm-config doesn't report
 sed -i '/target_link_libraries(cuda-tile-tblgen/,/)/ s/)/  pthread\n)/' tools/cuda-tile-tblgen/CMakeLists.txt
+## Fix missing include
+sed -i 's|#include <vector>|#include <vector>\n#include <unordered_map>|' \
+  tools/cuda-tile-tblgen/CudaTileOp.h
 
 mkdir build
 cd build/
