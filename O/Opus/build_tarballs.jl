@@ -3,16 +3,17 @@
 using BinaryBuilder
 
 name = "Opus"
-version = v"1.5.2"
+version = v"1.6.0"
 
 # Collection of sources required to build Opus
 sources = [
-    GitSource("https://gitlab.xiph.org/xiph/opus", "ddbe48383984d56acd9e1ab6a090c54ca6b735a6"),
+    ArchiveSource("https://downloads.xiph.org/releases/opus/opus-$(version.major).$(version.minor).tar.gz",
+                  "b7637334527201fdfd6dd6a02e67aceffb0e5e60155bbd89175647a80301c92c"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/opus
+cd $WORKSPACE/srcdir/opus*
 
 if [[ ${target} == *musl* ]]; then
     # On musl, disable stack protection (https://www.openwall.com/lists/musl/2018/09/11/2)
@@ -25,7 +26,6 @@ elif [[ "${target}" == *-mingw* ]]; then
     export LDFLAGS="-lssp"
 fi
 
-./autogen.sh
 ./configure --prefix=$prefix --host=$target --build=${MACHTYPE} \
             --disable-static \
             --enable-custom-modes \
