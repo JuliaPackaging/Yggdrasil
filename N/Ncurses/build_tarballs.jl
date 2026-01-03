@@ -3,13 +3,15 @@
 using BinaryBuilder
 
 name = "Ncurses"
-version = v"6.5.0"
-ygg_version = v"6.5.1" # Bump to build riscv, and will pull in new version of JLLWrappers
+version = v"6.6.0"
 
 # Collection of sources required to build Ncurses
 sources = [
-    ArchiveSource("https://ftp.gnu.org/pub/gnu/ncurses/ncurses-$(version.major).$(version.minor).tar.gz",
-                  "136d91bc269a9a5785e5f9e980bc76ab57428f604ce3e5a5a90cebc767971cc6"),
+    # `ftpmirror.gnu.org` is flaky today; switch back later
+    # ArchiveSource("https://ftpmirror.gnu.org/pub/gnu/ncurses/ncurses-$(version.major).$(version.minor).tar.gz",
+    #               "355b4cbbed880b0381a04c46617b7656e362585d52e9cf84a67e2009b749ff11"),
+    ArchiveSource("https://mirror.csclub.uwaterloo.ca/gnu/ncurses/ncurses-$(version.major).$(version.minor).tar.gz",
+                  "355b4cbbed880b0381a04c46617b7656e362585d52e9cf84a67e2009b749ff11"),
 ]
 
 # Bash recipe for building across all platforms
@@ -102,4 +104,4 @@ end
 """
 
 # Build the tarballs.
-build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6", init_block)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", init_block)
