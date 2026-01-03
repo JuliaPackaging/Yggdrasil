@@ -7,7 +7,7 @@ version = v"6.6.0"
 
 # Collection of sources required to build Ncurses
 sources = [
-    ArchiveSource("https://ftp.gnu.org/pub/gnu/ncurses/ncurses-$(version.major).$(version.minor).tar.gz",
+    ArchiveSource("https://ftpmirror.gnu.org/pub/gnu/ncurses/ncurses-$(version.major).$(version.minor).tar.gz",
                   "355b4cbbed880b0381a04c46617b7656e362585d52e9cf84a67e2009b749ff11"),
 ]
 
