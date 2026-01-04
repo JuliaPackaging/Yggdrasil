@@ -1,7 +1,18 @@
-diff -urN gdbm-1.15_orig/compat/dbmopen.c gdbm-1.15/compat/dbmopen.c
---- gdbm-1.15_orig/compat/dbmopen.c	2018-02-10 08:05:11.000000000 +0200
-+++ gdbm-1.15/compat/dbmopen.c	2018-06-17 20:55:43.784407600 +0300
-@@ -58,13 +58,17 @@
+diff -ru gdbm-1.26.orig/compat/Makefile.am gdbm-1.26/compat/Makefile.am
+--- gdbm-1.26.orig/compat/Makefile.am	2025-03-06 10:51:59
++++ gdbm-1.26/compat/Makefile.am	2026-01-03 20:34:59
+@@ -51,5 +51,5 @@
+ 
+ libgdbm_compat_la_SOURCES = $(DBM_CF) $(NDBM_CF)
+ 
+-libgdbm_compat_la_LDFLAGS = -version-info $(VI_CURRENT):$(VI_REVISION):$(VI_AGE)
++libgdbm_compat_la_LDFLAGS = -no-undefined -version-info $(VI_CURRENT):$(VI_REVISION):$(VI_AGE)
+ 
+Only in gdbm-1.26/compat: Makefile.am.orig
+diff -ru gdbm-1.26.orig/compat/dbmopen.c gdbm-1.26/compat/dbmopen.c
+--- gdbm-1.26.orig/compat/dbmopen.c	2025-03-06 10:51:59
++++ gdbm-1.26/compat/dbmopen.c	2026-01-03 20:34:59
+@@ -57,13 +57,17 @@
  
  /* FIXME: revise return codes */
  static int
@@ -20,60 +31,7 @@ diff -urN gdbm-1.15_orig/compat/dbmopen.c gdbm-1.15/compat/dbmopen.c
  
    if (mode & GDBM_CLOEXEC)
      flags |= O_CLOEXEC;
-@@ -76,22 +80,49 @@
-     } 
-       
-   /* Previous versions of GDBM linked pag to dir. Try to detect this: */
-+#ifdef _WIN32
-+  hFile = CreateFile(file_name, 0, FILE_SHARE_READ | FILE_SHARE_WRITE,
-+		     NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL,
-+		     NULL);
-+
-+  if (hFile != INVALID_HANDLE_VALUE)
-+    {
-+      BY_HANDLE_FILE_INFORMATION fileInfo;
-+      GetFileInformationByHandle (hFile, &fileInfo);
-+      CloseHandle (hFile);
-+      st.st_size = (fileInfo.nFileSizeHigh * MAXDWORD) + fileInfo.nFileSizeLow;
-+
-+      if (fileInfo.nNumberOfLinks >= 2)
-+	{
-+	   BY_HANDLE_FILE_INFORMATION pagInfo;
-+	   GetFileInformationByHandle ((HANDLE)_get_osfhandle (pagfd), &pagInfo);
-+	   if ((fileInfo.nFileIndexLow == pagInfo.nFileIndexLow) &&
-+	       (fileInfo.nFileIndexHigh == pagInfo.nFileIndexHigh))
-+	    {
-+	      /* Close pag because unlink dir file fails on Windows */
-+	      close (pagfd);
-+#else
-   if (stat (file_name, &st) == 0)
-     {
-       if (st.st_nlink >= 2)
- 	{
- 	  if (st.st_dev == pagst.st_dev && st.st_ino == pagst.st_ino)
- 	    {
--	      if (unlink (file_name))
-+#endif
-+	      int ret = unlink (file_name);
-+#ifdef _WIN32
-+	      pagfd = pag->desc = open(pag->name, flags | O_BINARY);
-+#endif
-+	      if (ret)
- 		{
- 		  if ((mode & GDBM_OPENMASK) == GDBM_READER)
- 		    /* Ok, try to cope with it. */
- 		    return pagfd;
- 		  else if (errno != ENOENT)
- 		    {
--		      gdbm_set_errno (NULL, GDBM_FILE_OPEN_ERROR, TRUE); 
-+		      gdbm_set_errno (NULL, GDBM_FILE_OPEN_ERROR, TRUE);
- 		      return -1;
--		    } 
-+		    }
- 		}
- 	    }
- 	  else
-@@ -109,7 +140,7 @@
+@@ -117,7 +121,7 @@
  	}
        else
  	{
@@ -82,7 +40,7 @@ diff -urN gdbm-1.15_orig/compat/dbmopen.c gdbm-1.15/compat/dbmopen.c
  	  if (fd == -1)
  	    {
  	      gdbm_set_errno (NULL, GDBM_FILE_OPEN_ERROR, FALSE);
-@@ -141,7 +172,7 @@
+@@ -156,7 +160,7 @@
      }
    
    /* File does not exist.  Create it. */
@@ -91,7 +49,7 @@ diff -urN gdbm-1.15_orig/compat/dbmopen.c gdbm-1.15/compat/dbmopen.c
    if (fd >= 0)
      {
        putint (dirbuf, GDBM_DIR_MAGIC);
-@@ -161,10 +192,11 @@
+@@ -176,10 +180,11 @@
  }
  
  static int
@@ -104,7 +62,7 @@ diff -urN gdbm-1.15_orig/compat/dbmopen.c gdbm-1.15/compat/dbmopen.c
    
    if (!file_name)
      {
-@@ -172,7 +204,7 @@
+@@ -187,7 +192,7 @@
        return -1;
      }
    fd = ndbm_open_dir_file0 (strcat (strcpy (file_name, base), DIRSUF),
@@ -113,7 +71,7 @@ diff -urN gdbm-1.15_orig/compat/dbmopen.c gdbm-1.15/compat/dbmopen.c
    free (file_name);
    return fd;
  }
-@@ -265,7 +297,7 @@
+@@ -280,7 +285,7 @@
      }
    else
      {
@@ -122,20 +80,12 @@ diff -urN gdbm-1.15_orig/compat/dbmopen.c gdbm-1.15/compat/dbmopen.c
        if (dbm->dirfd == -1)
  	{
  	  gdbm_close (dbm->file);
-diff -urN gdbm-1.15_orig/compat/Makefile.am gdbm-1.15/compat/Makefile.am
---- gdbm-1.15_orig/compat/Makefile.am	2018-02-10 08:05:11.000000000 +0200
-+++ gdbm-1.15/compat/Makefile.am	2018-06-17 20:55:43.786407700 +0300
-@@ -52,5 +52,5 @@
- 
- libgdbm_compat_la_SOURCES = $(DBM_CF) $(NDBM_CF)
- 
--libgdbm_compat_la_LDFLAGS = -version-info $(VI_CURRENT):$(VI_REVISION):$(VI_AGE)
-+libgdbm_compat_la_LDFLAGS = -no-undefined -version-info $(VI_CURRENT):$(VI_REVISION):$(VI_AGE)
- 
-diff -urN gdbm-1.15_orig/configure.ac gdbm-1.15/configure.ac
---- gdbm-1.15_orig/configure.ac	2018-06-15 23:14:19.000000000 +0300
-+++ gdbm-1.15/configure.ac	2018-06-17 20:55:43.812409200 +0300
-@@ -192,6 +192,13 @@
+Only in gdbm-1.26/compat: dbmopen.c.orig
+Only in gdbm-1.26/compat: dbmopen.c.rej
+diff -ru gdbm-1.26.orig/configure.ac gdbm-1.26/configure.ac
+--- gdbm-1.26.orig/configure.ac	2025-07-30 05:46:20
++++ gdbm-1.26/configure.ac	2026-01-03 20:34:59
+@@ -218,6 +218,13 @@
  
  AM_CONDITIONAL([COND_GDBMTOOL_DEBUG], [test "$want_gdbmtool_debug" = yes])
  
@@ -149,10 +99,11 @@ diff -urN gdbm-1.15_orig/configure.ac gdbm-1.15/configure.ac
  # Initialize the test suite.
  AC_CONFIG_TESTDIR(tests)
  AC_CONFIG_FILES([tests/Makefile tests/atlocal po/Makefile.in])
-diff -urN gdbm-1.15_orig/src/fullio.c gdbm-1.15/src/fullio.c
---- gdbm-1.15_orig/src/fullio.c	2018-05-30 14:04:21.000000000 +0300
-+++ gdbm-1.15/src/fullio.c	2018-06-17 21:33:28.588947000 +0300
-@@ -81,7 +81,13 @@
+Only in gdbm-1.26: configure.ac.orig
+diff -ru gdbm-1.26.orig/src/fullio.c gdbm-1.26/src/fullio.c
+--- gdbm-1.26.orig/src/fullio.c	2025-04-11 04:58:48
++++ gdbm-1.26/src/fullio.c	2026-01-03 20:34:59
+@@ -84,7 +84,13 @@
  int
  _gdbm_file_extend (GDBM_FILE dbf, off_t size)
  {
@@ -166,9 +117,10 @@ diff -urN gdbm-1.15_orig/src/fullio.c gdbm-1.15/src/fullio.c
    char *buf;
    off_t file_end;
  
-diff -urN gdbm-1.15_orig/src/gdbmdump.c gdbm-1.15/src/gdbmdump.c
---- gdbm-1.15_orig/src/gdbmdump.c	2018-05-30 12:39:15.000000000 +0300
-+++ gdbm-1.15/src/gdbmdump.c	2018-06-17 20:55:43.828410100 +0300
+Only in gdbm-1.26/src: fullio.c.orig
+diff -ru gdbm-1.26.orig/src/gdbmdump.c gdbm-1.26/src/gdbmdump.c
+--- gdbm-1.26.orig/src/gdbmdump.c	2025-03-09 05:50:57
++++ gdbm-1.26/src/gdbmdump.c	2026-01-03 20:34:59
 @@ -17,8 +17,6 @@
  # include "autoconf.h"
  # include "gdbmdefs.h"
@@ -199,9 +151,9 @@ diff -urN gdbm-1.15_orig/src/gdbmdump.c gdbm-1.15/src/gdbmdump.c
 -  if (gr)
 -    fprintf (fp, "group=%s,", gr->gr_name);
    fprintf (fp, "mode=%03o\n", st.st_mode & 0777);
+   fprintf (fp, "#:format=%s\n", dbf->xheader ? "numsync" : "standard");
    fprintf (fp, "# End of header\n");
-   
-@@ -172,7 +162,7 @@
+@@ -179,7 +169,7 @@
    switch (open_flags)
      {
      case GDBM_WRCREAT:
@@ -210,7 +162,7 @@ diff -urN gdbm-1.15_orig/src/gdbmdump.c gdbm-1.15/src/gdbmdump.c
        if (nfd == -1)
  	{
  	  GDBM_SET_ERRNO (NULL, GDBM_FILE_OPEN_ERROR, FALSE);
-@@ -180,7 +170,7 @@
+@@ -187,7 +177,7 @@
  	}
        break;
      case GDBM_NEWDB:
@@ -219,10 +171,11 @@ diff -urN gdbm-1.15_orig/src/gdbmdump.c gdbm-1.15/src/gdbmdump.c
        if (nfd == -1)
  	{
  	  GDBM_SET_ERRNO (NULL, GDBM_FILE_OPEN_ERROR, FALSE);
-diff -urN gdbm-1.15_orig/src/gdbmexp.c gdbm-1.15/src/gdbmexp.c
---- gdbm-1.15_orig/src/gdbmexp.c	2018-05-30 12:39:15.000000000 +0300
-+++ gdbm-1.15/src/gdbmexp.c	2018-06-17 20:55:43.832410400 +0300
-@@ -19,7 +19,11 @@
+Only in gdbm-1.26/src: gdbmdump.c.orig
+diff -ru gdbm-1.26.orig/src/gdbmexp.c gdbm-1.26/src/gdbmexp.c
+--- gdbm-1.26.orig/src/gdbmexp.c	2025-03-09 05:50:57
++++ gdbm-1.26/src/gdbmexp.c	2026-01-03 20:34:59
+@@ -18,7 +18,11 @@
  
  /* Include system configuration before all else. */
  # include "autoconf.h"
@@ -234,7 +187,7 @@ diff -urN gdbm-1.15_orig/src/gdbmexp.c gdbm-1.15/src/gdbmexp.c
  
  #ifdef GDBM_EXPORT_18
  # define GDBM_SET_ERRNO(dbf, ec, fatal) gdbm_errno = ec
-@@ -104,7 +108,7 @@
+@@ -108,7 +112,7 @@
    switch (flags)
      {
      case GDBM_WRCREAT:
@@ -243,7 +196,7 @@ diff -urN gdbm-1.15_orig/src/gdbmexp.c gdbm-1.15/src/gdbmexp.c
        if (nfd == -1)
  	{
  	  GDBM_SET_ERRNO (NULL, GDBM_FILE_OPEN_ERROR, FALSE);
-@@ -112,7 +116,7 @@
+@@ -116,7 +120,7 @@
  	}
        break;
      case GDBM_NEWDB:
@@ -252,7 +205,7 @@ diff -urN gdbm-1.15_orig/src/gdbmexp.c gdbm-1.15/src/gdbmexp.c
        if (nfd == -1)
  	{
  	  GDBM_SET_ERRNO (NULL, GDBM_FILE_OPEN_ERROR, FALSE);
-@@ -128,7 +132,7 @@
+@@ -132,7 +136,7 @@
        return -1;
    }
  
@@ -261,10 +214,11 @@ diff -urN gdbm-1.15_orig/src/gdbmexp.c gdbm-1.15/src/gdbmexp.c
    if (!fp)
      {
        close (nfd);
-diff -urN gdbm-1.15_orig/src/gdbmimp.c gdbm-1.15/src/gdbmimp.c
---- gdbm-1.15_orig/src/gdbmimp.c	2018-05-30 12:39:15.000000000 +0300
-+++ gdbm-1.15/src/gdbmimp.c	2018-06-17 20:55:43.834410500 +0300
-@@ -18,7 +18,11 @@
+Only in gdbm-1.26/src: gdbmexp.c.orig
+diff -ru gdbm-1.26.orig/src/gdbmimp.c gdbm-1.26/src/gdbmimp.c
+--- gdbm-1.26.orig/src/gdbmimp.c	2025-03-09 05:50:57
++++ gdbm-1.26/src/gdbmimp.c	2026-01-03 20:34:59
+@@ -17,7 +17,11 @@
     along with GDBM. If not, see <http://www.gnu.org/licenses/>.   */
  
  # include "autoconf.h"
@@ -276,9 +230,10 @@ diff -urN gdbm-1.15_orig/src/gdbmimp.c gdbm-1.15/src/gdbmimp.c
  # include <limits.h>
  
  # include "gdbmdefs.h"
-diff -urN gdbm-1.15_orig/src/gdbmload.c gdbm-1.15/src/gdbmload.c
---- gdbm-1.15_orig/src/gdbmload.c	2018-05-30 12:39:15.000000000 +0300
-+++ gdbm-1.15/src/gdbmload.c	2018-06-17 20:55:43.837410600 +0300
+Only in gdbm-1.26/src: gdbmimp.c.orig
+diff -ru gdbm-1.26.orig/src/gdbmload.c gdbm-1.26/src/gdbmload.c
+--- gdbm-1.26.orig/src/gdbmload.c	2025-03-21 08:43:02
++++ gdbm-1.26/src/gdbmload.c	2026-01-03 20:34:59
 @@ -18,8 +18,6 @@
  # include "gdbmdefs.h"
  # include "gdbm.h"
@@ -288,7 +243,7 @@ diff -urN gdbm-1.15_orig/src/gdbmload.c gdbm-1.15/src/gdbmload.c
  
  struct datbuf
  {
-@@ -289,13 +287,12 @@
+@@ -299,13 +297,12 @@
  _set_gdbm_meta_info (GDBM_FILE dbf, char *param, int meta_mask)
  {
    unsigned long n;
@@ -303,7 +258,7 @@ diff -urN gdbm-1.15_orig/src/gdbmload.c gdbm-1.15/src/gdbmload.c
    if (!(meta_mask & GDBM_META_MASK_OWNER))
      {
        p = getparm (param, "user");
-@@ -341,6 +338,7 @@
+@@ -351,6 +348,7 @@
  	    }
  	}
      }
@@ -311,7 +266,7 @@ diff -urN gdbm-1.15_orig/src/gdbmload.c gdbm-1.15/src/gdbmload.c
    
    if (!(meta_mask & GDBM_META_MASK_MODE))
      {
-@@ -357,6 +355,7 @@
+@@ -367,6 +365,7 @@
  	}
      }
    
@@ -319,7 +274,7 @@ diff -urN gdbm-1.15_orig/src/gdbmload.c gdbm-1.15/src/gdbmload.c
    if (meta_flags)
      {
        int fd = gdbm_fdesc (dbf);
-@@ -387,6 +386,7 @@
+@@ -397,6 +396,7 @@
  	  return 1;
  	}
      }
@@ -327,11 +282,12 @@ diff -urN gdbm-1.15_orig/src/gdbmload.c gdbm-1.15/src/gdbmload.c
    return 0;
  }
  
-diff -urN gdbm-1.15_orig/src/gdbmopen.c gdbm-1.15/src/gdbmopen.c
---- gdbm-1.15_orig/src/gdbmopen.c	2018-05-30 16:55:36.000000000 +0300
-+++ gdbm-1.15/src/gdbmopen.c	2018-06-17 21:11:42.126221600 +0300
-@@ -33,7 +33,7 @@
- #endif
+Only in gdbm-1.26/src: gdbmload.c.orig
+diff -ru gdbm-1.26.orig/src/gdbmopen.c gdbm-1.26/src/gdbmopen.c
+--- gdbm-1.26.orig/src/gdbmopen.c	2025-03-09 05:50:57
++++ gdbm-1.26/src/gdbmopen.c	2026-01-03 20:34:59
+@@ -23,7 +23,7 @@
+ #include <stddef.h>
  
  static void
 -compute_directory_size (blksize_t block_size,
@@ -339,7 +295,7 @@ diff -urN gdbm-1.15_orig/src/gdbmopen.c gdbm-1.15/src/gdbmopen.c
  			int *ret_dir_size, int *ret_dir_bits)
  {
    /* Create the initial hash table directory.  */
-@@ -224,7 +224,7 @@
+@@ -225,7 +225,7 @@
    return ftruncate (dbf->desc, 0);
  #else
    int fd;
@@ -357,7 +313,7 @@ diff -urN gdbm-1.15_orig/src/gdbmopen.c gdbm-1.15/src/gdbmopen.c
        fd = open (file_name, fbits, op->mode);
        if (fd < 0)
  	{
-@@ -355,8 +355,7 @@
+@@ -464,8 +466,7 @@
  	      if (!(flags & GDBM_CLOERROR))
  		dbf->desc = -1;
  	      gdbm_close (dbf);
@@ -367,10 +323,24 @@ diff -urN gdbm-1.15_orig/src/gdbmopen.c gdbm-1.15/src/gdbmopen.c
  	      return NULL;
  	    }
  	  else
---- gdbm-1.15_orig/src/lock.c	2018-05-30 12:39:15.000000000 +0300
-+++ gdbm-1.15/src/lock.c	2018-06-17 20:55:52.058880900 +0300
-@@ -24,7 +24,7 @@
- 
+Only in gdbm-1.26/src: gdbmopen.c.orig
+diff -ru gdbm-1.26.orig/src/gdbmsync.c gdbm-1.26/src/gdbmsync.c
+--- gdbm-1.26.orig/src/gdbmsync.c	2025-03-09 05:50:57
++++ gdbm-1.26/src/gdbmsync.c	2026-01-03 20:34:59
+@@ -440,6 +440,8 @@
+       GDBM_SET_ERRNO (dbf, GDBM_FILE_SYNC_ERROR, TRUE);
+       r = 1;
+     }
++#elif _WIN32
++  FlushFileBuffers(dbf);
+ #else
+   sync ();
+   sync ();
+diff -ru gdbm-1.26.orig/src/lock.c gdbm-1.26/src/lock.c
+--- gdbm-1.26.orig/src/lock.c	2025-04-11 01:35:20
++++ gdbm-1.26/src/lock.c	2026-01-03 21:06:37
+@@ -25,7 +25,7 @@
+ #include <signal.h>
  #include <errno.h>
  
 -#if HAVE_FLOCK
@@ -378,7 +348,7 @@ diff -urN gdbm-1.15_orig/src/gdbmopen.c gdbm-1.15/src/gdbmopen.c
  # ifndef LOCK_SH
  #  define LOCK_SH 1
  # endif
-@@ -42,6 +42,83 @@
+@@ -43,6 +43,83 @@
  # endif
  #endif
  
@@ -469,8 +439,8 @@ diff -urN gdbm-1.15_orig/src/gdbmopen.c gdbm-1.15/src/gdbmopen.c
 -#if HAVE_FLOCK
 +#if HAVE_FLOCK || defined(_WIN32)
    if (flock (dbf->desc,
-             ((dbf->read_write == GDBM_READER) ? LOCK_SH : LOCK_EX)
-             | (nb ? LOCK_NB : 0)) == 0)
+ 	     ((dbf->read_write == GDBM_READER) ? LOCK_SH : LOCK_EX)
+ 	     | (nb ? LOCK_NB : 0)) == 0)
 @@ -84,7 +161,7 @@
  static void
  unlock_flock (GDBM_FILE dbf)
@@ -480,20 +450,26 @@ diff -urN gdbm-1.15_orig/src/gdbmopen.c gdbm-1.15/src/gdbmopen.c
    flock (dbf->desc, LOCK_UN);
  #endif
  }
---- gdbm-1.26.orig/src/gdbmsync.c	2025-03-09 05:50:57
-+++ gdbm-1.26/src/gdbmsync.c	2026-01-03 20:14:30
-@@ -440,6 +440,8 @@
-       GDBM_SET_ERRNO (dbf, GDBM_FILE_SYNC_ERROR, TRUE);
-       r = 1;
+@@ -305,6 +382,7 @@
+ _gdbm_lockwait_signal (GDBM_FILE dbf, struct timespec const *ts)
+ {
+   int ret = -1;
++#if !defined(_WIN32)
+   int ec = 0;
+ 
+   if (ts == NULL || (ts->tv_sec == 0 && ts->tv_nsec == 0))
+@@ -358,6 +436,7 @@
      }
-+#elif _WIN32
-+  FlushFileBuffers(dbf);
- #else
-   sync ();
-   sync ();
-diff -urN gdbm-1.15_orig/src/recover.c gdbm-1.15/src/recover.c
---- gdbm-1.15_orig/src/recover.c	2018-05-30 12:39:15.000000000 +0300
-+++ gdbm-1.15/src/recover.c	2018-06-17 20:55:52.074881800 +0300
+   if (ret != 0)
+     errno = ec;
++#endif
+   return ret;
+ }
+ 
+Only in gdbm-1.26/src: lock.c.orig
+diff -ru gdbm-1.26.orig/src/recover.c gdbm-1.26/src/recover.c
+--- gdbm-1.26.orig/src/recover.c	2025-03-09 05:50:57
++++ gdbm-1.26/src/recover.c	2026-01-03 20:34:59
 @@ -19,6 +19,20 @@
  
  #define TMPSUF ".XXXXXX"
@@ -515,7 +491,7 @@ diff -urN gdbm-1.15_orig/src/recover.c gdbm-1.15/src/recover.c
  int
  gdbm_copy_meta (GDBM_FILE dst, GDBM_FILE src)
  {
-@@ -29,16 +29,20 @@
+@@ -29,16 +43,20 @@
        GDBM_SET_ERRNO (src, GDBM_FILE_STAT_ERROR, src->need_recovery);
        return -1;
      }
@@ -536,8 +512,8 @@ diff -urN gdbm-1.15_orig/src/recover.c gdbm-1.15/src/recover.c
    return 0;
  }
  
-@@ -130,18 +134,34 @@
-     }
+@@ -132,18 +150,34 @@
+     _gdbm_cache_init (new_dbf, dbf->cache_size);
    
    /* Move the new file to old name. */
 +#ifdef _WIN32
@@ -571,10 +547,11 @@ diff -urN gdbm-1.15_orig/src/recover.c gdbm-1.15/src/recover.c
    free (dbf->header);
    free (dbf->dir);
  
-diff -urN gdbm-1.15_orig/src/systems.h gdbm-1.15/src/systems.h
---- gdbm-1.15_orig/src/systems.h	2018-05-30 12:43:12.000000000 +0300
-+++ gdbm-1.15/src/systems.h	2018-06-17 21:16:30.716728100 +0300
-@@ -18,6 +18,11 @@
+Only in gdbm-1.26/src: recover.c.orig
+diff -ru gdbm-1.26.orig/src/systems.h gdbm-1.26/src/systems.h
+--- gdbm-1.26.orig/src/systems.h	2025-07-24 01:20:00
++++ gdbm-1.26/src/systems.h	2026-01-03 20:34:59
+@@ -17,6 +17,11 @@
     along with GDBM. If not, see <http://www.gnu.org/licenses/>.    */
  
  /* Include all system headers first. */
@@ -585,8 +562,8 @@ diff -urN gdbm-1.15_orig/src/systems.h gdbm-1.15/src/systems.h
 +#endif
  #include <sys/types.h>
  #include <stdio.h>
- #if HAVE_SYS_FILE_H
-@@ -43,6 +48,10 @@
+ #include <stddef.h>
+@@ -44,6 +49,10 @@
  # define O_CLOEXEC 0
  #endif
  
@@ -597,7 +574,7 @@ diff -urN gdbm-1.15_orig/src/systems.h gdbm-1.15/src/systems.h
  /* Default block size.  Some systems do not have blocksize in their
     stat record. This code uses the BSD blocksize from stat. */
  
-@@ -62,4 +62,7 @@
+@@ -64,4 +73,7 @@
  # define STDERR_FILENO 2
  #endif
  
@@ -606,36 +583,10 @@ diff -urN gdbm-1.15_orig/src/systems.h gdbm-1.15/src/systems.h
 +#ifdef _WIN32
 +extern int flock(int fd, int oper);
 +#endif
-diff -urN gdbm-1.15_orig/src/util.c gdbm-1.15/src/util.c
---- gdbm-1.15_orig/tools/util.c	2018-05-30 12:39:15.000000000 +0300
-+++ gdbm-1.15/tools/util.c	2018-06-17 20:55:52.082882300 +0300
-@@ -16,7 +16,6 @@
-    along with GDBM. If not, see <http://www.gnu.org/licenses/>.    */
- 
- #include "gdbmtool.h"
--#include <pwd.h>
- 
- char *
- mkfilename (const char *dir, const char *file, const char *suf)
-@@ -45,6 +44,7 @@
- char *
- tildexpand (char *s)
- {
-+#if 0
-   if (s[0] == '~')
-     {
-       char *p = s + 1;
-@@ -65,6 +65,7 @@
-       if (pw)
- 	return mkfilename (pw->pw_dir, p + len + 1, NULL);
-     }
-+#endif
-   return estrdup (s);
- }
- 
-diff -urN gdbm-1.15_orig/tests/blocksize02.at gdbm-1.15/tests/blocksize02.at
---- gdbm-1.15_orig/tests/blocksize02.at	2018-02-10 08:05:11.000000000 +0200
-+++ gdbm-1.15/tests/blocksize02.at	2018-06-18 10:58:25.793417500 +0300
+Only in gdbm-1.26/src: systems.h.orig
+diff -ru gdbm-1.26.orig/tests/blocksize02.at gdbm-1.26/tests/blocksize02.at
+--- gdbm-1.26.orig/tests/blocksize02.at	2025-03-06 10:57:50
++++ gdbm-1.26/tests/blocksize02.at	2026-01-03 20:34:59
 @@ -22,7 +22,6 @@
  ],
  [1],
@@ -645,9 +596,9 @@ diff -urN gdbm-1.15_orig/tests/blocksize02.at gdbm-1.15/tests/blocksize02.at
 +[gdbm_open failed: Block size error])
  
  AT_CLEANUP
-diff -urN gdbm-1.15_orig/tests/dbmdel01.at gdbm-1.15/tests/dbmdel01.at
---- gdbm-1.15_orig/tests/dbmdel01.at	2018-02-10 08:05:11.000000000 +0200
-+++ gdbm-1.15/tests/dbmdel01.at	2018-06-17 20:55:52.085882400 +0300
+diff -ru gdbm-1.26.orig/tests/dbmdel01.at gdbm-1.26/tests/dbmdel01.at
+--- gdbm-1.26.orig/tests/dbmdel01.at	2025-03-06 10:57:50
++++ gdbm-1.26/tests/dbmdel01.at	2026-01-03 20:34:59
 @@ -25,7 +25,7 @@
  ],
  [2],
@@ -657,9 +608,9 @@ diff -urN gdbm-1.15_orig/tests/dbmdel01.at gdbm-1.15/tests/dbmdel01.at
  ])
  
  AT_CLEANUP
-diff -urN gdbm-1.15_orig/tests/dbmfetch01.at gdbm-1.15/tests/dbmfetch01.at
---- gdbm-1.15_orig/tests/dbmfetch01.at	2018-02-10 08:05:11.000000000 +0200
-+++ gdbm-1.15/tests/dbmfetch01.at	2018-06-17 20:55:52.086882500 +0300
+diff -ru gdbm-1.26.orig/tests/dbmfetch01.at gdbm-1.26/tests/dbmfetch01.at
+--- gdbm-1.26.orig/tests/dbmfetch01.at	2025-03-06 10:57:50
++++ gdbm-1.26/tests/dbmfetch01.at	2026-01-03 20:34:59
 @@ -24,7 +24,7 @@
  ],
  [2],
@@ -669,9 +620,9 @@ diff -urN gdbm-1.15_orig/tests/dbmfetch01.at gdbm-1.15/tests/dbmfetch01.at
  ])
  
  AT_CLEANUP
-diff -urN gdbm-1.15_orig/tests/delete01.at gdbm-1.15/tests/delete01.at
---- gdbm-1.15_orig/tests/delete01.at	2018-02-10 08:05:11.000000000 +0200
-+++ gdbm-1.15/tests/delete01.at	2018-06-17 20:55:52.088882600 +0300
+diff -ru gdbm-1.26.orig/tests/delete01.at gdbm-1.26/tests/delete01.at
+--- gdbm-1.26.orig/tests/delete01.at	2025-03-06 10:57:50
++++ gdbm-1.26/tests/delete01.at	2026-01-03 20:34:59
 @@ -24,7 +24,7 @@
  ],
  [2],
@@ -681,9 +632,9 @@ diff -urN gdbm-1.15_orig/tests/delete01.at gdbm-1.15/tests/delete01.at
  ])
  
  AT_CLEANUP
-diff -urN gdbm-1.15_orig/tests/dtdel.c gdbm-1.15/tests/dtdel.c
---- gdbm-1.15_orig/tests/dtdel.c	2018-02-10 08:05:11.000000000 +0200
-+++ gdbm-1.15/tests/dtdel.c	2018-06-17 20:55:52.089882700 +0300
+diff -ru gdbm-1.26.orig/tests/dtdel.c gdbm-1.26/tests/dtdel.c
+--- gdbm-1.26.orig/tests/dtdel.c	2025-03-06 10:57:50
++++ gdbm-1.26/tests/dtdel.c	2026-01-03 20:34:59
 @@ -16,6 +16,7 @@
  */
  #include "autoconf.h"
@@ -706,9 +657,9 @@ diff -urN gdbm-1.15_orig/tests/dtdel.c gdbm-1.15/tests/dtdel.c
    while (--argc)
      {
        char *arg = *++argv;
-diff -urN gdbm-1.15_orig/tests/dtdump.c gdbm-1.15/tests/dtdump.c
---- gdbm-1.15_orig/tests/dtdump.c	2018-02-10 08:05:11.000000000 +0200
-+++ gdbm-1.15/tests/dtdump.c	2018-06-17 20:55:52.091882800 +0300
+diff -ru gdbm-1.26.orig/tests/dtdump.c gdbm-1.26/tests/dtdump.c
+--- gdbm-1.26.orig/tests/dtdump.c	2025-03-06 10:57:50
++++ gdbm-1.26/tests/dtdump.c	2026-01-03 20:34:59
 @@ -16,10 +16,13 @@
  */
  #include "autoconf.h"
@@ -737,9 +688,9 @@ diff -urN gdbm-1.15_orig/tests/dtdump.c gdbm-1.15/tests/dtdump.c
    while (--argc)
      {
        char *arg = *++argv;
-diff -urN gdbm-1.15_orig/tests/dtfetch.c gdbm-1.15/tests/dtfetch.c
---- gdbm-1.15_orig/tests/dtfetch.c	2018-02-10 08:05:11.000000000 +0200
-+++ gdbm-1.15/tests/dtfetch.c	2018-06-17 20:55:52.092882800 +0300
+diff -ru gdbm-1.26.orig/tests/dtfetch.c gdbm-1.26/tests/dtfetch.c
+--- gdbm-1.26.orig/tests/dtfetch.c	2025-03-06 10:57:50
++++ gdbm-1.26/tests/dtfetch.c	2026-01-03 20:34:59
 @@ -16,6 +16,7 @@
  */
  #include "autoconf.h"
@@ -762,9 +713,9 @@ diff -urN gdbm-1.15_orig/tests/dtfetch.c gdbm-1.15/tests/dtfetch.c
    while (--argc)
      {
        char *arg = *++argv;
-diff -urN gdbm-1.15_orig/tests/dtload.c gdbm-1.15/tests/dtload.c
---- gdbm-1.15_orig/tests/dtload.c	2018-02-10 08:05:11.000000000 +0200
-+++ gdbm-1.15/tests/dtload.c	2018-06-17 20:55:52.094882900 +0300
+diff -ru gdbm-1.26.orig/tests/dtload.c gdbm-1.26/tests/dtload.c
+--- gdbm-1.26.orig/tests/dtload.c	2025-03-06 10:57:50
++++ gdbm-1.26/tests/dtload.c	2026-01-03 20:34:59
 @@ -16,6 +16,7 @@
  */
  #include "autoconf.h"
@@ -788,9 +739,9 @@ diff -urN gdbm-1.15_orig/tests/dtload.c gdbm-1.15/tests/dtload.c
    while (--argc)
      {
        char *arg = *++argv;
-diff -urN gdbm-1.15_orig/tests/fetch01.at gdbm-1.15/tests/fetch01.at
---- gdbm-1.15_orig/tests/fetch01.at	2018-02-10 08:05:11.000000000 +0200
-+++ gdbm-1.15/tests/fetch01.at	2018-06-17 20:55:52.095883000 +0300
+diff -ru gdbm-1.26.orig/tests/fetch01.at gdbm-1.26/tests/fetch01.at
+--- gdbm-1.26.orig/tests/fetch01.at	2025-03-06 10:57:50
++++ gdbm-1.26/tests/fetch01.at	2026-01-03 20:34:59
 @@ -23,7 +23,7 @@
  ],
  [2],
@@ -800,9 +751,9 @@ diff -urN gdbm-1.15_orig/tests/fetch01.at gdbm-1.15/tests/fetch01.at
  ])
  
  AT_CLEANUP
-diff -urN gdbm-1.15_orig/tests/gdbmtool03.at gdbm-1.15/tests/gdbmtool03.at
---- gdbm-1.15_orig/tests/gdbmtool03.at	2018-05-24 07:15:19.000000000 +0300
-+++ gdbm-1.15/tests/gdbmtool03.at	2018-06-18 10:57:39.968796500 +0300
+diff -ru gdbm-1.26.orig/tests/gdbmtool03.at gdbm-1.26/tests/gdbmtool03.at
+--- gdbm-1.26.orig/tests/gdbmtool03.at	2025-03-06 10:57:50
++++ gdbm-1.26/tests/gdbmtool03.at	2026-01-03 20:34:59
 @@ -17,12 +17,13 @@
  AT_SETUP([Initialization file])
  AT_KEYWORDS([gdbmtool])
@@ -821,9 +772,9 @@ diff -urN gdbm-1.15_orig/tests/gdbmtool03.at gdbm-1.15/tests/gdbmtool03.at
  ],
  [0],
  [Database file: t.db
-diff -urN gdbm-1.15_orig/tests/gtdel.c gdbm-1.15/tests/gtdel.c
---- gdbm-1.15_orig/tests/gtdel.c	2018-02-10 08:05:11.000000000 +0200
-+++ gdbm-1.15/tests/gtdel.c	2018-06-17 20:55:52.097883100 +0300
+diff -ru gdbm-1.26.orig/tests/gtdel.c gdbm-1.26/tests/gtdel.c
+--- gdbm-1.26.orig/tests/gtdel.c	2025-03-06 10:57:50
++++ gdbm-1.26/tests/gtdel.c	2026-01-03 20:34:59
 @@ -16,6 +16,7 @@
  */
  #include "autoconf.h"
@@ -831,8 +782,8 @@ diff -urN gdbm-1.15_orig/tests/gtdel.c gdbm-1.15/tests/gtdel.c
 +#include <fcntl.h>
  #include <stdlib.h>
  #include <string.h>
- #include "gdbm.h"
-@@ -31,7 +32,12 @@
+ #include <errno.h>
+@@ -32,7 +33,12 @@
    GDBM_FILE dbf;
    int data_z = 0;
    int rc = 0;
@@ -846,18 +797,19 @@ diff -urN gdbm-1.15_orig/tests/gtdel.c gdbm-1.15/tests/gtdel.c
    while (--argc)
      {
        char *arg = *++argv;
-diff -urN gdbm-1.15_orig/tests/gtdump.c gdbm-1.15/tests/gtdump.c
---- gdbm-1.15_orig/tests/gtdump.c	2018-02-10 08:05:11.000000000 +0200
-+++ gdbm-1.15/tests/gtdump.c	2018-06-17 20:55:52.098883200 +0300
+Only in gdbm-1.26/tests: gtdel.c.orig
+diff -ru gdbm-1.26.orig/tests/gtdump.c gdbm-1.26/tests/gtdump.c
+--- gdbm-1.26.orig/tests/gtdump.c	2025-03-06 10:57:50
++++ gdbm-1.26/tests/gtdump.c	2026-01-03 20:34:59
 @@ -17,6 +17,7 @@
  #include "autoconf.h"
  #include <stdio.h>
  #include <stdlib.h>
 +#include <fcntl.h>
  #include <string.h>
+ #include <errno.h>
  #include "gdbm.h"
- #include "progname.h"
-@@ -31,7 +32,12 @@
+@@ -32,7 +33,12 @@
    int flags = 0;
    GDBM_FILE dbf;
    int delim = '\t';
@@ -871,9 +823,10 @@ diff -urN gdbm-1.15_orig/tests/gtdump.c gdbm-1.15/tests/gtdump.c
    while (--argc)
      {
        char *arg = *++argv;
-diff -urN gdbm-1.15_orig/tests/gtfetch.c gdbm-1.15/tests/gtfetch.c
---- gdbm-1.15_orig/tests/gtfetch.c	2018-02-10 08:05:11.000000000 +0200
-+++ gdbm-1.15/tests/gtfetch.c	2018-06-17 20:55:52.100883300 +0300
+Only in gdbm-1.26/tests: gtdump.c.orig
+diff -ru gdbm-1.26.orig/tests/gtfetch.c gdbm-1.26/tests/gtfetch.c
+--- gdbm-1.26.orig/tests/gtfetch.c	2025-03-06 10:57:50
++++ gdbm-1.26/tests/gtfetch.c	2026-01-03 20:34:59
 @@ -16,6 +16,7 @@
  */
  #include "autoconf.h"
@@ -881,8 +834,8 @@ diff -urN gdbm-1.15_orig/tests/gtfetch.c gdbm-1.15/tests/gtfetch.c
 +#include <fcntl.h>
  #include <stdlib.h>
  #include <string.h>
- #include "gdbm.h"
-@@ -46,7 +47,12 @@
+ #include <errno.h>
+@@ -47,7 +48,12 @@
    int data_z = 0;
    int delim = 0;
    int rc = 0;
@@ -896,9 +849,10 @@ diff -urN gdbm-1.15_orig/tests/gtfetch.c gdbm-1.15/tests/gtfetch.c
    while (--argc)
      {
        char *arg = *++argv;
-diff -urN gdbm-1.15_orig/tests/gtload.c gdbm-1.15/tests/gtload.c
---- gdbm-1.15_orig/tests/gtload.c	2018-05-30 12:16:40.000000000 +0300
-+++ gdbm-1.15/tests/gtload.c	2018-06-17 20:55:52.101883300 +0300
+Only in gdbm-1.26/tests: gtfetch.c.orig
+diff -ru gdbm-1.26.orig/tests/gtload.c gdbm-1.26/tests/gtload.c
+--- gdbm-1.26.orig/tests/gtload.c	2025-03-06 10:57:50
++++ gdbm-1.26/tests/gtload.c	2026-01-03 20:34:59
 @@ -16,6 +16,7 @@
  */
  #include "autoconf.h"
@@ -919,7 +873,7 @@ diff -urN gdbm-1.15_orig/tests/gtload.c gdbm-1.15/tests/gtload.c
    
    while (--argc)
      {
-@@ -199,7 +205,7 @@
+@@ -203,7 +209,7 @@
    dbf = gdbm_open (dbname, block_size, mode|flags, 00664, NULL);
    if (!dbf)
      {
@@ -928,9 +882,10 @@ diff -urN gdbm-1.15_orig/tests/gtload.c gdbm-1.15/tests/gtload.c
        exit (1);
      }
  
-diff -urN gdbm-1.15_orig/tests/gtopt.c gdbm-1.15/tests/gtopt.c
---- gdbm-1.15_orig/tests/gtopt.c	2018-02-10 08:05:11.000000000 +0200
-+++ gdbm-1.15/tests/gtopt.c	2018-06-17 20:55:52.104883500 +0300
+Only in gdbm-1.26/tests: gtload.c.orig
+diff -ru gdbm-1.26.orig/tests/gtopt.c gdbm-1.26/tests/gtopt.c
+--- gdbm-1.26.orig/tests/gtopt.c	2025-03-06 10:57:50
++++ gdbm-1.26/tests/gtopt.c	2026-01-03 20:34:59
 @@ -178,7 +178,11 @@
  int
  test_maxmapsize (void *valptr)
@@ -956,9 +911,9 @@ diff -urN gdbm-1.15_orig/tests/gtopt.c gdbm-1.15/tests/gtopt.c
    progname = canonical_progname (argv[0]);
    while (--argc)
      {
-diff -urN gdbm-1.15_orig/tests/gtver.c gdbm-1.15/tests/gtver.c
---- gdbm-1.15_orig/tests/gtver.c	2018-02-10 08:05:11.000000000 +0200
-+++ gdbm-1.15/tests/gtver.c	2018-06-17 20:55:52.105883600 +0300
+diff -ru gdbm-1.26.orig/tests/gtver.c gdbm-1.26/tests/gtver.c
+--- gdbm-1.26.orig/tests/gtver.c	2025-03-06 10:57:50
++++ gdbm-1.26/tests/gtver.c	2026-01-03 20:34:59
 @@ -17,6 +17,7 @@
  #include "autoconf.h"
  #include <stdlib.h>
@@ -967,20 +922,20 @@ diff -urN gdbm-1.15_orig/tests/gtver.c gdbm-1.15/tests/gtver.c
  #include <string.h>
  #include "gdbm.h"
  #include "progname.h"
-@@ -31,6 +32,10 @@
+@@ -30,6 +31,10 @@
+ {
    const char *progname = canonical_progname (argv[0]);
    int library = 0;
- 
++
 +#ifdef _WIN32
 +  _setmode(_fileno(stdout), O_BINARY);
 +#endif
-+
+ 
    if (argc == 1)
      {
-       printf ("%s\n", gdbm_version);
-diff -urN gdbm-1.15_orig/tests/num2word.c gdbm-1.15/tests/num2word.c
---- gdbm-1.15_orig/tests/num2word.c	2018-05-29 10:11:50.000000000 +0300
-+++ gdbm-1.15/tests/num2word.c	2018-06-17 22:06:14.980418200 +0300
+diff -ru gdbm-1.26.orig/tests/num2word.c gdbm-1.26/tests/num2word.c
+--- gdbm-1.26.orig/tests/num2word.c	2025-03-06 10:57:50
++++ gdbm-1.26/tests/num2word.c	2026-01-03 20:34:59
 @@ -17,6 +17,7 @@
  #include "autoconf.h"
  #include <stdlib.h>
@@ -989,7 +944,7 @@ diff -urN gdbm-1.15_orig/tests/num2word.c gdbm-1.15/tests/num2word.c
  #include <string.h>
  #include <unistd.h>
  #include <errno.h>
-@@ -328,6 +329,10 @@
+@@ -322,6 +323,10 @@
  int
  main (int argc, char **argv)
  {
@@ -1000,7 +955,7 @@ diff -urN gdbm-1.15_orig/tests/num2word.c gdbm-1.15/tests/num2word.c
    progname = *argv++;
    --argc;
  
-@@ -403,10 +408,10 @@
+@@ -397,10 +402,10 @@
    
    if (random_option)
      {
@@ -1013,9 +968,10 @@ diff -urN gdbm-1.15_orig/tests/num2word.c gdbm-1.15/tests/num2word.c
  	  print_number (n);
  	}
      }
-diff -urN gdbm-1.15_orig/tests/testsuite gdbm-1.15/tests/testsuite
+Only in gdbm-1.26/tests: num2word.c.orig
+diff -ru gdbm-1.26.orig/tests/testsuite gdbm-1.26/tests/testsuite
 --- gdbm-1.26.orig/tests/testsuite	2025-07-30 06:18:33
-+++ gdbm-1.26/tests/testsuite	2026-01-03 20:16:15
++++ gdbm-1.26/tests/testsuite	2026-01-03 20:34:59
 @@ -2187,7 +2187,7 @@
  ) >>"$at_stdout" 2>>"$at_stderr" 5>&-
  at_status=$? at_failed=false
@@ -1052,3 +1008,31 @@ diff -urN gdbm-1.15_orig/tests/testsuite gdbm-1.15/tests/testsuite
  " | \
    $at_diff - "$at_stderr" || at_failed=:
  at_fn_diff_devnull "$at_stdout" || at_failed=:
+diff -ru gdbm-1.26.orig/tools/util.c gdbm-1.26/tools/util.c
+--- gdbm-1.26.orig/tools/util.c	2025-03-06 10:51:59
++++ gdbm-1.26/tools/util.c	2026-01-03 20:34:59
+@@ -15,7 +15,6 @@
+    along with GDBM. If not, see <http://www.gnu.org/licenses/>.    */
+ 
+ #include "gdbmtool.h"
+-#include <pwd.h>
+ 
+ char *
+ mkfilename (const char *dir, const char *file, const char *suf)
+@@ -44,6 +43,7 @@
+ char *
+ tildexpand (char *s)
+ {
++#if 0
+   if (s[0] == '~')
+     {
+       char *p = s + 1;
+@@ -64,6 +64,7 @@
+       if (pw)
+ 	return mkfilename (pw->pw_dir, p + len + 1, NULL);
+     }
++#endif
+   return estrdup (s);
+ }
+ 
+Only in gdbm-1.26/tools: util.c.orig

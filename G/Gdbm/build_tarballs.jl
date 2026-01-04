@@ -17,8 +17,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/gdbm-*/
 
+args=()
 if [[ "${target}" == *-mingw* ]]; then
-    atomic_patch -p1 ../patches/gdbm-1.15-win32.patch
+    atomic_patch -p1 ../patches/gdbm-1.26-win32.patch
 fi
 
 if [[ "${target}" == powerpc64le-* ]] || [[ "${target}" == *-mingw* ]]; then
@@ -30,7 +31,7 @@ fi
 
 # `LDFLAGS` needed to let the linker find our readline on macOS
 export LDFLAGS="-L${libdir}"
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static --with-libiconv-prefix=${prefix}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static --with-libiconv-prefix=${prefix} "${args[@]}"
 make -j${nproc}
 make install
 """
