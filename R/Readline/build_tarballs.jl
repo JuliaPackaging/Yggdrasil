@@ -8,7 +8,7 @@ version = VersionNumber(version_str)
 
 # Collection of sources required to build Readline
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/readline/readline-$(version_str).tar.gz",
+    ArchiveSource("https://ftpmirror.gnu.org/gnu/readline/readline-$(version_str).tar.gz",
                   "fe5383204467828cd495ee8d1d3c037a7eba1389c22bc6a041f627976f9061cc"),
     DirectorySource("./bundled"),
 ]
