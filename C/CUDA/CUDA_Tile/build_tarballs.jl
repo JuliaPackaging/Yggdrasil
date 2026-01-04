@@ -94,10 +94,6 @@ if [[ "${target}" == *mingw* ]]; then
     # using Clang necessitates forcing pthread
     CMAKE_C_FLAGS+=(-pthread)
     CMAKE_CXX_FLAGS+=(-pthread)
-
-    # work around linker issues
-    CMAKE_C_FLAGS+=(-DMLIR_CAPI_ENABLE_WINDOWS_DLL_DECLSPEC -D__CRT__NO_INLINE)
-    CMAKE_CXX_FLAGS+=(-DMLIR_CAPI_ENABLE_WINDOWS_DLL_DECLSPEC -D__CRT__NO_INLINE)
 else
     CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
 fi
@@ -156,8 +152,8 @@ CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
 if [[ "${target}" == *mingw* ]]; then
     # using Clang as we link against a Clang-built LLVM
     CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake)
-    CMAKE_C_FLAGS+=(-pthread -DMLIR_CAPI_ENABLE_WINDOWS_DLL_DECLSPEC -D__CRT__NO_INLINE)
-    CMAKE_CXX_FLAGS+=(-pthread -DMLIR_CAPI_ENABLE_WINDOWS_DLL_DECLSPEC -D__CRT__NO_INLINE)
+    CMAKE_C_FLAGS+=(-pthread)
+    CMAKE_CXX_FLAGS+=(-pthread)
 else
     CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
 fi
