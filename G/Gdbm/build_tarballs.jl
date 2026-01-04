@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "Gdbm"
-version_string = "1.19"
+version_string = "1.26"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/gdbm/gdbm-$(version_string).tar.gz",
-                  "37ed12214122b972e18a0d94995039e57748191939ef74115b1d41d8811364bc"),
+    ArchiveSource("https://ftpmirror.gnu.org/gnu/gdbm/gdbm-$(version_string).tar.gz",
+                  "6a24504a14de4a744103dcb936be976df6fbe88ccff26065e54c1c47946f4a5e"),
     DirectorySource("./bundled")
 ]
 
