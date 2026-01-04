@@ -17,8 +17,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/readline-*/
 
-#TODO # Patch from https://aur.archlinux.org/cgit/aur.git/tree/readline-1-fixes.patch?h=mingw-w64-readline
-#TODO atomic_patch -p1 ${WORKSPACE}/srcdir/patches/readline-1-fixes.patch
+# Declare `struct winsize` on Windows. We'll never actually use it.
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-winsize.patch
 
 export CPPFLAGS="-I${includedir}"
 if [[ "${target}" == *-mingw* ]]; then
