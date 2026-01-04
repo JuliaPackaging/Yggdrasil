@@ -98,7 +98,7 @@ products = Product[
 # Dependencies that must be installed before this package can be built
 dependencies = [
     # We need to run the native "tic" program
-    HostBuildDependency(PackageSpec(; name="Ncurses_jll", version=v"6.5.1+0")),
+    HostBuildDependency(PackageSpec(; name="Ncurses_jll", version="6.5.1")),
 ]
 
 init_block = raw"""
