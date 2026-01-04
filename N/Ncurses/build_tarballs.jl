@@ -1,16 +1,13 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "Ncurses"
 version = v"6.6.0"
 
 # Collection of sources required to build Ncurses
 sources = [
-    # `ftpmirror.gnu.org` is flaky today; switch back later
-    # ArchiveSource("https://ftpmirror.gnu.org/pub/gnu/ncurses/ncurses-$(version.major).$(version.minor).tar.gz",
-    #               "355b4cbbed880b0381a04c46617b7656e362585d52e9cf84a67e2009b749ff11"),
-    ArchiveSource("https://mirror.csclub.uwaterloo.ca/gnu/ncurses/ncurses-$(version.major).$(version.minor).tar.gz",
+    ArchiveSource("https://ftpmirror.gnu.org/pub/gnu/ncurses/ncurses-$(version.major).$(version.minor).tar.gz",
                   "355b4cbbed880b0381a04c46617b7656e362585d52e9cf84a67e2009b749ff11"),
 ]
 
@@ -18,32 +15,45 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/ncurses-*
 
-CONFIG_FLAGS=""
+args=(
+    --disable-rpath
+    --disable-static
+    --enable-assertions
+    --enable-colorfgbg
+    --enable-database
+    --enable-ext-colors
+    --enable-ext-mouse
+    --enable-pc-files
+    --enable-warnings
+    --enable-widec
+    --with-normal
+    --with-shared
+    --without-ada
+    --without-cxx-binding
+    --without-debug
+    --without-manpages
+    --without-tests
+)
+
 if [[ ${target} == *-darwin* ]]; then
-    CONFIG_FLAGS="${CONFIG_FLAGS} --disable-stripping"
+    args+=(
+        --disable-stripping
+    )
 elif [[ "${target}" == *-mingw* ]]; then
-    CONFIG_FLAGS="--enable-sp-funcs --enable-term-driver"
+    args+=(
+        --enable-sp-funcs
+        --enable-term-driver
+    )
 fi
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-    --with-shared \
-    --disable-static \
-    --without-manpages \
-    --with-normal \
-    --without-debug \
-    --without-ada \
-    --without-cxx-binding \
-    --enable-widec \
-    --enable-pc-files \
-    --disable-rpath \
-    --enable-colorfgbg \
-    --enable-ext-colors \
-    --enable-ext-mouse \
-    --enable-warnings \
-    --enable-assertions \
-    --enable-database \
-    --without-tests \
-    ${CONFIG_FLAGS}
+# Ncurses check whether we're building on a "multi-user system". (We're
+# not, since we're building in a container.) If not, it disables access
+# to environment variables when running as root (i.e. usually when
+# running in a container). This breaks our `TERMINFO_DIRS` mechanism
+# below.
+export cf_cv_multiuser=yes
+
+./configure --build=${MACHTYPE} --host=${target} --prefix=${prefix} "${args[@]}"
 make -j${nproc}
 make install
 
@@ -88,7 +98,7 @@ products = Product[
 # Dependencies that must be installed before this package can be built
 dependencies = [
     # We need to run the native "tic" program
-    HostBuildDependency("Ncurses_jll"),
+    HostBuildDependency(PackageSpec(; name="Ncurses_jll", version="6.5.1")),
 ]
 
 init_block = raw"""
