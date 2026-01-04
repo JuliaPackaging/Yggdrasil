@@ -69,6 +69,8 @@ mkdir build
 cd build
 
 CMAKE_FLAGS=()
+CMAKE_C_FLAGS=()
+CMAKE_CXX_FLAGS=()
 
 # Point to native tools directory
 CMAKE_FLAGS+=(-DLLVM_NATIVE_TOOL_DIR=${WORKSPACE}/srcdir/llvm-project/native_build/bin)
@@ -89,9 +91,13 @@ if [[ "${target}" == *mingw* ]]; then
     # using Clang works around several (string table and eport symbol) limits on Windows
     CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake)
 
-    # using Clang necessitates forcing pthread though
-    CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS=-pthread)
-    CMAKE_FLAGS+=(-DCMAKE_C_FLAGS=-pthread)
+    # using Clang necessitates forcing pthread
+    CMAKE_C_FLAGS+=(-pthread)
+    CMAKE_CXX_FLAGS+=(-pthread)
+
+    # work around linker issues
+    CMAKE_C_FLAGS+=(-DMLIR_CAPI_ENABLE_WINDOWS_DLL_DECLSPEC -D__CRT__NO_INLINE)
+    CMAKE_CXX_FLAGS+=(-DMLIR_CAPI_ENABLE_WINDOWS_DLL_DECLSPEC -D__CRT__NO_INLINE)
 else
     CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
 fi
@@ -117,7 +123,7 @@ CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD="")
 CMAKE_FLAGS+=(-DMLIR_BUILD_EXAMPLES=OFF)
 CMAKE_FLAGS+=(-DMLIR_ENABLE_BINDINGS_PYTHON=OFF)
 
-cmake ../llvm ${CMAKE_FLAGS[@]}
+cmake ../llvm ${CMAKE_FLAGS[@]} "-DCMAKE_C_FLAGS=${CMAKE_C_FLAGS[*]}" "-DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS[*]}"
 
 # For some reason, LLVM doesn't build the necessary tablegen files...
 make llvm-headers mlir-generic-headers vt_gen
@@ -147,7 +153,14 @@ CMAKE_FLAGS=()
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
 
 # Explicitly use our cmake toolchain file and tell CMake we're cross-compiling
-CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+if [[ "${target}" == *mingw* ]]; then
+    # using Clang as we link against a Clang-built LLVM
+    CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake)
+    CMAKE_C_FLAGS+=(-pthread -DMLIR_CAPI_ENABLE_WINDOWS_DLL_DECLSPEC -D__CRT__NO_INLINE)
+    CMAKE_CXX_FLAGS+=(-pthread -DMLIR_CAPI_ENABLE_WINDOWS_DLL_DECLSPEC -D__CRT__NO_INLINE)
+else
+    CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+fi
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=ON)
 
 # Point CUDA Tile to our host compilers
@@ -161,7 +174,7 @@ CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 CMAKE_FLAGS+=(-DCUDA_TILE_USE_LLVM_INSTALL_DIR=${WORKSPACE}/srcdir/llvm-project/install)
 CMAKE_FLAGS+=(-DCUDA_TILE_USE_NATIVE_LLVM_INSTALL_DIR=${WORKSPACE}/srcdir/llvm-project/native_install)
 
-cmake .. ${CMAKE_FLAGS[@]}
+cmake .. ${CMAKE_FLAGS[@]} "-DCMAKE_C_FLAGS=${CMAKE_C_FLAGS[*]}" "-DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS[*]}"
 make -j${nproc} install
 
 # XXX: remove third-party tools that aren't needed at run time
