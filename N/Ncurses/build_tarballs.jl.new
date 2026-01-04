@@ -1,13 +1,16 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, Pkg
+using BinaryBuilder
 
 name = "Ncurses"
 version = v"6.6.0"
 
 # Collection of sources required to build Ncurses
 sources = [
-    ArchiveSource("https://ftpmirror.gnu.org/pub/gnu/ncurses/ncurses-$(version.major).$(version.minor).tar.gz",
+    # `ftpmirror.gnu.org` is flaky today; switch back later
+    # ArchiveSource("https://ftpmirror.gnu.org/pub/gnu/ncurses/ncurses-$(version.major).$(version.minor).tar.gz",
+    #               "355b4cbbed880b0381a04c46617b7656e362585d52e9cf84a67e2009b749ff11"),
+    ArchiveSource("https://mirror.csclub.uwaterloo.ca/gnu/ncurses/ncurses-$(version.major).$(version.minor).tar.gz",
                   "355b4cbbed880b0381a04c46617b7656e362585d52e9cf84a67e2009b749ff11"),
 ]
 
@@ -16,6 +19,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/ncurses-*
 
 args=(
+    --disable-mixed-case
     --disable-rpath
     --disable-static
     --enable-assertions
@@ -28,6 +32,7 @@ args=(
     --enable-widec
     --with-normal
     --with-shared
+    --with-terminfo-dirs='$ORIGIN/../share/terminfo:/usr/share/terminfo'
     --without-ada
     --without-cxx-binding
     --without-debug
@@ -36,9 +41,8 @@ args=(
 )
 
 if [[ ${target} == *-darwin* ]]; then
-    args+=(
-        --disable-stripping
-    )
+    #TODO args+=(--disable-stripping)
+    :
 elif [[ "${target}" == *-mingw* ]]; then
     args+=(
         --enable-sp-funcs
@@ -46,29 +50,31 @@ elif [[ "${target}" == *-mingw* ]]; then
     )
 fi
 
-# Ncurses check whether we're building on a "multi-user system". (We're
-# not, since we're building in a container.) If not, it disables access
-# to environment variables when running as root (i.e. usually when
-# running in a container). This breaks our `TERMINFO_DIRS` mechanism
-# below.
-export cf_cv_multiuser=yes
-
 ./configure --build=${MACHTYPE} --host=${target} --prefix=${prefix} "${args[@]}"
 make -j${nproc}
 make install
 
-# Remove duplicates that don't work on case-insensitive filesystems
-rm -f  ${prefix}/share/terminfo/2/2621a
-rm -rf ${prefix}/share/terminfo/a
-rm -rf ${prefix}/share/terminfo/e
-rm -f  ${prefix}/share/terminfo/h/hp2621a
-rm -f  ${prefix}/share/terminfo/h/hp70092a
-rm -rf ${prefix}/share/terminfo/l
-rm -rf ${prefix}/share/terminfo/m
-rm -rf ${prefix}/share/terminfo/n
-rm -rf ${prefix}/share/terminfo/p
-rm -rf ${prefix}/share/terminfo/q
-rm -rf ${prefix}/share/terminfo/X
+#TODO prefix=???
+#TODO     --enable-install-prefix
+#TODO DESTDIR=${prefix}
+#TODO 
+#TODO     --with-default-terminfo-dir=XXX
+#TODO     --with-terminfo-dirs=XXX
+#TODO 
+#TODO access("/root/.julia/artifacts/da7c8521d9d180eaf9cf4abdce28c4784f8882b6/share/terminfo/x/xterm", R_OK) = 0
+ 
+#TODO # Remove duplicates that don't work on case-insensitive filesystems
+#TODO rm -f  ${prefix}/share/terminfo/2/2621a
+#TODO rm -rf ${prefix}/share/terminfo/a
+#TODO rm -rf ${prefix}/share/terminfo/e
+#TODO rm -f  ${prefix}/share/terminfo/h/hp2621a
+#TODO rm -f  ${prefix}/share/terminfo/h/hp70092a
+#TODO rm -rf ${prefix}/share/terminfo/l
+#TODO rm -rf ${prefix}/share/terminfo/m
+#TODO rm -rf ${prefix}/share/terminfo/n
+#TODO rm -rf ${prefix}/share/terminfo/p
+#TODO rm -rf ${prefix}/share/terminfo/q
+#TODO rm -rf ${prefix}/share/terminfo/X
 
 # Install pc files and fool packages looking for non-wide-character ncurses
 for lib in ncurses form panel menu; do
@@ -98,7 +104,7 @@ products = Product[
 # Dependencies that must be installed before this package can be built
 dependencies = [
     # We need to run the native "tic" program
-    HostBuildDependency(PackageSpec(; name="Ncurses_jll", version=v"6.5.1+0")),
+    HostBuildDependency("Ncurses_jll"),
 ]
 
 init_block = raw"""
