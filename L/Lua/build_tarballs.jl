@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "Lua"
-version = v"5.4.8"
-ygg_version = v"5.4.9" # Got out of sync when RISC-V was added
+version = v"5.5.0"
+ygg_version = v"5.5.0"
 
 sources = [
     ArchiveSource("https://www.lua.org/ftp/lua-$(version).tar.gz",
-                  "4f18ddae154e793e46eeab727c59ef1c0c0c2b744e7b94219710d76f530629ae"),
+                  "57ccc32bbbd005cab75bcc52444052535af691789dba2b9016d5c50640d68b3d"),
     DirectorySource("./bundled"),
 ]
 
@@ -32,7 +32,7 @@ fi
 # XXX: Work around Lua apparently not understanding its own Windows setup
 if [[ ${target} == *-mingw* ]]; then
     TO_BIN="lua.exe luac.exe"
-    TO_LIB="lua54.dll"
+    TO_LIB="lua55.dll"
 else
     TO_BIN="lua luac"
     TO_LIB="liblua.${dlext}"
@@ -49,7 +49,7 @@ platforms = supported_platforms()
 products = [
     ExecutableProduct("lua", :lua),
     ExecutableProduct("luac", :luac),
-    LibraryProduct(["liblua", "lua54"], :liblua),
+    LibraryProduct(["liblua", "lua55"], :liblua),
 ]
 
 dependencies = [
