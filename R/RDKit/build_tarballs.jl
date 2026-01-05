@@ -1,5 +1,8 @@
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "RDKit"
 version = v"2025.09.3"
 
@@ -53,11 +56,14 @@ make -j${nproc}
 make install
 """
 
+# Adapted from https://github.com/JuliaPackaging/Yggdrasil/blob/60500f4eaba2534332f963eec85e8916ce9a2fcd/D/Doxygen/build_tarballs.jl#L46C1-L46C62
+sources, script = require_macos_sdk("10.14", sources, script)
+
 platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
     Platform("i686", "linux"; libc="glibc"),
     Platform("aarch64", "linux"; libc="glibc"),
-    Platform("x86_64", "macos"; os_version="10.14"),
+    Platform("x86_64", "macos"),
     Platform("aarch64", "macos"),
     Platform("x86_64", "windows"),
 ]
