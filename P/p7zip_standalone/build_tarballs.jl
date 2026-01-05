@@ -4,6 +4,9 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "p7zip_standalone"
+# This package is closely related to p7zip
+# p7zip builds the Alone bundle to provide 7za.exe which supports only the major formats.
+# p7zip_standalone builds the Alone2 bundle to provide 7zz.exe which supports the full set of formats except RAR.
 # Upstream uses CalVer
 upstream_version = "25.01"
 compact_version = replace(upstream_version, "."=>"")
