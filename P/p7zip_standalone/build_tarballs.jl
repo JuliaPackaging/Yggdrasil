@@ -3,7 +3,7 @@ using BinaryBuilder, Pkg
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
-name = "sevenzip_standalone"
+name = "p7zip_standalone"
 # Upstream uses CalVer
 upstream_version = "25.01"
 compact_version = replace(upstream_version, "."=>"")
@@ -62,7 +62,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("7zz", :sevenzip),
+    ExecutableProduct("7zz", :p7zz),
 ]
 
 # Dependencies that must be installed before this package can be built
