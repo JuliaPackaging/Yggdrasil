@@ -8,7 +8,6 @@ diff -ru gdbm-1.26.orig/compat/Makefile.am gdbm-1.26/compat/Makefile.am
 -libgdbm_compat_la_LDFLAGS = -version-info $(VI_CURRENT):$(VI_REVISION):$(VI_AGE)
 +libgdbm_compat_la_LDFLAGS = -no-undefined -version-info $(VI_CURRENT):$(VI_REVISION):$(VI_AGE)
  
-Only in gdbm-1.26/compat: Makefile.am.orig
 diff -ru gdbm-1.26.orig/compat/dbmopen.c gdbm-1.26/compat/dbmopen.c
 --- gdbm-1.26.orig/compat/dbmopen.c	2025-03-06 10:51:59
 +++ gdbm-1.26/compat/dbmopen.c	2026-01-03 20:34:59
@@ -80,7 +79,6 @@ diff -ru gdbm-1.26.orig/compat/dbmopen.c gdbm-1.26/compat/dbmopen.c
        if (dbm->dirfd == -1)
  	{
  	  gdbm_close (dbm->file);
-Only in gdbm-1.26/compat: dbmopen.c.orig
 Only in gdbm-1.26/compat: dbmopen.c.rej
 diff -ru gdbm-1.26.orig/configure.ac gdbm-1.26/configure.ac
 --- gdbm-1.26.orig/configure.ac	2025-07-30 05:46:20
@@ -99,7 +97,18 @@ diff -ru gdbm-1.26.orig/configure.ac gdbm-1.26/configure.ac
  # Initialize the test suite.
  AC_CONFIG_TESTDIR(tests)
  AC_CONFIG_FILES([tests/Makefile tests/atlocal po/Makefile.in])
-Only in gdbm-1.26: configure.ac.orig
+diff -ru gdbm-1.26.orig/src/Makefile.am gdbm-1.26/src/Makefile.am
+--- gdbm-1.26.orig/src/Makefile.am	2025-03-09 05:50:57
++++ gdbm-1.26/src/Makefile.am	2026-01-05 11:54:12
+@@ -69,5 +69,7 @@
+   libgdbm_la_SOURCES += debug.c
+ endif
+ 
+-libgdbm_la_LDFLAGS = -version-info $(VI_CURRENT):$(VI_REVISION):$(VI_AGE)
++libgdbm_la_LDFLAGS = -no-undefined -version-info $(VI_CURRENT):$(VI_REVISION):$(VI_AGE)
++
++libgdbm_la_LIBADD = -lws2_32
+ 
 diff -ru gdbm-1.26.orig/src/fullio.c gdbm-1.26/src/fullio.c
 --- gdbm-1.26.orig/src/fullio.c	2025-04-11 04:58:48
 +++ gdbm-1.26/src/fullio.c	2026-01-03 20:34:59
@@ -117,7 +126,6 @@ diff -ru gdbm-1.26.orig/src/fullio.c gdbm-1.26/src/fullio.c
    char *buf;
    off_t file_end;
  
-Only in gdbm-1.26/src: fullio.c.orig
 diff -ru gdbm-1.26.orig/src/gdbmdump.c gdbm-1.26/src/gdbmdump.c
 --- gdbm-1.26.orig/src/gdbmdump.c	2025-03-09 05:50:57
 +++ gdbm-1.26/src/gdbmdump.c	2026-01-03 20:34:59
@@ -171,7 +179,6 @@ diff -ru gdbm-1.26.orig/src/gdbmdump.c gdbm-1.26/src/gdbmdump.c
        if (nfd == -1)
  	{
  	  GDBM_SET_ERRNO (NULL, GDBM_FILE_OPEN_ERROR, FALSE);
-Only in gdbm-1.26/src: gdbmdump.c.orig
 diff -ru gdbm-1.26.orig/src/gdbmexp.c gdbm-1.26/src/gdbmexp.c
 --- gdbm-1.26.orig/src/gdbmexp.c	2025-03-09 05:50:57
 +++ gdbm-1.26/src/gdbmexp.c	2026-01-03 20:34:59
@@ -214,7 +221,6 @@ diff -ru gdbm-1.26.orig/src/gdbmexp.c gdbm-1.26/src/gdbmexp.c
    if (!fp)
      {
        close (nfd);
-Only in gdbm-1.26/src: gdbmexp.c.orig
 diff -ru gdbm-1.26.orig/src/gdbmimp.c gdbm-1.26/src/gdbmimp.c
 --- gdbm-1.26.orig/src/gdbmimp.c	2025-03-09 05:50:57
 +++ gdbm-1.26/src/gdbmimp.c	2026-01-03 20:34:59
@@ -230,7 +236,6 @@ diff -ru gdbm-1.26.orig/src/gdbmimp.c gdbm-1.26/src/gdbmimp.c
  # include <limits.h>
  
  # include "gdbmdefs.h"
-Only in gdbm-1.26/src: gdbmimp.c.orig
 diff -ru gdbm-1.26.orig/src/gdbmload.c gdbm-1.26/src/gdbmload.c
 --- gdbm-1.26.orig/src/gdbmload.c	2025-03-21 08:43:02
 +++ gdbm-1.26/src/gdbmload.c	2026-01-03 20:34:59
@@ -282,7 +287,6 @@ diff -ru gdbm-1.26.orig/src/gdbmload.c gdbm-1.26/src/gdbmload.c
    return 0;
  }
  
-Only in gdbm-1.26/src: gdbmload.c.orig
 diff -ru gdbm-1.26.orig/src/gdbmopen.c gdbm-1.26/src/gdbmopen.c
 --- gdbm-1.26.orig/src/gdbmopen.c	2025-03-09 05:50:57
 +++ gdbm-1.26/src/gdbmopen.c	2026-01-03 20:34:59
@@ -323,7 +327,6 @@ diff -ru gdbm-1.26.orig/src/gdbmopen.c gdbm-1.26/src/gdbmopen.c
  	      return NULL;
  	    }
  	  else
-Only in gdbm-1.26/src: gdbmopen.c.orig
 diff -ru gdbm-1.26.orig/src/gdbmsync.c gdbm-1.26/src/gdbmsync.c
 --- gdbm-1.26.orig/src/gdbmsync.c	2025-03-09 05:50:57
 +++ gdbm-1.26/src/gdbmsync.c	2026-01-03 20:34:59
@@ -466,7 +469,6 @@ diff -ru gdbm-1.26.orig/src/lock.c gdbm-1.26/src/lock.c
    return ret;
  }
  
-Only in gdbm-1.26/src: lock.c.orig
 diff -ru gdbm-1.26.orig/src/recover.c gdbm-1.26/src/recover.c
 --- gdbm-1.26.orig/src/recover.c	2025-03-09 05:50:57
 +++ gdbm-1.26/src/recover.c	2026-01-03 20:34:59
@@ -547,7 +549,6 @@ diff -ru gdbm-1.26.orig/src/recover.c gdbm-1.26/src/recover.c
    free (dbf->header);
    free (dbf->dir);
  
-Only in gdbm-1.26/src: recover.c.orig
 diff -ru gdbm-1.26.orig/src/systems.h gdbm-1.26/src/systems.h
 --- gdbm-1.26.orig/src/systems.h	2025-07-24 01:20:00
 +++ gdbm-1.26/src/systems.h	2026-01-03 20:34:59
@@ -583,7 +584,6 @@ diff -ru gdbm-1.26.orig/src/systems.h gdbm-1.26/src/systems.h
 +#ifdef _WIN32
 +extern int flock(int fd, int oper);
 +#endif
-Only in gdbm-1.26/src: systems.h.orig
 diff -ru gdbm-1.26.orig/tests/blocksize02.at gdbm-1.26/tests/blocksize02.at
 --- gdbm-1.26.orig/tests/blocksize02.at	2025-03-06 10:57:50
 +++ gdbm-1.26/tests/blocksize02.at	2026-01-03 20:34:59
@@ -797,7 +797,6 @@ diff -ru gdbm-1.26.orig/tests/gtdel.c gdbm-1.26/tests/gtdel.c
    while (--argc)
      {
        char *arg = *++argv;
-Only in gdbm-1.26/tests: gtdel.c.orig
 diff -ru gdbm-1.26.orig/tests/gtdump.c gdbm-1.26/tests/gtdump.c
 --- gdbm-1.26.orig/tests/gtdump.c	2025-03-06 10:57:50
 +++ gdbm-1.26/tests/gtdump.c	2026-01-03 20:34:59
@@ -823,7 +822,6 @@ diff -ru gdbm-1.26.orig/tests/gtdump.c gdbm-1.26/tests/gtdump.c
    while (--argc)
      {
        char *arg = *++argv;
-Only in gdbm-1.26/tests: gtdump.c.orig
 diff -ru gdbm-1.26.orig/tests/gtfetch.c gdbm-1.26/tests/gtfetch.c
 --- gdbm-1.26.orig/tests/gtfetch.c	2025-03-06 10:57:50
 +++ gdbm-1.26/tests/gtfetch.c	2026-01-03 20:34:59
@@ -849,7 +847,6 @@ diff -ru gdbm-1.26.orig/tests/gtfetch.c gdbm-1.26/tests/gtfetch.c
    while (--argc)
      {
        char *arg = *++argv;
-Only in gdbm-1.26/tests: gtfetch.c.orig
 diff -ru gdbm-1.26.orig/tests/gtload.c gdbm-1.26/tests/gtload.c
 --- gdbm-1.26.orig/tests/gtload.c	2025-03-06 10:57:50
 +++ gdbm-1.26/tests/gtload.c	2026-01-03 20:34:59
@@ -882,7 +879,6 @@ diff -ru gdbm-1.26.orig/tests/gtload.c gdbm-1.26/tests/gtload.c
        exit (1);
      }
  
-Only in gdbm-1.26/tests: gtload.c.orig
 diff -ru gdbm-1.26.orig/tests/gtopt.c gdbm-1.26/tests/gtopt.c
 --- gdbm-1.26.orig/tests/gtopt.c	2025-03-06 10:57:50
 +++ gdbm-1.26/tests/gtopt.c	2026-01-03 20:34:59
@@ -968,7 +964,6 @@ diff -ru gdbm-1.26.orig/tests/num2word.c gdbm-1.26/tests/num2word.c
  	  print_number (n);
  	}
      }
-Only in gdbm-1.26/tests: num2word.c.orig
 diff -ru gdbm-1.26.orig/tests/testsuite gdbm-1.26/tests/testsuite
 --- gdbm-1.26.orig/tests/testsuite	2025-07-30 06:18:33
 +++ gdbm-1.26/tests/testsuite	2026-01-03 20:34:59
@@ -1008,6 +1003,252 @@ diff -ru gdbm-1.26.orig/tests/testsuite gdbm-1.26/tests/testsuite
  " | \
    $at_diff - "$at_stderr" || at_failed=:
  at_fn_diff_devnull "$at_stdout" || at_failed=:
+diff -ru gdbm-1.26.orig/tools/gdbm_load.c gdbm-1.26/tools/gdbm_load.c
+--- gdbm-1.26.orig/tools/gdbm_load.c	2025-03-06 10:51:59
++++ gdbm-1.26/tools/gdbm_load.c	2026-01-05 12:28:32
+@@ -18,16 +18,12 @@
+ # include "gdbm.h"
+ # include "gdbmapp.h"
+ # include "gdbmdefs.h"
+-# include <pwd.h>
+-# include <grp.h>
+ 
+ int replace = 0;
+ int meta_mask = 0;
+ int no_meta_option;
+ 
+ int mode;
+-uid_t owner_uid;
+-gid_t owner_gid;
+ 
+ char *parseopt_program_doc = N_("load a GDBM database from a file");
+ char *parseopt_program_args = N_("FILE [DB_FILE]");
+@@ -50,6 +46,7 @@
+     {
+       int fd = gdbm_fdesc (dbf);
+ 
++#if 0
+       if (meta_mask & GDBM_META_MASK_OWNER)
+ 	{
+ 	  if (fchown (fd, owner_uid, owner_gid))
+@@ -63,6 +60,7 @@
+ 	  GDBM_SET_ERRNO (dbf, GDBM_ERR_FILE_OWNER, FALSE);
+ 	  return 1;
+ 	}
++#endif
+     }
+   return 0;
+ }
+@@ -144,6 +142,7 @@
+ 	oflags = (oflags & ~GDBM_OPENMASK) | GDBM_WRCREAT;
+ 	break;
+ 
++#if 0
+       case 'u':
+ 	{
+ 	  size_t len;
+@@ -208,6 +207,7 @@
+ 	  meta_mask |= GDBM_META_MASK_OWNER;
+ 	}
+ 	break;
++#endif
+ 	  
+       case 'r':
+ 	replace = 1;
+Only in gdbm-1.26/tools: gdbm_load.c~
+diff -ru gdbm-1.26.orig/tools/gdbmshell.c gdbm-1.26/tools/gdbmshell.c
+--- gdbm-1.26.orig/tools/gdbmshell.c	2025-03-21 08:45:05
++++ gdbm-1.26/tools/gdbmshell.c	2026-01-05 12:14:04
+@@ -21,12 +21,7 @@
+ #include <errno.h>
+ #include <ctype.h>
+ #include <signal.h>
+-#include <pwd.h>
+-#include <sys/ioctl.h>
+-#include <sys/wait.h>
+ #include <sys/time.h>
+-#include <sys/resource.h>
+-#include <termios.h>
+ #include <stdarg.h>
+ #ifdef HAVE_LOCALE_H
+ # include <locale.h>
+@@ -1048,19 +1043,13 @@
+   char *s = buf;
+   *s++ = mode & S_IRUSR ? 'r' : '-';
+   *s++ = mode & S_IWUSR ? 'w' : '-';
+-  *s++ = (mode & S_ISUID
+-	       ? (mode & S_IXUSR ? 's' : 'S')
+-	       : (mode & S_IXUSR ? 'x' : '-'));
++  *s++ = mode & S_IXUSR ? 'x' : '-';
+   *s++ = mode & S_IRGRP ? 'r' : '-';
+   *s++ = mode & S_IWGRP ? 'w' : '-';
+-  *s++ = (mode & S_ISGID
+-	       ? (mode & S_IXGRP ? 's' : 'S')
+-	       : (mode & S_IXGRP ? 'x' : '-'));
++  *s++ = mode & S_IXGRP ? 'x' : '-';
+   *s++ = mode & S_IROTH ? 'r' : '-';
+   *s++ = mode & S_IWOTH ? 'w' : '-';
+-  *s++ = (mode & S_ISVTX
+-	       ? (mode & S_IXOTH ? 't' : 'T')
+-	       : (mode & S_IXOTH ? 'x' : '-'));
++  *s++ = mode & S_IXOTH ? 'x' : '-';
+   *s = '\0';
+   return buf;
+ }
+@@ -1919,54 +1908,7 @@
+ shell_handler (struct command_param *param,
+ 	       struct command_environ *cenv GDBM_ARG_UNUSED)
+ {
+-  char *argv[4];
+-  pid_t pid, rc;
+-  int status;
+-
+-  argv[0] = getenv ("$SHELL");
+-  if (!argv[0])
+-    argv[0] = "/bin/sh";
+-  if (param->vararg)
+-    {
+-      argv[1] = "-c";
+-      argv[2] = param->vararg->v.string;
+-      argv[3] = NULL;
+-    }
+-  else
+-    {
+-      argv[1] = NULL;
+-    }
+-
+-  pid = fork ();
+-  if (pid == -1)
+-    {
+-      terror ("fork: %s", strerror (errno));
+-      return GDBMSHELL_ERR;
+-    }
+-  if (pid == 0)
+-    {
+-      execv (argv[0], argv);
+-      perror (argv[0]);
+-      _exit (127);
+-    }
+-
+-  rc = waitpid (pid, &status, 0);
+-  if (rc == -1)
+-    {
+-      terror ("waitpid: %s", strerror (errno));
+-      rc = GDBMSHELL_ERR;
+-    }
+-  else if (!interactive ())
+-    {
+-      if (WIFEXITED (status))
+-	{
+-	  if (WEXITSTATUS (status) != 0)
+-	    terror (_("command failed with status %d"), WEXITSTATUS (status));
+-	}
+-      else if (WIFSIGNALED (status))
+-	terror (_("command terminated on signal %d"), WTERMSIG (status));
+-    }
+-  return rc;
++  return -1;
+ }
+ 
+ static int
+@@ -3095,11 +3037,10 @@
+ void
+ timing_start (struct timing *t)
+ {
+-  struct rusage r;
+   gettimeofday (&t->real, NULL);
+-  getrusage (RUSAGE_SELF, &r);
+-  t->user  = r.ru_utime;
+-  t->sys = r.ru_stime;
++  t->user = t->real;
++  t->sys.tv_sec = 0;
++  t->sys.tv_usec = 0;
+ }
+ 
+ static inline struct timeval
+@@ -3121,14 +3062,13 @@
+ void
+ timing_stop (struct timing *t)
+ {
+-  struct rusage r;
+   struct timeval now;
+ 
+   gettimeofday (&now, NULL);
+-  getrusage (RUSAGE_SELF, &r);
+   t->real = timeval_sub (now, t->real);
+-  t->user = timeval_sub (r.ru_utime, t->user);
+-  t->sys = timeval_sub (r.ru_stime, t->sys);
++  t->user = t->real;
++  t->sys.tv_sec = 0;
++  t->sys.tv_usec = 0;
+ }
+ 
+ #ifndef HAVE_GETLINE
+@@ -3359,12 +3299,6 @@
+       rc = input_context_push (instream);
+       if (rc == 0)
+ 	{
+-	  struct sigaction act, old_act;
+-
+-	  act.sa_flags = 0;
+-	  sigemptyset(&act.sa_mask);
+-	  act.sa_handler = SIG_IGN;
+-	  sigaction (SIGPIPE, &act, &old_act);
+ 	  /* Welcome message. */
+ 	  if (instream_interactive (instream) && !variable_is_true ("quiet"))
+ 	    printf (_("\nWelcome to the gdbm tool.  Type ? for help.\n\n"));
+@@ -3372,7 +3306,6 @@
+ 	  input_context_drain ();
+ 	  yylex_destroy ();
+ 	  closedb ();
+-	  sigaction (SIGPIPE, &old_act, NULL);
+ 	}
+       else
+ 	instream_close (instream);
+Only in gdbm-1.26/tools: gdbmshell.c~
+diff -ru gdbm-1.26.orig/tools/gdbmtool.c gdbm-1.26/tools/gdbmtool.c
+--- gdbm-1.26.orig/tools/gdbmtool.c	2025-03-06 10:51:59
++++ gdbm-1.26/tools/gdbmtool.c	2026-01-05 12:06:48
+@@ -18,10 +18,6 @@
+ #include <errno.h>
+ #include <ctype.h>
+ #include <signal.h>
+-#include <pwd.h>
+-#include <sys/ioctl.h>
+-#include <sys/wait.h>
+-#include <termios.h>
+ #include <stdarg.h>
+ #ifdef HAVE_LOCALE_H
+ # include <locale.h>
+@@ -35,27 +31,6 @@
+   if (access (GDBMTOOLRC, R_OK) == 0)
+     {
+       istr = instream_file_create (GDBMTOOLRC);
+-    }
+-  else
+-    {
+-      char *fname;
+-      char *p = getenv ("HOME");
+-      if (!p)
+-	{
+-	  struct passwd *pw = getpwuid (getuid ());
+-	  if (!pw)
+-	    {
+-	      terror (_("cannot find home directory"));
+-	      return;
+-	    }
+-	  p = pw->pw_dir;
+-	}
+-      fname = mkfilename (p, GDBMTOOLRC, NULL);
+-      if (access (fname, R_OK) == 0)
+-	{
+-	  istr = instream_file_create (GDBMTOOLRC);
+-	}
+-      free (fname);
+     }
+ 
+   if (istr)
+Only in gdbm-1.26/tools: gdbmtool.c~
 diff -ru gdbm-1.26.orig/tools/util.c gdbm-1.26/tools/util.c
 --- gdbm-1.26.orig/tools/util.c	2025-03-06 10:51:59
 +++ gdbm-1.26/tools/util.c	2026-01-03 20:34:59
@@ -1035,4 +1276,60 @@ diff -ru gdbm-1.26.orig/tools/util.c gdbm-1.26/tools/util.c
    return estrdup (s);
  }
  
-Only in gdbm-1.26/tools: util.c.orig
+diff -ru gdbm-1.26.orig/tools/wordwrap.c gdbm-1.26/tools/wordwrap.c
+--- gdbm-1.26.orig/tools/wordwrap.c	2025-04-11 03:20:32
++++ gdbm-1.26/tools/wordwrap.c	2026-01-05 12:21:57
+@@ -23,8 +23,7 @@
+ #include <wchar.h>
+ #include <errno.h>
+ #include <limits.h>
+-#include <termios.h>
+-#include <sys/ioctl.h>
++#include <windows.h>
+ 
+ #define UNSET ((unsigned)-1)
+ #define ISSET(c) (c != UNSET)
+@@ -110,27 +109,28 @@
+ static unsigned
+ detect_right_margin (WORDWRAP_FILE wf)
+ {
+-  struct winsize ws;
++  CONSOLE_SCREEN_BUFFER_INFO csbi;
+   unsigned r = 0;
+ 
+-  ws.ws_col = ws.ws_row = 0;
+-  if ((ioctl (wf->fd, TIOCGWINSZ, (char *) &ws) < 0) || ws.ws_col == 0)
++  if (GetConsoleScreenBufferInfo (GetStdHandle (STD_OUTPUT_HANDLE), &csbi))
++    r = csbi.srWindow.Right  - csbi.srWindow.Left + 1;
++  else
+     {
+       char *p = getenv ("COLUMNS");
+       if (p)
+-	{
+-	  unsigned long n;
+-	  char *ep;
+-	  errno = 0;
+-	  n = strtoul (p, &ep, 10);
+-	  if (!(errno || *ep || n > UINT_MAX))
+-	    r = n;
+-	}
++        {
++          unsigned long n;
++          char *ep;
++          errno = 0;
++          n = strtoul (p, &ep, 10);
++          if (!(errno || *ep || n > UINT_MAX))
++            r = n;
++          else
++            r = DEFAULT_RIGHT_MARGIN;
++        }
+       else
+-	r = DEFAULT_RIGHT_MARGIN;
++        r = DEFAULT_RIGHT_MARGIN;
+     }
+-  else
+-    r = ws.ws_col;
+   return r;
+ }
+ 
+Only in gdbm-1.26/tools: wordwrap.c~
