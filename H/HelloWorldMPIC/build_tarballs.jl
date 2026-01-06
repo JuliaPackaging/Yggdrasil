@@ -1,3 +1,6 @@
+# This is a simple example, showing how an application using MPI can
+# be turned into an Yggdrasil recipe.
+
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
@@ -30,7 +33,12 @@ cmake --install build
 
 install_license /usr/share/licenses/MIT
 
-# Run the executable if we built for the host platform
+# (This is just for fun. It tests whether the executable is working.
+# It is not usually part of an Yggdrasil recipe.)
+#
+# Run the executable if we built for the host platform. Since there
+# are no generic `host` and `target` variables, we check the Rust
+# variables instead, although we're not using Rust.
 if [[ ${rust_host} == ${rust_target} ]]; then
     # Install ssh (for OpenMPI)
     apk add openssh-client
