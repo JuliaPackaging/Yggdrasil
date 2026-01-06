@@ -32,6 +32,9 @@ install_license /usr/share/licenses/MIT
 
 # Run the executable if we built for the host platform
 if [[ ${rust_host} == ${rust_target} ]]; then
+    # Install ssh (for OpenMPI)
+    apk add openssh-client
+    # Allow OpenMPI to run as root
     export OMPI_ALLOW_RUN_AS_ROOT=1
     export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
     mpiexec -n 2 ${bindir}/hello_world${exeext}
