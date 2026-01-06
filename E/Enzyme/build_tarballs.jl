@@ -14,14 +14,14 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 name = "Enzyme"
 repo = "https://github.com/EnzymeAD/Enzyme.git"
 
-auto_version = "refs/tags/v0.0.234"
+auto_version = "refs/tags/v0.0.235"
 version = VersionNumber(split(auto_version, "/")[end])
 
 llvm_versions = [v"15.0.7", v"16.0.6", v"18.1.7", v"20.1.8"]
 
 # Collection of sources required to build attr
 sources = [
-    GitSource(repo, "47d3426ba17e0c30b855184f2c5cf1e2b19c97bd"),
+    GitSource(repo, "32d13656e35373c68d9c8e40a30247c9a5039ee6"),
 ]
 
 # These are the platforms we will build for by default, unless further
@@ -47,7 +47,6 @@ install_license LICENSE
 # 1. Build HOST
 NATIVE_CMAKE_FLAGS=()
 NATIVE_CMAKE_FLAGS+=(-DENZYME_CLANG=ON)
-NATIVE_CMAKE_FLAGS+=(-DENZYME_EXTERNAL_SHARED_LIB=ON)
 NATIVE_CMAKE_FLAGS+=(-DENZYME_ENABLE_BENCHMARKS=OFF)
 NATIVE_CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=RelWithDebInfo)
 NATIVE_CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=OFF)
