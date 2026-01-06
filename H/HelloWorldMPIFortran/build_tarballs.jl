@@ -46,7 +46,7 @@ augment_platform_block = """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; exclude=Sys.iswindows) # MicrosoftMPI does not support Fortran
 platforms = expand_gfortran_versions(platforms)
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
