@@ -6,7 +6,7 @@ version = v"2.2.4"  # Update to the desired version
 # Collection of sources required to build thermopack
 sources = [
     GitSource("https://github.com/thermotools/thermopack.git", 
-              "v2.2.4")  # Update tag/commit as needed
+              "ca75d8e095e8b951616897efe1bca9b8c3badda7")  # Update tag/commit as needed
 ]
 
 # Bash recipe for building across all platforms
