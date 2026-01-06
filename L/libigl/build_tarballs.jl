@@ -15,9 +15,9 @@ cd $WORKSPACE/srcdir/libigl
 
 apk del cmake
 
-# Fix gettimeofday declaration issue on FreeBSD and macOS by defining _DEFAULT_SOURCE
+# Fix gettimeofday declaration issue on macOS by defining _DEFAULT_SOURCE
 # This is needed for GLFW's posix_time.c which uses gettimeofday
-if [[ "${target}" == *freebsd* || "${target}" == *darwin* ]]; then
+if [[ "${target}" == *darwin* ]]; then
     EXTRA_CMAKE_FLAGS="-DCMAKE_C_FLAGS=-D_DEFAULT_SOURCE"
 else
     EXTRA_CMAKE_FLAGS=""
@@ -63,9 +63,13 @@ filter!(p -> nbits(p) ≠ 32, platforms)
 filter!(p -> arch(p) != "powerpc64le", platforms)
 # Windows has template instantiation issues with size_t (unsigned long long vs unsigned long)
 filter!(p -> !Sys.iswindows(p), platforms)
+# FreeBSD has build issues
+filter!(p -> !Sys.isfreebsd(p), platforms)
+# macOS x86_64 has build issues (aarch64 works)
+filter!(p -> !(Sys.isapple(p) && arch(p) == "x86_64"), platforms)
 
 # Platform-specific dependencies for OpenGL and GLFW
-x11_platforms = filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)
+x11_platforms = filter(p -> Sys.islinux(p), platforms)
 
 dependencies = [
     Dependency("GMP_jll"),
@@ -77,7 +81,7 @@ dependencies = [
     HostBuildDependency("CMake_jll"),
     Dependency("GLFW_jll"),
     Dependency("Libglvnd_jll"; platforms=x11_platforms),
-    # X11 dependencies for GLFW on Linux/FreeBSD
+    # X11 dependencies for GLFW on Linux
     BuildDependency("Xorg_xorgproto_jll"; platforms=x11_platforms),
 ]
 
