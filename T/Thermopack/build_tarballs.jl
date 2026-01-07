@@ -46,7 +46,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("OpenBLAS_jll"),  # Provides BLAS and LAPACK
+    Dependency("LAPACK_jll"),
 ]
 
 # Build the tarballs
