@@ -63,7 +63,7 @@ cp bin/papilo${exeext} "${bindir}/papilo${exeext}"
 mv -v ${prefix}/share/licenses/scip ${prefix}/share/licenses/SCIP_PaPILO
 
 for dir in scip soplex gcg papilo; do
-    cp $WORKSPACE/srcdir/scipoptsuite*/${dir}/LICENSE ${prefix}/share/licenses/SCIP_PaPILO/LICENSE_${dir}
+    cp -v $WORKSPACE/srcdir/scipoptsuite*/${dir}/LICENSE ${prefix}/share/licenses/SCIP_PaPILO/LICENSE_${dir}
 done
 """
 
