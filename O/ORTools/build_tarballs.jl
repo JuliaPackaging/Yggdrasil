@@ -117,6 +117,11 @@ install -Dvm 644 ortools/scheduling/jobshop_scheduling.proto ${prefix}/include/o
 """
 
 platforms = supported_platforms()
+# Filter out RISC-V, Windows, and macOS x86_64 platforms
+platforms = filter(p -> arch(p) != "riscv64", platforms)
+platforms = filter(p -> !Sys.iswindows(p), platforms)
+platforms = filter(p -> !(arch(p) == "x86_64" && Sys.isapple(p)), platforms)
+
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
