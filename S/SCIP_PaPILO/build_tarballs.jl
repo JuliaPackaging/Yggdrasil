@@ -60,11 +60,7 @@ make papilo-executable
 make install
 cp bin/papilo${exeext} "${bindir}/papilo${exeext}"
 
-mkdir -p ${prefix}/share/licenses/SCIP_PaPILO
-
-# moving all licenses installed by SCIP to the corresponding folder
-mv ${prefix}/share/licenses/scip/* ${prefix}/share/licenses/SCIP_PaPILO
-rm -rf ${prefix}/share/licenses/scip
+mv ${prefix}/share/licenses/scip ${prefix}/share/licenses/SCIP_PaPILO
 
 for dir in scip soplex gcg papilo; do
     cp $WORKSPACE/srcdir/scipoptsuite*/${dir}/LICENSE ${prefix}/share/licenses/SCIP_PaPILO/LICENSE_${dir}
