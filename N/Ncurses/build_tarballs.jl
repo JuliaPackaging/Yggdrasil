@@ -44,6 +44,10 @@ elif [[ "${target}" == *-mingw* ]]; then
         --enable-sp-funcs
         --enable-term-driver
     )
+    # Do not export multi-byte string functions.
+    # These functions are defined in a system library, and if we not re-export them,
+    # there would be duplicate definitions.
+    export LDFLAGS="-Wl,--exclude-symbols,mbrtowc:mbrlen:mbsrtowcs:wcsrtombs:mbtowc:wctomb"
 fi
 
 # Ncurses check whether we're building on a "multi-user system". (We're
@@ -56,6 +60,11 @@ export cf_cv_multiuser=yes
 ./configure --build=${MACHTYPE} --host=${target} --prefix=${prefix} "${args[@]}"
 make -j${nproc}
 make install
+
+if [[ "${target}" == *-mingw* ]]; then
+    # Ensure we didn't put a copy of `mbrtowc` into our `libncursesw` library
+    ${target}-nm -A /workspace/destdir/lib/libncursesw.dll.a | grep -w 'mbrtowc$' && false
+fi
 
 # Remove duplicates that don't work on case-insensitive filesystems
 rm -f  ${prefix}/share/terminfo/2/2621a
@@ -92,6 +101,7 @@ products = Product[
     LibraryProduct(["libform", "libform6"], :libform),
     LibraryProduct(["libmenu", "libmenu6"], :libmenu),
     LibraryProduct(["libncurses", "libncurses6"], :libncurses),
+    LibraryProduct(["libncursesw", "libncursesw6"], :libncursesw),
     LibraryProduct(["libpanel", "libpanel6"], :libpanel),
 ]
 
