@@ -19,14 +19,19 @@ version = v"1.3.0"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://www.bork.embl.de/Docu/AQUA/latest/norMD1_3.tar.gz", "24ba32425640ae6288d59ca2bf5820dd85616132fe6a05337d849035184c660d"),
-    FileSource("https://www.bork.embl.de/Docu/AQUA/latest/License.txt", "ddb9db7630752f8fdc6898f7c99a99eaeeac5213627ecb093df9c82f56175dc7")
+    FileSource("https://www.bork.embl.de/Docu/AQUA/latest/License.txt", "ddb9db7630752f8fdc6898f7c99a99eaeeac5213627ecb093df9c82f56175dc7"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/normd_noexpat/
-sed -i '/#include "score.h"/a#include <string.h>' init.c
-make -j${nproc} CFLAGS="-c -O2 -std=c99 -Wno-implicit-function-declaration"
+
+for p in ../patches/*.patch; do
+    atomic_patch -p1 "${p}"
+done
+
+make -j${nproc} CFLAGS="-O2 -std=c99"
 install -Dvm 755 normd "${bindir}/normd${exeext}"
 """
 # NOTE: Only the normd executable is installed.
