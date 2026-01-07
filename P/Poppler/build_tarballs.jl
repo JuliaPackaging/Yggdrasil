@@ -81,7 +81,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 # https://gitlab.freedesktop.org/poppler/poppler/-/blob/poppler-25.10.0/CMakeLists.txt?ref_type=tags#L146-157
 dependencies = [
-    HostBuildDependency(PackageSpec("CMake_jll", v"3.22.2")), # we need 3.22.0
+    HostBuildDependency(PackageSpec("CMake_jll", v"3.22.2+0")), # we need 3.22.0
     BuildDependency("Xorg_xorgproto_jll"),
     Dependency("Cairo_jll"; compat="1.18.0"),       # we need 1.16.0
     Dependency("Fontconfig_jll"; compat="2.13.93"), # we need 2.13
