@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 name = "SCIP_PaPILO"
 
 upstream_version = v"10.0.0"
-version = VersionNumber(upstream_version.major * 100, upstream_version.minor * 100, upstream_version.patch * 100 + 1)
+version = VersionNumber(upstream_version.major * 100, upstream_version.minor * 100, upstream_version.patch * 100 + 2)
 
 # Collection of sources required to complete build
 sources = [
@@ -61,6 +61,11 @@ make install
 cp bin/papilo${exeext} "${bindir}/papilo${exeext}"
 
 mkdir -p ${prefix}/share/licenses/SCIP_PaPILO
+
+# moving all licenses installed by SCIP to the corresponding folder
+mv ${prefix}/share/licenses/scip/* ${prefix}/share/licenses/SCIP_PaPILO
+rm -rf ${prefix}/share/licenses/scip
+
 for dir in scip soplex gcg papilo; do
     cp $WORKSPACE/srcdir/scipoptsuite*/${dir}/LICENSE ${prefix}/share/licenses/SCIP_PaPILO/LICENSE_${dir}
 done
