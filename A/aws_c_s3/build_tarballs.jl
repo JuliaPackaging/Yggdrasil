@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_s3"
-version = v"0.11.3"
+version = v"0.11.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-s3.git", "3f81fc9e90b11e6b3e434b166e275f65d5c98d39"),
+    GitSource("https://github.com/awslabs/aws-c-s3.git", "3a2d31ac5e2d557a1abbb15216efb5462461a82b"),
 ]
 
 # Bash recipe for building across all platforms
@@ -37,10 +37,10 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("aws_checksums_jll"; compat="0.2.8"),
-    Dependency("aws_c_http_jll"; compat="0.10.7"),
-    Dependency("aws_c_auth_jll"; compat="0.9.3"),
+    Dependency("aws_c_http_jll"; compat="0.10.9"),
+    Dependency("aws_c_auth_jll"; compat="0.9.5"),
     Dependency("aws_c_common_jll"; compat="0.12.6"),
-    Dependency("s2n_tls_jll"; compat="1.6.1"),    
+    Dependency("s2n_tls_jll"; compat="1.6.4"),    
     BuildDependency("aws_lc_jll"),
 ]
 
