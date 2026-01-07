@@ -55,6 +55,18 @@ if [[ ${target} == aarch64-apple-* ]]; then
     )
 fi
 
+if [[ ${target} == *mingw* ]]; then
+    # Allow multiple definitions of symbols. This is needed as
+    # band-aid because many our dependencies (at least libexpat,
+    # libharfbuzz, libintl, libunistring) re-export multi-byte string
+    # functions (`mbrtowc` and friends) that are defined in a system
+    # library. We could fix all these libraries (see `Ncurses` for a
+    # fix), but this is easier.
+    FLAGS+=(
+        -DCMAKE_SHARED_LINKER_FLAGS="-Wl,--allow-multiple-definition"
+    )
+fi
+
 cmake -B build "${FLAGS[@]}"
 cmake --build build --parallel ${nproc}
 cmake --install build
