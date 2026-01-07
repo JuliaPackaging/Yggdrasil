@@ -60,11 +60,10 @@ make papilo-executable
 make install
 cp bin/papilo${exeext} "${bindir}/papilo${exeext}"
 
+mkdir -p ${prefix}/share/licenses/SCIP_PaPILO
 mv -v ${prefix}/share/licenses/scip ${prefix}/share/licenses/SCIP_PaPILO
-
-for dir in scip soplex gcg papilo; do
-    cp -v $WORKSPACE/srcdir/scipoptsuite*/${dir}/LICENSE ${prefix}/share/licenses/SCIP_PaPILO/LICENSE_${dir}
-done
+mv -v ${prefix}/share/licenses/soplex ${prefix}/share/licenses/SCIP_PaPILO
+mv -v ${prefix}/share/licenses/papilo ${prefix}/share/licenses/SCIP_PaPILO
 """
 
 # This requires macOS 10.13
