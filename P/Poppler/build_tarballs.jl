@@ -84,7 +84,7 @@ dependencies = [
     HostBuildDependency(PackageSpec("CMake_jll", v"3.22.2+0")), # we need 3.22.0
     BuildDependency("Xorg_xorgproto_jll"),
     Dependency("Cairo_jll"; compat="1.18.0"),       # we need 1.16.0
-    Dependency("Fontconfig_jll"; compat="2.13.93"), # we need 2.13
+    Dependency("Fontconfig_jll"; compat="2.16"), # we need 2.13
     Dependency("FreeType2_jll"; compat="2.13.4"),   # we need 2.11
     Dependency("Glib_jll"; compat="2.74.0"),        # we need 2.72
     Dependency("JpegTurbo_jll"; compat="3.0.1"),
