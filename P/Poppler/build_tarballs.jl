@@ -53,7 +53,7 @@ cmake --build build --parallel ${nproc}
 cmake --install build
 """
 
-sources, script = require_macos_sdk("10.15", sources, script; deployment_target="10.14")
+sources, script = require_macos_sdk("14.5", sources, script; deployment_target="11")
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
