@@ -91,7 +91,7 @@ dependencies = [
     Dependency("LibCURL_jll"; compat="7.81,8"), # we need 7.81
     Dependency("Libtiff_jll"; compat="4.7.1"),  # we need 4.3
     Dependency("OpenJpeg_jll";compat="2.5.4"),
-    Dependency("libpng_jll"; compat="1.6.45"),
+    Dependency("libpng_jll"; compat="1.6.47"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
