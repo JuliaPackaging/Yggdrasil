@@ -3,20 +3,26 @@
 using BinaryBuilder, Pkg
 
 name = "NASM"
-version_string = "2.16.03"
+version_string = "3.01"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://www.nasm.us/pub/nasm/releasebuilds/$(version_string)/nasm-$(version_string).tar.xz",
-                  "1412a1c760bbd05db026b6c0d1657affd6631cd0a63cddb6f73cc6d4aa616148"),
+                  "b7324cbe86e767b65f26f467ed8b12ad80e124e3ccb89076855c98e43a9eddd4"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/nasm-*
 ./autogen.sh 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-zlib=${prefix}
+
+# Fix broken <stdbool.h> detection
+# (This is an autoconf problem. It is looking for macros, but C23 switched to using keywords.
+#  Future autoconfs will fix this, I'm sure.)
+sed -i -e 's+/\* #undef HAVE_STDBOOL_H \*/+#define HAVE_STDBOOL_H 1+' config/config.h
+
 make -j${nproc}
 make install
 install_license LICENSE
@@ -34,6 +40,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
+    Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
