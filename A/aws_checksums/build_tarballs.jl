@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 
 name = "aws_checksums"
 
-version = v"0.2.7"
+version = v"0.2.8"
 
 # Collection of sources required to complete build
 sources = [
@@ -37,7 +37,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("aws_c_common_jll"; compat="0.11.1"),
+    Dependency("aws_c_common_jll"; compat="0.12.3"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

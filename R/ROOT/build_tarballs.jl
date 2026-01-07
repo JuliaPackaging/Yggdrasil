@@ -30,7 +30,7 @@ else
 fi
 
 # Required to compile graf3d/ftgl/src/FTVectoriser.cxx (for gcc to accept a conversion from char* to unsigned char*)
-CMAKE_EXTRA_OPTS+=(-DCMAKE_CXX_FLAGS=-fpermissive)
+CMAKE_CXX_FLAGS=(-fpermissive)
 
 # Uncomment for a minimal build for debugging purposes
 #CMAKE_EXTRA_OPTS+=(-Dclad=OFF -Dhtml=OFF -Dwebgui=OFF -Dcxxmodules=OFF -Dproof=OFF -Dtmva=OFF -Drootfit=OFF -Dxproofd=OFF -Dxrootd=OFF -Dssl=OFF -Dpyroot=OFF -Dtesting=OFF -Droot7=OFF -Dspectrum=OFF -Dunfold=OFF -Dasimage=OFF -Dgviz=OFF -Dfitiso=OFF -Dcocoa=OFF -Dopengl=OFF -Dproof=OFF -Dxml=OFF -Dgfal=OFF -Dmpi=OFF)
@@ -73,7 +73,14 @@ int main(){
 EOF
 
 ./need_variant_patch && (cd / && atomic_patch -p1 ${WORKSPACE}/srcdir/patches/$target-variant.patch)
+ 
+(cd srcdir
+ # patch to add ONLY_SIGALARM_ROOT_HANDLER macro
+ atomic_patch -p1 patches/signal_handler.patch
+)
 
+CMAKE_CXX_FLAGS+=(-DONLY_SIGALARM_ROOT_HANDLER)
+ 
 if [ $target != $MACHTYPE ]; then #cross compilation
 
    (cd srcdir
@@ -82,7 +89,7 @@ if [ $target != $MACHTYPE ]; then #cross compilation
 
    # patch to fix cross-compilation for afterimage
    atomic_patch -p1 patches/afterimage-cross-compile.patch
-   )
+  )
 
    # Compile for the host binary used in the build process
    # Davix is switched off, as otherwise build fails in buildkite CI. It should not be
@@ -95,6 +102,7 @@ if [ $target != $MACHTYPE ]; then #cross compilation
          -DCXX_STANDARD=c++17 \
          -DCLANG_DEFAULT_STD_CXX=cxx17 \
          "${CMAKE_EXTRA_OPTS[@]}" \
+         -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS[*]}" \
          -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DLLVM_BUILD_TYPE=$BUILD_TYPE \
          -DCLING_CXX_PATH=g++ \
          -DCLING_TARGET_GLIBC=1 \
@@ -105,7 +113,7 @@ if [ $target != $MACHTYPE ]; then #cross compilation
 
    cmake --build NATIVE -- -j$njobs rootcling_stage1 rootcling llvm-tblgen clang-tblgen llvm-config llvm-symbolizer
 
-   CMAKE_EXTRA_OPTS+=($CMAKE_EXTRA_OPTS "-DNATIVE_BINARY_DIR=$PWD/NATIVE" \
+   CMAKE_EXTRA_OPTS+=("-DNATIVE_BINARY_DIR=$PWD/NATIVE" \
       "-DLLVM_TABLEGEN=$PWD/NATIVE/interpreter/llvm-project/llvm/bin/llvm-tblgen" \
       "-DCLANG_TABLEGEN=$PWD/NATIVE/interpreter/llvm-project/llvm/bin/clang-tblgen" \
       "-DLLVM_CONFIG_PATH=$PWD/NATIVE/interpreter/llvm-project/llvm/bin/llvm-config" \
@@ -126,6 +134,7 @@ cmake -GNinja \
       -DCXX_STANDARD=c++17 \
       -DCLANG_DEFAULT_STD_CXX=cxx17 \
       "${CMAKE_EXTRA_OPTS[@]}" \
+      -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS[*]}" \
       -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DLLVM_BUILD_TYPE=$BUILD_TYPE \
       -DCLING_CXX_PATH=g++ \
       -Dfound_urandom_EXITCODE=0 \
@@ -182,6 +191,7 @@ dependencies = [
     Dependency(PackageSpec(name="Xorg_libX11_jll", uuid="4f6342f7-b3d2-589e-9d20-edeb45f2b2bc"))
     Dependency(PackageSpec(name="Xorg_libXpm_jll", uuid="1a3ddb2d-74e3-57f3-a27b-e9b16291b4f2"))
     Dependency(PackageSpec(name="Xorg_libXft_jll", uuid="2c808117-e144-5220-80d1-69d4eaa9352c"))
+    Dependency(PackageSpec(name="Libtiff_jll", uuid="89763e89-9b03-5906-acba-b20f662cd828"))
 
     #Optionnal dependencies (if absent, either a feature will be disabled or a built-in version will be compiled)
     Dependency(PackageSpec(name="VDT_jll", uuid="474730fa-5ea9-5b8c-8629-63de62f23418"))

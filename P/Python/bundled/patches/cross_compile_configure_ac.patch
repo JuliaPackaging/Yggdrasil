@@ -2,7 +2,7 @@ diff --git a/configure.ac b/configure.ac
 index 7051dc109a..474fdcbd82 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -364,38 +364,12 @@ AC_ARG_VAR([MACHDEP], [name for machine-dependent library files])
+@@ -530,44 +530,12 @@
  AC_MSG_CHECKING(MACHDEP)
  if test -z "$MACHDEP"
  then
@@ -24,6 +24,12 @@ index 7051dc109a..474fdcbd82 100644
 -	*-*-vxworks*)
 -	    ac_sys_system=VxWorks
 -	    ;;
+-	*-*-emscripten)
+-	    ac_sys_system=Emscripten
+-	    ;;
+-	*-*-wasi)
+-	    ac_sys_system=WASI
+-	    ;;
 -	*)
 -		# for now, limit cross builds to known configurations
 -		MACHDEP="unknown"
@@ -41,7 +47,7 @@ index 7051dc109a..474fdcbd82 100644
      fi
      ac_md_system=`echo $ac_sys_system |
  			tr -d '[/ ]' | tr '[[A-Z]]' '[[a-z]]'`
-@@ -415,28 +389,14 @@ AC_MSG_RESULT("$MACHDEP")
+@@ -595,31 +563,14 @@
  
  AC_SUBST(_PYTHON_HOST_PLATFORM)
  if test "$cross_compiling" = yes; then
@@ -59,6 +65,9 @@ index 7051dc109a..474fdcbd82 100644
 -		_host_cpu=
 -		;;
 -	*-*-vxworks*)
+-		_host_cpu=$host_cpu
+-		;;
+-	wasm32-*-* | wasm64-*-*)
 -		_host_cpu=$host_cpu
 -		;;
 -	*)

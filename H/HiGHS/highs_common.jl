@@ -4,12 +4,12 @@ using BinaryBuilder, Pkg
 
 name = "HiGHS"
 
-version = v"1.10.0"
+version = v"1.12.0"
 
 sources = [
     GitSource(
         "https://github.com/ERGO-Code/HiGHS.git",
-        "fd8665394edfd096c4f847c4a6fbc187364ef474",
+        "755a8e027a99a8d4ecf153a8dde4b2a767cdf384",
     ),
 ]
 
@@ -17,8 +17,9 @@ sources = [
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-# Disable riscv for now
+# Disable riscv and powerpc for now
 platforms = filter!(p -> arch(p) != "riscv64", platforms)
+platforms = filter!(p -> arch(p) != "powerpc64le", platforms)
 
 function build_script(; shared_libs::String)
     build_static = shared_libs == "OFF" ? "ON" : "OFF"
@@ -41,7 +42,10 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=${BUILD_SHARED} \
     -DZLIB_USE_STATIC_LIBS=${BUILD_STATIC} \
-    -DFAST_BUILD=ON ..
+    -DHIPO=ON \
+    -DBLAS_LIBRARIES="${libdir}/libopenblas.${dlext}" \
+    -DMETIS_ROOT=${prefix} \
+    ..
 
 if [[ "${target}" == *-linux-* ]]; then
         make -j ${nproc}

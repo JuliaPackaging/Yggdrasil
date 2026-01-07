@@ -1,6 +1,6 @@
 # To ensure a build, it isn't sufficient to modify highs_common.jl.
 # You also need to update a line in this file:
-#     Last updated: 2025-03-21
+#     Last updated: 2025-06-07
 
 include("../highs_common.jl")
 
@@ -19,6 +19,8 @@ dependencies = [
     # is a build-only dependency, in the other cases it's also a runtime one.
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.iswindows, platforms)),
     BuildDependency("CompilerSupportLibraries_jll"; platforms=filter(Sys.iswindows, platforms)),
+    Dependency("METIS_jll"),
+    Dependency("OpenBLAS32_jll"),
     HostBuildDependency(PackageSpec(; name="CMake_jll")),
     Dependency("Zlib_jll"),
 ]

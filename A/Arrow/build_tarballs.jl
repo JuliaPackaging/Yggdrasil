@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Arrow"
-version = v"19.0.0"
+version = v"19.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://dlcdn.apache.org/arrow/arrow-$version/apache-arrow-$version.tar.gz",
-                  "f89b93f39954740f7184735ff1e1d3b5be2640396febc872c4955274a011f56b"),
+    ArchiveSource("https://github.com/apache/arrow/releases/download/apache-arrow-$version/apache-arrow-$version.tar.gz",
+                  "acb76266e8b0c2fbb7eb15d542fbb462a73b3fd1e32b80fad6c2fafd95a51160"),
     DirectorySource("bundled"),
 ]
 
@@ -17,6 +17,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/apache-arrow-*
 
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/boost.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/parquet.patch
 if [[ $target == *mingw32* ]]; then
     # This hard-codes the name and location of the zstd library and
     # must not be applied on other architectures

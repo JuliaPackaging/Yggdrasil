@@ -4,12 +4,13 @@
 using BinaryBuilder, Pkg
 
 name = "AcousticsToolbox"
-version_string = "2024_12_25"
-version = VersionNumber(replace(version_string, "_" => "."))
+version = VersionNumber("2025.9.6")
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://oalib.hlsresearch.com/AcousticsToolbox/at_$(version_string).zip", "7b57e80bded7f71ea9536e541029615f3f430e390651d697a2212569cbafd85c")
+    ArchiveSource("http://oalib.hlsresearch.com/AcousticsToolbox/at_2024_12_25.zip", "7b57e80bded7f71ea9536e541029615f3f430e390651d697a2212569cbafd85c")
+    ArchiveSource("https://oalib-acoustics.org/website_resources/Modes/orca/mac_linux/ORCA_Mode_modelling_gfortran.zip", "4ac15c1374e08bedd0dd03fd5f79612a8f84899ebf529237e662d7efb1dfb10a")
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
@@ -21,6 +22,17 @@ make clean
 make
 mkdir -p $bindir
 find . -name *.exe -exec cp {} $bindir \;
+cd $WORKSPACE/srcdir/ORCA_Mode_modelling_gfortran/src
+perl -p -i -e 's/\r\n/\n/g;' cw_modes.f
+atomic_patch -p1 $WORKSPACE/srcdir/patches/cw_modes.patch
+rm -f *.o *.mod ../bin/*
+# don't add -j as it fails
+make
+# install script fails on libfortran3 and libfortran4 on w64 where .exe is not added during compilation
+# install -Dvm 755 "../bin/orca90${exeext}" "${bindir}/orca90.exe"
+install -Dvm 755 ../bin/orca90* "${bindir}/orca90.exe"
+install_license $WORKSPACE/srcdir/at/LICENSE
+install_license $WORKSPACE/srcdir/licenses/LICENSE-orca.txt
 """
 
 # These are the platforms we will build for by default, unless further
@@ -38,7 +50,8 @@ products = [
     ExecutableProduct("sparc.exe", :sparc),
     ExecutableProduct("scooter.exe", :scooter),
     ExecutableProduct("bounce.exe", :bounce),
-    ExecutableProduct("bellhop.exe", :bellhop)
+    ExecutableProduct("bellhop.exe", :bellhop),
+    ExecutableProduct("orca90.exe", :orca)
 ]
 
 # Dependencies that must be installed before this package can be built

@@ -3,13 +3,14 @@
 using BinaryBuilder
 
 name = "gmsh"
-version = v"4.13.1"
+version = v"4.15.0"
 
 # Collection of sources required to build Gmsh
 sources = [
     ArchiveSource("https://gmsh.info/src/gmsh-$(version)-source.tgz",
-                  "77972145f431726026d50596a6a44fb3c1c95c21255218d66955806b86edbe8d"),
-]
+                  "abb2632715bd7d0130ded7144fd6263635cd7dea883b8df61ba4da58ce6a1dfe"),
+    DirectorySource("./bundled")
+    ]
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -17,6 +18,10 @@ cd ${WORKSPACE}/srcdir/gmsh-*
 if [[ "${target}" == *linux* ]] || [[ "${target}" == *freebsd* ]]; then
     OPENGL_FLAGS="-DOpenGL_GL_PREFERENCE=LEGACY"
 fi
+
+# remove -static linker option from mingw builds, otherwise linker errors with "cannot find -lpng", "cannot find -lfontconfig" 
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/CMakeLists.txt.patch" 
+
 mkdir build
 cd build
 cmake .. \
@@ -50,14 +55,6 @@ products = [
 
 # Some dependencies are needed or available only on certain platforms
 x11_platforms = filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)
-hdf5_platforms = [
-    Platform("x86_64", "linux"),
-    Platform("aarch64", "linux"; libc="glibc"),
-    Platform("x86_64", "macos"),
-    Platform("aarch64", "macos"),
-    Platform("x86_64", "windows"),
-    Platform("i686", "windows")
-]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
@@ -65,20 +62,17 @@ dependencies = [
     Dependency("Cairo_jll"; compat="1.18.0"),
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
     Dependency("FLTK_jll"),
-    Dependency("FreeType2_jll", v"2.13.1"; compat="2.10.4"), # TODO: `compat="2.10.4"` is a LIE, in order to be able to rebuild the package without changing the compat bound.  In practice the compat bounds of Cairo_jll shouldn't allow having incompatible versions/.  Next version, change this compat to `"2.13.1"` and remove the build version.
+    Dependency("FreeType2_jll"; compat="2.13.4"),
     Dependency("GLU_jll"; platforms=x11_platforms),
     Dependency("GMP_jll"; compat="6.2"),
-    # We had to restrict compat with HDF5 because of ABI breakage:
-    # https://github.com/JuliaPackaging/Yggdrasil/pull/10347#issuecomment-2662923973
-    # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
-    Dependency("HDF5_jll"; platforms=hdf5_platforms, compat="=1.14.3"),
+    Dependency("HDF5_jll"; compat="~1.14.6"),
     Dependency("JpegTurbo_jll"),
     Dependency("Libglvnd_jll"; platforms=x11_platforms),
     Dependency("libpng_jll"),
     Dependency("LLVMOpenMP_jll"; platforms=filter(Sys.isbsd, platforms)),
     Dependency("METIS_jll"),
     Dependency("MMG_jll"),
-    Dependency("OCCT_jll"; compat="~7.7.2"),
+    Dependency("OCCT_jll"; compat="~7.9.2"),
     Dependency("Xorg_libX11_jll"; platforms=x11_platforms),
     Dependency("Xorg_libXext_jll"; platforms=x11_platforms),
     Dependency("Xorg_libXfixes_jll"; platforms=x11_platforms),

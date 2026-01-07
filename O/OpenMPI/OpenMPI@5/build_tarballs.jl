@@ -5,10 +5,10 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "OpenMPI"
 # Note that OpenMPI 5 is ABI compatible with OpenMPI 4
-version = v"5.0.7"
+version = v"5.0.9"
 sources = [
     ArchiveSource("https://download.open-mpi.org/release/open-mpi/v$(version.major).$(version.minor)/openmpi-$(version).tar.gz",
-                  "67435fdb2560f897882e69fead171d38e7f44a6dfe1d3c90506f549a943050b8"),
+                  "be35ac3aae68609dedf56a3c6480cb1b0af9ae40b98cc83ef27bc859084a9aa8"),
     DirectorySource("bundled"),
 ]
 
@@ -55,7 +55,7 @@ export LIBS='-ldl'
     --docdir=/tmp \
     --infodir=/tmp \
     --mandir=/tmp \
-    --with-cross=${WORKSPACE}/srcdir/${target} \
+    --with-cross=${WORKSPACE}/srcdir/files/${target} \
     --with-libevent=internal \
     --without-cs-fs
 

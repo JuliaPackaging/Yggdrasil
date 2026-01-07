@@ -6,13 +6,13 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "P4est"
-p4est_version = v"2.8.6"
-version = v"2.8.7"
+p4est_version = v"2.8.7"
+version = v"2.8.8"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://p4est.github.io/release/p4est-$(p4est_version).tar.gz",
-                  "46ee0c6e5a24f45be97fba743f5ef3d9618c075b023e9421ded9fc8cf7811300"),
+                  "0a1e912f3529999ca6d62fee335d51f24b5650b586e95a03ef39ebf73936d7f4"),
     DirectorySource("bundled"),
 ]
 
@@ -35,6 +35,7 @@ fi
 # Set default preprocessor and linker flags
 export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
+export LIBS="-lm"
 
 # Special Windows treatment
 FLAGS=()
@@ -78,10 +79,7 @@ platforms = supported_platforms()
 #     p4est-2.8.6/sc/src/sc_shmem.c:206: undefined reference to `MPIR_Dup_fn@24'
 platforms = filter(p -> !(Sys.iswindows(p) && nbits(p) == 32), platforms)
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms;
-                                                         MPICH_compat="4.2.3",
-                                                         MPItrampoline_compat="5.5.0",
-                                                         OpenMPI_compat="4.1.6, 5")
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # Disable OpenMPI:
 # It is important that P4est.jl can be used with custom-built libp4est
@@ -95,13 +93,6 @@ platforms, platform_dependencies = MPI.augment_platforms(platforms;
 # OpenMPI here.
 platforms = filter(p -> p["mpi"] ≠ "openmpi", platforms)
 
-# Avoid platforms where the MPI implementation isn't supported
-# OpenMPI
-platforms = filter(p -> !(p["mpi"] == "openmpi" && ((arch(p) == "armv6l" && libc(p) == "glibc") ||
-                                                    (arch(p) == "aarch64" && Sys.isfreebsd(p)))), platforms)
-# MPItrampoline
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && (Sys.iswindows(p) || libc(p) == "musl")), platforms)
-
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libp4est", :libp4est),
@@ -110,7 +101,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="Jansson_jll", uuid="83cbd138-b029-500a-bd82-26ec0fbaa0df"); compat="2.14.0"),
+    Dependency(PackageSpec(name="Jansson_jll", uuid="83cbd138-b029-500a-bd82-26ec0fbaa0df"); compat="2.14.1"),
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
 ]
 append!(dependencies, platform_dependencies)

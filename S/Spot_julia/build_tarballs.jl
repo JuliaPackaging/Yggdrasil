@@ -2,15 +2,17 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "Spot_julia"
-version = v"2.12"
+version_string = "2.13.1"
+version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://www.lrde.epita.fr/dload/spot/spot-2.12.tar.gz","26ba076ad57ec73d2fae5482d53e16da95c47822707647e784d8c7cec0d10455"),
+    ArchiveSource("http://www.lrde.epita.fr/dload/spot/spot-$(version_string).tar.gz","b9d1de4abcd069f923e1a3263f58ccafcc54896aa818b455928ca2b1a4466dc9"),
     GitSource("https://github.com/MaximeBouton/spot_julia.git", "6ffcf4b64f64fc9e3363db22f4cc57a957d28128"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-        "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
     ]
     
 # See https://github.com/JuliaLang/Pkg.jl/issues/2942
@@ -20,18 +22,6 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 # Bash recipe for building across all platforms
 script = raw"""
-if [[ ("${target}" == x86_64-apple-darwin*) ]]; then
-    # LLVM 15 requires macOS SDK 10.14, see
-    # <https://github.com/JuliaPackaging/Yggdrasil/pull/5592#issuecomment-1309525112> and
-    # references therein.
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    export MACOSX_DEPLOYMENT_TARGET=10.14
-    popd
-fi
-
 cd $WORKSPACE/srcdir/spot-*
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-python
 make -j${nproc}
@@ -58,6 +48,11 @@ cmake -DJulia_PREFIX=$Julia_PREFIX \
 VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
 install_license $WORKSPACE/srcdir/spot_julia/LICENSE.md
 """
+
+# LLVM 15 requires macOS SDK 10.14, see
+# <https://github.com/JuliaPackaging/Yggdrasil/pull/5592#issuecomment-1309525112> and
+# references therein.
+sources, script = require_macos_sdk("10.14", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
@@ -99,8 +94,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.9")),
-    Dependency("libcxxwrap_julia_jll"; compat="0.12.3")
+    BuildDependency(PackageSpec(;name="libjulia_jll", version="1.10.16")),
+    Dependency("libcxxwrap_julia_jll"; compat="0.14.3")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

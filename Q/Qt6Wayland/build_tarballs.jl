@@ -26,18 +26,28 @@ qtsrcdir=`ls -d ../qtwayland-*`
 case "$bb_full_target" in
 
     x86_64-linux-musl-libgfortran5-cxx11)
-        cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_FIND_ROOT_PATH=$prefix -DCMAKE_BUILD_TYPE=Release $qtsrcdir
+        cmake -G Ninja \
+            -DCMAKE_INSTALL_PREFIX=${prefix} \
+            -DCMAKE_FIND_ROOT_PATH=$prefix \
+            -DCMAKE_BUILD_TYPE=Release \
+            $qtsrcdir
     ;;
 
     *)
-        cmake -DQT_HOST_PATH=$host_prefix -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_FIND_ROOT_PATH=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release $qtsrcdir
+        cmake -G Ninja \
+            -DQT_HOST_PATH=$host_prefix \
+            -DCMAKE_INSTALL_PREFIX=${prefix} \
+            -DCMAKE_FIND_ROOT_PATH=$prefix \
+            -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+            -DCMAKE_BUILD_TYPE=Release \
+            $qtsrcdir
         # Fix needed for aarch64:
         sed -i 's!/workspace/destdir/bin/wayland-scanner!/workspace/x86_64-linux-musl-cxx11/destdir/bin/wayland-scanner!' CMakeCache.txt
     ;;
 
 esac
 
-cmake --build . --parallel 1
+cmake --build . --parallel ${nproc}
 cmake --install .
 install_license $WORKSPACE/srcdir/qt*-src-*/LICENSES/LGPL-3.0-only.txt
 """
@@ -48,6 +58,10 @@ include("../Qt6Base/common.jl")
 # No Wayland on Windows and macOS
 empty!(platforms_macos)
 empty!(platforms_win)
+
+# It seems Qt 6.8 Wayland doesn't compile out of the box on freeBSD and when forced requires
+# proper support in Qt6Base. To be investigated on version upgrade.
+filter!(!Sys.isfreebsd, platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -73,4 +87,4 @@ ENV["QT_PLUGIN_PATH"] = qt6plugins_dir
 ENV["__EGL_VENDOR_LIBRARY_DIRS"] = get(ENV, "__EGL_VENDOR_LIBRARY_DIRS", "/usr/share/glvnd/egl_vendor.d")
 """
 
-build_qt(name, version, sources, script, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"10", preferred_llvm_version=qt_llvm_version, julia_compat="1.6", init_block)

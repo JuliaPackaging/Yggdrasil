@@ -17,11 +17,12 @@ const llvm_tags = Dict(
     v"14.0.5" => "73db33ead13c3596f53408ad6d1de4d0f2270adb", # julia-14.0.5-3
     v"14.0.6" => "5c82f5309b10fab0adf6a94969e0dddffdb3dbce", # julia-14.0.6-3
     v"15.0.7" => "2593167b92dd2d27849e8bc331db2072a9b4bd7f", # julia-15.0.7-10
-    v"16.0.6" => "4a5c1da0d268d2858def6c1aa206ac4b31956208", # julia-16.0.6-4
+    v"16.0.6" => "422179dd6ee8d6b84023f922f3a0864db6e07c68", # julia-16.0.6-5
     v"17.0.6" => "0007e48608221f440dce2ea0d3e4f561fc10d3c6", # julia-17.0.6-5
-    v"18.1.7" => "ed30d043a240d06bb6e010a41086e75713156f4f", # julia-18.1.7-2
-    v"19.1.7" => "a9df916357c2fd0851df026a84f83d87efd6e212", # julia-19.1.7-1
-    v"20.1.2" => "4f020e6d4d37d271d46befedb896ea3df95fdc49", # julia-20.1.2-0
+    v"18.1.7" => "32719222d3ea71ed0b19c2cb75fa6f76713fda20", # julia-18.1.7-4
+    v"19.1.7" => "ccda9ec62497d9de88ca7090a749e52a89f62132", # julia-19.1.7-2
+    v"20.1.8" => "5b9f96366ce26dfc8ca91697ef0a57894791d95e", # julia-20.1.8-0
+    v"21.1.2" => "e01e3e96a51b18afc66b6b4ef358b3d72b51dc68", # julia-21.1.2-0
 )
 
 const buildscript = raw"""
@@ -109,7 +110,7 @@ fi
 # This is because LLVM's cross-compile setup is kind of borked, so we just
 # build the tools natively ourselves, directly.  :/
 
-# Build llvm-tblgen, clang-tblgen, and llvm-config
+# Build host-native llvm-tblgen, clang-tblgen, and llvm-config
 mkdir ${WORKSPACE}/bootstrap
 pushd ${WORKSPACE}/bootstrap
 CMAKE_FLAGS=()
@@ -127,9 +128,17 @@ if [[ "${LLVM_MAJ_VER}" -gt "13" ]]; then
 fi
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=False)
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN})
+# Turn off random crap the host tools do not need to configure
+CMAKE_FLAGS+=(-DLLVM_ENABLE_ZLIB=OFF)
+if [[ "${LLVM_MAJ_VER}" -ge "20" ]]; then
+CMAKE_FLAGS+=(-DLLVM_ENABLE_ZSTD=OFF)
+fi
+CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBXML2=OFF)
 
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
-if [[ ("${LLVM_MAJ_VER}" -eq "12" && "${LLVM_PATCH_VER}" -gt "0") || "${LLVM_MAJ_VER}" -gt "12" ]]; then
+if [[ "${LLVM_MAJ_VER}" -ge "17" ]]; then
+    ninja -j${nproc} llvm-tblgen llvm-min-tblgen clang-tblgen mlir-tblgen llvm-config
+elif [[ ("${LLVM_MAJ_VER}" -eq "12" && "${LLVM_PATCH_VER}" -gt "0") || "${LLVM_MAJ_VER}" -gt "12" ]]; then
     ninja -j${nproc} llvm-tblgen clang-tblgen mlir-tblgen llvm-config
 else
     ninja -j${nproc} llvm-tblgen clang-tblgen llvm-config
@@ -149,6 +158,9 @@ fi
 if [[ "${LLVM_MAJ_VER}" -ge "19" ]]; then
     ninja -j${nproc} mlir-src-sharder
 fi
+if [[ "${LLVM_MAJ_VER}" -ge "21" ]]; then
+    ninja -j${nproc} mlir-irdl-to-cpp
+fi
 popd
 
 # Let's do the actual build within the `build` subdirectory
@@ -161,6 +173,10 @@ CMAKE_CXX_FLAGS=()
 CMAKE_C_FLAGS=()
 
 CMAKE_FLAGS=()
+
+if [[ "${target}" != *-apple-darwin* ]]; then
+CMAKE_FLAGS+=(-DCMAKE_SHARED_LINKER_FLAGS=-Wl,--build-id)
+fi
 
 # Release build for best performance
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
@@ -201,6 +217,10 @@ CMAKE_FLAGS+=(-DLLVM_BINDINGS_LIST="" )
 
 # Turn on ZLIB
 CMAKE_FLAGS+=(-DLLVM_ENABLE_ZLIB=FORCE_ON)
+# Turn on ZSTD
+if [[ "${LLVM_MAJ_VER}" -ge "20" ]]; then
+CMAKE_FLAGS+=(-DLLVM_ENABLE_ZSTD=FORCE_ON)
+fi
 # Turn off XML2
 CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBXML2=OFF)
 
@@ -219,6 +239,9 @@ if [ -z "${LLVM_WANT_STATIC}" ]; then
     # Aggressively symbol version (added in LLVM 13.0.1)
     CMAKE_FLAGS+=(-DLLVM_SHLIB_SYMBOL_VERSION:STRING="JL_LLVM_${LLVM_MAJ_VER}.${LLVM_MIN_VER}")
 fi
+
+# We want to build the Clang monolithic static library (for Rust's bindgen)
+CMAKE_FLAGS+=(-DLIBCLANG_BUILD_STATIC:BOOL=ON)
 
 # We want to build LLVM with EH and RTTI
 if [ ! -z "${LLVM_WANT_EH_RTTI}" ]; then
@@ -266,6 +289,9 @@ fi
 
 # Tell LLVM where our pre-built tblgen tools are
 CMAKE_FLAGS+=(-DLLVM_TABLEGEN=${WORKSPACE}/bootstrap/bin/llvm-tblgen)
+if [[ "${LLVM_MAJ_VER}" -ge "17" ]]; then
+CMAKE_FLAGS+=(-DLLVM_HEADERS_TABLEGEN=${WORKSPACE}/bootstrap/bin/llvm-min-tblgen)
+fi
 CMAKE_FLAGS+=(-DCLANG_TABLEGEN=${WORKSPACE}/bootstrap/bin/clang-tblgen)
 CMAKE_FLAGS+=(-DLLVM_CONFIG_PATH=${WORKSPACE}/bootstrap/bin/llvm-config)
 if [[ ( "${LLVM_MAJ_VER}" -eq "12" && "${LLVM_PATCH_VER}" -gt "0" ) || "${LLVM_MAJ_VER}" -gt "12" ]]; then
@@ -289,8 +315,12 @@ if [[ "${LLVM_MAJ_VER}" -ge "19" ]]; then
 fi
 
 # Explicitly use our cmake toolchain file
-# Windows runs out of symbols so use clang which can do some fancy things
 if [[ "${target}" == *mingw* && "${LLVM_MAJ_VER}" -ge "16" ]]; then
+    # Windows has a 2^16 limit to the number of exported symbols.
+    # libLLVM.dll exceeds this in several configurations by default.
+    # Switch to Clang/LLD, which have the ability to drop hidden symbols
+    # from the export directory, putting us back under the limit.
+    # See https://reviews.llvm.org/D130121.
     CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake)
 else
     CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
@@ -429,8 +459,8 @@ rm -rf ${prefix}/*
 mkdir -p ${prefix}/include ${prefix}/tools ${libdir} ${prefix}/lib ${prefix}/lib/cmake
 mv -v ${LLVM_ARTIFACT_DIR}/include/llvm* ${prefix}/include/
 mv -v ${LLVM_ARTIFACT_DIR}/tools/llvm-config* ${prefix}/tools/
-mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*LLVM*.${dlext}* ${libdir}/
-mv -v ${LLVM_ARTIFACT_DIR}/lib/*LLVM*.a ${prefix}/lib
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/libLLVM*.${dlext}* ${libdir}/
+mv -v ${LLVM_ARTIFACT_DIR}/lib/libLLVM*.a ${prefix}/lib
 mv -v ${LLVM_ARTIFACT_DIR}/lib/cmake/llvm ${prefix}/lib/cmake/llvm
 install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
 """
@@ -468,8 +498,8 @@ rm -rf ${prefix}/*
 mkdir -p ${prefix}/include ${prefix}/tools ${libdir} ${prefix}/lib ${prefix}/lib/cmake
 mv -v ${LLVM_ARTIFACT_DIR}/include/mlir* ${prefix}/include/
 mv -v ${LLVM_ARTIFACT_DIR}/tools/mlir* ${prefix}/tools/
-mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*MLIR*.${dlext}* ${libdir}/
-mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*mlir*.${dlext}* ${libdir}/
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/libMLIR*.${dlext}* ${libdir}/
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/libmlir*.${dlext}* ${libdir}/
 mv -v ${LLVM_ARTIFACT_DIR}/lib/cmake/mlir ${prefix}/lib/cmake/mlir
 install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
 """
@@ -485,8 +515,8 @@ rm -rf ${prefix}/*
 mkdir -p ${prefix}/include ${prefix}/tools ${libdir} ${prefix}/lib ${prefix}/lib/cmake
 mv -v ${LLVM_ARTIFACT_DIR}/include/mlir* ${prefix}/include/
 mv -v ${LLVM_ARTIFACT_DIR}/tools/mlir* ${prefix}/tools/
-mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*MLIR*.${dlext}* ${libdir}/
-mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*mlir*.${dlext}* ${libdir}/
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/libMLIR*.${dlext}* ${libdir}/
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/libmlir*.${dlext}* ${libdir}/
 mv -v ${LLVM_ARTIFACT_DIR}/lib/objects-Release ${prefix}/lib/
 mv -v ${LLVM_ARTIFACT_DIR}/lib/cmake/mlir ${prefix}/lib/cmake/mlir
 install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
@@ -503,8 +533,8 @@ rm -rf ${prefix}/*
 mkdir -p ${prefix}/include ${prefix}/bin ${libdir} ${prefix}/lib ${prefix}/lib/cmake
 mv -v ${LLVM_ARTIFACT_DIR}/include/mlir* ${prefix}/include/
 mv -v ${LLVM_ARTIFACT_DIR}/bin/mlir* ${prefix}/bin/
-mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*MLIR*.${dlext}* ${libdir}/
-mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*mlir*.${dlext}* ${libdir}/
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/libMLIR*.${dlext}* ${libdir}/
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/libmlir*.${dlext}* ${libdir}/
 mv -v ${LLVM_ARTIFACT_DIR}/lib/objects-Release ${prefix}/lib/
 mv -v ${LLVM_ARTIFACT_DIR}/lib/cmake/mlir ${prefix}/lib/cmake/mlir
 install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
@@ -522,8 +552,8 @@ mkdir -p ${prefix}/include ${prefix}/tools ${libdir} ${prefix}/lib ${prefix}/lib
 mv -v ${LLVM_ARTIFACT_DIR}/include/mlir* ${prefix}/include/
 find ${LLVM_ARTIFACT_DIR}/tools/ -maxdepth 1 -type f -name "mlir*" -print0 -o -type l -name "mlir*" -print0 | xargs -0r mv -v -t "${prefix}/tools/"
 find ${LLVM_ARTIFACT_DIR}/bin/ -maxdepth 1 -type f -name "mlir*" -print0 -o -type l -name "mlir*" -print0 | xargs -0r mv -v -t "${prefix}/tools/"
-mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*MLIR*.${dlext}* ${libdir}/
-mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*mlir*.${dlext}* ${libdir}/
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/libMLIR*.${dlext}* ${libdir}/
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/libmlir*.${dlext}* ${libdir}/
 mv -v ${LLVM_ARTIFACT_DIR}/lib/objects-Release ${prefix}/lib/
 mv -v ${LLVM_ARTIFACT_DIR}/lib/cmake/mlir ${prefix}/lib/cmake/mlir
 install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
@@ -562,14 +592,12 @@ LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
 rm -rf ${prefix}/*
 # Copy over everything, but eliminate things already put inside `Clang_jll` or `libLLVM_jll`:
 mv -v ${LLVM_ARTIFACT_DIR}/* ${prefix}/
-rm -vrf ${prefix}/include/{clang*,llvm*,mlir*}
-rm -vrf ${prefix}/bin/{clang*,llvm-config,mlir*}
-rm -vrf ${prefix}/tools/{clang*,llvm-config,mlir*}
+rm -vrf ${prefix}/include/{clang,llvm,mlir}*
+rm -vrf ${prefix}/bin/{clang,llvm-config,mlir}*
+rm -vrf ${prefix}/tools/{clang,llvm-config,mlir}*
 rm -vrf ${libdir}/libclang*.${dlext}*
-rm -vrf ${libdir}/*LLVM*.${dlext}*
-rm -vrf ${libdir}/*MLIR*.${dlext}*
-rm -vrf ${prefix}/lib/*LLVM*.a
-rm -vrf ${prefix}/lib/libclang*.a
+rm -vrf ${libdir}/lib{LLVM,MLIR,clang}*.${dlext}*
+rm -vrf ${prefix}/lib/lib{LLVM,MLIR,clang}*.a
 rm -vrf ${prefix}/lib/clang
 rm -vrf ${prefix}/lib/mlir
 # Move lld to tools/
@@ -586,18 +614,35 @@ rm -rf ${prefix}/*
 # Copy over everything, but eliminate things already put inside `Clang_jll` or `libLLVM_jll`:
 mv -v ${LLVM_ARTIFACT_DIR}/* ${prefix}/
 rm -vrf ${prefix}/include/{*lld*,clang*,llvm*,mlir*}
-rm -vrf ${prefix}/bin/{*lld*,wasm-ld*,dsymutil*,clang*,llvm-config,mlir*}
-rm -vrf ${prefix}/tools/{*lld*,wasm-ld*,dsymutil*,clang*,llvm-config,mlir*}
+rm -vrf ${prefix}/bin/{*lld,wasm-ld,dsymutil,clang,llvm-config,mlir}*
+rm -vrf ${prefix}/tools/{*lld,wasm-ld,dsymutil,clang,llvm-config,mlir}*
 rm -vrf ${libdir}/libclang*.${dlext}*
-rm -vrf ${libdir}/*LLD*.${dlext}*
-rm -vrf ${libdir}/*LLVM*.${dlext}*
-rm -vrf ${libdir}/*MLIR*.${dlext}*
-rm -vrf ${prefix}/lib/*LLVM*.a
-rm -vrf ${prefix}/lib/libclang*.a
+rm -vrf ${libdir}/lib{LLVM,MLIR,lld,clang}*.${dlext}*
+rm -vrf ${prefix}/lib/lib{LLVM,MLIR,lld,clang}*.a
 rm -vrf ${prefix}/lib/clang
 rm -vrf ${prefix}/lib/mlir
 rm -vrf ${prefix}/lib/lld
 rm -vrf {prefix}/lib/objects-Release
+"""
+
+const llvm_utils_script = raw"""
+# First, find (true) LLVM library directory in ~/.artifacts somewhere
+LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
+
+# Clear out our `${prefix}`
+rm -rf ${prefix}/*
+
+# Copy over everything, but we are only keeping the small tools
+mv -v ${LLVM_ARTIFACT_DIR}/* ${prefix}/
+rm -vrf ${prefix}/include
+rm -vrf ${prefix}/bin
+rm -vrf ${prefix}/lib
+rm -vrf ${prefix}/libexec
+rm -vrf ${prefix}/share
+rm -vrf ${prefix}/tools/{*lld,wasm-ld,dsymutil,clang,llvm-config,mlir,c-index-test,llvm-exegesis}*
+# Windows has dlls in tools as well so remove them too
+rm -vrf ${prefix}/tools/*.${dlext}*
+
 """
 
 function configure_build(ARGS, version; experimental_platforms=false, assert=false,
@@ -677,9 +722,12 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     # Dependencies that must be installed before this package can be built
     # TODO: LibXML2
     dependencies = [
-        Dependency("Zlib_jll"), # for LLD&LTO
+        Dependency("Zlib_jll"), # for LLD&LTO&debuginfo
         BuildDependency("LLVMCompilerRT_jll"; platforms=filter(p -> sanitize(p) == "memory", platforms)),
     ]
+    if version >= v"20"
+        push!(dependencies, Dependency("Zstd_jll")) # for debuginfo
+    end
     if update_sdk
         config *= "LLVM_UPDATE_MAC_SDK=1\n"
         push!(sources,
@@ -762,6 +810,12 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
             push!(products, ExecutableProduct("lld-link", :lld_link, "tools"))
             push!(products, ExecutableProduct("wasm-ld", :wasm_ld, "tools"))
         end
+    elseif name == "LLVM_utils"
+        script = llvm_utils_script
+        products = ExecutableProduct[]
+        for tool in tools_list
+            push!(products, ExecutableProduct(tool, normalize_symbol(tool), "tools"))
+        end
     end
 
     platforms = supported_platforms(; experimental=experimental_platforms)
@@ -793,8 +847,11 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
     end
 
     dependencies = BinaryBuilder.AbstractDependency[
-        Dependency("Zlib_jll"), # for LLD&LTO
+        Dependency("Zlib_jll"), # for LLD&LTO&debuginfo
     ]
+    if version >= v"20"
+        push!(dependencies, Dependency("Zstd_jll")) # for debuginfo
+    end
 
     # Parse out some args
     if "--assert" in ARGS
@@ -805,19 +862,19 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
     if assert
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_assert_jll", LLVM_full_version)))
         if !augmentation
-            if name in ("Clang", "LLVM", "MLIR", "LLD")
+            if name in ("Clang", "LLVM", "MLIR", "LLD", "LLVM_utils")
                 push!(dependencies, Dependency("libLLVM_assert_jll", libLLVM_version, compat=compat_version))
             end
 
             name = "$(name)_assert"
         else
-            if name in ("Clang", "LLVM", "MLIR", "LLD")
+            if name in ("Clang", "LLVM", "MLIR", "LLD", "LLVM_utils")
                 push!(dependencies, Dependency("libLLVM_jll", libLLVM_version, compat=compat_version))
             end
         end
     else
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", LLVM_full_version)))
-        if name in ("Clang", "LLVM", "MLIR", "LLD")
+        if name in ("Clang", "LLVM", "MLIR", "LLD", "LLVM_utils")
             push!(dependencies, Dependency("libLLVM_jll", libLLVM_version, compat=compat_version))
         end
     end

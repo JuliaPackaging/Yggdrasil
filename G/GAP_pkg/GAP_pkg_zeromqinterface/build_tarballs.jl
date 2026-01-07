@@ -2,16 +2,16 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 include("../common.jl")
 
-gap_version = v"400.1400.0"
+gap_version = v"400.1500.0"
 name = "zeromqinterface"
-upstream_version = "0.16" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
+upstream_version = "0.17" # when you increment this, reset offset to v"0.0.0"
+offset = v"1.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
-# Collection of sources required to build libsingular-julia
+# Collection of sources required to build this JLL
 sources = [
     ArchiveSource("https://github.com/gap-packages/ZeroMQInterface/releases/download/v$(upstream_version)/ZeroMQInterface-$(upstream_version).tar.gz",
-                  "da9fc9ee04ba701b224d0809fdf4fc5b9782d9399326982273f77419fb3bd400"),
+                  "d77e979dc3a0b18e95fe2b61f45e5a765cb5661d52507019cf307929f50f65a9"),
 ]
 
 # Bash recipe for building across all platforms
@@ -30,7 +30,8 @@ cp bin/*/*.so ${prefix}/lib/gap/
 """
 
 name = gap_pkg_name(name)
-platforms, dependencies = setup_gap_package(gap_version)
+dependencies = gap_pkg_dependencies(gap_version)
+platforms = gap_platforms()
 
 append!(dependencies, [
     Dependency("ZeroMQ_jll"),
@@ -43,6 +44,6 @@ products = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"7")
+               julia_compat="1.10", preferred_gcc_version=v"7")
 
 # rebuild trigger: 1

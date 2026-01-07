@@ -1,0 +1,13 @@
+diff --git a/imagequant-sys/Cargo.toml b/imagequant-sys/Cargo.toml
+index 50cb6e9..c5d5162 100644
+--- a/imagequant-sys/Cargo.toml
++++ b/imagequant-sys/Cargo.toml
+@@ -17,7 +17,7 @@ build = "build.rs"
+ rust-version = "1.63"
+
+ [lib]
+-crate-type = ["staticlib", "lib"]
++crate-type = ["staticlib", "lib", "cdylib"]
+ doctest = false
+ path = "src/ffi.rs"
+ name = "imagequant_sys"

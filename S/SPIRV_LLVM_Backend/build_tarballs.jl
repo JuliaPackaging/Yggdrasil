@@ -3,21 +3,32 @@
 using BinaryBuilder, Pkg
 
 name = "SPIRV_LLVM_Backend"
-version = v"20"
+version = v"21.1.4"
 
 # Collection of sources required to build SPIRV_LLVM_Backend
 sources = [
-    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-20.1.0-rc1/llvm-project-20.1.0-rc1.src.tar.xz",
-                  "5f8653a2ffb59febd07d816778efe0dfc7a3d55f65b4213399608535d7bdc9a2"),
+    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/llvm-$(version).src.tar.xz",
+                  "f311681255deb37f74bbf950a653e9434e7d8383a7b46a603a323c46cd4bf50e"),
+    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/cmake-$(version).src.tar.xz",
+                  "f4316d84a862ba3023ca1d26bd9c6a995516b4fa028b6fb329d22e24cc6d235e"),
+    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/third-party-$(version).src.tar.xz",
+                  "ae8658390504e08e464f65ecea838a0584df4734c27cecedfe7eb32780e81564"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd llvm-project-*/llvm
+mv llvm-*.src llvm
+mv cmake-* cmake
+mv third-party-* third-party
+
+cd llvm
 LLVM_SRCDIR=$(pwd)
 
 atomic_patch -p1 $WORKSPACE/srcdir/patches/avoid_builtin_available.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/fix_insertvalue.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/atomic_cmpxchg_64bit.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/alloca_aggregate_type.patch
 
 install_license LICENSE.TXT
 
@@ -62,7 +73,8 @@ CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD=SPIRV)
 
 # Turn on ZLIB
 CMAKE_FLAGS+=(-DLLVM_ENABLE_ZLIB=ON)
-# Turn off XML2
+# Turn off XML2 and ZSTD to avoid unnecessary dependencies
+CMAKE_FLAGS+=(-DLLVM_ENABLE_ZSTD=OFF)
 CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBXML2=OFF)
 
 # Disable useless things like docs, terminfo, etc....

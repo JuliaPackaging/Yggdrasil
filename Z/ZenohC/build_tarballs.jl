@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "ZenohC"
-version = v"1.3.3"
+version = v"1.4.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/eclipse-zenoh/zenoh-c.git",
-              "0e2b2d3ccecbe3fabb81281243dc1540d872751a")
+              "0d33f530130c36afd76c2bb2270ca15e3a332f71")
 ]
 
 # Bash recipe for building across all platforms

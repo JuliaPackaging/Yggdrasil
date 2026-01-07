@@ -3,17 +3,16 @@
 include("../common.jl")
 
 name = "guava"
-upstream_version = "3.19" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version
+upstream_version = "3.20" # when you increment this, reset offset to v"0.0.0"
+offset = v"1.0.0" # increment this when rebuilding with unchanged upstream_version
 version = offset_version(upstream_version, offset)
 
-# This package only produces an executable and does not need GAP for this at all,
-# hence we don't include common.jl
+# This package only produces an executable and does not need GAP for this at all.
 
 # Collection of sources required to build this JLL
 sources = [
     ArchiveSource("https://github.com/gap-packages/guava/releases/download/v$(upstream_version)/guava-$(upstream_version).tar.gz",
-                  "653fa83dfb97702eab0936c2e8db6d293a4d55fd73f8e5e6f3847ee19da3fe3d"),
+                  "a6a19aae3dc8d32569d2c98715c3de84df88e65819ce70bdb7595850de5cbe56"),
 ]
 
 # Bash recipe for building across all platforms
@@ -42,9 +41,7 @@ rm $prefix/lib/gap/sysinfo.gap
 
 name = gap_pkg_name(name)
 
-platforms = supported_platforms()
-filter!(p -> nbits(p) == 64, platforms) # we only care about 64bit builds
-filter!(!Sys.iswindows, platforms)      # Windows is not supported
+platforms = gap_platforms()
 
 dependencies = Dependency[
 ]
@@ -59,4 +56,4 @@ products = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"7")
+               julia_compat="1.10", preferred_gcc_version=v"7")
