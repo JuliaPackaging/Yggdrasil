@@ -52,12 +52,10 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
 make -j${nproc}
 make install
 
+mkdir -p ${prefix}/share/licenses/SCIP
 # Move all licenses installed by SCIP to the correct folder for the JLL
-mv ${prefix}/share/licenses/scip ${prefix}/share/licenses/SCIP
-
-for dir in scip soplex; do
-    cp $WORKSPACE/srcdir/scipoptsuite*/${dir}/LICENSE ${prefix}/share/licenses/SCIP/LICENSE_${dir}
-done
+mv -v ${prefix}/share/licenses/scip ${prefix}/share/licenses/SCIP
+mv -v ${prefix}/share/licenses/soplex ${prefix}/share/licenses/SCIP
 """
 
 # This requires macOS 10.13
