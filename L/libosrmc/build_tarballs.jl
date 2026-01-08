@@ -1,10 +1,10 @@
 using BinaryBuilder, Pkg
 
 name = "libosrmc"
-version = v"6.0.1"
+version = v"6.0.2"
 
 sources = [
-    GitSource("https://github.com/moviro-hub/libosrmc.git", "08ae197fec79dc2f16ee9fa6370f14b8dc052aca"),
+    GitSource("https://github.com/moviro-hub/libosrmc.git", "2e1bcf0ce1019042e734195fc9bf3830db0722ac"),
 ]
 
 script = raw"""
@@ -36,9 +36,9 @@ products = [
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("OSRM_jll"; compat="6.0.0"),
-    Dependency("boost_jll"; compat="=1.87.0"),
-    Dependency("Expat_jll"; compat="2.6.5"),
+    Dependency("OSRM_jll"; compat = "6.0.0"),
+    Dependency("boost_jll"; compat = "=1.87.0"),
+    Dependency("Expat_jll"; compat = "2.6.5"),
     Dependency("Zlib_jll"),
     Dependency("Bzip2_jll"),
 ]
@@ -52,6 +52,6 @@ build_tarballs(
     platforms,
     products,
     dependencies;
-    julia_compat="1.10",
+    julia_compat = "1.10",
     preferred_gcc_version = v"13",
 )
