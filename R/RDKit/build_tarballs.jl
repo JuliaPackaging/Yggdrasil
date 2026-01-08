@@ -21,30 +21,22 @@ atomic_patch -p1 ../patches/fix-windows-zlib.patch
 
 sed -i '1s/^/#include <vector>\n/' Code/DataStructs/RealValueVect.h
 
-# Detect the Boost CMake directory for Windows
-# -> look for a directory starting with 'Boost-' inside lib/cmake
-BOOST_CMAKE_DIR=""
-if [[ "${target}" == *-mingw* ]]; then
-    echo "Searching for BoostConfig.cmake in ${prefix}..."
-    # Search recursively for the config file and take the directory of the first result
-    BOOST_CONFIG_FILE=$(find ${prefix} -name "BoostConfig.cmake" | head -n 1)
-    
-    if [[ -n "$BOOST_CONFIG_FILE" ]]; then
-        BOOST_CMAKE_DIR=$(dirname "$BOOST_CONFIG_FILE")
-        echo "Found Boost Config at: ${BOOST_CMAKE_DIR}"
-    else
-        echo "ERROR: BoostConfig.cmake not found in ${prefix}!"
-        # Debug: List lib directory to see what IS there if we fail
-        ls -F ${prefix}/lib
-        exit 1
-    fi
-fi
-
+# Windows Debugging & Setup
 FLAGS=()
 if [[ "${target}" == *-mingw* ]]; then
+    echo "--- DEBUG: Listing Boost Libraries ---"
+    ls -F ${prefix}/lib/libboost* || echo "No boost libs found in lib?"
+    echo "--------------------------------------"
+
     FLAGS+=(-DRDK_BUILD_THREADSAFE_SSS=OFF)
     FLAGS+=(-DBoost_USE_STATIC_LIBS=OFF)
-    FLAGS+=(-DBoost_DIR="${BOOST_CMAKE_DIR}")
+    
+    # Force Legacy Mode (since Config mode is missing)
+    FLAGS+=(-DBoost_NO_BOOST_CMAKE=ON)
+    FLAGS+=(-DBoost_NO_SYSTEM_PATHS=ON)
+    
+    # Enable Boost Debugging to see why FindBoost fails
+    FLAGS+=(-DBoost_DEBUG=ON)
 fi
 
 mkdir build
@@ -78,7 +70,7 @@ make install
 """
 
 # Adapted from https://github.com/JuliaPackaging/Yggdrasil/blob/60500f4eaba2534332f963eec85e8916ce9a2fcd/D/Doxygen/build_tarballs.jl#L46C1-L46C62
-sources, script = require_macos_sdk("10.14", sources, script)
+sources, script = require_macos_sdk("11.0", sources, script)
 
 platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
