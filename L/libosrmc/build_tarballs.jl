@@ -4,7 +4,7 @@ name = "libosrmc"
 version = v"6.0.2"
 
 sources = [
-    GitSource("https://github.com/moviro-hub/libosrmc.git", "2e1bcf0ce1019042e734195fc9bf3830db0722ac"),
+    GitSource("https://github.com/moviro-hub/libosrmc.git", "7602918805032eb740ad6bd78e551b876d470759"),
 ]
 
 script = raw"""
