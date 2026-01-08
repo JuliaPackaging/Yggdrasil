@@ -14,11 +14,12 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd ALPS
-autoreconf -fi
 
 # Fix hardcoded BLAS/LAPACK in all Makefile.am files
 sed -i 's/-llapack -lblas/$(LAPACK_LIBS) $(BLAS_LIBS)/g' distribution/Makefile.am
 sed -i 's/-llapack -lblas/$(LAPACK_LIBS) $(BLAS_LIBS)/g' interpolation/Makefile.am
+
+autoreconf -fi
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-blas="-L${prefix}/lib -lopenblas" --with-lapack="-L${prefix}/lib -lopenblas" FC=mpifort
 make
