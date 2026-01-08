@@ -19,22 +19,36 @@ atomic_patch -p1 ../patches/do-not-build-cffi-test.patch
 atomic_patch -p1 ../patches/disable-catch2.patch
 atomic_patch -p1 ../patches/fix-windows-zlib.patch
 
+# Detect the Boost CMake directory for Windows
+# -> look for a directory starting with 'Boost-' inside lib/cmake
+BOOST_CMAKE_DIR=""
+if [[ "${target}" == *-mingw* ]]; then
+    # Find the directory, e.g., /workspace/destdir/.../lib/cmake/Boost-1.87.0
+    BOOST_CMAKE_DIR=$(find ${prefix}/lib/cmake -maxdepth 1 -type d -name "Boost-*" | head -n 1)
+    if [[ -z "$BOOST_CMAKE_DIR" ]]; then
+        echo "Could not find Boost CMake directory!"
+        exit 1
+    fi
+    echo "Found Boost CMake dir: ${BOOST_CMAKE_DIR}"
+fi
+
 FLAGS=()
 if [[ "${target}" == *-mingw* ]]; then
     FLAGS+=(-DRDK_BUILD_THREADSAFE_SSS=OFF)
     FLAGS+=(-DBoost_USE_STATIC_LIBS=OFF)
-    FLAGS+=(-DBoost_INCLUDE_DIR=${prefix}/include)
-    FLAGS+=(-DBoost_LIBRARY_DIR=${prefix}/lib)
+    FLAGS+=(-DBoost_DIR="${BOOST_CMAKE_DIR}")
 fi
 
 mkdir build
 cd build
+
 cmake \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_PREFIX_PATH=${prefix} \
     -DCMAKE_CXX_STANDARD=17 \
+    -DCMAKE_CXX_FLAGS="-std=c++17" \
     -DRDK_INSTALL_INTREE=OFF \
     -DRDK_BUILD_INCHI_SUPPORT=ON \
     -DRDK_BUILD_PYTHON_WRAPPERS=OFF \
