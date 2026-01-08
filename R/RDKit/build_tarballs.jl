@@ -34,6 +34,7 @@ cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_PREFIX_PATH=${prefix} \
+    -DCMAKE_CXX_STANDARD=17 \
     -DRDK_INSTALL_INTREE=OFF \
     -DRDK_BUILD_INCHI_SUPPORT=ON \
     -DRDK_BUILD_PYTHON_WRAPPERS=OFF \
@@ -47,8 +48,6 @@ cmake \
     -DRDK_BUILD_CHEMDRAW_SUPPORT=OFF \
     -DRDK_USE_URF=OFF \
     -DBoost_ROOT=${prefix} \
-    -DBoost_NO_BOOST_CMAKE=ON \
-    -DBoost_NO_SYSTEM_PATHS=ON \
     "${FLAGS[@]}" \
     ..
 
