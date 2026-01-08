@@ -19,17 +19,25 @@ atomic_patch -p1 ../patches/do-not-build-cffi-test.patch
 atomic_patch -p1 ../patches/disable-catch2.patch
 atomic_patch -p1 ../patches/fix-windows-zlib.patch
 
+sed -i '1s/^/#include <vector>\n/' Code/DataStructs/RealValueVect.h
+
 # Detect the Boost CMake directory for Windows
 # -> look for a directory starting with 'Boost-' inside lib/cmake
 BOOST_CMAKE_DIR=""
 if [[ "${target}" == *-mingw* ]]; then
-    # Find the directory, e.g., /workspace/destdir/.../lib/cmake/Boost-1.87.0
-    BOOST_CMAKE_DIR=$(find ${prefix}/lib/cmake -maxdepth 1 -type d -name "Boost-*" | head -n 1)
-    if [[ -z "$BOOST_CMAKE_DIR" ]]; then
-        echo "Could not find Boost CMake directory!"
+    echo "Searching for BoostConfig.cmake in ${prefix}..."
+    # Search recursively for the config file and take the directory of the first result
+    BOOST_CONFIG_FILE=$(find ${prefix} -name "BoostConfig.cmake" | head -n 1)
+    
+    if [[ -n "$BOOST_CONFIG_FILE" ]]; then
+        BOOST_CMAKE_DIR=$(dirname "$BOOST_CONFIG_FILE")
+        echo "Found Boost Config at: ${BOOST_CMAKE_DIR}"
+    else
+        echo "ERROR: BoostConfig.cmake not found in ${prefix}!"
+        # Debug: List lib directory to see what IS there if we fail
+        ls -F ${prefix}/lib
         exit 1
     fi
-    echo "Found Boost CMake dir: ${BOOST_CMAKE_DIR}"
 fi
 
 FLAGS=()
