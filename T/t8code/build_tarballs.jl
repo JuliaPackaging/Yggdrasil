@@ -19,6 +19,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/T8CODE*
 
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi-constants.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/t8code.patch"
 
 # Show CMake where to find `mpiexec`.
 if [[ "${target}" == *-mingw* ]]; then
@@ -29,6 +30,7 @@ cmake . \
       -B build \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+      -DCMAKE_CXX_FLAGS="-std=c++20" \
       -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_TESTING=OFF \
       -DP4EST_BUILD_TESTING=OFF \
@@ -48,7 +50,9 @@ make -C build -j ${nproc} install
 """
 
 # We need some C++20
-sources, script = require_macos_sdk("12.3", sources, script)
+# std::visit introduced in macOS 10.14, 'range' in namespace 'std::ranges' from 14.0 on
+# target chosen as lowest working version
+sources, script = require_macos_sdk("14.0", sources, script; deployment_target="10.14")
 
 augment_platform_block = """
     using Base.BinaryPlatforms
@@ -58,7 +62,7 @@ augment_platform_block = """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; exclude = ["riscv64"],
+platforms = supported_platforms(; exclude = [Platform("riscv64", "linux")],
                                   experimental=false)
 # for riscv64 only MPI 2 is available
 
