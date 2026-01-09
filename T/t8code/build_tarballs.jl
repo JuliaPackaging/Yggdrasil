@@ -36,7 +36,7 @@ cmake . \
       -DT8CODE_BUILD_DOCUMENTATION=OFF \
       -DT8CODE_BUILD_EXAMPLES=OFF \
       -DT8CODE_BUILD_EXAMPLES=OFF \
-      -DT8CODE_BUILD_FORTRAN_INTERFACE=ON \
+      -DT8CODE_BUILD_FORTRAN_INTERFACE=OFF \
       -DT8CODE_BUILD_TESTS=OFF \
       -DT8CODE_BUILD_TUTORIALS=OFF \
       -DT8CODE_ENABLE_MPI=ON \
@@ -46,6 +46,9 @@ make -C build -j ${nproc}
 make -C build -j ${nproc} install
 """
 
+# We need some C++20
+sources, script = require_macos_sdk("12.3", sources, script)
+
 augment_platform_block = """
     using Base.BinaryPlatforms
     $(MPI.augment)
@@ -54,27 +57,26 @@ augment_platform_block = """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms(; experimental=false)
 
 # p4est with MPI enabled does not compile for 32 bit Windows
-# newer t8code versions require MPI 3 whereas only 2 seems available for Windows
 platforms = filter(p -> !(Sys.iswindows(p)), platforms)
 
 # likewise for riscv64 only MPI 2 is available
-platforms = filter(p -> (arch(p) != "riscv64"), platforms)
+#platforms = filter(p -> (arch(p) != "riscv64"), platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
 
 # Disable OpenMPI since it doesn't build. This could probably be fixed
 # via more explicit MPI configuraiton options.
-platforms = filter(p -> p["mpi"] ≠ "openmpi", platforms)
+#platforms = filter(p -> p["mpi"] ≠ "openmpi", platforms)
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+#platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
 # MPItrampoline
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
+#platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
+#platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
 # The products that we will ensure are always built
 products = [
