@@ -19,7 +19,6 @@ MAX_JULIA_VERSION = v"1.11.999"
 MIN_CUDA_VERSION = v"13.0"
 MAX_CUDA_VERSION = v"13.0.999" # none of the dependency JLLs have 13.1 builds rn
 
-
 julia_versions = filter!(v -> v >= MIN_JULIA_VERSION && v <= MAX_JULIA_VERSION , julia_versions)
 cpu_platform = [Platform("x86_64", "linux")]
 cuda_platforms = CUDA.supported_platforms(; min_version = MIN_CUDA_VERSION, max_version = MAX_CUDA_VERSION)
