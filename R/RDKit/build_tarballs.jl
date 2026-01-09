@@ -17,6 +17,9 @@ cd ${WORKSPACE}/srcdir/rdkit
 # Windows build fails to link a test, despite the fact we don't want tests.
 atomic_patch -p1 ../patches/do-not-build-cffi-test.patch
 
+# Add missing includes for <vector>
+atomic_patch -p1 ../patches/add-include-vec.patch
+
 FLAGS=()
 if [[ "${target}" == *-mingw* ]]; then
     FLAGS+=(-DRDK_BUILD_THREADSAFE_SSS=OFF)
