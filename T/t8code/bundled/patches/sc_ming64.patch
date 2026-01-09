@@ -1,0 +1,160 @@
+From 46a8ac1ade00d7d7a9440edaa04fe00c0bbf5651 Mon Sep 17 00:00:00 2001
+From: Valentin Churavy <v.churavy@gmail.com>
+Date: Fri, 9 Jan 2026 12:18:24 +0100
+Subject: [PATCH 1/2] Add standard includes for mingw64 builds
+
+---
+ src/sc.c            | 3 +++
+ src/sc_containers.h | 2 ++
+ src/sc_functions.h  | 1 +
+ src/sc_getopt.c     | 1 +
+ src/sc_io.c         | 2 ++
+ src/sc_mpi.c        | 3 +++
+ src/sc_random.h     | 1 +
+ src/sc_reduce.c     | 1 +
+ src/sc_search.h     | 1 +
+ src/sc_shmem.c      | 1 +
+ src/sc_uint128.h    | 1 +
+ 11 files changed, 17 insertions(+)
+
+diff --git a/src/sc.c b/src/sc.c
+index b3df5d68..79105eb6 100644
+--- a/src/sc.c
++++ b/src/sc.c
+@@ -22,6 +22,9 @@
+ */
+ 
+ #include <sc_private.h>
++#include <string.h>
++#include <stdint.h>
++#include <stdlib.h>
+ 
+ #ifdef SC_HAVE_SIGNAL_H
+ #include <signal.h>
+diff --git a/src/sc_containers.h b/src/sc_containers.h
+index 6eaeb74d..041c06ed 100644
+--- a/src/sc_containers.h
++++ b/src/sc_containers.h
+@@ -43,6 +43,8 @@
+  */
+ 
+ #include <sc.h>
++#include <string.h>
++#include <stdint.h>
+ 
+ SC_EXTERN_C_BEGIN;
+ 
+diff --git a/src/sc_functions.h b/src/sc_functions.h
+index 63ef469d..96ab44bb 100644
+--- a/src/sc_functions.h
++++ b/src/sc_functions.h
+@@ -25,6 +25,7 @@
+ #define SC_FUNCTIONS_H
+ 
+ #include <sc.h>
++#include <stdint.h>
+ 
+ SC_EXTERN_C_BEGIN;
+ 
+diff --git a/src/sc_getopt.c b/src/sc_getopt.c
+index b5590ef9..d5004b8e 100644
+--- a/src/sc_getopt.c
++++ b/src/sc_getopt.c
+@@ -32,6 +32,7 @@
+ #endif
+ 
+ #include <sc.h>
++#include <string.h>
+ 
+ #ifdef SC_PROVIDE_GETOPT
+ #include "sc_builtin/getopt.h"
+diff --git a/src/sc_io.c b/src/sc_io.c
+index 4cfc7b81..73f30f3b 100644
+--- a/src/sc_io.c
++++ b/src/sc_io.c
+@@ -24,6 +24,8 @@
+ #include <sc_io.h>
+ #include <sc_puff.h>
+ #include <libb64.h>
++#include <string.h>
++#include <stdint.h>
+ #ifdef SC_HAVE_ZLIB
+ #include <zlib.h>
+ #else
+diff --git a/src/sc_mpi.c b/src/sc_mpi.c
+index f925c8b5..7c339b50 100644
+--- a/src/sc_mpi.c
++++ b/src/sc_mpi.c
+@@ -23,6 +23,9 @@
+ 
+ /* including sc_mpi.h does not work here since sc_mpi.h is included by sc.h */
+ #include <sc.h>
++#include <stdlib.h>
++#include <string.h>
++#include <stdint.h>
+ 
+ #if (defined(SC_ENABLE_MPI) && !defined(SC_HAVE_AINT_DIFF)) ||\
+     !defined (SC_ENABLE_MPI)
+diff --git a/src/sc_random.h b/src/sc_random.h
+index 3ac26d49..228c61fb 100644
+--- a/src/sc_random.h
++++ b/src/sc_random.h
+@@ -29,6 +29,7 @@
+  */
+ 
+ #include <sc.h>
++#include <stdint.h>
+ 
+ /** The internal state of sc_rand and derived functions.
+  * Can be set arbitrarily to obtain reproducible pseudo random numbers.
+diff --git a/src/sc_reduce.c b/src/sc_reduce.c
+index 39a34a86..e676207a 100644
+--- a/src/sc_reduce.c
++++ b/src/sc_reduce.c
+@@ -23,6 +23,7 @@
+ 
+ #include <sc_reduce.h>
+ #include <sc_search.h>
++#include <string.h>
+ 
+ static void
+ sc_reduce_alltoall (sc_MPI_Comm mpicomm,
+diff --git a/src/sc_search.h b/src/sc_search.h
+index 451a8893..3785f0ec 100644
+--- a/src/sc_search.h
++++ b/src/sc_search.h
+@@ -25,6 +25,7 @@
+ #define SC_SEARCH_H
+ 
+ #include <sc.h>
++#include <stdint.h>
+ 
+ SC_EXTERN_C_BEGIN;
+ 
+diff --git a/src/sc_shmem.c b/src/sc_shmem.c
+index b9e71630..fd6f5c3e 100644
+--- a/src/sc_shmem.c
++++ b/src/sc_shmem.c
+@@ -22,6 +22,7 @@
+ */
+ 
+ #include <sc_shmem.h>
++#include <string.h>
+ 
+ #if defined(__bgq__)
+ /** for sc_allgather_final_*_bgq routines to work on BG/Q, you must
+diff --git a/src/sc_uint128.h b/src/sc_uint128.h
+index bfec500c..38dee325 100644
+--- a/src/sc_uint128.h
++++ b/src/sc_uint128.h
+@@ -37,6 +37,7 @@
+  */
+ 
+ #include <sc.h>
++#include <stdint.h>
+ 
+ /** An unsigned 128 bit integer represented as two uint64_t. */
+ typedef struct sc_uint128
+-- 
+2.50.1
+
