@@ -4,6 +4,7 @@ using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
 const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "t8code"
@@ -18,6 +19,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/T8CODE*
 
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi-constants.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/t8code.patch"
 
 # Show CMake where to find `mpiexec`.
 if [[ "${target}" == *-mingw* ]]; then
@@ -27,7 +29,8 @@ fi
 cmake . \
       -B build \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
-      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake \
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+      -DCMAKE_CXX_FLAGS="-std=c++20" \
       -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_TESTING=OFF \
       -DP4EST_BUILD_TESTING=OFF \
@@ -36,7 +39,7 @@ cmake . \
       -DT8CODE_BUILD_DOCUMENTATION=OFF \
       -DT8CODE_BUILD_EXAMPLES=OFF \
       -DT8CODE_BUILD_EXAMPLES=OFF \
-      -DT8CODE_BUILD_FORTRAN_INTERFACE=ON \
+      -DT8CODE_BUILD_FORTRAN_INTERFACE=OFF \
       -DT8CODE_BUILD_TESTS=OFF \
       -DT8CODE_BUILD_TUTORIALS=OFF \
       -DT8CODE_ENABLE_MPI=ON \
@@ -46,6 +49,11 @@ make -C build -j ${nproc}
 make -C build -j ${nproc} install
 """
 
+# We need some C++20
+# std::visit introduced in macOS 10.14, 'range' in namespace 'std::ranges' from 14.0 on
+# target chosen as lowest working version
+sources, script = require_macos_sdk("14.0", sources, script; deployment_target="10.14")
+
 augment_platform_block = """
     using Base.BinaryPlatforms
     $(MPI.augment)
@@ -54,27 +62,25 @@ augment_platform_block = """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms(; exclude = [Platform("riscv64", "linux")],
+                                  experimental=false)
+# for riscv64 only MPI 2 is available
 
 # p4est with MPI enabled does not compile for 32 bit Windows
-# newer t8code versions require MPI 3 whereas only 2 seems available for Windows
 platforms = filter(p -> !(Sys.iswindows(p)), platforms)
-
-# likewise for riscv64 only MPI 2 is available
-platforms = filter(p -> (arch(p) != "riscv64"), platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
 
 # Disable OpenMPI since it doesn't build. This could probably be fixed
 # via more explicit MPI configuraiton options.
-platforms = filter(p -> p["mpi"] ≠ "openmpi", platforms)
+#platforms = filter(p -> p["mpi"] ≠ "openmpi", platforms)
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+#platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
 # MPItrampoline
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
+#platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
+#platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
 # The products that we will ensure are always built
 products = [
