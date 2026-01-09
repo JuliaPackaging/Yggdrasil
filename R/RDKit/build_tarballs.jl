@@ -14,41 +14,21 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/rdkit
 
-# Apply patches
+# Windows build fails to link a test, despite the fact we don't want tests.
 atomic_patch -p1 ../patches/do-not-build-cffi-test.patch
-atomic_patch -p1 ../patches/disable-catch2.patch
-atomic_patch -p1 ../patches/fix-windows-zlib.patch
 
-sed -i '1s/^/#include <vector>\n/' Code/DataStructs/RealValueVect.h
-
-# Windows Debugging & Setup
 FLAGS=()
 if [[ "${target}" == *-mingw* ]]; then
-    echo "--- DEBUG: Listing Boost Libraries ---"
-    ls -F ${prefix}/lib/libboost* || echo "No boost libs found in lib?"
-    echo "--------------------------------------"
-
     FLAGS+=(-DRDK_BUILD_THREADSAFE_SSS=OFF)
-    FLAGS+=(-DBoost_USE_STATIC_LIBS=OFF)
-    
-    # Force Legacy Mode (since Config mode is missing)
-    FLAGS+=(-DBoost_NO_BOOST_CMAKE=ON)
-    FLAGS+=(-DBoost_NO_SYSTEM_PATHS=ON)
-    
-    # Enable Boost Debugging to see why FindBoost fails
-    FLAGS+=(-DBoost_DEBUG=ON)
+    FLAGS+=(-DBoost_DIR=${libdir}/cmake/Boost-1.87.0/)
 fi
 
 mkdir build
 cd build
-
 cmake \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_PREFIX_PATH=${prefix} \
-    -DCMAKE_CXX_STANDARD=17 \
-    -DCMAKE_CXX_FLAGS="-std=c++17" \
     -DRDK_INSTALL_INTREE=OFF \
     -DRDK_BUILD_INCHI_SUPPORT=ON \
     -DRDK_BUILD_PYTHON_WRAPPERS=OFF \
@@ -61,15 +41,12 @@ cmake \
     -DRDK_BUILD_MAEPARSER_SUPPORT=OFF \
     -DRDK_BUILD_CHEMDRAW_SUPPORT=OFF \
     -DRDK_USE_URF=OFF \
-    -DBoost_ROOT=${prefix} \
     "${FLAGS[@]}" \
     ..
-
 make -j${nproc}
 make install
 """
 
-# Adapted from https://github.com/JuliaPackaging/Yggdrasil/blob/60500f4eaba2534332f963eec85e8916ce9a2fcd/D/Doxygen/build_tarballs.jl#L46C1-L46C62
 sources, script = require_macos_sdk("11.0", sources, script)
 
 platforms = [
