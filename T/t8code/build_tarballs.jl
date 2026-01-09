@@ -18,10 +18,16 @@ script = raw"""
 cd $WORKSPACE/srcdir/T8CODE*
 
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi-constants.patch"
+pushd sc
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/sc_ming64.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/sc_ming64_lc.patch"
+popd
 
 # Show CMake where to find `mpiexec`.
+USEMPI=ON
 if [[ "${target}" == *-mingw* ]]; then
   ln -s $(which mpiexec.exe) /workspace/destdir/bin/mpiexec
+  USEMPI=OFF # MSMPI only supports MPI v2, we need MPI v3
 fi
 
 cmake . \
@@ -36,10 +42,10 @@ cmake . \
       -DT8CODE_BUILD_DOCUMENTATION=OFF \
       -DT8CODE_BUILD_EXAMPLES=OFF \
       -DT8CODE_BUILD_EXAMPLES=OFF \
-      -DT8CODE_BUILD_FORTRAN_INTERFACE=ON \
+      -DT8CODE_BUILD_FORTRAN_INTERFACE=OFF \
       -DT8CODE_BUILD_TESTS=OFF \
       -DT8CODE_BUILD_TUTORIALS=OFF \
-      -DT8CODE_ENABLE_MPI=ON \
+      -DT8CODE_ENABLE_MPI=$(USEMPI) \
       -DP4EST_ENABLE_MPIIO=OFF
 
 make -C build -j ${nproc}
@@ -55,10 +61,6 @@ augment_platform_block = """
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
-
-# p4est with MPI enabled does not compile for 32 bit Windows
-# newer t8code versions require MPI 3 whereas only 2 seems available for Windows
-platforms = filter(p -> !(Sys.iswindows(p)), platforms)
 
 # likewise for riscv64 only MPI 2 is available
 platforms = filter(p -> (arch(p) != "riscv64"), platforms)
