@@ -58,13 +58,12 @@ augment_platform_block = """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=false)
+platforms = supported_platforms(; exclude = ["riscv64"],
+                                  experimental=false)
+# for riscv64 only MPI 2 is available
 
 # p4est with MPI enabled does not compile for 32 bit Windows
 platforms = filter(p -> !(Sys.iswindows(p)), platforms)
-
-# likewise for riscv64 only MPI 2 is available
-#platforms = filter(p -> (arch(p) != "riscv64"), platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
 
