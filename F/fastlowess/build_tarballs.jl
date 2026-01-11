@@ -40,7 +40,7 @@ filter!(p -> libc(p) != "musl", platforms)  # musl can be problematic for Rust
 
 # The library we're building
 products = [
-    LibraryProduct("libfastlowess_jl", :libfastlowess_jl; dont_dlopen=true),
+    LibraryProduct(["libfastlowess_jl", "fastlowess_jl"], :libfastlowess_jl; dont_dlopen=true),
 ]
 
 # No JLL dependencies required (self-contained Rust library)
