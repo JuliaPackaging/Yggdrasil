@@ -50,5 +50,5 @@ dependencies = Dependency[]
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     julia_compat="1.6",
     compilers=[:rust, :c],
-    preferred_gcc_version=v"0.99.8",
+    preferred_gcc_version=v"10",
     lock_microarchitecture=false)
