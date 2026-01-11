@@ -56,43 +56,34 @@ endif()
 
 find_package(OpenMP REQUIRED)
 
-# BLAS/LAPACK: Find OpenBLAS in the sysroot (same location as netCDF)
-# Get the directory where netCDF was found and use it for OpenBLAS
-get_filename_component(NETCDF_LIB_DIR "${NETCDF_LIBRARY}" DIRECTORY)
-message(STATUS "Searching for OpenBLAS in: ${NETCDF_LIB_DIR}")
+# BLAS/LAPACK: Use libblastrampoline to allow users to choose their BLAS implementation
+# The library name is passed via LBT environment variable (blastrampoline on Unix, blastrampoline-5 on Windows)
+set(LBT_NAME "$ENV{LBT}")
+if(NOT LBT_NAME)
+    set(LBT_NAME "blastrampoline")
+endif()
 
-# On macOS, also check for .dylib extension explicitly
-find_library(OPENBLAS_LIBRARY
-    NAMES openblas libopenblas
+# Get the library directory from netCDF location
+get_filename_component(NETCDF_LIB_DIR "${NETCDF_LIBRARY}" DIRECTORY)
+message(STATUS "Searching for libblastrampoline (${LBT_NAME}) in: ${NETCDF_LIB_DIR}")
+
+find_library(LBT_LIBRARY
+    NAMES ${LBT_NAME}
     HINTS "${NETCDF_LIB_DIR}"
     NO_DEFAULT_PATH)
-if(NOT OPENBLAS_LIBRARY)
-    # Fall back to searching normally with PATHS
-    find_library(OPENBLAS_LIBRARY
-        NAMES openblas libopenblas
+if(NOT LBT_LIBRARY)
+    find_library(LBT_LIBRARY
+        NAMES ${LBT_NAME}
         PATHS "${NETCDF_LIB_DIR}" "${CMAKE_PREFIX_PATH}/lib" "$ENV{prefix}/lib"
         PATH_SUFFIXES lib lib64)
 endif()
 
-# On macOS, also try to find the Accelerate framework as fallback
-if(NOT OPENBLAS_LIBRARY AND APPLE)
-    find_library(ACCELERATE_FRAMEWORK Accelerate)
-    if(ACCELERATE_FRAMEWORK)
-        message(STATUS "Using macOS Accelerate framework for BLAS/LAPACK")
-        set(BLAS_LIBRARIES ${ACCELERATE_FRAMEWORK})
-        set(LAPACK_LIBRARIES ${ACCELERATE_FRAMEWORK})
-    else()
-        message(WARNING "Could not find OpenBLAS or Accelerate framework")
-        set(BLAS_LIBRARIES "")
-        set(LAPACK_LIBRARIES "")
-    endif()
-elseif(OPENBLAS_LIBRARY)
-    message(STATUS "Found OpenBLAS library: ${OPENBLAS_LIBRARY}")
-    set(BLAS_LIBRARIES ${OPENBLAS_LIBRARY})
-    set(LAPACK_LIBRARIES ${OPENBLAS_LIBRARY})
+if(LBT_LIBRARY)
+    message(STATUS "Found libblastrampoline: ${LBT_LIBRARY}")
+    set(BLAS_LIBRARIES ${LBT_LIBRARY})
+    set(LAPACK_LIBRARIES ${LBT_LIBRARY})
 else()
-    # vmecpp_core doesn't actually require OpenBLAS at link time if BLAS is built into system
-    message(WARNING "Could not find OpenBLAS library, trying to skip BLAS/LAPACK linking")
+    message(WARNING "Could not find libblastrampoline, linking without BLAS/LAPACK")
     set(BLAS_LIBRARIES "")
     set(LAPACK_LIBRARIES "")
 endif()

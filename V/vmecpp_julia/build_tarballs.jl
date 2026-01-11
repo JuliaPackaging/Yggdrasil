@@ -52,6 +52,8 @@ sources = [
               unpack_target="abseil-cpp"),
 
     # nlohmann_json v3.11.3 (vendored for FetchContent cmake integration)
+    # vmecpp uses CMake FetchContent which needs the full source tree with CMakeLists.txt;
+    # nlohmann_json_jll only provides headers without the cmake infrastructure
     ArchiveSource("https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz",
                   "d6c65aca6b1ed68e7a182f4757257b107ae403032760ed6ef121c9d55e81757d",
                   unpack_target="nlohmann_json"),
@@ -77,21 +79,22 @@ sources = [
               unpack_target="json-fortran"),
 
     # Julia wrapper sources (bundled)
-    # These are CxxWrap bindings adapted for cross-compilation from:
-    # https://github.com/proximafusion/VMECPP.jl/tree/main/deps/src
+    # These are CxxWrap bindings for vmecpp. The upstream goal is to move these into
+    # the vmecpp repository itself (https://github.com/proximafusion/vmecpp).
+    # Currently maintained at: https://github.com/proximafusion/VMECPP.jl/tree/main/deps/src
     DirectorySource("./bundled"),
-
-    # macOS SDK 12.3 for C++20 support (default darwin14 sysroot lacks C++20 features)
-    # SDK 12.3 provides std::construct_at, std::filesystem, etc.
-    get_macos_sdk_sources("12.3")...,
 ]
 
 # Bash recipe for building across all platforms
-# Prepend macOS SDK extraction script for C++20 support
-# Use SDK 12.3 for C++20 headers (std::construct_at, std::filesystem, etc.)
-# Deployment target 10.15 for Fortran compiler compatibility (gfortran's clang-8 doesn't understand 11.x+)
-script = get_macos_sdk_script("12.3"; deployment_target="10.15") * raw"""
+script = raw"""
 cd $WORKSPACE/srcdir
+
+# Set up libblastrampoline library name (different on Windows)
+if [[ "${target}" == *mingw* ]]; then
+    LBT=blastrampoline-5
+else
+    LBT=blastrampoline
+fi
 
 # Clean up macOS resource fork files (._*) that can corrupt CMake modules
 # These files end up in the Docker container and cause parse errors
@@ -175,7 +178,7 @@ if [[ "${target}" == *-apple-* ]]; then
 fi
 
 # Configure vmecpp with vendored dependencies
-# Set BLAS/LAPACK to use OpenBLAS from JLL
+# Use libblastrampoline for BLAS/LAPACK to allow users to choose their BLAS implementation
 # Note: FetchContent variable names use the EXACT name from FetchContent_Declare
 # For packages with hyphens, CMake converts them to underscores in cache variables
 # BUT we also need to try the hyphenated form for compatibility
@@ -192,9 +195,9 @@ cmake ../vmecpp \
     -DFETCHCONTENT_SOURCE_DIR_INDATA2JSON=${WORKSPACE}/srcdir/indata2json/indata2json \
     -DFETCHCONTENT_FULLY_DISCONNECTED=ON \
     -Dabsl_DIR=${prefix}/lib/cmake/absl \
-    -DBLA_VENDOR=OpenBLAS \
-    -DLAPACK_LIBRARIES="${libdir}/libopenblas.${dlext}" \
-    -DBLAS_LIBRARIES="${libdir}/libopenblas.${dlext}"
+    -DBLA_VENDOR=libblastrampoline \
+    -DLAPACK_LIBRARIES="${LBT}" \
+    -DBLAS_LIBRARIES="${LBT}"
 
 # Build only the core library (not Python bindings or standalone)
 make -j${nproc} vmecpp_core
@@ -206,6 +209,10 @@ cd ..
 echo "Building Julia wrapper..."
 # Note: DirectorySource("./bundled") copies contents to srcdir root, not to srcdir/bundled/
 # So the CMakeLists.txt and vmecpp_julia.cpp are at ${WORKSPACE}/srcdir/
+
+# Export LBT variable for CMakeLists.txt to find libblastrampoline
+export LBT
+
 mkdir -p julia-build && cd julia-build
 cmake .. \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -225,6 +232,11 @@ make install
 install_license ${WORKSPACE}/srcdir/vmecpp/LICENSE.txt
 """
 
+# Augment sources and script for macOS SDK 12.3 (C++20 support)
+# SDK 12.3 provides std::construct_at, std::filesystem, etc.
+# Deployment target 10.15 for Fortran compiler compatibility (gfortran's clang-8 doesn't understand 11.x+)
+sources, script = require_macos_sdk("12.3", sources, script; deployment_target="10.15")
+
 # Platforms - use libjulia_platforms from common.jl (already included above)
 platforms = reduce(vcat, libjulia_platforms.(julia_versions))
 
@@ -242,7 +254,11 @@ platforms = expand_cxxstring_abis(platforms)
 
 # Products
 products = [
-    LibraryProduct("libvmecpp_julia", :libvmecpp_julia; dlopen_flags=[:RTLD_GLOBAL]),
+    # RTLD_GLOBAL is required for CxxWrap-based Julia bindings to properly expose
+    # C++ symbols across shared library boundaries (same as libcxxwrap_julia_jll)
+    # dont_dlopen=true because the library depends on libjulia which can't be loaded
+    # during BinaryBuilder's audit phase when cross-compiling
+    LibraryProduct("libvmecpp_julia", :libvmecpp_julia; dlopen_flags=[:RTLD_GLOBAL], dont_dlopen=true),
 ]
 
 # Dependencies
@@ -255,9 +271,11 @@ dependencies = [
     Dependency("libcxxwrap_julia_jll"; compat="~0.14.7"),
     Dependency("HDF5_jll"; compat="~1.14.6"),
     Dependency("NetCDF_jll"),
-    Dependency("OpenBLAS_jll"),
-    Dependency("LLVMOpenMP_jll"),
-    Dependency("CompilerSupportLibraries_jll"),
+    Dependency("libblastrampoline_jll"; compat="5.4"),
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
+    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
+    Dependency("LLVMOpenMP_jll"; platforms=filter(Sys.isbsd, platforms)),
 ]
 
 # Build the tarballs
