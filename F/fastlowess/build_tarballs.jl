@@ -28,7 +28,7 @@ cd $WORKSPACE/srcdir/lowess-project/bindings/julia
 export RUSTFLAGS="-C linker=${CC}"
 
 # Build the release library
-cargo build --release --target ${rust_target}
+cargo build --release --target ${rust_target} --target-dir target
 
 # Install the shared library
 install -Dvm755 target/${rust_target}/release/*fastlowess_jl.${dlext} -t "${libdir}"
