@@ -24,8 +24,12 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/lowess-project/bindings/julia
 
-# Use the system linker with BFD to avoid "lld not built with zlib support" errors
-export RUSTFLAGS="-C linker=${CC} -C link-arg=-fuse-ld=bfd"
+# Use the system linker. On Linux, force BFD to avoid "lld not built with zlib support" errors.
+if [[ "${target}" == *-linux-* ]]; then
+    export RUSTFLAGS="-C linker=${CC} -C link-arg=-fuse-ld=bfd"
+else
+    export RUSTFLAGS="-C linker=${CC}"
+fi
 
 # Build the release library
 cargo build --release --target ${rust_target} --target-dir target
