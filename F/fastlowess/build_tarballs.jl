@@ -28,13 +28,7 @@ cd $WORKSPACE/srcdir/lowess-project/bindings/julia
 cargo build --release --target ${rust_target}
 
 # Install the shared library
-if [[ "${target}" == *-mingw* ]]; then
-    install -Dm755 "target/${rust_target}/release/fastlowess_jl.dll" \
-        "${libdir}/fastlowess_jl.dll"
-else
-    install -Dm755 "target/${rust_target}/release/libfastlowess_jl.${dlext}" \
-        "${libdir}/libfastlowess_jl.${dlext}"
-fi
+install -Dvm755 target/${rust_target}/release/*fastlowess_jl.${dlext} -t "${libdir}"
 """
 
 # Target platforms - all supported by BinaryBuilder
