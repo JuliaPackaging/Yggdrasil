@@ -37,6 +37,7 @@ platforms = supported_platforms()
 # Filter out platforms not supported by Rust
 filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms)
 filter!(p -> libc(p) != "musl", platforms)  # musl can be problematic for Rust
+filter!(p -> !Sys.isfreebsd(p), platforms)  # Rust toolchain unavailable on some FreeBSD archs
 
 # The library we're building
 products = [
