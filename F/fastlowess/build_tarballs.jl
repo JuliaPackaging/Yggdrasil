@@ -24,6 +24,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/lowess-project/bindings/julia
 
+# we use the system linker to avoid "lld not built with zlib support" errors
+export RUSTFLAGS="-C linker=${CC}"
+
 # Build the release library
 cargo build --release --target ${rust_target}
 
