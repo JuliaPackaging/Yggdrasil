@@ -44,8 +44,10 @@ init_block = map(eachline(IOBuffer(init_block))) do line
 products = [
     LibraryProduct("libcuda", :libcuda_compat;                            dont_dlopen=true),
     LibraryProduct("libcudadebugger", :libcuda_debugger;                  dont_dlopen=true),
+    LibraryProduct("libnvidia-gpucomp", :libnvidia_gpucomp;               dont_dlopen=true),
     LibraryProduct("libnvidia-nvvm", :libnvidia_nvvm;                     dont_dlopen=true),
     LibraryProduct("libnvidia-ptxjitcompiler", :libnvidia_ptxjitcompiler; dont_dlopen=true),
+    LibraryProduct("libnvidia-tileiras", :libnvidia_tileiras;             dont_dlopen=true),
 ]
 
 dependencies = []
