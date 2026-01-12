@@ -46,13 +46,20 @@ if [[ ${target} == aarch64-apple-* ]]; then  # FIXES the undefined symbol: __div
     export LDFLAGS="-L${libdir}/darwin -lclang_rt.osx"
 fi
 
+if [[ ${target} == *-apple-* ]]; then  # Add apple frameworks
+    export QT_CFLAGS="-F$prefix/lib -I$prefix/lib/QtCore.framework/Headers -I$prefix/lib/QtGui.framework/Headers -I$prefix/lib/QtNetwork.framework/Headers -I$prefix/lib/QtSvg.framework/Headers -I$prefix/lib/QtPrintSupport.framework/Headers -I$prefix/lib/QtWidgets.framework/Headers -I$prefix/lib/QtCore5Compat.framework/Headers"
+    export QT_LIBS="-F$prefix/lib -framework QtCore -framework QtGui -framework QtNetwork -framework QtSvg -framework QtPrintSupport -framework QtWidgets -framework QtCore5Compat"
+    export UIC=uic
+    export LRELEASE=lrelease
+fi
+
 unset args
 args+=(--with-bitmap-terminals)
 args+=(--disable-wxwidgets)
 
 # FIXME: no Qt Tools artifacts available for these platforms (missing either uic or lrelease)
 case "$target" in
-    *-musl*|*-freebsd*|riscv64-linux-gnu*|aarch64-apple-darwin*|arm-linux-gnueabihf*)
+    *-musl*|*-freebsd*|riscv64-linux-gnu*|arm-linux-gnueabihf*)
         args+=(--with-qt=no);;
 esac
 
@@ -71,9 +78,7 @@ chmod +x $dn/gnuplot_fake$exeext
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-# platforms = supported_platforms()
-# Do not build for Mac
-platforms = [p for p in supported_platforms() if !contains(string(p), "macOS")]
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -102,7 +107,7 @@ dependencies = [
     Dependency("Qt6Base_jll"),
     Dependency("Qt6Svg_jll"),
     Dependency("Qt65Compat_jll"),
-    BuildDependency("Qt6Tools_jll"),
+    HostBuildDependency("Qt6Tools_jll"),
     BuildDependency("Qt6Declarative_jll"),
 ]
 
