@@ -13,8 +13,6 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/thermopack
 
-apk del cmake
-
 # Patch CMakeLists.txt to remove architecture-specific flags (not allowed by BinaryBuilder)
 sed -i 's/-march=x86-64 -msse2//g' CMakeLists.txt
 sed -i 's/-arch arm64 -fno-expensive-optimizations//g' CMakeLists.txt
@@ -26,14 +24,7 @@ mkdir build
 cd build
 
 # Configure with CMake
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_SHARED_LIBS=ON \
-    -DBLA_VENDOR=OpenBLAS \
-    -DBLAS_LIBRARIES="-L${libdir} -lopenblas" \
-    -DLAPACK_LIBRARIES="-L${libdir} -lopenblas" \
-    ..
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DBLAS_LIBRARIES="-L${libdir} -lopenblas" -DLAPACK_LIBRARIES="-L${libdir} -lopenblas" ..
 
 # Build
 make -j${nproc}
@@ -58,7 +49,6 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    HostBuildDependency("CMake_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("OpenBLAS32_jll"),
 ]
@@ -66,5 +56,6 @@ dependencies = [
 # Build the tarballs
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                preferred_gcc_version=v"8", julia_compat="1.6")
+
 
 
