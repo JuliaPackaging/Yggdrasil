@@ -1,6 +1,6 @@
 using BinaryBuilder
 
-name = "thermopack"
+name = "Thermopack"
 version = v"2.2.4"  # Update to the desired version
 
 # Collection of sources required to build thermopack
@@ -59,5 +59,6 @@ dependencies = [
 # Build the tarballs
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                preferred_gcc_version=v"8", julia_compat="1.6")
+
 
 
