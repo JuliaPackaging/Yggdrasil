@@ -13,6 +13,8 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/thermopack
 
+apk del cmake
+
 # Create build directory
 mkdir build
 cd build
@@ -51,4 +53,5 @@ dependencies = [
 
 # Build the tarballs
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
+
 
