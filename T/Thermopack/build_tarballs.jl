@@ -24,7 +24,9 @@ cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
-    -DBLA_VENDOR=OpenBLAS
+    -DBLA_VENDOR=OpenBLAS \
+    -DBLAS_LIBRARIES="${libdir}/libopenblas.${dlext}" \
+    -DLAPACK_LIBRARIES="${libdir}/libopenblas.${dlext}"
 
 # Build
 make -j${nproc}
@@ -54,6 +56,7 @@ dependencies = [
 
 # Build the tarballs
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
+
 
 
 
