@@ -11,7 +11,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/thermopack*
+cd ${WORKSPACE}/srcdir/thermopack
 
 # Create build directory
 mkdir build
@@ -45,9 +45,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    HostBuildDependency("CMake_jll"),
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("LAPACK_jll"),
 ]
 
 # Build the tarballs
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
+
