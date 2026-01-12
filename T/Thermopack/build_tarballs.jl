@@ -20,11 +20,11 @@ mkdir build
 cd build
 
 # Configure with CMake
-cmake .. \
-    -DCMAKE_INSTALL_PREFIX=${prefix} \
+cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_SHARED_LIBS=ON
+    -DBUILD_SHARED_LIBS=ON \
+    -DBLA_VENDOR=OpenBLAS
 
 # Build
 make -j${nproc}
@@ -49,9 +49,11 @@ products = [
 dependencies = [
     HostBuildDependency("CMake_jll"),
     Dependency("CompilerSupportLibraries_jll"),
+    Dependency("OpenBLAS32_jll"),
 ]
 
 # Build the tarballs
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
+
 
 
