@@ -26,8 +26,8 @@ mkdir build
 cd build
 
 # Configure with CMake
-cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+cmake .. -DCMAKE_INSTALL_PREFIX="${prefix}" \
+    -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
     -DBLA_VENDOR=OpenBLAS \
@@ -65,3 +65,4 @@ dependencies = [
 # Build the tarballs
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                preferred_gcc_version=v"8", julia_compat="1.6")
+
