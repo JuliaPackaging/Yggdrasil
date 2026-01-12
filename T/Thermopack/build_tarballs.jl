@@ -15,9 +15,11 @@ cd ${WORKSPACE}/srcdir/thermopack
 
 apk del cmake
 
-# Patch CMakeLists.txt to remove -march flags (not allowed by BinaryBuilder)
+# Patch CMakeLists.txt to remove architecture-specific flags (not allowed by BinaryBuilder)
 sed -i 's/-march=x86-64 -msse2//g' CMakeLists.txt
 sed -i 's/-arch arm64 -fno-expensive-optimizations//g' CMakeLists.txt
+# Remove static libquadmath flag (not supported on all platforms)
+sed -i 's/-static-libquadmath//g' src/CMakeLists.txt
 
 # Create build directory
 mkdir build
@@ -28,13 +30,17 @@ cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
-    -DBLA_VENDOR=OpenBLAS
+    -DBLA_VENDOR=OpenBLAS \
+    -DBLAS_LIBRARIES="${libdir}/libopenblas.${dlext}" \
+    -DLAPACK_LIBRARIES="${libdir}/libopenblas.${dlext}" 
 
 # Build
 make -j${nproc}
+make install
 
 # Install manually (thermopack's CMake install doesn't respect CMAKE_INSTALL_PREFIX)
 cp -v thermopack/libthermopack.${dlext} ${libdir}/
+install_license ../LICENSE-MIT ../LICENSE-APACHE
 """
 
 # These are the platforms we will build for by default, unless further
@@ -57,4 +63,5 @@ dependencies = [
 ]
 
 # Build the tarballs
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version=v"8", julia_compat="1.6")
