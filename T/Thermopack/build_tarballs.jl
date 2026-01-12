@@ -1,0 +1,59 @@
+using BinaryBuilder
+
+name = "thermopack"
+version = v"2.2.4"  # Update to the desired version
+
+# Collection of sources required to build thermopack
+sources = [
+    GitSource("https://github.com/thermotools/thermopack.git", 
+              "ca75d8e095e8b951616897efe1bca9b8c3badda7")  # Update tag/commit as needed
+]
+
+# Bash recipe for building across all platforms
+script = raw"""
+cd ${WORKSPACE}/srcdir/thermopack
+
+apk del cmake
+
+# Create build directory
+mkdir build
+cd build
+
+# Configure with CMake
+cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_SHARED_LIBS=ON \
+    -DBLA_VENDOR=OpenBLAS
+
+# Build
+make -j${nproc}
+
+# Install
+make install
+"""
+
+# These are the platforms we will build for by default, unless further
+# platforms are passed in on the command line
+platforms = supported_platforms()
+
+# Filter out platforms that don't support Fortran
+platforms = expand_gfortran_versions(platforms)
+
+# The products that we will ensure are always built
+products = [
+    LibraryProduct("libthermopack", :libthermopack),
+]
+
+# Dependencies that must be installed before this package can be built
+dependencies = [
+    HostBuildDependency("CMake_jll"),
+    Dependency("CompilerSupportLibraries_jll"),
+    Dependency("OpenBLAS32_jll"),
+]
+
+# Build the tarballs
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
+
+
+
