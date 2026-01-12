@@ -15,18 +15,26 @@ cd ${WORKSPACE}/srcdir/thermopack
 
 apk del cmake
 
+# Patch CMakeLists.txt to remove -march flags (not allowed by BinaryBuilder)
+sed -i 's/-march=x86-64 -msse2//g' CMakeLists.txt
+sed -i 's/-arch arm64 -fno-expensive-optimizations//g' CMakeLists.txt
+
 # Create build directory
 mkdir build
 cd build
 
 # Configure with CMake
-cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DBLA_VENDOR=OpenBLAS -DBLAS_LIBRARIES="${libdir}/libopenblas.${dlext}" -DLAPACK_LIBRARIES="${libdir}/libopenblas.${dlext}"
+cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_SHARED_LIBS=ON \
+    -DBLA_VENDOR=OpenBLAS
 
 # Build
 make -j${nproc}
 
-# Install
-make install
+# Install manually (thermopack's CMake install doesn't respect CMAKE_INSTALL_PREFIX)
+cp -v thermopack/libthermopack.${dlext} ${libdir}/
 """
 
 # These are the platforms we will build for by default, unless further
@@ -50,8 +58,3 @@ dependencies = [
 
 # Build the tarballs
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
-
-
-
-
-
