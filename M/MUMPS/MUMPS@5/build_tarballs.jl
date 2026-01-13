@@ -95,7 +95,7 @@ make_args+=(PLAT="par" \
             LAPACK="${BLAS_LAPACK}" \
             SCALAP="-L${libdir} -lscalapack32" \
             INCPAR="-I${includedir}" \
-            LIBPAR=""${BLAS_LAPACK}" -lscalapack32 ${MPILIBS[*]}")
+            LIBPAR="-L${libdir} -lscalapack32 ${BLAS_LAPACK} ${MPILIBS[*]}")
 
 make -j${nproc} allshared "${make_args[@]}"
 
