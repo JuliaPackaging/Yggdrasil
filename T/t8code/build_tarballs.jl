@@ -19,7 +19,8 @@ script = raw"""
 cd $WORKSPACE/srcdir/T8CODE*
 
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi-constants.patch"
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/t8code.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/t8code_includes.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/t8code_format_lli.patch"
 
 # Show CMake where to find `mpiexec`.
 if [[ "${target}" == *-mingw* ]]; then
