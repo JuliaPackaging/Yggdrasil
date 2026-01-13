@@ -89,13 +89,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 
-# Set up libblastrampoline library name (different on Windows)
-if [[ "${target}" == *mingw* ]]; then
-    LBT=blastrampoline-5
-else
-    LBT=blastrampoline
-fi
-
 # Clean up macOS resource fork files (._*) that can corrupt CMake modules
 # These files end up in the Docker container and cause parse errors
 find /usr/share/cmake -name '._*' -delete 2>/dev/null || true
@@ -178,7 +171,6 @@ if [[ "${target}" == *-apple-* ]]; then
 fi
 
 # Configure vmecpp with vendored dependencies
-# Use libblastrampoline for BLAS/LAPACK to allow users to choose their BLAS implementation
 # Note: FetchContent variable names use the EXACT name from FetchContent_Declare
 # For packages with hyphens, CMake converts them to underscores in cache variables
 # BUT we also need to try the hyphenated form for compatibility
@@ -195,9 +187,9 @@ cmake ../vmecpp \
     -DFETCHCONTENT_SOURCE_DIR_INDATA2JSON=${WORKSPACE}/srcdir/indata2json/indata2json \
     -DFETCHCONTENT_FULLY_DISCONNECTED=ON \
     -Dabsl_DIR=${prefix}/lib/cmake/absl \
-    -DBLA_VENDOR=libblastrampoline \
-    -DLAPACK_LIBRARIES="${LBT}" \
-    -DBLAS_LIBRARIES="${LBT}"
+    -DBLA_VENDOR=OpenBLAS \
+    -DLAPACK_LIBRARIES="${libdir}/libopenblas.${dlext}" \
+    -DBLAS_LIBRARIES="${libdir}/libopenblas.${dlext}"
 
 # Build only the core library (not Python bindings or standalone)
 make -j${nproc} vmecpp_core
@@ -209,10 +201,6 @@ cd ..
 echo "Building Julia wrapper..."
 # Note: DirectorySource("./bundled") copies contents to srcdir root, not to srcdir/bundled/
 # So the CMakeLists.txt and vmecpp_julia.cpp are at ${WORKSPACE}/srcdir/
-
-# Export LBT variable for CMakeLists.txt to find libblastrampoline
-export LBT
-
 mkdir -p julia-build && cd julia-build
 cmake .. \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -271,7 +259,7 @@ dependencies = [
     Dependency("libcxxwrap_julia_jll"; compat="~0.14.7"),
     Dependency("HDF5_jll"; compat="~1.14.6"),
     Dependency("NetCDF_jll"),
-    Dependency("libblastrampoline_jll"; compat="5.4"),
+    Dependency("OpenBLAS_jll"),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
