@@ -14,14 +14,14 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 name = "Enzyme"
 repo = "https://github.com/EnzymeAD/Enzyme.git"
 
-auto_version = "refs/tags/v0.0.235"
+auto_version = "refs/tags/v0.0.236"
 version = VersionNumber(split(auto_version, "/")[end])
 
 llvm_versions = [v"15.0.7", v"16.0.6", v"18.1.7", v"20.1.8"]
 
 # Collection of sources required to build attr
 sources = [
-    GitSource(repo, "32d13656e35373c68d9c8e40a30247c9a5039ee6"),
+    GitSource(repo, "00857124eda0e620b3aa4b16ced859987d53c93f"),
 ]
 
 # These are the platforms we will build for by default, unless further
