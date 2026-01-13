@@ -27,11 +27,6 @@ if [[ "${target}" == *-musl* ]]; then
     export RUSTFLAGS="${RUSTFLAGS} -C target-feature=-crt-static"
 fi
 
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    # Qiskit requires macOS 10.12 or higher on this platform.
-    export MACOSX_DEPLOYMENT_TARGET=10.12
-fi
-
 # The current Qiskit C API build instructions say to use a Makefile that is
 # improperly formed and not suitable for cross compilation.  So, instead,
 # we invoke Cargo directly and copy the handful of files that result to their
