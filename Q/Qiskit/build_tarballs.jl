@@ -2,6 +2,9 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "Qiskit"
 version = v"2.3.0"
 
@@ -24,6 +27,11 @@ if [[ "${target}" == *-musl* ]]; then
     export RUSTFLAGS="${RUSTFLAGS} -C target-feature=-crt-static"
 fi
 
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    # Qiskit requires macOS 10.12 or higher on this platform.
+    export MACOSX_DEPLOYMENT_TARGET=10.12
+fi
+
 # The current Qiskit C API build instructions say to use a Makefile that is
 # improperly formed and not suitable for cross compilation.  So, instead,
 # we invoke Cargo directly and copy the handful of files that result to their
@@ -35,6 +43,10 @@ cp -v target/qiskit.h "${includedir}"
 cp -vr crates/cext/include/qiskit/* "${includedir}/qiskit"
 install_license LICENSE.txt
 """
+
+# Install a newer SDK which contains `__ZNSt3__120__libcpp_atomic_waitEPVKvx`
+# and related symbols on x86_64-apple-darwin
+sources, script = require_macos_sdk("11.0", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
