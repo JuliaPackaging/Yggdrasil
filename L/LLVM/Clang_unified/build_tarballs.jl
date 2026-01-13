@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 include("../common.jl")
 
 name = "Clang_unified"
-version = v"0.1"
+version = v"0.1.1"
 llvm_full_versions = [
     v"15.0.7+10",
     v"16.0.6+6",
