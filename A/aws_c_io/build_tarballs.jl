@@ -6,11 +6,11 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "aws_c_io"
-version = v"0.25.0"
+version = v"0.26.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-io.git", "93e934387cb5788acb234478a49d6d9e6c75650d"),
+    GitSource("https://github.com/awslabs/aws-c-io.git", "d5ad01cef5d027f65c6f5b460972bae0a469779d"),
 ]
 
 # Bash recipe for building across all platforms
