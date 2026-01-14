@@ -94,4 +94,4 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat)
 
-# Build trigger: 2
+# Build trigger: 3
