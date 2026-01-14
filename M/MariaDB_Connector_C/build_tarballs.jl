@@ -20,11 +20,14 @@ cd $WORKSPACE/srcdir/mariadb-*/
 # There are warnings on 32-bit systems, but they hardcode `-Werror`.  Also, issues are closed, so we can't even report it.
 atomic_patch -p1 ../patches/no-werror.patch
 
+# GCC 14+ has stricter pointer type checking that causes errors with MariaDB 3.4
+export CFLAGS="${CFLAGS} -Wno-error=incompatible-pointer-types"
+
 if [[ "${target}" == *-mingw* ]]; then
     for p in ../patches/{0004-Add-ws2_32-to-remoteio-libraries,001-mingw-build,002-fix-prototype,003-gcc-fix-use_VA_ARGS,005-Add-definition-of-macros-and-structs-missing-in-MinG,fix-undefined-sec-e-invalid-parameter}.patch; do
         atomic_patch -p1 "${p}"
     done
-    export CFLAGS="-std=c99"
+    export CFLAGS="${CFLAGS} -std=c99"
     # Minimum version of Windows supported by MariaDB is 7,
     # see tables in https://docs.microsoft.com/en-us/windows/win32/winprog/using-the-windows-headers
     if [[ "${nbits}" == 64 ]]; then
@@ -40,7 +43,7 @@ elif [[ "${target}" == *-apple-* ]]; then
     for sym in iconv iconv_close iconv_open; do
         SYMBS_DEFS+=(-D${sym}=lib${sym})
     done
-    export CFLAGS="${SYMBS_DEFS[@]}"
+    export CFLAGS="${CFLAGS} ${SYMBS_DEFS[@]}"
 fi
 
 if [[ "${target}" == x86_64-linux-* ]] || [[ "${target}" == x86_64-*-mingw* ]]; then
