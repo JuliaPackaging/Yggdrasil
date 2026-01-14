@@ -63,11 +63,14 @@ case "$target" in
         args+=(--with-qt=no);;
 esac
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ${args[@]}
+CXXFLAGS=-std=c++17 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ${args[@]}
+# fix up pkgconfig detected command paths
+sed -i 's!/workspace/destdir/lib/pkgconfig/../../libexec/!!' config.status
+sed -i 's!/workspace/destdir/lib/pkgconfig/../../bin/!!' config.status
 
 make -C src -j${nproc}
 make -C src install
-""" * raw"""
+""" * """
 # add a fake `gnuplot_fake` executable, in order to determine `GNUPLOT_DRIVER_DIR` in `Gaston.jl`
 dn="\$prefix/$libexec_path"
 """ * raw"""
@@ -114,5 +117,5 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(
     ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
-    julia_compat="1.6", preferred_gcc_version = v"8"
+    julia_compat="1.6", preferred_gcc_version = v"10"
 )
