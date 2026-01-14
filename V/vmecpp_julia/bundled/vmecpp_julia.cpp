@@ -341,6 +341,8 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
   wout.method("rbtor0", [](const vmecpp::WOutFileContents& w) { return w.rbtor0; });
   wout.method("fsqr", [](const vmecpp::WOutFileContents& w) { return w.fsqr; });
   wout.method("ftolv", [](const vmecpp::WOutFileContents& w) { return w.ftolv; });
+  wout.method("Aminor_p", [](const vmecpp::WOutFileContents& w) { return w.Aminor_p; });
+  wout.method("Rmajor_p", [](const vmecpp::WOutFileContents& w) { return w.Rmajor_p; });
 
   // Scalar outputs - integers
   wout.method("ns", [](const vmecpp::WOutFileContents& w) { return w.ns; });
@@ -396,6 +398,17 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
   wout.method("bsubumns", [](const vmecpp::WOutFileContents& w) { return w.bsubumns; });
   wout.method("bsubvmns", [](const vmecpp::WOutFileContents& w) { return w.bsubvmns; });
 
+  // Threed1GeometricAndMagneticQuantities - geometric quantities
+  mod.add_type<vmecpp::Threed1GeometricAndMagneticQuantities>("Threed1GeometricAndMagneticQuantities")
+    .method("surf_area_p", [](const vmecpp::Threed1GeometricAndMagneticQuantities& g) { return g.surf_area_p; })
+    .method("cross_area_p", [](const vmecpp::Threed1GeometricAndMagneticQuantities& g) { return g.cross_area_p; })
+    .method("volume_p", [](const vmecpp::Threed1GeometricAndMagneticQuantities& g) { return g.volume_p; })
+    .method("Rmajor_p", [](const vmecpp::Threed1GeometricAndMagneticQuantities& g) { return g.Rmajor_p; })
+    .method("Aminor_p", [](const vmecpp::Threed1GeometricAndMagneticQuantities& g) { return g.Aminor_p; })
+    .method("aspect", [](const vmecpp::Threed1GeometricAndMagneticQuantities& g) { return g.aspect; })
+    .method("circum_p", [](const vmecpp::Threed1GeometricAndMagneticQuantities& g) { return g.circum_p; })
+    .method("kappa_p", [](const vmecpp::Threed1GeometricAndMagneticQuantities& g) { return g.kappa_p; });
+
   // JxBOutFileContents - force diagnostics
   mod.add_type<vmecpp::JxBOutFileContents>("JxBOutFileContents")
     .method("bdotk", [](const vmecpp::JxBOutFileContents& j) { return j.bdotk; })
@@ -410,7 +423,10 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
   mod.add_type<vmecpp::OutputQuantities>("OutputQuantities")
     .method("wout", [](vmecpp::OutputQuantities& o) -> vmecpp::WOutFileContents& { return o.wout; })
     .method("jxbout", [](vmecpp::OutputQuantities& o) -> vmecpp::JxBOutFileContents& { return o.jxbout; })
-    .method("mercier", [](vmecpp::OutputQuantities& o) -> vmecpp::MercierFileContents& { return o.mercier; });
+    .method("mercier", [](vmecpp::OutputQuantities& o) -> vmecpp::MercierFileContents& { return o.mercier; })
+    .method("threed1_geometric_magnetic", [](vmecpp::OutputQuantities& o) -> vmecpp::Threed1GeometricAndMagneticQuantities& {
+      return o.threed1_geometric_magnetic;
+    });
 
   // HotRestartState
   mod.add_type<vmecpp::HotRestartState>("HotRestartState");

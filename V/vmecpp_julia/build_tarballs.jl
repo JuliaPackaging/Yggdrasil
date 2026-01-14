@@ -30,8 +30,8 @@ end
 # Include libjulia common.jl to get julia_versions and libjulia_platforms
 include("../../L/libjulia/common.jl")
 
-# Filter to supported Julia versions (only 1.12 for now)
-filter!(==(v"1.12"), julia_versions)
+# Filter to supported Julia versions (1.11 and 1.12)
+filter!(v -> (v.major, v.minor) in [(1, 11), (1, 12)], julia_versions)
 
 name = "vmecpp_julia"
 version = v"0.4.11"
