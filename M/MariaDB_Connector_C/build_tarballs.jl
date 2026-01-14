@@ -8,8 +8,8 @@ julia_compat = "1.6"
 
 # Collection of sources required to build MariaDB_Connector_C
 sources = [
-    ArchiveSource("https://github.com/mariadb-corporation/mariadb-connector-c/archive/refs/tags/v3.4.8.tar.gz",
-                  "ced7e5063c91fe2bfafd9d63a759490fe53e81df80599a9abad01c570c202f0c"),
+    ArchiveSource("https://archive.mariadb.org/connector-c-3.4.8/mariadb-connector-c-3.4.8-src.tar.gz",
+                  "156aed3b49f857d0ac74fb76f1982968bcbfd8382da3f5b6ae71f616729920d7"),
     DirectorySource("./bundled"),
 ]
 
