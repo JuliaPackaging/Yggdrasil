@@ -8,17 +8,14 @@ julia_compat = "1.6"
 
 # Collection of sources required to build MariaDB_Connector_C
 sources = [
-    GitSource("https://github.com/mariadb-corporation/mariadb-connector-c.git",
-              "c356f1ca148b864c5ae48ead0eb6db4457d413ae"),
+    ArchiveSource("https://github.com/mariadb-corporation/mariadb-connector-c/archive/refs/tags/v3.4.8.tar.gz",
+                  "ced7e5063c91fe2bfafd9d63a759490fe53e81df80599a9abad01c570c202f0c"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/mariadb-*/
-
-# Skip git submodule update which fails in BinaryBuilder
-atomic_patch -p1 ../patches/skip-submodule-update.patch
 
 # There are warnings on 32-bit systems, but they hardcode `-Werror`.  Also, issues are closed, so we can't even report it.
 atomic_patch -p1 ../patches/no-werror.patch
