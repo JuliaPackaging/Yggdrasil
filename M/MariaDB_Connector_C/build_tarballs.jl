@@ -27,8 +27,7 @@ atomic_patch -p1 ../patches/no-werror.patch
 
 # GCC 14+ has stricter type checking that causes errors with MariaDB 3.4
 # See https://gcc.gnu.org/gcc-14/porting_to.html
-# Use -fpermissive to allow legacy C code patterns
-GCC14_FLAGS="-fpermissive -Wno-error=incompatible-pointer-types -Wno-error=int-conversion -Wno-error=implicit-function-declaration -Wno-error"
+GCC14_FLAGS="-Wno-error=incompatible-pointer-types -Wno-error=int-conversion -Wno-error=implicit-function-declaration -Wno-error"
 export CFLAGS="${CFLAGS} ${GCC14_FLAGS}"
 
 if [[ "${target}" == *-mingw* ]]; then
