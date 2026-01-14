@@ -15,7 +15,7 @@ using BinaryBuilder, Pkg
 
 name = "MUMPS_seq"
 upstream_version = v"5.8.2"
-version_offset = v"0.0.0" # reset to 0.0.0 once the upstream version changes
+version_offset = v"0.0.0"  # reset to 0.0.0 once the upstream version changes
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
