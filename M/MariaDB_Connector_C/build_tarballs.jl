@@ -17,6 +17,11 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/mariadb-*/
 
+echo "=== Starting build for ${target} ==="
+echo "=== Listing patches ==="
+ls -la ../patches/
+echo "=== Applying no-werror.patch ==="
+
 # There are warnings on 32-bit systems, but they hardcode `-Werror`.  Also, issues are closed, so we can't even report it.
 atomic_patch -p1 ../patches/no-werror.patch
 
