@@ -17,8 +17,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/mariadb-*/
 
-# https://github.com/mariadb-corporation/mariadb-connector-c/pull/244
-atomic_patch -p1 ../patches/sys-poll.patch
 # There are warnings on 32-bit systems, but they hardcode `-Werror`.  Also, issues are closed, so we can't even report it.
 atomic_patch -p1 ../patches/no-werror.patch
 
