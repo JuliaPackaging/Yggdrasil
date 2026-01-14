@@ -8,7 +8,7 @@ version = v"3.51.2"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://sqlite.org/2026/sqlite-autoconf-3510200.tar.gz",
-                  "e0f7ae1c28c4fa551a2ffe8bdfafafa90613dabcef9553050892d02240b44f1d"),
+                  "fbd89f866b1403bb66a143065440089dd76100f2238314d92274a082d4f2b7bb"),
     FileSource("https://raw.githubusercontent.com/archlinux/svntogit-community/cf0a3337bd854104252dc1ff711e95cc8bc7ffb3/trunk/license.txt",
                "4e57d9ac979f1c9872e69799c2597eeef4c6ce7224f3ede0bf9dc8d217b1e65d";
                filename="LICENSE"),
