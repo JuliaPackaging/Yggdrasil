@@ -20,8 +20,10 @@ cd $WORKSPACE/srcdir/mariadb-*/
 # There are warnings on 32-bit systems, but they hardcode `-Werror`.  Also, issues are closed, so we can't even report it.
 atomic_patch -p1 ../patches/no-werror.patch
 
-# GCC 14+ has stricter pointer type checking that causes errors with MariaDB 3.4
-export CFLAGS="${CFLAGS} -Wno-error=incompatible-pointer-types"
+# GCC 14+ has stricter type checking that causes errors with MariaDB 3.4
+# See https://gcc.gnu.org/gcc-14/porting_to.html
+GCC14_FLAGS="-Wno-error=incompatible-pointer-types -Wno-error=int-conversion -Wno-error=implicit-function-declaration"
+export CFLAGS="${CFLAGS} ${GCC14_FLAGS}"
 
 if [[ "${target}" == *-mingw* ]]; then
     for p in ../patches/{0004-Add-ws2_32-to-remoteio-libraries,001-mingw-build,002-fix-prototype,003-gcc-fix-use_VA_ARGS,005-Add-definition-of-macros-and-structs-missing-in-MinG,fix-undefined-sec-e-invalid-parameter}.patch; do
@@ -59,7 +61,7 @@ mkdir build && cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_C_FLAGS="${CFLAGS} -Wno-error=incompatible-pointer-types" \
+    -DCMAKE_C_FLAGS="${CFLAGS}" \
     -DWITH_MYSQLCOMPAT=OFF \
     -DWITH_EXTERNAL_ZLIB=ON \
     -DZLIB_FOUND=ON \
