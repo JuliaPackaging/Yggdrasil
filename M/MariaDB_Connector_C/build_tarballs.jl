@@ -7,7 +7,7 @@ version = v"3.4.8"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://archive.mariadb.org/connector-c-3.4.8/mariadb-connector-c-3.4.8-src.tar.gz",
+    ArchiveSource("https://archive.mariadb.org/connector-c-$(version)/mariadb-connector-c-$(version)-src.tar.gz",
                   "156aed3b49f857d0ac74fb76f1982968bcbfd8382da3f5b6ae71f616729920d7"),
     DirectorySource("./bundled"),
 ]
