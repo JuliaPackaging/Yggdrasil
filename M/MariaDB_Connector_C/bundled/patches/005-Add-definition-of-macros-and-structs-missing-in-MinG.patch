@@ -3,9 +3,9 @@ index af7fc60..a477d8c 100644
 --- a/libmariadb/secure/ma_schannel.h
 +++ b/libmariadb/secure/ma_schannel.h
 @@ -46,6 +46,57 @@
-
+ 
  #include <ma_pthread.h>
-
+ 
 +/* mingw does not have these */
 +#ifndef SP_PROT_TLS1_0_CLIENT
 +#define SP_PROT_TLS1_0_CLIENT 0x00000080
@@ -19,7 +19,7 @@ index af7fc60..a477d8c 100644
 +#define SP_PROT_TLS1_2_CLIENT 0x00000800
 +#endif
 +
-+/* TLS 1.3 support added in MariaDB 3.4.x - required for Windows 10+ */
++/* TLS 1.3 support added in MariaDB 3.4.x */
 +#ifndef SP_PROT_TLS1_3_CLIENT
 +#define SP_PROT_TLS1_3_CLIENT 0x00002000
 +#endif
@@ -60,3 +60,6 @@ index af7fc60..a477d8c 100644
  struct st_DER {
    char* der_buffer;
    DWORD der_length;
+-- 
+2.20.2
+
