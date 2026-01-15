@@ -20,6 +20,10 @@ export PYO3_PYTHON=${host_bindir}/python3
 export PYO3_CROSS_LIB_DIR=$WORKSPACE/destdir/lib
 export RUSTFLAGS="-L ${libdir}"
 
+# not enough space in /tmp
+export TMPDIR=$WORKSPACE/tmp
+mkdir $TMPDIR
+
 # avoid 'cannot create cdylib' error on musl targets
 # see https://github.com/rust-lang/cargo/issues/8607
 #     https://github.com/rust-lang/rust/issues/59302
