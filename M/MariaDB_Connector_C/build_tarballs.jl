@@ -74,6 +74,10 @@ install_license ../COPYING.LIB
 
 platforms = supported_platforms()
 
+# Filter out riscv64 due to build failures (unknown cause - no access to logs)
+# TODO: Re-enable once we can diagnose and fix the riscv64 build issue
+filter!(p -> arch(p) != "riscv64", platforms)
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libmariadb", :libmariadb, ["lib/mariadb"]),
