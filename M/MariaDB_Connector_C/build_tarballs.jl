@@ -77,12 +77,6 @@ install_license ../COPYING.LIB
 
 platforms = supported_platforms()
 
-# Filter out platforms with known build issues for MariaDB 3.4.x:
-# - aarch64-unknown-freebsd: Limited toolchain support (common pattern in Yggdrasil)
-# - riscv64: Limited testing/support in upstream (common pattern in Yggdrasil)
-filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
-filter!(p -> arch(p) != "riscv64", platforms)
-
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libmariadb", :libmariadb, ["lib/mariadb"]),
@@ -92,7 +86,7 @@ products = [
 dependencies = [
     Dependency("LibCURL_jll"; compat="7.73.0,8"),
     Dependency("Libiconv_jll"),
-    Dependency("OpenSSL_jll"; compat="3.0.8"),
+    Dependency("OpenSSL_jll"; compat="3.0.15"),
     Dependency("Zlib_jll"),
 ]
 
