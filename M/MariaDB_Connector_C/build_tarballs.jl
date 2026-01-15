@@ -21,8 +21,10 @@ atomic_patch -p1 ../patches/no-werror.patch
 
 # GCC 14+ has stricter type checking that causes errors with MariaDB 3.4
 # See https://gcc.gnu.org/gcc-14/porting_to.html
-# Use -Wno-error to disable all warnings-as-errors (widely supported by GCC/Clang)
-export CFLAGS="${CFLAGS} -Wno-error"
+# -Wno-error: disable all warnings-as-errors
+# -Wno-incompatible-pointer-types: needed for some platforms (e.g., riscv64)
+# Both flags require GCC 6+ (ensured by preferred_gcc_version below)
+export CFLAGS="${CFLAGS} -Wno-error -Wno-incompatible-pointer-types"
 
 if [[ "${target}" == *-mingw* ]]; then
     for p in ../patches/{0004-Add-ws2_32-to-remoteio-libraries,001-mingw-build,002-fix-prototype,003-gcc-fix-use_VA_ARGS,005-Add-definition-of-macros-and-structs-missing-in-MinG,fix-undefined-sec-e-invalid-parameter}.patch; do
