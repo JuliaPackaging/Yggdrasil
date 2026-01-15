@@ -4,9 +4,8 @@ using BinaryBuilder
 
 name = "MariaDB_Connector_C"
 version = v"3.4.8"
-julia_compat = "1.6"
 
-# Collection of sources required to build MariaDB_Connector_C
+# Collection of sources required to complete build
 sources = [
     ArchiveSource("https://archive.mariadb.org/connector-c-3.4.8/mariadb-connector-c-3.4.8-src.tar.gz",
                   "156aed3b49f857d0ac74fb76f1982968bcbfd8382da3f5b6ae71f616729920d7"),
@@ -22,7 +21,14 @@ atomic_patch -p1 ../patches/no-werror.patch
 
 # GCC 14+ has stricter type checking that causes errors with MariaDB 3.4
 # See https://gcc.gnu.org/gcc-14/porting_to.html
-GCC14_FLAGS="-Wno-error=incompatible-pointer-types -Wno-error=int-conversion -Wno-error=implicit-function-declaration -Wno-error"
+GCC14_FLAGS=""
+flag_test_obj="${WORKSPACE}/flag-test.o"
+for flag in -Wno-error=incompatible-pointer-types -Wno-error=int-conversion -Wno-error=implicit-function-declaration -Wno-error; do
+    if printf '%s\n' 'int main(void){return 0;}' | ${CC} -x c - -c ${flag} -o "${flag_test_obj}" >/dev/null 2>&1; then
+        GCC14_FLAGS="${GCC14_FLAGS} ${flag}"
+    fi
+done
+rm -f "${flag_test_obj}"
 export CFLAGS="${CFLAGS} ${GCC14_FLAGS}"
 
 if [[ "${target}" == *-mingw* ]]; then
@@ -92,6 +98,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat)
-
-# Build trigger: 3
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"6")
