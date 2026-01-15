@@ -47,14 +47,9 @@ elif [[ "${target}" == *-apple-* ]]; then
     export CFLAGS="${CFLAGS} ${SYMBS_DEFS[@]}"
 fi
 
-if [[ "${target}" == x86_64-linux-* ]] || [[ "${target}" == x86_64-*-mingw* ]]; then
-   # You can avoid this in the future when targeting OpenSSL_jll@v3.0.13+.
-   OPENSSL_CRYPTO_LIBRARY=${libdir}64/libcrypto.${dlext}
-   OPENSSL_SSL_LIBRARY=${libdir}64/libssl.${dlext}
-else
-   OPENSSL_CRYPTO_LIBRARY=${libdir}/libcrypto.${dlext}
-   OPENSSL_SSL_LIBRARY=${libdir}/libssl.${dlext}
-fi
+# OpenSSL 3.0.13+ installs libraries in lib (not lib64)
+OPENSSL_CRYPTO_LIBRARY=${libdir}/libcrypto.${dlext}
+OPENSSL_SSL_LIBRARY=${libdir}/libssl.${dlext}
 
 mkdir build && cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
