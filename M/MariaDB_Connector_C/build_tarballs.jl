@@ -21,15 +21,8 @@ atomic_patch -p1 ../patches/no-werror.patch
 
 # GCC 14+ has stricter type checking that causes errors with MariaDB 3.4
 # See https://gcc.gnu.org/gcc-14/porting_to.html
-GCC14_FLAGS=""
-flag_test_obj="${WORKSPACE}/flag-test.o"
-for flag in -Wno-error=incompatible-pointer-types -Wno-error=int-conversion -Wno-error=implicit-function-declaration -Wno-error; do
-    if printf '%s\n' 'int main(void){return 0;}' | ${CC} -x c - -c ${flag} -o "${flag_test_obj}" >/dev/null 2>&1; then
-        GCC14_FLAGS="${GCC14_FLAGS} ${flag}"
-    fi
-done
-rm -f "${flag_test_obj}"
-export CFLAGS="${CFLAGS} ${GCC14_FLAGS}"
+# Use -Wno-error to disable all warnings-as-errors (widely supported by GCC/Clang)
+export CFLAGS="${CFLAGS} -Wno-error"
 
 if [[ "${target}" == *-mingw* ]]; then
     for p in ../patches/{0004-Add-ws2_32-to-remoteio-libraries,001-mingw-build,002-fix-prototype,003-gcc-fix-use_VA_ARGS,005-Add-definition-of-macros-and-structs-missing-in-MinG,fix-undefined-sec-e-invalid-parameter}.patch; do
@@ -83,6 +76,12 @@ install_license ../COPYING.LIB
 """
 
 platforms = supported_platforms()
+
+# Filter out platforms with known build issues for MariaDB 3.4.x:
+# - aarch64-unknown-freebsd: Limited toolchain support (common pattern in Yggdrasil)
+# - riscv64: Limited testing/support in upstream (common pattern in Yggdrasil)
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+filter!(p -> arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [
