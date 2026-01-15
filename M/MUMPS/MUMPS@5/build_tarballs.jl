@@ -4,11 +4,11 @@ const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MUMPS"
-version = v"5.8.1"
+version = v"5.8.2" 
 
 sources = [
   ArchiveSource("https://mumps-solver.org/MUMPS_$(version).tar.gz",
-                "e91b6dcd93597a34c0d433b862cf303835e1ea05f12af073b06c32f652f3edd8")
+                "eb515aa688e6dbab414bb6e889ff4c8b23f1691a843c68da5230a33ac4db7039")
 ]
 
 # Bash recipe for building across all platforms
@@ -30,6 +30,12 @@ if [[ "${target}" == *apple* ]]; then
     SONAME="-install_name"
 else
     SONAME="-soname"
+fi
+
+if [[ "${target}" == *mingw* ]]; then
+  BLAS_LAPACK="-L${libdir} -lblastrampoline-5"
+else
+  BLAS_LAPACK="-L${libdir} -lblastrampoline"
 fi
 
 MPILIBS=()
@@ -85,11 +91,11 @@ make_args+=(PLAT="par" \
             FL="${MPIFL}" \
             RANLIB="echo" \
             LPORD="-L./PORD/lib -lpordpar" \
-            LAPACK="-L${libdir} -lopenblas" \
+            LIBBLAS="${BLAS_LAPACK}" \
+            LAPACK="${BLAS_LAPACK}" \
             SCALAP="-L${libdir} -lscalapack32" \
             INCPAR="-I${includedir}" \
-            LIBPAR="-L${libdir} -lscalapack32 -lopenblas ${MPILIBS[*]}" \
-            LIBBLAS="-L${libdir} -lopenblas")
+            LIBPAR="-L${libdir} -lscalapack32 ${BLAS_LAPACK} ${MPILIBS[*]}")
 
 make -j${nproc} allshared "${make_args[@]}"
 
@@ -105,7 +111,7 @@ augment_platform_block = """
 
 platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # Remove platforms where some dependencies are missing
 filter!(p -> arch(p) != "riscv64", platforms)
@@ -140,8 +146,8 @@ dependencies = [
     Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa")),
     Dependency(PackageSpec(name="SCOTCH_jll", uuid="a8d0f55d-b80e-548d-aff6-1a04c175f0f9"); compat="~7.0.6"),
     # Dependency(PackageSpec(name="PTSCOTCH_jll", uuid="b3ec0f5a-9838-5c9b-9e77-5f2c6a4b089f"); compat="~7.0.6"),
-    Dependency(PackageSpec(name="SCALAPACK32_jll", uuid="aabda75e-bfe4-5a37-92e3-ffe54af3c273"); compat="2.1.0 - 2.2.1"),
-    Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
+    Dependency(PackageSpec(name="SCALAPACK32_jll", uuid="aabda75e-bfe4-5a37-92e3-ffe54af3c273"); compat="2.2.2"),
+    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
 ]
 append!(dependencies, platform_dependencies)
 
