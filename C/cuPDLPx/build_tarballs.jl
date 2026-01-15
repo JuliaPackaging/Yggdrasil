@@ -48,7 +48,7 @@ products = [
     # ExecutableProduct("cupdlpx", :cupdlpx),
 ]
 
-platforms = CUDA.supported_platforms(; min_version = v"12.4", max_version = v"13.0.999")
+platforms = CUDA.supported_platforms(; min_version = v"12.4", max_version = v"13.1.999")
 filter!(p -> arch(p) == "x86_64", platforms)
 
 for platform in platforms
