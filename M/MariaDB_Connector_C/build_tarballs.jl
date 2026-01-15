@@ -87,7 +87,7 @@ products = [
 dependencies = [
     Dependency("LibCURL_jll"; compat="7.73.0,8"),
     Dependency("Libiconv_jll"),
-    Dependency("OpenSSL_jll"; compat="3.0.15"),
+    Dependency("OpenSSL_jll"; compat="3.0.16"),
     Dependency("Zlib_jll"),
 ]
 
