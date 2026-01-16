@@ -10,7 +10,7 @@ name = "ADIOS2"
 upstream_version = v"2.11.0"
 
 # ADIOS2 2.11 is not compatible with ADIOS2 2.10. The C++ bindings differ.
-version_offset = v"1.0.0"
+version_offset = v"1.0.1"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -18,6 +18,8 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/ornladios/ADIOS2.git", "a3eb1ab7d713165f457377a925c0c4f3f4dcf0e5"),
+    FileSource("https://github.com/user-attachments/files/24653341/ADIOS2-PR4801-PR4804.patch",
+               "bbd0445f300d3035c09a193dfeaa86d2910b7e33a25229aa739f4ccf4eb3bb3e"),
     DirectorySource("bundled"),
 ]
 
@@ -39,6 +41,10 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/ffs.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cmakelists.patch
 # Correct C includes
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cinttypes.patch
+
+# Add function to determine string length.
+# Will probably become unnecessary in the next minor version of ADIOS2.
+atomic_patch -p1 ${WORKSPACE}/srcdir/ADIOS2-PR4801-PR4804.patch
 
 # pkg-config is very slow because `abseil_cpp` installed about 200 `*.pc` files.
 # Pretend that `protobuf` does not require `abseil_cpp`.
@@ -148,7 +154,7 @@ augment_platform_block = """
     using Base.BinaryPlatforms
     $(MPI.augment)
     augment_platform!(platform::Platform) = augment_mpi!(platform)
-"""
+    """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
