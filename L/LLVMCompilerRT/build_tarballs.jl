@@ -21,13 +21,18 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/
+cd $WORKSPACE/srcdir
+
 # The build system expects this directory to be called exactly "cmake".
 mv -v cmake*src cmake
-cd compiler-rt*/
+
+cd compiler-rt*
 
 # We'll codesign during audit
 atomic_patch -p1 ../patches/do-not-codesign.patch
+
+# We don't want `-march` on aarch64
+atomic_patch -p1 ../patches/aarch64-no-march.patch
 
 FLAGS=()
 if [[ "${target}" == *-apple-* ]]; then
@@ -55,20 +60,6 @@ else
    exec "\${@}"
 fi
 EOF
-
-    #TODO # Building this needs a newer SDK
-    #TODO apple_sdk_root=$WORKSPACE/srcdir/MacOSX10.14.sdk
-    #TODO sed -i "s!/opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
-
-    #TODO # We use could use `${MACOSX_DEPLOYMENT_TARGET}` to specify the SDK version, but it's
-    #TODO # set to 10.10 on x86_64, but compiler-rt requires at least 10.12 and we actually use
-    #TODO # 10.12.  On aarch64 it's 11.0, but the CMake script doesn't seem to like values greater
-    #TODO # than 10, so let's just use 10.12 everywhere.
-    #TODO FLAGS+=(
-    #TODO         -DDARWIN_macosx_OVERRIDE_SDK_VERSION:STRING=10.12
-    #TODO         -DDARWIN_macosx_CACHED_SYSROOT=/opt/${target}/${target}/sys-root
-    #TODO         -DCMAKE_SYSROOT=$apple_sdk_root -DCMAKE_FRAMEWORK_PATH=$apple_sdk_root/System/Library/Frameworks
-    #TODO        )
 fi
 
 FLAGS+=(
@@ -88,7 +79,7 @@ if [[ ${target} == x86_64-linux-gnu* ]]; then
 fi
 
 # Quick fix for https://github.com/llvm/llvm-project/pull/102980.
-# TODO: remove it after PR is merged.
+# Remove this patch for LLVM versions which include this patch -- probably LLVM 19 or 20.
 export CXXFLAGS="-D__STDC_FORMAT_MACROS=1"
 
 cmake -Bbuild "${FLAGS[@]}"
@@ -103,12 +94,20 @@ sources, script = require_macos_sdk("10.14", sources, script)
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-# push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
-#TODO # Exclude failing platforms.  This package is a stop-gap solution for being able to link
-#TODO # some packages on aarch64-apple-darwin, so there is little need to spend time on getting
-#TODO # this to build for _all_ platforms.  The long-term plan is to have these libraries as part
-#TODO # of LLVMBootstrap: https://github.com/JuliaPackaging/Yggdrasil/pull/1681
-#TODO filter!(p -> arch(p) != "powerpc64le" && !(BinaryBuilder.proc_family(p) == "intel" && libc(p) == "musl"), platforms)
+
+# Exclude failing platforms.  This package is a stop-gap solution for being able to link
+# some packages on aarch64-apple-darwin, so there is little need to spend time on getting
+# this to build for _all_ platforms.  The long-term plan is to have these libraries as part
+# of LLVMBootstrap: https://github.com/JuliaPackaging/Yggdrasil/pull/1681
+filter!(platforms) do p
+    # Something doesn't work
+    BinaryBuilder.proc_family(p) == "intel" && libc(p) == "musl" && return false
+    # LLVM 17 has not been built for aarch64-unknown-freebsd
+    arch(p) == "aarch64" && Sys.isfreebsd(p) && return false
+    # LLVM 17 has not been built for riscv64
+    arch(p) == "riscv64" && return false
+    return true
+end
 
 # The products that we will ensure are always built
 products = LibraryProduct[
