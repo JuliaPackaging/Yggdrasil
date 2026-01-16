@@ -13,7 +13,7 @@ platforms = openblas_platforms(; version)
 # Note: The msan build doesn't use gfortran, and we thus don't expand the gfortran versions
 push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 products = openblas_products()
-preferred_llvm_version = v"17.0.6+0"
+preferred_llvm_version = v"18.1.7"
 dependencies = openblas_dependencies(platforms; llvm_compilerrt_version=preferred_llvm_version)
 
 # Everything below is necessary only because we need to build msan platforms with a different LLVM version.
