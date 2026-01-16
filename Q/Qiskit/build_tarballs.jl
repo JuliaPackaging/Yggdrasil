@@ -15,7 +15,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-export CARGO_HOME="$WORKSPACE/cargo"
 cd $WORKSPACE/srcdir/qiskit
 export PYO3_PYTHON=${host_bindir}/python3
 export PYO3_CROSS_LIB_DIR=$WORKSPACE/destdir/lib
