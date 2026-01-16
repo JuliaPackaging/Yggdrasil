@@ -129,14 +129,7 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
 
     # Build BFLOAT16 kernels
     if [[ "${BFLOAT16}" == "true" ]]; then
-        #TODO if [[ "${target}" == aarch64-*-darwin* || "${target}" == aarch64-*-freebsd* ]]; then
-        #TODO     # Bfloat16 support is broken on aarch64 darwin and freebsd.
-        #TODO     # Clang 13 ... 16 report internal compiler errors such as:
-        #TODO     # `fatal error: error in backend: Cannot select: 0x1555483de020: bf16,ch = load<(load (s16) from %ir.917, !tbaa !17)> 0x15554822e090, 0x1555483e1830, undef:i64`
-        #TODO     flags+=(BUILD_BFLOAT16=0)
-        #TODO else
-            flags+=(BUILD_BFLOAT16=1)
-        #TODO fi
+        flags+=(BUILD_BFLOAT16=1)
     fi
 
     # We are cross-compiling
