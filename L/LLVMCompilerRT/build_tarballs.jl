@@ -87,9 +87,9 @@ if [[ ${target} == x86_64-linux-gnu* ]]; then
    )
 fi
 
-#TODO # Quick fix for https://github.com/llvm/llvm-project/pull/102980.
-#TODO # TODO: remove it after PR is merged.
-#TODO export CXXFLAGS="-D__STDC_FORMAT_MACROS=1"
+# Quick fix for https://github.com/llvm/llvm-project/pull/102980.
+# TODO: remove it after PR is merged.
+export CXXFLAGS="-D__STDC_FORMAT_MACROS=1"
 
 cmake -Bbuild "${FLAGS[@]}"
 cmake --build build --parallel ${nproc}
