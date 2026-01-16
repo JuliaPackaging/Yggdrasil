@@ -78,7 +78,7 @@ CoinUtils_gitsha = "cc644574ef1899f14b7318e6cdb7f460bbee5212"
 
 Ipopt_upstream_version = v"3.14.19"
 Ipopt_gitsha = "2695946fa79d2e84f3034e065e788933a81466eb"
-Ipopt_verson_offset = v"0.0.0"
+Ipopt_verson_offset = v"0.0.1"
 Ipopt_version = offset_version(Ipopt_upstream_version, Ipopt_verson_offset)
 
 ALPS_version = offset_version(v"1.5.12", v"0.0.0")
@@ -104,8 +104,8 @@ Julia_compat_version = "1.6"
 ASL_version = v"0.1.3"
 METIS_version = v"5.1.2"
 MUMPS_seq_version = v"5.4.1"
-MUMPS_seq_version_LBT = v"500.800.100"
-SPRAL_version_LBT = v"2025.5.20"
+MUMPS_seq_version_LBT = v"500.800.200"
+SPRAL_version_LBT = v"2025.9.18"
 OpenBLAS32_version = v"0.3.26"
 
 # These are the platforms we will build for by default, unless further
