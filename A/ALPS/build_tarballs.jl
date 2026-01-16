@@ -21,7 +21,7 @@ sed -i 's/-llapack -lblas/$(LAPACK_LIBS) $(BLAS_LIBS)/g' interpolation/Makefile.
 
 autoreconf -fi
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-blas="-L${prefix}/lib -lopenblas" --with-lapack="-L${prefix}/lib -lopenblas" FC=mpifort
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-blas="-lblastrampoline" --with-lapack="-lblastrampoline" FC=mpifort
 make
 make install
 """
