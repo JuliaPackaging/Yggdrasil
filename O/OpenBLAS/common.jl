@@ -4,6 +4,10 @@ using BinaryBuilderBase: sanitize
 # Collection of sources required to build OpenBLAS
 function openblas_sources(version::VersionNumber; kwargs...)
     openblas_version_sources = Dict(
+        v"0.3.31" => [
+            ArchiveSource("https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.31/OpenBLAS-0.3.31.tar.gz",
+                          "6dd2a63ac9d32643b7cc636eab57bf4e57d0ed1fff926dfbc5d3d97f2d2be3a6")
+        ],
         v"0.3.30" => [
             ArchiveSource("https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.30/OpenBLAS-0.3.30.tar.gz",
                           "27342cff518646afb4c2b976d809102e368957974c250a25ccc965e53063c95d")
@@ -217,8 +221,10 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
         atomic_patch -p1 ${f}
     done
 
-    # Choose our make parallelism
-    flags+=(-j${nproc})
+    # Choose our make parallelism.
+    # We need less parallelism so that we don't run out of memory.
+    flags+=(-j$(((nproc + 1) / 2)))
+
 
     # Print the flags for posterity
     echo "Build flags: ${flags[@]}"
