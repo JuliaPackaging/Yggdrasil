@@ -222,9 +222,9 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     done
 
     # Choose our make parallelism.
-    # We need less parallelism so that we don't run out of memory.
-    flags+=(-j$(((nproc + 1) / 2)))
-
+    flags+=(-j${nproc})
+    # The Makefile will otherwise override our choice
+    export MAKE_NB_JOBS=0
 
     # Print the flags for posterity
     echo "Build flags: ${flags[@]}"
