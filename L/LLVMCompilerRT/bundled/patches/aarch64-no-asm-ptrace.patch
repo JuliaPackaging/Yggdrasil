@@ -1,5 +1,5 @@
---- a/cmake/base-config-ix.cmake
-+++ b/cmake/base-config-ix.cmake
+--- a/lib/sanitizer_common/sanitizer_stoptheworld_linux_libcdep.cpp
++++ b/lib/sanitizer_common/sanitizer_stoptheworld_linux_libcdep.cpp
 @@ -31,11 +31,6 @@
  #include <sys/types.h> // for pid_t
  #include <sys/uio.h> // for iovec
