@@ -104,7 +104,7 @@ platforms = supported_platforms()
 # of LLVMBootstrap: https://github.com/JuliaPackaging/Yggdrasil/pull/1681
 filter!(platforms) do p
     # Something doesn't work
-    BinaryBuilder.proc_family(p) == "intel" && libc(p) == "musl" && return false
+    arch(p) in ["aarch64", "i686", "x86_64"] && libc(p) == "musl" && return false
     # LLVM 17 has not been built for aarch64-unknown-freebsd
     arch(p) == "aarch64" && Sys.isfreebsd(p) && return false
     # LLVM 17 has not been built for riscv64
