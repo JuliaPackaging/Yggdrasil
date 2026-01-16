@@ -34,6 +34,9 @@ atomic_patch -p1 ../patches/do-not-codesign.patch
 # We don't want `-march` on aarch64
 atomic_patch -p1 ../patches/aarch64-no-march.patch
 
+# We don't need musl's <asm/ptrace.h> on aarch64
+atomic_patch -p1 ../patches/aarch64-no-asm-ptrace.patch
+
 FLAGS=()
 if [[ "${target}" == *-apple-* ]]; then
     # Fake `PlistBuddy` to make detection of aarch64 support work
