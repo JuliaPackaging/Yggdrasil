@@ -188,8 +188,8 @@ cmake ../vmecpp \
     -DFETCHCONTENT_FULLY_DISCONNECTED=ON \
     -Dabsl_DIR=${prefix}/lib/cmake/absl \
     -DBLA_VENDOR=OpenBLAS \
-    -DLAPACK_LIBRARIES="${libdir}/libopenblas.${dlext}" \
-    -DBLAS_LIBRARIES="${libdir}/libopenblas.${dlext}"
+    -DLAPACK_LIBRARIES="=lopenblas" \
+    -DBLAS_LIBRARIES="-lopenblas"
 
 # Build only the core library (not Python bindings or standalone)
 make -j${nproc} vmecpp_core
