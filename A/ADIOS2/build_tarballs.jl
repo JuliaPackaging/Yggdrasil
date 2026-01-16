@@ -42,7 +42,8 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cmakelists.patch
 # Correct C includes
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cinttypes.patch
 
-# Add function to determin string length
+# Add function to determine string length.
+# Will probably become unnecessary in the next minor version of ADIOS2.
 atomic_patch -p1 ${WORKSPACE}/srcdir/ADIOS2-PR4801-PR4804.patch
 
 # pkg-config is very slow because `abseil_cpp` installed about 200 `*.pc` files.
