@@ -31,6 +31,12 @@ install_license $WORKSPACE/srcdir/cubic_interpolation*/LICENSE
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
 
+# Filter out platforms with build issues
+# Windows: linking issues with shared library exports
+# RISC-V: not yet supported
+filter!(p -> !Sys.iswindows(p), platforms)
+filter!(p -> arch(p) != "riscv64", platforms)
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libCubicInterpolation", :libCubicInterpolation),
