@@ -11,14 +11,14 @@ function yggdrasil_version(version::VersionNumber, offset::VersionNumber)
 end
 
 name = "Gnuplot"
-version = v"6.0.3"
-ygg_offset = v"0.0.4"  # NOTE: increase on new build, reset on new upstream version
+version = v"6.0.4"
+ygg_offset = v"0.0.0"  # NOTE: increase on new build, reset on new upstream version
 ygg_version = yggdrasil_version(version, ygg_offset)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://downloads.sourceforge.net/project/gnuplot/gnuplot/$(version)/gnuplot-$(version).tar.gz",
-                  "ec52e3af8c4083d4538152b3f13db47f6d29929a3f6ecec5365c834e77f251ab"),
+                  "458d94769625e73d5f6232500f49cbadcb2b183380d43d2266a0f9701aeb9c5b"),
     DirectorySource("./bundled"),
 ]
 
