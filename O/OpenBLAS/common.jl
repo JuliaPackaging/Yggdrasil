@@ -93,7 +93,7 @@ end
 
 # Do not override the default `num_64bit_threads` here, instead pass a custom from specific OpenBLAS versions
 # that should opt into a higher thread count.
-function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false, aarch64_ilp64::Bool=false, consistent_fpcsr::Bool=false, bfloat16::Bool=false, kwargs...)
+function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false, aarch64_ilp64::Bool=false, consistent_fpcsr::Bool=false, bfloat16::Bool=false, float16::Bool=false, kwargs...)
     # Allow some basic configuration
     script = """
     NUM_64BIT_THREADS=$(num_64bit_threads)
@@ -101,6 +101,7 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     AARCH64_ILP64=$(aarch64_ilp64)
     CONSISTENT_FPCSR=$(consistent_fpcsr)
     BFLOAT16=$(bfloat16)
+    FLOAT16=$(float16)
     version_patch=$(version.patch)
     """
     # Bash recipe for building across all platforms
@@ -134,6 +135,11 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     # Build BFLOAT16 kernels
     if [[ "${BFLOAT16}" == "true" ]]; then
         flags+=(BUILD_BFLOAT16=1)
+    fi
+
+    # Build FLOAT16 kernels
+    if [[ "${FLOAT16}" == "true" ]]; then
+        flags+=(BUILD_HFLOAT16=1)
     fi
 
     # We are cross-compiling
