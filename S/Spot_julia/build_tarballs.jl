@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "Spot_julia"
-version_string = "2.13.1"
+version_string = "2.14.5"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
@@ -95,7 +95,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency(PackageSpec(;name="libjulia_jll", version="1.10.16")),
-    Dependency("libcxxwrap_julia_jll"; compat="0.14.3")
+    Dependency("libcxxwrap_julia_jll"; compat="0.14.7")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
