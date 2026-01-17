@@ -200,7 +200,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="Blosc2_jll"); compat="202.2000.0"),
+    Dependency(PackageSpec(name="Blosc2_jll"); compat="202.2200.0"),
     Dependency(PackageSpec(name="Bzip2_jll"); compat="1.0.9"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="HDF5_jll"); compat="2.0.0"),
