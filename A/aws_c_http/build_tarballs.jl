@@ -28,7 +28,7 @@ cmake --build . -j${nproc} --target install
 cd ..
 
 # Save vanilla library before patching
-cp ${libdir}/libaws-c-http.${dlext} /tmp/libaws-c-http-vanilla.${dlext}
+cp -v ${libdir}/libaws-c-http.${dlext} /tmp/libaws-c-http-vanilla.${dlext}
 
 # Apply server-side websocket upgrade patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-Add-support-for-server-side-websocket-upgrade.patch
