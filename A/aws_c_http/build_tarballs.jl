@@ -27,8 +27,14 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 cmake --build . -j${nproc} --target install
 cd ..
 
-# Save vanilla library before patching
-cp -v ${libdir}/libaws-c-http.${dlext} /tmp/libaws-c-http-vanilla.${dlext}
+# Save vanilla library artifacts before patching (preserve symlinks/import libs)
+vanilla_root=/tmp/aws-c-http-vanilla
+mkdir -p ${vanilla_root}/libdir
+cp -av ${libdir}/libaws-c-http* ${vanilla_root}/libdir/
+if [[ "${libdir}" != "${prefix}/lib" ]]; then
+    mkdir -p ${vanilla_root}/lib
+    cp -av ${prefix}/lib/libaws-c-http* ${vanilla_root}/lib/
+fi
 
 # Apply server-side websocket upgrade patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-Add-support-for-server-side-websocket-upgrade.patch
@@ -45,9 +51,40 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 cmake --build . -j${nproc} --target install
 cd ..
 
-# Rename patched library and restore vanilla
-mv -v ${libdir}/libaws-c-http.${dlext} ${libdir}/libaws-c-http-jq.${dlext}
-mv -v /tmp/libaws-c-http-vanilla.${dlext} ${libdir}/libaws-c-http.${dlext}
+# Rename patched library and give it a unique SONAME/install_name
+if [[ "${target}" == *-mingw* ]]; then
+    mv -v ${libdir}/libaws-c-http.${dlext} ${libdir}/libaws-c-http-jq.${dlext}
+else
+    patched_real=$(realpath ${libdir}/libaws-c-http.${dlext})
+    patched_base=$(basename "${patched_real}")
+    patched_jq_base=${patched_base/libaws-c-http/libaws-c-http-jq}
+
+    mv -v "${patched_real}" "${libdir}/${patched_jq_base}"
+    for l in ${libdir}/libaws-c-http.${dlext}*; do
+        if [[ -L "${l}" ]]; then
+            rm -f "${l}"
+        fi
+    done
+    if [[ "${patched_jq_base}" != "libaws-c-http-jq.${dlext}" ]]; then
+        ln -sf "${patched_jq_base}" "${libdir}/libaws-c-http-jq.${dlext}"
+    fi
+
+    PATCHELF_FLAGS=()
+    if [[ ${target} == aarch64-* || ${target} == powerpc64le-* ]]; then
+        PATCHELF_FLAGS+=(--page-size 65536)
+    fi
+    if [[ ${target} == *linux* ]] || [[ ${target} == *freebsd* ]]; then
+        patchelf ${PATCHELF_FLAGS[@]} --set-soname libaws-c-http-jq.${dlext} ${libdir}/${patched_jq_base}
+    elif [[ ${target} == *apple* ]]; then
+        install_name_tool -id @rpath/libaws-c-http-jq.${dlext} ${libdir}/${patched_jq_base}
+    fi
+fi
+
+# Restore vanilla library artifacts
+cp -av ${vanilla_root}/libdir/libaws-c-http* ${libdir}/
+if [[ -d ${vanilla_root}/lib ]]; then
+    cp -av ${vanilla_root}/lib/libaws-c-http* ${prefix}/lib/
+fi
 """
 
 platforms = supported_platforms()
