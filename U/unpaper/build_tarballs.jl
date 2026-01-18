@@ -13,17 +13,13 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/unpaper-*
 
-# if [[ "${target}" == *-mingw* ]]; then
-#     # FFMPEG_jll installs the pkgconfig files in the wrong directory for Windows
-#     export PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:${libdir}/pkgconfig"
-#     # Give some hints to the linker
-#     export LDFLAGS="-L${libdir}"
-#     export LIBAV_LIBS="-lavformat -lavutil -lavcodec"
-# fi
-# update_configure_scripts
-# ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-# make -j${nproc}
-# make install
+if [[ "${target}" == *-mingw* ]]; then
+    # FFMPEG_jll installs the pkgconfig files in the wrong directory for Windows
+    export PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:${libdir}/pkgconfig"
+    # Give some hints to the linker
+    export LDFLAGS="-L${libdir}"
+    export LIBAV_LIBS="-lavformat -lavutil -lavcodec"
+fi
 
 apk add py3-sphinx
 
@@ -38,7 +34,6 @@ install_license 0BSD.txt Apache-2.0.txt GPL-2.0-only.txt MIT.txt
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-#TODO platforms = filter!(p -> arch(p) != "armv6l", supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
 products = [
@@ -54,4 +49,5 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # FFMPEG uses `preferred_gcc_version=v"8"`.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"8")
