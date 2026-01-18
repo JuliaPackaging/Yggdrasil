@@ -46,8 +46,8 @@ cmake --build . -j${nproc} --target install
 cd ..
 
 # Rename patched library and restore vanilla
-mv ${libdir}/libaws-c-http.${dlext} ${libdir}/libaws-c-http-jq.${dlext}
-mv /tmp/libaws-c-http-vanilla.${dlext} ${libdir}/libaws-c-http.${dlext}
+mv -v ${libdir}/libaws-c-http.${dlext} ${libdir}/libaws-c-http-jq.${dlext}
+mv -v /tmp/libaws-c-http-vanilla.${dlext} ${libdir}/libaws-c-http.${dlext}
 """
 
 platforms = supported_platforms()
