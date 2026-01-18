@@ -10,7 +10,7 @@ name = "ADIOS2"
 upstream_version = v"2.11.0"
 
 # ADIOS2 2.11 is not compatible with ADIOS2 2.10. The C++ bindings differ.
-version_offset = v"1.0.1"
+version_offset = v"1.0.2"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -230,7 +230,6 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 # GCC 7 is too old; it doesn't handle `std::thread(std::memcpy, ...)`
 # GCC 8 is too old; it requires explicitly linking for using `std::filesystem`
 # We need MacOS SDK 11.0 for `std::filesystem`
+# We need Julia 1.8 or later so that HDF5_jll is working
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"9")
-
-# Build trigger: 1
+               augment_platform_block, julia_compat="1.8", preferred_gcc_version=v"9")
