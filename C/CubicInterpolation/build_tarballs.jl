@@ -7,7 +7,7 @@ version = v"0.1.5"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/MaxSac/cubic_interpolation.git",
+    GitSource("https://github.com/tudo-astroparticlephysics/cubic_interpolation.git",
               "2ac2899d9f3457b595299b3762934bc10ad984bf"),  # v0.1.5
 ]
 
