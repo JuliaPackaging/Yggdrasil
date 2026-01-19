@@ -20,10 +20,10 @@ mkdir -vp $bindir
 cd $WORKSPACE/srcdir/tracy*/
 
 export TRACY_NO_ISA_EXTENSIONS=1
-export DEFINES="-D__STDC_FORMAT_MACROS -DNO_PARALLEL_SORT"
+DEFINES="-D__STDC_FORMAT_MACROS -DNO_PARALLEL_SORT"
 if [[ "${target}" == *-mingw* ]]; then
     export TRACY_NO_LTO=1
-    export DEFINES="-DWINVER=0x0601 -D_WIN32_WINNT=0x0601 -DNO_PARALLEL_SORT"
+    DEFINES="-DWINVER=0x0601 -D_WIN32_WINNT=0x0601 -DNO_PARALLEL_SORT"
     atomic_patch -p1 ../patches/TracyProfiler-mingw32-win.patch
 elif [[ "${target}" == *-apple-darwin* ]]; then
     export TRACY_NO_LTO=1
@@ -45,7 +45,9 @@ fi
 cmake -B profiler/build -S profiler \
     -DLEGACY=1 \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
-    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_CXX_FLAGS="${DEFINES}" \
+    -DCMAKE_C_FLAGS="${DEFINES}"
 cmake --build profiler/build --config Release --parallel ${nproc}
 cp -v ./profiler/build/tracy* $bindir
 
