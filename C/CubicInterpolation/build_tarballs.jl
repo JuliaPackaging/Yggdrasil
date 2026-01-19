@@ -44,7 +44,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("boost_jll"; compat="1.79.0"),
+    Dependency("boost_jll"; compat="=1.79.0"),
     BuildDependency("Eigen_jll"),
 ]
 
