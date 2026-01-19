@@ -3,6 +3,7 @@ using BinaryBuilder, Pkg
 const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
+include(joinpath(YGGDRASIL_DIR, "C/CUDA", "common.jl"))
 
 name = "Libxc_GPU"
 version = v"7.0.0"
@@ -93,12 +94,16 @@ for platform in platforms
     # Download the CUDA redist for the host x64_64 architecture
     platform_sources = BinaryBuilder.AbstractSource[sources...]
     if arch(platform) == "aarch64"
-        push!(platform_sources, CUDA.cuda_nvcc_redist_source(cuda_ver, "x86_64"))
 
         # From CUDA v13 on, nvvm is not shipped with nvcc anymore
-        if parse(Float64, cuda_ver) >= 13.0
-            push!(platform_sources, CUDA.cuda_nvvm_redist_source(cuda_ver, "x86_64"))
+        components = ["cuda_nvcc"]
+        if VersionNumber(cuda_ver) >= v"13.0"
+           push!(components, "libnvvm")
         end
+        x86_platform = deepcopy(platform)
+        x86_platform["arch"] = "x86_64"
+        append!(platform_sources, get_sources("cuda", components; platform=x86_platform,
+                                              version=CUDA.full_version(VersionNumber(cuda_ver))))
     end
 
     build_tarballs(ARGS, name, version, platform_sources, script, [platform], products, [dependencies; cuda_deps];
