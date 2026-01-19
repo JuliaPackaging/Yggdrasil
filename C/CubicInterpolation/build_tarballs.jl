@@ -45,7 +45,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("boost_jll"; compat="1.79.0"),
-    Dependency("Eigen_jll"),
+    BuildDependency("Eigen_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
