@@ -9,7 +9,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 include("make_script.jl")
 
 name = "cupynumeric"
-version = v"25.10.1"
+version = v"25.10.2"
 sources = [
     GitSource("https://github.com/nv-legate/cupynumeric.git","66d872d22d66d78f42e91778a6b1c731e796d1f4"),
     GitSource("https://github.com/MatthewsResearchGroup/tblis.git", "c4f81e08b2827e72335baa7bf91a245f72c43970"),
@@ -49,7 +49,7 @@ products = [
 ] 
 
 dependencies = [
-    Dependency("legate_jll"; compat = "=25.10.1"), # Legate versioning is Year.Month
+    Dependency("legate_jll"; compat = "~25.10.1"), # Legate versioning is Year.Month
     # Dependency("CUTENSOR_jll", compat = "2.2"), # supplied via ArchiveSource
     Dependency("OpenBLAS32_jll"),
     HostBuildDependency(PackageSpec(; name = "CMake_jll", version = "3.31.9")),
