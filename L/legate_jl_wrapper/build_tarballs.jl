@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 include("make_script.jl")
 
 name = "legate_jl_wrapper"
-version = v"25.10.1" # legate has 05, but Julia doesn't like that
+version = v"25.10.2" # legate has 05, but Julia doesn't like that
 sources = [
     GitSource("https://github.com/JuliaLegate/legate_jl_wrapper.git","b45876b1a766083cd95f10ffd85652af6150acfe"),
 ]
@@ -52,7 +52,7 @@ products = [
 
 
 dependencies = [
-    Dependency("legate_jll"; compat = "=25.10.1"), # Legate versioning is Year.Month
+    Dependency("legate_jll"; compat = "~25.10.1"), # Legate versioning is Year.Month
     Dependency("libcxxwrap_julia_jll"; compat="0.14.3"),
     BuildDependency("libjulia_jll"),
     HostBuildDependency(PackageSpec(; name = "CMake_jll", version = "3.31.9")),
