@@ -25,7 +25,7 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/t8code_includes.patch"
 #atomic_patch -p1 "${WORKSPACE}/srcdir/patches/t8code_format_lli.patch"
 
 # Microsoft MPI is still 2.0 but has the required features; remove the strict 3.0 requirement
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi2.patch
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi2.patch"
 
 # Fixes for mingw, which is WIN32 for cmake, but uses Linux syntax
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/ming64.patch"
