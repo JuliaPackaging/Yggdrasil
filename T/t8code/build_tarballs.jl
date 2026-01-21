@@ -28,7 +28,7 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/t8code_includes.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi2.patch"
 
 # Fixes for mingw, which is WIN32 for cmake, but uses Linux syntax
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/ming64.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mingw.patch"
 
 # Show CMake where to find `mpiexec`.
 if [[ "${target}" == *-mingw* ]]; then
