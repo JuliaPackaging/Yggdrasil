@@ -18,22 +18,22 @@ script = raw"""
 cd $WORKSPACE/srcdir/T8CODE*
 
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi-constants.patch"
-pushd sc
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/sc_ming64.patch"
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/sc_ming64_lc.patch"
-popd
+
+# Microsoft MPI is still 2.0 but has the required features; remove the strict 3.0 requirement
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi2.patch
+
+# Fixes for mingw, which is WIN32 for cmake, but uses Linux syntax
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/ming64.patch"
 
 # Show CMake where to find `mpiexec`.
-USEMPI=ON
 if [[ "${target}" == *-mingw* ]]; then
   ln -s $(which mpiexec.exe) /workspace/destdir/bin/mpiexec
-  USEMPI=OFF # MSMPI only supports MPI v2, we need MPI v3
 fi
 
 cmake . \
       -B build \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
-      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake \
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_TESTING=OFF \
       -DP4EST_BUILD_TESTING=OFF \
@@ -41,12 +41,10 @@ cmake . \
       -DT8CODE_BUILD_BENCHMARKS=OFF \
       -DT8CODE_BUILD_DOCUMENTATION=OFF \
       -DT8CODE_BUILD_EXAMPLES=OFF \
-      -DT8CODE_BUILD_EXAMPLES=OFF \
       -DT8CODE_BUILD_FORTRAN_INTERFACE=OFF \
       -DT8CODE_BUILD_TESTS=OFF \
       -DT8CODE_BUILD_TUTORIALS=OFF \
-      -DT8CODE_ENABLE_MPI=$(USEMPI) \
-      -DP4EST_ENABLE_MPIIO=OFF
+      -DT8CODE_ENABLE_MPI=ON
 
 make -C build -j ${nproc}
 make -C build -j ${nproc} install
