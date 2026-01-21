@@ -8,21 +8,16 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "t8code"
-version = v"4.0.0"
+version = v"4.0.0-26.01"
+commit_hash = "a4572db2c7b8103dfba9e942c24acb923d735fdb"
 
-tarball = "https://github.com/DLR-AMR/t8code/releases/download/v$(version)/T8CODE-$(version)-Source.tar.gz"
-sha256sum = "668536f82730a23fc6fd96ff13e64762b6b0890d04e99a7a38d66341332d5770"
-
-sources = [ArchiveSource(tarball, sha256sum), DirectorySource("./bundled")]
+sources = [GitSource("https://github.com/DLR-AMR/t8code", commit_hash),
+           DirectorySource("./bundled")]
 
 script = raw"""
 cd $WORKSPACE/srcdir/T8CODE*
 
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi-constants.patch"
-
-# To be removed in upcoming release
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/t8code_includes.patch"
-#atomic_patch -p1 "${WORKSPACE}/srcdir/patches/t8code_format_lli.patch"
 
 # Microsoft MPI is still 2.0 but has the required features; remove the strict 3.0 requirement
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi2.patch"
