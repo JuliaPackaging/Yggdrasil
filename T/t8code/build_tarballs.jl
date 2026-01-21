@@ -22,7 +22,7 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi-constants.patch"
 
 # To be removed in upcoming release
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/t8code_includes.patch"
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/t8code_format_lli.patch"
+#atomic_patch -p1 "${WORKSPACE}/srcdir/patches/t8code_format_lli.patch"
 
 # Microsoft MPI is still 2.0 but has the required features; remove the strict 3.0 requirement
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi2.patch
