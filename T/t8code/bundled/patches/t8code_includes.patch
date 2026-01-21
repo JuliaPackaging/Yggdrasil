@@ -1,0 +1,40 @@
+--- a/src/t8_cmesh/t8_cmesh_io/t8_cmesh_readmshfile.cxx
++++ b/src/t8_cmesh/t8_cmesh_io/t8_cmesh_readmshfile.cxx
+@@ -33,6 +33,7 @@
+ #include <unordered_set>
+ #include <optional>
+ #include <vector>
++#include <array>
+
+ #ifdef _WIN32
+ #include "t8_windows.h"
+--- a/src/t8_forest/t8_forest_search/t8_forest_search.hxx
++++ b/src/t8_forest/t8_forest_search/t8_forest_search.hxx
+@@ -37,6 +37,7 @@
+ #include <numeric>
+ #include <ranges>
+ #include <algorithm>
++#include <vector>
+
+ /**
+  *  t8_search_element_callback
+--- a/src/t8_types/t8_vec.hxx
++++ b/src/t8_types/t8_vec.hxx
+@@ -34,6 +34,7 @@
+ #include <algorithm>
+ #include <numeric>
+ #include <span>
++#include <ranges>
+
+ template <std::size_t TDim>
+ struct t8_vec_tag
+--- a/src/t8_helper_functions/t8_vector_algorithms.hxx
++++ b/src/t8_helper_functions/t8_vector_algorithms.hxx
+@@ -34,6 +34,7 @@
+ #include <functional>
+ #include <numeric>
+ #include <iterator>
++#include <ranges>
+ #include <t8.h>
+
+ /**
