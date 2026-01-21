@@ -3,22 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "SQLite"
-# NOTE: This version has been yanked (disabled) in the Julia registry.
-#
-# SQLite 3.49.0 uses a new build system (autosetup instead of
-# autoconf), and this leads to different names for all shared
-# libraries, in particular on Windows. This makes this version
-# incompatible with earlier versions.
-#
-# We will either need to rename the shared libraries (if possible) or
-# increase the major version number of this package.
-version = v"3.49.0"
-# Read carefully message above.
+version = v"3.51.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://sqlite.org/2025/sqlite-autoconf-3490000.tar.gz",
-                  "4d8bfa0b55e36951f6e5a9fb8c99f3b58990ab785c57b4f84f37d163a0672759"),
+    ArchiveSource("https://sqlite.org/2026/sqlite-autoconf-3510200.tar.gz",
+                  "fbd89f866b1403bb66a143065440089dd76100f2238314d92274a082d4f2b7bb"),
     FileSource("https://raw.githubusercontent.com/archlinux/svntogit-community/cf0a3337bd854104252dc1ff711e95cc8bc7ffb3/trunk/license.txt",
                "4e57d9ac979f1c9872e69799c2597eeef4c6ce7224f3ede0bf9dc8d217b1e65d";
                filename="LICENSE"),
