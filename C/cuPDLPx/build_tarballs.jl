@@ -5,13 +5,13 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "cuPDLPx"
-version = v"0.2.3"
+version = v"0.2.4"
 
 
 sources = [
     GitSource(
         "https://github.com/MIT-Lu-Lab/cuPDLPx.git",
-        "078c2aaac440c62f1c79c00b187764cff50684d9",
+        "6bb4cc7d9c6876ca0c3da9c3d145152b945ad03f",
     ),
 ]
 
