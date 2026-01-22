@@ -17,6 +17,10 @@ sources = [GitSource("https://github.com/DLR-AMR/t8code", commit_hash),
 script = raw"""
 cd $WORKSPACE/srcdir/t8code
 
+# fetch sc and p4est
+git submodule init
+git submodule update
+
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi-constants.patch"
 
 # Microsoft MPI is still 2.0 but has the required features; remove the strict 3.0 requirement
