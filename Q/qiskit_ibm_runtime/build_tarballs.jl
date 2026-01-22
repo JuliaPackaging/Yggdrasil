@@ -7,7 +7,7 @@ version = v"0.38.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Qiskit/qiskit-ibm-runtime-c.git", "f552982a1ce7ce6bf77907676223ea21c6dd5b5d")
+    GitSource("https://github.com/Qiskit/qiskit-ibm-runtime-c.git", "b7e4838640b56610c25d3776036dcf1ef7766fea")
 ]
 
 # Bash recipe for building across all platforms

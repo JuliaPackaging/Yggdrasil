@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 name = "SCIP_PaPILO"
 
 upstream_version = v"10.0.0"
-version = VersionNumber(upstream_version.major * 100, upstream_version.minor * 100, upstream_version.patch * 100)
+version = VersionNumber(upstream_version.major * 100, upstream_version.minor * 100, upstream_version.patch * 100 + 2)
 
 # Collection of sources required to complete build
 sources = [
@@ -61,9 +61,9 @@ make install
 cp bin/papilo${exeext} "${bindir}/papilo${exeext}"
 
 mkdir -p ${prefix}/share/licenses/SCIP_PaPILO
-for dir in scip soplex gcg papilo; do
-    cp $WORKSPACE/srcdir/scipoptsuite*/${dir}/LICENSE ${prefix}/share/licenses/SCIP_PaPILO/LICENSE_${dir}
-done
+mv -v ${prefix}/share/licenses/scip ${prefix}/share/licenses/SCIP_PaPILO
+mv -v ${prefix}/share/licenses/soplex ${prefix}/share/licenses/SCIP_PaPILO
+mv -v ${prefix}/share/licenses/papilo ${prefix}/share/licenses/SCIP_PaPILO
 """
 
 # This requires macOS 10.13
@@ -116,6 +116,6 @@ build_tarballs(
     products,
     dependencies;
     preferred_gcc_version=v"12",
-    julia_compat="1.6",
+    julia_compat="1.9",
     clang_use_lld=false,
 )

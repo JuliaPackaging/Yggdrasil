@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "CUDA_Compiler"
-version = v"0.3.0"
+version = v"0.4.1"
 
 augment_platform_block = read(joinpath(@__DIR__, "platform_augmentation.jl"), String)
 
@@ -29,9 +29,9 @@ if [[ ${target} == *-linux-gnu ]]; then
     mv cuda_nvcc/bin/ptxas ${bindir}
     mv cuda_nvcc/bin/nvlink ${bindir}
     if [[ -d cuda_nvcc/nvvm ]]; then
-        mv cuda_nvcc/nvvm/libdevice/libdevice.10.bc ${prefix}/share/libdevice
+        mv cuda_nvcc/nvvm ${prefix}
     else
-        mv libnvvm/nvvm/libdevice/libdevice.10.bc ${prefix}/share/libdevice
+        mv libnvvm/nvvm ${prefix}
     fi
 
     mv cuda_nvdisasm/bin/nvdisasm ${bindir}
@@ -49,9 +49,9 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     mv cuda_nvcc/bin/ptxas.exe ${bindir}
     mv cuda_nvcc/bin/nvlink.exe ${bindir}
     if [[ -d cuda_nvcc/nvvm ]]; then
-        mv cuda_nvcc/nvvm/libdevice/libdevice.10.bc ${prefix}/share/libdevice
+        mv cuda_nvcc/nvvm ${prefix}
     else
-        mv libnvvm/nvvm/libdevice/libdevice.10.bc ${prefix}/share/libdevice
+        mv libnvvm/nvvm ${prefix}
     fi
 
     mv cuda_nvdisasm/bin/nvdisasm.exe ${bindir}
@@ -85,7 +85,9 @@ end
 function get_products(version::VersionNumber)
     products = [
         FileProduct(["lib/libcudadevrt.a", "lib/cudadevrt.lib"], :libcudadevrt),
-        FileProduct("share/libdevice/libdevice.10.bc", :libdevice),
+        FileProduct("nvvm/libdevice/libdevice.10.bc", :libdevice),
+        LibraryProduct(["libnvvm", "nvvm64_40_0"], :libnvvm,
+                       ["nvvm/lib64", "nvvm/bin/x64", "nvvm/bin"]),
         ExecutableProduct("ptxas", :ptxas),
         ExecutableProduct("nvdisasm", :nvdisasm),
         ExecutableProduct("nvlink", :nvlink),
@@ -140,3 +142,5 @@ for (i,build) in enumerate(builds)
                    julia_compat="1.6", lazy_artifacts=true,
                    augment_platform_block, build.init_block)
 end
+
+# bump

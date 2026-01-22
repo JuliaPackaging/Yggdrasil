@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "wget2"
-version = v"2.2.0"
+version = v"2.2.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/wget/wget2-$(version).tar.gz",
-                  "2b3b9c85b7fb26d33ca5f41f1f8daca71838d869a19b406063aa5c655294d357")
+    ArchiveSource("https://ftpmirror.gnu.org/gnu/wget/wget2-$(version).tar.gz",
+                  "d7544b13e37f18e601244fce5f5f40688ac1d6ab9541e0fbb01a32ee1fb447b4")
 ]
 
 # Bash recipe for building across all platforms
@@ -69,15 +69,14 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Bzip2_jll"; compat="1.0.8"),
+    Dependency("Bzip2_jll"; compat="1.0.9"),
     Dependency("Gettext_jll"; compat="=0.21.0"),
-    Dependency("OpenSSL_jll"; compat="3.0.15"),
-    Dependency("PCRE2_jll"),
-    Dependency("XZ_jll"; compat="5.6.3"),
+    Dependency("OpenSSL_jll"; compat="3.0.16"),
+    Dependency("PCRE2_jll"; compat="10.42.0"),
+    Dependency("XZ_jll"; compat="5.8.2"),
     Dependency("Zlib_jll"),
-    # Zstd seems to define the function `mbrtowc` on Windows (it shouldn't)
-    Dependency("Zstd_jll"; compat="1.5.6", platforms=filter(!Sys.iswindows, platforms)),
-    Dependency("brotli_jll"; compat="1.1.0"),
+    Dependency("Zstd_jll"; compat="1.5.7"),
+    Dependency("brotli_jll"; compat="1.2.0"),
     Dependency("libidn2_jll"; compat="2.3.7"),
     Dependency("libpsl_jll"; compat="0.21.5"),
 ]

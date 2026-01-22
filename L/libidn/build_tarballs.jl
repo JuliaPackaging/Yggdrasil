@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "libidn"
-version = v"1.38.0"
+version = v"1.43.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/libidn/libidn-$(version.major).$(version.minor).tar.gz", "de00b840f757cd3bb14dd9a20d5936473235ddcba06d4bc2da804654b8bbf0f6")
+    ArchiveSource("https://ftpmirror.gnu.org/gnu/libidn/libidn-$(version.major).$(version.minor).tar.gz",
+                  "bdc662c12d041b2539d0e638f3a6e741130cdb33a644ef3496963a443482d164")
 ]
 
 # Bash recipe for building across all platforms
@@ -25,12 +26,11 @@ cd $WORKSPACE/srcdir/libidn-*
 
 make -j${nproc}
 make install
-
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental = true)
+platforms = supported_platforms()
 
 
 # The products that we will ensure are always built

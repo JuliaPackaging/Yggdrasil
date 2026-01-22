@@ -1,0 +1,25 @@
+From 6fd3e72d71fb8899a0a82c396e5d2869cfa9fe30 Mon Sep 17 00:00:00 2001
+From: Max Horn <max@quendi.de>
+Date: Wed, 7 Jan 2026 20:13:46 +0100
+Subject: [PATCH 6/6] Actually call 'exit' ...
+
+---
+ normd_sw.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/normd_sw.c b/normd_sw.c
+index da3bc34..a14db59 100644
+--- a/normd_sw.c
++++ b/normd_sw.c
+@@ -83,7 +83,7 @@ int main(int argc, char **argv)
+ 		err=readmatrix(ifd);
+ 		if(err<=0) {
+ 			fprintf(stderr,"Error: bad matrix in %s\n",argv[3]);
+-			exit;
++			exit(1);
+ 		}
+ 
+ 		go=atof(argv[3]);
+-- 
+2.52.0
+
