@@ -11,12 +11,15 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/quiver
 
+# Set cache variables for cross-compilation (bypass TRY_RUN checks in bundled SQLite)
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DQUIVER_BUILD_TESTS=OFF \
-    -DQUIVER_BUILD_C_API=ON
+    -DQUIVER_BUILD_C_API=ON \
+    -DHAVE_GNU_STRERROR_R_EXITCODE=0 \
+    -DHAVE_GNU_STRERROR_R_EXITCODE__TRYRUN_OUTPUT=""
 
 cmake --build build --parallel ${nproc}
 cmake --install build
@@ -36,4 +39,5 @@ dependencies = Dependency[]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.7",
-               preferred_gcc_version=v"13")
+               preferred_gcc_version=v"13",
+               dont_dlopen=true)
