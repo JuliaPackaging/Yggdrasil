@@ -15,7 +15,7 @@ sources = [GitSource("https://github.com/DLR-AMR/t8code", commit_hash),
            DirectorySource("./bundled")]
 
 script = raw"""
-cd $WORKSPACE/srcdir/T8CODE*
+cd $WORKSPACE/srcdir/t8code
 
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi-constants.patch"
 
