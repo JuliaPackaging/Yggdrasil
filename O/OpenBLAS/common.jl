@@ -4,6 +4,14 @@ using BinaryBuilderBase: sanitize
 # Collection of sources required to build OpenBLAS
 function openblas_sources(version::VersionNumber; kwargs...)
     openblas_version_sources = Dict(
+        v"0.3.31" => [
+            ArchiveSource("https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.31/OpenBLAS-0.3.31.tar.gz",
+                          "6dd2a63ac9d32643b7cc636eab57bf4e57d0ed1fff926dfbc5d3d97f2d2be3a6")
+        ],
+        v"0.3.30" => [
+            ArchiveSource("https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.30/OpenBLAS-0.3.30.tar.gz",
+                          "27342cff518646afb4c2b976d809102e368957974c250a25ccc965e53063c95d")
+        ],
         v"0.3.29" => [
             ArchiveSource("https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.29/OpenBLAS-0.3.29.tar.gz",
                           "38240eee1b29e2bde47ebb5d61160207dc68668a54cac62c076bb5032013b1eb")
@@ -205,7 +213,6 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
         export LDFLAGS="${LDFLAGS} -Wl,-rpath,@loader_path/"
     fi
 
-
     # Enter the fun zone
     cd ${WORKSPACE}/srcdir/OpenBLAS*/
 
@@ -213,6 +220,14 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     for f in ${WORKSPACE}/srcdir/patches/*.patch; do
         atomic_patch -p1 ${f}
     done
+
+    # Choose our make parallelism.
+    flags+=(-j${nproc})
+    # The Makefile will otherwise override our choice
+    export MAKE_NB_JOBS=0
+
+    # Print the flags for posterity
+    echo "Build flags: ${flags[@]}"
 
     # Build the actual library
     make "${flags[@]}"
@@ -262,7 +277,7 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
 end
 
 function openblas_platforms(;experimental::Bool=true, version::Union{Nothing,VersionNumber}=nothing, kwargs...)
-    platforms = expand_gfortran_versions(supported_platforms(;experimental))
+    platforms = expand_gfortran_versions(supported_platforms())
     # OpenBLAS 0.3.29 doesn't support GCC < v11 on powerpc64le:
     # <https://github.com/OpenMathLib/OpenBLAS/issues/5068#issuecomment-2585836284>.
     # This means we can't build it at all for libgfortran 3 and 4.
