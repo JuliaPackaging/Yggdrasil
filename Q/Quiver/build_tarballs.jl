@@ -28,6 +28,7 @@ install_license LICENSE
 """
 
 platforms = supported_platforms()
+filter!(!Sys.isapple, platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
