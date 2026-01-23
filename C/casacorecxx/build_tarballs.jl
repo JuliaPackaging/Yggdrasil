@@ -34,7 +34,7 @@ platforms = expand_cxxstring_abis(platforms)
 
 # Filter this list based on the same filter criteria used in the casacore build script
 filter!(platforms) do p
-    !Sys.iswindows(p) && !Sys.isfreebsd(p) && libc(p) != "musl"
+    arch(p) != "riscv64" && !Sys.iswindows(p) && !Sys.isfreebsd(p) && libc(p) != "musl"
 end
 
 # The products that we will ensure are always built
