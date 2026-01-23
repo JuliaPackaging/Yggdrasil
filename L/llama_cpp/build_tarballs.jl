@@ -4,7 +4,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "llama_cpp"
-version = v"0.0.17"  # fake version number
+version = v"0.0.18"  # fake version number
 
 # url = "https://github.com/ggerganov/llama.cpp"
 # description = "Port of Facebook's LLaMA model in C/C++"
@@ -57,9 +57,10 @@ version = v"0.0.17"  # fake version number
 # 0.0.15          2024-01-09       b1796             https://github.com/ggerganov/llama.cpp/releases/tag/b1796
 # 0.0.16          2024-03-10       b2382             https://github.com/ggerganov/llama.cpp/releases/tag/b2382
 # 0.0.17          2024-12-20       b4371             https://github.com/ggerganov/llama.cpp/releases/tag/b4371
+# 0.0.18          2025-12-10       b7347             https://github.com/ggml-org/llama.cpp/releases/tag/b7347
 
 sources = [
-    GitSource("https://github.com/ggerganov/llama.cpp.git", "eb5c3dc64bd967f2e23c87d9dec195f45468de60"),
+    GitSource("https://github.com/ggml-org/llama.cpp.git", "b6777218198888ed4b18d839e805f887562a9be4"),
 ]
 
 script = raw"""
@@ -120,30 +121,28 @@ products = [
     ExecutableProduct("llama-cli", :llama_cli),
     ExecutableProduct("llama-convert-llama2c-to-ggml", :llama_convert_llama2c_to_ggml),
     ExecutableProduct("llama-cvector-generator", :llama_cvector_generator),
+    ExecutableProduct("llama-diffusion-cli", :llama_diffusion_cli),
     ExecutableProduct("llama-embedding", :llama_embedding),
     ExecutableProduct("llama-eval-callback", :llama_eval_callback),
     ExecutableProduct("llama-export-lora", :llama_export_lora),
-    # ExecutableProduct("llama-gbnf-validator", :llama_gbnf_validator),   # not built on Windows
+    ExecutableProduct("llama-finetune", :llama_finetune),
     ExecutableProduct("llama-gen-docs", :llama_gen_docs),
     ExecutableProduct("llama-gguf", :llama_gguf),
     ExecutableProduct("llama-gguf-hash", :llama_gguf_hash),
     ExecutableProduct("llama-gguf-split", :llama_gguf_split),
-    ExecutableProduct("llama-gritlm", :llama_gritlm),
+    ExecutableProduct("llama-idle", :llama_idle),
     ExecutableProduct("llama-imatrix", :llama_imatrix),
-    ExecutableProduct("llama-infill", :llama_infill),
-    ExecutableProduct("llama-llava-cli", :llama_llava_cli),
+    ExecutableProduct("llama-logits", :llama_logits),
     ExecutableProduct("llama-lookahead", :llama_lookahead),
     ExecutableProduct("llama-lookup", :llama_lookup),
     ExecutableProduct("llama-lookup-create", :llama_lookup_create),
     ExecutableProduct("llama-lookup-merge", :llama_lookup_merge),
     ExecutableProduct("llama-lookup-stats", :llama_lookup_stats),
-    ExecutableProduct("llama-minicpmv-cli", :llama_minicpmv_cli),
+    ExecutableProduct("llama-mtmd-cli", :llama_mtmd_cli),
     ExecutableProduct("llama-parallel", :llama_parallel),
     ExecutableProduct("llama-passkey", :llama_passkey),
     ExecutableProduct("llama-perplexity", :llama_perplexity),
     ExecutableProduct("llama-quantize", :llama_quantize),
-    # ExecutableProduct("llama-quantize-stats", :llama_quantize_stats),   # not built on Windows
-    ExecutableProduct("llama-qwen2vl-cli", :llama_qwen2vl_cli),
     ExecutableProduct("llama-retrieval", :llama_retrieval),
     ExecutableProduct("llama-run", :llama_run),
     ExecutableProduct("llama-save-load-state", :llama_save_load_state),
@@ -156,15 +155,18 @@ products = [
     ExecutableProduct("llama-tts", :llama_tts),
 
     LibraryProduct(["libggml-base", "ggml-base"], :libggml_base),
+    LibraryProduct(["libggml-blas", "ggml-blas"], :libggml_blas),
     LibraryProduct(["libggml-cpu", "ggml-cpu"], :libggml_cpu),
     LibraryProduct(["libggml", "ggml"], :libggml),
     LibraryProduct("libllama", :libllama),
-    LibraryProduct("libllava_shared", :libllava_shared),
+    LibraryProduct("libmtmd", :libmtmd),
 ]
 
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    Dependency(PackageSpec(name = "CompilerSupportLibraries_jll", uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"10")
+build_tarballs(
+    ARGS, name, version, sources, script, platforms, products, dependencies;
+    julia_compat = "1.6", preferred_gcc_version = v"10"
+)
