@@ -133,7 +133,6 @@ products = [
     ExecutableProduct("llama-gguf-split", :llama_gguf_split),
     ExecutableProduct("llama-idle", :llama_idle),
     ExecutableProduct("llama-imatrix", :llama_imatrix),
-    ExecutableProduct("llama-logits", :llama_logits),
     ExecutableProduct("llama-lookahead", :llama_lookahead),
     ExecutableProduct("llama-lookup", :llama_lookup),
     ExecutableProduct("llama-lookup-create", :llama_lookup_create),
@@ -145,7 +144,6 @@ products = [
     ExecutableProduct("llama-perplexity", :llama_perplexity),
     ExecutableProduct("llama-quantize", :llama_quantize),
     ExecutableProduct("llama-retrieval", :llama_retrieval),
-    ExecutableProduct("llama-run", :llama_run),
     ExecutableProduct("llama-save-load-state", :llama_save_load_state),
     ExecutableProduct("llama-server", :llama_server),
     ExecutableProduct("llama-simple", :llama_simple),
@@ -156,7 +154,6 @@ products = [
     ExecutableProduct("llama-tts", :llama_tts),
 
     LibraryProduct(["libggml-base", "ggml-base"], :libggml_base),
-    LibraryProduct(["libggml-blas", "ggml-blas"], :libggml_blas),
     LibraryProduct(["libggml-cpu", "ggml-cpu"], :libggml_cpu),
     LibraryProduct(["libggml", "ggml"], :libggml),
     LibraryProduct("libllama", :libllama),
