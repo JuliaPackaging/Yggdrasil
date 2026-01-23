@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 
 # Get a full list of platforms supported by Libjulia
 include("../../L/libjulia/common.jl")
-filter!(x -> x >= v"1.10", julia_versions)
+filter!(x -> v"1.10" <= x <= v"1.13", julia_versions)
 
 name = "casacorecxx"
 version = v"0.4.0"
