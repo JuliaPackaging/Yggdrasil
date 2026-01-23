@@ -5,13 +5,15 @@ Subject: [PATCH] Allow disabling building static library for Windows
 
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 8a311094..89d7c51e 100644
+index 5b82faac..c31ba1c7 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -21,10 +21,6 @@ option(WITH_FLOAT128       "Use __float128 (requires libquadmath)" OFF)
- option(WITH_JEMALLOC       "Use jemalloc allocator"                OFF)
- option(WITH_MPI            "Enable MPI support"                    OFF)
+@@ -23,12 +23,6 @@ option(WITH_JEMALLOC        "Use jemalloc allocator"                OFF)
  
+ # libprimecount sanity checks ########################################
+ 
+-# We don't yet support building libprimecount as a shared DLL
+-# library on Windows. If you need this let me know...
 -if(WIN32)
 -    set(BUILD_SHARED_LIBS OFF)
 -endif()
