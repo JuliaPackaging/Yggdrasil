@@ -6,28 +6,19 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "PTSCOTCH"
-version = v"7.0.4"
-scotch_jll_version = v"7.0.4"
+version = v"7.0.6"
+scotch_jll_version = v"7.0.6"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://gitlab.inria.fr/scotch/scotch", "82ec87f558f4acb7ccb69a079f531be380504c92"),
-    DirectorySource("./bundled")
+    GitSource("https://gitlab.inria.fr/scotch/scotch", "e231061e53f3ad63d6cce19d983be2c6c4301749"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/scotch*
-
-# https://github.com/conda-forge/scotch-feedstock
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-  atomic_patch -p1 ${f}
-done
-
-# We don't want to break the ABI if we have a new release.
-sed s/'set_target_properties(scotch PROPERTIES VERSION'/'#set_target_properties(scotch PROPERTIES VERSION'/ -i src/libscotch/CMakeLists.txt
-sed s/'  ${SCOTCH_VERSION}.${SCOTCH_RELEASE}.${SCOTCH_PATCHLEVEL})'/'#  ${SCOTCH_VERSION}.${SCOTCH_RELEASE}.${SCOTCH_PATCHLEVEL})'/ -i src/libscotch/CMakeLists.txt
-sed s/'    VERSION ${SCOTCH_VERSION}.${SCOTCH_RELEASE}.${SCOTCH_PATCHLEVEL}'/'#    VERSION ${SCOTCH_VERSION}.${SCOTCH_RELEASE}.${SCOTCH_PATCHLEVEL}'/ -i src/libscotch/CMakeLists.txt
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/scotch.patch"
 
 mkdir -p src/dummysizes/build-host
 cd src/dummysizes/build-host
@@ -35,6 +26,9 @@ cp ${WORKSPACE}/srcdir/patches/CMakeLists-dummysizes.txt ../CMakeLists.txt
 
 CC=${CC_BUILD} cmake .. \
     -DBUILD_PTSCOTCH=ON \
+    -DSCOTCH_VERSION=7 \
+    -DSCOTCH_RELEASE=0 \
+    -DSCOTCH_PATCHLEVEL=6 \
     -DCMAKE_BUILD_TYPE=Release
 
 # make -j${nproc}
@@ -70,14 +64,14 @@ CFLAGS=$FLAGS cmake .. \
     -DBUILD_LIBESMUMPS=ON \
     -DBUILD_LIBSCOTCHMETIS=ON \
     -DBUILD_DUMMYSIZES=OFF \
-    -DINSTALL_METIS_HEADERS=OFF
+    -DINSTALL_METIS_HEADERS=OFF \
+    -DENABLE_TESTS=OFF \
+    -DLIBSCOTCHERR=scotcherr \
+    -DLIBPTSCOTCHERR=ptscotcherr
 
 # make -j${nproc}
 make
-
-# make install
-cp lib/libpt*.$dlext $libdir
-cp src/include/pt*.h $includedir
+make install
 
 install_license ../LICENSE_en.txt
 """
@@ -90,7 +84,8 @@ augment_platform_block = """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; exclude=Sys.iswindows)
+platforms = supported_platforms()
+# platforms = supported_platforms(; exclude=Sys.iswindows)
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
 
 # Avoid platforms where the MPI implementation isn't supported

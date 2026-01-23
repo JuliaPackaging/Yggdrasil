@@ -1,8 +1,6 @@
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 6b64a15..08cf2f8 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -68,6 +68,9 @@ option(THREADS "Use multi-threading in Scotch and PT-Scotch" ON)
+@@ -77,6 +77,9 @@
  # Use MPI with threads
  option(MPI_THREAD_MULTIPLE "Use multi-threading with MPI in PT-Scotch" ON)
  
@@ -12,16 +10,9 @@ index 6b64a15..08cf2f8 100644
  # Build PT-Scotch
  option(BUILD_PTSCOTCH "Build PT-Scotch" ON)
  
-diff --git a/src/libscotch/CMakeLists.txt b/src/libscotch/CMakeLists.txt
-index 7e5b479..6285b2f 100644
 --- a/src/libscotch/CMakeLists.txt
 +++ b/src/libscotch/CMakeLists.txt
-@@ -45,24 +45,32 @@
- ##                                                        ##
- ############################################################
- 
-+
- ################
+@@ -49,20 +49,27 @@
  #  dummysizes  #
  ################
  
@@ -38,7 +29,7 @@ index 7e5b479..6285b2f 100644
 -  add_dependencies(ptdummysizes scotch_h)
 -  set_target_properties(ptdummysizes PROPERTIES
 -    COMPILE_FLAGS -DSCOTCH_PTSCOTCH)
--endif(BUILD_PTSCOTCH)
+-endif()
 +if(BUILD_DUMMYSIZES)
 +  add_executable(dummysizes dummysizes.c)
 +  set_target_properties(dummysizes PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
