@@ -4,7 +4,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "llama_cpp"
-version = v"0.0.18"  # fake version number
+version = v"0.0.19"  # fake version number
 
 # url = "https://github.com/ggerganov/llama.cpp"
 # description = "Port of Facebook's LLaMA model in C/C++"
@@ -58,9 +58,10 @@ version = v"0.0.18"  # fake version number
 # 0.0.16          2024-03-10       b2382             https://github.com/ggerganov/llama.cpp/releases/tag/b2382
 # 0.0.17          2024-12-20       b4371             https://github.com/ggerganov/llama.cpp/releases/tag/b4371
 # 0.0.18          2025-12-10       b7347             https://github.com/ggml-org/llama.cpp/releases/tag/b7347
+# 0.0.19          2026-01-22       b7813             https://github.com/ggml-org/llama.cpp/releases/tag/b7813
 
 sources = [
-    GitSource("https://github.com/ggml-org/llama.cpp.git", "b6777218198888ed4b18d839e805f887562a9be4"),
+    GitSource("https://github.com/ggml-org/llama.cpp.git", "51fa458a92d6a3f305f8fd76fc8f702e3e87ddb5"),
 ]
 
 script = raw"""
