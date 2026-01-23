@@ -31,19 +31,6 @@ cmake --install build
 install_license $WORKSPACE/srcdir/libslope/LICENSE
 """
 
-# Workaround for haskey bug in Julia 1.11+: Empty weakdeps from Pkg stdlib
-# The bug is triggered when a stdlib (like Pkg) has weakdeps and gets resolved
-# as part of the dependency graph. The code tries to call haskey(p.deps, name)
-# where p.deps is a Vector{UUID} but the code expects a Dict.
-# By emptying weakdeps, we avoid the buggy code path in Pkg.Operations.fixups_from_projectfile!
-uuidpkg = Base.UUID("44cfe95a-1eb2-52ea-b672-e2afdf69b78f")
-for v in [v"1.11.0", v"1.12.0", v"1.13.0", v"1.14.0"]
-    stdlibs = Pkg.Types.get_last_stdlibs(v)
-    if haskey(stdlibs, uuidpkg)
-        empty!(stdlibs[uuidpkg].weakdeps)
-    end
-end
-
 # `std::optionals()`'s `value()` needs macOS 10.14 SDK
 sources, script = require_macos_sdk("11.3", sources, script)
 
