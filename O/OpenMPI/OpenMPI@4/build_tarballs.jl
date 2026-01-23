@@ -57,8 +57,8 @@ install_license $WORKSPACE/srcdir/openmpi*/LICENSE
 
 augment_platform_block = """
     using Base.BinaryPlatforms
-    $(MPI.augment)
-    augment_platform!(platform::Platform) = augment_mpi!(platform)
+    $(MPI.augment_provider)
+    augment_platform!(platform::Platform) = augment_mpi_provider!(platform)
 """
 
 # These are the platforms we will build for by default, unless further
@@ -66,8 +66,14 @@ augment_platform_block = """
 platforms = filter(p -> !Sys.iswindows(p) && !(arch(p) == "armv6l" && libc(p) == "glibc"), supported_platforms())
 platforms = expand_gfortran_versions(platforms)
 
+function tag_platform!(p)
+    p["mpi"] = "OpenMPI"
+    p["mpi_provider"] = "jll"
+    p
+end
+
 # Add `mpi+openmpi` platform tag
-foreach(p -> (p["mpi"] = "OpenMPI"), platforms)
+foreach(tag_platform!, platforms)
 
 products = [
     # OpenMPI
