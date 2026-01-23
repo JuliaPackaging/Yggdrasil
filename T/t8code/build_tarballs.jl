@@ -22,6 +22,7 @@ git submodule init
 git submodule update
 
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi-constants.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/inttypes.patch"
 
 # Microsoft MPI is still 2.0 but has the required features; remove the strict 3.0 requirement
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi2.patch"
@@ -72,10 +73,8 @@ platforms = supported_platforms(; experimental=false)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
 
-# Avoid platforms where the MPI implementation isn't supported
-# MPItrampoline
-#platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
-#platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
+# Avoid platforms where MPItrampoline isn't supported
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
 # The products that we will ensure are always built
 products = [

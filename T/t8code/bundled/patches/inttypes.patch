@@ -1,0 +1,14 @@
+--- a/src/t8.h
++++ b/src/t8.h
+@@ -29,7 +29,11 @@
+ #ifndef T8_H
+ #define T8_H
+ 
++#ifdef __cplusplus
++#include <cinttypes>
++#else
+ #include <inttypes.h>
++#endif
+ 
+ #include <sc_config.h>
+ #if (defined(T8_ENABLE_MPI) && !defined(SC_ENABLE_MPI)) || (!defined(T8_ENABLE_MPI) && defined(SC_ENABLE_MPI))
