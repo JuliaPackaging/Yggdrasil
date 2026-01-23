@@ -70,6 +70,9 @@ cd $WORKSPACE/srcdir/llama.cpp*
 # remove compiler flags forbidden in BinaryBuilder
 sed -i -e 's/-funsafe-math-optimizations//g' CMakeLists.txt
 
+# Fix missing errno include in gguf.cpp (b7813 CI failure on macOS)
+sed -i '1i#include <cerrno>' ggml/src/gguf.cpp
+
 EXTRA_CMAKE_ARGS=()
 if [[ "${target}" == *-linux-* ]]; then
     # otherwise we have undefined reference to `clock_gettime' when
