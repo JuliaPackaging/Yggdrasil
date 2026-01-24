@@ -10,8 +10,8 @@ version = v"0.2.4"
 
 sources = [
     GitSource(
-        "https://github.com/MIT-Lu-Lab/cuPDLPx.git",
-        "6bb4cc7d9c6876ca0c3da9c3d145152b945ad03f",
+        "https://github.com/ZedongPeng/cuPDLPx.git",
+        "a329b3aff5577bc8a93ba6f69c282461f4210712",
     ),
 ]
 
