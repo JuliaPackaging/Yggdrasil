@@ -38,13 +38,18 @@ sed -i \
     -e '/typedef u_int64_t uint64_t;/d' \
     sqlite-vec.c
 
-# Fix NEON vabdq_s8 return type (armv8)
+# Fix NEON vabdq_s8 typing for armv8
 sed -i \
-    -e 's/int8x16_t diff1 = vabdq_s8/uint8x16_t diff1 = vabdq_s8/' \
-    -e 's/int8x16_t diff2 = vabdq_s8/uint8x16_t diff2 = vabdq_s8/' \
-    -e 's/int8x16_t diff3 = vabdq_s8/uint8x16_t diff3 = vabdq_s8/' \
-    -e 's/int8x16_t diff4 = vabdq_s8/uint8x16_t diff4 = vabdq_s8/' \
-    -e 's/int8x16_t diff = vabdq_s8/uint8x16_t diff = vabdq_s8/' \
+    -e 's/int8x16_t diff1 = vabdq_s8(v1, v2);/int8x16_t diff1 = vreinterpretq_s8_u8(vabdq_s8(v1, v2));/' \
+    -e 's/int8x16_t diff2 = vabdq_s8(v1, v2);/int8x16_t diff2 = vreinterpretq_s8_u8(vabdq_s8(v1, v2));/' \
+    -e 's/int8x16_t diff3 = vabdq_s8(v1, v2);/int8x16_t diff3 = vreinterpretq_s8_u8(vabdq_s8(v1, v2));/' \
+    -e 's/int8x16_t diff4 = vabdq_s8(v1, v2);/int8x16_t diff4 = vreinterpretq_s8_u8(vabdq_s8(v1, v2));/' \
+    -e 's/int8x16_t diff = vabdq_s8(v1, v2);/int8x16_t diff = vreinterpretq_s8_u8(vabdq_s8(v1, v2));/' \
+    -e 's/vpaddlq_u8(diff1)/vpaddlq_u8(vreinterpretq_u8_s8(diff1))/' \
+    -e 's/vpaddlq_u8(diff2)/vpaddlq_u8(vreinterpretq_u8_s8(diff2))/' \
+    -e 's/vpaddlq_u8(diff3)/vpaddlq_u8(vreinterpretq_u8_s8(diff3))/' \
+    -e 's/vpaddlq_u8(diff4)/vpaddlq_u8(vreinterpretq_u8_s8(diff4))/' \
+    -e 's/vpaddlq_u8(diff)/vpaddlq_u8(vreinterpretq_u8_s8(diff))/' \
     sqlite-vec.c
 
 # Set up SIMD flags based on target architecture
