@@ -40,16 +40,16 @@ sed -i \
 
 # Fix NEON vabdq_s8 typing for armv8
 sed -i \
-    -e 's/int8x16_t diff1 = vabdq_s8(v1, v2);/int8x16_t diff1 = vreinterpretq_s8_u8(vabdq_s8(v1, v2));/' \
-    -e 's/int8x16_t diff2 = vabdq_s8(v1, v2);/int8x16_t diff2 = vreinterpretq_s8_u8(vabdq_s8(v1, v2));/' \
-    -e 's/int8x16_t diff3 = vabdq_s8(v1, v2);/int8x16_t diff3 = vreinterpretq_s8_u8(vabdq_s8(v1, v2));/' \
-    -e 's/int8x16_t diff4 = vabdq_s8(v1, v2);/int8x16_t diff4 = vreinterpretq_s8_u8(vabdq_s8(v1, v2));/' \
-    -e 's/int8x16_t diff = vabdq_s8(v1, v2);/int8x16_t diff = vreinterpretq_s8_u8(vabdq_s8(v1, v2));/' \
-    -e 's/vpaddlq_u8(diff1)/vpaddlq_u8(vreinterpretq_u8_s8(diff1))/' \
-    -e 's/vpaddlq_u8(diff2)/vpaddlq_u8(vreinterpretq_u8_s8(diff2))/' \
-    -e 's/vpaddlq_u8(diff3)/vpaddlq_u8(vreinterpretq_u8_s8(diff3))/' \
-    -e 's/vpaddlq_u8(diff4)/vpaddlq_u8(vreinterpretq_u8_s8(diff4))/' \
-    -e 's/vpaddlq_u8(diff)/vpaddlq_u8(vreinterpretq_u8_s8(diff))/' \
+    -e 's/int8x16_t diff1 = vabdq_s8(v1, v2);/uint8x16_t diff1 = (uint8x16_t) vabdq_s8(v1, v2);/' \
+    -e 's/int8x16_t diff2 = vabdq_s8(v1, v2);/uint8x16_t diff2 = (uint8x16_t) vabdq_s8(v1, v2);/' \
+    -e 's/int8x16_t diff3 = vabdq_s8(v1, v2);/uint8x16_t diff3 = (uint8x16_t) vabdq_s8(v1, v2);/' \
+    -e 's/int8x16_t diff4 = vabdq_s8(v1, v2);/uint8x16_t diff4 = (uint8x16_t) vabdq_s8(v1, v2);/' \
+    -e 's/int8x16_t diff = vabdq_s8(v1, v2);/uint8x16_t diff = (uint8x16_t) vabdq_s8(v1, v2);/' \
+    -e 's/acc1 = vaddq_s32(acc1, vpaddlq_u16(vpaddlq_u8(diff1)));/acc1 = vaddq_s32(acc1, vreinterpretq_s32_u32(vpaddlq_u16(vpaddlq_u8(diff1))));/' \
+    -e 's/acc2 = vaddq_s32(acc2, vpaddlq_u16(vpaddlq_u8(diff2)));/acc2 = vaddq_s32(acc2, vreinterpretq_s32_u32(vpaddlq_u16(vpaddlq_u8(diff2))));/' \
+    -e 's/acc3 = vaddq_s32(acc3, vpaddlq_u16(vpaddlq_u8(diff3)));/acc3 = vaddq_s32(acc3, vreinterpretq_s32_u32(vpaddlq_u16(vpaddlq_u8(diff3))));/' \
+    -e 's/acc4 = vaddq_s32(acc4, vpaddlq_u16(vpaddlq_u8(diff4)));/acc4 = vaddq_s32(acc4, vreinterpretq_s32_u32(vpaddlq_u16(vpaddlq_u8(diff4))));/' \
+    -e 's/acc1 = vaddq_s32(acc1, vpaddlq_u16(vpaddlq_u8(diff)));/acc1 = vaddq_s32(acc1, vreinterpretq_s32_u32(vpaddlq_u16(vpaddlq_u8(diff))));/' \
     sqlite-vec.c
 
 # Set up SIMD flags based on target architecture
