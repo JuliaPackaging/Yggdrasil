@@ -9,7 +9,7 @@ version = v"0.1"
 sources = [
     GitSource(
         "https://github.com/cgeoga/sequentialknn",
-        "ef59da866a14ff5a53e27295cfd6f8d9ca2999c3"),
+        "31dec6fc265e5606e7009d972159f966484de066"),
 ]
 
 script = raw"""
