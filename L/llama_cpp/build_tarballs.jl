@@ -85,10 +85,16 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     EXTRA_CMAKE_ARGS+=(-DGGML_METAL=OFF)
 fi
 
+# Enable Metal on Apple Silicon
+if [[ "${target}" == aarch64-apple-darwin* ]]; then
+    EXTRA_CMAKE_ARGS+=(-DGGML_METAL=ON)
+fi
+
 cmake -Bbuild -GNinja \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=RELEASE \
+    -DCMAKE_SKIP_RPATH=ON \
     -DBUILD_SHARED_LIBS=ON \
     -DLLAMA_BUILD_TESTS=OFF \
     -DLLAMA_BUILD_EXAMPLES=ON \
