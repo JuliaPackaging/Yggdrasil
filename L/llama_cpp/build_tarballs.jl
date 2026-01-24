@@ -72,6 +72,8 @@ sed -i -e 's/-funsafe-math-optimizations//g' CMakeLists.txt
 
 # Fix missing errno include in gguf.cpp (b7813 CI failure on macOS)
 sed -i '1i#include <cerrno>' ggml/src/gguf.cpp
+# Guard Windows thread power throttling API usage for mingw/older SDKs
+sed -i -e 's/#if _WIN32_WINNT >= 0x0602/#if _WIN32_WINNT >= 0x0602 \&\& defined(THREAD_POWER_THROTTLING_CURRENT_VERSION)/' ggml/src/ggml-cpu/ggml-cpu.c
 
 EXTRA_CMAKE_ARGS=()
 if [[ "${target}" == *-linux-* ]]; then
