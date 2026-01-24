@@ -74,6 +74,9 @@ sed -i -e 's/-funsafe-math-optimizations//g' CMakeLists.txt
 sed -i '1i#include <cerrno>' ggml/src/gguf.cpp
 # Guard Windows thread power throttling API usage for mingw/older SDKs
 sed -i -e 's/#if _WIN32_WINNT >= 0x0602/#if _WIN32_WINNT >= 0x0602 \&\& defined(THREAD_POWER_THROTTLING_CURRENT_VERSION)/' ggml/src/ggml-cpu/ggml-cpu.c
+# Avoid forcing -march on riscv64 (BinaryBuilder disallows explicit -march)
+sed -i -e 's/list(APPEND ARCH_FLAGS \"-march=${MARCH_STR}\" -mabi=lp64d)/list(APPEND ARCH_FLAGS -mabi=lp64d)/' ggml/src/ggml-cpu/CMakeLists.txt
+sed -i -e 's/list(APPEND ARCH_FLAGS -march=rv64gc_v -mabi=lp64d)/list(APPEND ARCH_FLAGS -mabi=lp64d)/' ggml/src/ggml-cpu/CMakeLists.txt
 
 EXTRA_CMAKE_ARGS=()
 if [[ "${target}" == *-linux-* ]]; then
