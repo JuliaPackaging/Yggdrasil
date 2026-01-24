@@ -31,6 +31,22 @@ cp sqlite-amalgamation-3450300/sqlite3ext.h vendor/
 
 # sqlite-vec.h is already generated in the amalgamation release
 
+# Fix invalid u_int typedefs in amalgamation (breaks musl)
+sed -i \
+    -e '/typedef u_int8_t uint8_t;/d' \
+    -e '/typedef u_int16_t uint16_t;/d' \
+    -e '/typedef u_int64_t uint64_t;/d' \
+    sqlite-vec.c
+
+# Fix NEON vabdq_s8 return type (armv8)
+sed -i \
+    -e 's/int8x16_t diff1 = vabdq_s8/uint8x16_t diff1 = vabdq_s8/' \
+    -e 's/int8x16_t diff2 = vabdq_s8/uint8x16_t diff2 = vabdq_s8/' \
+    -e 's/int8x16_t diff3 = vabdq_s8/uint8x16_t diff3 = vabdq_s8/' \
+    -e 's/int8x16_t diff4 = vabdq_s8/uint8x16_t diff4 = vabdq_s8/' \
+    -e 's/int8x16_t diff = vabdq_s8/uint8x16_t diff = vabdq_s8/' \
+    sqlite-vec.c
+
 # Set up SIMD flags based on target architecture
 SIMD_FLAGS=""
 if [[ "${target}" == x86_64-* ]]; then
@@ -49,6 +65,7 @@ if [[ "${target}" == *-mingw* ]]; then
         -Wall -Wextra \
         -Ivendor/ \
         -O3 \
+        -std=gnu99 \
         ${SIMD_FLAGS} \
         sqlite-vec.c \
         -o dist/vec0.${dlext}
@@ -59,6 +76,7 @@ else
         -Wall -Wextra \
         -Ivendor/ \
         -O3 \
+        -std=gnu99 \
         ${SIMD_FLAGS} \
         sqlite-vec.c \
         -lm \
@@ -66,7 +84,7 @@ else
 fi
 
 # Build the static library
-${CC} -Ivendor/ ${SIMD_FLAGS} -DSQLITE_CORE -DSQLITE_VEC_STATIC \
+${CC} -Ivendor/ ${SIMD_FLAGS} -DSQLITE_CORE -DSQLITE_VEC_STATIC -std=gnu99 \
     -O3 -c sqlite-vec.c -o dist/sqlite-vec.o
 ar rcs dist/libsqlite_vec.a dist/sqlite-vec.o
 
