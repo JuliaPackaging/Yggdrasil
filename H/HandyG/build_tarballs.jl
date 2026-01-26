@@ -24,13 +24,13 @@ if [[ "${target}" != *mingw* ]]; then
 fi
 
 for f in globals ieps utils shuffle maths_functions mpl_module gpl_module handyg_capi; do
-  ${FC} ${FFLAGS} -J build -I build -c src/${f}.f90 -o build/${f}.o
+  gfortran ${FFLAGS} -J build -I build -c src/${f}.f90 -o build/${f}.o
 done
 
 if [[ "${target}" == *apple* ]]; then
-  ${FC} -dynamiclib -o libhandyg.${dlext} build/*.o
+  gfortran -dynamiclib -o libhandyg.${dlext} build/*.o
 else
-  ${FC} -shared -o libhandyg.${dlext} build/*.o
+  gfortran -shared -o libhandyg.${dlext} build/*.o
 fi
 
 install -Dvm 755 libhandyg.${dlext} ${libdir}/libhandyg.${dlext}
