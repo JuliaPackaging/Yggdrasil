@@ -1,5 +1,5 @@
 module handyg_capi
-  use, intrinsic :: iso_c_binding, only: c_ptr, c_int, c_int8_t, c_f_pointer
+  use, intrinsic :: iso_c_binding, only: c_ptr, c_int, c_signed_char, c_f_pointer
   use globals, only: prec, zero, set_options
   use ieps, only: inum, di0
   use gpl_module, only: G_flat, G_condensed, clearcache
@@ -49,7 +49,7 @@ contains
   subroutine set_inum_i0(out, z, i0)
     type(inum), intent(out) :: out
     complex(kind=prec), intent(in) :: z
-    integer(c_int8_t), intent(in) :: i0
+    integer(c_signed_char), intent(in) :: i0
     out%c = z
     out%i0 = int(i0, kind=1)
     if (abs(aimag(z)) > zero) out%i0 = int(sign(1._prec, aimag(z)), kind=1)
@@ -58,7 +58,7 @@ contains
   subroutine set_inum_real_i0(out, x, i0)
     type(inum), intent(out) :: out
     real(kind=prec), intent(in) :: x
-    integer(c_int8_t), intent(in) :: i0
+    integer(c_signed_char), intent(in) :: i0
     out%c = cmplx(x, 0._prec, kind=prec)
     out%i0 = int(i0, kind=1)
   end subroutine set_inum_real_i0
@@ -120,10 +120,10 @@ contains
   subroutine handyg_g_flat_i0(out_ptr, z_ptr, z_i0_ptr, n, y_ptr, y_i0) bind(C, name="handyg_g_flat_i0")
     type(c_ptr), value :: out_ptr, z_ptr, z_i0_ptr, y_ptr
     integer(c_int), value :: n
-    integer(c_int8_t), value :: y_i0
+    integer(c_signed_char), value :: y_i0
     complex(kind=prec), pointer :: out
     complex(kind=prec), pointer :: z(:)
-    integer(c_int8_t), pointer :: z_i0(:)
+    integer(c_signed_char), pointer :: z_i0(:)
     complex(kind=prec), pointer :: y
     type(inum) :: z_inum(n)
     type(inum) :: y_inum
@@ -258,11 +258,11 @@ contains
   subroutine handyg_g_condensed_i0(out_ptr, m_ptr, z_ptr, z_i0_ptr, k, y_ptr, y_i0) bind(C, name="handyg_g_condensed_i0")
     type(c_ptr), value :: out_ptr, m_ptr, z_ptr, z_i0_ptr, y_ptr
     integer(c_int), value :: k
-    integer(c_int8_t), value :: y_i0
+    integer(c_signed_char), value :: y_i0
     complex(kind=prec), pointer :: out
     integer(c_int), pointer :: m(:)
     complex(kind=prec), pointer :: z(:)
-    integer(c_int8_t), pointer :: z_i0(:)
+    integer(c_signed_char), pointer :: z_i0(:)
     complex(kind=prec), pointer :: y
     type(inum) :: z_inum(k)
     type(inum) :: y_inum
@@ -352,10 +352,10 @@ contains
     integer(c_int), value :: depth_max, ncols
     complex(kind=prec), pointer :: out(:)
     complex(kind=prec), pointer :: z(:, :)
-    integer(c_int8_t), pointer :: z_i0(:, :)
+    integer(c_signed_char), pointer :: z_i0(:, :)
     integer(c_int), pointer :: len(:)
     complex(kind=prec), pointer :: y(:)
-    integer(c_int8_t), pointer :: y_i0(:)
+    integer(c_signed_char), pointer :: y_i0(:)
     type(inum) :: z_inum(depth_max)
     type(inum) :: y_inum
     integer :: i, j, n
@@ -509,10 +509,10 @@ contains
     complex(kind=prec), pointer :: out(:)
     integer(c_int), pointer :: m(:, :)
     complex(kind=prec), pointer :: z(:, :)
-    integer(c_int8_t), pointer :: z_i0(:, :)
+    integer(c_signed_char), pointer :: z_i0(:, :)
     integer(c_int), pointer :: len(:)
     complex(kind=prec), pointer :: y(:)
-    integer(c_int8_t), pointer :: y_i0(:)
+    integer(c_signed_char), pointer :: y_i0(:)
     type(inum) :: z_inum(depth_max)
     type(inum) :: y_inum
     integer :: i, j, k
@@ -540,4 +540,3 @@ contains
   end subroutine handyg_g_condensed_batch_i0
 
 end module handyg_capi
-
