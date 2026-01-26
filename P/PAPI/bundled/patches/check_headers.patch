@@ -1,0 +1,13 @@
+diff --git a/src/configure.in b/src/configure.in
+index 6ea7250ce..bad203edd 100644
+--- a/src/configure.in
++++ b/src/configure.in
+@@ -2004,7 +2004,7 @@ for comp in $components; do
+   fi
+   if test "${subcomp}" != "perf_event"; then
+     subcomp_preset_inc=components/${subcomp}/papi_${subcomp}_presets.h
+-    AC_CHECK_FILE(${subcomp_preset_inc}, [`echo "#include \"${subcomp_preset_inc}\"" >> components_config.h`])
++    AC_CHECK_HEADER(${subcomp_preset_inc}, [`echo "#include \"${subcomp_preset_inc}\"" >> components_config.h`])
+   fi
+ done
+ echo "" >> components_config.h

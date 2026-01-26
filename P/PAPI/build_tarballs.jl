@@ -7,11 +7,11 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "PAPI"
-version = v"7.1.0"
+version = v"7.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/icl-utk-edu/papi.git", "3ce9001dff49e1b6b1653ffb429808795f71a0bd"),
+    GitSource("https://github.com/icl-utk-edu/papi.git", "72a3124d048dc5c89eb3f00c9f2866f4492b5383"),
     DirectorySource("./bundled")
 ]
 
@@ -45,6 +45,8 @@ elif [[ ${target} == x86_64-* || ${target} == i686-* ]]; then
 else
   CPU=arm
 fi
+
+autoreconf -vi
 
 echo "Building components: ${COMPONENTS[@]}"
 export CFLAGS
