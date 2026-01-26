@@ -7,7 +7,7 @@ version = v"5.15.3"
 
 # Collection of sources required to build qt5
 sources = [
-    ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$(version)/submodules/qtbase-everywhere-opensource-src-$(version).tar.xz",
+    ArchiveSource("https://download.qt.io/archive/qt/$(version.major).$(version.minor)/$(version)/submodules/qtbase-everywhere-opensource-src-$(version).tar.xz",
                   "26394ec9375d52c1592bd7b689b1619c6b8dbe9b6f91fdd5c355589787f3a0b6"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                   "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
