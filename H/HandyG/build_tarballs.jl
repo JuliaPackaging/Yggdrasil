@@ -18,7 +18,7 @@ cp ${WORKSPACE}/srcdir/bundled/handyg_capi.f90 src/handyg_capi.f90
 
 mkdir -p build
 
-FFLAGS="-cpp -std=f2008 -O3 -ffree-line-length-0"
+FFLAGS="-cpp -O3"
 if [[ "${target}" != *mingw* ]]; then
   FFLAGS="${FFLAGS} -fPIC"
 fi

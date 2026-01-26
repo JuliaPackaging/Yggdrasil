@@ -347,7 +347,8 @@ contains
     end do
   end subroutine handyg_g_flat_batch_rc
 
-  subroutine handyg_g_flat_batch_i0(out_ptr, z_ptr, z_i0_ptr, depth_max, ncols, len_ptr, y_ptr, y_i0_ptr) bind(C, name="handyg_g_flat_batch_i0")
+  subroutine handyg_g_flat_batch_i0(out_ptr, z_ptr, z_i0_ptr, depth_max, ncols, &
+                                    len_ptr, y_ptr, y_i0_ptr) bind(C, name="handyg_g_flat_batch_i0")
     type(c_ptr), value :: out_ptr, z_ptr, z_i0_ptr, len_ptr, y_ptr, y_i0_ptr
     integer(c_int), value :: depth_max, ncols
     complex(kind=prec), pointer :: out(:)
@@ -439,7 +440,8 @@ contains
     end do
   end subroutine handyg_g_superflat_batch_r
 
-  subroutine handyg_g_condensed_batch_cc(out_ptr, m_ptr, z_ptr, depth_max, ncols, len_ptr, y_ptr) bind(C, name="handyg_g_condensed_batch_cc")
+  subroutine handyg_g_condensed_batch_cc(out_ptr, m_ptr, z_ptr, depth_max, ncols, &
+                                         len_ptr, y_ptr) bind(C, name="handyg_g_condensed_batch_cc")
     type(c_ptr), value :: out_ptr, m_ptr, z_ptr, len_ptr, y_ptr
     integer(c_int), value :: depth_max, ncols
     complex(kind=prec), pointer :: out(:)
@@ -471,7 +473,8 @@ contains
     end do
   end subroutine handyg_g_condensed_batch_cc
 
-  subroutine handyg_g_condensed_batch_rc(out_ptr, m_ptr, z_ptr, depth_max, ncols, len_ptr, y_ptr) bind(C, name="handyg_g_condensed_batch_rc")
+  subroutine handyg_g_condensed_batch_rc(out_ptr, m_ptr, z_ptr, depth_max, ncols, &
+                                         len_ptr, y_ptr) bind(C, name="handyg_g_condensed_batch_rc")
     type(c_ptr), value :: out_ptr, m_ptr, z_ptr, len_ptr, y_ptr
     integer(c_int), value :: depth_max, ncols
     complex(kind=prec), pointer :: out(:)
@@ -503,7 +506,8 @@ contains
     end do
   end subroutine handyg_g_condensed_batch_rc
 
-  subroutine handyg_g_condensed_batch_i0(out_ptr, m_ptr, z_ptr, z_i0_ptr, depth_max, ncols, len_ptr, y_ptr, y_i0_ptr) bind(C, name="handyg_g_condensed_batch_i0")
+  subroutine handyg_g_condensed_batch_i0(out_ptr, m_ptr, z_ptr, z_i0_ptr, depth_max, &
+                                         ncols, len_ptr, y_ptr, y_i0_ptr) bind(C, name="handyg_g_condensed_batch_i0")
     type(c_ptr), value :: out_ptr, m_ptr, z_ptr, z_i0_ptr, len_ptr, y_ptr, y_i0_ptr
     integer(c_int), value :: depth_max, ncols
     complex(kind=prec), pointer :: out(:)
