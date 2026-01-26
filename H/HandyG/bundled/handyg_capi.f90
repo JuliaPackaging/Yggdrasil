@@ -2,12 +2,18 @@ module handyg_capi
   use, intrinsic :: iso_c_binding, only: c_ptr, c_int, c_signed_char, c_f_pointer
   use globals, only: prec, zero, set_options
   use ieps, only: inum, di0
-  use gpl_module, only: G_flat, G_condensed, clearcache
+  use gpl_module, only: G_flat, G_condensed, clear_g_cache
+#ifndef NOCACHE
+  use maths_functions, only: clear_poly_cache
+#endif
   implicit none
 contains
 
   subroutine handyg_clearcache() bind(C, name="handyg_clearcache")
-    call clearcache()
+#ifndef NOCACHE
+    call clear_poly_cache()
+#endif
+    call clear_g_cache()
   end subroutine handyg_clearcache
 
   subroutine handyg_set_mpldelta(val_ptr) bind(C, name="handyg_set_mpldelta")
