@@ -12,6 +12,21 @@ sources = [
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/handyg
+# GitSource may introduce an extra directory level; locate the actual source root.
+if [[ ! -d src ]]; then
+  for d in ${WORKSPACE}/srcdir/handyg/*; do
+    if [[ -d "${d}/src" ]]; then
+      cd "${d}"
+      break
+    fi
+  done
+fi
+if [[ ! -d src ]]; then
+  echo "ERROR: Could not find handyG source directory (expected src/)."
+  echo "PWD=$(pwd)"
+  ls -la
+  exit 1
+fi
 
 # Add stable C-ABI entrypoints used by HandyG.jl
 cp ${WORKSPACE}/srcdir/bundled/handyg_capi.f90 src/handyg_capi.f90
