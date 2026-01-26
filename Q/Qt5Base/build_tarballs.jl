@@ -175,7 +175,7 @@ products_macos = [
 ]
 
 # We must use the same version of LLVM for the build toolchain and LLVMCompilerRT_jll
-llvm_version = v"13.0.1"
+llvm_version = "13.0.1"
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
