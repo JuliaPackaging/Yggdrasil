@@ -53,8 +53,8 @@ if [[ "$target" == *mingw* ]]; then
         # Help link to find BZip2
         cmake_extra_args+=("-DBUILD_BZip2:BOOL=OFF")
         cmake_extra_args+=("-DCMAKE_PREFIX_PATH=${prefix}")
-        cmake_extra_args+=("-DCMAKE_EXE_LINKER_FLAGS=-lbz2")
-        cmake_extra_args+=("-DCMAKE_SHARED_LINKER_FLAGS=-lbz2")
+        cmake_extra_args+=("-DCMAKE_EXE_LINKER_FLAGS=-L${libdir} -lbz2")
+        cmake_extra_args+=("-DCMAKE_SHARED_LINKER_FLAGS=-L${libdir} -lbz2")
     fi
 fi
 
