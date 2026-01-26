@@ -1,7 +1,8 @@
 using BinaryBuilder
 
 name = "HandyG"
-version = v"0.2.0b"
+# Upstream tag is `v0.2.0b` (beta), but BinaryBuilder requires `major.minor.patch`.
+version = v"0.2.0"
 
 sources = [
     GitSource("https://gitlab.com/mule-tools/handyG.git",
@@ -51,4 +52,3 @@ dependencies = [
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
-
