@@ -50,8 +50,7 @@ if [[ "$target" == *mingw* ]]; then
     export CXXFLAGS="${CXXFLAGS} -D_USE_MATH_DEFINES"
 
     if [[ "$target" == i686-w64-mingw32* ]]; then
-        # BZip2 must be linked after object files
-        cmake_extra_args+=("-DCMAKE_PREFIX_PATH=${prefix}")
+        # BZip2 must be linked after object files on i686 Windows
         cmake_extra_args+=("-DCMAKE_CXX_STANDARD_LIBRARIES=-lbz2")
     fi
 fi
@@ -60,7 +59,6 @@ cmake -S. -Bbuild \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DBUILD_DEPS:BOOL=ON \
-    -DBUILD_BZip2:BOOL=OFF \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_TESTING:BOOL=OFF \
     -DBUILD_EXAMPLES:BOOL=OFF \
@@ -71,12 +69,19 @@ cmake -S. -Bbuild \
     -DUSE_GLPK:BOOL=OFF \
     "${cmake_extra_args[@]}"
 
+# Add library path for internal BZip2 on i686 Windows (after cmake config creates directories)
+if [[ "$target" == i686-w64-mingw32* ]]; then
+    if [ -d "build/_deps/bzip2-build" ]; then
+        export LDFLAGS="${LDFLAGS} -Lbuild/_deps/bzip2-build"
+    fi
+fi
+
 # Remove target-specific -march flags added by Abseil
 # See: Yggdrasil/AGENTS.md (Unsupported Build Flags section)
 if [ -d "build/_deps/abseil-cpp-src" ]; then
     echo "Patching Abseil CMake files to remove -march flags..."
-    find build/_deps/abseil-cpp-src -name "*.cmake" -type f -exec sed -i 's/-march[^ ]*//g' {} +
-    find build/_deps/abseil-cpp-src -name "CMakeLists.txt" -type f -exec sed -i 's/-march[^ ]*//g' {} +
+    find build/_deps/abseil-cpp-src -name "*.cmake" -type f -exec sed -i 's/-march[^ ]*//g' {} + 2>/dev/null || true
+    find build/_deps/abseil-cpp-src -name "CMakeLists.txt" -type f -exec sed -i 's/-march[^ ]*//g' {} + 2>/dev/null || true
     find build/_deps/abseil-cpp-build -name "*.cmake" -type f -exec sed -i 's/-march[^ ]*//g' {} + 2>/dev/null || true
 
     # armv6l cross-compilation: disable randen_hwaes (ARM AES instructions not available).
@@ -197,8 +202,6 @@ dependencies = [
     # OR-Tools deps require CMake >= 3.25
     # See: https://github.com/google/or-tools/blob/v9.15/cmake/dependencies/CMakeLists.txt#L16
     HostBuildDependency(PackageSpec(; name = "CMake_jll", version = "3.28.1")),
-    # Provide BZip2  to work around linking issue on Windows 32-bit
-    Dependency("Bzip2_jll"; compat = "1.0.9"),
     # OR-Tools needs a dlopen-compatible shim on Windows
     # See: https://github.com/google/or-tools/issues/4073
     Dependency("dlfcn_win32_jll"; platforms = filter(Sys.iswindows, platforms)),
