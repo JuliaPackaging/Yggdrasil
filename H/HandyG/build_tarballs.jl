@@ -33,6 +33,10 @@ cp ${WORKSPACE}/srcdir/bundled/handyg_capi.f90 src/handyg_capi.f90
 
 mkdir -p build
 
+# Some platforms (e.g. i686, armv6l/armv7l) do not support INTEGER(16).
+# handyG uses it in `utils.f90` for `binom()`, but 64-bit is sufficient here.
+sed -i 's/integer(16) :: num, den/integer(kind=selected_int_kind(18)) :: num, den/' src/utils.f90
+
 FFLAGS="-cpp -O3"
 if [[ "${target}" != *mingw* ]]; then
   FFLAGS="${FFLAGS} -fPIC"
