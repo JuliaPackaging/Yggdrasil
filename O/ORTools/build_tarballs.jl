@@ -43,19 +43,10 @@ export RANLIB=$HOSTRANLIB
 export READELF=$HOSTREADELF
 export STRIP=$HOSTSTRIP
 
-cmake_extra_args=()
 if [[ "$target" == *mingw* ]]; then
     # MinGW doesn't expose M_PI unless _USE_MATH_DEFINES is set
     # See: https://learn.microsoft.com/en-us/cpp/c-runtime-library/math-constants?view=msvc-170
     export CXXFLAGS="${CXXFLAGS} -D_USE_MATH_DEFINES"
-
-    if [[ "$target" == i686-w64-mingw32* ]]; then
-        # Help link to find BZip2
-        cmake_extra_args+=("-DBUILD_BZip2:BOOL=OFF")
-        cmake_extra_args+=("-DCMAKE_PREFIX_PATH=${prefix}")
-        cmake_extra_args+=("-DCMAKE_EXE_LINKER_FLAGS=-L${libdir} -lbz2")
-        cmake_extra_args+=("-DCMAKE_SHARED_LINKER_FLAGS=-L${libdir} -lbz2")
-    fi
 fi
 
 cmake -S. -Bbuild \
@@ -69,8 +60,7 @@ cmake -S. -Bbuild \
     -DUSE_SCIP:BOOL=OFF \
     -DUSE_HIGHS:BOOL=OFF \
     -DUSE_COINOR:BOOL=OFF \
-    -DUSE_GLPK:BOOL=OFF \
-    "${cmake_extra_args[@]}"
+    -DUSE_GLPK:BOOL=OFF
 
 # Remove target-specific -march flags added by Abseil
 # See: Yggdrasil/AGENTS.md (Unsupported Build Flags section)
@@ -139,6 +129,8 @@ install -Dvm 644 ortools/util/optional_boolean.proto ${prefix}/include/ortools/u
 platforms = supported_platforms()
 # Disable RISC-V due to protoc segfault during .proto generation
 platforms = filter(p -> arch(p) != "riscv64", platforms)
+# Disable i686 Windows due to BZip2 linking issue
+platforms = filter(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -198,8 +190,6 @@ dependencies = [
     # OR-Tools deps require CMake >= 3.25
     # See: https://github.com/google/or-tools/blob/v9.15/cmake/dependencies/CMakeLists.txt#L16
     HostBuildDependency(PackageSpec(; name = "CMake_jll", version = "3.28.1")),
-    # Provide BZip2 to work around linking issue on Windows 32-bit
-    Dependency("Bzip2_jll"; compat = "1.0.9", platforms = filter(p -> arch(p) == "i686" && Sys.iswindows(p), platforms)),
     # OR-Tools needs a dlopen-compatible shim on Windows
     # See: https://github.com/google/or-tools/issues/4073
     Dependency("dlfcn_win32_jll"; platforms = filter(Sys.iswindows, platforms)),
