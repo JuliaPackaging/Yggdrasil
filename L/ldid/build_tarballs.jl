@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "ldid"
-version = v"2.1.3" # <-- Fake version to build for new platforms
+version = v"2.1.4" # <-- Fake version to build with new OpenSSL compat bounds
 
 # Collection of sources required to build ldid
 sources = [
@@ -22,6 +22,10 @@ make INSTALLPREFIX=${prefix} install
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(filter(!Sys.iswindows, supported_platforms()))
 
+# Disable aarch64-freebsd until libplist can be built for it.
+# X-ref: https://github.com/JuliaPackaging/Yggdrasil/pull/9702
+platforms = filter(p -> !(os(p) == "freebsd" && arch(p) == "aarch64"), platforms)
+
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("ldid", :ldid),
@@ -30,7 +34,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("libplist_jll"),
-    Dependency("OpenSSL_jll"; compat="1.1.13"),
+    Dependency("OpenSSL_jll"; compat="3.0.15"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

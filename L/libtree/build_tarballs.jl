@@ -1,14 +1,14 @@
 using BinaryBuilder, Pkg
 
 name = "libtree"
-version = v"3.1.0"
+version = v"3.1.1"
 
 sources = [
-    ArchiveSource("https://github.com/haampie/libtree/archive/refs/tags/v$(version).tar.gz", "8057edb2dd77b0acf6ceab6868741993979dccd41fc41a58bde743f11666d781")
+    GitSource("https://github.com/haampie/libtree.git", "1521dfe063284551b955958fd7deb3426fd75d84")
 ]
 
 script = raw"""
-cd $WORKSPACE/srcdir/libtree-*/
+cd $WORKSPACE/srcdir/libtree*/
 make CFLAGS="-Os -fwhole-program" LDFLAGS="-Wl,-s" "PREFIX=$prefix" install
 """
 

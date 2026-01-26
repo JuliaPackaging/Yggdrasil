@@ -32,8 +32,8 @@ agent() = Dict(
 plugins() = Pair{String, Union{Nothing, Dict}}[
     "JuliaCI/julia#v1" => Dict(
         "persist_depot_dirs" => "packages,artifacts,compiled",
-        "version" => "1.7",
-        "depot_hard_size_limit" => string(150 << 30), # 150 GiB
+        "version" => "1.12.4",
+        "artifacts_size_limit" => string(120 << 30), # 120 GiB
     ),
     "JuliaCI/merge-commit" => nothing
 ]
@@ -41,6 +41,7 @@ plugins() = Pair{String, Union{Nothing, Dict}}[
 env(NAME, PROJECT) = Dict(
     "JULIA_PKG_SERVER" => "us-east.pkg.julialang.org",
     "JULIA_PKG_SERVER_REGISTRY_PREFERENCE" => "eager",
+    "JULIA_REGISTRYCI_AUTOMERGE" => "true",
     "NAME" => NAME,
     "PROJECT" => PROJECT,
     "YGGDRASIL" => "true",
@@ -55,8 +56,7 @@ group_step(name, steps) = Dict(:group => name, :steps => steps)
 
 function build_step(NAME, PLATFORM, PROJECT)
     script = raw"""
-    # Don't share secrets with build_tarballs.jl
-    BUILDKITE_PLUGIN_CRYPTIC_BASE64_SIGNED_JOB_ID_SECRET="" AWS_SECRET_ACCESS_KEY="" .buildkite/build.sh
+    .buildkite/build.sh
     """
 
     build_plugins = plugins()
@@ -94,17 +94,19 @@ function build_step(NAME, PLATFORM, PROJECT)
         :plugins => build_plugins,
         :timeout_in_minutes => 240,
         :priority => -1,
-        :concurrency => 12,
+        # Reduce concurrency for Reactant builds, which are extremely intensive and grind
+        # the system to a halt when run with several parallel jobs.
+        :concurrency => NAME == "Reactant" ? 8 : 12,
         :concurrency_group => "yggdrasil/build/$NAME", # Could use ENV["BUILDKITE_JOB_ID"]
         :commands => [script],
         :env => build_env,
         :artifacts => [
-            "**/products/$NAME*.tar.gz"
+            "**/products/$NAME*.tar.*"
         ]
     )
 end
 
-function register_step(NAME, PROJECT, SKIP_BUILD)
+function register_step(NAME, PROJECT, SKIP_BUILD, NUM_PLATFORMS)
     script = raw"""
     BUILDKITE_PLUGIN_CRYPTIC_BASE64_SIGNED_JOB_ID_SECRET="" .buildkite/register.sh
     """
@@ -120,6 +122,14 @@ function register_step(NAME, PROJECT, SKIP_BUILD)
     register_env = env(NAME, PROJECT)
     if SKIP_BUILD
         register_env["SKIP_BUILD"] = "true"
+    end
+    # For packages with a large number of platforms, trying to upload several release
+    # artifacts at once with `ghr` results in exceeding GitHub's API secondary rate limits.
+    # Ref: <https://github.com/JuliaPackaging/BinaryBuilder.jl/pull/1334>.
+    if NUM_PLATFORMS > 80
+        concurrency = 4
+        @info "Reducing ghr concurrency" NAME NUM_PLATFORMS concurrency
+        register_env["BINARYBUILDER_GHR_CONCURRENCY"] = string(concurrency)
     end
 
     Dict(

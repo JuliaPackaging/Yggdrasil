@@ -1,46 +1,34 @@
 using BinaryBuilder
 
 name = "IntelOpenMP"
-version = v"2024.1.0"
+version = v"2025.2.0"
 
 sources = [
     # Main OpenMP files
-    ArchiveSource("https://anaconda.org/intel/intel-openmp/2024.1.0/download/win-32/intel-openmp-2024.1.0-intel_964.tar.bz2",
-                  "fff7a16f808a1aa5f4a9aa05ca9e28045895b0bcf0a9b9a64cfeed70f7ca647f"; unpack_target="i686-w64-mingw32"),
-    ArchiveSource("https://anaconda.org/intel/intel-openmp/2024.1.0/download/win-64/intel-openmp-2024.1.0-intel_964.tar.bz2",
-                  "862eec5374464534149ba203f061abd3bb69a1240e7257d560f2a86888fb780e"; unpack_target="x86_64-w64-mingw32"),
-    ArchiveSource("https://anaconda.org/intel/intel-openmp/2024.1.0/download/linux-32/intel-openmp-2024.1.0-intel_963.tar.bz2",
-                  "46185591a72a0d959e1ac5333bc749f97c86c3f03785f2053cdafd7bd37d92ec"; unpack_target="i686-linux-gnu"),
-    ArchiveSource("https://anaconda.org/intel/intel-openmp/2024.1.0/download/linux-64/intel-openmp-2024.1.0-intel_963.tar.bz2",
-                  "6ab48343ca3c15768c33ca50ba2f0266e8d300b6755a685ae1aa5149fbe008e9"; unpack_target="x86_64-linux-gnu"),
-
-    # Archive for Windows linker file, only available for win64 currently
-    ArchiveSource("https://anaconda.org/intel/dpcpp_impl_win-64/2024.1.0/download/win-64/dpcpp_impl_win-64-2024.1.0-intel_964.tar.bz2",
-                  "3c72809c39e6b1a97a0b4e234705c33b37b0ca0dc4315d0b47f16fd878f7164c"; unpack_target="x86_64-w64-mingw32-dpcpp"),
+    # Files from the PyPi package: https://pypi.org/project/intel-openmp/#files
+    FileSource("https://files.pythonhosted.org/packages/bc/37/bab8e9283407798d8782f4d9b374436e51c7a297e1b6dc05073df550c010/intel_openmp-2025.2.0-py2.py3-none-win_amd64.whl",
+               "1710356ae0db744ca028ed380759a2007548ad1819f743be9d675603cb127377"; filename="intel_openmp-x86_64-w64-mingw32.whl"),
+    FileSource("https://files.pythonhosted.org/packages/39/17/45e67730f8757a00d665095338b21ca04890d2a3d52a44d725fb5393a044/intel_openmp-2025.2.0-py2.py3-none-manylinux_2_28_x86_64.whl",
+               "57f52a5f374e70dce56591ab23bf274252a68128d5b8de8f897f3683f65374c8"; filename="intel_openmp-x86_64-linux-gnu.whl"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-mkdir -p "${libdir}"
-if [[ ${target} == *i686-w64-mingw* ]]; then
-    mv ${target}/bin32/* "${libdir}/."
-fi
+unzip -d intel_openmp-$target intel_openmp-$target.whl
+
 if [[ ${target} == *x86_64-w64-mingw* ]]; then
-    mv ${target}/Library/bin/* "${libdir}/."
+    install -Dvm 755 intel_openmp-${target}/intel_openmp-*.data/data/Library/bin/* -t "${libdir}"
 
     # These import libraries go inside the actual lib folder, not the bin folder with the DLLs
-    mkdir -p $WORKSPACE/destdir/lib
-    cp ${target}-dpcpp/Library/lib/libiomp5md.lib "$WORKSPACE/destdir/lib/"
-    cp ${target}-dpcpp/Library/lib/libiompstubs5md.lib "$WORKSPACE/destdir/lib/"
-fi
-if [[ ${target} == *i686-linux-gnu* ]]; then
-    mv ${target}/lib32/* "${libdir}/."
+    install -Dv intel_openmp-${target}/intel_openmp-*.data/data/Library/lib/libiomp5md.lib -t "${prefix}/lib/"
+    install -Dv intel_openmp-${target}/intel_openmp-*.data/data/Library/lib/libiompstubs5md.lib -t "${prefix}/lib/"
 fi
 if [[ ${target} == *x86_64-linux-gnu* ]]; then
-    mv ${target}/lib/* "${libdir}/."
+    install -Dvm 755 intel_openmp-${target}/intel_openmp-*.data/data/lib/*.${dlext} -t "${libdir}"
 fi
-install_license ${target}/info/licenses/*.txt
+install_license intel_openmp-${target}/intel_openmp-*.dist-info/LICENSE.txt
+install_license intel_openmp-${target}/intel_openmp-*.data/data/share/doc/compiler/licensing/openmp/third-party-programs.txt
 """
 
 # The products that we will ensure are always built
@@ -50,14 +38,11 @@ products = [
 
 platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
-    Platform("i686", "linux"; libc="glibc"),
-    Platform("i686", "windows"),
     Platform("x86_64", "windows"),
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
-]
+dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; lazy_artifacts=true, julia_compat="1.6")

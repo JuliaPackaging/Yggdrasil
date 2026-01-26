@@ -8,7 +8,7 @@ version = v"2"
 # Collection of sources required to build libuv
 sources = [
     GitSource("https://github.com/JuliaLang/libuv.git",
-              "ca3a5a431a1c37859b6508e6b2a288092337029a"),
+              "b21d6d84e46f6c97ecbc8e4e8a8ea6ad98049ea8"),
 ]
 
 # Bash recipe for building across all platforms
@@ -27,13 +27,13 @@ fi
 
 # `--with-pic` isn't enough; we really really need -fPIC and -DPIC everywhere...
 # everywhere, especially on FreeBSD. In the end, isn't FreeBSD all that matters?
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-pic CFLAGS="${CFLAGS} -DPIC -fPIC" CXXFLAGS="${CXXFLAGS} -DPIC -fPIC"
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-pic CFLAGS="${CFLAGS} -DPIC -fPIC -g -O2" CXXFLAGS="${CXXFLAGS} -DPIC -fPIC -g -O2"
 make -j${nproc} V=1
 make install
 """
 
 # We enable experimental platforms as this is a core Julia dependency
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 
 # The products that we will ensure are always built
@@ -45,12 +45,14 @@ llvm_version = v"13.0.1"
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(; name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version); platforms=filter(p -> sanitize(p)=="memory", platforms)),
+    BuildDependency(PackageSpec(; name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=string(llvm_version)); platforms=filter(p -> sanitize(p)=="memory", platforms)),
 ]
 
 # Note: we explicitly lie about this because we don't have the new
 # versioning APIs worked out in BB yet.
 version = v"2.0.1"
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    # We need GCC 4.9+ for stdatomic.h
-    julia_compat="1.6", preferred_gcc_version=v"5", preferred_llvm_version=llvm_version)
+               # We need GCC 4.9+ for stdatomic.h
+               julia_compat="1.6", preferred_gcc_version=v"5", preferred_llvm_version=llvm_version)
+
+# Build trigger: 1

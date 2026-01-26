@@ -2,15 +2,14 @@ using BinaryBuilder, Pkg
 
 # Collection of sources required to build FastTransforms
 name = "FastTransforms"
-version = v"0.6.2"
+version = v"0.6.3"
 sources = [
-    ArchiveSource("https://github.com/MikaelSlevinsky/FastTransforms/archive/v$(version).tar.gz",
-                  "fd00befcb0c20ba962a8744a7b9139355071ee95be70420de005b7c0f6e023aa"),
+    GitSource("https://github.com/MikaelSlevinsky/FastTransforms.git", "abd33bc1e99f9e75cff7ade1154ecc2f4cec6a62")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/FastTransforms-*
+cd $WORKSPACE/srcdir/FastTransforms/
 if [[ ${target} == x86_64-* ]] || [[ ${target} == i686-* ]]; then
     export MSSE=-msse
     export MSSE2=-msse2
@@ -27,7 +26,7 @@ else
 fi
 if [[ ${nbits} == 64 ]]; then
     SYMBOL_DEFS=()
-    SYMBOLS=(dgemm dtrmm dtrmv dtrsm sgemm strmm strsm ztrmm)
+    SYMBOLS=(dgemv dgemm dtrmm dtrmv dtrsm sgemv sgemm strmm strsm ztrmm)
     for sym in ${SYMBOLS[@]}; do
         SYMBOL_DEFS+=("-Dcblas_${sym}=cblas_${sym}64_")
     done

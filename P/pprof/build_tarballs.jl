@@ -6,8 +6,8 @@ name = "pprof"
 # identifying a version by a specific commit hash, off of `pprof`'s
 # main branch.
 
-hash = "b5a4dc8f4f2afdee77047b6aae3834140efc83ed"
-version = v"1.0.1"
+hash = "ec68065c825ea799954096b0995381983fc35156"
+version = v"2.0.0"
 
 # Collection of sources required to build pprof
 sources = [

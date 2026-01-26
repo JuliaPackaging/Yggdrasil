@@ -1,0 +1,10 @@
+--- sshpass-1.10/configure.ac        2023-02-12 03:50:43.000000000 +0100
++++ sshpass-1.10/configure.ac        2024-10-25 23:34:18.626361315 +0200
+@@ -27,7 +27,6 @@
+ # Checks for library functions.
+ AC_FUNC_FORK
+ AC_PROG_GCC_TRADITIONAL
+-AC_FUNC_MALLOC
+ AC_FUNC_SELECT_ARGTYPES
+ AC_TYPE_SIGNAL
+ AC_CHECK_FUNCS([select posix_openpt strdup])

@@ -3,12 +3,12 @@
 using BinaryBuilder, BinaryBuilderBase, Pkg
 
 name = "crun"
-version = v"1.12.0"
+version = v"1.18.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/containers/crun",
-              "ce429cb2e277d001c2179df1ac66a470f00802ae")
+              "8656b2548509fcc69ea7e8823a870564360a57a1")
 ]
 
 # Bash recipe for building across all platforms
@@ -48,4 +48,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"7")
+               julia_compat="1.6", preferred_gcc_version=v"5")

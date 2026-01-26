@@ -4,30 +4,21 @@ using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "mlir_jl_tblgen"
 repo = "https://github.com/JuliaLabs/MLIR.jl.git"
-version = v"0.0.8"
+version = v"0.0.10"
 
-llvm_versions = [v"14.0.6", v"15.0.7", v"16.0.6", v"17.0.6"]
+llvm_versions = [v"14.0.6", v"15.0.7", v"16.0.6", v"17.0.6", v"18.1.7", v"19.1.1"]
 
 sources = [
-    GitSource(repo, "5c35af320732e6d3363cdf47e4d6f156b100756e")
+    GitSource(repo, "1e5e8a2b7b43ec79ec2132cf7a90a5f96d97b4da"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd MLIR.jl/deps/tblgen
-
-if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
-    # LLVM 15+ requires macOS SDK 10.14.
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    export MACOSX_DEPLOYMENT_TARGET=10.14
-    popd
-fi
 
 CMAKE_FLAGS=()
 # Release build for best performance
@@ -48,6 +39,9 @@ cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
 
 ninja -C build -j ${nproc} install
 """
+
+# LLVM 15+ requires macOS SDK 10.14.
+sources, script = require_macos_sdk("10.14", sources, script)
 
 augment_platform_block = """
     using Base.BinaryPlatforms
@@ -81,16 +75,13 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
         filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
     end
 
+    filter!(p -> !(arch(p) == "aarch64" && os(p) == "freebsd"), platforms)
+
     for platform in platforms
         augmented_platform = deepcopy(platform)
         augmented_platform[LLVM.platform_name] = LLVM.platform(llvm_version, llvm_assertions)
 
         platform_sources = BinaryBuilder.AbstractSource[sources...]
-        if Sys.isapple(platform)
-            push!(platform_sources,
-                  ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-                                "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
-        end
 
         should_build_platform(triplet(augmented_platform)) || continue
         push!(builds, (;

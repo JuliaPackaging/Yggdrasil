@@ -4,7 +4,7 @@
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
  * terms governing use, modification, and redistribution, is contained in    *
- * the COPYING file, which can be found at the root of the source code       *
+ * the LICENSE file, which can be found at the root of the source code       *
  * distribution tree, or in https://www.hdfgroup.org/licenses.               *
  * If you do not have access to either file, you may request a copy from     *
  * help@hdfgroup.org.                                                        *
@@ -28,7 +28,6 @@
 #define c_float_4 float
 #define c_float_8 double
 #define c_float_10 long double
-#define c_float_16 __float128
 
 typedef c_int_8 haddr_t_f;
 typedef c_hsize_t_8 hsize_t_f;
@@ -40,7 +39,6 @@ typedef c_int_4 int_f;
 typedef c_float_4 real_C_FLOAT_f;
 typedef c_float_8 real_C_DOUBLE_f;
 typedef c_float_10 real_C_LONG_DOUBLE_f;
-typedef c_float_16 real_C_FLOAT128_f;
 typedef c_int_8 hid_t_f;
 typedef c_float_4 real_f;
 typedef c_float_8 double_f;

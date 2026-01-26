@@ -3,29 +3,27 @@
 using BinaryBuilder, Pkg
 
 name = "Catalyst"
-version = v"0.1.0"
+version = v"2.0.0"
 sources = [
     GitSource("https://gitlab.kitware.com/paraview/catalyst", 
-	      "16dc369855a7c29bb00829cf8ecb16fa3b7ebd4b")
+	      "ed6151a298c6bcc888353e2bdf92a40e6ed8de30")
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/catalyst*
-rm -rf build && mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+apk del cmake
+cmake -G Ninja \
+      -B build \
+      -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_BUILD_TYPE=Release \
-      -DCATALYST_BUILD_SHARED_LIBS=ON \
-      -DCATALYST_BUILD_STUB_IMPLEMENTATION=ON \
       -DCATALYST_BUILD_TESTING=OFF \
-      -DCATALYST_BUILD_TOOLS=ON \
-      -DCATALYST_USE_MPI=OFF \
-      ..
-make -j${nproc}
-make install
+      .
+cmake --build build --parallel ${nproc}
+cmake --install build
 # install catalyst-replay to bindir
 mkdir -vp $bindir
-cp -v ./bin/catalyst_replay* $bindir
+install -Dvm 755 ./build/bin/catalyst_replay${exeext} -t ${bindir}
 """
 
 # Paraview / Catalyst only supports x86_64 builds for Linux, Windows
@@ -44,7 +42,8 @@ products = [
     # LibraryProduct("libcatalyst-stub", Symbol("libcatalyst-stub"), ["lib/catalyst"]),
 ]
 
-dependencies = Dependency[
+dependencies = [
+    HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.30.2+0"))
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 

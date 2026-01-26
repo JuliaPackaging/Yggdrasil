@@ -1,5 +1,5 @@
-version = v"1.16.14"
-api_version = v"1.9.2"
+version = v"1.25.1"
+api_version = v"1.13.0"
 
 # Collection of sources required to build this package
 #
@@ -7,5 +7,5 @@ api_version = v"1.9.2"
 # which are versioned independently.
 sources = BinaryBuilder.AbstractSource[
     GitSource("https://github.com/oneapi-src/level-zero.git",
-              "0765f88f93ca39e8d8056aabab18c78de9d50cd4"),
+              "a93cb081169fe11ec42da3f620839d2feb64742a"),
 ]

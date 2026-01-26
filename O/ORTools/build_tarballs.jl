@@ -1,18 +1,23 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "ORTools"
-version = v"9.7"
+version = v"9.14.0"
 
 # Collection of sources required to build this package
 sources = [
-    GitSource("https://github.com/google/or-tools.git",
-              "6fa02e157a5c91067b7d7b88629472b9ed461193")
+    GitSource(
+        "https://github.com/google/or-tools.git",
+        "0d60e8afe450ec817f510aae965ab8898310cb41"
+    ),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+# OR-Tools 9.12 starts requiring CMake 3.24+. Thus, uninstall the previous version to use the one from CMake_jll.
+apk del cmake
+
 # Prepare the source directory.
 cd $WORKSPACE/srcdir/or-tools*
 mkdir build
@@ -43,12 +48,31 @@ cmake -S. -Bbuild \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DBUILD_DEPS:BOOL=ON \
     -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_TESTING:BOOL=OFF \
     -DBUILD_EXAMPLES:BOOL=OFF \
     -DBUILD_SAMPLES:BOOL=OFF \
     -DUSE_SCIP:BOOL=OFF \
     -DUSE_HIGHS:BOOL=OFF \
     -DUSE_COINOR:BOOL=OFF \
     -DUSE_GLPK:BOOL=OFF
+
+# Patch Abseil's CMake files to remove -march flags
+# Abseil is fetched by CMake's FetchContent, so we patch it after configuration
+if [ -d "build/_deps/abseil-cpp-src" ]; then
+    echo "Patching Abseil CMake files to remove -march flags..."
+    find build/_deps/abseil-cpp-src -name "*.cmake" -type f -exec sed -i 's/-march[^ ]*//g' {} + || true
+    find build/_deps/abseil-cpp-src -name "CMakeLists.txt" -type f -exec sed -i 's/-march[^ ]*//g' {} + || true
+    # Also remove from any generated CMake cache files
+    find build/_deps/abseil-cpp-build -name "*.cmake" -type f -exec sed -i 's/-march[^ ]*//g' {} + 2>/dev/null || true
+
+    # Special handling for armv6l (disable Neon)
+    if [[ "$target" == armv6l-* ]]; then
+        if [ -f "build/_deps/abseil-cpp-src/CMakeLists.txt" ]; then
+            sed -i 's/ABSL_RANDOM_HWAES_ARM32_FLAGS//g' build/_deps/abseil-cpp-src/CMakeLists.txt || true
+        fi
+    fi
+fi
+
 cmake --build build
 cmake --build build --target install
 
@@ -60,6 +84,7 @@ install -Dvm 644 ortools/constraint_solver/search_limit.proto ${prefix}/include/
 install -Dvm 644 ortools/constraint_solver/search_stats.proto ${prefix}/include/ortools/constraint_solver/search_stats.proto
 install -Dvm 644 ortools/constraint_solver/solver_parameters.proto ${prefix}/include/ortools/constraint_solver/solver_parameters.proto
 install -Dvm 644 ortools/constraint_solver/routing_enums.proto ${prefix}/include/ortools/constraint_solver/routing_enums.proto
+install -Dvm 644 ortools/constraint_solver/routing_ils.proto ${prefix}/include/ortools/constraint_solver/routing_ils.proto
 install -Dvm 644 ortools/constraint_solver/routing_parameters.proto ${prefix}/include/ortools/constraint_solver/routing_parameters.proto
 install -Dvm 644 ortools/glop/parameters.proto ${prefix}/include/ortools/glop/parameters.proto
 install -Dvm 644 ortools/graph/flow_problem.proto ${prefix}/include/ortools/graph/flow_problem.proto
@@ -76,6 +101,7 @@ install -Dvm 644 ortools/math_opt/parameters.proto ${prefix}/include/ortools/mat
 install -Dvm 644 ortools/math_opt/solvers/glpk.proto ${prefix}/include/ortools/math_opt/solvers/glpk.proto
 install -Dvm 644 ortools/math_opt/solvers/gurobi.proto ${prefix}/include/ortools/math_opt/solvers/gurobi.proto
 install -Dvm 644 ortools/math_opt/solvers/highs.proto ${prefix}/include/ortools/math_opt/solvers/highs.proto
+install -Dvm 644 ortools/math_opt/solvers/osqp.proto ${prefix}/include/ortools/math_opt/solvers/osqp.proto
 install -Dvm 644 ortools/math_opt/sparse_containers.proto ${prefix}/include/ortools/math_opt/sparse_containers.proto
 install -Dvm 644 ortools/packing/multiple_dimensions_bin_packing.proto ${prefix}/include/ortools/packing/multiple_dimensions_bin_packing.proto
 install -Dvm 644 ortools/packing/vector_bin_packing.proto ${prefix}/include/ortools/packing/vbp/vector_bin_packing.proto
@@ -90,21 +116,19 @@ install -Dvm 644 ortools/scheduling/rcpsp.proto ${prefix}/include/ortools/schedu
 install -Dvm 644 ortools/scheduling/jobshop_scheduling.proto ${prefix}/include/ortools/scheduling/jssp/jobshop_scheduling.proto
 """
 
-platforms = [
-    Platform("x86_64", "linux"),
-    # Platform("aarch64", "linux"),   # Abseil uses -march for some files.
-    # Platform("x86_64", "macos"),    # Requires Clang 16+.
-    # Platform("aarch64", "macos"),   # Abseil uses -march for some files.
-    # Platform("x86_64", "freebsd"),  # Requires Clang 16+.
-    # Platform("x86_64", "windows"),  # Requires dlfcn.h.
-]
+platforms = supported_platforms()
+# Filter out RISC-V, Windows, and macOS x86_64 platforms
+platforms = filter(p -> arch(p) != "riscv64", platforms)
+platforms = filter(p -> !Sys.iswindows(p), platforms)
+platforms = filter(p -> !(arch(p) == "x86_64" && Sys.isapple(p)), platforms)
+
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libortools", :libortools),
     LibraryProduct("libortools_flatzinc", :libortools_flatzinc),
-    
+
     ExecutableProduct("fzn-cp-sat", :fzncpsat),
     ExecutableProduct("sat_runner", :sat_runner),
     ExecutableProduct("solve", :solve),
@@ -119,6 +143,7 @@ products = [
     FileProduct("include/ortools/constraint_solver/search_stats.proto", :proto_constraint_solver_search_stats),
     FileProduct("include/ortools/constraint_solver/solver_parameters.proto", :proto_constraint_solver_solver_parameters),
     FileProduct("include/ortools/constraint_solver/routing_enums.proto", :proto_constraint_solver_routing_enums),
+    FileProduct("include/ortools/constraint_solver/routing_ils.proto", :proto_constraint_solver_routing_ils),
     FileProduct("include/ortools/constraint_solver/routing_parameters.proto", :proto_constraint_solver_routing_parameters),
     # - From glop/
     FileProduct("include/ortools/glop/parameters.proto", :ortools_glop_parameters),
@@ -139,6 +164,7 @@ products = [
     FileProduct("include/ortools/math_opt/solvers/glpk.proto", :proto_math_opt_solvers_glpk),
     FileProduct("include/ortools/math_opt/solvers/gurobi.proto", :proto_math_opt_solvers_gurobi),
     FileProduct("include/ortools/math_opt/solvers/highs.proto", :proto_math_opt_solvers_highs),
+    FileProduct("include/ortools/math_opt/solvers/osqp.proto", :proto_math_opt_solvers_osqp),
     FileProduct("include/ortools/math_opt/sparse_containers.proto", :proto_math_opt_sparse_containers),
     FileProduct("include/ortools/math_opt/infeasible_subsystem.proto", :proto_math_opt_infeasible_subsystem),
     # - From packing/
@@ -161,7 +187,15 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[]
+dependencies = [
+    # OR-Tools 9.12 starts depending on CMake 3.28.
+    HostBuildDependency(PackageSpec(; name = "CMake_jll", version = "3.28.1")),
+    Dependency("dlfcn_win32_jll"; platforms = filter(Sys.iswindows, platforms)),
+]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"11", julia_compat="1.9")
+#
+# Add `lock_microarchitecture=false` to bypass checks for `-march`, but
+# Abseil's compilation scripts are still broken (trying to build the
+# host tools with a target toolchain...).
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"11", julia_compat = "1.9")

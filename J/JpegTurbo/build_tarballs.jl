@@ -1,18 +1,19 @@
 using BinaryBuilder
 
 name = "JpegTurbo"
-version = v"3.0.3"
+upstream_version = v"3.1.3"
+version = v"3.1.4" # Needed to change version number to bump compat bounds, next time can go back to follow upstream
 
 # Collection of sources required to build Ogg
 sources = [
     # The release notes say that this is the official source tarball for this release
-    ArchiveSource("https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/$(version)/libjpeg-turbo-$(version).tar.gz",
-                  "343e789069fc7afbcdfe44dbba7dbbf45afa98a15150e079a38e60e44578865d"),
+    ArchiveSource("https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/$(upstream_version)/libjpeg-turbo-$(upstream_version).tar.gz",
+                  "075920b826834ac4ddf97661cc73491047855859affd671d52079c6867c1c6c0"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libjpeg-turbo*/
+cd $WORKSPACE/srcdir/libjpeg-turbo*
 
 mkdir build
 cd build

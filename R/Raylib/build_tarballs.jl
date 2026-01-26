@@ -3,12 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "Raylib"
-version = v"4.0.0"
+version = v"5.5.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/raysan5/raylib.git",
-              "0851960397f02a477d80eda2239f90fae14dec64"),
+              "c1ab645ca298a2801097931d1079b10ff7eb9df8"),
+    GitSource("https://github.com/raysan5/raygui.git",
+              "25c8c65a6e5f0f4d4b564a0343861898c6f2778b"),
+    GitSource("https://github.com/raysan5/physac.git",
+              "4a8e17f263fb8e1150b3fbafc96f880c7d7a4833"),
     DirectorySource("./bundled"),
 ]
 
@@ -16,11 +20,10 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/raylib/src/
 
-atomic_patch -p1 ../../patches/add-missing-header.patch
 atomic_patch -p1 ../../patches/make-install-everywhere.patch
-atomic_patch -p2 ../../patches/make-ldflags-windows.patch
 
 export CFLAGS="-D_POSIX_C_SOURCE=200112L"
+
 if [[ "${target}" == *-freebsd* ]]; then
     # Allow definition of `u_char`, `u_short`, `u_int`, and `u_long` in sys/types.h
     CFLAGS="${CFLAGS} -D__BSD_VISIBLE"
@@ -29,13 +32,19 @@ CFLAGS="${CFLAGS} -DSUPPORT_EVENTS_AUTOMATION -DSUPPORT_FILEFORMAT_BMP -DSUPPORT
 
 FLAGS=()
 if [[ "${target}" == *-mingw* ]]; then
-    # raylib.rc.data is broken for x64, remove it from compilation
-    sed -i 's+$(RAYLIB_RES_FILE)+ +g' Makefile
-    # we need to specify the OS in the flags to make for Windows
-    FLAGS+=(OS=Windows_NT)
+   if [[ ${nbits} == 32 ]]; then
+      # raylib.rc.data is broken for 32-bit, remove it from compilation
+      sed -i 's+$(RAYLIB_RES_FILE)+ +g' Makefile
+   fi   
+   # we need to specify the OS in the flags to make for Windows
+   FLAGS+=(OS=Windows_NT)
+   FLAGS+=(LDLIBS=\"-L${libdir} -lglfw3 -lwinmm\")
 fi
-make -j${nproc} USE_EXTERNAL_GLFW=TRUE PLATFORM=PLATFORM_DESKTOP RAYLIB_LIBTYPE=SHARED RAYLIB_MODULE_RAYGUI=TRUE RAYLIB_MODULE_PHYSAC=TRUE "${FLAGS[@]}"
+
+make raygui.c
+make -j${nproc} USE_EXTERNAL_GLFW=TRUE RAYLIB_LIBTYPE=SHARED RAYLIB_MODULE_RAYGUI=TRUE RAYLIB_MODULE_PHYSAC=TRUE "${FLAGS[@]}"
 make install RAYLIB_LIBTYPE=SHARED DESTDIR="${prefix}" RAYLIB_INSTALL_PATH="${libdir}"
+install_license ../LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
@@ -62,4 +71,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version=v"7", julia_compat="1.6")

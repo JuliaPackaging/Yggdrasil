@@ -3,232 +3,235 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "HDF5"
-version = v"1.14.3"
+version = v"2.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-$(version.major).$(version.minor)/hdf5-$(version)/src/hdf5-$(version).tar.bz2",
-                  "9425f224ed75d1280bb46d6f26923dd938f9040e7eaebf57e66ec7357c08f917"),
-    DirectorySource("./bundled"),
+    ArchiveSource("https://github.com/HDFGroup/hdf5/releases/download/$(version)/hdf5-$(version).tar.gz",
+                  "f4c2edc5668fb846627182708dbe1e16c60c467e63177a75b0b9f12c19d7efed"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/hdf5-*
+cd ${WORKSPACE}/srcdir/hdf5*
 
-if [[ ${target} == *-mingw* ]]; then
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/h5ls.c.patch
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mkdir.patch
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/strncpy.patch
-    cp ${WORKSPACE}/srcdir/headers/pthread_time.h "/opt/${target}/${target}/sys-root/include/pthread_time.h"
+# Make our own, more modern cmake visible
+apk del cmake
+
+if [[ ${bb_full_target} == *mpitrampoline* ]]; then
+    atomic_patch -p1 ../patches/mpi.patch
 fi
 
-# HDF5 assumes that some MPI constants are C constants, but they are not
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mpi.patch
+# OS does not support `O_DIRECT`
+direct_vfd=$(if [[ ${target} == *-apple-* || ${target} == *-w64-* ]]; then echo OFF; else echo ON; fi)
 
-# Patch `configure.ac`:
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/configure.ac.patch
+# `aws_c_s3_jll` has not been built
+ros3_vdf=$(if [[ ${target} == i686-w64-* ]]; then echo OFF; else echo ON; fi)
 
-# Prepare the file `config.saved` that contains predetermined
-# configuration information
-mkdir saved
-case "${target}" in
-    aarch64-apple-darwin*)
-        cp ../files/darwin-arm64v8/* saved
-        ;;
-    aarch64-linux-*)
-        cp ../files/debian-arm64v8/* saved
+# MPI does not support Fortran
+parallel=$(if [[ ${target} == *-w64-* ]]; then echo OFF; else echo ON; fi)
+
+cmake_options=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_INSTALL_PREFIX=${prefix}
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+    -DBUILD_SHARED_LIBS=ON
+    -DBUILD_STATIC_LIBS=OFF
+    -DBUILD_TESTING=OFF
+    -DHDF5_ALLOW_UNSUPPORTED=ON
+    -DHDF5_BUILD_CPP_LIB=ON
+    -DHDF5_BUILD_DOC=OFF
+    -DHDF5_BUILD_EXAMPLES=OFF
+    -DHDF5_BUILD_FORTRAN=ON
+    -DHDF5_BUILD_HL_LIB=ON
+    -DHDF5_BUILD_JAVA=OFF              # would require Java
+    -DHDF5_BUILD_PARALLEL_TOOLS=OFF    # would require MFU (<https://github.com/hpc/mpifileutils>?)
+    -DHDF5_BUILD_TOOLS=ON
+    -DHDF5_ENABLE_CONCURRENCY=ON       # superset of THREADSAFE
+    -DHDF5_ENABLE_DIRECT_VFD=${direct_vfd}
+    -DHDF5_ENABLE_HDFS=OFF             # would require Java
+    -DHDF5_ENABLE_MAP_API=ON
+    -DHDF5_ENABLE_MIRROR_VFD=ON
+    -DHDF5_ENABLE_PARALLEL=${parallel}
+    -DHDF5_ENABLE_ROS3_VFD=${ros3_vfd}
+    -DHDF5_ENABLE_SUBFILING_VFD=ON
+    -DHDF5_ENABLE_SZIP_SUPPORT=ON
+    -DHDF5_ENABLE_ZLIB_SUPPORT=ON
+    -DHDF5_USE_PREGEN=ON
+    -DMPI_HOME=${prefix}
+)
+
+# We could enable this, but it would require more cross-compiling information:
+#     -DHDF5_ENABLE_NONSTANDARD_FEATURE_FLOAT16=ON
+# We would need to set these flags (and check that these conditions are true!): 
+#     -DH5_FLOAT16_CONVERSION_FUNCS_LINK=ON
+#     -DH5_FLOAT16_CONVERSION_FUNCS_LINK_NO_FLAGS=ON
+#     -DH5_LDOUBLE_TO_FLOAT16_CORRECT=ON
+
+# We have pregenerated the Fortran configurations for Linux.
+# (See <https://github.com/HDFGroup/hdf5/issues/6042>.)
+# We assume that Darwin and mingw use the same configurations.
+case ${target} in
+    aarch64-linux-*|aarch64-apple-darwin*|aarch64-*-freebsd*)
+        cmake_options+=(
+            -DHDF5_USE_PREGEN_DIR=${WORKSPACE}/srcdir/files/debian-arm64v8
+            -DPAC_FORTRAN_NUM_INTEGER_KINDS=5
+            -DPAC_FC_ALL_INTEGER_KINDS='{1,2,4,8,16}'
+            -DPAC_FC_ALL_INTEGER_KINDS_SIZEOF='{1,2,4,8,16}'
+            -DPAC_FORTRAN_NUM_LOGICAL_KINDS=5
+            -DPAC_FC_ALL_LOGICAL_KINDS='{1,2,4,8,16}'
+            -DPAC_FORTRAN_NUM_REAL_KINDS=3
+            -DPAC_FC_ALL_REAL_KINDS='{4,8,16}'
+            -DPAC_FC_ALL_REAL_KINDS_SIZEOF='{4,8,16}'
+            -DH5_PAC_FC_MAX_REAL_PRECISION=33
+            -DPAC_FORTRAN_NATIVE_INTEGER_KIND=4
+            -DPAC_FORTRAN_NATIVE_INTEGER_SIZEOF=4
+            -DPAC_FORTRAN_NATIVE_REAL_KIND=4
+            -DPAC_FORTRAN_NATIVE_REAL_SIZEOF=4
+            -DPAC_FORTRAN_NATIVE_DOUBLE_KIND=8
+            -DPAC_FORTRAN_NATIVE_DOUBLE_SIZEOF=8
+            -DH5_H5CONFIG_F_NUM_IKIND='INTEGER, PARAMETER :: num_ikinds = 5'
+            -DH5_H5CONFIG_F_IKIND='INTEGER, DIMENSION(1:num_ikinds) :: ikind = (/1,2,4,8,16/)'
+        )
         ;;
     arm-linux-*)
-        cp ../files/debian-arm32v7/* saved
+        cmake_options+=(
+            -DHDF5_USE_PREGEN_DIR=${WORKSPACE}/srcdir/files/debian-arm32v7
+            -DPAC_FORTRAN_NUM_INTEGER_KINDS=4
+            -DPAC_FC_ALL_INTEGER_KINDS='{1,2,4,8}'
+            -DPAC_FC_ALL_INTEGER_KINDS_SIZEOF='{1,2,4,8}'
+            -DPAC_FORTRAN_NUM_LOGICAL_KINDS=4
+            -DPAC_FC_ALL_LOGICAL_KINDS='{1,2,4,8}'
+            -DPAC_FORTRAN_NUM_REAL_KINDS=2
+            -DPAC_FC_ALL_REAL_KINDS='{4,8}'
+            -DPAC_FC_ALL_REAL_KINDS_SIZEOF='{4,8}'
+            -DH5_PAC_FC_MAX_REAL_PRECISION=15
+            -DPAC_FORTRAN_NATIVE_INTEGER_KIND=4
+            -DPAC_FORTRAN_NATIVE_INTEGER_SIZEOF=4
+            -DPAC_FORTRAN_NATIVE_REAL_KIND=4
+            -DPAC_FORTRAN_NATIVE_REAL_SIZEOF=4
+            -DPAC_FORTRAN_NATIVE_DOUBLE_KIND=8
+            -DPAC_FORTRAN_NATIVE_DOUBLE_SIZEOF=8
+            -DH5_H5CONFIG_F_NUM_IKIND='INTEGER, PARAMETER :: num_ikinds = 4'
+            -DH5_H5CONFIG_F_IKIND='INTEGER, DIMENSION(1:num_ikinds) :: ikind = (/1,2,4,8/)'
+        )
         ;;
-    i686-linux-*)
-        cp ../files/debian-i386/* saved
-        ;;
-    i686-w64-mingw32)
-        # sizeof(long double) == 12
-        # layout seems to be 16-bit sign+exponent and 64-bit mantissa
-        cp ../files/msys2-mingw32/* saved
+    i686-linux-*|i686-w64-mingw32)
+        cmake_options+=(
+            -DHDF5_USE_PREGEN_DIR=${WORKSPACE}/srcdir/files/debian-i386
+            -DPAC_FORTRAN_NUM_INTEGER_KINDS=4
+            -DPAC_FC_ALL_INTEGER_KINDS='{1,2,4,8}'
+            -DPAC_FC_ALL_INTEGER_KINDS_SIZEOF='{1,2,4,8}'
+            -DPAC_FORTRAN_NUM_LOGICAL_KINDS=4
+            -DPAC_FC_ALL_LOGICAL_KINDS='{1,2,4,8}'
+            -DPAC_FORTRAN_NUM_REAL_KINDS=3
+            -DPAC_FC_ALL_REAL_KINDS='{4,8,10}'
+            -DPAC_FC_ALL_REAL_KINDS_SIZEOF='{4,8,12}'
+            -DH5_PAC_FC_MAX_REAL_PRECISION=18
+            -DPAC_FORTRAN_NATIVE_INTEGER_KIND=4
+            -DPAC_FORTRAN_NATIVE_INTEGER_SIZEOF=4
+            -DPAC_FORTRAN_NATIVE_REAL_KIND=4
+            -DPAC_FORTRAN_NATIVE_REAL_SIZEOF=4
+            -DPAC_FORTRAN_NATIVE_DOUBLE_KIND=8
+            -DPAC_FORTRAN_NATIVE_DOUBLE_SIZEOF=8
+            -DH5_H5CONFIG_F_NUM_IKIND='INTEGER, PARAMETER :: num_ikinds = 4'
+            -DH5_H5CONFIG_F_IKIND='INTEGER, DIMENSION(1:num_ikinds) :: ikind = (/1,2,4,8/)'
+        )
         ;;
     powerpc64le-linux-*)
-        cp ../files/debian-ppc64le/* saved
+        cmake_options+=(
+            -DHDF5_USE_PREGEN_DIR=${WORKSPACE}/srcdir/files/debian-ppc64le
+            -DPAC_FORTRAN_NUM_INTEGER_KINDS=5
+            -DPAC_FC_ALL_INTEGER_KINDS='{1,2,4,8,16}'
+            -DPAC_FC_ALL_INTEGER_KINDS_SIZEOF='{1,2,4,8,16}'
+            -DPAC_FORTRAN_NUM_LOGICAL_KINDS=5
+            -DPAC_FC_ALL_LOGICAL_KINDS='{1,2,4,8,16}'
+            -DPAC_FORTRAN_NUM_REAL_KINDS=3
+            -DPAC_FC_ALL_REAL_KINDS='{4,8,16}'
+            -DPAC_FC_ALL_REAL_KINDS_SIZEOF='{4,8,16}'
+            -DH5_PAC_FC_MAX_REAL_PRECISION=33
+            -DPAC_FORTRAN_NATIVE_INTEGER_KIND=4
+            -DPAC_FORTRAN_NATIVE_INTEGER_SIZEOF=4
+            -DPAC_FORTRAN_NATIVE_REAL_KIND=4
+            -DPAC_FORTRAN_NATIVE_REAL_SIZEOF=4
+            -DPAC_FORTRAN_NATIVE_DOUBLE_KIND=8
+            -DPAC_FORTRAN_NATIVE_DOUBLE_SIZEOF=8
+            -DH5_H5CONFIG_F_NUM_IKIND='INTEGER, PARAMETER :: num_ikinds = 5'
+            -DH5_H5CONFIG_F_IKIND='INTEGER, DIMENSION(1:num_ikinds) :: ikind = (/1,2,4,8,16/)'
+        )
         ;;
-    x86_64-apple-darwin*)
-        cp ../files/darwin-amd64/* saved
+    riscv64-linux-*)
+        cmake_options+=(
+            -DHDF5_USE_PREGEN_DIR=${WORKSPACE}/srcdir/files/debian-riscv64
+            -DPAC_FORTRAN_NUM_INTEGER_KINDS=5
+            -DPAC_FC_ALL_INTEGER_KINDS='{1,2,4,8,16}'
+            -DPAC_FC_ALL_INTEGER_KINDS_SIZEOF='{1,2,4,8,16}'
+            -DPAC_FORTRAN_NUM_LOGICAL_KINDS=5
+            -DPAC_FC_ALL_LOGICAL_KINDS='{1,2,4,8,16}'
+            -DPAC_FORTRAN_NUM_REAL_KINDS=3
+            -DPAC_FC_ALL_REAL_KINDS='{4,8,16}'
+            -DPAC_FC_ALL_REAL_KINDS_SIZEOF='{4,8,16}'
+            -DH5_PAC_FC_MAX_REAL_PRECISION=33
+            -DPAC_FORTRAN_NATIVE_INTEGER_KIND=4
+            -DPAC_FORTRAN_NATIVE_INTEGER_SIZEOF=4
+            -DPAC_FORTRAN_NATIVE_REAL_KIND=4
+            -DPAC_FORTRAN_NATIVE_REAL_SIZEOF=4
+            -DPAC_FORTRAN_NATIVE_DOUBLE_KIND=8
+            -DPAC_FORTRAN_NATIVE_DOUBLE_SIZEOF=8
+            -DH5_H5CONFIG_F_NUM_IKIND='INTEGER, PARAMETER :: num_ikinds = 5'
+            -DH5_H5CONFIG_F_IKIND='INTEGER, DIMENSION(1:num_ikinds) :: ikind = (/1,2,4,8,16/)'
+        )
         ;;
-    x86_64-linux-*)
-        cp ../files/debian-amd64/* saved
-        ;;
-    x86_64-*-freebsd*)
-        # no __float128
-        cp ../files/freebsd-amd64/* saved
-        ;;
-    x86_64-w64-mingw32)
-        # sizeof(long double) == 16
-        # layout seems to be 16-bit sign+exponent and 64-bit mantissa
-        cp ../files/msys2-mingw64/* saved
+    x86_64-linux-*|x86_64-apple-darwin*|x86_64-*-freebsd*|x86_64-w64-mingw32)
+        cmake_options+=(
+            -DHDF5_USE_PREGEN_DIR=${WORKSPACE}/srcdir/files/debian-amd64
+            -DPAC_FORTRAN_NUM_INTEGER_KINDS=5
+            -DPAC_FC_ALL_INTEGER_KINDS='{1,2,4,8,16}'
+            -DPAC_FC_ALL_INTEGER_KINDS_SIZEOF='{1,2,4,8,16}'
+            -DPAC_FORTRAN_NUM_LOGICAL_KINDS=5
+            -DPAC_FC_ALL_LOGICAL_KINDS='{1,2,4,8,16}'
+            -DPAC_FORTRAN_NUM_REAL_KINDS=4
+            -DPAC_FC_ALL_REAL_KINDS='{4,8,10,16}'
+            -DPAC_FC_ALL_REAL_KINDS_SIZEOF='{4,8,16,16}'
+            -DH5_PAC_FC_MAX_REAL_PRECISION=33
+            -DPAC_FORTRAN_NATIVE_INTEGER_KIND=4
+            -DPAC_FORTRAN_NATIVE_INTEGER_SIZEOF=4
+            -DPAC_FORTRAN_NATIVE_REAL_KIND=4
+            -DPAC_FORTRAN_NATIVE_REAL_SIZEOF=4
+            -DPAC_FORTRAN_NATIVE_DOUBLE_KIND=8
+            -DPAC_FORTRAN_NATIVE_DOUBLE_SIZEOF=8
+            -DH5_H5CONFIG_F_NUM_IKIND='INTEGER, PARAMETER :: num_ikinds = 5'
+            -DH5_H5CONFIG_F_IKIND='INTEGER, DIMENSION(1:num_ikinds) :: ikind = (/1,2,4,8,16/)'
+        )
         ;;
     *)
         echo "Unsupported target architecture ${target}" >&2
         exit 1
         ;;
 esac
-cp ../files/get_config_setting saved
 
-env \
-    HDF5_ACLOCAL=/usr/bin/aclocal \
-    HDF5_AUTOHEADER=/usr/bin/autoheader \
-    HDF5_AUTOMAKE=/usr/bin/automake \
-    HDF5_AUTOCONF=/usr/bin/autoconf \
-    HDF5_LIBTOOL=/usr/bin/libtool \
-    HDF5_M4=/usr/bin/m4 \
-    ./autogen.sh
+export MPITRAMPOLINE_CC="${CC}"
+export MPITRAMPOLINE_CXX="${CXX}"
+export MPITRAMPOLINE_FC="${FC}"
 
-mkdir build
-pushd build
+cmake -Bbuilddir "${cmake_options[@]}"
 
-# Required for x86_64-linux-musl:
-# - Some HDF5 C code requires C99, but configure only requests C89.
-# - Some HDF5 C++ code requires C++11, but configure does not request this.
-# This might not be necessary if we switch to newer GCC versions.
-export CFLAGS="${CFLAGS} -std=c99"
-export CXXFLAGS="${CXXFLAGS} -std=c++11"
+# Remove stray `-llibname-NOTFOUND` from `hdf5.pc`:
+# (Reported as <https://github.com/HDFGroup/hdf5/issues/6059>)
+sed -i -e 's/-llibname-NOTFOUND//g' builddir/CMakeFiles/hdf5.pc
 
-if [[ ${target} == x86_64-linux-musl ]]; then
-    # ${libdir}/libcurl.so needs a libnghttp, and it prefers to load /usr/lib/libnghttp2.so for this.
-    # Unfortunately, that library is missing a symbol. Setting LD_LIBRARY_PATH is not enough to avoid this.
-    rm /usr/lib/libcurl.*
-    rm /usr/lib/libnghttp2.*
-fi
+cmake --build builddir --parallel ${nproc}
+cmake --install builddir
 
-FLAGS=()
-if [[ ${target} == *-mingw* ]]; then
-    FLAGS+=(LDFLAGS='-no-undefined')
-    # For OpenSSL's libcrypto for ROS3-VFD
-    export CFLAGS="${CFLAGS} -L${prefix}/lib64"
-    export FCFLAGS="${FCFLAGS} -L${prefix}/lib64"
-fi
-
-# Check which VFD are available
-ENABLE_DIRECT_VFD=yes
-ENABLE_MIRROR_VFD=yes
-if [[ ${target} == *-darwin* ]]; then
-    ENABLE_DIRECT_VFD=no
-elif [[ ${target} == *-w64-mingw32 ]]; then
-    ENABLE_DIRECT_VFD=no
-    ENABLE_MIRROR_VFD=no
-fi
-
-# Configure MPI
-if grep -q MSMPI_VER ${prefix}/include/mpi.h; then
-    # Microsoft MPI
-    if [[ ${target} == i686-* ]]; then
-        # 32-bit system
-        # Do not enable MPI; the function MPI_File_close is not defined
-        # in the 32-bit version of Microsoft MPI 10.1.12498.18
-        :
-    elif false; then
-        # DISABLED
-        # 64-bit system
-        # Do not enable MPI
-        # Mingw-w64 runtime failure:
-        # 32 bit pseudo relocation at 0000000007828E2C out of range, targeting 00007FFDE78BAD90, yielding the value 00007FFDE0091F60.
-        # Consider: https://www.symscape.com/configure-msmpi-for-mingw-w64
-        # gendef msmpi.dll - creates msmpi.def
-        # x86_64-w64-mingw32-dlltool -d msmpi.def -l libmsmpi.a -D msmpi.dll - creates libmsmpi.a
-
-        # Hide static libraries
-        rm ${prefix}/lib/msmpi*.lib
-        # Make shared libraries visible
-        ln -s msmpi.dll ${libdir}/libmsmpi.dll
-        ENABLE_PARALLEL=yes
-        export FCFLAGS="${FCFLAGS} -I${prefix}/src -I${prefix}/include -fno-range-check"
-        export LIBS="-L${libdir} -lmsmpi"
-    fi
-else
-    ENABLE_PARALLEL=yes
-    export MPITRAMPOLINE_CC="${CC}"
-    export MPITRAMPOLINE_CXX="${CXX}"
-    export MPITRAMPOLINE_FC="${FC}"
-    export CC=mpicc
-    export CXX=mpicxx
-    export FC=mpifort
-fi
-
-# This is a bug in HDF5; see
-# <https://github.com/HDFGroup/hdf5/issues/3925>. The file
-# `config/freebsd` includes `config/classic-fflags` which is
-# missing.
-: >../config/classic-fflags
-
-../configure \
-    --prefix=${prefix} \
-    --build=${MACHTYPE} \
-    --host=${target} \
-    --enable-cxx=yes \
-    --enable-direct-vfd="$ENABLE_DIRECT_VFD" \
-    --enable-fortran=yes \
-    --enable-hl=yes \
-    --enable-mirror-vfd="$ENABLE_MIRROR_VFD" \
-    --enable-parallel="$ENABLE_PARALLEL" \
-    --enable-ros3-vfd=yes \
-    --enable-static=no \
-    --enable-tests=no \
-    --enable-tools=yes \
-    --enable-unsupported=yes \
-    --with-examplesdir=/tmp \
-    --with-szlib=${prefix} \
-    hdf5_cv_ldouble_to_long_special=no \
-    hdf5_cv_long_to_ldouble_special=no \
-    hdf5_cv_ldouble_to_llong_accurate=yes \
-    hdf5_cv_llong_to_ldouble_correct=yes \
-    hdf5_cv_disable_some_ldouble_conv=no \
-    hdf5_cv_szlib_can_encode=yes \
-    "$(../saved/get_config_setting PAC_C_MAX_REAL_PRECISION ../saved/config.status)" \
-    "$(../saved/get_config_setting PAC_FC_ALL_REAL_KINDS ../saved/config.status)" \
-    "$(../saved/get_config_setting PAC_FC_MAX_REAL_PRECISION ../saved/config.status)" \
-    "$(../saved/get_config_setting PAC_FORTRAN_NUM_INTEGER_KINDS ../saved/config.status)" \
-    "$(../saved/get_config_setting PAC_FC_ALL_INTEGER_KINDS ../saved/config.status)" \
-    "$(../saved/get_config_setting PAC_FC_ALL_REAL_KINDS_SIZEOF ../saved/config.status)" \
-    "$(../saved/get_config_setting PAC_FC_ALL_INTEGER_KINDS_SIZEOF ../saved/config.status)" \
-    "$(../saved/get_config_setting PAC_FORTRAN_NATIVE_INTEGER_KIND ../saved/config.status)" \
-    "$(../saved/get_config_setting PAC_FORTRAN_NATIVE_INTEGER_SIZEOF ../saved/config.status)" \
-    "$(../saved/get_config_setting PAC_FORTRAN_NATIVE_REAL_KIND ../saved/config.status)" \
-    "$(../saved/get_config_setting PAC_FORTRAN_NATIVE_REAL_SIZEOF ../saved/config.status)" \
-    "$(../saved/get_config_setting PAC_FORTRAN_NATIVE_DOUBLE_KIND ../saved/config.status)" \
-    "$(../saved/get_config_setting PAC_FORTRAN_NATIVE_DOUBLE_SIZEOF ../saved/config.status)" \
-    "$(../saved/get_config_setting HAVE_Fortran_INTEGER_SIZEOF ../saved/config.status)" \
-    "$(../saved/get_config_setting FORTRAN_HAVE_C_LONG_DOUBLE ../saved/config.status)" \
-    "$(../saved/get_config_setting FORTRAN_C_LONG_DOUBLE_IS_UNIQUE ../saved/config.status)" \
-    "$(../saved/get_config_setting H5CONFIG_F_NUM_RKIND ../saved/config.status)" \
-    "$(../saved/get_config_setting H5CONFIG_F_RKIND ../saved/config.status)" \
-    "$(../saved/get_config_setting H5CONFIG_F_RKIND_SIZEOF ../saved/config.status)" \
-    "$(../saved/get_config_setting H5CONFIG_F_NUM_IKIND ../saved/config.status)" \
-    "$(../saved/get_config_setting H5CONFIG_F_IKIND ../saved/config.status)"
-
-# Patch the generated `Makefile`:
-# (We could instead patch `Makefile.in`, or maybe even `Makefile.am`.)
-# HDF5 would otherwise try to build and run code to determine what
-# integer and real types are available in Fortran. This doesn't work
-# while cross-compiling. We thus provide pre-recorded information
-# instead (see `config.saved` above).
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fortran-src-Makefile.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/hl-fortran-src-Makefile.patch
-
-# `AM_V_P` is not defined. This must be a shell command that returns
-# true or false depending on whether `make` should be verbose. This is
-# probably caused by a bug in automake, or in how automake was used.
-make -j${nproc} AM_V_P=: "${FLAGS[@]}"
-
-make install
-
-popd
-
-install_license COPYING
+install_license LICENSE
 """
+
+sources, script = require_macos_sdk("10.14", sources, script)
 
 augment_platform_block = """
     using Base.BinaryPlatforms
@@ -242,16 +245,7 @@ platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.1", OpenMPI_compat="4.1.6, 5")
-# TODO: Use MPI only on non-Windows platforms
-# platforms = [filter(!Sys.iswindows, mpi_platforms); filter(Sys.iswindows, platforms)]
-
-# Avoid platforms where the MPI implementation isn't supported
-# OpenMPI
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
-# MPItrampoline
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -280,18 +274,21 @@ products = [
     LibraryProduct("libhdf5_fortran", :libhdf5_fortran),
     LibraryProduct("libhdf5_hl", :libhdf5_hl),
     LibraryProduct("libhdf5_hl_cpp", :libhdf5_hl_cpp),
-    LibraryProduct("libhdf5hl_fortran", :libhdf5_hl_fortran),
+    LibraryProduct("libhdf5_hl_fortran", :libhdf5_hl_fortran),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    HostBuildDependency("CMake_jll"),
+
     # To ensure that the correct version of libgfortran is found at runtime
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency("LibCURL_jll"; compat="7.73,8"),
-    Dependency("OpenSSL_jll"; compat="3.0.8"),
-    Dependency("Zlib_jll"),
-    # Dependency("dlfcn_win32_jll"; platforms=filter(Sys.iswindows, platforms)),
-    Dependency("libaec_jll"),   # This is the successor of szlib
+    Dependency("LibCURL_jll"; compat="7.73, 8"),
+    Dependency("OpenSSL_jll"; compat="3.0.16"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
+    Dependency("aws_c_s3_jll"; compat="0.9.2"),
+    Dependency("dlfcn_win32_jll"; platforms=filter(Sys.iswindows, platforms)),
+    Dependency("libaec_jll"; compat="1.1.4"), # This is the successor of szlib
 ]
 append!(dependencies, platform_dependencies)
 
@@ -300,8 +297,5 @@ append!(dependencies, platform_dependencies)
 ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# GCC 5 reports an ICE on i686-linux-gnu-libgfortran3-cxx11-mpi+mpich
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"6")
-
-# Trigger build: 1

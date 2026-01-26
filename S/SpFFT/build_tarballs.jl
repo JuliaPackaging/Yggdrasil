@@ -1,15 +1,15 @@
-# Note that this script can accept some limited command-line arguments, run                          
-# `julia build_tarballs.jl --help` to see a usage message.                                           
-using BinaryBuilder, Pkg                                                                             
-using Base.BinaryPlatforms                                                                           
-const YGGDRASIL_DIR = "../.."                                                                        
+# Note that this script can accept some limited command-line arguments, run
+# `julia build_tarballs.jl --help` to see a usage message.
+using BinaryBuilder, Pkg
+using Base.BinaryPlatforms
+const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "SpFFT"
-version = v"1.0.6"
+version = v"1.1.1"
 
 sources = [
-   GitSource("https://github.com/eth-cscs/SpFFT/", "aa6653f044dc8f6dbf5dc7befe45db7ce353938e")
+   GitSource("https://github.com/eth-cscs/SpFFT/", "34391bc8c5e2b8add000e38fdc6ce68896184d10")
 ]
 
 script = raw"""
@@ -63,6 +63,7 @@ augment_platform_block = """
 platforms = supported_platforms()                                                       
 filter!(!Sys.iswindows, platforms)
 filter!(!Sys.isfreebsd, platforms)
+filter!(p -> arch(p) != "riscv64", platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 products = [

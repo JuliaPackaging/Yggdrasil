@@ -1,0 +1,65 @@
+diff --git before/skia/BUILD.gn after/skia/BUILD.gn
+index 33f3208..b7efcf6 100644
+--- before/skia/BUILD.gn
++++ after/skia/BUILD.gn
+@@ -173,7 +173,7 @@ opts("hsw") {
+   if (is_win) {
+     cflags = [ "/arch:AVX2" ]
+   } else {
+-    cflags = [ "-march=haswell" ]
++    cflags = [ "" ]
+   }
+ }
+ 
+@@ -183,7 +183,7 @@ opts("skx") {
+   if (is_win) {
+     cflags = [ "/arch:AVX512" ]
+   } else {
+-    cflags = [ "-march=skylake-avx512" ]
++    cflags = [ "" ]
+   }
+ }
+ 
+diff --git before/skia/gn/core.gni after/skia/gn/core.gni
+index 06a7bb1..0323fe9 100644
+--- before/skia/gn/core.gni
++++ after/skia/gn/core.gni
+@@ -187,6 +187,8 @@ skia_core_sources = [
+   "$_include/private/chromium/SkDiscardableMemory.h",
+   "$_include/private/chromium/SkPMColor.h",
+   "$_include/private/chromium/Slug.h",
++ "$_src/base/sk_capi.cpp",
++  "$_src/base/sk_capi.h",
+   "$_src/base/SkArenaAlloc.cpp",
+   "$_src/base/SkArenaAlloc.h",
+   "$_src/base/SkArenaAllocList.h",
+@@ -847,3 +849,4 @@ skia_no_slug_srcs = []
+ skia_core_sources += skia_pathops_sources
+ 
+ skia_core_public += skia_pathops_public
++
+
+diff --git before/skia/src/ports/SkTypeface_mac_ct.cpp after/skia/src/ports/SkTypeface_mac_ct.cpp
+index 81e11e4..d4b69ad 100644
+--- before/skia/src/ports/SkTypeface_mac_ct.cpp
++++ after/skia/src/ports/SkTypeface_mac_ct.cpp
+@@ -727,18 +727,9 @@ bool SkTypeface_Mac::onGlyphMaskNeedsCurrentColor() const {
+     return this->fHasColorGlyphs;
+ }
+ 
++
+ CFArrayRef SkTypeface_Mac::getVariationAxes() const {
+     fInitVariationAxes([this]{
+-        // Prefer kCTFontVariationAxesAttribute, faster since it doesn't localize axis names.
+-        SkUniqueCFRef<CTFontDescriptorRef> desc(CTFontCopyFontDescriptor(fFontRef.get()));
+-        SkUniqueCFRef<CFTypeRef> cf(
+-                CTFontDescriptorCopyAttribute(desc.get(), kCTFontVariationAxesAttribute));
+-        CFArrayRef array;
+-        if (cf && SkCFDynamicCast(cf.get(), &array, "Axes")) {
+-            fVariationAxes.reset(array);
+-            cf.release();
+-            return;
+-        }
+         fVariationAxes.reset(CTFontCopyVariationAxes(fFontRef.get()));
+     });
+     return fVariationAxes.get();

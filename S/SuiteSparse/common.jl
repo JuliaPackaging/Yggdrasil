@@ -43,6 +43,30 @@ function suitesparse_sources(version::VersionNumber; kwargs...)
             GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
                       "13806726cbf470914d012d132a85aea1aff9ee77")
         ],
+        v"7.8.0" => [
+            GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
+                      "58e6558408f6a51c08e35a5557d5e68cae32147e")
+        ],
+        v"7.8.2" => [
+            GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
+                      "c8c3a9de1c8eef54da5ff19fd0bcf7ca6e8bc9de")
+        ],
+        v"7.8.3" => [
+            GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
+                      "d3c4926d2c47fd6ae558e898bfc072ade210a2a1")
+        ],
+        v"7.10.1" => [
+            GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
+                      "31572b33461e17eb3836c8cda9b1e5920ab1dfa0")
+        ],
+        v"7.11.0" => [
+            GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
+                      "b35a1f9318f4bd42085f4b5ea56f29c89d342d4d")
+        ],
+        v"7.12.1" => [
+            GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
+                      "901381cd753c004cc2db8e91bdb48f1b51212d3d")
+        ],
     )
     return Any[
         suitesparse_version_sources[version]...,
@@ -73,9 +97,13 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("libblastrampoline_jll"; compat="5.8.0"),
+    Dependency(PackageSpec(name="libblastrampoline_jll",
+                           uuid="8e850b90-86db-534c-a0d3-1478176c7d93"),
+               v"5.12.0";  # build version
+               compat="5.8.0"),
     BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
-    HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.24.3"))
+    # Need the most recent 3.29.3+1 version (or later) to get libblastrampoline support
+    HostBuildDependency(PackageSpec(; name="CMake_jll"))
 ]
 
 # Generate a common build script for most SuiteSparse packages.
@@ -86,28 +114,21 @@ dependencies = [
 # for instance -DSUITESPARSE_USE_SYSTEM_*=ON to use pre-existing JLLs for
 # certain packages.
 # Use PROJECTS_TO_BUILD to specify which projects to build.
-function build_script(use_omp::Bool = false, use_cuda::Bool = false)
-    return "USEOMP=$(use_omp)\nUSECUDA=$(use_cuda)\n" * raw"""
+function build_script(; use_omp::Bool = false, use_cuda::Bool = false, build_32bit_blas::Bool = false)
+    return "USE_OMP=$(use_omp)\nUSE_CUDA=$(use_cuda)\nUSE_32BIT_BLAS=$(build_32bit_blas)\n" * raw"""
 cd $WORKSPACE/srcdir/SuiteSparse
 
-# Needs cmake >= 3.24 provided by jll
+# Needs cmake >= 3.29 provided by jll
 apk del cmake
 
 FLAGS+=(INSTALL="${prefix}" INSTALL_LIB="${libdir}" INSTALL_INCLUDE="${prefix}/include")
-
-BLAS_NAME=blastrampoline
-if [[ "${target}" == *-mingw* ]]; then
-    BLAS_LIB=${BLAS_NAME}-5
-else
-    BLAS_LIB=${BLAS_NAME}
-fi
 
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     # Install msan runtime (for clang)
     cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
 fi
 
-if [[ ${nbits} == 64 ]]; then
+if [[ ${nbits} == 64 ]] && [[ ${USE_32BIT_BLAS} == false ]]; then
     CMAKE_OPTIONS+=(
         -DBLAS64_SUFFIX="_64"
         -DSUITESPARSE_USE_64BIT_BLAS=YES
@@ -128,19 +149,14 @@ cmake -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DBUILD_STATIC_LIBS=OFF \
       -DBUILD_TESTING=OFF \
+      -DBLA_VENDOR=libblastrampoline \
       -DSUITESPARSE_ENABLE_PROJECTS=${PROJECTS_TO_BUILD} \
       -DSUITESPARSE_DEMOS=OFF \
       -DSUITESPARSE_USE_STRICT=ON \
       -DSUITESPARSE_USE_FORTRAN=OFF \
-      -DSUITESPARSE_USE_OPENMP=${USEOMP} \
-      -DSUITESPARSE_USE_CUDA=${USECUDA} \
+      -DSUITESPARSE_USE_OPENMP=${USE_OMP} \
+      -DSUITESPARSE_USE_CUDA=${USE_CUDA} \
       -DCHOLMOD_PARTITION=ON \
-      -DBLAS_FOUND=1 \
-      -DBLAS_LIBRARIES="${libdir}/lib${BLAS_LIB}.${dlext}" \
-      -DBLAS_LINKER_FLAGS="${BLAS_LIB}" \
-      -DBLA_VENDOR="${BLAS_NAME}" \
-      -DLAPACK_LIBRARIES="${libdir}/lib${BLAS_LIB}.${dlext}" \
-      -DLAPACK_LINKER_FLAGS="${BLAS_LIB}" \
       "${CMAKE_OPTIONS[@]}" \
       ..
 
@@ -152,6 +168,7 @@ cmake --install .
 if [[ ${target} == *-apple-* ]] || [[ ${target} == *freebsd* ]]; then
     echo "-- Modifying library name for libblastrampoline"
 
+    BLAS_NAME=blastrampoline
     for nm in libcholmod libspqr libumfpack; do
         if [[ *"${nm}"* == PROJECTS_TO_BUILD ]]; then
             # Figure out what version it probably latched on to:

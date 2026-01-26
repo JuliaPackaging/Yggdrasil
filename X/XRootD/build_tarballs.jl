@@ -2,17 +2,25 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "XRootD"
-version = v"5.6.9"
+version = v"5.8.4"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/xrootd/xrootd/releases/download/v$(version)/xrootd-$(version).tar.gz", "44196167fbcf030d113e3749dfdecab934c43ec15e38e77481e29aac191ca3a8")
+    ArchiveSource("https://github.com/xrootd/xrootd/releases/download/v$(version)/xrootd-$(version).tar.gz", 
+                  "d8716bf764a7e8103aab83fbf4906ea2cc157646b1a633d99f91edbf204ff632"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
+
+atomic_patch -p0 patches/compilation-fixes.patch
+
 mkdir build && cd build
 install_license ../xrootd-*/LICENSE
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
@@ -24,9 +32,13 @@ make -j${nproc}
 make install
 """
 
+sources, script = require_macos_sdk("10.15", sources, script)
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(exclude= p->libc(p) == "musl" || os(p) == "freebsd" || os(p) == "windows") |> expand_cxxstring_abis
+platforms = supported_platforms(exclude = p -> libc(p) == "musl" || 
+                                               os(p) == "freebsd" || 
+                                               os(p) == "windows" ) |> expand_cxxstring_abis
 
 # The products that we will ensure are always built
 products = [
@@ -96,12 +108,12 @@ dependencies = [
     Dependency(PackageSpec(name="Libuuid_jll", uuid="38a345b3-de98-5d2b-a5d3-14cd9215e700"))
     Dependency(PackageSpec(name="libxcrypt_legacy_jll", uuid="5ef642bb-a58b-5208-ae37-583168b2c491"))
     Dependency(PackageSpec(name="JSON_C_jll", uuid="9cdfc4e7-e793-5089-b6f7-569a57a60f0a"))
-    Dependency(PackageSpec(name="XML2_jll", uuid="02c8fc9c-b97f-50b9-bbe4-9be30ff0a78a"))
-    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="1.1.10")
+    Dependency(PackageSpec(name="XML2_jll", uuid="02c8fc9c-b97f-50b9-bbe4-9be30ff0a78a"); compat="~2.14.1")
+    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="3.0.16")
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"8", julia_compat="1.6")
+               preferred_gcc_version=v"9", julia_compat="1.6")
