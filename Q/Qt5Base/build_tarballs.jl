@@ -31,7 +31,7 @@ atomic_patch -p1 -d "${qtsrcdir}" ../patches/0003-gcc-11.patch
 
 commonoptions=" \
 -opensource -confirm-license \
--openssl-linked  -nomake examples -release \
+-openssl-runtime  -nomake examples -release \
 "
 
 export OPENSSL_LIBS="-L${libdir} -lssl -lcrypto"
