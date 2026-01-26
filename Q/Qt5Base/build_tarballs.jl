@@ -203,7 +203,7 @@ dependencies = [
 
 include("../../fancy_toys.jl")
 
-julia_compat = "1.10"
+julia_compat = "1.12"
 
 if any(should_build_platform.(triplet.(platforms_linux)))
     build_tarballs(ARGS, name, version, sources, script, platforms_linux, products, dependencies; preferred_gcc_version = v"7", preferred_llvm_version=llvm_version, julia_compat)
