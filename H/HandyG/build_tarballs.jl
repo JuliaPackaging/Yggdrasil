@@ -29,7 +29,17 @@ if [[ ! -d src ]]; then
 fi
 
 # Add stable C-ABI entrypoints used by HandyG.jl
-cp ${WORKSPACE}/srcdir/bundled/handyg_capi.f90 src/handyg_capi.f90
+shim_src="${WORKSPACE}/srcdir/handyg_capi.f90"
+if [[ -f "${shim_src}" ]]; then
+  cp "${shim_src}" src/handyg_capi.f90
+elif [[ -f "${WORKSPACE}/srcdir/bundled/handyg_capi.f90" ]]; then
+  # Backwards-compat in case DirectorySource uses `target="bundled"`.
+  cp "${WORKSPACE}/srcdir/bundled/handyg_capi.f90" src/handyg_capi.f90
+else
+  echo "ERROR: handyg_capi.f90 not found in srcdir (expected handyg_capi.f90 or bundled/handyg_capi.f90)."
+  ls -la "${WORKSPACE}/srcdir"
+  exit 1
+fi
 
 mkdir -p build
 
