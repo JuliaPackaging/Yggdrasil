@@ -7,7 +7,7 @@ version = v"0.2.0"
 sources = [
     GitSource("https://gitlab.com/mule-tools/handyG.git",
               "756ab007b4655e0b37244dd0dcc072f3ae7f4bc8"; unpack_target="handyg"),
-    DirectorySource(joinpath(@__DIR__, "bundled"); target="bundled", follow_symlinks=true),
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
