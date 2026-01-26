@@ -175,7 +175,7 @@ products_macos = [
 ]
 
 # We must use the same version of LLVM for the build toolchain and LLVMCompilerRT_jll
-llvm_version = "13.0.1"
+llvm_version = v"13.0.1"
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
@@ -194,13 +194,13 @@ dependencies = [
     Dependency("Zlib_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("OpenSSL_jll"; compat="3.0.13"),
-    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
+    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=string(llvm_version));
                     platforms=filter(p -> Sys.isapple(p) && arch(p) == "x86_64", platforms_macos)),
 ]
 
 include("../../fancy_toys.jl")
 
-julia_compat = "1.6"
+julia_compat = "1.10"
 
 if any(should_build_platform.(triplet.(platforms_linux)))
     build_tarballs(ARGS, name, version, sources, script, platforms_linux, products, dependencies; preferred_gcc_version = v"7", preferred_llvm_version=llvm_version, julia_compat)
