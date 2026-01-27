@@ -39,6 +39,8 @@ platforms = expand_cxxstring_abis(supported_platforms())
 # RISC-V: not yet supported
 filter!(p -> !Sys.iswindows(p), platforms)
 filter!(p -> arch(p) != "riscv64", platforms)
+filter!(p -> arch(p) != "armv6l", platforms)
+filter!(p -> arch(p) != "armv7l", platforms)
 
 # The products that we will ensure are always built
 products = [
