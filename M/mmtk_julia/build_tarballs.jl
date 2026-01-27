@@ -12,6 +12,12 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+# Use the system linker. On Linux, force BFD to avoid "lld not built with zlib support" errors.
+export RUSTFLAGS="-C linker=${CC}"
+if [[ "${target}" == *-linux-* ]]; then
+    RUSTFLAGS="${RUSTFLAGS} -C link-arg=-fuse-ld=bfd"
+fi
+
 cd $WORKSPACE/srcdir/mmtk-julia/
 MMTK_PLANS=("Immix" "StickyImmix")
 MMTK_MOVING=(0 1)
@@ -74,4 +80,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", compilers = [:rust, :c], preferred_gcc_version = v"10", preferred_rust_version=v"1.91.0", dont_dlopen=true)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", compilers = [:rust, :c], preferred_gcc_version = v"10", dont_dlopen=true)
