@@ -3,13 +3,16 @@ using BinaryBuilder, Pkg
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
-name = "p7zip_standalone"
+name = "p7zip_alone2"
 # This package is closely related to p7zip
 # p7zip builds the Alone bundle to provide 7za.exe which supports only the major formats.
-# p7zip_standalone builds the Alone2 bundle to provide 7zz.exe which supports the full set of formats except RAR.
-# Upstream uses CalVer
+# p7zip_alone2 builds the Alone2 bundle to provide 7zz.exe which supports the full set of formats except RAR.
 upstream_version = "25.01"
 compact_version = replace(upstream_version, "."=>"")
+# Upstream uses CalVer
+# This package uses an independent SemVer version number
+# to avoid dependent packages needing to update compat every year
+# even if there are no breaking changes.
 version = v"1.0.0"
 
 # Collection of sources required to build p7zip
