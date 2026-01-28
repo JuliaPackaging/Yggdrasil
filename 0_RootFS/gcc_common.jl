@@ -69,6 +69,7 @@ function gcc_script(gcc_version::VersionNumber, compiler_target::Platform)
     # Default sysroot
     sysroot="${prefix}/${COMPILER_TARGET}/sys-root"
     cp -ra "/opt/${COMPILER_TARGET}/${COMPILER_TARGET}" "${prefix}/${COMPILER_TARGET}"
+    mkdir -p "${sysroot}/include"
 
     # Some things need /lib64, others just need /lib.  Be consistent with where
     # our compiler wrappers expect the libraries to be:
