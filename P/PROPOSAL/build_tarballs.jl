@@ -8,7 +8,7 @@ version = v"7.6.2"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/tudo-astroparticlephysics/PROPOSAL.git",
-              "0d7fb45b2305bd275e90c6d68c1168301198e451"),  # v7.6.2
+              "0d7fb45b2305bd275e90c6d68c1168301198e451"),
 ]
 
 # Bash recipe for building across all platforms
