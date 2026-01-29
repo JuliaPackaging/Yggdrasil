@@ -1,0 +1,42 @@
+using BinaryBuilder
+
+name = "Quiver"
+version = v"0.1.0"
+
+sources = [
+    GitSource("https://github.com/psrenergy/quiver.git",
+              "00b7cdc3e4187db73c405c1d407ad4b1664e40d7"),
+]
+
+script = raw"""
+cd ${WORKSPACE}/srcdir/quiver
+
+# Set cache variables for cross-compilation (bypass TRY_RUN checks in bundled SQLite)
+cmake -B build \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DQUIVER_BUILD_TESTS=OFF \
+    -DQUIVER_BUILD_C_API=ON \
+    -DHAVE_GNU_STRERROR_R_EXITCODE=0 \
+    -DHAVE_GNU_STRERROR_R_EXITCODE__TRYRUN_OUTPUT=""
+
+cmake --build build --parallel ${nproc}
+cmake --install build
+
+install_license LICENSE
+"""
+
+platforms = supported_platforms()
+filter!(!Sys.isapple, platforms)
+platforms = expand_cxxstring_abis(platforms)
+
+products = [
+    LibraryProduct("libquiver_c", :libquiver_c),
+]
+
+dependencies = Dependency[]
+
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.7",
+               preferred_gcc_version=v"13")
