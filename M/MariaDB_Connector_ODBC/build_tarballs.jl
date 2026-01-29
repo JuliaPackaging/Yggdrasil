@@ -3,17 +3,17 @@
 using BinaryBuilder
 
 name = "MariaDB_Connector_ODBC"
-version = v"3.1.16"
+version = v"3.1.22"
 
 # Collection of sources required to build MariaDB_Connector_ODBC
 sources = [
-    ArchiveSource("https://downloads.mariadb.com/Connectors/odbc/connector-odbc-$(version)/mariadb-connector-odbc-$(version)-src.tar.gz",
-                  "4fd0de9d0e9da883ac9801cbf97953be9cc9010830417c44e8b339deca48463d"),
+    ArchiveSource("https://archive.mariadb.org/connector-odbc-$(version)/mariadb-connector-odbc-$(version)-src.tar.gz",
+                  "250f23dc2cc47bd0e80b3eb8059819a06275d22950b22b7afca8b253c3cebcee"),
     DirectorySource("./bundled"),
     FileSource("https://downloads.mariadb.com/Connectors/odbc/connector-odbc-$(version)/mariadb-connector-odbc-$(version)-win64.msi",
-               "9d027383b88b7f82203081402242828cf3b54cdd9d1ea7a60be145e9a3dd750e"; filename = "x86_64-w64-mingw32.msi"),
+               "fb66392eea982cd77a3e191075d4fa15a10b5ac6ea854f7d1bd3ce5d178f7359"; filename = "x86_64-w64-mingw32.msi"),
     FileSource("https://downloads.mariadb.com/Connectors/odbc/connector-odbc-$(version)/mariadb-connector-odbc-$(version)-win32.msi",
-               "341bb7126cc40314244dd62a5c77799d2f9429ac5142880320f3bbc3fd8dc4ee"; filename = "i686-w64-mingw32.msi"),
+               "346fc34cfc517843516725cf581b6d16d824db39d2b01f8fcb1fbae24ebefb71"; filename = "i686-w64-mingw32.msi"),
     ## Keep the patches just in case some day we decide to build for Windows
     ## from source
     # DirectorySource("./bundled"),
@@ -85,8 +85,10 @@ platforms = [
     Platform("x86_64", "linux"; libc="musl"),
     # Platform("aarch64", "linux"; libc="musl"),
     # Platform("armv7l", "linux"; libc="musl"),
-    Platform("x86_64", "macos"),
-    Platform("aarch64", "macos"),
+    # TODO: Re-enable macOS once build issues are resolved
+    # macOS builds failing, likely due to iODBC/OpenSSL path issues
+    # Platform("x86_64", "macos"),
+    # Platform("aarch64", "macos"),
     # Platform("x86_64", "freebsd"),
     Platform("i686", "windows"),
     Platform("x86_64", "windows"),
@@ -104,7 +106,7 @@ dependencies = [
     Dependency("iODBC_jll"),
     Dependency("Libiconv_jll"),
     Dependency("unixODBC_jll"),
-    Dependency("OpenSSL_jll"; compat="1.1.10"),
+    Dependency("OpenSSL_jll"; compat="3.0.16"),
     Dependency("Zlib_jll"),
 ]
 
