@@ -34,8 +34,9 @@ fi
 
 cd $WORKSPACE/srcdir/mariadb-connector*/
 
-# Skip building of macOS package
-sed -i 's/ADD_SUBDIRECTORY(osxinstall)/# ADD_SUBDIRECTORY(osxinstall)/' CMakeLists.txt
+# Skip building of macOS package (requires pkgbuild/productbuild which aren't available in cross-compilation)
+# In 3.1.x, the packaging is in packaging/macos subdirectory
+sed -i 's/ADD_SUBDIRECTORY(packaging\/macos)/# ADD_SUBDIRECTORY(packaging\/macos)/' CMakeLists.txt
 
 # They want to run a script which changes the name of the required library
 # `libiodbcinst` from `libiodbcinst.2.dylib` to `libiodbcinst.dylib` which has the only
@@ -85,10 +86,8 @@ platforms = [
     Platform("x86_64", "linux"; libc="musl"),
     # Platform("aarch64", "linux"; libc="musl"),
     # Platform("armv7l", "linux"; libc="musl"),
-    # TODO: Re-enable macOS once build issues are resolved
-    # macOS builds failing, likely due to iODBC/OpenSSL path issues
-    # Platform("x86_64", "macos"),
-    # Platform("aarch64", "macos"),
+    Platform("x86_64", "macos"),
+    Platform("aarch64", "macos"),
     # Platform("x86_64", "freebsd"),
     Platform("i686", "windows"),
     Platform("x86_64", "windows"),
