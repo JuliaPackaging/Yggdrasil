@@ -13,12 +13,23 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/liquid-dsp
+
 mkdir build
 cd build 
 
-#cross-compiling outside of subset of platforms not achievable due to
-#executable testing in cmake process
-cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} 
+#for i686 and x68_64 linux, can use native binarybuilder toolchain w/ simd
+#enabled and executable testing. for all other linux, use toolchain but disable
+#simd and any/all testing.  current linker error with windows and apple
+
+if [[ "${target}" == *i686-linux* ]] || [[ "${target}" == *x86_64-linux* ]]; then
+    cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_BUILD_TYPE=Release
+else
+    cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_BUILD_TYPE=Release \
+             -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+             -DFIND_SIMD=OFF -DENABLE_SIMD=OFF \
+             -DBUILD_EXAMPLES=OFF -DBUILD_AUTOTESTS=OFF -DBUILD_BENCHMARKS=OFF
+fi
+
 
 make -j${nproc}
 make install
@@ -29,12 +40,7 @@ install_license ${WORKSPACE}/srcdir/liquid-dsp/LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("i686", "linux"; libc = "musl"),
-    Platform("i686", "linux"; libc = "glibc")
-]
+platforms = supported_platforms( exclude=x->(Sys.isapple(x) || Sys.iswindows(x)) )
 
 
 # The products that we will ensure are always built
