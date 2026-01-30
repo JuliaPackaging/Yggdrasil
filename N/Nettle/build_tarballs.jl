@@ -6,7 +6,7 @@ version_string = "3.10.2"
 version = VersionNumber(version_string)
 
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/nettle/nettle-$(version_string).tar.gz",
+    ArchiveSource("https://ftpmirror.gnu.org/gnu/nettle/nettle-$(version_string).tar.gz",
                   "fe9ff51cb1f2abb5e65a6b8c10a92da0ab5ab6eaf26e7fc2b675c45f1fb519b5"),
     DirectorySource("./bundled"),
 ]
