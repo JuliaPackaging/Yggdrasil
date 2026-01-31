@@ -90,7 +90,7 @@ for platform in all_platforms
     should_build_platform(triplet(platform)) || continue
 
     platform_deps = BinaryBuilder.AbstractDependency[dependencies...]
-    platform_script = copy(script)
+    platform_script = deepcopy(script)
 
     if haskey(platform, "cuda") && platform["cuda"] != "none" 
         append!(platform_deps, CUDA.required_dependencies(platform))
