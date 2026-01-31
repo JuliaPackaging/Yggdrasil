@@ -9,7 +9,7 @@ include("make_script.jl")
 name = "legate_jl_wrapper"
 version = v"25.10.3" # legate has 05, but Julia doesn't like that
 sources = [
-    GitSource("https://github.com/JuliaLegate/Legate.jl","4e1270b25bfa3b07d775ba630cf205b65b358812"),
+    GitSource("https://github.com/JuliaLegate/Legate.jl","29b14ed3e78013a47241a7f77140454271159bfb"),
 ]
 
 MIN_JULIA_VERSION = v"1.10"
