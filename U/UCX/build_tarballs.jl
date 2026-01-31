@@ -97,7 +97,7 @@ dependencies = [
 ]
 
 
-for platform in platforms
+for platform in all_platforms
 
     should_build_platform(triplet(platform)) || continue
 
