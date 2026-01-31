@@ -60,9 +60,9 @@ cpu_platforms = [Platform("x86_64", "linux"; libc="glibc"), Platform("aarch64", 
 cuda_platforms = CUDA.supported_platforms(; min_version = MIN_CUDA_VERSION, max_version = MAX_CUDA_VERSION)
 filter!(p -> arch(p) == "x86_64", cuda_platforms) # ARM+CUDA+UCX should work, but not gonna do that today
 
-all_platforms = [cpu_platform; cuda_platforms]
+all_platforms = [cpu_platforms; cuda_platforms]
 
-for platform in platforms
+for platform in all_platforms
     if CUDA.is_supported(platform) && !haskey(platform, "cuda")
         platform["cuda"] = "none"
     end
