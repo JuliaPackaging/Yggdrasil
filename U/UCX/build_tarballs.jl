@@ -55,8 +55,6 @@ for platform in all_platforms
     end
 end
 
-all_platforms = [all_platforms[4]]
-
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libuct", :libuct),
