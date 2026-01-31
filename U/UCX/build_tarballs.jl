@@ -4,6 +4,7 @@ using BinaryBuilder, Pkg
 
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "UCX"
 version = v"1.20.0"
@@ -101,14 +102,12 @@ for platform in all_platforms
 
     should_build_platform(triplet(platform)) || continue
 
-    platform_sources = BinaryBuilder.AbstractSource[sources...]
-
     if haskey(platform, "cuda") && platform["cuda"] != "none" 
         append!(dependencies, CUDA.required_dependencies(platform))
     end
 
     build_tarballs(
-        ARGS, name, version, platform_sources, 
+        ARGS, name, version, sources, 
         script, [platform], products, dependencies;
         julia_compat = "1.10", 
         preferred_gcc_version = v"7",
