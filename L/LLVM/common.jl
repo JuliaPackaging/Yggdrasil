@@ -396,6 +396,9 @@ if [[ "${target}" == *musl* ]]; then
     # Taken from https://git.alpinelinux.org/cgit/aports/tree/main/compiler-rt/APKBUILD
     CMAKE_FLAGS+=(-DCOMPILER_RT_BUILD_SANITIZERS=OFF)
     CMAKE_FLAGS+=(-DCOMPILER_RT_BUILD_XRAY=OFF)
+
+    CMAKE_FLAGS+=(-DCOMPILER_RT_BUILD_MEMPROF=OFF)
+    CMAKE_FLAGS+=(-DCOMPILER_RT_BUILD_CTX_PROFILE=OFF)
 fi
 
 if [[ "${target}" == *freebsd* ]]; then
