@@ -7,9 +7,9 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 include("make_script.jl")
 
 name = "legate_jl_wrapper"
-version = v"25.10.2" # legate has 05, but Julia doesn't like that
+version = v"25.10.3" # legate has 05, but Julia doesn't like that
 sources = [
-    GitSource("https://github.com/JuliaLegate/legate_jl_wrapper.git","b45876b1a766083cd95f10ffd85652af6150acfe"),
+    GitSource("https://github.com/JuliaLegate/Legate.jl","29b14ed3e78013a47241a7f77140454271159bfb"),
 ]
 
 MIN_JULIA_VERSION = v"1.10"
