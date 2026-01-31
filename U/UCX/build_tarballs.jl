@@ -37,20 +37,6 @@ FLAGS+=(--enable-frame-pointer)
 FLAGS+=(--enable-cma)
 FLAGS+=(--with-rdmacm=${prefix})
 
-
-if [[ "${target}" != *aarch64* ]]; then
-    FLAGS+=(--with-cuda=${prefix}/cuda)
-fi
-
-
-./configure ${FLAGS[@]}
-
-# For a bug in `src/uct/sm/cma/Makefile` that I did't have the time to look
-# into, we have to build with `V=1`
-make -j${nproc} V=1
-make install
-
-install_license LICENSE
 """
 
 MIN_CUDA_VERSION = v"12.2"
@@ -69,6 +55,7 @@ for platform in all_platforms
     end
 end
 
+all_platforms = [all_platforms[4]]
 
 # The products that we will ensure are always built
 products = [
@@ -103,14 +90,37 @@ for platform in all_platforms
     should_build_platform(triplet(platform)) || continue
 
     platform_deps = BinaryBuilder.AbstractDependency[dependencies...]
+    platform_script = copy(script)
 
     if haskey(platform, "cuda") && platform["cuda"] != "none" 
         append!(platform_deps, CUDA.required_dependencies(platform))
+
+        platform_script *= "\n"
+        platform_script *= raw"""
+            FLAGS+=(--with-cuda=${prefix}/cuda)
+            export CUDA_HOME=${prefix}/cuda;
+            export PATH=$PATH:$CUDA_HOME/bin
+            export CUDACXX=$CUDA_HOME/bin/nvcc
+            export CUDA_LIB=${CUDA_HOME}/lib
+        """
+
     end
+
+    platform_script *= "\n"
+    platform_script *= raw"""
+        ./configure ${FLAGS[@]}
+
+        # For a bug in `src/uct/sm/cma/Makefile` that I did't have the time to look
+        # into, we have to build with `V=1`
+        make -j${nproc} V=1
+        make install
+
+        install_license LICENSE
+        """
 
     build_tarballs(
         ARGS, name, version, sources, 
-        script, [platform], products, platform_deps;
+        platform_script, [platform], products, platform_deps;
         julia_compat = "1.10", 
         preferred_gcc_version = v"7",
         lazy_artifacts = true,
