@@ -102,13 +102,15 @@ for platform in all_platforms
 
     should_build_platform(triplet(platform)) || continue
 
+    platform_deps = BinaryBuilder.AbstractDependency[dependencies...]
+
     if haskey(platform, "cuda") && platform["cuda"] != "none" 
-        append!(dependencies, CUDA.required_dependencies(platform))
+        append!(platform_deps, CUDA.required_dependencies(platform))
     end
 
     build_tarballs(
         ARGS, name, version, sources, 
-        script, [platform], products, dependencies;
+        script, [platform], products, platform_deps;
         julia_compat = "1.10", 
         preferred_gcc_version = v"7",
         lazy_artifacts = true,
