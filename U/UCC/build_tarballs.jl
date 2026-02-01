@@ -73,10 +73,12 @@ for platform in all_platforms
 
     if haskey(platform, "cuda") && platform["cuda"] != "none" 
         append!(platform_deps, CUDA.required_dependencies(platform))
+        push!(platform_deps, Dependency("NCCL_jll"))
 
         platform_script *= "\n"
         platform_script *= raw"""
             FLAGS+=(--with-cuda=${prefix}/cuda)
+            FLAGS+=(--with-nccl=${prefix})
             export CUDA_HOME=${prefix}/cuda;
             export PATH=$PATH:$CUDA_HOME/bin
             export CUDACXX=$CUDA_HOME/bin/nvcc
