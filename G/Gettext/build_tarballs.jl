@@ -27,10 +27,10 @@ export LDFLAGS="-L${libdir}"
 atomic_patch -p1 ../patches/progreloc.patch
 
 if [[ "${target}" == *-mingw* ]]; then
-    # Apply patch from https://lists.gnu.org/archive/html/bug-gettext/2020-07/msg00035.html
-    #      ../woe32dll/.libs/libgettextsrc_la-c++format.o: In function `__static_initialization_and_destruction_0':
-    #      /workspace/srcdir/gettext-0.21/gettext-tools/src/../woe32dll/../src/format.c:67: undefined reference to `__imp_formatstring_ruby'
-    atomic_patch -p1 ../patches/0001-build-Fix-build-failure-on-mingw-formatstring_ruby.patch
+    # Do not export multi-byte string functions.
+    # These functions are defined in a system library, and if we not re-export them,
+    # there would be duplicate definitions.
+    export LDFLAGS="-Wl,--exclude-symbols,mbrtowc:mbrlen:mbsrtowcs:wcsrtombs:mbtowc:wctomb"
 fi
 
 ./configure --prefix=${prefix} \
