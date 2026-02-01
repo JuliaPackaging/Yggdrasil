@@ -50,7 +50,7 @@ platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libgnuintl", :libintl),
+    LibraryProduct(["libintl", "libgnuintl"], :libintl),
     LibraryProduct("libasprintf", :libasprintf),
     ExecutableProduct("gettext", :gettext),
     ExecutableProduct("ngettext", :ngettext),
