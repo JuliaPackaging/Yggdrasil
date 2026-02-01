@@ -57,8 +57,10 @@ dependencies = [
     Dependency(PackageSpec(name="libcxxwrap_julia_jll"), compat="0.13.4"),
     Dependency(PackageSpec(name="OpenSSL_jll")),
     Dependency(PackageSpec(name="Zstd_jll")),
-    BuildDependency(PackageSpec(name="libjulia_jll", version=v"1.7"))
+    # Pin libjulia to 1.6 for widest compatibility (works on 1.7+)
+    BuildDependency(PackageSpec(name="libjulia_jll", version=v"1.6"))
 ]
 
 # Build the tarballs
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.7", preferred_gcc_version=v"9")
+# We prefer GCC 9 to ensure glibc compatibility with older linux distros (e.g. CentOS 7)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"9")
