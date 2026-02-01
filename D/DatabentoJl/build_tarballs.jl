@@ -57,8 +57,8 @@ dependencies = [
     Dependency(PackageSpec(name="libcxxwrap_julia_jll"), compat="0.13.4"),
     Dependency(PackageSpec(name="OpenSSL_jll")),
     Dependency(PackageSpec(name="Zstd_jll")),
-    # Pin libjulia to 1.6 for widest compatibility (works on 1.7+)
-    BuildDependency(PackageSpec(name="libjulia_jll", version=v"1.6"))
+    # Pin libjulia (implicit via julia_compat, but explicit build dep needed for linking)
+    BuildDependency(PackageSpec(name="libjulia_jll"))
 ]
 
 # Build the tarballs
