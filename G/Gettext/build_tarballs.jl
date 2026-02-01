@@ -2,21 +2,25 @@ using BinaryBuilder
 
 # Collection of sources required to build Gettext
 name = "Gettext"
-version = v"0.21.0"
+version_string = "1.0"
+version = VersionNumber(version_string)
 
 sources = [
-    ArchiveSource("https://ftp.gnu.org/pub/gnu/gettext/gettext-$(version.major).$(version.minor).tar.xz",
-                  "d20fcbb537e02dcf1383197ba05bd0734ef7bf5db06bdb241eb69b7d16b73192"),
-    DirectorySource("./bundled"),
+    ArchiveSource("https://ftpmirror.gnu.org/pub/gnu/gettext/gettext-$(version_string).tar.xz",
+                  "71132a3fb71e68245b8f2ac4e9e97137d3e5c02f415636eb508ae607bc01add7"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/gettext-*/
+cd $WORKSPACE/srcdir/gettext-*
 
 export CFLAGS="-O2"
 export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
+
+# Reported as <https://savannah.gnu.org/bugs/?67987>
+atomic_patch -p1 ../patches/progreloc.patch
 
 if [[ "${target}" == *-mingw* ]]; then
     # Apply patch from https://lists.gnu.org/archive/html/bug-gettext/2020-07/msg00035.html
@@ -39,7 +43,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
