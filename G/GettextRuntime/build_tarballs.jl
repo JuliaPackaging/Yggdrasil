@@ -32,7 +32,8 @@ cd gettext-runtime
     --disable-static \
     --enable-relocatable \
     --with-libiconv-prefix=${prefix} \
-    --with-included-gettext
+    --with-included-gettext \
+    --with-included-libintl \
     am_cv_lib_iconv=yes \
     am_cv_func_iconv=yes
 make -j${nproc}
