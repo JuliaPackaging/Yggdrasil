@@ -58,8 +58,8 @@ dependencies = [
     Dependency(PackageSpec(name="libcxxwrap_julia_jll")),
     Dependency(PackageSpec(name="OpenSSL_jll")),
     Dependency(PackageSpec(name="Zstd_jll")),
-    # Force build against Julia 1.6 headers to ensure ABI compatibility and avoid jl_function_t errors
-    BuildDependency(PackageSpec(name="libjulia_jll", version=v"1.6"))
+    # Force build against Julia 1.6 headers (using compat to find available version)
+    Dependency(PackageSpec(name="libjulia_jll"), compat="1.6")
 ]
 
 # Build the tarballs
