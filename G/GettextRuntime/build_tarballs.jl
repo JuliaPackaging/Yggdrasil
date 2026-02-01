@@ -2,17 +2,23 @@ using BinaryBuilder
 
 # Collection of sources required to build GettextRuntime
 name = "GettextRuntime"
-version_string = "0.22.4"
+version_string = "1.0"
 version = VersionNumber(version_string)
 
 sources = [
     ArchiveSource("https://ftp.gnu.org/pub/gnu/gettext/gettext-$(version_string).tar.xz",
-                  "29217f1816ee2e777fa9a01f9956a14139c0c23cc1b20368f06b2888e8a34116"),
+                  "71132a3fb71e68245b8f2ac4e9e97137d3e5c02f415636eb508ae607bc01add7"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/gettext-*/gettext-runtime
+cd $WORKSPACE/srcdir/gettext-*
+
+# Reported as <https://savannah.gnu.org/bugs/?67987>
+atomic_patch -p1 ../patches/progreloc.patch
+
+cd gettext-runtime
 
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
@@ -38,7 +44,7 @@ platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libintl", :libintl),
+    LibraryProduct("libgnuintl", :libintl),
     LibraryProduct("libasprintf", :libasprintf),
     ExecutableProduct("gettext", :gettext),
     ExecutableProduct("ngettext", :ngettext),
