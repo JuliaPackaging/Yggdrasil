@@ -73,7 +73,7 @@ for platform in all_platforms
 
     if haskey(platform, "cuda") && platform["cuda"] != "none" 
         append!(platform_deps, CUDA.required_dependencies(platform))
-        push!(platform_deps, Dependency("NCCL_jll"))
+        push!(platform_deps, Dependency("NCCL_jll"; compat="=2.27.7")) # force NCCL without patch?
 
         platform_script *= "\n"
         platform_script *= raw"""
@@ -101,7 +101,7 @@ for platform in all_platforms
         ARGS, name, version, sources, 
         platform_script, [platform], products, platform_deps;
         julia_compat = "1.10", 
-        preferred_gcc_version = v"7",
+        preferred_gcc_version = v"11",
         lazy_artifacts = true,
         augment_platform_block = CUDA.augment
     )
