@@ -6,7 +6,11 @@ version_string = "1.0"
 version = VersionNumber(version_string)
 
 sources = [
-    ArchiveSource("https://ftpmirror.gnu.org/pub/gnu/gettext/gettext-$(version_string).tar.xz",
+    # <ftp.gnu.org> has a too-strict rate limit.
+    # <ftpmirror.gnu.org> does not have gettext-1.0. (yet?)
+    # ArchiveSource("https://ftpmirror.gnu.org/pub/gnu/gettext/gettext-$(version_string).tar.xz",
+    #               "71132a3fb71e68245b8f2ac4e9e97137d3e5c02f415636eb508ae607bc01add7"),
+    ArchiveSource("https://mirror.csclub.uwaterloo.ca/gnu/gettext/gettext-$(version_string).tar.xz",
                   "71132a3fb71e68245b8f2ac4e9e97137d3e5c02f415636eb508ae607bc01add7"),
     DirectorySource("bundled"),
 ]
