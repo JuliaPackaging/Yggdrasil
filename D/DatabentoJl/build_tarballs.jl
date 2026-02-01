@@ -9,7 +9,7 @@ sources = [
     GitSource("https://github.com/harris-azmon/databento-julia.git", "5274c23a3ec711639d2d77e2c2736b0070ea77e2"),
 
     # 2. Databento C++ Library (v0.30.0)
-    GitSource("https://github.com/databento/databento-cpp.git", "4d76077755776c5222bf62463e2732922dfd7718"),
+    GitSource("https://github.com/databento/databento-cpp.git", "49baedc33bd00b24d7503822c0c2ce6274477c18"),
 
     # 3. License File (copied from source)
     FileSource("https://raw.githubusercontent.com/harris-azmon/databento-julia/5274c23a3ec711639d2d77e2c2736b0070ea77e2/LICENSE", "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4")
