@@ -19,6 +19,12 @@ cd VkFFT/vkFFT
 echo "Current directory: $(pwd)"
 ls -F
 
+# PATCH: Fix log2 ambiguity for nvcc (C++11)
+# nvcc -std=c++11 fails to resolve log2(int) between float/double overloads.
+# We force a cast to double for all log2 calls.
+echo "Patching log2 usages..."
+grep -rl "log2(" . | xargs sed -i 's/log2(/log2((double)/g'
+
 # Create the shim file (inlined from repo)
 cat << 'EOF' > dct_shim.cu
 // dct_shim.cu
