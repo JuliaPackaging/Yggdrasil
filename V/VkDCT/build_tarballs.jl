@@ -12,10 +12,11 @@ sources = [
 
 # The script to build the binary
 script = raw"""
-cd VkFFT
+# Enter the inner directory where headers are located
+cd VkFFT/vkFFT
 
-# Debug check (simple ls)
-echo "Repo root content:"
+# Debug check
+echo "Current directory: $(pwd)"
 ls -F
 
 # Create the shim file (inlined from repo)
@@ -28,8 +29,8 @@ cat << 'EOF' > dct_shim.cu
 // Define Backend as CUDA
 #define VKFFT_BACKEND 1
 
-// Rely on standard structure: vkFFT/vkFFT.h relative to root
-#include "vkFFT/vkFFT.h"
+// Directly include the header since we are in its directory
+#include "vkFFT.h"
 
 // Context Struct
 struct VkDCTContext {
@@ -139,18 +140,11 @@ fi
 export PATH="$(dirname $NVCC):$PATH"
 echo "Found and added nvcc: $NVCC"
 
-# OS Detection: Linux Only
-# We strictly target .so output with -fPIC
 mkdir -p ${libdir}
 
-# Hardcoded Include Path: Current directory (Repo Root)
-# Expects vkFFT/vkFFT.h to resolve
-INCLUDE_PATH="."
-echo "Using Include Path: $INCLUDE_PATH"
+nvcc -O3 --shared -Xcompiler -fPIC -arch=sm_60 -o ${libdir}/libvkfft_dct.so dct_shim.cu -I. -lcuda -lnvrtc
 
-nvcc -O3 --shared -Xcompiler -fPIC -arch=sm_60 -o ${libdir}/libvkfft_dct.so dct_shim.cu -I"${INCLUDE_PATH}" -lcuda -lnvrtc
-
-install_license LICENSE
+install_license ../LICENSE
 """
 
 # Platforms - restricting to Linux/x86_64 for now as requested by typical GPU setups
