@@ -12,7 +12,15 @@ sources = [
 
 # The script to build the binary
 script = raw"""
-cd VkFFT*
+cd VkFFT
+
+# Debug: Check directory structure
+echo "Current directory: $(pwd)"
+if [ ! -f "vkFFT/VkFFT.h" ]; then
+    echo "ERROR: vkFFT/VkFFT.h not found!"
+    ls -F
+    exit 1
+fi
 
 # Create the shim file (inlined from repo)
 cat << 'EOF' > dct_shim.cu
@@ -23,7 +31,7 @@ cat << 'EOF' > dct_shim.cu
 
 // Define Backend as CUDA
 #define VKFFT_BACKEND 1
-#include "vkFFT/VkFFT.h"
+#include "vkFFT/vkFFT.h"
 
 // Context Struct
 struct VkDCTContext {
@@ -31,6 +39,7 @@ struct VkDCTContext {
     VkFFTConfiguration config;
     CUdevice device;
 };
+
 
 extern "C" {
 
@@ -122,9 +131,6 @@ void destroy_dct3d_plan(void* plan_ptr) {
 }
 EOF
 
-# Compile
-# Use -arch=sm_60 to support Pascal and newer. 
-# Since this is a shim, it mainly needs to act as host code, but includes CUDA headers.
 # Locate nvcc - properly add to PATH
 # CUDA_full_jll installation location can vary in the sandbox
 NVCC=$(find / -type f -name nvcc -executable 2>/dev/null | head -n 1)
@@ -139,7 +145,28 @@ echo "Found and added nvcc: $NVCC"
 # OS Detection: Linux Only
 # We strictly target .so output with -fPIC
 mkdir -p ${libdir}
-nvcc -O3 --shared -Xcompiler -fPIC -arch=sm_60 -o ${libdir}/libvkfft_dct.so dct_shim.cu -I. -lcuda -lnvrtc
+
+# Locate VkFFT.h and derive include path
+# The structure might be ./vkFFT/vkFFT.h or ./include/vkFFT/vkFFT.h
+VK_HEADER=$(find . -name vkFFT.h | head -n 1)
+
+if [ -z "$VK_HEADER" ]; then
+    echo "ERROR: vkFFT.h not found in $(pwd)"
+    ls -R
+    exit 1
+fi
+
+echo "Found header at: $VK_HEADER"
+# We need the directory *containing* the vkFFT folder
+# If header is ./vkFFT/vkFFT.h, include base is .
+# If header is ./include/vkFFT/vkFFT.h, include base is ./include
+HEADER_DIR=$(dirname "$VK_HEADER")   # e.g. ./vkFFT
+INCLUDE_BASE=$(dirname "$HEADER_DIR") # e.g. .
+INCLUDE_PATH="$(readlink -f "$INCLUDE_BASE")"
+
+echo "Derived Include Path: $INCLUDE_PATH"
+
+nvcc -O3 --shared -Xcompiler -fPIC -arch=sm_60 -o ${libdir}/libvkfft_dct.so dct_shim.cu -I"${INCLUDE_PATH}" -lcuda -lnvrtc
 
 install_license LICENSE
 """
