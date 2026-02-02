@@ -1,9 +1,9 @@
 --- a/src/t8.h
 +++ b/src/t8.h
-@@ -29,7 +29,11 @@
- #ifndef T8_H
+@@ -30,7 +30,11 @@
  #define T8_H
  
+ #include <t8_with_macro_error.h>
 +#ifdef __cplusplus
 +#include <cinttypes>
 +#else
