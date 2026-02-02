@@ -148,7 +148,7 @@ echo "Found and added nvcc: $NVCC"
 
 mkdir -p ${libdir}
 
-nvcc -O3 -std=c++11 --shared -Xcompiler -fPIC -arch=sm_60 -o ${libdir}/libvkfft_dct.so dct_shim.cu -I. -lcuda -lnvrtc
+nvcc -O3 -std=c++11 --shared -cudart shared -Xcompiler -fPIC -arch=sm_60 -o ${libdir}/libvkfft_dct.so dct_shim.cu -I. -lcuda -lnvrtc
 
 install_license ../LICENSE
 """
@@ -156,7 +156,6 @@ install_license ../LICENSE
 # Platforms - restricting to Linux/x86_64 for now as requested by typical GPU setups
 platforms = [
     Platform("x86_64", "linux"),
-    Platform("aarch64", "linux"),
 ]
 
 # The products that we will ensure are always built
