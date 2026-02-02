@@ -9,7 +9,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "t8code"
 version = v"4.0.1"
-commit_hash = "a4572db2c7b8103dfba9e942c24acb923d735fdb"
+commit_hash = "44f449b28321ab6a3053edfcf2d14c6dfe796d23"
 
 sources = [GitSource("https://github.com/DLR-AMR/t8code", commit_hash),
            DirectorySource("./bundled")]
@@ -75,6 +75,7 @@ platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampolin
 
 # Avoid platforms where MPItrampoline isn't supported
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && p["arch"] == "riscv64"), platforms)
 
 # The products that we will ensure are always built
 products = [
