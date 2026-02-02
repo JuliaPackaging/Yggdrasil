@@ -2,7 +2,7 @@ using BinaryBuilder
 
 # The version of this JLL
 name = "VkDCT"
-version = v"0.1.0"
+version = v"1.3.4"
 
 # Sources - VkFFT release and inline shim
 sources = [
