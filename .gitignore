@@ -11,3 +11,4 @@ meta.json
 
 .DS_Store
 
+.vscode/settings.json
