@@ -22,7 +22,10 @@ atomic_patch -p1 ../patches/add-include-vec.patch
 
 FLAGS=()
 if [[ "${target}" == *-mingw* ]]; then
-    FLAGS+=(-DRDK_BUILD_THREADSAFE_SSS=OFF)
+    FLAGS+=(-DRDK_BUILD_THREADSAFE_SSS=ON)
+    FLAGS+=(-DRDK_INSTALL_STATIC_LIBS=OFF)
+    FLAGS+=(-DRDK_CFFI_STATIC=OFF)
+    FLAGS+=(-DRDK_INSTALL_DLLS_MSVC=ON)
     FLAGS+=(-DBoost_DIR=${libdir}/cmake/Boost-1.87.0/)
 fi
 
