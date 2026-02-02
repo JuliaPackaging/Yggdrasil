@@ -142,7 +142,7 @@ echo "Found and added nvcc: $NVCC"
 
 mkdir -p ${libdir}
 
-nvcc -O3 --shared -Xcompiler -fPIC -arch=sm_60 -o ${libdir}/libvkfft_dct.so dct_shim.cu -I. -lcuda -lnvrtc
+nvcc -O3 -std=c++11 --shared -Xcompiler -fPIC -arch=sm_60 -o ${libdir}/libvkfft_dct.so dct_shim.cu -I. -lcuda -lnvrtc
 
 install_license ../LICENSE
 """
