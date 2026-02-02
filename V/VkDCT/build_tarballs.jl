@@ -14,13 +14,9 @@ sources = [
 script = raw"""
 cd VkFFT
 
-# Debug: Check directory structure
-echo "Current directory: $(pwd)"
-if [ ! -f "vkFFT/VkFFT.h" ]; then
-    echo "ERROR: vkFFT/VkFFT.h not found!"
-    ls -F
-    exit 1
-fi
+# Debug check (simple ls)
+echo "Repo root content:"
+ls -F
 
 # Create the shim file (inlined from repo)
 cat << 'EOF' > dct_shim.cu
@@ -31,6 +27,8 @@ cat << 'EOF' > dct_shim.cu
 
 // Define Backend as CUDA
 #define VKFFT_BACKEND 1
+
+// Rely on standard structure: vkFFT/vkFFT.h relative to root
 #include "vkFFT/vkFFT.h"
 
 // Context Struct
@@ -39,7 +37,6 @@ struct VkDCTContext {
     VkFFTConfiguration config;
     CUdevice device;
 };
-
 
 extern "C" {
 
@@ -146,25 +143,10 @@ echo "Found and added nvcc: $NVCC"
 # We strictly target .so output with -fPIC
 mkdir -p ${libdir}
 
-# Locate VkFFT.h and derive include path
-# The structure might be ./vkFFT/vkFFT.h or ./include/vkFFT/vkFFT.h
-VK_HEADER=$(find . -name vkFFT.h | head -n 1)
-
-if [ -z "$VK_HEADER" ]; then
-    echo "ERROR: vkFFT.h not found in $(pwd)"
-    ls -R
-    exit 1
-fi
-
-echo "Found header at: $VK_HEADER"
-# We need the directory *containing* the vkFFT folder
-# If header is ./vkFFT/vkFFT.h, include base is .
-# If header is ./include/vkFFT/vkFFT.h, include base is ./include
-HEADER_DIR=$(dirname "$VK_HEADER")   # e.g. ./vkFFT
-INCLUDE_BASE=$(dirname "$HEADER_DIR") # e.g. .
-INCLUDE_PATH="$(readlink -f "$INCLUDE_BASE")"
-
-echo "Derived Include Path: $INCLUDE_PATH"
+# Hardcoded Include Path: Current directory (Repo Root)
+# Expects vkFFT/vkFFT.h to resolve
+INCLUDE_PATH="."
+echo "Using Include Path: $INCLUDE_PATH"
 
 nvcc -O3 --shared -Xcompiler -fPIC -arch=sm_60 -o ${libdir}/libvkfft_dct.so dct_shim.cu -I"${INCLUDE_PATH}" -lcuda -lnvrtc
 
