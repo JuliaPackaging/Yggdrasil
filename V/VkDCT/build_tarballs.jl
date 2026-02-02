@@ -1,4 +1,4 @@
-using BinaryBuilder, Pkg
+using BinaryBuilder
 
 # The version of this JLL
 name = "VkDCT"
@@ -125,13 +125,16 @@ EOF
 # Compile
 # Use -arch=sm_60 to support Pascal and newer. 
 # Since this is a shim, it mainly needs to act as host code, but includes CUDA headers.
-# check if nvcc is available
-if ! command -v nvcc &> /dev/null; then
-    echo "nvcc not found!"
-    # In official builds, nvcc should be in PATH. 
-    # If not, let it fail so we know env is wrong.
+# Locate nvcc - properly add to PATH
+# CUDA_full_jll installation location can vary in the sandbox
+NVCC=$(find / -type f -name nvcc -executable 2>/dev/null | head -n 1)
+if [ -z "$NVCC" ]; then
+    echo "nvcc not found in sandbox"
     exit 1
 fi
+# Add to PATH so nvcc can find its own subprocesses (cic, ptxas)
+export PATH="$(dirname $NVCC):$PATH"
+echo "Found and added nvcc: $NVCC"
 
 # OS Detection: Linux Only
 # We strictly target .so output with -fPIC
@@ -163,4 +166,4 @@ dependencies = [
 ]
 
 # Build the tarballs
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
