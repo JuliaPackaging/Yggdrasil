@@ -25,6 +25,25 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+set -x  # Enable debug output
+
+echo "=== Environment ==="
+echo "prefix: ${prefix}"
+echo "WORKSPACE: $WORKSPACE"
+echo "target: ${target}"
+
+echo "=== Source directory contents ==="
+ls -la $WORKSPACE/srcdir/
+
+echo "=== Checking for PROPOSAL in prefix ==="
+ls -la ${prefix}/lib/ | grep -i proposal || echo "No PROPOSAL libs found"
+ls -la ${prefix}/include/ | head -20
+ls -la ${prefix}/lib/cmake/ || echo "No cmake directory"
+
+echo "=== Checking for JlCxx ==="
+ls -la ${prefix}/lib/cmake/JlCxx/ || echo "No JlCxx cmake directory"
+
+echo "=== Starting CMake configuration ==="
 cd $WORKSPACE/srcdir
 mkdir -p build && cd build
 
@@ -34,12 +53,17 @@ cmake ../wrapper \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_PREFIX_PATH=${prefix} \
     -DJlCxx_DIR=${prefix}/lib/cmake/JlCxx \
-    -DJulia_PREFIX=${prefix}
+    -DJulia_PREFIX=${prefix} \
+    -DCMAKE_VERBOSE_MAKEFILE=ON
 
-make -j${nproc}
+echo "=== CMake configuration complete, starting build ==="
+make -j${nproc} VERBOSE=1
+
+echo "=== Build complete, installing ==="
 make install
 
 install_license $WORKSPACE/srcdir/LICENSE.md
+echo "=== Done ==="
 """
 
 # Filter Julia versions: remove versions below current LTS (1.10)
