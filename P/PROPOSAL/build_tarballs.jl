@@ -51,7 +51,7 @@ products = [
 dependencies = [
     Dependency("CubicInterpolation_jll"; compat="0.1.5"),
     Dependency("boost_jll"; compat="1.79.0"),
-    Dependency("Eigen_jll"),
+    BuildDependency("Eigen_jll"),
     Dependency("spdlog_jll"),
     Dependency("nlohmann_json_jll"),
 ]
