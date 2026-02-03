@@ -3,14 +3,21 @@
 using BinaryBuilder, Pkg
 
 name = "open62541"
-version = v"1.3.17"
+version = v"1.4.15"
+
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/open62541/open62541.git",
-              "41f4deef34a9d0f94fcb830e2c831a9eb6236ade")
+              "45e4cd3ef6c79a8e503d37c9f5c89fefe90d99db")
 ]
+
 # Bash recipe for building across all platforms
 script = raw"""
+# Necessary for cmake to find openssl on Windows 
+if [[ ${target} == x86_64-*-mingw* ]]; then 
+    export OPENSSL_ROOT_DIR=${prefix}/lib64 
+fi 
+
 # Deactivates stack protector under i686-linux-musl; necessary to avoid 
 # "undefined reference to `__stack_chk_fail_local`
 if [[ ${target} == i686-linux-musl ]]; then 
@@ -27,9 +34,8 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DUA_MULTITHREADING=100 \
     -DUA_ENABLE_SUBSCRIPTIONS=ON \
     -DUA_ENABLE_METHODCALLS=ON \
-    -DUA_ENABLE_PARSING=ON \
     -DUA_ENABLE_NODEMANAGEMENT=ON \
-    -DUA_ENABLE_IMMUTABLE_NODES=ON \
+    -DUA_ENABLE_ENCRYPTION=OPENSSL \
     -DUA_ENABLE_HISTORIZING=ON \
     -DBUILD_SHARED_LIBS=ON \
     -DUA_FORCE_WERROR=OFF \
@@ -39,15 +45,20 @@ make -j${nproc}
 make install
 install_license ../LICENSE
 """
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libopen62541", :libopen62541)
 ]
+
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    Dependency("OpenSSL_jll"; compat="3.0.16")
 ]
-# Build the tarballs, and possibly a `build.jl` as well.
+
+# Build the tarballs
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"7")
