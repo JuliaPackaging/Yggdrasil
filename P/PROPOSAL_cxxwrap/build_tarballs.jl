@@ -2,6 +2,16 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+# See https://github.com/JuliaLang/Pkg.jl/issues/2942
+# Once this Pkg issue is resolved, this must be removed
+uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
+delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
+
+# Workaround for the Pkg issue above, also remove openssl stdlib
+openssl = Base.UUID("458c3c95-2e84-50aa-8efc-19380b2a3a95")
+delete!(Pkg.Types.get_last_stdlibs(v"1.12.0"), openssl)
+delete!(Pkg.Types.get_last_stdlibs(v"1.13.0"), openssl)
+
 # Include libjulia common definitions for Julia version handling
 include("../../L/libjulia/common.jl")
 
@@ -42,6 +52,7 @@ platforms = expand_cxxstring_abis(platforms)
 # Filter to platforms supported by both PROPOSAL_jll and libcxxwrap_julia
 filter!(p -> libc(p) != "musl", platforms)
 filter!(p -> !Sys.iswindows(p), platforms)
+filter!(p -> !Sys.isfreebsd(p), platforms)
 filter!(p -> arch(p) != "riscv64", platforms)
 filter!(p -> arch(p) != "armv6l", platforms)
 filter!(p -> arch(p) != "armv7l", platforms)
@@ -60,4 +71,4 @@ dependencies = [
 
 # Build the tarballs
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"10", julia_compat="1.10")
+               preferred_gcc_version=v"10", julia_compat="1.6")
