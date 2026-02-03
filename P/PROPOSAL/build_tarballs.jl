@@ -53,7 +53,7 @@ dependencies = [
     Dependency("boost_jll"; compat="=1.79.0"),
     BuildDependency("Eigen_jll"),
     Dependency("spdlog_jll"),
-    Dependency("nlohmann_json_jll"),
+    BuildDependency("nlohmann_json_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
