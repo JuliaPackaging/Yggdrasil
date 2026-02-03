@@ -1,0 +1,25 @@
+diff --git a/arch/posix/eventloop_posix.h b/arch/posix/eventloop_posix.h
+index a5f51383e..41ffeee5e 100644
+--- a/arch/posix/eventloop_posix.h
++++ b/arch/posix/eventloop_posix.h
+@@ -270,16 +270,14 @@ typedef int SOCKET;
+ #include <libgen.h>
+ #include <limits.h>
+ #include <stdio.h>
+-#ifndef __APPLE__
++#ifdef __linux__
+ # include <sys/inotify.h>
+-#endif /* !__APPLE__ */
++#endif /* __linux__ */
+ #include <sys/stat.h>
+ 
+-#ifndef __ANDROID__
+-#ifndef __APPLE__
++#ifdef __GLIBC__
+ #include <bits/stdio_lim.h>
+-#endif /* !__APPLE__ */
+-#endif /* !__ANDROID__ */
++#endif /* !__GLIBC__ */
+ 
+ #define UA_STAT stat
+ #define UA_DIR DIR

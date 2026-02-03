@@ -9,6 +9,7 @@ version = v"1.5.0"
 sources = [
     GitSource("https://github.com/open62541/open62541.git",
               "b90fbfac5ef484089447bf5e3fe6ad7baaaebada")
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
@@ -27,6 +28,7 @@ else
 fi 
 
 cd $WORKSPACE/srcdir/open62541/
+atomic_patch -p1 ../patches/0001-fix-eventloop-includes-freebsd-musl.patch
 mkdir build && cd build/
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
