@@ -25,6 +25,9 @@ sources = [
                   "powsybl-java-x86_64-linux-musl"), # linux package for gnu and musl
     ArchiveSource("https://github.com/powsybl/pypowsybl/releases/download/v$(pypowsybl_version)/binaries-v$(pypowsybl_version)-darwin.zip",
                   "ce3a9254fabce9dec84ca4c39aaa1879e1b26bde12c403f3b9c10c443ce6d7a0",
+                  "powsybl-java-x86_64-apple-darwin14"),
+    ArchiveSource("https://github.com/powsybl/pypowsybl/releases/download/v$(pypowsybl_version)/binaries-v$(pypowsybl_version)-darwin-arm64.zip",
+                  "ec1afab2bb092e422b001ca75486bf2b880979b36d7c5dc4159eb43c8cc72983",
                   "powsybl-java-aarch64-apple-darwin20")
 ]
 
@@ -70,7 +73,7 @@ install_license $WORKSPACE/srcdir/powsybl.jl/LICENSE.md
 include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 
-filter!(p -> (arch(p) == "x86_64" && os(p) ∈ ("windows", "linux")) || (arch(p) == "aarch64" && Sys.isapple(p)), platforms)
+filter!(p -> (arch(p) == "x86_64" && os(p) ∈ ("windows", "linux", "macos")) || (arch(p) == "aarch64" && Sys.isapple(p)), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
