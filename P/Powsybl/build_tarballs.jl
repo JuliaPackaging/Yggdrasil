@@ -11,6 +11,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 pypowsybl_version = "1.14.0"
 
 
+# Powsybl is a java framework, built to native binaries using GraalVm native image. This building process cannot be done in binary builder. Prebuilt binaries are retrieved from pypowsybl release.
 sources = [
     GitSource("https://github.com/powsybl/powsybl.jl.git", "70503bf17751430d4c00f7345986bd574cbdb3ef"),
     GitSource("https://github.com/powsybl/pypowsybl.git", "342fb354a7c9f9bdfdec66d5901005293848d64b"),
