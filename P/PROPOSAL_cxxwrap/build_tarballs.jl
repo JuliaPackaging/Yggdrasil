@@ -31,17 +31,31 @@ echo "=== Environment ==="
 echo "prefix: ${prefix}"
 echo "WORKSPACE: $WORKSPACE"
 echo "target: ${target}"
+pwd
 
 echo "=== Source directory contents ==="
 ls -la $WORKSPACE/srcdir/
+ls -la $WORKSPACE/srcdir/wrapper/ || echo "No wrapper directory"
 
-echo "=== Checking for PROPOSAL in prefix ==="
-ls -la ${prefix}/lib/ | grep -i proposal || echo "No PROPOSAL libs found"
-ls -la ${prefix}/include/ | head -20
-ls -la ${prefix}/lib/cmake/ || echo "No cmake directory"
+echo "=== Checking prefix structure ==="
+echo "--- prefix/lib ---"
+ls -la ${prefix}/lib/ 2>&1 | head -30
+echo "--- prefix/include ---"
+ls -la ${prefix}/include/ 2>&1 | head -30
 
-echo "=== Checking for JlCxx ==="
-ls -la ${prefix}/lib/cmake/JlCxx/ || echo "No JlCxx cmake directory"
+echo "=== Checking for PROPOSAL ==="
+find ${prefix} -name "*PROPOSAL*" -o -name "*proposal*" 2>/dev/null | head -20
+ls -la ${prefix}/lib/libPROPOSAL* 2>&1 || echo "No libPROPOSAL found"
+ls -la ${prefix}/include/PROPOSAL/ 2>&1 | head -10 || echo "No PROPOSAL headers found"
+
+echo "=== Checking for JlCxx/CxxWrap ==="
+ls -la ${prefix}/lib/cmake/ 2>&1 || echo "No cmake directory"
+ls -la ${prefix}/lib/cmake/JlCxx/ 2>&1 || echo "No JlCxx cmake directory"
+ls -la ${prefix}/lib/libcxxwrap* 2>&1 || echo "No libcxxwrap found"
+
+echo "=== Checking for Julia ==="
+ls -la ${prefix}/lib/libjulia* 2>&1 || echo "No libjulia found"
+ls -la ${prefix}/include/julia/ 2>&1 | head -10 || echo "No julia headers found"
 
 echo "=== Starting CMake configuration ==="
 cd $WORKSPACE/srcdir
@@ -54,10 +68,11 @@ cmake ../wrapper \
     -DCMAKE_PREFIX_PATH=${prefix} \
     -DJlCxx_DIR=${prefix}/lib/cmake/JlCxx \
     -DJulia_PREFIX=${prefix} \
-    -DCMAKE_VERBOSE_MAKEFILE=ON
+    -DCMAKE_VERBOSE_MAKEFILE=ON \
+    2>&1
 
 echo "=== CMake configuration complete, starting build ==="
-make -j${nproc} VERBOSE=1
+make -j${nproc} VERBOSE=1 2>&1
 
 echo "=== Build complete, installing ==="
 make install
