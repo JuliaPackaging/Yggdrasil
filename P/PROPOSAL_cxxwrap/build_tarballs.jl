@@ -63,9 +63,12 @@ products = [
 ]
 
 # Dependencies
+# Note: Eigen_jll and nlohmann_json_jll are BuildDependencies for PROPOSAL_jll,
+# but PROPOSAL's cmake config requires them, so we need them here too.
 dependencies = [
     BuildDependency("libjulia_jll"),
-    BuildDependency("Eigen_jll"),  # Required by PROPOSAL's cmake config
+    BuildDependency("Eigen_jll"),
+    BuildDependency("nlohmann_json_jll"),
     Dependency("PROPOSAL_jll"; compat="~7.6.2"),
     Dependency("libcxxwrap_julia_jll"; compat="0.14.7"),
 ]
