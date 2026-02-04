@@ -46,10 +46,10 @@ elif [ "${tarch}" = "powerpc64le" ]; then
 fi
 # Only disable the x86-64 if we're compiling for a different architecture
 if [ "${tarch}" != "x86-64" ]; then
-    OPTS+=(TARGET_FEATURES="-no-feature x86-64 -feature ${tarch}")
+    OPTS+=(TARGET_FEATURES='"-no-feature x86-64 -feature ${tarch}"')
 fi
 
-make ${OPTS[@]} install
+make "${OPTS[@]}" install
 """
 
 platforms = supported_platforms()
