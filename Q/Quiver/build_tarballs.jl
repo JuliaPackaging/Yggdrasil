@@ -11,21 +11,29 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/quiver
 
+# Set cache variables for cross-compilation (bypass TRY_RUN checks in bundled SQLite)
 # Force GCC on macOS instead of Clang
 if [[ "${target}" == *-apple-* ]]; then
-    export CC=gcc
-    export CXX=g++
+    cmake -B build \
+        -DCMAKE_INSTALL_PREFIX=${prefix} \
+        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_C_COMPILER=gcc-13 \
+        -DCMAKE_CXX_COMPILER=g++-13 \
+        -DQUIVER_BUILD_TESTS=OFF \
+        -DQUIVER_BUILD_C_API=ON \
+        -DHAVE_GNU_STRERROR_R_EXITCODE=0 \
+        -DHAVE_GNU_STRERROR_R_EXITCODE__TRYRUN_OUTPUT=""
+else
+    cmake -B build \
+        -DCMAKE_INSTALL_PREFIX=${prefix} \
+        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DQUIVER_BUILD_TESTS=OFF \
+        -DQUIVER_BUILD_C_API=ON \
+        -DHAVE_GNU_STRERROR_R_EXITCODE=0 \
+        -DHAVE_GNU_STRERROR_R_EXITCODE__TRYRUN_OUTPUT=""
 fi
-
-# Set cache variables for cross-compilation (bypass TRY_RUN checks in bundled SQLite)
-cmake -B build \
-    -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DQUIVER_BUILD_TESTS=OFF \
-    -DQUIVER_BUILD_C_API=ON \
-    -DHAVE_GNU_STRERROR_R_EXITCODE=0 \
-    -DHAVE_GNU_STRERROR_R_EXITCODE__TRYRUN_OUTPUT=""
 
 cmake --build build --parallel ${nproc}
 cmake --install build
