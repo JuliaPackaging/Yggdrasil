@@ -34,7 +34,9 @@ cmake ../wrapper \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_PREFIX_PATH=${prefix} \
     -DJlCxx_DIR=${prefix}/lib/cmake/JlCxx \
-    -DJulia_PREFIX=${prefix}
+    -DJulia_PREFIX=${prefix} \
+    -DCMAKE_CXX_STANDARD=17 \
+    -DCMAKE_CXX_STANDARD_REQUIRED=ON
 
 make -j${nproc}
 make install
