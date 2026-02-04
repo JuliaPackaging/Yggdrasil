@@ -27,7 +27,7 @@ cmake --install build
 install_license LICENSE
 """
 
-platforms = supported_platforms()S
+platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
