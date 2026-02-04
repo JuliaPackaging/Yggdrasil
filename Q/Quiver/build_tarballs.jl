@@ -11,6 +11,12 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/quiver
 
+# Force GCC on macOS instead of Clang
+if [[ "${target}" == *-apple-* ]]; then
+    export CC=gcc
+    export CXX=g++
+fi
+
 # Set cache variables for cross-compilation (bypass TRY_RUN checks in bundled SQLite)
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
