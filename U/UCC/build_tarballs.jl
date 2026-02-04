@@ -59,7 +59,7 @@ products = [
 ]
 
 dependencies = [
-    Dependency("UCX_jll"),
+    Dependency("UCX_jll"; compat="~1.20.0"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
