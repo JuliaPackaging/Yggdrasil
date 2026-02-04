@@ -65,6 +65,7 @@ products = [
 # Dependencies
 dependencies = [
     BuildDependency("libjulia_jll"),
+    BuildDependency("Eigen_jll"),  # Required by PROPOSAL's cmake config
     Dependency("PROPOSAL_jll"; compat="~7.6.2"),
     Dependency("libcxxwrap_julia_jll"; compat="0.14.7"),
 ]
