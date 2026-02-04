@@ -5,7 +5,7 @@ version = v"0.1.0"
 
 sources = [
     GitSource("https://github.com/psrenergy/quiver.git",
-              "00b7cdc3e4187db73c405c1d407ad4b1664e40d7"),
+              "293cac77f4db59ebab38f33b190bfd380acf48bb"),
 ]
 
 script = raw"""
@@ -27,8 +27,7 @@ cmake --install build
 install_license LICENSE
 """
 
-platforms = supported_platforms()
-filter!(!Sys.isapple, platforms)
+platforms = supported_platforms()S
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
