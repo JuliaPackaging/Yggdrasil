@@ -7,6 +7,14 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Find JlCxx (CxxWrap C++ library)
 find_package(JlCxx REQUIRED)
 
+# Remove C++20 compile feature from JlCxx to avoid nlohmann_json incompatibility
+# JlCxx propagates cxx_std_20 which breaks nlohmann_json's std::u8string usage
+get_target_property(JLCXX_COMPILE_FEATURES JlCxx::cxxwrap_julia INTERFACE_COMPILE_FEATURES)
+if(JLCXX_COMPILE_FEATURES)
+    list(FILTER JLCXX_COMPILE_FEATURES EXCLUDE REGEX "cxx_std_.*")
+    set_target_properties(JlCxx::cxxwrap_julia PROPERTIES INTERFACE_COMPILE_FEATURES "${JLCXX_COMPILE_FEATURES}")
+endif()
+
 # Find PROPOSAL
 find_package(PROPOSAL REQUIRED)
 
