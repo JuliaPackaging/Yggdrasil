@@ -16,7 +16,13 @@ if [[ ${target} == *-apple-* ]]; then
 elif [[ ${target} == *-freebsd* ]]; then
     PLATFORM=bsd
 elif [[ ${target} == *-mingw* ]]; then
-    PLATFORM=mingw
+    # There are three Windows-related values recognized here: mingw, mingw-msys, and
+    # linux-cross-mingw. The first assumes backslash path delimiters when building, which
+    # doesn't work in the BinaryBuilder environment; the second assumes cmd.exe names and
+    # backslash path delimiters for compiled code running on the target, which is maybe
+    # fine; and the last builds a compiler that emits binaries for Windows, but the compiler
+    # itself is intended to run on Linux, which is not what we want.
+    PLATFORM=mingw-msys
 else
     PLATFORM=linux
 fi
@@ -25,12 +31,11 @@ OPTS=(
     ARCH=
     PLATFORM=${PLATFORM}
     C_COMPILER=${CC}
-    C_COMPILER_OPTIMIZATION_OPTIONS="${CFLAGS}"
     CXX_COMPILER=${CXX}
     LIBRARIAN=ar
-    LINKER_OPTIONS="${LDFLAGS}"
     HOSTSYSTEM=${target}
-    PREFIX=${prefix}
+    PREFIX=/usr
+    DESTDIR=${prefix}
 )
 
 # Translate what we call the target architecture into what Chicken calls it
@@ -46,7 +51,7 @@ elif [ "${tarch}" = "powerpc64le" ]; then
 fi
 # Only disable the x86-64 if we're compiling for a different architecture
 if [ "${tarch}" != "x86-64" ]; then
-    OPTS+=(TARGET_FEATURES='"-no-feature x86-64 -feature ${tarch}"')
+    OPTS+=("TARGET_FEATURES=\"-no-feature x86-64 -feature ${tarch}\"")
 fi
 
 make "${OPTS[@]}" install
