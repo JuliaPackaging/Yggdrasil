@@ -23,6 +23,14 @@ target_link_libraries(PROPOSAL_cxxwrap
     PROPOSAL::PROPOSAL
 )
 
+# Force C++17 to avoid nlohmann_json C++20 incompatibility with std::u8string
+# JlCxx propagates C++20 via interface compile features, so we must override explicitly
+set_target_properties(PROPOSAL_cxxwrap PROPERTIES
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+)
+target_compile_options(PROPOSAL_cxxwrap PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-std=c++17>)
+
 # Apple-specific: avoid dlopen deadlock by deferring symbol resolution
 if(APPLE)
     target_link_options(PROPOSAL_cxxwrap PRIVATE "LINKER:-undefined,dynamic_lookup")
