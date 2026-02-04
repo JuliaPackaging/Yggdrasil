@@ -15,10 +15,9 @@ sources = [
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-# Disable riscv, powerpc, and freebsd for now
+# Disable riscv and powerpc for now
 platforms = filter!(p -> arch(p) != "riscv64", platforms)
 platforms = filter!(p -> arch(p) != "powerpc64le", platforms)
-platforms = filter!(p -> !(os(p) == "freebsd" && arch(p) == "aarch64"), platforms)
 
 script = raw"""
 cd $WORKSPACE/srcdir/HiGHS
@@ -35,7 +34,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DBUILD_SHARED_LIBS=ON \
     -DZLIB_USE_STATIC_LIBS=${BUILD_STATIC} \
     -DHIPO=ON \
-    -DBLAS_LIBRARIES="${libdir}/libopenblas.${dlext}" \
+    -DBLAS_LIBRARIES="${libdir}/${LBT}.${dlext}" \
     ..
 
 if [[ "${target}" == *-linux-* ]]; then
@@ -62,8 +61,7 @@ platforms = expand_cxxstring_abis(platforms)
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("Zlib_jll"),
-    # This is the version that supports Julia v1.10
-    Dependency("OpenBLAS32_jll"; compat = "0.3.24"),
+    Dependency("libblastrampoline_jll"),
     HostBuildDependency(PackageSpec(; name="CMake_jll")),
 ]
 
