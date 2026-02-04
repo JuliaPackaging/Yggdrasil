@@ -40,7 +40,8 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DBUILD_SHARED_LIBS=ON \
     -DZLIB_USE_STATIC_LIBS=${BUILD_STATIC} \
     -DHIPO=ON \
-    -DBLAS_LIBRARIES="${libdir}/${LBT}.${dlext}" \
+    -DBLA_VENDOR=blastrampoline \
+    -DBLAS_LIBRARIES=\"${LBT}\" \
     ..
 
 if [[ "${target}" == *-linux-* ]]; then
