@@ -102,7 +102,7 @@ fi
 if [[ ${nbits} == 64 ]]; then
     grep -q '#define SIZEOF___INT128' src/include/mpichconf.h
 fi
-if [[ ${target} != x86_64-apple* && ${target} != armv[67]l-* ]]; then
+if [[ ${target} != x86_64-apple* && ${target} != arm-* ]]; then
     grep -q '#define SIZEOF__FLOAT16' src/include/mpichconf.h
 fi
 
