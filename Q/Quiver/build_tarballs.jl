@@ -15,7 +15,6 @@ cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_CXX_FLAGS="-D_LIBCPP_DISABLE_AVAILABILITY=1" \
     -DQUIVER_BUILD_TESTS=OFF \
     -DQUIVER_BUILD_C_API=ON \
     -DHAVE_GNU_STRERROR_R_EXITCODE=0 \
@@ -26,6 +25,8 @@ cmake --install build
 
 install_license LICENSE
 """
+
+sources, script = require_macos_sdk("10.15", sources, script)
 
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
