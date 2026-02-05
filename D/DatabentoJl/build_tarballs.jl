@@ -35,7 +35,7 @@ make -j${nproc}
 make install
 
 # Install license
-install_license ${WORKSPACE}/srcdir/LICENSE
+install_license ${WORKSPACE}/srcdir/databento-julia/LICENSE
 """
 
 # Platforms we are targeting (Expanding ABIs for C++ compatibility)
