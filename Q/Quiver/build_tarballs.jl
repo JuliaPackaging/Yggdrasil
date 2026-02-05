@@ -3,6 +3,8 @@ using BinaryBuilder
 name = "Quiver"
 version = v"0.1.0"
 
+include("../../platforms/macos_sdks.jl")
+
 sources = [
     GitSource("https://github.com/psrenergy/quiver.git",
               "293cac77f4db59ebab38f33b190bfd380acf48bb"),
