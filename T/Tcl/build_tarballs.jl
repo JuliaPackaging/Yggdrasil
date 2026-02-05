@@ -21,9 +21,21 @@ else
     cd $WORKSPACE/srcdir/tcl/unix/
 fi
 
+# musl needs bsd-compat-headers for sys/queue.h
+# Copy header to sysroot since cross-compiler doesn't see /usr/include
+if [[ "${target}" == *-musl* ]]; then
+    apk add bsd-compat-headers
+    cp /usr/include/sys/queue.h /opt/${target}/${target}/sys-root/usr/include/sys/
+fi
+
 FLAGS=(--enable-threads --disable-rpath)
 if [[ "${target}" == x86_64-* ]] || [[ "${target}" == aarch64-* ]]; then
     FLAGS+=(--enable-64bit)
+fi
+# musl libc has a working strtod, so disable the fixstrtod workaround
+# that causes "multiple definition of fixstrtod" linker errors
+if [[ "${target}" == *-musl* ]]; then
+    export tcl_cv_strtod_buggy=ok
 fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
 make -j${nproc}
