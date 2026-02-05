@@ -30,7 +30,10 @@ fi
 
 export CFLAGS="-I${prefix}/include ${CFLAGS}"
 
-FLAGS=(--enable-threads --disable-rpath)
+# Disable zipfs: Tk 9.0 embeds a zip archive in shared libraries which appends
+# data past the Mach-O __LINKEDIT segment, breaking install_name_tool on macOS.
+# The Tk library scripts are still installed as regular files in lib/tk9.0/.
+FLAGS=(--enable-threads --disable-rpath --disable-zipfs)
 if [[ "${target}" == x86_64-* ]] || [[ "${target}" == aarch64-* ]]; then
     FLAGS+=(--enable-64bit)
 fi
@@ -41,6 +44,12 @@ if [[ "${target}" == *-apple-* ]]; then
     # The following patch replaces the hard-coded path of Cocoa framework
     # with the actual path on our system.
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/apple_cocoa_configure.patch"
+
+    # Tk 9.0 uses @available() runtime checks which compile to calls to
+    # ___isPlatformVersionAtLeast. The darwin14 toolchain's compiler runtime
+    # doesn't provide this symbol, but it will be available at runtime on
+    # the user's macOS system. Allow it to remain undefined at link time.
+    export LDFLAGS="-Wl,-undefined,dynamic_lookup ${LDFLAGS}"
 fi
 if [[ "${target}" == *mingw* ]]; then
     FLAGS+=(--with-x=no)
@@ -77,7 +86,7 @@ x11_platforms = filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libtcl9tk9.0", "tcl9tk90"], :libtk),
+    LibraryProduct(["libtcl9tk9.0", "libtcl9tk9", "tcl9tk90"], :libtk),
     ExecutableProduct(["wish9.0", "wish90"], :wish),
 ]
 
