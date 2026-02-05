@@ -3,22 +3,22 @@
 using BinaryBuilder
 
 name = "Tcl"
-version = v"8.6.14"
+version = v"9.0.3"
 
 # Collection of sources required to build Tcl
 sources = [
-    ArchiveSource("https://downloads.sourceforge.net/sourceforge/tcl/tcl$(version)-src.tar.gz",
-                  "5880225babf7954c58d4fb0f5cf6279104ce1cd6aa9b71e9a6322540e1c4de66"),
+    GitSource("https://github.com/tcltk/tcl.git",
+              "bcd73c5cf807577f93f890c0efdd577b14a66418"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 if [[ "${target}" == *-mingw* ]]; then
-    cd $WORKSPACE/srcdir/tcl*/win/
+    cd $WORKSPACE/srcdir/tcl/win/
     # `make install` calls `tclsh` on Windows
     apk add tcl
 else
-    cd $WORKSPACE/srcdir/tcl*/unix/
+    cd $WORKSPACE/srcdir/tcl/unix/
 fi
 
 FLAGS=(--enable-threads --disable-rpath)
@@ -32,7 +32,7 @@ make install
 make install-private-headers
 
 # Install license file
-install_license $WORKSPACE/srcdir/tcl*/license.terms
+install_license $WORKSPACE/srcdir/tcl/license.terms
 """
 
 # These are the platforms we will build for by default, unless further
@@ -41,12 +41,12 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libtcl8.6", "libtcl8", "tcl86"], :libtcl),
+    LibraryProduct(["libtcl9.0", "libtcl9", "tcl90"], :libtcl),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Zlib_jll"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
