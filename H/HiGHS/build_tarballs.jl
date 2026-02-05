@@ -1,15 +1,13 @@
-# Note that this script can accept some limited command-line arguments, run
-# `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
 name = "HiGHS"
 
-version = v"1.12.0"
+version = v"1.13.0"
 
 sources = [
     GitSource(
         "https://github.com/ERGO-Code/HiGHS.git",
-        "755a8e027a99a8d4ecf153a8dde4b2a767cdf384",
+        "1bce6d5c801398dab6d2e6f98ac8935f3d4eec9c",
     ),
 ]
 
@@ -21,9 +19,7 @@ platforms = supported_platforms()
 platforms = filter!(p -> arch(p) != "riscv64", platforms)
 platforms = filter!(p -> arch(p) != "powerpc64le", platforms)
 
-function build_script(; shared_libs::String)
-    build_static = shared_libs == "OFF" ? "ON" : "OFF"
-    return "BUILD_SHARED=$(shared_libs)\nBUILD_STATIC=$(build_static)\n" * raw"""
+script = raw"""
 cd $WORKSPACE/srcdir/HiGHS
 
 # Remove system CMake to use the jll version
@@ -32,19 +28,20 @@ apk del cmake
 mkdir -p build
 cd build
 
-# Do fully static build only on Windows
-if [[ "${BUILD_SHARED}" == "OFF" ]] && [[ "${target}" == *-mingw* ]]; then
-    export CXXFLAGS="-static"
+if [[ "${target}" == *-mingw* ]]; then
+    LBT=blastrampoline-5
+else
+    LBT=blastrampoline
 fi
 
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_SHARED_LIBS=${BUILD_SHARED} \
+    -DBUILD_SHARED_LIBS=ON \
     -DZLIB_USE_STATIC_LIBS=${BUILD_STATIC} \
     -DHIPO=ON \
-    -DBLAS_LIBRARIES="${libdir}/libopenblas.${dlext}" \
-    -DMETIS_ROOT=${prefix} \
+    -DBLA_VENDOR=blastrampoline \
+    -DBLAS_LIBRARIES=\"${LBT}\" \
     ..
 
 if [[ "${target}" == *-linux-* ]]; then
@@ -59,14 +56,31 @@ fi
 make install
 
 install_license ../LICENSE.txt
-
-if [[ "${BUILD_SHARED}" == "OFF" ]]; then
-    # Delete the static library to save space
-    rm -r ${prefix}/lib
-    if [[ "${target}" == *-mingw* ]]; then
-        # The Windows build ships also GCC runtime, add its license as well
-        install_license /usr/share/licenses/GPL-3.0+
-    fi
-fi
 """
-end
+
+products = [
+    LibraryProduct("libhighs", :libhighs),
+    ExecutableProduct("highs", :highs),
+]
+
+platforms = expand_cxxstring_abis(platforms)
+
+dependencies = [
+    Dependency("CompilerSupportLibraries_jll"),
+    Dependency("Zlib_jll"),
+    Dependency("libblastrampoline_jll"),
+    HostBuildDependency(PackageSpec(; name="CMake_jll")),
+]
+
+build_tarballs(
+    ARGS,
+    name,
+    version,
+    sources,
+    script,
+    platforms,
+    products,
+    dependencies;
+    preferred_gcc_version = v"6",
+    julia_compat = "1.10",
+)
