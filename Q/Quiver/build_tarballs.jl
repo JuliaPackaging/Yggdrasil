@@ -34,6 +34,7 @@ platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
+    LibraryProduct("libquiver", :libquiver),
     LibraryProduct("libquiver_c", :libquiver_c),
 ]
 
