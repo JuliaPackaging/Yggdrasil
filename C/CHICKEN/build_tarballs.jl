@@ -34,7 +34,7 @@ OPTS=(
     CXX_COMPILER=${CXX}
     LIBRARIAN=ar
     HOSTSYSTEM=${target}
-    PREFIX=/usr
+    PREFIX=
     DESTDIR=${prefix}
 )
 
@@ -49,12 +49,15 @@ elif [[ ${tarch} == armv* ]]; then
 elif [ "${tarch}" = "powerpc64le" ]; then
     tarch="ppc64"
 fi
-# Only disable the x86-64 if we're compiling for a different architecture
-if [ "${tarch}" != "x86-64" ]; then
-    OPTS+=("TARGET_FEATURES=\\"-no-feature x86-64 -feature ${tarch}\\"")
-fi
 
-make "${OPTS[@]}" install
+# Only disable the x86-64 if we're compiling for a different architecture. I can't for the
+# life of me get the quoting to work correctly for the target feature specification when
+# putting it into the array, so I'll just admit defeat and separate the `make` calls.
+if [ "${tarch}" = "x86-64" ]; then
+    make "${OPTS[@]}" install
+else
+    make "${OPTS[@]}" TARGET_FEATURES="-no-feature x86-64 -feature ${tarch}" install
+fi
 """
 
 platforms = supported_platforms()
@@ -72,8 +75,8 @@ products = [
     ExecutableProduct("csc", :chicken_csc),
     ExecutableProduct("csi", :chicken_csi),
     FileProduct("libchicken.a", :libchicken_a),
-    FileProduct("include/chicken.h", :chicken_h),
-    FileProduct("include/chicken-config.h", :chicken_config_h),
+    FileProduct("include/chicken/chicken.h", :chicken_h),
+    FileProduct("include/chicken/chicken-config.h", :chicken_config_h),
     LibraryProduct("libchicken", :libchicken),
 ]
 
