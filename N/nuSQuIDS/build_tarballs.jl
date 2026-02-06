@@ -155,6 +155,9 @@ make install
 # Ensure data files are installed
 mkdir -p ${prefix}/share/nuSQuIDS
 cp -r data/* ${prefix}/share/nuSQuIDS/
+
+# Install license
+install_license LICENSE
 """
 
 # Platforms - Linux (glibc) and macOS
@@ -179,6 +182,7 @@ products = [
 dependencies = [
     Dependency("GSL_jll"; compat="~2.8"),
     Dependency("HDF5_jll"; compat="~1.14"),
+    Dependency("LibCURL_jll"),  # Required by HDF5_jll for ROS3 VFD support
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
