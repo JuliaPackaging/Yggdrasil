@@ -34,8 +34,8 @@ products = [
     LibraryProduct("libjwt", :libjwt),
     ExecutableProduct("jwt-generate", :jwt_generate),
     ExecutableProduct("jwt-verify", :jwt_verify),
-    ExecutableProduct("jwk2key", :jwt2key),
-    ExecutableProduct("key2jwk", :key2jwt)
+    ExecutableProduct("jwk2key", :jwk2key),
+    ExecutableProduct("key2jwk", :key2jwk)
 ]
 
 # Dependencies that must be installed before this package can be built
