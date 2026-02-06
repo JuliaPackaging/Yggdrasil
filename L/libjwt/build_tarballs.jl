@@ -15,6 +15,9 @@ script = raw"""
 cd $WORKSPACE/srcdir/libjwt
 mkdir build
 cd build
+if [[ ${target} == x86_64-*mingw* ]]; then
+    export OPENSSL_ROOT_DIR="${prefix}/lib64"
+fi
 cmake .. \
     -DCMAKE_INSTALL_PREFIX="${prefix}" \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
@@ -40,7 +43,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="3.0.15")
+    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="3.0.16")
     Dependency(PackageSpec(name="Jansson_jll", uuid="83cbd138-b029-500a-bd82-26ec0fbaa0df"))
 ]
 
