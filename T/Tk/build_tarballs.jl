@@ -1,6 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, BinaryBuilderBase, Pkg
 include("../../platforms/macos_sdks.jl")
 
 name = "Tk"
@@ -21,19 +21,9 @@ else
     cd $WORKSPACE/srcdir/tk/unix/
 fi
 
-# musl needs bsd-compat-headers for sys/queue.h
-# Copy header to sysroot since cross-compiler doesn't see /usr/include
-if [[ "${target}" == *-musl* ]]; then
-    apk add bsd-compat-headers
-    cp /usr/include/sys/queue.h /opt/${target}/${target}/sys-root/usr/include/sys/
-fi
-
 export CFLAGS="-I${prefix}/include ${CFLAGS}"
 
-# Disable zipfs: Tk 9.0 embeds a zip archive in shared libraries which appends
-# data past the Mach-O __LINKEDIT segment, breaking install_name_tool on macOS.
-# The Tk library scripts are still installed as regular files in lib/tk9.0/.
-FLAGS=(--enable-threads --disable-rpath --disable-zipfs)
+FLAGS=()
 if [[ "${target}" == x86_64-* ]] || [[ "${target}" == aarch64-* ]]; then
     FLAGS+=(--enable-64bit)
 fi
@@ -45,11 +35,11 @@ if [[ "${target}" == *-apple-* ]]; then
     # with the actual path on our system.
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/apple_cocoa_configure.patch"
 
-    # Tk 9.0 uses @available() runtime checks which compile to calls to
-    # ___isPlatformVersionAtLeast. The darwin14 toolchain's compiler runtime
-    # doesn't provide this symbol, but it will be available at runtime on
-    # the user's macOS system. Allow it to remain undefined at link time.
-    export LDFLAGS="-Wl,-undefined,dynamic_lookup ${LDFLAGS}"
+    # Set deployment target to 11.0 so that @available() checks for macOS ≤ 11
+    # are resolved at compile time (no ___isPlatformVersionAtLeast calls emitted).
+    # Link UniformTypeIdentifiers for UTType used in tkMacOSXDialog/FileTypes.
+    export MACOSX_DEPLOYMENT_TARGET=11.0
+    export LDFLAGS="-framework UniformTypeIdentifiers ${LDFLAGS}"
 fi
 if [[ "${target}" == *mingw* ]]; then
     FLAGS+=(--with-x=no)
@@ -61,13 +51,9 @@ fi
 if [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
     FLAGS+=(--enable-xft)
 fi
-# musl libc has a working strtod, so disable the fixstrtod workaround
-# that causes "multiple definition of fixstrtod" linker errors
-if [[ "${target}" == *-musl* ]]; then
-    export tcl_cv_strtod_buggy=ok
-fi
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
+
 make -j${nproc}
 make install
 make install-private-headers
@@ -76,8 +62,7 @@ make install-private-headers
 install_license $WORKSPACE/srcdir/tk/license.terms
 """
 
-# Tk 9.0.3 uses macOS 10.13+ APIs (window tabbing, dark mode)
-sources, script = require_macos_sdk("10.15", sources, script)
+sources, script = require_macos_sdk("11.0", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
@@ -94,9 +79,11 @@ products = [
 dependencies = [
     BuildDependency("Xorg_xorgproto_jll"; platforms=x11_platforms),
     Dependency("Tcl_jll"; compat="~"*string(version)),
+    Dependency("Xorg_libXext_jll"; platforms=x11_platforms),
     Dependency("Xorg_libXft_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libXScrnSaver_jll"; platforms=x11_platforms),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies,
-               julia_compat="1.6")
+               preferred_gcc_version=v"5", julia_compat="1.6")
