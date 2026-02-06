@@ -32,7 +32,7 @@ if [[ "${target}" == *-apple-* ]]; then
 
     # Disable zipfs: Tk 9.0 embeds a zip archive in shared libraries which appends
     # data past the Mach-O __LINKEDIT segment, breaking install_name_tool on macOS.
-    FLAGS=(--disable-zipfs)
+    FLAGS+=(--disable-zipfs)
 
     # The following patch replaces the hard-coded path of Cocoa framework
     # with the actual path on our system.
@@ -68,7 +68,7 @@ make install-private-headers
 install_license $WORKSPACE/srcdir/tk/license.terms
 """
 
-sources, script = require_macos_sdk("10.15", sources, script)
+sources, script = require_macos_sdk("11.0", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
