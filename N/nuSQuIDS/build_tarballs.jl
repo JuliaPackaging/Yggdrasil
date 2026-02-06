@@ -144,6 +144,11 @@ bash ./configure --prefix=${prefix} \
     --with-hdf5-incdir=${includedir} \
     --with-hdf5-libdir=${libdir}
 
+# Patch Makefile: BinaryBuilder's busybox `head` doesn't support /dev/stdin.
+# The Makefile uses `head -c N /dev/stdin` to truncate after sed, but we can
+# just pipe directly without the explicit /dev/stdin argument.
+sed -i 's|/dev/stdin >|>|g' Makefile
+
 make -j${nproc}
 make install
 
