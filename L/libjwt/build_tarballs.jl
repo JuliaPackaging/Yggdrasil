@@ -32,8 +32,10 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libjwt", :libjwt),
-    ExecutableProduct("jwtgen", :jwtgen),
-    ExecutableProduct("jwtauth", :jwtauth)
+    ExecutableProduct("jwt-generate", :jwt_generate),
+    ExecutableProduct("jwt-verify", :jwt_verify),
+    ExecutableProduct("jwt2key", :jwt2key),
+    ExecutableProduct("key2jwt", :key2jwt)
 ]
 
 # Dependencies that must be installed before this package can be built
