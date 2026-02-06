@@ -187,5 +187,8 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
+# Note: dont_dlopen=true because HDF5_jll's libcurl dependency has version
+# symbol issues in the BinaryBuilder audit environment (CURL_4 not found).
+# The library works correctly at runtime when all JLL dependencies are loaded.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"8")
+               julia_compat="1.6", preferred_gcc_version=v"8", dont_dlopen=true)
