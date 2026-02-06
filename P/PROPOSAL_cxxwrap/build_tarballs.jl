@@ -10,7 +10,8 @@ version = v"0.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/jlazar17/PROPOSAL_cxxwrap.git",
+              "5ea111580ef1e11f0e23810b861213ff063e181f"),
 ]
 
 # Bash recipe for building across all platforms
@@ -18,7 +19,7 @@ script = raw"""
 cd $WORKSPACE/srcdir
 mkdir -p build && cd build
 
-cmake ../wrapper \
+cmake ../PROPOSAL_cxxwrap \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
@@ -31,7 +32,7 @@ cmake ../wrapper \
 make -j${nproc}
 make install
 
-install_license $WORKSPACE/srcdir/LICENSE.md
+install_license $WORKSPACE/srcdir/PROPOSAL_cxxwrap/LICENSE.md
 """
 
 # Filter Julia versions: remove versions below current LTS (1.10)
