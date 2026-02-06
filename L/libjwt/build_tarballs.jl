@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libjwt"
-version = v"1.15.3"
+version = v"3.2.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/benmcollins/libjwt.git", "e8af37ce2e7de2d3bbadaaf232dc6f6b0fd97f03")
+    GitSource("https://github.com/benmcollins/libjwt.git", "91fa41ad05e71fd03c3156372cd0ef1bd52b2261")
 ]
 
 # Bash recipe for building across all platforms
