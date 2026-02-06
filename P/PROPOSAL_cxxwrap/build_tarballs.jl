@@ -2,16 +2,6 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-# See https://github.com/JuliaLang/Pkg.jl/issues/2942
-# Once this Pkg issue is resolved, this must be removed
-uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
-delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
-
-# Workaround for the Pkg issue above, also remove openssl stdlib
-openssl = Base.UUID("458c3c95-2e84-50aa-8efc-19380b2a3a95")
-delete!(Pkg.Types.get_last_stdlibs(v"1.12.0"), openssl)
-delete!(Pkg.Types.get_last_stdlibs(v"1.13.0"), openssl)
-
 # Include libjulia common definitions for Julia version handling
 include("../../L/libjulia/common.jl")
 
