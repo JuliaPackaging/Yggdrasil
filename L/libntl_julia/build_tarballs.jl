@@ -6,12 +6,12 @@ using BinaryBuilder, Pkg
 include("../../L/libjulia/common.jl")
 
 name = "libntl_julia"
-version = v"0.1.0"
+version = v"0.2.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/s-celles/libntl-julia-wrapper.git",
-              "a127599de78173de79c4fd1cb745fb34670c56ef"),
+              "3440f943665e1b1b6badfad557d008402851c60d"),
 ]
 
 # Bash recipe for building across all platforms
