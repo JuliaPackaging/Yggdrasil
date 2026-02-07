@@ -10,50 +10,13 @@ version = v"0.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/s-celles/libntl-julia-wrapper.git",
+              "a127599de78173de79c4fd1cb745fb34670c56ef"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-
-# Create CMakeLists.txt
-cat > CMakeLists.txt << 'EOF'
-cmake_minimum_required(VERSION 3.10)
-project(libntl_julia_wrapper CXX)
-
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-find_package(JlCxx REQUIRED)
-
-# Find NTL
-find_path(NTL_INCLUDE_DIR NAMES NTL/ZZ.h PATHS ${prefix}/include)
-find_library(NTL_LIBRARY NAMES ntl PATHS ${prefix}/lib)
-
-add_library(libntl_julia SHARED libntl_julia.cpp)
-
-target_link_libraries(libntl_julia
-    PRIVATE JlCxx::cxxwrap_julia
-    PRIVATE ${NTL_LIBRARY}
-)
-
-target_include_directories(libntl_julia
-    PRIVATE ${NTL_INCLUDE_DIR}
-)
-
-target_compile_definitions(libntl_julia PRIVATE NTL_EXCEPTIONS=on)
-
-set_target_properties(libntl_julia PROPERTIES
-    PREFIX ""
-    OUTPUT_NAME "libntl_julia"
-)
-
-install(TARGETS libntl_julia
-    LIBRARY DESTINATION lib
-    RUNTIME DESTINATION bin
-)
-EOF
+cd $WORKSPACE/srcdir/libntl-julia-wrapper
 
 mkdir -p build && cd build
 
@@ -67,6 +30,8 @@ cmake .. \
 
 cmake --build . --parallel ${nproc}
 cmake --install .
+
+install_license ../LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
