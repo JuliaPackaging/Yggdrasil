@@ -44,8 +44,8 @@ function get_script(cuda::Val{true})
 
     ### Set Up CUDA ENV Vars
 
-    export CPPFLAGS="${CPPFLAGS} -I${prefix}/include"
-    export CFLAGS="${CFLAGS} -I${prefix}/include"
+    export CPPFLAGS="${CPPFLAGS} -I${prefix}/include -Wno-error=unknown-warning-option -Wno-unknown-warning-option"
+    export CFLAGS="${CFLAGS} -I${prefix}/include -Wno-error=unknown-warning-option -Wno-unknown-warning-option"
     export LDFLAGS="${LDFLAGS} -L${prefix}/lib -L${prefix}/lib64"
 
     export CUDA_HOME=${prefix}/cuda;
@@ -77,9 +77,6 @@ function get_script(cuda::Val{true})
         --cmake-executable=${host_bindir}/cmake \
         -- "-DCMAKE_TOOLCHAIN_FILE=/opt/toolchains/${bb_full_target}/target_${target}_clang.cmake" \
             "-DCMAKE_CUDA_HOST_COMPILER=$(which clang++)" \
-            "-Wno-error=unknown-warning-option" \
-            "-Wno-unknown-warning-option" \
-
 
     # Patch redop header that is installed by configure script
     # Patch in macro to export specific symbols 
@@ -131,8 +128,8 @@ function get_script(cuda::Val{false})
 
     ### Set Up CUDA ENV Vars
 
-    export CPPFLAGS="${CPPFLAGS} -I${prefix}/include"
-    export CFLAGS="${CFLAGS} -I${prefix}/include"
+    export CPPFLAGS="${CPPFLAGS} -I${prefix}/include -Wno-error=unknown-warning-option -Wno-unknown-warning-option"
+    export CFLAGS="${CFLAGS} -I${prefix}/include -Wno-error=unknown-warning-option -Wno-unknown-warning-option"
     export LDFLAGS="${LDFLAGS} -L${prefix}/lib -L${prefix}/lib64"
 
     ./configure \
@@ -155,8 +152,6 @@ function get_script(cuda::Val{false})
         --cmake-executable=${host_bindir}/cmake \
         -- "-DCMAKE_TOOLCHAIN_FILE=/opt/toolchains/${bb_full_target}/target_${target}_clang.cmake" \
             "-DCMAKE_CUDA_HOST_COMPILER=$(which clang++)" \
-            "-Wno-error=unknown-warning-option" \
-            "-Wno-unknown-warning-option" \
 
 
     # Patch redop header that is installed by configure script
