@@ -77,6 +77,15 @@ cmake --install .
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line. We need CxxWrap support.
 platforms = vcat(libjulia_platforms.(julia_versions)...)
+
+# Filter to platforms supported by ntl_jll (only Linux x86_64, i686, x86_64-musl)
+ntl_platforms = [
+    Platform("x86_64", "linux"),
+    Platform("i686", "linux"),
+    Platform("x86_64", "linux"; libc="musl"),
+]
+filter!(p -> any(q -> arch(p) == arch(q) && os(p) == os(q) && libc(p) == libc(q), ntl_platforms), platforms)
+
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -86,13 +95,13 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(; name="libjulia_jll", version=v"1.10.0")),
-    Dependency("libcxxwrap_julia_jll"; compat="~0.13, ~0.14"),
-    Dependency("ntl_jll"; compat="~10.5"),
+    BuildDependency("libjulia_jll"),
+    Dependency("libcxxwrap_julia_jll"; compat="0.14"),
+    Dependency("ntl_jll"),
     Dependency("GMP_jll"; compat="6"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     preferred_gcc_version=v"10",
-    julia_compat=libjulia_julia_compat(julia_versions))
+    julia_compat="1.6")
