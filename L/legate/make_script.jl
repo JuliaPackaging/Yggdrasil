@@ -77,6 +77,8 @@ function get_script(cuda::Val{true})
         --cmake-executable=${host_bindir}/cmake \
         -- "-DCMAKE_TOOLCHAIN_FILE=/opt/toolchains/${bb_full_target}/target_${target}_clang.cmake" \
             "-DCMAKE_CUDA_HOST_COMPILER=$(which clang++)" \
+            "-Wno-error=unknown-warning-option" \
+            "-Wno-unknown-warning-option" \
 
 
     # Patch redop header that is installed by configure script
@@ -153,6 +155,8 @@ function get_script(cuda::Val{false})
         --cmake-executable=${host_bindir}/cmake \
         -- "-DCMAKE_TOOLCHAIN_FILE=/opt/toolchains/${bb_full_target}/target_${target}_clang.cmake" \
             "-DCMAKE_CUDA_HOST_COMPILER=$(which clang++)" \
+            "-Wno-error=unknown-warning-option" \
+            "-Wno-unknown-warning-option" \
 
 
     # Patch redop header that is installed by configure script
