@@ -65,7 +65,7 @@ for platform in all_platforms
     should_build_platform(triplet(platform)) || continue
 
     platform_sources = BinaryBuilder.AbstractSource[sources...]
-    clang_ver = v"17"
+    clang_ver = v"19"
 
     _dependencies = copy(dependencies)
     script = get_script(Val{false}())
@@ -73,7 +73,6 @@ for platform in all_platforms
     if haskey(platform, "cuda") && platform["cuda"] != "none" 
 
         cuda_ver = platform["cuda"]
-        clang_ver = VersionNumber(cuda_ver) >= v"12.6" ? v"17" : v"13"
 
         # Add x86_64 CUDA_SDK to cross compile for aarch64
         if arch(platform) == "aarch64"
