@@ -64,6 +64,7 @@ function get_script(cuda::Val{true})
         --with-mpi-dir=${prefix} \
         --with-hdf5-vfd-gds=0 \
         --with-hdf5-dir=${prefix} \
+        --with-ucx-dir=${prefix} \
         --num-threads=${nproc} \
         --with-cxx=${CXX} \
         --with-cc=${CC} \
@@ -137,6 +138,7 @@ function get_script(cuda::Val{false})
         --with-mpi-dir=${prefix} \
         --with-hdf5-vfd-gds=0 \
         --with-hdf5-dir=${prefix} \
+        --with-ucx-dir=${prefix} \
         --num-threads=${nproc} \
         --with-cxx=${CXX} \
         --with-cc=${CC} \
