@@ -11,7 +11,7 @@ version = v"0.2.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/s-celles/libntl-julia-wrapper.git",
-              "2d7ccbe0572840c476273509b7b52bd6d18ca2d5"),
+              "9de5aeb7d2971c83a46a95ccf4cf4dd20425ca28"),
 ]
 
 # Bash recipe for building across all platforms
