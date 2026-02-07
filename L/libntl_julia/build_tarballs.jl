@@ -93,7 +93,7 @@ dependencies = [
     BuildDependency("libjulia_jll"),
     Dependency("libcxxwrap_julia_jll"; compat="0.14"),
     Dependency("ntl_jll"),
-    Dependency("GMP_jll"; compat="6"),
+    Dependency("GMP_jll"; compat="6.2"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
