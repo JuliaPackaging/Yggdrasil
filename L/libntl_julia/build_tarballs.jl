@@ -36,6 +36,8 @@ install_license ../LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line. We need CxxWrap support.
+# Filter out Julia DEV versions (1.13, 1.14) - not yet supported by libcxxwrap_julia_jll
+filter!(v -> v < v"1.13", julia_versions)
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 
 # Filter to platforms supported by ntl_jll (only Linux x86_64, i686, x86_64-musl)
