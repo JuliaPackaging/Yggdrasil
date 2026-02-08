@@ -6,6 +6,7 @@ on:
     paths:
       - "L/LibPQ/**"
       - "Project.toml"
+      - ".ci/**"
       - ".github/workflows/libpq-ci.yml"
 
 jobs:
@@ -23,8 +24,10 @@ jobs:
           version: "1.12"
 
       - name: Instantiate
-        run: julia --project=. -e "using Pkg; Pkg.instantiate()"
+        shell: julia --project=.ci --color=yes {0}
+        run: |
+          using Pkg
+          Pkg.instantiate()
 
       - name: Build LibPQ (x86_64-linux-gnu, aarch64-linux-gnu)
-        working-directory: L/LibPQ
-        run: julia --project=../../ build_tarballs.jl --verbose x86_64-linux-gnu aarch64-linux-gnu
+        run: julia --project=.ci --color=yes L/LibPQ/build_tarballs.jl --verbose x86_64-linux-gnu aarch64-linux-gnu
