@@ -29,5 +29,12 @@ jobs:
           using Pkg
           Pkg.instantiate()
 
-      - name: Build LibPQ (x86_64-linux-gnu, aarch64-linux-gnu)
-        run: julia --project=.ci --color=yes L/LibPQ/build_tarballs.jl --verbose x86_64-linux-gnu aarch64-linux-gnu
+      - name: Build LibPQ (selected platforms)
+        run: julia --project=.ci --color=yes L/LibPQ/build_tarballs.jl --verbose x86_64-linux-gnu aarch64-linux-gnu aarch64-apple-darwin x86_64-w64-mingw32
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: libpq-products
+          path: |
+            L/LibPQ/products/**
