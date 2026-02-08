@@ -46,13 +46,8 @@ cmake --install build
 install_license LICENSE.txt
 """
 
-# See https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/1185
-# work around macOS SDK issue
-#     /workspace/srcdir/z3/src/ast/ast.h:: 189error:: 47:'get<unsigned int, int, ast *,
-#         symbol, zstring *, rational *, double, unsigned int>' is unavailable:
-#         introduced in macOS 10.14
-# ...and install a newer SDK
-sources, script = require_macos_sdk("10.15", sources, script)
+# Use SDK 14.5 for C++20 support
+sources, script = require_macos_sdk("14.5", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
@@ -75,6 +70,6 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isapple, platforms)),
 ]
 
-# Use GCC 13 for C++20 support.
+# Use GCC 13 for C++20 support
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.10", preferred_gcc_version=v"13")
