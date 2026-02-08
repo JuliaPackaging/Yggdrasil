@@ -33,52 +33,25 @@ export CFLAGS="-std=c11 -D__STDC_WANT_LIB_EXT1__"
 
 cd postgres
 
-if [[ ${target} == *-apple-* ]]; then
-    ./configure --prefix=${prefix} \
-        --build=${MACHTYPE} \
-        --host=${target} \
-        --with-includes=${includedir} \
-        --with-libraries=${libdir} \
-        --without-readline \
-        --without-zlib \
-        --with-ssl=openssl \
-        --with-libcurl \
-        --with-oauth \
-        "${FLAGS[@]}"
+./configure --prefix=${prefix} \
+    --build=${MACHTYPE} \
+    --host=${target} \
+    --with-includes=${includedir} \
+    --with-libraries=${libdir} \
+    --without-readline \
+    --without-zlib \
+    --with-ssl=openssl \
+    --with-libcurl \
+    --with-oauth \
+    "${FLAGS[@]}"
 
-    make -C src/interfaces/libpq -j${nproc}
-    make -C src/interfaces/libpq install
-    if [[ -d src/interfaces/libpq-oauth ]]; then
-        make -C src/interfaces/libpq-oauth -j${nproc}
-        make -C src/interfaces/libpq-oauth install
-    fi
-    make -C src/include install
-
-else
-    meson setup meson_build --prefix=$prefix \
-        --cross-file="${MESON_TARGET_TOOLCHAIN}" \
-        --bindir=${bindir} \
-        --libdir=${libdir} \
-        --includedir=${includedir} \
-        -Dssl=openssl \
-        -Dlibcurl=enabled \
-        -Doauth=enabled \
-        -Dzlib=disabled \
-        -Dreadline=disabled \
-        -Dtap_tests=disabled \
-        -Dplpython=disabled \
-        -Dplperl=disabled \
-        -Dnls=disabled
-
-    cd meson_build
-    ninja -j${nproc}
-    ninja install
-    cd ../
-
-    if [[ ${target} == *-w64-mingw32 ]]; then
-        mv -v meson_build/src/interfaces/libpq/* ${prefix}/lib
-    fi    
+make -C src/interfaces/libpq -j${nproc}
+make -C src/interfaces/libpq install
+if [[ -d src/interfaces/libpq-oauth ]]; then
+    make -C src/interfaces/libpq-oauth -j${nproc}
+    make -C src/interfaces/libpq-oauth install
 fi
+make -C src/include install
 
 
 # Delete static library
