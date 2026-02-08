@@ -1,0 +1,30 @@
+name: LibPQ CI (fork only)
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "L/LibPQ/**"
+      - "Project.toml"
+      - ".github/workflows/libpq-ci.yml"
+
+jobs:
+  build-libpq:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Julia
+        uses: julia-actions/setup-julia@v2
+        with:
+          version: "1.12"
+
+      - name: Instantiate
+        run: julia --project=. -e "using Pkg; Pkg.instantiate()"
+
+      - name: Build LibPQ (x86_64-linux-gnu, aarch64-linux-gnu)
+        working-directory: L/LibPQ
+        run: julia --project=../../ build_tarballs.jl --verbose x86_64-linux-gnu aarch64-linux-gnu
