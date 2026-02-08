@@ -3,20 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "squashfs_tools"
-version = v"4.7.2"
+version = v"4.7.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/plougher/squashfs-tools.git", "99d23a31b471433c51e9c145aeba2ab1536e34df"),
-    DirectorySource("bundled"),
+    GitSource("https://github.com/plougher/squashfs-tools.git", "bad1d213ab6df587d6fa0ef7286180fbf7b86167"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/squashfs-tools/squashfs-tools
-
-# Reported as <https://github.com/plougher/squashfs-tools/issues/324>
-atomic_patch -p1 $WORKSPACE/srcdir/patches/nprocessors_compat.patch
 
 args=(XZ_SUPPORT=1 LZO_SUPPORT=1 LZ4_SUPPORT=1 ZSTD_SUPPORT=1)
 if [[ "${target}" == *-mingw* ]] || [[ "${target}" == *-freebsd* ]]; then
