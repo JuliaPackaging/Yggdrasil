@@ -65,7 +65,7 @@ for platform in all_platforms
     should_build_platform(triplet(platform)) || continue
 
     platform_sources = BinaryBuilder.AbstractSource[sources...]
-    clang_ver = v"20"
+    clang_ver = v"18"
 
     _dependencies = copy(dependencies)
     script = get_script(Val{false}())
