@@ -70,11 +70,11 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("libjulia_jll"),
-    Dependency("GMP_jll"; compat="6.2.1"),
+    Dependency("GMP_jll"),
     Dependency("libcxxwrap_julia_jll"; compat="0.14.9"),
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isapple, platforms)),
 ]
 
-# Use GCC 10 to avoid compile errors on Windows
+# Use GCC 13 for C++20 support.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.10", preferred_gcc_version=v"10")
+               julia_compat="1.10", preferred_gcc_version=v"13")
