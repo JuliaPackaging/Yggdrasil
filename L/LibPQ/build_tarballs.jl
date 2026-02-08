@@ -31,7 +31,7 @@ export PATH=$WORKSPACE/srcdir:$PATH
 # We need `__STDC_WANT_LIB_EXT1__` for `memset_s` on macOS
 export CFLAGS="-std=c11 -D__STDC_WANT_LIB_EXT1__"
 
-cd postgres
+cd postgres/postgresql-*
 
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
