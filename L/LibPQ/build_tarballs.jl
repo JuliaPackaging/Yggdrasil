@@ -3,14 +3,15 @@
 using BinaryBuilder
 
 name = "LibPQ"
-version = v"16.8"
+version = v"18.1"
 tzcode_version = "2025a"
 
 # Collection of sources required to build LibPQ
 sources = [
-    GitSource(
-        "https://github.com/postgres/postgres.git",
-        "71eb35c0b18de96537bd3876ec9bf8075bfd484f",
+    ArchiveSource(
+        "https://ftp.postgresql.org/pub/source/v18.1/postgresql-18.1.tar.gz",
+        "b0f18c2d6973d2aa023cfc77feda787d7bbe9c31a3977d0f04ac29885fb98ec4",
+        unpack_target="postgres",
     ),
     ArchiveSource(
         "https://data.iana.org/time-zones/releases/tzcode$tzcode_version.tar.gz",
@@ -41,10 +42,16 @@ if [[ ${target} == *-apple-* ]]; then
         --without-readline \
         --without-zlib \
         --with-ssl=openssl \
+        --with-libcurl \
+        --with-oauth \
         "${FLAGS[@]}"
 
     make -C src/interfaces/libpq -j${nproc}
     make -C src/interfaces/libpq install
+    if [[ -d src/interfaces/libpq-oauth ]]; then
+        make -C src/interfaces/libpq-oauth -j${nproc}
+        make -C src/interfaces/libpq-oauth install
+    fi
     make -C src/include install
 
 else
@@ -54,6 +61,8 @@ else
         --libdir=${libdir} \
         --includedir=${includedir} \
         -Dssl=openssl \
+        -Dlibcurl=enabled \
+        -Doauth=enabled \
         -Dzlib=disabled \
         -Dreadline=disabled \
         -Dtap_tests=disabled \
@@ -89,6 +98,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     HostBuildDependency("Bison_jll"),
+    Dependency("LibCURL_jll"),
     Dependency("OpenSSL_jll"; compat="3.0.16"),
     Dependency("Kerberos_krb5_jll"; compat="1.21.3", platforms=filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
     Dependency("ICU_jll"; compat="76.1"),
