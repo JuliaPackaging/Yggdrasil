@@ -121,11 +121,6 @@ function get_script(cuda::Val{false})
 
         ln -s ${CUDA_HOME}/lib ${CUDA_HOME}/lib64
 
-        # Patch cupynumeric src code missing header include
-        cd $WORKSPACE/srcdir
-        atomic_patch -p1 cstring.patch
-
-
         ## BUILD TBLIS ##
         cd ${WORKSPACE}/srcdir/tblis
 
