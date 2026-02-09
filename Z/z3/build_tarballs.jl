@@ -6,12 +6,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "z3"
-version = v"4.15.4"
+version = v"4.15.5"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/Z3Prover/z3/releases/download/z3-$(version)/z3_solver-$(version).0.tar.gz",
-                  "928c29b58c4eb62106da51c1914f6a4a55d0441f8f48a81b9da07950434a8946"),
+                  "d4ce56db7f235a8696623c4f48fc314da1a5499faba85eded34b0d98f139e24c"),
 ]
 
 # Bash recipe for building across all platforms
@@ -46,22 +46,14 @@ cmake --install build
 install_license LICENSE.txt
 """
 
-# See https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/1185
-# work around macOS SDK issue
-#     /workspace/srcdir/z3/src/ast/ast.h:: 189error:: 47:'get<unsigned int, int, ast *,
-#         symbol, zstring *, rational *, double, unsigned int>' is unavailable:
-#         introduced in macOS 10.14
-# ...and install a newer SDK
-sources, script = require_macos_sdk("10.15", sources, script)
+# Use SDK 14.5 for C++20 support
+sources, script = require_macos_sdk("14.5", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
-
-# libcxxwrap_julia_jll 0.14.4 supports only Julia 1.13.x
-filter!(p -> VersionNumber(p["julia_version"]) < v"1.14-", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -73,11 +65,11 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("libjulia_jll"),
-    Dependency("GMP_jll"; compat="6.2.1"),
-    Dependency("libcxxwrap_julia_jll"; compat="0.14.4"),
+    Dependency("GMP_jll"),
+    Dependency("libcxxwrap_julia_jll"; compat="0.14.9"),
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isapple, platforms)),
 ]
 
-# Use GCC 10 to avoid compile errors on Windows
+# Use GCC 13 for C++20 support
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"10")
+               julia_compat="1.10", preferred_gcc_version=v"13")
