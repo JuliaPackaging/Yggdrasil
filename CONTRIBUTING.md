@@ -13,6 +13,8 @@ If you want to submit a new package or update an existing one, you always have t
 Note that it is important to modify the `build_tarballs.jl` file of your package, or any other file in the same directory or one of its subdirectories: Yggdrasil CI workflow uses the modified `build_tarballs.jl` file to identify which package to rebuild, if no `build_tarballs.jl` (or any other file in its subdirectories) is touched, no build will happen.
 Make sure not to mistype the name of the file.
 
+Keep the repository root `Project.toml` as a regular file (not a symlink). If you need the CI environment, pass `--project=.ci` when running Julia instead of linking `Project.toml` to `.ci/Project.toml`.
+
 If you are submitting a recipe for a new package, follow the suggestions in the [Building Packages](https://docs.binarybuilder.org/stable/building/) page of BinaryBuilder documentation.
 
 If you want to build a new version of an existing package, you can open a pull request which updates the sources and the version number of the package as appropriate.
