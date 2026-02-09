@@ -21,8 +21,8 @@ sources = [
 
 # Bash recipe for building across all platforms
 # TODO: Theora once it's available
-function script(; ffplay=false)
-    "FFPLAY=$(ffplay)\n" * get_macos_sdk_script("10.13") * raw"""
+function script(; ffplay=false, gpl=true)
+    "FFPLAY=$(ffplay)\nGPL=$(gpl)\n" * get_macos_sdk_script("10.13") * raw"""
 cd $WORKSPACE/srcdir
 cd ffmpeg-*/
 sed -i 's/-lflite"/-lflite -lasound"/' configure
@@ -73,6 +73,12 @@ else
     EXTRA_FLAGS+=("--enable-openssl" "--disable-schannel")
 fi
 
+# GPL and nonfree libraries
+if [[ "${GPL}" == "true" ]]; then
+    EXTRA_FLAGS+=("--enable-gpl" "--enable-nonfree")
+    EXTRA_FLAGS+=("--enable-libfdk-aac" "--enable-libx264" "--enable-libx265")
+fi
+
 # Remove `-march` flags
 sed -i 's/cpuflags="-march=$cpu"/cpuflags=""/g' configure
 
@@ -93,9 +99,7 @@ sed -i 's/cpuflags="-march=$cpu"/cpuflags=""/g' configure
   --prefix=$prefix     \
   --sysroot=/opt/${target}/${target}/sys-root \
   --extra-libs=-lpthread \
-  --enable-gpl         \
   --enable-version3    \
-  --enable-nonfree     \
   --disable-static     \
   --enable-shared      \
   --enable-pic         \
@@ -103,13 +107,10 @@ sed -i 's/cpuflags="-march=$cpu"/cpuflags=""/g' configure
   --disable-doc        \
   --enable-libaom      \
   --enable-libass      \
-  --enable-libfdk-aac  \
   --enable-libfreetype \
   --enable-libmp3lame  \
   --enable-libopus     \
   --enable-libvorbis   \
-  --enable-libx264     \
-  --enable-libx265     \
   --enable-libvpx      \
   --enable-encoders    \
   --enable-decoders    \
