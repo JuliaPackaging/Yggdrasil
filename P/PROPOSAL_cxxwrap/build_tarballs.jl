@@ -6,12 +6,12 @@ using BinaryBuilder, Pkg
 include("../../L/libjulia/common.jl")
 
 name = "PROPOSAL_cxxwrap"
-version = v"0.1.0"
+version = v"0.1.1"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/jlazar17/PROPOSAL_cxxwrap.git",
-              "5ea111580ef1e11f0e23810b861213ff063e181f"),
+              "f0cbc2bcd40ea9e326661ac42137f138bff5a3dc"),
 ]
 
 # Bash recipe for building across all platforms
