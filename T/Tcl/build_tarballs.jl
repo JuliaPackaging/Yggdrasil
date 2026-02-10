@@ -15,8 +15,6 @@ sources = [
 script = raw"""
 if [[ "${target}" == *-mingw* ]]; then
     cd $WORKSPACE/srcdir/tcl/win/
-    # `make install` calls `tclsh` on Windows
-    apk add tcl
 else
     cd $WORKSPACE/srcdir/tcl/unix/
 fi
@@ -28,15 +26,12 @@ if [[ "${target}" == *-musl* ]]; then
     cp /usr/include/sys/queue.h /opt/${target}/${target}/sys-root/usr/include/sys/
 fi
 
-FLAGS=(--enable-threads --disable-rpath)
+FLAGS=(--disable-zipfs --enable-threads --disable-rpath)
+
 if [[ "${target}" == x86_64-* ]] || [[ "${target}" == aarch64-* ]]; then
     FLAGS+=(--enable-64bit)
 fi
-# musl libc has a working strtod, so disable the fixstrtod workaround
-# that causes "multiple definition of fixstrtod" linker errors
-if [[ "${target}" == *-musl* ]]; then
-    export tcl_cv_strtod_buggy=ok
-fi
+
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
 make -j${nproc}
 make install
@@ -63,4 +58,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies,
-               julia_compat="1.6")
+               julia_compat="1.6", preferred_gcc_version=v"5")
