@@ -15,6 +15,8 @@ sources = [
 script = raw"""
 if [[ "${target}" == *-mingw* ]]; then
     cd $WORKSPACE/srcdir/tcl/win/
+    # `make install` calls `tclsh` on Windows
+    apk add tcl
 else
     cd $WORKSPACE/srcdir/tcl/unix/
 fi
