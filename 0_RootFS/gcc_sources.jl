@@ -129,6 +129,18 @@ const gcc_version_sources = Dict{VersionNumber,Vector}(
         ArchiveSource("https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.24.tar.bz2",
                       "fcf78dd9656c10eb8cf9fbd5f59a0b6b01386205fe1934b3b287a0a1898145c0"),
     ],
+    v"15.2.0" => [
+        ArchiveSource("https://mirrors.kernel.org/gnu/gcc/gcc-15.2.0/gcc-15.2.0.tar.xz",
+                      "438fd996826b0c82485a29da03a72d71d6e3541a83ec702df4271f6fe025d24e"),
+        ArchiveSource("https://mirrors.kernel.org/gnu/gmp/gmp-6.3.0.tar.xz",
+                      "a3c2b80201b89e68616f4ad30bc66aee4927c3ce50e33929ca819d5c43538898"),
+        ArchiveSource("https://mirrors.kernel.org/gnu/mpfr/mpfr-4.2.2.tar.xz",
+                      "b67ba0383ef7e8a8563734e2e889ef5ec3c3b898a01d00fa0a6869ad81c6ce01"),
+        ArchiveSource("https://mirrors.kernel.org/gnu/mpc/mpc-1.3.1.tar.gz",
+                      "ab642492f5cf882b74aa0cb730cd410a81edcdbec895183ce930e706c1c759b8"),
+        ArchiveSource("https://libisl.sourceforge.io/isl-0.27.tar.xz",
+                      "6d8babb59e7b672e8cb7870e874f3f7b813b6e00e6af3f8b04f7579965643d5c"),
+    ],
 )
 
 function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwargs...)
@@ -166,6 +178,18 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
             ArchiveSource("https://mirrors.kernel.org/gnu/gmp/gmp-6.2.0.tar.xz",
                           "258e6cd51b3fbdfc185c716d55f82c08aff57df0c6fbd143cf6ed561267a1526"),
         ]
+        gcc_version_sources[v"15.1.0-iains"] = [
+            GitSource("https://github.com/iains/gcc-15-branch.git",
+                      "845fee6ec56db98b84888f782fe7daea99b4b358"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/gmp/gmp-6.3.0.tar.xz",
+                          "a3c2b80201b89e68616f4ad30bc66aee4927c3ce50e33929ca819d5c43538898"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/mpfr/mpfr-4.2.2.tar.xz",
+                          "b67ba0383ef7e8a8563734e2e889ef5ec3c3b898a01d00fa0a6869ad81c6ce01"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/mpc/mpc-1.3.1.tar.gz",
+                          "ab642492f5cf882b74aa0cb730cd410a81edcdbec895183ce930e706c1c759b8"),
+            ArchiveSource("https://libisl.sourceforge.io/isl-0.27.tar.xz",
+                          "6d8babb59e7b672e8cb7870e874f3f7b813b6e00e6af3f8b04f7579965643d5c"),
+        ]
         # MacOS doesn't actually use binutils, it uses cctools
         if gcc_version < v"14"
             binutils_sources = [
@@ -196,6 +220,7 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
             v"12.1.0" => v"2.38",
             v"13.2.0" => v"2.41",
             v"14.2.0" => v"2.43.1",
+            v"15.2.0" => v"2.45",
         )
 
         # Everyone else uses GNU Binutils, but we have to version carefully.
@@ -247,6 +272,10 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
             v"2.43.1" => [
                 ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-2.43.1.tar.xz",
                               "13f74202a3c4c51118b797a39ea4200d3f6cfbe224da6d1d95bb938480132dfd"),
+            ],
+            v"2.45" => [
+                ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-2.45.tar.xz",
+                              "c50c0e7f9cb188980e2cc97e4537626b1672441815587f1eab69d2a1bfbef5d2"),
             ],
         )
         binutils_version = binutils_gcc_version_mapping[gcc_version]
