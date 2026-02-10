@@ -1,0 +1,14 @@
+diff --git a/Makefile.riscv64 b/Makefile.riscv64
+index d8da98d5f..9cad6bc19 100644
+--- a/Makefile.riscv64
++++ b/Makefile.riscv64
+@@ -10,9 +10,6 @@ RISCV64_OPT  = rv64imafdcv
+ ifeq ($(BUILD_HFLOAT16), 1)
+ RISCV64_OPT := $(RISCV64_OPT)_zvfh_zfh
+ endif
+-ifeq ($(BUILD_BFLOAT16), 1)
+-RISCV64_OPT := $(RISCV64_OPT)_zvfbfwma
+-endif
+ ifeq ($(CORE), RISCV64_ZVL256B)
+ CCOMMON_OPT += -march=$(RISCV64_OPT)_zvl256b -mabi=lp64d
+ FCOMMON_OPT += -march=$(RISCV64_OPT) -mabi=lp64d
