@@ -23,7 +23,7 @@ fi
 
 export CFLAGS="-I${prefix}/include ${CFLAGS}"
 
-FLAGS=(--disable-zipfs)
+FLAGS=(--disable-zipfs --enable-threads --disable-rpath)
 if [[ "${target}" == x86_64-* ]] || [[ "${target}" == aarch64-* ]]; then
     FLAGS+=(--enable-64bit)
 fi
