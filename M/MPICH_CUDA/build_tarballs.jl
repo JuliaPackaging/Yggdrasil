@@ -125,7 +125,7 @@ rm -rf ${prefix}/cuda/bin
 
 augment_platform_block = """
     using Base.BinaryPlatforms
-    $(replace(CUDA.augment, "function augment_platform!" => "function augment_cuda!")
+    $(replace(CUDA.augment, "function augment_platform!" => "function augment_cuda!"))
     $(MPI.augment)
     function augment_platform!(platform::Platform)
         augment_cuda!(platform)
