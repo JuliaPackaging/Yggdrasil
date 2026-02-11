@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "wolfSSL"
-version = v"5.8.4"
+version = v"5.8.4+1"
 
 # Collection of sources required to complete build
 sources = [
@@ -33,6 +33,8 @@ CFLAGS=-DLARGE_STATIC_BUFFERS ./configure \
     --disable-crypttests \
     --disable-examples \
     --enable-maxfragment \
+    --enable-aesctr \
+    --enable-atomicuser \
     $ARCHFLAGS
 
 make -j${nproc}
