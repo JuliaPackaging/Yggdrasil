@@ -1,0 +1,2144 @@
++ echo 'cpuarch=i386 platform=linux/i386 osversion=13.1 gccversion=12:'
+cpuarch=i386 platform=linux/i386 osversion=13.1 gccversion=12:
++ tag=generate-h5tinit:debian-i386
++ dockerargs=(--file generate-h5tinit.dockerfile --build-arg commit="${commit}" --build-arg cpuarch="${cpuarch}" --build-arg osversion="${osversion}" --build-arg gccversion="${gccversion}" --platform "${platform}" --progress plain --tag "${tag}")
++ docker build --file generate-h5tinit.dockerfile --build-arg commit=2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1 --build-arg cpuarch=i386 --build-arg osversion=13.1 --build-arg gccversion=12 --platform linux/i386 --progress plain --tag generate-h5tinit:debian-i386 .
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from generate-h5tinit.dockerfile
+#1 transferring dockerfile: 2.04kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/i386/debian:13.1-slim
+#2 ...
+
+#3 [auth] i386/debian:pull token for registry-1.docker.io
+#3 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/i386/debian:13.1-slim
+#2 DONE 0.8s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 2B done
+#4 DONE 0.0s
+
+#5 [ 1/10] FROM docker.io/i386/debian:13.1-slim@sha256:b024c852eb34baf0b2d51e606a151eb1dc150ed145c94d117dd93ea48caacd1e
+#5 resolve docker.io/i386/debian:13.1-slim@sha256:b024c852eb34baf0b2d51e606a151eb1dc150ed145c94d117dd93ea48caacd1e done
+#5 sha256:f20d3afd3e0683f94dedfb1b55a873c80e954166309a1a81eed0cc68875743f9 448B / 448B done
+#5 sha256:7f24a3a0c200106d0d9ab7b6264e50c689910154fb57bf08185b9eaf995db758 0B / 31.29MB 0.1s
+#5 sha256:b024c852eb34baf0b2d51e606a151eb1dc150ed145c94d117dd93ea48caacd1e 1.46kB / 1.46kB done
+#5 sha256:4c0c58ced6f64d51aa5f9579757c0c131623975a324b87eac6e6d89118d2cd5e 1.02kB / 1.02kB done
+#5 ...
+
+#6 [ 3/10] ADD https://github.com/HDFGroup/hdf5/archive/2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1.tar.gz hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1.tar.gz
+#6 CACHED
+
+#5 [ 1/10] FROM docker.io/i386/debian:13.1-slim@sha256:b024c852eb34baf0b2d51e606a151eb1dc150ed145c94d117dd93ea48caacd1e
+#5 sha256:7f24a3a0c200106d0d9ab7b6264e50c689910154fb57bf08185b9eaf995db758 2.10MB / 31.29MB 0.7s
+#5 sha256:7f24a3a0c200106d0d9ab7b6264e50c689910154fb57bf08185b9eaf995db758 5.24MB / 31.29MB 1.1s
+#5 sha256:7f24a3a0c200106d0d9ab7b6264e50c689910154fb57bf08185b9eaf995db758 8.39MB / 31.29MB 1.6s
+#5 sha256:7f24a3a0c200106d0d9ab7b6264e50c689910154fb57bf08185b9eaf995db758 10.49MB / 31.29MB 1.9s
+#5 sha256:7f24a3a0c200106d0d9ab7b6264e50c689910154fb57bf08185b9eaf995db758 12.58MB / 31.29MB 2.2s
+#5 sha256:7f24a3a0c200106d0d9ab7b6264e50c689910154fb57bf08185b9eaf995db758 14.68MB / 31.29MB 2.6s
+#5 sha256:7f24a3a0c200106d0d9ab7b6264e50c689910154fb57bf08185b9eaf995db758 17.83MB / 31.29MB 3.0s
+#5 sha256:7f24a3a0c200106d0d9ab7b6264e50c689910154fb57bf08185b9eaf995db758 19.92MB / 31.29MB 3.3s
+#5 sha256:7f24a3a0c200106d0d9ab7b6264e50c689910154fb57bf08185b9eaf995db758 23.07MB / 31.29MB 3.7s
+#5 sha256:7f24a3a0c200106d0d9ab7b6264e50c689910154fb57bf08185b9eaf995db758 25.17MB / 31.29MB 4.0s
+#5 sha256:7f24a3a0c200106d0d9ab7b6264e50c689910154fb57bf08185b9eaf995db758 27.26MB / 31.29MB 4.3s
+#5 sha256:7f24a3a0c200106d0d9ab7b6264e50c689910154fb57bf08185b9eaf995db758 30.41MB / 31.29MB 4.7s
+#5 sha256:7f24a3a0c200106d0d9ab7b6264e50c689910154fb57bf08185b9eaf995db758 31.29MB / 31.29MB 4.8s done
+#5 extracting sha256:7f24a3a0c200106d0d9ab7b6264e50c689910154fb57bf08185b9eaf995db758
+#5 extracting sha256:7f24a3a0c200106d0d9ab7b6264e50c689910154fb57bf08185b9eaf995db758 0.6s done
+#5 DONE 5.5s
+
+#7 [ 2/10] RUN apt-get update &&     apt-get --yes --no-install-recommends install         ca-certificates         cmake         g++-12         gcc-12         gfortran-12         make         ninja-build         wget
+#7 0.318 Get:1 http://deb.debian.org/debian trixie InRelease [140 kB]
+#7 0.377 Get:2 http://deb.debian.org/debian trixie-updates InRelease [47.3 kB]
+#7 0.508 Get:3 http://deb.debian.org/debian-security trixie-security InRelease [43.4 kB]
+#7 0.710 Get:4 http://deb.debian.org/debian trixie/main i386 Packages [9429 kB]
+#7 2.385 Get:5 http://deb.debian.org/debian trixie-updates/main i386 Packages [5136 B]
+#7 2.426 Get:6 http://deb.debian.org/debian-security trixie-security/main i386 Packages [95.2 kB]
+#7 4.509 Fetched 9761 kB in 4s (2284 kB/s)
+#7 4.509 Reading package lists...
+#7 7.017 Reading package lists...
+#7 9.490 Building dependency tree...
+#7 9.882 Reading state information...
+#7 10.28 The following additional packages will be installed:
+#7 10.28   binutils binutils-common binutils-i686-linux-gnu cmake-data cpp-12
+#7 10.28   gcc-12-base libarchive13t64 libasan8 libatomic1 libbinutils libbrotli1
+#7 10.28   libc-bin libc-dev-bin libc6 libc6-dev libcc1-0 libcom-err2 libcrypt-dev
+#7 10.28   libctf-nobfd0 libctf0 libcurl4t64 libexpat1 libffi8 libgcc-12-dev
+#7 10.28   libgfortran-12-dev libgfortran5 libgnutls30t64 libgomp1 libgprofng0
+#7 10.28   libgssapi-krb5-2 libidn2-0 libisl23 libitm1 libjansson4 libjsoncpp26
+#7 10.28   libk5crypto3 libkeyutils1 libkrb5-3 libkrb5support0 libldap2 libmpc3
+#7 10.28   libmpfr6 libncursesw6 libnghttp2-14 libnghttp3-9 libp11-kit0 libproc2-0
+#7 10.28   libpsl5t64 libquadmath0 librhash1 librtmp1 libsasl2-2 libsasl2-modules-db
+#7 10.28   libsframe1 libssh2-1t64 libssl3t64 libstdc++-12-dev libtasn1-6 libubsan1
+#7 10.28   libunistring5 libuv1t64 libxml2 linux-libc-dev openssl
+#7 10.28   openssl-provider-legacy procps rpcsvc-proto
+#7 10.28 Suggested packages:
+#7 10.28   binutils-doc gprofng-gui binutils-gold cmake-doc cmake-format
+#7 10.28   elpa-cmake-mode gcc-12-locales cpp-12-doc g++-12-multilib gcc-12-doc
+#7 10.28   gcc-12-multilib gfortran-12-multilib gfortran-12-doc libcoarrays-dev lrzip
+#7 10.28   libc-devtools glibc-doc manpages-dev gnutls-bin krb5-doc krb5-user
+#7 10.28   libstdc++-12-doc make-doc python3
+#7 10.28 Recommended packages:
+#7 10.28   gcc manpages manpages-dev krb5-locales libldap-common libgpm2 publicsuffix
+#7 10.28   libsasl2-modules psmisc linux-sysctl-defaults
+#7 11.10 The following NEW packages will be installed:
+#7 11.10   binutils binutils-common binutils-i686-linux-gnu ca-certificates cmake
+#7 11.10   cmake-data cpp-12 g++-12 gcc-12 gcc-12-base gfortran-12 libarchive13t64
+#7 11.10   libasan8 libatomic1 libbinutils libbrotli1 libc-dev-bin libc6-dev libcc1-0
+#7 11.10   libcom-err2 libcrypt-dev libctf-nobfd0 libctf0 libcurl4t64 libexpat1 libffi8
+#7 11.10   libgcc-12-dev libgfortran-12-dev libgfortran5 libgnutls30t64 libgomp1
+#7 11.10   libgprofng0 libgssapi-krb5-2 libidn2-0 libisl23 libitm1 libjansson4
+#7 11.10   libjsoncpp26 libk5crypto3 libkeyutils1 libkrb5-3 libkrb5support0 libldap2
+#7 11.10   libmpc3 libmpfr6 libncursesw6 libnghttp2-14 libnghttp3-9 libp11-kit0
+#7 11.10   libproc2-0 libpsl5t64 libquadmath0 librhash1 librtmp1 libsasl2-2
+#7 11.10   libsasl2-modules-db libsframe1 libssh2-1t64 libstdc++-12-dev libtasn1-6
+#7 11.10   libubsan1 libunistring5 libuv1t64 libxml2 linux-libc-dev make ninja-build
+#7 11.11   openssl procps rpcsvc-proto wget
+#7 11.11 The following packages will be upgraded:
+#7 11.11   libc-bin libc6 libssl3t64 openssl-provider-legacy
+#7 11.29 4 upgraded, 71 newly installed, 0 to remove and 6 not upgraded.
+#7 11.29 Need to get 107 MB of archives.
+#7 11.29 After this operation, 389 MB of additional disk space will be used.
+#7 11.29 Get:1 http://deb.debian.org/debian trixie/main i386 libc6 i386 2.41-12+deb13u1 [2724 kB]
+#7 12.16 Get:2 http://deb.debian.org/debian trixie/main i386 libc-bin i386 2.41-12+deb13u1 [658 kB]
+#7 12.32 Get:3 http://deb.debian.org/debian trixie/main i386 libexpat1 i386 2.7.1-2 [110 kB]
+#7 12.35 Get:4 http://deb.debian.org/debian-security trixie-security/main i386 openssl-provider-legacy i386 3.5.4-1~deb13u2 [305 kB]
+#7 12.44 Get:5 http://deb.debian.org/debian-security trixie-security/main i386 libssl3t64 i386 3.5.4-1~deb13u2 [2425 kB]
+#7 12.95 Get:6 http://deb.debian.org/debian trixie/main i386 libncursesw6 i386 6.5+20250216-2 [148 kB]
+#7 13.05 Get:7 http://deb.debian.org/debian trixie/main i386 libproc2-0 i386 2:4.0.4-9 [66.5 kB]
+#7 13.14 Get:8 http://deb.debian.org/debian trixie/main i386 procps i386 2:4.0.4-9 [879 kB]
+#7 13.34 Get:9 http://deb.debian.org/debian-security trixie-security/main i386 openssl i386 3.5.4-1~deb13u2 [1500 kB]
+#7 13.40 Get:10 http://deb.debian.org/debian trixie/main i386 ca-certificates all 20250419 [162 kB]
+#7 13.42 Get:11 http://deb.debian.org/debian trixie/main i386 libunistring5 i386 1.3-2 [471 kB]
+#7 13.48 Get:12 http://deb.debian.org/debian trixie/main i386 libidn2-0 i386 2.3.8-2 [110 kB]
+#7 13.50 Get:13 http://deb.debian.org/debian trixie/main i386 libffi8 i386 3.4.8-2 [21.6 kB]
+#7 13.52 Get:14 http://deb.debian.org/debian trixie/main i386 libp11-kit0 i386 0.25.5-3 [423 kB]
+#7 13.58 Get:15 http://deb.debian.org/debian trixie/main i386 libtasn1-6 i386 4.20.0-2 [51.6 kB]
+#7 13.60 Get:16 http://deb.debian.org/debian trixie/main i386 libgnutls30t64 i386 3.8.9-3+deb13u1 [1464 kB]
+#7 13.86 Get:17 http://deb.debian.org/debian trixie/main i386 libpsl5t64 i386 0.21.2-1.1+b1 [57.7 kB]
+#7 13.88 Get:18 http://deb.debian.org/debian trixie/main i386 wget i386 1.25.0-2 [1000 kB]
+#7 14.02 Get:19 http://deb.debian.org/debian trixie/main i386 libsframe1 i386 2.44-3 [78.5 kB]
+#7 14.06 Get:20 http://deb.debian.org/debian trixie/main i386 binutils-common i386 2.44-3 [2509 kB]
+#7 14.44 Get:21 http://deb.debian.org/debian trixie/main i386 libbinutils i386 2.44-3 [593 kB]
+#7 14.45 Get:22 http://deb.debian.org/debian trixie/main i386 libgprofng0 i386 2.44-3 [848 kB]
+#7 14.53 Get:23 http://deb.debian.org/debian trixie/main i386 libctf-nobfd0 i386 2.44-3 [159 kB]
+#7 14.56 Get:24 http://deb.debian.org/debian trixie/main i386 libctf0 i386 2.44-3 [94.5 kB]
+#7 14.65 Get:25 http://deb.debian.org/debian trixie/main i386 libjansson4 i386 2.14-2+b3 [41.6 kB]
+#7 14.75 Get:26 http://deb.debian.org/debian trixie/main i386 binutils-i686-linux-gnu i386 2.44-3 [1073 kB]
+#7 15.03 Get:27 http://deb.debian.org/debian trixie/main i386 binutils i386 2.44-3 [269 kB]
+#7 15.04 Get:28 http://deb.debian.org/debian trixie/main i386 cmake-data all 3.31.6-2 [2268 kB]
+#7 15.27 Get:29 http://deb.debian.org/debian trixie/main i386 libxml2 i386 2.12.7+dfsg+really2.9.14-2.1+deb13u2 [733 kB]
+#7 15.43 Get:30 http://deb.debian.org/debian trixie/main i386 libarchive13t64 i386 3.7.4-4 [390 kB]
+#7 15.48 Get:31 http://deb.debian.org/debian trixie/main i386 libbrotli1 i386 1.1.0-2+b7 [299 kB]
+#7 15.53 Get:32 http://deb.debian.org/debian trixie/main i386 libkrb5support0 i386 1.21.3-5 [35.3 kB]
+#7 15.55 Get:33 http://deb.debian.org/debian trixie/main i386 libcom-err2 i386 1.47.2-3+b7 [25.3 kB]
+#7 15.56 Get:34 http://deb.debian.org/debian trixie/main i386 libk5crypto3 i386 1.21.3-5 [84.3 kB]
+#7 15.57 Get:35 http://deb.debian.org/debian trixie/main i386 libkeyutils1 i386 1.6.3-6 [9964 B]
+#7 15.58 Get:36 http://deb.debian.org/debian trixie/main i386 libkrb5-3 i386 1.21.3-5 [355 kB]
+#7 15.64 Get:37 http://deb.debian.org/debian trixie/main i386 libgssapi-krb5-2 i386 1.21.3-5 [149 kB]
+#7 15.67 Get:38 http://deb.debian.org/debian trixie/main i386 libsasl2-modules-db i386 2.1.28+dfsg1-9 [20.8 kB]
+#7 15.68 Get:39 http://deb.debian.org/debian trixie/main i386 libsasl2-2 i386 2.1.28+dfsg1-9 [61.2 kB]
+#7 15.70 Get:40 http://deb.debian.org/debian trixie/main i386 libldap2 i386 2.6.10+dfsg-1 [208 kB]
+#7 15.74 Get:41 http://deb.debian.org/debian trixie/main i386 libnghttp2-14 i386 1.64.0-1.1 [83.1 kB]
+#7 15.84 Get:42 http://deb.debian.org/debian trixie/main i386 libnghttp3-9 i386 1.8.0-1 [78.7 kB]
+#7 15.89 Get:43 http://deb.debian.org/debian trixie/main i386 librtmp1 i386 2.4+20151223.gitfa8646d.1-2+b5 [62.4 kB]
+#7 15.91 Get:44 http://deb.debian.org/debian trixie/main i386 libssh2-1t64 i386 1.11.1-1 [256 kB]
+#7 15.95 Get:45 http://deb.debian.org/debian trixie/main i386 libcurl4t64 i386 8.14.1-2+deb13u2 [439 kB]
+#7 16.06 Get:46 http://deb.debian.org/debian trixie/main i386 libjsoncpp26 i386 1.9.6-3 [90.0 kB]
+#7 16.15 Get:47 http://deb.debian.org/debian trixie/main i386 librhash1 i386 1.4.5-1 [144 kB]
+#7 16.26 Get:48 http://deb.debian.org/debian trixie/main i386 libuv1t64 i386 1.50.0-2 [163 kB]
+#7 16.42 Get:49 http://deb.debian.org/debian trixie/main i386 cmake i386 3.31.6-2 [13.1 MB]
+#7 18.02 Get:50 http://deb.debian.org/debian trixie/main i386 gcc-12-base i386 12.4.0-5 [43.9 kB]
+#7 18.11 Get:51 http://deb.debian.org/debian trixie/main i386 libisl23 i386 0.27-1 [747 kB]
+#7 18.23 Get:52 http://deb.debian.org/debian trixie/main i386 libmpfr6 i386 4.2.2-1 [757 kB]
+#7 18.32 Get:53 http://deb.debian.org/debian trixie/main i386 libmpc3 i386 1.3.1-1+b3 [60.5 kB]
+#7 18.41 Get:54 http://deb.debian.org/debian trixie/main i386 cpp-12 i386 12.4.0-5 [10.2 MB]
+#7 19.51 Get:55 http://deb.debian.org/debian trixie/main i386 libcc1-0 i386 14.2.0-19 [44.9 kB]
+#7 19.54 Get:56 http://deb.debian.org/debian trixie/main i386 libgomp1 i386 14.2.0-19 [138 kB]
+#7 19.62 Get:57 http://deb.debian.org/debian trixie/main i386 libitm1 i386 14.2.0-19 [27.4 kB]
+#7 19.66 Get:58 http://deb.debian.org/debian trixie/main i386 libatomic1 i386 14.2.0-19 [7648 B]
+#7 19.72 Get:59 http://deb.debian.org/debian trixie/main i386 libasan8 i386 14.2.0-19 [2605 kB]
+#7 20.13 Get:60 http://deb.debian.org/debian trixie/main i386 libubsan1 i386 14.2.0-19 [1054 kB]
+#7 20.43 Get:61 http://deb.debian.org/debian trixie/main i386 libquadmath0 i386 14.2.0-19 [231 kB]
+#7 20.52 Get:62 http://deb.debian.org/debian trixie/main i386 libgcc-12-dev i386 12.4.0-5 [2428 kB]
+#7 21.22 Get:63 http://deb.debian.org/debian trixie/main i386 gcc-12 i386 12.4.0-5 [20.3 MB]
+#7 22.92 Get:64 http://deb.debian.org/debian trixie/main i386 libc-dev-bin i386 2.41-12+deb13u1 [58.7 kB]
+#7 22.94 Get:65 http://deb.debian.org/debian-security trixie-security/main i386 linux-libc-dev all 6.12.69-1 [2742 kB]
+#7 23.19 Get:66 http://deb.debian.org/debian trixie/main i386 libcrypt-dev i386 1:4.4.38-1 [126 kB]
+#7 23.20 Get:67 http://deb.debian.org/debian trixie/main i386 rpcsvc-proto i386 1.4.3-1 [66.1 kB]
+#7 23.30 Get:68 http://deb.debian.org/debian trixie/main i386 libc6-dev i386 2.41-12+deb13u1 [1810 kB]
+#7 24.66 Get:69 http://deb.debian.org/debian trixie/main i386 libstdc++-12-dev i386 12.4.0-5 [2137 kB]
+#7 25.21 Get:70 http://deb.debian.org/debian trixie/main i386 g++-12 i386 12.4.0-5 [11.2 MB]
+#7 26.29 Get:71 http://deb.debian.org/debian trixie/main i386 libgfortran5 i386 14.2.0-19 [735 kB]
+#7 26.44 Get:72 http://deb.debian.org/debian trixie/main i386 libgfortran-12-dev i386 12.4.0-5 [761 kB]
+#7 26.85 Get:73 http://deb.debian.org/debian trixie/main i386 gfortran-12 i386 12.4.0-5 [10.7 MB]
+#7 27.98 Get:74 http://deb.debian.org/debian trixie/main i386 make i386 4.4.1-2 [469 kB]
+#7 27.99 Get:75 http://deb.debian.org/debian trixie/main i386 ninja-build i386 1.12.1-1 [153 kB]
+#7 36.07 Preconfiguring packages ...
+#7 36.37 Fetched 107 MB in 17s (6342 kB/s)
+#7 36.47 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 4933 files and directories currently installed.)
+#7 36.48 Preparing to unpack .../libc6_2.41-12+deb13u1_i386.deb ...
+#7 37.23 Unpacking libc6:i386 (2.41-12+deb13u1) over (2.41-12) ...
+#7 37.77 Setting up libc6:i386 (2.41-12+deb13u1) ...
+#7 38.41 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 4933 files and directories currently installed.)
+#7 38.42 Preparing to unpack .../libc-bin_2.41-12+deb13u1_i386.deb ...
+#7 38.43 Unpacking libc-bin (2.41-12+deb13u1) over (2.41-12) ...
+#7 38.62 Setting up libc-bin (2.41-12+deb13u1) ...
+#7 38.79 Selecting previously unselected package libexpat1:i386.
+#7 38.79 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 4933 files and directories currently installed.)
+#7 38.80 Preparing to unpack .../libexpat1_2.7.1-2_i386.deb ...
+#7 38.80 Unpacking libexpat1:i386 (2.7.1-2) ...
+#7 38.93 Preparing to unpack .../openssl-provider-legacy_3.5.4-1~deb13u2_i386.deb ...
+#7 38.93 Unpacking openssl-provider-legacy (3.5.4-1~deb13u2) over (3.5.1-1+deb13u1) ...
+#7 39.04 Setting up openssl-provider-legacy (3.5.4-1~deb13u2) ...
+#7 39.15 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 4942 files and directories currently installed.)
+#7 39.16 Preparing to unpack .../libssl3t64_3.5.4-1~deb13u2_i386.deb ...
+#7 39.16 Unpacking libssl3t64:i386 (3.5.4-1~deb13u2) over (3.5.1-1+deb13u1) ...
+#7 39.55 Setting up libssl3t64:i386 (3.5.4-1~deb13u2) ...
+#7 39.66 Selecting previously unselected package libncursesw6:i386.
+#7 39.66 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 4942 files and directories currently installed.)
+#7 39.66 Preparing to unpack .../00-libncursesw6_6.5+20250216-2_i386.deb ...
+#7 39.67 Unpacking libncursesw6:i386 (6.5+20250216-2) ...
+#7 39.83 Selecting previously unselected package libproc2-0:i386.
+#7 39.83 Preparing to unpack .../01-libproc2-0_2%3a4.0.4-9_i386.deb ...
+#7 39.83 Unpacking libproc2-0:i386 (2:4.0.4-9) ...
+#7 39.96 Selecting previously unselected package procps.
+#7 39.96 Preparing to unpack .../02-procps_2%3a4.0.4-9_i386.deb ...
+#7 40.03 Unpacking procps (2:4.0.4-9) ...
+#7 40.26 Selecting previously unselected package openssl.
+#7 40.27 Preparing to unpack .../03-openssl_3.5.4-1~deb13u2_i386.deb ...
+#7 40.27 Unpacking openssl (3.5.4-1~deb13u2) ...
+#7 40.56 Selecting previously unselected package ca-certificates.
+#7 40.56 Preparing to unpack .../04-ca-certificates_20250419_all.deb ...
+#7 40.56 Unpacking ca-certificates (20250419) ...
+#7 40.69 Selecting previously unselected package libunistring5:i386.
+#7 40.69 Preparing to unpack .../05-libunistring5_1.3-2_i386.deb ...
+#7 40.69 Unpacking libunistring5:i386 (1.3-2) ...
+#7 40.88 Selecting previously unselected package libidn2-0:i386.
+#7 40.88 Preparing to unpack .../06-libidn2-0_2.3.8-2_i386.deb ...
+#7 40.88 Unpacking libidn2-0:i386 (2.3.8-2) ...
+#7 41.01 Selecting previously unselected package libffi8:i386.
+#7 41.01 Preparing to unpack .../07-libffi8_3.4.8-2_i386.deb ...
+#7 41.02 Unpacking libffi8:i386 (3.4.8-2) ...
+#7 41.13 Selecting previously unselected package libp11-kit0:i386.
+#7 41.13 Preparing to unpack .../08-libp11-kit0_0.25.5-3_i386.deb ...
+#7 41.13 Unpacking libp11-kit0:i386 (0.25.5-3) ...
+#7 41.29 Selecting previously unselected package libtasn1-6:i386.
+#7 41.29 Preparing to unpack .../09-libtasn1-6_4.20.0-2_i386.deb ...
+#7 41.29 Unpacking libtasn1-6:i386 (4.20.0-2) ...
+#7 41.41 Selecting previously unselected package libgnutls30t64:i386.
+#7 41.41 Preparing to unpack .../10-libgnutls30t64_3.8.9-3+deb13u1_i386.deb ...
+#7 41.41 Unpacking libgnutls30t64:i386 (3.8.9-3+deb13u1) ...
+#7 41.67 Selecting previously unselected package libpsl5t64:i386.
+#7 41.67 Preparing to unpack .../11-libpsl5t64_0.21.2-1.1+b1_i386.deb ...
+#7 41.67 Unpacking libpsl5t64:i386 (0.21.2-1.1+b1) ...
+#7 41.79 Selecting previously unselected package wget.
+#7 41.79 Preparing to unpack .../12-wget_1.25.0-2_i386.deb ...
+#7 41.79 Unpacking wget (1.25.0-2) ...
+#7 42.01 Selecting previously unselected package libsframe1:i386.
+#7 42.01 Preparing to unpack .../13-libsframe1_2.44-3_i386.deb ...
+#7 42.01 Unpacking libsframe1:i386 (2.44-3) ...
+#7 42.13 Selecting previously unselected package binutils-common:i386.
+#7 42.13 Preparing to unpack .../14-binutils-common_2.44-3_i386.deb ...
+#7 42.13 Unpacking binutils-common:i386 (2.44-3) ...
+#7 42.63 Selecting previously unselected package libbinutils:i386.
+#7 42.63 Preparing to unpack .../15-libbinutils_2.44-3_i386.deb ...
+#7 42.63 Unpacking libbinutils:i386 (2.44-3) ...
+#7 42.82 Selecting previously unselected package libgprofng0:i386.
+#7 42.82 Preparing to unpack .../16-libgprofng0_2.44-3_i386.deb ...
+#7 42.83 Unpacking libgprofng0:i386 (2.44-3) ...
+#7 43.06 Selecting previously unselected package libctf-nobfd0:i386.
+#7 43.06 Preparing to unpack .../17-libctf-nobfd0_2.44-3_i386.deb ...
+#7 43.06 Unpacking libctf-nobfd0:i386 (2.44-3) ...
+#7 43.19 Selecting previously unselected package libctf0:i386.
+#7 43.19 Preparing to unpack .../18-libctf0_2.44-3_i386.deb ...
+#7 43.19 Unpacking libctf0:i386 (2.44-3) ...
+#7 43.32 Selecting previously unselected package libjansson4:i386.
+#7 43.32 Preparing to unpack .../19-libjansson4_2.14-2+b3_i386.deb ...
+#7 43.32 Unpacking libjansson4:i386 (2.14-2+b3) ...
+#7 43.43 Selecting previously unselected package binutils-i686-linux-gnu.
+#7 43.43 Preparing to unpack .../20-binutils-i686-linux-gnu_2.44-3_i386.deb ...
+#7 43.43 Unpacking binutils-i686-linux-gnu (2.44-3) ...
+#7 43.71 Selecting previously unselected package binutils.
+#7 43.71 Preparing to unpack .../21-binutils_2.44-3_i386.deb ...
+#7 43.73 Unpacking binutils (2.44-3) ...
+#7 43.88 Selecting previously unselected package cmake-data.
+#7 43.88 Preparing to unpack .../22-cmake-data_3.31.6-2_all.deb ...
+#7 43.96 Unpacking cmake-data (3.31.6-2) ...
+#7 44.38 Selecting previously unselected package libxml2:i386.
+#7 44.39 Preparing to unpack .../23-libxml2_2.12.7+dfsg+really2.9.14-2.1+deb13u2_i386.deb ...
+#7 44.39 Unpacking libxml2:i386 (2.12.7+dfsg+really2.9.14-2.1+deb13u2) ...
+#7 44.60 Selecting previously unselected package libarchive13t64:i386.
+#7 44.60 Preparing to unpack .../24-libarchive13t64_3.7.4-4_i386.deb ...
+#7 44.60 Unpacking libarchive13t64:i386 (3.7.4-4) ...
+#7 44.77 Selecting previously unselected package libbrotli1:i386.
+#7 44.77 Preparing to unpack .../25-libbrotli1_1.1.0-2+b7_i386.deb ...
+#7 44.77 Unpacking libbrotli1:i386 (1.1.0-2+b7) ...
+#7 44.92 Selecting previously unselected package libkrb5support0:i386.
+#7 44.92 Preparing to unpack .../26-libkrb5support0_1.21.3-5_i386.deb ...
+#7 44.92 Unpacking libkrb5support0:i386 (1.21.3-5) ...
+#7 45.04 Selecting previously unselected package libcom-err2:i386.
+#7 45.04 Preparing to unpack .../27-libcom-err2_1.47.2-3+b7_i386.deb ...
+#7 45.04 Unpacking libcom-err2:i386 (1.47.2-3+b7) ...
+#7 45.15 Selecting previously unselected package libk5crypto3:i386.
+#7 45.15 Preparing to unpack .../28-libk5crypto3_1.21.3-5_i386.deb ...
+#7 45.15 Unpacking libk5crypto3:i386 (1.21.3-5) ...
+#7 45.27 Selecting previously unselected package libkeyutils1:i386.
+#7 45.28 Preparing to unpack .../29-libkeyutils1_1.6.3-6_i386.deb ...
+#7 45.28 Unpacking libkeyutils1:i386 (1.6.3-6) ...
+#7 45.39 Selecting previously unselected package libkrb5-3:i386.
+#7 45.39 Preparing to unpack .../30-libkrb5-3_1.21.3-5_i386.deb ...
+#7 45.39 Unpacking libkrb5-3:i386 (1.21.3-5) ...
+#7 45.55 Selecting previously unselected package libgssapi-krb5-2:i386.
+#7 45.55 Preparing to unpack .../31-libgssapi-krb5-2_1.21.3-5_i386.deb ...
+#7 45.55 Unpacking libgssapi-krb5-2:i386 (1.21.3-5) ...
+#7 45.68 Selecting previously unselected package libsasl2-modules-db:i386.
+#7 45.69 Preparing to unpack .../32-libsasl2-modules-db_2.1.28+dfsg1-9_i386.deb ...
+#7 45.69 Unpacking libsasl2-modules-db:i386 (2.1.28+dfsg1-9) ...
+#7 45.80 Selecting previously unselected package libsasl2-2:i386.
+#7 45.80 Preparing to unpack .../33-libsasl2-2_2.1.28+dfsg1-9_i386.deb ...
+#7 45.80 Unpacking libsasl2-2:i386 (2.1.28+dfsg1-9) ...
+#7 45.92 Selecting previously unselected package libldap2:i386.
+#7 45.92 Preparing to unpack .../34-libldap2_2.6.10+dfsg-1_i386.deb ...
+#7 45.92 Unpacking libldap2:i386 (2.6.10+dfsg-1) ...
+#7 46.06 Selecting previously unselected package libnghttp2-14:i386.
+#7 46.06 Preparing to unpack .../35-libnghttp2-14_1.64.0-1.1_i386.deb ...
+#7 46.06 Unpacking libnghttp2-14:i386 (1.64.0-1.1) ...
+#7 46.18 Selecting previously unselected package libnghttp3-9:i386.
+#7 46.18 Preparing to unpack .../36-libnghttp3-9_1.8.0-1_i386.deb ...
+#7 46.18 Unpacking libnghttp3-9:i386 (1.8.0-1) ...
+#7 46.30 Selecting previously unselected package librtmp1:i386.
+#7 46.30 Preparing to unpack .../37-librtmp1_2.4+20151223.gitfa8646d.1-2+b5_i386.deb ...
+#7 46.31 Unpacking librtmp1:i386 (2.4+20151223.gitfa8646d.1-2+b5) ...
+#7 46.42 Selecting previously unselected package libssh2-1t64:i386.
+#7 46.42 Preparing to unpack .../38-libssh2-1t64_1.11.1-1_i386.deb ...
+#7 46.42 Unpacking libssh2-1t64:i386 (1.11.1-1) ...
+#7 46.56 Selecting previously unselected package libcurl4t64:i386.
+#7 46.56 Preparing to unpack .../39-libcurl4t64_8.14.1-2+deb13u2_i386.deb ...
+#7 46.56 Unpacking libcurl4t64:i386 (8.14.1-2+deb13u2) ...
+#7 46.73 Selecting previously unselected package libjsoncpp26:i386.
+#7 46.73 Preparing to unpack .../40-libjsoncpp26_1.9.6-3_i386.deb ...
+#7 46.74 Unpacking libjsoncpp26:i386 (1.9.6-3) ...
+#7 46.87 Selecting previously unselected package librhash1:i386.
+#7 46.87 Preparing to unpack .../41-librhash1_1.4.5-1_i386.deb ...
+#7 46.87 Unpacking librhash1:i386 (1.4.5-1) ...
+#7 47.00 Selecting previously unselected package libuv1t64:i386.
+#7 47.00 Preparing to unpack .../42-libuv1t64_1.50.0-2_i386.deb ...
+#7 47.00 Unpacking libuv1t64:i386 (1.50.0-2) ...
+#7 47.13 Selecting previously unselected package cmake.
+#7 47.13 Preparing to unpack .../43-cmake_3.31.6-2_i386.deb ...
+#7 47.13 Unpacking cmake (3.31.6-2) ...
+#7 48.33 Selecting previously unselected package gcc-12-base:i386.
+#7 48.34 Preparing to unpack .../44-gcc-12-base_12.4.0-5_i386.deb ...
+#7 48.34 Unpacking gcc-12-base:i386 (12.4.0-5) ...
+#7 48.45 Selecting previously unselected package libisl23:i386.
+#7 48.46 Preparing to unpack .../45-libisl23_0.27-1_i386.deb ...
+#7 48.46 Unpacking libisl23:i386 (0.27-1) ...
+#7 48.67 Selecting previously unselected package libmpfr6:i386.
+#7 48.67 Preparing to unpack .../46-libmpfr6_4.2.2-1_i386.deb ...
+#7 48.67 Unpacking libmpfr6:i386 (4.2.2-1) ...
+#7 48.84 Selecting previously unselected package libmpc3:i386.
+#7 48.84 Preparing to unpack .../47-libmpc3_1.3.1-1+b3_i386.deb ...
+#7 48.84 Unpacking libmpc3:i386 (1.3.1-1+b3) ...
+#7 48.95 Selecting previously unselected package cpp-12.
+#7 48.96 Preparing to unpack .../48-cpp-12_12.4.0-5_i386.deb ...
+#7 48.96 Unpacking cpp-12 (12.4.0-5) ...
+#7 50.17 Selecting previously unselected package libcc1-0:i386.
+#7 50.17 Preparing to unpack .../49-libcc1-0_14.2.0-19_i386.deb ...
+#7 50.17 Unpacking libcc1-0:i386 (14.2.0-19) ...
+#7 50.28 Selecting previously unselected package libgomp1:i386.
+#7 50.29 Preparing to unpack .../50-libgomp1_14.2.0-19_i386.deb ...
+#7 50.29 Unpacking libgomp1:i386 (14.2.0-19) ...
+#7 50.42 Selecting previously unselected package libitm1:i386.
+#7 50.42 Preparing to unpack .../51-libitm1_14.2.0-19_i386.deb ...
+#7 50.42 Unpacking libitm1:i386 (14.2.0-19) ...
+#7 50.53 Selecting previously unselected package libatomic1:i386.
+#7 50.53 Preparing to unpack .../52-libatomic1_14.2.0-19_i386.deb ...
+#7 50.53 Unpacking libatomic1:i386 (14.2.0-19) ...
+#7 50.64 Selecting previously unselected package libasan8:i386.
+#7 50.64 Preparing to unpack .../53-libasan8_14.2.0-19_i386.deb ...
+#7 50.64 Unpacking libasan8:i386 (14.2.0-19) ...
+#7 51.15 Selecting previously unselected package libubsan1:i386.
+#7 51.15 Preparing to unpack .../54-libubsan1_14.2.0-19_i386.deb ...
+#7 51.15 Unpacking libubsan1:i386 (14.2.0-19) ...
+#7 51.42 Selecting previously unselected package libquadmath0:i386.
+#7 51.42 Preparing to unpack .../55-libquadmath0_14.2.0-19_i386.deb ...
+#7 51.42 Unpacking libquadmath0:i386 (14.2.0-19) ...
+#7 51.56 Selecting previously unselected package libgcc-12-dev:i386.
+#7 51.56 Preparing to unpack .../56-libgcc-12-dev_12.4.0-5_i386.deb ...
+#7 51.56 Unpacking libgcc-12-dev:i386 (12.4.0-5) ...
+#7 51.97 Selecting previously unselected package gcc-12.
+#7 51.97 Preparing to unpack .../57-gcc-12_12.4.0-5_i386.deb ...
+#7 51.99 Unpacking gcc-12 (12.4.0-5) ...
+#7 53.26 Selecting previously unselected package libc-dev-bin.
+#7 53.26 Preparing to unpack .../58-libc-dev-bin_2.41-12+deb13u1_i386.deb ...
+#7 53.26 Unpacking libc-dev-bin (2.41-12+deb13u1) ...
+#7 53.38 Selecting previously unselected package linux-libc-dev.
+#7 53.38 Preparing to unpack .../59-linux-libc-dev_6.12.69-1_all.deb ...
+#7 53.39 Unpacking linux-libc-dev (6.12.69-1) ...
+#7 53.76 Selecting previously unselected package libcrypt-dev:i386.
+#7 53.76 Preparing to unpack .../60-libcrypt-dev_1%3a4.4.38-1_i386.deb ...
+#7 53.84 Unpacking libcrypt-dev:i386 (1:4.4.38-1) ...
+#7 53.96 Selecting previously unselected package rpcsvc-proto.
+#7 53.96 Preparing to unpack .../61-rpcsvc-proto_1.4.3-1_i386.deb ...
+#7 53.97 Unpacking rpcsvc-proto (1.4.3-1) ...
+#7 54.08 Selecting previously unselected package libc6-dev:i386.
+#7 54.09 Preparing to unpack .../62-libc6-dev_2.41-12+deb13u1_i386.deb ...
+#7 54.09 Unpacking libc6-dev:i386 (2.41-12+deb13u1) ...
+#7 54.46 Selecting previously unselected package libstdc++-12-dev:i386.
+#7 54.46 Preparing to unpack .../63-libstdc++-12-dev_12.4.0-5_i386.deb ...
+#7 54.46 Unpacking libstdc++-12-dev:i386 (12.4.0-5) ...
+#7 54.89 Selecting previously unselected package g++-12.
+#7 54.89 Preparing to unpack .../64-g++-12_12.4.0-5_i386.deb ...
+#7 54.89 Unpacking g++-12 (12.4.0-5) ...
+#7 56.12 Selecting previously unselected package libgfortran5:i386.
+#7 56.12 Preparing to unpack .../65-libgfortran5_14.2.0-19_i386.deb ...
+#7 56.12 Unpacking libgfortran5:i386 (14.2.0-19) ...
+#7 56.34 Selecting previously unselected package libgfortran-12-dev:i386.
+#7 56.34 Preparing to unpack .../66-libgfortran-12-dev_12.4.0-5_i386.deb ...
+#7 56.34 Unpacking libgfortran-12-dev:i386 (12.4.0-5) ...
+#7 56.56 Selecting previously unselected package gfortran-12.
+#7 56.57 Preparing to unpack .../67-gfortran-12_12.4.0-5_i386.deb ...
+#7 56.57 Unpacking gfortran-12 (12.4.0-5) ...
+#7 57.81 Selecting previously unselected package make.
+#7 57.81 Preparing to unpack .../68-make_4.4.1-2_i386.deb ...
+#7 57.81 Unpacking make (4.4.1-2) ...
+#7 57.98 Selecting previously unselected package ninja-build.
+#7 57.98 Preparing to unpack .../69-ninja-build_1.12.1-1_i386.deb ...
+#7 57.98 Unpacking ninja-build (1.12.1-1) ...
+#7 58.10 Setting up libexpat1:i386 (2.7.1-2) ...
+#7 58.10 Setting up libkeyutils1:i386 (1.6.3-6) ...
+#7 58.10 Setting up libbrotli1:i386 (1.1.0-2+b7) ...
+#7 58.11 Setting up libuv1t64:i386 (1.50.0-2) ...
+#7 58.11 Setting up binutils-common:i386 (2.44-3) ...
+#7 58.11 Setting up libnghttp2-14:i386 (1.64.0-1.1) ...
+#7 58.11 Setting up linux-libc-dev (6.12.69-1) ...
+#7 58.11 Setting up libctf-nobfd0:i386 (2.44-3) ...
+#7 58.12 Setting up libcom-err2:i386 (1.47.2-3+b7) ...
+#7 58.12 Setting up libgomp1:i386 (14.2.0-19) ...
+#7 58.12 Setting up libsframe1:i386 (2.44-3) ...
+#7 58.12 Setting up ninja-build (1.12.1-1) ...
+#7 58.12 Setting up libjansson4:i386 (2.14-2+b3) ...
+#7 58.12 Setting up libkrb5support0:i386 (1.21.3-5) ...
+#7 58.13 Setting up gcc-12-base:i386 (12.4.0-5) ...
+#7 58.13 Setting up libsasl2-modules-db:i386 (2.1.28+dfsg1-9) ...
+#7 58.13 Setting up rpcsvc-proto (1.4.3-1) ...
+#7 58.13 Setting up make (4.4.1-2) ...
+#7 58.13 Setting up libmpfr6:i386 (4.2.2-1) ...
+#7 58.13 Setting up libjsoncpp26:i386 (1.9.6-3) ...
+#7 58.14 Setting up libquadmath0:i386 (14.2.0-19) ...
+#7 58.14 Setting up libproc2-0:i386 (2:4.0.4-9) ...
+#7 58.14 Setting up libunistring5:i386 (1.3-2) ...
+#7 58.14 Setting up libmpc3:i386 (1.3.1-1+b3) ...
+#7 58.14 Setting up libatomic1:i386 (14.2.0-19) ...
+#7 58.14 Setting up libncursesw6:i386 (6.5+20250216-2) ...
+#7 58.15 Setting up libk5crypto3:i386 (1.21.3-5) ...
+#7 58.15 Setting up libsasl2-2:i386 (2.1.28+dfsg1-9) ...
+#7 58.15 Setting up libgfortran5:i386 (14.2.0-19) ...
+#7 58.15 Setting up libnghttp3-9:i386 (1.8.0-1) ...
+#7 58.15 Setting up libubsan1:i386 (14.2.0-19) ...
+#7 58.15 Setting up libffi8:i386 (3.4.8-2) ...
+#7 58.15 Setting up libcrypt-dev:i386 (1:4.4.38-1) ...
+#7 58.23 Setting up libasan8:i386 (14.2.0-19) ...
+#7 58.23 Setting up procps (2:4.0.4-9) ...
+#7 58.43 Setting up libtasn1-6:i386 (4.20.0-2) ...
+#7 58.43 Setting up cmake-data (3.31.6-2) ...
+#7 58.51 Setting up librhash1:i386 (1.4.5-1) ...
+#7 58.51 Setting up libkrb5-3:i386 (1.21.3-5) ...
+#7 58.51 Setting up libssh2-1t64:i386 (1.11.1-1) ...
+#7 58.51 Setting up libbinutils:i386 (2.44-3) ...
+#7 58.51 Setting up libisl23:i386 (0.27-1) ...
+#7 58.51 Setting up libc-dev-bin (2.41-12+deb13u1) ...
+#7 58.52 Setting up openssl (3.5.4-1~deb13u2) ...
+#7 58.53 Setting up libxml2:i386 (2.12.7+dfsg+really2.9.14-2.1+deb13u2) ...
+#7 58.54 Setting up libcc1-0:i386 (14.2.0-19) ...
+#7 58.54 Setting up libldap2:i386 (2.6.10+dfsg-1) ...
+#7 58.54 Setting up libitm1:i386 (14.2.0-19) ...
+#7 58.54 Setting up libctf0:i386 (2.44-3) ...
+#7 58.54 Setting up cpp-12 (12.4.0-5) ...
+#7 58.54 Setting up binutils-i686-linux-gnu (2.44-3) ...
+#7 58.55 Setting up libidn2-0:i386 (2.3.8-2) ...
+#7 58.55 Setting up ca-certificates (20250419) ...
+#7 64.69 Updating certificates in /etc/ssl/certs...
+#7 74.40 150 added, 0 removed; done.
+#7 74.49 Setting up libgprofng0:i386 (2.44-3) ...
+#7 74.49 Setting up libgcc-12-dev:i386 (12.4.0-5) ...
+#7 74.49 Setting up libp11-kit0:i386 (0.25.5-3) ...
+#7 74.50 Setting up libgssapi-krb5-2:i386 (1.21.3-5) ...
+#7 74.51 Setting up libc6-dev:i386 (2.41-12+deb13u1) ...
+#7 74.52 Setting up libarchive13t64:i386 (3.7.4-4) ...
+#7 74.52 Setting up libgnutls30t64:i386 (3.8.9-3+deb13u1) ...
+#7 74.52 Setting up libstdc++-12-dev:i386 (12.4.0-5) ...
+#7 74.52 Setting up libpsl5t64:i386 (0.21.2-1.1+b1) ...
+#7 74.52 Setting up libgfortran-12-dev:i386 (12.4.0-5) ...
+#7 74.52 Setting up binutils (2.44-3) ...
+#7 74.53 Setting up gcc-12 (12.4.0-5) ...
+#7 74.53 Setting up librtmp1:i386 (2.4+20151223.gitfa8646d.1-2+b5) ...
+#7 74.53 Setting up g++-12 (12.4.0-5) ...
+#7 74.53 Setting up wget (1.25.0-2) ...
+#7 74.53 Setting up libcurl4t64:i386 (8.14.1-2+deb13u2) ...
+#7 74.54 Setting up gfortran-12 (12.4.0-5) ...
+#7 74.54 Setting up cmake (3.31.6-2) ...
+#7 74.54 Processing triggers for libc-bin (2.41-12+deb13u1) ...
+#7 74.58 Processing triggers for ca-certificates (20250419) ...
+#7 74.65 Updating certificates in /etc/ssl/certs...
+#7 82.48 0 added, 0 removed; done.
+#7 82.48 Running hooks in /etc/ca-certificates/update.d...
+#7 82.49 done.
+#7 DONE 82.7s
+
+#8 [ 3/10] ADD https://github.com/HDFGroup/hdf5/archive/2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1.tar.gz hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1.tar.gz
+#8 DONE 0.0s
+
+#9 [ 4/10] RUN tar xzf hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1.tar.gz
+#9 DONE 2.5s
+
+#10 [ 5/10] WORKDIR hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1
+#10 DONE 0.0s
+
+#11 [ 6/10] RUN if [ ${cpuarch} = arm64v8 ]; then sed -i -e 's/__float128/__float129/g' config/HDFTests.c; fi
+#11 0.122 /bin/sh: 1: [: =: unexpected operator
+#11 DONE 0.1s
+
+#12 [ 7/10] RUN sed -i -e 's/__float128/__float129/g' config/HDFTests.c
+#12 DONE 0.2s
+
+#13 [ 8/10] RUN cmake -Bbuilddir -GNinja         -DCMAKE_BUILD_TYPE=Release         -DCMAKE_C_COMPILER=gcc-12         -DCMAKE_CXX_COMPILER=g++-12         -DCMAKE_Fortran_COMPILER=gfortran-12         -DCMAKE_INSTALL_PREFIX=/hdf5         -DBUILD_SHARED_LIBS=ON         -DBUILD_STATIC_LIBS=OFF         -DBUILD_TESTING=OFF         -DHDF5_BUILD_CPP_LIB=ON         -DHDF5_BUILD_DOC=OFF         -DHDF5_BUILD_EXAMPLES=OFF         -DHDF5_BUILD_FORTRAN=ON         -DHDF5_BUILD_HL_LIB=ON         -DHDF5_BUILD_TOOLS=OFF         -DHDF5_ENABLE_NONSTANDARD_FEATURE_FLOAT16=ON         -DHDF5_ENABLE_SZIP_SUPPORT=OFF         -DHDF5_ENABLE_ZLIB_SUPPORT=OFF         -DH5_FLOAT16_CONVERSION_FUNCS_LINK=ON         -DH5_FLOAT16_CONVERSION_FUNCS_LINK_NO_FLAGS=ON         -DH5_LDOUBLE_TO_FLOAT16_CORRECT=ON
+#13 0.832 -- The C compiler identification is GNU 12.4.0
+#13 0.892 -- Detecting C compiler ABI info
+#13 1.619 -- Detecting C compiler ABI info - done
+#13 1.726 -- Check for working C compiler: /usr/bin/gcc-12 - skipped
+#13 1.728 -- Detecting C compile features
+#13 1.730 -- Detecting C compile features - done
+#13 1.838 -- Final: share
+#13 1.868 -- Looking for include file sys/file.h
+#13 2.499 -- Looking for include file sys/file.h - found
+#13 2.500 -- Looking for include files sys/file.h, sys/ioctl.h
+#13 3.130 -- Looking for include files sys/file.h, sys/ioctl.h - found
+#13 3.131 -- Looking for 3 include files sys/file.h, ..., sys/resource.h
+#13 3.767 -- Looking for 3 include files sys/file.h, ..., sys/resource.h - found
+#13 3.768 -- Looking for 4 include files sys/file.h, ..., sys/socket.h
+#13 4.415 -- Looking for 4 include files sys/file.h, ..., sys/socket.h - found
+#13 4.417 -- Looking for 5 include files sys/file.h, ..., sys/stat.h
+#13 5.068 -- Looking for 5 include files sys/file.h, ..., sys/stat.h - found
+#13 5.069 -- Looking for 6 include files sys/file.h, ..., sys/time.h
+#13 5.726 -- Looking for 6 include files sys/file.h, ..., sys/time.h - found
+#13 5.728 -- Looking for 7 include files sys/file.h, ..., dirent.h
+#13 6.396 -- Looking for 7 include files sys/file.h, ..., dirent.h - found
+#13 6.397 -- Looking for 8 include files sys/file.h, ..., unistd.h
+#13 7.068 -- Looking for 8 include files sys/file.h, ..., unistd.h - found
+#13 7.069 -- Looking for 9 include files sys/file.h, ..., pwd.h
+#13 7.739 -- Looking for 9 include files sys/file.h, ..., pwd.h - found
+#13 7.740 -- Looking for 10 include files sys/file.h, ..., pthread.h
+#13 8.421 -- Looking for 10 include files sys/file.h, ..., pthread.h - found
+#13 8.423 -- Looking for 11 include files sys/file.h, ..., dlfcn.h
+#13 9.107 -- Looking for 11 include files sys/file.h, ..., dlfcn.h - found
+#13 9.108 -- Looking for 12 include files sys/file.h, ..., netinet/in.h
+#13 9.791 -- Looking for 12 include files sys/file.h, ..., netinet/in.h - found
+#13 9.793 -- Looking for 13 include files sys/file.h, ..., netdb.h
+#13 10.47 -- Looking for 13 include files sys/file.h, ..., netdb.h - found
+#13 10.47 -- Looking for 14 include files sys/file.h, ..., arpa/inet.h
+#13 11.16 -- Looking for 14 include files sys/file.h, ..., arpa/inet.h - found
+#13 11.16 -- Looking for include file quadmath.h
+#13 11.81 -- Looking for include file quadmath.h - found
+#13 11.81 -- Looking for ceil in m;
+#13 12.46 -- Looking for ceil in m; - found
+#13 12.46 -- Looking for dlopen in dl;m
+#13 13.12 -- Looking for dlopen in dl;m - found
+#13 13.12 -- Looking for WSAStartup in ws2_32;m;dl
+#13 13.73 -- Looking for WSAStartup in ws2_32;m;dl - not found
+#13 13.73 -- Looking for gethostbyname in wsock32;m;dl
+#13 14.37 -- Looking for gethostbyname in wsock32;m;dl - not found
+#13 14.37 -- Looking for gethostname in ucb;m;dl
+#13 14.99 -- Looking for gethostname in ucb;m;dl - not found
+#13 14.99 -- Looking for sys/types.h
+#13 15.64 -- Looking for sys/types.h - found
+#13 15.64 -- Looking for stdint.h
+#13 16.26 -- Looking for stdint.h - found
+#13 16.26 -- Looking for stddef.h
+#13 16.88 -- Looking for stddef.h - found
+#13 16.88 -- Check size of char
+#13 17.55 -- Check size of char - done
+#13 17.56 -- Check size of short
+#13 18.21 -- Check size of short - done
+#13 18.21 -- Check size of int
+#13 18.87 -- Check size of int - done
+#13 18.87 -- Check size of unsigned
+#13 19.54 -- Check size of unsigned - done
+#13 19.54 -- Check size of long
+#13 20.20 -- Check size of long - done
+#13 20.20 -- Check size of long long
+#13 20.86 -- Check size of long long - done
+#13 20.86 -- Check size of float
+#13 21.52 -- Check size of float - done
+#13 21.52 -- Check size of double
+#13 22.18 -- Check size of double - done
+#13 22.18 -- Check size of long double
+#13 22.84 -- Check size of long double - done
+#13 22.84 -- Check size of int8_t
+#13 23.50 -- Check size of int8_t - done
+#13 23.50 -- Check size of uint8_t
+#13 24.16 -- Check size of uint8_t - done
+#13 24.17 -- Check size of int_least8_t
+#13 24.83 -- Check size of int_least8_t - done
+#13 24.83 -- Check size of uint_least8_t
+#13 25.49 -- Check size of uint_least8_t - done
+#13 25.50 -- Check size of int_fast8_t
+#13 26.15 -- Check size of int_fast8_t - done
+#13 26.15 -- Check size of uint_fast8_t
+#13 26.81 -- Check size of uint_fast8_t - done
+#13 26.81 -- Check size of int16_t
+#13 27.47 -- Check size of int16_t - done
+#13 27.47 -- Check size of uint16_t
+#13 28.13 -- Check size of uint16_t - done
+#13 28.14 -- Check size of int_least16_t
+#13 28.80 -- Check size of int_least16_t - done
+#13 28.80 -- Check size of uint_least16_t
+#13 29.46 -- Check size of uint_least16_t - done
+#13 29.46 -- Check size of int_fast16_t
+#13 30.12 -- Check size of int_fast16_t - done
+#13 30.12 -- Check size of uint_fast16_t
+#13 30.78 -- Check size of uint_fast16_t - done
+#13 30.78 -- Check size of int32_t
+#13 31.44 -- Check size of int32_t - done
+#13 31.44 -- Check size of uint32_t
+#13 32.10 -- Check size of uint32_t - done
+#13 32.10 -- Check size of int_least32_t
+#13 32.76 -- Check size of int_least32_t - done
+#13 32.76 -- Check size of uint_least32_t
+#13 33.42 -- Check size of uint_least32_t - done
+#13 33.42 -- Check size of int_fast32_t
+#13 34.07 -- Check size of int_fast32_t - done
+#13 34.07 -- Check size of uint_fast32_t
+#13 34.73 -- Check size of uint_fast32_t - done
+#13 34.74 -- Check size of int64_t
+#13 35.40 -- Check size of int64_t - done
+#13 35.40 -- Check size of uint64_t
+#13 36.06 -- Check size of uint64_t - done
+#13 36.07 -- Check size of int_least64_t
+#13 36.73 -- Check size of int_least64_t - done
+#13 36.73 -- Check size of uint_least64_t
+#13 37.39 -- Check size of uint_least64_t - done
+#13 37.39 -- Check size of int_fast64_t
+#13 38.04 -- Check size of int_fast64_t - done
+#13 38.04 -- Check size of uint_fast64_t
+#13 38.71 -- Check size of uint_fast64_t - done
+#13 38.71 -- Check size of size_t
+#13 39.38 -- Check size of size_t - done
+#13 39.38 -- Check size of ssize_t
+#13 40.04 -- Check size of ssize_t - done
+#13 40.05 -- Check size of ptrdiff_t
+#13 40.71 -- Check size of ptrdiff_t - done
+#13 40.72 -- Check size of off_t
+#13 41.38 -- Check size of off_t - done
+#13 41.39 -- Check size of time_t
+#13 42.05 -- Check size of time_t - done
+#13 42.05 -- Check size of _Bool
+#13 42.71 -- Check size of _Bool - done
+#13 42.71 -- Looking for CLOCK_MONOTONIC
+#13 43.34 -- Looking for CLOCK_MONOTONIC - not found
+#13 43.34 -- Performing Test H5_HAVE_TM_GMTOFF
+#13 43.97 -- Performing Test H5_HAVE_TM_GMTOFF - Success
+#13 43.97 -- Performing Test H5_HAVE___TM_GMTOFF
+#13 44.32 -- Performing Test H5_HAVE___TM_GMTOFF - Failed
+#13 44.32 -- Performing Test H5_HAVE_STRUCT_TIMEZONE
+#13 44.68 -- Performing Test H5_HAVE_STRUCT_TIMEZONE - Failed
+#13 44.68 -- Looking for gettimeofday
+#13 45.32 -- Looking for gettimeofday - found
+#13 46.99 -- Performing Test H5_HAVE_STAT_ST_BLOCKS
+#13 47.62 -- Performing Test H5_HAVE_STAT_ST_BLOCKS - Success
+#13 47.62 -- Looking for ioctl
+#13 48.25 -- Looking for ioctl - found
+#13 48.25 -- Performing Test H5_HAVE_STRUCT_VIDEOCONFIG
+#13 48.58 -- Performing Test H5_HAVE_STRUCT_VIDEOCONFIG - Failed
+#13 48.58 -- Performing Test H5_HAVE_STRUCT_TEXT_INFO
+#13 48.91 -- Performing Test H5_HAVE_STRUCT_TEXT_INFO - Failed
+#13 48.91 -- Looking for _getvideoconfig
+#13 49.55 -- Looking for _getvideoconfig - not found
+#13 49.55 -- Looking for gettextinfo
+#13 50.19 -- Looking for gettextinfo - not found
+#13 50.19 -- Looking for _scrsize
+#13 50.82 -- Looking for _scrsize - not found
+#13 50.83 -- Looking for GetConsoleScreenBufferInfo
+#13 51.47 -- Looking for GetConsoleScreenBufferInfo - not found
+#13 51.47 -- Looking for TIOCGWINSZ
+#13 52.08 -- Looking for TIOCGWINSZ - found
+#13 52.08 -- Looking for TIOCGETD
+#13 52.69 -- Looking for TIOCGETD - found
+#13 52.69 -- Looking for alarm
+#13 53.33 -- Looking for alarm - found
+#13 53.33 -- Looking for fcntl
+#13 53.98 -- Looking for fcntl - found
+#13 53.98 -- Looking for flock
+#13 54.62 -- Looking for flock - found
+#13 54.62 -- Looking for fork
+#13 55.27 -- Looking for fork - found
+#13 55.27 -- Looking for gethostname
+#13 55.92 -- Looking for gethostname - found
+#13 55.92 -- Looking for getrusage
+#13 56.58 -- Looking for getrusage - found
+#13 56.58 -- Looking for pread
+#13 57.21 -- Looking for pread - found
+#13 57.22 -- Looking for pwrite
+#13 57.87 -- Looking for pwrite - found
+#13 57.87 -- Looking for strcasestr
+#13 58.52 -- Looking for strcasestr - found
+#13 58.52 -- Looking for strdup
+#13 59.16 -- Looking for strdup - found
+#13 59.16 -- Looking for symlink
+#13 59.81 -- Looking for symlink - found
+#13 59.81 -- Looking for tmpfile
+#13 60.45 -- Looking for tmpfile - found
+#13 60.45 -- Looking for asprintf
+#13 61.10 -- Looking for asprintf - found
+#13 61.10 -- Looking for vasprintf
+#13 61.77 -- Looking for vasprintf - found
+#13 61.77 -- Looking for waitpid
+#13 62.42 -- Looking for waitpid - found
+#13 62.42 -- Looking for sigsetjmp
+#13 63.05 -- Looking for sigsetjmp - found
+#13 65.58 -- Looking for clock_gettime
+#13 66.22 -- Looking for clock_gettime - found
+#13 66.22 -- Looking for clock_gettime in rt
+#13 66.87 -- Looking for clock_gettime in rt - found
+#13 66.87 -- Looking for clock_gettime in posix4
+#13 67.45 -- Looking for clock_gettime in posix4 - not found
+#13 68.50 -- Testing maximum decimal precision for C - 21;0
+#13 68.50 -- maximum decimal precision for C var - 21
+#13 68.50 -- Checking if complex number support is available
+#13 68.50 -- Looking for complex.h
+#13 69.17 -- Looking for complex.h - found
+#13 69.17 -- Check size of float _Complex
+#13 69.84 -- Check size of float _Complex - done
+#13 69.84 -- Check size of double _Complex
+#13 70.51 -- Check size of double _Complex - done
+#13 70.51 -- Check size of long double _Complex
+#13 71.16 -- Check size of long double _Complex - done
+#13 72.16 -- Using C99 complex number types
+#13 75.73 -- Checking if _Float16 support is available
+#13 75.73 -- Check size of _Float16
+#13 76.10 -- Check size of _Float16 - failed
+#13 76.10 -- _Float16 support has been disabled since the _Float16 type was not found
+#13 76.12 -- Could NOT find PkgConfig (missing: PKG_CONFIG_EXECUTABLE) 
+#13 76.23 -- Found Perl: /usr/bin/perl (found version "5.40.1")
+#13 76.23 -- ... disable color and URL extended diagnostic messages
+#13 76.27 -- ....All Warnings are enabled
+#13 76.27 -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+#13 76.95 -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+#13 76.95 -- Found Threads: TRUE
+#13 76.95 -- Looking for stdatomic.h
+#13 77.56 -- Looking for stdatomic.h - found
+#13 78.21 -- The Fortran compiler identification is GNU 12.4.0
+#13 78.37 -- Detecting Fortran compiler ABI info
+#13 79.39 -- Detecting Fortran compiler ABI info - done
+#13 79.51 -- Check for working Fortran compiler: /usr/bin/gfortran-12 - skipped
+#13 79.57 -- ... disable color and URL extended diagnostic messages
+#13 79.59 -- Detecting Fortran/C Interface
+#13 84.22 -- Detecting Fortran/C Interface - Found GLOBAL and MODULE mangling
+#13 84.22 -- Verifying Fortran/C Compiler Compatibility
+#13 85.55 -- Verifying Fortran/C Compiler Compatibility - Success
+#13 85.55 -- Performing Test H5_FORTRAN_HAVE_SIZEOF
+#13 86.67 -- Performing Test H5_FORTRAN_HAVE_SIZEOF - Success
+#13 86.68 -- Performing Test H5_FORTRAN_HAVE_C_SIZEOF
+#13 87.80 -- Performing Test H5_FORTRAN_HAVE_C_SIZEOF - Success
+#13 87.81 -- Performing Test H5_FORTRAN_HAVE_STORAGE_SIZE
+#13 88.93 -- Performing Test H5_FORTRAN_HAVE_STORAGE_SIZE - Success
+#13 88.93 -- Performing Test H5_FORTRAN_HAVE_ISO_C_BINDING
+#13 90.07 -- Performing Test H5_FORTRAN_HAVE_ISO_C_BINDING - Success
+#13 90.07 -- Performing Test FORTRAN_HAVE_C_LONG_DOUBLE
+#13 91.19 -- Performing Test FORTRAN_HAVE_C_LONG_DOUBLE - Success
+#13 91.19 -- Performing Test FORTRAN_C_LONG_DOUBLE_IS_UNIQUE
+#13 92.39 -- Performing Test FORTRAN_C_LONG_DOUBLE_IS_UNIQUE - Success
+#13 92.39 -- Performing Test FORTRAN_C_BOOL_IS_UNIQUE
+#13 93.55 -- Performing Test FORTRAN_C_BOOL_IS_UNIQUE - Success
+#13 93.55 -- Performing Test HAVE_ISO_FORTRAN_ENV
+#13 94.66 -- Performing Test HAVE_ISO_FORTRAN_ENV - Success
+#13 94.66 -- Performing Test FORTRAN_CHAR_ALLOC
+#13 95.75 -- Performing Test FORTRAN_CHAR_ALLOC - Success
+#13 97.35 -- ....LOGICAL KINDS FOUND {1,2,4,8}
+#13 97.35 -- ....NUMBER OF INTEGER KINDS FOUND 4
+#13 97.35 -- ....REAL KINDS FOUND {4,8,10,16}
+#13 97.35 -- ....INTEGER KINDS FOUND {1,2,4,8}
+#13 97.35 -- ....MAX DECIMAL PRECISION 33
+#13 106.8 -- ....FOUND SIZEOF for REAL KINDs {4,8,12,16}
+#13 108.0 -- No pre-generated H5fortran_types.F90 file found - generating one
+#13 108.0 -- No pre-generated H5_gen.F90 file found - generating one
+#13 108.0 -- No pre-generated H5LTff_gen.F90 H5TBff_gen.F90 file found - generating one
+#13 108.6 -- The CXX compiler identification is GNU 12.4.0
+#13 108.6 -- Detecting CXX compiler ABI info
+#13 109.3 -- Detecting CXX compiler ABI info - done
+#13 109.4 -- Check for working CXX compiler: /usr/bin/g++-12 - skipped
+#13 109.4 -- Detecting CXX compile features
+#13 109.4 -- Detecting CXX compile features - done
+#13 109.5 -- ... disable color and URL extended diagnostic messages
+#13 109.5 -- ....All CXX Warnings are enabled
+#13 109.5 -- ....All Warnings are enabled
+#13 109.7 -- Configuring done (109.4s)
+#13 110.0 -- Generating done (0.3s)
+#13 110.0 CMake Warning:
+#13 110.0   Manually-specified variables were not used by the project:
+#13 110.0 
+#13 110.0     H5_FLOAT16_CONVERSION_FUNCS_LINK
+#13 110.0     H5_FLOAT16_CONVERSION_FUNCS_LINK_NO_FLAGS
+#13 110.0 
+#13 110.0 
+#13 110.0 -- Build files have been written to: /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/builddir
+#13 DONE 110.0s
+
+#14 [ 9/10] RUN cmake --build builddir
+#14 0.786 [1/519] Building Fortran preprocessed fortran/src/CMakeFiles/H5_buildiface.dir/H5_buildiface.F90-pp.f90
+#14 1.101 [2/519] Generating Fortran dyndep file fortran/src/CMakeFiles/H5_buildiface.dir/Fortran.dd
+#14 1.178 [3/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5mpi.c.o
+#14 2.324 [4/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5dbg.c.o
+#14 2.527 [5/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5system.c.o
+#14 2.975 [6/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5timer.c.o
+#14 3.287 [7/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5checksum.c.o
+#14 3.608 [8/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Abtree2.c.o
+#14 5.327 [9/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Adeprec.c.o
+#14 5.522 [10/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5.c.o
+#14 5.785 [11/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Atest.c.o
+#14 6.404 [12/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5ACmpio.c.o
+#14 6.930 [13/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5ACdbg.c.o
+#14 7.167 [14/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5trace.c.o
+#14 7.773 [15/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5ACproxy_entry.c.o
+#14 8.293 [16/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Adense.c.o
+#14 8.501 [17/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5AC.c.o
+#14 8.571 [18/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Aint.c.o
+#14 9.024 [19/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Bdbg.c.o
+#14 9.132 [20/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5A.c.o
+#14 9.534 [21/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Bcache.c.o
+#14 10.63 [22/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5B2dbg.c.o
+#14 11.65 [23/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5B2.c.o
+#14 11.94 [24/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5B2cache.c.o
+#14 12.06 [25/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5B2hdr.c.o
+#14 12.15 [26/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5B2stat.c.o
+#14 12.46 [27/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5B.c.o
+#14 13.02 [28/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5B2internal.c.o
+#14 13.73 [29/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5B2leaf.c.o
+#14 13.78 [30/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Cepoch.c.o
+#14 13.81 [31/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Cdbg.c.o
+#14 15.02 [32/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5B2test.c.o
+#14 15.93 [33/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5B2int.c.o
+#14 16.24 [34/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5C.c.o
+#14 16.55 [35/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Clog.c.o
+#14 16.86 [36/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Clog_json.c.o
+#14 17.24 [37/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Cmpio.c.o
+#14 17.75 [38/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Cimage.c.o
+#14 17.75 In file included from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5encode.h:23,
+#14 17.75                  from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5private.h:1757,
+#14 17.75                  from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Cimage.c:33:
+#14 17.75 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Cimage.c: In function 'H5C__construct_cache_image_buffer':
+#14 17.75 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Cimage.c:261:77: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 17.75   261 |     if (NULL == (cache_ptr->image_buffer = H5MM_malloc(cache_ptr->image_len + 1)))
+#14 17.75       |                                                        ~~~~~~~~~~~~~~~~~~~~~^~~
+#14 17.75 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5MMprivate.h:38:31: note: in definition of macro 'H5MM_malloc'
+#14 17.75    38 | #define H5MM_malloc(Z) malloc(Z)
+#14 17.75       |                               ^
+#14 17.75 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Cimage.c: In function 'H5C__read_cache_image':
+#14 17.75 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Cimage.c:551:83: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 17.75   551 |             if (H5F_block_read(f, H5FD_MEM_SUPER, cache_ptr->image_addr, cache_ptr->image_len,
+#14 17.75       |                                                                          ~~~~~~~~~^~~~~~~~~~~
+#14 17.75 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Cimage.c: In function 'H5C__load_cache_image':
+#14 17.75 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Cimage.c:621:81: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 17.75   621 |         if (NULL == (cache_ptr->image_buffer = H5MM_malloc(cache_ptr->image_len + 1)))
+#14 17.75       |                                                            ~~~~~~~~~~~~~~~~~~~~~^~~
+#14 17.75 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5MMprivate.h:38:31: note: in definition of macro 'H5MM_malloc'
+#14 17.75    38 | #define H5MM_malloc(Z) malloc(Z)
+#14 17.75       |                               ^
+#14 17.75 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Cimage.c: In function 'H5C__reconstruct_cache_contents':
+#14 17.75 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Cimage.c:2405:79: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 17.75  2405 |     if (H5C__decode_cache_image_header(f, cache_ptr, &p, cache_ptr->image_len + 1) < 0)
+#14 17.75       |                                                          ~~~~~~~~~~~~~~~~~~~~~^~~
+#14 17.75 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Cimage.c: In function 'H5C__write_cache_image':
+#14 17.75 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Cimage.c:2868:84: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 17.75  2868 |             if (H5F_block_write(f, H5FD_MEM_SUPER, cache_ptr->image_addr, cache_ptr->image_len,
+#14 17.75       |                                                                           ~~~~~~~~~^~~~~~~~~~~
+#14 18.04 [39/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Cint.c.o
+#14 18.28 [40/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Clog_trace.c.o
+#14 18.85 [41/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Cquery.c.o
+#14 18.85 [42/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ctest.c.o
+#14 19.45 [43/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Cprefetched.c.o
+#14 20.87 [44/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ctag.c.o
+#14 21.59 [45/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Centry.c.o
+#14 22.21 [46/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Dcompact.c.o
+#14 22.47 [47/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Dbtree.c.o
+#14 22.57 [48/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5CX.c.o
+#14 23.30 [49/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Dbtree2.c.o
+#14 24.09 [50/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ddbg.c.o
+#14 24.55 [51/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ddeprec.c.o
+#14 25.61 [52/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Defl.c.o
+#14 26.23 [53/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5D.c.o
+#14 26.50 [54/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Dcontig.c.o
+#14 26.50 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dcontig.c: In function 'H5D__contig_construct':
+#14 26.50 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dcontig.c:481:53: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 26.50   481 |         dset->shared->cache.contig.sieve_buf_size = tmp_size;
+#14 26.50       |                                                     ^~~~~~~~
+#14 26.50 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dcontig.c: In function 'H5D__contig_init':
+#14 26.50 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dcontig.c:544:53: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 26.50   544 |         dset->shared->cache.contig.sieve_buf_size = dset->shared->layout.storage.u.contig.size;
+#14 26.50       |                                                     ^~~~
+#14 26.50 In file included from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dcontig.c:31:
+#14 26.50 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dcontig.c: In function 'H5D__contig_io_init':
+#14 26.50 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dpkg.h:110:42: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 26.50   110 |             (IO_INFO)->tconv_buf_size += (PIECE_INFO)->piece_points * MAX((DINFO)->type_info.src_type_size,  \
+#14 26.50       |                                          ^
+#14 26.50 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dcontig.c:705:13: note: in expansion of macro 'H5D_INIT_PIECE_TCONV'
+#14 26.50   705 |             H5D_INIT_PIECE_TCONV(io_info, dinfo, new_piece_info)
+#14 26.50       |             ^~~~~~~~~~~~~~~~~~~~
+#14 26.63 [55/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Dfarray.c.o
+#14 26.86 [56/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Dfill.c.o
+#14 28.00 [57/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Dmpio.c.o
+#14 28.82 [58/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Dearray.c.o
+#14 29.02 [59/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Doh.c.o
+#14 29.20 [60/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Dlayout.c.o
+#14 29.70 [61/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Dnone.c.o
+#14 29.93 [62/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Dio.c.o
+#14 29.93 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dio.c: In function 'H5D__typeinfo_init_phase2':
+#14 29.93 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dio.c:1198:42: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 29.93  1198 |                 io_info->bkg_buf_size += io_info->dsets_info[i].nelmts * type_info->dst_type_size;
+#14 29.93       |                                          ^~~~~~~
+#14 30.73 [63/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Dtest.c.o
+#14 31.25 [64/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Dsingle.c.o
+#14 31.88 [65/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Dselect.c.o
+#14 31.88 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dselect.c: In function 'H5D__select_io':
+#14 31.88 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dselect.c:107:14: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 31.88   107 |     nelmts = dset_info->nelmts;
+#14 31.88       |              ^~~~~~~~~
+#14 33.03 [66/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Dint.c.o
+#14 33.03 [67/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Dscatgath.c.o
+#14 33.03 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dscatgath.c: In function 'H5D__scatgath_read':
+#14 33.03 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dscatgath.c:527:32: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 33.03   527 |                 smine_nelmts = dset_info->nelmts;
+#14 33.03       |                                ^~~~~~~~~
+#14 33.03 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dscatgath.c: In function 'H5D__scatgath_write':
+#14 33.03 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dscatgath.c:713:32: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 33.03   713 |                 smine_nelmts = dset_info->nelmts;
+#14 33.03       |                                ^~~~~~~~~
+#14 33.03 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dscatgath.c: In function 'H5D__scatgath_read_select':
+#14 33.03 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dscatgath.c:881:21: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 33.03   881 |                     io_info->sel_pieces[i]->piece_points *
+#14 33.03       |                     ^~~~~~~
+#14 33.03 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dscatgath.c:896:25: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 33.03   896 |                         io_info->sel_pieces[i]->piece_points * dset_info->type_info.dst_type_size;
+#14 33.03       |                         ^~~~~~~
+#14 33.03 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dscatgath.c:970:25: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 33.03   970 |                         io_info->sel_pieces[i]->piece_points * dset_info->type_info.dst_type_size;
+#14 33.03       |                         ^~~~~~~
+#14 33.03 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dscatgath.c: In function 'H5D__scatgath_write_select':
+#14 33.03 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dscatgath.c:1136:21: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 33.03  1136 |                     io_info->sel_pieces[i]->piece_points *
+#14 33.03       |                     ^~~~~~~
+#14 33.03 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dscatgath.c:1170:25: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 33.03  1170 |                         io_info->sel_pieces[i]->piece_points * dset_info->type_info.dst_type_size;
+#14 33.03       |                         ^~~~~~~
+#14 33.25 [68/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Edeprec.c.o
+#14 33.57 [69/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5E.c.o
+#14 33.99 [70/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Dchunk.c.o
+#14 34.00 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dchunk.c: In function 'H5D__chunk_direct_read':
+#14 34.00 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dchunk.c:562:52: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 34.00   562 |                                   udata.chunk_block.length, buf) < 0)
+#14 34.00       |                                   ~~~~~~~~~~~~~~~~~^~~~~~~
+#14 34.00 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dchunk.c:567:19: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 34.00   567 |         *nalloc = udata.chunk_block.length;
+#14 34.00       |                   ^~~~~
+#14 34.00 In file included from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dchunk.c:51:
+#14 34.00 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dchunk.c: In function 'H5D__chunk_io_init':
+#14 34.00 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dpkg.h:110:42: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 34.00   110 |             (IO_INFO)->tconv_buf_size += (PIECE_INFO)->piece_points * MAX((DINFO)->type_info.src_type_size,  \
+#14 34.00       |                                          ^
+#14 34.00 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dchunk.c:1124:13: note: in expansion of macro 'H5D_INIT_PIECE_TCONV'
+#14 34.00  1124 |             H5D_INIT_PIECE_TCONV(io_info, dinfo, piece_info)
+#14 34.00       |             ^~~~~~~~~~~~~~~~~~~~
+#14 34.00 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dchunk.c: In function 'H5D__chunk_read':
+#14 34.00 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dchunk.c:2814:66: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 34.00  2814 |                 nonexistent_dset_info.type_info.request_nelmts = nonexistent_dset_info.nelmts;
+#14 34.00       |                                                                  ^~~~~~~~~~~~~~~~~~~~~
+#14 34.00 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dchunk.c: In function 'H5D__chunk_write':
+#14 34.00 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dchunk.c:3148:58: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 34.00  3148 |                 cpt_dset_info.type_info.request_nelmts = cpt_dset_info.nelmts;
+#14 34.00       |                                                          ^~~~~~~~~~~~~
+#14 34.00 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dchunk.c: In function 'H5D__chunk_flush_entry':
+#14 34.00 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dchunk.c:3975:31: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 34.00  3975 |             size_t    alloc = udata.chunk_block.length; /* Bytes allocated for BUF    */
+#14 34.00       |                               ^~~~~
+#14 34.00 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dchunk.c: In function 'H5D__chunk_lock':
+#14 34.00 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dchunk.c:4530:41: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 34.00  4530 |                 size_t my_chunk_alloc = chunk_alloc; /* Allocated buffer size */
+#14 34.00       |                                         ^~~~~~~~~~~
+#14 34.00 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dchunk.c:4531:41: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 34.00  4531 |                 size_t buf_alloc      = chunk_alloc; /* [Re-]allocated buffer size */
+#14 34.00       |                                         ^~~~~~~~~~~
+#14 35.23 [71/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5EAdbg.c.o
+#14 35.66 [72/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5EA.c.o
+#14 35.81 [73/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5EAdblkpage.c.o
+#14 36.06 [74/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5EAdblock.c.o
+#14 37.03 [75/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5EAhdr.c.o
+#14 37.15 [76/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5EAint.c.o
+#14 37.35 [77/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5EAiblock.c.o
+#14 37.50 [78/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5EAcache.c.o
+#14 38.18 [79/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Eint.c.o
+#14 38.33 [80/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5EAstat.c.o
+#14 38.70 [81/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5EAsblock.c.o
+#14 38.80 [82/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5ESevent.c.o
+#14 38.95 [83/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5EAtest.c.o
+#14 40.15 [84/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5ES.c.o
+#14 40.35 [85/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5ESlist.c.o
+#14 40.43 [86/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5ESint.c.o
+#14 40.62 [87/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Fdbg.c.o
+#14 42.03 [88/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Fcwfs.c.o
+#14 42.08 [89/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Faccum.c.o
+#14 42.10 [90/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Fdeprec.c.o
+#14 42.72 [91/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ffake.c.o
+#14 42.97 [92/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Fefc.c.o
+#14 43.24 [93/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Dvirtual.c.o
+#14 43.24 In file included from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDprivate.h:22,
+#14 43.24                  from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Fprivate.h:29,
+#14 43.24                  from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Cprivate.h:30,
+#14 43.24                  from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5ACprivate.h:30,
+#14 43.24                  from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5CXprivate.h:21,
+#14 43.24                  from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5private.h:1239,
+#14 43.24                  from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dvirtual.c:51:
+#14 43.24 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dvirtual.c: In function 'H5D__virtual_read':
+#14 43.24 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Sprivate.h:165:49: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 43.24   165 | #define H5S_GET_SELECT_NPOINTS(S)               (H5S_get_select_npoints(S))
+#14 43.24       |                                                 ^
+#14 43.24 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dvirtual.c:3315:14: note: in expansion of macro 'H5S_GET_SELECT_NPOINTS'
+#14 43.24  3315 |     nelmts = H5S_GET_SELECT_NPOINTS(dset_info->file_space);
+#14 43.24       |              ^~~~~~~~~~~~~~~~~~~~~~
+#14 43.24 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dvirtual.c: In function 'H5D__virtual_write':
+#14 43.24 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Sprivate.h:165:49: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 43.24   165 | #define H5S_GET_SELECT_NPOINTS(S)               (H5S_get_select_npoints(S))
+#14 43.24       |                                                 ^
+#14 43.24 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Dvirtual.c:3561:14: note: in expansion of macro 'H5S_GET_SELECT_NPOINTS'
+#14 43.24  3561 |     nelmts = H5S_GET_SELECT_NPOINTS(dset_info->file_space);
+#14 43.24       |              ^~~~~~~~~~~~~~~~~~~~~~
+#14 43.45 [94/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Fmpi.c.o
+#14 43.90 [95/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Fio.c.o
+#14 45.05 [96/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Fspace.c.o
+#14 45.19 [97/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Fquery.c.o
+#14 45.30 [98/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Fsfile.c.o
+#14 45.89 [99/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Fmount.c.o
+#14 47.22 [100/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Fsuper_cache.c.o
+#14 47.43 [101/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Fsuper.c.o
+#14 47.87 [102/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5F.c.o
+#14 47.91 [103/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FAcache.c.o
+#14 47.92 [104/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Fint.c.o
+#14 47.92 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Fint.c: In function 'H5F_open':
+#14 47.92 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Fint.c:2131:29: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 47.92  2131 |             page_buf_size = shared->fs_page_size;
+#14 47.92       |                             ^~~~~~
+#14 47.96 [105/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ftest.c.o
+#14 48.81 [106/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FAdbg.c.o
+#14 48.90 [107/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FAdblkpage.c.o
+#14 48.92 [108/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FA.c.o
+#14 49.27 [109/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FAint.c.o
+#14 49.75 [110/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FAstat.c.o
+#14 49.79 [111/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FAhdr.c.o
+#14 49.96 [112/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDdirect.c.o
+#14 50.05 [113/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FAdblock.c.o
+#14 50.25 [114/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FAtest.c.o
+#14 50.83 [115/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDhdfs.c.o
+#14 51.21 [116/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDmirror.c.o
+#14 51.25 [117/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDmpi.c.o
+#14 52.65 [118/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDfamily.c.o
+#14 52.65 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDfamily.c: In function 'H5FD__family_get_default_printf_filename':
+#14 52.65 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDfamily.c:256:55: warning: '%s' directive output between 5 and 5 bytes may cause result to exceed 'INT_MAX' [-Wformat-truncation=]
+#14 52.65   214 |     const char *suffix           = "-%06d";
+#14 52.65       |                                    ~~~~~~~             
+#14 52.65 ......
+#14 52.65   256 |             snprintf(tmp_buffer, new_filename_len, "%s%s", old_filename, suffix);
+#14 52.65       |                                                       ^~
+#14 52.65 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDfamily.c:256:13: note: 'snprintf' output between 7 and 2147483651 bytes into a destination of size 2147483651
+#14 52.65   256 |             snprintf(tmp_buffer, new_filename_len, "%s%s", old_filename, suffix);
+#14 52.65       |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#14 52.68 [119/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDmpio.c.o
+#14 53.00 [120/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDmulti_int.c.o
+#14 53.59 [121/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDcore.c.o
+#14 53.59 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDcore.c: In function 'H5FD__core_truncate':
+#14 53.59 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDcore.c:1508:23: warning: conversion from 'haddr_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 53.59  1508 |             new_eof = file->eoa;
+#14 53.59       |                       ^~~~
+#14 53.98 [122/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDlog.c.o
+#14 54.45 [123/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDonion_header.c.o
+#14 54.45 In file included from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5encode.h:23,
+#14 54.45                  from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5private.h:1757,
+#14 54.45                  from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion_header.c:21:
+#14 54.45 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion_header.c: In function 'H5FD__onion_ingest_header':
+#14 54.45 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion_header.c:50:49: warning: conversion from 'haddr_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 54.45    50 |     if (NULL == (buf = H5MM_malloc(sizeof(char) * size)))
+#14 54.45       |                                    ~~~~~~~~~~~~~^~~~~~
+#14 54.45 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5MMprivate.h:38:31: note: in definition of macro 'H5MM_malloc'
+#14 54.45    38 | #define H5MM_malloc(Z) malloc(Z)
+#14 54.45       |                               ^
+#14 54.45 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion_header.c:56:50: warning: conversion from 'haddr_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 54.45    56 |     if (H5FD_read(raw_file, H5FD_MEM_DRAW, addr, size, buf) < 0)
+#14 54.45       |                                                  ^~~~
+#14 54.45 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion_header.c:62:44: warning: conversion from 'haddr_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 54.45    62 |     sum = H5_checksum_fletcher32(buf, size - 4);
+#14 54.45       |                                       ~~~~~^~~
+#14 54.45 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion_header.c: In function 'H5FD__onion_write_header':
+#14 54.45 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion_header.c:97:44: warning: conversion from 'long long unsigned int' to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 54.45    97 |     if (H5FD_write(file, H5FD_MEM_DRAW, 0, (haddr_t)size, buf) < 0)
+#14 54.45       |                                            ^~~~~~~~~~~~~
+#14 55.08 [124/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDonion_history.c.o
+#14 55.08 In file included from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5encode.h:23,
+#14 55.08                  from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5private.h:1757,
+#14 55.08                  from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion_history.c:21:
+#14 55.08 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion_history.c: In function 'H5FD__onion_ingest_history':
+#14 55.08 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion_history.c:55:49: warning: conversion from 'haddr_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 55.08    55 |     if (NULL == (buf = H5MM_malloc(sizeof(char) * size)))
+#14 55.08       |                                    ~~~~~~~~~~~~~^~~~~~
+#14 55.08 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5MMprivate.h:38:31: note: in definition of macro 'H5MM_malloc'
+#14 55.08    38 | #define H5MM_malloc(Z) malloc(Z)
+#14 55.08       |                               ^
+#14 55.08 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion_history.c:61:50: warning: conversion from 'haddr_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 55.08    61 |     if (H5FD_read(raw_file, H5FD_MEM_DRAW, addr, size, buf) < 0)
+#14 55.08       |                                                  ^~~~
+#14 55.08 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion_history.c:67:44: warning: conversion from 'haddr_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 55.08    67 |     sum = H5_checksum_fletcher32(buf, size - 4);
+#14 55.08       |                                       ~~~~~^~~
+#14 55.08 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion_history.c:73:63: warning: conversion from 'uint64_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 55.08    73 |                          H5MM_calloc(history_out->n_revisions * sizeof(H5FD_onion_record_loc_t))))
+#14 55.08       |                                      ~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#14 55.08 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5MMprivate.h:36:34: note: in definition of macro 'H5MM_calloc'
+#14 55.08    36 | #define H5MM_calloc(Z) calloc(1, Z)
+#14 55.08       |                                  ^
+#14 55.08 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion_history.c: In function 'H5FD__onion_write_history':
+#14 55.08 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion_history.c:107:68: warning: conversion from 'uint64_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 55.08   107 |     if (NULL == (buf = H5MM_malloc(H5FD_ONION_ENCODED_SIZE_HISTORY +
+#14 55.08 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5MMprivate.h:38:31: note: in definition of macro 'H5MM_malloc'
+#14 55.08    38 | #define H5MM_malloc(Z) malloc(Z)
+#14 55.08       |                               ^
+#14 55.08 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion_history.c:117:52: warning: conversion from 'uint64_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 55.08   117 |     if (H5FD_write(file, H5FD_MEM_DRAW, off_start, size, buf) < 0)
+#14 55.08       |                                                    ^~~~
+#14 55.12 [125/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDros3.c.o
+#14 55.52 [126/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDros3_s3comms.c.o
+#14 57.29 [127/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDonion_index.c.o
+#14 57.29 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion_index.c: In function 'H5FD__onion_ingest_revision_record':
+#14 57.29 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion_index.c:64:13: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 57.29    64 |     size  = history->record_locs[high].record_size;
+#14 57.29       |             ^~~~~~~
+#14 57.29 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion_index.c:90:16: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 57.29    90 |         size = history->record_locs[n].record_size;
+#14 57.29       |                ^~~~~~~
+#14 57.29 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion_index.c:124:16: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 57.29   124 |         size = history->record_locs[n].record_size;
+#14 57.29       |                ^~~~~~~
+#14 57.29 In file included from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5encode.h:23,
+#14 57.29                  from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5private.h:1757,
+#14 57.29                  from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion_index.c:21:
+#14 57.29 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion_index.c:150:70: warning: conversion from 'uint64_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 57.29   150 |                          H5MM_calloc(r_out->archival_index.n_entries * sizeof(H5FD_onion_index_entry_t))))
+#14 57.29       |                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#14 57.29 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5MMprivate.h:36:34: note: in definition of macro 'H5MM_calloc'
+#14 57.29    36 | #define H5MM_calloc(Z) calloc(1, Z)
+#14 57.29       |                                  ^
+#14 57.29 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion_index.c: In function 'H5FD__onion_revision_index_init':
+#14 57.29 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion_index.c:346:52: warning: conversion from 'uint64_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 57.29   346 |         (rix->_hash_table = H5MM_calloc(table_size * sizeof(H5FD_onion_revision_index_hash_chain_node_t *))))
+#14 57.29       |                                         ~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#14 57.29 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5MMprivate.h:36:34: note: in definition of macro 'H5MM_calloc'
+#14 57.29    36 | #define H5MM_calloc(Z) calloc(1, Z)
+#14 57.29       |                                  ^
+#14 57.29 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion_index.c: In function 'H5FD__onion_revision_index_resize':
+#14 57.29 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion_index.c:397:51: warning: conversion from 'uint64_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 57.29   397 |     if (NULL == (new_table = H5MM_calloc(new_size * sizeof(H5FD_onion_revision_index_hash_chain_node_t *))))
+#14 57.29       |                                          ~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#14 57.29 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5MMprivate.h:36:34: note: in definition of macro 'H5MM_calloc'
+#14 57.29    36 | #define H5MM_calloc(Z) calloc(1, Z)
+#14 57.29       |                                  ^
+#14 57.29 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion_index.c: In function 'H5FD__onion_merge_revision_index_into_archival_index':
+#14 57.29 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion_index.c:870:60: warning: conversion from 'uint64_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 57.29   870 |     if (NULL == (new_aix.list = H5MM_calloc(rix->n_entries * sizeof(H5FD_onion_index_entry_t))))
+#14 57.29       |                                             ~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#14 57.29 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5MMprivate.h:36:34: note: in definition of macro 'H5MM_calloc'
+#14 57.29    36 | #define H5MM_calloc(Z) calloc(1, Z)
+#14 57.29       |                                  ^
+#14 57.29 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion_index.c:884:32: warning: conversion from 'uint64_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 57.29   884 |     qsort(new_aix.list, new_aix.n_entries, sizeof(H5FD_onion_index_entry_t),
+#14 57.29       |                         ~~~~~~~^~~~~~~~~~
+#14 57.29 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion_index.c:895:61: warning: conversion from 'uint64_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 57.29   895 |         if (NULL == (kept_list = H5MM_calloc(aix->n_entries * sizeof(H5FD_onion_index_entry_t))))
+#14 57.29       |                                              ~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#14 57.29 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5MMprivate.h:36:34: note: in definition of macro 'H5MM_calloc'
+#14 57.29    36 | #define H5MM_calloc(Z) calloc(1, Z)
+#14 57.29       |                                  ^
+#14 57.29 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion_index.c:912:71: warning: conversion from 'uint64_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 57.29   912 |     if (NULL == (aix->list = H5MM_calloc((new_aix.n_entries + n_kept) * sizeof(H5FD_onion_index_entry_t))))
+#14 57.29       |                                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#14 57.29 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5MMprivate.h:36:34: note: in definition of macro 'H5MM_calloc'
+#14 57.29    36 | #define H5MM_calloc(Z) calloc(1, Z)
+#14 57.29       |                                  ^
+#14 57.29 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion_index.c:916:75: warning: conversion from 'uint64_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 57.29   916 |     H5MM_memcpy(aix->list, new_aix.list, sizeof(H5FD_onion_index_entry_t) * new_aix.n_entries);
+#14 57.29       |                                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~
+#14 57.29 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5MMprivate.h:41:43: note: in definition of macro 'H5MM_memcpy'
+#14 57.29    41 | #define H5MM_memcpy(D, S, N) memcpy(D, S, N)
+#14 57.29       |                                           ^
+#14 57.29 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion_index.c:921:93: warning: conversion from 'uint64_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 57.29   921 |         H5MM_memcpy(&aix->list[aix->n_entries], kept_list, sizeof(H5FD_onion_index_entry_t) * n_kept);
+#14 57.29       |                                                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~
+#14 57.29 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5MMprivate.h:41:43: note: in definition of macro 'H5MM_memcpy'
+#14 57.29    41 | #define H5MM_memcpy(D, S, N) memcpy(D, S, N)
+#14 57.29       |                                           ^
+#14 57.29 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion_index.c:926:25: warning: conversion from 'uint64_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 57.29   926 |     qsort(aix->list, aix->n_entries, sizeof(H5FD_onion_index_entry_t),
+#14 57.29       |                      ~~~^~~~~~~~~~~
+#14 57.75 [128/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDmulti.c.o
+#14 58.24 [129/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDonion.c.o
+#14 58.24 In file included from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5encode.h:23,
+#14 58.24                  from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5private.h:1757,
+#14 58.24                  from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion.c:21:
+#14 58.24 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion.c: In function 'H5FD__onion_commit_new_revision_record':
+#14 58.24 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion.c:466:104: warning: conversion from 'uint64_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 58.24   466 |     if (NULL == (buf = H5MM_malloc(H5FD_ONION_ENCODED_SIZE_REVISION_RECORD + (size_t)rec->comment_size +
+#14 58.24 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5MMprivate.h:38:31: note: in definition of macro 'H5MM_malloc'
+#14 58.24    38 | #define H5MM_malloc(Z) malloc(Z)
+#14 58.24       |                               ^
+#14 58.24 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion.c:506:72: warning: conversion from 'uint64_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 58.24   506 |         if (NULL == (new_list = H5MM_calloc((history->n_revisions + 1) * sizeof(H5FD_onion_record_loc_t))))
+#14 58.24       |                                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#14 58.24 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5MMprivate.h:36:34: note: in definition of macro 'H5MM_calloc'
+#14 58.24    36 | #define H5MM_calloc(Z) calloc(1, Z)
+#14 58.24       |                                  ^
+#14 58.24 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion.c:508:85: warning: conversion from 'uint64_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 58.24   508 |         H5MM_memcpy(new_list, history->record_locs, sizeof(H5FD_onion_record_loc_t) * history->n_revisions);
+#14 58.24       |                                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~
+#14 58.24 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5MMprivate.h:41:43: note: in definition of macro 'H5MM_memcpy'
+#14 58.24    41 | #define H5MM_memcpy(D, S, N) memcpy(D, S, N)
+#14 58.24       |                                           ^
+#14 58.24 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion.c: In function 'H5FD__onion_open_rw':
+#14 58.24 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion.c:1246:22: warning: conversion from 'uint64_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 58.24  1246 |     if (0 == (size = H5FD__onion_write_history(&file->history, file->recovery_file, 0, 0)))
+#14 58.24       |                      ^~~~~~~~~~~~~~~~~~~~~~~~~
+#14 58.24 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion.c: In function 'H5FD__onion_read':
+#14 58.24 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion.c:1345:25: warning: conversion from 'haddr_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 58.24  1345 |         page_readsize = (size_t)page_size - page_gap_head - page_gap_tail;
+#14 58.24       |                         ^
+#14 58.24 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion.c:1370:85: warning: conversion from 'haddr_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 58.24  1370 |             if ((read_size > 0) && H5FD_read(file->original_file, type, addr_start, read_size, buf_out) < 0) {
+#14 58.24       |                                                                                     ^~~~~~~~~
+#14 58.24 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion.c:1377:29: warning: conversion from 'haddr_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 58.24  1377 |             for (size_t j = read_size; j < page_readsize; j++)
+#14 58.24       |                             ^~~~~~~~~
+#14 58.24 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion.c: In function 'H5FD__onion_write':
+#14 58.24 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion.c:1477:23: warning: conversion from 'haddr_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 58.24  1477 |         page_n_used = page_size - page_gap_head - page_gap_tail;
+#14 58.24       |                       ^~~~~~~~~
+#14 58.24 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion.c:1515:70: warning: conversion from 'haddr_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 58.24  1515 |                     H5FD_read(file->original_file, type, addr_start, read_size, page_buf) < 0) {
+#14 58.24       |                                                                      ^~~~~~~~~
+#14 58.24 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion.c:1522:33: warning: conversion from 'haddr_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 58.24  1522 |                 for (size_t j = read_size; j < page_gap_head; j++)
+#14 58.24       |                                 ^~~~~~~~~
+#14 58.24 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5private.h:306:26: warning: conversion from 'haddr_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 58.24   306 | #define MAX(a, b)        (((a) > (b)) ? (a) : (b))
+#14 58.24       |                          ^
+#14 58.24 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion.c:1528:33: note: in expansion of macro 'MAX'
+#14 58.24  1528 |                 for (size_t j = MAX(read_size, page_size - page_gap_tail); j < page_size; j++)
+#14 58.24       |                                 ^~~
+#14 58.24 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion.c: In function 'H5FD__onion_write_final_history':
+#14 58.24 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDonion.c:1707:22: warning: conversion from 'uint64_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 58.24  1707 |     if (0 == (size = H5FD__onion_write_history(&(file->history), file->onion_file, file->onion_eof,
+#14 58.24       |                      ^~~~~~~~~~~~~~~~~~~~~~~~~
+#14 58.38 [130/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDint.c.o
+#14 58.52 [131/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDspace.c.o
+#14 59.05 [132/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FD.c.o
+#14 59.19 [133/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDsplitter.c.o
+#14 59.30 [134/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDsec2.c.o
+#14 59.39 [135/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDwindows.c.o
+#14 59.59 [136/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDstdio_int.c.o
+#14 59.84 [137/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDstdio.c.o
+#14 60.17 [138/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDtest.c.o
+#14 60.62 [139/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FO.c.o
+#14 61.15 [140/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FSint.c.o
+#14 61.53 [141/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FSstat.c.o
+#14 62.04 [142/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FS.c.o
+#14 62.23 [143/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FStest.c.o
+#14 62.55 [144/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FSdbg.c.o
+#14 62.56 [145/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FL.c.o
+#14 63.58 [146/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Gbtree2.c.o
+#14 63.94 [147/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Gcache.c.o
+#14 64.87 [148/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FScache.c.o
+#14 65.48 [149/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Gcompact.c.o
+#14 65.58 [150/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FSsection.c.o
+#14 65.58 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FSsection.c: In function 'H5FS__sect_serialize_size':
+#14 65.58 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FSsection.c:535:26: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 65.58   535 |         sect_buf_size += fspace->serial_sect_count * fspace->sinfo->sect_off_size;
+#14 65.58       |                          ^~~~~~
+#14 65.58 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FSsection.c:538:26: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 65.58   538 |         sect_buf_size += fspace->serial_sect_count * 1 /* byte */;
+#14 65.58       |                          ^~~~~~
+#14 66.11 [151/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5G.c.o
+#14 66.15 [152/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Gent.c.o
+#14 66.66 [153/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Gdense.c.o
+#14 66.82 [154/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Gdeprec.c.o
+#14 66.99 [155/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Glink.c.o
+#14 68.00 [156/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Gint.c.o
+#14 68.18 [157/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Gloc.c.o
+#14 68.61 [158/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Groot.c.o
+#14 69.03 [159/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Goh.c.o
+#14 69.74 [160/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Gnode.c.o
+#14 69.90 [161/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Gname.c.o
+#14 70.52 [162/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Gstab.c.o
+#14 70.70 [163/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HF.c.o
+#14 70.96 [164/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Gobj.c.o
+#14 71.17 [165/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Gtraverse.c.o
+#14 71.86 [166/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Gtest.c.o
+#14 72.76 [167/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HFdbg.c.o
+#14 73.03 [168/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HFdtable.c.o
+#14 73.06 [169/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HFbtree2.c.o
+#14 73.11 [170/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HFdblock.c.o
+#14 74.79 [171/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HFiter.c.o
+#14 74.85 [172/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HFhdr.c.o
+#14 74.87 [173/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HFhuge.c.o
+#14 75.28 [174/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HFspace.c.o
+#14 76.22 [175/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HFcache.c.o
+#14 76.22 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5HFcache.c: In function 'H5HF__cache_dblock_image_len':
+#14 76.22 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5HFcache.c:1879:20: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 76.22  1879 |             size = dblock->file_size;
+#14 76.22       |                    ^~~~~~
+#14 76.90 [176/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HFstat.c.o
+#14 77.08 [177/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HFtest.c.o
+#14 77.12 [178/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HFtiny.c.o
+#14 77.26 [179/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HFman.c.o
+#14 77.46 [180/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HFiblock.c.o
+#14 77.46 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5HFiblock.c: In function 'H5HF__man_iblock_attach':
+#14 77.46 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5HFiblock.c:1281:45: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 77.46  1281 |             iblock->filt_ents[entry].size = iblock->hdr->man_dtable.row_block_size[row];
+#14 77.46       |                                             ^~~~~~
+#14 78.48 [181/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HGquery.c.o
+#14 78.59 [182/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HGdbg.c.o
+#14 78.99 [183/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HGcache.c.o
+#14 79.21 [184/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HG.c.o
+#14 79.92 [185/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HL.c.o
+#14 80.04 [186/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HLint.c.o
+#14 80.22 [187/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HLdbg.c.o
+#14 80.44 [188/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HFsection.c.o
+#14 80.44 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5HFsection.c: In function 'H5HF__sect_single_dblock_info':
+#14 80.44 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5HFsection.c:607:13: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 80.44   607 |             hdr->man_dtable.row_block_size[sect->u.single.par_entry / hdr->man_dtable.cparam.width];
+#14 80.44       |             ^~~
+#14 80.45 [189/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HLdblk.c.o
+#14 80.49 [190/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HLprfx.c.o
+#14 80.92 [191/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HLcache.c.o
+#14 81.91 [192/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Itest.c.o
+#14 82.32 [193/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5I.c.o
+#14 82.51 [194/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Idbg.c.o
+#14 82.52 [195/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ideprec.c.o
+#14 83.39 [196/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Lexternal.c.o
+#14 83.70 [197/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ldeprec.c.o
+#14 83.89 [198/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5M.c.o
+#14 85.20 [199/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5MM.c.o
+#14 85.93 [200/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5MFaggr.c.o
+#14 86.14 [201/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5MFdbg.c.o
+#14 86.28 [202/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Iint.c.o
+#14 86.51 [203/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5MFsection.c.o
+#14 86.80 [204/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Lint.c.o
+#14 86.88 [205/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5L.c.o
+#14 87.74 [206/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Obogus.c.o
+#14 87.76 [207/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5MF.c.o
+#14 88.20 [208/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Oainfo.c.o
+#14 89.33 [209/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Obtreek.c.o
+#14 89.78 [210/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Oattr.c.o
+#14 90.30 [211/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ochunk.c.o
+#14 90.84 [212/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ocache_image.c.o
+#14 91.58 [213/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ocache.c.o
+#14 91.58 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Ocache.c: In function 'H5O__chunk_deserialize':
+#14 91.58 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Ocache.c:1507:68: warning: comparison of integer expressions of different signedness: 'int' and 'unsigned int' [-Wsign-compare]
+#14 91.58  1507 |         if ((eom_ptr - chunk_image) > 0 && (eom_ptr - chunk_image) < H5O_SIZEOF_MSGHDR_OH(oh)) {
+#14 91.58       |                                                                    ^
+#14 91.89 [214/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ocont.c.o
+#14 92.24 [215/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Oattribute.c.o
+#14 92.66 [216/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Odeleted.c.o
+#14 92.85 [217/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5O.c.o
+#14 93.25 [218/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Odbg.c.o
+#14 93.89 [219/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Oalloc.c.o
+#14 94.03 [220/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ocopy.c.o
+#14 94.29 [221/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ocopy_ref.c.o
+#14 94.43 [222/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Odrvinfo.c.o
+#14 95.74 [223/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Odeprec.c.o
+#14 95.78 [224/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Oflush.c.o
+#14 96.16 [225/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Oefl.c.o
+#14 96.22 [226/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ofill.c.o
+#14 96.22 In file included from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5private.h:1757,
+#14 96.22                  from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Ofill.c:20:
+#14 96.22 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Ofill.c: In function 'H5O__fill_new_decode':
+#14 96.22 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5encode.h:182:13: warning: conversion to 'unsigned int' from 'ssize_t' {aka 'int'} may change the sign of the result [-Wsign-conversion]
+#14 96.22   182 |         (i) |= ((uint32_t)(*(p) & 0xff) << 8);                                                               \
+#14 96.22       |             ^~
+#14 96.22 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Ofill.c:286:13: note: in expansion of macro 'UINT32DECODE'
+#14 96.22   286 |             UINT32DECODE(p, fill->size);
+#14 96.22       |             ^~~~~~~~~~~~
+#14 96.22 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5encode.h:182:16: warning: conversion to 'ssize_t' {aka 'int'} from 'unsigned int' may change the sign of the result [-Wsign-conversion]
+#14 96.22   182 |         (i) |= ((uint32_t)(*(p) & 0xff) << 8);                                                               \
+#14 96.22       |                ^
+#14 96.22 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Ofill.c:286:13: note: in expansion of macro 'UINT32DECODE'
+#14 96.22   286 |             UINT32DECODE(p, fill->size);
+#14 96.22       |             ^~~~~~~~~~~~
+#14 96.22 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5encode.h:184:13: warning: conversion to 'unsigned int' from 'ssize_t' {aka 'int'} may change the sign of the result [-Wsign-conversion]
+#14 96.22   184 |         (i) |= ((uint32_t)(*(p) & 0xff) << 16);                                                              \
+#14 96.22       |             ^~
+#14 96.22 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Ofill.c:286:13: note: in expansion of macro 'UINT32DECODE'
+#14 96.22   286 |             UINT32DECODE(p, fill->size);
+#14 96.22       |             ^~~~~~~~~~~~
+#14 96.22 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5encode.h:184:16: warning: conversion to 'ssize_t' {aka 'int'} from 'unsigned int' may change the sign of the result [-Wsign-conversion]
+#14 96.22   184 |         (i) |= ((uint32_t)(*(p) & 0xff) << 16);                                                              \
+#14 96.22       |                ^
+#14 96.22 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Ofill.c:286:13: note: in expansion of macro 'UINT32DECODE'
+#14 96.22   286 |             UINT32DECODE(p, fill->size);
+#14 96.22       |             ^~~~~~~~~~~~
+#14 96.22 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5encode.h:186:13: warning: conversion to 'unsigned int' from 'ssize_t' {aka 'int'} may change the sign of the result [-Wsign-conversion]
+#14 96.22   186 |         (i) |= ((uint32_t)(*(p) & 0xff) << 24);                                                              \
+#14 96.22       |             ^~
+#14 96.22 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Ofill.c:286:13: note: in expansion of macro 'UINT32DECODE'
+#14 96.22   286 |             UINT32DECODE(p, fill->size);
+#14 96.22       |             ^~~~~~~~~~~~
+#14 96.22 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5encode.h:186:16: warning: conversion to 'ssize_t' {aka 'int'} from 'unsigned int' may change the sign of the result [-Wsign-conversion]
+#14 96.22   186 |         (i) |= ((uint32_t)(*(p) & 0xff) << 24);                                                              \
+#14 96.22       |                ^
+#14 96.22 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Ofill.c:286:13: note: in expansion of macro 'UINT32DECODE'
+#14 96.22   286 |             UINT32DECODE(p, fill->size);
+#14 96.22       |             ^~~~~~~~~~~~
+#14 96.22 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Ofill.c: In function 'H5O__fill_old_decode':
+#14 96.22 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5encode.h:182:13: warning: conversion to 'unsigned int' from 'ssize_t' {aka 'int'} may change the sign of the result [-Wsign-conversion]
+#14 96.22   182 |         (i) |= ((uint32_t)(*(p) & 0xff) << 8);                                                               \
+#14 96.22       |             ^~
+#14 96.22 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Ofill.c:353:5: note: in expansion of macro 'UINT32DECODE'
+#14 96.22   353 |     UINT32DECODE(p, fill->size);
+#14 96.22       |     ^~~~~~~~~~~~
+#14 96.22 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5encode.h:182:16: warning: conversion to 'ssize_t' {aka 'int'} from 'unsigned int' may change the sign of the result [-Wsign-conversion]
+#14 96.22   182 |         (i) |= ((uint32_t)(*(p) & 0xff) << 8);                                                               \
+#14 96.22       |                ^
+#14 96.22 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Ofill.c:353:5: note: in expansion of macro 'UINT32DECODE'
+#14 96.22   353 |     UINT32DECODE(p, fill->size);
+#14 96.22       |     ^~~~~~~~~~~~
+#14 96.22 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5encode.h:184:13: warning: conversion to 'unsigned int' from 'ssize_t' {aka 'int'} may change the sign of the result [-Wsign-conversion]
+#14 96.22   184 |         (i) |= ((uint32_t)(*(p) & 0xff) << 16);                                                              \
+#14 96.22       |             ^~
+#14 96.22 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Ofill.c:353:5: note: in expansion of macro 'UINT32DECODE'
+#14 96.22   353 |     UINT32DECODE(p, fill->size);
+#14 96.22       |     ^~~~~~~~~~~~
+#14 96.22 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5encode.h:184:16: warning: conversion to 'ssize_t' {aka 'int'} from 'unsigned int' may change the sign of the result [-Wsign-conversion]
+#14 96.22   184 |         (i) |= ((uint32_t)(*(p) & 0xff) << 16);                                                              \
+#14 96.22       |                ^
+#14 96.22 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Ofill.c:353:5: note: in expansion of macro 'UINT32DECODE'
+#14 96.22   353 |     UINT32DECODE(p, fill->size);
+#14 96.22       |     ^~~~~~~~~~~~
+#14 96.22 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5encode.h:186:13: warning: conversion to 'unsigned int' from 'ssize_t' {aka 'int'} may change the sign of the result [-Wsign-conversion]
+#14 96.22   186 |         (i) |= ((uint32_t)(*(p) & 0xff) << 24);                                                              \
+#14 96.22       |             ^~
+#14 96.22 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Ofill.c:353:5: note: in expansion of macro 'UINT32DECODE'
+#14 96.22   353 |     UINT32DECODE(p, fill->size);
+#14 96.22       |     ^~~~~~~~~~~~
+#14 96.22 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5encode.h:186:16: warning: conversion to 'ssize_t' {aka 'int'} from 'unsigned int' may change the sign of the result [-Wsign-conversion]
+#14 96.22   186 |         (i) |= ((uint32_t)(*(p) & 0xff) << 24);                                                              \
+#14 96.22       |                ^
+#14 96.22 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Ofill.c:353:5: note: in expansion of macro 'UINT32DECODE'
+#14 96.22   353 |     UINT32DECODE(p, fill->size);
+#14 96.22       |     ^~~~~~~~~~~~
+#14 96.63 [227/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Oginfo.c.o
+#14 98.06 [228/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Olinfo.c.o
+#14 98.11 [229/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ofsinfo.c.o
+#14 98.84 [230/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Omtime.c.o
+#14 99.13 [231/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Onull.c.o
+#14 99.57 [232/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Oname.c.o
+#14 99.65 [233/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Olink.c.o
+#14 99.65 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Olink.c: In function 'H5O__link_size':
+#14 99.65 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Olink.c:502:17: warning: conversion from 'uint64_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 99.65   502 |     ret_value = 1 +                                            /* Version */
+#14 99.65       |                 ^
+#14 99.82 [234/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Odtype.c.o
+#14 100.8 [235/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Orefcount.c.o
+#14 101.6 [236/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Oint.c.o
+#14 102.1 [237/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Omessage.c.o
+#14 102.1 [238/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Oshmesg.c.o
+#14 102.2 [239/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Opline.c.o
+#14 102.5 [240/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Oshared.c.o
+#14 102.5 [241/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ostab.c.o
+#14 102.6 [242/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Olayout.c.o
+#14 103.4 [243/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Pacpl.c.o
+#14 103.4 [244/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ounknown.c.o
+#14 103.6 [245/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Osdspace.c.o
+#14 104.7 [246/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Pdeprec.c.o
+#14 105.5 [247/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Otest.c.o
+#14 105.9 [248/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5P.c.o
+#14 106.6 [249/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Pencdec.c.o
+#14 107.1 [250/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Pdapl.c.o
+#14 107.1 In file included from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Pdapl.c:31:
+#14 107.1 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Pdapl.c: In function 'H5P__decode_chunk_cache_nslots':
+#14 107.1 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5private.h:907:17: warning: conversion from 'long long unsigned int' to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 107.1   907 |         (dst) = (dsttype)(src);                                                                              \
+#14 107.1       |                 ^
+#14 107.1 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Pdapl.c:955:9: note: in expansion of macro 'H5_CHECKED_ASSIGN'
+#14 107.1   955 |         H5_CHECKED_ASSIGN(*value, uint64_t, enc_value, size_t);
+#14 107.1       |         ^~~~~~~~~~~~~~~~~
+#14 107.1 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Pdapl.c: In function 'H5P__decode_chunk_cache_nbytes':
+#14 107.1 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5private.h:907:17: warning: conversion from 'long long unsigned int' to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 107.1   907 |         (dst) = (dsttype)(src);                                                                              \
+#14 107.1       |                 ^
+#14 107.1 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Pdapl.c:1055:9: note: in expansion of macro 'H5_CHECKED_ASSIGN'
+#14 107.1  1055 |         H5_CHECKED_ASSIGN(*value, uint64_t, enc_value, size_t);
+#14 107.1       |         ^~~~~~~~~~~~~~~~~
+#14 107.1 [251/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Pfmpl.c.o
+#14 108.6 [252/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Pgcpl.c.o
+#14 109.0 [253/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Plcpl.c.o
+#14 109.8 [254/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Pdxpl.c.o
+#14 110.1 [255/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Pmcpl.c.o
+#14 110.4 [256/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Pfcpl.c.o
+#14 110.5 [257/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Pmapl.c.o
+#14 112.5 [258/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ptest.c.o
+#14 112.6 [259/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Plapl.c.o
+#14 112.7 [260/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Pocpypl.c.o
+#14 113.2 [261/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Pstrcpl.c.o
+#14 114.5 [262/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Pint.c.o
+#14 115.4 [263/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5PLint.c.o
+#14 115.8 [264/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5PL.c.o
+#14 116.1 [265/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5PLpath.c.o
+#14 116.6 [266/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5PB.c.o
+#14 116.6 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5PB.c: In function 'H5PB_read':
+#14 116.6 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5PB.c:843:35: warning: conversion from 'haddr_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 116.6   843 |                     access_size = page_buf->page_size - offset;
+#14 116.6       |                                   ^~~~~~~~
+#14 116.6 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5PB.c:918:35: warning: conversion from 'haddr_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 116.6   918 |                     access_size = page_buf->page_size - offset;
+#14 116.6       |                                   ^~~~~~~~
+#14 116.8 [267/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5PLplugin_cache.c.o
+#14 117.4 [268/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Pocpl.c.o
+#14 118.1 [269/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5UC.c.o
+#14 119.0 [270/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Pfapl.c.o
+#14 119.0 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Pfapl.c: In function 'H5P__facc_mdc_log_location_dec':
+#14 119.0 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Pfapl.c:4786:11: warning: conversion from 'uint64_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 119.0  4786 |     len = enc_value;
+#14 119.0       |           ^~~~~~~~~
+#14 119.0 In file included from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Pfapl.c:31:
+#14 119.0 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Pfapl.c: In function 'H5P__facc_page_buffer_size_dec':
+#14 119.0 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5private.h:907:17: warning: conversion from 'long long unsigned int' to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 119.0   907 |         (dst) = (dsttype)(src);                                                                              \
+#14 119.0       |                 ^
+#14 119.0 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Pfapl.c:5959:13: note: in expansion of macro 'H5_CHECKED_ASSIGN'
+#14 119.0  5959 |             H5_CHECKED_ASSIGN(*value, uint64_t, enc_value, size_t);
+#14 119.0       |             ^~~~~~~~~~~~~~~~~
+#14 119.4 [271/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5RS.c.o
+#14 120.2 [272/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Pdcpl.c.o
+#14 120.2 In file included from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5private.h:1757,
+#14 120.2                  from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Pdcpl.c:32:
+#14 120.2 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Pdcpl.c: In function 'H5P__dcrt_fill_value_dec':
+#14 120.2 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5encode.h:215:17: warning: conversion from 'long long int' to 'ssize_t' {aka 'int'} may change value [-Wconversion]
+#14 120.2   215 |             n = (int64_t)(((uint64_t)n << 8) | *(--p));                                                      \
+#14 120.2       |                 ^
+#14 120.2 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Pdcpl.c:1187:5: note: in expansion of macro 'INT64DECODE'
+#14 120.2  1187 |     INT64DECODE(*pp, fill->size);
+#14 120.2       |     ^~~~~~~~~~~
+#14 120.5 [273/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5R.c.o
+#14 120.8 [274/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Sdbg.c.o
+#14 121.2 [275/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5RT.c.o
+#14 121.3 [276/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Rdeprec.c.o
+#14 121.3 In file included from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5FDprivate.h:22,
+#14 121.3                  from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Fprivate.h:29,
+#14 121.3                  from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Cprivate.h:30,
+#14 121.3                  from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5ACprivate.h:30,
+#14 121.3                  from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5CXprivate.h:21,
+#14 121.3                  from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5private.h:1239,
+#14 121.3                  from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Rdeprec.c:38:
+#14 121.3 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Rdeprec.c: In function 'H5R__encode_token_region_compat':
+#14 121.3 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Sprivate.h:168:49: warning: conversion from 'hssize_t' {aka 'long long int'} to 'ssize_t' {aka 'int'} may change value [-Wconversion]
+#14 121.3   168 | #define H5S_SELECT_SERIAL_SIZE(S)               (H5S_select_serial_size(S))
+#14 121.3       |                                                 ^
+#14 121.3 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Rdeprec.c:200:26: note: in expansion of macro 'H5S_SELECT_SERIAL_SIZE'
+#14 121.3   200 |         if ((data_size = H5S_SELECT_SERIAL_SIZE(space)) < 0)
+#14 121.3       |                          ^~~~~~~~~~~~~~~~~~~~~~
+#14 121.3 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Rdeprec.c:205:22: warning: conversion from 'long long int' to 'ssize_t' {aka 'int'} may change value [-Wconversion]
+#14 121.3   205 |         data_size += (hssize_t)token_size;
+#14 121.3       |                      ^
+#14 121.7 [277/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Rint.c.o
+#14 122.1 [278/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Smpio.c.o
+#14 122.1 [279/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Sdeprec.c.o
+#14 122.2 [280/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Sall.c.o
+#14 123.6 [281/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5S.c.o
+#14 123.8 [282/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Snone.c.o
+#14 125.2 [283/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Stest.c.o
+#14 125.5 [284/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5SMbtree2.c.o
+#14 126.6 [285/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5SMcache.c.o
+#14 126.8 [286/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Spoint.c.o
+#14 126.8 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Spoint.c: In function 'H5S__point_deserialize':
+#14 126.8 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Spoint.c:1480:37: warning: conversion from 'uint64_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 126.8  1480 |     coordinate_buffer_requirement = num_elem * rank * enc_type_size;
+#14 126.8       |                                     ^~~~~~~~
+#14 126.8 In file included from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5encode.h:23,
+#14 126.8                  from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5private.h:1757,
+#14 126.8                  from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Spoint.c:26:
+#14 126.8 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Spoint.c:1492:65: warning: conversion from 'uint64_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 126.8  1492 |     if (NULL == (coord = (hsize_t *)H5MM_malloc(num_elem * rank * sizeof(hsize_t))))
+#14 126.8       |                                                 ~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~
+#14 126.8 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5MMprivate.h:38:31: note: in definition of macro 'H5MM_malloc'
+#14 126.8    38 | #define H5MM_malloc(Z) malloc(Z)
+#14 126.8       |                               ^
+#14 126.8 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Spoint.c:1514:56: warning: conversion from 'uint64_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 126.8  1514 |     if (H5S_select_elements(tmp_space, H5S_SELECT_SET, num_elem, (const hsize_t *)coord) < 0)
+#14 126.8       |                                                        ^~~~~~~~
+#14 126.9 [287/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5SMtest.c.o
+#14 127.7 [288/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5SMmessage.c.o
+#14 129.5 [289/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Sselect.c.o
+#14 130.2 [290/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tbit.c.o
+#14 130.2 [291/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5SM.c.o
+#14 130.6 [292/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tarray.c.o
+#14 131.2 [293/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tcommit.c.o
+#14 131.6 [294/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tcomplex.c.o
+#14 132.2 [295/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tconv_array.c.o
+#14 133.1 [296/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tconv_bitfield.c.o
+#14 133.7 [297/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tcompound.c.o
+#14 135.0 [298/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tconv.c.o
+#14 136.1 [299/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tconv_compound.c.o
+#14 137.6 [300/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tconv_enum.c.o
+#14 137.9 [301/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tconv_reference.c.o
+#14 138.3 [302/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5SL.c.o
+#14 140.2 [303/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tconv_vlen.c.o
+#14 140.4 [304/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tcset.c.o
+#14 140.6 [305/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tconv_string.c.o
+#14 142.2 [306/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tdeprec.c.o
+#14 142.7 [307/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tdbg.c.o
+#14 143.2 [308/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tenum.c.o
+#14 144.3 [309/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tfixed.c.o
+#14 144.7 [310/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5T.c.o
+#14 144.7 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5T.c: In function 'H5T__create':
+#14 144.7 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5T.c:3953:35: warning: duplicated 'if' condition [-Wduplicated-cond]
+#14 144.7  3953 |             else if (sizeof(long) == size)
+#14 144.7       |                      ~~~~~~~~~~~~~^~~~~~~
+#14 144.7 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5T.c:3951:34: note: previously used here
+#14 144.7  3951 |             else if (sizeof(int) == size)
+#14 144.7       |                      ~~~~~~~~~~~~^~~~~~~
+#14 145.6 [311/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tfields.c.o
+#14 145.9 [312/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tfloat.c.o
+#14 148.0 [313/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Toffset.c.o
+#14 148.2 [314/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Toh.c.o
+#14 148.7 [315/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tinit_float.c.o
+#14 149.1 [316/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tnative.c.o
+#14 149.7 [317/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Topaque.c.o
+#14 150.4 [318/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Torder.c.o
+#14 151.8 [319/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tprecis.c.o
+#14 152.0 [320/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tpad.c.o
+#14 152.1 [321/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Shyper.c.o
+#14 152.1 In file included from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5encode.h:23,
+#14 152.1                  from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5private.h:1757,
+#14 152.1                  from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Shyper.c:26:
+#14 152.1 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Shyper.c: In function 'H5S__hyper_span_blocklist':
+#14 152.1 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Shyper.c:4600:47: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 152.1  4600 |                 H5MM_memcpy(*buf, start, rank * sizeof(hsize_t));
+#14 152.1       |                                          ~~~~~^~~~~~~~~~~~~~~~~
+#14 152.1 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5MMprivate.h:41:43: note: in definition of macro 'H5MM_memcpy'
+#14 152.1    41 | #define H5MM_memcpy(D, S, N) memcpy(D, S, N)
+#14 152.1       |                                           ^
+#14 152.1 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Shyper.c:4608:45: warning: conversion from 'hsize_t' {aka 'long long unsigned int'} to 'size_t' {aka 'unsigned int'} may change value [-Wconversion]
+#14 152.1  4608 |                 H5MM_memcpy(*buf, end, rank * sizeof(hsize_t));
+#14 152.1       |                                        ~~~~~^~~~~~~~~~~~~~~~~
+#14 152.1 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5MMprivate.h:41:43: note: in definition of macro 'H5MM_memcpy'
+#14 152.1    41 | #define H5MM_memcpy(D, S, N) memcpy(D, S, N)
+#14 152.1       |                                           ^
+#14 152.4 [322/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tref.c.o
+#14 152.5 [323/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tstrpad.c.o
+#14 153.2 [324/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5TS.c.o
+#14 153.3 [325/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5TSatomic.c.o
+#14 154.4 [326/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5TSbarrier.c.o
+#14 154.5 [327/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5TScond.c.o
+#14 154.5 [328/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tvisit.c.o
+#14 154.8 [329/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5TSc11.c.o
+#14 155.3 [330/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5TSint.c.o
+#14 155.5 [331/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tvlen.c.o
+#14 156.0 [332/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5TSkey.c.o
+#14 156.5 [333/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5TSmutex.c.o
+#14 156.7 [334/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5TSpthread.c.o
+#14 157.2 [335/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5TSonce.c.o
+#14 157.9 [336/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5TSpool.c.o
+#14 158.1 [337/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5TSrec_rwlock.c.o
+#14 158.7 [338/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5TSsemaphore.c.o
+#14 158.7 [339/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5TSrwlock.c.o
+#14 158.8 [340/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5TSwin.c.o
+#14 159.3 [341/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5TSthread.c.o
+#14 160.8 [342/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VLdyn_ops.c.o
+#14 161.4 [343/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VLnative.c.o
+#14 161.5 [344/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VL.c.o
+#14 162.7 [345/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VLnative_attr.c.o
+#14 162.9 [346/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VLnative_blob.c.o
+#14 165.2 [347/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VLnative_dataset.c.o
+#14 165.3 [348/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VLint.c.o
+#14 165.5 [349/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VLnative_file.c.o
+#14 165.7 [350/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VLnative_datatype.c.o
+#14 167.3 [351/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VLnative_link.c.o
+#14 167.4 [352/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VLnative_group.c.o
+#14 168.1 [353/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VLnative_introspect.c.o
+#14 169.0 [354/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VLnative_token.c.o
+#14 169.2 [355/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VLnative_object.c.o
+#14 169.7 [356/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VLpassthru_int.c.o
+#14 170.7 [357/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VLquery.c.o
+#14 170.9 [358/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VLtest.c.o
+#14 171.9 [359/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VLpassthru.c.o
+#14 172.7 [360/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5WB.c.o
+#14 172.7 [361/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Zdeflate.c.o
+#14 173.1 [362/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tconv_complex.c.o
+#14 173.2 [363/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tconv_float.c.o
+#14 173.2 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Tconv_float.c: In function 'H5T__conv_f_i_loop':
+#14 173.2 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Tconv_float.c:1080:33: warning: conversion from 'hssize_t' {aka 'long long int'} to 'ssize_t' {aka 'int'} may change value [-Wconversion]
+#14 173.2  1080 |         H5T__bit_shift(int_buf, shift_val, (size_t)0, int_buf_size * 8);
+#14 173.2       |                                 ^~~~~~~~~
+#14 173.2 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Tconv_float.c:1086:23: warning: conversion from 'hssize_t' {aka 'long long int'} to 'ssize_t' {aka 'int'} may change value [-Wconversion]
+#14 173.2  1086 |         new_msb_pos = msb_pos_s + shift_val;
+#14 173.2       |                       ^~~~~~~~~
+#14 173.8 [364/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VM.c.o
+#14 174.3 [365/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Zfletcher32.c.o
+#14 174.6 [366/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Zszip.c.o
+#14 175.4 [367/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Zshuffle.c.o
+#14 175.8 [368/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5build_settings.c.o
+#14 176.9 [369/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Z.c.o
+#14 177.4 [370/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Znbit.c.o
+#14 177.4 [371/519] Building Fortran preprocessed hl/fortran/src/CMakeFiles/H5HL_buildiface.dir/H5HL_buildiface.F90-pp.f90
+#14 177.7 [372/519] Generating Fortran dyndep file hl/fortran/src/CMakeFiles/H5HL_buildiface.dir/Fortran.dd
+#14 177.9 [373/519] Building C object fortran/src/CMakeFiles/H5match_types.dir/H5match_types.c.o
+#14 178.5 [374/519] Linking C executable bin/H5match_types
+#14 178.5 
+#14 178.5                       **** HDF5 WARNING ****
+#14 178.5 Fortran REAL(KIND=16) is 16 Bytes, but no corresponding C float type exists of that size
+#14 178.5      !!! Fortran interfaces will not be generated for REAL(KIND=16) !!!
+#14 178.5 
+#14 180.0 [375/519] Building C object hl/src/CMakeFiles/hdf5_hl-shared.dir/H5DO.c.o
+#14 180.1 [376/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VLcallback.c.o
+#14 182.1 [377/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Zscaleoffset.c.o
+#14 182.1 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Zscaleoffset.c: In function 'H5Z__scaleoffset_get_type':
+#14 182.1 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Zscaleoffset.c:818:33: warning: duplicated 'if' condition [-Wduplicated-cond]
+#14 182.1   818 |             else if (dtype_size == sizeof(unsigned long))
+#14 182.1       |                      ~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~
+#14 182.1 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Zscaleoffset.c:816:33: note: previously used here
+#14 182.1   816 |             else if (dtype_size == sizeof(unsigned int))
+#14 182.1       |                      ~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~
+#14 182.1 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Zscaleoffset.c:835:33: warning: duplicated 'if' condition [-Wduplicated-cond]
+#14 182.1   835 |             else if (dtype_size == sizeof(long))
+#14 182.1       |                      ~~~~~~~~~~~^~~~~~~~~~~~~~~
+#14 182.1 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/src/H5Zscaleoffset.c:833:33: note: previously used here
+#14 182.1   833 |             else if (dtype_size == sizeof(int))
+#14 182.1       |                      ~~~~~~~~~~~^~~~~~~~~~~~~~
+#14 182.5 [378/519] Building C object hl/src/CMakeFiles/hdf5_hl-shared.dir/H5IM.c.o
+#14 182.7 [379/519] Building C object hl/src/CMakeFiles/hdf5_hl-shared.dir/H5DS.c.o
+#14 183.3 [380/519] Building C object hl/src/CMakeFiles/hdf5_hl-shared.dir/H5LTanalyze.c.o
+#14 185.1 [381/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ztrans.c.o
+#14 185.5 [382/519] Building C object hl/src/CMakeFiles/hdf5_hl-shared.dir/H5LTparse.c.o
+#14 185.7 [383/519] Building Fortran object fortran/src/CMakeFiles/H5_buildiface.dir/H5_buildiface.F90.o
+#14 186.0 [384/519] Building C object hl/src/CMakeFiles/hdf5_hl-shared.dir/H5PT.c.o
+#14 186.2 [385/519] Linking Fortran executable bin/H5_buildiface
+#14 186.6 [386/519] Building C object hl/src/CMakeFiles/hdf5_hl-shared.dir/H5LD.c.o
+#14 187.9 [387/519] Building C object fortran/src/CMakeFiles/hdf5_f90cstub-shared.dir/H5f90kit.c.o
+#14 187.9 [388/519] Building C object fortran/src/CMakeFiles/hdf5_f90cstub-shared.dir/H5Af.c.o
+#14 188.2 [389/519] Building C object hl/src/CMakeFiles/hdf5_hl-shared.dir/H5LT.c.o
+#14 188.4 [390/519] Building C object fortran/src/CMakeFiles/hdf5_f90cstub-shared.dir/H5Df.c.o
+#14 188.8 [391/519] Building C object fortran/src/CMakeFiles/hdf5_f90cstub-shared.dir/H5_f.c.o
+#14 188.9 [392/519] Building C object fortran/src/CMakeFiles/hdf5_f90cstub-shared.dir/H5Ef.c.o
+#14 189.1 [393/519] Building C object hl/src/CMakeFiles/hdf5_hl-shared.dir/H5TB.c.o
+#14 189.4 [394/519] Building C object fortran/src/CMakeFiles/hdf5_f90cstub-shared.dir/H5Ff.c.o
+#14 190.7 [395/519] Building C object fortran/src/CMakeFiles/hdf5_f90cstub-shared.dir/H5Of.c.o
+#14 190.7 [396/519] Building C object fortran/src/CMakeFiles/hdf5_f90cstub-shared.dir/H5Gf.c.o
+#14 190.7 [397/519] Building C object fortran/src/CMakeFiles/hdf5_f90cstub-shared.dir/H5Rf.c.o
+#14 190.9 [398/519] Building C object fortran/src/CMakeFiles/hdf5_f90cstub-shared.dir/H5If.c.o
+#14 191.2 [399/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/__/shared/H5fortran_types.F90-pp.f90
+#14 191.3 [400/519] Building C object fortran/src/CMakeFiles/hdf5_f90cstub-shared.dir/H5Lf.c.o
+#14 191.4 [401/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5f90global.F90-pp.f90
+#14 191.5 [402/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5fortkit.F90-pp.f90
+#14 191.7 [403/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Aff.F90-pp.f90
+#14 191.8 [404/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5_ff.F90-pp.f90
+#14 192.0 [405/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Dff.F90-pp.f90
+#14 192.0 [406/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Eff.F90-pp.f90
+#14 192.2 [407/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5FDff.F90-pp.f90
+#14 192.2 [408/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5ESff.F90-pp.f90
+#14 192.2 [409/519] Building C object fortran/src/CMakeFiles/hdf5_f90cstub-shared.dir/H5Zf.c.o
+#14 192.3 [410/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Fff.F90-pp.f90
+#14 192.4 [411/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Gff.F90-pp.f90
+#14 192.5 [412/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Iff.F90-pp.f90
+#14 192.6 [413/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Lff.F90-pp.f90
+#14 192.6 [414/519] Building C object fortran/src/CMakeFiles/hdf5_f90cstub-shared.dir/H5Sf.c.o
+#14 192.7 [415/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Off.F90-pp.f90
+#14 192.7 [416/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Pff.F90-pp.f90
+#14 192.8 [417/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Sff.F90-pp.f90
+#14 192.8 [418/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Rff.F90-pp.f90
+#14 193.0 [419/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Tff.F90-pp.f90
+#14 193.1 [420/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/HDF5.F90-pp.f90
+#14 193.1 [421/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Zff.F90-pp.f90
+#14 193.1 [422/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/__/shared/H5_gen.F90-pp.f90
+#14 193.1 [423/519] Building C object fortran/src/CMakeFiles/hdf5_f90cstub-shared.dir/H5Tf.c.o
+#14 193.1 [424/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5VLff.F90-pp.f90
+#14 193.3 [425/519] Generating Fortran dyndep file fortran/src/CMakeFiles/hdf5_fortran-shared.dir/Fortran.dd
+#14 193.7 [426/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/__/shared/H5fortran_types.F90.o
+#14 194.3 [427/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5f90global.F90.o
+#14 194.4 [428/519] Building C object fortran/src/CMakeFiles/hdf5_f90cstub-shared.dir/H5Pf.c.o
+#14 195.1 [429/519] Building C object hl/fortran/src/CMakeFiles/hdf5_hl_f90cstub-shared.dir/H5LTfc.c.o
+#14 195.1 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/hl/fortran/src/H5LTfc.c: In function 'h5ltset_attribute_c':
+#14 195.1 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/hl/fortran/src/H5LTfc.c:268:38: warning: duplicated 'if' condition [-Wduplicated-cond]
+#14 195.1   268 |         else if ((size_t)*sizeof_val == sizeof(long))
+#14 195.1       |                  ~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~
+#14 195.1 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/hl/fortran/src/H5LTfc.c:265:33: note: previously used here
+#14 195.1   265 |         if ((size_t)*sizeof_val == sizeof(int))
+#14 195.1       |             ~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~
+#14 195.1 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/hl/fortran/src/H5LTfc.c: In function 'h5ltget_attribute_c':
+#14 195.1 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/hl/fortran/src/H5LTfc.c:357:38: warning: duplicated 'if' condition [-Wduplicated-cond]
+#14 195.1   357 |         else if ((size_t)*sizeof_val == sizeof(long))
+#14 195.1       |                  ~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~
+#14 195.1 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/hl/fortran/src/H5LTfc.c:355:33: note: previously used here
+#14 195.1   355 |         if ((size_t)*sizeof_val == sizeof(int))
+#14 195.1       |             ~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~
+#14 195.1 [430/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5fortkit.F90.o
+#14 195.2 [431/519] Building C object hl/fortran/src/CMakeFiles/hdf5_hl_f90cstub-shared.dir/H5IMcc.c.o
+#14 195.5 [432/519] Building C object hl/fortran/src/CMakeFiles/hdf5_hl_f90cstub-shared.dir/H5DSfc.c.o
+#14 195.8 [433/519] Building C object hl/fortran/src/CMakeFiles/hdf5_hl_f90cstub-shared.dir/H5IMfc.c.o
+#14 195.9 [434/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5FDff.F90.o
+#14 196.3 [435/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5ESff.F90.o
+#14 196.9 [436/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Eff.F90.o
+#14 197.2 [437/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Iff.F90.o
+#14 197.8 [438/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Aff.F90.o
+#14 197.8 [439/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Fff.F90.o
+#14 198.0 [440/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Lff.F90.o
+#14 198.9 [441/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Off.F90.o
+#14 199.5 [442/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Rff.F90.o
+#14 200.1 [443/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Sff.F90.o
+#14 200.1 [444/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Zff.F90.o
+#14 200.2 [445/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Tff.F90.o
+#14 200.6 [446/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5VLff.F90.o
+#14 201.6 [447/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Pff.F90.o
+#14 202.5 [448/519] Building C object hl/fortran/src/CMakeFiles/hdf5_hl_f90cstub-shared.dir/H5TBfc.c.o
+#14 202.6 [449/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5ArrayType.cpp.o
+#14 203.4 [450/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5_ff.F90.o
+#14 203.9 [451/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Gff.F90.o
+#14 204.1 [452/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5AtomType.cpp.o
+#14 204.3 [453/519] Building Fortran object hl/fortran/src/CMakeFiles/H5HL_buildiface.dir/H5HL_buildiface.F90.o
+#14 204.6 [454/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5AbstractDs.cpp.o
+#14 205.0 [455/519] Linking Fortran executable bin/H5HL_buildiface
+#14 205.3 [456/519] Building Fortran preprocessed hl/fortran/src/CMakeFiles/hdf5_hl_fortran-shared.dir/H5DSff.F90-pp.f90
+#14 205.5 [457/519] Building Fortran preprocessed hl/fortran/src/CMakeFiles/hdf5_hl_fortran-shared.dir/H5TBff.F90-pp.f90
+#14 206.0 [458/519] Building Fortran preprocessed hl/fortran/src/CMakeFiles/hdf5_hl_fortran-shared.dir/H5LTff.F90-pp.f90
+#14 206.3 [459/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5CommonFG.cpp.o
+#14 206.4 [460/519] Building Fortran preprocessed hl/fortran/src/CMakeFiles/hdf5_hl_fortran-shared.dir/H5IMff.F90-pp.f90
+#14 206.7 [461/519] Building Fortran preprocessed hl/fortran/src/CMakeFiles/hdf5_hl_fortran-shared.dir/H5DOff.F90-pp.f90
+#14 206.8 [462/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Dff.F90.o
+#14 206.8 [463/519] Building Fortran preprocessed hl/fortran/src/CMakeFiles/hdf5_hl_fortran-shared.dir/__/shared/H5LTff_gen.F90-pp.f90
+#14 207.1 [464/519] Building Fortran preprocessed hl/fortran/src/CMakeFiles/hdf5_hl_fortran-shared.dir/__/shared/H5TBff_gen.F90-pp.f90
+#14 207.3 [465/519] Generating Fortran dyndep file hl/fortran/src/CMakeFiles/hdf5_hl_fortran-shared.dir/Fortran.dd
+#14 208.0 [466/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5CompType.cpp.o
+#14 208.3 [467/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5Attribute.cpp.o
+#14 209.0 [468/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5DataSpace.cpp.o
+#14 210.0 [469/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5DaccProp.cpp.o
+#14 211.8 [470/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5DataSet.cpp.o
+#14 212.1 [471/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5DxferProp.cpp.o
+#14 213.2 [472/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5DcreatProp.cpp.o
+#14 213.5 [473/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5EnumType.cpp.o
+#14 214.9 [474/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5DataType.cpp.o
+#14 215.4 [475/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5Exception.cpp.o
+#14 215.6 [476/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5FcreatProp.cpp.o
+#14 216.7 [477/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5FaccProp.cpp.o
+#14 218.1 [478/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/__/shared/H5_gen.F90.o
+#14 219.1 [479/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5FloatType.cpp.o
+#14 219.2 [480/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5IntType.cpp.o
+#14 220.0 [481/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5IdComponent.cpp.o
+#14 220.2 [482/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5LaccProp.cpp.o
+#14 220.3 [483/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5Group.cpp.o
+#14 220.4 [484/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5File.cpp.o
+#14 222.1 [485/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5Library.cpp.o
+#14 222.8 [486/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5LcreatProp.cpp.o
+#14 223.2 [487/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/HDF5.F90.o
+#14 223.9 [488/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5OcreatProp.cpp.o
+#14 225.5 [489/519] Building Fortran object hl/fortran/src/CMakeFiles/hdf5_hl_fortran-shared.dir/H5DSff.F90.o
+#14 226.1 [490/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5Object.cpp.o
+#14 227.5 [491/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5StrType.cpp.o
+#14 227.5 [492/519] Building Fortran object hl/fortran/src/CMakeFiles/hdf5_hl_fortran-shared.dir/H5TBff.F90.o
+#14 228.5 [493/519] Building Fortran object hl/fortran/src/CMakeFiles/hdf5_hl_fortran-shared.dir/H5IMff.F90.o
+#14 228.6 [494/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5PropList.cpp.o
+#14 228.8 [495/519] Building Fortran object hl/fortran/src/CMakeFiles/hdf5_hl_fortran-shared.dir/H5DOff.F90.o
+#14 229.5 [496/519] Building Fortran object hl/fortran/src/CMakeFiles/hdf5_hl_fortran-shared.dir/__/shared/H5TBff_gen.F90.o
+#14 229.5 [497/519] Building Fortran object hl/fortran/src/CMakeFiles/hdf5_hl_fortran-shared.dir/H5LTff.F90.o
+#14 230.0 [498/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5PredType.cpp.o
+#14 231.2 [499/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5VarLenType.cpp.o
+#14 231.6 [500/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5Location.cpp.o
+#14 231.6 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/c++/src/H5Location.cpp: In member function 'std::string H5::H5Location::getObjnameByIdx(hsize_t) const':
+#14 231.6 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/c++/src/H5Location.cpp:2001:46: warning: argument 1 range [2147483649, 4294967295] exceeds maximum object size 2147483647 [-Walloc-size-larger-than=]
+#14 231.6  2001 |     char *name_C = new char[actual_name_len]();
+#14 231.6       |                                              ^
+#14 231.6 In file included from /usr/include/c++/12/bits/exception_ptr.h:40,
+#14 231.6                  from /usr/include/c++/12/exception:168,
+#14 231.6                  from /usr/include/c++/12/ios:39,
+#14 231.6                  from /usr/include/c++/12/ostream:38,
+#14 231.6                  from /usr/include/c++/12/iostream:39,
+#14 231.6                  from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/c++/src/H5Location.cpp:13:
+#14 231.6 /usr/include/c++/12/new:128:26: note: in a call to allocation function 'void* operator new [](std::size_t)' declared here
+#14 231.6   128 | _GLIBCXX_NODISCARD void* operator new[](std::size_t) _GLIBCXX_THROW (std::bad_alloc)
+#14 231.6       |                          ^~~~~~~~
+#14 232.3 [501/519] Building CXX object hl/c++/src/CMakeFiles/hdf5_hl_cpp-shared.dir/H5PacketTable.cpp.o
+#14 236.2 [502/519] Building Fortran object hl/fortran/src/CMakeFiles/hdf5_hl_fortran-shared.dir/__/shared/H5LTff_gen.F90.o
+#14 260.5 [503/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tconv_integer.c.o
+#14 261.3 [504/519] Linking C shared library bin/libhdf5.so.1000.0.0
+#14 261.3 [505/519] Creating library symlink bin/libhdf5.so.1000 bin/libhdf5.so
+#14 261.6 [506/519] Linking C shared library bin/libhdf5_f90cstub.so.1000.0.0
+#14 261.6 [507/519] Linking C shared library bin/libhdf5_hl.so.1000.0.0
+#14 261.7 [508/519] Creating library symlink bin/libhdf5_hl.so.1000 bin/libhdf5_hl.so
+#14 261.7 [509/519] Creating library symlink bin/libhdf5_f90cstub.so.1000 bin/libhdf5_f90cstub.so
+#14 261.7 [510/519] Linking CXX shared library bin/libhdf5_cpp.so.1000.0.0
+#14 261.8 [511/519] Creating library symlink bin/libhdf5_cpp.so.1000 bin/libhdf5_cpp.so
+#14 261.9 [512/519] Linking C shared library bin/libhdf5_hl_f90cstub.so.1000.0.0
+#14 261.9 [513/519] Linking CXX shared library bin/libhdf5_hl_cpp.so.1000.0.0
+#14 261.9 [514/519] Linking Fortran shared library bin/libhdf5_fortran.so.1000.0.0
+#14 261.9 [515/519] Creating library symlink bin/libhdf5_hl_f90cstub.so.1000 bin/libhdf5_hl_f90cstub.so
+#14 262.0 [516/519] Creating library symlink bin/libhdf5_hl_cpp.so.1000 bin/libhdf5_hl_cpp.so
+#14 262.0 [517/519] Creating library symlink bin/libhdf5_fortran.so.1000 bin/libhdf5_fortran.so
+#14 262.2 [518/519] Linking Fortran shared library bin/libhdf5_hl_fortran.so.1000.0.0
+#14 262.3 [519/519] Creating library symlink bin/libhdf5_hl_fortran.so.1000 bin/libhdf5_hl_fortran.so
+#14 DONE 262.4s
+
+#15 [10/10] RUN cmake --install builddir
+#15 0.261 -- Install configuration: "Release"
+#15 0.269 -- Installing: /hdf5/include/hdf5.h
+#15 0.272 -- Installing: /hdf5/include/H5api_adpt.h
+#15 0.272 -- Installing: /hdf5/include/H5public.h
+#15 0.273 -- Installing: /hdf5/include/H5Apublic.h
+#15 0.273 -- Installing: /hdf5/include/H5ACpublic.h
+#15 0.273 -- Installing: /hdf5/include/H5Cpublic.h
+#15 0.273 -- Installing: /hdf5/include/H5Dpublic.h
+#15 0.274 -- Installing: /hdf5/include/H5Epubgen.h
+#15 0.274 -- Installing: /hdf5/include/H5Epublic.h
+#15 0.274 -- Installing: /hdf5/include/H5ESdevelop.h
+#15 0.275 -- Installing: /hdf5/include/H5ESpublic.h
+#15 0.275 -- Installing: /hdf5/include/H5Fpublic.h
+#15 0.275 -- Installing: /hdf5/include/H5FDcore.h
+#15 0.276 -- Installing: /hdf5/include/H5FDdevelop.h
+#15 0.276 -- Installing: /hdf5/include/H5FDdirect.h
+#15 0.276 -- Installing: /hdf5/include/H5FDfamily.h
+#15 0.276 -- Installing: /hdf5/include/H5FDhdfs.h
+#15 0.276 -- Installing: /hdf5/include/H5FDlog.h
+#15 0.276 -- Installing: /hdf5/include/H5FDmirror.h
+#15 0.277 -- Installing: /hdf5/include/H5FDmpi.h
+#15 0.277 -- Installing: /hdf5/include/H5FDmpio.h
+#15 0.277 -- Installing: /hdf5/include/H5FDmulti.h
+#15 0.277 -- Installing: /hdf5/include/H5FDonion.h
+#15 0.277 -- Installing: /hdf5/include/H5FDpublic.h
+#15 0.278 -- Installing: /hdf5/include/H5FDros3.h
+#15 0.278 -- Installing: /hdf5/include/H5FDsec2.h
+#15 0.278 -- Installing: /hdf5/include/H5FDsplitter.h
+#15 0.278 -- Installing: /hdf5/include/H5FDstdio.h
+#15 0.278 -- Installing: /hdf5/include/H5FDwindows.h
+#15 0.279 -- Installing: /hdf5/include/H5FDsubfiling.h
+#15 0.279 -- Installing: /hdf5/include/H5FDioc.h
+#15 0.279 -- Installing: /hdf5/include/H5Gpublic.h
+#15 0.279 -- Installing: /hdf5/include/H5Idevelop.h
+#15 0.280 -- Installing: /hdf5/include/H5Ipublic.h
+#15 0.280 -- Installing: /hdf5/include/H5Ldevelop.h
+#15 0.280 -- Installing: /hdf5/include/H5Lpublic.h
+#15 0.280 -- Installing: /hdf5/include/H5Mpublic.h
+#15 0.281 -- Installing: /hdf5/include/H5MMpublic.h
+#15 0.281 -- Installing: /hdf5/include/H5Opublic.h
+#15 0.281 -- Installing: /hdf5/include/H5Ppublic.h
+#15 0.282 -- Installing: /hdf5/include/H5PLextern.h
+#15 0.282 -- Installing: /hdf5/include/H5PLpublic.h
+#15 0.282 -- Installing: /hdf5/include/H5Rpublic.h
+#15 0.283 -- Installing: /hdf5/include/H5Spublic.h
+#15 0.283 -- Installing: /hdf5/include/H5Tdevelop.h
+#15 0.283 -- Installing: /hdf5/include/H5Tpublic.h
+#15 0.283 -- Installing: /hdf5/include/H5TSdevelop.h
+#15 0.283 -- Installing: /hdf5/include/H5VLconnector.h
+#15 0.284 -- Installing: /hdf5/include/H5VLconnector_passthru.h
+#15 0.284 -- Installing: /hdf5/include/H5VLnative.h
+#15 0.284 -- Installing: /hdf5/include/H5VLpassthru.h
+#15 0.284 -- Installing: /hdf5/include/H5VLpublic.h
+#15 0.285 -- Installing: /hdf5/include/H5Zdevelop.h
+#15 0.285 -- Installing: /hdf5/include/H5Zpublic.h
+#15 0.285 -- Up-to-date: /hdf5/include/H5Epubgen.h
+#15 0.285 -- Installing: /hdf5/include/H5version.h
+#15 0.285 -- Installing: /hdf5/include/H5overflow.h
+#15 0.286 -- Installing: /hdf5/include/H5pubconf.h
+#15 0.288 -- Installing: /hdf5/lib/libhdf5.so.1000.0.0
+#15 0.295 -- Installing: /hdf5/lib/libhdf5.so.1000
+#15 0.299 -- Set non-toolchain portion of runtime path of "/hdf5/lib/libhdf5.so.1000.0.0" to "$ORIGIN/../lib:$ORIGIN/"
+#15 0.300 -- Installing: /hdf5/lib/libhdf5.so
+#15 0.300 -- Installing: /hdf5/lib/pkgconfig/hdf5.pc
+#15 0.303 -- Installing: /hdf5/include/H5DOpublic.h
+#15 0.304 -- Installing: /hdf5/include/H5DSpublic.h
+#15 0.304 -- Installing: /hdf5/include/H5IMpublic.h
+#15 0.304 -- Installing: /hdf5/include/H5LTpublic.h
+#15 0.305 -- Installing: /hdf5/include/H5PTpublic.h
+#15 0.305 -- Installing: /hdf5/include/H5TBpublic.h
+#15 0.305 -- Installing: /hdf5/include/H5LDpublic.h
+#15 0.305 -- Installing: /hdf5/include/hdf5_hl.h
+#15 0.306 -- Installing: /hdf5/lib/libhdf5_hl.so.1000.0.0
+#15 0.307 -- Installing: /hdf5/lib/libhdf5_hl.so.1000
+#15 0.307 -- Set non-toolchain portion of runtime path of "/hdf5/lib/libhdf5_hl.so.1000.0.0" to "$ORIGIN/../lib:$ORIGIN/"
+#15 0.308 -- Installing: /hdf5/lib/libhdf5_hl.so
+#15 0.308 -- Installing: /hdf5/lib/pkgconfig/hdf5_hl.pc
+#15 0.311 -- Installing: /hdf5/include/H5f90.h
+#15 0.311 -- Installing: /hdf5/include/H5f90i.h
+#15 0.311 -- Installing: /hdf5/include/H5f90proto.h
+#15 0.311 -- Installing: /hdf5/include/H5f90i_gen.h
+#15 0.312 -- Installing: /hdf5/include/H5config_f.inc
+#15 0.312 -- Installing: /hdf5/mod/shared/h5fortran_types.mod
+#15 0.312 -- Installing: /hdf5/mod/shared/hdf5.mod
+#15 0.313 -- Installing: /hdf5/mod/shared/h5fortkit.mod
+#15 0.313 -- Installing: /hdf5/mod/shared/h5global.mod
+#15 0.313 -- Installing: /hdf5/mod/shared/h5a.mod
+#15 0.313 -- Installing: /hdf5/mod/shared/h5d.mod
+#15 0.314 -- Installing: /hdf5/mod/shared/h5e.mod
+#15 0.314 -- Installing: /hdf5/mod/shared/h5es.mod
+#15 0.314 -- Installing: /hdf5/mod/shared/h5f.mod
+#15 0.314 -- Installing: /hdf5/mod/shared/h5fd.mod
+#15 0.315 -- Installing: /hdf5/mod/shared/h5g.mod
+#15 0.315 -- Installing: /hdf5/mod/shared/h5i.mod
+#15 0.315 -- Installing: /hdf5/mod/shared/h5l.mod
+#15 0.315 -- Installing: /hdf5/mod/shared/h5lib.mod
+#15 0.315 -- Installing: /hdf5/mod/shared/h5o.mod
+#15 0.316 -- Installing: /hdf5/mod/shared/h5p.mod
+#15 0.316 -- Installing: /hdf5/mod/shared/h5r.mod
+#15 0.316 -- Installing: /hdf5/mod/shared/h5s.mod
+#15 0.316 -- Installing: /hdf5/mod/shared/h5t.mod
+#15 0.317 -- Installing: /hdf5/mod/shared/h5vl.mod
+#15 0.317 -- Installing: /hdf5/mod/shared/h5z.mod
+#15 0.317 -- Installing: /hdf5/mod/shared/h5_gen.mod
+#15 0.318 -- Installing: /hdf5/include/h5fortran_types.mod
+#15 0.318 -- Installing: /hdf5/include/hdf5.mod
+#15 0.318 -- Installing: /hdf5/include/h5fortkit.mod
+#15 0.318 -- Installing: /hdf5/include/h5global.mod
+#15 0.319 -- Installing: /hdf5/include/h5a.mod
+#15 0.319 -- Installing: /hdf5/include/h5d.mod
+#15 0.319 -- Installing: /hdf5/include/h5e.mod
+#15 0.319 -- Installing: /hdf5/include/h5es.mod
+#15 0.320 -- Installing: /hdf5/include/h5f.mod
+#15 0.320 -- Installing: /hdf5/include/h5fd.mod
+#15 0.320 -- Installing: /hdf5/include/h5g.mod
+#15 0.320 -- Installing: /hdf5/include/h5i.mod
+#15 0.320 -- Installing: /hdf5/include/h5l.mod
+#15 0.320 -- Installing: /hdf5/include/h5lib.mod
+#15 0.321 -- Installing: /hdf5/include/h5o.mod
+#15 0.321 -- Installing: /hdf5/include/h5p.mod
+#15 0.321 -- Installing: /hdf5/include/h5r.mod
+#15 0.321 -- Installing: /hdf5/include/h5s.mod
+#15 0.322 -- Installing: /hdf5/include/h5t.mod
+#15 0.322 -- Installing: /hdf5/include/h5vl.mod
+#15 0.322 -- Installing: /hdf5/include/h5z.mod
+#15 0.322 -- Installing: /hdf5/include/h5_gen.mod
+#15 0.323 -- Installing: /hdf5/lib/libhdf5_f90cstub.so.1000.0.0
+#15 0.323 -- Installing: /hdf5/lib/libhdf5_f90cstub.so.1000
+#15 0.324 -- Set non-toolchain portion of runtime path of "/hdf5/lib/libhdf5_f90cstub.so.1000.0.0" to "$ORIGIN/../lib:$ORIGIN/"
+#15 0.325 -- Installing: /hdf5/lib/libhdf5_f90cstub.so
+#15 0.325 -- Installing: /hdf5/lib/libhdf5_fortran.so.1000.0.0
+#15 0.326 -- Installing: /hdf5/lib/libhdf5_fortran.so.1000
+#15 0.326 -- Set non-toolchain portion of runtime path of "/hdf5/lib/libhdf5_fortran.so.1000.0.0" to "$ORIGIN/../lib:$ORIGIN/"
+#15 0.327 -- Installing: /hdf5/lib/libhdf5_fortran.so
+#15 0.327 -- Installing: /hdf5/lib/pkgconfig/hdf5_fortran.pc
+#15 0.330 -- Installing: /hdf5/mod/shared/h5ds.mod
+#15 0.330 -- Installing: /hdf5/mod/shared/h5tb.mod
+#15 0.331 -- Installing: /hdf5/mod/shared/h5tb_const.mod
+#15 0.331 -- Installing: /hdf5/mod/shared/h5lt.mod
+#15 0.331 -- Installing: /hdf5/mod/shared/h5lt_const.mod
+#15 0.332 -- Installing: /hdf5/mod/shared/h5im.mod
+#15 0.332 -- Installing: /hdf5/mod/shared/h5do.mod
+#15 0.333 -- Installing: /hdf5/include/h5ds.mod
+#15 0.333 -- Installing: /hdf5/include/h5tb.mod
+#15 0.333 -- Installing: /hdf5/include/h5tb_const.mod
+#15 0.334 -- Installing: /hdf5/include/h5lt.mod
+#15 0.334 -- Installing: /hdf5/include/h5lt_const.mod
+#15 0.334 -- Installing: /hdf5/include/h5im.mod
+#15 0.335 -- Installing: /hdf5/include/h5do.mod
+#15 0.335 -- Installing: /hdf5/lib/libhdf5_hl_f90cstub.so.1000.0.0
+#15 0.336 -- Installing: /hdf5/lib/libhdf5_hl_f90cstub.so.1000
+#15 0.336 -- Set non-toolchain portion of runtime path of "/hdf5/lib/libhdf5_hl_f90cstub.so.1000.0.0" to "$ORIGIN/../lib:$ORIGIN/"
+#15 0.337 -- Installing: /hdf5/lib/libhdf5_hl_f90cstub.so
+#15 0.338 -- Installing: /hdf5/lib/libhdf5_hl_fortran.so.1000.0.0
+#15 0.338 -- Installing: /hdf5/lib/libhdf5_hl_fortran.so.1000
+#15 0.338 -- Set non-toolchain portion of runtime path of "/hdf5/lib/libhdf5_hl_fortran.so.1000.0.0" to "$ORIGIN/../lib:$ORIGIN/"
+#15 0.339 -- Installing: /hdf5/lib/libhdf5_hl_fortran.so
+#15 0.339 -- Installing: /hdf5/lib/pkgconfig/hdf5_hl_fortran.pc
+#15 0.342 -- Installing: /hdf5/include/H5AbstractDs.h
+#15 0.342 -- Installing: /hdf5/include/H5Alltypes.h
+#15 0.342 -- Installing: /hdf5/include/H5ArrayType.h
+#15 0.342 -- Installing: /hdf5/include/H5AtomType.h
+#15 0.343 -- Installing: /hdf5/include/H5Attribute.h
+#15 0.343 -- Installing: /hdf5/include/H5Classes.h
+#15 0.343 -- Installing: /hdf5/include/H5CommonFG.h
+#15 0.343 -- Installing: /hdf5/include/H5CompType.h
+#15 0.343 -- Installing: /hdf5/include/H5Cpp.h
+#15 0.344 -- Installing: /hdf5/include/H5CppDoc.h
+#15 0.344 -- Installing: /hdf5/include/H5DataSet.h
+#15 0.344 -- Installing: /hdf5/include/H5DataSpace.h
+#15 0.344 -- Installing: /hdf5/include/H5DataType.h
+#15 0.345 -- Installing: /hdf5/include/H5DaccProp.h
+#15 0.345 -- Installing: /hdf5/include/H5DcreatProp.h
+#15 0.345 -- Installing: /hdf5/include/H5DxferProp.h
+#15 0.345 -- Installing: /hdf5/include/H5EnumType.h
+#15 0.345 -- Installing: /hdf5/include/H5Exception.h
+#15 0.346 -- Installing: /hdf5/include/H5FaccProp.h
+#15 0.346 -- Installing: /hdf5/include/H5FcreatProp.h
+#15 0.346 -- Installing: /hdf5/include/H5File.h
+#15 0.346 -- Installing: /hdf5/include/H5FloatType.h
+#15 0.346 -- Installing: /hdf5/include/H5Group.h
+#15 0.347 -- Installing: /hdf5/include/H5IdComponent.h
+#15 0.347 -- Installing: /hdf5/include/H5Include.h
+#15 0.347 -- Installing: /hdf5/include/H5IntType.h
+#15 0.347 -- Installing: /hdf5/include/H5LaccProp.h
+#15 0.347 -- Installing: /hdf5/include/H5LcreatProp.h
+#15 0.348 -- Installing: /hdf5/include/H5Library.h
+#15 0.348 -- Installing: /hdf5/include/H5Location.h
+#15 0.348 -- Installing: /hdf5/include/H5Object.h
+#15 0.348 -- Installing: /hdf5/include/H5OcreatProp.h
+#15 0.349 -- Installing: /hdf5/include/H5PredType.h
+#15 0.349 -- Installing: /hdf5/include/H5PropList.h
+#15 0.349 -- Installing: /hdf5/include/H5StrType.h
+#15 0.349 -- Installing: /hdf5/include/H5VarLenType.h
+#15 0.350 -- Installing: /hdf5/lib/libhdf5_cpp.so.1000.0.0
+#15 0.351 -- Installing: /hdf5/lib/libhdf5_cpp.so.1000
+#15 0.351 -- Set non-toolchain portion of runtime path of "/hdf5/lib/libhdf5_cpp.so.1000.0.0" to "$ORIGIN/../lib:$ORIGIN/"
+#15 0.352 -- Installing: /hdf5/lib/libhdf5_cpp.so
+#15 0.352 -- Installing: /hdf5/lib/pkgconfig/hdf5_cpp.pc
+#15 0.355 -- Installing: /hdf5/include/H5PacketTable.h
+#15 0.355 -- Installing: /hdf5/lib/libhdf5_hl_cpp.so.1000.0.0
+#15 0.355 -- Installing: /hdf5/lib/libhdf5_hl_cpp.so.1000
+#15 0.356 -- Set non-toolchain portion of runtime path of "/hdf5/lib/libhdf5_hl_cpp.so.1000.0.0" to "$ORIGIN/../lib:$ORIGIN/"
+#15 0.356 -- Installing: /hdf5/lib/libhdf5_hl_cpp.so
+#15 0.357 -- Installing: /hdf5/lib/pkgconfig/hdf5_hl_cpp.pc
+#15 0.358 -- Installing: /hdf5/cmake/hdf5-targets.cmake
+#15 0.358 -- Installing: /hdf5/cmake/hdf5-targets-release.cmake
+#15 0.359 -- Installing: /hdf5/cmake/hdf5-config.cmake
+#15 0.359 -- Installing: /hdf5/cmake/hdf5-config-version.cmake
+#15 0.360 -- Installing: /hdf5/lib/libhdf5.settings
+#15 0.360 -- Installing: /hdf5/share/LICENSE
+#15 0.360 -- Installing: /hdf5/share/USING_HDF5_CMake.txt
+#15 0.361 -- Installing: /hdf5/share/CHANGELOG.md
+#15 DONE 0.4s
+
+#16 exporting to image
+#16 exporting layers
+#16 exporting layers 0.9s done
+#16 writing image sha256:39a6cdce0546de273741e53ff8371d10cfaa40d3cd14b4d043446930e524377b done
+#16 naming to docker.io/library/generate-h5tinit:debian-i386
+#16 naming to docker.io/library/generate-h5tinit:debian-i386 done
+#16 DONE 0.9s
+
+ [33m1 warning found (use docker --debug to expand):
+[0m - WorkdirRelativePath: Relative workdir "hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1" can have unexpected results if the base image changes (line 26)
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/36ncinba7od7ihkf51y16m2dd
++ rm -rf debian-i386
++ mkdir debian-i386
++ for file in fortran/H5_gen.F90 fortran/H5f90i_gen.h fortran/H5fortran_types.F90 hl/fortran/H5LTff_gen.F90 hl/fortran/H5TBff_gen.F90
++ docker run --rm generate-h5tinit:debian-i386 cat builddir/fortran/H5_gen.F90
+++ basename fortran/H5_gen.F90
+WARNING: The requested image's platform (linux/386) does not match the detected host platform (linux/arm64/v8) and no specific platform was requested
++ for file in fortran/H5_gen.F90 fortran/H5f90i_gen.h fortran/H5fortran_types.F90 hl/fortran/H5LTff_gen.F90 hl/fortran/H5TBff_gen.F90
++ docker run --rm generate-h5tinit:debian-i386 cat builddir/fortran/H5f90i_gen.h
+++ basename fortran/H5f90i_gen.h
+WARNING: The requested image's platform (linux/386) does not match the detected host platform (linux/arm64/v8) and no specific platform was requested
++ for file in fortran/H5_gen.F90 fortran/H5f90i_gen.h fortran/H5fortran_types.F90 hl/fortran/H5LTff_gen.F90 hl/fortran/H5TBff_gen.F90
++ docker run --rm generate-h5tinit:debian-i386 cat builddir/fortran/H5fortran_types.F90
+++ basename fortran/H5fortran_types.F90
+WARNING: The requested image's platform (linux/386) does not match the detected host platform (linux/arm64/v8) and no specific platform was requested
++ for file in fortran/H5_gen.F90 fortran/H5f90i_gen.h fortran/H5fortran_types.F90 hl/fortran/H5LTff_gen.F90 hl/fortran/H5TBff_gen.F90
++ docker run --rm generate-h5tinit:debian-i386 cat builddir/hl/fortran/H5LTff_gen.F90
+++ basename hl/fortran/H5LTff_gen.F90
+WARNING: The requested image's platform (linux/386) does not match the detected host platform (linux/arm64/v8) and no specific platform was requested
++ for file in fortran/H5_gen.F90 fortran/H5f90i_gen.h fortran/H5fortran_types.F90 hl/fortran/H5LTff_gen.F90 hl/fortran/H5TBff_gen.F90
++ docker run --rm generate-h5tinit:debian-i386 cat builddir/hl/fortran/H5TBff_gen.F90
+++ basename hl/fortran/H5TBff_gen.F90
+WARNING: The requested image's platform (linux/386) does not match the detected host platform (linux/arm64/v8) and no specific platform was requested

@@ -1,0 +1,1585 @@
++ echo 'cpuarch=arm64v8 platform=linux/arm64 osversion=13.1 gccversion=12:'
+cpuarch=arm64v8 platform=linux/arm64 osversion=13.1 gccversion=12:
++ tag=generate-h5tinit:debian-arm64v8
++ dockerargs=(--file generate-h5tinit.dockerfile --build-arg commit="${commit}" --build-arg cpuarch="${cpuarch}" --build-arg osversion="${osversion}" --build-arg gccversion="${gccversion}" --platform "${platform}" --progress plain --tag "${tag}")
++ docker build --file generate-h5tinit.dockerfile --build-arg commit=2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1 --build-arg cpuarch=arm64v8 --build-arg osversion=13.1 --build-arg gccversion=12 --platform linux/arm64 --progress plain --tag generate-h5tinit:debian-arm64v8 .
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from generate-h5tinit.dockerfile
+#1 transferring dockerfile: 2.04kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/arm64v8/debian:13.1-slim
+#2 ...
+
+#3 [auth] arm64v8/debian:pull token for registry-1.docker.io
+#3 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/arm64v8/debian:13.1-slim
+#2 DONE 1.1s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 2B done
+#4 DONE 0.0s
+
+#5 [ 1/10] FROM docker.io/arm64v8/debian:13.1-slim@sha256:a0a91b381d8012575a4f3137a55eedaabc6870c840c5bb010ef6d31a230cbfc8
+#5 resolve docker.io/arm64v8/debian:13.1-slim@sha256:a0a91b381d8012575a4f3137a55eedaabc6870c840c5bb010ef6d31a230cbfc8 done
+#5 sha256:a0a91b381d8012575a4f3137a55eedaabc6870c840c5bb010ef6d31a230cbfc8 1.49kB / 1.49kB done
+#5 sha256:c8f0beb24beca8d20b134642aa45df1d5d2fd3ce5ce1437325becbb1d457bc7c 1.04kB / 1.04kB done
+#5 sha256:b5d31b25bb368f225cab5ea9679dd01598d0e03ea6cdcafe4aaa484c01e564a8 466B / 466B done
+#5 sha256:51365f04b68881c6fd3d04aa38cdb689fdee6efba2aa6afcf2da5385022cf475 0B / 30.14MB 0.1s
+#5 sha256:51365f04b68881c6fd3d04aa38cdb689fdee6efba2aa6afcf2da5385022cf475 2.10MB / 30.14MB 0.8s
+#5 ...
+
+#6 [ 3/10] ADD https://github.com/HDFGroup/hdf5/archive/2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1.tar.gz hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1.tar.gz
+#6 CACHED
+
+#5 [ 1/10] FROM docker.io/arm64v8/debian:13.1-slim@sha256:a0a91b381d8012575a4f3137a55eedaabc6870c840c5bb010ef6d31a230cbfc8
+#5 sha256:51365f04b68881c6fd3d04aa38cdb689fdee6efba2aa6afcf2da5385022cf475 4.19MB / 30.14MB 1.0s
+#5 sha256:51365f04b68881c6fd3d04aa38cdb689fdee6efba2aa6afcf2da5385022cf475 7.34MB / 30.14MB 1.4s
+#5 sha256:51365f04b68881c6fd3d04aa38cdb689fdee6efba2aa6afcf2da5385022cf475 10.49MB / 30.14MB 1.9s
+#5 sha256:51365f04b68881c6fd3d04aa38cdb689fdee6efba2aa6afcf2da5385022cf475 12.58MB / 30.14MB 2.2s
+#5 sha256:51365f04b68881c6fd3d04aa38cdb689fdee6efba2aa6afcf2da5385022cf475 14.68MB / 30.14MB 2.5s
+#5 sha256:51365f04b68881c6fd3d04aa38cdb689fdee6efba2aa6afcf2da5385022cf475 17.83MB / 30.14MB 3.0s
+#5 sha256:51365f04b68881c6fd3d04aa38cdb689fdee6efba2aa6afcf2da5385022cf475 20.97MB / 30.14MB 3.5s
+#5 sha256:51365f04b68881c6fd3d04aa38cdb689fdee6efba2aa6afcf2da5385022cf475 23.07MB / 30.14MB 3.8s
+#5 sha256:51365f04b68881c6fd3d04aa38cdb689fdee6efba2aa6afcf2da5385022cf475 25.17MB / 30.14MB 4.0s
+#5 sha256:51365f04b68881c6fd3d04aa38cdb689fdee6efba2aa6afcf2da5385022cf475 28.31MB / 30.14MB 4.5s
+#5 sha256:51365f04b68881c6fd3d04aa38cdb689fdee6efba2aa6afcf2da5385022cf475 30.14MB / 30.14MB 4.8s done
+#5 extracting sha256:51365f04b68881c6fd3d04aa38cdb689fdee6efba2aa6afcf2da5385022cf475 0.1s
+#5 extracting sha256:51365f04b68881c6fd3d04aa38cdb689fdee6efba2aa6afcf2da5385022cf475 0.6s done
+#5 DONE 5.5s
+
+#7 [ 2/10] RUN apt-get update &&     apt-get --yes --no-install-recommends install         ca-certificates         cmake         g++-12         gcc-12         gfortran-12         make         ninja-build         wget
+#7 0.160 Get:1 http://deb.debian.org/debian trixie InRelease [140 kB]
+#7 0.327 Get:2 http://deb.debian.org/debian trixie-updates InRelease [47.3 kB]
+#7 0.486 Get:3 http://deb.debian.org/debian-security trixie-security InRelease [43.4 kB]
+#7 0.532 Get:4 http://deb.debian.org/debian trixie/main arm64 Packages [9607 kB]
+#7 1.917 Get:5 http://deb.debian.org/debian trixie-updates/main arm64 Packages [5404 B]
+#7 1.966 Get:6 http://deb.debian.org/debian-security trixie-security/main arm64 Packages [105 kB]
+#7 2.520 Fetched 9949 kB in 2s (4103 kB/s)
+#7 2.520 Reading package lists...
+#7 2.815 Reading package lists...
+#7 3.092 Building dependency tree...
+#7 3.178 Reading state information...
+#7 3.294 The following additional packages will be installed:
+#7 3.294   binutils binutils-aarch64-linux-gnu binutils-common cmake-data cpp-12
+#7 3.294   gcc-12-base libarchive13t64 libasan8 libatomic1 libbinutils libbrotli1
+#7 3.294   libc-bin libc-dev-bin libc6 libc6-dev libcc1-0 libcom-err2 libcrypt-dev
+#7 3.294   libctf-nobfd0 libctf0 libcurl4t64 libexpat1 libffi8 libgcc-12-dev
+#7 3.294   libgfortran-12-dev libgfortran5 libgnutls30t64 libgomp1 libgprofng0
+#7 3.294   libgssapi-krb5-2 libhwasan0 libidn2-0 libisl23 libitm1 libjansson4
+#7 3.294   libjsoncpp26 libk5crypto3 libkeyutils1 libkrb5-3 libkrb5support0 libldap2
+#7 3.294   liblsan0 libmpc3 libmpfr6 libncursesw6 libnghttp2-14 libnghttp3-9
+#7 3.294   libp11-kit0 libproc2-0 libpsl5t64 librhash1 librtmp1 libsasl2-2
+#7 3.294   libsasl2-modules-db libsframe1 libssh2-1t64 libssl3t64 libstdc++-12-dev
+#7 3.294   libtasn1-6 libtsan2 libubsan1 libunistring5 libuv1t64 libxml2 linux-libc-dev
+#7 3.295   openssl openssl-provider-legacy procps rpcsvc-proto
+#7 3.295 Suggested packages:
+#7 3.295   binutils-doc gprofng-gui binutils-gold cmake-doc cmake-format
+#7 3.295   elpa-cmake-mode gcc-12-locales cpp-12-doc gcc-12-doc gfortran-12-doc
+#7 3.295   libcoarrays-dev lrzip libc-devtools glibc-doc manpages-dev gnutls-bin
+#7 3.295   krb5-doc krb5-user libstdc++-12-doc make-doc python3
+#7 3.295 Recommended packages:
+#7 3.295   gcc manpages manpages-dev krb5-locales libldap-common libgpm2 publicsuffix
+#7 3.295   libsasl2-modules psmisc linux-sysctl-defaults
+#7 3.505 The following NEW packages will be installed:
+#7 3.505   binutils binutils-aarch64-linux-gnu binutils-common ca-certificates cmake
+#7 3.505   cmake-data cpp-12 g++-12 gcc-12 gcc-12-base gfortran-12 libarchive13t64
+#7 3.505   libasan8 libatomic1 libbinutils libbrotli1 libc-dev-bin libc6-dev libcc1-0
+#7 3.505   libcom-err2 libcrypt-dev libctf-nobfd0 libctf0 libcurl4t64 libexpat1 libffi8
+#7 3.505   libgcc-12-dev libgfortran-12-dev libgfortran5 libgnutls30t64 libgomp1
+#7 3.505   libgprofng0 libgssapi-krb5-2 libhwasan0 libidn2-0 libisl23 libitm1
+#7 3.505   libjansson4 libjsoncpp26 libk5crypto3 libkeyutils1 libkrb5-3 libkrb5support0
+#7 3.505   libldap2 liblsan0 libmpc3 libmpfr6 libncursesw6 libnghttp2-14 libnghttp3-9
+#7 3.505   libp11-kit0 libproc2-0 libpsl5t64 librhash1 librtmp1 libsasl2-2
+#7 3.505   libsasl2-modules-db libsframe1 libssh2-1t64 libstdc++-12-dev libtasn1-6
+#7 3.505   libtsan2 libubsan1 libunistring5 libuv1t64 libxml2 linux-libc-dev make
+#7 3.505   ninja-build openssl procps rpcsvc-proto wget
+#7 3.506 The following packages will be upgraded:
+#7 3.506   libc-bin libc6 libssl3t64 openssl-provider-legacy
+#7 3.572 4 upgraded, 73 newly installed, 0 to remove and 6 not upgraded.
+#7 3.572 Need to get 94.5 MB of archives.
+#7 3.572 After this operation, 363 MB of additional disk space will be used.
+#7 3.572 Get:1 http://deb.debian.org/debian trixie/main arm64 libc6 arm64 2.41-12+deb13u1 [2484 kB]
+#7 4.228 Get:2 http://deb.debian.org/debian trixie/main arm64 libc-bin arm64 2.41-12+deb13u1 [550 kB]
+#7 4.338 Get:3 http://deb.debian.org/debian trixie/main arm64 libexpat1 arm64 2.7.1-2 [93.3 kB]
+#7 4.348 Get:4 http://deb.debian.org/debian-security trixie-security/main arm64 openssl-provider-legacy arm64 3.5.4-1~deb13u2 [307 kB]
+#7 4.446 Get:5 http://deb.debian.org/debian-security trixie-security/main arm64 libssl3t64 arm64 3.5.4-1~deb13u2 [2750 kB]
+#7 4.990 Get:6 http://deb.debian.org/debian trixie/main arm64 libncursesw6 arm64 6.5+20250216-2 [124 kB]
+#7 5.018 Get:7 http://deb.debian.org/debian trixie/main arm64 libproc2-0 arm64 2:4.0.4-9 [62.8 kB]
+#7 5.038 Get:8 http://deb.debian.org/debian trixie/main arm64 procps arm64 2:4.0.4-9 [871 kB]
+#7 5.298 Get:9 http://deb.debian.org/debian-security trixie-security/main arm64 openssl arm64 3.5.4-1~deb13u2 [1459 kB]
+#7 5.696 Get:10 http://deb.debian.org/debian trixie/main arm64 ca-certificates all 20250419 [162 kB]
+#7 5.722 Get:11 http://deb.debian.org/debian trixie/main arm64 libunistring5 arm64 1.3-2 [453 kB]
+#7 5.776 Get:12 http://deb.debian.org/debian trixie/main arm64 libidn2-0 arm64 2.3.8-2 [107 kB]
+#7 5.805 Get:13 http://deb.debian.org/debian trixie/main arm64 libffi8 arm64 3.4.8-2 [21.3 kB]
+#7 5.822 Get:14 http://deb.debian.org/debian trixie/main arm64 libp11-kit0 arm64 0.25.5-3 [409 kB]
+#7 5.907 Get:15 http://deb.debian.org/debian trixie/main arm64 libtasn1-6 arm64 4.20.0-2 [47.3 kB]
+#7 5.908 Get:16 http://deb.debian.org/debian trixie/main arm64 libgnutls30t64 arm64 3.8.9-3+deb13u1 [1375 kB]
+#7 6.136 Get:17 http://deb.debian.org/debian trixie/main arm64 libpsl5t64 arm64 0.21.2-1.1+b1 [57.1 kB]
+#7 6.154 Get:18 http://deb.debian.org/debian trixie/main arm64 wget arm64 1.25.0-2 [970 kB]
+#7 6.435 Get:19 http://deb.debian.org/debian trixie/main arm64 libsframe1 arm64 2.44-3 [77.8 kB]
+#7 6.454 Get:20 http://deb.debian.org/debian trixie/main arm64 binutils-common arm64 2.44-3 [2509 kB]
+#7 7.003 Get:21 http://deb.debian.org/debian trixie/main arm64 libbinutils arm64 2.44-3 [660 kB]
+#7 7.186 Get:22 http://deb.debian.org/debian trixie/main arm64 libgprofng0 arm64 2.44-3 [668 kB]
+#7 7.333 Get:23 http://deb.debian.org/debian trixie/main arm64 libctf-nobfd0 arm64 2.44-3 [152 kB]
+#7 7.345 Get:24 http://deb.debian.org/debian trixie/main arm64 libctf0 arm64 2.44-3 [84.2 kB]
+#7 7.351 Get:25 http://deb.debian.org/debian trixie/main arm64 libjansson4 arm64 2.14-2+b3 [39.2 kB]
+#7 7.369 Get:26 http://deb.debian.org/debian trixie/main arm64 binutils-aarch64-linux-gnu arm64 2.44-3 [820 kB]
+#7 7.687 Get:27 http://deb.debian.org/debian trixie/main arm64 binutils arm64 2.44-3 [262 kB]
+#7 7.722 Get:28 http://deb.debian.org/debian trixie/main arm64 cmake-data all 3.31.6-2 [2268 kB]
+#7 8.843 Get:29 http://deb.debian.org/debian trixie/main arm64 libxml2 arm64 2.12.7+dfsg+really2.9.14-2.1+deb13u2 [630 kB]
+#7 9.162 Get:30 http://deb.debian.org/debian trixie/main arm64 libarchive13t64 arm64 3.7.4-4 [323 kB]
+#7 9.206 Get:31 http://deb.debian.org/debian trixie/main arm64 libbrotli1 arm64 1.1.0-2+b7 [308 kB]
+#7 9.235 Get:32 http://deb.debian.org/debian trixie/main arm64 libkrb5support0 arm64 1.21.3-5 [32.4 kB]
+#7 9.240 Get:33 http://deb.debian.org/debian trixie/main arm64 libcom-err2 arm64 1.47.2-3+b7 [24.9 kB]
+#7 9.335 Get:34 http://deb.debian.org/debian trixie/main arm64 libk5crypto3 arm64 1.21.3-5 [81.2 kB]
+#7 9.345 Get:35 http://deb.debian.org/debian trixie/main arm64 libkeyutils1 arm64 1.6.3-6 [9716 B]
+#7 9.347 Get:36 http://deb.debian.org/debian trixie/main arm64 libkrb5-3 arm64 1.21.3-5 [308 kB]
+#7 9.375 Get:37 http://deb.debian.org/debian trixie/main arm64 libgssapi-krb5-2 arm64 1.21.3-5 [127 kB]
+#7 9.402 Get:38 http://deb.debian.org/debian trixie/main arm64 libsasl2-modules-db arm64 2.1.28+dfsg1-9 [20.1 kB]
+#7 9.403 Get:39 http://deb.debian.org/debian trixie/main arm64 libsasl2-2 arm64 2.1.28+dfsg1-9 [55.6 kB]
+#7 9.414 Get:40 http://deb.debian.org/debian trixie/main arm64 libldap2 arm64 2.6.10+dfsg-1 [179 kB]
+#7 9.530 Get:41 http://deb.debian.org/debian trixie/main arm64 libnghttp2-14 arm64 1.64.0-1.1 [71.4 kB]
+#7 9.540 Get:42 http://deb.debian.org/debian trixie/main arm64 libnghttp3-9 arm64 1.8.0-1 [63.2 kB]
+#7 9.913 Get:43 http://deb.debian.org/debian trixie/main arm64 librtmp1 arm64 2.4+20151223.gitfa8646d.1-2+b5 [56.8 kB]
+#7 9.958 Get:44 http://deb.debian.org/debian trixie/main arm64 libssh2-1t64 arm64 1.11.1-1 [235 kB]
+#7 10.08 Get:45 http://deb.debian.org/debian trixie/main arm64 libcurl4t64 arm64 8.14.1-2+deb13u2 [359 kB]
+#7 10.13 Get:46 http://deb.debian.org/debian trixie/main arm64 libjsoncpp26 arm64 1.9.6-3 [72.9 kB]
+#7 10.14 Get:47 http://deb.debian.org/debian trixie/main arm64 librhash1 arm64 1.4.5-1 [129 kB]
+#7 10.16 Get:48 http://deb.debian.org/debian trixie/main arm64 libuv1t64 arm64 1.50.0-2 [148 kB]
+#7 10.20 Get:49 http://deb.debian.org/debian trixie/main arm64 cmake arm64 3.31.6-2 [9906 kB]
+#7 11.78 Get:50 http://deb.debian.org/debian trixie/main arm64 gcc-12-base arm64 12.4.0-5 [43.9 kB]
+#7 11.79 Get:51 http://deb.debian.org/debian trixie/main arm64 libisl23 arm64 0.27-1 [601 kB]
+#7 11.96 Get:52 http://deb.debian.org/debian trixie/main arm64 libmpfr6 arm64 4.2.2-1 [685 kB]
+#7 12.04 Get:53 http://deb.debian.org/debian trixie/main arm64 libmpc3 arm64 1.3.1-1+b3 [50.5 kB]
+#7 12.05 Get:54 http://deb.debian.org/debian trixie/main arm64 cpp-12 arm64 12.4.0-5 [8235 kB]
+#7 13.25 Get:55 http://deb.debian.org/debian trixie/main arm64 libcc1-0 arm64 14.2.0-19 [42.2 kB]
+#7 13.25 Get:56 http://deb.debian.org/debian trixie/main arm64 libgomp1 arm64 14.2.0-19 [124 kB]
+#7 13.26 Get:57 http://deb.debian.org/debian trixie/main arm64 libitm1 arm64 14.2.0-19 [24.2 kB]
+#7 13.26 Get:58 http://deb.debian.org/debian trixie/main arm64 libatomic1 arm64 14.2.0-19 [10.1 kB]
+#7 13.28 Get:59 http://deb.debian.org/debian trixie/main arm64 libasan8 arm64 14.2.0-19 [2578 kB]
+#7 13.83 Get:60 http://deb.debian.org/debian trixie/main arm64 liblsan0 arm64 14.2.0-19 [1161 kB]
+#7 14.07 Get:61 http://deb.debian.org/debian trixie/main arm64 libtsan2 arm64 14.2.0-19 [2383 kB]
+#7 14.60 Get:62 http://deb.debian.org/debian trixie/main arm64 libubsan1 arm64 14.2.0-19 [1039 kB]
+#7 14.79 Get:63 http://deb.debian.org/debian trixie/main arm64 libhwasan0 arm64 14.2.0-19 [1442 kB]
+#7 15.10 Get:64 http://deb.debian.org/debian trixie/main arm64 libgcc-12-dev arm64 12.4.0-5 [958 kB]
+#7 15.20 Get:65 http://deb.debian.org/debian trixie/main arm64 gcc-12 arm64 12.4.0-5 [16.4 MB]
+#7 17.52 Get:66 http://deb.debian.org/debian trixie/main arm64 libc-dev-bin arm64 2.41-12+deb13u1 [57.6 kB]
+#7 17.54 Get:67 http://deb.debian.org/debian-security trixie-security/main arm64 linux-libc-dev all 6.12.69-1 [2742 kB]
+#7 18.05 Get:68 http://deb.debian.org/debian trixie/main arm64 libcrypt-dev arm64 1:4.4.38-1 [123 kB]
+#7 18.05 Get:69 http://deb.debian.org/debian trixie/main arm64 rpcsvc-proto arm64 1.4.3-1+b1 [60.5 kB]
+#7 18.06 Get:70 http://deb.debian.org/debian trixie/main arm64 libc6-dev arm64 2.41-12+deb13u1 [1623 kB]
+#7 18.25 Get:71 http://deb.debian.org/debian trixie/main arm64 libstdc++-12-dev arm64 12.4.0-5 [2035 kB]
+#7 18.53 Get:72 http://deb.debian.org/debian trixie/main arm64 g++-12 arm64 12.4.0-5 [9086 kB]
+#7 19.85 Get:73 http://deb.debian.org/debian trixie/main arm64 libgfortran5 arm64 14.2.0-19 [361 kB]
+#7 20.02 Get:74 http://deb.debian.org/debian trixie/main arm64 libgfortran-12-dev arm64 12.4.0-5 [396 kB]
+#7 20.06 Get:75 http://deb.debian.org/debian trixie/main arm64 gfortran-12 arm64 12.4.0-5 [8659 kB]
+#7 21.28 Get:76 http://deb.debian.org/debian trixie/main arm64 make arm64 4.4.1-2 [452 kB]
+#7 21.32 Get:77 http://deb.debian.org/debian trixie/main arm64 ninja-build arm64 1.12.1-1+b1 [130 kB]
+#7 22.26 Preconfiguring packages ...
+#7 22.28 Fetched 94.5 MB in 18s (5302 kB/s)
+#7 22.29 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 4933 files and directories currently installed.)
+#7 22.30 Preparing to unpack .../libc6_2.41-12+deb13u1_arm64.deb ...
+#7 22.33 Unpacking libc6:arm64 (2.41-12+deb13u1) over (2.41-12) ...
+#7 22.51 Setting up libc6:arm64 (2.41-12+deb13u1) ...
+#7 22.54 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 4933 files and directories currently installed.)
+#7 22.55 Preparing to unpack .../libc-bin_2.41-12+deb13u1_arm64.deb ...
+#7 22.55 Unpacking libc-bin (2.41-12+deb13u1) over (2.41-12) ...
+#7 22.58 Setting up libc-bin (2.41-12+deb13u1) ...
+#7 22.59 Selecting previously unselected package libexpat1:arm64.
+#7 22.59 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 4933 files and directories currently installed.)
+#7 22.60 Preparing to unpack .../libexpat1_2.7.1-2_arm64.deb ...
+#7 22.60 Unpacking libexpat1:arm64 (2.7.1-2) ...
+#7 22.61 Preparing to unpack .../openssl-provider-legacy_3.5.4-1~deb13u2_arm64.deb ...
+#7 22.61 Unpacking openssl-provider-legacy (3.5.4-1~deb13u2) over (3.5.1-1+deb13u1) ...
+#7 22.62 Setting up openssl-provider-legacy (3.5.4-1~deb13u2) ...
+#7 22.63 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 4942 files and directories currently installed.)
+#7 22.64 Preparing to unpack .../libssl3t64_3.5.4-1~deb13u2_arm64.deb ...
+#7 22.64 Unpacking libssl3t64:arm64 (3.5.4-1~deb13u2) over (3.5.1-1+deb13u1) ...
+#7 22.73 Setting up libssl3t64:arm64 (3.5.4-1~deb13u2) ...
+#7 22.74 Selecting previously unselected package libncursesw6:arm64.
+#7 22.74 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 4942 files and directories currently installed.)
+#7 22.74 Preparing to unpack .../00-libncursesw6_6.5+20250216-2_arm64.deb ...
+#7 22.74 Unpacking libncursesw6:arm64 (6.5+20250216-2) ...
+#7 22.75 Selecting previously unselected package libproc2-0:arm64.
+#7 22.75 Preparing to unpack .../01-libproc2-0_2%3a4.0.4-9_arm64.deb ...
+#7 22.75 Unpacking libproc2-0:arm64 (2:4.0.4-9) ...
+#7 22.76 Selecting previously unselected package procps.
+#7 22.76 Preparing to unpack .../02-procps_2%3a4.0.4-9_arm64.deb ...
+#7 22.76 Unpacking procps (2:4.0.4-9) ...
+#7 22.81 Selecting previously unselected package openssl.
+#7 22.81 Preparing to unpack .../03-openssl_3.5.4-1~deb13u2_arm64.deb ...
+#7 22.81 Unpacking openssl (3.5.4-1~deb13u2) ...
+#7 22.87 Selecting previously unselected package ca-certificates.
+#7 22.87 Preparing to unpack .../04-ca-certificates_20250419_all.deb ...
+#7 22.87 Unpacking ca-certificates (20250419) ...
+#7 22.88 Selecting previously unselected package libunistring5:arm64.
+#7 22.88 Preparing to unpack .../05-libunistring5_1.3-2_arm64.deb ...
+#7 22.88 Unpacking libunistring5:arm64 (1.3-2) ...
+#7 22.91 Selecting previously unselected package libidn2-0:arm64.
+#7 22.91 Preparing to unpack .../06-libidn2-0_2.3.8-2_arm64.deb ...
+#7 22.91 Unpacking libidn2-0:arm64 (2.3.8-2) ...
+#7 22.92 Selecting previously unselected package libffi8:arm64.
+#7 22.92 Preparing to unpack .../07-libffi8_3.4.8-2_arm64.deb ...
+#7 22.92 Unpacking libffi8:arm64 (3.4.8-2) ...
+#7 22.93 Selecting previously unselected package libp11-kit0:arm64.
+#7 22.93 Preparing to unpack .../08-libp11-kit0_0.25.5-3_arm64.deb ...
+#7 22.93 Unpacking libp11-kit0:arm64 (0.25.5-3) ...
+#7 22.95 Selecting previously unselected package libtasn1-6:arm64.
+#7 22.95 Preparing to unpack .../09-libtasn1-6_4.20.0-2_arm64.deb ...
+#7 22.95 Unpacking libtasn1-6:arm64 (4.20.0-2) ...
+#7 22.96 Selecting previously unselected package libgnutls30t64:arm64.
+#7 22.96 Preparing to unpack .../10-libgnutls30t64_3.8.9-3+deb13u1_arm64.deb ...
+#7 22.96 Unpacking libgnutls30t64:arm64 (3.8.9-3+deb13u1) ...
+#7 23.01 Selecting previously unselected package libpsl5t64:arm64.
+#7 23.01 Preparing to unpack .../11-libpsl5t64_0.21.2-1.1+b1_arm64.deb ...
+#7 23.01 Unpacking libpsl5t64:arm64 (0.21.2-1.1+b1) ...
+#7 23.02 Selecting previously unselected package wget.
+#7 23.02 Preparing to unpack .../12-wget_1.25.0-2_arm64.deb ...
+#7 23.02 Unpacking wget (1.25.0-2) ...
+#7 23.06 Selecting previously unselected package libsframe1:arm64.
+#7 23.06 Preparing to unpack .../13-libsframe1_2.44-3_arm64.deb ...
+#7 23.06 Unpacking libsframe1:arm64 (2.44-3) ...
+#7 23.07 Selecting previously unselected package binutils-common:arm64.
+#7 23.07 Preparing to unpack .../14-binutils-common_2.44-3_arm64.deb ...
+#7 23.07 Unpacking binutils-common:arm64 (2.44-3) ...
+#7 23.19 Selecting previously unselected package libbinutils:arm64.
+#7 23.19 Preparing to unpack .../15-libbinutils_2.44-3_arm64.deb ...
+#7 23.19 Unpacking libbinutils:arm64 (2.44-3) ...
+#7 23.23 Selecting previously unselected package libgprofng0:arm64.
+#7 23.23 Preparing to unpack .../16-libgprofng0_2.44-3_arm64.deb ...
+#7 23.23 Unpacking libgprofng0:arm64 (2.44-3) ...
+#7 23.26 Selecting previously unselected package libctf-nobfd0:arm64.
+#7 23.26 Preparing to unpack .../17-libctf-nobfd0_2.44-3_arm64.deb ...
+#7 23.26 Unpacking libctf-nobfd0:arm64 (2.44-3) ...
+#7 23.28 Selecting previously unselected package libctf0:arm64.
+#7 23.28 Preparing to unpack .../18-libctf0_2.44-3_arm64.deb ...
+#7 23.28 Unpacking libctf0:arm64 (2.44-3) ...
+#7 23.29 Selecting previously unselected package libjansson4:arm64.
+#7 23.29 Preparing to unpack .../19-libjansson4_2.14-2+b3_arm64.deb ...
+#7 23.29 Unpacking libjansson4:arm64 (2.14-2+b3) ...
+#7 23.30 Selecting previously unselected package binutils-aarch64-linux-gnu.
+#7 23.30 Preparing to unpack .../20-binutils-aarch64-linux-gnu_2.44-3_arm64.deb ...
+#7 23.30 Unpacking binutils-aarch64-linux-gnu (2.44-3) ...
+#7 23.36 Selecting previously unselected package binutils.
+#7 23.36 Preparing to unpack .../21-binutils_2.44-3_arm64.deb ...
+#7 23.36 Unpacking binutils (2.44-3) ...
+#7 23.39 Selecting previously unselected package cmake-data.
+#7 23.39 Preparing to unpack .../22-cmake-data_3.31.6-2_all.deb ...
+#7 23.39 Unpacking cmake-data (3.31.6-2) ...
+#7 23.52 Selecting previously unselected package libxml2:arm64.
+#7 23.52 Preparing to unpack .../23-libxml2_2.12.7+dfsg+really2.9.14-2.1+deb13u2_arm64.deb ...
+#7 23.52 Unpacking libxml2:arm64 (2.12.7+dfsg+really2.9.14-2.1+deb13u2) ...
+#7 23.56 Selecting previously unselected package libarchive13t64:arm64.
+#7 23.56 Preparing to unpack .../24-libarchive13t64_3.7.4-4_arm64.deb ...
+#7 23.56 Unpacking libarchive13t64:arm64 (3.7.4-4) ...
+#7 23.58 Selecting previously unselected package libbrotli1:arm64.
+#7 23.58 Preparing to unpack .../25-libbrotli1_1.1.0-2+b7_arm64.deb ...
+#7 23.58 Unpacking libbrotli1:arm64 (1.1.0-2+b7) ...
+#7 23.60 Selecting previously unselected package libkrb5support0:arm64.
+#7 23.60 Preparing to unpack .../26-libkrb5support0_1.21.3-5_arm64.deb ...
+#7 23.60 Unpacking libkrb5support0:arm64 (1.21.3-5) ...
+#7 23.61 Selecting previously unselected package libcom-err2:arm64.
+#7 23.61 Preparing to unpack .../27-libcom-err2_1.47.2-3+b7_arm64.deb ...
+#7 23.61 Unpacking libcom-err2:arm64 (1.47.2-3+b7) ...
+#7 23.62 Selecting previously unselected package libk5crypto3:arm64.
+#7 23.62 Preparing to unpack .../28-libk5crypto3_1.21.3-5_arm64.deb ...
+#7 23.62 Unpacking libk5crypto3:arm64 (1.21.3-5) ...
+#7 23.63 Selecting previously unselected package libkeyutils1:arm64.
+#7 23.63 Preparing to unpack .../29-libkeyutils1_1.6.3-6_arm64.deb ...
+#7 23.63 Unpacking libkeyutils1:arm64 (1.6.3-6) ...
+#7 23.64 Selecting previously unselected package libkrb5-3:arm64.
+#7 23.64 Preparing to unpack .../30-libkrb5-3_1.21.3-5_arm64.deb ...
+#7 23.64 Unpacking libkrb5-3:arm64 (1.21.3-5) ...
+#7 23.66 Selecting previously unselected package libgssapi-krb5-2:arm64.
+#7 23.66 Preparing to unpack .../31-libgssapi-krb5-2_1.21.3-5_arm64.deb ...
+#7 23.66 Unpacking libgssapi-krb5-2:arm64 (1.21.3-5) ...
+#7 23.67 Selecting previously unselected package libsasl2-modules-db:arm64.
+#7 23.67 Preparing to unpack .../32-libsasl2-modules-db_2.1.28+dfsg1-9_arm64.deb ...
+#7 23.67 Unpacking libsasl2-modules-db:arm64 (2.1.28+dfsg1-9) ...
+#7 23.68 Selecting previously unselected package libsasl2-2:arm64.
+#7 23.68 Preparing to unpack .../33-libsasl2-2_2.1.28+dfsg1-9_arm64.deb ...
+#7 23.68 Unpacking libsasl2-2:arm64 (2.1.28+dfsg1-9) ...
+#7 23.69 Selecting previously unselected package libldap2:arm64.
+#7 23.69 Preparing to unpack .../34-libldap2_2.6.10+dfsg-1_arm64.deb ...
+#7 23.69 Unpacking libldap2:arm64 (2.6.10+dfsg-1) ...
+#7 23.71 Selecting previously unselected package libnghttp2-14:arm64.
+#7 23.71 Preparing to unpack .../35-libnghttp2-14_1.64.0-1.1_arm64.deb ...
+#7 23.71 Unpacking libnghttp2-14:arm64 (1.64.0-1.1) ...
+#7 23.72 Selecting previously unselected package libnghttp3-9:arm64.
+#7 23.72 Preparing to unpack .../36-libnghttp3-9_1.8.0-1_arm64.deb ...
+#7 23.72 Unpacking libnghttp3-9:arm64 (1.8.0-1) ...
+#7 23.73 Selecting previously unselected package librtmp1:arm64.
+#7 23.73 Preparing to unpack .../37-librtmp1_2.4+20151223.gitfa8646d.1-2+b5_arm64.deb ...
+#7 23.73 Unpacking librtmp1:arm64 (2.4+20151223.gitfa8646d.1-2+b5) ...
+#7 23.74 Selecting previously unselected package libssh2-1t64:arm64.
+#7 23.74 Preparing to unpack .../38-libssh2-1t64_1.11.1-1_arm64.deb ...
+#7 23.74 Unpacking libssh2-1t64:arm64 (1.11.1-1) ...
+#7 23.75 Selecting previously unselected package libcurl4t64:arm64.
+#7 23.75 Preparing to unpack .../39-libcurl4t64_8.14.1-2+deb13u2_arm64.deb ...
+#7 23.75 Unpacking libcurl4t64:arm64 (8.14.1-2+deb13u2) ...
+#7 23.77 Selecting previously unselected package libjsoncpp26:arm64.
+#7 23.77 Preparing to unpack .../40-libjsoncpp26_1.9.6-3_arm64.deb ...
+#7 23.77 Unpacking libjsoncpp26:arm64 (1.9.6-3) ...
+#7 23.78 Selecting previously unselected package librhash1:arm64.
+#7 23.78 Preparing to unpack .../41-librhash1_1.4.5-1_arm64.deb ...
+#7 23.78 Unpacking librhash1:arm64 (1.4.5-1) ...
+#7 23.80 Selecting previously unselected package libuv1t64:arm64.
+#7 23.80 Preparing to unpack .../42-libuv1t64_1.50.0-2_arm64.deb ...
+#7 23.80 Unpacking libuv1t64:arm64 (1.50.0-2) ...
+#7 23.81 Selecting previously unselected package cmake.
+#7 23.81 Preparing to unpack .../43-cmake_3.31.6-2_arm64.deb ...
+#7 23.81 Unpacking cmake (3.31.6-2) ...
+#7 24.13 Selecting previously unselected package gcc-12-base:arm64.
+#7 24.13 Preparing to unpack .../44-gcc-12-base_12.4.0-5_arm64.deb ...
+#7 24.13 Unpacking gcc-12-base:arm64 (12.4.0-5) ...
+#7 24.14 Selecting previously unselected package libisl23:arm64.
+#7 24.14 Preparing to unpack .../45-libisl23_0.27-1_arm64.deb ...
+#7 24.14 Unpacking libisl23:arm64 (0.27-1) ...
+#7 24.17 Selecting previously unselected package libmpfr6:arm64.
+#7 24.17 Preparing to unpack .../46-libmpfr6_4.2.2-1_arm64.deb ...
+#7 24.17 Unpacking libmpfr6:arm64 (4.2.2-1) ...
+#7 24.20 Selecting previously unselected package libmpc3:arm64.
+#7 24.20 Preparing to unpack .../47-libmpc3_1.3.1-1+b3_arm64.deb ...
+#7 24.20 Unpacking libmpc3:arm64 (1.3.1-1+b3) ...
+#7 24.20 Selecting previously unselected package cpp-12.
+#7 24.21 Preparing to unpack .../48-cpp-12_12.4.0-5_arm64.deb ...
+#7 24.21 Unpacking cpp-12 (12.4.0-5) ...
+#7 24.53 Selecting previously unselected package libcc1-0:arm64.
+#7 24.53 Preparing to unpack .../49-libcc1-0_14.2.0-19_arm64.deb ...
+#7 24.53 Unpacking libcc1-0:arm64 (14.2.0-19) ...
+#7 24.54 Selecting previously unselected package libgomp1:arm64.
+#7 24.54 Preparing to unpack .../50-libgomp1_14.2.0-19_arm64.deb ...
+#7 24.54 Unpacking libgomp1:arm64 (14.2.0-19) ...
+#7 24.55 Selecting previously unselected package libitm1:arm64.
+#7 24.55 Preparing to unpack .../51-libitm1_14.2.0-19_arm64.deb ...
+#7 24.56 Unpacking libitm1:arm64 (14.2.0-19) ...
+#7 24.56 Selecting previously unselected package libatomic1:arm64.
+#7 24.56 Preparing to unpack .../52-libatomic1_14.2.0-19_arm64.deb ...
+#7 24.56 Unpacking libatomic1:arm64 (14.2.0-19) ...
+#7 24.57 Selecting previously unselected package libasan8:arm64.
+#7 24.57 Preparing to unpack .../53-libasan8_14.2.0-19_arm64.deb ...
+#7 24.57 Unpacking libasan8:arm64 (14.2.0-19) ...
+#7 24.69 Selecting previously unselected package liblsan0:arm64.
+#7 24.69 Preparing to unpack .../54-liblsan0_14.2.0-19_arm64.deb ...
+#7 24.69 Unpacking liblsan0:arm64 (14.2.0-19) ...
+#7 24.75 Selecting previously unselected package libtsan2:arm64.
+#7 24.75 Preparing to unpack .../55-libtsan2_14.2.0-19_arm64.deb ...
+#7 24.75 Unpacking libtsan2:arm64 (14.2.0-19) ...
+#7 24.87 Selecting previously unselected package libubsan1:arm64.
+#7 24.87 Preparing to unpack .../56-libubsan1_14.2.0-19_arm64.deb ...
+#7 24.87 Unpacking libubsan1:arm64 (14.2.0-19) ...
+#7 24.92 Selecting previously unselected package libhwasan0:arm64.
+#7 24.92 Preparing to unpack .../57-libhwasan0_14.2.0-19_arm64.deb ...
+#7 24.92 Unpacking libhwasan0:arm64 (14.2.0-19) ...
+#7 24.99 Selecting previously unselected package libgcc-12-dev:arm64.
+#7 24.99 Preparing to unpack .../58-libgcc-12-dev_12.4.0-5_arm64.deb ...
+#7 24.99 Unpacking libgcc-12-dev:arm64 (12.4.0-5) ...
+#7 25.05 Selecting previously unselected package gcc-12.
+#7 25.05 Preparing to unpack .../59-gcc-12_12.4.0-5_arm64.deb ...
+#7 25.05 Unpacking gcc-12 (12.4.0-5) ...
+#7 25.42 Selecting previously unselected package libc-dev-bin.
+#7 25.42 Preparing to unpack .../60-libc-dev-bin_2.41-12+deb13u1_arm64.deb ...
+#7 25.43 Unpacking libc-dev-bin (2.41-12+deb13u1) ...
+#7 25.43 Selecting previously unselected package linux-libc-dev.
+#7 25.44 Preparing to unpack .../61-linux-libc-dev_6.12.69-1_all.deb ...
+#7 25.44 Unpacking linux-libc-dev (6.12.69-1) ...
+#7 25.54 Selecting previously unselected package libcrypt-dev:arm64.
+#7 25.54 Preparing to unpack .../62-libcrypt-dev_1%3a4.4.38-1_arm64.deb ...
+#7 25.54 Unpacking libcrypt-dev:arm64 (1:4.4.38-1) ...
+#7 25.55 Selecting previously unselected package rpcsvc-proto.
+#7 25.56 Preparing to unpack .../63-rpcsvc-proto_1.4.3-1+b1_arm64.deb ...
+#7 25.56 Unpacking rpcsvc-proto (1.4.3-1+b1) ...
+#7 25.57 Selecting previously unselected package libc6-dev:arm64.
+#7 25.57 Preparing to unpack .../64-libc6-dev_2.41-12+deb13u1_arm64.deb ...
+#7 25.57 Unpacking libc6-dev:arm64 (2.41-12+deb13u1) ...
+#7 25.65 Selecting previously unselected package libstdc++-12-dev:arm64.
+#7 25.65 Preparing to unpack .../65-libstdc++-12-dev_12.4.0-5_arm64.deb ...
+#7 25.65 Unpacking libstdc++-12-dev:arm64 (12.4.0-5) ...
+#7 25.76 Selecting previously unselected package g++-12.
+#7 25.76 Preparing to unpack .../66-g++-12_12.4.0-5_arm64.deb ...
+#7 25.76 Unpacking g++-12 (12.4.0-5) ...
+#7 26.08 Selecting previously unselected package libgfortran5:arm64.
+#7 26.08 Preparing to unpack .../67-libgfortran5_14.2.0-19_arm64.deb ...
+#7 26.08 Unpacking libgfortran5:arm64 (14.2.0-19) ...
+#7 26.11 Selecting previously unselected package libgfortran-12-dev:arm64.
+#7 26.11 Preparing to unpack .../68-libgfortran-12-dev_12.4.0-5_arm64.deb ...
+#7 26.11 Unpacking libgfortran-12-dev:arm64 (12.4.0-5) ...
+#7 26.13 Selecting previously unselected package gfortran-12.
+#7 26.13 Preparing to unpack .../69-gfortran-12_12.4.0-5_arm64.deb ...
+#7 26.13 Unpacking gfortran-12 (12.4.0-5) ...
+#7 26.47 Selecting previously unselected package make.
+#7 26.47 Preparing to unpack .../70-make_4.4.1-2_arm64.deb ...
+#7 26.47 Unpacking make (4.4.1-2) ...
+#7 26.49 Selecting previously unselected package ninja-build.
+#7 26.49 Preparing to unpack .../71-ninja-build_1.12.1-1+b1_arm64.deb ...
+#7 26.50 Unpacking ninja-build (1.12.1-1+b1) ...
+#7 26.51 Setting up libexpat1:arm64 (2.7.1-2) ...
+#7 26.51 Setting up libkeyutils1:arm64 (1.6.3-6) ...
+#7 26.52 Setting up libbrotli1:arm64 (1.1.0-2+b7) ...
+#7 26.52 Setting up libuv1t64:arm64 (1.50.0-2) ...
+#7 26.52 Setting up binutils-common:arm64 (2.44-3) ...
+#7 26.52 Setting up libnghttp2-14:arm64 (1.64.0-1.1) ...
+#7 26.52 Setting up linux-libc-dev (6.12.69-1) ...
+#7 26.53 Setting up libctf-nobfd0:arm64 (2.44-3) ...
+#7 26.53 Setting up libcom-err2:arm64 (1.47.2-3+b7) ...
+#7 26.53 Setting up libgomp1:arm64 (14.2.0-19) ...
+#7 26.53 Setting up libsframe1:arm64 (2.44-3) ...
+#7 26.53 Setting up ninja-build (1.12.1-1+b1) ...
+#7 26.53 Setting up libjansson4:arm64 (2.14-2+b3) ...
+#7 26.53 Setting up libkrb5support0:arm64 (1.21.3-5) ...
+#7 26.54 Setting up gcc-12-base:arm64 (12.4.0-5) ...
+#7 26.54 Setting up libsasl2-modules-db:arm64 (2.1.28+dfsg1-9) ...
+#7 26.54 Setting up rpcsvc-proto (1.4.3-1+b1) ...
+#7 26.54 Setting up make (4.4.1-2) ...
+#7 26.54 Setting up libmpfr6:arm64 (4.2.2-1) ...
+#7 26.54 Setting up libjsoncpp26:arm64 (1.9.6-3) ...
+#7 26.55 Setting up libproc2-0:arm64 (2:4.0.4-9) ...
+#7 26.55 Setting up libunistring5:arm64 (1.3-2) ...
+#7 26.55 Setting up libmpc3:arm64 (1.3.1-1+b3) ...
+#7 26.55 Setting up libatomic1:arm64 (14.2.0-19) ...
+#7 26.55 Setting up libncursesw6:arm64 (6.5+20250216-2) ...
+#7 26.55 Setting up libk5crypto3:arm64 (1.21.3-5) ...
+#7 26.55 Setting up libsasl2-2:arm64 (2.1.28+dfsg1-9) ...
+#7 26.56 Setting up libgfortran5:arm64 (14.2.0-19) ...
+#7 26.56 Setting up libnghttp3-9:arm64 (1.8.0-1) ...
+#7 26.56 Setting up libubsan1:arm64 (14.2.0-19) ...
+#7 26.56 Setting up libffi8:arm64 (3.4.8-2) ...
+#7 26.56 Setting up libhwasan0:arm64 (14.2.0-19) ...
+#7 26.56 Setting up libcrypt-dev:arm64 (1:4.4.38-1) ...
+#7 26.57 Setting up libasan8:arm64 (14.2.0-19) ...
+#7 26.57 Setting up procps (2:4.0.4-9) ...
+#7 26.57 Setting up libtasn1-6:arm64 (4.20.0-2) ...
+#7 26.58 Setting up cmake-data (3.31.6-2) ...
+#7 26.58 Setting up librhash1:arm64 (1.4.5-1) ...
+#7 26.58 Setting up libkrb5-3:arm64 (1.21.3-5) ...
+#7 26.58 Setting up libssh2-1t64:arm64 (1.11.1-1) ...
+#7 26.58 Setting up libtsan2:arm64 (14.2.0-19) ...
+#7 26.59 Setting up libbinutils:arm64 (2.44-3) ...
+#7 26.59 Setting up libisl23:arm64 (0.27-1) ...
+#7 26.59 Setting up libc-dev-bin (2.41-12+deb13u1) ...
+#7 26.59 Setting up openssl (3.5.4-1~deb13u2) ...
+#7 26.60 Setting up libxml2:arm64 (2.12.7+dfsg+really2.9.14-2.1+deb13u2) ...
+#7 26.60 Setting up libcc1-0:arm64 (14.2.0-19) ...
+#7 26.60 Setting up libldap2:arm64 (2.6.10+dfsg-1) ...
+#7 26.60 Setting up liblsan0:arm64 (14.2.0-19) ...
+#7 26.60 Setting up libitm1:arm64 (14.2.0-19) ...
+#7 26.60 Setting up libctf0:arm64 (2.44-3) ...
+#7 26.61 Setting up cpp-12 (12.4.0-5) ...
+#7 26.61 Setting up binutils-aarch64-linux-gnu (2.44-3) ...
+#7 26.61 Setting up libidn2-0:arm64 (2.3.8-2) ...
+#7 26.61 Setting up ca-certificates (20250419) ...
+#7 26.78 Updating certificates in /etc/ssl/certs...
+#7 26.99 150 added, 0 removed; done.
+#7 27.00 Setting up libgprofng0:arm64 (2.44-3) ...
+#7 27.00 Setting up libgcc-12-dev:arm64 (12.4.0-5) ...
+#7 27.00 Setting up libp11-kit0:arm64 (0.25.5-3) ...
+#7 27.00 Setting up libgssapi-krb5-2:arm64 (1.21.3-5) ...
+#7 27.01 Setting up libc6-dev:arm64 (2.41-12+deb13u1) ...
+#7 27.01 Setting up libarchive13t64:arm64 (3.7.4-4) ...
+#7 27.01 Setting up libgnutls30t64:arm64 (3.8.9-3+deb13u1) ...
+#7 27.01 Setting up libstdc++-12-dev:arm64 (12.4.0-5) ...
+#7 27.01 Setting up libpsl5t64:arm64 (0.21.2-1.1+b1) ...
+#7 27.01 Setting up libgfortran-12-dev:arm64 (12.4.0-5) ...
+#7 27.02 Setting up binutils (2.44-3) ...
+#7 27.02 Setting up gcc-12 (12.4.0-5) ...
+#7 27.02 Setting up librtmp1:arm64 (2.4+20151223.gitfa8646d.1-2+b5) ...
+#7 27.02 Setting up g++-12 (12.4.0-5) ...
+#7 27.02 Setting up wget (1.25.0-2) ...
+#7 27.03 Setting up libcurl4t64:arm64 (8.14.1-2+deb13u2) ...
+#7 27.03 Setting up gfortran-12 (12.4.0-5) ...
+#7 27.03 Setting up cmake (3.31.6-2) ...
+#7 27.03 Processing triggers for libc-bin (2.41-12+deb13u1) ...
+#7 27.04 Processing triggers for ca-certificates (20250419) ...
+#7 27.04 Updating certificates in /etc/ssl/certs...
+#7 27.20 0 added, 0 removed; done.
+#7 27.20 Running hooks in /etc/ca-certificates/update.d...
+#7 27.20 done.
+#7 DONE 27.4s
+
+#8 [ 3/10] ADD https://github.com/HDFGroup/hdf5/archive/2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1.tar.gz hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1.tar.gz
+#8 DONE 0.1s
+
+#9 [ 4/10] RUN tar xzf hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1.tar.gz
+#9 DONE 1.1s
+
+#10 [ 5/10] WORKDIR hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1
+#10 DONE 0.0s
+
+#11 [ 6/10] RUN if [ ${cpuarch} = arm64v8 ]; then sed -i -e 's/__float128/__float129/g' config/HDFTests.c; fi
+#11 0.099 /bin/sh: 1: [: =: unexpected operator
+#11 DONE 0.1s
+
+#12 [ 7/10] RUN sed -i -e 's/__float128/__float129/g' config/HDFTests.c
+#12 DONE 0.1s
+
+#13 [ 8/10] RUN cmake -Bbuilddir -GNinja         -DCMAKE_BUILD_TYPE=Release         -DCMAKE_C_COMPILER=gcc-12         -DCMAKE_CXX_COMPILER=g++-12         -DCMAKE_Fortran_COMPILER=gfortran-12         -DCMAKE_INSTALL_PREFIX=/hdf5         -DBUILD_SHARED_LIBS=ON         -DBUILD_STATIC_LIBS=OFF         -DBUILD_TESTING=OFF         -DHDF5_BUILD_CPP_LIB=ON         -DHDF5_BUILD_DOC=OFF         -DHDF5_BUILD_EXAMPLES=OFF         -DHDF5_BUILD_FORTRAN=ON         -DHDF5_BUILD_HL_LIB=ON         -DHDF5_BUILD_TOOLS=OFF         -DHDF5_ENABLE_NONSTANDARD_FEATURE_FLOAT16=ON         -DHDF5_ENABLE_SZIP_SUPPORT=OFF         -DHDF5_ENABLE_ZLIB_SUPPORT=OFF         -DH5_FLOAT16_CONVERSION_FUNCS_LINK=ON         -DH5_FLOAT16_CONVERSION_FUNCS_LINK_NO_FLAGS=ON         -DH5_LDOUBLE_TO_FLOAT16_CORRECT=ON
+#13 0.186 -- The C compiler identification is GNU 12.4.0
+#13 0.190 -- Detecting C compiler ABI info
+#13 0.215 -- Detecting C compiler ABI info - done
+#13 0.222 -- Check for working C compiler: /usr/bin/gcc-12 - skipped
+#13 0.222 -- Detecting C compile features
+#13 0.222 -- Detecting C compile features - done
+#13 0.228 -- Final: share
+#13 0.232 -- Looking for include file sys/file.h
+#13 0.257 -- Looking for include file sys/file.h - found
+#13 0.257 -- Looking for include files sys/file.h, sys/ioctl.h
+#13 0.282 -- Looking for include files sys/file.h, sys/ioctl.h - found
+#13 0.282 -- Looking for 3 include files sys/file.h, ..., sys/resource.h
+#13 0.307 -- Looking for 3 include files sys/file.h, ..., sys/resource.h - found
+#13 0.307 -- Looking for 4 include files sys/file.h, ..., sys/socket.h
+#13 0.333 -- Looking for 4 include files sys/file.h, ..., sys/socket.h - found
+#13 0.333 -- Looking for 5 include files sys/file.h, ..., sys/stat.h
+#13 0.359 -- Looking for 5 include files sys/file.h, ..., sys/stat.h - found
+#13 0.359 -- Looking for 6 include files sys/file.h, ..., sys/time.h
+#13 0.385 -- Looking for 6 include files sys/file.h, ..., sys/time.h - found
+#13 0.385 -- Looking for 7 include files sys/file.h, ..., dirent.h
+#13 0.410 -- Looking for 7 include files sys/file.h, ..., dirent.h - found
+#13 0.410 -- Looking for 8 include files sys/file.h, ..., unistd.h
+#13 0.439 -- Looking for 8 include files sys/file.h, ..., unistd.h - found
+#13 0.439 -- Looking for 9 include files sys/file.h, ..., pwd.h
+#13 0.466 -- Looking for 9 include files sys/file.h, ..., pwd.h - found
+#13 0.466 -- Looking for 10 include files sys/file.h, ..., pthread.h
+#13 0.495 -- Looking for 10 include files sys/file.h, ..., pthread.h - found
+#13 0.495 -- Looking for 11 include files sys/file.h, ..., dlfcn.h
+#13 0.524 -- Looking for 11 include files sys/file.h, ..., dlfcn.h - found
+#13 0.524 -- Looking for 12 include files sys/file.h, ..., netinet/in.h
+#13 0.552 -- Looking for 12 include files sys/file.h, ..., netinet/in.h - found
+#13 0.553 -- Looking for 13 include files sys/file.h, ..., netdb.h
+#13 0.582 -- Looking for 13 include files sys/file.h, ..., netdb.h - found
+#13 0.582 -- Looking for 14 include files sys/file.h, ..., arpa/inet.h
+#13 0.611 -- Looking for 14 include files sys/file.h, ..., arpa/inet.h - found
+#13 0.611 -- Looking for include file quadmath.h
+#13 0.623 -- Looking for include file quadmath.h - not found
+#13 0.623 -- Looking for ceil in m;
+#13 0.649 -- Looking for ceil in m; - found
+#13 0.649 -- Looking for dlopen in dl;m
+#13 0.673 -- Looking for dlopen in dl;m - found
+#13 0.673 -- Looking for WSAStartup in ws2_32;m;dl
+#13 0.691 -- Looking for WSAStartup in ws2_32;m;dl - not found
+#13 0.691 -- Looking for gethostbyname in wsock32;m;dl
+#13 0.710 -- Looking for gethostbyname in wsock32;m;dl - not found
+#13 0.710 -- Looking for gethostname in ucb;m;dl
+#13 0.729 -- Looking for gethostname in ucb;m;dl - not found
+#13 0.729 -- Looking for sys/types.h
+#13 0.754 -- Looking for sys/types.h - found
+#13 0.754 -- Looking for stdint.h
+#13 0.777 -- Looking for stdint.h - found
+#13 0.777 -- Looking for stddef.h
+#13 0.800 -- Looking for stddef.h - found
+#13 0.800 -- Check size of char
+#13 0.825 -- Check size of char - done
+#13 0.825 -- Check size of short
+#13 0.850 -- Check size of short - done
+#13 0.850 -- Check size of int
+#13 0.876 -- Check size of int - done
+#13 0.876 -- Check size of unsigned
+#13 0.902 -- Check size of unsigned - done
+#13 0.902 -- Check size of long
+#13 0.927 -- Check size of long - done
+#13 0.927 -- Check size of long long
+#13 0.952 -- Check size of long long - done
+#13 0.952 -- Check size of float
+#13 0.977 -- Check size of float - done
+#13 0.977 -- Check size of double
+#13 1.002 -- Check size of double - done
+#13 1.002 -- Check size of long double
+#13 1.027 -- Check size of long double - done
+#13 1.027 -- Check size of int8_t
+#13 1.053 -- Check size of int8_t - done
+#13 1.053 -- Check size of uint8_t
+#13 1.079 -- Check size of uint8_t - done
+#13 1.080 -- Check size of int_least8_t
+#13 1.116 -- Check size of int_least8_t - done
+#13 1.116 -- Check size of uint_least8_t
+#13 1.145 -- Check size of uint_least8_t - done
+#13 1.146 -- Check size of int_fast8_t
+#13 1.173 -- Check size of int_fast8_t - done
+#13 1.173 -- Check size of uint_fast8_t
+#13 1.199 -- Check size of uint_fast8_t - done
+#13 1.200 -- Check size of int16_t
+#13 1.224 -- Check size of int16_t - done
+#13 1.225 -- Check size of uint16_t
+#13 1.249 -- Check size of uint16_t - done
+#13 1.249 -- Check size of int_least16_t
+#13 1.274 -- Check size of int_least16_t - done
+#13 1.274 -- Check size of uint_least16_t
+#13 1.299 -- Check size of uint_least16_t - done
+#13 1.299 -- Check size of int_fast16_t
+#13 1.324 -- Check size of int_fast16_t - done
+#13 1.324 -- Check size of uint_fast16_t
+#13 1.350 -- Check size of uint_fast16_t - done
+#13 1.350 -- Check size of int32_t
+#13 1.375 -- Check size of int32_t - done
+#13 1.375 -- Check size of uint32_t
+#13 1.400 -- Check size of uint32_t - done
+#13 1.400 -- Check size of int_least32_t
+#13 1.426 -- Check size of int_least32_t - done
+#13 1.426 -- Check size of uint_least32_t
+#13 1.451 -- Check size of uint_least32_t - done
+#13 1.451 -- Check size of int_fast32_t
+#13 1.477 -- Check size of int_fast32_t - done
+#13 1.477 -- Check size of uint_fast32_t
+#13 1.501 -- Check size of uint_fast32_t - done
+#13 1.501 -- Check size of int64_t
+#13 1.527 -- Check size of int64_t - done
+#13 1.527 -- Check size of uint64_t
+#13 1.552 -- Check size of uint64_t - done
+#13 1.552 -- Check size of int_least64_t
+#13 1.577 -- Check size of int_least64_t - done
+#13 1.577 -- Check size of uint_least64_t
+#13 1.602 -- Check size of uint_least64_t - done
+#13 1.602 -- Check size of int_fast64_t
+#13 1.628 -- Check size of int_fast64_t - done
+#13 1.628 -- Check size of uint_fast64_t
+#13 1.653 -- Check size of uint_fast64_t - done
+#13 1.653 -- Check size of size_t
+#13 1.678 -- Check size of size_t - done
+#13 1.678 -- Check size of ssize_t
+#13 1.704 -- Check size of ssize_t - done
+#13 1.704 -- Check size of ptrdiff_t
+#13 1.729 -- Check size of ptrdiff_t - done
+#13 1.729 -- Check size of off_t
+#13 1.754 -- Check size of off_t - done
+#13 1.754 -- Check size of time_t
+#13 1.780 -- Check size of time_t - done
+#13 1.780 -- Check size of _Bool
+#13 1.805 -- Check size of _Bool - done
+#13 1.805 -- Looking for CLOCK_MONOTONIC
+#13 1.828 -- Looking for CLOCK_MONOTONIC - not found
+#13 1.828 -- Performing Test H5_HAVE_TM_GMTOFF
+#13 1.852 -- Performing Test H5_HAVE_TM_GMTOFF - Success
+#13 1.852 -- Performing Test H5_HAVE___TM_GMTOFF
+#13 1.866 -- Performing Test H5_HAVE___TM_GMTOFF - Failed
+#13 1.866 -- Performing Test H5_HAVE_STRUCT_TIMEZONE
+#13 1.880 -- Performing Test H5_HAVE_STRUCT_TIMEZONE - Failed
+#13 1.880 -- Looking for gettimeofday
+#13 1.905 -- Looking for gettimeofday - found
+#13 1.977 -- Performing Test H5_HAVE_STAT_ST_BLOCKS
+#13 2.003 -- Performing Test H5_HAVE_STAT_ST_BLOCKS - Success
+#13 2.003 -- Looking for ioctl
+#13 2.026 -- Looking for ioctl - found
+#13 2.026 -- Performing Test H5_HAVE_STRUCT_VIDEOCONFIG
+#13 2.039 -- Performing Test H5_HAVE_STRUCT_VIDEOCONFIG - Failed
+#13 2.039 -- Performing Test H5_HAVE_STRUCT_TEXT_INFO
+#13 2.052 -- Performing Test H5_HAVE_STRUCT_TEXT_INFO - Failed
+#13 2.052 -- Looking for _getvideoconfig
+#13 2.076 -- Looking for _getvideoconfig - not found
+#13 2.076 -- Looking for gettextinfo
+#13 2.100 -- Looking for gettextinfo - not found
+#13 2.100 -- Looking for _scrsize
+#13 2.124 -- Looking for _scrsize - not found
+#13 2.124 -- Looking for GetConsoleScreenBufferInfo
+#13 2.148 -- Looking for GetConsoleScreenBufferInfo - not found
+#13 2.148 -- Looking for TIOCGWINSZ
+#13 2.174 -- Looking for TIOCGWINSZ - found
+#13 2.174 -- Looking for TIOCGETD
+#13 2.198 -- Looking for TIOCGETD - found
+#13 2.198 -- Looking for alarm
+#13 2.222 -- Looking for alarm - found
+#13 2.222 -- Looking for fcntl
+#13 2.246 -- Looking for fcntl - found
+#13 2.246 -- Looking for flock
+#13 2.269 -- Looking for flock - found
+#13 2.269 -- Looking for fork
+#13 2.292 -- Looking for fork - found
+#13 2.292 -- Looking for gethostname
+#13 2.315 -- Looking for gethostname - found
+#13 2.315 -- Looking for getrusage
+#13 2.339 -- Looking for getrusage - found
+#13 2.339 -- Looking for pread
+#13 2.362 -- Looking for pread - found
+#13 2.362 -- Looking for pwrite
+#13 2.386 -- Looking for pwrite - found
+#13 2.386 -- Looking for strcasestr
+#13 2.409 -- Looking for strcasestr - found
+#13 2.409 -- Looking for strdup
+#13 2.432 -- Looking for strdup - found
+#13 2.432 -- Looking for symlink
+#13 2.456 -- Looking for symlink - found
+#13 2.456 -- Looking for tmpfile
+#13 2.479 -- Looking for tmpfile - found
+#13 2.479 -- Looking for asprintf
+#13 2.502 -- Looking for asprintf - found
+#13 2.502 -- Looking for vasprintf
+#13 2.525 -- Looking for vasprintf - found
+#13 2.525 -- Looking for waitpid
+#13 2.548 -- Looking for waitpid - found
+#13 2.548 -- Looking for sigsetjmp
+#13 2.572 -- Looking for sigsetjmp - found
+#13 2.673 -- Looking for clock_gettime
+#13 2.698 -- Looking for clock_gettime - found
+#13 2.698 -- Looking for clock_gettime in rt
+#13 2.722 -- Looking for clock_gettime in rt - found
+#13 2.722 -- Looking for clock_gettime in posix4
+#13 2.741 -- Looking for clock_gettime in posix4 - not found
+#13 2.778 -- Testing maximum decimal precision for C - 36;0
+#13 2.778 -- maximum decimal precision for C var - 36
+#13 2.778 -- Checking if complex number support is available
+#13 2.778 -- Looking for complex.h
+#13 2.804 -- Looking for complex.h - found
+#13 2.804 -- Check size of float _Complex
+#13 2.830 -- Check size of float _Complex - done
+#13 2.830 -- Check size of double _Complex
+#13 2.855 -- Check size of double _Complex - done
+#13 2.855 -- Check size of long double _Complex
+#13 2.880 -- Check size of long double _Complex - done
+#13 2.918 -- Using C99 complex number types
+#13 3.054 -- Checking if _Float16 support is available
+#13 3.055 -- Check size of _Float16
+#13 3.080 -- Check size of _Float16 - done
+#13 3.081 -- Looking for FLT16_EPSILON
+#13 3.104 -- Looking for FLT16_EPSILON - found
+#13 3.105 -- Looking for FLT16_MIN
+#13 3.130 -- Looking for FLT16_MIN - found
+#13 3.130 -- Looking for FLT16_MAX
+#13 3.153 -- Looking for FLT16_MAX - found
+#13 3.153 -- Looking for FLT16_MIN_10_EXP
+#13 3.179 -- Looking for FLT16_MIN_10_EXP - found
+#13 3.179 -- Looking for FLT16_MAX_10_EXP
+#13 3.202 -- Looking for FLT16_MAX_10_EXP - found
+#13 3.202 -- Looking for FLT16_MANT_DIG
+#13 3.226 -- Looking for FLT16_MANT_DIG - found
+#13 3.260 -- Looking for fabsf16
+#13 3.283 -- Looking for fabsf16 - not found
+#13 3.284 -- Could NOT find PkgConfig (missing: PKG_CONFIG_EXECUTABLE) 
+#13 3.288 -- Found Perl: /usr/bin/perl (found version "5.40.1")
+#13 3.288 -- ... disable color and URL extended diagnostic messages
+#13 3.290 -- ....All Warnings are enabled
+#13 3.291 -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+#13 3.317 -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+#13 3.317 -- Found Threads: TRUE
+#13 3.317 -- Looking for stdatomic.h
+#13 3.341 -- Looking for stdatomic.h - found
+#13 3.381 -- The Fortran compiler identification is GNU 12.4.0
+#13 3.389 -- Detecting Fortran compiler ABI info
+#13 3.441 -- Detecting Fortran compiler ABI info - done
+#13 3.449 -- Check for working Fortran compiler: /usr/bin/gfortran-12 - skipped
+#13 3.453 -- ... disable color and URL extended diagnostic messages
+#13 3.454 -- Detecting Fortran/C Interface
+#13 3.604 -- Detecting Fortran/C Interface - Found GLOBAL and MODULE mangling
+#13 3.604 -- Verifying Fortran/C Compiler Compatibility
+#13 3.656 -- Verifying Fortran/C Compiler Compatibility - Success
+#13 3.656 -- Performing Test H5_FORTRAN_HAVE_SIZEOF
+#13 3.698 -- Performing Test H5_FORTRAN_HAVE_SIZEOF - Success
+#13 3.698 -- Performing Test H5_FORTRAN_HAVE_C_SIZEOF
+#13 3.741 -- Performing Test H5_FORTRAN_HAVE_C_SIZEOF - Success
+#13 3.741 -- Performing Test H5_FORTRAN_HAVE_STORAGE_SIZE
+#13 3.783 -- Performing Test H5_FORTRAN_HAVE_STORAGE_SIZE - Success
+#13 3.784 -- Performing Test H5_FORTRAN_HAVE_ISO_C_BINDING
+#13 3.825 -- Performing Test H5_FORTRAN_HAVE_ISO_C_BINDING - Success
+#13 3.825 -- Performing Test FORTRAN_HAVE_C_LONG_DOUBLE
+#13 3.867 -- Performing Test FORTRAN_HAVE_C_LONG_DOUBLE - Success
+#13 3.867 -- Performing Test FORTRAN_C_LONG_DOUBLE_IS_UNIQUE
+#13 3.910 -- Performing Test FORTRAN_C_LONG_DOUBLE_IS_UNIQUE - Success
+#13 3.910 -- Performing Test FORTRAN_C_BOOL_IS_UNIQUE
+#13 3.954 -- Performing Test FORTRAN_C_BOOL_IS_UNIQUE - Success
+#13 3.954 -- Performing Test HAVE_ISO_FORTRAN_ENV
+#13 3.995 -- Performing Test HAVE_ISO_FORTRAN_ENV - Success
+#13 3.995 -- Performing Test FORTRAN_CHAR_ALLOC
+#13 4.036 -- Performing Test FORTRAN_CHAR_ALLOC - Success
+#13 4.102 -- ....LOGICAL KINDS FOUND {1,2,4,8,16}
+#13 4.102 -- ....NUMBER OF INTEGER KINDS FOUND 5
+#13 4.102 -- ....REAL KINDS FOUND {4,8,16}
+#13 4.102 -- ....INTEGER KINDS FOUND {1,2,4,8,16}
+#13 4.102 -- ....MAX DECIMAL PRECISION 33
+#13 4.450 -- ....FOUND SIZEOF for REAL KINDs {4,8,16}
+#13 4.497 -- No pre-generated H5fortran_types.F90 file found - generating one
+#13 4.498 -- No pre-generated H5_gen.F90 file found - generating one
+#13 4.502 -- No pre-generated H5LTff_gen.F90 H5TBff_gen.F90 file found - generating one
+#13 4.529 -- The CXX compiler identification is GNU 12.4.0
+#13 4.533 -- Detecting CXX compiler ABI info
+#13 4.561 -- Detecting CXX compiler ABI info - done
+#13 4.569 -- Check for working CXX compiler: /usr/bin/g++-12 - skipped
+#13 4.569 -- Detecting CXX compile features
+#13 4.570 -- Detecting CXX compile features - done
+#13 4.573 -- ... disable color and URL extended diagnostic messages
+#13 4.575 -- ....All CXX Warnings are enabled
+#13 4.575 -- ....All Warnings are enabled
+#13 4.588 -- Configuring done (4.4s)
+#13 4.610 -- Generating done (0.0s)
+#13 4.610 -- Build files have been written to: /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/builddir
+#13 DONE 4.6s
+
+#14 [ 9/10] RUN cmake --build builddir
+#14 0.177 [1/519] Building Fortran preprocessed fortran/src/CMakeFiles/H5_buildiface.dir/H5_buildiface.F90-pp.f90
+#14 0.183 [2/519] Generating Fortran dyndep file fortran/src/CMakeFiles/H5_buildiface.dir/Fortran.dd
+#14 0.258 [3/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5timer.c.o
+#14 0.258 [4/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5checksum.c.o
+#14 0.262 [5/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5mpi.c.o
+#14 0.282 [6/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5dbg.c.o
+#14 0.320 [7/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5system.c.o
+#14 0.397 [8/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Atest.c.o
+#14 0.401 [9/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5.c.o
+#14 0.424 [10/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Abtree2.c.o
+#14 0.450 [11/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Adeprec.c.o
+#14 0.456 [12/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5ACdbg.c.o
+#14 0.536 [13/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5ACmpio.c.o
+#14 0.553 [14/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5ACproxy_entry.c.o
+#14 0.612 [15/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Adense.c.o
+#14 0.677 [16/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5AC.c.o
+#14 0.712 [17/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Aint.c.o
+#14 0.719 [18/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5B.c.o
+#14 0.733 [19/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Bcache.c.o
+#14 0.739 [20/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Bdbg.c.o
+#14 0.802 [21/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5B2dbg.c.o
+#14 0.833 [22/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5B2hdr.c.o
+#14 0.834 [23/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5B2.c.o
+#14 0.836 [24/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5B2cache.c.o
+#14 0.886 [25/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5B2stat.c.o
+#14 0.942 [26/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5B2test.c.o
+#14 0.955 [27/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Cdbg.c.o
+#14 0.966 [28/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5B2leaf.c.o
+#14 1.008 [29/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5A.c.o
+#14 1.052 [30/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5C.c.o
+#14 1.061 [31/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Cepoch.c.o
+#14 1.111 [32/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5B2internal.c.o
+#14 1.117 [33/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5trace.c.o
+#14 1.217 [34/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Clog_json.c.o
+#14 1.224 [35/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Cmpio.c.o
+#14 1.236 [36/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5B2int.c.o
+#14 1.275 [37/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Cint.c.o
+#14 1.296 [38/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Clog_trace.c.o
+#14 1.300 [39/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Clog.c.o
+#14 1.308 [40/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Cimage.c.o
+#14 1.316 [41/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Cquery.c.o
+#14 1.342 [42/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ctest.c.o
+#14 1.367 [43/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Cprefetched.c.o
+#14 1.481 [44/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ctag.c.o
+#14 1.500 [45/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Dbtree.c.o
+#14 1.555 [46/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Dbtree2.c.o
+#14 1.561 [47/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ddbg.c.o
+#14 1.601 [48/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Dcompact.c.o
+#14 1.650 [49/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5CX.c.o
+#14 1.671 [50/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ddeprec.c.o
+#14 1.713 [51/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Centry.c.o
+#14 1.746 [52/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Defl.c.o
+#14 1.778 [53/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Dcontig.c.o
+#14 1.792 [54/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5D.c.o
+#14 1.837 [55/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Dearray.c.o
+#14 1.846 [56/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Dmpio.c.o
+#14 1.887 [57/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Dfarray.c.o
+#14 1.894 [58/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Dfill.c.o
+#14 1.919 [59/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Dnone.c.o
+#14 1.934 [60/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Doh.c.o
+#14 2.004 [61/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Dsingle.c.o
+#14 2.030 [62/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Dselect.c.o
+#14 2.053 [63/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Dlayout.c.o
+#14 2.069 [64/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Dtest.c.o
+#14 2.136 [65/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Dio.c.o
+#14 2.213 [66/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Dscatgath.c.o
+#14 2.288 [67/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Edeprec.c.o
+#14 2.322 [68/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5E.c.o
+#14 2.423 [69/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Dint.c.o
+#14 2.425 [70/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5EAdblkpage.c.o
+#14 2.438 [71/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5EA.c.o
+#14 2.470 [72/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5EAdbg.c.o
+#14 2.471 [73/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5EAcache.c.o
+#14 2.487 [74/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Eint.c.o
+#14 2.515 [75/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5EAdblock.c.o
+#14 2.555 [76/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5EAsblock.c.o
+#14 2.560 [77/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5EAiblock.c.o
+#14 2.565 [78/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5EAint.c.o
+#14 2.577 [79/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5EAstat.c.o
+#14 2.612 [80/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5EAtest.c.o
+#14 2.619 [81/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5ESevent.c.o
+#14 2.637 [82/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5ESlist.c.o
+#14 2.652 [83/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5EAhdr.c.o
+#14 2.718 [84/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Fcwfs.c.o
+#14 2.754 [85/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5ES.c.o
+#14 2.776 [86/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Fdbg.c.o
+#14 2.798 [87/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Fdeprec.c.o
+#14 2.848 [88/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5ESint.c.o
+#14 2.883 [89/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Faccum.c.o
+#14 2.890 [90/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Dvirtual.c.o
+#14 2.894 [91/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ffake.c.o
+#14 2.911 [92/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Dchunk.c.o
+#14 2.941 [93/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Fmpi.c.o
+#14 2.969 [94/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Fefc.c.o
+#14 2.999 [95/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Fsfile.c.o
+#14 3.000 [96/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Fspace.c.o
+#14 3.023 [97/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Fmount.c.o
+#14 3.037 [98/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Fquery.c.o
+#14 3.050 [99/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Fio.c.o
+#14 3.073 [100/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ftest.c.o
+#14 3.143 [101/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5F.c.o
+#14 3.151 [102/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FAdblkpage.c.o
+#14 3.227 [103/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FAdbg.c.o
+#14 3.229 [104/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FAdblock.c.o
+#14 3.235 [105/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Fsuper_cache.c.o
+#14 3.240 [106/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FA.c.o
+#14 3.243 [107/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FAhdr.c.o
+#14 3.257 [108/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Fsuper.c.o
+#14 3.276 [109/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FAcache.c.o
+#14 3.284 [110/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FAint.c.o
+#14 3.322 [111/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FAstat.c.o
+#14 3.332 [112/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDhdfs.c.o
+#14 3.336 [113/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDdirect.c.o
+#14 3.382 [114/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Fint.c.o
+#14 3.385 [115/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDmirror.c.o
+#14 3.421 [116/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FAtest.c.o
+#14 3.440 [117/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDmpi.c.o
+#14 3.491 [118/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDmpio.c.o
+#14 3.493 [119/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDfamily.c.o
+#14 3.499 [120/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDmulti_int.c.o
+#14 3.540 [121/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDcore.c.o
+#14 3.575 [122/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDlog.c.o
+#14 3.629 [123/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDonion_history.c.o
+#14 3.671 [124/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDonion_header.c.o
+#14 3.677 [125/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDros3.c.o
+#14 3.682 [126/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDros3_s3comms.c.o
+#14 3.691 [127/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDonion_index.c.o
+#14 3.733 [128/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FD.c.o
+#14 3.782 [129/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDspace.c.o
+#14 3.821 [130/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDonion.c.o
+#14 3.835 [131/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDtest.c.o
+#14 3.840 [132/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDstdio_int.c.o
+#14 3.852 [133/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDstdio.c.o
+#14 3.868 [134/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDwindows.c.o
+#14 3.918 [135/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDsec2.c.o
+#14 3.945 [136/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDint.c.o
+#14 3.955 [137/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDsplitter.c.o
+#14 3.962 [138/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FO.c.o
+#14 4.016 [139/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FSstat.c.o
+#14 4.030 [140/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FSint.c.o
+#14 4.034 [141/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FDmulti.c.o
+#14 4.054 [142/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FS.c.o
+#14 4.070 [143/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FStest.c.o
+#14 4.071 [144/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FSdbg.c.o
+#14 4.084 [145/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FScache.c.o
+#14 4.106 [146/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FL.c.o
+#14 4.125 [147/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Gcache.c.o
+#14 4.169 [148/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Gcompact.c.o
+#14 4.202 [149/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Gbtree2.c.o
+#14 4.218 [150/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Gent.c.o
+#14 4.262 [151/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Glink.c.o
+#14 4.296 [152/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5FSsection.c.o
+#14 4.335 [153/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5G.c.o
+#14 4.360 [154/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Gname.c.o
+#14 4.398 [155/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Gdense.c.o
+#14 4.405 [156/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Gint.c.o
+#14 4.444 [157/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Gloc.c.o
+#14 4.447 [158/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Groot.c.o
+#14 4.458 [159/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Gnode.c.o
+#14 4.474 [160/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Gobj.c.o
+#14 4.518 [161/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Goh.c.o
+#14 4.530 [162/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Gdeprec.c.o
+#14 4.589 [163/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Gtest.c.o
+#14 4.612 [164/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HF.c.o
+#14 4.613 [165/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HFbtree2.c.o
+#14 4.649 [166/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Gstab.c.o
+#14 4.674 [167/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Gtraverse.c.o
+#14 4.688 [168/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HFdtable.c.o
+#14 4.701 [169/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HFdblock.c.o
+#14 4.720 [170/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HFdbg.c.o
+#14 4.780 [171/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HFhdr.c.o
+#14 4.813 [172/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HFcache.c.o
+#14 4.841 [173/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HFstat.c.o
+#14 4.866 [174/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HFiter.c.o
+#14 4.889 [175/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HFtest.c.o
+#14 4.899 [176/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HFspace.c.o
+#14 4.904 [177/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HFman.c.o
+#14 4.906 [178/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HFiblock.c.o
+#14 4.907 [179/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HFhuge.c.o
+#14 4.927 [180/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HFtiny.c.o
+#14 4.976 [181/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HGdbg.c.o
+#14 4.992 [182/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HLdbg.c.o
+#14 4.994 [183/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HGcache.c.o
+#14 5.041 [184/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HG.c.o
+#14 5.044 [185/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HLdblk.c.o
+#14 5.053 [186/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HLprfx.c.o
+#14 5.056 [187/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HLint.c.o
+#14 5.063 [188/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HGquery.c.o
+#14 5.093 [189/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HFsection.c.o
+#14 5.119 [190/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Idbg.c.o
+#14 5.134 [191/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ideprec.c.o
+#14 5.150 [192/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HLcache.c.o
+#14 5.158 [193/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5HL.c.o
+#14 5.159 [194/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Itest.c.o
+#14 5.218 [195/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5M.c.o
+#14 5.223 [196/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5I.c.o
+#14 5.243 [197/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Lexternal.c.o
+#14 5.294 [198/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5MFdbg.c.o
+#14 5.342 [199/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5MFaggr.c.o
+#14 5.347 [200/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5MFsection.c.o
+#14 5.354 [201/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5MM.c.o
+#14 5.369 [202/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Iint.c.o
+#14 5.391 [203/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ldeprec.c.o
+#14 5.456 [204/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Oainfo.c.o
+#14 5.506 [205/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Obogus.c.o
+#14 5.555 [206/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Lint.c.o
+#14 5.559 [207/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Oattr.c.o
+#14 5.579 [208/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Obtreek.c.o
+#14 5.599 [209/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5MF.c.o
+#14 5.658 [210/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5L.c.o
+#14 5.669 [211/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ochunk.c.o
+#14 5.727 [212/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ocont.c.o
+#14 5.727 [213/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Oattribute.c.o
+#14 5.740 [214/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ocache_image.c.o
+#14 5.819 [215/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ocache.c.o
+#14 5.838 [216/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Odeleted.c.o
+#14 5.849 [217/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Odbg.c.o
+#14 5.864 [218/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ocopy_ref.c.o
+#14 5.883 [219/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Oalloc.c.o
+#14 5.916 [220/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Odrvinfo.c.o
+#14 5.973 [221/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5O.c.o
+#14 5.987 [222/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Oflush.c.o
+#14 6.014 [223/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ocopy.c.o
+#14 6.024 [224/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Oefl.c.o
+#14 6.048 [225/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Oginfo.c.o
+#14 6.052 [226/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ofsinfo.c.o
+#14 6.117 [227/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Odeprec.c.o
+#14 6.165 [228/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Olinfo.c.o
+#14 6.231 [229/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Oname.c.o
+#14 6.261 [230/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Olink.c.o
+#14 6.266 [231/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Omtime.c.o
+#14 6.275 [232/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ofill.c.o
+#14 6.293 [233/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Onull.c.o
+#14 6.325 [234/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Olayout.c.o
+#14 6.329 [235/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Oint.c.o
+#14 6.382 [236/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Omessage.c.o
+#14 6.389 [237/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Orefcount.c.o
+#14 6.392 [238/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Oshmesg.c.o
+#14 6.420 [239/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Opline.c.o
+#14 6.450 [240/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Osdspace.c.o
+#14 6.483 [241/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ostab.c.o
+#14 6.500 [242/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Oshared.c.o
+#14 6.501 [243/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Pacpl.c.o
+#14 6.502 [244/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ounknown.c.o
+#14 6.520 [245/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Odtype.c.o
+#14 6.541 [246/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Otest.c.o
+#14 6.610 [247/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Pdeprec.c.o
+#14 6.667 [248/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Pfmpl.c.o
+#14 6.769 [249/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Pencdec.c.o
+#14 6.781 [250/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Pdapl.c.o
+#14 6.794 [251/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5P.c.o
+#14 6.861 [252/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Plcpl.c.o
+#14 6.868 [253/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Pdxpl.c.o
+#14 6.918 [254/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Pmapl.c.o
+#14 6.919 [255/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Pmcpl.c.o
+#14 6.955 [256/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Pgcpl.c.o
+#14 6.994 [257/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Pfcpl.c.o
+#14 7.082 [258/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Plapl.c.o
+#14 7.101 [259/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Pstrcpl.c.o
+#14 7.106 [260/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ptest.c.o
+#14 7.122 [261/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Pocpypl.c.o
+#14 7.212 [262/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Pocpl.c.o
+#14 7.256 [263/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5PL.c.o
+#14 7.283 [264/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5PLint.c.o
+#14 7.288 [265/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5PLpath.c.o
+#14 7.295 [266/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5PB.c.o
+#14 7.370 [267/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5PLplugin_cache.c.o
+#14 7.399 [268/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Pint.c.o
+#14 7.418 [269/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5UC.c.o
+#14 7.517 [270/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5R.c.o
+#14 7.584 [271/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Pdcpl.c.o
+#14 7.585 [272/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Rint.c.o
+#14 7.594 [273/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5RT.c.o
+#14 7.598 [274/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5RS.c.o
+#14 7.624 [275/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Pfapl.c.o
+#14 7.636 [276/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Rdeprec.c.o
+#14 7.642 [277/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Sall.c.o
+#14 7.648 [278/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Smpio.c.o
+#14 7.663 [279/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Sdeprec.c.o
+#14 7.668 [280/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Sdbg.c.o
+#14 7.745 [281/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Stest.c.o
+#14 7.802 [282/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5S.c.o
+#14 7.808 [283/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Snone.c.o
+#14 7.837 [284/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5SMbtree2.c.o
+#14 7.895 [285/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5SMtest.c.o
+#14 7.971 [286/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5SMmessage.c.o
+#14 8.034 [287/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5SMcache.c.o
+#14 8.056 [288/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5SM.c.o
+#14 8.075 [289/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Spoint.c.o
+#14 8.156 [290/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tcomplex.c.o
+#14 8.213 [291/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tarray.c.o
+#14 8.215 [292/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tbit.c.o
+#14 8.280 [293/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Sselect.c.o
+#14 8.306 [294/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tcompound.c.o
+#14 8.310 [295/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tconv_array.c.o
+#14 8.365 [296/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tconv_bitfield.c.o
+#14 8.481 [297/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tconv_compound.c.o
+#14 8.495 [298/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tconv_enum.c.o
+#14 8.579 [299/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tcommit.c.o
+#14 8.740 [300/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tconv.c.o
+#14 8.768 [301/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tconv_reference.c.o
+#14 8.913 [302/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tconv_string.c.o
+#14 8.957 [303/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tconv_vlen.c.o
+#14 9.039 [304/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tdbg.c.o
+#14 9.069 [305/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tcset.c.o
+#14 9.178 [306/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tdeprec.c.o
+#14 9.180 [307/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5SL.c.o
+#14 9.225 [308/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tenum.c.o
+#14 9.275 [309/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tfixed.c.o
+#14 9.291 [310/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tfields.c.o
+#14 9.409 [311/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tfloat.c.o
+#14 9.490 [312/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tnative.c.o
+#14 9.498 [313/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Toffset.c.o
+#14 9.553 [314/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Toh.c.o
+#14 9.566 [315/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Topaque.c.o
+#14 9.639 [316/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tpad.c.o
+#14 9.642 [317/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Torder.c.o
+#14 9.721 [318/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tprecis.c.o
+#14 9.782 [319/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tref.c.o
+#14 9.798 [320/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tstrpad.c.o
+#14 9.798 [321/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tinit_float.c.o
+#14 9.843 [322/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Shyper.c.o
+#14 9.852 [323/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tvisit.c.o
+#14 9.873 [324/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5TS.c.o
+#14 9.907 [325/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5TSbarrier.c.o
+#14 9.922 [326/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5TSc11.c.o
+#14 9.936 [327/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tvlen.c.o
+#14 9.946 [328/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5TSatomic.c.o
+#14 9.961 [329/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5TScond.c.o
+#14 10.01 [330/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5TSint.c.o
+#14 10.02 [331/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5TSonce.c.o
+#14 10.03 [332/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5TSkey.c.o
+#14 10.04 [333/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5T.c.o
+#14 10.06 [334/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5TSmutex.c.o
+#14 10.09 [335/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5TSpool.c.o
+#14 10.11 [336/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5TSrec_rwlock.c.o
+#14 10.11 [337/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5TSpthread.c.o
+#14 10.13 [338/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5TSrwlock.c.o
+#14 10.15 [339/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5TSthread.c.o
+#14 10.18 [340/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5TSsemaphore.c.o
+#14 10.21 [341/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5TSwin.c.o
+#14 10.27 [342/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VLdyn_ops.c.o
+#14 10.42 [343/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VLnative.c.o
+#14 10.54 [344/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VLnative_attr.c.o
+#14 10.56 [345/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VL.c.o
+#14 10.57 [346/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VLint.c.o
+#14 10.58 [347/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VLnative_blob.c.o
+#14 10.64 [348/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VLnative_datatype.c.o
+#14 10.73 [349/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VLnative_link.c.o
+#14 10.75 [350/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VLnative_group.c.o
+#14 10.75 [351/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VLnative_file.c.o
+#14 10.80 [352/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VLnative_dataset.c.o
+#14 10.82 [353/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VLnative_introspect.c.o
+#14 10.88 [354/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VLnative_token.c.o
+#14 10.89 [355/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VLnative_object.c.o
+#14 10.95 [356/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VLpassthru_int.c.o
+#14 10.96 [357/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VLtest.c.o
+#14 11.00 [358/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VLquery.c.o
+#14 11.04 [359/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5WB.c.o
+#14 11.04 [360/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VLpassthru.c.o
+#14 11.09 [361/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Zdeflate.c.o
+#14 11.16 [362/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Zfletcher32.c.o
+#14 11.30 [363/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VM.c.o
+#14 11.32 [364/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Z.c.o
+#14 11.39 [365/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Znbit.c.o
+#14 11.42 [366/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Zshuffle.c.o
+#14 11.43 [367/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Zszip.c.o
+#14 11.48 [368/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5build_settings.c.o
+#14 11.49 [369/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5VLcallback.c.o
+#14 11.53 [370/519] Building Fortran preprocessed hl/fortran/src/CMakeFiles/H5HL_buildiface.dir/H5HL_buildiface.F90-pp.f90
+#14 11.54 [371/519] Generating Fortran dyndep file hl/fortran/src/CMakeFiles/H5HL_buildiface.dir/Fortran.dd
+#14 11.55 [372/519] Building C object fortran/src/CMakeFiles/H5match_types.dir/H5match_types.c.o
+#14 11.57 [373/519] Linking C executable bin/H5match_types
+#14 11.73 [374/519] Building C object hl/src/CMakeFiles/hdf5_hl-shared.dir/H5DO.c.o
+#14 11.87 [375/519] Building C object hl/src/CMakeFiles/hdf5_hl-shared.dir/H5DS.c.o
+#14 12.01 [376/519] Building C object hl/src/CMakeFiles/hdf5_hl-shared.dir/H5IM.c.o
+#14 12.17 [377/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Zscaleoffset.c.o
+#14 12.27 [378/519] Building C object hl/src/CMakeFiles/hdf5_hl-shared.dir/H5LTanalyze.c.o
+#14 12.37 [379/519] Building C object hl/src/CMakeFiles/hdf5_hl-shared.dir/H5LT.c.o
+#14 12.39 [380/519] Building C object hl/src/CMakeFiles/hdf5_hl-shared.dir/H5PT.c.o
+#14 12.52 [381/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tconv_complex.c.o
+#14 12.56 [382/519] Building C object hl/src/CMakeFiles/hdf5_hl-shared.dir/H5LTparse.c.o
+#14 12.63 [383/519] Building Fortran object fortran/src/CMakeFiles/H5_buildiface.dir/H5_buildiface.F90.o
+#14 12.64 [384/519] Building C object hl/src/CMakeFiles/hdf5_hl-shared.dir/H5LD.c.o
+#14 12.65 [385/519] Building C object fortran/src/CMakeFiles/hdf5_f90cstub-shared.dir/H5f90kit.c.o
+#14 12.68 [386/519] Linking Fortran executable bin/H5_buildiface
+#14 12.74 [387/519] Building C object fortran/src/CMakeFiles/hdf5_f90cstub-shared.dir/H5Ef.c.o
+#14 12.77 [388/519] Building C object fortran/src/CMakeFiles/hdf5_f90cstub-shared.dir/H5Df.c.o
+#14 12.80 [389/519] Building C object fortran/src/CMakeFiles/hdf5_f90cstub-shared.dir/H5_f.c.o
+#14 12.80 [390/519] Building C object fortran/src/CMakeFiles/hdf5_f90cstub-shared.dir/H5Af.c.o
+#14 12.85 [391/519] Building C object fortran/src/CMakeFiles/hdf5_f90cstub-shared.dir/H5Gf.c.o
+#14 12.86 [392/519] Building C object fortran/src/CMakeFiles/hdf5_f90cstub-shared.dir/H5If.c.o
+#14 12.89 [393/519] Building C object fortran/src/CMakeFiles/hdf5_f90cstub-shared.dir/H5Ff.c.o
+#14 12.94 [394/519] Building C object fortran/src/CMakeFiles/hdf5_f90cstub-shared.dir/H5Of.c.o
+#14 12.96 [395/519] Building C object fortran/src/CMakeFiles/hdf5_f90cstub-shared.dir/H5Lf.c.o
+#14 13.02 [396/519] Building C object fortran/src/CMakeFiles/hdf5_f90cstub-shared.dir/H5Rf.c.o
+#14 13.03 [397/519] Building C object hl/src/CMakeFiles/hdf5_hl-shared.dir/H5TB.c.o
+#14 13.05 [398/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/__/shared/H5fortran_types.F90-pp.f90
+#14 13.07 [399/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5f90global.F90-pp.f90
+#14 13.09 [400/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5fortkit.F90-pp.f90
+#14 13.10 [401/519] Building C object fortran/src/CMakeFiles/hdf5_f90cstub-shared.dir/H5Sf.c.o
+#14 13.10 [402/519] Building C object fortran/src/CMakeFiles/hdf5_f90cstub-shared.dir/H5Zf.c.o
+#14 13.10 [403/519] Building C object fortran/src/CMakeFiles/hdf5_f90cstub-shared.dir/H5Tf.c.o
+#14 13.11 [404/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5_ff.F90-pp.f90
+#14 13.11 [405/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Aff.F90-pp.f90
+#14 13.12 [406/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5ESff.F90-pp.f90
+#14 13.12 [407/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Eff.F90-pp.f90
+#14 13.12 [408/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Dff.F90-pp.f90
+#14 13.12 [409/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Fff.F90-pp.f90
+#14 13.12 [410/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5FDff.F90-pp.f90
+#14 13.13 [411/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Iff.F90-pp.f90
+#14 13.13 [412/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Gff.F90-pp.f90
+#14 13.13 [413/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Lff.F90-pp.f90
+#14 13.14 [414/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Rff.F90-pp.f90
+#14 13.14 [415/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Ztrans.c.o
+#14 13.14 [416/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Off.F90-pp.f90
+#14 13.14 [417/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Pff.F90-pp.f90
+#14 13.15 [418/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5VLff.F90-pp.f90
+#14 13.15 [419/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Sff.F90-pp.f90
+#14 13.15 [420/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/__/shared/H5_gen.F90-pp.f90
+#14 13.15 [421/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Tff.F90-pp.f90
+#14 13.15 [422/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Zff.F90-pp.f90
+#14 13.16 [423/519] Building Fortran preprocessed fortran/src/CMakeFiles/hdf5_fortran-shared.dir/HDF5.F90-pp.f90
+#14 13.17 [424/519] Generating Fortran dyndep file fortran/src/CMakeFiles/hdf5_fortran-shared.dir/Fortran.dd
+#14 13.18 [425/519] Building C object fortran/src/CMakeFiles/hdf5_f90cstub-shared.dir/H5Pf.c.o
+#14 13.19 [426/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/__/shared/H5fortran_types.F90.o
+#14 13.21 [427/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5f90global.F90.o
+#14 13.24 [428/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5fortkit.F90.o
+#14 13.26 [429/519] Building C object hl/fortran/src/CMakeFiles/hdf5_hl_f90cstub-shared.dir/H5IMfc.c.o
+#14 13.27 [430/519] Building C object hl/fortran/src/CMakeFiles/hdf5_hl_f90cstub-shared.dir/H5DSfc.c.o
+#14 13.28 [431/519] Building C object hl/fortran/src/CMakeFiles/hdf5_hl_f90cstub-shared.dir/H5IMcc.c.o
+#14 13.31 [432/519] Building C object hl/fortran/src/CMakeFiles/hdf5_hl_f90cstub-shared.dir/H5LTfc.c.o
+#14 13.32 [433/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5ESff.F90.o
+#14 13.32 [434/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5FDff.F90.o
+#14 13.32 [435/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Eff.F90.o
+#14 13.35 [436/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Iff.F90.o
+#14 13.37 [437/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Fff.F90.o
+#14 13.42 [438/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Off.F90.o
+#14 13.45 [439/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tconv_float.c.o
+#14 13.45 [440/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Lff.F90.o
+#14 13.49 [441/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Rff.F90.o
+#14 13.54 [442/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5VLff.F90.o
+#14 13.55 [443/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Zff.F90.o
+#14 13.56 [444/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Sff.F90.o
+#14 13.59 [445/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Tff.F90.o
+#14 13.59 [446/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Pff.F90.o
+#14 13.64 [447/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Aff.F90.o
+#14 13.70 [448/519] Building C object hl/fortran/src/CMakeFiles/hdf5_hl_f90cstub-shared.dir/H5TBfc.c.o
+#14 13.76 [449/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5AbstractDs.cpp.o
+#14 13.79 [450/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5_ff.F90.o
+#14 13.81 [451/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5AtomType.cpp.o
+#14 13.81 [452/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Gff.F90.o
+#14 13.85 [453/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5ArrayType.cpp.o
+#14 13.97 [454/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5CommonFG.cpp.o
+#14 13.98 [455/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/H5Dff.F90.o
+#14 14.02 [456/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5CompType.cpp.o
+#14 14.02 [457/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5Attribute.cpp.o
+#14 14.05 [458/519] Building Fortran object hl/fortran/src/CMakeFiles/H5HL_buildiface.dir/H5HL_buildiface.F90.o
+#14 14.09 [459/519] Linking Fortran executable bin/H5HL_buildiface
+#14 14.11 [460/519] Building Fortran preprocessed hl/fortran/src/CMakeFiles/hdf5_hl_fortran-shared.dir/H5DSff.F90-pp.f90
+#14 14.13 [461/519] Building Fortran preprocessed hl/fortran/src/CMakeFiles/hdf5_hl_fortran-shared.dir/H5TBff.F90-pp.f90
+#14 14.14 [462/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5DaccProp.cpp.o
+#14 14.14 [463/519] Building Fortran preprocessed hl/fortran/src/CMakeFiles/hdf5_hl_fortran-shared.dir/H5LTff.F90-pp.f90
+#14 14.15 [464/519] Building Fortran preprocessed hl/fortran/src/CMakeFiles/hdf5_hl_fortran-shared.dir/H5IMff.F90-pp.f90
+#14 14.16 [465/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5DataSpace.cpp.o
+#14 14.16 [466/519] Building Fortran preprocessed hl/fortran/src/CMakeFiles/hdf5_hl_fortran-shared.dir/H5DOff.F90-pp.f90
+#14 14.17 [467/519] Building Fortran preprocessed hl/fortran/src/CMakeFiles/hdf5_hl_fortran-shared.dir/__/shared/H5TBff_gen.F90-pp.f90
+#14 14.17 [468/519] Building Fortran preprocessed hl/fortran/src/CMakeFiles/hdf5_hl_fortran-shared.dir/__/shared/H5LTff_gen.F90-pp.f90
+#14 14.19 [469/519] Generating Fortran dyndep file hl/fortran/src/CMakeFiles/hdf5_hl_fortran-shared.dir/Fortran.dd
+#14 14.25 [470/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5DcreatProp.cpp.o
+#14 14.30 [471/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5DataSet.cpp.o
+#14 14.33 [472/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5DataType.cpp.o
+#14 14.36 [473/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5EnumType.cpp.o
+#14 14.44 [474/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5Exception.cpp.o
+#14 14.50 [475/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5FaccProp.cpp.o
+#14 14.51 [476/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5FcreatProp.cpp.o
+#14 14.52 [477/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5DxferProp.cpp.o
+#14 14.55 [478/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/__/shared/H5_gen.F90.o
+#14 14.60 [479/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5FloatType.cpp.o
+#14 14.63 [480/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5IntType.cpp.o
+#14 14.65 [481/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5File.cpp.o
+#14 14.66 [482/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5LaccProp.cpp.o
+#14 14.67 [483/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5Group.cpp.o
+#14 14.77 [484/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5Library.cpp.o
+#14 14.79 [485/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5OcreatProp.cpp.o
+#14 14.81 [486/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5IdComponent.cpp.o
+#14 14.84 [487/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5LcreatProp.cpp.o
+#14 14.89 [488/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5Object.cpp.o
+#14 15.03 [489/519] Building Fortran object fortran/src/CMakeFiles/hdf5_fortran-shared.dir/HDF5.F90.o
+#14 15.08 [490/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5VarLenType.cpp.o
+#14 15.08 [491/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5PropList.cpp.o
+#14 15.09 [492/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5StrType.cpp.o
+#14 15.13 [493/519] Building Fortran object hl/fortran/src/CMakeFiles/hdf5_hl_fortran-shared.dir/H5DSff.F90.o
+#14 15.16 [494/519] Building Fortran object hl/fortran/src/CMakeFiles/hdf5_hl_fortran-shared.dir/H5IMff.F90.o
+#14 15.17 [495/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5Location.cpp.o
+#14 15.17 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/c++/src/H5Location.cpp: In member function 'std::string H5::H5Location::getObjnameByIdx(hsize_t) const':
+#14 15.17 /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/c++/src/H5Location.cpp:2001:46: warning: argument 1 range [9223372036854775809, 18446744073709551615] exceeds maximum object size 9223372036854775807 [-Walloc-size-larger-than=]
+#14 15.17  2001 |     char *name_C = new char[actual_name_len]();
+#14 15.17       |                                              ^
+#14 15.17 In file included from /usr/include/c++/12/bits/exception_ptr.h:40,
+#14 15.17                  from /usr/include/c++/12/exception:168,
+#14 15.17                  from /usr/include/c++/12/ios:39,
+#14 15.17                  from /usr/include/c++/12/ostream:38,
+#14 15.17                  from /usr/include/c++/12/iostream:39,
+#14 15.17                  from /hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1/c++/src/H5Location.cpp:13:
+#14 15.17 /usr/include/c++/12/new:128:26: note: in a call to allocation function 'void* operator new [](std::size_t)' declared here
+#14 15.17   128 | _GLIBCXX_NODISCARD void* operator new[](std::size_t) _GLIBCXX_THROW (std::bad_alloc)
+#14 15.17       |                          ^~~~~~~~
+#14 15.20 [496/519] Building Fortran object hl/fortran/src/CMakeFiles/hdf5_hl_fortran-shared.dir/H5TBff.F90.o
+#14 15.21 [497/519] Building Fortran object hl/fortran/src/CMakeFiles/hdf5_hl_fortran-shared.dir/H5DOff.F90.o
+#14 15.23 [498/519] Building CXX object c++/src/CMakeFiles/hdf5_cpp-shared.dir/H5PredType.cpp.o
+#14 15.23 [499/519] Building CXX object hl/c++/src/CMakeFiles/hdf5_hl_cpp-shared.dir/H5PacketTable.cpp.o
+#14 15.25 [500/519] Building Fortran object hl/fortran/src/CMakeFiles/hdf5_hl_fortran-shared.dir/H5LTff.F90.o
+#14 15.27 [501/519] Building Fortran object hl/fortran/src/CMakeFiles/hdf5_hl_fortran-shared.dir/__/shared/H5TBff_gen.F90.o
+#14 15.61 [502/519] Building Fortran object hl/fortran/src/CMakeFiles/hdf5_hl_fortran-shared.dir/__/shared/H5LTff_gen.F90.o
+#14 19.95 [503/519] Building C object src/CMakeFiles/hdf5-shared.dir/H5Tconv_integer.c.o
+#14 20.02 [504/519] Linking C shared library bin/libhdf5.so.1000.0.0
+#14 20.03 [505/519] Creating library symlink bin/libhdf5.so.1000 bin/libhdf5.so
+#14 20.04 [506/519] Linking C shared library bin/libhdf5_hl.so.1000.0.0
+#14 20.04 [507/519] Linking C shared library bin/libhdf5_f90cstub.so.1000.0.0
+#14 20.04 [508/519] Creating library symlink bin/libhdf5_hl.so.1000 bin/libhdf5_hl.so
+#14 20.04 [509/519] Creating library symlink bin/libhdf5_f90cstub.so.1000 bin/libhdf5_f90cstub.so
+#14 20.06 [510/519] Linking C shared library bin/libhdf5_hl_f90cstub.so.1000.0.0
+#14 20.06 [511/519] Creating library symlink bin/libhdf5_hl_f90cstub.so.1000 bin/libhdf5_hl_f90cstub.so
+#14 20.07 [512/519] Linking CXX shared library bin/libhdf5_hl_cpp.so.1000.0.0
+#14 20.07 [513/519] Linking CXX shared library bin/libhdf5_cpp.so.1000.0.0
+#14 20.07 [514/519] Linking Fortran shared library bin/libhdf5_fortran.so.1000.0.0
+#14 20.07 [515/519] Creating library symlink bin/libhdf5_hl_cpp.so.1000 bin/libhdf5_hl_cpp.so
+#14 20.07 [516/519] Creating library symlink bin/libhdf5_cpp.so.1000 bin/libhdf5_cpp.so
+#14 20.08 [517/519] Creating library symlink bin/libhdf5_fortran.so.1000 bin/libhdf5_fortran.so
+#14 20.09 [518/519] Linking Fortran shared library bin/libhdf5_hl_fortran.so.1000.0.0
+#14 20.10 [519/519] Creating library symlink bin/libhdf5_hl_fortran.so.1000 bin/libhdf5_hl_fortran.so
+#14 DONE 20.2s
+
+#15 [10/10] RUN cmake --install builddir
+#15 0.719 -- Install configuration: "Release"
+#15 0.719 -- Installing: /hdf5/include/hdf5.h
+#15 0.720 -- Installing: /hdf5/include/H5api_adpt.h
+#15 0.720 -- Installing: /hdf5/include/H5public.h
+#15 0.720 -- Installing: /hdf5/include/H5Apublic.h
+#15 0.720 -- Installing: /hdf5/include/H5ACpublic.h
+#15 0.720 -- Installing: /hdf5/include/H5Cpublic.h
+#15 0.720 -- Installing: /hdf5/include/H5Dpublic.h
+#15 0.720 -- Installing: /hdf5/include/H5Epubgen.h
+#15 0.720 -- Installing: /hdf5/include/H5Epublic.h
+#15 0.720 -- Installing: /hdf5/include/H5ESdevelop.h
+#15 0.720 -- Installing: /hdf5/include/H5ESpublic.h
+#15 0.720 -- Installing: /hdf5/include/H5Fpublic.h
+#15 0.720 -- Installing: /hdf5/include/H5FDcore.h
+#15 0.720 -- Installing: /hdf5/include/H5FDdevelop.h
+#15 0.720 -- Installing: /hdf5/include/H5FDdirect.h
+#15 0.720 -- Installing: /hdf5/include/H5FDfamily.h
+#15 0.720 -- Installing: /hdf5/include/H5FDhdfs.h
+#15 0.720 -- Installing: /hdf5/include/H5FDlog.h
+#15 0.720 -- Installing: /hdf5/include/H5FDmirror.h
+#15 0.720 -- Installing: /hdf5/include/H5FDmpi.h
+#15 0.721 -- Installing: /hdf5/include/H5FDmpio.h
+#15 0.721 -- Installing: /hdf5/include/H5FDmulti.h
+#15 0.721 -- Installing: /hdf5/include/H5FDonion.h
+#15 0.721 -- Installing: /hdf5/include/H5FDpublic.h
+#15 0.721 -- Installing: /hdf5/include/H5FDros3.h
+#15 0.721 -- Installing: /hdf5/include/H5FDsec2.h
+#15 0.721 -- Installing: /hdf5/include/H5FDsplitter.h
+#15 0.721 -- Installing: /hdf5/include/H5FDstdio.h
+#15 0.721 -- Installing: /hdf5/include/H5FDwindows.h
+#15 0.721 -- Installing: /hdf5/include/H5FDsubfiling.h
+#15 0.721 -- Installing: /hdf5/include/H5FDioc.h
+#15 0.721 -- Installing: /hdf5/include/H5Gpublic.h
+#15 0.721 -- Installing: /hdf5/include/H5Idevelop.h
+#15 0.721 -- Installing: /hdf5/include/H5Ipublic.h
+#15 0.721 -- Installing: /hdf5/include/H5Ldevelop.h
+#15 0.721 -- Installing: /hdf5/include/H5Lpublic.h
+#15 0.721 -- Installing: /hdf5/include/H5Mpublic.h
+#15 0.722 -- Installing: /hdf5/include/H5MMpublic.h
+#15 0.722 -- Installing: /hdf5/include/H5Opublic.h
+#15 0.722 -- Installing: /hdf5/include/H5Ppublic.h
+#15 0.722 -- Installing: /hdf5/include/H5PLextern.h
+#15 0.722 -- Installing: /hdf5/include/H5PLpublic.h
+#15 0.722 -- Installing: /hdf5/include/H5Rpublic.h
+#15 0.722 -- Installing: /hdf5/include/H5Spublic.h
+#15 0.722 -- Installing: /hdf5/include/H5Tdevelop.h
+#15 0.722 -- Installing: /hdf5/include/H5Tpublic.h
+#15 0.723 -- Installing: /hdf5/include/H5TSdevelop.h
+#15 0.723 -- Installing: /hdf5/include/H5VLconnector.h
+#15 0.723 -- Installing: /hdf5/include/H5VLconnector_passthru.h
+#15 0.723 -- Installing: /hdf5/include/H5VLnative.h
+#15 0.723 -- Installing: /hdf5/include/H5VLpassthru.h
+#15 0.723 -- Installing: /hdf5/include/H5VLpublic.h
+#15 0.723 -- Installing: /hdf5/include/H5Zdevelop.h
+#15 0.723 -- Installing: /hdf5/include/H5Zpublic.h
+#15 0.723 -- Up-to-date: /hdf5/include/H5Epubgen.h
+#15 0.723 -- Installing: /hdf5/include/H5version.h
+#15 0.723 -- Installing: /hdf5/include/H5overflow.h
+#15 0.723 -- Installing: /hdf5/include/H5pubconf.h
+#15 0.723 -- Installing: /hdf5/lib/libhdf5.so.1000.0.0
+#15 0.727 -- Installing: /hdf5/lib/libhdf5.so.1000
+#15 0.727 -- Set non-toolchain portion of runtime path of "/hdf5/lib/libhdf5.so.1000.0.0" to "$ORIGIN/../lib:$ORIGIN/"
+#15 0.727 -- Installing: /hdf5/lib/libhdf5.so
+#15 0.727 -- Installing: /hdf5/lib/pkgconfig/hdf5.pc
+#15 0.727 -- Installing: /hdf5/include/H5DOpublic.h
+#15 0.727 -- Installing: /hdf5/include/H5DSpublic.h
+#15 0.727 -- Installing: /hdf5/include/H5IMpublic.h
+#15 0.727 -- Installing: /hdf5/include/H5LTpublic.h
+#15 0.727 -- Installing: /hdf5/include/H5PTpublic.h
+#15 0.727 -- Installing: /hdf5/include/H5TBpublic.h
+#15 0.727 -- Installing: /hdf5/include/H5LDpublic.h
+#15 0.728 -- Installing: /hdf5/include/hdf5_hl.h
+#15 0.728 -- Installing: /hdf5/lib/libhdf5_hl.so.1000.0.0
+#15 0.728 -- Installing: /hdf5/lib/libhdf5_hl.so.1000
+#15 0.728 -- Set non-toolchain portion of runtime path of "/hdf5/lib/libhdf5_hl.so.1000.0.0" to "$ORIGIN/../lib:$ORIGIN/"
+#15 0.728 -- Installing: /hdf5/lib/libhdf5_hl.so
+#15 0.728 -- Installing: /hdf5/lib/pkgconfig/hdf5_hl.pc
+#15 0.728 -- Installing: /hdf5/include/H5f90.h
+#15 0.728 -- Installing: /hdf5/include/H5f90i.h
+#15 0.728 -- Installing: /hdf5/include/H5f90proto.h
+#15 0.728 -- Installing: /hdf5/include/H5f90i_gen.h
+#15 0.728 -- Installing: /hdf5/include/H5config_f.inc
+#15 0.729 -- Installing: /hdf5/mod/shared/h5fortran_types.mod
+#15 0.729 -- Installing: /hdf5/mod/shared/hdf5.mod
+#15 0.729 -- Installing: /hdf5/mod/shared/h5fortkit.mod
+#15 0.729 -- Installing: /hdf5/mod/shared/h5global.mod
+#15 0.729 -- Installing: /hdf5/mod/shared/h5a.mod
+#15 0.729 -- Installing: /hdf5/mod/shared/h5d.mod
+#15 0.729 -- Installing: /hdf5/mod/shared/h5e.mod
+#15 0.729 -- Installing: /hdf5/mod/shared/h5es.mod
+#15 0.729 -- Installing: /hdf5/mod/shared/h5f.mod
+#15 0.729 -- Installing: /hdf5/mod/shared/h5fd.mod
+#15 0.729 -- Installing: /hdf5/mod/shared/h5g.mod
+#15 0.729 -- Installing: /hdf5/mod/shared/h5i.mod
+#15 0.729 -- Installing: /hdf5/mod/shared/h5l.mod
+#15 0.730 -- Installing: /hdf5/mod/shared/h5lib.mod
+#15 0.730 -- Installing: /hdf5/mod/shared/h5o.mod
+#15 0.730 -- Installing: /hdf5/mod/shared/h5p.mod
+#15 0.730 -- Installing: /hdf5/mod/shared/h5r.mod
+#15 0.730 -- Installing: /hdf5/mod/shared/h5s.mod
+#15 0.730 -- Installing: /hdf5/mod/shared/h5t.mod
+#15 0.730 -- Installing: /hdf5/mod/shared/h5vl.mod
+#15 0.730 -- Installing: /hdf5/mod/shared/h5z.mod
+#15 0.730 -- Installing: /hdf5/mod/shared/h5_gen.mod
+#15 0.730 -- Installing: /hdf5/include/h5fortran_types.mod
+#15 0.730 -- Installing: /hdf5/include/hdf5.mod
+#15 0.730 -- Installing: /hdf5/include/h5fortkit.mod
+#15 0.730 -- Installing: /hdf5/include/h5global.mod
+#15 0.730 -- Installing: /hdf5/include/h5a.mod
+#15 0.730 -- Installing: /hdf5/include/h5d.mod
+#15 0.730 -- Installing: /hdf5/include/h5e.mod
+#15 0.730 -- Installing: /hdf5/include/h5es.mod
+#15 0.730 -- Installing: /hdf5/include/h5f.mod
+#15 0.730 -- Installing: /hdf5/include/h5fd.mod
+#15 0.731 -- Installing: /hdf5/include/h5g.mod
+#15 0.731 -- Installing: /hdf5/include/h5i.mod
+#15 0.731 -- Installing: /hdf5/include/h5l.mod
+#15 0.731 -- Installing: /hdf5/include/h5lib.mod
+#15 0.731 -- Installing: /hdf5/include/h5o.mod
+#15 0.731 -- Installing: /hdf5/include/h5p.mod
+#15 0.731 -- Installing: /hdf5/include/h5r.mod
+#15 0.731 -- Installing: /hdf5/include/h5s.mod
+#15 0.731 -- Installing: /hdf5/include/h5t.mod
+#15 0.731 -- Installing: /hdf5/include/h5vl.mod
+#15 0.731 -- Installing: /hdf5/include/h5z.mod
+#15 0.731 -- Installing: /hdf5/include/h5_gen.mod
+#15 0.731 -- Installing: /hdf5/lib/libhdf5_f90cstub.so.1000.0.0
+#15 0.731 -- Installing: /hdf5/lib/libhdf5_f90cstub.so.1000
+#15 0.731 -- Set non-toolchain portion of runtime path of "/hdf5/lib/libhdf5_f90cstub.so.1000.0.0" to "$ORIGIN/../lib:$ORIGIN/"
+#15 0.731 -- Installing: /hdf5/lib/libhdf5_f90cstub.so
+#15 0.731 -- Installing: /hdf5/lib/libhdf5_fortran.so.1000.0.0
+#15 0.732 -- Installing: /hdf5/lib/libhdf5_fortran.so.1000
+#15 0.732 -- Set non-toolchain portion of runtime path of "/hdf5/lib/libhdf5_fortran.so.1000.0.0" to "$ORIGIN/../lib:$ORIGIN/"
+#15 0.732 -- Installing: /hdf5/lib/libhdf5_fortran.so
+#15 0.732 -- Installing: /hdf5/lib/pkgconfig/hdf5_fortran.pc
+#15 0.732 -- Installing: /hdf5/mod/shared/h5ds.mod
+#15 0.732 -- Installing: /hdf5/mod/shared/h5tb.mod
+#15 0.732 -- Installing: /hdf5/mod/shared/h5tb_const.mod
+#15 0.732 -- Installing: /hdf5/mod/shared/h5lt.mod
+#15 0.733 -- Installing: /hdf5/mod/shared/h5lt_const.mod
+#15 0.733 -- Installing: /hdf5/mod/shared/h5im.mod
+#15 0.733 -- Installing: /hdf5/mod/shared/h5do.mod
+#15 0.733 -- Installing: /hdf5/include/h5ds.mod
+#15 0.733 -- Installing: /hdf5/include/h5tb.mod
+#15 0.733 -- Installing: /hdf5/include/h5tb_const.mod
+#15 0.733 -- Installing: /hdf5/include/h5lt.mod
+#15 0.733 -- Installing: /hdf5/include/h5lt_const.mod
+#15 0.733 -- Installing: /hdf5/include/h5im.mod
+#15 0.733 -- Installing: /hdf5/include/h5do.mod
+#15 0.734 -- Installing: /hdf5/lib/libhdf5_hl_f90cstub.so.1000.0.0
+#15 0.734 -- Installing: /hdf5/lib/libhdf5_hl_f90cstub.so.1000
+#15 0.734 -- Set non-toolchain portion of runtime path of "/hdf5/lib/libhdf5_hl_f90cstub.so.1000.0.0" to "$ORIGIN/../lib:$ORIGIN/"
+#15 0.734 -- Installing: /hdf5/lib/libhdf5_hl_f90cstub.so
+#15 0.734 -- Installing: /hdf5/lib/libhdf5_hl_fortran.so.1000.0.0
+#15 0.734 -- Installing: /hdf5/lib/libhdf5_hl_fortran.so.1000
+#15 0.734 -- Set non-toolchain portion of runtime path of "/hdf5/lib/libhdf5_hl_fortran.so.1000.0.0" to "$ORIGIN/../lib:$ORIGIN/"
+#15 0.734 -- Installing: /hdf5/lib/libhdf5_hl_fortran.so
+#15 0.734 -- Installing: /hdf5/lib/pkgconfig/hdf5_hl_fortran.pc
+#15 0.734 -- Installing: /hdf5/include/H5AbstractDs.h
+#15 0.734 -- Installing: /hdf5/include/H5Alltypes.h
+#15 0.734 -- Installing: /hdf5/include/H5ArrayType.h
+#15 0.734 -- Installing: /hdf5/include/H5AtomType.h
+#15 0.735 -- Installing: /hdf5/include/H5Attribute.h
+#15 0.735 -- Installing: /hdf5/include/H5Classes.h
+#15 0.735 -- Installing: /hdf5/include/H5CommonFG.h
+#15 0.735 -- Installing: /hdf5/include/H5CompType.h
+#15 0.735 -- Installing: /hdf5/include/H5Cpp.h
+#15 0.735 -- Installing: /hdf5/include/H5CppDoc.h
+#15 0.735 -- Installing: /hdf5/include/H5DataSet.h
+#15 0.735 -- Installing: /hdf5/include/H5DataSpace.h
+#15 0.735 -- Installing: /hdf5/include/H5DataType.h
+#15 0.735 -- Installing: /hdf5/include/H5DaccProp.h
+#15 0.735 -- Installing: /hdf5/include/H5DcreatProp.h
+#15 0.735 -- Installing: /hdf5/include/H5DxferProp.h
+#15 0.735 -- Installing: /hdf5/include/H5EnumType.h
+#15 0.735 -- Installing: /hdf5/include/H5Exception.h
+#15 0.735 -- Installing: /hdf5/include/H5FaccProp.h
+#15 0.735 -- Installing: /hdf5/include/H5FcreatProp.h
+#15 0.735 -- Installing: /hdf5/include/H5File.h
+#15 0.735 -- Installing: /hdf5/include/H5FloatType.h
+#15 0.735 -- Installing: /hdf5/include/H5Group.h
+#15 0.735 -- Installing: /hdf5/include/H5IdComponent.h
+#15 0.736 -- Installing: /hdf5/include/H5Include.h
+#15 0.736 -- Installing: /hdf5/include/H5IntType.h
+#15 0.736 -- Installing: /hdf5/include/H5LaccProp.h
+#15 0.736 -- Installing: /hdf5/include/H5LcreatProp.h
+#15 0.736 -- Installing: /hdf5/include/H5Library.h
+#15 0.736 -- Installing: /hdf5/include/H5Location.h
+#15 0.736 -- Installing: /hdf5/include/H5Object.h
+#15 0.736 -- Installing: /hdf5/include/H5OcreatProp.h
+#15 0.736 -- Installing: /hdf5/include/H5PredType.h
+#15 0.736 -- Installing: /hdf5/include/H5PropList.h
+#15 0.736 -- Installing: /hdf5/include/H5StrType.h
+#15 0.736 -- Installing: /hdf5/include/H5VarLenType.h
+#15 0.736 -- Installing: /hdf5/lib/libhdf5_cpp.so.1000.0.0
+#15 0.736 -- Installing: /hdf5/lib/libhdf5_cpp.so.1000
+#15 0.737 -- Set non-toolchain portion of runtime path of "/hdf5/lib/libhdf5_cpp.so.1000.0.0" to "$ORIGIN/../lib:$ORIGIN/"
+#15 0.737 -- Installing: /hdf5/lib/libhdf5_cpp.so
+#15 0.737 -- Installing: /hdf5/lib/pkgconfig/hdf5_cpp.pc
+#15 0.737 -- Installing: /hdf5/include/H5PacketTable.h
+#15 0.737 -- Installing: /hdf5/lib/libhdf5_hl_cpp.so.1000.0.0
+#15 0.737 -- Installing: /hdf5/lib/libhdf5_hl_cpp.so.1000
+#15 0.737 -- Set non-toolchain portion of runtime path of "/hdf5/lib/libhdf5_hl_cpp.so.1000.0.0" to "$ORIGIN/../lib:$ORIGIN/"
+#15 0.737 -- Installing: /hdf5/lib/libhdf5_hl_cpp.so
+#15 0.737 -- Installing: /hdf5/lib/pkgconfig/hdf5_hl_cpp.pc
+#15 0.737 -- Installing: /hdf5/cmake/hdf5-targets.cmake
+#15 0.737 -- Installing: /hdf5/cmake/hdf5-targets-release.cmake
+#15 0.737 -- Installing: /hdf5/cmake/hdf5-config.cmake
+#15 0.737 -- Installing: /hdf5/cmake/hdf5-config-version.cmake
+#15 0.737 -- Installing: /hdf5/lib/libhdf5.settings
+#15 0.738 -- Installing: /hdf5/share/LICENSE
+#15 0.738 -- Installing: /hdf5/share/USING_HDF5_CMake.txt
+#15 0.738 -- Installing: /hdf5/share/CHANGELOG.md
+#15 DONE 0.8s
+
+#16 exporting to image
+#16 exporting layers
+#16 exporting layers 0.7s done
+#16 writing image sha256:32b86a880452ade702750e420e09bf749100c8e45a7d0bc73c9c1fbec0a9f9b7
+#16 writing image sha256:32b86a880452ade702750e420e09bf749100c8e45a7d0bc73c9c1fbec0a9f9b7 done
+#16 naming to docker.io/library/generate-h5tinit:debian-arm64v8 done
+#16 DONE 0.7s
+
+ [33m1 warning found (use docker --debug to expand):
+[0m - WorkdirRelativePath: Relative workdir "hdf5-2ff6c6497c2962c78e489b59a4b5b0e2b136a2c1" can have unexpected results if the base image changes (line 26)
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/isl2o676zb1jua7aotxfa8imy
++ rm -rf debian-arm64v8
++ mkdir debian-arm64v8
++ for file in fortran/H5_gen.F90 fortran/H5f90i_gen.h fortran/H5fortran_types.F90 hl/fortran/H5LTff_gen.F90 hl/fortran/H5TBff_gen.F90
++ docker run --rm generate-h5tinit:debian-arm64v8 cat builddir/fortran/H5_gen.F90
+++ basename fortran/H5_gen.F90
++ for file in fortran/H5_gen.F90 fortran/H5f90i_gen.h fortran/H5fortran_types.F90 hl/fortran/H5LTff_gen.F90 hl/fortran/H5TBff_gen.F90
++ docker run --rm generate-h5tinit:debian-arm64v8 cat builddir/fortran/H5f90i_gen.h
+++ basename fortran/H5f90i_gen.h
++ for file in fortran/H5_gen.F90 fortran/H5f90i_gen.h fortran/H5fortran_types.F90 hl/fortran/H5LTff_gen.F90 hl/fortran/H5TBff_gen.F90
++ docker run --rm generate-h5tinit:debian-arm64v8 cat builddir/fortran/H5fortran_types.F90
+++ basename fortran/H5fortran_types.F90
++ for file in fortran/H5_gen.F90 fortran/H5f90i_gen.h fortran/H5fortran_types.F90 hl/fortran/H5LTff_gen.F90 hl/fortran/H5TBff_gen.F90
++ docker run --rm generate-h5tinit:debian-arm64v8 cat builddir/hl/fortran/H5LTff_gen.F90
+++ basename hl/fortran/H5LTff_gen.F90
++ for file in fortran/H5_gen.F90 fortran/H5f90i_gen.h fortran/H5fortran_types.F90 hl/fortran/H5LTff_gen.F90 hl/fortran/H5TBff_gen.F90
++ docker run --rm generate-h5tinit:debian-arm64v8 cat builddir/hl/fortran/H5TBff_gen.F90
+++ basename hl/fortran/H5TBff_gen.F90
