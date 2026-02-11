@@ -55,89 +55,24 @@ if Libdl.dlopen(libcuda_system, Libdl.RTLD_NOLOAD; throw_error=false) !== nothin
     return
 end
 
+# This shaves ~120ms off the load time
+precompile(Base.cmd_gen, (Tuple{Tuple{Base.Cmd}, Tuple{String}, Tuple{Bool}, Tuple{Array{String, 1}}},))
+precompile(Base.read, (Base.Cmd, Type{String}))
+
 # helper function to load a driver, query its version, and optionally query device
 # capabilities. needs to happen in a separate process because dlclose is unreliable.
 function inspect_driver(driver, deps=String[]; inspect_devices=false)
-    script = raw"""
-        using Libdl
-
-        const DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR = 75
-        const DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR = 76
-
-        function main(driver, inspect_devices, deps...)
-            inspect_devices = parse(Bool, inspect_devices)
-
-            for dep in deps
-                Libdl.dlopen(dep; throw_error=false) === nothing && exit(-1)
-            end
-
-            library_handle = Libdl.dlopen(driver; throw_error=false)
-            library_handle === nothing && return -1
-
-            cuInit = Libdl.dlsym(library_handle, "cuInit")
-            status = ccall(cuInit, Cint, (UInt32,), 0)
-            status == 0 || return -2
-
-            cuDriverGetVersion = Libdl.dlsym(library_handle, "cuDriverGetVersion")
-            version = Ref{Cint}()
-            status = ccall(cuDriverGetVersion, Cint, (Ptr{Cint},), version)
-            status == 0 || return -3
-            major, ver = divrem(version[], 1000)
-            minor, patch = divrem(ver, 10)
-            println(major, ".", minor, ".", patch)
-
-            if inspect_devices
-                cuDeviceGetCount = Libdl.dlsym(library_handle, "cuDeviceGetCount")
-                device_count = Ref{Cint}()
-                status = ccall(cuDeviceGetCount, Cint, (Ptr{Cint},), device_count)
-                status == 0 || return -4
-
-                cuDeviceGet = Libdl.dlsym(library_handle, "cuDeviceGet")
-                cuDeviceGetAttribute = Libdl.dlsym(library_handle, "cuDeviceGetAttribute")
-                for i in 1:device_count[]
-                    device = Ref{Cint}()
-                    status = ccall(cuDeviceGet, Cint, (Ptr{Cint}, Cint), device, i-1)
-                    status == 0 || return -5
-
-                    major = Ref{Cint}()
-                    status = ccall(cuDeviceGetAttribute, Cint, (Ptr{Cint}, UInt32, Cint), major, DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR, device[])
-                    status == 0 || return -6
-                    minor = Ref{Cint}()
-                    status = ccall(cuDeviceGetAttribute, Cint, (Ptr{Cint}, UInt32, Cint), minor, DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR, device[])
-                    status == 0 || return -7
-                    println(major[], ".", minor[])
-                end
-            end
-
-            return 0
-        end
-
-        exit(main(ARGS...))
-    """
-
-    # make sure we don't include any system image flags here since this will cause an infinite loop of __init__()
-    cmd = ```$(Cmd(filter(!startswith(r"-J|--sysimage"), Base.julia_cmd().exec)))
-             -O0 --compile=min -t1 --startup-file=no
-             -e $script $driver $inspect_devices $deps```
-
-    # make sure we use a fresh environment we can load Libdl in
-    cmd = addenv(cmd, "JULIA_LOAD_PATH" => nothing, "JULIA_DEPOT_PATH" => nothing)
+    cmd = `$(cuda_inspect_driver()) $driver $inspect_devices $deps`
 
     # run the command
-    out = Pipe()
-    proc = run(pipeline(cmd, stdin=devnull, stdout=out), wait=false)
-    close(out.in)
-    out_reader = @static if VERSION >= v"1.12-"
-        # XXX: avoid concurrent compilation (JuliaLang/julia#59834)
-        Threads.@spawn :samepool String.(readlines(out))
-    else
-        Threads.@spawn String.(readlines(out))
+    version_strings = String[]
+    try
+        version_strings = split(read(cmd, String))
+    catch _
+        return nothing
     end
-    wait(proc)
-    success(proc) || return nothing
 
     # parse the versions
-    version_strings = fetch(out_reader)
     driver_version = parse(VersionNumber, version_strings[1])
     if inspect_devices
         device_capabilities = map(str -> parse(VersionNumber, str), version_strings[2:end])
@@ -148,18 +83,18 @@ function inspect_driver(driver, deps=String[]; inspect_devices=false)
 end
 
 # fetch driver details
-    compat_driver_task = @static if VERSION >= v"1.12-"
-        # XXX: avoid concurrent compilation (JuliaLang/julia#59834)
-        Threads.@spawn :samepool inspect_driver(libcuda_compat, libcuda_deps)
-    else
-        Threads.@spawn inspect_driver(libcuda_compat, libcuda_deps)
-    end
-    system_driver_task = @static if VERSION >= v"1.12-"
-        # XXX: avoid concurrent compilation (JuliaLang/julia#59834)
-        Threads.@spawn :samepool inspect_driver(libcuda_system; inspect_devices=true)
-    else
-        Threads.@spawn inspect_driver(libcuda_system; inspect_devices=true)
-    end
+compat_driver_task = @static if VERSION >= v"1.12-"
+    # XXX: avoid concurrent compilation (JuliaLang/julia#59834)
+    Threads.@spawn :samepool inspect_driver(libcuda_compat, libcuda_deps)
+else
+    Threads.@spawn inspect_driver(libcuda_compat, libcuda_deps)
+end
+system_driver_task = @static if VERSION >= v"1.12-"
+    # XXX: avoid concurrent compilation (JuliaLang/julia#59834)
+    Threads.@spawn :samepool inspect_driver(libcuda_system; inspect_devices=true)
+else
+    Threads.@spawn inspect_driver(libcuda_system; inspect_devices=true)
+end
 compat_driver_details = fetch(compat_driver_task)
 if compat_driver_details === nothing
     @debug "Failed to load forwards-compatible driver."
