@@ -17,6 +17,10 @@ cuda_version = v"13.1"
 driver_version = "590.48.01"
 
 script = raw"""
+    # Build the driver inspection binary
+    mkdir -p ${bindir}
+    ${CC} -std=c99 -ldl cuda_inspect_driver.c -o ${bindir}/cuda_inspect_driver
+
     mkdir -p ${libdir}
 
     cd ${WORKSPACE}/srcdir/cuda_compat*
@@ -48,6 +52,7 @@ products = [
     LibraryProduct("libnvidia-nvvm", :libnvidia_nvvm;                     dont_dlopen=true),
     LibraryProduct("libnvidia-ptxjitcompiler", :libnvidia_ptxjitcompiler; dont_dlopen=true),
     LibraryProduct("libnvidia-tileiras", :libnvidia_tileiras;             dont_dlopen=true),
+    ExecutableProduct("cuda_inspect_driver", :cuda_inspect_driver)
 ]
 
 dependencies = []
@@ -63,6 +68,7 @@ for platform in platforms
 
     sources = get_sources("nvidia-driver", ["cuda_compat"]; version=driver_version,
                           platform=augmented_platform, variant="cuda$(cuda_version.major).$(cuda_version.minor)")
+    push!(sources, DirectorySource("./src"))
 
     push!(builds, (; platforms=[platform], sources))
 end
@@ -78,5 +84,13 @@ for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    name, cuda_version, build.sources, script,
                    build.platforms, products, dependencies;
-                   skip_audit=true, init_block)
+                   skip_audit=true, init_block, julia_compat="1.10",
+                   augment_platform_block="""
+                   # This shaves ~120ms off the load time
+                   precompile(Base.cmd_gen, (Tuple{Tuple{Base.Cmd}, Tuple{String}, Tuple{Bool}, Tuple{Array{String, 1}}},))
+                   precompile(Base.read, (Base.Cmd, Type{String}))
+                   precompile(Tuple{typeof(Base.arg_gen), Bool})
+
+                   augment_platform! = identity
+                   """)
 end
