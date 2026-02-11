@@ -2,12 +2,12 @@ using BinaryBuilder, Pkg
 
 name = "HiGHS"
 
-version = v"1.13.0"
+version = v"1.13.1"
 
 sources = [
     GitSource(
         "https://github.com/ERGO-Code/HiGHS.git",
-        "1bce6d5c801398dab6d2e6f98ac8935f3d4eec9c",
+        "1d267d97c16928bb5f86fcb2cba2d20f94c8720c",
     ),
 ]
 
@@ -38,7 +38,8 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
-    -DZLIB_USE_STATIC_LIBS=${BUILD_STATIC} \
+    -DBUILD_TESTING=OFF \
+    -DBUILD_CXX_EXE=OFF \
     -DHIPO=ON \
     -DBLA_VENDOR=blastrampoline \
     -DBLAS_LIBRARIES=\"${LBT}\" \
