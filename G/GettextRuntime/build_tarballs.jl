@@ -7,10 +7,7 @@ version = VersionNumber(version_string)
 
 sources = [
     # <ftp.gnu.org> has a too-strict rate limit.
-    # <ftpmirror.gnu.org> does not have gettext-1.0. (yet?)
-    # ArchiveSource("https://ftpmirror.gnu.org/pub/gnu/gettext/gettext-$(version_string).tar.xz",
-    #               "71132a3fb71e68245b8f2ac4e9e97137d3e5c02f415636eb508ae607bc01add7"),
-    ArchiveSource("https://mirror.csclub.uwaterloo.ca/gnu/gettext/gettext-$(version_string).tar.xz",
+    ArchiveSource("https://ftpmirror.gnu.org/gettext/gettext-$(version_string).tar.xz",
                   "71132a3fb71e68245b8f2ac4e9e97137d3e5c02f415636eb508ae607bc01add7"),
 
 
@@ -32,7 +29,6 @@ cd gettext-runtime
     --disable-static \
     --enable-relocatable \
     --with-libiconv-prefix=${prefix} \
-    --with-included-gettext \
     --with-included-libintl \
     am_cv_lib_iconv=yes \
     am_cv_func_iconv=yes
