@@ -120,7 +120,7 @@ make install
 install_license $WORKSPACE/srcdir/mpich*/COPYRIGHT
 
 # Remove everything we may have installed manually
-rm -rf ${prefix}/cuda
+rm -rf ${prefix}/cuda/bin
 """
 
 augment_platform_block = """
