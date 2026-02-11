@@ -125,9 +125,12 @@ rm -rf ${prefix}/cuda/bin
 
 augment_platform_block = """
     using Base.BinaryPlatforms
-    $(CUDA.augment)
+    $(replace(CUDA.augment, "function augment_platform!" => "function augment_cuda!")
     $(MPI.augment)
-    augment_platform!(platform::Platform) = augment_mpi!(platform)
+    function augment_platform!(platform::Platform)
+        augment_cuda!(platform)
+        augment_mpi!(platform)
+    end
     """
 
 platforms = CUDA.supported_platforms(; min_version = v"11.8", max_version=v"13.1.999")

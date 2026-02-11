@@ -94,7 +94,7 @@ const platform_augment = """
     function augment_platform!(platform::Platform)
         haskey(platform, "cuda_platform") && return platform
 
-        if Sys.islinux() && arch(platform) == "aarch64"
+        if Sys.islinux() && arch(platform) == "aarch64" && version < v"13"
             platform["cuda_platform"] = if is_tegra()
                 "jetson"
             else
@@ -154,8 +154,9 @@ Return a list of supported platforms to build CUDA artifacts for.
 function supported_platforms(; min_version=v"11", max_version=nothing)
     base_platforms = [
         Platform("x86_64", "linux"; libc = "glibc"),
-        Platform("aarch64", "linux"; libc = "glibc", cuda_platform="jetson"),
-        Platform("aarch64", "linux"; libc = "glibc", cuda_platform="sbsa"),
+        Platform("aarch64", "linux"; libc = "glibc", cuda_platform = "jetson"),
+        Platform("aarch64", "linux"; libc = "glibc", cuda_platform = "sbsa"),
+        Platform("aarch64", "linux"; libc = "glibc"),
 
         # nvcc isn't a cross compiler, so incompatible with BinaryBuilder
         #Platform("x86_64", "windows"),
@@ -172,6 +173,14 @@ function supported_platforms(; min_version=v"11", max_version=nothing)
             platform = deepcopy(base_platform)
 
             if arch(platform) == "aarch64"
+                # CUDA 13.x: we don't distinguish between jetson and sbsa any more
+                if version >= v"13" && haskey(platform, "cuda_platform")
+                    continue
+                end
+                if version < v"13" && !haskey(platform, "cuda_platform")
+                    continue
+                end
+
                 # CUDA 10.x: our CUDA 10.2 build recipe for arm64 only provides jetson binaries
                 if Base.thisminor(version) == v"10.2" && platform["cuda_platform"] != "jetson"
                     continue
