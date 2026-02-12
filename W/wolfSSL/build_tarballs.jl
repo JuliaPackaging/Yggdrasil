@@ -34,6 +34,7 @@ CFLAGS=-DLARGE_STATIC_BUFFERS ./configure \
     --disable-examples \
     --enable-maxfragment \
     --enable-aesctr \
+    --enable-aesgcm-stream \
     --enable-atomicuser \
     $ARCHFLAGS
 
