@@ -84,5 +84,13 @@ for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    name, cuda_version, build.sources, script,
                    build.platforms, products, dependencies;
-                   skip_audit=true, init_block)
+                   skip_audit=true, init_block, julia_compat="1.10",
+                   augment_platform_block="""
+                   # This shaves ~120ms off the load time
+                   precompile(Base.cmd_gen, (Tuple{Tuple{Base.Cmd}, Tuple{String}, Tuple{Bool}, Tuple{Array{String, 1}}},))
+                   precompile(Base.read, (Base.Cmd, Type{String}))
+                   precompile(Tuple{typeof(Base.arg_gen), Bool})
+
+                   augment_platform! = identity
+                   """)
 end

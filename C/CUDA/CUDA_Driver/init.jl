@@ -55,10 +55,6 @@ if Libdl.dlopen(libcuda_system, Libdl.RTLD_NOLOAD; throw_error=false) !== nothin
     return
 end
 
-# This shaves ~120ms off the load time
-precompile(Base.cmd_gen, (Tuple{Tuple{Base.Cmd}, Tuple{String}, Tuple{Bool}, Tuple{Array{String, 1}}},))
-precompile(Base.read, (Base.Cmd, Type{String}))
-
 # helper function to load a driver, query its version, and optionally query device
 # capabilities. needs to happen in a separate process because dlclose is unreliable.
 function inspect_driver(driver, deps=String[]; inspect_devices=false)
