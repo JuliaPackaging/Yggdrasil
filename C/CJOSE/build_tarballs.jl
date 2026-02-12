@@ -5,8 +5,7 @@ name = "CJOSE"
 # clear what each component means. For example, v0.6.2 precedes v0.6.2.1 through v0.6.2.4,
 # and while some release notes include only security and/or bug fixes, v0.6.2.1 apparently
 # also includes new features. So... who knows what anything means.
-version = "0.6.2.4"
-ygg_version = v"0.62.4"
+version = v"0.62.4"  # upstream version is 0.6.2.4
 
 sources = [
     # NOTE: This is OpenIDC's maintenance fork, not the original Cisco repository
@@ -16,7 +15,6 @@ sources = [
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/cjose
-
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static
 make install
 """
@@ -34,5 +32,5 @@ dependencies = [
                compat="3.0.16")
 ]
 
-build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_version="1.6")
