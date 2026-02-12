@@ -35,7 +35,7 @@ if [[ "${target}" == *-apple-* ]]; then
     # with the actual path on our system.
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/apple_cocoa_configure.patch"
 
-    export LDFLAGS="-framework UniformTypeIdentifiers -Wl,-U,___isPlatformVersionAtLeast ${LDFLAGS}"
+    export LDFLAGS="-framework UniformTypeIdentifiers -L${libdir}/darwin -lclang_rt.osx ${LDFLAGS}"
 fi
 if [[ "${target}" == *mingw* ]]; then
     FLAGS+=(--with-x=no)
@@ -74,6 +74,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("Xorg_xorgproto_jll"; platforms=x11_platforms),
+    BuildDependency("LLVMCompilerRT_jll"; platforms=filter(p -> Sys.isapple(p), platforms)),
     Dependency("Tcl_jll"; compat="~"*string(version)),
     Dependency("Xorg_libXext_jll"; platforms=x11_platforms),
     Dependency("Xorg_libXft_jll"; platforms=x11_platforms),
