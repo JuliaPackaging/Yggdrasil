@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "wolfSSL"
-version = v"5.8.4+1"
+version = v"5.8.4"
 
 # Collection of sources required to complete build
 sources = [
