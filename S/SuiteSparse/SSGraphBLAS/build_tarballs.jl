@@ -36,9 +36,12 @@ products = [
 ]
 
 dependencies = append!(dependencies, [
-    # SSGraphBLAS doesn't actually depend on SuiteSparse, it is just shipped inside of it
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
+
+    # SSGraphBLAS doesn't actually depend on SuiteSparse, it is just shipped inside of it and needs the basic infrastructure to be around
+    # in the build system, but not when running
+    BuildDependency("SuiteSparse_jll"),
 ])
 
 # Build the tarballs, and possibly a `build.jl` as well.
