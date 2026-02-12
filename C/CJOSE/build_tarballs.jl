@@ -15,6 +15,7 @@ sources = [
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/cjose
+autoreconf -fiv
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static
 make install
 """
