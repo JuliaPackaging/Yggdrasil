@@ -1,4 +1,4 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "CJOSE"
 # Upstream uses version numbers with 4 components in some but not all cases and it's not
