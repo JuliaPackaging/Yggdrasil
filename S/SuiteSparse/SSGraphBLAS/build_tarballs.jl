@@ -1,12 +1,18 @@
 include("../common.jl")
 
 name = "SSGraphBLAS"
-version = v"10.2.0"
+version = v"10.3.1"
 
-SS_version_str = "7.12.1"
-SS_version = VersionNumber(SS_version_str)
+function gb_to_ss_version(version::VersionNumber)
+    # Version map started when GraphBLAS decoupled from SS dependency. Everything before here
+    # has a dependency on SS in the registry and can't be rebuilt easily.
+    ss_version = Dict(
+        v"10.3.1" => v"7.12.2",
+    )
+    return ss_version[version]
+end
 
-sources = suitesparse_sources(SS_version)
+sources = suitesparse_sources(gb_to_ss_version(version))
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -29,13 +35,12 @@ products = [
     LibraryProduct("libgraphblas", :libgraphblas),
 ]
 
-# Add dependency on SuiteSparse_jll
 dependencies = append!(dependencies, [
+    # SSGraphBLAS doesn't actually depend on SuiteSparse, it is just shipped inside of it
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
-    Dependency("SuiteSparse_jll"; compat = "=$SS_version_str")
 ])
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms,
-               products, dependencies; preferred_gcc_version=v"9", julia_compat="1.12")
+               products, dependencies; preferred_gcc_version=v"9", julia_compat="1.10")
