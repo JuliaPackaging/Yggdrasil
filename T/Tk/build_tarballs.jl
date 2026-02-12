@@ -58,7 +58,7 @@ make install-private-headers
 install_license $WORKSPACE/srcdir/tk/license.terms
 """
 
-sources, script = require_macos_sdk("12.0", sources, script)
+sources, script = require_macos_sdk("12.3", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
