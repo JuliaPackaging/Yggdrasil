@@ -113,9 +113,8 @@ dependencies = [
     Dependency(PackageSpec(name="FLINT_jll"), compat = "~301.400.000"),
     Dependency("GMP_jll", v"6.2.1"),
     Dependency("MPFR_jll", v"4.1.1"),
-    BuildDependency(PackageSpec(name="OpenBLAS32_jll", version="0.3.29")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    preferred_gcc_version=v"6", julia_compat = "1.10")
+    preferred_gcc_version=v"8", julia_compat = "1.10")
