@@ -29,6 +29,13 @@ if [[ ${bb_full_target} == *mpitrampoline* ]]; then
     atomic_patch -p1 ../patches/mpi.patch
 fi
 
+if [[ ${target} == x86_64-apple-darwin* ]]; then
+    # When compiling Fortran, our gfortran 12 uses Clang 8 to assemble object files.
+    # Clang 8 is too old to understand newer MacOSX versions:
+    # clang-8: error: invalid version number in 'MACOSX_DEPLOYMENT_TARGET=14.0'
+    export MACOSX_DEPLOYMENT_TARGET=10.9
+fi
+
 # OS does not support `O_DIRECT`
 direct_vfd=$(if [[ ${target} == *-apple-* || ${target} == *-w64-* ]]; then echo OFF; else echo ON; fi)
 
@@ -234,8 +241,6 @@ install_license LICENSE
 
 # The HDF5 2.0.0 release note state that MacOS 13 does not correct
 # convert long double to float16, while MacOS 14 is fine.
-# TODO: check whether 14.5 works, or what is going wrong with the compiler. i see
-# `[13:02:57] <built-in>: error: unknown value ‘14.0’ of ‘-mmacosx-version-min’`
 sources, script = require_macos_sdk("14.0", sources, script)
 
 augment_platform_block = """
@@ -302,10 +307,5 @@ append!(dependencies, platform_dependencies)
 ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# TODO: use minimum LLVM to get float16 on x86_64-unknown-freebsd
-# i see
-# /opt/x86_64-unknown-freebsd13.4/bin/x86_64-unknown-freebsd13.4-ld: ../../bin/libhdf5.so.320.0.0: undefined reference to `__extendhfxf2'
-# [13:03:35] /opt/x86_64-unknown-freebsd13.4/bin/x86_64-unknown-freebsd13.4-ld: ../../bin/libhdf5.so.320.0.0: undefined reference to `__truncxfhf2'
-# [13:03:35] clang: error: linker command failed with exit code 1 (use -v to see invocation)
 build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                augment_platform_block, clang_use_lld=false, julia_compat="1.10", preferred_gcc_version=v"12")
