@@ -61,9 +61,9 @@ if [[ "${target}" == *-mingw* ]]; then
     make install
     make install-private-headers
 
-    # Remove the pre-built MSVC zlib1.dll installed by the Makefile;
-    # tcl90.dll imports libz.dll from Zlib_jll at runtime instead.
-    rm -f ${bindir}/zlib1.dll
+    # Remove the pre-built MSVC zlib1.dll and the zlib import library installed
+    # by the Makefile; tcl90.dll imports libz.dll from Zlib_jll at runtime instead.
+    rm -f ${bindir}/zlib1.dll ${libdir}/libz.dll.a
 else
     cd $WORKSPACE/srcdir/tcl/unix/
     ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
