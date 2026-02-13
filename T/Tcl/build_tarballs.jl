@@ -67,6 +67,12 @@ make install
 # Tk needs private headers
 make install-private-headers
 
+# Remove the pre-built MSVC zlib1.dll that the Makefile installs;
+# tcl90.dll now imports libz.dll from Zlib_jll at runtime.
+if [[ "${target}" == *-mingw* ]]; then
+    rm -f ${bindir}/zlib1.dll
+fi
+
 # Install license file
 install_license $WORKSPACE/srcdir/tcl/license.terms
 """
