@@ -67,7 +67,8 @@ fi
     --enable-p-procs-static \
     --disable-p-procs-dynamic \
     --enable-gfanlib \
-    --with-readline=no \
+    --without-readline \
+    --without-ntl \
     --with-gmp=$prefix \
     --with-flint=$prefix \
     --without-python \
@@ -112,6 +113,7 @@ dependencies = [
     Dependency(PackageSpec(name="FLINT_jll"), compat = "~301.400.000"),
     Dependency("GMP_jll", v"6.2.1"),
     Dependency("MPFR_jll", v"4.1.1"),
+    BuildDependency(PackageSpec(name="OpenBLAS32_jll", version="0.3.29")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
