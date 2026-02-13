@@ -14,6 +14,23 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 if [[ "${target}" == *-mingw* ]]; then
+    # Cross-compile libtommath from source to fix C runtime mismatch.
+    # The pre-built libtommath.dll in the Tcl source tree was compiled with MSVC (UCRT)
+    # but tcl90.dll is cross-compiled with MinGW (msvcrt), causing a crash at mp_init.
+    cd $WORKSPACE/srcdir/tcl/libtommath
+    TOMMATH_CFLAGS="-O2 -I. -DTCL_WITH_EXTERNAL_TOMMATH"
+    if [[ "${target}" == x86_64-* ]] || [[ "${target}" == aarch64-* ]]; then
+        TOMMATH_CFLAGS="${TOMMATH_CFLAGS} -DMP_64BIT"
+    fi
+    ${CC} ${TOMMATH_CFLAGS} -shared -o libtommath.dll bn_*.c \
+        -Wl,--out-implib,libtommath.dll.a
+    # Replace pre-built binaries with cross-compiled ones.
+    if [[ "${target}" == aarch64-*mingw* ]]; then
+        cp libtommath.dll libtommath.dll.a win64-arm/
+    elif [[ "${target}" == x86_64-*mingw* ]]; then
+        cp libtommath.dll libtommath.dll.a win64/
+    fi
+
     cd $WORKSPACE/srcdir/tcl/win/
     # `make install` calls `tclsh` on Windows
     apk add tcl
@@ -63,4 +80,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies,
-               julia_compat="1.6")
+               preferred_gcc_version=v"5", julia_compat="1.6")
