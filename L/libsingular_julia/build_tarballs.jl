@@ -59,7 +59,7 @@ dependencies = [
     # Singular.jl to ensure the right versions of libsingular_julia_jll and
     # Singular_jll are paired. This gives us flexibility in the development
     # setup there.
-    Dependency("Singular_jll", v"404.101.505+1"),
+    Dependency("Singular_jll", v"404.101.505"),
 ]
 
 # we want to get notified of any changes to julia_compat, and adapt `version` accordingly
@@ -69,4 +69,4 @@ dependencies = [
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     preferred_gcc_version=v"8", julia_compat=libjulia_julia_compat(julia_versions))
 
-# rebuild trigger: 0
+# rebuild trigger: 1
