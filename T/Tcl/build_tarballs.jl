@@ -3,28 +3,54 @@
 using BinaryBuilder
 
 name = "Tcl"
-version = v"8.6.14"
+version = v"9.0.3"
 
 # Collection of sources required to build Tcl
 sources = [
-    ArchiveSource("https://downloads.sourceforge.net/sourceforge/tcl/tcl$(version)-src.tar.gz",
-                  "5880225babf7954c58d4fb0f5cf6279104ce1cd6aa9b71e9a6322540e1c4de66"),
+    GitSource("https://github.com/tcltk/tcl.git",
+              "bcd73c5cf807577f93f890c0efdd577b14a66418"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 if [[ "${target}" == *-mingw* ]]; then
-    cd $WORKSPACE/srcdir/tcl*/win/
+    # Cross-compile libtommath from source to fix C runtime mismatch.
+    # The pre-built libtommath.dll in the Tcl source tree was compiled with MSVC (UCRT)
+    # but tcl90.dll is cross-compiled with MinGW (msvcrt), causing a crash at mp_init.
+    cd $WORKSPACE/srcdir/tcl/libtommath
+    TOMMATH_CFLAGS="-O2 -I. -DTCL_WITH_EXTERNAL_TOMMATH"
+    if [[ "${target}" == x86_64-* ]] || [[ "${target}" == aarch64-* ]]; then
+        TOMMATH_CFLAGS="${TOMMATH_CFLAGS} -DMP_64BIT"
+    fi
+    ${CC} ${TOMMATH_CFLAGS} -shared -o libtommath.dll bn_*.c \
+        -Wl,--out-implib,libtommath.dll.a
+    # Replace pre-built binaries with cross-compiled ones.
+    if [[ "${target}" == aarch64-*mingw* ]]; then
+        cp libtommath.dll libtommath.dll.a win64-arm/
+    elif [[ "${target}" == x86_64-*mingw* ]]; then
+        cp libtommath.dll libtommath.dll.a win64/
+    fi
+
+    cd $WORKSPACE/srcdir/tcl/win/
     # `make install` calls `tclsh` on Windows
     apk add tcl
 else
-    cd $WORKSPACE/srcdir/tcl*/unix/
+    cd $WORKSPACE/srcdir/tcl/unix/
 fi
 
-FLAGS=(--enable-threads --disable-rpath)
+# musl needs bsd-compat-headers for sys/queue.h
+# Copy header to sysroot since cross-compiler doesn't see /usr/include
+if [[ "${target}" == *-musl* ]]; then
+    apk add bsd-compat-headers
+    cp /usr/include/sys/queue.h /opt/${target}/${target}/sys-root/usr/include/sys/
+fi
+
+FLAGS=(--disable-zipfs --enable-threads --disable-rpath)
+
 if [[ "${target}" == x86_64-* ]] || [[ "${target}" == aarch64-* ]]; then
     FLAGS+=(--enable-64bit)
 fi
+
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
 make -j${nproc}
 make install
@@ -32,7 +58,7 @@ make install
 make install-private-headers
 
 # Install license file
-install_license $WORKSPACE/srcdir/tcl*/license.terms
+install_license $WORKSPACE/srcdir/tcl/license.terms
 """
 
 # These are the platforms we will build for by default, unless further
@@ -41,14 +67,14 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libtcl8.6", "libtcl8", "tcl86"], :libtcl),
+    LibraryProduct(["libtcl9.0", "libtcl9", "tcl90"], :libtcl),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Zlib_jll"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies,
-               julia_compat="1.6")
+               preferred_gcc_version=v"5", julia_compat="1.6")

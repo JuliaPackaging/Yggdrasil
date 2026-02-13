@@ -14,17 +14,21 @@ Base.record_compiletime_preference(CUDA_Runtime_jll_uuid, "version")
 Base.record_compiletime_preference(CUDA_Runtime_jll_uuid, "local")
 
 function augment_platform!(platform::Platform)
+    # When CUDA is not available, default to last known version.
+    # This ensures the JLL is also functional on systems without a GPU.
+    last_known_version = "13"
+
     platform["cuda"] = if @isdefined(CUDA_Runtime_jll)
         cuda = CUDA_Runtime_jll.cuda_toolkit_tag()
         if cuda === nothing
-            "none"
+            last_known_version
         else
             # extract major version
             cuda_version = parse(VersionNumber, cuda)
             "$(cuda_version.major)"
         end
     else
-        "none"
+        last_known_version
     end
 
     return platform

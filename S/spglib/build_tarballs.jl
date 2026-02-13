@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "spglib"
-version = v"2.6.0"
+version = v"2.7.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/spglib/spglib.git", "c633404d67b2aa341ae748819c542e81c0c1f55d")
+    GitSource("https://github.com/spglib/spglib.git", "12355c77fb7c505a55f52cae36341d73b781a065")
 ]
 
 # Bash recipe for building across all platforms
