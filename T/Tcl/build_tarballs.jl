@@ -14,9 +14,11 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 if [[ "${target}" == *-mingw* ]]; then
-    # Cross-compile libtommath from source to fix C runtime mismatch.
-    # The pre-built libtommath.dll in the Tcl source tree was compiled with MSVC (UCRT)
-    # but tcl90.dll is cross-compiled with MinGW (msvcrt), causing a crash at mp_init.
+    # The pre-built DLLs in the Tcl source tree were compiled with MSVC (UCRT)
+    # but tcl90.dll is cross-compiled with MinGW (msvcrt), causing crashes.
+    # Fix: cross-compile libtommath from source, and use Zlib_jll's zlib.
+
+    # Cross-compile libtommath from source.
     cd $WORKSPACE/srcdir/tcl/libtommath
     TOMMATH_CFLAGS="-O2 -I. -DTCL_WITH_EXTERNAL_TOMMATH"
     if [[ "${target}" == x86_64-* ]] || [[ "${target}" == aarch64-* ]]; then
@@ -24,11 +26,12 @@ if [[ "${target}" == *-mingw* ]]; then
     fi
     ${CC} ${TOMMATH_CFLAGS} -shared -o libtommath.dll bn_*.c \
         -Wl,--out-implib,libtommath.dll.a
-    # Replace pre-built binaries with cross-compiled ones.
+
+    # Replace pre-built libtommath with cross-compiled version.
     if [[ "${target}" == aarch64-*mingw* ]]; then
-        cp libtommath.dll libtommath.dll.a win64-arm/
+        cp -f libtommath.dll libtommath.dll.a win64-arm/
     elif [[ "${target}" == x86_64-*mingw* ]]; then
-        cp libtommath.dll libtommath.dll.a win64/
+        cp -f libtommath.dll libtommath.dll.a win64/
     fi
 
     cd $WORKSPACE/srcdir/tcl/win/
@@ -52,6 +55,13 @@ if [[ "${target}" == x86_64-* ]] || [[ "${target}" == aarch64-* ]]; then
 fi
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
+
+# On Windows, the configure hardcodes ZLIB_LIBS to pre-built MSVC DLLs from
+# the source tree. Use Zlib_jll's zlib instead (available on the path at runtime).
+if [[ "${target}" == *-mingw* ]]; then
+    sed -i 's|[^ ]*compat/zlib[^ ]*/libz\.dll\.a|-lz|g' Makefile
+fi
+
 make -j${nproc}
 make install
 # Tk needs private headers
