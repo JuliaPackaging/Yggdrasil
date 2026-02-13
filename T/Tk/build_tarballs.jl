@@ -23,6 +23,7 @@ fi
 
 export CFLAGS="-I${prefix}/include ${CFLAGS}"
 
+FLAGS=(--disable-zipfs --enable-threads --disable-rpath)
 if [[ "${target}" == x86_64-* ]] || [[ "${target}" == aarch64-* ]]; then
     FLAGS+=(--enable-64bit)
 fi
@@ -30,22 +31,11 @@ if [[ "${target}" == *-apple-* ]]; then
     FLAGS+=(--with-x=no)
     FLAGS+=(--enable-aqua=yes)
 
-    # Disable zipfs: Tk 9.0 embeds a zip archive in shared libraries which appends
-    # data past the Mach-O __LINKEDIT segment, breaking install_name_tool on macOS.
-    FLAGS+=(--disable-zipfs)
-
     # The following patch replaces the hard-coded path of Cocoa framework
     # with the actual path on our system.
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/apple_cocoa_configure.patch"
 
-    # Set deployment target to 11.0 so that @available() checks for macOS ≤ 11
-    # are resolved at compile time (no ___isPlatformVersionAtLeast calls emitted).
-    # Link UniformTypeIdentifiers for UTType used in tkMacOSXDialog/FileTypes.
-    # Allow __isPlatformVersionAtLeast to remain undefined at link time; it is
-    # emitted by @available() checks for macOS > 11 and resolves at runtime from
-    # the system's libclang_rt. Using -U limits this to that single symbol only.
-    export MACOSX_DEPLOYMENT_TARGET=11.0
-    export LDFLAGS="-framework UniformTypeIdentifiers -Wl,-U,___isPlatformVersionAtLeast ${LDFLAGS}"
+    export LDFLAGS="-framework UniformTypeIdentifiers -L${libdir}/darwin -lclang_rt.osx ${LDFLAGS}"
 fi
 if [[ "${target}" == *mingw* ]]; then
     FLAGS+=(--with-x=no)
@@ -68,7 +58,7 @@ make install-private-headers
 install_license $WORKSPACE/srcdir/tk/license.terms
 """
 
-sources, script = require_macos_sdk("11.0", sources, script)
+sources, script = require_macos_sdk("12.3", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
@@ -84,6 +74,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("Xorg_xorgproto_jll"; platforms=x11_platforms),
+    BuildDependency("LLVMCompilerRT_jll"; platforms=filter(p -> Sys.isapple(p), platforms)),
     Dependency("Tcl_jll"; compat="~"*string(version)),
     Dependency("Xorg_libXext_jll"; platforms=x11_platforms),
     Dependency("Xorg_libXft_jll"; platforms=x11_platforms),
