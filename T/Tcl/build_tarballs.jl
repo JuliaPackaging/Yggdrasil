@@ -13,31 +13,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-if [[ "${target}" == *-mingw* ]]; then
-    # Cross-compile libtommath from source to fix C runtime mismatch.
-    # The pre-built libtommath.dll in the Tcl source tree was compiled with MSVC (UCRT)
-    # but tcl90.dll is cross-compiled with MinGW (msvcrt), causing a crash at mp_init.
-    cd $WORKSPACE/srcdir/tcl/libtommath
-    TOMMATH_CFLAGS="-O2 -I. -DTCL_WITH_EXTERNAL_TOMMATH"
-    if [[ "${target}" == x86_64-* ]] || [[ "${target}" == aarch64-* ]]; then
-        TOMMATH_CFLAGS="${TOMMATH_CFLAGS} -DMP_64BIT"
-    fi
-    ${CC} ${TOMMATH_CFLAGS} -shared -o libtommath.dll bn_*.c \
-        -Wl,--out-implib,libtommath.dll.a
-    # Replace pre-built binaries with cross-compiled ones.
-    if [[ "${target}" == aarch64-*mingw* ]]; then
-        cp libtommath.dll libtommath.dll.a win64-arm/
-    elif [[ "${target}" == x86_64-*mingw* ]]; then
-        cp libtommath.dll libtommath.dll.a win64/
-    fi
-
-    cd $WORKSPACE/srcdir/tcl/win/
-    # `make install` calls `tclsh` on Windows
-    apk add tcl
-else
-    cd $WORKSPACE/srcdir/tcl/unix/
-fi
-
 # musl needs bsd-compat-headers for sys/queue.h
 # Copy header to sysroot since cross-compiler doesn't see /usr/include
 if [[ "${target}" == *-musl* ]]; then
@@ -51,11 +26,59 @@ if [[ "${target}" == x86_64-* ]] || [[ "${target}" == aarch64-* ]]; then
     FLAGS+=(--enable-64bit)
 fi
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
-make -j${nproc}
-make install
-# Tk needs private headers
-make install-private-headers
+if [[ "${target}" == *-mingw* ]]; then
+    # `make install` calls `tclsh` on Windows
+    apk add tcl
+
+    # The pre-built libtommath and zlib DLLs in the Tcl source tree were compiled
+    # with MSVC (UCRT) but tcl90.dll is cross-compiled with MinGW (msvcrt),
+    # causing C runtime mismatch crashes. Fix:
+    #  - Cross-compile libtommath from source.
+    #  - Use Zlib_jll's zlib (available on the DLL search path at runtime).
+
+    # Cross-compile libtommath from source.
+    cd $WORKSPACE/srcdir/tcl/libtommath
+    TOMMATH_CFLAGS="-O2 -I. -DTCL_WITH_EXTERNAL_TOMMATH"
+    if [[ "${target}" == x86_64-* ]] || [[ "${target}" == aarch64-* ]]; then
+        TOMMATH_CFLAGS="${TOMMATH_CFLAGS} -DMP_64BIT"
+    fi
+    ${CC} ${TOMMATH_CFLAGS} -shared -o libtommath.dll bn_*.c \
+        -Wl,--out-implib,libtommath.dll.a
+    # Replace pre-built MSVC libtommath and zlib with cross-compiled / Zlib_jll versions.
+    # The MSVC import libraries point to zlib1.dll; Zlib_jll's points to libz.dll.
+    # Configure sets ZLIB_LIBS per target: win64/libz.dll.a, win64-arm/libz.dll.a,
+    # or win32/zdll.lib (no GCC branch for 32-bit in upstream configure).
+    if [[ "${target}" == aarch64-*mingw* ]]; then
+        cp -f libtommath.dll libtommath.dll.a win64-arm/
+        cp -f ${prefix}/lib/libz.dll.a $WORKSPACE/srcdir/tcl/compat/zlib/win64-arm/libz.dll.a
+    elif [[ "${target}" == x86_64-*mingw* ]]; then
+        cp -f libtommath.dll libtommath.dll.a win64/
+        cp -f ${prefix}/lib/libz.dll.a $WORKSPACE/srcdir/tcl/compat/zlib/win64/libz.dll.a
+    elif [[ "${target}" == i686-*mingw* ]]; then
+        cp -f libtommath.dll libtommath.dll.a win32/
+        cp -f ${prefix}/lib/libz.dll.a $WORKSPACE/srcdir/tcl/compat/zlib/win32/zdll.lib
+    fi
+
+    cd $WORKSPACE/srcdir/tcl/win/
+    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
+
+    # Disable the zlib1.dll copy target; we use libz.dll from Zlib_jll instead.
+    sed -i 's/^ZLIB_DLL_FILE.*/ZLIB_DLL_FILE =/' Makefile
+
+    make -j${nproc}
+    make install
+    make install-private-headers
+
+    # Remove leftover zlib files; Zlib_jll provides libz.dll at runtime.
+    rm -f ${bindir}/zlib1.dll ${prefix}/lib/libz.dll.a
+else
+    cd $WORKSPACE/srcdir/tcl/unix/
+    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
+    make -j${nproc}
+    make install
+    # Tk needs private headers
+    make install-private-headers
+fi
 
 # Install license file
 install_license $WORKSPACE/srcdir/tcl/license.terms
