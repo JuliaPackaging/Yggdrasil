@@ -44,26 +44,33 @@ if [[ "${target}" == *-mingw* ]]; then
     fi
     ${CC} ${TOMMATH_CFLAGS} -shared -o libtommath.dll bn_*.c \
         -Wl,--out-implib,libtommath.dll.a
+    # Replace pre-built MSVC libtommath and zlib with cross-compiled / Zlib_jll versions.
+    # The MSVC import libraries point to zlib1.dll; Zlib_jll's points to libz.dll.
+    # Configure sets ZLIB_LIBS per target: win64/libz.dll.a, win64-arm/libz.dll.a,
+    # or win32/zdll.lib (no GCC branch for 32-bit in upstream configure).
     if [[ "${target}" == aarch64-*mingw* ]]; then
         cp -f libtommath.dll libtommath.dll.a win64-arm/
+        cp -f ${prefix}/lib/libz.dll.a $WORKSPACE/srcdir/tcl/compat/zlib/win64-arm/libz.dll.a
     elif [[ "${target}" == x86_64-*mingw* ]]; then
         cp -f libtommath.dll libtommath.dll.a win64/
+        cp -f ${prefix}/lib/libz.dll.a $WORKSPACE/srcdir/tcl/compat/zlib/win64/libz.dll.a
+    elif [[ "${target}" == i686-*mingw* ]]; then
+        cp -f libtommath.dll libtommath.dll.a win32/
+        cp -f ${prefix}/lib/libz.dll.a $WORKSPACE/srcdir/tcl/compat/zlib/win32/zdll.lib
     fi
 
     cd $WORKSPACE/srcdir/tcl/win/
     ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
 
-    # Configure hardcodes ZLIB_LIBS to pre-built MSVC DLLs from the source tree.
-    # Replace with -lz to link against Zlib_jll instead.
-    sed -i 's|[^ ]*compat/zlib[^ ]*/libz\.dll\.a|-lz|g' Makefile
+    # Disable the zlib1.dll copy target; we use libz.dll from Zlib_jll instead.
+    sed -i 's/^ZLIB_DLL_FILE.*/ZLIB_DLL_FILE =/' Makefile
 
     make -j${nproc}
     make install
     make install-private-headers
 
-    # Remove the pre-built MSVC zlib1.dll and the zlib import library installed
-    # by the Makefile; tcl90.dll imports libz.dll from Zlib_jll at runtime instead.
-    rm -f ${bindir}/zlib1.dll ${libdir}/libz.dll.a
+    # Remove leftover zlib files; Zlib_jll provides libz.dll at runtime.
+    rm -f ${bindir}/zlib1.dll ${prefix}/lib/libz.dll.a
 else
     cd $WORKSPACE/srcdir/tcl/unix/
     ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
