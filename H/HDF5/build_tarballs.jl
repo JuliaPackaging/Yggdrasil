@@ -32,6 +32,8 @@ fi
 # OS does not support `O_DIRECT`
 direct_vfd=$(if [[ ${target} == *-apple-* || ${target} == *-w64-* ]]; then echo OFF; else echo ON; fi)
 
+float16=$(if [[ ${target} == x86_64-apple-darwin* || ${target} == x86_64-unknown-freebsd* ]]; then echo OFF; else echo ON; fi)
+
 # `aws_c_s3_jll` has not been built
 ros3_vdf=$(if [[ ${target} == i686-w64-* ]]; then echo OFF; else echo ON; fi)
 
@@ -59,7 +61,7 @@ cmake_options=(
     -DHDF5_ENABLE_HDFS=OFF             # would require Java
     -DHDF5_ENABLE_MAP_API=ON
     -DHDF5_ENABLE_MIRROR_VFD=ON
-    -DHDF5_ENABLE_NONSTANDARD_FEATURE_FLOAT16=ON
+    -DHDF5_ENABLE_NONSTANDARD_FEATURE_FLOAT16=${float16}
     -DHDF5_ENABLE_PARALLEL=${parallel}
     -DHDF5_ENABLE_ROS3_VFD=${ros3_vfd}
     -DHDF5_ENABLE_SUBFILING_VFD=ON
@@ -67,9 +69,9 @@ cmake_options=(
     -DHDF5_ENABLE_ZLIB_SUPPORT=ON
     -DHDF5_USE_PREGEN=ON
     -DMPI_HOME=${prefix}
-    -DH5_FLOAT16_CONVERSION_FUNCS_LINK=ON
-    -DH5_FLOAT16_CONVERSION_FUNCS_LINK_NO_FLAGS=ON
-    -DH5_LDOUBLE_TO_FLOAT16_CORRECT=ON
+    -DH5_FLOAT16_CONVERSION_FUNCS_LINK=${float16}
+    -DH5_FLOAT16_CONVERSION_FUNCS_LINK_NO_FLAGS=${float16}
+    -DH5_LDOUBLE_TO_FLOAT16_CORRECT=${float16}
 )
 
 # We have pregenerated the Fortran configurations for Linux.
