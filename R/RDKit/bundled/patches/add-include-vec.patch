@@ -1,0 +1,10 @@
+--- a/Code/DataStructs/RealValueVect.h
++++ b/Code/DataStructs/RealValueVect.h
+@@ -15,6 +15,7 @@
+ #include <boost/smart_ptr.hpp>
+ #include <string>
+ #include <cstring>
++#include <vector>
+ 
+ namespace RDGeom {
+ class UniformRealValueGrid3D;
