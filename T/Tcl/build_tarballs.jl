@@ -13,34 +13,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-if [[ "${target}" == *-mingw* ]]; then
-    # The pre-built DLLs in the Tcl source tree were compiled with MSVC (UCRT)
-    # but tcl90.dll is cross-compiled with MinGW (msvcrt), causing crashes.
-    # Fix: cross-compile libtommath from source, and use Zlib_jll's zlib.
-
-    # Cross-compile libtommath from source.
-    cd $WORKSPACE/srcdir/tcl/libtommath
-    TOMMATH_CFLAGS="-O2 -I. -DTCL_WITH_EXTERNAL_TOMMATH"
-    if [[ "${target}" == x86_64-* ]] || [[ "${target}" == aarch64-* ]]; then
-        TOMMATH_CFLAGS="${TOMMATH_CFLAGS} -DMP_64BIT"
-    fi
-    ${CC} ${TOMMATH_CFLAGS} -shared -o libtommath.dll bn_*.c \
-        -Wl,--out-implib,libtommath.dll.a
-
-    # Replace pre-built libtommath with cross-compiled version.
-    if [[ "${target}" == aarch64-*mingw* ]]; then
-        cp -f libtommath.dll libtommath.dll.a win64-arm/
-    elif [[ "${target}" == x86_64-*mingw* ]]; then
-        cp -f libtommath.dll libtommath.dll.a win64/
-    fi
-
-    cd $WORKSPACE/srcdir/tcl/win/
-    # `make install` calls `tclsh` on Windows
-    apk add tcl
-else
-    cd $WORKSPACE/srcdir/tcl/unix/
-fi
-
 # musl needs bsd-compat-headers for sys/queue.h
 # Copy header to sysroot since cross-compiler doesn't see /usr/include
 if [[ "${target}" == *-musl* ]]; then
@@ -54,23 +26,51 @@ if [[ "${target}" == x86_64-* ]] || [[ "${target}" == aarch64-* ]]; then
     FLAGS+=(--enable-64bit)
 fi
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
-
-# On Windows, the configure hardcodes ZLIB_LIBS to pre-built MSVC DLLs from
-# the source tree. Use Zlib_jll's zlib instead (available on the path at runtime).
 if [[ "${target}" == *-mingw* ]]; then
+    # `make install` calls `tclsh` on Windows
+    apk add tcl
+
+    # The pre-built libtommath and zlib DLLs in the Tcl source tree were compiled
+    # with MSVC (UCRT) but tcl90.dll is cross-compiled with MinGW (msvcrt),
+    # causing C runtime mismatch crashes. Fix:
+    #  - Cross-compile libtommath from source.
+    #  - Use Zlib_jll's zlib (available on the DLL search path at runtime).
+
+    # Cross-compile libtommath from source.
+    cd $WORKSPACE/srcdir/tcl/libtommath
+    TOMMATH_CFLAGS="-O2 -I. -DTCL_WITH_EXTERNAL_TOMMATH"
+    if [[ "${target}" == x86_64-* ]] || [[ "${target}" == aarch64-* ]]; then
+        TOMMATH_CFLAGS="${TOMMATH_CFLAGS} -DMP_64BIT"
+    fi
+    ${CC} ${TOMMATH_CFLAGS} -shared -o libtommath.dll bn_*.c \
+        -Wl,--out-implib,libtommath.dll.a
+    if [[ "${target}" == aarch64-*mingw* ]]; then
+        cp -f libtommath.dll libtommath.dll.a win64-arm/
+    elif [[ "${target}" == x86_64-*mingw* ]]; then
+        cp -f libtommath.dll libtommath.dll.a win64/
+    fi
+
+    cd $WORKSPACE/srcdir/tcl/win/
+    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
+
+    # Configure hardcodes ZLIB_LIBS to pre-built MSVC DLLs from the source tree.
+    # Replace with -lz to link against Zlib_jll instead.
     sed -i 's|[^ ]*compat/zlib[^ ]*/libz\.dll\.a|-lz|g' Makefile
-fi
 
-make -j${nproc}
-make install
-# Tk needs private headers
-make install-private-headers
+    make -j${nproc}
+    make install
+    make install-private-headers
 
-# Remove the pre-built MSVC zlib1.dll that the Makefile installs;
-# tcl90.dll now imports libz.dll from Zlib_jll at runtime.
-if [[ "${target}" == *-mingw* ]]; then
+    # Remove the pre-built MSVC zlib1.dll installed by the Makefile;
+    # tcl90.dll imports libz.dll from Zlib_jll at runtime instead.
     rm -f ${bindir}/zlib1.dll
+else
+    cd $WORKSPACE/srcdir/tcl/unix/
+    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
+    make -j${nproc}
+    make install
+    # Tk needs private headers
+    make install-private-headers
 fi
 
 # Install license file
