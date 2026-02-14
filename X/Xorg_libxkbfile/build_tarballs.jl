@@ -14,8 +14,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libxkbfile-*
-meson setup builddir --cross-file="${MESON_TARGET_TOOLCHAIN}"
-meson compile -C builddir
+meson setup builddir --cross-file="${MESON_TARGET_TOOLCHAIN}" --buildtype=release
+meson compile -C builddir -j${nproc}
 meson install -C builddir
 """
 
