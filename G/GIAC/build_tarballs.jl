@@ -151,7 +151,8 @@ platforms = reverse(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libgiac", :libgiac)
+    LibraryProduct("libgiac", :libgiac),
+    FileProduct("share/giac/aide_cas", :aide_cas),
 ]
 
 # Dependencies that must be installed before this package can be built
