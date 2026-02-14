@@ -3,18 +3,18 @@
 using BinaryBuilder
 
 name = "Xorg_libX11"
-version = v"1.8.12"
+version = v"1.8.13"
 
 # Collection of sources required to build libX11
 sources = [
     ArchiveSource("https://www.x.org/archive/individual/lib/libX11-$(version).tar.xz",
-                  "fa026f9bb0124f4d6c808f9aef4057aad65e7b35d8ff43951cef0abe06bb9a9a"),
+                  "69606f485c2c07c14ef64f75b7bb326d48587af33795d9ab3e607c0b5f94f11c"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libX11-*
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-static=no
 make -j${nproc}
 make install
 """
