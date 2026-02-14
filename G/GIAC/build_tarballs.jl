@@ -93,9 +93,9 @@ if [[ "${target}" == *freebsd* ]]; then
   cd ..
   make -i install
 
-  # Explicitly install aide_cas for FreeBSD                                                                                                                                                                   
-  mkdir -p ${prefix}/share/giac                                                                                                                                                                               
-  cp -r ../share/giac/aide_cas ${prefix}/share/giac/ || cp -r share/aide_cas ${prefix}/share/giac/aide_cas || true   
+  # Explicitly install aide_cas for FreeBSD
+  mkdir -p ${prefix}/share/giac
+  cp -r doc/aide_cas ${prefix}/share/giac/
 fi
 
 if [[ "${target}" == x86_64-apple-* ]]; then
