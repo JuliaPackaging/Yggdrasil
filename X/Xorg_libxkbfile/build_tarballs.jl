@@ -3,20 +3,20 @@
 using BinaryBuilder
 
 name = "Xorg_libxkbfile"
-version = v"1.1.3"
+version = v"1.2.0"
 
 # Collection of sources required to build libxkbfile
 sources = [
     ArchiveSource("https://www.x.org/archive/individual/lib/libxkbfile-$(version).tar.xz",
-                  "a9b63eea997abb9ee6a8b4fbb515831c841f471af845a09de443b28003874bec"),
+                  "7f71884e5faf56fb0e823f3848599cf9b5a9afce51c90982baeb64f635233ebf"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libxkbfile-*
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make -j${nproc}
-make install
+meson setup builddir --cross-file="${MESON_TARGET_TOOLCHAIN}"
+meson compile -C builddir
+meson install -C builddir
 """
 
 # These are the platforms we will build for by default, unless further
