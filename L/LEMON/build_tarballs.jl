@@ -40,6 +40,7 @@ $CXX -shared -std=c++17 -O3 -fPIC \
     -o ${libdir}/liblemoncxxwrap.${dlext} \
     cxxwrap/lemoncxxwrap.cpp \
     -I$includedir \
+    -I$includedir/libcxxwrap \
     -I$includedir/julia \
     -L${libdir} \
     -l${LIBLEMON} \
