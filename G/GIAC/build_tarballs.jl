@@ -92,6 +92,10 @@ if [[ "${target}" == *freebsd* ]]; then
   g++  -g -fPIC -DGIAC_JULIA  -U_GLIBCXX_ASSERTIONS -DUSE_OBJET_BIDON -fno-strict-aliasing -DGIAC_GENERIC_CONSTANTS -DTIMEOUT   -o aide aide.o -L.libs -lgiac -lxcas    -lrt -lpthread -ldl -lm -lmpfr -lgmp 
   cd ..
   make -i install
+
+  # Explicitly install aide_cas for FreeBSD                                                                                                                                                                   
+  mkdir -p ${prefix}/share/giac                                                                                                                                                                               
+  cp -r ../share/giac/aide_cas ${prefix}/share/giac/ || cp -r share/aide_cas ${prefix}/share/giac/aide_cas || true   
 fi
 
 if [[ "${target}" == x86_64-apple-* ]]; then
