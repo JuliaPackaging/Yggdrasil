@@ -8,13 +8,13 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "AMReX"
-version_string = "26.01"
+version_string = "26.02"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/AMReX-Codes/amrex/releases/download/$(version_string)/amrex-$(version_string).tar.gz",
-                  "b26c8d36b3941881bb5db683147f94d5a48f9bcedfa4bcf65a36acb6f0710bcb"),
+                  "7627f0bac4f8025b555b6c7c7a26e2d4db4e7a7fda660b77b272ffe40749b7b2"),
 ]
 
 # Bash recipe for building across all platforms

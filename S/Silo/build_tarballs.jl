@@ -62,7 +62,7 @@ augment_platform_block = """
     using Base.BinaryPlatforms
     $(MPI.augment)
     augment_platform!(platform::Platform) = augment_mpi!(platform)
-"""
+    """
 
 platforms = expand_cxxstring_abis(supported_platforms())
 platforms, platform_dependencies = MPI.augment_platforms(platforms)

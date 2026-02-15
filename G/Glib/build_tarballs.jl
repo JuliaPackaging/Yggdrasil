@@ -4,12 +4,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "Glib"
-version = v"2.86.2"
+version = v"2.86.3"
 
 # Collection of sources required to build Glib
 sources = [
     ArchiveSource("https://ftp.gnome.org/pub/gnome/sources/glib/$(version.major).$(version.minor)/glib-$(version).tar.xz",
-                  "8a724e970855357ea8101e27727202392a0ffd5410a98336aed54ec59113e611"),
+                  "b3211d8d34b9df5dca05787ef0ad5d7ca75dec998b970e1aab0001d229977c65"),
     DirectorySource("bundled"),
 ]
 
