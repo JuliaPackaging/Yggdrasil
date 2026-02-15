@@ -8,7 +8,8 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 # list of supported Julia versions
-julia_full_versions = [v"1.10.0", v"1.11.1", v"1.12.0", v"1.13.0-beta2", v"1.14.0-DEV"]
+#julia_full_versions = [v"1.10.0", v"1.11.1", v"1.12.0", v"1.13.0-beta2", v"1.14.0-DEV"]
+julia_full_versions = [v"1.14.0-DEV"]
 libjulia_min_julia_version = Base.thispatch(minimum(julia_full_versions))
 if ! @isdefined julia_versions
     julia_versions = Base.thispatch.(julia_full_versions)
@@ -48,6 +49,8 @@ function julia_supported_platforms(julia_version)
     if julia_version < v"1.13.0-0"
         filter!(p -> arch(p) != "riscv64", platforms)
     end
+
+filter!(Sys.isapple, platforms)
 
     return platforms
 end
