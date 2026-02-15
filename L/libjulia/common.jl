@@ -411,6 +411,9 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     # gcc 7 and gcc 8 crash on aarch64-linux when encountering some bfloat16 intrinsics
     gcc_ver = version >= v"1.11.0-" ? v"9" : v"7"
 
+    # Julia requires macOS SDK >= 10.14
+    sources, script = require_macos_sdk("10.14", sources, script)
+
     if any(should_build_platform.(triplet.(platforms)))
         build_tarballs(ARGS, name, jllversion, sources, script, platforms, products, dependencies;
                    preferred_gcc_version=gcc_ver, preferred_llvm_version=v"17",
