@@ -7,7 +7,7 @@ gitsha = "7a53925d6fa0bdc1019d17648f6e6aaa3ee02c9b"
 # Collection of sources required to build pixi
 sources = [
     # the tarballs do not include the license, so we get the repo too
-    GitSource("https://github.com/prefix-dev/pixi.git", gitsha, unpack_target="pixi-repo"),
+    GitSource("https://github.com/prefix-dev/pixi.git", gitsha, unpack_target="repo"),
     # pre-build tarballs, which only contain the executable
     FileSource(
         "https://github.com/prefix-dev/pixi/releases/download/v$version/pixi-aarch64-apple-darwin.tar.gz",
@@ -37,26 +37,25 @@ sources = [
     FileSource(
         "https://github.com/prefix-dev/pixi/releases/download/v$version/pixi-x86_64-unknown-linux-musl.tar.gz",
         "b2a9e26bb6c80fe00618a02e7198dec222e1fbcec61e04c11b6e6538089ab100",
-        filename="pixi-x86_64-linux-gnu.tar.bz2",
+        filename="pixi-x86_64-linux-gnu.tar.gz",
     ),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-# unpack and install the binary
 cd $WORKSPACE/srcdir
-mkdir build
-cd build
+
+# unpack and install the binary
 if [[ $target = *-w64-* ]]; then
-    unzip ../pixi-$target.zip
-    install -Dvm 755 ./pixi.exe "${bindir}/pixi.exe"
+    unzip pixi-$target.zip
+    install -Dvm 755 pixi.exe "${bindir}/pixi.exe"
 else
-    install -Dvm 755 ./pixi "${bindir}/pixi"
+    tar -xzf pixi-$target.tar.gz
+    install -Dvm 755 pixi "${bindir}/pixi"
 fi
 
 # install the license
-cd $WORKSPACE/srcdir
-install_license ./pixi-repo/LICENSE
+install_license repo/pixi/LICENSE
 """
 
 # Supported platforms from https://github.com/prefix-dev/pixi/releases/latest
