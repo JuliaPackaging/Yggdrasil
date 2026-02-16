@@ -126,6 +126,14 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
         cp -rL ${prefix}/lib/linux/* $(dirname $(readlink -f $(which flang)))/../lib/clang/13.0.1/lib/linux/
     fi
 
+    # GCC 14+ on Darwin requires additional libraries.
+    # (These should be in our image; remove this when the RootFS images have been updated.)
+    if [[ ${target} == *-darwin* ]]; then
+        if gcc --version | head -n 1 | grep -q '(GCC) 1[45][.]'; then
+            apk add libdispatch libdispatch-dev --repository=http://dl-cdn.alpinelinux.org/alpine/v3.17/community
+        fi
+    fi
+
     # We always want threading
     flags=(USE_THREAD=1 GEMM_MULTITHREADING_THRESHOLD=400 NO_AFFINITY=1)
     if [[ "${CONSISTENT_FPCSR}" == "true" ]]; then
@@ -136,12 +144,12 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     if [[ "${BFLOAT16}" == "true" ]]; then
         flags+=(BUILD_BFLOAT16=1)
         if [[ "${target}" == riscv64-* ]]; then
-            CFLAGS="${CFLAGS} -Wno-error=incompatible-pointer-types"
+            flags+=(CFLAGS=-Wno-error=incompatible-pointer-types)
         fi
     fi
 
     # Build FLOAT16 kernels
-    if [[ "${FLOAT16}" == "true" && "${target}" != arm-* && "${target}" != powerpc64le-* ]]; then
+    if [[ "${FLOAT16}" == "true" && "${target}" != arm-* && "${target}" != powerpc64le-* && "${target}" != x86_64-apple-* ]]; then
         flags+=(BUILD_HFLOAT16=1)
     fi
 
