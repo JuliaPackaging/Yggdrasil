@@ -10,9 +10,6 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/gametracer
 
-# Remove any corrupted Mac OS resource fork files that may interfere with CMake
-rm -f /usr/share/cmake/Modules/Compiler/._*
-
 cmake -S c_api -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
