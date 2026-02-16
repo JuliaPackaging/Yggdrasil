@@ -6,8 +6,6 @@ include("../common.jl")
 name = "OpenBLAS32"
 version = v"0.3.31"
 
-# NOTE: riscv64: Disabling `_zvfbfwma` in a patch doesn't work. Next idea: Build with GCC 15.
-
 sources = openblas_sources(version)
 script = openblas_script(openblas32=true, bfloat16=true, float16=true)
 platforms = openblas_platforms(; version)

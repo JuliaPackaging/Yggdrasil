@@ -135,10 +135,13 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     # Build BFLOAT16 kernels
     if [[ "${BFLOAT16}" == "true" ]]; then
         flags+=(BUILD_BFLOAT16=1)
+        if [[ "${target}" == riscv64-* ]]; then
+            CFLAGS="${CFLAGS} -Wno-error=incompatible-pointer-types"
+        fi
     fi
 
     # Build FLOAT16 kernels
-    if [[ "${FLOAT16}" == "true" ]]; then
+    if [[ "${FLOAT16}" == "true" && "${target}" != arm-* && "${target}" != powerpc64le-* ]]; then
         flags+=(BUILD_HFLOAT16=1)
     fi
 
