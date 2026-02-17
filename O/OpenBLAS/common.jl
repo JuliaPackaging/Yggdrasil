@@ -215,6 +215,11 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
         flags+=(TARGET=RISCV64_GENERIC DYNAMIC_ARCH=1)
     fi
 
+    if [[ ${target} == aarch64-*-darwin* ]]; then
+        # Disable SME (not support on Darwin -- neither by the hardware nor by the toolchain)
+        export NO_SME=1
+    fi
+
     # If we're building for x86_64 Windows gcc7+, we need to disable usage of
     # certain AVX-512 registers (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=65782)
     if [[ ${target} == x86_64-w64-mingw32 ]] && [[ $(gcc --version | head -1 | awk '{ print $3 }') =~ (7|8).* ]]; then
