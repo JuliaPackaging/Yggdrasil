@@ -75,7 +75,7 @@ dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency("libpng_jll"; compat="~1.6.43"),
     Dependency("OpenJpeg_jll", compat="~2.5.2"),
-    Dependency("libaec_jll", compat="~1.1.2"),
+    Dependency("libaec_jll", compat="~1.1.5"),
 ]
 
 init_block = raw"""
