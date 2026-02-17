@@ -66,3 +66,21 @@ products = [
 
 # Some dependencies are needed only on Linux and FreeBSD
 linux_freebsd = filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)
+
+# Common dependencies shared by Cairo and Cairo_NoGPL
+common_dependencies = [
+    BuildDependency("Xorg_xorgproto_jll"; platforms=linux_freebsd),
+    Dependency("Glib_jll"; compat="2.84.0"),
+    Dependency("Pixman_jll"; compat="0.44.2"),
+    Dependency("libpng_jll"; compat="1.6.47"),
+    Dependency("Fontconfig_jll"; compat="2.16.0"),
+    Dependency("FreeType2_jll"; compat="2.13.4"),
+    Dependency("Bzip2_jll"; compat="1.0.9"),
+    Dependency("Xorg_libXext_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_libXrender_jll"; platforms=linux_freebsd),
+    Dependency("Zlib_jll"; compat="1.2.12"),
+    # libcairo needs libssp on Windows, which is provided by CSL, but not in all versions of
+    # Julia.  Note that above we're copying libssp to libdir for the versions of Julia where
+    # this wasn't available.
+    Dependency("CompilerSupportLibraries_jll"; platforms=filter(Sys.iswindows, platforms)),
+]
