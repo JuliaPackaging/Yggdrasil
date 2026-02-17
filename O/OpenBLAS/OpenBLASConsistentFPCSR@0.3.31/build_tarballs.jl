@@ -14,7 +14,7 @@ preferred_gcc_version = v"11"
 preferred_llvm_version = v"18.1.7"
 dependencies = openblas_dependencies(platforms; llvm_compilerrt_version=preferred_llvm_version)
 
-aarch64_darwin_preferred_gcc_version = v"15"
+riscv64_preferred_gcc_version = v"15"
 
 # The regular options, excluding the list of platforms
 option_args = filter(arg -> startswith(arg, "--"), ARGS)
@@ -27,9 +27,7 @@ for (n,platform) in enumerate(platforms)
     build_tarballs(args, name, version, sources, script, [platform], products, dependencies;
                    julia_compat="1.11",
                    lock_microarchitecture=false,
-                   preferred_gcc_version =
-                       arch(platform) == "aarch64" && Sys.isapple(platform) ?
-                       aarch64_darwin_preferred_gcc_version : preferred_gcc_version,
+                   preferred_gcc_version = arch(platform) == "riscv64" ? riscv64_preferred_gcc_version : preferred_gcc_version,
                    preferred_llvm_version=preferred_llvm_version,
                    )
 end
