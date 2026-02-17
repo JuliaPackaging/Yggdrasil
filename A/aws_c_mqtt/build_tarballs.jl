@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_mqtt"
-version = v"0.13.4"
+version = v"0.13.5"
 
 # Collection of sources required to complete build
 sources = [
