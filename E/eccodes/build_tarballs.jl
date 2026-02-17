@@ -6,12 +6,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "eccodes"
-version = v"2.36.0"
+version = v"2.45.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://confluence.ecmwf.int/download/attachments/45757960/eccodes-$version-Source.tar.gz",
-                  "da74143a64b2beea25ea27c63875bc8ec294e69e5bd0887802040eb04151d79a"),
+                  "6c84b39d7cc5e3b8330eeabe880f3e337f9b2ee1ebce20ea03eecd785f6c39a1"),
     DirectorySource("./bundled"),
 ]
 
@@ -66,6 +66,8 @@ filter!(p -> libgfortran_version(p) != v"3", platforms) # Avoid too old GCC
 products = [
     LibraryProduct("libeccodes", :eccodes),
     LibraryProduct("libeccodes_f90", :libeccodes_f90),
+    ExecutableProduct("grib_set", :grib_set),
+    FileProduct("share/eccodes/definitions", :eccodes_definitions)
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -76,5 +78,9 @@ dependencies = [
     Dependency("libaec_jll", compat="~1.1.2"),
 ]
 
+init_block = raw"""
+ENV["ECCODES_DEFINITION_PATH"] = eccodes_definitions
+"""
+
 # Build the tarballs, and possibly a `build.jl` as well. GCC 8 because we need C++17
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"8", clang_use_lld=false, julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"8", clang_use_lld=false, julia_compat="1.6", init_block)
