@@ -3,12 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "zfp"
-version = v"1.0.0"
+zfp_version = v"1.0.1"
+version = v"1.0.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/LLNL/zfp/releases/download/$(version)/zfp-$(version).tar.gz",
-                  "0ea08ae3e50e3c92f8b8cf41ba5b6e2de8892bc4a4ca0c59b8945b6c2ab617c4")
+    ArchiveSource("https://github.com/LLNL/zfp/releases/download/$(zfp_version)/zfp-$(zfp_version).tar.gz",
+                  "ca0f7b4ae88044ffdda12faead30723fe83dd8f5bb0db74125df84589e60e52b")
 ]
 
 # Bash recipe for building across all platforms
@@ -27,7 +28,6 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-
 
 # The products that we will ensure are always built
 products = [

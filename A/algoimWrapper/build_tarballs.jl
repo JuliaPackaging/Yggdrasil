@@ -5,12 +5,14 @@ using BinaryBuilder, Pkg
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
+# needed for libjulia_platforms and julia_versions
+include("../../L/libjulia/common.jl")
+
 name = "algoimWrapper"
-version = v"0.2.1"
-julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
+version = v"0.3.1"
 
 sources = [
-    GitSource("https://github.com/ericneiva/algoimWrapper.git", "d763149d1d2fdd698c4982c28cdeff69c9c16a07"),
+    GitSource("https://github.com/ericneiva/algoimWrapper.git", "b7ce0d93f25f5f2261c6ca36b1b71a041ecb72ed"),
     DirectorySource("./bundled"),
 ]
 
@@ -27,8 +29,10 @@ cmake \
 VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
 """
 
-include("../../L/libjulia/common.jl")
-platforms = expand_cxxstring_abis(vcat(libjulia_platforms.(julia_versions)...))
+platforms = vcat(libjulia_platforms.(julia_versions)...)
+# FreeBSD on 64bit ARM 64 is not supported by algoimWrapper
+platforms = filter(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+platforms = expand_cxxstring_abis(platforms)
 
 products = [
     LibraryProduct("libalgoimwrapper", :libalgoimwrapper),
@@ -37,7 +41,7 @@ products = [
 dependencies = [
     BuildDependency("algoim_jll"),
     BuildDependency("libjulia_jll"),
-    Dependency("libcxxwrap_julia_jll"),
+    Dependency("libcxxwrap_julia_jll"; compat="0.13.2"),
     Dependency("OpenBLAS32_jll"), # links to LAPACKE
 ]
 

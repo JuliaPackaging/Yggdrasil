@@ -3,21 +3,20 @@
 using BinaryBuilder
 
 name = "Xorg_libXinerama"
-version = v"1.1.4"
+version = v"1.1.6"
+# We bumped the version number to build for riscv64
+ygg_version = v"1.1.7"
 
 # Collection of sources required to build libXinerama
 sources = [
-    ArchiveSource("https://www.x.org/archive/individual/lib/libXinerama-$(version).tar.bz2",
-                  "0008dbd7ecf717e1e507eed1856ab0d9cf946d03201b85d5dcf61489bb02d720"),
+    ArchiveSource("https://www.x.org/archive/individual/lib/libXinerama-$(version).tar.gz",
+                  "c74ee3d05e473671bf86285e2dece345485200bb042bea1540b1e30ff3f74bae"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libXinerama-*/
-CPPFLAGS="-I${prefix}/include"
-# When compiling for things like ppc64le, we need newer `config.sub` files
-update_configure_scripts
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=no
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=yes --enable-static=no
 make -j${nproc}
 make install
 """
@@ -38,4 +37,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6")

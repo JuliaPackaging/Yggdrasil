@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "LMDB"
-version = v"0.9.27"
+version = v"0.9.33"
 
 # No sources, we're just building the testsuite
 sources = [
     ArchiveSource("https://git.openldap.org/openldap/openldap/-/archive/LMDB_$(version)/openldap-LMDB_$(version).tar.gz",
-                  "752a3ebd4bbfa1830dff2ca4f5ff4c4be97da843810626d5dd9e2e4e5484a399"),
+                  "476801f5239c88c7de61c3390502a5d13965ecedef80105b5fb0fcb8373d1e53"),
 ]
 
 # Bash recipe for building across all platforms
@@ -44,4 +44,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

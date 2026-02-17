@@ -1,0 +1,13 @@
+Installing Arrow with Zstd fails on Windows. Reported upstream as
+<https://github.com/apache/arrow/issues/45032>
+
+--- a/cpp/cmake_modules/FindzstdAlt.cmake
++++ b/cpp/cmake_modules/FindzstdAlt.cmake
+@@ -136,6 +136,7 @@
+   endif()
+   set_target_properties(${zstd_TARGET}
+                         PROPERTIES IMPORTED_LOCATION "${ZSTD_LIB}"
++                                   IMPORTED_IMPLIB /workspace/destdir/bin/libzstd-1.dll
+                                    INTERFACE_INCLUDE_DIRECTORIES "${ZSTD_INCLUDE_DIR}")
+   message(STATUS "Zstandard library: ${ZSTD_LIB}")
+   message(STATUS "Zstandard include directory: ${ZSTD_INCLUDE_DIR}")

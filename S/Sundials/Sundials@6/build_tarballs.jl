@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "Sundials"
-version = v"6.6.0"
+version = v"6.7.0"
 
 # Collection of sources required to build Sundials
 sources = [
     ArchiveSource("https://github.com/LLNL/sundials/releases/download/v$(version)/sundials-$(version).tar.gz",
-                  "f90029b8da846c8faff5530fd1fa4847079188d040554f55c1d5d1e04743d29d"),
+                  "5f113a1564a9d2d98ff95249f4871a4c815a05dbb9b8866a82b13ab158c37adb"),
     DirectorySource("./bundled"),
 ]
 
@@ -44,7 +44,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
     -DEXAMPLES_ENABLE_C=OFF \
     -DENABLE_KLU=ON \
-    -DKLU_INCLUDE_DIR="${includedir}" \
+    -DKLU_INCLUDE_DIR="${includedir}/suitesparse" \
     -DKLU_LIBRARY_DIR="${libdir}" \
     -DKLU_WORKS=ON \
     -DENABLE_LAPACK=ON \
@@ -97,4 +97,4 @@ dependencies = [
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"6", julia_compat="1.10")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"6", julia_compat="1.11")

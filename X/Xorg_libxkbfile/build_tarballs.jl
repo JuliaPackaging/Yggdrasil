@@ -3,23 +3,20 @@
 using BinaryBuilder
 
 name = "Xorg_libxkbfile"
-version = v"1.1.2"
+version = v"1.2.0"
 
 # Collection of sources required to build libxkbfile
 sources = [
     ArchiveSource("https://www.x.org/archive/individual/lib/libxkbfile-$(version).tar.xz",
-                  "b8a3784fac420b201718047cfb6c2d5ee7e8b9481564c2667b4215f6616644b1"),
+                  "7f71884e5faf56fb0e823f3848599cf9b5a9afce51c90982baeb64f635233ebf"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libxkbfile-*/
-CPPFLAGS="-I${prefix}/include"
-# When compiling for things like ppc64le, we need newer `config.sub` files
-update_configure_scripts
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=no
-make -j${nproc}
-make install
+cd $WORKSPACE/srcdir/libxkbfile-*
+meson setup builddir --cross-file="${MESON_TARGET_TOOLCHAIN}" --buildtype=release
+meson compile -C builddir -j${nproc}
+meson install -C builddir
 """
 
 # These are the platforms we will build for by default, unless further
@@ -38,4 +35,6 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+# (There are build errors with GCC 4.)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"5")

@@ -4,12 +4,12 @@ using BinaryBuilder, Pkg
 
 name = "MiniZinc"
 
-version = v"2.7.6"
+version = v"2.9.5"
 
 sources = [
     GitSource(
         "https://github.com/MiniZinc/libminizinc.git",
-        "3eacc4cd3e6ba1b5414e9fa1639beaefa270f24b",
+        "96ebc4bc60a4eec6bf0a0bac59f46f7a4a2aefb2",
     ),
     DirectorySource("./bundled"),
 ]
@@ -22,28 +22,16 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fixes.patch
 # Patch for MinGW toolchain
 find .. -type f -exec sed -i 's/Windows.h/windows.h/g' {} +
 
-mkdir -p build
-cd build
-
 # FAST_BUILD is needed when linking HiGHS, because that's what
 # we used when compiling HiGHS_jll.
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+cmake -B build \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_CXX_FLAGS="-I${includedir}/highs" \
-    -DFAST_BUILD=ON \
-    ..
-
-if [[ "${target}" == *-linux-* ]]; then
-        make -j ${nproc}
-else
-    if [[ "${target}" == *-mingw* ]]; then
-        cmake --build . --config Release
-    else
-        cmake --build . --config Release --parallel
-    fi
-fi
-make install
+    -DFAST_BUILD=ON
+cmake --build build --parallel ${nproc}
+cmake --install build
 """
 
 products = [
@@ -60,7 +48,7 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     # Use an exact version for HiGHS. @odow has observed segfaults with
     # HiGHS_jll v1.5.3 when libminizinc compiled with v1.5.1.
-    Dependency("HiGHS_jll"; compat="=1.6.0"),
+    Dependency("HiGHS_jll"; compat="=1.13.1"),
 ]
 
 build_tarballs(
@@ -73,5 +61,5 @@ build_tarballs(
     products,
     dependencies;
     preferred_gcc_version = v"6",
-    julia_compat = "1.6",
+    julia_compat = "1.10",
 )

@@ -1,0 +1,149 @@
+diff --git a/lang/c/CMakeLists.txt b/lang/c/CMakeLists.txt
+index aa923e182..914c14e81 100644
+--- a/lang/c/CMakeLists.txt
++++ b/lang/c/CMakeLists.txt
+@@ -29,40 +29,32 @@ cmake_policy(SET CMP0003 NEW)
+ #-----------------------------------------------------------------------
+ # Retrieve the current version number
+ 
+-if (UNIX)
+-    execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/version.sh project
+-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+-        RESULT_VARIABLE AVRO_VERSION_RESULT
+-        OUTPUT_VARIABLE AVRO_VERSION
+-        OUTPUT_STRIP_TRAILING_WHITESPACE)
+-    if(AVRO_VERSION_RESULT)
+-        message(FATAL_ERROR "Cannot determine Avro version number")
+-    endif(AVRO_VERSION_RESULT)
+-
+-    execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/version.sh libtool
+-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+-        RESULT_VARIABLE LIBAVRO_VERSION_RESULT
+-        OUTPUT_VARIABLE LIBAVRO_VERSION
+-        OUTPUT_STRIP_TRAILING_WHITESPACE)
+-    if(LIBAVRO_VERSION_RESULT)
+-        message(FATAL_ERROR "Cannot determine libavro version number")
+-    endif(LIBAVRO_VERSION_RESULT)
+-
+-    execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/version.sh libcurrent
+-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+-        RESULT_VARIABLE LIBAVRO_SOVERSION_RESULT
+-        OUTPUT_VARIABLE LIBAVRO_SOVERSION
+-        OUTPUT_STRIP_TRAILING_WHITESPACE)
+-    if(LIBAVRO_SOVERSION_RESULT)
+-        message(FATAL_ERROR "Cannot determine libavro version number")
+-    endif(LIBAVRO_SOVERSION_RESULT)
+-
+-else(UNIX)
+-    # Hard code for win32 -- need to figure out how to port version.sh for
+-    # Windows.
+-    set(LIBAVRO_VERSION "22:0:0")
+-endif(UNIX)
+-
++execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/version.sh project
++  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
++  RESULT_VARIABLE AVRO_VERSION_RESULT
++  OUTPUT_VARIABLE AVRO_VERSION
++  OUTPUT_STRIP_TRAILING_WHITESPACE)
++if(AVRO_VERSION_RESULT)
++  message(FATAL_ERROR "Cannot determine Avro version number")
++endif(AVRO_VERSION_RESULT)
++
++execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/version.sh libtool
++  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
++  RESULT_VARIABLE LIBAVRO_VERSION_RESULT
++  OUTPUT_VARIABLE LIBAVRO_VERSION
++  OUTPUT_STRIP_TRAILING_WHITESPACE)
++if(LIBAVRO_VERSION_RESULT)
++  message(FATAL_ERROR "Cannot determine libavro version number")
++endif(LIBAVRO_VERSION_RESULT)
++
++execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/version.sh libcurrent
++  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
++  RESULT_VARIABLE LIBAVRO_SOVERSION_RESULT
++  OUTPUT_VARIABLE LIBAVRO_SOVERSION
++  OUTPUT_STRIP_TRAILING_WHITESPACE)
++if(LIBAVRO_SOVERSION_RESULT)
++  message(FATAL_ERROR "Cannot determine libavro version number")
++endif(LIBAVRO_SOVERSION_RESULT)
+ 
+ #-----------------------------------------------------------------------
+ # Extract major.minor.patch from version number
+@@ -107,10 +99,10 @@ if(CMAKE_COMPILER_IS_GNUCC)
+     add_definitions(-W -Wall)
+ endif(CMAKE_COMPILER_IS_GNUCC)
+ 
+-if (WIN32)
++if (MSVC)
+    # Compile win32 in C++ to allow declarations after statements
+    add_definitions(/TP)
+-endif(WIN32)
++endif(MSVC)
+ 
+ # Uncomment to allow missing fields in the resolved-writer
+ # add_definitions(-DAVRO_ALLOW_MISSING_FIELDS_IN_RESOLVED_WRITER)
+@@ -191,7 +183,10 @@ endif (JANSSON_FOUND)
+ 
+ add_subdirectory(src)
+ add_subdirectory(examples)
+-add_subdirectory(tests)
++if (BUILD_TESTING)
++  add_subdirectory(tests)
++endif(BUILD_TESTING)
++
+ add_subdirectory(docs)
+ 
+ add_custom_target(pretty
+diff --git a/lang/c/src/CMakeLists.txt b/lang/c/src/CMakeLists.txt
+index c1761c8de..dd2a5059d 100644
+--- a/lang/c/src/CMakeLists.txt
++++ b/lang/c/src/CMakeLists.txt
+@@ -88,7 +88,6 @@ add_library(avro-static STATIC ${AVRO_SRC})
+ target_link_libraries(avro-static ${JANSSON_LIBRARIES} ${CODEC_LIBRARIES} ${THREADS_LIBRARIES})
+ set_target_properties(avro-static PROPERTIES OUTPUT_NAME avro)
+ 
+-if (NOT WIN32)
+ # TODO: Create Windows DLLs. See https://www.cmake.org/Wiki/BuildingWinDLL
+ add_library(avro-shared SHARED ${AVRO_SRC})
+ target_link_libraries(avro-shared ${JANSSON_LIBRARIES} ${CODEC_LIBRARIES} ${THREADS_LIBRARIES})
+@@ -96,7 +95,6 @@ set_target_properties(avro-shared PROPERTIES
+         OUTPUT_NAME avro
+         VERSION ${LIBAVRO_DOT_VERSION}
+         SOVERSION ${LIBAVRO_SOVERSION})
+-endif(NOT WIN32)
+ 
+ install(FILES
+         ${CMAKE_CURRENT_SOURCE_DIR}/avro.h
+@@ -108,19 +106,11 @@ install(DIRECTORY
+ 
+ include(GNUInstallDirs)
+ 
+-if (WIN32)
+-install(TARGETS avro-static
+-	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+-       )
+-else(WIN32)
+ install(TARGETS avro-static avro-shared
+ 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+ 	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        )
+-endif(WIN32)
+ 
+ # Install pkg-config file
+ 
+diff --git a/lang/c/src/avro/platform.h b/lang/c/src/avro/platform.h
+index 929305505..965cdc460 100644
+--- a/lang/c/src/avro/platform.h
++++ b/lang/c/src/avro/platform.h
+@@ -26,7 +26,7 @@ extern "C" {
+ 
+ /* Use this header file to include platform specific definitions */
+ 
+-#ifdef _WIN32
++#ifdef _MSC_VER
+   #include <avro/msinttypes.h>
+ #else
+   #include <inttypes.h>

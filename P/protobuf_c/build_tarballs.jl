@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "protobuf_c"
-version = v"1.4.1"
+version = v"1.5.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/protobuf-c/protobuf-c/releases/download/v$(version)/protobuf-c-$(version).tar.gz",
-                  "4cc4facd508172f3e0a4d3a8736225d472418aee35b4ad053384b137b220339f"),
+                  "7b404c63361ed35b3667aec75cc37b54298d56dd2bcf369de3373212cc06fd98"),
 ]
 
 # Bash recipe for building across all platforms

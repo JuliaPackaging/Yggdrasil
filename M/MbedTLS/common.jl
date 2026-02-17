@@ -1,4 +1,4 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "MbedTLS"
 
@@ -39,6 +39,20 @@ sources_by_version = Dict(
                   "89f040a5c938985c5f30728baed21e49d0846a53"),
         DirectorySource("./bundled"; follow_symlinks=true),
     ],
+    v"2.28.6" => [
+        GitSource("https://github.com/Mbed-TLS/mbedtls.git",
+                  "3a91dad9dceb484eea8b41f8941facafc4520021"),
+        DirectorySource("./bundled"; follow_symlinks=true),
+    ],
+    v"2.28.10" => [
+        GitSource("https://github.com/Mbed-TLS/mbedtls.git",
+                  "2fc8413bfcb51354c8e679141b17b3f1a5942561"),
+    ],
+    v"2.28.1010" => [
+        GitSource("https://github.com/Mbed-TLS/mbedtls.git",
+                  "2fc8413bfcb51354c8e679141b17b3f1a5942561"), # still upstream 2.28.10
+        DirectorySource("./bundled"; follow_symlinks=true),
+    ],
 )
 sources = sources_by_version[version]
 
@@ -48,7 +62,7 @@ shopt -s nullglob
 cd $WORKSPACE/srcdir/mbedtls
 
 # llvm-ranlib gets confused, use the binutils one
-if [[ "${target}" == *apple* ]]; then
+if [[ "${target}" == *apple* && -f "${WORKSPACE}/srcdir/patches/conditional/0001-Remove-flags-not-supported-by-ranlib.patch" ]]; then
     ln -sf /opt/${target}/bin/${target}-ranlib /opt/bin/ranlib
     ln -sf /opt/${target}/bin/${target}-ranlib /opt/bin/${target}-ranlib
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/conditional/0001-Remove-flags-not-supported-by-ranlib.patch"
@@ -65,15 +79,26 @@ done
 # enable MD4
 sed "s|//#define MBEDTLS_MD4_C|#define MBEDTLS_MD4_C|" -i include/mbedtls/config.h
 
+# Only x86 Linux targets can actually execute the test suite
+if [[ "${target}" == *86*-linux-* ]]; then
+    BB_RUN_TESTS="On"
+fi
+
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
     -DCMAKE_C_STANDARD=99 \
     -DUSE_SHARED_MBEDTLS_LIBRARY=On \
     -DMBEDTLS_FATAL_WARNINGS=OFF \
-    -DENABLE_TESTING=OFF \
+    -DENABLE_TESTING=${BB_RUN_TESTS:-Off} \
+    -DCMAKE_BUILD_TYPE=Release \
     ..
 make -j${nproc}
+
+if [[ "${BB_RUN_TESTS}" ]]; then
+    make test ARGS="--output-on-failure" || [[ "${bb_full_target}" == *-sanitize+memory ]]
+fi
+
 make install
 
 if [[ "${target}" == *mingw* ]]; then
@@ -98,7 +123,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
+llvm_version = v"13.0.1+1"
 dependencies = [
-    BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
+    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
+                    platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
 ]
-

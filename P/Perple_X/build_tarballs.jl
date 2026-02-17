@@ -3,18 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "Perple_X"
-version = v"7.1.4"
+version = v"7.1.9"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/jadconnolly/Perple_X.git", "9dd6d58ba0fa93f4a0042eab513b9d7ed4d830b0")
+    GitSource("https://github.com/jadconnolly/Perple_X.git", "bdf871bfb990ec6613c7b443c7cc32a8617632db")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/Perple_X/src/
 
-FilesArray=("vertex"  "build"  "actcor"  "convex" "ctransf" "fluids" "frendly" "meemum" "pspts" "pssect" "pstable" "psvdraw" "pt2curv" "werami")
+FilesArray=("vertex"  "build"  "actcor"  "convex" "ctransf" "fluids" "frendly" "meemum" "pspts" "pssect" "pstable" "psvdraw" "pt2curv" "werami" "MC_fit")
 
 # 1) compile binaries
 make -j${nproc} -f makefile EXT=${exeext}
@@ -84,6 +84,9 @@ products = [
     
     ExecutableProduct("frendly", :frendly),
     LibraryProduct("libfrendly", :libfrendly),
+
+    ExecutableProduct("MC_fit", :MC_fit),
+    LibraryProduct("libMC_fit", :libMC_fit),
 ]
 
 # Dependencies that must be installed before this package can be built

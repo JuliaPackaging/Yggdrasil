@@ -1,0 +1,18 @@
+Subject: [PATCH] Fix popcnt detection during cross-compilation
+
+Nauty's configure script performs a runtime check to find out whether the
+`popcnt` CPU instruction is available. This check is not possible during cross-compilation,
+which causes the entire configure script to fail. We patch `configure.ac` to simply disable
+`popcnt` while cross-compiling, and generate a new, working configure script with `autoreconf`.
+
+--- a/configure.ac	2024-09-06 16:08:24
++++ b/configure.ac	2024-09-06 16:08:41
+@@ -352,7 +352,7 @@
+ dnl --check if popcnt instruction is available and desired
+ AC_MSG_CHECKING(if popcnt instruction is available and requested)
+ AC_RUN_IFELSE([AC_LANG_PROGRAM([],[[if (__builtin_cpu_supports("popcnt")) return 0; else return 1;]])],
+-  popsup=1,popsup=0)
++  popsup=1,popsup=0,popsup=0)
+ 
+ AS_IF([test "$allow_popcnt" -eq 1],
+       [have_hwpopcnt=$popsup

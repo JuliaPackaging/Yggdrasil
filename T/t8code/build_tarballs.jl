@@ -2,70 +2,48 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
+
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "t8code"
-version = v"1.6.1"
+version = v"4.0.0"
 
-tarball = "https://github.com/DLR-AMR/t8code/releases/download/v$(version)/t8-$(version).tar.gz"
-sha256sum = "dc96effa7c1ad1d50437fefdd0963f6ef7c943eb10a372a4e8546a5f2970a412"
+tarball = "https://github.com/DLR-AMR/t8code/releases/download/v$(version)/T8CODE-$(version)-Source.tar.gz"
+sha256sum = "668536f82730a23fc6fd96ff13e64762b6b0890d04e99a7a38d66341332d5770"
 
-# Collection of sources required to complete build
 sources = [ArchiveSource(tarball, sha256sum), DirectorySource("./bundled")]
 
-# Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/t8*
+cd $WORKSPACE/srcdir/T8CODE*
+
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi-constants.patch"
 
-# Set default preprocessor and linker flags
-# Note: This is *crucial* for Windows builds as otherwise the wrong libraries are picked up!
-export CPPFLAGS="-I${includedir}"
-export LDFLAGS="-L${libdir}"
-export CFLAGS="-O3"
-export CXXFLAGS="-O3"
-
-# Set necessary flags for FreeBSD
-if [[ "${target}" == *-freebsd* ]]; then
-  export LIBS="${LIBS} -lm"
-fi
-
-# Set necessary flags for Windows and non-Windodws systems
-FLAGS=()
+# Show CMake where to find `mpiexec`.
 if [[ "${target}" == *-mingw* ]]; then
-  # Pass -lmsmpi explicitly to linker as the absolute library path specified in LIBS below is not always propagated properly
-  export LDFLAGS="$LDFLAGS -Wl,-lmsmpi"
-  # Set linker flags only at build time (see https://docs.binarybuilder.org/v0.3/troubleshooting/#Windows)
-  FLAGS+=(LDFLAGS="$LDFLAGS -no-undefined")
-  # Link against ws2_32 to use the htonl function from winsock2.h
-  export LIBS="${LIBS} ${libdir}/msmpi.dll -lws2_32"
-  # Disable MPI I/O on Windows since it causes p4est to crash
-  mpiopts="--enable-mpi --disable-mpiio"
-else
-  # Use MPI including MPI I/O on all other platforms
-  export CC="mpicc"
-  export CXX="mpicxx"
-  mpiopts="--enable-mpi"
+  ln -s $(which mpiexec.exe) /workspace/destdir/bin/mpiexec
 fi
 
-# Temporary fix according to: https://github.com/JuliaPackaging/Yggdrasil/issues/7745
-if [[ "${target}" == *-apple-* ]]; then
-  export LDFLAGS="$LDFLAGS -fuse-ld=ld"
-fi
+cmake . \
+      -B build \
+      -DCMAKE_INSTALL_PREFIX=${prefix} \
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_TESTING=OFF \
+      -DP4EST_BUILD_TESTING=OFF \
+      -DSC_BUILD_TESTING=OFF \
+      -DT8CODE_BUILD_BENCHMARKS=OFF \
+      -DT8CODE_BUILD_DOCUMENTATION=OFF \
+      -DT8CODE_BUILD_EXAMPLES=OFF \
+      -DT8CODE_BUILD_EXAMPLES=OFF \
+      -DT8CODE_BUILD_FORTRAN_INTERFACE=ON \
+      -DT8CODE_BUILD_TESTS=OFF \
+      -DT8CODE_BUILD_TUTORIALS=OFF \
+      -DT8CODE_ENABLE_MPI=ON \
+      -DP4EST_ENABLE_MPIIO=OFF
 
-# Run configure
-./configure \
-  --prefix="${prefix}" \
-  --build=${MACHTYPE} \
-  --host=${target} \
-  --disable-static \
-  --without-blas \
-  ${mpiopts}
-
-# Build & install
-make -j${nproc} "${FLAGS[@]}"
-make install
+make -C build -j ${nproc}
+make -C build -j ${nproc} install
 """
 
 augment_platform_block = """
@@ -77,8 +55,13 @@ augment_platform_block = """
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
+
 # p4est with MPI enabled does not compile for 32 bit Windows
-platforms = filter(p -> !(Sys.iswindows(p) && nbits(p) == 32), platforms)
+# newer t8code versions require MPI 3 whereas only 2 seems available for Windows
+platforms = filter(p -> !(Sys.iswindows(p)), platforms)
+
+# likewise for riscv64 only MPI 2 is available
+platforms = filter(p -> (arch(p) != "riscv64"), platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
 
@@ -108,4 +91,4 @@ append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"12.1.0")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"12.1.0", clang_use_lld=false)

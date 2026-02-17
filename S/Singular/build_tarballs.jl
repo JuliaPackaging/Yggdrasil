@@ -28,16 +28,16 @@ import Pkg.Types: VersionSpec
 #
 name = "Singular"
 
-upstream_version = v"4.3.2-11" # 4.3.2p10
-version_offset = v"0.11.0"
+upstream_version = v"4.4.1-5" # 4.4.1p5
+version_offset = v"0.1.5"
 
 version = VersionNumber(upstream_version.major * 100 + upstream_version.minor + version_offset.major,
                         upstream_version.patch * 100 + version_offset.minor,
                         Int(upstream_version.prerelease[1]) * 100 + version_offset.patch)
 
-# Collection of sources required to build normaliz
+# Collection of sources required to build Singular
 sources = [
-    GitSource("https://github.com/Singular/Singular.git", "e7cc1ebecb61be8b9ca6c18016352af89940b21a"),
+    GitSource("https://github.com/Singular/Singular.git", "abc73b69185a2f369e11458d80ef222307adf869"),
     #ArchiveSource("https://www.mathematik.uni-kl.de/ftp/pub/Math/Singular/SOURCES/$(upstream_version.major)-$(upstream_version.minor)-$(upstream_version.patch)/singular-$(upstream_version).tar.gz",
     #              "5b0f6c036b4a6f58bf620204b004ec6ca3a5007acc8352fec55eade2fc9d63f6"),
     #DirectorySource("./bundled")
@@ -67,7 +67,8 @@ fi
     --enable-p-procs-static \
     --disable-p-procs-dynamic \
     --enable-gfanlib \
-    --with-readline=no \
+    --without-readline \
+    --without-ntl \
     --with-gmp=$prefix \
     --with-flint=$prefix \
     --without-python \
@@ -109,11 +110,11 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("cddlib_jll"),
-    Dependency(PackageSpec(name="FLINT_jll"), compat = "~200.900.000"),
-    Dependency("GMP_jll", v"6.2.0"),
+    Dependency(PackageSpec(name="FLINT_jll"), compat = "~301.400.000"),
+    Dependency("GMP_jll", v"6.2.1"),
     Dependency("MPFR_jll", v"4.1.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    preferred_gcc_version=v"6", julia_compat = "1.6")
+    preferred_gcc_version=v"8", julia_compat = "1.10")

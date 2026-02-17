@@ -1,36 +1,34 @@
 using BinaryBuilder
 
 name = "IntelOpenMP"
-version = v"2024.0.0"
+version = v"2025.2.0"
 
 sources = [
-    ArchiveSource("https://anaconda.org/intel/intel-openmp/2024.0.0/download/win-32/intel-openmp-2024.0.0-intel_49840.tar.bz2",
-                  "7b94dd0d65c8fbb76f0e2ab207731ae1cf6cf0ab3678e79d9bcfae56b5fb7fe6"; unpack_target="i686-w64-mingw32"),
-    ArchiveSource("https://anaconda.org/intel/intel-openmp/2024.0.0/download/win-64/intel-openmp-2024.0.0-intel_49840.tar.bz2",
-                  "a971532e9a397ec2907d079183f2852d907e42b8ac7616e53e1d3dd664903721"; unpack_target="x86_64-w64-mingw32"),
-    ArchiveSource("https://anaconda.org/intel/intel-openmp/2024.0.0/download/linux-32/intel-openmp-2024.0.0-intel_49819.tar.bz2",
-                  "f3e8e6fea77e8206ca32727fd59fb55a496f70a0f9942d0216b9ba5789a0a9b4"; unpack_target="i686-linux-gnu"),
-    ArchiveSource("https://anaconda.org/intel/intel-openmp/2024.0.0/download/linux-64/intel-openmp-2024.0.0-intel_49819.tar.bz2",
-                  "feee49a26abc74ef0b57cfb6f521b427d6a93e7d8293d30e941b70d5fd0ab2d9"; unpack_target="x86_64-linux-gnu"),
+    # Main OpenMP files
+    # Files from the PyPi package: https://pypi.org/project/intel-openmp/#files
+    FileSource("https://files.pythonhosted.org/packages/bc/37/bab8e9283407798d8782f4d9b374436e51c7a297e1b6dc05073df550c010/intel_openmp-2025.2.0-py2.py3-none-win_amd64.whl",
+               "1710356ae0db744ca028ed380759a2007548ad1819f743be9d675603cb127377"; filename="intel_openmp-x86_64-w64-mingw32.whl"),
+    FileSource("https://files.pythonhosted.org/packages/39/17/45e67730f8757a00d665095338b21ca04890d2a3d52a44d725fb5393a044/intel_openmp-2025.2.0-py2.py3-none-manylinux_2_28_x86_64.whl",
+               "57f52a5f374e70dce56591ab23bf274252a68128d5b8de8f897f3683f65374c8"; filename="intel_openmp-x86_64-linux-gnu.whl"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-mkdir -p "${libdir}"
-if [[ ${target} == *i686-w64-mingw* ]]; then
-    mv ${target}/bin32/* "${libdir}/."
-fi
+unzip -d intel_openmp-$target intel_openmp-$target.whl
+
 if [[ ${target} == *x86_64-w64-mingw* ]]; then
-    mv ${target}/bin/* "${libdir}/."
-fi
-if [[ ${target} == *i686-linux-gnu* ]]; then
-    mv ${target}/lib32/* "${libdir}/."
+    install -Dvm 755 intel_openmp-${target}/intel_openmp-*.data/data/Library/bin/* -t "${libdir}"
+
+    # These import libraries go inside the actual lib folder, not the bin folder with the DLLs
+    install -Dv intel_openmp-${target}/intel_openmp-*.data/data/Library/lib/libiomp5md.lib -t "${prefix}/lib/"
+    install -Dv intel_openmp-${target}/intel_openmp-*.data/data/Library/lib/libiompstubs5md.lib -t "${prefix}/lib/"
 fi
 if [[ ${target} == *x86_64-linux-gnu* ]]; then
-    mv ${target}/lib/* "${libdir}/."
+    install -Dvm 755 intel_openmp-${target}/intel_openmp-*.data/data/lib/*.${dlext} -t "${libdir}"
 fi
-install_license ${target}/info/licenses/*.txt
+install_license intel_openmp-${target}/intel_openmp-*.dist-info/LICENSE.txt
+install_license intel_openmp-${target}/intel_openmp-*.data/data/share/doc/compiler/licensing/openmp/third-party-programs.txt
 """
 
 # The products that we will ensure are always built
@@ -40,14 +38,11 @@ products = [
 
 platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
-    Platform("i686", "linux"; libc="glibc"),
-    Platform("i686", "windows"),
     Platform("x86_64", "windows"),
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
-]
+dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; lazy_artifacts=true, julia_compat="1.6")

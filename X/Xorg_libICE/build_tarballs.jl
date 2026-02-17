@@ -3,29 +3,25 @@
 using BinaryBuilder
 
 name = "Xorg_libICE"
-version = v"1.0.10"
-
+version = v"1.1.2"
 
 # Collection of sources required to build libICE
 sources = [
-    ArchiveSource("https://www.x.org/archive/individual/lib/libICE-$(version).tar.bz2",
-                  "6f86dce12cf4bcaf5c37dddd8b1b64ed2ddf1ef7b218f22b9942595fb747c348"),
+    ArchiveSource("https://www.x.org/archive/individual/lib/libICE-$(version).tar.xz",
+                  "974e4ed414225eb3c716985df9709f4da8d22a67a2890066bc6dfc89ad298625"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libICE-*/
-CPPFLAGS="-I${prefix}/include"
-# When compiling for things like ppc64le, we need newer `config.sub` files
-update_configure_scripts
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=no
+cd $WORKSPACE/srcdir/libICE-*
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if Sys.islinux(p) || Sys.isfreebsd(p)]
+platforms = supported_platforms(; exclude=p->Sys.isapple(p) || Sys.iswindows(p))
 
 products = [
     LibraryProduct("libICE", :libICE),
@@ -39,4 +35,5 @@ dependencies = [
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6")

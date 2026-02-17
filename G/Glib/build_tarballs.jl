@@ -1,18 +1,21 @@
 using BinaryBuilder
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "Glib"
-version = v"2.76.5"
+version = v"2.86.3"
 
 # Collection of sources required to build Glib
 sources = [
     ArchiveSource("https://ftp.gnome.org/pub/gnome/sources/glib/$(version.major).$(version.minor)/glib-$(version).tar.xz",
-                  "ed3a9953a90b20da8e5578a79f7d1c8a532eacbe2adac82aa3881208db8a3abe"),
-    DirectorySource("./bundled"),
+                  "b3211d8d34b9df5dca05787ef0ad5d7ca75dec998b970e1aab0001d229977c65"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/glib-*/
+cd $WORKSPACE/srcdir/glib-*
 install_license COPYING
 
 # meson shouldn't be so opinionated (mesonbuild/meson#4542 is incomplete)
@@ -37,7 +40,7 @@ MESON_FLAGS+=(-Dtests=false)
 if [[ "${target}" == *-freebsd* ]]; then
     # Our FreeBSD libc has `environ` as undefined symbol, so the linker will
     # complain if this symbol is used in the built library, even if this won't
-    # be a problem at runtim.  This flag allows having undefined symbols.
+    # be a problem at runtime. This flag allows having undefined symbols.
     MESON_FLAGS+=(-Db_lundef=false)
 fi
 
@@ -58,9 +61,11 @@ ninja -j${nproc} --verbose
 ninja install
 """
 
+sources, script = require_macos_sdk("10.13", sources, script)
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -69,20 +74,21 @@ products = [
     LibraryProduct(["libgmodule-2", "libgmodule-2.0"], :libgmodule),
     LibraryProduct(["libgobject-2", "libgobject-2.0"], :libgobject),
     LibraryProduct(["libgthread-2", "libgthread-2.0"], :libgthread),
+    LibraryProduct(["libgirepository-2", "libgirepository-2.0"], :libgirepository),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     # Host gettext needed for "msgfmt"
     HostBuildDependency("Gettext_jll"),
+    Dependency("GettextRuntime_jll"; compat="0.22.4"),
+    Dependency("Libffi_jll"; compat="~3.4.7"),
     Dependency("Libiconv_jll"),
-    Dependency("Libffi_jll", v"3.2.2"; compat="~3.2.2"),
-    # Gettext is only needed on macOS, as far as I could see
-    Dependency("Gettext_jll", v"0.21.0"; compat="=0.21.0"),
-    Dependency("PCRE2_jll"; compat="10.35"),
-    Dependency("Zlib_jll"),
     Dependency("Libmount_jll"; platforms=filter(Sys.islinux, platforms)),
+    Dependency("PCRE2_jll"; compat="10.42.0"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"6")

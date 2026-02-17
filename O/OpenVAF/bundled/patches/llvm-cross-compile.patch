@@ -1,0 +1,121 @@
+diff --git a/openvaf/llvm/build.rs b/openvaf/llvm/build.rs
+index 86d48c5..7efcd51 100644
+--- a/openvaf/llvm/build.rs
++++ b/openvaf/llvm/build.rs
+@@ -173,7 +173,17 @@ fn main() {
+     }
+
+     for component in components.iter() {
+-        println!("cargo:rustc-cfg=llvm_component=\"{}\"", component);
++        if component.contains("x86") && host.contains("x86") && !target.contains("x86") && !target.contains("i686") {
++           if target.contains("aarch64") {
++               println!("cargo:rustc-cfg=llvm_component=\"{}\"", "aarch64");
++           } else if target.contains("arm") {
++               println!("cargo:rustc-cfg=llvm_component=\"{}\"", "arm");
++           } else {
++               panic!("Could not identify native LLVM arch component for target.");
++           }
++        } else {
++            println!("cargo:rustc-cfg=llvm_component=\"{}\"", component);
++        }
+     }
+
+     // Link in our own LLVM shims, compiled with the same flags as LLVM
+@@ -186,14 +196,18 @@ fn main() {
+     cmd.arg("--version");
+     let version = output(&mut cmd).trim().to_owned();
+     let version_components: Vec<_> = version.split('.').collect();
+-    if let [major, minor, patch] = version_components.as_slice() {
++    if let [major, minor, tail] = version_components.as_slice() {
+         let major: Result<u32, _> = major.parse();
+         let minor: Result<u32, _> = minor.parse();
++        let (patch, suffix) = tail.split_at(tail.find(char::is_alphabetic).unwrap_or_else(|| tail.len()));
+         let patch: Result<u32, _> = patch.parse();
+         if let (Ok(major), Ok(minor), Ok(patch)) = (major, minor, patch) {
+             println!("cargo:rustc-env=LLVM_VERSION_MAJOR={}", major);
+             println!("cargo:rustc-env=LLVM_VERSION_MINOR={}", minor);
+             println!("cargo:rustc-env=LLVM_VERSION_PATCH={}", patch);
++            if suffix.len() > 0 {
++                println!("cargo:rustc-env=LLVM_VERSION_SUFFIX={}", suffix);
++            }
+         } else {
+             fail(&format!(
+                 "Invalid LLVM version {:?}!\nExpected 3 numbers separated by '.' foound {:?}",
+@@ -206,6 +217,17 @@ fn main() {
+
+     let mut cfg = cc::Build::new();
+     cfg.warnings(false);
++    let include_overridden = match env::var("OPENVAF_LLVM_INCLUDEDIR") {
++        Ok(env_var) => {
++            let mut flag = "-I".to_owned();
++            flag.push_str(&env_var);
++            cfg.flag(&flag);
++
++            true
++        },
++        Err(_) => false,
++    };
++
+     for flag in cxxflags.split_whitespace() {
+         // Ignore flags like `-m64` when we're doing a cross build
+         if is_crossed && flag.starts_with("-m") {
+@@ -221,6 +243,10 @@ fn main() {
+             continue;
+         }
+
++        if flag.starts_with("-I") && include_overridden {
++            continue;
++        }
++
+         // Include path contains host directory, replace it with target
+         if is_crossed && flag.starts_with("-I") {
+             cfg.flag(&flag.replace(&host, &target));
+@@ -257,11 +279,18 @@ fn main() {
+     // Link in all LLVM libraries, if we're using the "wrong" llvm-config then
+     // we don't pick up system libs because unfortunately they're for the host
+     // of llvm-config, not the target that we're attempting to link.
+-    let mut cmd = Command::new(&llvm_config);
+-    cmd.arg(llvm_link_arg).arg("--libnames");
+-    cmd.args(&components);
++    let libnames = match env::var("OPENVAF_LLVM_LIBNAMES") {
++        Ok(env_str) => env_str.to_owned(),
++        Err(_) => {
++            let mut cmd = Command::new(&llvm_config);
++            cmd.arg(llvm_link_arg).arg("--libnames");
++            cmd.args(&components);
++
++            output(&mut cmd)
++        },
++    };
+
+-    for mut lib in output(&mut cmd).split_whitespace() {
++    for mut lib in libnames.split_whitespace() {
+         lib = lib
+             .trim_end_matches(".lib")
+             .trim_end_matches(".so")
+@@ -323,13 +352,19 @@ fn main() {
+     // ldflags (largely where all the LLVM libs are located). Currently just
+     // hack around this by replacing the host triple with the target and pray
+     // that those -L directories are the same!
+-    let mut cmd = Command::new(&llvm_config);
+-    let mut libdir = output(cmd.arg(llvm_link_arg).arg("--libdir"));
+
+-    if is_wine {
+-        libdir = winepath(&libdir).to_str().expect("all paths are valid utf-8").to_owned();
+-    }
++    let libdir = match env::var("OPENVAF_LLVM_LIBDIR") {
++        Ok(libdir) => libdir,
++        Err(_) => {
++            let mut cmd = Command::new(&llvm_config);
++            let mut libdir = output(cmd.arg(llvm_link_arg).arg("--libdir"));
+
++            if is_wine {
++                libdir = winepath(&libdir).to_str().expect("all paths are valid utf-8").to_owned();
++            }
++            libdir
++        }
++    };
+     println!("cargo:rustc-link-search=native={}", libdir);
+
+     let llvm_linker_flags = tracked_env_var_os("LLVM_LINKER_FLAGS");
+

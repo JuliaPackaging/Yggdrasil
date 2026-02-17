@@ -3,12 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "H3"
-version = v"3.7.2"
+version = v"4.3.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/uber/h3/archive/v$(version).zip",
-                  "805f787912608b09afa7c0e9c432c0e4b43f17a9d10faed880b3f74f038ce576")
+    GitSource("https://github.com/uber/h3.git", "f6d1b0ba0a0eb076abe655ffdd576a445373a39e")
 ]
 
 # Bash recipe for building across all platforms

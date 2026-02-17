@@ -3,37 +3,28 @@
 using BinaryBuilder, Pkg
 
 name = "diffutils"
-version_string = "3.8"
+version_string = "3.12"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource(
         "https://ftp.gnu.org/gnu/diffutils/diffutils-$(version_string).tar.xz",
-        "a6bdd7d1b31266d11c4f4de6c1b748d4607ab0231af5188fc2533d0ae2438fec",
+        "7c8b7f9fc8609141fdea9cece85249d308624391ff61dedaf528fcb337727dfd",
     ),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/diffutils-*/
+cd $WORKSPACE/srcdir/diffutils-*
 
-if [[ "${target}" == *-mingw* ]]; then
-    atomic_patch -p1 ../patches/win_sa_restart.patch
-    atomic_patch -p1 ../patches/win_signal_handling.patch
-fi
+# The autoconf test for `strcasecmp` runs code and thus doesn't work
+# when cross-building. We assume that `strcasecmp` is working
+# correctly.
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-dependency-tracking gl_cv_func_strcasecmp_works=yes
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-dependency-tracking
-
-# skip gnulib-tests on mingw
-if [[ "${target}" == *-mingw* ]]; then
-    make -j${nproc} SUBDIRS="lib src tests doc man po"
-    make install SUBDIRS="lib src tests doc man po"
-else
-    make -j${nproc}
-    make install
-fi
+make -j${nproc}
+make install
 """
 
 # These are the platforms we will build for by default, unless further

@@ -1,0 +1,12 @@
+diff --git before/yyjson/src/yyjson.h after/yyjson/src/yyjson.h
+index 88cec2b..585e3da 100644
+--- before/yyjson/src/yyjson.h
++++ after/yyjson/src/yyjson.h
+@@ -368,6 +368,7 @@
+ #endif
+ 
+ /** inline function export */
++#define yyjson_api_inline yyjson_api
+ #ifndef yyjson_api_inline
+ #   define yyjson_api_inline static yyjson_inline
+ #endif

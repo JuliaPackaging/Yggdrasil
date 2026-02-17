@@ -6,18 +6,17 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "HYPRE"
-version = v"2.23.1"
-hypre_version = v"2.23.0"
+version = v"3.0.0"
+hypre_version = v"3.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/hypre-space/hypre/archive/refs/tags/v$(hypre_version).tar.gz",
-                  "8a9f9fb6f65531b77e4c319bf35bfc9d34bf529c36afe08837f56b635ac052e2")
+    GitSource("https://github.com/hypre-space/hypre.git", "da9f93f8d698f4caaaff35fe81655b8ad7bb91f9") # Tag v3.0.0
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/hypre-*
+cd $WORKSPACE/srcdir/hypre
 cd src
 
 mkdir build
@@ -42,12 +41,13 @@ cmake .. \
 -DCMAKE_INSTALL_PREFIX=$prefix \
 -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
 -DCMAKE_BUILD_TYPE=Release \
--DHYPRE_ENABLE_SHARED=ON \
+-DBUILD_SHARED_LIBS=ON \
 -DHYPRE_ENABLE_HYPRE_BLAS=ON \
 -DHYPRE_ENABLE_HYPRE_LAPACK=ON \
 -DHYPRE_ENABLE_CUDA_STREAMS=OFF \
 -DHYPRE_ENABLE_CUSPARSE=OFF \
 -DHYPRE_ENABLE_CURAND=OFF \
+-DHYPRE_ENABLE_OPENMP=ON \
 "${CMAKE_FLAGS[@]}"
 
 make -j${nproc}
@@ -82,6 +82,10 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="OpenBLAS_jll", uuid="4536629a-c528-5b80-bd46-f80d51c5b363")),
     Dependency(PackageSpec(name="LAPACK_jll", uuid="51474c39-65e3-53ba-86ba-03b1b862ec14")),
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
+    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms))
 ]
 append!(dependencies, platform_dependencies)
 

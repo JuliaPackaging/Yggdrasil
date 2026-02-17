@@ -1,7 +1,10 @@
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "llama_cpp"
-version = v"0.0.13"  # fake version number
+version = v"0.0.20"  # fake version number
 
 # url = "https://github.com/ggerganov/llama.cpp"
 # description = "Port of Facebook's LLaMA model in C/C++"
@@ -22,11 +25,16 @@ version = v"0.0.13"  # fake version number
 #   - OpenCL/CLBLAST (LLAMA_CLBLAST)
 
 # Build notes and failures
-# - k_quants disabled for armv{6,7}-linux due to compile errors
+# - k_quants disabled for armv{6,7}-linux due to compile errors -- re-enabled as LLAMA_K_QUANTS option is no longer available
 # - k_quants fails to compile on aarch64-linux for gcc-9 and below
 # - missing arch: powerpc64le (code tests for __POWER9_VECTOR__)
 # - fails on i686-w64-mingw32
 #   /workspace/srcdir/llama.cpp/examples/main/main.cpp:249:81: error: invalid static_cast from type ‘main(int, char**)::<lambda(DWORD)>’ to type ‘PHANDLER_ROUTINE’ {aka ‘int (__attribute__((stdcall)) *)(long unsigned int)’}
+# - removed armv{6,7} specific CMAKE ARGS as the flag `LLAMA_K_QUANTS` is no longer available
+# - removed Product "embd_input_test" as it's no longer part of the project
+# - removed Library "libembdinput" as it's no longer part of the project
+# - disabled METAL (LLAMA_METAL=OFF) on Intel-based MacOS as it's not supported (supported on Apple Silicon only)
+# - temporary disabled armv{6,7} builds due to compile errors (missing vld1q_u8_x2, vqtbl1q_u8, uint8x16_t), issue: https://github.com/ggerganov/llama.cpp/issues/5748
 
 # versions: fake_version to github_version mapping
 #
@@ -45,10 +53,16 @@ version = v"0.0.13"  # fake version number
 # 0.0.11          2023-06-13       master-9254920    https://github.com/ggerganov/llama.cpp/releases/tag/master-9254920
 # 0.0.12          2023-07-24       master-41c6741    https://github.com/ggerganov/llama.cpp/releases/tag/master-41c6741
 # 0.0.13          2023-07-29       master-11f3ca0    https://github.com/ggerganov/llama.cpp/releases/tag/master-11f3ca0
+# 0.0.14          2024-01-04       b1767             https://github.com/ggerganov/llama.cpp/releases/tag/b1767
+# 0.0.15          2024-01-09       b1796             https://github.com/ggerganov/llama.cpp/releases/tag/b1796
+# 0.0.16          2024-03-10       b2382             https://github.com/ggerganov/llama.cpp/releases/tag/b2382
+# 0.0.17          2024-12-20       b4371             https://github.com/ggerganov/llama.cpp/releases/tag/b4371
+# 0.0.18          2025-12-10       b7347             https://github.com/ggml-org/llama.cpp/releases/tag/b7347
+# 0.0.19          2026-01-22       b7813             https://github.com/ggml-org/llama.cpp/releases/tag/b7813
+# 0.0.20          2026-01-24       b7821             https://github.com/ggml-org/llama.cpp/releases/tag/b7821
 
 sources = [
-    GitSource("https://github.com/ggerganov/llama.cpp.git",
-              "11f3ca06b8c66b0427aab0a472479da22553b472"),
+    GitSource("https://github.com/ggml-org/llama.cpp.git", "81ab64f3c858c0db8c7c3a6bccd4cbbe624f52a3"),
 ]
 
 script = raw"""
@@ -57,31 +71,36 @@ cd $WORKSPACE/srcdir/llama.cpp*
 # remove compiler flags forbidden in BinaryBuilder
 sed -i -e 's/-funsafe-math-optimizations//g' CMakeLists.txt
 
-EXTRA_CMAKE_ARGS=
+# Fix missing errno include in gguf.cpp (b7813 CI failure on macOS)
+sed -i '1i#include <cerrno>' ggml/src/gguf.cpp
+# Guard Windows thread power throttling API usage for mingw/older SDKs
+sed -i -e 's/#if _WIN32_WINNT >= 0x0602/#if _WIN32_WINNT >= 0x0602 \&\& defined(THREAD_POWER_THROTTLING_CURRENT_VERSION)/' ggml/src/ggml-cpu/ggml-cpu.c
+# Avoid forcing -march on riscv64 (BinaryBuilder disallows explicit -march)
+sed -i -e 's/list(APPEND ARCH_FLAGS \"-march=${MARCH_STR}\" -mabi=lp64d)/list(APPEND ARCH_FLAGS -mabi=lp64d)/' ggml/src/ggml-cpu/CMakeLists.txt
+sed -i -e 's/list(APPEND ARCH_FLAGS -march=rv64gc_v -mabi=lp64d)/list(APPEND ARCH_FLAGS -mabi=lp64d)/' ggml/src/ggml-cpu/CMakeLists.txt
+
+EXTRA_CMAKE_ARGS=()
 if [[ "${target}" == *-linux-* ]]; then
     # otherwise we have undefined reference to `clock_gettime' when
     # linking the `main' example program
-    EXTRA_CMAKE_ARGS='-DCMAKE_EXE_LINKER_FLAGS="-lrt"'
+    EXTRA_CMAKE_ARGS+=(-DCMAKE_EXE_LINKER_FLAGS="-lrt")
 fi
 
-# compilation errors using k_quants on armv{6,7}l-linux-*
-if [[ "${proc_family}" == "arm" && "${nbits}" == 32 ]]; then
-    EXTRA_CMAKE_ARGS="$EXTRA_CMAKE_ARGS -DLLAMA_K_QUANTS=OFF"
-else
-    EXTRA_CMAKE_ARGS="$EXTRA_CMAKE_ARGS -DLLAMA_K_QUANTS=ON"
+# Disable Metal on Intel Apple platforms
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    EXTRA_CMAKE_ARGS+=(-DGGML_METAL=OFF)
 fi
 
-# Use Metal on Apple Silicon
+# Enable Metal on Apple Silicon
 if [[ "${target}" == aarch64-apple-darwin* ]]; then
-    EXTRA_CMAKE_ARGS="$EXTRA_CMAKE_ARGS -DLLAMA_METAL=ON"
+    EXTRA_CMAKE_ARGS+=(-DGGML_METAL=ON)
 fi
 
-mkdir build && cd build
-
-cmake .. \
+cmake -Bbuild -GNinja \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=RELEASE \
+    -DCMAKE_SKIP_RPATH=ON \
     -DBUILD_SHARED_LIBS=ON \
     -DLLAMA_BUILD_TESTS=OFF \
     -DLLAMA_BUILD_EXAMPLES=ON \
@@ -94,42 +113,73 @@ cmake .. \
     -DLLAMA_BLAS=OFF \
     -DLLAMA_CUBLAS=OFF \
     -DLLAMA_CLBLAST=OFF \
-    $EXTRA_CMAKE_ARGS
-make -j${nproc}
-
-make install
-
-# install header files
-for hdr in ../*.h; do
-    install -Dvm 644 "${hdr}" "${includedir}/$(basename "${hdr}")"
-done
-
-install_license ../LICENSE
+    "${EXTRA_CMAKE_ARGS[@]}"
+cmake --build build
+cmake --install build
+install_license LICENSE
 """
 
-platforms = supported_platforms(; exclude = p -> arch(p) == "powerpc64le" || (arch(p) == "i686" && Sys.iswindows(p)))
+# Install a newer SDK which supports `std::filesystem`
+sources, script = require_macos_sdk("10.15", sources, script)
+
+platforms = supported_platforms()
+
+# aarch64-linux-musl:
+# /workspace/srcdir/llama.cpp/ggml/src/ggml-cpu/ggml-cpu.c:2398:53: error: ‘HWCAP_ASIMDDP’ undeclared (first use in this function); did you mean ‘HWCAP_ASIMDHP’?
+filter!(p -> !(Sys.islinux(p) && arch(p) == "aarch64" && libc(p) == "musl"), platforms)
+
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
-    ExecutableProduct("baby-llama", :baby_llama),
-    ExecutableProduct("benchmark", :benchmark),
-    ExecutableProduct("embd-input-test", :embd_input_test),
-    ExecutableProduct("embedding", :embedding),
-    ExecutableProduct("main", :main),
-    ExecutableProduct("perplexity", :perplexity),
-    ExecutableProduct("quantize", :quantize),
-    ExecutableProduct("quantize-stats", :quantize_stats),
-    ExecutableProduct("save-load-state", :save_load_state),
-    ExecutableProduct("server", :server),
-    ExecutableProduct("simple", :simple),
-    ExecutableProduct("train-text-from-scratch", :train_text_from_scratch),
-    LibraryProduct("libembdinput", :libembdinput),
-    LibraryProduct("libggml_shared", :libggml),
+    ExecutableProduct("llama-batched", :llama_batched),
+    ExecutableProduct("llama-batched-bench", :llama_batched_bench),
+    ExecutableProduct("llama-bench", :llama_bench),
+    ExecutableProduct("llama-cli", :llama_cli),
+    ExecutableProduct("llama-convert-llama2c-to-ggml", :llama_convert_llama2c_to_ggml),
+    ExecutableProduct("llama-cvector-generator", :llama_cvector_generator),
+    ExecutableProduct("llama-diffusion-cli", :llama_diffusion_cli),
+    ExecutableProduct("llama-embedding", :llama_embedding),
+    ExecutableProduct("llama-eval-callback", :llama_eval_callback),
+    ExecutableProduct("llama-export-lora", :llama_export_lora),
+    ExecutableProduct("llama-finetune", :llama_finetune),
+    ExecutableProduct("llama-gen-docs", :llama_gen_docs),
+    ExecutableProduct("llama-gguf", :llama_gguf),
+    ExecutableProduct("llama-gguf-hash", :llama_gguf_hash),
+    ExecutableProduct("llama-gguf-split", :llama_gguf_split),
+    ExecutableProduct("llama-idle", :llama_idle),
+    ExecutableProduct("llama-imatrix", :llama_imatrix),
+    ExecutableProduct("llama-lookahead", :llama_lookahead),
+    ExecutableProduct("llama-lookup", :llama_lookup),
+    ExecutableProduct("llama-lookup-create", :llama_lookup_create),
+    ExecutableProduct("llama-lookup-merge", :llama_lookup_merge),
+    ExecutableProduct("llama-lookup-stats", :llama_lookup_stats),
+    ExecutableProduct("llama-mtmd-cli", :llama_mtmd_cli),
+    ExecutableProduct("llama-parallel", :llama_parallel),
+    ExecutableProduct("llama-passkey", :llama_passkey),
+    ExecutableProduct("llama-perplexity", :llama_perplexity),
+    ExecutableProduct("llama-quantize", :llama_quantize),
+    ExecutableProduct("llama-retrieval", :llama_retrieval),
+    ExecutableProduct("llama-save-load-state", :llama_save_load_state),
+    ExecutableProduct("llama-server", :llama_server),
+    ExecutableProduct("llama-simple", :llama_simple),
+    ExecutableProduct("llama-simple-chat", :llama_simple_chat),
+    ExecutableProduct("llama-speculative", :llama_speculative),
+    ExecutableProduct("llama-speculative-simple", :llama_speculative_simple),
+    ExecutableProduct("llama-tokenize", :llama_tokenize),
+    ExecutableProduct("llama-tts", :llama_tts),
+
+    LibraryProduct(["libggml-base", "ggml-base"], :libggml_base),
+    LibraryProduct(["libggml-cpu", "ggml-cpu"], :libggml_cpu),
+    LibraryProduct(["libggml", "ggml"], :libggml),
     LibraryProduct("libllama", :libllama),
+    LibraryProduct("libmtmd", :libmtmd),
 ]
 
-dependencies = Dependency[
+dependencies = [
+    Dependency(PackageSpec(name = "CompilerSupportLibraries_jll", uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version = v"10")
+build_tarballs(
+    ARGS, name, version, sources, script, platforms, products, dependencies;
+    julia_compat = "1.6", preferred_gcc_version = v"10"
+)

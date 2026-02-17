@@ -1,0 +1,28 @@
+From b1a4e92ab848543e43db805ad72cb00d5fadb3a3 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mos=C3=A8=20Giordano?= <giordano@users.noreply.github.com>
+Date: Sat, 30 Mar 2024 16:16:39 +0000
+Subject: [PATCH] Include `stdlib.h` in `ioapi/sortic.c` for exit
+
+This fixes the issue
+```
+[16:00:35] /workspace/srcdir/ioapi-3.2/ioapi/sortic.c:322:30: error: call to undeclared library function 'exit' with type 'void (int) __attribute__((noreturn))'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+[16:00:35]         if ( ind[ i ] > n )  exit( 2 ) ;
+[16:00:35]                              ^
+[16:00:35] /workspace/srcdir/ioapi-3.2/ioapi/sortic.c:322:30: note: include the header <stdlib.h> or explicitly provide a declaration for 'exit'
+```
+---
+ ioapi/sortic.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/ioapi/sortic.c b/ioapi/sortic.c
+index 292c2fe..da984ea 100644
+--- a/ioapi/sortic.c
++++ b/ioapi/sortic.c
+@@ -46,6 +46,7 @@ REVISION HISTORY:
+ 
+ #include  <string.h>
+ #include  <stdint.h>
++#include  <stdlib.h>
+ #include "parms3.h"
+ 
+                          /**  DEAL WITH  FELDMANISMS  OF MANY UN*X F77'S   **/

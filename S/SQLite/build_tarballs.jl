@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "SQLite"
-version = v"3.43.0"
+version = v"3.51.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.sqlite.org/2023/sqlite-autoconf-3430000.tar.gz",
-                  "49008dbf3afc04d4edc8ecfc34e4ead196973034293c997adad2f63f01762ae1"),
+    ArchiveSource("https://sqlite.org/2026/sqlite-autoconf-3510200.tar.gz",
+                  "fbd89f866b1403bb66a143065440089dd76100f2238314d92274a082d4f2b7bb"),
     FileSource("https://raw.githubusercontent.com/archlinux/svntogit-community/cf0a3337bd854104252dc1ff711e95cc8bc7ffb3/trunk/license.txt",
                "4e57d9ac979f1c9872e69799c2597eeef4c6ce7224f3ede0bf9dc8d217b1e65d";
                filename="LICENSE"),
@@ -16,7 +16,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/sqlite-autoconf-*/
+cd $WORKSPACE/srcdir/sqlite-autoconf-*
 
 # Use same flags as
 # https://github.com/archlinux/svntogit-packages/blob/packages/sqlite/trunk/PKGBUILD
@@ -47,7 +47,7 @@ install_license "${WORKSPACE}/srcdir/LICENSE"
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -58,6 +58,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Zlib_jll"),
+    Dependency("dlfcn_win32_jll"; platforms=filter(Sys.iswindows, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

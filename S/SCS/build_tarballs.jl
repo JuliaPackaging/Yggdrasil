@@ -1,18 +1,24 @@
+using Pkg
 using BinaryBuilder
 
 name = "SCS"
-version = v"3.2.4"
+version = v"300.200.1100"
 
 # Collection of sources required to build SCSBuilder
 sources = [
-    GitSource("https://github.com/cvxgrp/scs.git", "9024b8ccc1bba6ee797440fb22354cadb9c81839")
+    GitSource("https://github.com/cvxgrp/scs.git", "e2f2148b6db2055fbdea58ceae28a29b07cc681d")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/scs*
-flags="DLONG=1 USE_OPENMP=0"
-blasldflags="-L${prefix}/lib -lopenblas"
+flags="DLONG=1 USE_OPENMP=1 USE_SPECTRAL_CONES=1"
+if [[ "${target}" == *-mingw* ]]; then
+    LBT=blastrampoline-5
+else
+    LBT=blastrampoline
+fi
+blasldflags="-L${prefix}/lib -l${LBT}"
 
 make BLASLDFLAGS="${blasldflags}" ${flags} out/libscsdir.${dlext}
 make BLASLDFLAGS="${blasldflags}" ${flags} out/libscsindir.${dlext}
@@ -33,8 +39,14 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenBLAS32_jll", v"0.3.10"),
+    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
+    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae");
+        platforms=filter(!Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
+        platforms=filter(Sys.isbsd, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.10", preferred_gcc_version=v"8")

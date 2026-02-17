@@ -1,10 +1,10 @@
 using BinaryBuilder
 
 name = "ZipFlow"
-version = v"1.1.0"
+version = v"1.4.0"
 
 sources = [GitSource("https://github.com/madler/zipflow.git",
-                     "913ef458c51504d1f461f6d3a24d4a1a9bdc2bcc")]
+                     "dd2c33bc91ef2142c96472656cb540ae8c1d8281")]
 
 script = raw"""
     cd ${WORKSPACE}/srcdir/zipflow/

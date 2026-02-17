@@ -1,44 +1,40 @@
-diff --git a/src/makefile b/src/makefile
-index 43d335d..3668d11 100644
---- a/src/makefile
-+++ b/src/makefile
-@@ -62,14 +62,13 @@ ifeq ($(gcc), 4.9)
- 	LIBPATH1 = ${ROOT_DIR}/lib
- else 
- # Compiled libraries under user ~flexpart, gfortran v5.4
--	ROOT_DIR = /homevip/flexpart/
-+	ROOT_DIR = ${prefix}
+diff --git a/src/makefile_gfortran b/src/makefile_gfortran
+index f08f9bd..bb83caa 100644
+--- a/src/makefile_gfortran
++++ b/src/makefile_gfortran
+@@ -37,6 +37,8 @@ FLEXPART-ETA-BIN = FLEXPART_ETA_BIN
  
--	F90	  = /usr/bin/gfortran
-+	F90	  = gfortran
- 	MPIF90    = /usr/bin/mpifort
+ export OMP_NESTED=FALSE
  
--	INCPATH1  = ${ROOT_DIR}/gcc-5.4.0/include	
--	INCPATH2  = /usr/include
--	LIBPATH1 = ${ROOT_DIR}/gcc-5.4.0/lib
-+	INCPATH1  = ${includedir}
-+	LIBPATH1 = ${libdir}
++CPATH = ${includedir}
++LIBRARY_PATH = ${libdir}
+ ROOT_DIR = . #MD
+ 
+ #F90 = /usr/bin/gfortran
+@@ -87,13 +89,13 @@ O_LEV_DBG = g # [0,g]
+ # (defined by the machine where you are compiling it)
+ #
+ ifeq ($(arch), generic)
+-	FUSER = -g -fopenmp -march=core-avx2
++	FUSER = -fopenmp
+ else ifeq ($(arch), x86-64)
+-	FUSER = -g -fopenmp -march=x86-64
++	FUSER = -fopenmp
+ else ifeq ($(arch), skylake)
+-	FUSER = -g -fopenmp -march=skylake-avx512
++	FUSER = -fopenmp
+ else
+-	FUSER = -g -fopenmp -march=native -mtune=native
++	FUSER = -fopenmp
  endif
  
- 
-@@ -87,16 +86,16 @@ VPATH = gributils/
- 
- 
- ## OPTIMIZATION LEVEL
--O_LEV = 0 # [0,1,2,3,g,s,fast]
-+O_LEV = 3 # [0,1,2,3,g,s,fast]
- O_LEV_DBG = g # [0,g]
- 
+ # To compile in serial
+@@ -103,7 +105,7 @@ mpi: FUSER := $(FUSER) -Dusempi #-MM -MT -MD
  ## LIBRARIES
- #LIBS = -lgrib_api_f90 -lgrib_api -lm -ljasper -lnetcdff
--LIBS = -lgrib_api_f90 -lgrib_api -lm -ljasper $(NCOPT)
-+LIBS = -leccodes_f90 -leccodes -lm $(NCOPT)
+ LIBS = -leccodes -leccodes_f90 -lm $(NCOPT) $(ETAOPT) #MD -ljasper
  
--FFLAGS   = -I$(INCPATH1) -I$(INCPATH2) -O$(O_LEV) -g -cpp -m64 -mcmodel=medium -fconvert=little-endian -frecord-marker=4 -fmessage-length=0 -flto=jobserver -O$(O_LEV) $(NCOPT) $(FUSER)  #-Warray-bounds -fcheck=all # -march=native
-+FFLAGS   = -I$(INCPATH1) -O$(O_LEV) -cpp -m64 -mcmodel=medium -fconvert=little-endian -frecord-marker=4 -fmessage-length=0 -O$(O_LEV) $(NCOPT) $(FUSER)  #-Warray-bounds -fcheck=all # -march=native
+-FFLAGS   = $(INC) -O$(O_LEV) -m64 -cpp -mcmodel=large $(NCOPT) $(ETAOPT) $(FUSER)  #-convert little_endian -fpp -WB -check all
++FFLAGS   = $(INC) -O$(O_LEV) -cpp -mcmodel=large $(NCOPT) $(ETAOPT) $(FUSER)  #-convert little_endian -fpp -WB -check all
  
--DBGFLAGS = -I$(INCPATH1) -I$(INCPATH2) -O$(O_LEV_DBG) -g3 -ggdb3 -cpp -m64 -mcmodel=medium -fconvert=little-endian -frecord-marker=4 -fmessage-length=0 -flto=jobserver -O$(O_LEV_DBG) $(NCOPT) -fbacktrace   -Wall  -fdump-core $(FUSER)  #  -ffpe-trap=invalid,overflow,denormal,underflow,zero  -Warray-bounds -fcheck=all
-+DBGFLAGS = -I$(INCPATH1) -O$(O_LEV_DBG) -g3 -ggdb3 -cpp -m64 -mcmodel=medium -fconvert=little-endian -frecord-marker=4 -fmessage-length=0 -O$(O_LEV_DBG) $(NCOPT) -fbacktrace   -Wall  -fdump-core $(FUSER)  #  -ffpe-trap=invalid,overflow,denormal,underflow,zero  -Warray-bounds -fcheck=all
+ DBGFLAGS = $(INC) -O$(O_LEV_DBG) -g3 -ggdb3 -cpp -m64 -mcmodel=large -fconvert=little-endian -frecord-marker=4 -fmessage-length=0 -flto=jobserver -O$(O_LEV_DBG) $(NCOPT) $(ETAOPT) -fbacktrace   -Wall  -fdump-core $(FUSER)  #  -ffpe-trap=invalid,overflow,denormal,underflow,zero  -Warray-bounds -fcheck=all
  
- LDFLAGS  = $(FFLAGS) -L$(LIBPATH1) -Wl,-rpath,$(LIBPATH1) $(LIBS) #-L$(LIBPATH2)
- LDDEBUG  = $(DBGFLAGS) -L$(LIBPATH1) $(LIBS) #-L$(LIBPATH2)

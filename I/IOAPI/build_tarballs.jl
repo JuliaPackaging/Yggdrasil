@@ -3,11 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "IOAPI"
-version = v"3.2.0"
+version = v"3.2.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/cjcoats/ioapi-3.2.git", "ef5d5f4e112c249b593b19426421f25d79ae094b")
+    GitSource("https://github.com/cjcoats/ioapi-3.2.git",
+              "ef5d5f4e112c249b593b19426421f25d79ae094b"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -15,6 +17,8 @@ script = raw"""
 apk add tcsh # Build script is in csh
 
 cd $WORKSPACE/srcdir/ioapi-3.2/ioapi/
+# Patch from https://github.com/cjcoats/ioapi-3.2/pull/14
+atomic_patch -p2 ../../patches/clang-exit-stdlib.patch
 install_license ../LICENSE
 export HOME=${WORKSPACE}/srcdir
 export BIN=tmp
@@ -38,10 +42,14 @@ if [[ "${target}" == *mingw* ]]; then
     sed -i 's/\#include <sys\/wait.h>//g' systemf.c
 fi
 
-cp Makefile.nocpl Makefile
-cp Makeinclude.Linux2_x86_64gfort Makeinclude.$BIN
+cp -v Makefile.nocpl Makefile
+if [[ ${target} == aarch64-apple-* ]]; then
+   cp -v Makeinclude.Linux2_x86_64gfort10 Makeinclude.$BIN
+else
+   cp -v Makeinclude.Linux2_x86_64gfort Makeinclude.$BIN
+fi
 
-make # Parallel make (-j > 1) does not work
+make CC=cc CXX=c++ # Parallel make (-j > 1) does not work
 
 cp *.h ${includedir} # C header files
 cp fixed_src/* ${includedir} # FORTRAN .EXT (include) files
@@ -55,22 +63,23 @@ fi
 rm ${BINDIR}/libioapi.a
 
 cd ../m3tools/
-cp Makefile.nocpl Makefile
-make
+cp -v Makefile.nocpl Makefile
+make CC=cc CXX=c++
 
 cd $BINDIR
 
 rm *.o 
-mv *.mod ${includedir} # Move FORTRAN mod files to include dir, they are used by some dependencies
-mv * $bindir # Move executables to bindir
+mv -v *.mod ${includedir} # Move FORTRAN mod files to include dir, they are used by some dependencies
+mv -v * $bindir # Move executables to bindir
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
     Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("x86_64", "macos"; ),
     Platform("aarch64", "linux"; libc = "glibc"),
+    Platform("x86_64", "macos"),
+    Platform("aarch64", "macos"),
     #Platform("x86_64", "windows"),
     #Platform("i686", "windows")
 ]
@@ -140,13 +149,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="NetCDF_jll", uuid="7243133f-43d8-5620-bbf4-c2c921802cf3"); compat="400.701.400 - 400.799")
-    Dependency(PackageSpec(name="NetCDFF_jll", uuid="78e728a9-57fe-5d11-897c-5014b89e5f84"))
+    Dependency(PackageSpec(name="NetCDF_jll", uuid="7243133f-43d8-5620-bbf4-c2c921802cf3"); compat="400.902.208 - 400.999")
+    Dependency(PackageSpec(name="NetCDFF_jll", uuid="78e728a9-57fe-5d11-897c-5014b89e5f84"); compat="4.6.1")
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
-    # `MbedTLS_jll` is an indirect dependency through NetCDF, we need to specify
-    # a compatible build version for this to work.
-    BuildDependency(PackageSpec(; name="MbedTLS_jll", version=v"2.24.0"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"5")

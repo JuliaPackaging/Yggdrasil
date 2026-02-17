@@ -85,6 +85,16 @@ fi
 cmake --build . --config RelWithDebInfo --parallel $nproc
 cmake --build . --config RelWithDebInfo --parallel $nproc --target install
 
+if [[ ${target} == i686-w64-* ]]; then
+    # Remove 64-bit import libraries
+    rm $prefix/lib/*64.lib
+else
+    # Rename 64-bit import libraries
+    mv -f $prefix/lib/msmpifmc64.lib $prefix/lib/msmpifmc.lib
+    mv -f $prefix/lib/msmpifec64.lib $prefix/lib/msmpifec.lib
+    mv -f $prefix/lib/msmpi64.lib $prefix/lib/msmpi.lib
+fi
+
 install_license $WORKSPACE/destdir/share/licenses/MicrosoftMPI/* $WORKSPACE/srcdir/MPIconstants*/LICENSE.md
 """
 
@@ -104,4 +114,5 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+# We use GCC 5 to ensure Fortran module files are readable by all `libgfortran3` architectures. GCC 4 would use an older format.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, preferred_gcc_version=v"5")

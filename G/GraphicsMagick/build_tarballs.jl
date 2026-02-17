@@ -2,30 +2,26 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 name = "GraphicsMagick"
-version = v"1.3.42"
+version = v"1.3.46"
+ygg_version = v"1.3.47"
 
 # Collection of sources required to build GraphicsMagick
 sources = [
     ArchiveSource("https://sourceforge.net/projects/graphicsmagick/files/graphicsmagick/$(version)/GraphicsMagick-$(version).tar.xz",
-                  "484fccfd2b2faf6c2ba9151469ece5072bcb91ba4ed73e75ed3d8e46c759d557"),
-    DirectorySource("bundled"),
+                  "c7c706a505e9c6c3764156bb94a0c9644d79131785df15a89c9f8721d1abd061"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/GraphicsMagick*
+
 # Don't use `clock_realtime` if it isn't available
 atomic_patch -p1 ../patches/check-have-clock-realtime.patch
 
-LDFLAGS=()
-if [[ $target = *-darwin* ]]; then
-    # See <https://github.com/JuliaPackaging/Yggdrasil/issues/7745>
-    LDFLAGS=('-fuse-ld=ld')
-fi
-
 # While all libraries are available, only the last set of header files
-# (here depth=8) remain available.
-for depth in 32 16 8; do
+# (here depth=16) remain available.
+for depth in 32 8 16; do
     mkdir build-${depth}
     pushd build-${depth}
     # `configure` runs Ghostscript binaries -- this does not work when cross-compiling
@@ -37,7 +33,7 @@ for depth in 32 16 8; do
         --disable-installed \
         --disable-static \
         --docdir=/tmp \
-        --enable-openmp \
+        --disable-openmp \
         --enable-quantum-library-names \
         --enable-shared \
         --with-quantum-depth=${depth} \
@@ -45,7 +41,10 @@ for depth in 32 16 8; do
         --without-frozenpaths \
         --without-perl \
         --without-x \
-        LDFLAGS="${LDFLAGS[@]}"
+        --without-wmf \
+        --without-jxl \
+        --without-lzma \
+        --disable-prof --disable-gprof --disable-gcov
     make -j${nproc}
     make install
     popd
@@ -75,22 +74,25 @@ dependencies = [
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM
     # as compiler (BSD systems), and libgomp from
     # `CompilerSupportLibraries_jll` everywhere else.
-    Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
-    Dependency("LLVMOpenMP_jll"; platforms=filter(Sys.isbsd, platforms)),
-    Dependency("Bzip2_jll"),
-    Dependency("FreeType2_jll"; compat="2.10.4"),
+    # Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
+    # Dependency("LLVMOpenMP_jll"; platforms=filter(Sys.isbsd, platforms)),
+    Dependency("Bzip2_jll"; compat="1.0.9"),
+    Dependency("FreeType2_jll"; compat="2.13.4"),
     # Dependency("Ghostscript_jll"),
     Dependency("Graphviz_jll"),
     Dependency("JasPer_jll"),
     Dependency("JpegTurbo_jll"),
-    Dependency("Libtiff_jll"),
-    Dependency("XML2_jll"),
+    Dependency("Libtiff_jll"; compat="4.7.2"),
+    # We had to restrict compat with XML2 because of ABI breakage:
+    # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
+    # Updating to `compat="~2.14.1"` is likely possible without problems but requires rebuilding this package
+    Dependency("XML2_jll"; compat="~2.13.6"),
     Dependency("XZ_jll"),
     Dependency("Zlib_jll"),
     Dependency("Zstd_jll"),
-    Dependency("gperftools_jll"),
+    # Dependency("gperftools_jll"),
     Dependency("libpng_jll"),
-    Dependency("libwebp_jll"),
+    Dependency("libwebp_jll"; compat="1.6.0"),
     # TODO:
     # - ralcgm <http://www.agocg.ac.uk/train/cgm/ralcgm.htm>
     # - cdraw <https://www.dechifro.org/dcraw/>
@@ -110,4 +112,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", clang_use_lld=false)

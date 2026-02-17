@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "pigz"
-version = v"2.7"
+version = v"2.8"
 
 # Collection of sources required to build pigz
 sources = [
     ArchiveSource("https://zlib.net/pigz/pigz-$(version.major).$(version.minor).tar.gz",
-                  "b4c9e60344a08d5db37ca7ad00a5b2c76ccb9556354b722d56d55ca7e8b1c707"),
+                  "eb872b4f0e1f0ebe59c9f7bd8c506c4204893ba6a8492de31df416f0d5170fd0"),
 ]
 
 # Bash recipe for building across all platforms

@@ -1,0 +1,53 @@
+From ad520c15cc2dae3231c38cca916f93c8347c1bd9 Mon Sep 17 00:00:00 2001
+From: Valentin Churavy <v.churavy@gmail.com>
+Date: Tue, 8 Nov 2022 13:18:59 -0500
+Subject: [PATCH] handle template weirdness
+
+---
+ lld/ELF/InputFiles.cpp        | 4 ++--
+ lld/ELF/InputSection.cpp      | 2 +-
+ lld/ELF/SyntheticSections.cpp | 2 +-
+ 3 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/lld/ELF/InputFiles.cpp b/lld/ELF/InputFiles.cpp
+index 7dacdeb9f042..b43b3b3db6f5 100644
+--- a/lld/ELF/InputFiles.cpp
++++ b/lld/ELF/InputFiles.cpp
+@@ -275,7 +275,7 @@ template <class ELFT> static void doParseFile(InputFile *file) {
+ 
+   // .so file
+   if (auto *f = dyn_cast<SharedFile>(file)) {
+-    f->parse<ELFT>();
++    f->template parse<ELFT>();
+     return;
+   }
+ 
+diff --git a/lld/ELF/InputSection.cpp b/lld/ELF/InputSection.cpp
+index 8fe36eca6a4b..b9564f2184c3 100644
+--- a/lld/ELF/InputSection.cpp
++++ b/lld/ELF/InputSection.cpp
+@@ -130,7 +130,7 @@ template <class ELFT> RelsOrRelas<ELFT> InputSectionBase::relsOrRelas() const {
+     return {};
+   RelsOrRelas<ELFT> ret;
+   typename ELFT::Shdr shdr =
+-      cast<ELFFileBase>(file)->getELFShdrs<ELFT>()[relSecIdx];
++      cast<ELFFileBase>(file)->template getELFShdrs<ELFT>()[relSecIdx];
+   if (shdr.sh_type == SHT_REL) {
+     ret.rels = makeArrayRef(reinterpret_cast<const typename ELFT::Rel *>(
+                                 file->mb.getBufferStart() + shdr.sh_offset),
+diff --git a/lld/ELF/SyntheticSections.cpp b/lld/ELF/SyntheticSections.cpp
+index b359c2e7bcea..812d38ca81de 100644
+--- a/lld/ELF/SyntheticSections.cpp
++++ b/lld/ELF/SyntheticSections.cpp
+@@ -3360,7 +3360,7 @@ template <class ELFT> void elf::splitSections() {
+       if (auto *s = dyn_cast<MergeInputSection>(sec))
+         s->splitIntoPieces();
+       else if (auto *eh = dyn_cast<EhInputSection>(sec))
+-        eh->split<ELFT>();
++        eh->template split<ELFT>();
+     }
+   });
+ }
+-- 
+2.38.1
+

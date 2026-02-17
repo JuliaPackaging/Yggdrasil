@@ -3,26 +3,29 @@
 using BinaryBuilder, Pkg
 
 name = "libaec"
-version = v"1.0.6"
+version = v"1.1.5"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://gitlab.dkrz.de/k202009/libaec/-/archive/v$(version)/libaec-v$(version).tar.bz2", "31fb65b31e835e1a0f3b682d64920957b6e4407ee5bbf42ca49549438795a288")
+    GitSource("https://gitlab.dkrz.de/k202009/libaec.git",
+              "d84ea9c83097a0806f73fc48b69ae7eb9a94525e")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libaec*/
+cd $WORKSPACE/srcdir/libaec*
 
-mkdir build && cd build
-cmake \
-    -DCMAKE_INSTALL_PREFIX=$prefix \
+apk del cmake # We need cmake 3.26
+
+cmake -B build \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    ..
+    -DBUILD_STATIC_LIBS=OFF
 
-make -j${nproc}
-make install
+cmake --build build --parallel ${nproc}
+cmake --install build
+install -Dvm 755 "build/src/graec${exeext}" -t "${bindir}"
 """
 
 # These are the platforms we will build for by default, unless further
@@ -33,11 +36,12 @@ platforms = supported_platforms()
 products = [
     LibraryProduct("libsz", :libsz),
     LibraryProduct("libaec", :libaec),
-    ExecutableProduct("aec", :aec)
+    ExecutableProduct("graec", :aec)
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    HostBuildDependency("CMake_jll"), # We need cmake 3.26
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

@@ -1,16 +1,19 @@
 using BinaryBuilder
 
 name = "Binutils"
-version = v"2.41"
+version = v"2.45.1"
 
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-$(version.major).$(version.minor).tar.xz",
-                  "ae9a5789e23459e59606e6714723f2d3ffc31c03174191ef0d015bdf06007450"),
+    ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-$(version).tar.xz",
+                  "5fe101e6fe9d18fdec95962d81ed670fdee5f37e3f48f0bef87bddf862513aa5"),
     DirectorySource("bundled"),
 ]
 
 script = raw"""
-cd ${WORKSPACE}/srcdir/binutils-*/
+cd ${WORKSPACE}/srcdir/binutils-*
+
+# Don't use `ln` (hard links), use `cp` (copy) to "duplicate" installed files
+sed -i 's/ ln / cp /' binutils/Makefile.am binutils/Makefile.in
 
 ./configure --prefix=${prefix} \
     --target=${target} \
@@ -32,7 +35,9 @@ cd ${WORKSPACE}/srcdir/binutils-*/
     --disable-nls \
     --enable-64-bit-bfd \
     --disable-static \
-    --enable-shared
+    --enable-shared \
+    --with-system-zlib=no \
+    --with-zstd=yes
 
 make -j${nproc}
 make install
@@ -48,7 +53,7 @@ else
 fi
 """
 
-platforms = supported_platforms(; exclude=!Sys.islinux)
+platforms = supported_platforms(; exclude = p -> !(Sys.islinux(p) || Sys.isfreebsd(p)))
 
 products = [
     ExecutableProduct("addr2line", :addr2line),
@@ -75,6 +80,10 @@ products = [
     LibraryProduct("libopcodes", :libopcodes),
 ]
 
-dependencies = Dependency[]
+dependencies = [
+    Dependency("Zlib_jll"; compat="1.2.12"),
+    Dependency("Zstd_jll"; compat="1.5.7"),
+]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"5")

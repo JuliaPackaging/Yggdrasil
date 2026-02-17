@@ -1,5 +1,6 @@
 using JSON3, Downloads
 using BinaryBuilder
+using Base: thisminor
 
 function get_sources(product::String, components::Vector{String};
                      version::Union{VersionNumber,String}, platform::Platform,
@@ -17,15 +18,30 @@ function parse_sources(json::String, product::String, components::Vector{String}
     root = "https://developer.download.nvidia.com/compute/$product/redist"
 
     redist = JSON3.read(json)
+    if !haskey(platform, "cuda")
+        error("Please provide a platform that has the 'cuda' tag set, indicating which CUDA toolkit version this product is to be used with.")
+    end
+    cuda_version = platform["cuda"]
     architecture = if Sys.islinux(platform)
         libc(platform) == "glibc" || error("Only glibc is supported on Linux")
         if arch(platform) == "x86_64"
             "linux-x86_64"
-        elseif arch(platform) == "aarch64"
-            # XXX: 11.7+ also has linux-aarch64
-            "linux-sbsa"
         elseif arch(platform) == "powerpc64le"
             "linux-ppc64le"
+        elseif arch(platform) == "aarch64"
+            if VersionNumber(cuda_version) >= v"13"
+                haskey(platform, "cuda_platform") && error("CUDA 13 uses unified ARM platforms")
+                "linux-sbsa"
+            else
+                haskey(platform, "cuda_platform") || error("CUDA 12 and earlier require the 'cuda_platform' tag to be set")
+                if platform["cuda_platform"] == "jetson"
+                    "linux-aarch64"
+                elseif platform["cuda_platform"] == "sbsa"
+                    "linux-sbsa"
+                else
+                    error("Unknown cuda_platform $(platform["cuda_platform"])")
+                end
+            end
         else
             error("Unsupported Linux architecture $(arch(platform))")
         end
@@ -115,8 +131,7 @@ fi"""
         "libcurand",
         "libcusolver",
         "libcusparse",
-        "libnpp",
-        "libnvjpeg"
+        "libnpp"
     ]
     if version >= v"11.8"
         push!(components, "cuda_profiler_api")
@@ -124,12 +139,28 @@ fi"""
     if version >= v"12"
         push!(components, "libnvjitlink")
     end
-
+    if version >= v"12.2"
+        # available earlier, but not for aarch64
+        push!(components, "libnvjpeg")
+    end
+    if version >= v"13"
+        push!(components, "cuda_crt")
+        push!(components, "libnvvm")
+    end
     for platform in platforms
         should_build_platform(triplet(platform)) || continue
+
+        # add the CUDA tag to the platform used by get_sources to determine compatibility.
+        # note that this is different from `version`, since `get_sources` is also used by
+        # recipes to select products (e.g. CUDNN) whose version differs from the CTK one.
+        # we don't actually use the augmented platform to generate a JLL since the CUDA SDK
+        # JLLs also need to be loadable on systems without CUDA (i.e. the musl builders).
+        augmented_platform = deepcopy(platform)
+        augmented_platform["cuda"] = CUDA.platform(version)
+
         push!(builds,
                 (; script, platforms=[platform], products=Product[],
-                sources=get_sources("cuda", components; version, platform)
+                   sources=get_sources("cuda", components; version, platform=augmented_platform)
         ))
     end
 
@@ -144,6 +175,6 @@ fi"""
         build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                     name, version, build.sources, build.script,
                     build.platforms, build.products, [];
-                    skip_audit=true)
+                    skip_audit=true, julia_compat="1.6", compression_format="xz")
     end
 end

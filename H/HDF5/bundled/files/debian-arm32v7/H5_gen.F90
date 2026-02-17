@@ -15,7 +15,7 @@
 !                                                                             *
 !   This file is part of HDF5.  The full HDF5 copyright notice, including     *
 !   terms governing use, modification, and redistribution, is contained in    *
-!   the COPYING file, which can be found at the root of the source code       *
+!   the LICENSE file, which can be found at the root of the source code       *
 !   distribution tree, or in https://www.hdfgroup.org/licenses.               *
 !   If you do not have access to either file, you may request a copy from     *
 !   help@hdfgroup.org.                                                        *
@@ -5149,7 +5149,7 @@ CONTAINS
     INTEGER, INTENT(OUT) :: hdferr 
     TYPE(C_PTR) :: f_ptr 
     f_ptr = C_LOC(fillvalue)
-    hdferr = h5pset_fill_value_c(prp_id, type_id, f_ptr)
+    hdferr = INT(h5pset_fill_value(prp_id, type_id, f_ptr))
   END SUBROUTINE h5pset_fill_value_kind_4
 !DEC$if defined(BUILD_HDF5_DLL)
 !DEC$attributes dllexport :: h5pset_fill_value_kind_8
@@ -5162,7 +5162,7 @@ CONTAINS
     INTEGER, INTENT(OUT) :: hdferr 
     TYPE(C_PTR) :: f_ptr 
     f_ptr = C_LOC(fillvalue)
-    hdferr = h5pset_fill_value_c(prp_id, type_id, f_ptr)
+    hdferr = INT(h5pset_fill_value(prp_id, type_id, f_ptr))
   END SUBROUTINE h5pset_fill_value_kind_8
 !DEC$if defined(BUILD_HDF5_DLL)
 !DEC$attributes dllexport :: h5pget_fill_value_kind_4
@@ -5175,7 +5175,7 @@ CONTAINS
     INTEGER, INTENT(OUT) :: hdferr
     TYPE(C_PTR) :: f_ptr
     f_ptr = C_LOC(fillvalue)
-    hdferr = h5pget_fill_value_c(prp_id, type_id, f_ptr)
+    hdferr = INT(h5pget_fill_value(prp_id, type_id, f_ptr))
   END SUBROUTINE h5pget_fill_value_kind_4
 !DEC$if defined(BUILD_HDF5_DLL)
 !DEC$attributes dllexport :: h5pget_fill_value_kind_8
@@ -5188,7 +5188,7 @@ CONTAINS
     INTEGER, INTENT(OUT) :: hdferr
     TYPE(C_PTR) :: f_ptr
     f_ptr = C_LOC(fillvalue)
-    hdferr = h5pget_fill_value_c(prp_id, type_id, f_ptr)
+    hdferr = INT(h5pget_fill_value(prp_id, type_id, f_ptr))
   END SUBROUTINE h5pget_fill_value_kind_8
 !DEC$if defined(BUILD_HDF5_DLL)
 !DEC$attributes dllexport :: h5pset_kind_4
