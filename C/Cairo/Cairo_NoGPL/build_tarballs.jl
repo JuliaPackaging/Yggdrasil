@@ -1,6 +1,6 @@
 include(joinpath("..", "common.jl"))
 
-name = "Cairo_nogpl"
+name = "Cairo_NoGPL"
 
 # Ensure LZO is not present in the build environment — meson auto-detects it,
 # so its mere presence would cause Cairo to link against GPL code.
