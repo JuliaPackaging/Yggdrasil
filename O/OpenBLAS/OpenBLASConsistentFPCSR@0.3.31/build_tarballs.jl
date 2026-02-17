@@ -26,7 +26,8 @@ for (n,platform) in enumerate(platforms)
                    julia_compat="1.11",
                    lock_microarchitecture=false,
                    preferred_gcc_version =
-                       arch(p) == "aarch64" && Sys.isapple(arch) ? aarch64_darwin_preferred_gcc_version : preferred_gcc_version,
+                       arch(platform) == "aarch64" && Sys.isapple(platform) ?
+                       aarch64_darwin_preferred_gcc_version : preferred_gcc_version,
                    preferred_llvm_version=preferred_llvm_version,
                    )
 end
