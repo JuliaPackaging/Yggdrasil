@@ -63,8 +63,9 @@ platforms = expand_cxxstring_abis(platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.5")
 
-# OpenMPI does not provide armv6l binaries.
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l"), platforms)
+# Current upstream develop branch fails on non-x86 and musl targets in CI;
+# keep the known-good Linux glibc x86 targets.
+platforms = filter(p -> arch(p) in ("i686", "x86_64") && libc(p) == "glibc", platforms)
 
 products = [
     LibraryProduct("libpvfmm", :libpvfmm),
