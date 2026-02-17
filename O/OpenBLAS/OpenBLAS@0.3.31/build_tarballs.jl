@@ -40,7 +40,7 @@ for (n,platform) in enumerate(platforms)
     # We register the build products only after the last build.
     args = n == length(platforms) ? option_args : non_register_option_args
 
-    build_tarballs(args, name, version, sources, script, non_msan_platforms, products, dependencies;
+    build_tarballs(args, name, version, sources, script, [platform], products, dependencies;
                    julia_compat="1.11",
                    lock_microarchitecture=false,
                    preferred_gcc_version =
