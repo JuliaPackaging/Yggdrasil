@@ -6,7 +6,7 @@ version = v"1.14.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/VROOM-Project/vroom.git", "1fd711bc8c20326dd8e9538e2c7e4cb1ebd67bdb"),
-    GitSource("https://github.com/chriskohlhoff/asio.git", "asio-1-30-2"),
+    GitSource("https://github.com/chriskohlhoff/asio.git", "231cb29bab30f82712fcd54faaea42424cc6e710"),
 ]
 
 # Bash recipe for building across all platforms
