@@ -21,24 +21,24 @@ ln -s /workspace/srcdir/opt-x86_64-linux-musl/registry /opt/x86_64-linux-musl/re
 mv /tmp .
 ln -s /workspace/srcdir/tmp /tmp
 
-apk add fontconfig-dev
-echo '
-prefix=/usr
-exec_prefix=${prefix}
-libdir=${prefix}/lib
-includedir=${prefix}/include
-sysconfdir=/etc
-localstatedir=/var
-PACKAGE=fontconfig
-confdir=${sysconfdir}/fonts
-cachedir=${localstatedir}/cache/${PACKAGE}
-
-Name: Fontconfig
-Description: Font configuration and customization library
-Version: 1.12.0
-Libs: -L${libdir} -lfontconfig
-Cflags: -I${includedir}
-' > /usr/local/lib/pkgconfig/fontconfig.pc
+#apk add fontconfig-dev
+#echo '
+#prefix=/usr
+#exec_prefix=${prefix}
+#libdir=${prefix}/lib
+#includedir=${prefix}/include
+#sysconfdir=/etc
+#localstatedir=/var
+#PACKAGE=fontconfig
+#confdir=${sysconfdir}/fonts
+#cachedir=${localstatedir}/cache/${PACKAGE}
+#
+#Name: Fontconfig
+#Description: Font configuration and customization library
+#Version: 1.12.0
+#Libs: -L${libdir} -lfontconfig
+#Cflags: -I${includedir}
+#' > /usr/local/lib/pkgconfig/fontconfig.pc
 
 cd Slint.jl/deps/SlintWrapper
 cargo build --release 
@@ -66,7 +66,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
+    #HostBuildDependency("Fontconfig_jll"),
+    #Dependency("Fontconfig_jll"; compat="2.16.0"),
+    Dependency("Fontconfig_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:c, :rust])
+#build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:c, :rust])
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:rust])
