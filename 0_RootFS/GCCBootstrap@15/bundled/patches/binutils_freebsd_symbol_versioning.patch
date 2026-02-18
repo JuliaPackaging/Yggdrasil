@@ -1,0 +1,34 @@
+diff --git a/ld/scripttempl/elf.sc b/ld/scripttempl/elf.sc
+index 444aef2942..8a3858d32b 100644
+--- a/ld/scripttempl/elf.sc
++++ b/ld/scripttempl/elf.sc
+@@ -853,17 +853,17 @@ cat <<EOF
+   ${SDATA_GOT+${OTHER_GOT_SECTIONS}}
+ 
+   ${DATA_SDATA-${SDATA}}
+   ${DATA_SDATA-${OTHER_SDATA_SECTIONS}}
+ 
+   ${RELOCATING+${SYMBOL_ABI_ALIGNMENT+. = ALIGN(${SYMBOL_ABI_ALIGNMENT});}}
+-  ${RELOCATING+${DATA_END_SYMBOLS-${CREATE_SHLIB+PROVIDE (}$(def_symbol "_edata")${CREATE_SHLIB+)};
++  ${RELOCATING+${DATA_END_SYMBOLS-$(def_symbol "_edata");
+   PROVIDE ($(def_symbol "edata"));}}
+ 
+   $(emit_persistent)
+ 
+   ${RELOCATING+. = ALIGN(ALIGNOF(NEXT_SECTION));}
+-  ${RELOCATING+${CREATE_SHLIB+PROVIDE (}$(def_symbol "__bss_start")${CREATE_SHLIB+)};}
++  ${RELOCATING+${USER_LABEL_PREFIX}__bss_start = .;}
+   ${RELOCATING+${OTHER_BSS_SYMBOLS}}
+ 
+   ${DATA_SDATA-${SBSS}}
+   ${BSS_PLT+${PLT}}
+@@ -959,8 +959,8 @@ cat <<EOF
+ cat <<EOF
+   ${RELOCATING+${OTHER_END_SYMBOLS}}
+ 
+-  ${RELOCATING+${END_SYMBOLS-${CREATE_SHLIB+PROVIDE (}$(def_symbol "_end")${CREATE_SHLIB+)};
++  ${RELOCATING+${END_SYMBOLS-$(def_symbol "_end");
+   PROVIDE ($(def_symbol "end"));}}
+ 
+   ${RELOCATING+${DATA_SEGMENT_END}}
+ EOF

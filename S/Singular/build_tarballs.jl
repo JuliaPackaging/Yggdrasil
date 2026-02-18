@@ -67,7 +67,8 @@ fi
     --enable-p-procs-static \
     --disable-p-procs-dynamic \
     --enable-gfanlib \
-    --with-readline=no \
+    --without-readline \
+    --without-ntl \
     --with-gmp=$prefix \
     --with-flint=$prefix \
     --without-python \
@@ -116,4 +117,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    preferred_gcc_version=v"6", julia_compat = "1.10")
+    preferred_gcc_version=v"8", julia_compat = "1.10")
