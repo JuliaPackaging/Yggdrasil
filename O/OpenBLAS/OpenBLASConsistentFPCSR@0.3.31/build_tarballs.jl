@@ -1,4 +1,5 @@
 using BinaryBuilder
+using BinaryBuilderBase
 
 include("../common.jl")
 
