@@ -13,7 +13,7 @@ platforms = openblas_platforms(; version)
 # Note: The msan build doesn't use gfortran, and we thus don't expand the gfortran versions
 push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 products = openblas_products()
-preferred_gcc_version = v"11"
+preferred_gcc_version = v"12"
 preferred_llvm_version = v"18.1.7"
 dependencies = openblas_dependencies(platforms; llvm_compilerrt_version=preferred_llvm_version)
 
@@ -30,6 +30,7 @@ if !isempty(platform_args)
 end
 
 msan_preferred_llvm_version = v"13.0.1+0"
+msan_dependencies = openblas_dependencies(platforms; llvm_compilerrt_version=msan_preferred_llvm_version)
 riscv64_preferred_gcc_version = v"15"
 
 # The regular options, excluding the list of platforms
@@ -40,12 +41,12 @@ for (n,platform) in enumerate(platforms)
     # We register the build products only after the last build.
     args = n == length(platforms) ? option_args : non_register_option_args
 
-    build_tarballs(args, name, version, sources, script, [platform], products, dependencies;
-                   julia_compat="1.11",
-                   lock_microarchitecture=false,
-                   preferred_gcc_version = arch(platform) == "riscv64" ? riscv64_preferred_gcc_version : preferred_gcc_version,
-                   preferred_llvm_version = sanitize(platform) == "memory" ? msan_preferred_llvm_version : preferred_llvm_version,
-                   )
+    deps = sanitize(platform) == "memory" ? msan_dependencies : dependencies
+    pref_gcc = arch(platform) == "riscv64" ? riscv64_preferred_gcc_version : preferred_gcc_version
+    pref_llvm = sanitize(platform) == "memory" ? msan_preferred_llvm_version : preferred_llvm_version
+
+    build_tarballs(args, name, version, sources, script, [platform], products, deps;
+                   julia_compat="1.11", lock_microarchitecture=false, preferred_gcc_version=pref_gcc, preferred_llvm_version=pref_llvm)
 end
 
 # Build trigger: 0

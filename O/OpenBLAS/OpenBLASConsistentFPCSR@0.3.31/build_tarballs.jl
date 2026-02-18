@@ -11,7 +11,7 @@ sources = openblas_sources(version)
 script = openblas_script(; aarch64_ilp64=true, num_64bit_threads=512, bfloat16=true, consistent_fpcsr=true)
 platforms = expand_gfortran_versions(supported_platforms(; exclude=p -> !(arch(p) in ("x86_64", "aarch64"))))
 products = openblas_products()
-preferred_gcc_version = v"11"
+preferred_gcc_version = v"12"
 preferred_llvm_version = v"18.1.7"
 dependencies = openblas_dependencies(platforms; llvm_compilerrt_version=preferred_llvm_version)
 

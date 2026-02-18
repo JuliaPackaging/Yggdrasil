@@ -11,7 +11,7 @@ sources = openblas_sources(version)
 script = openblas_script(openblas32=true, bfloat16=true, float16=true)
 platforms = openblas_platforms(; version)
 products = openblas_products()
-preferred_gcc_version = v"11"
+preferred_gcc_version = v"12"
 preferred_llvm_version = v"18.1.7"
 dependencies = openblas_dependencies(platforms; llvm_compilerrt_version=preferred_llvm_version)
 
