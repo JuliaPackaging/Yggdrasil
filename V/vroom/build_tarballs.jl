@@ -5,7 +5,8 @@ version = v"1.14.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/VROOM-Project/vroom.git", "1fd711bc8c20326dd8e9538e2c7e4cb1ebd67bdb"),
+    # Need latest version in order to include the fix of https://github.com/VROOM-Project/vroom/pull/1279
+    GitSource("https://github.com/VROOM-Project/vroom.git", "004faa4b89d769f51cb1f0227cd53be41f5d4586"),
     GitSource("https://github.com/chriskohlhoff/asio.git", "231cb29bab30f82712fcd54faaea42424cc6e710"),
 ]
 
@@ -22,7 +23,7 @@ cd ../../vroom
 git submodule init
 git submodule update
 cd src
-make
+make -j${nproc}
 """
 
 # These are the platforms we will build for by default, unless further
