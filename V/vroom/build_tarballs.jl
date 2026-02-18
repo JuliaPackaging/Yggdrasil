@@ -16,14 +16,12 @@ cd $WORKSPACE/srcdir
 cd asio/asio
 ./autogen.sh
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make
+make -j${nproc}
 make install
-cd ../..
-cd vroom
+cd ../../vroom
 git submodule init
 git submodule update
 cd src
-sed -i 's|-I\. |-I. -I../../asio/asio/include |' makefile
 make
 """
 
@@ -43,5 +41,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# Need GCC 10 because the makefile uses `-std=c++20`
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"10")
+# Need GCC 11 for full C++20 support (e.g. `using enum`, which vroom uses)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"11")
