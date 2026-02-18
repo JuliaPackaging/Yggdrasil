@@ -29,9 +29,9 @@ if !isempty(platform_args)
     platforms = BinaryBuilderBase.parse_platform.(split(platform_args[1], ","))
 end
 
-msan_preferred_llvm_version = v"13.0.1+0"
 msan_dependencies = openblas_dependencies(platforms; llvm_compilerrt_version=msan_preferred_llvm_version)
 riscv64_preferred_gcc_version = v"15"
+msan_preferred_llvm_version = v"13.0.1+0"
 
 # The regular options, excluding the list of platforms
 option_args = filter(arg -> startswith(arg, "--"), ARGS)
@@ -49,4 +49,4 @@ for (n,platform) in enumerate(platforms)
                    julia_compat="1.11", lock_microarchitecture=false, preferred_gcc_version=pref_gcc, preferred_llvm_version=pref_llvm)
 end
 
-# Build trigger: 0
+# Build trigger: 1
