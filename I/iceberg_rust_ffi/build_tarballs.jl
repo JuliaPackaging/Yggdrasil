@@ -1,10 +1,10 @@
 using BinaryBuilder
 
 name = "iceberg_rust_ffi"
-version = v"0.7.5"
+version = v"0.7.8"
 
 sources = [
-    GitSource("https://github.com/RelationalAI/RustyIceberg.jl.git", "853e61aad2ea7df4394300bad0a6c49e12eb49bd"),
+    GitSource("https://github.com/RelationalAI/RustyIceberg.jl.git", "47a1358d6002b38fbe88adcf1ead3530ae6eabd3"),
 ]
 
 # Bash recipe for building across all platforms
