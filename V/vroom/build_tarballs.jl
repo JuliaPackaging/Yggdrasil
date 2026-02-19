@@ -43,4 +43,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # Need GCC 14 for C++20 <format>, <ranges>, and full C++20 (Darwin bootstrap needs it for <ranges>)
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"14")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"15")
