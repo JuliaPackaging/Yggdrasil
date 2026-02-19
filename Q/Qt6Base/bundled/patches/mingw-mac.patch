@@ -22,3 +22,17 @@ diff --color -ur a/src/corelib/global/qlogging.cpp b/src/corelib/global/qlogging
  static bool qt_append_thread_name_to(QString &message)
  {
      std::array<char, 16> name{};
+diff --color -ur a/src/corelib/global/qsimd_p.h b/src/corelib/global/qsimd_p.h
+--- a/src/corelib/global/qsimd_p.h	2026-01-13 11:18:17.000000000 +0100
++++ b/src/corelib/global/qsimd_p.h	2026-02-19 21:58:05.412506514 +0100
+@@ -353,6 +353,10 @@
+ #define __ARM_FEATURE_CRC32 1
+ #endif
+ 
++#if defined(Q_OS_MACOS) && defined(Q_PROCESSOR_ARM)
++#define __ARM_FEATURE_CRYPTO 1
++#endif
++
+ #if defined(Q_PROCESSOR_ARM_64)
+ #if defined(Q_CC_CLANG)
+ #define QT_FUNCTION_TARGET_STRING_AES        "aes"
