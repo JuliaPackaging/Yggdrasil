@@ -33,6 +33,9 @@ CFLAGS=-DLARGE_STATIC_BUFFERS ./configure \
     --disable-crypttests \
     --disable-examples \
     --enable-maxfragment \
+    --enable-aesctr \
+    --enable-aesgcm-stream \
+    --enable-atomicuser \
     $ARCHFLAGS
 
 make -j${nproc}
