@@ -31,6 +31,8 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_BUILD_TYPE=Release \
     -DRDKAFKA_BUILD_EXAMPLES=OFF \
     -DRDKAFKA_BUILD_TESTS=OFF \
+    -DWITH_ZSTD=ON \
+    -DCMAKE_MODULE_PATH=../packaging/cmake/Modules \
     ..
 make -j${nproc}
 make install
