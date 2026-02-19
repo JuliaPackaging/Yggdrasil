@@ -28,7 +28,7 @@ make -j${nproc}
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+all_platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = Product[
@@ -41,6 +41,4 @@ dependencies = [
     Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"))
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
-# Need GCC 14 for C++20 <format>, <ranges>, and full C++20 (Darwin bootstrap needs it for <ranges>)
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"15")
+build_tarballs(ARGS, name, version, sources, script, all_platforms, products, dependencies; julia_compat="1.6", preferred_llvm_version=v"16")
