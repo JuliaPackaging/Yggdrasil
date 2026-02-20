@@ -24,6 +24,8 @@ git submodule init
 git submodule update
 cd src
 make -j${nproc}
+cd ..
+mv bin/vroom ${bindir}
 """
 
 # Install a newer SDK which has `<ranges>`
@@ -35,6 +37,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = Product[
+    ExecutableProduct("vroom", :vroom),
 ]
 
 # Dependencies that must be installed before this package can be built
