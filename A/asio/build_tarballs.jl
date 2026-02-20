@@ -24,9 +24,9 @@ make install
 # platforms are passed in on the command line
 all_platforms = supported_platforms()
 
-# The products that we will ensure are always built
+# The products that we will ensure are always built (header-only: export main header so downstreams can discover include/)
 products = Product[
-    LibraryProduct("libasio", :libasio),
+    FileProduct("include/asio.hpp", :asio_hpp),
 ]
 
 # Dependencies that must be installed before this package can be built
