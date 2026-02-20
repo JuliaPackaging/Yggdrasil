@@ -26,9 +26,14 @@ git submodule init
 git submodule update
 if [[ ${target} == *-w64-mingw32 ]]; then
     # There is no pkg-config info for OpenSSL on Windows. The Makefile passes -lssl -lcrypto
-    # but not -L, so set LIBRARY_PATH for the linker to find OpenSSL in the JLL prefix.
-    export LIBRARY_PATH="${libdir}${LIBRARY_PATH:+:${LIBRARY_PATH}}"
+    # but not -L and does not use LDFLAGS, so patch Makefiles to add -L${libdir}.
     export CPPFLAGS="-I${includedir} ${CPPFLAGS}"
+    for f in $(find . -name Makefile -o -name '*.mk'); do
+        if grep -q 'lssl' "$f" 2>/dev/null; then
+            sed -i "s| -lssl| -L${libdir} -lssl|g" "$f"
+            sed -i "s| -lcrypto| -L${libdir} -lcrypto|g" "$f"
+        fi
+    done
 fi
 cd src
 make -j${nproc}
