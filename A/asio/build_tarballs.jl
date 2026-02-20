@@ -33,7 +33,9 @@ products = Product[
 dependencies = []
 
 # Build the tarballs, and possibly a `build.jl` as well.
+# GCC v4 is missing `std::align`
 build_tarballs(
     ARGS, name, version, sources, script, all_platforms, products, dependencies;
     julia_compat="1.6",
+    preferred_gcc_version=v"5",
 )
