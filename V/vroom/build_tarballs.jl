@@ -7,9 +7,10 @@ version = v"1.14.0"
 
 # Collection of sources required to complete build
 sources = [
-    # Need latest version in order to include the fix of https://github.com/VROOM-Project/vroom/pull/1279
-    GitSource("https://github.com/VROOM-Project/vroom.git", "004faa4b89d769f51cb1f0227cd53be41f5d4586"),
-    GitSource("https://github.com/chriskohlhoff/asio.git", "231cb29bab30f82712fcd54faaea42424cc6e710"),
+    # v1.14.0
+    GitSource("https://github.com/VROOM-Project/vroom.git", "1fd711bc8c20326dd8e9538e2c7e4cb1ebd67bdb"),
+    # Vroom v1.14.0 does not work with the latest version of ASIO. This is ASIO v1.18.1
+    GitSource("https://github.com/chriskohlhoff/asio.git", "b84e6c16b2ea907dbad94206b7510d85aafc0b42"),
 ]
 
 # Bash recipe for building across all platforms
@@ -19,7 +20,6 @@ cd $WORKSPACE/srcdir
 cd asio/asio
 ./autogen.sh
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make -j${nproc}
 make install
 cd ../../vroom
 git submodule init
