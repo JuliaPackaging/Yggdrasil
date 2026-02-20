@@ -25,9 +25,9 @@ cd ../../vroom
 git submodule init
 git submodule update
 if [[ ${target} == *-w64-mingw32 ]]; then
-    # There is no pkg-config info for OpenSSL on Windows; help the linker find libssl/libcrypto
-    export LDFLAGS="-L${libdir} ${LDFLAGS}"
-    export LIBS="-lssl -lcrypto ${LIBS}"
+    # There is no pkg-config info for OpenSSL on Windows. The Makefile passes -lssl -lcrypto
+    # but not -L, so set LIBRARY_PATH for the linker to find OpenSSL in the JLL prefix.
+    export LIBRARY_PATH="${libdir}${LIBRARY_PATH:+:${LIBRARY_PATH}}"
     export CPPFLAGS="-I${includedir} ${CPPFLAGS}"
 fi
 cd src
