@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "bb-sandbox": {
+      "command": "julia",
+      "args": [
+        "--project=.ci",
+        ".claude/mcp-bb-sandbox/server.jl"
+      ]
+    }
+  }
+}

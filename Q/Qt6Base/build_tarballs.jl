@@ -3,21 +3,24 @@
 using BinaryBuilder, Pkg
 
 name = "Qt6Base"
-version = v"6.8.2"
+version = v"6.10.2"
 
 # Set this to true first when updating the version. It will build only for the host (linux musl).
 # After that JLL is in the registry, set this to false to build for the other platforms, using
 # this same package as host build dependency.
-const host_build = false
+const host_build = true
 
 # Collection of sources required to build qt6
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtbase-everywhere-src-$version.tar.xz",
-                  "012043ce6d411e6e8a91fdc4e05e6bedcfa10fcb1347d3c33908f7fdd10dfe05"),
+                  "aeb78d29291a2b5fd53cb55950f8f5065b4978c25fb1d77f627d695ab9adf21e"),
     DirectorySource("./bundled"),
 ]
 
 script = raw"""
+# Need newer cmake from JLL
+apk del cmake
+
 cd $WORKSPACE/srcdir
 
 BIN_DIR="/opt/bin/${bb_full_target}"
@@ -173,6 +176,7 @@ dependencies = [
     BuildDependency("Xorg_xproto_jll"),
     BuildDependency("Xorg_glproto_jll"),
     BuildDependency("Vulkan_Headers_jll"),
+    HostBuildDependency("CMake_jll"),
 ]
 
 if !host_build
