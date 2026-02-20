@@ -26,6 +26,9 @@ cd src
 make -j${nproc}
 """
 
+# Install a newer SDK which has `<ranges>`
+sources, script = require_macos_sdk("14.5", sources, script)
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
@@ -42,5 +45,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# Need GCC 14 for C++20 <format>, <ranges>, and full C++20 (Darwin bootstrap needs it for <ranges>)
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"15")
+# Need GCC 13+ for C++20 <format> and full C++20 support (e.g. `using enum`)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"13")
