@@ -8,6 +8,8 @@ version = v"1.14.0"
 # Collection of sources required to complete build
 sources = [
     # v1.14.0
+    # The latest git commit has an issue with MacOS: https://github.com/VROOM-Project/vroom/issues/1062
+    # Let's way for v1.15.0 to be released and we'll see if the issue is fixed.
     GitSource("https://github.com/VROOM-Project/vroom.git", "1fd711bc8c20326dd8e9538e2c7e4cb1ebd67bdb"),
     # Vroom v1.14.0 does not work with the latest version of ASIO. This is ASIO v1.18.1
     GitSource("https://github.com/chriskohlhoff/asio.git", "b84e6c16b2ea907dbad94206b7510d85aafc0b42"),
