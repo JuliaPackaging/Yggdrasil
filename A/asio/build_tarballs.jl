@@ -14,10 +14,17 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd asio/asio
-./autogen.sh
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make -j${nproc}
-make install
+if [[ ${target} == *-w64-mingw32 ]]; then
+    # Header-only: on Windows skip build (examples use POSIX-only asio::posix::stream_descriptor) and install headers manually
+    mkdir -p ${includedir}
+    cp include/asio.hpp ${includedir}/
+    cp -r include/asio ${includedir}/
+else
+    ./autogen.sh
+    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+    make -j${nproc}
+    make install
+fi
 """
 
 # These are the platforms we will build for by default, unless further
