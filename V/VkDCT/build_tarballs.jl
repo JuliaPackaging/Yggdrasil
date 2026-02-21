@@ -50,7 +50,7 @@ products = [
 ]
 
 # Platforms - build for all supported CUDA versions on x86_64
-platforms = CUDA.supported_platforms()
+platforms = CUDA.supported_platforms(; max_version=v"12")
 filter!(p -> arch(p) == "x86_64", platforms)
 
 for platform in platforms
