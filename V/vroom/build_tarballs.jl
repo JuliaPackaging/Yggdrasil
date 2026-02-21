@@ -22,15 +22,11 @@ if [[ ${target} == *-w64-mingw32 ]]; then
 fi
 cd asio/asio
 ./autogen.sh
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-# ASIO make install builds SSL examples; patch Makefiles to find OpenSSL on Windows
+# Windows: --with-openssl adds -I and -L so SSL examples can link; elsewhere pkg-config works
 if [[ ${target} == *-w64-mingw32 ]]; then
-    for f in $(find . -name Makefile -o -name '*.mk'); do
-        if grep -q 'lssl' "$f" 2>/dev/null; then
-            sed -i "s| -lssl| -L${libdir} -lssl|g" "$f"
-            sed -i "s| -lcrypto| -L${libdir} -lcrypto|g" "$f"
-        fi
-    done
+    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-openssl=$(dirname ${includedir})
+else
+    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 fi
 make install
 cd ../../vroom
