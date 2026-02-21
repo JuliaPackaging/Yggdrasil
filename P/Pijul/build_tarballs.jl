@@ -5,7 +5,7 @@ using BinaryBuilder, Pkg
 name = "Pijul"
 true_upstream_version = v"1.0.0-beta.11"
 # Upstream version is a beta, but BinaryBuilder requires `major.minor.patch`
-version = v"1.0.0"
+version = v"0.999.11"
 
 # Collection of sources required to complete build
 sources = [
