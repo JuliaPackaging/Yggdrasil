@@ -36,7 +36,7 @@ fi
 cd src
 # Use GCC instead of Clang on macOS: Apple's libc++ lacks std::jthread (vroom#1062, pyvroom#106)
 # Override deployment target for GCC compatibility (Runner/default may use 14.5 which GCC rejects).
-if [[ "${target}" == *-apple-* ]]; then
+if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
     export CC=gcc
     export CXX=g++
     export MACOSX_DEPLOYMENT_TARGET=10.15
