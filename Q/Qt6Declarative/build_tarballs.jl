@@ -3,22 +3,25 @@
 using BinaryBuilder, Pkg
 
 name = "Qt6Declarative"
-version = v"6.8.2"
+version = v"6.10.2"
 
 # Set this to true first when updating the version. It will build only for the host (linux musl).
 # After that JLL is in the registry, set this to false to build for the other platforms, using
 # this same package as host build dependency.
-const host_build = false
+const host_build = true
 
 # Collection of sources required to build qt6
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtdeclarative-everywhere-src-$version.tar.xz",
-                  "144d876adc8bb55909735143e678d1e24eadcd0a380a0186792d88b731346d56"),
+                  "a249914ff66cdcdbf0df8b5ffad997a2ee6dce01cc17d43c6cc56fdc1d0f4b0f"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
 ]
 
 script = raw"""
+# Need newer cmake from JLL
+apk del cmake
+
 cd $WORKSPACE/srcdir
 
 mkdir build
@@ -127,10 +130,12 @@ products_win = vcat(products,
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    HostBuildDependency("CMake_jll"),
     HostBuildDependency("Qt6Base_jll"),
     HostBuildDependency("Qt6ShaderTools_jll"),
     Dependency("Qt6Base_jll"; compat="="*string(version)),
     Dependency("Qt6ShaderTools_jll"; compat="="*string(version)),
+    Dependency("Qt6Svg_jll"; compat="="*string(version)),
     BuildDependency("Vulkan_Headers_jll"),
 ]
 
