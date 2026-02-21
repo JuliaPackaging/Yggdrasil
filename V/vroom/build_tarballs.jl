@@ -39,7 +39,7 @@ if [[ ${target} == *-w64-mingw32 ]]; then
     for f in $(find . \( -name Makefile -o -name makefile -o -name '*.mk' \) -type f); do
         if grep -q 'lssl' "$f" 2>/dev/null; then
             sed -i "s| -lssl| -L${libdir} -lssl|g" "$f"
-            sed -i "s| -lcrypto| -L${libdir} -lcrypto|g" "$f"
+            sed -i "s| -lcrypto| -L${libdir} -lcrypto -lws2_32 -lmswsock|g" "$f"
         fi
     done
 fi
