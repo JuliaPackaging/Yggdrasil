@@ -15,9 +15,23 @@ sources = [
 # ASIO is expected at ../asio (sibling of vroom); add its include path to the makefile
 script = raw"""
 cd $WORKSPACE/srcdir
+# Windows: no pkg-config for OpenSSL; set include/lib paths for ASIO and vroom builds
+if [[ ${target} == *-w64-mingw32 ]]; then
+    export CPPFLAGS="-I${includedir} ${CPPFLAGS}"
+    export LDFLAGS="-L${libdir} ${LDFLAGS}"
+fi
 cd asio/asio
 ./autogen.sh
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+# ASIO make install builds SSL examples; patch Makefiles to find OpenSSL on Windows
+if [[ ${target} == *-w64-mingw32 ]]; then
+    for f in $(find . -name Makefile -o -name '*.mk'); do
+        if grep -q 'lssl' "$f" 2>/dev/null; then
+            sed -i "s| -lssl| -L${libdir} -lssl|g" "$f"
+            sed -i "s| -lcrypto| -L${libdir} -lcrypto|g" "$f"
+        fi
+    done
+fi
 make install
 cd ../../vroom
 git submodule init
