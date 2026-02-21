@@ -56,7 +56,7 @@ if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
 fi
 make -j${nproc}
 cd ..
-mv bin/vroom ${bindir}
+mv bin/vroom${exeext} ${bindir}/
 """
 
 # These are the platforms we will build for by default, unless further
