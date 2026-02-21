@@ -37,12 +37,12 @@ if [[ ${target} == *-w64-mingw32 ]]; then
 fi
 cd src
 # Use GCC instead of Clang on macOS: Apple's libc++ lacks std::jthread (vroom#1062, pyvroom#106)
-# GCC in BinaryBuilder doesn't support -mmacosx-version-min, so strip it from the flags.
-# Unset MACOSX_DEPLOYMENT_TARGET so the linker (clang-8) doesn't choke on 14.5.
+# BinaryBuilder's compiler wrappers inject -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET};
+# use 10.15 so the wrapper gets a valid value (14.5 can trigger "unknown value" with cross-GCC).
 if [[ "${target}" == *-apple-* ]]; then
     export CC=gcc
     export CXX=g++
-    unset MACOSX_DEPLOYMENT_TARGET
+    export MACOSX_DEPLOYMENT_TARGET=10.15
     export CFLAGS="$(echo " ${CFLAGS}" | sed 's/ -mmacosx-version-min=[^ ]*//g' | sed 's/^ *//')"
     export CXXFLAGS="$(echo " ${CXXFLAGS}" | sed 's/ -mmacosx-version-min=[^ ]*//g' | sed 's/^ *//')"
     export LDFLAGS="$(echo " ${LDFLAGS}" | sed 's/ -Wl,-sdk_version,[^ ]*//g' | sed 's/^ *//')"
