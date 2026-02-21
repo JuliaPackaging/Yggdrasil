@@ -1,6 +1,4 @@
 using BinaryBuilder, Pkg
-const YGGDRASIL_DIR = "../.."
-include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "vroom"
 version = v"1.14.0"
@@ -37,8 +35,7 @@ if [[ ${target} == *-w64-mingw32 ]]; then
 fi
 cd src
 # Use GCC instead of Clang on macOS: Apple's libc++ lacks std::jthread (vroom#1062, pyvroom#106)
-# BinaryBuilder's compiler wrappers inject -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET};
-# use 10.15 so the wrapper gets a valid value (14.5 can trigger "unknown value" with cross-GCC).
+# Override deployment target for GCC compatibility (Runner/default may use 14.5 which GCC rejects).
 if [[ "${target}" == *-apple-* ]]; then
     export CC=gcc
     export CXX=g++
@@ -51,9 +48,6 @@ make -j${nproc}
 cd ..
 mv bin/vroom ${bindir}
 """
-
-# Install a newer SDK which has `<ranges>`
-sources, script = require_macos_sdk("14.5", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
