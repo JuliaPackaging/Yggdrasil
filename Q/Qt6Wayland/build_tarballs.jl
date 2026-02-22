@@ -8,12 +8,13 @@ version = v"6.10.2"
 # Set this to true first when updating the version. It will build only for the host (linux musl).
 # After that JLL is in the registry, set this to false to build for the other platforms, using
 # this same package as host build dependency.
-const host_build = true
+const host_build = false
 
 # Collection of sources required to build qt6
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtwayland-everywhere-src-$version.tar.xz",
                   "391998eb432719df26a6a67d8efdc67f8bf2afdd76c1ee3381ebff4fe7527ee2"),
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
@@ -25,6 +26,8 @@ cd $WORKSPACE/srcdir
 mkdir build
 cd build/
 qtsrcdir=`ls -d ../qtwayland-*`
+
+atomic_patch -p1 -d "${qtsrcdir}" ../patches/freebsd.patch
 
 case "$bb_full_target" in
 
@@ -61,10 +64,6 @@ include("../Qt6Base/common.jl")
 # No Wayland on Windows and macOS
 empty!(platforms_macos)
 empty!(platforms_win)
-
-# It seems Qt 6.8 Wayland doesn't compile out of the box on freeBSD and when forced requires
-# proper support in Qt6Base. To be investigated on version upgrade.
-filter!(!Sys.isfreebsd, platforms)
 
 # The products that we will ensure are always built
 products = [
