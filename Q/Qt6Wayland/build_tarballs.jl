@@ -3,20 +3,23 @@
 using BinaryBuilder, Pkg
 
 name = "Qt6Wayland"
-version = v"6.8.2"
+version = v"6.10.2"
 
 # Set this to true first when updating the version. It will build only for the host (linux musl).
 # After that JLL is in the registry, set this to false to build for the other platforms, using
 # this same package as host build dependency.
-const host_build = false
+const host_build = true
 
 # Collection of sources required to build qt6
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtwayland-everywhere-src-$version.tar.xz",
-                  "5e46157908295f2bf924462d8c0855b0508ba338ced9e810891fefa295dc9647"),
+                  "391998eb432719df26a6a67d8efdc67f8bf2afdd76c1ee3381ebff4fe7527ee2"),
 ]
 
 script = raw"""
+# Need newer cmake from JLL
+apk del cmake
+
 cd $WORKSPACE/srcdir
 
 mkdir build
@@ -70,6 +73,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    HostBuildDependency("CMake_jll"),
     HostBuildDependency("Qt6Base_jll"),
     Dependency("Qt6Base_jll"; compat="="*string(version)),
     HostBuildDependency("Qt6Declarative_jll"),
@@ -87,4 +91,4 @@ ENV["QT_PLUGIN_PATH"] = qt6plugins_dir
 ENV["__EGL_VENDOR_LIBRARY_DIRS"] = get(ENV, "__EGL_VENDOR_LIBRARY_DIRS", "/usr/share/glvnd/egl_vendor.d")
 """
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"10", preferred_llvm_version=qt_llvm_version, julia_compat="1.6", init_block)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"10", preferred_llvm_version=VersionNumber(qt_llvm_version), julia_compat="1.6", init_block)
