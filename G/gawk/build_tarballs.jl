@@ -5,8 +5,7 @@ version = v"5.4.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftpmirror.gnu.org/gawk/gawk-$(version).tar.xz",
-                  "3dd430f0cd3b4428c6c3f6afc021b9cd3c1f8c93f7a688dc268ca428a90b4ac1"),
+    GitSource("https://git.savannah.gnu.org/git/gawk.git", "c86b958ce5d651147d39eb147c439dae1dbfd949"),
     DirectorySource("bundled"),
 ]
 
