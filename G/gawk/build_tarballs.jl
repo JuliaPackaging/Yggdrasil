@@ -1,11 +1,12 @@
 using BinaryBuilder
 
 name = "gawk"
-version = v"5.3.2"
+version = v"5.4.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://git.savannah.gnu.org/git/gawk.git", "027ebff56b83600d88fd303b98c36201116a7560"),
+    ArchiveSource("https://ftpmirror.gnu.org/gawk/gawk-$(version).tar.xz",
+                  "3dd430f0cd3b4428c6c3f6afc021b9cd3c1f8c93f7a688dc268ca428a90b4ac1"),
     DirectorySource("bundled"),
 ]
 
