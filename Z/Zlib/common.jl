@@ -11,6 +11,7 @@ function configure_zlib_build(upstream_version::VersionNumber;
     versions_tags = Dict(
         v"1.2.12" => "21767c654d31d2dccdde4330529775c6c5fd5389",
         v"1.3.1" => "51b7f2abdade71cd9bb0e7a373ef2610ec6f9daf",
+        v"1.3.2" => "da607da739fa6047df13e66a2af6b8bec7c2a498",
     )
 
     name = "Zlib"
