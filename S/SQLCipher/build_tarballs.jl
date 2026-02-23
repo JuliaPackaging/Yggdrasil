@@ -38,7 +38,6 @@ export CPPFLAGS="-DSQLITE_ENABLE_COLUMN_METADATA=1 \
 make -j${nproc}
 make install
 
-cd $WORKSPACE/srcdir/sqlcipher
 # SQLCipher and SQLite licenses
 install_license LICENSE*
 """
