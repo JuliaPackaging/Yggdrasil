@@ -13,9 +13,9 @@ version = v"2.0.0"
 
 # Collection of sources required to build GIAC
 sources = [
-    ArchiveSource("https://www-fourier.univ-grenoble-alpes.fr/~parisse/giac/giac-$(version).tar.gz",
-      "bf918eae70a0371caa2a7465b8af2e06d547bb5435d2ec5b4b93e0c9bca3ae96"
-    ),
+  ArchiveSource("https://www-fourier.univ-grenoble-alpes.fr/~parisse/giac/giac-$(version).tar.gz",
+    "bf918eae70a0371caa2a7465b8af2e06d547bb5435d2ec5b4b93e0c9bca3ae96"
+  ),
 ]
 
 # Bash recipe for building across all platforms
@@ -94,7 +94,7 @@ if [[ "${target}" == *freebsd* ]]; then
   g++ ${GIAC_CXXFLAGS} -o xcas xcas.o -L.libs -lgiac -lxcas -lrt -lpthread -ldl -lm -lmpfr -lgmp
   g++ ${GIAC_CXXFLAGS} -o aide aide.o -L.libs -lgiac -lxcas -lrt -lpthread -ldl -lm -lmpfr -lgmp
   cd ..
-  make -i install
+  make install
 
   # Explicitly install aide_cas for FreeBSD
   mkdir -p ${prefix}/share/giac
@@ -114,7 +114,7 @@ elif [[ "${target}" == x86_64-apple-* ]]; then
   g++ ${GIAC_CXXFLAGS} -o xcas xcas.o -L.libs -lgiac -lxcas -lintl -lpthread -ldl -lm -lmpfr -lgmp
   g++ ${GIAC_CXXFLAGS} -o aide aide.o -L.libs -lgiac -lxcas -lintl -lpthread -ldl -lm -lmpfr -lgmp
   cd ..
-  make -i install
+  make install
 
 elif [[ "${target}" == aarch64-apple-* ]]; then
   cd src
@@ -130,7 +130,7 @@ elif [[ "${target}" == aarch64-apple-* ]]; then
   g++ ${GIAC_CXXFLAGS} -o xcas xcas.o -L.libs -lgiac -lxcas -lintl -lpthread -ldl -lm -lmpfr -lgmp
   g++ ${GIAC_CXXFLAGS} -o aide aide.o -L.libs -lgiac -lxcas -lintl -lpthread -ldl -lm -lmpfr -lgmp
   cd ..
-  make -i install
+  make install
 
 elif [[ "${target}" == *mingw* ]]; then
   # The flag is injected only for make
