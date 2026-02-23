@@ -37,15 +37,27 @@ if [[ ${target} == x86_64-apple-darwin* ]]; then
 fi
 
 # OS does not support `O_DIRECT`
-direct_vfd=$(if [[ ${target} == *-apple-* || ${target} == *-w64-* ]]; then echo OFF; else echo ON; fi)
+direct_vfd=ON
+if [[ ${target} == *-apple-* || ${target} == *-w64-* ]]; then
+    direct_vfd=OFF
+fi
 
-float16=$(if [[ ${target} == x86_64-apple-darwin* || ${target} == x86_64-unknown-freebsd* ]]; then echo OFF; else echo ON; fi)
+float16=ON
+if [[ ${target} == x86_64-apple-darwin* || ${target} == x86_64-unknown-freebsd* ]]; then
+    float16=OFF
+fi
 
 # `aws_c_s3_jll` has not been built
-ros3_vdf=$(if [[ ${target} == i686-w64-* ]]; then echo OFF; else echo ON; fi)
+ros3_vdf=ON
+if [[ ${target} == i686-w64-* ]]; then
+    ros3_vdf=OFF
+fi
 
 # MPI does not support Fortran
-parallel=$(if [[ ${target} == *-w64-* ]]; then echo OFF; else echo ON; fi)
+parallel=ON
+if [[ ${target} == *-w64-* ]]; then
+    parallel=OFF
+fi
 
 cmake_options=(
     -DCMAKE_BUILD_TYPE=Release
