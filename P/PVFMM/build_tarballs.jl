@@ -13,15 +13,12 @@ version = v"1.3.0"
 sources = [
     # develop branch head on 2026-02-17
     GitSource("https://github.com/dmalhotra/pvfmm.git", "77c87ef9796d358bc5dd703b5c16ee0f92bd1b59"),
-    # SCTL submodule pinned by the pvfmm commit above
-    GitSource("https://github.com/dmalhotra/SCTL.git", "06f26892ac1177eabec022d2e73ae737dd402975"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/pvfmm
-rm -rf SCTL
-cp -a ${WORKSPACE}/srcdir/SCTL ./SCTL
+git submodule update --init --recursive
 
 export MPITRAMPOLINE_CC=${CC}
 export MPITRAMPOLINE_CXX=${CXX}
