@@ -29,12 +29,20 @@ function configure_zlib_build(upstream_version::VersionNumber;
         cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
     fi
     # We use `-DUNIX=true` to ensure that it is always named `libz` instead of `libzlib` or something absolutely absurd like that.
-    cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DUNIX=true \
-        -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-        ..
+    options=(
+        -DCMAKE_INSTALL_PREFIX=${prefix}
+        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+        -DCMAKE_BUILD_TYPE=Release
+        -DUNIX=true
+        -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+    )
+    if grep -q 'ZLIB_VERNUM 0x1320' ../zlib.h; then
+        options+=(
+            -DZLIB_BUILD_TESTING=OFF
+            -DZLIB_BUILD_STATIC=OFF
+        )
+    fi
+    cmake "${options[@]}" ..
     make install -j${nproc}
     install_license ../README
     """
@@ -47,7 +55,8 @@ function configure_zlib_build(upstream_version::VersionNumber;
     ]
 
     dependencies = [
-        BuildDependency(PackageSpec(; name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version); platforms=filter(p -> sanitize(p)=="memory", platforms)),
+        BuildDependency(PackageSpec(; name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=string(llvm_version));
+                        platforms=filter(p -> sanitize(p)=="memory", platforms)),
     ]
 
     return name, version, sources, script, platforms, products, dependencies
