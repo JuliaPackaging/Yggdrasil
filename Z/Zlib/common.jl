@@ -35,13 +35,9 @@ function configure_zlib_build(upstream_version::VersionNumber;
         -DCMAKE_BUILD_TYPE=Release
         -DUNIX=true
         -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+        -DZLIB_BUILD_TESTING=OFF
+        -DZLIB_BUILD_STATIC=OFF
     )
-    if grep -q 'ZLIB_VERNUM 0x1320' ../zlib.h; then
-        options+=(
-            -DZLIB_BUILD_TESTING=OFF
-            -DZLIB_BUILD_STATIC=OFF
-        )
-    fi
     cmake "${options[@]}" ..
     make install -j${nproc}
     install_license ../README
