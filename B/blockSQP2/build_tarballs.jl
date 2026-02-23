@@ -9,9 +9,8 @@ sources = [
 
 script = raw"""
 apk del cmake
-cd ${WORKSPACE}/srcdir
-mv blockSQP2/CMake/CMakeListsBinaryBuilderjl.cmake blockSQP2/CMakeLists.txt
-cd blockSQP2
+cd ${WORKSPACE}/srcdir/blockSQP2
+mv CMake/CMakeListsBinaryBuilderjl.cmake CMakeLists.txt
 
 LOBSUFFIX=""
 
@@ -33,8 +32,11 @@ cmake \
 make
 make install
 install_license ${WORKSPACE}/srcdir/blockSQP2/LICENSE
-mkdir ${prefix}/share/licenses/blockSQP && cp ${WORKSPACE}/srcdir/blockSQP2/blockSQP2/LICENSE ${prefix}/share/licenses/blockSQP/LICENSE
-mkdir ${prefix}/share/licenses/qpOASES && cp ${WORKSPACE}/srcdir/blockSQP2/blockSQP2/dep/modified_qpOASES/LICENSE ${prefix}/share/licenses/qpOASES/LICENSE
+mkdir ${prefix}/share/licenses/blockSQP
+cp ${WORKSPACE}/srcdir/blockSQP2/blockSQP2/LICENSE ${prefix}/share/licenses/blockSQP/LICENSE
+
+mkdir ${prefix}/share/licenses/qpOASES 
+cp ${WORKSPACE}/srcdir/blockSQP2/blockSQP2/dep/modified_qpOASES/LICENSE ${prefix}/share/licenses/qpOASES/LICENSE
 """
 
 platforms = supported_platforms()
