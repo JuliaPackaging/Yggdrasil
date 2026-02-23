@@ -32,24 +32,11 @@ export CPPFLAGS="-DSQLITE_ENABLE_COLUMN_METADATA=1 \
     --enable-fts4 \
     --enable-fts5 \
     --enable-rtree \
-    # SQLITE_EXTRA_INIT and _SHUTDOWN required since v4.7.0
     CFLAGS="-DSQLITE_HAS_CODEC -DSQLITE_EXTRA_INIT=sqlcipher_extra_init -DSQLITE_EXTRA_SHUTDOWN=sqlcipher_extra_shutdown" \
     LDFLAGS="-L${libdir} -lcrypto"
 
 make -j${nproc}
 make install
-
-# Since v4.7.0, default build outputs are sqlite3/libsqlite3 instead of sqlcipher/libsqlcipher.
-# Rename to preserve the existing JLL product names.
-cd ${prefix}
-mv bin/sqlite3 bin/sqlcipher
-for f in lib/libsqlite3.*; do
-    mv "$f" "$(echo $f | sed 's/libsqlite3/libsqlcipher/')"
-done
-# Recreate symlinks
-cd lib
-ln -sf libsqlcipher.so.*.*.* libsqlcipher.so
-ln -sf libsqlcipher.so.*.*.* libsqlcipher.so.0
 
 cd $WORKSPACE/srcdir/sqlcipher
 # SQLCipher and SQLite licenses
@@ -63,8 +50,8 @@ filter!(p -> libc(p) != "musl" && !Sys.isfreebsd(p) && !Sys.iswindows(p), platfo
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libsqlcipher", :libsqlcipher),
-    ExecutableProduct("sqlcipher", :sqlcipher)
+    LibraryProduct("libsqlite3", :libsqlcipher),
+    ExecutableProduct("sqlite3", :sqlcipher)
 ]
 
 # Dependencies that must be installed before this package can be built
