@@ -94,6 +94,7 @@ if [[ "${target}" == *freebsd* ]]; then
   g++ ${GIAC_CXXFLAGS} -o xcas xcas.o -L.libs -lgiac -lxcas -lrt -lpthread -ldl -lm -lmpfr -lgmp
   g++ ${GIAC_CXXFLAGS} -o aide aide.o -L.libs -lgiac -lxcas -lrt -lpthread -ldl -lm -lmpfr -lgmp
   cd ..
+  make -i install
 
   # Explicitly install aide_cas for FreeBSD
   mkdir -p ${prefix}/share/giac
@@ -113,6 +114,7 @@ elif [[ "${target}" == x86_64-apple-* ]]; then
   g++ ${GIAC_CXXFLAGS} -o xcas xcas.o -L.libs -lgiac -lxcas -lintl -lpthread -ldl -lm -lmpfr -lgmp
   g++ ${GIAC_CXXFLAGS} -o aide aide.o -L.libs -lgiac -lxcas -lintl -lpthread -ldl -lm -lmpfr -lgmp
   cd ..
+  make -i install
 
 elif [[ "${target}" == aarch64-apple-* ]]; then
   cd src
@@ -128,16 +130,18 @@ elif [[ "${target}" == aarch64-apple-* ]]; then
   g++ ${GIAC_CXXFLAGS} -o xcas xcas.o -L.libs -lgiac -lxcas -lintl -lpthread -ldl -lm -lmpfr -lgmp
   g++ ${GIAC_CXXFLAGS} -o aide aide.o -L.libs -lgiac -lxcas -lintl -lpthread -ldl -lm -lmpfr -lgmp
   cd ..
+  make -i install
 
 elif [[ "${target}" == *mingw* ]]; then
   # The flag is injected only for make
   make LDFLAGS="-no-undefined ${LDFLAGS}" -j${nproc}
+  make install
 
 else
   make -j${nproc}
+  make install
 fi
 
-make install
 install_license COPYING
 """
 
