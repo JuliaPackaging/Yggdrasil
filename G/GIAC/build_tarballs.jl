@@ -9,12 +9,12 @@
 using BinaryBuilder, Pkg
 
 name = "GIAC"
-version = v"2.0.0-21"
+version = v"2.0.0"
 
 # Collection of sources required to build GIAC
 sources = [
   ArchiveSource("https://www-fourier.univ-grenoble-alpes.fr/~parisse/giac/giac-$(version).tar.gz",
-    "3e7fa1c281a21ab74ed66ef247faffe5a105bc11be1f7715f31b4368ce8dcbc8"
+    "6abfab95bae0981201498ce0dd6086da65ab0ff45f96ef6dd7d766518f6741f4"
   ),
 ]
 
