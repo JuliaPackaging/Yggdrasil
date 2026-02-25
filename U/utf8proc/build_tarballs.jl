@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "utf8proc"
-version = v"2.11.0"
+version = v"2.11.3"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/JuliaStrings/utf8proc.git",
-              "d7bf128df773c2a1a7242eb80e51e91a769fc985"),
+              "e5e799221b45bbb90f5fdc5c69b6b8dfbf017e78"),
 ]
 
 # Bash recipe for building across all platforms

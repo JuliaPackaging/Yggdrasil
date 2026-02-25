@@ -3,6 +3,7 @@ using BinaryBuilder, Pkg
 const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
+include(joinpath(YGGDRASIL_DIR, "C/CUDA", "common.jl"))
 
 name = "Libxc_GPU"
 version = v"7.0.0"
@@ -29,9 +30,15 @@ if [[ "${target}" == aarch64-linux-* ]]; then
    NVCC_DIR=(/workspace/srcdir/cuda_nvcc-*-archive)
    rm -rf ${prefix}/cuda/bin
    cp -r ${NVCC_DIR}/bin ${prefix}/cuda/bin
-   
-   rm -rf ${prefix}/cuda/nvvm/bin
-   cp -r ${NVCC_DIR}/nvvm/bin ${prefix}/cuda/nvvm/bin
+
+   # From CUDA v13 on, nvvm is not distributed in the NVCC redist anymore
+   if [[ "${bb_full_target}" == *cuda+13* ]]; then
+       NVVM_DIR=(/workspace/srcdir/libnvvm-*-archive)
+   else
+       NVVM_DIR=${NVCC_DIR}
+   fi
+   rm -rf ${prefix}/cuda/nvvm
+   cp -r ${NVVM_DIR}/nvvm ${prefix}/cuda/nvvm
 fi
 
 mkdir libxc_build
@@ -48,7 +55,6 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DENABLE_XHOST=OFF \
       -DENABLE_FORTRAN=ON \
       -DDISABLE_KXC=ON ..
-
 cmake --build . --parallel $nproc
 cmake --install .
 
@@ -88,7 +94,16 @@ for platform in platforms
     # Download the CUDA redist for the host x64_64 architecture
     platform_sources = BinaryBuilder.AbstractSource[sources...]
     if arch(platform) == "aarch64"
-        push!(platform_sources, CUDA.cuda_nvcc_redist_source(cuda_ver, "x86_64"))
+
+        # From CUDA v13 on, nvvm is not shipped with nvcc anymore
+        components = ["cuda_nvcc"]
+        if VersionNumber(cuda_ver) >= v"13.0"
+           push!(components, "libnvvm")
+        end
+        x86_platform = deepcopy(platform)
+        x86_platform["arch"] = "x86_64"
+        append!(platform_sources, get_sources("cuda", components; platform=x86_platform,
+                                              version=CUDA.full_version(VersionNumber(cuda_ver))))
     end
 
     build_tarballs(ARGS, name, version, platform_sources, script, [platform], products, [dependencies; cuda_deps];

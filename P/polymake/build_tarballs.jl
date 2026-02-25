@@ -23,7 +23,7 @@ import Pkg.Types: VersionSpec
 
 name = "polymake"
 upstream_version = v"4.15"
-version_offset = v"0.0.0"
+version_offset = v"0.0.2"
 version = VersionNumber(upstream_version.major*100+version_offset.major,
                         upstream_version.minor*100+version_offset.minor,
                         version_offset.patch)
@@ -149,7 +149,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    HostBuildDependency(PackageSpec(name="Perl_jll", version=v"5.34.1")),
+    HostBuildDependency(PackageSpec(name="Perl_jll", version="5.34.1")),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD systems),
     # and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
@@ -157,7 +157,7 @@ dependencies = [
 
     Dependency("GMP_jll", v"6.2.1"),
     Dependency("MPFR_jll", v"4.1.1"),
-    Dependency("FLINT_jll", compat = "~301.300.0"),
+    Dependency("FLINT_jll", compat = "~301.400.0"),
     Dependency("MongoC_jll", compat = "~1.28.1"),
     Dependency("PPL_jll", compat = "~1.2.1"),
     Dependency("Perl_jll", compat = "=5.34.1"),
@@ -166,7 +166,7 @@ dependencies = [
     Dependency("boost_jll", compat = "=1.87.0"),
     Dependency("cddlib_jll", compat = "~0.94.15"),
     Dependency("lrslib_jll", compat = "~0.3.3"),
-    Dependency("normaliz_jll", compat = "~300.1001.501"),
+    Dependency("normaliz_jll", compat = "~300.1001.503"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

@@ -2,27 +2,27 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "FFMPEG"
-version_string = "8.0"   # when patch number is zero, they use X.Y format
+version_string = "8.0.1"   # when patch number is zero, they use X.Y format
 version = VersionNumber(version_string)
 
 # Collection of sources required to build FFMPEG
 sources = [
     ArchiveSource(
         "https://ffmpeg.org/releases/ffmpeg-$(version_string).tar.xz",
-        "b2751fccb6cc4c77708113cd78b561059b6fa904b24162fa0be2d60273d27b8e",
+        "05ee0b03119b45c0bdb4df654b96802e909e0a752f72e4fe3794f487229e5a41",
     ),
     ## FFmpeg 6.1.1 does not work with macos 10.13 or earlier.
-    FileSource(
-        "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
-        "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4",
-    ),
+    get_macos_sdk_sources("10.13")...
 ]
 
 # Bash recipe for building across all platforms
 # TODO: Theora once it's available
-function script(; ffplay=false)
-    "FFPLAY=$(ffplay)\n" * raw"""
+function script(; ffplay=false, gpl=true)
+    "FFPLAY=$(ffplay)\nGPL=$(gpl)\n" * get_macos_sdk_script("10.13") * raw"""
 cd $WORKSPACE/srcdir
 cd ffmpeg-*/
 sed -i 's/-lflite"/-lflite -lasound"/' configure
@@ -57,12 +57,6 @@ else
     export ccARCH="x86_64"
 fi
 
-if [[ "${target}" == x86_64-apple-darwin* ]]; then 
-    rm -rf /opt/${target}/${target}/sys-root/System
-    tar --extract --file=${WORKSPACE}/srcdir/MacOSX10.13.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX10.13.sdk/System MacOSX10.13.sdk/usr
-    export MACOSX_DEPLOYMENT_TARGET=10.13
-fi 
-
 export CUDA_ARGS=""
 
 EXTRA_FLAGS=()
@@ -77,6 +71,12 @@ if [[ "${target}" == *-mingw* ]]; then
     EXTRA_FLAGS+=("--disable-openssl" "--enable-schannel")
 else
     EXTRA_FLAGS+=("--enable-openssl" "--disable-schannel")
+fi
+
+# GPL and nonfree libraries
+if [[ "${GPL}" == "true" ]]; then
+    EXTRA_FLAGS+=("--enable-gpl" "--enable-nonfree")
+    EXTRA_FLAGS+=("--enable-libfdk-aac" "--enable-libx264" "--enable-libx265")
 fi
 
 # Remove `-march` flags
@@ -99,9 +99,7 @@ sed -i 's/cpuflags="-march=$cpu"/cpuflags=""/g' configure
   --prefix=$prefix     \
   --sysroot=/opt/${target}/${target}/sys-root \
   --extra-libs=-lpthread \
-  --enable-gpl         \
   --enable-version3    \
-  --enable-nonfree     \
   --disable-static     \
   --enable-shared      \
   --enable-pic         \
@@ -109,13 +107,10 @@ sed -i 's/cpuflags="-march=$cpu"/cpuflags=""/g' configure
   --disable-doc        \
   --enable-libaom      \
   --enable-libass      \
-  --enable-libfdk-aac  \
   --enable-libfreetype \
   --enable-libmp3lame  \
   --enable-libopus     \
   --enable-libvorbis   \
-  --enable-libx264     \
-  --enable-libx265     \
   --enable-libvpx      \
   --enable-encoders    \
   --enable-decoders    \

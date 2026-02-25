@@ -1,7 +1,8 @@
 using BinaryBuilder, SHA
 using BinaryBuilderBase: aatriplet
 
-include("../../fancy_toys.jl")
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 function build_csl(ARGS, version::VersionNumber;
                    # Note: use preferred_gcc_version=v"100" to always force

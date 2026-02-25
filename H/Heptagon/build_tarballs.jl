@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "Heptagon"
-version = v"1.05.00"
+version = v"1.05.4"
 
 sources = [
     DirectorySource("./bundled"),
@@ -15,8 +15,8 @@ sources = [
     GitSource("https://gitlab.inria.fr/fpottier/menhir",
               "d71051f500c4f34c9faf93192a593cdf4903b0c0"),  # 20240715
 
-    GitSource("https://gitlab.inria.fr/synchrone/heptagon",
-              "af93d1f0916b7ff37cb88beb8744ecb976d53ae0")
+    GitSource("https://github.com/JuliaComputing/heptagon",
+              "0f363a1a075f5926a74f955a489053b76f458309")
 ]
 
 script = raw"""

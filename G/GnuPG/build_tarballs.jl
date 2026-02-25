@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "GnuPG"
-version = v"2.4.8"
+version = v"2.5.17"
 
 # Collection of sources required to build libgcrypt
 sources = [
     ArchiveSource("https://gnupg.org/ftp/gcrypt/gnupg/gnupg-$(version).tar.bz2",
-                  "b58c80d79b04d3243ff49c1c3fc6b5f83138eb3784689563bcdd060595318616"),
+                  "2c1fbe20e2958fd8fb53cf37d7c38e84a900edc0d561a1c4af4bc3a10888685d"),
     DirectorySource("bundled"),
 ]
 
@@ -36,8 +36,6 @@ make install
 # platforms are passed in on the command line.  We are manually disabling
 # many platforms that do not seem to work.
 platforms = supported_platforms()
-# Missing dependencies
-filter!(p -> arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -64,17 +62,17 @@ dependencies = [
     # We need this to run a host msgfmt executable
     HostBuildDependency("Gettext_jll"),
     Dependency("OpenSSL_jll"; compat="3.0.15"),
-    Dependency("Libksba_jll"),
-    Dependency("Libgcrypt_jll"),
-    Dependency("Libgpg_error_jll"; compat="1.51.0"),
-    Dependency("nPth_jll"),
+    Dependency("Libksba_jll"; compat="1.6.8"),
+    Dependency("Libgcrypt_jll"; compat="1.11.2"),
+    Dependency("Libgpg_error_jll"; compat="1.58"),
+    Dependency("nPth_jll"; compat="1.8.1"),
     Dependency("Zlib_jll"),
-    Dependency("Libassuan_jll"),
+    Dependency("Libassuan_jll"; compat="3.0.2"),
     Dependency("OpenLDAPClient_jll"),
-    Dependency("Bzip2_jll"; compat="1.0.8"),
+    Dependency("Bzip2_jll"; compat="1.0.9"),
     Dependency("SQLite_jll"),
     Dependency("libusb_jll"),
-    Dependency("Nettle_jll"; compat="~3.10.0"),
+    Dependency("Nettle_jll"; compat="~3.10.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

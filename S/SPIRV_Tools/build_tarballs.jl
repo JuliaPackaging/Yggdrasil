@@ -4,19 +4,20 @@ using BinaryBuilder, Pkg
 
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 
 name = "SPIRV_Tools"
-version = v"2025.1"
+version = v"2025.4"
 
 # Collection of sources required to build SPIRV-Tools
 sources = [
-    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "f289d047f49fb60488301ec62bafab85573668cc"),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "7f2d9ee926f98fc77a3ed1e1e0f113b8c9c49458"),
     # vendored dependencies, see the DEPS file
-    GitSource("https://github.com/google/effcee.git", "12241cbc30f20730b656db7fd5a3fa36cd420843"),
-    GitSource("https://github.com/google/googletest", "c00fd25b71a17e645e4567fcb465c3fa532827d2"),
-    GitSource("https://github.com/google/re2.git", "6dcd83d60f7944926bfd308cc13979fc53dd69ca"),
-    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "09913f088a1197aba4aefd300a876b2ebbaa3391"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/google/effcee.git", "514b52ec61609744d7e587d93a7ef9b60407ab45"),
+    GitSource("https://github.com/google/googletest", "50b8600c63c5487e901e2845a0f64d384a65f75d"),
+    GitSource("https://github.com/google/re2.git", "6569a9a3df256f4c0c3813cb8ee2f8eef6e2c1fb"),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "01e0577914a75a2569c846778c2f93aa8e6feddd"),
 ]
 
 # Bash recipe for building across all platforms
@@ -30,17 +31,7 @@ mv re2 SPIRV-Tools/external/re2
 mv googletest SPIRV-Tools/external/googletest
 mv SPIRV-Headers SPIRV-Tools/external/spirv-headers
 
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    export MACOSX_DEPLOYMENT_TARGET=10.15
-    popd
-fi
-
 cd SPIRV-Tools
-atomic_patch -p1 ../SPV_INTEL_masked_gather_scatter.patch
 install_license LICENSE
 
 CMAKE_FLAGS=()
@@ -70,6 +61,8 @@ ninja -C build -j ${nproc} install
 # Remove unwanted static libraries
 rm -f $prefix/lib/*.a
 """
+
+sources, script = require_macos_sdk("10.15", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
@@ -102,17 +95,7 @@ dependencies = [
 builds = []
 for platform in platforms
     should_build_platform(triplet(platform)) || continue
-
-    # On macOS, we need to use a newer SDK which supports `std::filesystem`
-    platform_sources = if Sys.isapple(platform)
-        [sources;
-         ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-                       "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62")]
-    else
-        sources
-    end
-
-    push!(builds, (; platform, sources=platform_sources))
+    push!(builds, (; platform, sources))
 end
 
 # don't allow `build_tarballs` to override platform selection based on ARGS.

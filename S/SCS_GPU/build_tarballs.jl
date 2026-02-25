@@ -6,11 +6,11 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "SCS_GPU"
-version = v"300.200.900"
+version = v"300.200.1100"
 
 # Collection of sources required to build SCSBuilder
 sources = [
-    GitSource("https://github.com/cvxgrp/scs.git", "c8297172633bcb3a10d4781a19d4769ce5282d29")
+    GitSource("https://github.com/cvxgrp/scs.git", "e2f2148b6db2055fbdea58ceae28a29b07cc681d")
 ]
 
 # Bash recipe for building across all platforms

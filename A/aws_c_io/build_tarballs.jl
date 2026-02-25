@@ -2,27 +2,19 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "aws_c_io"
-version = v"0.23.2"
+version = v"0.26.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-io.git", "1af325b54bba2e95a640a5be5ffe0b27e4ead79c"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
+    GitSource("https://github.com/awslabs/aws-c-io.git", "bfb0819d3906502483611ce832a5ec6b897c8421"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    export MACOSX_DEPLOYMENT_TARGET=10.14
-    popd
-fi
-
 cd $WORKSPACE/srcdir/aws-c-io
 
 # Patch for MinGW toolchain
@@ -48,6 +40,8 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 cmake --build . -j${nproc} --target install
 """
 
+sources, script = require_macos_sdk("10.15", sources, script)
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
@@ -60,9 +54,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("s2n_tls_jll"; compat="1.5.27", platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
-    Dependency("aws_c_cal_jll"; compat="0.9.4"),
-    Dependency("aws_c_common_jll"; compat="0.12.5"),
+    Dependency("s2n_tls_jll"; compat="1.6.4", platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
+    Dependency("aws_c_cal_jll"; compat="0.9.13"),
+    Dependency("aws_c_common_jll"; compat="0.12.6"),
     BuildDependency("aws_lc_jll"),
 ]
 

@@ -1,5 +1,8 @@
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "libcellml"
 version = v"0.6.3"
 
@@ -7,23 +10,10 @@ sources = [
     GitSource(
         "https://github.com/cellml/libcellml",
         "7269e4a234b133e930722acd11acd04e4cad31b4"),
-    ArchiveSource(
-        "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-        "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 # https://libcellml.org/documentation/installation/build_from_source
 script = raw"""
-# This requires macOS 10.15
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    export MACOSX_DEPLOYMENT_TARGET=10.15
-    popd
-fi
-
 cd libcellml
 mkdir build && cd build
 cmake -DINSTALL_PREFIX=${prefix} \
@@ -38,6 +28,8 @@ make -j${nproc}
 make install
 install_license ../LICENSE
 """
+
+sources, script = require_macos_sdk("10.15", sources, script)
 
 # It doesn't look like this works with 32-bit systems
 platforms = expand_cxxstring_abis(supported_platforms(; exclude=p->nbits(p)==32))

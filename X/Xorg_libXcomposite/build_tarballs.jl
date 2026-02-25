@@ -3,18 +3,18 @@
 using BinaryBuilder
 
 name = "Xorg_libXcomposite"
-version = v"0.4.6"
+version = v"0.4.7"
 
 # Collection of sources required to build libXcomposite
 sources = [
     ArchiveSource("https://www.x.org/archive/individual/lib/libXcomposite-$(version).tar.xz",
-                  "fe40bcf0ae1a09070eba24088a5eb9810efe57453779ec1e20a55080c6dc2c87"),
+                  "8bdf310967f484503fa51714cf97bff0723d9b673e0eecbf92b3f97c060c8ccb"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libXcomposite-*
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-static=no
 make -j${nproc}
 make install
 """
