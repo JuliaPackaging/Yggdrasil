@@ -1,0 +1,16 @@
+--- a/thirdparty/ffs/ffs/CMakeLists.txt
++++ b/thirdparty/ffs/ffs/CMakeLists.txt
+@@ -318,12 +318,7 @@
+   set(NEED_IOVEC_DEFINE TRUE)
+ endif()
+ 
+-TRY_RUN(RUN_RESULT COMPILE_RESULT
+-        # Binary directory:
+-        ${CMAKE_CURRENT_BINARY_DIR}/
+-        # source file
+-	${CMAKE_CURRENT_SOURCE_DIR}/cmake/float_format_test.c
+-	RUN_OUTPUT_VARIABLE FFS_FLOAT_FORMAT)
++set(FFS_FLOAT_FORMAT "Format_IEEE_754_littleendian")
+ message(STATUS "Float format is ${FFS_FLOAT_FORMAT}")
+ 
+ if(NOT DEFINED FORMAT_SERVER_HOST)

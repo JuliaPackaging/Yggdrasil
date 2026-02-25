@@ -23,18 +23,18 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MPItrampoline"
 
-mpitrampoline_version = v"5.5.0"
-version = v"5.5.4"
-mpich_version = "4.3.1"
+mpitrampoline_version = v"5.5.1"
+version = v"5.5.5"
+mpich_version = "4.3.2"
 mpiconstants_version = v"1.5.0"
 mpiwrapper_version = v"2.11.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/eschnett/MPItrampoline", "67292e8b1ac40aa5bd6d0a5dab669da32405a2d7"),
+    GitSource("https://github.com/eschnett/MPItrampoline", "1071c390039532d99105093f2042295c3f769915"),
     GitSource("https://github.com/eschnett/MPIconstants", "d2763908c4d69c03f77f5f9ccc546fe635d068cb"),
     ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version)/mpich-$(mpich_version).tar.gz",
-                  "acc11cb2bdc69678dc8bba747c24a28233c58596f81f03785bf2b7bb7a0ef7dc"),
+                  "47d774587a7156a53752218c811c852e70ac44db9c502dc3f399b4cb817e3818"),
     GitSource("https://github.com/eschnett/MPIwrapper", "070c4e1b8a98fbe63ea8f84d046effb813c9febb"),
 ]
 
@@ -249,7 +249,7 @@ augment_platform_block = """
     using Base.BinaryPlatforms
     $(MPI.augment)
     augment_platform!(platform::Platform) = augment_mpi!(platform)
-"""
+    """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line

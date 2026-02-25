@@ -82,7 +82,7 @@ function configure_build(version)
     #if version >= v"5.4.4"
         # Need this for CLOCK_BOOTTIME
         push!(dependencies,
-              BuildDependency(PackageSpec(name = "Glibc_jll", version = v"2.17");
+              BuildDependency(PackageSpec(name = "Glibc_jll", version = "2.17");
                               platforms = filter(p->libc(p)=="glibc", ROCM_PLATFORMS)))
     #end
     NAME, version, sources, buildscript, ROCM_PLATFORMS, PRODUCTS, dependencies

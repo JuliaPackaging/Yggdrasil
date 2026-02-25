@@ -85,7 +85,7 @@ dependencies = [
     Dependency(PackageSpec(name="libgeotiff_jll", uuid="06c338fa-64ff-565b-ac2f-249532af990e"); compat="100.702.400"),
     # From GDAL recipe, for 32-bit platforms, when we need to link to OpenMPI we need version 4,
     # because version 5 dropped support for these architectures
-    BuildDependency(PackageSpec(; name="OpenMPI_jll", version=v"4.1.8"); platforms=filter(p -> nbits(p)==32, platforms)),
+    BuildDependency(PackageSpec(; name="OpenMPI_jll", version="4.1.8"); platforms=filter(p -> nbits(p)==32, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

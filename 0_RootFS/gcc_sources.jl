@@ -129,6 +129,18 @@ const gcc_version_sources = Dict{VersionNumber,Vector}(
         ArchiveSource("https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.24.tar.bz2",
                       "fcf78dd9656c10eb8cf9fbd5f59a0b6b01386205fe1934b3b287a0a1898145c0"),
     ],
+    v"15.2.0" => [
+        ArchiveSource("https://mirrors.kernel.org/gnu/gcc/gcc-15.2.0/gcc-15.2.0.tar.xz",
+                      "438fd996826b0c82485a29da03a72d71d6e3541a83ec702df4271f6fe025d24e"),
+        ArchiveSource("https://mirrors.kernel.org/gnu/gmp/gmp-6.2.1.tar.xz", # 6.3.0?
+                      "fd4829912cddd12f84181c3451cc752be224643e87fac497b69edddadc49b4f2"),
+        ArchiveSource("https://mirrors.kernel.org/gnu/mpfr/mpfr-4.1.0.tar.xz", # 4.2.2?
+                      "0c98a3f1732ff6ca4ea690552079da9c597872d30e96ec28414ee23c95558a7f"),
+        ArchiveSource("https://mirrors.kernel.org/gnu/mpc/mpc-1.2.1.tar.gz", # 1.3.2?
+                      "17503d2c395dfcf106b622dc142683c1199431d095367c6aacba6eec30340459"),
+        ArchiveSource("https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.24.tar.bz2",
+                      "fcf78dd9656c10eb8cf9fbd5f59a0b6b01386205fe1934b3b287a0a1898145c0"),
+    ],
 )
 
 function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwargs...)
@@ -196,6 +208,7 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
             v"12.1.0" => v"2.38",
             v"13.2.0" => v"2.41",
             v"14.2.0" => v"2.43.1",
+            v"15.2.0" => v"2.45.1",
         )
 
         # Everyone else uses GNU Binutils, but we have to version carefully.
@@ -247,6 +260,10 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
             v"2.43.1" => [
                 ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-2.43.1.tar.xz",
                               "13f74202a3c4c51118b797a39ea4200d3f6cfbe224da6d1d95bb938480132dfd"),
+            ],
+            v"2.45.1" => [
+                ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-2.45.1.tar.xz",
+                              "5fe101e6fe9d18fdec95962d81ed670fdee5f37e3f48f0bef87bddf862513aa5"),
             ],
         )
         binutils_version = binutils_gcc_version_mapping[gcc_version]

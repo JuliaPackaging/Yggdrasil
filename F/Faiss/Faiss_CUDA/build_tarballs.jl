@@ -20,15 +20,18 @@ include(joinpath(@__DIR__, "..", "common.jl"))
 
 # Override the default platforms
 platforms = CUDA.supported_platforms()
-filter!(p -> arch(p) == "x86_64", platforms)
-
 filter!(p -> p["cuda"] in cuda_versions, platforms)
+for cuda_version in cuda_versions
+    push!(platforms, Platform("powerpc64le", "linux"; cuda=cuda_version))
+end
 
 # Override the default products
 products = [
     products...,
     FileProduct("include/faiss/gpu/GpuIndex.h", :faiss_gpu_gpuindex_h),
     FileProduct("include/faiss/c_api/gpu/GpuIndex_c.h", :faiss_c_api_gpu_gpuindex_c_h),
+    LibraryProduct(["libfaiss_gpu", "faiss_gpu"], :libfaiss_gpu),
+    LibraryProduct(["libfaiss_gpu_c", "faiss_gpu_c"], :libfaiss_gpu_c),
 ]
 
 # Build for all supported CUDA toolkits
@@ -37,7 +40,14 @@ for platform in platforms
 
     cuda_deps = CUDA.required_dependencies(platform; static_sdk=true)
 
-    build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; cuda_deps];
+    # Download the CUDA nvcc redist for the host architecture (x86_64) for non-x86_64-linux-gnu platforms
+    platform_sources = BinaryBuilder.AbstractSource[sources...]
+    if !platforms_match(platform, Platform("x86_64", "linux"))
+        cuda_version = platform["cuda"]
+        push!(platform_sources, CUDA.cuda_nvcc_redist_source(cuda_version, "x86_64"))
+    end
+
+    build_tarballs(ARGS, name, version, platform_sources, script, [platform], products, [dependencies; cuda_deps];
                    lazy_artifacts=true,
                    julia_compat="1.9",
                    preferred_gcc_version=v"7",

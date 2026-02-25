@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "GALAHAD"
-version = v"5.3.0"
+version = v"5.4.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ralna/GALAHAD.git", "17cecabc1aae869dc80b071d7c6c93e15222c21f")
+    GitSource("https://github.com/ralna/GALAHAD.git", "1b18769eb152d36fe360b277b3a7fa0920789ca7")
 ]
 
 # Bash recipe for building across all platforms
@@ -239,6 +239,8 @@ products = [
     ExecutableProduct("runnls_sif_double", :runnls_sif_double),
     ExecutableProduct("runnodend_sif_single", :runnodend_sif_single),
     ExecutableProduct("runnodend_sif_double", :runnodend_sif_double),
+    ExecutableProduct("runnrek_sif_single", :runnrek_sif_single),
+    ExecutableProduct("runnrek_sif_double", :runnrek_sif_double),
     ExecutableProduct("runpresolve_sif_single", :runpresolve_sif_single),
     ExecutableProduct("runpresolve_sif_double", :runpresolve_sif_double),
     ExecutableProduct("runqp_qplib_single", :runqp_qplib_single),
@@ -257,6 +259,8 @@ products = [
     ExecutableProduct("runqpc_qplib_double", :runqpc_qplib_double),
     ExecutableProduct("runqpc_sif_single", :runqpc_sif_single),
     ExecutableProduct("runqpc_sif_double", :runqpc_sif_double),
+    ExecutableProduct("runtrek_sif_single", :runtrek_sif_single),
+    ExecutableProduct("runtrek_sif_double", :runtrek_sif_double),
 ]
 
 # Dependencies that must be installed before this package can be built

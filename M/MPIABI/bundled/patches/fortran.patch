@@ -1,0 +1,11 @@
+--- a/mpi.h
++++ b/mpi.h
+@@ -37,6 +37,8 @@
+ typedef MPI_ABI_Count MPI_Count;
+ #undef  MPI_ABI_Count
+ 
++typedef int MPI_Fint;
++
+ typedef struct {
+     int MPI_SOURCE;
+     int MPI_TAG;

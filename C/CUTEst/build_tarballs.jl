@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "CUTEst"
-version = v"2.5.6"
+version = v"2.6.0"
 
 # Collection of sources required to build CUTEst
 sources = [
-    GitSource("https://github.com/ralna/CUTEst.git", "c0b28c8fd041228071838c1aed03d4ebbf5e64f6"),
+    GitSource("https://github.com/ralna/CUTEst.git", "1db1e4a15243eea0cd3da3f6dfec4cb35f1a9500"),
 ]
 
 # Bash recipe for building across all platforms

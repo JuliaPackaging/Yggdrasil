@@ -3,32 +3,17 @@
 using BinaryBuilder, Pkg
 
 name = "P11Kit"
-version = v"0.25.5"
+version = v"0.26.2"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/p11-glue/p11-kit/releases/download/$(version)/p11-kit-$(version).tar.xz",
-                  "04d0a86450cdb1be018f26af6699857171a188ac6d5b8c90786a60854e1198e5"),
-    DirectorySource("bundled"),
+                  "09fd9f44da4813a3141e73d5e7cf7008e5660d0405f13d56c15e1da9dcecf828"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/p11-kit-*
-
-# Update our compiler wrappers.
-# (This prevents compiler warnings that are later treated as errors.)
-# - Only pass linker arguments when linking.
-if [[ ${target} = aarch64-apple-darwin* ]]; then
-    pushd /
-    atomic_patch -p0 ${WORKSPACE}/srcdir/patches/aarch64-apple-clang.patch
-    popd
-fi
-if [[ ${target} = x86_64-apple-darwin* ]]; then
-    pushd /
-    atomic_patch -p0 ${WORKSPACE}/srcdir/patches/x86_64-apple-clang.patch
-    popd
-fi
 
 meson setup --cross-file="${MESON_TARGET_TOOLCHAIN}" --buildtype=release builddir
 meson compile -C builddir
@@ -49,7 +34,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Libffi_jll"; compat="~3.2.2"),
+    Dependency("Libffi_jll"; compat="3.4.7"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

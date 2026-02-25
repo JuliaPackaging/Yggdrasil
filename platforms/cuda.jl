@@ -129,6 +129,7 @@ const cuda_full_versions = [
     v"12.8.1",
     v"12.9.1",
     v"13.0.2",
+    v"13.1.1",
 ]
 
 function full_version(ver::VersionNumber)
@@ -226,12 +227,12 @@ function required_dependencies(platform; static_sdk=false)
     end
     release = VersionNumber(tags(platform)["cuda"])
     deps = BinaryBuilder.AbstractDependency[
-        BuildDependency(PackageSpec(name="CUDA_SDK_jll", version=CUDA.full_version(release))),
+        BuildDependency(PackageSpec(name="CUDA_SDK_jll", version=string(CUDA.full_version(release)))),
         RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll"))
     ]
 
     if static_sdk
-        push!(deps, BuildDependency(PackageSpec(name="CUDA_SDK_static_jll", version=CUDA.full_version(release))))
+        push!(deps, BuildDependency(PackageSpec(name="CUDA_SDK_static_jll", version=string(CUDA.full_version(release)))))
     end
 
     return deps

@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "Qt6Base"
-version = v"6.8.2"
+version = v"6.10.2"
 
 # Set this to true first when updating the version. It will build only for the host (linux musl).
 # After that JLL is in the registry, set this to false to build for the other platforms, using
@@ -13,13 +13,14 @@ const host_build = false
 # Collection of sources required to build qt6
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtbase-everywhere-src-$version.tar.xz",
-                  "012043ce6d411e6e8a91fdc4e05e6bedcfa10fcb1347d3c33908f7fdd10dfe05"),
-    ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
-                  "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
+                  "aeb78d29291a2b5fd53cb55950f8f5065b4978c25fb1d77f627d695ab9adf21e"),
     DirectorySource("./bundled"),
 ]
 
 script = raw"""
+# Need newer cmake from JLL
+apk del cmake
+
 cd $WORKSPACE/srcdir
 
 BIN_DIR="/opt/bin/${bb_full_target}"
@@ -36,7 +37,7 @@ commonoptions=" \
 -openssl-linked  -nomake examples -release \
 "
 
-commoncmakeoptions="-DCMAKE_PREFIX_PATH=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DQT_HOST_PATH=$host_prefix -DQT_FEATURE_openssl_linked=ON"
+commoncmakeoptions="-DCMAKE_PREFIX_PATH=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DQT_HOST_PATH=$host_prefix -DQT_FEATURE_openssl_linked=ON -DWaylandScanner_EXECUTABLE=$host_bindir/wayland-scanner"
 
 export LD_LIBRARY_PATH=$host_libdir:$host_prefix/lib64:$LD_LIBRARY_PATH
 export OPENSSL_LIBS="-L${libdir} -lssl -lcrypto"
@@ -69,28 +70,16 @@ case "$bb_full_target" in
     ;;
 
     *apple-darwin*)
-        apple_sdk_root=$WORKSPACE/srcdir/MacOSX14.0.sdk
-        sed -i "s!/opt/$target/$target/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
-        sed -i "s!/opt/$target/$target/sys-root!$apple_sdk_root!" /opt/bin/$bb_full_target/$target-clang++
-        deployarg="-DCMAKE_OSX_DEPLOYMENT_TARGET=12"
         export LDFLAGS="-L${libdir}/darwin -lclang_rt.osx"
-        export MACOSX_DEPLOYMENT_TARGET=12
         export OBJCFLAGS="-D__ENVIRONMENT_OS_VERSION_MIN_REQUIRED__=120000"
         export OBJCXXFLAGS=$OBJCFLAGS
         export CXXFLAGS=$OBJCFLAGS
-        # Override SDK root of BB tooling, which Qt queries
-        export SDKROOT=$apple_sdk_root
         sed -i 's/exit 1/#exit 1/' /opt/bin/$bb_full_target/$target-clang++
         ../qtbase-everywhere-src-*/configure -prefix $prefix \
             $commonoptions \
             -- $commoncmakeoptions \
             -DQT_INTERNAL_APPLE_SDK_VERSION=14 \
             -DQT_INTERNAL_XCODE_VERSION=15 \
-            -DCMAKE_SYSROOT=$apple_sdk_root \
-            -DCMAKE_FRAMEWORK_PATH=$apple_sdk_root/System/Library/Frameworks \
-            $deployarg \
-            -DCUPS_INCLUDE_DIR=$apple_sdk_root/usr/include \
-            -DCUPS_LIBRARIES=$apple_sdk_root/usr/lib/libcups.tbd \
             -DQT_FEATURE_vulkan=OFF
         sed -i 's/#exit 1/exit 1/' /opt/bin/$bb_full_target/$target-clang++
     ;;
@@ -187,6 +176,7 @@ dependencies = [
     BuildDependency("Xorg_xproto_jll"),
     BuildDependency("Xorg_glproto_jll"),
     BuildDependency("Vulkan_Headers_jll"),
+    HostBuildDependency("CMake_jll"),
 ]
 
 if !host_build

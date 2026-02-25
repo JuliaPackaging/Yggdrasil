@@ -44,8 +44,8 @@ function get_script(cuda::Val{true})
 
     ### Set Up CUDA ENV Vars
 
-    export CPPFLAGS="${CPPFLAGS} -I${prefix}/include"
-    export CFLAGS="${CFLAGS} -I${prefix}/include"
+    export CPPFLAGS="${CPPFLAGS} -I${prefix}/include -Wno-error=unknown-warning-option -Wno-unknown-warning-option"
+    export CFLAGS="${CFLAGS} -I${prefix}/include -Wno-error=unknown-warning-option -Wno-unknown-warning-option"
     export LDFLAGS="${LDFLAGS} -L${prefix}/lib -L${prefix}/lib64"
 
     export CUDA_HOME=${prefix}/cuda;
@@ -60,10 +60,14 @@ function get_script(cuda::Val{true})
         --with-cudac=${CUDACXX} \
         --with-cuda-dir=${CUDA_HOME} \
         --with-nccl-dir=${prefix} \
+        --with-mpi=1 \
         --with-mpiexec-executable=${bindir}/mpiexec \
         --with-mpi-dir=${prefix} \
         --with-hdf5-vfd-gds=0 \
         --with-hdf5-dir=${prefix} \
+        --with-ucx=1 \
+        --with-ucx-dir=${prefix} \
+        --with-ucc-dir=${prefix} \
         --num-threads=${nproc} \
         --with-cxx=${CXX} \
         --with-cc=${CC} \
@@ -74,10 +78,11 @@ function get_script(cuda::Val{true})
         -- "-DCMAKE_TOOLCHAIN_FILE=/opt/toolchains/${bb_full_target}/target_${target}_clang.cmake" \
             "-DCMAKE_CUDA_HOST_COMPILER=$(which clang++)" \
 
-
     # Patch redop header that is installed by configure script
+    # Patch in macro to export specific symbols 
     cd ${WORKSPACE}/srcdir
-    atomic_patch -p1 ./legion_redop.patch
+    atomic_patch -p1 ./proc_local_h.patch
+    atomic_patch -p1 ./proc_local_inl.patch
 
     # Go back to main dir
     cd ${WORKSPACE}/srcdir/legate
@@ -123,17 +128,21 @@ function get_script(cuda::Val{false})
 
     ### Set Up CUDA ENV Vars
 
-    export CPPFLAGS="${CPPFLAGS} -I${prefix}/include"
-    export CFLAGS="${CFLAGS} -I${prefix}/include"
+    export CPPFLAGS="${CPPFLAGS} -I${prefix}/include -Wno-error=unknown-warning-option -Wno-unknown-warning-option"
+    export CFLAGS="${CFLAGS} -I${prefix}/include -Wno-error=unknown-warning-option -Wno-unknown-warning-option"
     export LDFLAGS="${LDFLAGS} -L${prefix}/lib -L${prefix}/lib64"
 
     ./configure \
         --prefix=${prefix} \
         --with-cuda=0 \
+        --with-mpi=1 \
         --with-mpiexec-executable=${bindir}/mpiexec \
         --with-mpi-dir=${prefix} \
         --with-hdf5-vfd-gds=0 \
         --with-hdf5-dir=${prefix} \
+        --with-ucx=1 \
+        --with-ucx-dir=${prefix} \
+        --with-ucc-dir=${prefix} \
         --num-threads=${nproc} \
         --with-cxx=${CXX} \
         --with-cc=${CC} \
@@ -146,8 +155,10 @@ function get_script(cuda::Val{false})
 
 
     # Patch redop header that is installed by configure script
+    # Patch in macro to export specific symbols 
     cd ${WORKSPACE}/srcdir
-    atomic_patch -p1 ./legion_redop.patch
+    atomic_patch -p1 ./proc_local_h.patch
+    atomic_patch -p1 ./proc_local_inl.patch
 
     # Go back to main dir
     cd ${WORKSPACE}/srcdir/legate
