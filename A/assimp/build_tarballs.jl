@@ -38,6 +38,9 @@ install_license ../LICENSE
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
+platforms_win = filter(Sys.iswindows, platforms)
+platforms = setdiff(platforms, platforms_win)
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libassimp", :libassimp)
@@ -49,5 +52,13 @@ dependencies = [
     Dependency("Zlib_jll")
 ]
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"12", julia_compat="1.6")
+if any(should_build_platform.(triplet.(platforms_win)))
+    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"12", julia_compat="1.6")
+end
+if any(should_build_platform.(triplet.(platforms)))
+    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"10", julia_compat="1.6")
+end
