@@ -9,6 +9,7 @@ sources = [
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/s2geography
+# TODO: drop this patch once paleolimbot/s2geography#70 and #71 are merged
 atomic_patch -p1 ../patches/cmake_fixes.patch
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
