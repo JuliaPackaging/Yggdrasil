@@ -14,7 +14,7 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/s2geography
 atomic_patch -p1 ../patches/msvc_to_win32_target.patch
 # Use system nanoarrow instead of FetchContent download
-sed -i '/if(NOT TARGET nanoarrow)/i find_package(nanoarrow REQUIRED)\nadd_library(nanoarrow ALIAS nanoarrow::nanoarrow)' CMakeLists.txt
+sed -i '/if(NOT TARGET nanoarrow)/i find_package(nanoarrow REQUIRED)\nadd_library(nanoarrow ALIAS nanoarrow::nanoarrow_shared)' CMakeLists.txt
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
