@@ -3,41 +3,43 @@
 using BinaryBuilder
 
 name = "capnproto"
-version = v"0.8.0"
+version = v"1.3.0"
 
 # Collection of sources required to build capnproto
 sources = [
     ArchiveSource("https://capnproto.org/capnproto-c++-$(version).tar.gz",
-                  "d1f40e47574c65700f0ec98bf66729378efabe3c72bc0cda795037498541c10d"),
+                  "098f824a495a1a837d56ae17e07b3f721ac86f8dbaf58896a389923458522108"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/capnproto-*/
-(
-    # Do native build to get a capnp that we can run
-    mkdir build_native && cd build_native
-    export CC=${CC_BUILD}
-    export CXX=${CXX_BUILD}
-    export LD=${LD_BUILD}
-    ../configure --host=${MACHTYPE} --with-pic \
-        lt_cv_prog_compiler_pic_works=yes \
-        lt_cv_prog_compiler_pic_works_CXX=yes
-    make -j${nproc}
-)
-export CAPNP=build_native/capnp
-if [[ ${target} == *linux* ]]; then
-    export LDFLAGS="-lrt"
-fi
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-external-capnp
-make -j${nproc}
-make install
-if [[ "${target}" == *-mingw* ]]; then
-    # The build for Windows creates "${bindir}/capnpc" as a broken link to
-    # "capnp": let's remove it and copy capnp.exe to capnpc.exe
-    rm "${bindir}/capnpc"
-    cp "${bindir}/capnp${exeext}" "${bindir}/capnpc${exeext}"
-fi
+
+# Native build for tools
+mkdir native_install
+cmake -S . -B build_native \
+    -DCMAKE_CXX_COMPILER=${CXX_BUILD} \
+    -DCMAKE_INSTALL_PREFIX=$(pwd)/native_install \
+    -DBUILD_TESTING=OFF \
+    -DCAPNP_LITE=ON
+
+cmake --build build_native -j${nproc}
+cmake --build build_native --target install
+
+# Cross-compilation
+cmake -S . -B build_cross \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_TESTING=OFF \
+    -DBUILD_SHARED_LIBS=ON \
+    -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.14 \
+    -DCAPNP_EXECUTABLE=$(pwd)/native_install/bin/capnp \
+    -DCAPNPC_CXX_EXECUTABLE=$(pwd)/native_install/bin/capnpc-c++ \
+    -DWITH_OPENSSL=ON
+
+cmake --build build_cross -j
+cmake --build build_cross --target install
 """
 
 # These are the platforms we will build for by default, unless further
@@ -46,14 +48,21 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libcapnp", "libcapnp-$(version.major)-$(version.minor)"], :libcapnp),
+    LibraryProduct("libcapnp", :libcapnp),
+    LibraryProduct("libcapnp-rpc", :libcapnp_rpc),
+    LibraryProduct("libcapnpc", :libcapnpc),
+    LibraryProduct("libkj", :libkj),
+    LibraryProduct("libkj-async", :libkj_async),
     ExecutableProduct("capnp", :capnp)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    HostBuildDependency("CMake_jll"),
+    Dependency("OpenSSL_jll"; compat="3.0.16"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies,
-              preferred_gcc_version=v"5", julia_compat="1.6")
+              preferred_gcc_version=v"9", julia_compat="1.6")
