@@ -7,7 +7,7 @@ version = v"0.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/zsoerenm/litex_m2sdr.git", "1845f77baf52454a6d3573172236e4bf7827be69")
+    GitSource("https://github.com/zsoerenm/litex_m2sdr.git", "53805b7cf28742400999d67964d27d3741c406a4")
 ]
 
 # Bash recipe for building across all platforms
@@ -17,11 +17,12 @@ cd $WORKSPACE/srcdir/litex_m2sdr/litex_m2sdr/software/user
 # Build only the shared memory streaming executables
 # These only work on Linux (require /dev/m2sdr* device access)
 # Add -std=gnu99 for C99 compatibility with older GCC in BinaryBuilder
-make INTERFACE=USE_LITEPCIE CFLAGS="-O2 -Wall -g -I../kernel -Ilibliteeth -Iliblitepcie -Ilibm2sdr -Iad9361 -MMD -fPIC -std=gnu99 -DUSE_LITEPCIE" LDFLAGS="-g -lrt" m2sdr_rx_stream_shm m2sdr_tx_stream_shm
+make INTERFACE=USE_LITEPCIE CFLAGS="-O2 -Wall -g -I../kernel -Ilibliteeth -Iliblitepcie -Ilibm2sdr -Iad9361 -MMD -fPIC -std=gnu99 -DUSE_LITEPCIE" LDFLAGS="-g -lrt" m2sdr_rx_stream_shm m2sdr_tx_stream_shm m2sdr_stream_shm
 
 # Install executables
 install -Dvm 755 m2sdr_rx_stream_shm ${bindir}/m2sdr_rx_stream_shm${exeext}
 install -Dvm 755 m2sdr_tx_stream_shm ${bindir}/m2sdr_tx_stream_shm${exeext}
+install -Dvm 755 m2sdr_stream_shm ${bindir}/m2sdr_stream_shm${exeext}
 """
 
 # These are the platforms we will build for by default, unless further
@@ -38,6 +39,7 @@ platforms = [
 products = [
     ExecutableProduct("m2sdr_rx_stream_shm", :m2sdr_rx_stream_shm),
     ExecutableProduct("m2sdr_tx_stream_shm", :m2sdr_tx_stream_shm),
+    ExecutableProduct("m2sdr_stream_shm", :m2sdr_stream_shm),
 ]
 
 # Dependencies that must be installed before this package can be built
