@@ -5,33 +5,22 @@ using BinaryBuilder, Pkg
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
-# See https://github.com/JuliaLang/Pkg.jl/issues/2942
-# Once this Pkg issue is resolved, this must be removed
-uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
-delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
-
 name = "OpenCV"
-version = v"4.10.0"
+version = v"4.12.0"
 version_collapsed_str = replace(string(version), "." => "")
 
 include("../../L/libjulia/common.jl")
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/opencv/opencv.git", "71d3237a093b60a27601c20e9ee6c3e52154e8b1"),
-    GitSource("https://github.com/opencv/opencv_contrib.git", "1ed3dd2c53888e3289afdb22ec4e9ebbff3dba87"),
+    GitSource("https://github.com/opencv/opencv.git", "49486f61fb25722cbcf586b7f4320921d46fb38e"),
+    GitSource("https://github.com/barche/opencv_contrib.git","40080954a3afcc331463c2d40c6809de29fde50d"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-
-# Apply patch for BB specific CMake changes
-cd opencv_contrib
-git apply ../patches/opencv-julia-cmake.patch
-git apply ../patches/opencv-julia-code.patch
-cd ..
 
 mkdir build && cd build
 export USE_QT="ON"
@@ -41,33 +30,20 @@ if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-freebsd* ]]; then
     atomic_patch -p1 -d../opencv ../patches/atomic_fix.patch
 fi
 
-if [[ "${target}" == *-apple-* ]]; then
-    # We want to use OpenBLAS over Accelerate framework...
-    export OpenBLAS_HOME=${prefix}
-    export CXXFLAGS=""
-    # ...but we also need to rename quite a few symbols
-    for symbol in sgemm dgemm cgemm zgemm; do
-        # Rename CBLAS symbols for ILP64
-        CXXFLAGS="${CXXFLAGS} -Dcblas_${symbol}=cblas_${symbol}64_"
-    done
-    for symbol in sgesv_ sposv_ spotrf_ sgesdd_ sgeqrf_ sgels_ dgeqrf_ dgesdd_ sgetrf_ dgesv_ dposv_ dgels_ dgetrf_ dpotrf_ dgeev_; do
-        # Rename LAPACK symbols for ILP64
-        CXXFLAGS="${CXXFLAGS} -D${symbol}=${symbol}64_"
-    done
-    # Apply patch to help CMake find our 64-bit OpenBLAS
-    atomic_patch -p1 -d../opencv ../patches/find-openblas64.patch
-
-    # Disable QT
-    export USE_QT="OFF"
-elif [[ "${target}" == *-w64-* ]]; then
+if [[ "${target}" == *-w64-* ]]; then
     # Needed for mingw compilation of big files
     export CXXFLAGS="-Wa,-mbig-obj"
-    export USE_QT="OFF"
 fi
 
 cmake -DCMAKE_FIND_ROOT_PATH=${prefix} \
       -DJulia_PREFIX=${prefix} \
       -DWITH_JULIA=ON \
+      -DJulia_FOUND=ON \
+      -DHAVE_JULIA=ON \
+      -DJulia_WORD_SIZE=${nbits} \
+      -DJulia_INCLUDE_DIRS=${includedir}/julia \
+      -DJulia_LIBRARY_DIR=${libdir} \
+      -DJulia_LIBRARY=${libdir}/libjulia.${dlext} \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_BUILD_TYPE=Release \
@@ -96,15 +72,16 @@ install_license ../opencv/{LICENSE,COPYRIGHT}
 
 
 # Newer macOS SDK is needed for recent video codecs
-sources, script = require_macos_sdk("10.13", sources, script)
+sources, script = require_macos_sdk("12.3", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = vcat(libjulia_platforms.(julia_versions)...)
-
-# We don't have Qt5 for Musl platforms
-filter!(p -> libc(p) != "musl", platforms)
 platforms = expand_cxxstring_abis(platforms)
+# Filter out platforms that don't have Qt
+filter!(p -> !(arch(p) == "aarch64" && Sys.isfreebsd(p)), platforms) # No OpenGL on aarch64 freeBSD
+filter!(p -> arch(p) != "armv6l", platforms) # No OpenGL on armv6
+filter!(p -> arch(p) != "riscv64", platforms) # No OpenGL on riscv64
 
 # The products that we will ensure are always built
 products = [
@@ -127,12 +104,15 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Qt6Base_jll"; compat="~6.7.1"),
+    Dependency("Qt6Base_jll"; compat="~6.8.2"),
     HostBuildDependency("Qt6Base_jll"),
     Dependency(PackageSpec(name="Libglvnd_jll", uuid="7e76a0d4-f3c7-5321-8279-8d96eeed0f29")),
     BuildDependency(PackageSpec(name="libjulia_jll")),
-    Dependency(PackageSpec(name="libcxxwrap_julia_jll", uuid="3eaa8342-bff7-56a5-9981-c04077f7cee7"); compat="0.13"),
+    Dependency(PackageSpec(name="libcxxwrap_julia_jll", uuid="3eaa8342-bff7-56a5-9981-c04077f7cee7"); compat="0.14.7"),
+    Dependency("OpenBLAS32_jll"; compat="0.3.24"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"10")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+    julia_compat = libjulia_julia_compat(julia_versions),
+    preferred_gcc_version = v"10")
