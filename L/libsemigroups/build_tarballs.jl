@@ -1,7 +1,7 @@
-# Note: This file is for use with BinaryBuilder.jl to create libsemigroups_jll
-# See https://docs.binarybuilder.org for documentation
-
 using BinaryBuilder, Pkg
+
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "libsemigroups"
 version = v"3.4.0"
@@ -20,22 +20,10 @@ cd $WORKSPACE/srcdir/libsemigroups
 ./autogen.sh
 export CPPFLAGS="-I${prefix}/include"
 
-# Disable HPCombi on non-x86_64 platforms (requires AVX instructions)
+# Disable HPCombi on 32-bit platforms (requires __int128)
 HPCOMBI_FLAG=""
-if [[ "${target}" != x86_64-* ]]; then
+if [[ "${nbits}" == 32 ]]; then
     HPCOMBI_FLAG="--disable-hpcombi"
-fi
-
-# switch back to ld on macos to avoid errors:
-if [[ "${target}" == *apple* ]]; then
-  export LDFLAGS="${LDFLAGS} -fuse-ld=ld"
-fi
-
-# mark libc++abi as an unresolved dependency -> resolve at runtime
-# /usr/lib/libc++abi.dylib is always present on macOS 10.14+
-if [[ "${target}" == *x86_64-apple-darwin* ]]; then
-  export LDFLAGS="${LDFLAGS} -lc++abi -Wl,-undefined,dynamic_lookup"
-  export MACOSX_DEPLOYMENT_TARGET=10.14
 fi
 
 ./configure --prefix=${prefix} \
@@ -48,16 +36,15 @@ fi
 # Build and install (V=1 for verbose link commands)
 make V=1 -j${nproc}
 make install
+
+install_license LICENSE
 """
+
+sources, script = require_macos_sdk("10.14", sources, script)
 
 # These are the platforms we will build for by default
 platforms = supported_platforms()
-
-# Filter out platforms that don't support C++17 well
 platforms = expand_cxxstring_abis(platforms)
-
-# Build for all supported platforms
-# platforms = filter(p -> arch(p) == "x86_64" && Sys.islinux(p), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -73,4 +60,5 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.7",
-               preferred_gcc_version=v"10")
+               preferred_gcc_version=v"10",
+               clang_use_lld=false)
