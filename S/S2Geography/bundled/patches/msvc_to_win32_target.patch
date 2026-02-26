@@ -1,7 +1,7 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -295,7 +295,7 @@ target_compile_definitions(
+@@ -295,9 +295,11 @@ target_compile_definitions(
    PRIVATE ${GEOARROW_COMPILE_DEFINITIONS})
 
 -if(MSVC)
@@ -9,3 +9,8 @@ diff --git a/CMakeLists.txt b/CMakeLists.txt
    # used in s2geometry's CMakeLists.txt but not defined in target
    target_compile_definitions(s2geography PUBLIC _USE_MATH_DEFINES)
    target_compile_definitions(s2geography PUBLIC NOMINMAX)
+-  target_compile_options(s2geography PUBLIC /J)
++  if(MSVC)
++    target_compile_options(s2geography PUBLIC /J)
++  endif()
+ endif()
