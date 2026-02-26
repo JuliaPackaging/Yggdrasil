@@ -136,7 +136,7 @@ function full_version(ver::VersionNumber)
     ver == Base.thisminor(ver) || error("Cannot specify a patch version")
     for full_ver in cuda_full_versions
         if ver == Base.thisminor(full_ver)
-            return full_ver
+            return string(full_ver) # see commit 9fbd371
         end
     end
     error("CUDA version $ver not supported")
