@@ -1,0 +1,12 @@
+diff --git i/lib/builtins/CMakeLists.txt w/lib/builtins/CMakeLists.txt
+index 3ab92403d416..582f0ac15bdd 100644
+--- i/lib/builtins/CMakeLists.txt
++++ w/lib/builtins/CMakeLists.txt
+@@ -591,7 +591,6 @@ set(aarch64_SOURCES
+   ${GENERIC_TF_SOURCES}
+   ${GENERIC_SOURCES}
+   cpu_model/aarch64.c
+-  aarch64/emupac.cpp
+   aarch64/fp_mode.c
+ )
+ 
