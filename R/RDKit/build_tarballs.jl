@@ -1,10 +1,13 @@
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "RDKit"
-version = v"2022.09.5"
+version = v"2025.09.3"
 
 sources = [
-    GitSource("https://github.com/rdkit/rdkit.git", "723e05d46f4c91988622a4035433d016729e2ed2"),
+    GitSource("https://github.com/rdkit/rdkit.git", "fd677c59b21ffbf50157752102216660324ac1f1"),
     DirectorySource("./bundled"),
 ]
 
@@ -14,9 +17,16 @@ cd ${WORKSPACE}/srcdir/rdkit
 # Windows build fails to link a test, despite the fact we don't want tests.
 atomic_patch -p1 ../patches/do-not-build-cffi-test.patch
 
+# Add missing includes for <vector>
+atomic_patch -p1 ../patches/add-include-vec.patch
+
 FLAGS=()
 if [[ "${target}" == *-mingw* ]]; then
-    FLAGS+=(-DRDK_BUILD_THREADSAFE_SSS=OFF)
+    FLAGS+=(-DRDK_BUILD_THREADSAFE_SSS=ON)
+    FLAGS+=(-DRDK_INSTALL_STATIC_LIBS=OFF)
+    FLAGS+=(-DRDK_CFFI_STATIC=OFF)
+    FLAGS+=(-DRDK_INSTALL_DLLS_MSVC=ON)
+    FLAGS+=(-DBoost_DIR=${libdir}/cmake/Boost-1.87.0/)
 fi
 
 mkdir build
@@ -33,11 +43,17 @@ cmake \
     -DRDK_BUILD_CPP_TESTS=OFF \
     -DRDK_BUILD_SLN_SUPPORT=OFF \
     -DRDK_TEST_MULTITHREADED=OFF \
+    -DRDK_BUILD_COORDGEN_SUPPORT=OFF \
+    -DRDK_BUILD_MAEPARSER_SUPPORT=OFF \
+    -DRDK_BUILD_CHEMDRAW_SUPPORT=OFF \
+    -DRDK_USE_URF=OFF \
     "${FLAGS[@]}" \
     ..
 make -j${nproc}
 make install
 """
+
+sources, script = require_macos_sdk("11.0", sources, script)
 
 platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
@@ -56,11 +72,10 @@ products = [
 
 dependencies = [
     Dependency("FreeType2_jll"; compat="2.10.4"),
-    Dependency("boost_jll"; compat="=1.76.0"),
+    Dependency("boost_jll"; compat="=1.87.0"),
     BuildDependency("Eigen_jll"),
     Dependency("Zlib_jll"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               # GCC 8 is needed for `std::from_chars`
-               preferred_gcc_version=v"8", julia_compat="1.6")
+               preferred_gcc_version=v"11", julia_compat="1.6")
