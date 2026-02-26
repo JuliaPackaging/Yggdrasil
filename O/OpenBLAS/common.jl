@@ -93,7 +93,7 @@ end
 
 # Do not override the default `num_64bit_threads` here, instead pass a custom from specific OpenBLAS versions
 # that should opt into a higher thread count.
-function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false, aarch64_ilp64::Bool=false, consistent_fpcsr::Bool=false, bfloat16::Bool=false, kwargs...)
+function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false, aarch64_ilp64::Bool=false, consistent_fpcsr::Bool=false, bfloat16::Bool=false, float16::Bool=false, kwargs...)
     # Allow some basic configuration
     script = """
     NUM_64BIT_THREADS=$(num_64bit_threads)
@@ -101,6 +101,7 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     AARCH64_ILP64=$(aarch64_ilp64)
     CONSISTENT_FPCSR=$(consistent_fpcsr)
     BFLOAT16=$(bfloat16)
+    FLOAT16=$(float16)
     version_patch=$(version.patch)
     """
     # Bash recipe for building across all platforms
@@ -125,6 +126,14 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
         cp -rL ${prefix}/lib/linux/* $(dirname $(readlink -f $(which flang)))/../lib/clang/13.0.1/lib/linux/
     fi
 
+    # GCC 14+ on Darwin requires additional libraries.
+    # (These should be in our image; remove this when the RootFS images have been updated.)
+    if [[ ${target} == *-darwin* ]]; then
+        if gcc --version | head -n 1 | grep -q '(GCC) 1[45][.]'; then
+            apk add libdispatch libdispatch-dev --repository=http://dl-cdn.alpinelinux.org/alpine/v3.17/community
+        fi
+    fi
+
     # We always want threading
     flags=(USE_THREAD=1 GEMM_MULTITHREADING_THRESHOLD=400 NO_AFFINITY=1)
     if [[ "${CONSISTENT_FPCSR}" == "true" ]]; then
@@ -134,6 +143,14 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     # Build BFLOAT16 kernels
     if [[ "${BFLOAT16}" == "true" ]]; then
         flags+=(BUILD_BFLOAT16=1)
+        if [[ "${target}" == riscv64-* ]]; then
+            flags+=(CFLAGS=-Wno-error=incompatible-pointer-types)
+        fi
+    fi
+
+    # Build FLOAT16 kernels
+    if [[ "${FLOAT16}" == "true" && "${target}" != arm-* && "${target}" != powerpc64le-* && "${target}" != x86_64-apple-* ]]; then
+        flags+=(BUILD_HFLOAT16=1)
     fi
 
     # We are cross-compiling
@@ -196,6 +213,11 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
         flags+=(TARGET=POWER8 DYNAMIC_ARCH=1)
     elif [[ ${target} == riscv64-* ]]; then
         flags+=(TARGET=RISCV64_GENERIC DYNAMIC_ARCH=1)
+    fi
+
+    if [[ ${target} == aarch64-*-darwin* ]]; then
+        # Disable SME (not support on Darwin -- neither by the hardware nor by the toolchain)
+        export NO_SME=1
     fi
 
     # If we're building for x86_64 Windows gcc7+, we need to disable usage of
