@@ -34,8 +34,9 @@ platforms = supported_platforms()
 platforms = supported_platforms()
 # The following platforms are also excluded by s2geometry, which we depend on.
 filter!(p -> nbits(p) == 64, platforms)
-filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+filter!(p -> !Sys.isfreebsd(p), platforms)
 filter!(p -> arch(p) != "powerpc64le", platforms)
+filter!(p -> arch(p) != "riscv64", platforms)
 
 platforms = expand_cxxstring_abis(platforms)
 
@@ -49,4 +50,4 @@ dependencies = [
     Dependency(PackageSpec(name="nanoarrow_jll", uuid="c104a5b5-1715-5fd7-8664-28eaad6c5848")),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"10")
