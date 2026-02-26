@@ -7,14 +7,9 @@ sources = [
     DirectorySource("./bundled"),
 ]
 
-# TODO: fix the build
-# by pointing to the right s2 and abseil paths
-# from the JLLs.
 script = raw"""
 cd ${WORKSPACE}/srcdir/s2geography
-atomic_patch -p1 ../patches/msvc_to_win32_target.patch
-# Use system nanoarrow instead of FetchContent download
-sed -i '/if(NOT TARGET nanoarrow)/i find_package(nanoarrow REQUIRED)\nadd_library(nanoarrow ALIAS nanoarrow::nanoarrow_shared)' CMakeLists.txt
+atomic_patch -p1 ../patches/cmake_fixes.patch
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -28,16 +23,10 @@ cmake --install build
 """
 
 platforms = supported_platforms()
-
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = supported_platforms()
-# The following platforms are also excluded by s2geometry, which we depend on.
 filter!(p -> nbits(p) == 64, platforms)
 filter!(p -> !Sys.isfreebsd(p), platforms)
 filter!(p -> arch(p) != "powerpc64le", platforms)
 filter!(p -> arch(p) != "riscv64", platforms)
-
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
