@@ -82,6 +82,9 @@ fi
 # Remove `-march` flags
 sed -i 's/cpuflags="-march=$cpu"/cpuflags=""/g' configure
 
+# Ensure pkg-config can find SDL2
+export PKG_CONFIG_PATH="${prefix}/lib/pkgconfig:${prefix}/share/pkgconfig:${PKG_CONFIG_PATH}"
+
 ./configure            \
   --enable-cross-compile \
   --cross-prefix=/opt/${target}/bin/${target}- \
