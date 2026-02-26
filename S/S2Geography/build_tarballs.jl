@@ -14,10 +14,14 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/s2geography
 atomic_patch -p1 ../patches/msvc_to_win32_target.patch
 cmake -B build \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
     -DS2GEOGRAPHY_S2_SOURCE=SYSTEM \
     -DS2GEOGRAPHY_BUILD_TESTS=OFF \
     -DS2GEOGRAPHY_BUILD_EXAMPLES=OFF \
-    -DS2GEOGRAPHY_CODE_COVERAGE=OFF
+    -DS2GEOGRAPHY_CODE_COVERAGE=OFF \
+    -DFETCHCONTENT_FULLY_DISCONNECTED=ON
 cmake --build build --parallel ${nproc}
 cmake --install build
 """
