@@ -94,7 +94,7 @@ const platform_augment = """
     function augment_platform!(platform::Platform)
         haskey(platform, "cuda_platform") && return platform
 
-        if Sys.islinux() && arch(platform) == "aarch64"
+        if Sys.islinux() && arch(platform) == "aarch64" && version < v"13"
             platform["cuda_platform"] = if is_tegra()
                 "jetson"
             else
@@ -154,8 +154,9 @@ Return a list of supported platforms to build CUDA artifacts for.
 function supported_platforms(; min_version=v"11", max_version=nothing)
     base_platforms = [
         Platform("x86_64", "linux"; libc = "glibc"),
-        Platform("aarch64", "linux"; libc = "glibc", cuda_platform="jetson"),
-        Platform("aarch64", "linux"; libc = "glibc", cuda_platform="sbsa"),
+        Platform("aarch64", "linux"; libc = "glibc", cuda_platform = "jetson"),
+        Platform("aarch64", "linux"; libc = "glibc", cuda_platform = "sbsa"),
+        Platform("aarch64", "linux"; libc = "glibc"),
 
         # nvcc isn't a cross compiler, so incompatible with BinaryBuilder
         #Platform("x86_64", "windows"),
@@ -172,6 +173,14 @@ function supported_platforms(; min_version=v"11", max_version=nothing)
             platform = deepcopy(base_platform)
 
             if arch(platform) == "aarch64"
+                # CUDA 13.x: we don't distinguish between jetson and sbsa any more
+                if version >= v"13" && haskey(platform, "cuda_platform")
+                    continue
+                end
+                if version < v"13" && !haskey(platform, "cuda_platform")
+                    continue
+                end
+
                 # CUDA 10.x: our CUDA 10.2 build recipe for arm64 only provides jetson binaries
                 if Base.thisminor(version) == v"10.2" && platform["cuda_platform"] != "jetson"
                     continue
@@ -284,7 +293,15 @@ function cuda_nvcc_redist_source(cuda_ver, arch)
         elseif cuda_ver == "12.9"
             # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_12.9.0.json
             ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-x86_64/cuda_nvcc-linux-x86_64-12.9.41-archive.tar.xz",
-                            "b3a0e115840e04c0cfa559263cbbe8b78a2455788e12605732aff68abc50dd34")
+                          "b3a0e115840e04c0cfa559263cbbe8b78a2455788e12605732aff68abc50dd34")
+        elseif cuda_ver == "13.0"
+            # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_13.0.0.json
+            ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-x86_64/cuda_nvcc-linux-x86_64-13.0.48-archive.tar.xz",
+                          "cc5ff4a00d3be7c6c86ff740de7672e142ec87fea74e7e46b1b142b59fd2ac51")
+        elseif cuda_ver == "13.1"
+            # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_13.1.0.json
+            ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-x86_64/cuda_nvcc-linux-x86_64-13.1.80-archive.tar.xz",
+                          "5ed3b7cfe7f12557199773e7769445357ee048958ff51e623e15f36d3393ca8b")
         else
             error("No CUDA redist available for CUDA version $cuda_ver on arch $arch")
         end
