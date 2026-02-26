@@ -9,7 +9,7 @@ include("../../L/libjulia/common.jl")
 filter!(>=(v"1.10"), julia_versions)
 
 name = "libpolymake_julia"
-version = v"0.14.5"
+version = v"0.14.6"
 
 # reminder: change the above version when changing the supported julia versions
 # julia_versions is now taken from libjulia/common.jl and filtered
@@ -18,7 +18,7 @@ julia_compat = libjulia_julia_compat(julia_versions)
 # Collection of sources required to build libpolymake_julia
 sources = [
     GitSource("https://github.com/oscar-system/libpolymake-julia.git",
-              "05c15ac09fb0ef48ec616e1bdc8ab1641e45a57b"),
+              "6c9c4ee6abdd79a5cbf65ceed165847922527289"),
 ]
 
 # Bash recipe for building across all platforms
