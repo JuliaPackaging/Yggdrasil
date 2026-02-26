@@ -49,8 +49,8 @@ cmake --install .
 unlink $prefix/cuda/lib64
 """
 
-# Build for all supported CUDA >= v11.6 (highest that builds)
-platforms = expand_cxxstring_abis(CUDA.supported_platforms(min_version=v"11.6"))
+# Build for all supported CUDA >= v11.8. Only one v11.x shuold be sufficient.
+platforms = expand_cxxstring_abis(CUDA.supported_platforms(min_version=v"11.8"))
 
 # Cmake toolchain breaks on aarch64, so only x86_64 for now
 filter!(p -> arch(p)=="x86_64", platforms)
