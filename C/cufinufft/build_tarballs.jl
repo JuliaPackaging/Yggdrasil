@@ -12,8 +12,8 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 # Builds for all compatible CUDA platforms, but without microarchitecture expansion (not
 # needed for CUDA cuda, and would produce a giant amount of artifacts)
 name = "cufinufft"
-version = v"2.4.1"
-commit_hash = "629c76f9ad971302f05317b324fbd8584deca9d1" # master 2025-10-26
+version = v"2.5.0"
+commit_hash = "15fd54c762c17689da9eb50069f43e367a27c99f" # 2.5.0-rc1
 preferred_gcc_version=v"11"
 
 # Collection of sources required to complete build
@@ -54,18 +54,6 @@ platforms = expand_cxxstring_abis(CUDA.supported_platforms(min_version=v"11.6"))
 
 # Cmake toolchain breaks on aarch64, so only x86_64 for now
 filter!(p -> arch(p)=="x86_64", platforms)
-
-# cuFINUFFT does not compile with CUDA 12.5, so exclude
-filter!(p -> VersionNumber(p["cuda"]) != v"12.5", platforms)
-
-# Build process fails (why??) when specifying minor versions of CUDA 13, so don't
-for platform in platforms
-    cuda_version = VersionNumber(platform["cuda"])
-    if cuda_version.major==13
-        platform["cuda"] = "13"
-    end
-end
-unique!(platforms) # Remove duplicates if there were multiple 13.x
 
 # The products that we will ensure are always built
 products = [
