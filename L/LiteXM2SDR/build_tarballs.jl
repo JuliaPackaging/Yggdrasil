@@ -7,7 +7,7 @@ version = v"0.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/zsoerenm/litex_m2sdr.git", "21713734ee7ea4658b5cef320ec30393d690dcc1")
+    GitSource("https://github.com/zsoerenm/litex_m2sdr.git", "91957e0a4a0de8ed913bccfc27abf4ef54332782")
 ]
 
 # Bash recipe for building across all platforms
