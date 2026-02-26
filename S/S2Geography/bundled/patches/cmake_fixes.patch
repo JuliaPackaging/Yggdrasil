@@ -1,5 +1,5 @@
 --- a/CMakeLists.txt	2026-02-25 20:13:38
-+++ b/CMakeLists.txt	2026-02-25 21:26:20
++++ b/CMakeLists.txt	2026-02-25 21:16:20
 @@ -196,6 +196,23 @@
  
  # --- nanoarrow (no longer bundled with geoarrow...could be bundled here, or
@@ -24,3 +24,19 @@
  if(NOT TARGET nanoarrow)
    FetchContent_Declare(
      nanoarrow
+@@ -292,11 +309,13 @@
+          S2_VERSION_PATCH=${S2_VERSION_PATCH}
+   PRIVATE ${GEOARROW_COMPILE_DEFINITIONS})
+ 
+-if(MSVC)
++if(WIN32)
+   # used in s2geometry's CMakeLists.txt but not defined in target
+   target_compile_definitions(s2geography PUBLIC _USE_MATH_DEFINES)
+   target_compile_definitions(s2geography PUBLIC NOMINMAX)
+-  target_compile_options(s2geography PUBLIC /J)
++  if(MSVC)
++    target_compile_options(s2geography PUBLIC /J)
++  endif()
+ endif()
+ 
+ target_link_libraries(
