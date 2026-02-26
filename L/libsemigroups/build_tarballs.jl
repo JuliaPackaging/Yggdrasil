@@ -20,6 +20,12 @@ cd $WORKSPACE/srcdir/libsemigroups
 ./autogen.sh
 export CPPFLAGS="-I${prefix}/include"
 
+# Disable HPCombi on non-x86_64 platforms (requires AVX instructions)
+HPCOMBI_FLAG=""
+if [[ "${target}" != x86_64-* ]]; then
+    HPCOMBI_FLAG="--disable-hpcombi"
+fi
+
 # switch back to ld on macos to avoid errors:
 if [[ "${target}" == *apple* ]]; then
   export LDFLAGS="${LDFLAGS} -fuse-ld=ld"
@@ -36,7 +42,8 @@ fi
             --build=${MACHTYPE} \
             --host=${target} \
             --enable-shared \
-            --disable-static
+            --disable-static \
+            ${HPCOMBI_FLAG}
 
 # Build and install (V=1 for verbose link commands)
 make V=1 -j${nproc}
