@@ -1,4 +1,4 @@
-# Note that this script can accept some limited command-line arguments, run
+J# Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 import Pkg.Types: VersionSpec
@@ -37,7 +37,7 @@ version = VersionNumber(upstream_version.major * 100 + upstream_version.minor + 
 
 # Collection of sources required to build Singular
 sources = [
-    GitSource("https://github.com/Singular/Singular.git", "abc73b69185a2f369e11458d80ef222307adf869"),
+    GitSource("https://github.com/Singular/Singular.git", "91dd8995334f630592558de627decc21a357e5ce"),
     #ArchiveSource("https://www.mathematik.uni-kl.de/ftp/pub/Math/Singular/SOURCES/$(upstream_version.major)-$(upstream_version.minor)-$(upstream_version.patch)/singular-$(upstream_version).tar.gz",
     #              "5b0f6c036b4a6f58bf620204b004ec6ca3a5007acc8352fec55eade2fc9d63f6"),
     #DirectorySource("./bundled")
