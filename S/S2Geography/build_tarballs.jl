@@ -10,10 +10,20 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/s2geography
 atomic_patch -p1 ../patches/cmake_fixes.patch
+
+# Make system nanoarrow available before the FetchContent block runs.
+# Injected after project() via CMAKE_PROJECT_s2geography_INCLUDE so
+# the "if(NOT TARGET nanoarrow)" check sees it and skips FetchContent.
+cat > use_system_nanoarrow.cmake << 'CMAKE'
+find_package(nanoarrow REQUIRED)
+add_library(nanoarrow ALIAS nanoarrow::nanoarrow_shared)
+CMAKE
+
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_PROJECT_s2geography_INCLUDE=${WORKSPACE}/srcdir/s2geography/use_system_nanoarrow.cmake \
     -DS2GEOGRAPHY_S2_SOURCE=SYSTEM \
     -DS2GEOGRAPHY_BUILD_TESTS=OFF \
     -DS2GEOGRAPHY_BUILD_EXAMPLES=OFF \

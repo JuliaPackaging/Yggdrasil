@@ -1,33 +1,9 @@
 --- a/CMakeLists.txt	2026-02-25 20:13:38
 +++ b/CMakeLists.txt	2026-02-25 20:13:54
-@@ -194,20 +194,9 @@
-   message(FATAL_ERROR "Couldn't find absl")
- endif()
- 
--# --- nanoarrow (no longer bundled with geoarrow...could be bundled here, or
--# bundled as a fallback)
--if(NOT TARGET nanoarrow)
--  FetchContent_Declare(
--    nanoarrow
--    URL https://github.com/apache/arrow-nanoarrow/archive/refs/tags/apache-arrow-nanoarrow-0.6.0.zip
--    URL_HASH
--      SHA256=73b3235453902c9e92b5e942683d02d764a2aea1f999c03bf4a747c90df2f505)
--
--  FetchContent_MakeAvailable(nanoarrow)
--
--  # do not install nanoarrow by default when running cmake --install
--  set_property(DIRECTORY ${nanoarrow_SOURCE_DIR} PROPERTY EXCLUDE_FROM_ALL YES)
--endif()
-+# --- nanoarrow: use system nanoarrow instead of FetchContent
-+find_package(nanoarrow REQUIRED)
-+add_library(nanoarrow ALIAS nanoarrow::nanoarrow_shared)
- 
- # --- geoarrow (vendored, but we can use an external version of it)
- if(NOT TARGET geoarrow)
-@@ -292,11 +281,13 @@
+@@ -292,11 +292,13 @@
           S2_VERSION_PATCH=${S2_VERSION_PATCH}
    PRIVATE ${GEOARROW_COMPILE_DEFINITIONS})
- 
+
 -if(MSVC)
 +if(WIN32)
    # used in s2geometry's CMakeLists.txt but not defined in target
@@ -38,5 +14,5 @@
 +    target_compile_options(s2geography PUBLIC /J)
 +  endif()
  endif()
- 
+
  target_link_libraries(
