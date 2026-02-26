@@ -20,24 +20,23 @@ cd $WORKSPACE/srcdir/libsemigroups
 ./autogen.sh
 export CPPFLAGS="-I${prefix}/include"
 
-# Configure with vendored dependencies (simplifies cross-compilation)
-# Disable HPCombi on non-x86_64 platforms (requires AVX instructions)
-HPCOMBI_FLAG=""
-if [[ "${target}" != x86_64-* ]]; then
-    HPCOMBI_FLAG="--disable-hpcombi"
-fi
-
 # switch back to ld on macos to avoid errors:
 if [[ "${target}" == *apple* ]]; then
-  export LDFLAGS="-fuse-ld=ld"
+  export LDFLAGS="${LDFLAGS} -fuse-ld=ld"
+fi
+
+# mark libc++abi as an unresolved dependency -> resolve at runtime
+# /usr/lib/libc++abi.dylib is always present on macOS 10.14+
+if [[ "${target}" == *x86_64-apple-darwin* ]]; then
+  export LDFLAGS="${LDFLAGS} -lc++abi -Wl,-undefined,dynamic_lookup"
+  export MACOSX_DEPLOYMENT_TARGET=10.14
 fi
 
 ./configure --prefix=${prefix} \
             --build=${MACHTYPE} \
             --host=${target} \
             --enable-shared \
-            --disable-static \
-            ${HPCOMBI_FLAG}
+            --disable-static
 
 # Build and install (V=1 for verbose link commands)
 make V=1 -j${nproc}
