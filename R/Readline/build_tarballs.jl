@@ -11,11 +11,11 @@ version_str2 = "$(version.major)$(version.minor)"
 sources = [
     ArchiveSource("https://ftpmirror.gnu.org/gnu/readline/readline-$(version_str).tar.gz",
                   "fe5383204467828cd495ee8d1d3c037a7eba1389c22bc6a041f627976f9061cc"),
-    FileSource("https://ftpmirror.gnu.org/gnu/readline/readline-$(version_str)/readline83-001",
+    FileSource("https://ftpmirror.gnu.org/gnu/readline/readline-$(version_str)-patches/readline83-001",
                "21f0a03106dbe697337cd25c70eb0edbaa2bdb6d595b45f83285cdd35bac84de"),
-    FileSource("https://ftpmirror.gnu.org/gnu/readline/readline-$(version_str)/readline83-002",
+    FileSource("https://ftpmirror.gnu.org/gnu/readline/readline-$(version_str)-patches/readline83-002",
                "e27364396ba9f6debf7cbaaf1a669e2b2854241ae07f7eca74ca8a8ba0c97472"),
-    FileSource("https://ftpmirror.gnu.org/gnu/readline/readline-$(version_str)/readline83-003",
+    FileSource("https://ftpmirror.gnu.org/gnu/readline/readline-$(version_str)-patches/readline83-003",
                "72dee13601ce38f6746eb15239999a7c56f8e1ff5eb1ec8153a1f213e4acdb29"),
     DirectorySource("./bundled"),
 ]
