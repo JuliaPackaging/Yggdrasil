@@ -13,6 +13,8 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/s2geography
 atomic_patch -p1 ../patches/msvc_to_win32_target.patch
+# Use system nanoarrow instead of FetchContent download
+sed -i '/if(NOT TARGET nanoarrow)/i find_package(nanoarrow REQUIRED)\nadd_library(nanoarrow ALIAS nanoarrow::nanoarrow)' CMakeLists.txt
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -20,8 +22,7 @@ cmake -B build \
     -DS2GEOGRAPHY_S2_SOURCE=SYSTEM \
     -DS2GEOGRAPHY_BUILD_TESTS=OFF \
     -DS2GEOGRAPHY_BUILD_EXAMPLES=OFF \
-    -DS2GEOGRAPHY_CODE_COVERAGE=OFF \
-    -DFETCHCONTENT_FULLY_DISCONNECTED=ON
+    -DS2GEOGRAPHY_CODE_COVERAGE=OFF
 cmake --build build --parallel ${nproc}
 cmake --install build
 """
