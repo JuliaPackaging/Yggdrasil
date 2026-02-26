@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Imath"
-version = v"3.1.11"
+version = v"3.2.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/AcademySoftwareFoundation/Imath.git", "5ac1d5335cb34f0f356c5f2461a57c845b96b115")
+    GitSource("https://github.com/AcademySoftwareFoundation/Imath.git", "1e480d11cb98b032a2dece9b9a8730512effc7f6")
 ]
 
 # Bash recipe for building across all platforms
@@ -28,7 +28,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libImath-3_1", :libImath)
+    LibraryProduct("libImath-3_2", :libImath)
 ]
 
 # Dependencies that must be installed before this package can be built

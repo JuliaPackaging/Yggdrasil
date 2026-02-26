@@ -14,14 +14,14 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 name = "Enzyme"
 repo = "https://github.com/EnzymeAD/Enzyme.git"
 
-auto_version = "refs/tags/v0.0.229"
+auto_version = "refs/tags/v0.0.249"
 version = VersionNumber(split(auto_version, "/")[end])
 
 llvm_versions = [v"15.0.7", v"16.0.6", v"18.1.7", v"20.1.8"]
 
 # Collection of sources required to build attr
 sources = [
-    GitSource(repo, "a60b57849c63792e66f88f7b74fee9ca2f74c53d"),
+    GitSource(repo, "c3c973213c604028762dfbb30cf9f8ec9c83fc38"),
 ]
 
 # These are the platforms we will build for by default, unless further
@@ -47,6 +47,7 @@ install_license LICENSE
 # 1. Build HOST
 NATIVE_CMAKE_FLAGS=()
 NATIVE_CMAKE_FLAGS+=(-DENZYME_CLANG=ON)
+NATIVE_CMAKE_FLAGS+=(-DENZYME_ENABLE_BENCHMARKS=OFF)
 NATIVE_CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=RelWithDebInfo)
 NATIVE_CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=OFF)
 # Install things into $host_prefix
@@ -92,6 +93,8 @@ CMAKE_FLAGS+=(-DBC_LOAD_HEADER=`pwd`/build-native/BCLoad/gsl/blas_headers.h)
 CMAKE_FLAGS+=(-DEnzyme_TABLEGEN=`pwd`/build-native/tools/enzyme-tblgen/enzyme-tblgen)
 CMAKE_FLAGS+=(-DEnzyme_TABLEGEN_EXE=`pwd`/build-native/tools/enzyme-tblgen/enzyme-tblgen)
 CMAKE_FLAGS+=(-DENZYME_CLANG=OFF)
+CMAKE_FLAGS+=(-DENZYME_ENABLE_BENCHMARKS=OFF)
+
 # RelWithDebInfo for decent performance, with debugability
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=RelWithDebInfo)
 # Install things into $prefix

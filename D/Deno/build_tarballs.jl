@@ -3,18 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "Deno"
-version = v"2.2.6"
+version = v"2.6.3"
 
 release_url = "https://github.com/denoland/deno/releases/download/v$version"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("$release_url/deno-x86_64-unknown-linux-gnu.zip", "2bc96c49f5ceb5a74add43f16381e2a2ab5f509c5a5665c5533a661a4141e650"; unpack_target="x86_64-linux-gnu"),
-    ArchiveSource("$release_url/deno-aarch64-unknown-linux-gnu.zip", "6fbb81191c38488de73f4a8612d856d4eeb45165121dd57c6f68a46de82d30aa"; unpack_target="aarch64-linux-gnu"),
-    ArchiveSource("$release_url/deno-x86_64-apple-darwin.zip", "85eaa0d3f8e76931ca4b03f3d5befcb2ad72942db2a3233e3abf2dab58db52bc"; unpack_target="x86_64-apple-darwin14"),
-    ArchiveSource("$release_url/deno-aarch64-apple-darwin.zip", "4459182bd23c28958c807f06645e371ec8a34cddb70a1d99680e75cca76d6e86"; unpack_target="aarch64-apple-darwin20"),
-    ArchiveSource("$release_url/deno-x86_64-pc-windows-msvc.zip", "e0229e239b4b3ffd356a7731dcab9e277c7750669c27515c4c22cd21b1c0108d"; unpack_target="x86_64-w64-mingw32"),
-    ArchiveSource("$release_url/deno_src.tar.gz", "e3a0763f10d8f0ec511f2617456c7e0eee130c2b7a6787abbbab3baf29bc98e8"),
+    ArchiveSource("$release_url/deno-x86_64-unknown-linux-gnu.zip", "b3c24dc6f3982607896bd795fd6bcbdc53f3d11e8d8190b2a07fd1881eb1148a"; unpack_target="x86_64-linux-gnu"),
+    ArchiveSource("$release_url/deno-aarch64-unknown-linux-gnu.zip", "92c9496e8c71e6b18abf1f728d6223bb682749e4946f24589a7ef8972fec423e"; unpack_target="aarch64-linux-gnu"),
+    ArchiveSource("$release_url/deno-x86_64-apple-darwin.zip", "3942e5af4d25588b506f49155278239c9fa09e7683a912ca091a346a1fc40733"; unpack_target="x86_64-apple-darwin14"),
+    ArchiveSource("$release_url/deno-aarch64-apple-darwin.zip", "7fdc01002a90a6ac58b8936e5d7a872fa7885db71d51bac7f776b7b790c82085"; unpack_target="aarch64-apple-darwin20"),
+    ArchiveSource("$release_url/deno-x86_64-pc-windows-msvc.zip", "a011a0c6f1ea120ec60a65969e9d549af894b999cf1d35fe5ee81e694227cce2"; unpack_target="x86_64-w64-mingw32"),
+    ArchiveSource("$release_url/deno_src.tar.gz", "f1f631687b9949000b91b480982859a5557b398009f0a6a62d05c88fd4def5fb"),
 ]
 
 # Bash recipe for building across all platforms

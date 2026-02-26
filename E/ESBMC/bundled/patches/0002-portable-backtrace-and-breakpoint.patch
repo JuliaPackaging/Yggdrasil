@@ -1,0 +1,40 @@
+--- a/src/esbmc/esbmc_parseoptions.cpp
++++ b/src/esbmc/esbmc_parseoptions.cpp
+@@ -58,8 +58,10 @@
+
+ #ifndef _WIN32
+ #  include <sys/wait.h>
+-#  include <execinfo.h>
+ #  include <fcntl.h>
++#  ifdef __GLIBC__
++#    include <execinfo.h>
++#  endif
+ #endif
+
+ #ifdef ENABLE_GOTO_CONTRACTOR
+@@ -121,8 +123,10 @@
+ {
+   ::signal(sig, SIG_DFL);
+   void *buffer[BT_BUF_SIZE];
++#ifdef __GLIBC__
+   int n = backtrace(buffer, BT_BUF_SIZE);
+   dprintf(STDERR_FILENO, "\nSignal %d, backtrace:\n", sig);
+   backtrace_symbols_fd(buffer, n, STDERR_FILENO);
++#endif
+   int fd = open("/proc/self/maps", O_RDONLY);
+   if (fd != -1)
+--- a/src/util/breakpoint.h
++++ b/src/util/breakpoint.h
+@@ -3,10 +3,10 @@
+ static void breakpoint()
+ {
+ #ifndef _WIN32
+-#  if !(defined(__arm__) || defined(__aarch64__))
++#  if defined(__i386__) || defined(__x86_64__)
+   __asm__("int $3");
+ #  else
+-  log_error("Can't trap on ARM, sorry");
++  log_error("Can't trap on this platform, sorry");
+   abort();
+ #  endif
+ #else

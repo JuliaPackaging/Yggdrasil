@@ -27,7 +27,7 @@ fi
 
 # `--with-pic` isn't enough; we really really need -fPIC and -DPIC everywhere...
 # everywhere, especially on FreeBSD. In the end, isn't FreeBSD all that matters?
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-pic CFLAGS="${CFLAGS} -DPIC -fPIC" CXXFLAGS="${CXXFLAGS} -DPIC -fPIC"
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-pic CFLAGS="${CFLAGS} -DPIC -fPIC -g -O2" CXXFLAGS="${CXXFLAGS} -DPIC -fPIC -g -O2"
 make -j${nproc} V=1
 make install
 """
@@ -45,7 +45,7 @@ llvm_version = v"13.0.1"
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(; name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version); platforms=filter(p -> sanitize(p)=="memory", platforms)),
+    BuildDependency(PackageSpec(; name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=string(llvm_version)); platforms=filter(p -> sanitize(p)=="memory", platforms)),
 ]
 
 # Note: we explicitly lie about this because we don't have the new

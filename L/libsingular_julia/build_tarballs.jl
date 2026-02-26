@@ -4,11 +4,11 @@ using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
 name = "libsingular_julia"
-version = v"0.47.9"
+version = v"0.47.12"
 
 # Collection of sources required to build libsingular-julia
 sources = [
-    GitSource("https://github.com/oscar-system/Singular.jl.git", "8fa974cb98a85ce4aeb03b3a14da4f839248e914"),
+    GitSource("https://github.com/oscar-system/Singular.jl.git", "3e166694cf7dd1c94b2a1eaab02c6edb5879e6c9"),
 ]
 
 # Bash recipe for building across all platforms
@@ -59,7 +59,7 @@ dependencies = [
     # Singular.jl to ensure the right versions of libsingular_julia_jll and
     # Singular_jll are paired. This gives us flexibility in the development
     # setup there.
-    Dependency("Singular_jll", v"404.101.500"),
+    Dependency("Singular_jll", v"404.101.505"),
 ]
 
 # we want to get notified of any changes to julia_compat, and adapt `version` accordingly
@@ -69,4 +69,4 @@ dependencies = [
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     preferred_gcc_version=v"8", julia_compat=libjulia_julia_compat(julia_versions))
 
-# rebuild trigger: 0
+# rebuild trigger: 1
