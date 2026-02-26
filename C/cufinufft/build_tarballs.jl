@@ -8,9 +8,9 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 # Build script for the CUDA part of FINUFFT
-
 # Builds for all compatible CUDA platforms, but without microarchitecture expansion (not
 # needed for CUDA cuda, and would produce a giant amount of artifacts)
+
 name = "cufinufft"
 version = v"2.5.0"
 commit_hash = "15fd54c762c17689da9eb50069f43e367a27c99f" # 2.5.0-rc1
@@ -64,7 +64,7 @@ products = [
 # NVTX_jll is needed for nvToolsExt. (tested with v3.1.0+2)
 # CMake needs higher version than what is bundled
 dependencies = [Dependency("NVTX_jll"),
-                HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.24.3"))]
+                HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.24.3+0"))]
 
 for platform in platforms
     should_build_platform(triplet(platform)) || continue
