@@ -68,6 +68,35 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
   mod.add_type<ListGraph::EdgeMap<int>>("ListGraphEdgeMapInt")
     .constructor<const ListGraph&>()
     .method("set", &ListGraph::EdgeMap<int>::set);
+   
+  mod.method("countNodes", [](const ListGraph& g) {
+    return lemon::countNodes(g);
+  });
+  mod.method("countEdges", [](const ListGraph& g) {
+    return lemon::countEdges(g);
+  });
+  mod.method("countArcs", [](const ListGraph& g) {
+    return lemon::countArcs(g);
+  });
+  mod.method("countNodes", [](const ListDigraph& g) {
+    return lemon::countNodes(g);
+  });
+  mod.method("countArcs", [](const ListDigraph& g) {
+    return lemon::countArcs(g);
+  });
+  mod.method("u", [](const ListGraph& g, const ListGraph::Edge& e) {
+    return g.u(e);
+  });
+  mod.method("v", [](const ListGraph& g, const ListGraph::Edge& e) {
+    return g.v(e);
+  });
+  mod.method("source", [](const ListDigraph& g, const ListDigraph::Arc& a) {
+    return g.source(a);
+  });
+  mod.method("target", [](const ListDigraph& g, const ListDigraph::Arc& a) {
+    return g.target(a);
+  });
+
 
   using MWPM = MaxWeightedPerfectMatching<ListGraph, ListGraph::EdgeMap<int>>;
   using MWPMmatchingedge_ptr = bool (MWPM::*)(const ListGraph::Edge&) const; // used to resolve the overloads of `matching`
