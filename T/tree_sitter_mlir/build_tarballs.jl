@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "tree_sitter_mlir"
-version = v"0.0.1"
+version = v"0.0.2"
 
 # Collection of sources required to complete build
 sources = [
     GitSource(
         "https://github.com/artagnon/tree-sitter-mlir.git",
-        "c7eec06be8a9ddae688e1b03fca2eed79e9801c4"
+        "520cab3d4c436a5ee84d18e36647a83da6e46c02"
     ),
     DirectorySource("./bundled")
 ]
@@ -24,6 +24,10 @@ mkdir build && cd build
 cmake .. "${BUILD_FLAGS[@]}"
 make -j${nproc}
 make install LANGUAGE_NAME=libtreesitter_mlir
+
+if [ -d $WORKSPACE/srcdir/tree-sitter/queries ]; then
+    cp -r $WORKSPACE/srcdir/tree-sitter/queries $WORKSPACE/destdir/
+fi
 
 install_license $WORKSPACE/srcdir/tree-sitter/LICENSE
 """
