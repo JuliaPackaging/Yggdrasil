@@ -57,7 +57,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 # Build the tarballs, and possibly a `build.jl` as well.
 if any(should_build_platform.(triplet.(platforms_win)))
-    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"12", julia_compat="1.6")
+    build_tarballs(ARGS, name, version, sources, script, platforms_win, products, dependencies; preferred_gcc_version=v"12", julia_compat="1.6")
 end
 if any(should_build_platform.(triplet.(platforms)))
     build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"10", julia_compat="1.6")
