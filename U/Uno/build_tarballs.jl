@@ -4,12 +4,12 @@ using BinaryBuilder, Pkg
 
 name = "Uno"
 
-version = v"2.3.1"
+version = v"2.4.0"
 
 sources = [
     GitSource(
         "https://github.com/cvanaret/Uno.git",
-        "607e08952037d74e8cb7ad8c9ec6e5b96149f3c7",
+        "6150a18d01180ce75c52fa5a29f0eef32f04fa8b",
     ),
 ]
 
@@ -20,10 +20,8 @@ cd build
 
 if [[ "${target}" == *mingw* ]]; then
     LBT=blastrampoline-5
-    HIGHS_DIR=${prefix}/lib
 else
     LBT=blastrampoline
-    HIGHS_DIR=${libdir}
 fi
 
 # FortranCInterface_VERIFY fails on macOS, but it's not actually needed for the current build
@@ -35,7 +33,7 @@ cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DAMPLSOLVER=${libdir}/libasl.${dlext} \
-    -DHIGHS_DIR=${HIGHS_DIR} \
+    -DHIGHS=${libdir}/libhighs.${dlext} \
     -DBQPD=${prefix}/lib/libbqpd.a \
     -DHSL=${libdir}/libhsl.${dlext} \
     -DBLA_VENDOR="libblastrampoline" \
@@ -65,6 +63,7 @@ install_license ${WORKSPACE}/srcdir/Uno/LICENSE_BQPD
 platforms = supported_platforms()
 filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 filter!(p -> arch(p) != "riscv64", platforms)
+filter!(p -> arch(p) != "powerpc64le", platforms)
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 platforms = filter(p -> libgfortran_version(p) != v"3", platforms)
