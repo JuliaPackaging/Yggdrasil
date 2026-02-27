@@ -104,8 +104,8 @@ elif [[ "${target}" == x86_64-apple-* ]]; then
   cd src
   make -j${nproc} libgiac.la libxcas.la icas.o xcas.o aide.o
   cd .libs
-  g++ ${GIAC_CXXFLAGS} -dynamiclib -o libgiac.0.dylib ${GIAC_OBJS} -lintl -lpthread -lm -lmpfr -lgmp -framework Accelerate -install_name \${prefix}/lib/libgiac.0.dylib -current_version 0.0.0 -compatibility_version 0.0.0
-  g++ ${GIAC_CXXFLAGS} -dynamiclib -o libxcas.0.dylib ${XCAS_OBJS} -L. -lgiac -lintl -lpthread -lm -lmpfr -lgmp -install_name \${prefix}/lib/libxcas.0.dylib -current_version 0.0.0 -compatibility_version 0.0.0
+  g++ ${GIAC_CXXFLAGS} -dynamiclib -o libgiac.0.dylib ${GIAC_OBJS} -lintl -lpthread -lm -lmpfr -lgmp -framework Accelerate -install_name ${prefix}/lib/libgiac.0.dylib -current_version 0.0.0 -compatibility_version 0.0.0
+  g++ ${GIAC_CXXFLAGS} -dynamiclib -o libxcas.0.dylib ${XCAS_OBJS} -L. -lgiac -lintl -lpthread -lm -lmpfr -lgmp -install_name ${prefix}/lib/libxcas.0.dylib -current_version 0.0.0 -compatibility_version 0.0.0
   cd ..
   /usr/bin/install -c .libs/libxcas.0.dylib /workspace/destdir/lib/libxcas.0.dylib
   (cd /workspace/destdir/lib && { ln -s -f libxcas.0.dylib libxcas.dylib || { rm -f libxcas.dylib && ln -s libxcas.0.dylib libxcas.dylib; }; })
@@ -120,8 +120,8 @@ elif [[ "${target}" == aarch64-apple-* ]]; then
   cd src
   make -j${nproc} libgiac.la libxcas.la icas.o xcas.o aide.o
   cd .libs
-  g++ ${GIAC_CXXFLAGS} -dynamiclib -o libgiac.0.dylib ${GIAC_OBJS} -lopenblas -lintl -lpthread -lm -lmpfr -lgmp -install_name \${prefix}/lib/libgiac.0.dylib -current_version 0.0.0 -compatibility_version 0.0.0
-  g++ ${GIAC_CXXFLAGS} -dynamiclib -o libxcas.0.dylib ${XCAS_OBJS} -L. -lgiac -lopenblas -lintl -lpthread -lm -lmpfr -lgmp -install_name \${prefix}/lib/libxcas.0.dylib -current_version 0.0.0 -compatibility_version 0.0.0
+  g++ ${GIAC_CXXFLAGS} -dynamiclib -o libgiac.0.dylib ${GIAC_OBJS} -lopenblas -lintl -lpthread -lm -lmpfr -lgmp -install_name ${prefix}/lib/libgiac.0.dylib -current_version 0.0.0 -compatibility_version 0.0.0
+  g++ ${GIAC_CXXFLAGS} -dynamiclib -o libxcas.0.dylib ${XCAS_OBJS} -L. -lgiac -lopenblas -lintl -lpthread -lm -lmpfr -lgmp -install_name ${prefix}/lib/libxcas.0.dylib -current_version 0.0.0 -compatibility_version 0.0.0
   cd ..
   /usr/bin/install -c .libs/libxcas.0.dylib /workspace/destdir/lib/libxcas.0.dylib
   (cd /workspace/destdir/lib && { ln -s -f libxcas.0.dylib libxcas.dylib || { rm -f libxcas.dylib && ln -s libxcas.0.dylib libxcas.dylib; }; })
