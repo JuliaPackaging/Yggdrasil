@@ -3,14 +3,11 @@ using BinaryBuilder, Pkg
 name = "S2Geography"
 version = v"0.3.0"
 sources = [
-    GitSource("https://github.com/paleolimbot/s2geography.git", "c4d4e5f7416dc203d3cb0485d56f5d72e9ccb6dd"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/paleolimbot/s2geography.git", "04a31a89e16e59d5a827f7251c5bbd24e2f6b919"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/s2geography
-# TODO: drop this patch once paleolimbot/s2geography#70 and #71 are merged
-atomic_patch -p1 ../patches/cmake_fixes.patch
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
