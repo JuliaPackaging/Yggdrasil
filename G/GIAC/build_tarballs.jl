@@ -157,9 +157,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    HostBuildDependency("Gettext_jll"),
     Dependency("GMP_jll", v"6.3.0"),
     Dependency("MPFR_jll", v"4.1.1"),
-    Dependency("Gettext_jll"),
     Dependency("OpenBLAS32_jll"),
 ]
 
