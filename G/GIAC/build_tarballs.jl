@@ -71,7 +71,6 @@ fi
     --disable-gsl \
     --disable-lapack \
     --disable-png \
-    --disable-micropy \
     ${GETTEXT_FLAG}
 
 GIAC_CXXFLAGS="-g -fPIC -DGIAC_JULIA -U_GLIBCXX_ASSERTIONS -DUSE_OBJET_BIDON -fno-strict-aliasing -DGIAC_GENERIC_CONSTANTS -DTIMEOUT"
@@ -94,7 +93,7 @@ if [[ "${target}" == *freebsd* ]]; then
   g++ ${GIAC_CXXFLAGS} -o xcas xcas.o -L.libs -lgiac -lxcas -lrt -lpthread -ldl -lm -lmpfr -lgmp
   g++ ${GIAC_CXXFLAGS} -o aide aide.o -L.libs -lgiac -lxcas -lrt -lpthread -ldl -lm -lmpfr -lgmp
   cd ..
-  make -i install
+  make install
 
   # Explicitly install aide_cas for FreeBSD
   mkdir -p ${prefix}/share/giac
@@ -114,7 +113,7 @@ elif [[ "${target}" == x86_64-apple-* ]]; then
   g++ ${GIAC_CXXFLAGS} -o xcas xcas.o -L.libs -lgiac -lxcas -lintl -lpthread -ldl -lm -lmpfr -lgmp
   g++ ${GIAC_CXXFLAGS} -o aide aide.o -L.libs -lgiac -lxcas -lintl -lpthread -ldl -lm -lmpfr -lgmp
   cd ..
-  make -i install
+  make install
 
 elif [[ "${target}" == aarch64-apple-* ]]; then
   cd src
@@ -130,7 +129,7 @@ elif [[ "${target}" == aarch64-apple-* ]]; then
   g++ ${GIAC_CXXFLAGS} -o xcas xcas.o -L.libs -lgiac -lxcas -lintl -lpthread -ldl -lm -lmpfr -lgmp
   g++ ${GIAC_CXXFLAGS} -o aide aide.o -L.libs -lgiac -lxcas -lintl -lpthread -ldl -lm -lmpfr -lgmp
   cd ..
-  make -i install
+  make install
 
 elif [[ "${target}" == *mingw* ]]; then
   # The flag is injected only for make
@@ -158,6 +157,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     HostBuildDependency("Gettext_jll"),
+    Dependency("GettextRuntime_jll"),
     Dependency("GMP_jll", v"6.3.0"),
     Dependency("MPFR_jll", v"4.1.1"),
     Dependency("OpenBLAS32_jll"),
