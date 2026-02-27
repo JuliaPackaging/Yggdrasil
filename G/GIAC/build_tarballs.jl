@@ -85,18 +85,19 @@ if [[ "${target}" == *freebsd* ]]; then
   cd .libs
   g++ ${GIAC_CXXFLAGS} -shared -o libgiac.so.0.0.0 ${GIAC_OBJS} -lrt -lpthread -ldl -lm -lmpfr -lgmp
   g++ ${GIAC_CXXFLAGS} -shared -o libxcas.so.0.0.0 ${XCAS_OBJS} -L. -lgiac -lrt -lpthread -ldl -lm -lmpfr -lgmp
+  # Install libraries
+  /usr/bin/install -c libgiac.so.0.0.0 ${libdir}/libgiac.so.0.0.0
+  (cd ${libdir} && ln -sf libgiac.so.0.0.0 libgiac.so.0 && ln -sf libgiac.so.0.0.0 libgiac.so)
+  /usr/bin/install -c libxcas.so.0.0.0 ${libdir}/libxcas.so.0.0.0
+  (cd ${libdir} && ln -sf libxcas.so.0.0.0 libxcas.so.0 && ln -sf libxcas.so.0.0.0 libxcas.so)
   cd ..
-  /usr/bin/install -c .libs/libxcas.so.0.0.0 /workspace/destdir/lib/libxcas.so.0.0.0
-  (cd /workspace/destdir/lib && { ln -s -f libxcas.so.0.0.0 libxcas.so.0 || { rm -f libxcas.so.0 && ln -s libxcas.so.0.0.0 libxcas.so.0; }; })
-  /usr/bin/install -c .libs/libxcas.lai /workspace/destdir/lib/libxcas.la
+  # Build and install binaries
   g++ ${GIAC_CXXFLAGS} -o icas icas.o -L.libs -lgiac -lxcas -lrt -lpthread -ldl -lm -lmpfr -lgmp
   g++ ${GIAC_CXXFLAGS} -o xcas xcas.o -L.libs -lgiac -lxcas -lrt -lpthread -ldl -lm -lmpfr -lgmp
   g++ ${GIAC_CXXFLAGS} -o aide aide.o -L.libs -lgiac -lxcas -lrt -lpthread -ldl -lm -lmpfr -lgmp
+  /usr/bin/install -c icas xcas aide ${bindir}/
   cd ..
-  # make install fails relinking libxcas (already installed manually above), so ignore errors
-  make -i install
-
-  # Explicitly install aide_cas for FreeBSD
+  # Install aide_cas
   mkdir -p ${prefix}/share/giac
   cp -r doc/aide_cas ${prefix}/share/giac/
 
@@ -106,16 +107,21 @@ elif [[ "${target}" == x86_64-apple-* ]]; then
   cd .libs
   g++ ${GIAC_CXXFLAGS} -dynamiclib -o libgiac.0.dylib ${GIAC_OBJS} -lintl -lpthread -lm -lmpfr -lgmp -framework Accelerate -install_name ${prefix}/lib/libgiac.0.dylib -current_version 0.0.0 -compatibility_version 0.0.0
   g++ ${GIAC_CXXFLAGS} -dynamiclib -o libxcas.0.dylib ${XCAS_OBJS} -L. -lgiac -lintl -lpthread -lm -lmpfr -lgmp -install_name ${prefix}/lib/libxcas.0.dylib -current_version 0.0.0 -compatibility_version 0.0.0
+  # Install libraries
+  /usr/bin/install -c libgiac.0.dylib ${libdir}/libgiac.0.dylib
+  (cd ${libdir} && ln -sf libgiac.0.dylib libgiac.dylib)
+  /usr/bin/install -c libxcas.0.dylib ${libdir}/libxcas.0.dylib
+  (cd ${libdir} && ln -sf libxcas.0.dylib libxcas.dylib)
   cd ..
-  /usr/bin/install -c .libs/libxcas.0.dylib /workspace/destdir/lib/libxcas.0.dylib
-  (cd /workspace/destdir/lib && { ln -s -f libxcas.0.dylib libxcas.dylib || { rm -f libxcas.dylib && ln -s libxcas.0.dylib libxcas.dylib; }; })
-  /usr/bin/install -c .libs/libxcas.lai /workspace/destdir/lib/libxcas.la
+  # Build and install binaries
   g++ ${GIAC_CXXFLAGS} -o icas icas.o -L.libs -lgiac -lxcas -lintl -lpthread -ldl -lm -lmpfr -lgmp
   g++ ${GIAC_CXXFLAGS} -o xcas xcas.o -L.libs -lgiac -lxcas -lintl -lpthread -ldl -lm -lmpfr -lgmp
   g++ ${GIAC_CXXFLAGS} -o aide aide.o -L.libs -lgiac -lxcas -lintl -lpthread -ldl -lm -lmpfr -lgmp
+  /usr/bin/install -c icas xcas aide ${bindir}/
   cd ..
-  # make install fails relinking libxcas (already installed manually above), so ignore errors
-  make -i install
+  # Install aide_cas
+  mkdir -p ${prefix}/share/giac
+  cp -r doc/aide_cas ${prefix}/share/giac/
 
 elif [[ "${target}" == aarch64-apple-* ]]; then
   cd src
@@ -123,16 +129,21 @@ elif [[ "${target}" == aarch64-apple-* ]]; then
   cd .libs
   g++ ${GIAC_CXXFLAGS} -dynamiclib -o libgiac.0.dylib ${GIAC_OBJS} -lopenblas -lintl -lpthread -lm -lmpfr -lgmp -install_name ${prefix}/lib/libgiac.0.dylib -current_version 0.0.0 -compatibility_version 0.0.0
   g++ ${GIAC_CXXFLAGS} -dynamiclib -o libxcas.0.dylib ${XCAS_OBJS} -L. -lgiac -lopenblas -lintl -lpthread -lm -lmpfr -lgmp -install_name ${prefix}/lib/libxcas.0.dylib -current_version 0.0.0 -compatibility_version 0.0.0
+  # Install libraries
+  /usr/bin/install -c libgiac.0.dylib ${libdir}/libgiac.0.dylib
+  (cd ${libdir} && ln -sf libgiac.0.dylib libgiac.dylib)
+  /usr/bin/install -c libxcas.0.dylib ${libdir}/libxcas.0.dylib
+  (cd ${libdir} && ln -sf libxcas.0.dylib libxcas.dylib)
   cd ..
-  /usr/bin/install -c .libs/libxcas.0.dylib /workspace/destdir/lib/libxcas.0.dylib
-  (cd /workspace/destdir/lib && { ln -s -f libxcas.0.dylib libxcas.dylib || { rm -f libxcas.dylib && ln -s libxcas.0.dylib libxcas.dylib; }; })
-  /usr/bin/install -c .libs/libxcas.lai /workspace/destdir/lib/libxcas.la
+  # Build and install binaries
   g++ ${GIAC_CXXFLAGS} -o icas icas.o -L.libs -lgiac -lxcas -lintl -lpthread -ldl -lm -lmpfr -lgmp
   g++ ${GIAC_CXXFLAGS} -o xcas xcas.o -L.libs -lgiac -lxcas -lintl -lpthread -ldl -lm -lmpfr -lgmp
   g++ ${GIAC_CXXFLAGS} -o aide aide.o -L.libs -lgiac -lxcas -lintl -lpthread -ldl -lm -lmpfr -lgmp
+  /usr/bin/install -c icas xcas aide ${bindir}/
   cd ..
-  # make install fails relinking libxcas (already installed manually above), so ignore errors
-  make -i install
+  # Install aide_cas
+  mkdir -p ${prefix}/share/giac
+  cp -r doc/aide_cas ${prefix}/share/giac/
 
 elif [[ "${target}" == *mingw* ]]; then
   # The flag is injected only for make
@@ -154,6 +165,10 @@ platforms = expand_cxxstring_abis(platforms)
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libgiac", :libgiac),
+    LibraryProduct("libxcas", :libxcas),
+    ExecutableProduct("icas", :icas),
+    ExecutableProduct("xcas", :xcas),
+    ExecutableProduct("aide", :aide),
     FileProduct("share/giac/aide_cas", :aide_cas),
 ]
 
