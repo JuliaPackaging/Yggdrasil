@@ -147,6 +147,7 @@ install_license COPYING
 
 # Build for all supported platforms
 platforms = supported_platforms()
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
