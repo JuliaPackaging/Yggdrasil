@@ -5,7 +5,7 @@ using BinaryBuilder, Pkg
 name = "Qt6Quick3D"
 version = v"6.10.2"
 
-host_build = true
+host_build = false
 
 # Collection of sources required to build qt6
 sources = [
