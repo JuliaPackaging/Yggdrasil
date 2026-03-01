@@ -13,9 +13,10 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/typedb-driver
 
-# Build the C FFI crate from the Cargo workspace.
-# BinaryBuilder sets `rust_target` for cross-compilation.
-cargo build --release -p typedb_driver_clib
+# Build the C FFI crate as a cdylib (shared library).
+# c/Cargo.toml does not declare crate-type = ["cdylib"], so we pass it
+# explicitly via `cargo rustc`. BinaryBuilder sets `rust_target`.
+cargo rustc --release -p typedb_driver_clib -- --crate-type=cdylib
 
 mkdir -p "${libdir}"
 
