@@ -14,6 +14,11 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/giac*
 
+# On Windows, libtool needs -no-undefined to produce DLLs
+if [[ "${target}" == *-mingw* ]]; then
+    sed -i 's/^lib_LTLIBRARIES = libgiac.la libxcas.la/lib_LTLIBRARIES = libgiac.la libxcas.la\nlibgiac_la_LDFLAGS = -no-undefined\nlibxcas_la_LDFLAGS = -no-undefined/' src/Makefile.am
+fi
+
 update_configure_scripts
 autoreconf -vif
 
@@ -24,6 +29,8 @@ autoreconf -vif
     --enable-shared \
     --disable-fltk \
     --disable-micropy
+
+export CXXFLAGS="-g -fPIC -DGIAC_JULIA -U_GLIBCXX_ASSERTIONS -DUSE_OBJET_BIDON -fno-strict-aliasing -DGIAC_GENERIC_CONSTANTS -DTIMEOUT"
 
 make -j${nproc}
 make install
