@@ -22,6 +22,11 @@ fi
 update_configure_scripts
 autoreconf -vif
 
+export CC=gcc
+export CFLAGS="-g -fPIC -DGIAC_JULIA -DUSE_OBJET_BIDON -fno-strict-aliasing -DGIAC_GENERIC_CONSTANTS -DTIMEOUT"
+export CXX=g++
+export CXXFLAGS="${CFLAGS} -U_GLIBCXX_ASSERTIONS"
+
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
@@ -29,8 +34,6 @@ autoreconf -vif
     --enable-shared \
     --disable-fltk \
     --disable-micropy
-
-export CXXFLAGS="-g -fPIC -DGIAC_JULIA -U_GLIBCXX_ASSERTIONS -DUSE_OBJET_BIDON -fno-strict-aliasing -DGIAC_GENERIC_CONSTANTS -DTIMEOUT"
 
 make -j${nproc}
 make install
