@@ -1,0 +1,50 @@
+using BinaryBuilder, Pkg
+
+name    = "TypeDBDriverClib"   # BinaryBuilder appends _jll → TypeDBDriverClib_jll
+version = v"3.8.1"
+
+sources = [
+    GitSource(
+        "https://github.com/typedb/typedb-driver.git",
+        "8e8d4a43da32adc1c56084f4d34174bebd0ce34a",  # tag 3.8.1
+    ),
+]
+
+script = raw"""
+cd ${WORKSPACE}/srcdir/typedb-driver
+
+# Build the C FFI crate from the Cargo workspace.
+# BinaryBuilder sets `rust_target` for cross-compilation.
+cargo build --release -p typedb_driver_clib
+
+mkdir -p "${libdir}"
+
+if [[ "${target}" == *-w64-mingw* ]]; then
+    # Windows: Rust omits the lib prefix
+    install -Dvm 755 "target/${rust_target}/release/typedb_driver_clib.dll" \
+        "${libdir}/typedb_driver_clib.dll"
+else
+    install -Dvm 755 "target/${rust_target}/release/libtypedb_driver_clib.${dlext}" \
+        "${libdir}/libtypedb_driver_clib.${dlext}"
+fi
+"""
+
+platforms = [
+    Platform("x86_64",  "linux";   libc="glibc"),
+    Platform("aarch64", "linux";   libc="glibc"),
+    Platform("x86_64",  "macos"),
+    Platform("aarch64", "macos"),
+    Platform("x86_64",  "windows"),
+]
+
+products = [
+    LibraryProduct(["libtypedb_driver_clib", "typedb_driver_clib"], :libtypedb_driver_clib),
+]
+
+dependencies = Dependency[]
+
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               compilers             = [:c, :rust],
+               julia_compat          = "1.6",
+               preferred_gcc_version = v"5",
+               dont_dlopen           = true)
