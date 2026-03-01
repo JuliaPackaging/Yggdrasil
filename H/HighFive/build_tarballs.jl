@@ -3,11 +3,11 @@
 using BinaryBuilder, BinaryBuilderBase, Pkg
 
 name = "HighFive"
-version = v"3.2.0"
+version = v"3.3.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/highfive-devs/highfive", "b8d21eb39d4c6c66a72646ddd338d4c552b1a645"),
+    GitSource("https://github.com/highfive-devs/highfive", "be0ddb3d43ce0f53db2d8b1438e819c5a5cb278a"),
 ]
 
 # Bash recipe for building across all platforms
@@ -36,7 +36,7 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("HDF5_jll"; compat="~1.14.6"),
+    Dependency("HDF5_jll"; compat="2.0.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
