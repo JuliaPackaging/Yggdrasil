@@ -18,6 +18,10 @@ cd ${WORKSPACE}/srcdir/typedb-driver
 # a C-ABI shared library (.dylib/.so/.dll).
 sed -i 's/path = "src\/lib.rs"/path = "src\/lib.rs"\ncrate-type = ["cdylib"]/' c/Cargo.toml
 
+# typedb-protocol (a git dependency) has a build.rs that calls tonic_build
+# which invokes protoc.  Make the host protoc binary visible to prost-build.
+export PROTOC=$(which protoc)
+
 # BinaryBuilder sets `rust_target` for cross-compilation.
 cargo build --release -p typedb_driver_clib
 
@@ -45,7 +49,11 @@ products = [
     LibraryProduct(["libtypedb_driver_clib", "typedb_driver_clib"], :libtypedb_driver_clib),
 ]
 
-dependencies = Dependency[]
+dependencies = [
+    # typedb-protocol/grpc/rust/build.rs calls tonic_build::compile_protos(),
+    # which invokes `protoc` at build time to generate Rust gRPC stubs.
+    HostBuildDependency("protoc_jll"),
+]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                compilers             = [:c, :rust],
