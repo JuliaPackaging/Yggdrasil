@@ -29,22 +29,11 @@ autoreconf -fi
 
 export CXXFLAGS='-g -Os -fPIC'
 
-if [[ "${target}" == *freebsd* ]]; then
+if [[ "${target}" == *freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
     export CC=gcc
     export CFLAGS='-g -fPIC'
     export CXX=g++
     export CXXFLAGS='-g -fPIC -DGIAC_JULIA'
-elif [[ "${target}" == *-apple-* ]]; then
-    export CC=gcc
-    export CFLAGS='-g -fPIC'
-    export CXX=g++
-    export CXXFLAGS='-g -fPIC -DGIAC_JULIA'
-fi
-
-GETTEXT_FLAG="--enable-gettext"
-if [[ "${target}" == *freebsd* ]]; then
-    # FreeBSD doesn't have libintl available through Gettext_jll
-    GETTEXT_FLAG="--disable-gettext"
 fi
 
 # Configure with minimal dependencies
@@ -54,6 +43,7 @@ fi
     --build=${MACHTYPE} \
     --host=${target} \
     --enable-shared \
+    --enable-gettext \
     --disable-libbf \
     --disable-static \
     --disable-gui \
@@ -70,8 +60,7 @@ fi
     --disable-glpk \
     --disable-gsl \
     --disable-lapack \
-    --disable-png \
-    ${GETTEXT_FLAG}
+    --disable-png
 
 GIAC_CXXFLAGS="-g -fPIC -DGIAC_JULIA -U_GLIBCXX_ASSERTIONS -DUSE_OBJET_BIDON -fno-strict-aliasing -DGIAC_GENERIC_CONSTANTS -DTIMEOUT"
 
@@ -79,81 +68,70 @@ GIAC_OBJS="input_lexer.o sym2poly.o gausspol.o threaded.o moyal.o maple.o ti89.o
 
 XCAS_OBJS="History.o Input.o Xcas1.o Equation.o Print.o Tableur.o Editeur.o Graph.o Graph3d.o Help1.o Cfg.o Flv_CStyle.o Flve_Check_Button.o Flve_Input.o Flv_Style.o Flv_Data_Source.o Flve_Combo.o Flv_List.o Flv_Table.o gl2ps.o Python.o"
 
-if [[ "${target}" == *freebsd* ]]; then
-  cd src
-  make -j${nproc} libgiac.la libxcas.la icas.o xcas.o aide.o
-  cd .libs
-  g++ ${GIAC_CXXFLAGS} -shared -o libgiac.so.0.0.0 ${GIAC_OBJS} -lrt -lpthread -ldl -lm -lmpfr -lgmp
-  g++ ${GIAC_CXXFLAGS} -shared -o libxcas.so.0.0.0 ${XCAS_OBJS} -L. -lgiac -lrt -lpthread -ldl -lm -lmpfr -lgmp
-  # Install libraries
+# Set platform-specific link flags
+LINK_LIBS="-lintl -lpthread -lm -lmpfr -lgmp"
+if [[ "${target}" != *mingw* ]]; then
+  LINK_LIBS="-ldl ${LINK_LIBS}"
+fi
+if [[ "${target}" != *-apple-* ]] && [[ "${target}" != *mingw* ]]; then
+  LINK_LIBS="-lrt ${LINK_LIBS}"
+fi
+if [[ "${target}" == *-apple-* ]]; then
+  LINK_LIBS="-L${libdir} -lopenblas ${LINK_LIBS}"
+fi
+if [[ "${target}" == *mingw* ]]; then
+  MAKE_LDFLAGS="-no-undefined ${LDFLAGS}"
+fi
+
+# Build object files (same for all platforms)
+cd src
+make ${MAKE_LDFLAGS:+LDFLAGS="$MAKE_LDFLAGS"} -j${nproc} libgiac.la libxcas.la icas.o xcas.o aide.o
+cd .libs
+
+# Build and install shared libraries (naming differs per platform)
+if [[ "${target}" == *-apple-* ]]; then
+  g++ ${GIAC_CXXFLAGS} -dynamiclib -o libgiac.0.dylib ${GIAC_OBJS} ${LINK_LIBS} \
+    -install_name ${prefix}/lib/libgiac.0.dylib -current_version 0.0.0 -compatibility_version 0.0.0
+  g++ ${GIAC_CXXFLAGS} -dynamiclib -o libxcas.0.dylib ${XCAS_OBJS} -L. -lgiac ${LINK_LIBS} \
+    -install_name ${prefix}/lib/libxcas.0.dylib -current_version 0.0.0 -compatibility_version 0.0.0
+  /usr/bin/install -c libgiac.0.dylib ${libdir}/libgiac.0.dylib
+  (cd ${libdir} && ln -sf libgiac.0.dylib libgiac.dylib)
+  /usr/bin/install -c libxcas.0.dylib ${libdir}/libxcas.0.dylib
+  (cd ${libdir} && ln -sf libxcas.0.dylib libxcas.dylib)
+elif [[ "${target}" == *mingw* ]]; then
+  g++ ${GIAC_CXXFLAGS} -shared -o libgiac-0.dll ${GIAC_OBJS} ${LINK_LIBS} -Wl,--out-implib,libgiac.dll.a
+  g++ ${GIAC_CXXFLAGS} -shared -o libxcas-0.dll ${XCAS_OBJS} -L. -lgiac ${LINK_LIBS} -Wl,--out-implib,libxcas.dll.a
+  /usr/bin/install -c libgiac-0.dll ${libdir}/libgiac-0.dll
+  /usr/bin/install -c libgiac.dll.a ${libdir}/libgiac.dll.a
+  /usr/bin/install -c libxcas-0.dll ${libdir}/libxcas-0.dll
+  /usr/bin/install -c libxcas.dll.a ${libdir}/libxcas.dll.a
+else
+  # Linux and FreeBSD
+  g++ ${GIAC_CXXFLAGS} -shared -o libgiac.so.0.0.0 ${GIAC_OBJS} ${LINK_LIBS}
+  g++ ${GIAC_CXXFLAGS} -shared -o libxcas.so.0.0.0 ${XCAS_OBJS} -L. -lgiac ${LINK_LIBS}
   /usr/bin/install -c libgiac.so.0.0.0 ${libdir}/libgiac.so.0.0.0
   (cd ${libdir} && ln -sf libgiac.so.0.0.0 libgiac.so.0 && ln -sf libgiac.so.0.0.0 libgiac.so)
   /usr/bin/install -c libxcas.so.0.0.0 ${libdir}/libxcas.so.0.0.0
   (cd ${libdir} && ln -sf libxcas.so.0.0.0 libxcas.so.0 && ln -sf libxcas.so.0.0.0 libxcas.so)
-  cd ..
-  # Build and install binaries
-  g++ ${GIAC_CXXFLAGS} -o icas icas.o -L.libs -lgiac -lxcas -lrt -lpthread -ldl -lm -lmpfr -lgmp
-  g++ ${GIAC_CXXFLAGS} -o xcas xcas.o -L.libs -lgiac -lxcas -lrt -lpthread -ldl -lm -lmpfr -lgmp
-  g++ ${GIAC_CXXFLAGS} -o aide aide.o -L.libs -lgiac -lxcas -lrt -lpthread -ldl -lm -lmpfr -lgmp
-  /usr/bin/install -c icas xcas aide ${bindir}/
-  cd ..
-  # Install aide_cas
-  mkdir -p ${prefix}/share/giac
-  cp -r doc/aide_cas ${prefix}/share/giac/
-
-elif [[ "${target}" == x86_64-apple-* ]]; then
-  cd src
-  make -j${nproc} libgiac.la libxcas.la icas.o xcas.o aide.o
-  cd .libs
-  g++ ${GIAC_CXXFLAGS} -dynamiclib -o libgiac.0.dylib ${GIAC_OBJS} -lintl -lpthread -lm -lmpfr -lgmp -framework Accelerate -install_name ${prefix}/lib/libgiac.0.dylib -current_version 0.0.0 -compatibility_version 0.0.0
-  g++ ${GIAC_CXXFLAGS} -dynamiclib -o libxcas.0.dylib ${XCAS_OBJS} -L. -lgiac -lintl -lpthread -lm -lmpfr -lgmp -install_name ${prefix}/lib/libxcas.0.dylib -current_version 0.0.0 -compatibility_version 0.0.0
-  # Install libraries
-  /usr/bin/install -c libgiac.0.dylib ${libdir}/libgiac.0.dylib
-  (cd ${libdir} && ln -sf libgiac.0.dylib libgiac.dylib)
-  /usr/bin/install -c libxcas.0.dylib ${libdir}/libxcas.0.dylib
-  (cd ${libdir} && ln -sf libxcas.0.dylib libxcas.dylib)
-  cd ..
-  # Build and install binaries
-  g++ ${GIAC_CXXFLAGS} -o icas icas.o -L.libs -lgiac -lxcas -lintl -lpthread -ldl -lm -lmpfr -lgmp
-  g++ ${GIAC_CXXFLAGS} -o xcas xcas.o -L.libs -lgiac -lxcas -lintl -lpthread -ldl -lm -lmpfr -lgmp
-  g++ ${GIAC_CXXFLAGS} -o aide aide.o -L.libs -lgiac -lxcas -lintl -lpthread -ldl -lm -lmpfr -lgmp
-  /usr/bin/install -c icas xcas aide ${bindir}/
-  cd ..
-  # Install aide_cas
-  mkdir -p ${prefix}/share/giac
-  cp -r doc/aide_cas ${prefix}/share/giac/
-
-elif [[ "${target}" == aarch64-apple-* ]]; then
-  cd src
-  make -j${nproc} libgiac.la libxcas.la icas.o xcas.o aide.o
-  cd .libs
-  g++ ${GIAC_CXXFLAGS} -dynamiclib -o libgiac.0.dylib ${GIAC_OBJS} -lopenblas -lintl -lpthread -lm -lmpfr -lgmp -install_name ${prefix}/lib/libgiac.0.dylib -current_version 0.0.0 -compatibility_version 0.0.0
-  g++ ${GIAC_CXXFLAGS} -dynamiclib -o libxcas.0.dylib ${XCAS_OBJS} -L. -lgiac -lopenblas -lintl -lpthread -lm -lmpfr -lgmp -install_name ${prefix}/lib/libxcas.0.dylib -current_version 0.0.0 -compatibility_version 0.0.0
-  # Install libraries
-  /usr/bin/install -c libgiac.0.dylib ${libdir}/libgiac.0.dylib
-  (cd ${libdir} && ln -sf libgiac.0.dylib libgiac.dylib)
-  /usr/bin/install -c libxcas.0.dylib ${libdir}/libxcas.0.dylib
-  (cd ${libdir} && ln -sf libxcas.0.dylib libxcas.dylib)
-  cd ..
-  # Build and install binaries
-  g++ ${GIAC_CXXFLAGS} -o icas icas.o -L.libs -lgiac -lxcas -lintl -lpthread -ldl -lm -lmpfr -lgmp
-  g++ ${GIAC_CXXFLAGS} -o xcas xcas.o -L.libs -lgiac -lxcas -lintl -lpthread -ldl -lm -lmpfr -lgmp
-  g++ ${GIAC_CXXFLAGS} -o aide aide.o -L.libs -lgiac -lxcas -lintl -lpthread -ldl -lm -lmpfr -lgmp
-  /usr/bin/install -c icas xcas aide ${bindir}/
-  cd ..
-  # Install aide_cas
-  mkdir -p ${prefix}/share/giac
-  cp -r doc/aide_cas ${prefix}/share/giac/
-
-elif [[ "${target}" == *mingw* ]]; then
-  # The flag is injected only for make
-  make LDFLAGS="-no-undefined ${LDFLAGS}" -j${nproc}
-  make install
-
-else
-  make -j${nproc}
-  make install
 fi
+
+cd ..
+
+# Build and install executables (unified for all platforms)
+EXE_EXT=""
+if [[ "${target}" == *mingw* ]]; then
+  EXE_EXT=".exe"
+fi
+g++ ${GIAC_CXXFLAGS} -o icas${EXE_EXT} icas.o -L.libs -lgiac -lxcas ${LINK_LIBS}
+g++ ${GIAC_CXXFLAGS} -o xcas${EXE_EXT} xcas.o -L.libs -lgiac -lxcas ${LINK_LIBS}
+g++ ${GIAC_CXXFLAGS} -o aide${EXE_EXT} aide.o -L.libs -lgiac -lxcas ${LINK_LIBS}
+/usr/bin/install -c icas${EXE_EXT} xcas${EXE_EXT} aide${EXE_EXT} ${bindir}/
+
+cd ..
+
+# Install aide_cas
+mkdir -p ${prefix}/share/giac
+cp -r doc/aide_cas ${prefix}/share/giac/
 
 install_license COPYING
 """
