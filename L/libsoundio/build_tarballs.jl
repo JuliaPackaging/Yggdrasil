@@ -18,6 +18,7 @@ cd $WORKSPACE/srcdir/libsoundio
 CMAKE_FLAGS=("-DCMAKE_INSTALL_PREFIX=$prefix" 
              "-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}" 
              "-DCMAKE_BUILD_TYPE=Release" 
+             "-DBUILD_STATIC_LIBS=OFF"
              "-DBUILD_EXAMPLE_PROGRAMS=OFF" 
              "-DBUILD_TESTS=OFF"
              "-DENABLE_JACK=OFF")
