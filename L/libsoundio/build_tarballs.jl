@@ -42,7 +42,7 @@ cmake -B build "${CMAKE_FLAGS[@]}"
 cmake --build build --parallel ${nproc}
 cmake --install build
 
-install -D -m 644 LICENSE "${prefix}/share/licenses/libsoundio/LICENSE"
+install_license ./LICENSE
 """
 
 # These are the platforms we will build for by default
