@@ -21,18 +21,27 @@ cd $WORKSPACE/srcdir/libgiac-julia-wrapper
 # Help CMake find GIAC
 export GIAC_ROOT="${prefix}"
 
+# On Windows, ${libdir} points to bin/; import libraries (.dll.a) are in ${prefix}/lib/
+GIAC_LIB="${libdir}/libgiac.${dlext}"
+GMP_LIB="${libdir}/libgmp.${dlext}"
+if [[ "${target}" == *mingw* ]]; then
+    GIAC_LIB="${prefix}/lib/libgiac.dll.a"
+    GMP_LIB="${prefix}/lib/libgmp.dll.a"
+fi
+
 # Build with CMake
 cmake -B build \
    -DJulia_PREFIX="${prefix}" \
    -DGIAC_INCLUDE_DIR="${includedir}/giac" \
-   -DGIAC_LIBRARY="${libdir}/libgiac.${dlext}" \
-   -DGMP_LIBRARY="${libdir}/libgmp.${dlext}" \
+   -DGIAC_LIBRARY="${GIAC_LIB}" \
+   -DGMP_LIBRARY="${GMP_LIB}" \
    -DCMAKE_INSTALL_PREFIX="${prefix}" \
    -DCMAKE_FIND_ROOT_PATH="${prefix}" \
    -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
    -DCMAKE_BUILD_TYPE=Release
 
-VERBOSE=ON cmake --build build --config Release --target install -- -j${nproc}
+cmake --build build --config Release --target giac_wrapper -- -j${nproc}
+cmake --install build
 
 install_license LICENSE
 """
@@ -42,6 +51,10 @@ install_license LICENSE
 include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
+
+# Restrict to Linux and Windows for now:
+# macOS/FreeBSD: GIAC_jll is built with g++/libstdc++ but libcxxwrap_julia uses clang/libc++ (ABI mismatch)
+filter!(p -> Sys.islinux(p) || Sys.iswindows(p), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -53,7 +66,7 @@ dependencies = [
     BuildDependency(PackageSpec(;name="libjulia_jll", version="1.11.0")),
     BuildDependency("GMP_jll"),
     BuildDependency("MPFR_jll"),
-    Dependency("libcxxwrap_julia_jll"; compat = "~0.14"),
+    Dependency("libcxxwrap_julia_jll"; compat = "~0.14.9"),
     Dependency("GIAC_jll"; compat = "~2.0.0"),
 ]
 
