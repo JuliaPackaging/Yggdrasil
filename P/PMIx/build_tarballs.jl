@@ -3,13 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "PMIx"
-version = v"6.0.0"
+version = v"6.1.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/openpmix/openpmix/releases/download/v$(version)/pmix-$(version).tar.bz2",
-                  "bfe969966d0ce82e032739cac286239bd5ad74a831d7adae013284919f125318"),
-    DirectorySource("bundled")
+                  "bb9021c8e100a376f5070ecca727f83a29b5f652dfe381793b88daa79a3b98a2")
 ]
 
 # Bash recipe for building across all platforms
@@ -18,9 +17,6 @@ cd $WORKSPACE/srcdir/pmix-*
 if [[ ${target} == *-musl* ]]; then
    # Help configure find installed packages
    export CPPFLAGS=-I${includedir}
-elif [[ ${target} == *bsd* ]]; then
-    # nonstandard pthread extensions live in a different header on some BSDs.
-    atomic_patch -p1 ${WORKSPACE}/srcdir/nonstandard_pthreads.patch
 fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --enable-shared \
@@ -64,7 +60,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="libevent_jll", uuid="1080aeaf-3a6a-583e-a51c-c537b09f60ec")),
     Dependency(PackageSpec(name="Hwloc_jll", uuid="e33a78d0-f292-5ffc-b300-72abe9b543c8")),
-    Dependency("Zlib_jll"),
+    Dependency("Zlib_jll")
 ]
 
 init_block = raw"""
@@ -72,5 +68,6 @@ ENV["PMIX_PREFIX"] = artifact_dir
 """
 
 # Build the tarballs, and possibly a `build.jl` as well.
+# gcc 5+ for C11 atomics
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", init_block=init_block)
+               julia_compat="1.6", preferred_gcc_version=v"5", init_block=init_block)
