@@ -54,7 +54,7 @@ platforms = expand_cxxstring_abis(platforms)
 
 # Restrict to Linux and Windows for now:
 # macOS/FreeBSD: GIAC_jll is built with g++/libstdc++ but libcxxwrap_julia uses clang/libc++ (ABI mismatch)
-filter!(p -> Sys.islinux(p) || Sys.iswindows(p), platforms)
+#filter!(p -> Sys.islinux(p) || Sys.iswindows(p), platforms)
 
 # The products that we will ensure are always built
 products = [
