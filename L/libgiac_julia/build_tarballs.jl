@@ -10,7 +10,7 @@ version = v"0.4.0"
 sources = [
     GitSource(
         "https://github.com/s-celles/libgiac-julia-wrapper.git",
-        "4773340b0e45c420e9b6361b17b8aac165c658e4"
+        "6252612f39277a83b56cfd14bb40175700d22668"
     ),
 ]
 
@@ -36,45 +36,31 @@ if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *freebsd* ]]; then
     # On macOS/FreeBSD, GIAC_jll is built with g++/libstdc++ while
     # libcxxwrap_julia_jll uses clang++/libc++. The std::string types are
     # ABI-incompatible. We use a dual-compiler approach:
-    #   1. Compile giac_impl.cpp + giac_cabi.cpp with g++ -> libgiac_cabi.a
+    #   1. Compile giac_impl.cpp + giac_cabi.cpp with g++ -> libgiac_cabi.dylib
     #   2. Compile giac_wrapper.cpp with clang++ (default) + USE_GIAC_CABI
     # The C-ABI shim bridges the two with extern "C" functions.
+    # Building libgiac_cabi as a shared library lets g++ resolve its own
+    # libstdc++ and libgcc, avoiding platform tag and search path issues.
 
     echo "=== Building C-ABI shim with g++ ==="
 
     # Find g++ cross-compiler (BinaryBuilder provides it as ${target}-g++)
     GCC_CXX="${target}-g++"
 
-    # Compile giac_impl.cpp (C++14, includes GIAC headers)
-    ${GCC_CXX} -c -std=c++14 -O2 -fPIC \
-        -I${includedir}/giac \
-        -I${includedir}/giac/giac \
-        -I${prefix}/include \
-        src/giac_impl.cpp \
-        -o /tmp/giac_impl.o
-
-    # Compile giac_cabi.cpp (C++14, extern "C" bridge)
-    ${GCC_CXX} -c -std=c++14 -O2 -fPIC \
+    # Build shared libgiac_cabi with g++ (resolves all libstdc++/libgcc internally)
+    ${GCC_CXX} -shared -std=c++14 -O2 -fPIC \
         -I${includedir}/giac \
         -I${includedir}/giac/giac \
         -I${prefix}/include \
         -Isrc \
+        src/giac_impl.cpp \
         src/giac_cabi.cpp \
-        -o /tmp/giac_cabi.o
+        -L${libdir} -lgiac -lgmp \
+        -o ${libdir}/libgiac_cabi.${dlext}
 
-    # Create static library
-    ar rcs /tmp/libgiac_cabi.a /tmp/giac_impl.o /tmp/giac_cabi.o
+    echo "=== C-ABI shim built: ${libdir}/libgiac_cabi.${dlext} ==="
 
-    echo "=== C-ABI shim built: /tmp/libgiac_cabi.a ==="
-
-    # Find full paths to GCC runtime libraries (clang++ linker can't find them by default)
-    LIBSTDCXX=$(${GCC_CXX} -print-file-name=libstdc++.a)
-    LIBGCC=$(${GCC_CXX} -print-file-name=libgcc.a)
-    LIBGCC_EH=$(${GCC_CXX} -print-file-name=libgcc_eh.a)
-    echo "=== GCC runtime libs: ${LIBSTDCXX} ; ${LIBGCC} ; ${LIBGCC_EH} ==="
-
-    CABI_CMAKE_ARGS="-DUSE_GIAC_CABI=ON -DGIAC_CABI_LIBRARY=/tmp/libgiac_cabi.a"
-    CABI_CMAKE_ARGS="${CABI_CMAKE_ARGS} -DGCC_RUNTIME_LIBS=${LIBSTDCXX};${LIBGCC};${LIBGCC_EH}"
+    CABI_CMAKE_ARGS="-DUSE_GIAC_CABI=ON -DGIAC_CABI_LIBRARY=${libdir}/libgiac_cabi.${dlext}"
 fi
 
 # Build with CMake
