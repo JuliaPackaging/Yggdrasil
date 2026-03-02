@@ -2,4 +2,4 @@ include("../common.jl")
 
 build_libxcrypt(ARGS; legacy=true)
 
-# Build trigger: 1
+# Build trigger: 2

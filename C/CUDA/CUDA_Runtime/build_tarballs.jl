@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDA_Runtime"
-version = v"0.19.2"
+version = v"0.20.1"
 
 augment_platform_block = """
     $(read(joinpath(@__DIR__, "platform_augmentation.jl"), String))
@@ -160,14 +160,14 @@ for version in reverse(CUDA.cuda_full_versions)
 
         if Base.thisminor(version) == v"10.2"
             push!(builds,
-                (; dependencies=[Dependency("CUDA_Driver_jll", v"13.0"; compat="13"),
+                (; dependencies=[Dependency("CUDA_Driver_jll", v"13.1"; compat="13"),
                                  BuildDependency(PackageSpec(name="CUDA_SDK_jll", version="10.2.89"))],
                    script=get_script(), platforms=[augmented_platform], products=get_products(platform),
                    sources=[]
             ))
         else
             push!(builds,
-                (; dependencies=[Dependency("CUDA_Driver_jll", v"13.0"; compat="13")],
+                (; dependencies=[Dependency("CUDA_Driver_jll", v"13.1"; compat="13")],
                    script, platforms=[augmented_platform], products=get_products(platform),
                    sources=get_sources("cuda", components; version, platform=augmented_platform)
             ))

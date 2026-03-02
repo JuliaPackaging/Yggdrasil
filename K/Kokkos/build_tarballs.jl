@@ -6,12 +6,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "Kokkos"
-version_string = "4.3.1"
+version_string = "4.7.1"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/kokkos/kokkos.git", "6ecdf605e0f7639adec599d25cf0e206d7b8f9f5"),
+    GitSource("https://github.com/kokkos/kokkos.git", "b601b82d0f4b4491aeafb7b19cde557e92aa761d"),
 ]
 
 # Bash recipe for building across all platforms

@@ -1,0 +1,13 @@
+diff --git a/proc_local.old b/proc_local.new
+index 667939f..f9d514f 100644
+--- a/legate/src/cpp/legate/utilities/proc_local_storage.h
++++ b/legate/src/cpp/legate/utilities/proc_local_storage.h
+@@ -64,7 +64,7 @@ namespace legate {
+  * @tparam T Type of values stored in this `ProcLocalStorage`.
+  */
+ template <typename T>
+-class ProcLocalStorage {
++class LEGATE_EXPORT ProcLocalStorage {
+  public:
+   /**
+    * @brief The type of stored objects.

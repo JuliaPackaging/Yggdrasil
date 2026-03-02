@@ -7,7 +7,7 @@ version = v"1.1.0"
 
 # Collection of sources required to complete build
 sources = [
-   GitSource("https://github.com/JuliaHEP/ROOT.jl.git", "cf68f4ec3409f3fd37805726fb7f7180acfbf62e")
+   GitSource("https://github.com/JuliaHEP/ROOT.jl.git", "56147f26b44e833b776d7cfc648c8e723910f9d0")
 ]
 
 # See https://github.com/JuliaLang/Pkg.jl/issues/2942

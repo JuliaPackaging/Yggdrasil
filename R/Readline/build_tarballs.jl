@@ -3,12 +3,13 @@
 using BinaryBuilder
 
 name = "Readline"
-version = v"8.2.13"
+version_str = "8.3"
+version = VersionNumber(version_str)
 
 # Collection of sources required to build Readline
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/readline/readline-$(version).tar.gz",
-                  "0e5be4d2937e8bd9b7cd60d46721ce79f88a33415dd68c2d738fb5924638f656"),
+    ArchiveSource("https://ftpmirror.gnu.org/gnu/readline/readline-$(version_str).tar.gz",
+                  "fe5383204467828cd495ee8d1d3c037a7eba1389c22bc6a041f627976f9061cc"),
     DirectorySource("./bundled"),
 ]
 
@@ -16,8 +17,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/readline-*/
 
-# Patch from https://aur.archlinux.org/cgit/aur.git/tree/readline-1-fixes.patch?h=mingw-w64-readline
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/readline-1-fixes.patch
+# Declare `struct winsize` on Windows. We'll never actually use it.
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-winsize.patch
 
 export CPPFLAGS="-I${includedir}"
 if [[ "${target}" == *-mingw* ]]; then
@@ -46,7 +47,7 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Ncurses_jll"),
+    Dependency("Ncurses_jll"; compat="6.5.1"),
 ]
 
 # Build the tarballs

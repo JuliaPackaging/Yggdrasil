@@ -150,9 +150,17 @@ fi"""
     for platform in platforms
         should_build_platform(triplet(platform)) || continue
 
+        # add the CUDA tag to the platform used by get_sources to determine compatibility.
+        # note that this is different from `version`, since `get_sources` is also used by
+        # recipes to select products (e.g. CUDNN) whose version differs from the CTK one.
+        # we don't actually use the augmented platform to generate a JLL since the CUDA SDK
+        # JLLs also need to be loadable on systems without CUDA (i.e. the musl builders).
+        augmented_platform = deepcopy(platform)
+        augmented_platform["cuda"] = CUDA.platform(version)
+
         push!(builds,
                 (; script, platforms=[platform], products=Product[],
-                   sources=get_sources("cuda", components; version, platform)
+                   sources=get_sources("cuda", components; version, platform=augmented_platform)
         ))
     end
 

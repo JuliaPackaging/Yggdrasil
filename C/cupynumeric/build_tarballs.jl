@@ -9,20 +9,18 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 include("make_script.jl")
 
 name = "cupynumeric"
-version = v"25.10"
+version = v"26.01"
 sources = [
-    GitSource("https://github.com/nv-legate/cupynumeric.git","66d872d22d66d78f42e91778a6b1c731e796d1f4"),
+    GitSource("https://github.com/nv-legate/cupynumeric.git","ae1c787828a9327ad00a076739706f41d196a043"),
     GitSource("https://github.com/MatthewsResearchGroup/tblis.git", "c4f81e08b2827e72335baa7bf91a245f72c43970"),
     FileSource("https://repo.anaconda.com/miniconda/Miniconda3-py311_24.3.0-0-Linux-x86_64.sh", 
-                "4da8dde69eca0d9bc31420349a204851bfa2a1c87aeb87fe0c05517797edaac4", "miniconda.sh"),
-    DirectorySource("./bundled")
-    
+                "4da8dde69eca0d9bc31420349a204851bfa2a1c87aeb87fe0c05517797edaac4", "miniconda.sh"),    
 ]
 
 
 # These should match the legate_jll build_tarballs script
-MIN_CUDA_VERSION = v"12.2"
-MAX_CUDA_VERSION = v"12.8.999"
+MIN_CUDA_VERSION = v"13.0"
+MAX_CUDA_VERSION = v"13.0.999" # none of the dependency JLLs have 13.1 builds rn
 
 
 cpu_platform = [Platform("x86_64", "linux")]
@@ -49,7 +47,7 @@ products = [
 ] 
 
 dependencies = [
-    Dependency("legate_jll"; compat = "=25.10"), # Legate versioning is Year.Month
+    Dependency("legate_jll"; compat = "~26.01"), # Legate versioning is Year.Month
     # Dependency("CUTENSOR_jll", compat = "2.2"), # supplied via ArchiveSource
     Dependency("OpenBLAS32_jll"),
     HostBuildDependency(PackageSpec(; name = "CMake_jll", version = "3.31.9")),
@@ -68,8 +66,8 @@ for platform in all_platforms
     if haskey(platform, "cuda") && platform["cuda"] != "none" 
 
         # cuTensor dependency
-        push!(platform_sources, ArchiveSource("https://github.com/JuliaBinaryWrappers/CUTENSOR_jll.jl/releases/download/CUTENSOR-v2.2.0%2B0/CUTENSOR.v2.2.0.x86_64-linux-gnu-cuda+12.0.tar.gz",
-                     "1c243b48e189070fefcdd603f87c06fada2d71c911dea7028748ad7a4315b816")
+        push!(platform_sources, ArchiveSource("https://github.com/JuliaBinaryWrappers/CUTENSOR_jll.jl/releases/download/CUTENSOR-v2.3.1%2B0/CUTENSOR.v2.3.1.x86_64-linux-gnu-cuda+13.0.tar.gz",
+                     "bb9d29e92522d4867dcd5124dfb9151cc40eb87f8a7772dd0509bd344e393abf")
         )
 
         append!(_dependencies, CUDA.required_dependencies(platform, static_sdk=true))
@@ -81,7 +79,7 @@ for platform in all_platforms
         end
 
         script = get_script(Val{true}())
-    end # else CPU build
+    end # else CPU-only build
 
     build_tarballs(
         ARGS, name, version, platform_sources, 
@@ -91,6 +89,5 @@ for platform in all_platforms
         lazy_artifacts = true, dont_dlopen = true,
         augment_platform_block = CUDA.augment
     )
-
 
 end

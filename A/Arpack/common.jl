@@ -3,6 +3,10 @@ using Pkg
 # Collection of sources required to build Arpack
 function arpack_sources(version::VersionNumber; kwargs...)
     arpack_version_sources = Dict(
+        v"3.5.0" => [
+	    GitSource("https://github.com/opencollab/arpack-ng.git",
+		      "9233f7f86f063ca6ca3793cb54dec590eb146e10"),
+        ],
         v"3.9.1" => [
 	    GitSource("https://github.com/opencollab/arpack-ng.git",
 		      "40329031ae8deb7c1e26baf8353fa384fc37c251"),
@@ -62,7 +66,7 @@ fi
 # Set up not only lowercase symbol remappings, but uppercase as well:
 SYMBOL_DEFS+=(${SYMBOL_DEFS[@]^^})
 
-FFLAGS="${FFLAGS} -O3 -fPIE -ffixed-line-length-none -fno-optimize-sibling-calls -cpp"
+FFLAGS="${FFLAGS} -O3 -fPIE -ffixed-line-length-none -fno-optimize-sibling-calls -fallow-argument-mismatch -cpp"
 
 if [[ "${target}" == *-mingw* ]]; then
     LBT=blastrampoline-5
@@ -99,5 +103,5 @@ platforms = expand_gfortran_versions(supported_platforms())
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.12"),
+    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
 ]

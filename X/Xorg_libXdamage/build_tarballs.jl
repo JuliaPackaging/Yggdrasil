@@ -3,18 +3,18 @@
 using BinaryBuilder
 
 name = "Xorg_libXdamage"
-version = v"1.1.6"
+version = v"1.1.7"
 
 # Collection of sources required to build libXdamage
 sources = [
     ArchiveSource("https://www.x.org/archive/individual/lib/libXdamage-$(version).tar.xz",
-                  "52733c1f5262fca35f64e7d5060c6fcd81a880ba8e1e65c9621cf0727afb5d11"),
+                  "127067f521d3ee467b97bcb145aeba1078e2454d448e8748eb984d5b397bde24"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libXdamage-*
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-static=no
 make -j${nproc}
 make install
 """

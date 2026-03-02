@@ -13,7 +13,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.12.0"), openssl)
 delete!(Pkg.Types.get_last_stdlibs(v"1.13.0"), openssl  )
 
 name = "XRootD_cxxwrap"
-version = v"0.3.0"
+version = v"0.3.1"
 
 # Collection of sources required to build XRootD_julia
 sources = [
@@ -57,8 +57,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("libjulia_jll"),
-    Dependency("libcxxwrap_julia_jll"; compat="0.14.4"),
-    Dependency("XRootD_jll"; compat = "~5.8.4"),
+    Dependency("libcxxwrap_julia_jll"; compat="0.14.8"),
+    Dependency("XRootD_jll"; compat = "~5.9.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

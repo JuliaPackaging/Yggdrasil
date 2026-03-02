@@ -26,7 +26,7 @@ else
     missing
 end
 
-libcuda_deps = [libcuda_debugger, libnvidia_nvvm, libnvidia_ptxjitcompiler]
+libcuda_deps = [libcuda_debugger, libnvidia_nvvm, libnvidia_ptxjitcompiler, libnvidia_gpucomp, libnvidia_tileiras]
 libcuda_system = Sys.iswindows() ? "nvcuda" : "libcuda.so.1"
 
 # if anything goes wrong, we'll use the system driver

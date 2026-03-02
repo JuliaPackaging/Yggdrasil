@@ -32,7 +32,7 @@ agent() = Dict(
 plugins() = Pair{String, Union{Nothing, Dict}}[
     "JuliaCI/julia#v1" => Dict(
         "persist_depot_dirs" => "packages,artifacts,compiled",
-        "version" => "1.12.2",
+        "version" => "1.12.4",
         "artifacts_size_limit" => string(120 << 30), # 120 GiB
     ),
     "JuliaCI/merge-commit" => nothing

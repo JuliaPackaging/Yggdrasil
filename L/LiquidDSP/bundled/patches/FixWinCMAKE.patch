@@ -1,0 +1,19 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 71c8a149d..a4bc2dd17 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -435,8 +435,11 @@ if(COVERAGE)
+     target_link_options(${LIBNAME} PRIVATE -coverage)
+ endif(COVERAGE)
+ 
+-
+-target_link_libraries(${LIBNAME} c m)
++if(WIN32)
++  #do nothing
++else()
++  target_link_libraries(${LIBNAME} c m)
++endif()
+ if (fftw3f_FOUND)
+     target_link_libraries(${LIBNAME} fftw3f)
+ endif()
+

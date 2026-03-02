@@ -3,18 +3,18 @@
 using BinaryBuilder
 
 name = "Xorg_libXmu"
-version = v"1.2.1"
+version = v"1.3.1"
 
 # Collection of sources required to build libXmu
 sources = [
     ArchiveSource("https://www.x.org/archive/individual/lib/libXmu-$(version).tar.xz",
-                  "fcb27793248a39e5fcc5b9c4aec40cc0734b3ca76aac3d7d1c264e7f7e14e8b2"),
+                  "81a99e94c4501e81c427cbaa4a11748b584933e94b7a156830c3621256857bc4"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libXmu-*
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-static=no
 make -j${nproc}
 make install
 """

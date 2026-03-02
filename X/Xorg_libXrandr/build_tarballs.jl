@@ -3,20 +3,20 @@
 using BinaryBuilder
 
 name = "Xorg_libXrandr"
-version = v"1.5.4"
+version = v"1.5.5"
 # We bumped the version number to build for riscv64
-ygg_version = v"1.5.5"
+ygg_version = v"1.5.6"
 
 # Collection of sources required to build libXrandr
 sources = [
     ArchiveSource("https://www.x.org/archive/individual/lib/libXrandr-$(version).tar.gz",
-                  "c72c94dc3373512ceb67f578952c5d10915b38cc9ebb0fd176a49857b8048e22"),
+                  "23faedab4675890ba579b8103399132a139527306b18b500c6fe28e090e2a056"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libXrandr-*
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=yes
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=yes --enable-static=no
 make -j${nproc}
 make install
 """
