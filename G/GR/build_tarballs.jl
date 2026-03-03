@@ -1,7 +1,7 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
-#import Pkg
+using Pkg: PackageSpec
 
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
@@ -21,6 +21,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/gr
+
+apk del cmake
 
 update_configure_scripts
 
@@ -110,6 +112,7 @@ dependencies = [
     BuildDependency("Xorg_libX11_jll"),
     BuildDependency("Xorg_xproto_jll"),
     Dependency("Zlib_jll"),
+    HostBuildDependency(PackageSpec(; name="CMake_jll", version = "3.31.9")),
 ]
 
 platforms_win = filter(Sys.iswindows, platforms)
