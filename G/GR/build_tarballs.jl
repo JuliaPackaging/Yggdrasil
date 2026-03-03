@@ -47,9 +47,11 @@ if [[ "${target}" == arm-* ]]; then
     export CXXFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib"
 fi
 
+cmakeflags=-DQT_FORCE_MIN_CMAKE_VERSION_FOR_USING_QT=3.21
+
 mkdir build
 cd build
-cmake $winflags -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_FIND_ROOT_PATH=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DGR_USE_BUNDLED_LIBRARIES=ON $tifflags -DCMAKE_BUILD_TYPE=Release ..
+cmake $cmakeflags $winflags -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_FIND_ROOT_PATH=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DGR_USE_BUNDLED_LIBRARIES=ON $tifflags -DCMAKE_BUILD_TYPE=Release ..
 
 VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
 cp ../../gr.js ${libdir}/
