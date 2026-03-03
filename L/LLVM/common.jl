@@ -264,7 +264,7 @@ if [[ "${LLVM_MAJ_VER}" -ge "16" ]]; then
     CMAKE_FLAGS+=(-DCMAKE_INSTALL_BINDIR="tools")
 else
     CMAKE_FLAGS+=(-DLLVM_TOOLS_INSTALL_DIR="tools")
-    CMAKE_FLAGS+=(-DCLANG_TOOLS_INSTALL_DIR="tools")
+    CMAKE_FLAGS+=(-DCLANG_TOOLS_INSTALL_DIR="${prefix}/tools")
 fi
 
 # Also build and install utils, since we want FileCheck, and lit
