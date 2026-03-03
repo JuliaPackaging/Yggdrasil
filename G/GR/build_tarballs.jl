@@ -1,7 +1,7 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
-import Pkg
+#import Pkg
 
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
@@ -102,8 +102,9 @@ dependencies = [
     Dependency("libpng_jll"),
     Dependency("Libtiff_jll"; compat="4.7.1"),
     Dependency("Pixman_jll"),
-    HostBuildDependency(Pkg.PackageSpec(; name="Qt6Base_jll", version = v"6.10.2")),
-    Dependency("Qt6Base_jll"; compat="=6.10.2"),
+    #HostBuildDependency(Pkg.PackageSpec(; name="Qt6Base_jll", version = v"6.10.2")),
+    #Dependency("Qt6Base_jll"; compat="=6.10.2"),
+    Dependency("Qt6Base_jll"),
     BuildDependency("Xorg_libX11_jll"),
     BuildDependency("Xorg_xproto_jll"),
     Dependency("Zlib_jll"),
