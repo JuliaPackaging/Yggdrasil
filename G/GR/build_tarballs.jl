@@ -71,11 +71,11 @@ fi
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Platform("armv7l",  "linux"; libc="glibc", cxxstring_abi="cxx11"),
-    Platform("aarch64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
-    Platform("x86_64",  "linux"; libc="glibc", cxxstring_abi="cxx11"),
-    Platform("i686",  "linux"; libc="glibc", cxxstring_abi="cxx11"),
-    Platform("powerpc64le",  "linux"; libc="glibc", cxxstring_abi="cxx11"),
+    Platform("armv7l",  "linux"; libc="glibc"),
+    Platform("aarch64", "linux"; libc="glibc"),
+    Platform("x86_64",  "linux"; libc="glibc"),
+    Platform("i686",  "linux"; libc="glibc"),
+    Platform("powerpc64le",  "linux"; libc="glibc"),
     Platform("x86_64",  "windows"),
     Platform("i686",  "windows"),
     Platform("x86_64",  "macos"),
