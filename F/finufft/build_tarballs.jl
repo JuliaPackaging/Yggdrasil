@@ -39,12 +39,11 @@ cmake --install .
 sources, script = require_macos_sdk("10.14", sources, script)
 
 platforms = supported_platforms()
-# xsimd library does not work with armv6, armv7, powerpc
-filter!(p -> !(contains(arch(p), "armv") || contains(arch(p), "powerpc")), platforms)
-# riscv64 does not build, remove for now
+
+# Remove platforms that do not currently build: armv6, armv7, riscv64
+filter!(p -> !(contains(arch(p), "armv")), platforms)
 filter!(p -> !(contains(arch(p), "riscv64")), platforms)
-# FreeBSD aarch64 does not build, remove for now
-filter!(p -> !(p["os"]=="freebsd" && p["arch"]=="aarch64"), platforms)
+
 # ABI expansion
 platforms = expand_cxxstring_abis(platforms; skip=!Sys.iswindows)
 # Expand for microarchitectures on x86_64 (library doesn't have CPU dispatching)
