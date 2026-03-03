@@ -20,11 +20,8 @@ cd $WORKSPACE/srcdir/libsemigroups
 ./autogen.sh
 export CPPFLAGS="-I${prefix}/include"
 
-# Disable HPCombi on 32-bit platforms (requires __int128)
-HPCOMBI_FLAG=""
-if [[ "${nbits}" == 32 ]] || [[ "${target}" == powerpc* ]]; then
-    HPCOMBI_FLAG="--disable-hpcombi"
-fi
+# Disable HPCombi on all platforms
+HPCOMBI_FLAG="--disable-hpcombi"
 
 ./configure --prefix=${prefix} \
             --build=${MACHTYPE} \
