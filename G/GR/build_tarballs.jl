@@ -24,6 +24,8 @@ cd $WORKSPACE/srcdir/gr
 
 apk del cmake
 
+cmake --version
+
 update_configure_scripts
 
 make -C 3rdparty/qhull -j${nproc}
