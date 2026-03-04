@@ -60,7 +60,6 @@ install_license $WORKSPACE/srcdir/gr/LICENSE.md
 if [[ $target == *"apple-darwin"* ]]; then
     cd ${bindir}
     ln -s ../Applications/gksqt.app/Contents/MacOS/gksqt ./
-    ln -s ../Applications/grplot.app/Contents/MacOS/grplot ./
     ln -s ../Applications/GKSTerm.app/Contents/MacOS/GKSTerm ./
 fi
 """
