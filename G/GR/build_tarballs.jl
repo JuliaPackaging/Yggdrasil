@@ -106,13 +106,12 @@ dependencies = [
     Dependency("libpng_jll"),
     Dependency("Libtiff_jll"; compat="4.7.1"),
     Dependency("Pixman_jll"),
-    #HostBuildDependency(Pkg.PackageSpec(; name="Qt6Base_jll", version = v"6.10.2")),
-    #Dependency("Qt6Base_jll"; compat="=6.10.2"),
-    Dependency("Qt6Base_jll"),
+    HostBuildDependency("Qt6Base_jll"),
+    Dependency("Qt6Base_jll"; compat="~6.10.2"),
     BuildDependency("Xorg_libX11_jll"),
     BuildDependency("Xorg_xproto_jll"),
     Dependency("Zlib_jll"),
-    HostBuildDependency(PackageSpec(; name="CMake_jll", version = "3.31.9")),
+    HostBuildDependency("CMake_jll"),
 ]
 
 platforms_win = filter(Sys.iswindows, platforms)
