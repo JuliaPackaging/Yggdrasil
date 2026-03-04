@@ -9,7 +9,7 @@ filter!(>=(v"1.10"), julia_versions)
 
 # reminder: change the version when changing the supported julia versions
 name = "polymake_oscarnumber"
-version = v"0.3.15"
+version = v"0.3.16"
 
 # reminder: change the above version when changing the supported julia versions
 # julia_versions is now taken from libjulia/common.jl and filtered
@@ -85,7 +85,7 @@ dependencies = [
     BuildDependency(PackageSpec(;name="libjulia_jll", version="1.11.0")),
 
     Dependency("libcxxwrap_julia_jll"; compat = "~0.14.9"),
-    Dependency("libpolymake_julia_jll", compat = "=0.14.5"),
+    Dependency("libpolymake_julia_jll", compat = "=0.14.6"),
     Dependency("polymake_jll", compat = "~400.1500.1"),
 ]
 
