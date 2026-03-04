@@ -9,7 +9,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "finufft"
 version = v"2.5.0"
-commit_hash = "d0c2f621c180c71db9383a3147b482a256b3364f" # master as of 2026-02-26
+commit_hash = "8b7ac66e617ea317cd42366ac27c536793131696"
 preferred_gcc_version=v"10"
 
 # Collection of sources required to complete build
