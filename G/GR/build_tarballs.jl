@@ -1,7 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
-using Pkg: PackageSpec
 
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
@@ -23,8 +22,6 @@ script = raw"""
 cd $WORKSPACE/srcdir/gr
 
 apk del cmake
-
-cmake --version
 
 update_configure_scripts
 
@@ -110,7 +107,7 @@ dependencies = [
     Dependency("Qt6Base_jll"; compat="~6.10.2"),
     BuildDependency("Xorg_libX11_jll"),
     BuildDependency("Xorg_xproto_jll"),
-    Dependency("Zlib_jll"),
+    Dependency("Zlib_jll"; compat="1.3.1"),
     HostBuildDependency("CMake_jll"),
 ]
 
