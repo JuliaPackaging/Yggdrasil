@@ -6,11 +6,11 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "GR"
-version = v"0.73.23"
+version = v"0.73.24"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sciapp/gr.git", "30a598f87747c909e061d954c33527e6f75595e6"),
+    GitSource("https://github.com/sciapp/gr.git", "53ed71e0f464868e1e1cba668895bb4b2d4e2228"),
     FileSource("https://github.com/sciapp/gr/releases/download/v$version/gr-$version.js",
                "0d316bcf4c5b580faf7166cd97b031d10ba76270042fc418c7dfbbdc6d27679f", "gr.js"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
@@ -106,7 +106,7 @@ dependencies = [
     Dependency("Qt6Base_jll"; compat="~6.10.2"),
     BuildDependency("Xorg_libX11_jll"),
     BuildDependency("Xorg_xproto_jll"),
-    Dependency("Zlib_jll"; compat="1.3.1"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
     HostBuildDependency("CMake_jll"),
 ]
 
