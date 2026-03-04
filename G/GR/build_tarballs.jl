@@ -106,7 +106,7 @@ dependencies = [
     Dependency("Qt6Base_jll"; compat="~6.10.2"),
     BuildDependency("Xorg_libX11_jll"),
     BuildDependency("Xorg_xproto_jll"),
-    Dependency("Zlib_jll"; compat="1.3.1"),
+    Dependency("Zlib_jll"; compat="1.2.12,1.3.1"),
     HostBuildDependency("CMake_jll"),
 ]
 
