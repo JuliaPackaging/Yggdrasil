@@ -13,7 +13,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "cufinufft"
 version = v"2.5.0"
-commit_hash = "15fd54c762c17689da9eb50069f43e367a27c99f" # 2.5.0-rc1
+commit_hash = "8b7ac66e617ea317cd42366ac27c536793131696"
 preferred_gcc_version=v"11"
 
 # Collection of sources required to complete build
@@ -49,7 +49,7 @@ cmake --install .
 unlink $prefix/cuda/lib64
 """
 
-# Build for all supported CUDA >= v11.8. Only one v11.x shuold be sufficient.
+# Build for all supported CUDA >= v11.8. Only one v11.x should be sufficient.
 platforms = expand_cxxstring_abis(CUDA.supported_platforms(min_version=v"11.8"))
 
 # Cmake toolchain breaks on aarch64, so only x86_64 for now
