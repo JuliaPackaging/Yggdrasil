@@ -13,7 +13,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDA_Driver"
-cuda_version = v"13.1"
+cuda_version = v"13.1.1"
 driver_version = "590.48.01"
 
 script = raw"""
