@@ -4,9 +4,9 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "QuantumEspresso"
-# When updating to 7.5+ (as of 2nd of July 2025 not yet released),
-# it should be possible to remove 0002-kcw-parallel-make.patch.
-version = v"7.4.1"
+# Separate to avoid padding to 3 components
+raw_version = "7.5"
+version = VersionNumber(raw_version)
 
 # Minor updates of libxc bump the libtool "current" version which is part of the .so file's name.
 # (For example libxc 6.0.x -> 6.1.x bumped "current" from 12 to 13)
@@ -15,8 +15,8 @@ version = v"7.4.1"
 Libxc_jll_range = "~7.0"
 
 sources = [
-    ArchiveSource("https://gitlab.com/QEF/q-e/-/archive/qe-$(version)/q-e-qe-$(version).tar.gz",
-                  "6ef9c53dbf0add2a5bf5ad2a372c0bff935ad56c4472baa001003e4f932cab97"),
+    ArchiveSource("https://gitlab.com/QEF/q-e/-/archive/qe-$(raw_version)/q-e-qe-$(raw_version).tar.gz",
+                  "7e1f7a9a21b63192f5135218bee20a5321b66582e4756536681b76e9c59b3cc8"),
     DirectorySource("bundled"),
 ]
 
@@ -24,7 +24,6 @@ sources = [
 script = raw"""
 cd q-e-qe-*
 atomic_patch -p1 ../patches/0000-pass-host-to-configure.patch
-atomic_patch ../patches/0002-kcw-parallel-make.patch
 
 export BLAS_LIBS="-L${libdir} -lopenblas"
 export LAPACK_LIBS="-L${libdir} -lopenblas"
@@ -146,4 +145,4 @@ append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"6")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"10")
