@@ -16,10 +16,10 @@ std::string compiledebug()
 namespace jlcxx
 {
   template<> struct SuperType<ListGraph::NodeIt> { typedef ListGraph::Node type; };
-  template<> struct SuperType<ListGraph::EdgeIt> { typedef ListGraph::Edge type; };
   template<> struct SuperType<ListDigraph::NodeIt> { typedef ListDigraph::Node type; };
-  // no appropriate factory error
-  //template<> struct SuperType<ListDigraph::ArcIt> { typedef ListDigraph::Arc type; };
+  template<> struct SuperType<ListGraph::EdgeIt> { typedef ListGraph::Edge type; };
+  template<> struct SuperType<ListGraph::ArcIt>  { typedef ListGraph::Arc type; };
+  template<> struct SuperType<ListDigraph::ArcIt> { typedef ListDigraph::Arc type; };
 }
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
@@ -38,6 +38,18 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
   mod.method("id", static_cast<int(*)(ListDigraph::Node)>(&ListDigraph::id));
   mod.method("id", static_cast<int(*)(ListDigraph::Arc)>(&ListDigraph::id));
 
+  mod.method("countNodes", static_cast<int(*)(const ListGraph&)>(&lemon::countNodes));
+  mod.method("countEdges", static_cast<int(*)(const ListGraph&)>(&lemon::countEdges));
+  mod.method("countArcs",  static_cast<int(*)(const ListGraph&)>(&lemon::countArcs));
+  mod.method("countNodes", static_cast<int(*)(const ListDigraph&)>(&lemon::countNodes));
+  mod.method("countArcs",  static_cast<int(*)(const ListDigraph&)>(&lemon::countArcs));
+
+  mod.method("u", [](const ListGraph& g, const ListGraph::Edge& e) { return g.u(e); });
+  mod.method("v", [](const ListGraph& g, const ListGraph::Edge& e) { return g.v(e); });
+
+  mod.method("source", [](const ListDigraph& g, const ListDigraph::Arc& a) { return g.source(a); });
+  mod.method("target", [](const ListDigraph& g, const ListDigraph::Arc& a) { return g.target(a); });
+
   mod.add_type<ListGraph>("ListGraph")
     .method("addNode"  , &ListGraph::addNode)
     .method("addEdge"  , &ListGraph::addEdge);
@@ -54,10 +66,12 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
   mod.add_type<ListGraph::EdgeIt>("ListGraphEdgeIt", jlcxx::julia_base_type<ListGraph::Edge>())
     .constructor<const ListGraph&>()
     .method("iternext", &ListGraph::EdgeIt::operator++);
-  // no appropriate factory error
-  //mod.add_type<ListDigraph::ArcIt>("ListDigraphArcIt", jlcxx::julia_base_type<ListDigraph::ArcIt>())
-  //  .constructor<const ListDigraph&>()
-  //  .method("iternext", &ListDigraph::ArcIt::operator++);
+    mod.add_type<ListDigraph::ArcIt>("ListDigraphArcIt", jlcxx::julia_base_type<ListDigraph::Arc>())  // FIXED: Uncommented
+    .constructor<const ListDigraph&>()
+    .method("iternext", &ListDigraph::ArcIt::operator++);
+  mod.add_type<ListGraph::ArcIt>("ListGraphArcIt", jlcxx::julia_base_type<ListGraph::Arc>())
+    .constructor<const ListGraph&>()
+    .method("iternext", &ListGraph::ArcIt::operator++);
 
   mod.add_type<ListGraph::NodeMap<int>>("ListGraphNodeMapInt")
     .constructor<const ListGraph&>()
@@ -68,35 +82,6 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
   mod.add_type<ListGraph::EdgeMap<int>>("ListGraphEdgeMapInt")
     .constructor<const ListGraph&>()
     .method("set", &ListGraph::EdgeMap<int>::set);
-   
-  mod.method("countNodes", [](const ListGraph& g) {
-    return lemon::countNodes(g);
-  });
-  mod.method("countEdges", [](const ListGraph& g) {
-    return lemon::countEdges(g);
-  });
-  mod.method("countArcs", [](const ListGraph& g) {
-    return lemon::countArcs(g);
-  });
-  mod.method("countNodes", [](const ListDigraph& g) {
-    return lemon::countNodes(g);
-  });
-  mod.method("countArcs", [](const ListDigraph& g) {
-    return lemon::countArcs(g);
-  });
-  mod.method("u", [](const ListGraph& g, const ListGraph::Edge& e) {
-    return g.u(e);
-  });
-  mod.method("v", [](const ListGraph& g, const ListGraph::Edge& e) {
-    return g.v(e);
-  });
-  mod.method("source", [](const ListDigraph& g, const ListDigraph::Arc& a) {
-    return g.source(a);
-  });
-  mod.method("target", [](const ListDigraph& g, const ListDigraph::Arc& a) {
-    return g.target(a);
-  });
-
 
   using MWPM = MaxWeightedPerfectMatching<ListGraph, ListGraph::EdgeMap<int>>;
   using MWPMmatchingedge_ptr = bool (MWPM::*)(const ListGraph::Edge&) const; // used to resolve the overloads of `matching`
