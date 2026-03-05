@@ -8,6 +8,12 @@ name = "QuantumEspresso"
 # it should be possible to remove 0002-kcw-parallel-make.patch.
 version = v"7.4.1"
 
+# Minor updates of libxc bump the libtool "current" version which is part of the .so file's name.
+# (For example libxc 6.0.x -> 6.1.x bumped "current" from 12 to 13)
+# A minor version mismatch will thus prevent loading the QE jll which depends on the libxc .so file.
+# To avoid this, we restrict libxc compat to a specific minor version.
+Libxc_jll_range = "~7.0"
+
 sources = [
     ArchiveSource("https://gitlab.com/QEF/q-e/-/archive/qe-$(version)/q-e-qe-$(version).tar.gz",
                   "6ef9c53dbf0add2a5bf5ad2a372c0bff935ad56c4472baa001003e4f932cab97"),
@@ -75,7 +81,8 @@ filter!(p -> !(arch(p) == "powerpc64le" && libgfortran_version(p) < v"5"), platf
 # Not supported by SCALAPACK32 JLL
 filter!(p -> arch(p) != "riscv64", platforms)
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms)
+# TODO 05/03/2026: Override MPIABI_compat since the default (0.2.0) does not exist
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPIABI_compat="0.1.1")
 
 # MPItrampoline is not supported
 filter!(p -> p["mpi"] ≠ "mpitrampoline", platforms)
@@ -131,7 +138,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency("FFTW_jll"),
-    Dependency("Libxc_jll"),
+    Dependency(PackageSpec(name="Libxc_jll", uuid="a56a6d9d-ad03-58af-ab61-878bf78270d6"); compat=Libxc_jll_range),
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
     Dependency(PackageSpec(name="SCALAPACK32_jll", uuid="aabda75e-bfe4-5a37-92e3-ffe54af3c273"); compat="2.1.0 - 2.2.1"),
 ]
