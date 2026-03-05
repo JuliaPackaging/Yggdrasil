@@ -19,7 +19,7 @@ driver_version = "590.48.01"
 script = raw"""
     # Build the driver inspection binary
     mkdir -p ${bindir}
-    ${CC} -std=c99 -ldl cuda_inspect_driver.c -o ${bindir}/cuda_inspect_driver
+    ${CC} -std=c99 -O2 cuda_inspect_driver.c -ldl -o ${bindir}/cuda_inspect_driver
 
     mkdir -p ${libdir}
 

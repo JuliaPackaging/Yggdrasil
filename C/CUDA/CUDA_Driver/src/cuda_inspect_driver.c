@@ -7,11 +7,7 @@
 
 // These match the flags of Libdl.dlopen():
 // https://docs.julialang.org/en/v1/stdlib/Libdl/#Base.Libc.Libdl.dlopen
-#ifdef __APPLE__
-#define DLOPEN_FLAGS RTLD_LAZY | RTLD_DEEPBIND | RTLD_GLOBAL
-#else
-#define DLOPEN_FLAGS RTLD_LAZY | RTLD_DEEPBIND | RTLD_LOCAL
-#endif
+#define DLOPEN_FLAGS (RTLD_LAZY | RTLD_DEEPBIND | RTLD_LOCAL)
 
 const int DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR = 75;
 const int DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR = 76;
@@ -44,12 +40,18 @@ int main(int argc, char *argv[]) {
     }
 
     cuInit_t cuInit = (cuInit_t)dlsym(library_handle, "cuInit");
+    if (cuInit == NULL) {
+        return -2;
+    }
     int status = cuInit(0);
     if (status != 0) {
         return -2;
     }
 
     cuDriverGetVersion_t cuDriverGetVersion = (cuDriverGetVersion_t)dlsym(library_handle, "cuDriverGetVersion");
+    if (cuDriverGetVersion == NULL) {
+        return -3;
+    }
     int version;
     status = cuDriverGetVersion(&version);
     if (status != 0) {
@@ -63,6 +65,9 @@ int main(int argc, char *argv[]) {
 
     if (inspect_devices) {
         cuDeviceGetCount_t cuDeviceGetCount = (cuDeviceGetCount_t)dlsym(library_handle, "cuDeviceGetCount");
+        if (cuDeviceGetCount == NULL) {
+            return -4;
+        }
         int device_count;
         status = cuDeviceGetCount(&device_count);
         if (status != 0) {
@@ -71,6 +76,9 @@ int main(int argc, char *argv[]) {
 
         cuDeviceGet_t cuDeviceGet = (cuDeviceGet_t)dlsym(library_handle, "cuDeviceGet");
         cuDeviceGetAttribute_t cuDeviceGetAttribute = (cuDeviceGetAttribute_t)dlsym(library_handle, "cuDeviceGetAttribute");
+        if (cuDeviceGet == NULL || cuDeviceGetAttribute == NULL) {
+            return -5;
+        }
 
         for (int i = 0; i < device_count; i++) {
             int device = -1;
