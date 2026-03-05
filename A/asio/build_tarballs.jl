@@ -14,21 +14,12 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd asio/asio
-if [[ ${target} == *-w64-mingw32 ]]; then
-    # Header-only: on Windows skip build (examples use POSIX-only asio::posix::stream_descriptor) and install headers manually
-    mkdir -p ${includedir}
-    cp include/asio.hpp ${includedir}/
-    cp -r include/asio ${includedir}/
-else
-    ./autogen.sh
-    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-    make -j${nproc}
-    make install
-fi
+./autogen.sh
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+make install
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
+# Because we are just producing a header, the same product is available for any platform
 platforms = [AnyPlatform()]
 
 # The products that we will ensure are always built (header-only: export main header so downstreams can discover include/)
@@ -40,7 +31,6 @@ products = Product[
 dependencies = []
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# GCC v4 is missing `std::align`
 build_tarballs(
     ARGS, name, version, sources, script, platforms, products, dependencies;
     julia_compat="1.6",
