@@ -66,7 +66,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
   mod.add_type<ListGraph::EdgeIt>("ListGraphEdgeIt", jlcxx::julia_base_type<ListGraph::Edge>())
     .constructor<const ListGraph&>()
     .method("iternext", &ListGraph::EdgeIt::operator++);
-    mod.add_type<ListDigraph::ArcIt>("ListDigraphArcIt", jlcxx::julia_base_type<ListDigraph::Arc>())  // FIXED: Uncommented
+    mod.add_type<ListDigraph::ArcIt>("ListDigraphArcIt", jlcxx::julia_base_type<ListDigraph::Arc>())
     .constructor<const ListDigraph&>()
     .method("iternext", &ListDigraph::ArcIt::operator++);
   mod.add_type<ListGraph::ArcIt>("ListGraphArcIt", jlcxx::julia_base_type<ListGraph::Arc>())
