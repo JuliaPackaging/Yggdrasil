@@ -19,17 +19,24 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/finufft*/
 
-mkdir build && cd build
-cmake .. \
+toolchain="${CMAKE_TARGET_TOOLCHAIN}"
+if [[ "${target}" == *-apple-* ]]; then
+    toolchain="${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake"
+    
+    # Apparently, we also need to remove the -ld_classic link option
+    sed -i '/add_link_options("-ld_classic")/d' CMakeLists.txt
+fi
+
+cmake -B build \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_PREFIX_PATH="${prefix}" \
     -DCMAKE_INSTALL_PREFIX="${prefix}" \
-    -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
+    -DCMAKE_TOOLCHAIN_FILE="${toolchain}" \
     -DFINUFFT_FFTW_SUFFIX="" \
     -DFINUFFT_ARCH_FLAGS="" \
     -DFINUFFT_STATIC_LINKING="OFF"
-cmake --build . --parallel $nproc
-cmake --install .
+cmake --build build --parallel $nproc
+cmake --install build
 """
 
 platforms = supported_platforms()
@@ -65,8 +72,8 @@ dependencies = [
     Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a")),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
-    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isfreebsd, platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isfreebsd, platforms)),
 ]
 
 llvm_version = v"13.0.1+1"
