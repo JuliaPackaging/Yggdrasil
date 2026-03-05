@@ -40,4 +40,6 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+# Require GCC 8 to map to libgfortran5; we didn't build HDF5 for earlier versions
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.10", preferred_gcc_version=v"8")
