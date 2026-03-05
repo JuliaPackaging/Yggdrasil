@@ -2,12 +2,12 @@ using BinaryBuilder, Pkg
 
 name = "CasADi"
 
-version = v"3.5.5"
+version = v"3.7.2"
 
 sources = [
     GitSource(
         "https://github.com/casadi/casadi.git",
-        "fadc86444f3c7ab824dc3f2d91d4c0cfe7f9dad5",
+        "f959d3175a444d763e4eda4aece48f4c5f4a6f90",
     ),
     DirectorySource("./bundled"),
 ]
