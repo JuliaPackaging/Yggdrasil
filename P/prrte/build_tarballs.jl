@@ -32,7 +32,7 @@ make install
 
 platforms = supported_platforms()
 # `configure` does not find `libevent` on Windows (could probably be fixed)
-filter!(!Sys.iswindows, platforms)
+filter!(!(x) -> (Sys.iswindows(x) || nbits(x) == 32), platforms)
 
 # The products that we will ensure are always built
 products = [
