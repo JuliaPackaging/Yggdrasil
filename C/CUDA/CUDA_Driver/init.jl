@@ -61,17 +61,21 @@ function inspect_driver(driver, deps=String[]; inspect_devices=false)
     cmd = `$(cuda_inspect_driver()) $driver $inspect_devices $deps`
 
     # run the command
-    version_strings = String[]
-    try
-        version_strings = split(read(cmd, String))
+    output = try
+        read(cmd, String)
     catch _
         return nothing
     end
 
     # parse the versions
-    driver_version = parse(VersionNumber, version_strings[1])
+    lines = readlines(IOBuffer(output))
+    isempty(lines) && return nothing
+    driver_version = parse(VersionNumber, lines[1])
     if inspect_devices
-        device_capabilities = map(str -> parse(VersionNumber, str), version_strings[2:end])
+        device_capabilities = VersionNumber[]
+        for i in 2:length(lines)
+            push!(device_capabilities, parse(VersionNumber, lines[i]))
+        end
         return driver_version, device_capabilities
     else
         return driver_version
