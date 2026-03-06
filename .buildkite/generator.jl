@@ -75,6 +75,22 @@ TEMP = mktempdir()
 # (`L/LLVM/LLVM@14` results in `NAME = "LLVM@14"`)
 const NAME = first(split(basename(PROJECT), "@"))
 
+# Check for projects with similar names (differing only by case or underscores).
+# This mirrors the check used by the Julia package registry.
+let all_project_names = unique(first(split(basename(root), "@"))
+                               for (root, dirs, files) in walkdir(YGGDRASIL_BASE)
+                               if "build_tarballs.jl" ∈ files)
+    normalize(s) = lowercase(replace(s, "_" => ""))
+    conflicts = filter(other -> other != NAME && normalize(NAME) == normalize(other), all_project_names)
+    if !isempty(conflicts)
+        msg = "Project `$(NAME)` has a name too similar to `$(join(conflicts, "`, `"))`: " *
+              "Project names cannot differ only by case and underscores."
+        @error msg
+        annotate(msg, style="error", context="similar-names")
+        error(msg)
+    end
+end
+
 # We always invoke a `build_tarballs.jl` file from its own directory
 # generate platform list
 cd(PROJECT) do
