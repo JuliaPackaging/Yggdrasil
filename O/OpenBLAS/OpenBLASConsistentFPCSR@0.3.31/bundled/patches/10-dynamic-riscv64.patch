@@ -1,0 +1,21 @@
+diff --git a/driver/others/dynamic_riscv64.c b/driver/others/dynamic_riscv64.c
+index 726f76d79..919663b22 100644
+--- a/driver/others/dynamic_riscv64.c
++++ b/driver/others/dynamic_riscv64.c
+@@ -99,7 +99,7 @@ struct riscv_hwprobe {
+ #define		RISCV_HWPROBE_IMA_V		(1 << 2)
+ #define		RISCV_HWPROBE_EXT_ZFH		(1 << 27)
+ #define		RISCV_HWPROBE_EXT_ZVFH		(1 << 30)
+-#define		RISCV_HWPROBE_EXT_ZVFBFWMA	(1 << 54)
++#define		RISCV_HWPROBE_EXT_ZVFBFWMA	(1ULL << 54)
+ 
+ #ifndef NR_riscv_hwprobe
+ #ifndef NR_arch_specific_syscall
+@@ -152,6 +152,7 @@ char* gotoblas_corename(void) {
+ static gotoblas_t* get_coretype(void) {
+ 	uint64_t vector_mask;
+ 	unsigned vlenb = 0;
++        char coremsg[128];
+ 
+ #if !defined(OS_LINUX)
+ 	return NULL;
