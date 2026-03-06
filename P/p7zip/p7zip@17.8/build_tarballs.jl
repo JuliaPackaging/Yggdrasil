@@ -5,29 +5,20 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "p7zip"
 # Upstream uses CalVer
-upstream_version = "25.01"
+upstream_version = "26.00"
 compact_version = replace(upstream_version, "."=>"")
-version = v"17.7.0"
+version = v"17.8.0"
 
 # Collection of sources required to build p7zip
 sources = [
     ArchiveSource("https://downloads.sourceforge.net/project/sevenzip/7-Zip/$(upstream_version)/7z$(compact_version)-src.tar.xz",
-                  "ed087f83ee789c1ea5f39c464c55a5c9d4008deb0efe900814f2df262b82c36e";
+                  "3e596155744af055a77fc433c703d54e3ea9212246287b5b1436a6beac060f16";
                   unpack_target="7z"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd 7z/CPP/7zip/Bundles/Alone
-
-# Lowercase names for MinGW
-sed -i "s/NTSecAPI.h/ntsecapi.h/" ../../../Windows/SecurityUtils.h
-sed -i 's/-lUser32/-luser32/g' ../../7zip_gcc.mak
-sed -i 's/-lOle32/-lole32/g' ../../7zip_gcc.mak
-sed -i 's/-lGdi32/-lgdi32/g' ../../7zip_gcc.mak
-sed -i 's/-lComctl32/-lcomctl32/g' ../../7zip_gcc.mak
-sed -i 's/-lComdlg32/-lcomdlg32/g' ../../7zip_gcc.mak
-sed -i 's/-lShell32/-lshell32/g' ../../7zip_gcc.mak
 
 # RAR has a custom license
 export DISABLE_RAR=1
