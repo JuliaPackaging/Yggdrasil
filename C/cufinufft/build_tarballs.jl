@@ -29,6 +29,10 @@ script = raw"""
 cd $WORKSPACE/srcdir/finufft*/
 apk del cmake
 
+# CUDA compilation can run out of storage
+mkdir $WORKSPACE/tmpdir
+export TMPDIR=$WORKSPACE/tmpdir
+
 export CUDA_PATH="$prefix/cuda"
 ln -s $prefix/cuda/lib $prefix/cuda/lib64
 
@@ -76,8 +80,8 @@ for platform in platforms
     # See https://en.wikipedia.org/wiki/CUDA
     cuda_ver = VersionNumber(platform["cuda"])
     if cuda_ver >= v"13" # 13.0+
-        # Skip 110,121 to not run out of space
-        cuda_archs = "75;80;90;100;120"
+        # Build native cubins for major archs from 7.5 (Turing) and up; include 7.5 PTX as a forward-compat fallback
+        cuda_archs = "75;80-real;90-real;100-real;110-real;120-real"
     elseif cuda_ver >= v"12.1" # 12.1-12.9
         # sm_90 works for CUDA v12.1 and up, due to use of atomic operations
         cuda_archs = "60;70;80;90"
