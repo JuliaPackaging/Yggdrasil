@@ -16,9 +16,18 @@ apk del cmake
 
 cd ${WORKSPACE}/srcdir/quiver
 
+# Force apple to use gcc
+toolchain="${CMAKE_TARGET_TOOLCHAIN}"
+if [[ "${target}" == *-apple-* ]]; then
+    toolchain="${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake"
+    
+    # Apparently, we also need to remove the -ld_classic link option
+    sed -i '/add_link_options("-ld_classic")/d' src/CMakeLists.txt
+fi
+
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_TOOLCHAIN_FILE=${toolchain} \
     -DCMAKE_BUILD_TYPE=Release \
     -DQUIVER_BUILD_TESTS=OFF \
     -DQUIVER_BUILD_C_API=ON \
