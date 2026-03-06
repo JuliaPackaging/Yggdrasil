@@ -1,9 +1,9 @@
 using BinaryBuilder, Pkg
 
 name = "blockSQP2"
-version = v"0.1.0"
+version = v"0.1.1"
 sources = [
-    GitSource("https://github.com/ReWittmann/blockSQP2.git", "e92bb91a4d6c1d2b77974e17980fdc370c8b7cd1"),
+    GitSource("https://github.com/ReWittmann/blockSQP2.git", "70cdd7dca3b6e48c80022f071e4df39b68c247cf"),
 ]
 
 
@@ -11,6 +11,12 @@ script = raw"""
 apk del cmake
 cd ${WORKSPACE}/srcdir/blockSQP2
 mv CMake/CMakeListsBinaryBuilderjl.cmake CMakeLists.txt
+
+if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
+    _CMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake
+else
+    _CMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+fi
 
 LOBSUFFIX=""
 
@@ -20,7 +26,7 @@ cmake \
     -DCMAKE_FIND_ROOT_PATH=$prefix \
     -DCMAKE_PREFIX_PATH=$prefix \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_TOOLCHAIN_FILE=${_CMAKE_TOOLCHAIN_FILE} \
     -DCBLAS_SUFFIX="$LOBSUFFIX" \
     -DINCLUDE_DIR=${includedir} \
     -DMUMPS_LIBRARIES="${libdir}/libdmumps.${dlext}" \
@@ -45,7 +51,6 @@ filter!(p -> !(arch(p) == "i686"), platforms)
 filter!(p -> !(libc(p) == "musl"), platforms)
 filter!(p -> !(arch(p) == "riscv64"), platforms)
 filter!(p -> !(os(p) == "freebsd"), platforms)
-filter!(p -> !(os(p) == "macos"), platforms) # C++-20 std::jthread and std::stop_token seem to be unsupported on this platform
 
 
 products = [
