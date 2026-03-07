@@ -43,7 +43,7 @@ products = [
 
 dependencies = [
     # Quiver deps require CMake >= 3.26
-    HostBuildDependency(PackageSpec(; name = "CMake_jll", version = "3.26.0")),
+    HostBuildDependency(PackageSpec(; name = "CMake_jll")),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
