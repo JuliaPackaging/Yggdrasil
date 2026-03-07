@@ -35,7 +35,14 @@ else
     make lib SHARED_LD="${FC} -shared  -o libpgplot.${dlext}"
 fi
 
+# Build grfont.dat using host (musl) Fortran compiler so pgpack can run in the sandbox
+/opt/x86_64-linux-musl/bin/x86_64-linux-musl-gfortran -o pgpack ../pgplot/fonts/pgpack.f
+./pgpack < ../pgplot/fonts/grfont.txt
+make rgb.txt
+
 install -Dvm 755 libpgplot.${dlext} "${libdir}/libpgplot.${dlext}"
+install -Dvm 644 grfont.dat "${prefix}/share/pgplot/grfont.dat"
+install -Dvm 644 rgb.txt "${prefix}/share/pgplot/rgb.txt"
 install_license ../pgplot/copyright.notice
 """
 
@@ -47,11 +54,18 @@ platforms = [
 ]
 platforms = expand_gfortran_versions(platforms)
 
-products = [LibraryProduct("libpgplot", :libpgplot)]
+products = [
+    LibraryProduct("libpgplot", :libpgplot),
+    FileProduct("share/pgplot/grfont.dat", :grfont_dat),
+]
 
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="libpng_jll", uuid="b53b4c65-9356-5827-b1ea-8c7a1a84506f")),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6",
+    init_block = raw"""
+    # need to set because PGPLOT searches for grfot.dat only via (i) PGPLOT_FONT (ii) PGPLOT_DIR (iii) comptime default path
+    ENV["PGPLOT_FONT"] = grfont_dat
+""")
