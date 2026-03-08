@@ -20,29 +20,24 @@ for f in ../patch-*.diff; do
 done
 popd
 
-if [[ "${target}" == *-apple-* ]]; then
-    pushd pgplot
-    mkdir sys_darwin
-    cp ../bb.conf ./sys_darwin/bb.conf
-    popd
-fi
-
 mkdir pgplot_build && cd pgplot_build/
 cp ../pgplot/drivers.list drivers.list
 
 if [[ "${target}" == *-apple-* ]]; then
+    mkdir ../pgplot/sys_darwin
+    cp ../bb.conf ../pgplot/sys_darwin/bb.conf
     ../pgplot/makemake ../pgplot/ darwin
     make lib SHELL=/bin/bash
 else
     ../pgplot/makemake ../pgplot/ linux g77_gcc
-    # Symlink libpng/zlib headers so the Makefile's local header dependencies resolve
+    # Symlink libpng/zlib headers to satisfy Make's local header prerequisites
     ln -sf ${includedir}/png.h ${includedir}/pngconf.h ${includedir}/pnglibconf.h .
     ln -sf ${includedir}/zlib.h ${includedir}/zconf.h .
     make lib SHARED_LD="${FC} -shared  -o libpgplot.${dlext}"
 fi
 
 # Build grfont.dat using host (musl) Fortran compiler so pgpack can run in the sandbox
-/opt/x86_64-linux-musl/bin/x86_64-linux-musl-gfortran -o pgpack ../pgplot/fonts/pgpack.f
+/opt/${MACHTYPE}/bin/${MACHTYPE}-gfortran -o pgpack ../pgplot/fonts/pgpack.f
 ./pgpack < ../pgplot/fonts/grfont.txt
 make rgb.txt
 
