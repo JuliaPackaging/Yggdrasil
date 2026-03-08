@@ -18,8 +18,6 @@ pushd pgplot
 for f in ../patch-*.diff; do
     atomic_patch -p0 "${f}"
 done
-# Fix pndriv.c for modern libpng (png_struct is opaque since libpng 1.5)
-sed -i 's|png_ptr->jmpbuf|png_jmpbuf(png_ptr)|' drivers/pndriv.c
 popd
 
 if [[ "${target}" == *-apple-* ]]; then
@@ -30,15 +28,13 @@ if [[ "${target}" == *-apple-* ]]; then
 fi
 
 mkdir pgplot_build && cd pgplot_build/
-cat ../pgplot/drivers.list | sed 's|! PSDRIV|  PSDRIV|g' | sed 's|! GIDRIV|  GIDRIV|g' | sed 's|! PNDRIV|  PNDRIV|g' > drivers.list
+cp ../pgplot/drivers.list drivers.list
 
 if [[ "${target}" == *-apple-* ]]; then
     ../pgplot/makemake ../pgplot/ darwin
     make lib SHELL=/bin/bash
 else
     ../pgplot/makemake ../pgplot/ linux g77_gcc
-    sed -i 's|FCOMPL=g77|FCOMPL=gfortran|' makefile
-    sed -i 's|^SHARED_LIB_LIBS=.*|SHARED_LIB_LIBS=-lpng -lz|' makefile
     # Symlink libpng/zlib headers so the Makefile's local header dependencies resolve
     ln -sf ${includedir}/png.h ${includedir}/pngconf.h ${includedir}/pnglibconf.h .
     ln -sf ${includedir}/zlib.h ${includedir}/zconf.h .
