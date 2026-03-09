@@ -30,9 +30,6 @@ if [[ "${target}" == *-apple-* ]]; then
     make lib SHELL=/bin/bash
 else
     ../pgplot/makemake ../pgplot/ linux g77_gcc
-    # Symlink libpng/zlib headers to satisfy Make's local header prerequisites
-    ln -sf ${includedir}/png.h ${includedir}/pngconf.h ${includedir}/pnglibconf.h .
-    ln -sf ${includedir}/zlib.h ${includedir}/zconf.h .
     make lib FCOMPL=gfortran SHARED_LIB_LIBS="-lpng -lz" SHARED_LD="${FC} -shared  -o libpgplot.${dlext}"
 fi
 
