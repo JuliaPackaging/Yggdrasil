@@ -53,12 +53,14 @@ function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=fal
         unpack_macosx_sdk = ""
     end
     macos_use_openssl = version >= v"8.15"
-
+	macos_use_sectrust = version >= v"8.17"
+	
     # Disable nss only for CURL < 8.16
     without_nss = version < v"8.16.0"
 
     config = "THIS_IS_CURL=$(this_is_curl_jll)\n"
     config *= "MACOS_USE_OPENSSL=$(macos_use_openssl)\n"
+	config *= "MACOS_USE_SECTRUST=$(macos_use_sectrust)\n"
     if with_zstd
 	config *= "HAVE_ZSTD=true\n"
     end
@@ -117,6 +119,8 @@ function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=fal
         if [[ "${target}" == *x86_64* ]]; then
             export CFLAGS=-mmacosx-version-min=10.11
         fi
+    elif [[ ${MACOS_USE_SECTRUST} == true && ${target} == *darwin* ]]; then
+        FLAGS+=(--with-apple-sectrust)
     else
         # On all other systems, we use OpenSSL
         FLAGS+=(--with-openssl)
