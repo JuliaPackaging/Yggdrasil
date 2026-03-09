@@ -51,7 +51,7 @@ if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
 fi
 make -j${nproc}
 cd ..
-mv bin/vroom${exeext} ${bindir}/
+install -Dvm 755 bin/vroom${exeext} -t ${bindir}
 """
 
 # These are the platforms we will build for by default, unless further
