@@ -37,7 +37,7 @@ else
 fi
 
 # Build grfont.dat using host (musl) Fortran compiler so pgpack can run in the sandbox
-/opt/${MACHTYPE}/bin/${MACHTYPE}-gfortran -o pgpack ../pgplot/fonts/pgpack.f
+${HOSTFC} -o pgpack ../pgplot/fonts/pgpack.f
 ./pgpack < ../pgplot/fonts/grfont.txt
 make rgb.txt
 
