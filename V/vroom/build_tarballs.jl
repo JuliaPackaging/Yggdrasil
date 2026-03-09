@@ -22,12 +22,7 @@ if [[ ${target} == *-w64-mingw32 ]]; then
 fi
 cd asio/asio
 ./autogen.sh
-# Windows: --with-openssl adds -I and -L so SSL examples can link; elsewhere pkg-config works
-if [[ ${target} == *-w64-mingw32 ]]; then
-    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-openssl=$(dirname ${includedir})
-else
-    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-fi
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-openssl=${prefix}
 make install
 cd ../../vroom
 git submodule init
