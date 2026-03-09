@@ -22,7 +22,7 @@ make install
 platforms = [AnyPlatform()]
 
 # The products that we will ensure are always built (header-only: export main header so downstreams can discover include/)
-products = Product[
+products = [
     FileProduct("include/asio.hpp", :asio_hpp),
 ]
 
