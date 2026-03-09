@@ -12,8 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd asio/asio
+cd $WORKSPACE/srcdir/asio/asio
 ./autogen.sh
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make install
