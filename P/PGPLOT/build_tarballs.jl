@@ -33,7 +33,7 @@ else
     # Symlink libpng/zlib headers to satisfy Make's local header prerequisites
     ln -sf ${includedir}/png.h ${includedir}/pngconf.h ${includedir}/pnglibconf.h .
     ln -sf ${includedir}/zlib.h ${includedir}/zconf.h .
-    make lib SHARED_LD="${FC} -shared  -o libpgplot.${dlext}"
+    make lib FCOMPL=gfortran SHARED_LIB_LIBS="-lpng -lz" SHARED_LD="${FC} -shared  -o libpgplot.${dlext}"
 fi
 
 # Build grfont.dat using host (musl) Fortran compiler so pgpack can run in the sandbox
