@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "asio"
-version = v"1.36.0"
+version = v"1.18.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/chriskohlhoff/asio.git", "231cb29bab30f82712fcd54faaea42424cc6e710"),
+    GitSource("https://github.com/chriskohlhoff/asio.git", "b84e6c16b2ea907dbad94206b7510d85aafc0b42"),
 ]
 
 # Bash recipe for building across all platforms
