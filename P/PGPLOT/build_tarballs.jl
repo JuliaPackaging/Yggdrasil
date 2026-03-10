@@ -64,6 +64,8 @@ dependencies = [
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6",
     init_block = raw"""
-    # need to set because PGPLOT searches for grfot.dat only via (i) PGPLOT_FONT (ii) PGPLOT_DIR (iii) comptime default path
-    ENV["PGPLOT_FONT"] = grfont_dat
+    if (@isdefined grfont_dat)
+        # need to set because PGPLOT searches for grfot.dat only via (i) PGPLOT_FONT (ii) PGPLOT_DIR (iii) comptime default path
+        ENV["PGPLOT_FONT"] = grfont_dat
+    end
 """)
