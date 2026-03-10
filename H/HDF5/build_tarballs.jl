@@ -267,6 +267,11 @@ platforms = expand_gfortran_versions(platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
+# Not yet supported
+filter!(platforms) do p
+    return p["mpi"] != "mpiabi"
+end
+
 # The products that we will ensure are always built
 products = [
     # # HDF5 tools
