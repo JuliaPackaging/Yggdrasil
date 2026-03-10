@@ -1,11 +1,26 @@
 --- a/mpi.h
 +++ b/mpi.h
-@@ -37,6 +37,8 @@
- typedef MPI_ABI_Count MPI_Count;
- #undef  MPI_ABI_Count
+@@ -559,7 +559,23 @@
+ typedef void (MPI_T_event_cb_function)(MPI_T_event_instance event_instance, MPI_T_event_registration event_registration, MPI_T_cb_safety cb_safety, void *user_data);
+ typedef void (MPI_T_event_free_cb_function)(MPI_T_event_registration event_registration, MPI_T_cb_safety cb_safety, void *user_data);
+ typedef void (MPI_T_event_dropped_cb_function)(MPI_Count count, MPI_T_event_registration event_registration, int source_index, MPI_T_cb_safety cb_safety, void *user_data);
  
++/* Fortran declarations */
++
 +typedef int MPI_Fint;
 +
- typedef struct {
-     int MPI_SOURCE;
-     int MPI_TAG;
++typedef MPI_Status MPI_F08_Status;
++
++#define MPI_F_STATUS_IGNORE     ((MPI_Fint*)MPI_STATUS_IGNORE)
++#define MPI_F_STATUSES_IGNORE   ((MPI_Fint*)MPI_STATUSES_IGNORE)
++#define MPI_F08_STATUS_IGNORE   ((MPI_F08_Status*)MPI_STATUS_IGNORE)
++#define MPI_F08_STATUSES_IGNORE ((MPI_F08_Status*)MPI_STATUSES_IGNORE)
++
++int MPI_Status_f2c(const MPI_Fint *f_status, MPI_Status *c_status);
++int MPI_Status_c2f(const MPI_Status *c_status, MPI_Fint *f_status);
++int MPI_Status_f082c(const MPI_F08_Status *f08_status, MPI_Status *c_status);
++int MPI_Status_c2f08(const MPI_Status *c_status, MPI_F08_Status *f08_status);
++
+ /* MPI functions */
+ int MPI_Abi_get_fortran_booleans(int logical_size, void *logical_true, void *logical_false, int *is_set);
+ int MPI_Abi_get_fortran_info(MPI_Info *info);
