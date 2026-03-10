@@ -7,24 +7,17 @@ version = v"1.14.0"
 sources = [
     # v1.14.0
     GitSource("https://github.com/VROOM-Project/vroom.git", "1fd711bc8c20326dd8e9538e2c7e4cb1ebd67bdb"),
-    # Vroom v1.14.0 does not work with the latest version of ASIO. This is ASIO v1.18.1
-    GitSource("https://github.com/chriskohlhoff/asio.git", "b84e6c16b2ea907dbad94206b7510d85aafc0b42"),
 ]
 
 # Bash recipe for building across all platforms
-# ASIO is expected at ../asio (sibling of vroom); add its include path to the makefile
 script = raw"""
 cd $WORKSPACE/srcdir
-# Windows: no pkg-config for OpenSSL; set include/lib paths for ASIO and vroom builds
+# Windows: no pkg-config for OpenSSL; set include/lib paths
 if [[ ${target} == *-w64-mingw32 ]]; then
     export CPPFLAGS="-I${includedir} ${CPPFLAGS}"
     export LDFLAGS="-L${libdir} ${LDFLAGS}"
 fi
-cd asio/asio
-./autogen.sh
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-openssl=${prefix}
-make install
-cd ../../vroom
+cd vroom
 git submodule init
 git submodule update
 if [[ ${target} == *-w64-mingw32 ]]; then
@@ -65,6 +58,7 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency(PackageSpec(name="asio_jll", uuid="adbc9c39-6bf4-5566-8295-c0623552eeca"))
     Dependency(PackageSpec(name="GLPK_jll", uuid="e8aa6df9-e6ca-548a-97ff-1f85fc5b8b98"))
     Dependency(PackageSpec(name="jq_jll", uuid="f8f80db2-c0ba-59e9-a5c3-38d72e3c5ac2"))
     Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="3.0.16")
