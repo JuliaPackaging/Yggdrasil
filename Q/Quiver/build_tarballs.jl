@@ -1,4 +1,4 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "Quiver"
 version = v"0.5.0"
@@ -11,6 +11,9 @@ sources = [
 ]
 
 script = raw"""
+# Use CMake_jll instead of the base image CMake
+apk del cmake
+
 cd ${WORKSPACE}/srcdir/quiver
 
 cmake -B build \
@@ -38,7 +41,10 @@ products = [
     LibraryProduct("libquiver_c", :libquiver_c),
 ]
 
-dependencies = Dependency[]
+dependencies = [
+    # Quiver deps require CMake >= 3.26
+    HostBuildDependency(PackageSpec(; name = "CMake_jll")),
+]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.7",
