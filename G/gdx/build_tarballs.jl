@@ -44,7 +44,7 @@ cmake --build build --parallel ${nproc}
 cmake --install build
 
 mkdir -p ${libdir}
-install -Dvm 755 "build/libgdxcclib*.${dlext}" -t "${libdir}"
+install -Dvm 755 "build/libgdxcclib64.${dlext}" -t "${libdir}"
 
 install_license ${WORKSPACE}/srcdir/gdx/LICENSE
 """
