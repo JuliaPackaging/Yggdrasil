@@ -1,14 +1,17 @@
+diff --git a/lib/minitasn1/decoding.c b/lib/minitasn1/decoding.c
+index 1e0fcb3..36b3449 100644
 --- a/lib/minitasn1/decoding.c
 +++ b/lib/minitasn1/decoding.c
-@@ -32,7 +32,6 @@
+@@ -32,7 +32,7 @@
  #include <element.h>
  #include <limits.h>
  #include <intprops.h>
 -#include "c-ctype.h"
++#include <ctype.h>
  
  #ifdef DEBUG
  # define warn() fprintf(stderr, "%s: %d\n", __func__, __LINE__)
-@@ -353,7 +352,7 @@ _asn1_get_time_der (unsigned type, const unsigned char *der, int der_len, int *r
+@@ -355,7 +355,7 @@ _asn1_get_time_der (unsigned type, const unsigned char *der, int der_len,
        p = &der[len_len];
        for (i = 0; i < (unsigned) (str_len - 1); i++)
  	{
@@ -17,17 +20,20 @@
  	    {
  	      if (type == ASN1_ETYPE_GENERALIZED_TIME)
  		{
+diff --git a/lib/minitasn1/element.c b/lib/minitasn1/element.c
+index 528df41..b4ee1e5 100644
 --- a/lib/minitasn1/element.c
 +++ b/lib/minitasn1/element.c
-@@ -30,7 +30,6 @@
+@@ -31,7 +31,7 @@
  #include "parser_aux.h"
  #include <gstr.h>
  #include "structure.h"
 -#include "c-ctype.h"
++#include <ctype.h>
  #include "element.h"
- 
- void
-@@ -380,7 +379,7 @@ asn1_write_value (asn1_node node_root, const char *name,
+ #include <limits.h>
+ #include "intprops.h"
+@@ -424,7 +424,7 @@ asn1_write_value (asn1_node node_root, const char *name,
      case ASN1_ETYPE_ENUMERATED:
        if (len == 0)
  	{
@@ -36,7 +42,7 @@
  	    {
  	      value_temp = malloc (SIZEOF_UNSIGNED_LONG_INT);
  	      if (value_temp == NULL)
-@@ -453,7 +452,7 @@ asn1_write_value (asn1_node node_root, const char *name,
+@@ -497,7 +497,7 @@ asn1_write_value (asn1_node node_root, const char *name,
  	  p = node->down;
  	  while (type_field (p->type) != ASN1_ETYPE_DEFAULT)
  	    p = p->right;
@@ -45,7 +51,7 @@
  	    {
  	      default_temp = malloc (SIZEOF_UNSIGNED_LONG_INT);
  	      if (default_temp == NULL)
-@@ -519,7 +518,7 @@ asn1_write_value (asn1_node node_root, const char *name,
+@@ -563,7 +563,7 @@ asn1_write_value (asn1_node node_root, const char *name,
        break;
      case ASN1_ETYPE_OBJECT_ID:
        for (i = 0; i < _asn1_strlen (value); i++)
@@ -54,7 +60,7 @@
  	  return ASN1_VALUE_NOT_VALID;
        if (node->type & CONST_DEFAULT)
  	{
-@@ -540,7 +539,7 @@ asn1_write_value (asn1_node node_root, const char *name,
+@@ -584,7 +584,7 @@ asn1_write_value (asn1_node node_root, const char *name,
  	if (len < 11)
  	  return ASN1_VALUE_NOT_VALID;
  	for (k = 0; k < 10; k++)
@@ -63,7 +69,7 @@
  	    return ASN1_VALUE_NOT_VALID;
  	switch (len)
  	  {
-@@ -549,7 +548,7 @@ asn1_write_value (asn1_node node_root, const char *name,
+@@ -593,7 +593,7 @@ asn1_write_value (asn1_node node_root, const char *name,
  	      return ASN1_VALUE_NOT_VALID;
  	    break;
  	  case 13:
@@ -72,7 +78,7 @@
  		(value[12] != 'Z'))
  	      return ASN1_VALUE_NOT_VALID;
  	    break;
-@@ -557,16 +556,16 @@ asn1_write_value (asn1_node node_root, const char *name,
+@@ -601,16 +601,16 @@ asn1_write_value (asn1_node node_root, const char *name,
  	    if ((value[10] != '+') && (value[10] != '-'))
  	      return ASN1_VALUE_NOT_VALID;
  	    for (k = 11; k < 15; k++)
@@ -92,7 +98,7 @@
  		return ASN1_VALUE_NOT_VALID;
  	    break;
  	  default:
-@@ -890,7 +889,7 @@ asn1_read_value_type (asn1_node_const root, const char *name, void *ivalue,
+@@ -935,7 +935,7 @@ asn1_read_value_type (asn1_node_const root, const char *name, void *ivalue,
  	  p = node->down;
  	  while (type_field (p->type) != ASN1_ETYPE_DEFAULT)
  	    p = p->right;
@@ -101,27 +107,29 @@
  	      || (p->value[0] == '+'))
  	    {
  	      result = _asn1_convert_integer
---- a/lib/minitasn1/int.h
-+++ b/lib/minitasn1/int.h
-@@ -29,6 +29,7 @@
- # include <string.h>
- # include <stdlib.h>
- # include <stdio.h>
-+# include <ctype.h>
- # include <stdint.h>
- 
- #ifdef HAVE_SYS_TYPES_H
+diff --git a/lib/minitasn1/parser_aux.c b/lib/minitasn1/parser_aux.c
+index 4281cc9..f789b1a 100644
 --- a/lib/minitasn1/parser_aux.c
 +++ b/lib/minitasn1/parser_aux.c
-@@ -26,7 +26,6 @@
+@@ -27,7 +27,7 @@
  #include "gstr.h"
  #include "structure.h"
  #include "element.h"
 -#include "c-ctype.h"
++#include <ctype.h>
  
  char _asn1_identifierMissing[ASN1_MAX_NAME_SIZE + 1];	/* identifier name not found */
  
-@@ -755,7 +754,7 @@ _asn1_expand_object_id (list_type **list, asn1_node node)
+@@ -224,7 +224,7 @@ asn1_find_node (asn1_node_const pointer, const char *name)
+ 	}
+       else
+ 	{			/* no "?LAST" */
+-	  if (n[0] == '?' && c_isdigit (n[1]))
++	  if (n[0] == '?' && isdigit (n[1]))
+ 	    {
+ 	      long position = strtol (n + 1, NULL, 10);
+ 	      if (position > 0 && position < LONG_MAX)
+@@ -764,7 +764,7 @@ _asn1_expand_object_id (list_type **list, asn1_node node)
  	      p2 = p->down;
  	      if (p2 && (type_field (p2->type) == ASN1_ETYPE_CONSTANT))
  		{
@@ -130,7 +138,7 @@
  		    {
  		      _asn1_str_cpy (name2, sizeof (name2), name_root);
  		      _asn1_str_cat (name2, sizeof (name2), ".");
-@@ -1067,7 +1066,7 @@ _asn1_check_identifier (asn1_node_const node)
+@@ -1081,7 +1081,7 @@ _asn1_check_identifier (asn1_node_const node)
  	  p2 = p->down;
  	  if (p2 && (type_field (p2->type) == ASN1_ETYPE_CONSTANT))
  	    {
@@ -139,3 +147,25 @@
  		{
  		  _asn1_str_cpy (name2, sizeof (name2), node->name);
  		  _asn1_str_cat (name2, sizeof (name2), ".");
+diff --git a/lib/minitasn1/structure.c b/lib/minitasn1/structure.c
+index 5d291f1..7856a59 100644
+--- a/lib/minitasn1/structure.c
++++ b/lib/minitasn1/structure.c
+@@ -31,7 +31,7 @@
+ #include <structure.h>
+ #include "parser_aux.h"
+ #include <gstr.h>
+-#include "c-ctype.h"
++#include <ctype.h>
+ #include "element.h"
+ #include <limits.h>
+ 
+@@ -395,7 +395,7 @@ asn1_delete_element (asn1_node structure, const char *element_name)
+     return ASN1_ELEMENT_NOT_FOUND;
+ 
+   if (source_node->parent
+-      && source_node->name[0] == '?' && c_isdigit (source_node->name[1]))
++      && source_node->name[0] == '?' && isdigit (source_node->name[1]))
+     {
+       long position = strtol (source_node->name + 1, NULL, 10);
+       if (position > 0 && position < LONG_MAX)

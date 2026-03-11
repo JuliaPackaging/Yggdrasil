@@ -1,5 +1,8 @@
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 include("../../L/libjulia/common.jl")
 
 function prepare_openfhe_build(name::String, git_hash::String)
@@ -39,12 +42,10 @@ function prepare_openfhe_build(name::String, git_hash::String)
     make install
     """
     
-    # These are the platforms we will build for by default, unless further
-    # platforms are passed in on the command line
-    # Required Julia version is 1.10, exclude not released versions
-    julia_versions = filter(v -> !occursin("DEV", string(v)), julia_full_versions)
-    julia_versions = filter(v -> v >= v"1.10", julia_versions)
-    platforms = vcat(libjulia_platforms.(julia_versions)...)
+    # If necessary, install newer macOS SDK which supports `std::filesystem`
+    sources, script = require_macos_sdk("10.15", sources, script)
+
+    platforms = supported_platforms()
 
     # We cannot build with musl since OpenFHE requires the `execinfo.h` header for `backtrace`
     platforms = filter(p -> libc(p) != "musl", platforms)

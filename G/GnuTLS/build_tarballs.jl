@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "GnuTLS"
-version = v"3.8.4"
+version = v"3.8.11"
 
 # Collection of sources required to build GnuTLS
 sources = [
     ArchiveSource("https://www.gnupg.org/ftp/gcrypt/gnutls/v$(version.major).$(version.minor)/gnutls-$(version).tar.xz",
-                  "2bea4e154794f3f00180fa2a5c51fe8b005ac7a31cd58bd44cdfa7f36ebc3a9b"),
+                  "91bd23c4a86ebc6152e81303d20cf6ceaeb97bc8f84266d0faec6e29f17baa20"),
     DirectorySource("./bundled"),
 ]
 
@@ -24,6 +24,11 @@ if [[ ${target} == *darwin* ]]; then
     if [[ "${target}" == x86_64* ]]; then
         export CFLAGS="-mmacosx-version-min=10.11"
     fi
+fi
+
+if [[ ${target} == ${MACHTYPE} ]]; then
+    # Remove libffi from the system to avoid confusion.
+    rm /usr/lib/libffi.so*
 fi
 
 # Checks from macros `AC_FUNC_MALLOC` and `AC_FUNC_REALLOC` may fail when cross-compiling,
@@ -59,10 +64,10 @@ products = Product[
 dependencies = [
     Dependency("Zlib_jll"),
     Dependency("GMP_jll", v"6.2.1"),
-    Dependency("Nettle_jll"; compat="~3.7.2"),
-    Dependency("P11Kit_jll"; compat="0.24.1"),
+    Dependency("Nettle_jll"; compat="3.10.1"),
+    Dependency("P11Kit_jll"; compat="0.25.10"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               clang_use_lld=false, julia_compat="1.6", lock_microarchitecture=false, preferred_gcc_version=v"6")
+               clang_use_lld=false, julia_compat="1.6", lock_microarchitecture=false, preferred_gcc_version=v"11")

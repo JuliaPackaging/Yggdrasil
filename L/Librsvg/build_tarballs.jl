@@ -89,7 +89,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     # We need to run `gdk-pixbuf-query-loaders`
-    HostBuildDependency(PackageSpec(; name="gdk_pixbuf_jll", version=v"2.42.8")),
+    HostBuildDependency(PackageSpec(; name="gdk_pixbuf_jll", version="2.42.8")),
     BuildDependency(PackageSpec(; name="Xorg_xorgproto_jll", version=v"2019.2.0+2")),
     Dependency("gdk_pixbuf_jll"; compat="2.42.8"),
     Dependency("Pango_jll"; compat="1.50.3"),

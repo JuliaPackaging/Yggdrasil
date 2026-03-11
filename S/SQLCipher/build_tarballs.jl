@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "SQLCipher"
-version = v"4.6.1"
+version = v"4.13.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sqlcipher/sqlcipher.git", "c5bd336ece77922433aaf6d6fe8cf203b0c299d5")
+    GitSource("https://github.com/sqlcipher/sqlcipher.git", "222bdcafad462a1080360de1928cd900a8bccd0a")
 ]
 
 # Bash recipe for building across all platforms
@@ -26,16 +26,14 @@ export CPPFLAGS="-DSQLITE_ENABLE_COLUMN_METADATA=1 \
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
-    --enable-tempstore=yes \
+    --with-tempstore=yes \
     --disable-static \
     --enable-fts3 \
     --enable-fts4 \
     --enable-fts5 \
     --enable-rtree \
-    --enable-json1 \
-    CFLAGS="-DSQLITE_HAS_CODEC" \
-    LDFLAGS="-L${libdir}" \
-    LDFLAGS="-lcrypto"
+    CFLAGS="-DSQLITE_HAS_CODEC -DSQLITE_EXTRA_INIT=sqlcipher_extra_init -DSQLITE_EXTRA_SHUTDOWN=sqlcipher_extra_shutdown" \
+    LDFLAGS="-L${libdir} -lcrypto"
 
 make -j${nproc}
 make install
@@ -51,8 +49,8 @@ filter!(p -> libc(p) != "musl" && !Sys.isfreebsd(p) && !Sys.iswindows(p), platfo
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libsqlcipher", :libsqlcipher),
-    ExecutableProduct("sqlcipher", :sqlcipher)
+    LibraryProduct("libsqlite3", :libsqlcipher),
+    ExecutableProduct("sqlite3", :sqlcipher)
 ]
 
 # Dependencies that must be installed before this package can be built

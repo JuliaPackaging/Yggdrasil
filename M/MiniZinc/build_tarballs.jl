@@ -4,12 +4,12 @@ using BinaryBuilder, Pkg
 
 name = "MiniZinc"
 
-version = v"2.9.3"
+version = v"2.9.5"
 
 sources = [
     GitSource(
         "https://github.com/MiniZinc/libminizinc.git",
-        "a3297cbe6716e0e544a667eb2e5cfde3b151a855",
+        "96ebc4bc60a4eec6bf0a0bac59f46f7a4a2aefb2",
     ),
     DirectorySource("./bundled"),
 ]
@@ -48,7 +48,7 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     # Use an exact version for HiGHS. @odow has observed segfaults with
     # HiGHS_jll v1.5.3 when libminizinc compiled with v1.5.1.
-    Dependency("HiGHS_jll"; compat="=1.11.0"),
+    Dependency("HiGHS_jll"; compat="=1.13.1"),
 ]
 
 build_tarballs(
@@ -61,5 +61,5 @@ build_tarballs(
     products,
     dependencies;
     preferred_gcc_version = v"6",
-    julia_compat = "1.6",
+    julia_compat = "1.10",
 )

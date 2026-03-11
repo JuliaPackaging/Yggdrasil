@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDA_Runtime"
-version = v"0.19.1"
+version = v"0.21.0"
 
 augment_platform_block = """
     $(read(joinpath(@__DIR__, "platform_augmentation.jl"), String))
@@ -160,14 +160,14 @@ for version in reverse(CUDA.cuda_full_versions)
 
         if Base.thisminor(version) == v"10.2"
             push!(builds,
-                (; dependencies=[Dependency("CUDA_Driver_jll", v"13.0"; compat="13"),
-                                 BuildDependency(PackageSpec(name="CUDA_SDK_jll", version=v"10.2.89"))],
+                (; dependencies=[Dependency("CUDA_Driver_jll", v"13.2"; compat="13"),
+                                 BuildDependency(PackageSpec(name="CUDA_SDK_jll", version="10.2.89"))],
                    script=get_script(), platforms=[augmented_platform], products=get_products(platform),
                    sources=[]
             ))
         else
             push!(builds,
-                (; dependencies=[Dependency("CUDA_Driver_jll", v"13.0"; compat="13")],
+                (; dependencies=[Dependency("CUDA_Driver_jll", v"13.2"; compat="13")],
                    script, platforms=[augmented_platform], products=get_products(platform),
                    sources=get_sources("cuda", components; version, platform=augmented_platform)
             ))
@@ -186,5 +186,6 @@ for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    name, version, build.sources, build.script,
                    build.platforms, build.products, build.dependencies;
-                   julia_compat="1.6", lazy_artifacts=true, augment_platform_block)
+                   julia_compat="1.6", augment_platform_block,
+                   lazy_artifacts=true, skip_audit=true, dont_dlopen=true)
 end

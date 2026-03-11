@@ -2,11 +2,10 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-YGGDRASILPATH = joinpath(@__DIR__, "..", "..")
-
-include(joinpath(YGGDRASILPATH, "fancy_toys.jl"))
-include(joinpath(YGGDRASILPATH, "platforms", "microarchitectures.jl"))
-include(joinpath(YGGDRASILPATH, "platforms", "cuda.jl"))
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "microarchitectures.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "SHTns"
 version_string = "3.7"

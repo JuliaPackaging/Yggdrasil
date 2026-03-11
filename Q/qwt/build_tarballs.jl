@@ -2,6 +2,9 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+
 name = "qwt"
 version = v"6.0.0"
 
@@ -39,8 +42,6 @@ dependencies = [
     Dependency(PackageSpec(name="GLFW_jll", uuid="0656b61e-2033-5cc2-a64a-77c0f6c09b89"))
     Dependency(PackageSpec(name="GLU_jll", uuid="bd17208b-e95e-5925-bf81-e2f59b3e5c61"))
 ]
-
-include("../../fancy_toys.jl")
 
 platforms_linux = filter(p -> Sys.islinux(p), platforms)
 platforms_win = filter(p -> Sys.iswindows(p), platforms)

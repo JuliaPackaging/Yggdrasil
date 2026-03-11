@@ -2,26 +2,20 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "PlutoBook"
-version = v"0.9.0"
+version = v"0.12.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/plutoprint/plutobook.git", "d18e317a76da51816240c203253bfabb72208011"),
-    # We need C++20
-    FileSource("https://github.com/alexey-lysiuk/macos-sdk/releases/download/14.5/MacOSX14.5.tar.xz",
-               "f6acc6209db9d56b67fcaf91ec1defe48722e9eb13dc21fb91cfeceb1489e57e"),
+    GitSource("https://github.com/plutoprint/plutobook.git", "1fb1dea07adac92bdf7de492786076c4237ef596"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/plutobook/
-
-if [[ "${target}" == *-apple-darwin* ]]; then
-    rm -rf /opt/${target}/${target}/sys-root/System /opt/${target}/${target}/sys-root/usr/include/libxml2
-    tar --extract --file=${WORKSPACE}/srcdir/MacOSX14.5.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX14.5.sdk/System MacOSX14.5.sdk/usr
-    export MACOSX_DEPLOYMENT_TARGET=14.5
-fi
 
 mkdir build
 cd build/
@@ -31,6 +25,9 @@ ninja install
 
 install_license ${WORKSPACE}/srcdir/plutobook/LICENSE
 """
+
+# We need C++20
+sources, script = require_macos_sdk("14.5", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line

@@ -2,45 +2,49 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "wolfSSL"
-version = v"5.7.2"
+version = v"5.8.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/wolfSSL/wolfssl.git", "00e42151ca061463ba6a95adb2290f678cbca472"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-                  "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/wolfSSL/wolfssl.git", "59f4fa568615396fbf381b073b220d1e8d61e4c2"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/wolfssl*
-atomic_patch -p1 ../patches/mingw32-link-with-ws2_32.patch
 
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    export MACOSX_DEPLOYMENT_TARGET=10.14
-    popd
+./autogen.sh
+
+# NOTE: some non-x86_64 CPUs support AES-NI as well, but provided assembly seems x86_64-specific
+# NOTE: assembly code has some ELF-specific instructions and doesn't compile for Windows
+if [[ ${target} == x86_64-* ]] && [[ ${target} != *-w64-* ]]; then
+    ARCHFLAGS="--enable-aesni --enable-intelasm"
+else
+    ARCHFLAGS=""
 fi
-
-mkdir build && cd build
-
-cmake .. \
--DCMAKE_INSTALL_PREFIX=${prefix} \
--DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
--DCMAKE_BUILD_TYPE=Release \
--DWOLFSSL_EXAMPLES=no \
--DWOLFSSL_CRYPT_TESTS=no \
--DBUILD_SHARED_LIBS=ON
+CFLAGS=-DLARGE_STATIC_BUFFERS ./configure \
+    --prefix=${prefix} \
+    --build=${MACHTYPE} \
+    --host=${target} \
+    --disable-crypttests \
+    --disable-examples \
+    --enable-maxfragment \
+    --enable-aesctr \
+    --enable-aesgcm-stream \
+    --enable-atomicuser \
+    $ARCHFLAGS
 
 make -j${nproc}
 make install
 
+install_license LICENSING
 """
+
+sources, script = require_macos_sdk("10.14", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
@@ -56,4 +60,6 @@ products = [
 dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+# NOTE: gcc 11+ produces faster code than older ones
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+    julia_compat="1.6", preferred_gcc_version = v"11")

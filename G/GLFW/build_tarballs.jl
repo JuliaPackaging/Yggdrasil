@@ -2,16 +2,17 @@ using BinaryBuilder
 
 name = "GLFW"
 version = "3.4"
+ygg_version = "3.4.1"
 
 # Collection of sources required to build glfw
 sources = [
-    ArchiveSource("https://github.com/glfw/glfw/releases/download/$(version)/glfw-$(version).zip",
-                  "b5ec004b2712fd08e8861dc271428f048775200a2df719ccf575143ba749a3e9")
+    GitSource("https://github.com/glfw/glfw.git",
+              "7b6aead9fb88b3623e3b3725ebb42670cbe4c579")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/glfw-*/
+cd $WORKSPACE/srcdir/glfw*/
 mkdir build && cd build
 
 # Building with Wayland fails on FreeBSD because it's missing some headers (e.g. linux/input.h)
@@ -76,5 +77,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, VersionNumber(version), sources, script, platforms, products, dependencies; julia_compat="1.6")
-# Build trigger: 1
+build_tarballs(ARGS, name, VersionNumber(ygg_version), sources, script, platforms, products, dependencies; 
+               julia_compat="1.6")

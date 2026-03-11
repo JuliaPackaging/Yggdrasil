@@ -16,6 +16,9 @@
 # Build count: 1
 using BinaryBuilder
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 HELICS_VERSION = v"3.6.1"
 HELICS_SHA = "d607c1b47dd5ae32f3076c4aa4aa584d37b6056a9bd049234494698ed95cd70f"
 
@@ -23,21 +26,9 @@ sources = [
     DirectorySource("./bundled"),
     ArchiveSource("https://github.com/GMLC-TDC/HELICS/releases/download/v$HELICS_VERSION/Helics-v$HELICS_VERSION-source.tar.gz",
                   "$HELICS_SHA"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 script = raw"""
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    # Install a newer SDK which supports `std::filesystem`
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    popd
-    export MACOSX_DEPLOYMENT_TARGET=10.15
-fi
-
 # Need newer CMake than provided by the default image (currently requires at least 3.22)
 apk del cmake
 
@@ -60,6 +51,9 @@ if [[ "${target}" == *-mingw* ]]; then
     rm ${prefix}/bin/libzmq.dll.a
 fi
 """
+
+# Install a newer SDK which supports `std::filesystem`
+sources, script = require_macos_sdk("10.15", sources, script)
 
 products = [
     LibraryProduct("libhelics", :libhelics),

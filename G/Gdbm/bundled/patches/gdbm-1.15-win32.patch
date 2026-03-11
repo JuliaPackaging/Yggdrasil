@@ -132,73 +132,6 @@ diff -urN gdbm-1.15_orig/compat/Makefile.am gdbm-1.15/compat/Makefile.am
 -libgdbm_compat_la_LDFLAGS = -version-info $(VI_CURRENT):$(VI_REVISION):$(VI_AGE)
 +libgdbm_compat_la_LDFLAGS = -no-undefined -version-info $(VI_CURRENT):$(VI_REVISION):$(VI_AGE)
  
-diff -urN gdbm-1.15_orig/compat/Makefile.in gdbm-1.15/compat/Makefile.in
---- gdbm-1.15_orig/compat/Makefile.in	2018-06-15 23:14:27.000000000 +0300
-+++ gdbm-1.15/compat/Makefile.in	2018-06-17 22:30:53.220968700 +0300
-@@ -417,7 +417,7 @@
-  dbmrdonly.c
- 
- libgdbm_compat_la_SOURCES = $(DBM_CF) $(NDBM_CF)
--libgdbm_compat_la_LDFLAGS = -version-info $(VI_CURRENT):$(VI_REVISION):$(VI_AGE)
-+libgdbm_compat_la_LDFLAGS = -no-undefined -version-info $(VI_CURRENT):$(VI_REVISION):$(VI_AGE)
- all: all-am
- 
- .SUFFIXES:
-diff -urN gdbm-1.15_orig/configure gdbm-1.15/configure
---- gdbm-1.15_orig/configure	2018-06-15 23:14:27.000000000 +0300
-+++ gdbm-1.15/configure	2018-06-17 21:24:30.141149600 +0300
-@@ -639,6 +639,8 @@
- LTLIBOBJS
- LIBOBJS
- AUTOM4TE
-+WIN32_FALSE
-+WIN32_TRUE
- COND_GDBMTOOL_DEBUG_FALSE
- COND_GDBMTOOL_DEBUG_TRUE
- LFLAGS_DEBUG
-@@ -15169,6 +15171,27 @@
- fi
- 
- 
-+if test x$host_os = xmingw32
-+then
-+   if true; then
-+  WIN32_TRUE=
-+  WIN32_FALSE='#'
-+else
-+  WIN32_TRUE='#'
-+  WIN32_FALSE=
-+fi
-+
-+else
-+   if false; then
-+  WIN32_TRUE=
-+  WIN32_FALSE='#'
-+else
-+  WIN32_TRUE='#'
-+  WIN32_FALSE=
-+fi
-+
-+fi
-+
- # Initialize the test suite.
- ac_config_commands="$ac_config_commands tests/atconfig"
- 
-@@ -15333,6 +15356,14 @@
-   as_fn_error $? "conditional \"COND_GDBMTOOL_DEBUG\" was never defined.
- Usually this means the macro was only invoked conditionally." "$LINENO" 5
- fi
-+if test -z "${WIN32_TRUE}" && test -z "${WIN32_FALSE}"; then
-+  as_fn_error $? "conditional \"WIN32\" was never defined.
-+Usually this means the macro was only invoked conditionally." "$LINENO" 5
-+fi
-+if test -z "${WIN32_TRUE}" && test -z "${WIN32_FALSE}"; then
-+  as_fn_error $? "conditional \"WIN32\" was never defined.
-+Usually this means the macro was only invoked conditionally." "$LINENO" 5
-+fi
- 
- : "${CONFIG_STATUS=./config.status}"
- ac_write_fail=0
 diff -urN gdbm-1.15_orig/configure.ac gdbm-1.15/configure.ac
 --- gdbm-1.15_orig/configure.ac	2018-06-15 23:14:19.000000000 +0300
 +++ gdbm-1.15/configure.ac	2018-06-17 20:55:43.812409200 +0300
@@ -233,58 +166,6 @@ diff -urN gdbm-1.15_orig/src/fullio.c gdbm-1.15/src/fullio.c
    char *buf;
    off_t file_end;
  
-diff -urN gdbm-1.15_orig/src/gdbm_load.c gdbm-1.15/src/gdbm_load.c
---- gdbm-1.15_orig/src/gdbm_load.c	2018-05-30 12:39:15.000000000 +0300
-+++ gdbm-1.15/src/gdbm_load.c	2018-06-17 20:55:43.821409700 +0300
-@@ -18,16 +18,12 @@
- # include "gdbm.h"
- # include "gdbmapp.h"
- # include "gdbmdefs.h"
--# include <pwd.h>
--# include <grp.h>
- 
- int replace = 0;
- int meta_mask = 0;
- int no_meta_option;
- 
- int mode;
--uid_t owner_uid;
--gid_t owner_gid;
- 
- char *parseopt_program_doc = "load a GDBM database from a file";
- char *parseopt_program_args = "FILE [DB_FILE]";
-@@ -45,6 +41,7 @@
- static int
- set_meta_info (GDBM_FILE dbf)
- {
-+#if 0
-   if (meta_mask)
-     {
-       int fd = gdbm_fdesc (dbf);
-@@ -63,6 +60,7 @@
- 	  return 1;
- 	}
-     }
-+#endif
-   return 0;
- }
- 
-@@ -139,6 +137,7 @@
- 	}
- 	break;
- 
-+#if 0
-       case 'u':
- 	{
- 	  size_t len;
-@@ -198,6 +197,7 @@
- 	  meta_mask |= GDBM_META_MASK_OWNER;
- 	}
- 	break;
-+#endif
- 	  
-       case 'r':
- 	replace = 1;
 diff -urN gdbm-1.15_orig/src/gdbmdump.c gdbm-1.15/src/gdbmdump.c
 --- gdbm-1.15_orig/src/gdbmdump.c	2018-05-30 12:39:15.000000000 +0300
 +++ gdbm-1.15/src/gdbmdump.c	2018-06-17 20:55:43.828410100 +0300
@@ -467,6 +348,15 @@ diff -urN gdbm-1.15_orig/src/gdbmopen.c gdbm-1.15/src/gdbmopen.c
    if (fd == -1)
      return -1;
    return close (fd);
+@@ -300,6 +300,8 @@
+       if (flags & GDBM_CLOEXEC)
+ 	fbits |= O_CLOEXEC;
+ 
++      fbits |= O_BINARY;
++
+       fd = open (file_name, fbits, op->mode);
+       if (fd < 0)
+ 	{
 @@ -355,8 +355,7 @@
  	      if (!(flags & GDBM_CLOERROR))
  		dbf->desc = -1;
@@ -477,63 +367,6 @@ diff -urN gdbm-1.15_orig/src/gdbmopen.c gdbm-1.15/src/gdbmopen.c
  	      return NULL;
  	    }
  	  else
-@@ -656,6 +657,8 @@
-     }
-   if (flags & GDBM_CLOEXEC)
-     fbits |= O_CLOEXEC;
-+
-+  fbits |= O_BINARY;
-   
-   fd = open (file, fbits, mode);
-   if (fd < 0)
-@@ -689,7 +690,7 @@
-       for (index = 0; index < size; index++)
-         {
- 	  (dbf->bucket_cache[index]).ca_bucket =
--	    malloc (dbf->header->bucket_size);
-+	    calloc (1, dbf->header->bucket_size);
-           if ((dbf->bucket_cache[index]).ca_bucket == NULL)
- 	    {
-               GDBM_SET_ERRNO (dbf, GDBM_MALLOC_ERROR, TRUE);
-diff -urN gdbm-1.15_orig/src/gdbmtool.c gdbm-1.15/src/gdbmtool.c
---- gdbm-1.15_orig/src/gdbmtool.c	2018-06-14 14:53:35.000000000 +0300
-+++ gdbm-1.15/src/gdbmtool.c	2018-06-17 20:55:52.053880600 +0300
-@@ -22,9 +22,6 @@
- #include <errno.h>
- #include <ctype.h>
- #include <signal.h>
--#include <pwd.h>
--#include <sys/ioctl.h>
--#include <termios.h>
- #include <stdarg.h>
- #ifdef HAVE_LOCALE_H
- # include <locale.h>
-@@ -1993,6 +1995,7 @@
-     {
-       istr = instream_file_create (GDBMTOOLRC);
-     }
-+#if 0
-   else
-     {
-       char *fname;
-@@ -2023,6 +2024,7 @@
- 	exit (EXIT_FATAL);
-       yyparse ();
-     }
-+#endif
- }
- 
- #if GDBM_DEBUG_ENABLE
-@@ -2167,8 +2167,6 @@
- 	}
-     }
- 
--  signal (SIGPIPE, SIG_IGN);
--
-   memset (&param, 0, sizeof (param));
-   argmax = 0;
- 
-diff -urN gdbm-1.15_orig/src/lock.c gdbm-1.15/src/lock.c
 --- gdbm-1.15_orig/src/lock.c	2018-05-30 12:39:15.000000000 +0300
 +++ gdbm-1.15/src/lock.c	2018-06-17 20:55:52.058880900 +0300
 @@ -24,7 +24,7 @@
@@ -630,93 +463,28 @@ diff -urN gdbm-1.15_orig/src/lock.c gdbm-1.15/src/lock.c
  # define HAVE_FCNTL_LOCK 1
  #else
 @@ -66,7 +143,7 @@
-   switch (dbf->lock_type)
-     {
-       case LOCKING_FLOCK:
+ static int
+ try_lock_flock (GDBM_FILE dbf, int nb)
+ {
 -#if HAVE_FLOCK
 +#if HAVE_FLOCK || defined(_WIN32)
- 	flock (dbf->desc, LOCK_UN);
- #endif
- 	break;
-@@ -102,7 +179,7 @@
- #endif
-   int lock_val = -1;
- 
+   if (flock (dbf->desc,
+             ((dbf->read_write == GDBM_READER) ? LOCK_SH : LOCK_EX)
+             | (nb ? LOCK_NB : 0)) == 0)
+@@ -84,7 +161,7 @@
+ static void
+ unlock_flock (GDBM_FILE dbf)
+ {
 -#if HAVE_FLOCK
 +#if HAVE_FLOCK || defined(_WIN32)
-   if (dbf->read_write == GDBM_READER)
-     lock_val = flock (dbf->desc, LOCK_SH + LOCK_NB);
-   else
-diff -urN gdbm-1.15_orig/src/Makefile.am gdbm-1.15/src/Makefile.am
---- gdbm-1.15_orig/src/Makefile.am	2018-06-15 23:11:53.000000000 +0300
-+++ gdbm-1.15/src/Makefile.am	2018-06-17 20:55:52.060881000 +0300
-@@ -74,7 +74,7 @@
-   libgdbm_la_SOURCES += debug.c
- endif
- 
--libgdbm_la_LDFLAGS = -version-info $(VI_CURRENT):$(VI_REVISION):$(VI_AGE)
-+libgdbm_la_LDFLAGS = -no-undefined -lws2_32 -version-info $(VI_CURRENT):$(VI_REVISION):$(VI_AGE)
- 
- noinst_LIBRARIES = libgdbmapp.a
- 
-diff -urN gdbm-1.15_orig/src/Makefile.in gdbm-1.15/src/Makefile.in
---- gdbm-1.15_orig/src/Makefile.in	2018-06-15 23:14:27.000000000 +0300
-+++ gdbm-1.15/src/Makefile.in	2018-06-17 22:31:16.905323400 +0300
-@@ -474,7 +474,7 @@
- 	gdbmsetopt.c gdbmstore.c gdbmsync.c base64.c bucket.c falloc.c \
- 	findkey.c fullio.c hash.c lock.c mmap.c recover.c update.c \
- 	version.c $(am__append_1)
--libgdbm_la_LDFLAGS = -version-info $(VI_CURRENT):$(VI_REVISION):$(VI_AGE)
-+libgdbm_la_LDFLAGS = -no-undefined -lws2_32 -version-info $(VI_CURRENT):$(VI_REVISION):$(VI_AGE)
- noinst_LIBRARIES = libgdbmapp.a
- libgdbmapp_a_SOURCES = \
-  err.c\
-diff -urN gdbm-1.15_orig/src/mem.c gdbm-1.15/src/mem.c
---- gdbm-1.15_orig/src/mem.c	2018-05-30 12:39:15.000000000 +0300
-+++ gdbm-1.15/src/mem.c	2018-06-17 20:55:52.066881300 +0300
-@@ -14,7 +14,7 @@
-    You should have received a copy of the GNU General Public License
-    along with GDBM. If not, see <http://www.gnu.org/licenses/>.   */
- 
--# include "autoconf.h"
-+# include "../autoconf.h"
- # include "gdbm.h"
- # include "gdbmapp.h"
- # include "gdbmdefs.h"
-diff -urN gdbm-1.15_orig/src/parseopt.c gdbm-1.15/src/parseopt.c
---- gdbm-1.15_orig/src/parseopt.c	2018-05-30 12:39:15.000000000 +0300
-+++ gdbm-1.15/src/parseopt.c	2018-06-17 20:55:52.069881500 +0300
-@@ -14,10 +14,11 @@
-    You should have received a copy of the GNU General Public License
-    along with GDBM. If not, see <http://www.gnu.org/licenses/>.   */
- 
--# include "autoconf.h"
-+# include "../autoconf.h"
- # include "gdbm.h"
- # include "gdbmapp.h"
- # include "gdbmdefs.h"
-+#include "autoconf.h"
- # include <stdio.h>
- # include <stdarg.h>
- # include <errno.h>
-diff -urN gdbm-1.15_orig/src/progname.c gdbm-1.15/src/progname.c
---- gdbm-1.15_orig/src/progname.c	2018-05-30 12:39:15.000000000 +0300
-+++ gdbm-1.15/src/progname.c	2018-06-17 20:55:52.071881600 +0300
-@@ -14,7 +14,7 @@
-    You should have received a copy of the GNU General Public License
-    along with GDBM. If not, see <http://www.gnu.org/licenses/>.   */
- 
--# include "autoconf.h"
-+# include "../autoconf.h"
- # include "gdbm.h"
- # include "gdbmapp.h"
- # include <string.h>
-diff -urN gdbm-1.15_orig/src/proto.h gdbm-1.15/src/proto.h
---- gdbm-1.15_orig/src/proto.h	2018-05-30 14:14:11.000000000 +0300
-+++ gdbm-1.15/src/proto.h	2018-06-17 22:10:50.270163800 +0300
-@@ -122,6 +122,8 @@
+   flock (dbf->desc, LOCK_UN);
+ #endif
+ }
+--- gdbm-1.26.orig/src/gdbmsync.c	2025-03-09 05:50:57
++++ gdbm-1.26/src/gdbmsync.c	2026-01-03 20:14:30
+@@ -440,6 +440,8 @@
        GDBM_SET_ERRNO (dbf, GDBM_FILE_SYNC_ERROR, TRUE);
-       return 1;
+       r = 1;
      }
 +#elif _WIN32
 +  FlushFileBuffers(dbf);
@@ -839,8 +607,8 @@ diff -urN gdbm-1.15_orig/src/systems.h gdbm-1.15/src/systems.h
 +extern int flock(int fd, int oper);
 +#endif
 diff -urN gdbm-1.15_orig/src/util.c gdbm-1.15/src/util.c
---- gdbm-1.15_orig/src/util.c	2018-05-30 12:39:15.000000000 +0300
-+++ gdbm-1.15/src/util.c	2018-06-17 20:55:52.082882300 +0300
+--- gdbm-1.15_orig/tools/util.c	2018-05-30 12:39:15.000000000 +0300
++++ gdbm-1.15/tools/util.c	2018-06-17 20:55:52.082882300 +0300
 @@ -16,7 +16,6 @@
     along with GDBM. If not, see <http://www.gnu.org/licenses/>.    */
  
@@ -1246,41 +1014,41 @@ diff -urN gdbm-1.15_orig/tests/num2word.c gdbm-1.15/tests/num2word.c
  	}
      }
 diff -urN gdbm-1.15_orig/tests/testsuite gdbm-1.15/tests/testsuite
---- gdbm-1.15_orig/tests/testsuite	2018-06-15 23:14:42.000000000 +0300
-+++ gdbm-1.15/tests/testsuite	2018-06-17 22:36:55.525691300 +0300
-@@ -2166,7 +2166,7 @@
+--- gdbm-1.26.orig/tests/testsuite	2025-07-30 06:18:33
++++ gdbm-1.26/tests/testsuite	2026-01-03 20:16:15
+@@ -2187,7 +2187,7 @@
  ) >>"$at_stdout" 2>>"$at_stderr" 5>&-
  at_status=$? at_failed=false
  $at_check_filter
--echo >>"$at_stderr"; $as_echo "gtfetch: 0: not found
-+echo >>"$at_stderr"; $as_echo "gtfetch.exe: 0: not found
+-echo >>"$at_stderr"; printf "%s\n" "gtfetch: 0: not found
++echo >>"$at_stderr"; printf "%s\n" "gtfetch.exe: 0: not found
  " | \
    $at_diff - "$at_stderr" || at_failed=:
  at_fn_diff_devnull "$at_stdout" || at_failed=:
-@@ -2262,7 +2262,7 @@
+@@ -2283,7 +2283,7 @@
  ) >>"$at_stdout" 2>>"$at_stderr" 5>&-
  at_status=$? at_failed=false
  $at_check_filter
--echo >>"$at_stderr"; $as_echo "gtdel: cannot delete 11: Item not found
-+echo >>"$at_stderr"; $as_echo "gtdel.exe: cannot delete 11: Item not found
+-echo >>"$at_stderr"; printf "%s\n" "gtdel: cannot delete 11: Item not found
++echo >>"$at_stderr"; printf "%s\n" "gtdel.exe: cannot delete 11: Item not found
  " | \
    $at_diff - "$at_stderr" || at_failed=:
  at_fn_diff_devnull "$at_stdout" || at_failed=:
-@@ -2627,7 +2627,7 @@
+@@ -2795,7 +2795,7 @@
  ) >>"$at_stdout" 2>>"$at_stderr" 5>&-
  at_status=$? at_failed=false
  $at_check_filter
--echo >>"$at_stderr"; $as_echo "dtfetch: 0: not found
-+echo >>"$at_stderr"; $as_echo "dtfetch.exe: 0: not found
+-echo >>"$at_stderr"; printf "%s\n" "dtfetch: 0: not found
++echo >>"$at_stderr"; printf "%s\n" "dtfetch.exe: 0: not found
  " | \
    $at_diff - "$at_stderr" || at_failed=:
  at_fn_diff_devnull "$at_stdout" || at_failed=:
-@@ -2835,7 +2835,7 @@
+@@ -3003,7 +3003,7 @@
  ) >>"$at_stdout" 2>>"$at_stderr" 5>&-
  at_status=$? at_failed=false
  $at_check_filter
--echo >>"$at_stderr"; $as_echo "dtdel: cannot delete 11: Item not found
-+echo >>"$at_stderr"; $as_echo "dtdel.exe: cannot delete 11: Item not found
+-echo >>"$at_stderr"; printf "%s\n" "dtdel: cannot delete 11: Item not found
++echo >>"$at_stderr"; printf "%s\n" "dtdel.exe: cannot delete 11: Item not found
  " | \
    $at_diff - "$at_stderr" || at_failed=:
  at_fn_diff_devnull "$at_stdout" || at_failed=:

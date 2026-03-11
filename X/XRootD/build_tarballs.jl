@@ -2,32 +2,21 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "XRootD"
-version = v"5.8.4"
+version = v"5.9.1"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/xrootd/xrootd/releases/download/v$(version)/xrootd-$(version).tar.gz", 
-                  "d8716bf764a7e8103aab83fbf4906ea2cc157646b1a633d99f91edbf204ff632"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
-    DirectorySource("./bundled")
+                  "39946509a50e790ab3fcc77ba0f4c9b66abef221262756aa8bb2494f00a0e321"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-
-atomic_patch -p0 patches/compilation-fixes.patch
-
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    export MACOSX_DEPLOYMENT_TARGET=10.15
-    popd
-fi
 
 mkdir build && cd build
 install_license ../xrootd-*/LICENSE
@@ -39,6 +28,8 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
 make -j${nproc}
 make install
 """
+
+sources, script = require_macos_sdk("10.15", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
@@ -123,3 +114,4 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                preferred_gcc_version=v"9", julia_compat="1.6")
+

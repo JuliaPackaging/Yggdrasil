@@ -13,7 +13,6 @@ products = [
     LibraryProduct(["libavfilter", "avfilter"], :libavfilter),
     LibraryProduct(["libavformat", "avformat"], :libavformat),
     LibraryProduct(["libavutil", "avutil"], :libavutil),
-    LibraryProduct(["libpostproc", "postproc"], :libpostproc),
     LibraryProduct(["libswresample", "swresample"], :libswresample),
     LibraryProduct(["libswscale", "swscale"], :libswscale),
 ]
@@ -21,7 +20,7 @@ products = [
 # Dependencies that must be installed before this package can be built.
 # TODO: Theora once it's available
 dependencies = [
-    HostBuildDependency("YASM_jll"),
+    HostBuildDependency("NASM_jll"),
     BuildDependency("nv_codec_headers_jll"),
     Dependency("libass_jll"; compat="0.17.4"),
     Dependency("libfdk_aac_jll"; compat="2.0.4"),
@@ -45,4 +44,4 @@ dependencies = [
 build_tarballs(ARGS, name, version, sources, script(; ffplay=false), platforms, products, dependencies;
     julia_compat="1.6", preferred_gcc_version=preferred_gcc_version, clang_use_lld=false)
 
-# Build trigger: 2
+# Build trigger: 3

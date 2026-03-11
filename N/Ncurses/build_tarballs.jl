@@ -1,49 +1,70 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "Ncurses"
-version = v"6.5.0"
-ygg_version = v"6.5.1" # Bump to build riscv, and will pull in new version of JLLWrappers
+version = v"6.6.0"
 
 # Collection of sources required to build Ncurses
 sources = [
-    ArchiveSource("https://ftp.gnu.org/pub/gnu/ncurses/ncurses-$(version.major).$(version.minor).tar.gz",
-                  "136d91bc269a9a5785e5f9e980bc76ab57428f604ce3e5a5a90cebc767971cc6"),
+    ArchiveSource("https://ftpmirror.gnu.org/pub/gnu/ncurses/ncurses-$(version.major).$(version.minor).tar.gz",
+                  "355b4cbbed880b0381a04c46617b7656e362585d52e9cf84a67e2009b749ff11"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/ncurses-*
 
-CONFIG_FLAGS=""
+args=(
+    --disable-rpath
+    --disable-static
+    --enable-assertions
+    --enable-colorfgbg
+    --enable-database
+    --enable-ext-colors
+    --enable-ext-mouse
+    --enable-pc-files
+    --enable-warnings
+    --enable-widec
+    --with-normal
+    --with-shared
+    --without-ada
+    --without-cxx-binding
+    --without-debug
+    --without-manpages
+    --without-tests
+)
+
 if [[ ${target} == *-darwin* ]]; then
-    CONFIG_FLAGS="${CONFIG_FLAGS} --disable-stripping"
+    args+=(
+        --disable-stripping
+    )
 elif [[ "${target}" == *-mingw* ]]; then
-    CONFIG_FLAGS="--enable-sp-funcs --enable-term-driver"
+    args+=(
+        --enable-sp-funcs
+        --enable-term-driver
+    )
+    # Do not export multi-byte string functions.
+    # These functions are defined in a system library, and if we not re-export them,
+    # there would be duplicate definitions.
+    export LDFLAGS="-Wl,--exclude-symbols,mbrtowc:mbrlen:mbsrtowcs:wcsrtombs:mbtowc:wctomb"
 fi
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-    --with-shared \
-    --disable-static \
-    --without-manpages \
-    --with-normal \
-    --without-debug \
-    --without-ada \
-    --without-cxx-binding \
-    --enable-widec \
-    --enable-pc-files \
-    --disable-rpath \
-    --enable-colorfgbg \
-    --enable-ext-colors \
-    --enable-ext-mouse \
-    --enable-warnings \
-    --enable-assertions \
-    --enable-database \
-    --without-tests \
-    ${CONFIG_FLAGS}
+# Ncurses check whether we're building on a "multi-user system". (We're
+# not, since we're building in a container.) If not, it disables access
+# to environment variables when running as root (i.e. usually when
+# running in a container). This breaks our `TERMINFO_DIRS` mechanism
+# below.
+export cf_cv_multiuser=yes
+
+./configure --build=${MACHTYPE} --host=${target} --prefix=${prefix} "${args[@]}"
 make -j${nproc}
 make install
+
+if [[ "${target}" == *-mingw* ]]; then
+    # Ensure we didn't put a copy of `mbrtowc` into our `libncursesw` library
+    ${target}-nm -A /workspace/destdir/lib/libncursesw.dll.a | grep -w 'mbrtowc$' && false
+fi
 
 # Remove duplicates that don't work on case-insensitive filesystems
 rm -f  ${prefix}/share/terminfo/2/2621a
@@ -80,13 +101,14 @@ products = Product[
     LibraryProduct(["libform", "libform6"], :libform),
     LibraryProduct(["libmenu", "libmenu6"], :libmenu),
     LibraryProduct(["libncurses", "libncurses6"], :libncurses),
+    LibraryProduct(["libncursesw", "libncursesw6"], :libncursesw),
     LibraryProduct(["libpanel", "libpanel6"], :libpanel),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     # We need to run the native "tic" program
-    HostBuildDependency("Ncurses_jll"),
+    HostBuildDependency(PackageSpec(; name="Ncurses_jll", version="6.5.1")),
 ]
 
 init_block = raw"""
@@ -102,4 +124,4 @@ end
 """
 
 # Build the tarballs.
-build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6", init_block)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", init_block)

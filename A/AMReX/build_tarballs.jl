@@ -2,30 +2,24 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
+
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "AMReX"
-version_string = "25.07"
+version_string = "26.02"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/AMReX-Codes/amrex/releases/download/$(version_string)/amrex-$(version_string).tar.gz",
-                  "19b9e5271451c202610f9c6569189c28fc05bcd655d53525df9169efeb5ee66f"),
-    FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-               "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
+                  "7627f0bac4f8025b555b6c7c7a26e2d4db4e7a7fda660b77b272ffe40749b7b2"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/amrex
-
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    rm -rf /opt/${target}/${target}/sys-root/System
-    tar --extract --file=${WORKSPACE}/srcdir/MacOSX10.14.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX10.14.sdk/System MacOSX10.14.sdk/usr
-    export MACOSX_DEPLOYMENT_TARGET=10.14
-fi
 
 # Correct HDF5 compiler wrappers
 perl -pi -e 's+-I/workspace/srcdir/hdf5-1[.]14[.]./src/H5FDsubfiling++' $(which h5pcc)
@@ -83,11 +77,13 @@ fi
 install_license LICENSE
 """
 
+sources, script = require_macos_sdk("10.14", sources, script)
+
 augment_platform_block = """
     using Base.BinaryPlatforms
     $(MPI.augment)
     augment_platform!(platform::Platform) = augment_mpi!(platform)
-"""
+    """
 
 # The products that we will ensure are always built
 products = [
@@ -108,7 +104,7 @@ platforms = filter(p -> libc(p) ≠ "musl", platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
-# Windows does not supported parallel HDF5
+# Windows does not support parallel HDF5
 hdf5_platforms = filter(!Sys.iswindows, platforms)
 
 # Dependencies that must be installed before this package can be built
@@ -117,7 +113,7 @@ dependencies = [
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else. 
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae");
                platforms=filter(!Sys.isbsd, platforms)),
-    Dependency(PackageSpec(name="HDF5_jll"); compat="~1.14.6", platforms=hdf5_platforms),
+    Dependency(PackageSpec(name="HDF5_jll"); compat="2.0.0", platforms=hdf5_platforms),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
                platforms=filter(Sys.isbsd, platforms)),
 ]

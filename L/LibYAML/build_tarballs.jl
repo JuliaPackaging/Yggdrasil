@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "LibYAML"
-version = v"0.2.6" #​ <-- This version is a lie, we need to bump it to build for experimental platforms
+version = v"0.2.7" #​ <-- This version is a lie, we need to bump it to build for experimental platforms
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://pyyaml.org/download/libyaml/yaml-0.2.5.tar.gz", "c642ae9b75fee120b2d96c712538bd2cf283228d2337df2cf2988e3c02678ef4")
+    ArchiveSource("http://pyyaml.org/download/libyaml/yaml-0.2.5.tar.gz",
+                  "c642ae9b75fee120b2d96c712538bd2cf283228d2337df2cf2988e3c02678ef4")
 ]
 
 # Bash recipe for building across all platforms

@@ -45,11 +45,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(; name = "OpenCL_Headers_jll", version = v"2024.10.24")),
+    BuildDependency(PackageSpec(; name = "OpenCL_Headers_jll", version = "2024.10.24")),
     Dependency("OpenCL_jll"),
     Dependency("perfetto_jll"),
     Dependency("SPIRV_Tools_jll"),
-    HostBuildDependency(PackageSpec(; name = "CMake_jll", version = v"3.24.3")),
+    HostBuildDependency(PackageSpec(; name = "CMake_jll", version = "3.24.3")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

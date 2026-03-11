@@ -3,16 +3,16 @@ Author: Tim Besard <tim.besard@gmail.com>
 Date:   Fri Jun 6 14:47:12 2025 +0200
 
     [SPIRV] Fix type mismatch assertion in insertvalue.
-    
+
     The code was incorrectly converting all undef arguments to i32, while
     the `spv_insertv` intrinsics only expects that for the first operand,
     representing the aggregate type.
 
 diff --git a/llvm/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp b/llvm/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
-index 702206b8e0dc..22cfae9ca8e6 100644
+index b90e1aadbb5a..84e275ccb30c 100644
 --- a/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
 +++ b/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
-@@ -1732,11 +1732,12 @@ Instruction *SPIRVEmitIntrinsics::visitInsertValueInst(InsertValueInst &I) {
+@@ -1712,11 +1712,12 @@ Instruction *SPIRVEmitIntrinsics::visitInsertValueInst(InsertValueInst &I) {
    B.SetInsertPoint(&I);
    SmallVector<Type *, 1> Types = {I.getInsertedValueOperand()->getType()};
    SmallVector<Value *> Args;

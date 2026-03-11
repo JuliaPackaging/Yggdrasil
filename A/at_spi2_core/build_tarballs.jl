@@ -3,22 +3,17 @@
 using BinaryBuilder
 
 name = "at_spi2_core"
-version = v"2.57.1"
+version = v"2.58.2"
 
 # Collection of sources required to build at-spi2-core
 sources = [
     ArchiveSource("http://ftp.gnome.org/pub/gnome/sources/at-spi2-core/$(version.major).$(version.minor)/at-spi2-core-$(version).tar.xz",
-                  "5d1eac51ede2bf0d438b6ee69654ab0baa8c3ce183a5aaf450255eabc0d88da6"),
-    DirectorySource("bundled"),
+                  "a2823b962ed16cdd5cb1fc5365029fd218394d852acd4098b321854bd6692f6e"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/at-spi2-core-*
-
-# Old versions of glibc need help before they define `timersub`:
-# Reported as <https://gitlab.gnome.org/GNOME/at-spi2-core/-/issues/200>
-atomic_patch -p1 $WORKSPACE/srcdir/patches/timersub.patch
 
 mkdir build && cd build
 

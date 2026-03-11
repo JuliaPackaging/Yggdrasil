@@ -12,6 +12,10 @@ components:
     - eschnett
   A/AMReX/:
     - eschnett
+  A/Arrow/:
+    - evetion
+  A/Aria2/:
+    - evetion
   A/asdf_cxx/:
     - eschnett
   B/basiclu/:
@@ -72,6 +76,9 @@ components:
     - lgoettgens
   G/GDAL/:
     - eschnett
+    - evetion
+  G/geoarrow-c/:
+    - evetion
   G/Git_LFS/:
     - cgarling
   G/GLPK/:
@@ -100,6 +107,8 @@ components:
   L/LAPACK/:
     - amontoison
     - imciner2
+  L/LASzip/:
+    - evetion
   L/LEMON/:
     - Krastanov
   L/legate/:
@@ -115,6 +124,8 @@ components:
   L/libblastrampoline/:
     - amontoison
     - imciner2
+  L/licensecheck/:
+    - ericphanson
   L/libigc/:
     - amontoison
     - michel2323
@@ -131,6 +142,8 @@ components:
     - fingolfin
   L/libsixel/:
     - eschnett
+  M/MDAL/:
+    - evetion
   M/METIS/:
     - amontoison
   M/MiniZinc/:
@@ -147,6 +160,8 @@ components:
     - eschnett
   M/MUMPS/:
     - amontoison
+  N/nanoarrow/:
+    - evetion
   N/Ncurses/:
     - eschnett
   N/NEO/:
@@ -167,6 +182,18 @@ components:
     - michel2323
   O/OpenBLAS/:
     - imciner2
+  O/OpenFHE/:
+    - sloede
+    - MaxGruebmeyer
+  O/OpenFHE_int128/:
+    - sloede
+    - MaxGruebmeyer
+  O/openfhe_julia/:
+    - sloede
+    - MaxGruebmeyer
+  O/openfhe_julia_int128/:
+    - sloede
+    - MaxGruebmeyer
   O/OpenMPI/:
     - eschnett
   O/openPMD_api/:
@@ -183,6 +210,7 @@ components:
     - amontoison
   P/PDAL/:
     - eschnett
+    - evetion
   P/PicoSAT:
     - StefanKarpinski
   P/polymake:
@@ -193,6 +221,7 @@ components:
     - amontoison
   P/PROJ/:
     - eschnett
+    - evetion
   P/ProxTV/:
     - amontoison
   P/PROPACK/:
@@ -241,6 +270,8 @@ components:
     - amontoison
   S/StarPU/:
     - amontoison
+  S/startin/:
+    - evetion
   S/STYRENE/:
     - amontoison
   S/SuiteSparse/:

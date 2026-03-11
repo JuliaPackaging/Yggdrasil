@@ -1,0 +1,16 @@
+--- a/build/_deps/openjph-src/src/core/others/ojph_arch.cpp
++++ b/build/_deps/openjph-src/src/core/others/ojph_arch.cpp
+@@ -173,8 +173,13 @@
+       #if defined(__aarch64__) || defined(_M_ARM64) // 64-bit ARM
+ 
+         #include <sys/auxv.h>
+         #include <asm/hwcap.h>
+ 
++        // Compatibility for older kernel headers
++        #ifndef HWCAP2_SVE2
++        #define HWCAP2_SVE2 (1 << 1)
++        #endif
++        
+         bool init_cpu_ext_level(int& level) {
+           unsigned long hwcaps = getauxval(AT_HWCAP);
+           unsigned long hwcaps2 = getauxval(AT_HWCAP2);

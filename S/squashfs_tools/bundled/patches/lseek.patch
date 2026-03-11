@@ -1,0 +1,62 @@
+commit 9ac89115cc0a3acc71c5d34d7e2ee9379159807a
+Author: Phillip Lougher <phillip@squashfs.org.uk>
+Date:   Tue Jan 6 03:04:46 2026 +0000
+
+    lseek: define SEEK_DATA if not defined by C library
+
+    Define SEEK_DATA if the C library is too old to define it.
+
+    Fixes: https://github.com/plougher/squashfs-tools/issues/338
+
+    Signed-off-by: Phillip Lougher <phillip@squashfs.org.uk>
+
+diff --git a/squashfs-tools/lseek.h b/squashfs-tools/lseek.h
+new file mode 100644
+index 00000000..501f85f8
+--- /dev/null
++++ b/squashfs-tools/lseek.h
+@@ -0,0 +1,33 @@
++#ifndef LSEEK_H
++#define LSEEK_H
++/*
++ * Create a squashfs filesystem.  This is a highly compressed read only
++ * filesystem.
++ *
++ * Copyright (c) 2026
++ * Phillip Lougher <phillip@squashfs.org.uk>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2,
++ * or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ *
++ * lseek.h
++ */
++
++#include <unistd.h>
++
++/* define SEEK_DATA if C library is too old to define it */
++#ifndef SEEK_DATA
++#define SEEK_DATA 3
++#endif
++#endif
+diff --git a/squashfs-tools/reader.c b/squashfs-tools/reader.c
+index 76ff0e0d..9627d4f8 100644
+--- a/squashfs-tools/reader.c
++++ b/squashfs-tools/reader.c
+@@ -52,6 +52,7 @@
+ #include "atomic_swap.h"
+ #include "caches-queues-lists.h"
+ #include "alloc.h"
++#include "lseek.h"
+
+ #define READER_ALLOC 1024

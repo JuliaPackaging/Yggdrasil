@@ -4,12 +4,12 @@ using BinaryBuilder, Pkg
 
 name = "Uno"
 
-version = v"2.2.0"
+version = v"2.4.1"
 
 sources = [
     GitSource(
         "https://github.com/cvanaret/Uno.git",
-        "94768b83d63b8a87c2a2e9530cee98d964095edf",
+        "7bd0e25016c1b7c436c518bcf17919ccee97347d",
     ),
 ]
 
@@ -20,10 +20,8 @@ cd build
 
 if [[ "${target}" == *mingw* ]]; then
     LBT=blastrampoline-5
-    HIGHS_DIR=${prefix}/lib
 else
     LBT=blastrampoline
-    HIGHS_DIR=${libdir}
 fi
 
 # FortranCInterface_VERIFY fails on macOS, but it's not actually needed for the current build
@@ -35,7 +33,7 @@ cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DAMPLSOLVER=${libdir}/libasl.${dlext} \
-    -DHIGHS_DIR=${HIGHS_DIR} \
+    -DHIGHS=${libdir}/libhighs.${dlext} \
     -DBQPD=${prefix}/lib/libbqpd.a \
     -DHSL=${libdir}/libhsl.${dlext} \
     -DBLA_VENDOR="libblastrampoline" \
@@ -65,6 +63,7 @@ install_license ${WORKSPACE}/srcdir/Uno/LICENSE_BQPD
 platforms = supported_platforms()
 filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 filter!(p -> arch(p) != "riscv64", platforms)
+filter!(p -> arch(p) != "powerpc64le", platforms)
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 platforms = filter(p -> libgfortran_version(p) != v"3", platforms)
@@ -79,7 +78,7 @@ products = [
 
 dependencies = [
     BuildDependency(PackageSpec(name="BQPD_jll", uuid="1325ac01-0a49-589f-8355-43321054aaab")),
-    Dependency(PackageSpec(name="HiGHS_jll", uuid="8fd58aa0-07eb-5a78-9b36-339c94fd15ea"), compat="1.11.0"),
+    Dependency(PackageSpec(name="HiGHS_jll", uuid="8fd58aa0-07eb-5a78-9b36-339c94fd15ea"), compat="1.12.0"),
     Dependency(PackageSpec(name="HSL_jll", uuid="017b0a0e-03f4-516a-9b91-836bbd1904dd")),
     Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70")),
     Dependency(PackageSpec(name="ASL_jll", uuid="ae81ac8f-d209-56e5-92de-9978fef736f9"), compat="0.1.3"),

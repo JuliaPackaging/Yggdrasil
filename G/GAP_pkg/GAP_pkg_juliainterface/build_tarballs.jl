@@ -9,7 +9,7 @@ using Pkg
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
-gap_version = v"400.1500.0"
+gap_version = v"400.1500.100"
 name = "JuliaInterface"
 upstream_version = "0.16.0" # when you increment this, reset offset to v"0.0.0"
 offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
@@ -54,7 +54,7 @@ platforms = gap_platforms(expand_julia_versions=true)
 # is easy as it only requires a change to GAP.jl, not to any JLLs.
 dependencies = [
     Dependency("GAP_jll", gap_version),
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.20")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version="1.11.0")),
 ]
 
 # The products that we will ensure are always built
@@ -62,8 +62,11 @@ products = [
     FileProduct("lib/gap/JuliaInterface.so", :JuliaInterface),
 ]
 
+# we want to get notified of any changes to julia_compat, and adapt `version` accordingly
+@assert libjulia_min_julia_version <= v"1.10.0"
+
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.10", preferred_gcc_version=v"7")
+               preferred_gcc_version=v"7", julia_compat=libjulia_julia_compat(julia_versions))
 
 # rebuild trigger: 1
