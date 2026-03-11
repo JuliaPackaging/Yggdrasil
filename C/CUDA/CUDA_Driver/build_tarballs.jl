@@ -13,8 +13,8 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDA_Driver"
-cuda_version = v"13.1.1"
-driver_version = "590.48.01"
+cuda_version = v"13.2.0"
+driver_version = "595.45.04"
 
 script = raw"""
     # Build the driver inspection binary
@@ -66,8 +66,12 @@ for platform in platforms
     augmented_platform["cuda"] = CUDA.platform(cuda_version)
     should_build_platform(triplet(augmented_platform)) || continue
 
-    sources = get_sources("nvidia-driver", ["cuda_compat"]; version=driver_version,
+    # for the cuda compatibility library shipped as part of the CUDA toolkit
+    sources = get_sources("cuda", ["cuda_compat"]; version=cuda_version,
                           platform=augmented_platform, variant="cuda$(cuda_version.major).$(cuda_version.minor)")
+    # for the datacenter driver
+    #sources = get_sources("nvidia-driver", ["cuda_compat"]; version=driver_version,
+    #                      platform=augmented_platform, variant="cuda$(cuda_version.major).$(cuda_version.minor)")
     push!(sources, DirectorySource("./src"))
 
     push!(builds, (; platforms=[platform], sources))
