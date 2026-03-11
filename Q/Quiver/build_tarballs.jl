@@ -7,7 +7,7 @@ include("../../platforms/macos_sdks.jl")
 
 sources = [
     GitSource("https://github.com/psrenergy/quiver.git",
-              "d99e2f4cb7a82e7bc8a1a29c5a061af378829762"),
+              "94901c8e8704e42556e297f20b8478933c8e56e8"),
 ]
 
 script = raw"""
