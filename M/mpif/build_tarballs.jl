@@ -38,7 +38,7 @@ platforms = expand_gfortran_versions(platforms)
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # We only build for the MPI ABI
-filter!(p -> p["mpi"] == "MPIABI", platforms)
+filter!(p -> p["mpi"] == "mpiabi", platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
