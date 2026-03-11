@@ -89,7 +89,7 @@ products = [
 dependencies = [
     BuildDependency("libjulia_jll"),
     Dependency("libcxxwrap_julia_jll"; compat="~0.13"),
-    HostBuildDependency(PackageSpec(name="CMake_jll", version=v"3.31.9")),
+    HostBuildDependency(PackageSpec(name="CMake_jll", version=v"3.31.9+0")),
 ]
 
 # Build the tarballs
