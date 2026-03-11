@@ -16,11 +16,14 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/gdx/
 
-# Patch for MinGW toolchain
+C_FLAGS=()
+# Special mingw fixes
 if [[ "${target}" == *mingw* ]]; then
-    find .. -type f -exec sed -i 's/Windows.h/windows.h/g' {} +;
-    find .. -type f -exec sed -i 's/IPTypes.h/iptypes.h/g' {} +;
-    find .. -type f -exec sed -i 's/Psapi.h/psapi.h/g' {} +;
+    echo "Windows.h windows.h" >> /opt/${target}/${target}/sys-root/include/header.gcc
+    echo "IPTypes.h iptypes.h" > /opt/${target}/${target}/sys-root/include/header.gcc
+    echo "Psapi.h psapi.h" > /opt/${target}/${target}/sys-root/include/header.gcc
+
+    C_FLAGS+=(-remap)
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/winfloat.patch;
 fi
 
@@ -28,12 +31,20 @@ fi
 rmdir zlib
 mv ../zlib/ .
 
-cmake -S . -B build --install-prefix ${prefix} --toolchain ${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DNO_TESTS=ON -DNO_EXAMPLES=ON -DNO_TOOLS=ON
+cmake -S . -B build \
+    --install-prefix ${prefix} \
+    --toolchain ${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_C_FLAGS=${C_FLAGS} \
+    -DCMAKE_CXX_FLAGS=${C_FLAGS} \
+    -DNO_TESTS=ON \
+    -DNO_EXAMPLES=ON \
+    -DNO_TOOLS=ON
 cmake --build build --parallel ${nproc}
 cmake --install build
 
 mkdir -p ${libdir}
-mv build/libgdxcclib*.${dlext} ${libdir};
+install -Dvm 755 "build/libgdxcclib*.${dlext}" -t "${libdir}"
 
 install_license ${WORKSPACE}/srcdir/gdx/LICENSE
 """
@@ -49,6 +60,7 @@ platforms = [
     Platform("x86_64", "windows"; ),
 ]
 
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
