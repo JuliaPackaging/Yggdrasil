@@ -27,7 +27,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "GAP"
 upstream_version = v"4.15.1"
-version = v"400.1500.100"
+version = v"400.1500.101"
 
 # Collection of sources required to complete build
 sources = [
@@ -60,6 +60,10 @@ julia_version=$(./julia_version)
 # must run autogen.sh if compiling from git snapshot and/or if configure was patched;
 # it doesn't hurt otherwise, too, so just always do it
 ./autogen.sh
+
+# force use of GCC, even under macOS, to get proper stack unwinding
+export CC=gcc
+export CXX=g++
 
 # configure GAP
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
