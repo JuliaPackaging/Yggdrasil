@@ -40,7 +40,7 @@ dependencies = [
     Dependency("XML2_jll"; compat="~2.13.6"),
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.  We use GCC 8 because it is the only GCC version that links
-# properly on powerpc64le.  Shocking, I know, but this is the world we live in.
+# Build the tarballs, and possibly a `build.jl` as well.
+# Requires GCC 9 for std::filesystem.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"8")
+               julia_compat="1.6", preferred_gcc_version=v"9")
