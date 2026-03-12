@@ -6,17 +6,17 @@ sources = [
     GitSource("https://github.com/ReWittmann/blockSQP2.git", "70cdd7dca3b6e48c80022f071e4df39b68c247cf"),
 ]
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+macos_sdk_sources["26.1"] = FileSource("https://github.com/joseluisq/macosx-sdks/releases/download/26.1/MacOSX26.1.sdk.tar.xz",
+                                       "beee7212d265a6d2867d0236cc069314b38d5fb3486a6515734e76fa210c784c"
+)
 
 script = raw"""
+    
 apk del cmake
 cd ${WORKSPACE}/srcdir/blockSQP2
 mv CMake/CMakeListsBinaryBuilderjl.cmake CMakeLists.txt
-
-if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
-    _CMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake
-else
-    _CMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
-fi
 
 LOBSUFFIX=""
 
@@ -26,7 +26,7 @@ cmake \
     -DCMAKE_FIND_ROOT_PATH=$prefix \
     -DCMAKE_PREFIX_PATH=$prefix \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_TOOLCHAIN_FILE=${_CMAKE_TOOLCHAIN_FILE} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCBLAS_SUFFIX="$LOBSUFFIX" \
     -DINCLUDE_DIR=${includedir} \
     -DMUMPS_LIBRARIES="${libdir}/libdmumps.${dlext}" \
@@ -44,6 +44,17 @@ cp ${WORKSPACE}/srcdir/blockSQP2/blockSQP2/LICENSE ${prefix}/share/licenses/bloc
 mkdir ${prefix}/share/licenses/qpOASES 
 cp ${WORKSPACE}/srcdir/blockSQP2/blockSQP2/dep/modified_qpOASES/LICENSE ${prefix}/share/licenses/qpOASES/LICENSE
 """
+
+sources, script = require_macos_sdk("26.1", sources, script)
+#Macos sdk 15.0+ is too large to fit in the 1G space available, so mount more.
+mount_command = raw"""
+
+if [[ "${target}" == *-apple-* ]]; then
+    mount -t tmpfs -o size=2G tmpfs "/opt/${target}/${target}/sys-root"
+fi
+
+"""
+script = mount_command*script
 
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
