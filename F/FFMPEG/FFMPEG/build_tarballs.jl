@@ -40,6 +40,12 @@ dependencies = [
     Dependency("PCRE2_jll"; compat="10.42.0"),
 ]
 
+# Add libva for hardware acceleration on Linux and FreeBSD
+linux_freebsd_platforms = filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)
+if !isempty(linux_freebsd_platforms)
+    push!(dependencies, Dependency("libva_jll"; platforms=linux_freebsd_platforms))
+end
+
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script(; ffplay=false), platforms, products, dependencies;
     julia_compat="1.6", preferred_gcc_version=preferred_gcc_version, clang_use_lld=false)
