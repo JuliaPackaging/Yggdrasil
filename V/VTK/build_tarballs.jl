@@ -6,12 +6,12 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "VTK"
-version = v"9.5.2"
+version = v"9.6.0"
 
 # No sources, we're just building the testsuite
 sources = [
     ArchiveSource("https://vtk.org/files/release/$(version.major).$(version.minor)/VTK-$(version).tar.gz",
-                  "cee64b98d270ff7302daf1ef13458dff5d5ac1ecb45d47723835f7f7d562c989"),
+                  "d77d180694faafdc816578b9a53651f6790e799615811bfbb91018661a3bb8f2"),
 ]
 
 # Bash recipe for building across all platforms
