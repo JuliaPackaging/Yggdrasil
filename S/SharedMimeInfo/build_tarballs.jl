@@ -16,7 +16,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/shared-mime-info-*
-apk add gettext
+apk add gettext libxml2-utils
 
 meson setup builddir --cross-file="${MESON_TARGET_TOOLCHAIN}" -Dbuild-tests=false
 meson compile -C builddir
