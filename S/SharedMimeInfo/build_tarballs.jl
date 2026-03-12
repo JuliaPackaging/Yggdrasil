@@ -21,6 +21,8 @@ apk add gettext
 meson setup builddir --cross-file="${MESON_TARGET_TOOLCHAIN}" -Dbuild-tests=false
 meson compile -C builddir
 meson install -C builddir
+
+install_license COPYING
 """
 
 # 10.14
