@@ -145,7 +145,7 @@ vtk_modules = [
     # "nlohmannjson",
     "token",
     # "fast_float",
-    "doubleconversion",
+    # "doubleconversion",   [removed in 9.6.0]
     "loguru",
     "CommonCore",
     # "CommonCore-private-kit-links",
