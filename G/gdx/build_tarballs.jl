@@ -8,13 +8,13 @@ version = v"7.11.19"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/GAMS-dev/gdx.git", "fd8c1292973885cb6f8b689208b81b33b1270f26"),
-    GitSource("https://github.com/madler/zlib.git", "216c70c020aa53f0c40920d155f808b6b59c9acb"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/gdx/
+git submodule update --init --recursive
 
 if [[ "${target}" == *mingw* ]]; then
     find .. -type f -exec sed -i 's/Windows.h/windows.h/g' {} +;
@@ -22,9 +22,6 @@ if [[ "${target}" == *mingw* ]]; then
     find .. -type f -exec sed -i 's/Psapi.h/psapi.h/g' {} +;
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/winfloat.patch;
 fi
-
-rmdir zlib
-mv ../zlib/ .
 
 cmake -S . -B build \
     --install-prefix ${prefix} \
