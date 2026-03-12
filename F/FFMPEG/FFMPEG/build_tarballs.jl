@@ -19,6 +19,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built.
 # TODO: Theora once it's available
+linux_freebsd_platforms = filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)
 dependencies = [
     HostBuildDependency("NASM_jll"),
     BuildDependency("nv_codec_headers_jll"),
@@ -38,13 +39,8 @@ dependencies = [
     Dependency("OpenSSL_jll"; compat="3.5.0"),
     Dependency("Opus_jll"),
     Dependency("PCRE2_jll"; compat="10.42.0"),
+    Dependency("libva_jll"; platforms=linux_freebsd_platforms) # Add libva for hardware acceleration on Linux and FreeBSD
 ]
-
-# Add libva for hardware acceleration on Linux and FreeBSD
-linux_freebsd_platforms = filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)
-if !isempty(linux_freebsd_platforms)
-    push!(dependencies, Dependency("libva_jll"; platforms=linux_freebsd_platforms))
-end
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script(; ffplay=false), platforms, products, dependencies;
