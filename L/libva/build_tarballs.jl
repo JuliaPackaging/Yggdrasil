@@ -16,12 +16,10 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libva
 
-# libva requires C99 for for-loop initial declarations
-export CFLAGS="-std=gnu99 $CFLAGS"
-
 meson setup builddir \
     --cross-file=${MESON_TARGET_TOOLCHAIN} \
     --buildtype=release \
+    -Dc_args="-std=gnu99" \
     -Dwith_x11=yes \
     -Dwith_wayland=no
 
