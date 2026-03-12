@@ -14,7 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/gdx/
-git submodule update --init --recursive
+git submodule update --init zlib
 
 if [[ "${target}" == *mingw* ]]; then
     find .. -type f -exec sed -i 's/Windows.h/windows.h/g' {} +;
