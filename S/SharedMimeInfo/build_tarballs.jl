@@ -2,6 +2,9 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "SharedMimeInfo"
 version = v"2.4"
 
@@ -19,6 +22,9 @@ meson setup builddir --cross-file="${MESON_TARGET_TOOLCHAIN}" -Dbuild-tests=fals
 meson compile -C builddir
 meson install -C builddir
 """
+
+# 10.14
+sources, script = require_macos_sdk("11.0", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
@@ -43,4 +49,4 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 # Requires GCC 9 for std::filesystem.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"9")
+               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"9")
