@@ -1,9 +1,9 @@
 # Build script for Musica_jll
 # To test locally:
-#   julia --project=@BinaryBuilder build_tarballs.jl --verbose --debug
+#   julia build_tarballs.jl --verbose --debug
 #
 # To build for a specific platform:
-#   julia --project=@BinaryBuilder build_tarballs.jl x86_64-linux-gnu-cxx11
+#   julia build_tarballs.jl x86_64-linux-gnu-cxx11
 
 using BinaryBuilder, Pkg
 
@@ -13,7 +13,7 @@ version = v"0.14.4"
 # Collection of sources required to build Musica
 sources = [
     GitSource("https://github.com/NCAR/musica.git",
-              "f7252d14f53caa2b37cbf2419fdbcbbcddf4c795"),
+              "53f11d5fa0828713daf4e084db80f67f3404b3b1"),
     ArchiveSource("https://github.com/joseluisq/MacOSX-SDKs/releases/download/15.5/MacOSX15.5.sdk.tar.xz",
                   "c15cf0f3f17d714d1aa5a642da8e118db53d79429eb015771ba816aa7c6c1cbd"),
 ]
@@ -67,9 +67,12 @@ if [[ "${target}" == *-mingw* ]]; then
 fi
 """
 
-# These are the platforms the libcxxwrap_julia_jll is built on.
+# grab all of the platforms supported by libjulia
 include("../../L/libjulia/common.jl")
 platforms = expand_cxxstring_abis(supported_platforms())
+
+# then constrain it to what libcxxwrap_julia_jll spports
+filter!(p -> !(Sys.islinux(p) && arch(p) == "i686" && libc(p) == "musl"), platforms)
 
 # FreeBSD 13.4's libc++ in BinaryBuilder's sysroot is too old to support
 # std::formatter<ErrorLocation> used by mechanism_configuration
