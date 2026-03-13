@@ -3,24 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "MQLib"
-version = v"0.1.0"
+version = v"0.1.1"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/MQLib/MQLib.git",
-              "686a4fc52b9d2037b4a9ed55fbd178cc9e60ebc3"),
+              "585496274af5abb0849d0d47e135496b4688680b"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/MQLib/
-# https://github.com/MQLib/MQLib/pull/6
-atomic_patch -p1 ../patches/cxx-makefile.patch
-# https://github.com/MQLib/MQLib/pull/7
-atomic_patch -p1 ../patches/math-defines.patch
-# https://github.com/MQLib/MQLib/pull/8
-atomic_patch -p1 ../patches/include-limits.patch
 make -j${nproc}
 install -Dvm 0755 bin/MQLib "${bindir}/MQLib${exeext}"
 """
