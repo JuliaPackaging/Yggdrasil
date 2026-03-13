@@ -62,6 +62,8 @@ export CUDA_ARGS=""
 EXTRA_FLAGS=()
 if [[ "${target}" == *-darwin* ]]; then
     EXTRA_FLAGS+=(--objcc="${CC} -x objective-c")
+    # Enable VideoToolbox hardware acceleration on macOS
+    EXTRA_FLAGS+=("--enable-videotoolbox")
 fi
 if [[ "${FFPLAY}" == "true" ]]; then
     EXTRA_FLAGS+=("--enable-ffplay")
@@ -69,8 +71,15 @@ fi
 # On Windows, use Schannel instead of OpenSSL
 if [[ "${target}" == *-mingw* ]]; then
     EXTRA_FLAGS+=("--disable-openssl" "--enable-schannel")
+    # Enable D3D11VA and DXVA2 hardware acceleration on Windows
+    EXTRA_FLAGS+=("--enable-d3d11va" "--enable-dxva2")
 else
     EXTRA_FLAGS+=("--enable-openssl" "--disable-schannel")
+fi
+
+# Enable VAAPI hardware acceleration on Linux/FreeBSD
+if [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
+    EXTRA_FLAGS+=("--enable-vaapi")
 fi
 
 # GPL and nonfree libraries
