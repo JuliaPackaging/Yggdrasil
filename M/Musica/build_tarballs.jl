@@ -69,9 +69,7 @@ fi
 
 # These are the platforms the libcxxwrap_julia_jll is built on.
 include("../../L/libjulia/common.jl")
-julia_versions = [v"1.10", v"1.11"]  # libcxxwrap ~0.13 only supports 1.10 and 1.11
-platforms = vcat(libjulia_platforms.(julia_versions)...)
-platforms = expand_cxxstring_abis(platforms)
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # FreeBSD 13.4's libc++ in BinaryBuilder's sysroot is too old to support
 # std::formatter<ErrorLocation> used by mechanism_configuration
@@ -88,7 +86,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("libjulia_jll"),
-    Dependency("libcxxwrap_julia_jll"; compat="~0.13"),
+    Dependency("libcxxwrap_julia_jll"; compat="~0.14.9"),
     HostBuildDependency(PackageSpec(name="CMake_jll", version=v"3.31.9+0")),
 ]
 
