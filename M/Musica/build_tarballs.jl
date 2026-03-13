@@ -71,12 +71,13 @@ fi
 include("../../L/libjulia/common.jl")
 platforms = expand_cxxstring_abis(supported_platforms())
 
-# then constrain it to what libcxxwrap_julia_jll spports
-filter!(p -> !(Sys.islinux(p) && arch(p) == "i686" && libc(p) == "musl"), platforms)
-
 # FreeBSD 13.4's libc++ in BinaryBuilder's sysroot is too old to support
 # std::formatter<ErrorLocation> used by mechanism_configuration
 filter!(!Sys.isfreebsd, platforms)
+
+# libcxxwrap_julia_jll does not provide artifacts for armv6l and armv7l
+filter!(p -> arch(p) != "armv6l", platforms)
+filter!(p -> arch(p) != "armv7l", platforms)
 
 # The products that we will ensure are always built
 products = [
