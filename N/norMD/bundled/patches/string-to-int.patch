@@ -1,0 +1,35 @@
+From 8776250af78ce45d6ed2f59eca7badb6cf50e112 Mon Sep 17 00:00:00 2001
+From: Max Horn <max@quendi.de>
+Date: Wed, 7 Jan 2026 20:11:00 +0100
+Subject: [PATCH 3/6] Don't mix up string pointers and integers
+
+---
+ normd_range.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/normd_range.c b/normd_range.c
+index 0dd15e8..88ec352 100644
+--- a/normd_range.c
++++ b/normd_range.c
+@@ -112,15 +112,15 @@ int main(int argc, char **argv)
+ 		last_col=atoi(argv[6])-1;
+ 	}
+ 	if(first_col<0) {
+-		fprintf(stderr,"Bad first column [%d]",argv[5]);
++		fprintf(stderr,"Bad first column [%d]",first_col);
+ 		return 0;
+ 	}
+ 	if(last_col<0) {
+-		fprintf(stderr,"Bad first column [%d]",argv[6]);
++		fprintf(stderr,"Bad first column [%d]",last_col);
+ 		return 0;
+ 	}
+ 	if(first_col>last_col) {
+-		fprintf(stderr,"Bad alignment range [%d-%d]",argv[5],argv[6]);
++		fprintf(stderr,"Bad alignment range [%d-%d]",first_col,last_col);
+ 		return 0;
+ 	}
+ 
+-- 
+2.52.0
+

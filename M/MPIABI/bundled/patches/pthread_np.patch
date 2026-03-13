@@ -1,0 +1,14 @@
+diff --git a/src/mpl/include/mpl_thread_posix.h b/src/mpl/include/mpl_thread_posix.h
+index 2ba608875..f69fe2e94 100644
+--- a/src/mpl/include/mpl_thread_posix.h
++++ b/src/mpl/include/mpl_thread_posix.h
+@@ -13,6 +13,9 @@
+
+ #include <errno.h>
+ #include <pthread.h>
++#ifdef __FreeBSD__
++#include <pthread_np.h>
++#endif
+
+ #define MPL_POSIX_MUTEX_NATIVE 0
+ #define MPL_POSIX_MUTEX_TICKETLOCK 1

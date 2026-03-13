@@ -74,7 +74,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(name="boost_jll", version=v"1.79.0")),
+    BuildDependency(PackageSpec(name="boost_jll", version="1.79.0")),
     BuildDependency("ELFIO_jll"),
     BuildDependency("OpenCL_Headers_jll"),
     Dependency("ocl_icd_jll"),

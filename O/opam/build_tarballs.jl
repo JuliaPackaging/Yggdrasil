@@ -26,7 +26,7 @@ products = [
 ]
 
 dependencies = [
-    BuildDependency(PackageSpec(name="OCaml_jll", version=v"5.3.0"))
+    BuildDependency(PackageSpec(name="OCaml_jll", version="5.3.0"))
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies,

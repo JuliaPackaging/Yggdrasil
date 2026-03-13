@@ -2,14 +2,15 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "quickfix"
 version = v"1.16.0"
 
 # Collection of sources required to build CMake
 sources = [
     GitSource("https://github.com/quickfix/quickfix.git", "92c85ca63fc260d16e24e0ece419ecdec9ffe868"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-    "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
     DirectorySource("./bundled")
 ]
 
@@ -19,16 +20,6 @@ julia_versions = [v"1.8", v"1.9", v"1.10", v"1.11"]
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/quickfix
-
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    # Install a newer SDK which supports `shared_timed_mutex` and `std::filesystem`
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    export MACOSX_DEPLOYMENT_TARGET=10.15
-    popd
-fi
 
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
@@ -49,6 +40,9 @@ make -j${nproc} install
 
 install_license ${WORKSPACE}/srcdir/quickfix/LICENSE
 """
+
+# Install a newer SDK which supports `shared_timed_mutex` and `std::filesystem`
+sources, script = require_macos_sdk("10.15", sources, script)
 
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = filter(!Sys.iswindows, platforms)

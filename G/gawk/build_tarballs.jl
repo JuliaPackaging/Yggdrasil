@@ -1,17 +1,22 @@
 using BinaryBuilder
 
 name = "gawk"
-version = v"5.3.1"
+version = v"5.4.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/gawk/gawk-$(version).tar.xz",
-                  "694db764812a6236423d4ff40ceb7b6c4c441301b72ad502bb5c27e00cd56f78")
+    GitSource("https://git.savannah.gnu.org/git/gawk.git", "c86b958ce5d651147d39eb147c439dae1dbfd949"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/gawk*/
+
+# Add missing #include for `_NSGetExecutablePath`
+atomic_patch -p1 $WORKSPACE/srcdir/patches/gawk_nsgep.patch
+
+apk add texinfo
 
 CONFIGURE_ARGS=()
 if [[ ${target} == aarch64-apple-darwin* ]]; then

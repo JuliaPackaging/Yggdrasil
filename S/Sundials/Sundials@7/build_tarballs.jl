@@ -15,6 +15,6 @@ script = install_script * raw"""
 
 for platform in platforms
     should_build_platform(triplet(platform)) || continue
-    build_tarballs(ARGS, name, ygg_version, sources, script, [platform], products, dependencies;
+    build_tarballs(ARGS, name, version, sources, script, [platform], products, dependencies;
                    preferred_gcc_version=v"6", julia_compat="1.6")
 end

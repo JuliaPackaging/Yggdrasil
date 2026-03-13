@@ -4,6 +4,7 @@ using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "LLVMExtra"
 repo = "https://github.com/maleadt/LLVM.jl.git"
@@ -18,16 +19,6 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd LLVM.jl/deps/LLVMExtra
-
-if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
-    # LLVM 15+ requires macOS SDK 10.14.
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    export MACOSX_DEPLOYMENT_TARGET=10.14
-    popd
-fi
 
 CMAKE_FLAGS=()
 # Release build for best performance
@@ -50,14 +41,14 @@ ninja -C build -j ${nproc} install
 install_license LICENSE-APACHE LICENSE-MIT
 """
 
+# LLVM 15+ requires macOS SDK 10.14.
+sources, script = require_macos_sdk("10.14", sources, script)
+
 augment_platform_block = """
     using Base.BinaryPlatforms
-
     $(LLVM.augment)
-
-    function augment_platform!(platform::Platform)
-        augment_llvm!(platform)
-    end"""
+    augment_platform!(platform::Platform) = augment_llvm!(platform)
+"""
 
 # determine exactly which tarballs we should build
 builds = []
@@ -95,11 +86,6 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
         augmented_platform[LLVM.platform_name] = LLVM.platform(llvm_version, llvm_assertions)
 
         platform_sources = BinaryBuilder.AbstractSource[sources...]
-        if Sys.isapple(platform)
-            push!(platform_sources,
-                  ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-                                "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
-        end
 
         should_build_platform(triplet(augmented_platform)) || continue
         push!(builds, (;

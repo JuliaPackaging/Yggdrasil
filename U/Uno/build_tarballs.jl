@@ -4,12 +4,12 @@ using BinaryBuilder, Pkg
 
 name = "Uno"
 
-version = v"2.2.1"
+version = v"2.4.2"
 
 sources = [
     GitSource(
         "https://github.com/cvanaret/Uno.git",
-        "af68e63bfc77a2f6be032f8aab589a41a82bd2ea",
+        "1681d3d1ce52219c4db106b730b5b085737b1af9",
     ),
 ]
 
@@ -20,10 +20,8 @@ cd build
 
 if [[ "${target}" == *mingw* ]]; then
     LBT=blastrampoline-5
-    HIGHS_DIR=${prefix}/lib
 else
     LBT=blastrampoline
-    HIGHS_DIR=${libdir}
 fi
 
 # FortranCInterface_VERIFY fails on macOS, but it's not actually needed for the current build
@@ -35,7 +33,7 @@ cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DAMPLSOLVER=${libdir}/libasl.${dlext} \
-    -DHIGHS_DIR=${HIGHS_DIR} \
+    -DHIGHS=${libdir}/libhighs.${dlext} \
     -DBQPD=${prefix}/lib/libbqpd.a \
     -DHSL=${libdir}/libhsl.${dlext} \
     -DBLA_VENDOR="libblastrampoline" \
@@ -45,6 +43,7 @@ cmake \
     -DMUMPS_COMMON_LIBRARY="${libdir}/libmumps_common.${dlext}" \
     -DMUMPS_PORD_LIBRARY="${libdir}/libpord.${dlext}" \
     -DMUMPS_MPISEQ_LIBRARY="${libdir}/libmpiseq.${dlext}" \
+    -DSPRAL="${libdir}/libspral.${dlext}" \
     -DBLAS_LIBRARIES="${libdir}/lib${LBT}.${dlext}" \
     -DLAPACK_LIBRARIES="${libdir}/lib${LBT}.${dlext}" \
     -DBUILD_STATIC_LIBS=ON \
@@ -65,6 +64,7 @@ install_license ${WORKSPACE}/srcdir/Uno/LICENSE_BQPD
 platforms = supported_platforms()
 filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 filter!(p -> arch(p) != "riscv64", platforms)
+filter!(p -> arch(p) != "powerpc64le", platforms)
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 platforms = filter(p -> libgfortran_version(p) != v"3", platforms)
@@ -79,11 +79,12 @@ products = [
 
 dependencies = [
     BuildDependency(PackageSpec(name="BQPD_jll", uuid="1325ac01-0a49-589f-8355-43321054aaab")),
-    Dependency(PackageSpec(name="HiGHS_jll", uuid="8fd58aa0-07eb-5a78-9b36-339c94fd15ea"), compat="1.11.0"),
+    Dependency(PackageSpec(name="HiGHS_jll", uuid="8fd58aa0-07eb-5a78-9b36-339c94fd15ea"), compat="1.12.0"),
     Dependency(PackageSpec(name="HSL_jll", uuid="017b0a0e-03f4-516a-9b91-836bbd1904dd")),
     Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70")),
     Dependency(PackageSpec(name="ASL_jll", uuid="ae81ac8f-d209-56e5-92de-9978fef736f9"), compat="0.1.3"),
     Dependency(PackageSpec(name="MUMPS_seq_jll", uuid="d7ed1dd3-d0ae-5e8e-bfb4-87a502085b8d")),
+    Dependency(PackageSpec(name="SPRAL_jll", uuid="319450e9-13b8-58e8-aa9f-8fd1420848ab")),
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD systems),
     # and libgomp from `CompilerSupportLibraries_jll` everywhere else.

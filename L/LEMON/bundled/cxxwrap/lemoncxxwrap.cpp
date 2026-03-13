@@ -29,10 +29,12 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
   mod.add_type<ListGraph::Node>("ListGraphNode");
   mod.add_type<ListDigraph::Node>("ListDigraphNode");
   mod.add_type<ListGraph::Edge>("ListGraphEdge");
+  mod.add_type<ListGraph::Arc>("ListGraphArc");
   mod.add_type<ListDigraph::Arc>("ListDigraphArc");
 
   mod.method("id", static_cast<int(*)(ListGraph::Node)>(&ListGraph::id));
   mod.method("id", static_cast<int(*)(ListGraph::Edge)>(&ListGraph::id));
+  mod.method("id", static_cast<int(*)(ListGraph::Arc)>(&ListGraph::id));
   mod.method("id", static_cast<int(*)(ListDigraph::Node)>(&ListDigraph::id));
   mod.method("id", static_cast<int(*)(ListDigraph::Arc)>(&ListDigraph::id));
 
@@ -67,11 +69,22 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
     .constructor<const ListGraph&>()
     .method("set", &ListGraph::EdgeMap<int>::set);
 
-  mod.add_type<MaxWeightedPerfectMatching<ListGraph, ListGraph::EdgeMap<int>>>("MaxWeightedPerfectMatchingListGraphInt")
+  using MWPM = MaxWeightedPerfectMatching<ListGraph, ListGraph::EdgeMap<int>>;
+  using MWPMmatchingedge_ptr = bool (MWPM::*)(const ListGraph::Edge&) const; // used to resolve the overloads of `matching`
+  using MWPMmatchingnode_ptr = ListGraph::Arc (MWPM::*)(const ListGraph::Node&) const; // used to resolve the overloads of `matching`
+  MWPMmatchingedge_ptr matchingedge = &MWPM::matching;
+  MWPMmatchingnode_ptr matchingnode = &MWPM::matching;
+  mod.add_type<MWPM>("MaxWeightedPerfectMatchingListGraphInt")
     .constructor<const ListGraph&, const ListGraph::EdgeMap<int>&>()
-    .method("mate", &MaxWeightedPerfectMatching<ListGraph, ListGraph::EdgeMap<int>>::mate)
-    .method("run", &MaxWeightedPerfectMatching<ListGraph, ListGraph::EdgeMap<int>>::run)
-    .method("matchingWeight", &MaxWeightedPerfectMatching<ListGraph, ListGraph::EdgeMap<int>>::matchingWeight);
-
+    .method("mate", &MWPM::mate)
+    .method("run", &MWPM::run)
+    .method("matchingWeight", &MWPM::matchingWeight)
+    .method("matching", matchingedge)
+    .method("matching", matchingnode)
+    .method("dualValue", &MWPM::dualValue)
+    .method("nodeValue", &MWPM::nodeValue)
+    .method("blossomNum", &MWPM::blossomNum)
+    .method("blossomSize", &MWPM::blossomSize)
+    .method("blossomValue", &MWPM::blossomValue);
 }
 

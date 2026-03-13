@@ -141,12 +141,9 @@ products = [
 
 augment_platform_block = """
     using Base.BinaryPlatforms
-
     $(LLVM.augment)
-
-    function augment_platform!(platform::Platform)
-        augment_llvm!(platform)
-    end"""
+    augment_platform!(platform::Platform) = augment_llvm!(platform)
+"""
 
 init_block = raw"""
     # Register this driver with OpenCL_jll

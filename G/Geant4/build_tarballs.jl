@@ -2,6 +2,9 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "Geant4"
 version = v"11.3.2"
 
@@ -9,24 +12,12 @@ version = v"11.3.2"
 sources = [
     ArchiveSource("https://gitlab.cern.ch/geant4/geant4/-/archive/v$(version)/geant4-v$(version).tar.gz",
                   "077edca6aa3b3940f351cf9a948457cad3fb117f215b88c52cce315e1a07fd7a"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/geant4-*/
-
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    # Install a newer SDK which supports `std::filesystem`
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    export MACOSX_DEPLOYMENT_TARGET=10.15
-    popd
-fi
 
 if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 ../patches/windows.patch
@@ -57,6 +48,9 @@ make install
 
 install_license ../LICENSE
 """
+
+# Install a newer SDK which supports `std::filesystem`
+sources, script = require_macos_sdk("10.15", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line

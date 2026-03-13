@@ -1,0 +1,17 @@
+diff --git a/onnx/onnxifi_dummy.c b/onnx/onnxifi_dummy.c
+index f3557436..af2bca48 100644
+--- a/onnx/onnxifi_dummy.c
++++ b/onnx/onnxifi_dummy.c
+@@ -174,10 +174,10 @@ onnxGetExtensionFunctionAddress(
+     if (strcmp(name, extension_function_list[i]) == 0) {
+       switch (i) {
+         case 0:
+-          *function = &onnxGetExtensionFunctionAddress;
++          *function = (void *)&onnxGetExtensionFunctionAddress;
+           break;
+         case 1:
+-          *function = &onnxSetIOAndRunGraph;
++          *function = (void *)&onnxSetIOAndRunGraph;
+           break;
+       }
+     }

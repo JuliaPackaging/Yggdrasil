@@ -1,0 +1,56 @@
+From 7839c0381179b0484ea636b04c16746152dd4f90 Mon Sep 17 00:00:00 2001
+From: Max Horn <max@quendi.de>
+Date: Wed, 7 Jan 2026 20:12:08 +0100
+Subject: [PATCH 4/6] Fix buffer overflow in alphabet
+
+Yes, the original code omits Z from the list of symbols. So
+this really is a buffer overflow *and* an off-by-one bug,
+but I am not fixing the latter to maximize backwards
+compatibility...
+---
+ score.h    | 1 -
+ utils.c    | 1 -
+ writeseq.c | 3 +--
+ 3 files changed, 1 insertion(+), 4 deletions(-)
+
+diff --git a/score.h b/score.h
+index ed17a1b..3c16d6d 100644
+--- a/score.h
++++ b/score.h
+@@ -309,7 +309,6 @@ typedef struct {
+ typedef struct {
+ 	char filename[FILENAMELEN+1];	/* input sequence file name */
+ 	char treename[FILENAMELEN+1];	/* input phylogenetic file name */
+-	char alphabet[NUMRES];		/* the alphabet */
+ 	sint nseqs;			/* number of sequences */
+ 	sint nanchors;			/* number of anchors */
+ 	sint validalnscore;		/* number of anchors */
+diff --git a/utils.c b/utils.c
+index f03defb..081ead9 100644
+--- a/utils.c
++++ b/utils.c
+@@ -316,7 +316,6 @@ void alloc_aln(sint nseqs,ALNPTR mult_aln)
+         mult_aln->ncol_scores=0;
+         mult_aln->nanchors=0;
+         mult_aln->dnaflag=FALSE;
+-        strcpy(mult_aln->alphabet,"ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+         mult_aln->prf1.nseqs=0;
+         mult_aln->prf2.nseqs=0;
+         mult_aln->treename[0]='\0';
+diff --git a/writeseq.c b/writeseq.c
+index a1c5e78..02f27d0 100644
+--- a/writeseq.c
++++ b/writeseq.c
+@@ -572,8 +572,7 @@ void nexus_out(FILE *nxsout, sint fres, sint len, ALN mult_aln)
+         fprintf(nxsout,"dimensions ntax=%d nchar=%d;\n",(pint)nseqs,(pint)len);
+         fprintf(nxsout,"format missing=?\n");
+         fprintf(nxsout,"symbols=\"");
+-        for(i=0;i<strlen(mult_aln.alphabet)-1;i++)
+-                fprintf(nxsout,"%c",mult_aln.alphabet[i]);
++        fprintf(nxsout,"ABCDEFGHIJKLMNOPQRSTUVWXY");
+         fprintf(nxsout,"\"\n");
+         fprintf(nxsout,"interleave datatype=");
+         fprintf(nxsout, mult_aln.dnaflag ? "DNA " : "PROTEIN ");
+-- 
+2.52.0
+

@@ -1,25 +1,30 @@
-using BinaryBuilder
-using Pkg
+using BinaryBuilder, Pkg
+
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "MGARD"
-version = v"1.5.2"
+version = v"1.6.0"
 
 # Collection of sources required to build MGARD
 sources = [
-    # GitSource("https://github.com/CODARcode/MGARD", "208b0c42af6ba552387aec321664d5cbb757b2e2"),
-    # This is PR 233 for MGARD
-    # <https://github.com/CODARcode/MGARD/pull/233>, later than 1.5.2.
-    # It includes corrections to support musl.
-    GitSource("https://github.com/JieyangChen7/MGARD", "70281b1f3a150ba07f5054c100adf1c2f324f6fd"),
+    GitSource("https://github.com/CODARcode/MGARD", "024ccc2b8ca4a787cfc6f227a6d14e7fd9cb76cb"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd MGARD
+
 # We installed a `protoc` executable both as a build- and a host-build-dependency.
 # Delete the non-host-build `protoc` executable so that cmake won't try to run it.
 rm ${bindir}/protoc${exeext}
 ls -l ${host_bindir}/protoc
+
+# pkg-config is very slow because `abseil_cpp` installed about 200 `*.pc` files.
+# Pretend that `protobuf` does not require `abseil_cpp`.
+mv /workspace/destdir/lib/pkgconfig/protobuf.pc /workspace/destdir/lib/pkgconfig/protobuf.pc.orig
+sed -e 's/Requires/# Requires/' /workspace/destdir/lib/pkgconfig/protobuf.pc.orig >/workspace/destdir/lib/pkgconfig/protobuf.pc
+
 cmake -B build \
     -DBUILD_TESTING=OFF \
     -DCMAKE_BUILD_TYPE=Release \
@@ -31,16 +36,15 @@ cmake -B build \
     -DMGARD_ENABLE_SERIAL=ON
 cmake --build build --parallel ${nproc}
 cmake --install build
+
+# Restore files
+mv /workspace/destdir/lib/pkgconfig/protobuf.pc.orig /workspace/destdir/lib/pkgconfig/protobuf.pc
 """
+
+sources, script = require_macos_sdk("10.13", sources, script)
 
 # We enable all platforms
 platforms = expand_cxxstring_abis(supported_platforms())
-
-# All BSD (FreeBSD and Apple) builds fail in the cmake stage:
-# Finding `protobuf` via pkg-config takes a very long time and times
-# out on CI after 4 hours. This might be a bug in pkg-config, its
-# executable is running for a very long time.
-filter!(!Sys.isbsd, platforms)
 
 # Windows build fail because `CLOCK_REALTIME` is not declared.
 # See `N/Notcurses/bundled/headers/pthread_time.h` for a possible fix.
@@ -70,5 +74,3 @@ dependencies = [
 # We need at least GCC 8 for C++17
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"8")
-
-# Build trigger: 1

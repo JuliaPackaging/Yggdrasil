@@ -20,6 +20,10 @@ function lapack_script(;lapack32::Bool=false)
     script *= raw"""
     cd $WORKSPACE/srcdir/lapack*
 
+    # Remove the stop command from the xerbla function to prevent
+    # us from exiting Julia on bad arguments
+    sed -i '/^[ \t]*STOP/d' SRC/xerbla.f
+
     if [[ "${target}" == *-mingw* ]]; then
         BLAS="blastrampoline-5"
     else

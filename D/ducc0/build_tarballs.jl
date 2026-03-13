@@ -3,7 +3,9 @@
 using BinaryBuilder, Pkg
 using BinaryBuilderBase
 
-include(joinpath(@__DIR__, "..", "..", "platforms", "microarchitectures.jl"))
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "microarchitectures.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "ducc0"
 version = v"0.29.0"
@@ -11,23 +13,10 @@ version = v"0.29.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://gitlab.mpcdf.mpg.de/mtr/ducc.git", "d29050f2dff2a87dd430ddf2c82d590cc3aa42a4"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    # Install a newer SDK to work around compilation failures
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    popd
-    CXXFLAGS="-mmacosx-version-min=10.14"
-fi
-
 cd $WORKSPACE/srcdir/ducc*/julia
 install_license ../LICENSE
 ${CXX} ${CXXFLAGS} -O3 -I ../src/ ducc_julia.cc -Wfatal-errors -pthread -std=c++17 -fPIC -fno-math-errno -fassociative-math -freciprocal-math -fno-signed-zeros -fno-trapping-math -ffp-contract=fast -ffinite-math-only -fno-rounding-math -fno-signaling-nans -fexcess-precision=fast -fvisibility=hidden -c
@@ -35,6 +24,9 @@ ${CXX} ${CXXFLAGS} -O3 -I ../src/ ducc_julia.cc -Wfatal-errors -pthread -std=c++
 ${CXX} ${CXXFLAGS} -O3 -o libducc_julia.${dlext} ducc_julia.o -Wfatal-errors -pthread -std=c++17 -shared -fPIC
 install -Dvm 0755 "libducc_julia.${dlext}" "${libdir}/libducc_julia.${dlext}"
 """
+
+# Install a newer SDK to work around compilation failures
+sources, script = require_macos_sdk("10.15", sources, script; deployment_target="10.14")
 
 # Expand for microarchitectures on x86_64 (library doesn't have CPU dispatching)
 # Tests on Linux/x86_64 yielded a slow binary with avx512 for some reason, so disable that.

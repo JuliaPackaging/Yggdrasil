@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "Jansson"
-version = v"2.14"
+version = v"2.14.1"
 
-# Collection of sources required to build ZMQ
+# Collection of sources required to build Jansson
 sources = [
-    GitSource("https://github.com/akheron/jansson.git", "684e18c927e89615c2d501737e90018f4930d6c5"),
+    GitSource("https://github.com/akheron/jansson.git", "ed5cae4ed0621ef409510f94270c9f8f263736d0"),
 ]
 
 # Bash recipe for building across all platforms

@@ -45,7 +45,7 @@ platforms = expand_cxxstring_abis(platforms)
 
 
 dependencies = [ 
-    HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.28.1")),
+    HostBuildDependency(PackageSpec(; name="CMake_jll", version = "3.28.1")),
 ]
 
 build_tarballs(ARGS, "IGLWrap", version,

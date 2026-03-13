@@ -2,6 +2,9 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+
 name = "Qt5Base"
 version = v"5.15.3"
 
@@ -197,8 +200,6 @@ dependencies = [
     BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
                     platforms=filter(p -> Sys.isapple(p) && arch(p) == "x86_64", platforms_macos)),
 ]
-
-include("../../fancy_toys.jl")
 
 julia_compat = "1.6"
 

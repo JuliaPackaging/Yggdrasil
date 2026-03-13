@@ -4,7 +4,7 @@ This guide helps AI agents generate correct `build_tarballs.jl` recipes for Bina
 
 ## Prerequisites
 
-- **BinaryBuilder.jl**: Requires Julia 1.7 specifically (use `julia +1.7` if juliaup is installed)
+- **BinaryBuilder.jl**: Requires at least Julia 1.12.
 - **Supported Platforms**: Linux (glibc and musl for x86_64, i686, aarch64, armv7l, armv6l, ppc64le, riscv64), Windows (x86_64, i686), macOS (x86_64, aarch64), FreeBSD (x86_64, aarch64)
 - Use `supported_platforms()` to get all available platforms
 
@@ -68,6 +68,34 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
 - **GitSource**: For git repos. Use specific commit hash, not branch names.
 - **DirectorySource**: For local patches. Place patches in `bundled/patches/` subdirectory.
 - Build **one package per recipe**. Don't bundle multiple packages—use dependencies instead.
+
+#### GitHub Archive Sources
+
+**IMPORTANT**: GitHub's automatically generated archive sources (`/archive/refs/tags/` URLs) do **not** have stable checksums and cannot be used. See [GitHub's announcement](https://github.blog/2023-02-21-update-on-the-future-stability-of-source-code-archives-and-hashes/).
+
+Instead:
+
+1. **Use GitSource with commit hash** (preferred):
+
+   ```julia
+   sources = [
+       GitSource("https://github.com/owner/repo.git", "full_commit_hash"),
+   ]
+   ```
+
+2. **Use official release assets**: If maintainers upload release tarballs (not auto-generated):
+
+   ```julia
+   sources = [
+       ArchiveSource("https://github.com/owner/repo/releases/download/v1.0.0/package-1.0.0.tar.gz", "sha256"),
+   ]
+   ```
+
+To find the commit hash for a tag:
+
+```bash
+git ls-remote https://github.com/owner/repo.git refs/tags/v1.0.0
+```
 
 ### Build Script
 
@@ -173,7 +201,6 @@ Use `preferred_gcc_version=v"X"` for (see [available GCC versions](https://githu
 - **Musl bugs**: Use GCC ≥6 to avoid `posix_memalign` issues
 - Default is GCC 4.8.5 for maximum compatibility
 
-
 ### Optional Arguments
 
 ```julia
@@ -192,6 +219,7 @@ Products should not force using certain CPUs or instruction sets (e.g., the `mar
 They also should not use unsafe math operations or the "fast math" mode in compilters.
 
 To remove the `march` and `mcpu` flags in a list of files:
+
 ```bash
 for i in ${files}
     sed -i "s/-march[^ ]*//g" $i
@@ -200,6 +228,7 @@ done
 ```
 
 To remove the fast math and unsafe math optimizations in a list of files:
+
 ```bash
 for i in ${files}
     sed -i "s/-ffast-math//g" $i
@@ -259,10 +288,10 @@ cmake ../package-source
 ## Testing Locally
 
 ```bash
-julia +1.7 --project=/path/to/Yggdrasil build_tarballs.jl --verbose --debug
+julia --project=/path/to/Yggdrasil build_tarballs.jl --verbose --debug
 ```
 
-Use `--debug` to get interactive shell on failure. If you have juliaup installed, use `julia +1.7` to ensure Julia 1.7 is used.
+Use `--debug` to get interactive shell on failure.
 
 **Note**: On macOS, you need Docker installed for local testing.
 
@@ -323,7 +352,7 @@ Before merging a Yggdrasil PR, you should test the generated JLL package locally
 For faster local testing, build only for your current platform by passing it as an argument to the build script:
 
 ```bash
-julia +1.7 --project=/path/to/Yggdrasil build_tarballs.jl --verbose --debug x86_64-linux-gnu
+julia --project=/path/to/Yggdrasil build_tarballs.jl --verbose --debug x86_64-linux-gnu
 # Or for your current platform:
 # x86_64-apple-darwin20 (macOS x86_64)
 # aarch64-apple-darwin20 (macOS ARM64)
@@ -336,7 +365,7 @@ julia +1.7 --project=/path/to/Yggdrasil build_tarballs.jl --verbose --debug x86_
 
 ```bash
 cd PackageName
-julia +1.7 --project=/path/to/Yggdrasil build_tarballs.jl --verbose
+julia --project=/path/to/Yggdrasil build_tarballs.jl --verbose
 ```
 
 This creates tarballs in the `products/` directory.
@@ -352,13 +381,13 @@ using BinaryBuilder
 cd("E/Electron")
 
 # Run the build script to generate JLLs
-run(`julia +1.7 --project=/path/to/Yggdrasil build_tarballs.jl --deploy=local`)
+run(`julia --project=/path/to/Yggdrasil build_tarballs.jl --deploy=local`)
 ```
 
 Or directly from the command line:
 
 ```bash
-julia +1.7 --project=/path/to/Yggdrasil build_tarballs.jl --deploy=local
+julia --project=/path/to/Yggdrasil build_tarballs.jl --deploy=local
 ```
 
 This generates a local JLL package in `~/.julia/dev/PackageName_jll/`.
@@ -428,15 +457,18 @@ For complex packages, you can also:
 ### Common Issues When Testing
 
 **JLL not found after `Pkg.develop`**:
+
 - Make sure the path is correct: `~/.julia/dev/PackageName_jll/`
 - Try `Pkg.resolve()` to refresh the manifest
 
 **Products not working**:
+
 - Check that products in `build_tarballs.jl` match actual files
 - Verify executables are actually executable: `ls -la`
 - On macOS, check for quarantine flags: `xattr -d com.apple.quarantine file`
 
 **Dependency conflicts**:
+
 - Use a fresh Julia environment for testing
 - Check that dependencies have correct compat bounds
 
@@ -464,4 +496,3 @@ For complex packages, you can also:
 - [Troubleshooting](https://docs.binarybuilder.org/stable/troubleshooting/)
 - [CONTRIBUTING.md](CONTRIBUTING.md) in this repository
 - [RootFS.md](RootFS.md) for compiler versions and cross-compilation details
-

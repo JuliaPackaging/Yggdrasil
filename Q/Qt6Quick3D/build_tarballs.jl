@@ -3,24 +3,30 @@
 using BinaryBuilder, Pkg
 
 name = "Qt6Quick3D"
-version = v"6.8.2"
+version = v"6.10.2"
 
 host_build = false
 
 # Collection of sources required to build qt6
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtquick3d-everywhere-src-$version.tar.xz",
-                  "084cebccb8c5b1c6bafb7756ab89b08ced23c20cd2e996ed54909a154a9f0b6d"),
+                  "b95439f31d1e580c379e9828b48b03b932b0bdade4ff09f4dd639eff9da2cd75"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
+# Need newer cmake from JLL
+apk del cmake
+
 cd $WORKSPACE/srcdir
 
 mkdir build
 cd build/
 qtsrcdir=`ls -d ../qtquick3d-*`
+
+atomic_patch -p1 -d "${qtsrcdir}" ../patches/assimp-6.patch
 
 if [[ $bb_full_target == *"musl"* ]]; then
     # secure_getenv is undefined on the musl platforms
@@ -30,7 +36,11 @@ fi
 case "$bb_full_target" in
 
     x86_64-linux-musl-libgfortran5-cxx11)
-        cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_FIND_ROOT_PATH=$prefix -DCMAKE_BUILD_TYPE=Release $qtsrcdir
+        cmake -G Ninja \
+            -DCMAKE_INSTALL_PREFIX=${prefix} \
+            -DCMAKE_FIND_ROOT_PATH=$prefix \
+            -DCMAKE_BUILD_TYPE=Release \
+            $qtsrcdir
     ;;
 
     *apple-darwin*)
@@ -41,20 +51,29 @@ case "$bb_full_target" in
         export OBJCFLAGS="-D__ENVIRONMENT_OS_VERSION_MIN_REQUIRED__=120000"
         export OBJCXXFLAGS=$OBJCFLAGS
         export CXXFLAGS=$OBJCFLAGS
-        cmake -G Ninja -DQT_HOST_PATH=$host_prefix \
+        cmake -G Ninja \
+            -DQT_HOST_PATH=$host_prefix \
             -DPython_ROOT_DIR=/usr \
             -DCMAKE_INSTALL_PREFIX=${prefix} \
             -DCMAKE_PREFIX_PATH=$host_prefix \
             -DCMAKE_FIND_ROOT_PATH=$prefix \
             -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-            -DCMAKE_SYSROOT=$apple_sdk_root -DCMAKE_FRAMEWORK_PATH=$apple_sdk_root/System/Library/Frameworks -DCMAKE_OSX_DEPLOYMENT_TARGET=11 \
+            -DCMAKE_SYSROOT=$apple_sdk_root \
+            -DCMAKE_FRAMEWORK_PATH=$apple_sdk_root/System/Library/Frameworks \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=11 \
             -DQT_NO_APPLE_SDK_AND_XCODE_CHECK=ON \
             -DCMAKE_BUILD_TYPE=Release \
-        $qtsrcdir
+            $qtsrcdir
     ;;
 
     *)
-        cmake -DQT_HOST_PATH=$host_prefix -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_FIND_ROOT_PATH=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release $qtsrcdir
+        cmake -G Ninja \
+            -DQT_HOST_PATH=$host_prefix \
+            -DCMAKE_INSTALL_PREFIX=${prefix} \
+            -DCMAKE_FIND_ROOT_PATH=$prefix \
+            -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+            -DCMAKE_BUILD_TYPE=Release \
+            $qtsrcdir
     ;;
 
 esac
@@ -85,14 +104,17 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    HostBuildDependency("CMake_jll"),
     HostBuildDependency("Qt6Base_jll"),
     HostBuildDependency("Qt6Declarative_jll"),
     HostBuildDependency("Qt6ShaderTools_jll"),
+    Dependency("assimp_jll"; compat="6.0.4"),
     Dependency("Qt6Base_jll"; compat="="*string(version)),
     Dependency("Qt6Declarative_jll"; compat="="*string(version)),
     Dependency("Qt6ShaderTools_jll"; compat="="*string(version)),
     Dependency("Qt6QuickTimeline_jll"; compat="="*string(version)),
     BuildDependency("Vulkan_Headers_jll"),
+    BuildDependency("Xorg_xproto_jll"),
 ]
 
 if !host_build

@@ -116,9 +116,8 @@ include("../common.jl")
 augment_platform_block = """
     using Base.BinaryPlatforms
     $(LLVM.augment)
-    function augment_platform!(platform::Platform)
-        augment_llvm!(platform)
-    end"""
+    augment_platform!(platform::Platform) = augment_llvm!(platform)
+"""
 
 # determine exactly which tarballs we should build
 builds = []
@@ -139,4 +138,4 @@ for (i, build) in enumerate(builds)
                    skip_audit=true, julia_compat="1.12",
                    augment_platform_block)
 end
-#!
+#!!

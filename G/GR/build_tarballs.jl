@@ -2,16 +2,17 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
-include("../../fancy_toys.jl")  # for `should_build_platform`
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "GR"
-version = v"0.73.17"
+version = v"0.73.24"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sciapp/gr.git", "c8a8395aa194deec8c87575ba4238972bbdf6c40"),
+    GitSource("https://github.com/sciapp/gr.git", "53ed71e0f464868e1e1cba668895bb4b2d4e2228"),
     FileSource("https://github.com/sciapp/gr/releases/download/v$version/gr-$version.js",
-               "a449b886d4ea28445ff3d1b345b35edd91d1d807ca65fa9f82805bd6e0f448c0", "gr.js"),
+               "0d316bcf4c5b580faf7166cd97b031d10ba76270042fc418c7dfbbdc6d27679f", "gr.js"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49")
 ]
@@ -19,6 +20,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/gr
+
+apk del cmake
 
 update_configure_scripts
 
@@ -57,7 +60,6 @@ install_license $WORKSPACE/srcdir/gr/LICENSE.md
 if [[ $target == *"apple-darwin"* ]]; then
     cd ${bindir}
     ln -s ../Applications/gksqt.app/Contents/MacOS/gksqt ./
-    ln -s ../Applications/grplot.app/Contents/MacOS/grplot ./
     ln -s ../Applications/GKSTerm.app/Contents/MacOS/GKSTerm ./
 fi
 """
@@ -101,17 +103,18 @@ dependencies = [
     Dependency("Libtiff_jll"; compat="4.7.1"),
     Dependency("Pixman_jll"),
     HostBuildDependency("Qt6Base_jll"),
-    Dependency("Qt6Base_jll"; compat="~6.8.2"), # Never allow upgrading more than the minor version without recompilation
+    Dependency("Qt6Base_jll"; compat="~6.10.2"),
     BuildDependency("Xorg_libX11_jll"),
     BuildDependency("Xorg_xproto_jll"),
-    Dependency("Zlib_jll"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
+    HostBuildDependency("CMake_jll"),
 ]
 
 platforms_win = filter(Sys.iswindows, platforms)
 platforms_rest = setdiff(platforms, platforms_win)
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# GCC version 10 because of Qt6.7
+# GCC version 11 because of Qt6.10
 if any(should_build_platform.(triplet.(platforms_win)))
     # GCC 12 and before fail with internal compiler error on mingw
     build_tarballs(ARGS, name, version, sources, script, platforms_win, products, dependencies;
@@ -119,5 +122,5 @@ if any(should_build_platform.(triplet.(platforms_win)))
 end
 if any(should_build_platform.(triplet.(platforms_rest)))
     build_tarballs(ARGS, name, version, sources, script, platforms_rest, products, dependencies;
-                   preferred_gcc_version=v"10", julia_compat="1.6")
+                   preferred_gcc_version=v"11", julia_compat="1.6")
 end

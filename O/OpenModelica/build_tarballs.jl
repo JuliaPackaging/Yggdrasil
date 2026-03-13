@@ -1,11 +1,11 @@
 using BinaryBuilder, Pkg
 
 name = "OpenModelica"
-version = v"1.25.1"
+version = v"1.25.5"
 
 sources = [
    GitSource("https://github.com/OpenModelica/OpenModelica.git",
-             "66757f39f530bc032d5c1a71c105bd568207444a"),
+             "38bef66da59e57597a6a5f482695e6c37ca09940"),
    DirectorySource("./bundled"),
 ]
 

@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "SDL2_mixer"
-version = v"2.6.2"
+version = v"2.8.1"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/libsdl-org/SDL_mixer.git",
-              "75f318100d220e236c4fcc5a3d0c9ba33d064f3f"),
+              "171eb2d420d5643e4ee11514a06e04a41a463bbd"),
 ]
 
 # Bash recipe for building across all platforms
@@ -35,4 +35,5 @@ dependencies = [
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"5")
