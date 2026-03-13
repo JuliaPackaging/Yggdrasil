@@ -25,7 +25,6 @@ meson install -C builddir
 install_license COPYING
 """
 
-# 10.14
 sources, script = require_macos_sdk("11.0", sources, script)
 
 # These are the platforms we will build for by default, unless further
