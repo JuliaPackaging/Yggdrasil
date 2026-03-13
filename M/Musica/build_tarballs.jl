@@ -22,6 +22,10 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 
+# not enough space in /tmp
+export TMPDIR=$WORKSPACE/tmp
+mkdir -p $TMPDIR
+
 cd $WORKSPACE/srcdir/musica
 
 # Needs cmake >= 3.24 provided by jll
