@@ -35,9 +35,9 @@ cmake -S . -B build \
 cmake --build build --parallel ${nproc}
 cmake --install build
 
-install -Dvm 755 "build/libgdxcclib64.${dlext}" -t "${libdir}"
-
-install_license ${WORKSPACE}/srcdir/gdx/LICENSE
+install -Dvm 755 build/libgdxcclib64.${dlext} -t ${libdir}
+install -Dvm 644 generated/*.h -t ${includedir}
+install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
