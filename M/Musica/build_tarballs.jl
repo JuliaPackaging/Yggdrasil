@@ -7,6 +7,9 @@
 
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "Musica"
 version = v"0.14.4"
 
@@ -14,24 +17,10 @@ version = v"0.14.4"
 sources = [
     GitSource("https://github.com/NCAR/musica.git",
               "53f11d5fa0828713daf4e084db80f67f3404b3b1"),
-    ArchiveSource("https://github.com/joseluisq/MacOSX-SDKs/releases/download/15.5/MacOSX15.5.sdk.tar.xz",
-                  "c15cf0f3f17d714d1aa5a642da8e118db53d79429eb015771ba816aa7c6c1cbd"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-
-apple_sdk_root=""
-if [[ "${target}" == *-apple-darwin* ]]; then
-    # Install a newer SDK which supports C++20
-    # including std::format and concepts... which were added even later than c++20 support
-    # for some reason, anything less than 15.5 doesn't compile with mechanism configuration, I guess because of the custom formatter
-    # for error location (include/mechanism_configuration/error_location.hpp)
-    apple_sdk_root=$WORKSPACE/srcdir/MacOSX15.5.sdk
-    sed -i "s!/opt/$target/$target/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
-    sed -i "s!/opt/$target/$target/sys-root!$apple_sdk_root!" /opt/bin/$bb_full_target/$target-clang++
-    export MACOSX_DEPLOYMENT_TARGET=15.5
-fi
 
 cd $WORKSPACE/srcdir/musica
 
@@ -52,8 +41,7 @@ cmake -B build -G Ninja \
     -DMUSICA_ENABLE_CARMA=OFF \
     -DMUSICA_ENABLE_TESTS=OFF \
     -DMUSICA_ENABLE_INSTALL=ON \
-    -DMUSICA_BUILD_SHARED_LIBS=ON \
-    ${apple_sdk_root:+-DCMAKE_OSX_SYSROOT=${apple_sdk_root} -DCMAKE_OSX_DEPLOYMENT_TARGET=15.5} \
+    -DMUSICA_BUILD_SHARED_LIBS=ON 
 
 cmake --build build --parallel ${nproc}
 cmake --install build
@@ -67,8 +55,10 @@ if [[ "${target}" == *-mingw* ]]; then
 fi
 """
 
+sources, script = require_macos_sdk("15.0", sources, script, deployment_target="10.15")
+
 # grab all of the platforms supported by libjulia
-include("../../L/libjulia/common.jl")
+include(joinpath(YGGDRASIL_DIR, "L", "libjulia", "common.jl"))
 platforms = expand_cxxstring_abis(supported_platforms())
 
 # FreeBSD 13.4's libc++ in BinaryBuilder's sysroot is too old to support
