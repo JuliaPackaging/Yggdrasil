@@ -75,9 +75,10 @@ platforms = expand_cxxstring_abis(supported_platforms())
 # std::formatter<ErrorLocation> used by mechanism_configuration
 filter!(!Sys.isfreebsd, platforms)
 
-# libcxxwrap_julia_jll does not provide artifacts for armv6l and armv7l
+# libcxxwrap_julia_jll does not provide artifacts for armv6l, armv7l, or i686-linux-musl
 filter!(p -> arch(p) != "armv6l", platforms)
 filter!(p -> arch(p) != "armv7l", platforms)
+filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
 
 # The products that we will ensure are always built
 products = [
