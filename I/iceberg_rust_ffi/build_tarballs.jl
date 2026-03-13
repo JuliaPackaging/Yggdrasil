@@ -4,7 +4,7 @@ name = "iceberg_rust_ffi"
 version = v"0.7.11"
 
 sources = [
-    GitSource("https://github.com/RelationalAI/RustyIceberg.jl.git", "1951f348030bea8e4f062ef5066fdb4f3f5128e0"),
+    GitSource("https://github.com/RelationalAI/RustyIceberg.jl.git", "e9adeef62d0a68c1a89f7e6d8e5d92f82ef440bf"),
 ]
 
 # Bash recipe for building across all platforms
