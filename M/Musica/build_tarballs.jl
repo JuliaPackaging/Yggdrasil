@@ -16,7 +16,7 @@ version = v"0.14.4"
 # Collection of sources required to build Musica
 sources = [
     GitSource("https://github.com/NCAR/musica.git",
-              "53f11d5fa0828713daf4e084db80f67f3404b3b1"),
+              "5ce469e046fd365e238bc21118b96bafb7773261"),
 ]
 
 # Bash recipe for building across all platforms
@@ -59,7 +59,7 @@ if [[ "${target}" == *-mingw* ]]; then
 fi
 """
 
-sources, script = require_macos_sdk("15.0", sources, script, deployment_target="10.15")
+sources, script = require_macos_sdk("14.5", sources, script, deployment_target="15.0")
 
 # grab all of the platforms supported by libjulia
 include(joinpath(YGGDRASIL_DIR, "L", "libjulia", "common.jl"))
