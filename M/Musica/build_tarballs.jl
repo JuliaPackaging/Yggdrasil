@@ -22,10 +22,6 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 
-# not enough space in /tmp
-export TMPDIR=$WORKSPACE/tmp
-mkdir -p $TMPDIR
-
 cd $WORKSPACE/srcdir/musica
 
 # Needs cmake >= 3.24 provided by jll
@@ -64,10 +60,6 @@ sources, script = require_macos_sdk("14.5", sources, script, deployment_target="
 # grab all of the platforms supported by libjulia
 include(joinpath(YGGDRASIL_DIR, "L", "libjulia", "common.jl"))
 platforms = expand_cxxstring_abis(supported_platforms())
-
-# FreeBSD 13.4's libc++ in BinaryBuilder's sysroot is too old to support
-# std::formatter<ErrorLocation> used by mechanism_configuration
-filter!(!Sys.isfreebsd, platforms)
 
 # libcxxwrap_julia_jll does not provide artifacts for armv6l, armv7l, or i686-linux-musl
 filter!(p -> arch(p) != "armv6l", platforms)
