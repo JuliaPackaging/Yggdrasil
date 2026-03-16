@@ -761,6 +761,11 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
             LibraryProduct("libclang", :libclang; dont_dlopen),
             LibraryProduct("libclang-cpp", :libclang_cpp; dont_dlopen),
             ExecutableProduct(["clang", "clang-$(version.major)"], :clang, "tools"),
+            ExecutableProduct("clang-format", :clang_format, "tools"),
+            ExecutableProduct("clang-tidy", :clang_tidy, "tools"),
+            ExecutableProduct("clang-apply-replacements", :clang_apply_replacements, "tools"),
+            ExecutableProduct("clang-scan-deps", :clang_scan_deps, "tools"),
+            ExecutableProduct("clang-check", :clang_check, "tools"),
         ]
     elseif name == "MLIR"
         script = if version < v"14"
