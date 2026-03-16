@@ -5,7 +5,7 @@ repo = "https://github.com/GalacticDynamics-Oxford/Agama.git"
 
 version = v"1.0"
 sources = [
-    GitSource(repo, "f392b9d6e59269d451b37b3ada2508a44bd3a80c"),
+    GitSource(repo, "1a0c519f3d89c621f04c2e4502183e22dc7e441a"),
 ]
 
 platforms = supported_platforms(;exclude=x->Sys.iswindows(x) || Sys.isfreebsd(x) || (libc(x) == "musl"))
