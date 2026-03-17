@@ -29,25 +29,25 @@ CMAKE_ARGS="-DSPFFT_OMP=ON \
             -DMPI_C_COMPILER=$bindir/mpicc \
             -DMPI_CXX_COMPILER=$bindir/mpicxx"
 
-if [[ "${target}" == *-apple-mpich ]]; then
-  CMAKE_ARGS="${CMAKE_ARGS} \
-               -DMPI_C_LIB_NAMES='mpi;pmpi;hwloc' \
-               -DMPI_CXX_LIB_NAMES='mpicxx;mpi;pmpi;hwloc' \
-               -DMPI_mpicxx_LIBRARY=${libdir}/libmpicxx.dylib \
-               -DMPI_mpi_LIBRARY=${libdir}/libmpi.dylib \
-               -DMPI_pmpi_LIBRARY=${libdir}/libpmpi.dylib \
-               -DMPI_hwloc_LIBRARY=${libdir}/libhwloc.dylib"
-fi
-
-if [[ "${target}" == *-apple-mpitrampoline ]]; then
-  CMAKE_ARGS="${CMAKE_ARGS} \
-               -DMPI_C_LIB_NAMES='mpi;pmpi;hwloc' \
-               -DMPI_CXX_LIB_NAMES='mpicxx;mpi;pmpi;hwloc' \
-               -DMPI_mpicxx_LIBRARY=${libdir}/mpich/lib.libmpicxx.a \
-               -DMPI_mpi_LIBRARY=${libdir}/mpich/lib/libmpi.a \
-               -DMPI_pmpi_LIBRARY=${libdir}/mpich/lib/libpmpi.a \
-               -DMPI_hwloc_LIBRARY=${libdir}/libhwloc.dylib"
-fi
+#TODO if [[ "${target}" == *-apple-mpich ]]; then
+#TODO   CMAKE_ARGS="${CMAKE_ARGS} \
+#TODO                -DMPI_C_LIB_NAMES='mpi;pmpi;hwloc' \
+#TODO                -DMPI_CXX_LIB_NAMES='mpicxx;mpi;pmpi;hwloc' \
+#TODO                -DMPI_mpicxx_LIBRARY=${libdir}/libmpicxx.dylib \
+#TODO                -DMPI_mpi_LIBRARY=${libdir}/libmpi.dylib \
+#TODO                -DMPI_pmpi_LIBRARY=${libdir}/libpmpi.dylib \
+#TODO                -DMPI_hwloc_LIBRARY=${libdir}/libhwloc.dylib"
+#TODO fi
+#TODO 
+#TODO if [[ "${target}" == *-apple-mpitrampoline ]]; then
+#TODO   CMAKE_ARGS="${CMAKE_ARGS} \
+#TODO                -DMPI_C_LIB_NAMES='mpi;pmpi;hwloc' \
+#TODO                -DMPI_CXX_LIB_NAMES='mpicxx;mpi;pmpi;hwloc' \
+#TODO                -DMPI_mpicxx_LIBRARY=${libdir}/mpich/lib.libmpicxx.a \
+#TODO                -DMPI_mpi_LIBRARY=${libdir}/mpich/lib/libmpi.a \
+#TODO                -DMPI_pmpi_LIBRARY=${libdir}/mpich/lib/libpmpi.a \
+#TODO                -DMPI_hwloc_LIBRARY=${libdir}/libhwloc.dylib"
+#TODO fi
 
 cmake .. ${CMAKE_ARGS}
 
@@ -62,8 +62,8 @@ augment_platform_block = """
 """
 platforms = supported_platforms()                                                       
 filter!(!Sys.iswindows, platforms)
-filter!(!Sys.isfreebsd, platforms)
-filter!(p -> arch(p) != "riscv64", platforms)
+#TODO filter!(!Sys.isfreebsd, platforms)
+#TODO filter!(p -> arch(p) != "riscv64", platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
@@ -77,15 +77,7 @@ dependencies = [
     Dependency("LLVMOpenMP_jll", platforms=filter(Sys.isapple, platforms)),
 ]
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1",
-                                                         OpenMPI_compat="4.1.6, 5")
-# OpenMPI
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
-
-# MPItrampoline
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
-
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
 append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
