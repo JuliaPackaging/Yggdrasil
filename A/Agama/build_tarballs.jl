@@ -3,7 +3,7 @@ using BinaryBuilder, Pkg
 name = "Agama"
 repo = "https://github.com/GalacticDynamics-Oxford/Agama.git"
 
-version = v"1.0"
+version = v"1.1"
 sources = [
     GitSource(repo, "1a0c519f3d89c621f04c2e4502183e22dc7e441a"),
 ]
