@@ -11,7 +11,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 # So for example version 2.6.3 would become 200.600.300.
 
 name = "NetCDF"
-upstream_version = v"4.9.3"
+upstream_version = v"4.10.0"
 
 # Offset to add to the version number.  Remember to always bump this.
 version_offset = v"1.0.0"
@@ -23,7 +23,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to build NetCDF
 sources = [
     ArchiveSource("https://downloads.unidata.ucar.edu/netcdf-c/$(upstream_version)/netcdf-c-$(upstream_version).tar.gz",
-                  "a474149844e6144566673facf097fea253dc843c37bc0a7d3de047dc8adda5dd"),
+                  "bd4bfa239385802a6cbea71a2f038dadcaba756a38c56804f829ed8262e7912f"),
 ]
 
 # HDF5.h in /workspace/artifacts/805ccba77cd286c1afc127d1e45aae324b507973/include
@@ -66,6 +66,8 @@ fi
 if [[ ${target} == *-unknown-freebsd* ]]; then
     # MPI isn't autodetected; we need to specify the libraries
     case ${bb_full_target} in
+        *mpiabi*)
+            export LIBS="-lmpi_abi -lm -lexecinfo -lutil -lz";;
         *mpich*)
             export LIBS="-lmpi -lm -lexecinfo -lutil -lz";;
         *mpitrampoline*)
@@ -74,6 +76,8 @@ if [[ ${target} == *-unknown-freebsd* ]]; then
             export LIBS="-lmpi -lm -lexecinfo -lutil -lz";;
     esac
 fi
+
+export CFLAGS=-Wno-implicit-function-declaration
 
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
@@ -87,7 +91,7 @@ fi
 make LDFLAGS="${LDFLAGS_MAKE}" -j${nproc}
 
 if [[ ${target} == x86_64-linux-gnu ]]; then
-   make check
+    make check
 fi
 
 make install
@@ -126,7 +130,7 @@ products = [
 dependencies = [
     Dependency("Blosc_jll"; compat="1.21.6"),
     Dependency("Bzip2_jll"; compat="1.0.9"),
-    Dependency("HDF5_jll"; compat="~1.14.6"),
+    Dependency("HDF5_jll"; compat="2.1.1"),
     Dependency("LibCURL_jll"; compat="7.73.0,8"),
     # We had to restrict compat with XML2 because of ABI breakage:
     # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
@@ -134,7 +138,7 @@ dependencies = [
     Dependency("XML2_jll"; compat="~2.13.6"),
     Dependency("Zlib_jll"; compat="1.2.12"),
     Dependency("Zstd_jll"; compat="1.5.7"),
-    Dependency("libaec_jll"; compat="1.1.3"), # This is the successor of szlib
+    Dependency("libaec_jll"; compat="1.1.4"), # This is the successor of szlib
     Dependency("libzip_jll"; compat="1.11.3"),
 ]
 append!(dependencies, platform_dependencies)
