@@ -13,7 +13,7 @@ version = v"2.0.1"
 # Using the Meson-based fork from https://github.com/s-celles/giac
 sources = [
     GitSource("https://github.com/s-celles/giac.git",
-        "8276ec648a4a75a4295cd105a6fa9e55fe3d6471"),  # dev branch
+        "453eed6d08a3b50abde05434b71a1ec891c293f1"),  # dev branch
 ]
 
 # Bash recipe for building across all platforms
@@ -81,4 +81,4 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 # Use GCC 7+ for C++14 support (required by meson.build)
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-  preferred_gcc_version=v"8", julia_compat="1.10")
+  clang_use_lld=false, preferred_gcc_version=v"8", julia_compat="1.10")
