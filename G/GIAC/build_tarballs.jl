@@ -29,6 +29,7 @@ fi
 # Configure with Meson, disabling all optional dependencies
 meson setup build \
     --cross-file="${MESON_TARGET_TOOLCHAIN}" \
+    --buildtype=release \
     -Dgui=disabled \
     -Dpari=disabled \
     -Dntl=disabled \
