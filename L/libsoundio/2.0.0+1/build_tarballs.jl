@@ -2,6 +2,7 @@ using BinaryBuilder, Pkg
 
 name = "libsoundio"
 version = v"2.0.0"
+jll_version = v"2.0.0+1"
 
 sources = [
     GitSource("https://github.com/andrewrk/libsoundio.git",
@@ -91,4 +92,5 @@ dependencies = [
 build_tarballs(ARGS, name, version, sources, script, platforms,
                products, dependencies;
                julia_compat="1.6",
-               preferred_gcc_version=v"13.2.0")
+               preferred_gcc_version=v"13.2.0",
+               jll_version=jll_version)
