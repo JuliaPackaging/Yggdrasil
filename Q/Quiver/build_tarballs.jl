@@ -1,13 +1,13 @@
 using BinaryBuilder, Pkg
 
 name = "Quiver"
-version = v"0.5.0"
+version = v"0.6.0"
 
 include("../../platforms/macos_sdks.jl")
 
 sources = [
     GitSource("https://github.com/psrenergy/quiver.git",
-              "084773d92f3b6e8d7d67909009174575f726a15a"),
+        "181c8d6e89819ea2742350e4ab6dc7f9a4171be9"),
 ]
 
 script = raw"""
@@ -43,9 +43,9 @@ products = [
 
 dependencies = [
     # Quiver deps require CMake >= 3.26
-    HostBuildDependency(PackageSpec(; name = "CMake_jll")),
+    HostBuildDependency(PackageSpec(; name="CMake_jll")),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.7",
-               preferred_gcc_version=v"13")
+    julia_compat="1.7",
+    preferred_gcc_version=v"13")
