@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "libsoundio"
-version = v"2.0.0+1"
+version = v"2.0.0"
 
 sources = [
     GitSource("https://github.com/andrewrk/libsoundio.git",
