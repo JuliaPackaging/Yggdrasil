@@ -28,6 +28,7 @@ HPCOMBI_FLAG="--disable-hpcombi"
             --host=${target} \
             --enable-shared \
             --disable-static \
+            --disable-backward \
             ${HPCOMBI_FLAG}
 
 # Build and install (V=1 for verbose link commands)
