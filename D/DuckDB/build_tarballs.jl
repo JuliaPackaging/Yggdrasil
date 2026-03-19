@@ -76,10 +76,10 @@ products = [
 dependencies = Dependency[
 ]
 
-# Install a newer macOS SDK on x86_64-apple-darwin so libc++ provides
-# std::hash for enum types (LWG 2148), needed since DuckDB v1.5.0.
-# DuckDB itself targets macOS 11.0, so this has no user-facing impact.
-sources, script = require_macos_sdk("10.15", sources, script)
+# The default macOS 10.12 SDK (and even 10.15) has a libc++ that doesn't provide
+# std::hash for enum types (LWG 2148). Use SDK 14.0 which definitely includes it.
+# DuckDB itself targets macOS 11.0, so we set that as the deployment target.
+sources, script = require_macos_sdk("14.0", sources, script; deployment_target="11.0")
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"6.1.0", julia_compat="1.6")
