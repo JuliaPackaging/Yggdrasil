@@ -16,7 +16,7 @@ version = v"0.14.4"
 # Collection of sources required to build Musica
 sources = [
     GitSource("https://github.com/NCAR/musica.git",
-              "5ce469e046fd365e238bc21118b96bafb7773261"),
+              "3d3319ce4c08df50df3df3b0ddb7716c14a570a1"),
 ]
 
 # Bash recipe for building across all platforms
