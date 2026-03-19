@@ -7,6 +7,8 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "Silo"
 version = v"4.12.0"
+ygg_version = v"4.12.1"         # we bumped the version to build against the new MPIABI
+
 sources = [
     ArchiveSource("https://github.com/LLNL/Silo/releases/download/$(version)/Silo-$(version).tar.xz",
                   "bde1685e4547d5dd7416bd6215b41f837efef0e4934d938ba776957afbebdff0"),
@@ -72,7 +74,7 @@ products = [
 ]
 
 dependencies = [
-    Dependency("HDF5_jll"; compat="2.0.0"),
+    Dependency("HDF5_jll"; compat="2.1.1"),
     Dependency("Zlib_jll"; compat="1.2.12"),
 ]
 append!(dependencies, platform_dependencies)
@@ -82,5 +84,5 @@ append!(dependencies, platform_dependencies)
 ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # We need to use at least GCC 8 to ensure that we get at least libgfortran5, which we need for HDF5.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                augment_platform_block, julia_compat="1.10", preferred_gcc_version=v"8")
