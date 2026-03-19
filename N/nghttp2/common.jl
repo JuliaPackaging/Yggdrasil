@@ -46,7 +46,7 @@ function configure_nghttp2_build(version; kwargs...)
     ]
 
     dependencies = [
-        BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version); platforms=filter(p -> sanitize(p)=="memory", platforms)),
+        BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=string(llvm_version)); platforms=filter(p -> sanitize(p)=="memory", platforms)),
     ]
 
     return name, version, sources, script, platforms, products, dependencies
