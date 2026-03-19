@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "hackrf"
-version = v"0.1.0"
+version = v"2026.01.3"
 
 # Collection of sources required to complete build
 sources = [
