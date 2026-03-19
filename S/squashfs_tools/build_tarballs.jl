@@ -8,11 +8,16 @@ version = v"4.7.5"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/plougher/squashfs-tools.git", "708c59ae80853b0845017c33b42e56061cc546cd"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/squashfs-tools/squashfs-tools
+
+# Darwin uses `st_atimespec` instead of `st_atim`
+# See <https://github.com/plougher/squashfs-tools/issues/358>.
+atomic_patch -p2 $WORKSPACE/srcdir/patches/st_atim.patch
 
 args=(XZ_SUPPORT=1 LZO_SUPPORT=1 LZ4_SUPPORT=1 ZSTD_SUPPORT=1)
 if [[ "${target}" == *-mingw* ]] || [[ "${target}" == *-freebsd* ]]; then
