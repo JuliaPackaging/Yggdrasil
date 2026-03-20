@@ -51,7 +51,7 @@ install_license LICENSE
 # On Windows, CMake installs DLLs for LIBRARY targets to lib/ instead of bin/
 # BinaryBuilder requires all DLLs to be in bin/
 if [[ "${target}" == *-mingw* ]]; then
-    mv -f "${prefix}/lib/"*.dll "${prefix}/bin/" 2>/dev/null || true
+    mv -vf "${prefix}/lib/"*.dll "${libdir}/" || true
 fi
 """
 
