@@ -55,7 +55,7 @@ if [[ "${target}" == *-mingw* ]]; then
 fi
 """
 
-sources, script = require_macos_sdk("14.5", sources, script, deployment_target="15.0")
+sources, script = require_macos_sdk("14.5", sources, script)
 
 # grab all of the platforms supported by libjulia
 include(joinpath(YGGDRASIL_DIR, "L", "libjulia", "common.jl"))
