@@ -3,37 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "SCOTCH"
-version = v"7.0.7"
+version = v"7.0.11"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://gitlab.inria.fr/scotch/scotch", "d736fce170ab3dfab7ec368b4d2a9be31d6ccd34"),
+    GitSource("https://gitlab.inria.fr/scotch/scotch", "626b88ce70edabb993bbee463f6c28ae2899af69"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/scotch*
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/scotch.patch"
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/fortify-source.patch"
-
-mkdir -p src/dummysizes/build-host
-cd src/dummysizes/build-host
-cp ${WORKSPACE}/srcdir/patches/CMakeLists-dummysizes.txt ../CMakeLists.txt
-
-CC=${CC_BUILD} cmake .. \
-    -DSCOTCH_VERSION=7 \
-    -DSCOTCH_RELEASE=0 \
-    -DSCOTCH_PATCHLEVEL=7 \
-    -DBUILD_PTSCOTCH=OFF \
-    -DINTSIZE="32" \
-    -DCMAKE_BUILD_TYPE=Release
-
-make -j${nproc}
-
-cd ${WORKSPACE}/srcdir/scotch*
-mkdir build
-cd build
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/crossbuilding.patch"
 
 FLAGS=""
 if [[ "${target}" == *linux* ]]; then
@@ -46,25 +27,26 @@ if [[ "${target}" == *freebsd* ]]; then
     FLAGS="-Dcpu_set_t=cpuset_t -D__BSD_VISIBLE"
 fi
 
-CFLAGS=$FLAGS cmake .. \
-    -DBUILD_SHARED_LIBS=ON \
-    -DCMAKE_INSTALL_PREFIX=$prefix \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DINTSIZE="32" \
-    -DTHREADS=ON \
-    -DMPI_THREAD_MULTIPLE=OFF \
-    -DBUILD_PTSCOTCH=OFF \
-    -DBUILD_LIBESMUMPS=ON \
-    -DBUILD_LIBSCOTCHMETIS=ON \
-    -DBUILD_DUMMYSIZES=OFF \
-    -DINSTALL_METIS_HEADERS=OFF \
-    -DLIBSCOTCHERR=scotcherr \
+OPTIONS=(
+    -DBUILD_SHARED_LIBS=ON
+    -DCMAKE_INSTALL_PREFIX=$prefix
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+    -DCMAKE_BUILD_TYPE=Release
+    -DINTSIZE="32"
+    -DTHREADS=ON
+    -DMPI_THREAD_MULTIPLE=OFF
+    -DBUILD_PTSCOTCH=OFF
+    -DBUILD_LIBESMUMPS=ON
+    -DBUILD_LIBSCOTCHMETIS=ON
+    # -DBUILD_DUMMYSIZES=OFF
+    -DINSTALL_METIS_HEADERS=OFF
+    -DLIBSCOTCHERR=scotcherr
     -DENABLE_TESTS=OFF
+)
 
-# make -j${nproc}
-make
-make install
+CFLAGS=$FLAGS cmake -B build ${OPTIONS[@]}
+cmake --build build --parallel 1
+cmake --install build
 
 install_license ${WORKSPACE}/srcdir/scotch/LICENSE_en.txt
 """
@@ -86,9 +68,9 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
-    Dependency(PackageSpec(name="Bzip2_jll", uuid="6e34b625-4abd-537c-b88f-471c36dfa7a0"); compat="1.0.8"),
-    Dependency(PackageSpec(name="XZ_jll", uuid="ffd25f8a-64ca-5728-b0f7-c24cf3aae800"))
+    Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"); compat="1.2.12"),
+    Dependency(PackageSpec(name="Bzip2_jll", uuid="6e34b625-4abd-537c-b88f-471c36dfa7a0"); compat="1.0.9"),
+    Dependency(PackageSpec(name="XZ_jll", uuid="ffd25f8a-64ca-5728-b0f7-c24cf3aae800"); compat="5.8.2"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
