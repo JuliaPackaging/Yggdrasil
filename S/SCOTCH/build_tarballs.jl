@@ -39,13 +39,24 @@ cp $WORKSPACE/srcdir/scotch-feedstock/recipe/CMakeLists-dummysizes.txt CMakeList
 # First we need to find out `sizeof(pthread_mutex_t)` for the build platform
 cat >find_mutex_size.c <<EOF
 #include <pthread.h>
-char pthread_mutex_size_val = sizeof(pthread_mutex_t);
+// Encode size as ASCII digits in a magic string
+char info[] = {
+    'I','N','F','O',':','s','i','z','e','[',
+    ('0' + ((sizeof(pthread_mutex_t) / 10000) % 10)),
+    ('0' + ((sizeof(pthread_mutex_t) /  1000) % 10)),
+    ('0' + ((sizeof(pthread_mutex_t) /   100) % 10)),
+    ('0' + ((sizeof(pthread_mutex_t) /    10) % 10)),
+    ('0' + ((sizeof(pthread_mutex_t) /     1) % 10)),
+    ']', '\0'
+};
 EOF
 $CC -c find_mutex_size.c
 mutex_size=$(
-    readelf -x .data  find_mutex_size.o |
-    awk 'NR>1 && /0x/{print $2; exit}' |
-    printf '%d\n' "0x$(cat)"
+    strings find_mutex_size.o |
+    grep 'INFO:size\[' |
+    grep -o '\[[0-9]*\]' |
+    tr -d '[]' |
+    sed 's/^0*//'
 )
 echo "Found sizeof(pthread_mutex_t) = $mutex_size"
 
