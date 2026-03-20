@@ -7,14 +7,70 @@ version = v"7.0.11"
 
 # Collection of sources required to complete build
 sources = [
+    # SCOTCH source code
     GitSource("https://gitlab.inria.fr/scotch/scotch", "626b88ce70edabb993bbee463f6c28ae2899af69"),
-    DirectorySource("./bundled"),
+    # conda-forge patches for cross-building
+    GitSource("https://github.com/conda-forge/scotch-feedstock", "73cc602e57759cd4a12823586aa46e29d7a7e6f7"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/scotch*
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/crossbuilding.patch"
+cd ${WORKSPACE}/srcdir/scotch
+
+# Apply conda-forge patches
+atomic_patch -p1 $WORKSPACE/srcdir/scotch-feedstock/recipe/0001-put-metis-headers-in-include-scotch.patch
+atomic_patch -p1 $WORKSPACE/srcdir/scotch-feedstock/recipe/0002-fix-ptesmumps.h.patch
+atomic_patch -p1 $WORKSPACE/srcdir/scotch-feedstock/recipe/0003-win-fix-ssize_t.patch
+atomic_patch -p1 $WORKSPACE/srcdir/scotch-feedstock/recipe/0004-win-fix-context.c.patch
+atomic_patch -p1 $WORKSPACE/srcdir/scotch-feedstock/recipe/0005-use-external-dummysizes.patch
+atomic_patch -p1 $WORKSPACE/srcdir/scotch-feedstock/recipe/0006-win-fix-graph-match-scan.patch
+atomic_patch -p1 $WORKSPACE/srcdir/scotch-feedstock/recipe/0007-allow-overriding-pthread_mutex_t-size.patch
+
+################################################################################
+
+# SCOTCH builds a helper program `dummysizes`, and runs it to extract sizes of datatypes.
+# This does not work when cross-building.
+# We build `dummysizes` ahead of time with the host compiler.
+
+mkdir -p src/dummysizes/build-host
+cd src/dummysizes
+cp $WORKSPACE/srcdir/scotch-feedstock/recipe/CMakeLists-dummysizes.txt CMakeLists.txt
+
+# First we need to find out `sizeof(pthread_mutex_t)` for the build platform
+cat >find_mutex_size.c <<EOF
+#include <pthread.h>
+char pthread_mutex_size_val = sizeof(pthread_mutex_t);
+EOF
+$CC -c find_mutex_size.c
+mutex_size=$(
+    readelf -x .data  find_mutex_size.o |
+    awk 'NR>1 && /0x/{print $2; exit}' |
+    printf '%d\n' "0x$(cat)"
+)
+echo "Found sizeof(pthread_mutex_t) = $mutex_size"
+
+OPTIONS=(
+    -DBUILD_LIBESMUMPS=OFF
+    -DBUILD_LIBSCOTCHMETIS=OFF
+    -DBUILD_PTSCOTCH=OFF
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN}
+    -DENABLE_TESTS=OFF
+    -DINTSIZE="32"
+    -DMPI_THREAD_MULTIPLE=OFF
+    -DSCOTCH_PATCHLEVEL=11
+    -DSCOTCH_RELEASE=0
+    -DSCOTCH_VERSION=7
+    -DTHREADS=ON
+)
+cmake -B build-host ${OPTIONS[@]}
+cmake --build build-host --parallel ${nproc}
+
+################################################################################
+
+# Now build SCOTCH
+
+cd ${WORKSPACE}/srcdir/scotch
 
 FLAGS=""
 if [[ "${target}" == *linux* ]]; then
@@ -28,23 +84,24 @@ if [[ "${target}" == *freebsd* ]]; then
 fi
 
 OPTIONS=(
-    -DBUILD_SHARED_LIBS=ON
-    -DCMAKE_INSTALL_PREFIX=$prefix
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
-    -DCMAKE_BUILD_TYPE=Release
-    -DINTSIZE="32"
-    -DTHREADS=ON
-    -DMPI_THREAD_MULTIPLE=OFF
-    -DBUILD_PTSCOTCH=OFF
     -DBUILD_LIBESMUMPS=ON
     -DBUILD_LIBSCOTCHMETIS=ON
-    -DINSTALL_METIS_HEADERS=OFF
-    -DLIBSCOTCHERR=scotcherr
+    -DBUILD_PTSCOTCH=OFF
+    -DBUILD_SHARED_LIBS=ON
+    -DBUILD_DUMMYSIZES=OFF
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_INSTALL_PREFIX=$prefix
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
     -DENABLE_TESTS=OFF
+    -DINSTALL_METIS_HEADERS=OFF
+    -DINTSIZE="32"
+    -DLIBSCOTCHERR=scotcherr
+    -DMPI_THREAD_MULTIPLE=OFF
+    -DTHREADS=ON
 )
 
 CFLAGS=$FLAGS cmake -B build ${OPTIONS[@]}
-cmake --build build --parallel 1
+cmake --build build --parallel ${nproc}
 cmake --install build
 
 install_license ${WORKSPACE}/srcdir/scotch/LICENSE_en.txt
