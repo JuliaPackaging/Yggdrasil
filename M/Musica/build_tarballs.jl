@@ -59,7 +59,8 @@ sources, script = require_macos_sdk("14.5", sources, script)
 
 # grab all of the platforms supported by libjulia
 include(joinpath(YGGDRASIL_DIR, "L", "libjulia", "common.jl"))
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = vcat(libjulia_platforms.(julia_versions)...)
+platforms = expand_cxxstring_abis(platforms)
 
 # libcxxwrap_julia_jll does not provide artifacts for armv6l, armv7l, or i686-linux-musl
 filter!(p -> arch(p) != "armv6l", platforms)
@@ -84,7 +85,7 @@ dependencies = [
 # Build the tarballs
 build_tarballs(
     ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat="1.10",
+    julia_compat=libjulia_julia_compat(julia_versions),
     preferred_gcc_version=v"13",
     dont_dlopen=true
 )
