@@ -116,10 +116,6 @@ platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
-#TODO # Remove platforms where some dependencies are missing
-#TODO filter!(p -> arch(p) != "riscv64", platforms)
-#TODO filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
-
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libsmumpspar", :libsmumpspar),
