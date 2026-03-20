@@ -59,7 +59,7 @@ build_superlu_dist()
         -Denable_complex16=ON \
         -DTPL_BLAS_LIBRARIES="${libdir}/${BLAS}.${dlext}" \
         ${PLATFLAGS} \
-        -DCMAKE_C_FLAGS="-std=c99" \
+        -DCMAKE_C_FLAGS="-std=c99 -Wno-implicit-function-declaration" \
         -DXSDK_INDEX_SIZE=${INT} \
         -DXSDK_ENABLE_Fortran=OFF \
         -DSUPERLU_OUTPUT_NAME="superlu_dist_Int${INT}" \
