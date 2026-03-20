@@ -67,6 +67,8 @@ augment_platform_block = """
 # platforms are passed in on the command line
 platforms = expand_gfortran_versions(supported_platforms())
 filter!(!Sys.iswindows, platforms)
+# "Old-style type declaration REAL*16 not supported" in merge_wann.f90
+filter!(p -> !(Sys.islinux(p) && (arch(p) == "armv6l" || arch(p) == "armv7l")), platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
