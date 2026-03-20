@@ -19,9 +19,9 @@ install -Dvm 755 \
 """
 
 excluded = [
-	"riscv64-linux-gnu",
-	"aarch64-unknown-freebsd",
-	"i686-w64-mingw32",
+	"riscv64-linux-gnu",          # Rust 1.94 toolchain not available
+	"aarch64-unknown-freebsd",    # Rust 1.94 toolchain not available
+	"i686-w64-mingw32",           # _Unwind linker errors
 ]
 
 platforms = filter(supported_platforms()) do p
