@@ -13,22 +13,19 @@ cd  ${WORKSPACE}/srcdir/boringssl
 
 mkdir build && cd build
 
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_SHARED_LIBS=ON \
-    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+cmake 
+   -DCMAKE_INSTALL_PREFIX=${prefix} \
+   -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+   -DCMAKE_BUILD_TYPE=Release \
+   -DBUILD_SHARED_LIBS=ON \
+   -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+   -GNinja 
    ..
 
-make -j${nproc}
+ninja -j${nproc}
+ninja install
 
-mkdir -p ${prefix}/lib
-mkdir -p ${prefix}/include
-cp crypto/libcrypto.a ssl/libssl.a ${prefix}/lib/
-cp -r ../include/* ${prefix}/include/
-
-mkdir -p ${prefix}/share/licenses/LSBoringSSL
-cp ../LICENSE ${prefix}/share/licenses/LSBoringSSL/
+install_license ../LICENSE
 """
 
 platforms = supported_platforms()
