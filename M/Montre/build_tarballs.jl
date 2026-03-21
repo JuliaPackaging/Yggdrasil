@@ -1,12 +1,12 @@
 using BinaryBuilder, Pkg
 
 name = "Montre"
-version = v"0.2.0"
+version = v"0.3.0"
 
 sources = [
 	GitSource(
 		"https://github.com/myersm0/montre.git",
-		"54a24f413d50a4c18719b8e3018159626799bc11",
+		"e6c4490757f4b283ff8406031ebc18cecafa7333",
 	),
 ]
 
@@ -19,8 +19,6 @@ install -Dvm 755 \
 """
 
 excluded = [
-	"riscv64-linux-gnu",          # Rust 1.94 toolchain not available
-	"aarch64-unknown-freebsd",    # Rust 1.94 toolchain not available
 	"i686-w64-mingw32",           # _Unwind linker errors
 ]
 
