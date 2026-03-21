@@ -178,3 +178,5 @@ for platform in platforms
                    preferred_gcc_version=v"12",
                    )
 end
+
+# build trigger: 1
