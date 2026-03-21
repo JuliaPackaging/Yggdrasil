@@ -3,21 +3,18 @@
 using BinaryBuilder
 
 name = "Xorg_util_macros"
-version = v"1.19.2"
+version = v"1.20.2"
 
 # Collection of sources required to build xorg-util-macros
 sources = [
-    ArchiveSource("https://www.x.org/archive/individual/util/util-macros-$(version).tar.bz2",
-                  "d7e43376ad220411499a79735020f9d145fdc159284867e99467e0d771f3e712")
+    ArchiveSource("https://www.x.org/archive/individual/util/util-macros-$(version).tar.xz",
+                  "9ac269eba24f672d7d7b3574e4be5f333d13f04a7712303b1821b2a51ac82e8e")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/util-macros-*/
-CPPFLAGS="-I${prefix}/include"
-# When compiling for things like ppc64le, we need newer `config.sub` files
-update_configure_scripts
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=no
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 """

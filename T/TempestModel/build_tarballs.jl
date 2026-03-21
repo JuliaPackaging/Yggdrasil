@@ -130,8 +130,10 @@ dependencies = [
     # semver-like.
     Dependency("MKL_jll", v"2023.2.0"),
     Dependency("NetCDF_jll"; compat="400.902.208 - 400.999"),
+    # We had to restrict compat with HDF5 because of ABI breakage:
+    # https://github.com/JuliaPackaging/Yggdrasil/pull/10347#issuecomment-2662923973
     # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
-    Dependency("HDF5_jll"; compat="~1.14.3"),
+    Dependency("HDF5_jll"; compat="=1.14.3"),
 ]
 append!(dependencies, platform_dependencies)
 

@@ -1,0 +1,16 @@
+diff --git a/include/ssht/ssht_types.h b/include/ssht/ssht_types.h
+index 31881fe..2608cfe 100644
+--- a/include/ssht/ssht_types.h
++++ b/include/ssht/ssht_types.h
+@@ -49,6 +49,11 @@
+ typedef std::complex<double> ssht_complex_double;
+ extern "C" {
+ #else
++#include <complex.h>
++#include <math.h>
++_Complex long double ccosl(_Complex long double);
++_Complex long double csinl(_Complex long double);
++_Complex long double ctanl(_Complex long double);
+ #include <tgmath.h>
+ typedef double complex ssht_complex_double;
+ #endif

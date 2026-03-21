@@ -26,7 +26,7 @@
 #   `--deploy` flag to the `build_tarballs.jl` script.  You can either build &
 #   deploy the compilers one by one or run something like
 #
-#      for p in i686-linux-gnu x86_64-linux-gnu aarch64-linux-gnu armv7l-linux-gnueabihf powerpc64le-linux-gnu riscv64-linux-gnu i686-linux-musl x86_64-linux-musl aarch64-linux-musl armv7l-linux-musleabihf x86_64-apple-darwin14 x86_64-unknown-freebsd13.2 aarch64-unknown-freebsd13.2 i686-w64-mingw32 x86_64-w64-mingw32; do julia build_tarballs.jl --debug --verbose --deploy "${p}"; done
+#      for p in i686-linux-gnu x86_64-linux-gnu aarch64-linux-gnu armv7l-linux-gnueabihf powerpc64le-linux-gnu riscv64-linux-gnu i686-linux-musl x86_64-linux-musl aarch64-linux-musl armv7l-linux-musleabihf x86_64-apple-darwin14 x86_64-unknown-freebsd13.4 aarch64-unknown-freebsd14.1 i686-w64-mingw32 x86_64-w64-mingw32; do julia build_tarballs.jl --debug --verbose --deploy "${p}"; done
 
 include("./common.jl")
 include("./gcc_sources.jl")
@@ -69,6 +69,7 @@ function gcc_script(gcc_version::VersionNumber, compiler_target::Platform)
     # Default sysroot
     sysroot="${prefix}/${COMPILER_TARGET}/sys-root"
     cp -ra "/opt/${COMPILER_TARGET}/${COMPILER_TARGET}" "${prefix}/${COMPILER_TARGET}"
+    mkdir -p "${sysroot}/include"
 
     # Some things need /lib64, others just need /lib.  Be consistent with where
     # our compiler wrappers expect the libraries to be:

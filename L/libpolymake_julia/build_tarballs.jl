@@ -3,29 +3,22 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
-# copied from libsingular_julia:
-# See https://github.com/JuliaLang/Pkg.jl/issues/2942
-# Once this Pkg issue is resolved, this must be removed
-uuidosxunw = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
-uuidopenssl = Base.UUID("458c3c95-2e84-50aa-8efc-19380b2a3a95")
-delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuidosxunw)
-delete!(Pkg.Types.get_last_stdlibs(v"1.12.0"), uuidopenssl)
-delete!(Pkg.Types.get_last_stdlibs(v"1.13.0"), uuidopenssl)
-
 # needed for libjulia_platforms and julia_versions
 include("../../L/libjulia/common.jl")
+# we only support julia >=1.10
+filter!(>=(v"1.10"), julia_versions)
 
 name = "libpolymake_julia"
-version = v"0.13.1"
+version = v"0.14.6"
 
 # reminder: change the above version when changing the supported julia versions
-# julia_versions is now taken from libjulia/common.jl
-julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
+# julia_versions is now taken from libjulia/common.jl and filtered
+julia_compat = libjulia_julia_compat(julia_versions)
 
 # Collection of sources required to build libpolymake_julia
 sources = [
     GitSource("https://github.com/oscar-system/libpolymake-julia.git",
-              "86391622a702d7dec1932dc8bd3f0733a59074ff"),
+              "5c84b225f6919f57f21bb828db44b6ce329afb3f"),
 ]
 
 # Bash recipe for building across all platforms
@@ -53,6 +46,7 @@ $host_bindir/perl $host_bindir/polymake --iscript libpolymake-j*/src/polymake/ap
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 filter!(p -> !Sys.iswindows(p) && arch(p) != "armv6l", platforms)
 filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+filter!(p -> arch(p) != "riscv64", platforms) # filter riscv64 until supported by all dependencies
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -65,26 +59,27 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.15")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version="1.11.0")),
     BuildDependency("GMP_jll"),
     BuildDependency("MPFR_jll"),
+
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("FLINT_jll", compat = "~300.100.301"),
+    Dependency("FLINT_jll", compat = "~301.400.0"),
     Dependency("TOPCOM_jll"; compat = "~0.17.8"),
     Dependency("lib4ti2_jll"; compat = "^1.6.10"),
-    Dependency("libcxxwrap_julia_jll"; compat = "~0.13.4"),
-    Dependency("polymake_jll"; compat = "~400.1300.2"),
+    Dependency("libcxxwrap_julia_jll"; compat = "~0.14.9"),
+    Dependency("polymake_jll"; compat = "~400.1500.1"),
 
-    HostBuildDependency(PackageSpec(name="Perl_jll", version=v"5.34.1")),
-    HostBuildDependency(PackageSpec(name="polymake_jll", version=v"400.1300.2")),
-    HostBuildDependency(PackageSpec(name="lib4ti2_jll", version=v"1.6.10")),
-    HostBuildDependency(PackageSpec(name="TOPCOM_jll", version=v"0.17.8")),
+    HostBuildDependency(PackageSpec(name="Perl_jll", version="5.34.1")),
+    HostBuildDependency(PackageSpec(name="polymake_jll", version="400.1500.1")),
+    HostBuildDependency(PackageSpec(name="lib4ti2_jll", version="1.6.10")),
+    HostBuildDependency(PackageSpec(name="TOPCOM_jll", version="0.17.8")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     preferred_gcc_version=v"8",
     clang_use_lld=false,
-    julia_compat = julia_compat)
+    julia_compat=julia_compat)
 
 # rebuild trigger: 1

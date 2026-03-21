@@ -61,61 +61,36 @@ index 18a56628..9bbe1e2c 100644
  	endpoint := github.Endpoint
  	// case when it is a GitHub Enterprise account.
 diff --git a/connector/gitlab/gitlab.go b/connector/gitlab/gitlab.go
-index fdb2c482..fb37b1c6 100644
+index 7aa44398..4e7cffc4 100644
 --- a/connector/gitlab/gitlab.go
 +++ b/connector/gitlab/gitlab.go
-@@ -28,12 +28,13 @@ const (
- 
- // Config holds configuration options for gitlab logins.
- type Config struct {
--	BaseURL      string   `json:"baseURL"`
--	ClientID     string   `json:"clientID"`
--	ClientSecret string   `json:"clientSecret"`
--	RedirectURI  string   `json:"redirectURI"`
--	Groups       []string `json:"groups"`
--	UseLoginAsID bool     `json:"useLoginAsID"`
-+	BaseURL          string   `json:"baseURL"`
-+	ClientID         string   `json:"clientID"`
-+	ClientSecret     string   `json:"clientSecret"`
-+	RedirectURI      string   `json:"redirectURI"`
-+	Groups           []string `json:"groups"`
-+	UseLoginAsID     bool     `json:"useLoginAsID"`
-+	AdditionalScopes []string `json:"additionalScopes,omitempty"`
+@@ -35,6 +35,7 @@ type Config struct {
+ 	Groups              []string `json:"groups"`
+ 	UseLoginAsID        bool     `json:"useLoginAsID"`
+ 	GetGroupsPermission bool     `json:"getGroupsPermission"`
++	AdditionalScopes    []string `json:"additionalScopes,omitempty"`
  }
  
  type gitlabUser struct {
-@@ -51,13 +52,14 @@ func (c *Config) Open(id string, logger *slog.Logger) (connector.Connector, erro
- 		c.BaseURL = "https://gitlab.com"
- 	}
- 	return &gitlabConnector{
--		baseURL:      c.BaseURL,
--		redirectURI:  c.RedirectURI,
--		clientID:     c.ClientID,
--		clientSecret: c.ClientSecret,
--		logger:       logger.With(slog.Group("connector", "type", "gitlab", "id", id)),
--		groups:       c.Groups,
--		useLoginAsID: c.UseLoginAsID,
-+		baseURL:          c.BaseURL,
-+		redirectURI:      c.RedirectURI,
-+		clientID:         c.ClientID,
-+		clientSecret:     c.ClientSecret,
-+		logger:           logger.With(slog.Group("connector", "type", "gitlab", "id", id)),
-+		groups:           c.Groups,
-+		useLoginAsID:     c.UseLoginAsID,
-+		additionalScopes: c.AdditionalScopes,
+@@ -60,6 +61,7 @@ func (c *Config) Open(id string, logger *slog.Logger) (connector.Connector, erro
+ 		groups:              c.Groups,
+ 		useLoginAsID:        c.UseLoginAsID,
+ 		getGroupsPermission: c.GetGroupsPermission,
++		additionalScopes:    c.AdditionalScopes,
  	}, nil
  }
  
-@@ -82,6 +84,8 @@ type gitlabConnector struct {
- 	httpClient   *http.Client
- 	// if set to true will use the user's handle rather than their numeric id as the ID
- 	useLoginAsID bool
+@@ -87,6 +89,9 @@ type gitlabConnector struct {
+ 
+ 	// if set to true permissions will be added to list of groups
+ 	getGroupsPermission bool
++
 +	// optional scopes to be requested apart from what the connector itself needs
 +	additionalScopes []string
  }
  
  func (c *gitlabConnector) oauth2Config(scopes connector.Scopes) *oauth2.Config {
-@@ -89,7 +93,10 @@ func (c *gitlabConnector) oauth2Config(scopes connector.Scopes) *oauth2.Config {
+@@ -94,7 +99,10 @@ func (c *gitlabConnector) oauth2Config(scopes connector.Scopes) *oauth2.Config {
  	if c.groupsRequired(scopes.Groups) {
  		gitlabScopes = []string{scopeUser, scopeOpenID}
  	}

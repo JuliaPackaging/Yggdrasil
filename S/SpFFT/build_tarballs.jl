@@ -6,10 +6,10 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "SpFFT"
-version = v"1.1.0"
+version = v"1.1.1"
 
 sources = [
-   GitSource("https://github.com/eth-cscs/SpFFT/", "0a0a08c203b311d10d840444886e61c87e2d20f0")
+   GitSource("https://github.com/eth-cscs/SpFFT/", "34391bc8c5e2b8add000e38fdc6ce68896184d10")
 ]
 
 script = raw"""
@@ -63,6 +63,7 @@ augment_platform_block = """
 platforms = supported_platforms()                                                       
 filter!(!Sys.iswindows, platforms)
 filter!(!Sys.isfreebsd, platforms)
+filter!(p -> arch(p) != "riscv64", platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 products = [

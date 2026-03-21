@@ -4,12 +4,16 @@ using BinaryBuilder, Pkg
 using BinaryBuilderBase: sanitize
 
 name = "PCRE2"
-version_string = "10.44"
+
+version_string = "10.47"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/PCRE2Project/pcre2", "6ae58beca071f13ccfed31d03b3f479ab520639b"),
+    # We use an archive because (a) the archives are signed, hence
+    # presumably immutable, and (b) the git source uses submodules.
+    ArchiveSource("https://github.com/PCRE2Project/pcre2/releases/download/pcre2-$(version.major).$(version.minor)/pcre2-$(version.major).$(version.minor).tar.bz2",
+                  "47fe8c99461250d42f89e6e8fdaeba9da057855d06eb7fc08d9ca03fd08d7bc7"),
 ]
 
 # Bash recipe for building across all platforms
@@ -21,15 +25,11 @@ if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
 fi
 
-./autogen.sh
-
-# Update configure scripts
-update_configure_scripts
-
 # Force optimization
 export CFLAGS="${CFLAGS} -O3"
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
+    --disable-symvers \
     --enable-jit \
     --enable-pcre2-16 \
     --enable-pcre2-32
@@ -68,7 +68,7 @@ dependencies = [
 
 ]
 
+# Need at least GCC XXX for asm instructions on i686
+# (We could instead patch the asm instructions.)
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.9", preferred_llvm_version=llvm_version)
-
-# Build trigger: 1
+               julia_compat="1.9", preferred_gcc_version=v"5", preferred_llvm_version=llvm_version)

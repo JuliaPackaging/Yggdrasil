@@ -4,6 +4,8 @@ using BinaryBuilder
 
 name = "FriBidi"
 version = v"1.0.16"
+# We bumped the version number because we built for new architectures
+ygg_version = v"1.0.17"
 
 # Collection of sources required to build FriBidi
 sources = [
@@ -36,5 +38,5 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", clang_use_lld=false)

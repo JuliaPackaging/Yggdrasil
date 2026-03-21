@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libharu"
-version = v"2.4.4"
+version = v"2.4.5"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/libharu/libharu.git", "0c598becaadaef8e3d12b883f9fc2864a118c12d")
+    GitSource("https://github.com/libharu/libharu.git", "8fe5a738541a04642885fb7a75b2b5b9c5b416fa")
 ]
 
 # Bash recipe for building across all platforms
@@ -25,8 +25,6 @@ cmake --build build --target install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-#  Cannot find required math library
-filter!(p -> arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [

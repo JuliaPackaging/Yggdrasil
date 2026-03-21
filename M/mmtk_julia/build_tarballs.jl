@@ -3,15 +3,21 @@
 using BinaryBuilder, Pkg
 
 name = "mmtk_julia"
-version = v"0.30.5"
+version = v"0.32.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/mmtk/mmtk-julia.git", "10ad6638b69b31a97a844f2f4e651e5ccea4e298")
+    GitSource("https://github.com/mmtk/mmtk-julia.git", "a51981067a37c781351e05ddc2dc9795f1700227")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+# Use the system linker. On Linux, force BFD to avoid "lld not built with zlib support" errors.
+export RUSTFLAGS="-C linker=${CC}"
+if [[ "${target}" == *-linux-* ]]; then
+    RUSTFLAGS="${RUSTFLAGS} -C link-arg=-fuse-ld=bfd"
+fi
+
 cd $WORKSPACE/srcdir/mmtk-julia/
 MMTK_PLANS=("Immix" "StickyImmix")
 MMTK_MOVING=(0 1)

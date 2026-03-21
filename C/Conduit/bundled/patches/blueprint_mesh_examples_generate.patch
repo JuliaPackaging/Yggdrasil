@@ -1,0 +1,58 @@
+diff --git a/src/libs/blueprint/c/conduit_blueprint_mesh.h b/src/libs/blueprint/c/conduit_blueprint_mesh.h
+index 2408a09f..b6676690 100644
+--- a/src/libs/blueprint/c/conduit_blueprint_mesh.h
++++ b/src/libs/blueprint/c/conduit_blueprint_mesh.h
+@@ -103,6 +103,20 @@ CONDUIT_BLUEPRINT_API void conduit_blueprint_mesh_examples_misc(const char *mesh
+                                                                  conduit_index_t nz,
+                                                                  conduit_node *cres);
+ 
++//-----------------------------------------------------------------------------
++/// generates a named example mesh using options
++/// expects opts node to contains relevant args for each example
++//-----------------------------------------------------------------------------
++CONDUIT_BLUEPRINT_API void conduit_blueprint_mesh_examples_generate(const char *example_name,
++                                                                    const conduit_node *copts,
++                                                                    conduit_node *cres);
++
++//-----------------------------------------------------------------------------
++/// creates the default options for a given example
++//-----------------------------------------------------------------------------
++CONDUIT_BLUEPRINT_API void conduit_blueprint_mesh_examples_generate_default_options(const char *example_name,
++                                                                                    conduit_node *copts);
++
+ #ifdef __cplusplus
+ }
+ #endif
+diff --git a/src/libs/blueprint/c/conduit_blueprint_mesh_c.cpp b/src/libs/blueprint/c/conduit_blueprint_mesh_c.cpp
+index 435a620d..4fc46cb9 100644
+--- a/src/libs/blueprint/c/conduit_blueprint_mesh_c.cpp
++++ b/src/libs/blueprint/c/conduit_blueprint_mesh_c.cpp
+@@ -175,6 +175,28 @@ conduit_blueprint_mesh_examples_misc(const char *mesh_type,
+                                     res);
+ }
+ 
++void
++conduit_blueprint_mesh_examples_generate(const char *example_name,
++                                         const conduit_node *copts,
++                                         conduit_node *cres)
++
++{
++    const Node &opts = cpp_node_ref(copts);
++    Node &res        = cpp_node_ref(cres);
++    blueprint::mesh::examples::generate(std::string(example_name),
++                                        opts,
++                                        res);
++}
++
++void
++conduit_blueprint_mesh_examples_generate_default_options(const char *example_name,
++                                                         conduit_node *copts)
++{
++    Node &opts = cpp_node_ref(copts);
++    blueprint::mesh::examples::generate_default_options(std::string(example_name),
++                                                        opts);
++}
++
+ 
+ 
+ }

@@ -8,3 +8,6 @@ build/
 
 # Ignore meta.json files
 meta.json
+
+.DS_Store
+

@@ -3,33 +3,41 @@
 using BinaryBuilder, Pkg
 
 name = "LASzip"
-version = v"3.4.3000"
+version = v"3.4.4001"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/LASzip/LASzip.git", "1ab671e42ff1f086e29d5b7e300a5026e7b8d69b")
+    GitSource("https://github.com/LASzip/LASzip.git", "b6412aa4ac3f1fd44874c862de8e3eb7f672d495")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 
-# Patch to find unordered_map from tr1, logic there doesn't work for MINGW32.
-if [[ "${target}" == *-mingw* ]]; then
-    sed -i '/add_definitions(-DUNORDERED)/d' LASzip/src/CMakeLists.txt;  
-fi
-
 mkdir LASzip/build
 cd LASzip/build/
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_CXX_FLAGS="-std=c++11" -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_VERBOSE_MAKEFILE=OFF ..
-cmake --build . --target install --config Release
+
+CMAKE_FLAGS=(
+    -DCMAKE_INSTALL_PREFIX=$prefix
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+    -DCMAKE_BUILD_TYPE=Release
+)
+
+# Prevents Mingw-w64 runtime failure:
+# 32 bit pseudo relocation at 000000006A2417D2 out of range, targeting 00007FF91B307DD0, yielding the value 00007FF8B10C65FA
+if [[ "${target}" == *-mingw* ]]; then
+    CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="-fno-gnu-unique")
+fi
+
+cmake ${CMAKE_FLAGS[@]} ..
+cmake --build . --parallel ${nproc}
+cmake --install .
 """
 
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
-
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [

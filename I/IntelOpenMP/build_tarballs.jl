@@ -1,14 +1,15 @@
 using BinaryBuilder
 
 name = "IntelOpenMP"
-version = v"2025.0.4"
+version = v"2025.2.0"
 
 sources = [
     # Main OpenMP files
-    FileSource("https://files.pythonhosted.org/packages/51/36/1074001dc5a5add3f445dc1d44aecbb239e60fef8269b9c420d731d002d2/intel_openmp-2025.0.4-py2.py3-none-win_amd64.whl",
-               "9dd9c2918158bd19395f28ee2e4b91c00bd86fe45b627e765f611478c7c2c173"; filename="intel_openmp-x86_64-w64-mingw32.whl"),
-    FileSource("https://files.pythonhosted.org/packages/a2/f9/d35767b6ae062e841c20beee56151c914c733dba1a0ba5996c2fc6792a90/intel_openmp-2025.0.4-py2.py3-none-manylinux_2_28_x86_64.whl",
-               "bf31d1cbf3f857b90a7e3c1caab75a546445845e14fd24439e81a70bcbc8d783"; filename="intel_openmp-x86_64-linux-gnu.whl"),
+    # Files from the PyPi package: https://pypi.org/project/intel-openmp/#files
+    FileSource("https://files.pythonhosted.org/packages/bc/37/bab8e9283407798d8782f4d9b374436e51c7a297e1b6dc05073df550c010/intel_openmp-2025.2.0-py2.py3-none-win_amd64.whl",
+               "1710356ae0db744ca028ed380759a2007548ad1819f743be9d675603cb127377"; filename="intel_openmp-x86_64-w64-mingw32.whl"),
+    FileSource("https://files.pythonhosted.org/packages/39/17/45e67730f8757a00d665095338b21ca04890d2a3d52a44d725fb5393a044/intel_openmp-2025.2.0-py2.py3-none-manylinux_2_28_x86_64.whl",
+               "57f52a5f374e70dce56591ab23bf274252a68128d5b8de8f897f3683f65374c8"; filename="intel_openmp-x86_64-linux-gnu.whl"),
 ]
 
 # Bash recipe for building across all platforms

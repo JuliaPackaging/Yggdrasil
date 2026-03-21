@@ -1,0 +1,25 @@
+From 811bde347d425929813cbf40620f497b924c2c45 Mon Sep 17 00:00:00 2001
+From: Valentin Churavy <v.churavy@gmail.com>
+Date: Tue, 8 Nov 2022 19:52:32 -0500
+Subject: [PATCH] no codesign
+
+---
+ compiler-rt/cmake/Modules/AddCompilerRT.cmake | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/compiler-rt/cmake/Modules/AddCompilerRT.cmake b/compiler-rt/cmake/Modules/AddCompilerRT.cmake
+index 298093462f80..34b9daf97400 100644
+--- a/compiler-rt/cmake/Modules/AddCompilerRT.cmake
++++ b/compiler-rt/cmake/Modules/AddCompilerRT.cmake
+@@ -413,7 +413,7 @@ function(add_compiler_rt_runtime name type)
+
+         add_custom_command(TARGET ${libname}
+           POST_BUILD
+-          COMMAND ${CODESIGN} --sign - ${EXTRA_CODESIGN_ARGUMENTS} $<TARGET_FILE:${libname}>
++          # COMMAND ${CODESIGN} --sign - ${EXTRA_CODESIGN_ARGUMENTS} $<TARGET_FILE:${libname}>
+           WORKING_DIRECTORY ${COMPILER_RT_OUTPUT_LIBRARY_DIR}
+           COMMAND_EXPAND_LISTS
+         )
+--
+2.38.1
+

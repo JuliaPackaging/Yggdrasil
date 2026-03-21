@@ -26,23 +26,25 @@ else
     missing
 end
 
-libcuda_deps = [libcuda_debugger, libnvidia_nvvm, libnvidia_ptxjitcompiler]
+libcuda_deps = [libcuda_debugger, libnvidia_nvvm, libnvidia_ptxjitcompiler, libnvidia_gpucomp, libnvidia_tileiras]
 libcuda_system = Sys.iswindows() ? "nvcuda" : "libcuda.so.1"
-can_use_compat = true
+
+# if anything goes wrong, we'll use the system driver
+global libcuda = libcuda_system
 
 # check if we even have an artifact
 if @isdefined(libcuda_compat)
     @debug "Forward-compatible driver found at $libcuda_compat"
 else
     @debug "No forward-compatible driver available for your platform."
-    can_use_compat = false
+    return
 end
 
 # check the user preference
 if compat_preference !== missing
     if !compat_preference
         @debug "User disallows using forward-compatible driver."
-        can_use_compat = false
+        return
     end
 end
 
@@ -50,52 +52,87 @@ end
 # the code that loaded it in the first place might have made assumptions based on it.
 if Libdl.dlopen(libcuda_system, Libdl.RTLD_NOLOAD; throw_error=false) !== nothing
     @debug "System CUDA driver already loaded, continuing using it."
-    can_use_compat = false
+    return
 end
 
-# check if we can load the forward-compatible driver in a separate process
-function try_driver(driver, deps)
-    script = raw"""
-        using Libdl
-        driver, deps... = ARGS
+# helper function to load a driver, query its version, and optionally query device
+# capabilities. needs to happen in a separate process because dlclose is unreliable.
+function inspect_driver(driver, deps=String[]; inspect_devices=false)
+    cmd = `$(cuda_inspect_driver()) $driver $inspect_devices $deps`
 
-        for dep in deps
-            Libdl.dlopen(dep; throw_error=false) === nothing && exit(-1)
-        end
-
-        library_handle = Libdl.dlopen(driver; throw_error=false)
-        library_handle === nothing && exit(-1)
-
-        function_handle = Libdl.dlsym(library_handle, "cuInit")
-        status = ccall(function_handle, Cint, (UInt32,), 0)
-        status == 0 || exit(-2)
-
-        exit(0)
-    """
-    # make sure we don't include any system image flags here since this will cause an infinite loop of __init__()
-    success(`$(Cmd(filter(!startswith(r"-J|--sysimage"), Base.julia_cmd().exec))) --compile=min -t1 --startup-file=no -e $script $driver $deps`)
-end
-
-if can_use_compat && !try_driver(libcuda_compat, libcuda_deps)
-    @debug "Failed to load forwards-compatible driver."
-    can_use_compat = false
-end
-
-# finally, load the appropriate driver
-if can_use_compat
-    @debug "Using forwards-compatible CUDA driver."
-    global libcuda = libcuda_compat
-
-    # load the driver and its dependencies; this should now always succeed
-    # as we've already verified that we can load it in a separate process.
-    for dep in libcuda_deps
-        Libdl.dlopen(dep; throw_error=true)
+    # run the command
+    output = try
+        read(cmd, String)
+    catch _
+        return nothing
     end
-    Libdl.dlopen(libcuda_compat; throw_error=true)
-elseif Libdl.dlopen(libcuda_system; throw_error=false) !== nothing
-    @debug "Using system CUDA driver."
-    global libcuda = libcuda_system
-else
-    @debug "Could not load system CUDA driver."
-    global libcuda = nothing
+
+    # parse the versions
+    lines = readlines(IOBuffer(output))
+    isempty(lines) && return nothing
+    driver_version = parse(VersionNumber, lines[1])
+    if inspect_devices
+        device_capabilities = VersionNumber[]
+        for i in 2:length(lines)
+            push!(device_capabilities, parse(VersionNumber, lines[i]))
+        end
+        return driver_version, device_capabilities
+    else
+        return driver_version
+    end
 end
+
+# fetch driver details
+compat_driver_task = @static if VERSION >= v"1.12-"
+    # XXX: avoid concurrent compilation (JuliaLang/julia#59834)
+    Threads.@spawn :samepool inspect_driver(libcuda_compat, libcuda_deps)
+else
+    Threads.@spawn inspect_driver(libcuda_compat, libcuda_deps)
+end
+system_driver_task = @static if VERSION >= v"1.12-"
+    # XXX: avoid concurrent compilation (JuliaLang/julia#59834)
+    Threads.@spawn :samepool inspect_driver(libcuda_system; inspect_devices=true)
+else
+    Threads.@spawn inspect_driver(libcuda_system; inspect_devices=true)
+end
+compat_driver_details = fetch(compat_driver_task)
+if compat_driver_details === nothing
+    @debug "Failed to load forwards-compatible driver."
+    return
+end
+compat_driver_version = compat_driver_details::VersionNumber
+@debug "Forwards compatible driver version: $compat_driver_version"
+system_driver_details = fetch(system_driver_task)
+if system_driver_details === nothing
+    @debug "Failed to load system driver."
+    return
+end
+system_driver_version = system_driver_details[1]::VersionNumber
+device_capabilities = system_driver_details[2]::Vector{VersionNumber}
+@debug "System driver version: $system_driver_version"
+
+# determine if loading the forwards-compatible driver would exclude devices
+for (dev, cap) in enumerate(device_capabilities)
+    # CUDA 12 deprecated Kepler
+    if compat_driver_version >= v"12" && system_driver_version < v"12" && v"3.0" <= cap <= v"3.5"
+        @debug "Loading forwards-compatible driver would exclude device $dev with capability $cap"
+        return
+    end
+
+    # CUDA 13 deprecated Maxwell, Pascal, and Volta
+    if compat_driver_version >= v"13" && system_driver_version < v"13" && v"5.0" <= cap <= v"7.2"
+        @debug "Loading forwards-compatible driver would exclude device $dev with capability $cap"
+        return
+    end
+end
+
+# finally, load the forwards-compatible driver
+@debug "Using forwards-compatible CUDA driver."
+global libcuda = libcuda_compat
+
+# load the driver and its dependencies; this should now always succeed
+# as we've already verified that we can load it in a separate process.
+for dep in libcuda_deps
+    Libdl.dlopen(dep; throw_error=true)
+end
+Libdl.dlopen(libcuda_compat; throw_error=true)

@@ -1,0 +1,43 @@
+diff --git a/cmake/tribits/common_tpls/find_modules/FindNetCDF.cmake b/cmake/tribits/common_tpls/find_modules/FindNetCDF.cmake
+index 92cd46a214..7d3f15ccf5 100644
+--- a/cmake/tribits/common_tpls/find_modules/FindNetCDF.cmake
++++ b/cmake/tribits/common_tpls/find_modules/FindNetCDF.cmake
+@@ -240,9 +240,9 @@ if ( NetCDF_ROOT OR NetCDF_BIN_DIR )
+         set(NetCDF_NEEDS_PNetCDF "${netCDF_HAS_PNETCDF}")
+     else()
+         # Otherwise, try calling the nc-config shell script
+-        if (WIN32)
+-            message(FATAL_ERROR "nc-config can't be used on Windows, please use CMake to install NetCDF")
+-        endif()
++        #if (WIN32)
++        #    message(FATAL_ERROR "nc-config can't be used on Windows, please use CMake to install NetCDF")
++        #endif()
+         find_program(netcdf_config nc-config
+                        PATHS ${NetCDF_ROOT}/bin ${NetCDF_BIN_DIR}
+ 		           NO_DEFAULT_PATH
+diff --git a/packages/seacas/applications/epu/EP_ParallelDisks.C b/packages/seacas/applications/epu/EP_ParallelDisks.C
+index 6a25543b4b..0d3e0b9166 100644
+--- a/packages/seacas/applications/epu/EP_ParallelDisks.C
++++ b/packages/seacas/applications/epu/EP_ParallelDisks.C
+@@ -15,7 +15,7 @@
+ 
+ #if defined(WIN32) || defined(__WIN32__) || defined(_WIN32) || defined(_MSC_VER) ||                \
+     defined(__MINGW32__) || defined(_WIN64) || defined(__MINGW64__)
+-#include <Shlwapi.h>
++#include <shlwapi.h>
+ #endif
+ 
+ /*****************************************************************************/
+diff --git a/packages/seacas/libraries/suplib_cpp/sys_info.C b/packages/seacas/libraries/suplib_cpp/sys_info.C
+index cc034e1815..5f36b1f8b1 100644
+--- a/packages/seacas/libraries/suplib_cpp/sys_info.C
++++ b/packages/seacas/libraries/suplib_cpp/sys_info.C
+@@ -12,7 +12,7 @@
+ #ifndef NOMINMAX
+ #define NOMINMAX
+ #endif
+-#include <Windows.h>
++#include <windows.h>
+ #undef IN
+ #undef OUT
+ #include <fmt/ostream.h>

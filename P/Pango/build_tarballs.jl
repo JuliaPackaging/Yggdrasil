@@ -3,39 +3,20 @@
 using BinaryBuilder
 
 name = "Pango"
-version = v"1.55.5"
+version = v"1.57.0"
 
 # Collection of sources required to build Pango: https://download.gnome.org/sources/pango/
 sources = [
     ArchiveSource("http://ftp.gnome.org/pub/GNOME/sources/pango/$(version.major).$(version.minor)/pango-$(version).tar.xz",
-                  "e396126ea08203cbd8ef12638e6222e2e1fd8aa9cac6743072fedc5f2d820dd8"),
-    ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v11.0.0.tar.bz2",
-                  "bd0ea1633bd830204cc23a696889335e9d4a32b8619439ee17f22188695fcc5f"),
-    DirectorySource("bundled"),
+                  "890640c841dae77d3ae3d8fe8953784b930fa241b17423e6120c7bfdf8b891e7"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 
-if [[ "${target}" == *-mingw* ]]; then
-    cd $WORKSPACE/srcdir/mingw*/mingw-w64-headers
-    ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target
-    make install
+apk add glib-dev
 
-    cd ../mingw-w64-crt/
-    if [ ${target} == "i686-w64-mingw32" ]; then
-        _crt_configure_args="--disable-lib64 --enable-lib32"
-    elif [ ${target} == "x86_64-w64-mingw32" ]; then
-        _crt_configure_args="--disable-lib32 --enable-lib64"
-    fi
-    ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target --enable-wildcard ${_crt_configure_args}
-    make -j${nproc}
-    make install
-fi
-
-cd $WORKSPACE/srcdir/pango*/
-
-atomic_patch -p1 ../patches/sentinel.patch
+cd $WORKSPACE/srcdir/pango*
 
 if [[ "${target}" == "${MACHTYPE}" ]]; then
     # When building for the host platform, the system libexpat is picked up
@@ -45,7 +26,12 @@ fi
 # If we want libpangoft2 on Windows we need to explicitly enable fontconfig and freetype
 # See <https://gitlab.gnome.org/GNOME/pango/-/blob/main/README.win32.md>.
 
+# We need to update pip
+python3 -m pip install --upgrade pip setuptools wheel
 pip3 install gi-docgen
+# We need a newer meson
+python3 -m pip install --upgrade meson
+
 mkdir build && cd build
 meson --cross-file="${MESON_TARGET_TOOLCHAIN}" \
     -Dintrospection=disabled \
@@ -71,14 +57,15 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    HostBuildDependency("Gettext_jll"),
     HostBuildDependency("gperf_jll"),
-    Dependency("Cairo_jll"; compat="1.18.2"),
-    Dependency("Fontconfig_jll"; compat="2.15.0"),
-    Dependency("FreeType2_jll"; compat="2.13.3"),
-    Dependency("FriBidi_jll"; compat="1.0.16"),
-    Dependency("Glib_jll"; compat="2.82.2"),
-    Dependency("HarfBuzz_jll"; compat="8.5.0"),
     BuildDependency("Xorg_xorgproto_jll"; platforms=filter(p -> Sys.isfreebsd(p) || Sys.islinux(p), platforms)),
+    Dependency("Cairo_jll"; compat="1.18.5"),
+    Dependency("Fontconfig_jll"; compat="2.16.0"),
+    Dependency("FreeType2_jll"; compat="2.13.4"),
+    Dependency("FriBidi_jll"; compat="1.0.17"),
+    Dependency("Glib_jll"; compat="2.84.0"),
+    Dependency("HarfBuzz_jll"; compat="8.5.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

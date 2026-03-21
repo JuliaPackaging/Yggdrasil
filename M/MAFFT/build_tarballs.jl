@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "MAFFT"
-version = v"7.505"
+version = v"7.525"
 
 # Notes
 # - build fails on windows, include file sys/resource.h is missing
@@ -11,7 +11,7 @@ version = v"7.505"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://mafft.cbrc.jp/alignment/software/mafft-$(version.major).$(version.minor)-with-extensions-src.tgz",
-                  "f54a78670fcd9960233bcc3b3dd359f395a71c0ced45a7be1cfeae19950ce6ff")
+                  "2876f4adc1a2de4ed206bc40896763bf208bf1a02bda52f8bfdd91cf52d73e4a")
 ]
 
 # Bash recipe for building across all platforms

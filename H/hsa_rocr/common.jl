@@ -66,7 +66,10 @@ function configure_build(version)
         Dependency("hsakmt_roct_jll", version),
         Dependency("ROCmDeviceLibs_jll", version),
         Dependency("NUMA_jll"),
-        Dependency("XML2_jll"),
+        # We had to restrict compat with XML2 because of ABI breakage:
+        # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
+        # Updating to `compat="~2.14.1"` is likely possible without problems but requires rebuilding this package
+        Dependency("XML2_jll"; compat="~2.13.6"),
         Dependency("Elfutils_jll"),
     ]
     if version < v"5"
@@ -79,7 +82,7 @@ function configure_build(version)
     #if version >= v"5.4.4"
         # Need this for CLOCK_BOOTTIME
         push!(dependencies,
-              BuildDependency(PackageSpec(name = "Glibc_jll", version = v"2.17");
+              BuildDependency(PackageSpec(name = "Glibc_jll", version = "2.17");
                               platforms = filter(p->libc(p)=="glibc", ROCM_PLATFORMS)))
     #end
     NAME, version, sources, buildscript, ROCM_PLATFORMS, PRODUCTS, dependencies

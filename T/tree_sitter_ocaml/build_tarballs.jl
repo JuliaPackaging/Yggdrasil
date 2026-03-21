@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "tree_sitter_ocaml"
-version = v"0.20.1"
+version = v"0.24.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource(
-        "https://github.com/tree-sitter/tree-sitter-ocaml/archive/v$(version).tar.gz",
-        "56fddf0c5a775807ba535b4a7fda81ef843f384cba9377fc391b1b692f3aa6f7"
+    GitSource(
+        "https://github.com/tree-sitter/tree-sitter-ocaml.git",
+        "0cc270ff90ca09c29d0f2f9dec69ddfef55a3eff"
     ),
     DirectorySource("./bundled")
 ]
@@ -41,6 +41,8 @@ platforms = expand_cxxstring_abis(supported_platforms())
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libtreesitter_ocaml", :libtreesitter_ocaml),
+    LibraryProduct("libtreesitter_ocaml_interface", :libtreesitter_ocaml_interface),
+    LibraryProduct("libtreesitter_ocaml_type", :libtreesitter_ocaml_type),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -48,4 +50,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

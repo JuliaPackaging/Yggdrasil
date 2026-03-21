@@ -2,16 +2,16 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 include("../common.jl")
 
-gap_version = v"400.1400.0"
+gap_version = v"400.1500.0"
 name = "io"
-upstream_version = "4.9.1" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
+upstream_version = "4.9.3" # when you increment this, reset offset to v"0.0.0"
+offset = v"1.0.0" # increment this when rebuilding with unchanged upstream_version
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL
 sources = [
     ArchiveSource("https://github.com/gap-packages/io/releases/download/v$(upstream_version)/io-$(upstream_version).tar.gz",
-                  "edb0a8ab61ad36664e2ddaab38af052ad3e063479dfdb7985a10ebb8b1c7795b"),
+                  "842926c02ecdfcc16ff31468c376dcf4fbb7faa5094e637c83d7b00a503900c3"),
 ]
 
 # Bash recipe for building across all platforms
@@ -28,7 +28,8 @@ install_license LICENSE
 """
 
 name = gap_pkg_name(name)
-platforms, dependencies = setup_gap_package(gap_version)
+dependencies = gap_pkg_dependencies(gap_version)
+platforms = gap_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -37,6 +38,6 @@ products = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"7")
+               julia_compat="1.10", preferred_gcc_version=v"7")
 
 # rebuild trigger: 1

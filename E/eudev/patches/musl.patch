@@ -1,0 +1,42 @@
+--- src/shared/util.c
++++ src/shared/util.c
+@@ -76,7 +76,7 @@
+ char **saved_argv = NULL;
+ 
+ size_t page_size(void) {
+-        static thread_local size_t pgsz = 0;
++        static __thread size_t pgsz = 0;
+         long r;
+ 
+         if (_likely_(pgsz > 0))
+@@ -1329,7 +1329,7 @@
+ }
+ 
+ bool is_main_thread(void) {
+-        static thread_local int cached = 0;
++        static __thread int cached = 0;
+ 
+         if (_unlikely_(cached == 0))
+                 cached = getpid() == gettid() ? 1 : -1;
+@@ -1474,7 +1474,7 @@
+ DEFINE_PRIVATE_STRING_TABLE_LOOKUP(__signal, int);
+ 
+ const char *signal_to_string(int signo) {
+-        static thread_local char buf[sizeof("RTMIN+")-1 + DECIMAL_STR_MAX(int) + 1];
++        static __thread char buf[sizeof("RTMIN+")-1 + DECIMAL_STR_MAX(int) + 1];
+         const char *name;
+ 
+         name = __signal_to_string(signo);
+--- src/shared/virt.c
++++ src/shared/virt.c
+@@ -28,8 +28,8 @@
+ 
+ int detect_container(const char **id) {
+ 
+-        static thread_local int cached_found = -1;
+-        static thread_local const char *cached_id = NULL;
++        static __thread int cached_found = -1;
++        static __thread const char *cached_id = NULL;
+ 
+         _cleanup_free_ char *m = NULL;
+         const char *_id = NULL, *e = NULL;

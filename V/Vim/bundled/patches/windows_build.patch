@@ -1,0 +1,11 @@
+--- src/Make_cyg_ming.mak
++++ src/Make_cyg_ming.mak.new
+@@ -517,7 +517,7 @@
+ #>>>>> end of choices
+ ###########################################################################
+ 
+-CFLAGS = -I. -Iproto $(DEFINES) -pipe -march=$(ARCH) -Wall
++CFLAGS = -I. -Iproto $(DEFINES) -pipe -Wall -std=gnu99
+ # To get additional compiler warnings
+ #CFLAGS += -Wextra -pedantic
+ CXXFLAGS = -std=gnu++11

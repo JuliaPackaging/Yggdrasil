@@ -1,14 +1,14 @@
 using BinaryBuilder, Pkg
 
 name = "Foldseek"
-version = v"8"
+version = v"10"
 
 # url = "https://github.com/steineggerlab/foldseek"
 # description = "Fast and sensitive comparisons of large protein structure sets"
 
 sources = [
     GitSource("https://github.com/steineggerlab/foldseek",
-              "946841ff3b15531349a9883358b3a3052b368da9"),
+              "941cd33ff0771cd2e3f144e3293e22a2b87e9fda"),
     DirectorySource("./bundled"),
 ]
 
@@ -23,6 +23,9 @@ sources = [
 #   and usage in freebsd headers, e.g. at line 190 of
 #   /opt/x86_64-unknown-freebsd12.2/x86_64-unknown-freebsd12.2/sys-root//usr/include/sys/time.h
 #   see: https://github.com/JuliaPackaging/Yggdrasil/pull/6195#issuecomment-1416227398
+# - musl, riscv64: Rust fails to compile with error: undefined reference to 
+#   `posix_spawn_file_actions_addchdir_np'. This is possibly an upstream issue:
+#   https://github.com/rust-lang/rust/issues/141795
 
 script = raw"""
 cd $WORKSPACE/srcdir/foldseek*/
@@ -60,7 +63,7 @@ make install
 install_license ../LICENSE.md
 """
 
-platforms = supported_platforms(; exclude = p -> Sys.iswindows(p) || Sys.isfreebsd(p) || nbits(p) == 32 || arch(p) == "powerpc64le")
+platforms = supported_platforms(; exclude = p -> Sys.iswindows(p) || Sys.isfreebsd(p) || nbits(p) == 32 || arch(p) == "powerpc64le" || libc(p) == "musl" || arch(p) == "riscv64")
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
@@ -79,4 +82,4 @@ dependencies = Dependency[
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version = v"8", compilers=[:c, :rust])
+               julia_compat="1.6", preferred_gcc_version = v"11", compilers=[:c, :rust])

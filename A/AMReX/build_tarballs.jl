@@ -2,33 +2,24 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
+
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "AMReX"
-version_string = "25.02"
+version_string = "26.03"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/AMReX-Codes/amrex/releases/download/$(version_string)/amrex-$(version_string).tar.gz",
-                  "2680a5a9afba04e211cd48d27799c5a25abbb36c6c3d2b6c13cd4757c7176b23"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-                  "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
+                  "7139b8bb423a4311e8990bee6cb06b86a81de439363f35a3f29c808a93a003ca"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/amrex
-
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    export MACOSX_DEPLOYMENT_TARGET=10.14
-    popd
-fi
 
 # Correct HDF5 compiler wrappers
 perl -pi -e 's+-I/workspace/srcdir/hdf5-1[.]14[.]./src/H5FDsubfiling++' $(which h5pcc)
@@ -53,12 +44,6 @@ fi
 
 if [[ "${target}" == *-mingw32* ]]; then
     # AMReX requires a parallel HDF5 library
-    hdf5opts="-DAMReX_HDF5=OFF"
-elif [[ "${target}" == aarch64-*-freebsd* ]]; then
-    # HDF5 has not yet been built for these platforms -- update this once HDF5 has been updated
-    hdf5opts="-DAMReX_HDF5=OFF"
-elif [[ "${bb_full_target}" == x86_64-*-freebsd*mpi+mpitrampoline ]]; then
-    # HDF5 has not yet been built for these platforms -- update this once HDF5 has been updated
     hdf5opts="-DAMReX_HDF5=OFF"
 else
     hdf5opts="-DAMReX_HDF5=ON"
@@ -92,11 +77,13 @@ fi
 install_license LICENSE
 """
 
+sources, script = require_macos_sdk("10.14", sources, script)
+
 augment_platform_block = """
     using Base.BinaryPlatforms
     $(MPI.augment)
     augment_platform!(platform::Platform) = augment_mpi!(platform)
-"""
+    """
 
 # The products that we will ensure are always built
 products = [
@@ -115,33 +102,10 @@ platforms = filter(p -> libgfortran_version(p).major ≥ 5, platforms)
 # We cannot build with musl since AMReX requires the `fegetexcept` GNU API
 platforms = filter(p -> libc(p) ≠ "musl", platforms)
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms;
-                                                         MPICH_compat="4.2.3",
-                                                         MPItrampoline_compat="5.5.1",
-                                                         OpenMPI_compat="4.1.6, 5")
-# Avoid platforms where the MPI implementation isn't supported
-filter!(platforms) do p
-    if p["mpi"] == "mpich"
-        arch(p) == "riscv64" && return false # very soon available
-    elseif p["mpi"] == "mpitrampoline"
-        libc(p) == "musl" && return false
-        arch(p) == "riscv64" && return false # we should really build this
-    elseif p["mpi"] == "openmpi"
-        arch(p) == "armv6l" && libc(p) == "glibc" && return false
-        Sys.isfreebsd(p) && arch(p) == "aarch64" && return false # we should build this
-        arch(p) == "riscv64" && return false                     # we should build this at some time
-    end
-    return true
-end
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
-# Windows does not supported parallel HDF5
+# Windows does not support parallel HDF5
 hdf5_platforms = filter(!Sys.iswindows, platforms)
-
-# HDF5 has not yet been built for aarch64-unknown-freebsd. Re-enable once it's available.
-hdf5_platforms = filter(p -> !(arch(p) == "aarch64" && Sys.isfreebsd(p)), hdf5_platforms)
-
-# HDF5 has not yet been built for x86_64-unknown-freebsd with MPItrampoline. Re-enable once it's available.
-hdf5_platforms = filter(p -> !(arch(p) == "x86_64" && Sys.isfreebsd(p) && p["mpi"] == "mpitrampoline"), hdf5_platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
@@ -149,7 +113,7 @@ dependencies = [
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else. 
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae");
                platforms=filter(!Sys.isbsd, platforms)),
-    Dependency(PackageSpec(name="HDF5_jll"); compat="~1.14", platforms=hdf5_platforms),
+    Dependency(PackageSpec(name="HDF5_jll"); compat="2.1.1", platforms=hdf5_platforms),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
                platforms=filter(Sys.isbsd, platforms)),
 ]

@@ -4,6 +4,7 @@ using BinaryBuilder
 
 name = "libfdk_aac"
 version = v"2.0.3"
+ygg_version = v"2.0.4"
 
 # Collection of sources required to build libfdk
 sources = [
@@ -34,4 +35,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6")

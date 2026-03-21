@@ -3,11 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "sed"
-version = v"4.8.1"
+version_string = "4.9"
+version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/sed/sed-4.8.tar.xz", "f79b0cfea71b37a8eeec8490db6c5f7ae7719c35587f21edb0617f370eeff633")
+    ArchiveSource("https://ftp.gnu.org/gnu/sed/sed-$(version_string).tar.xz",
+                  "6e226b732e1cd739464ad6862bd1a1aba42d7982922da7a53519631d24975181"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
@@ -19,6 +22,15 @@ if [[ "${target}" == *-mingw* ]]; then
     #    /opt/x86_64-w64-mingw32/x86_64-w64-mingw32/sys-root/include/stdio.h:366: undefined reference to `__chk_fail'
     # See https://github.com/msys2/MINGW-packages/issues/5868#issuecomment-544107564
     export LIBS="-lssp"
+
+    # install `autopoint`, needed by `autoreconf`
+    apk update && apk add gettext-dev
+    # Fix error
+    #     lib/libsed.a(libsed_a-getrandom.o): In function `getrandom':
+    #     /workspace/srcdir/sed-4.9/lib/getrandom.c:128: undefined reference to `BCryptGenRandom@16'
+    # with https://github.com/msys2/MINGW-packages/blob/b400fdecc8e7234ddb1fd45604595d181664b15e/mingw-w64-sed/001-link-to-bcrypt.patch
+    atomic_patch -p1 ../patches/001-link-to-bcrypt.patch
+    autoreconf -fiv
 fi
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
@@ -28,7 +40,7 @@ make install SUBDIRS="po ."
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -36,7 +48,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
     Dependency("Libiconv_jll"),
 ]
 

@@ -1,26 +1,57 @@
 using BinaryBuilder, Pkg
 
+function yggdrasil_version(version::VersionNumber, offset::VersionNumber)
+    max_offset = v"10.100.1000"
+    @assert offset < max_offset
+    VersionNumber(
+        max_offset.major * version.major + offset.major,
+        max_offset.minor * version.minor + offset.minor,
+        max_offset.patch * version.patch + offset.patch
+    )
+end
+
 name = "LibGD"
 version = v"2.3.3"
+ygg_offset = v"0.0.0"  # NOTE: increase on new build, reset on new upstream version
+ygg_version = yggdrasil_version(version, ygg_offset)
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/libgd/libgd.git",
-              "b5319a41286107b53daa0e08e402aa1819764bdc")
+    ArchiveSource("https://github.com/libgd/libgd/releases/download/gd-$version/libgd-$version.tar.gz",
+                  "dd3f1f0bb016edcc0b2d082e8229c822ad1d02223511997c80461481759b1ed2"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libgd
+cd $WORKSPACE/srcdir/libgd-*
 
-./bootstrap.sh
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-png --with-jpeg --with-tiff --with-webp --with-zlib
+# for release 2.3.3, remove in 2.3.4 (adapted from https://github.com/libgd/libgd/pull/828)
+atomic_patch -p1 -l ${WORKSPACE}/srcdir/patches/allow-mingw-for-webpng.patch
 
-# For some reasons (something must be off in the configure script), on some
-# platforms the build system tries to use iconv but without adding the `-liconv`
-# flag.  Give a hint to make to use the right flag everywhere
-make -j${nproc} LIBICONV="-liconv" LTLIBICONV="-liconv"
-make install
+mkdir build
+
+args+=(-DCMAKE_TOOLCHAIN_FILE=$CMAKE_TARGET_TOOLCHAIN)
+args+=(-DCMAKE_INSTALL_PREFIX=$prefix)
+args+=(-DCMAKE_BUILD_TYPE=RELEASE)
+
+args+=(-DENABLE_FONTCONFIG=1)
+args+=(-DENABLE_GD_FORMATS=1)
+args+=(-DENABLE_FREETYPE=1)
+args+=(-DENABLE_ICONV=1)
+args+=(-DENABLE_JPEG=1)
+args+=(-DENABLE_TIFF=1)
+args+=(-DENABLE_HEIF=1)
+args+=(-DENABLE_AVIF=0)  # FIXME: fails
+args+=(-DENABLE_WEBP=1)
+args+=(-DENABLE_PNG=1)
+
+cmake -B build -S . "${args[@]}"
+
+cmake --build build --parallel $nproc
+cmake --install build
+
+install_license COPYING
 """
 
 # These are the platforms we will build for by default, unless further
@@ -44,15 +75,21 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="JpegTurbo_jll", uuid="aacddb02-875f-59d6-b918-886e6ef4fbf8")),
-    Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
-    Dependency(PackageSpec(name="libpng_jll", uuid="b53b4c65-9356-5827-b1ea-8c7a1a84506f")),
-    # TODO: v4.3.0 is available, use that next time
-    Dependency("Libtiff_jll"; compat="~4.5.1"),
-    BuildDependency(PackageSpec(name="Xorg_xorgproto_jll", uuid = "c4d99508-4286-5418-9131-c86396af500b")),
-    Dependency(PackageSpec(name="Libiconv_jll", uuid = "94ce4f54-9a6c-5748-9c1c-f9c7231a4531")),
-    Dependency("libwebp_jll"; compat="1.2.4"),
+    BuildDependency("Xorg_xorgproto_jll"),
+    Dependency("Fontconfig_jll"),
+    Dependency("FreeType2_jll"),
+    Dependency("Libtiff_jll"; compat="~4.7.1"),
+    Dependency("libwebp_jll"; compat="1.5.0"),
+    Dependency("JpegTurbo_jll"),
+    Dependency("Libiconv_jll"),
+    Dependency("libheif_jll"),
+    # Dependency("libavif_jll"),  # FIXME: fails
+    Dependency("libpng_jll"),
+    Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(
+    ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+    julia_compat="1.6", preferred_gcc_version = v"9"
+)

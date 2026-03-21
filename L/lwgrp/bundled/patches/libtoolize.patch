@@ -1,0 +1,11 @@
+--- lwgrp/autogen.sh
++++ lwgrp/autogen.sh
+@@ -3,7 +3,7 @@
+ aclocal -I config -I m4
+ echo "Running libtoolize ... "
+ if [ `uname` == "Darwin" ]; then
+-    glibtoolize --automake --copy
++    libtoolize --automake --copy
+ else
+     libtoolize --automake --copy
+ fi

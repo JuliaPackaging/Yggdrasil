@@ -3,16 +3,17 @@
 using BinaryBuilder, Pkg
 
 name = "spectra"
-version = v"1.0.0"
+version = v"1.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/yixuan/spectra/archive/refs/tags/v$(version).tar.gz", "45228b7d77b916b5384245eb13aa24bc994f3b0375013a8ba6b85adfd2dafd67")
+    # ArchiveSource("https://github.com/yixuan/spectra/archive/refs/tags/v$(version).tar.gz", "45228b7d77b916b5384245eb13aa24bc994f3b0375013a8ba6b85adfd2dafd67")
+     GitSource("https://github.com/yixuan/spectra.git", "6841bcbacaa0f0a8446210314e682057a084be4e")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/spectra-*
+cd $WORKSPACE/srcdir/spectra
 mkdir build && cd build/
 
 cmake .. \

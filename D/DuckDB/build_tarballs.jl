@@ -2,17 +2,40 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+include("../../platforms/macos_sdks.jl")
+
 name = "DuckDB"
-version = v"1.2.0"
+version = v"1.5.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/duckdb/duckdb.git", "5f5512b827df6397afd31daedb4bbdee76520019"),
+    GitSource("https://github.com/duckdb/duckdb.git", "3a3967aa8190d0a2d1931d4ca4f5d920760030b4"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/duckdb/
+
+export DUCKDB_TARGET="${target}"
+if [[ "${target}" == "x86_64-linux-gnu" ]]; then
+    export DUCKDB_TARGET="linux_amd64"
+elif [[ "${target}" == aarch64-linux-gnu ]]; then
+    export DUCKDB_TARGET="linux_arm64"
+elif [[ "${target}" == "x86_64-linux-musl" ]]; then
+    export DUCKDB_TARGET="linux_amd64_musl"
+elif [[ "${target}" == "x86_64-w64-mingw32" ]]; then
+    export DUCKDB_TARGET="windows_amd64_mingw"
+elif [[ "${target}" == x86_64-apple-* ]]; then
+    export DUCKDB_TARGET="osx_amd64"
+elif [[ "${target}" == aarch64-apple-* ]]; then
+    export DUCKDB_TARGET="osx_arm64"
+fi
+
+if [[ "${bb_full_target}" == *-cxx03* ]]; then
+    export DUCKDB_TARGET="${DUCKDB_TARGET}_gcc4"
+fi
+
+echo "Compiling for DuckDB Target - $DUCKDB_TARGET"
 
 cmake -B build \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -25,7 +48,7 @@ cmake -B build \
       -DENABLE_EXTENSION_AUTOINSTALL=1 \
       -DBUILD_UNITTESTS=FALSE \
       -DBUILD_SHELL=TRUE \
-      -DDUCKDB_EXPLICIT_PLATFORM="${target}"
+      -DDUCKDB_EXPLICIT_PLATFORM=${DUCKDB_TARGET}
 cmake --build build --parallel ${nproc}
 cmake --install build
 
@@ -52,6 +75,11 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
 ]
+
+# The default macOS 10.12 SDK (and even 10.15) has a libc++ that doesn't provide
+# std::hash for enum types (LWG 2148). Use SDK 14.0 which definitely includes it.
+# DuckDB itself targets macOS 11.0, so we set that as the deployment target.
+sources, script = require_macos_sdk("14.0", sources, script; deployment_target="11.0")
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"6.1.0", julia_compat="1.6")

@@ -6,44 +6,40 @@ using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "libclangex"
-version = v"0.1.8"
+repo = "https://github.com/Gnimuc/ClangCompiler.jl.git"
+version = v"0.2.0"
 
-llvm_versions = [#=v"11.0.1",=# v"12.0.1", v"13.0.1", v"14.0.5"]
+llvm_versions = [v"18.1.7"]
 
-# Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Gnimuc/libclangex.git", "c22e5eadc5f05b2f174d49c8e2fc5fcb75c3fbdb")
+    GitSource(repo, "7d599c3f41a183aae68e53f510915d64bbad3da7")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd libclangex/
+cd ClangCompiler.jl/deps/ClangExtra
+
 mkdir build && cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
      -DLLVM_DIR=${prefix}/lib/cmake/llvm \
      -DClang_DIR=${prefix}/lib/cmake/clang \
-     -DCMAKE_BUILD_TYPE=Release \
-     -DCMAKE_EXPORT_COMPILE_COMMANDS=true
+     -DCMAKE_BUILD_TYPE=Release
 make -j${nproc}
 make install
 install_license ../COPYRIGHT ../LICENSE-APACHE ../LICENSE-MIT
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+# LLVM 15+ requires macOS SDK 10.14.
+sources, script = require_macos_sdk("10.14", sources, script)
 
 augment_platform_block = """
     using Base.BinaryPlatforms
-
     $(LLVM.augment)
-
-    function augment_platform!(platform::Platform)
-        augment_llvm!(platform)
-    end"""
+    augment_platform!(platform::Platform) = augment_llvm!(platform)
+"""
 
 # determine exactly which tarballs we should build
 builds = []
@@ -62,16 +58,27 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
         # so loading the library will always fail. We fix this in ClangCompiler.jl
         LibraryProduct("libclangex", :libclangex, dont_dlopen=true),
     ]
-    
+
+    # These are the platforms we will build for by default, unless further
+    # platforms are passed in on the command line
+    platforms = expand_cxxstring_abis(supported_platforms())
+    # disable riscv64
+    filter!(p -> arch(p) != "riscv64", platforms)
+    # disable aarch64 freebsd
+    filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+    # disable i686-linux-musl
+    filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
+
     for platform in platforms
         augmented_platform = deepcopy(platform)
         augmented_platform[LLVM.platform_name] = LLVM.platform(llvm_version, llvm_assertions)
 
+        platform_sources = BinaryBuilder.AbstractSource[sources...]
+
         should_build_platform(triplet(augmented_platform)) || continue
         push!(builds, (;
-            dependencies, products,
+            dependencies, products, sources=platform_sources,
             platforms=[augmented_platform],
-            script=script,
         ))
     end
 end
@@ -85,9 +92,9 @@ non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
 
 for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
-                   name, version, sources, build.script,
+                   name, version, build.sources, script,
                    build.platforms, build.products, build.dependencies;
-                   preferred_gcc_version=v"8", julia_compat="1.7",
+                   preferred_gcc_version=v"10", julia_compat="1.12",
                    augment_platform_block)
 end
 

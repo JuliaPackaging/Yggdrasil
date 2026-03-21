@@ -457,11 +457,11 @@ products = [
 ]
 
 dependencies = [
-    Dependency("OpenBLAS32_jll"),
-    Dependency(PackageSpec(name="SCALAPACK32_jll")),
-    
+    Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
+    Dependency(PackageSpec(name="SCALAPACK32_jll", uuid="aabda75e-bfe4-5a37-92e3-ffe54af3c273"); compat="=2.2.1"),
+
     BuildDependency("LLVMCompilerRT_jll"; platforms=[Platform("aarch64", "macos")]),
-    Dependency("CompilerSupportLibraries_jll"),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 
     HostBuildDependency(PackageSpec(; name="CMake_jll"))
 ]

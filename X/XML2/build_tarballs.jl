@@ -3,13 +3,12 @@
 using BinaryBuilder
 
 name = "XML2"
-ygg_version = v"2.13.6"
-version = v"2.13.5" # Building version 2.13.5; bumped to *.6 to build for riscv
+version = v"2.15.1"
 
 # Collection of sources required to build XML2
 sources = [
     ArchiveSource("https://download.gnome.org/sources/libxml2/$(version.major).$(version.minor)/libxml2-$(version).tar.xz",
-                  "74fc163217a3964257d3be39af943e08861263c4231f9ef5b496b6f6d4c7b2b6"),
+                  "c008bac08fd5c7b4a87f7b8a71f283fa581d80d80ff8d2efd3b26224c39bc54c"),
 ]
 
 # Bash recipe for building across all platforms
@@ -25,7 +24,8 @@ make -j${nproc}
 make install
 
 # Remove heavy doc directories
-rm -r ${prefix}/share/{doc/libxml2,man}
+rm -rf ${prefix}/share/doc/libxml2
+rm -rf ${prefix}/share/man
 """
 
 # These are the platforms we will build for by default, unless further
@@ -47,5 +47,5 @@ dependencies = [
 
 # XML2 requires full C11 support (so GCC >= 5), but GCC v5-7 crases with an ICE
 # on Windows, so we need GCC 8 for that platform.
-build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                preferred_gcc_version=v"8", julia_compat="1.6")

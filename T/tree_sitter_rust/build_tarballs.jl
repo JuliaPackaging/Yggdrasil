@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "tree_sitter_rust"
-version = v"0.16.1"
+version = v"0.24.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource(
-        "https://github.com/tree-sitter/tree-sitter-rust/archive/v$(version).tar.gz",
-        "8c34f19a9270ee60367ee235226ff1108341f944e0bd245cb47e1c2721f0c39b"
+    GitSource(
+        "https://github.com/tree-sitter/tree-sitter-rust.git",
+        "18b0515fca567f5a10aee9978c6d2640e878671a"
     ),
     DirectorySource("./bundled")
 ]
@@ -48,4 +48,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

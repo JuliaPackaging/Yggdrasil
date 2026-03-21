@@ -2,6 +2,9 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "Doxygen"
 version = v"1.10.0"
 
@@ -9,29 +12,12 @@ version = v"1.10.0"
 sources = [
     ArchiveSource("https://github.com/doxygen/doxygen/releases/download/Release_$(version.major)_$(version.minor)_$(version.patch)/doxygen-$(version).src.tar.gz",
                   "dd7c556b4d96ca5e682534bc1f1a78a5cfabce0c425b14c1b8549802686a4442"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-                  "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/doxygen*
-
-# Avoid error
-# ld64.lld: error: undefined symbol: typeinfo for std::bad_variant_access
-# >>> referenced by ../lib/libdoxymain.a(doxygen.cpp.o):(symbol std::__1::__throw_bad_variant_access()+0x1f)
-# ld64.lld: error: undefined symbol: vtable for std::bad_variant_access
-# >>> referenced by ../lib/libdoxymain.a(doxygen.cpp.o):(symbol std::__1::__throw_bad_variant_access()+0x11)
-# clang-16: error: linker command failed with exit code 1 (use -v to see invocation)
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    export MACOSX_DEPLOYMENT_TARGET=10.14
-    popd
-fi
 
 if [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
     atomic_patch -p1 ../patches/skip-iconv-in-glibc-test.patch
@@ -50,6 +36,14 @@ make install
 
 install_license ../LICENSE
 """
+
+# Avoid error
+# ld64.lld: error: undefined symbol: typeinfo for std::bad_variant_access
+# >>> referenced by ../lib/libdoxymain.a(doxygen.cpp.o):(symbol std::__1::__throw_bad_variant_access()+0x1f)
+# ld64.lld: error: undefined symbol: vtable for std::bad_variant_access
+# >>> referenced by ../lib/libdoxymain.a(doxygen.cpp.o):(symbol std::__1::__throw_bad_variant_access()+0x11)
+# clang-16: error: linker command failed with exit code 1 (use -v to see invocation)
+sources, script = require_macos_sdk("10.14", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line

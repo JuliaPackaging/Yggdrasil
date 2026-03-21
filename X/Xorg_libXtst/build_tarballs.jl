@@ -3,21 +3,18 @@
 using BinaryBuilder
 
 name = "Xorg_libXtst"
-version = v"1.2.3"
+version = v"1.2.5"
 
 # Collection of sources required to build libXtst
 sources = [
-    ArchiveSource("https://www.x.org/archive/individual/lib/libXtst-$(version).tar.bz2",
-                  "4655498a1b8e844e3d6f21f3b2c4e2b571effb5fd83199d428a6ba7ea4bf5204"),
+    ArchiveSource("https://www.x.org/archive/individual/lib/libXtst-$(version).tar.xz",
+                  "b50d4c25b97009a744706c1039c598f4d8e64910c9fde381994e1cae235d9242"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libXtst-*/
-CPPFLAGS="-I${prefix}/include"
-# When compiling for things like ppc64le, we need newer `config.sub` files
-update_configure_scripts
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=no
+cd $WORKSPACE/srcdir/libXtst-*
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 """
@@ -40,4 +37,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6")

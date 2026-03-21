@@ -5,6 +5,8 @@ using BinaryBuilder
 name = "GSL"
 version_string = "2.8"
 version = VersionNumber(version_string)
+# We bumped the version because we built for new architectures
+ygg_version = v"2.8.1"
 
 # Collection of sources required to build GSL
 sources = [
@@ -24,6 +26,8 @@ if [[ "${target}" == aarch64-apple-darwin* ]]; then
 fi
 
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-remove-unknown-ld-option.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/ieee_interface.patch
+update_configure_scripts
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static
 make -j${nproc}
 make install
@@ -31,7 +35,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; exclude=[Platform("aarch64", "freebsd")], experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -46,4 +50,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6")

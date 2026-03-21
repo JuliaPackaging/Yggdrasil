@@ -2,21 +2,26 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+
 name = "GR"
-version = v"0.73.12"
+version = v"0.73.24"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sciapp/gr.git", "bbb16e529aa014a550f36b695e4d1141d3011f62"),
+    GitSource("https://github.com/sciapp/gr.git", "53ed71e0f464868e1e1cba668895bb4b2d4e2228"),
     FileSource("https://github.com/sciapp/gr/releases/download/v$version/gr-$version.js",
-               "630295fe8fadcf1eeda697bfc245f1c6a6b6419bdc9bb4a3e2e19aac1ded0f0e", "gr.js"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-                  "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
+               "0d316bcf4c5b580faf7166cd97b031d10ba76270042fc418c7dfbbdc6d27679f", "gr.js"),
+    ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
+                  "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/gr
+
+apk del cmake
 
 update_configure_scripts
 
@@ -30,9 +35,9 @@ else
 fi
 
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    apple_sdk_root=$WORKSPACE/srcdir/MacOSX10.14.sdk
+    apple_sdk_root=$WORKSPACE/srcdir/MacOSX14.0.sdk
     sed -i "s!/opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
-    export MACOSX_DEPLOYMENT_TARGET=10.14
+    export MACOSX_DEPLOYMENT_TARGET=12
 fi
 
 if [[ "${target}" == *apple* ]]; then
@@ -55,7 +60,6 @@ install_license $WORKSPACE/srcdir/gr/LICENSE.md
 if [[ $target == *"apple-darwin"* ]]; then
     cd ${bindir}
     ln -s ../Applications/gksqt.app/Contents/MacOS/gksqt ./
-    ln -s ../Applications/grplot.app/Contents/MacOS/grplot ./
     ln -s ../Applications/GKSTerm.app/Contents/MacOS/GKSTerm ./
 fi
 """
@@ -78,34 +82,45 @@ platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libGR", :libGR, dont_dlopen=true),
-    LibraryProduct("libGR3", :libGR3, dont_dlopen=true),
-    LibraryProduct("libGRM", :libGRM, dont_dlopen=true),
-    LibraryProduct("libGKS", :libGKS, dont_dlopen=true),
+    LibraryProduct("libGR", :libGR; dont_dlopen=true),
+    LibraryProduct("libGR3", :libGR3; dont_dlopen=true),
+    LibraryProduct("libGRM", :libGRM; dont_dlopen=true),
+    LibraryProduct("libGKS", :libGKS; dont_dlopen=true),
     ExecutableProduct("gksqt", :gksqt),
     ExecutableProduct("grplot", :grplot),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Bzip2_jll"; compat="1.0.8"),
+    Dependency("Bzip2_jll"; compat="1.0.9"),
     Dependency("Cairo_jll"; compat="1.16.1"),
     Dependency("FFMPEG_jll"),
     Dependency("Fontconfig_jll"),
-    Dependency("FreeType2_jll"; compat="2.10.4"),
+    Dependency("FreeType2_jll"; compat="2.13.4"),
     Dependency("GLFW_jll"),
     Dependency("JpegTurbo_jll"),
     Dependency("libpng_jll"),
     Dependency("Libtiff_jll"; compat="4.7.1"),
     Dependency("Pixman_jll"),
     HostBuildDependency("Qt6Base_jll"),
-    Dependency("Qt6Base_jll"; compat="~6.7.1"), # Never allow upgrading more than the minor version without recompilation
+    Dependency("Qt6Base_jll"; compat="~6.10.2"),
     BuildDependency("Xorg_libX11_jll"),
     BuildDependency("Xorg_xproto_jll"),
-    Dependency("Zlib_jll"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
+    HostBuildDependency("CMake_jll"),
 ]
 
+platforms_win = filter(Sys.iswindows, platforms)
+platforms_rest = setdiff(platforms, platforms_win)
+
 # Build the tarballs, and possibly a `build.jl` as well.
-# GCC version 10 because of Qt6.7
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version = v"10", julia_compat="1.6")
+# GCC version 11 because of Qt6.10
+if any(should_build_platform.(triplet.(platforms_win)))
+    # GCC 12 and before fail with internal compiler error on mingw
+    build_tarballs(ARGS, name, version, sources, script, platforms_win, products, dependencies;
+                   preferred_gcc_version=v"13", julia_compat="1.6")
+end
+if any(should_build_platform.(triplet.(platforms_rest)))
+    build_tarballs(ARGS, name, version, sources, script, platforms_rest, products, dependencies;
+                   preferred_gcc_version=v"11", julia_compat="1.6")
+end

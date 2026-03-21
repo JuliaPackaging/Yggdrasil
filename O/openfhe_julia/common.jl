@@ -42,13 +42,18 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
         fi
     fi
     
-    # For MacOS higher version of SDK and additional linker flag are required 
-    # according to https://github.com/llvm/llvm-project/issues/119608 to link typeid(__int128)
     if [[ "$target" == *-apple-darwin* ]]; then
+        # For MacOS higher version of SDK and additional linker flag are required 
+        # according to https://github.com/llvm/llvm-project/issues/119608 to link typeid(__int128)
         export LDFLAGS="-lc++abi"
         apple_sdk_root=$WORKSPACE/srcdir/MacOSX14.5.sdk
         sed -i "s!/opt/$bb_target/$bb_target/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
         sed -i "s!/opt/$bb_target/$bb_target/sys-root!$apple_sdk_root!" /opt/bin/$bb_full_target/$target-clang++
+
+        # OpenFHE's CMake config populates the build system with wrong path info for OpenMP
+        export LDFLAGS="$LDFLAGS -L$libdir"
+        sed -i "s|\${OPENMP_INCLUDES}|\$ENV{includedir}|" CMakeLists.txt
+        sed -i "s|\${OPENMP_LIBRARIES}|\$ENV{libdir}|" CMakeLists.txt
     fi
 
     mkdir build && cd build
@@ -65,8 +70,8 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
 
     # These are the platforms we will build for by default, unless further
     # platforms are passed in on the command line
-    # Required Julia version is 1.10
-    filter!(v -> v >= v"1.10", julia_versions)
+    # Required Julia version is v1.10, v1.13 is not supported yet
+    filter!(v -> v >= v"1.10" && v < v"1.13", julia_versions)
     platforms = vcat(libjulia_platforms.(julia_versions)...)
 
     # We cannot build with musl since OpenFHE requires the `execinfo.h` header for `backtrace`
@@ -101,8 +106,8 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
 
     # Dependencies that must be installed before this package can be built
     dependencies = [
-        BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.9")),
-        Dependency(PackageSpec(name="libcxxwrap_julia_jll", uuid="3eaa8342-bff7-56a5-9981-c04077f7cee7"); compat="0.13.0"),
+        BuildDependency(PackageSpec(;name="libjulia_jll", version="1.11.0")),
+        Dependency("libcxxwrap_julia_jll"; compat="0.14.4"),
         # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
         # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
         Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae");

@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Liburing"
-version = v"2.8.0"
+version = v"2.12.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/axboe/liburing.git", "80272cbeb42bcd0b39a75685a50b0009b77cd380"),
+    GitSource("https://github.com/axboe/liburing.git", "e907d6a342e80b70874f93abd440b92b8a40b7bc"),
 ]
 
 # Bash recipe for building across all platforms

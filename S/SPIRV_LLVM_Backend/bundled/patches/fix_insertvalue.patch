@@ -1,0 +1,65 @@
+commit 0bd1661d9cb48ad6773a5ec60e64cb6c4a4d0f7a
+Author: Tim Besard <tim.besard@gmail.com>
+Date:   Fri Jun 6 14:47:12 2025 +0200
+
+    [SPIRV] Fix type mismatch assertion in insertvalue.
+
+    The code was incorrectly converting all undef arguments to i32, while
+    the `spv_insertv` intrinsics only expects that for the first operand,
+    representing the aggregate type.
+
+diff --git a/llvm/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp b/llvm/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
+index b90e1aadbb5a..84e275ccb30c 100644
+--- a/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
++++ b/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
+@@ -1712,11 +1712,12 @@ Instruction *SPIRVEmitIntrinsics::visitInsertValueInst(InsertValueInst &I) {
+   B.SetInsertPoint(&I);
+   SmallVector<Type *, 1> Types = {I.getInsertedValueOperand()->getType()};
+   SmallVector<Value *> Args;
+-  for (auto &Op : I.operands())
+-    if (isa<UndefValue>(Op))
+-      Args.push_back(UndefValue::get(B.getInt32Ty()));
+-    else
+-      Args.push_back(Op);
++  Value *AggregateOp = I.getAggregateOperand();
++  if (isa<UndefValue>(AggregateOp))
++    Args.push_back(UndefValue::get(B.getInt32Ty()));
++  else
++    Args.push_back(AggregateOp);
++  Args.push_back(I.getInsertedValueOperand());
+   for (auto &Op : I.indices())
+     Args.push_back(B.getInt32(Op));
+   Instruction *NewI =
+diff --git a/llvm/test/CodeGen/SPIRV/instructions/insertvalue-undef-ptr.ll b/llvm/test/CodeGen/SPIRV/instructions/insertvalue-undef-ptr.ll
+new file mode 100644
+index 000000000000..0676652ac1b3
+--- /dev/null
++++ b/llvm/test/CodeGen/SPIRV/instructions/insertvalue-undef-ptr.ll
+@@ -0,0 +1,27 @@
++; RUN: llc -verify-machineinstrs -O0 -mtriple=spirv64-unknown-unknown %s -o - | FileCheck %s
++
++; CHECK-LABEL: Begin function original_testcase
++define fastcc void @original_testcase() {
++top:
++  ; CHECK: OpCompositeInsert
++  %0 = insertvalue [1 x ptr] zeroinitializer, ptr poison, 0
++  ret void
++}
++
++; CHECK-LABEL: Begin function additional_testcases
++define fastcc void @additional_testcases() {
++top:
++  ; Test with different pointer types
++  ; CHECK: OpCompositeInsert
++  %1 = insertvalue [1 x ptr] zeroinitializer, ptr undef, 0
++  ; CHECK-NEXT: OpCompositeInsert
++  %2 = insertvalue {ptr, i32} zeroinitializer, ptr poison, 0
++  ; CHECK-NEXT: OpCompositeInsert
++  %3 = insertvalue {ptr, ptr} undef, ptr null, 0
++
++  ; Test with undef aggregate
++  ; CHECK-NEXT: OpCompositeInsert
++  %4 = insertvalue [1 x ptr] undef, ptr undef, 0
++
++  ret void
++}

@@ -2,18 +2,18 @@ diff --git a/Makefile.in b/Makefile.in
 index 29db7be..3046cdf 100644
 --- a/Makefile.in
 +++ b/Makefile.in
-@@ -2423,10 +2423,10 @@ $(notes_txt): $(notes_texi)
+@@ -2427,10 +2427,10 @@
  # files created in the build tree, so instead we regenerate the
  # manual pages if the sources for the build-tree files we want to
  # run have changed.
 -$(libtool_1): $(ltmain_sh)
--	$(AM_V_GEN)$(update_mans) --help-option=--help-all libtool
+-	$(AM_V_GEN)$(update_mans) -n 'Provide generalized library-building support services' --help-option=--help-all libtool
 -$(libtoolize_1): $(libtoolize_in)
--	$(AM_V_GEN)$(update_mans) libtoolize
+-	$(AM_V_GEN)$(update_mans) -n 'Prepare a package to use libtool' libtoolize
 +#$(libtool_1): $(ltmain_sh)
-+#	$(AM_V_GEN)$(update_mans) --help-option=--help-all libtool
++#	$(AM_V_GEN)$(update_mans) -n 'Provide generalized library-building support services' --help-option=--help-all libtool
 +#$(libtoolize_1): $(libtoolize_in)
-+#	$(AM_V_GEN)$(update_mans) libtoolize
++#	$(AM_V_GEN)$(update_mans) -n 'Prepare a package to use libtool' libtoolize
  
  install-data-local: $(lt_Makefile_in) install-scripts-local
  	@$(NORMAL_INSTALL)

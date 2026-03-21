@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "fts"
-version = v"1.2.8"  # XXX: upstream is 1.2.7, but we needed a version bump
+version = v"1.2.9"  # XXX: upstream is 1.2.7, but we needed a version bump
 
 # Collection of sources required to build fts
 sources = [

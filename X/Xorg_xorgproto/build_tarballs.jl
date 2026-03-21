@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "Xorg_xorgproto"
-version = v"2024.1"
+version = v"2024.1.1"
 
 # Collection of sources required to build xproto
 sources = [
@@ -35,4 +35,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

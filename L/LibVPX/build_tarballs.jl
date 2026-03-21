@@ -3,20 +3,18 @@
 using BinaryBuilder
 
 name = "LibVPX"
-version = v"1.10.0"
+version = v"1.15.2"
 
 # Collection of sources required to build LibVPX
 sources = [
-    ArchiveSource("https://github.com/webmproject/libvpx/archive/v$(version).tar.gz",
-                  "85803ccbdbdd7a3b03d930187cb055f1353596969c1f92ebec2db839fa4f834a"),
+    GitSource("https://github.com/webmproject/libvpx", "d168454ecd099805c675d4a98c66f4891373302a"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/libvpx-*/
+cd ${WORKSPACE}/srcdir/libvpx
 sed -i 's/cp -p/cp/' build/make/Makefile
 
-mkdir vpx_build && cd vpx_build
 apk add diffutils yasm
 
 if [[ "${bb_full_target}" == i686-linux-* ]]; then
@@ -38,22 +36,19 @@ elif [[ "${bb_full_target}" == i686-w64-mingw32* ]]; then
 elif [[ "${bb_full_target}" == x86_64-w64-mingw32* ]]; then
     export TARGET=x86_64-win64-gcc
     export CFLAGS="${CFLAGS} -fno-asynchronous-unwind-tables"
+elif [[ "${bb_full_target}" == *-linux* ]]; then
+    export TARGET=generic-gnu
 elif [[ "${bb_full_target}" == *-freebsd* ]]; then
     export TARGET=generic-gnu
 fi
 
 CONFIG_OPTS=()
-if [[ "${target}" == aarch64-apple-* ]]; then
-    # This feature isn't currently available for this platforms
-    # check again in the future.
-    CONFIG_OPTS+=(--disable-runtime-cpu-detect)
-else
-    CONFIG_OPTS+=(--enable-runtime-cpu-detect)
-    if [[ "${target}" == *-freebsd* ]]; then
-        CONFIG_OPTS+=(--disable-multithread)
-    fi
+CONFIG_OPTS+=(--enable-runtime-cpu-detect)
+if [[ "${target}" == *-freebsd* ]]; then
+    CONFIG_OPTS+=(--disable-multithread)
 fi
 
+mkdir vpx_build && cd vpx_build
 ../configure --prefix=$prefix --target=${TARGET} \
     --as=yasm \
     --enable-postproc \
@@ -77,7 +72,7 @@ fi
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> arch(p) != "armv6l", supported_platforms(; experimental=true))
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -91,4 +86,5 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6", lock_microarchitecture=false)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", lock_microarchitecture=false, preferred_gcc_version=v"8")

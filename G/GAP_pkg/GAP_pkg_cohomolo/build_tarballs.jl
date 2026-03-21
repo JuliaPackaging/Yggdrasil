@@ -3,17 +3,16 @@
 include("../common.jl")
 
 name = "cohomolo"
-upstream_version = "1.6.11" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version
+upstream_version = "1.6.12" # when you increment this, reset offset to v"0.0.0"
+offset = v"1.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
-# This package only produces an executable and does not need GAP for this at all,
-# hence we don't include common.jl
+# This package only produces an executable and does not need GAP for this at all.
 
 # Collection of sources required to build this JLL
 sources = [
     ArchiveSource("https://github.com/gap-packages/cohomolo/releases/download/v$(upstream_version)/cohomolo-$(upstream_version).tar.gz",
-                  "63e9ff01c73e3c263b57407075a77d7981bbb32b6a1b611610f092781db5d7e5"),
+                  "9f68a987685affd3510a21c4a7d2b1260a6a98f237c5ac76531e4980616532a8"),
 ]
 
 # Bash recipe for building across all platforms
@@ -39,9 +38,7 @@ rm $prefix/lib/gap/sysinfo.gap
 
 name = gap_pkg_name(name)
 
-platforms = supported_platforms()
-filter!(p -> nbits(p) == 64, platforms) # we only care about 64bit builds
-filter!(!Sys.iswindows, platforms)      # Windows is not supported
+platforms = gap_platforms()
 
 dependencies = Dependency[
 ]
@@ -70,5 +67,6 @@ products = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"7")
+               julia_compat="1.10", preferred_gcc_version=v"7")
 
+# rebuild trigger: 1
