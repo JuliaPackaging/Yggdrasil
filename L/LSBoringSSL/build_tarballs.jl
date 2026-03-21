@@ -5,7 +5,7 @@ version = v"2025.8.7" #Do not edit/update unless LSQUIC README has a new version
 
 sources = [
    GitSource("https://github.com/google/boringssl.git", 
-              "0.20250807.0")
+              "e20e8486554098772673b55ea76bb003d0b330e5")
 ]
 
 script = raw"""
