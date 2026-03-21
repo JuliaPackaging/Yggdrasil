@@ -12,18 +12,21 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/boringssl
 mkdir build && cd build
 
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-   -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-   -DCMAKE_BUILD_TYPE=Release \
-   -DBUILD_SHARED_LIBS=ON \
-   -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-   ..
+cmake 
+-DCMAKE_INSTALL_PREFIX=${prefix} \
+-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+-DCMAKE_BUILD_TYPE=Release \
+-DBUILD_SHARED_LIBS=ON \
+-DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+-DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON \
+-DGO_EXECUTABLE=$(which go) \
+..
 
-   make -j${nproc}
-   make install
+make -j${nproc}
+make install
 
-   install_license ../LICENSE
-   """
+install_license ../LICENSE
+"""
 
 platforms = supported_platforms()
 
