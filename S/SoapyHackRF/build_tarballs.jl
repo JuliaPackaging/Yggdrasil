@@ -25,11 +25,16 @@ cmake -B . -S .. \
     -DCMAKE_BUILD_TYPE=Release
 make -j${nproc}
 make install
+if [[ "${target}" == *-apple-* ]]; then
+    mv ${libdir}/SoapySDR/modules0.8/libHackRFSupport.so  ${libdir}/SoapySDR/modules0.8/libHackRFSupport.dylib
+fi
+
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!( p -> !(Sys.isfreebsd(p) || Sys.isapple(p) || occursin("riscv",arch(p))),
+# FreeBSD is excluded because there's no hackrf_jll. riscv is excluded because there's no SoapySDR.
+platforms = filter!( p -> !(Sys.isfreebsd(p) || occursin("riscv",arch(p))),
                      supported_platforms())
 platforms = expand_cxxstring_abis(platforms)
 
