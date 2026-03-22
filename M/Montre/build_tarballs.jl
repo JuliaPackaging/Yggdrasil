@@ -1,12 +1,12 @@
 using BinaryBuilder, Pkg
 
 name = "Montre"
-version = v"0.3.0"
+version = v"0.4.0"
 
 sources = [
 	GitSource(
 		"https://github.com/myersm0/montre.git",
-		"e6c4490757f4b283ff8406031ebc18cecafa7333",
+		"3352177486de0a9e5511ed023db516c4e5e9536b",
 	),
 ]
 
