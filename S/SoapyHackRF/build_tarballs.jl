@@ -11,7 +11,6 @@ sources = [
 ]
 
 dependencies = [
-#    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency("hackrf_jll"; compat="2026.1.3"),
     Dependency("soapysdr_jll"; compat="0.8.0")
 ]
@@ -30,7 +29,8 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = filter!( p -> !(Sys.isfreebsd(p) || Sys.isapple(p) || occursin("riscv",arch(p))),
+                     supported_platforms())
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
