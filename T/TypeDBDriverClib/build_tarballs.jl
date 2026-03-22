@@ -25,14 +25,7 @@ export PROTOC=$(which protoc)
 # BinaryBuilder sets `rust_target` for cross-compilation.
 cargo build --release -p typedb_driver_clib
 
-if [[ "${target}" == *-w64-mingw* ]]; then
-    # Windows: Rust omits the lib prefix
-    install -Dvm 755 "target/${rust_target}/release/typedb_driver_clib.dll" \
-        "${libdir}/typedb_driver_clib.dll"
-else
-    install -Dvm 755 "target/${rust_target}/release/libtypedb_driver_clib.${dlext}" \
-        "${libdir}/libtypedb_driver_clib.${dlext}"
-fi
+install -Dvm 755 "target/${rust_target}/release"/*typedb_driver_clib.${dlext} -t  "${libdir}"
 """
 
 platforms = [
