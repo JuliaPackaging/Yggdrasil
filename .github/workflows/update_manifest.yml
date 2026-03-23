@@ -19,7 +19,7 @@ jobs:
         with:
           version: '1.12.4' # Use the version of Julia used on the build machine
           arch: x64
-      - uses: julia-actions/cache@e33b4bfa0ea7cd9caedd7cb82b0e36956ef40285 # v3.0.0
+      - uses: julia-actions/cache@e97f6fc1a6e21c82253c85e269be7340376aa425 # v3.0.1
         with:
           cache-registries: "true"
           cache-compiled: "true"
