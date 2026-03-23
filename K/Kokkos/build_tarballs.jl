@@ -44,6 +44,7 @@ filter!(p -> nbits(p) != 32, platforms)
 
 # The products that we will ensure are always built
 products = [
+    LibraryProduct("libkokkosalgorithms", :libkokkosalgorithms),
     LibraryProduct("libkokkoscore", :libkokkoscore),
     LibraryProduct("libkokkoscontainers", :libkokkoscontainers),
     LibraryProduct("libkokkossimd", :libkokkossimd)
