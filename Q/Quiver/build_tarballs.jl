@@ -21,7 +21,8 @@ cmake -B build \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DQUIVER_BUILD_TESTS=OFF \
-    -DQUIVER_BUILD_C_API=ON
+    -DQUIVER_BUILD_C_API=ON \
+    -DHAVE_GNU_STRERROR_R_EXITCODE=0
 
 cmake --build build --parallel ${nproc}
 cmake --install build
