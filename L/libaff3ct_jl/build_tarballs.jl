@@ -62,6 +62,16 @@ cmake .. \
 make -j${nproc}
 make install
 
+# Create unversioned library symlink: macOS interprets dots in dylib names
+# as version separators, so libaff3ct-4.2.0.dylib confuses BinaryBuilder's
+# product check. An unversioned symlink avoids this on all platforms.
+cd ${prefix}/lib
+for f in libaff3ct-4.2.0.*; do
+    ext="${f#libaff3ct-4.2.0}"
+    ln -sf "$f" "libaff3ct${ext}"
+done
+cd ${WORKSPACE}/srcdir
+
 # ── Build libaff3ct_jl ────────────────────────────────────────
 cd ${WORKSPACE}/srcdir/libaff3ct_jl*
 rm -rf build && mkdir build && cd build
@@ -79,7 +89,8 @@ make install
 install_license ${WORKSPACE}/srcdir/libaff3ct_jl*/LICENSE
 """
 
-platforms = supported_platforms()
+# Filter out Windows — aff3ct/streampu has compilation issues on MinGW
+platforms = supported_platforms(; exclude=Sys.iswindows)
 # Expand for microarchitectures on x86_64 (MIPP selects SIMD at compile time)
 platforms = expand_cxxstring_abis(
     expand_microarchitectures(platforms, ["x86_64", "avx", "avx2", "avx512"])
@@ -98,7 +109,7 @@ augment_platform_block = """
     """
 
 products = [
-    LibraryProduct("libaff3ct-4.2.0", :libaff3ct),
+    LibraryProduct("libaff3ct", :libaff3ct),
     LibraryProduct("libaff3ct_jl", :libaff3ct_jl),
 ]
 
