@@ -10,11 +10,51 @@ name = "libaff3ct_jl"
 version = v"0.1.0"
 
 sources = [
+    GitSource("https://github.com/zsoerenm/aff3ct.git",
+              "5169fa0cb9b117c3aacf83bd950d075850aff1d8"),
     GitSource("https://github.com/JuliaGNSS/libaff3ct_jl.git",
               "2d7645a4cae0ffd446bf51d0aef2bcbcac13a605"),
 ]
 
 script = raw"""
+# ── Build aff3ct ──────────────────────────────────────────────
+cd ${WORKSPACE}/srcdir/aff3ct*
+
+# Rewrite relative submodule URLs to absolute GitHub URLs so they resolve in the sandbox
+sed -i 's|url = \.\./MIPP|url = https://github.com/aff3ct/MIPP.git|' .gitmodules
+sed -i 's|url = \.\./configuration_files|url = https://github.com/aff3ct/configuration_files.git|' .gitmodules
+sed -i 's|url = \.\./error_rate_references|url = https://github.com/aff3ct/error_rate_references.git|' .gitmodules
+sed -i 's|url = \.\./cli|url = https://github.com/aff3ct/cli.git|' .gitmodules
+sed -i 's|url = \.\./streampu|url = https://github.com/aff3ct/streampu.git|' .gitmodules
+git submodule sync
+git submodule update --init --recursive --depth 1
+
+mkdir build && cd build
+
+# Map BinaryBuilder march tag to SIMD compiler flags for MIPP
+SIMD_FLAGS=""
+if [[ "${march}" == "avx" ]]; then
+    SIMD_FLAGS="-mavx"
+elif [[ "${march}" == "avx2" ]]; then
+    SIMD_FLAGS="-mavx2 -mfma"
+elif [[ "${march}" == "avx512" ]]; then
+    SIMD_FLAGS="-mavx512f -mavx512bw"
+fi
+
+cmake .. \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DAFF3CT_COMPILE_EXE=OFF \
+    -DAFF3CT_COMPILE_SHARED_LIB=ON \
+    -DSPU_STACKTRACE=OFF \
+    -DAFF3CT_OVERRIDE_VERSION="v4.2.0" \
+    -DCMAKE_CXX_FLAGS="${SIMD_FLAGS}"
+
+make -j${nproc}
+make install
+
+# ── Build libaff3ct_jl ────────────────────────────────────────
 cd ${WORKSPACE}/srcdir/libaff3ct_jl*
 rm -rf build && mkdir build && cd build
 
@@ -28,11 +68,11 @@ make -j${nproc}
 make install
 
 # Install license
-install_license ${WORKSPACE}/srcdir/LICENSE
+install_license ${WORKSPACE}/srcdir/libaff3ct_jl*/LICENSE
 """
 
-# Must match the same platform set as aff3ct_jll
 platforms = supported_platforms()
+# Expand for microarchitectures on x86_64 (MIPP selects SIMD at compile time)
 platforms = expand_cxxstring_abis(
     expand_microarchitectures(platforms, ["x86_64", "avx", "avx2", "avx512"])
 )
@@ -50,11 +90,11 @@ augment_platform_block = """
     """
 
 products = [
+    LibraryProduct("libaff3ct-4.2.0", :libaff3ct),
     LibraryProduct("libaff3ct_jl", :libaff3ct_jl),
 ]
 
 dependencies = [
-    Dependency("aff3ct_jll"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
