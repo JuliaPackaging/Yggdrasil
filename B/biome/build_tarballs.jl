@@ -7,7 +7,7 @@ version = v"2.4.8"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/biomejs/biome/archive/refs/tags/@biomejs/biome@2.4.8.tar.gz",
+    ArchiveSource("https://github.com/biomejs/biome/archive/refs/tags/@biomejs/biome@$(version).tar.gz",
                   "1600ed6c4b405d385929e34b678825129096be605dfb834ce7aef57011274ad4"),
 ]
 
