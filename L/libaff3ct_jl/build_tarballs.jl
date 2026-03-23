@@ -33,8 +33,8 @@ git submodule update --init --recursive --depth 1
 # Patch streampu and MIPP to guard their includes with __GLIBC__.
 if [[ "${target}" == *-musl* ]]; then
     sed -i 's/#include <execinfo.h>//' lib/streampu/src/Tools/system_functions.cpp
-    sed -i '/#include <execinfo.h>/d' lib/MIPP/include/mipp.h
-    sed -i 's/defined(MIPP_ENABLE_BACKTRACE)/defined(MIPP_ENABLE_BACKTRACE) \&\& defined(__GLIBC__)/' lib/MIPP/include/mipp.h
+    sed -i '/#include <execinfo.h>/d' lib/MIPP/src/mipp.h
+    sed -i 's/defined(MIPP_ENABLE_BACKTRACE)/defined(MIPP_ENABLE_BACKTRACE) \&\& defined(__GLIBC__)/' lib/MIPP/src/mipp.h
 fi
 
 mkdir build && cd build
