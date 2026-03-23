@@ -29,6 +29,14 @@ sed -i 's|url = \.\./streampu|url = https://github.com/aff3ct/streampu.git|' .gi
 git submodule sync
 git submodule update --init --recursive --depth 1
 
+# musl doesn't have <execinfo.h> (glibc extension for backtrace).
+# Patch streampu and MIPP to guard their includes with __GLIBC__.
+if [[ "${target}" == *-musl* ]]; then
+    sed -i 's/#include <execinfo.h>//' lib/streampu/src/Tools/system_functions.cpp
+    sed -i '/#include <execinfo.h>/d' lib/MIPP/include/mipp.h
+    sed -i 's/defined(MIPP_ENABLE_BACKTRACE)/defined(MIPP_ENABLE_BACKTRACE) \&\& defined(__GLIBC__)/' lib/MIPP/include/mipp.h
+fi
+
 mkdir build && cd build
 
 # Map BinaryBuilder march tag to SIMD compiler flags for MIPP
