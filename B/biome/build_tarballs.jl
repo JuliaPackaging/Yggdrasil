@@ -13,7 +13,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/biome--biomejs-biome-*/
+cd $WORKSPACE/srcdir/biome*
 # The BIOME_VERSION stuff is some weird stuff you need to do. From
 # Biome's CONTRIBUTING.md about production builds:
 #
