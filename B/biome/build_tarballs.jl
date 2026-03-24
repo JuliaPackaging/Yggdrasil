@@ -3,6 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "biome"
+version = v"2.4.8"
 
 # Collection of sources required to complete build
 sources = [
