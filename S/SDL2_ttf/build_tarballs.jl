@@ -39,7 +39,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("FreeType2_jll"; compat="2.13.4"),
+    Dependency("FreeType2_jll"; compat="2.14.3"),
     Dependency("SDL2_jll"),
 ]
 
