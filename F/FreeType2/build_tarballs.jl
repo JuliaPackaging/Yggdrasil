@@ -15,20 +15,21 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/freetype-*
 flags=(
-    -DCMAKE_BUILD_TYPE=Release
-    -DCMAKE_INSTALL_PREFIX=${prefix}
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
-    -DBUILD_SHARED_LIBS=ON
-    -DFT_DISABLE_BROTLI=ON
-    -DFT_DISABLE_HARFBUZZ=ON
-    -DFT_DISABLE_PNG=ON
-    -DFT_REQUIRE_BZIP2=ON
-    -DFT_REQUIRE_ZLIB=ON
-    -DFT_DYNAMIC_HARFBUZZ=OFF   # leave this off -- this could load a system library which can be disastrous when the versions don't match
+    --prefix=${prefix}
+    --build=${MACHTYPE}
+    --host=${target}
+    --enable-shared
+    --disable-static
+    --with-brotli=no
+    --with-bzip2=yes
+    --with-harfbuzz=no   # do not set this to `auto` -- this could load a system library which can be disastrous when the versions don't match
+    --with-librsvg=no
+    --with-png=no
+    --with-zlib=yes
 )
-cmake -Bbuild ${flags[@]}
-cmake --build build --parallel ${nproc}
-cmake --install build
+./configure ${flags[@]}
+make -j${nproc}
+make install
 install_license docs/{FTL,GPLv2}.TXT
 """
 
