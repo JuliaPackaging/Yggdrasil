@@ -59,7 +59,7 @@ install_license docs/license.rst
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-# macOS uses a different windowing system (no X11/GLX), exclude for now
+# macOS provides OpenGL natively; Mesa doesn't produce a GL library without X11/GLX
 filter!(p -> !Sys.isapple(p), platforms)
 
 # The products that we will ensure are always built
@@ -83,4 +83,4 @@ dependencies = [
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"10")
+               julia_compat="1.6", preferred_gcc_version=v"10", clang_use_lld=false)
