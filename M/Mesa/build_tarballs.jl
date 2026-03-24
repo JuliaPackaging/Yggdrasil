@@ -77,8 +77,11 @@ filter!(p -> !Sys.isapple(p), platforms)
 # LLVM links C++ symbols into Mesa, requiring cxxstring ABI expansion
 platforms = expand_cxxstring_abis(platforms)
 
-# Platforms where LLVM_full_jll is available (all except i686-linux-musl)
-llvm_platforms = filter(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
+# LLVM static linking only works when target arch matches host (x86_64/i686)
+# because llvm-config reports host paths. Other archs fall back to softpipe.
+llvm_platforms = filter(p -> arch(p) in ("x86_64", "i686") && !Sys.isfreebsd(p), platforms)
+# i686-linux-musl doesn't have LLVM_full_jll
+filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), llvm_platforms)
 
 # The products that we will ensure are always built
 products = [
