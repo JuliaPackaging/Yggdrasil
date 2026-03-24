@@ -4,6 +4,7 @@ using BinaryBuilder
 
 name = "FreeType2"
 version = v"2.14.3"
+ygg_version = v"2.14.4"
 
 # Collection of sources required to build FreeType2
 sources = [
@@ -14,9 +15,21 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/freetype-*
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared --disable-static
-make -j${nproc}
-make install
+flags=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_INSTALL_PREFIX=${prefix}
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+    -DBUILD_SHARED_LIBS=ON
+    -DFT_REQUIRE_BROTLI=ON
+    -DFT_REQUIRE_BZIP2=ON
+    -DFT_REQUIRE_HARFBUZZ=ON
+    -DFT_REQUIRE_PNG=ON
+    -DFT_REQUIRE_ZLIB=ON
+    -DFT_DYNAMIC_HARFBUZZ=OFF   # leave this off -- this could load a system library which can be disastrous when the versions don't match
+)
+cmake -Bbuild ${flags[@]}
+cmake --build build --parallel ${nproc}
+cmake --install build
 install_license docs/{FTL,GPLv2}.TXT
 """
 
@@ -32,8 +45,11 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Bzip2_jll"; compat="1.0.9"),
+    Dependency("HarfBuzz_jll"; compat="8.5.1"),
     Dependency("Zlib_jll"; compat="1.2.12"),
+    Dependency("brotli_jll"; compat="1.2.0"),
+    Dependency("libpng_jll"; compat="1.6.55"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6")
