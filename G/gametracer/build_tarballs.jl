@@ -12,11 +12,16 @@ sources = [
 script = raw"""
 cd "${WORKSPACE}/srcdir/gametracer"
 
+extra_cmake_flags=()
+if [[ "${target}" == *-mingw* ]]; then
+    extra_cmake_flags+=(-DCMAKE_SHARED_LINKER_FLAGS=-static-libstdc++)
+fi
 
 cmake -S c_api -B build \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX="${prefix}"
+    -DCMAKE_INSTALL_PREFIX="${prefix}" \
+    "${extra_cmake_flags[@]}"
 
 cmake --build build --parallel "${nproc}"
 cmake --install build
