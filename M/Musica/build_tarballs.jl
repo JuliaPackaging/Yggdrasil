@@ -4,6 +4,9 @@
 #
 # To build for a specific platform:
 #   julia build_tarballs.jl x86_64-linux-gnu-cxx11
+#
+# To create a local installation 
+#  julia build_tarballs.jl --deploy=local "aarch64-apple-darwin-julia_version+1.11"
 
 using BinaryBuilder, Pkg
 
@@ -11,12 +14,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "Musica"
-version = v"0.14.4"
+version = v"0.14.5"
 
 # Collection of sources required to build Musica
 sources = [
     GitSource("https://github.com/NCAR/musica.git",
-              "3d3319ce4c08df50df3df3b0ddb7716c14a570a1"),
+              "99939404e5953450ceb2b377db8d20aaba09bd2a"),
 ]
 
 # Bash recipe for building across all platforms
