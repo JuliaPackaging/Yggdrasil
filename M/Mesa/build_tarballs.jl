@@ -36,7 +36,7 @@ if [[ "${target}" == *-mingw* ]]; then
         -D egl=disabled
         -D gbm=disabled
     )
-elif [[ "${target}" == *-linux* ]]; then
+elif [[ "${target}" == *-linux* ]] || [[ "${target}" == *-freebsd* ]]; then
     MESA_FLAGS+=(
         -D platforms=x11
         -D glx=xlib
@@ -58,11 +58,9 @@ install_license docs/license.rst
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("x86_64", "linux"),
-    Platform("x86_64", "windows"),
-    Platform("i686", "windows"),
-]
+platforms = supported_platforms()
+# macOS uses a different windowing system (no X11/GLX), exclude for now
+filter!(p -> !Sys.isapple(p), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -70,17 +68,17 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-linux = filter(Sys.islinux, platforms)
+x11_platforms = filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)
 dependencies = [
     Dependency("Zlib_jll"; compat="1.2.12"),
-    Dependency("Expat_jll"; platforms=linux),
-    Dependency("Xorg_libX11_jll"; platforms=linux),
-    Dependency("Xorg_libXext_jll"; platforms=linux),
-    Dependency("Xorg_libxcb_jll"; platforms=linux),
-    Dependency("Xorg_xorgproto_jll"; platforms=linux),
-    Dependency("Xorg_libxshmfence_jll"; platforms=linux),
-    Dependency("Xorg_libXrandr_jll"; platforms=linux),
-    Dependency("Xorg_libXxf86vm_jll"; platforms=linux),
+    Dependency("Expat_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libX11_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libXext_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libxcb_jll"; platforms=x11_platforms),
+    Dependency("Xorg_xorgproto_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libxshmfence_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libXrandr_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libXxf86vm_jll"; platforms=x11_platforms),
 ]
 
 # Build the tarballs.
