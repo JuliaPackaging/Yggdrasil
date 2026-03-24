@@ -22,7 +22,7 @@ make install
 # move them to a proper location
 if [ -f ${prefix}/README.txt ]; then
     mkdir -p ${prefix}/share/doc/hwloc
-    mv ${prefix}/README.txt ${prefix}/NEWS.txt ${prefix}/COPYING.txt ${prefix}/share/doc/hwloc/
+    mv -v ${prefix}/README.txt ${prefix}/NEWS.txt ${prefix}/COPYING.txt ${prefix}/share/doc/hwloc/
 fi
 """
 
