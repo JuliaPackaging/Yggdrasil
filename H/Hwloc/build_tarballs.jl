@@ -17,6 +17,13 @@ cd $WORKSPACE/srcdir/hwloc-*
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
+
+# hwloc's Makefile installs README/NEWS/COPYING directly into ${prefix} on Windows;
+# move them to a proper location
+if [ -f ${prefix}/README.txt ]; then
+    mkdir -p ${prefix}/share/doc/hwloc
+    mv ${prefix}/README.txt ${prefix}/NEWS.txt ${prefix}/COPYING.txt ${prefix}/share/doc/hwloc/
+fi
 """
 
 # These are the platforms we will build for by default, unless further
