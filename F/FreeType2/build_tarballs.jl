@@ -14,9 +14,21 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/freetype-*
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared --disable-static
-make -j${nproc}
-make install
+flags=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_INSTALL_PREFIX=${prefix}
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+    -DBUILD_SHARED_LIBS=ON
+    -DFT_DISABLE_BROTLI=ON
+    -DFT_DISABLE_HARFBUZZ=ON
+    -DFT_DISABLE_PNG=ON
+    -DFT_REQUIRE_BZIP2=ON
+    -DFT_REQUIRE_ZLIB=ON
+    -DFT_DYNAMIC_HARFBUZZ=OFF   # leave this off -- this could load a system library which can be disastrous when the versions don't match
+)
+cmake -Bbuild ${flags[@]}
+cmake --build build --parallel ${nproc}
+cmake --install build
 install_license docs/{FTL,GPLv2}.TXT
 """
 
