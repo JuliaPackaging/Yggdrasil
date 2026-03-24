@@ -3,14 +3,12 @@
 using BinaryBuilder
 
 name = "FreeType2"
-version = v"2.13.3"
-# We bumped the Yggdrasil version because we built for risv64
-ygg_version = v"2.13.4"
+version = v"2.14.3"
 
 # Collection of sources required to build FreeType2
 sources = [
     ArchiveSource("https://download.savannah.gnu.org/releases/freetype/freetype-$(version).tar.xz",
-                  "0550350666d427c74daeb85d5ac7bb353acba5f76956395995311a9c6f063289")
+                  "36bc4f1cc413335368ee656c42afca65c5a3987e8768cc28cf11ba775e785a5f")
 ]
 
 # Bash recipe for building across all platforms
@@ -38,4 +36,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
