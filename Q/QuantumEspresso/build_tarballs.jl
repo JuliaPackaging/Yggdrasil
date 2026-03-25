@@ -127,5 +127,6 @@ dependencies = [
 append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"6")
+# We require Julia 1.9 since SCALAPACK32 only supports Julia 1.9
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+               augment_platform_block, julia_compat="1.9", preferred_gcc_version=v"6")
