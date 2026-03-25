@@ -3,32 +3,66 @@
 using BinaryBuilder, Pkg
 
 name = "mpv"
-version = v"0.40.0"
+version = v"0.41.0"
 
 # Collection of sources required to complete build #
 sources = [
-    GitSource("https://github.com/mpv-player/mpv.git", "e48ac7ce08462f5e33af6ef9deeac6fa87eef01e")
+    GitSource("https://github.com/mpv-player/mpv.git",
+              "41f6a645068483470267271e1d09966ca3b9f413"),  # v0.41.0
+    # macOS 11.3 SDK for Apple framework headers (CoreAudio, AVFoundation, etc.)
+    FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz",
+               "cd4f08a75577145b8f05245a2975f7c81401d75e9535dcffbb879ee1deefcbf4"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/mpv
 
+# Clone libplacebo as a meson subproject (needs --recursive for 3rdparty deps)
+mkdir -p subprojects
+git clone https://code.videolan.org/videolan/libplacebo.git \
+    --branch v7.349.0 --depth=1 --recursive subprojects/libplacebo
+
+# Remove host cmake so meson doesn't pick it up for cross-compilation
 apk del cmake
 
-mkdir -p subprojects
-git clone https://code.videolan.org/videolan/libplacebo.git --depth=1 --recursive subprojects/libplacebo
+# FFMPEG_jll installs pkgconfig files in ${libdir}/pkgconfig on Windows
+if [[ "${target}" == *-mingw* ]]; then
+    export PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:${libdir}/pkgconfig"
+fi
 
-meson setup build --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release
+FLAGS=()
+
+if [[ "${target}" == *-apple-* ]]; then
+    # Install macOS SDK for framework headers (CoreAudio, AVFoundation, etc.)
+    rm -rf /opt/${target}/${target}/sys-root/System
+    tar --extract --file=${WORKSPACE}/srcdir/MacOSX11.3.sdk.tar.xz \
+        --directory="/opt/${target}/${target}/sys-root/." \
+        --strip-components=1 MacOSX11.3.sdk/System MacOSX11.3.sdk/usr
+    export MACOSX_DEPLOYMENT_TARGET=11.0
+
+    # Cocoa requires Swift (no Swift compiler in BinaryBuilder), so disable it
+    # and all features that depend on it. CoreAudio/AVFoundation are independent.
+    FLAGS+=(
+        -Dcocoa=disabled
+        -Dswift-build=disabled
+        -Dgl-cocoa=disabled
+        -Dmacos-cocoa-cb=disabled
+        -Dmacos-media-player=disabled
+        -Dmacos-touchbar=disabled
+    )
+fi
+
+meson setup build --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release "${FLAGS[@]}"
 meson compile -C build
 meson install -C build
 """
 
-# We pick the same platforms FFMPEG_jll does 
+# Filter platforms that don't have full dependency support
 platforms = supported_platforms()
-#filter!(p -> arch(p) != "armv6l", platforms)
-#filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
-#filter!(p -> arch(p) != "riscv64", platforms)
+filter!(p -> arch(p) != "armv6l", platforms)
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+filter!(p -> arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -54,4 +88,3 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", clang_use_lld=false, preferred_gcc_version=v"8")
-
