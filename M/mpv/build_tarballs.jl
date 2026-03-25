@@ -56,6 +56,8 @@ fi
 meson setup build --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release "${FLAGS[@]}"
 meson compile -C build
 meson install -C build
+
+install_license Copyright LICENSE.GPL
 """
 
 # Filter platforms that don't have full dependency support
