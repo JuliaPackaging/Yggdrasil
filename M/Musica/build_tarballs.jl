@@ -4,6 +4,9 @@
 #
 # To build for a specific platform:
 #   julia build_tarballs.jl x86_64-linux-gnu-cxx11
+#
+# To create a local installation 
+#  julia build_tarballs.jl --deploy=local "aarch64-apple-darwin-julia_version+1.11"
 
 using BinaryBuilder, Pkg
 
@@ -11,12 +14,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "Musica"
-version = v"0.14.4"
+version = v"0.14.5"
 
 # Collection of sources required to build Musica
 sources = [
     GitSource("https://github.com/NCAR/musica.git",
-              "3d3319ce4c08df50df3df3b0ddb7716c14a570a1"),
+              "99939404e5953450ceb2b377db8d20aaba09bd2a"),
 ]
 
 # Bash recipe for building across all platforms
@@ -59,7 +62,8 @@ sources, script = require_macos_sdk("14.5", sources, script)
 
 # grab all of the platforms supported by libjulia
 include(joinpath(YGGDRASIL_DIR, "L", "libjulia", "common.jl"))
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = vcat(libjulia_platforms.(julia_versions)...)
+platforms = expand_cxxstring_abis(platforms)
 
 # libcxxwrap_julia_jll does not provide artifacts for armv6l, armv7l, or i686-linux-musl
 filter!(p -> arch(p) != "armv6l", platforms)
@@ -84,7 +88,7 @@ dependencies = [
 # Build the tarballs
 build_tarballs(
     ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat="1.10",
+    julia_compat=libjulia_julia_compat(julia_versions),
     preferred_gcc_version=v"13",
     dont_dlopen=true
 )
