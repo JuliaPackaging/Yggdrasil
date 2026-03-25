@@ -5,7 +5,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MUMPS"
 version = v"5.8.2" 
-ygg_version = v"5.8.3"          # we updated compat bounds to build for MPIABI
+ygg_version = v"5.8.4"          # we updated compat bounds to build for MPIABI
 
 sources = [
   ArchiveSource("https://mumps-solver.org/MUMPS_$(version).tar.gz",
