@@ -34,16 +34,16 @@ fi
 FLAGS=()
 
 if [[ "${target}" == *-apple-* ]]; then
-    # Install macOS 11.3 SDK for framework headers (CoreAudio, AVFoundation, etc.)
-    rm -rf /opt/${target}/${target}/sys-root/System
+    # x86_64-darwin14 sysroot lacks newer framework headers; overlay macOS 11.3 SDK
+    # aarch64-darwin20 already has them so no SDK needed
     if [[ "${target}" == x86_64-apple-darwin* ]]; then
-        # darwin14 sysroot has symlinks that conflict with SDK directories
+        rm -rf /opt/${target}/${target}/sys-root/System
         rm -rf /opt/${target}/${target}/sys-root/usr/include/libxml2/libxml
+        tar --extract --file=${WORKSPACE}/srcdir/MacOSX11.3.sdk.tar.xz \
+            --directory="/opt/${target}/${target}/sys-root/." \
+            --strip-components=1 MacOSX11.3.sdk/System MacOSX11.3.sdk/usr
+        export MACOSX_DEPLOYMENT_TARGET=11.0
     fi
-    tar --extract --file=${WORKSPACE}/srcdir/MacOSX11.3.sdk.tar.xz \
-        --directory="/opt/${target}/${target}/sys-root/." \
-        --strip-components=1 MacOSX11.3.sdk/System MacOSX11.3.sdk/usr
-    export MACOSX_DEPLOYMENT_TARGET=11.0
 
     # Cocoa requires Swift (no Swift compiler in BinaryBuilder), so disable it
     # and all features that depend on it. CoreAudio/AVFoundation are independent.
