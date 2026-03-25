@@ -34,8 +34,12 @@ fi
 FLAGS=()
 
 if [[ "${target}" == *-apple-* ]]; then
-    # Install macOS SDK for framework headers (CoreAudio, AVFoundation, etc.)
+    # Install macOS 11.3 SDK for framework headers (CoreAudio, AVFoundation, etc.)
     rm -rf /opt/${target}/${target}/sys-root/System
+    if [[ "${target}" == x86_64-apple-darwin* ]]; then
+        # darwin14 sysroot has symlinks that conflict with SDK directories
+        rm -rf /opt/${target}/${target}/sys-root/usr/include/libxml2/libxml
+    fi
     tar --extract --file=${WORKSPACE}/srcdir/MacOSX11.3.sdk.tar.xz \
         --directory="/opt/${target}/${target}/sys-root/." \
         --strip-components=1 MacOSX11.3.sdk/System MacOSX11.3.sdk/usr
