@@ -4,6 +4,7 @@ using BinaryBuilder, Pkg
 
 name = "alsa_plugins"
 version = v"1.2.12"
+ygg_version = v"1.2.13"
 
 # Collection of sources required to complete build
 sources = [
@@ -50,12 +51,16 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="FFMPEG_jll", uuid="b22a6f82-2f65-5046-a5b2-351ab43fb4e5"); compat="7.1")
+    Dependency(PackageSpec(name="FFMPEG_jll", uuid="b22a6f82-2f65-5046-a5b2-351ab43fb4e5"); compat="7.1, 8")
     Dependency(PackageSpec(name="alsa_jll", uuid="45378030-f8ea-5b20-a7c7-1a9d95efb90e"))
     Dependency(PackageSpec(name="libsamplerate_jll", uuid="9427e74d-4e05-59c1-8ff3-7d74b6e52ac8"))
     Dependency(PackageSpec(name="PulseAudio_jll", uuid="02771fc1-bdb7-5db5-8d11-300768e00fbd"))
 ]
 
+init_block = raw"""
+ENV["ALSA_PLUGIN_DIR"] = get(ENV, "ALSA_PLUGIN_DIR", joinpath(artifact_dir, "lib", "alsa-lib"))
+"""
+
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6", init_block)
 
