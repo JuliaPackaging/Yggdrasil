@@ -1,12 +1,12 @@
 using BinaryBuilder, Pkg
 
 name = "Montre"
-version = v"0.5.0"
+version = v"0.5.1"
 
 sources = [
 	GitSource(
 		"https://github.com/myersm0/montre.git",
-		"09f37176e2c93098fa048d2f06731444643f2838",
+		"68491729bf705ffcb5c65b8506a6864b667cdd4f",
 	),
 ]
 
@@ -18,14 +18,11 @@ install -Dvm 755 \
 	${libdir}/libmontre_ffi.${dlext}
 """
 
-
+# Rust 1.94.0 toolchain not available for these platform targets
+# (confirmed still failing as of 2026-03-21, after Rust 1.94 was added to Yggdrasil)
 excluded = [
-	# Rust 1.94.0 toolchain not available for this platform target
-	# (confirmed still failing as of 2026-03-21, after Rust 1.94 was added to Yggdrasil)
 	"riscv64-linux-gnu",
 	"aarch64-unknown-freebsd",
-	# _Unwind linker errors:
-	"i686-w64-mingw32",
 ]
 
 platforms = filter(supported_platforms()) do p
