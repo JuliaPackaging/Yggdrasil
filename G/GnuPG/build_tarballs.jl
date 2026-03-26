@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "GnuPG"
-version = v"2.5.17"
+version = v"2.5.18"
 
 # Collection of sources required to build libgcrypt
 sources = [
     ArchiveSource("https://gnupg.org/ftp/gcrypt/gnupg/gnupg-$(version).tar.bz2",
-                  "2c1fbe20e2958fd8fb53cf37d7c38e84a900edc0d561a1c4af4bc3a10888685d"),
+                  "0dbd64e0322fe1a4813360d46539d5f8daf4a8fa235cf5fce464e8b0214a7e4f"),
     DirectorySource("bundled"),
 ]
 
