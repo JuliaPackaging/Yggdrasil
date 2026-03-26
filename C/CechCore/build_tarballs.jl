@@ -12,8 +12,7 @@ sources = [
 ]
 
 script = raw"""
-cd ${WORKSPACE}/srcdir/src
-
+cd ${WORKSPACE}/srcdir/CechCore*
 test -f CMakeLists.txt || (echo "ERROR: CMakeLists.txt not found"; exit 1)
 test -f src/cech_core.cpp || (echo "ERROR: src/cech_core.cpp not found"; exit 1)
 test -f src/cech_core.hpp || (echo "ERROR: src/cech_core.hpp not found"; exit 1)
