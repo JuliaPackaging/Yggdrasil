@@ -15,6 +15,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/gnupg-*
+# `time_t` is used without including <time.h>
+atomic_patch -p1 ../patches/time_t.patch
 # Use Windows LDAP
 FLAGS=(LDAPLIBS="-lwldap32")
 if [[ "${target}" == *86*-linux-gnu ]]; then
