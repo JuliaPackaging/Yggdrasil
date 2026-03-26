@@ -136,9 +136,6 @@ build_petsc()
     else
         USE_MUMPS=0
     fi
-    #TODO if [[ "${target}" == powerpc64le-linux-* ]] || [[ "${target}" == aarch64-linux-* ]] || [[ "${target}" == arm-linux-* ]]; then
-    #TODO     USE_MUMPS=0
-    #TODO fi
 
     LIBFLAGS="-L${libdir}"
     if [[ "${target}" == *-mingw* ]]; then
