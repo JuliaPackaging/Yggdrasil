@@ -24,9 +24,6 @@ if [[ "${target}" == *apple-darwin* ]]; then
     # but the detection is broken due to a warning
     # see https://savannah.gnu.org/support/?110937
     EXTRA_FLAGS+=(lt_cv_apple_cc_single_mod=yes)
-elif [[ "${target}" == *-freebsd* ]]; then
-    # backward-cpp doesn't support freebsd
-    EXTRA_FLAGS+=(--disable-backward)
 fi
 
 # not enough space in /tmp on buildkite
