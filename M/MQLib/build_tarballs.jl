@@ -7,9 +7,10 @@ version = v"0.1.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/MQLib/MQLib.git",
-              "585496274af5abb0849d0d47e135496b4688680b"),
-    DirectorySource("./bundled"),
+    GitSource(
+        "https://github.com/MQLib/MQLib.git",
+        "585496274af5abb0849d0d47e135496b4688680b",
+    ),
 ]
 
 # Bash recipe for building across all platforms
