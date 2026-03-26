@@ -12,7 +12,7 @@ sources = [
 ]
 
 script = raw"""
-cd ${WORKSPACE}/srcdir/src
+cd ${WORKSPACE}/srcdir/src/CechCore
 
 test -f CMakeLists.txt || (echo "ERROR: CMakeLists.txt not found at $(pwd)"; ls; exit 1)
 
