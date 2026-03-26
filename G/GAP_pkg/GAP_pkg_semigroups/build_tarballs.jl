@@ -36,13 +36,13 @@ mkdir $TMPDIR
     --with-gaproot=${prefix}/lib/gap \
     --disable-hpcombi \
     --disable-backward \
+    --with-external-libsemigroups \
     "${EXTRA_FLAGS[@]}"
 make -j${nproc}
 
 # copy the loadable module
 mkdir -p ${prefix}/lib/gap
 cp bin/*/*.so ${prefix}/lib/gap/
-cp bin/lib/*.* ${prefix}/lib/gap/
 
 install_license LICENSE
 """
@@ -51,6 +51,8 @@ name = gap_pkg_name(name)
 dependencies = gap_pkg_dependencies(gap_version)
 platforms = gap_platforms()
 platforms = expand_cxxstring_abis(platforms)
+
+push!(dependencies, Dependency("libsemigroups_jll", compat = "=3.5.3"))
 
 # The products that we will ensure are always built
 products = [
