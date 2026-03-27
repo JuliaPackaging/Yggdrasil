@@ -46,6 +46,9 @@ FLAGS=(
 ./configure "${FLAGS[@]}"
 make -j${nproc}
 make install
+
+install_license COPYING
+install_license COPYRIGHT.md
 """
 
 platforms = supported_platforms()
