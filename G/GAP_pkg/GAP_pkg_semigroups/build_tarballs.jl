@@ -2,6 +2,9 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 include("../common.jl")
 
+const YGGDRASIL_DIR = "../../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 gap_version = v"400.1500.0"
 name = "semigroups"
 upstream_version = "5.6.1" # when you increment this, reset offset to v"0.0.0"
@@ -46,6 +49,8 @@ cp bin/*/*.so ${prefix}/lib/gap/
 
 install_license LICENSE
 """
+
+sources, script = require_macos_sdk("10.14", sources, script)
 
 name = gap_pkg_name(name)
 dependencies = gap_pkg_dependencies(gap_version)
