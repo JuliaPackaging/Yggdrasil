@@ -43,6 +43,4 @@ products = Product[
     LibraryProduct("libHackRFSupport", :libHackRFSupport, ["lib/SoapySDR/modules0.8/"])
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
-# gcc7 constraint from boost
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
