@@ -9,7 +9,6 @@ sources = [
                   "c0e7e2c91bc573256431b2cc989290b9bd13851dbadd59d0ac74714f1334b0e6"),
     FileSource("https://github.com/fastfloat/fast_float/releases/download/v8.2.4/fast_float.h",
                "0055d1c392c2ebd9933146d3efcc9a7b98abb45960ecb90fcaadfc00b9be22e6"),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
