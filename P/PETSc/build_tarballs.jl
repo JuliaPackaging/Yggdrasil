@@ -5,14 +5,10 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "PETSc"
-version = v"3.22.0"
+version = v"3.22.1"
 petsc_version = v"3.22.0"
 
-MPItrampoline_compat_version="5.5.0"
-MicrosoftMPI_compat_version="10.1.4" 
-MPICH_compat_version="4.2.3"    
-
-# Collection of sources required to build PETSc. 
+# Collection of sources required to build PETSc.
 sources = [
     ArchiveSource("https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-$(petsc_version).tar.gz",
                   "2c03f7c0f7ad2649240d4989355cf7fb7f211b75156cd7d424e1d9dd7dfb290b"),
@@ -35,20 +31,20 @@ export MPITRAMPOLINE_FC="$(which $FC)"
 
 if [[ "${target}" == *-mingw* ]]; then
     # On windows, it compiles fine but we obtain a following runtime error:
-    # 
+    #
     # Mingw-w64 runtime failure:
     # 32 bit pseudo relocation at 00000000093934AA out of range, targeting 00007FF8B7756530, yielding the value 00007FF8AE3C3082.
     #
     # (see https://github.com/boriskaus/test_PETSc_jll/actions/runs/7444842322/job/20251986258#step:7:236)
     #
     # Interestingly, this error does NOT occur if we use the originally compiled PETSc_jll version 3.18.6 from May 2023.
-    # (e.g., https://github.com/boriskaus/test_PETSc_jll/actions/runs/7444942534/job/20252261704#step:6:49). 
+    # (e.g., https://github.com/boriskaus/test_PETSc_jll/actions/runs/7444942534/job/20252261704#step:6:49).
     #
     # If we recompile it using the same versions of all packages (while fixing llvm to version 13, as was used in May 2023 for compilation), we have the runtime error above
     #
     # The same issue occured in HDF5_jll (https://github.com/eschnett/Yggdrasil/pull/6)
     #
-    # Interestingly, SuperLU_Dist_jll does not have this issue and runs fine in serial & parallel on windows 
+    # Interestingly, SuperLU_Dist_jll does not have this issue and runs fine in serial & parallel on windows
     # (see e.g. https://github.com/boriskaus/test_SuperLU_DIST_jll/actions/runs/7595261750/job/20687625690#step:7:181)
     #
     # Despite a significant time-effort from my side, I have been unable to fix the issue, so I deactivate MPI on windows as a workaround.
@@ -61,17 +57,22 @@ if [[ "${target}" == *-mingw* ]]; then
     USE_MPI=0
 
 else
-    if grep -q MPICH_NAME $prefix/include/mpi.h; then
+    if [[ ${bb_full_target} == *mpiabi* ]]; then
+        USE_MPI=1
+        MPI_FFLAGS=""
+        MPI_LIBS=--with-mpi-lib="[${libdir}/libmpif.${dlext},${libdir}/libmpi_abi.${dlext}]"
+        MPI_INC=--with-mpi-include=${includedir}
+    elif [[ ${bb_full_target} == *mpich* ]]; then
         USE_MPI=1
         MPI_FFLAGS=""
         MPI_LIBS=--with-mpi-lib="[${libdir}/libmpifort.${dlext},${libdir}/libmpi.${dlext}]"
         MPI_INC=--with-mpi-include=${includedir}
-    elif grep -q MPItrampoline $prefix/include/mpi.h; then
+    elif [[ ${bb_full_target} == *mpitrampoline* ]]; then
         USE_MPI=1
         MPI_FFLAGS="-fcray-pointer"
         MPI_LIBS=--with-mpi-lib="[${libdir}/libmpitrampoline.${dlext}]"
         MPI_INC=--with-mpi-include=${includedir}
-    elif grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
+    elif [[ ${bb_full_target} == *openmpi* ]]; then
         USE_MPI=1
         MPI_FFLAGS=""
         MPI_LIBS=--with-mpi-lib="[${libdir}/libmpi_usempif08.${dlext},${libdir}/libmpi_usempi_ignore_tkr.${dlext},${libdir}/libmpi_mpifh.${dlext},${libdir}/libmpi.${dlext}]"
@@ -82,19 +83,17 @@ else
         MPI_LIBS=""
         MPI_INC=""
     fi
-
 fi
 
 atomic_patch -p1 $WORKSPACE/srcdir/patches/mingw-version.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi-constants.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/sosuffix.patch
+if [[ ${bb_full_target} == *mpitrampoline* ]]; then
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi-constants.patch
+fi
 
 mkdir $libdir/petsc
 build_petsc()
 {
-    # so we can use a newer version of cmake
-    apk del cmake
-
     # Compile a debug version?
     DEBUG_FLAG=0
     PETSC_CONFIG="${1}_${2}_${3}"
@@ -110,9 +109,9 @@ build_petsc()
     fi
 
     # A SuperLU_DIST build is (now) available on most systems, but only works for double precision
-    USE_SUPERLU_DIST=0    
+    USE_SUPERLU_DIST=0
     if [ "${1}" == "double" ]; then
-        USE_SUPERLU_DIST=1    
+        USE_SUPERLU_DIST=1
     fi
     if [[ "${target}" == *-mingw* ]]; then
         USE_SUPERLU_DIST=0
@@ -121,34 +120,31 @@ build_petsc()
     # install suitesparse if available - note that this shipped with julia and therefore linked to specific julia versions
     USE_SUITESPARSE=0
     if [ "${1}" == "double" ]; then
-        USE_SUITESPARSE=1    
+        USE_SUITESPARSE=1
     fi
     if [[ "${target}" == *-mingw* ]]; then
         USE_SUITESPARSE=0
     fi
 
     # See if we can install MUMPS
-    USE_MUMPS=0  
+    USE_MUMPS=0
     if [[ "${target}" == *-mingw* ]]; then
         # try static
         USE_MUMPS=0
-    elif [ "${1}" == "double" ] && [ "${2}" == "real" ]; then 
-        USE_MUMPS=1      
+    elif [ "${1}" == "double" ] && [ "${2}" == "real" ]; then
+        USE_MUMPS=1
     else
-        USE_MUMPS=0      
-    fi
-    if [[ "${target}" == powerpc64le-linux-* ]] || [[ "${target}" == aarch64-linux-* ]] || [[ "${target}" == arm-linux-* ]]; then        
         USE_MUMPS=0
     fi
 
-    LIBFLAGS="-L${libdir}" 
+    LIBFLAGS="-L${libdir}"
     if [[ "${target}" == *-mingw* ]]; then
-        LIBFLAGS="-L${libdir} -lssp -lmsmpi" 
+        LIBFLAGS="${LIBFLAGS} -lssp -lmsmpi"
     fi
 
     # use LBT - to be activated @ a later stage
-    #if [[ "${target}" == aarch64-apple-* ]]; then    
-    #    LIBFLAGS="-L${libdir}" 
+    #if [[ "${target}" == aarch64-apple-* ]]; then
+    #    LIBFLAGS="-L${libdir}"
     #    # Linking requires the function `__divdc3`, which is implemented in
     #    # `libclang_rt.osx.a` from LLVM compiler-rt.
     #    BLAS_LAPACK_LIB="${libdir}/libblastrampoline.${dlext}"
@@ -157,7 +153,7 @@ build_petsc()
     #    # BLAS_LAPACK_LIB="${libdir}/libblastrampoline-5.${dlext}"
     #    BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"            # LBT doesn't seem to work on windows
     #    CLINK_FLAGS=""
-    
+
     #else
     #    BLAS_LAPACK_LIB="${libdir}/libblastrampoline.${dlext}"
     #    CLINK_FLAGS=""
@@ -168,11 +164,11 @@ build_petsc()
     if  [ ${DEBUG_FLAG} == 1 ]; then
         _COPTFLAGS='-O0 -g'
         _CXXOPTFLAGS='-O0 -g'
-        _FOPTFLAGS='-O0' 
+        _FOPTFLAGS='-O0'
     else
         _COPTFLAGS='-O3 -g'
         _CXXOPTFLAGS='-O3 -g'
-        _FOPTFLAGS='-O3' 
+        _FOPTFLAGS='-O3'
     fi
 
     # hypre
@@ -184,18 +180,21 @@ build_petsc()
     MPI_CC=mpicc
     MPI_FC=mpif90
     MPI_CXX=mpicxx
-    if [ -f "${libdir}/libmpitrampoline.${dlext}" ]; then
+    if [[ "${bb_full_target}" == *mpiabi* ]]; then
+        MPI_FC=mpifc
+        export MPIF_FCLIBS='-lmpif -lmpi_abi'
+    elif [[ "${bb_full_target}" == *mpitrampoline* ]]; then
         # required for mpitrampoline
         MPI_FC=mpifc
-    elif [ -d "${libdir}/openmpi" ]; then
+    elif [[ "${bb_full_target}" == *openmpi* ]]; then
         # SuperLU_DIST and MUMPS cannot be compiled statically with OpenMPI, it seems. As this appears to be a less common platform,
-        # and we should in principle be able to use ith thorugh MPItrampoline, the external packages are commented out
+        # and we should in principle be able to use ith through MPIABI or MPItrampoline, we build without MPI.
         MPI_CC=${CC}
         MPI_FC=${FC}
         MPI_CXX=${CXX}
         USE_SUPERLU_DIST=0
         USE_MUMPS=1
-    elif [[ "${target}" == *-mingw* ]]; then
+    elif [[ "${bb_full_target}" == *microsoftmpi* ]]; then
         # since we don't use MPI on windows
         MPI_CC=${CC}
         MPI_FC=${FC}
@@ -204,7 +203,7 @@ build_petsc()
         USE_SUITESPARSE=0
         USE_HYPRE=0
     fi
-    if [[ "${target}" == powerpc64le-linux-* ]] || [[ "${target}" == aarch64-linux-* ]] || [[ "${target}" == arm-linux-* ]]; then        
+    if [[ "${target}" == powerpc64le-linux-* ]] || [[ "${target}" == aarch64-linux-* ]] || [[ "${target}" == arm-linux-* ]]; then
         USE_MUMPS=0
     fi
 
@@ -237,12 +236,11 @@ build_petsc()
     echo "MPI_CC="$MPI_CC
     echo "MPI_FC="$MPI_FC
     echo "MPI_CXX="$MPI_CXX
-    
+
     mkdir $libdir/petsc/${PETSC_CONFIG}
-        
-   
-    # Step 1: build static libraries of external packages (happens during configure)    
-    # Note that mpicc etc. should be indicated rather than ${CC} to compile external packages 
+
+    # Step 1: build static libraries of external packages (happens during configure)
+    # Note that mpicc etc. should be indicated rather than ${CC} to compile external packages
     ./configure --prefix=${libdir}/petsc/${PETSC_CONFIG} \
         --CC=${MPI_CC} \
         --FC=${MPI_FC} \
@@ -252,7 +250,7 @@ build_petsc()
         --FOPTFLAGS=${_FOPTFLAGS}  \
         --with-blaslapack-lib=${BLAS_LAPACK_LIB}  \
         --with-blaslapack-suffix="" \
-        --CFLAGS='-fno-stack-protector'  \
+        --CFLAGS='-fno-stack-protector -Wno-incompatible-pointer-types' \
         --FFLAGS="${MPI_FFLAGS} ${FFLAGS[*]}"  \
         --LDFLAGS="${LIBFLAGS}"  \
         --CC_LINKER_FLAGS="${CLINK_FLAGS}" \
@@ -300,8 +298,8 @@ build_petsc()
     # Remove PETSc.pc because petsc.pc also exists, causing conflicts on case-insensitive file-systems.
     rm ${libdir}/petsc/${PETSC_CONFIG}/lib/pkgconfig/PETSc.pc
     if  [ "${1}" == "double" ] &&  [ "${2}" == "real" ] &&  [ "${3}" == "Int64" ] &&  [ "${4}" == "opt" ]; then
-        
-        # Compile examples (to allow testing the installation). 
+
+        # Compile examples (to allow testing the installation).
         # This can later be run with:
         # julia> run(`$(PETSc_jll.ex42()) -stokes_ksp_monitor -log_view` )
         workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/ksp/ksp/tutorials/
@@ -314,7 +312,7 @@ build_petsc()
         fi
         install -Dvm 755 ${workdir}/ex42${exeext} "${bindir}/ex42${exeext}"
 
-        # This is a staggered grid Stokes example, as discussed in https://joss.theoj.org/papers/10.21105/joss.04531 
+        # This is a staggered grid Stokes example, as discussed in https://joss.theoj.org/papers/10.21105/joss.04531
         # This can later be run with:
         # julia> run(`$(PETSc_jll.ex4()) -ksp_monitor -log_view` )
         workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/dm/impls/stag/tutorials/
@@ -327,7 +325,7 @@ build_petsc()
         fi
         install -Dvm 755 ${workdir}/ex4${exeext} "${bindir}/ex4${exeext}"
 
-        # this is the example that PETSc uses to test the correct installation        
+        # this is the example that PETSc uses to test the correct installation
         workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/snes/tutorials/
         make --directory=$workdir PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex19
         file=${workdir}/ex19
@@ -341,8 +339,8 @@ build_petsc()
     fi
 
     if  [ "${1}" == "double" ] &&  [ "${2}" == "real" ] &&  [ "${3}" == "Int64" ] &&  [ "${4}" == "deb" ]; then
-        
-        # this is the example that PETSc uses to test the correct installation        
+
+        # this is the example that PETSc uses to test the correct installation
         # We compile it with debug flags (helpful to catch issues)
         workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/snes/tutorials/
         make --directory=$workdir PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex19
@@ -358,8 +356,8 @@ build_petsc()
     fi
 
     if  [ "${1}" == "double" ] &&  [ "${2}" == "real" ] &&  [ "${3}" == "Int32" ] &&  [ "${4}" == "opt" ]; then
-        
-        # this is the example that PETSc uses to test the correct installation        
+
+        # this is the example that PETSc uses to test the correct installation
         # We compile it with debug flags (helpful to catch issues)
         workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/snes/tutorials/
         make --directory=$workdir PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex19
@@ -396,45 +394,16 @@ augment_platform_block = """
 """
 
 # We attempt to build for all defined platforms
-platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686", "windows"),
-                                                                  Platform("i686","linux"; libc="musl"),
-                                                                  Platform("i686","linux"; libc="gnu"),
-                                                                  Platform("x86_64","freebsd"),
-                                                                  Platform("armv6l","linux"; libc="musl"),
-                                                                  Platform("armv7l","linux"; libc="musl"),
-                                                                  Platform("armv7l","linux"; libc="gnu"),
-                                                                  Platform("aarch64","linux"; libc="musl")]))
+platforms = expand_gfortran_versions(supported_platforms())
 
-# a few, but not all, platforms with libgfortran 3.0.0 are excluded
-platforms, platform_dependencies = MPI.augment_platforms(platforms; 
-                                        MPItrampoline_compat = MPItrampoline_compat_version,
-                                        MPICH_compat         = MPICH_compat_version,
-                                        MicrosoftMPI_compat  = MicrosoftMPI_compat_version )
+filter!(platforms) do p
+    # i686-linux-musl fails with: undefined reference to `__stack_chk_fail_local'
+    # This is a known problem with this architecture. There may be work-arounds available.
+    arch(p) == "i686" && libc(p) == "musl" && return false
+    return true
+end
 
-# mpitrampoline and libgfortran 3 don't seem to work
-platforms = filter(p -> !(libgfortran_version(p) == v"3" && p.tags["mpi"]=="mpitrampoline"), platforms)
-
-# aarch64-linux-gnu-libgfortran3-mpi+mpich fails to build with a compile time segfault
-platforms = filter(p -> !(libgfortran_version(p) == v"3" && arch(p) == "aarch64" && Sys.islinux(p) && p["mpi"] == "mpich"), platforms)
-
-# aarch64-linux-gnu-libgfortran4-mpi+mpitrampoline fails to build with a compile time segfault
-platforms = filter(p -> !(libgfortran_version(p) == v"4" && arch(p) == "aarch64" && Sys.islinux(p) && p["mpi"] == "mpitrampoline"), platforms)
-
-# Avoid platforms where the MPI implementation isn't supported
-# OpenMPI
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv7l" && libc(p) == "glibc"), platforms)
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "x86_64" && libc(p) == "musl"), platforms)
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "i686"), platforms)
-
-# this excludes only aarch64-unknown-freebsd;  can be removed once OpenMPI has been built for this platforms.
-platforms = filter(p -> !(p["mpi"] == "openmpi" && Sys.isfreebsd(p) && arch(p) == "aarch64"),  platforms)   
-
-# MPItrampoline
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl" ), platforms)
-
-# MPICH
-platforms = filter(p -> !(p["mpi"] == "mpich" && Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)  # can be removed once MPICH has been built for aarch64-unknown-freebsd
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 products = [
     ExecutableProduct("ex4", :ex4)
@@ -458,10 +427,11 @@ products = [
 
 dependencies = [
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
-    Dependency(PackageSpec(name="SCALAPACK32_jll", uuid="aabda75e-bfe4-5a37-92e3-ffe54af3c273"); compat="=2.2.1"),
+    Dependency(PackageSpec(name="SCALAPACK32_jll", uuid="aabda75e-bfe4-5a37-92e3-ffe54af3c273"); compat="2.2.3"),
 
     BuildDependency("LLVMCompilerRT_jll"; platforms=[Platform("aarch64", "macos")]),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    Dependency("mpif_jll"; compat="0.1.5", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)), # MPI Fortran bindings
 
     HostBuildDependency(PackageSpec(; name="CMake_jll"))
 ]
@@ -473,9 +443,9 @@ append!(dependencies, platform_dependencies)
 ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # Build the tarballs.
-# NOTE: llvm16 seems to have an issue with PETSc 3.18.x as on apple architectures it doesn't know how to create dynamic libraries  
+# NOTE: llvm16 seems to have an issue with PETSc 3.18.x as on apple architectures it doesn't know how to create dynamic libraries
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, 
-               julia_compat="1.9", 
-               preferred_gcc_version = v"9",
-               clang_use_lld=false)
+               augment_platform_block,
+               clang_use_lld=false,
+               julia_compat="1.9",
+               preferred_gcc_version=v"9")
