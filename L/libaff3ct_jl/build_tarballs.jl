@@ -89,11 +89,10 @@ make install
 install_license ${WORKSPACE}/srcdir/libaff3ct_jl*/LICENSE
 """
 
-# Filter out Windows — aff3ct/streampu has compilation issues on MinGW
-platforms = supported_platforms(; exclude=Sys.iswindows)
-# Expand for microarchitectures on x86_64 (MIPP selects SIMD at compile time)
+# Filter out Windows (aff3ct/streampu has compilation issues on MinGW), then
+# expand for x86_64 microarchitectures (MIPP selects SIMD at compile time).
 platforms = expand_cxxstring_abis(
-    expand_microarchitectures(platforms, ["x86_64", "avx", "avx2", "avx512"])
+    expand_microarchitectures(supported_platforms(; exclude=Sys.iswindows), ["x86_64", "avx", "avx2", "avx512"])
 )
 
 augment_platform_block = """
