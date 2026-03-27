@@ -1,4 +1,6 @@
 using BinaryBuilder, Pkg
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "Octave"
 version = v"11.1.0"
@@ -11,7 +13,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/octave*
+cd ${WORKSPACE}/srcdir/octave*
 
 apk add texinfo
 
@@ -27,13 +29,15 @@ fi
 
 # Base configure flags
 FLAGS=(
-    --prefix="$prefix"
+    --prefix="${prefix}"
     --build=${MACHTYPE}
     --host="${target}"
     --enable-shared
     --disable-static
     --with-blas="-L${libdir} -l${LBT}"
     --with-lapack="-L${libdir} -l${LBT}"
+    # Pretend to cross-compile all the time so that `configure` doesn't run programs built against libblastrampoline
+    cross_compiling=yes
 )
 
 ./configure "${FLAGS[@]}"
@@ -42,6 +46,8 @@ make install
 
 install_license COPYING
 """
+
+sources, script = require_macos_sdk("10.14", sources, script)
 
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
