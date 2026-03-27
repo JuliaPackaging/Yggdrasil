@@ -3,23 +3,19 @@
 using BinaryBuilder, Pkg
 
 name = "gdx"
-version = v"7.11.19"
+version = v"7.11.20"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/GAMS-dev/gdx.git", "fd8c1292973885cb6f8b689208b81b33b1270f26"),
+    GitSource("https://github.com/GAMS-dev/gdx.git", "c6417bbbd0cd3c620f7b705b15ec8474fbbacd5b"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/gdx/
-git submodule update --init zlib
 
 if [[ "${target}" == *mingw* ]]; then
-    find .. -type f -exec sed -i 's/Windows.h/windows.h/g' {} +;
-    find .. -type f -exec sed -i 's/IPTypes.h/iptypes.h/g' {} +;
-    find .. -type f -exec sed -i 's/Psapi.h/psapi.h/g' {} +;
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/winfloat.patch;
 fi
 
@@ -59,7 +55,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
