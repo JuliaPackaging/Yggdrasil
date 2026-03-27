@@ -1,20 +1,17 @@
 using BinaryBuilder, Pkg
 
 name = "Octave"
-version = v"9.4.0"
+version = v"11.1.0"
 
 # Collection of sources required to build Octave
 sources = [
-  ArchiveSource("https://ftpmirror.gnu.org/octave/octave-$(version).tar.gz",
-                "da9481205bfa717660b7d4a16732d8b2d58aadceab4993d41242a8e2848ea6c1"),
-  DirectorySource("./bundled"),
+    ArchiveSource("https://ftpmirror.gnu.org/octave/octave-$(version).tar.gz",
+                  "c0e7e2c91bc573256431b2cc989290b9bd13851dbadd59d0ac74714f1334b0e6"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/octave*
-
-atomic_patch -p0 ../patches/freebsd_sig_atomic_t.patch
 
 apk add texinfo
 
@@ -42,15 +39,13 @@ FLAGS=(
 ./configure "${FLAGS[@]}"
 make -j${nproc}
 make install
+
+install_license COPYING
 """
 
 platforms = supported_platforms()
-# Disable RISC-V
-filter!(p -> arch(p) != "riscv64", platforms)
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
-# Disable old libgfortran builds - only use libgfortran5
-filter!(p -> !(any(libgfortran_version(p) .== (v"4.0.0", v"3.0.0"))), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -63,30 +58,31 @@ dependencies = [
     HostBuildDependency("flex_jll"),
     HostBuildDependency("Bison_jll"),
     HostBuildDependency("gperf_jll"),
+    BuildDependency("fast_float_jll"),
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("libblastrampoline_jll"; compat="5.11.0"),
+    Dependency("libblastrampoline_jll"; compat="5.11.2"),
     Dependency("OpenBLAS32_jll"),
-    Dependency("SuiteSparse32_jll"),
-    Dependency("Arpack32_jll"),
-    Dependency("Sundials32_jll"),
-    Dependency("QRupdate_ng_jll"),
+    Dependency("SuiteSparse32_jll"; compat="7.8.3"),
+    Dependency("Arpack32_jll"; compat="3.9.1"),
+    Dependency("Sundials32_jll"; compat="5.3.0"),
+    Dependency("QRupdate_ng_jll"; compat="1.1.5"),
     Dependency("CXSparse_jll"; compat="400.400.100"),
     Dependency("PCRE2_jll"),
-    Dependency("Readline_jll"),
+    Dependency("Readline_jll"; compat="8.2.13"),
     Dependency("Libiconv_jll"),
-    Dependency("Zlib_jll"),
-    Dependency("Bzip2_jll"),
-    Dependency("FFTW_jll"),
-    Dependency("GLPK_jll"),
-    Dependency("GMP_jll"; compat="6.2"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
+    Dependency("Bzip2_jll"; compat="1.0.9"),
+    Dependency("FFTW_jll"; compat="3.3.11"),
+    Dependency("GLPK_jll"; compat="5.0.1"),
+    Dependency("GMP_jll"; compat="6.2.1"),
     Dependency("LibCURL_jll"; compat="7.73.0,8"),
-    Dependency("Qhull_jll"),
-    Dependency("HDF5_jll"),
-    Dependency("rapidjson_jll"),
+    Dependency("Qhull_jll"; compat="10008.0.1004"),
+    Dependency("HDF5_jll"; compat="2.0.0"),
+    Dependency("rapidjson_jll"; compat="1.1.1"),
     Dependency("libsndfile_jll"),
-    Dependency("GraphicsMagick_jll"),
+    Dependency("GraphicsMagick_jll"; compat="1.3.46"),
 ]
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.10", clang_use_lld=false, preferred_gcc_version=v"10")
+               clang_use_lld=false, julia_compat="1.10", preferred_gcc_version=v"10")
