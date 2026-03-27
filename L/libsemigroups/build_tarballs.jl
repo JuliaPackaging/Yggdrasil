@@ -4,17 +4,17 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "libsemigroups"
-version = v"3.5.3"
+version = v"3.5.4"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/libsemigroups/libsemigroups/releases/download/v$(version)/libsemigroups-$(version).tar.gz",
-                  "28642eeac16a2a3287eaca065f39e769df6fd002bd823f0641e20f0c00aef4e9"),
+    GitSource("https://github.com/libsemigroups/libsemigroups.git",
+              "d044c6bfefbff48c8ae7547d760215d14d843376"),  # v3.5.4
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd libsemigroups-*
+cd libsemigroups
 
 # Generate configure script
 ./autogen.sh
