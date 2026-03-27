@@ -6,12 +6,11 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "HYPRE"
-version = v"3.0.1"
-hypre_version = v"3.0.0"
+version = v"3.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/hypre-space/hypre.git", "da9f93f8d698f4caaaff35fe81655b8ad7bb91f9") # Tag v3.0.0
+    GitSource("https://github.com/hypre-space/hypre.git", "9dc9e18aed6a945a95f966e57daacfb1c269f6ec") # Tag v3.1.0
 ]
 
 # Bash recipe for building across all platforms
