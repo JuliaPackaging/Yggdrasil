@@ -14,7 +14,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd libsemigroups-*
+cd libsemigroups
 
 # Generate configure script
 ./autogen.sh
