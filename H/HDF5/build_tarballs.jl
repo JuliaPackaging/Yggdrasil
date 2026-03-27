@@ -7,14 +7,14 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "HDF5"
-version = v"2.1.0"
+version = v"2.1.1"
 # We added support for MPIABI
-ygg_version = v"2.1.1"
+ygg_version = v"2.1.2"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/HDFGroup/hdf5/releases/download/$(version)/hdf5-$(version).tar.gz",
-                  "ce7f5515a95d588b8606c3fb50643f8b88ac52ffbbde9c63bb1edca6a256e964"),
+                  "efff93b5a904d66e8f626d7da60b5eedc9faf544be27dbabbaa87967b8ad798b"),
     DirectorySource("bundled"),
 ]
 
