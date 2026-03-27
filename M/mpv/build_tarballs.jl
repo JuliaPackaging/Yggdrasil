@@ -57,6 +57,9 @@ if [[ "${target}" == *-apple-* ]]; then
     )
 fi
 
+# SDL2 video/audio are disabled by default in mpv; enable them explicitly
+FLAGS+=(-Dsdl2-video=enabled -Dsdl2-audio=enabled)
+
 meson setup build --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release "${FLAGS[@]}"
 meson compile -C build
 meson install -C build
@@ -79,8 +82,10 @@ products = [
 dependencies = [
     HostBuildDependency("CMake_jll"),
     BuildDependency("Xorg_xorgproto_jll"),
+    BuildDependency("Vulkan_Headers_jll"),
     Dependency("Libiconv_jll"),
     Dependency("SDL2_jll"),
+    Dependency("Shaderc_jll"),
     Dependency("Zlib_jll"),
     Dependency("FFMPEG_jll"; compat="7.1"),
     Dependency("Lua_jll"),
@@ -88,6 +93,7 @@ dependencies = [
     Dependency("Xorg_libXrandr_jll"),
     Dependency("Xorg_libXinerama_jll"),
     Dependency("Libglvnd_jll"),
+    Dependency("Vulkan_Loader_jll"),
     Dependency("Xorg_libX11_jll"),
 ]
 
