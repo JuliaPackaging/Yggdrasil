@@ -33,6 +33,11 @@ fi
 export TMPDIR=$WORKSPACE/tmp
 mkdir $TMPDIR
 
+if [[ "${target}" == powerpc64le* ]]; then
+    # work around https://gitlab.com/libeigen/eigen/-/work_items/2259 until the fixed eigen gets used in libsemigroups (https://github.com/libsemigroups/libsemigroups/issues/932)
+    export CXXFLAGS="-DEIGEN_ALTIVEC_DISABLE_MMA"
+fi
+
 ./configure \
     --build=${MACHTYPE} \
     --host=${target} \
