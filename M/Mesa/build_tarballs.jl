@@ -14,6 +14,7 @@ llvm_version = v"18.1.7+5"
 sources = [
     ArchiveSource("https://archive.mesa3d.org/mesa-$version.tar.xz",
                   "ddb7443d328e89aa45b4b6b80f077bf937f099daeca8ba48cabe32aab769e134"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -22,12 +23,13 @@ cd $WORKSPACE/srcdir/mesa-*
 
 apk add py3-mako py3-yaml py3-packaging
 
-# Enable llvmpipe where LLVM is available, fall back to softpipe
-if [ -d "${prefix}/lib/cmake/llvm" ]; then
+# Enable llvmpipe where LLVM is available, fall back to softpipe.
+# We use a wrapper script around host llvm-config that rewrites paths for cross-compilation.
+if [ -f "${host_prefix}/tools/llvm-config" ]; then
+    chmod +x $WORKSPACE/srcdir/llvm-config
     GALLIUM_DRIVERS="softpipe,llvmpipe"
     LLVM_FLAGS="-D llvm=enabled -D shared-llvm=enabled -D cpp_rtti=false"
-    # Tell meson where to find llvm-config for cross compilation
-    sed -i "/^\[binaries\]/a llvm-config = '${prefix}/tools/llvm-config'" ${MESON_TARGET_TOOLCHAIN}
+    sed -i "/^\[binaries\]/a llvm-config = '$WORKSPACE/srcdir/llvm-config'" ${MESON_TARGET_TOOLCHAIN}
 else
     GALLIUM_DRIVERS="softpipe"
     LLVM_FLAGS="-D llvm=disabled"
@@ -111,8 +113,9 @@ for llvm_assertions in (false, true)
         Dependency("Xorg_libxshmfence_jll"; platforms=x11_platforms),
         Dependency("Xorg_libXrandr_jll"; platforms=x11_platforms),
         Dependency("Xorg_libXxf86vm_jll"; platforms=x11_platforms),
-        # LLVM for llvmpipe: shared library at runtime, full package at build time
+        # LLVM for llvmpipe: host llvm-config + target libs for build, shared lib at runtime
         Dependency("libLLVM_jll"),
+        HostBuildDependency(PackageSpec(name=llvm_name, version=llvm_version)),
         BuildDependency(PackageSpec(name=llvm_name, version=llvm_version)),
     ]
 

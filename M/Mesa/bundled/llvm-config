@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# Wrapper around the host llvm-config that rewrites paths for cross-compilation.
+# The host llvm-config is executable but reports host paths/libraries.
+# We run it and substitute host_prefix -> prefix so meson finds target libraries.
+
+host_tool=${host_prefix}/tools/llvm-config
+host_pfx=$(dirname $(dirname $(realpath ${host_tool})))
+target_pfx=${prefix}
+
+# For --system-libs on mingw, adjust for platform differences
+if [[ "${target}" == *mingw* && "$@" == *--system-libs* ]]; then
+    $host_tool "$@" | sed -e "s|$host_pfx|$target_pfx|g" -e 's/-lrt//' -e 's/-ldl//'
+    exit 0
+fi
+
+# For everything else, run host tool and rewrite paths
+$host_tool "$@" | sed -e "s|$host_pfx|$target_pfx|g"
