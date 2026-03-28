@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "XSLT"
-version = v"1.1.43"
+version = v"1.1.45"
 
 # Collection of sources required to build XSLT
 sources = [
     ArchiveSource("https://download.gnome.org/sources/libxslt/$(version.major).$(version.minor)/libxslt-$(version).tar.xz",
-                  "5a3d6b383ca5afc235b171118e90f5ff6aa27e9fea3303065231a6d403f0183a"),
+                  "9acfe68419c4d06a45c550321b3212762d92f41465062ca4ea19e632ee5d216e"),
 ]
 
 # Bash recipe for building across all platforms
@@ -37,10 +37,7 @@ dependencies = [
     Dependency("Libgpg_error_jll"; compat="1.51.1"),
     Dependency("Libgcrypt_jll"; compat="1.11.1"),
     Dependency("Libiconv_jll"; compat="1.18"),
-    # We had to restrict compat with XML2 because of ABI breakage:
-    # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
-    # Updating to `compat="~2.14.1"` is likely possible without problems but requires rebuilding this package
-    Dependency("XML2_jll"; compat="~2.13.6"),
+    Dependency("XML2_jll"; compat="~2.15.1"),
     Dependency("Zlib_jll"; compat="1.2.12"),
 ]
 
