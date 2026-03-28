@@ -17,25 +17,12 @@ cd $WORKSPACE/srcdir/mesa-*
 
 apk add py3-mako py3-yaml py3-packaging
 
-# Use llvmpipe where LLVM is available, fall back to softpipe
-if [ -f "${prefix}/tools/llvm-config" ]; then
-    GALLIUM_DRIVERS="softpipe,llvmpipe"
-    LLVM_FLAG="-D llvm=enabled -D shared-llvm=disabled -D cpp_rtti=false"
-    # Our LLVM was built with Intel JIT events enabled in headers but without the library
-    sed -i 's/LLVM_USE_INTEL_JITEVENTS/LLVM_USE_INTEL_JITEVENTS_DISABLED/' src/gallium/auxiliary/gallivm/lp_bld_misc.cpp
-    # Tell meson where to find llvm-config for cross compilation
-    sed -i "/^\[binaries\]/a llvm-config = '${prefix}/tools/llvm-config'" ${MESON_TARGET_TOOLCHAIN}
-else
-    GALLIUM_DRIVERS="softpipe"
-    LLVM_FLAG="-D llvm=disabled"
-fi
-
 MESA_FLAGS=(
     -D b_ndebug=true
     -D buildtype=release
     -D strip=true
-    ${LLVM_FLAG}
-    -D gallium-drivers=${GALLIUM_DRIVERS}
+    -D llvm=disabled
+    -D gallium-drivers=softpipe
     -D vulkan-drivers=[]
     -D gles1=disabled
     -D gles2=disabled
@@ -74,14 +61,7 @@ install_license docs/license.rst
 platforms = supported_platforms()
 # macOS provides OpenGL natively; Mesa doesn't produce a GL library without X11/GLX
 filter!(p -> !Sys.isapple(p), platforms)
-# LLVM links C++ symbols into Mesa, requiring cxxstring ABI expansion
 platforms = expand_cxxstring_abis(platforms)
-
-# LLVM static linking only works when target arch matches host (x86_64/i686)
-# because llvm-config reports host paths. Other archs fall back to softpipe.
-llvm_platforms = filter(p -> arch(p) in ("x86_64", "i686") && !Sys.isfreebsd(p), platforms)
-# i686-linux-musl doesn't have LLVM_full_jll
-filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), llvm_platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -101,8 +81,6 @@ dependencies = [
     Dependency("Xorg_libxshmfence_jll"; platforms=x11_platforms),
     Dependency("Xorg_libXrandr_jll"; platforms=x11_platforms),
     Dependency("Xorg_libXxf86vm_jll"; platforms=x11_platforms),
-    # LLVM for llvmpipe (statically linked into Mesa, no runtime dep needed)
-    BuildDependency(PackageSpec(name="LLVM_full_jll", version=v"18.1.7+5"); platforms=llvm_platforms),
 ]
 
 # Build the tarballs.
