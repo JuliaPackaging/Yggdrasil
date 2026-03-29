@@ -3,23 +3,29 @@
 using BinaryBuilder, Pkg
 
 name = "libsoundio"
-version = v"2.0.0"
+version = v"2.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/andrewrk/libsoundio.git", "5087ef68b9c9014883861832c2f6dd8c6515f8e0")
+    GitSource("https://github.com/andrewrk/libsoundio.git", "f42a607883101244e2d21168cce8d7f2ec21c588"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libsoundio
 
+# Fix MinGW GUID redefinition errors (upstream PR #283)
+atomic_patch -p1 $WORKSPACE/srcdir/patches/fix-mingw-guid-redefinition.patch
+
 # Initialize flags
-CMAKE_FLAGS=("-DCMAKE_INSTALL_PREFIX=$prefix" 
-             "-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}" 
-             "-DCMAKE_BUILD_TYPE=Release" 
+CMAKE_FLAGS=("-DCMAKE_INSTALL_PREFIX=$prefix"
+             "-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}"
+             "-DCMAKE_BUILD_TYPE=Release"
+             "-DCMAKE_C_FLAGS_RELEASE=-O3 -DNDEBUG -funroll-loops -fno-plt"
+             "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON"
              "-DBUILD_STATIC_LIBS=OFF"
-             "-DBUILD_EXAMPLE_PROGRAMS=OFF" 
+             "-DBUILD_EXAMPLE_PROGRAMS=OFF"
              "-DBUILD_TESTS=OFF"
              "-DENABLE_JACK=OFF")
 
@@ -63,4 +69,4 @@ dependencies = [
 ]
 
 # Build the tarballs
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"13.2.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"8")
