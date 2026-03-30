@@ -20,8 +20,8 @@ cmake -B build \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release
 
-make -j${nproc}
-make install
+cmake --build build --parallel ${nproc}
+cmake --install build
 """
 
 platforms = expand_cxxstring_abis(supported_platforms())
