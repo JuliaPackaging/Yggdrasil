@@ -7,7 +7,6 @@ sources = [
     GitSource(
         "https://github.com/profsms/CechCore.git",
         "b9797e58fbbf923c6c0c2c42f662795ad477ed41";
-        unpack_target = "src",
     ),
 ]
 
