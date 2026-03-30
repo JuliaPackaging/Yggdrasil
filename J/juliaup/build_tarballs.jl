@@ -46,5 +46,5 @@ dependencies = Dependency[
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-	       compilers=[:rust, :c], julia_compat="1.6", preferred_gcc_version=v"13",
+	       compilers=[:rust, :c], julia_compat="1.6", preferred_gcc_version=v"12",
 	       lock_microarchitecture=false) # cargo inserts -march
