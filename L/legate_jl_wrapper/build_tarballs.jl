@@ -13,7 +13,7 @@ sources = [
 ]
 
 MIN_JULIA_VERSION = v"1.10"
-MAX_JULIA_VERSION = v"1.11.999"
+MAX_JULIA_VERSION = v"1.12.999"
 
 # These should match the legate_jll build_tarballs script
 MIN_CUDA_VERSION = v"13.0"
