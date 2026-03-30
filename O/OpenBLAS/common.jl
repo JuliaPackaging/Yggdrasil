@@ -4,9 +4,9 @@ using BinaryBuilderBase: sanitize
 # Collection of sources required to build OpenBLAS
 function openblas_sources(version::VersionNumber; kwargs...)
     openblas_version_sources = Dict(
-        v"0.3.31" => [
-            ArchiveSource("https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.31/OpenBLAS-0.3.31.tar.gz",
-                          "6dd2a63ac9d32643b7cc636eab57bf4e57d0ed1fff926dfbc5d3d97f2d2be3a6")
+        v"0.3.32" => [
+            ArchiveSource("https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.32/OpenBLAS-0.3.32.tar.gz",
+                          "f8a1138e01fddca9e4c29f9684fd570ba39dedc9ca76055e1425d5d4b1a4a766")
         ],
         v"0.3.30" => [
             ArchiveSource("https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.30/OpenBLAS-0.3.30.tar.gz",
@@ -239,9 +239,11 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     cd ${WORKSPACE}/srcdir/OpenBLAS*/
 
     # Apply any patches this version of OpenBLAS requires
+    shopt -s nullglob
     for f in ${WORKSPACE}/srcdir/patches/*.patch; do
         atomic_patch -p1 ${f}
     done
+    shopt -u nullglob
 
     # Choose our make parallelism.
     flags+=(-j${nproc})

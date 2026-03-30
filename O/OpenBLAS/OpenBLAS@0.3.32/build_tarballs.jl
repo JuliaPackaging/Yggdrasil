@@ -5,7 +5,7 @@ include("../common.jl")
 
 # Collection of sources required to build OpenBLAS
 name = "OpenBLAS"
-version = v"0.3.31"
+version = v"0.3.32"
 
 sources = openblas_sources(version)
 script = openblas_script(; aarch64_ilp64=true, num_64bit_threads=512, bfloat16=true)
@@ -49,4 +49,4 @@ for (n,platform) in enumerate(platforms)
                    julia_compat="1.11", lock_microarchitecture=false, preferred_gcc_version=pref_gcc, preferred_llvm_version=pref_llvm)
 end
 
-# Build trigger: 2
+# Build trigger: 0
