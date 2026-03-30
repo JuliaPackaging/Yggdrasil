@@ -9,11 +9,13 @@ version = v"7.6.2"
 sources = [
     GitSource("https://github.com/tudo-astroparticlephysics/PROPOSAL.git",
               "0d7fb45b2305bd275e90c6d68c1168301198e451"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/PROPOSAL*
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fix_leptonic_decay_nan.patch
 mkdir -p build && cd build
 cmake .. \
     -DCMAKE_INSTALL_PREFIX=${prefix} \

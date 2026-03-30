@@ -1,6 +1,6 @@
 name = "Clang"
-llvm_full_version = v"15.0.7+11"
-libllvm_version = v"15.0.7+11"
+llvm_full_version = v"15.0.7+12"
+libllvm_version = v"15.0.7+12"
 
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms

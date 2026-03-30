@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "prrte"
-version = v"3.0.2"
+version = v"4.1.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/openpmix/prrte/releases/download/v$(version)/prrte-$(version).tar.bz2",
-                  "1aaa1bb930e8e940251ea682b4a6abc24e4849fa9ffbaaaaf2750a38ba4e474a"),
+                  "285ad62b670075708b9fcfe14c54baa599733bc274d10502a82e8eebba0b7c70"),
 ]
 
 # Bash recipe for building across all platforms
@@ -31,10 +31,8 @@ make install
 """
 
 platforms = supported_platforms()
-# PMIx is not supported on FreeBSD
-filter!(!Sys.isfreebsd, platforms)
 # `configure` does not find `libevent` on Windows (could probably be fixed)
-filter!(!Sys.iswindows, platforms)
+filter!(!(x) -> (Sys.iswindows(x) || nbits(x) == 32), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -47,9 +45,10 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="Hwloc_jll", uuid="e33a78d0-f292-5ffc-b300-72abe9b543c8")),
-    Dependency(PackageSpec(name="PMIx_jll", uuid="32165bc3-0280-59bc-8c0b-c33b6203efab")),
+    Dependency(PackageSpec(name="PMIx_jll", uuid="32165bc3-0280-59bc-8c0b-c33b6203efab"), compat="~6.1.0"),
     Dependency(PackageSpec(name="libevent_jll", uuid="1080aeaf-3a6a-583e-a51c-c537b09f60ec")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+                julia_compat="1.6", preferred_gcc_version=v"5")

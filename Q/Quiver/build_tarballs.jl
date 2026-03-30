@@ -1,16 +1,19 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "Quiver"
-version = v"0.2.0"
+version = v"0.6.0"
 
 include("../../platforms/macos_sdks.jl")
 
 sources = [
     GitSource("https://github.com/psrenergy/quiver.git",
-              "c4b6c1027b675214f80b469d3b6185c0ac4bd16d"),
+        "181c8d6e89819ea2742350e4ab6dc7f9a4171be9"),
 ]
 
 script = raw"""
+# Use CMake_jll instead of the base image CMake
+apk del cmake
+
 cd ${WORKSPACE}/srcdir/quiver
 
 cmake -B build \
@@ -19,8 +22,7 @@ cmake -B build \
     -DCMAKE_BUILD_TYPE=Release \
     -DQUIVER_BUILD_TESTS=OFF \
     -DQUIVER_BUILD_C_API=ON \
-    -DHAVE_GNU_STRERROR_R_EXITCODE=0 \
-    -DHAVE_GNU_STRERROR_R_EXITCODE__TRYRUN_OUTPUT=""
+    -DHAVE_GNU_STRERROR_R_EXITCODE=0
 
 cmake --build build --parallel ${nproc}
 cmake --install build
@@ -38,8 +40,11 @@ products = [
     LibraryProduct("libquiver_c", :libquiver_c),
 ]
 
-dependencies = Dependency[]
+dependencies = [
+    # Quiver deps require CMake >= 3.26
+    HostBuildDependency(PackageSpec(; name="CMake_jll")),
+]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.7",
-               preferred_gcc_version=v"13")
+    julia_compat="1.7",
+    preferred_gcc_version=v"13")

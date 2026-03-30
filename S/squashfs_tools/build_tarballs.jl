@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "squashfs_tools"
-version = v"4.7.4"
+version = v"4.7.5"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/plougher/squashfs-tools.git", "bad1d213ab6df587d6fa0ef7286180fbf7b86167"),
+    GitSource("https://github.com/plougher/squashfs-tools.git", "708c59ae80853b0845017c33b42e56061cc546cd"),
     DirectorySource("bundled"),
 ]
 
@@ -15,9 +15,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/squashfs-tools/squashfs-tools
 
-# lseek: define SEEK_DATA if not defined by C library
-# Taken from master branch after 4.7.4 release.
-atomic_patch -p2 $WORKSPACE/srcdir/patches/lseek.patch
+# Darwin uses `st_atimespec` instead of `st_atim`
+# See <https://github.com/plougher/squashfs-tools/issues/358>.
+atomic_patch -p2 $WORKSPACE/srcdir/patches/st_atim.patch
 
 args=(XZ_SUPPORT=1 LZO_SUPPORT=1 LZ4_SUPPORT=1 ZSTD_SUPPORT=1)
 if [[ "${target}" == *-mingw* ]] || [[ "${target}" == *-freebsd* ]]; then

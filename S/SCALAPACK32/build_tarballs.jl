@@ -5,6 +5,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "SCALAPACK32"
 version = v"2.2.2"
+ygg_version = v"2.2.3"          # we updated dependency compats
 
 sources = [
   GitSource("https://github.com/Reference-ScaLAPACK/scalapack", "25935e1a7e022ede9fd71bd86dcbaa7a3f1846b7"),
@@ -44,7 +45,9 @@ else
 
     LBT=(-lblastrampoline)
     MPILIBS=()
-    if [[ ${bb_full_target} == *mpich* ]]; then
+    if [[ ${bb_full_target} == *mpiabi* ]]; then
+        MPILIBS=(-lmpif -lmpi_abi)
+    elif [[ ${bb_full_target} == *mpich* ]]; then
         MPILIBS=(-lmpifort -lmpi)
     elif [[ ${bb_full_target} == *mpitrampoline* ]]; then
         MPILIBS=(-lmpitrampoline)
@@ -115,10 +118,11 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
+    Dependency("mpif_jll"; compat="0.1.5", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)), # MPI Fortran bindings
 ]
 append!(dependencies, platform_dependencies)
 
 # Build the tarballs.
 # We need at least GCC 5 for MPICH
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                augment_platform_block, julia_compat="1.9", preferred_gcc_version=v"5")

@@ -7,12 +7,14 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "HDF5"
-version = v"2.0.0"
+version = v"2.1.1"
+# We added support for MPIABI
+ygg_version = v"2.1.2"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/HDFGroup/hdf5/releases/download/$(version)/hdf5-$(version).tar.gz",
-                  "f4c2edc5668fb846627182708dbe1e16c60c467e63177a75b0b9f12c19d7efed"),
+                  "efff93b5a904d66e8f626d7da60b5eedc9faf544be27dbabbaa87967b8ad798b"),
     DirectorySource("bundled"),
 ]
 
@@ -27,14 +29,35 @@ if [[ ${bb_full_target} == *mpitrampoline* ]]; then
     atomic_patch -p1 ../patches/mpi.patch
 fi
 
+if [[ ${target} == x86_64-apple-darwin* ]]; then
+    # When compiling Fortran, our gfortran 12 uses Clang 8 to assemble object files.
+    # Clang 8 is too old to understand newer MacOSX versions:
+    # clang-8: error: invalid version number in 'MACOSX_DEPLOYMENT_TARGET=14.0'
+    export MACOSX_DEPLOYMENT_TARGET=10.9
+fi
+
 # OS does not support `O_DIRECT`
-direct_vfd=$(if [[ ${target} == *-apple-* || ${target} == *-w64-* ]]; then echo OFF; else echo ON; fi)
+direct_vfd=ON
+if [[ ${target} == *-apple-* || ${target} == *-w64-* ]]; then
+    direct_vfd=OFF
+fi
+
+float16=ON
+if [[ ${target} == x86_64-apple-darwin* || ${target} == x86_64-unknown-freebsd* ]]; then
+    float16=OFF
+fi
 
 # `aws_c_s3_jll` has not been built
-ros3_vdf=$(if [[ ${target} == i686-w64-* ]]; then echo OFF; else echo ON; fi)
+ros3_vdf=ON
+if [[ ${target} == i686-w64-* ]]; then
+    ros3_vdf=OFF
+fi
 
 # MPI does not support Fortran
-parallel=$(if [[ ${target} == *-w64-* ]]; then echo OFF; else echo ON; fi)
+parallel=ON
+if [[ ${target} == *-w64-* ]]; then
+    parallel=OFF
+fi
 
 cmake_options=(
     -DCMAKE_BUILD_TYPE=Release
@@ -57,21 +80,29 @@ cmake_options=(
     -DHDF5_ENABLE_HDFS=OFF             # would require Java
     -DHDF5_ENABLE_MAP_API=ON
     -DHDF5_ENABLE_MIRROR_VFD=ON
+    -DHDF5_ENABLE_NONSTANDARD_FEATURE_FLOAT16=${float16}
     -DHDF5_ENABLE_PARALLEL=${parallel}
     -DHDF5_ENABLE_ROS3_VFD=${ros3_vfd}
     -DHDF5_ENABLE_SUBFILING_VFD=ON
     -DHDF5_ENABLE_SZIP_SUPPORT=ON
     -DHDF5_ENABLE_ZLIB_SUPPORT=ON
     -DHDF5_USE_PREGEN=ON
-    -DMPI_HOME=${prefix}
+    -DH5_FLOAT16_CONVERSION_FUNCS_LINK=${float16}
+    -DH5_FLOAT16_CONVERSION_FUNCS_LINK_NO_FLAGS=${float16}
+    -DH5_LDOUBLE_TO_FLOAT16_CORRECT=${float16}
 )
 
-# We could enable this, but it would require more cross-compiling information:
-#     -DHDF5_ENABLE_NONSTANDARD_FEATURE_FLOAT16=ON
-# We would need to set these flags (and check that these conditions are true!): 
-#     -DH5_FLOAT16_CONVERSION_FUNCS_LINK=ON
-#     -DH5_FLOAT16_CONVERSION_FUNCS_LINK_NO_FLAGS=ON
-#     -DH5_LDOUBLE_TO_FLOAT16_CORRECT=ON
+if [[ ${bb_full_target} == *mpiabi* ]]; then
+    # MPIABI splits the C and Fortran MPI bindings
+    cmake_options+=(
+        -DMPI_C_COMPILER=mpicc
+        -DMPI_Fortran_COMPILER=mpifc
+    )
+else
+    cmake_options+=(
+        -DMPI_HOME=${prefix}
+    )
+fi
 
 # We have pregenerated the Fortran configurations for Linux.
 # (See <https://github.com/HDFGroup/hdf5/issues/6042>.)
@@ -231,13 +262,15 @@ cmake --install builddir
 install_license LICENSE
 """
 
-sources, script = require_macos_sdk("10.14", sources, script)
+# The HDF5 2.0.0 release note state that MacOS 13 does not correctly
+# convert long double to float16, while MacOS 14 is fine.
+sources, script = require_macos_sdk("14.0", sources, script)
 
 augment_platform_block = """
     using Base.BinaryPlatforms
     $(MPI.augment)
     augment_platform!(platform::Platform) = augment_mpi!(platform)
-"""
+    """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
@@ -286,9 +319,10 @@ dependencies = [
     Dependency("LibCURL_jll"; compat="7.73, 8"),
     Dependency("OpenSSL_jll"; compat="3.0.16"),
     Dependency("Zlib_jll"; compat="1.2.12"),
-    Dependency("aws_c_s3_jll"; compat="0.9.2"),
+    Dependency("aws_c_s3_jll"; compat="0.11.2"),
     Dependency("dlfcn_win32_jll"; platforms=filter(Sys.iswindows, platforms)),
     Dependency("libaec_jll"; compat="1.1.4"), # This is the successor of szlib
+    Dependency("mpif_jll"; compat="0.1.5", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)), # MPI Fortran bindings
 ]
 append!(dependencies, platform_dependencies)
 
@@ -297,5 +331,5 @@ append!(dependencies, platform_dependencies)
 ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+               augment_platform_block, clang_use_lld=false, julia_compat="1.10", preferred_gcc_version=v"12")

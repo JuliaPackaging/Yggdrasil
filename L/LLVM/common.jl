@@ -22,7 +22,7 @@ const llvm_tags = Dict(
     v"18.1.7" => "32719222d3ea71ed0b19c2cb75fa6f76713fda20", # julia-18.1.7-4
     v"19.1.7" => "ccda9ec62497d9de88ca7090a749e52a89f62132", # julia-19.1.7-2
     v"20.1.8" => "5b9f96366ce26dfc8ca91697ef0a57894791d95e", # julia-20.1.8-0
-    v"21.1.2" => "e01e3e96a51b18afc66b6b4ef358b3d72b51dc68", # julia-21.1.2-0
+    v"21.1.8" => "7cd4442d4a6c949de43c1e2c0e20334ee59aa154", # julia-21.1.8-0
 )
 
 const buildscript = raw"""
@@ -264,7 +264,7 @@ if [[ "${LLVM_MAJ_VER}" -ge "16" ]]; then
     CMAKE_FLAGS+=(-DCMAKE_INSTALL_BINDIR="tools")
 else
     CMAKE_FLAGS+=(-DLLVM_TOOLS_INSTALL_DIR="tools")
-    CMAKE_FLAGS+=(-DCLANG_TOOLS_INSTALL_DIR="tools")
+    CMAKE_FLAGS+=(-DCLANG_TOOLS_INSTALL_DIR="${prefix}/tools")
 fi
 
 # Also build and install utils, since we want FileCheck, and lit
@@ -761,6 +761,11 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
             LibraryProduct("libclang", :libclang; dont_dlopen),
             LibraryProduct("libclang-cpp", :libclang_cpp; dont_dlopen),
             ExecutableProduct(["clang", "clang-$(version.major)"], :clang, "tools"),
+            ExecutableProduct("clang-format", :clang_format, "tools"),
+            ExecutableProduct("clang-tidy", :clang_tidy, "tools"),
+            ExecutableProduct("clang-apply-replacements", :clang_apply_replacements, "tools"),
+            ExecutableProduct("clang-scan-deps", :clang_scan_deps, "tools"),
+            ExecutableProduct("clang-check", :clang_check, "tools"),
         ]
     elseif name == "MLIR"
         script = if version < v"14"

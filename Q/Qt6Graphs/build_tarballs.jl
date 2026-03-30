@@ -3,15 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "Qt6Graphs"
-version = v"6.8.2"
+version = v"6.10.2"
 
 # Collection of sources required to build qt6
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtgraphs-everywhere-src-$version.tar.xz",
-                  "05c7a4a3482f6ffd7e9005964bb5ab634062a6d023ccd96f5447db6eae3c46d4"),
+                  "f690fc6aa567d89a6e76ce370d684beb243dc0c2ed1187dd305433e278dd7aaf"),
 ]
 
 script = raw"""
+# Need newer cmake from JLL
+apk del cmake
+
 cd $WORKSPACE/srcdir/qt*
 
 cmake -G Ninja \
@@ -42,6 +45,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    HostBuildDependency("CMake_jll"),
     HostBuildDependency("Qt6Base_jll"),
     HostBuildDependency("Qt6Declarative_jll"),
     HostBuildDependency("Qt6Quick3D_jll"),

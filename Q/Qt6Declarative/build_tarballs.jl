@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "Qt6Declarative"
-version = v"6.8.2"
+version = v"6.10.2"
 
 # Set this to true first when updating the version. It will build only for the host (linux musl).
 # After that JLL is in the registry, set this to false to build for the other platforms, using
@@ -13,17 +13,23 @@ const host_build = false
 # Collection of sources required to build qt6
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtdeclarative-everywhere-src-$version.tar.xz",
-                  "144d876adc8bb55909735143e678d1e24eadcd0a380a0186792d88b731346d56"),
+                  "a249914ff66cdcdbf0df8b5ffad997a2ee6dce01cc17d43c6cc56fdc1d0f4b0f"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
+# Need newer cmake from JLL
+apk del cmake
+
 cd $WORKSPACE/srcdir
 
 mkdir build
 cd build/
 qtsrcdir=`ls -d ../qtdeclarative-*`
+
+atomic_patch -p1 -d "${qtsrcdir}" ../patches/patch.patch
 
 case "$bb_full_target" in
 
@@ -39,8 +45,8 @@ case "$bb_full_target" in
         apple_sdk_root=$WORKSPACE/srcdir/MacOSX14.0.sdk
         sed -i "s!/opt/$target/$target/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
         sed -i "s!/opt/$target/$target/sys-root!$apple_sdk_root!" /opt/bin/$bb_full_target/$target-clang++
-        export MACOSX_DEPLOYMENT_TARGET=12
-        export OBJCFLAGS="-D__ENVIRONMENT_OS_VERSION_MIN_REQUIRED__=120000"
+        export MACOSX_DEPLOYMENT_TARGET=14
+        export OBJCFLAGS="-D__ENVIRONMENT_OS_VERSION_MIN_REQUIRED__=140000"
         export OBJCXXFLAGS=$OBJCFLAGS
         export CXXFLAGS=$OBJCFLAGS
         cmake -G Ninja \
@@ -52,7 +58,7 @@ case "$bb_full_target" in
             -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
             -DCMAKE_SYSROOT=$apple_sdk_root \
             -DCMAKE_FRAMEWORK_PATH=$apple_sdk_root/System/Library/Frameworks \
-            -DCMAKE_OSX_DEPLOYMENT_TARGET=12 \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=14 \
             -DQT_NO_APPLE_SDK_AND_XCODE_CHECK=ON \
             -DCMAKE_BUILD_TYPE=Release \
             $qtsrcdir
@@ -127,10 +133,12 @@ products_win = vcat(products,
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    HostBuildDependency("CMake_jll"),
     HostBuildDependency("Qt6Base_jll"),
     HostBuildDependency("Qt6ShaderTools_jll"),
     Dependency("Qt6Base_jll"; compat="="*string(version)),
     Dependency("Qt6ShaderTools_jll"; compat="="*string(version)),
+    Dependency("Qt6Svg_jll"; compat="="*string(version)),
     BuildDependency("Vulkan_Headers_jll"),
 ]
 
