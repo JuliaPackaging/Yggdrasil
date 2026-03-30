@@ -15,10 +15,7 @@ cd ${WORKSPACE}/srcdir/CechCore
 
 test -f CMakeLists.txt || (echo "ERROR: CMakeLists.txt not found at $(pwd)"; ls; exit 1)
 
-mkdir build
-cd build
-
-cmake .. \
+cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release
