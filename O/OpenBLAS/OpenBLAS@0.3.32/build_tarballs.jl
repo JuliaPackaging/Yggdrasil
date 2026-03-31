@@ -8,7 +8,7 @@ name = "OpenBLAS"
 version = v"0.3.32"
 
 sources = openblas_sources(version)
-script = openblas_script(; aarch64_ilp64=true, num_64bit_threads=512, bfloat16=true)
+script = openblas_script(; aarch64_ilp64=true, num_64bit_threads=512, bfloat16=true, float16=true)
 platforms = openblas_platforms(; version)
 # Note: The msan build doesn't use gfortran, and we thus don't expand the gfortran versions
 push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
@@ -49,4 +49,4 @@ for (n,platform) in enumerate(platforms)
                    julia_compat="1.11", lock_microarchitecture=false, preferred_gcc_version=pref_gcc, preferred_llvm_version=pref_llvm)
 end
 
-# Build trigger: 1
+# Build trigger: 2

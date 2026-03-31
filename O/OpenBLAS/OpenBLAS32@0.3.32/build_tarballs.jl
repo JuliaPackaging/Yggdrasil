@@ -32,12 +32,14 @@ for (n,platform) in enumerate(platforms)
     # We register the build products only after the last build.
     args = n == length(platforms) ? option_args : non_register_option_args
 
+    pref_gcc = arch(platform) == "riscv64" ? riscv64_preferred_gcc_version : preferred_gcc_version
+
     build_tarballs(args, name, version, sources, script, [platform], products, dependencies;
                    julia_compat="1.11",
                    lock_microarchitecture=false,
-                   preferred_gcc_version = arch(platform) == "riscv64" ? riscv64_preferred_gcc_version : preferred_gcc_version,
+                   preferred_gcc_version=pref_gcc,
                    preferred_llvm_version=preferred_llvm_version,
                    )
 end
 
-# Build trigger: 0
+# Build trigger: 1

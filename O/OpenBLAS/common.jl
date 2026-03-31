@@ -218,7 +218,7 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     fi
 
     if [[ ${target} == aarch64-*-darwin* ]]; then
-        # Disable SME (not support on Darwin -- neither by the hardware nor by the toolchain)
+        # Disable SME (not supported on Darwin -- neither by the hardware nor by the toolchain)
         export NO_SME=1
     fi
 
@@ -233,6 +233,14 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     # so set it here.
     if [[ ${target} == *linux* ]] || [[ ${target} == *freebsd* ]]; then
         export LDFLAGS="${LDFLAGS} '-Wl,-rpath,\$\$ORIGIN' -Wl,-z,origin"
+        # The regular linker produces invalid ELF files. Yggdrasil notices because it cannot load the shared library.
+        # Using lld instead creates valid ELF files.
+        # It might be that using a different version of binutils would also correct the problem.
+        #
+        # The problem can be seen by running `readelf -lW libopenblas64_.0.3.32.so`.
+        # The segment
+        #     LOAD  0x0000000001fba508 0x0000000001fbb508 ... RW  0x8000
+        # is not properly aligned. The two addresses are supposed to differ by a multiple of the alignment (0x8000) but they do not.
         export LDFLAGS="${LDFLAGS} -fuse-ld=lld"
     elif [[ ${target} == *apple* ]]; then
         export LDFLAGS="${LDFLAGS} -Wl,-rpath,@loader_path/"
