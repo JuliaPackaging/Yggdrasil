@@ -30,6 +30,8 @@ if !isempty(platform_args)
 end
 
 riscv64_preferred_gcc_version = v"15"
+# We need to disable float16 for the msan build because the msan llvm version is too old to support it
+msan_script = openblas_script(; aarch64_ilp64=true, num_64bit_threads=512, bfloat16=true, float16=false)
 msan_preferred_llvm_version = v"13.0.1+0"
 msan_dependencies = openblas_dependencies(platforms; llvm_compilerrt_version=msan_preferred_llvm_version)
 
@@ -41,11 +43,12 @@ for (n,platform) in enumerate(platforms)
     # We register the build products only after the last build.
     args = n == length(platforms) ? option_args : non_register_option_args
 
+    scr = sanitize(platform) == "memory" ? msan_script : script
     deps = sanitize(platform) == "memory" ? msan_dependencies : dependencies
     pref_gcc = arch(platform) == "riscv64" ? riscv64_preferred_gcc_version : preferred_gcc_version
     pref_llvm = sanitize(platform) == "memory" ? msan_preferred_llvm_version : preferred_llvm_version
 
-    build_tarballs(args, name, version, sources, script, [platform], products, deps;
+    build_tarballs(args, name, version, sources, scr, [platform], products, deps;
                    julia_compat="1.11", lock_microarchitecture=false, preferred_gcc_version=pref_gcc, preferred_llvm_version=pref_llvm)
 end
 
