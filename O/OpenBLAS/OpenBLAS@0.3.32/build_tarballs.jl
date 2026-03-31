@@ -49,4 +49,4 @@ for (n,platform) in enumerate(platforms)
                    julia_compat="1.11", lock_microarchitecture=false, preferred_gcc_version=pref_gcc, preferred_llvm_version=pref_llvm)
 end
 
-# Build trigger: 0
+# Build trigger: 1

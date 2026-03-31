@@ -8,6 +8,8 @@ function openblas_sources(version::VersionNumber; kwargs...)
             ArchiveSource("https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.32/OpenBLAS-0.3.32.tar.gz",
                           "f8a1138e01fddca9e4c29f9684fd570ba39dedc9ca76055e1425d5d4b1a4a766")
         ],
+        # OpenBLAS 0.3.31 contains a serious bug <https://github.com/OpenMathLib/OpenBLAS/pull/5643>,
+        # we do not want to wrap that version
         v"0.3.30" => [
             ArchiveSource("https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.30/OpenBLAS-0.3.30.tar.gz",
                           "27342cff518646afb4c2b976d809102e368957974c250a25ccc965e53063c95d")
@@ -231,6 +233,7 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     # so set it here.
     if [[ ${target} == *linux* ]] || [[ ${target} == *freebsd* ]]; then
         export LDFLAGS="${LDFLAGS} '-Wl,-rpath,\$\$ORIGIN' -Wl,-z,origin"
+        export LDFLAGS="${LDFLAGS} -fuse-ld=lld"
     elif [[ ${target} == *apple* ]]; then
         export LDFLAGS="${LDFLAGS} -Wl,-rpath,@loader_path/"
     fi
@@ -239,11 +242,9 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     cd ${WORKSPACE}/srcdir/OpenBLAS*/
 
     # Apply any patches this version of OpenBLAS requires
-    shopt -s nullglob
     for f in ${WORKSPACE}/srcdir/patches/*.patch; do
         atomic_patch -p1 ${f}
     done
-    shopt -u nullglob
 
     # Choose our make parallelism.
     flags+=(-j${nproc})
@@ -254,7 +255,7 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     echo "Build flags: ${flags[@]}"
 
     # Build the actual library
-    make "${flags[@]}"
+    make "${flags[@]}" shared
 
     # Install the library
     make "${flags[@]}" "PREFIX=$prefix" install
