@@ -77,7 +77,8 @@ filter!(p -> arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("mpv", :mpv)
+    ExecutableProduct("mpv", :mpv),
+    LibraryProduct("libmpv", :libmpv),
 ]
 
 # Dependencies that must be installed before this package can be built
