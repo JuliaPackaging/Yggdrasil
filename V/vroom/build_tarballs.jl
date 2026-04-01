@@ -50,6 +50,9 @@ install -Dvm 755 bin/vroom${exeext} -t ${bindir}
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+platforms = expand_cxxstring_abis(platforms)
+# GCC 13 always uses the cxx11 ABI
+filter!(p -> cxxstring_abi(p) != "cxx03", platforms)
 
 # The products that we will ensure are always built
 products =[
