@@ -13,6 +13,11 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libxslt-*
 
+if [[ ${target} == x86_64-linux-musl ]]; then
+    # Configure picks up the system xml2 library. Prevent this.
+    rm -rf /opt/x86_64-linux-musl/x86_64-linux-musl/lib64/libxml2*
+fi
+
 # XSLT wants Python 2.7... XML2_jll disables Python, so let's do that here as well.
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static --with-python=no
 make -j${nproc}
