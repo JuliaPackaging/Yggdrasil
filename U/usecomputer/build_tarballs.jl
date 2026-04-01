@@ -40,12 +40,19 @@ platforms = [
     Platform("x86_64", "windows"),
 ]
 
+linux_platforms = filter(Sys.islinux, platforms)
+
 products = [
     LibraryProduct(["libusecomputer_c", "usecomputer_c"], :libusecomputer_c),
     FileProduct("include/usecomputer.h", :usecomputer_h),
 ]
 
-dependencies = Dependency[]
+dependencies = [
+    Dependency("Xorg_libX11_jll"; platforms=linux_platforms),
+    Dependency("Xorg_libXext_jll"; platforms=linux_platforms),
+    Dependency("Xorg_libXtst_jll"; platforms=linux_platforms),
+    Dependency("libpng_jll"; platforms=linux_platforms),
+]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     julia_compat="1.6")
