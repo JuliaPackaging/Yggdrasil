@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 include("../common.jl")
 
 name = "Clang_unified"
-version = v"0.1.3"
+version = v"0.1.4"
 llvm_full_versions = [
     v"15.0.7+12",               # Julia 1.10
     v"16.0.6+6",                # Julia 1.11
@@ -61,3 +61,5 @@ for (i, build) in enumerate(builds)
                    skip_audit=true, dont_dlopen=true, julia_compat="1.10",
                    augment_platform_block)
 end
+
+# bump

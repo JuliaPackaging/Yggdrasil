@@ -5,6 +5,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MUMPS"
 version = v"5.8.2" 
+ygg_version = v"5.8.4"          # we updated compat bounds to build for MPIABI
 
 sources = [
   ArchiveSource("https://mumps-solver.org/MUMPS_$(version).tar.gz",
@@ -39,13 +40,15 @@ else
 fi
 
 MPILIBS=()
-if grep -q MSMPI "${includedir}/mpi.h"; then
+if [[ ${bb_full_target} == *microsoftmpi* ]]; then
     MPILIBS=(-lmsmpi)
-elif grep -q MPICH "${includedir}/mpi.h"; then
+elif [[ ${bb_full_target} == *mpiabi* ]]; then
+    MPILIBS=(-lmpif -lmpi_abi)
+elif [[ ${bb_full_target} == *mpich* ]]; then
     MPILIBS=(-lmpifort -lmpi)
-elif grep -q MPItrampoline "${includedir}/mpi.h"; then
+elif [[ ${bb_full_target} == *mpitrampoline* ]]; then
     MPILIBS=(-lmpitrampoline)
-elif grep -q OMPI_MAJOR_VERSION "${includedir}/mpi.h"; then
+elif [[ ${bb_full_target} == *openmpi* ]]; then
     MPILIBS=(-lmpi_usempif08 -lmpi_usempi_ignore_tkr -lmpi_mpifh -lmpi)
 fi
 
@@ -113,24 +116,6 @@ platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
-# Remove platforms where some dependencies are missing
-filter!(p -> arch(p) != "riscv64", platforms)
-filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
-
-# OpenBLAS >= 0.3.29 doesn't support GCC < v11 on powerpc64le
-filter!(p -> !(arch(p) == "powerpc64le" && libgfortran_version(p) < v"5"), platforms)
-
-# Avoid platforms where the MPI implementation isn't supported
-# OpenMPI
-platforms = filter(p -> !(p["mpi"] == "openmpi" && nbits(p) == 32), platforms)
-platforms = filter(p -> !(p["mpi"] == "openmpi" && Sys.isfreebsd(p)), platforms)
-platforms = filter(p -> !(p["mpi"] == "openmpi" && Sys.iswindows(p)), platforms)
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "x86_64" && os(p) == "linux" && libc(p) == "musl" && libgfortran_version(p) == v"5"), platforms)
-
-# MPItrampoline
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
-
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libsmumpspar", :libsmumpspar),
@@ -142,14 +127,17 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70")),
-    Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa")),
-    Dependency(PackageSpec(name="SCOTCH_jll", uuid="a8d0f55d-b80e-548d-aff6-1a04c175f0f9"); compat="~7.0.6"),
+    Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70"); compat="5.1.3"),
+    Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa"); compat="4.0.7"),
+    Dependency(PackageSpec(name="SCOTCH_jll", uuid="a8d0f55d-b80e-548d-aff6-1a04c175f0f9"); compat="~7.0.7"),
     # Dependency(PackageSpec(name="PTSCOTCH_jll", uuid="b3ec0f5a-9838-5c9b-9e77-5f2c6a4b089f"); compat="~7.0.6"),
-    Dependency(PackageSpec(name="SCALAPACK32_jll", uuid="aabda75e-bfe4-5a37-92e3-ffe54af3c273"); compat="2.2.2"),
+    Dependency(PackageSpec(name="SCALAPACK32_jll", uuid="aabda75e-bfe4-5a37-92e3-ffe54af3c273"); compat="2.2.3"),
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
+    Dependency("mpif_jll"; compat="0.1.5", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)), # MPI Fortran bindings
 ]
 append!(dependencies, platform_dependencies)
 
 # Build the tarballs
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"6")
+# We require Julia 1.9 since SCALAPACK32 only supports Julia 1.9
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+               augment_platform_block, julia_compat="1.9", preferred_gcc_version=v"6")

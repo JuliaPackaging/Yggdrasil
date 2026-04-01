@@ -3,14 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "CUDA_Tile"
-version = v"13.1.6"
+version = v"13.2.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/NVIDIA/cuda-tile",
-              "9d5be8a17a69f2fba2d46a38b8bc635add57af9c"),
+              "0859212ad19f71133a9b940c05323286cbf28a05"),
     GitSource("https://github.com/llvm/llvm-project.git",
-              "b82c7fc65229c8b2b6a964f023f6ec59b3cf9210")
+              "13c00cbc2aa2ddc9aae2e72b02bc6cb2a482e0e7")    # see cmake/IncludeLLVM.cmake
 ]
 
 # Bash recipe for building across all platforms

@@ -6,11 +6,8 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "SuperLU_DIST"
-version = v"8.2.1"
+version = v"8.2.2"
 superlu_dist_version = v"8.2.1"
-
-OpenMPI_version="4.1.6, 5.0"    # adding 4.1.6 to ensure that 32bit builds still work
-MPItrampoline_version="5.2.1"
 
 # Collection of sources required to complete build
 sources = [
@@ -62,7 +59,7 @@ build_superlu_dist()
         -Denable_complex16=ON \
         -DTPL_BLAS_LIBRARIES="${libdir}/${BLAS}.${dlext}" \
         ${PLATFLAGS} \
-        -DCMAKE_C_FLAGS="-std=c99" \
+        -DCMAKE_C_FLAGS="-std=c99 -Wno-implicit-function-declaration -Wno-incompatible-pointer-types" \
         -DXSDK_INDEX_SIZE=${INT} \
         -DXSDK_ENABLE_Fortran=OFF \
         -DSUPERLU_OUTPUT_NAME="superlu_dist_Int${INT}" \
@@ -96,21 +93,7 @@ augment_platform_block = """
 # per Mose. Will return to it later and attempt to find a solution.
 platforms = supported_platforms()
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat=MPItrampoline_version, OpenMPI_compat=OpenMPI_version)
-
-# Avoid platforms where the MPI implementation isn't supported
-# OpenMPI
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
-
-# Disable FreeBSD, it is not supported by PMIx (which we need)
-platforms = filter(p -> !(p["mpi"] == "openmpi" && Sys.isfreebsd(p) ), platforms)
-
-# Disable Windows, we do not know how to cross-compile
-platforms = filter(p -> !(p["mpi"] == "openmpi" && Sys.iswindows(p) ), platforms)
-
-# MPItrampoline
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -124,8 +107,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
-    Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa"); platforms=filter(!Sys.iswindows, platforms), compat="4.0.6"),
-    Dependency("METIS_jll"),
+    Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa"); platforms=filter(!Sys.iswindows, platforms), compat="4.0.7"),
+    Dependency("METIS_jll"; compat="5.1.3"),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
@@ -143,6 +126,4 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 # CI suggests that this generally works on most systems [1.6 - nightly (1.11)], apart 
 # from a failure on 1.8 & windows, which is why julia compat is set to 1.9 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, 
-               julia_compat="1.9", 
-               preferred_gcc_version = v"8")
+               augment_platform_block, julia_compat="1.9", preferred_gcc_version=v"8")

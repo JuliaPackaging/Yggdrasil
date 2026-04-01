@@ -9,7 +9,7 @@ name = "MPIABI"
 # OpenMPI's released versions.
 #
 # We are currently at version 0.1 because some details of the ABI are still being hashed out, e.g. the library SOVERSION.
-version = v"0.1.2"
+version = v"0.1.3"
 
 # The MPI ABI does not provide Fortran bindings. Packages using this
 # ABI should use a different package, e.g.
