@@ -52,7 +52,7 @@ install -Dvm 755 bin/vroom${exeext} -t ${bindir}
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products = Product[
+products =[
     ExecutableProduct("vroom", :vroom),
 ]
 
