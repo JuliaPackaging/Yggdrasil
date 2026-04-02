@@ -88,7 +88,7 @@ dependencies = [
     BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.11.0+0")),
     Dependency("libcxxwrap_julia_jll"),
     Dependency("GMP_jll"; compat="6.2.1"),
-    Dependency("MPFR_jll"; compat="4.2.0"),
+    Dependency("MPFR_jll"; compat="4.2.1"),
     Dependency("GIAC_jll"; compat="2.0.1"),
 ]
 
