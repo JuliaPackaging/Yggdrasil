@@ -92,7 +92,7 @@ dependencies = [
     Dependency("libcxxwrap_julia_jll"),
     Dependency("Gettext_jll"; compat="0.21.0"),
     Dependency("GMP_jll"; compat="6.2.1"),
-    Dependency("MPFR_jll"; compat="4.1.1"),
+    Dependency("MPFR_jll"; compat="4.2.0"),
     Dependency("Readline_jll"; compat="8.2.13"),
     Dependency("GIAC_jll"; compat="2.0.1"),
 ]
