@@ -21,7 +21,7 @@ cd $WORKSPACE/srcdir/utils/piolib/
 cmake . -B build -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel ${nproc}
 cmake --install build
-install_license $WORKSPACE/srcdir/LICENSE
+install_license ${WORKSPACE}/srcdir/utils/LICENCE
 exit
 """
 
