@@ -88,16 +88,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.11.0+0")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.11.0")),
     Dependency("libcxxwrap_julia_jll"),
     Dependency("Gettext_jll"; compat="0.21.0"),
-    # GMP and MPFR are BuildDependency (not Dependency) because GIAC_jll already
-    # declares them as runtime dependencies. Since this package uses the julia_version
-    # platform tag, Julia's dependency resolver automatically pulls in the correct
-    # versions transitively through GIAC_jll. Declaring them as Dependency here with
-    # compat bounds causes "unsatisfiable requirements" errors.
-    BuildDependency("GMP_jll"),
-    BuildDependency("MPFR_jll"),
+    Dependency("GMP_jll"; compat="6.2.1"),
+    Dependency("MPFR_jll"; compat="4.1.1"),
     Dependency("Readline_jll"; compat="8.2.13"),
     Dependency("GIAC_jll"; compat="2.0.1"),
 ]
