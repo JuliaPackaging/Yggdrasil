@@ -3,6 +3,7 @@ using BinaryBuilder, Pkg
 # Collection of sources required to build FastTransforms
 name = "FastTransforms"
 version = v"0.6.3"
+ygg_version = v"0.6.4"
 sources = [
     GitSource("https://github.com/MikaelSlevinsky/FastTransforms.git", "abd33bc1e99f9e75cff7ade1154ecc2f4cec6a62")
 ]
@@ -50,13 +51,17 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("FFTW_jll"),
-    Dependency("MPFR_jll", v"4.1.1"),
-    Dependency("OpenBLAS_jll", v"0.3.17"),
+    Dependency("MPFR_jll"),     # v"4.1.1"
+    # We need 0.3.23; other (newer?) versions don't provide <cblas.h>
+    Dependency("OpenBLAS_jll", v"0.3.23"),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
-    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae");
+               platforms=filter(!Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
+               platforms=filter(Sys.isbsd, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7", julia_compat="1.7")
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version=v"7", julia_compat="1.7")
