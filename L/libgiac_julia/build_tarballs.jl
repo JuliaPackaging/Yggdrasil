@@ -18,9 +18,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libgiac-julia-wrapper
 
-# CMake is needed by meson to find JlCxx (libcxxwrap-julia)
-apk add cmake
-
 # Meson cross-compilation setup
 # BinaryBuilder generates two meson cross-files per platform:
 #   target_<triplet>_clang.meson  and  target_<triplet>_gcc.meson
@@ -88,15 +85,13 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.11.0")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.11.0+0")),
     Dependency("libcxxwrap_julia_jll"),
-    Dependency("Gettext_jll"; compat="0.21.0"),
     Dependency("GMP_jll"; compat="6.2.1"),
     Dependency("MPFR_jll"; compat="4.2.0"),
-    Dependency("Readline_jll"; compat="8.2.13"),
     Dependency("GIAC_jll"; compat="2.0.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    preferred_gcc_version=v"9", julia_compat=libjulia_julia_compat(julia_versions))
+    preferred_gcc_version=v"10", julia_compat=libjulia_julia_compat(julia_versions))
