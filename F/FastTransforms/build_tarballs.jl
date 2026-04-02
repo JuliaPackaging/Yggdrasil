@@ -51,7 +51,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("FFTW_jll"),
-    Dependency("MPFR_jll"),     # v"4.1.1"
+    Dependency("MPFR_jll", v"4.1.1"),
     # We need 0.3.23; other (newer?) versions don't provide <cblas.h>
     Dependency("OpenBLAS_jll", v"0.3.23"),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
