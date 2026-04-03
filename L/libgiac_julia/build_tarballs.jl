@@ -86,7 +86,7 @@ products = [
 # We do not provide all the compats since julia_version is in use
 dependencies = [
     BuildDependency("libjulia_jll"),
-    Dependency("libcxxwrap_julia_jll"),
+    Dependency("libcxxwrap_julia_jll"; compat="~0.14"),
     Dependency("GIAC_jll"; compat="2.0.1"),
     Dependency("GMP_jll"),
     Dependency("MPFR_jll"),
