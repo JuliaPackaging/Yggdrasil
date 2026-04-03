@@ -18,15 +18,16 @@ install -Dvm 755 \
 	${libdir}/libmontre_ffi.${dlext}
 """
 
+# note: I'll see if build works this time without these exclusions,
+# then will modify these comments depending on the outcome
 excluded = [
 	# Rust 1.94.0 toolchain not available for this platform target
 	# (confirmed still failing as of 2026-03-21, after Rust 1.94 was added to Yggdrasil)
-	"riscv64-linux-gnu",
-	"aarch64-unknown-freebsd",
+#	"riscv64-linux-gnu",
+#	"aarch64-unknown-freebsd",
 	# _Unwind linker errors:
-	"i686-w64-mingw32",
+#	"i686-w64-mingw32",
 ]
-
 
 platforms = filter(supported_platforms()) do p
 	triplet(p) ∉ excluded && !occursin("musl", triplet(p))
@@ -36,7 +37,9 @@ products = [
 	LibraryProduct("libmontre_ffi", :libmontre),
 ]
 
-dependencies = Dependency[]
+dependencies = [
+    Dependency("CompilerSupportLibraries_jll"),
+]
 
 build_tarballs(
 	ARGS, name, version, sources, script, platforms, products, dependencies;
