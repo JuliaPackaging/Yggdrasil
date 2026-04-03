@@ -1,7 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, Pkg
-using Base.BinaryPlatforms
+using BinaryBuilder
 
 name = "libgiac_julia"
 version = v"0.5.0"
@@ -18,35 +17,13 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libgiac-julia-wrapper
 
-# Meson cross-compilation setup
-# BinaryBuilder generates two meson cross-files per platform:
-#   target_<triplet>_clang.meson  and  target_<triplet>_gcc.meson
-# MESON_TARGET_TOOLCHAIN is a symlink to one of them (gcc on Linux/Windows,
-# clang on macOS/FreeBSD).
-#
-# On macOS/FreeBSD: keep clang (default) to match libcxxwrap_julia_jll ABI.
-# On Linux/Windows: explicitly select the GCC variant for GIAC_jll compatibility.
-if [[ "${target}" == *apple* ]] || [[ "${target}" == *freebsd* ]]; then
-    MESON_CROSS="${MESON_TARGET_TOOLCHAIN}"
-elif [[ -f "${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson" ]]; then
-    # Replace .meson with _gcc.meson on the symlink path (e.g.
-    # target_x86_64-linux-gnu.meson -> target_x86_64-linux-gnu_gcc.meson)
-    MESON_CROSS="${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson"
-else
-    MESON_CROSS="${MESON_TARGET_TOOLCHAIN}"
-fi
+# Use BinaryBuilder's default meson cross-file:
+# gcc on Linux/Windows, clang on macOS/FreeBSD.
+MESON_CROSS="${MESON_TARGET_TOOLCHAIN}"
 
 # Inject cmake path into the cross-file so meson can find JlCxx
 CMAKE_PATH=$(which cmake)
 sed -i "/^\[binaries\]/a cmake = '${CMAKE_PATH}'" "${MESON_CROSS}"
-
-# Fix linker detection on macOS: meson tries -Wl,--version to detect the linker
-# specified via c_ld/cpp_ld, but Apple's ld doesn't support --version.
-# Remove these entries so meson auto-detects the linker through clang.
-if [[ "${target}" == *apple* ]]; then
-    sed -i "/^c_ld = /d" "${MESON_CROSS}"
-    sed -i "/^cpp_ld = /d" "${MESON_CROSS}"
-fi
 
 # Tell meson where to find JlCxx (libcxxwrap-julia) via CMake
 # and where GIAC headers are installed
@@ -85,6 +62,7 @@ products = [
 
 # We do not provide all the compats since julia_version is in use
 dependencies = [
+    HostBuildDependency("CMake_jll"),
     BuildDependency("libjulia_jll"),
     Dependency("libcxxwrap_julia_jll"; compat="~0.14"),
     Dependency("GIAC_jll"; compat="2.0.1"),
@@ -94,4 +72,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    preferred_gcc_version=v"10", julia_compat=libjulia_julia_compat(julia_versions))
+    clang_use_lld=false, preferred_gcc_version=v"10", julia_compat=libjulia_julia_compat(julia_versions))
