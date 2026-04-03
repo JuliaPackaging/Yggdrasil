@@ -53,6 +53,8 @@ install_license LICENSE
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
+# libcxxwrap_julia_jll v0.14.x does not yet have artifacts for Julia 1.13+
+filter!(p -> VersionNumber(p["julia_version"]) < v"1.13", platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
