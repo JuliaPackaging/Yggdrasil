@@ -21,9 +21,9 @@ cd $WORKSPACE/srcdir/libgiac-julia-wrapper
 # gcc on Linux/Windows, clang on macOS/FreeBSD.
 MESON_CROSS="${MESON_TARGET_TOOLCHAIN}"
 
-# Inject cmake path into the cross-file so meson can find JlCxx
-CMAKE_PATH=$(which cmake)
-sed -i "/^\[binaries\]/a cmake = '${CMAKE_PATH}'" "${MESON_CROSS}"
+# Meson's cmake module requires cmake in the cross-file's [binaries] section
+# for cross-compilation. Inject the system cmake path.
+sed -i "/^\[binaries\]/a cmake = '$(which cmake)'" "${MESON_CROSS}"
 
 # Tell meson where to find JlCxx (libcxxwrap-julia) via CMake
 # and where GIAC headers are installed
@@ -62,7 +62,6 @@ products = [
 
 # We do not provide all the compats since julia_version is in use
 dependencies = [
-    HostBuildDependency("CMake_jll"),
     BuildDependency("libjulia_jll"),
     Dependency("libcxxwrap_julia_jll"; compat="~0.14"),
     Dependency("GIAC_jll"; compat="2.0.1"),
