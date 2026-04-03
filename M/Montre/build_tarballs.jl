@@ -27,7 +27,6 @@ excluded = [
 	"i686-w64-mingw32",
 ]
 
-
 platforms = filter(supported_platforms()) do p
 	triplet(p) ∉ excluded && !occursin("musl", triplet(p))
 end
@@ -36,7 +35,7 @@ products = [
 	LibraryProduct("libmontre_ffi", :libmontre),
 ]
 
-dependencies = Dependency[]
+dependencies = []
 
 build_tarballs(
 	ARGS, name, version, sources, script, platforms, products, dependencies;
