@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "librtlsdr"
-version = v"0.6.0"
+version = v"2.0.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/steve-m/librtlsdr.git", "1f0eafe60445339703903af6d8814ffab7e73784")
+    GitSource("https://github.com/steve-m/librtlsdr.git", "619ac3186ea0ffc092615e1f59f7397e5e6f668c")
 ]
 
 dependencies = [
