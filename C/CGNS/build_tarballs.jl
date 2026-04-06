@@ -42,7 +42,7 @@ products = [
 dependencies = [
     # Without OpenMPI as build dependency the build fails on 32-bit platforms
     BuildDependency(PackageSpec(; name="OpenMPI_jll", version="4.1.8"); platforms=filter(p -> nbits(p)==32, platforms)),
-    Dependency("HDF5_jll"; compat="~2.0.0"),
+    Dependency("HDF5_jll"; compat="~2.1.1"),
 ]
 
 # We need at least GCC 5 for the HDF5 libraries
