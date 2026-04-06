@@ -1,11 +1,11 @@
 using BinaryBuilder, Pkg
 
 name = "CGNS"
-version = v"4.5.0"
+version = v"4.5.1"
 
 sources = [
     GitSource("https://github.com/CGNS/CGNS.git",
-              "c64b4abf7f5e9ca28c1afa3a4609efca961cee02"),
+              "bbce5f0ec594ae4d066893370965d3b77136b13c"),
 ]
 
 script = raw"""
@@ -42,9 +42,9 @@ products = [
 dependencies = [
     # Without OpenMPI as build dependency the build fails on 32-bit platforms
     BuildDependency(PackageSpec(; name="OpenMPI_jll", version="4.1.8"); platforms=filter(p -> nbits(p)==32, platforms)),
-    Dependency("HDF5_jll"; compat="~1.14.6"),
+    Dependency("HDF5_jll"; compat="~2.0.0"),
 ]
 
 # We need at least GCC 5 for the HDF5 libraries
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"5")
+               julia_compat="1.6", preferred_gcc_version=v"8")
