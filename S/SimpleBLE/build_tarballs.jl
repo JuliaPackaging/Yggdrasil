@@ -61,7 +61,8 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libsimplecble", :simplecble)
+    LibraryProduct("libsimplecble", :simplecble),
+    LibraryProduct("libsimpleble", :simpleble)
 ]
 
 # Dependencies that must be installed before this package can be built
