@@ -48,3 +48,5 @@ dependencies = [
 # We need at least GCC 5 for the HDF5 libraries
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"8")
+
+# build trigger: 1
