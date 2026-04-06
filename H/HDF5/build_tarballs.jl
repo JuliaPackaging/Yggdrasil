@@ -7,12 +7,14 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "HDF5"
-version = v"2.1.0"
+version = v"2.1.1"
+# We added support for MPIABI
+ygg_version = v"2.1.2"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/HDFGroup/hdf5/releases/download/$(version)/hdf5-$(version).tar.gz",
-                  "ce7f5515a95d588b8606c3fb50643f8b88ac52ffbbde9c63bb1edca6a256e964"),
+                  "efff93b5a904d66e8f626d7da60b5eedc9faf544be27dbabbaa87967b8ad798b"),
     DirectorySource("bundled"),
 ]
 
@@ -85,11 +87,22 @@ cmake_options=(
     -DHDF5_ENABLE_SZIP_SUPPORT=ON
     -DHDF5_ENABLE_ZLIB_SUPPORT=ON
     -DHDF5_USE_PREGEN=ON
-    -DMPI_HOME=${prefix}
     -DH5_FLOAT16_CONVERSION_FUNCS_LINK=${float16}
     -DH5_FLOAT16_CONVERSION_FUNCS_LINK_NO_FLAGS=${float16}
     -DH5_LDOUBLE_TO_FLOAT16_CORRECT=${float16}
 )
+
+if [[ ${bb_full_target} == *mpiabi* ]]; then
+    # MPIABI splits the C and Fortran MPI bindings
+    cmake_options+=(
+        -DMPI_C_COMPILER=mpicc
+        -DMPI_Fortran_COMPILER=mpifc
+    )
+else
+    cmake_options+=(
+        -DMPI_HOME=${prefix}
+    )
+fi
 
 # We have pregenerated the Fortran configurations for Linux.
 # (See <https://github.com/HDFGroup/hdf5/issues/6042>.)
@@ -249,7 +262,7 @@ cmake --install builddir
 install_license LICENSE
 """
 
-# The HDF5 2.0.0 release note state that MacOS 13 does not correct
+# The HDF5 2.0.0 release note state that MacOS 13 does not correctly
 # convert long double to float16, while MacOS 14 is fine.
 sources, script = require_macos_sdk("14.0", sources, script)
 
@@ -266,11 +279,6 @@ platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
-
-# Not yet supported
-filter!(platforms) do p
-    return p["mpi"] != "mpiabi"
-end
 
 # The products that we will ensure are always built
 products = [
@@ -314,6 +322,7 @@ dependencies = [
     Dependency("aws_c_s3_jll"; compat="0.11.2"),
     Dependency("dlfcn_win32_jll"; platforms=filter(Sys.iswindows, platforms)),
     Dependency("libaec_jll"; compat="1.1.4"), # This is the successor of szlib
+    Dependency("mpif_jll"; compat="0.1.5", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)), # MPI Fortran bindings
 ]
 append!(dependencies, platform_dependencies)
 
@@ -322,5 +331,5 @@ append!(dependencies, platform_dependencies)
 ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                augment_platform_block, clang_use_lld=false, julia_compat="1.10", preferred_gcc_version=v"12")

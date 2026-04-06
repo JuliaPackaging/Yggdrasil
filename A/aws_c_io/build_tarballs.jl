@@ -6,11 +6,11 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "aws_c_io"
-version = v"0.26.1"
+version = v"0.26.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-io.git", "bfb0819d3906502483611ce832a5ec6b897c8421"),
+    GitSource("https://github.com/awslabs/aws-c-io.git", "1ec8081f208ef8d51381889eda3bda9756fd5bb5"),
 ]
 
 # Bash recipe for building across all platforms
@@ -54,7 +54,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("s2n_tls_jll"; compat="1.6.4", platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
+    Dependency("s2n_tls_jll"; compat="1.7.0", platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
     Dependency("aws_c_cal_jll"; compat="0.9.13"),
     Dependency("aws_c_common_jll"; compat="0.12.6"),
     BuildDependency("aws_lc_jll"),

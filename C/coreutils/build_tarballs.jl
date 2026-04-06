@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "coreutils"
-version = v"9.9"
+version = v"9.10"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://ftpmirror.gnu.org/gnu/coreutils/coreutils-$(version.major).$(version.minor).tar.xz",
-                  "19bcb6ca867183c57d77155eae946c5eced88183143b45ca51ad7d26c628ca75"),
+                  "16535a9adf0b10037364e2d612aad3d9f4eca3a344949ced74d12faf4bd51d25"),
 ]
 
 # Bash recipe for building across all platforms
@@ -100,7 +100,7 @@ products = [
     ExecutableProduct("cp", :cp_bin),
     ExecutableProduct("ln", :ln),
     # [removed in 9.9] ExecutableProduct("runcon", :runcon),
-    ExecutableProduct("kill", :kill_bin),
+    # [removed in 9.10] ExecutableProduct("kill", :kill_bin),
     ExecutableProduct("mkfifo", :mkfifo),
     ExecutableProduct("tac", :tac),
     ExecutableProduct("echo", :echo),
@@ -148,7 +148,7 @@ products = [
     ExecutableProduct("join", :join_bin),
     ExecutableProduct("id", :id),
     ExecutableProduct("mktemp", :mktemp_bin),
-    ExecutableProduct("uptime", :uptime),
+    # [removed in 9.10] ExecutableProduct("uptime", :uptime),
     ExecutableProduct("stdbuf", :stdbuf),
     ExecutableProduct("uniq", :uniq),
     ExecutableProduct("dd", :dd),
