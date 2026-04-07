@@ -12,6 +12,7 @@ version = v"9.6.1"
 sources = [
     ArchiveSource("https://vtk.org/files/release/$(version.major).$(version.minor)/VTK-$(version).tar.gz",
                   "47ca9af899165a33b935533046acce7c0aa3c007f0b57880665bb89d9986543f"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -41,6 +42,9 @@ apk del cmake
 if [[ ${target} == *mingw* ]]; then
     apk add sqlite
 fi
+
+# powerpc64le refuses to treat long double multiplication as constexpr
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/long_double.patch
 
 # Build the tools for building VTK
 host_opts=(
