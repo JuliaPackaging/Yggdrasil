@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "mlir_jl_tblgen"
 repo = "https://github.com/JuliaLabs/MLIR.jl.git"
-version = v"0.0.10+1"
+version = v"0.0.10"
 
 llvm_versions = [v"14.0.6", v"15.0.7", v"16.0.6", v"17.0.6", v"18.1.7", v"19.1.1", v"20.1.8", v"21.1.8"]
 
