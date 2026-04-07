@@ -18,8 +18,8 @@ version = v"0.15.0"
 
 # Collection of sources required to build Musica
 sources = [
-    ArchiveSource("https://github.com/NCAR/musica/archive/refs/tags/v0.15.0.tar.gz",
-                "48a01c082d8db8731add80c691c7794e7069927fa17ec21e093ad1774b8cd30b")
+    GitSource("https://github.com/NCAR/musica.git",
+              "5908fb677962b5a4dcae9118139edd7cef70b09f")
 ]
 
 # Bash recipe for building across all platforms
