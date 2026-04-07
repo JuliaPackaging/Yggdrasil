@@ -17,6 +17,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 install_license simpleble/LICENSE.md
+# Currently building for windows does not work I suspect 
+# because we need MinGW 14 to have access to the right winrt
+# header files, so we download perbuilt binaries and use those
 if [[ ${target} == *mingw* ]]; then
     if [[ ${target} == i686* ]]; then
         cd windllx32/shared/bin/
