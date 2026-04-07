@@ -85,6 +85,7 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
     end
 
     filter!(p -> !(arch(p) == "aarch64" && os(p) == "freebsd"), platforms)
+    filter!(p -> arch(p) != "riscv64", platforms)
 
     for platform in platforms
         augmented_platform = deepcopy(platform)
