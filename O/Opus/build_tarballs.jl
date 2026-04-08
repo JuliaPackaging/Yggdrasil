@@ -3,12 +3,13 @@
 using BinaryBuilder
 
 name = "Opus"
-version = v"1.6.0"
+version_string = "1.6.1"
+version = VersionNumber(version_string)
 
 # Collection of sources required to build Opus
 sources = [
-    ArchiveSource("https://downloads.xiph.org/releases/opus/opus-$(version.major).$(version.minor).tar.gz",
-                  "b7637334527201fdfd6dd6a02e67aceffb0e5e60155bbd89175647a80301c92c"),
+    ArchiveSource("https://downloads.xiph.org/releases/opus/opus-$(version_string).tar.gz",
+                  "6ffcb593207be92584df15b32466ed64bbec99109f007c82205f0194572411a1"),
 ]
 
 # Bash recipe for building across all platforms

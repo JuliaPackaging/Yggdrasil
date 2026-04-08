@@ -3,18 +3,20 @@
 using BinaryBuilder
 
 name = "GnuPG"
-version = v"2.5.16"
+version = v"2.5.18"
 
 # Collection of sources required to build libgcrypt
 sources = [
     ArchiveSource("https://gnupg.org/ftp/gcrypt/gnupg/gnupg-$(version).tar.bz2",
-                  "05144040fedb828ced2a6bafa2c4a0479ee4cceacf3b6d68ccc75b175ac13b7e"),
+                  "0dbd64e0322fe1a4813360d46539d5f8daf4a8fa235cf5fce464e8b0214a7e4f"),
     DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/gnupg-*
+# `time_t` is used without including <time.h>
+atomic_patch -p1 ../patches/time_t.patch
 # Use Windows LDAP
 FLAGS=(LDAPLIBS="-lwldap32")
 if [[ "${target}" == *86*-linux-gnu ]]; then

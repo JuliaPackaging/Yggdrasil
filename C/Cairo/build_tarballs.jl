@@ -1,10 +1,11 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
-name = "Cairo"
 version = v"1.18.4"
 # We bumped the version number because we updated the dependencies (for new architectures)
-ygg_version = v"1.18.5"
+ygg_version = v"1.18.6"
+
+name = "Cairo"
 
 sources = [
     ArchiveSource("https://cairographics.org/releases/cairo-1.18.4.tar.xz",
@@ -13,6 +14,13 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+# Ensure LZO is not present in the build environment — meson auto-detects it,
+# so its mere presence would cause Cairo to link against GPL code.
+if [ -f "${includedir}/lzo/lzoconf.h" ]; then
+    echo "ERROR: LZO found in build environment!" >&2
+    exit 1
+fi
+
 cd $WORKSPACE/srcdir/cairo*
 
 # Add nipc_rmid_deferred_release = false for non linux builds to avoid running test
@@ -68,7 +76,6 @@ products = [
 # Some dependencies are needed only on Linux and FreeBSD
 linux_freebsd = filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)
 
-# Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("Xorg_xorgproto_jll"; platforms=linux_freebsd),
     Dependency("Glib_jll"; compat="2.84.0"),
@@ -79,9 +86,6 @@ dependencies = [
     Dependency("Bzip2_jll"; compat="1.0.9"),
     Dependency("Xorg_libXext_jll"; platforms=linux_freebsd),
     Dependency("Xorg_libXrender_jll"; platforms=linux_freebsd),
-    # Build with LZO errors on macOS:
-    # /workspace/destdir/include/lzo/lzodefs.h:2197:1: error: 'lzo_cta__3' declared as an array with a negative size
-    Dependency("LZO_jll"; compat="2.10.3", platforms=filter(!Sys.isapple, platforms)), 
     Dependency("Zlib_jll"; compat="1.2.12"),
     # libcairo needs libssp on Windows, which is provided by CSL, but not in all versions of
     # Julia.  Note that above we're copying libssp to libdir for the versions of Julia where

@@ -6,12 +6,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "Spot_julia"
-version_string = "2.13.1"
+version_string = "2.14.5"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://www.lrde.epita.fr/dload/spot/spot-$(version_string).tar.gz","b9d1de4abcd069f923e1a3263f58ccafcc54896aa818b455928ca2b1a4466dc9"),
+    ArchiveSource("http://www.lrde.epita.fr/dload/spot/spot-$(version_string).tar.gz","8703d33426eea50a8e3b7f4b984c05b8058cbff054b260863a1688980d8b8d19"),
     GitSource("https://github.com/MaximeBouton/spot_julia.git", "6ffcf4b64f64fc9e3363db22f4cc57a957d28128"),
     ]
     
@@ -94,8 +94,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(;name="libjulia_jll", version="1.10.16")),
-    Dependency("libcxxwrap_julia_jll"; compat="0.14.3")
+    BuildDependency(PackageSpec(;name="libjulia_jll", version="1.11.0")),
+    Dependency("libcxxwrap_julia_jll"; compat="0.14.7")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

@@ -27,6 +27,7 @@ const curl_hashes = Dict(
     v"8.16.0" => "a21e20476e39eca5a4fc5cfb00acf84bbc1f5d8443ec3853ad14c26b3c85b970",
     v"8.17.0" => "e8e74cdeefe5fb78b3ae6e90cd542babf788fa9480029cfcee6fd9ced42b7910",
     v"8.18.0" => "e9274a5f8ab5271c0e0e6762d2fce194d5f98acc568e4ce816845b2dcc0cf88f",
+    v"8.19.0" => "2a2c11db4c122691aa23b4363befda1bfd801770bfebf41e1d21cee4f2ab0f71",
 )
 
 function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=false)
@@ -53,12 +54,14 @@ function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=fal
         unpack_macosx_sdk = ""
     end
     macos_use_openssl = version >= v"8.15"
-
+	macos_use_sectrust = version >= v"8.17"
+	
     # Disable nss only for CURL < 8.16
     without_nss = version < v"8.16.0"
 
     config = "THIS_IS_CURL=$(this_is_curl_jll)\n"
     config *= "MACOS_USE_OPENSSL=$(macos_use_openssl)\n"
+	config *= "MACOS_USE_SECTRUST=$(macos_use_sectrust)\n"
     if with_zstd
 	config *= "HAVE_ZSTD=true\n"
     end
@@ -66,12 +69,18 @@ function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=fal
         config *= "WITHOUT_NSS=true\n"
     end
 
+    if version < v"8.19.0"
+        config *= "APPLY_MEMDUP_PATCH=true\n"
+    end
+
     # Bash recipe for building across all platforms
     script = config * unpack_macosx_sdk * raw"""
     cd $WORKSPACE/srcdir/curl-*
 
-    # Address <https://github.com/curl/curl/issues/12849>
-    atomic_patch -p1 $WORKSPACE/srcdir/memdup.patch
+    if [[ ${APPLY_MEMDUP_PATCH} == true ]]; then
+        # Address <https://github.com/curl/curl/issues/12849>
+        atomic_patch -p1 $WORKSPACE/srcdir/memdup.patch
+    fi
 
     # Holy crow we really configure the bitlets out of this thing
     FLAGS=(
@@ -108,15 +117,24 @@ function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=fal
 
         # We also need to tell it to link against schannel (native TLS library)
         FLAGS+=(--with-schannel)
-    elif [[ ${MACOS_USE_OPENSSL} == false && ${target} == *darwin* ]]; then
-        # On Darwin, we need to use SecureTransport (native TLS library) for pre-8.15 versions of CURL
-        FLAGS+=(--with-secure-transport)
+    elif [[ ${target} == *darwin* ]]; then
+        if [[ ${MACOS_USE_OPENSSL} == false ]]; then
+            # On Darwin, we need to use SecureTransport (native TLS library) for pre-8.15 versions of CURL
+            FLAGS+=(--with-secure-transport)
 
-        # We need to explicitly request a higher `-mmacosx-version-min` here, so that it doesn't
-        # complain about: `Symbol not found: ___isOSVersionAtLeast`
-        if [[ "${target}" == *x86_64* ]]; then
-            export CFLAGS=-mmacosx-version-min=10.11
+            # We need to explicitly request a higher `-mmacosx-version-min` here, so that it doesn't
+            # complain about: `Symbol not found: ___isOSVersionAtLeast`
+            if [[ "${target}" == *x86_64* ]]; then
+                export CFLAGS=-mmacosx-version-min=10.11
+            fi
+        else
+            # Otherwise we use OpenSSL (but without a certificate store on 8.15 and 8.16)
+            FLAGS+=(--with-openssl)
         fi
+        if [[ ${MACOS_USE_SECTRUST} == true ]]; then
+            # On Darwin, we use SecTrust for certificate validation starting with CURL 8.17
+            FLAGS+=(--with-apple-sectrust)
+        fi  
     else
         # On all other systems, we use OpenSSL
         FLAGS+=(--with-openssl)

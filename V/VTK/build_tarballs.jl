@@ -6,17 +6,21 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "VTK"
-version = v"9.5.2"
+version = v"9.6.1"
 
 # No sources, we're just building the testsuite
 sources = [
     ArchiveSource("https://vtk.org/files/release/$(version.major).$(version.minor)/VTK-$(version).tar.gz",
-                  "cee64b98d270ff7302daf1ef13458dff5d5ac1ecb45d47723835f7f7d562c989"),
+                  "47ca9af899165a33b935533046acce7c0aa3c007f0b57880665bb89d9986543f"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/VTK-*
+
+# We need at least cmake 3.27.1, so we add it as HostBuildDependency below
+apk del cmake
 
 # For the record:
 # If we want to build `libproj` ourselves (instead of depending on `PROJ_jll`), then we need the following:
@@ -38,6 +42,9 @@ cd ${WORKSPACE}/srcdir/VTK-*
 if [[ ${target} == *mingw* ]]; then
     apk add sqlite
 fi
+
+# powerpc64le refuses to treat long double multiplication as constexpr
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/long_double.patch
 
 # Build the tools for building VTK
 host_opts=(
@@ -71,6 +78,8 @@ opts=(
     -DVTK_REQUIRE_LARGE_FILE_SUPPORT=OFF
     -DVTK_USE_MPI=ON
     -DTEST_LFS_WORKS_RUN:STRING=0
+    -DHDF5_NO_FIND_PACKAGE_CONFIG_FILE=TRUE
+    -DHDF5_PREFER_PARALLEL=TRUE
     -DVTK_MODULE_USE_EXTERNAL_VTK_cgns=ON
     -DVTK_MODULE_USE_EXTERNAL_VTK_expat=ON
     -DVTK_MODULE_USE_EXTERNAL_VTK_exprtk=ON
@@ -145,7 +154,7 @@ vtk_modules = [
     # "nlohmannjson",
     "token",
     # "fast_float",
-    "doubleconversion",
+    # "doubleconversion",   [removed in 9.6.0]
     "loguru",
     "CommonCore",
     # "CommonCore-private-kit-links",
@@ -324,14 +333,16 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("CGNS_jll"; compat="4.5.0"),           # cgns
+    HostBuildDependency("CMake_jll"),
+
+    Dependency("CGNS_jll"; compat="4.5.1"),           # cgns
     Dependency("Expat_jll"; compat="2.7.1"),          # expat
     Dependency("FreeType2_jll"; compat="2.13.4"),     # freetype
-    Dependency("HDF5_jll"; compat="~1.14.6"),         # hdf5
+    Dependency("HDF5_jll"; compat="~2.1.1"),          # hdf5
     Dependency("JpegTurbo_jll"; compat="3.1.2"),      # jpeg
     Dependency("Libtiff_jll"; compat="4.7.1"),        # tiff
     Dependency("Lz4_jll"; compat="1.10.1"),           # lz4
-    Dependency("NetCDF_jll"; compat="401.900.300"),   # netcdf
+    Dependency("NetCDF_jll"; compat="401.1000.000"),  # netcdf
     Dependency("Ogg_jll"; compat="1.3.6"),            # ogg
     Dependency("PROJ_jll"; compat="902.600.200"),     # libproj
     Dependency("SQLite_jll"; compat="3.48.0"),        # sqlite

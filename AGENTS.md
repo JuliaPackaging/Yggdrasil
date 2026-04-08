@@ -69,6 +69,34 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
 - **DirectorySource**: For local patches. Place patches in `bundled/patches/` subdirectory.
 - Build **one package per recipe**. Don't bundle multiple packages—use dependencies instead.
 
+#### GitHub Archive Sources
+
+**IMPORTANT**: GitHub's automatically generated archive sources (`/archive/refs/tags/` URLs) do **not** have stable checksums and cannot be used. See [GitHub's announcement](https://github.blog/2023-02-21-update-on-the-future-stability-of-source-code-archives-and-hashes/).
+
+Instead:
+
+1. **Use GitSource with commit hash** (preferred):
+
+   ```julia
+   sources = [
+       GitSource("https://github.com/owner/repo.git", "full_commit_hash"),
+   ]
+   ```
+
+2. **Use official release assets**: If maintainers upload release tarballs (not auto-generated):
+
+   ```julia
+   sources = [
+       ArchiveSource("https://github.com/owner/repo/releases/download/v1.0.0/package-1.0.0.tar.gz", "sha256"),
+   ]
+   ```
+
+To find the commit hash for a tag:
+
+```bash
+git ls-remote https://github.com/owner/repo.git refs/tags/v1.0.0
+```
+
 ### Build Script
 
 The script runs in `x86_64-linux-musl` environment. Key variables:
@@ -173,7 +201,6 @@ Use `preferred_gcc_version=v"X"` for (see [available GCC versions](https://githu
 - **Musl bugs**: Use GCC ≥6 to avoid `posix_memalign` issues
 - Default is GCC 4.8.5 for maximum compatibility
 
-
 ### Optional Arguments
 
 ```julia
@@ -192,6 +219,7 @@ Products should not force using certain CPUs or instruction sets (e.g., the `mar
 They also should not use unsafe math operations or the "fast math" mode in compilters.
 
 To remove the `march` and `mcpu` flags in a list of files:
+
 ```bash
 for i in ${files}
     sed -i "s/-march[^ ]*//g" $i
@@ -200,6 +228,7 @@ done
 ```
 
 To remove the fast math and unsafe math optimizations in a list of files:
+
 ```bash
 for i in ${files}
     sed -i "s/-ffast-math//g" $i
@@ -428,15 +457,18 @@ For complex packages, you can also:
 ### Common Issues When Testing
 
 **JLL not found after `Pkg.develop`**:
+
 - Make sure the path is correct: `~/.julia/dev/PackageName_jll/`
 - Try `Pkg.resolve()` to refresh the manifest
 
 **Products not working**:
+
 - Check that products in `build_tarballs.jl` match actual files
 - Verify executables are actually executable: `ls -la`
 - On macOS, check for quarantine flags: `xattr -d com.apple.quarantine file`
 
 **Dependency conflicts**:
+
 - Use a fresh Julia environment for testing
 - Check that dependencies have correct compat bounds
 
@@ -464,4 +496,3 @@ For complex packages, you can also:
 - [Troubleshooting](https://docs.binarybuilder.org/stable/troubleshooting/)
 - [CONTRIBUTING.md](CONTRIBUTING.md) in this repository
 - [RootFS.md](RootFS.md) for compiler versions and cross-compilation details
-

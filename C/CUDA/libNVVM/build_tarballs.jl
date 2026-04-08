@@ -6,8 +6,8 @@ const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "libNVVM"
-version = v"4.0.5"
-cuda_version = v"13.0"
+version = v"4.0.7"
+cuda_version = v"13.2"
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/libnvvm-*
@@ -40,7 +40,7 @@ for platform in platforms
 
     augmented_platform = deepcopy(platform)
     augmented_platform["cuda"] = "$(cuda_version.major)"
-    
+
     sources = get_sources("cuda", ["libnvvm"]; version=cuda_version, platform=augmented_platform)
     push!(builds, (; platforms=[augmented_platform], sources))
 end

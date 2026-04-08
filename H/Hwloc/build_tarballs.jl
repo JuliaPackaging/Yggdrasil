@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Hwloc"
-version = v"2.12.2"
+version = v"2.13.0"
 
 # Collection of sources required to build hwloc
 sources = [
     ArchiveSource("https://download.open-mpi.org/release/hwloc/v$(version.major).$(version.minor)/hwloc-$(version).tar.bz2",
-                  "563e61d70febb514138af0fac36b97621e01a4aacbca07b86e7bd95b85055ba0")
+                  "52e936afb6ebd80f171f763fcf14f7b1f5ce98b125af5dd2f328b873b1fd0dab")
 ]
 
 # Bash recipe for building across all platforms
@@ -17,6 +17,13 @@ cd $WORKSPACE/srcdir/hwloc-*
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
+
+# hwloc's Makefile installs README/NEWS/COPYING directly into ${prefix} on Windows;
+# move them to a proper location
+if [ -f ${prefix}/README.txt ]; then
+    mkdir -p ${prefix}/share/doc/hwloc
+    mv -v ${prefix}/README.txt ${prefix}/NEWS.txt ${prefix}/COPYING.txt ${prefix}/share/doc/hwloc/
+fi
 """
 
 # These are the platforms we will build for by default, unless further
