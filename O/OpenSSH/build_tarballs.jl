@@ -1,16 +1,16 @@
 using BinaryBuilder
 
 name = "OpenSSH"
-version = v"10.2.1"
+version = v"10.3.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-10.2p1.tar.gz",
-                  "ccc42c0419937959263fa1dbd16dafc18c56b984c03562d2937ce56a60f798b2"),
-    ArchiveSource("https://github.com/PowerShell/Win32-OpenSSH/releases/download/v9.8.3.0p2-Preview/OpenSSH-Win32.zip",
-                  "9245c9ff62d6d11708cb3125097f8cd5627e995c225d0469cf2c3c6be4014952"; unpack_target = "i686-w64-mingw32"),
-    ArchiveSource("https://github.com/PowerShell/Win32-OpenSSH/releases/download/v9.8.3.0p2-Preview/OpenSSH-Win64.zip",
-                  "bd48fe985d400402c278c485db20e6a82bc4c7f7d8e0ef5a81128f523096530c"; unpack_target = "x86_64-w64-mingw32"),
+    ArchiveSource("https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-10.3p1.tar.gz",
+                  "56682a36bb92dcf4b4f016fd8ec8e74059b79a8de25c15d670d731e7d18e45f4"),
+    ArchiveSource("https://github.com/PowerShell/Win32-OpenSSH/releases/download/10.0.0.0p2-Preview/OpenSSH-Win32.zip",
+                  "c61d7fea20ddfe0fc50eb56210a66464557721120f7794ff9cc883b5ba526abd"; unpack_target = "i686-w64-mingw32"),
+    ArchiveSource("https://github.com/PowerShell/Win32-OpenSSH/releases/download/10.0.0.0p2-Preview/OpenSSH-Win64.zip",
+                  "23f50f3458c4c5d0b12217c6a5ddfde0137210a30fa870e98b29827f7b43aba5"; unpack_target = "x86_64-w64-mingw32"),
 ]
 
 # Bash recipe for building across all platforms
