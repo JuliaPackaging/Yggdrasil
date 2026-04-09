@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "libaec"
-version = v"1.1.5"
+version = v"1.1.6"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://gitlab.dkrz.de/k202009/libaec.git",
-              "d84ea9c83097a0806f73fc48b69ae7eb9a94525e")
+              "50b1537986a7394d5079ec427295614179d3eed6")
 ]
 
 # Bash recipe for building across all platforms
