@@ -183,7 +183,7 @@ dependencies = [
     Dependency("Lua_jll"; compat="~5.4.9"),
     Dependency("oneTBB_jll"; compat="2022.0.0"),
     Dependency("Expat_jll"; compat="2.6.5"),
-    Dependency("XML2_jll"; compat="~2.14.1"),
+    Dependency("XML2_jll"; compat="2.13 - 2.15", platforms=filter(p -> Sys.isapple(p) && arch(p) == "x86_64", platforms)),
     Dependency("libzip_jll"),
     Dependency("Bzip2_jll"),
     Dependency("Zlib_jll"),
