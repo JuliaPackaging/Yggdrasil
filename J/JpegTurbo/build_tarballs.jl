@@ -15,12 +15,20 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libjpeg-turbo*
 
-mkdir build
-cd build
+options=(
+    -DCMAKE_INSTALL_PREFIX=${prefix}
+    -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}"
+    -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+)
 
-cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-make -j${nproc}
-make install
+if [[ $target == riscv64-* ]]; then
+    # Disable SIMD to avoid build error
+    options+=(-DWITH_SIMD=OFF)
+fi
+
+cmake -Bbuild "${options[@]}"
+cmake --build build --parallel ${nproc}
+cmake --install build
 """
 
 # These are the platforms we will build for by default, unless further
