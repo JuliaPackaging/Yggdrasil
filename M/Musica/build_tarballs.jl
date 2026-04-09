@@ -14,12 +14,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "Musica"
-version = v"0.14.5"
+version = v"0.15.0"
 
 # Collection of sources required to build Musica
 sources = [
     GitSource("https://github.com/NCAR/musica.git",
-              "99939404e5953450ceb2b377db8d20aaba09bd2a"),
+              "5908fb677962b5a4dcae9118139edd7cef70b09f")
 ]
 
 # Bash recipe for building across all platforms
