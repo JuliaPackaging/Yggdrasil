@@ -12,8 +12,8 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 # needed for CUDA cuda, and would produce a giant amount of artifacts)
 
 name = "cufinufft"
-version = v"2.5.0"
-commit_hash = "8b7ac66e617ea317cd42366ac27c536793131696"
+version = v"2.5.1"
+commit_hash = "679d9ae59fe0146c50da360e5a3fee70ae3aa646"
 preferred_gcc_version=v"11"
 
 # Collection of sources required to complete build
