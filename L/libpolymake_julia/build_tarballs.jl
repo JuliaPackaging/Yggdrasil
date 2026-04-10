@@ -18,7 +18,7 @@ julia_compat = libjulia_julia_compat(julia_versions)
 # Collection of sources required to build libpolymake_julia
 sources = [
     GitSource("https://github.com/oscar-system/libpolymake-julia.git",
-              "aa63571e0940fee4f76d9b903d6aca94d0ef5574"),
+              "623082bd8069c26dc381af94cf713f2da9ca5f0c"),
 ]
 
 # Bash recipe for building across all platforms
