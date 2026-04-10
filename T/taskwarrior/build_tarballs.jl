@@ -2,10 +2,10 @@ using BinaryBuilder
 using Pkg
 
 name = "taskwarrior"
-version = v"3.2.0"
+version = v"3.4.2"
 
 sources = [
-    GitSource("https://github.com/GothenburgBitFactory/taskwarrior", "7a092bea037517be4dc839ee8141b8d6b00738eb"),
+    GitSource("https://github.com/GothenburgBitFactory/taskwarrior", "48fb891c30fd7c572db3a4cff46e3435c75a1b6c"),
     DirectorySource("./bundled"),
 ]
 
