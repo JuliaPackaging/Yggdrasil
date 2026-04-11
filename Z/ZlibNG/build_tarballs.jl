@@ -3,19 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "ZlibNG"
-version = v"2.3.2"
+version = v"2.3.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/zlib-ng/zlib-ng.git", "6d9f3dc072369dc719a5fbe71d4e086a96a680bd"),
-    DirectorySource("bundled"),
+    GitSource("https://github.com/zlib-ng/zlib-ng.git", "12731092979c6d07f42da27da673a9f6c7b13586"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/zlib-ng
-# Correct Power build (see <https://github.com/zlib-ng/zlib-ng/issues/1648>)
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/power.patch
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
