@@ -48,7 +48,10 @@ then
     # Disabling `copyfilerange` via a configure option does not work. Configure enables it anyway. We disable it manually.
     perl -pi -e 's/^\s*if test "x\$build_copyfilerange" = xyes; then$/if false; then/' configure
 fi
-if [[ ${target} == i686-linux-gnu* ]]; then
+if [[ ${target} == armv6l-linux-gnu* ||
+      ${target} == armv7l-linux-gnu* ||
+      ${target} == i686-linux-gnu* ]]
+then
     # Our <fts.h> is too old for 64-bit LFS on 32-bit systems; disable fts.
     configure_flags+=(ac_cv_func_fts_open=no)
 fi
