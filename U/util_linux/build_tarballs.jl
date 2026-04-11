@@ -36,8 +36,7 @@ if [[ ${target} == powerpc64le-linux-gnu* || ${target} == x86_64-linux-gnu* || $
     configure_flags+=(--disable-lsfd)
 fi
 if [[ ${target} == aarch64-linux-gnu* ||
-      ${target} == armv6l-linux-gnu* ||
-      ${target} == armv7l-linux-gnu* ||
+      ${target} == arm-linux-gnu* ||
       ${target} == i686-linux-gnu* ||
       ${target} == powerpc64le-linux-gnu* ||
       ${target} == x86_64-linux-gnu* ||
@@ -48,8 +47,7 @@ then
     # Disabling `copyfilerange` via a configure option does not work. Configure enables it anyway. We disable it manually.
     perl -pi -e 's/^\s*if test "x\$build_copyfilerange" = xyes; then$/if false; then/' configure
 fi
-if [[ ${target} == armv6l-linux-gnu* ||
-      ${target} == armv7l-linux-gnu* ||
+if [[ ${target} == arm-linux-gnu* ||
       ${target} == i686-linux-gnu* ]]
 then
     # Our <fts.h> is too old for 64-bit LFS on 32-bit systems; disable fts.
@@ -57,7 +55,6 @@ then
 fi
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-makeinstall-chown --enable-fdformat ${configure_flags[@]}
-
 make -j${nproc}
 make install
 """
