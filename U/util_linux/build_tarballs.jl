@@ -36,6 +36,8 @@ if [[ ${target} == powerpc64le-linux-gnu* || ${target} == x86_64-linux-gnu* || $
     configure_flags+=(--disable-lsfd)
 fi
 if [[ ${target} == aarch64-linux-gnu* ||
+      ${target} == armv6l-linux-gnu* ||
+      ${target} == armv7l-linux-gnu* ||
       ${target} == i686-linux-gnu* ||
       ${target} == powerpc64le-linux-gnu* ||
       ${target} == x86_64-linux-gnu* ||
