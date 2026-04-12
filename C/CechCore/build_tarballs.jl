@@ -23,7 +23,6 @@ cmake --install build
 """
 
 platforms = expand_cxxstring_abis(supported_platforms())
-filter!(p -> arch(p) != "riscv64", platforms)
 
 products = [
     LibraryProduct("libcech", :libcech),
@@ -41,5 +40,5 @@ build_tarballs(
     products,
     dependencies;
     julia_compat = "1.6",
-    preferred_gcc_version = v"9",
+    preferred_gcc_version = v"12",   # was v"9"; GCC ≥ 12 required for riscv64
 )
