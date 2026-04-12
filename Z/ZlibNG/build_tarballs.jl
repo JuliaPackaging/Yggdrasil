@@ -17,8 +17,20 @@ cd $WORKSPACE/srcdir/zlib-ng
 # Architecture-specific optimization flags
 # These default to ON in zlib-ng, but we set them explicitly to ensure
 # they are not missed during cross-compilation.
-CMAKE_EXTRA_OPTIONS=()
+# We also force-set compiler flag variables and detection results because
+# cmake's check_c_compiler_flag tests fail during cross-compilation.
+# On aarch64, NEON is always available so no special compiler flag is needed,
+# but BinaryBuilder rejects -march flags, so we patch the cmake detection
+# to use empty flags instead.
+CMAKE_EXTRA_OPTIONS=(
+    -DWITH_RUNTIME_CPU_DETECTION=ON
+)
 if [[ "${target}" == aarch64-* ]]; then
+    # Patch cmake detection to avoid -march flags that BinaryBuilder rejects.
+    # NEON and CRC32 are always available on aarch64, no special flag needed.
+    sed -i 's/-march=armv8-a+simd//g' cmake/detect-intrinsics.cmake
+    sed -i 's/-march=armv8-a+crc+simd//g' cmake/detect-intrinsics.cmake
+    sed -i 's/-march=armv8-a+crc//g' cmake/detect-intrinsics.cmake
     CMAKE_EXTRA_OPTIONS+=(
         -DWITH_NEON=ON
         -DWITH_ARMV8=ON
@@ -48,7 +60,7 @@ cmake -B build \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
-    -DZLIB_ENABLE_TESTS=OFF \
+    -DBUILD_TESTING=OFF \
     "${CMAKE_EXTRA_OPTIONS[@]}"
 cmake --build build --parallel ${nproc}
 cmake --install build
