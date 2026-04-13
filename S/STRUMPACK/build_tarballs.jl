@@ -14,7 +14,6 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/STRUMPACK
-mkdir build && cd build
 
 # Set LD_LIBRARY_PATH so CMake can find the libraries
 export LD_LIBRARY_PATH="${libdir}:${LD_LIBRARY_PATH}"
