@@ -15,9 +15,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/STRUMPACK
 
-# Set LD_LIBRARY_PATH so CMake can find the libraries
-export LD_LIBRARY_PATH="${libdir}:${LD_LIBRARY_PATH}"
-
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
