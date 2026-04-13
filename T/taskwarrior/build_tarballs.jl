@@ -30,6 +30,7 @@ cmake \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DFETCHCONTENT_SOURCE_DIR_CORROSION=${WORKSPACE}/srcdir/taskwarrior/src/taskchampion-cpp/corrosion \
     -DRust_COMPILER=$(which ${RUSTC}) \
     -DRust_CARGO_TARGET=${CARGO_BUILD_TARGET} \
     ..
