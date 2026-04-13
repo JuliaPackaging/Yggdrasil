@@ -15,6 +15,13 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/STRUMPACK
 
+# Fix FindMETIS.cmake: when IDXTYPEWIDTH is not #define'd in metis.h
+# (METIS_jll passes it as a compiler flag), metis_idxwidth is empty and
+# the unquoted ${metis_idxwidth} causes a "REGEX REPLACE needs at least 6
+# arguments" error. Wrap the problematic block in an if() guard.
+sed -i 's/string( REGEX REPLACE ${idxwidth_pattern}/if(metis_idxwidth)\n  string( REGEX REPLACE ${idxwidth_pattern}/' cmake/Modules/FindMETIS.cmake
+sed -i 's/METIS_IDXWIDTH_STRING ${metis_idxwidth} )/METIS_IDXWIDTH_STRING "${metis_idxwidth}" )\n  endif()/' cmake/Modules/FindMETIS.cmake
+
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
