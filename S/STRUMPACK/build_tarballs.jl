@@ -58,7 +58,10 @@ cmake --install build
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+# NOTE: 32-bit platforms are excluded because STRUMPACK defines separate
+# overloads for `unsigned int` and `std::size_t` which are the same type
+# on 32-bit, causing redefinition errors (upstream bug).
+platforms = filter(p -> nbits(p) == 64, supported_platforms())
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
