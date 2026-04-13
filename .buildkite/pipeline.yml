@@ -3,7 +3,7 @@ steps:
     plugins:
       - JuliaCI/julia#v1:
           persist_depot_dirs: packages,artifacts,compiled
-          version: "1.12.4"
+          version: "1.12.5"
           artifacts_size_limit: "214748364800" # 200GB
       - JuliaCI/merge-commit: ~
       - staticfloat/forerunner#v1:
@@ -13,6 +13,9 @@ steps:
           path_processor: .buildkite/path_processors/per-project
           target: .buildkite/generator.jl
           target_type: command
+    artifacts:
+      - "*.meta.json"
+      - "*.platforms.list"
     agents:
       queue: "yggdrasil"
       arch:  "x86_64"
