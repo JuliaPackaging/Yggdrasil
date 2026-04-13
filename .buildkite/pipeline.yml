@@ -14,6 +14,9 @@ steps:
           path_processor: .buildkite/path_processors/per-project
           target: .buildkite/generator.jl
           target_type: command
+    artifacts:
+      - "*.meta.json"
+      - "*.platforms.list"
     agents:
       queue: "yggdrasil"
       arch:  "x86_64"
