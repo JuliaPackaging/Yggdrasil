@@ -25,21 +25,15 @@ if [[ ${target} == *mingw* ]]; then
     else
         cd windllx64/shared/bin/
     fi
-    ln simpleble.dll libsimpleble.dll
-    ln simplecble.dll libsimplecble.dll
     chmod +x simpleble.dll simplecble.dll
     mkdir ${prefix}/bin || echo "Its fine"
-    cp -a simpleble.dll libsimpleble.dll simplecble.dll libsimplecble.dll ${prefix}/bin
+    cp -a simpleble.dll simplecble.dll ${prefix}/bin
 else
     cd simpleble/
     cmake -S simplecble -B build_simplecble -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=TRUE
     cmake --build build_simplecble --parallel ${nproc}
     cd build_simplecble/
     make install
-    cd ${prefix}
-    cd lib
-    ln libsimpleble.so simpleble.so
-    ln libsimplecble.so simplecble.so
 fi
 """
 
@@ -54,10 +48,8 @@ platforms = expand_cxxstring_abis(platforms)
 # name the products different things but all products
 # must be present
 products = [
-    LibraryProduct("libsimplecble", :simplecble),
-    LibraryProduct("libsimpleble", :simpleble),
-    LibraryProduct("simplecble", :simplecble),
-    LibraryProduct("simpleble", :simpleble)
+    LibraryProduct(["libsimplecble", "simplecble"], :simplecble),
+    LibraryProduct(["libsimpleble", "simpleble"], :simpleble)
 ]
 
 # Dependencies that must be installed before this package can be built
