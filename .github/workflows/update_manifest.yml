@@ -30,7 +30,7 @@ jobs:
           Pkg.instantiate()
           Pkg.precompile()
       - name: Generate commit message
-        run: julia --project=.ci --color=yes .ci/update_manifest.jl
+        run: julia --project=.ci/bb1_project --color=yes .ci/bb1_project/update_manifest.jl
         id: commit_message
       - name: Show git status
         run: git status

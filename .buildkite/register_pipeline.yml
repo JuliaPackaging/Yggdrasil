@@ -23,7 +23,7 @@ steps:
     plugins:
       - JuliaCI/julia#v1:
           persist_depot_dirs: packages,artifacts,compiled
-          version: "1.12.4"
+          version: "1.12.6"
       - JuliaCI/merge-commit: ~
     timeout_in_minutes: 90
     concurrency: 1
