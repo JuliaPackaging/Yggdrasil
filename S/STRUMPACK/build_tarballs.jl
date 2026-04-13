@@ -33,17 +33,18 @@ sed -i 's/string( REGEX REPLACE ${idxwidth_pattern}/if(metis_idxwidth)\n  string
 sed -i 's/METIS_IDXWIDTH_STRING ${metis_idxwidth} )/METIS_IDXWIDTH_STRING "${metis_idxwidth}" )\n  endif()/' cmake/Modules/FindMETIS.cmake
 
 # On Darwin, mixing clang++ link with gfortran runtime can pull in
-# libgcc_ext.10.5.dylib that ld64.lld rejects. Force GCC/G++ in CMake
-# directly (toolchain files can ignore CC/CXX environment variables).
-cmake_compiler_flags=""
+# libgcc_ext.10.5.dylib that ld64.lld rejects. Override the compilers in the
+# target toolchain itself so it cannot be reset back to clang by toolchain defaults.
 if [[ "${target}" == *-apple-* ]]; then
-    cmake_compiler_flags="-DCMAKE_C_COMPILER=${target}-gcc -DCMAKE_CXX_COMPILER=${target}-g++"
+    cat >> "${CMAKE_TARGET_TOOLCHAIN}" <<EOF
+set(CMAKE_C_COMPILER "${target}-gcc" CACHE STRING "" FORCE)
+set(CMAKE_CXX_COMPILER "${target}-g++" CACHE STRING "" FORCE)
+EOF
 fi
 
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    ${cmake_compiler_flags} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
     -DSTRUMPACK_USE_MPI=OFF \
