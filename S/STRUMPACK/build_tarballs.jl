@@ -29,7 +29,7 @@ cmake -B build \
     -DSTRUMPACK_USE_HIP=OFF \
     -DSTRUMPACK_USE_SYCL=OFF \
     -DTPL_BLAS_LIBRARIES="-lblastrampoline" \
-    -DTPL_LAPACK_LIBRARIES="-llapack -lblastrampoline -fopenmp -lgfortran" \
+    -DTPL_LAPACK_LIBRARIES="-lblastrampoline" \
     -DTPL_ENABLE_SLATE=OFF \
     -DTPL_ENABLE_PARMETIS=OFF \
     -DTPL_ENABLE_SCOTCH=OFF \
@@ -42,18 +42,20 @@ cmake -B build \
     -DTPL_ENABLE_KBLAS=OFF \
     -DTPL_ENABLE_PAPI=OFF \
     -DTPL_ENABLE_MATLAB=OFF \
+    -Dmetis_PREFIX=${prefix} \
     -DSTRUMPACK_COUNT_FLOPS=OFF \
     -DSTRUMPACK_TASK_TIMERS=OFF \
     -DSTRUMPACK_MESSAGE_COUNTER=OFF \
     -DSTRUMPACK_BUILD_TESTS=OFF
 
-make -j${nproc}
-make install
+cmake --build build --parallel ${nproc}
+cmake --install build
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -66,7 +68,10 @@ dependencies = [
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
     Dependency(PackageSpec(name="LAPACK_jll", uuid="51474c39-65e3-53ba-86ba-03b1b862ec14")),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    Dependency("METIS_jll"; compat="5.1.3"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+    julia_compat="1.6",
+    preferred_gcc_version=v"8")
