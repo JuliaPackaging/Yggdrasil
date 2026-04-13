@@ -9,8 +9,7 @@ version = v"0.12.1"
 sources = [
     GitSource("https://github.com/simpleble/simpleble.git", "d1b7110644f0f9cb850d6ab43f7d461ca9d4031e"),
     ArchiveSource("https://github.com/simpleble/simpleble/releases/download/v$(version)/libsimplecble_windows-x64.zip", "d6aa05c6a8f0ea710419dc82ea00c4ebbcd37a4d9644f70d79b94b6baf03c888"; unpack_target="windllx64"),
-    ArchiveSource("https://github.com/simpleble/simpleble/releases/download/v$(version)/libsimplecble_windows-x86.zip", "1be89fda486cdcecfeda78b1c78ed1c3e502544f6d9fbbd4362b9844cfb435c2"; unpack_target="windllx32"),
-    # DirectorySource("./bundled")
+    ArchiveSource("https://github.com/simpleble/simpleble/releases/download/v$(version)/libsimplecble_windows-x86.zip", "1be89fda486cdcecfeda78b1c78ed1c3e502544f6d9fbbd4362b9844cfb435c2"; unpack_target="windllx32")
 ]
 
 # Bash recipe for building across all platforms
