@@ -45,8 +45,7 @@ cmake -B build \
     -DSTRUMPACK_COUNT_FLOPS=OFF \
     -DSTRUMPACK_TASK_TIMERS=OFF \
     -DSTRUMPACK_MESSAGE_COUNTER=OFF \
-    -DSTRUMPACK_BUILD_TESTS=OFF \
-    ..
+    -DSTRUMPACK_BUILD_TESTS=OFF
 
 make -j${nproc}
 make install
