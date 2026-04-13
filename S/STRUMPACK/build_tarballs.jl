@@ -32,6 +32,14 @@ sed -i 's/LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/LIBRARY DESTINATION ${CMAK
 sed -i 's/string( REGEX REPLACE ${idxwidth_pattern}/if(metis_idxwidth)\n  string( REGEX REPLACE ${idxwidth_pattern}/' cmake/Modules/FindMETIS.cmake
 sed -i 's/METIS_IDXWIDTH_STRING ${metis_idxwidth} )/METIS_IDXWIDTH_STRING "${metis_idxwidth}" )\n  endif()/' cmake/Modules/FindMETIS.cmake
 
+# On Darwin, mixing clang++ link with gfortran runtime can pull in
+# libgcc_ext.10.5.dylib that ld64.lld rejects. Use GCC/G++ for C/C++ too,
+# matching the Fortran toolchain and avoiding the incompatible linker input.
+if [[ "${target}" == *-apple-* ]]; then
+    export CC="${target}-gcc"
+    export CXX="${target}-g++"
+fi
+
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
