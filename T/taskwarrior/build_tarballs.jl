@@ -20,6 +20,21 @@ pushd src/taskchampion-cpp/corrosion && \
     atomic_patch -p1 ../../../../patches/corrosion-remove-rustup-check.patch && \
     popd
 
+# Build cxxbridge for the build host so Corrosion does not try to execute a
+# target binary while generating C++ bridge sources.
+cxx_version=$(awk '
+    /^\[\[package\]\]$/ { pkg="" }
+    $1 == "name" && $2 == "=" { gsub(/"/, "", $3); pkg=$3 }
+    pkg == "cxx" && $1 == "version" && $2 == "=" {
+        gsub(/"/, "", $3)
+        print $3
+        exit
+    }
+' Cargo.lock)
+test -n "${cxx_version}"
+cargo install cxxbridge-cmd --version "${cxx_version}" --locked --root "${WORKSPACE}/host-tools" --target "${rust_host}"
+export PATH="${WORKSPACE}/host-tools/bin:${PATH}"
+
 # Needs at least CMake 3.22, BB image has 3.21 currently
 apk del cmake
 
