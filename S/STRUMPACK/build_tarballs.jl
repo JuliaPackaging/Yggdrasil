@@ -15,6 +15,16 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/STRUMPACK
 
+# FortranCInterface_VERIFY fails on Apple because the verification link step
+# pulls in an incompatible libgcc_ext from the cross toolchain. The generated
+# header is still created by FortranCInterface_HEADER, so the verify step can be
+# skipped safely for this package.
+sed -i 's/FortranCInterface_VERIFY(CXX)/if(NOT APPLE)\n  FortranCInterface_VERIFY(CXX)\nendif()/' CMakeLists.txt
+
+# Windows DLLs are installed as RUNTIME products, so make sure the shared
+# library lands in ${bindir} where BinaryBuilder looks for it.
+sed -i 's/LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}\n  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}/' CMakeLists.txt
+
 # Fix FindMETIS.cmake: when IDXTYPEWIDTH is not #define'd in metis.h
 # (METIS_jll passes it as a compiler flag), metis_idxwidth is empty and
 # the unquoted ${metis_idxwidth} causes a "REGEX REPLACE needs at least 6
