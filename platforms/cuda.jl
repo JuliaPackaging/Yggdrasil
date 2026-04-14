@@ -315,4 +315,31 @@ function cuda_nvcc_redist_source(cuda_ver, arch)
     end
 end
 
+"""
+    cuda_nvvm_redist_source(cuda_ver, arch)
+
+Returns an ArchiveSource for the official NVIDIA libnvvm redist of the given CUDA version and architecture.
+"""
+function cuda_nvvm_redist_source(cuda_ver, arch)
+    if arch == "x86_64"
+        if cuda_ver == "13.0"
+            # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_13.0.0.json
+            ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/libnvvm/linux-x86_64/libnvvm-linux-x86_64-13.0.48-archive.tar.xz",
+                          "8c5676a65a2e6d13e3c229f025af18677de46c220d77992fe932200fa798b19b")
+        elseif cuda_ver == "13.1"
+            # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_13.1.0.json
+            ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/libnvvm/linux-x86_64/libnvvm-linux-x86_64-13.1.80-archive.tar.xz",
+                        "1a102f6658b6ecaa7a3aae1aa85a61a9aa6ba197be9f6b185d906deb2a6c5afd")
+        elseif cuda_ver == "13.2"
+            # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_13.2.0.json
+            ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/libnvvm/linux-x86_64/libnvvm-linux-x86_64-13.2.51-archive.tar.xz",
+                          "e013fce38130d2337ea695aadc5ddd5dcfb78f9107903d72492b9819539749bb")
+        else
+            error("No CUDA libnvvm redist available for CUDA version $cuda_ver on arch $arch")
+        end
+    else
+        error("No CUDA libnvvm redist available for arch $arch")
+    end
+end
+
 end

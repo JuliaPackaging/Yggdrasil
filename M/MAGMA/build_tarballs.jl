@@ -36,13 +36,19 @@ if [[ "${target}" == aarch64-linux-* ]]; then
    
    # Make sure we use host CUDA executable by copying from the x86_64 CUDA redist
    NVCC_DIR=(/workspace/srcdir/cuda_nvcc-*-archive)
+   NVVM_DIR=(/workspace/srcdir/libnvvm-*-archive)
    rm -rf ${prefix}/cuda/bin
    cp -r ${NVCC_DIR}/bin ${prefix}/cuda/bin
 
    rm -rf ${prefix}/cuda/nvvm/bin
    if [[ -d "${NVCC_DIR}/nvvm/bin" ]]; then
-      # Copy nvvm only if it exists. CUDA 13+ requires a separate download for nvvm.
+      # CUDA 12 bundles nvvm, so we can copy it form there.
       cp -r ${NVCC_DIR}/nvvm/bin ${prefix}/cuda/nvvm/bin
+   elif [[ -d "${NVVM_DIR}/nvvm/bin" ]]; then
+      # CUDA 13+ has a separate download for nvvm.
+      cp -r ${NVVM_DIR}/nvvm/bin ${prefix}/cuda/nvvm/bin
+   else
+      exit 1
    fi
 
    # Workaround failed execution of sizeptr in cross-compile builds
@@ -102,6 +108,9 @@ for platform in platforms
 
     if arch(platform) == "aarch64"
         push!(platform_sources, CUDA.cuda_nvcc_redist_source(cuda_ver, "x86_64"))
+        if VersionNumber(cuda_ver) >= v"13.0"
+            push!(platform_sources, CUDA.cuda_nvvm_redist_source(cuda_ver, "x86_64"))
+        end
     end
 
     build_tarballs(ARGS, name, version, platform_sources, script, [platform],
