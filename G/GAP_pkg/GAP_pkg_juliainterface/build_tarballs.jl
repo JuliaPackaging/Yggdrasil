@@ -18,8 +18,6 @@ version = offset_version(upstream_version, offset)
 # Collection of sources required to build this JLL
 sources = [
     GitSource("https://github.com/oscar-system/GAP.jl", "43ec515a9c5e8f087e32c87e5412c600b8329a85"),
-    ArchiveSource("https://julialang-s3.julialang.org/bin/musl/x64/1.6/julia-1.6.7-musl-x86_64.tar.gz",
-                  "d71ccc5aa36cf691616a40bf6fb960fac5620ce53d2f90a95947b90dec509433"), # some julia supported by GAP.jl for the host system
 ]
 
 # Bash recipe for building across all platforms
@@ -36,10 +34,10 @@ cp bin/*/*.so ${prefix}/lib/gap/
 cp -r src ${prefix}/
 
 # setup julia with GAP.jl for the host system (needed for building the manual)
-mv ${WORKSPACE}/srcdir/julia-* ${WORKSPACE}/srcdir/julia
-export PATH="${PATH}:${WORKSPACE}/srcdir/julia/bin"
+export JULIA_DEPOT_PATH="${WORKSPACE}/.julia"
+export JULIAUP_DEPOT_PATH="${JULIA_DEPOT_PATH}/juliaup"
 cd ../..
-LD_LIBRARY_PATH= julia --project=@. -e "using Pkg; Pkg.instantiate(); using GAP; GAP.create_gap_sh(\"${WORKSPACE}/gap_sh\")"
+julia --project=@. -e "using Pkg; Pkg.instantiate(); using GAP; GAP.create_gap_sh(\"${WORKSPACE}/gap.sh\")"
 
 # build the manual
 cd pkg/JuliaInterface
@@ -68,6 +66,7 @@ platforms = gap_platforms(expand_julia_versions=true)
 dependencies = [
     Dependency("GAP_jll", gap_version),
     BuildDependency(PackageSpec(;name="libjulia_jll", version="1.11.0")),
+    HostBuildDependency("juliaup_jll"),
 ]
 
 # The products that we will ensure are always built
