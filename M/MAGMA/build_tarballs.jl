@@ -39,8 +39,9 @@ if [[ "${target}" == aarch64-linux-* ]]; then
    rm -rf ${prefix}/cuda/bin
    cp -r ${NVCC_DIR}/bin ${prefix}/cuda/bin
 
+   rm -rf ${prefix}/cuda/nvvm/bin
    if [[ -d "${NVCC_DIR}/nvvm/bin" ]]; then
-      rm -rf ${prefix}/cuda/nvvm/bin
+      # Copy nvvm only if it exists. CUDA 13+ requires a separate download for nvvm.
       cp -r ${NVCC_DIR}/nvvm/bin ${prefix}/cuda/nvvm/bin
    fi
 
