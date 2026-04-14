@@ -13,7 +13,7 @@ sources = [
     ArchiveSource("$(url_prefix)x86_64-apple-darwin.tar.gz", "d7308c504afa58eb4aa2bd0c655252c324aea04891ac079b6b8764b33fa7dc15"; unpack_target="x86_64-apple-darwin14"),
     ArchiveSource("$(url_prefix)aarch64-apple-darwin.tar.gz", "adf795d7c2ac9d93677517fd58b119e9bb5bc8fc5143ac9b581a6f8264def8da"; unpack_target="aarch64-apple-darwin20"),
     ArchiveSource("$(url_prefix)x86_64-pc-windows-msvc.zip", "fe28df5993a9f9830b1e7290e2e341becf3c91366941b73b4322a05e4f91585c"; unpack_target="x86_64-w64-mingw32"),
-    FileSource("https://raw.githubusercontent.com/qdrant/qdrant/refs/tags/v$(qdrant_ver)/LICENSE", "5fea605a17e4e927542d0031a7c82e557c89f13a0c6e44412920d5d2483afc48"),
+    FileSource("https://raw.githubusercontent.com/qdrant/qdrant/refs/tags/v$(qdrant_ver)/LICENSE", "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"),
     ]
 
 # Bash recipe for building across all platforms
