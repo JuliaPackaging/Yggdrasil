@@ -10,7 +10,6 @@ version = v"26.4.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/Project-OSRM/osrm-backend.git", "d3e0a354350b3e370e9124d43bcf6e22e85cf11c"),
-    get_macos_sdk_sources("14.5")...,
 ]
 
 script = raw"""
@@ -44,19 +43,6 @@ fi
 
 # Apple specific handling
 if [[ "${target}" == *-apple-darwin* ]]; then
-    ### SDK extraction — extract to a separate directory and point the toolchain at it
-    apple_sdk_root=${WORKSPACE}/srcdir/MacOSX14.5.sdk
-    mkdir -p "${apple_sdk_root}"
-    echo "Extracting MacOSX14.5.sdk.tar.xz (this may take a while)"
-    tar --extract \
-        --file=${WORKSPACE}/srcdir/MacOSX14.5.sdk.tar.xz \
-        --directory="${apple_sdk_root}" \
-        --strip-components=1 \
-        --warning=no-unknown-keyword \
-        MacOSX14.5.sdk/System \
-        MacOSX14.5.sdk/usr
-    sed -i "s!/opt/${target}/${target}/sys-root!${apple_sdk_root}!" ${CMAKE_TARGET_TOOLCHAIN}
-    sed -i "s!/opt/${target}/${target}/sys-root!${apple_sdk_root}!" /opt/bin/${bb_full_target}/${target}-clang++
     export MACOSX_DEPLOYMENT_TARGET=14.5
 
     ### CMake flags
@@ -161,13 +147,15 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("boost_jll"; compat = "~1.87.0"),
+    Dependency("boost_jll"; compat = "=1.87.0"),
     Dependency("Lua_jll"; compat = "~5.4.9"),
     Dependency("oneTBB_jll"; compat = "2022.0.0"),
     Dependency("Expat_jll"; compat = "2.6.5"),
     Dependency("Bzip2_jll"),
     Dependency("Zlib_jll"),
 ]
+
+sources, script = require_macos_sdk("14.5", sources, script)
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(
