@@ -5,6 +5,7 @@ using BinaryBuilder, Pkg
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
+include(joinpath(YGGDRASIL_DIR, "C/CUDA", "common.jl"))
 
 name = "MAGMA"
 version = v"2.10.0"
@@ -36,20 +37,17 @@ if [[ "${target}" == aarch64-linux-* ]]; then
    
    # Make sure we use host CUDA executable by copying from the x86_64 CUDA redist
    NVCC_DIR=(/workspace/srcdir/cuda_nvcc-*-archive)
-   NVVM_DIR=(/workspace/srcdir/libnvvm-*-archive)
    rm -rf ${prefix}/cuda/bin
    cp -r ${NVCC_DIR}/bin ${prefix}/cuda/bin
 
-   rm -rf ${prefix}/cuda/nvvm/bin
-   if [[ -d "${NVCC_DIR}/nvvm/bin" ]]; then
-      # CUDA 12 bundles nvvm, so we can copy it form there.
-      cp -r ${NVCC_DIR}/nvvm/bin ${prefix}/cuda/nvvm/bin
-   elif [[ -d "${NVVM_DIR}/nvvm/bin" ]]; then
-      # CUDA 13+ has a separate download for nvvm.
-      cp -r ${NVVM_DIR}/nvvm/bin ${prefix}/cuda/nvvm/bin
+   # From CUDA v13 on, nvvm is not distributed in the NVCC redist anymore
+   if [[ "${bb_full_target}" == *cuda+13* ]]; then
+      NVVM_DIR=(/workspace/srcdir/libnvvm-*-archive)
    else
-      exit 1
+      NVVM_DIR=${NVCC_DIR}
    fi
+   rm -rf ${prefix}/cuda/nvvm/bin
+   cp -r ${NVVM_DIR}/nvvm/bin ${prefix}/cuda/nvvm/bin
 
    # Workaround failed execution of sizeptr in cross-compile builds
    PTROPT="PTRSIZE=8"
@@ -107,10 +105,15 @@ for platform in platforms
     platform_sources = BinaryBuilder.AbstractSource[sources...]
 
     if arch(platform) == "aarch64"
-        push!(platform_sources, CUDA.cuda_nvcc_redist_source(cuda_ver, "x86_64"))
+        components = ["cuda_nvcc"]
+        # From CUDA v13 on, nvvm is not shipped with nvcc anymore
         if VersionNumber(cuda_ver) >= v"13.0"
-            push!(platform_sources, CUDA.cuda_nvvm_redist_source(cuda_ver, "x86_64"))
+           push!(components, "libnvvm")
         end
+        x86_platform = deepcopy(platform)
+        x86_platform["arch"] = "x86_64"
+        append!(platform_sources, get_sources("cuda", components; platform=x86_platform,
+                                              version=CUDA.full_version(VersionNumber(cuda_ver))))
     end
 
     build_tarballs(ARGS, name, version, platform_sources, script, [platform],
