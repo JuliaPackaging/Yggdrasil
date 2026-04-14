@@ -38,9 +38,11 @@ if [[ "${target}" == aarch64-linux-* ]]; then
    NVCC_DIR=(/workspace/srcdir/cuda_nvcc-*-archive)
    rm -rf ${prefix}/cuda/bin
    cp -r ${NVCC_DIR}/bin ${prefix}/cuda/bin
-   
-   rm -rf ${prefix}/cuda/nvvm/bin
-   cp -r ${NVCC_DIR}/nvvm/bin ${prefix}/cuda/nvvm/bin
+
+   if [[ -d "${NVCC_DIR}/nvvm/bin" ]]; then
+      rm -rf ${prefix}/cuda/nvvm/bin
+      cp -r ${NVCC_DIR}/nvvm/bin ${prefix}/cuda/nvvm/bin
+   fi
 
    # Workaround failed execution of sizeptr in cross-compile builds
    PTROPT="PTRSIZE=8"
