@@ -26,8 +26,8 @@ if [[ ${target} == *-w64-mingw32 ]]; then
     export CPPFLAGS="-I${includedir} ${CPPFLAGS}"
     for f in $(find . \( -name Makefile -o -name makefile -o -name '*.mk' \) -type f); do
         if grep -q 'lssl' "$f" 2>/dev/null; then
-            sed -i "s| -lssl| -L${libdir} -lssl|g" "$f"
-            sed -i "s| -lcrypto| -L${libdir} -lcrypto -lws2_32 -lmswsock|g" "$f"
+            sed -i -e "s| -lssl| -L${libdir} -lssl|g" \
+                   -e "s| -lcrypto| -L${libdir} -lcrypto -lws2_32 -lmswsock|g" "$f"
         fi
     done
 fi
@@ -43,8 +43,7 @@ if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
     export LDFLAGS="$(echo " ${LDFLAGS}" | sed 's/ -Wl,-sdk_version,[^ ]*//g' | sed 's/^ *//')"
 fi
 make -j${nproc}
-cd ..
-install -Dvm 755 bin/vroom${exeext} -t ${bindir}
+install -Dvm 755 ../bin/vroom${exeext} -t ${bindir}
 """
 
 # These are the platforms we will build for by default, unless further
