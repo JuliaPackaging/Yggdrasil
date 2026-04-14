@@ -7,16 +7,15 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "MAGMA"
-version = v"2.9.0"
+version = v"2.10.0"
 
-# Note: Hopper should still build with CUDA v11.8
-# on x86_64, but aarch64 requires CUDA v12.0
-MIN_CUDA_VERSION = v"12"
+# Note: Blackwell requires CUDA v12.8
+MIN_CUDA_VERSION = v"12.8"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("http://icl.utk.edu/projectsfiles/magma/downloads/magma-$(version).tar.gz",
-                  "ff77fd3726b3dfec3bfb55790b06480aa5cc384396c2db35c56fdae4a82c641c"),
+                  "ea0c57fcb64ac2fd7ffe8f02d8fe18f07055c5b7fba0164f565d1e3a85148fb5"),
     DirectorySource("./bundled")
 ]
 
