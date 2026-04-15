@@ -22,6 +22,7 @@ args+=(-DCMAKE_INSTALL_PREFIX=$prefix)
 args+=(-DCMAKE_BUILD_TYPE=RELEASE)
 args+=(-DCMAKE_EXE_LINKER_FLAGS="-pthread")
 args+=(-DCMAKE_SHARED_LINKER_FLAGS="-pthread")
+args+=(-DCMAKE_INSTALL_RPATH='$ORIGIN')
 
 cmake -B build -S . "${args[@]}"
 
