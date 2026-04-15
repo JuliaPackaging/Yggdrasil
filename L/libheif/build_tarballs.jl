@@ -1,5 +1,8 @@
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "libheif"
 version = v"1.21.2"
 ygg_build = 0  # NOTE: increment on rebuild of the same upstream version, reset on new libheifversion
@@ -30,6 +33,10 @@ cmake -B build -S . "${args[@]}"
 cmake --build build --parallel $nproc
 cmake --install build
 """
+
+# sources, script = require_macos_sdk("10.14", sources, script)
+# sources, script = require_macos_sdk("11.0", sources, script)
+sources, script = require_macos_sdk("15.0", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
