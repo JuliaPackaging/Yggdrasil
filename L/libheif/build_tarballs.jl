@@ -1,14 +1,14 @@
 using BinaryBuilder, Pkg
 
 name = "libheif"
-version = v"1.20.2"
+version = v"1.21.2"
 ygg_build = 0  # NOTE: increment on rebuild of the same upstream version, reset on new libheifversion
 ygg_version = VersionNumber(version.major, version.minor, 1_000 * version.patch + ygg_build)
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/strukturag/libheif.git",
-              "35dad50a9145332a7bfdf1ff6aef6801fb613d68"),
+              "62f1b8c76ed4d8305071fdacbe74ef9717bacac5"),
 ]
 
 # Bash recipe for building across all platforms
