@@ -27,6 +27,26 @@ cmake -B build -S . "${args[@]}"
 
 cmake --build build --parallel $nproc
 cmake --install build
+
+# The library's soversion was changed from "" (nothing) to "0" (zero)
+# during a "maintenance release". We undo this change to avoid
+# breaking the ABI. We should remove this work-around when the next
+# major version is available.
+if [[ ${target} == *darwin* ]]; then
+    # Remove symbolic links
+    rm ${libdir}/libde265.dylib
+    rm ${libdir}/libde265.0.dylib
+    # Rename file
+    mv ${libdir}/libde265.*.dylib ${libdir}/libde265.dylib
+    # Change install name
+    install_name_tool -id @rpath/libde265.dylib ${libdir}/libde265.dylib
+elif [[ ${target} == *mingw* ]]; then
+    # do nothing
+    :
+else
+    # Change soname
+    patchelf --set-soname libde265.so ${libdir}/libde265.so
+fi
 """
 
 # These are the platforms we will build for by default, unless further
