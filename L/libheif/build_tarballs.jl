@@ -33,7 +33,7 @@ cmake -B build -S . "${args[@]}"
 cmake --build build --parallel $nproc
 cmake --install build
 
-install_licence COPYING
+install_license COPYING
 """
 
 sources, script = require_macos_sdk("11.3", sources, script)
