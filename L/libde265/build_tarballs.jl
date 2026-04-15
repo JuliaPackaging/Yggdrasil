@@ -32,7 +32,14 @@ cmake --install build
 # during a "maintenance release". We undo this change to avoid
 # breaking the ABI. We should remove this work-around when the next
 # major version is available.
-patchelf --set-soname libde265.so ${libdir}/libde265.so
+if [[ ${target} == *darwin* ]]; then
+    install_name_tool -id @rpath/libde265.dylib ${libdir}/libde265.dylib
+elif [[ ${target} == *mingw* ]]; then
+    # do nothing
+    :
+else
+    patchelf --set-soname libde265.so ${libdir}/libde265.so
+fi
 """
 
 # These are the platforms we will build for by default, unless further
