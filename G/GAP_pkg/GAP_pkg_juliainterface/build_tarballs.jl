@@ -37,6 +37,7 @@ cp -r src ${prefix}/
 export JULIA_DEPOT_PATH="${WORKSPACE}/.julia"
 export JULIAUP_DEPOT_PATH="${JULIA_DEPOT_PATH}/juliaup"
 cd ../..
+unset LD_LIBRARY_PATH
 julia --project=@. -e "using Pkg; Pkg.instantiate(); using GAP; GAP.create_gap_sh(\"${WORKSPACE}/gap.sh\")"
 
 # build the manual
