@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "MongoC"
-version = v"1.28.1"
+version = v"1.30.8"
 
 # Collection of sources required to complete build
 sources = [
     GitSource(
         "https://github.com/mongodb/mongo-c-driver.git",
-        "97f166d8d784d6096d48ba288f98b48028cdfe8b";
+        "57dba9c04991e38124022e0f16c50b87bd9b29a1";
     )
 ]
 
