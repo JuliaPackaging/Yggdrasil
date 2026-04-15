@@ -43,8 +43,6 @@ fi
 
 # Apple specific handling
 if [[ "${target}" == *-apple-darwin* ]]; then
-    export MACOSX_DEPLOYMENT_TARGET=14.5
-
     ### CMake flags
     CMAKE_FLAGS+=(
         -DENABLE_LTO=OFF
