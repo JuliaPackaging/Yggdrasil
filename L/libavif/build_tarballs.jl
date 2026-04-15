@@ -3,16 +3,20 @@
 using BinaryBuilder, BinaryBuilderBase, Pkg
 
 name = "libavif"
-version = v"1.3.0"
+version = v"1.4.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/AOMediaCodec/libavif", "1aadfad932c98c069a1204261b1856f81f3bc199"),
+    GitSource("https://github.com/AOMediaCodec/libavif", "6543b22b5bc706c53f038a16fe515f921556d9b3"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libavif
+
+# We need cmake 3.22
+apk del cmake
+
 cmake -B build -G Ninja \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -37,6 +41,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    HostBuildDependency("CMake_jll"),
     Dependency("JpegTurbo_jll"),
     Dependency("XML2_jll"; compat="~2.13.6"),
     Dependency("Zlib_jll"),
