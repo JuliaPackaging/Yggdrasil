@@ -48,7 +48,7 @@ dependencies = [
     Dependency("dav1d_jll"),
     Dependency("libaom_jll"),
     Dependency("libpng_jll"),
-    Dependency("libyuv_jll"),
+    Dependency("libyuv_jll"; compat="0.1.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
