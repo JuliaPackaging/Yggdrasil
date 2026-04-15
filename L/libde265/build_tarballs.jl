@@ -22,12 +22,17 @@ args+=(-DCMAKE_INSTALL_PREFIX=$prefix)
 args+=(-DCMAKE_BUILD_TYPE=RELEASE)
 args+=(-DCMAKE_EXE_LINKER_FLAGS="-pthread")
 args+=(-DCMAKE_SHARED_LINKER_FLAGS="-pthread")
-args+=(-DCMAKE_INSTALL_RPATH='$ORIGIN')
 
 cmake -B build -S . "${args[@]}"
 
 cmake --build build --parallel $nproc
 cmake --install build
+
+# The library's soversion was changed from "" (nothing) to "0" (zero)
+# during a "maintenance release". We undo this change to avoid
+# breaking the ABI. We should remove this work-around when the next
+# major version is available.
+patchelf --set-soname libde265.so ${libdir}/libde265.so
 """
 
 # These are the platforms we will build for by default, unless further
