@@ -32,11 +32,11 @@ cmake -B build -S . "${args[@]}"
 
 cmake --build build --parallel $nproc
 cmake --install build
+
+install_licence COPYING
 """
 
-# sources, script = require_macos_sdk("10.14", sources, script)
-# sources, script = require_macos_sdk("11.0", sources, script)
-sources, script = require_macos_sdk("15.0", sources, script)
+sources, script = require_macos_sdk("11.3", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
