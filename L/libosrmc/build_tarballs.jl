@@ -2,6 +2,10 @@ using BinaryBuilder, Pkg
 
 include(joinpath("..", "..", "platforms", "macos_sdks.jl"))
 
+# OSRM moved to a versioning scheme of year.month.patch, meaning major and minor versions
+# might or might not contain breaking changes. The C interface libosrmc remains on a SemVer
+# versioning scheme. To guarantee interoperability, we build a dedicated interface version
+# for each supported OSRM release following their versioning.
 name = "libosrmc"
 version = v"26.4.0"
 
