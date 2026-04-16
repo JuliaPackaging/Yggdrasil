@@ -48,13 +48,10 @@ products = [
 # platforms are passed in on the command line
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
-filter!(platforms) do p
-    # Windows export bug is:
-    #   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=50044
-    # because of
-    #   https://github.com/casadi/casadi/blob/402fe583f0d3cf1fc77d1e1ac933f75d86083124/casadi/core/dm_instantiator.cpp#L373-L374
-    return !Sys.iswindows(p)
-end
+filter!(p -> !Sys.iswindows(p) &&
+              arch(p) != "riscv64" &&
+              !(arch(p) == "aarch64" && Sys.isfreebsd(p)),
+        platforms)
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
