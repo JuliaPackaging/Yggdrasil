@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 name = "PROJ"
-upstream_version = v"9.7.1"
+upstream_version = v"9.8.1"
 version_offset = v"2.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
@@ -11,7 +11,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://download.osgeo.org/proj/proj-$upstream_version.tar.gz",
-                  "6c097dc803c561929cdfcc46e4bf9945ea977611fb31493ad14e88edaeae260f")
+                  "af5b731c145c1d13c4e3b4eeb7d167e94e845e440f71e3496b4ed8dae0291960")
 ]
 
 # Bash recipe for building across all platforms
