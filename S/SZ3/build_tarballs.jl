@@ -3,20 +3,20 @@
 using BinaryBuilder, Pkg
 
 name = "SZ3"
-version = v"3.3.2"
+upstream_version = v"3.3.2"
 
 # SZ3 is a C++ header-only library. It's very unlikely to be ABI
 # stable. We probably want to create a new major version for each
 # release we make.
-#
-# We use the "100 x" versioning scheme where the hundreds digits are
-# the actual library version and the ones digits increase as needed to
-# mark ABI incompatibilities. E.g. `300.300.200` is version `3.3.2`.
-ygg_version = v"300.300.200"
+version_offset = v"0.0.0"
+
+version = VersionNumber(upstream_version.major * 100 + version_offset.major,
+                        upstream_version.minor * 100 + version_offset.minor,
+                        upstream_version.patch * 100 + version_offset.patch)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/szcompressor/SZ3/releases/download/v$(version)/SZ3-v$(version).zip",
+    ArchiveSource("https://github.com/szcompressor/SZ3/releases/download/v$(upstream_version)/SZ3-v$(upstream_version).zip",
                   "8eadebe5cb5739fc8346d7bf911db66626fc92d1d27e67bc8f962d0d152ef342"),
 ]
 
@@ -89,5 +89,5 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # Using GCC 8 since we require newer features of C++17.
-build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"8")
