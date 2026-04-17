@@ -15,16 +15,26 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/casadi
 install_license LICENSE.txt
-
 mkdir -p build
 cd build
 
-export CXXFLAGS="-fPIC -std=c++11"
+CXX_STANDARD="-std=c++11"
+CMAKE_CXX_STANDARD="11"
+if [[ "${target}" == *"mingw"* ]]; then
+    CXX_STANDARD="-std=c++14"
+    CMAKE_CXX_STANDARD="14"
+fi
+
+export CXXFLAGS="-fPIC ${CXX_STANDARD}"
 export CFLAGS="${CFLAGS} -fPIC"
 
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_INSTALL_BINDIR=${bindir} \
+    -DCMAKE_INSTALL_LIBDIR=${libdir} \
+    -DCMAKE_INSTALL_INCLUDEDIR=${includedir} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD} \
     -DWITH_IPOPT=ON \
     -DWITH_EXAMPLES=OFF \
     -DWITH_DEEPBIND=OFF \
@@ -33,9 +43,12 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 make -j ${nproc}
 make install
 
+# Build amplexe
 cd $WORKSPACE/srcdir
-
-c++ main.cpp -o "${bindir}/amplexe${exeext}" -I"${includedir}" -L"${libdir}" -lcasadi -std=c++11
+c++ main.cpp -o "${bindir}/amplexe${exeext}" \
+    -I"${includedir}" \
+    -L"${libdir}" \
+    -lcasadi ${CXX_STANDARD}
 """
 
 products = [
@@ -44,14 +57,11 @@ products = [
     LibraryProduct("libcasadi_nlpsol_ipopt", :libcasadi_nlpsol_ipopt),
 ]
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
-filter!(p -> !Sys.iswindows(p) &&
-              arch(p) != "riscv64" &&
-              !(arch(p) == "aarch64" && Sys.isfreebsd(p)),
-        platforms)
+filter!(p -> arch(p) != "riscv64" && 
+    !(arch(p) == "aarch64" && Sys.isfreebsd(p)),
+    platforms)
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
