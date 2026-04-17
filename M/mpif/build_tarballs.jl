@@ -5,10 +5,10 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 # Collection of sources required to build mpi-abi-stubs
 name = "mpif"
-version = v"0.1.6"
+version = v"0.1.7"
 
 sources = [
-    GitSource("https://github.com/eschnett/mpif", "0832857b4cec3314fad05c9d5893d656cc200a98"),
+    GitSource("https://github.com/eschnett/mpif", "d40209744cb0452c79ef11b847dc1282cdd07221"),
 ]
 
 script = raw"""
