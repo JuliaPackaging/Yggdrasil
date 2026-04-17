@@ -25,17 +25,19 @@ script = raw"""
 cd ${WORKSPACE}/srcdir
 cd SZ3-*
 
+# Building the SZ3 HDF5 filter adds a direct dependency on the MPI libraries. That's a very heavy dependendy,
+# and so we disable building the filter. We could re-enable it as separate package, e.g. `hdf5sz3`.
 hdf5_options=
-if test -f "${includedir}/hdf5.h"; then
-    # HDF5 is available, use it
-    hdf5_options='-DBUILD_H5Z_FILTER=ON'
-else
-    # Create an empty library
-    echo 'int SZ_no_hdf5;' >hdf5sz3.cxx
-    c++ -fPIC -c hdf5sz3.cxx
-    c++ -shared -o libhdf5sz3.${dlext} hdf5sz3.o
-    install -Dvm 755 "libhdf5sz3.${dlext}" "${libdir}/libhdf5sz3.${dlext}"
-fi
+# if test -f "${includedir}/hdf5.h"; then
+#     # HDF5 is available, use it
+#     hdf5_options='-DBUILD_H5Z_FILTER=ON'
+# else
+#     # Create an empty library
+#     echo 'int SZ_no_hdf5;' >hdf5sz3.cxx
+#     c++ -fPIC -c hdf5sz3.cxx
+#     c++ -shared -o libhdf5sz3.${dlext} hdf5sz3.o
+#     install -Dvm 755 "libhdf5sz3.${dlext}" "${libdir}/libhdf5sz3.${dlext}"
+# fi
 
 mkdir build
 cd build
@@ -70,7 +72,7 @@ products = [
     ExecutableProduct("mdz_smoke_test", :mdz_smoke_test),
     ExecutableProduct("sz3", :sz3),
     ExecutableProduct("sz3_smoke_test", :sz3_smoke_test),
-    LibraryProduct("libhdf5sz3", :libhdf5sz3),
+    # LibraryProduct("libhdf5sz3", :libhdf5sz3),
     LibraryProduct("libSZ3c", :libSZ3c),
 ]
 
@@ -83,7 +85,7 @@ dependencies = [
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
                platforms=filter(Sys.isbsd, platforms)),
     Dependency("GSL_jll"),
-    Dependency("HDF5_jll"; compat="2.1.2"),
+    # Dependency("HDF5_jll"; compat="2.1.2"),
     Dependency("Zstd_jll"),
 ]
 
