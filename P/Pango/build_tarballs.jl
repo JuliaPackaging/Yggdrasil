@@ -29,16 +29,20 @@ fi
 # We need a newer meson
 python3 -m pip install --upgrade meson
 
-mkdir build && cd build
-meson setup --cross-file="${MESON_TARGET_TOOLCHAIN}" \
+# Fix target toolchain (required by meson 1.11)
+if [[ ${target} == *darwin* ]]; then
+    sed -i "/\[host_machine\]/,/^$/ s/system = 'darwin'/system = 'darwin'\nsubsystem = 'macos'/" "$MESON_TARGET_TOOLCHAIN"
+fi
+
+meson setup build \
+    --cross-file="${MESON_TARGET_TOOLCHAIN}" \
     -Dintrospection=disabled \
     -Dfontconfig=enabled \
-    -Dfreetype=enabled \
-    ..
-ninja -j${nproc}
-ninja install
+    -Dfreetype=enabled
+ninja -C build -j${nproc}
+ninja -C build install
 
-install_license ../COPYING
+install_license COPYING
 """
 
 # These are the platforms we will build for by default, unless further
