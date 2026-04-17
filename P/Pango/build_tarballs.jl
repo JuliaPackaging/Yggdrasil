@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Pango"
-version = v"1.57.0"
+version = v"1.57.1"
 
 # Collection of sources required to build Pango: https://download.gnome.org/sources/pango/
 sources = [
     ArchiveSource("http://ftp.gnome.org/pub/GNOME/sources/pango/$(version.major).$(version.minor)/pango-$(version).tar.xz",
-                  "890640c841dae77d3ae3d8fe8953784b930fa241b17423e6120c7bfdf8b891e7"),
+                  "e65d6d117080dc3aeeb7d8b4b3b518f7383aa2e6cfce23117c623cd624764c2f"),
 ]
 
 # Bash recipe for building across all platforms
@@ -26,14 +26,11 @@ fi
 # If we want libpangoft2 on Windows we need to explicitly enable fontconfig and freetype
 # See <https://gitlab.gnome.org/GNOME/pango/-/blob/main/README.win32.md>.
 
-# We need to update pip
-python3 -m pip install --upgrade pip setuptools wheel
-pip3 install gi-docgen
 # We need a newer meson
 python3 -m pip install --upgrade meson
 
 mkdir build && cd build
-meson --cross-file="${MESON_TARGET_TOOLCHAIN}" \
+meson setup --cross-file="${MESON_TARGET_TOOLCHAIN}" \
     -Dintrospection=disabled \
     -Dfontconfig=enabled \
     -Dfreetype=enabled \
