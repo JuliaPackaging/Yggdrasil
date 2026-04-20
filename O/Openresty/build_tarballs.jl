@@ -3,17 +3,17 @@
 using BinaryBuilder, Pkg
 
 name = "Openresty"
-version = v"1.27.1"
+version = v"1.29.203"
+upstream_version = "1.29.2.3"
 
 # Collection of sources required to complete build.
 # Openresty requires static linking of these libraries, hence sources are provided so that they are compiled in.
 sources = [
-    ArchiveSource("https://openresty.org/download/openresty-$(version).1.tar.gz", "79b071e27bdc143d5f401d0dbf504de4420070d867538c5edc2546d0351fd5c0"),
-    ArchiveSource("https://sourceforge.net/projects/pcre/files/pcre/8.45/pcre-8.45.tar.bz2", "4dae6fdcd2bb0bb6c37b5f97c33c2be954da743985369cddac3546e3218bffb8"),
-    ArchiveSource("https://github.com/openssl/openssl/releases/download/openssl-3.0.15/openssl-3.0.15.tar.gz", "23c666d0edf20f14249b3d8f0368acaee9ab585b09e1de82107c66e1f3ec9533"),
-    ArchiveSource("https://www.zlib.net/zlib-1.3.1.tar.gz", "9a93b2b7dfdac77ceba5a558a580e74667dd6fede4585b91eefb60f03b72df23")
+    ArchiveSource("https://openresty.org/download/openresty-$(upstream_version).tar.gz", "79b071e27bdc143d5f401d0dbf504de4420070d867538c5edc2546d0351fd5c0"),
+    ArchiveSource("https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.47/pcre2-10.47.tar.bz2", "47fe8c99461250d42f89e6e8fdaeba9da057855d06eb7fc08d9ca03fd08d7bc7"),
+    ArchiveSource("https://github.com/openssl/openssl/releases/download/openssl-3.5.5/openssl-3.5.5.tar.gz", "b28c91532a8b65a1f983b4c28b7488174e4a01008e29ce8e69bd789f28bc2a89"),
+    ArchiveSource("https://www.zlib.net/zlib-1.3.2.tar.gz", "bb329a0a2cd0274d05519d61c667c062e06990d72e125ee2dfa8de64f0119d16")
 ]
-
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -21,9 +21,9 @@ cd $WORKSPACE/srcdir/openresty-*/
 export SUPER_VERBOSE=1
 ./configure --prefix=${prefix} \
     --with-cc=$CC \
-    --with-zlib=$WORKSPACE/srcdir/zlib-1.3.1 \
-    --with-openssl=$WORKSPACE/srcdir/openssl-3.0.15 \
-    --with-pcre=$WORKSPACE/srcdir/pcre-8.45 \
+    --with-zlib=$WORKSPACE/srcdir/zlib-1.3.2 \
+    --with-openssl=$WORKSPACE/srcdir/openssl-3.5.5 \
+    --with-pcre=$WORKSPACE/srcdir/pcre-10.47 \
     --with-pcre-jit
 make
 make install
