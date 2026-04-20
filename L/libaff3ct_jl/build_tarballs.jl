@@ -10,8 +10,8 @@ name = "libaff3ct_jl"
 version = v"0.1.0"
 
 sources = [
-    GitSource("https://github.com/zsoerenm/aff3ct.git",
-              "5169fa0cb9b117c3aacf83bd950d075850aff1d8"),
+    GitSource("https://github.com/aff3ct/aff3ct.git",
+              "bd436ca2d8176983668d3dfbe231d6b52d9b5d06"),
     GitSource("https://github.com/JuliaGNSS/libaff3ct_jl.git",
               "2d7645a4cae0ffd446bf51d0aef2bcbcac13a605"),
 ]
@@ -33,8 +33,8 @@ git submodule update --init --recursive --depth 1
 # Patch streampu and MIPP to guard their includes with __GLIBC__.
 if [[ "${target}" == *-musl* ]]; then
     sed -i 's/#include <execinfo.h>//' lib/streampu/src/Tools/system_functions.cpp
-    sed -i '/#include <execinfo.h>/d' lib/MIPP/src/mipp.h
-    sed -i 's/defined(MIPP_ENABLE_BACKTRACE)/defined(MIPP_ENABLE_BACKTRACE) \&\& defined(__GLIBC__)/' lib/MIPP/src/mipp.h
+    sed -i '/#include <execinfo.h>/d' lib/MIPP/include/mipp.h
+    sed -i 's/defined(MIPP_ENABLE_BACKTRACE)/defined(MIPP_ENABLE_BACKTRACE) \&\& defined(__GLIBC__)/' lib/MIPP/include/mipp.h
 fi
 
 mkdir build && cd build
