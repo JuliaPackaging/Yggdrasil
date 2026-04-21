@@ -38,8 +38,8 @@ fi
 #    FLAGS+=( --enable-avx512 );
 # fi
 
-# Enable NEON on Aarch64
-if [[ "${target}" == aarch64-* ]]; then FLAGS+=( --enable-neon ); fi
+# Enable NEON and SVE on Aarch64
+if [[ "${target}" == aarch64-* ]]; then FLAGS+=( --enable-neon --enable-sve ); fi
 
 # Julia-Aarch64 platforms (MacOS, Linux, FreeBSD) nowadays give access to
 # CNTVCT_EL0 cycle counter in userspace.  (We need to enable this explicitly
