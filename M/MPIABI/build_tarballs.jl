@@ -9,7 +9,7 @@ name = "MPIABI"
 # OpenMPI's released versions.
 #
 # We are currently at version 0.1 because some details of the ABI are still being hashed out, e.g. the library SOVERSION.
-version = v"0.1.4"
+version = v"0.1.5"
 
 # The MPI ABI does not provide Fortran bindings. Packages using this
 # ABI should use a different package, e.g.
@@ -26,6 +26,8 @@ sources = [
     # MPICH source, implementing the C bindings
     ArchiveSource("https://www.mpich.org/static/downloads/5.0.1/mpich-5.0.1.tar.gz",
                   "8c1832a13ddacf071685069f5fadfd1f2877a29e1a628652892c65211b1f3327"),
+    FileSource("https://github.com/pmodels/mpich/commit/689a0869c8f58167e3b0b5db13f8ce8db5f24009.patch",
+               "6f34a32a78eb9ad6e7e430eda0b8477761ca2c2d788a77027c8ebf40ad0673d1"),
 
     # Patches
     DirectorySource("bundled"),
@@ -44,6 +46,9 @@ cd ${WORKSPACE}/srcdir/mpich*
 # (The MPICH developers say that this is a bug in MPICH and that
 # `<pthread_np.h>` should not actually be used on FreeBSD.)
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pthread_np.patch
+
+# Correct 32-bit bug in MPICH <https://github.com/pmodels/mpich/pull/7776>
+atomic_patch -p1 ${WORKSPACE}/srcdir/689a0869c8f58167e3b0b5db13f8ce8db5f24009.patch
 
 # Add C bindings missing from the MPI ABI
 cp ${WORKSPACE}/srcdir/files/fortran_binding_abi.c src/binding/abi/fortran_binding_abi.c
@@ -141,7 +146,7 @@ fi
 
 ./configure "${configure_flags[@]}"
 
-# Disable MPI_File_{c2f,f2c} that shouldn't be there
+# Disable MPI_File_{c2f,f2c} that shouldn't be there <https://github.com/pmodels/mpich/pull/7777>
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mpich-disable-file.patch
 
 # Remove empty `-l` flags from libtool
