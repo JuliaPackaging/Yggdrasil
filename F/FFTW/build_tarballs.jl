@@ -54,6 +54,9 @@ if [[ "${target}" == i686-w64-* ]]; then FLAGS+=( --with-incoming-stack-boundary
 # On ppc64le, enable VSX
 if [[ "${target}" == powerpc64le-*  ]]; then FLAGS+=( --enable-vsx ); fi
 
+# work around https://github.com/FFTW/fftw3/issues/403
+perl -pi -e "s/CLOCK_SGI_CYCLE/CLOCK_SGI_CYCLE_NOPE/" ${WORKSPACE}/srcdir/fftw*/kernel/cycle.h
+
 # We need to do this a couple times, so functionalize it
 build_fftw()
 {
