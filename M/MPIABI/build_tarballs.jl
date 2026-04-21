@@ -26,7 +26,7 @@ sources = [
     # MPICH source, implementing the C bindings
     ArchiveSource("https://www.mpich.org/static/downloads/5.0.1/mpich-5.0.1.tar.gz",
                   "8c1832a13ddacf071685069f5fadfd1f2877a29e1a628652892c65211b1f3327"),
-    FileSource("https://github.com/pmodels/mpich/commit/689a0869c8f58167e3b0b5db13f8ce8db5f24009.patch",
+    FileSource("https://github.com/pmodels/mpich/commit/689a0869c8f58167e3b0b5db13f8ce8db5f24009.patch?full_index=1",
                "6f34a32a78eb9ad6e7e430eda0b8477761ca2c2d788a77027c8ebf40ad0673d1"),
 
     # Patches
