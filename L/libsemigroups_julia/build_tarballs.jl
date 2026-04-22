@@ -33,6 +33,8 @@ git ls-tree HEAD .. | cut -c13-52 > ${libdir}/libsemigroups_julia.treehash
 install_license ../../LICENSE
 """
 
+sources, script = require_macos_sdk("10.14", sources, script)
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl")
