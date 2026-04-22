@@ -3,6 +3,9 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "libsemigroups_julia"
 version = v"0.0.1"
 
