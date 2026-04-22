@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "sed"
-version_string = "4.9"
+version_string = "4.10"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/sed/sed-$(version_string).tar.xz",
-                  "6e226b732e1cd739464ad6862bd1a1aba42d7982922da7a53519631d24975181"),
+    ArchiveSource("https://ftpmirror.gnu.org/gnu/sed/sed-$(version_string).tar.xz",
+                  "b8e72182b2ec96a3574e2998c47b7aaa64cc20ce000d8e9ac313cc07cecf28c7"),
     DirectorySource("./bundled")
 ]
 
