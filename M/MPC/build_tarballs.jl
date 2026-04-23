@@ -42,8 +42,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GMP_jll"; compat="6.2.0"),
-    Dependency("MPFR_jll", v"4.1.1"),
+    Dependency("GMP_jll"; compat="6.2.1"),
+    Dependency("MPFR_jll"; compat="4.1.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
