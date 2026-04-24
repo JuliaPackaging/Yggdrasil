@@ -102,7 +102,9 @@ augment_platform_block = """
 # SIGILL. augment_platform_block ensures users only download a variant
 # matching their CPU, so skip the audit's dlopen check.
 products = [
-    LibraryProduct(["libaff3ct-4.2.0", "libaff3ct"], :libaff3ct; dont_dlopen=true),
+    # libaff3ct-4.2.0 is the CMake install name on Linux; macOS strips
+    # the trailing .2.0 as a dylib version suffix, leaving "libaff3ct-4".
+    LibraryProduct(["libaff3ct-4.2.0", "libaff3ct-4"], :libaff3ct; dont_dlopen=true),
     LibraryProduct("libaff3ct_jl", :libaff3ct_jl; dont_dlopen=true),
 ]
 
