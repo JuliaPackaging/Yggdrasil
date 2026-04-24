@@ -93,8 +93,9 @@ if [[ ${target} == *mingw* ]]; then
            destdir="${prefix}/lib"
         fi
         # Install also some static and import libraries, needed for linking of pkgimages.
-        for lib in libadvapi32.a libgcc.a libgcc_s.a libmingw32.a libmsvcrt.a libmoldname.a libshell32.a \
-                   libuser32.a libpthread.dll.a libssp.dll.a dllcrt2.o crtbegin.o crtend.o; do
+        for lib in libadvapi32.a libgcc.a libgcc_s.a libkernel32.a libmingwex.a libmingw32.a libmsvcrt.a \
+                   libmoldname.a libshell32.a libssp.a libuser32.a libpthread.dll.a libssp.dll.a dllcrt2.o \
+                   crtbegin.o crtend.o; do
             qfind "/opt/${target}" -name "${lib}" -exec install -Dvm 0644 '{}' "${destdir}/${lib}" \;
         done
     fi
@@ -182,10 +183,13 @@ install_license /usr/share/licenses/GPL-3.0+
                                 [FileProduct("$(destdir)/libadvapi32.a", :libadvapi32_a),
                                  FileProduct("$(destdir)/libgcc.a", :libgcc_a),
                                  FileProduct("$(destdir)/libgcc_s.a", :libgcc_s_a),
+                                 FileProduct("$(destdir)/libkernel32.a", :libkernel32_a),
+                                 FileProduct("$(destdir)/libmingwex.a", :libmingwex_a),
                                  FileProduct("$(destdir)/libmingw32.a", :libmingw32_a),
                                  FileProduct("$(destdir)/libmsvcrt.a", :libmsvcrt_a),
                                  FileProduct("$(destdir)/libmoldname.a", :libmoldname_a),
                                  FileProduct("$(destdir)/libshell32.a", :libshell32_a),
+                                 FileProduct("$(destdir)/libssp.a", :libssp_a),
                                  FileProduct("$(destdir)/libuser32.a", :libuser32_a),
                                  FileProduct("$(destdir)/libpthread.dll.a", :libpthread_dll_a),
                                  FileProduct("$(destdir)/libssp.dll.a", :libssp_dll_a),
