@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "Quiver"
-version = v"0.6.1"
+version = v"0.7.8"
 
 include("../../platforms/macos_sdks.jl")
 
