@@ -62,16 +62,6 @@ cmake .. \
 make -j${nproc}
 make install
 
-# Create unversioned library symlink: macOS interprets dots in dylib names
-# as version separators, so libaff3ct-4.2.0.dylib confuses BinaryBuilder's
-# product check. An unversioned symlink avoids this on all platforms.
-cd ${prefix}/lib
-for f in libaff3ct-4.2.0.*; do
-    ext="${f#libaff3ct-4.2.0}"
-    ln -sf "$f" "libaff3ct${ext}"
-done
-cd ${WORKSPACE}/srcdir
-
 # ── Build libaff3ct_jl ────────────────────────────────────────
 cd ${WORKSPACE}/srcdir/libaff3ct_jl*
 rm -rf build && mkdir build && cd build
@@ -107,9 +97,13 @@ augment_platform_block = """
     end
     """
 
+# The microarchitecture variants bake SIMD instructions into static
+# initializers, so dlopen'ing them on an incompatible build host raises
+# SIGILL. augment_platform_block ensures users only download a variant
+# matching their CPU, so skip the audit's dlopen check.
 products = [
-    LibraryProduct("libaff3ct", :libaff3ct),
-    LibraryProduct("libaff3ct_jl", :libaff3ct_jl),
+    LibraryProduct(["libaff3ct-4.2.0", "libaff3ct"], :libaff3ct; dont_dlopen=true),
+    LibraryProduct("libaff3ct_jl", :libaff3ct_jl; dont_dlopen=true),
 ]
 
 dependencies = [
@@ -119,5 +113,4 @@ dependencies = [
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                preferred_gcc_version=v"8",
                julia_compat="1.6",
-               augment_platform_block,
-               dont_dlopen=true)
+               augment_platform_block)
