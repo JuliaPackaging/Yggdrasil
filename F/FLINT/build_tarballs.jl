@@ -35,7 +35,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 sources = [
    ArchiveSource("https://github.com/flintlib/flint/releases/download/v$(upstream_version)/flint-$(upstream_version).tar.gz",
                  "3982f385f00610a944e0152eb0a29893b2366fa640e8f5f3076c47564cf7e2a6"),
-   DirectorySource("./bundled"),
+   #DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
