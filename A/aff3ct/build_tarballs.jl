@@ -6,8 +6,8 @@ using BinaryBuilderBase
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "microarchitectures.jl"))
 
-name = "libaff3ct_jl"
-version = v"0.1.0"
+name = "aff3ct"
+version = v"4.2.0"
 
 sources = [
     GitSource("https://github.com/aff3ct/aff3ct.git",
