@@ -8,8 +8,8 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "microarchitectures.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "finufft"
-version = v"2.5.0"
-commit_hash = "8b7ac66e617ea317cd42366ac27c536793131696"
+version = v"2.5.1"
+commit_hash = "679d9ae59fe0146c50da360e5a3fee70ae3aa646"
 preferred_gcc_version = v"10"
 preferred_llvm_version = v"13.0.1+1"
 
