@@ -218,7 +218,9 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     fi
 
     if [[ ${target} == aarch64-*-darwin* ]]; then
-        # Disable SME (not supported on Darwin -- neither by the hardware nor by the toolchain)
+        # Disable SME. Not supported on Darwin -- neither by the hardware before the M4 CPU, nor by our toolchains.
+        # (It is likely supported by MacOS SDK 15.0, but this SDK  doesn't work:
+        #  https://github.com/JuliaPackaging/Yggdrasil/issues/13593.)
         export NO_SME=1
     fi
 
@@ -307,6 +309,7 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     fi
     """
 
+    return script
 end
 
 function openblas_platforms(;experimental::Bool=true, version::Union{Nothing,VersionNumber}=nothing, kwargs...)
