@@ -38,6 +38,16 @@ else
 fi
 export CC=mpicc
 export LD=
+if [[ ${bb_full_target} == *mpiabi* ]]; then
+    export MPIF_FC=gfortran
+    export MPIF_FCLIBS="-L${prefix} -Wl,-rpath,${prefix} -lmpif -lmpi_abi"
+fi
+
+# Profiling is not supported on Darwin, FreeBSD, or musl
+if [[ ${target} == *darwin* || ${target} == *freebsd* || ${target} == *musl* ]]; then
+    # Remove `-pg` flag
+    sed -i 's/ -pg$//' PIOUD/src/Makefile
+fi
 
 flags=(--enable-parallel=yes)
 if [ "${nbits}" == 64 ]; then
@@ -55,7 +65,7 @@ else
 fi
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ${flags[@]}
-make all "${make_args[@]}" -j $nproc
+make all -j $nproc
 make install
 # Manually make all binary executables...executable.  Sigh
 chmod +x "${bindir}"/*
