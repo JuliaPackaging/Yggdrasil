@@ -71,7 +71,7 @@ dependencies = [
     Dependency("polymake_jll"; compat = "~400.1500.3"),
 
     HostBuildDependency(PackageSpec(name="Perl_jll", version="5.34.1")),
-    HostBuildDependency(PackageSpec(name="polymake_jll", version="400.1500.2")),
+    HostBuildDependency(PackageSpec(name="polymake_jll", version="400.1500.3")),
     HostBuildDependency(PackageSpec(name="lib4ti2_jll", version="1.6.10")),
     HostBuildDependency(PackageSpec(name="TOPCOM_jll", version="0.17.8")),
 ]
