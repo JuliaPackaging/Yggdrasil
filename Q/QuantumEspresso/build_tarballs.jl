@@ -15,7 +15,7 @@ version = VersionNumber(raw_version)
 Libxc_jll_range = "~7.0"
 
 sources = [
-    ArchiveSource("https://gitlab.com/QEF/q-e/-/archive/qe-$(version)/q-e-qe-$(version).tar.gz",
+    ArchiveSource("https://gitlab.com/QEF/q-e/-/archive/qe-$(raw_version)/q-e-qe-$(raw_version).tar.gz",
                   "7e1f7a9a21b63192f5135218bee20a5321b66582e4756536681b76e9c59b3cc8"),
     DirectorySource("bundled"),
 ]
