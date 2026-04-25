@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Xorg_xkeyboard_config"
-version = v"2.44"
+version = v"2.47"
 
 # Collection of sources required to build xkeyboard_config
 sources = [
     ArchiveSource("https://www.x.org/archive/individual/data/xkeyboard-config/xkeyboard-config-$(version.major).$(version.minor).tar.xz",
-                  "54d2c33eeebb031d48fa590c543e54c9bcbd0f00386ebc6489b2f47a0da4342a"),
+                  "e59984416a72d58b46a52bfec1b1361aa7d84354628227ee2783626c7a6db6b6"),
 ]
 
 # Bash recipe for building across all platforms
