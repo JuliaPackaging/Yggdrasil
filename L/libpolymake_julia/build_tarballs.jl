@@ -68,7 +68,7 @@ dependencies = [
     Dependency("TOPCOM_jll"; compat = "~0.17.8"),
     Dependency("lib4ti2_jll"; compat = "^1.6.10"),
     Dependency("libcxxwrap_julia_jll"; compat = "~0.14.9"),
-    Dependency("polymake_jll"; compat = "~400.1500.2"),
+    Dependency("polymake_jll"; compat = "~400.1500.3"),
 
     HostBuildDependency(PackageSpec(name="Perl_jll", version="5.34.1")),
     HostBuildDependency(PackageSpec(name="polymake_jll", version="400.1500.2")),
