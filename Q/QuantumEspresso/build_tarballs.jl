@@ -134,4 +134,4 @@ append!(dependencies, platform_dependencies)
 # We require Julia 1.9 since SCALAPACK32 only supports Julia 1.9
 # We require GCC 9 to get Fortran FINDLOC
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.9", preferred_gcc_version=v"9")
+               augment_platform_block, julia_compat="1.9", preferred_gcc_version=v"10")
