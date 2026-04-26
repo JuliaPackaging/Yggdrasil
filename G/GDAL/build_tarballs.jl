@@ -185,7 +185,6 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(; name="OpenMPI_jll", version="4.1.8"); platforms=filter(p -> nbits(p)==32, platforms)),
     Dependency("Arrow_jll"; compat="19.0.0"),
     Dependency("Blosc_jll"; compat="1.21.7"),
     Dependency("Expat_jll"; compat="2.6.5"),
