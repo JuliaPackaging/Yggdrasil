@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "GDAL"
-upstream_version = v"3.12.3"
+upstream_version = v"3.12.4"
 # The version offset is used for two purposes:
 # - If we need to release multiple jll packages for the same GDAL
 #   library (usually for weird packaging reasons) then we increase the
@@ -178,13 +178,13 @@ dependencies = [
     Dependency("Expat_jll"; compat="2.6.5"),
     Dependency("GEOS_jll"; compat="3.13.1"),
     Dependency("HDF4_jll"; compat="4.3.1"),
-    Dependency("HDF5_jll"; compat="~1.14.6"),
+    Dependency("HDF5_jll"; compat="~2.1.2"),
     Dependency("LERC_jll"; compat="4.0.1"),
     Dependency("LibCURL_jll"; compat="7.73,8"),
     Dependency("LibPQ_jll"; compat="16.8"),
     Dependency("Libtiff_jll"; compat="4.7.1"),
     Dependency("Lz4_jll"; compat="1.10.1"),
-    Dependency("NetCDF_jll"; compat="401.900.300"),
+    Dependency("NetCDF_jll"; compat="401.1000.0"),
     Dependency("OpenJpeg_jll"; compat="2.5.4"),
     Dependency("PCRE2_jll"; compat="10.42.0"),
     Dependency("PROJ_jll"; compat="902.500.100"),
