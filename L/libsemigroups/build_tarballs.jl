@@ -20,8 +20,11 @@ cd libsemigroups
 ./autogen.sh
 export CPPFLAGS="-I${prefix}/include"
 
-# Disable HPCombi on all platforms
+# Enable HPCombi only on macOS arm builds
 HPCOMBI_FLAG="--disable-hpcombi"
+if [[ "${target}" == aarch64-apple-darwin* ]]; then
+    HPCOMBI_FLAG="--enable-hpcombi"
+fi
 
 ./configure --prefix=${prefix} \
             --build=${MACHTYPE} \
