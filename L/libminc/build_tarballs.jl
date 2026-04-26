@@ -43,6 +43,10 @@ install_license ${WORKSPACE}/srcdir/libminc/COPYING
 
 platforms = supported_platforms()
 
+# Disable Darwin, FreeBSD, and Windows.
+# Some of these systems could likely be supported with fairly small patches.
+filter!(p -> !((Sys.isapple(p) && arch(p) == "aarch64") || Sys.isfreebsd(p)  || Sys.iswindows(p)), platforms)
+
 products = [
     LibraryProduct("libminc2", :libminc2),
     LibraryProduct("libminc2-simple", :libminc2_simple)
