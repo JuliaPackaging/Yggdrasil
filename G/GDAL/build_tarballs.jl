@@ -113,7 +113,7 @@ sources, script = require_macos_sdk("10.15", sources, script)
 # Although GDAL does not call MPI directly, it links explicitly
 # against the MPI libraries when using a parallel HDF5. (Instead of
 # declaring this dependency to BinaryBuilder we could try removing
-# these lines from cmake.
+# these lines from cmake.)
 augment_platform_block = """
     using Base.BinaryPlatforms
     $(MPI.augment)
