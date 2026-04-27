@@ -1,6 +1,7 @@
 #include "jlcxx/jlcxx.hpp"
 
 #include <lemon/list_graph.h>
+#include <lemon/dijkstra.h>
 #include <lemon/matching.h>
 
 #include <functional>
@@ -40,10 +41,22 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
 
   mod.add_type<ListGraph>("ListGraph")
     .method("addNode"  , &ListGraph::addNode)
-    .method("addEdge"  , &ListGraph::addEdge);
+    .method("addEdge"  , &ListGraph::addEdge)
+    .method("nodeFromId", &ListGraph::nodeFromId)
+    .method("edgeFromId", &ListGraph::edgeFromId)
+    .method("u", static_cast<ListGraph::Node (ListGraph::*)(const ListGraph::Edge&) const>(&ListGraph::u))
+    .method("v", static_cast<ListGraph::Node (ListGraph::*)(const ListGraph::Edge&) const>(&ListGraph::v))
+    .method("nodeNum", static_cast<int (ListGraph::*)() const>(&ListGraph::nodeNum))
+    .method("edgeNum", static_cast<int (ListGraph::*)() const>(&ListGraph::edgeNum));
   mod.add_type<ListDigraph>("ListDigraph")
     .method("addNode"  , &ListDigraph::addNode)
-    .method("addArc"   , &ListDigraph::addArc);
+    .method("addArc"   , &ListDigraph::addArc)
+    .method("nodeFromId", &ListDigraph::nodeFromId)
+    .method("arcFromId", &ListDigraph::arcFromId)
+    .method("source", static_cast<ListDigraph::Node (ListDigraph::*)(const ListDigraph::Arc&) const>(&ListDigraph::source))
+    .method("target", static_cast<ListDigraph::Node (ListDigraph::*)(const ListDigraph::Arc&) const>(&ListDigraph::target))
+    .method("nodeNum", static_cast<int (ListDigraph::*)() const>(&ListDigraph::nodeNum))
+    .method("arcNum", static_cast<int (ListDigraph::*)() const>(&ListDigraph::arcNum));
 
   mod.add_type<ListGraph::NodeIt>("ListGraphNodeIt", jlcxx::julia_base_type<ListGraph::Node>())
     .constructor<const ListGraph&>()
@@ -61,13 +74,34 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
 
   mod.add_type<ListGraph::NodeMap<int>>("ListGraphNodeMapInt")
     .constructor<const ListGraph&>()
-    .method("set", &ListGraph::NodeMap<int>::set);
+    .method("set", &ListGraph::NodeMap<int>::set)
+    .method("get", [](const ListGraph::NodeMap<int>& m, const ListGraph::Node& n) { return m[n]; });
   mod.add_type<ListDigraph::NodeMap<int>>("ListDigraphNodeMapInt")
     .constructor<const ListDigraph&>()
-    .method("set", &ListDigraph::NodeMap<int>::set);
+    .method("set", &ListDigraph::NodeMap<int>::set)
+    .method("get", [](const ListDigraph::NodeMap<int>& m, const ListDigraph::Node& n) { return m[n]; });
   mod.add_type<ListGraph::EdgeMap<int>>("ListGraphEdgeMapInt")
     .constructor<const ListGraph&>()
-    .method("set", &ListGraph::EdgeMap<int>::set);
+    .method("set", &ListGraph::EdgeMap<int>::set)
+    .method("get", [](const ListGraph::EdgeMap<int>& m, const ListGraph::Edge& e) { return m[e]; });
+  mod.add_type<ListDigraph::ArcMap<int>>("ListDigraphArcMapInt")
+    .constructor<const ListDigraph&>()
+    .method("set", &ListDigraph::ArcMap<int>::set)
+    .method("get", [](const ListDigraph::ArcMap<int>& m, const ListDigraph::Arc& a) { return m[a]; });
+
+  using DijkstraInt = Dijkstra<ListDigraph, ListDigraph::ArcMap<int>>;
+  using DijkstraRunS = void (DijkstraInt::*)(const ListDigraph::Node&);
+  using DijkstraRunST = void (DijkstraInt::*)(const ListDigraph::Node&, const ListDigraph::Node&);
+  DijkstraRunS dijkstra_run_s = &DijkstraInt::run;
+  DijkstraRunST dijkstra_run_st = &DijkstraInt::run;
+  mod.add_type<DijkstraInt>("DijkstraListDigraphArcMapInt")
+    .constructor<const ListDigraph&, const ListDigraph::ArcMap<int>&>()
+    .method("run", dijkstra_run_s)
+    .method("run", dijkstra_run_st)
+    .method("dist", &DijkstraInt::dist)
+    .method("predNode", &DijkstraInt::predNode)
+    .method("predArc", &DijkstraInt::predArc)
+    .method("reached", &DijkstraInt::reached);
 
   using MWPM = MaxWeightedPerfectMatching<ListGraph, ListGraph::EdgeMap<int>>;
   using MWPMmatchingedge_ptr = bool (MWPM::*)(const ListGraph::Edge&) const; // used to resolve the overloads of `matching`
