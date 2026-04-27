@@ -2,8 +2,8 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
-include("../common.jl")
-name = "oneAPI_Level_Zero_Headers"
+include("../common_lts_2523_40.jl")
+name = "oneAPI_Level_Zero_Headers_LTS_2523_40"
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -27,5 +27,3 @@ products = [
 dependencies = Dependency[]
 
 build_tarballs(ARGS, name, api_version, sources, script, platforms, products, dependencies)
-
-#Bump
