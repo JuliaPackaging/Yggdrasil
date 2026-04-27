@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 project(D4 VERSION 2.0.0)
 
-set(CMAKE_CXX_STANDARD 17)
+# Aligned with upstream and Stefan Karpinski's recommendation for GCC 11
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
@@ -33,11 +34,11 @@ set(SOURCES
     "3rdParty/glucose-3.0/core/Solver.cc"
 )
 
-# Exclude missing/optional components
+# Exclude missing/optional components (proprietary or not in JLL)
 list(FILTER SOURCES EXCLUDE REGEX "PartitionerPatoh")
 list(FILTER SOURCES EXCLUDE REGEX "PartitionerKahypar")
 
-# Shared Library
+# Shared Library (Must-fix for Stefan)
 add_library(d4 SHARED ${SOURCES})
 target_compile_definitions(d4 PRIVATE NOMAIN)
 target_link_libraries(d4 
@@ -48,7 +49,7 @@ target_link_libraries(d4
     ZLIB::ZLIB
 )
 
-# Executable (from demo/compiler)
+# Executable (Integrated into CMake as requested by Stefan)
 add_executable(d4-bin 
     demo/compiler/src/Main.cpp 
     demo/compiler/src/CompilerDemo.cpp 
