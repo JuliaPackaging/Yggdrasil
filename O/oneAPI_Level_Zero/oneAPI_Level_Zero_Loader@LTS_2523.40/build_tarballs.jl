@@ -2,8 +2,8 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-include("../common.jl")
-name = "oneAPI_Level_Zero_Loader"
+include("../common_lts_2523_40.jl")
+name = "oneAPI_Level_Zero_Loader_LTS_2523_40"
 
 
 # Bash recipe for building across all platforms
@@ -47,9 +47,8 @@ dependencies = [
     #
     # Users of these packages, e.g. oneAPI.jl, should only depend on the loader and an
     # implementation, but will need to make sure to load one before the other.
-    Dependency("oneAPI_Level_Zero_Headers_jll"; compat="=$api_version"),
+    Dependency("oneAPI_Level_Zero_Headers_LTS_2523_40_jll"; compat="=$api_version"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                preferred_gcc_version=v"8")
-# bump
