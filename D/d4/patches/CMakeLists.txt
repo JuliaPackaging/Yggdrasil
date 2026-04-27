@@ -1,12 +1,10 @@
 cmake_minimum_required(VERSION 3.10)
 project(D4 VERSION 2.0.0)
 
-# Aligned with upstream and Stefan Karpinski's recommendation for GCC 11
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-# Dependencies
 find_package(Boost REQUIRED COMPONENTS program_options)
 find_package(TBB REQUIRED)
 find_package(ZLIB REQUIRED)
@@ -22,7 +20,6 @@ include_directories(
     ${GMP_INCLUDE_DIR}
 )
 
-# Source discovery
 file(GLOB_RECURSE SRC_FILES "src/*.cpp" "src/*.cc")
 file(GLOB_RECURSE BIPE_FILES "3rdParty/bipe/src/*.cpp" "3rdParty/bipe/src/*.cc")
 file(GLOB_RECURSE FLOW_FILES "3rdParty/flowCutter/src/*.cpp" "3rdParty/flowCutter/src/*.cc")
@@ -34,11 +31,9 @@ set(SOURCES
     "3rdParty/glucose-3.0/core/Solver.cc"
 )
 
-# Exclude missing/optional components (proprietary or not in JLL)
 list(FILTER SOURCES EXCLUDE REGEX "PartitionerPatoh")
 list(FILTER SOURCES EXCLUDE REGEX "PartitionerKahypar")
 
-# Shared Library (Must-fix for Stefan)
 add_library(d4 SHARED ${SOURCES})
 target_compile_definitions(d4 PRIVATE NOMAIN)
 target_link_libraries(d4 
@@ -49,7 +44,6 @@ target_link_libraries(d4
     ZLIB::ZLIB
 )
 
-# Executable (Integrated into CMake as requested by Stefan)
 add_executable(d4-bin 
     demo/compiler/src/Main.cpp 
     demo/compiler/src/CompilerDemo.cpp 
@@ -58,7 +52,6 @@ add_executable(d4-bin
 set_target_properties(d4-bin PROPERTIES OUTPUT_NAME d4)
 target_link_libraries(d4-bin d4 ${Boost_LIBRARIES} TBB::tbb)
 
-# Installation
 install(TARGETS d4 d4-bin
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib

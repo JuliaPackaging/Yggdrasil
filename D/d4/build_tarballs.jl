@@ -16,6 +16,7 @@ cd ${WORKSPACE}/srcdir/d4v2
 # 1. Apply patches for portability and disabling non-free components
 atomic_patch ${WORKSPACE}/srcdir/01-glucose-fpu-fix.patch
 atomic_patch ${WORKSPACE}/srcdir/02-disable-patoh.patch
+atomic_patch ${WORKSPACE}/srcdir/03-portability-fixes.patch
 
 # 2. Use our clean CMakeLists.txt (replacing the upstream one which is not cross-friendly)
 cp ${WORKSPACE}/srcdir/CMakeLists.txt .
