@@ -9,7 +9,7 @@ name = "MPIABI"
 # OpenMPI's released versions.
 #
 # We are currently at version 0.1 because some details of the ABI are still being hashed out, e.g. the library SOVERSION.
-version = v"0.1.3"
+version = v"0.1.5"
 
 # The MPI ABI does not provide Fortran bindings. Packages using this
 # ABI should use a different package, e.g.
@@ -24,8 +24,11 @@ sources = [
     GitSource("https://github.com/mpi-forum/mpi-abi-stubs", "e3a9e9b16f86099723d287b6ab477626ab4956b8"),
 
     # MPICH source, implementing the C bindings
-    ArchiveSource("https://www.mpich.org/static/downloads/5.0.0/mpich-5.0.0.tar.gz",
-                  "e9350e32224283e95311f22134f36c98e3cd1c665d17fae20a6cc92ed3cffe11"),
+    ArchiveSource("https://www.mpich.org/static/downloads/5.0.1/mpich-5.0.1.tar.gz",
+                  "8c1832a13ddacf071685069f5fadfd1f2877a29e1a628652892c65211b1f3327"),
+    FileSource("https://github.com/pmodels/mpich/commit/689a0869c8f58167e3b0b5db13f8ce8db5f24009.patch?full_index=1",
+               "0cfb0980cd8b4debc7899fdb247aa3c4cb27b52e58e1a1f1bec1b096ec318f32";
+               filename="689a0869c8f58167e3b0b5db13f8ce8db5f24009.patch"),
 
     # Patches
     DirectorySource("bundled"),
@@ -44,6 +47,14 @@ cd ${WORKSPACE}/srcdir/mpich*
 # (The MPICH developers say that this is a bug in MPICH and that
 # `<pthread_np.h>` should not actually be used on FreeBSD.)
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pthread_np.patch
+
+# Correct 32-bit bug in MPICH <https://github.com/pmodels/mpich/pull/7776>
+atomic_patch -p1 ${WORKSPACE}/srcdir/689a0869c8f58167e3b0b5db13f8ce8db5f24009.patch
+
+# Add C bindings missing from the MPI ABI
+cp ${WORKSPACE}/srcdir/files/fortran_binding_abi.c src/binding/abi/fortran_binding_abi.c
+perl -pi -e 's!src/binding/abi/c_binding_abi.c!src/binding/abi/c_binding_abi.c src/binding/abi/fortran_binding_abi.c!' src/binding/abi/Makefile.mk
+./autogen.sh
 
 # - Do not install doc and man files which contain files which clashing names on
 #   case-insensitive file systems:
@@ -136,6 +147,9 @@ fi
 
 ./configure "${configure_flags[@]}"
 
+# Disable MPI_File_{c2f,f2c} that shouldn't be there <https://github.com/pmodels/mpich/pull/7777>
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mpich-disable-file.patch
+
 # Remove empty `-l` flags from libtool
 # (Why are they there? They should not be.)
 # Run the command several times to handle multiple (overlapping) occurrences.
@@ -210,7 +224,7 @@ cd ${WORKSPACE}/srcdir/mpi-abi-stubs
 #
 # MPI programs may expect it, but the MPI ABI standard intentionally excludes it.
 # We choose to provide a Fortran ABI as well, and therefore we need to define it here.
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fortran.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mpi.h.patch
 
 # Install the official MPI ABI header file
 install -Dvm 644 mpi.h ${includedir}/mpi.h

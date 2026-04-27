@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Libgcrypt"
-version = v"1.12.1"
+version = v"1.12.2"
 
 # Collection of sources required to build libgcrypt
 sources = [
     ArchiveSource("https://gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-$(version).tar.bz2",
-                  "7df5c08d952ba33f9b6bdabdb06a61a78b2cf62d2122c2d1d03a91a79832aa3c"),
+                  "7ce33c2492221a0436f96a8500215e9f3e3dcb5fd26a757cd415e7a843babd5e"),
 ]
 
 # Bash recipe for building across all platforms
