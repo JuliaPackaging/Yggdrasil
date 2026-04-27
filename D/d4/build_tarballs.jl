@@ -5,7 +5,7 @@ version = v"2.0.0"
 
 # Collection of sources
 sources = [
-    GitSource("https://github.com/crillab/d4v2.git", "c6d1209b55f6979687e4125868a2656910609b53"),
+    GitSource("https://github.com/crillab/d4v2.git", "15eff31962466804a48374826b9e5a746fc2766e"),
     DirectorySource(joinpath(@__DIR__, "patches"))
 ]
 
