@@ -36,7 +36,7 @@ if [[ "${target}" == *mingw* ]]; then
 else
     LIBLEMON=emon
 fi
-$CXX -shared -std=c++17 -O3 -fPIC -o ${libdir}/liblemoncxxwrap.${dlext} cxxwrap/lemoncxxwrap.cpp -I$includedir/julia -L${libdir} -l${LIBLEMON} -ljulia -lcxxwrap_julia
+$CXX -shared -std=c++17 -O3 -fPIC -o ${libdir}/liblemoncxxwrap.${dlext} cxxwrap/lemoncxxwrap.cpp -I$includedir -I$includedir/julia -L${libdir} -l${LIBLEMON} -ljulia -lcxxwrap_julia
 """
 
 # These are the platforms we will build for by default, unless further
@@ -59,7 +59,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("libcxxwrap_julia_jll"; compat = "~0.14.4"),
+    # Keep on newer 0.14.x so julia_version+1.14 platforms get complete cxxwrap artifacts
+    # (including jlcxx headers needed at build time).
+    Dependency("libcxxwrap_julia_jll"; compat = "~0.14.9"),
     BuildDependency("libjulia_jll")
 ]
 
