@@ -42,21 +42,13 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
   mod.add_type<ListGraph>("ListGraph")
     .method("addNode"  , &ListGraph::addNode)
     .method("addEdge"  , &ListGraph::addEdge)
-    .method("nodeFromId", &ListGraph::nodeFromId)
-    .method("edgeFromId", &ListGraph::edgeFromId)
-    .method("u", static_cast<ListGraph::Node (ListGraph::*)(const ListGraph::Edge&) const>(&ListGraph::u))
-    .method("v", static_cast<ListGraph::Node (ListGraph::*)(const ListGraph::Edge&) const>(&ListGraph::v))
-    .method("nodeNum", static_cast<int (ListGraph::*)() const>(&ListGraph::nodeNum))
-    .method("edgeNum", static_cast<int (ListGraph::*)() const>(&ListGraph::edgeNum));
+    .method("u", [](const ListGraph& g, const ListGraph::Edge& e) { return g.u(e); })
+    .method("v", [](const ListGraph& g, const ListGraph::Edge& e) { return g.v(e); });
   mod.add_type<ListDigraph>("ListDigraph")
     .method("addNode"  , &ListDigraph::addNode)
     .method("addArc"   , &ListDigraph::addArc)
-    .method("nodeFromId", &ListDigraph::nodeFromId)
-    .method("arcFromId", &ListDigraph::arcFromId)
-    .method("source", static_cast<ListDigraph::Node (ListDigraph::*)(const ListDigraph::Arc&) const>(&ListDigraph::source))
-    .method("target", static_cast<ListDigraph::Node (ListDigraph::*)(const ListDigraph::Arc&) const>(&ListDigraph::target))
-    .method("nodeNum", static_cast<int (ListDigraph::*)() const>(&ListDigraph::nodeNum))
-    .method("arcNum", static_cast<int (ListDigraph::*)() const>(&ListDigraph::arcNum));
+    .method("source", [](const ListDigraph& g, const ListDigraph::Arc& a) { return g.source(a); })
+    .method("target", [](const ListDigraph& g, const ListDigraph::Arc& a) { return g.target(a); });
 
   mod.add_type<ListGraph::NodeIt>("ListGraphNodeIt", jlcxx::julia_base_type<ListGraph::Node>())
     .constructor<const ListGraph&>()
@@ -89,9 +81,14 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
     .method("set", &ListDigraph::ArcMap<int>::set)
     .method("get", [](const ListDigraph::ArcMap<int>& m, const ListDigraph::Arc& a) { return m[a]; });
 
+  mod.method("ListGraphNodeFromId", [](int i) { return ListGraph::nodeFromId(i); });
+  mod.method("ListGraphEdgeFromId", [](int i) { return ListGraph::edgeFromId(i); });
+  mod.method("ListDigraphNodeFromId", [](int i) { return ListDigraph::nodeFromId(i); });
+  mod.method("ListDigraphArcFromId", [](int i) { return ListDigraph::arcFromId(i); });
+
   using DijkstraInt = Dijkstra<ListDigraph, ListDigraph::ArcMap<int>>;
-  using DijkstraRunS = void (DijkstraInt::*)(const ListDigraph::Node&);
-  using DijkstraRunST = void (DijkstraInt::*)(const ListDigraph::Node&, const ListDigraph::Node&);
+  using DijkstraRunS = void (DijkstraInt::*)(ListDigraph::Node);
+  using DijkstraRunST = bool (DijkstraInt::*)(ListDigraph::Node, ListDigraph::Node);
   DijkstraRunS dijkstra_run_s = &DijkstraInt::run;
   DijkstraRunST dijkstra_run_st = &DijkstraInt::run;
   mod.add_type<DijkstraInt>("DijkstraListDigraphArcMapInt")
