@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Rclone"
-version = v"1.73.3"
+version = v"1.73.5"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/rclone/rclone/releases/download/v$(version)/rclone-v$(version).tar.gz",
-                  "608dde134e02a429b95ae566d638e514a9a658d0d69c35812069cf1c1b8f24af"),
+                  "19c929ce2f54bd22af2db4dd9d2a289499b02274f9f7d3c6639090761adfab1f"),
     DirectorySource("bundled"),
 ]
 
