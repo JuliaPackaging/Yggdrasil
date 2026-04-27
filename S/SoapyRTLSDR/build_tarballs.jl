@@ -12,7 +12,7 @@ sources = [
 
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency("librtlsdr_jll"; compat="0.6.0"),
+    Dependency("librtlsdr_jll"; compat="0.6.0, 2.0.2"),
     Dependency("soapysdr_jll"; compat="0.8.0")
 ]
 
@@ -34,7 +34,12 @@ fi
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> arch(p) != "armv6l", supported_platforms(;experimental=true))
+platforms = filter!(supported_platforms(;experimental=true)) do p
+    arch(p) == "armv6l" && return false
+    arch(p) == "aarch64" && os(p) == "freebsd" && return false
+    arch(p) == "riscv64" && return false
+    return true
+end
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
