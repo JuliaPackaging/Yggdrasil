@@ -1,23 +1,12 @@
---- a/src/problem/circuit/ParserCircuit.cpp
-+++ b/src/problem/circuit/ParserCircuit.cpp
-@@ -107,7 +107,7 @@
-     if (line.rfind("c w ", 0) == 0) {
-       std::stringstream ss(line);
-       std::string tmp;
-       ss >> tmp >> tmp;
+# Fix types for portability
+--- src/problem/circuit/ParserCircuit.cpp
++++ src/problem/circuit/ParserCircuit.cpp
+@@ -111,1 +111,1 @@
 -      u_int32_t var;
 +      uint32_t var;
-       double weight;
-       ss >> var >> weight;
-       weights[var] = weight;
---- a/3rdParty/bipe/src/solver/Solver.hpp
-+++ b/3rdParty/bipe/src/solver/Solver.hpp
-@@ -51,7 +51,7 @@
- namespace bipe {
- 
- /**
-- * @brief u_int32_t variable
-+ * @brief uint32_t variable
-  *
-  */
- using Var = uint32_t;
+
+--- 3rdParty/bipe/src/solver/Solver.hpp
++++ 3rdParty/bipe/src/solver/Solver.hpp
+@@ -51,1 +51,1 @@
+-using Var = u_int32_t;
++using Var = uint32_t;

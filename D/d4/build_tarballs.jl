@@ -13,10 +13,10 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/d4v2
 
-# 1. Apply patches for portability and disabling non-free components
-atomic_patch ${WORKSPACE}/srcdir/01-glucose-fpu-fix.patch
-atomic_patch ${WORKSPACE}/srcdir/02-disable-patoh.patch
-atomic_patch ${WORKSPACE}/srcdir/03-portability-fixes.patch
+# 1. Apply patches (using -p0 for simplified paths)
+atomic_patch ${WORKSPACE}/srcdir/d4v2 ${WORKSPACE}/srcdir/01-glucose-fpu-fix.patch -p0
+atomic_patch ${WORKSPACE}/srcdir/d4v2 ${WORKSPACE}/srcdir/02-disable-patoh.patch -p0
+atomic_patch ${WORKSPACE}/srcdir/d4v2 ${WORKSPACE}/srcdir/03-portability-fixes.patch -p0
 
 # 2. Use our clean CMakeLists.txt (replacing the upstream one which is not cross-friendly)
 cp ${WORKSPACE}/srcdir/CMakeLists.txt .
