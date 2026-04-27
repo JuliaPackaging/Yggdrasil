@@ -1,37 +1,36 @@
-using BinaryBuilder, BinaryBuilderBase
+using BinaryBuilder
 
 name = "d4"
 version = v"2.0.0"
 
-# Using official upstream repository with fixed latest commit hash
+# Collection of sources
 sources = [
-    GitSource("https://github.com/crillab/d4v2.git", "15eff31962466804a48374826b9e5a746fc2766e"),
-    DirectorySource("./patches"; target="patches")
+    GitSource("https://github.com/crillab/d4v2.git", "c6d1209b55f6979687e4125868a2656910609b53"),
+    DirectorySource(joinpath(@__DIR__, "patches"))
 ]
 
+# Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/d4v2*
+cd ${WORKSPACE}/srcdir/d4v2
 
-# 1. Apply logic, build system, and platform fixes via patch file
-# Path is now guaranteed by DirectorySource target="patches"
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/d4-all-fixes.patch
+# 1. Apply patches for portability and disabling non-free components
+atomic_patch ${WORKSPACE}/srcdir/01-glucose-fpu-fix.patch
+atomic_patch ${WORKSPACE}/srcdir/02-disable-patoh.patch
 
-# 2. Inject broad compatibility headers (cstdint, stdexcept)
-find . -type f \( -name "*.cpp" -o -name "*.hpp" -o -name "*.cc" -o -name "*.h" \) -exec sed -i '1i #include <cstdint>\n#include <stdexcept>' {} +
-# Fix u_int types globally (fallback for non-glibc systems)
-find . -type f \( -name "*.cpp" -o -name "*.hpp" -o -name "*.cc" -o -name "*.h" \) -exec sed -i 's/u_int\([0-9]\+\)_t/uint\1_t/g' {} +
+# 2. Use our clean CMakeLists.txt (replacing the upstream one which is not cross-friendly)
+cp ${WORKSPACE}/srcdir/CMakeLists.txt .
 
-# 3. Build using CMake
+# 3. Build using CMake (both shared library and executable)
 mkdir build && cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
+cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
+         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+         -DCMAKE_BUILD_TYPE=Release
 make -j${nproc}
 make install
-
-# 4. License
-install_license ../LICENSE
 """
 
 platforms = supported_platforms()
+platforms = expand_cxxstring_abis(platforms)
 
 products = [
     ExecutableProduct("d4", :d4),
@@ -43,8 +42,11 @@ dependencies = [
     Dependency("boost_jll"; compat="1.79.0"),
     Dependency("oneTBB_jll"),
     Dependency("Zlib_jll"),
-    # CompilerSupportLibraries is required on Windows to bundle runtime DLLs (libstdc++, libgcc)
-    Dependency("CompilerSupportLibraries_jll"; platforms=filter(Sys.iswindows, platforms))
+    # CompilerSupportLibraries_jll is required for GCC runtime on Windows
+    Dependency("CompilerSupportLibraries_jll"; platforms=filter(Sys.iswindows, platforms)),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"11")
+# preferred_gcc_version=v"11" is REQUIRED for Boost 1.87 compatibility.
+# We use julia_compat="1.10" to resolve the conflict with GCC 11.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
+               julia_compat="1.10", preferred_gcc_version=v"11")

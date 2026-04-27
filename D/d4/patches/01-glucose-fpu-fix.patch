@@ -1,0 +1,21 @@
+--- a/3rdParty/glucose-3.0/utils/System.h
++++ b/3rdParty/glucose-3.0/utils/System.h
+@@ -21,7 +21,7 @@
+ #ifndef Glucose_System_h
+ #define Glucose_System_h
+ 
+-#if defined(__linux__)
++#if defined(__linux__) && defined(__GLIBC__)
+ #include <fpu_control.h>
+ #endif
+ 
+--- a/3rdParty/glucose-3.0/utils/System.cc
++++ b/3rdParty/glucose-3.0/utils/System.cc
+@@ -73,7 +73,7 @@
+ void Glucose::limitMemory(uint64_t max_mem_mb)
+ { libc_limitMemory(max_mem_mb); }
+ 
+-#elif defined(__linux__)
++#elif defined(__linux__) && defined(__GLIBC__)
+ 
+ #include <fpu_control.h>

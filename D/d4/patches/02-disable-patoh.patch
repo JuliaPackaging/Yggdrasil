@@ -1,0 +1,19 @@
+--- a/src/partitioner/PartitionerManager.cpp
++++ b/src/partitioner/PartitionerManager.cpp
+@@ -2,7 +2,6 @@
+ #include "PartitionerFlowCutter.hpp"
+ #include "PartitionerKahypar.hpp"
+ #include "PartitionerNone.hpp"
+-#include "PartitionerPatoh.hpp"
+ #include "PartitionerShatter.hpp"
+ #include <iostream>
+ #include <stdexcept>
+@@ -40,8 +39,7 @@
+     case PARTITIONER_KAHYPAR:
+       return new PartitionerKahypar(infoHyperGraph, out);
+     case PARTITIONER_PATOH:
+-      return new PartitionerPatoh(infoHyperGraph, out);
++      throw std::runtime_error("Partitioner PaToH not supported");
+     case PARTITIONER_NONE:
+       return new PartitionerNone(infoHyperGraph, out);
+     case PARTITIONER_SHATTER:
