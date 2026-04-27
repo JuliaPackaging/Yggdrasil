@@ -6,13 +6,14 @@ version = v"2.0.0"
 # Using official upstream repository with fixed latest commit hash
 sources = [
     GitSource("https://github.com/crillab/d4v2.git", "15eff31962466804a48374826b9e5a746fc2766e"),
-    DirectorySource("./patches")
+    DirectorySource("./patches"; target="patches")
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/d4v2*
 
 # 1. Apply logic, build system, and platform fixes via patch file
+# Path is now guaranteed by DirectorySource target="patches"
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/d4-all-fixes.patch
 
 # 2. Inject broad compatibility headers (cstdint, stdexcept)
@@ -27,7 +28,7 @@ make -j${nproc}
 make install
 
 # 4. License
-install_license LICENSE
+install_license ../LICENSE
 """
 
 platforms = supported_platforms()
@@ -42,7 +43,7 @@ dependencies = [
     Dependency("boost_jll"; compat="1.79.0"),
     Dependency("oneTBB_jll"),
     Dependency("Zlib_jll"),
-    # CompilerSupportLibraries is required on Windows to bundle libstdc++ and libgcc runtime DLLs.
+    # CompilerSupportLibraries is required on Windows to bundle runtime DLLs (libstdc++, libgcc)
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(Sys.iswindows, platforms))
 ]
 
