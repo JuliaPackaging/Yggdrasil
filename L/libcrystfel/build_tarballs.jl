@@ -60,6 +60,7 @@ sources, script = require_macos_sdk("10.13", sources, script)
 # - Freebsd is not supported because crystfel doesn't recognize libutil.h to get
 #   forkpty().
 platforms = filter(p -> Sys.islinux(p) || Sys.isapple(p), supported_platforms())
+platforms = expand_cxxstring_abis(platforms)
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # The products that we will ensure are always built
