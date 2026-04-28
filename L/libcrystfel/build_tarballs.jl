@@ -23,12 +23,6 @@ mv ../fdip subprojects/fdip
 
 LINK_ARGS=''
 
-# Allow undefined symbols in linked libraries. Needed on some platforms because
-# our HDF5 is built with MPI support but we don't have MPI as a dependency.
-if [[ ${target} != *-apple-* ]]; then
-   LINK_ARGS='-Wl,--allow-shlib-undefined'
-fi
-
 # Handle argp on glibc/musl
 if [[ ${target} == *-musl* || ${target} == *-apple-* ]]; then
     LINK_ARGS="${LINK_ARGS} -largp"
