@@ -7,7 +7,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "libsemigroups_julia"
-version = v"0.1.0"
+version = v"0.1.1"
 
 # Collection of sources required to build libsemigroups_julia
 sources = [
