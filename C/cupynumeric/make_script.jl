@@ -83,7 +83,8 @@ function get_script(cuda::Val{true})
             -Dcutensor_LIBRARY=${libdir}/libcutensor.so \
             -Dcutensor_INCLUDE_DIR=${includedir} \
             -DBLAS_LIBRARIES=${libdir}/libopenblas.so \
-            -Dcupynumeric_USE_CUSOLVERMP=0 
+            -Dcupynumeric_USE_CUSOLVERMP=0 \
+            -DCMAKE_CUDA_ARCHITECTURES="70;75;80;86;89;90;100;103"
             
 
         cmake --build build --parallel ${nproc} --verbose
