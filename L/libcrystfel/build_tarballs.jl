@@ -94,8 +94,8 @@ dependencies = [
     # Eigen is required for fdip. It's a header-only library so we can get away
     # with it only being a build dependency.
     BuildDependency("Eigen_jll"),
-    Dependency("HDF5_jll"),
-    Dependency("GSL_jll"),
+    Dependency("HDF5_jll"; compat="~2.1"),
+    Dependency("GSL_jll"; compat="~2.7.2"),
     Dependency("argp_standalone_jll")
 ]
 
