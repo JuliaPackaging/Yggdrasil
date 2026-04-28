@@ -2,7 +2,9 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-include(joinpath("..", "..", "platforms", "macos_sdks.jl"))
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "libcrystfel"
 version = v"0.12.0"
@@ -58,6 +60,7 @@ sources, script = require_macos_sdk("10.13", sources, script)
 # - Freebsd is not supported because crystfel doesn't recognize libutil.h to get
 #   forkpty().
 platforms = filter(p -> Sys.islinux(p) || Sys.isapple(p), supported_platforms())
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -98,9 +101,17 @@ dependencies = [
     Dependency("GSL_jll"; compat="~2.8.1"),
     Dependency("argp_standalone_jll")
 ]
+append!(dependencies, platform_dependencies)
+
+augment_platform_block = """
+    using Base.BinaryPlatforms
+    $(MPI.augment)
+    augment_platform!(platform::Platform) = augment_mpi!(platform)
+    """
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               augment_platform_block,
                julia_compat="1.10",
                # Need this to find the linker on macos
                clang_use_lld=false,
