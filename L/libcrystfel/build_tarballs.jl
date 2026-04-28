@@ -95,7 +95,7 @@ dependencies = [
     # with it only being a build dependency.
     BuildDependency("Eigen_jll"),
     Dependency("HDF5_jll"; compat="~2.1"),
-    Dependency("GSL_jll"; compat="~2.7.2"),
+    Dependency("GSL_jll"; compat="~2.8.1"),
     Dependency("argp_standalone_jll")
 ]
 
