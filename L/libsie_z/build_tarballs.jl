@@ -40,35 +40,7 @@ install_license LICENSE
 
 # Platforms
 # All BinaryBuilder-supported platforms 
-platforms = [
-    # Linux glibc
-    Platform("i686",    "linux"; libc="glibc"),
-    Platform("x86_64",  "linux"; libc="glibc"),
-    Platform("aarch64", "linux"; libc="glibc"),
-    Platform("armv6l",  "linux"; libc="glibc", call_abi="eabihf"),
-    Platform("armv7l",  "linux"; libc="glibc", call_abi="eabihf"),
-    Platform("powerpc64le", "linux"; libc="glibc"),
-    Platform("riscv64", "linux"; libc="glibc"),
-
-    # Linux musl
-    Platform("i686",    "linux"; libc="musl"),
-    Platform("x86_64",  "linux"; libc="musl"),
-    Platform("aarch64", "linux"; libc="musl"),
-    Platform("armv6l",  "linux"; libc="musl", call_abi="eabihf"),
-    Platform("armv7l",  "linux"; libc="musl", call_abi="eabihf"),
-
-    # macOS
-    Platform("x86_64",  "macos"),
-    Platform("aarch64", "macos"),
-
-    # FreeBSD
-    Platform("x86_64",  "freebsd"),
-    Platform("aarch64", "freebsd"),
-
-    # Windows
-    Platform("i686",    "windows"),
-    Platform("x86_64",  "windows"),
-]
+platforms = supported_platforms()
 
 # Products
 # Zig emits `libsie.{so,dylib}` on Unix and `sie.dll` on Windows (no `lib`
