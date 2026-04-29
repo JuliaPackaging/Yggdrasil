@@ -59,6 +59,7 @@ for platform in all_platforms
     should_build_platform(triplet(platform)) || continue
 
     platform_sources = BinaryBuilder.AbstractSource[sources...]
+    platform_products = BinaryBuilderBase.Product[products...]
 
     _dependencies = copy(dependencies)
     script = get_script(Val{false}())
@@ -80,14 +81,14 @@ for platform in all_platforms
 
         # Necessary for some development workflows 
         # to re-build things locally.
-        products = [FileProduct("cuda.h"), products...]
+        push!(platform_products, FileProduct("cuda.h"))
 
         script = get_script(Val{true}())
     end # else CPU-only build
 
     build_tarballs(
         ARGS, name, version, platform_sources, 
-        script, [platform], products, _dependencies;
+        script, [platform], platform_products, _dependencies;
         julia_compat = "1.10", 
         preferred_gcc_version = v"11",
         lazy_artifacts = true, dont_dlopen = true,
