@@ -9,7 +9,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 include("make_script.jl")
 
 name = "cupynumeric"
-version = v"26.01"
+version = v"25.10.3"
 sources = [
     GitSource("https://github.com/nv-legate/cupynumeric.git","ae1c787828a9327ad00a076739706f41d196a043"),
     GitSource("https://github.com/MatthewsResearchGroup/tblis.git", "c4f81e08b2827e72335baa7bf91a245f72c43970"),
@@ -47,7 +47,7 @@ products = [
 ] 
 
 dependencies = [
-    Dependency("legate_jll"; compat = "~26.01"), # Legate versioning is Year.Month
+    Dependency("legate_jll"; compat = "=25.10.2"), # Legate versioning is Year.Month
     # Dependency("CUTENSOR_jll", compat = "2.2"), # supplied via ArchiveSource
     Dependency("OpenBLAS32_jll"),
     HostBuildDependency(PackageSpec(; name = "CMake_jll", version = "3.31.9")),
@@ -77,6 +77,10 @@ for platform in all_platforms
         if arch(platform) == "aarch64"
             push!(platform_sources, CUDA.cuda_nvcc_redist_source(cuda_ver, "x86_64"))
         end
+
+        # Necessary for some development workflows 
+        # to re-build things locally.
+        products = [FileProduct("cuda.h"), products...]
 
         script = get_script(Val{true}())
     end # else CPU-only build
