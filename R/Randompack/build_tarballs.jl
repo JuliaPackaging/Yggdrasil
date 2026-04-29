@@ -54,6 +54,11 @@ export PKG_CONFIG_PATH="$P1:${PKG_CONFIG_PATH:-}"
 export CPPFLAGS="-I${prefix}/include ${CPPFLAGS:-}"
 export LDFLAGS="-L${prefix}/lib -L${prefix}/lib64 ${LDFLAGS:-}"
 
+EXTRA_MESON_FLAGS=""
+if [[ "${target}" == x86_64-w64-mingw32 ]]; then
+  EXTRA_MESON_FLAGS="-Dforce_nosimd=true"
+fi
+
 meson setup build $SRC \
   --cross-file=${MESON_TARGET_TOOLCHAIN} \
   --buildtype=release \
@@ -62,7 +67,8 @@ meson setup build $SRC \
   -Dblas=openblas \
   -Dbuild_examples=false \
   -Dbuild_tests=false \
-  -Dbuild_fortran_interface=false
+  -Dbuild_fortran_interface=false \
+  ${EXTRA_MESON_FLAGS}
 
 ninja -C build
 ninja -C build install
