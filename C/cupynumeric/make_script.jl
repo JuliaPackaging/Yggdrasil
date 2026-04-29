@@ -35,6 +35,7 @@ function get_script(cuda::Val{true})
         export CUDACXX=$CUDA_HOME/bin/nvcc
 
         ln -s ${CUDA_HOME}/lib ${CUDA_HOME}/lib64
+        
 
         ## BUILD TBLIS ##
         cd ${WORKSPACE}/srcdir/tblis
@@ -121,6 +122,10 @@ function get_script(cuda::Val{false})
         export PATH=${host_bindir}:$PATH
 
         ln -s ${CUDA_HOME}/lib ${CUDA_HOME}/lib64
+
+        # Patch cupynumeric src code missing header include
+        cd $WORKSPACE/srcdir
+        atomic_patch -p1 cstring.patch
 
         ## BUILD TBLIS ##
         cd ${WORKSPACE}/srcdir/tblis
