@@ -93,6 +93,9 @@ function get_script(cuda::Val{true})
 
         install_license $WORKSPACE/srcdir/cupynumeric*/LICENSE
         install_license $WORKSPACE/srcdir/share/licenses/CUTENSOR/LICENSE
+
+        cp ${CUDA_HOME}/include/cuda.h ${includedir}/cuda.h
+        ls ${includedir}
     """
 
     return script
