@@ -82,7 +82,7 @@ for platform in all_platforms
 
         # Necessary for some development workflows 
         # to re-build things locally.
-        push!(platform_products, FileProduct("cuda.h"))
+        push!(platform_products, FileProduct(["cuda.h", "include/cuda.h"], :cuda_header))
 
         script = get_script(Val{true}())
     end # else CPU-only build
