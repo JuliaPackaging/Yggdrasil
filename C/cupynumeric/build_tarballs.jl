@@ -1,4 +1,5 @@
 using BinaryBuilder
+import BinaryBuilderBase
 import Pkg: PackageSpec
 using Base.BinaryPlatforms: arch, os, tags
 
@@ -59,6 +60,7 @@ for platform in all_platforms
     should_build_platform(triplet(platform)) || continue
 
     platform_sources = BinaryBuilder.AbstractSource[sources...]
+    platform_products = BinaryBuilderBase.Product[products...]
 
     _dependencies = copy(dependencies)
     script = get_script(Val{false}())
@@ -78,12 +80,16 @@ for platform in all_platforms
             push!(platform_sources, CUDA.cuda_nvcc_redist_source(cuda_ver, "x86_64"))
         end
 
+        # Necessary for some development workflows 
+        # to re-build things locally.
+        push!(platform_products, FileProduct("cuda.h"))
+
         script = get_script(Val{true}())
     end # else CPU-only build
 
     build_tarballs(
         ARGS, name, version, platform_sources, 
-        script, [platform], products, _dependencies;
+        script, [platform], platform_products, _dependencies;
         julia_compat = "1.10", 
         preferred_gcc_version = v"11",
         lazy_artifacts = true, dont_dlopen = true,
