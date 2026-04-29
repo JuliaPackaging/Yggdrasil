@@ -12,7 +12,7 @@ include("make_script.jl")
 name = "cupynumeric"
 version = v"25.10.3"
 sources = [
-    GitSource("https://github.com/nv-legate/cupynumeric.git","ae1c787828a9327ad00a076739706f41d196a043"),
+    GitSource("https://github.com/nv-legate/cupynumeric.git","66d872d22d66d78f42e91778a6b1c731e796d1f4"),
     GitSource("https://github.com/MatthewsResearchGroup/tblis.git", "c4f81e08b2827e72335baa7bf91a245f72c43970"),
     FileSource("https://repo.anaconda.com/miniconda/Miniconda3-py311_24.3.0-0-Linux-x86_64.sh", 
                 "4da8dde69eca0d9bc31420349a204851bfa2a1c87aeb87fe0c05517797edaac4", "miniconda.sh"),    
