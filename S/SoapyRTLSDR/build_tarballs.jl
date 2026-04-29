@@ -3,7 +3,8 @@
 using BinaryBuilder, Pkg
 
 name = "SoapyRTLSDR"
-version = v"0.3.3"
+# bumped to 300 to be able to update the compat with 2.0.2. 
+version = v"0.3.300"
 
 # Collection of sources required to complete build
 sources = [
