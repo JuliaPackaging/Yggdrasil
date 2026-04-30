@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms: arch, os, tags
 
-const YGGDRASIL_DIR = "../.."
+const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "libigc_LTS"
