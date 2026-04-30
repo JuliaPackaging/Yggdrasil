@@ -263,7 +263,7 @@ build_petsc()
         --with-scalapack-lib=${libdir}/libscalapack32.${dlext} \
         --with-scalapack-include=${includedir} \
         --with-suitesparse-lib="${SUITESPARSE_LIBS}" \
-        --with-suitesparse-include=${includedir} \
+        --with-suitesparse-include=${includedir}/suitesparse \
         --download-superlu_dist=${USE_SUPERLU_DIST} \
         --download-superlu_dist-shared=0 \
         --download-hypre=${USE_HYPRE} \
