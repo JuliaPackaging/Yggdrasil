@@ -42,8 +42,6 @@ fi
     --build=${MACHTYPE} \
     --host=${target} \
     --with-gaproot=${prefix}/lib/gap \
-    --disable-hpcombi \
-    --disable-backward \
     --with-external-libsemigroups \
     "${EXTRA_FLAGS[@]}"
 make -j${nproc}
