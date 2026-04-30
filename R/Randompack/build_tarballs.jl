@@ -56,6 +56,7 @@ export LDFLAGS="-L${prefix}/lib -L${prefix}/lib64 ${LDFLAGS:-}"
 
 if [[ "${target}" == x86_64-w64-mingw32 ]]; then
   sed -i "s/build_avx512 = build_avx512 and build_avx2/build_avx512 = build_avx512 and build_avx2 and host_system != 'windows'/" $SRC/meson.build
+  sed -i "/randompack_avx2_used/d; /randompack_avx2_reset/d" $SRC/src/randompack.def
 fi
 
 meson setup build $SRC \
