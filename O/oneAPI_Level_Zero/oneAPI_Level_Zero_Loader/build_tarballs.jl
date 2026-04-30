@@ -22,9 +22,12 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Platform("i686", "linux"; libc="glibc"),
+    # i686 dropped: level-zero >=1.28 has a 32-bit-only redefinition bug in
+    # source/utils/ze_to_string.h — the `#if SIZE_MAX != UINT64_MAX` guard
+    # forgets that size_t == uint32_t on i686, so to_string(size_t) collides
+    # with to_string(uint32_t). No consumer in the Intel GPU stack needs i686
+    # (NEO, libigc, oneAPI_Support are all x86_64-only), so we just drop it.
     Platform("x86_64", "linux"; libc="glibc"),
-    Platform("i686", "linux"; libc="musl"),
     Platform("x86_64", "linux"; libc="musl"),
 ]
 platforms = expand_cxxstring_abis(platforms)
