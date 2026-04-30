@@ -117,15 +117,6 @@ build_petsc()
         USE_SUPERLU_DIST=0
     fi
 
-    # install suitesparse if available - note that this shipped with julia and therefore linked to specific julia versions
-    USE_SUITESPARSE=0
-    if [ "${1}" == "double" ]; then
-        USE_SUITESPARSE=1
-    fi
-    if [[ "${target}" == *-mingw* ]]; then
-        USE_SUITESPARSE=0
-    fi
-
     # See if we can install MUMPS
     USE_MUMPS=0
     if [[ "${target}" == *-mingw* ]]; then
@@ -200,7 +191,6 @@ build_petsc()
         MPI_FC=${FC}
         MPI_CXX=${CXX}
         USE_SUPERLU_DIST=0
-        USE_SUITESPARSE=0
         USE_HYPRE=0
     fi
     if [[ "${target}" == powerpc64le-linux-* ]] || [[ "${target}" == aarch64-linux-* ]] || [[ "${target}" == arm-linux-* ]]; then
@@ -267,8 +257,8 @@ build_petsc()
         --PETSC_ARCH=${target}_${PETSC_CONFIG} \
         --with-scalapack-lib=${libdir}/libscalapack32.${dlext} \
         --with-scalapack-include=${includedir} \
-        --download-suitesparse=${USE_SUITESPARSE} \
-        --download-suitesparse-shared=0 \
+        --with-suitesparse-lib=${libdir}/libsuitesparse32.${dlext} \
+        --with-suitesparse-include=${includedir} \
         --download-superlu_dist=${USE_SUPERLU_DIST} \
         --download-superlu_dist-shared=0 \
         --download-hypre=${USE_HYPRE} \
@@ -428,6 +418,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
     Dependency(PackageSpec(name="SCALAPACK32_jll", uuid="aabda75e-bfe4-5a37-92e3-ffe54af3c273"); compat="2.2.3"),
+    Dependency("SuiteSparse32_jll"),
 
     BuildDependency("LLVMCompilerRT_jll"; platforms=[Platform("aarch64", "macos")]),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
