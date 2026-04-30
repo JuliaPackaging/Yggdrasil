@@ -62,7 +62,7 @@ dependencies = gap_pkg_dependencies(gap_version)
 platforms = gap_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
-push!(dependencies, Dependency("libsemigroups_jll", compat = "=3.5.3"))
+push!(dependencies, Dependency("libsemigroups_jll", compat = "=3.5.5"))
 
 # The products that we will ensure are always built
 products = [
