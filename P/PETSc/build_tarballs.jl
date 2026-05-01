@@ -117,6 +117,12 @@ build_petsc()
         USE_SUPERLU_DIST=0
     fi
 
+    # SuiteSparse only supports double precision
+    USE_SUITESPARSE=0
+    if [ "${1}" == "double" ]; then
+        USE_SUITESPARSE=1
+    fi
+
     # See if we can install MUMPS
     USE_MUMPS=0
     if [[ "${target}" == *-mingw* ]]; then
@@ -229,10 +235,14 @@ build_petsc()
 
     mkdir $libdir/petsc/${PETSC_CONFIG}
 
-    # Following spack here for which names to use
-    SUITESPARSE_NAMES=(umfpack klu cholmod btf ccolamd colamd camd amd suitesparseconfig spqr)
-    SUITESPARSE_LIBS=$(printf "${libdir}/lib%s.${dlext}," "${SUITESPARSE_NAMES[@]}")
-    SUITESPARSE_LIBS="[${SUITESPARSE_LIBS%,}]"
+    SUITESPARSE_OPTS=""
+    if [ ${USE_SUITESPARSE} == 1 ]; then
+        # Following spack here for which names to use
+        SUITESPARSE_NAMES=(umfpack klu cholmod btf ccolamd colamd camd amd suitesparseconfig spqr)
+        SUITESPARSE_LIBS=$(printf "${libdir}/lib%s.${dlext}," "${SUITESPARSE_NAMES[@]}")
+        SUITESPARSE_LIBS="[${SUITESPARSE_LIBS%,}]"
+        SUITESPARSE_OPTS="--with-suitesparse-lib=${SUITESPARSE_LIBS} --with-suitesparse-include=${includedir}/suitesparse"
+    fi
 
     # Step 1: build static libraries of external packages (happens during configure)
     # Note that mpicc etc. should be indicated rather than ${CC} to compile external packages
@@ -262,8 +272,7 @@ build_petsc()
         --PETSC_ARCH=${target}_${PETSC_CONFIG} \
         --with-scalapack-lib=${libdir}/libscalapack32.${dlext} \
         --with-scalapack-include=${includedir} \
-        --with-suitesparse-lib="${SUITESPARSE_LIBS}" \
-        --with-suitesparse-include=${includedir}/suitesparse \
+        ${SUITESPARSE_OPTS} \
         --download-superlu_dist=${USE_SUPERLU_DIST} \
         --download-superlu_dist-shared=0 \
         --download-hypre=${USE_HYPRE} \
