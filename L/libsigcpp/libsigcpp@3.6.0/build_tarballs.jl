@@ -16,7 +16,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/libsigc++*
 mkdir meson
 cd meson
-meson --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson
+meson --cross-file=${MESON_TARGET_TOOLCHAIN}
 ninja -j${nproc}
 ninja install
 """
