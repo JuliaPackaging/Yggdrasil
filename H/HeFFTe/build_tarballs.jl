@@ -5,6 +5,7 @@ using BinaryBuilder, Pkg
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "HeFFTe"
 version = v"2.4.1"
@@ -124,6 +125,7 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # Build the tarballs, and possibly a `build.jl` as well.
 for platform in all_platforms
+    should_build_platform(triplet(platform)) || continue
     _dependencies = copy(dependencies)
     if haskey(platform, "cuda") && platform["cuda"] != "none" && platform["mpi"] != "none"
         append!(_dependencies, cudampi_dependencies)
