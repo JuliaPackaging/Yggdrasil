@@ -77,7 +77,7 @@ augment_platform_block = """
 
 # HeFFTe requires MPI, so all platforms must have MPI.
 # Restrict to HPC-relevant Linux architectures.
-const hpc_archs = ("x86_64", "aarch64", "powerpc64le")
+const hpc_archs = ("x86_64", "aarch64")
 platforms = filter(p -> Sys.islinux(p) && arch(p) in hpc_archs, supported_platforms())
 platforms = expand_cxxstring_abis(platforms)
 
