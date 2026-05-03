@@ -84,7 +84,7 @@ platforms = expand_cxxstring_abis(platforms)
 mpi_platforms, mpi_dependencies = MPI.augment_platforms(platforms)
 
 # CUDA+MPI platforms (x86_64 only)
-cuda_platforms = expand_cxxstring_abis(CUDA.supported_platforms(min_version=v"11.0"))
+cuda_platforms = expand_cxxstring_abis(CUDA.supported_platforms(min_version=v"12.0"))
 filter!(p -> arch(p) == "x86_64", cuda_platforms)
 cudampi_platforms, cudampi_dependencies = MPI.augment_platforms(cuda_platforms)
 
