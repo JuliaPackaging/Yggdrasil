@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "libssh"
-version = v"0.11.3"
+version = v"0.11.4"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.libssh.org/files/$(version.major).$(version.minor)/libssh-$(version).tar.xz", "7d8a1361bb094ec3f511964e78a5a4dba689b5986e112afabe4f4d0d6c6125c3")
+    ArchiveSource("https://www.libssh.org/files/$(version.major).$(version.minor)/libssh-$(version).tar.xz",
+                  "002ac320e3d66c9e100ec6576e3e84aa0c48949efde3bf5b40a2802992297701")
 ]
 
 # Bash recipe for building across all platforms
