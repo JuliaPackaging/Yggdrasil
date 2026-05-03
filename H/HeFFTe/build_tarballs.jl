@@ -1,6 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, Pkg
+using BinaryBuilder, Pkg, BinaryBuilderBase
 
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
@@ -16,6 +16,7 @@ sources = [
 ]
 
 # Bash recipe for building across all platforms
+# Note: HeFFTe requires MPI unconditionally (find_package(MPI REQUIRED))
 script = raw"""
 cd $WORKSPACE/srcdir/heffte
 
@@ -35,19 +36,14 @@ else
     "
 fi
 
-# Detect MPI
-if [[ "${bb_full_target}" == *mpi\+none* ]]; then
-    MPI_OPTION="OFF"
-else
-    MPI_OPTION="ON"
-fi
-
 cmake -B build \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_FIND_ROOT_PATH="${prefix}/lib/mpich;${prefix}" \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
+    -DMPI_C_COMPILER=$bindir/mpicc \
+    -DMPI_CXX_COMPILER=$bindir/mpicxx \
     -DHeffte_ENABLE_FFTW=ON \
     -DHeffte_ENABLE_CUDA=${CUDA_OPTION} \
     -DHeffte_ENABLE_TESTING=OFF \
@@ -77,24 +73,22 @@ augment_platform_block = """
     end
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
+# HeFFTe requires MPI, so all platforms must have MPI.
+# Start with Linux-only MPI platforms.
 platforms = filter(Sys.islinux, supported_platforms())
 platforms = expand_cxxstring_abis(platforms)
 
+mpi_platforms, mpi_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.1", OpenMPI_compat="4.1.6, 5")
+
+# CUDA+MPI platforms (x86_64 only)
 cuda_platforms = expand_cxxstring_abis(CUDA.supported_platforms(min_version=v"11.0"))
 filter!(p -> arch(p) == "x86_64", cuda_platforms)
-
-mpi_platforms, mpi_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.1", OpenMPI_compat="4.1.6, 5")
 cudampi_platforms, cudampi_dependencies = MPI.augment_platforms(cuda_platforms; MPItrampoline_compat="5.3.1", OpenMPI_compat="4.1.6, 5")
 
-all_platforms = [platforms; cuda_platforms; mpi_platforms; cudampi_platforms]
+all_platforms = [mpi_platforms; cudampi_platforms]
 for platform in all_platforms
     if CUDA.is_supported(platform) && !haskey(platform, "cuda")
         platform["cuda"] = "none"
-    end
-    if !haskey(platform, "mpi")
-        platform["mpi"] = "none"
     end
 end
 
@@ -127,14 +121,11 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 for platform in all_platforms
     should_build_platform(triplet(platform)) || continue
     _dependencies = copy(dependencies)
-    if haskey(platform, "cuda") && platform["cuda"] != "none" && platform["mpi"] != "none"
+    if haskey(platform, "cuda") && platform["cuda"] != "none"
         append!(_dependencies, cudampi_dependencies)
         append!(_dependencies, CUDA.required_dependencies(platform))
         push!(_dependencies, Dependency(PackageSpec(name="CUDA_Driver_jll")))
-    elseif haskey(platform, "cuda") && platform["cuda"] != "none"
-        append!(_dependencies, CUDA.required_dependencies(platform))
-        push!(_dependencies, Dependency(PackageSpec(name="CUDA_Driver_jll")))
-    elseif platform["mpi"] != "none"
+    else
         append!(_dependencies, mpi_dependencies)
     end
     build_tarballs(ARGS, name, version, sources, script, [platform],
