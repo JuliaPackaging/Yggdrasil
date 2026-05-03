@@ -76,8 +76,9 @@ augment_platform_block = """
 """
 
 # HeFFTe requires MPI, so all platforms must have MPI.
-# Start with Linux-only platforms.
-platforms = filter(Sys.islinux, supported_platforms())
+# Restrict to HPC-relevant Linux architectures.
+const hpc_archs = ("x86_64", "aarch64", "powerpc64le")
+platforms = filter(p -> Sys.islinux(p) && arch(p) in hpc_archs, supported_platforms())
 platforms = expand_cxxstring_abis(platforms)
 
 # Use default MPI compat ranges from platforms/mpi.jl
@@ -95,9 +96,6 @@ for platform in all_platforms
     end
 end
 
-# Avoid platforms where the MPI implementation isn't supported
-all_platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "riscv64"), all_platforms)
-all_platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && arch(p) == "riscv64"), all_platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -106,6 +104,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = AbstractDependency[
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a"))
 ]
 
