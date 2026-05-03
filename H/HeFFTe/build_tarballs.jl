@@ -30,8 +30,10 @@ else
     export PATH=$PATH:$prefix/cuda/bin/
     export CUDA_PATH=$prefix/cuda/
     ln -s $prefix/cuda/lib/stubs/libcuda.so $prefix/cuda/lib/libcuda.so
+    ln -s $prefix/cuda/lib $prefix/cuda/lib64
     cmake_extra_args="\
         -DCUDA_TOOLKIT_ROOT_DIR=$prefix/cuda/ \
+        -DCMAKE_CUDA_HOST_COMPILER=$CXX \
         -DCMAKE_EXE_LINKER_FLAGS=-Wl,--allow-shlib-undefined \
     "
 fi
@@ -118,7 +120,7 @@ for platform in all_platforms
     _dependencies = copy(dependencies)
     if haskey(platform, "cuda") && platform["cuda"] != "none"
         append!(_dependencies, cudampi_dependencies)
-        append!(_dependencies, CUDA.required_dependencies(platform))
+        append!(_dependencies, CUDA.required_dependencies(platform, static_sdk=true))
         push!(_dependencies, Dependency(PackageSpec(name="CUDA_Driver_jll")))
     else
         append!(_dependencies, mpi_dependencies)
