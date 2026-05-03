@@ -74,16 +74,17 @@ augment_platform_block = """
 """
 
 # HeFFTe requires MPI, so all platforms must have MPI.
-# Start with Linux-only MPI platforms.
+# Start with Linux-only platforms.
 platforms = filter(Sys.islinux, supported_platforms())
 platforms = expand_cxxstring_abis(platforms)
 
-mpi_platforms, mpi_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.1", OpenMPI_compat="4.1.6, 5")
+# Use default MPI compat ranges from platforms/mpi.jl
+mpi_platforms, mpi_dependencies = MPI.augment_platforms(platforms)
 
 # CUDA+MPI platforms (x86_64 only)
 cuda_platforms = expand_cxxstring_abis(CUDA.supported_platforms(min_version=v"11.0"))
 filter!(p -> arch(p) == "x86_64", cuda_platforms)
-cudampi_platforms, cudampi_dependencies = MPI.augment_platforms(cuda_platforms; MPItrampoline_compat="5.3.1", OpenMPI_compat="4.1.6, 5")
+cudampi_platforms, cudampi_dependencies = MPI.augment_platforms(cuda_platforms)
 
 all_platforms = [mpi_platforms; cudampi_platforms]
 for platform in all_platforms
@@ -93,18 +94,12 @@ for platform in all_platforms
 end
 
 # Avoid platforms where the MPI implementation isn't supported
-# OpenMPI
-all_platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), all_platforms)
 all_platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "riscv64"), all_platforms)
-
-# MPItrampoline
-all_platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), all_platforms)
-all_platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), all_platforms)
 all_platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && arch(p) == "riscv64"), all_platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libheffte", "libheffte_fftw"], :libheffte)
+    LibraryProduct("libheffte", :libheffte)
 ]
 
 # Dependencies that must be installed before this package can be built
