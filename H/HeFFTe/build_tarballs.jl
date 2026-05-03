@@ -32,7 +32,6 @@ else
     ln -s $prefix/cuda/lib/stubs/libcuda.so $prefix/cuda/lib/libcuda.so
     ln -s $prefix/cuda/lib $prefix/cuda/lib64
     cmake_extra_args="\
-        -DCUDA_TOOLKIT_ROOT_DIR=$prefix/cuda/ \
         -DCMAKE_CUDA_HOST_COMPILER=$CXX \
         -DCMAKE_EXE_LINKER_FLAGS=-Wl,--allow-shlib-undefined \
     "
