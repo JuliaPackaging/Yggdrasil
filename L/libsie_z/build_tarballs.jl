@@ -7,10 +7,7 @@ version   = v"0.3.3"
 repo      = "https://github.com/efollman/libsie-z.git"
 tree_hash = "76034b20049e95da6a0380bc2d6c2634d227781c"
 
-# zig tarball
-# zig_version = "0.15.2"
-#zig_sha256  = "02aa270f183da276e5b5920b1dac44a63f1a49e55050ebde3aecc9eb82f93239"
-#zig_url     = "https://ziglang.org/download/$(zig_version)/zig-x86_64-linux-$(zig_version).tar.xz"
+zig_jll_version = v"0.15.2+1"
 
 sources = [
     GitSource(repo, tree_hash),
@@ -40,13 +37,11 @@ products = [
 #waiting on zig_jll to have musl linux artifact available
 dependencies = BinaryBuilder.AbstractDependency[
     HostBuildDependency(
-        PackageSpec(name = "zig_jll", version = v"0.15.2+1");
-        platforms = [Platform("x86_64", "linux"; libc = "glibc")],
+        PackageSpec(name = "zig_jll", version = zig_jll_version)
     ),
 ]
 
 build_tarballs(
     ARGS, name, version, sources, script, platforms, products, dependencies;
     julia_compat   = "1.9",
-    preferred_gcc_version = v"10",  # only used for the host-tool stage
 )
