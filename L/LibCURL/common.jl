@@ -31,7 +31,7 @@ const curl_hashes = Dict(
     v"8.20.0" => "fc5819cad3f9f5482669adcdc49a782c15f36d2a0715b395b06d9173593d2dc0",
 )
 
-function build_libcurl(ARGS, name::String, version::VersionNumber; ygg_version=version, with_zstd=false)
+function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=false)
     hash = curl_hashes[version]
 
     if name == "CURL"
@@ -74,7 +74,7 @@ function build_libcurl(ARGS, name::String, version::VersionNumber; ygg_version=v
         config *= "APPLY_MEMDUP_PATCH=true\n"
     end
 
-    if version >= v"8.20.0" && ygg_version >= v"8.20.1"
+    if version >= v"8.20.0"
         config *= "APPLY_ASYNC_THRDD_PATH=true\n"
     end
 
@@ -227,6 +227,6 @@ function build_libcurl(ARGS, name::String, version::VersionNumber; ygg_version=v
     end
 
     # Build the tarballs, and possibly a `build.jl` as well.
-    build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                    julia_compat="1.8", preferred_llvm_version=llvm_version)
 end
