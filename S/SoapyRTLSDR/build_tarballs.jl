@@ -3,8 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "SoapyRTLSDR"
-# bumped to 300 to be able to update the compat with 2.0.2. 
-version = v"0.3.300"
+# Multiply patch by 100 and add an offset to accomodate changes in dependencies
+# The registry does not accept build numbers
+upstream = v"0.3.3"
+offset = 1
+version = VersionNumber(upstream.major, upstream.minor, 100upstream.patch + offset)
 
 # Collection of sources required to complete build
 sources = [
