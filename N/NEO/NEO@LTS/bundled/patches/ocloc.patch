@@ -1,0 +1,31 @@
+diff --git a/shared/source/built_ins/kernels/CMakeLists.txt b/shared/source/built_ins/kernels/CMakeLists.txt
+index b86efe3a01..34529921f6 100644
+--- compute-runtime/shared/source/built_ins/kernels/CMakeLists.txt
++++ compute-runtime/shared/source/built_ins/kernels/CMakeLists.txt
+@@ -80,7 +80,7 @@ function(compile_builtin core_type platform_it builtin bits builtin_options mode
+   set(INTERNAL_OPTIONS "${${mode}_INTERNAL_OPTIONS}")
+   add_custom_command(
+                      OUTPUT ${OUTPUT_FILE_SPV}
+-                     COMMAND ${ocloc_cmd_prefix} -q -file ${absolute_filepath} -spv_only -device ${platform_it_lower} -heapless_mode ${heapless_mode} ${builtin_options} -${bits} -output ${mode}_${BASENAME} -out_dir ${OUTPUTDIR} ${INTERNAL_OPTIONS} -options "$<JOIN:${__ocloc__options__}, >"
++                     COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/ocloc_wrapper.sh ${ocloc_cmd_prefix} -q -file ${absolute_filepath} -spv_only -device ${platform_it_lower} -heapless_mode ${heapless_mode} ${builtin_options} -${bits} -output ${mode}_${BASENAME} -out_dir ${OUTPUTDIR} ${INTERNAL_OPTIONS} -options "$<JOIN:${__ocloc__options__}, >"
+                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                      DEPENDS ${builtin} ocloc copy_compiler_files
+   )
+@@ -111,7 +111,7 @@ function(compile_builtin core_type platform_it builtin bits builtin_options mode
+       get_filename_component(absolute_filepath_spv ${OUTPUT_FILE_SPV} ABSOLUTE)
+       add_custom_command(
+                          OUTPUT ${OUTPUT_FILES_BINARIES}
+-                         COMMAND ${ocloc_cmd_prefix} -q -file ${absolute_filepath_spv} -spirv_input -device ${RELEASE} -heapless_mode ${heapless_mode} ${builtin_options} -${bits} -stateful_address_mode ${stateful_address_mode} -output ${mode}_${BASENAME}_${RELEASE_FILENAME} -output_no_suffix -out_dir ${OUTPUTDIR} ${INTERNAL_OPTIONS} -options "$<JOIN:${__ocloc__options__}, >"
++                         COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/ocloc_wrapper.sh ${ocloc_cmd_prefix} -q -file ${absolute_filepath_spv} -spirv_input -device ${RELEASE} -heapless_mode ${heapless_mode} ${builtin_options} -${bits} -stateful_address_mode ${stateful_address_mode} -output ${mode}_${BASENAME}_${RELEASE_FILENAME} -output_no_suffix -out_dir ${OUTPUTDIR} ${INTERNAL_OPTIONS} -options "$<JOIN:${__ocloc__options__}, >"
+                          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                          DEPENDS ${OUTPUT_FILE_SPV} ocloc copy_compiler_files ${OUTPUT_FILES_BINARIES_PREV}
+       )
+@@ -165,7 +165,7 @@ function(generate_cpp_spirv builtin)
+   if(NOT NEO_DISABLE_BUILTINS_COMPILATION)
+     add_custom_command(
+                        OUTPUT ${GENERATED_SPV_INPUT}
+-                       COMMAND ${ocloc_cmd_prefix} -q -spv_only -file ${absolute_filepath} -out_dir ${OUTPUTDIR} -output_no_suffix -options "-cl-kernel-arg-info"
++                       COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/ocloc_wrapper.sh ${ocloc_cmd_prefix} -q -spv_only -file ${absolute_filepath} -out_dir ${OUTPUTDIR} -output_no_suffix -options "-cl-kernel-arg-info"
+                        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                        DEPENDS ${INPUT_FILENAME} ocloc copy_compiler_files ${OUTPUT_FILES_SPIRV_PREV}
+       )
