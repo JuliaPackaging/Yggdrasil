@@ -31,7 +31,7 @@ const curl_hashes = Dict(
     v"8.20.0" => "fc5819cad3f9f5482669adcdc49a782c15f36d2a0715b395b06d9173593d2dc0",
 )
 
-function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=false)
+function build_libcurl(ARGS, name::String, version::VersionNumber; ygg_version=version, with_zstd=false)
     hash = curl_hashes[version]
 
     if name == "CURL"
@@ -74,6 +74,10 @@ function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=fal
         config *= "APPLY_MEMDUP_PATCH=true\n"
     end
 
+    if version >= v"8.20.0" && ygg_version >= v"8.20.1"
+        config *= "APPLY_ASYNC_THRDD_PATH=true\n"
+    end
+
     # Bash recipe for building across all platforms
     script = config * unpack_macosx_sdk * raw"""
     cd $WORKSPACE/srcdir/curl-*
@@ -82,21 +86,32 @@ function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=fal
         # Address <https://github.com/curl/curl/issues/12849>
         atomic_patch -p1 $WORKSPACE/srcdir/memdup.patch
     fi
+    if [[ ${APPLY_ASYNC_THRDD_PATH} == true ]]; then
+        # Address <https://github.com/curl/curl/pull/21476>
+        atomic_patch -p1 $WORKSPACE/srcdir/async_thrdd.patch
+    fi
 
     # Holy crow we really configure the bitlets out of this thing
     FLAGS=(
         # Disable....almost everything
-        --without-gnutls
-        --without-libidn2 --without-librtmp
-        --without-libpsl
-        --disable-ares --disable-manual
-        --disable-ldap --disable-ldaps --without-zsh-functions-dir
-        --disable-static --without-libgsasl
+        --disable-ares
+        --disable-ldap
+        --disable-ldaps
+        --disable-manual
+        --disable-static
         --without-brotli
+        --without-gnutls
+        --without-libgsasl
+        --without-libidn2
+        --without-libpsl
+        --without-librtmp
+        --without-zsh-functions-dir
 
         # A few things we actually enable
-	--with-libssh2=${prefix} --with-zlib=${prefix} --with-nghttp2=${prefix}
+	--with-libssh2=${prefix}
         --enable-versioned-symbols
+        --with-nghttp2=${prefix}
+        --with-zlib=${prefix}
     )
 
     if [[ ${HAVE_ZSTD} == true ]]; then
@@ -212,6 +227,6 @@ function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=fal
     end
 
     # Build the tarballs, and possibly a `build.jl` as well.
-    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+    build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                    julia_compat="1.8", preferred_llvm_version=llvm_version)
 end
