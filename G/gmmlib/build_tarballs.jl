@@ -59,5 +59,5 @@ products = [
 dependencies = Dependency[]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"5", lock_microarchitecture=false)
+               preferred_gcc_version=v"5", lock_microarchitecture=false, julia_compat="1.6")
 # bump
