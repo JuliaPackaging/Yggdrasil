@@ -7,7 +7,11 @@ include("../coin-or-common.jl")
 
 # Collection of sources required to build Clp
 sources = [
-    GitSource("https://github.com/coin-or/Clp.git", Clp_gitsha),
+    # GitSource("https://github.com/coin-or/Clp.git", Clp_gitsha),
+    ArchiveSource(
+        "https://github.com/coin-or/Clp/archive/refs/tags/releases/1.17.11.tar.gz",
+        "2c078e174dc1a7a308e091b6256fb34b4017897fc140ea707ba207b2913ea46d",
+    ),
 ]
 
 # Bash recipe for building across all platforms
