@@ -37,4 +37,4 @@ products = [
 dependencies = Dependency[]   # libm comes from libc
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat = "1.10.0")
+               julia_compat = "1.10")
