@@ -74,6 +74,10 @@ function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=fal
         config *= "APPLY_MEMDUP_PATCH=true\n"
     end
 
+    if version >= v"8.20.0"
+        config *= "APPLY_ASYNC_THRDD_PATH=true\n"
+    end
+
     # Bash recipe for building across all platforms
     script = config * unpack_macosx_sdk * raw"""
     cd $WORKSPACE/srcdir/curl-*
@@ -82,21 +86,32 @@ function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=fal
         # Address <https://github.com/curl/curl/issues/12849>
         atomic_patch -p1 $WORKSPACE/srcdir/memdup.patch
     fi
+    if [[ ${APPLY_ASYNC_THRDD_PATH} == true ]]; then
+        # Address <https://github.com/curl/curl/pull/21476>
+        atomic_patch -p1 $WORKSPACE/srcdir/async_thrdd.patch
+    fi
 
     # Holy crow we really configure the bitlets out of this thing
     FLAGS=(
         # Disable....almost everything
-        --without-gnutls
-        --without-libidn2 --without-librtmp
-        --without-libpsl
-        --disable-ares --disable-manual
-        --disable-ldap --disable-ldaps --without-zsh-functions-dir
-        --disable-static --without-libgsasl
+        --disable-ares
+        --disable-ldap
+        --disable-ldaps
+        --disable-manual
+        --disable-static
         --without-brotli
+        --without-gnutls
+        --without-libgsasl
+        --without-libidn2
+        --without-libpsl
+        --without-librtmp
+        --without-zsh-functions-dir
 
         # A few things we actually enable
-	--with-libssh2=${prefix} --with-zlib=${prefix} --with-nghttp2=${prefix}
+	--with-libssh2=${prefix}
         --enable-versioned-symbols
+        --with-nghttp2=${prefix}
+        --with-zlib=${prefix}
     )
 
     if [[ ${HAVE_ZSTD} == true ]]; then
