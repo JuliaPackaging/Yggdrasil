@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "LEMON"
-version = v"1.3.4"
+version = v"1.3.5"
 upstreamversion = v"1.3.1"
 min_jl_version = v"1.9"
 
@@ -67,4 +67,3 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat=string(min_jl_version), preferred_gcc_version = v"7.1.0")
-

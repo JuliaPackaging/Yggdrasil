@@ -3,6 +3,7 @@
 #include <lemon/list_graph.h>
 #include <lemon/dijkstra.h>
 #include <lemon/matching.h>
+#include <lemon/network_simplex.h>
 
 #include <functional>
 
@@ -117,5 +118,23 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
     .method("blossomNum", &MWPM::blossomNum)
     .method("blossomSize", &MWPM::blossomSize)
     .method("blossomValue", &MWPM::blossomValue);
-}
 
+  using NetworkSimplexInt = NetworkSimplex<ListDigraph, int, int>;
+  mod.add_type<NetworkSimplexInt>("NetworkSimplexListDigraphIntInt")
+    .constructor<const ListDigraph&>()
+    .method("lowerMap", [](NetworkSimplexInt& ns, const ListDigraph::ArcMap<int>& map) -> NetworkSimplexInt& { return ns.lowerMap(map); })
+    .method("upperMap", [](NetworkSimplexInt& ns, const ListDigraph::ArcMap<int>& map) -> NetworkSimplexInt& { return ns.upperMap(map); })
+    .method("costMap", [](NetworkSimplexInt& ns, const ListDigraph::ArcMap<int>& map) -> NetworkSimplexInt& { return ns.costMap(map); })
+    .method("supplyMap", [](NetworkSimplexInt& ns, const ListDigraph::NodeMap<int>& map) -> NetworkSimplexInt& { return ns.supplyMap(map); })
+    .method("stSupply", &NetworkSimplexInt::stSupply)
+    .method("reset", &NetworkSimplexInt::reset)
+    .method("resetParams", &NetworkSimplexInt::resetParams)
+    .method("run", [](NetworkSimplexInt& ns) { return static_cast<int>(ns.run()); })
+    .method("totalCost", static_cast<int (NetworkSimplexInt::*)() const>(&NetworkSimplexInt::totalCost))
+    .method("flow", &NetworkSimplexInt::flow)
+    .method("potential", &NetworkSimplexInt::potential);
+
+  mod.method("NetworkSimplexProblemTypeInfeasible", []() { return static_cast<int>(NetworkSimplexInt::INFEASIBLE); });
+  mod.method("NetworkSimplexProblemTypeOptimal", []() { return static_cast<int>(NetworkSimplexInt::OPTIMAL); });
+  mod.method("NetworkSimplexProblemTypeUnbounded", []() { return static_cast<int>(NetworkSimplexInt::UNBOUNDED); });
+}
