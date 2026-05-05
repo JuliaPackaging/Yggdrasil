@@ -7,12 +7,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "libsemigroups_julia"
-version = v"0.0.1"
+version = v"0.1.1"
 
 # Collection of sources required to build libsemigroups_julia
 sources = [
     GitSource("https://github.com/libsemigroups/Semigroups.jl.git",
-        "ea11f697ebae7417e24a8140c35e4318fd308bc2"),
+        "7936ddeb53e9e629048beead2c774d3383302835"),
 ]
 
 # Bash recipe for building across all platforms

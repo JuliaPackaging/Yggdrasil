@@ -51,12 +51,6 @@ c++ main.cpp -o "${bindir}/amplexe${exeext}" \
     -lcasadi ${CXX_STANDARD}
 """
 
-products = [
-    ExecutableProduct("amplexe", :amplexe),
-    LibraryProduct("libcasadi", :libcasadi),
-    LibraryProduct("libcasadi_nlpsol_ipopt", :libcasadi_nlpsol_ipopt),
-]
-
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 filter!(p -> arch(p) != "riscv64" && 
@@ -66,6 +60,39 @@ filter!(p -> arch(p) != "riscv64" &&
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("Ipopt_jll"; compat="300.1400.400"),
+]
+
+products = [
+    ExecutableProduct("amplexe", :amplexe),
+    LibraryProduct("libcasadi", :libcasadi),
+    LibraryProduct("libcasadi_conic_ipqp", :libcasadi_conic_ipqp),
+    LibraryProduct("libcasadi_conic_nlpsol", :libcasadi_conic_nlpsol),
+    LibraryProduct("libcasadi_conic_qrqp", :libcasadi_conic_qrqp),
+    LibraryProduct("libcasadi_importer_shell", :libcasadi_importer_shell),
+    LibraryProduct("libcasadi_integrator_collocation", :libcasadi_integrator_collocation),
+    LibraryProduct("libcasadi_integrator_cvodes", :libcasadi_integrator_cvodes),
+    LibraryProduct("libcasadi_integrator_idas", :libcasadi_integrator_idas),
+    LibraryProduct("libcasadi_integrator_rk", :libcasadi_integrator_rk),
+    LibraryProduct("libcasadi_interpolant_bspline", :libcasadi_interpolant_bspline),
+    LibraryProduct("libcasadi_interpolant_linear", :libcasadi_interpolant_linear),
+    LibraryProduct("libcasadi_linsol_csparse", :libcasadi_linsol_csparse),
+    LibraryProduct("libcasadi_linsol_csparsecholesky", :libcasadi_linsol_csparsecholesky),
+    LibraryProduct("libcasadi_linsol_ldl", :libcasadi_linsol_ldl),
+    LibraryProduct("libcasadi_linsol_lsqr", :libcasadi_linsol_lsqr),
+    LibraryProduct("libcasadi_linsol_qr", :libcasadi_linsol_qr),
+    LibraryProduct("libcasadi_linsol_symbolicqr", :libcasadi_linsol_symbolicqr),
+    LibraryProduct("libcasadi_linsol_tridiag", :libcasadi_linsol_tridiag),
+    LibraryProduct("libcasadi_nlpsol_feasiblesqpmethod", :libcasadi_nlpsol_feasiblesqpmethod),
+    LibraryProduct("libcasadi_nlpsol_ipopt", :libcasadi_nlpsol_ipopt),
+    LibraryProduct("libcasadi_nlpsol_qrsqp", :libcasadi_nlpsol_qrsqp),
+    LibraryProduct("libcasadi_nlpsol_scpgen", :libcasadi_nlpsol_scpgen),
+    LibraryProduct("libcasadi_nlpsol_sqpmethod", :libcasadi_nlpsol_sqpmethod),
+    LibraryProduct("libcasadi_rootfinder_fast_newton", :libcasadi_rootfinder_fast_newton),
+    LibraryProduct("libcasadi_rootfinder_kinsol", :libcasadi_rootfinder_kinsol),
+    LibraryProduct("libcasadi_rootfinder_newton", :libcasadi_rootfinder_newton),
+    LibraryProduct("libcasadi_rootfinder_nlpsol", :libcasadi_rootfinder_nlpsol),
+    LibraryProduct("libcasadi_sundials_common", :libcasadi_sundials_common),
+    LibraryProduct("libcasadi_xmlfile_tinyxml", :libcasadi_xmlfile_tinyxml),
 ]
 
 build_tarballs(

@@ -15,7 +15,7 @@
 using BinaryBuilder
 
 name = "OpenSSL_CLI"
-version = v"3.5.1"
+version = v"3.5.6"
 
 # No sources needed - we're repackaging from OpenSSL_jll
 sources = []

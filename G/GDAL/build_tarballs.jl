@@ -4,9 +4,10 @@ using BinaryBuilder, Pkg
 
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "GDAL"
-upstream_version = v"3.12.3"
+upstream_version = v"3.12.4"
 # The version offset is used for two purposes:
 # - If we need to release multiple jll packages for the same GDAL
 #   library (usually for weird packaging reasons) then we increase the
@@ -109,9 +110,21 @@ install_license LICENSE.TXT
 # ...and install a newer SDK
 sources, script = require_macos_sdk("10.15", sources, script)
 
+# Although GDAL does not call MPI directly, it links explicitly
+# against the MPI libraries when using a parallel HDF5. (Instead of
+# declaring this dependency to BinaryBuilder we could try removing
+# these lines from cmake.)
+augment_platform_block = """
+    using Base.BinaryPlatforms
+    $(MPI.augment)
+    augment_platform!(platform::Platform) = augment_mpi!(platform)
+    """
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
+
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -172,19 +185,18 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(; name="OpenMPI_jll", version="4.1.8"); platforms=filter(p -> nbits(p)==32, platforms)),
     Dependency("Arrow_jll"; compat="19.0.0"),
     Dependency("Blosc_jll"; compat="1.21.7"),
     Dependency("Expat_jll"; compat="2.6.5"),
     Dependency("GEOS_jll"; compat="3.13.1"),
     Dependency("HDF4_jll"; compat="4.3.1"),
-    Dependency("HDF5_jll"; compat="~1.14.6"),
+    Dependency("HDF5_jll"; compat="~2.1.2"),
     Dependency("LERC_jll"; compat="4.0.1"),
     Dependency("LibCURL_jll"; compat="7.73,8"),
     Dependency("LibPQ_jll"; compat="16.8"),
     Dependency("Libtiff_jll"; compat="4.7.1"),
     Dependency("Lz4_jll"; compat="1.10.1"),
-    Dependency("NetCDF_jll"; compat="401.900.300"),
+    Dependency("NetCDF_jll"; compat="401.1000.0"),
     Dependency("OpenJpeg_jll"; compat="2.5.4"),
     Dependency("PCRE2_jll"; compat="10.42.0"),
     Dependency("PROJ_jll"; compat="902.500.100"),
@@ -204,6 +216,7 @@ dependencies = [
     # Disable exprtk on Windows, it exports too many symbols (21086, with at most 65535 allowed)
     BuildDependency("exprtk_jll", platforms=filter(!Sys.iswindows, platforms)),
 ]
+append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
 #
@@ -224,4 +237,4 @@ dependencies = [
 # NOTE: Require at least Julia 1.9 because we use a PCRE2_jll that is
 # not available on earlier versions.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.9", preferred_gcc_version=v"11")
+               augment_platform_block, julia_compat="1.9", preferred_gcc_version=v"11")
