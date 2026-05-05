@@ -7,7 +7,7 @@ include("../../L/libjulia/common.jl")
 filter!(x -> v"1.10" <= x <= v"1.13", julia_versions)
 
 name = "casacorecxx"
-version = v"0.4.0"
+version = v"0.4.1"
 
 # Collection of sources required to complete build
 sources = [GitSource("https://github.com/JuliaAstro/Casacore.jl.git", "a3e775c203692352b99bf11eab755f618fb88017")]
