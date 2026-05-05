@@ -401,9 +401,8 @@ augment_platform_block = """
 platforms = expand_gfortran_versions(supported_platforms())
 
 filter!(platforms) do p
-    # i686-linux-musl fails with: undefined reference to `__stack_chk_fail_local'
-    # This is a known problem with this architecture. There may be work-arounds available.
-    arch(p) == "i686" && libc(p) == "musl" && return false
+    # Disable 32-bit builds
+    nbits(p) == 32 && return false
     return true
 end
 
