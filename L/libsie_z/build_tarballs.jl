@@ -16,7 +16,7 @@ sources = [
 # Runs inside the BinaryBuilder sandbox. `${target}` is the BB GNU triple,
 # which `build.zig` translates to a Zig target via `-Dtriple=`.
 script = raw"""
-export PATH="${host_prefix}/bin/zig:$PATH"
+export PATH="${host_bindir}/zig:${PATH}"
 export ZIG_GLOBAL_CACHE_DIR=$WORKSPACE/.zig-cache
 
 cd $WORKSPACE/srcdir/libsie-z*
