@@ -68,7 +68,7 @@ Cgl_version = offset_version(v"0.60.9", v"0.0.0")
 Cgl_gitsha = "1d91b9ccb57eafbb7c07e994089a0f124358ffbd"
 
 Clp_version = offset_version(v"1.17.11", v"0.0.0")
-Clp_gitsha = "5020035ce7006fce74e64b36aac6930a83aa5044"
+Clp_gitsha = "9310c186d546e21d482be3455166ee6fb4cd6302"
 
 Osi_version = offset_version(v"0.108.12", v"0.0.0")
 Osi_gitsha = "b3dbb7c910a9992717b1107542606262296a0e7e"
