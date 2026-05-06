@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 
 name = "Blosc2"
 
-upstream_version = v"3.0.0"
+upstream_version = v"3.0.2"
 # We add a version offset because:
 # - Blosc2 2.15 is not ABI-compatible with Blosc2 2.14
 #   (see the release notes <https://github.com/Blosc/c-blosc2/releases/tag/v2.15.0>)
@@ -19,7 +19,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 
 # Collection of sources required to build Blosc2
 sources = [
-    GitSource("https://github.com/Blosc/c-blosc2.git", "917ec73d24320aeecf5f689975b8932ebeff4394"),
+    GitSource("https://github.com/Blosc/c-blosc2.git", "c33052d670cf060afcafdb36d9ea229239ba8f08"),
     DirectorySource("bundled"),
 ]
 
@@ -55,7 +55,6 @@ options=(
     -DLZ4_DIR=${prefix}
     -DZLIB_NG_DIR=${prefix}
     -DZSTD_DIR=${prefix}
-    -DZFP_DIR=${prefix}
 )
 
 cmake -Bbuild -GNinja "${options[@]}"
