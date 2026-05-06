@@ -32,7 +32,7 @@ dependencies = gap_pkg_dependencies(gap_version)
 platforms = gap_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
-push!(dependencies, Dependency("normaliz_jll", compat = "~300.1001.502"))
+push!(dependencies, Dependency("normaliz_jll", compat = "~300.1100.100"))
 
 # The products that we will ensure are always built
 products = [
