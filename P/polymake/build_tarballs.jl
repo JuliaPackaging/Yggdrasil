@@ -23,7 +23,7 @@ import Pkg.Types: VersionSpec
 
 name = "polymake"
 upstream_version = v"4.15"
-version_offset = v"0.0.3"
+version_offset = v"0.0.4"
 version = VersionNumber(upstream_version.major*100+version_offset.major,
                         upstream_version.minor*100+version_offset.minor,
                         version_offset.patch)
@@ -166,7 +166,7 @@ dependencies = [
     Dependency("boost_jll", compat = "=1.87.0"),
     Dependency("cddlib_jll", compat = "~0.94.15"),
     Dependency("lrslib_jll", compat = "~0.3.3"),
-    Dependency("normaliz_jll", compat = "~300.1001.504"),
+    Dependency("normaliz_jll", compat = "~300.1100.100"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
