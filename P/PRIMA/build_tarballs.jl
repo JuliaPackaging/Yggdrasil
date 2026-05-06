@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "PRIMA"
-version = v"0.7.1"
+version = v"0.7.2"  # <-- Release 0.7.1 recompiled with "-Wl,-z,noexecstack"
 
 # Collection of sources required to complete build
 sources = [
@@ -13,7 +13,17 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd prima
-cmake -S . -B build -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
+
+if [[ "${target}" == *mingw* ]] || [[ "${target}" == *apple-darwin* ]]; then
+    cmake -S . -B build -DCMAKE_INSTALL_PREFIX=$prefix \
+                        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+                        -DCMAKE_BUILD_TYPE=Release
+else
+    cmake -S . -B build -DCMAKE_INSTALL_PREFIX=$prefix \
+                        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+                        -DCMAKE_BUILD_TYPE=Release \
+                        -DCMAKE_SHARED_LINKER_FLAGS="-Wl,-z,noexecstack"
+fi
 cmake --build build --target install
 """
 
