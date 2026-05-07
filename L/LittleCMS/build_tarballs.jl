@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "LittleCMS"
-version = v"2.17.0"
+version = v"2.19.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/mm2/Little-CMS.git", "5176347635785e53ee5cee92328f76fda766ecc6"),
+    GitSource("https://github.com/mm2/Little-CMS.git", "b76633e60c8387a77268fb3359277ca25b5fd75c"),
 ]
 
 # Bash recipe for building across all platforms
