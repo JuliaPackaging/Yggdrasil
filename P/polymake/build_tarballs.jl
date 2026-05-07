@@ -168,7 +168,8 @@ dependencies = [
     Dependency("lrslib_jll", compat = "~0.3.3"),
     Dependency("normaliz_jll", compat = "~300.1100.100"),
     
-    BuildDependency(PackageSpec("OpenBLAS32_jll", v"0.3.30+0"))
+    # workaround: use older OpenBLAS32 build to avoid hang on native platforms, see https://github.com/JuliaPackaging/Yggdrasil/pull/13665
+    BuildDependency(PackageSpec("OpenBLAS32_jll", v"0.3.30+0")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
