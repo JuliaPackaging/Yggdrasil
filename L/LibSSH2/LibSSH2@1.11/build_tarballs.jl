@@ -3,18 +3,22 @@ using Pkg
 using BinaryBuilderBase: sanitize
 
 name = "LibSSH2"
-# This is a lie, we actually build 1.11.1, but we needed to bump the patch version to change our compat below
-version = v"1.11.3"
-
+version = v"1.11.101"
+upstream = VersionNumber(version.major, version.minor, version.patch÷100)
 # Collection of sources required to build LibSSH2
 sources = [
-    ArchiveSource("https://github.com/libssh2/libssh2/releases/download/libssh2-1.11.1/libssh2-1.11.1.tar.gz",
+    ArchiveSource("https://github.com/libssh2/libssh2/releases/download/libssh2-$upstream/libssh2-$upstream.tar.gz",
                   "d9ec76cbe34db98eec3539fe2c899d26b0c837cb3eb466a56b0f109cabf658f7"),
+    DirectorySource("./bundled"; follow_symlinks=true),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libssh2*
+
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 "${f}"
+done
 
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     # Install msan runtime (for clang)
