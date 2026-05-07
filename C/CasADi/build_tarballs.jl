@@ -25,7 +25,8 @@ if [[ "${target}" == *"mingw"* ]]; then
     CMAKE_CXX_STANDARD="14"
 fi
 
-export CXXFLAGS="-fPIC ${CXX_STANDARD}"
+#export CXXFLAGS="-fPIC ${CXX_STANDARD}"
+export CXXFLAGS="-fPIC ${CXX_STANDARD} -I${includedir}/coin-or"
 export CFLAGS="${CFLAGS} -fPIC"
 
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -36,6 +37,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD} \
     -DWITH_IPOPT=ON \
+    -DWITH_BONMIN=ON \
     -DWITH_EXAMPLES=OFF \
     -DWITH_DEEPBIND=OFF \
     ..
@@ -59,7 +61,8 @@ filter!(p -> arch(p) != "riscv64" &&
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("Ipopt_jll"; compat="300.1400.400"),
+    Dependency("Ipopt_jll"; compat="300.1400.1901"),
+    Dependency("Bonmin_jll"; compat="100.800.902")
 ]
 
 products = [
@@ -87,6 +90,7 @@ products = [
     LibraryProduct("libcasadi_nlpsol_qrsqp", :libcasadi_nlpsol_qrsqp),
     LibraryProduct("libcasadi_nlpsol_scpgen", :libcasadi_nlpsol_scpgen),
     LibraryProduct("libcasadi_nlpsol_sqpmethod", :libcasadi_nlpsol_sqpmethod),
+    LibraryProduct("libcasadi_nlpsol_bonmin", :libcasadi_nlpsol_bonmin),
     LibraryProduct("libcasadi_rootfinder_fast_newton", :libcasadi_rootfinder_fast_newton),
     LibraryProduct("libcasadi_rootfinder_kinsol", :libcasadi_rootfinder_kinsol),
     LibraryProduct("libcasadi_rootfinder_newton", :libcasadi_rootfinder_newton),
