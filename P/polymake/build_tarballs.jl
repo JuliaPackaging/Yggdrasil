@@ -167,6 +167,8 @@ dependencies = [
     Dependency("cddlib_jll", compat = "~0.94.15"),
     Dependency("lrslib_jll", compat = "~0.3.3"),
     Dependency("normaliz_jll", compat = "~300.1100.100"),
+    
+    BuildDependency(PackageSpec("OpenBLAS32_jll", v"0.3.30+0"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
