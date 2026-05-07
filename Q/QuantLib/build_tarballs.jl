@@ -32,8 +32,21 @@ CMAKE_FLAGS=(
     -DQL_EXTRA_SAFETY_CHECKS=ON
 )
 
+CXX_EXTRA_FLAGS=""
 if [[ ${target} == *darwin* || ${target} == *freebsd* ]]; then
-    CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS=-Wno-enum-constexpr-conversion)
+    # Boost violates the C++17 enum-to-int constexpr rule; Yggdrasil's
+    # Clang treats this as a hard error.
+    CXX_EXTRA_FLAGS="-Wno-enum-constexpr-conversion"
+fi
+if [[ ${target} == *darwin* ]]; then
+    # Workaround upstream QuantLib bug: ql/termstructures/volatility/
+    # equityfx/blackvoltimeextrapolation.cpp uses std::vector without
+    # an #include <vector>. libc++ on darwin doesn't pull it in
+    # transitively (libstdc++ on Linux does).
+    CXX_EXTRA_FLAGS="${CXX_EXTRA_FLAGS} -include vector"
+fi
+if [ -n "${CXX_EXTRA_FLAGS}" ]; then
+    CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="${CXX_EXTRA_FLAGS}")
 fi
 
 cmake "${CMAKE_FLAGS[@]}" -G Ninja ..
