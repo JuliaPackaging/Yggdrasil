@@ -3,7 +3,7 @@
 using BinaryBuilder
 version = v"1.18.4"
 # We bumped the version number because we updated the dependencies (for new architectures)
-ygg_version = v"1.18.6"
+ygg_version = v"1.18.7"
 
 name = "Cairo"
 
@@ -79,7 +79,7 @@ linux_freebsd = filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)
 dependencies = [
     BuildDependency("Xorg_xorgproto_jll"; platforms=linux_freebsd),
     Dependency("Glib_jll"; compat="2.84.0"),
-    Dependency("Pixman_jll"; compat="0.44.2"),
+    Dependency("Pixman_jll"; compat="0.46.4"),
     Dependency("libpng_jll"; compat="1.6.47"),
     Dependency("Fontconfig_jll"; compat="2.16.0"),
     Dependency("FreeType2_jll"; compat="2.13.4"),
