@@ -2,6 +2,9 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "QuantLib"
 version = v"1.42.1"
 
@@ -37,6 +40,10 @@ cmake "${CMAKE_FLAGS[@]}" -G Ninja ..
 ninja -j${nproc}
 ninja install
 """
+
+# Install a newer macOS SDK so std::any_cast (introduced in 10.14) is available;
+# QuantLib uses it in ql/instrument.hpp.
+sources, script = require_macos_sdk("10.15", sources, script)
 
 # windows excluded b/c QL doesn't build with MinGW: https://github.com/JuliaPackaging/Yggdrasil/pull/7090#issuecomment-1646444669
 platforms = expand_cxxstring_abis(supported_platforms(; exclude = Sys.iswindows))
