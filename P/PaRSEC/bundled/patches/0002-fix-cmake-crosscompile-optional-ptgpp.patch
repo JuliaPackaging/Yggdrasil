@@ -1,13 +1,15 @@
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -903,45 +903,14 @@ endif(PARSEC_PROF_TRACE AND PARSEC_DIST_WITH_MPI)
+--- a/CMakeLists.txt	2024-11-19 07:02:59.000000000 -0700
++++ b/CMakeLists.txt	2026-05-06 20:26:56.964639401 -0700
+@@ -902,48 +902,17 @@
  #
  add_subdirectory(tools)
  if(CMAKE_CROSSCOMPILING)
 -  #
 -  # Import the EXPORT file from external native ptgpp.
 -  #
--  set(IMPORT_EXECUTABLES "IMPORTFILE-NOTFOUND" CACHE FILEPATH "Point it to the export file from a native build")
++  # Import the EXPORT file from external native ptgpp, if provided.
++  # When building only the C runtime library, parsec-ptgpp is not required.
+   set(IMPORT_EXECUTABLES "IMPORTFILE-NOTFOUND" CACHE FILEPATH "Point it to the export file from a native build")
 -  message(STATUS "Prepare cross-compiling using ${IMPORT_EXECUTABLES}")
 -  include(${IMPORT_EXECUTABLES})
 -  set_target_properties(parsec-ptgpp PROPERTIES IMPORTED_GLOBAL ON)
@@ -46,9 +48,6 @@
 -  add_dependencies(parsec-ptgpp native-build)
 -  install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} --build ${PROJECT_BINARY_DIR} --target native-install)")
 -  add_test(NAME native-test COMMAND ${CMAKE_COMMAND} --build ${PROJECT_BINARY_DIR} --target native-test)
-+  # Import the EXPORT file from external native ptgpp, if provided.
-+  # When building only the C runtime library, parsec-ptgpp is not required.
-+  set(IMPORT_EXECUTABLES "IMPORTFILE-NOTFOUND" CACHE FILEPATH "Point it to the export file from a native build")
 +  if(EXISTS "${IMPORT_EXECUTABLES}")
 +    message(STATUS "Prepare cross-compiling using ${IMPORT_EXECUTABLES}")
 +    include(${IMPORT_EXECUTABLES})

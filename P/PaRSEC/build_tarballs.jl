@@ -19,10 +19,12 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/parsec
 
-# Patch CMakeLists.txt to make parsec-ptgpp import optional when cross-compiling.
-# We only build the C runtime library, not the PTG compiler tool.
-python3 ${WORKSPACE}/srcdir/patches/fix_cmake_crosscompile.py
-python3 ${WORKSPACE}/srcdir/patches/fix_mpi_overtake.py
+# Make parsec-ptgpp import optional when cross-compiling (we only need libparsec).
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0002-fix-cmake-crosscompile-optional-ptgpp.patch
+
+# Fix parsec_param_enable_mpi_overtake declared only under #if defined() but
+# used in the #else branch too.
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-fix-mpi-overtake-undeclared.patch
 
 # Detect the MPI implementation to give cmake's FindMPI a reliable hint.
 # cmake cannot run the mpicc wrapper during cross-compilation, so we pass
