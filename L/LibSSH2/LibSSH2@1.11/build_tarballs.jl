@@ -65,7 +65,7 @@ llvm_version = v"13.0.1"
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("OpenSSL_jll"; compat="3.0.16", platforms=filter(!Sys.iswindows, platforms)),
-    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
+    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=string(llvm_version));
                     platforms=filter(p -> sanitize(p)=="memory", platforms)),
 ]
 
