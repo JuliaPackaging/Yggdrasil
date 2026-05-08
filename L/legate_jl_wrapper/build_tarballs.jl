@@ -7,13 +7,13 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 include("make_script.jl")
 
 name = "legate_jl_wrapper"
-version = v"25.10.3" # legate has 05, but Julia doesn't like that
+version = v"25.10.4"
 sources = [
     GitSource("https://github.com/JuliaLegate/Legate.jl","bb1f82f1d944716be04240a9e93dd6623cc3ab60"),
 ]
 
 MIN_JULIA_VERSION = v"1.10"
-MAX_JULIA_VERSION = v"1.11.999"
+MAX_JULIA_VERSION = v"1.12.999"
 
 # These should match the legate_jll build_tarballs script
 MIN_CUDA_VERSION = v"13.0"

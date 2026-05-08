@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "CUDA_Compiler"
-version = v"0.4.1"
+version = v"0.4.3"
 
 augment_platform_block = read(joinpath(@__DIR__, "platform_augmentation.jl"), String)
 
@@ -92,7 +92,7 @@ function get_products(version::VersionNumber)
         ExecutableProduct("nvdisasm", :nvdisasm),
         ExecutableProduct("nvlink", :nvlink),
     ]
-    if version >= v"13.1"
+    if version >= v"13.2"
         push!(products, ExecutableProduct("tileiras", :tileiras))
     end
     return products
@@ -100,7 +100,7 @@ end
 
 # determine exactly which tarballs we should build
 builds = []
-for version in [ v"11.8", v"12.9", v"13.1"]
+for version in [ v"11.8", v"12.9", v"13.2"]
     # CUDA_Compiler uses the following components
     components = [
         "cuda_cudart",
@@ -142,5 +142,3 @@ for (i,build) in enumerate(builds)
                    julia_compat="1.6", lazy_artifacts=true,
                    augment_platform_block, build.init_block)
 end
-
-# bump

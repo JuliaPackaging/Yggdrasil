@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "at_spi2_core"
-version = v"2.58.2"
+version = v"2.60.3"
 
 # Collection of sources required to build at-spi2-core
 sources = [
     ArchiveSource("http://ftp.gnome.org/pub/gnome/sources/at-spi2-core/$(version.major).$(version.minor)/at-spi2-core-$(version).tar.xz",
-                  "a2823b962ed16cdd5cb1fc5365029fd218394d852acd4098b321854bd6692f6e"),
+                  "21056bc04e43e8ed34fdafd916a0ddcc29ec03a4ce6cf5aacac1ddf6ef185ef7"),
 ]
 
 # Bash recipe for building across all platforms

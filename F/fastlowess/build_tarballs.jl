@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "fastlowess"
-version = v"1.0.0"
+version = v"1.2.0"
 
 # Update the commit hash when releasing a new version
 sources = [
     GitSource("https://github.com/thisisamirv/lowess-project.git",
-        "50394eb6d81bd2e1f303685159b5d54f7dd95ce1"),
+        "af37ea7887e858328eb3190ab09623e4525cc02c"),
 ]
 
 # Build script

@@ -13,10 +13,14 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDA_Driver"
-cuda_version = v"13.1"
-driver_version = "590.48.01"
+cuda_version = v"13.2.1"
+driver_version = "595.58.03"
 
 script = raw"""
+    # Build the driver inspection binary
+    mkdir -p ${bindir}
+    ${CC} -std=c99 -O2 cuda_inspect_driver.c -ldl -o ${bindir}/cuda_inspect_driver
+
     mkdir -p ${libdir}
 
     cd ${WORKSPACE}/srcdir/cuda_compat*
@@ -48,6 +52,7 @@ products = [
     LibraryProduct("libnvidia-nvvm", :libnvidia_nvvm;                     dont_dlopen=true),
     LibraryProduct("libnvidia-ptxjitcompiler", :libnvidia_ptxjitcompiler; dont_dlopen=true),
     LibraryProduct("libnvidia-tileiras", :libnvidia_tileiras;             dont_dlopen=true),
+    ExecutableProduct("cuda_inspect_driver", :cuda_inspect_driver)
 ]
 
 dependencies = []
@@ -61,8 +66,13 @@ for platform in platforms
     augmented_platform["cuda"] = CUDA.platform(cuda_version)
     should_build_platform(triplet(augmented_platform)) || continue
 
-    sources = get_sources("nvidia-driver", ["cuda_compat"]; version=driver_version,
+    # for the cuda compatibility library shipped as part of the CUDA toolkit
+    sources = get_sources("cuda", ["cuda_compat"]; version=cuda_version,
                           platform=augmented_platform, variant="cuda$(cuda_version.major).$(cuda_version.minor)")
+    # for the datacenter driver
+    #sources = get_sources("nvidia-driver", ["cuda_compat"]; version=driver_version,
+    #                      platform=augmented_platform, variant="cuda$(cuda_version.major).$(cuda_version.minor)")
+    push!(sources, DirectorySource("./src"))
 
     push!(builds, (; platforms=[platform], sources))
 end
@@ -78,5 +88,20 @@ for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    name, cuda_version, build.sources, script,
                    build.platforms, products, dependencies;
-                   skip_audit=true, init_block)
+                   skip_audit=true, init_block, julia_compat="1.10",
+                   augment_platform_block="""
+                   # Precompile the process-spawning and version-parsing hot path
+                   precompile(Tuple{typeof(Base.cmd_gen), Tuple{Tuple{Base.Cmd}, Tuple{String}, Tuple{Bool}, Tuple{Array{String, 1}}}})
+                   precompile(Tuple{typeof(Base.arg_gen), Bool})
+                   precompile(Tuple{typeof(Base.read), Base.Cmd, Type{String}})
+                   precompile(Tuple{typeof(Base.readlines), Base.IOBuffer})
+                   precompile(Tuple{typeof(Base.push!), Array{Base.VersionNumber, 1}, Base.VersionNumber})
+                   precompile(Tuple{typeof(Base.Iterators.enumerate), Array{Base.VersionNumber, 1}})
+                   precompile(Tuple{typeof(Base.iterate), Base.Iterators.Enumerate{Array{Base.VersionNumber, 1}}})
+                   precompile(Tuple{typeof(Base.iterate), Base.Iterators.Enumerate{Array{Base.VersionNumber, 1}}, Tuple{Int64, Int64}})
+                   precompile(Tuple{typeof(Base.indexed_iterate), Tuple{Int64, Base.VersionNumber}, Int64})
+                   precompile(Tuple{typeof(Base.indexed_iterate), Tuple{Int64, Base.VersionNumber}, Int64, Int64})
+
+                   augment_platform! = identity
+                   """)
 end

@@ -3,16 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "msolve"
-upstream_version = v"0.9.4"
+upstream_version = v"0.9.5"
 
-version_offset = v"0.0.0"
+version_offset = v"0.0.3"
 version = VersionNumber(upstream_version.major*100+version_offset.major,
                         upstream_version.minor*100+version_offset.minor,
                         upstream_version.patch*100+version_offset.patch)
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/algebraic-solving/msolve.git", "8f84271426f2e8a08ee822bf3ac76592d4c818e4")
+    GitSource("https://github.com/algebraic-solving/msolve.git", "7c4fbe08cf4dcaf73fad2ae2d3902795d040f290")
 ]
 
 # Bash recipe for building across all platforms
@@ -41,7 +41,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("GMP_jll", v"6.2.1"),
-    Dependency("FLINT_jll", compat = "~301.400.000"),
+    Dependency("FLINT_jll", compat = "~301.500.000"),
     Dependency("MPFR_jll", v"4.1.1"),
     Dependency("OpenBLAS32_jll", v"0.3.29"),
 

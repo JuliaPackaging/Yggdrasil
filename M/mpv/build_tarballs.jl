@@ -3,68 +3,101 @@
 using BinaryBuilder, Pkg
 
 name = "mpv"
-version = v"0.32.0"
+version = v"0.41.0"
 
 # Collection of sources required to complete build #
 sources = [
-    ArchiveSource("https://github.com/mpv-player/mpv/archive/v0.32.0.tar.gz", "9163f64832226d22e24bbc4874ebd6ac02372cd717bef15c28a0aa858c5fe592")
+    GitSource("https://github.com/mpv-player/mpv.git",
+              "41f6a645068483470267271e1d09966ca3b9f413"),  # v0.41.0
+    # macOS 11.3 SDK for Apple framework headers (CoreAudio, AVFoundation, etc.)
+    FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz",
+               "cd4f08a75577145b8f05245a2975f7c81401d75e9535dcffbb879ee1deefcbf4"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd mpv-*
-ln -s /usr/bin/pkg-config /usr/bin/$target-pkg-config
+cd $WORKSPACE/srcdir/mpv
 
-# libstc++ required for c++ libs when using C compiler
-if [[ "${nbits}" == 32 ]]; then
-    export LDFLAGS="-L${prefix}/lib -liconv -Wl,-rpath-link,/opt/${target}/${target}/lib"
-elif [[ "${target}" != *-apple-* ]]; then 
-    export LDFLAGS="-L${prefix}/lib -liconv -Wl,-rpath-link,/opt/${target}/${target}/lib64"
-else 
-    export LDFLAGS="-L${prefix}/lib -liconv"
-fi
+# Clone libplacebo as a meson subproject (needs --recursive for 3rdparty deps)
+mkdir -p subprojects
+git clone https://code.videolan.org/videolan/libplacebo.git \
+    --branch v7.349.0 --depth=1 --recursive subprojects/libplacebo
 
-# pkg-config files for ffmpeg are in $bindir for windows
+# Remove host cmake so meson doesn't pick it up for cross-compilation
+apk del cmake
+
+# FFMPEG_jll installs pkgconfig files in ${libdir}/pkgconfig on Windows
 if [[ "${target}" == *-mingw* ]]; then
-    cp $bindir/pkgconfig/lib*  /workspace/destdir/lib/pkgconfig/
+    export PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:${libdir}/pkgconfig"
 fi
-python3 bootstrap.py
 
-# No opengl on MacOS
-if [[  "${target}" == *-apple-* ]]; then
-    TARGET=$target ./waf --prefix=${prefix} --disable-manpage-build --enable-sdl2 --disable-gl configure
-else 
-    TARGET=$target ./waf --prefix=${prefix} --disable-manpage-build --enable-sdl2 configure
+FLAGS=()
+
+if [[ "${target}" == *-apple-* ]]; then
+    # x86_64-darwin14 sysroot lacks newer framework headers; overlay macOS 11.3 SDK
+    # aarch64-darwin20 already has them so no SDK needed
+    if [[ "${target}" == x86_64-apple-darwin* ]]; then
+        rm -rf /opt/${target}/${target}/sys-root/System
+        rm -rf /opt/${target}/${target}/sys-root/usr/include/libxml2/libxml
+        tar --extract --file=${WORKSPACE}/srcdir/MacOSX11.3.sdk.tar.xz \
+            --directory="/opt/${target}/${target}/sys-root/." \
+            --strip-components=1 MacOSX11.3.sdk/System MacOSX11.3.sdk/usr
+        export MACOSX_DEPLOYMENT_TARGET=11.0
+    fi
+
+    # Cocoa requires Swift (no Swift compiler in BinaryBuilder), so disable it
+    # and all features that depend on it. CoreAudio/AVFoundation are independent.
+    FLAGS+=(
+        -Dcocoa=disabled
+        -Dswift-build=disabled
+        -Dgl-cocoa=disabled
+        -Dmacos-cocoa-cb=disabled
+        -Dmacos-media-player=disabled
+        -Dmacos-touchbar=disabled
+    )
 fi
-./waf build -j${nproc}
-./waf install
+
+# SDL2 video/audio are disabled by default in mpv 0.41; enable them explicitly
+# Vulkan is disabled: not native on macOS, stdcall ABI issues on 32-bit Windows,
+# and SDL2+OpenGL provide sufficient video output for a JLL package
+FLAGS+=(-Dsdl2-video=enabled -Dsdl2-audio=enabled -Dvulkan=disabled)
+
+meson setup build --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release "${FLAGS[@]}"
+meson compile -C build
+meson install -C build
+
+install_license Copyright LICENSE.GPL
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
+# Filter platforms that don't have full dependency support
 platforms = supported_platforms()
-filter!(!Sys.isfreebsd, platforms)
+filter!(p -> arch(p) != "armv6l", platforms)
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+filter!(p -> arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("mpv", :mpv)
+    ExecutableProduct("mpv", :mpv),
+    LibraryProduct("libmpv", :libmpv),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="Libiconv_jll", uuid="94ce4f54-9a6c-5748-9c1c-f9c7231a4531"))
-    Dependency(PackageSpec(name="SDL2_jll", uuid="ab825dc5-c88e-5901-9575-1e5e20358fcf"))
-    Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
-    Dependency(PackageSpec(name="FFMPEG_jll", uuid="b22a6f82-2f65-5046-a5b2-351ab43fb4e5"))
-    Dependency(PackageSpec(name="Lua_jll", uuid="a4086b1d-a96a-5d6b-8e4f-2030e6f25ba6"); compat="~5.3.6")
-    Dependency(PackageSpec(name="JpegTurbo_jll", uuid="aacddb02-875f-59d6-b918-886e6ef4fbf8"))
-    Dependency(PackageSpec(name="Xorg_libXrandr_jll", uuid="ec84b674-ba8e-5d96-8ba1-2a689ba10484"))
-    Dependency(PackageSpec(name="Xorg_libXinerama_jll", uuid="d1454406-59df-5ea1-beac-c340f2130bc3"))
-    Dependency(PackageSpec(name="Libglvnd_jll", uuid="7e76a0d4-f3c7-5321-8279-8d96eeed0f29"))
-    Dependency(PackageSpec(name="Xorg_libX11_jll", uuid="4f6342f7-b3d2-589e-9d20-edeb45f2b2bc"))
-    BuildDependency(PackageSpec(name="Xorg_xorgproto_jll", uuid="c4d99508-4286-5418-9131-c86396af500b"))
+    HostBuildDependency("CMake_jll"),
+    BuildDependency("Xorg_xorgproto_jll"),
+    Dependency("Libiconv_jll"),
+    Dependency("SDL2_jll"),
+    Dependency("Shaderc_jll"),
+    Dependency("Zlib_jll"),
+    Dependency("FFMPEG_jll"; compat="7.1"),
+    Dependency("Lua_jll"),
+    Dependency("JpegTurbo_jll"),
+    Dependency("Xorg_libXrandr_jll"),
+    Dependency("Xorg_libXinerama_jll"),
+    Dependency("Libglvnd_jll"),
+    Dependency("Xorg_libX11_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;preferred_gcc_version=v"7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", clang_use_lld=false, preferred_gcc_version=v"8")

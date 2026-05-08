@@ -4,11 +4,11 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MPICH"
-version = v"5.0.0"
+version = v"5.0.1"
 
 sources = [
     ArchiveSource("https://www.mpich.org/static/downloads/$(version)/mpich-$(version).tar.gz",
-                  "e9350e32224283e95311f22134f36c98e3cd1c665d17fae20a6cc92ed3cffe11"),
+                  "8c1832a13ddacf071685069f5fadfd1f2877a29e1a628652892c65211b1f3327"),
     DirectorySource("bundled"),
 ]
 
@@ -46,7 +46,7 @@ configure_flags=(
     --prefix=${prefix}
     --with-hwloc=${prefix}
 )
-if [[ "${target}" == aarch64-apple-* ]]; then
+if [[ "${target}" == *-apple-* ]]; then
     # Add options from MacPorts
     configure_flags+=(
         --enable-timer-type=mach_absolute_time

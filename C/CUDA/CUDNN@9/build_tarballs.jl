@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDNN"
-version = v"9.17.1"
+version = v"9.20.0"
 
 script = raw"""
 mkdir -p ${libdir} ${prefix}/include
@@ -20,7 +20,7 @@ if [[ ${target} == *-linux-gnu ]]; then
 
     install_license LICENSE
 
-    mv lib/libcudnn*.so* ${libdir}
+    mv lib/*.so* ${libdir}
     mv include/* ${prefix}/include
 elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     cd cudnn*
@@ -28,7 +28,7 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
 
     install_license LICENSE
 
-    mv bin/cudnn*64_*.dll ${libdir}
+    mv bin/x64/* ${libdir}
     mv include/* ${prefix}/include
 
     mv ../dll_x64/zlibwapi.dll ${libdir}

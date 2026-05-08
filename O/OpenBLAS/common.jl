@@ -4,10 +4,16 @@ using BinaryBuilderBase: sanitize
 # Collection of sources required to build OpenBLAS
 function openblas_sources(version::VersionNumber; kwargs...)
     openblas_version_sources = Dict(
-        v"0.3.31" => [
-            ArchiveSource("https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.31/OpenBLAS-0.3.31.tar.gz",
-                          "6dd2a63ac9d32643b7cc636eab57bf4e57d0ed1fff926dfbc5d3d97f2d2be3a6")
+        v"0.3.33" => [
+            ArchiveSource("https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.33/OpenBLAS-0.3.33.tar.gz",
+                          "6761af1d9f5d353ab4f0b7497be2643313b36c8f31caec0144bfef198e71e6ab")
         ],
+        v"0.3.32" => [
+            ArchiveSource("https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.32/OpenBLAS-0.3.32.tar.gz",
+                          "f8a1138e01fddca9e4c29f9684fd570ba39dedc9ca76055e1425d5d4b1a4a766")
+        ],
+        # OpenBLAS 0.3.31 contains a serious bug <https://github.com/OpenMathLib/OpenBLAS/pull/5643>,
+        # we do not want to wrap that version
         v"0.3.30" => [
             ArchiveSource("https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.30/OpenBLAS-0.3.30.tar.gz",
                           "27342cff518646afb4c2b976d809102e368957974c250a25ccc965e53063c95d")
@@ -93,7 +99,7 @@ end
 
 # Do not override the default `num_64bit_threads` here, instead pass a custom from specific OpenBLAS versions
 # that should opt into a higher thread count.
-function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false, aarch64_ilp64::Bool=false, consistent_fpcsr::Bool=false, bfloat16::Bool=false, kwargs...)
+function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false, aarch64_ilp64::Bool=false, consistent_fpcsr::Bool=false, bfloat16::Bool=false, float16::Bool=false, kwargs...)
     # Allow some basic configuration
     script = """
     NUM_64BIT_THREADS=$(num_64bit_threads)
@@ -101,6 +107,7 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     AARCH64_ILP64=$(aarch64_ilp64)
     CONSISTENT_FPCSR=$(consistent_fpcsr)
     BFLOAT16=$(bfloat16)
+    FLOAT16=$(float16)
     version_patch=$(version.patch)
     """
     # Bash recipe for building across all platforms
@@ -125,6 +132,14 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
         cp -rL ${prefix}/lib/linux/* $(dirname $(readlink -f $(which flang)))/../lib/clang/13.0.1/lib/linux/
     fi
 
+    # GCC 14+ on Darwin requires additional libraries.
+    # (These should be in our image; remove this when the RootFS images have been updated.)
+    if [[ ${target} == *-darwin* ]]; then
+        if gcc --version | head -n 1 | grep -q '(GCC) 1[45][.]'; then
+            apk add libdispatch libdispatch-dev --repository=http://dl-cdn.alpinelinux.org/alpine/v3.17/community
+        fi
+    fi
+
     # We always want threading
     flags=(USE_THREAD=1 GEMM_MULTITHREADING_THRESHOLD=400 NO_AFFINITY=1)
     if [[ "${CONSISTENT_FPCSR}" == "true" ]]; then
@@ -134,6 +149,14 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     # Build BFLOAT16 kernels
     if [[ "${BFLOAT16}" == "true" ]]; then
         flags+=(BUILD_BFLOAT16=1)
+        if [[ "${target}" == riscv64-* ]]; then
+            flags+=(CFLAGS=-Wno-error=incompatible-pointer-types)
+        fi
+    fi
+
+    # Build FLOAT16 kernels
+    if [[ "${FLOAT16}" == "true" && "${target}" != arm-* && "${target}" != powerpc64le-* && "${target}" != x86_64-apple-* ]]; then
+        flags+=(BUILD_HFLOAT16=1)
     fi
 
     # We are cross-compiling
@@ -198,6 +221,13 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
         flags+=(TARGET=RISCV64_GENERIC DYNAMIC_ARCH=1)
     fi
 
+    if [[ ${target} == aarch64-*-darwin* ]]; then
+        # Disable SME. Not supported on Darwin -- neither by the hardware before the M4 CPU, nor by our toolchains.
+        # (It is likely supported by MacOS SDK 15.0, but this SDK  doesn't work:
+        #  https://github.com/JuliaPackaging/Yggdrasil/issues/13593.)
+        export NO_SME=1
+    fi
+
     # If we're building for x86_64 Windows gcc7+, we need to disable usage of
     # certain AVX-512 registers (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=65782)
     if [[ ${target} == x86_64-w64-mingw32 ]] && [[ $(gcc --version | head -1 | awk '{ print $3 }') =~ (7|8).* ]]; then
@@ -209,6 +239,15 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     # so set it here.
     if [[ ${target} == *linux* ]] || [[ ${target} == *freebsd* ]]; then
         export LDFLAGS="${LDFLAGS} '-Wl,-rpath,\$\$ORIGIN' -Wl,-z,origin"
+        # The regular linker produces invalid ELF files. Yggdrasil notices because it cannot load the shared library.
+        # Using lld instead creates valid ELF files.
+        # It might be that using a different version of binutils would also correct the problem.
+        #
+        # The problem can be seen by running `readelf -lW libopenblas64_.0.3.32.so`.
+        # The segment
+        #     LOAD  0x0000000001fba508 0x0000000001fbb508 ... RW  0x8000
+        # is not properly aligned. The two addresses are supposed to differ by a multiple of the alignment (0x8000) but they do not.
+        export LDFLAGS="${LDFLAGS} -fuse-ld=lld"
     elif [[ ${target} == *apple* ]]; then
         export LDFLAGS="${LDFLAGS} -Wl,-rpath,@loader_path/"
     fi
@@ -230,7 +269,7 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     echo "Build flags: ${flags[@]}"
 
     # Build the actual library
-    make "${flags[@]}"
+    make "${flags[@]}" shared
 
     # Install the library
     make "${flags[@]}" "PREFIX=$prefix" install
@@ -274,6 +313,7 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     fi
     """
 
+    return script
 end
 
 function openblas_platforms(;experimental::Bool=true, version::Union{Nothing,VersionNumber}=nothing, kwargs...)

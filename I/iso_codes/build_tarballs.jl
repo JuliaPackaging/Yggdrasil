@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "iso_codes"
-version = v"4.18.0"
+version = v"4.20.1"
 
 # Collection of sources required to build iso-codes
 sources = [
     ArchiveSource("https://salsa.debian.org/iso-codes-team/iso-codes/-/archive/v$(version)/iso-codes-v$(version).tar.bz2",
-                  "e6351276de5bb5c91c17546c4d3f53bee9494f3f14f5db7594a19d6cdd01d0f3"),
+                  "66ea9879f9a4d6f767f424bf74bc5471215d36d54f8940f6d32dd7737ceef046"),
 ]
 
 # Bash recipe for building across all platforms
@@ -16,9 +16,11 @@ script = raw"""
 cd $WORKSPACE/srcdir/iso-codes-*
 apk update
 apk add gettext
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make -j${nproc}
-make install
+meson setup builddir --cross-file="${MESON_TARGET_TOOLCHAIN}"
+meson compile -C builddir
+meson install -C builddir
+cd LICENSES
+install_license FSFAP.txt LGPL-2.1-or-later.txt
 """
 
 # The files are identical for all platforms, and in principle we could

@@ -9,7 +9,7 @@ name = "MPIABI"
 # OpenMPI's released versions.
 #
 # We are currently at version 0.1 because some details of the ABI are still being hashed out, e.g. the library SOVERSION.
-version = v"0.1.1"
+version = v"0.1.5"
 
 # The MPI ABI does not provide Fortran bindings. Packages using this
 # ABI should use a different package, e.g.
@@ -21,11 +21,14 @@ sources = [
     # The official MPI ABI C bindings.
     # There are no released versions. We choose a recent commit.
     # This corresponds to the MPI standard 5.0, MPI ABI 1.0.
-    GitSource("https://github.com/mpi-forum/mpi-abi-stubs", "a1183ce6e048341cc65414fd21d928b8cfc9709f"),
+    GitSource("https://github.com/mpi-forum/mpi-abi-stubs", "e3a9e9b16f86099723d287b6ab477626ab4956b8"),
 
     # MPICH source, implementing the C bindings
-    ArchiveSource("https://www.mpich.org/static/downloads/5.0.0b1/mpich-5.0.0b1.tar.gz",
-                  "fb862b0c733c004477ba95ee879b90b17940726ed11a9427b68d90fb86888412"),
+    ArchiveSource("https://www.mpich.org/static/downloads/5.0.1/mpich-5.0.1.tar.gz",
+                  "8c1832a13ddacf071685069f5fadfd1f2877a29e1a628652892c65211b1f3327"),
+    FileSource("https://github.com/pmodels/mpich/commit/689a0869c8f58167e3b0b5db13f8ce8db5f24009.patch?full_index=1",
+               "0cfb0980cd8b4debc7899fdb247aa3c4cb27b52e58e1a1f1bec1b096ec318f32";
+               filename="689a0869c8f58167e3b0b5db13f8ce8db5f24009.patch"),
 
     # Patches
     DirectorySource("bundled"),
@@ -45,8 +48,13 @@ cd ${WORKSPACE}/srcdir/mpich*
 # `<pthread_np.h>` should not actually be used on FreeBSD.)
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pthread_np.patch
 
-# See <https://github.com/pmodels/mpich/issues/7690> and <https://github.com/pmodels/mpich/issues/7691>
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mpich.patch
+# Correct 32-bit bug in MPICH <https://github.com/pmodels/mpich/pull/7776>
+atomic_patch -p1 ${WORKSPACE}/srcdir/689a0869c8f58167e3b0b5db13f8ce8db5f24009.patch
+
+# Add C bindings missing from the MPI ABI
+cp ${WORKSPACE}/srcdir/files/fortran_binding_abi.c src/binding/abi/fortran_binding_abi.c
+perl -pi -e 's!src/binding/abi/c_binding_abi.c!src/binding/abi/c_binding_abi.c src/binding/abi/fortran_binding_abi.c!' src/binding/abi/Makefile.mk
+./autogen.sh
 
 # - Do not install doc and man files which contain files which clashing names on
 #   case-insensitive file systems:
@@ -55,10 +63,6 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mpich.patch
 # - `--enable-fast=all,O3` leads to very long compile times for the
 #   file `src/mpi/coll/mpir_coll.c`. It seems we need to avoid
 #   `alwaysinline`.
-# - We need to use `ch3` because `ch4` breaks on some systems, e.g. on
-#   x86_64 macOS. See
-#   <https://github.com/JuliaPackaging/Yggdrasil/pull/10249#discussion_r1975948816> for a brief
-#   discussion.
 # - We configure with Fortran although we do not provide any Fortran
 #   bindings. This ensures that the C API still supports Fortran types.
 configure_flags=(
@@ -75,6 +79,14 @@ configure_flags=(
     --with-device=ch3
     --with-hwloc=${prefix}
 )
+if [[ "${target}" == *-apple-* ]]; then
+    # Add options from MacPorts
+    configure_flags+=(
+        --enable-timer-type=mach_absolute_time
+        --with-device=ch4:ofi:tcp
+        --with-pm=hydra
+    )
+fi
 
 # Define some obscure undocumented variables needed for cross compilation of
 # the Fortran bindings.  See for example
@@ -134,6 +146,9 @@ fi
 # --with-ze=
 
 ./configure "${configure_flags[@]}"
+
+# Disable MPI_File_{c2f,f2c} that shouldn't be there <https://github.com/pmodels/mpich/pull/7777>
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mpich-disable-file.patch
 
 # Remove empty `-l` flags from libtool
 # (Why are they there? They should not be.)
@@ -209,7 +224,7 @@ cd ${WORKSPACE}/srcdir/mpi-abi-stubs
 #
 # MPI programs may expect it, but the MPI ABI standard intentionally excludes it.
 # We choose to provide a Fortran ABI as well, and therefore we need to define it here.
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fortran.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mpi.h.patch
 
 # Install the official MPI ABI header file
 install -Dvm 644 mpi.h ${includedir}/mpi.h
@@ -218,51 +233,9 @@ install -Dvm 644 mpi.h ${includedir}/mpi.h
 install_license LICENSE
 """
 
-# We are inlining `$(MPI.augment)` because we did not update Yggdrasil's `platforms/mpi.jl` yet
 augment_platform_block = """
     using Base.BinaryPlatforms
-
-    # Can't use Preferences since we might be running this very early with a non-existing Manifest
-    MPIPreferences_UUID = Base.UUID("3da0fdf6-3ccc-4f1b-acd9-58baa6c99267")
-    const preferences = Base.get_preferences(MPIPreferences_UUID)
-
-    # Keep logic in sync with MPIPreferences.jl
-    function augment_mpi!(platform)
-        # Doesn't need to be `const` since we depend on MPIPreferences so we
-        # invalidate the cache when it changes.
-        # Note: MPIPreferences uses `Sys.iswindows()` without the `platform` argument.
-        binary = get(preferences, "binary", Sys.iswindows(platform) ? "MicrosoftMPI_jll" : "MPICH_jll")
-
-        abi = if binary == "system"
-            let abi = get(preferences, "abi", nothing)
-                if abi === nothing
-                    error("MPIPreferences: Inconsistent state detected, binary set to system, but no ABI set.")
-                else
-                    abi
-                end
-            end
-        elseif binary == "MPIABI_jll"
-            "MPIABI"
-        elseif binary == "MPICH_jll"
-            "MPICH"
-        elseif binary == "MPICH_CUDA_jll"
-            "MPICH"
-        elseif binary == "MPItrampoline_jll"
-            "MPItrampoline"
-        elseif binary == "MicrosoftMPI_jll"
-            "MicrosoftMPI"
-        elseif binary == "OpenMPI_jll"
-            "OpenMPI"
-        else
-            error("Unknown binary: ", binary)
-        end
-
-        if !haskey(platform, "mpi")
-            platform["mpi"] = abi
-        end
-        return platform
-    end
-
+    $(MPI.augment)
     augment_platform!(platform::Platform) = augment_mpi!(platform)
     """
 

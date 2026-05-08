@@ -6,12 +6,11 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "HYPRE"
-version = v"3.0.0"
-hypre_version = v"3.0.0"
+version = v"3.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/hypre-space/hypre.git", "da9f93f8d698f4caaaff35fe81655b8ad7bb91f9") # Tag v3.0.0
+    GitSource("https://github.com/hypre-space/hypre.git", "9dc9e18aed6a945a95f966e57daacfb1c269f6ec") # Tag v3.1.0
 ]
 
 # Bash recipe for building across all platforms
@@ -62,16 +61,9 @@ augment_platform_block = """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
-
-# Avoid platforms where the MPI implementation isn't supported
-# OpenMPI
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
-# MPItrampoline
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
 # The products that we will ensure are always built
 products = [

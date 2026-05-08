@@ -1,6 +1,6 @@
 name = "Clang"
-llvm_full_version = v"21.1.2+0"
-libllvm_version = v"21.1.2+0"
+llvm_full_version = v"21.1.8+0"
+libllvm_version = v"21.1.8+0"
 
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
@@ -33,7 +33,7 @@ non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
 for (i, build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    build...;
-                   skip_audit=true, julia_compat="1.13",
+                   skip_audit=true, julia_compat="1.14",
                    augment_platform_block)
 end
 #!

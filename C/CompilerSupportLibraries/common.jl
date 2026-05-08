@@ -9,6 +9,7 @@ function build_csl(ARGS, version::VersionNumber;
                    # latest compatible version.
                    preferred_gcc_version::VersionNumber,
                    windows_staticlibs::Bool,
+                   unix_staticlibs::Bool,
                    julia_compat::String,
                    )
     name = "CompilerSupportLibraries"
@@ -65,7 +66,7 @@ done
 
     ## Now that we've got those tarballs, we're going to use them as sources to overwrite
     ## the libstdc++ and libgomp that we would otherwise get from our compiler shards:
-    script = "WINDOWS_STATICLIBS=$(windows_staticlibs)\nPREFERRED_GCC_VERSION=$(preferred_gcc_version)\nVERSION=$(version.major * 100 ^ 2 + version.minor * 100 + version.patch)\n" * raw"""
+    script = "WINDOWS_STATICLIBS=$(windows_staticlibs)\nUNIX_STATICLIBS=$(unix_staticlibs)\nPREFERRED_GCC_VERSION=$(preferred_gcc_version)\nVERSION=$(version.major * 100 ^ 2 + version.minor * 100 + version.patch)\n" * raw"""
 # Start by extracting LatestLibraries
 tar -zxvf ${WORKSPACE}/srcdir/LatestLibraries*.tar.gz -C ${prefix}
 
@@ -87,14 +88,28 @@ if [[ ${target} == *mingw* ]]; then
         # From v1.1.0 of CSL we move the Windows `*.a` files to a subdir of `${prefix}/lib`.
         # See <https://github.com/JuliaLang/julia/issues/48081>.
         if [[ "${VERSION}" -ge 10100 ]]; then
-           destdir="${prefix}/lib/gcc/${target}/${PREFERRED_GCC_VERSION%.*.*}"
+           destdir="${prefix}/lib/gcc/${AATRIPLET}/${PREFERRED_GCC_VERSION%.*.*}"
         else
            destdir="${prefix}/lib"
         fi
         # Install also some static and import libraries, needed for linking of pkgimages.
-        for lib in libmsvcrt.a libgcc.a libgcc_s.a libssp.dll.a; do
+        for lib in libadvapi32.a libgcc.a libgcc_s.a libkernel32.a libmingwex.a libmingw32.a libmsvcrt.a \
+                   libmoldname.a libshell32.a libssp.a libuser32.a libpthread.dll.a libssp.dll.a dllcrt2.o \
+                   crtbegin.o crtend.o; do
             qfind "/opt/${target}" -name "${lib}" -exec install -Dvm 0644 '{}' "${destdir}/${lib}" \;
         done
+    fi
+fi
+if [[ "${UNIX_STATICLIBS}" == "true" ]] && [[ ${target} != *mingw* ]]; then
+    destdir="${prefix}/lib/gcc/${AATRIPLET}/${PREFERRED_GCC_VERSION%.*.*}"
+    qfind "/opt/${target}" -name "libgcc.a" -exec install -Dvm 0644 '{}' "${destdir}/libgcc.a" \;
+    if [[ ${target} == *linux* ]] || [[ ${target} == *freebsd* ]]; then
+        for lib in crti.o crtn.o crtbeginS.o crtendS.o; do
+            qfind "/opt/${target}" -name "${lib}" -exec install -Dvm 0644 '{}' "${destdir}/${lib}" \;
+        done
+        if [[ ${target} == *-linux-gnu* ]]; then
+            qfind "/opt/${target}" -name "libc_nonshared.a" -exec install -Dvm 0644 '{}' "${destdir}/libc_nonshared.a" \;
+        fi
     fi
 fi
 
@@ -165,16 +180,46 @@ install_license /usr/share/licenses/GPL-3.0+
             if windows_staticlibs && Sys.iswindows(platform)
                 destdir = version >= v"1.1.0" ? "lib/gcc/$(aatriplet(platform))/$(preferred_gcc_version.major)" : "lib"
                 products = vcat(products,
-                                [FileProduct("$(destdir)/libmsvcrt.a", :libmsvcrt_a),
+                                [FileProduct("$(destdir)/libadvapi32.a", :libadvapi32_a),
                                  FileProduct("$(destdir)/libgcc.a", :libgcc_a),
                                  FileProduct("$(destdir)/libgcc_s.a", :libgcc_s_a),
+                                 FileProduct("$(destdir)/libkernel32.a", :libkernel32_a),
+                                 FileProduct("$(destdir)/libmingwex.a", :libmingwex_a),
+                                 FileProduct("$(destdir)/libmingw32.a", :libmingw32_a),
+                                 FileProduct("$(destdir)/libmsvcrt.a", :libmsvcrt_a),
+                                 FileProduct("$(destdir)/libmoldname.a", :libmoldname_a),
+                                 FileProduct("$(destdir)/libshell32.a", :libshell32_a),
+                                 FileProduct("$(destdir)/libssp.a", :libssp_a),
+                                 FileProduct("$(destdir)/libuser32.a", :libuser32_a),
+                                 FileProduct("$(destdir)/libpthread.dll.a", :libpthread_dll_a),
                                  FileProduct("$(destdir)/libssp.dll.a", :libssp_dll_a),
+                                 FileProduct("$(destdir)/dllcrt2.o", :dllcrt2_o),
+                                 FileProduct("$(destdir)/crtbegin.o", :crtbegin_o),
+                                 FileProduct("$(destdir)/crtend.o", :crtend_o),
                                  ])
+            end
+            if unix_staticlibs && !Sys.iswindows(platform)
+                destdir = version >= v"1.1.0" ? "lib/gcc/$(aatriplet(platform))/$(preferred_gcc_version.major)" : "lib"
+                products = vcat(products,
+                                [FileProduct("$(destdir)/libgcc.a", :libgcc_a)])
+                if Sys.islinux(platform) || Sys.isfreebsd(platform)
+                    products = vcat(products,
+                                    [FileProduct("$(destdir)/crti.o", :crti_o),
+                                     FileProduct("$(destdir)/crtn.o", :crtn_o),
+                                     FileProduct("$(destdir)/crtbeginS.o", :crtbeginS_o),
+                                     FileProduct("$(destdir)/crtendS.o", :crtendS_o),
+                                     ])
+                    if libc(platform) == "glibc"
+                        products = vcat(products,
+                                        [FileProduct("$(destdir)/libc_nonshared.a", :libc_nonshared_a)])
+                    end
+                end
             end
             if libc(platform) != "musl"
                 products = vcat(products, LibraryProduct("libssp", :libssp))
             end
-            build_tarballs(ARGS, name, version, sources, script, [platform], products, []; preferred_gcc_version, julia_compat)
+            platform_script = "AATRIPLET=$(aatriplet(platform))\n" * script
+            build_tarballs(ARGS, name, version, sources, platform_script, [platform], products, []; preferred_gcc_version, julia_compat)
         end
     end
 end

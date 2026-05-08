@@ -22,13 +22,13 @@ import Pkg.Types: VersionSpec
 # to all components.
 
 name = "normaliz"
-version = v"300.1001.503"
-upstream_version = v"3.10.5"
+version = v"300.1100.100"
+upstream_version = v"3.11.1"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/Normaliz/Normaliz/releases/download/v$(upstream_version)/normaliz-$(upstream_version).tar.gz",
-                  "58492cfbfebb2ee5702969a03c3c73a2cebcbca2262823416ca36e7b77356a44"),
+                  "9a00d590f0fdcad847e2189696d2842d97ed896ed36c22421874a364047f76e8"),
 ]
 
 # Bash recipe for building across all platforms
@@ -69,7 +69,7 @@ dependencies = [
     Dependency("GMP_jll", v"6.2.1"),
     Dependency("MPFR_jll", v"4.1.1"),
     Dependency("OpenBLAS32_jll", v"0.3.29"),
-    Dependency("FLINT_jll"; compat = "~301.400.000"),
+    Dependency("FLINT_jll"; compat = "~301.500.000"),
     Dependency("nauty_jll"; compat = "~2.8.10"),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD systems),
     # and libgomp from `CompilerSupportLibraries_jll` everywhere else.
