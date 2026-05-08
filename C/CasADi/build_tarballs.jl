@@ -2,7 +2,7 @@ using BinaryBuilder, Pkg
 
 name = "CasADi"
 
-version = v"3.7.2"
+version = v"3.7.3" # upstream is 3.7.2; bump Yggdrasil version because we updated compat bounds
 
 sources = [
     GitSource(
