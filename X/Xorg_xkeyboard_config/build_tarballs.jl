@@ -22,9 +22,14 @@ ninja -j${nproc}
 ninja install
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = [AnyPlatform()]
+# The files are identical for all platforms, and in principle we could
+# use `AnyPlatform()` instead. However, starting with 2.47 the upstream
+# install creates symlinks (`share/X11/xkb`,
+# `share/pkgconfig/xkeyboard-config.pc`,
+# `share/man/man7/xkeyboard-config.7`) which have to be replaced with
+# copies on Windows, and for that to happen we need to build it for
+# Windows specifically (and hence for all other platforms as well).
+platforms = supported_platforms()
 
 products = Product[
 ]
