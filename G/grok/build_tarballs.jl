@@ -66,7 +66,7 @@ platforms = expand_cxxstring_abis(platforms)
 # Disable armv[67]l.
 # The enclosed library "Highway" is not built (correctly? at all?) for this architecture:
 # `error: ‘InterleaveWholeLower’ was not declared in this scope1
-filter!(p -> arch(p) != "arm", platforms)
+filter!(p -> arch(p) ∉ ("armv6l", "armv7l"), platforms)
 
 # Disable riscv64.
 # The enclosed library "Highway" is not built (correctly? at all?) for this architecture:
