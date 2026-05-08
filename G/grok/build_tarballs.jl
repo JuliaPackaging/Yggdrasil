@@ -19,6 +19,8 @@ cd ${WORKSPACE}/srcdir/grok*
 # Use our own, newer cmake
 apk del cmake
 
+# The include file problems and the namespace problem have been reporte as
+# <https://github.com/GrokImageCompression/grok/issues/404>.
 atomic_patch -p1  ${WORKSPACE}/srcdir/patches/cinttypes.patch
 
 # Use proper C++ include headers
