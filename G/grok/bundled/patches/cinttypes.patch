@@ -1,0 +1,21 @@
+--- a/src/lib/codec/apps/GrkCompress.cpp
++++ b/src/lib/codec/apps/GrkCompress.cpp
+@@ -22,6 +22,7 @@
+ #include <cstddef>
+ #include <cstdlib>
+ #include <sstream>
++#include <cinttypes>
+ #ifndef _WIN32
+ #include <cstring>
+ #include <sys/time.h>
+xxx
+--- a/src/lib/codec/apps/GrkDecompress.cpp
++++ b/src/lib/codec/apps/GrkDecompress.cpp
+@@ -16,6 +16,7 @@
+  */
+ 
+ #include <filesystem>
++#include <cinttypes>
+ #ifndef _WIN32
+ #include <sys/time.h>
+ #include <sys/resource.h>

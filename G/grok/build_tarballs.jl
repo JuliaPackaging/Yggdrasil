@@ -1,0 +1,119 @@
+# Note that this script can accept some limited command-line arguments, run
+# `julia build_tarballs.jl --help` to see a usage message.
+using BinaryBuilder
+
+name = "grok"
+version = v"20.3.2"
+
+# Collection of sources required to complete build
+sources = [
+    ArchiveSource("https://github.com/GrokImageCompression/grok/releases/download/v$(version)/source-full.tar.gz",
+                  "e51302338564648bcd966429bb5bea9d48e3a3958820df77bf691f7d678aa810"),
+    DirectorySource("bundled"),
+]
+
+# Bash recipe for building across all platforms
+script = raw"""
+cd ${WORKSPACE}/srcdir/grok*
+
+# Use our own, newer cmake
+apk del cmake
+
+# The include file problems and the namespace problem have been reporte as
+# <https://github.com/GrokImageCompression/grok/issues/404>.
+atomic_patch -p1  ${WORKSPACE}/srcdir/patches/cinttypes.patch
+
+# Use proper C++ include headers
+find examples -type f \( -name '*.h' -o -name '*.cpp' \) -exec sed -i 's/#include <inttypes\.h>/#include <cinttypes>/g' {} +
+
+# Correct case of file name
+find src -type f \( -name '*.h' -o -name '*.cpp' \) -exec sed -i 's/#include <Windows\.h>/#include <windows.h>/g' {} +
+
+# Fix namespace location of `aligned_alloc` on Apple
+if [[ ${target} == *-apple-* ]]; then
+    find src -type f \( -name '*.h' -o -name '*.cpp' \) -exec sed -i 's/std::aligned_alloc/::aligned_alloc/g' {} +
+fi
+
+cmake_flags=(
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_INSTALL_PREFIX=${prefix}
+    -DBUILD_SHARED_LIBS=ON
+    -DGRK_BUILD_JPEG=OFF
+    -DGRK_BUILD_LCMS2=OFF
+    -DGRK_BUILD_LIBPNG=OFF
+    -DGRK_BUILD_LIBTIFF=OFF
+    -DHWY_CMAKE_ARM7=OFF        # this would use `-march`, but it should be enabled
+    -DHWY_CMAKE_RVV=OFF         # we target riscv64 without the vector extension
+    -DSPDLOG_FMT_EXTERNAL=ON
+)
+
+if [[ ${target} == aarch64-* ]]; then
+    # We are building with old kernel headers that do not define `HWCAP_SVE2`.
+    cmake_flags+=(-DCMAKE_CXX_FLAGS='-DHWCAP2_SVE2=2')
+fi
+
+cmake -Bbuild "${cmake_flags[@]}"
+cmake --build build --parallel ${nproc}
+cmake --install build
+
+install_license LICENSE
+"""
+
+# These are the platforms we will build for by default, unless further
+# platforms are passed in on the command line
+platforms = supported_platforms()
+platforms = expand_cxxstring_abis(platforms)
+
+# Disable armv[67]l.
+# The enclosed library "Highway" is not built (correctly? at all?) for this architecture:
+# `error: ‘InterleaveWholeLower’ was not declared in this scope1
+filter!(p -> arch(p) ∉ ("armv6l", "armv7l"), platforms)
+
+# Disable riscv64.
+# The enclosed library "Highway" is not built (correctly? at all?) for this architecture:
+# `error: ‘InterleaveWholeLower’ was not declared in this scope1
+filter!(p -> arch(p) != "riscv64", platforms)
+
+# Disable Apple.
+# Our libc++ is too old; it lacks `hardware_destructive_interference_size` in `<new>`.
+# Using a newer SDK does not help.
+filter!(!Sys.isapple, platforms)
+
+# Disable FreeBSD.
+# Our libc++ is too old; it lacks `std::atomic_ref`.
+filter!(!Sys.isfreebsd, platforms)
+
+# Disable musl.
+# grok uses `malloc_trim`, which is not available in musl
+# (We could provide a trivial implementation if we wanted.)
+filter!(p -> libc(p) != "musl", platforms)
+
+# Disable Windows.
+# The cmake file uses ELF options and probably has never heard of Windows.
+filter!(!Sys.iswindows, platforms)
+
+# The products that we will ensure are always built
+products = [
+    LibraryProduct("libgrokj2k", :libgrokj2k),
+    LibraryProduct("libgrokj2kcodec", :libgrokj2kcodec),
+    ExecutableProduct("grk_compress", :grk_compress),
+    ExecutableProduct("grk_decompress", :grk_decompress),
+    ExecutableProduct("grk_dump", :grk_dump),
+    ExecutableProduct("grk_transcode", :grk_transcode),
+]
+
+# Dependencies that must be installed before this package can be built
+dependencies = [
+    HostBuildDependency("CMake_jll"),
+    Dependency("Fmt_jll"; compat="11.1.1"),
+    Dependency("JpegTurbo_jll"; compat="3.1.5"),
+    Dependency("Libtiff_jll"; compat="4.7.2"),
+    Dependency("LittleCMS_jll"; compat="2.19.0"),
+    Dependency("Zlib_jll"),
+    Dependency("libpng_jll"; compat="1.6.58"),
+]
+
+# Build the tarballs, and possibly a `build.jl` as well.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"11")
