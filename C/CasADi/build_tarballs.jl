@@ -55,8 +55,7 @@ c++ main.cpp -o "${bindir}/amplexe${exeext}" \
 
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
-filter!(p -> arch(p) != "riscv64" && 
-    !(arch(p) == "aarch64" && Sys.isfreebsd(p)),
+filter!(p -> arch(p) != "riscv64" && !Sys.isfreebsd(p),
     platforms)
 
 dependencies = [
