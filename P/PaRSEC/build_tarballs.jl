@@ -1,8 +1,10 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, Pkg
+using BinaryBuilder, BinaryBuilderBase, Pkg
 using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "PaRSEC"
@@ -37,8 +39,40 @@ elif grep -q "MPI_ABI_VERSION" ${includedir}/mpi.h 2>/dev/null && [[ -f ${libdir
 elif [[ "${target}" == *-mingw* ]]; then
     MPI_LIBS="msmpi"
 fi
-
 MPI_LIB_FILE="${libdir}/lib${MPI_LIBS}.${dlext}"
+
+# Configure GPU flags based on whether a CUDA SDK is present.
+# `bb_full_target` contains `cuda+<version>` for CUDA platforms and `cuda+none`
+# (or no cuda tag) for CPU-only platforms.
+if [[ "${bb_full_target}" == *cuda\+[0-9]* ]]; then
+    export CUDA_HOME="${prefix}/cuda"
+    # Some CUDA SDK versions put libs in lib/, others expect lib64/.
+    ln -sf "${CUDA_HOME}/lib" "${CUDA_HOME}/lib64" 2>/dev/null || true
+    export CUDACXX="${CUDA_HOME}/bin/nvcc"
+    export PATH="${CUDA_HOME}/bin:${PATH}"
+    # Help the linker find libcudart during CMake's compiler-ID test.
+    export LDFLAGS="${LDFLAGS-} -L${CUDA_HOME}/lib"
+    GPU_FLAGS=(
+        -DPARSEC_GPU_WITH_CUDA=ON
+        -DPARSEC_GPU_WITH_HIP=OFF
+        -DPARSEC_GPU_WITH_LEVEL_ZERO=OFF
+        -DPARSEC_GPU_WITH_OPENCL=OFF
+        -DCUDAToolkit_ROOT="${CUDA_HOME}"
+        # Pre-set the CUDA compiler so check_language(CUDA) finds it even when
+        # CMAKE_CROSSCOMPILING=ON suppresses the normal compiler search.
+        -DCMAKE_CUDA_COMPILER="${CUDA_HOME}/bin/nvcc"
+        -DCMAKE_CUDA_ARCHITECTURES="${CUDA_ARCHS}"
+        # Link against shared cudart (provided at runtime by CUDA_Runtime_jll).
+        -DCMAKE_CUDA_FLAGS="-cudart shared"
+    )
+else
+    GPU_FLAGS=(
+        -DPARSEC_GPU_WITH_CUDA=OFF
+        -DPARSEC_GPU_WITH_HIP=OFF
+        -DPARSEC_GPU_WITH_LEVEL_ZERO=OFF
+        -DPARSEC_GPU_WITH_OPENCL=OFF
+    )
+fi
 
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -46,10 +80,6 @@ cmake -B build \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
     -DPARSEC_DIST_WITH_MPI=ON \
-    -DPARSEC_GPU_WITH_CUDA=OFF \
-    -DPARSEC_GPU_WITH_HIP=OFF \
-    -DPARSEC_GPU_WITH_LEVEL_ZERO=OFF \
-    -DPARSEC_GPU_WITH_OPENCL=OFF \
     -DPARSEC_DEBUG=OFF \
     -DPARSEC_PROF_TRACE=OFF \
     -DPARSEC_PROF_PINS=OFF \
@@ -64,7 +94,8 @@ cmake -B build \
     -DPARSEC_HAVE_MPI_20=TRUE \
     -DPARSEC_HAVE_MPI_30=TRUE \
     -DPARSEC_HAVE_MPI_OVERTAKE=TRUE \
-    -DHWLOC_ROOT=${prefix}
+    -DHWLOC_ROOT=${prefix} \
+    "${GPU_FLAGS[@]}"
 
 cmake --build build --parallel ${nproc}
 cmake --install build
@@ -74,33 +105,85 @@ install_license LICENSE.txt
 
 augment_platform_block = """
     using Base.BinaryPlatforms
+    module __CUDA
+        $(CUDA.augment)
+    end
+
     $(MPI.augment)
-    augment_platform!(platform::Platform) = augment_mpi!(platform)
-"""
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line.
-# Windows is excluded: PaRSEC is primarily an HPC Linux/macOS framework and
-# Windows MPI support is not well-tested upstream.
-platforms = supported_platforms()
-platforms = filter(p -> !Sys.iswindows(p), platforms)
+    function augment_platform!(platform::Platform)
+        augment_mpi!(platform)
+        __CUDA.augment_platform!(platform)
+    end
+    """
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms)
+# CPU platforms: all non-Windows platforms.
+cpu_platforms = filter(p -> !Sys.iswindows(p), supported_platforms())
+
+# CUDA platforms: x86_64-linux only. nvcc is an x86_64 host binary, so it can
+# only run natively on x86_64 build hosts. aarch64 cross-compilation requires
+# copying the x86_64 nvcc into the sysroot (see NCCL recipe); skip for now.
+cuda_platforms = CUDA.supported_platforms(; min_version=v"11.8")
+filter!(p -> arch(p) == "x86_64", cuda_platforms)
+
+# Augment CPU and CUDA base platforms independently with MPI variants, then
+# combine. Calling augment_platforms on separate sets lets MPI filter correctly
+# (e.g. mpitrampoline is excluded from musl targets).
+mpi_cpu_platforms, mpi_cpu_deps   = MPI.augment_platforms(cpu_platforms)
+mpi_cuda_platforms, mpi_cuda_deps = MPI.augment_platforms(cuda_platforms)
+
+all_platforms = [mpi_cpu_platforms; mpi_cuda_platforms]
+
+# For CPU platforms that could in principle support CUDA (x86_64/aarch64/ppc64le
+# Linux), tag them `cuda=none` so the augment block can distinguish at runtime
+# between "no GPU driver" and "GPU not applicable".
+for p in all_platforms
+    if CUDA.is_supported(p) && !haskey(p, "cuda")
+        p["cuda"] = "none"
+    end
+end
 
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libparsec", :libparsec),
 ]
 
-# Dependencies that must be installed before this package can be built
-dependencies = [
+# Base dependencies shared by all platform variants
+base_dependencies = BinaryBuilder.AbstractDependency[
     Dependency(PackageSpec(name="Hwloc_jll", uuid="e33a78d0-f292-5ffc-b300-72abe9b543c8")),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    RuntimeDependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267");
-                      compat="0.1", top_level=true),
 ]
-append!(dependencies, platform_dependencies)
 
-# Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"9")
+for platform in all_platforms
+    should_build_platform(triplet(platform)) || continue
+
+    deps = copy(base_dependencies)
+    cuda_ver = get(tags(platform), "cuda", "none")
+
+    if cuda_ver != "none"
+        # CUDA+MPI variant: add CUDA SDK (build-time) + runtime dependency.
+        append!(deps, CUDA.required_dependencies(platform))
+        append!(deps, mpi_cuda_deps)
+
+        # Select GPU architectures appropriate for this CUDA version.
+        cv = VersionNumber(cuda_ver)
+        archs = if cv >= v"13"
+            "75;80;90;100;120"
+        elseif cv >= v"12"
+            "60;70;80;90"
+        else  # 11.x
+            "60;70;80;86"
+        end
+        platform_script = "export CUDA_ARCHS=\"$archs\"\n" * script
+    else
+        append!(deps, mpi_cpu_deps)
+        platform_script = script
+    end
+
+    build_tarballs(ARGS, name, version, sources, platform_script, [platform],
+                   products, deps;
+                   augment_platform_block,
+                   julia_compat="1.6",
+                   preferred_gcc_version=v"9",
+                   lazy_artifacts=true)
+end
