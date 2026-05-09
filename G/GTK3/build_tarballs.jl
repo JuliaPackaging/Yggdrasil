@@ -3,33 +3,41 @@
 using BinaryBuilder
 
 name = "GTK3"
-version = v"3.24.31"
+version = v"3.24.50"
 
 # Collection of sources required to build GTK
 sources = [
     GitSource("https://gitlab.gnome.org/GNOME/gtk.git",
-              "ab45bde94c7bbd140b12fa0dd6203f7b98d1a715"),
-    DirectorySource("./bundled"),
+              "93f05958bd683cb573236bd2a4cede68160595ca"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/gtk*/
+cd $WORKSPACE/srcdir/gtk*
 
 # We need to run some commands with a native Glib
 apk add glib-dev gtk+3.0
 
 # This is awful, I know
-ln -sf /usr/bin/glib-compile-resources ${prefix}/bin/glib-compile-resources
-ln -sf /usr/bin/glib-compile-schemas ${prefix}/bin/glib-compile-schemas
-ln -sf /usr/bin/gdk-pixbuf-pixdata ${prefix}/bin/gdk-pixbuf-pixdata
-# Remove gio-2.0 pkgconfig file so that it isn't picked up by post-install script.
-rm ${prefix}/lib/pkgconfig/gio-2.0.pc
+ln -sf /usr/bin/glib-compile-resources ${bindir}/glib-compile-resources
+ln -sf /usr/bin/glib-compile-schemas ${bindir}/glib-compile-schemas
+ln -sf /usr/bin/gdk-pixbuf-pixdata ${bindir}/gdk-pixbuf-pixdata
 
-atomic_patch -p1 ../patches/meson_build.patch
-# Fix bugs in v3.24.31
-atomic_patch -p1 ../patches/macos-3.24.31.patch
-atomic_patch -p1 ../patches/0001-Use-lowercase-name-for-windows.h.patch
+# `${bindir}/wayland_scanner` is a symbolic link that contains `..` path elements.
+# These are not properly normalized: They are normalized before expanding the symbolic link `/workspace/destdir`,
+# and this leads to a broken reference. We resolve the path manually.
+#
+# Since this symbolic link is working in the shell, and since `pkg-config` outputs the expected values,
+# I think this may be a bug in `meson`.
+#
+# The file `wayland-scanner.pc` is mounted multiple times (and is also available via symbolic links).
+# Fix it for all relevant mount points.
+for destdir in /workspace/x86_64-linux-musl*/destdir; do
+    prefix_path=$(echo $destdir | sed -e 's+/destdir$++')/$(readlink ${host_bindir}/wayland-scanner | sed -e 's+^[.][.]/[.][.]/++' | sed -e 's+/bin/wayland-scanner$++')
+    if [ -e ${prefix_path}/lib/pkgconfig/wayland-scanner.pc ]; then
+        sed -i -e "s+prefix=.*+prefix=${prefix_path}+" ${prefix_path}/lib/pkgconfig/wayland-scanner.pc
+    fi
+done
 
 FLAGS=()
 if [[ "${target}" == *-apple-* ]]; then
@@ -41,24 +49,25 @@ elif [[ "${target}" == *-mingw* ]]; then
     sed -ri "s/^c_args = \[(.*)\]/c_args = [\1, '-DWINVER=_WIN32_WINNT_WIN7']/" ${MESON_TARGET_TOOLCHAIN}
 fi
 
-mkdir build-gtk && cd build-gtk
-meson .. \
+meson setup builddir \
+    --buildtype=release \
+    --cross-file="${MESON_TARGET_TOOLCHAIN}" \
     -Dintrospection=false \
     -Ddemos=false \
     -Dexamples=false \
     -Dtests=false \
-    "${FLAGS[@]}" \
-    --cross-file="${MESON_TARGET_TOOLCHAIN}"
-ninja -j${nproc}
-ninja install
+    "${FLAGS[@]}"
+meson compile -C builddir
+meson install -C builddir
 
 # Remove temporary links
-rm ${prefix}/bin/gdk-pixbuf-pixdata ${prefix}/bin/glib-compile-{resources,schemas}
+rm ${bindir}/gdk-pixbuf-pixdata ${bindir}/glib-compile-{resources,schemas}
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> arch(p) != "armv6l", supported_platforms(; experimental=true))
+#TODO platforms = filter!(p -> arch(p) != "armv6l", supported_platforms(; experimental=true))
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -76,31 +85,31 @@ dependencies = [
     # Need a host Wayland for wayland-scanner
     HostBuildDependency("Wayland_jll"; platforms=linux),
     BuildDependency("Xorg_xorgproto_jll"; platforms=linux_freebsd),
-    Dependency("Glib_jll"; compat="2.68.3"),
-    Dependency("Cairo_jll"),
-    Dependency("Pango_jll"; compat="1.47.0"),
+    Dependency("ATK_jll"; compat="2.38.1"),
+    Dependency("Cairo_jll"; compat="1.18.5"),
+    Dependency("Fontconfig_jll"),
+    Dependency("FreeType2_jll"; compat="2.13.4"),
     Dependency("FriBidi_jll"),
-    Dependency("FreeType2_jll"; compat="2.10.4"),
-    Dependency("gdk_pixbuf_jll"),
-    Dependency("Libepoxy_jll"),
-    # Gtk 3.24.29 requires ATK 2.35.1
-    Dependency("ATK_jll", v"2.36.1"; compat="2.35.1"),
+    Dependency("Glib_jll"; compat="2.84.3"),
     Dependency("HarfBuzz_jll"),
-    Dependency("xkbcommon_jll"; platforms=linux),
-    Dependency("iso_codes_jll"),
+    Dependency("Libepoxy_jll"; compat="1.5.11"),
+    Dependency("Pango_jll"; compat="1.56.3"),
     Dependency("Wayland_jll"; platforms=linux),
-    Dependency("Xorg_libXrandr_jll"; platforms=linux_freebsd),
+    Dependency("Wayland_protocols_jll"; compat="1.44", platforms=linux),
     Dependency("Xorg_libX11_jll"; platforms=linux_freebsd),
-    Dependency("Xorg_libXrender_jll"; platforms=linux_freebsd),
-    Dependency("Xorg_libXi_jll"; platforms=linux_freebsd),
-    Dependency("Xorg_libXext_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_libXcomposite_jll"; platforms=linux_freebsd),
     Dependency("Xorg_libXcursor_jll"; platforms=linux_freebsd),
     Dependency("Xorg_libXdamage_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_libXext_jll"; platforms=linux_freebsd),
     Dependency("Xorg_libXfixes_jll"; platforms=linux_freebsd),
-    Dependency("Xorg_libXcomposite_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_libXi_jll"; platforms=linux_freebsd),
     Dependency("Xorg_libXinerama_jll"; platforms=linux_freebsd),
-    Dependency("Fontconfig_jll"),
+    Dependency("Xorg_libXrandr_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_libXrender_jll"; platforms=linux_freebsd),
     Dependency("at_spi2_atk_jll"; platforms=linux_freebsd),
+    Dependency("gdk_pixbuf_jll"),
+    Dependency("iso_codes_jll"),
+    Dependency("xkbcommon_jll"; platforms=linux),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
