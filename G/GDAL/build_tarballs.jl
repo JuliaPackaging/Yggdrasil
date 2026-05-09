@@ -42,13 +42,6 @@ if [[ "${target}" == *-freebsd* ]]; then
     export LDFLAGS="-lexecinfo -undefined"
 fi
 
-# grok is not available on all platforms (see grok/build_tarballs.jl)
-if [ -f ${libdir}/libgrokj2k.so ]; then
-    use_grok=ON
-else
-    use_grok=OFF
-fi
-
 CMAKE_FLAGS=(
     -B build
     -DCMAKE_INSTALL_PREFIX=${prefix}
@@ -65,7 +58,6 @@ CMAKE_FLAGS=(
     -DGDAL_USE_EXPAT=ON
     -DGDAL_USE_GEOS=ON
     -DGDAL_USE_GEOTIFF=ON
-    -DGDAL_USE_GROK=${use_grok}
     -DGDAL_USE_HDF4=ON
     -DGDAL_USE_HDF5=ON
     -DGDAL_USE_LERC=ON
@@ -95,6 +87,18 @@ if [ -e "${libdir}/libarrow.${dlext}" ]; then
         -DGDAL_USE_ARROW=ON
         -DGDAL_USE_PARQUET=ON
     )
+fi
+
+# Use grok only if available
+if [ -e "${libdir}/libgrokj2k.${dlext}" ]; then
+    CMAKE_FLAGS+=(-DGDAL_USE_GROK=ON)
+fi
+
+# For run-time CPU detection on x86_64-apple
+# (avoid `ld64.lld: error: undefined symbol: __cpu_model`)
+if [[ "${target}" == x86_64-apple-* ]]; then
+    # Disable AVX2 unconditionally
+    sed -i -e 's/__builtin_cpu_supports("[a-z0-9]*")/false/' gcore/gdaldataset.cpp port/cpl_cpu_features.cpp
 fi
 
 # Disable gif on Windows
