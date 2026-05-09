@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "GDAL"
-upstream_version = v"3.12.4"
+upstream_version = v"3.13.0"
 # The version offset is used for two purposes:
 # - If we need to release multiple jll packages for the same GDAL
 #   library (usually for weird packaging reasons) then we increase the
@@ -15,14 +15,14 @@ upstream_version = v"3.12.4"
 # - Minor versions of GDAL are usually binary incompatible because
 #   they increase the shared library soname. To encode this, we
 #   increase the major version number of the version offset.
-version_offset = v"4.0.0"
+version_offset = v"5.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
 
 # Collection of sources required to build GDAL
 sources = [
-    GitSource("https://github.com/OSGeo/gdal.git", "5e70e43057176e6d6c45a147976daf04593f8471"),
+    GitSource("https://github.com/OSGeo/gdal.git", "130cb4675a0b42bd32acad56e57022cca44fc008"),
     DirectorySource("./bundled"),
 ]
 
@@ -42,6 +42,13 @@ if [[ "${target}" == *-freebsd* ]]; then
     export LDFLAGS="-lexecinfo -undefined"
 fi
 
+# grok is not available on all platforms (see grok/build_tarballs.jl)
+if [ -f ${libdir}/libgrokj2k.so ]; then
+    use_grok=ON
+else
+    use_grok=OFF
+fi
+
 CMAKE_FLAGS=(
     -B build
     -DCMAKE_INSTALL_PREFIX=${prefix}
@@ -56,9 +63,9 @@ CMAKE_FLAGS=(
     -DGDAL_USE_BLOSC=ON
     -DGDAL_USE_CURL=ON
     -DGDAL_USE_EXPAT=ON
-    -DGDAL_USE_HDF4=ON
     -DGDAL_USE_GEOS=ON
     -DGDAL_USE_GEOTIFF=ON
+    -DGDAL_USE_GROK=${use_grok}
     -DGDAL_USE_HDF4=ON
     -DGDAL_USE_HDF5=ON
     -DGDAL_USE_LERC=ON
@@ -185,6 +192,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency("Arrow_jll"; compat="19.0.0"),
     Dependency("Blosc_jll"; compat="1.21.7"),
     Dependency("Expat_jll"; compat="2.6.5"),
@@ -194,7 +202,7 @@ dependencies = [
     Dependency("LERC_jll"; compat="4.0.1"),
     Dependency("LibCURL_jll"; compat="7.73,8"),
     Dependency("LibPQ_jll"; compat="16.8"),
-    Dependency("Libtiff_jll"; compat="4.7.1"),
+    Dependency("Libtiff_jll"; compat="4.7.2"),
     Dependency("Lz4_jll"; compat="1.10.1"),
     Dependency("NetCDF_jll"; compat="401.1000.0"),
     Dependency("OpenJpeg_jll"; compat="2.5.4"),
@@ -206,11 +214,12 @@ dependencies = [
     # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
     # Updating to `compat="~2.14.1"` is likely possible without problems but requires rebuilding this package
     Dependency("XML2_jll"; compat="~2.13.6"),
-    Dependency("XZ_jll"; compat="5.6.4"),
+    Dependency("XZ_jll"; compat="5.8.3"),
     Dependency("Zlib_jll"; compat="1.2.12"),
     Dependency("Zstd_jll"; compat="1.5.7"),
+    Dependency("grok_jll"; compat="20.3.2"),
     Dependency("libgeotiff_jll"; compat="100.702.400"),
-    Dependency("libpng_jll"; compat="1.6.47"),
+    Dependency("libpng_jll"; compat="1.6.58"),
     Dependency("libwebp_jll"; compat="1.5.0"),
     Dependency("muparser_jll"; compat="2.3.5"),
     # Disable exprtk on Windows, it exports too many symbols (21086, with at most 65535 allowed)
