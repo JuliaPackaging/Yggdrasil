@@ -7,15 +7,18 @@ version = v"13.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource(
-        "https://github.com/AcademySoftwareFoundation/openvdb/archive/refs/tags/v$(version).tar.gz",
-        "4d6a91df5f347017496fe8d22c3dbb7c4b5d7289499d4eb4d53dd2c75bb454e1",
+    GitSource(
+        "https://github.com/AcademySoftwareFoundation/openvdb",
+        "7c03e1f084873cd1b3422c7ff7aec6ee681b3b38",  # tag v13.0.0
     ),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/openvdb-*/
+# OpenVDB 13 needs CMake >= 3.24; the base image ships 3.21.
+apk del cmake
+
+cd $WORKSPACE/srcdir/openvdb
 
 args=(
     -DCMAKE_BUILD_TYPE=Release
@@ -38,7 +41,9 @@ if [[ ${target} == *darwin* ]]; then
 fi
 
 cmake -B build -G Ninja "${args[@]}"
-cmake --build build --parallel ${nproc}
+# OpenVDB template instantiations are memory-heavy at compile time;
+# cap parallelism to keep peak RSS bounded.
+cmake --build build --parallel 2
 cmake --install build
 install_license LICENSE
 """
@@ -58,13 +63,18 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("boost_jll"; compat="1.85"),
+    # OpenVDB 13's CMakeLists requires CMake >= 3.24.
+    HostBuildDependency("CMake_jll"),
+    Dependency("boost_jll"),
     Dependency("oneTBB_jll"),
     Dependency("Blosc_jll"),
     Dependency("Zlib_jll"),
+    # libopenvdb.so links libgcc_s; audit fails to auto-map without this.
+    Dependency("CompilerSupportLibraries_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# OpenVDB needs C++17, so use a gcc that supports it on every host.
+# OpenVDB 13's OpenVDBCXX.cmake requires g++ >= 11.2.1; pick the highest
+# bootstrap available in BB (13.2.0).
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"10")
+               julia_compat="1.6", preferred_gcc_version=v"13")
