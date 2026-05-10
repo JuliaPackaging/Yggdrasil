@@ -5,12 +5,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "PETSc"
-version = v"3.24.2"
+version = v"3.24.6"
 
 # Collection of sources required to build PETSc.
 sources = [
     ArchiveSource("https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-$(version).tar.gz",
-                  "105c77cbc7361c078e013448bcad2c57ce8081377e5a8e49b3cc213f1a0a4a63"),
+                  "d6ad14652996b0e0d3da51068eec902118057f275de867e8cf258ffd64d90a7d"),
     DirectorySource("bundled"),
 ]
 
