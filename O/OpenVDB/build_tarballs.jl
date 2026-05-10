@@ -15,8 +15,8 @@ sources = [
     # target is darwin14 (10.10), whose libc++ predates std::any_cast and
     # aligned-deallocation operators that OpenVDB 13 + TBB depend on.
     ArchiveSource(
-        "https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz",
-        "cd4f08a75577145b8f05245a2975f7c81401d75e9535dcffbb879ee1deefcbf4",
+        "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
+        "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f",
     ),
 ]
 
@@ -29,18 +29,16 @@ cd $WORKSPACE/srcdir/openvdb
 
 # OpenVDB 13's PointDataGrid uses std::any_cast and TBB uses aligned
 # deallocation operators; both need libc++ symbols introduced in macOS
-# 10.14. Set deployment target on all darwin targets; overlay a newer
-# SDK on x86_64-apple-darwin since BB's default sysroot for that target
-# is darwin14 (10.10). aarch64-apple-darwin's sysroot is already new.
+# 10.14. Set deployment target on all darwin targets; for
+# x86_64-apple-darwin, redirect the toolchain at the bundled 10.14 SDK
+# (BB's default sysroot for that target is darwin14 / 10.10).
+# aarch64-apple-darwin's sysroot is already new.
 if [[ ${target} == *apple-darwin* ]]; then
     export MACOSX_DEPLOYMENT_TARGET=10.14
 fi
 if [[ ${target} == x86_64-apple-darwin* ]]; then
-    pushd $WORKSPACE/srcdir/MacOSX11.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    popd
+    apple_sdk_root=$WORKSPACE/srcdir/MacOSX10.14.sdk
+    sed -i "s!/opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
 fi
 
 args=(
