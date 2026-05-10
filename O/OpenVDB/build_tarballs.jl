@@ -20,6 +20,14 @@ apk del cmake
 
 cd $WORKSPACE/srcdir/openvdb
 
+# OpenVDB 13's PointDataGrid uses std::any_cast and TBB uses aligned
+# deallocation operators; both have libc++ availability annotations
+# gating them to macOS >= 10.14 / 10.13. BB's darwin14 sysroot defaults
+# to 10.10 — raise it.
+if [[ ${target} == *apple-darwin* ]]; then
+    export MACOSX_DEPLOYMENT_TARGET=10.14
+fi
+
 args=(
     -DCMAKE_BUILD_TYPE=Release
     -DCMAKE_INSTALL_PREFIX=${prefix}
