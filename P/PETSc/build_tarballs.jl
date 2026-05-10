@@ -55,7 +55,12 @@ if [[ "${target}" == *-mingw* ]]; then
     USE_MPI=0
 
 else
-    if [[ ${bb_full_target} == *mpich* ]]; then
+    if [[ ${bb_full_target} == *mpiabi* ]]; then
+        USE_MPI=1
+        MPI_FFLAGS=""
+        MPI_LIBS=--with-mpi-lib="[${libdir}/libmpif.${dlext},${libdir}/libmpi_abi.${dlext}]"
+        MPI_INC=--with-mpi-include=${includedir}
+    elif [[ ${bb_full_target} == *mpich* ]]; then
         USE_MPI=1
         MPI_FFLAGS=""
         MPI_LIBS=--with-mpi-lib="[${libdir}/libmpifort.${dlext},${libdir}/libmpi.${dlext}]"
@@ -176,7 +181,10 @@ build_petsc()
     MPI_CC=mpicc
     MPI_FC=mpif90
     MPI_CXX=mpicxx
-    if [[ ${bb_full_target} == *mpitrampoline* ]]; then
+    if [[ ${bb_full_target} == *mpiabi* ]]; then
+        MPI_FC=mpifc
+        export MPIF_FCLIBS='-lmpif -lmpi_abi'
+    elif [[ ${bb_full_target} == *mpitrampoline* ]]; then
         # required for mpitrampoline
         MPI_FC=mpifc
     elif [[ ${bb_full_target} == *openmpi* ]]; then
@@ -456,6 +464,7 @@ dependencies = [
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93");
                compat="5.4.0",
                platforms=filter(!Sys.iswindows, platforms)),
+    Dependency("mpif_jll"; compat="0.1.5", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)), # MPI Fortran bindings
 ]
 append!(dependencies, platform_dependencies)
 
