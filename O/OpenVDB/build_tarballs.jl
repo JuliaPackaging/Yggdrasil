@@ -48,6 +48,14 @@ if [[ ${target} == *darwin* ]]; then
    args+=(-DCMAKE_STRIP=${target}-strip)
 fi
 
+# boost_jll's mingw tarball installs BoostConfig.cmake under bin/cmake/
+# (Windows-native layout) rather than lib/cmake/ where CMake's config-mode
+# find_package looks. Point Boost_DIR at the actual location; the glob
+# keeps this robust to boost_jll version bumps.
+if [[ ${target} == *-mingw32* ]]; then
+    args+=(-DBoost_DIR=$(dirname $(ls ${prefix}/bin/cmake/Boost-*/BoostConfig.cmake | head -1)))
+fi
+
 cmake -B build -G Ninja "${args[@]}"
 # OpenVDB template instantiations are memory-heavy at compile time;
 # cap parallelism to keep peak RSS bounded.
