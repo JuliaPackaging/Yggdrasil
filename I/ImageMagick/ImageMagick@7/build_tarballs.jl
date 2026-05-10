@@ -20,7 +20,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/ImageMagick*/
 
-#TODO atomic_patch -p1 ../patches/check-have-clock-realtime.patch
 atomic_patch -p1 ../patches/urlmon.patch
 
 export LDFLAGS="${LDFLAGS} -L${libdir}"
