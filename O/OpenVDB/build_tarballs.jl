@@ -86,7 +86,6 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# OpenVDB 13's OpenVDBCXX.cmake requires g++ >= 11.2.1; pick the highest
-# bootstrap available in BB (13.2.0).
+# OpenVDB 13's OpenVDBCXX.cmake requires g++ >= 11.2.1.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"13")
+               julia_compat="1.6", preferred_gcc_version=v"12")
