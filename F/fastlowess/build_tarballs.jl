@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "fastlowess"
-version = v"1.2.0"
+version = v"1.3.0"
 
 # Update the commit hash when releasing a new version
 sources = [
-    GitSource("https://github.com/thisisamirv/lowess-project.git",
-        "af37ea7887e858328eb3190ab09623e4525cc02c"),
+	GitSource("https://github.com/thisisamirv/lowess-project.git",
+		"f194fc94a188d16039ed3b2fcb09f1294bf6df4d"),
 ]
 
 # Build script
@@ -17,7 +17,7 @@ cd $WORKSPACE/srcdir/lowess-project/bindings/julia
 # Use the system linker. On Linux, force BFD to avoid "lld not built with zlib support" errors.
 export RUSTFLAGS="-C linker=${CC}"
 if [[ "${target}" == *-linux-* ]]; then
-    RUSTFLAGS="${RUSTFLAGS} -C link-arg=-fuse-ld=bfd"
+	RUSTFLAGS="${RUSTFLAGS} -C link-arg=-fuse-ld=bfd"
 fi
 # Build the release library
 cargo build --release --target ${rust_target} --target-dir target
@@ -39,7 +39,7 @@ filter!(p -> arch(p) != "riscv64", platforms)
 
 # Products
 products = [
-    LibraryProduct(["libfastlowess_jl", "fastlowess_jl"], :libfastlowess_jl; dont_dlopen=true),
+	LibraryProduct(["libfastlowess_jl", "fastlowess_jl"], :libfastlowess_jl; dont_dlopen = true),
 ]
 
 # No JLL dependencies required
@@ -47,7 +47,7 @@ dependencies = Dependency[]
 
 # Build with Rust compiler support
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat="1.6",
-    compilers=[:rust, :c],
-    preferred_gcc_version=v"10",
-    lock_microarchitecture=false)
+	julia_compat = "1.6",
+	compilers = [:rust, :c],
+	preferred_gcc_version = v"1.3.0",
+	lock_microarchitecture = false)
