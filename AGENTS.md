@@ -510,22 +510,22 @@ For complex packages, you can also:
 
 ## MCP Tooling
 
-This repo ships an MCP server for Claude Code, configured in `.mcp.json`:
+This repo ships an MCP server for AI coding agents, configured in `.mcp.json`:
 
 - **`bb-sandbox`** (`.claude/mcp-bb-sandbox/server.jl`) — launches and drives an
   interactive BinaryBuilder cross-compilation sandbox. Tools: `sandbox_start`,
   `sandbox_exec`, `sandbox_stop`, `sandbox_list`, `sandbox_str_replace_editor`.
 
 The server runs from the `.ci/` Julia environment. On a fresh checkout it must
-be instantiated once, otherwise Claude Code reports
-`Failed to reconnect to bb-sandbox` because the server crashes on startup with
-a missing-package error (e.g. `ClaudeMCPTools`). From the repo root:
+be instantiated once, otherwise the agent will fail to connect to `bb-sandbox`
+because the server crashes on startup with a missing-package error
+(e.g. `ClaudeMCPTools`). From the repo root:
 
 ```bash
 julia --project=.ci -e 'using Pkg; Pkg.instantiate()'
 ```
 
-After that, `/mcp` in Claude Code should show `bb-sandbox` connected.
+After that, the agent's MCP status should show `bb-sandbox` connected.
 
 ## Additional Resources
 
