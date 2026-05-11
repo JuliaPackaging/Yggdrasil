@@ -2,6 +2,9 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "OpenVDB"
 version = v"13.0.0"
 
@@ -11,13 +14,6 @@ sources = [
         "https://github.com/AcademySoftwareFoundation/openvdb",
         "7c03e1f084873cd1b3422c7ff7aec6ee681b3b38",  # tag v13.0.0
     ),
-    # Newer macOS SDK for x86_64-apple-darwin. BB's default sysroot for that
-    # target is darwin14 (10.10), whose libc++ predates std::any_cast and
-    # aligned-deallocation operators that OpenVDB 13 + TBB depend on.
-    ArchiveSource(
-        "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-        "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f",
-    ),
 ]
 
 # Bash recipe for building across all platforms
@@ -26,20 +22,6 @@ script = raw"""
 apk del cmake
 
 cd $WORKSPACE/srcdir/openvdb
-
-# OpenVDB 13's PointDataGrid uses std::any_cast and TBB uses aligned
-# deallocation operators; both need libc++ symbols introduced in macOS
-# 10.14. Set deployment target on all darwin targets; for
-# x86_64-apple-darwin, redirect the toolchain at the bundled 10.14 SDK
-# (BB's default sysroot for that target is darwin14 / 10.10).
-# aarch64-apple-darwin's sysroot is already new.
-if [[ ${target} == *apple-darwin* ]]; then
-    export MACOSX_DEPLOYMENT_TARGET=10.14
-fi
-if [[ ${target} == x86_64-apple-darwin* ]]; then
-    apple_sdk_root=$WORKSPACE/srcdir/MacOSX10.14.sdk
-    sed -i "s!/opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
-fi
 
 args=(
     -DCMAKE_BUILD_TYPE=Release
@@ -76,6 +58,8 @@ cmake --build build --parallel 2
 cmake --install build
 install_license LICENSE
 """
+
+sources, script = require_macos_sdk("10.14", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
