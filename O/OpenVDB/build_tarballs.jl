@@ -76,8 +76,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    # OpenVDB 13's CMakeLists requires CMake >= 3.24.
-    HostBuildDependency("CMake_jll"),
+    HostBuildDependency(PackageSpec(; name="CMake_jll", version="3.24")),
     Dependency("boost_jll"),
     Dependency("oneTBB_jll"),
     Dependency("Blosc_jll"),
