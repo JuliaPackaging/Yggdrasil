@@ -79,7 +79,7 @@ dependencies = [
     HostBuildDependency(PackageSpec(; name="CMake_jll", version="3.24")),
     Dependency("boost_jll"; compat="1.87"),
     Dependency("oneTBB_jll"; compat="2022.3"),
-    Dependency("Blosc_jll"; compat="1.21"),
+    Dependency("Blosc_jll"; compat="1.21.7"),
     Dependency("Zlib_jll"; compat="1.3"),
     # libopenvdb.so links libgcc_s; audit fails to auto-map without this.
     Dependency("CompilerSupportLibraries_jll"),
