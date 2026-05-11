@@ -23,46 +23,61 @@ if [[ "${target}" == *-mingw* ]]; then
     # This is required to ensure that MSMPI can be found by cmake
     export LDFLAGS="-L${libdir} -lmsmpi"
     PLATFLAGS="-DTPL_ENABLE_PARMETISLIB:BOOL=FALSE -DMPI_C_ADDITIONAL_INCLUDE_DIRS=${includedir}"
-else
-    METIS_PATH="${libdir}/metis/metis_Int64_Real32/lib/libmetis_Int64_Real32.${dlext}"
-    PARMETIS_PATH="${libdir}/libparmetis_Int64_Real32.${dlext}"
-    PLATFLAGS="-DTPL_ENABLE_PARMETISLIB:BOOL=TRUE -DTPL_PARMETIS_INCLUDE_DIRS=${includedir} -DTPL_PARMETIS_LIBRARIES=${PARMETIS_PATH};${METIS_PATH}"
 fi
 
 # Pick libblastrampoline.so / libblastrampoline-5.dll / libblastrampoline.dylib
 # without an explicit Windows check.
 BLAS_LIB=$(ls "${libdir}"/libblastrampoline*."${dlext}" 2>/dev/null | head -1)
 
-mkdir build-64
-cd build-64
-cmake \
-    -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_SHARED_LIBS=ON \
-    -DBUILD_STATIC_LIBS=OFF \
-    -DTPL_ENABLE_INTERNAL_BLASLIB=OFF \
-    -Denable_tests=ON \
-    -Denable_doc=OFF \
-    -Denable_single=ON \
-    -Denable_double=ON \
-    -Denable_complex16=ON \
-    -DTPL_BLAS_LIBRARIES="${BLAS_LIB}" \
-    -DTPL_ENABLE_LAPACKLIB=ON \
-    -DTPL_LAPACK_LIBRARIES="${BLAS_LIB}" \
-    ${PLATFLAGS} \
-    -DCMAKE_C_FLAGS="-std=c99 -Wno-implicit-function-declaration -Wno-incompatible-pointer-types" \
-    -DXSDK_INDEX_SIZE=64 \
-    -DXSDK_ENABLE_Fortran=OFF \
-    -DSUPERLU_OUTPUT_NAME="superlu_dist_Int64" \
-    -Denable_examples=OFF \
-    -Denable_python=OFF \
-    ..
-make -j${nproc}
-make install
+build_superlu_dist()
+{
+    if [[ "${1}" == "Int64" ]]; then
+        INT=64
+        METIS_PATH="${libdir}/metis/metis_Int64_Real32/lib/libmetis_Int64_Real32.${dlext}"
+        PARMETIS_PATH="${libdir}/libparmetis_Int64_Real32.${dlext}"
+    else
+        INT=32
+        METIS_PATH="${libdir}/libmetis.${dlext}"
+        PARMETIS_PATH="${libdir}/libparmetis.${dlext}"
+    fi
+    if [[ "${target}" != *-mingw* ]]; then
+        PLATFLAGS="-DTPL_ENABLE_PARMETISLIB:BOOL=TRUE -DTPL_PARMETIS_INCLUDE_DIRS=${includedir} -DTPL_PARMETIS_LIBRARIES=${PARMETIS_PATH};${METIS_PATH}"
+    fi
 
-install -Dvm 755 TEST/pdtest${exeext} "${bindir}/pdtest_64${exeext}"
-install -vm 644 ../EXAMPLE/g20.rua "${includedir}"
+    mkdir build-${INT}
+    pushd build-${INT}
+    cmake \
+        -DCMAKE_INSTALL_PREFIX=${prefix} \
+        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DBUILD_SHARED_LIBS=ON \
+        -DBUILD_STATIC_LIBS=OFF \
+        -DTPL_ENABLE_INTERNAL_BLASLIB=OFF \
+        -Denable_tests=ON \
+        -Denable_doc=OFF \
+        -Denable_single=ON \
+        -Denable_double=ON \
+        -Denable_complex16=ON \
+        -DTPL_BLAS_LIBRARIES="${BLAS_LIB}" \
+        -DTPL_ENABLE_LAPACKLIB=ON \
+        -DTPL_LAPACK_LIBRARIES="${BLAS_LIB}" \
+        ${PLATFLAGS} \
+        -DCMAKE_C_FLAGS="-std=c99 -Wno-implicit-function-declaration -Wno-incompatible-pointer-types" \
+        -DXSDK_INDEX_SIZE=${INT} \
+        -DXSDK_ENABLE_Fortran=OFF \
+        -DSUPERLU_OUTPUT_NAME="superlu_dist_Int${INT}" \
+        -Denable_examples=OFF \
+        -Denable_python=OFF \
+        ..
+    make -j${nproc}
+    make install
+    popd
+
+    install -Dvm 755 build-${INT}/TEST/pdtest${exeext} "${bindir}/pdtest_${INT}${exeext}"
+    install -vm 644 EXAMPLE/g20.rua "${includedir}"
+}
+build_superlu_dist Int32
+build_superlu_dist Int64
 """
 
 augment_platform_block = """
@@ -72,14 +87,16 @@ augment_platform_block = """
 """
 
 platforms = supported_platforms()
-filter!(p -> nbits(p) != 32, platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # The products that we will ensure are always built
 products = [
+    ExecutableProduct("pdtest_32", :pdtest_32),
     ExecutableProduct("pdtest_64", :pdtest_64),
-    LibraryProduct("libsuperlu_dist_Int64", :libsuperlu_dist_Int64, ["\$libdir/superlu_dist/Int64/lib", "\$libdir/superlu_dist/Int64/bin"]),
+
+    LibraryProduct("libsuperlu_dist_Int32", :libsuperlu_dist_Int32, ["\$libdir/superlu_dist/Int32/lib", "\$libdir/superlu_dist/Int32/bin"]),
+    LibraryProduct("libsuperlu_dist_Int64", :libsuperlu_dist_Int64, ["\$libdir/superlu_dist/Int64/lib", "\$libdir/superlu_dist/Int64/bin"])
 ]
 
 # Dependencies that must be installed before this package can be built
