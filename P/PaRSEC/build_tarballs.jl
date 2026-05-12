@@ -28,6 +28,10 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0002-fix-cmake-crosscompile-optiona
 # used in the #else branch too.
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-fix-mpi-overtake-undeclared.patch
 
+# Fix cudaDeviceProp fields removed in CUDA 13.0 (clockRate, computeMode,
+# memoryClockRate). Guard with CUDART_VERSION < 13000.
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0003-fix-cuda13-removed-devprop-fields.patch
+
 # Detect the MPI implementation to give cmake's FindMPI a reliable hint.
 # cmake cannot run the mpicc wrapper during cross-compilation, so we pass
 # the full library path directly. All supported MPI JLLs are MPI 3.0+.
