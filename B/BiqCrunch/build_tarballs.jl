@@ -7,16 +7,15 @@ version = v"2.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://gitlab.inria.fr/mbesanco/BiqCrunch.git", "eb04f7b16754abbd4fb55ac837540a5c4ffaccc2")
+    ArchiveSource("https://gitlab.inria.fr/mbesanco/BiqCrunch/-/archive/v$(version)/BiqCrunch-v$(version).tar.gz",
+                  "45f2f5f16bda636658aac40da0d1d18b9fbdc8d22bab29f9adfe2c9467a413db")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd BiqCrunch/src/
+cd BiqCrunch-*/src/
 make -f Makefile.BinaryBuilder 
-rm -rf $prefix/Obj/
-exit
 """
 
 # These are the platforms we will build for by default, unless further
