@@ -31,9 +31,6 @@ fi
 if [[ "${target}" == *-apple-* ]]; then
     FLAGS+=(-DGEANT4_USE_SYSTEM_ZLIB=ON)
 fi
-# if [[ "${target}" == *-w64-* ]]; then
-#     FLAGS+=(-DGEANT4_BUILD_MULTITHREADED=OFF)
-# fi
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_BUILD_TYPE=Release \
