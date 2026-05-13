@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "BlueZ"
-version = v"5.54.0"
+version = v"5.86.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.kernel.org/pub/linux/bluetooth/bluez-$(version.major).$(version.minor).tar.xz", "68cdab9e63e8832b130d5979dc8c96fdb087b31278f342874d992af3e56656dc")
+    ArchiveSource("https://www.kernel.org/pub/linux/bluetooth/bluez-$(version.major).$(version.minor).tar.xz", "99f144540c6070591e4c53bcb977eb42664c62b7b36cb35a29cf72ded339621d")
 ]
 
 # Bash recipe for building across all platforms
