@@ -14,6 +14,9 @@ products = openblas_products()
 preferred_gcc_version = v"12"
 preferred_llvm_version = v"18.1.7"
 dependencies = openblas_dependencies(platforms; llvm_compilerrt_version=preferred_llvm_version)
+push!(dependencies,
+      Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93");
+                 compat="5.11.0"))
 
 # Do we build all platforms, or those specified as arguments?
 platform_args = filter(arg -> !startswith(arg, "--"), ARGS)
@@ -39,7 +42,13 @@ for (n,platform) in enumerate(platforms)
                    lock_microarchitecture=false,
                    preferred_gcc_version=pref_gcc,
                    preferred_llvm_version=preferred_llvm_version,
+                   init_block = raw"""
+                       try
+                           ccall((:lbt_forward, libblastrampoline_jll.libblastrampoline), Int32,
+                                 (Cstring, Int32, Int32, Cstring),
+                                 libopenblas_path, Int32(0), Int32(0), C_NULL)
+                       catch
+                       end
+                   """,
                    )
 end
-
-# Build trigger: 0
