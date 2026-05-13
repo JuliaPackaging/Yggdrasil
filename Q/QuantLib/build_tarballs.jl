@@ -30,6 +30,13 @@ CMAKE_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release
     -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
     -DQL_EXTRA_SAFETY_CHECKS=ON
+    # Force shared library on all platforms. On UNIX this matches the upstream
+    # default (BUILD_SHARED_LIBS=${UNIX}); on MinGW it overrides the static-only
+    # default so we ship a DLL.
+    -DBUILD_SHARED_LIBS=ON
+    # Auto-generate the symbol export list on Windows (no-op elsewhere) so the
+    # MinGW DLL has its symbols visible; QuantLib doesn't use __declspec(dllexport).
+    -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON
 )
 
 CXX_EXTRA_FLAGS=""
@@ -45,6 +52,11 @@ if [[ ${target} == *darwin* ]]; then
     # transitively (libstdc++ on Linux does).
     CXX_EXTRA_FLAGS="${CXX_EXTRA_FLAGS} -include vector"
 fi
+if [[ ${target} == *mingw* ]]; then
+    # boost_jll ships shared Boost on MinGW; tell Boost headers to mark
+    # symbols as dllimport instead of expecting static linkage.
+    CXX_EXTRA_FLAGS="${CXX_EXTRA_FLAGS} -DBOOST_ALL_DYN_LINK"
+fi
 if [ -n "${CXX_EXTRA_FLAGS}" ]; then
     CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="${CXX_EXTRA_FLAGS}")
 fi
@@ -58,8 +70,7 @@ ninja install
 # QuantLib uses it in ql/instrument.hpp.
 sources, script = require_macos_sdk("10.15", sources, script)
 
-# windows excluded b/c QL doesn't build with MinGW: https://github.com/JuliaPackaging/Yggdrasil/pull/7090#issuecomment-1646444669
-platforms = expand_cxxstring_abis(supported_platforms(; exclude = Sys.iswindows))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 products = [
     LibraryProduct("libQuantLib", :libQuantLib),
