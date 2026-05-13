@@ -58,7 +58,9 @@ end
 # helper function to load a driver, query its version, and optionally query device
 # capabilities. needs to happen in a separate process because dlclose is unreliable.
 function inspect_driver(driver, deps=String[]; inspect_devices=false)
-    cmd = `$(cuda_inspect_driver()) $driver $inspect_devices $deps`
+    # NOTE: no use of the executable helper or it would always end up using
+    #       the forwards-compatible driver library packaged next to it.
+    cmd = `$(cuda_inspect_driver_path) $driver $inspect_devices $deps`
 
     # run the command
     output = try
