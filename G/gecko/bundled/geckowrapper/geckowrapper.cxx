@@ -8,24 +8,24 @@
 // Can we automate this process here in WrapIt? We are essentially emulating C++ v-table behavior manually.
 class JuliaProgressWrapper final : public Gecko::Progress {
 private:
-    jl_value_t*    data;
-    jl_function_t* fbeginorder;
-    jl_function_t* fendorder;
-    jl_function_t* fbeginiter;
-    jl_function_t* fenditer;
-    jl_function_t* fbeginphase;
-    jl_function_t* fendphase;
-    jl_function_t* fquit;
+    jl_value_t* data;
+    jl_value_t* fbeginorder;
+    jl_value_t* fendorder;
+    jl_value_t* fbeginiter;
+    jl_value_t* fenditer;
+    jl_value_t* fbeginphase;
+    jl_value_t* fendphase;
+    jl_value_t* fquit;
 
 public:
-    JuliaProgressWrapper( jl_value_t*    data_
-                        , jl_function_t* fbeginorder_
-                        , jl_function_t* fendorder_
-                        , jl_function_t* fbeginiter_
-                        , jl_function_t* fenditer_
-                        , jl_function_t* fbeginphase_
-                        , jl_function_t* fendphase_
-                        , jl_function_t* fquit_
+    JuliaProgressWrapper( jl_value_t* data_
+                        , jl_value_t* fbeginorder_
+                        , jl_value_t* fendorder_
+                        , jl_value_t* fbeginiter_
+                        , jl_value_t* fenditer_
+                        , jl_value_t* fbeginphase_
+                        , jl_value_t* fendphase_
+                        , jl_value_t* fquit_
                     )
     : data(data_)
     , fbeginorder(fbeginorder_)
@@ -189,5 +189,5 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& gecko)
     progress_type.method("endorder", [](const Gecko::Progress* a)-> bool {return a->quit(); } );
 
     auto jlprogress_type = gecko.add_type<JuliaProgressWrapper>("JuliaProgressWrapper", jlcxx::julia_base_type<Gecko::Progress>());
-    jlprogress_type.constructor<jl_value_t*, jl_function_t*, jl_function_t*, jl_function_t*, jl_function_t*, jl_function_t*, jl_function_t*, jl_function_t*>();
+    jlprogress_type.constructor<jl_value_t*, jl_value_t*, jl_value_t*, jl_value_t*, jl_value_t*, jl_value_t*, jl_value_t*, jl_value_t*>();
 }
