@@ -38,7 +38,6 @@ cd $WORKSPACE/srcdir/tetgen
 # Patch tetgen.h  with operators delegating new/delete to malloc/free for C/Julia compatibility
 # Made corresponding feature request to upstream, probably available for 1.6.1
 #
-
 mv tetgen.h tmp.h
 sed -e "s/class tetgenio {/class tetgenio { void * operator new(size_t n) {  return malloc(n);} void operator delete(void* p) noexcept {free(p);} /g" tmp.h > tetgen.h
 
@@ -46,7 +45,7 @@ sed -e "s/class tetgenio {/class tetgenio { void * operator new(size_t n) {  ret
 # Fix crash of README example (see TetGen.jl#26)
 # There seems to be a one-off error or something like this in the routine writing the result. In 1.6.0 and also in
 # the previous 1.5 version this does not happen.
-# 
+#
 mv tetgen.cxx tmp.cxx
 sed -e "s/tetrahedrons->items \* 10/(tetrahedrons->items + 100) * 10/g" tmp.cxx > tetgen.cxx
 
