@@ -33,7 +33,7 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = filter!(Sys.islinux, supported_platforms())
-
+filter!(p -> arch(p) != "riscv64", platforms) # not all dependencies available for this platform
 
 # The products that we will ensure are always built
 products = [
