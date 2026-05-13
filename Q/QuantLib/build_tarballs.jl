@@ -39,6 +39,15 @@ CMAKE_FLAGS=(
     -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON
 )
 
+if [[ ${target} == *mingw* ]]; then
+    # The library and Examples link fine on MinGW, but quantlib-test-suite.exe
+    # and quantlib-benchmark.exe fail to link because their CMake config doesn't
+    # add libboost_unit_test_framework to the link line. They're never shipped
+    # anyway, so just skip building them on MinGW. Other platforms keep them on
+    # for compile-coverage.
+    CMAKE_FLAGS+=(-DQL_BUILD_TEST_SUITE=OFF -DQL_BUILD_BENCHMARK=OFF)
+fi
+
 CXX_EXTRA_FLAGS=""
 if [[ ${target} == *darwin* || ${target} == *freebsd* ]]; then
     # Boost violates the C++17 enum-to-int constexpr rule; Yggdrasil's
