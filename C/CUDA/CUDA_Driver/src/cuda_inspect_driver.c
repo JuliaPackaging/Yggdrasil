@@ -1,6 +1,8 @@
 /* Script to check the usability of CUDA drivers. */
 
+#define _GNU_SOURCE
 #include <dlfcn.h>
+#include <link.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -38,6 +40,15 @@ int main(int argc, char *argv[]) {
     if (library_handle == NULL) {
         return -1;
     }
+
+    /* Report the resolved absolute path of the loaded driver, so that callers
+     * can register it as a file dependency (e.g. for cache invalidation) without
+     * having to dlopen the library themselves. */
+    struct link_map *lm = NULL;
+    if (dlinfo(library_handle, RTLD_DI_LINKMAP, &lm) != 0 || lm == NULL) {
+        return -1;
+    }
+    printf("%s\n", lm->l_name);
 
     cuInit_t cuInit = (cuInit_t)dlsym(library_handle, "cuInit");
     if (cuInit == NULL) {

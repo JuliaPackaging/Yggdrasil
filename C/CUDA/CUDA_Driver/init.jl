@@ -55,35 +55,6 @@ if Libdl.dlopen(libcuda_system, Libdl.RTLD_NOLOAD; throw_error=false) !== nothin
     return
 end
 
-# helper function to load a driver, query its version, and optionally query device
-# capabilities. needs to happen in a separate process because dlclose is unreliable.
-function inspect_driver(driver, deps=String[]; inspect_devices=false)
-    # NOTE: no use of the executable helper or it would always end up using
-    #       the forwards-compatible driver library packaged next to it.
-    cmd = `$(cuda_inspect_driver_path) $driver $inspect_devices $deps`
-
-    # run the command
-    output = try
-        read(cmd, String)
-    catch _
-        return nothing
-    end
-
-    # parse the versions
-    lines = readlines(IOBuffer(output))
-    isempty(lines) && return nothing
-    driver_version = parse(VersionNumber, lines[1])
-    if inspect_devices
-        device_capabilities = VersionNumber[]
-        for i in 2:length(lines)
-            push!(device_capabilities, parse(VersionNumber, lines[i]))
-        end
-        return driver_version, device_capabilities
-    else
-        return driver_version
-    end
-end
-
 # fetch driver details
 compat_driver_task = @static if VERSION >= v"1.12-"
     # XXX: avoid concurrent compilation (JuliaLang/julia#59834)
@@ -93,40 +64,22 @@ else
 end
 system_driver_task = @static if VERSION >= v"1.12-"
     # XXX: avoid concurrent compilation (JuliaLang/julia#59834)
-    Threads.@spawn :samepool inspect_driver(libcuda_system; inspect_devices=true)
+    Threads.@spawn :samepool inspect_driver(libcuda_system)
 else
-    Threads.@spawn inspect_driver(libcuda_system; inspect_devices=true)
+    Threads.@spawn inspect_driver(libcuda_system)
 end
-compat_driver_details = fetch(compat_driver_task)
-if compat_driver_details === nothing
+compat_driver_info = fetch(compat_driver_task)
+if compat_driver_info === nothing
     @debug "Failed to load forwards-compatible driver."
     return
 end
-compat_driver_version = compat_driver_details::VersionNumber
-@debug "Forwards compatible driver version: $compat_driver_version"
-system_driver_details = fetch(system_driver_task)
-if system_driver_details === nothing
+@debug "Forwards compatible driver version: $(compat_driver_info.version)"
+system_driver_info = fetch(system_driver_task)
+if system_driver_info === nothing
     @debug "Failed to load system driver."
     return
 end
-system_driver_version = system_driver_details[1]::VersionNumber
-device_capabilities = system_driver_details[2]::Vector{VersionNumber}
-@debug "System driver version: $system_driver_version"
-
-# determine if loading the forwards-compatible driver would exclude devices
-for (dev, cap) in enumerate(device_capabilities)
-    # CUDA 12 deprecated Kepler
-    if compat_driver_version >= v"12" && system_driver_version < v"12" && v"3.0" <= cap <= v"3.5"
-        @debug "Loading forwards-compatible driver would exclude device $dev with capability $cap"
-        return
-    end
-
-    # CUDA 13 deprecated Maxwell, Pascal, and Volta
-    if compat_driver_version >= v"13" && system_driver_version < v"13" && v"5.0" <= cap <= v"7.2"
-        @debug "Loading forwards-compatible driver would exclude device $dev with capability $cap"
-        return
-    end
-end
+@debug "System driver version: $(system_driver_info.version)"
 
 # finally, load the forwards-compatible driver
 @debug "Using forwards-compatible CUDA driver."
