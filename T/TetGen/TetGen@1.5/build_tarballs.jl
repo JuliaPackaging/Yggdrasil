@@ -3,6 +3,7 @@ using BinaryBuilder
 name = "TetGen"
 version = v"1.5.4"
 
+#
 # Artifact builder for TetGen (c) Hang Si, see project home page https://tetgen.org
 # TetGen's license is  AGPLv3.
 #
@@ -11,7 +12,12 @@ version = v"1.5.4"
 #
 # For the 1.5.x series, the patch version of the build script is increased along with the
 # improvements in the wrapper API.
+#
 
+#
+# For 1.5.1 use the same upstream  source as in tetgenbuilder
+# Tentative upstream source for 1.6:
+# "http://www.tetgen.org/1.5/src/tetgen1.6.0.zip" => "e7bbbb4fb8f47f0adc3b46b26ab172557ebb90808c06e21b902b2166717af582"
 sources = [
     GitSource("https://github.com/ufz/tetgen.git","3f75905af7407ab0de1cd1dc92a1b77d6bdacbb7"),
     DirectorySource("cwrapper",target="cwrapper")
@@ -20,13 +26,26 @@ sources = [
 
 
 script = raw"""
+# This will be used for 1.6
+# zipname=tetgen1.6.0
+# cd $WORKSPACE/srcdir/$zipname
+
 mkdir -p ${libdir}
 
 cd $WORKSPACE/srcdir/tetgen
 
+#
+# Patch tetgen.h  with operators delegating new/delete to malloc/free for C/Julia compatibility
+# Made corresponding feature request to upstream, probably available for 1.6.1
+#
 mv tetgen.h tmp.h
 sed -e "s/class tetgenio {/class tetgenio { void * operator new(size_t n) {  return malloc(n);} void operator delete(void* p) noexcept {free(p);} /g" tmp.h > tetgen.h
 
+#
+# Fix crash of README example (see TetGen.jl#26)
+# There seems to be a one-off error or something like this in the routine writing the result. In 1.6.0 and also in
+# the previous 1.5 version this does not happen.
+#
 mv tetgen.cxx tmp.cxx
 sed -e "s/tetrahedrons->items \* 10/(tetrahedrons->items + 100) * 10/g" tmp.cxx > tetgen.cxx
 
