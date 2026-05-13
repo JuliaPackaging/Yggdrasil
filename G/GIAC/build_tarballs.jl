@@ -7,13 +7,13 @@
 using BinaryBuilder, Pkg
 
 name = "GIAC"
-version = v"2.0.1"
+version = v"2.0.2"
 
 # Collection of sources required to build GIAC
 # Using the Meson-based fork from https://github.com/s-celles/giac
 sources = [
     GitSource("https://github.com/s-celles/giac.git",
-        "194ff510872c5b871e316bf5c7dfbe942273bef8"),  # dev branch
+        "64fdcefb45d0599e60083e785a3cc033e74714ee"),  # dev branch + GIAC_TYPE_ON_8BITS default
 ]
 
 # Bash recipe for building across all platforms
@@ -80,5 +80,6 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
+# preferred_gcc_version aligned with libgiac_julia_jll's recipe (Giac.jl#22).
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-  clang_use_lld=false, preferred_gcc_version=v"8", julia_compat="1.10")
+  clang_use_lld=false, preferred_gcc_version=v"10", julia_compat="1.10")
