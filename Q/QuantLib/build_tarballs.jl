@@ -73,6 +73,14 @@ fi
 cmake "${CMAKE_FLAGS[@]}" -G Ninja ..
 ninja -j${nproc}
 ninja install
+
+if [[ ${target} == *mingw* ]]; then
+    # QuantLib's install() for ql_library specifies ARCHIVE+LIBRARY but no
+    # RUNTIME, so the import library (.dll.a) is installed to lib/ but the
+    # actual DLL is left in the build tree. Copy it into bin/ ourselves.
+    mkdir -p ${prefix}/bin
+    cp ql/libQuantLib.dll ${prefix}/bin/
+fi
 """
 
 # Install a newer macOS SDK so std::any_cast (introduced in 10.14) is available;
