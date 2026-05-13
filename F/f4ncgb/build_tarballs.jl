@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "f4ncgb"
-upstream_version = v"0.3.4"
+upstream_version = v"0.3.5"
 version_offset = v"0.0.1"
 version = VersionNumber(upstream_version.major*100+version_offset.major,
                         upstream_version.minor*100+version_offset.minor,
@@ -11,7 +11,7 @@ version = VersionNumber(upstream_version.major*100+version_offset.major,
 
 sources = [
     GitSource("https://gitlab.sai.jku.at/f4ncgb/f4ncgb.git",
-              "37c78bb5cf778ce25064ee9ffcf0650274589be1"),
+              "0e60fede6aaa7dccc9e1e7c08a8b5b53982cf9c5"),
     ArchiveSource("https://github.com/joseluisq/MacOSX-SDKs/releases/download/15.0/MacOSX15.0.sdk.tar.xz",
                   "9df0293776fdc8a2060281faef929bf2fe1874c1f9368993e7a4ef87b1207f98"),
 ]
