@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "libconfuse"
-upstream_version = v"3.3"
+upstream_version = "3.3"
 version = v"3.3.0"
 
 # Collection of sources required to complete build
