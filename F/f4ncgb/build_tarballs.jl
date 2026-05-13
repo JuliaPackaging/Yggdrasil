@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "f4ncgb"
-upstream_version = v"0.3.5"
+upstream_version = v"1.0.0"
 version_offset = v"0.0.0"
 version = VersionNumber(upstream_version.major*100+version_offset.major,
                         upstream_version.minor*100+version_offset.minor,
