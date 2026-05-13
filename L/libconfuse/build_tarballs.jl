@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "libconfuse"
-version = v"3.2.2"
+upstream_version = v"3.3"
+version = v"3.3.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/martinh/libconfuse/releases/download/v3.2.2/confuse-3.2.2.tar.gz",
-                  "71316b55592f8d0c98924242c98dbfa6252153a8b6e7d89e57fe6923934d77d0"),
-
+    ArchiveSource("https://github.com/martinh/libconfuse/releases/download/v$(upstream_version)/confuse-$(upstream_version).tar.gz",
+                  "3a59ded20bc652eaa8e6261ab46f7e483bc13dad79263c15af42ecbb329707b8"),
 ]
 
 # Bash recipe for building across all platforms
