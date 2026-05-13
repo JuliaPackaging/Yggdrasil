@@ -33,6 +33,18 @@ cp bin/*/*.so ${prefix}/lib/gap/
 # copy the sources, too, so that we can later compare them
 cp -r src ${prefix}/
 
+# setup julia with GAP.jl for the host system (needed for building the manual)
+export JULIA_DEPOT_PATH="${WORKSPACE}/.julia"
+export JULIAUP_DEPOT_PATH="${JULIA_DEPOT_PATH}/juliaup"
+cd ../..
+unset LD_LIBRARY_PATH
+julia --project=@. -e "using Pkg; Pkg.instantiate(); using GAP; GAP.create_gap_sh(\"${WORKSPACE}/gap.sh\")"
+
+# build the manual
+cd pkg/JuliaInterface
+make GAP="${WORKSPACE}/gap_sh/gap.sh" V=1 doc
+# TODO: move the compiled manual to a suitable place
+
 install_license ../../LICENSE
 """
 
@@ -55,6 +67,7 @@ platforms = gap_platforms(expand_julia_versions=true)
 dependencies = [
     Dependency("GAP_jll", gap_version),
     BuildDependency(PackageSpec(;name="libjulia_jll", version="1.11.0")),
+    HostBuildDependency("juliaup_jll"),
 ]
 
 # The products that we will ensure are always built
