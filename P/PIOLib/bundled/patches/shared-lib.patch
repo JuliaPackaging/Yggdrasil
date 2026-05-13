@@ -1,0 +1,22 @@
+diff --git before/utils/piolib/CMakeLists.txt after/utils/piolib/CMakeLists.txt
+index 9e98d9b..3e5e131 100644
+--- before/utils/piolib/CMakeLists.txt
++++ after/utils/piolib/CMakeLists.txt
+@@ -15,7 +15,7 @@ if (CMAKE_COMPILER_IS_GNUCC)
+    add_definitions (-ffunction-sections)
+ endif ()
+ 
+-add_library (pio piolib.c library_piochips.c pio_rp1.c)
++add_library (pio SHARED piolib.c library_piochips.c pio_rp1.c)
+ target_include_directories(pio PUBLIC include)
+ set_target_properties(pio PROPERTIES SOVERSION 0)
+ 
+@@ -30,7 +30,7 @@ set(INCLUDE_FILES
+     "pico/stdlib.h"
+ )
+ 
+-install(TARGETS pio ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT piolib)
++install(TARGETS pio LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT piolib)
+ foreach ( file ${INCLUDE_FILES} )
+     get_filename_component( dir ${file} DIRECTORY )
+     install( FILES "include/${file}" DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/piolib/${dir}" COMPONENT piolib)
