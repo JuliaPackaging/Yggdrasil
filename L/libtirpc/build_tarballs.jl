@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libtirpc"
-version = v"1.3.2"
+version = v"1.3.7"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://downloads.sourceforge.net/project/libtirpc/libtirpc/$(version)/libtirpc-$(version).tar.bz2", "e24eb88b8ce7db3b7ca6eb80115dd1284abc5ec32a8deccfed2224fc2532b9fd"),
+    ArchiveSource("https://downloads.sourceforge.net/project/libtirpc/libtirpc/$(version)/libtirpc-$(version).tar.bz2", "b47d3ac19d3549e54a05d0019a6c400674da716123858cfdb6d3bdd70a66c702"),
     DirectorySource("./bundled")
 ]
 
