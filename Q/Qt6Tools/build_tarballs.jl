@@ -110,7 +110,7 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
         BuildDependency("Vulkan_Headers_jll"),
         # LLVM jlls are complicated - sigh - don't ask
         RuntimeDependency("Clang_jll"),
-        BuildDependency(PackageSpec(name=llvm_name, version=llvm_version))
+        BuildDependency(PackageSpec(name=llvm_name, version=string(llvm_version)))
     ]
     if !host_build
         push!(dependencies, HostBuildDependency("Qt6LinguistTools_jll"))
@@ -145,3 +145,5 @@ for (i,build) in enumerate(builds)
                    preferred_llvm_version=qt_llvm_version,
                    augment_platform_block)
 end
+
+# rebuild trigger: 1

@@ -221,7 +221,7 @@ for llvm_version in llvm_versions
     llvm_name = "LLVM_full_jll"
     dependencies = [
 	base_dependencies;
-        BuildDependency(PackageSpec(name=llvm_name, version=llvm_version))
+        BuildDependency(PackageSpec(name=llvm_name, version=string(llvm_version)))
     ]
 
     for platform in platforms
@@ -251,3 +251,5 @@ for (i,build) in enumerate(builds)
                    preferred_gcc_version=v"8", julia_compat="1.6",
                    augment_platform_block, lazy_artifacts=true)
 end
+
+# rebuild trigger: 1

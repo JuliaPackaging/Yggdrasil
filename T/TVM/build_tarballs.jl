@@ -61,8 +61,8 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
         Dependency(PackageSpec(name="XML2_jll")),
         Dependency(PackageSpec(name="libLLVM_jll")),
         Dependency(PackageSpec(name="TVMFFI_jll")),
-        BuildDependency(PackageSpec(name=llvm_name, version=llvm_version)),
-        BuildDependency(PackageSpec(name="MLIR_jll", version=llvm_version)),
+        BuildDependency(PackageSpec(name=llvm_name, version=string(llvm_version))),
+        BuildDependency(PackageSpec(name="MLIR_jll", version=string(llvm_version))),
     ]
 
     # The products that we will ensure are always built
@@ -108,3 +108,5 @@ for (i, build) in enumerate(builds)
         preferred_gcc_version=v"8", julia_compat="1.6",
         augment_platform_block, lazy_artifacts=true)
 end
+
+# rebuild trigger: 1
