@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Clingo"
-version = v"5.7.1"
+version = v"5.8.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/potassco/clingo.git", "65e056a24ce77caf0d705e7ccd02f04519bcaf48")
+    GitSource("https://github.com/potassco/clingo.git", "78107e88e69d626daf46a37155510c26e8bb7f2b")
 ]
 
 # Bash recipe for building across all platforms
