@@ -402,7 +402,7 @@ dependencies = [
     # ILP64 SCALAPACK to match the BLAS ABI.  No Windows build (PETSc has
     # MPI disabled on Windows so SCALAPACK isn't needed there either).
     Dependency(PackageSpec(name="SCALAPACK_jll", uuid="5d3fc3e8-a677-5550-826f-6cfd58f208da");
-               compat="2.2.2", platforms=filter(!Sys.iswindows, platforms)),
+               compat="2.2.3", platforms=filter(!Sys.iswindows, platforms)),
     # Julia's stdlib SuiteSparse (Int64 / SuiteSparse_long).  Julia
     # 1.10 ships SuiteSparse_jll 7.2.x.
     Dependency(PackageSpec(name="SuiteSparse_jll", uuid="bea87d4a-7f5b-5778-9afe-8cc45184846c"); compat="7.2.0"),
