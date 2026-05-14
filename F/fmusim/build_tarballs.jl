@@ -20,6 +20,11 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/Reference-FMUs*/
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/use-shared-deps.patch
+# MinGW cross-compilation: Linux is case-sensitive, fix Windows header capitalization
+find . \( -name "*.c" -o -name "*.h" \) -exec sed -i \
+    -e 's/#include <Windows\.h>/#include <windows.h>/g' \
+    -e 's/#include <Shlwapi\.h>/#include <shlwapi.h>/g' \
+    {} \;
 
 case "${target}" in
     aarch64-*) FMI_ARCH=aarch64 ;;
@@ -27,15 +32,17 @@ case "${target}" in
     *) echo "Unsupported target ${target}"; exit 1 ;;
 esac
 
-mkdir build && cd build
+mkdir -p build && cd build
 cmake \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_C_STANDARD=99 \
+    -DCMAKE_PREFIX_PATH=${prefix} \
     -DWITH_FMUSIM=ON \
     -DFMI_VERSION=3 \
     -DFMI_ARCHITECTURE=${FMI_ARCH} \
-    -DFMUSIM_VERSION="\"0.0.39\"" \
+    -DFMUSIM_VERSION=0.0.39 \
     -DZLIB_SRC_DIR=${WORKSPACE}/srcdir/zlib \
     ..
 
@@ -61,9 +68,9 @@ products = [
 dependencies = [
     Dependency("XML2_jll"),
     Dependency("Zlib_jll"),
-    Dependency("SUNDIALS_jll"; compat="~7"),
+    Dependency("Sundials_jll"; compat="7.4"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6")
+               julia_compat="1.6", preferred_gcc_version=v"9")

@@ -29,10 +29,10 @@
  
  if (WIN32)
 -    target_compile_definitions(fmusim PRIVATE FMUSIM_VERSION=${FMUSIM_VERSION} YY_NO_UNISTD_H LIBXML_STATIC)
-+    target_compile_definitions(fmusim PRIVATE FMUSIM_VERSION=${FMUSIM_VERSION} YY_NO_UNISTD_H)
++    target_compile_definitions(fmusim PRIVATE "FMUSIM_VERSION=\"${FMUSIM_VERSION}\"" YY_NO_UNISTD_H STRSAFE_NO_DEPRECATE)
  else ()
 -    target_compile_definitions(fmusim PRIVATE FMUSIM_VERSION=${FMUSIM_VERSION} LIBXML_STATIC)
-+    target_compile_definitions(fmusim PRIVATE FMUSIM_VERSION=${FMUSIM_VERSION})
++    target_compile_definitions(fmusim PRIVATE "FMUSIM_VERSION=\"${FMUSIM_VERSION}\"")
  endif ()
  
 +set(libraries LibXml2::LibXml2 ZLIB::ZLIB SUNDIALS::cvode SUNDIALS::core)
@@ -47,7 +47,7 @@
 -      ws2_32
 -      bcrypt
 -    )
-+    list(APPEND libraries wsock32 ws2_32 bcrypt)
++    list(APPEND libraries wsock32 ws2_32 bcrypt shlwapi)
  elseif(UNIX AND NOT APPLE)
 -    set(libraries
 -      ${LIBXML2_DIR}/lib/libxml2.a
