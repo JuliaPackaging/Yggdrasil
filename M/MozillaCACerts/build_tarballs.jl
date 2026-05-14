@@ -4,13 +4,13 @@ using BinaryBuilder
 
 name = "MozillaCACerts"
 # Info and new versions here: https://curl.haxx.se/docs/caextract.html
-cacert_version = "2026-03-19"
+cacert_version = "2026-05-14"
 version = VersionNumber(replace(cacert_version, '-'=>'.'))
 
 # Collection of sources required to build MozillaCACerts
 sources = [
     FileSource("https://curl.haxx.se/ca/cacert-$cacert_version.pem", 
-               "b6e66569cc3d438dd5abe514d0df50005d570bfc96c14dca8f768d020cb96171",
+               "86a1f3366afac7c6f8ae9f3c779ac221129328c43f0ab2b8817eb2f362a5025c",
                filename="cacert.pem"),
 ]
 
