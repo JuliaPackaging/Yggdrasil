@@ -107,7 +107,7 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
     # Dependencies that must be installed before this package can be built
     llvm_name = llvm_assertions ? "LLVM_full_assert_jll" : "LLVM_full_jll"
     dependencies = [
-        BuildDependency(PackageSpec(name=llvm_name, version=llvm_version)),
+        BuildDependency(PackageSpec(name=llvm_name, version=string(llvm_version))),
         Dependency("Zlib_jll")
     ]
 
@@ -138,3 +138,5 @@ for (i,build) in enumerate(builds)
                    preferred_gcc_version=v"7", julia_compat="1.6",
                    augment_platform_block, lazy_artifacts=true)
 end
+
+# rebuild trigger: 1
