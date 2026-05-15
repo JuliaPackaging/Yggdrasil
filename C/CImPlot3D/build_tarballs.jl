@@ -20,18 +20,16 @@ sources = [
     DirectorySource("./bundled"),
 ]
 
-# Bash recipe for building across all platforms
+# Bash recipe for building across all platforms.
+# DirectorySource("./bundled") copies bundled/CMakeLists.txt to
+# $WORKSPACE/srcdir/CMakeLists.txt; that CMakeLists references
+# cimplot3d/* paths relative to itself, which line up with where the
+# GitSource clones cimplot3d.
 script = raw"""
-mv $WORKSPACE/srcdir/CMakeLists.txt $WORKSPACE/srcdir/cimplot3d.cmake
 cd $WORKSPACE/srcdir
 git -C cimplot3d submodule update --init --recursive --depth 1
 
-# Stage sources under a dedicated dir so the bundled CMakeLists' relative
-# paths (cimplot3d/cimplot3d.cpp, cimplot3d/implot3d/...) resolve cleanly.
-mkdir build
-mv cimplot3d.cmake build/CMakeLists.txt
-cd build
-
+mkdir build && cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
          -DCMAKE_PREFIX_PATH=${prefix} \
          -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
