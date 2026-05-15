@@ -102,10 +102,24 @@ make -j${nproc} all
 #      additions are covered.
 #   2. BLAS/LAPACK undefined refs — drawn from blas_lapack_syms only,
 #      not a blanket sweep, so MPI/libc undefined refs aren't renamed.
+# Apple toolchains don't ship working ${target}-{nm,objcopy} (Mach-O).
+# llvm-{nm,objcopy} understand both ELF and Mach-O and are host-side.
+if [[ ${target} == *apple* ]]; then
+    NM=llvm-nm
+    OBJCOPY=llvm-objcopy
+    # On Mach-O the symbol prefix is `_`; strip it so the dynamic
+    # enumeration produces the same `name_` form as ELF.
+    NM_DEFINED_FILTER='$2 ~ /^[TW]$/ {sub(/^_/, "", $3); print $3}'
+else
+    NM=${target}-nm
+    OBJCOPY=${target}-objcopy
+    NM_DEFINED_FILTER='$2 ~ /^[TW]$/ {print $3}'
+fi
+
 find CMakeFiles/scalapack.dir -name "*.o" > /tmp/scalapack_objs.txt
 {
-    ${target}-nm --defined-only $(cat /tmp/scalapack_objs.txt) 2>/dev/null \
-        | awk '$2 ~ /^[TW]$/ {print $3}' \
+    ${NM} --defined-only $(cat /tmp/scalapack_objs.txt) 2>/dev/null \
+        | awk "${NM_DEFINED_FILTER}" \
         | grep -E '^[a-z][a-zA-Z0-9_]*_$' \
         | grep -v '_64_$' \
         | sort -u \
@@ -119,7 +133,7 @@ echo "=== symbols renamed ($(wc -l < /tmp/scalapack_redefine.txt) total) ==="
 cat /tmp/scalapack_redefine.txt
 
 while read -r o; do
-    ${target}-objcopy --redefine-syms=/tmp/scalapack_redefine.txt "$o"
+    ${OBJCOPY} --redefine-syms=/tmp/scalapack_redefine.txt "$o"
 done < /tmp/scalapack_objs.txt
 
 # Force re-link with renamed objects so `.dynsym` reflects the rewrite.
