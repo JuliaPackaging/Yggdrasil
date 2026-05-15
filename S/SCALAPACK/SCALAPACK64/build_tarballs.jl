@@ -101,6 +101,9 @@ make install
     done
 } > /tmp/scalapack_redefine.txt
 
+echo "=== symbols renamed ($(wc -l < /tmp/scalapack_redefine.txt) total) ==="
+cat /tmp/scalapack_redefine.txt
+
 ${target}-objcopy --redefine-syms=/tmp/scalapack_redefine.txt \
     "${libdir}/libscalapack.${dlext}"
 
