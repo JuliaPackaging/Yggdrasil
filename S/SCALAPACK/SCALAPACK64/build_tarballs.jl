@@ -132,8 +132,12 @@ find CMakeFiles/scalapack.dir -name "*.o" > /tmp/scalapack_objs.txt
 echo "=== symbols renamed ($(wc -l < /tmp/scalapack_redefine.txt) total) ==="
 cat /tmp/scalapack_redefine.txt
 
+# Some llvm-objcopy builds on BB don't support --redefine-syms=<file>;
+# expand the map into per-symbol --redefine-sym args, which is supported
+# across all objcopy variants we care about.
+OBJCOPY_ARGS=$(awk '{printf " --redefine-sym=%s=%s", $1, $2}' /tmp/scalapack_redefine.txt)
 while read -r o; do
-    ${OBJCOPY} --redefine-syms=/tmp/scalapack_redefine.txt "$o"
+    ${OBJCOPY} ${OBJCOPY_ARGS} "$o"
 done < /tmp/scalapack_objs.txt
 
 # Force re-link with renamed objects so `.dynsym` reflects the rewrite.
