@@ -159,3 +159,5 @@ for (i,build) in enumerate(builds)
                    julia_compat="1.12",
                    augment_platform_block)
 end
+
+# rebuild trigger: 1
