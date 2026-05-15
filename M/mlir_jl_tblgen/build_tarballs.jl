@@ -74,7 +74,7 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
     # Dependencies that must be installed before this package can be built
     llvm_name = llvm_assertions ? "LLVM_full_assert_jll" : "LLVM_full_jll"
     dependencies = [
-        BuildDependency(PackageSpec(name=llvm_name, version=llvm_version))
+        BuildDependency(PackageSpec(name=llvm_name, version=string(llvm_version)))s
     ]
 
     # The products that we will ensure are always built
@@ -92,6 +92,10 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
     end
 
     filter!(p -> !(arch(p) == "aarch64" && os(p) == "freebsd"), platforms)
+
+    if llvm_version < v"19.1.7"
+        filter!(p -> arch(p) != "riscv64", platforms)
+    end
 
     for platform in platforms
         augmented_platform = deepcopy(platform)
