@@ -76,6 +76,20 @@ case "$target" in
     *)                       ABI_TRIPLET="$target" ;;
 esac
 
+# Tell Meson which linker family is in use, instead of letting it
+# probe with `-Wl,--version`. BB's sandbox carries Meson 1.4.0, which
+# probes Apple's `ld64` by running `-Wl,--version` — but ld64 rejects
+# `--version` (it uses `-v` instead), and the probe fails before we
+# ever see a compiler check. Setting CC_LD/CXX_LD short-circuits the
+# probe. Meson 1.5+ handles this automatically; once BB upgrades we
+# can drop this block.
+case "$target" in
+    *-apple-darwin*)
+        export CC_LD=ld64
+        export CXX_LD=ld64
+        ;;
+esac
+
 # Pass the normalized triplet so pick-abi.py looks up the right
 # in-source ABI table.
 meson setup \
