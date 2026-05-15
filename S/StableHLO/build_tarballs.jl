@@ -13,13 +13,14 @@ sources = [
     GitSource("https://github.com/openxla/stablehlo.git", "8816d0581d9a5fb7d212affef858e991a349ad6b"),
 ]
 
-llvm_versions = [v"17.0.6+0"]
+llvm_versions = [v"17.0.6"]
 
 script = raw"""
 cd $WORKSPACE/srcdir/stablehlo
 
 # need to run mlir-tblgen and mlir-pdll on the host
-rm ${bindir}/mlir-tblgen ${bindir}/mlir-pdll
+mkdir -p ${bindir}
+rm -f ${bindir}/mlir-tblgen ${bindir}/mlir-pdll
 ln -s ${host_prefix}/bin/mlir-tblgen ${bindir}/mlir-tblgen
 ln -s ${host_prefix}/bin/mlir-pdll ${bindir}/mlir-pdll
 
@@ -65,7 +66,7 @@ products = [
     ExecutableProduct("stablehlo-opt", :stablehlo_opt),
     ExecutableProduct("stablehlo-translate", :stablehlo_translate),
     ExecutableProduct("stablehlo-lsp-server", :stablehlo_lsp_server),
-    LibraryProduct("libStablehlo", :libStablehlo),
+    LibraryProduct("libStablehlo", :libStablehlo; dont_dlopen=true),
 ]
 
 augment_platform_block = """
@@ -79,8 +80,8 @@ for llvm_version in llvm_versions
 
     dependencies = [
         Dependency("MLIR_jll", llvm_version),
-        BuildDependency(PackageSpec(name="LLVM_full_jll", version=llvm_version)),
-        HostBuildDependency(PackageSpec(name="MLIR_jll", version=llvm_version)),
+        BuildDependency(PackageSpec(name="LLVM_full_jll", version=string(llvm_version))),
+        HostBuildDependency(PackageSpec(name="MLIR_jll", version=string(llvm_version))),
     ]
 
     for platform in platforms
@@ -107,3 +108,5 @@ for (i, build) in enumerate(builds)
         augment_platform_block,
         lazy_artifacts=true)
 end
+
+# rebuild trigger: 1
