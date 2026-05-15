@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "Metal_LLVM_Tools"
 repo = "https://github.com/JuliaGPU/llvm-metal"
-version = v"0.5.1"
+version = v"0.5.2"
 
 llvm_versions = [v"13.0.1", v"14.0.6", v"15.0.7"]
 
