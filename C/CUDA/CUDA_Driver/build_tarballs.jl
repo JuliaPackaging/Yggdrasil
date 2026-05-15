@@ -17,17 +17,25 @@ cuda_version = v"13.2.1"
 driver_version = "595.58.03"
 
 script = raw"""
-    # Build the driver inspection binary
+    # Build the driver inspection binary. On Linux/macOS we need -ldl for
+    # dlopen/dlsym/dlinfo, and -D_GNU_SOURCE to expose dlinfo/RTLD_DI_LINKMAP;
+    # on Windows the equivalent APIs (LoadLibrary etc.) come from kernel32 which
+    # is linked implicitly.
     mkdir -p ${bindir}
-    ${CC} -std=c99 -O2 cuda_inspect_driver.c -ldl -o ${bindir}/cuda_inspect_driver
+    if [[ "${target}" == *mingw* ]]; then
+        ${CC} -std=c99 -O2 cuda_inspect_driver.c -o ${bindir}/cuda_inspect_driver${exeext}
+    else
+        ${CC} -std=c99 -O2 -D_GNU_SOURCE cuda_inspect_driver.c -ldl -o ${bindir}/cuda_inspect_driver${exeext}
+    fi
 
-    mkdir -p ${libdir}
-
-    cd ${WORKSPACE}/srcdir/cuda_compat*
-
-    install_license LICENSE
-
-    mv compat/* ${libdir}
+    # Install the forwards-compatible driver from the CUDA toolkit. NVIDIA only
+    # ships this on Linux.
+    if [[ ${target} == *-linux-gnu ]]; then
+        mkdir -p ${libdir}
+        cd ${WORKSPACE}/srcdir/cuda_compat*
+        install_license LICENSE
+        mv compat/* ${libdir}
+    fi
 """
 
 # CUDA_Driver_jll provides libcuda_compat, but we can't always use that driver: It requires
@@ -45,23 +53,31 @@ init_block = map(eachline(IOBuffer(init_block))) do line
         (isempty(line) ? "" : "    ") * line * "\n"
     end |> join
 
-products = [
+helper_product = ExecutableProduct("cuda_inspect_driver", :cuda_inspect_driver)
+compat_products = [
     LibraryProduct("libcuda", :libcuda_compat;                            dont_dlopen=true),
     LibraryProduct("libcudadebugger", :libcuda_debugger;                  dont_dlopen=true),
     LibraryProduct("libnvidia-gpucomp", :libnvidia_gpucomp;               dont_dlopen=true),
     LibraryProduct("libnvidia-nvvm", :libnvidia_nvvm;                     dont_dlopen=true),
     LibraryProduct("libnvidia-ptxjitcompiler", :libnvidia_ptxjitcompiler; dont_dlopen=true),
     LibraryProduct("libnvidia-tileiras", :libnvidia_tileiras;             dont_dlopen=true),
-    ExecutableProduct("cuda_inspect_driver", :cuda_inspect_driver)
+    helper_product,
 ]
 
 dependencies = []
 
-platforms = [Platform("x86_64", "linux"),
-             Platform("aarch64", "linux")]
+# Platforms that ship the forwards-compatible driver alongside the helper.
+compat_platforms = [Platform("x86_64", "linux"),
+                    Platform("aarch64", "linux")]
+
+# Platforms where we only build the cuda_inspect_driver helper, without a
+# forwards-compatible libcuda. CUDA_Runtime_jll's platform augmentation needs
+# the JLL to be `is_available()` on these platforms so it can pick a runtime
+# artifact based on the system driver.
+helper_only_platforms = [Platform("x86_64", "windows")]
 
 builds = []
-for platform in platforms
+for platform in compat_platforms
     augmented_platform = deepcopy(platform)
     augmented_platform["cuda"] = CUDA.platform(cuda_version)
     should_build_platform(triplet(augmented_platform)) || continue
@@ -74,7 +90,15 @@ for platform in platforms
     #                      platform=augmented_platform, variant="cuda$(cuda_version.major).$(cuda_version.minor)")
     push!(sources, DirectorySource("./src"))
 
-    push!(builds, (; platforms=[platform], sources))
+    push!(builds, (; platforms=[platform], sources, products=compat_products))
+end
+for platform in helper_only_platforms
+    augmented_platform = deepcopy(platform)
+    augmented_platform["cuda"] = CUDA.platform(cuda_version)
+    should_build_platform(triplet(augmented_platform)) || continue
+
+    sources = [DirectorySource("./src")]
+    push!(builds, (; platforms=[platform], sources, products=[helper_product]))
 end
 
 # don't allow `build_tarballs` to override platform selection based on ARGS.
@@ -93,7 +117,7 @@ $(read(joinpath(@__DIR__, "inspect_driver.jl"), String))
 for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    name, cuda_version, build.sources, script,
-                   build.platforms, products, dependencies;
+                   build.platforms, build.products, dependencies;
                    skip_audit=true, init_block, julia_compat="1.10",
                    augment_platform_block)
 end

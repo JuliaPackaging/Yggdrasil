@@ -26,7 +26,6 @@ else
     missing
 end
 
-libcuda_deps = [libcuda_debugger, libnvidia_nvvm, libnvidia_ptxjitcompiler, libnvidia_gpucomp, libnvidia_tileiras]
 libcuda_system = Sys.iswindows() ? "nvcuda" : "libcuda.so.1"
 
 # if anything goes wrong, we'll use the system driver
@@ -36,6 +35,8 @@ global libcuda = libcuda_system
 if @isdefined(libcuda_compat)
     @debug "Forward-compatible driver found at $libcuda_compat"
 else
+    # the JLL ships only the cuda_inspect_driver helper on this platform
+    # (e.g. Windows). nothing to do but keep using the system driver.
     @debug "No forward-compatible driver available for your platform."
     return
 end
@@ -54,6 +55,10 @@ if Libdl.dlopen(libcuda_system, Libdl.RTLD_NOLOAD; throw_error=false) !== nothin
     @debug "System CUDA driver already loaded, continuing using it."
     return
 end
+
+# only reference the compat-driver dependency products now that we've
+# confirmed they exist (helper-only builds don't declare these symbols).
+libcuda_deps = [libcuda_debugger, libnvidia_nvvm, libnvidia_ptxjitcompiler, libnvidia_gpucomp, libnvidia_tileiras]
 
 # fetch driver details
 compat_driver_task = @static if VERSION >= v"1.12-"
