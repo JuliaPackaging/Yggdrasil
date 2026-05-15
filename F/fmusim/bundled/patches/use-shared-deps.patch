@@ -1,6 +1,6 @@
---- a/fmusim/CMakeLists.txt	2026-05-14 08:50:31
-+++ b/fmusim/CMakeLists.txt	2026-05-14 08:51:04
-@@ -12,10 +12,12 @@
+--- a/fmusim/CMakeLists.txt
++++ b/fmusim/CMakeLists.txt
+@@ -12,10 +12,9 @@
  
  set(FMUSIM_VERSION "" CACHE STRING "")
  
@@ -11,13 +11,10 @@
 +find_package(LibXml2 REQUIRED)
 +find_package(ZLIB REQUIRED)
 +find_package(SUNDIALS REQUIRED)
-+if (NOT ZLIB_SRC_DIR)
-+    message(FATAL_ERROR "ZLIB_SRC_DIR must be set to a zlib source tree (for contrib/minizip).")
-+endif ()
  
  if (WIN32)
      set(FMUSIM_DIST_DIR ${CMAKE_BINARY_DIR}/dist/fmusim-windows/)
-@@ -90,44 +92,21 @@
+@@ -90,44 +89,19 @@
  target_include_directories(fmusim PRIVATE
    .
    ../include
@@ -27,16 +24,15 @@
 -  ${CVODE_DIR}/include
  )
  
++target_compile_definitions(fmusim PRIVATE "FMUSIM_VERSION=\"${FMUSIM_VERSION}\"")
  if (WIN32)
 -    target_compile_definitions(fmusim PRIVATE FMUSIM_VERSION=${FMUSIM_VERSION} YY_NO_UNISTD_H LIBXML_STATIC)
-+    target_compile_definitions(fmusim PRIVATE "FMUSIM_VERSION=\"${FMUSIM_VERSION}\"" YY_NO_UNISTD_H STRSAFE_NO_DEPRECATE)
- else ()
+-else ()
 -    target_compile_definitions(fmusim PRIVATE FMUSIM_VERSION=${FMUSIM_VERSION} LIBXML_STATIC)
-+    target_compile_definitions(fmusim PRIVATE "FMUSIM_VERSION=\"${FMUSIM_VERSION}\"")
++    target_compile_definitions(fmusim PRIVATE YY_NO_UNISTD_H STRSAFE_NO_DEPRECATE)
  endif ()
  
 +set(libraries LibXml2::LibXml2 ZLIB::ZLIB SUNDIALS::cvode SUNDIALS::core)
-+
  if (WIN32)
 -    set(libraries
 -      ${LIBXML2_DIR}/lib/libxml2s.lib
