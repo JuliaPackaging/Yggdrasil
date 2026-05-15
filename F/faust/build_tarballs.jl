@@ -221,10 +221,18 @@ for llvm_version in llvm_versions
     llvm_name = "LLVM_full_jll"
     dependencies = [
 	base_dependencies;
-        BuildDependency(PackageSpec(name=llvm_name, version=llvm_version))
+        BuildDependency(PackageSpec(name=llvm_name, version=string(llvm_version)))
     ]
 
-    for platform in platforms
+    llvm_platforms = copy(platforms)
+    if llvm_version < v"18"
+        filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), llvm_platforms)
+    end
+    if llvm_version < v"19.1.7"
+        filter!(p -> arch(p) != "riscv64", llvm_platforms)
+    end
+
+    for platform in llvm_platforms
         augmented_platform = deepcopy(platform)
         augmented_platform[LLVM.platform_name] = LLVM.platform(llvm_version, false)
 
@@ -251,3 +259,5 @@ for (i,build) in enumerate(builds)
                    preferred_gcc_version=v"8", julia_compat="1.6",
                    augment_platform_block, lazy_artifacts=true)
 end
+
+# rebuild trigger: 1
