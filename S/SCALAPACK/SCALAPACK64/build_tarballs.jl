@@ -11,23 +11,19 @@ sources = [
   GitSource("https://github.com/Reference-ScaLAPACK/scalapack", "3e0da655fb07de5f1d76d6afb43f16ae17ca98c4"),  # v2.2.3
 ]
 
-# Bash recipe for building across all platforms
 script = raw"""
 mkdir -p ${libdir}
 cd $WORKSPACE/srcdir/scalapack
 
-CPPFLAGS=()
 CFLAGS=(-Wno-error=implicit-function-declaration)
 FFLAGS=(-cpp -ffixed-line-length-none)
 
-# Add `-fallow-argument-mismatch` if supported
 : >empty.f
 if gfortran -c -fallow-argument-mismatch empty.f >/dev/null 2>&1; then
     FFLAGS+=(-fallow-argument-mismatch)
 fi
 rm -f empty.*
 
-# Add `-fcray-pointer` if supported
 : >empty.f
 if gfortran -c -fcray-pointer empty.f >/dev/null 2>&1; then
     FFLAGS+=(-fcray-pointer)
@@ -40,27 +36,18 @@ else
   LBT=(-lblastrampoline)
 fi
 
-# This artifact is always ILP64: 64-bit Fortran INTEGERs internally,
-# every BLAS/LAPACK reference redirected to libblastrampoline's `_64_`
-# entry points at compile-time, and every ScaLAPACK export renamed to
-# the same `_64_` convention post-link with objcopy (see below).
-CPPFLAGS+=(-DInt=long)
+# ILP64: 64-bit Fortran INTEGERs and 64-bit C `Int`.  Symbol naming is
+# fixed up post-link with objcopy below.
+CPPFLAGS=(-DInt=long)
 FFLAGS+=(-fdefault-integer-8)
 
-# BLAS/LAPACK routines that ScaLAPACK calls into.  Rewriting these via
-# CPP -D makes ScaLAPACK's internal references resolve to the ILP64
-# (`_64_`-suffixed) entry points in libblastrampoline.  Must happen at
-# compile-time because the references are external and post-link
-# objcopy can't redirect undefined refs to a different external lib.
-syms=(caxpy cbdsqr ccopy cdotc cdotu cgbmv cgbtrf cgemm cgemv cgerc cgeru cgesv cgetrf cgetrs chbmv chemm chemv cher cher2 cher2k cherk chetrd clacgv clacpy cladiv clanhs clarfg clartg claset clasr classq claswp cpbtrf cpotrf cpttrf crot csbmv cscal csscal cswap csymm csyr2k csyrk ctbtrs ctrmm ctrmv ctrsm ctrsv ctrtrs dasum daxpy dbdsqr dcopy ddot dgbmv dgbtrf dgemm dgemv dger dgesv dgetrf dgetrs dhbmv disnan dlabad dlacpy dladiv dlae2 dlaebz dlaed4 dlaev2 dlagtf dlagts dlahqr dlamc3 dlamch dlange dlanst dlanv2 dlapy2 dlapy3 dlaqr0 dlaqr1 dlaqr3 dlaqr4 dlarfg dlarfx dlarnv dlarra dlarrb dlarrc dlarrd dlarrk dlarrv dlartg dlaruv dlascl dlaset dlasq2 dlasr dlasrt dlassq dlaswp dlasy2 dnrm2 dpbtrf dpotrf dpttrf drot dsbmv dscal dstedc dsteqr dsterf dswap dsymm dsymv dsyr dsyr2 dsyr2k dsyrk dsytrd dtbtrs dtrmm dtrmv dtrsm dtrsv dtrtrs dzasum dznrm2 dzsum1 icamax icmax1 idamax ieeeck ilaenv isamax izamax izmax1 lsame lsamen sasum saxpy sbdsqr scasum scnrm2 scopy scsum1 sdot sgbmv sgbtrf sgemm sgemv sger sgesv sgetrf sgetrs shbmv sisnan slabad slacpy sladiv slae2 slaebz slaed4 slaev2 slagtf slagts slahqr slamc3 slamch slange slanst slanv2 slapy2 slapy3 slaqr0 slaqr1 slaqr3 slaqr4 slarfg slarfx slarnv slarra slarrb slarrc slarrd slarrk slarrv slartg slaruv slascl slaset slasq2 slasr slasrt slassq slaswp slasy2 snrm2 spbtrf spotrf spttrf srot ssbmv sscal sstedc ssteqr ssterf sswap ssymm ssymv ssyr ssyr2 ssyr2k ssyrk ssytrd stbtrs strmm strmv strsm strsv strtrs xerbla zaxpy zbdsqr zcopy zdbmv zdotc zdotu zdscal zgbmv zgbtrf zgemm zgemv zgerc zgeru zgesv zgetrf zgetrs zhbmv zhemm zhemv zher zher2 zher2k zherk zhetrd zlacgv zlacpy zladiv zlanhs zlarfg zlartg zlaset zlasr zlassq zlaswp zpbtrf zpotrf zpttrf zrot zscal zswap zsymm zsyr2k zsyrk ztbtrs ztrmm ztrmv ztrsm ztrsv ztrtrs)
-for sym in ${syms[@]}; do
-    CPPFLAGS+=("-D${sym}=${sym}_64")
-    CPPFLAGS+=("-D${sym}_=${sym}_64_")   # due to some evil #defines in SCALAPACK
-    CPPFLAGS+=("-D${sym^^}=${sym}_64")
-done
+# BLAS/LAPACK names that ScaLAPACK calls into.  Used as the safety
+# boundary for the post-link rewrite: only these undefined refs get
+# redirected to libblastrampoline's `_64_` slot.  MPI/libc undefined
+# refs are not in the list and stay untouched.
+blas_lapack_syms=(caxpy cbdsqr ccopy cdotc cdotu cgbmv cgbtrf cgemm cgemv cgerc cgeru cgesv cgetrf cgetrs chbmv chemm chemv cher cher2 cher2k cherk chetrd clacgv clacpy cladiv clanhs clarfg clartg claset clasr classq claswp cpbtrf cpotrf cpttrf crot csbmv cscal csscal cswap csymm csyr2k csyrk ctbtrs ctrmm ctrmv ctrsm ctrsv ctrtrs dasum daxpy dbdsqr dcopy ddot dgbmv dgbtrf dgemm dgemv dger dgesv dgetrf dgetrs dhbmv disnan dlabad dlacpy dladiv dlae2 dlaebz dlaed4 dlaev2 dlagtf dlagts dlahqr dlamc3 dlamch dlange dlanst dlanv2 dlapy2 dlapy3 dlaqr0 dlaqr1 dlaqr3 dlaqr4 dlarfg dlarfx dlarnv dlarra dlarrb dlarrc dlarrd dlarrk dlarrv dlartg dlaruv dlascl dlaset dlasq2 dlasr dlasrt dlassq dlaswp dlasy2 dnrm2 dpbtrf dpotrf dpttrf drot dsbmv dscal dstedc dsteqr dsterf dswap dsymm dsymv dsyr dsyr2 dsyr2k dsyrk dsytrd dtbtrs dtrmm dtrmv dtrsm dtrsv dtrtrs dzasum dznrm2 dzsum1 icamax icmax1 idamax ieeeck ilaenv isamax izamax izmax1 lsame lsamen sasum saxpy sbdsqr scasum scnrm2 scopy scsum1 sdot sgbmv sgbtrf sgemm sgemv sger sgesv sgetrf sgetrs shbmv sisnan slabad slacpy sladiv slae2 slaebz slaed4 slaev2 slagtf slagts slahqr slamc3 slamch slange slanst slanv2 slapy2 slapy3 slaqr0 slaqr1 slaqr3 slaqr4 slarfg slarfx slarnv slarra slarrb slarrc slarrd slarrk slarrv slartg slaruv slascl slaset slasq2 slasr slasrt slassq slaswp slasy2 snrm2 spbtrf spotrf spttrf srot ssbmv sscal sstedc ssteqr ssterf sswap ssymm ssymv ssyr ssyr2 ssyr2k ssyrk ssytrd stbtrs strmm strmv strsm strsv strtrs xerbla zaxpy zbdsqr zcopy zdbmv zdotc zdotu zdscal zgbmv zgbtrf zgemm zgemv zgerc zgeru zgesv zgetrf zgetrs zhbmv zhemm zhemv zher zher2 zher2k zherk zhetrd zlacgv zlacpy zladiv zlanhs zlarfg zlartg zlaset zlasr zlassq zlaswp zpbtrf zpotrf zpttrf zrot zscal zswap zsymm zsyr2k zsyrk ztbtrs ztrmm ztrmv ztrsm ztrsv ztrtrs)
 
-# We need to specify the MPI libraries explicitly because the
-# CMakeLists.txt doesn't properly add them when linking
+# CMakeLists.txt doesn't add MPI libs to the link line; pass them explicitly.
 MPI_SETTINGS=(-DMPI_BASE_DIR="${prefix}")
 MPILIBS=()
 if [[ ${bb_full_target} == *microsoftmpi* ]]; then
@@ -92,39 +79,34 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
 mkdir build
 cd build
 cmake .. "${CMAKE_FLAGS[@]}"
-
 make -j${nproc} all
 make install
 
-# Rename ScaLAPACK's own exported Fortran-mangled symbols (pdgemm_,
-# pdgetrf_, infog2l_, numroc_, ...) to the `_64_` suffix convention
-# used by libblastrampoline-aware callers (PETSc, MUMPS, ...).
-#
-# We do this post-link with objcopy --redefine-syms over every defined
-# T/W text symbol that ends in `_` and isn't already `_64_`-suffixed,
-# rather than maintaining a curated symbol list.  That way the rewrite
-# covers every export the artifact actually produces — including
-# anything new the build emits after a future ScaLAPACK upgrade —
-# without a bundled list to keep in sync with upstream.
-#
-# References we already redirected at compile-time (BLAS/LAPACK calls)
-# show up as undefined `_64_`-suffixed external refs to libblastrampoline
-# and are skipped by the `_64_$` filter, so they stay correct.
-nm -D --defined-only "${libdir}/libscalapack.${dlext}" \
-    | awk '$2 ~ /^[TW]$/ {print $3}' \
-    | grep -E '^[a-z][a-zA-Z0-9_]*_$' \
-    | grep -v '_64_$' \
-    | awk '{print $1, substr($1, 1, length($1)-1) "_64_"}' \
-    > /tmp/scalapack_redefine.txt
+# Rewrite symbols to the `_64_` convention used by libblastrampoline-aware
+# callers (PETSc, MUMPS, ...).  Single objcopy pass over a rename map
+# built from two sources:
+#   1. ScaLAPACK's own defined exports (pdgemm_, numroc_, ...) — every
+#      defined T/W text symbol ending in `_` and not already `_64_`,
+#      enumerated dynamically so future upstream additions are covered.
+#   2. BLAS/LAPACK undefined refs — drawn from blas_lapack_syms only,
+#      not a blanket sweep, so MPI/libc undefined refs aren't renamed.
+{
+    nm -D --defined-only "${libdir}/libscalapack.${dlext}" \
+        | awk '$2 ~ /^[TW]$/ {print $3}' \
+        | grep -E '^[a-z][a-zA-Z0-9_]*_$' \
+        | grep -v '_64_$' \
+        | awk '{print $1, substr($1, 1, length($1)-1) "_64_"}'
+    for sym in "${blas_lapack_syms[@]}"; do
+        echo "${sym}_ ${sym}_64_"
+    done
+} > /tmp/scalapack_redefine.txt
 
 ${target}-objcopy --redefine-syms=/tmp/scalapack_redefine.txt \
     "${libdir}/libscalapack.${dlext}"
 
-# Rename the artifact so it ships as libscalapack64 alongside
-# SCALAPACK_jll's libscalapack.
+# Ship as libscalapack64 so it coexists with SCALAPACK_jll's libscalapack.
 mv -v ${libdir}/libscalapack.${dlext} ${libdir}/libscalapack64.${dlext}
 
-# If there were links that are now broken, fix 'em up
 for l in $(find ${prefix}/lib -xtype l); do
   if [[ $(basename $(readlink ${l})) == libscalapack ]]; then
     ln -vsf libscalapack64.${dlext} ${l}
@@ -132,8 +114,7 @@ for l in $(find ${prefix}/lib -xtype l); do
 done
 
 PATCHELF_FLAGS=()
-
-# ppc64le and aarch64 have 64 kB page sizes, don't muck up the ELF section load alignment
+# aarch64 / ppc64le have 64 kB page sizes
 if [[ ${target} == aarch64-* || ${target} == powerpc64le-* ]]; then
   PATCHELF_FLAGS+=(--page-size 65536)
 fi
@@ -152,27 +133,21 @@ augment_platform_block = """
 """
 
 platforms = expand_gfortran_versions(supported_platforms())
-# Don't know how to configure MPI for Windows
-platforms = filter(p -> !Sys.iswindows(p), platforms)
-# This artifact is ILP64; restrict to 64-bit platforms.
-platforms = filter(p -> nbits(p) == 64, platforms)
+platforms = filter(p -> !Sys.iswindows(p), platforms)  # MPI on Windows not configured
+platforms = filter(p -> nbits(p) == 64, platforms)     # ILP64 needs 64-bit address space
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
-# The products that we will ensure are always built
 products = [
     LibraryProduct("libscalapack64", :libscalapack64),
 ]
 
-# Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
-    Dependency("mpif_jll"; compat="0.1.5", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)), # MPI Fortran bindings
+    Dependency("mpif_jll"; compat="0.1.5", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)),
 ]
 append!(dependencies, platform_dependencies)
 
-# Build the tarballs.
-# We need at least GCC 5 for MPICH
 build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                augment_platform_block, julia_compat="1.9", preferred_gcc_version=v"5")
