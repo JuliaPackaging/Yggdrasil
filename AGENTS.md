@@ -14,9 +14,10 @@ Some dependencies require special handling:
 
 - **LLVM packages**: Must use `LLVM_full_jll` and match the version used by the Julia version. Requires careful ABI compatibility.
 - **MPI packages**: Need `MPIPreferences.jl` configuration and must use `MPItrampoline_jll` for cross-implementation compatibility.
+- **BLAS/LAPACK packages**: Should link against `libblastrampoline_jll` rather than a concrete BLAS implementation, so downstream Julia users can swap implementations at runtime.
 - **CUDA packages**: Use `CUDA.required_dependencies` to get the necessary runtime dependencies. Must handle different CUDA versions. GPU code needs special compilation flags.
 
-For these complex dependencies, consult existing recipes in the repository (search for `LLVM_full_jll`, `MPItrampoline_jll`, or `CUDA.required_dependencies`).
+For these complex dependencies, consult existing recipes in the repository (search for `LLVM_full_jll`, `MPItrampoline_jll`, `libblastrampoline_jll`, or `CUDA.required_dependencies`).
 
 ## Essential Structure
 
@@ -55,6 +56,10 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
 ```
 
 ## Critical Rules
+
+These are the hard requirements every recipe must satisfy. The "Build Script Reference"
+section below is non-normative reference material (env vars, common build systems,
+optional arguments).
 
 ### Naming
 
@@ -97,9 +102,62 @@ To find the commit hash for a tag:
 git ls-remote https://github.com/owner/repo.git refs/tags/v1.0.0
 ```
 
-### Build Script
+### Products
 
-The script runs in `x86_64-linux-musl` environment. Key variables:
+- **LibraryProduct**: Shared libraries (`.so`, `.dylib`, `.dll`)
+- **ExecutableProduct**: Binary executables
+- **FileProduct**: Other files (headers, data files)
+- **FrameworkProduct**: macOS frameworks
+
+### Dependencies
+
+- **Dependency**: Runtime dependency (will be a dependency of the generated JLL package)
+- **BuildDependency**: Build-time only (not a dependency for the final JLL)
+- **HostBuildDependency**: Build-time only dependency that needs to run on the build host, not target (not a dependency for the final JLL)
+
+Always add `_jll` suffix: `Dependency("Zlib_jll")`
+
+### GCC Version Selection
+
+Use `preferred_gcc_version=v"X"` for (see [available GCC versions](https://github.com/JuliaPackaging/Yggdrasil/blob/master/RootFS.md#compiler-shards)):
+
+- **C++ code**: Use oldest GCC that compiles (≤10 for Julia v1.6 compatibility)
+- **Dependencies built with newer GCC**: Match or exceed their GCC version
+- **Musl bugs**: Use GCC ≥6 to avoid `posix_memalign` issues
+- Default is GCC 4.8.5 for maximum compatibility
+
+### Unsupported Build Flags
+
+Products should not force using certain CPUs or instruction sets (e.g., the `march` or `mcpu` flags), unless they perform their own selection of the appropriate code for the current processor at runtime.
+They also should not use unsafe math operations or fast-math mode in compilers.
+
+To remove the `march` and `mcpu` flags in a list of files:
+
+```bash
+for i in ${files}; do
+    sed -i "s/-march[^ ]*//g" $i
+    sed -i "s/-mcpu[^ ]*//g" $i
+done
+```
+
+To remove the fast math and unsafe math optimizations in a list of files:
+
+```bash
+for i in ${files}; do
+    sed -i "s/-ffast-math//g" $i
+    sed -i "s/-funsafe-math-optimizations//g" $i
+done
+```
+
+## Build Script Reference
+
+Reference material for writing the `script` block — environment variables, common
+build-system invocations, platform branching, and optional `build_tarballs` keyword
+arguments.
+
+### Environment Variables
+
+The script runs in an `x86_64-linux-musl` environment. Key variables:
 
 - `${prefix}`: Install root (target for all outputs)
 - `${bindir}`: Executables go here (= `${prefix}/bin`)
@@ -177,35 +235,11 @@ if [[ ${nbits} == 32 ]]; then
 fi
 ```
 
-### Products
-
-- **LibraryProduct**: Shared libraries (`.so`, `.dylib`, `.dll`)
-- **ExecutableProduct**: Binary executables
-- **FileProduct**: Other files (headers, data files)
-- **FrameworkProduct**: macOS frameworks
-
-### Dependencies
-
-- **Dependency**: Runtime dependency (will be a dependency of the generated JLL package)
-- **BuildDependency**: Build-time only (not a dependency for the final JLL)
-- **HostBuildDependency**: Build-time only dependency that needs to run on the build host, not target (not a dependency for the final JLL)
-
-Always add `_jll` suffix: `Dependency("Zlib_jll")`
-
-### GCC Version Selection
-
-Use `preferred_gcc_version=v"X"` for (see [available GCC versions](https://github.com/JuliaPackaging/Yggdrasil/blob/master/RootFS.md#compiler-shards)):
-
-- **C++ code**: Use oldest GCC that compiles (≤10 for Julia v1.6 compatibility)
-- **Dependencies built with newer GCC**: Match or exceed their GCC version
-- **Musl bugs**: Use GCC ≥6 to avoid `posix_memalign` issues
-- Default is GCC 4.8.5 for maximum compatibility
-
-### Optional Arguments
+### Optional Arguments to `build_tarballs`
 
 ```julia
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat="1.10",                   # Minimum Julia version
+    julia_compat="1.10",                   # Minimum Julia version for the JLL
     preferred_gcc_version=v"8",            # GCC version
     preferred_llvm_version=v"13",          # LLVM version
     compilers=[:c, :rust],                 # Additional compilers
@@ -213,28 +247,8 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
 )
 ```
 
-### Unsupported Build Flags
-
-Products should not force using certain CPUs or instruction sets (e.g., the `march` or `mcpu` flags), unless they perform their own selection of the appropriate code for the current processor at runtime.
-They also should not use unsafe math operations or the "fast math" mode in compilters.
-
-To remove the `march` and `mcpu` flags in a list of files:
-
-```bash
-for i in ${files}
-    sed -i "s/-march[^ ]*//g" $i
-    sed -i "s/-mcpu[^ ]*//g" $i
-done
-```
-
-To remove the fast math and unsafe math optimizations in a list of files:
-
-```bash
-for i in ${files}
-    sed -i "s/-ffast-math//g" $i
-    sed -i "s/-funsafe-math-optimizations//g" $i
-done
-```
+Note: `julia_compat` is the **JLL's** Julia compat bound, independent of the Julia
+version required to *run* BinaryBuilder.jl itself (see [Prerequisites](#prerequisites)).
 
 ## Common Patterns
 
@@ -407,7 +421,12 @@ using PackageName_jll
 
 # Test that products are accessible
 @info "Package path:" PackageName_jll.artifact_dir
-@info "Executable path:" PackageName_jll.executable_name()
+
+# JLLs export each ExecutableProduct as a function named after its symbol.
+# E.g. for `ExecutableProduct("zstd", :zstd)` the wrapper is `Zstd_jll.zstd()`,
+# which returns a Cmd usable with `run` or string interpolation.
+# Replace `executable_name` below with your actual product symbol.
+@info "Executable Cmd:" PackageName_jll.executable_name()
 
 # Try running the executable (if applicable)
 run(`$(PackageName_jll.executable_name()) --version`)
@@ -488,6 +507,25 @@ For complex packages, you can also:
 - **Autotools with patches**: Look for recipes with `bundled/patches/`
 - **Platform-specific builds**: `G/Git/build_tarballs.jl`
 - **Multiple sources**: `L/libftd2xx/build_tarballs.jl`
+
+## MCP Tooling
+
+This repo ships an MCP server for AI coding agents, configured in `.mcp.json`:
+
+- **`bb-sandbox`** (`.claude/mcp-bb-sandbox/server.jl`) — launches and drives an
+  interactive BinaryBuilder cross-compilation sandbox. Tools: `sandbox_start`,
+  `sandbox_exec`, `sandbox_stop`, `sandbox_list`, `sandbox_str_replace_editor`.
+
+The server runs from the `.ci/` Julia environment. On a fresh checkout it must
+be instantiated once, otherwise the agent will fail to connect to `bb-sandbox`
+because the server crashes on startup with a missing-package error
+(e.g. `ClaudeMCPTools`). From the repo root:
+
+```bash
+julia --project=.ci -e 'using Pkg; Pkg.instantiate()'
+```
+
+After that, the agent's MCP status should show `bb-sandbox` connected.
 
 ## Additional Resources
 
