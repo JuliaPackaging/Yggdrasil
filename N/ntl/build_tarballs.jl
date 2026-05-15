@@ -65,12 +65,15 @@ esac
 # tables use (src/meson/abi-tables/<triplet>.ini):
 #   - Strip Darwin version suffix:  x86_64-apple-darwin14 → x86_64-apple-darwin
 #   - Strip FreeBSD version suffix: x86_64-unknown-freebsd14.1 → x86_64-unknown-freebsd
-#   - Re-order musl + eabihf:       armv7l-linux-musleabihf → armv7l-linux-gnueabihf-musl
+#   - BB uses `arm-linux-musleabihf` (with the gcc binary prefix
+#     `arm-linux-musleabihf-`) for what NTL's spec calls
+#     `armv7l-linux-gnueabihf-musl` — map it here.
 case "$target" in
-    *-apple-darwin*)        ABI_TRIPLET=$(echo "$target" | sed -E 's/(apple-darwin)[0-9.]+$/\1/') ;;
-    *-unknown-freebsd*)     ABI_TRIPLET=$(echo "$target" | sed -E 's/(unknown-freebsd)[0-9.]+$/\1/') ;;
+    *-apple-darwin*)         ABI_TRIPLET=$(echo "$target" | sed -E 's/(apple-darwin)[0-9.]+$/\1/') ;;
+    *-unknown-freebsd*)      ABI_TRIPLET=$(echo "$target" | sed -E 's/(unknown-freebsd)[0-9.]+$/\1/') ;;
+    arm-linux-musleabihf)    ABI_TRIPLET="armv7l-linux-gnueabihf-musl" ;;
     armv7l-linux-musleabihf) ABI_TRIPLET="armv7l-linux-gnueabihf-musl" ;;
-    *)                      ABI_TRIPLET="$target" ;;
+    *)                       ABI_TRIPLET="$target" ;;
 esac
 
 # Pass the normalized triplet so pick-abi.py looks up the right
