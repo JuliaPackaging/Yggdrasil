@@ -1,0 +1,66 @@
+--- a/fmusim/CMakeLists.txt
++++ b/fmusim/CMakeLists.txt
+@@ -12,10 +12,9 @@
+ 
+ set(FMUSIM_VERSION "" CACHE STRING "")
+ 
+-set(CVODE_DIR    ${CMAKE_SOURCE_DIR}/build/cvode-${FMI_PLATFORM}/install/)
+-set(LIBXML2_DIR  ${CMAKE_SOURCE_DIR}/build/libxml2-${FMI_PLATFORM}/install/)
+-set(ZLIB_DIR     ${CMAKE_SOURCE_DIR}/build/zlib-${FMI_PLATFORM}/install/)
+-set(ZLIB_SRC_DIR ${CMAKE_SOURCE_DIR}/build/zlib-1.3.1/)
++find_package(LibXml2 REQUIRED)
++find_package(ZLIB REQUIRED)
++find_package(SUNDIALS REQUIRED)
+ 
+ if (WIN32)
+     set(FMUSIM_DIST_DIR ${CMAKE_BINARY_DIR}/dist/fmusim-windows/)
+@@ -90,44 +89,19 @@
+ target_include_directories(fmusim PRIVATE
+   .
+   ../include
+-  ${LIBXML2_DIR}/include/libxml2
+-  ${ZLIB_DIR}/include
+   ${ZLIB_SRC_DIR}/contrib/minizip
+-  ${CVODE_DIR}/include
+ )
+ 
++target_compile_definitions(fmusim PRIVATE "FMUSIM_VERSION=\"${FMUSIM_VERSION}\"")
+ if (WIN32)
+-    target_compile_definitions(fmusim PRIVATE FMUSIM_VERSION=${FMUSIM_VERSION} YY_NO_UNISTD_H LIBXML_STATIC)
+-else ()
+-    target_compile_definitions(fmusim PRIVATE FMUSIM_VERSION=${FMUSIM_VERSION} LIBXML_STATIC)
++    target_compile_definitions(fmusim PRIVATE YY_NO_UNISTD_H STRSAFE_NO_DEPRECATE)
+ endif ()
+ 
++set(libraries LibXml2::LibXml2 ZLIB::ZLIB SUNDIALS::cvode SUNDIALS::core)
+ if (WIN32)
+-    set(libraries
+-      ${LIBXML2_DIR}/lib/libxml2s.lib
+-      ${ZLIB_DIR}/lib/zlibstatic.lib
+-      ${CVODE_DIR}/lib/sundials_cvode_static.lib
+-      ${CVODE_DIR}/lib/sundials_core_static.lib
+-      wsock32
+-      ws2_32
+-      bcrypt
+-    )
++    list(APPEND libraries wsock32 ws2_32 bcrypt shlwapi)
+ elseif(UNIX AND NOT APPLE)
+-    set(libraries
+-      ${LIBXML2_DIR}/lib/libxml2.a
+-      ${ZLIB_DIR}lib/libz.a
+-      ${CVODE_DIR}/lib/libsundials_cvode.a
+-      ${CVODE_DIR}/lib/libsundials_core.a
+-      ${CMAKE_DL_LIBS}
+-      m
+-    )
+-else ()
+-    set(libraries
+-      ${LIBXML2_DIR}/lib/libxml2.a
+-      ${ZLIB_DIR}lib/libz.a
+-      ${CVODE_DIR}/lib/libsundials_cvode.a
+-      ${CVODE_DIR}/lib/libsundials_core.a
+-    )
++    list(APPEND libraries ${CMAKE_DL_LIBS} m)
+ endif ()
+ 
+ target_link_libraries(fmusim ${libraries})
