@@ -41,7 +41,7 @@ version = v"11.6.0"
 # the upstream tarball hash once the Meson build lands upstream.
 sources = [
     GitSource("https://github.com/s-celles/ntl.git",
-              "8723d5f4b4a53f38ba7f47059a39360f2e257ced"),
+              "26747b88756d44ae8b95611faa49883e95c06d46"),
 ]
 
 # Build script. Uses BinaryBuilder's $MESON_TARGET_TOOLCHAIN env var to
