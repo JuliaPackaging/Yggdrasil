@@ -52,11 +52,11 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built.
-# We pin against the published CImGuiPack_jll v0.8.x line because the
-# unreleased Yggdrasil HEAD (v0.11.x) drops the libcxxwrap_julia_jll
-# dependency, which would change which ImGui symbols are reachable.
+# CImGuiPack_jll v0.11+ ships consistent imgui 1.92.x cimgui across all
+# platforms (the published v0.8 line was platform-skewed and lacked the
+# `_c`-suffixed types this wrapper requires).
 dependencies = [
-    Dependency("CImGuiPack_jll"; compat="0.8"),
+    Dependency("CImGuiPack_jll"; compat="0.11"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
