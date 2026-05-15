@@ -1,0 +1,11 @@
+--- a/parsec/parsec_mpi_funnelled.c	2024-11-19 07:02:59.000000000 -0700
++++ b/parsec/parsec_mpi_funnelled.c	2026-05-06 20:26:29.011600123 -0700
+@@ -194,6 +194,8 @@
+ 
+ #if defined(PARSEC_HAVE_MPI_OVERTAKE)
+ static int parsec_param_enable_mpi_overtake = 1;
++#else
++static int parsec_param_enable_mpi_overtake = 0;
+ #endif
+ 
+ /* List to hold pending requests */
