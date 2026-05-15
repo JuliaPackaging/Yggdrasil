@@ -17,10 +17,7 @@ cd $WORKSPACE/srcdir/scalapack
 
 apk del cmake
 
-# v2.2.3 introduced an unconditional try_run() probe in
-# CMAKE/FortranMangling.cmake that fails under cross-compilation
-# (TryRunResults.cmake → xintface_res=PLEASE_FILL_OUT-FAILED_TO_RUN).
-# We already pass -DCDEFS=Add_; stub the probe out.
+# v2.2.3 try_run()s a Fortran-mangling probe; fails under cross-compile.
 cat > CMAKE/FortranMangling.cmake <<'EOF'
 include_guard()
 EOF
@@ -46,15 +43,11 @@ else
   LBT=(-lblastrampoline)
 fi
 
-# ILP64: 64-bit Fortran INTEGERs and 64-bit C `Int`.
 CPPFLAGS=(-DInt=long)
 FFLAGS+=(-fdefault-integer-8)
 
-# BLAS/LAPACK names that ScaLAPACK calls into.  Rewritten at compile
-# time to the `_64_` ABI via -D defines below.
 blas_lapack_syms=(caxpy cbdsqr ccopy cdotc cdotu cgbmv cgbtrf cgemm cgemv cgerc cgeru cgesv cgetrf cgetrs chbmv chemm chemv cher cher2 cher2k cherk chetrd clacgv clacpy cladiv clanhs clarfg clartg claset clasr classq claswp cpbtrf cpotrf cpttrf crot csbmv cscal csscal cswap csymm csyr2k csyrk ctbtrs ctrmm ctrmv ctrsm ctrsv ctrtrs dasum daxpy dbdsqr dcopy ddot dgbmv dgbtrf dgemm dgemv dger dgesv dgetrf dgetrs dhbmv disnan dlabad dlacpy dladiv dlae2 dlaebz dlaed4 dlaev2 dlagtf dlagts dlahqr dlamc3 dlamch dlange dlanst dlanv2 dlapy2 dlapy3 dlaqr0 dlaqr1 dlaqr3 dlaqr4 dlarfg dlarfx dlarnv dlarra dlarrb dlarrc dlarrd dlarrk dlarrv dlartg dlaruv dlascl dlaset dlasq2 dlasr dlasrt dlassq dlaswp dlasy2 dnrm2 dpbtrf dpotrf dpttrf drot dsbmv dscal dstedc dsteqr dsterf dswap dsymm dsymv dsyr dsyr2 dsyr2k dsyrk dsytrd dtbtrs dtrmm dtrmv dtrsm dtrsv dtrtrs dzasum dznrm2 dzsum1 icamax icmax1 idamax ieeeck ilaenv isamax izamax izmax1 lsame lsamen sasum saxpy sbdsqr scasum scnrm2 scopy scsum1 sdot sgbmv sgbtrf sgemm sgemv sger sgesv sgetrf sgetrs shbmv sisnan slabad slacpy sladiv slae2 slaebz slaed4 slaev2 slagtf slagts slahqr slamc3 slamch slange slanst slanv2 slapy2 slapy3 slaqr0 slaqr1 slaqr3 slaqr4 slarfg slarfx slarnv slarra slarrb slarrc slarrd slarrk slarrv slartg slaruv slascl slaset slasq2 slasr slasrt slassq slaswp slasy2 snrm2 spbtrf spotrf spttrf srot ssbmv sscal sstedc ssteqr ssterf sswap ssymm ssymv ssyr ssyr2 ssyr2k ssyrk ssytrd stbtrs strmm strmv strsm strsv strtrs xerbla zaxpy zbdsqr zcopy zdbmv zdotc zdotu zdscal zgbmv zgbtrf zgemm zgemv zgerc zgeru zgesv zgetrf zgetrs zhbmv zhemm zhemv zher zher2 zher2k zherk zhetrd zlacgv zlacpy zladiv zlanhs zlarfg zlartg zlaset zlasr zlassq zlaswp zpbtrf zpotrf zpttrf zrot zscal zswap zsymm zsyr2k zsyrk ztbtrs ztrmm ztrmv ztrsm ztrsv ztrtrs)
 
-# CMakeLists.txt doesn't add MPI libs to the link line; pass them explicitly.
 MPI_SETTINGS=(-DMPI_BASE_DIR="${prefix}")
 MPILIBS=()
 if [[ ${bb_full_target} == *microsoftmpi* ]]; then
@@ -81,10 +74,9 @@ CMAKE_FLAGS_BASE=(-DCMAKE_INSTALL_PREFIX=${prefix}
                   ${MPI_SETTINGS[*]}
                   -DCDEFS=Add_)
 
-# Pass 1: vanilla compile to enumerate ScaLAPACK's defined exports.
-# We need the symbol list to construct the -D rename defines below.
-# On Apple, ${target}-nm is missing — use llvm-nm and strip the Mach-O
-# leading underscore so the form matches ELF.
+# Pass 1: compile vanilla so we can nm-enumerate ScaLAPACK's exports.
+# Source-scanning is unreliable because BLACS C wrappers hide names
+# behind macros (F_VOID_FUNC, F_INT_FUNC, ...).
 mkdir build1
 cd build1
 cmake .. "${CMAKE_FLAGS_BASE[@]}" \
@@ -94,28 +86,23 @@ make -j${nproc} all
 
 if [[ ${target} == *apple* ]]; then
     NM=llvm-nm
-    NM_DEFINED_FILTER='$2 ~ /^[TW]$/ {sub(/^_/, "", $3); print $3}'
+    NM_FILTER='$2 ~ /^[TW]$/ {sub(/^_/, "", $3); print $3}'
 else
     NM=${target}-nm
-    NM_DEFINED_FILTER='$2 ~ /^[TW]$/ {print $3}'
+    NM_FILTER='$2 ~ /^[TW]$/ {print $3}'
 fi
 
 find CMakeFiles/scalapack.dir -name "*.o" > /tmp/scalapack_objs.txt
 ${NM} --defined-only $(cat /tmp/scalapack_objs.txt) 2>/dev/null \
-    | awk "${NM_DEFINED_FILTER}" \
+    | awk "${NM_FILTER}" \
     | grep -E '^[a-z][a-zA-Z0-9_]*_$' \
     | grep -v '_64_$' \
     | sed 's/_$//' \
     | sort -u > /tmp/scalapack_exports.txt
 cd ..
 
-echo "=== ScaLAPACK exports to rename ($(wc -l < /tmp/scalapack_exports.txt)) ==="
-
-# Build the -D rename defines.  ScaLAPACK Fortran source is UPPERCASE and
-# the compiler appends `_` for name mangling, so:
-#   Fortran source: -DPDGEMM=PDGEMM_64       (preprocessor sees PDGEMM, no _)
-#   C source:       -Dpdgemm_=pdgemm_64_     (C ref has trailing _)
-# Apply both to BLAS/LAPACK refs and to ScaLAPACK's own exports.
+# Fortran source is UPPERCASE without trailing `_` (compiler adds it);
+# C source has it. So we emit two sets of defines.
 : >/tmp/fortran_defines.txt
 : >/tmp/c_defines.txt
 { cat /tmp/scalapack_exports.txt; printf '%s\n' "${blas_lapack_syms[@]}"; } | sort -u \
@@ -127,9 +114,7 @@ echo "=== ScaLAPACK exports to rename ($(wc -l < /tmp/scalapack_exports.txt)) ==
 RENAME_F=$(tr '\n' ' ' < /tmp/fortran_defines.txt)
 RENAME_C=$(tr '\n' ' ' < /tmp/c_defines.txt)
 
-# Pass 2: rebuild from scratch with -D defines so the compiler emits
-# `_64_`-suffixed symbols directly. Works the same on ELF and Mach-O —
-# no post-link symbol manipulation required.
+# Pass 2: rebuild with -D defines so the compiler emits `_64_` directly.
 mkdir build
 cd build
 cmake .. "${CMAKE_FLAGS_BASE[@]}" \
@@ -138,7 +123,6 @@ cmake .. "${CMAKE_FLAGS_BASE[@]}" \
 make -j${nproc} all
 make install
 
-# Ship as libscalapack64 so it coexists with SCALAPACK_jll's libscalapack.
 mv -v ${libdir}/libscalapack.${dlext} ${libdir}/libscalapack64.${dlext}
 
 for l in $(find ${prefix}/lib -xtype l); do
@@ -148,7 +132,6 @@ for l in $(find ${prefix}/lib -xtype l); do
 done
 
 PATCHELF_FLAGS=()
-# aarch64 / ppc64le have 64 kB page sizes
 if [[ ${target} == aarch64-* || ${target} == powerpc64le-* ]]; then
   PATCHELF_FLAGS+=(--page-size 65536)
 fi
@@ -167,8 +150,8 @@ augment_platform_block = """
 """
 
 platforms = expand_gfortran_versions(supported_platforms())
-platforms = filter(p -> !Sys.iswindows(p), platforms)  # MPI on Windows not configured
-platforms = filter(p -> nbits(p) == 64, platforms)     # ILP64 needs 64-bit address space
+platforms = filter(p -> !Sys.iswindows(p), platforms)
+platforms = filter(p -> nbits(p) == 64, platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
@@ -185,4 +168,4 @@ dependencies = [
 append!(dependencies, platform_dependencies)
 
 build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.9", preferred_gcc_version=v"5")
+               augment_platform_block, julia_compat="1.9", preferred_gcc_version=v"9")
