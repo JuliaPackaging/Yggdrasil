@@ -17,6 +17,14 @@ cd $WORKSPACE/srcdir/scalapack
 
 apk del cmake
 
+# v2.2.3 introduced an unconditional try_run() probe in
+# CMAKE/FortranMangling.cmake that fails under cross-compilation
+# (TryRunResults.cmake → xintface_res=PLEASE_FILL_OUT-FAILED_TO_RUN).
+# We already pass -DCDEFS=Add_; stub the probe out.
+cat > CMAKE/FortranMangling.cmake <<'EOF'
+include_guard()
+EOF
+
 CFLAGS=(-Wno-error=implicit-function-declaration)
 FFLAGS=(-cpp -ffixed-line-length-none)
 
@@ -82,32 +90,42 @@ mkdir build
 cd build
 cmake .. "${CMAKE_FLAGS[@]}"
 make -j${nproc} all
-make install
 
 # Rewrite symbols to the `_64_` convention used by libblastrampoline-aware
-# callers (PETSc, MUMPS, ...).  Single objcopy pass over a rename map
-# built from two sources:
+# callers (PETSc, MUMPS, ...).  objcopy --redefine-sym only rewrites
+# `.symtab` — to land the rename in the shipped library's `.dynsym`,
+# we have to apply it at the `.o` stage, then force a relink.
+# Rename map is built from two sources:
 #   1. ScaLAPACK's own defined exports (pdgemm_, numroc_, ...) — every
 #      defined T/W text symbol ending in `_` and not already `_64_`,
-#      enumerated dynamically so future upstream additions are covered.
+#      enumerated dynamically from the .o files so future upstream
+#      additions are covered.
 #   2. BLAS/LAPACK undefined refs — drawn from blas_lapack_syms only,
 #      not a blanket sweep, so MPI/libc undefined refs aren't renamed.
+find CMakeFiles/scalapack.dir -name "*.o" > /tmp/scalapack_objs.txt
 {
-    nm -D --defined-only "${libdir}/libscalapack.${dlext}" \
+    ${target}-nm --defined-only $(cat /tmp/scalapack_objs.txt) 2>/dev/null \
         | awk '$2 ~ /^[TW]$/ {print $3}' \
         | grep -E '^[a-z][a-zA-Z0-9_]*_$' \
         | grep -v '_64_$' \
+        | sort -u \
         | awk '{print $1, substr($1, 1, length($1)-1) "_64_"}'
     for sym in "${blas_lapack_syms[@]}"; do
         echo "${sym}_ ${sym}_64_"
     done
-} > /tmp/scalapack_redefine.txt
+} | sort -u > /tmp/scalapack_redefine.txt
 
 echo "=== symbols renamed ($(wc -l < /tmp/scalapack_redefine.txt) total) ==="
 cat /tmp/scalapack_redefine.txt
 
-${target}-objcopy --redefine-syms=/tmp/scalapack_redefine.txt \
-    "${libdir}/libscalapack.${dlext}"
+while read -r o; do
+    ${target}-objcopy --redefine-syms=/tmp/scalapack_redefine.txt "$o"
+done < /tmp/scalapack_objs.txt
+
+# Force re-link with renamed objects so `.dynsym` reflects the rewrite.
+rm -f lib/libscalapack.${dlext}*
+make -j${nproc} all
+make install
 
 # Ship as libscalapack64 so it coexists with SCALAPACK_jll's libscalapack.
 mv -v ${libdir}/libscalapack.${dlext} ${libdir}/libscalapack64.${dlext}
