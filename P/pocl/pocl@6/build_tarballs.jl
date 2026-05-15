@@ -135,7 +135,7 @@ filter!(p -> arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libpocl", :libpocl),
+    LibraryProduct("libpocl", :libpocl; dont_dlopen=true),
     ExecutableProduct("poclcc", :poclcc),
 ]
 
@@ -269,8 +269,8 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
     # Dependencies that must be installed before this package can be built
     llvm_name = llvm_assertions ? "LLVM_full_assert_jll" : "LLVM_full_jll"
     dependencies = [
-        HostBuildDependency(PackageSpec(name=llvm_name, version=llvm_version)),
-        BuildDependency(PackageSpec(name=llvm_name, version=llvm_version)),
+        HostBuildDependency(PackageSpec(name=llvm_name, version=string(llvm_version))),
+        BuildDependency(PackageSpec(name=llvm_name, version=string(llvm_version))),
         Dependency("OpenCL_jll"),
         Dependency("Hwloc_jll"),
         Dependency("SPIRV_LLVM_Translator_unified_jll"),
@@ -306,3 +306,5 @@ for (i,build) in enumerate(builds)
                    preferred_gcc_version=v"10", build.preferred_llvm_version,
                    julia_compat="1.6", augment_platform_block, init_block)
 end
+
+# rebuild trigger: 1
