@@ -5,10 +5,14 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-# CImGuiPack_jll exports a cmake target `cimgui::cimgui` via its
-# lib/cmake/cimgui/cimgui-config.cmake. Use it so headers, link line and
-# IMPORTED_LOCATION / SONAME are all picked up portably.
-find_package(cimgui REQUIRED)
+# Locate libcimgui (from CImGuiPack_jll) and its public headers directly,
+# rather than via find_package(cimgui). The exported cmake target
+# pulls in JlCxx::cxxwrap_julia in its INTERFACE_LINK_LIBRARIES on some
+# platforms; we don't use any cxxwrap symbols so we'd rather not depend
+# on JlCxx at build time.
+find_path(CIMGUI_INCLUDE_DIR cimgui.h REQUIRED)
+find_library(CIMGUI_LIBRARY NAMES cimgui REQUIRED)
+message(STATUS "Using cimgui: ${CIMGUI_LIBRARY} (headers in ${CIMGUI_INCLUDE_DIR})")
 
 add_library(cimplot3d SHARED
     cimplot3d/cimplot3d.cpp
@@ -19,6 +23,7 @@ add_library(cimplot3d SHARED
 )
 
 target_include_directories(cimplot3d PRIVATE
+    ${CIMGUI_INCLUDE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/cimplot3d
     ${CMAKE_CURRENT_SOURCE_DIR}/cimplot3d/implot3d
 )
@@ -32,7 +37,7 @@ target_compile_definitions(cimplot3d PRIVATE
     IMGUI_ENABLE_TEST_ENGINE
 )
 
-target_link_libraries(cimplot3d PRIVATE cimgui::cimgui)
+target_link_libraries(cimplot3d PRIVATE ${CIMGUI_LIBRARY})
 
 install(TARGETS cimplot3d
         RUNTIME DESTINATION bin
