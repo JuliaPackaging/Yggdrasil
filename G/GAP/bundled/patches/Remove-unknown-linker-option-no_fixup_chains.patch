@@ -1,0 +1,26 @@
+From 22308e5ef59e7c5037123de9560859d7ffb2a65b Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lars=20G=C3=B6ttgens?= <lars.goettgens@rwth-aachen.de>
+Date: Mon, 4 May 2026 11:57:34 +0200
+Subject: [PATCH] Remove unknown linker option: -no_fixup_chains
+
+See https://github.com/gap-system/gap/issues/6356.
+---
+ Makefile.rules | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Makefile.rules b/Makefile.rules
+index 1aec140fd..3e1db3796 100644
+--- a/Makefile.rules
++++ b/Makefile.rules
+@@ -308,7 +308,7 @@ ifneq (,$(findstring cygwin,$(host_os)))
+ else
+   ifneq (,$(findstring darwin,$(host_os)))
+     GAC_CFLAGS = -fno-common
+-    GAC_LDFLAGS = -bundle -undefined dynamic_lookup -Wl,-no_fixup_chains
++    GAC_LDFLAGS = -bundle -undefined dynamic_lookup
+   else
+     GAC_CFLAGS = -fPIC
+     GAC_LDFLAGS = -shared -fPIC
+-- 
+2.54.0
+
