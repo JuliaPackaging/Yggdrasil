@@ -4,11 +4,11 @@ const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "SCALAPACK64"
-version = v"2.2.2"
+version = v"2.2.3"
 ygg_version = v"2.2.3"
 
 sources = [
-  GitSource("https://github.com/Reference-ScaLAPACK/scalapack", "25935e1a7e022ede9fd71bd86dcbaa7a3f1846b7"),
+  GitSource("https://github.com/Reference-ScaLAPACK/scalapack", "3e0da655fb07de5f1d76d6afb43f16ae17ca98c4"),  # v2.2.3
 ]
 
 # Bash recipe for building across all platforms
