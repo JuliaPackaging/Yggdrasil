@@ -70,7 +70,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [Dependency("GLFW_jll")]
+dependencies = [Dependency("GLFW_jll"),
+                BuildDependency("Xorg_xorgproto_jll")]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.9", preferred_gcc_version=v"5")
