@@ -1,65 +1,57 @@
 using BinaryBuilder
 
 # ============================================================================
-# DRAFT — DO NOT MERGE TO JuliaPackaging/Yggdrasil/master.
+# COORDINATION DRAFT — NOT FOR MERGE
 #
-# This recipe builds NTL from an unreleased fork (s-celles/ntl) at a
-# specific commit on the work-in-progress Meson cross-compile branch.
-# It is published here as a local dev loop for validating the cross-
-# compile build across BinaryBuilder's full platform matrix before the
-# upstream PR lands in libntl/ntl.
+# This branch (`ntl-12.0-coordination`) tracks NTL feature 002 work
+# (`s-celles/ntl@002-remove-legacy-build`), which:
+#   * REMOVES the legacy Perl ./configure + Makefile build path.
+#   * Bumps NTL to 12.0.0 (SemVer major; BREAKING).
+#   * Reintroduces auto-tuning via a Python tool (`ntl-wizard`) that is
+#     native-only and refuses cross-compile contexts; cross builds
+#     (this recipe) keep using static tune tables.
 #
-# Before merging upstream:
-#   1. Land the Meson PR in libntl/ntl (tag e.g. v11.7.0).
-#   2. Swap GitSource(s-celles/ntl, <SHA>) for
-#      ArchiveSource("https://www.shoup.net/ntl/ntl-X.Y.Z.tar.gz", <hash>).
-#   3. Bump the version field.
-#   4. Remove this DRAFT banner.
+# Feature 002 depends on feature 001 (`ntl-meson-cross-compile` branch
+# of the s-celles fork) landing first; do not open this as a JuliaPackaging
+# PR until both upstream merges are in libntl/ntl and a v12.0.0 tag exists.
+#
+# Before merging upstream (sequence):
+#   1. Land NTL feature 001 in libntl/ntl.
+#   2. Land NTL feature 002 in libntl/ntl with the v12.0.0 tag.
+#   3. Swap GitSource(s-celles/ntl, <SHA>) for
+#      ArchiveSource("https://www.shoup.net/ntl/ntl-12.0.0.tar.gz", <hash>).
+#   4. Remove this banner.
 # ============================================================================
 
 # NTL — A Library for doing Number Theory.
 #
-# This recipe builds NTL using its new Meson build path (see
-# https://github.com/s-celles/ntl/tree/001-meson-cross-compile and the
-# design docs under specs/001-meson-cross-compile/), which is
-# cross-compile-friendly. The legacy `./configure` + Makefile path
-# remains the source of truth in upstream NTL; the Meson build cohabits
-# with it. Once the Meson PR lands in libntl/ntl, switch the source to
-# an ArchiveSource of the upstream tarball.
+# NTL 12.0.0 (feature 002) uses Meson + Python as its sole build path.
+# The Python Wizard (`ntl-wizard`) replaces the legacy Perl Wizard for
+# native auto-tuning; cross-compile builds like this recipe consume the
+# built-in static tune tables under src/meson/tune-tables/.
 #
-# The previous recipe shipped Linux x86/x86_64 (glibc + musl) only,
-# because NTL's `./configure` runs target probes that cannot execute in
-# the BinaryBuilder cross-compile sandbox. The Meson path puts every
-# probe behind compile-time introspection or a per-target ABI table,
-# unblocking the FR-008 platform matrix.
+# The recipe never runs `ntl-wizard` — the Wizard explicitly refuses
+# cross-build contexts (exit code 2) and is not needed: passing
+# `-Dtune=default` lets Meson pick the appropriate static table from
+# the host_machine.cpu_family (x86 family → x86, s390x → linux-s390x,
+# else generic).
 
 name = "ntl"
-version = v"11.6.0"
+version = v"12.0.0"
 
-# Source: the s-celles/ntl fork at the tip of the Meson cross-compile
-# branch. Replace with ArchiveSource("https://www.shoup.net/ntl/...") +
-# the upstream tarball hash once the Meson build lands upstream.
+# Source: s-celles/ntl @ 002-remove-legacy-build branch HEAD.
+# Replace with ArchiveSource(...) of upstream tarball once v12.0.0 lands.
 sources = [
     GitSource("https://github.com/s-celles/ntl.git",
-              "0a5c14796356b33a181fd24222edf797cb9c7169"),
+              "a21fe6caf7ed45213ee08b68544ba669c48135bf"),
 ]
 
-# Build script. Uses BinaryBuilder's $MESON_TARGET_TOOLCHAIN env var to
-# pick the right cross-file for the current build target. The Meson
-# build's in-source ABI table at src/meson/abi-tables/<triplet>.ini
-# supplies every per-target property `cc.compiles()` cannot determine
-# in cross mode.
+# Build script. The post-feature-002 recipe is simpler than the
+# feature-001 draft: no per-target bash TUNE switching (Meson now does
+# it internally via -Dtune=default), no Wizard invocation (cross-only
+# build).
 script = raw"""
 cd $WORKSPACE/srcdir/ntl
-
-# The Meson build refuses to use NTL's auto-tuning Wizard (no target
-# execution allowed under cross-compile). Per the spec, cross-compile
-# users select a static tune table; `x86` is correct for x86 family
-# targets, `generic` everywhere else.
-case "${target}" in
-    x86_64-*|i686-*)    TUNE=x86 ;;
-    *)                  TUNE=generic ;;
-esac
 
 # Normalize BinaryBuilder's ${target} into the form NTL's in-source ABI
 # tables use (src/meson/abi-tables/<triplet>.ini):
@@ -76,15 +68,18 @@ case "$target" in
     *)                       ABI_TRIPLET="$target" ;;
 esac
 
-# Pass the normalized triplet so pick-abi.py looks up the right
-# in-source ABI table.
+# `-Dtune=default` is post-feature-002: Meson auto-picks per cpu_family
+# (x86 family → x86, s390x → linux-s390x, else generic). The Python
+# Wizard (`ntl-wizard`) is intentionally NOT invoked here — it is
+# native-only and refuses cross contexts; cross packagers use the
+# static tables shipped in the source tree.
 meson setup \
     --cross-file="${MESON_TARGET_TOOLCHAIN}" \
     --prefix="${prefix}" \
     --libdir="${libdir}" \
     --buildtype=release \
     -Dabi_triplet="${ABI_TRIPLET}" \
-    -Dtune="${TUNE}" \
+    -Dtune=default \
     -Dgmp=enabled \
     build
 
