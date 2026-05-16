@@ -8,7 +8,7 @@ version = v"0.12.0"
 # Collection of sources required to build CImGuiPack
 sources = [
     GitSource("https://github.com/JuliaImGui/cimgui-pack.git",
-              "c8fef0ede7be4ca3af77ccd014c4b5b7e2907b55")
+              "437622a2e223b13a799b55eeaf9ea4d59d585b14")
 ]
 
 # Bash recipe for building across all platforms
