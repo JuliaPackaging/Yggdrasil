@@ -55,6 +55,20 @@ Cflags: -I\${includedir}
 EOF
 fi
 
+# GLPK_jll ships no pkg-config file either, so provide one.
+mkdir -p ${prefix}/lib/pkgconfig
+cat > ${prefix}/lib/pkgconfig/glpk.pc <<EOF
+prefix=${prefix}
+libdir=\${prefix}/lib
+includedir=\${prefix}/include
+
+Name: glpk
+Description: GNU Linear Programming Kit
+Version: 5.0
+Libs: -L\${libdir} -lglpk
+Cflags: -I\${includedir}
+EOF
+
 # Configure with Meson, disabling all optional dependencies
 meson setup build \
     --cross-file="${MESON_TARGET_TOOLCHAIN}" \
@@ -66,7 +80,7 @@ meson setup build \
     -Dgsl=enabled \
     -Dlapack=enabled \
     -Decm=disabled \
-    -Dglpk=disabled \
+    -Dglpk=enabled \
     -Dpng=disabled \
     -Dao=disabled \
     -Dsamplerate=disabled \
@@ -111,6 +125,7 @@ dependencies = [
     # itself is ILP64 with _64_ symbol suffixes which Giac doesn't expect.
     Dependency("OpenBLAS32_jll"),
     Dependency("CompilerSupportLibraries_jll"),
+    Dependency("GLPK_jll"; compat="5.0.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
