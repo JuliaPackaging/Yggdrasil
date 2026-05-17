@@ -55,9 +55,14 @@ Cflags: -I\${includedir}
 EOF
 fi
 
-# GLPK_jll ships no pkg-config file either, so provide one.
-mkdir -p ${prefix}/lib/pkgconfig
-cat > ${prefix}/lib/pkgconfig/glpk.pc <<EOF
+# Determine GLPK option: GLPK_jll doesn't support RISC-V yet
+if [[ "${target}" == riscv64-* ]]; then
+    GLPK_OPT="disabled"
+else
+    GLPK_OPT="enabled"
+    # GLPK_jll ships no pkg-config file either, so provide one.
+    mkdir -p ${prefix}/lib/pkgconfig
+    cat > ${prefix}/lib/pkgconfig/glpk.pc <<EOF
 prefix=${prefix}
 libdir=\${prefix}/lib
 includedir=\${prefix}/include
@@ -68,6 +73,7 @@ Version: 5.0
 Libs: -L\${libdir} -lglpk
 Cflags: -I\${includedir}
 EOF
+fi
 
 # Configure with Meson, disabling all optional dependencies
 meson setup build \
@@ -80,7 +86,7 @@ meson setup build \
     -Dgsl=enabled \
     -Dlapack=enabled \
     -Decm=disabled \
-    -Dglpk=enabled \
+    -Dglpk=${GLPK_OPT} \
     -Dpng=disabled \
     -Dao=disabled \
     -Dsamplerate=disabled \
