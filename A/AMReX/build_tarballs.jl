@@ -77,7 +77,7 @@ fi
 install_license LICENSE
 """
 
-sources, script = require_macos_sdk("10.14", sources, script)
+sources, script = require_macos_sdk("14.5", sources, script)
 
 augment_platform_block = """
     using Base.BinaryPlatforms
