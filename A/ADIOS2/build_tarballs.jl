@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "ADIOS2"
-upstream_version = v"2.12.0"
+upstream_version = v"2.12.1"
 
 # ADIOS2 2.11 is not compatible with ADIOS2 2.10. The C++ bindings differ.
 # ADIOS2 2.12 is not compatible with ADIOS2 2.11. The C++ bindings differ.
@@ -18,9 +18,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ornladios/ADIOS2.git", "b630633c4162ba7821d3b50d433c1e95151fbf4e"),
-    FileSource("https://github.com/GTkorvo/dill/commit/94b4c437182318a0d446fb6f82511fac0e4f2516.patch",
-               "6138487c5301932726499476cc43f794a728b3ea47fdef782396084f47e94869"),
+    GitSource("https://github.com/ornladios/ADIOS2.git", "f5267290f06980acaecaf54688d0980958eb86bf"),
     DirectorySource("bundled"),
 ]
 
@@ -38,9 +36,6 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/htons.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cmakelists.patch
 # Correct C includes
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cinttypes.patch
-
-# Correct arm64v8 handling in DILL (https://github.com/ornladios/ADIOS2/issues/5005)
-(cd thirdparty/dill/dill && atomic_patch -p1 ${WORKSPACE}/srcdir/94b4c437182318a0d446fb6f82511fac0e4f2516.patch)
 
 # pkg-config is very slow because `abseil_cpp` installed about 200 `*.pc` files.
 # Pretend that `protobuf` does not require `abseil_cpp`.
@@ -199,7 +194,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="Blosc2_jll"); compat="203.2300.100"),
+    Dependency(PackageSpec(name="Blosc2_jll"); compat="300.0.200"),
     Dependency(PackageSpec(name="Bzip2_jll"); compat="1.0.9"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="HDF5_jll"); compat="2.1.2"),
@@ -208,12 +203,12 @@ dependencies = [
     Dependency(PackageSpec(name="SZ3_jll"); compat="300.300.200"),
     Dependency(PackageSpec(name="ZeroMQ_jll"); compat="4.3.6"),
     Dependency(PackageSpec(name="Zstd_jll")),
-    Dependency(PackageSpec(name="libpng_jll"); compat="1.6.47"),
+    Dependency(PackageSpec(name="libpng_jll"); compat="1.6.58"),
     BuildDependency(PackageSpec(name="nlohmann_json_jll")),
     Dependency(PackageSpec(name="protoc_jll")),
     #TODO Dependency(PackageSpec(name="ProtocolBuffers_jll"); compat="3.16.0"),
     Dependency(PackageSpec(name="pugixml_jll"); compat="1.14.1"),
-    Dependency(PackageSpec(name="yaml_cpp_jll"); compat="0.8.1"),
+    Dependency(PackageSpec(name="yaml_cpp_jll"); compat="0.9.0"),
     Dependency(PackageSpec(name="zfp_jll"); compat="1.0.2"),
 ]
 append!(dependencies, platform_dependencies)
