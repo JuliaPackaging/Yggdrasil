@@ -14,14 +14,14 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 name = "Enzyme"
 repo = "https://github.com/EnzymeAD/Enzyme.git"
 
-auto_version = "refs/tags/v0.0.260"
+auto_version = "refs/tags/v0.0.261"
 version = VersionNumber(split(auto_version, "/")[end])
 
 llvm_versions = [v"15.0.7", v"16.0.6", v"18.1.7", v"20.1.8"]
 
 # Collection of sources required to build attr
 sources = [
-    GitSource(repo, "b12f5fd88acf7ebf8c1ea6165f34c71e66975d58"),
+    GitSource(repo, "d0749cbba68234506c9a953d894650a73114f657"),
 ]
 
 # These are the platforms we will build for by default, unless further
@@ -200,5 +200,3 @@ for (i,build) in enumerate(builds)
                    preferred_gcc_version=build.gcc_version, julia_compat="1.10",
                    augment_platform_block, lazy_artifacts=true) # drop when julia_compat >= 1.7
 end
-
-# rebuild trigger: 1
