@@ -25,13 +25,6 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/LuaJIT*
 
-# LuaJIT's Makefile derives the rolling-release version from `git show -s --format=%ct`
-# via src/host/genversion.lua. The BB sandbox runs as root but the bind-mounted source
-# tree is owned by the host user, so git refuses with "dubious ownership" unless the
-# repo is marked safe. Without this the build silently falls back to the literal
-# string "ROLLING" for the version.
-git config --global --add safe.directory ${WORKSPACE}/srcdir/LuaJIT
-
 for file in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${file}
 done
