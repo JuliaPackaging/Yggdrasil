@@ -7,13 +7,22 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "mlir_jl_tblgen"
-repo = "https://github.com/JuliaLabs/MLIR.jl.git"
-version = v"0.0.10"
+repo = "https://github.com/JuliaLLVM/MLIR.jl.git"
+version = v"0.0.11"
 
-llvm_versions = [v"14.0.6", v"15.0.7", v"16.0.6", v"17.0.6", v"18.1.7", v"19.1.1"]
+llvm_versions = [
+    v"14.0.6",
+    v"15.0.7",
+    v"16.0.6",
+    v"17.0.6",
+    v"18.1.7",
+    v"19.1.7",
+    v"20.1.8",
+    v"21.1.8",
+]
 
 sources = [
-    GitSource(repo, "1e5e8a2b7b43ec79ec2132cf7a90a5f96d97b4da"),
+    GitSource(repo, "b70f06ee952fbf72708fe948e106aa32e4e33c8e"),
 ]
 
 # Bash recipe for building across all platforms
@@ -21,18 +30,24 @@ script = raw"""
 cd MLIR.jl/deps/tblgen
 
 CMAKE_FLAGS=()
+
 # Release build for best performance
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=RelWithDebInfo)
+
 # Install things into $prefix
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
+
 # Explicitly use our cmake toolchain file and tell CMake we're cross-compiling
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=ON)
+
 # Tell CMake where LLVM and MLIR are
 CMAKE_FLAGS+=(-DLLVM_DIR="${prefix}/lib/cmake/llvm")
 CMAKE_FLAGS+=(-DMLIR_DIR="${prefix}/lib/cmake/mlir")
+
 # Force linking against shared lib
 CMAKE_FLAGS+=(-DLLVM_LINK_LLVM_DYLIB=ON)
+
 # Build the library
 CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
@@ -50,7 +65,8 @@ augment_platform_block = """
 
     function augment_platform!(platform::Platform)
         augment_llvm!(platform)
-    end"""
+    end
+    """
 
 # determine exactly which tarballs we should build
 builds = []
@@ -58,7 +74,7 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
     # Dependencies that must be installed before this package can be built
     llvm_name = llvm_assertions ? "LLVM_full_assert_jll" : "LLVM_full_jll"
     dependencies = [
-        BuildDependency(PackageSpec(name=llvm_name, version=llvm_version))
+        BuildDependency(PackageSpec(name=llvm_name, version=string(llvm_version)))
     ]
 
     # The products that we will ensure are always built
@@ -76,6 +92,10 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
     end
 
     filter!(p -> !(arch(p) == "aarch64" && os(p) == "freebsd"), platforms)
+
+    if llvm_version < v"19.1.7"
+        filter!(p -> arch(p) != "riscv64", platforms)
+    end
 
     for platform in platforms
         augmented_platform = deepcopy(platform)
