@@ -62,15 +62,21 @@ make -j${nproc} amalg "${FLAGS[@]}"
 make install "${FLAGS[@]}"
 
 # LuaJIT's Makefile install rules use Linux SO conventions even for TARGET_SYS=Windows
-# (DLL installed under lib/ as libluajit-5.1.so.X.Y.Z; exe installed without .exe), so
-# relocate to Windows conventions: lua51.dll -> bin/, .exe extension on the executable,
-# import lib named libluajit-5.1.dll.a.
+# (DLL installed under lib/ as libluajit-5.1.so.<VERSION>; exe installed without .exe),
+# so relocate to Windows conventions: lua51.dll -> bin/, .exe extension on the
+# executable, import lib named libluajit-5.1.dll.a.
 if [[ ${target} == *-mingw* ]]; then
     # On Windows ${libdir} == ${bindir}, but LuaJIT's `make install PREFIX=…` writes to
-    # ${prefix}/lib regardless, so refer to that absolute path explicitly here.
+    # ${prefix}/lib regardless, so refer to that absolute path explicitly here. The DLL's
+    # full installed name is libluajit-5.1.so.<MAJVER>.<MINVER>.<RELVER> where RELVER is
+    # the commit timestamp (rolling release), so glob for it instead of hardcoding.
     rm -f ${prefix}/lib/libluajit-5.1.so ${prefix}/lib/libluajit-5.1.so.2
-    mv ${prefix}/lib/libluajit-5.1.so.2.1.0 ${bindir}/lua51.dll
+    mv ${prefix}/lib/libluajit-5.1.so.* ${bindir}/lua51.dll
     mv ${prefix}/lib/libluajit-5.1.a ${prefix}/lib/libluajit-5.1.dll.a
+    # Upstream installs ${bindir}/luajit as a symlink to the versioned executable; its
+    # target gets renamed below, leaving the symlink broken. Symlinked .exe entries
+    # aren't a standard Windows convention anyway, so just drop it.
+    rm -f ${bindir}/luajit
     for f in ${bindir}/luajit-*; do
         [[ ${f} == *.exe ]] && continue
         mv ${f} ${f}.exe
