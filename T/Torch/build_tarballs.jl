@@ -6,32 +6,64 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "Torch"
-version = v"1.10.2"
+version = v"1.11.0"
 
 sources = [
-    GitSource("https://github.com/pytorch/pytorch.git", "71f889c7d265b9636b93ede9d651c0a9c4bee191"),
+    GitSource("https://github.com/pytorch/pytorch.git", "bc2c6edaf163b1a1330e37a6e34caf8c553e4755"),
     FileSource("https://micromamba.snakepit.net/api/micromamba/linux-64/0.21.1", "c907423887b43bec4e8b24f17471262c8087b7095683f41dcef4a4e24e9a3bbd"; filename = "micromamba.tar.bz2"),
     DirectorySource("./bundled"),
 ]
 
 script = raw"""
+apk del cmake # Need CMake >= 3.30 for BLA_VENDOR=libblastrampoline
+
+export SDKROOT=/opt/$target/$target/sys-root
+
 cat > /opt/bin/$bb_full_target/xcrun << EOF
-#!/bin/bash
-if [[ "\${@}" == *"--show-sdk-path"* ]]; then
-   echo /opt/$target/$target/sys-root
-elif [[ "\${@}" == *"--show-sdk-version"* ]]; then
-   grep -A1 '<key>Version</key>' /opt/$target/$target/sys-root/SDKSettings.plist \
-   | tail -n1 \
-   | sed -E -e 's/\s*<string>([^<]+)<\/string>\s*/\1/'
-else
-   exec "\${@}"
+#!/bin/sh
+
+sdk_path="\$SDKROOT"
+
+show_sdk_path() {
+    echo "\$1"
+}
+
+show_sdk_version() {
+    plistutil -f xml -i "\$1"/SDKSettings.plist \\
+    | grep -A1 '<key>Version</key>' \\
+    | tail -n1 \\
+    | sed -E -e 's/\\s*<string>([^<]+)<\\/string>\\s*/\\1/'
+}
+
+while [ \$# -gt 0 ]; do
+    case "\$1" in
+        --sdk)
+            sdk_path="\$2"
+            shift 2
+            ;;
+        --show-sdk-path)
+            show_sdk_path "\$sdk_path"
+            shift
+            ;;
+        --show-sdk-version)
+            show_sdk_version "\$sdk_path"
+            shift
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
+if [ \$# -gt 0 ]; then
+"\$@"
 fi
 EOF
 chmod +x /opt/bin/$bb_full_target/xcrun
 
 cd $WORKSPACE/srcdir
 
-mkdir micromamba
+mkdir -p micromamba
 cd micromamba
 tar xfj ../micromamba.tar.bz2
 export PATH=$PATH:$WORKSPACE/srcdir/micromamba/bin
@@ -43,126 +75,148 @@ micromamba install -y python=3.9 pyyaml typing_extensions -c conda-forge
 cd $WORKSPACE/srcdir/pytorch
 
 atomic_patch -p1 ../patches/pytorch-aten-qnnpack-cmake-windows.patch
+atomic_patch -p1 ../patches/pytorch-c10-mingw32.patch
+atomic_patch -p1 ../patches/pytorch-cmake-blas-default.patch
 
-cmake_extra_args=""
-include_paths=""
+cmake_extra_args=()
+include_paths=()
 
-if [[ $bb_full_target == *cxx11* ]]; then
-    cmake_extra_args+="-DGLIBCXX_USE_CXX11_ABI=1 "
-fi
-
-# MKL is avoided for all platforms are excluded due to https://github.com/JuliaRegistries/General/pull/68946#issuecomment-1257308450
-if [[ 0 -eq 1
-    # || $target == i686-linux-gnu*
-    # || $target == x86_64-linux-gnu*
-    # || $target == x86_64-apple-darwin*
-]]; then
-    cmake_extra_args+="-DBLAS=MKL "
-elif [[ $target == x86_64-apple-darwin*
-    || $target == aarch64-apple-darwin*
-]]; then
-    cmake_extra_args+="-DBLAS=vecLib "
+if [[ "$bb_full_target" != armv6l-linux-* ]]; then
+    # Remove custom FindBLAS, and FindLAPACK, cmake modules to let cmake find libblastrampoline
+    rm -v cmake/Modules/Find{BLAS,LAPACK}.cmake
+    cmake_extra_args+=(
+        -DBLA_VENDOR=libblastrampoline
+        -DBLAS=Default
+    )
 else
-    cmake_extra_args+="-DBLAS=OpenBLAS "
+    cmake_extra_args+=(-DBLAS=OpenBLAS)
 fi
 
-if [[ $target == x86_64* ]]; then # Restricting PYTORCH_QNNPACK to x86_64: Adapted from https://salsa.debian.org/deeplearning-team/pytorch/-/blob/master/debian/rules
-    cmake_extra_args+="-DUSE_PYTORCH_QNNPACK=ON "
+# Only enable XNNPACK for supported architectures
+if [[ $bb_full_target == armv6l-*
+    || $bb_full_target == armv7l-* # XNNPACK for armv7l requires neon instructions
+    || $target == powerpc64le-*
+    || $target == riscv64-*
+]]; then
+    cmake_extra_args+=(-DUSE_XNNPACK=OFF)
 else
-    cmake_extra_args+="-DUSE_PYTORCH_QNNPACK=OFF "
+    cmake_extra_args+=(
+        -DUSE_XNNPACK=ON
+        -DUSE_SYSTEM_XNNPACK=ON
+    )
 fi
 
-if [[ $target == aarch64-linux-gnu* # Disabled use of breakpad on aarch64-linux-gnu: Fails to build embedded breakpad library.
+# if [[ $target == x86_64* ]]; then # Restricting PYTORCH_QNNPACK to x86_64: Adapted from https://salsa.debian.org/deeplearning-team/pytorch/-/blob/master/debian/rules
+    cmake_extra_args+=(-DUSE_PYTORCH_QNNPACK=ON)
+# else
+#     cmake_extra_args+=(-DUSE_PYTORCH_QNNPACK=OFF)
+# fi
+
+if [[ $target == aarch64-linux-gnu* # Fails to build embedded breakpad library
+    || $target == powerpc64le-* # Fails to build embedded breakpad library
     || $target == *-w64-mingw32* # Disabling breakpad enables configure on Windows - in combination with pytorch-aten-qnnpack-cmake-windows.patch
-    || $target == *-freebsd*
+    || $target == *-freebsd* # Fails to build embedded breakpad library
 ]]; then
-    cmake_extra_args+="-DUSE_BREAKPAD=OFF "
+    cmake_extra_args+=(-DUSE_BREAKPAD=OFF)
 else
-    cmake_extra_args+="-DUSE_BREAKPAD=ON "
+    cmake_extra_args+=(-DUSE_BREAKPAD=ON)
 fi
 
-if [[ $target == *-linux-musl* # Disabled use of TensorPipe on linux-musl: Fails to build embedded TensorPipe library.
-    || $target == *-w64-mingw32* # TensorPipe cannot be used on Windows
-]]; then
-    cmake_extra_args+="-DUSE_TENSORPIPE=OFF "
+if [[ $target == *-w64-mingw32* ]]; then # TensorPipe does not support Windows, and USE_DISTRIBUTED on Windows requires libuv 
+    cmake_extra_args+=(-DUSE_DISTRIBUTED=OFF)
+elif [[ $target == *-linux-musl* ]]; then # Fails to build embedded TensorPipe library.
+    cmake_extra_args+=(-DUSE_TENSORPIPE=OFF)
 else
-    cmake_extra_args+="-DUSE_TENSORPIPE=ON "
+    cmake_extra_args+=(-DUSE_TENSORPIPE=ON)
 fi
 
-if [[ $target == *-w64-* || $target == *-freebsd* ]]; then
-    cmake_extra_args+="-DUSE_KINETO=OFF "
+if [[ $target == *-w64-mingw32* # Fails to compile: third_party/kineto/libkineto/src/ThreadUtil.cpp:6:10: fatal error: sys/syscall.h: No such file or directory
+    || $target == *-freebsd* # Fails to compile: third_party/kineto/libkineto/src/ThreadUtil.cpp:52:32: error: use of undeclared identifier 'SYS_gettid'
+]]; then
+    cmake_extra_args+=(-DUSE_KINETO=OFF)
 fi
 
 # Gloo is only available for 64-bit x86_64 or aarch64 - and cmake currently cannot find Gloo on *-linux-gnu
-if [[ $target != arm-* && $target == *-linux-musl* ]]; then
-    cmake_extra_args+="-DUSE_SYSTEM_GLOO=ON "
-fi
+# if [[ $target != arm-* && $target == *-linux-musl* ]]; then
+    cmake_extra_args+=(-DUSE_SYSTEM_GLOO=ON)
+# fi
 
-if [[ $target == aarch64-* # A compiler with AVX512 support is required for FBGEM
-    || $target == arm-* # A compiler with AVX512 support is required for FBGEM
-    || $target == i686-* # x64 operating system is required for FBGEMM
-    || $target == x86_64-w64-mingw32*
+if [[ 0 -eq 1
+    || $nbits != 64 # Quiets the CMake Warning: x64 operating system is required for FBGEMM
+    || $target != x86_64-* # Quiets the CMake Warning: A compiler with AVX512 support is required for FBGEMM
+    || $target == x86_64-apple-darwin* # Fails to compile: third_party/fbgemm/third_party/asmjit
+    || $target == x86_64-unknown-freebsd* # Fails to compile: third_party/fbgemm/third_party/asmjit
+    || $target == x86_64-w64-mingw32* # Fails to compile: third_party/fbgemm
 ]]; then
-    cmake_extra_args+="-DUSE_FBGEMM=OFF -DUSE_FAKELOWP=OFF "
+    cmake_extra_args+=(-DUSE_FBGEMM=OFF -DUSE_FAKELOWP=OFF)
 fi
 
-if [[ $target == x86_64-apple-darwin* # Fails to compile: /workspace/srcdir/pytorch/third_party/ideep/mkl-dnn/src/cpu/x64/jit_avx512_core_amx_conv_kernel.cpp:483:43: error: use of undeclared identifier 'noU';
-    || $target == *-w64-mingw32*
-    || $target == *-linux-musl* ]]; then
-    cmake_extra_args+="-DUSE_MKLDNN=OFF "
-fi
+# if [[ $target == *-linux-musl* ]]; then
+#     cmake_extra_args+=(-DUSE_MKLDNN=OFF)
+# fi
 
 cuda_version=${bb_full_target##*-cuda+}
 if [[ $bb_full_target == *cuda* ]] && [[ $cuda_version != none ]]; then
     export CUDA_PATH="$prefix/cuda"
     mkdir $WORKSPACE/tmpdir
     export TMPDIR=$WORKSPACE/tmpdir
-    cmake_extra_args+="\
-        -DUSE_CUDA=ON \
-        -DUSE_CUDNN=ON \
-        -DUSE_MAGMA=ON \
-        -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_PATH \
-        -DCUB_INCLUDE_DIR=$WORKSPACE/srcdir/pytorch/third_party/cub "
+    cmake_extra_args+=(
+        -DUSE_CUDA=ON
+        -DUSE_CUDNN=ON
+        -DUSE_MAGMA=ON
+        -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_PATH
+    )
     cuda_version_major=`echo $cuda_version | cut -d . -f 1`
     cuda_version_minor=`echo $cuda_version | cut -d . -f 2`
     micromamba install -y magma-cuda${cuda_version_major}${cuda_version_minor} -c pytorch
-    git submodule update --init \
-        third_party/cub \
-        third_party/cudnn_frontend
+    git submodule update --init third_party/cudnn_frontend
+
+    if [[ $cuda_version_major == 10 ]]; then
+        cmake_extra_args+=(-DCUB_INCLUDE_DIR=$WORKSPACE/srcdir/pytorch/third_party/cub)
+        git submodule update --init third_party/cub
+    fi
 else
-    cmake_extra_args+="-DUSE_CUDA=OFF -DUSE_MAGMA=OFF "
+    cmake_extra_args+=(-DUSE_CUDA=OFF -DUSE_MAGMA=OFF)
 fi
 
-git submodule update --init \
+# https://github.com/pytorch/pytorch/tree/v1.11.0/third_party/breakpad points to https://github.com/driazati/breakpad which has moved to https://github.com/google/breakpad
+git submodule set-url third_party/breakpad https://github.com/google/breakpad.git
+
+git submodule update --init --depth 1 \
     third_party/FP16 \
     third_party/FXdiv \
     third_party/eigen \
     third_party/fbgemm \
+    third_party/flatbuffers \
     third_party/fmt \
     third_party/foxi \
     third_party/gloo \
     third_party/kineto \
-    third_party/onnx \
+    third_party/pocketfft \
     third_party/psimd \
     third_party/tensorpipe
-git submodule update --init --recursive \
+git submodule update --init --depth 1 --recursive \
     third_party/breakpad \
     third_party/ideep
-cd third_party/fbgemm && git submodule update --init third_party/asmjit && cd ../..
-cd third_party/tensorpipe && git submodule update --init third_party/libnop third_party/libuv && cd ../..
-mkdir build
-cd build
+cd third_party/fbgemm && git submodule update --init --depth 1 third_party/asmjit && cd ../..
+cd third_party/tensorpipe && git submodule update --init --depth 1 third_party/libnop third_party/libuv && cd ../..
+
 configure() {
+    cmake_generator=$([[ $target == *-w64-mingw32* ]] && echo "Unix Makefiles" || echo Ninja)
     cmake \
+        -B build \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=$prefix \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
         -DCMAKE_INCLUDE_PATH=$include_paths \
         -DBUILD_CUSTOM_PROTOBUF=OFF \
         -DBUILD_PYTHON=OFF \
-        -DPYTHON_EXECUTABLE=`which python3` \
+        -DPYTHON_EXECUTABLE=$(which python3) \
         -DBUILD_SHARED_LIBS=ON \
         -DHAVE_SOVERSION=ON \
+        -DUSE_GFLAGS=ON \
+        -DUSE_GLOG=ON \
+        -DUSE_LITE_PROTO=ON \
         -DUSE_METAL=OFF \
         -DUSE_MPI=OFF \
         -DUSE_NCCL=OFF \
@@ -171,32 +225,30 @@ configure() {
         -DUSE_NUMPY=OFF \
         -DUSE_QNNPACK=OFF \
         -DUSE_SYSTEM_CPUINFO=ON \
+        -DUSE_SYSTEM_ONNX=ON \
         -DUSE_SYSTEM_PTHREADPOOL=ON \
         -DUSE_SYSTEM_SLEEF=ON \
-        -DUSE_SYSTEM_XNNPACK=ON \
         -DPROTOBUF_PROTOC_EXECUTABLE=$host_bindir/protoc \
         -DCAFFE2_CUSTOM_PROTOC_EXECUTABLE=$host_bindir/protoc \
+        -G "$cmake_generator" \
         -Wno-dev \
-        $cmake_extra_args \
-        ..
+        ${cmake_extra_args[@]}
 }
 if [[ $bb_full_target == *cuda* ]] && [[ $cuda_version != none ]]; then
     configure || configure
 else
     configure
 fi
-cmake --build . -- -j $nproc
-make install
-install_license ../LICENSE
+cmake --build build --parallel $nproc
+cmake --install build
+install_license LICENSE
 """
 
 platforms = supported_platforms()
-filter!(p -> !(Sys.islinux(p) && libc(p) == "musl"), platforms) # musl fails due to conflicting declaration of C function ‘void __assert_fail(const char*, const char*, int, const char*) - between /opt/x86_64-linux-musl/x86_64-linux-musl/include/c++/8.1.0/cassert:44 and /opt/x86_64-linux-musl/x86_64-linux-musl/sys-root/usr/include/assert.h
-filter!(!Sys.iswindows, platforms) # ONNX does not support cross-compiling for w64-mingw32 on linux
-filter!(p -> arch(p) != "armv6l", platforms) # armv6l is not supported by XNNPACK
-filter!(p -> arch(p) != "armv7l", platforms) # armv7l is not supported by XNNPACK
-filter!(p -> arch(p) != "powerpc64le", platforms) # PowerPC64LE is not supported by XNNPACK
-filter!(!Sys.isfreebsd, platforms) # Build fails: Clang v12 crashes compiling aten/src/ATen/native/cpu/MaxUnpoolKernel.cpp.
+filter!(p -> libc(p) != "musl", platforms)
+filter!(p -> arch(p) != "powerpc64le", platforms) # Fails due to: aten/src/ATen/native/attention.cpp:145:46: error: use of deleted function ‘double& at::vec::CPU_CAPABILITY::Vectorized<double>::operator[](int)’
+filter!(p -> arch(p) != "riscv64", platforms) # Artifacts are not available for dependencies for riscv64
+filter!(p -> arch(p) != "aarch64" || !Sys.isfreebsd(p), platforms) # Artifacts are not available for dependencies for aarch64-unknown-freebsd
 
 let cuda_platforms = CUDA.supported_platforms(min_version=v"10.2", max_version=v"11")
     filter!(p -> arch(p) != "aarch64", cuda_platforms) # Cmake toolchain breaks on aarch64
@@ -211,25 +263,10 @@ let cuda_platforms = CUDA.supported_platforms(min_version=v"10.2", max_version=v
     append!(platforms, cuda_platforms)
 end
 
-accelerate_platforms = [
-    Platform("aarch64", "macos"),
-    Platform("x86_64", "macos"),
-]
-
-# MKL is avoided for all platforms due to https://github.com/JuliaRegistries/General/pull/68946#issuecomment-1257308450
-mkl_platforms = Platform[
-    # Platform("x86_64", "Linux"),
-    # Platform("i686", "Linux"),
-    # Platform("x86_64", "MacOS"),
-    # Platform("x86_64", "Windows"),
-]
-
-openblas_platforms = filter(p -> p ∉ union(mkl_platforms, accelerate_platforms), platforms)
-
 platforms = expand_cxxstring_abis(platforms)
-accelerate_platforms = expand_cxxstring_abis(accelerate_platforms)
-mkl_platforms = expand_cxxstring_abis(mkl_platforms)
-openblas_platforms = expand_cxxstring_abis(openblas_platforms)
+
+openblas_platforms = filter(p -> arch(p) == "armv6l", platforms)
+libblastrampoline_platforms = filter(p -> p ∉ openblas_platforms, platforms)
 
 products = [
     FileProduct("share/ATen/Declarations.yaml", :declarations_yaml),
@@ -238,24 +275,28 @@ products = [
 ]
 
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency("CompilerSupportLibraries_jll", platforms = filter(!Sys.isbsd, platforms)),
+    Dependency("LLVMOpenMP_jll", platforms = filter(Sys.isbsd, platforms)),
+
     Dependency("CPUInfo_jll"; compat = "0.0.20201217"),
     Dependency("Gloo_jll";  compat = "0.0.20210521", platforms = filter(p -> nbits(p) == 64, platforms)),
-    Dependency("LAPACK_jll"; platforms = openblas_platforms),
-    # Dependency("MKL_jll"; platforms = mkl_platforms), # MKL is avoided for all platforms
-    # BuildDependency("MKL_Headers_jll"; platforms = mkl_platforms), # MKL is avoided for all platforms
+    Dependency("gflags_jll"; compat = "2.2.2"),
+    Dependency("glog_jll"), # TODO should be 0.5.0
+    Dependency("libblastrampoline_jll"; compat="5.4", platforms = libblastrampoline_platforms),
 
     # libtorch, libtorch_cuda, and libtorch_global_deps all link with `libnvToolsExt`
     # maleadt: `libnvToolsExt is not shipped by CUDA anymore, so the best solution is definitely static linking. CUDA 10.2 shipped it, later it became a header-only library which we do compile into a dynamic one for use with NVTX.jl, but there's no guarantees that the library we build has the same symbols as the "old" libnvToolsExt shipped by CUDA 10.2
     RuntimeDependency("NVTX_jll"), # TODO: Replace RuntimeDependency with static linking.
 
+    BuildDependency(PackageSpec(name = "ONNX_static_jll", version = "1.10.2")),
     Dependency("OpenBLAS32_jll"; platforms = openblas_platforms),
     Dependency("PThreadPool_jll"; compat = "0.0.20210414"),
     Dependency("SLEEF_jll", v"3.5.2"; compat = "3"),
-    # Dependency("TensorRT_jll"; platforms = cuda_platforms), # Building with TensorRT is not supported: https://github.com/pytorch/pytorch/issues/60228
     Dependency("XNNPACK_jll"; compat = "0.0.20210622"),
-    Dependency(PackageSpec("protoc_jll", Base.UUID("c7845625-083e-5bbe-8504-b32d602b7110")); compat="~3.13.0"),
-    HostBuildDependency(PackageSpec("protoc_jll", Base.UUID("c7845625-083e-5bbe-8504-b32d602b7110"), v"3.13.0")),
+    BuildDependency(PackageSpec(name="ProtocolBuffersSDK_static_jll", version="3.16.0")),
+    HostBuildDependency(PackageSpec(name="ProtocolBuffersCompiler_jll", version="3.16.0")),
+    HostBuildDependency(PackageSpec(name="CMake_jll")), # Need CMake >= 3.30 for BLA_VENDOR=libblastrampoline
 ]
 
 builds = []
@@ -265,7 +306,7 @@ for platform in platforms
     if haskey(platform, "cuda") && platform["cuda"] != "none"
         if platform["cuda"] == "11.3"
             additional_deps = BinaryBuilder.AbstractDependency[
-                BuildDependency(PackageSpec("CUDA_full_jll", v"11.3.1")),
+                BuildDependency(PackageSpec(name = "CUDA_full_jll", version = "11.3.1")),
                 Dependency("CUDA_Runtime_jll", v"0.7.0"), # Using v"0.7.0" to get support for cuda = "11.3" - using Dependency rather than RuntimeDependency to be sure to pass audit
             ]
         else
@@ -273,6 +314,7 @@ for platform in platforms
         end
         push!(additional_deps,
             Dependency(get_addable_spec("CUDNN_jll", v"8.2.4+0"); compat = "8"), # Using v"8.2.4+0" to get support for cuda = "11.3"
+            # Dependency("TensorRT_jll"; platforms = cuda_platforms), # Building with TensorRT is not supported: https://github.com/pytorch/pytorch/issues/60228
         )
     end
     push!(builds, (; platforms=[platform], dependencies=[dependencies; additional_deps]))
@@ -290,8 +332,8 @@ for (i, build) in enumerate(builds)
                    name, version, sources, script,
                    build.platforms, products, build.dependencies;
         preferred_gcc_version = v"8",
-        preferred_llvm_version = v"13",
-        julia_compat = "1.6",
+        preferred_llvm_version = v"14",
+        julia_compat = "1.9",
         augment_platform_block = CUDA.augment,
         lazy_artifacts = true)
 end
