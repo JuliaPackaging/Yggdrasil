@@ -25,6 +25,13 @@ cd ${WORKSPACE}/srcdir/amrex
 perl -pi -e 's+-I/workspace/srcdir/hdf5-1[.]14[.]./src/H5FDsubfiling++' $(which h5pcc)
 
 if [[ "${target}" == *-apple-* ]]; then
+    # Install libdispatch. This is required for the MacOS linker.
+    # It should probably have been put into the root file system.
+    # This requires GCC 14 or later.
+    apk add libdispatch libdispatch-dev --repository=http://dl-cdn.alpinelinux.org/alpine/v3.17/community
+fi
+
+if [[ "${target}" == *-apple-* ]]; then
     if grep -q MPICH_NAME ${prefix}/include/mpi.h; then
         # MPICH's pkgconfig file "mpich.pc" lists these options:
         #     Libs:     -framework OpenCL -Wl,-flat_namespace -Wl,-commons,use_dylibs -L${libdir} -lmpi -lpmpi -lm    -lpthread
@@ -77,7 +84,7 @@ fi
 install_license LICENSE
 """
 
-sources, script = require_macos_sdk("14.5", sources, script)
+sources, script = require_macos_sdk("14.0", sources, script)
 
 augment_platform_block = """
     using Base.BinaryPlatforms
@@ -125,5 +132,6 @@ append!(dependencies, platform_dependencies)
 # - AMReX requires C++17, and at least GCC 8 to provide the <filesystem> header
 # - GCC 8.1.0 suffers from an ICE, so we use GCC 9 instead
 # - AMReX requires GCC 11
+# - We need GCC 14 so that gfortran understands `MACOSX_DEPLOYMENT_TARGET=14.5`
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"11")
+               augment_platform_block, clang_use_lld=false, julia_compat="1.10", preferred_gcc_version=v"14")
