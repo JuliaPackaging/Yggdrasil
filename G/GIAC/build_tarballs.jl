@@ -34,7 +34,7 @@ meson setup build \
     -Dpari=disabled \
     -Dntl=disabled \
     -Dcocoa=disabled \
-    -Dgsl=disabled \
+    -Dgsl=enabled \
     -Dlapack=disabled \
     -Decm=disabled \
     -Dglpk=disabled \
@@ -77,6 +77,7 @@ dependencies = [
     Dependency("GMP_jll"; compat="6.2.1"),
     Dependency("MPFR_jll"; compat="4.1.1"),
     Dependency("Readline_jll"; compat="8.2.13"),
+    Dependency("GSL_jll"; compat="2.8.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
