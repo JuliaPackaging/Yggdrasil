@@ -26,6 +26,35 @@ if [[ "${target}" == *freebsd* ]]; then
     GETTEXT_OPT="disabled"
 fi
 
+# Meson's dependency('blas')/dependency('lapack') want blas.pc/lapack.pc, but
+# OpenBLAS_jll only ships openblas.pc. Provide self-contained wrapper .pc
+# files (skip on macOS — Giac will detect the Accelerate framework instead).
+if [[ "${target}" != *apple-darwin* ]]; then
+    mkdir -p ${prefix}/lib/pkgconfig
+    cat > ${prefix}/lib/pkgconfig/blas.pc <<EOF
+prefix=${prefix}
+libdir=\${prefix}/lib
+includedir=\${prefix}/include
+
+Name: blas
+Description: BLAS interface provided by OpenBLAS
+Version: 0.3
+Libs: -L\${libdir} -lopenblas
+Cflags: -I\${includedir}
+EOF
+    cat > ${prefix}/lib/pkgconfig/lapack.pc <<EOF
+prefix=${prefix}
+libdir=\${prefix}/lib
+includedir=\${prefix}/include
+
+Name: lapack
+Description: LAPACK interface provided by OpenBLAS
+Version: 0.3
+Libs: -L\${libdir} -lopenblas
+Cflags: -I\${includedir}
+EOF
+fi
+
 # Configure with Meson, disabling all optional dependencies
 meson setup build \
     --cross-file="${MESON_TARGET_TOOLCHAIN}" \
@@ -35,7 +64,7 @@ meson setup build \
     -Dntl=disabled \
     -Dcocoa=disabled \
     -Dgsl=enabled \
-    -Dlapack=disabled \
+    -Dlapack=enabled \
     -Decm=disabled \
     -Dglpk=disabled \
     -Dpng=disabled \
@@ -78,6 +107,10 @@ dependencies = [
     Dependency("MPFR_jll"; compat="4.1.1"),
     Dependency("Readline_jll"; compat="8.2.13"),
     Dependency("GSL_jll"; compat="2.8.1"),
+    # OpenBLAS32_jll = LP64 (32-bit integers, standard C ABI) — OpenBLAS_jll
+    # itself is ILP64 with _64_ symbol suffixes which Giac doesn't expect.
+    Dependency("OpenBLAS32_jll"),
+    Dependency("CompilerSupportLibraries_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
