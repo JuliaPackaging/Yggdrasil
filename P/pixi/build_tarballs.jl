@@ -48,11 +48,10 @@ cd $WORKSPACE/srcdir
 # unpack and install the binary
 if [[ $target = *-w64-* ]]; then
     unzip pixi-$target.zip
-    install -Dvm 755 pixi.exe "${bindir}/pixi.exe"
 else
     tar -xzf pixi-$target.tar.gz
-    install -Dvm 755 pixi "${bindir}/pixi"
 fi
+install -Dvm 755 "pixi${exeext}" -t "${bindir}"
 
 # install the license
 install_license repo/pixi/LICENSE
