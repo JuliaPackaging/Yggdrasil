@@ -113,6 +113,9 @@ install_license COPYING
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
+# Platforms where GLPK_jll has artifacts (everything except riscv64)
+glpk_platforms = filter(p -> arch(p) != "riscv64", platforms)
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libgiac", :libgiac),
@@ -131,7 +134,7 @@ dependencies = [
     # itself is ILP64 with _64_ symbol suffixes which Giac doesn't expect.
     Dependency("OpenBLAS32_jll"),
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("GLPK_jll"; compat="5.0.1"),
+    Dependency("GLPK_jll"; compat="5.0.1", platforms=glpk_platforms),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
