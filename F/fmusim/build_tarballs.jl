@@ -26,29 +26,24 @@ find . \( -name "*.c" -o -name "*.h" \) -exec sed -i \
     -e 's/#include <Shlwapi\.h>/#include <shlwapi.h>/g' \
     {} \;
 
-case "${target}" in
-    aarch64-*) FMI_ARCH=aarch64 ;;
-    x86_64-*)  FMI_ARCH=x86_64  ;;
-    *) echo "Unsupported target ${target}"; exit 1 ;;
-esac
-
 mkdir -p build && cd build
+# Configure fmusim's own CMakeLists.txt directly (it has its own project() call)
+# rather than the root, which would otherwise force -DFMI_VERSION=3 just to
+# satisfy the reference-FMU model configure step. fmusim itself always
+# compiles support for FMI 1/2/3.
 cmake \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_C_STANDARD=99 \
     -DCMAKE_PREFIX_PATH=${prefix} \
-    -DWITH_FMUSIM=ON \
-    -DFMI_VERSION=3 \
-    -DFMI_ARCHITECTURE=${FMI_ARCH} \
-    -DFMUSIM_VERSION=0.0.39 \
+    -DFMUSIM_VERSION=${version} \
     -DZLIB_SRC_DIR=${WORKSPACE}/srcdir/zlib \
-    ..
+    ../fmusim
 
-cmake --build . --target fmusim --parallel ${nproc}
+cmake --build . --parallel ${nproc}
 
-install -Dm755 fmusim/fmusim${exeext} ${bindir}/fmusim${exeext}
+install -Dm755 fmusim${exeext} ${bindir}/fmusim${exeext}
 install_license ../LICENSE.txt
 """
 
