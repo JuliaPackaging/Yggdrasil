@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "GLPK"
-version = v"5.0.1" # <-- This is a lie, we're bumping from 5.0 to 5.0.1 to create a Julia v1.6+ release with experimental platforms
+version = v"5.0.2" # <-- This is a lie, we're bumping from 5.0 to 5.0.2 to create a Julia v1.6+ release with experimental platforms
 
 # Collection of sources required to build GLPK
 sources = [
