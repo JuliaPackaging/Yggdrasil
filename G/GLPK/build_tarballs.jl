@@ -34,9 +34,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    # GMP_jll v6.3.0 is the first release with riscv64-linux-gnu artifacts
-    # (still Julia 1.6+ compatible per the General registry).
-    Dependency("GMP_jll"; compat="6.3.0"),
+    Dependency("GMP_jll", v"6.2.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
