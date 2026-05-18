@@ -18,6 +18,7 @@ else
     export CPPFLAGS="-I${prefix}/include"
 fi
 autoreconf -vi
+update_configure_scripts
 ./configure --prefix=${prefix} --host=${target} --build=${MACHTYPE} --with-gmp
 make -j${nproc}
 make install
@@ -33,8 +34,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    # We use GMP_jll v6.2.0 because we're requiring Julia v1.6+
-    Dependency("GMP_jll", v"6.2.0"),
+    # GMP_jll v6.3.0 is the first release with riscv64-linux-gnu artifacts
+    # (still Julia 1.6+ compatible per the General registry).
+    Dependency("GMP_jll"; compat="6.3.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
@@ -42,4 +44,4 @@ dependencies = [
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
                preferred_gcc_version=v"6", julia_compat="1.6")
 
-# Build trigger: 1
+# Build trigger: 2
