@@ -132,6 +132,6 @@ append!(dependencies, platform_dependencies)
 # - AMReX requires C++17, and at least GCC 8 to provide the <filesystem> header
 # - GCC 8.1.0 suffers from an ICE, so we use GCC 9 instead
 # - AMReX requires GCC 11
-# - We need GCC 14 so that gfortran understands `MACOSX_DEPLOYMENT_TARGET=14.5`
+# - We need GCC 14 so that gfortran understands `MACOSX_DEPLOYMENT_TARGET=14.0`
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, clang_use_lld=false, julia_compat="1.10", preferred_gcc_version=v"14")
