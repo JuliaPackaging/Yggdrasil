@@ -1,20 +1,26 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
-const YGGDRASIL_DIR = "../.."
+const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "SCALAPACK"
-version = v"2.2.2"
-ygg_version = v"2.2.3"          # we updated dependency compats
+version = v"2.2.3"
 
 sources = [
-  GitSource("https://github.com/Reference-ScaLAPACK/scalapack", "25935e1a7e022ede9fd71bd86dcbaa7a3f1846b7"),
+  GitSource("https://github.com/Reference-ScaLAPACK/scalapack", "3e0da655fb07de5f1d76d6afb43f16ae17ca98c4"),  # v2.2.3
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 mkdir -p ${libdir}
 cd $WORKSPACE/srcdir/scalapack
+
+apk del cmake
+
+# v2.2.3 try_run()s a Fortran-mangling probe; fails under cross-compile.
+cat > CMAKE/FortranMangling.cmake <<'EOF'
+include_guard()
+EOF
 
 CPPFLAGS=()
 CFLAGS=(-Wno-error=implicit-function-declaration)
@@ -98,6 +104,7 @@ augment_platform_block = """
 platforms = expand_gfortran_versions(supported_platforms())
 # Don't know how to configure MPI for Windows
 platforms = filter(p -> !Sys.iswindows(p), platforms)
+platforms = filter(p -> nbits(p) == 64, platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
@@ -111,10 +118,10 @@ dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
     Dependency("mpif_jll"; compat="0.1.5", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)), # MPI Fortran bindings
+    HostBuildDependency(PackageSpec(; name="CMake_jll")),
 ]
 append!(dependencies, platform_dependencies)
 
 # Build the tarballs.
-# We need at least GCC 5 for MPICH
-build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.9", preferred_gcc_version=v"5")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               augment_platform_block, julia_compat="1.9", preferred_gcc_version=v"9")
