@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "Geant4_julia"
-version = v"0.3.1"
+version = v"0.3.2"
 
 # Collection of sources required to build Geant4_julia
 sources = [
