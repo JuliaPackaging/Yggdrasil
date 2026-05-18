@@ -116,8 +116,13 @@ fi
 # Delete .a and .py files, we don't want those.
 rm -f ${libdir}/*.a ${libdir}/*.py
 
-# Delete any `.so` files that are not ELF files, since they're mostly likely linker scripts
+# Delete any `.so` files that are not ELF files, since they're mostly likely linker scripts.
+# Keep the `libgcc_s.so` linker script though so that `gcc -shared` can pick up `libgcc.a`
+# via `-shared-libgcc` / `-lgcc_s` (c.f. JuliaLang/julia#61824)
 for f in ${libdir}/*.so; do
+    if [[ "$(basename "$f")" == "libgcc_s.so" ]]; then
+        continue
+    fi
     if [[ "$(file -b "$(realpath "$f")")" != ELF* ]]; then
         rm -vf "$f"
     fi
@@ -211,7 +216,8 @@ install_license /usr/share/licenses/GPL-3.0+
                                      ])
                     if libc(platform) == "glibc"
                         products = vcat(products,
-                                        [FileProduct("$(destdir)/libc_nonshared.a", :libc_nonshared_a)])
+                                        [FileProduct("$(destdir)/libc_nonshared.a", :libc_nonshared_a),
+                                         FileProduct("lib/libgcc_s.so", :libgcc_s_linker_script)])
                     end
                 end
             end
