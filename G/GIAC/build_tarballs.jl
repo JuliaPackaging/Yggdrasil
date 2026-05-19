@@ -55,14 +55,9 @@ Cflags: -I\${includedir}
 EOF
 fi
 
-# Determine GLPK option: GLPK_jll doesn't support RISC-V yet
-if [[ "${target}" == riscv64-* ]]; then
-    GLPK_OPT="disabled"
-else
-    GLPK_OPT="enabled"
-    # GLPK_jll ships no pkg-config file either, so provide one.
-    mkdir -p ${prefix}/lib/pkgconfig
-    cat > ${prefix}/lib/pkgconfig/glpk.pc <<EOF
+# GLPK_jll ships no pkg-config file, so provide one.
+mkdir -p ${prefix}/lib/pkgconfig
+cat > ${prefix}/lib/pkgconfig/glpk.pc <<EOF
 prefix=${prefix}
 libdir=\${prefix}/lib
 includedir=\${prefix}/include
@@ -73,7 +68,6 @@ Version: 5.0
 Libs: -L\${libdir} -lglpk
 Cflags: -I\${includedir}
 EOF
-fi
 
 # Configure with Meson, disabling all optional dependencies
 meson setup build \
@@ -86,7 +80,7 @@ meson setup build \
     -Dgsl=enabled \
     -Dlapack=enabled \
     -Decm=disabled \
-    -Dglpk=${GLPK_OPT} \
+    -Dglpk=enabled \
     -Dpng=disabled \
     -Dao=disabled \
     -Dsamplerate=disabled \
@@ -113,9 +107,6 @@ install_license COPYING
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
-# Platforms where GLPK_jll has artifacts (everything except riscv64)
-glpk_platforms = filter(p -> arch(p) != "riscv64", platforms)
-
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libgiac", :libgiac),
@@ -134,7 +125,7 @@ dependencies = [
     # itself is ILP64 with _64_ symbol suffixes which Giac doesn't expect.
     Dependency("OpenBLAS32_jll"),
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("GLPK_jll"; compat="5.0.1", platforms=glpk_platforms),
+    Dependency("GLPK_jll"; compat="5.0.2"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
