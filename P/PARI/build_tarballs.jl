@@ -54,12 +54,20 @@ make install-lib-dyn
 install_license ${WORKSPACE}/srcdir/pari-*/COPYING
 """
 
-# Start with all supported platforms, then exclude what we know won't build
-# on a first pass.
-platforms = supported_platforms()
-
+# Restricted to x86 Linux only for v1: PARI's Configure runs compiled test
+# binaries to verify the toolchain, which fails under cross-compilation
+# whenever the produced binary cannot run on the BB Linux sandbox (i.e.
+# everywhere except native x86 Linux). Keep the broader pattern below as
+# commented references for follow-up work.
+platforms = [
+    Platform("i686",   "linux"; libc="glibc"),
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("i686",   "linux"; libc="musl"),
+    Platform("x86_64", "linux"; libc="musl"),
+]
+# platforms = supported_platforms()
 # Windows (mingw) needs extra work in PARI's Configure → defer to a follow-up.
-platforms = filter(p -> !Sys.iswindows(p), platforms)
+# platforms = filter(p -> !Sys.iswindows(p), platforms)
 
 # The products that we will ensure are always built
 products = [
