@@ -5,10 +5,12 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "SCALAPACK32"
 version = v"2.2.3"
-ygg_version = v"2.2.4"
+# ygg_version.patch = 100 * version.patch + offset; bump `offset` for rebuilds.
+offset = 0
+ygg_version = VersionNumber(version.major, version.minor, 100 * version.patch + offset)
 
 sources = [
-  GitSource("https://github.com/Reference-ScaLAPACK/scalapack", "3e0da655fb07de5f1d76d6afb43f16ae17ca98c4"),  # v2.2.3
+  GitSource("https://github.com/Reference-ScaLAPACK/scalapack", "3e0da655fb07de5f1d76d6afb43f16ae17ca98c4"),
 ]
 
 # Bash recipe for building across all platforms
@@ -131,4 +133,4 @@ append!(dependencies, platform_dependencies)
 
 # Build the tarballs.
 build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.9", preferred_gcc_version=v"9")
+               augment_platform_block, julia_compat="1.10", preferred_gcc_version=v"9")
