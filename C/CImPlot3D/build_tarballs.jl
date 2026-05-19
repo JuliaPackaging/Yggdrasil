@@ -15,9 +15,11 @@ sources = [
 
     # cimplot3d's generator does `require"cpp2ffi"` and a `dofile` of cimgui's
     # generator output, expecting cimgui as a sibling directory. Pinned to the
-    # commit that introduced GetScriptArgs (which cimplot3d 8c1c16e9 relies on).
+    # SAME cimgui SHA that CImGuiPack_jll 0.12's libcimgui submodule is built
+    # from, so the C struct types referenced by the generated cimplot3d.cpp
+    # match the layout inside libcimgui at runtime.
     GitSource("https://github.com/cimgui/cimgui.git",
-              "ad70f13873e0e9e7a8ba14aa8feebbcbff3b8098"),
+              "1261b231939fc210032f30c4ee8a8f0440372237"),
 
     # Bundled CMakeLists.txt that links against CImGuiPack_jll's exported
     # cimgui::cimgui target rather than rebuilding imgui sources locally —
@@ -84,7 +86,7 @@ products = [
 ]
 
 dependencies = [
-    Dependency("CImGuiPack_jll"; compat="0.11"),
+    Dependency("CImGuiPack_jll"; compat="0.12"),
     HostBuildDependency("LuaJIT_jll"),
 ]
 
