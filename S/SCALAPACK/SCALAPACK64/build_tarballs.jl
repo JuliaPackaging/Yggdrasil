@@ -10,7 +10,7 @@ offset = 0
 ygg_version = VersionNumber(version.major, version.minor, 100 * version.patch + offset)
 
 sources = [
-  GitSource("https://github.com/Reference-ScaLAPACK/scalapack", "3e0da655fb07de5f1d76d6afb43f16ae17ca98c4"),  # v2.2.3
+  GitSource("https://github.com/Reference-ScaLAPACK/scalapack", "3e0da655fb07de5f1d76d6afb43f16ae17ca98c4"),
 ]
 
 script = raw"""
