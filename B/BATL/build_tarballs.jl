@@ -114,6 +114,11 @@ FLAGCC = $(FLAGC) -std=c++17
 	$(COMPILE.mpicxx) $(FLAGCC) $< -o $@
 EOF
 
+# Conditionally add -fallow-argument-mismatch for gfortran 10+
+if [[ $(gfortran -dumpversion | cut -d. -f1) -ge 10 ]]; then
+    sed -i 's/DTESTACC/DTESTACC -fallow-argument-mismatch/' Makefile.conf
+fi
+
 # Ensure literal tabs in Makefile.conf
 sed -i 's/^[[:space:]]\+/\t/' Makefile.conf
 
