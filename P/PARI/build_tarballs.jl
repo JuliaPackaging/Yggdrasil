@@ -66,6 +66,14 @@ case "${target}" in
     *)                 pari_host="${target}" ;;
 esac
 
+# BinaryBuilder exports LD pointing at the raw `ld`. PARI's Configure honours
+# $LD and would then link executables with `ld` directly, bypassing the
+# compiler driver. That is harmless on Linux (the C-library symbols resolve
+# transitively through libpari's NEEDED entries) but fatal on macOS, where
+# libSystem never lands on the link line (undefined ___stdinp/___stderrp/...).
+# Unset LD so Configure falls back to LD=$CC and links via the driver.
+unset LD
+
 # Cross-compile friendly Configure invocation.
 #   --kernel=gmp  : skip native CPU kernel autodetect, always use GMP kernel
 #   --graphic=none: do not link any plotting backend
