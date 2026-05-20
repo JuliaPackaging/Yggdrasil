@@ -19,6 +19,42 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/pari-*
 
+# --- Cross-compilation shim for PARI's Configure --------------------------
+# PARI's Configure probes the target by COMPILING and then RUNNING small C
+# programs (config/ansi.c, config/gnu.c, config/endian.c, config/gmp_version.c).
+# Under BinaryBuilder everything is cross-compiled, so those probe binaries are
+# foreign and cannot execute on the builder; Configure then aborts with
+# "C compiler does not work" (this is what broke aarch64, darwin, ... ).
+# Configure honours a $RUNTEST hook precisely for cross-compilation, so we
+# point it at a shim that answers each probe from values we already know for
+# ${target}. Note: the has_*.c feature probes use link-only tests already, so
+# RUNTEST is the *only* thing standing between PARI and cross-compilation.
+if [ "${nbits}" -eq 64 ]; then
+    pari_endian="-"          # config/endian.c: '-'  => sizeof(long) == 8
+else
+    pari_endian="1"          # config/endian.c: '1'  => 32-bit IEEE little-endian
+fi
+# config/gmp_version.c only needs a non-empty, non-"unsupported" string.
+pari_gmp_version=$(awk '/define __GNU_MP_VERSION /         {maj=$3}
+                        /define __GNU_MP_VERSION_MINOR /    {min=$3}
+                        /define __GNU_MP_VERSION_PATCHLEVEL /{pat=$3}
+                        END {print maj"."min"."pat}' "${prefix}/include/gmp.h")
+[ -n "${pari_gmp_version}" ] && [ "${pari_gmp_version}" != ".." ] || pari_gmp_version="6.0.0"
+
+cat > "${WORKSPACE}/pari_runtest" <<EOF
+#!/bin/sh
+# Configure calls us as: pari_runtest <freshly-built-probe-binary>.
+# The probe binary's name encodes which check Configure is performing.
+case "\$1" in
+    *-endian*) echo "${pari_endian}" ;;
+    *-gmp*)    echo "${pari_gmp_version}" ;;
+    *)         : ;;   # ansi.c / gnu.c: a 0 exit status is all Configure needs
+esac
+exit 0
+EOF
+chmod +x "${WORKSPACE}/pari_runtest"
+export RUNTEST="${WORKSPACE}/pari_runtest"
+
 # PARI's Configure expects target_host in the form "arch-osname"
 # (its config/get_archos splits on the LAST dash). BB triplets like
 # x86_64-linux-gnu have an extra component, so we normalise them.
@@ -54,20 +90,11 @@ make install-lib-dyn
 install_license ${WORKSPACE}/srcdir/pari-*/COPYING
 """
 
-# Restricted to x86 Linux only for v1: PARI's Configure runs compiled test
-# binaries to verify the toolchain, which fails under cross-compilation
-# whenever the produced binary cannot run on the BB Linux sandbox (i.e.
-# everywhere except native x86 Linux). Keep the broader pattern below as
-# commented references for follow-up work.
-platforms = [
-    Platform("i686",   "linux"; libc="glibc"),
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("i686",   "linux"; libc="musl"),
-    Platform("x86_64", "linux"; libc="musl"),
-]
-# platforms = supported_platforms()
-# Windows (mingw) needs extra work in PARI's Configure → defer to a follow-up.
-# platforms = filter(p -> !Sys.iswindows(p), platforms)
+# With the RUNTEST shim above, PARI's Configure cross-compiles cleanly, so we
+# build for every platform. Windows/mingw still needs mingw-specific Configure
+# work (DLL naming, winpthreads) and is deferred to a follow-up.
+platforms = supported_platforms()
+platforms = filter(p -> !Sys.iswindows(p), platforms)
 
 # The products that we will ensure are always built
 products = [
