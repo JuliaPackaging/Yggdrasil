@@ -149,14 +149,27 @@ make LIB LIBDIR=${libdir} INCLDIR=${WORKSPACE}/srcdir/include \
 if [[ "${target}" == *apple* ]]; then
     # On macOS we use -Wl,-force_load for each archive.
     mpif90 -shared -fPIC -o ${libdir}/libBATL.${dlext} \
-        -Wl,-force_load,${libdir}/libBATL.a -Wl,-force_load,${libdir}/libSHARE.a -Wl,-force_load,${libdir}/libTIMING.a \
+        -Wl,-force_load,./libBATL.a \
+        -Wl,-force_load,${libdir}/libSHARE.a \
+        -Wl,-force_load,${libdir}/libTIMING.a \
         ${LIB_STDCXX}
 else
     # On Linux/FreeBSD we use -Wl,--whole-archive.
     mpif90 -shared -fPIC -o ${libdir}/libBATL.${dlext} \
-        -Wl,--whole-archive ${libdir}/libBATL.a ${libdir}/libSHARE.a ${libdir}/libTIMING.a -Wl,--no-whole-archive \
+        -Wl,--whole-archive \
+        ./libBATL.a \
+        ${libdir}/libSHARE.a \
+        ${libdir}/libTIMING.a \
+        -Wl,--no-whole-archive \
         ${LIB_STDCXX}
 fi
+
+# Remove static libraries so they are not packaged
+rm ${libdir}/libSHARE.a ${libdir}/libTIMING.a
+
+# Install license file
+mkdir -p ${prefix}/share/licenses/BATL
+cp LICENSE.txt ${prefix}/share/licenses/BATL/
 """
 
 script = script_header * script_body
@@ -165,6 +178,7 @@ platforms = supported_platforms()
 # Filter out Windows for now as it requires more complex MPI handling
 filter!(p -> !Sys.iswindows(p), platforms)
 platforms = expand_gfortran_versions(platforms)
+platforms = expand_cxxstring_abis(platforms)
 products = [
     LibraryProduct("libBATL", :libBATL)
 ]
