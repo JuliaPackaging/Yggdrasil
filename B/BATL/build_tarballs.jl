@@ -115,8 +115,8 @@ FLAGCC = $(FLAGC) -std=c++17
 EOF
 
 # Ensure literal tabs in Makefile.conf
-sed -i 's/^	/\t/' Makefile.conf
-sed -i 's/^        /\t/' Makefile.conf
+sed -i 's/^[[:space:]]\+/\t/' Makefile.conf
+
 
 cat <<EOF > Makefile.def
 OS=${OS}
