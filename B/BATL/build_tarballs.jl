@@ -19,6 +19,26 @@ nI=$nI; nJ=$nJ; nK=$nK; nG=$nG
 """
 
 script_body = raw"""
+# Setup OS variable
+if [[ "${target}" == *linux* ]]; then
+    OS="Linux"
+elif [[ "${target}" == *apple* ]]; then
+    OS="Darwin"
+elif [[ "${target}" == *w64* ]]; then
+    OS="Windows"
+elif [[ "${target}" == *freebsd* ]]; then
+    OS="FreeBSD"
+else
+    OS="Linux"
+fi
+
+# Define C++ library to link against
+if [[ "${target}" == *apple* ]]; then
+    LIB_STDCXX="-lc++"
+else
+    LIB_STDCXX="-lstdc++"
+fi
+
 cd ${WORKSPACE}/srcdir
 
 # Setup SWMF directory structure
@@ -41,8 +61,10 @@ mkdir -p include
 mkdir -p ${libdir}
 
 # Create Makefile.conf
-# We use mpif90 for everything
 cat <<EOF > Makefile.conf
+WORKSPACE=${WORKSPACE}
+EOF
+cat <<'EOF' >> Makefile.conf
 FORTRAN_COMPILER_NAME=gfortran
 FC=mpif90
 CC=mpicc
@@ -56,40 +78,44 @@ COMPILE.mpicxx=mpicxx
 AR=ar -rs
 PRECISION=-frecord-marker=4 -fdefault-real-8 -fdefault-double-8
 OPT3=-O3
-SEARCH=-J${WORKSPACE}/srcdir/include -I${WORKSPACE}/srcdir/include
-CFLAG=\$(SEARCH) -c -w -cpp -fPIC -DTESTACC
-Cflag0=\$(CFLAG) \$(PRECISION) -O0
-Cflag1=\$(CFLAG) \$(PRECISION) -O1
-Cflag2=\$(CFLAG) \$(PRECISION) -O2
-Cflag3=\$(CFLAG) \$(PRECISION) -O3
-Cflag4=\$(CFLAG) \$(PRECISION) -O4
-INCLDIR=${WORKSPACE}/srcdir/include
-SCRIPTDIR=${WORKSPACE}/srcdir/share/Scripts
+SEARCH=-J$(WORKSPACE)/srcdir/include -I$(WORKSPACE)/srcdir/include
+CFLAG=$(SEARCH) -c -w -cpp -fPIC -DTESTACC
+Cflag0=$(CFLAG) $(PRECISION) -O0
+Cflag1=$(CFLAG) $(PRECISION) -O1
+Cflag2=$(CFLAG) $(PRECISION) -O2
+Cflag3=$(CFLAG) $(PRECISION) -O3
+Cflag4=$(CFLAG) $(PRECISION) -O4
+INCLDIR=$(WORKSPACE)/srcdir/include
+SCRIPTDIR=$(WORKSPACE)/srcdir/share/Scripts
 
-FLAGC = \$(SEARCH) -c \$(OPT3) -fPIC
-FLAGCC = \$(FLAGC) -std=c++17
+FLAGC = $(SEARCH) -c $(OPT3) -fPIC
+FLAGCC = $(FLAGC) -std=c++17
 
 .SUFFIXES:
 .SUFFIXES: .f90 .F90 .f .c .cpp .o
 
 .f90.o:
-	\$(COMPILE.f90) \$(Cflag3) \$<
+	$(COMPILE.f90) $(Cflag3) $<
 
 .F90.o:
-	\$(COMPILE.f90) \$(Cflag3) \$<
+	$(COMPILE.f90) $(Cflag3) $<
 
 .f.o:
-	\$(COMPILE.f77) \$(Cflag3) \$<
+	$(COMPILE.f77) $(Cflag3) $<
 
 .c.o:
-	\$(COMPILE.c) \$(FLAGC) \$< -o \$@
+	$(COMPILE.c) $(FLAGC) $< -o $@
 
 .cpp.o:
-	\$(COMPILE.mpicxx) \$(FLAGCC) \$< -o \$@
+	$(COMPILE.mpicxx) $(FLAGCC) $< -o $@
 EOF
 
+# Ensure literal tabs in Makefile.conf
+sed -i 's/^        /\t/' Makefile.conf
+sed -i 's/^\t/\t/' Makefile.conf # Just in case
+
 cat <<EOF > Makefile.def
-OS=Linux
+OS=${OS}
 DIR=${WORKSPACE}/srcdir
 EOF
 
@@ -106,7 +132,7 @@ make -C GM/BATSRUS/srcBATL DEPEND -f Makefile -I ${WORKSPACE}/srcdir
 # Build components
 make -C share/Library/src LIB LIBDIR=${libdir} INCLDIR=${WORKSPACE}/srcdir/include \
     -f Makefile -I ${WORKSPACE}/srcdir
-    
+
 make -C util/TIMING/src LIB LIBDIR=${libdir} INCLDIR=${WORKSPACE}/srcdir/include \
     -f Makefile -I ${WORKSPACE}/srcdir
 
@@ -115,15 +141,25 @@ make LIB LIBDIR=${libdir} INCLDIR=${WORKSPACE}/srcdir/include \
     -f Makefile -I ${WORKSPACE}/srcdir
 
 # Link final shared library
-mpif90 -shared -fPIC -o ${libdir}/libBATL.${dlext} *.o \
-    -L${libdir} -lTIMING -lSHARE -lstdc++
+# Combine static libraries into the shared library.
+# On macOS we use -Wl,-all_load, on others -Wl,--whole-archive.
+if [[ "${target}" == *apple* ]]; then
+    mpif90 -shared -fPIC -o ${libdir}/libBATL.${dlext} \
+        -Wl,-all_load ${libdir}/libBATL.a ${libdir}/libSHARE.a ${libdir}/libTIMING.a \
+        ${LIB_STDCXX}
+else
+    mpif90 -shared -fPIC -o ${libdir}/libBATL.${dlext} \
+        -Wl,--whole-archive ${libdir}/libBATL.a ${libdir}/libSHARE.a ${libdir}/libTIMING.a -Wl,--no-whole-archive \
+        ${LIB_STDCXX}
+fi
 """
 
 script = script_header * script_body
 
 platforms = supported_platforms()
+# Filter out Windows for now as it requires more complex MPI handling
+filter!(p -> !Sys.iswindows(p), platforms)
 platforms = expand_gfortran_versions(platforms)
-
 products = [
     LibraryProduct("libBATL", :libBATL)
 ]
