@@ -98,11 +98,9 @@ make install-lib-dyn
 install_license ${WORKSPACE}/srcdir/pari-*/COPYING
 """
 
-# With the RUNTEST shim above, PARI's Configure cross-compiles cleanly, so we
-# build for every platform. Windows/mingw still needs mingw-specific Configure
-# work (DLL naming, winpthreads) and is deferred to a follow-up.
+# With the RUNTEST shim and the LD fix above, PARI's Configure cross-compiles
+# cleanly on every platform, Windows/mingw included.
 platforms = supported_platforms()
-platforms = filter(p -> !Sys.iswindows(p), platforms)
 
 # The products that we will ensure are always built
 products = [
