@@ -43,7 +43,7 @@ cmake \
 
 cmake --build . --parallel ${nproc}
 
-install -Dm755 fmusim${exeext} ${bindir}/fmusim${exeext}
+install -Dvm 755 fmusim${exeext} ${bindir}/fmusim${exeext}
 install_license ../LICENSE.txt
 """
 
