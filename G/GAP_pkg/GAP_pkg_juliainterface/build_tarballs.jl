@@ -10,19 +10,22 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 gap_version = v"400.1500.100"
+gap_upstream_version = v"4.15.1"
 name = "JuliaInterface"
 upstream_version = "0.16.0" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
+offset = v"0.0.1" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL
 sources = [
     GitSource("https://github.com/oscar-system/GAP.jl", "43ec515a9c5e8f087e32c87e5412c600b8329a85"),
+    ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(gap_upstream_version)/gap-$(gap_upstream_version).tar.gz",
+                  "6049d53e99b12e25c2d848db21ac4a06380a46fe4c4157243d556fe06930042c"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd GAP.jl/pkg/JuliaInterface
+cd ${WORKSPACE}/srcdir/GAP.jl/pkg/JuliaInterface
 ./configure --with-gaproot=${prefix}/lib/gap
 make CFLAGS="-I${includedir} -I${includedir}/julia" LDFLAGS="-ljulia -lgap" V=1
 
@@ -33,25 +36,22 @@ cp bin/*/*.so ${prefix}/lib/gap/
 # copy the sources, too, so that we can later compare them
 cp -r src ${prefix}/
 
-# setup julia with GAP.jl for the host system (needed for building the manual)
-# all the env vars and flags are needed to make sure that julia works on the host system
-export JULIA_DEPOT_PATH="${WORKSPACE}/.julia"
-export JULIAUP_DEPOT_PATH="${JULIA_DEPOT_PATH}/juliaup"
-export JULIA_PKG_PRECOMPILE_AUTO=0
-cd ../..
-unset LD_LIBRARY_PATH
-julia --project=@. --compiled-modules=no --startup-file=no -e "using Pkg; Pkg.instantiate(); using GAP; GAP.create_gap_sh(\\"${WORKSPACE}/gap.sh\\")"
+# build a gap for the host system, to be used for building the manual
+cd ${WORKSPACE}/srcdir/gap-*
+./autogen.sh
+./configure --host=${MACHTYPE}
+make -j${nproc}
 
 # build the manual
-cd pkg/JuliaInterface
-make GAP="${WORKSPACE}/gap_sh/gap.sh" V=1 doc
-# TODO: move the compiled manual to a suitable place
+cd ${WORKSPACE}/srcdir/GAP.jl/pkg/JuliaInterface
+make GAP=${WORKSPACE}/srcdir/gap-*/gap V=1 doc
+cp -r doc ${prefix}/doc
 
 install_license ../../LICENSE
 """
 
 name = gap_pkg_name(name)
-# dependencies = gap_pkg_dependencies(gap_version)
+# dependencies = gap_pkg_dependencies(gap_version) # juliainterface has special dependencies defined below
 platforms = gap_platforms(expand_julia_versions=true)
 
 # Unlike other GAP_pkg_* JLLs, we do *not* set a compat bound for GAP_jll and
@@ -69,7 +69,6 @@ platforms = gap_platforms(expand_julia_versions=true)
 dependencies = [
     Dependency("GAP_jll", gap_version),
     BuildDependency(PackageSpec(;name="libjulia_jll", version="1.11.0")),
-    HostBuildDependency("juliaup_jll"),
 ]
 
 # The products that we will ensure are always built
