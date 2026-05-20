@@ -1,0 +1,168 @@
+--- a/src/misc/extra/extraUtilUtil.c
++++ b/src/misc/extra/extraUtilUtil.c
+@@ -389,6 +389,23 @@
+ #include <sys/time.h>
+ #include <sys/resource.h>
+ #include <unistd.h>
++#if defined(__APPLE__)
++#include <sys/time.h>
++#ifndef CLOCK_REALTIME
++#define CLOCK_REALTIME 0
++#endif
++#ifndef CLOCK_MONOTONIC
++#define CLOCK_MONOTONIC 0
++#endif
++static int abc_clock_gettime_compat(int clk_id, struct timespec *ts) {
++    struct timeval tv; (void)clk_id;
++    if (gettimeofday(&tv, NULL) != 0) return -1;
++    ts->tv_sec = tv.tv_sec; ts->tv_nsec = tv.tv_usec * 1000; return 0;
++}
++#ifndef clock_gettime
++#define clock_gettime abc_clock_gettime_compat
++#endif
++#endif
+ 
+ ABC_NAMESPACE_IMPL_START
+ 
+
+
+--- a/src/sat/bmc/bmcMaj.c
++++ b/src/sat/bmc/bmcMaj.c
+@@ -39,6 +39,23 @@
+ #define unlink _unlink
+ #else
+ #include <unistd.h>
++#if defined(__APPLE__)
++#include <sys/time.h>
++#ifndef CLOCK_REALTIME
++#define CLOCK_REALTIME 0
++#endif
++#ifndef CLOCK_MONOTONIC
++#define CLOCK_MONOTONIC 0
++#endif
++static int abc_clock_gettime_compat(int clk_id, struct timespec *ts) {
++    struct timeval tv; (void)clk_id;
++    if (gettimeofday(&tv, NULL) != 0) return -1;
++    ts->tv_sec = tv.tv_sec; ts->tv_nsec = tv.tv_usec * 1000; return 0;
++}
++#ifndef clock_gettime
++#define clock_gettime abc_clock_gettime_compat
++#endif
++#endif
+ #endif
+ 
+ ////////////////////////////////////////////////////////////////////////
+
+
+--- a/src/aig/gia/giaLutCas.c
++++ b/src/aig/gia/giaLutCas.c
+@@ -26,6 +26,23 @@
+ #include "sat/cnf/cnf.h"
+ #include "misc/util/utilTruth.h"
+ #include "sat/cadical/cadicalSolver.h"
++#if defined(__APPLE__)
++#include <sys/time.h>
++#ifndef CLOCK_REALTIME
++#define CLOCK_REALTIME 0
++#endif
++#ifndef CLOCK_MONOTONIC
++#define CLOCK_MONOTONIC 0
++#endif
++static int abc_clock_gettime_compat(int clk_id, struct timespec *ts) {
++    struct timeval tv; (void)clk_id;
++    if (gettimeofday(&tv, NULL) != 0) return -1;
++    ts->tv_sec = tv.tv_sec; ts->tv_nsec = tv.tv_usec * 1000; return 0;
++}
++#ifndef clock_gettime
++#define clock_gettime abc_clock_gettime_compat
++#endif
++#endif
+ 
+ ABC_NAMESPACE_IMPL_START
+ 
+
+
+--- a/src/misc/util/utilNet.c
++++ b/src/misc/util/utilNet.c
+@@ -30,6 +30,23 @@
+ #include <time.h>
+ 
+ #include "abc_global.h"
++#if defined(__APPLE__)
++#include <sys/time.h>
++#ifndef CLOCK_REALTIME
++#define CLOCK_REALTIME 0
++#endif
++#ifndef CLOCK_MONOTONIC
++#define CLOCK_MONOTONIC 0
++#endif
++static int abc_clock_gettime_compat(int clk_id, struct timespec *ts) {
++    struct timeval tv; (void)clk_id;
++    if (gettimeofday(&tv, NULL) != 0) return -1;
++    ts->tv_sec = tv.tv_sec; ts->tv_nsec = tv.tv_usec * 1000; return 0;
++}
++#ifndef clock_gettime
++#define clock_gettime abc_clock_gettime_compat
++#endif
++#endif
+ 
+ ABC_NAMESPACE_IMPL_START
+ 
+
+
+--- a/src/misc/util/utilLinear.c
++++ b/src/misc/util/utilLinear.c
+@@ -28,6 +28,23 @@
+ #include <time.h>
+ 
+ #include "misc/util/abc_global.h"
++#if defined(__APPLE__)
++#include <sys/time.h>
++#ifndef CLOCK_REALTIME
++#define CLOCK_REALTIME 0
++#endif
++#ifndef CLOCK_MONOTONIC
++#define CLOCK_MONOTONIC 0
++#endif
++static int abc_clock_gettime_compat(int clk_id, struct timespec *ts) {
++    struct timeval tv; (void)clk_id;
++    if (gettimeofday(&tv, NULL) != 0) return -1;
++    ts->tv_sec = tv.tv_sec; ts->tv_nsec = tv.tv_usec * 1000; return 0;
++}
++#ifndef clock_gettime
++#define clock_gettime abc_clock_gettime_compat
++#endif
++#endif
+ 
+ ABC_NAMESPACE_IMPL_START
+ 
+
+
+--- a/src/opt/rar/rewireTime.h
++++ b/src/opt/rar/rewireTime.h
+@@ -26,6 +26,23 @@
+ **************************************************************/
+ 
+ #include "base/abc/abc.h"
++#if defined(__APPLE__)
++#include <sys/time.h>
++#ifndef CLOCK_REALTIME
++#define CLOCK_REALTIME 0
++#endif
++#ifndef CLOCK_MONOTONIC
++#define CLOCK_MONOTONIC 0
++#endif
++static int abc_clock_gettime_compat(int clk_id, struct timespec *ts) {
++    struct timeval tv; (void)clk_id;
++    if (gettimeofday(&tv, NULL) != 0) return -1;
++    ts->tv_sec = tv.tv_sec; ts->tv_nsec = tv.tv_usec * 1000; return 0;
++}
++#ifndef clock_gettime
++#define clock_gettime abc_clock_gettime_compat
++#endif
++#endif
+ 
+ ABC_NAMESPACE_HEADER_START
+ 
+
+

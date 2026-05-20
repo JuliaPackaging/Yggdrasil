@@ -1,0 +1,23 @@
+--- a/src/sat/bmc/bmcMaj8.c
++++ b/src/sat/bmc/bmcMaj8.c
+@@ -46,6 +46,7 @@
+ #include <unistd.h>
+ #endif
+ #include <limits.h>
++#include <stdint.h>
+ 
+ ////////////////////////////////////////////////////////////////////////
+ ///                        DECLARATIONS                              ///
+
+
+--- a/src/sat/bmc/bmcMaj9.c
++++ b/src/sat/bmc/bmcMaj9.c
+@@ -34,6 +34,7 @@
+ #include <unistd.h>
+ #endif
+ #include <limits.h>
++#include <stdint.h>
+ 
+ #define KISSAT_UNSAT 20
+ #define KISSAT_SAT   10
+
