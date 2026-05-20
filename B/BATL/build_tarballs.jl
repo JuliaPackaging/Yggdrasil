@@ -19,6 +19,7 @@ nI=$nI; nJ=$nJ; nK=$nK; nG=$nG
 """
 
 script_body = raw"""
+set -ex
 # Setup OS variable
 if [[ "${target}" == *linux* ]]; then
     OS="Linux"
@@ -45,6 +46,9 @@ cd ${WORKSPACE}/srcdir
 mv srcBATL BATL
 mkdir -p GM/BATSRUS
 mv BATL GM/BATSRUS/srcBATL
+
+# Run CreateModMpi.pl to generate ModMpiInterfaces.f90
+(cd share/Library/src && perl ../../Scripts/CreateModMpi.pl)
 
 # Patch BATL_size.f90
 sed -i "s/\bnI = [0-9]*/nI = ${nI}/" GM/BATSRUS/srcBATL/BATL_size_orig.f90
@@ -111,8 +115,8 @@ FLAGCC = $(FLAGC) -std=c++17
 EOF
 
 # Ensure literal tabs in Makefile.conf
+sed -i 's/^	/\t/' Makefile.conf
 sed -i 's/^        /\t/' Makefile.conf
-sed -i 's/^\t/\t/' Makefile.conf # Just in case
 
 cat <<EOF > Makefile.def
 OS=${OS}
@@ -142,12 +146,13 @@ make LIB LIBDIR=${libdir} INCLDIR=${WORKSPACE}/srcdir/include \
 
 # Link final shared library
 # Combine static libraries into the shared library.
-# On macOS we use -Wl,-all_load, on others -Wl,--whole-archive.
 if [[ "${target}" == *apple* ]]; then
+    # On macOS we use -Wl,-force_load for each archive.
     mpif90 -shared -fPIC -o ${libdir}/libBATL.${dlext} \
-        -Wl,-all_load ${libdir}/libBATL.a ${libdir}/libSHARE.a ${libdir}/libTIMING.a \
+        -Wl,-force_load,${libdir}/libBATL.a -Wl,-force_load,${libdir}/libSHARE.a -Wl,-force_load,${libdir}/libTIMING.a \
         ${LIB_STDCXX}
 else
+    # On Linux/FreeBSD we use -Wl,--whole-archive.
     mpif90 -shared -fPIC -o ${libdir}/libBATL.${dlext} \
         -Wl,--whole-archive ${libdir}/libBATL.a ${libdir}/libSHARE.a ${libdir}/libTIMING.a -Wl,--no-whole-archive \
         ${LIB_STDCXX}
