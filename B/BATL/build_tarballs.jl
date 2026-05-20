@@ -83,6 +83,7 @@ AR=ar -rs
 PRECISION=-frecord-marker=4 -fdefault-real-8 -fdefault-double-8
 OPT3=-O3
 SEARCH=-J$(WORKSPACE)/srcdir/include -I$(WORKSPACE)/srcdir/include
+INC=-I$(WORKSPACE)/srcdir/include
 CFLAG=$(SEARCH) -c -w -cpp -fPIC -DTESTACC
 Cflag0=$(CFLAG) $(PRECISION) -O0
 Cflag1=$(CFLAG) $(PRECISION) -O1
@@ -92,7 +93,7 @@ Cflag4=$(CFLAG) $(PRECISION) -O4
 INCLDIR=$(WORKSPACE)/srcdir/include
 SCRIPTDIR=$(WORKSPACE)/srcdir/share/Scripts
 
-FLAGC = $(SEARCH) -c $(OPT3) -fPIC
+FLAGC = $(INC) -c $(OPT3) -fPIC
 FLAGCC = $(FLAGC) -std=c++17
 
 .SUFFIXES:
