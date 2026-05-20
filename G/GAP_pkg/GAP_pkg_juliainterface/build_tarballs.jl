@@ -34,11 +34,13 @@ cp bin/*/*.so ${prefix}/lib/gap/
 cp -r src ${prefix}/
 
 # setup julia with GAP.jl for the host system (needed for building the manual)
+# all the env vars and flags are needed to make sure that julia works on the host system
 export JULIA_DEPOT_PATH="${WORKSPACE}/.julia"
 export JULIAUP_DEPOT_PATH="${JULIA_DEPOT_PATH}/juliaup"
+export JULIA_PKG_PRECOMPILE_AUTO=0
 cd ../..
 unset LD_LIBRARY_PATH
-julia --project=@. -e "using Pkg; Pkg.instantiate(); using GAP; GAP.create_gap_sh(\"${WORKSPACE}/gap.sh\")"
+julia --project=@. --compiled-modules=no --startup-file=no -e "using Pkg; Pkg.instantiate(); using GAP; GAP.create_gap_sh(\\"${WORKSPACE}/gap.sh\\")"
 
 # build the manual
 cd pkg/JuliaInterface
