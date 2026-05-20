@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 name = "ImageMagick"
-upstream_version = v"7.1.2-9"
+upstream_version = v"7.1.2-21"
 version = VersionNumber(
     upstream_version.major,
     upstream_version.minor,
@@ -12,7 +12,7 @@ version = VersionNumber(
 # Collection of sources required to build imagemagick
 sources = [
     GitSource("https://github.com/ImageMagick/ImageMagick",
-              "a90c0505dcb65c8caff3c545be10afea6028ec8f"),
+              "c86de049cefb8dd739e16f0e2fdc1ef8d2006d59"),
     DirectorySource("./bundled"),
 ]
 
@@ -20,7 +20,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/ImageMagick*/
 
-atomic_patch -p1 ../patches/check-have-clock-realtime.patch
 atomic_patch -p1 ../patches/urlmon.patch
 
 export LDFLAGS="${LDFLAGS} -L${libdir}"

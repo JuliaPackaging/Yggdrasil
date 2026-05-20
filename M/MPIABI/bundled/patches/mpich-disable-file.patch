@@ -1,0 +1,91 @@
+--- a/src/binding/abi/io_abi.c
++++ b/src/binding/abi/io_abi.c
+@@ -9,44 +9,7 @@
+ #include "io_abi_internal.h"
+ #include "mpir_io_impl.h"
+ #include <limits.h>
+ 
+-/* -- Begin Profiling Symbol Block for routine MPI_File_c2f */
+-#if defined(HAVE_PRAGMA_WEAK)
+-#pragma weak MPI_File_c2f = PMPI_File_c2f
+-#elif defined(HAVE_PRAGMA_HP_SEC_DEF)
+-#pragma _HP_SECONDARY_DEF PMPI_File_c2f  MPI_File_c2f
+-#elif defined(HAVE_PRAGMA_CRI_DUP)
+-#pragma _CRI duplicate MPI_File_c2f as PMPI_File_c2f
+-#elif defined(HAVE_WEAK_ATTRIBUTE)
+-MPI_Fint MPI_File_c2f(MPI_File file)  __attribute__ ((weak, alias("PMPI_File_c2f")));
+-#endif
+-/* -- End Profiling Symbol Block */
+-
+-/* Define MPICH_MPI_FROM_PMPI if weak symbols are not supported to build
+-   the MPI routines */
+-#ifndef MPICH_MPI_FROM_PMPI
+-#undef MPI_File_c2f
+-#define MPI_File_c2f PMPI_File_c2f
+-#endif /* MPICH_MPI_FROM_PMPI */
+-
+-static MPI_Fint internal_File_c2f(MPI_File file)
+-{
+-#ifndef HAVE_ROMIO
+-    return 0;
+-#else
+-    return MPIR_File_c2f_impl(file);
+-#endif
+-}
+-
+-MPI_Fint MPI_File_c2f(ABI_File file_abi)
+-{
+-    if ((uintptr_t) file_abi > 0 && (uintptr_t) file_abi < 4096) {
+-        return (int) (uintptr_t) file_abi;
+-    }
+-    MPI_File file = ABI_File_to_mpi(file_abi);
+-    return internal_File_c2f(file);
+-}
+-
+ /* -- Begin Profiling Symbol Block for routine MPI_File_close */
+ #if defined(HAVE_PRAGMA_WEAK)
+ #pragma weak MPI_File_close = PMPI_File_close
+@@ -131,43 +94,7 @@
+     mpi_errno = MPIO_Err_return_file(MPI_FILE_NULL, mpi_errno);
+     goto fn_exit;
+ }
+ 
+-/* -- Begin Profiling Symbol Block for routine MPI_File_f2c */
+-#if defined(HAVE_PRAGMA_WEAK)
+-#pragma weak MPI_File_f2c = PMPI_File_f2c
+-#elif defined(HAVE_PRAGMA_HP_SEC_DEF)
+-#pragma _HP_SECONDARY_DEF PMPI_File_f2c  MPI_File_f2c
+-#elif defined(HAVE_PRAGMA_CRI_DUP)
+-#pragma _CRI duplicate MPI_File_f2c as PMPI_File_f2c
+-#elif defined(HAVE_WEAK_ATTRIBUTE)
+-MPI_File MPI_File_f2c(MPI_Fint file)  __attribute__ ((weak, alias("PMPI_File_f2c")));
+-#endif
+-/* -- End Profiling Symbol Block */
+-
+-/* Define MPICH_MPI_FROM_PMPI if weak symbols are not supported to build
+-   the MPI routines */
+-#ifndef MPICH_MPI_FROM_PMPI
+-#undef MPI_File_f2c
+-#define MPI_File_f2c PMPI_File_f2c
+-#endif /* MPICH_MPI_FROM_PMPI */
+-
+-static MPI_File internal_File_f2c(MPI_Fint file)
+-{
+-#ifndef HAVE_ROMIO
+-    return 0;
+-#else
+-    return MPIR_File_f2c_impl(file);
+-#endif
+-}
+-
+-ABI_File MPI_File_f2c(MPI_Fint file)
+-{
+-    if (file > 0 && file < 4096) {
+-        return (ABI_File) (uintptr_t) file;
+-    }
+-    return ABI_File_from_mpi(internal_File_f2c(file));
+-}
+-
+ /* -- Begin Profiling Symbol Block for routine MPI_File_get_amode */
+ #if defined(HAVE_PRAGMA_WEAK)
+ #pragma weak MPI_File_get_amode = PMPI_File_get_amode

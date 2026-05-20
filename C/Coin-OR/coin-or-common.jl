@@ -70,11 +70,11 @@ Cgl_gitsha = "1d91b9ccb57eafbb7c07e994089a0f124358ffbd"
 Clp_version = offset_version(v"1.17.10", v"0.0.1")
 Clp_gitsha = "9a3efaa9ecefeb2a6088a447c9f66c6f31edbed9"
 
-Osi_version = offset_version(v"0.108.11", v"0.0.0")
-Osi_gitsha = "d979b7b890a32a7e69c53920bb39eef17bd599b8"
+Osi_version = offset_version(v"0.108.12", v"0.0.0")
+Osi_gitsha = "b3dbb7c910a9992717b1107542606262296a0e7e"
 
-CoinUtils_version = offset_version(v"2.11.12", v"0.0.0")
-CoinUtils_gitsha = "cc644574ef1899f14b7318e6cdb7f460bbee5212"
+CoinUtils_version = offset_version(v"2.11.13", v"0.0.0")
+CoinUtils_gitsha = "1f3484e0578944a506452e1e35360c09e1490315"
 
 Ipopt_upstream_version = v"3.14.19"
 Ipopt_gitsha = "2695946fa79d2e84f3034e065e788933a81466eb"

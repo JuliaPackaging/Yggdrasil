@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "SoapyPlutoSDR"
-version = v"0.2.1" # not yet tagged
+version = v"0.2.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/pothosware/SoapyPlutoSDR.git", "a07c37230369653818b3a5c448c00cee1ac9f8e5")
+    GitSource("https://github.com/pothosware/SoapyPlutoSDR.git", "422a9b306f765499dd3e9a4c3400fa39816dcfdb")
 ]
 
 dependencies = [
@@ -34,12 +34,17 @@ fi
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(;experimental=true)
-platforms = expand_cxxstring_abis(platforms) # requested by auditor
+platforms = filter(platforms) do p
+    os(p) == "freebsd" && arch(p) == "aarch64" && return false
+    arch(p) == "riscv64" && return false
+    return true
+end
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = Product[
     LibraryProduct("libPlutoSDRSupport", :libPlutoSDRSupport, ["lib/SoapySDR/modules0.8/"])
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
+# Build the tarballs
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"7")

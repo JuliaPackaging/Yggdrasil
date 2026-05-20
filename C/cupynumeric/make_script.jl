@@ -35,6 +35,7 @@ function get_script(cuda::Val{true})
         export CUDACXX=$CUDA_HOME/bin/nvcc
 
         ln -s ${CUDA_HOME}/lib ${CUDA_HOME}/lib64
+        
 
         ## BUILD TBLIS ##
         cd ${WORKSPACE}/srcdir/tblis
@@ -83,7 +84,8 @@ function get_script(cuda::Val{true})
             -Dcutensor_LIBRARY=${libdir}/libcutensor.so \
             -Dcutensor_INCLUDE_DIR=${includedir} \
             -DBLAS_LIBRARIES=${libdir}/libopenblas.so \
-            -Dcupynumeric_USE_CUSOLVERMP=0 
+            -Dcupynumeric_USE_CUSOLVERMP=0 \
+            -DCMAKE_CUDA_ARCHITECTURES="75;80;86;89;90;100;103"
             
 
         cmake --build build --parallel ${nproc} --verbose
@@ -91,6 +93,9 @@ function get_script(cuda::Val{true})
 
         install_license $WORKSPACE/srcdir/cupynumeric*/LICENSE
         install_license $WORKSPACE/srcdir/share/licenses/CUTENSOR/LICENSE
+
+        mkdir -vp "${includedir}/cupynumeric/cuda"
+        cp -v ${CUDA_HOME}/include/cuda.h ${includedir}/cupynumeric/cuda/cuda.h
     """
 
     return script
@@ -120,6 +125,10 @@ function get_script(cuda::Val{false})
         export PATH=${host_bindir}:$PATH
 
         ln -s ${CUDA_HOME}/lib ${CUDA_HOME}/lib64
+
+        # Patch cupynumeric src code missing header include
+        cd $WORKSPACE/srcdir
+        atomic_patch -p1 cstring.patch
 
         ## BUILD TBLIS ##
         cd ${WORKSPACE}/srcdir/tblis

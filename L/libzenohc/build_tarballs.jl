@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "libzenohc"
-version = v"1.6.2"
+version = v"1.9.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource(
         "https://github.com/eclipse-zenoh/zenoh-c.git",
-        "f376456ccf75ed837a21a186bdf5191cba50eb3b",
+        "499de93af63e6a7d3497313f544e666fea1d33fd",
     ),
 ]
 

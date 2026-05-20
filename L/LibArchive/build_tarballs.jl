@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "LibArchive"
-version = v"3.8.6"
+version = v"3.8.7"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://www.libarchive.org/downloads/libarchive-$(version).tar.xz",
-                  "8ac57c1f5e99550948d1fe755c806d26026e71827da228f36bef24527e372e6f"),
+                  "d3a8ba457ae25c27c84fd2830a2efdcc5b1d40bf585d4eb0d35f47e99e5d4774"),
 ]
 
 # Bash recipe for building across all platforms

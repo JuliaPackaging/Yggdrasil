@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "MuesliMaterials"
-version = v"1.16.1"
+version = v"1.16.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://bitbucket.org/ignromero/muesli.git", "be3500e9958ef79974fb1f588a8f885c442448ce")
+    GitSource("https://bitbucket.org/ignromero/muesli.git", "d03610adcf0294693ad033bf6f475718fb4a8ca0")
     DirectorySource("bundled")
 ]
 

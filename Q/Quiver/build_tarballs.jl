@@ -1,13 +1,13 @@
 using BinaryBuilder, Pkg
 
 name = "Quiver"
-version = v"0.6.0"
+version = v"0.7.9"
 
 include("../../platforms/macos_sdks.jl")
 
 sources = [
     GitSource("https://github.com/psrenergy/quiver.git",
-        "181c8d6e89819ea2742350e4ab6dc7f9a4171be9"),
+        "2123331b864469b2185f56034f0fbd481a1fcb1f"),
 ]
 
 script = raw"""

@@ -7,11 +7,11 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 
 name = "MPICH_CUDA"
-version = v"5.0.0"
+version = v"5.0.1"
 
 sources = [
     ArchiveSource("https://www.mpich.org/static/downloads/$(version)/mpich-$(version).tar.gz",
-                  "e9350e32224283e95311f22134f36c98e3cd1c665d17fae20a6cc92ed3cffe11"),
+                  "8c1832a13ddacf071685069f5fadfd1f2877a29e1a628652892c65211b1f3327"),
 ]
 
 script = raw"""
@@ -133,7 +133,7 @@ augment_platform_block = """
     end
     """
 
-platforms = CUDA.supported_platforms(; min_version = v"11.8", max_version=v"13.1.999")
+platforms = CUDA.supported_platforms(; min_version = v"11.8", max_version=v"13.2.999")
 filter!(p -> arch(p) == "x86_64" || arch(p) == "aarch64", platforms)
 platforms = expand_gfortran_versions(platforms)
 

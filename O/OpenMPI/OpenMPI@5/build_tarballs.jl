@@ -6,6 +6,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 name = "OpenMPI"
 # Note that OpenMPI 5 is ABI compatible with OpenMPI 4
 version = v"5.0.10"
+ygg_version = v"5.0.11"
 sources = [
     ArchiveSource("https://download.open-mpi.org/release/open-mpi/v$(version.major).$(version.minor)/openmpi-$(version).tar.gz",
                   "5692cc80554a7117c99eaa725d35100edd8bbf73423a5e265ff867979192df7d"),
@@ -124,5 +125,5 @@ ENV["OPAL_PREFIX"] = artifact_dir
 """
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                augment_platform_block, init_block, julia_compat="1.6", preferred_gcc_version=v"5", clang_use_lld=false)

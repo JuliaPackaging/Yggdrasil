@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "Geant4_julia"
-version = v"0.3.1"
+version = v"0.3.2"
 
 # Collection of sources required to build Geant4_julia
 sources = [
@@ -57,7 +57,7 @@ dependencies = [
     BuildDependency("libjulia_jll"),
     BuildDependency("Xorg_xorgproto_jll"),
     Dependency("libcxxwrap_julia_jll"; compat="0.14.7"),
-    Dependency("Geant4_jll"; compat="11.3.2")
+    Dependency("Geant4_jll"; compat="~11.3.2")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

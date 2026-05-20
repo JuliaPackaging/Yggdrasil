@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "MongoC"
-version = v"1.28.1"
+version = v"1.30.8"
 
 # Collection of sources required to complete build
 sources = [
     GitSource(
         "https://github.com/mongodb/mongo-c-driver.git",
-        "97f166d8d784d6096d48ba288f98b48028cdfe8b";
+        "57dba9c04991e38124022e0f16c50b87bd9b29a1";
     )
 ]
 
@@ -68,10 +68,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="3.0.15")
+    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="3.0.16")
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
     Dependency(PackageSpec(name="Zstd_jll", uuid="3161d3a3-bdf6-5164-811a-617609db77b4"))
-    Dependency(PackageSpec(name="snappy_jll", uuid="fe1e1685-f7be-5f59-ac9f-4ca204017dfd"); compat="1.2.1")
+    Dependency(PackageSpec(name="snappy_jll", uuid="fe1e1685-f7be-5f59-ac9f-4ca204017dfd"); compat="1.2.2")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

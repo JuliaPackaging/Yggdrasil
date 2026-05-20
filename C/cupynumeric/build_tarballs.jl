@@ -1,4 +1,5 @@
 using BinaryBuilder
+import BinaryBuilderBase
 import Pkg: PackageSpec
 using Base.BinaryPlatforms: arch, os, tags
 
@@ -9,12 +10,13 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 include("make_script.jl")
 
 name = "cupynumeric"
-version = v"26.01"
+version = v"25.10.3"
 sources = [
-    GitSource("https://github.com/nv-legate/cupynumeric.git","ae1c787828a9327ad00a076739706f41d196a043"),
+    GitSource("https://github.com/nv-legate/cupynumeric.git","66d872d22d66d78f42e91778a6b1c731e796d1f4"),
     GitSource("https://github.com/MatthewsResearchGroup/tblis.git", "c4f81e08b2827e72335baa7bf91a245f72c43970"),
     FileSource("https://repo.anaconda.com/miniconda/Miniconda3-py311_24.3.0-0-Linux-x86_64.sh", 
-                "4da8dde69eca0d9bc31420349a204851bfa2a1c87aeb87fe0c05517797edaac4", "miniconda.sh"),    
+                "4da8dde69eca0d9bc31420349a204851bfa2a1c87aeb87fe0c05517797edaac4", "miniconda.sh"), 
+    DirectorySource("./bundled")   
 ]
 
 
@@ -47,7 +49,7 @@ products = [
 ] 
 
 dependencies = [
-    Dependency("legate_jll"; compat = "~26.01"), # Legate versioning is Year.Month
+    Dependency("legate_jll"; compat = "=25.10.2"), # Legate versioning is Year.Month
     # Dependency("CUTENSOR_jll", compat = "2.2"), # supplied via ArchiveSource
     Dependency("OpenBLAS32_jll"),
     HostBuildDependency(PackageSpec(; name = "CMake_jll", version = "3.31.9")),
@@ -59,6 +61,7 @@ for platform in all_platforms
     should_build_platform(triplet(platform)) || continue
 
     platform_sources = BinaryBuilder.AbstractSource[sources...]
+    platform_products = BinaryBuilderBase.Product[products...]
 
     _dependencies = copy(dependencies)
     script = get_script(Val{false}())
@@ -78,12 +81,16 @@ for platform in all_platforms
             push!(platform_sources, CUDA.cuda_nvcc_redist_source(cuda_ver, "x86_64"))
         end
 
+        # Necessary for some development workflows 
+        # to re-build things locally.
+        push!(platform_products, FileProduct(["include/cupynumeric/cuda/cuda.h"], :cuda_header))
+
         script = get_script(Val{true}())
     end # else CPU-only build
 
     build_tarballs(
         ARGS, name, version, platform_sources, 
-        script, [platform], products, _dependencies;
+        script, [platform], platform_products, _dependencies;
         julia_compat = "1.10", 
         preferred_gcc_version = v"11",
         lazy_artifacts = true, dont_dlopen = true,

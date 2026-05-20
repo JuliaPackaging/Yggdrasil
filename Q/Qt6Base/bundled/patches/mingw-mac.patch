@@ -1,6 +1,6 @@
 diff --color -ur a/cmake/QtCompilerOptimization.cmake b/cmake/QtCompilerOptimization.cmake
 --- a/cmake/QtCompilerOptimization.cmake	2026-01-13 11:18:17.000000000 +0100
-+++ b/cmake/QtCompilerOptimization.cmake	2026-02-17 22:50:57.547445002 +0100
++++ b/cmake/QtCompilerOptimization.cmake	2026-05-01 17:34:29.758875771 +0200
 @@ -49,7 +49,7 @@
      set(QT_CFLAGS_RDSEED     "${__prefix}-mrdseed")
      set(QT_CFLAGS_AVX        "${__prefix}-mavx")
@@ -12,7 +12,7 @@ diff --color -ur a/cmake/QtCompilerOptimization.cmake b/cmake/QtCompilerOptimiza
      set(QT_CFLAGS_AVX512CD   "${__prefix}-mavx512cd")
 diff --color -ur a/src/corelib/global/qlogging.cpp b/src/corelib/global/qlogging.cpp
 --- a/src/corelib/global/qlogging.cpp	2026-01-13 11:18:17.000000000 +0100
-+++ b/src/corelib/global/qlogging.cpp	2026-02-18 21:02:34.179245237 +0100
++++ b/src/corelib/global/qlogging.cpp	2026-05-01 17:34:29.759711430 +0200
 @@ -203,7 +203,7 @@
      return false;
  }
@@ -24,7 +24,7 @@ diff --color -ur a/src/corelib/global/qlogging.cpp b/src/corelib/global/qlogging
      std::array<char, 16> name{};
 diff --color -ur a/src/corelib/global/qsimd_p.h b/src/corelib/global/qsimd_p.h
 --- a/src/corelib/global/qsimd_p.h	2026-01-13 11:18:17.000000000 +0100
-+++ b/src/corelib/global/qsimd_p.h	2026-02-19 21:58:05.412506514 +0100
++++ b/src/corelib/global/qsimd_p.h	2026-05-01 17:34:29.760135345 +0200
 @@ -353,6 +353,10 @@
  #define __ARM_FEATURE_CRC32 1
  #endif
@@ -36,3 +36,70 @@ diff --color -ur a/src/corelib/global/qsimd_p.h b/src/corelib/global/qsimd_p.h
  #if defined(Q_PROCESSOR_ARM_64)
  #if defined(Q_CC_CLANG)
  #define QT_FUNCTION_TARGET_STRING_AES        "aes"
+diff --color -ur a/src/corelib/thread/qthread_win.cpp b/src/corelib/thread/qthread_win.cpp
+--- a/src/corelib/thread/qthread_win.cpp	2026-01-13 11:18:17.000000000 +0100
++++ b/src/corelib/thread/qthread_win.cpp	2026-05-10 15:04:59.732358484 +0200
+@@ -48,7 +48,29 @@
+ 
+ #if QT_CONFIG(thread)
+ 
+-Q_CONSTINIT static thread_local QThreadData *currentThreadData = nullptr;
++static void destroy_current_thread_data(void *p);
++
++static DWORD currentThreadDataHandle()
++{
++    // Cannot use C++11 thread_local because it's still broken with MinGW/GCC:
++    // non-trivial destructors are sometimes called with objects whose storage
++    // has already been freed (see QTBUG-131476). MinGW/Clang/libgcc has a
++    // slightly different implementation but presumably also affected.
++
++    static DWORD h = TlsAlloc();
++
++    static struct Handle {
++        ~Handle() {
++            void* d = TlsGetValue(h);
++            // This destructor may get called before ~Cleanup below on the main thread
++            if(d != nullptr) {
++                destroy_current_thread_data(d);
++            }
++            TlsFree(h); h = TLS_OUT_OF_INDEXES;
++        }
++    } destroyh;
++    return h;
++}
+ 
+ static void destroy_current_thread_data(void *p)
+ {
+@@ -71,12 +93,12 @@
+ 
+     // ... but we must reset it to zero before returning so we aren't
+     // leaving a dangling pointer.
+-    currentThreadData = nullptr;
++    TlsSetValue(currentThreadDataHandle(), nullptr);
+ }
+ 
+ static QThreadData *get_thread_data()
+ {
+-    return currentThreadData;
++    return static_cast<QThreadData *>(TlsGetValue(currentThreadDataHandle()));
+ }
+ 
+ static void set_thread_data(QThreadData *data) noexcept
+@@ -84,11 +106,15 @@
+     if (data) {
+         struct Cleanup {
+             Cleanup() { QThreadStoragePrivate::init(); }
+-            ~Cleanup() { destroy_current_thread_data(currentThreadData); }
++            ~Cleanup() {
++                if(currentThreadDataHandle() != TLS_OUT_OF_INDEXES) {
++                    destroy_current_thread_data(get_thread_data());
++                }
++            }
+         };
+         static thread_local Cleanup currentThreadCleanup;
+     }
+-    currentThreadData = data;
++    TlsSetValue(currentThreadDataHandle(), data);
+ }
+ 
+ /*

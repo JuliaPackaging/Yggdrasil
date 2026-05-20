@@ -20,6 +20,14 @@ index cf6d8bdb..32676b85 100644
  
  if (MINGW AND CMAKE_SYSTEM_PROCESSOR MATCHES "i.86")
      list (APPEND TBB_COMMON_COMPILE_FLAGS -msse2)
+@@ -110,7 +109,6 @@ endif()
+ if (CMAKE_SYSTEM_PROCESSOR MATCHES "(AMD64|amd64|i.86|x86)" AND NOT EMSCRIPTEN)
+     set(TBB_LIB_COMPILE_FLAGS ${TBB_LIB_COMPILE_FLAGS} $<$<NOT:$<VERSION_LESS:${CMAKE_CXX_COMPILER_VERSION},8.0>>:-fcf-protection=full>)
+ endif ()
+-set(TBB_LIB_COMPILE_FLAGS ${TBB_LIB_COMPILE_FLAGS} $<$<NOT:$<VERSION_LESS:${CMAKE_CXX_COMPILER_VERSION},8.0>>:-fstack-clash-protection>)
+ 
+ # -z switch is not supported on MacOS and MinGW
+ if (NOT APPLE AND NOT MINGW)
 diff --git a/src/tbb/tools_api/ittnotify_config.h b/src/tbb/tools_api/ittnotify_config.h
 index 001d42e0..871673e0 100644
 --- a/src/tbb/tools_api/ittnotify_config.h

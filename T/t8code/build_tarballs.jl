@@ -8,8 +8,8 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "t8code"
-version = v"4.0.1"
-commit_hash = "44f449b28321ab6a3053edfcf2d14c6dfe796d23"
+version = v"4.0.5"
+commit_hash = "3f9df7fb5e757fbe675203e95af62c4f39f886aa"
 
 sources = [GitSource("https://github.com/DLR-AMR/t8code", commit_hash),
            DirectorySource("./bundled")]
@@ -22,7 +22,6 @@ git submodule init
 git submodule update
 
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi-constants.patch"
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/inttypes.patch"
 
 # Microsoft MPI is still 2.0 but has the required features; remove the strict 3.0 requirement
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi2.patch"

@@ -3,12 +3,12 @@
 using BinaryBuilder, BinaryBuilderBase, Pkg
 
 name = "libaom"
-version = v"3.13.1"
+version = v"3.13.3"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://storage.googleapis.com/aom-releases/libaom-$(version).tar.gz",
-                  "19e45a5a7192d690565229983dad900e76b513a02306c12053fb9a262cbeca7d"),
+                  "446a4ae9741cb8f3eeb98c949d25f91b48cb2b8569cae975c4b737392e9024fc"),
     DirectorySource("bundled"),
 ]
 

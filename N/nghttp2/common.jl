@@ -15,6 +15,7 @@ function configure_nghttp2_build(version; kwargs...)
         v"1.67.1" => "49908f992027821912b96a13898b665a35aa3a0a",
         v"1.68.0" => "534b74b72524e962c18c7146470914632ca7eb2d",
         v"1.68.1" => "f769990597670f3ea8d2440d1e18a3f9a0df9bc0",
+        v"1.69.0" => "68cb6900fde14c77f0cd7add0e094a862960eb99",
     )
 
     sources = [

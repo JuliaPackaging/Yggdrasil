@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Xorg_xkeyboard_config"
-version = v"2.44"
+version = v"2.47"
 
 # Collection of sources required to build xkeyboard_config
 sources = [
     ArchiveSource("https://www.x.org/archive/individual/data/xkeyboard-config/xkeyboard-config-$(version.major).$(version.minor).tar.xz",
-                  "54d2c33eeebb031d48fa590c543e54c9bcbd0f00386ebc6489b2f47a0da4342a"),
+                  "e59984416a72d58b46a52bfec1b1361aa7d84354628227ee2783626c7a6db6b6"),
 ]
 
 # Bash recipe for building across all platforms
@@ -22,9 +22,14 @@ ninja -j${nproc}
 ninja install
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = [AnyPlatform()]
+# The files are identical for all platforms, and in principle we could
+# use `AnyPlatform()` instead. However, starting with 2.47 the upstream
+# install creates symlinks (`share/X11/xkb`,
+# `share/pkgconfig/xkeyboard-config.pc`,
+# `share/man/man7/xkeyboard-config.7`) which have to be replaced with
+# copies on Windows, and for that to happen we need to build it for
+# Windows specifically (and hence for all other platforms as well).
+platforms = supported_platforms()
 
 products = Product[
 ]

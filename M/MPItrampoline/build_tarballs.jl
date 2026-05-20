@@ -24,7 +24,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 name = "MPItrampoline"
 
 mpitrampoline_version = v"5.5.1"
-version = v"5.5.5"
+version = v"5.5.6"
 mpich_version = "4.3.2"
 mpiconstants_version = v"1.5.0"
 mpiwrapper_version = v"2.11.1"
@@ -192,7 +192,7 @@ cmake --install build
 
 # When we build libraries linking to MPITrampoline, this library needs to find the
 # libgfortran it links to.  At runtime this isn't a problem, but during the audit in BB we
-# need to give a little help to MPITrampoline to find it:
+# need to give a little help to MPItrampoline to find it:
 # <https://github.com/JuliaPackaging/Yggdrasil/pull/5028#issuecomment-1166388492>.  Note, we
 # apply this *hack* only when strictly needed, to avoid screwing something else up.
 if [[ "${target}" == x86_64-linux-gnu* ]]; then
