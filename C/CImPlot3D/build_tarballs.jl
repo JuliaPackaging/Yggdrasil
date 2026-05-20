@@ -66,13 +66,8 @@ install_license $WORKSPACE/srcdir/cimplot3d/implot3d/LICENSE
 
 # Match CImGuiPack's platform filter (excludes armv6l, riscv64,
 # aarch64-freebsd because of GLFW_jll / dependency limitations).
-# We additionally exclude Windows: CImGuiPack's libcimgui.dll only
-# exports the cimgui C wrappers (`ig*`), not the underlying `ImGui::*`
-# C++ symbols that cimplot3d.cpp calls directly, so the link fails.
-# Revisit if cimgui-pack starts exporting all symbols on Windows.
 platforms = filter(p -> arch(p) ∉ ("armv6l", "riscv64") &&
-                        !(arch(p) == "aarch64" && os(p) == "freebsd") &&
-                        os(p) != "windows",
+                        !(arch(p) == "aarch64" && os(p) == "freebsd"),
                    supported_platforms())
 
 # The products that we will ensure are always built
@@ -86,7 +81,7 @@ products = [
 ]
 
 dependencies = [
-    Dependency("CImGuiPack_jll"; compat="0.12"),
+    Dependency("CImGuiPack_jll"; compat="0.12.1"),
     HostBuildDependency("LuaJIT_jll"),
 ]
 
