@@ -106,6 +106,13 @@ platforms = supported_platforms()
 products = [
     ExecutableProduct("gp", :gp),
     LibraryProduct("libpari", :libpari),
+    # pari.desc: the machine-readable database of every GP function (name, C
+    # symbol, prototype, help text). `make install` always installs it under
+    # share/pari/ (install-cfg target). Declaring it as a product exposes it
+    # as PARI_jll.pari_desc and makes the audit fail loudly if a future PARI
+    # release stops shipping it -- it is the source consumed by auto-generated
+    # high-level wrappers (e.g. a Julia binding generator, like cypari2's).
+    FileProduct("share/pari/pari.desc", :pari_desc),
 ]
 
 # Dependencies that must be installed before this package can be built
