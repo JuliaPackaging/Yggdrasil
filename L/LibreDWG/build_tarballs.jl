@@ -38,9 +38,17 @@ sources = [
 # the codepage table for ~30 legacy DWG encodings. CPPFLAGS exports the
 # JLL include dir so configure detects both deps; libtool then picks up
 # `-liconv` transitively for the CLI tools that link libredwg.so.
+#
+# `-Wno-error=implicit-function-declaration` downgrades the newer clang
+# strict-mode error LibreDWG hits on FreeBSD: `decode.c` calls `memmem`
+# unguarded, and FreeBSD's `<string.h>` hides the declaration when
+# `_POSIX_C_SOURCE=900000L` is set (which LibreDWG's configure does).
+# The symbol exists in libc; only the declaration is missing, so the
+# link succeeds. Same workaround used in `M/MPIR` and `P/PTSCOTCH`.
 script = raw"""
 cd $WORKSPACE/srcdir/libredwg-*/
 export CPPFLAGS="-I${includedir}"
+export CFLAGS="-Wno-error=implicit-function-declaration"
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
