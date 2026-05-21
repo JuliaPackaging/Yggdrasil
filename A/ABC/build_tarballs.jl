@@ -1,17 +1,18 @@
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 # abc
 name = "ABC"
 version = v"1.01.2"
-ABC_ver = "1.01.0"
+upstream_version = "1.01.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource(
         "https://github.com/berkeley-abc/abc.git",
         "f4d870e109938fd1a283ecceea950bd9cd616f67"
-        # "https://github.com/PasoStudio73/abc.git",
-        # "b74950f11b4b6064d7d09e4479dee68a9cbba55e"
     )
 ]
 
@@ -26,6 +27,22 @@ sources = [
 # still set here anyway
 
 script = raw"""
+cd ${WORKSPACE}/srcdir/abc
+
+# it appears necessary to have the file(s) for the FileProduct(s) live in the destdir
+cp abc.rc ${prefix}/.
+
+# select compiler based on target platform
+# ABC on Apple platforms can be compiled using clang instead of gcc,
+# while clang fails on Linux
+if [[ "${target}" == *-apple-* ]]; then
+    CC=clang
+    CXX=clang++
+else
+    CC=gcc
+    CXX=g++
+fi
+
 EXFLGS="\
 -fPIC \
 -Wall \
@@ -36,22 +53,19 @@ EXFLGS="\
 -DSIZEOF_INT=4 \
 -DABC_USE_CUDD=1 \
 -DABC_USE_PTHREADS \
+-DABC_USE_STDINT_H=1 \
 -DSIZEOF_VOID_P=8 \
 -DSIZEOF_LONG=8 \
--DLIN64"
+"
 
-cd ${WORKSPACE}/srcdir/abc
-
-# it appears necessary to have the file(s) for the FileProduct(s) live in the destdir
-cp abc.rc ${prefix}/.
-
-make -j${nproc} CC=clang CXX=clang++ ABC_USE_NO_READLINE=1 CFLAGS+="${EXFLGS}" libabc.so
+# make libabc.so
+make -j${nproc} CC=${CC} CXX=${CXX} ABC_USE_NO_READLINE=1 CFLAGS+="${EXFLGS}" libabc.so
 # the abc Makefile always makes a .so  Fix that here.
 mv libabc.so libabc.${dlext}
 mkdir -p "${libdir}"
 cp libabc.${dlext} ${libdir}
 
-make -j${nproc} CC=clang CXX=clang++ ABC_USE_NO_READLINE=1 CFLAGS+="${EXFLGS}"
+make -j${nproc} CC=${CC} CXX=${CXX} ABC_USE_NO_READLINE=1 CFLAGS+="${EXFLGS}"
 mkdir -p "${bindir}"
 cp abc${exeext} ${bindir}
 chmod +x ${bindir}/*
@@ -62,13 +76,9 @@ exit
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 # core-math uses unsigned __int128 which is unavailable on 32-bit platforms
-# platforms = supported_platforms(exclude= x -> (
-#     Sys.iswindows(x) ||
-#     Sys.isfreebsd(x) ||
-#     nbits(x) == 32
-# ))
 platforms = supported_platforms(exclude= x -> (
-    !Sys.isapple(x) ||
+    Sys.iswindows(x) ||
+    Sys.isfreebsd(x) ||
     nbits(x) == 32
 ))
 platforms = expand_cxxstring_abis(platforms)
@@ -88,6 +98,7 @@ build_tarballs(
     ARGS, name, version, sources, script,
     platforms, products, dependencies;
     julia_compat="1.6",
-    # preferred_gcc_version=v"8"
-    preferred_llvm_version=v"13"
+    preferred_gcc_version=v"8",
+    preferred_llvm_version=v"13",
+    clang_use_lld=false,
 )
