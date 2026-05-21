@@ -39,7 +39,7 @@ cp -r src ${prefix}/
 # build a gap for the host system, to be used for building the manual
 cd ${WORKSPACE}/srcdir/gap-*
 ./autogen.sh
-./configure --host=${MACHTYPE}
+CC="${HOSTCC}" CXX="${HOSTCXX}" ./configure --build=${MACHTYPE} --host=${MACHTYPE}
 make -j${nproc}
 
 # build the manual
