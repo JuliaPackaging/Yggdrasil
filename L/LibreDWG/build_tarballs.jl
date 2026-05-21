@@ -61,10 +61,7 @@ export CFLAGS="-Wno-error=implicit-function-declaration"
     --disable-static
 make -j${nproc}
 make install
-
-# Yggdrasil license-file audit expects share/licenses/<name>/. LibreDWG
-# ships COPYING (GPL-3) at the source root; copy it to the canonical path.
-install -Dm644 COPYING ${prefix}/share/licenses/LibreDWG/COPYING
+install_license COPYING
 """
 
 # These are the platforms we will build for by default, unless further
