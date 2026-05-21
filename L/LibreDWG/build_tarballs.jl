@@ -1,0 +1,102 @@
+# Note that this script can accept some limited command-line arguments, run
+# `julia build_tarballs.jl --help` to see a usage message.
+using BinaryBuilder, Pkg
+
+name = "LibreDWG"
+version = v"0.13.4"
+
+# Collection of sources required to build LibreDWG. Upstream release
+# tarball ships a pre-bootstrapped `configure`, so no autogen step is
+# needed.
+sources = [
+    ArchiveSource("https://github.com/LibreDWG/libredwg/releases/download/$(version)/libredwg-$(version).tar.xz",
+                  "7e153ea4dac4cbf3dc9c50b9ef7a5604e09cdd4c5520bcf8017877bbe1422cd5"),
+]
+
+# Bash recipe for building across all platforms.
+#
+# Flags chosen for the broadest production-grade JLL:
+#   --enable-release           Production-stable build (skips unstable DWG
+#                              features). Recommended for packagers per
+#                              upstream README.
+#   --enable-trace             Compiles in the LIBREDWG_TRACE env-var
+#                              diagnostic hook. Default verbosity 0
+#                              (silent), so zero runtime cost when off;
+#                              operators get a path to debug parse
+#                              failures without rebuilding.
+#   --disable-bindings         Drops the Python/Perl/Lua/Ruby wrappers;
+#                              Julia consumers use the C library + CLI
+#                              tools only.
+#   --disable-python           Paranoid pin against picking up host
+#                              Python in the cross-compile rootfs.
+#   --disable-docs             TeXinfo build chain is large; docs not
+#                              shipped in the JLL.
+#   --disable-werror           Tolerates warnings on cross toolchains.
+#   --disable-static           Shared-only, matching JLL convention.
+#
+# PCRE2 (8 + 16 bit) activates `dwggrep` regex search. Libiconv provides
+# the codepage table for ~30 legacy DWG encodings. CPPFLAGS exports the
+# JLL include dir so configure detects both deps; libtool then picks up
+# `-liconv` transitively for the CLI tools that link libredwg.so.
+script = raw"""
+cd $WORKSPACE/srcdir/libredwg-*/
+export CPPFLAGS="-I${includedir}"
+./configure --prefix=${prefix} \
+    --build=${MACHTYPE} \
+    --host=${target} \
+    --enable-release \
+    --enable-trace \
+    --disable-bindings \
+    --disable-python \
+    --disable-docs \
+    --disable-werror \
+    --disable-static
+make -j${nproc}
+make install
+
+# Yggdrasil license-file audit expects share/licenses/<name>/. LibreDWG
+# ships COPYING (GPL-3) at the source root; copy it to the canonical path.
+install -Dm644 COPYING ${prefix}/share/licenses/LibreDWG/COPYING
+"""
+
+# These are the platforms we will build for by default, unless further
+# platforms are passed in on the command line.
+platforms = supported_platforms()
+
+# The products that we will ensure are always built.
+products = [
+    LibraryProduct("libredwg",   :libredwg),
+    ExecutableProduct("dwg2dxf",    :dwg2dxf),
+    ExecutableProduct("dxf2dwg",    :dxf2dwg),
+    ExecutableProduct("dwgread",    :dwgread),
+    ExecutableProduct("dwgwrite",   :dwgwrite),
+    ExecutableProduct("dwgrewrite", :dwgrewrite),
+    ExecutableProduct("dwggrep",    :dwggrep),
+    ExecutableProduct("dwglayers",  :dwglayers),
+    ExecutableProduct("dwgbmp",     :dwgbmp),
+    ExecutableProduct("dwg2SVG",    :dwg2svg),
+    # `dwg2ps` is conditionally built only when pslib is present (configure
+    # emits "pslib for dwg2ps missing with release" otherwise). pslib has no
+    # JLL; dwg2ps is a niche PostScript exporter rarely needed by Julia
+    # consumers, so the product is omitted rather than carrying a fragile
+    # build-from-source dep.
+    ExecutableProduct("dxfwrite",   :dxfwrite),
+]
+
+# Dependencies that must be installed before this package can be built.
+#   Libiconv_jll  codepage conversion for the ~30 legacy DWG encodings.
+#                 macOS + glibc Linux ship iconv natively, but musl Linux
+#                 + Windows MinGW + FreeBSD need an external JLL; passing
+#                 it unconditionally is harmless on the natively-provided
+#                 platforms (ABI-compatible).
+#   PCRE2_jll     8 + 16 bit regex libraries; activates dwggrep regex
+#                 search. Without it dwggrep builds as a stripped-down
+#                 stub (string-match only).
+dependencies = [
+    Dependency("Libiconv_jll"),
+    Dependency("PCRE2_jll"),
+]
+
+# Build the tarballs, and possibly a `build.jl` as well.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6")
