@@ -174,8 +174,7 @@ fi
 rm ${libdir}/libSHARE.a ${libdir}/libTIMING.a
 
 # Install license file
-mkdir -p ${prefix}/share/licenses/BATL
-cp LICENSE.txt ${prefix}/share/licenses/BATL/
+install_license LICENSE.txt
 """
 
 script = script_header * script_body
