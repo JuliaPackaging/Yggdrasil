@@ -93,8 +93,8 @@ products = [
 #                 search. Without it dwggrep builds as a stripped-down
 #                 stub (string-match only).
 dependencies = [
-    Dependency("Libiconv_jll"),
-    Dependency("PCRE2_jll"),
+    Dependency("Libiconv_jll"; compat="1.17"),
+    Dependency("PCRE2_jll"; compat="10.42"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
