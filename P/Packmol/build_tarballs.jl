@@ -7,7 +7,7 @@ version = v"21.2.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/m3g/packmol", "fecd7b2b0633c997fb207870255f3ba70cd5cdf7"),
+    GitSource("https://github.com/m3g/packmol", "7f8e0c6f945eeffe123279e09a40b1cdd04fc0ec"),
 ]
 
 # Bash recipe for building across all platforms
