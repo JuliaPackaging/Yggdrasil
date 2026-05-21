@@ -50,7 +50,10 @@ make -j${nproc}
 # build the manual
 cd ${WORKSPACE}/srcdir/GAP.jl/pkg/JuliaInterface
 make GAP=${WORKSPACE}/srcdir/gap-*/gap V=1 doc
-cp -r doc ${prefix}/doc
+# remove auxiliary files (taken from https://github.com/gap-actions/build-pkg-docs/blob/ee3f0345faaa15e9c0173f8f2aec61e65483168f/action.yml#L149)
+find doc \( -name '*.aux' -o -name '*.bbl' -o -name '*.blg' -o -name '*.brf' -o -name '*.dvi' -o -name '*.idx' -o -name '*.ilg' -o -name '*.ind' -o -name '*.log' -o -name '*.out' -o -name '*.pnr' -o -name '*.toc' -o -name '*.tst' \) -exec rm -f {} +
+# copy the manual (we need the additional "doc" directory as gap expects a path ending in "doc/manual.six" for the manual)
+cp -r doc ${prefix}/share/doc/JuliaInterface/doc
 
 install_license ../../LICENSE
 """
