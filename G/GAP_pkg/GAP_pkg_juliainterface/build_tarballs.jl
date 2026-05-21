@@ -39,7 +39,12 @@ cp -r src ${prefix}/
 # build a gap for the host system, to be used for building the manual
 cd ${WORKSPACE}/srcdir/gap-*
 ./autogen.sh
-CC="${HOSTCC}" CXX="${HOSTCXX}" ./configure --build=${MACHTYPE} --host=${MACHTYPE}
+configure --build=${MACHTYPE} --host=${MACHTYPE} \
+    --enable-Werror \
+    --with-gmp=${host_prefix} \
+    --without-readline \
+    --with-zlib=${host_prefix} \
+    CC=${CC_BUILD} CXX=${CXX_BUILD}
 make -j${nproc}
 
 # build the manual
@@ -67,6 +72,10 @@ platforms = gap_platforms(expand_julia_versions=true)
 # that's a small risk, usually immediately detected in CI test, and fixing it
 # is easy as it only requires a change to GAP.jl, not to any JLLs.
 dependencies = [
+    # for the "native" gap build that builds the docs
+    HostBuildDependency("GMP_jll"),
+    HostBuildDependency("Zlib_jll"),
+
     Dependency("GAP_jll", gap_version),
     BuildDependency(PackageSpec(;name="libjulia_jll", version="1.11.0")),
 ]
