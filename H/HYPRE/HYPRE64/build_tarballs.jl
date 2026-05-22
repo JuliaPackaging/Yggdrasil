@@ -15,6 +15,16 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/hypre/src
 
+sed -i '$i\
+\
+/* HYPRE64 override: rename external BLAS\/LAPACK calls to _64_-suffixed names\
+   so they resolve to libblastrampoline'\''s ILP64 slot. */\
+#undef hypre_F90_NAME_BLAS\
+#undef hypre_F90_NAME_LAPACK\
+#define hypre_F90_NAME_BLAS(name,NAME)   name##_64_\
+#define hypre_F90_NAME_LAPACK(name,NAME) name##_64_\
+' utilities/_hypre_fortran.h
+
 if [[ "${target}" == *mingw* ]]; then
     LBT=(-lblastrampoline-5)
 else
