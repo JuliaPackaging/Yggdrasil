@@ -1,0 +1,45 @@
+Use find_package(OpenMP) in cmaple instead of its bundled libomp.a.
+
+cmaple ships its own copy of the libmac/libomp.a chain (separate from
+iqtree3's). Same failure as the parent: glibc-linked on Linux (breaks
+musl) and references ___chkstk_darwin on x86_64 macOS, which BB's
+clang-rt doesn't ship. Mirrors the openmp-find-package.patch for the
+parent iqtree3 project.
+
+--- a/cmaple/CMakeLists.txt
++++ b/cmaple/CMakeLists.txt
+@@ -159,28 +159,12 @@
+ if (NOT CMAPLE_FLAGS MATCHES "single")
+     message("OpenMP        : Yes")
+
+-    if(APPLE)
+-        if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm" OR ${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch")
+-        	if(MACOS_MAJOR_VERSION GREATER_EQUAL 26)
+-                message("Using libmac26_m1 for macOS ${MACOS_VERSION}")
+-                link_directories(${PROJECT_SOURCE_DIR}/libraries/static/libmac26_m1)
+-            else()
+-                link_directories(${PROJECT_SOURCE_DIR}/libraries/static/libmac_m1)
+-            endif()
+-        else()
+-        	if(MACOS_MAJOR_VERSION GREATER_EQUAL 26)
+-                message("Using libmac26 for macOS ${MACOS_VERSION}")
+-                link_directories(${PROJECT_SOURCE_DIR}/libraries/static/libmac26)
+-            else()
+-                link_directories(${PROJECT_SOURCE_DIR}/libraries/static/libmac)
+-            endif()
+-        endif()
+-    elseif (UNIX AND NOT ${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD")
+-      if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm" OR ${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch")
+-        link_directories(${PROJECT_SOURCE_DIR}/libraries/static/liblinux_arm)
+-      else()
+-        link_directories(${PROJECT_SOURCE_DIR}/libraries/static/lib)
+-      endif()
++    if(APPLE OR (UNIX AND NOT ${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD"))
++      # Bundled libomp.a is glibc-linked on Linux (breaks musl) and references
++      # ___chkstk_darwin on x86_64 macOS (BB's clang-rt lacks it). Use system
++      # OpenMP - libgomp via CompilerSupportLibraries_jll on Linux, libomp via
++      # LLVMOpenMP_jll on macOS.
++      find_package(OpenMP REQUIRED)
+     elseif (WIN32)
+         if (BINARY32)
+             link_directories(${PROJECT_SOURCE_DIR}/libraries/static/lib32)

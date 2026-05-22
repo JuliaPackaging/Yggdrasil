@@ -24,6 +24,7 @@ mv ../lsd2 lsd2
 mv ../cmaple cmaple
 
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/openmp-find-package.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cmaple-openmp-find-package.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/respect-cross-compile-osx-arch.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cmaple-disable-lto.patch
 
