@@ -35,6 +35,10 @@ find /usr/share/cmake -name '._*' -delete || true
 # CMakeLists. Stop class avoids eating the closing `)`.
 find . -name CMakeLists.txt -exec sed -i 's/-march[^ "()]*//g; s/-mcpu[^ "()]*//g' {} +
 
+# iqtree3's Windows post-build steps use the shell `copy` command,
+# which isn't available in BB's mingw cross-compile sandbox.
+sed -i 's/COMMAND copy /COMMAND ${CMAKE_COMMAND} -E copy /g' CMakeLists.txt
+
 mkdir -p build && cd build
 
 cmake .. \
@@ -48,9 +52,7 @@ make install
 install_license ${WORKSPACE}/srcdir/iqtree3/LICENSE
 """
 
-# Windows: `GlobalMemoryStatusEx` link error under mingw (Yggdrasil #7097).
-platforms = filter(!Sys.iswindows, supported_platforms())
-platforms = expand_cxxstring_abis(platforms)
+platforms = expand_cxxstring_abis(supported_platforms())
 
 products = [
     ExecutableProduct("iqtree3", :iqtree3),
