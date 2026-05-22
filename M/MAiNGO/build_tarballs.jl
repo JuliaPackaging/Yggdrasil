@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "MAiNGO"
-version = v"0.7.2"
+version = v"0.8.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://git.rwth-aachen.de/avt-svt/public/maingo.git", "252733413a29dbe5b84a4cdaf53e60e9934f372f"),
+    GitSource("https://git.rwth-aachen.de/avt-svt/public/maingo.git", "4b52dfc73ad5fec79dd671eefea51e32de57906b"),
 ]
 
 # Bash recipe for building across all platforms
@@ -24,6 +24,7 @@ common_cmake_options="-DCMAKE_BUILD_TYPE=Release \
                      -DMAiNGO_build_standalone=True \
                      -DMAiNGO_build_shared_c_api=True \
                      -DMAiNGO_build_parser=True \
+                     -DMAiNGO_build_test=False\
                      -DMAiNGO_use_cplex=False \
                      -DMAiNGO_use_melon=False"
 
