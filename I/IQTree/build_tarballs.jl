@@ -49,6 +49,11 @@ cmake .. \
 
 make -j${nproc}
 make install
+
+# Drop the Windows GUI-launcher variant. Julia consumers call iqtree3()
+# directly; the click variant is dead weight in a JLL.
+rm -f ${bindir}/iqtree3-click.exe
+
 install_license ${WORKSPACE}/srcdir/iqtree3/LICENSE
 """
 
@@ -61,7 +66,7 @@ products = [
 # libgomp on Linux, libomp on macOS/FreeBSD.
 dependencies = [
     BuildDependency("Eigen_jll"),
-    Dependency("boost_jll"; compat="=1.87.0"),
+    Dependency("boost_jll"; compat="1.87"),
     Dependency("Zlib_jll"; compat="1.3.1"),
     Dependency("CompilerSupportLibraries_jll";
                platforms=filter(!Sys.isbsd, platforms)),
