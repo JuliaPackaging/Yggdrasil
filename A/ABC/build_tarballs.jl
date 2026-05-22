@@ -19,7 +19,8 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/abc
 
-# it appears necessary to have the file(s) for the FileProduct(s) live in the destdir
+# it appears necessary to have the file(s)
+# for the FileProduct(s) live in the destdir
 cp abc.rc ${prefix}/.
 
 # select compiler based on target platform
@@ -49,13 +50,13 @@ EXFLGS="\
 "
 
 # make libabc.so
-make -j${nproc} CC=${CC} CXX=${CXX} ABC_USE_NO_READLINE=1 CFLAGS+="${EXFLGS}" libabc.so
+make -j${nproc} CC=${CC} CXX=${CXX} CFLAGS+="${EXFLGS}" libabc.so
 # the abc Makefile always makes a .so  Fix that here.
 mv libabc.so libabc.${dlext}
 mkdir -p "${libdir}"
 cp libabc.${dlext} ${libdir}
 
-make -j${nproc} CC=${CC} CXX=${CXX} ABC_USE_NO_READLINE=1 CFLAGS+="${EXFLGS}"
+make -j${nproc} CC=${CC} CXX=${CXX} CFLAGS+="${EXFLGS}"
 mkdir -p "${bindir}"
 cp abc${exeext} ${bindir}
 chmod +x ${bindir}/*
@@ -82,6 +83,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency("Readline_jll"),
     Dependency(PackageSpec(
         name="CompilerSupportLibraries_jll",
         uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"
