@@ -16,16 +16,6 @@ sources = [
     )
 ]
 
-# ABC is setup for native builds (the arch_flags program and running the
-# shell to get other flags), so we need to manually add the arch flags
-# here.  Also, the combo of BinaryBuilder and ABC's Makefile always seems
-# to override rather than extend CFLAGS, so I've included the whole mess
-# here.  Even though we use ABC_USE_STDINT_H=1 it doesn't work as
-# expected, so we only use it here to prevent the Makefile from running
-# the arch_flags executable, which will always fail when cross compiling.
-# Note that neither -DLIN nor -DLIN64 actually appear to be used anymore but
-# still set here anyway
-
 script = raw"""
 cd ${WORKSPACE}/srcdir/abc
 
@@ -91,7 +81,12 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = []
+dependencies = [
+    Dependency(PackageSpec(
+        name="CompilerSupportLibraries_jll",
+        uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"
+    ))
+]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(
