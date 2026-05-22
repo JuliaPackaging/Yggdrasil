@@ -1,0 +1,18 @@
+diff --git a/aocl_dtl/aoclflist.c b/aocl_dtl/aoclflist.c
+index 5265cd97c..50e08dc50 100644
+--- a/aocl_dtl/aoclflist.c
++++ b/aocl_dtl/aoclflist.c
+@@ -128,9 +128,11 @@ AOCL_FAL_FILE *AOCL_FLIST_AddFile(const int8 *pchFilePrefix, AOCL_FLIST_Node **p
+ 
+     /* We don't have exiting file, lets try to open new one */
+ #ifdef BLIS_ENABLE_PTHREADS
+-    sprintf(pchFileName, "P%d_T%lu_%s", AOCL_getpid(), tid, pchFilePrefix);
++    sprintf(pchFileName, "P%lld_T%lld_%s",
++            (long long)AOCL_getpid(), (long long)tid, pchFilePrefix);
+ #else
+-    sprintf(pchFileName, "P%d_T%u_%s", AOCL_getpid(), tid, pchFilePrefix);
++    sprintf(pchFileName, "P%lld_T%lld_%s",
++            (long long)AOCL_getpid(), (long long)tid, pchFilePrefix);
+ #endif
+     file = AOCL_FAL_Open(pchFileName, "wb");
+     if (file == NULL)
