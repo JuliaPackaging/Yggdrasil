@@ -23,7 +23,7 @@ rm -rf lsd2 cmaple
 mv ../lsd2 lsd2
 mv ../cmaple cmaple
 
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/openmp-find-package-on-linux.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/openmp-find-package.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/respect-cross-compile-osx-arch.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cmaple-disable-lto.patch
 
@@ -38,6 +38,10 @@ find . -name CMakeLists.txt -exec sed -i 's/-march[^ "()]*//g; s/-mcpu[^ "()]*//
 # iqtree3's Windows post-build steps use the shell `copy` command,
 # which isn't available in BB's mingw cross-compile sandbox.
 sed -i 's/COMMAND copy /COMMAND ${CMAKE_COMMAND} -E copy /g' CMakeLists.txt
+
+# `#include <Windows.h>` (capital W) is fine on case-insensitive Windows
+# but breaks on the case-sensitive BB Linux sandbox cross-compiling mingw.
+sed -i 's|#include <Windows\.h>|#include <windows.h>|g' utils/timeutil.h
 
 mkdir -p build && cd build
 
@@ -57,7 +61,14 @@ rm -f ${bindir}/iqtree3-click.exe
 install_license ${WORKSPACE}/srcdir/iqtree3/LICENSE
 """
 
-platforms = expand_cxxstring_abis(supported_platforms())
+# Upstream iqtree3 errors on 32-bit (CMakeLists.txt:480, "32-bit
+# compilation is not supported") and hardcodes -msse3/-mavx/-mfma on any
+# non-ARM target (CMakeLists.txt:670/687/710) - so ppc64le and riscv64
+# fail in the vectorclass and PLL submodules.
+platforms = supported_platforms()
+filter!(p -> nbits(p) == 64, platforms)
+filter!(p -> arch(p) in ("x86_64", "aarch64"), platforms)
+platforms = expand_cxxstring_abis(platforms)
 
 products = [
     ExecutableProduct("iqtree3", :iqtree3),
