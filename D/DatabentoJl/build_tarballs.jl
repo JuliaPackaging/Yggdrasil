@@ -1,0 +1,64 @@
+using BinaryBuilder, Pkg
+
+name = "DatabentoJl"
+version = v"0.1.0"
+
+# Sources
+sources = [
+    # 1. Your Package Source (Public GitHub)
+    GitSource("https://github.com/harris-azmon/databento-julia.git", "13a6e5642151f8dffebb91c3aa284a4ba3192b5e"),
+
+    # 2. Databento C++ Library (v0.30.0)
+    GitSource("https://github.com/databento/databento-cpp.git", "49baedc33bd00b24d7503822c0c2ce6274477c18"),
+]
+
+# Bash recipe for building
+script = raw"""
+# Move to the C++ wrapper directory
+cd $WORKSPACE/srcdir/databento-julia/deps
+
+rm -rf build
+mkdir build && cd build
+
+# We use FETCHCONTENT_SOURCE_DIR_DATABENTO to tell CMake to use the
+# checked-out databento-cpp from 'sources' instead of downloading it.
+cmake -DCMAKE_INSTALL_PREFIX=$prefix \
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DJlCxx_DIR=${prefix}/lib/cmake/JlCxx \
+      -DJulia_INCLUDE_DIRS=${prefix}/include/julia \
+      -DJulia_LIBRARY=${prefix}/lib/libjulia.so \
+      -DFETCHCONTENT_SOURCE_DIR_DATABENTO=${WORKSPACE}/srcdir/databento-cpp \
+      ..
+
+make -j${nproc}
+make install
+
+# Install license
+install_license ${WORKSPACE}/srcdir/databento-julia/LICENSE
+"""
+
+# Platforms we are targeting (Expanding ABIs for C++ compatibility)
+platforms = [
+    Platform("x86_64", "linux"; libc="glibc")
+]
+platforms = expand_cxxstring_abis(platforms)
+
+# Products
+products = [
+    LibraryProduct("libdatabento_jl", :libdatabento_jl; dont_dlopen=true)
+]
+
+# Dependencies
+dependencies = [
+    # Allow resolver to pick compatible libcxxwrap-julia for libjulia 1.6
+    Dependency(PackageSpec(name="libcxxwrap_julia_jll")),
+    Dependency(PackageSpec(name="OpenSSL_jll")),
+    Dependency(PackageSpec(name="Zstd_jll")),
+    # Force build against Julia 1.6 headers (using compat to find available version)
+    Dependency(PackageSpec(name="libjulia_jll"), compat="1.6")
+]
+
+# Build the tarballs
+# We prefer GCC 9 to ensure glibc compatibility with older linux distros (e.g. CentOS 7)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"9")
