@@ -25,6 +25,8 @@ fi
 
 $CC "${ARCHFLAGS[@]}"  "${GENERICFLAGS[@]}" -O3 -fPIC -shared -o "${libdir}/libtriangle.${dlext}" triangle.c triwrapjulia.c
 
+install -Dm644 triangle.h ${includedir}/triangle.h
+
 install_license README
 """
 
