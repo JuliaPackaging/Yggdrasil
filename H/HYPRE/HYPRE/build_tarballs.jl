@@ -5,6 +5,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "HYPRE"
 version = v"3.1.0"
+ygg_version = v"3.1.1"
 
 sources = [
     GitSource("https://github.com/hypre-space/hypre.git", "9dc9e18aed6a945a95f966e57daacfb1c269f6ec") # Tag v3.1.0
@@ -72,5 +73,5 @@ dependencies = [
 ]
 append!(dependencies, platform_dependencies)
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"8")
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+               augment_platform_block, julia_compat="1.10", preferred_gcc_version = v"8")
