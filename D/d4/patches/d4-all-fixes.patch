@@ -1,0 +1,167 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1,102 +1,41 @@
+-cmake_minimum_required(VERSION 3.1)
+-project(D4 VERSION 0.1)
++cmake_minimum_required(VERSION 3.10)
++project(D4 VERSION 2.0.0)
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+ set(CMAKE_BUILD_TYPE Release)
+-set(CMAKE_CXX_STANDARD_REQUIRED 20)
+-set(CMAKE_CXX_STANDARD_REQUIRED True)
+-file(GLOB_RECURSE SOURCES ./src/**.cpp)
+-file(GLOB_RECURSE INCLUDES ./src/**.hpp)
+-set(SRCS ${SOURCES})
+-set(HEADERS ${INCLUDES})
+-set(Boost_USE_STATIC_LIBS ON)
+-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR})
+-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/3rdParty/glucose-3.0/)
+-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/3rdParty/bipe/)
+-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/3rdParty/flowCutter/)
+-INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
+-if (NOT DEFINED BUILD_MODE)
+-   set(BUILD_MODE 1)
+-endif()
+-set(libList ${CMAKE_SOURCE_DIR}/3rdParty/kahypar/build/lib/libkahypar.a ${Boost_LIBRARIES} ${CMAKE_SOURCE_DIR}/3rdParty/flowCutter/libflowCutter.a ${CMAKE_SOURCE_DIR}/3rdParty/bipe/build/libbipe.a  ${CMAKE_SOURCE_DIR}/3rdParty/bipe/3rdParty/glucose-3.0/core/libglucose.a ${CMAKE_SOURCE_DIR}/3rdParty/patoh/libpatoh.a ${CMAKE_SOURCE_DIR}/3rdParty/glucose-3.0/core/lib_glucose.a)
+-set(wnoOption -Wno-strict-aliasing -Wno-class-memaccess -Wno-format -Wno-misleading-indentation -Wno-literal-suffix -Wno-sign-compare -Wno-parentheses -Wno-restrict)
+-if(${BUILD_MODE} EQUAL 1)
+-  add_library(d4 ${SRCS} ${HEADERS})
+-  target_compile_options(d4 PUBLIC -DNOMAIN -std=c++20 -Wall -g -O2 ${wnoOption} -U NDEBUG)
+-  target_link_libraries (d4 -lz -O2  -U NDEBUG -lgmpxx -lgmp ${libList})
+-  target_include_directories (d4 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+-  install (TARGETS d4 DESTINATION lib)
+-elseif(${BUILD_MODE} EQUAL 2)
+-  add_library(d4 ${SRCS} ${HEADERS})
+-  target_compile_options(d4 PUBLIC -DNOMAIN -std=c++20 -Wall -O2 ${wnoOption} -D NDEBUG -static)
+-  target_link_libraries (d4 -lz -O2 -lgmpxx -lgmp ${libList} -static)
+-  target_include_directories (d4 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+-  install (TARGETS d4 DESTINATION lib)
+-elseif(${BUILD_MODE} EQUAL 3)
+-  add_library(d4 ${SRCS} ${HEADERS})
+-  target_compile_options(d4 PUBLIC -DNOMAIN -std=c++20 -Wall -pg -O3 ${wnoOption} -D NDEBUG)
+-  target_link_libraries (d4 -lz -O3 -pg -lgmpxx -lgmp ${libList})
+-  target_include_directories (d4 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+-  install (TARGETS d4 DESTINATION lib)
+-else()
+-  add_library(d4 ${SRCS} ${HEADERS})
+-  target_compile_options(d4 PUBLIC -DNOMAIN -std=c++20 -Wall -O3 ${wnoOption} -D NDEBUG)
+-  target_link_libraries (d4 -lz -O3 -lgmpxx -lgmp ${libList})
+-  target_include_directories (d4 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+-  install (TARGETS d4 DESTINATION lib)
+-endif()
++set(CMAKE_CXX_STANDARD 17)
++set(CMAKE_CXX_STANDARD_REQUIRED ON)
++
++find_package(Boost REQUIRED COMPONENTS program_options)
++find_package(TBB REQUIRED)
++find_package(ZLIB REQUIRED)
++find_path(GMP_INCLUDE_DIR gmp.h)
++find_library(GMP_LIBRARY NAMES gmp)
++find_library(GMPXX_LIBRARY NAMES gmpxx)
++
++include_directories(${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/3rdParty/bipe/src ${CMAKE_SOURCE_DIR}/3rdParty/glucose-3.0 ${CMAKE_SOURCE_DIR}/3rdParty/flowCutter/src ${GMP_INCLUDE_DIR})
++
++file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.cc")
++file(GLOB_RECURSE BIPE_SOURCES "3rdParty/bipe/src/*.cpp")
++file(GLOB_RECURSE FLOW_SOURCES "3rdParty/flowCutter/src/*.cpp")
++set(ALL_SOURCES ${SOURCES} ${BIPE_SOURCES} ${FLOW_SOURCES} "3rdParty/glucose-3.0/core/Solver.cc")
++list(FILTER ALL_SOURCES EXCLUDE REGEX "PartitionerPatoh")
++
++add_library(d4 SHARED ${ALL_SOURCES})
++target_compile_definitions(d4 PRIVATE NOMAIN)
++target_link_libraries(d4 ${GMPXX_LIBRARY} ${GMP_LIBRARY} ${Boost_LIBRARIES} TBB::tbb ZLIB::ZLIB)
++
++add_executable(d4-bin demo/compiler/src/Main.cpp demo/compiler/src/CompilerDemo.cpp demo/compiler/src/ParseOption.cpp)
++set_target_properties(d4-bin PROPERTIES OUTPUT_NAME d4)
++target_link_libraries(d4-bin d4 ${Boost_LIBRARIES} TBB::tbb)
++
++install(TARGETS d4 d4-bin RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
++install(DIRECTORY src/ DESTINATION include/d4 FILES_MATCHING PATTERN "*.hpp" PATTERN "*.h")
++
++if(MSVC)
++    target_compile_options(d4 PRIVATE /utf-8)
++endif()
++
++--- a/src/methods/nnf/NodeManager.hpp
+++++ b/src/methods/nnf/NodeManager.hpp
++@@ -40,11 +40,11 @@
++ template <class T> class NodeManager {
++  public:
++-  using NodeManager<T>::PAGE_SIZE;
+++  using NodeManager<T>::D4_PAGE_SIZE;
++   using NodeManager<T>::nodes;
++@@ -241,1 +241,1 @@
++-  static const unsigned PAGE_SIZE = 1 << 24;
+++  static const unsigned D4_PAGE_SIZE = 1 << 24;
++--- a/3rdParty/glucose-3.0/utils/System.h
+++++ b/3rdParty/glucose-3.0/utils/System.h
++@@ -23,10 +23,15 @@
++ #ifndef Glucose_System_h
++ #define Glucose_System_h
++ 
+++#if defined(__linux__) && defined(__GLIBC__)
++ #include <fpu_control.h>
+++#else
+++#define fpu_control_t unsigned int
+++#endif
++ 
++ #include "glucose-3.0/utils/Resources.h"
++ 
++ namespace Glucose {
++--- a/3rdParty/glucose-3.0/utils/System.cc
+++++ b/3rdParty/glucose-3.0/utils/System.cc
++@@ -75,9 +75,11 @@
++ void Glucose::limitMemory(uint64_t max_mem_mb)
++ { /* KR: Not implemented for now */ }
++ 
+++#if defined(__linux__) && defined(__GLIBC__)
++ void Glucose::limitTime(uint32_t max_cpu_time)
++ { /* KR: Not implemented for now */ }
++-
+++#endif
+++
++ void Glucose::sigTerm(void handler(int))
++ { /* KR: Not implemented for now */ }
++--- a/3rdParty/bipe/src/solver/WrapperGlucose.cpp
+++++ b/3rdParty/bipe/src/solver/WrapperGlucose.cpp
++@@ -35,1 +35,1 @@
++-    s.addClauseInit(addCl);
+++    s.addClause_(addCl);
++@@ -58,1 +58,2 @@
++-    Glucose::lbool res = s.solveLimited(nbConflict);
+++    bool success = s.solve();
+++    Glucose::lbool res = success ? Glucose::lbool((uint8_t)0) : Glucose::lbool((uint8_t)1);
++--- a/src/partitioner/PartitionerManager.cpp
+++++ b/src/partitioner/PartitionerManager.cpp
++@@ -21,1 +21,1 @@
++-#include "PartitionerPatoh.hpp"
+++// #include "PartitionerPatoh.hpp"
++@@ -62,1 +62,1 @@
++-    return new PartitionerPatoh(infoHyperGraph, out);
+++    throw(std::runtime_error("Partitioner PaToH not supported"));
++--- a/src/problem/ProblemTypes.hpp
+++++ b/src/problem/ProblemTypes.hpp
++@@ -23,1 +23,3 @@
++ namespace d4 {
+++  class ProblemInputTypeManager;
+++  using InputTypeManager = ProblemInputTypeManager;
++--- a/src/problem/circuit/ParserCircuit.cpp
+++++ b/src/problem/circuit/ParserCircuit.cpp
++@@ -45,1 +45,1 @@
++-    if (line.starts_with("c w ")) {
+++    if (0 == line.find("c w ")) {
++--- a/src/configurations/ConfigurationCache.hpp
+++++ b/src/configurations/ConfigurationCache.hpp
++@@ -29,2 +29,2 @@
++-  unsigned long sizeFirstPage = 1UL << 32;
++-  unsigned long sizeAdditionalPage = 536870912;
+++  uint64_t sizeFirstPage = 1ULL << 32;
+++  uint64_t sizeAdditionalPage = 536870912;
++--- a/demo/compiler/src/ParseOption.cpp
+++++ b/demo/compiler/src/ParseOption.cpp
++@@ -100,2 +100,2 @@
++-    unsigned long sizeFirstPage = vm["cache-size-first-page"].as<unsigned long>();
++-    unsigned long sizeAdditionalPage = vm["cache-size-additional-page"].as<unsigned long>();
+++    uint64_t sizeFirstPage = vm["cache-size-first-page"].as<uint64_t>();
+++    uint64_t sizeAdditionalPage = vm["cache-size-additional-page"].as<uint64_t>();
