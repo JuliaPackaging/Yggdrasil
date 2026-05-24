@@ -18,7 +18,7 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
 cd $WORKSPACE/srcdir/utils/piolib/
-cmake . -B build -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
+cmake . -B build -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_STANDARD=11 -DCMAKE_C_STANDARD_REQUIRED=ON
 cmake --build build --parallel ${nproc}
 cmake --install build
 install_license ${WORKSPACE}/srcdir/utils/LICENCE
