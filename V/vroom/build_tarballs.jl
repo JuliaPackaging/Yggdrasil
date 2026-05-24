@@ -1,12 +1,12 @@
 using BinaryBuilder, Pkg
 
 name = "vroom"
-version = v"1.14.0"
+version = v"1.15.0"
 
 # Collection of sources required to complete build
 sources = [
-    # v1.14.0
-    GitSource("https://github.com/VROOM-Project/vroom.git", "1fd711bc8c20326dd8e9538e2c7e4cb1ebd67bdb"),
+    # v1.15.0
+    GitSource("https://github.com/VROOM-Project/vroom.git", "43dd7d0b8b560431eb555bf335cf4797eb7343c4"),
 ]
 
 # Bash recipe for building across all platforms
