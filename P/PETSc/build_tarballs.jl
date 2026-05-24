@@ -48,6 +48,7 @@ fi
 # Otherwise PETSc's per-package `requires32bitintblas` default rejects
 # the combination at configure time.
 atomic_patch -p1 $WORKSPACE/srcdir/patches/suitesparse-64bit-blas.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/external-pkgs-64bit-blas.patch
 
 mkdir $libdir/petsc
 build_petsc()
@@ -86,15 +87,9 @@ build_petsc()
         USE_SUITESPARSE=1
     fi
 
-    # See if we can install MUMPS
     USE_MUMPS=0
-    if [[ "${target}" == *-mingw* ]]; then
-        # try static
-        USE_MUMPS=0
-    elif [ "${1}" == "double" ] && [ "${2}" == "real" ]; then
+    if [ "${1}" == "double" ] && [ "${2}" == "real" ] && [[ "${target}" != *-mingw* ]]; then
         USE_MUMPS=1
-    else
-        USE_MUMPS=0
     fi
     if [[ "${target}" == powerpc64le-linux-* ]] || [[ "${target}" == aarch64-linux-* ]] || [[ "${target}" == arm-linux-* ]]; then
         USE_MUMPS=0
@@ -117,7 +112,7 @@ build_petsc()
     if [[ "${target}" == *-mingw* ]]; then
         SCALAPACK_ARGS=""
     else
-        SCALAPACK_ARGS="--with-scalapack-lib=${libdir}/libscalapack.${dlext} --with-scalapack-include=${includedir}"
+        SCALAPACK_ARGS="--with-scalapack-lib=[${libdir}/libscalapack64.${dlext},${libdir}/libscalapack.${dlext}] --with-scalapack-include=${includedir}"
     fi
 
     # ILP64 BLAS via libblastrampoline (PETSc calls dgemm_64_, etc.).
@@ -144,9 +139,8 @@ build_petsc()
         _FOPTFLAGS='-O3'
     fi
 
-    # hypre
     USE_HYPRE=0
-    if [ "${1}" == "double" ] && [ "${2}" == "real" ]; then
+    if [ "${1}" == "double" ] && [ "${2}" == "real" ] && [[ "${target}" != *-mingw* ]]; then
         USE_HYPRE=1
     fi
 
@@ -161,7 +155,7 @@ build_petsc()
         USE_HYPRE=0
     else
         MPI_CC=mpicc
-        MPI_FC=mpifc
+        MPI_FC=mpifort
         MPI_CXX=mpicxx
         export MPIF_FCLIBS='-lmpif -lmpi_abi'
     fi
@@ -175,6 +169,30 @@ build_petsc()
     if [ "${1}" == "double" ] ; then
          USE_TRIANGLE=1
          USE_TETGEN=1
+    fi
+
+    if [ ${USE_HYPRE} == 1 ]; then
+        HYPRE_ARGS="--with-hypre=1 --with-hypre-include=${includedir} --with-hypre-lib=${libdir}/libHYPRE64.${dlext}"
+    else
+        HYPRE_ARGS="--with-hypre=0"
+    fi
+
+    if [ ${USE_SUPERLU_DIST} == 1 ]; then
+        SUPERLU_DIST_ARGS="--with-superlu_dist=1 --with-superlu_dist-include=${includedir} --with-superlu_dist-lib=${libdir}/libsuperlu_dist_Int64.${dlext}"
+    else
+        SUPERLU_DIST_ARGS="--with-superlu_dist=0"
+    fi
+
+    if [ ${USE_TETGEN} == 1 ]; then
+        TETGEN_ARGS="--with-tetgen=1 --with-tetgen-include=${includedir} --with-tetgen-lib=${libdir}/libtet.${dlext}"
+    else
+        TETGEN_ARGS="--with-tetgen=0"
+    fi
+
+    if [ ${USE_TRIANGLE} == 1 ]; then
+        TRIANGLE_ARGS="--with-triangle=1 --with-triangle-include=${includedir} --with-triangle-lib=${libdir}/libtriangle.${dlext}"
+    else
+        TRIANGLE_ARGS="--with-triangle=0"
     fi
 
     # Define our toolchain for PETSc and all the other packages it configures recursively
@@ -247,15 +265,12 @@ build_petsc()
         --PETSC_ARCH=${target}_${PETSC_CONFIG} \
         ${SCALAPACK_ARGS} \
         ${SUITESPARSE_ARGS} \
-        --download-superlu_dist=${USE_SUPERLU_DIST} \
-        --download-superlu_dist-shared=0 \
-        --download-hypre=${USE_HYPRE} \
-        --download-hypre-shared=0 \
-        --download-hypre-configure-arguments='--host --build' \
+        ${SUPERLU_DIST_ARGS} \
+        ${HYPRE_ARGS} \
         --download-mumps=${USE_MUMPS} \
         --download-mumps-shared=0 \
-        --download-tetgen=${USE_TETGEN} \
-        --download-triangle=${USE_TRIANGLE} \
+        ${TETGEN_ARGS} \
+        ${TRIANGLE_ARGS} \
         --with-library-name-suffix=_${PETSC_CONFIG} \
         --with-shared-libraries=1 \
         --with-clean=1
@@ -397,12 +412,20 @@ dependencies = [
     Dependency(PackageSpec(name="OpenBLAS_jll", uuid="4536629a-c528-5b80-bd46-f80d51c5b363");
                platforms=filter(Sys.iswindows, platforms)),
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93");
-               compat="5.4.0",
+               compat="5.11.0",
                platforms=filter(!Sys.iswindows, platforms)),
     # ILP64 SCALAPACK to match the BLAS ABI.  No Windows build (PETSc has
     # MPI disabled on Windows so SCALAPACK isn't needed there either).
+    Dependency(PackageSpec(name="SCALAPACK64_jll", uuid="575e156b-18ce-583f-9f61-e5186a0cefa5");
+               compat="2.2.300", platforms=filter(!Sys.iswindows, platforms)),
     Dependency(PackageSpec(name="SCALAPACK_jll", uuid="5d3fc3e8-a677-5550-826f-6cfd58f208da");
-               compat="2.2.3", platforms=filter(!Sys.iswindows, platforms)),
+               compat="2.2.300", platforms=filter(!Sys.iswindows, platforms)),
+    Dependency(PackageSpec(name="HYPRE64_jll"); compat="3.1.0",
+               platforms=filter(!Sys.iswindows, platforms)),
+    Dependency(PackageSpec(name="SuperLU_DIST_jll"); compat="9.2.1",
+               platforms=filter(!Sys.iswindows, platforms)),
+    Dependency(PackageSpec(name="TetGen_jll"); compat="1.6.0"),
+    Dependency(PackageSpec(name="Triangle_jll"); compat="1.6.3"),
     # Julia's stdlib SuiteSparse (Int64 / SuiteSparse_long).  Julia
     # 1.10 ships SuiteSparse_jll 7.2.x.
     Dependency(PackageSpec(name="SuiteSparse_jll", uuid="bea87d4a-7f5b-5778-9afe-8cc45184846c"); compat="7.2.0"),
