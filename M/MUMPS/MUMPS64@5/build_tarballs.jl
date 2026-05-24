@@ -12,11 +12,8 @@ sources = [
                 "02c6efdb91749ec0f82351d40f3f860547272a1eb1d899126a4265b4d6bcc4ca")
 ]
 
-# Bash recipe for building across all platforms.
-# This is the ILP64 / 64-bit integer parallel build of MUMPS that:
-#   * uses 64-bit Fortran integers (-fdefault-integer-8, -DINTSIZE64)
-#   * links to libblastrampoline via `_64_`-suffixed BLAS/LAPACK symbols
-#   * links to SCALAPACK64 (libscalapack64), whose exports are `_64_`-suffixed
+# ILP64 parallel MUMPS: -fdefault-integer-8 / -DINTSIZE64, BLAS/LAPACK via
+# libblastrampoline `_64_`-suffixed symbols, links to libscalapack64.
 script = raw"""
 mkdir -p ${libdir}
 cd $WORKSPACE/srcdir/MUMPS*
@@ -72,9 +69,8 @@ else
     MPIFL=mpifort
 fi
 
-# Discover ScaLAPACK64's exported symbol base names (strip `_64_`).
-# These are the names MUMPS sources call; we must rename them to the
-# real `_64_`-suffixed exports at compile time via -D defines.
+# Discover ScaLAPACK64 symbol base names (strip `_64_`) so we can rewrite
+# MUMPS's unsuffixed calls to the `_64_` exports via cpp -D defines.
 if [[ ${target} == *apple* ]]; then
     NM=llvm-nm
     NM_FILTER='$2 ~ /^[TW]$/ {sub(/^_/, "", $3); print $3}'
@@ -88,8 +84,7 @@ ${NM} --defined-only --extern-only ${libdir}/libscalapack64.${dlext} 2>/dev/null
     | sed 's/_64_$//' \
     | sort -u > /tmp/scalapack_syms.txt
 
-# Fixed BLAS/LAPACK symbols (must match the names MUMPS calls). LBT routes
-# `_64_`-suffixed symbols to the underlying ILP64 BLAS implementation.
+# BLAS/LAPACK symbols MUMPS calls; routed via LBT's `_64_` suffix.
 blas_lapack_syms=(
     isamax idamax icamax izamax ilaenv lsame xerbla
     slamch dlamch
@@ -131,10 +126,7 @@ blas_lapack_syms=(
     sgeqp3 dgeqp3 cgeqp3 zgeqp3
 )
 
-# MUMPS Fortran sources use a mix of lowercase and UPPERCASE identifiers
-# (Fortran is case-insensitive, but the C preprocessor is not), so we emit
-# both case variants for Fortran (no trailing `_`, since gfortran appends
-# it) and lowercase C-style defines (with `_`).
+# cpp is case-sensitive but Fortran isn't, so emit both case variants for F.
 : >/tmp/fortran_defines.txt
 : >/tmp/c_defines.txt
 { cat /tmp/scalapack_syms.txt; printf '%s\n' "${blas_lapack_syms[@]}"; } | sort -u \
@@ -151,7 +143,22 @@ RENAME_C=$(tr '\n' ' ' < /tmp/c_defines.txt)
 LSCOTCH=""
 FSCOTCH=""
 
-make_args+=(PLAT="_par64"
+# MPI Fortran headers (mpif_jll, mpitrampoline, …) use `&` at col 73 paired
+# with `&` at col 6 of the next line, relying on fixed-72 truncation.
+# `-ffixed-line-length-none` defeats this. mpifort hardcodes `-I${includedir}`
+# first, so we patch in place (originals are read-only artifact symlinks).
+for f in "${includedir}"/*.h; do
+    [[ -e "$f" ]] || continue
+    if awk 'length($0)>=73 && substr($0,73,1)=="&" {found=1; exit} END {exit !found}' "$f"; then
+        cp -L "$f" "${f}.tmp"
+        rm -f "$f"
+        mv "${f}.tmp" "$f"
+        chmod u+w "$f"
+        sed -i 's/&[[:space:]]*$//' "$f"
+    fi
+done
+
+make_args+=(PLAT="par64"
             OPTF="-O3 -fopenmp -fdefault-integer-8 -ffixed-line-length-none -cpp ${RENAME_F}"
             OPTL="-O3 -fopenmp"
             OPTC="-O3 -fopenmp -DINTSIZE64 ${RENAME_C}"
@@ -170,7 +177,7 @@ make_args+=(PLAT="_par64"
             FC="${MPIFC} ${FFLAGS[@]}"
             FL="${MPIFL}"
             RANLIB="echo"
-            LPORD="-L./PORD/lib -lpord_par64"
+            LPORD="-L./PORD/lib -lpordpar64"
             LIBBLAS="${BLAS_LAPACK}"
             LAPACK="${BLAS_LAPACK}"
             SCALAP="-L${libdir} -lscalapack64"
@@ -195,10 +202,10 @@ platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libsmumps_par64", :libsmumps_par64),
-    LibraryProduct("libdmumps_par64", :libdmumps_par64),
-    LibraryProduct("libcmumps_par64", :libcmumps_par64),
-    LibraryProduct("libzmumps_par64", :libzmumps_par64),
+    LibraryProduct("libsmumpspar64", :libsmumpspar64),
+    LibraryProduct("libdmumpspar64", :libdmumpspar64),
+    LibraryProduct("libcmumpspar64", :libcmumpspar64),
+    LibraryProduct("libzmumpspar64", :libzmumpspar64),
 ]
 
 # Dependencies that must be installed before this package can be built
