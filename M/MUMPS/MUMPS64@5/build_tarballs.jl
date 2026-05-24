@@ -161,7 +161,7 @@ done
 make_args+=(PLAT="par64"
             OPTF="-O3 -fopenmp -fdefault-integer-8 -ffixed-line-length-none -cpp ${RENAME_F}"
             OPTL="-O3 -fopenmp"
-            OPTC="-O3 -fopenmp -DINTSIZE64 ${RENAME_C}"
+            OPTC="-O3 -fopenmp -DINTSIZE64 -DIDXTYPEWIDTH=64 -DREALTYPEWIDTH=64 ${RENAME_C}"
             CDEFS=-DAdd_
             LMETISDIR="${libdir}/metis/metis_Int64_Real64/lib"
             IMETIS="-I${libdir}/metis/metis_Int64_Real64/include"
@@ -198,6 +198,8 @@ augment_platform_block = """
 
 platforms = expand_gfortran_versions(supported_platforms())
 platforms = filter(p -> nbits(p) == 64, platforms)
+# SCALAPACK64_jll has no Windows build, so MUMPS64 can't link there either.
+platforms = filter(!Sys.iswindows, platforms)
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # The products that we will ensure are always built
@@ -210,7 +212,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    # libgomp on glibc/musl/freebsd, libomp from LLVM on Darwin (Apple clang ships no omp.h).
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae");
+               platforms=filter(!Sys.isapple, platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
+               platforms=filter(Sys.isapple, platforms)),
     Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70"); compat="5.1.3"),
     Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa"); compat="4.0.7"),
     Dependency(PackageSpec(name="SCALAPACK64_jll", uuid="575e156b-18ce-583f-9f61-e5186a0cefa5"); compat="2.2.3"),
