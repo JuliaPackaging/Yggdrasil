@@ -67,8 +67,8 @@ Cbc_gitsha = "782d275a8efa569eb818551561b424948e19653c"
 Cgl_version = offset_version(v"0.60.9", v"0.0.0")
 Cgl_gitsha = "1d91b9ccb57eafbb7c07e994089a0f124358ffbd"
 
-Clp_version = offset_version(v"1.17.10", v"0.0.1")
-Clp_gitsha = "9a3efaa9ecefeb2a6088a447c9f66c6f31edbed9"
+Clp_version = offset_version(v"1.17.11", v"0.0.0")
+Clp_gitsha = "9310c186d546e21d482be3455166ee6fb4cd6302"
 
 Osi_version = offset_version(v"0.108.12", v"0.0.0")
 Osi_gitsha = "b3dbb7c910a9992717b1107542606262296a0e7e"
@@ -103,8 +103,7 @@ SHOT_version = offset_version(v"1.1.0", v"0.0.0")
 Julia_compat_version = "1.6"
 ASL_version = v"0.1.3"
 METIS_version = v"5.1.2"
-MUMPS_seq_version = v"5.4.1"
-MUMPS_seq_version_LBT = v"500.800.200"
+MUMPS_seq_version_LBT = v"500.900.000"
 SPRAL_version_LBT = v"2025.9.18"
 OpenBLAS32_version = v"0.3.26"
 
