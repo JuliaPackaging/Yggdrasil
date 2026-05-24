@@ -1,0 +1,16 @@
+macOS only added mknodat()/mkfifoat() in macOS 13 (Ventura). Older SDKs
+declare AT_FDCWD but not those functions, so the dirfd-based do_mknod_at()
+path fails to compile. Gate that path on HAVE_MKNODAT and fall through to
+plain do_mknod() when the SDK is too old to provide the secure variant.
+
+--- a/syscall.c
++++ b/syscall.c
+@@ -536,7 +536,7 @@
+ */
+ int do_mknod_at(const char *pathname, mode_t mode, dev_t dev)
+ {
+-#ifdef AT_FDCWD
++#if defined(AT_FDCWD) && defined(HAVE_MKNODAT)
+ 	extern int am_daemon, am_chrooted;
+ 	char dirpath[MAXPATHLEN];
+ 	const char *bname;

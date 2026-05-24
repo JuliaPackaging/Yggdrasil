@@ -28,6 +28,19 @@ if echo '#include <linux/openat2.h>' | ${CC} -E -x c - >/dev/null 2>&1; then
     export CPPFLAGS="${CPPFLAGS:-} -DHAVE_LINUX_OPENAT2_H=1"
 fi
 
+# rsync 3.4.3 uses mknodat()/mkfifoat() unconditionally in its symlink-race-
+#     safe do_mknod_at(). macOS only added them in 13 (Ventura).
+# The patch falls back to the existing plain do_mknod() implementation
+#     when the SDK is too old.
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mknodat.patch
+if ${CC} -Werror=implicit-function-declaration -c -x c - -o /dev/null 2>/dev/null <<'EOF'
+#include <sys/stat.h>
+int probe(void) { return mknodat(0, "", 0, 0); }
+EOF
+then
+    export CPPFLAGS="${CPPFLAGS:-} -DHAVE_MKNODAT=1"
+fi
+
 CONFIGURE_FLAGS=(--prefix=${prefix} --build=${MACHTYPE} --host=${target})
 # prefer to use JLLs instead of included deps
 CONFIGURE_FLAGS+=(--with-included-popt=no)
