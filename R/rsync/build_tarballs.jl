@@ -17,12 +17,16 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/rsync-*
 
-# rsync 3.4.3 unconditionally includes <linux/openat2.h> (kernel >= 5.6).
-# Check target sysroot. Patch the source to add guards.
+# rsync 3.4.3 unconditionally includes <linux/openat2.h>, which only
+#     exists on Linux 5.6+, and not in some of our older platforms.
+#     Check the target sysroot.
+# The patch provides a fallback declaration for `openat2`.
+# At run time, the code checks whether the kernel supports `openat2`,
+#     and uses a slower fallback if not.
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/openat2.patch
 if echo '#include <linux/openat2.h>' | ${CC} -E -x c - >/dev/null 2>&1; then
     export CPPFLAGS="${CPPFLAGS:-} -DHAVE_LINUX_OPENAT2_H=1"
 fi
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/openat2.patch
 
 CONFIGURE_FLAGS=(--prefix=${prefix} --build=${MACHTYPE} --host=${target})
 # prefer to use JLLs instead of included deps
