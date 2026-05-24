@@ -10,6 +10,7 @@ version = v"3.4.3"
 sources = [
     ArchiveSource("https://download.samba.org/pub/rsync/src/rsync-$(version).tar.gz",
                   "c72e63ca3021cbc80ba86ec30102773f4c5631fbc492b52e773b3958f82a53d3"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
