@@ -8,13 +8,13 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "AMReX"
-version_string = "26.03"
+version_string = "26.05"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/AMReX-Codes/amrex/releases/download/$(version_string)/amrex-$(version_string).tar.gz",
-                  "7139b8bb423a4311e8990bee6cb06b86a81de439363f35a3f29c808a93a003ca"),
+                  "70ec8f0e6917388b3d91a7c470648f6ce11a99096810420f1054ed98a041e315"),
 ]
 
 # Bash recipe for building across all platforms
@@ -23,6 +23,13 @@ cd ${WORKSPACE}/srcdir/amrex
 
 # Correct HDF5 compiler wrappers
 perl -pi -e 's+-I/workspace/srcdir/hdf5-1[.]14[.]./src/H5FDsubfiling++' $(which h5pcc)
+
+if [[ "${target}" == *-apple-* ]]; then
+    # Install libdispatch. This is required for the MacOS linker.
+    # It should probably have been put into the root file system.
+    # This requires GCC 14 or later.
+    apk add libdispatch libdispatch-dev --repository=http://dl-cdn.alpinelinux.org/alpine/v3.17/community
+fi
 
 if [[ "${target}" == *-apple-* ]]; then
     if grep -q MPICH_NAME ${prefix}/include/mpi.h; then
@@ -77,7 +84,7 @@ fi
 install_license LICENSE
 """
 
-sources, script = require_macos_sdk("10.14", sources, script)
+sources, script = require_macos_sdk("14.0", sources, script)
 
 augment_platform_block = """
     using Base.BinaryPlatforms
@@ -124,5 +131,7 @@ append!(dependencies, platform_dependencies)
 # - GCC 4 is too old: AMReX requires C++14, and thus at least GCC 5
 # - AMReX requires C++17, and at least GCC 8 to provide the <filesystem> header
 # - GCC 8.1.0 suffers from an ICE, so we use GCC 9 instead
+# - AMReX requires GCC 11
+# - We need GCC 14 so that gfortran understands `MACOSX_DEPLOYMENT_TARGET=14.0`
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, clang_use_lld=false, julia_compat="1.6", preferred_gcc_version = v"9")
+               augment_platform_block, clang_use_lld=false, julia_compat="1.10", preferred_gcc_version=v"14")
