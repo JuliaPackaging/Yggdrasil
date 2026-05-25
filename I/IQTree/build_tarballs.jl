@@ -69,22 +69,25 @@ install_license ${WORKSPACE}/srcdir/iqtree3/LICENSE
 platforms = supported_platforms()
 filter!(p -> nbits(p) == 64, platforms)
 filter!(p -> arch(p) in ("x86_64", "aarch64"), platforms)
+# Zlib_jll stdlib on Julia 1.10-1.12 (1.2.13+1, 1.3.1+0) has no aarch64-freebsd binary.
+filter!(p -> !(arch(p) == "aarch64" && Sys.isfreebsd(p)), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
     ExecutableProduct("iqtree3", :iqtree3),
 ]
 
-# libgomp on Linux, libomp on macOS/FreeBSD.
+# For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
+# systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
 dependencies = [
-    BuildDependency("Eigen_jll"),
+    BuildDependency(PackageSpec(name="Eigen_jll", uuid="bc6bbf8a-a594-5541-9c57-10b0d0312c70")),
     Dependency("boost_jll"; compat="1.87"),
-    Dependency("Zlib_jll"; compat="1.3.1"),
-    Dependency("CompilerSupportLibraries_jll";
-               platforms=filter(!Sys.isbsd, platforms)),
-    Dependency("LLVMOpenMP_jll";
+    Dependency("Zlib_jll"; compat="1.2.13"),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae");
+               compat="1.0.5", platforms=filter(!Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
                platforms=filter(Sys.isbsd, platforms)),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"9")
+               julia_compat="1.10", preferred_gcc_version=v"9")
