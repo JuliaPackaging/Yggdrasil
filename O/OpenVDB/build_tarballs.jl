@@ -80,12 +80,12 @@ dependencies = [
     Dependency("boost_jll"; compat="1.87"),
     Dependency("oneTBB_jll"; compat="2022.3"),
     Dependency("Blosc_jll"; compat="1.21.7"),
-    Dependency("Zlib_jll"; compat="1.3.2"),
+    Dependency("Zlib_jll"; compat="1.2.13"),
     # libopenvdb.so links libgcc_s; audit fails to auto-map without this.
-    Dependency("CompilerSupportLibraries_jll"),
+    Dependency("CompilerSupportLibraries_jll"; compat="1.0.5"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # OpenVDB 13's OpenVDBCXX.cmake requires g++ >= 11.2.1.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"12")
+               julia_compat="1.10", preferred_gcc_version=v"12")
