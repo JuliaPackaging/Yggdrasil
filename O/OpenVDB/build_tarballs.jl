@@ -68,9 +68,9 @@ platforms = expand_cxxstring_abis(supported_platforms())
 # Disable platforms that we don't have oneTBB for
 filter!(p -> arch(p) ∉ ("armv6l", "armv7l"), platforms)
 filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
-# Zlib_jll's stdlib version on Julia 1.10/1.11 (1.2.13+1) doesn't ship a
-# riscv64 binary; BB pins stdlib JLLs to the julia_compat floor's version.
+# Zlib_jll stdlib on Julia 1.10-1.12 has neither riscv64 nor aarch64-freebsd.
 filter!(p -> arch(p) != "riscv64", platforms)
+filter!(p -> !(arch(p) == "aarch64" && Sys.isfreebsd(p)), platforms)
 
 # The products that we will ensure are always built
 products = [
