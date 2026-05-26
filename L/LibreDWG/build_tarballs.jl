@@ -34,10 +34,8 @@ sources = [
 #   --disable-werror           Tolerates warnings on cross toolchains.
 #   --disable-static           Shared-only, matching JLL convention.
 #
-# PCRE2 (8 + 16 bit) activates `dwggrep` regex search. Libiconv provides
-# the codepage table for ~30 legacy DWG encodings. CPPFLAGS exports the
-# JLL include dir so configure detects both deps; libtool then picks up
-# `-liconv` transitively for the CLI tools that link libredwg.so.
+# CPPFLAGS export form (vs `--with-libiconv-prefix`) preserves libtool
+# dep tracking for CLI tools on musl. Matches `L/LibArchive`, `L/libpsl`.
 #
 # `-Wno-error=implicit-function-declaration` for FreeBSD: LibreDWG calls
 # `memmem` unguarded; FreeBSD hides the decl under `_POSIX_C_SOURCE`.
@@ -73,7 +71,7 @@ products = [
     ExecutableProduct("dwgread",    :dwgread),
     ExecutableProduct("dwgwrite",   :dwgwrite),
     ExecutableProduct("dwgrewrite", :dwgrewrite),
-    ExecutableProduct("dwggrep",    :dwggrep),
+    # `dwggrep` omitted: needs libpcre2-16, which Julia's stdlib PCRE2_jll lacks.
     ExecutableProduct("dwglayers",  :dwglayers),
     ExecutableProduct("dwgbmp",     :dwgbmp),
     ExecutableProduct("dwg2SVG",    :dwg2svg),
@@ -84,12 +82,8 @@ products = [
 # Dependencies that must be installed before this package can be built.
 #   Libiconv_jll  codepage conversion (musl/windows/freebsd need the JLL;
 #                 native on macOS/glibc, harmless to include unconditionally).
-#   PCRE2_jll     8 + 16 bit regex libraries; activates dwggrep regex
-#                 search. Without it dwggrep builds as a stripped-down
-#                 stub (string-match only).
 dependencies = [
     Dependency("Libiconv_jll"; compat="1.17"),
-    Dependency("PCRE2_jll"; compat="10.42"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
