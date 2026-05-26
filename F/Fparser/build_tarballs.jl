@@ -1,6 +1,6 @@
 using BinaryBuilder, Pkg
 
-name = "fparser"
+name = "Fparser"
 version = v"4.5.1"
 
 # ---------------------------------------------------------------------------
