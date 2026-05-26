@@ -39,12 +39,9 @@ sources = [
 # JLL include dir so configure detects both deps; libtool then picks up
 # `-liconv` transitively for the CLI tools that link libredwg.so.
 #
-# `-Wno-error=implicit-function-declaration` downgrades the newer clang
-# strict-mode error LibreDWG hits on FreeBSD: `decode.c` calls `memmem`
-# unguarded, and FreeBSD's `<string.h>` hides the declaration when
-# `_POSIX_C_SOURCE=900000L` is set (which LibreDWG's configure does).
-# The symbol exists in libc; only the declaration is missing, so the
-# link succeeds. Same workaround used in `M/MPIR` and `P/PTSCOTCH`.
+# `-Wno-error=implicit-function-declaration` for FreeBSD: LibreDWG calls
+# `memmem` unguarded; FreeBSD hides the decl under `_POSIX_C_SOURCE`.
+# Same workaround as `M/MPIR`, `P/PTSCOTCH`.
 script = raw"""
 cd $WORKSPACE/srcdir/libredwg-*/
 export CPPFLAGS="-I${includedir}"
@@ -80,20 +77,13 @@ products = [
     ExecutableProduct("dwglayers",  :dwglayers),
     ExecutableProduct("dwgbmp",     :dwgbmp),
     ExecutableProduct("dwg2SVG",    :dwg2svg),
-    # `dwg2ps` is conditionally built only when pslib is present (configure
-    # emits "pslib for dwg2ps missing with release" otherwise). pslib has no
-    # JLL; dwg2ps is a niche PostScript exporter rarely needed by Julia
-    # consumers, so the product is omitted rather than carrying a fragile
-    # build-from-source dep.
+    # `dwg2ps` omitted: needs pslib, which has no JLL.
     ExecutableProduct("dxfwrite",   :dxfwrite),
 ]
 
 # Dependencies that must be installed before this package can be built.
-#   Libiconv_jll  codepage conversion for the ~30 legacy DWG encodings.
-#                 macOS + glibc Linux ship iconv natively, but musl Linux
-#                 + Windows MinGW + FreeBSD need an external JLL; passing
-#                 it unconditionally is harmless on the natively-provided
-#                 platforms (ABI-compatible).
+#   Libiconv_jll  codepage conversion (musl/windows/freebsd need the JLL;
+#                 native on macOS/glibc, harmless to include unconditionally).
 #   PCRE2_jll     8 + 16 bit regex libraries; activates dwggrep regex
 #                 search. Without it dwggrep builds as a stripped-down
 #                 stub (string-match only).
