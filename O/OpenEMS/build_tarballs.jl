@@ -1,6 +1,6 @@
 using BinaryBuilder, Pkg
 
-name = "openEMS"
+name = "OpenEMS"
 version = v"0.0.36"
 
 # ---------------------------------------------------------------------------
@@ -63,7 +63,7 @@ products = [
 # Dependencies
 # ---------------------------------------------------------------------------
 dependencies = [
-    Dependency("fparser_jll"),
+    Dependency("Fparser_jll"),
     Dependency("CSXCAD_jll"),
     Dependency("TinyXML_jll"),
     Dependency("HDF5_jll"),
