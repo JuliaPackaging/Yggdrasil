@@ -1,0 +1,13 @@
+diff --git a/magic/Makefile.am b/magic/Makefile.am
+index 270c7fc..8fed0ba 100644
+--- a/magic/Makefile.am
++++ b/magic/Makefile.am
+@@ -375,7 +375,7 @@ ${MAGIC}: $(MAGIC_FRAGMENTS) $(FILE_COMPILE_DEP)
+ 	@(if expr "${FILE_COMPILE}" : '.*/.*' > /dev/null; then \
+ 	    echo "Using ${FILE_COMPILE} to generate ${MAGIC}" > /dev/null; \
+ 	  else \
+-	    v=$$(${FILE_COMPILE} --version | sed -e s/file-// -e q); \
++	    v=$$(${FILE_COMPILE} --version | sed -e s/file${EXEEXT}-// -e q); \
+ 	    if [ "$$v" != "${PACKAGE_VERSION}" ]; then \
+ 		echo "Cannot use the installed version of file ($$v) to"; \
+ 		echo "cross-compile file ${PACKAGE_VERSION}"; \
