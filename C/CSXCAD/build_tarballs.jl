@@ -70,7 +70,7 @@ products = [
 # Dependencies
 # ---------------------------------------------------------------------------
 dependencies = [
-    Dependency("fparser_jll"),
+    Dependency("Fparser_jll"),
     Dependency("TinyXML_jll"),
     Dependency("HDF5_jll"),
     Dependency("CGAL_jll"),
