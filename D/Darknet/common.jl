@@ -1,10 +1,10 @@
 using BinaryBuilder, Pkg
 
 function gen_common(platforms; openmp = true, gpu = false, kwargs...)
-    # "yolov4" https://github.com/AlexeyAB/darknet/releases/tag/yolov4
-    version = v"2021.10.29"
+    # tip of master https://github.com/AlexeyAB/darknet/commit/9ade741db91fd3d796d2abb0c9889b10943ea28a
+    version = v"2024.11.6"
     sources = BinaryBuilder.AbstractSource[
-        GitSource("https://github.com/AlexeyAB/darknet.git", "9d40b619756be9521bc2ccd81808f502daaa3e9a"),
+        GitSource("https://github.com/AlexeyAB/darknet.git", "9ade741db91fd3d796d2abb0c9889b10943ea28a"),
     ]
 
     script = "OPENMP=$(Int(openmp))\nGPU=$(Int(gpu))\n" * raw"""
