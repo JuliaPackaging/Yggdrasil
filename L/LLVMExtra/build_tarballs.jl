@@ -110,3 +110,4 @@ for (i,build) in enumerate(builds)
                    augment_platform_block, lazy_artifacts=true)
 end
 
+# rebuild trigger: 1

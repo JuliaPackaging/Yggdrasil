@@ -48,6 +48,18 @@ function make_sandbox_cmd(params::AbstractDict)
         cmd = Cmd(`$(JULIA_CMD) --project=$CI_PROJECT $RUN_SHELL_SCRIPT $platform $PROJECT_ROOT`; dir=PROJECT_ROOT)
     end
 
+    # Detach the subprocess from the parent's controlling TTY (this MCP server
+    # is itself spawned by Claude Code, whose stdin is the user's terminal).
+    # Without this, the sandbox bind-mounts the host /dev/tty into the
+    # container, and any descendant — bash, configure, meson, … — that opens
+    # /dev/tty writes escape sequences (focus reporting, raw mode, ^Z) directly
+    # to the user's terminal, leaving it in a broken state that `reset` cannot
+    # recover.  `detach=true` calls setsid() in the child, so /dev/tty resolves
+    # to ENXIO across the whole subtree.  See
+    # JuliaContainerization/Sandbox.jl#159.  Upstream fix:
+    # JuliaBench/ClaudeMCPTools.jl#4.
+    cmd = Cmd(cmd; detach=true)
+
     return (cmd, metadata)
 end
 
