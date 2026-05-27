@@ -4,12 +4,11 @@ const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MUMPS"
-version = v"5.8.2" 
-ygg_version = v"5.8.4"          # we updated compat bounds to build for MPIABI
+version = v"5.9.0"
 
 sources = [
   ArchiveSource("https://mumps-solver.org/MUMPS_$(version).tar.gz",
-                "eb515aa688e6dbab414bb6e889ff4c8b23f1691a843c68da5230a33ac4db7039")
+                "02c6efdb91749ec0f82351d40f3f860547272a1eb1d899126a4265b4d6bcc4ca")
 ]
 
 # Bash recipe for building across all platforms
@@ -126,6 +125,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    # We just want omp.h from `LLVMOpenMP_jll` on Mac platforms
+    BuildDependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isapple, platforms)),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70"); compat="5.1.3"),
     Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa"); compat="4.0.7"),
@@ -139,5 +140,5 @@ append!(dependencies, platform_dependencies)
 
 # Build the tarballs
 # We require Julia 1.9 since SCALAPACK32 only supports Julia 1.9
-build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.9", preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               augment_platform_block, julia_compat="1.9", preferred_gcc_version=v"9")
