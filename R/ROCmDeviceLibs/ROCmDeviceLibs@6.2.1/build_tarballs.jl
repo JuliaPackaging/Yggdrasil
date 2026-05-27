@@ -20,7 +20,7 @@ function configure_build(version)
 
     ar x *.deb
     tar xf data.tar.*
-    mv opt/rocm-6.2.1/lib/llvm/lib/clang/18/lib/amdgcn ${prefix}/amdgcn
+    mv -v opt/rocm-6.2.1/lib/llvm/lib/clang/18/lib/amdgcn ${prefix}/amdgcn
     install_license opt/rocm-6.2.1/share/doc/ROCm-Device-Libs/LICENSE.TXT
     """
 
