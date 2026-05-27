@@ -30,7 +30,7 @@ if [[ ! -f "${MQLIB_JL_SRC}/c_api/src/mqlib_c_api.cpp" ]]; then
     exit 1
 fi
 
-mkdir -p "${bindir}" "${libdir}" "${includedir}"
+mkdir -p "${bindir}" "${libdir}" "${includedir}" "${datadir}/mqlib/hhdata"
 
 cd "${MQLIB_SRC}"
 make -j${nproc}
@@ -38,6 +38,7 @@ install -Dvm 0755 bin/MQLib "${bindir}/MQLib${exeext}"
 install -Dvm 0644 \
     "${MQLIB_JL_SRC}/c_api/include/mqlib_c_api.h" \
     "${includedir}/mqlib_c_api.h"
+install -vm 0644 hhdata/*.rf "${datadir}/mqlib/hhdata/"
 
 MQLIB_LIBRARY_SOURCES="$(find src -name '*.cpp' ! -name main.cpp | sort)"
 
