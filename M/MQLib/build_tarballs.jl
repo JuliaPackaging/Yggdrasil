@@ -39,7 +39,7 @@ install -Dvm 0644 \
     "${MQLIB_JL_SRC}/c_api/include/mqlib_c_api.h" \
     "${includedir}/mqlib_c_api.h"
 
-mapfile -t MQLIB_LIBRARY_SOURCES < <(find src -name '*.cpp' ! -name main.cpp | sort)
+MQLIB_LIBRARY_SOURCES="$(find src -name '*.cpp' ! -name main.cpp | sort)"
 
 if [[ "${target}" == *-mingw* ]]; then
     MQLIB_C_API_LIBRARY="${bindir}/libmqlib_c_api.${dlext}"
@@ -65,7 +65,7 @@ fi
     -DMQLIB_C_BUILD_SHARED \
     -Iinclude \
     -I"${MQLIB_JL_SRC}/c_api/include" \
-    "${MQLIB_LIBRARY_SOURCES[@]}" \
+    ${MQLIB_LIBRARY_SOURCES} \
     "${MQLIB_JL_SRC}/c_api/src/mqlib_c_api.cpp" \
     "${MQLIB_C_API_SHARED_FLAGS[@]}" \
     -o "${MQLIB_C_API_LIBRARY}" \
