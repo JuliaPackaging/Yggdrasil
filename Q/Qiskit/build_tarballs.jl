@@ -15,6 +15,15 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+# not enough space in /tmp
+export TMPDIR=$WORKSPACE/tmp
+mkdir -p $TMPDIR
+
+# not enough space in /
+export OLD_CARGO_HOME="$CARGO_HOME"
+export CARGO_HOME=$WORKSPACE/cargo-home
+cp -a $OLD_CARGO_HOME $CARGO_HOME
+
 cd $WORKSPACE/srcdir/qiskit
 
 # The current Qiskit C API build instructions say to use a Makefile that is
@@ -22,15 +31,11 @@ cd $WORKSPACE/srcdir/qiskit
 # we invoke Cargo directly and copy the handful of files that result to their
 # proper location.  Upstream issue: https://github.com/Qiskit/qiskit/issues/16250
 env -u CARGO_BUILD_TARGET -u rust_target ${MACHTYPE}-cargo build -p qiskit-bindgen-c
-./target/debug/qiskit-bindgen-c crates/cext dist/c/include
+env -u CARGO_BUILD_TARGET -u rust_target ./target/debug/qiskit-bindgen-c crates/cext dist/c/include
 
 export PYO3_PYTHON=${host_bindir}/python3
 export PYO3_CROSS_LIB_DIR=$WORKSPACE/destdir/lib
 export RUSTFLAGS="-L ${libdir}"
-
-# not enough space in /tmp
-export TMPDIR=$WORKSPACE/tmp
-mkdir $TMPDIR
 
 # avoid 'cannot create cdylib' error on musl targets
 # see https://github.com/rust-lang/cargo/issues/8607
@@ -56,6 +61,7 @@ platforms = [
     Platform("x86_64", "linux"; libc = "musl"),
     Platform("aarch64", "linux"; libc = "glibc"),
     Platform("aarch64", "linux"; libc = "musl"),
+    Platform("x86_64", "macos"),
     Platform("aarch64", "macos"),
 ]
 
