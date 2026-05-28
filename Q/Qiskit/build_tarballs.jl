@@ -6,23 +6,36 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "Qiskit"
-version = v"2.3.1"
+version = v"2.4.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Qiskit/qiskit.git", "913f89110309d4c6c1bd42cfa1281e46f86c5a1f")
+    GitSource("https://github.com/Qiskit/qiskit.git", "0fd015a22b84c9082173597a5d2304dc0aaec08c")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+# not enough space in /tmp
+export TMPDIR=$WORKSPACE/tmp
+mkdir -p $TMPDIR
+
+# not enough space in /
+export OLD_CARGO_HOME="$CARGO_HOME"
+export CARGO_HOME=$WORKSPACE/cargo-home
+cp -a $OLD_CARGO_HOME $CARGO_HOME
+
 cd $WORKSPACE/srcdir/qiskit
+
+# The current Qiskit C API build instructions say to use a Makefile that is
+# improperly formed and not suitable for cross compilation.  So, instead,
+# we invoke Cargo directly and copy the handful of files that result to their
+# proper location.  Upstream issue: https://github.com/Qiskit/qiskit/issues/16250
+env -u CARGO_BUILD_TARGET -u rust_target ${MACHTYPE}-cargo build -p qiskit-bindgen-c
+env -u CARGO_BUILD_TARGET -u rust_target ./target/debug/qiskit-bindgen-c crates/cext dist/c/include
+
 export PYO3_PYTHON=${host_bindir}/python3
 export PYO3_CROSS_LIB_DIR=$WORKSPACE/destdir/lib
 export RUSTFLAGS="-L ${libdir}"
-
-# not enough space in /tmp
-export TMPDIR=$WORKSPACE/tmp
-mkdir $TMPDIR
 
 # avoid 'cannot create cdylib' error on musl targets
 # see https://github.com/rust-lang/cargo/issues/8607
@@ -31,15 +44,9 @@ if [[ "${target}" == *-musl* ]]; then
     export RUSTFLAGS="${RUSTFLAGS} -C target-feature=-crt-static"
 fi
 
-# The current Qiskit C API build instructions say to use a Makefile that is
-# improperly formed and not suitable for cross compilation.  So, instead,
-# we invoke Cargo directly and copy the handful of files that result to their
-# proper location.
 cargo rustc --release --crate-type cdylib -p qiskit-cext
 install -Dvm 755 "target/${rust_target}/release/libqiskit_cext.${dlext}" "${libdir}/libqiskit.${dlext}"
-mkdir -p "${includedir}/qiskit"
-cp -v target/qiskit.h "${includedir}"
-cp -vr crates/cext/include/qiskit/* "${includedir}/qiskit"
+cp -vr dist/c/include/* "${includedir}"
 install_license LICENSE.txt
 """
 
@@ -54,6 +61,7 @@ platforms = [
     Platform("x86_64", "linux"; libc = "musl"),
     Platform("aarch64", "linux"; libc = "glibc"),
     Platform("aarch64", "linux"; libc = "musl"),
+    Platform("x86_64", "macos"),
     Platform("aarch64", "macos"),
 ]
 
