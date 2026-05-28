@@ -2,19 +2,24 @@
 # Fail on error
 set -e
 
-export JULIA_PROJECT="${BUILDKITE_BUILD_CHECKOUT_PATH}/.ci"
+SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+YGGDRASIL_BASE="$(dirname "${SCRIPT_DIR}")"
+JULIA_PROJECT="${YGGDRASIL_BASE}/${JULIA_PROJECT:-/foo}"
+
+# Early-exit if someone is blindly running this manually
+if [[ ! -d "${JULIA_PROJECT:-}" ]]; then
+    echo "ERROR: Must set JULIA_PROJECT to one of:" >&2
+    echo "  - ${YGGDRASIL_BASE}/.ci/bb1_project" >&2
+    echo "  - ${YGGDRASIL_BASE}/.ci/bb2_project" >&2
+    exit 1
+fi
 
 echo "--- Setup Julia packages"
 GITHUB_TOKEN="" julia --color=yes -e 'import Pkg; Pkg.instantiate(); Pkg.precompile()'
-
-cd "${PROJECT}"
-echo "--- Generating meta.json..."
-GITHUB_TOKEN="" julia --compile=min ./build_tarballs.jl --meta-json=${NAME}.meta.json
 
 echo "--- Setting up git"
 git config --global user.name "jlbuild"
 git config --global user.email "juliabuildbot@gmail.com"
 
-echo "--- Registering ${NAME}..."
-julia ${BUILDKITE_BUILD_CHECKOUT_PATH}/.ci/register_package.jl "${NAME}.meta.json" --verbose
-
+echo "--- Registering..."
+julia ${JULIA_PROJECT}/register_package.jl "${META_JSON:-}" --verbose
