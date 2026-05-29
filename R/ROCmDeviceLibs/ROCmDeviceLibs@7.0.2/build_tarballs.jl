@@ -20,7 +20,7 @@ function configure_build(version)
 
     ar x *.deb
     tar xf data.tar.*
-    cp -rv $(find opt -type d -name "amdgcn" | head -1) ${prefix}/amdgcn
+    cp -rvp $(find opt -type d -name "amdgcn" | head -1) ${prefix}/amdgcn
     install_license opt/rocm-7.0.2/share/doc/ROCm-Device-Libs/LICENSE.TXT
     """
 
