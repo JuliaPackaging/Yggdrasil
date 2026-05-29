@@ -20,6 +20,12 @@ sources = [
 # lib/cmake/libminizinc config (shipped alongside lib/libmzn.a and
 # include/minizinc/). CMAKE_POLICY_VERSION_MINIMUM placates the vendored
 # MiniSat's pre-3.5 CMakeLists under modern CMake.
+#
+# findMUS's own targets include the vendored MiniSat's Options.h, which uses
+# PRIi64 and INT64_MIN/INT64_MAX. MiniSat's CMakeLists defines
+# __STDC_FORMAT_MACROS / __STDC_LIMIT_MACROS, but only in its subdirectory
+# scope, so findMUS's sources fail to compile against the older-glibc and musl
+# <inttypes.h>/<stdint.h>. Define both globally via CMAKE_CXX_FLAGS.
 script = raw"""
 cd $WORKSPACE/srcdir/FindMUS
 cmake -B build \
@@ -27,6 +33,7 @@ cmake -B build \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_PREFIX_PATH=${prefix} \
+    -DCMAKE_CXX_FLAGS="-D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS" \
     -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 cmake --build build --parallel ${nproc}
 cmake --install build
