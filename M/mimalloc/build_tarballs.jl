@@ -3,19 +3,19 @@
 using BinaryBuilder, Pkg
 
 name = "mimalloc"
-version = v"2.1.4"
+version = v"2.2.4"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/microsoft/mimalloc.git",
-              "1b3cb0258fc475460ed19cdb78feaebd69cef0c6"),
+              "fbd8b99c2b828428947d70fdc046bb55609be93e"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 if [[ "${target}" == *-linux-musl* ]]; then
     # Musl doesn't support init-exec TLS
-    CMAKE_FLAGS=(-DMI_LOCAL_DYNAMIC_TLS=ON) 
+    CMAKE_FLAGS=(-DMI_LOCAL_DYNAMIC_TLS=ON)
 fi
 cd $WORKSPACE/srcdir/mimalloc
 cmake -B build -G Ninja \
