@@ -1,57 +1,62 @@
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 # abc
 name = "ABC"
-version = v"1.01.1"
-ABC_ver = "1.01.0"
+version = v"1.01.2"
+upstream_version = "1.01.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/berkeley-abc/abc.git", "08d25f39f2ee717b688529e61acb695cec0deeed")
+    GitSource(
+        "https://github.com/berkeley-abc/abc.git",
+        "f4d870e109938fd1a283ecceea950bd9cd616f67"
+    )
 ]
 
-# ABC is setup for native builds (the arch_flags program and running the
-# shell to get other flags), so we need to manually add the arch flags
-# here.  Also, the combo of BinaryBuilder and ABC's Makefile always seems
-# to override rather than extend CFLAGS, so I've included the whole mess
-# here.  Even though we use ABC_USE_STDINT_H=1 it doesn't work as
-# expected, so we only use it here to prevent the Makefile from running
-# the arch_flags executable, which will always fail when cross compiling.
-# Note that neither -DLIN nor -DLIN64 actually appear to be used anymore but
-# still set here anyway
-
-# Bash recipe for building across all platforms
 script = raw"""
-
-EXFLGS="-Wall -Wno-unused-function -Wno-write-strings -Wno-sign-compare -DSIZEOF_INT=4 -DABC_USE_CUDD=1 -DABC_USE_PTHREADS -Wno-unused-but-set-variable -fPIC"
-
-if [[ ${nbits} == 32 ]]; then
-    EXFLGS="${EXFLGS} -DSIZEOF_VOID_P=4"
-    EXFLGS="${EXFLGS} -DSIZEOF_LONG=4"
-    EXFLGS="${EXFLGS} -DLIN"
-else
-    EXFLGS="${EXFLGS} -DSIZEOF_VOID_P=8"
-    EXFLGS="${EXFLGS} -DSIZEOF_LONG=8"
-    EXFLGS="${EXFLGS} -DLIN64"
-fi
-
-# musl doesn't like readline
-if [[ ${target} != *"musl"* ]]; then
-    EXFLGS="${EXFLGS} -DABC_READLINE"
-fi
-
 cd ${WORKSPACE}/srcdir/abc
 
-# it appears necessary to have the file(s) for the FileProduct(s) live in the destdir
+# it appears necessary to have the file(s)
+# for the FileProduct(s) live in the destdir
 cp abc.rc ${prefix}/.
 
-make -j${nproc} ABC_USE_STDINT_H=1 CFLAGS+="${EXFLGS}" libabc.so
+# select compiler based on target platform
+# ABC on Apple platforms can be compiled using clang instead of gcc,
+# while clang fails on Linux
+if [[ "${target}" == *-apple-* ]]; then
+    CC=clang
+    CXX=clang++
+else
+    CC=gcc
+    CXX=g++
+fi
+
+EXFLGS="\
+-fPIC \
+-Wall \
+-Wno-unused-function \
+-Wno-write-strings \
+-Wno-sign-compare \
+-Wno-unused-but-set-variable \
+-DSIZEOF_INT=4 \
+-DABC_USE_CUDD=1 \
+-DABC_USE_PTHREADS \
+-DABC_USE_STDINT_H=1 \
+-DSIZEOF_VOID_P=8 \
+-DSIZEOF_LONG=8 \
+"
+
+# make libabc.so
+make -j${nproc} CC=${CC} CXX=${CXX} CFLAGS+="${EXFLGS}" libabc.so
 # the abc Makefile always makes a .so  Fix that here.
 mv libabc.so libabc.${dlext}
 mkdir -p "${libdir}"
 cp libabc.${dlext} ${libdir}
 
-make -j${nproc} ABC_USE_STDINT_H=1 CFLAGS+="${EXFLGS}"
+make -j${nproc} CC=${CC} CXX=${CXX} CFLAGS+="${EXFLGS}"
 mkdir -p "${bindir}"
 cp abc${exeext} ${bindir}
 chmod +x ${bindir}/*
@@ -61,7 +66,13 @@ exit
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(exclude= x -> (Sys.iswindows(x) || Sys.isfreebsd(x)))
+# core-math uses unsigned __int128 which is unavailable on 32-bit platforms
+platforms = supported_platforms(exclude= x -> (
+    Sys.iswindows(x) ||
+    Sys.isfreebsd(x) ||
+    nbits(x) == 32
+))
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -73,8 +84,18 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Readline_jll"),
+    Dependency(PackageSpec(
+        name="CompilerSupportLibraries_jll",
+        uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"
+    ))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script,
-               platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(
+    ARGS, name, version, sources, script,
+    platforms, products, dependencies;
+    julia_compat="1.6",
+    preferred_gcc_version=v"8",
+    preferred_llvm_version=v"13",
+    clang_use_lld=false,
+)
