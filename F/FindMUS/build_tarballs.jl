@@ -42,6 +42,10 @@ cmake -B build \
     -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 cmake --build build --parallel ${nproc}
 cmake --install build
+# findMUS is MPL-2.0; install its license explicitly rather than relying on the
+# single-source license auto-detection (which silently stops finding it if
+# another source is ever added).
+install_license LICENSE.txt
 """
 
 products = [
