@@ -28,6 +28,11 @@ sources = [
 # <inttypes.h>/<stdint.h>. Define both globally via CMAKE_CXX_FLAGS.
 script = raw"""
 cd $WORKSPACE/srcdir/FindMUS
+# musl lacks glibc's <fpu_control.h>; the vendored MiniSat includes it under a
+# bare __linux__ guard but only uses it (in System.cc) when _FPU_* are defined.
+# Gate the include on __GLIBC__ so the build works on musl too.
+sed -i 's/#if defined(__linux__)/#if defined(__linux__) \&\& defined(__GLIBC__)/' \
+    mapsolvers/minisat/minisat/utils/System.h
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -45,9 +50,12 @@ products = [
     FileProduct("share/minizinc/solvers/findmus.msc", :findmus_msc),
 ]
 
-# Mirror MiniZinc_jll's platform set: findMUS statically links libmzn.a.
+# findMUS statically links libmzn.a from MiniZinc_jll. Windows is excluded:
+# findMUS's CMake cannot locate libminizinc in the MiniZinc_jll Windows artifact
+# (libminizinc's own Windows support is a known work in progress), so drop all
+# Windows platforms rather than ship a broken build.
 platforms = expand_cxxstring_abis(
-    supported_platforms(; exclude = p -> arch(p) == "i686" && Sys.iswindows(p)),
+    supported_platforms(; exclude = Sys.iswindows),
 )
 
 dependencies = [
