@@ -9,23 +9,35 @@ function build_script(standalone=false)
     install_license LICENSE
 
     if [[ "${target}" == x86_64-apple-darwin* ]]; then
-        # LLVM 20 was built against the macOS 10.14 SDK, so install it into the
-        # sys-root. Unlike the usual recipe we do NOT `rm -rf` the old System
-        # first: removing directories from the read-only lower overlay layer
-        # fails with I/O errors on the current rootfs. Extracting the new SDK
-        # over the top (overwriting files; no directory removal) is enough, and
-        # -- crucially -- keeps the rest of the sys-root intact, including the
-        # toolchain's C++ headers and the build-time LLVM headers under
-        # usr/local that the bare SDK doesn't provide.
+        # LLVM 20 was built against the macOS 10.14 SDK, so PoCL needs it too.
+        # We can't upgrade the SDK in the real sys-root: it lives on a read-only
+        # overlay lower layer where removing/replacing directories fails with
+        # I/O errors, and merging the SDK on top hits symlink-vs-directory
+        # conflicts. So assemble a combined sysroot in a writable scratch dir
+        # and point the toolchain at it. The copy of the sys-root carries the
+        # things the bare SDK lacks (the toolchain's C++ headers, the build-time
+        # LLVM headers under usr/local), and in the scratch copy we can replace
+        # System the usual way.
+        apple_sysroot=$WORKSPACE/srcdir/sysroot
+        cp -a /opt/${target}/${target}/sys-root $apple_sysroot
         tar --extract --file=$WORKSPACE/srcdir/MacOSX10.14.sdk.tar.xz \
-            --directory=/opt/${target}/${target}/sys-root --strip-components=1 \
-            --warning=no-unknown-keyword \
+            --directory=$WORKSPACE/srcdir --warning=no-unknown-keyword \
             MacOSX10.14.sdk/System MacOSX10.14.sdk/usr
+        rm -rf $apple_sysroot/System
+        cp -ra $WORKSPACE/srcdir/MacOSX10.14.sdk/usr/* $apple_sysroot/usr/.
+        cp -ra $WORKSPACE/srcdir/MacOSX10.14.sdk/System $apple_sysroot/.
+        # redirect every sys-root reference (--sysroot and -isysroot) at it
+        sed -i "s!/opt/${target}/${target}/sys-root!$apple_sysroot!g" ${CMAKE_TARGET_TOOLCHAIN}
+        sed -i "s!/opt/${target}/${target}/sys-root!$apple_sysroot!g" /opt/bin/${bb_full_target}/${target}-clang*
         export MACOSX_DEPLOYMENT_TARGET=10.14
     fi
 
     # POCL wants a target sysroot for compiling the host kernellib (for `math.h` etc)
     sysroot=/opt/${target}/${target}/sys-root
+    if [[ "${target}" == x86_64-apple-darwin* ]]; then
+        # use the combined sysroot assembled above
+        sysroot=$apple_sysroot
+    fi
     if [[ "${target}" == *-mingw* ]]; then
         sysroot_include=$sysroot/include
     else
