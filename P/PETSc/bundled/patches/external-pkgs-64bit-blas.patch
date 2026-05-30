@@ -1,0 +1,65 @@
+diff --git a/config/BuildSystem/config/packages/SuperLU_DIST.py b/config/BuildSystem/config/packages/SuperLU_DIST.py
+--- a/config/BuildSystem/config/packages/SuperLU_DIST.py
++++ b/config/BuildSystem/config/packages/SuperLU_DIST.py
+@@ -4,6 +4,7 @@ import os
+ class Configure(config.package.CMakePackage):
+   def __init__(self, framework):
+     config.package.CMakePackage.__init__(self, framework)
++    self.requires32bitintblas = 0
+     self.minversion       = '6.3.0'
+     self.version          = '9.2.1'
+     self.versionname      = 'SUPERLU_DIST_MAJOR_VERSION.SUPERLU_DIST_MINOR_VERSION.SUPERLU_DIST_PATCH_VERSION'
+diff --git a/config/BuildSystem/config/packages/ScaLAPACK.py b/config/BuildSystem/config/packages/ScaLAPACK.py
+--- a/config/BuildSystem/config/packages/ScaLAPACK.py
++++ b/config/BuildSystem/config/packages/ScaLAPACK.py
+@@ -4,6 +4,7 @@
+ class Configure(config.package.CMakePackage):
+   def __init__(self, framework):
+     config.package.CMakePackage.__init__(self, framework)
++    self.requires32bitintblas = 0
+     self.version          = '2.2.2'
+     self.gitcommit        = '6f56981cb0cabffd8c72c7d1016146c4b8e276dc' # master (includes fix for C std) jul-16-2025
+     self.download         = ['git://https://github.com/Reference-ScaLAPACK/scalapack','https://github.com/Reference-ScaLAPACK/scalapack/archive/'+self.gitcommit+'.tar.gz']
+@@ -30,6 +31,10 @@
+     self.blasLapack = framework.require('config.packages.BlasLapack',self)
+     self.mpi        = framework.require('config.packages.MPI',self)
+     self.deps       = [self.mpi, self.blasLapack, self.flibs]
++    suffix = self.argDB.get('with-blaslapack-suffix', '') or ''
++    if suffix:
++      self.functions = [f if f.endswith(suffix) else f + suffix for f in self.functions]
++      self.functionsFortran = 0
+     return
+ 
+   def formCMakeConfigureArgs(self):
+diff --git a/config/BuildSystem/config/packages/hypre.py b/config/BuildSystem/config/packages/hypre.py
+--- a/config/BuildSystem/config/packages/hypre.py
++++ b/config/BuildSystem/config/packages/hypre.py
+@@ -4,6 +4,7 @@ import os
+ class Configure(config.package.GNUPackage):
+   def __init__(self, framework):
+     config.package.GNUPackage.__init__(self, framework)
++    self.requires32bitintblas = 0
+     self.version         = '3.0.0'
+     self.minversion      = '2.14'
+     self.versionname     = 'HYPRE_RELEASE_VERSION'
+diff --git a/config/BuildSystem/config/packages/MUMPS.py b/config/BuildSystem/config/packages/MUMPS.py
+--- a/config/BuildSystem/config/packages/MUMPS.py
++++ b/config/BuildSystem/config/packages/MUMPS.py
+@@ -3,6 +3,7 @@ import config.package
+ class Configure(config.package.Package):
+   def __init__(self, framework):
+     config.package.Package.__init__(self, framework)
++    self.requires32bitintblas = 0
+     self.version          = '5.8.1'
+     self.minversion       = '5.2.1'
+     self.versionname      = 'MUMPS_VERSION'
+@@ -49,9 +50,6 @@
+     return
+ 
+   def configureLibrary(self):
+-    for arg in ['with-64-bit-blas-indices','known-64-bit-blas-indices']:
+-      if self.argDB.get(arg):
+-        raise RuntimeError('MUMPS cannot be used with %s' % arg)
+     if self.scalartypes.precision == 'single':
+       if self.scalartypes.scalartype == 'real': l = 's'
+       else: l = 'c'
