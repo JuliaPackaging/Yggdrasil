@@ -5,6 +5,7 @@ using Base.BinaryPlatforms
 
 const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "pocl"
 version = v"7.1.1"
@@ -45,6 +46,11 @@ filter!(p -> !(arch(p) == "i686" && os(p) == "windows"), platforms)
 
 include("common.jl")
 
+# LLVM 20 was built against the macOS 10.14 SDK, so install that on Intel macOS.
+# This appends the SDK source (for all platforms) and prepends the install
+# script (which only acts on x86_64-apple-darwin).
+sources, script = require_macos_sdk("10.14", sources, build_script())
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct(["libpocl", "pocl"], :libpocl),
@@ -73,13 +79,6 @@ for platform in platforms
 
     platform_sources = deepcopy(sources)
     platform_dependencies = deepcopy(dependencies)
-
-    # On macOS, we need to use a newer SDK to match the one LLVM was built with
-    if Sys.isapple(platform) && arch(platform) == "x86_64"
-        push!(platform_sources,
-              ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-                            "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
-    end
 
     # for fp16, we need a vectorization library
     if arch(platform) in ["armv6l", "aarch64"]
@@ -115,7 +114,7 @@ end
 
 for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
-                   name, version, build.sources, build_script(),
+                   name, version, build.sources, script,
                    [build.platform], products, build.dependencies;
                    build.preferred_gcc_version, preferred_llvm_version=v"20",
                    julia_compat="1.6", init_block=init_block())

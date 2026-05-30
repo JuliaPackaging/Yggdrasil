@@ -8,15 +8,8 @@ function build_script(standalone=false)
     cd $WORKSPACE/srcdir/pocl/
     install_license LICENSE
 
-    if [[ ("${target}" == x86_64-apple-darwin*) ]]; then
-        # LLVM 15+ requires macOS SDK 10.14
-        pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
-        rm -rf /opt/${target}/${target}/sys-root/System
-        cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-        cp -ra System "/opt/${target}/${target}/sys-root/."
-        export MACOSX_DEPLOYMENT_TARGET=10.14
-        popd
-    fi
+    # NOTE: the macOS SDK upgrade (LLVM 15+ requires SDK 10.14) is installed by
+    #       the `require_macos_sdk` helper, which prepends to this script.
 
     # POCL wants a target sysroot for compiling the host kernellib (for `math.h` etc)
     sysroot=/opt/${target}/${target}/sys-root
