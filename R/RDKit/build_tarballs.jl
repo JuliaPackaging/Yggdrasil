@@ -1,10 +1,10 @@
 using BinaryBuilder, Pkg
 
 name = "RDKit"
-version = v"2022.09.5"
+version = v"2026.03.1"
 
 sources = [
-    GitSource("https://github.com/rdkit/rdkit.git", "723e05d46f4c91988622a4035433d016729e2ed2"),
+    GitSource("https://github.com/rdkit/rdkit.git", "351f8f378f8ad6bbd517980c38896e66bf907af8"),
     DirectorySource("./bundled"),
 ]
 
@@ -55,12 +55,12 @@ products = [
 ]
 
 dependencies = [
-    Dependency("FreeType2_jll"; compat="2.10.4"),
-    Dependency("boost_jll"; compat="=1.76.0"),
+    Dependency("FreeType2_jll"; compat="2.13"),
+    Dependency("boost_jll"; compat="1.87"),
     BuildDependency("Eigen_jll"),
     Dependency("Zlib_jll"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               # GCC 8 is needed for `std::from_chars`
-               preferred_gcc_version=v"8", julia_compat="1.6")
+               # GCC 11 is needed for C++20
+               preferred_gcc_version=v"11", julia_compat="1.10")
