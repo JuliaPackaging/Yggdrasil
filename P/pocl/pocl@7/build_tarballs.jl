@@ -7,7 +7,7 @@ const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "pocl"
-version = v"7.1.0"
+version = v"7.1.1"
 
 # Build
 
@@ -15,7 +15,7 @@ version = v"7.1.0"
 sources = [
     DirectorySource("./bundled"),
     GitSource("https://github.com/juliagpu/pocl",
-              "d05646955f60741a2c05f867209012a17ebd2872")
+              "2bf5b6303984fe30db9dd4047af420f84912f609")
 ]
 
 #=
