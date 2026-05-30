@@ -5,9 +5,10 @@ using Base.BinaryPlatforms
 
 const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "pocl"
-version = v"7.1.0"
+version = v"7.1.1"
 
 # Build
 
@@ -15,7 +16,7 @@ version = v"7.1.0"
 sources = [
     DirectorySource("./bundled"),
     GitSource("https://github.com/juliagpu/pocl",
-              "d05646955f60741a2c05f867209012a17ebd2872")
+              "2bf5b6303984fe30db9dd4047af420f84912f609")
 ]
 
 #=
@@ -45,6 +46,13 @@ filter!(p -> !(arch(p) == "i686" && os(p) == "windows"), platforms)
 
 include("common.jl")
 
+# LLVM 20 was built against the macOS 10.14 SDK, so ship it. We only use the
+# helper for the (centralized) SDK source; the install itself is done
+# non-destructively in common.jl, which extracts the SDK to a scratch dir and
+# redirects the toolchain at it, rather than overwriting the read-only sys-root
+# (whose `System` tree can no longer be `rm`'d on the current rootfs).
+sources = vcat(sources, get_macos_sdk_sources("10.14"))
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct(["libpocl", "pocl"], :libpocl),
@@ -73,13 +81,6 @@ for platform in platforms
 
     platform_sources = deepcopy(sources)
     platform_dependencies = deepcopy(dependencies)
-
-    # On macOS, we need to use a newer SDK to match the one LLVM was built with
-    if Sys.isapple(platform) && arch(platform) == "x86_64"
-        push!(platform_sources,
-              ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-                            "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
-    end
 
     # for fp16, we need a vectorization library
     if arch(platform) in ["armv6l", "aarch64"]
