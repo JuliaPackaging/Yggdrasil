@@ -46,10 +46,12 @@ filter!(p -> !(arch(p) == "i686" && os(p) == "windows"), platforms)
 
 include("common.jl")
 
-# LLVM 20 was built against the macOS 10.14 SDK, so install that on Intel macOS.
-# This appends the SDK source (for all platforms) and prepends the install
-# script (which only acts on x86_64-apple-darwin).
-sources, script = require_macos_sdk("10.14", sources, build_script())
+# LLVM 20 was built against the macOS 10.14 SDK, so ship it. We only use the
+# helper for the (centralized) SDK source; the install itself is done
+# non-destructively in common.jl, which extracts the SDK to a scratch dir and
+# redirects the toolchain at it, rather than overwriting the read-only sys-root
+# (whose `System` tree can no longer be `rm`'d on the current rootfs).
+sources = vcat(sources, get_macos_sdk_sources("10.14"))
 
 # The products that we will ensure are always built
 products = [
@@ -114,7 +116,7 @@ end
 
 for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
-                   name, version, build.sources, script,
+                   name, version, build.sources, build_script(),
                    [build.platform], products, build.dependencies;
                    build.preferred_gcc_version, preferred_llvm_version=v"20",
                    julia_compat="1.6", init_block=init_block())
