@@ -9,26 +9,23 @@ function build_script(standalone=false)
     install_license LICENSE
 
     if [[ "${target}" == x86_64-apple-darwin* ]]; then
-        # LLVM 20 was built against the macOS 10.14 SDK, so we need it here too.
-        # Rather than overwriting the (read-only) sys-root -- which fails with
-        # I/O errors on the current rootfs when removing the bundled SDK's
-        # System tree -- unpack the SDK into a scratch dir and point the
-        # toolchain at it, leaving the sys-root untouched.
-        apple_sdk_root=$WORKSPACE/srcdir/MacOSX10.14.sdk
+        # LLVM 20 was built against the macOS 10.14 SDK, so install it into the
+        # sys-root. Unlike the usual recipe we do NOT `rm -rf` the old System
+        # first: removing directories from the read-only lower overlay layer
+        # fails with I/O errors on the current rootfs. Extracting the new SDK
+        # over the top (overwriting files; no directory removal) is enough, and
+        # -- crucially -- keeps the rest of the sys-root intact, including the
+        # toolchain's C++ headers and the build-time LLVM headers under
+        # usr/local that the bare SDK doesn't provide.
         tar --extract --file=$WORKSPACE/srcdir/MacOSX10.14.sdk.tar.xz \
-            --directory=$WORKSPACE/srcdir --warning=no-unknown-keyword \
+            --directory=/opt/${target}/${target}/sys-root --strip-components=1 \
+            --warning=no-unknown-keyword \
             MacOSX10.14.sdk/System MacOSX10.14.sdk/usr
-        sed -i "s!/opt/${target}/${target}/sys-root!${apple_sdk_root}!" ${CMAKE_TARGET_TOOLCHAIN}
-        sed -i "s!/opt/${target}/${target}/sys-root!${apple_sdk_root}!" /opt/bin/${bb_full_target}/${target}-clang*
         export MACOSX_DEPLOYMENT_TARGET=10.14
     fi
 
     # POCL wants a target sysroot for compiling the host kernellib (for `math.h` etc)
     sysroot=/opt/${target}/${target}/sys-root
-    if [[ "${target}" == x86_64-apple-darwin* ]]; then
-        # the upgraded SDK lives in a scratch dir, not the sys-root (see above)
-        sysroot=${apple_sdk_root}
-    fi
     if [[ "${target}" == *-mingw* ]]; then
         sysroot_include=$sysroot/include
     else
