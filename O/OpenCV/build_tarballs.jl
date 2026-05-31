@@ -33,6 +33,9 @@ if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-freebsd* ]]; then
     atomic_patch -p1 -d../opencv ../patches/atomic_fix.patch
 fi
 
+# Upstream fix for a missing `)` in vsx_utils.hpp, not in the 4.13.0 tag
+atomic_patch -p1 -d../opencv ../patches/vsx_power10_paren.patch
+
 if [[ "${target}" == *-w64-* ]]; then
     # Needed for mingw compilation of big files
     export CXXFLAGS="-Wa,-mbig-obj"
