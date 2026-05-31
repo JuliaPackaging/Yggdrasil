@@ -7,7 +7,10 @@ version = v"0.11.25"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/mackron/miniaudio/archive/refs/tags/$(version).tar.gz", "b900edcffe979816e2560a0580b9b1216d674b4f17fbadeca8f777a7f8ab0274")
+    GitSource(
+        "https://github.com/mackron/miniaudio.git",
+        "9634bedb5b5a2ca38c1ee7108a9358a4e233f14d",
+    ),
 ]
 
 # Bash recipe for building across all platforms
