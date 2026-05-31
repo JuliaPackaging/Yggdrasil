@@ -14,13 +14,25 @@ include("../../L/libjulia/common.jl")
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/opencv/opencv.git", "fe38fc608f6acb8b68953438a62305d8318f4fcd"),
-    GitSource("https://github.com/barche/opencv_contrib.git","40080954a3afcc331463c2d40c6809de29fde50d"),
+    GitSource("https://github.com/opencv/opencv_contrib.git", "d99ad2a188210cc35067c2e60076eed7c2442bc3"),  # tag 4.13.0
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
+
+# Bring the Julia bindings (in opencv_contrib/modules/julia) up to date so they
+# build against modern CxxWrap / libcxxwrap_julia and against OpenCV 4.13's API:
+#   - Carries forward all julia-binding fixes from barche/opencv_contrib's
+#     julia-fixes branch (CMake, generator templates, cxx wrappers, jlcv.hpp).
+#   - Adds generator fixes specific to 4.13:
+#       gen3_cpp.py: handle nested enum properties
+#         (e.g. CirclesGridFinderParameters::GridType, exposed via CV_PROP_RW)
+#       gen3_julia_cxx.py / defval.txt: strip cv:: prefix in default-value
+#         lookups, add AlgorithmHint, IMREAD_COLOR_BGR/RGB/ANYCOLOR mappings
+#       typemap.txt: Rect2f/Rect2d -> Rect{Float32}/Rect{Float64}
+atomic_patch -p1 -d opencv_contrib patches/julia-bindings-upstream-contrib.patch
 
 mkdir build && cd build
 export USE_QT="ON"
