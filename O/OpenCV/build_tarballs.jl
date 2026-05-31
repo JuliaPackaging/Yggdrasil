@@ -78,30 +78,11 @@ install_license ../opencv/{LICENSE,COPYRIGHT}
 """
 
 
-# Newer macOS SDK is needed for recent video codecs. We inline an
-# extraction step instead of calling `require_macos_sdk` because the
-# CI runners currently return EIO when removing some files in the
-# compiler shard's pre-existing `System/` tree; ignore those errors
-# and let the subsequent tar extraction overwrite as needed.
-push!(sources, get_macos_sdk_sources("12.3")...)
-script = raw"""
-macos_sdk_version=12.3
-macosx_deployment_target=12.3
-if [[ "${target}" == *-apple-darwin* ]]; then
-    echo "Extracting MacOSX${macos_sdk_version}.sdk.tar.xz (tolerating EIO on shard cleanup)"
-    rm -rf /opt/${target}/${target}/sys-root/System 2>/dev/null || true
-    rm -rf /opt/${target}/${target}/sys-root/usr/include/libxml2/libxml 2>/dev/null || true
-    tar --extract \
-        --file=${WORKSPACE}/srcdir/MacOSX${macos_sdk_version}.sdk.tar.xz \
-        --directory="/opt/${target}/${target}/sys-root/." \
-        --strip-components=1 \
-        --warning=no-unknown-keyword \
-        --overwrite --recursive-unlink \
-        MacOSX${macos_sdk_version}.sdk/System \
-        MacOSX${macos_sdk_version}.sdk/usr
-    export MACOSX_DEPLOYMENT_TARGET=${macosx_deployment_target}
-fi
-""" * script
+# OpenCV 4.12.0 used `require_macos_sdk("12.3")` for newer video
+# codecs, but the CI runners currently return EIO when modifying
+# the compiler shard's sys-root, breaking SDK swap-in. Use the
+# default shard SDK; codecs that require newer headers will simply
+# be disabled by OpenCV's CMake feature detection.
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
