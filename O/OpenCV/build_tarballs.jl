@@ -6,14 +6,14 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "OpenCV"
-version = v"4.12.0"
+version = v"4.13.0"
 version_collapsed_str = replace(string(version), "." => "")
 
 include("../../L/libjulia/common.jl")
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/opencv/opencv.git", "49486f61fb25722cbcf586b7f4320921d46fb38e"),
+    GitSource("https://github.com/opencv/opencv.git", "fe38fc608f6acb8b68953438a62305d8318f4fcd"),
     GitSource("https://github.com/barche/opencv_contrib.git","40080954a3afcc331463c2d40c6809de29fde50d"),
     DirectorySource("./bundled"),
 ]
@@ -24,6 +24,9 @@ cd $WORKSPACE/srcdir
 
 mkdir build && cd build
 export USE_QT="ON"
+
+# Qt 6.10 requires CMake >= 3.22; use the newer CMake_jll from the host prefix
+apk del cmake
 
 # Patch a minor clang issue
 if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-freebsd* ]]; then
@@ -53,6 +56,7 @@ cmake -DCMAKE_FIND_ROOT_PATH=${prefix} \
       -DBUILD_EXAMPLES=OFF \
       -DHAVE_CXX_FVISIBILITY_HIDDEN=OFF \
       -DHAVE_CXX_FVISIBILITY_INLINES_HIDDEN=OFF \
+      -DWITH_KLEIDICV=OFF \
       -DWITH_QT=${USE_QT} \
       -DOPENCV_EXTRA_MODULES_PATH=../opencv_contrib/modules \
       -DBUILD_LIST=core,imgproc,imgcodecs,highgui,videoio,dnn,features2d,objdetect,calib3d,video,gapi,stitching,julia \
@@ -104,8 +108,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Qt6Base_jll"; compat="~6.8.2"),
+    Dependency("Qt6Base_jll"; compat="~6.10.2"),
     HostBuildDependency("Qt6Base_jll"),
+    HostBuildDependency("CMake_jll"),
     Dependency(PackageSpec(name="Libglvnd_jll", uuid="7e76a0d4-f3c7-5321-8279-8d96eeed0f29")),
     BuildDependency(PackageSpec(name="libjulia_jll")),
     Dependency(PackageSpec(name="libcxxwrap_julia_jll", uuid="3eaa8342-bff7-56a5-9981-c04077f7cee7"); compat="0.14.7"),
