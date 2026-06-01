@@ -90,11 +90,13 @@ install_license ../opencv/{LICENSE,COPYRIGHT}
 """
 
 
-# OpenCV 4.12.0 used `require_macos_sdk("12.3")` for newer video
-# codecs, but the CI runners currently return EIO when modifying
-# the compiler shard's sys-root, breaking SDK swap-in. Use the
-# default shard SDK; codecs that require newer headers will simply
-# be disabled by OpenCV's CMake feature detection.
+# Swap in the macOS 11.0 SDK for x86_64-apple-darwin (the helper restricts
+# the swap to x86_64 because the arm shard already ships a newer SDK).
+# - OpenCV 4.13's cap_avfoundation_mac.mm uses AVVideoCodecType{JPEG,H264}
+#   which require 10.13+.
+# - Qt6Base 6.10's macOS frameworks link UniformTypeIdentifiers, added in 11.0.
+# The default x86_64-apple-darwin14 sys-root (10.10) satisfies neither.
+sources, script = require_macos_sdk("11.0", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
