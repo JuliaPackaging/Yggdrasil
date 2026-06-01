@@ -19,8 +19,7 @@ sources = [
 
 # find_package(libminizinc) resolves against MiniZinc_jll's
 # lib/cmake/libminizinc config (shipped alongside lib/libmzn.a and
-# include/minizinc/). CMAKE_POLICY_VERSION_MINIMUM placates the vendored
-# MiniSat's pre-3.5 CMakeLists under modern CMake.
+# include/minizinc/).
 #
 # findMUS's own targets include the vendored MiniSat's Options.h, which uses
 # PRIi64 and INT64_MIN/INT64_MAX. MiniSat's CMakeLists defines
@@ -41,13 +40,9 @@ cmake -B build \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_PREFIX_PATH=${prefix} \
-    -DCMAKE_CXX_FLAGS="-D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS" \
-    -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+    -DCMAKE_CXX_FLAGS="-D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS"
 cmake --build build --parallel ${nproc}
 cmake --install build
-# findMUS is MPL-2.0; install its license explicitly rather than relying on the
-# single-source license auto-detection (which silently stops finding it if
-# another source is ever added).
 install_license LICENSE.txt
 """
 
