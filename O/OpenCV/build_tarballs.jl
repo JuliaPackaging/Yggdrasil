@@ -90,13 +90,35 @@ install_license ../opencv/{LICENSE,COPYRIGHT}
 """
 
 
-# Swap in the macOS 11.0 SDK for x86_64-apple-darwin (the helper restricts
-# the swap to x86_64 because the arm shard already ships a newer SDK).
-# - OpenCV 4.13's cap_avfoundation_mac.mm uses AVVideoCodecType{JPEG,H264}
-#   which require 10.13+.
-# - Qt6Base 6.10's macOS frameworks link UniformTypeIdentifiers, added in 11.0.
+# Swap in the macOS 11.0 SDK for x86_64-apple-darwin (the arm shard already
+# ships a newer SDK, so we only need this on Intel):
+#   - OpenCV 4.13's cap_avfoundation_mac.mm uses AVVideoCodecType{JPEG,H264}
+#     which require 10.13+.
+#   - Qt6Base 6.10's macOS frameworks link UniformTypeIdentifiers, added in 11.0.
 # The default x86_64-apple-darwin14 sys-root (10.10) satisfies neither.
-sources, script = require_macos_sdk("11.0", sources, script)
+#
+# We inline the extraction (rather than calling require_macos_sdk) because the
+# CI runners currently return EIO when removing files from the compiler shard's
+# pre-existing System/ tree. The plain `rm -rf` in the helper aborts on that;
+# here we ignore the cleanup failures and let tar overwrite what it needs.
+push!(sources, get_macos_sdk_sources("11.0")...)
+script = raw"""
+macos_sdk_version=11.0
+macosx_deployment_target=11.0
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    echo "Extracting MacOSX${macos_sdk_version}.sdk.tar.xz (tolerating EIO on shard cleanup)"
+    rm -rf /opt/${target}/${target}/sys-root/System 2>/dev/null || true
+    rm -rf /opt/${target}/${target}/sys-root/usr/include/libxml2/libxml 2>/dev/null || true
+    tar --extract \
+        --file=${WORKSPACE}/srcdir/MacOSX${macos_sdk_version}.sdk.tar.xz \
+        --directory="/opt/${target}/${target}/sys-root/." \
+        --strip-components=1 \
+        --warning=no-unknown-keyword \
+        MacOSX${macos_sdk_version}.sdk/System \
+        MacOSX${macos_sdk_version}.sdk/usr
+    export MACOSX_DEPLOYMENT_TARGET=${macosx_deployment_target}
+fi
+""" * script
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
