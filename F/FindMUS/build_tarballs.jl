@@ -14,6 +14,7 @@ sources = [
         "https://gitlab.com/minizinc/FindMUS.git",
         "d986e4e114a11eddb7def41837f900e00845a800",
     ),
+    DirectorySource("./bundled"),
 ]
 
 # find_package(libminizinc) resolves against MiniZinc_jll's
@@ -28,11 +29,13 @@ sources = [
 # <inttypes.h>/<stdint.h>. Define both globally via CMAKE_CXX_FLAGS.
 script = raw"""
 cd $WORKSPACE/srcdir/FindMUS
-# musl lacks glibc's <fpu_control.h>; the vendored MiniSat includes it under a
-# bare __linux__ guard but only uses it (in System.cc) when _FPU_* are defined.
-# Gate the include on __GLIBC__ so the build works on musl too.
-sed -i 's/#if defined(__linux__)/#if defined(__linux__) \&\& defined(__GLIBC__)/' \
-    mapsolvers/minisat/minisat/utils/System.h
+# Apply the bundled source patches. Currently just one: musl lacks glibc's
+# <fpu_control.h>, which the vendored MiniSat includes under a bare __linux__
+# guard (using it, in System.cc, only when _FPU_* are defined); the patch gates
+# the include on __GLIBC__ so the build works on musl too.
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 ${f}
+done
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
