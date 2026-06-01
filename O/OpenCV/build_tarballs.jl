@@ -114,6 +114,7 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
         --directory="/opt/${target}/${target}/sys-root/." \
         --strip-components=1 \
         --warning=no-unknown-keyword \
+        --overwrite --recursive-unlink \
         MacOSX${macos_sdk_version}.sdk/System \
         MacOSX${macos_sdk_version}.sdk/usr
     export MACOSX_DEPLOYMENT_TARGET=${macosx_deployment_target}
