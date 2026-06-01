@@ -18,14 +18,8 @@ cd BiqCrunch-*/src/
 make -f Makefile.BinaryBuilder 
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = [
-    Platform("x86_64", "macos"; ),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "macos"; ),
-    Platform("aarch64", "linux"; libc = "glibc")
-]
+# BiqCrunch only supports Unix x86_64 or aarch64
+platforms = filter(p -> Sys.isunix(p) && (arch(p) == "x86_64" || arch(p) == "aarch64"), supported_platforms())
 platforms = expand_gfortran_versions(platforms)
 
 
