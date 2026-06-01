@@ -17,17 +17,10 @@ sources = [GitSource("https://github.com/DLR-AMR/t8code", commit_hash),
 script = raw"""
 cd $WORKSPACE/srcdir/t8code
 
-# fetch sc and p4est
-git submodule init
-git submodule update
-
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi-constants.patch"
 
 # Microsoft MPI is still 2.0 but has the required features; remove the strict 3.0 requirement
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi2.patch"
-
-# Fixes for mingw, which is WIN32 for cmake, but uses Linux syntax
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mingw.patch"
 
 # Show CMake where to find `mpiexec`.
 if [[ "${target}" == *-mingw* ]]; then
@@ -51,6 +44,9 @@ cmake . \
       -DT8CODE_BUILD_TESTS=OFF \
       -DT8CODE_BUILD_TUTORIALS=OFF \
       -DT8CODE_ENABLE_MPI=ON
+
+# Fixes for mingw, which is WIN32 for cmake, but uses Linux syntax
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mingw.patch"
 
 make -C build -j ${nproc}
 make -C build -j ${nproc} install
