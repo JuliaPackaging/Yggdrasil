@@ -17,8 +17,6 @@ sources = [GitSource("https://github.com/DLR-AMR/t8code", commit_hash),
 script = raw"""
 cd $WORKSPACE/srcdir/t8code
 
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi-constants.patch"
-
 # Microsoft MPI is still 2.0 but has the required features; remove the strict 3.0 requirement
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi2.patch"
 
@@ -47,6 +45,9 @@ cmake . \
 
 # Fixes for mingw, which is WIN32 for cmake, but uses Linux syntax
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mingw.patch"
+
+# Fixes for "initializer element is not constant" in sc
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi-constants.patch"
 
 make -C build -j ${nproc}
 make -C build -j ${nproc} install

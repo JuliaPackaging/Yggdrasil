@@ -1,5 +1,6 @@
---- a/sc/src/sc.c
-+++ b/sc/src/sc.c
+--- a/build/_deps/sc-src/src/sc.c
++++ b/build/_deps/sc-src/src/sc.c
+
 @@ -98,7 +98,10 @@
  static int          default_abort_mismatch = 1;
  
