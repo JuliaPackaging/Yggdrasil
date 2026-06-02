@@ -11,6 +11,7 @@ sources = [
         "https://github.com/thliebig/CSXCAD.git",
         "3861f2102aa9d13fbb0edb115fe446aeca6a0c13",  # tag v0.6.3
     ),
+    DirectorySource("./bundled"),
 ]
 
 # ---------------------------------------------------------------------------
@@ -31,8 +32,7 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/CSXCAD
 
 # Fix bare 'cout' in CSPropDiscMaterial.cpp (upstream bug in v0.6.3)
-sed -i 's/^\tcout << __func__/\tstd::cout << __func__/' \
-    ${WORKSPACE}/srcdir/CSXCAD/src/CSPropDiscMaterial.cpp
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/fix_bare_cout.patch"
 
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
