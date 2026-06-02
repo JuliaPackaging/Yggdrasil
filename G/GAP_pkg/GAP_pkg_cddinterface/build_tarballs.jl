@@ -2,16 +2,16 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 include("../common.jl")
 
-gap_version = v"400.1500.0"
+gap_version = v"400.1600.0"
 name = "cddinterface"
-upstream_version = "2025.06.24" # when you increment this, reset offset to v"0.0.0"
-offset = v"1.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
+upstream_version = "2026.03.02" # when you increment this, reset offset to v"0.0.0"
+offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL
 sources = [
     ArchiveSource("https://github.com/homalg-project/CddInterface/releases/download/v$(upstream_version)/CddInterface-$(upstream_version).tar.gz",
-                  "fc3f4ae2b4cb27152bf82d3a64a3aec63be283c83090e586204540a12b0d4883"),
+                  "e425b0e87667df3f6e4c33cd2656bfc53602297620c91f60e322b29478954a2b"),
 ]
 
 # Bash recipe for building across all platforms
