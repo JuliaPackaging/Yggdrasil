@@ -9,18 +9,18 @@ using Pkg
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
-gap_version = v"400.1500.100"
-gap_upstream_version = v"4.15.1"
+gap_version = v"400.1600.0"
+gap_upstream_version = v"4.16.0"
 name = "JuliaInterface"
 upstream_version = "0.16.0" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.1" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
+offset = v"0.0.2" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL
 sources = [
     GitSource("https://github.com/oscar-system/GAP.jl", "43ec515a9c5e8f087e32c87e5412c600b8329a85"),
     ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(gap_upstream_version)/gap-$(gap_upstream_version).tar.gz",
-                  "6049d53e99b12e25c2d848db21ac4a06380a46fe4c4157243d556fe06930042c"),
+                  "aaa296b32a5d7bf25fd80f241d23ec1f58b74e991ae730fafe40e54eb3af6e7e"),
 ]
 
 # Bash recipe for building across all platforms
