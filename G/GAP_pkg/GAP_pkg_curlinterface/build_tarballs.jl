@@ -2,16 +2,16 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 include("../common.jl")
 
-gap_version = v"400.1500.0"
+gap_version = v"400.1600.0"
 name = "curlinterface"
-upstream_version = "2.4.2" # when you increment this, reset offset to v"0.0.0"
+upstream_version = "2.4.3" # when you increment this, reset offset to v"0.0.0"
 offset = v"1.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL
 sources = [
     ArchiveSource("https://github.com/gap-packages/curlInterface/releases/download/v$(upstream_version)/curlInterface-$(upstream_version).tar.gz",
-                  "973d4b518bb25295fa36e367c54fd257adb7af4723634f039f53dae507855756"),
+                  "bba4ac8190eb9f51a5b645d09aaea7a60e9af949b37e6c8ff8f1d2ce5f4df587"),
 ]
 
 # Bash recipe for building across all platforms
