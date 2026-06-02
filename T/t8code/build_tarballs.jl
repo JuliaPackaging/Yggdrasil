@@ -17,6 +17,9 @@ sources = [GitSource("https://github.com/DLR-AMR/t8code", commit_hash),
 script = raw"""
 cd $WORKSPACE/srcdir/t8code
 
+# Fix for https://github.com/DLR-AMR/t8code/pull/2335
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/cmake-rpath.patch"
+
 # Microsoft MPI is still 2.0 but has the required features; remove the strict 3.0 requirement
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi2.patch"
 
