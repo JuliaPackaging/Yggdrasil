@@ -40,6 +40,7 @@ script = raw"""
 include("../../L/libjulia/common.jl")
 filter!(>=(v"1.10"), julia_versions)
 platforms = vcat(libjulia_platforms.(julia_versions)...)
+platforms = filter(p -> nbits(p) == 64, platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 products = [ LibraryProduct("libnumav_julia", :libnumav_julia) ]
