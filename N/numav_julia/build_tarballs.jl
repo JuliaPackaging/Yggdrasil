@@ -68,5 +68,5 @@ dependencies = [
 build_tarballs(
     ARGS, name, version, sources, script, platforms, products, dependencies;
     preferred_gcc_version=v"10",
-    julia_compat=join("~".*julia_versions, ", ")
+    julia_compat=libjulia_julia_compat(julia_versions)
 )
