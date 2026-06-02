@@ -35,22 +35,11 @@ script = raw"""
     cmake --build . --config Release --target install -- -j${nproc}
 """
 
-julia_versions = [ "1.10", "1.11", "1.12", "1.13", "1.14" ]
-
-platforms = Platform[]
-for v in VersionNumber.(julia_versions)
-    append!(platforms,
-        [
-            Platform("x86_64" , "linux"  ; libc=:glibc, julia_version=v),
-            Platform("aarch64", "linux"  ; libc=:glibc, julia_version=v),
-            Platform("x86_64" , "linux"  ; libc=:musl , julia_version=v),
-            Platform("aarch64", "linux"  ; libc=:musl , julia_version=v),
-            Platform("x86_64" , "windows";              julia_version=v),
-            Platform("x86_64" , "macos"  ;              julia_version=v),
-            Platform("aarch64", "macos"  ;              julia_version=v),
-        ]
-    )
-end
+# These are the platforms we will build for by default, unless further
+# platforms are passed in on the command line
+include("../../L/libjulia/common.jl")
+filter!(>=(v"1.10"), julia_versions)
+platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
 products = [ LibraryProduct("libnumav_julia", :libnumav_julia) ]
