@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "OpenVDB"
-version = v"13.0.0"
+version = v"13.0.0+1"
 
 # Collection of sources required to complete build
 sources = [
