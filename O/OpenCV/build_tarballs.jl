@@ -16,7 +16,7 @@ sources = [
     # julia-bindings-upstream-contrib.patch folded in and made reproducible. We
     # overlay it onto opencv_contrib's julia module to build libopencv_julia.
     # Keep this commit's gen/OPENCV_VERSION in lockstep with the OpenCV sources above.
-    GitSource("https://github.com/JuliaImages/OpenCV.jl.git", "e6313b2ccab37eff41abc1dbce32b893ae00d023"),  # JuliaImages/OpenCV.jl#76 — re-pin to the merged commit before registering
+    GitSource("https://github.com/JuliaImages/OpenCV.jl.git", "685eb367e8d6689ac672bc846032c72f1421b283"),  # OpenCV.jl v4.8.0
     DirectorySource("./bundled"),
 ]
 
