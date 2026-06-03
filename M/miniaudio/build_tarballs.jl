@@ -21,7 +21,6 @@ mkdir -p ${libdir}
 cc -shared -fPIC -O2 -I. miniaudio.c -o ${libdir}/libminiaudio.${dlext} -lpthread -lm
 ls -la ${libdir}
 install_license LICENSE
-exit
 """
 
 # These are the platforms we will build for by default, unless further
