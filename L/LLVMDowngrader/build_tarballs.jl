@@ -7,17 +7,38 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "LLVMDowngrader"
 repo = "https://github.com/JuliaLLVM/llvm-downgrade"
-version = v"0.6"
+version = v"0.7"
 
-llvm_versions = [v"15.0.7", v"16.0.6", v"18.1.7", v"20.1.2"]
+llvm_versions = [v"13.0.1", v"14.0.6", v"15.0.7", v"16.0.6", v"17.0.6",
+                 v"18.1.7", v"19.1.7", v"20.1.8", v"21.1.8"]
 
-# Collection of sources required to build LLVMDowngrader
+# Collection of sources required to build LLVMDowngrader. Each LLVM release has a
+# matching `downgrade_release_<major>` branch in the llvm-downgrade repo; we pin
+# the branch tip below. The LLVM patch version is the latest available as
+# LLVM_full_jll (the build-time dependency).
 sources = Dict(
-    v"15.0.7" => [GitSource(repo, "aba82137dde7a0e5e5f2d8a44d7daf750e51fd30")],
-    v"16.0.6" => [GitSource(repo, "079c50a3cb88053b54db312710347db298407806")],
-    v"18.1.7" => [GitSource(repo, "7995dec609d994ae0a9a99f8f3776da5439749c9")],
-    v"20.1.2" => [GitSource(repo, "655eb609daad4fe04b80644828de3769a33c748f")],
+    v"13.0.1" => [GitSource(repo, "18a0ccd129a934b7d91f4043f1b87638bd5775e3")],
+    v"14.0.6" => [GitSource(repo, "8d54b2e2d8e5a5fc0ffdd0ee5eadfe66b2289fe3")],
+    v"15.0.7" => [GitSource(repo, "b756f60e7b414ff88de66b3a97399dc395f94108")],
+    v"16.0.6" => [GitSource(repo, "c31c6bf5ed1b29248f2e607e063e80c19e9379aa")],
+    v"17.0.6" => [GitSource(repo, "7864270d4621d90251fe36501beb50c383065202")],
+    v"18.1.7" => [GitSource(repo, "a888e043e130c72f165b1349b36754469cede1de")],
+    v"19.1.7" => [GitSource(repo, "3694275433b020b823bb674a72de7658a65c76ef")],
+    v"20.1.8" => [GitSource(repo, "0b57c0e4658742028c96b59f5e94300f77eb754a")],
+    v"21.1.8" => [GitSource(repo, "8f34656a7743121e453f8aba54cce10e94f07eec")],
 )
+
+# `llvm-downgrade` can emit LLVM 5.0 and 7.0 bitcode (`llvm-as --bitcode-version`).
+# To disassemble that downgraded bitcode we also ship the matching `llvm-dis` from
+# those LLVM releases (as `llvm-dis-5` / `llvm-dis-7`). These are version- and
+# assertion-independent, so the same sources are added to every build.
+llvm_dis_sources = [
+    ArchiveSource("https://releases.llvm.org/5.0.2/llvm-5.0.2.src.tar.xz",
+                  "d522eda97835a9c75f0b88ddc81437e5edbb87dc2740686cb8647763855c2b3c"),
+    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-7.1.0/llvm-7.1.0.src.tar.xz",
+                  "1bcc9b285074ded87b88faaedddb88e6b5d6c331dfcfb57d7f3393dd622b3764"),
+    DirectorySource("./bundled"),
+]
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
@@ -81,11 +102,77 @@ CMAKE_FLAGS+=(-DHAVE_LIBEDIT=Off)
 
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
 ninja -j${nproc} tools/llvm-as/install
+
+# Build `llvm-dis` from the old LLVM releases whose bitcode `llvm-as` can emit,
+# so the downgraded IR can be disassembled with a matching disassembler. These
+# are old enough that they need a couple of source tweaks to build with a modern
+# CMake/toolchain (see bundled/patches), and they cross-compile the same way as
+# the main build: a native llvm-tblgen/llvm-config bootstrap, then the actual
+# cross build. We only build `llvm-dis` itself (no backends) to keep it quick.
+build_old_llvm_dis() {
+    local llvm_src="$1"
+    local suffix="$2"
+
+    # apply the build-compatibility patches
+    pushd "${llvm_src}"
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/llvm${suffix}-cmake-policy-and-regex-guard.patch"
+    popd
+
+    # native bootstrap: build a host llvm-tblgen/llvm-config matching this version
+    mkdir -p "${WORKSPACE}/dis-bootstrap-${suffix}"
+    pushd "${WORKSPACE}/dis-bootstrap-${suffix}"
+    cmake -GNinja "${llvm_src}" \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_CROSSCOMPILING=False \
+        -DCMAKE_TOOLCHAIN_FILE="${CMAKE_HOST_TOOLCHAIN}" \
+        -DLLVM_HOST_TRIPLE="${MACHTYPE}" \
+        -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+        -DLLVM_TARGETS_TO_BUILD="" \
+        -DLLVM_INCLUDE_TESTS=OFF \
+        -DLLVM_INCLUDE_EXAMPLES=OFF \
+        -DLLVM_INCLUDE_DOCS=OFF \
+        -DLLVM_ENABLE_TERMINFO=OFF \
+        -DLLVM_ENABLE_ZLIB=OFF \
+        -DLLVM_ENABLE_ZSTD=OFF \
+        -DLLVM_ENABLE_LIBXML2=OFF
+    ninja -j${nproc} llvm-tblgen llvm-config
+    popd
+
+    # cross build: just `llvm-dis`, then install + rename to `llvm-dis-${suffix}`
+    mkdir -p "${WORKSPACE}/dis-build-${suffix}"
+    pushd "${WORKSPACE}/dis-build-${suffix}"
+    cmake -GNinja "${llvm_src}" \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_CROSSCOMPILING:BOOL=ON \
+        -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
+        -DCMAKE_INSTALL_PREFIX="${prefix}" \
+        -DLLVM_TABLEGEN="${WORKSPACE}/dis-bootstrap-${suffix}/bin/llvm-tblgen" \
+        -DLLVM_CONFIG_PATH="${WORKSPACE}/dis-bootstrap-${suffix}/bin/llvm-config" \
+        -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+        -DLLVM_TARGETS_TO_BUILD="" \
+        -DLLVM_INCLUDE_TESTS=OFF \
+        -DLLVM_INCLUDE_EXAMPLES=OFF \
+        -DLLVM_INCLUDE_DOCS=OFF \
+        -DLLVM_ENABLE_TERMINFO=OFF \
+        -DLLVM_ENABLE_ZLIB=OFF \
+        -DLLVM_ENABLE_ZSTD=OFF \
+        -DLLVM_ENABLE_LIBXML2=OFF \
+        -DHAVE_HISTEDIT_H=OFF \
+        -DHAVE_LIBEDIT=OFF
+    ninja -j${nproc} tools/llvm-dis/install
+    mv "${bindir}/llvm-dis${exeext}" "${bindir}/llvm-dis-${suffix}${exeext}"
+    popd
+}
+
+build_old_llvm_dis "${WORKSPACE}/srcdir/llvm-5.0.2.src" 5
+build_old_llvm_dis "${WORKSPACE}/srcdir/llvm-7.1.0.src" 7
 """
 
 # The products that we will ensure are always built
 products = Product[
     ExecutableProduct("llvm-as", :llvm_as),
+    ExecutableProduct("llvm-dis-5", :llvm_dis_5),
+    ExecutableProduct("llvm-dis-7", :llvm_dis_7),
 ]
 
 augment_platform_block = """
@@ -111,7 +198,7 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
         should_build_platform(triplet(augmented_platform)) || continue
         push!(builds, (;
             dependencies,
-            sources=sources[llvm_version],
+            sources=[sources[llvm_version]; llvm_dis_sources],
             platforms=[augmented_platform],
             preferred_gcc_version=(llvm_version >= v"16" ? v"10" : v"7")
         ))
@@ -134,5 +221,3 @@ for (i,build) in enumerate(builds)
                    build.preferred_gcc_version, julia_compat="1.6",
                    augment_platform_block, lazy_artifacts=true)
 end
-
-# rebuild trigger: 1
