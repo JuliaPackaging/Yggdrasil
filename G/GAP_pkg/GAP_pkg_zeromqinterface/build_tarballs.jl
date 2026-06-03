@@ -2,16 +2,16 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 include("../common.jl")
 
-gap_version = v"400.1500.0"
+gap_version = v"400.1600.0"
 name = "zeromqinterface"
-upstream_version = "0.17" # when you increment this, reset offset to v"0.0.0"
+upstream_version = "0.18" # when you increment this, reset offset to v"0.0.0"
 offset = v"1.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL
 sources = [
     ArchiveSource("https://github.com/gap-packages/ZeroMQInterface/releases/download/v$(upstream_version)/ZeroMQInterface-$(upstream_version).tar.gz",
-                  "d77e979dc3a0b18e95fe2b61f45e5a765cb5661d52507019cf307929f50f65a9"),
+                  "252d660f037dffc58edc80d452698a534ec91fb6a83c5416eabc8969a87a4b00"),
 ]
 
 # Bash recipe for building across all platforms
