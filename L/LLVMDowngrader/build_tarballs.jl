@@ -1,4 +1,4 @@
-using BinaryBuilder, Pkg
+using BinaryBuilder
 using Base.BinaryPlatforms
 
 const YGGDRASIL_DIR = "../.."
@@ -14,8 +14,8 @@ llvm_versions = [v"13.0.1", v"14.0.6", v"15.0.7", v"16.0.6", v"17.0.6",
 
 # Collection of sources required to build LLVMDowngrader. Each LLVM release has a
 # matching `downgrade_release_<major>` branch in the llvm-downgrade repo; we pin
-# the branch tip below. The LLVM patch version is the latest available as
-# LLVM_full_jll (the build-time dependency).
+# the branch tip below. The LLVM patch version matches the latest corresponding
+# LLVM_full_jll release.
 sources = Dict(
     v"13.0.1" => [GitSource(repo, "18a0ccd129a934b7d91f4043f1b87638bd5775e3")],
     v"14.0.6" => [GitSource(repo, "8d54b2e2d8e5a5fc0ffdd0ee5eadfe66b2289fe3")],
@@ -50,6 +50,16 @@ cd llvm-downgrade/llvm
 LLVM_SRCDIR=$(pwd)
 
 install_license LICENSE.TXT
+
+# LLVM 13/14's Support/Signals.h declares `CleanupOnSignal(uintptr_t)` but does
+# not `#include <cstdint>` (upstream only added that in LLVM 15). GCC >= 13 no
+# longer pulls in <cstdint> transitively, so this fails to compile on toolchains
+# that ship only a recent GCC -- e.g. riscv64, which has no GCC older than 14.
+# Backport the include when it's missing (a no-op for LLVM 15+).
+signals_h="${LLVM_SRCDIR}/include/llvm/Support/Signals.h"
+if ! grep -q '#include <cstdint>' "${signals_h}"; then
+    sed -i 's|^#include <string>|#include <cstdint>\n#include <string>|' "${signals_h}"
+fi
 
 # The very first thing we need to do is to build llvm-tblgen for x86_64-linux-muslc
 # This is because LLVM's cross-compile setup is kind of borked, so we just
@@ -175,25 +185,31 @@ products = Product[
     ExecutableProduct("llvm-dis-7", :llvm_dis_7),
 ]
 
+# We ship a single build per LLVM major version. `llvm-as` is a standalone tool
+# that round-trips IR/bitcode and doesn't link against the running Julia's
+# libLLVM, so whether that LLVM was built with assertions is irrelevant: map both
+# the assertions and non-assertions case to the same artifact.
 augment_platform_block = """
     using Base.BinaryPlatforms
-    $(LLVM.augment)
-    augment_platform!(platform::Platform) = augment_llvm!(platform)
+    function augment_platform!(platform::Platform)
+        haskey(platform, "llvm_version") && return platform
+        platform["llvm_version"] = string(Base.libllvm_version.major)
+        return platform
+    end
 """
 
 # determine exactly which tarballs we should build
 builds = []
-for llvm_version in llvm_versions, llvm_assertions in (false, true)
-    # Dependencies that must be installed before this package can be built
-    llvm_name = llvm_assertions ? "LLVM_full_assert_jll" : "LLVM_full_jll"
+for llvm_version in llvm_versions
+    # We build LLVM from the downgrade source, so there's no LLVM_full_jll build
+    # dependency; only Zlib is needed (the build configures LLVM_ENABLE_ZLIB=ON).
     dependencies = [
-        BuildDependency(PackageSpec(name=llvm_name, version=string(llvm_version))),
         Dependency("Zlib_jll")
     ]
 
     for platform in platforms
         augmented_platform = deepcopy(platform)
-        augmented_platform[LLVM.platform_name] = LLVM.platform(llvm_version, llvm_assertions)
+        augmented_platform[LLVM.platform_name] = LLVM.platform(llvm_version, false)
 
         should_build_platform(triplet(augmented_platform)) || continue
         push!(builds, (;
