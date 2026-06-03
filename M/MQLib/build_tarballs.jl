@@ -43,21 +43,19 @@ install -vm 0644 hhdata/*.rf "${datadir}/mqlib/hhdata/"
 MQLIB_LIBRARY_SOURCES="$(find src -name '*.cpp' ! -name main.cpp | sort)"
 
 if [[ "${target}" == *-mingw* ]]; then
-    MQLIB_C_API_LIBRARY="${bindir}/libmqlib_c_api.${dlext}"
     MQLIB_C_API_SHARED_FLAGS=(
         -shared
         -Wl,--out-implib,"${libdir}/libmqlib_c_api.dll.a"
     )
 elif [[ "${target}" == *-apple-darwin* ]]; then
-    MQLIB_C_API_LIBRARY="${libdir}/libmqlib_c_api.${dlext}"
     MQLIB_C_API_SHARED_FLAGS=(
         -dynamiclib
         -Wl,-install_name,@rpath/libmqlib_c_api.${dlext}
     )
 else
-    MQLIB_C_API_LIBRARY="${libdir}/libmqlib_c_api.${dlext}"
     MQLIB_C_API_SHARED_FLAGS=(-shared)
 fi
+MQLIB_C_API_LIBRARY="${libdir}/libmqlib_c_api.${dlext}"
 
 "${CXX}" \
     -std=c++11 \
