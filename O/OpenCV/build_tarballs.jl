@@ -77,7 +77,6 @@ cmake -DCMAKE_FIND_ROOT_PATH=${prefix} \
       -DOPENCV_EXTRA_MODULES_PATH=../opencv_contrib/modules \
       -DBUILD_LIST=core,imgproc,imgcodecs,highgui,videoio,dnn,features2d,objdetect,calib3d,video,gapi,stitching,julia \
       -DINSTALL_CREATE_DISTRIB=ON \
-
       ${EXTRA_CMAKE} \
       ../opencv/
 
