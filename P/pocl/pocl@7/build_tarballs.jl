@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "pocl"
-version = v"7.1.1"
+version = v"7.1.2"
 
 # Build
 
@@ -16,7 +16,7 @@ version = v"7.1.1"
 sources = [
     DirectorySource("./bundled"),
     GitSource("https://github.com/juliagpu/pocl",
-              "2bf5b6303984fe30db9dd4047af420f84912f609")
+              "a6b36382744c2cb98f42d063457a948d31d23c9a")
 ]
 
 #=
