@@ -74,7 +74,7 @@ meson setup build \
     --cross-file="${MESON_TARGET_TOOLCHAIN}" \
     --buildtype=release \
     -Dgui=disabled \
-    -Dpari=disabled \
+    -Dpari=enabled \
     -Dntl=disabled \
     -Dcocoa=disabled \
     -Dgsl=enabled \
@@ -126,6 +126,7 @@ dependencies = [
     Dependency("OpenBLAS32_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("GLPK_jll"; compat="5.0.2"),
+    Dependency("PARI_jll"; compat="2.17.3"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
