@@ -1,5 +1,3 @@
-# Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
-
 using BinaryBuilder, Pkg
 
 name = "numav_julia"
@@ -8,7 +6,7 @@ version = v"0.1.0"
 sources = [ 
     GitSource(
         "https://github.com/mmfiuza/numav.git", 
-        "f0f0b67e98ad47b2a0e9b451f9e97fffa7d6bc8a"
+        "bee6a3c00fa959bf1a3766a27d26aec9c2837b43"
     )
 ]
 
