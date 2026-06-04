@@ -1,0 +1,13 @@
+--- a/symtabAPI/src/Object-elf.C
++++ b/symtabAPI/src/Object-elf.C
+@@ -332,6 +332,10 @@
+ #define DF_1_PIE 0x08000000
+ #endif
+ 
++#if !defined(DT_FLAGS_1)
++#define DT_FLAGS_1 0x6ffffffb
++#endif
++
+ // loaded_elf(): populate elf section pointers
+ // for EEL rewritten code, also populate "code_*_" members
+ bool Object::loaded_elf(Offset &txtaddr, Offset &dataddr,

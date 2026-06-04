@@ -1,0 +1,24 @@
+--- a/elf/src/Elf_X.C
++++ b/elf/src/Elf_X.C
+@@ -1081,6 +1081,9 @@
+ #if !defined(EM_AARCH64)
+ #define EM_AARCH64 183
+ #endif
++#if !defined(EM_AMDGPU)
++#define EM_AMDGPU 224
++#endif
+ Dyninst::Architecture Elf_X::getArch() const
+ {
+     switch(e_machine())
+--- a/dwarf/src/dwarfHandle.C
++++ b/dwarf/src/dwarfHandle.C
+@@ -50,6 +50,9 @@
+ #if !defined(EM_AARCH64)
+ #define EM_AARCH64 183
+ #endif
++#if !defined(EM_AMDGPU)
++#define EM_AMDGPU 224
++#endif
+ 
+ static const Dwfl_Callbacks dwfl_callbacks =
+ {

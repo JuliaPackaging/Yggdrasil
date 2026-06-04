@@ -1,0 +1,13 @@
+--- a/symtabAPI/src/Object-elf.C
++++ b/symtabAPI/src/Object-elf.C
+@@ -328,6 +328,10 @@
+ set<string> debugInfoSections = list_of(string(SYMTAB_NAME))
+         (string(STRTAB_NAME));
+ 
++#if !defined(DF_1_PIE)
++#define DF_1_PIE 0x08000000
++#endif
++
+ // loaded_elf(): populate elf section pointers
+ // for EEL rewritten code, also populate "code_*_" members
+ bool Object::loaded_elf(Offset &txtaddr, Offset &dataddr,
