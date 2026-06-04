@@ -30,6 +30,8 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/alloca_aggregate_type.patch
 # https://github.com/llvm/llvm-project/pull/201417 ("[SPIR-V] Lower select
 # instructions with aggregate operands").
 atomic_patch -p1 $WORKSPACE/srcdir/patches/select_composite_constant.patch
+# Backport of https://github.com/llvm/llvm-project/pull/201523
+atomic_patch -p1 $WORKSPACE/srcdir/patches/printf_format_string_lookup.patch
 
 install_license LICENSE.TXT
 
