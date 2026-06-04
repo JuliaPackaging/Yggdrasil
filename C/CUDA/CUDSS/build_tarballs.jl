@@ -26,6 +26,7 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
 
     cd libcudss-*
     install_license LICENSE
+    mkdir -p ${prefix}/lib
     mv lib/cudss*.lib ${prefix}/lib
     mv bin/cudss*.dll ${libdir}
     mv include/* ${prefix}/include
