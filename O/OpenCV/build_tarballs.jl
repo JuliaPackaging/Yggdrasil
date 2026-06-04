@@ -12,16 +12,25 @@ include("../../L/libjulia/common.jl")
 sources = [
     GitSource("https://github.com/opencv/opencv.git", "fe38fc608f6acb8b68953438a62305d8318f4fcd"),
     GitSource("https://github.com/opencv/opencv_contrib.git", "d99ad2a188210cc35067c2e60076eed7c2442bc3"),  # tag 4.13.0
+    # The Julia binding generator now lives in OpenCV.jl (gen/), with the former
+    # julia-bindings-upstream-contrib.patch folded in and made reproducible. We
+    # overlay it onto opencv_contrib's julia module to build libopencv_julia.
+    # Keep this commit's gen/OPENCV_VERSION in lockstep with the OpenCV sources above.
+    GitSource("https://github.com/JuliaImages/OpenCV.jl.git", "ac677e09dd7bf6504849c8567b287eaf68d54c38"),  # OpenCV.jl master (incl. #80 macOS C++17 fix + #81 features2d gen)
     DirectorySource("./bundled"),
 ]
 
 script = raw"""
 cd $WORKSPACE/srcdir
 
-atomic_patch -p1 -d opencv_contrib patches/julia-bindings-upstream-contrib.patch
+# Overlay OpenCV.jl's vendored, reproducible Julia binding generator onto
+# opencv_contrib's julia module. This replaces the old in-tree generator and the
+# julia-bindings-upstream-contrib.patch (now folded into OpenCV.jl gen/).
+rm -rf opencv_contrib/modules/julia/gen
+cp -r OpenCV.jl/gen opencv_contrib/modules/julia/gen
+cp OpenCV.jl/gen/CMakeLists.txt opencv_contrib/modules/julia/CMakeLists.txt
 
 mkdir build && cd build
-export USE_QT="ON"
 
 # Qt 6.10 requires CMake >= 3.22; use CMake_jll from the host prefix
 apk del cmake
@@ -34,14 +43,6 @@ atomic_patch -p1 -d../opencv ../patches/vsx_power10_paren.patch
 
 if [[ "${target}" == *-w64-* ]]; then
     export CXXFLAGS="-Wa,-mbig-obj"
-fi
-
-# x86_64-apple-darwin shard sys-root is macOS 10.10; AVFoundation (10.13+)
-# and Qt 6.10's UniformTypeIdentifiers (11.0+) aren't available there.
-EXTRA_CMAKE=""
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    EXTRA_CMAKE="-DWITH_AVFOUNDATION=OFF"
-    export USE_QT="OFF"
 fi
 
 cmake -DCMAKE_FIND_ROOT_PATH=${prefix} \
@@ -63,21 +64,25 @@ cmake -DCMAKE_FIND_ROOT_PATH=${prefix} \
       -DHAVE_CXX_FVISIBILITY_HIDDEN=OFF \
       -DHAVE_CXX_FVISIBILITY_INLINES_HIDDEN=OFF \
       -DWITH_KLEIDICV=OFF \
-      -DWITH_QT=${USE_QT} \
+      -DWITH_QT=ON \
       -DOPENCV_EXTRA_MODULES_PATH=../opencv_contrib/modules \
       -DBUILD_LIST=core,imgproc,imgcodecs,highgui,videoio,dnn,features2d,objdetect,calib3d,video,gapi,stitching,julia \
-      ${EXTRA_CMAKE} \
       ../opencv/
 
 make -j${nproc}
 make install
 
 cp lib/libopencv_julia.* ${libdir}/.
-cp -R OpenCV ${prefix}
+# NOTE: the generated Julia wrappers are no longer shipped in the JLL — they live
+# in OpenCV.jl (src/generated/). This build only provides libopencv_julia.
 
 install_license ../opencv/{LICENSE,COPYRIGHT}
 """
 
+# Install a recent macOS SDK so AVFoundation (10.13+) and Qt 6.10's
+# UniformTypeIdentifiers (11.0+) are available on Intel macOS too. Match
+# Qt6Base_jll's SDK/deployment target so the two link cleanly.
+sources, script = require_macos_sdk("14.0", sources, script; deployment_target="12")
 
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
