@@ -16,7 +16,7 @@ sources = [
     # julia-bindings-upstream-contrib.patch folded in and made reproducible. We
     # overlay it onto opencv_contrib's julia module to build libopencv_julia.
     # Keep this commit's gen/OPENCV_VERSION in lockstep with the OpenCV sources above.
-    GitSource("https://github.com/JuliaImages/OpenCV.jl.git", "ac677e09dd7bf6504849c8567b287eaf68d54c38"),  # OpenCV.jl master (incl. #80 macOS C++17 fix + #81 features2d gen)
+    GitSource("https://github.com/JuliaImages/OpenCV.jl.git", "bf25f74aed56d8fa5d66c6b6dcd3efd952886078"),  # OpenCV.jl vs/fix-enum-add-type (#87): skip enum typedefs in mod.add_type<T>
     DirectorySource("./bundled"),
 ]
 
