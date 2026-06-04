@@ -1,6 +1,8 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "flatbuffers"
 version = v"25.2.10"
@@ -37,6 +39,9 @@ products = [
 ]
 
 dependencies = Dependency[]
+
+# `std::optional::value()` needs macOS 10.14 on Intel macOS.
+sources, script = require_macos_sdk("10.14", sources, script)
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     julia_compat="1.6", preferred_gcc_version=v"7")
