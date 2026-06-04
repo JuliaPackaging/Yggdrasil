@@ -1,0 +1,34 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index a3d3013c..3ae82709 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -11,7 +11,7 @@ cmake_policy(SET CMP0048 NEW)
+ # stripped everywhere that access the SOURCES property, so we just
+ # defer to the OLD behavior of not including generator expressions
+ # in the output for now.
+-cmake_policy(SET CMP0051 OLD)
++cmake_policy(SET CMP0051 NEW)
+ 
+ cmake_policy(SET CMP0056 NEW)
+ 
+diff --git a/lib/Support/regex_impl.h b/lib/Support/regex_impl.h
+index 8ddac7dc..2093b60b 100644
+--- a/lib/Support/regex_impl.h
++++ b/lib/Support/regex_impl.h
+@@ -35,8 +35,8 @@
+  *	@(#)regex.h	8.1 (Berkeley) 6/2/93
+  */
+ 
+-#ifndef _REGEX_H_
+-#define	_REGEX_H_
++#ifndef LLVM_SUPPORT_REGEX_IMPL_H
++#define	LLVM_SUPPORT_REGEX_IMPL_H
+ 
+ #include <sys/types.h>
+ typedef off_t llvm_regoff_t;
+@@ -105,4 +105,4 @@ size_t  llvm_strlcpy(char *dst, const char *src, size_t siz);
+ }
+ #endif
+ 
+-#endif /* !_REGEX_H_ */
++#endif /* !LLVM_SUPPORT_REGEX_IMPL_H */
