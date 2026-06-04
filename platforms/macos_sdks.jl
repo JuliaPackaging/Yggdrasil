@@ -109,38 +109,6 @@ function get_macos_sdk_script(version::String; deployment_target::String = versi
         """ *
     raw"""
     if [[ "${target}" == """*arch*raw"""-apple-darwin* ]]; then
-        # echo "Extracting MacOSX${macos_sdk_version}.sdk.tar.xz (this may take a while)"
-        # rm -rf /opt/${target}/${target}/sys-root/System
-        # rm -rf /opt/${target}/${target}/sys-root/usr/include/libxml2/libxml
-        # # extract the tarball into the sys-root so all compilers pick it up
-        # # automatically, and use --warning=no-unknown-keyword to hide harmless
-        # # warnings about unsupported pax header keywords like "SCHILY.fflags"
-        # tar --extract \
-        #     --file=${WORKSPACE}/srcdir/MacOSX${macos_sdk_version}.sdk.tar.xz \
-        #     --directory="/opt/${target}/${target}/sys-root/." \
-        #     --strip-components=1 \
-        #     --warning=no-unknown-keyword \
-        #     MacOSX${macos_sdk_version}.sdk/System \
-        #     MacOSX${macos_sdk_version}.sdk/usr
-        # export MACOSX_DEPLOYMENT_TARGET=${macosx_deployment_target}
-
-        # Note: the code below works (almost!) for MacOSSDK 15.0 as well
-        # # Extract SDK
-        # sysroot=/opt/${target}/${target}/sys-root
-        # apple_sdk_root=${WORKSPACE}/srcdir/MacOSX15.0.sdk
-        # tar \
-        #     --extract \
-        #     --file=${WORKSPACE}/srcdir/MacOSX15.0.sdk.tar.xz \
-        #     --directory=${WORKSPACE}/srcdir \
-        #     --warning=no-unknown-keyword
-        # # Copy the old `include` directory, but only the files that don't exist in the new `include` directory
-        # rsync -a --ignore-existing ${sysroot}/usr/include/ ${apple_sdk_root}/usr/include
-        # # Remove old SDK
-        # rm -rf /opt/${target}/${target}/sys-root/System
-        # # Create symbolic link to new SDK
-        # ln -s ${apple_sdk_root}/System ${sysroot}/System
-        # Note: the code below works (almost!) for MacOSSDK 15.0 as well
-
         # Extract SDK
         echo "Extracting MacOSX${macos_sdk_version}.sdk.tar.xz (this may take a while)"
         tar \
