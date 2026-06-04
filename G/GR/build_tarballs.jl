@@ -6,13 +6,13 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "GR"
-version = v"0.73.24"
+version = v"0.73.25"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sciapp/gr.git", "53ed71e0f464868e1e1cba668895bb4b2d4e2228"),
+    GitSource("https://github.com/sciapp/gr.git", "1cfac451f898bc9b31509c434f571bfff99d8017"),
     FileSource("https://github.com/sciapp/gr/releases/download/v$version/gr-$version.js",
-               "0d316bcf4c5b580faf7166cd97b031d10ba76270042fc418c7dfbbdc6d27679f", "gr.js"),
+               "42e5174076070861bd096a5515fd87a098a9665718acd0af990beb34decfb725", "gr.js"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49")
 ]
