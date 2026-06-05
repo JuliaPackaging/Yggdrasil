@@ -119,7 +119,7 @@ install_license LICENSE.TXT
 #                                    ^
 # /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/include/c++/v1/variant:1394:22: note: 'get<arrow::FieldPath, arrow::FieldPath, std::basic_string<char>, std::vector<arrow::FieldRef>>' has been explicitly marked unavailable here
 # ...and install a newer SDK
-sources, script = require_macos_sdk("10.15", sources, script)
+sources, script = require_macos_sdk("11.3", sources, script)
 
 # Although GDAL does not call MPI directly, it links explicitly
 # against the MPI libraries when using a parallel HDF5. (Instead of
@@ -197,12 +197,12 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency("Arrow_jll"; compat="19.0.0"),
+    Dependency("Arrow_jll"; compat="24.0.0"),
     Dependency("Blosc_jll"; compat="1.21.7"),
     Dependency("Expat_jll"; compat="2.6.5"),
     Dependency("GEOS_jll"; compat="3.13.1"),
     Dependency("HDF4_jll"; compat="4.3.1"),
-    Dependency("HDF5_jll"; compat="~2.1.2"),
+    Dependency("HDF5_jll"; compat="2.1.2"),
     Dependency("LERC_jll"; compat="4.0.1"),
     Dependency("LibCURL_jll"; compat="7.73,8"),
     Dependency("LibPQ_jll"; compat="16.8"),
