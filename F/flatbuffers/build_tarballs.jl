@@ -34,8 +34,6 @@ platforms = expand_cxxstring_abis(supported_platforms())
 
 products = [
     ExecutableProduct("flatc", :flatc),
-    FileProduct("include/flatbuffers/flatbuffers.h", :flatbuffers_h),
-    FileProduct("lib/cmake/flatbuffers/BuildFlatBuffers.cmake", :BuildFlatBuffers_cmake),
 ]
 
 dependencies = Dependency[]
