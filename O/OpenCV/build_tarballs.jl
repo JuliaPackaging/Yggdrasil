@@ -16,7 +16,7 @@ sources = [
     # julia-bindings-upstream-contrib.patch folded in and made reproducible. We
     # overlay it onto opencv_contrib's julia module to build libopencv_julia.
     # Keep this commit's gen/OPENCV_VERSION in lockstep with the OpenCV sources above.
-    GitSource("https://github.com/JuliaImages/OpenCV.jl.git", "0245f70158c0c7cd010880c83d095b9b09de1e8e"),  # OpenCV.jl vs/fix-enum-return-cast (#89): cast enum return types to int64_t
+    GitSource("https://github.com/JuliaImages/OpenCV.jl.git", "a8e1995f8ce79579313d7c7478d23caf6541d183"), 
     DirectorySource("./bundled"),
 ]
 
