@@ -17,9 +17,8 @@ cmake -B build \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_PREFIX_PATH=${prefix} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DVTZERO_BUILD_TESTS=OFF \
-    -DVTZERO_BUILD_EXAMPLES=OFF
+    -DCMAKE_BUILD_TYPE=Release
+
 cmake --build build --parallel ${nproc}
 cmake --install build
 
