@@ -129,8 +129,8 @@ if [[ "${target}" == *mingw* ]]; then
     CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS=-pthread)
 fi
 if [[ "${target}" == *apple-darwin* && "${LLVM_MAJ_VER}" -ge "20" ]]; then
-    CMAKE_FLAGS+=(-DCMAKE_SHARED_LINKER_FLAGS="-L${libdir} -lzstd")
-    CMAKE_FLAGS+=(-DCMAKE_MODULE_LINKER_FLAGS="-L${libdir} -lzstd")
+    CMAKE_FLAGS+=(-DCMAKE_SHARED_LINKER_FLAGS=${libdir}/libzstd.dylib)
+    CMAKE_FLAGS+=(-DCMAKE_MODULE_LINKER_FLAGS=${libdir}/libzstd.dylib)
 fi
 echo ${CMAKE_FLAGS[@]}
 cmake -B build -S enzyme -GNinja ${CMAKE_FLAGS[@]}
