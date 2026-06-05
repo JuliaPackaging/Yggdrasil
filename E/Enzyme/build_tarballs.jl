@@ -128,7 +128,10 @@ if [[ "${target}" == *mingw* ]]; then
     CMAKE_FLAGS+=(-DCMAKE_SHARED_LINKER_FLAGS=-pthread)
     CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS=-pthread)
 fi
-
+if [[ "${target}" == *apple-darwin* && "${LLVM_MAJ_VER}" -ge "20" ]]; then
+    CMAKE_FLAGS+=(-DCMAKE_SHARED_LINKER_FLAGS="-L${libdir} -lzstd")
+    CMAKE_FLAGS+=(-DCMAKE_MODULE_LINKER_FLAGS="-L${libdir} -lzstd")
+fi
 echo ${CMAKE_FLAGS[@]}
 cmake -B build -S enzyme -GNinja ${CMAKE_FLAGS[@]}
 
@@ -160,6 +163,9 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
     # enzyme-tblgen
     if llvm_version >= v"20"
         push!(dependencies, HostBuildDependency("Zstd_jll")) # for debuginfo
+        # libLLVM is linked against libzstd; make it available on the target too
+        # so the plugins can resolve it at link time.
+        push!(dependencies, BuildDependency("Zstd_jll"))
     end
 
     # The products that we will ensure are always built
