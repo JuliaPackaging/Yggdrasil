@@ -28,9 +28,7 @@ sed -i 's/LUA_VERSION_NUM == 504/LUA_VERSION_NUM >= 504/g' \
 cmake -B build \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DSOL2_TESTS=OFF \
-    -DSOL2_EXAMPLES=OFF
+    -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel ${nproc}
 cmake --install build
 
