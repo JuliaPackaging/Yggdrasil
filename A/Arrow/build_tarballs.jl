@@ -2,6 +2,9 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "Arrow"
 version = v"24.0.0"
 
@@ -57,16 +60,22 @@ CMAKE_FLAGS=(
 )
 
 if [[ $target == *mingw32* ]]; then
-    # Cmake doesn't find the zstd library on Windows. It does find
+    # Cmake doesn't find Boost nor zstd on Windows. (It does find
     # zstd, but it somehow can't determine the path to the actual
-    # library.
-    CMAKE_FLAGS+=(-DZSTD_LIB="${prefix}/lib/libzstd.dll.a")
+    # library.)
+    CMAKE_FLAGS+=(
+        -DBoost_DIR=${prefix}/bin/cmake/Boost-1.87.0
+        -DZSTD_LIB="${prefix}/lib/libzstd.dll.a"
+    )
 fi
 
 cmake -B cmake-build "${CMAKE_FLAGS[@]}"
 cmake --build cmake-build --parallel ${nproc}
 cmake --install cmake-build
 """
+
+# Require SDK 12.3
+sources, script = require_macos_sdk("12.3", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
