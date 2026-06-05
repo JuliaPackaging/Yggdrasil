@@ -120,7 +120,7 @@ install_license LICENSE.TXT
 #                                    ^
 # /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/include/c++/v1/variant:1394:22: note: 'get<arrow::FieldPath, arrow::FieldPath, std::basic_string<char>, std::vector<arrow::FieldRef>>' has been explicitly marked unavailable here
 # ...and install a newer SDK
-sources, script = require_macos_sdk("10.15", sources, script)
+sources, script = require_macos_sdk("12.3", sources, script)
 
 # Although GDAL does not call MPI directly, it links explicitly
 # against the MPI libraries when using a parallel HDF5. (Instead of
