@@ -12,7 +12,7 @@ upstream_version = "1.01.0"
 sources = [
     GitSource(
         "https://github.com/berkeley-abc/abc.git",
-        "f4d870e109938fd1a283ecceea950bd9cd616f67"
+        "b7ee7a5f70c37e0b0cb00bde1bacfb8c26adf82a"
     )
 ]
 
