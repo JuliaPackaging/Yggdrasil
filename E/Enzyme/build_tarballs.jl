@@ -165,7 +165,7 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
         push!(dependencies, HostBuildDependency("Zstd_jll")) # for debuginfo
         # libLLVM is linked against libzstd; make it available on the target too
         # so the plugins can resolve it at link time.
-        push!(dependencies, Dependency("Zstd_jll"))
+        push!(dependencies, BuildDependency("Zstd_jll"))
     end
 
     # The products that we will ensure are always built
