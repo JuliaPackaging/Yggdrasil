@@ -96,5 +96,4 @@ for platform in all_platforms
         lazy_artifacts = true, dont_dlopen = true,
         augment_platform_block = CUDA.augment
     )
-
 end
