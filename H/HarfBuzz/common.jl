@@ -6,14 +6,12 @@ function build_harfbuzz(ARGS, name::String)
 
     icu = name == "HarfBuzz_ICU"
 
-    version = v"8.5.0"
-    # Bump Yggdrasil version because we updated libffi_jll
-    ygg_version = v"8.5.1"
+    version = v"14.2.0"
 
     # Collection of sources required to build Harfbuzz
     sources = [
         ArchiveSource("https://github.com/harfbuzz/harfbuzz/releases/download/$(version)/harfbuzz-$(version).tar.xz",
-                      "77e4f7f98f3d86bf8788b53e6832fb96279956e1c3961988ea3d4b7ca41ddc27"),
+                      "94017020f96d025bb66ae91574e4cf334bcad23e8175a8a40565b3721bc2eaff"),
         DirectorySource("../bundled"),
     ]
 
@@ -91,13 +89,13 @@ fi
 
     if icu
         append!(dependencies, [
-            Dependency("HarfBuzz_jll"; compat="$(ygg_version)"),
+            Dependency("HarfBuzz_jll"; compat="$(version)"),
             Dependency("ICU_jll"; compat="76.2"),
         ])
     end
 
     # Build the tarballs, and possibly a `build.jl` as well.
     # We need at lest GCC 8 to support C++ 20
-    build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                    clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"8")
 end

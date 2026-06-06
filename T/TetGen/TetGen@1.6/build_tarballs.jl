@@ -40,6 +40,8 @@ ${CXX} -c -fPIC -std=c++11 -O3 -c -DTETLIBRARY tetgen.cxx -o tetgen.o
 ${CXX} -c -fPIC -std=c++11 -O3 -c -DTETLIBRARY predicates.cxx -o predicates.o
 ${CXX} $LDFLAGS -shared -fPIC tetgen.o predicates.o cwrapper.o -o ${libdir}/libtet.${dlext}
 
+install -Dm644 tetgen.h ${includedir}/tetgen.h
+
 install_license $WORKSPACE/srcdir/cwrapper/LICENSE
 """
 
