@@ -53,9 +53,7 @@ make -j${nproc} CC=${CC} CXX=${CXX} CFLAGS+="${EXFLGS}" libabc.so
 install -Dvm 755 "libabc.so" "${libdir}/libabc.${dlext}"
 
 make -j${nproc} CC=${CC} CXX=${CXX} CFLAGS+="${EXFLGS}"
-mkdir -p "${bindir}"
-cp abc${exeext} ${bindir}
-chmod +x ${bindir}/*
+install -Dvm 755 "abc${exeext}" "${bindir}/abc${exeext}"
 install_license copyright.txt
 exit
 """
