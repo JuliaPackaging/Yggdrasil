@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "GDAL"
-upstream_version = v"3.13.0"
+upstream_version = v"3.13.1"
 # The version offset is used for two purposes:
 # - If we need to release multiple jll packages for the same GDAL
 #   library (usually for weird packaging reasons) then we increase the
@@ -22,7 +22,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 
 # Collection of sources required to build GDAL
 sources = [
-    GitSource("https://github.com/OSGeo/gdal.git", "130cb4675a0b42bd32acad56e57022cca44fc008"),
+    GitSource("https://github.com/OSGeo/gdal.git", "b2e6057d1d0f2cb4c11bfdf79ab1a61def0ce9ca"),
     DirectorySource("./bundled"),
 ]
 
@@ -49,6 +49,7 @@ CMAKE_FLAGS=(
     -DCMAKE_FIND_ROOT_PATH=${prefix}
     -DCMAKE_PREFIX_PATH=${prefix}
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+    -DCMAKE_CXX_STANDARD=20
     -DBUILD_CSHARP_BINDINGS=OFF
     -DBUILD_JAVA_BINDINGS=OFF
     -DBUILD_PYTHON_BINDINGS=OFF
@@ -119,7 +120,7 @@ install_license LICENSE.TXT
 #                                    ^
 # /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/include/c++/v1/variant:1394:22: note: 'get<arrow::FieldPath, arrow::FieldPath, std::basic_string<char>, std::vector<arrow::FieldRef>>' has been explicitly marked unavailable here
 # ...and install a newer SDK
-sources, script = require_macos_sdk("10.15", sources, script)
+sources, script = require_macos_sdk("12.3", sources, script)
 
 # Although GDAL does not call MPI directly, it links explicitly
 # against the MPI libraries when using a parallel HDF5. (Instead of
@@ -197,12 +198,12 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency("Arrow_jll"; compat="19.0.0"),
+    Dependency("Arrow_jll"; compat="24.0.0"),
     Dependency("Blosc_jll"; compat="1.21.7"),
     Dependency("Expat_jll"; compat="2.6.5"),
     Dependency("GEOS_jll"; compat="3.13.1"),
     Dependency("HDF4_jll"; compat="4.3.1"),
-    Dependency("HDF5_jll"; compat="~2.1.2"),
+    Dependency("HDF5_jll"; compat="2.1.2"),
     Dependency("LERC_jll"; compat="4.0.1"),
     Dependency("LibCURL_jll"; compat="7.73,8"),
     Dependency("LibPQ_jll"; compat="16.8"),
@@ -221,7 +222,7 @@ dependencies = [
     Dependency("XZ_jll"; compat="5.8.3"),
     Dependency("Zlib_jll"; compat="1.2.12"),
     Dependency("Zstd_jll"; compat="1.5.7"),
-    Dependency("grok_jll"; compat="20.3.2"),
+    Dependency("grok_jll"; compat="20.3.3"),
     Dependency("libgeotiff_jll"; compat="100.702.400"),
     Dependency("libpng_jll"; compat="1.6.58"),
     Dependency("libwebp_jll"; compat="1.5.0"),
