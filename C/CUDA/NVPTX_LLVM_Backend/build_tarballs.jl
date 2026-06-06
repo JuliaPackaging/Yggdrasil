@@ -10,6 +10,7 @@ version = v"22.1.7"
 sources = [
     ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/llvm-project-$(version).src.tar.xz",
                   "5cc4a3f12bba50b6bdfb4b61bdc852117a0ff2517807c3902fc13267fb93562e"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
@@ -18,6 +19,12 @@ mv llvm-project-* llvm-project
 
 cd llvm-project/llvm
 LLVM_SRCDIR=$(pwd)
+
+# Backport of https://github.com/llvm/llvm-project/pull/201772 ("[SelectionDAG]
+# Look through addrspacecasts when raising stack object alignment"), fixing
+# byte-per-byte expansion of small unaligned memcpys on NVPTX
+# (JuliaGPU/CUDA.jl#3162).
+atomic_patch -p1 $WORKSPACE/srcdir/patches/memcpy_alloca_align.patch
 
 install_license LICENSE.TXT
 
