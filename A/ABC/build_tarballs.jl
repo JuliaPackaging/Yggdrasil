@@ -50,9 +50,7 @@ EXFLGS="\
 # make libabc.so
 make -j${nproc} CC=${CC} CXX=${CXX} CFLAGS+="${EXFLGS}" libabc.so
 # the abc Makefile always makes a .so  Fix that here.
-mv libabc.so libabc.${dlext}
-mkdir -p "${libdir}"
-cp libabc.${dlext} ${libdir}
+install -Dvm 755 "libabc.so" "${libdir}/libabc.${dlext}"
 
 make -j${nproc} CC=${CC} CXX=${CXX} CFLAGS+="${EXFLGS}"
 mkdir -p "${bindir}"
