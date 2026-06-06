@@ -19,9 +19,7 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/abc
 
-# it appears necessary to have the file(s)
-# for the FileProduct(s) live in the destdir
-cp abc.rc ${prefix}/.
+install -Dv abc.rc ${prefix}/abc.rc
 
 # select compiler based on target platform
 # ABC on Apple platforms can be compiled using clang instead of gcc,
