@@ -14,14 +14,14 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 name = "Enzyme"
 repo = "https://github.com/EnzymeAD/Enzyme.git"
 
-auto_version = "refs/tags/v0.0.264"
+auto_version = "refs/tags/v0.0.265"
 version = VersionNumber(split(auto_version, "/")[end])
 
 llvm_versions = [v"15.0.7", v"16.0.6", v"18.1.7", v"20.1.8"]
 
 # Collection of sources required to build attr
 sources = [
-    GitSource(repo, "f06646a6d8a6a69a123c7b4184f8db261c03216d"),
+    GitSource(repo, "0bcd813fcccb37bba817be6e08a0b529f65c6758"),
 ]
 
 # These are the platforms we will build for by default, unless further
@@ -125,6 +125,7 @@ else
         CMAKE_FLAGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.12)
     fi
 fi
+
 if [[ "${target}" == *mingw* ]]; then
     CMAKE_FLAGS+=(-DCMAKE_CPP_FLAGS=-pthread)
     CMAKE_FLAGS+=(-DCMAKE_C_FLAGS=-pthread)
