@@ -103,7 +103,14 @@ function build_script(standalone=false)
     CMAKE_FLAGS+=(-DKERNELLIB_HOST_CPU_VARIANTS=distro)
 
     if [[ "${STANDALONE}" == "true" ]]; then
+        # Build a directly-linkable library instead of an OpenCL ICD driver.
         CMAKE_FLAGS+=(-DENABLE_ICD:BOOL=OFF)
+        # Rename PoCL's OpenCL entrypoints to PO<cl_function>, so the standalone library can
+        # coexist in-process with a real OpenCL ICD loader (e.g. one targeting other GPUs).
+        CMAKE_FLAGS+=(-DRENAME_POCL:BOOL=ON)
+        # With ENABLE_ICD=OFF, PoCL names the library "OpenCL" (libOpenCL.so), which would
+        # collide with the system ICD loader. Rename it so it ships as a distinct product.
+        sed -i 's/set(POCL_LIBRARY_NAME "OpenCL")/set(POCL_LIBRARY_NAME "pocl_standalone")/' CMakeLists.txt
     else
         # Build POCL as an dynamic library loaded by the OpenCL runtime
         CMAKE_FLAGS+=(-DENABLE_ICD:BOOL=ON)
