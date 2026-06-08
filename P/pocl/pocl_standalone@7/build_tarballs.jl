@@ -7,8 +7,15 @@ const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
-name = "pocl"
+name = "pocl_standalone"
 version = v"7.1.2"
+
+# This is the standalone (OpenCL-less) variant of PoCL: instead of an ICD driver loaded by
+# an OpenCL ICD loader, it builds a directly-linkable library (`libpocl_standalone`) whose
+# OpenCL entrypoints are renamed to `PO<cl_function>` (RENAME_POCL). That lets it be used as
+# a CPU back-end (e.g. by KernelAbstractions.jl's nanoOpenCL) without an OpenCL.jl/ICD
+# dependency, while still coexisting in-process with a real OpenCL ICD targeting other GPUs.
+# The actual build differences live in ../common.jl, gated on the `standalone` argument.
 
 # Build
 
@@ -16,7 +23,7 @@ version = v"7.1.2"
 sources = [
     DirectorySource("./bundled"),
     GitSource("https://github.com/juliagpu/pocl",
-              "a6b36382744c2cb98f42d063457a948d31d23c9a")
+              "3e7b3cbf5f4f57d07553d875c98ab087572be694")
 ]
 
 #=
@@ -55,16 +62,17 @@ sources = vcat(sources, get_macos_sdk_sources("10.14"))
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libpocl", "pocl"], :libpocl),
+    LibraryProduct(["libpocl_standalone", "pocl_standalone"], :libpocl),
     ExecutableProduct("poclcc", :poclcc),
 ]
 
-# Dependencies that must be installed before this package can be built
+# Dependencies that must be installed before this package can be built.
+# Unlike the regular `pocl` build, the standalone variant does not use an OpenCL ICD loader
+# (ENABLE_ICD=OFF) and uses PoCL's vendored OpenCL headers, so OpenCL_jll and
+# OpenCL_Headers_jll are not needed.
 dependencies = [
     HostBuildDependency(PackageSpec(name="LLVM_full_jll", version="20.1.2")),
     BuildDependency(PackageSpec(name="LLVM_full_jll", version="20.1.2")),
-    Dependency("OpenCL_jll"),
-    Dependency("OpenCL_Headers_jll"),
     Dependency("Hwloc_jll"),
     Dependency("Zstd_jll"), # our LLVM 20 build has LLVM_ENABLE_ZSTD=ON
     # only used at run time, but also detected by the build
@@ -116,10 +124,8 @@ end
 
 for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
-                   name, version, build.sources, build_script(),
+                   name, version, build.sources, build_script(true),
                    [build.platform], products, build.dependencies;
                    build.preferred_gcc_version, preferred_llvm_version=v"20",
-                   julia_compat="1.6", init_block=init_block())
+                   julia_compat="1.6", init_block=init_block(true))
 end
-
-# bump
