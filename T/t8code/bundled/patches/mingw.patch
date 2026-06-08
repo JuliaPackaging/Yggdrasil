@@ -1,5 +1,6 @@
---- a/sc/cmake/config.cmake
-+++ b/sc/cmake/config.cmake
+--- a/build/_deps/sc-src/cmake/config.cmake
++++ b/build/_deps/sc-src/cmake/config.cmake
+
 @@ -184,7 +184,7 @@
  check_symbol_exists(gettimeofday sys/time.h SC_HAVE_GETTIMEOFDAY)
  
