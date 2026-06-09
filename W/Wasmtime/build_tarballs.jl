@@ -18,10 +18,6 @@ if [[ "${target}" == armv* ]] || [[ "${target}" == aarch64-linux* ]]; then
     export CFLAGS="-D__ARM_ARCH"
 fi
 
-if [[ "${target}" == *-musl* ]]; then
-    export RUSTFLAGS="-C target-feature=-crt-static"
-fi
-
 cargo build \
     --release \
     --target ${rust_target} \
@@ -50,6 +46,12 @@ platforms = supported_platforms(; exclude=(p -> !(arch(p) in ("x86_64", "aarch64
 
 # Filter aarch64 FreeBSD because no Rust toolchain is available there yet
 filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+
+# Filter musl because Rust >= 1.84 (Wasmtime 45 requires >= 1.93) assumes musl 1.2.3
+# and emits hard references to `getrandom` and `posix_spawn_file_actions_addchdir_np`,
+# which our musl 1.1.19 does not provide.
+# See https://github.com/rust-lang/rust/issues/141795
+filter!(p -> libc(p) != "musl", platforms)
 
 # NOTE: Headers get installed too but we aren't explicitly listing them as `FileProduct`s
 products = [LibraryProduct("libwasmtime", :libwasmtime),
