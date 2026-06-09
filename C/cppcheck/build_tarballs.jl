@@ -47,14 +47,7 @@ platforms = expand_cxxstring_abis(supported_platforms(exclude=Sys.isfreebsd))
 
 # The products that we will ensure are always built
 products = Product[
-    ExecutableProduct("cppcheck", :cppcheck),
-    # cppcheck's addons (misra.py, etc.) are installed next to the binary so they
-    # are found relative to the executable after relocation. They are plain
-    # Python scripts using only the standard library: running an addon needs a
-    # `python3`/`python` on PATH at runtime (cppcheck shells out to it, or use
-    # `--addon-python=<path>`). We deliberately do not bundle Python_jll, so
-    # addons rely on whatever Python the user has available.
-    FileProduct("bin/addons/misra.py", :misra_addon),
+    ExecutableProduct("cppcheck", :cppcheck)
 ]
 
 # Dependencies that must be installed before this package can be built
