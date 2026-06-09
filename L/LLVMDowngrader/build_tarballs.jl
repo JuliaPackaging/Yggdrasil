@@ -3,6 +3,7 @@ using Base.BinaryPlatforms
 
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "LLVMDowngrader"
 version = v"0.8"
@@ -124,6 +125,12 @@ build_old_llvm_dis "${WORKSPACE}/srcdir/llvm-5.0.2.src" 5
 build_old_llvm_dis "${WORKSPACE}/srcdir/llvm-7.1.0.src" 7
 build_old_llvm_dis "${WORKSPACE}/srcdir/llvm-14.0.6.src" 14
 """
+
+# LLVM 15+ (hence LLVM_full_jll) is built against the macOS 10.14 SDK with a
+# 10.14 deployment target, so linking its objects needs the same. The
+# x86_64-apple-darwin toolchain otherwise defaults to macOS 10.10, which fails to
+# link the prebuilt LLVM. (No effect on non-macOS or Apple Silicon.)
+sources, script = require_macos_sdk("10.14", sources, script)
 
 # The products that we will ensure are always built
 products = Product[
