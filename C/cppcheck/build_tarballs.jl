@@ -62,7 +62,7 @@ dependencies = [
     # cppcheck 2.21 requires CMake >= 3.22, newer than the one in the build
     # environment (used together with `apk del cmake` in the script above).
     HostBuildDependency("CMake_jll"),
-    Dependency("PCRE_jll"; compat="8.45")
+    Dependency("PCRE_jll"; compat="8.45.1")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
