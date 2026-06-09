@@ -6,7 +6,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "LLVMDowngrader"
-version = v"0.8"
+version = v"0.8.1"
 
 # Build the standalone `llvm-downgrade` out-of-tree against a prebuilt LLVM
 # (LLVM_full_jll), statically linked so the tool is self-contained and usable
@@ -146,8 +146,20 @@ platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 # LLVM 15+ has no i686-linux-musl build.
 filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
 
+# LLVM_full is built with ZLIB enabled (always) and ZSTD enabled (LLVM 20+), so
+# the statically-linked LLVM component archives reference libz/libzstd. Because
+# LLVM_full_jll is only a BuildDependency, it pulls Zlib_jll/Zstd_jll into the
+# build prefix and `llvm-downgrade` links the *JLL-provided* libraries with
+# `@rpath/` install names (not the system copies). BuildDependency transitive
+# deps aren't bundled into the output JLL, so those @rpath references would
+# dangle and dyld would fail to load `@rpath/libzstd.1.dylib` / `libz.1.dylib`
+# at runtime. Declaring them as runtime Dependencies bundles the libraries and
+# fixes up the rpath. (See SPIRV_LLVM_Translator / Metal_LLVM_Tools, which build
+# out-of-tree against LLVM_full_jll the same way.)
 dependencies = [
     BuildDependency(PackageSpec(name="LLVM_full_jll", version=llvm_version)),
+    Dependency("Zlib_jll"),
+    Dependency("Zstd_jll"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products,
