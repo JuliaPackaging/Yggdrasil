@@ -209,6 +209,18 @@ function init_block(standalone=false)
     end
     """
 
+    # The standalone build is linked directly rather than loaded through an OpenCL ICD
+    # loader, so it has no driver to register (and no OpenCL_jll dependency). It still uses
+    # Clang_jll at run time to compile kernels, so it needs the same macOS SDK fix that the
+    # regular build applies inside the OpenCL block above.
+    macos_sdk = raw"""
+    # XXX: Clang_jll does not have a functional clang binary on macOS,
+    #      as it's configured without a default sdkroot (see #9221)
+    if Sys.isapple()
+        ENV["SDKROOT"] = "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"
+    end
+    """
+
     pocl_binaries = raw"""
     # expose JLL binaries to the library
     # XXX: Scratch.jl is unusably slow with JLLWrapper-emitted @compiler_options
@@ -338,7 +350,7 @@ function init_block(standalone=false)
     """
 
     if standalone
-        return pocl_binaries
+        return macos_sdk * pocl_binaries
     else
         return opencl * pocl_binaries
     end
