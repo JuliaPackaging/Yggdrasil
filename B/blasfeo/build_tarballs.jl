@@ -7,8 +7,8 @@ version = v"0.1.4"
 # Source
 sources = [
     GitSource(
-        "https://github.com/apozharski/blasfeo.git",
-        "698489feaf3c89c44f28ce2d58163bdf9859085b",  # current master branch
+        "https://github.com/giaf/blasfeo.git",
+        "2825f3368c3e02003a0c42500a0605f687c9ccc8",  # current master branch
     ),
 ]
 
@@ -17,7 +17,7 @@ sources = [
 # Some notes from out of band conversations with @giaf:
 #    - It only makes sense to build for the following platforms:
 #        - X64_AMD_ZEN5: Specifically for AMD chips with good AVX512 implementation (desktop)
-#            - Currently support this but questionably useful because it is _only_ good on specifically Zen5
+#            - Currently support this but questionably useful because it is _only_ good on specifically Zen5 workstation
 #        - X64_INTEL_HASWELL: Generically for any 64 bit hardware supporting AVX2 and FMA (including AMD chips?)
 #        - X64_INTEL_SANDY_BRIDGE: For older Intel/AMD chips with avx support (what about chips with avx+fma?)
 #        - ARMV8A_APPLE_M1: Same as other ARMV8 just with different alignment due to cache size difference?
