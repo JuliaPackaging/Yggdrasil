@@ -15,6 +15,11 @@ sources = [
               "7e3c010be21a99507c16291b48f00cd9ce93f698"),  # v0.4.0
     GitSource("https://github.com/libAtoms/libcleri",
               "d12f5faba985e0f4a04025f84c0e6c1a025a366b"),  # extxyz submodule pin
+    # pyleri (pure Python) is needed at build time to generate the grammar
+    # parser sources; vendored as an sdist and used via PYTHONPATH since the
+    # rootfs pip/site machinery is not usable in the build sandbox
+    ArchiveSource("https://files.pythonhosted.org/packages/3a/0e/0e384ad4a9a603895f28da0fa32260402e372d26f3333a9ccd09de2bdf96/pyleri-1.5.0.tar.gz",
+                  "0715a433e5b97e3d2fd8f74b4e57871e365eb3a1c7a09fb70d2f78700fd25e4c"),
 ]
 
 # Bash recipe for building across all platforms.
@@ -31,22 +36,23 @@ rm -rf libcleri
 cp -r ../libcleri libcleri
 
 # generate the key/value grammar parser sources (extxyz_kv_grammar.c/.h);
-# the old Makefile build did the same pip3 install at build time
-pip3 install pyleri
+# python3 -S skips the rootfs site module, which fails to import
 cd libextxyz
-python3 ../python/extxyz/extxyz_kv_grammar.py
+PYLERI_DIR=$(echo $WORKSPACE/srcdir/pyleri-*)
+PYTHONPATH=$PYLERI_DIR python3 -S ../python/extxyz/extxyz_kv_grammar.py
 
 # build the vendored libcleri statically
+# (gnu99 rather than c99: libcleri uses POSIX strdup/strncasecmp)
 cd ../libcleri
 mkdir -p build
 cd build
-${CC} -O2 -fPIC -std=c99 -I../inc $(pcre2-config --cflags) -c ../src/*.c
-${AR} rcs libcleri.a *.o
+${CC} -O2 -fPIC -std=gnu99 -I../inc $(pcre2-config --cflags) -c ../src/*.c
+ar rcs libcleri.a *.o
 
 # link the shared library
 cd ../../libextxyz
 mkdir -p ${libdir} ${includedir}
-${CC} -O2 -fPIC -std=c99 -shared -o ${libdir}/libextxyz.${dlext} \
+${CC} -O2 -fPIC -std=gnu99 -shared -o ${libdir}/libextxyz.${dlext} \
     extxyz.c extxyz_kv_grammar.c fast_format.c \
     -I../libcleri/inc $(pcre2-config --cflags) \
     ../libcleri/build/libcleri.a $(pcre2-config --libs8)
