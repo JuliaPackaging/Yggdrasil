@@ -46,7 +46,7 @@ Two upstream/build changes make that possible:
 
 =#
 
-name = "pocl"
+name = "pocl_next"
 version = v"7.2.0"
 
 # Build
