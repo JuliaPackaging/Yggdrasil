@@ -1,0 +1,39 @@
+--- a/src/mat/impls/aij/mpi/mumps/mumps.c	2026-06-10 21:05:57.066979562 +0000
++++ b/src/mat/impls/aij/mpi/mumps/mumps.c	2026-06-10 21:07:04.450224405 +0000
+@@ -52,20 +52,16 @@
+ */
+ typedef MUMPS_INT PetscMUMPSInt;
+ 
+-#if PETSC_PKG_MUMPS_VERSION_GE(5, 3, 0)
+-  #if defined(MUMPS_INTSIZE64) /* MUMPS_INTSIZE64 is in MUMPS headers if it is built in full 64-bit mode, therefore the macro is more reliable */
+-    #error "PETSc has not been tested with full 64-bit MUMPS and we choose to error out"
+-  #endif
++#if defined(MUMPS_INTSIZE64) /* MUMPS_INTSIZE64 is in MUMPS headers if it is built in full 64-bit mode (-DINTSIZE64): MUMPS_INT is int64_t */
++  #define MPIU_MUMPSINT       MPI_INT64_T
++  #define PETSC_MUMPS_INT_MAX INT64_MAX
++  #define PETSC_MUMPS_INT_MIN INT64_MIN
+ #else
+-  #if defined(INTSIZE64) /* INTSIZE64 is a command line macro one used to build MUMPS in full 64-bit mode */
+-    #error "PETSc has not been tested with full 64-bit MUMPS and we choose to error out"
+-  #endif
++  #define MPIU_MUMPSINT       MPI_INT
++  #define PETSC_MUMPS_INT_MAX 2147483647
++  #define PETSC_MUMPS_INT_MIN -2147483648
+ #endif
+ 
+-#define MPIU_MUMPSINT       MPI_INT
+-#define PETSC_MUMPS_INT_MAX 2147483647
+-#define PETSC_MUMPS_INT_MIN -2147483648
+-
+ /* Cast PetscInt to PetscMUMPSInt. Usually there is no overflow since <a> is row/col indices or some small integers*/
+ static inline PetscErrorCode PetscMUMPSIntCast(PetscCount a, PetscMUMPSInt *b)
+ {
+@@ -2265,7 +2261,7 @@
+     /* copy MUMPS default control values from master to slaves. Although slaves do not call MUMPS, they may access these values in code.
+        For example, ICNTL(9) is initialized to 1 by MUMPS and slaves check ICNTL(9) in MatSolve_MUMPS.
+      */
+-    PetscCallMPI(MPI_Bcast(mumps->id.icntl, 40, MPI_INT, 0, mumps->omp_comm));
++    PetscCallMPI(MPI_Bcast(mumps->id.icntl, 40, MPIU_MUMPSINT, 0, mumps->omp_comm));
+     PetscCallMPI(MPI_Bcast(mumps->id.cntl, 15, MPIU_REAL, 0, mumps->omp_comm));
+ 
+     mumps->scat_rhs = NULL;

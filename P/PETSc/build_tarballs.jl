@@ -1,6 +1,7 @@
-# PETSc with ILP64 BLAS via libblastrampoline (Julia stdlib),
-# external SuiteSparse_jll, ILP64 SCALAPACK_jll, and static
-# compilations of SuperLU_Dist, MUMPS, Hypre, Triangle and TetGen.
+# PETSc with ILP64 BLAS via libblastrampoline (Julia stdlib) and all
+# external packages from Yggdrasil-built ILP64 JLLs: SuiteSparse_jll,
+# SCALAPACK64_jll, MUMPS64_jll, HYPRE64_jll, SuperLU_DIST_jll (Int64),
+# TetGen_jll and Triangle_jll.  Nothing is built or linked statically.
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
@@ -50,6 +51,11 @@ fi
 atomic_patch -p1 $WORKSPACE/srcdir/patches/suitesparse-64bit-blas.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/external-pkgs-64bit-blas.patch
 
+# Allow linking the full 64-bit integer MUMPS from MUMPS64_jll: upstream
+# mumps.c #errors out on MUMPS_INTSIZE64; define PetscMUMPSInt-related
+# macros for int64_t MUMPS_INT instead.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/mumps-full-64bit-int.patch
+
 mkdir $libdir/petsc
 build_petsc()
 {
@@ -87,12 +93,11 @@ build_petsc()
         USE_SUITESPARSE=1
     fi
 
+    # External ILP64 MUMPS from MUMPS64_jll (no Windows build, since
+    # SCALAPACK64_jll has none and PETSc has MPI disabled there anyway).
     USE_MUMPS=0
     if [ "${1}" == "double" ] && [ "${2}" == "real" ] && [[ "${target}" != *-mingw* ]]; then
         USE_MUMPS=1
-    fi
-    if [[ "${target}" == powerpc64le-linux-* ]] || [[ "${target}" == aarch64-linux-* ]] || [[ "${target}" == arm-linux-* ]]; then
-        USE_MUMPS=0
     fi
 
     LDFLAGS="-L${libdir}"
@@ -108,11 +113,14 @@ build_petsc()
         SUITESPARSE_ARGS="--with-suitesparse=0"
     fi
 
-    # SCALAPACK only on non-Windows (no Windows MPI build).
+    # ILP64 SCALAPACK only on non-Windows (no Windows MPI build).  PETSc's
+    # own MatScaLAPACK glue calls `_64_`-suffixed Fortran symbols and the
+    # (unsuffixed, but 64-bit integer) C BLACS entry points, both exported
+    # by libscalapack64.
     if [[ "${target}" == *-mingw* ]]; then
         SCALAPACK_ARGS=""
     else
-        SCALAPACK_ARGS="--with-scalapack-lib=[${libdir}/libscalapack64.${dlext},${libdir}/libscalapack.${dlext}] --with-scalapack-include=${includedir}"
+        SCALAPACK_ARGS="--with-scalapack-lib=${libdir}/libscalapack64.${dlext} --with-scalapack-include=${includedir}"
     fi
 
     # ILP64 BLAS via libblastrampoline (PETSc calls dgemm_64_, etc.).
@@ -159,9 +167,6 @@ build_petsc()
         MPI_CXX=mpicxx
         export MPIF_FCLIBS='-lmpif -lmpi_abi'
     fi
-    if [[ "${target}" == powerpc64le-linux-* || "${target}" == aarch64-linux-* || "${target}" == arm-linux-* ]]; then
-        USE_MUMPS=0
-    fi
 
     # triangle, tetgen
     USE_TRIANGLE=0
@@ -175,6 +180,12 @@ build_petsc()
         HYPRE_ARGS="--with-hypre=1 --with-hypre-include=${includedir} --with-hypre-lib=${libdir}/libHYPRE64.${dlext}"
     else
         HYPRE_ARGS="--with-hypre=0"
+    fi
+
+    if [ ${USE_MUMPS} == 1 ]; then
+        MUMPS_ARGS="--with-mumps=1 --with-mumps-include=${includedir} --with-mumps-lib=[${libdir}/libdmumpspar64.${dlext},${libdir}/libmumps_commonpar64.${dlext},${libdir}/libpordpar64.${dlext}]"
+    else
+        MUMPS_ARGS="--with-mumps=0"
     fi
 
     if [ ${USE_SUPERLU_DIST} == 1 ]; then
@@ -267,8 +278,7 @@ build_petsc()
         ${SUITESPARSE_ARGS} \
         ${SUPERLU_DIST_ARGS} \
         ${HYPRE_ARGS} \
-        --download-mumps=${USE_MUMPS} \
-        --download-mumps-shared=0 \
+        ${MUMPS_ARGS} \
         ${TETGEN_ARGS} \
         ${TRIANGLE_ARGS} \
         --with-library-name-suffix=_${PETSC_CONFIG} \
@@ -418,8 +428,10 @@ dependencies = [
     # MPI disabled on Windows so SCALAPACK isn't needed there either).
     Dependency(PackageSpec(name="SCALAPACK64_jll", uuid="575e156b-18ce-583f-9f61-e5186a0cefa5");
                compat="2.2.300", platforms=filter(!Sys.iswindows, platforms)),
-    Dependency(PackageSpec(name="SCALAPACK_jll", uuid="5d3fc3e8-a677-5550-826f-6cfd58f208da");
-               compat="2.2.300", platforms=filter(!Sys.iswindows, platforms)),
+    # ILP64 MUMPS (full 64-bit integers, -DINTSIZE64) linked against
+    # libblastrampoline and SCALAPACK64.
+    Dependency(PackageSpec(name="MUMPS64_jll", uuid="7e7123fb-46ff-5c22-8640-a7a534ee34a8");
+               compat="5.9.0", platforms=filter(!Sys.iswindows, platforms)),
     Dependency(PackageSpec(name="HYPRE64_jll"); compat="3.1.0",
                platforms=filter(!Sys.iswindows, platforms)),
     Dependency(PackageSpec(name="SuperLU_DIST_jll"); compat="9.2.1",
