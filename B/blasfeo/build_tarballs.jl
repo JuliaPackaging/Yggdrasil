@@ -8,7 +8,7 @@ version = v"0.1.4"
 sources = [
     GitSource(
         "https://github.com/apozharski/blasfeo.git",
-        "268f5244cc1e434b5dd5a5eceb6e42e9e3f0e849",  # current master branch
+        "698489feaf3c89c44f28ce2d58163bdf9859085b",  # current master branch
     ),
 ]
 
@@ -88,7 +88,7 @@ end
 # Platforms
 platforms = [
     expand_microarchitectures(filter!((p) -> Sys.islinux(p) && arch(p) == "x86_64",supported_platforms()), ["x86_64","avx", "avx2","avx512"]);
-    #expand_microarchitectures(filter!((p) -> Sys.iswindows(p) && arch(p) == "x86_64",supported_platforms()), ["x86_64","avx", "avx2","avx512"]); # windows support would require work in blasfeo
+    expand_microarchitectures(filter!((p) -> Sys.iswindows(p) && arch(p) == "x86_64",supported_platforms()), ["x86_64","avx", "avx2","avx512"]);
     expand_microarchitectures(filter!((p) -> Sys.isapple(p) && arch(p) == "x86_64",supported_platforms()), ["x86_64","avx", "avx2"]);
     expand_microarchitectures(filter!((p) -> Sys.isapple(p) && arch(p) == "aarch64",supported_platforms()), ["apple_m1"])
 ]
@@ -101,6 +101,11 @@ products = [
 dependencies = Dependency[]
 
 for platform in platforms
+    # This is necessary because for mingw-gcc has problems with xmm registers on <v8.4 <v9.3 <10.
+    # See this bug report: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=65782
+    # We set to v"10" because of how `preferred_gcc_version` works:
+    # https://github.com/JuliaPackaging/Yggdrasil/pull/6843#issuecomment-1585288925
+    gcc_ver = (Sys.iswindows(platform) && platform["march"] == "avx512") ? v"10" : nothing
     build_tarballs(
         ARGS,
         name,
@@ -112,5 +117,6 @@ for platform in platforms
         dependencies,
         julia_compat = "1.6",
         lock_microarchitecture=false, # blasfeo build handles march/m* flags
+        preferred_gcc_version=gcc_ver,
     )
 end
