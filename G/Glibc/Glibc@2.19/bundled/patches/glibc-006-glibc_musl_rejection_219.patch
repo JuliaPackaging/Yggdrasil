@@ -8,21 +8,31 @@ Date:   Fri Jun 22 18:03:46 2018 -0400
     libraries linked against musl (similar to how it would reject
     libraries for other architectures).
     
+
+    Updated 2026-06: validate_lib used the DT_STRTAB value (a virtual
+    address) directly as a file offset when reading DT_NEEDED names.
+    The two are not generally equal (e.g. for libraries rewritten by
+    patchelf, such as recent CompilerSupportLibraries_jll builds), in
+    which case the check silently failed to identify musl libraries.
+    Translate the virtual address through the program headers instead.
+    Also register libc.musl-i386.so.1 so the i686 loader rejects musl
+    libraries too.
+
     See https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/297
 
 diff --git a/elf/dl-load.c b/elf/dl-load.c
-index 7554a99..fe9e483 100644
+index 1be7a3c..832b070 100644
 --- a/elf/dl-load.c
 +++ b/elf/dl-load.c
-@@ -46,6 +46,7 @@
- #include <dl-machine-reject-phdr.h>
- #include <dl-sysdep-open.h>
+@@ -72,6 +72,7 @@
+ # define MAP_BASE_ADDR(l)	0
+ #endif
  
 +#include <ldconfig.h>
  
  #include <endian.h>
  #if BYTE_ORDER == BIG_ENDIAN
-@@ -1382,6 +1383,60 @@ print_search_path (struct r_search_path_elem **list,
+@@ -1659,6 +1660,78 @@ print_search_path (struct r_search_path_elem **list,
    else
      _dl_debug_printf_c ("\t\t(%s)\n", what);
  }
@@ -40,7 +50,8 @@ index 7554a99..fe9e483 100644
 +#endif
 +};
 +
-+static int validate_lib(int fd, unsigned int dynamic_addr, unsigned int dynamic_size)
++static int validate_lib(int fd, const ElfW(Phdr) *phdr, size_t phnum,
++                        ElfW(Off) dynamic_addr, size_t dynamic_size)
 +{
 +    ElfW(Dyn) *dyn_entry;
 +    ElfW(Dyn) *dynamic_segment = alloca(dynamic_size);
@@ -50,30 +61,47 @@ index 7554a99..fe9e483 100644
 +    {
 +        return -2;
 +    }
-+    // Find the string table
-+    unsigned int string_offset = 0;
++    /* Find the string table.  DT_STRTAB holds the *virtual address* of the
++       string table, not its file offset; translate it to a file offset using
++       the program headers.  The two are not generally equal, e.g. for
++       libraries that have been rewritten by patchelf.  */
++    ElfW(Addr) strtab_vaddr = 0;
 +    for (dyn_entry = dynamic_segment; dyn_entry->d_tag != DT_NULL; ++dyn_entry)
 +    {
 +        if (dyn_entry->d_tag == DT_STRTAB) {
-+            string_offset = dyn_entry->d_un.d_val;
++            strtab_vaddr = dyn_entry->d_un.d_ptr;
++            break;
 +        }
-+        if (string_offset != 0) {
-+            for (dyn_entry = dynamic_segment; dyn_entry->d_tag != DT_NULL; ++dyn_entry)
-+            {
-+                if (dyn_entry->d_tag == DT_NEEDED) {
-+                    __lseek (fd, string_offset + dyn_entry->d_un.d_val, SEEK_SET);
-+                    ssize_t nchars = __libc_read (fd, (void *)fname, 254);
-+                    if (nchars == -1)
-+                        return -2;
-+                    fname[nchars] = 0;
-+                    for (int j = 0; j < sizeof (known_libs) / sizeof (known_libs [0]); ++j) {
-+                        if (strcmp (fname, known_libs [j].soname) == 0)
-+                        {
-+                            if (known_libs [j].flag == FLAG_ELF_MUSL)
-+                                return 1;
-+                        }
-+                    }
-+                }
++    }
++    if (strtab_vaddr == 0)
++        return 0;
++    ElfW(Off) string_offset = 0;
++    int string_offset_found = 0;
++    for (size_t i = 0; i < phnum; ++i)
++    {
++        if (phdr[i].p_type == PT_LOAD
++            && strtab_vaddr >= phdr[i].p_vaddr
++            && strtab_vaddr - phdr[i].p_vaddr < phdr[i].p_filesz)
++        {
++            string_offset = strtab_vaddr - phdr[i].p_vaddr + phdr[i].p_offset;
++            string_offset_found = 1;
++            break;
++        }
++    }
++    if (!string_offset_found)
++        return 0;
++    for (dyn_entry = dynamic_segment; dyn_entry->d_tag != DT_NULL; ++dyn_entry)
++    {
++        if (dyn_entry->d_tag == DT_NEEDED) {
++            __lseek (fd, string_offset + dyn_entry->d_un.d_val, SEEK_SET);
++            ssize_t nchars = __libc_read (fd, (void *)fname, 254);
++            if (nchars == -1)
++                return -2;
++            fname[nchars] = 0;
++            for (size_t j = 0; j < sizeof (known_libs) / sizeof (known_libs [0]); ++j) {
++                if (strcmp (fname, known_libs [j].soname) == 0
++                    && known_libs [j].flag == FLAG_ELF_MUSL)
++                    return 1;
 +            }
 +        }
 +    }
@@ -83,18 +111,18 @@ index 7554a99..fe9e483 100644
  
  /* Open a file and verify it is an ELF file for this architecture.  We
     ignore only ELF files for other architectures.  Non-ELF files and
-@@ -1427,6 +1482,8 @@ open_verify (const char *name, int fd,
+@@ -1700,6 +1773,8 @@ open_verify (const char *name, struct filebuf *fbp, struct link_map *loader,
    } expected_note = { 4, 16, 1, "GNU" };
    /* Initialize it to make the compiler happy.  */
    const char *errstring = NULL;
-+  unsigned int dynamic_addr = 0;
-+  unsigned int dynamic_size = 0;
++  ElfW(Off) dynamic_addr = 0;
++  size_t dynamic_size = 0;
    int errval = 0;
  
  #ifdef SHARED
-@@ -1618,8 +1675,15 @@ open_verify (const char *name, int fd,
- 			     loader, fd)))
- 	goto close_and_out;
+@@ -1866,8 +1941,15 @@ open_verify (const char *name, struct filebuf *fbp, struct link_map *loader,
+ 	    }
+ 	}
  
 +      dynamic_addr = 0;
 +      dynamic_size = 0;
@@ -109,14 +137,14 @@ index 7554a99..fe9e483 100644
  	if (ph->p_type == PT_NOTE && ph->p_filesz >= 32 && ph->p_align >= 4)
  	  {
  	    ElfW(Addr) size = ph->p_filesz;
-@@ -1678,6 +1742,20 @@ open_verify (const char *name, int fd,
+@@ -1915,6 +1997,20 @@ open_verify (const char *name, struct filebuf *fbp, struct link_map *loader,
  
  	    break;
  	  }
 +       }
 +       /* Check the dynamic section */
 +       if (dynamic_addr != 0) {
-+         int err = validate_lib(fd, dynamic_addr, dynamic_size);
++         int err = validate_lib(fd, phdr, ehdr->e_phnum, dynamic_addr, dynamic_size);
 +         if (err == -2) {
 +            errstring = N_("failed to read file");
 +            goto call_lose;
@@ -131,10 +159,10 @@ index 7554a99..fe9e483 100644
  
    return fd;
 diff --git a/elf/ldconfig.c b/elf/ldconfig.c
-index fbdd814..53a1f87 100644
+index 46d2950..ff97427 100644
 --- a/elf/ldconfig.c
 +++ b/elf/ldconfig.c
-@@ -875,6 +875,16 @@ search_dir (const struct dir_entry *entry)
+@@ -887,6 +887,16 @@ search_dir (const struct dir_entry *entry)
  	    add_to_aux_cache (&lstat_buf, flag, osversion, soname);
  	}
  
@@ -152,10 +180,10 @@ index fbdd814..53a1f87 100644
  	soname = implicit_soname (direntry->d_name, flag);
  
 diff --git a/sysdeps/generic/ldconfig.h b/sysdeps/generic/ldconfig.h
-index fadd5ec370..1980d91df8 100644
+index ba1d953..3973149 100644
 --- a/sysdeps/generic/ldconfig.h
 +++ b/sysdeps/generic/ldconfig.h
-@@ -26,6 +26,7 @@
+@@ -27,6 +27,7 @@
  #define FLAG_ELF			0x0001
  #define FLAG_ELF_LIBC5			0x0002
  #define FLAG_ELF_LIBC6			0x0003
@@ -163,8 +191,19 @@ index fadd5ec370..1980d91df8 100644
  #define FLAG_REQUIRED_MASK		0xff00
  #define FLAG_SPARC_LIB64		0x0100
  #define FLAG_IA64_LIB64			0x0200
+diff --git a/sysdeps/unix/sysv/linux/i386/ldconfig.h b/sysdeps/unix/sysv/linux/i386/ldconfig.h
+index 4b95c86..9a229dd 100644
+--- a/sysdeps/unix/sysv/linux/i386/ldconfig.h
++++ b/sysdeps/unix/sysv/linux/i386/ldconfig.h
+@@ -21,4 +21,5 @@
+   { "/lib/ld-linux.so.1", FLAG_ELF_LIBC5 },
+ #define SYSDEP_KNOWN_LIBRARY_NAMES \
+   { "libc.so.5", FLAG_ELF_LIBC5 },	\
+-  { "libm.so.5", FLAG_ELF_LIBC5 },
++  { "libm.so.5", FLAG_ELF_LIBC5 } \
++  { "libc.musl-i386.so.1", FLAG_ELF_MUSL }
 diff --git a/sysdeps/unix/sysv/linux/x86_64/ldconfig.h b/sysdeps/unix/sysv/linux/x86_64/ldconfig.h
-index c7e9ad6..abd724e 100644
+index c713f08..fe091ec 100644
 --- a/sysdeps/unix/sysv/linux/x86_64/ldconfig.h
 +++ b/sysdeps/unix/sysv/linux/x86_64/ldconfig.h
 @@ -23,4 +23,5 @@
