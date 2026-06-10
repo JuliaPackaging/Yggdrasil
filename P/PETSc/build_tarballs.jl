@@ -1,7 +1,12 @@
-# PETSc with ILP64 BLAS via libblastrampoline (Julia stdlib) and all
-# external packages from Yggdrasil-built ILP64 JLLs: SuiteSparse_jll,
-# SCALAPACK64_jll, MUMPS64_jll, HYPRE64_jll, SuperLU_DIST_jll (Int64),
-# TetGen_jll and Triangle_jll.  Nothing is built or linked statically.
+# PETSc linked against Julia's stdlib ILP64 SuiteSparse_jll, which forces
+# ILP64 BLAS (via libblastrampoline `_64_` suffixes) for PETSc itself.
+# Every other external package comes from Yggdrasil-built shared JLLs in
+# its most convenient form: HYPRE64_jll and SuperLU_DIST_jll (Int64) match
+# the 64-bit PetscInt; MUMPS_jll keeps its stock 32-bit integers (PETSc's
+# supported PetscMUMPSInt=int32 path) and brings its own LP64 SCALAPACK32
+# and BLAS (forwarded to OpenBLAS32 through libblastrampoline's LP64 slot)
+# as private shared-library dependencies.  PETSc links no ScaLAPACK of its
+# own.  Nothing is built or linked statically.
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
@@ -51,9 +56,10 @@ fi
 atomic_patch -p1 $WORKSPACE/srcdir/patches/suitesparse-64bit-blas.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/external-pkgs-64bit-blas.patch
 
-# Allow linking the full 64-bit integer MUMPS from MUMPS64_jll: upstream
-# mumps.c #errors out on MUMPS_INTSIZE64; define PetscMUMPSInt-related
-# macros for int64_t MUMPS_INT instead.
+# Allow linking a full 64-bit integer MUMPS (e.g. a future MUMPS64_jll):
+# upstream mumps.c #errors out on MUMPS_INTSIZE64; define the
+# PetscMUMPSInt-related macros for int64_t MUMPS_INT instead.  For the
+# 32-bit-integer MUMPS_jll used below this is a behavioral no-op.
 atomic_patch -p1 $WORKSPACE/srcdir/patches/mumps-full-64bit-int.patch
 
 mkdir $libdir/petsc
@@ -93,8 +99,9 @@ build_petsc()
         USE_SUITESPARSE=1
     fi
 
-    # External ILP64 MUMPS from MUMPS64_jll (no Windows build, since
-    # SCALAPACK64_jll has none and PETSc has MPI disabled there anyway).
+    # External MUMPS from MUMPS_jll (stock 32-bit integers; PETSc's
+    # supported PetscMUMPSInt=int32 path).  Not on Windows: PETSc has
+    # MPI disabled there.
     USE_MUMPS=0
     if [ "${1}" == "double" ] && [ "${2}" == "real" ] && [[ "${target}" != *-mingw* ]]; then
         USE_MUMPS=1
@@ -107,21 +114,20 @@ build_petsc()
     fi
 
     # External SuiteSparse from Julia's stdlib SuiteSparse_jll.
+    # SuiteSparse_jll >= 7.8 installs its headers under include/suitesparse.
     if [ ${USE_SUITESPARSE} == 1 ]; then
-        SUITESPARSE_ARGS="--with-suitesparse=1 --with-suitesparse-include=${includedir} --with-suitesparse-lib=[${libdir}/libspqr.${dlext},${libdir}/libumfpack.${dlext},${libdir}/libklu.${dlext},${libdir}/libcholmod.${dlext},${libdir}/libamd.${dlext},${libdir}/libcamd.${dlext},${libdir}/libcolamd.${dlext},${libdir}/libccolamd.${dlext},${libdir}/libbtf.${dlext},${libdir}/libsuitesparseconfig.${dlext}]"
+        SUITESPARSE_ARGS="--with-suitesparse=1 --with-suitesparse-include=${includedir}/suitesparse --with-suitesparse-lib=[${libdir}/libspqr.${dlext},${libdir}/libumfpack.${dlext},${libdir}/libklu.${dlext},${libdir}/libcholmod.${dlext},${libdir}/libamd.${dlext},${libdir}/libcamd.${dlext},${libdir}/libcolamd.${dlext},${libdir}/libccolamd.${dlext},${libdir}/libbtf.${dlext},${libdir}/libsuitesparseconfig.${dlext}]"
     else
         SUITESPARSE_ARGS="--with-suitesparse=0"
     fi
 
-    # ILP64 SCALAPACK only on non-Windows (no Windows MPI build).  PETSc's
-    # own MatScaLAPACK glue calls `_64_`-suffixed Fortran symbols and the
-    # (unsuffixed, but 64-bit integer) C BLACS entry points, both exported
-    # by libscalapack64.
-    if [[ "${target}" == *-mingw* ]]; then
-        SCALAPACK_ARGS=""
-    else
-        SCALAPACK_ARGS="--with-scalapack-lib=${libdir}/libscalapack64.${dlext} --with-scalapack-include=${includedir}"
-    fi
+    # No --with-scalapack: PETSc's own MatScaLAPACK type is hardwired to
+    # the `_64_` BLAS suffix, while MUMPS uses the LP64 libscalapack32
+    # that MUMPS_jll's shared libraries link privately.  Mixing an ILP64
+    # and an LP64 ScaLAPACK in one process is unsafe (they export ~370
+    # identical BLACS-internal symbols, e.g. BI_* and Cblacs_*, that
+    # would cross-bind with mismatched integer widths), so PETSc links
+    # no ScaLAPACK at all and MatScaLAPACK is disabled.
 
     # ILP64 BLAS via libblastrampoline (PETSc calls dgemm_64_, etc.).
     # Julia >= 1.10 wires its stdlib OpenBLAS into LBT's ILP64 slots, so
@@ -183,7 +189,7 @@ build_petsc()
     fi
 
     if [ ${USE_MUMPS} == 1 ]; then
-        MUMPS_ARGS="--with-mumps=1 --with-mumps-include=${includedir} --with-mumps-lib=[${libdir}/libdmumpspar64.${dlext},${libdir}/libmumps_commonpar64.${dlext},${libdir}/libpordpar64.${dlext}]"
+        MUMPS_ARGS="--with-mumps=1 --with-mumps-include=${includedir} --with-mumps-lib=[${libdir}/libdmumpspar.${dlext},${libdir}/libmumps_commonpar.${dlext},${libdir}/libpordpar.${dlext}]"
     else
         MUMPS_ARGS="--with-mumps=0"
     fi
@@ -274,7 +280,6 @@ build_petsc()
         --with-scalar-type=${2} \
         --with-pthread=0 \
         --PETSC_ARCH=${target}_${PETSC_CONFIG} \
-        ${SCALAPACK_ARGS} \
         ${SUITESPARSE_ARGS} \
         ${SUPERLU_DIST_ARGS} \
         ${HYPRE_ARGS} \
@@ -424,23 +429,29 @@ dependencies = [
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93");
                compat="5.11.0",
                platforms=filter(!Sys.iswindows, platforms)),
-    # ILP64 SCALAPACK to match the BLAS ABI.  No Windows build (PETSc has
-    # MPI disabled on Windows so SCALAPACK isn't needed there either).
-    Dependency(PackageSpec(name="SCALAPACK64_jll", uuid="575e156b-18ce-583f-9f61-e5186a0cefa5");
-               compat="2.2.300", platforms=filter(!Sys.iswindows, platforms)),
-    # ILP64 MUMPS (full 64-bit integers, -DINTSIZE64) linked against
-    # libblastrampoline and SCALAPACK64.
-    Dependency(PackageSpec(name="MUMPS64_jll", uuid="7e7123fb-46ff-5c22-8640-a7a534ee34a8");
-               compat="5.9.0", platforms=filter(!Sys.iswindows, platforms)),
+    # Stock 32-bit-integer MUMPS.  Its shared libraries privately link
+    # SCALAPACK32_jll's libscalapack32 and call unsuffixed LP64 BLAS
+    # through libblastrampoline.
+    Dependency(PackageSpec(name="MUMPS_jll", uuid="ca64183c-ec4f-5579-95d5-17e128c21291");
+               compat="5.8.4", platforms=filter(!Sys.iswindows, platforms)),
+    # Fills libblastrampoline's LP64 forwarding slots at load time
+    # (OpenBLAS32 >= 0.3.33 auto-forwards), needed by MUMPS internally.
+    Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2");
+               compat="0.3.33", platforms=filter(!Sys.iswindows, platforms)),
     Dependency(PackageSpec(name="HYPRE64_jll"); compat="3.1.0",
                platforms=filter(!Sys.iswindows, platforms)),
     Dependency(PackageSpec(name="SuperLU_DIST_jll"); compat="9.2.1",
                platforms=filter(!Sys.iswindows, platforms)),
     Dependency(PackageSpec(name="TetGen_jll"); compat="1.6.0"),
     Dependency(PackageSpec(name="Triangle_jll"); compat="1.6.3"),
-    # Julia's stdlib SuiteSparse (Int64 / SuiteSparse_long).  Julia
-    # 1.10 ships SuiteSparse_jll 7.2.x.
-    Dependency(PackageSpec(name="SuiteSparse_jll", uuid="bea87d4a-7f5b-5778-9afe-8cc45184846c"); compat="7.2.0"),
+    # Julia's stdlib SuiteSparse (Int64 / SuiteSparse_long).  PETSc binds
+    # these libraries by soname, so the build must match the SuiteSparse
+    # shipped by the targeted Julia versions: 7.8.x (libcholmod.so.5) is
+    # what Julia 1.12 ships.  Julia 1.10/1.11 ship 7.2.x/7.4.x with
+    # libcholmod.so.4, which is soname-incompatible -- hence the
+    # julia_compat = 1.12 below.  (Supporting several Julia minors at
+    # once would need julia_version-expanded platforms.)
+    Dependency(PackageSpec(name="SuiteSparse_jll", uuid="bea87d4a-7f5b-5778-9afe-8cc45184846c"); compat="7.8.3"),
     Dependency("mpif_jll"; compat="0.1.5", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)), # MPI Fortran bindings
 ]
 append!(dependencies, platform_dependencies)
@@ -448,4 +459,4 @@ append!(dependencies, platform_dependencies)
 # Build the tarballs.
 # NOTE: llvm16 seems to have an issue with PETSc 3.18.x as on apple architectures it doesn't know how to create dynamic libraries
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, clang_use_lld=false, julia_compat="1.10", preferred_gcc_version=v"9")
+               augment_platform_block, clang_use_lld=false, julia_compat="1.12", preferred_gcc_version=v"9")
