@@ -17,7 +17,7 @@ sources = [
 # Some notes from out of band conversations with @giaf:
 #    - It only makes sense to build for the following platforms:
 #        - X64_AMD_ZEN5: Specifically for AMD chips with good AVX512 implementation (desktop)
-#            - Currently don't support this because it is _only_ useful for specifically Zen5
+#            - Currently support this but questionably useful because it is _only_ good on specifically Zen5
 #        - X64_INTEL_HASWELL: Generically for any 64 bit hardware supporting AVX2 and FMA (including AMD chips?)
 #        - X64_INTEL_SANDY_BRIDGE: For older Intel/AMD chips with avx support (what about chips with avx+fma?)
 #        - ARMV8A_APPLE_M1: Same as other ARMV8 just with different alignment due to cache size difference?
