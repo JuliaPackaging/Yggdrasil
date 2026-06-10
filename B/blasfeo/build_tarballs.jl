@@ -100,7 +100,11 @@ products = [
 # Dependencies
 dependencies = Dependency[]
 
+# For should_build_platform
+include("../../fancy_toys.jl")
+
 for platform in platforms
+    should_build_platform(platform) || continue # Don't build things on the wrong platforms
     # This is necessary because for mingw-gcc has problems with xmm registers on <v8.4 <v9.3 <10.
     # See this bug report: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=65782
     # We set to v"10" because of how `preferred_gcc_version` works:
