@@ -176,6 +176,8 @@ git ls-remote https://github.com/owner/repo.git refs/tags/v1.0.0
 - **FileProduct**: Other files (headers, data files)
 - **FrameworkProduct**: macOS frameworks
 
+Every declared product must actually be produced by the build on every supported platform — BinaryBuilder audits the install prefix after the script runs and fails the build if any listed product is missing. Gate platform-specific products with `Platform`-aware filters (e.g. only declare a `.dll` on Windows) rather than listing them unconditionally.
+
 ### Dependencies
 
 - **Dependency**: Runtime dependency (will be a dependency of the generated JLL package)
