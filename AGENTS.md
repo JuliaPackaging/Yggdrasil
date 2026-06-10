@@ -8,84 +8,6 @@ This guide helps AI agents generate correct `build_tarballs.jl` recipes for Bina
 - **Supported Platforms**: Linux (glibc and musl for x86_64, i686, aarch64, armv7l, armv6l, ppc64le, riscv64), Windows (x86_64, i686), macOS (x86_64, aarch64), FreeBSD (x86_64, aarch64)
 - Use `supported_platforms()` to get all available platforms
 
-## Special Dependencies
-
-Some dependencies require special handling:
-
-- **LLVM packages**: Must use `LLVM_full_jll` and match the version used by the Julia version. Requires careful ABI compatibility.
-- **MPI packages**: Need `MPIPreferences.jl` configuration and must use `MPItrampoline_jll` for cross-implementation compatibility.
-- **BLAS/LAPACK packages**: Should link against `libblastrampoline_jll` rather than a concrete BLAS implementation, so downstream Julia users can swap implementations at runtime.
-- **CUDA packages**: Use `CUDA.required_dependencies` to get the necessary runtime dependencies. Must handle different CUDA versions. GPU code needs special compilation flags.
-
-For these complex dependencies, consult existing recipes in the repository (search for `LLVM_full_jll`, `MPItrampoline_jll`, `libblastrampoline_jll`, or `CUDA.required_dependencies`).
-
-### MPI packages
-
-MPI recipes use a platform-tag augmentation scheme so a single set of JLLs can be retargeted at runtime via `MPIPreferences.jl`. Five ABIs are supported (`MPIABI`, `MPICH`, `MPItrampoline`, `OpenMPI`, `MicrosoftMPI`); the orchestration lives in `platforms/mpi.jl`.
-
-Standard recipe shape (see `H/HYPRE/build_tarballs.jl`, `P/PETSc/build_tarballs.jl`, `S/SCALAPACK/build_tarballs.jl`):
-
-```julia
-include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
-# ...
-platforms = supported_platforms()
-platforms = expand_gfortran_versions(platforms)   # if Fortran code
-platforms, platform_dependencies = MPI.augment_platforms(platforms;
-                                                        MPICH_compat="5",
-                                                        OpenMPI_compat="4.1.9, 5.0.11")
-augment_platform_block = """
-    using Base.BinaryPlatforms
-    $(MPI.augment)
-    augment_platform!(platform::Platform) = augment_mpi!(platform)
-"""
-append!(dependencies, platform_dependencies)
-build_tarballs(...; augment_platform_block, ...)
-```
-
-`MPI.augment_platforms` expands each base platform into one variant per allowed ABI, adds an `mpi=<abi>` tag, and returns the matching `Dependency` list (including `MPIPreferences`).
-
-Recurring gotchas:
-
-- **MPItrampoline** does not support musl, Windows, or FreeBSD; **OpenMPI** is unavailable on `armv6l-linux-gnu`. The `mpi_abis` table in `platforms/mpi.jl` encodes most of this, but downstream recipes often still drop unsupported combinations with `filter!(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)` etc. (see `C/COSMA`, `C/COSTA`, `C/CryptoMiniSat`).
-- **Fortran-bearing libraries** must call `expand_gfortran_versions(platforms)` *before* `MPI.augment_platforms`; C++-heavy packages often also need `expand_cxxstring_abis`.
-- **Per-ABI linking** is selected with `if [[ ${bb_full_target} == *mpiabi* ]]; then …` blocks; each ABI exposes a different set of libraries (`libmpitrampoline`, `libmpi`+`libmpifort`, `libmpi`+`libmpi_mpifh`+`libmpi_usempif08`, `msmpi64`). `P/PETSc/build_tarballs.jl` is the canonical reference.
-- **Windows (MicrosoftMPI)** needs `-DMPI_HOME=${prefix} -DMPI_GUESS_LIBRARY_NAME=MSMPI` and `-DMPI_${lang}_LIBRARIES=msmpi64` for CMake; see `H/HYPRE/build_tarballs.jl`.
-
-### CUDA packages
-
-CUDA tooling and platform augmentation live in `platforms/cuda.jl` (with the underlying JLLs under `C/CUDA/`). Depend on the right combination via `CUDA.required_dependencies(platform)` rather than naming the JLLs directly:
-
-- `CUDA_SDK_jll` / `CUDA_SDK_static_jll` — full toolkit (headers + libs), build-only (`BuildDependency`).
-- `CUDA_Runtime_jll` — slim redistributable runtime libs (cudart, cublas, cufft, curand, cusolver, cusparse, nvrtc, nvjitlink); the user-facing artifact.
-- `CUDA_Driver_jll` — wraps the system driver and provides `inspect_driver` for compute-capability detection during platform augmentation.
-
-Standard recipe shape (see `A/AMGX/build_tarballs.jl`, `H/HeFFTe/build_tarballs.jl`):
-
-```julia
-include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
-platforms = CUDA.supported_platforms()           # one platform per CUDA minor version
-filter!(p -> arch(p) == "x86_64", platforms)     # optional
-
-for platform in platforms
-    should_build_platform(triplet(platform)) || continue
-    dependencies = CUDA.required_dependencies(platform; static_sdk=true)
-    build_tarballs(ARGS, name, version, sources, script, [platform],
-                   products, dependencies; lazy_artifacts=true,
-                   augment_platform_block=CUDA.augment,
-                   dont_dlopen=true, preferred_gcc_version=v"9")
-end
-```
-
-Concrete rules:
-
-- **Platforms:** Linux `x86_64-glibc`, Linux `aarch64-glibc` (split into `cuda_platform=jetson` vs `sbsa` for CUDA <13; unified for CUDA ≥13), and Windows `x86_64` (with caveats — `nvcc` is not a cross-compiler, so most recipes skip Windows). Musl and macOS are unsupported.
-- **Supported toolkit versions** are listed in `CUDA.cuda_full_versions` in `platforms/cuda.jl`. Build one variant per CUDA minor; the `cuda=$MAJOR.$MINOR` platform tag drives selection.
-- **`CUDA.augment` block is required** on consumers — it reads `CUDA_Runtime_jll` `Preferences` (`version`, `local`), detects driver capabilities via `CUDA_Driver_jll.inspect_driver`, and picks the highest-compatible toolkit. Compute-capability support is encoded in `cuda_cap_db` in `C/CUDA/CUDA_Runtime/platform_augmentation.jl`.
-- **Build flags:** point CMake at the bundled toolkit with `-DCMAKE_CUDA_COMPILER=$prefix/cuda/bin/nvcc -DCMAKE_CUDA_FLAGS="-L${prefix}/cuda/lib"`. `nvcc` writes scratch to `/tmp` (small tmpfs in the sandbox); redirect with `export TMPDIR=${WORKSPACE}/tmpdir`.
-- Pass **`static_sdk=true`** to `required_dependencies` when linking static CUDA libs (e.g. AMGX); this adds `CUDA_SDK_static_jll` as a `BuildDependency`.
-- Always pass **`dont_dlopen=true`** and **`lazy_artifacts=true`** to `build_tarballs` for CUDA consumers — the runtime libs must not be dlopened at JLL init time.
-- **NVIDIA redistributable archive** SHAs are published per CUDA release in `redistrib_<version>.json`; `cuda_nvcc_redist_source` / `get_sources` in `platforms/cuda.jl` and `C/CUDA/common.jl` handle this — prefer them over hand-rolled `ArchiveSource` URLs.
-
 ## Essential Structure
 
 Every `build_tarballs.jl` file follows this pattern:
@@ -217,6 +139,84 @@ for i in ${files}; do
     sed -i "s/-funsafe-math-optimizations//g" $i
 done
 ```
+
+## Special Dependencies
+
+Some dependencies require special handling:
+
+- **LLVM packages**: Must use `LLVM_full_jll` and match the version used by the Julia version. Requires careful ABI compatibility.
+- **MPI packages**: Need `MPIPreferences.jl` configuration and must use `MPItrampoline_jll` for cross-implementation compatibility.
+- **BLAS/LAPACK packages**: Should link against `libblastrampoline_jll` rather than a concrete BLAS implementation, so downstream Julia users can swap implementations at runtime.
+- **CUDA packages**: Use `CUDA.required_dependencies` to get the necessary runtime dependencies. Must handle different CUDA versions. GPU code needs special compilation flags.
+
+For these complex dependencies, consult existing recipes in the repository (search for `LLVM_full_jll`, `MPItrampoline_jll`, `libblastrampoline_jll`, or `CUDA.required_dependencies`).
+
+### MPI packages
+
+MPI recipes use a platform-tag augmentation scheme so a single set of JLLs can be retargeted at runtime via `MPIPreferences.jl`. Five ABIs are supported (`MPIABI`, `MPICH`, `MPItrampoline`, `OpenMPI`, `MicrosoftMPI`); the orchestration lives in `platforms/mpi.jl`.
+
+Standard recipe shape (see `H/HYPRE/build_tarballs.jl`, `P/PETSc/build_tarballs.jl`, `S/SCALAPACK/build_tarballs.jl`):
+
+```julia
+include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
+# ...
+platforms = supported_platforms()
+platforms = expand_gfortran_versions(platforms)   # if Fortran code
+platforms, platform_dependencies = MPI.augment_platforms(platforms;
+                                                        MPICH_compat="5",
+                                                        OpenMPI_compat="4.1.9, 5.0.11")
+augment_platform_block = """
+    using Base.BinaryPlatforms
+    $(MPI.augment)
+    augment_platform!(platform::Platform) = augment_mpi!(platform)
+"""
+append!(dependencies, platform_dependencies)
+build_tarballs(...; augment_platform_block, ...)
+```
+
+`MPI.augment_platforms` expands each base platform into one variant per allowed ABI, adds an `mpi=<abi>` tag, and returns the matching `Dependency` list (including `MPIPreferences`).
+
+Recurring gotchas:
+
+- **MPItrampoline** does not support musl, Windows, or FreeBSD; **OpenMPI** is unavailable on `armv6l-linux-gnu`. The `mpi_abis` table in `platforms/mpi.jl` encodes most of this, but downstream recipes often still drop unsupported combinations with `filter!(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)` etc. (see `C/COSMA`, `C/COSTA`, `C/CryptoMiniSat`).
+- **Fortran-bearing libraries** must call `expand_gfortran_versions(platforms)` *before* `MPI.augment_platforms`; C++-heavy packages often also need `expand_cxxstring_abis`.
+- **Per-ABI linking** is selected with `if [[ ${bb_full_target} == *mpiabi* ]]; then …` blocks; each ABI exposes a different set of libraries (`libmpitrampoline`, `libmpi`+`libmpifort`, `libmpi`+`libmpi_mpifh`+`libmpi_usempif08`, `msmpi64`). `P/PETSc/build_tarballs.jl` is the canonical reference.
+- **Windows (MicrosoftMPI)** needs `-DMPI_HOME=${prefix} -DMPI_GUESS_LIBRARY_NAME=MSMPI` and `-DMPI_${lang}_LIBRARIES=msmpi64` for CMake; see `H/HYPRE/build_tarballs.jl`.
+
+### CUDA packages
+
+CUDA tooling and platform augmentation live in `platforms/cuda.jl` (with the underlying JLLs under `C/CUDA/`). Depend on the right combination via `CUDA.required_dependencies(platform)` rather than naming the JLLs directly:
+
+- `CUDA_SDK_jll` / `CUDA_SDK_static_jll` — full toolkit (headers + libs), build-only (`BuildDependency`).
+- `CUDA_Runtime_jll` — slim redistributable runtime libs (cudart, cublas, cufft, curand, cusolver, cusparse, nvrtc, nvjitlink); the user-facing artifact.
+- `CUDA_Driver_jll` — wraps the system driver and provides `inspect_driver` for compute-capability detection during platform augmentation.
+
+Standard recipe shape (see `A/AMGX/build_tarballs.jl`, `H/HeFFTe/build_tarballs.jl`):
+
+```julia
+include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
+platforms = CUDA.supported_platforms()           # one platform per CUDA minor version
+filter!(p -> arch(p) == "x86_64", platforms)     # optional
+
+for platform in platforms
+    should_build_platform(triplet(platform)) || continue
+    dependencies = CUDA.required_dependencies(platform; static_sdk=true)
+    build_tarballs(ARGS, name, version, sources, script, [platform],
+                   products, dependencies; lazy_artifacts=true,
+                   augment_platform_block=CUDA.augment,
+                   dont_dlopen=true, preferred_gcc_version=v"9")
+end
+```
+
+Concrete rules:
+
+- **Platforms:** Linux `x86_64-glibc`, Linux `aarch64-glibc` (split into `cuda_platform=jetson` vs `sbsa` for CUDA <13; unified for CUDA ≥13), and Windows `x86_64` (with caveats — `nvcc` is not a cross-compiler, so most recipes skip Windows). Musl and macOS are unsupported.
+- **Supported toolkit versions** are listed in `CUDA.cuda_full_versions` in `platforms/cuda.jl`. Build one variant per CUDA minor; the `cuda=$MAJOR.$MINOR` platform tag drives selection.
+- **`CUDA.augment` block is required** on consumers — it reads `CUDA_Runtime_jll` `Preferences` (`version`, `local`), detects driver capabilities via `CUDA_Driver_jll.inspect_driver`, and picks the highest-compatible toolkit. Compute-capability support is encoded in `cuda_cap_db` in `C/CUDA/CUDA_Runtime/platform_augmentation.jl`.
+- **Build flags:** point CMake at the bundled toolkit with `-DCMAKE_CUDA_COMPILER=$prefix/cuda/bin/nvcc -DCMAKE_CUDA_FLAGS="-L${prefix}/cuda/lib"`. `nvcc` writes scratch to `/tmp` (small tmpfs in the sandbox); redirect with `export TMPDIR=${WORKSPACE}/tmpdir`.
+- Pass **`static_sdk=true`** to `required_dependencies` when linking static CUDA libs (e.g. AMGX); this adds `CUDA_SDK_static_jll` as a `BuildDependency`.
+- Always pass **`dont_dlopen=true`** and **`lazy_artifacts=true`** to `build_tarballs` for CUDA consumers — the runtime libs must not be dlopened at JLL init time.
+- **NVIDIA redistributable archive** SHAs are published per CUDA release in `redistrib_<version>.json`; `cuda_nvcc_redist_source` / `get_sources` in `platforms/cuda.jl` and `C/CUDA/common.jl` handle this — prefer them over hand-rolled `ArchiveSource` URLs.
 
 ## Build Script Reference
 
