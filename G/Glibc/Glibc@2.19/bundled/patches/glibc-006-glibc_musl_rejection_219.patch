@@ -192,7 +192,7 @@ index ba1d953..3973149 100644
  #define FLAG_SPARC_LIB64		0x0100
  #define FLAG_IA64_LIB64			0x0200
 diff --git a/sysdeps/unix/sysv/linux/i386/ldconfig.h b/sysdeps/unix/sysv/linux/i386/ldconfig.h
-index 4b95c86..9a229dd 100644
+index 4b95c86..c184ee9 100644
 --- a/sysdeps/unix/sysv/linux/i386/ldconfig.h
 +++ b/sysdeps/unix/sysv/linux/i386/ldconfig.h
 @@ -21,4 +21,5 @@
@@ -200,7 +200,7 @@ index 4b95c86..9a229dd 100644
  #define SYSDEP_KNOWN_LIBRARY_NAMES \
    { "libc.so.5", FLAG_ELF_LIBC5 },	\
 -  { "libm.so.5", FLAG_ELF_LIBC5 },
-+  { "libm.so.5", FLAG_ELF_LIBC5 } \
++  { "libm.so.5", FLAG_ELF_LIBC5 },	\
 +  { "libc.musl-i386.so.1", FLAG_ELF_MUSL }
 diff --git a/sysdeps/unix/sysv/linux/x86_64/ldconfig.h b/sysdeps/unix/sysv/linux/x86_64/ldconfig.h
 index c713f08..fe091ec 100644
