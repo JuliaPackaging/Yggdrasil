@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "pocl"
-version = v"7.1.2"
+version = v"7.1.3"
 
 # Build
 
@@ -16,7 +16,12 @@ version = v"7.1.2"
 sources = [
     DirectorySource("./bundled"),
     GitSource("https://github.com/juliagpu/pocl",
-              "a6b36382744c2cb98f42d063457a948d31d23c9a")
+              "cd0d3970227e09382f57a5c715d42ed62e1baf00"),
+    # vendored SPIR-V translator, built as a static library against our LLVM (see
+    # common.jl); this commit is the LLVM-20.1-compatible revision (matches
+    # LLVM_full_jll 20.1.2).
+    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git",
+              "dee371987a59ed8654083c09c5f1d5c54f5db318"),
 ]
 
 #=
@@ -67,8 +72,9 @@ dependencies = [
     Dependency("OpenCL_Headers_jll"),
     Dependency("Hwloc_jll"),
     Dependency("Zstd_jll"), # our LLVM 20 build has LLVM_ENABLE_ZSTD=ON
+    # the SPIR-V translator is vendored and statically linked (see common.jl), so
+    # SPIRV_LLVM_Translator_jll is no longer needed at run time.
     # only used at run time, but also detected by the build
-    Dependency("SPIRV_LLVM_Translator_jll", compat="20.1"),
     Dependency("SPIRV_Tools_jll"),
     # only used at run time
     RuntimeDependency("Clang_unified_jll"),

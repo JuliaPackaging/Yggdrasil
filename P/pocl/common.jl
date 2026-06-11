@@ -5,9 +5,8 @@ function build_script(standalone=false)
 
     # Bash recipe for building across all platforms
     script = preheader * raw"""
-    cd $WORKSPACE/srcdir/pocl/
-    install_license LICENSE
-
+    # macOS SDK setup, shared by both the translator and PoCL builds below (it redirects
+    # the toolchain, so it must run before either of them).
     if [[ "${target}" == x86_64-apple-darwin* ]]; then
         # LLVM 20 was built against the macOS 10.14 SDK, so PoCL needs it too.
         # We can't upgrade the SDK in the real sys-root: it lives on a read-only
@@ -31,6 +30,83 @@ function build_script(standalone=false)
         sed -i "s!/opt/${target}/${target}/sys-root!$apple_sysroot!g" /opt/bin/${bb_full_target}/${target}-clang*
         export MACOSX_DEPLOYMENT_TARGET=10.14
     fi
+
+    ##########################################################################
+    # 1. Build the vendored SPIRV-LLVM-Translator as a static library.
+    #
+    # PoCL converts SPIR-V <-> LLVM IR with the SPIRV-LLVM-Translator. Using its
+    # `llvm-spirv` *binary* would mean shipping it (SPIRV_LLVM_Translator_jll) and
+    # wrapping it (to set up its library path) at run time. Instead we build the
+    # translator here as a static library and link it into libpocl. The catch (which
+    # bit us before, on macOS especially) is that the translator API passes
+    # `llvm::Module`s across the ABI boundary, so it must share a *single* LLVM with
+    # PoCL -- two LLVM copies means two sets of global state / type uniquing and is
+    # undefined behavior. We therefore build the translator against the same
+    # LLVM_full_jll and link it statically against LLVM's component libs
+    # (DISABLE_LLVM_LINK_LLVM_DYLIB), so libLLVMSPIRVLib.a contains only translator
+    # objects; their LLVM references resolve against PoCL's own statically-linked
+    # LLVM at the final libpocl link (single LLVM, ODR-safe).
+    ##########################################################################
+    # BB's cmake toolchain pins CMAKE_INSTALL_PREFIX to ${prefix}, so the translator
+    # installs there -- conveniently right where PoCL's cmake/LLVM.cmake looks
+    # (LLVM_INCLUDE_DIRS / LLVM_LIBDIR). We link it into libpocl below and then delete
+    # its artifacts from ${prefix} at the end, so they don't ship in the JLL.
+    spirv_src=$WORKSPACE/srcdir/SPIRV-LLVM-Translator
+    pushd $spirv_src
+    install_license LICENSE.TXT
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/spirv-translator-addrspacecast_null.patch
+    # link statically against LLVM's component libraries rather than the LLVM dylib.
+    # Patch both the library and the llvm-spirv tool: otherwise the tool links *both*
+    # the LLVM dylib import-lib and the static components, which is fatal on COFF/lld
+    # (duplicate symbols). The tool is built by `ninja install` (and removed afterwards),
+    # but its link must succeed for the install -- hence the lib+headers we actually use.
+    sed -i '/add_llvm_library(/a DISABLE_LLVM_LINK_LLVM_DYLIB' lib/SPIRV/CMakeLists.txt
+    sed -i '/add_llvm_tool(/a DISABLE_LLVM_LINK_LLVM_DYLIB' tools/llvm-spirv/CMakeLists.txt
+
+    SPIRV_CMAKE_FLAGS=()
+    SPIRV_CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
+    SPIRV_CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
+    if [[ "${target}" == *mingw* ]]; then
+        # on Windows, we run into "multiple definition" errors when linking with gcc
+        SPIRV_CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake)
+        SPIRV_CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-pthread")
+    else
+        SPIRV_CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+    fi
+    SPIRV_CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=ON)
+    # the static lib is linked into the shared libpocl, so it must be PIC
+    SPIRV_CMAKE_FLAGS+=(-DCMAKE_POSITION_INDEPENDENT_CODE=ON)
+    SPIRV_CMAKE_FLAGS+=(-DLLVM_DIR=${prefix}/lib/cmake/llvm)
+    SPIRV_CMAKE_FLAGS+=(-DBASE_LLVM_VERSION=20.1)
+    SPIRV_CMAKE_FLAGS+=(-DLLVM_SPIRV_INCLUDE_TESTS=OFF)
+    if [[ "${target}" == *-apple-darwin* ]]; then
+        cmake -B build -S . -GNinja ${SPIRV_CMAKE_FLAGS[@]} \
+            -DCMAKE_CXX_FLAGS="-Wno-error=enum-constexpr-conversion -include vector"
+    else
+        cmake -B build -S . -GNinja ${SPIRV_CMAKE_FLAGS[@]}
+    fi
+    ninja -C build -j ${nproc} install
+    popd
+
+    spirv_inc=${prefix}/include/LLVMSPIRVLib
+    spirv_lib=${prefix}/lib/libLLVMSPIRVLib.a
+    echo "Vendored SPIR-V translator: lib=${spirv_lib} include=${spirv_inc}"
+    if [[ ! -f "${spirv_lib}" || ! -f "${spirv_inc}/LLVMSPIRVLib.h" ]]; then
+        echo "ERROR: vendored translator library/headers not found" >&2
+        exit 1
+    fi
+    # Derive the maximum supported SPIR-V version from the translator headers, like
+    # PoCL >= 7.2 does. PoCL 7.1 instead derives it with a try_run, which cannot
+    # execute when cross-compiling, so we pre-seed the result below.
+    spirv_maxver_minor=$(grep -oE 'MaximumVersion = SPIRV_1_[0-9]+' ${spirv_inc}/LLVMSPIRVOpts.h | grep -oE '[0-9]+$')
+    spirv_maxver=$((65536 + spirv_maxver_minor * 256))
+    echo "Maximum SPIR-V version supported by the translator: ${spirv_maxver}"
+
+    ##########################################################################
+    # 2. Build PoCL.
+    ##########################################################################
+    cd $WORKSPACE/srcdir/pocl/
+    install_license LICENSE
 
     # POCL wants a target sysroot for compiling the host kernellib (for `math.h` etc)
     sysroot=/opt/${target}/${target}/sys-root
@@ -125,15 +201,31 @@ function build_script(standalone=false)
     CMAKE_FLAGS+=(-DSTATIC_LLVM:Bool=ON)
     # XXX: we add -pthread to the flags used to link libLLVM, so need that here too
     #      (as that is not reflected by llvm-config)
-    CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-pthread")
+    if [[ "${target}" == *mingw* ]]; then
+        # PoCL is built with GCC, but LLVM_full_jll and our vendored translator are
+        # clang-built. On PE/COFF the COMDAT section of <regex>'s function-local static
+        # `__nul` differs (.bss$ for clang vs .data$ for gcc), which GNU ld rejects as a
+        # multiple definition (ELF/Mach-O merge it silently). The definitions are the same
+        # template instantiation, so let ld keep the first.
+        CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-pthread -Wl,--allow-multiple-definition")
+        CMAKE_FLAGS+=(-DCMAKE_SHARED_LINKER_FLAGS="-Wl,--allow-multiple-definition")
+        CMAKE_FLAGS+=(-DCMAKE_MODULE_LINKER_FLAGS="-Wl,--allow-multiple-definition")
+    else
+        CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-pthread")
+    fi
 
-    # Enable SPIR-V support
-    ## disable use of the translator library, because the API is not ODR safe on macOS
-    ## when statically linking LLVM
-    CMAKE_FLAGS+=(-DLLVM_SPIRV_LIB="")
-    ## force use of the translator binary even if not executable during the build
-    ## XXX: add and use a HostBuildDependency?
-    sed -i '/unset(LLVM_SPIRV CACHE)/d' -i cmake/LLVM.cmake
+    # Enable SPIR-V support via the vendored translator *library* (built above), linked
+    # statically into libpocl (the macOS ODR hazard that previously forced the binary
+    # path is gone now that the translator shares PoCL's static LLVM, whose symbols are
+    # hidden on macOS via -hidden-l). Pre-seed the cache variables cmake/LLVM.cmake
+    # would otherwise probe: the lib/include paths it searches for, and the
+    # HAVE/MAXVER results it would derive from a try_run (which cannot execute when
+    # cross-compiling). We do NOT provide an llvm-spirv binary, so the binary code
+    # path stays off and no run-time translator package or wrapper is needed.
+    CMAKE_FLAGS+=(-DLLVM_SPIRV_INCLUDEDIR=${spirv_inc})
+    CMAKE_FLAGS+=(-DLLVM_SPIRV_LIB=${spirv_lib})
+    CMAKE_FLAGS+=(-DHAVE_LLVM_SPIRV_LIB:BOOL=ON)
+    CMAKE_FLAGS+=(-DLLVM_SPIRV_LIB_MAXVER=${spirv_maxver})
 
     # PoCL's CPU autodetection doesn't work on RISC-V
     if [[ ${target} == riscv64-* ]]; then
@@ -147,6 +239,14 @@ function build_script(standalone=false)
 
     cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
     ninja -C build -j ${nproc} install
+
+    # The vendored translator is now statically linked into libpocl; remove its build
+    # artifacts (static lib, generated headers, pkg-config, the unused llvm-spirv binary)
+    # from the prefix so they don't ship in the JLL.
+    rm -rf ${prefix}/include/LLVMSPIRVLib
+    rm -f ${prefix}/lib/libLLVMSPIRVLib.a \
+          ${prefix}/lib/pkgconfig/LLVMSPIRVLib.pc \
+          ${prefix}/bin/llvm-spirv ${prefix}/bin/llvm-spirv.exe
 
     # PoCL uses Clang, which relies on certain system libraries Clang_jll.jl doesn't provide
     mkdir -p $prefix/share/lib
@@ -306,11 +406,6 @@ function init_block(standalone=false)
     ENV["POCL_PATH_CLANG"] =
         generate_wrapper_script("clang", Clang_unified_jll.clang_path,
                                 Clang_unified_jll.LIBPATH[], Clang_unified_jll.PATH[])
-    ENV["POCL_PATH_LLVM_SPIRV"] =
-        generate_wrapper_script("llvm-spirv",
-                                SPIRV_LLVM_Translator_jll.llvm_spirv_path,
-                                SPIRV_LLVM_Translator_jll.LIBPATH[],
-                                SPIRV_LLVM_Translator_jll.PATH[])
     ld_path = if Sys.islinux()
             LLD_unified_jll.ld_lld_path
         elseif Sys.isapple()
