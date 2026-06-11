@@ -56,12 +56,6 @@ fi
 atomic_patch -p1 $WORKSPACE/srcdir/patches/suitesparse-64bit-blas.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/external-pkgs-64bit-blas.patch
 
-# Allow linking a full 64-bit integer MUMPS (e.g. a future MUMPS64_jll):
-# upstream mumps.c #errors out on MUMPS_INTSIZE64; define the
-# PetscMUMPSInt-related macros for int64_t MUMPS_INT instead.  For the
-# 32-bit-integer MUMPS_jll used below this is a behavioral no-op.
-atomic_patch -p1 $WORKSPACE/srcdir/patches/mumps-full-64bit-int.patch
-
 mkdir $libdir/petsc
 build_petsc()
 {
