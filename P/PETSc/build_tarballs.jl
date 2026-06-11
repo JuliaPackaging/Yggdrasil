@@ -1,11 +1,12 @@
 # PETSc linked against Julia's stdlib ILP64 SuiteSparse_jll, which forces
 # ILP64 BLAS (via libblastrampoline `_64_` suffixes) for PETSc itself.
 # Every other external package comes from Yggdrasil-built shared JLLs in
-# its most convenient form: HYPRE64_jll and SuperLU_DIST_jll (Int64) match
-# the 64-bit PetscInt; MUMPS_jll keeps its stock 32-bit integers (PETSc's
-# supported PetscMUMPSInt=int32 path) and brings its own LP64 SCALAPACK32
-# and BLAS (forwarded to OpenBLAS32 through libblastrampoline's LP64 slot)
-# as private shared-library dependencies.  PETSc links no ScaLAPACK of its
+# its most convenient form: HYPRE64_jll/HYPRE_jll and SuperLU_DIST_jll's
+# Int64/Int32 libraries are selected to match PetscInt per variant;
+# MUMPS_jll keeps its stock 32-bit integers (PETSc's supported
+# PetscMUMPSInt=int32 path) and brings its own LP64 SCALAPACK32 and BLAS
+# (forwarded to OpenBLAS32 through libblastrampoline's LP64 slot) as
+# private shared-library dependencies.  PETSc links no ScaLAPACK of its
 # own.  Nothing is built or linked statically.
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
@@ -176,8 +177,23 @@ build_petsc()
          USE_TETGEN=1
     fi
 
+    # hypre's integer width must match PetscInt: HYPRE64_jll (64-bit
+    # HYPRE_BigInt) for Int64 builds, stock HYPRE_jll for Int32 builds.
+    # Both JLLs install HYPRE_config.h into ${includedir} and only one
+    # survives the prefix merge, so stage a header copy whose
+    # HYPRE_BIGINT define matches the library being linked.
     if [ ${USE_HYPRE} == 1 ]; then
-        HYPRE_ARGS="--with-hypre=1 --with-hypre-include=${includedir} --with-hypre-lib=${libdir}/libHYPRE64.${dlext}"
+        HYPRE_INC=$(pwd)/hypre_include_${3}
+        mkdir -p ${HYPRE_INC}
+        cp ${includedir}/HYPRE*.h ${HYPRE_INC}/
+        if [ "${3}" == "Int64" ]; then
+            HYPRE_LIB="libHYPRE64"
+            grep -q "^#define HYPRE_BIGINT" ${HYPRE_INC}/HYPRE_config.h || echo "#define HYPRE_BIGINT 1" >> ${HYPRE_INC}/HYPRE_config.h
+        else
+            HYPRE_LIB="libHYPRE"
+            sed -i '/^#define HYPRE_BIGINT/d;/^#define HYPRE_MIXEDINT/d' ${HYPRE_INC}/HYPRE_config.h
+        fi
+        HYPRE_ARGS="--with-hypre=1 --with-hypre-include=${HYPRE_INC} --with-hypre-lib=${libdir}/${HYPRE_LIB}.${dlext}"
     else
         HYPRE_ARGS="--with-hypre=0"
     fi
@@ -188,8 +204,21 @@ build_petsc()
         MUMPS_ARGS="--with-mumps=0"
     fi
 
+    # SuperLU_DIST's index width must match PetscInt; SuperLU_DIST_jll
+    # ships both libsuperlu_dist_Int32 and libsuperlu_dist_Int64, but only
+    # one set of headers, whose superlu_dist_config.h is the Int64 one
+    # (XSDK_INDEX_SIZE 64).  For Int32 builds stage a corrected header
+    # copy and pass it as the SuperLU_DIST include dir; configure places
+    # user-specified package includes ahead of ${includedir} in its tests.
     if [ ${USE_SUPERLU_DIST} == 1 ]; then
-        SUPERLU_DIST_ARGS="--with-superlu_dist=1 --with-superlu_dist-include=${includedir} --with-superlu_dist-lib=${libdir}/libsuperlu_dist_Int64.${dlext}"
+        SLU_INC=${includedir}
+        if [ "${3}" == "Int32" ]; then
+            SLU_INC=$(pwd)/superlu_include_Int32
+            mkdir -p ${SLU_INC}
+            cp ${includedir}/superlu*.h* ${SLU_INC}/
+            sed -i 's/#define XSDK_INDEX_SIZE 64/#define XSDK_INDEX_SIZE 32/' ${SLU_INC}/superlu_dist_config.h
+        fi
+        SUPERLU_DIST_ARGS="--with-superlu_dist=1 --with-superlu_dist-include=${SLU_INC} --with-superlu_dist-lib=${libdir}/libsuperlu_dist_${3}.${dlext}"
     else
         SUPERLU_DIST_ARGS="--with-superlu_dist=0"
     fi
@@ -284,6 +313,17 @@ build_petsc()
         --with-shared-libraries=1 \
         --with-clean=1
 
+    # The PETSC_ARCH include dir precedes every package include (and
+    # ${includedir}) on PETSc compile lines, so the staged
+    # SuperLU_DIST/hypre headers also win during the library build.  This
+    # must happen after configure: --with-clean recreates the arch dir.
+    if [ ${USE_SUPERLU_DIST} == 1 ] && [ "${3}" == "Int32" ]; then
+        cp ${SLU_INC}/superlu*.h* ${target}_${PETSC_CONFIG}/include/
+    fi
+    if [ ${USE_HYPRE} == 1 ]; then
+        cp ${HYPRE_INC}/HYPRE*.h ${target}_${PETSC_CONFIG}/include/
+    fi
+
     if [[ "${target}" == *-mingw* ]]; then
         export CPPFLAGS="-Dpetsc_EXPORTS"
     else
@@ -300,6 +340,10 @@ build_petsc()
 
     # Remove PETSc.pc because petsc.pc also exists, causing conflicts on case-insensitive file-systems.
     rm ${libdir}/petsc/${PETSC_CONFIG}/lib/pkgconfig/PETSc.pc
+
+    # Don't ship the staged SuperLU_DIST/hypre headers that `make
+    # install` copied over from the arch include dir.
+    rm -f ${libdir}/petsc/${PETSC_CONFIG}/include/superlu* ${libdir}/petsc/${PETSC_CONFIG}/include/HYPRE*
     if  [[ "${1}" == "double" && "${2}" == "real" &&  "${3}" == "Int64" && "${4}" == "opt" ]]; then
 
         # Compile examples (to allow testing the installation).
@@ -341,6 +385,22 @@ build_petsc()
 
     fi
 
+    if [[ "${1}" == "double" && "${2}" == "real" && "${3}" == "Int32" && "${4}" == "opt" ]]; then
+
+        # Int32 flavor of the installation-check example
+        workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/snes/tutorials/
+        make --directory=$workdir PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex19
+        file=${workdir}/ex19
+        if [[ "${target}" == *-mingw* ]]; then
+            if [[ -f "$file" ]]; then
+                mv $file ${file}${exeext}
+            fi
+        fi
+        mv ${file}${exeext} ${file}_int32${exeext}
+        install -Dvm 755 ${workdir}/ex19_int32${exeext} "${bindir}/ex19_int32${exeext}"
+
+    fi
+
     if [[ "${1}" == "double" && "${2}" == "real" && "${3}" == "Int64" && "${4}" == "deb" ]]; then
 
         # this is the example that PETSc uses to test the correct installation
@@ -367,6 +427,10 @@ build_petsc double real    Int64 deb     # compile at least one debug version
 build_petsc double complex Int64 opt
 build_petsc single real    Int64 opt
 build_petsc single complex Int64 opt
+build_petsc double real    Int32 opt
+build_petsc double complex Int32 opt
+build_petsc single real    Int32 opt
+build_petsc single complex Int32 opt
 """
 
 augment_platform_block = """
@@ -399,6 +463,7 @@ products = [
     ExecutableProduct("ex4", :ex4),
     ExecutableProduct("ex42", :ex42),
     ExecutableProduct("ex19", :ex19),
+    ExecutableProduct("ex19_int32", :ex19_int32),
     ExecutableProduct("ex19_int64_deb", :ex19_int64_deb),
 
     # Default build, equivalent to Float64_Real_Int64
@@ -408,6 +473,10 @@ products = [
     LibraryProduct("libpetsc_double_complex_Int64", :libpetsc_Float64_Complex_Int64, "\$libdir/petsc/double_complex_Int64/lib"),
     LibraryProduct("libpetsc_single_real_Int64", :libpetsc_Float32_Real_Int64, "\$libdir/petsc/single_real_Int64/lib"),
     LibraryProduct("libpetsc_single_complex_Int64", :libpetsc_Float32_Complex_Int64, "\$libdir/petsc/single_complex_Int64/lib"),
+    LibraryProduct("libpetsc_double_real_Int32", :libpetsc_Float64_Real_Int32, "\$libdir/petsc/double_real_Int32/lib"),
+    LibraryProduct("libpetsc_double_complex_Int32", :libpetsc_Float64_Complex_Int32, "\$libdir/petsc/double_complex_Int32/lib"),
+    LibraryProduct("libpetsc_single_real_Int32", :libpetsc_Float32_Real_Int32, "\$libdir/petsc/single_real_Int32/lib"),
+    LibraryProduct("libpetsc_single_complex_Int32", :libpetsc_Float32_Complex_Int32, "\$libdir/petsc/single_complex_Int32/lib"),
 ]
 
 dependencies = [
@@ -433,6 +502,9 @@ dependencies = [
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2");
                compat="0.3.33", platforms=filter(!Sys.iswindows, platforms)),
     Dependency(PackageSpec(name="HYPRE64_jll"); compat="3.1.0",
+               platforms=filter(!Sys.iswindows, platforms)),
+    # Stock (32-bit HYPRE_BigInt) hypre for the Int32 PetscInt variants.
+    Dependency(PackageSpec(name="HYPRE_jll"); compat="3.1.0",
                platforms=filter(!Sys.iswindows, platforms)),
     Dependency(PackageSpec(name="SuperLU_DIST_jll"); compat="9.2.1",
                platforms=filter(!Sys.iswindows, platforms)),
