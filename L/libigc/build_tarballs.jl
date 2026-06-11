@@ -7,7 +7,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "libigc"
-version = v"2.22.2"
+version = v"2.34.4"
 
 # IGC depends on LLVM, a custom Clang, and a Khronos tool. Instead of building these pieces
 # separately, taking care to match versions and apply Intel-specific patches where needed
@@ -27,12 +27,12 @@ version = v"2.22.2"
 #       see https://github.com/intel/intel-graphics-compiler/blob/master/.github/workflows/build-IGC.yml
 #
 sources = [
-    GitSource("https://github.com/intel/intel-graphics-compiler.git", "478f6f8226d8d1cc49e6d217c362217352aba661"),
-    GitSource("https://github.com/intel/opencl-clang.git", "43611737fe738e227da35d65e787f4e10a88c9c9" #= branch ocl-open-160 =#),
-    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "0983ca98c8bea6a68f1731cd9aec0560914b93b1" #= branch llvm_release_160 =#),
+    GitSource("https://github.com/intel/intel-graphics-compiler.git", "5cebb69c84658ac2befba89f81c5ce9022f02f68" #= tag v2.34.4 =#),
+    GitSource("https://github.com/intel/opencl-clang.git", "07e7c931d8bdb38549a907cf04fd06a278f7cdce" #= branch ocl-open-160 =#),
+    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "308a0d7acfd7330e64d72a1cd23d272deafb113b" #= branch llvm_release_160 =#),
     GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "28a883ba4c67f58a9540fb0651c647bb02883622" #= main =#),
-    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "9e3836d7d6023843a72ecd3fbf3f09b1b6747a9e"), #= main =#
-    GitSource("https://github.com/intel/vc-intrinsics.git", "db261bc52c26b716f6ac8a5fe70659a6d7e66858" #= tag v0.23.4 =#),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "9268f3057354a2cb65991ba5f38b16d81e803692"), #= main =#
+    GitSource("https://github.com/intel/vc-intrinsics.git", "27f7c4f34738f5eaf7a045b77edf8d9e034443d8" #= tag v0.25.0 =#),
     GitSource("https://github.com/llvm/llvm-project.git", "7cbf1a2591520c2491aa35339f227775f4d3adf6" #= tag llvmorg-16.0.6 =#),
     # patches
     DirectorySource("./bundled"),
