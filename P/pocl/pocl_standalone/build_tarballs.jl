@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "pocl_standalone"
-version = v"7.1.2"
+version = v"7.1.3"
 
 # This is the standalone (OpenCL-less) variant of PoCL: instead of an ICD driver loaded by
 # an OpenCL ICD loader, it builds a directly-linkable library (`libpocl_standalone`) whose
@@ -23,7 +23,12 @@ version = v"7.1.2"
 sources = [
     DirectorySource("./bundled"),
     GitSource("https://github.com/juliagpu/pocl",
-              "3e7b3cbf5f4f57d07553d875c98ab087572be694")
+              "cd0d3970227e09382f57a5c715d42ed62e1baf00"),
+    # vendored SPIR-V translator, built as a static library against our LLVM (see
+    # common.jl); this commit is the LLVM-20.1-compatible revision (matches
+    # LLVM_full_jll 20.1.2).
+    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git",
+              "dee371987a59ed8654083c09c5f1d5c54f5db318"),
 ]
 
 #=
@@ -75,8 +80,9 @@ dependencies = [
     BuildDependency(PackageSpec(name="LLVM_full_jll", version="20.1.2")),
     Dependency("Hwloc_jll"),
     Dependency("Zstd_jll"), # our LLVM 20 build has LLVM_ENABLE_ZSTD=ON
+    # the SPIR-V translator is vendored and statically linked (see common.jl), so
+    # SPIRV_LLVM_Translator_jll is no longer needed at run time.
     # only used at run time, but also detected by the build
-    Dependency("SPIRV_LLVM_Translator_jll", compat="20.1"),
     Dependency("SPIRV_Tools_jll"),
     # only used at run time
     RuntimeDependency("Clang_unified_jll"),
