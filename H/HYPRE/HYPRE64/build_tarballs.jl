@@ -75,6 +75,14 @@ for f in $old_files; do
     fi
 done
 
+# Move the headers into their own subdirectory: stock HYPRE_jll installs
+# the same header names (notably HYPRE_config.h, which records the
+# integer width) into ${includedir}, and the two packages must be
+# co-installable for consumers that build against both integer widths
+# (e.g. PETSc).
+mkdir -p ${includedir}/HYPRE64
+mv ${includedir}/HYPRE*.h ${includedir}/HYPRE64/
+
 if [[ "${target}" == *apple* ]]; then
     install_name_tool -id "@rpath/libHYPRE64.${dlext}" ${libdir}/libHYPRE64.${dlext}
 elif [[ "${target}" == *mingw* ]]; then
