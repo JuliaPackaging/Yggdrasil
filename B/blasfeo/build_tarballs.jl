@@ -40,7 +40,7 @@ function get_script(; platform::Platform)
             LA = "HIGH_PERFORMANCE"
         else
             TARGET = "GENERIC"
-            LA = "REFERENCE"
+            LA = "HIGH_PERFORMANCE"
         end
     elseif arch(platform) == "aarch64" && os(platform) == "macos"
         if platform["march"] == "apple_m1"
@@ -48,10 +48,11 @@ function get_script(; platform::Platform)
             LA = "HIGH_PERFORMANCE"
         else
             TARGET = "GENERIC"
-            LA = "REFERENCE"
+            LA = "HIGH_PERFORMANCE"
         end
     else
         TARGET = "GENERIC"
+        LA = "HIGH_PERFORMANCE"
     end
     # Set OS variable
     if Sys.islinux(platform)
