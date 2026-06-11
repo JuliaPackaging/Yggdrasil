@@ -75,6 +75,14 @@ build_superlu_dist()
 
     install -Dvm 755 build-${INT}/TEST/pdtest${exeext} "${bindir}/pdtest_${INT}${exeext}"
     install -vm 644 EXAMPLE/g20.rua "${includedir}"
+
+    # Both integer-width builds install their headers into ${includedir},
+    # so the second build overwrites the first's superlu_dist_config.h
+    # (XSDK_INDEX_SIZE).  Keep a self-contained per-width copy so
+    # consumers that must match a specific index width (e.g. PETSc) can
+    # point at it instead of the ambiguous top-level headers.
+    mkdir -p ${includedir}/superlu_dist_Int${INT}
+    cp ${includedir}/superlu*.h* ${includedir}/superlu_dist_Int${INT}/
 }
 build_superlu_dist Int32
 build_superlu_dist Int64
