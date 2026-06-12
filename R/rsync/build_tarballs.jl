@@ -4,12 +4,12 @@ using BinaryBuilder, Pkg
 using BinaryBuilderBase: get_addable_spec
 
 name = "rsync"
-version = v"3.4.3"
+version = v"3.4.4"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://download.samba.org/pub/rsync/src/rsync-$(version).tar.gz",
-                  "c72e63ca3021cbc80ba86ec30102773f4c5631fbc492b52e773b3958f82a53d3"),
+                  "bd88cf82fa653da32314fb229136407c5c90f80d1758d8f4b091767877d8fa96"),
     DirectorySource("bundled"),
 ]
 
