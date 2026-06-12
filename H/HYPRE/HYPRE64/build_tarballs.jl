@@ -122,7 +122,7 @@ dependencies = [
 ]
 append!(dependencies, platform_dependencies)
 
-# Build trigger: 1
-
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, julia_compat="1.10", preferred_gcc_version = v"8")
+
+# Build trigger: 1
