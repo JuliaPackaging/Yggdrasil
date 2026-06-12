@@ -1,6 +1,12 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms: arch, os, tags
 
+const YGGDRASIL_DIR = "../.."
+# For MicroArchitectures
+include(joinpath(YGGDRASIL_DIR, "platforms", "microarchitectures.jl"))
+# For should_build_platform
+include(joinpath(YGGDRASIL_DIR,"fancy_toys.jl"))
+
 name = "blasfeo"
 version = v"0.1.4"
 
@@ -98,11 +104,18 @@ products = [
     LibraryProduct("libblasfeo", :blasfeo, "blasfeo/lib")
 ]
 
+# augment_platform so we get the correct, that is fast, build
+augment_platform_block = """
+$(MicroArchitectures.augment)
+
+function augment_platform!(platform::Platform)
+    augment_microarchitecture!(platform)
+end
+"""
+
 # Dependencies
 dependencies = Dependency[]
 
-# For should_build_platform
-include("../../fancy_toys.jl")
 
 for platform in platforms
     should_build_platform(platform) || continue # Don't build things on the wrong platforms
@@ -120,7 +133,8 @@ for platform in platforms
         [platform],
         products,
         dependencies,
-        julia_compat = "1.6",
+        julia_compat="1.6",
+        augment_platform_block=augment_platform_block,
         lock_microarchitecture=false, # blasfeo build handles march/m* flags
         preferred_gcc_version=gcc_ver,
     )
