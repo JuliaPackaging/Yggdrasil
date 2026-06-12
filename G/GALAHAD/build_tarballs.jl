@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "GALAHAD"
-version = v"5.4.0"
+version = v"5.5.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ralna/GALAHAD.git", "1b18769eb152d36fe360b277b3a7fa0920789ca7")
+    GitSource("https://github.com/ralna/GALAHAD.git", "4a8f5ce9732f987e58a8a107f1dce404c6ae65a3")
 ]
 
 # Bash recipe for building across all platforms
@@ -155,6 +155,8 @@ products = [
     ExecutableProduct("runblls_sif_double", :runblls_sif_double),
     ExecutableProduct("runbllsb_sif_single", :runbllsb_sif_single),
     ExecutableProduct("runbllsb_sif_double", :runbllsb_sif_double),
+    ExecutableProduct("runbnls_sif_single", :runbnls_sif_single),
+    ExecutableProduct("runbnls_sif_double", :runbnls_sif_double),
     ExecutableProduct("runbqp_qplib_single", :runbqp_qplib_single),
     ExecutableProduct("runbqp_qplib_double", :runbqp_qplib_double),
     ExecutableProduct("runbqp_sif_single", :runbqp_sif_single),
@@ -167,12 +169,12 @@ products = [
     ExecutableProduct("runccqp_qplib_double", :runccqp_qplib_double),
     ExecutableProduct("runccqp_sif_single", :runccqp_sif_single),
     ExecutableProduct("runccqp_sif_double", :runccqp_sif_double),
-    ExecutableProduct("runclls_sif_single", :runclls_sif_single),
-    ExecutableProduct("runclls_sif_double", :runclls_sif_double),
     ExecutableProduct("runcdqp_qplib_single", :runcdqp_qplib_single),
     ExecutableProduct("runcdqp_qplib_double", :runcdqp_qplib_double),
     ExecutableProduct("runcdqp_sif_single", :runcdqp_sif_single),
     ExecutableProduct("runcdqp_sif_double", :runcdqp_sif_double),
+    ExecutableProduct("runclls_sif_single", :runclls_sif_single),
+    ExecutableProduct("runclls_sif_double", :runclls_sif_double),
     ExecutableProduct("runcqp_qplib_single", :runcqp_qplib_single),
     ExecutableProduct("runcqp_qplib_double", :runcqp_qplib_double),
     ExecutableProduct("runcqp_sif_single", :runcqp_sif_single),
@@ -259,8 +261,26 @@ products = [
     ExecutableProduct("runqpc_qplib_double", :runqpc_qplib_double),
     ExecutableProduct("runqpc_sif_single", :runqpc_sif_single),
     ExecutableProduct("runqpc_sif_double", :runqpc_sif_double),
+    ExecutableProduct("runsllsb_sif_single", :runsllsb_sif_single),
+    ExecutableProduct("runsllsb_sif_double", :runsllsb_sif_double),
+    ExecutableProduct("runsnls_sif_single", :runsnls_sif_single),
+    ExecutableProduct("runsnls_sif_double", :runsnls_sif_double),
+    ExecutableProduct("runssls_sif_single", :runssls_sif_single),
+    ExecutableProduct("runssls_sif_double", :runssls_sif_double),
+    ExecutableProduct("runtrb_sif_single", :runtrb_sif_single),
+    ExecutableProduct("runtrb_sif_double", :runtrb_sif_double),
     ExecutableProduct("runtrek_sif_single", :runtrek_sif_single),
     ExecutableProduct("runtrek_sif_double", :runtrek_sif_double),
+    ExecutableProduct("runtrs_sif_single", :runtrs_sif_single),
+    ExecutableProduct("runtrs_sif_double", :runtrs_sif_double),
+    ExecutableProduct("runtru_sif_single", :runtru_sif_single),
+    ExecutableProduct("runtru_sif_double", :runtru_sif_double),
+    ExecutableProduct("runugo_sif_single", :runugo_sif_single),
+    ExecutableProduct("runugo_sif_double", :runugo_sif_double),
+    ExecutableProduct("runwarm_sif_single", :runwarm_sif_single),
+    ExecutableProduct("runwarm_sif_double", :runwarm_sif_double),
+    ExecutableProduct("runwcp_sif_single", :runwcp_sif_single),
+    ExecutableProduct("runwcp_sif_double", :runwcp_sif_double),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -269,7 +289,7 @@ dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
     Dependency(PackageSpec(name="Hwloc_jll", uuid="e33a78d0-f292-5ffc-b300-72abe9b543c8")),
-    Dependency(PackageSpec(name="MUMPS_seq_jll", uuid="d7ed1dd3-d0ae-5e8e-bfb4-87a502085b8d")),
+    Dependency(PackageSpec(name="MUMPS_seq_jll", uuid="d7ed1dd3-d0ae-5e8e-bfb4-87a502085b8d"), compat="~500.900.0"),
     Dependency(PackageSpec(name="HSL_jll", uuid="017b0a0e-03f4-516a-9b91-836bbd1904dd")),
     Dependency(PackageSpec(name="CUTEst_jll", uuid="bb5f6f25-f23d-57fd-8f90-3ef7bad1d825"), compat="2.5.6"),
     # Dependency(PackageSpec(name="PaStiX_jll", uuid="46e5285b-ff06-5712-adf2-cc145d39f096")),
