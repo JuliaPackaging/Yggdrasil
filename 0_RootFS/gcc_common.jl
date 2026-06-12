@@ -157,6 +157,26 @@ function gcc_script(gcc_version::VersionNumber, compiler_target::Platform)
         # that are available only starting in later macOS versions such as `clock_gettime` or `mkostemp`
         export ac_cv_func_clock_gettime=no
         export ac_cv_func_mkostemp=no
+
+        # Without `-sdk_version`, cctools ld64 stamps LC_BUILD_VERSION.sdk with the Darwin major
+        # (e.g. 20.0), which trips macOS 26's stricter dyld LINKEDIT validator and makes the runtime
+        # dylibs (-> CompilerSupportLibraries) fail to load.  Pin the (grandfathered) SDK version
+        # explicitly, like conda-forge's clang driver does.
+        if [[ "${GCC_VERSION_MAJOR}" -ge 14 ]]; then
+            export LDFLAGS_FOR_TARGET="${LDFLAGS_FOR_TARGET} -Wl,-sdk_version,11.0"
+        fi
+
+        # cctools' `as` runs clang without `-mcpu`, whose default CPU rejects the Apple-Silicon
+        # instructions GCC emits ("instruction requires: rcpc-immo").
+        if [[ "${GCC_VERSION_MAJOR}" -ge 14 ]] && [[ "${COMPILER_TARGET}" == aarch64-* ]]; then
+            mkdir -p "${prefix}/bin"
+            cat > "${prefix}/bin/clang-as-wrapper" <<'WRAP'
+#!/bin/sh
+exec clang -mcpu=apple-m1 "$@"
+WRAP
+            chmod +x "${prefix}/bin/clang-as-wrapper"
+            export CCTOOLS_CLANG_AS_EXECUTABLE="${prefix}/bin/clang-as-wrapper"
+        fi
     fi
 
     # Link dependent packages into gcc build root:
@@ -206,9 +226,17 @@ function gcc_script(gcc_version::VersionNumber, compiler_target::Platform)
 
         TAPI_CMAKE_FLAGS=()
         if [[ "${GCC_VERSION_MAJOR}" -ge 14 ]]; then
+            # libtapi 1500's LLVM tree is pruned of docs/examples/benchmarks; these flags
+            # match tpoechtrager's own build.sh.  Keep TAPI_*_VERSION in sync with the
+            # apple-libtapi pin in gcc_sources.jl.
             TAPI_CMAKE_FLAGS+=(
                 -DLLVM_ENABLE_PROJECTS="tapi;clang"
                 -DLLVM_TARGETS_TO_BUILD:STRING="host"
+                -DLLVM_INCLUDE_DOCS=OFF
+                -DLLVM_INCLUDE_EXAMPLES=OFF
+                -DLLVM_INCLUDE_BENCHMARKS=OFF
+                -DTAPI_REPOSITORY_STRING=1500.0.12.3
+                -DTAPI_FULL_VERSION=1500.0.12.3
             )
         fi
 
@@ -222,7 +250,18 @@ function gcc_script(gcc_version::VersionNumber, compiler_target::Platform)
             "${TAPI_CMAKE_FLAGS[@]}"
         make -j${nproc} VERBOSE=1 clangBasic
         make -j${nproc} VERBOSE=1 libtapi
-        make -j${nproc} VERBOSE=1 install
+        if [[ "${GCC_VERSION_MAJOR}" -ge 14 ]]; then
+            # libtapi 1500's optional tapi tools don't link on Linux (bad static-archive
+            # order, known upstream), and a plain `make install` would build them.  Install
+            # only what we use: libtapi for ld64, clang for the assembler, LLVM binutils
+            # and dsymutil for the *_FOR_TARGET tools.
+            make -j${nproc} VERBOSE=1 install-libtapi install-tapi-headers \
+                install-clang install-clang-resource-headers \
+                install-llvm-as install-llvm-ar install-llvm-nm install-llvm-ranlib \
+                install-dsymutil
+        else
+            make -j${nproc} VERBOSE=1 install
+        fi
 
         # Install cctools
         cd ${WORKSPACE}/srcdir/cctools-port/cctools
@@ -668,14 +707,18 @@ function build_and_upload_gcc(version::VersionNumber, ARGS=ARGS)
     script = gcc_script(version, compiler_target)
     products = gcc_products()
 
+    # Apple/arm64 recipes key their source off a `-iains` prerelease tag (e.g. v"15.2.0-iains"),
+    # but BinaryBuilder refuses prerelease versions, so strip the tag for build & upload.
+    build_version = VersionNumber(version.major, version.minor, version.patch)
+
     # Build the tarballs, and possibly a `build.jl` as well.
     ndARGS, deploy_target = find_deploy_arg(ARGS)
-    build_info = build_tarballs(ndARGS, name, version, sources, script, [compiler_target], products, Dependency[]; skip_audit=true, julia_compat="1.6")
+    build_info = build_tarballs(ndARGS, name, build_version, sources, script, [compiler_target], products, Dependency[]; skip_audit=true, julia_compat="1.6")
     build_info = Dict(host_platform => first(values(build_info)))
 
     # Upload the artifacts (if requested)
     if deploy_target !== nothing
-        upload_and_insert_shards(deploy_target, name, version, build_info; target=compiler_target)
+        upload_and_insert_shards(deploy_target, name, build_version, build_info; target=compiler_target)
     end
     return build_info
 end

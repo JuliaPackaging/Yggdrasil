@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "CUDA_Compiler"
-version = v"0.4.3"
+version = v"0.4.4"
 
 augment_platform_block = read(joinpath(@__DIR__, "platform_augmentation.jl"), String)
 
@@ -100,7 +100,7 @@ end
 
 # determine exactly which tarballs we should build
 builds = []
-for version in [ v"11.8", v"12.9", v"13.2"]
+for version in [ v"11.8", v"12.9", v"13.3"]
     # CUDA_Compiler uses the following components
     components = [
         "cuda_cudart",

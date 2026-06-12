@@ -3,136 +3,165 @@ using Base.BinaryPlatforms
 
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
-include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "LLVMDowngrader"
-repo = "https://github.com/JuliaLLVM/llvm-downgrade"
-version = v"0.6"
+version = v"0.8.1"
 
-llvm_versions = [v"15.0.7", v"16.0.6", v"18.1.7", v"20.1.2"]
+# Build the standalone `llvm-downgrade` out-of-tree against a prebuilt LLVM
+# (LLVM_full_jll), statically linked so the tool is self-contained and usable
+# outside a Julia environment.
+#
+# Because LLVM's bitcode reader is backwards compatible (any bitcode since 3.0,
+# auto-upgraded on load), this single tool ingests bitcode from any LLVM up to
+# its own version and emits the legacy 5.0/7.0/14.0 formats. So it is ONE
+# universal build -- not one per consumer LLVM version, and not augmented by
+# llvm_version. Built against LLVM 21; track the newest LLVM as new ones land.
+llvm_version = v"21.1.8+0"
 
-# Collection of sources required to build LLVMDowngrader
-sources = Dict(
-    v"15.0.7" => [GitSource(repo, "aba82137dde7a0e5e5f2d8a44d7daf750e51fd30")],
-    v"16.0.6" => [GitSource(repo, "079c50a3cb88053b54db312710347db298407806")],
-    v"18.1.7" => [GitSource(repo, "7995dec609d994ae0a9a99f8f3776da5439749c9")],
-    v"20.1.2" => [GitSource(repo, "655eb609daad4fe04b80644828de3769a33c748f")],
-)
-
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+sources = [
+    GitSource("https://github.com/JuliaLLVM/llvm-downgrade",
+              "1e04ee99aff7c059606502ee86d03eb7d1c5d781"),
+    # We also ship the `llvm-dis` from each LLVM release whose bitcode the
+    # downgrader emits (as `llvm-dis-5` / `llvm-dis-7` / `llvm-dis-14`), so the
+    # downgraded bitcode can be disassembled with a matching disassembler. These
+    # are built from the upstream release sources and are version-independent.
+    ArchiveSource("https://releases.llvm.org/5.0.2/llvm-5.0.2.src.tar.xz",
+                  "d522eda97835a9c75f0b88ddc81437e5edbb87dc2740686cb8647763855c2b3c"),
+    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-7.1.0/llvm-7.1.0.src.tar.xz",
+                  "1bcc9b285074ded87b88faaedddb88e6b5d6c331dfcfb57d7f3393dd622b3764"),
+    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-14.0.6/llvm-14.0.6.src.tar.xz",
+                  "050922ecaaca5781fdf6631ea92bc715183f202f9d2f15147226f023414f619a"),
+    DirectorySource("./bundled"),
+]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd llvm-downgrade/llvm
-LLVM_SRCDIR=$(pwd)
-
+cd ${WORKSPACE}/srcdir/llvm-downgrade
 install_license LICENSE.TXT
 
-# The very first thing we need to do is to build llvm-tblgen for x86_64-linux-muslc
-# This is because LLVM's cross-compile setup is kind of borked, so we just
-# build the tools natively ourselves, directly.  :/
+# Build out-of-tree against the prebuilt LLVM from LLVM_full_jll, statically
+# linking the LLVM component archives so `llvm-downgrade` has no runtime libLLVM
+# dependency. The test suite needs legacy disassemblers we don't ship here, so
+# it is disabled for the package build.
+cmake -B build -S . -GNinja \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_CROSSCOMPILING:BOOL=ON \
+    -DLLVM_DIR=${prefix}/lib/cmake/llvm \
+    -DLLVM_LINK_LLVM_DYLIB=OFF \
+    -DLLVMDG_BUILD_TESTS=OFF
+ninja -C build -j${nproc} install
 
-# Build llvm-tblgen and llvm-config
-mkdir ${WORKSPACE}/bootstrap
-pushd ${WORKSPACE}/bootstrap
-CMAKE_FLAGS=()
-CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING=host)
-CMAKE_FLAGS+=(-DLLVM_HOST_TRIPLE=${MACHTYPE})
-CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
-CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm')
-CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=False)
-CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN})
-CMAKE_FLAGS+=(-DLLVM_ENABLE_ZSTD=OFF)
-cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
-ninja -j${nproc} llvm-tblgen llvm-config
-popd
+# Build `llvm-dis` from the old LLVM releases whose bitcode the downgrader emits,
+# so the downgraded IR can be disassembled with a matching disassembler. These are
+# self-contained source builds (no LLVM_full_jll): a native llvm-tblgen/llvm-config
+# bootstrap, then a cross build of just `llvm-dis` (no backends) to keep it quick.
+# The ancient releases (5/7) need a couple of source tweaks to build with a modern
+# CMake/toolchain (see bundled/patches); LLVM 14 builds cleanly, so the patch is
+# applied only when one exists.
+build_old_llvm_dis() {
+    local llvm_src="$1"
+    local suffix="$2"
 
-# Let's do the actual build within the `build` subdirectory
-mkdir ${WORKSPACE}/build && cd ${WORKSPACE}/build
-CMAKE_FLAGS=()
+    # apply the build-compatibility patches, if this release needs any
+    local patch="${WORKSPACE}/srcdir/patches/llvm${suffix}-cmake-policy-and-regex-guard.patch"
+    if [ -f "${patch}" ]; then
+        pushd "${llvm_src}"
+        atomic_patch -p1 "${patch}"
+        popd
+    fi
 
-# Tell LLVM where our pre-built tblgen tools are
-CMAKE_FLAGS+=(-DLLVM_TABLEGEN=${WORKSPACE}/bootstrap/bin/llvm-tblgen)
-CMAKE_FLAGS+=(-DLLVM_CONFIG_PATH=${WORKSPACE}/bootstrap/bin/llvm-config)
+    # native bootstrap: build a host llvm-tblgen/llvm-config matching this version
+    mkdir -p "${WORKSPACE}/dis-bootstrap-${suffix}"
+    pushd "${WORKSPACE}/dis-bootstrap-${suffix}"
+    cmake -GNinja "${llvm_src}" \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_CROSSCOMPILING=False \
+        -DCMAKE_TOOLCHAIN_FILE="${CMAKE_HOST_TOOLCHAIN}" \
+        -DLLVM_HOST_TRIPLE="${MACHTYPE}" \
+        -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+        -DLLVM_TARGETS_TO_BUILD="" \
+        -DLLVM_INCLUDE_TESTS=OFF \
+        -DLLVM_INCLUDE_EXAMPLES=OFF \
+        -DLLVM_INCLUDE_BENCHMARKS=OFF \
+        -DLLVM_INCLUDE_DOCS=OFF \
+        -DLLVM_ENABLE_TERMINFO=OFF \
+        -DLLVM_ENABLE_ZLIB=OFF \
+        -DLLVM_ENABLE_ZSTD=OFF \
+        -DLLVM_ENABLE_LIBXML2=OFF
+    ninja -j${nproc} llvm-tblgen llvm-config
+    popd
 
-# Install things into $prefix
-CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
+    # cross build: just `llvm-dis`, then install + rename to `llvm-dis-${suffix}`
+    mkdir -p "${WORKSPACE}/dis-build-${suffix}"
+    pushd "${WORKSPACE}/dis-build-${suffix}"
+    cmake -GNinja "${llvm_src}" \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_CROSSCOMPILING:BOOL=ON \
+        -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
+        -DCMAKE_INSTALL_PREFIX="${prefix}" \
+        -DLLVM_TABLEGEN="${WORKSPACE}/dis-bootstrap-${suffix}/bin/llvm-tblgen" \
+        -DLLVM_CONFIG_PATH="${WORKSPACE}/dis-bootstrap-${suffix}/bin/llvm-config" \
+        -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+        -DLLVM_TARGETS_TO_BUILD="" \
+        -DLLVM_INCLUDE_TESTS=OFF \
+        -DLLVM_INCLUDE_EXAMPLES=OFF \
+        -DLLVM_INCLUDE_BENCHMARKS=OFF \
+        -DLLVM_INCLUDE_DOCS=OFF \
+        -DLLVM_ENABLE_TERMINFO=OFF \
+        -DLLVM_ENABLE_ZLIB=OFF \
+        -DLLVM_ENABLE_ZSTD=OFF \
+        -DLLVM_ENABLE_LIBXML2=OFF \
+        -DHAVE_HISTEDIT_H=OFF \
+        -DHAVE_LIBEDIT=OFF
+    ninja -j${nproc} tools/llvm-dis/install
+    mv "${bindir}/llvm-dis${exeext}" "${bindir}/llvm-dis-${suffix}${exeext}"
+    popd
+}
 
-# Explicitly use our cmake toolchain file and tell CMake we're cross-compiling
-CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
-CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=ON)
-
-# Release build for best performance
-CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
-
-# Turn on ZLIB
-CMAKE_FLAGS+=(-DLLVM_ENABLE_ZLIB=ON)
-# Turn off XML2 and ZSTD to avoid unnecessary dependencies
-CMAKE_FLAGS+=(-DLLVM_ENABLE_ZSTD=OFF)
-CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBXML2=OFF)
-
-# Disable useless things like docs, terminfo, etc....
-CMAKE_FLAGS+=(-DLLVM_INCLUDE_DOCS=Off)
-CMAKE_FLAGS+=(-DLLVM_ENABLE_TERMINFO=Off)
-CMAKE_FLAGS+=(-DHAVE_HISTEDIT_H=Off)
-CMAKE_FLAGS+=(-DHAVE_LIBEDIT=Off)
-
-cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
-ninja -j${nproc} tools/llvm-as/install
+build_old_llvm_dis "${WORKSPACE}/srcdir/llvm-5.0.2.src" 5
+build_old_llvm_dis "${WORKSPACE}/srcdir/llvm-7.1.0.src" 7
+build_old_llvm_dis "${WORKSPACE}/srcdir/llvm-14.0.6.src" 14
 """
+
+# LLVM 15+ (hence LLVM_full_jll) is built against the macOS 10.14 SDK with a
+# 10.14 deployment target, so linking its objects needs the same. The
+# x86_64-apple-darwin toolchain otherwise defaults to macOS 10.10, which fails to
+# link the prebuilt LLVM. (No effect on non-macOS or Apple Silicon.)
+sources, script = require_macos_sdk("10.14", sources, script)
 
 # The products that we will ensure are always built
 products = Product[
-    ExecutableProduct("llvm-as", :llvm_as),
+    ExecutableProduct("llvm-downgrade", :llvm_downgrade),
+    ExecutableProduct("llvm-dis-5", :llvm_dis_5),
+    ExecutableProduct("llvm-dis-7", :llvm_dis_7),
+    ExecutableProduct("llvm-dis-14", :llvm_dis_14),
 ]
 
-augment_platform_block = """
-    using Base.BinaryPlatforms
-    $(LLVM.augment)
-    augment_platform!(platform::Platform) = augment_llvm!(platform)
-"""
+# A single, version-agnostic artifact: selected by platform alone, with no
+# llvm_version augmentation.
+platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+# LLVM 15+ has no i686-linux-musl build.
+filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
 
-# determine exactly which tarballs we should build
-builds = []
-for llvm_version in llvm_versions, llvm_assertions in (false, true)
-    # Dependencies that must be installed before this package can be built
-    llvm_name = llvm_assertions ? "LLVM_full_assert_jll" : "LLVM_full_jll"
-    dependencies = [
-        BuildDependency(PackageSpec(name=llvm_name, version=string(llvm_version))),
-        Dependency("Zlib_jll")
-    ]
+# LLVM_full is built with ZLIB enabled (always) and ZSTD enabled (LLVM 20+), so
+# the statically-linked LLVM component archives reference libz/libzstd. Because
+# LLVM_full_jll is only a BuildDependency, it pulls Zlib_jll/Zstd_jll into the
+# build prefix and `llvm-downgrade` links the *JLL-provided* libraries with
+# `@rpath/` install names (not the system copies). BuildDependency transitive
+# deps aren't bundled into the output JLL, so those @rpath references would
+# dangle and dyld would fail to load `@rpath/libzstd.1.dylib` / `libz.1.dylib`
+# at runtime. Declaring them as runtime Dependencies bundles the libraries and
+# fixes up the rpath. (See SPIRV_LLVM_Translator / Metal_LLVM_Tools, which build
+# out-of-tree against LLVM_full_jll the same way.)
+dependencies = [
+    BuildDependency(PackageSpec(name="LLVM_full_jll", version=llvm_version)),
+    Dependency("Zlib_jll"),
+    Dependency("Zstd_jll"),
+]
 
-    for platform in platforms
-        augmented_platform = deepcopy(platform)
-        augmented_platform[LLVM.platform_name] = LLVM.platform(llvm_version, llvm_assertions)
-
-        should_build_platform(triplet(augmented_platform)) || continue
-        push!(builds, (;
-            dependencies,
-            sources=sources[llvm_version],
-            platforms=[augmented_platform],
-            preferred_gcc_version=(llvm_version >= v"16" ? v"10" : v"7")
-        ))
-    end
-end
-
-# don't allow `build_tarballs` to override platform selection based on ARGS.
-# we handle that ourselves by calling `should_build_platform`
-non_platform_ARGS = filter(arg -> startswith(arg, "--"), ARGS)
-
-# `--register` and `--deploy` should only be passed to the final `build_tarballs` invocation
-non_reg_ARGS = filter(non_platform_ARGS) do arg
-    arg != "--register" && !startswith(arg, "--deploy")
-end
-
-for (i,build) in enumerate(builds)
-    build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
-                   name, version, build.sources, script,
-                   build.platforms, products, build.dependencies;
-                   build.preferred_gcc_version, julia_compat="1.6",
-                   augment_platform_block, lazy_artifacts=true)
-end
-
-# rebuild trigger: 1
+build_tarballs(ARGS, name, version, sources, script, platforms, products,
+               dependencies; preferred_gcc_version=v"10", julia_compat="1.6",
+               lazy_artifacts=true)

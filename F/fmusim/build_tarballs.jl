@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "fmusim"
-version = v"0.0.39"
+version = v"0.0.39001"
 
 # Collection of sources required to complete build
 sources = [
@@ -12,7 +12,7 @@ sources = [
     # fmusim compiles three minizip sources (ioapi.c, unzip.c, iowin32.c)
     # directly from a zlib source tree, so we ship one alongside.
     GitSource("https://github.com/madler/zlib.git",
-              "51b7f2abdade71cd9bb0e7a373ef2610ec6f9daf"),
+              "da607da739fa6047df13e66a2af6b8bec7c2a498"),
     DirectorySource("./bundled"),
 ]
 
