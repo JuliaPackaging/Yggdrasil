@@ -45,13 +45,10 @@ env(NAME, PROJECT) = Dict(
     "NAME" => NAME,
     "PROJECT" => PROJECT,
     "YGGDRASIL" => "true",
-    # Inherit the secret so that we can decrypt cryptic secrets
-    "BUILDKITE_PLUGIN_CRYPTIC_BASE64_SIGNED_JOB_ID_SECRET" => get(ENV, "BUILDKITE_PLUGIN_CRYPTIC_BASE64_SIGNED_JOB_ID_SECRET", ""),
 )
 
 safe_name(fn::AbstractString) = replace(fn, r"[^A-Za-z0-9_\-:]"=>"-")
 
-wait_step() = Dict(:wait => nothing)
 group_step(name, steps) = Dict(:group => name, :steps => steps)
 
 function build_step(NAME, PLATFORM, PROJECT)
@@ -60,21 +57,16 @@ function build_step(NAME, PLATFORM, PROJECT)
     """
 
     build_plugins = plugins()
-    push!(build_plugins,
-        "staticfloat/cryptic#v2" => Dict(
-            "variables" => [
-                "AWS_SECRET_ACCESS_KEY=\"U2FsdGVkX1846b0BRbZjwIWSFV+Fiv1C/Hds/vB3aTkxubHPnRP6lVxGkAkOcFuvAntkoLF6J64QrOHWvjz8xg==\"",
-            ]
-        ),
-        "staticfloat/coppermind#v2" => Dict(
-            "inputs" => [
-                PROJECT,
-                ".ci/",
-                # ?meta.json
-            ],
-            "s3_prefix" => "s3://julia-bb-buildcache/"
-        ),
-    )
+    # push!(build_plugins,
+    #     "JuliaCI/coppermind#v2" => Dict(
+    #         "inputs" => [
+    #             PROJECT,
+    #             ".ci/",
+    #             # ?meta.json
+    #         ],
+    #         "s3_prefix" => "s3://julia-bb-buildcache/"
+    #     ),
+    # )
     build_env = env(NAME, PROJECT)
     merge!(build_env, Dict(
         "PLATFORM" => PLATFORM,
@@ -83,7 +75,6 @@ function build_step(NAME, PLATFORM, PROJECT)
         "BINARYBUILDER_STORAGE_DIR" => "/cache/yggdrasil",
         "BINARYBUILDER_CCACHE_DIR" => "/sharedcache/ccache",
         "BINARYBUILDER_NPROC" => "16", # Limit parallelism somewhat to avoid OOM for LLVM
-        "AWS_ACCESS_KEY_ID" => "AKIA4WZGSTHCB2YWWN46",
         "AWS_DEFAULT_REGION" => "us-east-1",
     ))
 
@@ -96,7 +87,7 @@ function build_step(NAME, PLATFORM, PROJECT)
         :priority => -1,
         # Reduce concurrency for Reactant builds, which are extremely intensive and grind
         # the system to a halt when run with several parallel jobs.
-        :concurrency => NAME == "Reactant" ? 8 : 12,
+        :concurrency => 12,
         :concurrency_group => "yggdrasil/build/$NAME", # Could use ENV["BUILDKITE_JOB_ID"]
         :commands => [script],
         :env => build_env,
@@ -106,40 +97,21 @@ function build_step(NAME, PLATFORM, PROJECT)
     )
 end
 
-function register_step(NAME, PROJECT, SKIP_BUILD, NUM_PLATFORMS)
-    script = raw"""
-    BUILDKITE_PLUGIN_CRYPTIC_BASE64_SIGNED_JOB_ID_SECRET="" .buildkite/register.sh
-    """
-
-    register_plugins = plugins()
-    push!(register_plugins,
-        "staticfloat/cryptic#v2" => Dict(
-            "variables" => [
-                "GITHUB_TOKEN=\"U2FsdGVkX19pZyo9s0+7a8o2ShJ7rk9iDq/27GGmg+tg692sK0ezyqzVDmVfjtUd+NGfVbh+z+Bk3UWf8xwM8Q==\"",
-            ]
-	  ))
-
-    register_env = env(NAME, PROJECT)
-    if SKIP_BUILD
-        register_env["SKIP_BUILD"] = "true"
-    end
+# The register step lives in the static `.buildkite/pipeline_register.yml`. We
+# upload it into the current build (with interpolation enabled, unlike
+# `upload_pipeline`) so the dynamic values can be passed in via the environment.
+function upload_register_pipeline(NAME, PROJECT, SKIP_BUILD, NUM_PLATFORMS)
+    e = copy(ENV)
+    e["NAME"] = NAME
+    e["PROJECT"] = PROJECT
+    e["SKIP_BUILD"] = string(SKIP_BUILD)
     # For packages with a large number of platforms, trying to upload several release
     # artifacts at once with `ghr` results in exceeding GitHub's API secondary rate limits.
     # Ref: <https://github.com/JuliaPackaging/BinaryBuilder.jl/pull/1334>.
     if NUM_PLATFORMS > 80
         concurrency = 4
         @info "Reducing ghr concurrency" NAME NUM_PLATFORMS concurrency
-        register_env["BINARYBUILDER_GHR_CONCURRENCY"] = string(concurrency)
+        e["BINARYBUILDER_GHR_CONCURRENCY"] = string(concurrency)
     end
-
-    Dict(
-        :label => "register -- $NAME",
-        :agents => agent(),
-        :plugins => register_plugins,
-        :timeout_in_minutes => 90,
-        :concurrency => 1,
-        :concurrency_group => "yggdrasil/register",
-        :commands => [script],
-	:env => register_env
-    )
+    run(setenv(`buildkite-agent pipeline upload .buildkite/pipeline_register.yml`, e))
 end

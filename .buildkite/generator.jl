@@ -112,23 +112,22 @@ end
 # This variable will tell us whether we want to skip the build
 const SKIP_BUILD = contains(COMMIT_MSG, SKIP_BUILD_COOKIE)
 
-STEPS = Any[]
 # Create the BUILD_STEPS
 if SKIP_BUILD
     println("The commit messages contains $(SKIP_BUILD_COOKIE), skipping build")
 else
+    build_steps = Any[]
     for PLATFORM in PLATFORMS
         println("    $(PLATFORM): building")
-        push!(STEPS, build_step(NAME, PLATFORM, PROJECT))
+        push!(build_steps, build_step(NAME, PLATFORM, PROJECT))
+    end
+    if !isempty(build_steps)
+        upload_pipeline(Dict(:steps => Any[group_step(NAME, build_steps)]))
     end
 end
-if !IS_PR
-    push!(STEPS, wait_step())
-    push!(STEPS, register_step(NAME, PROJECT, SKIP_BUILD, length(PLATFORMS)))
-end
-if !isempty(STEPS)
-    definition = Dict(
-        :steps => Any[group_step(NAME, STEPS)]
-    )
-    upload_pipeline(definition)
-end
+# # Registration happens on `master` only. The register step is defined statically
+# # in `.buildkite/pipeline_register.yml` and uploaded into the current build (it
+# # leads with a `wait`, so it runs after the build steps above).
+# if !IS_PR
+#     upload_register_pipeline(NAME, PROJECT, SKIP_BUILD, length(PLATFORMS))
+# end

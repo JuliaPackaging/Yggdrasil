@@ -2,6 +2,11 @@
 # Fail on error
 set -e
 
+# The register pipeline always passes `BINARYBUILDER_GHR_CONCURRENCY`, but leaves
+# it empty for packages with few platforms. Drop it when empty so BinaryBuilder
+# falls back to its own default rather than parsing an empty string.
+if [ -z "${BINARYBUILDER_GHR_CONCURRENCY:-}" ]; then unset BINARYBUILDER_GHR_CONCURRENCY; fi
+
 export JULIA_PROJECT="${BUILDKITE_BUILD_CHECKOUT_PATH}/.ci"
 
 echo "--- Setup Julia packages"
