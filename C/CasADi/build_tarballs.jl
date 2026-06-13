@@ -1,19 +1,36 @@
+# Yggdrasil recipe for CasADi — FORK of JuliaPackaging/Yggdrasil C/CasADi.
+#
+# Differences from upstream C/CasADi:
+#   * version  -> 3.8.0-beta1 (casadi nightly / Julia-bindings beta)
+#   * source   -> the casadi nightly-main SOURCE BUNDLE (not git): it carries the
+#                 pre-generated SWIG -julia wrapper (swig/julia/target/source/
+#                 casadiJULIA_wrap.cxx + casadi.jl) + CasADiNative.jl, so the
+#                 wrapper builds in SWIG_IMPORT mode (no patched SWIG in the BB
+#                 toolchain).  URL hardcoded for the beta.
+#   * adds the Julia wrapper product `libcasadi_wrap` (build-once: the marshaling
+#                 is de-inlined => ABI-portable across the Julia 1.11 Memory-array
+#                 boundary, so NO julia_version platform augmentation).
+#
+# STATUS: draft — not yet run through BinaryBuilder. Validate on a real Yggdrasil
+# PR. Two spots need BB confirmation (see inline TODO): the libjulia_jll header
+# dependency, and Windows DLL linking of the wrapper.
+
 using BinaryBuilder, Pkg
 
 name = "CasADi"
-
-version = v"3.7.3" # upstream is 3.7.2; bump Yggdrasil version because we updated compat bounds
+version = v"3.8.0-beta1"
 
 sources = [
-    GitSource(
-        "https://github.com/casadi/casadi.git",
-        "f959d3175a444d763e4eda4aece48f4c5f4a6f90",
+    ArchiveSource(
+        "https://github.com/casadi/casadi/releases/download/nightly-main/casadi-source-vmain.zip",
+        "02f4e0497c3cbe1f0a3f6cc73201f56547c651960b09ed3717a44760350778da",
     ),
-    DirectorySource("./bundled"),
+    DirectorySource("./bundled"),   # amplexe main.cpp (from upstream recipe)
 ]
 
 script = raw"""
-cd $WORKSPACE/srcdir/casadi
+# The source bundle extracts to the srcdir ROOT (CMakeLists.txt, casadi/, swig/ here).
+cd $WORKSPACE/srcdir
 install_license LICENSE.txt
 mkdir -p build
 cd build
@@ -25,7 +42,6 @@ if [[ "${target}" == *"mingw"* ]]; then
     CMAKE_CXX_STANDARD="14"
 fi
 
-#export CXXFLAGS="-fPIC ${CXX_STANDARD}"
 export CXXFLAGS="-fPIC ${CXX_STANDARD} -I${includedir}/coin-or"
 export CFLAGS="${CFLAGS} -fPIC"
 
@@ -45,28 +61,59 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 make -j ${nproc}
 make install
 
-# Build amplexe
+# ---- amplexe (unchanged from upstream CasADi recipe) ----
 cd $WORKSPACE/srcdir
 c++ main.cpp -o "${bindir}/amplexe${exeext}" \
-    -I"${includedir}" \
-    -L"${libdir}" \
-    -lcasadi ${CXX_STANDARD}
+    -I"${includedir}" -L"${libdir}" -lcasadi ${CXX_STANDARD}
+
+# ---- Julia wrapper: libcasadi_wrap (SWIG_IMPORT: compile the pre-generated
+# casadiJULIA_wrap.cxx).  Build-once: the wrapper has no jl_array_t layout reads,
+# so one binary spans Julia 1.10..1.12 (the de-inline removed the 1.11 coupling).
+# jl_* resolve at dlopen from the host julia process; on unix the wrapper does NOT
+# link libjulia. casadi.jl dlopens it as libcasadi_wrap.${dlext}. ----
+JL_INC="${includedir}/julia"
+WRAP="$WORKSPACE/srcdir/swig/julia/target/source/casadiJULIA_wrap.cxx"
+WRAP_FLAGS="-std=c++17 -fPIC -shared -DWITH_DEPRECATED_FEATURES -I${includedir} -I${JL_INC} ${WRAP} -L${libdir} -lcasadi"
+if [[ "${target}" == *"apple"* ]]; then
+    # macOS: leave jl_* undefined, resolved from the loading julia process.
+    WRAP_FLAGS="${WRAP_FLAGS} -undefined dynamic_lookup"
+elif [[ "${target}" == *"mingw"* ]]; then
+    # TODO(BB): Windows DLLs must resolve imports at link time, so the wrapper
+    # links the libjulia import lib here -> on Windows it is coupled to that
+    # libjulia ABI (not truly build-once). Revisit (delay-load, or drop Windows
+    # from v0.1) when validating the PR.
+    WRAP_FLAGS="${WRAP_FLAGS} -ljulia"
+fi
+c++ ${WRAP_FLAGS} -o "${libdir}/libcasadi_wrap.${dlext}"
+
+# Ship the Julia sources so LibCasADi.jl can vendor/load them.
+install -Dm644 "$WORKSPACE/srcdir/swig/julia/target/source/casadi.jl" \
+    "${prefix}/share/julia/casadi/casadi.jl"
+install -Dm644 "$WORKSPACE/srcdir/swig/julia/CasADiNative.jl" \
+    "${prefix}/share/julia/casadi/CasADiNative.jl"
 """
 
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
-filter!(p -> arch(p) != "riscv64" && !Sys.isfreebsd(p),
-    platforms)
+filter!(p -> arch(p) != "riscv64" && !Sys.isfreebsd(p), platforms)
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("Ipopt_jll"; compat="300.1400.1901"),
-    Dependency("Bonmin_jll"; compat="100.800.902")
+    Dependency("Bonmin_jll"; compat="100.800.902"),
+    # julia.h for the wrapper compile. Pinned to the OLDEST supported Julia so the
+    # build-once binary runs on >= that ABI. Headers-only on unix (jl_* resolve at
+    # dlopen); used as a plain BuildDependency -> NO augment_platform!/julia_version
+    # matrix (that is the whole point of the de-inline).
+    # TODO(BB): confirm libjulia_jll resolves as a version-pinned BuildDependency
+    # without triggering the julia_version platform augmentation.
+    BuildDependency(PackageSpec(name="libjulia_jll", version=v"1.10.0")),
 ]
 
 products = [
     ExecutableProduct("amplexe", :amplexe),
     LibraryProduct("libcasadi", :libcasadi),
+    LibraryProduct("libcasadi_wrap", :libcasadi_wrap),   # SWIG -julia wrapper (build-once)
     LibraryProduct("libcasadi_conic_ipqp", :libcasadi_conic_ipqp),
     LibraryProduct("libcasadi_conic_nlpsol", :libcasadi_conic_nlpsol),
     LibraryProduct("libcasadi_conic_qrqp", :libcasadi_conic_qrqp),
