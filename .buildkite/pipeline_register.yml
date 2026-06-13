@@ -1,0 +1,40 @@
+# Trigger the trusted yggdrasil-register pipeline once all staging is complete.
+#
+# The `wait` barrier ensures every build job has finished.
+#
+# This file is uploaded in both yggdrasil-ci and
+# yggdrasil-pr build flows, but the `if:` restricts the trigger to yggdrasil-ci --
+# the pipeline that only builds trusted refs. yggdrasil-pr (pull requests)
+# never triggers publish. This is layered with: yggdrasil-publish not building
+# PRs at all, its IAM trust being pinned to the yggdrasil-publish pipeline and
+# cluster UUIDs, and its jobs running verify_trusted_commit.sh.
+steps:
+  - wait: ~
+  - trigger: "yggdrasil-register"
+    label: "register -- ${NAME}"
+    if: pipeline.slug == "yggdrasil-ci"
+    agents:
+      queue: "secure"
+      arch: "x86_64"
+      os: "linux"
+      sandbox_capable: "true"
+    plugins:
+      - JuliaCI/julia#v1:
+          persist_depot_dirs: packages,artifacts,compiled
+          version: "1.12.4"
+          artifacts_size_limit: "128849018880"  # 120 GiB, matches plugins()
+      - JuliaCI/merge-commit: ~
+    timeout_in_minutes: 90
+    concurrency: 1
+    concurrency_group: "yggdrasil/register"
+    commands:
+      - .buildkite/register.sh
+    env:
+      NAME: "${NAME}"
+      PROJECT: "${PROJECT}"
+      SKIP_BUILD: "${SKIP_BUILD:-false}"
+      BINARYBUILDER_GHR_CONCURRENCY: "${BINARYBUILDER_GHR_CONCURRENCY:-}"
+      JULIA_PKG_SERVER: us-east.pkg.julialang.org
+      JULIA_PKG_SERVER_REGISTRY_PREFERENCE: eager
+      JULIA_REGISTRYCI_AUTOMERGE: "true"
+      YGGDRASIL: "true"
