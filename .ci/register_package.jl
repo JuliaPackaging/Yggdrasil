@@ -57,8 +57,9 @@ end
 function download_cached_binaries(download_dir)
     NAME = ENV["NAME"]
     PROJECT = ENV["PROJECT"]
+    BUILD_ID = ENV["BUILD_ID"]
     artifacts = "$(PROJECT)/products/$(NAME)*.tar.*"
-    cmd = `buildkite-agent artifact download $artifacts $download_dir`
+    cmd = `buildkite-agent artifact download --build $BUILD_ID $artifacts $download_dir`
     if !success(pipeline(cmd; stderr))
         error("Download failed")
     end

@@ -1,0 +1,32 @@
+# Steps for the `yggdrasil-register` pipeline.
+#
+# This pipeline is triggered by the main `yggdrasil` pipeline (see
+# `trigger_registration_step` in `.buildkite/utils.jl`) once all builds of a
+# project have finished.  It is kept separate so that the `GITHUB_TOKEN` secret --
+# used to push the JLL packages and create the GitHub releases -- is only
+# readable from this trusted pipeline and never from the build steps that run
+# (potentially untrusted) `build_tarballs.jl` code.
+#
+# Set the `yggdrasil-register` pipeline's webUI step to:
+#     buildkite-agent pipeline upload .buildkite/register_pipeline.yml
+#
+# The `NAME`, `PROJECT`, `SKIP_BUILD`, `BUILD_ID` (and the registry/pkg-server)
+# environment variables are supplied by the triggering build.
+steps:
+  - label: "register -- ${NAME}"
+    agents:
+      queue: "yggdrasil"
+      arch: "x86_64"
+      os: "linux"
+      sandbox_capable: "true"
+    plugins:
+      - JuliaCI/julia#v1:
+          persist_depot_dirs: packages,artifacts,compiled
+          version: "1.12.4"
+      - JuliaCI/merge-commit: ~
+    timeout_in_minutes: 90
+    concurrency: 1
+    concurrency_group: "yggdrasil/register"
+    command: .buildkite/register.sh
+    secrets:
+      - GITHUB_TOKEN
