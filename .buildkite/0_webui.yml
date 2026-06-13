@@ -5,9 +5,9 @@ steps:
     command: buildkite-agent pipeline upload
     branches: "!gh-pages"
     agents:
-      queue: "default"
+      queue: "yggdrasil"
     plugins:
       - JuliaCI/merge-commit: ~
     command: |
-      # Launch ONLY the untrusted builders (build + check + test + allow-fail).
+      # Launch ONLY the untrusted builders
       buildkite-agent pipeline upload .buildkite/pipeline.yml

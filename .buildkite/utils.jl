@@ -23,7 +23,7 @@ function annotate(annotation; context="default", style="info", append=true)
 end
 
 agent() = Dict(
-    :queue => "default",
+    :queue => "yggdrasil",
     :arch => "x86_64",
     :os => "linux",
     :sandbox_capable => "true"
@@ -57,16 +57,16 @@ function build_step(NAME, PLATFORM, PROJECT)
     """
 
     build_plugins = plugins()
-    push!(build_plugins,
-        "JuliaCI/coppermind#v2" => Dict(
-            "inputs" => [
-                PROJECT,
-                ".ci/",
-                # ?meta.json
-            ],
-            "s3_prefix" => "s3://julia-bb-buildcache/"
-        ),
-    )
+    # push!(build_plugins,
+    #     "JuliaCI/coppermind#v2" => Dict(
+    #         "inputs" => [
+    #             PROJECT,
+    #             ".ci/",
+    #             # ?meta.json
+    #         ],
+    #         "s3_prefix" => "s3://julia-bb-buildcache/"
+    #     ),
+    # )
     build_env = env(NAME, PROJECT)
     merge!(build_env, Dict(
         "PLATFORM" => PLATFORM,

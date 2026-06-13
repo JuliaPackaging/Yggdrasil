@@ -125,9 +125,9 @@ else
         upload_pipeline(Dict(:steps => Any[group_step(NAME, build_steps)]))
     end
 end
-# Registration happens on `master` only. The register step is defined statically
-# in `.buildkite/pipeline_register.yml` and uploaded into the current build (it
-# leads with a `wait`, so it runs after the build steps above).
-if !IS_PR
-    upload_register_pipeline(NAME, PROJECT, SKIP_BUILD, length(PLATFORMS))
-end
+# # Registration happens on `master` only. The register step is defined statically
+# # in `.buildkite/pipeline_register.yml` and uploaded into the current build (it
+# # leads with a `wait`, so it runs after the build steps above).
+# if !IS_PR
+#     upload_register_pipeline(NAME, PROJECT, SKIP_BUILD, length(PLATFORMS))
+# end
