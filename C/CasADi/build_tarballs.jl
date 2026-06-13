@@ -1,19 +1,22 @@
 using BinaryBuilder, Pkg
 
+# needed for libjulia_platforms, julia_versions and libjulia_julia_compat
+include("../../L/libjulia/common.jl")
+
 name = "CasADi"
 
-version = v"3.7.3" # upstream is 3.7.2; bump Yggdrasil version because we updated compat bounds
+version = v"3.8.0"
 
 sources = [
-    GitSource(
-        "https://github.com/casadi/casadi.git",
-        "f959d3175a444d763e4eda4aece48f4c5f4a6f90",
+    ArchiveSource(
+        "https://github.com/casadi/casadi/releases/download/nightly-main/casadi-source-vmain.zip",
+        "fa64acd6d1b36ff0ba8e75dd3390c90ef4ef41edb373c1bef93fbc5d288a753a",
     ),
     DirectorySource("./bundled"),
 ]
 
 script = raw"""
-cd $WORKSPACE/srcdir/casadi
+cd $WORKSPACE/srcdir
 install_license LICENSE.txt
 mkdir -p build
 cd build
@@ -51,22 +54,45 @@ c++ main.cpp -o "${bindir}/amplexe${exeext}" \
     -I"${includedir}" \
     -L"${libdir}" \
     -lcasadi ${CXX_STANDARD}
+
+# Build the SWIG -julia wrapper (jl_* resolve at dlopen on unix; Windows links libjulia)
+WRAP=swig/julia/target/source/casadiJULIA_wrap.cxx
+FLAGS="-std=c++17 -fPIC -shared -DWITH_DEPRECATED_FEATURES -I${includedir} -I${includedir}/julia ${WRAP} -L${libdir} -lcasadi"
+if [[ "${target}" == *"apple"* ]]; then
+    FLAGS="${FLAGS} -undefined dynamic_lookup"
+elif [[ "${target}" == *"mingw"* ]]; then
+    FLAGS="${FLAGS} -ljulia"
+fi
+c++ ${FLAGS} -o "${libdir}/libcasadi_wrap.${dlext}"
+
+install -Dm644 swig/julia/target/source/casadi.jl "${prefix}/share/julia/casadi/casadi.jl"
+install -Dm644 swig/julia/CasADiNative.jl "${prefix}/share/julia/casadi/CasADiNative.jl"
 """
 
-platforms = supported_platforms()
+# libcasadi_wrap inlines version-specific jl_array_* accessors, so it must be
+# built once per Julia minor: augment platforms with a julia_version dimension.
+# Matrix = Julia minors released in the last 2 years: 1.11 (2024-10) and 1.12
+# (2025-10). 1.10 (2023-12) is older; 1.13 is unreleased (beta).
+filter!(v -> v.minor in (11, 12), julia_versions)
+platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
-filter!(p -> arch(p) != "riscv64" && !Sys.isfreebsd(p),
-    platforms)
+# libjulia_platforms already drops the platforms libjulia lacks (32-bit musl,
+# armv6l/armv7l, ...); CasADi additionally skips riscv64 and freebsd.
+filter!(p -> arch(p) != "riscv64" && !Sys.isfreebsd(p), platforms)
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("Ipopt_jll"; compat="300.1400.1901"),
-    Dependency("Bonmin_jll"; compat="100.800.902")
+    Dependency("Bonmin_jll"; compat="100.800.902"),
+    BuildDependency(PackageSpec(; name="libjulia_jll", version="1.11.1")),
 ]
 
 products = [
     ExecutableProduct("amplexe", :amplexe),
     LibraryProduct("libcasadi", :libcasadi),
+    # jl_* symbols only resolve inside a host Julia process, so the audit-time
+    # dlopen (enabled by the julia_version platform augmentation) hangs/fails.
+    LibraryProduct("libcasadi_wrap", :libcasadi_wrap; dont_dlopen=true),
     LibraryProduct("libcasadi_conic_ipqp", :libcasadi_conic_ipqp),
     LibraryProduct("libcasadi_conic_nlpsol", :libcasadi_conic_nlpsol),
     LibraryProduct("libcasadi_conic_qrqp", :libcasadi_conic_qrqp),
@@ -108,5 +134,5 @@ build_tarballs(
     products,
     dependencies;
     preferred_gcc_version = v"8",
-    julia_compat = "1.6",
+    julia_compat = libjulia_julia_compat(julia_versions),
 )
