@@ -58,6 +58,19 @@ function build_step(NAME, PLATFORM, PROJECT)
     """
 
     build_plugins = plugins()
+    push!(build_plugins,
+        "aws-assume-role-with-web-identity#v1.6.0" => Dict(
+            "role-arn" => "arn:aws:iam::AWS-ACCOUNT-ID:role/SOME-ROLE"
+        ),
+        "JuliaCI/coppermind#v2" => Dict(
+            "inputs" => [
+                PROJECT,
+                ".ci/",
+                "platforms",
+            ],
+            "s3_prefix" => "s3://julia-bb-buildcache/"
+        ),
+    )
     build_env = env(NAME, PROJECT)
     merge!(build_env, Dict(
         "PLATFORM" => PLATFORM,
