@@ -1,8 +1,8 @@
 steps:
-  - label: "Trigger publishing pipeline"
-    trigger: "yggdrasil-publish"
+  - label: "Trigger register pipeline"
+    trigger: "yggdrasil-register"
     build:
-      message: "Publish"
+      message: "Register"
       commit:  "${BUILDKITE_COMMIT}"
       branch: "${BUILDKITE_BRANCH}"
     async: false # Wait for the publish to finish 
