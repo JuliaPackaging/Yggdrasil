@@ -1,11 +1,5 @@
 steps:
   - label: "Trigger publishing pipeline"
-    agents:
-      queue: "yggdrasil"
-      arch:  "x86_64"
-      os:    "linux"
-      # Only run on "sandbox.jl" machines
-      sandbox_capable: "true"
     trigger: "yggdrasil-publish"
     build:
       message: "Publish"
