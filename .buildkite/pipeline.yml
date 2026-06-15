@@ -1,12 +1,13 @@
 steps:
   - label: ":runner: Dynamically launch Pipelines"
+    priority: 0
     plugins:
       - JuliaCI/julia#v1:
           persist_depot_dirs: packages,artifacts,compiled
           version: "1.12.4"
           artifacts_size_limit: "214748364800" # 200GB
       - JuliaCI/merge-commit: ~
-      - staticfloat/forerunner#v1:
+      - JuliaCI/forerunner#v1:
           watch:
             # Watch only changes within our top-level alphabetical directories
             - "[A-Z]/**"
@@ -25,7 +26,5 @@ steps:
       JULIA_PKG_SERVER: us-east.pkg.julialang.org
       # Use eager registry to not have to wait for updates of the conservative registry
       JULIA_PKG_SERVER_REGISTRY_PREFERENCE: eager
-      # Forward JOB_ID_SECRET
-      BUILDKITE_PLUGIN_CRYPTIC_BASE64_SIGNED_JOB_ID_SECRET: ${BUILDKITE_PLUGIN_CRYPTIC_BASE64_SIGNED_JOB_ID_SECRET?}
       JULIA_REGISTRYCI_AUTOMERGE: true
     timeout_in_minutes: 60
