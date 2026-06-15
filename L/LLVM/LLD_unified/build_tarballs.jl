@@ -15,6 +15,7 @@ llvm_full_versions = [
     v"18.1.7+3",                # Julia 1.12
     # v"19.1.7+2",
     v"20.1.8+0",                # Julia 1.13
+    v"21.1.8+0",                # Julia 1.14
 ]
 
 augment_platform_block = """
