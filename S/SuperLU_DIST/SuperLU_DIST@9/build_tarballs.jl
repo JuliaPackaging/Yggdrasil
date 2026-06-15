@@ -81,6 +81,12 @@ build_superlu_dist()
     # (XSDK_INDEX_SIZE).  Keep a self-contained per-width copy so
     # consumers that must match a specific index width (e.g. PETSc) can
     # point at it instead of the ambiguous top-level headers.
+    #
+    # This copy MUST stay inside build_superlu_dist (i.e. run right after
+    # this width's `make install`, before the next width re-installs and
+    # clobbers the shared superlu_dist_config.h).  Don't hoist it past the
+    # `build_superlu_dist Int64` call below or both per-width copies would
+    # capture the Int64 config.
     mkdir -p ${includedir}/superlu_dist_Int${INT}
     cp ${includedir}/superlu*.h* ${includedir}/superlu_dist_Int${INT}/
 }
@@ -103,8 +109,12 @@ products = [
     ExecutableProduct("pdtest_32", :pdtest_32),
     ExecutableProduct("pdtest_64", :pdtest_64),
 
-    LibraryProduct("libsuperlu_dist_Int32", :libsuperlu_dist_Int32, ["\$libdir/superlu_dist/Int32/lib", "\$libdir/superlu_dist/Int32/bin"]),
-    LibraryProduct("libsuperlu_dist_Int64", :libsuperlu_dist_Int64, ["\$libdir/superlu_dist/Int64/lib", "\$libdir/superlu_dist/Int64/bin"])
+    # Both libraries install flat into ${libdir} (Windows: ${bindir}) and are
+    # disambiguated by filename (SUPERLU_OUTPUT_NAME), not by directory, so the
+    # default search dirs suffice. The previous ["superlu_dist/Int32/lib", ...]
+    # search paths pointed at directories this recipe never creates.
+    LibraryProduct("libsuperlu_dist_Int32", :libsuperlu_dist_Int32),
+    LibraryProduct("libsuperlu_dist_Int64", :libsuperlu_dist_Int64)
 ]
 
 # Dependencies that must be installed before this package can be built
