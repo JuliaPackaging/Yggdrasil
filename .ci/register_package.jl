@@ -1,4 +1,5 @@
 using BinaryBuilder, BinaryBuilderBase, Downloads, Pkg
+using GitHub: authenticate
 
 # FIXME: Golang auto-upgrades to HTTP2, this can cause issue like https://github.com/google/go-github/issues/2113
 ENV["GODEBUG"] = "http2client=0"
@@ -57,8 +58,9 @@ end
 function download_cached_binaries(download_dir)
     NAME = ENV["NAME"]
     PROJECT = ENV["PROJECT"]
+    BUILD_ID = ENV["BUILD_ID"]
     artifacts = "$(PROJECT)/products/$(NAME)*.tar.*"
-    cmd = `buildkite-agent artifact download $artifacts $download_dir`
+    cmd = `buildkite-agent artifact download --build $BUILD_ID $artifacts $download_dir`
     if !success(pipeline(cmd; stderr))
         error("Download failed")
     end
@@ -136,4 +138,6 @@ end
 
 # Sub off to Registrator to create a PR to General.  Note: it's important to pass both
 # `augment_platform_block` and `lazy_artifacts` to build the right Project dictionary
-BinaryBuilder.register_jll(name, build_version, dependencies, julia_compat; augment_platform_block, lazy_artifacts)
+register_gh_auth = authenticate(ENV["REGISTRY_GITHUB_TOKEN"])
+BinaryBuilder.register_jll(name, build_version, dependencies, julia_compat;
+                           augment_platform_block, lazy_artifacts, gh_auth=register_gh_auth)
