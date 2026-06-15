@@ -24,7 +24,7 @@ ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes ./configure --w
 make -j${nprocs}
 make install
 """
-
+sources, script = require_macos_sdk("10.15", sources, script)
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
