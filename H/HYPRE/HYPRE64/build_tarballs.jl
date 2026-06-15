@@ -110,7 +110,7 @@ filter!(p -> nbits(p) == 64, platforms)
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 products = [
-    LibraryProduct("libHYPRE64", :libHYPRE)
+    LibraryProduct("libHYPRE64", :libHYPRE64)
 ]
 
 dependencies = [
@@ -124,5 +124,3 @@ append!(dependencies, platform_dependencies)
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, julia_compat="1.10", preferred_gcc_version = v"8")
-
-# Build trigger: 1
