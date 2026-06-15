@@ -52,7 +52,7 @@ safe_name(fn::AbstractString) = replace(fn, r"[^A-Za-z0-9_\-:]"=>"-")
 wait_step() = Dict(:wait => nothing)
 group_step(name, steps) = Dict(:group => name, :steps => steps)
 
-function build_step(NAME, PLATFORM, PROJECT)
+function build_step(NAME, PLATFORM, PROJECT, IS_PR)
     script = raw"""
     .buildkite/build.sh
     """
@@ -75,7 +75,7 @@ function build_step(NAME, PLATFORM, PROJECT)
         :agents => agent(),
         :plugins => build_plugins,
         :timeout_in_minutes => 240,
-        :priority => -1,
+        :priority => IS_PR ? -2 : -1,
         :concurrency => 12,
         :concurrency_group => "yggdrasil/build/$NAME", # Could use ENV["BUILDKITE_JOB_ID"]
         :commands => [script],

@@ -117,7 +117,7 @@ if SKIP_BUILD
 else
     for PLATFORM in PLATFORMS
         println("    $(PLATFORM): building")
-        push!(STEPS, build_step(NAME, PLATFORM, PROJECT))
+        push!(STEPS, build_step(NAME, PLATFORM, PROJECT, IS_PR))
     end
 end
 if !IS_PR
