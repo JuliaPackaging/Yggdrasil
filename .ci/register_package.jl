@@ -137,4 +137,6 @@ end
 
 # Sub off to Registrator to create a PR to General.  Note: it's important to pass both
 # `augment_platform_block` and `lazy_artifacts` to build the right Project dictionary
-BinaryBuilder.register_jll(name, build_version, dependencies, julia_compat; augment_platform_block, lazy_artifacts)
+register_gh_auth = authenticate(ENV["REGISTRY_GITHUB_TOKEN"])
+BinaryBuilder.register_jll(name, build_version, dependencies, julia_compat;
+                           augment_platform_block, lazy_artifacts, gh_auth=register_gh_auth)

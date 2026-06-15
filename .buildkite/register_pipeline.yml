@@ -30,3 +30,4 @@ steps:
     command: .buildkite/register.sh
     secrets:
       - GITHUB_TOKEN
+      - REGISTRY_GITHUB_TOKEN
