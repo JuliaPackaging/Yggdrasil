@@ -32,7 +32,9 @@ if [[ "${target}" == *-mingw* ]]; then
     for p in ../patches/{0004-Add-ws2_32-to-remoteio-libraries,001-mingw-build,002-fix-prototype,003-gcc-fix-use_VA_ARGS,005-Add-definition-of-macros-and-structs-missing-in-MinG,fix-undefined-sec-e-invalid-parameter}.patch; do
         atomic_patch -p1 "${p}"
     done
-    export CFLAGS="${CFLAGS} -std=c99"
+    # GCC can vectorize Connector/C's unaligned protocol-buffer writes into
+    # aligned SSE stores on Windows, causing statement execution crashes.
+    export CFLAGS="${CFLAGS} -std=c99 -fno-tree-vectorize"
     # Minimum version of Windows supported by MariaDB is 7,
     # see tables in https://docs.microsoft.com/en-us/windows/win32/winprog/using-the-windows-headers
     if [[ "${nbits}" == 64 ]]; then
