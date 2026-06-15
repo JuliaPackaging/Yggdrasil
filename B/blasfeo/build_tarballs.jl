@@ -14,7 +14,7 @@ version = v"0.1.4"
 sources = [
     GitSource(
         "https://github.com/giaf/blasfeo.git",
-        "2825f3368c3e02003a0c42500a0605f687c9ccc8",  # current master branch
+        "0ab5db3259c009ea62318a5e35622fe6de7ae554",  # current master branch
     ),
 ]
 
