@@ -2,7 +2,7 @@
 
 julia_version = "1.12.4"
 manifest_format = "2.0"
-project_hash = "d83fad71cd930c3a3f7c5da96ad9a7cc856a5ea3"
+project_hash = "491f630e40fc31b52252e64b8739192e79f06ef3"
 
 [[deps.ArgParse]]
 deps = ["Logging", "TextWrap"]
@@ -88,14 +88,6 @@ deps = ["ChunkCodecCore", "Zstd_jll"]
 git-tree-sha1 = "34d9873079e4cb3d0c62926a225136824677073f"
 uuid = "55437552-ac27-4d47-9aa3-63184e8fd398"
 version = "1.0.0"
-
-[[deps.ClaudeMCPTools]]
-deps = ["Base64", "JSON", "Random", "Sockets", "UUIDs"]
-git-tree-sha1 = "b81b922b58ada3dc0b260c7451124ef2018a7047"
-repo-rev = "master"
-repo-url = "https://github.com/JuliaBench/ClaudeMCPTools.jl"
-uuid = "b9bb1685-6a70-41d7-9793-2f9fb633d966"
-version = "0.1.0"
 
 [[deps.CodecZlib]]
 deps = ["TranscodingStreams", "Zlib_jll"]

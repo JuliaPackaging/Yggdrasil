@@ -1,4 +1,5 @@
 using BinaryBuilder, BinaryBuilderBase, Downloads, Pkg
+using GitHub: authenticate
 
 # FIXME: Golang auto-upgrades to HTTP2, this can cause issue like https://github.com/google/go-github/issues/2113
 ENV["GODEBUG"] = "http2client=0"
