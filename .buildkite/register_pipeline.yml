@@ -14,6 +14,7 @@
 # environment variables are supplied by the triggering build.
 steps:
   - label: "register -- ${NAME}"
+    priority: 10
     agents:
       queue: "yggdrasil"
       arch: "x86_64"

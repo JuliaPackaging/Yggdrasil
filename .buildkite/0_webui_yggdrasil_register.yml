@@ -6,6 +6,7 @@
 # Buildkite secret used to publish the `*_jll` packages.
 steps:
   - label: ":buildkite: Pipeline upload"
+    priority: 100
     command: buildkite-agent pipeline upload
     branches: "master"
     agents:

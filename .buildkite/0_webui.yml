@@ -2,6 +2,7 @@
 # It is purely for keeping track of the changes we make to the webUI configuration; modifying this file has no effect.
 steps:
   - label: ":buildkite: Pipeline upload"
+    priority: 100
     command: buildkite-agent pipeline upload
     branches: "!gh-pages"
     agents:

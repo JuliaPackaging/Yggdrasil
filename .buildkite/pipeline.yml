@@ -1,5 +1,6 @@
 steps:
   - label: ":runner: Dynamically launch Pipelines"
+    priority: 0
     plugins:
       - JuliaCI/julia#v1:
           persist_depot_dirs: packages,artifacts,compiled
