@@ -19,7 +19,7 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/
 mkdir -p "${bindir}"
-install -m 755 ${target}/shellcheck-v*/shellcheck${exeext} "${bindir}/shellcheck${exeext}"
+install -Dvm 755 ${target}/shellcheck-v*/shellcheck${exeext} "${bindir}/shellcheck${exeext}"
 install_license ${target}/shellcheck-v*/LICENSE.txt
 """
 
