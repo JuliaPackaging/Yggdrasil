@@ -75,6 +75,20 @@ build_superlu_dist()
 
     install -Dvm 755 build-${INT}/TEST/pdtest${exeext} "${bindir}/pdtest_${INT}${exeext}"
     install -vm 644 EXAMPLE/g20.rua "${includedir}"
+
+    # Both integer-width builds install their headers into ${includedir},
+    # so the second build overwrites the first's superlu_dist_config.h
+    # (XSDK_INDEX_SIZE).  Keep a self-contained per-width copy so
+    # consumers that must match a specific index width (e.g. PETSc) can
+    # point at it instead of the ambiguous top-level headers.
+    #
+    # This copy MUST stay inside build_superlu_dist (i.e. run right after
+    # this width's `make install`, before the next width re-installs and
+    # clobbers the shared superlu_dist_config.h).  Don't hoist it past the
+    # `build_superlu_dist Int64` call below or both per-width copies would
+    # capture the Int64 config.
+    mkdir -p ${includedir}/superlu_dist_Int${INT}
+    cp ${includedir}/superlu*.h* ${includedir}/superlu_dist_Int${INT}/
 }
 build_superlu_dist Int32
 build_superlu_dist Int64
@@ -95,14 +109,21 @@ products = [
     ExecutableProduct("pdtest_32", :pdtest_32),
     ExecutableProduct("pdtest_64", :pdtest_64),
 
-    LibraryProduct("libsuperlu_dist_Int32", :libsuperlu_dist_Int32, ["\$libdir/superlu_dist/Int32/lib", "\$libdir/superlu_dist/Int32/bin"]),
-    LibraryProduct("libsuperlu_dist_Int64", :libsuperlu_dist_Int64, ["\$libdir/superlu_dist/Int64/lib", "\$libdir/superlu_dist/Int64/bin"])
+    # Both libraries install flat into ${libdir} (Windows: ${bindir}) and are
+    # disambiguated by filename (SUPERLU_OUTPUT_NAME), not by directory, so the
+    # default search dirs suffice. The previous ["superlu_dist/Int32/lib", ...]
+    # search paths pointed at directories this recipe never creates.
+    LibraryProduct("libsuperlu_dist_Int32", :libsuperlu_dist_Int32),
+    LibraryProduct("libsuperlu_dist_Int64", :libsuperlu_dist_Int64)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"); compat="5.4.0"),
-    Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"); compat="0.3.33"),
+    # Cap at 0.3.32: the in-sysimage libblastrampoline_jll (5.4.0, from Julia
+    # 1.12) only supports OpenBLAS32 0.3.9 - 0.3.32, so pinning 0.3.33 makes
+    # dependency resolution unsatisfiable.
+    Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"); compat="0.3.32"),
     Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa"); platforms=filter(!Sys.iswindows, platforms), compat="4.0.7"),
     Dependency("METIS_jll"; compat="5.1.3"),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
