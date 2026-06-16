@@ -5,45 +5,39 @@ using BinaryBuilder, Pkg
 include(joinpath("..", "..", "platforms", "macos_sdks.jl"))
 
 name = "OSRM"
-version = v"26.4.0"
+version = v"26.6.5"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Project-OSRM/osrm-backend.git", "d3e0a354350b3e370e9124d43bcf6e22e85cf11c"),
+    GitSource("https://github.com/Project-OSRM/osrm-backend.git",
+        "d173ad3eb020900f3f111f2e1fcb4769d9100573"),  # v26.6.5
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/osrm-backend
 
-# Common cmake flags
+# Drop CMP0156 (CMake 3.29); BB's older CMake errors on it, default is fine.
+sed -i '/cmake_policy(SET CMP0156 NEW)/d' CMakeLists.txt
+
+# Drop the blanket -Werror; it overrides our -Wno-error and trips BB-GCC warnings.
+sed -i '/add_warning(error)/d' cmake/warnings.cmake
+
 CMAKE_FLAGS=(
     -DCMAKE_INSTALL_PREFIX=${prefix}
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
     -DCMAKE_BUILD_TYPE=Release
     -DCMAKE_PREFIX_PATH=${prefix}
     -DBUILD_SHARED_LIBS=ON
+    -DFLATBUFFERS_FLATC_EXECUTABLE=${host_bindir}/flatc
+    -DOSRM_HAS_STD_FORMAT_EXITCODE=0
+    -DOSRM_HAS_STD_FORMAT_EXITCODE__TRYRUN_OUTPUT=""
 )
 
-# Linux specific handling
 if [[ "${target}" == *-linux-* ]]; then
-    ### CMake flags
     CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="-Wno-array-bounds -Wno-uninitialized -Wno-shift-count-overflow -Wno-error")
-
-    if [[ "${target}" == *-linux-musl* ]]; then
-        ### OSRM-backend Patching
-        sed -i 's/-Wpedantic/-Wno-pedantic/g; s/-Werror=pedantic/-Wno-error=pedantic/g' CMakeLists.txt
-
-        ### CMake flags
-        CMAKE_FLAGS+=(
-            -DOSRM_HAS_STD_FORMAT_EXITCODE=0
-            -DOSRM_HAS_STD_FORMAT_EXITCODE__TRYRUN_OUTPUT=""
-        )
-    fi
 fi
 
-# Apple specific handling
 if [[ "${target}" == *-apple-darwin* ]]; then
-    ### CMake flags
     CMAKE_FLAGS+=(
         -DENABLE_LTO=OFF
         -DCMAKE_EXE_LINKER_FLAGS="-L${libdir} -ltbb -lz"
@@ -52,14 +46,10 @@ if [[ "${target}" == *-apple-darwin* ]]; then
         -DTBB_DIR=${libdir}/cmake/TBB
         -DLUA_LIBRARIES="${libdir}/liblua.dylib"
         -DLUA_INCLUDE_DIR="${includedir}"
-        -DOSRM_HAS_STD_FORMAT_EXITCODE=0
-        -DOSRM_HAS_STD_FORMAT_EXITCODE__TRYRUN_OUTPUT=""
     )
 fi
 
-# Windows specific handling
 if [[ "${target}" == *-mingw* ]]; then
-    ### CMake flags
     LTO_FLAGS="-fno-lto"
     CMAKE_FLAGS+=(
         -DENABLE_LTO=OFF
@@ -70,8 +60,6 @@ if [[ "${target}" == *-mingw* ]]; then
         -DCMAKE_CXX_VISIBILITY_PRESET=default
         -DCMAKE_VISIBILITY_INLINES_HIDDEN=OFF
         -DCMAKE_SKIP_RPATH=ON
-        -DOSRM_HAS_STD_FORMAT_EXITCODE=0
-        -DOSRM_HAS_STD_FORMAT_EXITCODE__TRYRUN_OUTPUT=""
         -DBoost_DIR=${libdir}/cmake/Boost-1.87.0/
         -DTBB_DIR=${libdir}/cmake/TBB
         -DLUA_LIBRARIES="lua54"
@@ -80,29 +68,9 @@ if [[ "${target}" == *-mingw* ]]; then
 fi
 
 mkdir build && cd build
-
 cmake .. "${CMAKE_FLAGS[@]}"
-
 cmake --build . --parallel ${nproc}
 cmake --install .
-
-# Windows: Regenerate import library with proper symbols
-if [[ "${target}" == *-mingw* ]]; then
-    if [ -f ${prefix}/bin/libosrm.dll ] && [ -f ${prefix}/lib/libosrm.dll.a ]; then
-        cd ${prefix}/lib
-        # Extract exported symbols from DLL - nm -D shows dynamically exported symbols
-        nm -D ${prefix}/bin/libosrm.dll 2>/dev/null | awk '/^[0-9a-fA-F]+ [Tt] / {print $3}' > /tmp/libosrm.def
-        if [ -s /tmp/libosrm.def ]; then
-            # Create proper .def file format with EXPORTS header
-            echo "EXPORTS" > /tmp/libosrm.def.tmp
-            cat /tmp/libosrm.def >> /tmp/libosrm.def.tmp
-            mv /tmp/libosrm.def.tmp /tmp/libosrm.def
-            # Regenerate import library from .def file
-            dlltool -d /tmp/libosrm.def -l libosrm.dll.a -D ${prefix}/bin/libosrm.dll
-            rm -f /tmp/libosrm.def
-        fi
-    fi
-fi
 
 cp -r ${WORKSPACE}/srcdir/osrm-backend/profiles ${prefix}/
 install_license "${WORKSPACE}/srcdir/osrm-backend/LICENSE.TXT"
@@ -122,7 +90,7 @@ products = [
     ExecutableProduct("osrm-datastore", :osrm_datastore),
     ExecutableProduct("osrm-components", :osrm_components),
     ExecutableProduct("osrm-io-benchmark", :osrm_io_benchmark),
-    LibraryProduct("libosrm", :libosrm; dont_dlopen = true),  # Cannot be loaded in sandbox
+    LibraryProduct("libosrm", :libosrm; dont_dlopen=true),  # Cannot be loaded in sandbox
     FileProduct("profiles/bicycle.lua", :bicycle_lua),
     FileProduct("profiles/car.lua", :car_lua),
     FileProduct("profiles/foot.lua", :foot_lua),
@@ -145,12 +113,22 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("boost_jll"; compat = "=1.87.0"),
-    Dependency("Lua_jll"; compat = "~5.4.9"),
-    Dependency("oneTBB_jll"; compat = "2022.0.0"),
-    Dependency("Expat_jll"; compat = "2.6.5"),
+    Dependency("boost_jll"; compat="=1.87.0"),
+    Dependency("oneTBB_jll"; compat="2022.0.0"),
+    Dependency("Expat_jll"; compat="2.6.5"),
     Dependency("Bzip2_jll"),
     Dependency("Zlib_jll"),
+    Dependency("Lua_jll"; compat="~5.4.9"),
+    Dependency("LibArchive_jll"; compat="3.8.7"),
+    BuildDependency("Fmt_jll"),
+    BuildDependency("rapidjson_jll"),
+    BuildDependency("Sol2_jll"),
+    BuildDependency("protozero_jll"),
+    BuildDependency("vtzero_jll"),
+    BuildDependency("libosmium_jll"),
+    BuildDependency("flatbuffers_jll"),
+    # Host flatc to generate flatbuffers headers when cross-compiling.
+    HostBuildDependency("flatbuffers_jll"),
 ]
 
 sources, script = require_macos_sdk("14.5", sources, script)
@@ -158,5 +136,5 @@ sources, script = require_macos_sdk("14.5", sources, script)
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(
     ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat = "1.10", preferred_gcc_version = v"13"
+    julia_compat="1.10", preferred_gcc_version=v"13"
 )
