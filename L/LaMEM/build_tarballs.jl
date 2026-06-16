@@ -106,6 +106,11 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "i686"), platforms
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
+# PETSc_jll's mpiabi build is configured without MPI and uses a different PETSc arch
+# layout, so LaMEM's hardcoded PETSC_OPT (double_real_Int32) is not present there.
+# Exclude mpiabi until PETSc ships an MPI-based mpiabi build (2.2.0 shipped no mpiabi).
+platforms = filter(p -> !(p["mpi"] == "mpiabi"), platforms)
+
 # powerpc64le only with libgfortran 5 or higher (as openblas is not defined for other cases)
 platforms = filter(p -> !(p["arch"] == "powerpc64le" && (libgfortran_version(p) == v"3" || libgfortran_version(p) == v"4")), platforms)
 
