@@ -1,0 +1,20 @@
+diff --git a/interpolation/interpolation.f90 b/interpolation/interpolation.f90
+index 24be454..3d09757 100644
+--- a/interpolation/interpolation.f90
++++ b/interpolation/interpolation.f90
+@@ -164,15 +164,14 @@ open(unit=10,file=filename,status='old',action='read',iostat=io_error)
+    do
+          if (mode.EQ.1) read (10,*,iostat=status_read) r_pperp,r_ppar,r_f
+          if (mode.EQ.2) read (10,*,iostat=status_read) r_ppar,r_pperp,r_f
++         if (status_read.LT.0) exit
+         if (r_f.GT.threshold) then
+-            if (status_read.LT.0) exit
+        pperp_max=max(pperp_max,r_pperp)
+        pperp_min=min(pperp_min,r_pperp)
+        ppar_max=max(ppar_max,r_ppar)
+        ppar_min=min(ppar_min,r_ppar)
+          n_coarse=n_coarse+1
+       endif
+-  if (status_read.LT.0) exit
+        enddo
+ close(10)
