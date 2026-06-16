@@ -5,7 +5,7 @@
 # Thin wrapper around ClaudeMCPTools that registers a sessioned bash tool
 # configured to launch BinaryBuilder sandbox sessions.
 #
-# Dependencies: ClaudeMCPTools (from .ci project, activated via --project flag in .mcp.json)
+# Dependencies: ClaudeMCPTools (from .claude project, activated via --project flag in .mcp.json)
 
 using ClaudeMCPTools
 
