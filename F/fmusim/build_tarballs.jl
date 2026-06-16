@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "fmusim"
-version = v"0.0.39"
+version = v"0.0.39001"
 
 # Collection of sources required to complete build
 sources = [

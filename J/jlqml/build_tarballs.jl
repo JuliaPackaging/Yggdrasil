@@ -6,11 +6,11 @@ using BinaryBuilder, Pkg
 include("../../L/libjulia/common.jl")
 
 name = "jlqml"
-version = v"0.10.0"
+version = v"0.10.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/JuliaGraphics/jlqml.git", "ddde17dd8925089dba8254a48681600ebde4ea7e"),
+    GitSource("https://github.com/JuliaGraphics/jlqml.git", "c562cef2df378a9fcc8ea64c8ac2f9561f4e4e04"),
 ]
 
 # Bash recipe for building across all platforms
@@ -47,7 +47,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("libcxxwrap_julia_jll"; compat="0.14.9"),
+    Dependency("libcxxwrap_julia_jll"; compat="0.14.10"),
     Dependency("Qt6Declarative_jll"; compat="~6.10.2"),
     HostBuildDependency("Qt6Declarative_jll"),
     Dependency("Qt6Svg_jll"; compat="~6.10.2"),
