@@ -1,6 +1,9 @@
 using BinaryBuilder
 
 # Collection of pre-built ShellCheck binaries.
+# Pre-built binaries are used because Yggdrasil
+# doesn't yet have a toolchain for cross-compiling
+# Haskell projects
 name = "ShellCheck"
 shellcheck_ver = "0.11.0"
 version = VersionNumber(shellcheck_ver)
