@@ -25,6 +25,12 @@ sed -i 's|file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/arith.h|file(WRITE ${GENERATED_
 #     guard an x86 allowlist (keeping the AIX -maix64 case) instead of an ARM blocklist.
 sed -i 's@if(UNIX AND NOT CPUARCH MATCHES "arm")@if(UNIX AND (CPUARCH MATCHES "^(i386|x86_64)$" OR (CPUARCH MATCHES "ppc64" AND CMAKE_SYSTEM_NAME STREQUAL "AIX")))@' support/cmake/setArchitecture.cmake
 
+# (3) file_kind() uses the raw S_IFDIR/S_IFREG constants, which FreeBSD gates behind
+#     __XSI_VISIBLE; use the always-defined POSIX S_ISDIR/S_ISREG macros instead
+#     (also fixes a latent bug: the raw test doesn't mask S_IFMT).
+sed -i 's/sb\.st_mode & S_IFDIR/S_ISDIR(sb.st_mode)/; s/sb\.st_mode & S_IFREG/S_ISREG(sb.st_mode)/' \
+    src/solvers/funcadd1.c src/solvers2/funcadd1.c
+
 cmake -S . -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
