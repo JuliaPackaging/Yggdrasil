@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "sol2"
+name = "Sol2"
 version = v"3.3.1"
 
 sources = [
