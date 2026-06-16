@@ -23,7 +23,7 @@ version = v"7.1.3"
 sources = [
     DirectorySource("./bundled"),
     GitSource("https://github.com/juliagpu/pocl",
-              "cd0d3970227e09382f57a5c715d42ed62e1baf00"),
+              "9d52d6600b5717f2c20a42d3862754014937f849"),
     # vendored SPIR-V translator, built as a static library against our LLVM (see
     # common.jl); this commit is the LLVM-20.1-compatible revision (matches
     # LLVM_full_jll 20.1.2).
@@ -135,5 +135,3 @@ for (i,build) in enumerate(builds)
                    build.preferred_gcc_version, preferred_llvm_version=v"20",
                    julia_compat="1.6", init_block=init_block(true))
 end
-
-# bump

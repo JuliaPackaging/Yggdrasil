@@ -184,6 +184,8 @@ function build_script(standalone=false)
         # Rename PoCL's OpenCL entrypoints to PO<cl_function>, so the standalone library can
         # coexist in-process with a real OpenCL ICD loader (e.g. one targeting other GPUs).
         CMAKE_FLAGS+=(-DRENAME_POCL:BOOL=ON)
+        # The above only applies to public API, so link-in the drivers to avoid clashes.
+        CMAKE_FLAGS+=(-DENABLE_LOADABLE_DRIVERS:BOOL=OFF)
         # With ENABLE_ICD=OFF, PoCL names the library "OpenCL" (libOpenCL.so), which would
         # collide with the system ICD loader. Rename it so it ships as a distinct product.
         sed -i 's/set(POCL_LIBRARY_NAME "OpenCL")/set(POCL_LIBRARY_NAME "pocl_standalone")/' CMakeLists.txt
