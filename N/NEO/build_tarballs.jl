@@ -20,22 +20,13 @@ sources = [
 # Bash recipe for building across all platforms
 function get_script(; debug::Bool)
     raw"""
-        # ocloc segfaults after successful build and before exiting. So we wrap
-        # a script around ocloc that detects when the build is reported
-        # successful and ignores the segfault.
-        atomic_patch -p0 ./patches/ocloc.patch
         # Fix OpenCL ICD installation to use prefix instead of /etc
         atomic_patch -p0 ./patches/install_to_prefix.patch
-        cp ocloc_wrapper.sh compute-runtime/shared/source/built_ins/kernels/ocloc_wrapper.sh
         mkdir -p tmpdir
         export TMPDIR=$(pwd)/tmpdir
         export CCACHE_TEMPDIR=$(pwd)/tmpdir
         cd compute-runtime
         install_license LICENSE.md
-
-        # revert a change that breaks the cxx03 build
-        # https://github.com/intel/compute-runtime/issues/708
-        git revert 18c25e5aa3fc00c7d47469713adeace08a9aec07
 
         # work around compilation failures
         ## already defined in gmmlib
