@@ -26,7 +26,7 @@ Two upstream/build changes make that possible:
      - no Clang driver link step -> no Clang wrapper (the frontend runs in-process via
                                     libclang, and codegen emits the object in-process)
      - no startup files / libc   -> the JIT resolves libc/libm/compiler-rt via normal
-       / libgcc to bundle          process-symbol lookup, so we drop the `share/lib`
+       / libgcc to bundle           process-symbol lookup, so we drop the `share/lib`
                                     staging the 7.1 recipe needed for the external link
 
    We also build without the Level Zero driver (`-DENABLE_LEVEL0=OFF`), the only consumer
@@ -55,7 +55,7 @@ version = v"7.2.0"
 sources = [
     DirectorySource("./bundled"),
     GitSource("https://github.com/JuliaGPU/pocl",
-              "646e4b211eb2bb80df88f5be69c3527085755849"),
+              "49af20c4b429d607f9cdb1f40557826ca8926753"),
     # vendored SPIR-V translator, built as a static library against our LLVM (see above);
     # this commit is the LLVM-20.1-compatible revision (matches LLVM_full_jll 20.1.2).
     GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git",
