@@ -5,9 +5,9 @@ include(joinpath(@__DIR__, "..", "openfhe_julia", "common.jl"))
 # If you make changes in this file, e.g., to release a new version,
 # be sure to also release a new version of `openfhe_julia` as well (see `../openfhe_julia/build_tarballs.jl`)
 name = "openfhe_julia_int128"
-version = v"0.6.0"
+version = v"0.6.1"
 
-git_hash = "66b903eca1c2742268c740581bfaae4a49cb444d"
+git_hash = "aa3cdae85379dcfcd79d7cec945c154fabff29b6"
 
 sources, script, platforms, products, dependencies = prepare_openfhe_julia_build(name, git_hash)
 

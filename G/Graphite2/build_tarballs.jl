@@ -3,14 +3,14 @@
 using BinaryBuilder
 
 name = "Graphite2"
-version = v"1.3.14"
+version = v"1.3.15"
 # We bumped the Graphite2 version because we rebuilt for additional architectures
-ygg_version = v"1.3.15"
+ygg_version = v"1.3.16"
 
 # Collection of sources required to build Graphite2
 sources = [
     ArchiveSource("https://github.com/silnrsi/graphite/releases/download/$(version)/graphite2-$(version).tgz",
-                  "f99d1c13aa5fa296898a181dff9b82fb25f6cc0933dbaa7a475d8109bd54209d"),
+                  "c6bc8b4252724665297f7cad0c55897285c673f9b8e6db3522ace833593fe0b1"),
 ]
 
 # Bash recipe for building across all platforms
@@ -27,7 +27,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [

@@ -85,7 +85,7 @@ function get_script(cuda::Val{true})
             -Dcutensor_INCLUDE_DIR=${includedir} \
             -DBLAS_LIBRARIES=${libdir}/libopenblas.so \
             -Dcupynumeric_USE_CUSOLVERMP=0 \
-            -DCMAKE_CUDA_ARCHITECTURES="75;80;86;89;90;100;103"
+            -DCMAKE_CUDA_ARCHITECTURES="75;80;86;89;90;100;103;120;121"
             
 
         cmake --build build --parallel ${nproc} --verbose
@@ -127,8 +127,8 @@ function get_script(cuda::Val{false})
         ln -s ${CUDA_HOME}/lib ${CUDA_HOME}/lib64
 
         # Patch cupynumeric src code missing header include
-        cd $WORKSPACE/srcdir
-        atomic_patch -p1 cstring.patch
+        # cd $WORKSPACE/srcdir
+        # atomic_patch -p1 cstring.patch
 
         ## BUILD TBLIS ##
         cd ${WORKSPACE}/srcdir/tblis

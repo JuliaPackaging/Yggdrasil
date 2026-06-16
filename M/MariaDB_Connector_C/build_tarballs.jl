@@ -3,18 +3,20 @@
 using BinaryBuilder
 
 name = "MariaDB_Connector_C"
-version = v"3.4.8"
+version = v"3.4.9"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://archive.mariadb.org/connector-c-$(version)/mariadb-connector-c-$(version)-src.tar.gz",
-                  "156aed3b49f857d0ac74fb76f1982968bcbfd8382da3f5b6ae71f616729920d7"),
+                  "a84bba97e59b6a322637a189964d4fd72bd8d92f2d22a9f8d6a5f0657c821e97"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/mariadb-*/
+
+find /usr/share/cmake -name "._*" -delete 2>/dev/null
 
 # There are warnings on 32-bit systems, but they hardcode `-Werror`.  Also, issues are closed, so we can't even report it.
 atomic_patch -p1 ../patches/no-werror.patch
