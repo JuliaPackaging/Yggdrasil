@@ -7,7 +7,7 @@ version = v"3.3.1"
 
 sources = [
     GitSource("https://github.com/ThePhD/sol2.git",
-              "8c3fe95166818bf9cf8890fe5568f574b10a7d9e"),
+        "dca62a0f02bb45f3de296de3ce00b1275eb34c25"),
     DirectorySource("./bundled"),
 ]
 
