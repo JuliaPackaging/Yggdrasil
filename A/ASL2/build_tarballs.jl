@@ -16,8 +16,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/asl
-# (1) x86 cross branch writes arith.h to the wrong dir; force the portable arith.h1 path.
-sed -i 's|if(CMAKE_CROSSCOMPILING AND CMAKE_SYSTEM_PROCESSOR MATCHES "\^x86")|if(FALSE)  # use portable arith.h1 on all targets|' CMakeLists.txt
+# (1) x86 cross branch writes arith.h to the wrong dir
+sed -i 's|file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/arith.h|file(WRITE ${GENERATED_INCLUDE_DIR}/arith.h|' CMakeLists.txt
 # (2) getArchitectureFlags injects x86-only -m64/-m32 (and AIX -maix64); the cross
 #     toolchain already targets the right arch, so drop these entirely.
 sed -i 's|getArchitectureFlags(${ARCH} CCFLAGS LLFLAGS)|# ASL2_jll: skip arch flags; toolchain already targets the right arch|' CMakeLists.txt
