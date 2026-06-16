@@ -29,7 +29,8 @@ version = v"2.34.4"
 sources = [
     GitSource("https://github.com/intel/intel-graphics-compiler.git", "5cebb69c84658ac2befba89f81c5ce9022f02f68" #= tag v2.34.4 =#),
     GitSource("https://github.com/intel/opencl-clang.git", "07e7c931d8bdb38549a907cf04fd06a278f7cdce" #= branch ocl-open-160 =#),
-    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "308a0d7acfd7330e64d72a1cd23d272deafb113b" #= branch llvm_release_160 =#),
+    # Bumped past the release to include ae16e2b4, so that we can use the LLVM SPIRV back-end
+    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "04d01b35ab3d76730c46020c6ae78a3163fc8518" #= branch llvm_release_160 =#),
     GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "28a883ba4c67f58a9540fb0651c647bb02883622" #= main =#),
     GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "9268f3057354a2cb65991ba5f38b16d81e803692"), #= main =#
     GitSource("https://github.com/intel/vc-intrinsics.git", "27f7c4f34738f5eaf7a045b77edf8d9e034443d8" #= tag v0.25.0 =#),
