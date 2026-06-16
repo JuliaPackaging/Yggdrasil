@@ -36,7 +36,7 @@ cmake -S . -B build \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON
-cmake --build build --parallel
+cmake --build build --target asl2 --parallel
 cmake --install build
 
 install_license LICENSE
