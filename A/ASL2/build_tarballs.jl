@@ -16,6 +16,10 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/asl
+# ASL's x86 cross-compile branch writes arith.h to ${CMAKE_CURRENT_BINARY_DIR}
+# instead of ${GENERATED_INCLUDE_DIR}, so the generate step can't find it.
+# Disable that branch; the portable arith.h1 fallback works on every target.
+sed -i 's|if(CMAKE_CROSSCOMPILING AND CMAKE_SYSTEM_PROCESSOR MATCHES "\^x86")|if(FALSE)  # use portable arith.h1 on all targets|' CMakeLists.txt
 cmake -S . -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
