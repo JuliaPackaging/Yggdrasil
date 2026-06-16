@@ -97,10 +97,6 @@ export MPITRAMPOLINE_FC="${FC}"
 
 # apply patches
 cd $WORKSPACE/srcdir/dealii-*
-# Needed because issues in TBB headers
-#if [[ "${target}" == *aarch64-linux* ]]; then
-#  atomic_patch -p1 "${WORKSPACE}/srcdir/patches/tbb-fetchadd-aarch64.patch"
-#fi
 
 # fixes issue in triangulation class causing problems in another (tbr) package
 # (until deal.II v9.8 is published)
@@ -151,6 +147,7 @@ sources, script = require_macos_sdk("14.0", sources, script)
 
 # due to GSL
 platforms = filter(p -> p["arch"] != "riscv64", platforms)
+platforms = filter(p -> p["os"] != "freebsd", platforms)
 
 # Windows builds with MinGW are not supported by deal.II
 # see https://github.com/dealii/dealii/wiki/Windows#cygwin--minggw
@@ -159,10 +156,6 @@ platforms = filter(p -> !Sys.iswindows(p), platforms)
 # powerpc64le builds fail due to missing support for long doubles in Boost
 # furthermore: https://github.com/dealii/dealii/wiki/Power-architecture
 platforms = filter(p -> p["arch"] != "powerpc64le", platforms)
-
-# currently do not build
-platforms = filter(p -> p["os"] != "freebsd", platforms)
-platforms = filter(p -> !Sys.isapple(p), platforms)
 
 # the products that we will ensure are always built
 products = [
@@ -175,9 +168,6 @@ dependencies = [
   HostBuildDependency("CMake_jll"),
   RuntimeDependency(PackageSpec(name="MPIPreferences",
                                 uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267")),
-  Dependency(PackageSpec(name="boost_jll",
-                         uuid="28df3c45-c428-5900-9ff8-a3135698ca75"),
-             compat="1.76.0"),
 #  Dependency(PackageSpec(name="OCCT_jll",
 #                         uuid="baad4e97-8daa-5946-aac2-2edac59d34e1")),
   Dependency(PackageSpec(name="GSL_jll",
