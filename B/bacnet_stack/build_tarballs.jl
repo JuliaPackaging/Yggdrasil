@@ -36,17 +36,11 @@ mkdir -p ${prefix}/share/licenses/bacnet_stack
 cp bacnet-stack/license/* ${prefix}/share/licenses/bacnet_stack
 """
 
-# Linux, Windows and macOS are supported. bacnet-stack's CMakeLists.txt has a
-# dedicated `elseif(APPLE)` branch (it builds the ports/bsd datalink with
-# USE_MACH_TIME), so the Apple platforms build fine.
+# Upstream supports only Linux, Windows and macOS.
 #
-# FreeBSD still fails because it cannot find #include <dispatch/dispatch.h>;
+# FreeBSD fails because it cannot find #include <dispatch/dispatch.h>;
 # supporting it would require building a libdispatch port and adding it as a
-# dependency. Therefore exclude only FreeBSD, not the whole BSD family.
-#
-# Note: the previous `Sys.isbsd` filter also matched Apple platforms (macOS is
-# BSD-derived), which is why no macOS artifact was ever produced even though the
-# comment claimed Apple was supported.
+# dependency.
 platforms = supported_platforms(; exclude=Sys.isfreebsd)
 
 # The products that we will ensure are always built
