@@ -18,9 +18,6 @@ sources = [
 
 # bash recipe for building across all platforms
 script = raw"""
-# make our own, more modern cmake visible
-apk del cmake
-
 # build writes to /tmp, which is a small tmpfs in our sandbox
 # make it use the workspace instead
 export TMPDIR=${WORKSPACE}/tmpdir
@@ -78,18 +75,10 @@ else
   )
 fi
 
-# needed to support compiling for older macOS systems
-if [[ "${target}" == *x86_64-apple* ]]; then
-  export CPPFLAGS="-D_LIBCPP_DISABLE_AVAILABILITY"
-fi
-
 mkdir bin
 # expand_instantiations is called during the build, compile for the host arch
 $CXX_BUILD dealii-*/cmake/scripts/expand_instantiations.cc -o bin/expand_instantiations
 export PATH="$PWD/bin:$PATH"
-
-export CPPFLAGS="${CPPFLAGS} -I${includedir} -std=c++17"
-export LDFLAGS="-L${libdir}"
 
 export MPITRAMPOLINE_CC="${CC}"
 export MPITRAMPOLINE_CXX="${CXX}"
@@ -165,7 +154,6 @@ products = [
 # dependencies that must be installed before this package can be built
 # commented dependencies might be added in the future but stay here for reference
 dependencies = [
-  HostBuildDependency("CMake_jll"),
   RuntimeDependency(PackageSpec(name="MPIPreferences",
                                 uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267")),
 #  Dependency(PackageSpec(name="OCCT_jll",
