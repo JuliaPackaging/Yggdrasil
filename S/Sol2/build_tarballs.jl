@@ -32,6 +32,9 @@ cmake -B build \
 cmake --build build --parallel ${nproc}
 cmake --install build
 
+# Make the AnyPlatform config-version arch-independent (else 32-bit consumers reject the 64-bit-built config).
+sed -i 's/"8" STREQUAL ""/"" STREQUAL ""/' ${prefix}/lib/cmake/sol2/sol2-config-version.cmake
+
 install_license LICENSE.txt
 """
 
