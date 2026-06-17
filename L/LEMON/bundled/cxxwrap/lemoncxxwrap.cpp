@@ -25,35 +25,112 @@ namespace jlcxx
   template<> struct SuperType<ListDigraph::NodeIt> { typedef ListDigraph::Node type; };
   // no appropriate factory error
   //template<> struct SuperType<ListDigraph::ArcIt> { typedef ListDigraph::Arc type; };
+
+  // Expose both V and C as Julia type parameters for all four MCF algorithms
+  template<typename V, typename C>
+  struct BuildParameterList<lemon::NetworkSimplex<lemon::ListDigraph, V, C>> {
+    typedef ParameterList<V, C> type;
+  };
+  template<typename V, typename C>
+  struct BuildParameterList<lemon::CostScaling<lemon::ListDigraph, V, C>> {
+    typedef ParameterList<V, C> type;
+  };
+  template<typename V, typename C>
+  struct BuildParameterList<lemon::CapacityScaling<lemon::ListDigraph, V, C>> {
+    typedef ParameterList<V, C> type;
+  };
+  template<typename V, typename C>
+  struct BuildParameterList<lemon::CycleCanceling<lemon::ListDigraph, V, C>> {
+    typedef ParameterList<V, C> type;
+  };
 }
 
-// Define the MCF algorithms to register: (CppType, JlName)
-#define MCF_ALGORITHMS(X) \
-  X(NetworkSimplex,   "NetworkSimplex")   \
-  X(CostScaling,      "CostScaling")      \
-  X(CapacityScaling,  "CapacityScaling")  \
-  X(CycleCanceling,   "CycleCanceling")
+// ── NodeMap ───────────────────────────────────────────────────────────────────
+// Thin wrapper so we can partially apply Graph and leave Value as the
+// free parameter that apply_combination iterates over.
+template<typename Graph>
+struct ApplyNodeMap {
+  template<typename T> using apply = typename Graph::template NodeMap<T>;
+};
 
-#define REGISTER_MCF(Template, Name)                                                      \
-  {                                                                                        \
-    using Algo = Template<ListDigraph, int, int>;                                          \
-    mod.add_type<Algo>(Name "ListDigraphIntInt")                                           \
-      .constructor<const ListDigraph&>()                                                   \
-      .method("lowerMap",   [](Algo& a, const ListDigraph::ArcMap<int>& m)  -> Algo& { return a.lowerMap(m);  }) \
-      .method("upperMap",   [](Algo& a, const ListDigraph::ArcMap<int>& m)  -> Algo& { return a.upperMap(m);  }) \
-      .method("costMap",    [](Algo& a, const ListDigraph::ArcMap<int>& m)  -> Algo& { return a.costMap(m);   }) \
-      .method("supplyMap",  [](Algo& a, const ListDigraph::NodeMap<int>& m) -> Algo& { return a.supplyMap(m); }) \
-      .method("stSupply",   &Algo::stSupply)                                               \
-      .method("reset",      &Algo::reset)                                                  \
-      .method("resetParams",&Algo::resetParams)                                            \
-      .method("run",        [](Algo& a) { return static_cast<int>(a.run()); })             \
-      .method("totalCost",  static_cast<int (Algo::*)() const>(&Algo::totalCost))          \
-      .method("flow",       &Algo::flow)                                                   \
-      .method("potential",  &Algo::potential);                                             \
-    mod.method(Name "ProblemTypeInfeasible", []() { return static_cast<int>(Algo::INFEASIBLE); }); \
-    mod.method(Name "ProblemTypeOptimal",    []() { return static_cast<int>(Algo::OPTIMAL);    }); \
-    mod.method(Name "ProblemTypeUnbounded",  []() { return static_cast<int>(Algo::UNBOUNDED);  }); \
+template<typename Graph>
+struct ApplyEdgeMap {
+  template<typename T> using apply = typename Graph::template EdgeMap<T>;
+};
+
+template<typename Graph>
+struct ApplyArcMap {
+  template<typename T> using apply = typename Graph::template ArcMap<T>;
+};
+
+// NodeMap and EdgeMap wrappers for ListGraph and ListDigraph
+struct WrapNodeMapListGraph {
+  template<typename TypeWrapperT>
+  void operator()(TypeWrapperT&& wrapped) {
+    using M = typename TypeWrapperT::type;
+    wrapped.template constructor<const ListGraph&>();
+    wrapped.method("set", &M::set);
+    wrapped.method("get", [](const M& m, const ListGraph::Node& n) { return m[n]; });
   }
+};
+struct WrapNodeMapListDigraph {
+  template<typename TypeWrapperT>
+  void operator()(TypeWrapperT&& wrapped) {
+    using M = typename TypeWrapperT::type;
+    wrapped.template constructor<const ListDigraph&>();
+    wrapped.method("set", &M::set);
+    wrapped.method("get", [](const M& m, const ListDigraph::Node& n) { return m[n]; });
+  }
+};
+struct WrapEdgeMapListGraph {
+  template<typename TypeWrapperT>
+  void operator()(TypeWrapperT&& wrapped) {
+    using M = typename TypeWrapperT::type;
+    wrapped.template constructor<const ListGraph&>();
+    wrapped.method("set", &M::set);
+    wrapped.method("get", [](const M& m, const ListGraph::Edge& e) { return m[e]; });
+  }
+};
+struct WrapArcMapListDigraph {
+  template<typename TypeWrapperT>
+  void operator()(TypeWrapperT&& wrapped) {
+    using M = typename TypeWrapperT::type;
+    wrapped.template constructor<const ListDigraph&>();
+    wrapped.method("set", &M::set);
+    wrapped.method("get", [](const M& m, const ListDigraph::Arc& a) { return m[a]; });
+  }
+};
+
+// ── MCF algorithms ────────────────────────────────────────────────────────────
+// Both value and cost types are free parameters → two-parameter apply_combination.
+// We use a single ApplyAlgo adapter per algorithm template.
+template<template<typename,typename,typename> class Algo>
+struct ApplyAlgo {
+  template<typename V, typename C>
+  using apply = Algo<ListDigraph, V, C>;
+};
+
+// One generic wrapper for all four algorithms (they share identical API).
+struct WrapMCFAlgo {
+  template<typename TypeWrapperT>
+  void operator()(TypeWrapperT&& wrapped) {
+    using Algo = typename TypeWrapperT::type;
+    using V = typename Algo::Value;   // lemon exposes these
+    using C = typename Algo::Cost;
+    wrapped.template constructor<const ListDigraph&>();
+    wrapped.method("lowerMap",  [](Algo& a, const ListDigraph::ArcMap<V>& m)  -> Algo& { return a.lowerMap(m);  });
+    wrapped.method("upperMap",  [](Algo& a, const ListDigraph::ArcMap<V>& m)  -> Algo& { return a.upperMap(m);  });
+    wrapped.method("costMap",   [](Algo& a, const ListDigraph::ArcMap<C>& m)  -> Algo& { return a.costMap(m);   });
+    wrapped.method("supplyMap", [](Algo& a, const ListDigraph::NodeMap<V>& m) -> Algo& { return a.supplyMap(m); });
+    wrapped.method("stSupply",    &Algo::stSupply);
+    wrapped.method("reset",       &Algo::reset);
+    wrapped.method("resetParams", &Algo::resetParams);
+    wrapped.method("run",         [](Algo& a) { return static_cast<int>(a.run()); });
+    wrapped.method("totalCost",   static_cast<C (Algo::*)() const>(&Algo::totalCost));
+    wrapped.method("flow",        &Algo::flow);
+    wrapped.method("potential",   &Algo::potential);
+  }
+};
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
 {
@@ -96,22 +173,21 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
   //  .constructor<const ListDigraph&>()
   //  .method("iternext", &ListDigraph::ArcIt::operator++);
 
-  mod.add_type<ListGraph::NodeMap<int>>("ListGraphNodeMapInt")
-    .constructor<const ListGraph&>()
-    .method("set", &ListGraph::NodeMap<int>::set)
-    .method("get", [](const ListGraph::NodeMap<int>& m, const ListGraph::Node& n) { return m[n]; });
-  mod.add_type<ListDigraph::NodeMap<int>>("ListDigraphNodeMapInt")
-    .constructor<const ListDigraph&>()
-    .method("set", &ListDigraph::NodeMap<int>::set)
-    .method("get", [](const ListDigraph::NodeMap<int>& m, const ListDigraph::Node& n) { return m[n]; });
-  mod.add_type<ListGraph::EdgeMap<int>>("ListGraphEdgeMapInt")
-    .constructor<const ListGraph&>()
-    .method("set", &ListGraph::EdgeMap<int>::set)
-    .method("get", [](const ListGraph::EdgeMap<int>& m, const ListGraph::Edge& e) { return m[e]; });
-  mod.add_type<ListDigraph::ArcMap<int>>("ListDigraphArcMapInt")
-    .constructor<const ListDigraph&>()
-    .method("set", &ListDigraph::ArcMap<int>::set)
-    .method("get", [](const ListDigraph::ArcMap<int>& m, const ListDigraph::Arc& a) { return m[a]; });
+  using ValueTypes = jlcxx::ParameterList<int8_t, int16_t, int32_t, int64_t>;
+  using ValueTypesNoNarrow = jlcxx::ParameterList<int32_t, int64_t>;  // safe for CapacityScaling
+
+  // Maps
+  mod.add_type<jlcxx::Parametric<jlcxx::TypeVar<1>>>("ListGraphNodeMap")
+    .apply_combination<ApplyNodeMap<ListGraph>, ValueTypes>(WrapNodeMapListGraph());
+
+  mod.add_type<jlcxx::Parametric<jlcxx::TypeVar<1>>>("ListDigraphNodeMap")
+    .apply_combination<ApplyNodeMap<ListDigraph>, ValueTypes>(WrapNodeMapListDigraph());
+
+  mod.add_type<jlcxx::Parametric<jlcxx::TypeVar<1>>>("ListGraphEdgeMap")
+    .apply_combination<ApplyEdgeMap<ListGraph>, ValueTypes>(WrapEdgeMapListGraph());
+
+  mod.add_type<jlcxx::Parametric<jlcxx::TypeVar<1>>>("ListDigraphArcMap")
+    .apply_combination<ApplyArcMap<ListDigraph>, ValueTypes>(WrapArcMapListDigraph());
 
   mod.method("ListGraphNodeFromId", [](int i) { return ListGraph::nodeFromId(i); });
   mod.method("ListGraphEdgeFromId", [](int i) { return ListGraph::edgeFromId(i); });
@@ -150,5 +226,19 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
     .method("blossomSize", &MWPM::blossomSize)
     .method("blossomValue", &MWPM::blossomValue);
 
-  MCF_ALGORITHMS(REGISTER_MCF)
+  // MCF algorithms — one add_type per algorithm, both V and C vary
+  #define REGISTER_MCF_ALGO(Template, JlName, VTypes, CTypes)                      \
+    mod.add_type<jlcxx::Parametric<jlcxx::TypeVar<1>, jlcxx::TypeVar<2>>>(JlName)  \
+       .apply_combination<ApplyAlgo<Template>, VTypes, CTypes>(WrapMCFAlgo());
+
+  REGISTER_MCF_ALGO(NetworkSimplex, "NetworkSimplex", ValueTypes, ValueTypes)
+  REGISTER_MCF_ALGO(CostScaling, "CostScaling", ValueTypes, ValueTypes)
+  REGISTER_MCF_ALGO(CapacityScaling, "CapacityScaling", ValueTypesNoNarrow, ValueTypesNoNarrow)
+  REGISTER_MCF_ALGO(CycleCanceling, "CycleCanceling", ValueTypes, ValueTypes)
+
+  // ProblemType constants are the same for all algorithms — register once
+  using AnyAlgo = NetworkSimplex<ListDigraph, int32_t, int32_t>;
+  mod.method("ProblemTypeInfeasible", []() { return static_cast<int>(AnyAlgo::INFEASIBLE); });
+  mod.method("ProblemTypeOptimal",    []() { return static_cast<int>(AnyAlgo::OPTIMAL);    });
+  mod.method("ProblemTypeUnbounded",  []() { return static_cast<int>(AnyAlgo::UNBOUNDED);  });
 }
