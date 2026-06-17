@@ -38,6 +38,9 @@ if [[ "${target}" == *-linux-* ]]; then
 fi
 
 if [[ "${target}" == *-apple-darwin* ]]; then
+    # Apple libc++ lacks std::atomic_ref (C++20); use a portable atomic CAS builtin.
+    sed -i '/std::atomic_ref<uint64_t>/d' include/util/packed_vector.hpp
+    sed -i 's/return atomic_ref.*/return __sync_bool_compare_and_swap(ptr, old_value, new_value);/' include/util/packed_vector.hpp
     CMAKE_FLAGS+=(
         -DENABLE_LTO=OFF
         -DCMAKE_EXE_LINKER_FLAGS="-L${libdir} -ltbb -lz"
