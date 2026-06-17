@@ -43,7 +43,7 @@ cmake -S . -B build \
     -DBUILD_SHARED_LIBS=ON
 cmake --build build --parallel
 cmake --install build
-
+rm -rf ${prefix}/include/asl
 install_license LICENSE
 """
 
