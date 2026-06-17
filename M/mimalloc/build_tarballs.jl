@@ -18,7 +18,7 @@ if [[ "${target}" == *-linux-musl* ]]; then
     CMAKE_FLAGS=(-DMI_LOCAL_DYNAMIC_TLS=ON)
 fi
 
-CMAKE_FLAGS+=(-DMI_NO_OPT_ARCH=OFF)
+CMAKE_FLAGS+=(-DMI_NO_OPT_ARCH=ON) # who doesn't love a double negative
 
 cd $WORKSPACE/srcdir/mimalloc
 cmake -B build -G Ninja \
