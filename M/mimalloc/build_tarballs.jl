@@ -17,7 +17,8 @@ if [[ "${target}" == *-linux-musl* ]]; then
     # Musl doesn't support init-exec TLS
     CMAKE_FLAGS=(-DMI_LOCAL_DYNAMIC_TLS=ON)
 fi
-CMAKE_FLAGS+= -DMI_NO_OPT_ARCH=OFF
+
+CMAKE_FLAGS+= (-DMI_NO_OPT_ARCH=OFF)
 cd $WORKSPACE/srcdir/mimalloc
 cmake -B build -G Ninja \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
