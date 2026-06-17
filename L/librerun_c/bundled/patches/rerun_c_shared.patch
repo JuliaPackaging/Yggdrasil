@@ -1,0 +1,61 @@
+diff --git before/rerun/crates/top/rerun_c/CMakeLists.txt after/rerun/crates/top/rerun_c/CMakeLists.txt
+index caca08e..cf04a34 100644
+--- before/rerun/crates/top/rerun_c/CMakeLists.txt
++++ after/rerun/crates/top/rerun_c/CMakeLists.txt
+@@ -34,14 +34,20 @@ else()
+     message(FATAL_ERROR "Unsupported platform.")
+ endif()
+ 
++set(RERUN_C_SHARED_ARTIFACT
++    ${CARGO_TARGET_DIR}/$ENV{CARGO_BUILD_TARGET}/${RUST_BUILD_TYPE}/${CMAKE_SHARED_LIBRARY_PREFIX}rerun_c${CMAKE_SHARED_LIBRARY_SUFFIX})
++
+ # Setup rerun_c library
+-add_library(rerun_c STATIC IMPORTED GLOBAL)
++add_library(rerun_c SHARED IMPORTED GLOBAL)
+ set_target_properties(rerun_c PROPERTIES IMPORTED_LOCATION ${RERUN_C_BUILD_ARTIFACT})
+ 
++add_library(rerun_c_shared SHARED IMPORTED GLOBAL)
++set_target_properties(rerun_c_shared PROPERTIES IMPORTED_LOCATION ${RERUN_C_SHARED_ARTIFACT})
++
+ # Just depend on all rust and toml files, it's hard to know which files exactly are relevant.
+ file(GLOB_RECURSE RERUN_C_SOURCES LIST_DIRECTORIES FALSE "${PROJECT_SOURCE_DIR}/crates/*.rs" "${PROJECT_SOURCE_DIR}/crates/*.toml")
+ add_custom_command(
+-    OUTPUT ${RERUN_C_BUILD_ARTIFACT}
++    OUTPUT ${RERUN_C_BUILD_ARTIFACT} ${RERUN_C_SHARED_ARTIFACT}
+     DEPENDS ${RERUN_C_SOURCES}
+     COMMAND cargo build ${CARGO_BUILD_FLAG} -p rerun_c
+     COMMENT "Building rerun_c from source"
+@@ -49,5 +55,7 @@ add_custom_command(
+ )
+ 
+ # In CMake you can't depend on an output file directly. We have to wrap this in a target that rerun_c then depends on.
+-add_custom_target(rerun_c_build DEPENDS "${RERUN_C_BUILD_ARTIFACT}")
++add_custom_target(rerun_c_build DEPENDS "${RERUN_C_BUILD_ARTIFACT}" "${RERUN_C_SHARED_ARTIFACT}")
+ add_dependencies(rerun_c rerun_c_build)
++add_dependencies(rerun_c_shared rerun_c_build)
++
+diff --git before/rerun/crates/top/rerun_c/Cargo.toml after/rerun/crates/top/rerun_c/Cargo.toml
+index 77693bc..ae1589c 100644
+--- before/rerun/crates/top/rerun_c/Cargo.toml
++++ after/rerun/crates/top/rerun_c/Cargo.toml
+@@ -28,7 +28,7 @@ all-features = true
+ targets = ["x86_64-unknown-linux-gnu", "wasm32-unknown-unknown"]
+ 
+ [lib]
+-crate-type = ["staticlib"]
++crate-type = ["staticlib", "cdylib"]
+ name = "rerun_c"
+ doctest = false
+ test = false
+diff --git before/rerun/rerun_cpp/CMakeLists.txt after/rerun/rerun_cpp/CMakeLists.txt
+index f47feff..1c1575b 100644
+--- before/rerun/rerun_cpp/CMakeLists.txt
++++ after/rerun/rerun_cpp/CMakeLists.txt
+@@ -194,6 +194,7 @@ if(RERUN_INSTALL_RERUN_C)
+     get_target_property(RERUN_C_LIB_LOCATION rerun_c IMPORTED_LOCATION)
+     install(DIRECTORY "${RERUN_CPP_SOURCE_DIR}/" TYPE INCLUDE FILES_MATCHING PATTERN "*.h" PATTERN ${RERUN_PATTERN_HEADER_SHARED_BETWEEN_CXX_AND_C} EXCLUDE)
+     install(FILES ${RERUN_C_LIB_LOCATION} DESTINATION lib)
++    install(IMPORTED_RUNTIME_ARTIFACTS rerun_c_shared LIBRARY DESTINATION lib)
+ endif()
+ 
+ # Similarly, we bundle the arrow library that was used during the build.
