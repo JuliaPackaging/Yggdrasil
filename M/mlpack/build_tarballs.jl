@@ -9,11 +9,11 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 # Set sources and other environment variables.
 name = "mlpack"
-source_version = v"4.7.0"
+source_version = v"4.8.0"
 version = source_version
 sources = [
     ArchiveSource("https://www.mlpack.org/files/mlpack-$(source_version).tar.gz",
-                  "a3f0fb530e51d51f8d7eceb7998b4699906d628000b158ada80541465595324e"),
+                  "0ab06e5c506c7ed5f072faa4c04477c65624e4a1ff62eee8c0d996ef850ec51c"),
 ]
 
 script = raw"""
