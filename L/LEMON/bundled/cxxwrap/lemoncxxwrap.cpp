@@ -2,13 +2,11 @@
 
 // Win32 (mingw) defines IN and OUT as macros; undefine them before pulling
 // in LEMON headers that use IN/OUT as template parameter names.
-#ifdef _WIN32
-#  ifdef IN
-#    undef IN
-#  endif
-#  ifdef OUT
-#    undef OUT
-#  endif
+#ifdef IN
+#  undef IN
+#endif
+#ifdef OUT
+#  undef OUT
 #endif
 
 #include <lemon/list_graph.h>
