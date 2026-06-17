@@ -29,7 +29,7 @@ cmake -B build -G Ninja \
     -DMI_INSTALL_TOPLEVEL=ON \
     -DMI_BUILD_TESTS=OFF \
     -DMI_OVERRIDE=OFF \
-    "${CMAKE_FLAGS}"
+    "${CMAKE_FLAGS[@O]}"
 cmake --build build --parallel ${nproc}
 cmake --install build
 """
