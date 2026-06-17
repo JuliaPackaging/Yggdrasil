@@ -56,7 +56,7 @@ ${CC} -O2 -fPIC -std=gnu99 -shared -o ${libdir}/libextxyz.${dlext} \
     extxyz.c extxyz_kv_grammar.c fast_format.c \
     -I../libcleri/inc $(pcre2-config --cflags) \
     ../libcleri/build/libcleri.a $(pcre2-config --libs8)
-cp extxyz.h ${includedir}
+install -Dv extxyz.h ${includedir}/extxyz.h
 
 install_license ${WORKSPACE}/srcdir/extxyz/LICENSE
 """
