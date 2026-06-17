@@ -22,14 +22,19 @@ sed -i 's|file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/arith.h|file(WRITE ${GENERATED_
 
 # (2) ASL appends x86-only -m32/-m64 to anything UNIX that isn't ARM, so aarch64,
 #     riscv64, s390x, ... all get a flag their compiler rejects. Make the flag
-#     guard an x86 allowlist (keeping the AIX -maix64 case) instead of an ARM blocklist.
+#     guard an x86 allowlist (keeping the AIX -maix64 case) instead of an ARM blocklist
 sed -i 's@if(UNIX AND NOT CPUARCH MATCHES "arm")@if(UNIX AND (CPUARCH MATCHES "^(i386|x86_64)$" OR (CPUARCH MATCHES "ppc64" AND CMAKE_SYSTEM_NAME STREQUAL "AIX")))@' support/cmake/setArchitecture.cmake
 
 # (3) file_kind() uses the raw S_IFDIR/S_IFREG constants, which FreeBSD gates behind
 #     __XSI_VISIBLE; use the always-defined POSIX S_ISDIR/S_ISREG macros instead
-#     (also fixes a latent bug: the raw test doesn't mask S_IFMT).
+#     (also fixes a latent bug: the raw test doesn't mask S_IFMT)
 sed -i 's/sb\.st_mode & S_IFDIR/S_ISDIR(sb.st_mode)/; s/sb\.st_mode & S_IFREG/S_ISREG(sb.st_mode)/' \
     src/solvers/funcadd1.c src/solvers2/funcadd1.c
+
+# (4) install() couples asl + asl2; we only ship libasl2, so drop asl from the
+#     install/export rule. This lets us build asl2 alone and reuse CMake's own
+#     per-platform install logic (RUNTIME/LIBRARY/ARCHIVE destinations)
+sed -i 's/install(TARGETS asl asl2 /install(TARGETS asl2 /' CMakeLists.txt
 
 cmake -S . -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
