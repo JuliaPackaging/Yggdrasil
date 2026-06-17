@@ -27,6 +27,34 @@ namespace jlcxx
   //template<> struct SuperType<ListDigraph::ArcIt> { typedef ListDigraph::Arc type; };
 }
 
+// Define the MCF algorithms to register: (CppType, JlName)
+#define MCF_ALGORITHMS(X) \
+  X(NetworkSimplex,   "NetworkSimplex")   \
+  X(CostScaling,      "CostScaling")      \
+  X(CapacityScaling,  "CapacityScaling")  \
+  X(CycleCanceling,   "CycleCanceling")
+
+#define REGISTER_MCF(Template, Name)                                                      \
+  {                                                                                        \
+    using Algo = Template<ListDigraph, int, int>;                                          \
+    mod.add_type<Algo>(Name "ListDigraphIntInt")                                           \
+      .constructor<const ListDigraph&>()                                                   \
+      .method("lowerMap",   [](Algo& a, const ListDigraph::ArcMap<int>& m)  -> Algo& { return a.lowerMap(m);  }) \
+      .method("upperMap",   [](Algo& a, const ListDigraph::ArcMap<int>& m)  -> Algo& { return a.upperMap(m);  }) \
+      .method("costMap",    [](Algo& a, const ListDigraph::ArcMap<int>& m)  -> Algo& { return a.costMap(m);   }) \
+      .method("supplyMap",  [](Algo& a, const ListDigraph::NodeMap<int>& m) -> Algo& { return a.supplyMap(m); }) \
+      .method("stSupply",   &Algo::stSupply)                                               \
+      .method("reset",      &Algo::reset)                                                  \
+      .method("resetParams",&Algo::resetParams)                                            \
+      .method("run",        [](Algo& a) { return static_cast<int>(a.run()); })             \
+      .method("totalCost",  static_cast<int (Algo::*)() const>(&Algo::totalCost))          \
+      .method("flow",       &Algo::flow)                                                   \
+      .method("potential",  &Algo::potential);                                             \
+    mod.method(Name "ProblemTypeInfeasible", []() { return static_cast<int>(Algo::INFEASIBLE); }); \
+    mod.method(Name "ProblemTypeOptimal",    []() { return static_cast<int>(Algo::OPTIMAL);    }); \
+    mod.method(Name "ProblemTypeUnbounded",  []() { return static_cast<int>(Algo::UNBOUNDED);  }); \
+  }
+
 JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
 {
   mod.method("compiledebug", &compiledebug);
@@ -122,79 +150,5 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
     .method("blossomSize", &MWPM::blossomSize)
     .method("blossomValue", &MWPM::blossomValue);
 
-  using NetworkSimplexInt = NetworkSimplex<ListDigraph, int, int>;
-  mod.add_type<NetworkSimplexInt>("NetworkSimplexListDigraphIntInt")
-    .constructor<const ListDigraph&>()
-    .method("lowerMap", [](NetworkSimplexInt& ns, const ListDigraph::ArcMap<int>& map) -> NetworkSimplexInt& { return ns.lowerMap(map); })
-    .method("upperMap", [](NetworkSimplexInt& ns, const ListDigraph::ArcMap<int>& map) -> NetworkSimplexInt& { return ns.upperMap(map); })
-    .method("costMap", [](NetworkSimplexInt& ns, const ListDigraph::ArcMap<int>& map) -> NetworkSimplexInt& { return ns.costMap(map); })
-    .method("supplyMap", [](NetworkSimplexInt& ns, const ListDigraph::NodeMap<int>& map) -> NetworkSimplexInt& { return ns.supplyMap(map); })
-    .method("stSupply", &NetworkSimplexInt::stSupply)
-    .method("reset", &NetworkSimplexInt::reset)
-    .method("resetParams", &NetworkSimplexInt::resetParams)
-    .method("run", [](NetworkSimplexInt& ns) { return static_cast<int>(ns.run()); })
-    .method("totalCost", static_cast<int (NetworkSimplexInt::*)() const>(&NetworkSimplexInt::totalCost))
-    .method("flow", &NetworkSimplexInt::flow)
-    .method("potential", &NetworkSimplexInt::potential);
-
-  mod.method("NetworkSimplexProblemTypeInfeasible", []() { return static_cast<int>(NetworkSimplexInt::INFEASIBLE); });
-  mod.method("NetworkSimplexProblemTypeOptimal", []() { return static_cast<int>(NetworkSimplexInt::OPTIMAL); });
-  mod.method("NetworkSimplexProblemTypeUnbounded", []() { return static_cast<int>(NetworkSimplexInt::UNBOUNDED); });
-
-  using CostScalingInt = CostScaling<ListDigraph, int, int>;
-  mod.add_type<CostScalingInt>("CostScalingListDigraphIntInt")
-    .constructor<const ListDigraph&>()
-    .method("lowerMap", [](CostScalingInt& ns, const ListDigraph::ArcMap<int>& map) -> CostScalingInt& { return ns.lowerMap(map); })
-    .method("upperMap", [](CostScalingInt& ns, const ListDigraph::ArcMap<int>& map) -> CostScalingInt& { return ns.upperMap(map); })
-    .method("costMap", [](CostScalingInt& ns, const ListDigraph::ArcMap<int>& map) -> CostScalingInt& { return ns.costMap(map); })
-    .method("supplyMap", [](CostScalingInt& ns, const ListDigraph::NodeMap<int>& map) -> CostScalingInt& { return ns.supplyMap(map); })
-    .method("stSupply", &CostScalingInt::stSupply)
-    .method("reset", &CostScalingInt::reset)
-    .method("resetParams", &CostScalingInt::resetParams)
-    .method("run", [](CostScalingInt& ns) { return static_cast<int>(ns.run()); })
-    .method("totalCost", static_cast<int (CostScalingInt::*)() const>(&CostScalingInt::totalCost))
-    .method("flow", &CostScalingInt::flow)
-    .method("potential", &CostScalingInt::potential);
-
-  mod.method("CostScalingProblemTypeInfeasible", []() { return static_cast<int>(CostScalingInt::INFEASIBLE); });
-  mod.method("CostScalingProblemTypeOptimal", []() { return static_cast<int>(CostScalingInt::OPTIMAL); });
-  mod.method("CostScalingProblemTypeUnbounded", []() { return static_cast<int>(CostScalingInt::UNBOUNDED); });
-
-  using CapacityScalingInt = CapacityScaling<ListDigraph, int, int>;
-  mod.add_type<CapacityScalingInt>("CapacityScalingListDigraphIntInt")
-    .constructor<const ListDigraph&>()
-    .method("lowerMap", [](CapacityScalingInt& ns, const ListDigraph::ArcMap<int>& map) -> CapacityScalingInt& { return ns.lowerMap(map); })
-    .method("upperMap", [](CapacityScalingInt& ns, const ListDigraph::ArcMap<int>& map) -> CapacityScalingInt& { return ns.upperMap(map); })
-    .method("costMap", [](CapacityScalingInt& ns, const ListDigraph::ArcMap<int>& map) -> CapacityScalingInt& { return ns.costMap(map); })
-    .method("supplyMap", [](CapacityScalingInt& ns, const ListDigraph::NodeMap<int>& map) -> CapacityScalingInt& { return ns.supplyMap(map); })
-    .method("stSupply", &CapacityScalingInt::stSupply)
-    .method("reset", &CapacityScalingInt::reset)
-    .method("resetParams", &CapacityScalingInt::resetParams)
-    .method("run", [](CapacityScalingInt& ns) { return static_cast<int>(ns.run()); })
-    .method("totalCost", static_cast<int (CapacityScalingInt::*)() const>(&CapacityScalingInt::totalCost))
-    .method("flow", &CapacityScalingInt::flow)
-    .method("potential", &CapacityScalingInt::potential);
-
-  mod.method("CapacityScalingProblemTypeInfeasible", []() { return static_cast<int>(CapacityScalingInt::INFEASIBLE); });
-  mod.method("CapacityScalingProblemTypeOptimal", []() { return static_cast<int>(CapacityScalingInt::OPTIMAL); });
-  mod.method("CapacityScalingProblemTypeUnbounded", []() { return static_cast<int>(CapacityScalingInt::UNBOUNDED); });
-
-  using CycleCancelingInt = CycleCanceling<ListDigraph, int, int>;
-  mod.add_type<CycleCancelingInt>("CycleCancelingListDigraphIntInt")
-    .constructor<const ListDigraph&>()
-    .method("lowerMap", [](CycleCancelingInt& ns, const ListDigraph::ArcMap<int>& map) -> CycleCancelingInt& { return ns.lowerMap(map); })
-    .method("upperMap", [](CycleCancelingInt& ns, const ListDigraph::ArcMap<int>& map) -> CycleCancelingInt& { return ns.upperMap(map); })
-    .method("costMap", [](CycleCancelingInt& ns, const ListDigraph::ArcMap<int>& map) -> CycleCancelingInt& { return ns.costMap(map); })
-    .method("supplyMap", [](CycleCancelingInt& ns, const ListDigraph::NodeMap<int>& map) -> CycleCancelingInt& { return ns.supplyMap(map); })
-    .method("stSupply", &CycleCancelingInt::stSupply)
-    .method("reset", &CycleCancelingInt::reset)
-    .method("resetParams", &CycleCancelingInt::resetParams)
-    .method("run", [](CycleCancelingInt& ns) { return static_cast<int>(ns.run()); })
-    .method("totalCost", static_cast<int (CycleCancelingInt::*)() const>(&CycleCancelingInt::totalCost))
-    .method("flow", &CycleCancelingInt::flow)
-    .method("potential", &CycleCancelingInt::potential);
-
-  mod.method("CycleCancelingProblemTypeInfeasible", []() { return static_cast<int>(CycleCancelingInt::INFEASIBLE); });
-  mod.method("CycleCancelingProblemTypeOptimal", []() { return static_cast<int>(CycleCancelingInt::OPTIMAL); });
-  mod.method("CycleCancelingProblemTypeUnbounded", []() { return static_cast<int>(CycleCancelingInt::UNBOUNDED); });
+  MCF_ALGORITHMS(REGISTER_MCF)
 }
