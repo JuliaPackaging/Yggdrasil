@@ -77,6 +77,7 @@ function get_script(cuda::Val{true})
         --cmake-executable=${host_bindir}/cmake \
         -- "-DCMAKE_TOOLCHAIN_FILE=/opt/toolchains/${bb_full_target}/target_${target}_clang.cmake" \
             "-DCMAKE_CUDA_HOST_COMPILER=$(which clang++)" \
+            "-DCMAKE_CUDA_ARCHITECTURES=75;80;86;89;90;100;103;120;121" \
 
     # Patch redop header that is installed by configure script
     # Patch in macro to export specific symbols 

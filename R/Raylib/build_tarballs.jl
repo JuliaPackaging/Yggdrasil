@@ -4,6 +4,7 @@ using BinaryBuilder, Pkg
 
 name = "Raylib"
 version = v"6.0.0"
+ygg_version = v"6.0.1"
 
 # Collection of sources required to complete build
 sources = [
@@ -40,7 +41,11 @@ if [[ "${target}" == *-mingw* ]]; then
 fi
 
 make raygui.c
-make -j${nproc} USE_EXTERNAL_GLFW=TRUE RAYLIB_LIBTYPE=SHARED RAYLIB_MODULE_RAYGUI=TRUE RAYLIB_MODULE_PHYSAC=TRUE "${FLAGS[@]}"
+make -j${nproc} \
+    OPENGL_VERSION=4.3 \
+    GRAPHICS=GRAPHICS_API_OPENGL_43 \
+    USE_EXTERNAL_GLFW=TRUE RAYLIB_LIBTYPE=SHARED RAYLIB_MODULE_RAYGUI=TRUE RAYLIB_MODULE_PHYSAC=TRUE \
+    "${FLAGS[@]}"
 make install RAYLIB_LIBTYPE=SHARED DESTDIR="${prefix}" RAYLIB_INSTALL_PATH="${libdir}"
 install_license ../LICENSE
 """
@@ -69,5 +74,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                preferred_gcc_version=v"7", julia_compat="1.6")

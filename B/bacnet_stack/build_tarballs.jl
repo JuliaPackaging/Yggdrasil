@@ -36,10 +36,12 @@ mkdir -p ${prefix}/share/licenses/bacnet_stack
 cp bacnet-stack/license/* ${prefix}/share/licenses/bacnet_stack
 """
 
-# Currently linux, windows and apple are supported, but FreeBSD fails because it cannot find #include <dispatch/dispatch.h>
-# According to ChatGPT, one would have to explicitely install the libdispatch port of Apple’s Grand Central Dispatch APIs.
-# If you require FreeBSD support, maybe this is the way to go (add another build script for libdispatch and add it as a dependency?)
-platforms = supported_platforms(; exclude=(p) -> Sys.isbsd(p))
+# Upstream supports only Linux, Windows and macOS.
+#
+# FreeBSD fails because it cannot find #include <dispatch/dispatch.h>;
+# supporting it would require building a libdispatch port and adding it as a
+# dependency.
+platforms = supported_platforms(; exclude=Sys.isfreebsd)
 
 # The products that we will ensure are always built
 products = [
