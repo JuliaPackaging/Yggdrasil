@@ -25,6 +25,10 @@ sed -i 's/LUA_VERSION_NUM > 504/LUA_VERSION_NUM > 505/g' \
 sed -i 's/LUA_VERSION_NUM == 504/LUA_VERSION_NUM >= 504/g' \
     include/sol/compatibility/compat-5.4.h
 
+# Sol2 is header-only: mark its CMake version file ARCH_INDEPENDENT so the AnyPlatform
+# package is not rejected by find_package() on targets with a different pointer size.
+sed -i 's/COMPATIBILITY AnyNewerVersion)/COMPATIBILITY AnyNewerVersion ARCH_INDEPENDENT)/' CMakeLists.txt
+
 cmake -B build \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
