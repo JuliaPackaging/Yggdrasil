@@ -32,6 +32,13 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/alloca_aggregate_type.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/select_composite_constant.patch
 # Backport of https://github.com/llvm/llvm-project/pull/201523
 atomic_patch -p1 $WORKSPACE/srcdir/patches/printf_format_string_lookup.patch
+# Backport of https://github.com/llvm/llvm-project/pull/204231
+atomic_patch -p1 $WORKSPACE/srcdir/patches/minmax_i1.patch
+# Backport of https://github.com/llvm/llvm-project/pull/204239
+atomic_patch -p1 $WORKSPACE/srcdir/patches/nested_aggregate_insertvalue.patch
+# release/22.x backport for aggregate PHI value-id operands. Main already has a
+# broader aggregate PHI/select/freeze lowering path.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/aggregate_phi_value_id.patch
 
 install_license LICENSE.TXT
 
