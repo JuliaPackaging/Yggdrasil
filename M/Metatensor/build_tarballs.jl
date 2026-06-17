@@ -39,25 +39,10 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = []
-for platform in supported_platforms()
-    if Sys.iswindows(platform) && platform.tags["arch"] == "i686"
-        # The code fails to link on 32-bit windows
-        continue
-    end
-
-    if Sys.isfreebsd(platform) && platform.tags["arch"] == "aarch64"
-        # Rust toolchain is not available on aarch64-unknown-freebsd
-        continue
-    end
-
-    if platform.tags["arch"] == "riscv64"
-        # Rust toolchain is not available on riscv64
-        continue
-    end
-
-    push!(platforms, platform)
-end
+platforms = supported_platforms()
+filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms) # The code fails to link on 32-bit windows
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms) # Rust toolchain is not available on aarch64-unknown-freebsd
+filter!(p -> arch(p) != "riscv64", platforms) # Rust toolchain is not available on riscv64
 
 # The products that we will ensure are always built
 products = [
