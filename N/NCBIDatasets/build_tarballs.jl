@@ -6,7 +6,7 @@
 # has no public source, and `datasets` requires a Java OpenAPI codegen step
 # that the BinaryBuilder toolchain cannot run. The binaries are public-domain
 # "United States Government Work" (redistribution unrestricted). Same approach
-# as Deno_jll / Kaleido_jll. See docs/adr/0001 in the originating repo.
+# as Deno_jll / Kaleido_jll.
 using BinaryBuilder
 
 name = "NCBIDatasets"
