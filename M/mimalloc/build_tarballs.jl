@@ -19,6 +19,7 @@ if [[ "${target}" == *-linux-musl* ]]; then
 fi
 
 CMAKE_FLAGS+=(-DMI_NO_OPT_ARCH=ON) # who doesn't love a double negative
+CMAKE_FLAGS+=(-DMI_WIN_REDIRECT=OFF) 
 
 cd $WORKSPACE/srcdir/mimalloc
 cmake -B build -G Ninja \
