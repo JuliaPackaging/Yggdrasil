@@ -7,7 +7,7 @@ version = v"0.1100.100"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/oxfordcontrol/Clarabel.cpp.git", "cf1214b692c3431c59f8baee8ae27a1f68f915b2"),
+    GitSource("https://github.com/oxfordcontrol/Clarabel.cpp.git", "0de6259a3edfd5cc041ec42b2148599ce63e73cb"),
     DirectorySource("./bundled")
 ]
 
