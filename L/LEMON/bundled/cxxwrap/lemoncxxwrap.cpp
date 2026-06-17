@@ -1,5 +1,16 @@
 #include "jlcxx/jlcxx.hpp"
 
+// Win32 (mingw) defines IN and OUT as macros; undefine them before pulling
+// in LEMON headers that use IN/OUT as template parameter names.
+#ifdef _WIN32
+#  ifdef IN
+#    undef IN
+#  endif
+#  ifdef OUT
+#    undef OUT
+#  endif
+#endif
+
 #include <lemon/list_graph.h>
 #include <lemon/dijkstra.h>
 #include <lemon/matching.h>
@@ -109,6 +120,17 @@ struct ApplyAlgo {
   template<typename V, typename C>
   using apply = Algo<ListDigraph, V, C>;
 };
+
+// CostScaling and CapacityScaling have a 4th Traits parameter (with a default).
+// Clang strictly requires template template arguments to match the declared
+// parameter count, so we provide explicit 3-parameter alias templates that
+// drop the Traits parameter and let it default.  GCC accepts the 4-parameter
+// templates directly, but Clang (used for Apple targets) does not.
+template<typename GR, typename V, typename C>
+using CostScaling3 = lemon::CostScaling<GR, V, C>;
+
+template<typename GR, typename V, typename C>
+using CapacityScaling3 = lemon::CapacityScaling<GR, V, C>;
 
 // One generic wrapper for all four algorithms (they share identical API).
 struct WrapMCFAlgo {
@@ -231,10 +253,10 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
     mod.add_type<jlcxx::Parametric<jlcxx::TypeVar<1>, jlcxx::TypeVar<2>>>(JlName)  \
        .apply_combination<ApplyAlgo<Template>, VTypes, CTypes>(WrapMCFAlgo());
 
-  REGISTER_MCF_ALGO(NetworkSimplex, "NetworkSimplex", ValueTypes, ValueTypes)
-  REGISTER_MCF_ALGO(CostScaling, "CostScaling", ValueTypes, ValueTypes)
-  REGISTER_MCF_ALGO(CapacityScaling, "CapacityScaling", ValueTypesNoNarrow, ValueTypesNoNarrow)
-  REGISTER_MCF_ALGO(CycleCanceling, "CycleCanceling", ValueTypes, ValueTypes)
+  REGISTER_MCF_ALGO(NetworkSimplex,  "NetworkSimplex",  ValueTypes,         ValueTypes)
+  REGISTER_MCF_ALGO(CostScaling3,    "CostScaling",     ValueTypes,         ValueTypes)
+  REGISTER_MCF_ALGO(CapacityScaling3,"CapacityScaling", ValueTypesNoNarrow, ValueTypesNoNarrow)
+  REGISTER_MCF_ALGO(CycleCanceling,  "CycleCanceling",  ValueTypes,         ValueTypes)
 
   // ProblemType constants are the same for all algorithms — register once
   using AnyAlgo = NetworkSimplex<ListDigraph, int32_t, int32_t>;
