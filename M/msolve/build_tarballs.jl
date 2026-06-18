@@ -15,7 +15,7 @@ version = VersionNumber(upstream_version.major*100+version_offset.major,
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/algebraic-solving/msolve.git", "1c67c70365746f23c901a9e18d60f01b78d44dd7")
+    GitSource("https://github.com/algebraic-solving/msolve.git", "0441849e0655a901dcbbae7aa78b714bd7cafbe6")
 ]
 
 # Bash recipe for building across all platforms
@@ -27,7 +27,7 @@ ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes ./configure --w
 make -j${nprocs}
 make install
 """
-sources, script = require_macos_sdk("10.15", sources, script)
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
