@@ -1,4 +1,5 @@
 using BinaryBuilder
+using Pkg
 
 name = "CONOPT"
 version = v"4.39.0"
