@@ -7,10 +7,9 @@ version = v"0.2.1"
 
 
 # Collection of sources required to complete build
-github_release = "https://github.com/lab-cosmo/metatensor/releases/download"
 sources = [
     ArchiveSource(
-        "$github_release/metatensor-core-v$version/metatensor-core-cxx-$version.tar.gz",
+        "https://github.com/lab-cosmo/metatensor/releases/download/metatensor-core-v$version/metatensor-core-cxx-$version.tar.gz",
         "688751cb51900653edf2980bd80a52bbe187dff3c8b05cea9f1a1d3070b1e527"
     ),
 ]
