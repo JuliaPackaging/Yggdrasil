@@ -26,8 +26,6 @@ sources = [
                   "5d0e6982326e8851022e65fb88a6bd1fd2197d28c97df7c40595bbd0b7cc86ed"; unpack_target = "darwin-universal"),
     ArchiveSource("$release/windows-amd64.cli.package.zip",
                   "56807e4de16f86fffd7ac9f7a5dda6ab036ad631b7d254ca073993b908efebdb"; unpack_target = "windows-amd64"),
-    # Source clone solely to obtain LICENSE.md. We pin the v18.30.0 commit via
-    # GitSource because GitHub's auto-generated tarballs have unstable checksums.
     GitSource("https://github.com/ncbi/datasets.git",
               "c292d8f58e5cb6e27385385fc5d52f59a3409068"),
 ]
