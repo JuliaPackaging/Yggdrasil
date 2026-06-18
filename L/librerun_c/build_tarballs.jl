@@ -23,6 +23,16 @@ cd rerun
 # point cc-rs at the host compiler for the host target triple.
 export CC_$(echo $rust_host | sed "s/-/_/g")=$CC_BUILD
 
+# Link the system zstd (Zstd_jll) rather than zstd-sys's vendored copy, whose bundled C
+# uses qsort_r — absent from BinaryBuilder's musl libc. Zstd_jll is already patched for it.
+export ZSTD_SYS_USE_PKG_CONFIG=1
+export PKG_CONFIG_ALLOW_CROSS=1
+
+# Building a cdylib on musl requires disabling the default static-CRT linkage.
+if [[ "${target}" == *musl* ]]; then
+    export RUSTFLAGS="-C target-feature=-crt-static"
+fi
+
 cmake . -B build -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel ${nproc}
 cmake --install build
@@ -37,6 +47,8 @@ platforms = supported_platforms()
 filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
 # Rust toolchain is not available for RISC-V
 filter!(p -> arch(p) != "riscv64", platforms)
+# Rust toolchain is not available for aarch64 FreeBSD
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
 
 # The products that we will ensure are always built
@@ -46,7 +58,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
-    Dependency("CompilerSupportLibraries_jll")
+    Dependency("CompilerSupportLibraries_jll"),
+    Dependency("Zstd_jll"; compat="1.5.7"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
