@@ -1,0 +1,32 @@
+diff --git a/siglib/cpsig/log_sig_cache.cpp b/siglib/cpsig/log_sig_cache.cpp
+index 7d7f94d..55f7565 100644
+--- a/siglib/cpsig/log_sig_cache.cpp
++++ b/siglib/cpsig/log_sig_cache.cpp
+@@ -98,15 +98,9 @@ void set_cache_dir_(const char* dir) {
+ 
+ void set_default_cache_dir() {
+ #ifdef _WIN32
+-	char* dir = nullptr;
+-	size_t len;
+-
+-	const errno_t err = _dupenv_s(&dir, &len, "LOCALAPPDATA");
+-
+-	if (err || !dir) {
++	const char* dir = std::getenv("LOCALAPPDATA");
++	if (!dir)
+ 		throw default_cache_dir_error("Failed to get default cache directory.");
+-	}
+-
+ #elif __APPLE__
+ 	const char* home = std::getenv("HOME");
+ 	if (!home)
+@@ -136,9 +130,6 @@ void set_default_cache_dir() {
+ 			cache_dir = dir_path;
+ 	}
+ 
+-#ifdef _WIN32
+-	free(dir);
+-#endif
+ }
+ 
+ void set_basis_cache(uint64_t dimension, uint64_t degree, int method, bool use_disk) {

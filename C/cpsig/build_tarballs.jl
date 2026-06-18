@@ -1,5 +1,8 @@
 using BinaryBuilder
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "cpsig"
 version = v"3.1.0"
 
@@ -9,10 +12,21 @@ sources = [
         "377c712121cee078ec08bdf01cc6b76cc6f7fbd0";
         unpack_target = "pysiglib",
     ),
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/pysiglib/pySigLib
+
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-getenv.patch
+
+# BinaryBuilder's macOS libc++ headers do not provide <concepts>.  cpsig only
+# uses std::floating_point as a light constraint on float/double internals, so
+# remove that constraint for this portable build.
+sed -i '/#include <concepts>/d' siglib/cpsig/cppch.h
+for f in $(grep -rl "std::floating_point" siglib/cpsig || true); do
+    sed -i 's/std::floating_point /typename /g' "${f}"
+done
 
 # Replace upstream Python/JAX/CUDA-oriented root CMake with a minimal one.
 # We only build siglib/cpsig, which provides the C ABI library libcpsig.
@@ -49,11 +63,17 @@ install(FILES
 )
 EOF
 
+CMAKE_FLAGS=()
+if [[ "${target}" == x86_64-apple-* ]]; then
+    CMAKE_FLAGS+=("-DCMAKE_OSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET}")
+fi
+
 cmake -B build -S . \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_LIBDIR=lib
+    -DCMAKE_INSTALL_LIBDIR=lib \
+    "${CMAKE_FLAGS[@]}"
 
 cmake --build build --parallel ${nproc}
 cmake --install build
@@ -61,7 +81,10 @@ cmake --install build
 install_license LICENSE
 """
 
-platforms = supported_platforms()
+# cpsig uses std::filesystem, which needs a newer macOS SDK on x86_64.
+sources, script = require_macos_sdk("10.15", sources, script)
+
+platforms = expand_cxxstring_abis(supported_platforms())
 
 products = [
     LibraryProduct(["libcpsig", "cpsig"], :libcpsig, ["lib", "bin"]),
