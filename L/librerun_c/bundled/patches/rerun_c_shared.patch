@@ -46,12 +46,18 @@ diff --git before/rerun/CMakeLists.txt after/rerun/CMakeLists.txt
 diff --git before/rerun/crates/top/rerun_c/CMakeLists.txt after/rerun/crates/top/rerun_c/CMakeLists.txt
 --- before/rerun/crates/top/rerun_c/CMakeLists.txt
 +++ after/rerun/crates/top/rerun_c/CMakeLists.txt
-@@ -34,14 +34,20 @@ else()
+@@ -34,14 +34,26 @@ else()
      message(FATAL_ERROR "Unsupported platform.")
  endif()
 
++# Rust names the cdylib without a `lib` prefix on Windows (rerun_c.dll).
++if(WIN32)
++    set(RERUN_C_SHARED_PREFIX "")
++else()
++    set(RERUN_C_SHARED_PREFIX ${CMAKE_SHARED_LIBRARY_PREFIX})
++endif()
 +set(RERUN_C_SHARED_ARTIFACT
-+    ${CARGO_TARGET_DIR}/$ENV{CARGO_BUILD_TARGET}/${RUST_BUILD_TYPE}/${CMAKE_SHARED_LIBRARY_PREFIX}rerun_c${CMAKE_SHARED_LIBRARY_SUFFIX})
++    ${CARGO_TARGET_DIR}/$ENV{CARGO_BUILD_TARGET}/${RUST_BUILD_TYPE}/${RERUN_C_SHARED_PREFIX}rerun_c${CMAKE_SHARED_LIBRARY_SUFFIX})
 +
  # Setup rerun_c library
 -add_library(rerun_c STATIC IMPORTED GLOBAL)
@@ -69,7 +75,7 @@ diff --git before/rerun/crates/top/rerun_c/CMakeLists.txt after/rerun/crates/top
      DEPENDS ${RERUN_C_SOURCES}
      COMMAND cargo build ${CARGO_BUILD_FLAG} -p rerun_c
      COMMENT "Building rerun_c from source"
-@@ -49,5 +55,10 @@ add_custom_command(
+@@ -49,5 +61,10 @@ add_custom_command(
  )
 
  # In CMake you can't depend on an output file directly. We have to wrap this in a target that rerun_c then depends on.
