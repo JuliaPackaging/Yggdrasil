@@ -33,10 +33,11 @@ elif [[ "${target}" == aarch64-apple-* ]]; then
     chmod +x ${libdir}/libconopt.dylib
 
 elif [[ "${target}" == x86_64-w64-mingw32 ]]; then
-    # Note: Windows libraries go in ${bindir} in the Yggdrasil standard,
-    # but BinaryBuilder will automatically handle finding it.
     mkdir -p ${bindir}
     cp conopt-win-x86_64/lib/conopt4.dll ${bindir}/conopt4.dll
+elif [[ "${target}" == i686-w64-mingw32 ]]; then
+    mkdir -p ${bindir}
+    cp conopt-win-i386/lib/conopt4.dll ${bindir}/conopt4.dll
 fi
 """
 
@@ -49,10 +50,14 @@ platforms = [
     Platform("i386", "windows")
 ]
 
+platforms = expand_gfortran_versions(platforms)
+
 products = [
     LibraryProduct(["libconopt", "conopt4"], :libconopt)
 ]
 
-dependencies = Dependency[]
+dependencies = [
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
