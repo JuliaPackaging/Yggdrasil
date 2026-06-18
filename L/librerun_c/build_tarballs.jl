@@ -53,7 +53,8 @@ filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("librerun_c", :librerun_c)
+    # Rust names the cdylib `rerun_c.dll` on Windows, `librerun_c.{so,dylib}` elsewhere.
+    LibraryProduct(["librerun_c", "rerun_c"], :librerun_c)
 ]
 
 # Dependencies that must be installed before this package can be built
