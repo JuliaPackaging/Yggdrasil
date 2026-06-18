@@ -95,7 +95,7 @@ if [[ ${target} == *mingw* ]]; then
         # Install also some static and import libraries, needed for linking of pkgimages
         # and for direct ld links of Windows executables and DLLs.
         for lib in libadvapi32.a libdbghelp.a libgcc.a libgcc_s.a libiphlpapi.a libkernel32.a libmingwex.a \
-                   libmingw32.a libmsvcrt.a libmoldname.a libntdll.a libole32.a libpsapi.a libsecur32.a \
+                   libmingw32.a libmsvcrt.a libmsvcrt-os.a libmoldname.a libntdll.a libole32.a libpsapi.a libsecur32.a \
                    libshell32.a libssp.a libuser32.a libuserenv.a libuuid.a libwinmm.a libws2_32.a \
                    libpthread.dll.a libssp.dll.a dllcrt2.o crt2.o crt2u.o crtbegin.o crtend.o; do
             qfind "/opt/${target}" -name "${lib}" -exec install -Dvm 0644 '{}' "${destdir}/${lib}" \;
@@ -196,6 +196,7 @@ install_license /usr/share/licenses/GPL-3.0+
                                  FileProduct("$(destdir)/libmingwex.a", :libmingwex_a),
                                  FileProduct("$(destdir)/libmingw32.a", :libmingw32_a),
                                  FileProduct("$(destdir)/libmsvcrt.a", :libmsvcrt_a),
+                                 FileProduct("$(destdir)/libmsvcrt-os.a", :libmsvcrt_os_a),
                                  FileProduct("$(destdir)/libmoldname.a", :libmoldname_a),
                                  FileProduct("$(destdir)/libntdll.a", :libntdll_a),
                                  FileProduct("$(destdir)/libole32.a", :libole32_a),
