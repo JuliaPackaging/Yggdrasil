@@ -28,7 +28,6 @@ sources = [
                   "56807e4de16f86fffd7ac9f7a5dda6ab036ad631b7d254ca073993b908efebdb"; unpack_target = "windows-amd64"),
     # Source clone solely to obtain LICENSE.md. We pin the v18.30.0 commit via
     # GitSource because GitHub's auto-generated tarballs have unstable checksums.
-    GitSource("https://github.com/ncbi/datasets.git",
               "c292d8f58e5cb6e27385385fc5d52f59a3409068"),
 ]
 
