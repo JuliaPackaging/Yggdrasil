@@ -12,7 +12,7 @@ name = "NCBIDatasets"
 version = v"18.30.0"
 
 # Official release assets (each zip contains both `datasets` and `dataformat`),
-# plus the source tarball solely to obtain LICENSE.md (the binary zips bundle
+# plus the source repo solely to obtain LICENSE.md (the binary zips bundle
 # no license).
 release = "https://github.com/ncbi/datasets/releases/download/v$(version)"
 sources = [
