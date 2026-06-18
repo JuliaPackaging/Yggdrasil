@@ -1,4 +1,9 @@
 diff --git before/rerun/CMakeLists.txt after/rerun/CMakeLists.txt
+# this: 
+# turns off all of the compile targets except for rerun_c
+# disables loguru - not needed for rerun_c alone, and doesn't work on mingw
+# makes rerun_c build as a shared library
+# makes CMake happy with aforementioned shared librariness (need to invoke the target since rerun_cpp won't anymore)
 --- before/rerun/CMakeLists.txt
 +++ after/rerun/CMakeLists.txt
 @@ -137,41 +137,7 @@
