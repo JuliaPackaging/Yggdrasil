@@ -11,41 +11,32 @@ using BinaryBuilder
 name = "NCBIDatasets"
 version = v"18.30.0"
 
-# Official release assets (each zip contains both `datasets` and `dataformat`),
-# plus the source repo solely to obtain LICENSE.md (the binary zips bundle
-# no license).
+# The pinned GitSource is solely for LICENSE.md (the binary zips bundle no license).
 release = "https://github.com/ncbi/datasets/releases/download/v$(version)"
 sources = [
     ArchiveSource("$release/linux-amd64.cli.package.zip",
-                  "dae5e530ed76d02043d44da87083bf114a8865a8899ebaba089c3deedc8a5358"; unpack_target = "linux-amd64"),
+                  "dae5e530ed76d02043d44da87083bf114a8865a8899ebaba089c3deedc8a5358"; unpack_target = "x86_64-linux-gnu"),
+    ArchiveSource("$release/linux-amd64.cli.package.zip",
+                  "dae5e530ed76d02043d44da87083bf114a8865a8899ebaba089c3deedc8a5358"; unpack_target = "x86_64-linux-musl"),
     ArchiveSource("$release/linux-arm64.cli.package.zip",
-                  "3b2ecac56db1210d992ad0bd017b11a4f05a431c6a686c0d272a47004f9ff4ef"; unpack_target = "linux-arm64"),
+                  "3b2ecac56db1210d992ad0bd017b11a4f05a431c6a686c0d272a47004f9ff4ef"; unpack_target = "aarch64-linux-gnu"),
+    ArchiveSource("$release/linux-arm64.cli.package.zip",
+                  "3b2ecac56db1210d992ad0bd017b11a4f05a431c6a686c0d272a47004f9ff4ef"; unpack_target = "aarch64-linux-musl"),
     ArchiveSource("$release/linux-arm.cli.package.zip",
-                  "1895a6e97343b013261176dae03042ee22cd407c62336032698895f452ac408d"; unpack_target = "linux-arm"),
+                  "1895a6e97343b013261176dae03042ee22cd407c62336032698895f452ac408d"; unpack_target = "arm-linux-gnueabihf"),
     ArchiveSource("$release/darwin-universal.cli.package.zip",
-                  "5d0e6982326e8851022e65fb88a6bd1fd2197d28c97df7c40595bbd0b7cc86ed"; unpack_target = "darwin-universal"),
+                  "5d0e6982326e8851022e65fb88a6bd1fd2197d28c97df7c40595bbd0b7cc86ed"; unpack_target = "x86_64-apple-darwin14"),
+    ArchiveSource("$release/darwin-universal.cli.package.zip",
+                  "5d0e6982326e8851022e65fb88a6bd1fd2197d28c97df7c40595bbd0b7cc86ed"; unpack_target = "aarch64-apple-darwin20"),
     ArchiveSource("$release/windows-amd64.cli.package.zip",
-                  "56807e4de16f86fffd7ac9f7a5dda6ab036ad631b7d254ca073993b908efebdb"; unpack_target = "windows-amd64"),
+                  "56807e4de16f86fffd7ac9f7a5dda6ab036ad631b7d254ca073993b908efebdb"; unpack_target = "x86_64-w64-mingw32"),
     GitSource("https://github.com/ncbi/datasets.git",
               "c292d8f58e5cb6e27385385fc5d52f59a3409068"),
 ]
 
-# Bash recipe for installing across all platforms.
-# All Linux binaries are fully static (CGO-disabled Go), so the same x86_64 /
-# aarch64 builds serve both glibc and musl targets. macOS ships one universal
-# Mach-O that runs natively on Intel and Apple-silicon Macs.
 script = raw"""
-case "${target}" in
-    x86_64-linux-*)   pkg="linux-amd64"      ;;
-    aarch64-linux-*)  pkg="linux-arm64"      ;;
-    arm*-linux-*)     pkg="linux-arm"        ;;
-    *-apple-darwin*)  pkg="darwin-universal" ;;
-    *-mingw32)        pkg="windows-amd64"    ;;
-    *) echo "Unsupported target: ${target}" >&2; exit 1 ;;
-esac
-
-install -Dvm 755 "${WORKSPACE}/srcdir/${pkg}/datasets${exeext}"   "${bindir}/datasets${exeext}"
-install -Dvm 755 "${WORKSPACE}/srcdir/${pkg}/dataformat${exeext}" "${bindir}/dataformat${exeext}"
+install -Dvm 755 "${WORKSPACE}/srcdir/${target}/datasets${exeext}"   "${bindir}/datasets${exeext}"
+install -Dvm 755 "${WORKSPACE}/srcdir/${target}/dataformat${exeext}" "${bindir}/dataformat${exeext}"
 
 install_license ${WORKSPACE}/srcdir/datasets/LICENSE.md
 """
