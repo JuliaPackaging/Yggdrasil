@@ -7,7 +7,14 @@ This document details some of the journey we have embarked upon to create a Linu
 * musl Linux: `i686-linux-musl`, `x86_64-linux-musl`, `aarch64-linux-musl`, `armv7l-linux-musleabihf`, `armv6l-linux-musleabihf`
 * MacOS: `x86_64-apple-darwin`, `aarch64-apple-darwin`
 * FreeBSD: `x86_64-unknown-freebsd13.4`, `aarch64-unknown-freebsd14.1`
-* Windows: `i686-w64-mingw32`, `x86_64-w64-mingw32`
+* Windows: `i686-w64-mingw32`, `x86_64-w64-mingw32`, `i686-w64-ucrt-mingw32`, `x86_64-w64-ucrt-mingw32`
+
+The UCRT Windows rootfs also carries the MinGW-w64 v13 ABI break.  Although the
+MinGW-w64 build system can technically select a non-UCRT CRT from the same
+sources, Yggdrasil treats the v13 ABI break as part of the UCRT rootfs ABI; use
+the non-UCRT rootfs for `*-w64-mingw32` builds and the UCRT rootfs only for
+`*-w64-ucrt-mingw32` builds.  Compiler binaries and configure scripts still use
+the canonical `*-w64-mingw32` compiler target.
 
 These target platforms are compiled for by building a suite a cross-compilers (`gcc`, `gfortran`, `clang`, `binutils`, etc...) that run on `x86-64-linux-musl`, but target the specific platform.  Unfortunately, it is not sufficient to simply build these compilers once per target, because of incompatibilities between the generated code and the user's system where this code may eventually be running.
 
