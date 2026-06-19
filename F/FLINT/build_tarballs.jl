@@ -34,7 +34,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to build FLINT
 sources = [
    GitSource("https://github.com/oscarbenjamin/flint",
-                 "03efe0ee6ebafe19cc7725cf0431e43540488655"),
+                 "aa2b1c7bc93216a9512f013a4a84b725eb33ca09"),
    #DirectorySource("./bundled"),
 ]
 
