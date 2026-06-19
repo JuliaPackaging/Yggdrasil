@@ -26,15 +26,15 @@ using BinaryBuilder, Pkg
 # and possibly other packages.
 name = "FLINT"
 upstream_version = v"3.5.0"
-version_offset = v"1.0.0"
+version_offset = v"1.90.0" # NOT A REAL RELEASE, just a PR to test the new FLINT build system (which is not yet in a release)
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
 
 # Collection of sources required to build FLINT
 sources = [
-   ArchiveSource("https://github.com/flintlib/flint/releases/download/v$(upstream_version)/flint-$(upstream_version).tar.gz",
-                 "3982f385f00610a944e0152eb0a29893b2366fa640e8f5f3076c47564cf7e2a6"),
+   GitSource("https://github.com/oscarbenjamin/flint",
+                 "03efe0ee6ebafe19cc7725cf0431e43540488655"),
    #DirectorySource("./bundled"),
 ]
 
@@ -46,17 +46,25 @@ cd ${WORKSPACE}/srcdir/flint*
 #   atomic_patch -p1 ${f}
 #done
 
+options=(
+   --prefix="${prefix}"
+   --cross-file="${MESON_TARGET_TOOLCHAIN}"
+   --buildtype=release
+   -Ddefault_library=shared
+)
+
 if [[ ${target} == *musl* ]]; then
    # because of some ordering issue with pthread.h and sched.h includes
    export CFLAGS=-D_GNU_SOURCE
 elif [[ ${target} == *mingw* ]]; then
-   extraflags=--enable-reentrant
+   options+=(-Dreentrant=enabled)
 fi
 
-./bootstrap.sh
-./configure --host=${target} --prefix=$prefix --disable-static --enable-shared --with-gmp=$prefix --with-mpfr=$prefix --with-blas=$prefix ${extraflags}
-make -j${nproc}
-make install
+python3 update_meson.py # TEMPORARY, remove once the new build system is in a release
+
+meson setup build "${options[@]}"
+meson compile -C build
+meson install -C build
 """
 
 # These are the platforms we will build for by default, unless further
