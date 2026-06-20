@@ -92,10 +92,12 @@ if [[ ${target} == *mingw* ]]; then
         else
            destdir="${prefix}/lib"
         fi
-        # Install also some static and import libraries, needed for linking of pkgimages.
-        for lib in libadvapi32.a libgcc.a libgcc_s.a libkernel32.a libmingwex.a libmingw32.a libmsvcrt.a \
-                   libmoldname.a libshell32.a libssp.a libuser32.a libpthread.dll.a libssp.dll.a dllcrt2.o \
-                   crtbegin.o crtend.o; do
+        # Install also some static and import libraries, needed for linking of pkgimages
+        # and for direct ld links of Windows executables and DLLs.
+        for lib in libadvapi32.a libdbghelp.a libgcc.a libgcc_s.a libiphlpapi.a libkernel32.a libmingwex.a \
+                   libmingw32.a libmsvcrt.a libmsvcrt-os.a libmoldname.a libntdll.a libole32.a libpsapi.a libsecur32.a \
+                   libshell32.a libssp.a libuser32.a libuserenv.a libuuid.a libwinmm.a libws2_32.a \
+                   libpthread.dll.a libssp.dll.a dllcrt2.o crt2.o crt2u.o crtbegin.o crtend.o; do
             qfind "/opt/${target}" -name "${lib}" -exec install -Dvm 0644 '{}' "${destdir}/${lib}" \;
         done
     fi
@@ -186,19 +188,32 @@ install_license /usr/share/licenses/GPL-3.0+
                 destdir = version >= v"1.1.0" ? "lib/gcc/$(aatriplet(platform))/$(preferred_gcc_version.major)" : "lib"
                 products = vcat(products,
                                 [FileProduct("$(destdir)/libadvapi32.a", :libadvapi32_a),
+                                 FileProduct("$(destdir)/libdbghelp.a", :libdbghelp_a),
                                  FileProduct("$(destdir)/libgcc.a", :libgcc_a),
                                  FileProduct("$(destdir)/libgcc_s.a", :libgcc_s_a),
+                                 FileProduct("$(destdir)/libiphlpapi.a", :libiphlpapi_a),
                                  FileProduct("$(destdir)/libkernel32.a", :libkernel32_a),
                                  FileProduct("$(destdir)/libmingwex.a", :libmingwex_a),
                                  FileProduct("$(destdir)/libmingw32.a", :libmingw32_a),
                                  FileProduct("$(destdir)/libmsvcrt.a", :libmsvcrt_a),
+                                 FileProduct("$(destdir)/libmsvcrt-os.a", :libmsvcrt_os_a),
                                  FileProduct("$(destdir)/libmoldname.a", :libmoldname_a),
+                                 FileProduct("$(destdir)/libntdll.a", :libntdll_a),
+                                 FileProduct("$(destdir)/libole32.a", :libole32_a),
+                                 FileProduct("$(destdir)/libpsapi.a", :libpsapi_a),
+                                 FileProduct("$(destdir)/libsecur32.a", :libsecur32_a),
                                  FileProduct("$(destdir)/libshell32.a", :libshell32_a),
                                  FileProduct("$(destdir)/libssp.a", :libssp_a),
                                  FileProduct("$(destdir)/libuser32.a", :libuser32_a),
+                                 FileProduct("$(destdir)/libuserenv.a", :libuserenv_a),
+                                 FileProduct("$(destdir)/libuuid.a", :libuuid_a),
+                                 FileProduct("$(destdir)/libwinmm.a", :libwinmm_a),
+                                 FileProduct("$(destdir)/libws2_32.a", :libws2_32_a),
                                  FileProduct("$(destdir)/libpthread.dll.a", :libpthread_dll_a),
                                  FileProduct("$(destdir)/libssp.dll.a", :libssp_dll_a),
                                  FileProduct("$(destdir)/dllcrt2.o", :dllcrt2_o),
+                                 FileProduct("$(destdir)/crt2.o", :crt2_o),
+                                 FileProduct("$(destdir)/crt2u.o", :crt2u_o),
                                  FileProduct("$(destdir)/crtbegin.o", :crtbegin_o),
                                  FileProduct("$(destdir)/crtend.o", :crtend_o),
                                  ])

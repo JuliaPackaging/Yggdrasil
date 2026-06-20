@@ -1,8 +1,8 @@
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.12.4"
+julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "491f630e40fc31b52252e64b8739192e79f06ef3"
+project_hash = "7c094f9c3a913dbadcc8fbeaad95282e9b58d959"
 
 [[deps.ArgParse]]
 deps = ["Logging", "TextWrap"]
@@ -49,7 +49,7 @@ version = "0.6.6"
 
 [[deps.BinaryBuilderBase]]
 deps = ["Bzip2_jll", "CodecZlib", "Downloads", "Gzip_jll", "HistoricalStdlibVersions", "InteractiveUtils", "JLLWrappers", "JSON", "LibGit2", "LibGit2_jll", "Libdl", "Logging", "OrderedCollections", "OutputCollectors", "Pkg", "Printf", "ProgressMeter", "REPL", "Random", "RegistryInstances", "SHA", "Scratch", "SimpleBufferStream", "TOML", "Tar", "Tar_jll", "UUIDs", "XZ_jll", "Zstd_jll", "p7zip_jll", "pigz_jll", "unzip_jll"]
-git-tree-sha1 = "823b661d4cb7092d77a97619a060b4a9e89c10df"
+git-tree-sha1 = "bfd75ee02d5082b141fc046e0bc34332df437004"
 repo-rev = "master"
 repo-url = "https://github.com/JuliaPackaging/BinaryBuilderBase.jl.git"
 uuid = "7f725544-6523-48cd-82d1-3fa08ff4056e"
@@ -417,9 +417,9 @@ version = "0.1.2"
 
 [[deps.Parsers]]
 deps = ["Dates", "PrecompileTools", "UUIDs"]
-git-tree-sha1 = "468dbe2b510c876dc091b2c74ed52c7c34f48b9b"
+git-tree-sha1 = "32a4e09c5f29402573d673901778a0e03b0807b9"
 uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
-version = "2.8.5"
+version = "2.8.6"
 
 [[deps.Patchelf_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
