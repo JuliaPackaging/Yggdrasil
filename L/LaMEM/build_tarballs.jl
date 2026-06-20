@@ -8,15 +8,17 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 name = "LaMEM"
 version = v"2.2.1"
 
-# NOTE: the MPI compat bounds below must match PETSc_jll 3.22.1's requirements, since LaMEM
-# and PETSc co-resolve the same MPI JLL per platform. PETSc 3.22.1 raised these floors
-# (MPICH >=4.3.0, MPItrampoline >=5.5.3, OpenMPI >=5.0.7); keeping the old 3.22.0-era bounds
-# makes mpich/openmpi/mpitrampoline unresolvable against PETSc 3.22.1.
+# NOTE: the MPI compat bounds below must match the EXACT MPI versions PETSc_jll 3.22.1 was
+# built against, since LaMEM and PETSc co-resolve the same MPI JLL per platform AND PETSc's
+# headers (petscsys.h) hard-error if the mpi.h version differs from what PETSc was configured
+# with. PETSc 3.22.1 was built with: MPICH >=4.3.0, MPItrampoline >=5.5.3, and OpenMPI 4.1.8
+# (its compat is the union [4.1.8-4, 5.0.7-5] but the published binary used 4.1.8 — pin EXACTLY
+# 4.1.8, since OpenMPI 4.1.9 exists and the petscsys.h check is strict to the subminor).
 PETSc_COMPAT_VERSION = "~3.22.1"
 MPItrampoline_compat_version="5.5.3 - 5"
 MicrosoftMPI_compat_version="~10.1.4"
 MPICH_compat_version="4.3.0 - 5"
-OpenMPI_compat_version="5.0.7 - 5"
+OpenMPI_compat_version="4.1.8 - 4.1.8"
 
 # Collection of sources required to complete build
 sources = [
@@ -134,6 +136,10 @@ dependencies = [
     # only provides MPIABI_jll (libmpi_abi), so add mpif_jll for mpiabi platforms to
     # satisfy LaMEM's dlopen audit. Mirrors PETSc_jll's own recipe.
     Dependency("mpif_jll"; compat="0.1.5", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)),
+    # On Windows, PETSc_jll 3.22.1 links libscalapack32 statically into LaMEM's executable,
+    # so SCALAPACK32_jll must be present in the prefix or the link fails with
+    # `ld: cannot find -lscalapack32`. (On Linux/macOS it's resolved via libpetsc itself.)
+    Dependency("SCALAPACK32_jll"; compat="2.2.3", platforms=filter(p -> Sys.iswindows(p), platforms)),
 ]
 append!(dependencies, platform_dependencies)
 
