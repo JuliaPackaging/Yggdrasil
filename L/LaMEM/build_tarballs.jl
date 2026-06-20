@@ -8,11 +8,15 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 name = "LaMEM"
 version = v"2.2.1"
 
+# NOTE: the MPI compat bounds below must match PETSc_jll 3.22.1's requirements, since LaMEM
+# and PETSc co-resolve the same MPI JLL per platform. PETSc 3.22.1 raised these floors
+# (MPICH >=4.3.0, MPItrampoline >=5.5.3, OpenMPI >=5.0.7); keeping the old 3.22.0-era bounds
+# makes mpich/openmpi/mpitrampoline unresolvable against PETSc 3.22.1.
 PETSc_COMPAT_VERSION = "~3.22.1"
-MPItrampoline_compat_version=" 5.5.0"
-MicrosoftMPI_compat_version="~10.1.4" 
-MPICH_compat_version="~4.2.3"    
-OpenMPI_compat_version="~5.0.5"
+MPItrampoline_compat_version="5.5.3 - 5"
+MicrosoftMPI_compat_version="~10.1.4"
+MPICH_compat_version="4.3.0 - 5"
+OpenMPI_compat_version="5.0.7 - 5"
 
 # Collection of sources required to complete build
 sources = [
