@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 name = "LaMEM"
 version = v"2.2.1"
 
-PETSc_COMPAT_VERSION = "~3.22.0"    
+PETSc_COMPAT_VERSION = "~3.22.1"
 MPItrampoline_compat_version=" 5.5.0"
 MicrosoftMPI_compat_version="~10.1.4" 
 MPICH_compat_version="~4.2.3"    
@@ -106,11 +106,6 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "i686"), platforms
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
-# PETSc_jll's mpiabi build is configured without MPI and uses a different PETSc arch
-# layout, so LaMEM's hardcoded PETSC_OPT (double_real_Int32) is not present there.
-# Exclude mpiabi until PETSc ships an MPI-based mpiabi build (2.2.0 shipped no mpiabi).
-platforms = filter(p -> !(p["mpi"] == "mpiabi"), platforms)
-
 # powerpc64le only with libgfortran 5 or higher (as openblas is not defined for other cases)
 platforms = filter(p -> !(p["arch"] == "powerpc64le" && (libgfortran_version(p) == v"3" || libgfortran_version(p) == v"4")), platforms)
 
@@ -130,7 +125,11 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("PETSc_jll"; compat=PETSc_COMPAT_VERSION),
-    Dependency("CompilerSupportLibraries_jll")
+    Dependency("CompilerSupportLibraries_jll"),
+    # PETSc's mpiabi build links libmpif (Fortran MPI bindings); the MPI augmentation
+    # only provides MPIABI_jll (libmpi_abi), so add mpif_jll for mpiabi platforms to
+    # satisfy LaMEM's dlopen audit. Mirrors PETSc_jll's own recipe.
+    Dependency("mpif_jll"; compat="0.1.5", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)),
 ]
 append!(dependencies, platform_dependencies)
 
