@@ -6,12 +6,12 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "VTK"
-version = v"9.6.1"
+version = v"9.6.2"
 
 # No sources, we're just building the testsuite
 sources = [
     ArchiveSource("https://vtk.org/files/release/$(version.major).$(version.minor)/VTK-$(version).tar.gz",
-                  "47ca9af899165a33b935533046acce7c0aa3c007f0b57880665bb89d9986543f"),
+                  "aed12cec12a9609179bf66329070266627ca64244a10856a452b2a17ffb04a1d"),
     DirectorySource("bundled"),
 ]
 
@@ -338,7 +338,7 @@ dependencies = [
     Dependency("CGNS_jll"; compat="4.5.1"),           # cgns
     Dependency("Expat_jll"; compat="2.7.1"),          # expat
     Dependency("FreeType2_jll"; compat="2.13.4"),     # freetype
-    Dependency("HDF5_jll"; compat="~2.1.1"),          # hdf5
+    Dependency("HDF5_jll"; compat="~2.1.2"),          # hdf5
     Dependency("JpegTurbo_jll"; compat="3.1.2"),      # jpeg
     Dependency("Libtiff_jll"; compat="4.7.1"),        # tiff
     Dependency("Lz4_jll"; compat="1.10.1"),           # lz4
