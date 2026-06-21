@@ -38,6 +38,12 @@ else
   BLAS_LAPACK="-L${libdir} -lblastrampoline"
 fi
 
+if [[ "${target}" == *apple* ]] || [[ "${target}" == *freebsd* ]]; then
+    OMP=omp
+else
+    OMP=gomp
+fi
+
 MPILIBS=()
 if [[ ${bb_full_target} == *microsoftmpi* ]]; then
     MPILIBS=(-lmsmpi)
@@ -75,7 +81,7 @@ FSCOTCH="-Dscotch"
 
 make_args+=(PLAT="par" \
             OPTF="-O3 -fopenmp" \
-            OPTL="-O3 -fopenmp" \
+            OPTL="-O3 -l${OMP}" \
             OPTC="-O3 -fopenmp" \
             CDEFS=-DAdd_ \
             LMETISDIR="${libdir}" \
@@ -125,8 +131,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    # We just want omp.h from `LLVMOpenMP_jll` on Mac platforms
-    BuildDependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isapple, platforms)),
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD systems),
+    # and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
+    # We need libgfortran from `CompilerSupportLibraries_jll` for all platforms.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70"); compat="5.1.3"),
     Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa"); compat="4.0.7"),
