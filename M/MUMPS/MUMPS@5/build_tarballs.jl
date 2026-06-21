@@ -40,6 +40,8 @@ fi
 
 if [[ "${target}" == *apple* ]] || [[ "${target}" == *freebsd* ]]; then
     OMP=omp
+elif [[ "${target}" == *mingw* ]]; then
+    OMP=gomp-1
 else
     OMP=gomp
 fi
