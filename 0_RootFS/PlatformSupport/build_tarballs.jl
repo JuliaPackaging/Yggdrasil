@@ -34,7 +34,7 @@ include("../common.jl")
 @eval BinaryBuilder.BinaryBuilderBase push!(bootstrap_list, :rootfs)
 
 compiler_target = try
-    parse(Platform, ARGS[end])
+    BinaryBuilderBase.parse_platform(ARGS[end])
 catch
     error("This is not a typical build_tarballs.jl!  Must provide exactly one platform as the last argument!")
 end
@@ -183,7 +183,7 @@ ln -s "${prefix}" "${sysroot}/usr/local"
 
 # Build the artifacts
 ndARGS, deploy_target = find_deploy_arg(ARGS)
-build_info = build_tarballs(ndARGS, "$(name)-$(triplet(compiler_target))", version, sources, script, [host_platform], Product[], [];
+build_info = build_tarballs(ndARGS, "$(name)-$(BinaryBuilderBase.rootfs_triplet(compiler_target))", version, sources, script, [host_platform], Product[], [];
                             skip_audit=true, validate_name=false)
 if deploy_target !== nothing
     upload_and_insert_shards(deploy_target, name, version, build_info; target=compiler_target)

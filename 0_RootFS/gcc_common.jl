@@ -26,7 +26,7 @@
 #   `--deploy` flag to the `build_tarballs.jl` script.  You can either build &
 #   deploy the compilers one by one or run something like
 #
-#      for p in i686-linux-gnu x86_64-linux-gnu aarch64-linux-gnu armv7l-linux-gnueabihf powerpc64le-linux-gnu riscv64-linux-gnu i686-linux-musl x86_64-linux-musl aarch64-linux-musl armv7l-linux-musleabihf x86_64-apple-darwin14 x86_64-unknown-freebsd13.4 aarch64-unknown-freebsd14.1 i686-w64-mingw32 x86_64-w64-mingw32; do julia build_tarballs.jl --debug --verbose --deploy "${p}"; done
+#      for p in i686-linux-gnu x86_64-linux-gnu aarch64-linux-gnu armv7l-linux-gnueabihf powerpc64le-linux-gnu riscv64-linux-gnu i686-linux-musl x86_64-linux-musl aarch64-linux-musl armv7l-linux-musleabihf x86_64-apple-darwin14 x86_64-unknown-freebsd13.4 aarch64-unknown-freebsd14.1 i686-w64-mingw32 x86_64-w64-mingw32 i686-w64-ucrt-mingw32 x86_64-w64-ucrt-mingw32; do julia build_tarballs.jl --debug --verbose --deploy "${p}"; done
 
 include("./common.jl")
 include("./gcc_sources.jl")
@@ -42,6 +42,8 @@ function gcc_script(gcc_version::VersionNumber, compiler_target::Platform)
     GCC_VERSION_MAJOR=$(gcc_version.major)
     GCC_VERSION_MINOR=$(gcc_version.minor)
     GCC_VERSION_PATCH=$(gcc_version.patch)
+    MINGW_DEFAULT_CRT=$(Sys.iswindows(compiler_target) && libc(compiler_target) == "ucrt" ? "ucrt" : "")
+    ROOTFS_TARGET=$(BinaryBuilderBase.rootfs_triplet(compiler_target))
     """
 
     script *= raw"""
@@ -68,7 +70,7 @@ function gcc_script(gcc_version::VersionNumber, compiler_target::Platform)
 
     # Default sysroot
     sysroot="${prefix}/${COMPILER_TARGET}/sys-root"
-    cp -ra "/opt/${COMPILER_TARGET}/${COMPILER_TARGET}" "${prefix}/${COMPILER_TARGET}"
+    cp -ra "/opt/${ROOTFS_TARGET}/${COMPILER_TARGET}" "${prefix}/${COMPILER_TARGET}"
     mkdir -p "${sysroot}/include"
 
     # Some things need /lib64, others just need /lib.  Be consistent with where
@@ -133,6 +135,9 @@ function gcc_script(gcc_version::VersionNumber, compiler_target::Platform)
         export CPPFLAGS="${CPPFLAGS} -DCP_ACP=1"
         # Always disable TLS: https://github.com/JuliaLang/julia/pull/45582#issuecomment-1295697412
         GCC_CONF_ARGS="${GCC_CONF_ARGS} --disable-tls"
+        if [[ -n "${MINGW_DEFAULT_CRT}" ]]; then
+            GCC_CONF_ARGS="${GCC_CONF_ARGS} --with-default-msvcrt=${MINGW_DEFAULT_CRT}"
+        fi
 
     elif [[ "${COMPILER_TARGET}" == *-darwin* ]]; then
         # Use llvm archive tools to dodge binutils bugs
@@ -502,6 +507,9 @@ WRAP
         mkdir -p $WORKSPACE/srcdir/mingw_crt_build
         cd $WORKSPACE/srcdir/mingw_crt_build
         MINGW_CONF_ARGS=""
+        if [[ -n "${MINGW_DEFAULT_CRT}" ]]; then
+            MINGW_CONF_ARGS="${MINGW_CONF_ARGS} --with-default-msvcrt=${MINGW_DEFAULT_CRT}"
+        fi
 
         # If we're building a 32-bit build of mingw, add `--disable-lib64`
         if [[ "${COMPILER_TARGET}" == i686-* ]]; then
@@ -697,7 +705,7 @@ end
 function build_and_upload_gcc(version::VersionNumber, ARGS=ARGS)
     name = "GCCBootstrap"
     compiler_target = try
-        parse(Platform, ARGS[end])
+        BinaryBuilderBase.parse_platform(ARGS[end])
     catch
         error("This is not a typical build_tarballs.jl!  Must provide exactly one platform as the last argument!")
     end
