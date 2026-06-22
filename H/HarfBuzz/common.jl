@@ -6,12 +6,12 @@ function build_harfbuzz(ARGS, name::String)
 
     icu = name == "HarfBuzz_ICU"
 
-    version = v"14.2.0"
+    version = v"14.2.1"
 
     # Collection of sources required to build Harfbuzz
     sources = [
         ArchiveSource("https://github.com/harfbuzz/harfbuzz/releases/download/$(version)/harfbuzz-$(version).tar.xz",
-                      "94017020f96d025bb66ae91574e4cf334bcad23e8175a8a40565b3721bc2eaff"),
+                      "a54a5d8e9380a41fbb762ce367bcbf7704792dfca0d93f1bbca86c5a57902e0e"),
         DirectorySource("../bundled"),
     ]
 
