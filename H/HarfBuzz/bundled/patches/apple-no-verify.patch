@@ -1,6 +1,0 @@
---- a/src/hb-buffer.hh
-+++ b/src/hb-buffer.hh
-+#ifdef __APPLE__
-+/* Suppress unprefixed macros from AssertMacros.h that conflict with HarfBuzz */
-+#define __ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES 0
-+#endif
