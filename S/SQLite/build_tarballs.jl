@@ -43,6 +43,9 @@ export CPPFLAGS="-DSQLITE_ENABLE_COLUMN_METADATA=1 \
 make -j${nproc}
 make install
 
+# The autosetup build system drops .so version names, marking them as v0.0.0
+# This causes downstream libraries like GDAL to fail on macos, so we use 
+# install_name_tool to stamp the library with the correct version number.
 if [[ "${target}" == *-apple-darwin* ]]; then
     install_name_tool -id @rpath/libsqlite3.0.dylib ${libdir}/libsqlite3.dylib
 fi
