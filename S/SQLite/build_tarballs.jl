@@ -42,6 +42,11 @@ export CPPFLAGS="-DSQLITE_ENABLE_COLUMN_METADATA=1 \
     --enable-rtree
 make -j${nproc}
 make install
+
+if [[ "${target}" == *-apple-darwin* ]]; then
+    install_name_tool -id @rpath/libsqlite3.0.dylib ${libdir}/libsqlite3.dylib
+fi
+
 install_license "${WORKSPACE}/srcdir/LICENSE"
 """
 
