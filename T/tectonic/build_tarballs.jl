@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "tectonic"
-version = v"0.15.0"
+version = v"0.16.9"
 
 # Collection of sources required to build tar
 sources = [
     GitSource("https://github.com/tectonic-typesetting/tectonic.git",
-              "33ae8e755413c6b0d7adcbb550818683c6be645c"),
+              "66b6654103501b0a4a6926a7c450264be59cf927"),
 ]
 
 # Bash recipe for building across all platforms
@@ -41,12 +41,12 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Fontconfig_jll"),
-    Dependency("FreeType2_jll"; compat="2.10.4"),
+    Dependency("FreeType2_jll"),
     Dependency("Graphite2_jll"),
-    Dependency("HarfBuzz_jll"; compat="2.8.1"),
+    Dependency("HarfBuzz_jll"),
     Dependency("HarfBuzz_ICU_jll"),
-    Dependency("ICU_jll"; compat="69.1"),
-    Dependency("OpenSSL_jll"; compat="3.0.8"),
+    Dependency("ICU_jll"),
+    Dependency("OpenSSL_jll"; compat="3"),
     Dependency("Zlib_jll"),
     Dependency("libpng_jll"),
 ]
