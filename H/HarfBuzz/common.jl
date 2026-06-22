@@ -24,6 +24,8 @@ cd $WORKSPACE/srcdir/harfbuzz-*/
 # On MacOS, bypass broken check for CoreText
 if [[ "${target}" == *-apple-darwin* ]]; then
     atomic_patch -p1 ../patches/coretext-check-bypass.patch
+    # MacOS must not define a macro `verify` that clashes with HarfBuzz
+    cpp_args='-D__ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES=0'
 fi
 
 # We need C++20 for the `auto` in template parameters.
@@ -33,6 +35,7 @@ meson .. \
     --cross-file="${MESON_TARGET_TOOLCHAIN}" \
     --buildtype=release \
     -Dcpp_std=c++20 \
+    -Dcpp_args="${cpp_args}" \
     -Dcairo=enabled \
     -Dfreetype=enabled \
     -Dglib=enabled \
