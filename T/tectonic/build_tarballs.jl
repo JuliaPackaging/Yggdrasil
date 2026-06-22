@@ -25,8 +25,8 @@ install -Dvm 755 "target/${rust_target}/release/tectonic${exeext}" "${bindir}/te
 
 platforms = supported_platforms()
 # These platforms don't have a supported rust toolchain
-filter!(p -> !(arch(p) == "aarch64" && Sys.isfreebsd(p)), rust_platforms)
-filter!(p -> !(arch(p) == "riscv64"), rust_platforms)
+filter!(p -> !(arch(p) == "aarch64" && Sys.isfreebsd(p)), platforms)
+filter!(p -> !(arch(p) == "riscv64"), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
