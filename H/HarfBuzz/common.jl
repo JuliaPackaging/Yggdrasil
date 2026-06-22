@@ -45,7 +45,8 @@ meson .. \
     -Dicu_builtin=false \
     -Dcoretext=enabled \
     -Dgdi=enabled \
-    -Ddirectwrite=enabled
+    -Ddirectwrite=enabled \
+    -Dutilities=disabled
 ninja -j${nproc}
 if [[ "${ICU}" == true ]]; then
     # Remove directories with symbol files (they confuse the `cp` command below)
