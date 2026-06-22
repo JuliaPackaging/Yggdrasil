@@ -3,23 +3,19 @@
 using BinaryBuilder, Pkg
 
 name = "tree_sitter_fortran"
-version = v"0.5.1"
+version = v"0.6.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource(
         "https://github.com/stadelmanma/tree-sitter-fortran.git",
-        "64e11001d7ef3e8ac18e55a3a2d811fe36430923"
+        "48593829df8a929bfe58528eedcf405171921005"
     ),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/tree-sitter-*
-
-# Fix wide character function visibility (iswblank, etc.) on FreeBSD
-atomic_patch -p1 $WORKSPACE/srcdir/patches/freebsd-wctype-visibility.patch
 
 cmake -B build \
     -DCMAKE_BUILD_TYPE=Release \

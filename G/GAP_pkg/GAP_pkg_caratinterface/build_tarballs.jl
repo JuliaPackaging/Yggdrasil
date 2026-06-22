@@ -3,7 +3,7 @@
 include("../common.jl")
 
 name = "caratinterface"
-upstream_version = "2.3.7" # when you increment this, reset offset to v"0.0.0"
+upstream_version = "2.3.9" # when you increment this, reset offset to v"0.0.0"
 offset = v"1.0.0" # increment this when rebuilding with unchanged upstream_version
 version = offset_version(upstream_version, offset)
 
@@ -12,7 +12,7 @@ version = offset_version(upstream_version, offset)
 # Collection of sources required to build this JLL
 sources = [
     ArchiveSource("https://www.math.uni-bielefeld.de/~gaehler/gap/CaratInterface/CaratInterface-$(upstream_version).tar.gz",
-                  "fdbc0f86befd8bf575c93475b33f58329ce99fe2ef97ba69af1478bc8664059c"),
+                  "469caf37aa84cbedf6c616e69b0e2bc252376a296f0e171a134d7533b84b8dff"),
     DirectorySource("./bundled"),
 ]
 

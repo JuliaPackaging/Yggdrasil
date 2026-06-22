@@ -7,13 +7,19 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "microarchitectures.jl"))
 
 name = "aff3ct"
-version = v"4.2.0"
+# Upstream aff3ct is still 4.2.0; bumping to 4.2.2 to republish with the
+# bundled `share/aff3ct` configuration data stripped (see below). 4.2.1
+# shipped that data, which contains a case-only-differing filename pair that
+# collapses on case-insensitive filesystems (macOS APFS), causing an artifact
+# "Tree Hash Mismatch" on install. BinaryBuilder rejects build-metadata
+# versions, so bump the patch version rather than the build number.
+version = v"4.2.2"
 
 sources = [
     GitSource("https://github.com/aff3ct/aff3ct.git",
               "bd436ca2d8176983668d3dfbe231d6b52d9b5d06"),
     GitSource("https://github.com/JuliaGNSS/libaff3ct_jl.git",
-              "2d7645a4cae0ffd446bf51d0aef2bcbcac13a605"),
+              "7744526f265b2732d78bb7cd8c5da5b9ae6754f6"),
 ]
 
 script = raw"""
@@ -61,6 +67,15 @@ cmake .. \
 
 make -j${nproc}
 make install
+
+# Drop aff3ct's bundled configuration/test-vector data. We build the shared
+# library only (AFF3CT_COMPILE_EXE=OFF), so the multi-thousand-file
+# `share/aff3ct-*/conf` tree is dead weight in the artifact. It also contains
+# a filename pair differing only in case
+# (conf/cde/awgn_polar_codes/TV/11/{N,n}2048_awgn_s0.944.pc) that collapses on
+# case-insensitive filesystems (macOS APFS), making the unpacked tree hash to
+# a different git-tree-sha1 than recorded → "Tree Hash Mismatch" on install.
+rm -rf ${prefix}/share/aff3ct*
 
 # ── Build libaff3ct_jl ────────────────────────────────────────
 cd ${WORKSPACE}/srcdir/libaff3ct_jl*

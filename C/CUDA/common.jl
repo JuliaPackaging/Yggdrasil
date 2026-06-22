@@ -114,7 +114,6 @@ fi"""
     # determine exactly which tarballs we should build
     builds = []
     components = [
-        "cuda_cccl",
         "cuda_cudart",
         "cuda_cuobjdump",
         "cuda_cupti",
@@ -146,6 +145,11 @@ fi"""
     if version >= v"13"
         push!(components, "cuda_crt")
         push!(components, "libnvvm")
+    end
+    if version >= v"13.3"
+        push!(components, "cccl")
+    else
+        push!(components, "cuda_cccl")
     end
     for platform in platforms
         should_build_platform(triplet(platform)) || continue

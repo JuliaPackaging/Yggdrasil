@@ -109,19 +109,22 @@ function get_macos_sdk_script(version::String; deployment_target::String = versi
         """ *
     raw"""
     if [[ "${target}" == """*arch*raw"""-apple-darwin* ]]; then
+        # Extract SDK
         echo "Extracting MacOSX${macos_sdk_version}.sdk.tar.xz (this may take a while)"
-        rm -rf /opt/${target}/${target}/sys-root/System
-        rm -rf /opt/${target}/${target}/sys-root/usr/include/libxml2/libxml
-        # extract the tarball into the sys-root so all compilers pick it up
-        # automatically, and use --warning=no-unknown-keyword to hide harmless
-        # warnings about unsupported pax header keywords like "SCHILY.fflags"
-        tar --extract \
+        tar \
+            --extract \
             --file=${WORKSPACE}/srcdir/MacOSX${macos_sdk_version}.sdk.tar.xz \
-            --directory="/opt/${target}/${target}/sys-root/." \
-            --strip-components=1 \
-            --warning=no-unknown-keyword \
-            MacOSX${macos_sdk_version}.sdk/System \
-            MacOSX${macos_sdk_version}.sdk/usr
+            --directory=${WORKSPACE}/srcdir \
+            --warning=no-unknown-keyword
+        old_sdkroot=${SDKROOT}
+        new_sdkroot=${WORKSPACE}/srcdir/MacOSX${macos_sdk_version}.sdk
+        # Point to C++ header files (these are not shipped with the SDK)
+        ln -s ${old_sdkroot}/usr/include/c++ ${new_sdkroot}/usr/include/c++
+        # Fix toolchain files
+        sed -i -e "s+${old_sdkroot}+${new_sdkroot}+" ${MESON_TARGET_TOOLCHAIN} ${CMAKE_TARGET_TOOLCHAIN}
+        # Fix compiler wrappers
+        sed -i -e "s+${old_sdkroot}+${new_sdkroot}+" $(find /opt/bin/${target}* -type f -print)
+        SDKROOT=${new_sdkroot}
         export MACOSX_DEPLOYMENT_TARGET=${macosx_deployment_target}
     fi
     """

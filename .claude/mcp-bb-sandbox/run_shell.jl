@@ -3,7 +3,7 @@
 # Helper script to launch an interactive BinaryBuilder sandbox shell.
 # Called by the MCP server as a subprocess with piped IO.
 #
-# Usage: julia --project=.ci run_shell.jl <platform> [workdir]
+# Usage: julia --project=.claude run_shell.jl <platform> [workdir]
 #
 # The sandbox's stdin/stdout are inherited from this process,
 # so the MCP server can communicate with the shell via pipes.

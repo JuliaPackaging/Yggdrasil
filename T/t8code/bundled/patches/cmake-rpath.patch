@@ -1,0 +1,65 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+
+@@ -120,8 +120,31 @@ else()
+     set( gtest_disable_mpi ON CACHE INTERNAL "disable gtest mpi support" FORCE)
+ endif()
+ 
++# Rpath options necessary for shared library install to work correctly in user projects.
++# Compute the relative Rpath for proper library installation
++set(libPath ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}) # Library directory)
++cmake_path(RELATIVE_PATH libPath
++    BASE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR} # Binary directory
++    OUTPUT_VARIABLE relativeRpath
++)
++
++set(CMAKE_INSTALL_RPATH_USE_LINK_PATH true)
++
++if(APPLE)
++    set(CMAKE_MACOSX_RPATH true)
++    set(CMAKE_INSTALL_RPATH @loader_path @loader_path/${relativeRpath})
++elseif(UNIX)
++    set(CMAKE_INSTALL_RPATH $ORIGIN $ORIGIN/${relativeRpath})
++endif()
++
+ ############################################ ThirdParty ############################################
+ 
++# Override default for this libsc option
++set( BUILD_SHARED_LIBS ON CACHE BOOL "Build libsc as a shared library" )
++
++# Prevent `libsc` and `p4est` from overwriting the default install prefix.
++set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT FALSE)
++
+ # Set some variables for the thirdparty libraries
+ set( gtest_force_shared_crt ON CACHE INTERNAL "" FORCE )
+ set( P4EST_BUILD_EXAMPLES ${T8CODE_BUILD_TPL_EXAMPLES} )
+@@ -205,29 +228,6 @@ if( T8CODE_ENABLE_OCC )
+     endif (OpenCASCADE_FOUND)
+ endif( T8CODE_ENABLE_OCC )
+ 
+-# Override default for this libsc option
+-set( BUILD_SHARED_LIBS ON CACHE BOOL "Build libsc as a shared library" )
+-
+-# Prevent `libsc` and `p4est` from overwriting the default install prefix.
+-set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT FALSE)
+-
+-# Rpath options necessary for shared library install to work correctly in user projects.
+-# Compute the relative Rpath for proper library installation
+-set(libPath ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}) # Library directory)
+-cmake_path(RELATIVE_PATH libPath
+-    BASE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR} # Binary directory
+-    OUTPUT_VARIABLE relativeRpath
+-)
+-
+-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH true)
+-
+-if(APPLE)
+-    set(CMAKE_MACOSX_RPATH true)
+-    set(CMAKE_INSTALL_RPATH @loader_path @loader_path/${relativeRpath})
+-elseif(UNIX)
+-    set(CMAKE_INSTALL_RPATH $ORIGIN $ORIGIN/${relativeRpath})
+-endif()
+-
+ if ( T8CODE_USE_SYSTEM_SC )
+     find_package( SC REQUIRED )
+ else()

@@ -8,8 +8,8 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "t8code"
-version = v"4.0.5"
-commit_hash = "3f9df7fb5e757fbe675203e95af62c4f39f886aa"
+version = v"4.0.6"
+commit_hash = "4a82a3bf8f7741043478a0cbbdb33561ec50b8f2"
 
 sources = [GitSource("https://github.com/DLR-AMR/t8code", commit_hash),
            DirectorySource("./bundled")]
@@ -17,17 +17,11 @@ sources = [GitSource("https://github.com/DLR-AMR/t8code", commit_hash),
 script = raw"""
 cd $WORKSPACE/srcdir/t8code
 
-# fetch sc and p4est
-git submodule init
-git submodule update
-
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi-constants.patch"
+# Fix for https://github.com/DLR-AMR/t8code/pull/2335
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/cmake-rpath.patch"
 
 # Microsoft MPI is still 2.0 but has the required features; remove the strict 3.0 requirement
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi2.patch"
-
-# Fixes for mingw, which is WIN32 for cmake, but uses Linux syntax
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mingw.patch"
 
 # Show CMake where to find `mpiexec`.
 if [[ "${target}" == *-mingw* ]]; then
@@ -51,6 +45,12 @@ cmake . \
       -DT8CODE_BUILD_TESTS=OFF \
       -DT8CODE_BUILD_TUTORIALS=OFF \
       -DT8CODE_ENABLE_MPI=ON
+
+# Fixes for mingw, which is WIN32 for cmake, but uses Linux syntax
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mingw.patch"
+
+# Fixes for "initializer element is not constant" in sc
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi-constants.patch"
 
 make -C build -j ${nproc}
 make -C build -j ${nproc} install
