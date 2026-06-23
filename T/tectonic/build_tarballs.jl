@@ -23,7 +23,14 @@ cargo build --release --locked --features external-harfbuzz
 install -Dvm 755 "target/${rust_target}/release/tectonic${exeext}" "${bindir}/tectonic${exeext}"
 """
 
+# Some platforms disabled for now due issues with rust and musl cross compilation. See #1673.
 platforms = supported_platforms()
+# We dont have all dependencies for armv6l
+filter!(p -> arch(p) != "armv6l", platforms)
+# Rust toolchain for i686 Windows is unusable
+filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
+# Musl used to build in 0.14 but does not in 0.15+
+filter!(p -> libc(p) != "musl", platforms)
 # These platforms don't have a supported rust toolchain
 filter!(p -> !(arch(p) == "aarch64" && Sys.isfreebsd(p)), platforms)
 filter!(p -> !(arch(p) == "riscv64"), platforms)
