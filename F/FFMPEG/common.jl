@@ -6,14 +6,14 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "FFMPEG"
-version_string = "8.1"   # when patch number is zero, they use X.Y format
+version_string = "8.1.2"   # when patch number is zero, they use X.Y format
 version = VersionNumber(version_string)
 
 # Collection of sources required to build FFMPEG
 sources = [
     ArchiveSource(
         "https://ffmpeg.org/releases/ffmpeg-$(version_string).tar.xz",
-        "b072aed6871998cce9b36e7774033105ca29e33632be5b6347f3206898e0756a",
+        "464beb5e7bf0c311e68b45ae2f04e9cc2af88851abb4082231742a74d97b524c",
     ),
     ## FFmpeg 6.1.1 does not work with macos 10.13 or earlier.
     get_macos_sdk_sources("10.13")...
