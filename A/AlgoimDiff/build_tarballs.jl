@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "AlgoimDiff"
-version = v"1.1.0"
+version = v"1.2.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/jehicken/algoim.git", 
-        "5528fe12c6449d85dcf7960e48ed6e165bfd185b")
+        "c052754f0366591a25f1d0c15fdc77542362e9b6")
 ]
 
 # Bash recipe for building across all platforms
