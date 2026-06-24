@@ -4,7 +4,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "PARMETIS"
-version = v"4.0.6" # <-- This is a lie, we're bumping to 4.0.6 since we are adding new dependencies and building all library versions.
+version = v"4.0.7" # <-- This is a lie, we're bumping to 4.0.6 since we are adding new dependencies and building all library versions.
 parmetis_version = v"4.0.3"
 
 # Collection of sources required to build PARMETIS.
@@ -34,10 +34,12 @@ if [ $target = "x86_64-w64-mingw32" ] || [ $target = "i686-w64-mingw32" ]; then
 fi
 popd
 
-grep -iq MPICH $prefix/include/mpi.h && mpi_libraries='mpi'
-grep -iq OMPI $prefix/include/mpi.h && mpi_libraries='mpi'
-grep -iq MSMPI $prefix/include/mpi.h && mpi_libraries='msmpi'
-grep -iq MPItrampoline $prefix/include/mpi.h && mpi_libraries='mpitrampoline'
+grep -iq MPICH $includedir/mpi.h && mpi_libraries='mpi'
+grep -iq OMPI $includedir/mpi.h && mpi_libraries='mpi'
+grep -iq MSMPI $includedir/mpi.h && mpi_libraries='msmpi'
+grep -iq MPItrampoline $includedir/mpi.h && mpi_libraries='mpitrampoline'
+# Keep this last to overwrite the statements above if necessary
+grep -iq MPI_ABI_VERSION $includedir/mpi.h && test -f $libdir/libmpi_abi.$dlext && mpi_libraries='mpi_abi'
 
 cd build
 # {1} is inttype (32 or 64) and {2} is realtype (32 or 64)
@@ -84,14 +86,7 @@ augment_platform_block = """
 """
 
 platforms = supported_platforms()
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1", OpenMPI_compat="4.1.6, 5")
-
-# Avoid platforms where the MPI implementation isn't supported
-# OpenMPI
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
-# MPItrampoline
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -103,7 +98,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70"); compat="5.1.2"),
+    Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70"); compat="5.1.3"),
 ]
 append!(dependencies, platform_dependencies)
 

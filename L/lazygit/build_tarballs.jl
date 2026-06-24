@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "lazygit"
-version = v"0.23.6"
+version = v"0.61.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/jesseduffield/lazygit.git", "7c1889cd70b81d9f8438c197c3d2fc89e5695160")
+    GitSource("https://github.com/jesseduffield/lazygit.git", "d167063b4f45d044524f3fba97f850d1eec3f95c"),
 ]
 
 # Bash recipe for building across all platforms
@@ -32,4 +32,5 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers = [:go, :c])
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               compilers = [:go, :c], julia_compat = "1.6")

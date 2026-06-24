@@ -3,7 +3,8 @@
 using BinaryBuilder, Pkg
 
 name = "XPA"
-version = v"2.1.21" # <--- This version number is a lie to build for more platforms
+xpa_version = v"2.1.20"
+version = v"2.1.22" # <--- This version number is a lie to build for more platforms
 
 # Collection of sources required to complete build
 sources = [

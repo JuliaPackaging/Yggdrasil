@@ -1,0 +1,10 @@
+prefix=${pcfiledir}/../..
+exec_prefix=${pcfiledir}/../..
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: lz4
+Description: LZ4 compression library
+Version: ygg
+Libs: -L${libdir} -llz4
+Cflags: -I${includedir}

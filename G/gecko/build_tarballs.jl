@@ -1,0 +1,69 @@
+# Note that this script can accept some limited command-line arguments, run
+# `julia build_tarballs.jl --help` to see a usage message.
+using BinaryBuilder, Pkg
+
+# The version of this JLL is decoupled from the upstream version.
+name = "gecko"
+version = v"1.1.0"
+
+# Collection of sources required to complete build
+sources = [
+    GitSource("https://github.com/LLNL/gecko.git", "490ab7d9b7b4e0f007e10d2af2b022b96d427fee"),
+    DirectorySource("./bundled"),
+]
+
+# Bash recipe for building across all platforms
+script = raw"""
+# First build the gecko library
+cd $WORKSPACE/srcdir/gecko/
+mkdir build
+cmake -S ./ -B build .. \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_BUILD_TYPE=Release
+
+cmake --build build --parallel ${nproc}
+cmake --install build
+
+# Now with the gecko library we can build the wrapper
+cd $WORKSPACE/srcdir/geckowrapper/
+mkdir build
+cmake -S ./ -B build .. \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DJulia_PREFIX=${prefix} \
+    -DGECKO_DIR=$prefix \
+    -DGECKO_LIBRARY="-lgecko" \
+    -DCMAKE_BUILD_TYPE=Release
+
+cmake --build build --parallel ${nproc}
+cmake --install build
+"""
+
+# These are the platforms we will build for by default, unless further
+# platforms are passed in on the command line
+# Only support Linux and FreeBSD
+include("../../L/libjulia/common.jl")
+platforms = reduce(vcat, libjulia_platforms.(julia_versions))
+platforms = expand_cxxstring_abis(platforms)
+filter!(p -> (Sys.islinux(p) || Sys.isfreebsd(p)), platforms)
+
+# The products that we will ensure are always built
+products = [
+    LibraryProduct("libgecko", :libgecko)
+    LibraryProduct("libgeckowrapper", :libgeckowrapper)
+]
+
+# Dependencies that must be installed before this package can be built
+dependencies = [
+    Dependency("libcxxwrap_julia_jll"; compat = "~0.14.5"),
+    Dependency("CompilerSupportLibraries_jll"),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version="1.11.0")),
+]
+
+# we want to get notified of any changes to julia_compat, and adapt `version` accordingly
+@assert libjulia_min_julia_version <= v"1.10.0"
+
+# Build the tarballs, and possibly a `build.jl` as well.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+    preferred_gcc_version=v"8", julia_compat=libjulia_julia_compat(julia_versions))

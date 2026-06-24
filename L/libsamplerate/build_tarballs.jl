@@ -4,6 +4,7 @@ using BinaryBuilder, Pkg
 
 name = "libsamplerate"
 version = v"0.1.9"
+ygg_version = v"0.1.10"         # built for new architectures
 
 # Collection of sources required to complete build
 sources = [
@@ -36,4 +37,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6")

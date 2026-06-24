@@ -1,0 +1,11 @@
+--- a/src/backbone.cpp
++++ b/src/backbone.cpp
+@@ -27,7 +27,7 @@
+ #include <cstdint>
+ #include "cryptominisat.h"
+ #include "varreplacer.h"
+-#include "../cadiback/cadiback.h"
++#include "cadiback.h"
+ 
+ using namespace CMSat;
+ 

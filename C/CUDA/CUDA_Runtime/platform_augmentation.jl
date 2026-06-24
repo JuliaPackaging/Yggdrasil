@@ -59,28 +59,6 @@ else
     parse_version_preference("version")
 end
 
-if ismissing(version_preference)
-    # before loading CUDA_Driver_jll, try to find out where the system driver is located.
-    let
-        name = if Sys.iswindows()
-            Libdl.find_library("nvcuda")
-        else
-            Libdl.find_library(["libcuda.so.1", "libcuda.so"])
-        end
-
-        # if we've found a system driver, put a dependency on it,
-        # so that we get recompiled if the driver changes.
-        if name != ""
-            handle = Libdl.dlopen(name)
-            path = Libdl.dlpath(handle)
-            Libdl.dlclose(handle)
-
-            @debug "Adding include dependency on $path"
-            Base.include_dependency(path)
-        end
-    end
-end
-
 # platform augmentation hooks run in an ill-defined environment, where:
 # - CUDA_Driver_jll may not be available
 # - the wrong version of CUDA_Driver_jll may be available
@@ -139,70 +117,95 @@ function get_runtime_version()
     cudaRuntimeGetVersion(runtime_handle)
 end
 
-# get the version of the available CUDA driver by querying either CUDA_Driver_jll's
-# driver, or the system driver if CUDA_Driver_jll is not available
-function get_driver_version()
+# get the CUDA driver version and the compute capability of each visible device
+# by invoking CUDA_Driver_jll's `inspect_driver` helper, which runs the inspection
+# in a subprocess so we don't have to load the driver into our own process.
+function get_driver_info()
     if !@isdefined(CUDA_Driver_jll)
         # driver JLL not available because we're in the middle of installing packages
         @debug "CUDA_Driver_jll not available; not selecting an artifact"
         return nothing
     end
 
-    cuda_driver = if CUDA_Driver_jll.is_available()
-        @debug "Using CUDA_Driver_jll for driver discovery"
+    # inspect the system driver (rather than CUDA_Driver_jll.libcuda, which may
+    # be the forwards-compatible driver bundled in its artifact and which has
+    # private deps the inspection subprocess wouldn't preload). only the system
+    # driver actually changes when the user upgrades their NVIDIA driver, and
+    # it's the one we want to depend on for cache invalidation.
+    libcuda_system = Sys.iswindows() ? "nvcuda" : "libcuda.so.1"
 
-        if !isdefined(CUDA_Driver_jll, :libcuda) || # CUDA_Driver_jll@0.4-compat
-            isnothing(CUDA_Driver_jll.libcuda)      # https://github.com/JuliaLang/julia/issues/48999
-            # no driver found
-            @debug "CUDA_Driver_jll reports no driver found"
-            return nothing
-        end
-        CUDA_Driver_jll.libcuda
-    else
-        # CUDA_Driver_jll only kicks in for supported platforms, so fall back to
-        # a system search if the artifact isn't available (JLLWrappers.jl#50)
-        @debug "CUDA_Driver_jll unavailable, falling back to system search"
-
-        driver_name = if Sys.iswindows()
-            Libdl.find_library("nvcuda")
-        else
-            Libdl.find_library(["libcuda.so.1", "libcuda.so"])
-        end
-        if driver_name == ""
-            # no driver found
-            @debug "CUDA_Driver_jll unavailable, and no system CUDA driver found"
-            return nothing
-        end
-
-        driver_name
-    end
-    @debug "Found CUDA driver at '$cuda_driver'"
-
-    # minimal API call wrappers we need
-    function cuDriverGetVersion(library_handle)
-        function_handle = Libdl.dlsym(library_handle, "cuDriverGetVersion"; throw_error=false)
-        if function_handle === nothing
-            @debug "Driver library seems invalid (does not contain 'cuDriverGetVersion')"
-            return nothing
-        end
-        version_ref = Ref{Cint}()
-        status = ccall(function_handle, Cint, (Ptr{Cint},), version_ref)
-        if status != 0
-            @debug "Call to 'cuDriverGetVersion' failed with status $status"
-            return nothing
-        end
-        major, ver = divrem(version_ref[], 1000)
-        minor, patch = divrem(ver, 10)
-        return VersionNumber(major, minor, patch)
-    end
-
-    driver_handle = Libdl.dlopen(cuda_driver; throw_error=false)
-    if driver_handle === nothing
-        @debug "Failed to load CUDA driver"
+    # platform augmentation runs in a Pkg subprocess where the in-memory manifest
+    # may be inconsistent (JuliaLang/Pkg.jl#3225), so the CUDA_Driver_jll we just
+    # loaded may not actually be the one we'd resolve against. swallow any error
+    # accessing/calling `inspect_driver` and bail out.
+    info = try
+        CUDA_Driver_jll.inspect_driver(libcuda_system; inspect_devices=true)
+    catch err
+        @debug "CUDA_Driver_jll.inspect_driver failed: $err"
         return nothing
     end
+    info === nothing && return nothing
 
-    cuDriverGetVersion(driver_handle)
+    # register the resolved driver path as an include dependency so our
+    # precompile cache is invalidated when the user upgrades their driver.
+    @debug "Adding include dependency on $(info.path)"
+    Base.include_dependency(info.path)
+
+    return (info.version, info.capabilities)
+end
+
+# CUDA toolkit support for each GPU compute capability. Maps a compute
+# capability to a `(lo, hi)` tuple of inclusive toolkit version bounds:
+# `lo` is the toolkit that introduced support for the architecture, `hi` is
+# the last toolkit that still supports it (toolkits drop architecture support
+# over time). `v"99"` is used as an open-ended upper bound for capabilities
+# still supported by current toolkits.
+#
+# Sources:
+# - https://en.wikipedia.org/wiki/CUDA#GPUs_supported
+# - `ptxas |& grep -A 10 '\--gpu-name'`
+const cuda_cap_db = Dict{VersionNumber, NTuple{2, VersionNumber}}(
+    v"1.0"   => (v"0",     v"6.5"),
+    v"1.1"   => (v"0",     v"6.5"),
+    v"1.2"   => (v"0",     v"6.5"),
+    v"1.3"   => (v"0",     v"6.5"),
+    v"2.0"   => (v"0",     v"8.0"),
+    v"2.1"   => (v"0",     v"8.0"),
+    v"3.0"   => (v"4.2",   v"10.2"),
+    v"3.2"   => (v"6.0",   v"10.2"),
+    v"3.5"   => (v"5.0",   v"11.8"),
+    v"3.7"   => (v"6.5",   v"11.8"),
+    v"5.0"   => (v"6.0",   v"12.9"),
+    v"5.2"   => (v"7.0",   v"12.9"),
+    v"5.3"   => (v"7.5",   v"12.9"),
+    v"6.0"   => (v"8.0",   v"12.9"),
+    v"6.1"   => (v"8.0",   v"12.9"),
+    v"6.2"   => (v"8.0",   v"12.9"),
+    v"7.0"   => (v"9.0",   v"12.9"),
+    v"7.2"   => (v"9.2",   v"12.9"),
+    v"7.5"   => (v"10.0",  v"99"),
+    v"8.0"   => (v"11.0",  v"99"),
+    v"8.6"   => (v"11.1",  v"99"),
+    v"8.7"   => (v"11.4",  v"99"),
+    v"8.9"   => (v"11.8",  v"99"),
+    v"9.0"   => (v"11.8",  v"99"),
+    v"10.0"  => (v"12.8",  v"99"),
+    v"10.3"  => (v"12.8",  v"99"),
+    v"11.0"  => (v"12.8",  v"99"),
+    v"12.0"  => (v"12.8",  v"99"),
+    v"12.1"  => (v"12.9",  v"99"),
+)
+
+"""
+    supported_capabilities(toolkit::VersionNumber) -> Set{VersionNumber}
+
+Return the set of GPU compute capabilities supported by the given CUDA toolkit.
+Comparisons are at minor-version granularity, so e.g. `v"12.9.1"` and `v"12.9.0"`
+are treated identically.
+"""
+function supported_capabilities(toolkit::VersionNumber)
+    minor = thisminor(toolkit)
+    Set(cap for (cap, (lo, hi)) in cuda_cap_db if lo <= minor <= hi)
 end
 
 # returns the value for the "cuda" tag we should use in the platform ("$MAJOR.$MINOR")
@@ -236,43 +239,76 @@ function cuda_toolkit_tag()
         end
     end
 
-    # if not, we need to be able to use the driver to determine the version.
-    # note that we only require this when there's no override, to support
-    # precompiling with a fixed version without having the driver available.
+    # if not, we need to be able to inspect the driver to determine its version
+    # and the compute capability of each visible device. we only require this
+    # when there's no override, to support precompiling with a fixed version
+    # without having the driver available.
     if !@isdefined(cuda_version_override)
-        cuda_driver_version = get_driver_version()
-        if cuda_driver_version === nothing
-            @debug "Failed to query CUDA driver version"
+        driver_info = get_driver_info()
+        if driver_info === nothing
+            @debug "Failed to query the CUDA driver and its devices"
             return nothing
         end
+        cuda_driver_version, device_capabilities = driver_info
         @debug "CUDA driver version: $cuda_driver_version"
+        if isempty(device_capabilities)
+            @debug "No CUDA devices visible"
+        else
+            @debug "CUDA device compute capabilities: $(join(device_capabilities, ", "))"
+        end
     end
 
     # "[...] applications built against any of the older CUDA Toolkits always continued
     #  to function on newer drivers due to binary backward compatibility"
     compatible_toolkits = filter(cuda_toolkits) do toolkit
         if @isdefined(cuda_version_override)
-            thisminor(toolkit) == thisminor(cuda_version_override)
-        elseif cuda_driver_version >= v"11"
-            # enhanced compatibility
-            #
-            # "From CUDA 11 onwards, applications compiled with a CUDA Toolkit release
-            #  from within a CUDA major release family can run, with limited feature-set,
-            #  on systems having at least the minimum required driver version"
+            return thisminor(toolkit) == thisminor(cuda_version_override)
+        end
+
+        # enhanced compatibility
+        #
+        # "From CUDA 11 onwards, applications compiled with a CUDA Toolkit release
+        #  from within a CUDA major release family can run, with limited feature-set,
+        #  on systems having at least the minimum required driver version"
+        if cuda_driver_version >= v"11"
             thismajor(toolkit) <= thismajor(cuda_driver_version)
         else
             thisminor(toolkit) <= thisminor(cuda_driver_version)
         end
     end
     if isempty(compatible_toolkits)
-        # the user either has a functional CUDA driver set-up, or requested a specific
-        # toolkit version, so complain loudly if we aren't compatible with it.
         if @isdefined(cuda_version_override)
             @error "Requested CUDA version $(cuda_version_override) does not match any supported CUDA toolkit ($(join(cuda_toolkits, ", ", " or ")))"
         else
             @error "CUDA driver $(cuda_driver_version) is not compatible with any supported CUDA toolkit ($(join(cuda_toolkits, ", ", " or ")))"
         end
         return nothing
+    end
+
+    # narrow the candidate toolkits to those that support the user's hardware,
+    # giving priority to the newest devices: walk device capabilities from
+    # newest to oldest, intersecting the candidate set with toolkits supporting
+    # each. if an older device cannot be supported alongside newer ones, drop
+    # it rather than discard the whole selection, as the user almost certainly
+    # cares more about their newest hardware working than their oldest.
+    if !@isdefined(cuda_version_override) && !isempty(device_capabilities)
+        supports_capability(toolkit, cap) = let minor = thisminor(toolkit)
+            # capabilities absent from `cuda_cap_db` are presumed unsupported:
+            # they're either future architectures that need a newer toolkit
+            # than anything we know about, or fictional. either way no toolkit
+            # in our list is known to handle them.
+            haskey(cuda_cap_db, cap) || return false
+            lo, hi = cuda_cap_db[cap]
+            lo <= minor <= hi
+        end
+        for cap in sort(unique(device_capabilities); rev=true)
+            subset = filter(t -> supports_capability(t, cap), compatible_toolkits)
+            if isempty(subset)
+                @debug "No remaining toolkit supports device with compute capability $cap; dropping it from the selection"
+            else
+                compatible_toolkits = subset
+            end
+        end
     end
 
     cuda_toolkit = Base.thisminor(last(compatible_toolkits))
@@ -291,6 +327,17 @@ function cuda_comparison_strategy(a::String, b::String, a_requested::Bool, b_req
     return a == b
 end
 
+function is_tegra()
+    if isfile("/etc/nv_tegra_release")
+        return true
+    end
+    if isfile("/proc/device-tree/compatible") &&
+        contains(read("/proc/device-tree/compatible", String), "tegra")
+        return true
+    end
+    return false
+end
+
 function augment_platform!(platform::Platform)
     if !haskey(platform, "cuda")
         platform["cuda"] = something(cuda_toolkit_tag(), "none")
@@ -302,6 +349,15 @@ function augment_platform!(platform::Platform)
     # store the fact that we're using a local CUDA toolkit, so that we can more easily
     # query it from CUDA.jl without having to parse the preference again.
     platform["cuda_local"] = string(local_preference !== missing && local_preference)
+
+    # if we're on an arm64 platform, identify the CUDA subplatform
+    if Sys.islinux() && arch(platform) == "aarch64"
+        platform["cuda_platform"] = if is_tegra()
+            "jetson"
+        else
+            "sbsa"
+        end
+    end
 
     return platform
 end

@@ -3,11 +3,11 @@ using BinaryBuilder
 # ASDF - Advanced Scientific Data Format, a C++ implementation
 
 name = "asdf_cxx"
-version = v"7.3.1"
+version = v"7.3.2"
 
 # Collection of sources required to build asdf-cxx
 sources = [
-    GitSource("https://github.com/eschnett/asdf-cxx", "9836ffb81c79f48182226a3b976d260078a05b07"),
+    GitSource("https://github.com/eschnett/asdf-cxx", "abfdeb28d3d5b11f94f3937c082e3c5747710678"),
 ]
 
 # Bash recipe for building across all platforms
@@ -28,8 +28,8 @@ platforms = expand_cxxstring_abis(platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Blosc2_jll"),
-    Dependency("Blosc_jll"),
+    Dependency("Blosc2_jll"; compat="201.1500.0"),
+    Dependency("Blosc_jll"; compat="1.21.1"),
     Dependency("Bzip2_jll"; compat="1.0.8"),
     Dependency("OpenSSL_jll"; compat="3.0.10"),
     Dependency("Zlib_jll"),

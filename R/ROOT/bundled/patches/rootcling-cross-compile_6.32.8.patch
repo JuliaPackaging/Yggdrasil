@@ -1,0 +1,190 @@
+diff -ru a/root/cmake/modules/RootMacros.cmake b/root/cmake/modules/RootMacros.cmake
+--- a/root/cmake/modules/RootMacros.cmake	2024-11-14 10:27:26.000000000 +0100
++++ b/root/cmake/modules/RootMacros.cmake	2025-01-31 11:01:18.350881086 +0100
+@@ -8,6 +8,21 @@
+ #  RootMacros.cmake
+ #---------------------------------------------------------------------------------------------------
+ 
++set(NATIVE_BINARY_DIR FALSE CACHE FILEPATH "Path of native built in case of cross compiling.")
++set(CLING_SYSTEM_INCLUDE_PATH FALSE CACHE FILEPATH "List of system paths for rootcling. This option is relevant for a cross compilation that require change of the default path.")
++
++set(CLING_TARGET_GLIBC FALSE CACHE BOOL "Force rootcling to generate code for glibc. The option is relevant if rootcling is run on one platform to build code for another platform that uses a different libc library")
++
++if(CLING_TARGET_GLIBC)
++  add_compile_definitions(TARGET_GLIBC=1)
++endif()
++
++set(CLING_TARGET_GLIBCXX FALSE CACHE BOOL "Force rootcling to generate code for GNU libstdc++. The option is relevant if rootcling is run on one platform to build code for another platform that uses a different standard c++ library")
++
++if(CLING_TARGET_GLIBCXX)
++  add_compile_definitions(TARGET_GLIBCXX=1)
++endif()
++
+ if(WIN32)
+   set(libprefix lib)
+   set(ld_library_path PATH)
+@@ -302,6 +317,12 @@
+   # list of include directories for dictionary generation
+   set(incdirs)
+ 
++  # for cross compilation
++  set(system_include_dir_opt "")
++  if(CLING_SYSTEM_INCLUDE_PATH)
++    set(system_include_dir_opt "CPLUS_INCLUDE_PATH=${CLING_SYSTEM_INCLUDE_PATH}")
++  endif()
++
+   if((CMAKE_PROJECT_NAME STREQUAL ROOT) AND (TARGET ${ARG_MODULE}))
+     set(headerdirs)
+ 
+@@ -602,33 +623,47 @@
+     set(newargs -cxxmodule ${newargs})
+   endif()
+ 
++  set(rootcling_env "${system_include_dir_opt}")
++  
++  if(NATIVE_BINARY_DIR)
++    set(rootcling_libdir "${NATIVE_BINARY_DIR}/lib")
++    set(rootcling "${NATIVE_BINARY_DIR}/bin/rootcling")
++    set(rootcling_stage1 "${NATIVE_BINARY_DIR}/core/rootcling_stage1/src/rootcling_stage1")
++    set(rootcling_env ${rootcling_env} LLVM_SYMBOLIZER_PATH=${NATIVE_BINARY_DIR}/tools/llvm-symbolizer)
++  else()
++    set(rootcling_libdir "${CMAKE_BINARY_DIR}/lib")
++    set(rootcling "$<TARGET_FILE:rootcling>")
++    set(rootcling_stage1 "$<TARGET_FILE:rootcling_stage1>")
++  endif()
++
++  if(APPLE)
++    set(rootcling_env ${rootcling_env} DYLD_LIBRARY_PATH=${rootcling_libdir}:$ENV{DYLD_LIBRARY_PATH})
++  else()
++    set(rootcling_env ${rootcling_env} LD_LIBRARY_PATH=${rootcling_libdir}:$ENV{LD_LIBRARY_PATH})
++  endif()
++    
+   #---what rootcling command to use--------------------------
+   if(ARG_STAGE1)
+     if(MSVC AND CMAKE_ROOTTEST_DICT)
+       set(command ${CMAKE_COMMAND} -E ${CMAKE_BINARY_DIR}/bin/rootcling_stage1.exe)
+     else()
+-      set(command ${CMAKE_COMMAND} -E env "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib:$ENV{LD_LIBRARY_PATH}" $<TARGET_FILE:rootcling_stage1>)
++      set(command ${CMAKE_COMMAND} -E env ${rootcling_env}  ${rootcling_stage1})
+     endif()
+     set(ROOTCINTDEP rconfigure)
+     set(pcm_name)
+   else()
+     if(CMAKE_PROJECT_NAME STREQUAL ROOT)
+       if(MSVC AND CMAKE_ROOTTEST_DICT)
+-        set(command ${CMAKE_COMMAND} -E env "ROOTIGNOREPREFIX=1" ${CMAKE_BINARY_DIR}/bin/rootcling.exe)
++        set(command ${CMAKE_COMMAND} -E env "ROOTIGNOREPREFIX=1" ${CMAKE_BINARY_DIR}/core/rootcling_stage1/src/rootcling.exe)
+       else()
+-        set(command ${CMAKE_COMMAND} -E env "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib:$ENV{LD_LIBRARY_PATH}"
+-                    "ROOTIGNOREPREFIX=1" $<TARGET_FILE:rootcling> -rootbuild)
++        set(command ${CMAKE_COMMAND} -E env ${rootcling_env} "ROOTIGNOREPREFIX=1" ${rootcling} -rootbuild)
+         # Modules need RConfigure.h copied into include/.
+         set(ROOTCINTDEP rootcling rconfigure)
+       endif()
+     elseif(TARGET ROOT::rootcling)
+-      if(APPLE)
+-        set(command ${CMAKE_COMMAND} -E env "DYLD_LIBRARY_PATH=${ROOT_LIBRARY_DIR}:$ENV{DYLD_LIBRARY_PATH}" $<TARGET_FILE:ROOT::rootcling>)
+-      else()
+-        set(command ${CMAKE_COMMAND} -E env "LD_LIBRARY_PATH=${ROOT_LIBRARY_DIR}:$ENV{LD_LIBRARY_PATH}" $<TARGET_FILE:ROOT::rootcling>)
+-      endif()
++      set(command ${CMAKE_COMMAND} -E env ${rootcling_env} $rootcling)
+     else()
+-      set(command ${CMAKE_COMMAND} -E env rootcling)
++      set(command ${CMAKE_COMMAND} -E env ${system_include_dir_opt} rootcling)
+     endif()
+   endif()
+ 
+diff -ru a/root/CMakeLists.txt b/root/CMakeLists.txt
+--- a/root/CMakeLists.txt	2024-11-14 10:27:26.000000000 +0100
++++ b/root/CMakeLists.txt	2025-01-31 11:01:18.352881145 +0100
+@@ -531,6 +531,16 @@
+   get_property(__pch_dependencies GLOBAL PROPERTY ROOT_PCH_DEPENDENCIES)
+   get_property(__pch_dictionaries GLOBAL PROPERTY ROOT_PCH_DICTIONARIES)
+ 
++  if(NATIVE_BINARY_DIR)
++    set(rootcling_env "LLVM_SYMBOLIZER_PATH=${NATIVE_BINARY_DIR}/tools/llvm-symbolizer")
++  else()
++    set(rootcling_dir "")
++  endif()
++
++  if(CLING_SYSTEM_INCLUDE_PATH)
++    set(rootcling_env ${rootcling_env} "CPLUS_INCLUDE_PATH=${CLING_SYSTEM_INCLUDE_PATH}")
++  endif()
++
+   add_custom_command(OUTPUT etc/allDict.cxx.pch
+     BYPRODUCTS
+       etc/dictpch/allCppflags.txt
+@@ -540,7 +550,7 @@
+       ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/build/unix/makepchinput.py
+       ${CMAKE_SOURCE_DIR} . ${pyroot_legacy} ${__cling_pch}
+     COMMAND
+-      ${CMAKE_COMMAND} -E env ROOTIGNOREPREFIX=1 ${Python3_EXECUTABLE}
++      ${CMAKE_COMMAND} -E env ${rootcling_env} ROOTIGNOREPREFIX=1 ${Python3_EXECUTABLE}
+       ${CMAKE_SOURCE_DIR}/etc/dictpch/makepch.py etc/allDict.cxx.pch
+       ${__allIncludes} -I${CMAKE_BINARY_DIR}/include -I${CMAKE_SOURCE_DIR}/core
+     DEPENDS
+Only in b/root: CMakeLists.txt.orig
+diff -ru a/root/etc/dictpch/makepch.py b/root/etc/dictpch/makepch.py
+--- a/root/etc/dictpch/makepch.py	2024-11-14 10:27:26.000000000 +0100
++++ b/root/etc/dictpch/makepch.py	2025-01-31 11:01:18.347880996 +0100
+@@ -82,8 +82,6 @@
+    cppFlags = getCppFlags(cppflagsFilename)
+ 
+    cppflagsList=["-D__CLING__",
+-                 "-D__STDC_LIMIT_MACROS",
+-                 "-D__STDC_CONSTANT_MACROS",
+                  "-DROOT_PCH",
+                  "-I%s" %os.path.join(rootdir,"include"),
+                  "-I%s" %os.path.join(rootdir,"etc"),
+diff -ru a/root/interpreter/cling/lib/Interpreter/Interpreter.cpp b/root/interpreter/cling/lib/Interpreter/Interpreter.cpp
+--- a/root/interpreter/cling/lib/Interpreter/Interpreter.cpp	2024-11-14 10:27:26.000000000 +0100
++++ b/root/interpreter/cling/lib/Interpreter/Interpreter.cpp	2025-01-31 11:01:18.355881235 +0100
+@@ -67,6 +67,30 @@
+ 
+ using namespace clang;
+ 
++
++// For cross-compilation, TARGET_GLIBC should be set when invoking
++// the compiler to 0 or 1, depending if target is using glibc.
++// It is set automatically for normal compilation.
++#if !defined(TARGET_GLIBC)
++#  ifdef __GLIBC__
++#    define TARGET_GLIBC 1
++#  else
++#    define TARGET_GLIBC 0
++#  endif
++#endif
++
++// For cross-compilation, TARGET_GLIBCXX should be set when invoking
++// the compiler to 0 or 1, depending if target is using GNU libstdc++.
++// It is set automatically for normal compilation.
++#if !defined(TARGET_GLIBCXX)
++#  ifdef __GLIBCXX__
++#    define TARGET_GLIBCXX 1
++#  else
++#    define TARGET_GLIBCXX 0
++#  endif
++#endif
++
++
+ namespace {
+ 
+   static void registerCxaAtExitHelper(void *Self, void (*F)(void *), void *Ctx,
+@@ -460,7 +484,7 @@
+ 
+     // Intercept all atexit calls, as the Interpreter and functions will be long
+     // gone when the -native- versions invoke them.
+-#if defined(__GLIBC__)
++#if TARGET_GLIBC
+     const char* LinkageCxx = "extern \"C++\"";
+     const char* Attr = LangOpts.CPlusPlus ? " throw () " : "";
+ #else
+@@ -468,7 +492,7 @@
+     const char* Attr = "";
+ #endif
+ 
+-#if defined(__GLIBCXX__)
++#if TARGET_GLIBCXX
+     const char* cxa_atexit_is_noexcept = LangOpts.CPlusPlus ? " noexcept" : "";
+ #else
+     const char* cxa_atexit_is_noexcept = "";

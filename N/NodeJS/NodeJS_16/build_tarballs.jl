@@ -1,27 +1,30 @@
 using BinaryBuilder
 
 name = "NodeJS_16"
-version = v"16.15.0"
+version = v"16.20.2"
 
 url_prefix = "https://nodejs.org/dist/v$version/node-v$version"
 sources = [
-    ArchiveSource("$(url_prefix)-linux-x64.tar.gz", "d1c1de461be10bfd9c70ebae47330fb1b4ab0a98ad730823fb1340e34993edee"; unpack_target = "x86_64-linux-gnu"),
-    ArchiveSource("$(url_prefix)-linux-arm64.tar.gz", "2aa387e6a57ade663849efdc4fabf7431a38d975db98dcc79293840e6894d28b"; unpack_target = "aarch64-linux-gnu"),
-    ArchiveSource("$(url_prefix)-linux-ppc64le.tar.gz", "625bf1f6cc2d608c51fc5b412ca162251871d14eb795cb006107d743c1da200c"; unpack_target = "powerpc64le-linux-gnu"),
-    ArchiveSource("$(url_prefix)-linux-armv7l.tar.gz", "3b54c8f57a8ab211b5e969cdf6d20b3bcd7f30f7e0444e00c409f78b90486d30"; unpack_target = "arm-linux-gnueabihf"),
+    # glibc linux
+    ArchiveSource("$(url_prefix)-linux-x64.tar.gz",    "c9193e6c414891694759febe846f4f023bf48410a6924a8b1520c46565859665"; unpack_target = "x86_64-linux-gnu"),
+    ArchiveSource("$(url_prefix)-linux-arm64.tar.gz",  "b6945fcc9ad220386bb814bfae7137189fd17297f2959a744105e1bee006035a"; unpack_target = "aarch64-linux-gnu"),
+    ArchiveSource("$(url_prefix)-linux-ppc64le.tar.gz","731d9ecc82ff59449566bf73959b16cc368b1060212b51d03edf3ec5e9937ced"; unpack_target = "powerpc64le-linux-gnu"),
+    ArchiveSource("$(url_prefix)-linux-armv7l.tar.gz", "88ea2ddef7db491d2e93c150d27fbec422a4d06d7a63bf34d46e6d20d30eed43"; unpack_target = "arm-linux-gnueabihf"),
 
-    ArchiveSource("$(url_prefix)-linux-x64.tar.gz", "d1c1de461be10bfd9c70ebae47330fb1b4ab0a98ad730823fb1340e34993edee"; unpack_target = "x86_64-linux-musl"),
-    ArchiveSource("$(url_prefix)-linux-arm64.tar.gz", "2aa387e6a57ade663849efdc4fabf7431a38d975db98dcc79293840e6894d28b"; unpack_target = "aarch64-linux-musl"),
-    ArchiveSource("$(url_prefix)-linux-armv7l.tar.gz", "3b54c8f57a8ab211b5e969cdf6d20b3bcd7f30f7e0444e00c409f78b90486d30"; unpack_target = "arm-linux-musleabihf"),
+    # musl linux (using same upstream linux tarballs)
+    ArchiveSource("$(url_prefix)-linux-x64.tar.gz",    "c9193e6c414891694759febe846f4f023bf48410a6924a8b1520c46565859665"; unpack_target = "x86_64-linux-musl"),
+    ArchiveSource("$(url_prefix)-linux-arm64.tar.gz",  "b6945fcc9ad220386bb814bfae7137189fd17297f2959a744105e1bee006035a"; unpack_target = "aarch64-linux-musl"),
+    ArchiveSource("$(url_prefix)-linux-armv7l.tar.gz", "88ea2ddef7db491d2e93c150d27fbec422a4d06d7a63bf34d46e6d20d30eed43"; unpack_target = "arm-linux-musleabihf"),
     
-    ArchiveSource("$(url_prefix)-darwin-x64.tar.gz", "a6bb12bbf979d32137598e49d56d61bcddf8a8596c3442b44a9b3ace58dd4de8"; unpack_target = "x86_64-apple-darwin14"),
-    ArchiveSource("$(url_prefix)-darwin-arm64.tar.gz", "ad8d8fc5330ef47788f509c2af398c8060bb59acbe914070d0df684cd2d8d39b"; unpack_target = "aarch64-apple-darwin20"),
+    # macOS
+    ArchiveSource("$(url_prefix)-darwin-x64.tar.gz",   "d7a46eaf2b57ffddeda16ece0d887feb2e31a91ad33f8774da553da0249dc4a6"; unpack_target = "x86_64-apple-darwin14"),
+    ArchiveSource("$(url_prefix)-darwin-arm64.tar.gz", "6a5c4108475871362d742b988566f3fe307f6a67ce14634eb3fbceb4f9eea88c"; unpack_target = "aarch64-apple-darwin20"),
 
-    ArchiveSource("$(url_prefix)-win-x64.zip", "dbe04e92b264468f2e4911bc901ed5bfbec35e0b27b24f0d29eff4c25e428604"; unpack_target = "x86_64-w64-mingw32"),
-    ArchiveSource("$(url_prefix)-win-x86.zip", "0d11a3844dad4ab679502495a4aa41041168a2caa81b8da9c7b5a14902c46986"; unpack_target = "i686-w64-mingw32"),
+    # Windows
+    ArchiveSource("$(url_prefix)-win-x64.zip", "f8bb35f6c08dc7bf14ac753509c06ed1a7ebf5b390cd3fbdc8f8c1aedd020ec3"; unpack_target = "x86_64-w64-mingw32"),
+    ArchiveSource("$(url_prefix)-win-x86.zip", "c9c0b774328374973d5af5d72c4c6ce3932a1988c7efd32d84c35ba4771df41a"; unpack_target = "i686-w64-mingw32"),
 ]
 
-# Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/
 cp -r ${target}/*/* ${prefix}/.
@@ -35,8 +38,6 @@ fi
 install_license LICENSE
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
 platforms = [
     Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
     Platform("aarch64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
@@ -51,19 +52,15 @@ platforms = [
     Platform("aarch64", "macos"),
 
     Platform("x86_64", "windows"),
-    Platform("i686", "windows"),
+    Platform("i686",  "windows"),
 ]
 
-# The products that we will ensure are always built
 products = [
     ExecutableProduct("node", :node),
     FileProduct("bin/npm", :npm),
     FileProduct("bin/npx", :npx),
 ]
 
-# Dependencies that must be installed before this package can be built
-dependencies = [
-]
+dependencies = []
 
-# Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat = "1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6")

@@ -3,16 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Geant4_julia"
-version = v"0.1.15"
-
-# reminder: change the above version if restricting the supported julia versions
-julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10"]
-julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
+version = v"0.4.0"
 
 # Collection of sources required to build Geant4_julia
 sources = [
     GitSource("https://github.com/peremato/Geant4_cxxwrap.git",
-              "c50f41ae8837149aa1cb968cb37e4d1de7c360a8"),
+              "660ca242cb8c8d4e978653962e39bdc6ba717e4b"),
 ]
 
 # Bash recipe for building across all platforms
@@ -23,7 +19,7 @@ cmake ${WORKSPACE}/srcdir/Geant4_cxxwrap -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_CXX_STANDARD=17
+    -DCMAKE_CXX_STANDARD=17 
 
 VERBOSE=ON cmake --build build --config Release --target install -- -j${nproc}
 
@@ -33,10 +29,21 @@ install_license Geant4_cxxwrap/LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl")
+
+# Filter Julia versions:
+# - Remove versions below current LTS (1.10)
+filter!(x -> x >= v"1.10", julia_versions)
+
 # platforms supported by libjulia
 platforms = vcat(libjulia_platforms.(julia_versions)...)
+
 # platforms supported by Geant4
-platforms = filter(p -> libc(p) != "musl" && os(p) != "windows" && os(p) != "freebsd" && arch(p) != "armv6l" && arch(p) != "armv7l", platforms)
+platforms = filter(p -> libc(p) != "musl" && 
+                        os(p) != "freebsd" && 
+                        arch(p) != "armv6l" && 
+                        arch(p) != "armv7l" && 
+                        arch(p) != "i686" &&
+                        arch(p) != "riscv64", platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -48,12 +55,12 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("libjulia_jll"),
-    Dependency("libcxxwrap_julia_jll"; compat="0.11.2"),
-    Dependency("Geant4_jll"; compat = "~11.2.0"),
-    Dependency("Expat_jll"),
-    Dependency("Xerces_jll"),
+    BuildDependency("Xorg_xorgproto_jll"),
+    Dependency("libcxxwrap_julia_jll"; compat="0.14.7"),
+    Dependency("Geant4_jll"; compat="~11.4.1")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat=julia_compat)
-          
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
+               preferred_gcc_version=v"9", 
+               julia_compat="1.6")

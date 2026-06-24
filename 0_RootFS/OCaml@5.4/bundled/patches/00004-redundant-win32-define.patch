@@ -1,0 +1,51 @@
+commit 519375c631557f5c339b1312d2e2eedfdb7744e4
+Author: Cody Tapscott <topolarity@tapscott.me>
+Date:   Thu May 8 20:43:18 2025 -0400
+
+    Guard `_WIN32_WINNT` definition
+
+diff --git a/ocamltest/run_win32.c b/ocamltest/run_win32.c
+index 5f55206237..c04f9265ca 100644
+--- a/ocamltest/run_win32.c
++++ b/ocamltest/run_win32.c
+@@ -16,7 +16,9 @@
+ /* Run programs with redirections and timeouts under Windows */
+ 
+ /* GetTickCount64() requires Windows Vista or Server 2008 */
++#ifndef _WIN32_WINNT
+ #define _WIN32_WINNT 0x0600
++#endif
+ 
+ #include <stdio.h>
+ #include <stdlib.h>
+diff --git a/runtime/win32.c b/runtime/win32.c
+index 8a5c8ff4b0..4f5a521fe7 100644
+--- a/runtime/win32.c
++++ b/runtime/win32.c
+@@ -19,7 +19,9 @@
+ 
+ /* FILE_INFO_BY_HANDLE_CLASS, FILE_NAME_INFO, and INIT_ONCE are only
+    available from Windows Vista onwards */
++#ifndef _WIN32_WINNT
+ #define _WIN32_WINNT 0x0600 /* _WIN32_WINNT_VISTA */
++#endif
+ 
+ #define WIN32_LEAN_AND_MEAN
+ #define _CRT_RAND_S
+diff --git a/yacc/wstr.c b/yacc/wstr.c
+index 78c334e691..3ec9b751fb 100644
+--- a/yacc/wstr.c
++++ b/yacc/wstr.c
+@@ -13,8 +13,12 @@
+ /**************************************************************************/
+ 
+ /* Need at least Windows Vista for WC_ERR_INVALID_CHARS */
++#ifndef _WIN32_WINNT
+ #define _WIN32_WINNT 0x600
++#endif
++#ifndef WINVER
+ #define WINVER 0x600
++#endif
+ #include <windows.h>
+ 
+ /* See corresponding values in runtime/win32.c */

@@ -1,0 +1,37 @@
+--- a/scripts/cmake/ExternalDependencies.cmake	2026-02-15 04:59:35.589418776 +0000
++++ b/scripts/cmake/ExternalDependencies.cmake	2026-02-15 04:59:44.065421736 +0000
+@@ -2,20 +2,27 @@
+ # anywhere else
+ 
+ include(FetchContent)
++
+ # FMT
+ FetchContent_Declare(fmt
+   GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+   GIT_TAG 12.1.0)
+ FetchContent_MakeAvailable(fmt)
+ 
+-#nlohmann json
+-FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz)
+-FetchContent_MakeAvailable(json)
++# nlohmann json: prefer system-installed, fall back to FetchContent
++find_package(nlohmann_json QUIET)
++if(NOT nlohmann_json_FOUND)
++  FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz)
++  FetchContent_MakeAvailable(json)
++endif()
+ 
+-# yaml-cpp
+-FetchContent_Declare(yaml-cpp
+-  GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git)
+-FetchContent_MakeAvailable(yaml-cpp)
++# yaml-cpp: prefer system-installed, fall back to FetchContent
++find_package(yaml-cpp QUIET)
++if(NOT yaml-cpp_FOUND)
++  FetchContent_Declare(yaml-cpp
++    GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git)
++  FetchContent_MakeAvailable(yaml-cpp)
++endif()
+ 
+ if(ESBMC_CHERI_CLANG)
+   FetchContent_Declare(cheri_compressed_cap

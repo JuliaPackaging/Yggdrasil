@@ -1,6 +1,9 @@
 using BinaryBuilder, Pkg
 using BinaryBuilderBase: default_host_platform
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "libcifpp"
 version = v"5.1.1"
 
@@ -10,8 +13,6 @@ version = v"5.1.1"
 sources = [
     GitSource("https://github.com/PDB-REDO/libcifpp",
               "15a49f1bb4f555ea11a9186015df28adf7a10cb0"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
     DirectorySource("./bundled"),
 ]
 
@@ -69,17 +70,6 @@ if [[ "${target}" == *-apple-darwin* ]]; then
     atomic_patch -p1 ../patches/clang-libc++-fixes.patch
 fi
 
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    # Install a newer SDK which supports `shared_timed_mutex` and `std::filesystem`
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    export MACOSX_DEPLOYMENT_TARGET=10.15
-    popd
-fi
-
-
 mkdir build && cd build
 
 CFG_TESTING="-DENABLE_TESTING=OFF"
@@ -119,6 +109,9 @@ make install
 
 install_license ../LICENSE
 """
+
+# Install a newer SDK which supports `shared_timed_mutex` and `std::filesystem`
+sources, script = require_macos_sdk("10.15", sources, script)
 
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)

@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "minify"
-version = v"2.12.7"
+version = v"2.20.20"
 
 # Collection of sources required to complete build
 sources = [
     GitSource(
         "https://github.com/tdewolff/minify.git",
-        "bf2187d141bb46a807174779f6cbd3a16eb680f1",
+        "a58eb58ecdc1159f9b49c76c06c28a2103fcdb96",
     ),
 ]
 

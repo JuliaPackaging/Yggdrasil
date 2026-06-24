@@ -21,6 +21,7 @@ $(eval $(call enable_language,cxx,c++))
 $(eval $(call enable_language,fortran,gfortran))
 $(eval $(call enable_language,go,go))
 $(eval $(call enable_language,rust,rustc))
+$(eval $(call enable_language,ocaml,ocamlopt))
 
 define unesc
 $(subst -,/,$1)

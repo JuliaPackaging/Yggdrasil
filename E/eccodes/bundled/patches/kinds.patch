@@ -28,7 +28,7 @@ index 00000000..a490f87d
 +++ b/fortran/grib_kinds.h.in
 @@ -0,0 +1,11 @@
 + integer,public,parameter :: kindOfInt=           4
-+ integer,public,parameter :: kindOfLong=          ${longsize}
++ integer,public,parameter :: kindOfLong=          8
 + integer,public,parameter :: kindOfSize_t=        ${size_t_size}
 + integer,public,parameter :: kindOfSize=          ${size_t_size}
 + integer,public,parameter :: kindOfDouble=        8

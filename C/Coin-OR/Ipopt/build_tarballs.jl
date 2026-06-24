@@ -1,7 +1,10 @@
+# In addition to coin-or-common.jl, we need to modify this file to trigger a rebuild.
+# Last updated: 2026-05-23
+
 include("../coin-or-common.jl")
 
 name = "Ipopt"
-version = Ipopt_version  # v3.14.14
+version = Ipopt_version # v3.14.19
 
 sources = [
     GitSource("https://github.com/coin-or/Ipopt.git", Ipopt_gitsha)
@@ -59,6 +62,11 @@ platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 
+# Disable aarch64-freebsd until we recompile the dependencies.
+filter!(p -> !(os(p) == "freebsd" && arch(p) == "aarch64"), platforms)
+filter!(p -> !(Sys.islinux(p) && libc(p) == "musl" && libgfortran_version(p) == v"4" && arch(p) == "aarch64"), platforms)
+filter!(p -> arch(p) != "riscv64", platforms)
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libipopt", :libipopt),
@@ -69,7 +77,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="ASL_jll", uuid="ae81ac8f-d209-56e5-92de-9978fef736f9"), ASL_version),
-    Dependency(PackageSpec(name="MUMPS_seq_jll", uuid="d7ed1dd3-d0ae-5e8e-bfb4-87a502085b8d"), compat="=$(MUMPS_seq_version_LBT)"),
+    Dependency(PackageSpec(name="MUMPS_seq_jll", uuid="d7ed1dd3-d0ae-5e8e-bfb4-87a502085b8d"), compat="~$(MUMPS_seq_version_LBT)"),
     Dependency(PackageSpec(name="SPRAL_jll", uuid="319450e9-13b8-58e8-aa9f-8fd1420848ab"), compat="=$(SPRAL_version_LBT)"),
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))

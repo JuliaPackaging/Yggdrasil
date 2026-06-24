@@ -1,12 +1,13 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "CGNS"
-cgns_version = v"4.3.0"
-version = v"4.3.1"
+version = v"4.5.1"
 
 sources = [
     GitSource("https://github.com/CGNS/CGNS.git",
-              "ec538ac11dbaff510464a831ef094b0d6bf7216c"),
+              "bbce5f0ec594ae4d066893370965d3b77136b13c"),
 ]
 
 script = raw"""
@@ -18,23 +19,31 @@ if [[ ${target} == x86_64-linux-musl ]]; then
     rm /usr/lib/libnghttp2.*
 fi
 
-# Correct HDF5 compiler wrappers
-perl -pi -e 's+-I/workspace/srcdir/hdf5-1.14.0/src/H5FDsubfiling++' $(which h5pcc)
+# We need to build with MPI since our HDF5 uses MPI, and this makes
+# CGNS depend explicitly on MPI. Since we're doing that we might as
+# well enable the parallel API.
 
-mkdir build && cd build
-H5LIB=""
-if [[ "${target}" == *-mingw* ]]; then
-    H5LIB="-DHDF5_hdf5_LIBRARY_RELEASE=$(ls ${WORKSPACE}/destdir/bin/libhdf5-*.${dlext})"
-fi
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-      -DCMAKE_BUILD_TYPE=Release \
-      -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
-      ${H5LIB} ..
-make -j${nproc}
-make install
+cmake -Bbuild -GNinja \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
+    -DCGNS_BUILD_SHARED=ON \
+    -DCGNS_ENABLE_PARALLEL=ON
+cmake --build build --parallel ${nproc}
+cmake --install build
+
+# CGNS always builds a static library. Remove it.
+rm -f ${libdir}/libcgns.a
 """
 
+augment_platform_block = """
+    using Base.BinaryPlatforms
+    $(MPI.augment)
+    augment_platform!(platform::Platform) = augment_mpi!(platform)
+    """
+
 platforms = supported_platforms()
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 products = [
     LibraryProduct("libcgns", :libcgns),
@@ -47,7 +56,10 @@ products = [
 ]
 
 dependencies = [
-    Dependency("HDF5_jll"; compat="~1.14"),
+    Dependency("HDF5_jll"; compat="~2.1.1"),
 ]
+append!(dependencies, platform_dependencies)
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+# We need at least GCC 5 for the HDF5 libraries
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"8")

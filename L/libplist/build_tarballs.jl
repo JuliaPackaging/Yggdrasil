@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "libplist"
-version = v"2.2.1" # <-- Fake version number to build for more platforms
+version = v"2.6.0"
 
 # Collection of sources required to build libplist
 sources = [
     GitSource("https://github.com/libimobiledevice/libplist.git",
-              "c5a30e9267068436a75b5d00fcbf95cb9c1f4dcd"),
+              "2117b8fdb6b4096455bd2041a63e59a028120136"),
 ]
 
 # Bash recipe for building across all platforms
@@ -39,4 +39,4 @@ products = [
 dependencies = Dependency[
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", clang_use_lld=false)

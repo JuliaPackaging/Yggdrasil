@@ -104,6 +104,8 @@ int mesh_boolean(/*««*/
   }
   return 0;
 }/*»»*/
+
+#if 0 //(these function(s) are not used in the Julia code)
 int minkowski_sum(/*««*/
   int nv1, int nf1, const double *mv1, const int *mf1,
   int nv2, int nf2, const double *mv2, const int *mf2, int dim2,
@@ -189,6 +191,8 @@ int decimate(int nv, int nf, const double *mv, const int *mf, int faces,/*««*/
 	}
 	return 0;
 }/*»»*/
+#endif // 0 (not used in the Julia code)
+
 int loop(int nv, int nf, const double *mv, const int *mf, int n,/*««*/
 	int *nvout, int *nfout, double **mvout, int **mfout) {
 	Mesh m(nv, nf, mv, mf), mout;

@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "licensecheck"
-version = v"0.3.101"
+version = v"0.4.0"
 
 sources = [
     GitSource("https://github.com/google/licensecheck",
-              "5aa300fd3333d0c6592148249397338023cafcce"),
+        "5aa300fd3333d0c6592148249397338023cafcce"),
     DirectorySource("./bundled")
 ]
 
@@ -31,7 +31,7 @@ CGO_ENABLED=1 go build -buildmode=c-shared -o ${libdir}/licensecheck.${dlext} cl
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(exclude=[Platform("aarch64", "freebsd")])
 
 # The products that we will ensure are always built
 products = [

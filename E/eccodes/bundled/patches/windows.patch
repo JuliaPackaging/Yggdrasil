@@ -1,133 +1,194 @@
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index b81a803..0238298 100644
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -23,6 +23,8 @@ find_package( ecbuild 3.4 REQUIRED HINTS ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CUR
- # Initialise project
- project( eccodes VERSION 2.19.1 LANGUAGES C )
+diff -ur a/cmake/ecbuild_bundle.cmake b/cmake/ecbuild_bundle.cmake
+--- a/cmake/ecbuild_bundle.cmake	2026-01-19 14:09:07.000000000 +0100
++++ b/cmake/ecbuild_bundle.cmake	2026-02-17 14:04:57.775325689 +0100
+@@ -159,7 +159,7 @@
+       if( DEFINED ${PNAME}_SOURCE )
+         ecbuild_critical( "ecbuild_bundle called with SOURCE for project ${_PAR_PROJECT} but ${PNAME}_SOURCE is defined" )
+       endif()
+-      execute_process( COMMAND ${CMAKE_COMMAND} -E create_symlink ${_PAR_SOURCE} ${PROJECT_SOURCE_DIR}/${_PAR_PROJECT} )
++      execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${_PAR_SOURCE} ${PROJECT_SOURCE_DIR}/${_PAR_PROJECT} )
+     endif()
  
-+add_compile_definitions(ECCODES_ON_WINDOWS)
-+
- ###############################################################################
- # system checks needed for eccodes_config.h and some options like MEMFS
+     if( NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${_PAR_PROJECT} OR NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${_PAR_PROJECT}/CMakeLists.txt )
+diff -ur a/cmake/ecbuild_declare_project.cmake b/cmake/ecbuild_declare_project.cmake
+--- a/cmake/ecbuild_declare_project.cmake	2026-01-19 14:09:07.000000000 +0100
++++ b/cmake/ecbuild_declare_project.cmake	2026-02-17 14:04:57.775325689 +0100
+@@ -194,7 +194,7 @@
  
-@@ -312,11 +314,8 @@ if( EC_OS_NAME MATCHES "windows" )
+   # make sure nothing breaks if INSTALL_LIB_DIR is not lib
+   if( NOT INSTALL_LIB_DIR STREQUAL "lib" AND NOT EXISTS ${CMAKE_BINARY_DIR}/${INSTALL_LIB_DIR} )
+-    execute_process( COMMAND ${CMAKE_COMMAND} -E create_symlink lib ${CMAKE_BINARY_DIR}/${INSTALL_LIB_DIR} )
++    execute_process( COMMAND ${CMAKE_COMMAND} -E copy lib ${CMAKE_BINARY_DIR}/${INSTALL_LIB_DIR} )
+   endif()
+ 
+   # ecbuild_debug_var( CMAKE_INSTALL_RPATH )
+diff -ur a/CMakeLists.txt b/CMakeLists.txt
+--- a/CMakeLists.txt	2026-01-19 14:07:07.000000000 +0100
++++ b/CMakeLists.txt	2026-02-17 14:02:11.648341364 +0100
+@@ -342,7 +342,7 @@
+     # Symbols need to be explicitly exported on Windows so we can link to dlls.
+     set( CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE )
+     set( ECCODES_ON_WINDOWS 1 )
+-
++    if( MSVC )
      # Suppress compliler warnings - see ECC-850
      # Suppress warnings about using 'insecure' functions. Fixing this would require changes all over
      # the codebase which would damage portability.
--    ecbuild_add_c_flags("/D_CRT_SECURE_NO_WARNINGS")
-     # Suppress warnings about using well-known C functions.
--    ecbuild_add_c_flags("/D_CRT_NONSTDC_NO_DEPRECATE")
+@@ -351,6 +351,7 @@
+     ecbuild_add_c_flags("/D_CRT_NONSTDC_NO_DEPRECATE")
      # Suppress C4267: warns about possible loss of data when converting 'size_t' to 'int'.
--    ecbuild_add_c_flags("/wd4267")
+     ecbuild_add_c_flags("/wd4267")
++    endif()
  endif()
  
  ###############################################################################
-@@ -350,9 +349,6 @@ configure_file( eccodes_config.h.in eccodes_config.h )
+@@ -384,7 +385,7 @@
  
  add_definitions( -DHAVE_ECCODES_CONFIG_H )
  
--if( CMAKE_COMPILER_IS_GNUCC )
--    ecbuild_add_c_flags("-pedantic")
--endif()
+-if( CMAKE_CXX_COMPILER_ID STREQUAL "GNU" )
++if( CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND NOT MINGW )
+     ecbuild_add_c_flags("-pedantic")
+     ecbuild_add_cxx_flags("-pedantic")
+ endif()
+diff -ur a/definitions/CMakeLists.txt b/definitions/CMakeLists.txt
+--- a/definitions/CMakeLists.txt	2026-01-19 14:07:07.000000000 +0100
++++ b/definitions/CMakeLists.txt	2026-02-17 14:03:00.845099708 +0100
+@@ -45,7 +45,7 @@
+ # link to the definitions. See GRIB-786
+ file( MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/${INSTALL_DATA_DIR} )
+ if( NOT EXISTS "${CMAKE_BINARY_DIR}/${ECCODES_DEFINITION_SUFF}" )
+-  execute_process( COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink"
++  execute_process( COMMAND "${CMAKE_COMMAND}" "-E" "copy"
+     "${CMAKE_CURRENT_SOURCE_DIR}"
+     "${CMAKE_BINARY_DIR}/${ECCODES_DEFINITION_SUFF}" )
+ endif()
+diff -ur a/fortran/CMakeLists.txt b/fortran/CMakeLists.txt
+--- a/fortran/CMakeLists.txt	2026-01-19 14:07:07.000000000 +0100
++++ b/fortran/CMakeLists.txt	2026-02-17 14:04:57.775325689 +0100
+@@ -96,7 +96,7 @@
+     #add_custom_command(
+     #    OUTPUT ${_eccodes_mod}
+     #    WORKING_DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}
+-    #    #COMMAND ${CMAKE_COMMAND} -E create_symlink "${CMAKE_Fortran_MODULE_DIRECTORY}/grib_api.mod" ${_eccodes_mod}
++    #    #COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_Fortran_MODULE_DIRECTORY}/grib_api.mod" ${_eccodes_mod}
+     #    #COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_Fortran_MODULE_DIRECTORY}/grib_api.mod" ${_eccodes_mod}
+     #    COMMAND "/usr/bin/sh" "-c" "if test -f GRIB_API.mod; then ln -s GRIB_API.mod ECCODES.mod; fi"
+     #    COMMAND "/usr/bin/sh" "-c" "if test -f grib_api.mod; then ln -s grib_api.mod eccodes.mod; fi"
+diff -ur a/fortran/eccodes_f90_int.f90 b/fortran/eccodes_f90_int.f90
+--- a/fortran/eccodes_f90_int.f90	2026-01-19 14:07:07.000000000 +0100
++++ b/fortran/eccodes_f90_int.f90	2026-02-17 14:03:43.598514402 +0100
+@@ -100,7 +100,6 @@
+       codes_get_string, &
+       codes_get_byte_array, &
+       codes_get_int_array, &
+-      codes_get_long_array, &
+       codes_get_real4_array, &
+       codes_get_real8_array
+   end interface codes_get
+diff -ur a/fortran/grib_fortran.cc b/fortran/grib_fortran.cc
+--- a/fortran/grib_fortran.cc	2026-01-19 14:07:07.000000000 +0100
++++ b/fortran/grib_fortran.cc	2026-02-17 14:10:03.192623390 +0100
+@@ -903,7 +903,7 @@
+                 grib_context_log(context,GRIB_LOG_FATAL,"grib_f_open_file_: posix_memalign unable to allocate io_buffer\n");
+             }
+ #else
+-            iobuf = (void*)malloc(context->io_buffer_size);
++            iobuf = (char*)malloc(context->io_buffer_size);
+             if (!iobuf) {
+                 grib_context_log(context,GRIB_LOG_FATAL,"grib_f_open_file_: Unable to allocate io_buffer\n");
+             }
+diff -ur a/ifs_samples/CMakeLists.txt b/ifs_samples/CMakeLists.txt
+--- a/ifs_samples/CMakeLists.txt	2026-01-19 14:07:07.000000000 +0100
++++ b/ifs_samples/CMakeLists.txt	2026-02-17 14:04:57.765325669 +0100
+@@ -14,7 +14,7 @@
+   execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${destination_build} )
+   foreach( _file ${_samples} )
+     get_filename_component(_filename ${_file} NAME)
+-    execute_process( COMMAND ${CMAKE_COMMAND} -E create_symlink
++    execute_process( COMMAND ${CMAKE_COMMAND} -E copy
+        ${_file} ${destination_build}/${_filename} )
+   endforeach()
+ endfunction()
+diff -ur a/samples/CMakeLists.txt b/samples/CMakeLists.txt
+--- a/samples/CMakeLists.txt	2026-01-19 14:07:07.000000000 +0100
++++ b/samples/CMakeLists.txt	2026-02-17 14:04:57.775325689 +0100
+@@ -16,7 +16,7 @@
+ # link to the samples in the build directory. See GRIB-786
+ file( MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/${INSTALL_DATA_DIR} )
+ if( NOT EXISTS "${CMAKE_BINARY_DIR}/${ECCODES_SAMPLES_SUFF}" )
+-  execute_process( COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink"
++  execute_process( COMMAND "${CMAKE_COMMAND}" "-E" "copy"
+     "${CMAKE_CURRENT_SOURCE_DIR}"
+     "${CMAKE_BINARY_DIR}/${ECCODES_SAMPLES_SUFF}" )
+ endif()
+diff -ur a/src/eccodes/accessor/DataG1SecondOrderGeneralExtendedPacking.cc b/src/eccodes/accessor/DataG1SecondOrderGeneralExtendedPacking.cc
+--- a/src/eccodes/accessor/DataG1SecondOrderGeneralExtendedPacking.cc	2026-01-19 14:07:07.000000000 +0100
++++ b/src/eccodes/accessor/DataG1SecondOrderGeneralExtendedPacking.cc	2026-02-17 14:11:33.509484719 +0100
+@@ -20,7 +20,7 @@
+ #define MAX_NUMBER_OF_GROUPS 65534
+ #define EFDEBUG              0
  
- # gfortran 10 has become stricter with argument matching
- if( HAVE_FORTRAN AND CMAKE_Fortran_COMPILER_ID MATCHES "GNU" AND NOT CMAKE_Fortran_COMPILER_VERSION VERSION_LESS 10 )
-diff --git a/cmake/eccodes_test_endiness.cmake b/cmake/eccodes_test_endiness.cmake
-index 0f1870d..182ffe7 100644
---- a/cmake/eccodes_test_endiness.cmake
-+++ b/cmake/eccodes_test_endiness.cmake
-@@ -18,76 +18,5 @@ endif()
+-static const unsigned long nbits[64] = {
++static const size_t nbits[64] = {
+     0x1, 0x2, 0x4, 0x8,
+     0x10, 0x20, 0x40, 0x80,
+     0x100, 0x200, 0x400, 0x800,
+@@ -41,7 +41,7 @@
  
- set( ECCODES_BIG_ENDIAN    ${ECCODES_BIG_ENDIAN}    )
- set( ECCODES_LITTLE_ENDIAN ${ECCODES_LITTLE_ENDIAN} )
--
--if( NOT DEFINED IEEE_BE )
--    check_c_source_runs(
--       "int compare(unsigned char* a,unsigned char* b) {
--         while(*a != 0) if (*(b++)!=*(a++)) return 1;
--         return 0;
--       }
--       int main(int argc,char** argv) {
--         unsigned char dc[]={0x30,0x61,0xDE,0x80,0x93,0x67,0xCC,0xD9,0};
--         double da=1.23456789e-75;
--         unsigned char* ca;
--
--         unsigned char fc[]={0x05,0x83,0x48,0x22,0};
--         float fa=1.23456789e-35;
--
--         if (sizeof(double)!=8) return 1;
--
--         ca=(unsigned char*)&da;
--         if (compare(dc,ca)) return 1;
--
--         if (sizeof(float)!=4) return 1;
--
--         ca=(unsigned char*)&fa;
--         if (compare(fc,ca)) return 1;
--
--         return 0;
--       }" IEEE_BE )
--
--    if( "${IEEE_BE}" STREQUAL "" )
--      set( IEEE_BE 0 CACHE INTERNAL "Test IEEE_BE")
--    endif()
--
--endif()
--
--if( ECCODES_BIG_ENDIAN AND NOT IEEE_BE )
--    ecbuild_critical("Failed to sanity check on endiness: OS should be Big-Endian but compiled code runs differently -- to ignore this pass -DIEEE_BE=1 to CMake/ecBuild")
--endif()
--
--if( NOT DEFINED IEEE_LE )
--    check_c_source_runs(
--       "int compare(unsigned char* a,unsigned char* b) {
--         while(*a != 0) if (*(b++)!=*(a++)) return 1;
--         return 0;
--       }
--       int main(int argc,char** argv) {
--         unsigned char dc[]={0xD9,0xCC,0x67,0x93,0x80,0xDE,0x61,0x30,0};
--         double da=1.23456789e-75;
--         unsigned char* ca;
--
--         unsigned char fc[]={0x22,0x48,0x83,0x05,0};
--         float fa=1.23456789e-35;
--
--         if (sizeof(double)!=8) return 1;
--
--         ca=(unsigned char*)&da;
--         if (compare(dc,ca)) return 1;
--
--         if (sizeof(float)!=4) return 1;
--
--         ca=(unsigned char*)&fa;
--         if (compare(fc,ca)) return 1;
--
--         return 0;
--       }" IEEE_LE )
--
--    if( "${IEEE_LE}" STREQUAL "" )
--      set( IEEE_LE 0 CACHE INTERNAL "Test IEEE_LE")
--    endif()
--endif()
--
--if( ECCODES_LITTLE_ENDIAN AND NOT IEEE_LE )
--    ecbuild_critical("Failed to sanity check on endiness: OS should be Little-Endian but compiled code runs differently -- to ignore this pass -DIEEE_LE=1 to CMake/ecBuild")
--endif()
-+set( IEEE_BE ${ECCODES_BIG_ENDIAN} )
-+set( IEEE_LE ${ECCODES_LITTLE_ENDIAN} )
-diff --git a/src/grib_context.c b/src/grib_context.c
-index 327fdf1..69ff1cc 100644
---- a/src/grib_context.c
-+++ b/src/grib_context.c
-@@ -421,10 +421,6 @@ grib_context* grib_context_get_default()
+ long number_of_bits(grib_handle* h, unsigned long x)
+ {
+-    const unsigned long* n = nbits;
++    const size_t* n = nbits;
+     const int count        = sizeof(nbits) / sizeof(nbits[0]);
+     long i                 = 0;
+     while (x >= *n) {
+diff -ur a/src/eccodes/grib_api_internal.h b/src/eccodes/grib_api_internal.h
+--- a/src/eccodes/grib_api_internal.h	2026-01-19 14:07:07.000000000 +0100
++++ b/src/eccodes/grib_api_internal.h	2026-02-17 14:12:07.962893046 +0100
+@@ -87,7 +87,9 @@
+         #define M_PI 3.14159265358979323846
+     #endif
+ 
++    #ifdef _MSC_VER
+     #define R_OK 04 /* Needed for Windows */
++    #endif
+ 
+     #ifndef F_OK
+         #define F_OK 0
+diff -ur a/src/eccodes/grib_context.cc b/src/eccodes/grib_context.cc
+--- a/src/eccodes/grib_context.cc	2026-01-19 14:07:07.000000000 +0100
++++ b/src/eccodes/grib_context.cc	2026-02-17 14:12:35.242952682 +0100
+@@ -413,7 +413,7 @@
          /* On UNIX, when we read from a file we get exactly what is in the file on disk.
           * But on Windows a file can be opened in binary or text mode. In binary mode the system behaves exactly as in UNIX.
           */
 -#ifdef ECCODES_ON_WINDOWS
--        _set_fmode(_O_BINARY);
--#endif
--
-         default_grib_context.inited = 1;
-         default_grib_context.io_buffer_size = io_buffer_size ? atoi(io_buffer_size) : 0;
-         default_grib_context.no_big_group_split = no_big_group_split ? atoi(no_big_group_split) : 0;
++#ifdef _MSC_VER
+         _set_fmode(_O_BINARY);
+ #endif
+ 
+diff -ur a/tools/grib_tools.cc b/tools/grib_tools.cc
+--- a/tools/grib_tools.cc	2026-01-19 14:07:07.000000000 +0100
++++ b/tools/grib_tools.cc	2026-02-17 14:37:54.022770498 +0100
+@@ -665,7 +665,7 @@
+     int stat_val = 0;
+     int err = 0;
+ 
+-#ifndef ECCODES_ON_WINDOWS
++#ifdef _MSC_VER
+     stat_val = lstat(path, &s);
+ #else
+     stat_val = stat(path, &s);
+diff -ur a/tools/grib_tools.h b/tools/grib_tools.h
+--- a/tools/grib_tools.h	2026-01-19 14:07:07.000000000 +0100
++++ b/tools/grib_tools.h	2026-02-17 14:29:20.875238300 +0100
+@@ -160,7 +160,7 @@
+     int headers_only;
+     int skip_all;
+     grib_values tolerance[MAX_KEYS];
+-    off_t infile_offset;
++    long long infile_offset;
+     int json_output;
+ } grib_runtime_options;
+ 

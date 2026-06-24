@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Dex"
-version = v"2.30.2"
+version = v"2.43.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/dexidp/dex.git", "6e30b362b7238d5de80b8277bb47ece3994fec95"),
+    GitSource("https://github.com/dexidp/dex.git", "6e602d3315ea09d0cdeef6b51e61f2fd4ae52502"),
     DirectorySource("bundled"),
 ]
 
@@ -20,8 +20,9 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
 install_license LICENSE
+go get -u entgo.io/contrib/entproto@latest
+go get entgo.io/contrib/entproto/cmd/protoc-gen-entgrpc@latest
 go mod tidy
-go mod download entgo.io/ent
 make build
 mkdir -p $bindir
 mv bin/dex "$bindir/dex${exeext}"

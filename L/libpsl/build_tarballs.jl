@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "libpsl"
-version = v"0.21.1"
+version = v"0.21.5"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/rockdaboot/libpsl/releases/download/$(version)/libpsl-$(version).tar.gz", "ac6ce1e1fbd4d0254c4ddb9d37f1fa99dec83619c1253328155206b896210d4c")
+    ArchiveSource("https://github.com/rockdaboot/libpsl/releases/download/$(version)/libpsl-$(version).tar.gz",
+                  "1dcc9ceae8b128f3c0b3f654decd0e1e891afc6ff81098f227ef260449dae208")
 ]
 
 # Bash recipe for building across all platforms
@@ -25,12 +26,11 @@ cd $WORKSPACE/srcdir/libpsl*
 
 make -j${nproc}
 make install
-
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental = true)
+platforms = supported_platforms()
 
 
 # The products that we will ensure are always built

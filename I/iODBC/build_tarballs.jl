@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "iODBC"
-version = v"3.52.15"
+version = v"3.52.16"
 
 # Collection of sources required to complete build
 sources = [

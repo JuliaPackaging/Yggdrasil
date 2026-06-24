@@ -1,0 +1,13 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -7,8 +7,8 @@
+ set(CMAKE_CXX_STANDARD_REQUIRED ON)
+ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
+
+-find_library(QuickFIX_LIBRARIES QuickFIX REQUIRED)
+-find_path(QuickFIX_INCLUDE_DIRS QuickFIX REQUIRED)
++find_library(QuickFIX_LIBRARIES quickfix REQUIRED)
++find_path(QuickFIX_INCLUDE_DIRS quickfix REQUIRED)
+
+ message(STATUS "Found QuickFIX library: ${QuickFIX_LIBRARIES}")
+ message(STATUS "Found QuickFIX include dir: ${QuickFIX_INCLUDE_DIRS}")

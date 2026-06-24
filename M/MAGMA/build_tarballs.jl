@@ -5,37 +5,81 @@ using BinaryBuilder, Pkg
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
+include(joinpath(YGGDRASIL_DIR, "C/CUDA", "common.jl"))
 
 name = "MAGMA"
-version = v"2.7.0"
+version = v"2.10.0"
+
+# Note: Blackwell requires CUDA v12.8
+MIN_CUDA_VERSION = v"12.8"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("http://icl.utk.edu/projectsfiles/magma/downloads/magma-$(version).tar.gz",
-                  "fda1cbc4607e77cacd8feb1c0f633c5826ba200a018f647f1c5436975b39fd18"),
+                  "ea0c57fcb64ac2fd7ffe8f02d8fe18f07055c5b7fba0164f565d1e3a85148fb5"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/magma*
+cd $WORKSPACE/srcdir
 
-export CUDADIR=${WORKSPACE}/destdir/cuda
-export PATH=${PATH}:${CUDADIR}
+export TMPDIR=${WORKSPACE}/tmpdir # we need a lot of tmp space
+mkdir -p ${TMPDIR}
+
+PTROPT=""
+
+# Necessary operations to cross compile CUDA from x86_64 to aarch64
+if [[ "${target}" == aarch64-linux-* ]]; then
+
+   # Add /usr/lib/csl-musl-x86_64 to LD_LIBRARY_PATH to be able to use host nvcc
+   export LD_LIBRARY_PATH="/usr/lib/csl-musl-x86_64:/usr/lib/csl-glibc-x86_64:${LD_LIBRARY_PATH}"
+   
+   # Make sure we use host CUDA executable by copying from the x86_64 CUDA redist
+   NVCC_DIR=(/workspace/srcdir/cuda_nvcc-*-archive)
+   rm -rf ${prefix}/cuda/bin
+   cp -r ${NVCC_DIR}/bin ${prefix}/cuda/bin
+
+   # From CUDA v13 on, nvvm is not distributed in the NVCC redist anymore
+   if [[ "${bb_full_target}" == *cuda+13* ]]; then
+      NVVM_DIR=(/workspace/srcdir/libnvvm-*-archive)
+   else
+      NVVM_DIR=${NVCC_DIR}
+   fi
+   rm -rf ${prefix}/cuda/nvvm/bin
+   cp -r ${NVVM_DIR}/nvvm/bin ${prefix}/cuda/nvvm/bin
+
+   # Workaround failed execution of sizeptr in cross-compile builds
+   PTROPT="PTRSIZE=8"
+fi
+
+export CUDADIR=${prefix}/cuda
+export PATH=${PATH}:${CUDADIR}/bin
+export CUDACXX=${CUDADIR}/bin/nvcc
+
+# This flag reduces the size of the compiled binaries; if
+# they become over 2GB (e.g. due to targeting too many
+# compute_XX), linking fails.
+# See: https://github.com/NixOS/nixpkgs/pull/220402
+export NVCC_PREPEND_FLAGS+=' -Xfatbin=-compress-all'
+
+cd magma*
 cp ../make.inc .
+
 # Patch to _64_ suffixes
 atomic_patch -p1 ../0001-mangle-to-ILP64.patch
-# reduce parallelism since otherwise the builder may OOM.
-(( nproc=1+nproc/3 ))
-make -j${nproc} sparse-shared
-make install prefix=${prefix}
+
+make ${PTROPT} -j${nproc} sparse-shared
+make ${PTROPT} install prefix=${prefix}
+
 install_license COPYRIGHT
+
+# ensure products directory is clean
+rm -rf ${CUDADIR}
 """
 
-augment_platform_block = CUDA.augment
-
-platforms = CUDA.supported_platforms()
-filter!(p -> arch(p) == "x86_64", platforms)
+platforms = CUDA.supported_platforms(min_version = MIN_CUDA_VERSION)
+filter!(p -> arch(p) == "x86_64" || arch(p) == "aarch64", platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 
@@ -56,10 +100,26 @@ for platform in platforms
 
     cuda_deps = CUDA.required_dependencies(platform)
 
-    build_tarballs(ARGS, name, version, sources, script, [platform],
+    cuda_ver = platform["cuda"]
+
+    platform_sources = BinaryBuilder.AbstractSource[sources...]
+
+    if arch(platform) == "aarch64"
+        components = ["cuda_nvcc"]
+        # From CUDA v13 on, nvvm is not shipped with nvcc anymore
+        if VersionNumber(cuda_ver) >= v"13.0"
+           push!(components, "libnvvm")
+        end
+        x86_platform = deepcopy(platform)
+        x86_platform["arch"] = "x86_64"
+        append!(platform_sources, get_sources("cuda", components; platform=x86_platform,
+                                              version=CUDA.full_version(VersionNumber(cuda_ver))))
+    end
+
+    build_tarballs(ARGS, name, version, platform_sources, script, [platform],
                    products, [dependencies; cuda_deps];
                    preferred_gcc_version=v"8",
                    julia_compat="1.8",
-                   augment_platform_block,
+                   augment_platform_block=CUDA.augment,
                    skip_audit=true, dont_dlopen=true)
 end

@@ -3,21 +3,18 @@
 using BinaryBuilder
 
 name = "Xorg_libXcomposite"
-version = v"0.4.5"
+version = v"0.4.7"
 
 # Collection of sources required to build libXcomposite
 sources = [
-    ArchiveSource("https://www.x.org/archive/individual/lib/libXcomposite-$(version).tar.bz2",
-                  "b3218a2c15bab8035d16810df5b8251ffc7132ff3aa70651a1fba0bfe9634e8f"),
+    ArchiveSource("https://www.x.org/archive/individual/lib/libXcomposite-$(version).tar.xz",
+                  "8bdf310967f484503fa51714cf97bff0723d9b673e0eecbf92b3f97c060c8ccb"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libXcomposite-*/
-CPPFLAGS="-I${prefix}/include"
-# When compiling for things like ppc64le, we need newer `config.sub` files
-update_configure_scripts
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=no
+cd $WORKSPACE/srcdir/libXcomposite-*
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-static=no
 make -j${nproc}
 make install
 """
@@ -38,4 +35,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6")

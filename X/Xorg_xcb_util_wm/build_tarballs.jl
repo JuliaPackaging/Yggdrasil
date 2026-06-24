@@ -3,18 +3,17 @@
 using BinaryBuilder
 
 name = "Xorg_xcb_util_wm"
-version = v"0.4.1"
+version = v"0.4.2"
 
 # Collection of sources required to build libxcb
 sources = [
-    ArchiveSource("https://xcb.freedesktop.org/dist/xcb-util-wm-$(version).tar.bz2",
-                  "28bf8179640eaa89276d2b0f1ce4285103d136be6c98262b6151aaee1d3c2a3f"),
+    ArchiveSource("https://xcb.freedesktop.org/dist/xcb-util-wm-$(version).tar.xz",
+                  "62c34e21d06264687faea7edbf63632c9f04d55e72114aa4a57bb95e4f888a0b"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/xcb-util-wm-*/
-CPPFLAGS="-I${prefix}/include"
 
 # When compiling for things like ppc64le, we need newer `config.sub` files
 update_configure_scripts
@@ -26,7 +25,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if Sys.islinux(p) || Sys.isfreebsd(p)]
+platforms = supported_platforms(; exclude=p->!(Sys.islinux(p) || Sys.isfreebsd(p)))
 
 products = [
     LibraryProduct("libxcb-ewmh", :libxcb_ewmh),
@@ -40,4 +39,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

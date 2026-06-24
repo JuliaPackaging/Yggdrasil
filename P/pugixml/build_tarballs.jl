@@ -3,29 +3,30 @@
 using BinaryBuilder, Pkg
 
 name = "pugixml"
-version = v"1.11.0"
+version_string = "1.15"
+version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://github.com/zeux/pugixml/releases/download/v1.11/pugixml-1.11.tar.gz", "26913d3e63b9c07431401cf826df17ed832a20d19333d043991e611d23beaa2c")
+    ArchiveSource("http://github.com/zeux/pugixml/releases/download/v$(version_string)/pugixml-$(version_string).tar.gz",
+                  "655ade57fa703fb421c2eb9a0113b5064bddb145d415dd1f88c79353d90d511a")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/pugixml*
-mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+cmake -B build \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_SHARED_LIBS=ON \
-    -S ..
-make -j${nproc}
-make install
+    -DBUILD_SHARED_LIBS=ON
+cmake --build build --parallel ${nproc}
+cmake --install build
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 
 # The products that we will ensure are always built

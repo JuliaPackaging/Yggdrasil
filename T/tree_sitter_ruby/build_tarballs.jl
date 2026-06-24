@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "tree_sitter_ruby"
-version = v"0.16.2"
+version = v"0.23.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource(
-        "https://github.com/tree-sitter/tree-sitter-ruby/archive/v$(version).tar.gz",
-        "1a63b43f82837a1194cab997475a22f82bfd820dd32999aa1444cfeae70f7596"
+    GitSource(
+        "https://github.com/tree-sitter/tree-sitter-ruby.git",
+        "71bd32fb7607035768799732addba884a37a6210"
     ),
     DirectorySource("./bundled")
 ]
@@ -48,4 +48,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

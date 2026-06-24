@@ -3,12 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Aravis"
-version = v"0.8.26"
+version = v"0.8.35"
 
 sources = [
     GitSource("https://github.com/AravisProject/aravis.git",
-              "e977fa4eedc8c4f4747ff370d53621b369930fe9"),
-    
+              "ea4f3c47cb387d81b63444887f3e0efda7918d50")
 ]
 
 # Bash recipe for building across all platforms
@@ -40,9 +39,13 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Glib_jll"; compat="2.68.3"),
-    Dependency("libusb_jll")
+    Dependency("Glib_jll"; compat="2.84.3"),
+    Dependency("libusb_jll"),
+    # We had to restrict compat with XML2 because of ABI breakage:
+    # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
+    # Updating to `compat="~2.14.1"` is likely possible without problems but requires rebuilding this package
+    Dependency("XML2_jll"; compat="~2.13.6")
     ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"5", clang_use_lld=false)

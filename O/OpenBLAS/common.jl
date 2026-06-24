@@ -4,6 +4,28 @@ using BinaryBuilderBase: sanitize
 # Collection of sources required to build OpenBLAS
 function openblas_sources(version::VersionNumber; kwargs...)
     openblas_version_sources = Dict(
+        v"0.3.33" => [
+            ArchiveSource("https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.33/OpenBLAS-0.3.33.tar.gz",
+                          "6761af1d9f5d353ab4f0b7497be2643313b36c8f31caec0144bfef198e71e6ab")
+        ],
+        v"0.3.32" => [
+            ArchiveSource("https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.32/OpenBLAS-0.3.32.tar.gz",
+                          "f8a1138e01fddca9e4c29f9684fd570ba39dedc9ca76055e1425d5d4b1a4a766")
+        ],
+        # OpenBLAS 0.3.31 contains a serious bug <https://github.com/OpenMathLib/OpenBLAS/pull/5643>,
+        # we do not want to wrap that version
+        v"0.3.30" => [
+            ArchiveSource("https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.30/OpenBLAS-0.3.30.tar.gz",
+                          "27342cff518646afb4c2b976d809102e368957974c250a25ccc965e53063c95d")
+        ],
+        v"0.3.29" => [
+            ArchiveSource("https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.29/OpenBLAS-0.3.29.tar.gz",
+                          "38240eee1b29e2bde47ebb5d61160207dc68668a54cac62c076bb5032013b1eb")
+        ],
+        v"0.3.28" => [
+            ArchiveSource("https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.28/OpenBLAS-0.3.28.tar.gz",
+                          "f1003466ad074e9b0c8d421a204121100b0751c96fc6fcf3d1456bd12f8a00a1")
+        ],
         v"0.3.27" => [
             ArchiveSource("https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.27/OpenBLAS-0.3.27.tar.gz",
                           "aa2d68b1564fe2b13bc292672608e9cdeeeb6dc34995512e65c3b10f4599e897")
@@ -77,7 +99,7 @@ end
 
 # Do not override the default `num_64bit_threads` here, instead pass a custom from specific OpenBLAS versions
 # that should opt into a higher thread count.
-function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false, aarch64_ilp64::Bool=false, consistent_fpcsr::Bool=false, bfloat16::Bool=false, kwargs...)
+function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false, aarch64_ilp64::Bool=false, consistent_fpcsr::Bool=false, bfloat16::Bool=false, float16::Bool=false, kwargs...)
     # Allow some basic configuration
     script = """
     NUM_64BIT_THREADS=$(num_64bit_threads)
@@ -85,6 +107,7 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     AARCH64_ILP64=$(aarch64_ilp64)
     CONSISTENT_FPCSR=$(consistent_fpcsr)
     BFLOAT16=$(bfloat16)
+    FLOAT16=$(float16)
     version_patch=$(version.patch)
     """
     # Bash recipe for building across all platforms
@@ -109,6 +132,14 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
         cp -rL ${prefix}/lib/linux/* $(dirname $(readlink -f $(which flang)))/../lib/clang/13.0.1/lib/linux/
     fi
 
+    # GCC 14+ on Darwin requires additional libraries.
+    # (These should be in our image; remove this when the RootFS images have been updated.)
+    if [[ ${target} == *-darwin* ]]; then
+        if gcc --version | head -n 1 | grep -q '(GCC) 1[45][.]'; then
+            apk add libdispatch libdispatch-dev --repository=http://dl-cdn.alpinelinux.org/alpine/v3.17/community
+        fi
+    fi
+
     # We always want threading
     flags=(USE_THREAD=1 GEMM_MULTITHREADING_THRESHOLD=400 NO_AFFINITY=1)
     if [[ "${CONSISTENT_FPCSR}" == "true" ]]; then
@@ -118,6 +149,14 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     # Build BFLOAT16 kernels
     if [[ "${BFLOAT16}" == "true" ]]; then
         flags+=(BUILD_BFLOAT16=1)
+        if [[ "${target}" == riscv64-* ]]; then
+            flags+=(CFLAGS=-Wno-error=incompatible-pointer-types)
+        fi
+    fi
+
+    # Build FLOAT16 kernels
+    if [[ "${FLOAT16}" == "true" && "${target}" != arm-* && "${target}" != powerpc64le-* && "${target}" != x86_64-apple-* ]]; then
+        flags+=(BUILD_HFLOAT16=1)
     fi
 
     # We are cross-compiling
@@ -178,6 +217,15 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
         flags+=(TARGET=ARMV7)
     elif [[ ${target} == powerpc64le-* ]]; then
         flags+=(TARGET=POWER8 DYNAMIC_ARCH=1)
+    elif [[ ${target} == riscv64-* ]]; then
+        flags+=(TARGET=RISCV64_GENERIC DYNAMIC_ARCH=1)
+    fi
+
+    if [[ ${target} == aarch64-*-darwin* ]]; then
+        # Disable SME. Not supported on Darwin -- neither by the hardware before the M4 CPU, nor by our toolchains.
+        # (It is likely supported by MacOS SDK 15.0, but this SDK  doesn't work:
+        #  https://github.com/JuliaPackaging/Yggdrasil/issues/13593.)
+        export NO_SME=1
     fi
 
     # If we're building for x86_64 Windows gcc7+, we need to disable usage of
@@ -191,10 +239,18 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     # so set it here.
     if [[ ${target} == *linux* ]] || [[ ${target} == *freebsd* ]]; then
         export LDFLAGS="${LDFLAGS} '-Wl,-rpath,\$\$ORIGIN' -Wl,-z,origin"
+        # The regular linker produces invalid ELF files. Yggdrasil notices because it cannot load the shared library.
+        # Using lld instead creates valid ELF files.
+        # It might be that using a different version of binutils would also correct the problem.
+        #
+        # The problem can be seen by running `readelf -lW libopenblas64_.0.3.32.so`.
+        # The segment
+        #     LOAD  0x0000000001fba508 0x0000000001fbb508 ... RW  0x8000
+        # is not properly aligned. The two addresses are supposed to differ by a multiple of the alignment (0x8000) but they do not.
+        export LDFLAGS="${LDFLAGS} -fuse-ld=lld"
     elif [[ ${target} == *apple* ]]; then
         export LDFLAGS="${LDFLAGS} -Wl,-rpath,@loader_path/"
     fi
-
 
     # Enter the fun zone
     cd ${WORKSPACE}/srcdir/OpenBLAS*/
@@ -204,8 +260,16 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
         atomic_patch -p1 ${f}
     done
 
+    # Choose our make parallelism.
+    flags+=(-j${nproc})
+    # The Makefile will otherwise override our choice
+    export MAKE_NB_JOBS=0
+
+    # Print the flags for posterity
+    echo "Build flags: ${flags[@]}"
+
     # Build the actual library
-    make "${flags[@]}"
+    make "${flags[@]}" shared
 
     # Install the library
     make "${flags[@]}" "PREFIX=$prefix" install
@@ -245,14 +309,23 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     if [[ ${target} == *linux* ]] || [[ ${target} == *freebsd* ]]; then
         patchelf ${PATCHELF_FLAGS[@]} --set-soname ${LIBPREFIX}.${dlext} ${prefix}/lib/${LIBPREFIX}.${dlext}
     elif [[ ${target} == *apple* ]]; then
-        install_name_tool -id ${LIBPREFIX}.${dlext} ${prefix}/lib/${LIBPREFIX}.${dlext}
+        install_name_tool -id ${LIBPREFIX}.${dlext} $(realpath ${prefix}/lib/${LIBPREFIX}.${dlext})
     fi
     """
 
+    return script
 end
 
-# Nothing complicated here; we build for everywhere
-openblas_platforms(;experimental::Bool=true, kwargs...) = expand_gfortran_versions(supported_platforms(;experimental))
+function openblas_platforms(;experimental::Bool=true, version::Union{Nothing,VersionNumber}=nothing, kwargs...)
+    platforms = expand_gfortran_versions(supported_platforms())
+    # OpenBLAS 0.3.29 doesn't support GCC < v11 on powerpc64le:
+    # <https://github.com/OpenMathLib/OpenBLAS/issues/5068#issuecomment-2585836284>.
+    # This means we can't build it at all for libgfortran 3 and 4.
+    if version isa VersionNumber && version >= v"0.3.29"
+        filter!(p -> !(arch(p) == "powerpc64le" && libgfortran_version(p) < v"5"), platforms)
+    end
+    return platforms
+end
 
 # The products that we will ensure are always built
 function openblas_products(;kwargs...)
@@ -261,11 +334,11 @@ function openblas_products(;kwargs...)
     ]
 end
 
-function openblas_dependencies(platforms; kwargs...)
+function openblas_dependencies(platforms; llvm_compilerrt_version=v"13.0.1", kwargs...)
     return [
         Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
         HostBuildDependency(PackageSpec(name="FlangClassic_jll", uuid="b3f849d4-7198-5f76-a9c5-8e4f35f75d39")),
-        BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=v"13.0.1"); platforms=filter(p -> sanitize(p)=="memory", platforms)),
+        BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_compilerrt_version); platforms=filter(p -> sanitize(p)=="memory", platforms)),
         BuildDependency(PackageSpec(name="FlangClassic_RTLib_jll", uuid="48abaad9-6585-5455-9ce3-84cd0709264b"); platforms=filter(p -> sanitize(p)=="memory", platforms))
     ]
 end

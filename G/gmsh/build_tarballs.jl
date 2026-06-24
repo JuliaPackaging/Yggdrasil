@@ -3,13 +3,14 @@
 using BinaryBuilder
 
 name = "gmsh"
-version = v"4.12.2"
+version = v"4.15.2"
 
 # Collection of sources required to build Gmsh
 sources = [
     ArchiveSource("https://gmsh.info/src/gmsh-$(version)-source.tgz",
-                  "13e09d9ca8102e5c40171d6ee150c668742b98c3a6ca57f837f7b64e1e2af48f"),
-]
+                  "be3f66f225d27ba9fa014f07e83169285da8a051b0e8ab7103d88066b39bdd3e"),
+    DirectorySource("./bundled")
+    ]
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -17,6 +18,10 @@ cd ${WORKSPACE}/srcdir/gmsh-*
 if [[ "${target}" == *linux* ]] || [[ "${target}" == *freebsd* ]]; then
     OPENGL_FLAGS="-DOpenGL_GL_PREFERENCE=LEGACY"
 fi
+
+# remove -static linker option from mingw builds, otherwise linker errors with "cannot find -lpng", "cannot find -lfontconfig" 
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/CMakeLists.txt.patch" 
+
 mkdir build
 cd build
 cmake .. \
@@ -50,33 +55,24 @@ products = [
 
 # Some dependencies are needed or available only on certain platforms
 x11_platforms = filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)
-hdf5_platforms = [
-    Platform("x86_64", "linux"),
-    Platform("aarch64", "linux"; libc="glibc"),
-    Platform("x86_64", "macos"),
-    Platform("aarch64", "macos"),
-    Platform("x86_64", "windows"),
-    Platform("i686", "windows")
-]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("Xorg_xorgproto_jll"; platforms=x11_platforms),
-    Dependency("Cairo_jll"),
+    Dependency("Cairo_jll"; compat="1.18.0"),
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
     Dependency("FLTK_jll"),
-    Dependency("FreeType2_jll"; compat="2.10.4"),
+    Dependency("FreeType2_jll"; compat="2.13.4"),
     Dependency("GLU_jll"; platforms=x11_platforms),
     Dependency("GMP_jll"; compat="6.2"),
-    # Updating to a newer HDF5 version requires rebuilding this package
-    Dependency("HDF5_jll"; platforms=hdf5_platforms, compat="~1.12.1"),
+    Dependency("HDF5_jll"; compat="~2.1.2"),
     Dependency("JpegTurbo_jll"),
     Dependency("Libglvnd_jll"; platforms=x11_platforms),
     Dependency("libpng_jll"),
     Dependency("LLVMOpenMP_jll"; platforms=filter(Sys.isbsd, platforms)),
     Dependency("METIS_jll"),
     Dependency("MMG_jll"),
-    Dependency("OCCT_jll"),
+    Dependency("OCCT_jll"; compat="~7.9.2"),
     Dependency("Xorg_libX11_jll"; platforms=x11_platforms),
     Dependency("Xorg_libXext_jll"; platforms=x11_platforms),
     Dependency("Xorg_libXfixes_jll"; platforms=x11_platforms),

@@ -1,0 +1,34 @@
+When <linux/openat2.h> is unavailable (kernel headers < 5.6), provide local
+declarations for struct open_how, the RESOLVE_* flags, and __NR_openat2 so
+syscall.c still compiles. At runtime, if the running kernel does not support
+the openat2 syscall, the existing ENOSYS check in secure_relative_open()
+falls through to the portable per-component-walk path.
+
+--- a/syscall.c
++++ b/syscall.c
+@@ -36,5 +36,24 @@
+ #ifdef __linux__
+ #include <sys/syscall.h>
+-#include <linux/openat2.h>
++#ifdef HAVE_LINUX_OPENAT2_H
++#include <linux/openat2.h>
++#else
++/* Kernel headers predate openat2() (Linux 5.6). Provide the minimal
++ * definitions we need; if the running kernel also lacks the syscall,
++ * syscall(SYS_openat2, ...) returns ENOSYS and the caller falls back. */
++struct open_how {
++	uint64_t flags;
++	uint64_t mode;
++	uint64_t resolve;
++};
++#define RESOLVE_NO_MAGICLINKS	0x02
++#define RESOLVE_BENEATH		0x08
++#ifndef __NR_openat2
++#define __NR_openat2		437
++#endif
++#ifndef SYS_openat2
++#define SYS_openat2		__NR_openat2
++#endif
++#endif
+ #endif
+

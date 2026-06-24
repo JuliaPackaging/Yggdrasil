@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "PYTHIA"
-version = v"8.309.0"
+version = v"8.312.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://pythia.org/download/pythia83/pythia8309.tgz",
-                  "5bdafd9f2c4a1c47fd8a4e82fb9f0d8fcfba4de1003b8e14be4e0347436d6c33"),
+    ArchiveSource("https://pythia.org/download/pythia83/pythia8312.tgz",
+                  "bad98e2967b687046c4568c9091d630a0c31b628745c021a994aba4d1d50f8ea"),
 ]
 
 # Bash recipe for building across all platforms
@@ -21,12 +21,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("powerpc64le", "linux"; libc="glibc"),
-    Platform("x86_64", "macos")
-]
-platforms = expand_cxxstring_abis(platforms)
+platforms = supported_platforms(exclude = p->libc(p) == "musl" || os(p) == "freebsd" || os(p) == "windows") |> expand_cxxstring_abis
 
 # The products that we will ensure are always built
 products = [
@@ -38,4 +33,5 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
+               preferred_gcc_version=v"8", julia_compat="1.6")

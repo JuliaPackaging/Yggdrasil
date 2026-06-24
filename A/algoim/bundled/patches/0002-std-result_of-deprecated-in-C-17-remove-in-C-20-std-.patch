@@ -1,0 +1,35 @@
+From 9845a8cfa9bb3774faae8395aef5fe2753c1771a Mon Sep 17 00:00:00 2001
+From: Pablo Antolin <pablo.antolin@epfl.ch>
+Date: Sun, 6 Oct 2024 11:20:14 +0200
+Subject: [PATCH] std::result_of (deprecated in C++17, remove in C++20) ->
+ std::invoke_result
+
+---
+ algoim/quadrature_general.hpp | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/algoim/quadrature_general.hpp b/algoim/quadrature_general.hpp
+index bb3e16d..29d96b7 100644
+--- a/algoim/quadrature_general.hpp
++++ b/algoim/quadrature_general.hpp
+@@ -557,7 +557,7 @@ namespace algoim
+         }
+ 
+         // Evaluate an integral applied to a given functional
+-        template<typename F, typename R = typename std::result_of<F(const uvector<real,N>&)>::type>
++        template<typename F, typename R = typename std::invoke_result<F(const uvector<real,N>&)>::type>
+         R operator()(const F& f) const
+         {
+             R sum = 0;
+@@ -649,7 +649,7 @@ namespace algoim
+             hyperrectangle, i.e., {phi < 0}, intersected with xrange, intersected with the face
+             {x(dim) == xrange(side)(dim)}.
+        - side is used only when 0 <= dim && dim < N and specifies which side of the hyperrectangle to restrict
+-         to, either side == 0 or side == 1 for the “left” or “right” face, respectively (with normal pointing
++         to, either side == 0 or side == 1 for the ï¿½leftï¿½ or ï¿½rightï¿½ face, respectively (with normal pointing
+          in the direction of the dim-th axis).
+        - qo specifies the degree of the underlying one-dimensional Gaussian quadrature scheme and must satisfy
+          1 <= qo && qo <= 10.
+-- 
+2.25.1
+

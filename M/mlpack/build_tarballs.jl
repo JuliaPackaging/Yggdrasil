@@ -4,13 +4,16 @@
 
 using BinaryBuilder
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 # Set sources and other environment variables.
 name = "mlpack"
-source_version = v"4.3.0"
+source_version = v"4.8.0"
 version = source_version
 sources = [
     ArchiveSource("https://www.mlpack.org/files/mlpack-$(source_version).tar.gz",
-                  "08cd54f711fde66fc3b6c9db89dc26776f9abf1a6256c77cfa3556e2a56f1a3d"),
+                  "0ab06e5c506c7ed5f072faa4c04477c65624e4a1ff62eee8c0d996ef850ec51c"),
 ]
 
 script = raw"""
@@ -43,7 +46,7 @@ FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
 if [[ "${nbits}" == 64 ]]; then
     # We need to rename some functions for compatibility with Julia's OpenBLAS
     SYMB_DEFS=()
-    for sym in cgbcon cgbsv cgbsvx cgbtrf cgbtrs cgecon cgees cgeev cgeevx cgehrd cgels cgelsd cgemm cgemv cgeqp3 cgeqrf cgesdd cgesv cgesvd cgesvx cgetrf cgetri cgetrs cgges cggev cgtsv cgtsvx cheev cheevd cherk clangb clange clanhe clansy cpbtrf cpocon cposv cposvx cpotrf cpotri cpotrs cpstrf ctrcon ctrsyl ctrtri ctrtrs cungqr dasum ddot dgbcon dgbsv dgbsvx dgbtrf dgbtrs dgecon dgees dgeev dgeevx dgehrd dgels dgelsd dgemm dgemv dgeqp3 dgeqrf dgesdd dgesv dgesvd dgesvx dgetrf dgetri dgetrs dgges dggev dgtsv dgtsvx dlahqr dlangb dlange dlansy dlarnv dnrm2 dorgqr dpbtrf dpocon dposv dposvx dpotrf dpotri dpotrs dpstrf dstedc dsyev dsyevd dsyrk dtrcon dtrevc dtrsyl dtrtri dtrtrs ilaenv sasum sdot sgbcon sgbsv sgbsvx sgbtrf sgbtrs sgecon sgees sgeev sgeevx sgehrd sgels sgelsd sgemm sgemv sgeqrf sgeqp3 sgesdd sgesv sgesvd sgesvx sgetrf sgetri sgetrs sgges sggev sgtsv sgtsvx slahqr slangb slange slansy slarnv snrm2 sorgqr spbtrf spocon sposv sposvx spotrf spotri spotrs spstrf sstedc ssyev ssyevd ssyrk strcon strevc strsyl strtri strtrs zgbcon zgbsv zgbsvx zgbtrf zgbtrs zgecon zgees zgeev zgeevx zgehrd zgels zgelsd zgemm zgemv zgeqp3 zgeqrf zgesdd zgesv zgesvd zgesvx zgetrf zgetri zgetrs zgges zggev zgtsv zgtsvx zheev zheevd zherk zlangb zlange zlanhe zlansy zpbtrf zpocon zposv zposvx zpotrf zpotri zpotrs zpstrf ztrcon ztrsyl ztrtri ztrtrs zungqr; do
+    for sym in cgbcon cgbsv cgbsvx cgbtrf cgbtrs cgecon cgees cgeev cgeevx cgehrd cgels cgelsd cgemm cgemv cgeqp3 cgeqrf cgesdd cgesv cgesvd cgesvx cgetrf cgetri cgetrs cgges cggev cgtsv cgtsvx checon cheev cheevd cherk chetrf chetri chetrs clangb clange clanhe clansy cpbtrf cpocon cposv cposvx cpotrf cpotri cpotrs cpstrf ctrcon ctrsyl ctrtri ctrtrs cungqr dasum ddot dgbcon dgbsv dgbsvx dgbtrf dgbtrs dgecon dgees dgeev dgeevx dgehrd dgels dgelsd dgemm dgemv dgeqp3 dgeqrf dgesdd dgesv dgesvd dgesvx dgetrf dgetri dgetrs dgges dggev dgtsv dgtsvx dlahqr dlangb dlange dlansy dlarnv dnrm2 dorgqr dpbtrf dpocon dposv dposvx dpotrf dpotri dpotrs dpstrf dstedc dsycon dsyev dsyevd dsyrk dsytrf dsytri dsytrs dtrcon dtrevc dtrsyl dtrtri dtrtrs ilaenv sasum sdot sgbcon sgbsv sgbsvx sgbtrf sgbtrs sgecon sgees sgeev sgeevx sgehrd sgels sgelsd sgemm sgemv sgeqrf sgeqp3 sgesdd sgesv sgesvd sgesvx sgetrf sgetri sgetrs sgges sggev sgtsv sgtsvx slahqr slangb slange slansy slarnv snrm2 sorgqr spbtrf spocon sposv sposvx spotrf spotri spotrs spstrf sstedc ssycon ssyev ssyevd ssyrk ssytrf ssytri ssytrs strcon strevc strsyl strtri strtrs zgbcon zgbsv zgbsvx zgbtrf zgbtrs zgecon zgees zgeev zgeevx zgehrd zgels zgelsd zgemm zgemv zgeqp3 zgeqrf zgesdd zgesv zgesvd zgesvx zgetrf zgetri zgetrs zgges zggev zgtsv zgtsvx zhecon zheev zheevd zherk zhetrf zhetri zhetrs zlangb zlange zlanhe zlansy zpbtrf zpocon zposv zposvx zpotrf zpotri zpotrs zpstrf ztrcon ztrsyl ztrtri ztrtrs zungqr; do
         SYMB_DEFS+=("-D${sym}=${sym}_64")
     done
     export CXXFLAGS="${SYMB_DEFS[@]}"
@@ -96,9 +99,15 @@ fi
 install_license ../LICENSE.txt
 """
 
+# On macOS, we need to compile with 10.14 as a target to work around
+# std::optional availability issues.
+sources, script = require_macos_sdk("10.14", sources, script)
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.
 platforms = expand_cxxstring_abis(supported_platforms())
+# We're missing some dependencies for this platform, exclude it for the time being
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built.
 products = [
@@ -106,14 +115,25 @@ products = [
     LibraryProduct("libmlpack_julia_util", :libmlpack_julia_util),
     # Each of these contains a mlpackMain() implementation for the given
     # binding.
-    LibraryProduct("libmlpack_julia_adaboost", :libmlpack_julia_adaboost),
+    LibraryProduct("libmlpack_julia_adaboost_train",
+        :libmlpack_julia_adaboost_train),
+    LibraryProduct("libmlpack_julia_adaboost_classify",
+        :libmlpack_julia_adaboost_classify),
+    LibraryProduct("libmlpack_julia_adaboost_probabilities",
+        :libmlpack_julia_adaboost_probabilities),
     LibraryProduct("libmlpack_julia_approx_kfn", :libmlpack_julia_approx_kfn),
-    LibraryProduct("libmlpack_julia_bayesian_linear_regression",
-        :libmlpack_julia_bayesian_linear_regression),
+    LibraryProduct("libmlpack_julia_bayesian_linear_regression_train",
+        :libmlpack_julia_bayesian_linear_regression_train),
+    LibraryProduct("libmlpack_julia_bayesian_linear_regression_predict",
+        :libmlpack_julia_bayesian_linear_regression_predict),
     LibraryProduct("libmlpack_julia_cf", :libmlpack_julia_cf),
     LibraryProduct("libmlpack_julia_dbscan", :libmlpack_julia_dbscan),
-    LibraryProduct("libmlpack_julia_decision_tree",
-        :libmlpack_julia_decision_tree),
+    LibraryProduct("libmlpack_julia_decision_tree_train",
+        :libmlpack_julia_decision_tree_train),
+    LibraryProduct("libmlpack_julia_decision_tree_classify",
+        :libmlpack_julia_decision_tree_classify),
+    LibraryProduct("libmlpack_julia_decision_tree_probabilities",
+        :libmlpack_julia_decision_tree_probabilities),
     LibraryProduct("libmlpack_julia_det", :libmlpack_julia_det),
     LibraryProduct("libmlpack_julia_emst", :libmlpack_julia_emst),
     LibraryProduct("libmlpack_julia_fastmks", :libmlpack_julia_fastmks),
@@ -137,15 +157,22 @@ products = [
     LibraryProduct("libmlpack_julia_kmeans", :libmlpack_julia_kmeans),
     LibraryProduct("libmlpack_julia_knn", :libmlpack_julia_knn),
     LibraryProduct("libmlpack_julia_krann", :libmlpack_julia_krann),
-    LibraryProduct("libmlpack_julia_lars", :libmlpack_julia_lars),
-    LibraryProduct("libmlpack_julia_linear_regression",
-        :libmlpack_julia_linear_regression),
+    LibraryProduct("libmlpack_julia_lars_train", :libmlpack_julia_lars_train),
+    LibraryProduct("libmlpack_julia_lars_predict", :libmlpack_julia_lars_predict),
+    LibraryProduct("libmlpack_julia_linear_regression_train",
+        :libmlpack_julia_linear_regression_train),
+    LibraryProduct("libmlpack_julia_linear_regression_predict",
+        :libmlpack_julia_linear_regression_predict),
     LibraryProduct("libmlpack_julia_linear_svm", :libmlpack_julia_linear_svm),
     LibraryProduct("libmlpack_julia_lmnn", :libmlpack_julia_lmnn),
     LibraryProduct("libmlpack_julia_local_coordinate_coding",
         :libmlpack_julia_local_coordinate_coding),
-    LibraryProduct("libmlpack_julia_logistic_regression",
-        :libmlpack_julia_logistic_regression),
+    LibraryProduct("libmlpack_julia_logistic_regression_train",
+        :libmlpack_julia_logistic_regression_train),
+    LibraryProduct("libmlpack_julia_logistic_regression_classify",
+        :libmlpack_julia_logistic_regression_classify),
+    LibraryProduct("libmlpack_julia_logistic_regression_probabilities",
+        :libmlpack_julia_logistic_regression_probabilities),
     LibraryProduct("libmlpack_julia_lsh", :libmlpack_julia_lsh),
     LibraryProduct("libmlpack_julia_mean_shift", :libmlpack_julia_mean_shift),
     LibraryProduct("libmlpack_julia_nbc", :libmlpack_julia_nbc),
@@ -164,8 +191,12 @@ products = [
     LibraryProduct("libmlpack_julia_preprocess_split",
         :libmlpack_julia_preprocess_split),
     LibraryProduct("libmlpack_julia_radical", :libmlpack_julia_radical),
-    LibraryProduct("libmlpack_julia_random_forest",
-        :libmlpack_julia_random_forest),
+    LibraryProduct("libmlpack_julia_random_forest_train",
+        :libmlpack_julia_random_forest_train),
+    LibraryProduct("libmlpack_julia_random_forest_classify",
+        :libmlpack_julia_random_forest_classify),
+    LibraryProduct("libmlpack_julia_random_forest_probabilities",
+        :libmlpack_julia_random_forest_probabilities),
     LibraryProduct("libmlpack_julia_softmax_regression",
         :libmlpack_julia_softmax_regression),
     LibraryProduct("libmlpack_julia_sparse_coding",
@@ -174,8 +205,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("armadillo_jll"; compat="12.2.0"),
-    Dependency("OpenBLAS_jll", v"0.3.13"),
+    Dependency("armadillo_jll"; compat="14.4.1"),
+    Dependency("OpenBLAS_jll"),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
@@ -187,4 +218,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7", julia_compat="1.7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"9", julia_compat="1.7")

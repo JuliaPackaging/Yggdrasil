@@ -1,0 +1,203 @@
+diff --git a/sdk/perfetto.cc b/sdk/perfetto.cc
+index e055b55512..8cf83fe3c9 100644
+--- a/sdk/perfetto.cc
++++ b/sdk/perfetto.cc
+@@ -1013,9 +1013,10 @@ SystemInfo GetSystemInfo() {
+ 
+ #if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+ 
++using uid_t = int;
++
+ #if !PERFETTO_BUILDFLAG(PERFETTO_COMPILER_GCC)
+ // MinGW has these. clang-cl and MSVC, which use just the Windows SDK, don't.
+-using uid_t = int;
+ using pid_t = int;
+ #endif  // !GCC
+ 
+@@ -1081,7 +1082,7 @@ constexpr pid_t kInvalidPid = static_cast<pid_t>(-1);
+ // gen_amalgamated expanded: #include "perfetto/ext/base/sys_types.h"
+ 
+ #if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+-// Even if Windows has errno.h, the all syscall-restart behavior does not apply.
++// Even if windows.has errno.h, the all syscall-restart behavior does not apply.
+ // Trying to handle EINTR can cause more harm than good if errno is left stale.
+ // Chromium does the same.
+ #define PERFETTO_EINTR(x) (x)
+@@ -1786,7 +1787,7 @@ void InstallCtrlCHandler(CtrlCHandlerFunction);
+ // gen_amalgamated expanded: #include "perfetto/base/logging.h"
+ 
+ #if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+-#include <Windows.h>
++#include <windows.h>
+ #include <io.h>
+ #else
+ #include <signal.h>
+@@ -2106,7 +2107,7 @@ class Pipe {
+ #include <stdint.h>
+ 
+ #if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+-#include <Windows.h>
++#include <windows.h>
+ #include <synchapi.h>
+ #elif PERFETTO_BUILDFLAG(PERFETTO_OS_QNX)
+ #include <unistd.h>
+@@ -2388,7 +2389,7 @@ ScopedFile OpenFile(const std::string& path,
+                     FileOpenMode = kFileModeInvalid);
+ ScopedFstream OpenFstream(const char* path, const char* mode);
+ 
+-// This is an alias for close(). It's to avoid leaking Windows.h in headers.
++// This is an alias for close(). It's to avoid leaking windows.h in headers.
+ // Exported because ScopedFile is used in the /include/ext API by Chromium
+ // component builds.
+ int PERFETTO_EXPORT_COMPONENT CloseFile(int fd);
+@@ -2470,7 +2471,7 @@ std::optional<uint64_t> GetFileSize(PlatformHandle fd);
+ // gen_amalgamated expanded: #include "perfetto/ext/base/utils.h"
+ 
+ #if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+-#include <Windows.h>
++#include <windows.h>
+ #include <direct.h>
+ #include <io.h>
+ #include <stringapiset.h>
+@@ -5234,7 +5235,7 @@ class PagedMemory {
+ #include <cstddef>
+ 
+ #if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+-#include <Windows.h>
++#include <windows.h>
+ #else  // PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+ #include <sys/mman.h>
+ #endif  // PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+@@ -5336,7 +5337,7 @@ bool PagedMemory::AdviseDontNeed(void* p, size_t size) {
+   PERFETTO_DCHECK(p >= p_);
+   PERFETTO_DCHECK(static_cast<char*>(p) + size <= p_ + size_);
+ #if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN) || PERFETTO_BUILDFLAG(PERFETTO_OS_NACL)
+-  // Discarding pages on Windows has more CPU cost than is justified for the
++  // Discarding pages on windows.has more CPU cost than is justified for the
+   // possible memory savings.
+   return false;
+ #elif PERFETTO_BUILDFLAG(PERFETTO_OS_QNX)
+@@ -5875,7 +5876,7 @@ void PeriodicTask::ResetTimerFd() {
+ #include <fcntl.h>  // For O_BINARY (Windows) and F_SETxx (UNIX)
+ 
+ #if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+-#include <Windows.h>
++#include <windows.h>
+ #include <namedpipeapi.h>
+ #else
+ #include <sys/types.h>
+@@ -6048,7 +6049,7 @@ ScopedMmap ReadMmapWholeFile(const char* fname);
+ #include <sys/mman.h>
+ #include <unistd.h>
+ #elif PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+-#include <Windows.h>
++#include <windows.h>
+ #endif
+ 
+ namespace perfetto::base {
+@@ -6513,7 +6514,7 @@ bool StringSplitter::Next() {
+ #if PERFETTO_BUILDFLAG(PERFETTO_OS_APPLE)
+ #include <xlocale.h>
+ #elif PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+-#include <Windows.h>
++#include <windows.h>
+ #endif
+ 
+ #include <cinttypes>
+@@ -7211,7 +7212,7 @@ class TempDir {
+ #include <string.h>
+ 
+ #if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+-#include <Windows.h>
++#include <windows.h>
+ #include <direct.h>
+ #include <fileapi.h>
+ #include <io.h>
+@@ -7363,7 +7364,7 @@ TempDir::~TempDir() {
+ // gen_amalgamated expanded: #include "perfetto/ext/base/thread_checker.h"
+ 
+ #if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+-#include <Windows.h>
++#include <windows.h>
+ #endif
+ 
+ namespace perfetto {
+@@ -7530,7 +7531,7 @@ inline bool GetThreadName(std::string&) {
+ #include <zircon/syscalls.h>
+ #include <zircon/types.h>
+ #elif PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+-#include <Windows.h>
++#include <windows.h>
+ #endif
+ 
+ namespace perfetto {
+@@ -7626,7 +7627,7 @@ bool GetThreadName(std::string& out_result) {
+ // gen_amalgamated expanded: #include "perfetto/ext/base/string_utils.h"
+ 
+ #if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+-#include <Windows.h>
++#include <windows.h>
+ #else
+ #include <unistd.h>
+ #endif
+@@ -7877,7 +7878,7 @@ std::optional<int32_t> GetTimezoneOffsetMins() {
+ #endif  // OS_LINUX | OS_ANDROID
+ 
+ #if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+-#include <Windows.h>
++#include <windows.h>
+ #include <io.h>
+ #include <malloc.h>  // For _aligned_malloc().
+ #endif
+@@ -9591,7 +9592,7 @@ bool ThreadTaskRunner::RunsTasksOnCurrentThread() const {
+ #include <stdlib.h>
+ 
+ #if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+-#include <Windows.h>
++#include <windows.h>
+ #include <synchapi.h>
+ #else
+ #include <unistd.h>
+@@ -10729,7 +10730,7 @@ void Subprocess::KillAndWaitForTermination(int sig_num) {
+ #include <mutex>
+ #include <tuple>
+ 
+-#include <Windows.h>
++#include <windows.h>
+ 
+ // gen_amalgamated expanded: #include "perfetto/base/logging.h"
+ // gen_amalgamated expanded: #include "perfetto/base/time.h"
+@@ -43059,7 +43060,7 @@ Platform* Platform::GetDefaultPlatform() {
+ 
+ #if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+ 
+-#include <Windows.h>
++#include <windows.h>
+ 
+ // gen_amalgamated expanded: #include "perfetto/ext/base/thread_task_runner.h"
+ // gen_amalgamated expanded: #include "perfetto/tracing/internal/tracing_tls.h"
+@@ -60756,11 +60757,11 @@ struct sockaddr_vm {
+ // gen_amalgamated expanded: #include "perfetto/ext/base/string_utils.h"
+ 
+ #if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+-// The include order matters on these three Windows header groups.
+-#include <Windows.h>
++// The include order matters on these three windows.header groups.
++#include <windows.h>
+ 
+-#include <WS2tcpip.h>
+-#include <WinSock2.h>
++#include <ws2tcpip.h>
++#include <winsock2.h>
+ 
+ #include <afunix.h>
+ #else
+@@ -65838,7 +65839,7 @@ class SharedMemoryWindows : public SharedMemory {
+ #include <memory>
+ #include <random>
+ 
+-#include <Windows.h>
++#include <windows.h>
+ 
+ // gen_amalgamated expanded: #include "perfetto/base/logging.h"
+ // gen_amalgamated expanded: #include "perfetto/ext/base/string_utils.h"

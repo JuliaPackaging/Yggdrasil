@@ -1,0 +1,65 @@
+From d5d2f04992ab678d7b984164fd24bd94cff05578 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Fri, 27 Jun 2025 18:08:13 +0200
+Subject: [PATCH 6/6] Guard `_WIN32_WINNT` definition
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+🤖 Generated with [Claude Code](https://claude.ai/code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+---
+ ocamltest/run_win32.c | 2 ++
+ runtime/win32.c       | 2 ++
+ yacc/wstr.c           | 4 ++++
+ 3 files changed, 8 insertions(+)
+
+diff --git a/ocamltest/run_win32.c b/ocamltest/run_win32.c
+index 5f55206237..c04f9265ca 100644
+--- a/ocamltest/run_win32.c
++++ b/ocamltest/run_win32.c
+@@ -16,7 +16,9 @@
+ /* Run programs with redirections and timeouts under Windows */
+ 
+ /* GetTickCount64() requires Windows Vista or Server 2008 */
++#ifndef _WIN32_WINNT
+ #define _WIN32_WINNT 0x0600
++#endif
+ 
+ #include <stdio.h>
+ #include <stdlib.h>
+diff --git a/runtime/win32.c b/runtime/win32.c
+index 3ec659d42a..7e4fdeab9a 100644
+--- a/runtime/win32.c
++++ b/runtime/win32.c
+@@ -20,7 +20,9 @@
+ /* FILE_INFO_BY_HANDLE_CLASS and FILE_NAME_INFO are only available from Windows
+    Vista onwards */
+ #undef _WIN32_WINNT
++#ifndef _WIN32_WINNT
+ #define _WIN32_WINNT 0x0600
++#endif
+ 
+ #define WIN32_LEAN_AND_MEAN
+ #include <wtypes.h>
+diff --git a/yacc/wstr.c b/yacc/wstr.c
+index 78c334e691..3ec9b751fb 100644
+--- a/yacc/wstr.c
++++ b/yacc/wstr.c
+@@ -13,8 +13,12 @@
+ /**************************************************************************/
+ 
+ /* Need at least Windows Vista for WC_ERR_INVALID_CHARS */
++#ifndef _WIN32_WINNT
+ #define _WIN32_WINNT 0x600
++#endif
++#ifndef WINVER
+ #define WINVER 0x600
++#endif
+ #include <windows.h>
+ 
+ /* See corresponding values in runtime/win32.c */
+-- 
+2.50.0
+

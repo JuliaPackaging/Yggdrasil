@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "SDL2_gfx"
-version = v"1.0.3"
+version = v"1.0.4"
 
 # Collection of sources required to complete build
 sources = [
     "http://www.ferzkopp.net/Software/SDL2_gfx/SDL2_gfx-$(version).tar.gz" =>
-    "a4066bd467c96469935a4b1fe472893393e7d74e45f95d59f69726784befd8f8",
+    "63e0e01addedc9df2f85b93a248f06e8a04affa014a835c2ea34bfe34e576262",
     "./bundled",
 ]
 
@@ -55,4 +55,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

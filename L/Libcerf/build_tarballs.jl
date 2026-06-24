@@ -3,17 +3,28 @@
 using BinaryBuilder, Pkg
 
 name = "Libcerf"
-version = v"1.17"
+version = v"2.5"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://jugit.fz-juelich.de/mlz/libcerf/-/archive/v$(version.major).$(version.minor)/libcerf-v$(version.major).$(version.minor).tar.gz",
-                  "b1916b292cb37f2d0d0b699fbcf0fe260cca97ec7266ea20ff0c5cd8ef2eaab4")
+                  "b3a5e68a30bdbd3a58e9e7c038bd0aa2586b90bbb1c809f76665e176b2d42cdc"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libcerf-*/
+if [[ "${target}" == *-mingw* ]]; then
+    # ref:  https://github.com/msys2/MINGW-packages/commit/b3e9553aa603dc446af4a0610187c23ac8c9d97f
+    # fix wrong dll install path
+    atomic_patch -p1 ../patches/001-fix-install-dest.patch
+
+    # fix windows export symbols
+    LDFLAGS+=" -Wl,--export-all-symbols"
+    atomic_patch -p1 ../patches/002-fix-win-export.patch
+fi
+
 mkdir build && cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
 make -j${nproc}

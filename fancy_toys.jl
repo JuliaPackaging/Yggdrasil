@@ -2,9 +2,6 @@
 # developers.  These utilities can be employed in builder files.
 
 using BinaryBuilder, Pkg, LibGit2
-# Note: if you only need `get_addable_spec`, just add the following line to your recipe
-# instead of including this file.  This is reexported here for backward compatibility.
-using BinaryBuilderBase: get_addable_spec
 
 """
     should_build_platform(platform) -> Bool
@@ -14,6 +11,9 @@ Return whether the tarballs for the given `platform` should be built.
 This is useful when the builder has different platform-dependent elements
 (sources, script, products, etc...) that make it hard to have a single
 `build_tarballs` call.
+
+Note that the platform must be augmented, e.g. wrt. CUDA, if the platform
+supplied in ARGS is augmented.
 """
 function should_build_platform(platform)
     # If you need inspiration for how to use this function, look at the builder

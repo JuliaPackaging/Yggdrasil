@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libcint"
-version = v"5.1.7"
+version = v"6.1.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sunqm/libcint.git", "cd69f75b08bde058d1c7fc51355d2ea468f45978")
+    GitSource("https://github.com/sunqm/libcint.git", "8d13863ff481cea27efea5e56c9e4d352cdb8f80")
 ]
 
 # Bash recipe for building across all platforms
@@ -30,7 +30,8 @@ platforms = [
     Platform("aarch64", "macos"; ),
     Platform("aarch64", "linux"; libc = "glibc"),
     Platform("x86_64", "macos"; ),
-    Platform("x86_64", "linux"; libc = "glibc")
+    Platform("x86_64", "linux"; libc = "glibc"),
+    Platform("x86_64", "windows")
 ]
 
 # The products that we will ensure are always built

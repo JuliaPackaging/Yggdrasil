@@ -3,20 +3,21 @@
 using BinaryBuilder, Pkg
 
 name = "ORC"
-version = v"4.31.0"
+# Our ORC version numbers are off, this is actually 0.4.42
+version = v"4.42.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://gstreamer.freedesktop.org/src/orc/orc-0.4.31.tar.xz", "a0ab5f10a6a9ae7c3a6b4218246564c3bf00d657cbdf587e6d34ec3ef0616075")
+    ArchiveSource("https://gstreamer.freedesktop.org/src/orc/orc-0.$(version.major).$(version.minor).tar.xz",
+                  "7ec912ab59af3cc97874c456a56a8ae1eec520c385ec447e8a102b2bd122c90c")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/orc-0.4.31/
-mkdir build && cd build
-meson .. --cross-file=${MESON_TARGET_TOOLCHAIN}
-ninja -j${nproc}
-ninja install
+cd $WORKSPACE/srcdir/orc*
+meson setup build --buildtype=release --cross-file=${MESON_TARGET_TOOLCHAIN}
+meson compile -C build -j ${nproc}
+meson install -C build
 """
 
 # These are the platforms we will build for by default, unless further
@@ -36,4 +37,5 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"5")

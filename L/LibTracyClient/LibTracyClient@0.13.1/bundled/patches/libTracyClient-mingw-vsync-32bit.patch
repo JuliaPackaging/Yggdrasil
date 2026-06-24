@@ -1,0 +1,15 @@
+diff --git a/public/client/windows/TracyETW.cpp b/public/client/windows/TracyETW.cpp
+--- a/public/client/windows/TracyETW.cpp
++++ b/public/client/windows/TracyETW.cpp
+@@ -125,7 +125,10 @@ struct VSyncDPC
+     uint32_t    flipType;
+     uint64_t    flipFenceId;
+ };
++// VSyncDPC contains void* fields, so size differs between 32-bit and 64-bit
++#ifdef _WIN64
+ static_assert( sizeof( VSyncDPC ) == 64, "unexpected VSyncInfo struct size/alignment" );
++#endif
+ 
+ // --------------------------
+ 
+

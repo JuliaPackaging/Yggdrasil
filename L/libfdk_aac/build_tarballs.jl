@@ -3,12 +3,13 @@
 using BinaryBuilder
 
 name = "libfdk_aac"
-version = v"2.0.2"
+version = v"2.0.3"
+ygg_version = v"2.0.4"
 
 # Collection of sources required to build libfdk
 sources = [
     ArchiveSource("https://downloads.sourceforge.net/project/opencore-amr/fdk-aac/fdk-aac-$(version).tar.gz",
-                  "c9e8630cf9d433f3cead74906a1520d2223f89bcd3fa9254861017440b8eb22f"),
+                  "829b6b89eef382409cda6857fd82af84fabb63417b08ede9ea7a553f811cb79e"),
 ]
 
 # Bash recipe for building across all platforms
@@ -22,7 +23,7 @@ install_license NOTICE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -34,4 +35,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6")

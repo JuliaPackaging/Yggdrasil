@@ -9,10 +9,10 @@
  #elif defined(_WIN32) && !defined(OCCT_UWP)
  
  #include <Standard_WarningsDisable.hxx>
-@@ -313,6 +313,9 @@
+@@ -320,6 +320,9 @@
    Message::SendTrace ("Standard::StackTrace() is not implemented for this CPU architecture");
    return false;
- #endif
+   #endif
 +#elif 1
 +  Message::SendTrace ("Standard::StackTrace() is not implemented for this platform");
 +  return false;

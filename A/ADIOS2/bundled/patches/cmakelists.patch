@@ -1,0 +1,13 @@
+diff --git a/source/adios2/CMakeLists.txt b/source/adios2/CMakeLists.txt
+index daa921003..70f123e49 100644
+--- a/source/adios2/CMakeLists.txt
++++ b/source/adios2/CMakeLists.txt
+@@ -517,6 +517,8 @@ if(ADIOS2_HAVE_IME)
+   target_link_libraries(adios2_core PRIVATE IME::IME)
+ endif()
+ 
++target_link_libraries(adios2_core PUBLIC adios2::thirdparty::ffs adios2::thirdparty::perfstubs-interface)
++
+ if(ADIOS2_HAVE_MPI)
+   set(maybe_adios2_c_mpi adios2_c_mpi)
+   set(maybe_adios2_cxx_mpi adios2_cxx_mpi)

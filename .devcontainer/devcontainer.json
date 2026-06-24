@@ -1,7 +1,7 @@
 {
   "features": {
     "ghcr.io/julialang/devcontainer-features/julia:1": {
-      "channel": "1.7"
+      "channel": "1.12"
     },
   },
   "containerEnv": {

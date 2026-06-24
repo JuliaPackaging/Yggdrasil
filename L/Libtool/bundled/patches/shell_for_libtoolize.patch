@@ -1,0 +1,10 @@
+diff --git a/libtoolize.in b/libtoolize.in
+index 0c40fed..8938405 100644
+--- a/libtoolize.in
++++ b/libtoolize.in
+@@ -1,4 +1,4 @@
+-#! /usr/bin/env sh
++#! /bin/bash
+ 
+ # Prepare a package to use libtool.
+ # Written by Gary V. Vaughan <gary@gnu.org>, 2003

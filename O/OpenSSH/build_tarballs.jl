@@ -1,24 +1,24 @@
 using BinaryBuilder
 
 name = "OpenSSH"
-version = v"9.3.2"
+version = v"10.3.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-9.3p2.tar.gz",
-                  "200ebe147f6cb3f101fd0cdf9e02442af7ddca298dffd9f456878e7ccac676e8"),
-    ArchiveSource("https://github.com/PowerShell/Win32-OpenSSH/releases/download/v9.2.2.0p1-Beta/OpenSSH-Win32.zip",
-                  "7b132aad088eae3ac67d85751e88d884e80631607cab9b1da52c838655bb5ae6"; unpack_target = "i686-w64-mingw32"),
-    ArchiveSource("https://github.com/PowerShell/Win32-OpenSSH/releases/download/v9.2.2.0p1-Beta/OpenSSH-Win64.zip",
-                  "ec8144a107014740ec3ce16ec51710398fc390fca5344931c1506e7cc2e181f3"; unpack_target = "x86_64-w64-mingw32"),
+    ArchiveSource("https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-10.3p1.tar.gz",
+                  "56682a36bb92dcf4b4f016fd8ec8e74059b79a8de25c15d670d731e7d18e45f4"),
+    ArchiveSource("https://github.com/PowerShell/Win32-OpenSSH/releases/download/10.0.0.0p2-Preview/OpenSSH-Win32.zip",
+                  "c61d7fea20ddfe0fc50eb56210a66464557721120f7794ff9cc883b5ba526abd"; unpack_target = "i686-w64-mingw32"),
+    ArchiveSource("https://github.com/PowerShell/Win32-OpenSSH/releases/download/10.0.0.0p2-Preview/OpenSSH-Win64.zip",
+                  "23f50f3458c4c5d0b12217c6a5ddfde0137210a30fa870e98b29827f7b43aba5"; unpack_target = "x86_64-w64-mingw32"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
+cd ${WORKSPACE}/srcdir
 
 install_license openssh-*/LICENCE
-PRODUCTS=(ssh${exeext} ssh-add${exeext} ssh-keygen${exeext} ssh-keyscan${exeext} ssh-agent${exeext} scp${exeext})
+PRODUCTS=(ssh ssh-add ssh-keygen ssh-keyscan ssh-agent scp sftp)
 
 if [[ "${target}" == *-mingw* ]]; then
     cd "${target}/OpenSSH-Win${nbits}"
@@ -46,8 +46,14 @@ else
 fi
 
 for binary in "${PRODUCTS[@]}"; do
-    install -Dvm 0755 $binary ${bindir}/$binary
+    install -Dvm 0755 "${binary}${exeext}" -t "${bindir}"
 done
+if [[ "${target}" == *-mingw* ]]; then
+    # Install also a library needed by the Windows executables.  We do provide
+    # it in OpenSSL_jll, but with a different soname (`libcrypto-3-x64.dll`) and
+    # so it can't be found.
+    install -Dvm 0755 libcrypto.dll -t "${libdir}"
+fi
 """
 
 # These are the platforms we will build for by default, unless further
@@ -58,6 +64,7 @@ platforms = supported_platforms()
 products = [
     ExecutableProduct("ssh", :ssh),
     ExecutableProduct("scp", :scp),
+    ExecutableProduct("sftp", :sftp),
     ExecutableProduct("ssh-agent", :ssh_agent),
     ExecutableProduct("ssh-add", :ssh_add),
     ExecutableProduct("ssh-keygen", :ssh_keygen),
@@ -66,8 +73,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Zlib_jll"),
-    Dependency("OpenSSL_jll"; compat="3.0.8"),
+    Dependency("Zlib_jll"; platforms=filter(!Sys.iswindows, platforms)),
+    Dependency("OpenSSL_jll"; compat="3.0.16", platforms=filter(!Sys.iswindows, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

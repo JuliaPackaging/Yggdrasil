@@ -1,0 +1,12 @@
+--- lwgrp/src/lwgrp_util.c
++++ lwgrp/src/lwgrp_util.c
+@@ -13,7 +13,8 @@
+ #include "lwgrp.h"
+ #include "lwgrp_internal.h"
+ 
+-static MPI_Comm lwgrp_comm_self = MPI_COMM_NULL;
++static MPI_Comm lwgrp_comm_self;
++__attribute__((__constructor__)) static void init_lwgrp_comm_self() { lwgrp_comm_self = MPI_COMM_NULL; }
+ 
+ /* return lower bound and extent of given datatype */
+ static inline void lwgrp_type_get_lb_extent(MPI_Datatype type, MPI_Aint* lb, MPI_Aint* extent)

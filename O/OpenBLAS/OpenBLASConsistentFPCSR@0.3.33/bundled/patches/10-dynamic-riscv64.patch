@@ -1,0 +1,12 @@
+diff --git a/driver/others/dynamic_riscv64.c b/driver/others/dynamic_riscv64.c
+index 321e0875f..ec7fe8f55 100644
+--- a/driver/others/dynamic_riscv64.c
++++ b/driver/others/dynamic_riscv64.c
+@@ -152,6 +152,7 @@ char* gotoblas_corename(void) {
+ static gotoblas_t* get_coretype(void) {
+ 	uint64_t vector_mask;
+ 	unsigned vlenb = 0;
++	char coremsg[128];
+ 
+ #if !defined(OS_LINUX)
+ 	return NULL;

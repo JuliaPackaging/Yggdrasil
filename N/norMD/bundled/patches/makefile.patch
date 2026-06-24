@@ -1,0 +1,60 @@
+From e0e7668e1366240c3b05dce434a0db4580572aa4 Mon Sep 17 00:00:00 2001
+From: Max Horn <max@quendi.de>
+Date: Wed, 7 Jan 2026 20:09:41 +0100
+Subject: [PATCH 1/6] makefile: always use CFLAGS, simplify
+
+---
+ makefile | 29 ++++++++++++++---------------
+ 1 file changed, 14 insertions(+), 15 deletions(-)
+
+diff --git a/makefile b/makefile
+index 7317992..c7c3d1a 100644
+--- a/makefile
++++ b/makefile
+@@ -1,29 +1,28 @@
+ all: normd normd_sw normd_range normd_aln normd_subaln normd_aln1
+ 
+ CC	= cc
+-CFLAGS  = -c -g 
++CFLAGS  = -g
+ LFLAGS	= -g -lm 
+ 
+ ROBJECTS = init.o readseq.o gcgcheck.o writeseq.o
+ 
+-normd : normd.c $(ROBJECTS) readmatrix.o showpair.o utils.o
+-	$(CC) normd.c $(ROBJECTS) readmatrix.o showpair.o utils.o -o normd $(LFLAGS)
++normd : normd.o $(ROBJECTS) readmatrix.o showpair.o utils.o
++	$(CC) $^ -o $@ $(LFLAGS)
+ 
+-normd_aln : normd_aln.c $(ROBJECTS) readmatrix.o showpair.o utils.o
+-	$(CC) normd_aln.c $(ROBJECTS) readmatrix.o showpair.o utils.o -o normd_aln $(LFLAGS)
++normd_aln : normd_aln.o $(ROBJECTS) readmatrix.o showpair.o utils.o
++	$(CC) $^ -o $@ $(LFLAGS)
+ 
+-normd_aln1 : normd_aln1.c $(ROBJECTS) readmatrix.o showpair.o utils.o
+-	$(CC) normd_aln1.c $(ROBJECTS) readmatrix.o showpair.o utils.o -o normd_aln1 $(LFLAGS)
++normd_aln1 : normd_aln1.o $(ROBJECTS) readmatrix.o showpair.o utils.o
++	$(CC) $^ -o $@ $(LFLAGS)
+ 
+-normd_subaln : normd_subaln.c $(ROBJECTS) readmatrix.o utils.o
+-	$(CC) normd_subaln.c $(ROBJECTS) readmatrix.o utils.o -o normd_subaln $(LFLAGS)
++normd_subaln : normd_subaln.o $(ROBJECTS) readmatrix.o utils.o
++	$(CC) $^ -o $@ $(LFLAGS)
+ 
+-normd_sw : normd_sw.c $(ROBJECTS) readmatrix.o showpair.o utils.o
+-	$(CC) normd_sw.c $(ROBJECTS) readmatrix.o showpair.o utils.o -o normd_sw $(LFLAGS)
++normd_sw : normd_sw.o $(ROBJECTS) readmatrix.o showpair.o utils.o
++	$(CC) $^ -o $@ $(LFLAGS)
+ 
+-normd_range : normd_range.c $(ROBJECTS) readmatrix.o showpair.o utils.o
+-	$(CC) normd_range.c $(ROBJECTS) readmatrix.o showpair.o utils.o -o normd_range $(LFLAGS)
++normd_range : normd_range.o $(ROBJECTS) readmatrix.o showpair.o utils.o
++	$(CC) $^ -o $@ $(LFLAGS)
+ 
+ .c.o :
+-	$(CC) $(CFLAGS) $?
+-
++	$(CC) -c $(CFLAGS) $< -o $@
+-- 
+2.52.0
+

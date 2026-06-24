@@ -1,0 +1,14 @@
+--- a/pdal/util/FileUtils.cpp
++++ b/pdal/util/FileUtils.cpp
+@@ -446,9 +446,9 @@
+     if (VSIStatL(filename.c_str(), &sStat) == 0)
+     {
+         if (createTime)
+-            VSIGMTime(const_cast<time_t *>(&sStat.st_ctime), createTime);
++            VSIGMTime((time_t *)(&sStat.st_ctime), createTime);
+         if (modTime)
+-            VSIGMTime(const_cast<time_t *>(&sStat.st_mtime), modTime);
++            VSIGMTime((time_t *)(&sStat.st_mtime), modTime);
+     }
+ }
+ 

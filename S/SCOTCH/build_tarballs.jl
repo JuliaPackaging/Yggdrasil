@@ -3,41 +3,85 @@
 using BinaryBuilder, Pkg
 
 name = "SCOTCH"
-version = v"7.0.4"
+version = v"7.0.11"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://gitlab.inria.fr/scotch/scotch", "82ec87f558f4acb7ccb69a079f531be380504c92"),
-    DirectorySource("./bundled"),
+    # SCOTCH source code
+    GitSource("https://gitlab.inria.fr/scotch/scotch", "626b88ce70edabb993bbee463f6c28ae2899af69"),
+    # conda-forge patches for cross-building
+    GitSource("https://github.com/conda-forge/scotch-feedstock", "73cc602e57759cd4a12823586aa46e29d7a7e6f7"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/scotch*
+cd ${WORKSPACE}/srcdir/scotch
 
-# https://github.com/conda-forge/scotch-feedstock
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-  atomic_patch -p1 ${f}
-done
+# Apply conda-forge patches
+atomic_patch -p1 $WORKSPACE/srcdir/scotch-feedstock/recipe/0001-put-metis-headers-in-include-scotch.patch
+atomic_patch -p1 $WORKSPACE/srcdir/scotch-feedstock/recipe/0002-fix-ptesmumps.h.patch
+atomic_patch -p1 $WORKSPACE/srcdir/scotch-feedstock/recipe/0003-win-fix-ssize_t.patch
+atomic_patch -p1 $WORKSPACE/srcdir/scotch-feedstock/recipe/0004-win-fix-context.c.patch
+atomic_patch -p1 $WORKSPACE/srcdir/scotch-feedstock/recipe/0005-use-external-dummysizes.patch
+atomic_patch -p1 $WORKSPACE/srcdir/scotch-feedstock/recipe/0006-win-fix-graph-match-scan.patch
+atomic_patch -p1 $WORKSPACE/srcdir/scotch-feedstock/recipe/0007-allow-overriding-pthread_mutex_t-size.patch
 
-# We don't want to break the ABI if we have a new release.
-sed s/'set_target_properties(scotch PROPERTIES VERSION'/'#set_target_properties(scotch PROPERTIES VERSION'/ -i src/libscotch/CMakeLists.txt
-sed s/'  ${SCOTCH_VERSION}.${SCOTCH_RELEASE}.${SCOTCH_PATCHLEVEL})'/'#  ${SCOTCH_VERSION}.${SCOTCH_RELEASE}.${SCOTCH_PATCHLEVEL})'/ -i src/libscotch/CMakeLists.txt
+################################################################################
+
+# SCOTCH builds a helper program `dummysizes`, and runs it to extract sizes of datatypes.
+# This does not work when cross-building.
+# We build `dummysizes` ahead of time with the host compiler.
 
 mkdir -p src/dummysizes/build-host
-cd src/dummysizes/build-host
-cp ${WORKSPACE}/srcdir/patches/CMakeLists-dummysizes.txt ../CMakeLists.txt
+cd src/dummysizes
+cp $WORKSPACE/srcdir/scotch-feedstock/recipe/CMakeLists-dummysizes.txt CMakeLists.txt
 
-CC=${CC_BUILD} cmake .. \
-    -DBUILD_PTSCOTCH=OFF \
+# First we need to find out `sizeof(pthread_mutex_t)` for the build platform
+cat >find_mutex_size.c <<EOF
+#include <pthread.h>
+// Encode size as ASCII digits in a magic string
+char info[] = {
+    'I','N','F','O',':','s','i','z','e','[',
+    ('0' + ((sizeof(pthread_mutex_t) / 10000) % 10)),
+    ('0' + ((sizeof(pthread_mutex_t) /  1000) % 10)),
+    ('0' + ((sizeof(pthread_mutex_t) /   100) % 10)),
+    ('0' + ((sizeof(pthread_mutex_t) /    10) % 10)),
+    ('0' + ((sizeof(pthread_mutex_t) /     1) % 10)),
+    ']', '\0'
+};
+EOF
+$CC -c find_mutex_size.c
+mutex_size=$(
+    strings find_mutex_size.o |
+    grep 'INFO:size\[' |
+    grep -o '\[[0-9]*\]' |
+    tr -d '[]' |
+    sed 's/^0*//'
+)
+echo "Found sizeof(pthread_mutex_t) = $mutex_size"
+
+OPTIONS=(
+    -DBUILD_LIBESMUMPS=OFF
+    -DBUILD_LIBSCOTCHMETIS=OFF
+    -DBUILD_PTSCOTCH=OFF
     -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN}
+    -DENABLE_TESTS=OFF
+    -DINTSIZE="32"
+    -DMPI_THREAD_MULTIPLE=OFF
+    -DSCOTCH_PATCHLEVEL=11
+    -DSCOTCH_RELEASE=0
+    -DSCOTCH_VERSION=7
+    -DTHREADS=ON
+)
+cmake -B build-host ${OPTIONS[@]}
+cmake --build build-host --parallel ${nproc}
 
-# make -j${nproc}
-make
+################################################################################
 
-cd ${WORKSPACE}/srcdir/scotch*
-mkdir build
-cd build
+# Now build SCOTCH
+
+cd ${WORKSPACE}/srcdir/scotch
 
 FLAGS=""
 if [[ "${target}" == *linux* ]]; then
@@ -50,35 +94,26 @@ if [[ "${target}" == *freebsd* ]]; then
     FLAGS="-Dcpu_set_t=cpuset_t -D__BSD_VISIBLE"
 fi
 
-CFLAGS=$FLAGS cmake .. \
-    -DBUILD_SHARED_LIBS=ON \
-    -DCMAKE_INSTALL_PREFIX=$prefix \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DINTSIZE="32" \
-    -DTHREADS=ON \
-    -DMPI_THREAD_MULTIPLE=OFF \
-    -DBUILD_PTSCOTCH=OFF \
-    -DBUILD_LIBESMUMPS=ON \
-    -DBUILD_LIBSCOTCHMETIS=ON \
-    -DBUILD_DUMMYSIZES=OFF \
+OPTIONS=(
+    -DBUILD_LIBESMUMPS=ON
+    -DBUILD_LIBSCOTCHMETIS=ON
+    -DBUILD_PTSCOTCH=OFF
+    -DBUILD_SHARED_LIBS=ON
+    -DBUILD_DUMMYSIZES=OFF
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_INSTALL_PREFIX=$prefix
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+    -DENABLE_TESTS=OFF
     -DINSTALL_METIS_HEADERS=OFF
+    -DINTSIZE="32"
+    -DLIBSCOTCHERR=scotcherr
+    -DMPI_THREAD_MULTIPLE=OFF
+    -DTHREADS=ON
+)
 
-# make -j${nproc}
-make
-
-# make install
-if [[ "${target}" == *mingw* ]]; then
-    rm bin/libptesmumps.dll
-    rm lib/libptesmumps.dll.a
-    cp bin/*.dll $libdir
-    cp lib/*.dll.a $prefix/lib
-else
-    rm lib/libptesmumps.$dlext
-    cp lib/*.${dlext} $libdir
-fi
-cd src/include
-cp scotch.h scotchf.h esmumps.h $includedir
+CFLAGS=$FLAGS cmake -B build ${OPTIONS[@]}
+cmake --build build --parallel ${nproc}
+cmake --install build
 
 install_license ${WORKSPACE}/srcdir/scotch/LICENSE_en.txt
 """
@@ -100,9 +135,9 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
-    Dependency(PackageSpec(name="Bzip2_jll", uuid="6e34b625-4abd-537c-b88f-471c36dfa7a0"); compat="1.0.8"),
-    Dependency(PackageSpec(name="XZ_jll", uuid="ffd25f8a-64ca-5728-b0f7-c24cf3aae800"))
+    Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"); compat="1.2.12"),
+    Dependency(PackageSpec(name="Bzip2_jll", uuid="6e34b625-4abd-537c-b88f-471c36dfa7a0"); compat="1.0.9"),
+    Dependency(PackageSpec(name="XZ_jll", uuid="ffd25f8a-64ca-5728-b0f7-c24cf3aae800"); compat="5.8.2"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

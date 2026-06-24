@@ -1,0 +1,10 @@
+diff --git a/deps/spasm/src/CMakeLists.txt b/deps/spasm/src/CMakeLists.txt
+index 62815809..2894cd8e 100644
+--- spasm.orig/src/CMakeLists.txt
++++ spasm/src/CMakeLists.txt
+@@ -1,4 +1,4 @@
+-add_compile_options(-Werror)
++# add_compile_options(-Werror)
+ 
+ add_library(spasm SHARED
+ 	# crypto stuff

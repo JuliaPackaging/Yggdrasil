@@ -1,0 +1,28 @@
+From 2e70eb8b14dfe314090e0cdfcb2d8ec5c0f5aaaa Mon Sep 17 00:00:00 2001
+From: Max Horn <max@quendi.de>
+Date: Mon, 1 Sep 2025 14:59:56 +0200
+Subject: [PATCH] kernel: disable task stack rescan optimization
+
+This seems to prevent recent crashes in GAP.jl. It is not a viable
+long-term solution as it causes a severe performance penalty, but
+it is worthwhile to experiment with this to see if this really
+fixes all the crashes.
+---
+ src/julia_gc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/julia_gc.c b/src/julia_gc.c
+index 568b567b1..cd57329af 100644
+--- a/src/julia_gc.c
++++ b/src/julia_gc.c
+@@ -605,7 +605,7 @@ static void GapTaskScanner(jl_task_t * task, int root_task)
+         // age bit back to new if tasks are being switched.
+         jl_taggedvalue_t * tag = jl_astaggedvalue(task);
+         if (tag->bits.gc & 2)
+-            rescan = 0;
++            rescan = 1;
+     }
+ 
+     char *active_start, *active_end, *total_start, *total_end;
+-- 
+2.50.1

@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "Gdbm"
-version_string = "1.19"
+version_string = "1.26"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/gdbm/gdbm-$(version_string).tar.gz",
-                  "37ed12214122b972e18a0d94995039e57748191939ef74115b1d41d8811364bc"),
+    ArchiveSource("https://ftpmirror.gnu.org/gnu/gdbm/gdbm-$(version_string).tar.gz",
+                  "6a24504a14de4a744103dcb936be976df6fbe88ccff26065e54c1c47946f4a5e"),
     DirectorySource("./bundled")
 ]
 
@@ -17,8 +17,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/gdbm-*/
 
+args=()
 if [[ "${target}" == *-mingw* ]]; then
-    atomic_patch -p1 ../patches/gdbm-1.15-win32.patch
+    atomic_patch -p1 ../patches/gdbm-1.26-win32.patch
 fi
 
 if [[ "${target}" == powerpc64le-* ]] || [[ "${target}" == *-mingw* ]]; then
@@ -30,7 +31,7 @@ fi
 
 # `LDFLAGS` needed to let the linker find our readline on macOS
 export LDFLAGS="-L${libdir}"
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static --with-libiconv-prefix=${prefix}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static --with-libiconv-prefix=${prefix} "${args[@]}"
 make -j${nproc}
 make install
 """

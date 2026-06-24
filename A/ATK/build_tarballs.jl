@@ -4,6 +4,8 @@ using BinaryBuilder
 
 name = "ATK"
 version = v"2.38.0"
+# We bumped the version number because we built for new architectures
+ygg_version = v"2.38.1"
 
 # Collection of sources required to build ATK
 sources = [
@@ -33,8 +35,9 @@ products = [
 dependencies = [
     # Need host gettext for msgfmt
     HostBuildDependency("Gettext_jll"),
-    Dependency("Glib_jll", v"2.68.1"; compat="^2.38.0"),
+    Dependency("Glib_jll"; compat="2.84.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"5")

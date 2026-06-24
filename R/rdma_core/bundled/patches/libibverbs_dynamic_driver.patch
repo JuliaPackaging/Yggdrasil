@@ -1,0 +1,58 @@
+diff --git a/libibverbs/dynamic_driver.c b/libibverbs/dynamic_driver.c
+index 7fa423325..22215692a 100644
+--- a/libibverbs/dynamic_driver.c
++++ b/libibverbs/dynamic_driver.c
+@@ -115,27 +115,32 @@ static void read_config_file(const char *path)
+ 
+ static void read_config(void)
+ {
++	const char *conf_dir_name;
+ 	DIR *conf_dir;
+ 	struct dirent *dent;
+ 	char *path;
+ 
+-	conf_dir = opendir(IBV_CONFIG_DIR);
++	conf_dir_name = getenv("JULIA_IBV_CONFIG_DIR");
++	if (!conf_dir_name)
++		conf_dir_name = IBV_CONFIG_DIR;
++
++	conf_dir = opendir(conf_dir_name);
+ 	if (!conf_dir) {
+ 		fprintf(stderr,
+ 			PFX "Warning: couldn't open config directory '%s'.\n",
+-			IBV_CONFIG_DIR);
++			conf_dir_name);
+ 		return;
+ 	}
+ 
+ 	while ((dent = readdir(conf_dir))) {
+ 		struct stat buf;
+ 
+-		if (asprintf(&path, "%s/%s", IBV_CONFIG_DIR, dent->d_name) <
++		if (asprintf(&path, "%s/%s", conf_dir_name, dent->d_name) <
+ 		    0) {
+ 			fprintf(stderr,
+ 				PFX
+ 				"Warning: couldn't read config file %s/%s.\n",
+-				IBV_CONFIG_DIR, dent->d_name);
++				conf_dir_name, dent->d_name);
+ 			goto out;
+ 		}
+ 
+@@ -187,6 +192,16 @@ static void load_driver(const char *name)
+ 		free(so_name);
+ 		if (dlhandle)
+ 			return;
++		else {
++			if (asprintf(&so_name,
++			       "$ORIGIN/libibverbs/lib%s" VERBS_PROVIDER_SUFFIX,
++			       name) < 0)
++				goto out_asprintf;
++			dlhandle = dlopen(so_name, RTLD_NOW);
++			free(so_name);
++			if (dlhandle)
++				return;
++		}
+ 	}
+ 
+ 	/* Otherwise use the system library search path. This is the historical

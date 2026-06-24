@@ -1,0 +1,144 @@
+From fa6bd7957659c6635e167e52c732449485a19dba Mon Sep 17 00:00:00 2001
+From: Max Horn <max@quendi.de>
+Date: Wed, 7 Jan 2026 20:40:55 +0100
+Subject: [PATCH] Excise gets and system
+
+---
+ score.h |  2 --
+ trees.c | 23 +++++++++++++++--------
+ utils.c | 21 ++-------------------
+ 3 files changed, 17 insertions(+), 29 deletions(-)
+
+diff --git a/score.h b/score.h
+index 3c16d6d..08dceb1 100644
+--- a/score.h
++++ b/score.h
+@@ -687,10 +687,8 @@ char *rtrim(char *str);
+ char *blank_to_(char *str);
+ char *upstr(char *str);
+ char *lowstr(char *str);
+-void getstr(char *instr, char *outstr);
+ double getreal(char *instr, double minx, double maxx, double def);
+ int getint(char *instr, int minx, int maxx, int def);
+-void do_system(void);
+ Boolean linetype(char *line, char *code);
+ Boolean keyword(char *line, char *code);
+ Boolean blankline(char *line);
+diff --git a/trees.c b/trees.c
+index 59ea9f3..6b7ebed 100644
+--- a/trees.c
++++ b/trees.c
+@@ -63,7 +63,6 @@ void phylogenetic_tree(ALN mult_aln,char *phylip_name,char *clustal_name,char *d
+ 	sint total_dists;
+ 	static  PTREE *standard_tree;
+ 	static  PTREE *save_tree;
+-	char lin2[10];
+ 	sint nseqs;
+ 	sint maxres;
+ 	COMP_MATRIX matrix;
+@@ -172,8 +171,11 @@ if(tree_opt.output_tree_nexus)
+         	fprintf(stdout,"\n of divergence you will have great difficulty");
+         	fprintf(stdout,"\n getting robust and reliable trees.");
+ 		fprintf(stdout,"\n\n");
+-		if (clustalw_menu) 
+-			getstr("Press [RETURN] to continue",lin2);
++		if (clustalw_menu) {
++			char dummy[10];
++			fputs("Press [RETURN] to continue: ", stdout);
++			fgets(dummy, sizeof(dummy), stdin);
++		}
+ 	}
+ 
+ 	if(tree_opt.output_tree_distances) {
+@@ -841,7 +843,6 @@ void bootstrap_tree(ALN mult_aln,char *phylip_name,char *clustal_name,char *nexu
+ 	sint i,j;
+ 	int ranno;
+ 	char path[MAXLINE+1];
+-    char dummy[10];
+ 	static PTREE *sample_tree;
+ 	static PTREE *standard_tree;
+ 	static  PTREE *save_tree;
+@@ -950,8 +951,11 @@ void bootstrap_tree(ALN mult_aln,char *phylip_name,char *clustal_name,char *nexu
+ 		fprintf(stdout,"\n           or 2) remove the most distant sequences");
+ 		fprintf(stdout,"\n           or 3) use the PHYLIP package.");
+ 		fprintf(stdout,"\n\n");
+-		if (clustalw_menu) 
+-			getstr("Press [RETURN] to continue",dummy);
++		if (clustalw_menu) {
++			char dummy[10];
++			fputs("Press [RETURN] to continue: ", stdout);
++			fgets(dummy, sizeof(dummy), stdin);
++		}
+ 	}
+ 
+ 
+@@ -1055,8 +1059,11 @@ getint("\n\nEnter number of bootstrap trials ",1,10000,bstree_opt.boot_ntrials);
+ 		fprintf(stdout,"\n           or 2) remove the most distant sequences");
+ 		fprintf(stdout,"\n           or 3) use the PHYLIP package.");
+ 		fprintf(stdout,"\n\n");
+-		if (clustalw_menu) 
+-			getstr("Press [RETURN] to continue",dummy);
++		if (clustalw_menu) {
++			char dummy[10];
++			fputs("Press [RETURN] to continue: ", stdout);
++			fgets(dummy, sizeof(dummy), stdin);
++		}
+ 	}
+ 
+ 
+diff --git a/utils.c b/utils.c
+index 081ead9..26afa18 100644
+--- a/utils.c
++++ b/utils.c
+@@ -182,12 +182,6 @@ char * lowstr(char *str)
+ 	return str;
+ }
+ 
+-void getstr(char *instr,char *outstr)
+-{	
+-	fprintf(stdout,"%s: ",instr);
+-	gets(outstr);
+-}
+-
+ double getreal(char *instr,double minx,double maxx,double def)
+ {
+ 	int status;
+@@ -196,7 +190,7 @@ double getreal(char *instr,double minx,double maxx,double def)
+ 	
+ 	while(TRUE) {
+ 		fprintf(stdout,"%s (%.1f-%.1f)   [%.1f]: ",instr,minx,maxx,def);
+-		gets(line);
++		fgets(line,sizeof(line),stdin);
+ 		status=sscanf(line,"%f",&ret);
+ 		if(status == EOF) return def;
+ 		if(ret>maxx) {
+@@ -221,7 +215,7 @@ int getint(char *instr,int minx,int maxx, int def)
+ 	while(TRUE) {
+ 		fprintf(stdout,"%s (%d..%d)    [%d]: ",
+ 		instr,(pint)minx,(pint)maxx,(pint)def);
+-		gets(line);
++		fgets(line,sizeof(line),stdin);
+ 		status=sscanf(line,"%d",&ret);
+ 		if(status == EOF) return def;
+ 		if(ret>maxx) {
+@@ -237,17 +231,6 @@ int getint(char *instr,int minx,int maxx, int def)
+ 	return ret;
+ }
+ 
+-void do_system(void)
+-{
+-	char line[MAXLINE];
+-	
+-	getstr("\n\nEnter system command",line);
+-	if(*line != EOS)
+-		system(line);
+-	fprintf(stdout,"\n\n");
+-}
+-
+-
+ Boolean linetype(char *line,char *code)
+ {
+ 	return( strncmp(line,code,strlen(code)) == 0 );
+-- 
+2.52.0
+

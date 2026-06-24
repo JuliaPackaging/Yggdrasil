@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Keyutils"
-version = v"1.6.1"
+version = v"1.6.3"
 
 # Collection of sources required to build keyutils
 sources = [
     ArchiveSource("https://git.kernel.org/pub/scm/linux/kernel/git/dhowells/keyutils.git/snapshot/keyutils-$(version).tar.gz",
-                  "3c71dcfc6900d07b02f4e061d8fb218a4ae6519c1d283d6a57b8e27718e2f557"),
+                  "a61d5706136ae4c05bd48f86186bcfdbd88dd8bd5107e3e195c924cfc1b39bb4"),
 ]
 
 # Bash recipe for building across all platforms
@@ -33,7 +33,6 @@ ln -sf libkeyutils.so.1 "${libdir}/libkeyutils.so"
 # platforms are passed in on the command line.  We are manually disabling
 # many platforms that do not seem to work.
 platforms = supported_platforms(; exclude=!Sys.islinux)
-filter!(p->arch(p) != "armv6l", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -45,4 +44,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

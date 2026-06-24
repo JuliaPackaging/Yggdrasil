@@ -1,0 +1,33 @@
+diff --git before/procps/.git/index after/procps/.git/index
+index 486653f..67df40e 100644
+Binary files before/procps/.git/index and after/procps/.git/index differ
+diff --git before/procps/library/include/misc.h after/procps/library/include/misc.h
+index 51640d8..86011c5 100644
+--- before/procps/library/include/misc.h
++++ after/procps/library/include/misc.h
+@@ -42,6 +42,10 @@ long procps_cpu_count (void);
+ long procps_hertz_get (void);
+ unsigned int procps_pid_length (void);
+
++#ifndef CLOCK_BOOTTIME
++#define CLOCK_BOOTTIME 7
++#endif
++
+
+    // Convenience macros for composing/decomposing version codes
+ #define LINUX_VERSION(x,y,z)   (0x10000*((x)&0x7fff) + 0x100*((y)&0xff) + ((z)&0xff))
+ #define LINUX_VERSION_MAJOR(x) (((x)>>16) & 0xFF)
+diff --git before/procps/library/include/procps-private.h after/procps/library/include/procps-private.h
+index 835ea21..3702c76 100644
+--- before/procps/library/include/procps-private.h
++++ after/procps/library/include/procps-private.h
+@@ -25,4 +25,9 @@
+
+ #define MAXTABLE(t)		(int)(sizeof(t) / sizeof(t[0]))
+
++// Requires newer libc
++#ifndef CLOCK_BOOTTIME
++#define CLOCK_BOOTTIME 7
++#endif
++
+ #endif

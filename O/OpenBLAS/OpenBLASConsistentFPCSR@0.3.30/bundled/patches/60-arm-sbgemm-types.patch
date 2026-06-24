@@ -1,0 +1,98 @@
+From badef1d32efd5e8bf9cd052b5a57f866a9754308 Mon Sep 17 00:00:00 2001
+From: Ian McInerney <i.mcinerney17@imperial.ac.uk>
+Date: Thu, 19 Jun 2025 14:26:16 +0100
+Subject: [PATCH] Update sbgemm_tcopy_4_neoversev1 kernel to use standard C
+ types
+
+---
+ kernel/arm64/sbgemm_tcopy_4_neoversev1.c | 32 ++++++++++++------------
+ 1 file changed, 16 insertions(+), 16 deletions(-)
+
+diff --git a/kernel/arm64/sbgemm_tcopy_4_neoversev1.c b/kernel/arm64/sbgemm_tcopy_4_neoversev1.c
+index 140e8f7ed..16c71559d 100644
+--- a/kernel/arm64/sbgemm_tcopy_4_neoversev1.c
++++ b/kernel/arm64/sbgemm_tcopy_4_neoversev1.c
+@@ -52,16 +52,16 @@ int CNAME(BLASLONG m, BLASLONG n, IFLOAT *a, BLASLONG lda, IFLOAT *b) {
+   svbool_t pg16_first_8 = svwhilelt_b16(0, 8);
+ 
+   svbool_t pg64_first_4 = svwhilelt_b64(0, 4);
+-  
+-  u_int32_t sizeof_u64 = 8;
+-  u_int64_t _st_offsets_0[4] = {
++
++  uint32_t sizeof_u64 = 8;
++  uint64_t _st_offsets_0[4] = {
+       0 * sizeof_u64,
+       1 * sizeof_u64,
+       4 * sizeof_u64,
+       5 * sizeof_u64,
+   };
+ 
+-  u_int64_t _st_offsets_1[4] = {
++  uint64_t _st_offsets_1[4] = {
+       2 * sizeof_u64,
+       3 * sizeof_u64,
+       6 * sizeof_u64,
+@@ -108,13 +108,13 @@ int CNAME(BLASLONG m, BLASLONG n, IFLOAT *a, BLASLONG lda, IFLOAT *b) {
+       m01 = svzip1_u32(svreinterpret_u32_u16(t2), svreinterpret_u32_u16(t3));
+       m11 = svzip2_u32(svreinterpret_u32_u16(t2), svreinterpret_u32_u16(t3));
+ 
+-      svst1_scatter_u64offset_u64(pg64_first_4, (u_int64_t *)b_offset0,
++      svst1_scatter_u64offset_u64(pg64_first_4, (uint64_t *)b_offset0,
+                                   st_offsets_0, svreinterpret_u64_u32(m00));
+-      svst1_scatter_u64offset_u64(pg64_first_4, (u_int64_t *)b_offset0,
++      svst1_scatter_u64offset_u64(pg64_first_4, (uint64_t *)b_offset0,
+                                   st_offsets_1, svreinterpret_u64_u32(m01));
+-      svst1_scatter_u64offset_u64(pg64_first_4, (u_int64_t *)b_offset1,
++      svst1_scatter_u64offset_u64(pg64_first_4, (uint64_t *)b_offset1,
+                                   st_offsets_0, svreinterpret_u64_u32(m10));
+-      svst1_scatter_u64offset_u64(pg64_first_4, (u_int64_t *)b_offset1,
++      svst1_scatter_u64offset_u64(pg64_first_4, (uint64_t *)b_offset1,
+                                   st_offsets_1, svreinterpret_u64_u32(m11));
+ 
+       a_offset0 += 8 * lda;
+@@ -150,13 +150,13 @@ int CNAME(BLASLONG m, BLASLONG n, IFLOAT *a, BLASLONG lda, IFLOAT *b) {
+       m01 = svzip1_u32(svreinterpret_u32_u16(t2), svreinterpret_u32_u16(t3));
+       m11 = svzip2_u32(svreinterpret_u32_u16(t2), svreinterpret_u32_u16(t3));
+ 
+-      svst1_scatter_u64offset_u64(pg64_first_4, (u_int64_t *)b_offset0,
++      svst1_scatter_u64offset_u64(pg64_first_4, (uint64_t *)b_offset0,
+                                   st_offsets_0, svreinterpret_u64_u32(m00));
+-      svst1_scatter_u64offset_u64(pg64_first_4, (u_int64_t *)b_offset0,
++      svst1_scatter_u64offset_u64(pg64_first_4, (uint64_t *)b_offset0,
+                                   st_offsets_1, svreinterpret_u64_u32(m01));
+-      svst1_scatter_u64offset_u64(pg64_first_4, (u_int64_t *)b_offset1,
++      svst1_scatter_u64offset_u64(pg64_first_4, (uint64_t *)b_offset1,
+                                   st_offsets_0, svreinterpret_u64_u32(m10));
+-      svst1_scatter_u64offset_u64(pg64_first_4, (u_int64_t *)b_offset1,
++      svst1_scatter_u64offset_u64(pg64_first_4, (uint64_t *)b_offset1,
+                                   st_offsets_1, svreinterpret_u64_u32(m11));
+     }
+   }
+@@ -194,9 +194,9 @@ int CNAME(BLASLONG m, BLASLONG n, IFLOAT *a, BLASLONG lda, IFLOAT *b) {
+ 
+       m00 = svzip1_u32(svreinterpret_u32_u16(t0), svreinterpret_u32_u16(t1));
+       m01 = svzip1_u32(svreinterpret_u32_u16(t2), svreinterpret_u32_u16(t3));
+-      svst1_scatter_u64offset_u64(pg64_first_4, (u_int64_t *)b_offset0,
++      svst1_scatter_u64offset_u64(pg64_first_4, (uint64_t *)b_offset0,
+                                   st_offsets_0, svreinterpret_u64_u32(m00));
+-      svst1_scatter_u64offset_u64(pg64_first_4, (u_int64_t *)b_offset0,
++      svst1_scatter_u64offset_u64(pg64_first_4, (uint64_t *)b_offset0,
+                                   st_offsets_1, svreinterpret_u64_u32(m01));
+ 
+       a_offset0 += 8 * lda;
+@@ -229,9 +229,9 @@ int CNAME(BLASLONG m, BLASLONG n, IFLOAT *a, BLASLONG lda, IFLOAT *b) {
+       m00 = svzip1_u32(svreinterpret_u32_u16(t0), svreinterpret_u32_u16(t1));
+       m01 = svzip1_u32(svreinterpret_u32_u16(t2), svreinterpret_u32_u16(t3));
+ 
+-      svst1_scatter_u64offset_u64(pg64_first_4, (u_int64_t *)b_offset0,
++      svst1_scatter_u64offset_u64(pg64_first_4, (uint64_t *)b_offset0,
+                                   st_offsets_0, svreinterpret_u64_u32(m00));
+-      svst1_scatter_u64offset_u64(pg64_first_4, (u_int64_t *)b_offset0,
++      svst1_scatter_u64offset_u64(pg64_first_4, (uint64_t *)b_offset0,
+                                   st_offsets_1, svreinterpret_u64_u32(m01));
+     }
+   }
+-- 
+2.49.0
+

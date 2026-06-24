@@ -1,0 +1,12 @@
+diff --git a/IGC/Compiler/CISACodeGen/CISABuilder.cpp b/IGC/Compiler/CISACodeGen/CISABuilder.cpp
+--- intel-graphics-compiler/IGC/Compiler/CISACodeGen/CISABuilder.cpp
++++ intel-graphics-compiler/IGC/Compiler/CISACodeGen/CISABuilder.cpp
+@@ -63,7 +63,7 @@
+         case SIMDMode::SIMD16: return EXEC_SIZE_16;
+         case SIMDMode::SIMD32: return EXEC_SIZE_32;
+         case SIMDMode::UNKNOWN:
+-        default: IGC_ASSERT_MESSAGE(0, "unreachable"); break;
++        default: break;
+         }
+         return EXEC_SIZE_ILLEGAL;
+     }

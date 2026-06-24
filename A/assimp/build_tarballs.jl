@@ -3,16 +3,19 @@
 using BinaryBuilder, Pkg
 
 name = "assimp"
-version = v"5.2.5"
+version = v"6.0.4"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/assimp/assimp.git",
-              "9519a62dd20799c5493c638d1ef5a6f484e5faf1"),
+              "e0b52347c6e52de2827ec957a9ebf00ce3c54f79"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+# Need newer cmake from JLL
+apk del cmake
+
 cd $WORKSPACE/srcdir
 cd assimp/
 mkdir build && cd build
@@ -23,6 +26,7 @@ cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_T
     -DASSIMP_INSTALL_PDB=false \
     -DASSIMP_DOUBLE_PRECISION=false \
     -DINJECT_DEBUG_POSTFIX=false \
+    -DASSIMP_WARNINGS_AS_ERRORS=OFF \
 
 make -j${nproc}
 make install
@@ -31,13 +35,11 @@ install_license ../LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if p != Platform("i686", "linux"; libc="musl") &&
-                                                 p != Platform("armv7l", "linux"; libc="musl") &&
-                                                 p != Platform("aarch64", "macos") &&
-                                                 p != Platform("x86_64", "macos") &&
-                                                 p != Platform("powerpc64le", "linux"; libc="glibc")
-            ]
+platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
+
+platforms_win = filter(Sys.iswindows, platforms)
+platforms = setdiff(platforms, platforms_win)
 
 # The products that we will ensure are always built
 products = [
@@ -46,8 +48,17 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    HostBuildDependency("CMake_jll"),
     Dependency("Zlib_jll")
 ]
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"12", julia_compat="1.6")
+if any(should_build_platform.(triplet.(platforms_win)))
+    build_tarballs(ARGS, name, version, sources, script, platforms_win, products, dependencies; preferred_gcc_version=v"12", julia_compat="1.6")
+end
+if any(should_build_platform.(triplet.(platforms)))
+    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"10", julia_compat="1.6")
+end

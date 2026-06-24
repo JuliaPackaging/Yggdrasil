@@ -3,18 +3,22 @@
 using BinaryBuilder, Pkg
 
 name = "unixODBC"
-version = v"2.3.9"
+version = v"2.3.14"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://www.unixodbc.org/unixODBC-$(version).tar.gz",
-                  "52833eac3d681c8b0c9a5a65f2ebd745b3a964f208fc748f977e44015a31b207"),
+    GitSource("https://github.com/lurcher/unixODBC.git",
+              "9a814155d60c44632b23d7b1bb47b17206e21db0"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/unixODBC-*/
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-libiconv-prefix=${prefix}
+cd $WORKSPACE/srcdir/unixODBC*
+
+autoreconf -fiv
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
+    --with-libiconv-prefix=${prefix} \
+    --enable-readline
 make -j${nproc}
 make install
 """
@@ -39,7 +43,9 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Libiconv_jll"),
+    Dependency("Readline_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6")

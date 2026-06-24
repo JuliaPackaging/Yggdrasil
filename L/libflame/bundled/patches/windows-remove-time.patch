@@ -1,0 +1,196 @@
+diff --git a/src/map/common/lapacksrc/install/static/dsecnd.c b/src/map/common/lapacksrc/install/static/dsecnd.c
+index 2711ccee..89626f23 100644
+--- a/src/map/common/lapacksrc/install/static/dsecnd.c
++++ b/src/map/common/lapacksrc/install/static/dsecnd.c
+@@ -1,5 +1,5 @@
+ #include "FLA_f2c.h"
+-#include <sys/times.h>
++// #include <sys/times.h>
+ //#include <sys/types.h>
+ //#include <time.h>
+ 
+@@ -7,11 +7,11 @@
+ #define CLK_TCK 60
+ #endif
+ 
+-doublereal dsecnd_( void )
+-{
+-    struct tms rusage;
++// doublereal dsecnd_( void )
++// {
++//     struct tms rusage;
+ 
+-    times(&rusage);
+-    return (doublereal)(rusage.tms_utime) / CLK_TCK;
++//     times(&rusage);
++//     return (doublereal)(rusage.tms_utime) / CLK_TCK;
+ 
+-} /* dsecnd_ */
++// } /* dsecnd_ */
+diff --git a/src/map/common/lapacksrc/install/static/second.c b/src/map/common/lapacksrc/install/static/second.c
+index 68fbb062..915446f9 100644
+--- a/src/map/common/lapacksrc/install/static/second.c
++++ b/src/map/common/lapacksrc/install/static/second.c
+@@ -1,5 +1,5 @@
+ #include "FLA_f2c.h"
+-#include <sys/times.h>
++// #include <sys/times.h>
+ //#include <sys/types.h>
+ //#include <time.h>
+ 
+@@ -7,11 +7,11 @@
+ #define CLK_TCK 60
+ #endif
+ 
+-real second_( void )
+-{
+-    struct tms rusage;
++// real second_( void )
++// {
++//     struct tms rusage;
+ 
+-    times(&rusage);
+-    return (real)(rusage.tms_utime) / CLK_TCK;
++//     times(&rusage);
++//     return (real)(rusage.tms_utime) / CLK_TCK;
+ 
+-} /* second_ */
++// } /* second_ */
+diff --git a/src/map/common/lapacksrc/install/util/other/dtime_.c b/src/map/common/lapacksrc/install/util/other/dtime_.c
+index 6a09b3e9..5d87552d 100644
+--- a/src/map/common/lapacksrc/install/util/other/dtime_.c
++++ b/src/map/common/lapacksrc/install/util/other/dtime_.c
+@@ -13,7 +13,7 @@
+ #define _INCLUDE_POSIX_SOURCE	/* for HP-UX */
+ #define _INCLUDE_XOPEN_SOURCE	/* for HP-UX */
+ #include "sys/types.h"
+-#include "sys/times.h"
++// #include "sys/times.h"
+ #ifdef __cplusplus
+ extern "C" {
+ #endif
+@@ -30,34 +30,34 @@ extern "C" {
+ #endif
+ #endif
+ 
+- REAL
+-#ifdef KR_headers
+-dtime_(tarray) float *tarray;
+-#else
+-dtime_(float *tarray)
+-#endif
+-{
+-#ifdef USE_CLOCK
+-#ifndef CLOCKS_PER_SECOND
+-#define CLOCKS_PER_SECOND Hz
+-#endif
+-	static double t0;
+-	double t = clock();
+-	tarray[1] = 0;
+-	tarray[0] = (t - t0) / CLOCKS_PER_SECOND;
+-	t0 = t;
+-	return tarray[0];
+-#else
+-	struct tms t;
+-	static struct tms t0;
++//  REAL
++// #ifdef KR_headers
++// dtime_(tarray) float *tarray;
++// #else
++// dtime_(float *tarray)
++// #endif
++// {
++// #ifdef USE_CLOCK
++// #ifndef CLOCKS_PER_SECOND
++// #define CLOCKS_PER_SECOND Hz
++// #endif
++// 	static double t0;
++// 	double t = clock();
++// 	tarray[1] = 0;
++// 	tarray[0] = (t - t0) / CLOCKS_PER_SECOND;
++// 	t0 = t;
++// 	return tarray[0];
++// #else
++// 	struct tms t;
++// 	static struct tms t0;
+ 
+-	times(&t);
+-	tarray[0] = (double)(t.tms_utime - t0.tms_utime) / Hz;
+-	tarray[1] = (double)(t.tms_stime - t0.tms_stime) / Hz;
+-	t0 = t;
+-	return tarray[0] + tarray[1];
+-#endif
+-	}
++// 	times(&t);
++// 	tarray[0] = (double)(t.tms_utime - t0.tms_utime) / Hz;
++// 	tarray[1] = (double)(t.tms_stime - t0.tms_stime) / Hz;
++// 	t0 = t;
++// 	return tarray[0] + tarray[1];
++// #endif
++// 	}
+ #ifdef __cplusplus
+ }
+ #endif
+diff --git a/src/map/common/lapacksrc/install/util/other/etime_.c b/src/map/common/lapacksrc/install/util/other/etime_.c
+index 2d9a36d8..15ceca93 100644
+--- a/src/map/common/lapacksrc/install/util/other/etime_.c
++++ b/src/map/common/lapacksrc/install/util/other/etime_.c
+@@ -13,7 +13,7 @@
+ #define _INCLUDE_POSIX_SOURCE	/* for HP-UX */
+ #define _INCLUDE_XOPEN_SOURCE	/* for HP-UX */
+ #include "sys/types.h"
+-#include "sys/times.h"
++// #include "sys/times.h"
+ #ifdef __cplusplus
+ extern "C" {
+ #endif
+@@ -30,28 +30,28 @@ extern "C" {
+ #endif
+ #endif
+ 
+- REAL
+-#ifdef KR_headers
+-etime_(tarray) float *tarray;
+-#else
+-etime_(float *tarray)
+-#endif
+-{
+-#ifdef USE_CLOCK
+-#ifndef CLOCKS_PER_SECOND
+-#define CLOCKS_PER_SECOND Hz
+-#endif
+-	double t = clock();
+-	tarray[1] = 0;
+-	return tarray[0] = t / CLOCKS_PER_SECOND;
+-#else
+-	struct tms t;
++//  REAL
++// #ifdef KR_headers
++// etime_(tarray) float *tarray;
++// #else
++// etime_(float *tarray)
++// #endif
++// {
++// #ifdef USE_CLOCK
++// #ifndef CLOCKS_PER_SECOND
++// #define CLOCKS_PER_SECOND Hz
++// #endif
++// 	double t = clock();
++// 	tarray[1] = 0;
++// 	return tarray[0] = t / CLOCKS_PER_SECOND;
++// #else
++// 	struct tms t;
+ 
+-	times(&t);
+-	return	  (tarray[0] = (double)t.tms_utime/Hz)
+-		+ (tarray[1] = (double)t.tms_stime/Hz);
+-#endif
+-	}
++// 	times(&t);
++// 	return	  (tarray[0] = (double)t.tms_utime/Hz)
++// 		+ (tarray[1] = (double)t.tms_stime/Hz);
++// #endif
++// 	}
+ #ifdef __cplusplus
+ }
+ #endif

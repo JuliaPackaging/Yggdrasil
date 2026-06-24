@@ -3,22 +3,30 @@
 using BinaryBuilder, Pkg
 
 name = "VDT"
-version = v"0.4.4"
+version = v"0.4.6"
+
+vdtgithash = Dict(v"0.4.6" => "fc894d2ac53426bd8cac14f1e685e1ce8630ffff")
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/dpiparo/vdt/archive/refs/tags/v$(version).zip", "c03d21bdaaa8a0e6e557a496be505581f23aba9854e6059794721994289e97e8"),
+   GitSource("https://github.com/dpiparo/vdt.git", vdtgithash[version])
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/vdt-*
-sed -i "s/-Ofast//" CMakeLists.txt
+cd $WORKSPACE/srcdir/vdt
+
 install_license Licence.txt
-mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
-make -j${nproc}
-make install
+
+CMAKE_OPTS=(-DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release)
+
+if [[ "$target" != x86_64-* ]]; then
+  CMAKE_OPTS+=(-DSSE=OFF)
+fi
+
+cmake -GNinja "${CMAKE_OPTS[@]}" -B build -S .
+cmake --build build
+cmake --install build
 """
 
 # These are the platforms we will build for by default, unless further
@@ -26,13 +34,14 @@ make install
 platforms = [
     Platform("i686", "linux"; libc = "glibc"),
     Platform("x86_64", "linux"; libc = "glibc"),
+    Platform("aarch64", "linux"; libc = "glibc"),
     Platform("i686", "linux"; libc = "musl"),
     Platform("x86_64", "linux"; libc = "musl"),
+    Platform("aarch64", "linux"; libc = "musl"),
     Platform("x86_64", "macos"; ),
     Platform("aarch64", "macos"; ),
     Platform("x86_64", "freebsd"; )
 ]
-
 
 # The products that we will ensure are always built
 products = [

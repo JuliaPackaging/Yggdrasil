@@ -2,6 +2,9 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+
 name = "TOPCOM"
 version = v"0.17.8"
 underscored = join([version.major,version.minor,version.patch],"_")
@@ -87,8 +90,6 @@ dependencies = [
     Dependency("GMP_jll")
     Dependency("cddlib_jll")
 ]
-
-include("../../fancy_toys.jl")
 
 # Build the tarballs, and possibly a `build.jl` as well.
 if any(should_build_platform.(triplet.(platforms_unix)))

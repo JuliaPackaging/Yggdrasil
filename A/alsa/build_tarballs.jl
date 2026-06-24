@@ -3,26 +3,27 @@
 using BinaryBuilder
 
 name = "alsa"
-# It's actually v1.2.5.1
-version = v"1.2.5"
+upstream_version = "1.2.15.3"
+version = v"1.2.15"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.alsa-project.org/files/pub/lib/alsa-lib-1.2.5.1.tar.bz2",
-                  "628421d950cecaf234de3f899d520c0a6923313c964ad751ffac081df331438e"),
+    ArchiveSource("https://www.alsa-project.org/files/pub/lib/alsa-lib-$(upstream_version).tar.bz2",
+                  "7b079d614d582cade7ab8db2364e65271d0877a37df8757ac4ac0c8970be861e"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/alsa-lib*/
+cd $WORKSPACE/srcdir/alsa-lib*
+autoreconf -fiv
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make
+make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(Sys.islinux, supported_platforms(;experimental=true))
+platforms = filter(Sys.islinux, supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -34,6 +35,10 @@ products = [
 dependencies = [
 ]
 
+init_block = raw"""
+ENV["ALSA_CONFIG_DIR"] = get(ENV, "ALSA_CONFIG_DIR", joinpath(artifact_dir, "share", "alsa"))
+"""
+
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", init_block)
 

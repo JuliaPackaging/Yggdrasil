@@ -1,0 +1,25 @@
+From a73651145dad801a3900138ee4b4e8c3b0604612 Mon Sep 17 00:00:00 2001
+From: Max Horn <max@quendi.de>
+Date: Wed, 7 Jan 2026 20:13:00 +0100
+Subject: [PATCH 5/6] Fix open_output_file to return NULL in case of error
+
+Instead of returning whatever garbage happens to be around.
+---
+ writeseq.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/writeseq.c b/writeseq.c
+index 02f27d0..9029bcd 100644
+--- a/writeseq.c
++++ b/writeseq.c
+@@ -83,6 +83,7 @@ FILE *  open_output_file(char *in_name, char *prompt, char *file_extension, char
+ 		file_handle = open_explicit_file(out_name);
+ 		return file_handle;
+ 	}
++	return NULL;
+ }
+ 
+ /*
+-- 
+2.52.0
+

@@ -4,11 +4,11 @@ using BinaryBuilder
 
 # Collection of sources required to build SymEngine
 name = "SymEngine"
-version = v"0.11.2"
+version = v"0.12.0"
 
 sources = [
     GitSource("https://github.com/symengine/symengine.git",
-              "c1fc32cf0902ecd7b1a0e5369c38dd22ad75c726"),
+              "088aa01bf4ba020e22b7492086abdc08b37a5f7f"),
 ]
 
 # Bash recipe for building across all platforms
@@ -39,9 +39,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GMP_jll", v"6.2.0"),
-    Dependency("MPFR_jll", v"4.1.1"),
-    Dependency("MPC_jll", v"1.2.1"),
+    Dependency("GMP_jll"; compat="6.2.0"),
+    Dependency("MPFR_jll"; compat="4.1.1"),
+    Dependency("MPC_jll"; compat="1.2.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

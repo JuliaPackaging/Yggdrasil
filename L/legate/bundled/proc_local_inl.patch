@@ -1,0 +1,15 @@
+diff --git a/original.h b/new.h
+index 1bae8ab..d936dbf 100644
+--- a/legate/src/cpp/legate/utilities/proc_local_storage.inl
++++ b/legate/src/cpp/legate/utilities/proc_local_storage.inl
+@@ -15,9 +15,9 @@ namespace legate {
+
+ namespace detail {
+
+-[[nodiscard]] std::size_t processor_id();
++[[nodiscard]] LEGATE_EXPORT std::size_t processor_id();
+
+-[[noreturn]] void throw_invalid_proc_local_storage_access(const std::type_info&);
++[[noreturn]] LEGATE_EXPORT void throw_invalid_proc_local_storage_access(const std::type_info&);
+
+ }  // namespace detail

@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Clingo"
-version = v"5.5.0"
+version = v"5.8.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/potassco/clingo.git", "e1c20131b708439c7e1c317bb96b58e5a527b1a2")
+    GitSource("https://github.com/potassco/clingo.git", "78107e88e69d626daf46a37155510c26e8bb7f2b")
 ]
 
 # Bash recipe for building across all platforms
@@ -41,4 +41,15 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"5.2.0")
+build_tarballs(
+    ARGS,
+    name,
+    version,
+    sources,
+    script,
+    platforms,
+    products,
+    dependencies;
+    preferred_gcc_version=v"6.1.0",
+    julia_compat="1.6",
+)

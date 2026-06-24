@@ -1,4 +1,5 @@
-#Changes made to build tarballs for v1. 8.9
+# Last updated: 24 September, 2025
+
 include("../coin-or-common.jl")
 
 sources = [
@@ -79,5 +80,7 @@ build_tarballs(
     platforms,
     products,
     dependencies,
-    julia_compat = "1.6",
-    preferred_gcc_version = v"6")
+    preferred_gcc_version = gcc_version,
+    preferred_llvm_version = llvm_version,
+    julia_compat = "1.9",
+)

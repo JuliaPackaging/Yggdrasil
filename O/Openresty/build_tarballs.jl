@@ -3,14 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "Openresty"
-version = v"1.21.4"
+version = v"1.29.203"
+upstream_version = "1.29.2.3"
 
-# Collection of sources required to complete build
+# Collection of sources required to complete build.
+# Openresty requires static linking of these libraries, hence sources are provided so that they are compiled in.
 sources = [
-    ArchiveSource("https://openresty.org/download/openresty-$(version).1.tar.gz", "0c5093b64f7821e85065c99e5d4e6cc31820cfd7f37b9a0dec84209d87a2af99"),
-    ArchiveSource("https://sourceforge.net/projects/pcre/files/pcre/8.45/pcre-8.45.tar.bz2", "4dae6fdcd2bb0bb6c37b5f97c33c2be954da743985369cddac3546e3218bffb8"),
-    ArchiveSource("https://www.openssl.org/source/openssl-1.1.1p.tar.gz", "bf61b62aaa66c7c7639942a94de4c9ae8280c08f17d4eac2e44644d9fc8ace6f"),
-    ArchiveSource("https://www.zlib.net/zlib-1.2.12.tar.gz", "91844808532e5ce316b3c010929493c0244f3d37593afd6de04f71821d5136d9")
+    ArchiveSource("https://openresty.org/download/openresty-$(upstream_version).tar.gz", "315e49fa4568747fec4bdada9614d2ba287e7aed4b3430d7ea25685e24cc43ff"),
+    ArchiveSource("https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.47/pcre2-10.47.tar.bz2", "47fe8c99461250d42f89e6e8fdaeba9da057855d06eb7fc08d9ca03fd08d7bc7"),
+    ArchiveSource("https://github.com/openssl/openssl/releases/download/openssl-3.5.5/openssl-3.5.5.tar.gz", "b28c91532a8b65a1f983b4c28b7488174e4a01008e29ce8e69bd789f28bc2a89"),
+    ArchiveSource("https://www.zlib.net/zlib-1.3.2.tar.gz", "bb329a0a2cd0274d05519d61c667c062e06990d72e125ee2dfa8de64f0119d16")
 ]
 
 # Bash recipe for building across all platforms
@@ -19,14 +21,12 @@ cd $WORKSPACE/srcdir/openresty-*/
 export SUPER_VERBOSE=1
 ./configure --prefix=${prefix} \
     --with-cc=$CC \
-    --with-zlib=$WORKSPACE/srcdir/zlib-1.2.12 \
-    --with-openssl=$WORKSPACE/srcdir/openssl-1.1.1p \
-    --with-pcre=$WORKSPACE/srcdir/pcre-8.45 \
+    --with-zlib=$WORKSPACE/srcdir/zlib-1.3.2 \
+    --with-openssl=$WORKSPACE/srcdir/openssl-3.5.5 \
+    --with-pcre=$WORKSPACE/srcdir/pcre2-10.47 \
     --with-pcre-jit
 make
 make install
-rm ${bindir}/openresty
-ln -s ../nginx/sbin/nginx ${bindir}/openresty
 install_license $prefix/COPYRIGHT
 """
 

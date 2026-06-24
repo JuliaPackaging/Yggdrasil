@@ -1,0 +1,11 @@
+--- a/src/common/ittnotify/ittnotify_config.h
++++ b/src/common/ittnotify/ittnotify_config.h
+@@ -248,7 +248,7 @@
+ #define __itt_unload_lib(handle)  FreeLibrary(handle)
+ #define __itt_system_error()      (int)GetLastError()
+ #define __itt_fstrcmp(s1, s2)     lstrcmpA(s1, s2)
+-#define __itt_fstrnlen(s, l)      strnlen_s(s, l)
++#define __itt_fstrnlen(s, l)      strnlen(s, l)
+ #define __itt_fstrcpyn(s1, b, s2, l) strncpy_s(s1, b, s2, l)
+ #define __itt_thread_id()         GetCurrentThreadId()
+ #define __itt_thread_yield()      SwitchToThread()

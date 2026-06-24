@@ -4,20 +4,19 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "QuantumEspresso"
-version = v"7.0.1"
-quantumespresso_version = v"7.0.0"
+# Separate to avoid padding to 3 components
+raw_version = "7.5"
+version = VersionNumber(raw_version)
 
-# ES 2022-08-01: I tried updating to 7.1, but I encountered build problems:
-# - v7.1 encounters ICEs in gfortran; requires at least GCC 10
-# - the build fails because the directory "../W90" is not found at some point
-# version = v"7.1"
-# quantumespresso_version = v"7.1"
+# Minor updates of libxc bump the libtool "current" version which is part of the .so file's name.
+# (For example libxc 6.0.x -> 6.1.x bumped "current" from 12 to 13)
+# A minor version mismatch will thus prevent loading the QE jll which depends on the libxc .so file.
+# To avoid this, we restrict libxc compat to a specific minor version.
+Libxc_jll_range = "~7.0"
 
 sources = [
-    ArchiveSource("https://gitlab.com/QEF/q-e/-/archive/qe-7.0/q-e-qe-7.0.tar.gz",
-                  "85beceb1aaa1678a49e774c085866d4612d9d64108e0ac49b23152c8622880ee"),
-    # ArchiveSource("https://gitlab.com/QEF/q-e/-/archive/qe-7.1/q-e-qe-7.1.tar.gz",
-    #               "d56dea096635808843bd5a9be2dee3d1f60407c01dbeeda03f8256a3bcfc4eb6"),
+    ArchiveSource("https://gitlab.com/QEF/q-e/-/archive/qe-$(raw_version)/q-e-qe-$(raw_version).tar.gz",
+                  "7e1f7a9a21b63192f5135218bee20a5321b66582e4756536681b76e9c59b3cc8"),
     DirectorySource("bundled"),
 ]
 
@@ -25,7 +24,6 @@ sources = [
 script = raw"""
 cd q-e-qe-*
 atomic_patch -p1 ../patches/0000-pass-host-to-configure.patch
-# atomic_patch -p1 ../patches/0000-pass-host-to-configure-7.1.patch
 
 export BLAS_LIBS="-L${libdir} -lopenblas"
 export LAPACK_LIBS="-L${libdir} -lopenblas"
@@ -40,6 +38,16 @@ else
 fi
 export CC=mpicc
 export LD=
+if [[ ${bb_full_target} == *mpiabi* ]]; then
+    export MPIF_FC=gfortran
+    export MPIF_FCLIBS="-L${prefix} -Wl,-rpath,${prefix} -lmpif -lmpi_abi"
+fi
+
+# Profiling is not supported on Darwin, FreeBSD, or musl
+if [[ ${target} == *darwin* || ${target} == *freebsd* || ${target} == *musl* ]]; then
+    # Remove `-pg` flag
+    sed -i 's/ -pg$//' PIOUD/src/Makefile
+fi
 
 flags=(--enable-parallel=yes)
 if [ "${nbits}" == 64 ]; then
@@ -57,7 +65,7 @@ else
 fi
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ${flags[@]}
-make all "${make_args[@]}" -j $nproc
+make all -j $nproc
 make install
 # Manually make all binary executables...executable.  Sigh
 chmod +x "${bindir}"/*
@@ -73,18 +81,13 @@ augment_platform_block = """
 # platforms are passed in on the command line
 platforms = expand_gfortran_versions(supported_platforms())
 filter!(!Sys.iswindows, platforms)
+# "Old-style type declaration REAL*16 not supported" in merge_wann.f90
+filter!(p -> !(Sys.islinux(p) && (arch(p) == "armv6l" || arch(p) == "armv7l")), platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # MPItrampoline is not supported
 filter!(p -> p["mpi"] ≠ "mpitrampoline", platforms)
-
-# Avoid platforms where the MPI implementation isn't supported
-# OpenMPI
-filter!(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
-# MPItrampoline
-filter!(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
-filter!(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -102,18 +105,43 @@ products = [
     ExecutableProduct("dynmat.x", :dynamical_matrix_gamma),
     ExecutableProduct("hp.x", :hubbardparams),
     ExecutableProduct("neb.x", :nudged_elastic_band),
+    ExecutableProduct("band_interpolation.x", :band_interpolation),
+    ExecutableProduct("cppp.x", :cppp),
+    ExecutableProduct("d3hess.x", :d3hess),
+    ExecutableProduct("kcw.x", :kcw),
+    ExecutableProduct("ld1.x", :ld1),
+    ExecutableProduct("molecularpdos.x", :molecularpdos),
+    ExecutableProduct("oscdft_et.x", :oscdft_et),
+    ExecutableProduct("oscdft_pp.x", :oscdft_pp),
+    ExecutableProduct("postahc.x", :postahc),
+    ExecutableProduct("pp.x", :pp),
+    ExecutableProduct("ppacf.x", :ppacf),
+    ExecutableProduct("pprism.x", :pprism),
+    ExecutableProduct("projwfc.x", :projwfc),
+    ExecutableProduct("pw2bgw.x", :pw2bgw),
+    ExecutableProduct("pw2wannier90.x", :pw2wannier90),
+    ExecutableProduct("pwcond.x", :pwcond),
+    ExecutableProduct("turbo_davidson.x", :turbo_davidson),
+    ExecutableProduct("turbo_eels.x", :turbo_eels),
+    ExecutableProduct("turbo_lanczos.x", :turbo_lanczos),
+    ExecutableProduct("turbo_magnon.x", :turbo_magnon),
+    ExecutableProduct("turbo_spectrum.x", :turbo_spectrum),
+    ExecutableProduct("xspectra.x", :xspectra),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency("FFTW_jll"),
-    Dependency("Libxc_jll"),
+    Dependency(PackageSpec(name="Libxc_jll", uuid="a56a6d9d-ad03-58af-ab61-878bf78270d6"); compat=Libxc_jll_range),
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
-    Dependency("SCALAPACK32_jll"),
+    Dependency(PackageSpec(name="SCALAPACK32_jll", uuid="aabda75e-bfe4-5a37-92e3-ffe54af3c273"); compat="2.2.3"),
+    Dependency("mpif_jll"; compat="0.1.7", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)), # MPI Fortran bindings
 ]
 append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well
+# We require Julia 1.9 since SCALAPACK32 only supports Julia 1.9
+# We require GCC 9 to get Fortran FINDLOC
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"6")
+               augment_platform_block, julia_compat="1.9", preferred_gcc_version=v"10")

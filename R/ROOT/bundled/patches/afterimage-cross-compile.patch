@@ -1,0 +1,10 @@
+--- a/root/cmake/modules/SearchInstalledSoftware.cmake	2024-06-28 12:55:26.471599664 +0200
++++ b/root/cmake/modules/SearchInstalledSoftware.cmake	2024-06-28 12:57:58.417875621 +0200
+@@ -499,6 +499,7 @@
+       DOWNLOAD_COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/graf2d/asimage/src/libAfterImage AFTERIMAGE
+       INSTALL_DIR ${CMAKE_BINARY_DIR}
+       CONFIGURE_COMMAND ./configure --prefix <INSTALL_DIR>
++                        --host=$ENV{target}
+                         --libdir=<INSTALL_DIR>/lib
+                         --with-ttf ${_ttf_include} --with-afterbase=no
+                         --without-svg --disable-glx ${_after_mmx}

@@ -5,12 +5,13 @@ using BinaryBuilder, Pkg
 # This is the builder for the library Dierckx in Netlib
 # (http://www.netlib.org/dierckx/), which doesn't really have a versin number.
 name = "Dierckx"
-version = v"0.1.0"
+upstream_version = "1.15.1"
+version = v"0.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/scipy/scipy/releases/download/v1.7.2/scipy-1.7.2.tar.xz",
-                  "ee5d018ecad0364289efe3301f6445d7ef548637e0e14d0205bbf363f0dfe66a"),
+    ArchiveSource("https://github.com/scipy/scipy/releases/download/v$(upstream_version)/scipy-$(upstream_version).tar.gz",
+                  "033a75ddad1463970c96a88063a1df87ccfddd526437136b6ee81ff0312ebdf6"),
 ]
 
 # Bash recipe for building across all platforms
@@ -22,7 +23,7 @@ gfortran -o "${libdir}/libddierckx.${dlext}" -O3 -shared -fPIC *.f
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_gfortran_versions(supported_platforms(; experimental=true))
+platforms = expand_gfortran_versions(supported_platforms())
 
 # The products that we will ensure are always built
 products = [

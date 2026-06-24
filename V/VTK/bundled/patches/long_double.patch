@@ -1,0 +1,15 @@
+--- a/Infovis/Core/vtkWordCloud.cxx
++++ b/Infovis/Core/vtkWordCloud.cxx
+@@ -652,9 +652,9 @@
+   const int centerX = sizes[0] / 2.0;
+   const int centerY = sizes[1] / 2.0;
+ 
+-  constexpr std::size_t N = 10000;
+-  constexpr auto pi = 3.141592653589793238462643383279502884L; /* pi */
+-  constexpr double deltaAngle = pi * 20 / N;
++  const std::size_t N = 10000;
++  const auto pi = 3.141592653589793238462643383279502884L; /* pi */
++  const double deltaAngle = pi * 20 / N;
+   double maxX = -1000.0;
+   double minX = 1000.0;
+   double maxY = -1000.0;

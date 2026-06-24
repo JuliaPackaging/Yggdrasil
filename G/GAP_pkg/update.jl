@@ -1,13 +1,15 @@
 # Update the GAP_pkg_* recipes to match GAP / GAP_lib
+# Execute from the G/GAP_pkg/ directory, e.g.:
+# julia --project=. update.jl
 
-using JSON
 import Downloads
-using SHA
 using GZip
+using JSON
+using SHA
 
-upstream_version = v"4.13.0"
-gap_version = v"400.1300.000"
-gap_lib_version = v"400.1300.000"
+gap_upstream_version = v"4.16.0"
+gap_version = v"400.1600.000"
+gap_lib_version = v"400.1600.000"
 
 function download_with_sha256(url)
     io = IOBuffer()
@@ -29,7 +31,7 @@ function download_with_sha256(url)
 end
 
 # download latest package-infos
-download_with_sha256("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/package-infos.json.gz")
+download_with_sha256("https://github.com/gap-system/gap/releases/download/v$(gap_upstream_version)/package-infos.json.gz")
 
 # read the data
 pkginfo = GZip.open(JSON.parse, "package-infos.json.gz")
@@ -46,23 +48,23 @@ function update_gap_pkg_recipe(dir)
 
     # extract metadata from the recipe
     old_gap_version = try
-        VersionNumber(match(r"gap_version = v\"([^\"]+)\"", recipe).captures[1])
+        VersionNumber(match(r"^gap_version = v\"([^\"]+)\""m, recipe).captures[1])
     catch
         gap_version
     end
 
     old_gap_lib_version = try
-        VersionNumber(match(r"gap_lib_version = v\"([^\"]+)\"", recipe).captures[1])
+        VersionNumber(match(r"^gap_lib_version = v\"([^\"]+)\""m, recipe).captures[1])
     catch
         gap_lib_version
     end
 
-    old_upstream_version = match(r"upstream_version = v?\"([^\"]+)\"", recipe).captures[1]
-    offset = VersionNumber(match(r"offset = v\"([^\"]+)\"", recipe).captures[1])
+    old_upstream_version = match(r"^upstream_version = v?\"([^\"]+)\""m, recipe).captures[1]
+    offset = VersionNumber(match(r"^offset = v\"([^\"]+)\""m, recipe).captures[1])
 
     # new metadata from the GAP package registry
     if pkgname == "juliainterface"
-        upstream_version = "0.9.0"
+        upstream_version = "0.16.0"
         sha256 = "DUMMY"
     else
         meta = pkginfo[pkgname]
@@ -91,20 +93,31 @@ function update_gap_pkg_recipe(dir)
         @info "skipping $pkgname"
         return
     elseif old_upstream_version != upstream_version
-        offset = v"0.0.0"
+        _old_upstream_version = VersionNumber(replace(old_upstream_version, "-" => "."))
+        _upstream_version = VersionNumber(replace(upstream_version, "-" => "."))
+        if _old_upstream_version.major != _upstream_version.major
+            offset = v"0.0.0"
+        else
+            offset = VersionNumber(offset.major, 0, 0)
+        end
     else
         offset = VersionNumber(offset.major, offset.minor, offset.patch + 1)
     end
 
     # update the metadata
-    recipe = replace(recipe, r"gap_version = v\"([^\"]+)\"" => "gap_version = v\"$gap_version\"")
-    recipe = replace(recipe, r"gap_lib_version = v\"[^\"]+\"" => "gap_lib_version = v\"$gap_lib_version\"")
-
+    recipe = replace(recipe, r"^gap_version = v\"([^\"]+)\""m => "gap_version = v\"$gap_version\"")
+    recipe = replace(recipe, r"^gap_lib_version = v\"[^\"]+\"" => "gap_lib_version = v\"$gap_lib_version\"")
+    
     # update version
-    recipe = replace(recipe, r"upstream_version = v?\"[^\"]+\"" => "upstream_version = \"$upstream_version\"")
-    recipe = replace(recipe, r"offset = v\"[^\"]+\"" => "offset = v\"$offset\"")
-
-    if pkgname != "juliainterface"
+    recipe = replace(recipe, r"^upstream_version = v?\"[^\"]+\""m => "upstream_version = \"$upstream_version\"")
+    recipe = replace(recipe, r"^offset = v\"[^\"]+\""m => "offset = v\"$offset\"")
+    
+    if pkgname == "juliainterface"
+        # update GAP source & checksum for the host build (which is used for building the manual)
+        gapsha256 = readline(Downloads.download("https://github.com/gap-system/gap/releases/download/v$(gap_upstream_version)/gap-$(gap_upstream_version).tar.gz.sha256"))
+        recipe = replace(recipe, r"^gap_upstream_version = v\"([^\"]+)\""m => "gap_upstream_version = v\"$gap_upstream_version\"")
+        recipe = replace(recipe, r"\"[0-9a-f]{64,64}\"" => "\"$gapsha256\"")
+    else
         # update source & checksum
         recipe = replace(recipe, r"ArchiveSource\(\"([^\"]+)\"" => "ArchiveSource(\"$archive\"")
         recipe = replace(recipe, r"\"[0-9a-f]{64,64}\"" => "\"$sha256\"")

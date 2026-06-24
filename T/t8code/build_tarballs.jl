@@ -2,66 +2,64 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
+
 const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "t8code"
-version = v"1.6.1"
+version = v"4.0.6"
+commit_hash = "4a82a3bf8f7741043478a0cbbdb33561ec50b8f2"
 
-tarball = "https://github.com/DLR-AMR/t8code/releases/download/v$(version)/t8-$(version).tar.gz"
-sha256sum = "dc96effa7c1ad1d50437fefdd0963f6ef7c943eb10a372a4e8546a5f2970a412"
+sources = [GitSource("https://github.com/DLR-AMR/t8code", commit_hash),
+           DirectorySource("./bundled")]
 
-# Collection of sources required to complete build
-sources = [ArchiveSource(tarball, sha256sum), DirectorySource("./bundled")]
-
-# Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/t8*
+cd $WORKSPACE/srcdir/t8code
+
+# Fix for https://github.com/DLR-AMR/t8code/pull/2335
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/cmake-rpath.patch"
+
+# Microsoft MPI is still 2.0 but has the required features; remove the strict 3.0 requirement
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi2.patch"
+
+# Show CMake where to find `mpiexec`.
+if [[ "${target}" == *-mingw* ]]; then
+  ln -s $(which mpiexec.exe) /workspace/destdir/bin/mpiexec
+fi
+
+cmake . \
+      -B build \
+      -DCMAKE_INSTALL_PREFIX=${prefix} \
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+      -DCMAKE_CXX_FLAGS="-std=c++20" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_TESTING=OFF \
+      -DP4EST_BUILD_TESTING=OFF \
+      -DSC_BUILD_TESTING=OFF \
+      -DINSTALL_GTEST=OFF \
+      -DT8CODE_BUILD_BENCHMARKS=OFF \
+      -DT8CODE_BUILD_DOCUMENTATION=OFF \
+      -DT8CODE_BUILD_EXAMPLES=OFF \
+      -DT8CODE_BUILD_FORTRAN_INTERFACE=OFF \
+      -DT8CODE_BUILD_TESTS=OFF \
+      -DT8CODE_BUILD_TUTORIALS=OFF \
+      -DT8CODE_ENABLE_MPI=ON
+
+# Fixes for mingw, which is WIN32 for cmake, but uses Linux syntax
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mingw.patch"
+
+# Fixes for "initializer element is not constant" in sc
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi-constants.patch"
 
-# Set default preprocessor and linker flags
-# Note: This is *crucial* for Windows builds as otherwise the wrong libraries are picked up!
-export CPPFLAGS="-I${includedir}"
-export LDFLAGS="-L${libdir}"
-export CFLAGS="-O3"
-export CXXFLAGS="-O3"
-
-# Set necessary flags for FreeBSD
-if [[ "${target}" == *-freebsd* ]]; then
-  export LIBS="${LIBS} -lm"
-fi
-
-# Set necessary flags for Windows and non-Windodws systems
-FLAGS=()
-if [[ "${target}" == *-mingw* ]]; then
-  # Pass -lmsmpi explicitly to linker as the absolute library path specified in LIBS below is not always propagated properly
-  export LDFLAGS="$LDFLAGS -Wl,-lmsmpi"
-  # Set linker flags only at build time (see https://docs.binarybuilder.org/v0.3/troubleshooting/#Windows)
-  FLAGS+=(LDFLAGS="$LDFLAGS -no-undefined")
-  # Link against ws2_32 to use the htonl function from winsock2.h
-  export LIBS="${LIBS} ${libdir}/msmpi.dll -lws2_32"
-  # Disable MPI I/O on Windows since it causes p4est to crash
-  mpiopts="--enable-mpi --disable-mpiio"
-else
-  # Use MPI including MPI I/O on all other platforms
-  export CC="mpicc"
-  export CXX="mpicxx"
-  mpiopts="--enable-mpi"
-fi
-
-# Run configure
-./configure \
-  --prefix="${prefix}" \
-  --build=${MACHTYPE} \
-  --host=${target} \
-  --disable-static \
-  --without-blas \
-  ${mpiopts}
-
-# Build & install
-make -j${nproc} "${FLAGS[@]}"
-make install
+make -C build -j ${nproc}
+make -C build -j ${nproc} install
 """
+
+# We need some C++20
+# std::visit introduced in macOS 10.14, 'range' in namespace 'std::ranges' from 14.0 on
+# target chosen as lowest working version
+sources, script = require_macos_sdk("14.0", sources, script; deployment_target="10.14")
 
 augment_platform_block = """
     using Base.BinaryPlatforms
@@ -71,22 +69,13 @@ augment_platform_block = """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
-# p4est with MPI enabled does not compile for 32 bit Windows
-platforms = filter(p -> !(Sys.iswindows(p) && nbits(p) == 32), platforms)
+platforms = supported_platforms(; experimental=false)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
 
-# Disable OpenMPI since it doesn't build. This could probably be fixed
-# via more explicit MPI configuraiton options.
-platforms = filter(p -> p["mpi"] ≠ "openmpi", platforms)
-
-# Avoid platforms where the MPI implementation isn't supported
-# OpenMPI
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
-# MPItrampoline
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
+# Avoid platforms where MPItrampoline isn't supported
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && p["arch"] == "riscv64"), platforms)
 
 # The products that we will ensure are always built
 products = [

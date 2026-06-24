@@ -3,17 +3,17 @@
 using BinaryBuilder
 
 name = "Expat"
-version = v"2.5.0"
+version = v"2.8.1"
 
 # Collection of sources required to build Expat
 sources = [
     ArchiveSource("https://github.com/libexpat/libexpat/releases/download/R_$(version.major)_$(version.minor)_$(version.patch)/expat-$(version).tar.xz",
-                  "ef2420f0232c087801abf705e89ae65f6257df6b7931d37846a193ef2e8cdcbe"),
+                  "10b195ee78160a908388180a8fe3603d4e9a12f4755fbf5f3816b23a9d750da0"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/expat-*/
+cd $WORKSPACE/srcdir/expat*/
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static
 make -j${nproc}
 make install
@@ -34,4 +34,5 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6")

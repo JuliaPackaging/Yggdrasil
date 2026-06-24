@@ -3,39 +3,31 @@
 using BinaryBuilder
 
 name = "iso_codes"
-version = v"4.15.1"
-
-# the git tag used for versioning has changed format
-if version < v"4.8"
-    if version < v"4.5" && version.patch == 0
-        tag = "iso-codes-$(version.major).$(version.minor)"
-    else
-        tag = "iso-codes-$version"
-    end
-elseif version == v"4.15.1" # for fake patch version to fix windows install.
-    tag = "v4.15.0"
-else
-    tag = "v$version"
-end
+version = v"4.20.1"
 
 # Collection of sources required to build iso-codes
 sources = [
-    ArchiveSource("https://salsa.debian.org/iso-codes-team/iso-codes/-/archive/$tag/iso-codes-$tag.tar.bz2",
-                  "ca2cadca98ad50af6e0ee4e139ec838695f75729d7a2c6353d31d9dfc6d3f027"),
+    ArchiveSource("https://salsa.debian.org/iso-codes-team/iso-codes/-/archive/v$(version)/iso-codes-v$(version).tar.bz2",
+                  "66ea9879f9a4d6f767f424bf74bc5471215d36d54f8940f6d32dd7737ceef046"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/iso-codes-*/
+cd $WORKSPACE/srcdir/iso-codes-*
 apk update
 apk add gettext
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make -j${nproc}
-make install
+meson setup builddir --cross-file="${MESON_TARGET_TOOLCHAIN}"
+meson compile -C builddir
+meson install -C builddir
+cd LICENSES
+install_license FSFAP.txt LGPL-2.1-or-later.txt
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
+# The files are identical for all platforms, and in principle we could
+# use `AnyPlatform()` instead. However this artifact contains symlinks
+# which have to be replaced with copies on Windows, and for that to
+# happen we need to build it for Windows specifically (and hence for
+# all other platforms as well)
 platforms = supported_platforms()
 
 # The products that we will ensure are always built

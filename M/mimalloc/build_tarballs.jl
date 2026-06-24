@@ -3,33 +3,36 @@
 using BinaryBuilder, Pkg
 
 name = "mimalloc"
-version = v"2.1.2"
+version = v"3.3.2"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/microsoft/mimalloc.git",
-              "43ce4bd7fd34bcc730c1c7471c99995597415488"),
+              "30b2d9d89099bee08e9f67a1ffb3e12e7ba45227"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 if [[ "${target}" == *-linux-musl* ]]; then
     # Musl doesn't support init-exec TLS
-    CMAKE_FLAGS=(-DMI_LOCAL_DYNAMIC_TLS=ON) 
+    CMAKE_FLAGS=(-DMI_LOCAL_DYNAMIC_TLS=ON)
 fi
-cd $WORKSPACE/srcdir/mimalloc/
-mkdir -p build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+
+CMAKE_FLAGS+=(-DMI_NO_OPT_ARCH=ON) # who doesn't love a double negative
+CMAKE_FLAGS+=(-DMI_WIN_REDIRECT=OFF) 
+
+cd $WORKSPACE/srcdir/mimalloc
+cmake -B build -G Ninja \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DMI_BUILD_OBJECT=OFF \
     -DMI_INSTALL_TOPLEVEL=ON \
     -DMI_BUILD_TESTS=OFF \
     -DMI_OVERRIDE=OFF \
-    "${CMAKE_FLAGS}" \
-    ..
-make -j ${nproc}
-make -j ${nproc} install
+    "${CMAKE_FLAGS[@]}"
+cmake --build build --parallel ${nproc}
+cmake --install build
 """
 
 # These are the platforms we will build for by default, unless further

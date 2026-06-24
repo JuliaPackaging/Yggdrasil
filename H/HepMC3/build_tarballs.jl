@@ -3,11 +3,11 @@
 using BinaryBuilderBase, BinaryBuilder, Pkg
 
 name = "HepMC3"
-version = v"3.2.7"
+version = v"3.3.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://hepmc.web.cern.ch/hepmc/releases/HepMC3-$(version).tar.gz", "587faa6556cc54ccd89ad35421461b4761d7809bc17a2e72f5034daea142232b")
+    ArchiveSource("http://hepmc.web.cern.ch/hepmc/releases/HepMC3-$(version).tar.gz", "6f876091edcf7ee6d0c0db04e080056e89efc1a61abe62355d97ce8e735769d6")
 ]
 
 # Bash recipe for building across all platforms

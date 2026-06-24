@@ -1,12 +1,11 @@
 using BinaryBuilder
 
 name = "LMDB"
-version = v"0.9.27"
+version = v"0.9.35"
 
-# No sources, we're just building the testsuite
 sources = [
-    ArchiveSource("https://git.openldap.org/openldap/openldap/-/archive/LMDB_$(version)/openldap-LMDB_$(version).tar.gz",
-                  "752a3ebd4bbfa1830dff2ca4f5ff4c4be97da843810626d5dd9e2e4e5484a399"),
+    GitSource("https://git.openldap.org/openldap/openldap.git",
+              "cfb061a8f7879f865536fee7d1d8d9737833bbdb"),  # LMDB_0.9.35
 ]
 
 # Bash recipe for building across all platforms
@@ -14,7 +13,7 @@ sources = [
 # - rm: remove man files (it does not make sense)
 # - exeext: Makefile does not support extensions - need to rename execuables manually
 script = raw"""
-cd ${WORKSPACE}/srcdir/openldap-*/libraries/liblmdb
+cd ${WORKSPACE}/srcdir/openldap/libraries/liblmdb
 make CC=${CC} SOEXT=.${dlext} -j${nproc}
 make CC=${CC} SOEXT=.${dlext} ILIBS=liblmdb.${dlext} prefix=${prefix} install
 rm -rf ${prefix}/share
@@ -23,7 +22,7 @@ if [ -n "${exeext}" ]; then
         mv "${f}" "${f}${exeext}"
     done
 fi
-install_license ${WORKSPACE}/srcdir/openldap-*/libraries/liblmdb/LICENSE
+install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
@@ -44,4 +43,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

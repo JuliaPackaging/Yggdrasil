@@ -1,0 +1,11 @@
+--- a/src/random.cpp
++++ b/src/random.cpp
+@@ -79,6 +79,8 @@
+ // different seeds we are now also using network addresses (explicitly).
+ 
+ #ifndef __WIN32
++#include <sys/socket.h>
++#include <netinet/in.h>
+ 
+ extern "C" {
+ #include <ifaddrs.h>

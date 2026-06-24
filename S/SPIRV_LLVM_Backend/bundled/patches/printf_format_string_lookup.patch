@@ -1,0 +1,90 @@
+From 5606270ac556a0f37e75f2d0c7dd13be7f6e8ec6 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Thu, 4 Jun 2026 09:44:28 +0200
+Subject: [PATCH] [SPIR-V] Look up printf format string type in the correct
+ function
+
+addPrintfRequirements() resolved the SPIR-V type of the format string
+operand via getSPIRVTypeForVReg() without passing the instruction's
+parent MachineFunction, so the lookup defaulted to the registry's CurMF:
+whichever function happened to be processed last. Virtual register
+numbers are only unique within a function, so in multi-function modules
+the check could inspect an unrelated function's type. A colliding vreg
+with a non-UniformConstant pointer type triggered a spurious fatal
+"SPV_EXT_relaxed_printf_string_address_space is required" error even
+when the format string was in the constant address space; conversely,
+the extension requirement could be silently skipped when the colliding
+vreg had no recorded type.
+
+Backport of the fix to the released 22.x branch.
+
+Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+---
+ lib/Target/SPIRV/SPIRVModuleAnalysis.cpp      |  3 +-
+ .../multi-function-printf.ll                  | 40 +++++++++++++++++++
+ 2 files changed, 42 insertions(+), 1 deletion(-)
+ create mode 100644 llvm/test/CodeGen/SPIRV/extensions/SPV_EXT_relaxed_printf_string_address_space/multi-function-printf.ll
+
+diff --git a/lib/Target/SPIRV/SPIRVModuleAnalysis.cpp b/lib/Target/SPIRV/SPIRVModuleAnalysis.cpp
+index babce22d4f58..68f5b12dbc24 100644
+--- a/lib/Target/SPIRV/SPIRVModuleAnalysis.cpp
++++ b/lib/Target/SPIRV/SPIRVModuleAnalysis.cpp
+@@ -1377,7 +1377,8 @@ void addPrintfRequirements(const MachineInstr &MI,
+                            SPIRV::RequirementHandler &Reqs,
+                            const SPIRVSubtarget &ST) {
+   SPIRVGlobalRegistry *GR = ST.getSPIRVGlobalRegistry();
+-  const SPIRVType *PtrType = GR->getSPIRVTypeForVReg(MI.getOperand(4).getReg());
++  const SPIRVType *PtrType =
++      GR->getSPIRVTypeForVReg(MI.getOperand(4).getReg(), MI.getMF());
+   if (PtrType) {
+     MachineOperand ASOp = PtrType->getOperand(1);
+     if (ASOp.isImm()) {
+diff --git a/test/CodeGen/SPIRV/extensions/SPV_EXT_relaxed_printf_string_address_space/multi-function-printf.ll b/test/CodeGen/SPIRV/extensions/SPV_EXT_relaxed_printf_string_address_space/multi-function-printf.ll
+new file mode 100644
+index 000000000000..ec0aead14b86
+--- /dev/null
++++ b/test/CodeGen/SPIRV/extensions/SPV_EXT_relaxed_printf_string_address_space/multi-function-printf.ll
+@@ -0,0 +1,40 @@
++; RUN: llc -O0 -mtriple=spirv64-unknown-unknown %s -o - | FileCheck %s
++
++; The format string is in the constant address space, so no extension is
++; required. The pointer type of the format string used to be looked up in
++; whichever function was processed last instead of the calling function,
++; spuriously requiring the extension when an unrelated function's colliding
++; virtual register had a non-UniformConstant pointer type.
++
++; CHECK: OpExtInstImport "OpenCL.std"
++; CHECK-NOT: OpExtension "SPV_EXT_relaxed_printf_string_address_space"
++
++@.str = private unnamed_addr addrspace(2) constant [6 x i8] c"hello\00", align 1
++
++declare i32 @printf(ptr addrspace(2), ...)
++
++define spir_kernel void @kern() {
++top:
++  %r = call i32 (ptr addrspace(2), ...) @printf(ptr addrspace(2) @.str)
++  ret void
++}
++
++define void @tail(ptr addrspace(3) %p) {
++top:
++  %g1 = getelementptr inbounds i32, ptr addrspace(3) %p, i64 1
++  %v1 = load i32, ptr addrspace(3) %g1, align 4
++  %g2 = getelementptr inbounds i32, ptr addrspace(3) %p, i64 2
++  %v2 = load i32, ptr addrspace(3) %g2, align 4
++  %g3 = getelementptr inbounds i32, ptr addrspace(3) %p, i64 3
++  %v3 = load i32, ptr addrspace(3) %g3, align 4
++  %g4 = getelementptr inbounds i32, ptr addrspace(3) %p, i64 4
++  %v4 = load i32, ptr addrspace(3) %g4, align 4
++  %g5 = getelementptr inbounds i32, ptr addrspace(3) %p, i64 5
++  %v5 = load i32, ptr addrspace(3) %g5, align 4
++  %s1 = add i32 %v1, %v2
++  %s2 = add i32 %s1, %v3
++  %s3 = add i32 %s2, %v4
++  %s4 = add i32 %s3, %v5
++  store i32 %s4, ptr addrspace(3) %p, align 4
++  ret void
++}
+-- 
+2.50.1 (Apple Git-155)
+

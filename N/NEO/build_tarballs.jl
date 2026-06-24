@@ -7,23 +7,26 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "NEO"
-version = v"24.09.28717"#.12
+version = v"26.18.38308"#.1
 
 # Collection of sources required to build this package.
 sources = [
     GitSource("https://github.com/intel/compute-runtime.git",
-              "9e5ba367ca25915031955feff36ea0f6e61d4247"),
+              "82aab87fc932edc0558a0302d545a5bcc22edf41"),
+    # patches
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 function get_script(; debug::Bool)
     raw"""
+        # Fix OpenCL ICD installation to use prefix instead of /etc
+        atomic_patch -p0 ./patches/install_to_prefix.patch
+        mkdir -p tmpdir
+        export TMPDIR=$(pwd)/tmpdir
+        export CCACHE_TEMPDIR=$(pwd)/tmpdir
         cd compute-runtime
         install_license LICENSE.md
-
-        # revert a change that breaks the cxx03 build
-        # https://github.com/intel/compute-runtime/issues/708
-        git revert 18c25e5aa3fc00c7d47469713adeace08a9aec07
 
         # work around compilation failures
         ## already defined in gmmlib
@@ -35,6 +38,9 @@ function get_script(; debug::Bool)
         sed -i '/-Werror/d' CMakeLists.txt
 
         CMAKE_FLAGS=()
+
+        # Need C++20
+        CMAKE_FLAGS+=(-DCMAKE_CXX_STANDARD=20)
 
         # Release build for best performance
         CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=""" * (debug ? "Debug" : "Release") * raw""")
@@ -62,7 +68,11 @@ function get_script(; debug::Bool)
         export PKG_CONFIG_PATH=${prefix}/lib64/pkgconfig:${prefix}/lib/pkgconfig
 
         cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
-        ninja -C build -j ${nproc} install"""
+        ninja -C build -j ${nproc} install
+        # Create unversioned symlinks
+        ln -s ocloc-26.18.1 ${bindir}/ocloc
+
+"""
 end
 
 # These are the platforms we will build for by default, unless further
@@ -87,9 +97,9 @@ products = [
 #       when using a non-public release, refer to the compiled manifest
 #       https://github.com/intel/compute-runtime/blob/master/manifests/manifest.yml.
 dependencies = [
-    Dependency("gmmlib_jll"; compat="=22.3.17"),
-    Dependency("libigc_jll"; compat="=1.0.16238"),
-    Dependency("oneAPI_Level_Zero_Headers_jll", v"1.9.2"; compat="1.7.8"),
+    Dependency("gmmlib_jll"; compat="=22.10.0"),
+    Dependency("libigc_jll"; compat="=2.34.4"),
+    Dependency("oneAPI_Level_Zero_Headers_jll"; compat="=1.16"),
 ]
 
 augment_platform_block = raw"""
@@ -134,7 +144,10 @@ for platform in platforms, debug in (false, true)
 
     # GCC 4 has constexpr incompatibilities
     # GCC 7 triggers: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79929
+    # Needs at least GCC 10 for C++20 support of 'concepts'
+    # Needs GCC 11 for std::make_unique_for_overwrite
     build_tarballs(ARGS, name, version, sources, get_script(; debug), [augmented_platform],
-                   products, dependencies; preferred_gcc_version=v"8", julia_compat = "1.6",
+                   products, dependencies; preferred_gcc_version=v"11", julia_compat = "1.6",
                    augment_platform_block)
 end
+# bump

@@ -3,26 +3,25 @@
 using BinaryBuilder
 
 name = "Libepoxy"
-version = v"1.5.10"
+version = v"1.5.11" # upstream is 1.5.10, but we needed a version bump
 
 # Collection of sources required to build Libepoxy
 sources = [
-    ArchiveSource("https://github.com/anholt/libepoxy/archive/refs/tags/$(version).tar.gz",
-                  "a7ced37f4102b745ac86d6a70a9da399cc139ff168ba6b8002b4d8d43c900c15")
+    GitSource("https://github.com/anholt/libepoxy.git", "c84bc9459357a40e46e2fec0408d04fbdde2c973")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libepoxy-*/
+cd ${WORKSPACE}/srcdir/libepoxy
 mkdir build && cd build
-meson .. -Dtests=false --cross-file="${MESON_TARGET_TOOLCHAIN}"
+meson .. -Dtests=false --buildtype=release --cross-file="${MESON_TARGET_TOOLCHAIN}"
 ninja -j${nproc}
 ninja install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> arch(p) != "armv6l", supported_platforms(; experimental=true))
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -39,4 +38,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; clang_use_lld=false, julia_compat="1.6")

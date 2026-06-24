@@ -1,0 +1,13 @@
+diff --git a/src/PROPOSAL/detail/PROPOSAL/decay/LeptonicDecayChannel.cxx b/src/PROPOSAL/detail/PROPOSAL/decay/LeptonicDecayChannel.cxx
+index 95d256fd..f148dc77 100644
+--- a/src/PROPOSAL/detail/PROPOSAL/decay/LeptonicDecayChannel.cxx
++++ b/src/PROPOSAL/detail/PROPOSAL/decay/LeptonicDecayChannel.cxx
+@@ -213,7 +213,7 @@ double LeptonicDecayChannel::DecayRate(double x, double M, double E_max, double
+     double m2 = m * m;
+
+     double E_l     = E_max * x;
+-    double sqrt_EM = std::sqrt(E_l * E_l - m2);
++    double sqrt_EM = std::sqrt(std::max(0.0, E_l * E_l - m2));
+
+     return 1.5 * m2 * m2 * M * std::log(sqrt_EM + E_l) +
+            sqrt_EM * ((M2 + m2 - M * E_l) * (E_l * E_l - m2) - 1.5 * M * E_l * m2) - right_side;

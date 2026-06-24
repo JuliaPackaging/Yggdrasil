@@ -1,0 +1,78 @@
+diff --git a/src/C++/SSLSocketInitiator.cpp b/src/C++/SSLSocketInitiator.cpp
+index 0855529a..bfcbe01c 100644
+--- a/src/C++/SSLSocketInitiator.cpp
++++ b/src/C++/SSLSocketInitiator.cpp
+@@ -281,7 +281,7 @@ bool SSLSocketInitiator::onPoll() {
+ 
+ void SSLSocketInitiator::onStop() {}
+ 
+-void SSLSocketInitiator::doConnect(const SessionID &sessionID, const Dictionary &dictionary) {
++void SSLSocketInitiator::doConnect(const SessionID &sessionID, const Dictionary &d) {
+   try {
+ 
+     Session *session = Session::lookupSession(sessionID);
+@@ -291,7 +291,7 @@ void SSLSocketInitiator::doConnect(const SessionID &sessionID, const Dictionary
+ 
+     Log *log = session->getLog();
+ 
+-    HostDetails host = m_hostDetailsProvider.getHost(sessionID, dictionary);
++    HostDetails host = m_hostDetailsProvider.getHost(sessionID, d);
+     if (d.has(RECONNECT_INTERVAL)) // ReconnectInterval in [SESSION]
+     {
+       m_reconnectInterval = d.getInt(RECONNECT_INTERVAL);
+diff --git a/src/C++/SocketInitiator.h b/src/C++/SocketInitiator.h
+index 2f3c376e..00e25ebd 100644
+--- a/src/C++/SocketInitiator.h
++++ b/src/C++/SocketInitiator.h
+@@ -58,8 +58,6 @@ private:
+   void onError(SocketConnector &);
+   void onTimeout(SocketConnector &);
+ 
+-  SessionSettings m_settings;
+-
+   HostDetailsProvider m_hostDetailsProvider;
+   SocketConnector m_connector;
+   SocketConnections m_pendingConnections;
+diff --git a/src/C++/ThreadedSSLSocketInitiator.cpp b/src/C++/ThreadedSSLSocketInitiator.cpp
+index f07533d2..aa1881da 100644
+--- a/src/C++/ThreadedSSLSocketInitiator.cpp
++++ b/src/C++/ThreadedSSLSocketInitiator.cpp
+@@ -203,7 +203,7 @@ void ThreadedSSLSocketInitiator::onInitialize(const SessionSettings &s) EXCEPT(R
+   std::string errStr;
+ 
+   /* set up the application context */
+-  if ((m_ctx = createSSLContext(false, m_settings, errStr)) == 0) {
++  if ((m_ctx = createSSLContext(false, s, errStr)) == 0) {
+     throw RuntimeError(errStr);
+   }
+ 
+@@ -220,7 +220,7 @@ void ThreadedSSLSocketInitiator::onInitialize(const SessionSettings &s) EXCEPT(R
+   } else if (!loadSSLCert(
+                  m_ctx,
+                  false,
+-                 m_settings,
++                 s,
+                  getLog(),
+                  ThreadedSSLSocketInitiator::passwordHandleCB,
+                  this,
+@@ -230,7 +230,7 @@ void ThreadedSSLSocketInitiator::onInitialize(const SessionSettings &s) EXCEPT(R
+   }
+ 
+   int verifyLevel;
+-  if (!loadCAInfo(m_ctx, false, m_settings, getLog(), errStr, verifyLevel)) {
++  if (!loadCAInfo(m_ctx, false, s, getLog(), errStr, verifyLevel)) {
+     ssl_term();
+     throw RuntimeError(errStr);
+   }
+diff --git a/src/C++/ThreadedSocketInitiator.h b/src/C++/ThreadedSocketInitiator.h
+index c9640c14..d9e2fbeb 100644
+--- a/src/C++/ThreadedSocketInitiator.h
++++ b/src/C++/ThreadedSocketInitiator.h
+@@ -62,7 +62,6 @@ private:
+   void lock() { Locker l(m_mutex); }
+   static THREAD_PROC socketThread(void *p);
+ 
+-  SessionSettings m_settings;
+   HostDetailsProvider m_hostDetailsProvider;
+   time_t m_lastConnect;
+   int m_reconnectInterval;

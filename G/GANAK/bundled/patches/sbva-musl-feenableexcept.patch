@@ -1,0 +1,11 @@
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -96,7 +96,7 @@
+     program.add_argument("files").remaining().help("input file and output file");
+ 
+ 
+-    #if defined(__GNUC__) && defined(__linux__)
++    #if defined(__GNUC__) && defined(__linux__) && defined(__GLIBC__)
+     feenableexcept(FE_INVALID   | FE_DIVBYZERO | FE_OVERFLOW);
+     #endif
+ 

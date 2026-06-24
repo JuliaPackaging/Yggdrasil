@@ -3,21 +3,20 @@
 using BinaryBuilder
 
 name = "Xorg_libXcursor"
-version = v"1.2.0"
+version = v"1.2.3"
+# We bumped the version number to build for riscv64
+ygg_version = v"1.2.4"
 
 # Collection of sources required to build libXcursor
 sources = [
-    ArchiveSource("https://www.x.org/archive/individual/lib/libXcursor-$(version).tar.bz2",
-                  "3ad3e9f8251094af6fe8cb4afcf63e28df504d46bfa5a5529db74a505d628782"),
+    ArchiveSource("https://www.x.org/archive/individual/lib/libXcursor-$(version).tar.gz",
+                  "74e72da27e61cc2cfd2e267c14f500ea47775850048ee0b00362a55c9b60ee9b"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libXcursor-*/
-CPPFLAGS="-I${prefix}/include"
-# When compiling for things like ppc64le, we need newer `config.sub` files
-update_configure_scripts
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=no
+cd $WORKSPACE/srcdir/libXcursor-*
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 """
@@ -39,4 +38,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6")

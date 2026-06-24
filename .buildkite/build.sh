@@ -2,11 +2,15 @@
 # Fail on error
 set -e
 
+# Clear secrets from environment
+
 export JULIA_PROJECT="${BUILDKITE_BUILD_CHECKOUT_PATH}/.ci"
 
 # Add our shared depot cache to the end of JULIA_DEPOT_PATH which is already
 # filled out by `julia-buildkite-plugin` to our agent/pipeline-specific depot path.
-export JULIA_DEPOT_PATH="${JULIA_DEPOT_PATH}:/sharedcache/depot"
+# Make sure to append a colon at the end to allow use of shipped stdlib caches.
+export JULIA_DEPOT_PATH="${JULIA_DEPOT_PATH}:/sharedcache/depot:"
+echo "--- Set JULIA_DEPOT_PATH to ${JULIA_DEPOT_PATH}"
 
 echo "--- Setup Julia packages"
 julia --color=yes -e 'import Pkg; Pkg.instantiate(); Pkg.precompile()'
@@ -18,4 +22,10 @@ echo "--- Cleanup"
 
 echo "+++ Build"
 cd "${PROJECT}"
-julia ./build_tarballs.jl --verbose "${PLATFORM}"
+
+# Parallel auditor can end up opening loads of files and causing
+# "Too many open files" errors.  Increase the limit.
+ulimit -n 65536
+
+# Start Julia with multiple thread to make auditor parallel.
+julia --threads "${BINARYBUILDER_NPROC:-16}" ./build_tarballs.jl --verbose "${PLATFORM}"

@@ -3,24 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "sed"
-version = v"4.8.1"
+version_string = "4.10"
+version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/sed/sed-4.8.tar.xz", "f79b0cfea71b37a8eeec8490db6c5f7ae7719c35587f21edb0617f370eeff633")
+    ArchiveSource("https://ftpmirror.gnu.org/gnu/sed/sed-$(version_string).tar.xz",
+                  "b8e72182b2ec96a3574e2998c47b7aaa64cc20ce000d8e9ac313cc07cecf28c7"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/sed-*
-if [[ "${target}" == *-mingw* ]]; then
-    # Fix error
-    #    sed/sed-compile.o: In function `sprintf':
-    #    /opt/x86_64-w64-mingw32/x86_64-w64-mingw32/sys-root/include/stdio.h:366: undefined reference to `__chk_fail'
-    # See https://github.com/msys2/MINGW-packages/issues/5868#issuecomment-544107564
-    export LIBS="-lssp"
-fi
-
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc} SUBDIRS="po ."
 make install SUBDIRS="po ."
@@ -28,7 +22,7 @@ make install SUBDIRS="po ."
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -36,7 +30,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
     Dependency("Libiconv_jll"),
 ]
 

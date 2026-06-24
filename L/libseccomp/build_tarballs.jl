@@ -3,12 +3,12 @@
 using BinaryBuilder, BinaryBuilderBase, Pkg
 
 name = "libseccomp"
-version = v"2.5.4"
+version = v"2.6.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/seccomp/libseccomp",
-              "f33f95014b36f97b42f0c2290e96d5c31647ed10")
+              "c7c0caed1d04292500ed4b9bb386566053eb9775")
 ]
 
 # Bash recipe for building across all platforms
