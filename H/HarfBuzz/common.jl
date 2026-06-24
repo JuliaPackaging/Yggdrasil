@@ -6,7 +6,19 @@ function build_harfbuzz(ARGS, name::String)
 
     icu = name == "HarfBuzz_ICU"
 
+    # Harfbuzz's non-breaking major releases have started incurring
+    # some compatibility troubles for me as I try to use HarfBuzz_jll,
+    # since a compat like "2.8.1" doesn't include the compatible v8 or
+    # v14 or any other hypothetical release. HarfBuzz does promise
+    # that their API/ABI has been stable since v0 and will continue to
+    # be nonbreaking through major version bumps. See:
+    # https://github.com/harfbuzz/harfbuzz#api-stability
+
+    # We smooth this over with an invented version number:
+    # VersionNumber(100, 1000*major + minor, patch).
+
     version = v"14.2.1"
+    ygg_version = VersionNumber(100, 1000 * version.major + version.minor, version.patch)
 
     # Collection of sources required to build Harfbuzz
     sources = [
@@ -93,13 +105,13 @@ fi
 
     if icu
         append!(dependencies, [
-            Dependency("HarfBuzz_jll"; compat="$(version)"),
+            Dependency("HarfBuzz_jll"; compat="$(ygg_version)"),
             Dependency("ICU_jll"; compat="76.2"),
         ])
     end
 
     # Build the tarballs, and possibly a `build.jl` as well.
     # We need at lest GCC 8 to support C++ 20
-    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+    build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                    clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"8")
 end
