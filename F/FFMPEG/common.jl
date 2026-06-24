@@ -10,21 +10,30 @@ version_string = "8.1.2"   # when patch number is zero, they use X.Y format
 version = VersionNumber(version_string)
 
 # Collection of sources required to build FFMPEG
+macos_sdk_version = "10.13"
 sources = [
     ArchiveSource(
         "https://ffmpeg.org/releases/ffmpeg-$(version_string).tar.xz",
         "464beb5e7bf0c311e68b45ae2f04e9cc2af88851abb4082231742a74d97b524c",
     ),
-    ## FFmpeg 6.1.1 does not work with macos 10.13 or earlier.
-    get_macos_sdk_sources("10.13")...
+    DirectorySource("../bundled"),
+    get_macos_sdk_sources(macos_sdk_version)...
 ]
 
 # Bash recipe for building across all platforms
 # TODO: Theora once it's available
 function script(; ffplay=false, gpl=true)
-    "FFPLAY=$(ffplay)\nGPL=$(gpl)\n" * get_macos_sdk_script("10.13") * raw"""
+    "FFPLAY=$(ffplay)\nGPL=$(gpl)\n" * get_macos_sdk_script(macos_sdk_version) * raw"""
 cd $WORKSPACE/srcdir
 cd ffmpeg-*/
+
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    # AVMediaType is declared as NSString by the SDK and as enum by FFMPEG. Avoid the conflict.
+    # This only happens on x86_64, it does not happen on aarch64.
+    # Maybe our choice to build for darwin14 is the culprit? We're building for darwin20 on aarch64.
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/avfoundation.patch
+fi
+
 sed -i 's/-lflite"/-lflite -lasound"/' configure
 
 if [[ "${target}" == *-linux-* ]]; then
