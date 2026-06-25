@@ -87,6 +87,9 @@ dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
+# gwb-grid hits a libstdc++ defect in GCC <= ~6 (an explicit std::tuple
+# constructor rejecting brace-init that later GCCs accept), so we can't use
+# the oldest (cxx11-ABI) compiler shard here; GCC 9 is the oldest that builds
+# all three products (libWorldBuilder, gwb-dat, gwb-grid) cleanly.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.9", preferred_gcc_version=v"9")
