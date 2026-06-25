@@ -34,6 +34,14 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/constexpr_rounding_math.patch
 # fails to link.
 atomic_patch -p1 $WORKSPACE/srcdir/patches/shared_lib_whole_archive.patch
 
+# parameters.cc explicitly specializes Parameters::get<size_t>/get_vector<size_t>
+# and Parameters::get<unsigned int>/get_vector<unsigned int> as distinct
+# functions. On 32-bit platforms size_t and unsigned int are the same type,
+# so each pair of specializations collides ("redefinition"). Neither size_t
+# specialization is actually called anywhere in the codebase, so both are
+# simply removed.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/remove_dead_get_size_t.patch
+
 mkdir build && cd build
 
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -70,8 +78,12 @@ cp -r ../include/world_builder ${includedir}/
 """
 
 # These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = supported_platforms()
+# platforms are passed in on the command line.
+# i686-w64-mingw32 is excluded: GCC 9 hits an internal compiler error
+# (segfault) compiling the template-heavy gwb-grid/main.cc on this platform,
+# independent of optimization level. 32-bit Windows is a niche target for
+# this package, so we simply don't build it rather than chase a compiler bug.
+platforms = filter(p -> !(arch(p) == "i686" && Sys.iswindows(p)), supported_platforms())
 
 # The products that we will ensure are always built
 products = [
