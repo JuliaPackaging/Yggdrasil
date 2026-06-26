@@ -44,12 +44,12 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Fontconfig_jll"),
-    Dependency("FreeType2_jll"),
+    Dependency("FreeType2_jll"; compat="2.10.4"),
     Dependency("Graphite2_jll"),
-    Dependency("HarfBuzz_jll"),
+    Dependency("HarfBuzz_jll"; compat="2.8.1 - 100"),
     Dependency("HarfBuzz_ICU_jll"),
-    Dependency("ICU_jll"),
-    Dependency("OpenSSL_jll"),
+    Dependency("ICU_jll"; compat="69.1"),
+    Dependency("OpenSSL_jll"; compat="3.0.8"),
     Dependency("Zlib_jll"),
     Dependency("libpng_jll"),
 ]
