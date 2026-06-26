@@ -55,7 +55,7 @@ version = v"7.2.0"
 sources = [
     DirectorySource("./bundled"),
     GitSource("https://github.com/JuliaGPU/pocl",
-              "49af20c4b429d607f9cdb1f40557826ca8926753"),
+              "bbd327c519d355e5e01b88f83b4ad4a57b61a176"),
     # vendored SPIR-V translator, built as a static library against our LLVM (see above);
     # this commit is the LLVM-20.1-compatible revision (matches LLVM_full_jll 20.1.2).
     GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git",
@@ -212,8 +212,15 @@ function build_script()
     # Install things into $prefix
     CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
 
-    # Explicitly use our cmake toolchain file and tell CMake we're cross-compiling
-    CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+    # Explicitly use our cmake toolchain file and tell CMake we're cross-compiling.
+    if [[ "${target}" == *mingw* ]]; then
+        # Build PoCL with the Clang/lld toolchain on Windows; GNU ld is pathologically slow
+        # at producing a PE/COFF DLL from the large static LLVM/Clang archives (see the
+        # export-model notes above). Mirrors what the SPIR-V translator already uses.
+        CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake)
+    else
+        CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+    fi
     CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=ON)
 
     # PoCL 7.2 looks for the *host* LLVM tools (clang, opt, llc, ...) in the directory
@@ -273,6 +280,15 @@ function build_script()
     # Build PoCL as a dynamic library loaded by the OpenCL runtime
     CMAKE_FLAGS+=(-DENABLE_ICD:BOOL=ON)
 
+    # Link the CPU device drivers (basic, pthread) straight into libpocl on every platform
+    # rather than building them as separately-dlopen'd modules. We ship a fixed CPU-only set,
+    # so loadable modules add no capability; inlining keeps one self-contained library (no
+    # runtime driver-DLL discovery), consistent across platforms. It is also *required* on
+    # Windows, where libpocl is linked with lld and exports only its dllexport'd public API
+    # (--exclude-all-symbols): loadable modules can't import libpocl's internal pocl_driver_*
+    # ABI across that boundary.
+    CMAKE_FLAGS+=(-DENABLE_LOADABLE_DRIVERS:BOOL=OFF)
+
     # Load CPU host kernels in-process via ORC/JITLink instead of Clang+dlopen.
     # This is the whole point of pocl_next: it removes the external link step
     # (no lld, no startup files, no clang driver invocation at run time).
@@ -292,14 +308,15 @@ function build_script()
     # XXX: we add -pthread to the flags used to link libLLVM, so need that here too
     #      (as that is not reflected by llvm-config)
     if [[ "${target}" == *mingw* ]]; then
-        # PoCL is built with GCC, but LLVM_full_jll and our vendored translator are
-        # clang-built. On PE/COFF the COMDAT section of <regex>'s function-local static
-        # `__nul` differs (.bss$ for clang vs .data$ for gcc), which GNU ld rejects as a
-        # multiple definition (ELF/Mach-O merge it silently). The definitions are the same
-        # template instantiation, so let ld keep the first.
+        # PoCL is built with the Clang/lld toolchain on Windows (see above). Add -pthread to
+        # every link mode (not just executables): it pulls in libwinpthread, which Clang's
+        # windows-gnu driver -- unlike GCC's -- does not link implicitly, and it matches the
+        # -pthread we use when linking libLLVM (not reflected by llvm-config). Keep
+        # --allow-multiple-definition as a guard against duplicate COMDAT/weak template
+        # instantiations across the statically-linked LLVM/Clang/translator archives.
         CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-pthread -Wl,--allow-multiple-definition")
-        CMAKE_FLAGS+=(-DCMAKE_SHARED_LINKER_FLAGS="-Wl,--allow-multiple-definition")
-        CMAKE_FLAGS+=(-DCMAKE_MODULE_LINKER_FLAGS="-Wl,--allow-multiple-definition")
+        CMAKE_FLAGS+=(-DCMAKE_SHARED_LINKER_FLAGS="-pthread -Wl,--allow-multiple-definition")
+        CMAKE_FLAGS+=(-DCMAKE_MODULE_LINKER_FLAGS="-pthread -Wl,--allow-multiple-definition")
     else
         CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-pthread")
     fi
@@ -408,8 +425,11 @@ for platform in platforms
     # TODO: libsvml for x86 (part of mkl)
     # TODO: libmvec as fallback (part of glibc 2.22+)
 
-    # on Windows, we need to use a version of GCC that supports `.drectve -exclude-symbols`
-    # or we run into export ordinal limits
+    # On Windows we now link PoCL with the Clang/lld toolchain, but still build against this
+    # GCC's MinGW sysroot and libstdc++, so its version must stay compatible with the
+    # Clang-built LLVM_full_jll's libstdc++ ABI. (Previously pinned to 13 for GNU ld's
+    # `.drectve -exclude-symbols`, used to dodge the PE export-ordinal limit; lld no longer
+    # needs that.)
     preferred_gcc_version = if Sys.iswindows(platform)
         v"13"
     else
