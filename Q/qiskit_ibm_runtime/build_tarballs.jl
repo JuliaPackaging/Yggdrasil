@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "qiskit_ibm_runtime"
-version = v"0.38.0"
+version = v"0.38.1"
 
 # Collection of sources required to complete build
 sources = [
