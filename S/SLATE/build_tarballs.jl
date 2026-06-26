@@ -7,7 +7,8 @@ name = "SLATE"
 version = v"2025.05.28"
 
 sources = [
-    GitSource("https://github.com/icl-utk-edu/slate.git", "f8348a7c3de4f8fc60f5b8f78134df25ebc9061b")
+    GitSource("https://github.com/icl-utk-edu/slate.git", "f8348a7c3de4f8fc60f5b8f78134df25ebc9061b"),
+    DirectorySource(joinpath(@__DIR__, "bundled")),
 ]
 
 script = raw"""
@@ -16,14 +17,7 @@ git submodule update --init
 
 export CXXFLAGS="${CXXFLAGS:-} -std=c++17"
 
-# GCC 8.1 fails to match std::function partial specializations when the
-# function type includes parameter names.
-perl -pi -e 's/std::function< scalar_t \(int64_t i, int64_t j\) >/std::function< scalar_t (int64_t, int64_t) >/g;
-             s/std::function< float \(int64_t i, int64_t j\) >/std::function< float (int64_t, int64_t) >/g;
-             s/std::function< double \(int64_t i, int64_t j\) >/std::function< double (int64_t, int64_t) >/g;
-             s/std::function< std::complex<float> \(int64_t i, int64_t j\) >/std::function< std::complex<float> (int64_t, int64_t) >/g;
-             s/std::function< std::complex<double> \(int64_t i, int64_t j\) >/std::function< std::complex<double> (int64_t, int64_t) >/g' \
-    include/slate/slate.hh src/set_lambdas.cc
+atomic_patch -p1 ../patches/fix-std-function-signatures.patch
 
 mkdir build && cd build
 

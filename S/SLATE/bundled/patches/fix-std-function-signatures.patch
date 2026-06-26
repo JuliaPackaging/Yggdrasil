@@ -1,0 +1,102 @@
+diff --git a/include/slate/slate.hh b/include/slate/slate.hh
+index a4a8aae..96ef32b 100644
+--- a/include/slate/slate.hh
++++ b/include/slate/slate.hh
+@@ -149,13 +149,13 @@ void set(
+ 
+ template <typename scalar_t>
+ void set(
+-    std::function< scalar_t (int64_t i, int64_t j) > const& value,
++    std::function< scalar_t (int64_t, int64_t) > const& value,
+     Matrix<scalar_t>& A,
+     Options const& opts = Options());
+ 
+ template <typename scalar_t>
+ void set(
+-    std::function< scalar_t (int64_t i, int64_t j) > const& value,
++    std::function< scalar_t (int64_t, int64_t) > const& value,
+     BaseTrapezoidMatrix<scalar_t>& A,
+     Options const& opts = Options());
+ 
+diff --git a/src/set_lambdas.cc b/src/set_lambdas.cc
+index c550e38..c0476c2 100644
+--- a/src/set_lambdas.cc
++++ b/src/set_lambdas.cc
+@@ -29,7 +29,7 @@ namespace slate {
+ ///
+ template <typename scalar_t>
+ void set(
+-    std::function< scalar_t (int64_t i, int64_t j) > const& value,
++    std::function< scalar_t (int64_t, int64_t) > const& value,
+     Matrix<scalar_t>& A,
+     Options const& opts )
+ {
+@@ -70,25 +70,25 @@ void set(
+ // Explicit instantiations.
+ template
+ void set(
+-    std::function< float (int64_t i, int64_t j) > const& value,
++    std::function< float (int64_t, int64_t) > const& value,
+     Matrix<float>& A,
+     Options const& opts);
+ 
+ template
+ void set(
+-    std::function< double (int64_t i, int64_t j) > const& value,
++    std::function< double (int64_t, int64_t) > const& value,
+     Matrix<double>& A,
+     Options const& opts);
+ 
+ template
+ void set(
+-    std::function< std::complex<float> (int64_t i, int64_t j) > const& value,
++    std::function< std::complex<float> (int64_t, int64_t) > const& value,
+     Matrix< std::complex<float> >& A,
+     Options const& opts);
+ 
+ template
+ void set(
+-    std::function< std::complex<double> (int64_t i, int64_t j) > const& value,
++    std::function< std::complex<double> (int64_t, int64_t) > const& value,
+     Matrix< std::complex<double> >& A,
+     Options const& opts);
+ 
+@@ -118,7 +118,7 @@ void set(
+ ///
+ template <typename scalar_t>
+ void set(
+-    std::function< scalar_t (int64_t i, int64_t j) > const& value,
++    std::function< scalar_t (int64_t, int64_t) > const& value,
+     BaseTrapezoidMatrix<scalar_t>& A,
+     Options const& opts )
+ {
+@@ -162,25 +162,25 @@ void set(
+ // Explicit instantiations.
+ template
+ void set(
+-    std::function< float (int64_t i, int64_t j) > const& value,
++    std::function< float (int64_t, int64_t) > const& value,
+     BaseTrapezoidMatrix<float>& A,
+     Options const& opts);
+ 
+ template
+ void set(
+-    std::function< double (int64_t i, int64_t j) > const& value,
++    std::function< double (int64_t, int64_t) > const& value,
+     BaseTrapezoidMatrix<double>& A,
+     Options const& opts);
+ 
+ template
+ void set(
+-    std::function< std::complex<float> (int64_t i, int64_t j) > const& value,
++    std::function< std::complex<float> (int64_t, int64_t) > const& value,
+     BaseTrapezoidMatrix< std::complex<float> >& A,
+     Options const& opts);
+ 
+ template
+ void set(
+-    std::function< std::complex<double> (int64_t i, int64_t j) > const& value,
++    std::function< std::complex<double> (int64_t, int64_t) > const& value,
+     BaseTrapezoidMatrix< std::complex<double> >& A,
+     Options const& opts);
+ 
