@@ -4,33 +4,45 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "SLATE"
-version = v"2023.11.05"
+version = v"2025.05.28"
 
-# Collection of sources required to build PETSc. Avoid using the git repository, it will
-# require building SOWING which fails in all non-linux platforms.
 sources = [
-    GitSource("https://github.com/icl-utk-edu/slate.git", "f1c849074616e6d180a9aaac10407180cccfbe7f")
+    GitSource("https://github.com/icl-utk-edu/slate.git", "f8348a7c3de4f8fc60f5b8f78134df25ebc9061b")
 ]
 
-# Bash recipe for building across all platforms
-
-# Needs to add -Dcapi eventually once it's added to the cmake build system. Note yet available under CMAKAE toolchain.
 script = raw"""
 cd slate
 git submodule update --init
+
+export CXXFLAGS="${CXXFLAGS:-} -std=c++17"
+
+# GCC 8.1 fails to match std::function partial specializations when the
+# function type includes parameter names.
+perl -pi -e 's/std::function< scalar_t \(int64_t i, int64_t j\) >/std::function< scalar_t (int64_t, int64_t) >/g;
+             s/std::function< float \(int64_t i, int64_t j\) >/std::function< float (int64_t, int64_t) >/g;
+             s/std::function< double \(int64_t i, int64_t j\) >/std::function< double (int64_t, int64_t) >/g;
+             s/std::function< std::complex<float> \(int64_t i, int64_t j\) >/std::function< std::complex<float> (int64_t, int64_t) >/g;
+             s/std::function< std::complex<double> \(int64_t i, int64_t j\) >/std::function< std::complex<double> (int64_t, int64_t) >/g' \
+    include/slate/slate.hh src/set_lambdas.cc
+
 mkdir build && cd build
 
 CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
     -DCMAKE_BUILD_TYPE="Release"
+    -DCMAKE_CXX_STANDARD=17
+    -DCMAKE_CXX_STANDARD_REQUIRED=ON
+    -DCMAKE_CXX_EXTENSIONS=OFF
+    -DBUILD_SHARED_LIBS=ON
     -Dblas=openblas
+    -Dgpu_backend=none
     -Dbuild_tests=no
     -DMPI_RUN_RESULT_CXX_libver_mpi_normal="0"
     -DMPI_RUN_RESULT_CXX_libver_mpi_normal__TRYRUN_OUTPUT=""
     -Drun_result="0"
     -Drun_result__TRYRUN_OUTPUT="ok"
     -Dblas_complex_return=return
-    -Dblas_int=int${nbits}
+    -Dblas_int=int
 )
 
 cmake "${CMAKE_FLAGS[@]}" ..
@@ -58,7 +70,7 @@ platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), plat
 
 products = [
     LibraryProduct("libslate", :libslate),
-    LibraryProduct("libslate_lapack_api", :libslate_lapack_api)
+    LibraryProduct("libslate_lapack_api", :libslate_lapack_api),
     # LibraryProduct("libslate_scalapack_api, :libslate_scalapack_api) ** Not yet available under CMAKE toolchain.
 ]
 
@@ -70,4 +82,4 @@ append!(dependencies, platform_dependencies)
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"7")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"10")
