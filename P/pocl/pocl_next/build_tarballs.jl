@@ -261,6 +261,15 @@ function build_script()
     # Generate a portable build
     CMAKE_FLAGS+=(-DKERNELLIB_HOST_CPU_VARIANTS=distro)
 
+    # Each work-item's private memory is laid out on the worker thread's stack
+    # and replicated across the work-group, so a private-heavy kernel at a large
+    # work-group size can overflow the default thread stack (only 512 KB on
+    # macOS, 1 MB on Windows) and crash. Enabling this makes PoCL estimate the
+    # per-work-item stack usage and clamp the kernel's reported
+    # CL_KERNEL_WORK_GROUP_SIZE accordingly, so launches fit (and over-large ones
+    # are rejected with CL_INVALID_WORK_GROUP_SIZE) instead of segfaulting.
+    CMAKE_FLAGS+=(-DHOST_CPU_ENABLE_STACK_SIZE_CHECK:Bool=ON)
+
     # Build PoCL as a dynamic library loaded by the OpenCL runtime
     CMAKE_FLAGS+=(-DENABLE_ICD:BOOL=ON)
 
