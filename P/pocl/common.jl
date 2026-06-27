@@ -150,8 +150,24 @@ function build_script(standalone=false)
     # Install things into $prefix
     CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
 
-    # Explicitly use our cmake toolchain file and tell CMake we're cross-compiling
-    CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+    # Explicitly use our cmake toolchain file and tell CMake we're cross-compiling.
+    if [[ "${target}" == *mingw* ]]; then
+        # Build PoCL with the Clang/lld toolchain on Windows. The default GCC toolchain
+        # links with GNU ld, which is pathologically slow at producing a PE/COFF DLL out
+        # of the large static LLVM/Clang archives: the final libpocl link took ~25 min and
+        # CMake's LLVM/Clang link tests (try_compile against static LLVM) another ~13 min,
+        # together dominating the ~45 min Windows build. Clang defaults to lld, which links
+        # the same DLL in a fraction of the time; the link tests inherit the toolchain, so
+        # the configure-time cost disappears too. Clang also matches the Clang-built
+        # LLVM_full_jll and vendored translator, avoiding the GCC-vs-Clang COMDAT mismatch.
+        # The COFF export model this needs -- dllexport the public API + --exclude-all-symbols
+        # (lld can't --exclude-libs the static LLVM out of auto-export, which would overflow
+        # the 64K PE export limit) -- lives in the pinned pocl commit, and it requires the
+        # ENABLE_LOADABLE_DRIVERS=OFF set below.
+        CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake)
+    else
+        CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+    fi
     CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=ON)
 
     # Point to relevant LLVM tools (see above)
@@ -193,8 +209,6 @@ function build_script(standalone=false)
         # Rename PoCL's OpenCL entrypoints to PO<cl_function>, so the standalone library can
         # coexist in-process with a real OpenCL ICD loader (e.g. one targeting other GPUs).
         CMAKE_FLAGS+=(-DRENAME_POCL:BOOL=ON)
-        # The above only applies to public API, so link-in the drivers to avoid clashes.
-        CMAKE_FLAGS+=(-DENABLE_LOADABLE_DRIVERS:BOOL=OFF)
         # With ENABLE_ICD=OFF, PoCL names the library "OpenCL" (libOpenCL.so), which would
         # collide with the system ICD loader. Rename it so it ships as a distinct product.
         sed -i 's/set(POCL_LIBRARY_NAME "OpenCL")/set(POCL_LIBRARY_NAME "pocl_standalone")/' CMakeLists.txt
@@ -202,6 +216,16 @@ function build_script(standalone=false)
         # Build POCL as an dynamic library loaded by the OpenCL runtime
         CMAKE_FLAGS+=(-DENABLE_ICD:BOOL=ON)
     fi
+
+    # Link the CPU device drivers (basic, pthread) straight into libpocl on every platform
+    # rather than building them as separately-dlopen'd modules. We ship a fixed CPU-only set,
+    # so loadable modules add no capability; inlining keeps one self-contained library (no
+    # runtime driver-DLL discovery), consistent across platforms. It is also *required* on
+    # Windows, where libpocl is linked with lld and exports only its dllexport'd public API
+    # (--exclude-all-symbols): loadable modules can't import libpocl's internal pocl_driver_*
+    # ABI across that boundary. (For the standalone build it additionally avoids clashes, as
+    # RENAME_POCL only renames the public API.)
+    CMAKE_FLAGS+=(-DENABLE_LOADABLE_DRIVERS:BOOL=OFF)
 
     # XXX: work around pocl#1776, disabling FP16 support for FreeBSD
     if [[ ${target} == *-freebsd* ]]; then
@@ -213,14 +237,15 @@ function build_script(standalone=false)
     # XXX: we add -pthread to the flags used to link libLLVM, so need that here too
     #      (as that is not reflected by llvm-config)
     if [[ "${target}" == *mingw* ]]; then
-        # PoCL is built with GCC, but LLVM_full_jll and our vendored translator are
-        # clang-built. On PE/COFF the COMDAT section of <regex>'s function-local static
-        # `__nul` differs (.bss$ for clang vs .data$ for gcc), which GNU ld rejects as a
-        # multiple definition (ELF/Mach-O merge it silently). The definitions are the same
-        # template instantiation, so let ld keep the first.
+        # PoCL is built with the Clang/lld toolchain on Windows (see above). Add -pthread to
+        # every link mode (not just executables): it pulls in libwinpthread, which Clang's
+        # windows-gnu driver -- unlike GCC's -- does not link implicitly, and it matches the
+        # -pthread we use when linking libLLVM (not reflected by llvm-config). Keep
+        # --allow-multiple-definition as a guard against duplicate COMDAT/weak template
+        # instantiations across the statically-linked LLVM/Clang/translator archives.
         CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-pthread -Wl,--allow-multiple-definition")
-        CMAKE_FLAGS+=(-DCMAKE_SHARED_LINKER_FLAGS="-Wl,--allow-multiple-definition")
-        CMAKE_FLAGS+=(-DCMAKE_MODULE_LINKER_FLAGS="-Wl,--allow-multiple-definition")
+        CMAKE_FLAGS+=(-DCMAKE_SHARED_LINKER_FLAGS="-pthread -Wl,--allow-multiple-definition")
+        CMAKE_FLAGS+=(-DCMAKE_MODULE_LINKER_FLAGS="-pthread -Wl,--allow-multiple-definition")
     else
         CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-pthread")
     fi

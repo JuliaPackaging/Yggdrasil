@@ -16,7 +16,7 @@ version = v"7.1.3"
 sources = [
     DirectorySource("./bundled"),
     GitSource("https://github.com/juliagpu/pocl",
-              "cd0d3970227e09382f57a5c715d42ed62e1baf00"),
+              "21d408ea0adbfd59934d5720132c0e7f412af98e"),
     # vendored SPIR-V translator, built as a static library against our LLVM (see
     # common.jl); this commit is the LLVM-20.1-compatible revision (matches
     # LLVM_full_jll 20.1.2).
@@ -97,8 +97,11 @@ for platform in platforms
     # TODO: libsvml for x86 (part of mkl)
     # TODO: libmvec as fallback (part of glibc 2.22+)
 
-    # on Windows, we need to use a version of GCC that supports `.drectve -exclude-symbols`
-    # or we run into export ordinal limits
+    # On Windows we now link PoCL with the Clang/lld toolchain, but still build against this
+    # GCC's MinGW sysroot and libstdc++, so its version must stay compatible with the
+    # Clang-built LLVM_full_jll's libstdc++ ABI. (Previously pinned to 13 for GNU ld's
+    # `.drectve -exclude-symbols`, used to dodge the PE export-ordinal limit; lld no longer
+    # needs that -- it exports only the dllexport'd public API instead.)
     preferred_gcc_version = if Sys.iswindows(platform)
         v"13"
     else
