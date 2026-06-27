@@ -23,7 +23,8 @@ install_license LICENSE
 options=(
     -DCMAKE_BUILD_TYPE=Release 
     -DCMAKE_INSTALL_PREFIX=${prefix}
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+    # Changing to gcc, because for freebsd and macos it failed to find CMAKE_CXX_COMPILER_AR
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake
 )
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
     # We need at least MacOS 10.12 for `shared_mutex`
