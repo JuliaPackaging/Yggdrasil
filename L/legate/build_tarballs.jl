@@ -78,7 +78,7 @@ for platform in all_platforms
             push!(platform_sources, CUDA.cuda_nvcc_redist_source(cuda_ver, "x86_64"))
         end
 
-        push!(_dependencies, Dependency("NCCL_jll"; compat="2.27.7"))
+        push!(_dependencies, Dependency("NCCL_jll"; compat="2.28"))
         append!(_dependencies, CUDA.required_dependencies(platform, static_sdk=true))
 
         script = get_script(Val{true}())
