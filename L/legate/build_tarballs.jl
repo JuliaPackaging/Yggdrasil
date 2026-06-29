@@ -12,9 +12,9 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 include("make_script.jl")
 
 name = "legate"
-version = v"26.01.0" # Year.Month
+version = v"26.06.0" # Year.Month
 sources = [
-    GitSource("https://github.com/nv-legate/legate.git","3ccb639605eecd8e9fee52c2d7d56ea799f4864e"),
+    GitSource("https://github.com/nv-legate/legate.git","3b9f6d247d8504fa9b9411caed72da26b517545b"),
     DirectorySource("./bundled"),
     FileSource("https://repo.anaconda.com/miniconda/Miniconda3-py311_24.3.0-0-Linux-x86_64.sh", 
                 "4da8dde69eca0d9bc31420349a204851bfa2a1c87aeb87fe0c05517797edaac4", "miniconda.sh")
@@ -51,7 +51,7 @@ products = [
 
 # Dependencies that do not need CUDA
 dependencies = [
-    Dependency("HDF5_jll"; compat="~1.14.6"),
+    Dependency("HDF5_jll"; compat="2"),
     Dependency("MPICH_jll"; compat="4.3.0"),
     Dependency("Zlib_jll"; compat="1.2.12"),
     Dependency("UCC_jll"; compat="1.6.0"),
