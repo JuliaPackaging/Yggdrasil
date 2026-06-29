@@ -10,12 +10,12 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "UCC"
-version = v"1.6.0"
+version = v"1.8.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/openucx/ucc.git",
-                  "87ee888b78d12d797ac8288c8214c7cb86c8bd8c"),
+                  "211e2f60436cba7c044195acb43752aa70eab38f"),
     ]
 
 # Bash recipe for building across all platforms
@@ -73,7 +73,7 @@ for platform in all_platforms
 
     if haskey(platform, "cuda") && platform["cuda"] != "none" 
         append!(platform_deps, CUDA.required_dependencies(platform))
-        push!(platform_deps, Dependency("NCCL_jll"; compat="=2.27.7")) # force NCCL without patch?
+        push!(platform_deps, Dependency("NCCL_jll"; compat="=2.28.3")) # force NCCL without patch?
 
         platform_script *= "\n"
         platform_script *= raw"""
