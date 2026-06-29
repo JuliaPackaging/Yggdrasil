@@ -4,7 +4,7 @@ name = "Bazel"
 version = v"8.7.0"
 sources = [
     ArchiveSource("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.7%2B6/OpenJDK21U-jdk_x64_alpine-linux_hotspot_21.0.7_6.tar.gz", "79ecc4b213d21ae5c389bea13c6ed23ca4804a45b7b076983356c28105580013"),
-    ArchiveSource("https://github.com/bazelbuild/bazel/releases/download/$(version)/bazel-$(version)-dist.zip", "277946818c77fff70be442864cecc41faac862b6f2d0d37033e2da0b1fee7e0f"),
+    ArchiveSource("https://github.com/bazelbuild/bazel/releases/download/$(version)/bazel-$(version)-dist.zip", "75ed5aa189fd687e6e7c289ad86a3851844965a6c1479b7a5ce9b846a6e461bc"),
 
 ]
 
@@ -17,7 +17,7 @@ mkdir .tmp
 export TMPDIR=`pwd`/.tmp
 export TMP=$TMPDIR
 export TEMP=$TMPDIR
-export BAZEL_DEV_VERSION_OVERRIDE="7.7.0"
+export BAZEL_DEV_VERSION_OVERRIDE="$(version)"
 
 # Set the default verbose mode in buildenv.sh so that we do not display command
 # output unless there is a failure.  We do this conditionally to offer the user
