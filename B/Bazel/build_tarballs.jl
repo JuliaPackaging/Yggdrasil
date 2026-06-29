@@ -8,7 +8,9 @@ sources = [
 
 ]
 
-script = raw"""
+script = """
+export BAZEL_DEV_VERSION_OVERRIDE="$(version)"
+""" * raw"""
 # Enter the funzone
 export JAVA_HOME="`pwd`/jdk-21.0.7+6"
 
@@ -17,7 +19,6 @@ mkdir .tmp
 export TMPDIR=`pwd`/.tmp
 export TMP=$TMPDIR
 export TEMP=$TMPDIR
-export BAZEL_DEV_VERSION_OVERRIDE="$(version)"
 
 # Set the default verbose mode in buildenv.sh so that we do not display command
 # output unless there is a failure.  We do this conditionally to offer the user
