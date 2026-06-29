@@ -25,6 +25,8 @@ export TEMP=$TMPDIR
 # a chance of overriding this in case they want to do so.
 : ${VERBOSE:=no}
 
+find . -type f -name "*.sh" -exec chmod +x {} +
+
 source scripts/bootstrap/buildenv.sh
 
 mkdir -p output
