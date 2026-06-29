@@ -107,10 +107,13 @@ for platform in platforms
     # Clang-built LLVM_full_jll's libstdc++ ABI. (Previously pinned to 13 for GNU ld's
     # `.drectve -exclude-symbols`, used to dodge the PE export-ordinal limit; lld no longer
     # needs that.)
+    # _Float16 host support (cl_khr_fp16) requires the host C/C++ compiler to know the
+    # `_Float16` type, which GCC only gained in v12 (HOST_COMPILER_SUPPORTS_FLOAT16 fails
+    # on GCC 10/11 -> FP16 silently disabled). Keep >=12 so FP16 is enabled on the builds.
     preferred_gcc_version = if Sys.iswindows(platform)
         v"13"
     else
-        v"10"
+        v"12"
     end
 
     push!(builds, (; platform,
