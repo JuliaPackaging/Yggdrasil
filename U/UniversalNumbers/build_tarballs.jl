@@ -36,7 +36,7 @@ version = v"0.1.0"
 sources = [
     GitSource(
         "https://github.com/jamesquinlan/UniversalNumbers.jl.git",
-        "1bbd5c45e9647af037b13a5b923a5532b1254c6a",   # run: git rev-parse v0.1.0^{}
+        "07adfefb0bb7fdb83b16da56f487bd88e5b768ac",   # run: git rev-parse v0.1.0^{}
     ),
 ]
 
@@ -53,10 +53,15 @@ cmake --install build
 # ---------------------------------------------------------------------------
 # Target platforms
 # ---------------------------------------------------------------------------
+# The two libc++/C++20 issues that blocked macOS are fixed in the source
+# (CMAKE_CXX_STANDARD 23; <type_traits>/<utility> in the wrapper) -- verified to
+# compile on Linux (GCC) and macOS (AppleClang 14 / macOS 13 SDK).  macOS on
+# Yggdrasil additionally needs a newer SDK than darwin20 for the C++20 <concepts>
+# header (Universal's complex_traits.hpp).  Windows MinGW-w64 supports __uint128_t
+# (used by dd).
+#
 # The public API is pure extern "C", but the compiled library still contains
-# internal std::string symbols (printbits / Universal manipulators), so the
-# auditor requires building both libstdc++ string ABIs.  Windows uses MinGW-w64
-# which supports __uint128_t (used by dd).
+# internal std::string symbols, so the auditor requires both libstdc++ string ABIs.
 platforms = [
     Platform("x86_64",  "linux";   libc = "glibc"),
     Platform("aarch64", "linux";   libc = "glibc"),
