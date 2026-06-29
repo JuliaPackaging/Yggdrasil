@@ -15,7 +15,6 @@ name = "legate"
 version = v"26.06.0" # Year.Month
 sources = [
     GitSource("https://github.com/nv-legate/legate.git","3b9f6d247d8504fa9b9411caed72da26b517545b"),
-    DirectorySource("./bundled"),
     FileSource("https://repo.anaconda.com/miniconda/Miniconda3-py311_24.3.0-0-Linux-x86_64.sh", 
                 "4da8dde69eca0d9bc31420349a204851bfa2a1c87aeb87fe0c05517797edaac4", "miniconda.sh")
 ]
