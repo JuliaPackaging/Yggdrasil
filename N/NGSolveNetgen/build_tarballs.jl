@@ -26,6 +26,16 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/netgen
 
+# Netgen builds a tiny code generator, `makerls`, and then invokes it by bare
+# name during the build to turn its *.rls mesh-rule files into C++ sources.
+# The in-tree target is built with the *target* toolchain (so it cannot run on
+# the build host when cross-compiling) and the generation step calls it
+# unqualified, relying on PATH. Compile a host-native copy and put it on PATH
+# so the rule generation finds a runnable `makerls` on every platform.
+mkdir -p ${WORKSPACE}/srcdir/hostbin
+${HOSTCXX} -O2 -std=c++17 rules/makerlsfile.cpp -o ${WORKSPACE}/srcdir/hostbin/makerls
+export PATH=${WORKSPACE}/srcdir/hostbin:${PATH}
+
 # Build directly (not the superbuild, which would try to download and build
 # dependencies itself). Disable GUI and Python; enable the OpenCASCADE kernel,
 # which is provided by OCCT_jll. NETGEN_VERSION_GIT is passed explicitly so the
@@ -78,8 +88,9 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Zlib_jll"),
-    # OCCT_jll >= 7.8 exposes the modern toolkit names (TKDESTEP/TKDEIGES/
-    # TKDESTL) that current Netgen links against.
+    # Pin to OCCT_jll >= 7.9.3 (the current release). Netgen requires OCCT >= 7.8,
+    # the version that introduced the modern toolkit names (TKDESTEP/TKDEIGES/
+    # TKDESTL) it links against.
     Dependency("OCCT_jll"; compat="7.9.3"),
 ]
 
