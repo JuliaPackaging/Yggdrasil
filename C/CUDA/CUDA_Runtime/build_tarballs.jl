@@ -189,3 +189,5 @@ for (i,build) in enumerate(builds)
                    julia_compat="1.6", augment_platform_block,
                    lazy_artifacts=true, skip_audit=true, dont_dlopen=true)
 end
+
+# bump
