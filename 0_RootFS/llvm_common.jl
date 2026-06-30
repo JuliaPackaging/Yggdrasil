@@ -44,7 +44,7 @@ llvm_tags = Dict(
     v"18.1.7" => "768118d1ad38bf13c545828f67bd6b474d61fc55",
     v"19.1.7" => "cd708029e0b2869e80abe31ddb175f7c35361f90",
     v"20.1.2" => "58df0ef89dd64126512e4ee27b4ac3fd8ddf6247",
-    v"21.1.8" => "42befb84c672d78de430feb4c96710e6aa4fc774", # llvmorg-21.1.8
+    v"21.1.8" => "2078da43e25a4623cab2d0d60decddf709aaea28",
 )
 
 function llvm_sources(;version = "v8.0.1", kwargs...)
@@ -210,7 +210,7 @@ function llvm_dependencies(; version=v"8.0.1", kwargs...)
     # `libxml2.so.2` to `libxml2.so.16` (https://github.com/JuliaPackaging/Yggdrasil/pull/10965).
     # LLVM >= 19 links against the new SONAME, older LLVM against the old one, so pin XML2 to
     # the series matching the LLVM version we're building (older shards stay reproducible).
-    xml2_compat = version >= v"19" ? "~2.14" : "~2.13.6"
+    xml2_compat = version >= v"19" ? "~2.14.1" : "~2.13.6"
     return [
         Dependency("Zlib_jll"),
         Dependency("XML2_jll"; compat=xml2_compat),
