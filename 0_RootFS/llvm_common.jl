@@ -44,6 +44,7 @@ llvm_tags = Dict(
     v"18.1.7" => "768118d1ad38bf13c545828f67bd6b474d61fc55",
     v"19.1.7" => "cd708029e0b2869e80abe31ddb175f7c35361f90",
     v"20.1.2" => "58df0ef89dd64126512e4ee27b4ac3fd8ddf6247",
+    v"21.1.8" => "42befb84c672d78de430feb4c96710e6aa4fc774", # llvmorg-21.1.8
 )
 
 function llvm_sources(;version = "v8.0.1", kwargs...)
@@ -137,8 +138,10 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
     CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING=all)
     CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=${LLVM_BUILD_TYPE})
 
-    # We want a lot of projects
-    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='clang;polly;lld')
+    # We only need a cross-compilation toolchain: clang as the compiler and lld as the
+    # linker. (Polly, a polyhedral loop optimizer, is never engaged by BinaryBuilder's
+    # default flags, so building it just wasted time.)
+    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='clang;lld')
 
     # Build runtimes
     CMAKE_FLAGS+=(-DLLVM_ENABLE_RUNTIMES='compiler-rt;libcxx;libcxxabi;libunwind')
