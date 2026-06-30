@@ -105,9 +105,9 @@ for cuda_version in [v"13.0"]
         should_build_platform(triplet(augmented_platform)) || continue
 
         if arch(platform) == "aarch64"
-            hash = "42b4e213d17ffc2e9b9dd6f50a9086cb940087b1fec197cd9fd53403e35209ca"
+            hash = "2c84dcee747a552ba1f858e7dba66f2b0b7a93f49c12772f29cbc49ead26ca9c"
         elseif arch(platform) == "x86_64"
-            hash = "38cbc471f3058d5147f8112417fc24ea7dbe02bb94a6ab294d0b2a08d520eb60"
+            hash = "1aed015c07114ddf04ed997cbc87f1d0680b6c91d22b03c9a678aaa9f6c9054d"
         end
 
         sources = [
