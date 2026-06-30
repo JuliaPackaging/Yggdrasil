@@ -52,6 +52,15 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     export MACOSX_DEPLOYMENT_TARGET=10.15
 fi
 
+# On Windows, Netgen assumes the MSVC compiler and passes MSVC-only options
+# (/bigobj, /MP, /W1, /wd4068 and /ignore:* linker flags). BinaryBuilder's
+# Windows toolchain is mingw GCC, which interprets e.g. /bigobj as a file path
+# and errors out. Swap in the mingw-GCC equivalents (-Wa,-mbig-obj is needed
+# for Netgen's large object files) and drop the MSVC linker flags. These lines
+# live inside `if(WIN32)`, so the rewrite is a no-op on other platforms.
+sed -i 's@target_compile_options(ngcore PUBLIC /bigobj.*@target_compile_options(ngcore PUBLIC -Wa,-mbig-obj $<BUILD_INTERFACE:-Wno-unknown-pragmas>)@' libsrc/core/CMakeLists.txt
+sed -i 's@target_link_options(ngcore PUBLIC /ignore.*@@' libsrc/core/CMakeLists.txt
+
 # Build directly (not the superbuild, which would try to download and build
 # dependencies itself). Disable GUI and Python; enable the OpenCASCADE kernel,
 # which is provided by OCCT_jll. NETGEN_VERSION_GIT is passed explicitly so the
