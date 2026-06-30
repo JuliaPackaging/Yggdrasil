@@ -67,22 +67,6 @@ if [[ "${target}" == aarch64-linux-* ]]; then
 fi
 """
 
-redist_script = raw"""
-
-cd ${WORKSPACE}/srcdir/nccl*
-
-install_license LICENSE.txt
-
-for file in lib/libnccl*.${dlext}*; do
-    install -Dvm 755 "${file}" -t "${libdir}"
-done
-
-find include -type f -print0 | while IFS= read -r -d '' file; do
-    relpath="${file#include/}"
-    install -Dvm644 "$file" "${includedir}/${relpath}"
-done
-"""
-
 products = [
     LibraryProduct("libnccl", :libnccl),
 ]
@@ -94,35 +78,8 @@ dependencies = [
 
 builds = []
 
-# redist for sources that are available
-for cuda_version in [v"13.0"]
-    platforms = [
-        Platform("x86_64", "linux"),
-        Platform("aarch64", "linux")
-    ]
-    for platform in platforms
-        augmented_platform = deepcopy(platform)
-        augmented_platform["cuda"] = CUDA.platform(cuda_version)
-        should_build_platform(triplet(augmented_platform)) || continue
 
-        if arch(platform) == "aarch64"
-            hash = "2c84dcee747a552ba1f858e7dba66f2b0b7a93f49c12772f29cbc49ead26ca9c"
-        elseif arch(platform) == "x86_64"
-            hash = "1aed015c07114ddf04ed997cbc87f1d0680b6c91d22b03c9a678aaa9f6c9054d"
-        end
-
-        sources = [
-            ArchiveSource("https://developer.download.nvidia.com/compute/redist/nccl/v$(version)/nccl_$(version)-1+cuda$(cuda_version.major).$(cuda_version.minor)_$(arch(platform)).txz", hash)
-        ]
-
-        push!(
-            builds,
-            (; platforms=[augmented_platform], sources, script=redist_script, req_deps=false)
-        )
-    end
-end
-
-for platform in CUDA.supported_platforms(; min_version=v"12", max_version=v"12.9.999")
+for platform in CUDA.supported_platforms(; min_version=v"12", max_version=v"13.0")
     should_build_platform(triplet(platform)) || continue
 
     platform_sources = BinaryBuilder.AbstractSource[git_sources...]
