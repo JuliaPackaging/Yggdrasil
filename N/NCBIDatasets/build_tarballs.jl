@@ -1,15 +1,15 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 #
-# NCBIDatasets_jll repackages NCBI's official prebuilt `datasets` and
-# `dataformat` command-line tools. We do NOT build from source: `dataformat`
-# has no public source, and `datasets` requires a Java OpenAPI codegen step
-# that the BinaryBuilder toolchain cannot run. The binaries are public-domain
-# "United States Government Work" (redistribution unrestricted).
+# NCBIDatasets_jll repackages NCBI's official prebuilt `datasets` command-line
+# tool. We do NOT build from source: `datasets` requires a Java OpenAPI codegen
+# step that the BinaryBuilder toolchain cannot run. The binary itself is
+# public-domain "United States Government Work" (redistribution unrestricted);
+# its source is open (github.com/ncbi/datasets).
 using BinaryBuilder
 
 name = "NCBIDatasets"
-version = v"18.30.0"
+version = v"18.32.0"
 
 # The pinned GitSource is solely for LICENSE.md (the binary zips bundle no license).
 release = "https://github.com/ncbi/datasets/releases/download/v$(version)"
@@ -35,9 +35,7 @@ sources = [
 ]
 
 script = raw"""
-install -Dvm 755 "${WORKSPACE}/srcdir/${target}/datasets${exeext}"   "${bindir}/datasets${exeext}"
-install -Dvm 755 "${WORKSPACE}/srcdir/${target}/dataformat${exeext}" "${bindir}/dataformat${exeext}"
-
+install -Dvm 755 "${WORKSPACE}/srcdir/${target}/datasets${exeext}" "${bindir}/datasets${exeext}"
 install_license ${WORKSPACE}/srcdir/datasets/LICENSE.md
 """
 
@@ -57,8 +55,7 @@ platforms = [
 
 # The products that we will ensure are always built.
 products = [
-    ExecutableProduct("datasets",   :datasets),
-    ExecutableProduct("dataformat", :dataformat),
+    ExecutableProduct("datasets", :datasets),
 ]
 
 # No dependencies (static binaries).
