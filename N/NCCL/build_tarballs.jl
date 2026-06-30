@@ -79,7 +79,7 @@ dependencies = [
 builds = []
 
 
-for platform in CUDA.supported_platforms(; min_version=v"12", max_version=v"13.0")
+for platform in CUDA.supported_platforms(; min_version=v"12", max_version=v"13.0.999")
     should_build_platform(triplet(platform)) || continue
 
     platform_sources = BinaryBuilder.AbstractSource[git_sources...]
