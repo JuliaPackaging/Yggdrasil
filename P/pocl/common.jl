@@ -289,6 +289,29 @@ function build_script(standalone=false)
         CMAKE_FLAGS+=(-DHOST_COMPILER_SUPPORTS_FLOAT16:BOOL=OFF)
     fi
 
+    # Vectorize OpenCL math builtins (sin/exp/log/...) via a vector-math library. This is
+    # gated to exactly where it can work: LLVM's TargetLibraryInfo only maps a veclib for
+    # x86_64 (libmvec ABI, _ZGVdN*) and aarch64 (SLEEF ABI, _ZGVnN*), and SLEEF_jll only ships
+    # the symbol-providing libsleefgnuabi on ELF targets -- Linux and FreeBSD (NOT macOS, which
+    # has no GNUABI variant on Mach-O, and NOT Windows, where SLEEF_jll isn't built). The
+    # in-process JIT dlopens it by SONAME at run time, so nothing is redistributed beyond the
+    # SLEEF_jll dependency (added per-platform in build_tarballs.jl). Elsewhere there's no
+    # veclib -> the kernel body still vectorizes, transcendentals stay scalar. NB: on AVX-512
+    # hosts the work-item loop tends to pick width 16, which LLVM's x86 veclib tables don't
+    # cover (they stop at width 8), so the math scalarizes there; AVX2 (width 8) and aarch64
+    # NEON (width 4) get packed _ZGV* calls. (Separate from the always-on SLEEF kernel library,
+    # ENABLE_SLEEF.)
+    sleef_gnuabi="${prefix}/lib/libsleefgnuabi.so"
+    if [[ "${target}" == x86_64-linux-* || "${target}" == x86_64-*freebsd* ]]; then
+        CMAKE_FLAGS+=(-DENABLE_HOST_CPU_VECTORIZE_LIBMVEC:BOOL=ON)
+        CMAKE_FLAGS+=(-DLIBMVEC="${sleef_gnuabi}")
+        # libsleefgnuabi exports the required _ZGV* symbols; skip the (cross-unfriendly) probe.
+        CMAKE_FLAGS+=(-DLIBMVEC_HAS_REQUIRED_SYMBOLS:BOOL=ON)
+    elif [[ "${target}" == aarch64-linux-* || "${target}" == aarch64-*freebsd* ]]; then
+        CMAKE_FLAGS+=(-DENABLE_HOST_CPU_VECTORIZE_SLEEF:BOOL=ON)
+        CMAKE_FLAGS+=(-DLIBSLEEF="${sleef_gnuabi}")
+    fi
+
     # Link LLVM statically so that we don't have to worry about versioning the JLL against it
     CMAKE_FLAGS+=(-DSTATIC_LLVM:Bool=ON)
     # XXX: we add -pthread to the flags used to link libLLVM, so need that here too

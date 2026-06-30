@@ -42,6 +42,9 @@ llvm_tags = Dict(
     v"16.0.6" => "7cbf1a2591520c2491aa35339f227775f4d3adf6",
     v"17.0.6" => "6009708b4367171ccdbf4b5905cb6a803753fe18",
     v"18.1.7" => "768118d1ad38bf13c545828f67bd6b474d61fc55",
+    v"19.1.7" => "cd708029e0b2869e80abe31ddb175f7c35361f90",
+    v"20.1.2" => "58df0ef89dd64126512e4ee27b4ac3fd8ddf6247",
+    v"21.1.8" => "2078da43e25a4623cab2d0d60decddf709aaea28",
 )
 
 function llvm_sources(;version = "v8.0.1", kwargs...)
@@ -62,20 +65,18 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
     apk update
     apk add build-base python3 python3-dev linux-headers musl-dev zlib-dev
 
-    # We need the XML2, iconv, Zlib libraries in our LLVMBootstrap artifact,
-    # and we also need them in target-prefixed directories, so they stick
-    # around in `/opt/${target}/${target}/lib64` when mounted.
+    # We need the Zlib library in our LLVMBootstrap artifact, and we also need it
+    # in a target-prefixed directory, so it sticks around in
+    # `/opt/${target}/${target}/lib64` when mounted. (We deliberately do NOT bundle
+    # libxml2 here: it's built with LLVM_ENABLE_LIBXML2=OFF below, so libLLVM has no
+    # libxml2 dependency. Bundling libxml2 into the target sysroot also shadowed the
+    # target's own XML2_jll during cross-compilation -- and libxml2 2.14 dropped
+    # symbol versioning, breaking links against libs built on older libxml2.)
     mkdir -p ${prefix}/${target}/lib64
     # First, copy in the real files:
-    cp -a $(realpath ${libdir}/libxml2.so)  ${prefix}/${target}/lib64
-    cp -a $(realpath ${libdir}/libiconv.so) ${prefix}/${target}/lib64
     cp -a $(realpath ${libdir}/libz.so)     ${prefix}/${target}/lib64
 
     # Then create the symlinks
-    ln -s $(basename ${prefix}/${target}/lib64/libxml2.so.*) ${prefix}/${target}/lib64/libxml2.so
-    ln -s $(basename ${prefix}/${target}/lib64/libxml2.so.*) ${prefix}/${target}/lib64/libxml2.so.2
-    ln -s $(basename ${prefix}/${target}/lib64/libiconv.so.*) ${prefix}/${target}/lib64/libiconv.so
-    ln -s $(basename ${prefix}/${target}/lib64/libiconv.so.*) ${prefix}/${target}/lib64/libiconv.so.2
     ln -s $(basename ${prefix}/${target}/lib64/libz.so.*) ${prefix}/${target}/lib64/libz.so
     ln -s $(basename ${prefix}/${target}/lib64/libz.so.*) ${prefix}/${target}/lib64/libz.so.1
 
@@ -134,8 +135,16 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
     CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING=all)
     CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=${LLVM_BUILD_TYPE})
 
-    # We want a lot of projects
-    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='clang;polly;lld')
+    # We only need a cross-compilation toolchain: clang as the compiler and lld as the
+    # linker. (Polly, a polyhedral loop optimizer, is never engaged by BinaryBuilder's
+    # default flags, so building it just wasted time.)
+    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='clang;lld')
+
+    # Don't link libxml2 (only used by the WindowsManifestMerger / llvm-mt, which a
+    # cross-toolchain doesn't need). This matches the shipped LLVM_full and, crucially,
+    # avoids bundling a libxml2.so into the target sysroot where it shadowed the target's
+    # own XML2_jll and broke downstream links (libxml2 2.14 dropped symbol versioning).
+    CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBXML2=OFF)
 
     # Build runtimes
     CMAKE_FLAGS+=(-DLLVM_ENABLE_RUNTIMES='compiler-rt;libcxx;libcxxabi;libunwind')
@@ -178,12 +187,11 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
     CMAKE_FLAGS+=(-DZLIB_ROOT="${prefix}")
 
     # Build!
-    cmake ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
-    cmake -LA || true
-    make -j${nproc} VERBOSE=1
+    cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
+    ninja -j${nproc} -vv
 
     # Install!
-    make install -j${nproc} VERBOSE=1
+    ninja install
     """
 end
 
@@ -201,13 +209,11 @@ end
 
 # Dependencies that must be installed before this package can be built
 function llvm_dependencies(; kwargs...)
+    # No XML2_jll: we build with LLVM_ENABLE_LIBXML2=OFF (see llvm_script), so libLLVM
+    # has no libxml2 dependency. (Older recipes pulled XML2_jll and bundled libxml2 into
+    # the target sysroot, which shadowed the target's own XML2_jll during cross builds.)
     return [
         Dependency("Zlib_jll"),
-        # We had to restrict compat with XML2 because of ABI breakage:
-        # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
-        # Updating to `compat="~2.14.1"` is likely possible without problems but requires rebuilding this package
-        Dependency("XML2_jll"; compat="~2.13.6"),
-	# transitive dependency libiconv
     ]
 end
 
