@@ -21,7 +21,7 @@ version = v"7.2.0"
 sources = [
     DirectorySource("./bundled"),
     GitSource("https://github.com/JuliaGPU/pocl",
-              "88a7a839b58ff7f0e3720f58ed858eaf1480111b"),
+              "e344b0f02c2c9f3680aa9ebc2fe13846783e8af1"),
     # vendored SPIR-V translator, built as a static library against our LLVM (see
     # common.jl); this commit is the LLVM-20.1-compatible revision (matches
     # LLVM_full_jll 20.1.2).
@@ -93,24 +93,28 @@ for platform in platforms
     platform_sources = deepcopy(sources)
     platform_dependencies = deepcopy(dependencies)
 
-    # for fp16, we need a vectorization library
-    if arch(platform) in ["armv6l", "aarch64"]
-        #push!(platform_dependencies, Dependency("SLEEF_jll"))
-        # XXX: PoCL hard-codes the path to libsleef
-        # `no such file or directory: '/opt/aarch64-linux-gnu/aarch64-linux-gnu/sys-root/usr/local/lib/libsleef.so'`
+    # Vectorize OpenCL math builtins via SLEEF's libmvec-ABI / SLEEF compat library
+    # (libsleefgnuabi), which the in-process JIT dlopens at run time (see common.jl for the
+    # matching CMake flags). Gated to x86_64/aarch64 on the ELF OSes where LLVM maps a veclib
+    # *and* SLEEF_jll ships libsleefgnuabi: Linux and FreeBSD (not macOS -- no GNUABI on
+    # Mach-O -- and not Windows -- no SLEEF_jll). Static linking isn't used: the JIT resolves
+    # _ZGV* symbols by dlopen, so a dynamic dependency is the natural fit.
+    if (Sys.islinux(platform) || Sys.isfreebsd(platform)) && arch(platform) in ["x86_64", "aarch64"]
+        push!(platform_dependencies, Dependency("SLEEF_jll"))
     end
-    # TODO: libsvml for x86 (part of mkl)
-    # TODO: libmvec as fallback (part of glibc 2.22+)
 
     # On Windows we now link PoCL with the Clang/lld toolchain, but still build against this
     # GCC's MinGW sysroot and libstdc++, so its version must stay compatible with the
     # Clang-built LLVM_full_jll's libstdc++ ABI. (Previously pinned to 13 for GNU ld's
     # `.drectve -exclude-symbols`, used to dodge the PE export-ordinal limit; lld no longer
     # needs that.)
+    # _Float16 host support (cl_khr_fp16) requires the host C/C++ compiler to know the
+    # `_Float16` type, which GCC only gained in v12 (HOST_COMPILER_SUPPORTS_FLOAT16 fails
+    # on GCC 10/11 -> FP16 silently disabled). Keep >=12 so FP16 is enabled on the builds.
     preferred_gcc_version = if Sys.iswindows(platform)
         v"13"
     else
-        v"10"
+        v"12"
     end
 
     push!(builds, (; platform,
