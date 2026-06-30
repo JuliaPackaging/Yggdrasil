@@ -14,6 +14,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "pocl_next"
 version = v"7.2.0"
+llvm_version = v"20.1.2"
 
 # Build
 
@@ -21,7 +22,7 @@ version = v"7.2.0"
 sources = [
     DirectorySource("./bundled"),
     GitSource("https://github.com/JuliaGPU/pocl",
-              "e344b0f02c2c9f3680aa9ebc2fe13846783e8af1"),
+              "a18752a7e51c1d08ff1b1f5b116512ae2bbc9ec0"),
     # vendored SPIR-V translator, built as a static library against our LLVM (see
     # common.jl); this commit is the LLVM-20.1-compatible revision (matches
     # LLVM_full_jll 20.1.2).
@@ -78,8 +79,8 @@ products = [
 # binary (SPIRV_LLVM_Translator_jll gone). LLVM_full_jll is only a build dependency
 # because it is linked statically into libpocl.
 dependencies = [
-    HostBuildDependency(PackageSpec(name="LLVM_full_jll", version="20.1.2")),
-    BuildDependency(PackageSpec(name="LLVM_full_jll", version="20.1.2")),
+    HostBuildDependency(PackageSpec(name="LLVM_full_jll", version=string(llvm_version))),
+    BuildDependency(PackageSpec(name="LLVM_full_jll", version=string(llvm_version))),
     Dependency("OpenCL_jll"),
     Dependency("OpenCL_Headers_jll"),
     Dependency("Hwloc_jll"),
@@ -136,6 +137,7 @@ for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    name, version, build.sources, build_script(),
                    [build.platform], products, build.dependencies;
-                   build.preferred_gcc_version, preferred_llvm_version=v"20",
+                   build.preferred_gcc_version,
+                   preferred_llvm_version=Base.thismajor(llvm_version),
                    julia_compat="1.6", init_block=init_block())
 end
