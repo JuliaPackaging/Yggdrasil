@@ -9,10 +9,10 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "NCCL"
-version = v"2.27.7"
+version = v"2.28.9"
 
 git_sources = [
-    GitSource("https://github.com/NVIDIA/nccl.git", "593de54e52679b51428571c13271e2ea9f91b1b1"),
+    GitSource("https://github.com/NVIDIA/nccl.git", "dbc86fd06e8b0c4517b95d8958a09ccacf9520c9"),
     DirectorySource("./bundled/")
 ]
 
