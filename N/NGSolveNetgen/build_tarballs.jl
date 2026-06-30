@@ -36,6 +36,22 @@ mkdir -p ${WORKSPACE}/srcdir/hostbin
 ${HOSTCXX} -O2 -std=c++17 rules/makerlsfile.cpp -o ${WORKSPACE}/srcdir/hostbin/makerls
 export PATH=${WORKSPACE}/srcdir/hostbin:${PATH}
 
+# Netgen's ARM64 NEON SIMD path (libsrc/core/simd_arm64.hpp) uses Clang-only
+# intrinsics (__builtin_shufflevector) and relies on implicit signed/unsigned
+# NEON vector conversions, so it does not compile with GCC (used for the
+# aarch64-linux targets). Restrict that header to Clang toolchains (macOS /
+# FreeBSD arm64); GCC targets fall back to the portable generic SIMD code.
+sed -i 's@#ifdef __aarch64__@#if defined(__aarch64__) \&\& defined(__clang__)@' libsrc/core/simd.hpp
+
+# Netgen uses std::variant (e.g. in libsrc/meshing/meshtype.cpp), whose
+# std::get / std::bad_variant_access is annotated as available only from
+# macOS 10.14 in libc++. The x86_64-apple-darwin toolchain defaults to an
+# older minimum (10.10), so bump it. (aarch64-apple-darwin already defaults
+# to 11.0 and must not be lowered.)
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    export MACOSX_DEPLOYMENT_TARGET=10.15
+fi
+
 # Build directly (not the superbuild, which would try to download and build
 # dependencies itself). Disable GUI and Python; enable the OpenCASCADE kernel,
 # which is provided by OCCT_jll. NETGEN_VERSION_GIT is passed explicitly so the
