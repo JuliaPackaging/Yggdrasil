@@ -206,11 +206,22 @@ function build_script(standalone=false)
     mkdir -p $llvm_host_bin
     cp $WORKSPACE/srcdir/llvm-config $llvm_host_bin/llvm-config
     chmod +x $llvm_host_bin/llvm-config
+    # Compile the kernel builtin library with LLVM_full_jll's own clang/opt/... (the
+    # HostBuildDependency under $host_prefix/tools), NOT BinaryBuilderBase's native
+    # toolchain clang in /opt/$MACHTYPE/bin. The latter is LLVMBootstrap, which BBB only
+    # ships up to 18.1.7, so preferred_llvm_version=20 silently clamps to it. Clang 18's
+    # frontend lacks several _Float16 math builtins (__builtin_ceilf16/floorf16/truncf16/
+    # roundf16/rintf16/fmaxf16/fminf16/fmaf16/...), so once cl_khr_fp16 is enabled the
+    # per-file `#if !__has_builtin(__builtin_*f16)` guards drop those half builtins from
+    # the bitcode kernel library while the --fp16 SPIR wrappers still reference them ->
+    # "Cannot find symbol _Z8_cl_ceilDh in kernel library" at clCreateProgramWithIL time.
+    # LLVM_full_jll's clang (20) has these builtins, and matching the build-time LLVM tools
+    # to the LLVM we link against also keeps the emitted bitcode version in sync.
     for tool in clang clang++ opt llc llvm-as llvm-dis llvm-link; do
-        ln -sf /opt/$MACHTYPE/bin/$tool $llvm_host_bin/$tool
+        ln -sf ${host_prefix}/tools/$tool $llvm_host_bin/$tool
         # on mingw targets CMake appends .exe when searching, so provide that name too
         # (the host tools are ELF binaries; the suffix is just what find_program looks for)
-        ln -sf /opt/$MACHTYPE/bin/$tool $llvm_host_bin/$tool.exe
+        ln -sf ${host_prefix}/tools/$tool $llvm_host_bin/$tool.exe
     done
 
     # Point to relevant LLVM tools (see above). The target-side dependencies live

@@ -21,7 +21,7 @@ version = v"7.2.0"
 sources = [
     DirectorySource("./bundled"),
     GitSource("https://github.com/JuliaGPU/pocl",
-              "e344b0f02c2c9f3680aa9ebc2fe13846783e8af1"),
+              "a18752a7e51c1d08ff1b1f5b116512ae2bbc9ec0"),
     # vendored SPIR-V translator, built as a static library against our LLVM (see
     # common.jl); this commit is the LLVM-20.1-compatible revision (matches
     # LLVM_full_jll 20.1.2).
