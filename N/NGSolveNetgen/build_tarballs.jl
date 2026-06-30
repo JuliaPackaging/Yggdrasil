@@ -52,15 +52,6 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     export MACOSX_DEPLOYMENT_TARGET=10.15
 fi
 
-# On Windows, Netgen assumes the MSVC compiler and passes MSVC-only options
-# (/bigobj, /MP, /W1, /wd4068 and /ignore:* linker flags). BinaryBuilder's
-# Windows toolchain is mingw GCC, which interprets e.g. /bigobj as a file path
-# and errors out. Swap in the mingw-GCC equivalents (-Wa,-mbig-obj is needed
-# for Netgen's large object files) and drop the MSVC linker flags. These lines
-# live inside `if(WIN32)`, so the rewrite is a no-op on other platforms.
-sed -i 's@target_compile_options(ngcore PUBLIC /bigobj.*@target_compile_options(ngcore PUBLIC -Wa,-mbig-obj $<BUILD_INTERFACE:-Wno-unknown-pragmas>)@' libsrc/core/CMakeLists.txt
-sed -i 's@target_link_options(ngcore PUBLIC /ignore.*@@' libsrc/core/CMakeLists.txt
-
 # Build directly (not the superbuild, which would try to download and build
 # dependencies itself). Disable GUI and Python; enable the OpenCASCADE kernel,
 # which is provided by OCCT_jll. NETGEN_VERSION_GIT is passed explicitly so the
@@ -97,11 +88,16 @@ install_license ${WORKSPACE}/srcdir/netgen/LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.
 #
-# Mirror the platform set of OCCT_jll (our heaviest dependency): everything
+# Based on the platform set of OCCT_jll (our heaviest dependency): everything
 # supported_platforms() returns except armv6l, with the C++ string ABI variants
 # expanded since this is a C++ library.
+#
+# Windows is excluded: Netgen's Windows support targets MSVC, while
+# BinaryBuilder uses mingw GCC, against which the sources do not currently
+# compile (MSVC-only flags, Win32 API/_WIN32_WINNT and FARPROC conversions).
+# This can be revisited as a follow-up.
 platforms = supported_platforms()
-platforms = filter!(p -> arch(p) != "armv6l", platforms)
+platforms = filter!(p -> arch(p) != "armv6l" && !Sys.iswindows(p), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
