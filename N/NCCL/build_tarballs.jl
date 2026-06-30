@@ -16,6 +16,7 @@ git_sources = [
     DirectorySource("./bundled/")
 ]
 
+
 build_script = raw"""
 cd $WORKSPACE/srcdir
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
