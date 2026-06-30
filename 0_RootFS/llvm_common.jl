@@ -42,6 +42,9 @@ llvm_tags = Dict(
     v"16.0.6" => "7cbf1a2591520c2491aa35339f227775f4d3adf6",
     v"17.0.6" => "6009708b4367171ccdbf4b5905cb6a803753fe18",
     v"18.1.7" => "768118d1ad38bf13c545828f67bd6b474d61fc55",
+    v"19.1.7" => "cd708029e0b2869e80abe31ddb175f7c35361f90",
+    v"20.1.2" => "58df0ef89dd64126512e4ee27b4ac3fd8ddf6247",
+    v"21.1.8" => "2078da43e25a4623cab2d0d60decddf709aaea28",
 )
 
 function llvm_sources(;version = "v8.0.1", kwargs...)
@@ -74,6 +77,7 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
     # Then create the symlinks
     ln -s $(basename ${prefix}/${target}/lib64/libxml2.so.*) ${prefix}/${target}/lib64/libxml2.so
     ln -s $(basename ${prefix}/${target}/lib64/libxml2.so.*) ${prefix}/${target}/lib64/libxml2.so.2
+    ln -s $(basename ${prefix}/${target}/lib64/libxml2.so.*) ${prefix}/${target}/lib64/libxml2.so.16
     ln -s $(basename ${prefix}/${target}/lib64/libiconv.so.*) ${prefix}/${target}/lib64/libiconv.so
     ln -s $(basename ${prefix}/${target}/lib64/libiconv.so.*) ${prefix}/${target}/lib64/libiconv.so.2
     ln -s $(basename ${prefix}/${target}/lib64/libz.so.*) ${prefix}/${target}/lib64/libz.so
@@ -134,8 +138,10 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
     CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING=all)
     CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=${LLVM_BUILD_TYPE})
 
-    # We want a lot of projects
-    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='clang;polly;lld')
+    # We only need a cross-compilation toolchain: clang as the compiler and lld as the
+    # linker. (Polly, a polyhedral loop optimizer, is never engaged by BinaryBuilder's
+    # default flags, so building it just wasted time.)
+    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='clang;lld')
 
     # Build runtimes
     CMAKE_FLAGS+=(-DLLVM_ENABLE_RUNTIMES='compiler-rt;libcxx;libcxxabi;libunwind')
@@ -178,12 +184,11 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
     CMAKE_FLAGS+=(-DZLIB_ROOT="${prefix}")
 
     # Build!
-    cmake ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
-    cmake -LA || true
-    make -j${nproc} VERBOSE=1
+    cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
+    ninja -j${nproc} -vv
 
     # Install!
-    make install -j${nproc} VERBOSE=1
+    ninja install
     """
 end
 
@@ -200,13 +205,15 @@ function llvm_products(;kwargs...)
 end
 
 # Dependencies that must be installed before this package can be built
-function llvm_dependencies(; kwargs...)
+function llvm_dependencies(; version=v"8.0.1", kwargs...)
+    # XML2 had an ABI break between the 2.13 and 2.14 series: 2.14 bumped its SONAME from
+    # `libxml2.so.2` to `libxml2.so.16` (https://github.com/JuliaPackaging/Yggdrasil/pull/10965).
+    # LLVM >= 19 links against the new SONAME, older LLVM against the old one, so pin XML2 to
+    # the series matching the LLVM version we're building (older shards stay reproducible).
+    xml2_compat = version >= v"19" ? "~2.14.1" : "~2.13.6"
     return [
         Dependency("Zlib_jll"),
-        # We had to restrict compat with XML2 because of ABI breakage:
-        # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
-        # Updating to `compat="~2.14.1"` is likely possible without problems but requires rebuilding this package
-        Dependency("XML2_jll"; compat="~2.13.6"),
+        Dependency("XML2_jll"; compat=xml2_compat),
 	# transitive dependency libiconv
     ]
 end
