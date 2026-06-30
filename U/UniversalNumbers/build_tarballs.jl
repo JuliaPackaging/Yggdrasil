@@ -1,48 +1,20 @@
-# BinaryBuilder recipe for UniversalNumbers_jll
-#
-# Produces a pre-built libuniversal shared library for all supported platforms.
-# The resulting JLL package is what lets users `] add UniversalNumbers` without
-# needing a local C++ toolchain.
-#
-# --- Workflow ---
-#
-# 1. Tag and push the release:
-#      git tag -a v0.1.0 -m "v0.1.0"
-#      git push origin v0.1.0
-#
-# 2. Get the commit SHA the tag points to:
-#      git rev-parse v0.1.0^{}
-#
-# 3. Replace the placeholder SHA below with that output.
-#
-# 4. Test locally (requires BinaryBuilder in global env):
-#      julia build_tarballs.jl --verbose x86_64-linux-gnu
-#
-# 5. Submit to Yggdrasil:
-#      - Fork https://github.com/JuliaPackaging/Yggdrasil
-#      - Add this file at  Y/UniversalNumbers/build_tarballs.jl
-#      - Open a PR; CI builds all platforms and auto-publishes UniversalNumbers_jll
-
+# Note that this script can accept some limited command-line arguments, run
+# `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name    = "UniversalNumbers"
+# A newer macOS SDK is required for libc++'s C++20 <concepts> header.
+include(joinpath("..", "..", "platforms", "macos_sdks.jl"))
+
+name = "UniversalNumbers"
 version = v"0.1.0"
 
-# ---------------------------------------------------------------------------
-# Source
-# ---------------------------------------------------------------------------
-# The Julia package repo ships the C++ wrapper and vendored Stillwater
-# Universal headers under deps/universal/include/sw -- no external dependencies.
+# Collection of sources required to complete build
 sources = [
-    GitSource(
-        "https://github.com/jamesquinlan/UniversalNumbers.jl.git",
-        "07adfefb0bb7fdb83b16da56f487bd88e5b768ac",   # run: git rev-parse v0.1.0^{}
-    ),
+    GitSource("https://github.com/jamesquinlan/UniversalNumbers.jl.git",
+              "07adfefb0bb7fdb83b16da56f487bd88e5b768ac"),
 ]
 
-# ---------------------------------------------------------------------------
-# Build script (runs inside the BinaryBuilder sandbox)
-# ---------------------------------------------------------------------------
+# Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/UniversalNumbers.jl
 cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
@@ -50,46 +22,24 @@ cmake --build build --parallel ${nproc}
 cmake --install build
 """
 
-# ---------------------------------------------------------------------------
-# Target platforms
-# ---------------------------------------------------------------------------
-# The two libc++/C++20 issues that blocked macOS are fixed in the source
-# (CMAKE_CXX_STANDARD 23; <type_traits>/<utility> in the wrapper) -- verified to
-# compile on Linux (GCC) and macOS (AppleClang 14 / macOS 13 SDK).  macOS on
-# Yggdrasil additionally needs a newer SDK than darwin20 for the C++20 <concepts>
-# header (Universal's complex_traits.hpp).  Windows MinGW-w64 supports __uint128_t
-# (used by dd).
-#
-# The public API is pure extern "C", but the compiled library still contains
-# internal std::string symbols, so the auditor requires both libstdc++ string ABIs.
-platforms = [
-    Platform("x86_64",  "linux";   libc = "glibc"),
-    Platform("aarch64", "linux";   libc = "glibc"),
-    Platform("x86_64",  "macos"),
-    Platform("aarch64", "macos"),
-    Platform("x86_64",  "windows"),
-]
+sources, script = require_macos_sdk("14.0", sources, script)
 
-# Internal std::string symbols -> build for both C++ string ABIs (cxx03 + cxx11).
+# These are the platforms we will build for by default, unless further
+# platforms are passed in on the command line
+platforms = supported_platforms()
+filter!(p -> arch(p) ∉ ("i686", "armv6l", "armv7l"), platforms)  # dd uses __uint128_t (64-bit only)
 platforms = expand_cxxstring_abis(platforms)
 
-# ---------------------------------------------------------------------------
-# Products
-# ---------------------------------------------------------------------------
+# The products that we will ensure are always built
 products = [
     LibraryProduct("libuniversal", :libuniversal),
 ]
 
-# ---------------------------------------------------------------------------
-# Dependencies
-# ---------------------------------------------------------------------------
-# Stillwater Universal headers are vendored in deps/.  The compiled library links
-# the GCC runtime (libgcc_s), provided by CompilerSupportLibraries_jll.
+# Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
-# ---------------------------------------------------------------------------
+# Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat        = "1.9",
-               preferred_gcc_version = v"13")
+               julia_compat="1.9", preferred_gcc_version=v"13")
