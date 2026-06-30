@@ -135,11 +135,9 @@ products = [
 
 # libsleefgnuabi -- the GNU vector-ABI / drop-in libmvec compat library, exporting the plain
 # `_ZGV*` symbols LLVM emits for `-fveclib` -- is only built *and installed* by SLEEF on
-# x86/AArch64/RISC-V (PPC64LE builds it but doesn't install it; macOS has no GNUABI variant).
-# Declare it as a product only there, and `dont_dlopen` it: it's only loaded by specialized
-# consumers (e.g. pocl's CPU veclib), so a plain existence check suffices. Dynamic consumers
-# resolve `libsleefgnuabi.so` by SONAME; static ones link the `libsleefgnuabi.a` from above.
-gnuabi_product = LibraryProduct("libsleefgnuabi", :libsleefgnuabi; dont_dlopen=true)
+# x86/AArch64/RISC-V (PPC64LE builds it but doesn't install it; macOS has no GNUABI variant),
+# so declare the product only there.
+gnuabi_product = LibraryProduct("libsleefgnuabi", :libsleefgnuabi)
 has_gnuabi(p) = !Sys.isapple(p) && arch(p) in ("x86_64", "aarch64", "riscv64")
 
 # Dependencies that must be installed before this package can be built
