@@ -85,7 +85,7 @@ dependencies = [
                                 version="5.8.1")),
     BuildDependency(PackageSpec(name="LLVMCompilerRT_jll",
                                 uuid="4e17d02c-6bf5-513e-be62-445f41c75a11",
-                                version=llvm_version);
+                                version=string(llvm_version));
                     platforms=filter(p -> sanitize(p) == "memory", platforms)),
 ]
 
