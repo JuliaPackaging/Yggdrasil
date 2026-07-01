@@ -42,7 +42,6 @@ platforms = supported_platforms()
 
 products = [
     LibraryProduct("libOpenCRG", :libOpenCRG),
-    FileProduct("include/crgBaseLib.h", :crgBaseLib_h),
 ]
 
 dependencies = Dependency[]
