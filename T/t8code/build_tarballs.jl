@@ -54,9 +54,11 @@ make -C build -j ${nproc} install
 """
 
 # We need some C++20
-# std::visit introduced in macOS 10.14, 'range' in namespace 'std::ranges' from 14.0 on
+# - std::visit introduced in macOS 10.14
+# - range in namespace 'std::ranges' from 14.0 on
+# - std::filesystem::path introduced in macOS 10.15
 # target chosen as lowest working version
-sources, script = require_macos_sdk("14.0", sources, script; deployment_target="10.14")
+sources, script = require_macos_sdk("14.0", sources, script; deployment_target="10.15")
 
 augment_platform_block = """
     using Base.BinaryPlatforms
