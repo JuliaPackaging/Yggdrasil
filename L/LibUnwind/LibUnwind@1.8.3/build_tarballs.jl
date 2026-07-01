@@ -36,6 +36,8 @@ if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
 fi
 
 export CFLAGS="-DPI -fPIC"
+# liblzma is linked statically, don't re-export its symbols
+export LDFLAGS="-Wl,--exclude-libs=liblzma.a"
 if [[ "${target}" == aarch64-linux-* ]]; then
     # Define macro introduced in later Linux kernel than what we have in the RootFS.
     CFLAGS="${CFLAGS} -DNT_ARM_PAC_MASK=0x406"
@@ -80,7 +82,7 @@ dependencies = [
     Dependency("Zlib_jll"),
     BuildDependency(PackageSpec(name="XZ_jll",
                                 uuid="ffd25f8a-64ca-5728-b0f7-c24cf3aae800",
-                                version=v"5.8.1")),
+                                version=v"5.8.1+0")),
     BuildDependency(PackageSpec(name="LLVMCompilerRT_jll",
                                 uuid="4e17d02c-6bf5-513e-be62-445f41c75a11",
                                 version=llvm_version);
