@@ -33,12 +33,44 @@ if [[ "${target}" == aarch64-linux-* ]]; then
    export LD_LIBRARY_PATH="/usr/lib/csl-musl-x86_64:/usr/lib/csl-glibc-x86_64:${LD_LIBRARY_PATH}"
 
    # Make sure we use host CUDA executable by copying from the x86_64 CUDA redist
-   NVCC_DIR=(/workspace/srcdir/cuda_nvcc-*-archive)
-   rm -rf ${prefix}/cuda/bin
-   cp -r ${NVCC_DIR}/bin ${prefix}/cuda/bin
+   NVCC_DIRS=(/workspace/srcdir/cuda_nvcc-*-archive)
+   NVCC_DIR="${NVCC_DIRS[0]}"
 
-   rm -rf ${prefix}/cuda/nvvm/bin
-   cp -r ${NVCC_DIR}/nvvm/bin ${prefix}/cuda/nvvm/bin
+   if [[ ! -d "${NVCC_DIR}" ]]; then
+      echo "ERROR: could not find cuda_nvcc archive directory"
+      find /workspace/srcdir -maxdepth 2 -type d | sort
+      exit 1
+   fi
+
+   rm -rf "${prefix}/cuda/bin"
+   mkdir -p "${prefix}/cuda"
+   cp -a "${NVCC_DIR}/bin" "${prefix}/cuda/bin"
+
+   # CUDA 12.x and earlier often had nvvm/bin inside cuda_nvcc.
+   # CUDA 13.x may provide nvvm pieces through the separate libnvvm redist.
+   rm -rf "${prefix}/cuda/nvvm"
+
+   if [[ -d "${NVCC_DIR}/nvvm" ]]; then
+      cp -a "${NVCC_DIR}/nvvm" "${prefix}/cuda/nvvm"
+   else
+      LIBNVVM_DIRS=(/workspace/srcdir/libnvvm-*-archive)
+      LIBNVVM_DIR="${LIBNVVM_DIRS[0]}"
+
+      if [[ -d "${LIBNVVM_DIR}/nvvm" ]]; then
+         cp -a "${LIBNVVM_DIR}/nvvm" "${prefix}/cuda/nvvm"
+      elif [[ -d "${LIBNVVM_DIR}/lib64" ]]; then
+         # Some layouts may only provide libnvvm.so under lib64.
+         # Preserve CUDA-style location expected by tools that look under cuda/nvvm.
+         mkdir -p "${prefix}/cuda/nvvm/lib64"
+         cp -a "${LIBNVVM_DIR}/lib64/"* "${prefix}/cuda/nvvm/lib64/"
+      else
+         echo "ERROR: could not find nvvm in cuda_nvcc or libnvvm archives"
+         echo "NVCC_DIR=${NVCC_DIR}"
+         echo "LIBNVVM_DIR=${LIBNVVM_DIR:-unset}"
+         find /workspace/srcdir -maxdepth 4 -type d | sort
+         exit 1
+      fi
+   fi
 
    export NVCC_PREPEND_FLAGS="-ccbin='${CXX}'"
 fi
