@@ -1,33 +1,26 @@
-# Note that this script can accept some limited command-line arguments, run
-# `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
 name = "OpenCRG"
 version = v"2.0.1"
 
-# OpenCRG's c-api is pure, dependency-free ANSI C99/C11: 11 sources in baselib/src,
-# one public header baselib/inc/crgBaseLib.h. Upstream's CMakeLists.txt hardcodes a
-# STATIC library and has no dllexport annotations, so rather than patch it we just
-# invoke the cross-compiler directly on the sources, as done for e.g. CoreMath/EDFlib.
+# Upstream's CMake only builds a static lib with no dllexport annotations,
+# so this compiles baselib/src directly into a shared lib instead.
 sources = [
     GitSource("https://github.com/asam-ev/OpenCRG.git", "2530b4e711989acbcfa520e2b99034976afc589c"),
 ]
 
-# Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/OpenCRG*/c-api
 
 mkdir -p "${libdir}" "${includedir}"
 
-# Upstream only links libm on non-Apple Unix (see cmake/OpenCRGCompilerSettings.cmake);
-# on macOS libm is part of libSystem, and on Windows the mingw CRT already provides it.
+# Matches upstream: libm is linked only on non-Apple Unix targets.
 EXTRA_LIBS=""
 if [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
     EXTRA_LIBS="-lm"
 fi
 
-# Upstream never marks symbols for export, so on Windows nothing would be visible in
-# the DLL unless we tell the linker to export everything.
+# Export all symbols: upstream marks none, so Windows needs this for a DLL.
 EXTRA_LDFLAGS=""
 if [[ "${target}" == *-mingw* ]]; then
     EXTRA_LDFLAGS="-Wl,--export-all-symbols"
@@ -45,19 +38,14 @@ install -Dvm 644 baselib/inc/crgBaseLib.h "${includedir}/crgBaseLib.h"
 install_license ../LICENSE ../NOTICE
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
 platforms = supported_platforms()
 
-# The products that we will ensure are always built
 products = [
     LibraryProduct("libOpenCRG", :libOpenCRG),
     FileProduct("include/crgBaseLib.h", :crgBaseLib_h),
 ]
 
-# Dependencies that must be installed before this package can be built
 dependencies = Dependency[]
 
-# Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6")
