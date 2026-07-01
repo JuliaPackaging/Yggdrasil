@@ -8,17 +8,14 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "t8code"
-version = v"4.0.6"
-commit_hash = "4a82a3bf8f7741043478a0cbbdb33561ec50b8f2"
+version = v"4.0.7"
+commit_hash = "610eda1d465cf7123ea87d86d3a528c30b91b28f"
 
 sources = [GitSource("https://github.com/DLR-AMR/t8code", commit_hash),
            DirectorySource("./bundled")]
 
 script = raw"""
 cd $WORKSPACE/srcdir/t8code
-
-# Fix for https://github.com/DLR-AMR/t8code/pull/2335
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/cmake-rpath.patch"
 
 # Microsoft MPI is still 2.0 but has the required features; remove the strict 3.0 requirement
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi2.patch"
