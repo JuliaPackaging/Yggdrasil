@@ -33,21 +33,16 @@ elif [[ ${target} == *freebsd* ]]; then
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/STEPConstruct_AP203Context.cxx.patch"
 elif [[ ${target} == x86_64-apple-darwin* ]]; then
     # OCCT now uses std::shared_mutex (macOS 10.12+) and std::variant/std::visit
-    # (macOS 10.14+) in TKernel. The bundled SDK is too old to even have the
-    # linker stubs for these symbols, so swap in a newer one (same approach as
-    # Trilinos's build_tarballs.jl) in addition to bumping the deployment target.
-    pushd ${WORKSPACE}/srcdir/MacOSX11.*.sdk
-    # `rm -rf` on the old SDK's heavily-symlinked System dir can hit spurious
-    # I/O errors on some overlayfs setups, leaving behind entries that then
-    # make `cp -ra` fail too ("File exists") when it tries to replace them.
-    # OCCT doesn't need libxml2 at all, so don't bother touching it; for
-    # everything else, tolerate individual failures on both sides -- we only
-    # need the *new* symbols to be added/overwritten, not a byte-for-byte
-    # clean swap.
-    rm -rf /opt/${target}/${target}/sys-root/System || true
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/." || true
-    cp -ra System "/opt/${target}/${target}/sys-root/." || true
-    popd
+    # (macOS 10.14+) in TKernel. The bundled SDK's libc++.tbd predates
+    # std::bad_variant_access entirely (no typeinfo/vtable symbols at all,
+    # regardless of deployment target), so linking fails. Only that one
+    # stub file needs replacing -- swapping the whole System/Frameworks tree
+    # (as e.g. Trilinos's build_tarballs.jl does for a different symbol) isn't
+    # needed here and made BinaryBuilder's post-build audit hang, apparently
+    # while resolving a broken symlink left behind by a partial `rm -rf`.
+    cp -a ${WORKSPACE}/srcdir/MacOSX11.*.sdk/usr/lib/libc++.tbd \
+          ${WORKSPACE}/srcdir/MacOSX11.*.sdk/usr/lib/libc++.1.tbd \
+          "/opt/${target}/${target}/sys-root/usr/lib/"
     export MACOSX_DEPLOYMENT_TARGET=10.15
 fi
 mkdir build
