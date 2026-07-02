@@ -38,12 +38,15 @@ elif [[ ${target} == x86_64-apple-darwin* ]]; then
     # Trilinos's build_tarballs.jl) in addition to bumping the deployment target.
     pushd ${WORKSPACE}/srcdir/MacOSX11.*.sdk
     # `rm -rf` on the old SDK's heavily-symlinked System dir can hit spurious
-    # I/O errors on some overlayfs setups; `cp -ra` below overwrites same-named
-    # entries anyway, so tolerate a non-clean removal instead of aborting.
+    # I/O errors on some overlayfs setups, leaving behind entries that then
+    # make `cp -ra` fail too ("File exists") when it tries to replace them.
+    # OCCT doesn't need libxml2 at all, so don't bother touching it; for
+    # everything else, tolerate individual failures on both sides -- we only
+    # need the *new* symbols to be added/overwritten, not a byte-for-byte
+    # clean swap.
     rm -rf /opt/${target}/${target}/sys-root/System || true
-    rm -rf /opt/${target}/${target}/sys-root/usr/include/libxml2/libxml || true
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/." || true
+    cp -ra System "/opt/${target}/${target}/sys-root/." || true
     popd
     export MACOSX_DEPLOYMENT_TARGET=10.15
 fi
