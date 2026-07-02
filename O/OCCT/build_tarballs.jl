@@ -15,6 +15,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/OCCT
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/Standard_Real.hxx.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/Standard_Integer.hxx.patch"
 if [[ ${target} == *musl* ]]; then
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/OSD_MemInfo.cxx.patch"
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/OSD_signal.cxx.patch"
