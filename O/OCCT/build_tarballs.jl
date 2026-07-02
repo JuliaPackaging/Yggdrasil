@@ -37,8 +37,11 @@ elif [[ ${target} == x86_64-apple-darwin* ]]; then
     # linker stubs for these symbols, so swap in a newer one (same approach as
     # Trilinos's build_tarballs.jl) in addition to bumping the deployment target.
     pushd ${WORKSPACE}/srcdir/MacOSX11.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    rm -rf /opt/${target}/${target}/sys-root/usr/include/libxml2/libxml
+    # `rm -rf` on the old SDK's heavily-symlinked System dir can hit spurious
+    # I/O errors on some overlayfs setups; `cp -ra` below overwrites same-named
+    # entries anyway, so tolerate a non-clean removal instead of aborting.
+    rm -rf /opt/${target}/${target}/sys-root/System || true
+    rm -rf /opt/${target}/${target}/sys-root/usr/include/libxml2/libxml || true
     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
     cp -ra System "/opt/${target}/${target}/sys-root/."
     popd
