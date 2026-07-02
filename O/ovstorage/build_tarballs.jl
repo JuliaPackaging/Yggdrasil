@@ -19,12 +19,9 @@ mkdir -p "${libdir}/plugins" "${includedir}"
 mkdir -p "${WORKSPACE}/tmpdir"
 export TMPDIR="${WORKSPACE}/tmpdir"
 
-# build.rs nested-builds a test plugin without --target, breaking cross
-# builds; this upstream-provided override skips it.
+# Avoids build.rs building the test plugin against a runner-local path.
 export OVSTORAGE_EXAMPLE_PLUGIN_RUST_SO_OVERRIDE=/dev/null
 
-# Each workspace's target/ is deleted after its artifacts are copied,
-# capping disk to one workspace's build output at a time.
 (cd ovstorage-core && cargo build --release --locked \
     -p ovstorage-capi -p ovstorage-plugin-file -p ovstorage-plugin-http -p ovstorage-plugin-test)
 install -Dvm755 ovstorage-core/target/${rust_target}/release/*ovstorage.${dlext} -t "${libdir}"
