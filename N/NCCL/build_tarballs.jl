@@ -107,7 +107,7 @@ for platform in CUDA.supported_platforms(; min_version=v"12", max_version=v"13.0
     platform_sources = BinaryBuilder.AbstractSource[git_sources...]
     if arch(platform) == "aarch64"
         push!(platform_sources, CUDA.cuda_nvcc_redist_source(platform["cuda"], "x86_64"))
-        cuda_ver = platform["cuda"]
+        cuda_ver = VersionNumber(platform["cuda"])
         if v"13.0" <= cuda_ver < v"13.1"
             hash = "8c5676a65a2e6d13e3c229f025af18677de46c220d77992fe932200fa798b19b"
             as = ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/libnvvm/linux-x86_64/libnvvm-linux-x86_64-13.0.48-archive.tar.xz", hash)
