@@ -5,7 +5,6 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "MGARD"
 version = v"1.6.0"
-# Comment to test build
 
 # Collection of sources required to build MGARD
 sources = [
