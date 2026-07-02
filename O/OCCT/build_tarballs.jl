@@ -41,7 +41,8 @@ cmake -Wno-dev .. \
     -DBUILD_LIBRARY_TYPE=Shared \
     -DBUILD_MODULE_Draw=0 \
     -DBUILD_MODULE_Visualization=0 \
-    -DBUILD_MODULE_ApplicationFramework=0
+    -DBUILD_MODULE_ApplicationFramework=0 \
+    -D3RDPARTY_RAPIDJSON_INCLUDE_DIR=${includedir}
 make -j${nproc}
 make install
 install_license ../LICENSE_LGPL_21.txt ../OCCT_LGPL_EXCEPTION.txt
