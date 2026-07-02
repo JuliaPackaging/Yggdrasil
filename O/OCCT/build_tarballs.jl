@@ -32,16 +32,18 @@ elif [[ ${target} == *freebsd* ]]; then
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/Standard_StackTrace.cxx.patch"
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/STEPConstruct_AP203Context.cxx.patch"
 elif [[ ${target} == x86_64-apple-darwin* ]]; then
-    # OCCT now uses std::shared_mutex (macOS 10.12+) and std::variant/std::visit
-    # (macOS 10.14+) in TKernel. The bundled SDK's libc++.tbd predates
-    # std::bad_variant_access entirely (no typeinfo/vtable symbols at all,
-    # regardless of deployment target), so linking fails. Only that one
-    # stub file needs replacing -- swapping the whole System/Frameworks tree
-    # (as e.g. Trilinos's build_tarballs.jl does for a different symbol) isn't
-    # needed here and made BinaryBuilder's post-build audit hang, apparently
-    # while resolving a broken symlink left behind by a partial `rm -rf`.
-    cp -a ${WORKSPACE}/srcdir/MacOSX11.*.sdk/usr/lib/libc++.tbd \
-          ${WORKSPACE}/srcdir/MacOSX11.*.sdk/usr/lib/libc++.1.tbd \
+    # OCCT now uses std::shared_mutex (macOS 10.12+), std::variant/std::visit
+    # (macOS 10.14+), and objc_alloc_init (a newer ObjC runtime helper) in its
+    # Cocoa bridging code. The bundled SDK's linker stubs (usr/lib/*.tbd)
+    # simply predate these symbols entirely (missing regardless of deployment
+    # target), so replace all of them with the newer SDK's flat, individual
+    # stub files. Deliberately *not* swapping System/Library/Frameworks (as
+    # e.g. Trilinos's build_tarballs.jl does for a different symbol): that
+    # directory tree is a maze of Versions/Current-style symlinks, and doing
+    # so once made BinaryBuilder's post-build audit hang for over an hour,
+    # apparently while resolving a broken symlink left behind by a partial
+    # `rm -rf`. usr/lib/*.tbd are flat text stub files with no such risk.
+    cp -a ${WORKSPACE}/srcdir/MacOSX11.*.sdk/usr/lib/*.tbd \
           "/opt/${target}/${target}/sys-root/usr/lib/"
     export MACOSX_DEPLOYMENT_TARGET=10.15
 fi
