@@ -20,6 +20,11 @@ cd ${WORKSPACE}/srcdir/UniversalNumbers.jl
 cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
 cmake --build build --parallel ${nproc}
 cmake --install build
+
+# The compiled library includes both the wrapper (MIT) and the vendored
+# Stillwater Universal headers (MIT); ship both licenses.
+install_license LICENSE
+install_license deps/universal/LICENSE
 """
 
 sources, script = require_macos_sdk("14.0", sources, script)
