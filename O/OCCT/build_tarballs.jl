@@ -27,6 +27,10 @@ elif [[ ${target} == *freebsd* ]]; then
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/Standard_CString.cxx.patch"
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/Standard_StackTrace.cxx.patch"
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/STEPConstruct_AP203Context.cxx.patch"
+elif [[ ${target} == x86_64-apple-darwin* ]]; then
+    # OCCT now uses std::shared_mutex (macOS 10.12+) and std::variant/std::visit
+    # (macOS 10.14+) in TKernel, which are unavailable at the default deployment target.
+    export MACOSX_DEPLOYMENT_TARGET=10.15
 fi
 mkdir build
 cd build
