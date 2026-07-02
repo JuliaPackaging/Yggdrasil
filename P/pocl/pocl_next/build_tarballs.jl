@@ -141,3 +141,5 @@ for (i,build) in enumerate(builds)
                    preferred_llvm_version=Base.thismajor(llvm_version),
                    julia_compat="1.6", init_block=init_block())
 end
+
+# bump
