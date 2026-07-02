@@ -118,8 +118,24 @@ function get_macos_sdk_script(version::String; deployment_target::String = versi
             --warning=no-unknown-keyword
         old_sdkroot=${SDKROOT}
         new_sdkroot=${WORKSPACE}/srcdir/MacOSX${macos_sdk_version}.sdk
-        # Point to C++ header files (these are not shipped with the SDK)
-        ln -s ${old_sdkroot}/usr/include/c++ ${new_sdkroot}/usr/include/c++
+        # Make sure libc++ header files are available at `usr/include/c++/v1`.
+        # Some SDKs ship their own (e.g. 15.0), which we leave alone; for those
+        # that don't, symlink the ones from the default SDK. Note we symlink
+        # the `v1` subdirectory rather than the whole `c++` directory: some
+        # SDKs (e.g. 10.13) contain `usr/include/c++/4.2.1` (but no `v1`), and
+        # symlinking `c++` onto that existing directory would silently create
+        # a nested `c++/c++` link, so libc++ headers like <new> are not found.
+        if [[ ! -d ${new_sdkroot}/usr/include/c++/v1 ]]; then
+            mkdir -p ${new_sdkroot}/usr/include/c++
+            ln -sT ${old_sdkroot}/usr/include/c++/v1 ${new_sdkroot}/usr/include/c++/v1
+        fi
+        # In the build environment `usr/local` of the default sys-root is a
+        # symlink to the destdir prefix, which puts the header files of the
+        # dependencies on the compilers' default search path. No SDK ships a
+        # `usr/local`, so replicate that symlink in the new SDK. `-T` makes
+        # this fail loudly should some SDK ship a `usr/local` after all,
+        # instead of silently creating a nested `usr/local/local` link.
+        ln -sT ${old_sdkroot}/usr/local ${new_sdkroot}/usr/local
         # Fix toolchain files
         sed -i -e "s+${old_sdkroot}+${new_sdkroot}+" ${MESON_TARGET_TOOLCHAIN} ${CMAKE_TARGET_TOOLCHAIN}
         # Fix compiler wrappers
