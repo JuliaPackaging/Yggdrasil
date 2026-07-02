@@ -9,10 +9,10 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "NCCL"
-version = v"2.28.9"
+version = v"2.30.4"
 
 git_sources = [
-    GitSource("https://github.com/NVIDIA/nccl.git", "dbc86fd06e8b0c4517b95d8958a09ccacf9520c9"),
+    GitSource("https://github.com/NVIDIA/nccl.git", "1933fdd6360a8bfccaa0166bd71bce363d32e5b6"),
     DirectorySource("./bundled/")
 ]
 
@@ -29,21 +29,40 @@ mkdir -p ${TMPDIR}
 # Necessary operations to cross compile CUDA from x86_64 to aarch64
 if [[ "${target}" == aarch64-linux-* ]]; then
 
-   # Add /usr/lib/csl-musl-x86_64 to LD_LIBRARY_PATH to be able to use host nvcc
    export LD_LIBRARY_PATH="/usr/lib/csl-musl-x86_64:/usr/lib/csl-glibc-x86_64:${LD_LIBRARY_PATH}"
 
-   # Make sure we use host CUDA executable by copying from the x86_64 CUDA redist
-   NVCC_DIR=(/workspace/srcdir/cuda_nvcc-*-archive)
-   rm -rf ${prefix}/cuda/bin
-   cp -r ${NVCC_DIR}/bin ${prefix}/cuda/bin
+   NVCC_DIR=(/workspace/srcdir/cuda_nvcc-linux-x86_64-*-archive)
+   NVVM_DIR=(/workspace/srcdir/libnvvm-linux-x86_64-*-archive)
 
-   # CUDA > 12.9 libnvvm not part of redist
-   if [[ -d "${NVCC_DIR}/nvvm/bin" ]]; then
+   rm -rf ${prefix}/cuda/bin
+   cp -a "${NVCC_DIR[0]}/bin" "${prefix}/cuda/bin"
+
+   # CUDA <= 12.9: nvvm may still be inside cuda_nvcc.
+   # CUDA >= 13.0: nvvm is a separate redist.
+   if [[ -d "${NVCC_DIR[0]}/nvvm/bin" ]]; then
       rm -rf ${prefix}/cuda/nvvm/bin
-      cp -r ${NVCC_DIR}/nvvm/bin ${prefix}/cuda/nvvm/bin
+      cp -a "${NVCC_DIR[0]}/nvvm/bin" "${prefix}/cuda/nvvm/bin"
+
+      if [[ -d "${NVCC_DIR[0]}/nvvm/lib64" ]]; then
+         rm -rf ${prefix}/cuda/nvvm/lib64
+         cp -a "${NVCC_DIR[0]}/nvvm/lib64" "${prefix}/cuda/nvvm/lib64"
+      fi
+
+   elif [[ -d "${NVVM_DIR[0]}/nvvm/bin" ]]; then
+      rm -rf ${prefix}/cuda/nvvm/bin
+      cp -a "${NVVM_DIR[0]}/nvvm/bin" "${prefix}/cuda/nvvm/bin"
+
+      if [[ -d "${NVVM_DIR[0]}/nvvm/lib64" ]]; then
+         rm -rf ${prefix}/cuda/nvvm/lib64
+         cp -a "${NVVM_DIR[0]}/nvvm/lib64" "${prefix}/cuda/nvvm/lib64"
+      fi
+
+   else
+      echo "ERROR: no host x86_64 nvvm/bin found; cannot cross-compile CUDA device code"
+      exit 1
    fi
 
-   export NVCC_PREPEND_FLAGS="-ccbin='${CXX}'"
+   export NVCC_PREPEND_FLAGS="-ccbin=${CXX}"
 fi
 
 export CXXFLAGS='-D__STDC_FORMAT_MACROS -D_GNU_SOURCE -Wno-unused-parameter -Wno-type-limits -Wno-error -Wno-missing-field-initializers -Wno-implicit-fallthrough'
@@ -88,6 +107,14 @@ for platform in CUDA.supported_platforms(; min_version=v"12", max_version=v"13.0
     platform_sources = BinaryBuilder.AbstractSource[git_sources...]
     if arch(platform) == "aarch64"
         push!(platform_sources, CUDA.cuda_nvcc_redist_source(platform["cuda"], "x86_64"))
+        cuda_ver = platform["cuda"]
+        if v"13.0" <= cuda_ver < v"13.1"
+            hash = "8c5676a65a2e6d13e3c229f025af18677de46c220d77992fe932200fa798b19b"
+            as = ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/libnvvm/linux-x86_64/libnvvm-linux-x86_64-13.0.48-archive.tar.xz", hash)
+            push!(platform_sources, as)
+        elseif cuda_ver > v"13.0"
+            error("Add libnvvm redist source to build NCCL for CUDA $cuda_ver on aarch64")
+        end
     end
 
     push!(
