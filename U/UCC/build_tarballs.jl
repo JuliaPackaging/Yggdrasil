@@ -73,7 +73,7 @@ for platform in all_platforms
 
     if haskey(platform, "cuda") && platform["cuda"] != "none" 
         append!(platform_deps, CUDA.required_dependencies(platform))
-        push!(platform_deps, Dependency("NCCL_jll"; compat="=2.28.3")) # force NCCL without patch?
+        push!(platform_deps, Dependency("NCCL_jll"; compat="=2.28.9"))
 
         platform_script *= "\n"
         platform_script *= raw"""
