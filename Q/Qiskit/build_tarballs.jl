@@ -6,11 +6,11 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "Qiskit"
-version = v"2.4.2"
+version = v"2.5.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Qiskit/qiskit.git", "5a1cf3159aedad954767956d6a5c81a06d043d71")
+    GitSource("https://github.com/Qiskit/qiskit.git", "bbfa6170e00da694700a83bcd3a01d19588d15ae")
 ]
 
 # Bash recipe for building across all platforms
@@ -30,8 +30,8 @@ cd $WORKSPACE/srcdir/qiskit
 # improperly formed and not suitable for cross compilation.  So, instead,
 # we invoke Cargo directly and copy the handful of files that result to their
 # proper location.  Upstream issue: https://github.com/Qiskit/qiskit/issues/16250
-env -u CARGO_BUILD_TARGET -u rust_target ${MACHTYPE}-cargo build -p qiskit-bindgen-c
-env -u CARGO_BUILD_TARGET -u rust_target ./target/debug/qiskit-bindgen-c crates/cext dist/c/include
+env -u CARGO_BUILD_TARGET -u rust_target ${MACHTYPE}-cargo build -p qiskit-bindgen-cli
+env -u CARGO_BUILD_TARGET -u rust_target ./target/debug/qiskit-bindgen-cli install -c crates/cext -o dist/c/include
 
 export PYO3_PYTHON=${host_bindir}/python3
 export PYO3_CROSS_LIB_DIR=$WORKSPACE/destdir/lib
