@@ -102,6 +102,7 @@ x11_platforms = filter(p ->Sys.islinux(p) || Sys.isfreebsd(p), platforms)
 dependencies = [
     BuildDependency("Xorg_xorgproto_jll"; platforms=x11_platforms),
     Dependency("FreeType2_jll"; compat="2.13.4"),
+    Dependency("rapidjson_jll"; compat="1.1.1"),
     Dependency("Libglvnd_jll"; platforms=x11_platforms),
     Dependency("Xorg_libX11_jll"; platforms=x11_platforms),
     Dependency("Xorg_libXext_jll"; platforms=x11_platforms),
