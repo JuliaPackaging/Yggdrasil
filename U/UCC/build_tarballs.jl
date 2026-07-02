@@ -63,7 +63,6 @@ dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
-
 for platform in all_platforms
 
     should_build_platform(triplet(platform)) || continue
