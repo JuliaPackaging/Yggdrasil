@@ -42,6 +42,7 @@ cmake -Wno-dev .. \
     -DBUILD_MODULE_Draw=0 \
     -DBUILD_MODULE_Visualization=0 \
     -DBUILD_MODULE_ApplicationFramework=0 \
+    -DUSE_RAPIDJSON=ON \
     -D3RDPARTY_RAPIDJSON_INCLUDE_DIR=${includedir}
 make -j${nproc}
 make install
