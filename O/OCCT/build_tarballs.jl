@@ -9,7 +9,11 @@ version = v"8.0.0"
 sources = [
     GitSource("https://github.com/Open-Cascade-SAS/OCCT.git",
               "4f95ecaa3b690e34988d42e2ca7fe882e7a8bc7d"), # V8_0_0_p1 @ Jun 17, 2026
-    DirectorySource("./bundled")
+    DirectorySource("./bundled"),
+    # The bundled x86_64-apple-darwin SDK is too old to have symbols (e.g.
+    # std::bad_variant_access) needed by OCCT's C++17 std library usage.
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz",
+                  "cd4f08a75577145b8f05245a2975f7c81401d75e9535dcffbb879ee1deefcbf4"),
 ]
 
 # Bash recipe for building across all platforms
@@ -29,7 +33,15 @@ elif [[ ${target} == *freebsd* ]]; then
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/STEPConstruct_AP203Context.cxx.patch"
 elif [[ ${target} == x86_64-apple-darwin* ]]; then
     # OCCT now uses std::shared_mutex (macOS 10.12+) and std::variant/std::visit
-    # (macOS 10.14+) in TKernel, which are unavailable at the default deployment target.
+    # (macOS 10.14+) in TKernel. The bundled SDK is too old to even have the
+    # linker stubs for these symbols, so swap in a newer one (same approach as
+    # Trilinos's build_tarballs.jl) in addition to bumping the deployment target.
+    pushd ${WORKSPACE}/srcdir/MacOSX11.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    rm -rf /opt/${target}/${target}/sys-root/usr/include/libxml2/libxml
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    popd
     export MACOSX_DEPLOYMENT_TARGET=10.15
 fi
 mkdir build
