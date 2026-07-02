@@ -8,7 +8,6 @@ name = "p7zip"
 upstream_version = "26.01"
 compact_version = replace(upstream_version, "."=>"")
 version = v"17.8.1"
-# Comment to test building works
 
 # Collection of sources required to build p7zip
 sources = [
