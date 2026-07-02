@@ -108,16 +108,20 @@ function get_macos_sdk_script(version::String; deployment_target::String = versi
         macosx_deployment_target=$deployment_target
         """ *
     raw"""
+    # Move the SDK tarball out of `srcdir` on all platforms: any extra entry
+    # in there defeats the automatic installation of license files, which
+    # expects `srcdir` to contain a single top-level source directory.
+    mv ${WORKSPACE}/srcdir/MacOSX${macos_sdk_version}.sdk.tar.xz ${WORKSPACE}/
     if [[ "${target}" == """*arch*raw"""-apple-darwin* ]]; then
-        # Extract SDK
+        # Extract SDK. Also outside of `srcdir`, for the same reason.
         echo "Extracting MacOSX${macos_sdk_version}.sdk.tar.xz (this may take a while)"
         tar \
             --extract \
-            --file=${WORKSPACE}/srcdir/MacOSX${macos_sdk_version}.sdk.tar.xz \
-            --directory=${WORKSPACE}/srcdir \
+            --file=${WORKSPACE}/MacOSX${macos_sdk_version}.sdk.tar.xz \
+            --directory=${WORKSPACE} \
             --warning=no-unknown-keyword
         old_sdkroot=${SDKROOT}
-        new_sdkroot=${WORKSPACE}/srcdir/MacOSX${macos_sdk_version}.sdk
+        new_sdkroot=${WORKSPACE}/MacOSX${macos_sdk_version}.sdk
         # Make sure libc++ header files are available at `usr/include/c++/v1`.
         # Some SDKs ship their own (e.g. 15.0), which we leave alone; for those
         # that don't, symlink the ones from the default SDK. Note we symlink
