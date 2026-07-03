@@ -2,12 +2,12 @@ using BinaryBuilder, Pkg
 
 name = "HiGHS"
 
-version = v"1.15.0"
+version = v"1.15.1"
 
 sources = [
     GitSource(
         "https://github.com/ERGO-Code/HiGHS.git",
-        "83960019015b0d5152df73110ff142f328edcfd2",
+        "04024d701f79feb8e2f18bc3df0dffc04ef05088",
     ),
 ]
 
@@ -25,8 +25,16 @@ cd $WORKSPACE/srcdir/HiGHS
 # Remove system CMake to use the jll version
 apk del cmake
 
-mkdir -p build
-cd build
+rm -rf build
+mkdir build
+
+# Needed because of
+# https://github.com/ERGO-Code/HiGHS/issues/769#issuecomment-2466938187
+if [[ "${target}" == i686-* ]]; then
+    FFLOAT_STORE="-ffloat-store"
+else
+    FFLOAT_STORE=""
+fi
 
 if [[ "${target}" == *-mingw* ]]; then
     LBT=blastrampoline-5
@@ -34,7 +42,8 @@ else
     LBT=blastrampoline
 fi
 
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+cmake -S . -B build \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
@@ -42,20 +51,21 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DHIPO=ON \
     -DBLA_VENDOR=blastrampoline \
     -DBLAS_LIBRARIES=\"${LBT}\" \
-    ..
+    -DCMAKE_C_FLAGS="${FFLOAT_STORE}" \
+    -DCMAKE_CXX_FLAGS="${FFLOAT_STORE}"
 
 if [[ "${target}" == *-linux-* ]]; then
-        make -j ${nproc}
+        make -C build -j ${nproc}
 else
     if [[ "${target}" == *-mingw* ]]; then
-        cmake --build . --config Release
+        cmake --build build --config Release
     else
-        cmake --build . --config Release --parallel
+        cmake --build build --config Release --parallel
     fi
 fi
-make install
+cmake --install build
 
-install_license ../LICENSE.txt
+install_license LICENSE.txt
 """
 
 products = [
