@@ -32,7 +32,7 @@ sources, script = require_macos_sdk("14.0", sources, script)
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-filter!(p -> arch(p) ∉ ("i686", "armv6l", "armv7l"), platforms)  # dd uses __uint128_t (64-bit only)
+filter!(p -> nbits(p) == 64, platforms)  # dd uses __uint128_t (64-bit only)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
