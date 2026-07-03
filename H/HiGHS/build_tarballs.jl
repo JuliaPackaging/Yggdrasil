@@ -25,8 +25,8 @@ cd $WORKSPACE/srcdir/HiGHS
 # Remove system CMake to use the jll version
 apk del cmake
 
-rm -rf build
-mkdir build
+mkdir -p build
+cd build
 
 # Needed because of
 # https://github.com/ERGO-Code/HiGHS/issues/769#issuecomment-2466938187
@@ -42,8 +42,7 @@ else
     LBT=blastrampoline
 fi
 
-cmake -S . -B build \
-    -DCMAKE_INSTALL_PREFIX=${prefix} \
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
@@ -51,21 +50,22 @@ cmake -S . -B build \
     -DHIPO=ON \
     -DBLA_VENDOR=blastrampoline \
     -DBLAS_LIBRARIES=\"${LBT}\" \
-    -DCMAKE_C_FLAGS="${FFLOAT_STORE}" \
-    -DCMAKE_CXX_FLAGS="${FFLOAT_STORE}"
+    # -DCMAKE_C_FLAGS="${FFLOAT_STORE}" \
+    # -DCMAKE_CXX_FLAGS="${FFLOAT_STORE}" \
+    ..
 
 if [[ "${target}" == *-linux-* ]]; then
-        make -C build -j ${nproc}
+        make -j ${nproc}
 else
     if [[ "${target}" == *-mingw* ]]; then
-        cmake --build build --config Release
+        cmake --build . --config Release
     else
-        cmake --build build --config Release --parallel
+        cmake --build . --config Release --parallel
     fi
 fi
-cmake --install build
+make install
 
-install_license LICENSE.txt
+install_license ../LICENSE.txt
 """
 
 products = [
