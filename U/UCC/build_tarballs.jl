@@ -34,7 +34,7 @@ FLAGS+=(--enable-shared)
 
 """
 
-MIN_CUDA_VERSION = v"12.2"
+MIN_CUDA_VERSION = v"12.3"
 MAX_CUDA_VERSION = v"13.0.999" 
 
 # We need to wait until https://github.com/JuliaPackaging/Yggdrasil/pull/13039 is merged
