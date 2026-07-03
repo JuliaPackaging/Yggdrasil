@@ -1,10 +1,10 @@
 --- a/configure.ac
 +++ b/configure.ac
-@@ -521,6 +521,7 @@
-         PROFILE=
-         ;;
-     *)
-+        LD="$CC"
-         PROFILE=
-         ;;
+@@ -746,6 +746,7 @@
+     MPD_OPT="-DNDEBUG -O2"
+     ;;
+   *)
++    LD="$CC"
+     ;;
  esac
+ 
