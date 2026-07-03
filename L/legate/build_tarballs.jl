@@ -53,7 +53,7 @@ dependencies = [
     Dependency("HDF5_jll"; compat="^2"),
     Dependency("MPICH_jll"; compat="4.3.0"),
     Dependency("Zlib_jll"; compat="1.2.12"),
-    Dependency("UCC_jll"; compat="1.6.0"),
+    Dependency("UCC_jll"; compat="1.8.0"),
     Dependency("UCX_jll"; compat="1.20.0"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     HostBuildDependency(PackageSpec(; name = "CMake_jll", version = "3.31.9")),
@@ -78,7 +78,7 @@ for platform in all_platforms
             push!(platform_sources, CUDA.cuda_nvcc_redist_source(cuda_ver, "x86_64"))
         end
 
-        push!(_dependencies, Dependency("NCCL_jll"; compat="2.28.3"))
+        push!(_dependencies, Dependency("NCCL_jll"; compat="2.28.9"))
         append!(_dependencies, CUDA.required_dependencies(platform, static_sdk=true))
 
         script = get_script(Val{true}())
