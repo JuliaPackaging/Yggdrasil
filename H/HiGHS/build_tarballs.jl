@@ -50,9 +50,10 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DHIPO=ON \
     -DBLA_VENDOR=blastrampoline \
     -DBLAS_LIBRARIES=\"${LBT}\" \
-    # -DCMAKE_C_FLAGS="${FFLOAT_STORE}" \
-    # -DCMAKE_CXX_FLAGS="${FFLOAT_STORE}" \
     ..
+
+# -DCMAKE_C_FLAGS="${FFLOAT_STORE}" \
+# -DCMAKE_CXX_FLAGS="${FFLOAT_STORE}" \
 
 if [[ "${target}" == *-linux-* ]]; then
         make -j ${nproc}
