@@ -35,9 +35,9 @@ for platform in cuda_platforms
     should_build_platform(triplet(platform)) || continue
 
     platform_products = BinaryBuilderBase.Product[products...]
+    platform_deps = BinaryBuilderBase.AbstractDependency[dependencies...]
 
-    _dependencies = copy(dependencies)
-    append!(_dependencies, CUDA.required_dependencies(platform, static_sdk=true))
+    append!(platform_deps, CUDA.required_dependencies(platform, static_sdk=true))
 
     cuda_ver = VersionNumber(platform["cuda"])
     var = "cuda$(cuda_ver.major)"
@@ -52,7 +52,7 @@ for platform in cuda_platforms
 
     build_tarballs(
         ARGS, name, version, sources, 
-        script, [platform], platform_products, _dependencies;
+        script, [platform], platform_products, platform_deps;
         julia_compat = "1.10", 
         preferred_gcc_version = v"11",
         lazy_artifacts = true, dont_dlopen = true,
