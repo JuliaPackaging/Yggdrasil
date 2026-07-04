@@ -3,7 +3,6 @@ import BinaryBuilderBase
 import Pkg: PackageSpec
 using Base.BinaryPlatforms: arch, os, tags
 
-# needed for libjulia_platforms and julia_versions
 const YGGDRASIL_DIR = "../../../"
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "C/CUDA/common.jl"))
@@ -13,7 +12,7 @@ name = "cuSolverMp"
 version = v"0.8.0"
 
 MIN_CUDA_VERSION = v"12.2"
-MAX_CUDA_VERSION = v"13.1.999" 
+MAX_CUDA_VERSION = v"13.0.999" 
 
 cuda_platforms = CUDA.supported_platforms(; min_version = MIN_CUDA_VERSION, max_version = MAX_CUDA_VERSION)
 
@@ -73,22 +72,3 @@ for platform in cuda_platforms
         augment_platform_block = CUDA.augment
     )
 end
-
-
-# (base) emeitz@dubliner:/tank/emeitz/libcusolvermp-linux-x86_64-0.8.0.3126_cuda13-archive/lib$ readelf -d libcusolverMp.so | grep NEEDED
-#  0x0000000000000001 (NEEDED)             Shared library: [libnccl.so.2]
-#  0x0000000000000001 (NEEDED)             Shared library: [libcublas.so.13]
-#  0x0000000000000001 (NEEDED)             Shared library: [libcusolver.so.12]
-#  0x0000000000000001 (NEEDED)             Shared library: [libcuda.so.1]
-#  0x0000000000000001 (NEEDED)             Shared library: [libcublasLt.so.13]
-#  0x0000000000000001 (NEEDED)             Shared library: [libcusparse.so.12]
-#  0x0000000000000001 (NEEDED)             Shared library: [libnvJitLink.so.13]
-#  0x0000000000000001 (NEEDED)             Shared library: [libpthread.so.0]
-#  0x0000000000000001 (NEEDED)             Shared library: [libdl.so.2]
-#  0x0000000000000001 (NEEDED)             Shared library: [librt.so.1]
-#  0x0000000000000001 (NEEDED)             Shared library: [libcudart.so.13]
-#  0x0000000000000001 (NEEDED)             Shared library: [libstdc++.so.6]
-#  0x0000000000000001 (NEEDED)             Shared library: [libm.so.6]
-#  0x0000000000000001 (NEEDED)             Shared library: [libgcc_s.so.1]
-#  0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]
-#  0x0000000000000001 (NEEDED)             Shared library: [ld-linux-x86-64.so.2]
