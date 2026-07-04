@@ -67,7 +67,7 @@ for platform in cuda_platforms
 
     build_tarballs(
         ARGS, name, version, sources, redist_script,
-        script, [platform], platform_products, platform_deps;
+        [platform], platform_products, platform_deps;
         julia_compat = "1.10", 
         preferred_gcc_version = v"11",
         lazy_artifacts = true, dont_dlopen = true,
