@@ -40,7 +40,7 @@ cp -av include/* ${includedir}/
 """
 
 products = [
-    LibraryProduct("libcusolvermp", :libcusolvermp)
+    LibraryProduct("libcusolverMp", :libcusolvermp)
 ] 
 
 dependencies = [Dependency("NCCL_jll"; compat="2.28.9")]
