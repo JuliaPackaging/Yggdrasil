@@ -42,7 +42,10 @@ products = [
     LibraryProduct("libcufile_rdma", :libcufile_rdma)
 ] 
 
-dependencies = [Dependency("rdma_core_jll")] # missing libmlx5.so??
+dependencies = [
+    Dependency("rdma_core_jll"), # has libmlx5.so in tarball but not specified as product
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+]
 
 for platform in cuda_platforms
 
