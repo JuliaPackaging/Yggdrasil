@@ -24,6 +24,21 @@ filter!(p -> arch(p) == "x86_64", cuda_platforms)
 cuda_platforms = expand_cxxstring_abis(cuda_platforms) 
 filter!(p -> cxxstring_abi(p) == "cxx11", cuda_platforms)
 
+redist_script = raw"""
+
+cd ${WORKSPACE}/srcdir/libcusolvermp*
+
+install_license LICENSE
+
+# libraries (just copy everything in lib/)
+mkdir -p ${libdir}
+cp -av lib/* ${libdir}/
+
+# headers
+mkdir -p ${includedir}
+cp -av include/* ${includedir}/
+"""
+
 products = [
     LibraryProduct("libcusolvermp", :libcusolvermp)
 ] 
@@ -51,7 +66,7 @@ for platform in cuda_platforms
         )
 
     build_tarballs(
-        ARGS, name, version, sources, 
+        ARGS, name, version, sources, redist_script,
         script, [platform], platform_products, platform_deps;
         julia_compat = "1.10", 
         preferred_gcc_version = v"11",
