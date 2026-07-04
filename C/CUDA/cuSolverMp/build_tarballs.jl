@@ -12,7 +12,6 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 name = "cuSolverMp"
 version = v"0.8.0"
 
-# These should match the legate_jll build_tarballs script
 MIN_CUDA_VERSION = v"12.2"
 MAX_CUDA_VERSION = v"13.1.999" 
 
@@ -52,7 +51,7 @@ for platform in cuda_platforms
     platform_products = BinaryBuilderBase.Product[products...]
     platform_deps = BinaryBuilderBase.AbstractDependency[dependencies...]
 
-    append!(platform_deps, CUDA.required_dependencies(platform, static_sdk=true))
+    append!(platform_deps, CUDA.required_dependencies(platform))
 
     cuda_ver = VersionNumber(platform["cuda"])
     var = "cuda$(cuda_ver.major)"
