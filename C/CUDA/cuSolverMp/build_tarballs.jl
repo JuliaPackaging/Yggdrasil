@@ -4,7 +4,7 @@ import Pkg: PackageSpec
 using Base.BinaryPlatforms: arch, os, tags
 
 # needed for libjulia_platforms and julia_versions
-const YGGDRASIL_DIR = "../../"
+const YGGDRASIL_DIR = "../../../"
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "C/CUDA/common.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
