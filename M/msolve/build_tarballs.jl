@@ -3,16 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "msolve"
-upstream_version = v"0.10.0"
+upstream_version = v"0.9.5"
 
-version_offset = v"0.0.1"
+version_offset = v"0.0.4"
 version = VersionNumber(upstream_version.major*100+version_offset.major,
                         upstream_version.minor*100+version_offset.minor,
                         upstream_version.patch*100+version_offset.patch)
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/algebraic-solving/msolve.git", "0441849e0655a901dcbbae7aa78b714bd7cafbe6")
+    GitSource("https://github.com/algebraic-solving/msolve.git", "7c4fbe08cf4dcaf73fad2ae2d3902795d040f290")
 ]
 
 # Bash recipe for building across all platforms
@@ -53,4 +53,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-  julia_compat="1.6", preferred_gcc_version = v"8")
+  julia_compat="1.6", preferred_gcc_version = v"8", preferred_llvm_version=v"17")
