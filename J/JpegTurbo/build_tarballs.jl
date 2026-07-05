@@ -8,11 +8,16 @@ sources = [
     # The release notes say that this is the official source tarball for this release
     ArchiveSource("https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/$(version)/libjpeg-turbo-$(version).tar.gz",
                   "6f30092cef9fb839779646608f4ee14ae3cbac989c47fa05e841b0841f09878e"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libjpeg-turbo*
+
+# Explicitly link against libm, this is necessary on older glibc systems
+atomic_patch -p1 $WORKSPACE/srcdir/patches/libjpeg-turbo-toplevel-libm.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/libjpeg-turbo-sharedlib-libm.patch
 
 options=(
     -DCMAKE_INSTALL_PREFIX=${prefix}
@@ -50,4 +55,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"6")
