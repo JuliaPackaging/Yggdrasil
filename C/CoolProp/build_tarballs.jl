@@ -22,6 +22,7 @@ sed -i 's/Windows/windows/' source/dev/Tickets/60.cpp
 sed -i 's/Windows/windows/' source/src/CPfilepaths.cpp
 # Do not add `-m32`/`-m64` flags
 sed -i 's/-m${BITNESS}//' source/CMakeLists.txt
+sed -i 's/.*with MSYS2 UCRT64.*//' source/CMakeLists.txt
 
 mkdir build
 cd build
