@@ -4,12 +4,12 @@ using BinaryBuilder, Pkg
 
 name = "Uno"
 
-version = v"2.7.5"
+version = v"2.7.6"
 
 sources = [
     GitSource(
         "https://github.com/cvanaret/Uno.git",
-        "b3940f1b3bd60aa677da4259ffb912f15725e705",
+        "ef6f4260fdeaf8e8ab57e6cd913eb43da59bbf89",
     ),
 ]
 
@@ -39,6 +39,7 @@ cmake \
     -DBLA_VENDOR="libblastrampoline" \
     -DMUMPS_INCLUDE_DIR=${includedir} \
     -DMETIS_INCLUDE_DIR=${includedir} \
+    -DHIGHS_INCLUDE_DIR=${includedir}/highs \
     -DMUMPS_LIBRARY="${libdir}/libdmumps.${dlext}" \
     -DMUMPS_COMMON_LIBRARY="${libdir}/libmumps_common.${dlext}" \
     -DMUMPS_PORD_LIBRARY="${libdir}/libpord.${dlext}" \
@@ -79,7 +80,7 @@ products = [
 
 dependencies = [
     BuildDependency(PackageSpec(name="BQPD_jll", uuid="1325ac01-0a49-589f-8355-43321054aaab")),
-    Dependency(PackageSpec(name="HiGHS_jll", uuid="8fd58aa0-07eb-5a78-9b36-339c94fd15ea"), compat="1.12.0"),
+    Dependency(PackageSpec(name="HiGHS_jll", uuid="8fd58aa0-07eb-5a78-9b36-339c94fd15ea"), compat="=1.15.0"),
     Dependency(PackageSpec(name="HSL_jll", uuid="017b0a0e-03f4-516a-9b91-836bbd1904dd")),
     Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70")),
     Dependency(PackageSpec(name="ASL_jll", uuid="ae81ac8f-d209-56e5-92de-9978fef736f9"), compat="0.1.3"),
