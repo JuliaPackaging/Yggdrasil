@@ -1,0 +1,52 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -335,6 +335,9 @@ if(WITH_TURBOJPEG)
+     if(NOT WITH_SYSTEM_SPNG AND ZLIB_LIBRARY)
+       target_link_libraries(turbojpeg ${ZLIB_LIBRARY})
+     endif()
++    if(UNIX)
++      target_link_libraries(turbojpeg m)
++    endif()
+     set_property(TARGET turbojpeg PROPERTY COMPILE_FLAGS
+       "-DBMP_SUPPORTED -DPNG_SUPPORTED -DSPNG_STATIC -DPPM_SUPPORTED")
+     if(WIN32)
+@@ -382,6 +385,9 @@ if(WITH_TURBOJPEG)
+     if(NOT WITH_SYSTEM_SPNG AND ZLIB_LIBRARY)
+       target_link_libraries(turbojpeg-static ${ZLIB_LIBRARY})
+     endif()
++    if(UNIX)
++      target_link_libraries(turbojpeg-static m)
++    endif()
+     set_property(TARGET turbojpeg-static PROPERTY COMPILE_FLAGS
+       "-DBMP_SUPPORTED -DPNG_SUPPORTED -DSPNG_STATIC -DPPM_SUPPORTED")
+     if(NOT MSVC_LIKE)
+@@ -430,6 +436,9 @@ if(ENABLE_STATIC)
+     if(NOT WITH_SYSTEM_SPNG AND ZLIB_LIBRARY)
+       target_link_libraries(cjpeg-static ${ZLIB_LIBRARY})
+     endif()
++    if(UNIX)
++      target_link_libraries(cjpeg-static m)
++    endif()
+ 
+     add_executable(djpeg-static src/djpeg.c src/cdjpeg.c
+       src/wrapper/rdcolmap-8.c src/wrapper/rdcolmap-12.c
+@@ -446,6 +455,9 @@ if(ENABLE_STATIC)
+     if(NOT WITH_SYSTEM_SPNG AND ZLIB_LIBRARY)
+       target_link_libraries(djpeg-static ${ZLIB_LIBRARY})
+     endif()
++    if(UNIX)
++      target_link_libraries(djpeg-static m)
++    endif()
+ 
+     add_executable(jpegtran-static src/jpegtran.c src/cdjpeg.c src/rdswitch.c
+       src/transupp.c)
+@@ -480,6 +492,9 @@ if(WITH_TESTS)
+       if(ZLIB_LIBRARY)
+         target_link_libraries(bmpsizetest-static ${ZLIB_LIBRARY})
+       endif()
++      if(UNIX)
++        target_link_libraries(bmpsizetest-static m)
++      endif()
+     endif()
+   endif()
+ endif()
