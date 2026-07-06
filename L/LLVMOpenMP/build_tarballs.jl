@@ -3,19 +3,19 @@
 using BinaryBuilder, Pkg
 
 name = "LLVMOpenMP"
-version = v"19.1.7"
+version = v"20.1.8"
 ygg_version = version
 
 sources = [
     ArchiveSource(
         "https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/openmp-$(version).src.tar.xz",
-        "bd7e6901ab086fd268750363017935fd4a717c153dad3c2aab86cb0140d9e3fe"
+        "b21c04ee9cbe56e200c5d83823765a443ee6389bbc3f64154c96e94016e6cee9"
     ),
     # we need a bunch of additional cmake files to build the subproject separately
     # see: https://github.com/llvm/llvm-project/issues/53281#issuecomment-1260187944
     ArchiveSource(
         "https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/cmake-$(version).src.tar.xz",
-        "11c5a28f90053b0c43d0dec3d0ad579347fc277199c005206b963c19aae514e3"
+        "3319203cfd1172bbac50f06fa68e318af84dcb5d65353310c0586354069d6634"
     ),
     DirectorySource("./bundled"),
 ]
