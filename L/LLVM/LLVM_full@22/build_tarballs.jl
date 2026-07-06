@@ -12,5 +12,5 @@ include("../common.jl")
 # upstream -- not a reason to rebuild LLVM with GCC 13. GCC 10 keeps the GLIBCXX
 # floor low and stays on the well-tested toolchain.
 build_tarballs(ARGS, configure_build(ARGS, version; experimental_platforms=true)...;
-               preferred_gcc_version=v"10", preferred_llvm_version=v"16", julia_compat="1.6")
+               preferred_gcc_version=v"10", preferred_llvm_version=v"18", julia_compat="1.6")
 # Build trigger: 0
