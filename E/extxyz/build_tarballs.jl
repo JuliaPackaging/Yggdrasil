@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "extxyz"
-version = v"0.4.0"
+version = v"0.4.4"
 
 # Collection of sources required to complete build.
 # libcleri is a git submodule of extxyz (the libAtoms fork, which has diverged
@@ -12,9 +12,9 @@ version = v"0.4.0"
 # statically into libextxyz, replacing the former libcleri_jll dependency.
 sources = [
     GitSource("https://github.com/libAtoms/extxyz",
-              "7e3c010be21a99507c16291b48f00cd9ce93f698"),  # v0.4.0
+              "3d3f9180fd210729bcb603258260c3fa4675f5f9"),  # v0.4.4
     GitSource("https://github.com/libAtoms/libcleri",
-              "d12f5faba985e0f4a04025f84c0e6c1a025a366b"),  # extxyz submodule pin
+              "d12f5faba985e0f4a04025f84c0e6c1a025a366b"),  # extxyz submodule pin (unchanged since v0.4.0)
     # pyleri (pure Python) is needed at build time to generate the grammar
     # parser sources; vendored as an sdist and used via PYTHONPATH since the
     # rootfs pip/site machinery is not usable in the build sandbox
@@ -26,7 +26,7 @@ sources = [
 # Upstream now builds with Meson, but its top-level meson.build is geared to
 # producing Python wheels (it requires a Python installation and generates the
 # grammar via pyleri at setup time). The standalone shared library target is
-# just three C files, so they are compiled directly, mirroring what the old
+# just four C files, so they are compiled directly, mirroring what the old
 # Makefile (used by the previous version of this recipe) did.
 script = raw"""
 cd $WORKSPACE/srcdir/extxyz
@@ -53,7 +53,7 @@ ar rcs libcleri.a *.o
 cd ../../libextxyz
 mkdir -p ${libdir} ${includedir}
 ${CC} -O2 -fPIC -std=gnu99 -shared -o ${libdir}/libextxyz.${dlext} \
-    extxyz.c extxyz_kv_grammar.c fast_format.c \
+    extxyz.c extxyz_kv_grammar.c fast_format.c extxyz_dispatch.c \
     -I../libcleri/inc $(pcre2-config --cflags) \
     ../libcleri/build/libcleri.a $(pcre2-config --libs8)
 install -Dv extxyz.h ${includedir}/extxyz.h

@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "tectonic"
-version = v"0.15.0"
+version = v"0.16.9"
 
 # Collection of sources required to build tar
 sources = [
     GitSource("https://github.com/tectonic-typesetting/tectonic.git",
-              "33ae8e755413c6b0d7adcbb550818683c6be645c"),
+              "66b6654103501b0a4a6926a7c450264be59cf927"),
 ]
 
 # Bash recipe for building across all platforms
@@ -29,8 +29,11 @@ platforms = supported_platforms()
 filter!(p -> arch(p) != "armv6l", platforms)
 # Rust toolchain for i686 Windows is unusable
 filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
-# Musl used to build in 0.14 but does not in 0.15.
+# Musl used to build in 0.14 but does not in 0.15+
 filter!(p -> libc(p) != "musl", platforms)
+# These platforms don't have a supported rust toolchain
+filter!(p -> !(arch(p) == "aarch64" && Sys.isfreebsd(p)), platforms)
+filter!(p -> !(arch(p) == "riscv64"), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -43,7 +46,7 @@ dependencies = [
     Dependency("Fontconfig_jll"),
     Dependency("FreeType2_jll"; compat="2.10.4"),
     Dependency("Graphite2_jll"),
-    Dependency("HarfBuzz_jll"; compat="2.8.1"),
+    Dependency("HarfBuzz_jll"; compat="2.8.1 - 100"),
     Dependency("HarfBuzz_ICU_jll"),
     Dependency("ICU_jll"; compat="69.1"),
     Dependency("OpenSSL_jll"; compat="3.0.8"),

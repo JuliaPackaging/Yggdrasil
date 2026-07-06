@@ -6,11 +6,11 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "Qiskit"
-version = v"2.4.1"
+version = v"2.4.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Qiskit/qiskit.git", "0fd015a22b84c9082173597a5d2304dc0aaec08c")
+    GitSource("https://github.com/Qiskit/qiskit.git", "5a1cf3159aedad954767956d6a5c81a06d043d71")
 ]
 
 # Bash recipe for building across all platforms
