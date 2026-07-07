@@ -48,6 +48,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DBUILD_SHARED_LIBS=ON \
     -DBUILD_TESTING=OFF \
     -DHIPO=ON \
+    -DBUILD_SHARED_EXTRAS_LIB=OFF \
     -DBLA_VENDOR=blastrampoline \
     -DBLAS_LIBRARIES=\"${LBT}\" \
     ..
