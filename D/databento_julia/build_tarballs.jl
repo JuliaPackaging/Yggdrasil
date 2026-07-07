@@ -60,11 +60,7 @@ products = [
 dependencies = [
     BuildDependency(PackageSpec(; name="libjulia_jll", version="1.11.0")),
     Dependency("libcxxwrap_julia_jll"; compat="~0.14.10"),
-<<<<<<< Updated upstream
-    Dependency("OpenSSL_jll"; compat="3.0.16"),
-=======
     Dependency("OpenSSL_jll"; compat="3"),
->>>>>>> Stashed changes
     Dependency("Zstd_jll"),
 ]
 
