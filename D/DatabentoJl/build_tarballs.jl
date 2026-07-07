@@ -39,9 +39,7 @@ install_license ${WORKSPACE}/srcdir/databento-julia/LICENSE
 """
 
 # Platforms we are targeting (Expanding ABIs for C++ compatibility)
-platforms = [
-    Platform("x86_64", "linux"; libc="glibc")
-]
+platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
 # Products
