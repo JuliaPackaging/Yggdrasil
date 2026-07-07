@@ -22,6 +22,11 @@ mkdir build && cd build
 
 if [[ "${target}" == *apple* ]]; then
     export MACOSX_DEPLOYMENT_TARGET=10.14
+    JLEXT="dylib"
+elif [[ "${target}" == *mingw* ]]; then
+    JLEXT="dll.a"
+else
+    JLEXT="so"
 fi
 
 # We use FETCHCONTENT_SOURCE_DIR_DATABENTO to tell CMake to use the
@@ -31,7 +36,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DCMAKE_BUILD_TYPE=Release \
       -DJlCxx_DIR=${prefix}/lib/cmake/JlCxx \
       -DJulia_INCLUDE_DIRS=${prefix}/include/julia \
-      -DJulia_LIBRARY=${prefix}/lib/libjulia.so \
+      -DJulia_LIBRARY=${prefix}/lib/libjulia.${JLEXT} \
       -DFETCHCONTENT_SOURCE_DIR_DATABENTO=${WORKSPACE}/srcdir/databento-cpp \
       ..
 
@@ -44,7 +49,7 @@ install_license ${WORKSPACE}/srcdir/databento-julia/LICENSE
 
 # Platforms we are targeting (Expanding ABIs for C++ compatibility)
 platforms = supported_platforms()
-filter!(p -> arch(p) ∈ ("x86_64", "aarch64", "powerpc64le", "riscv64"), platforms)
+filter!(p -> os(p) ∈ ("linux", "freebsd") && arch(p) ∈ ("x86_64", "aarch64", "powerpc64le", "riscv64"), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # Products
