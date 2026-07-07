@@ -4,7 +4,7 @@ using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
-name = "DatabentoJl"
+name = "databento_julia"
 version = v"0.1.0"
 
 # Sources
