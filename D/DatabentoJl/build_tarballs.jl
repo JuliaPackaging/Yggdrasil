@@ -6,7 +6,7 @@ version = v"0.1.0"
 # Sources
 sources = [
     # 1. Your Package Source (Public GitHub)
-    GitSource("https://github.com/harris-azmon/databento-julia.git", "5f2a9bd3f8b58c0485c79d50500f888604855506"),
+    GitSource("https://github.com/harris-azmon/databento-julia.git", "d597c66d3f9048715a1bdd73c2c1881e03669fa0"),
 
     # 2. Databento C++ Library (v0.30.0)
     GitSource("https://github.com/databento/databento-cpp.git", "49baedc33bd00b24d7503822c0c2ce6274477c18"),
@@ -19,6 +19,10 @@ cd $WORKSPACE/srcdir/databento-julia/deps
 
 rm -rf build
 mkdir build && cd build
+
+if [[ "${target}" == *apple* ]]; then
+    export MACOSX_DEPLOYMENT_TARGET=10.14
+fi
 
 # We use FETCHCONTENT_SOURCE_DIR_DATABENTO to tell CMake to use the
 # checked-out databento-cpp from 'sources' instead of downloading it.
@@ -40,6 +44,7 @@ install_license ${WORKSPACE}/srcdir/databento-julia/LICENSE
 
 # Platforms we are targeting (Expanding ABIs for C++ compatibility)
 platforms = supported_platforms()
+filter!(p -> arch(p) ∈ ("x86_64", "aarch64", "powerpc64le", "riscv64"), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # Products
