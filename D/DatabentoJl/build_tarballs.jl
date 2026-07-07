@@ -6,7 +6,7 @@ version = v"0.1.0"
 # Sources
 sources = [
     # 1. Your Package Source (Public GitHub)
-    GitSource("https://github.com/harris-azmon/databento-julia.git", "56bdfd8a556fca17df2083c725f58bee932208e8"),
+    GitSource("https://github.com/harris-azmon/databento-julia.git", "49b499f35c1ad617aff37963451b06820d78ceaa"),
 
     # 2. Databento C++ Library (v0.30.0)
     GitSource("https://github.com/databento/databento-cpp.git", "49baedc33bd00b24d7503822c0c2ce6274477c18"),
