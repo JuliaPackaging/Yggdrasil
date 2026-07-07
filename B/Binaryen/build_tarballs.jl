@@ -4,12 +4,11 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "Binaryen"
-version = v"0.116.0"   # follows upstream's `version_116`
+version = v"0.130.0"   # follows upstream's `version_130`
 
 sources = [
-    GitSource("https://github.com/WebAssembly/binaryen.git", "11dba9b1c2ad988500b329727f39f4d8786918c5"),
+    GitSource("https://github.com/WebAssembly/binaryen.git", "5d704ad52bc77a258e8fa3f9d34fcc5e8799c1c3"),
     DirectorySource("./bundled"),
-
 ]
 
 script = raw"""
@@ -32,7 +31,7 @@ make install
 install_license ${WORKSPACE}/srcdir/binaryen/LICENSE
 """
 
-sources, script = require_macos_sdk("10.15", sources, script)
+sources, script = require_macos_sdk("14.0", sources, script)
 
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
@@ -57,5 +56,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# Needed a c++17 compiler, 7 didn't work. 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"9")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"13")

@@ -3,20 +3,19 @@
 using BinaryBuilder, Pkg
 
 name = "LLVMOpenMP"
-version = v"18.1.7"
-# We bumped the version number to build for riscv64
-ygg_version = v"18.1.8"
+version = v"21.1.8"
+ygg_version = version
 
 sources = [
     ArchiveSource(
         "https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/openmp-$(version).src.tar.xz",
-        "6523c898d754d466b77b64ddca8fd0185c5aeb7f24260ddb0fae5779eb31cee3"
+        "856b023748b41ac7b2c83fd8e9f765ff48a4df2fe6777d2811ef7c7ed8f2f977"
     ),
     # we need a bunch of additional cmake files to build the subproject separately
     # see: https://github.com/llvm/llvm-project/issues/53281#issuecomment-1260187944
     ArchiveSource(
         "https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/cmake-$(version).src.tar.xz",
-        "f0b67599f51cddcdbe604c35b6de97f2d0a447e18b9c30df300c82bf1ee25bd7"
+        "85735f20fd8c81ecb0a09abb0c267018475420e93b65050cc5b7634eab744de9"
     ),
     DirectorySource("./bundled"),
 ]

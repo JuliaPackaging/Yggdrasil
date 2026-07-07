@@ -280,6 +280,19 @@ function build_script(standalone=false)
     # (no lld, no startup files, no clang driver invocation at run time).
     CMAKE_FLAGS+=(-DHOST_CPU_ENABLE_JIT:BOOL=ON)
 
+    # PoCL bundles a libgcc archive so the JIT can resolve soft-float helpers (e.g. __truncdfhf2
+    # for FP16), auto-detecting it via `${CMAKE_C_COMPILER} -print-libgcc-file-name`. That comes
+    # up empty under our Windows clang, so point PoCL at the target GCC's libgcc.a explicitly
+    # (same archive clang links against; has the helpers on GCC >= 12).
+    if [[ "${target}" == *-mingw* ]]; then
+        libgcc_archive=$(gcc -print-libgcc-file-name)
+        if [[ ! -f "${libgcc_archive}" ]]; then
+            echo "ERROR: could not locate libgcc.a for the CPU JIT (got '${libgcc_archive}')" >&2
+            exit 1
+        fi
+        CMAKE_FLAGS+=(-DHOST_CPU_COMPILER_RT_LIBRARY_SOURCE=${libgcc_archive})
+    fi
+
     # Build without the (experimental) Level Zero driver. It is the only consumer
     # of spirv-link, so disabling it lets us drop SPIRV_Tools_jll entirely.
     CMAKE_FLAGS+=(-DENABLE_LEVEL0:BOOL=OFF)
