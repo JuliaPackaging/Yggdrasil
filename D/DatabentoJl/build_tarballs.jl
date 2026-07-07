@@ -6,7 +6,7 @@ version = v"0.1.0"
 # Sources
 sources = [
     # 1. Your Package Source (Public GitHub)
-    GitSource("https://github.com/harris-azmon/databento-julia.git", "13a6e5642151f8dffebb91c3aa284a4ba3192b5e"),
+    GitSource("https://github.com/harris-azmon/databento-julia.git", "5f2a9bd3f8b58c0485c79d50500f888604855506"),
 
     # 2. Databento C++ Library (v0.30.0)
     GitSource("https://github.com/databento/databento-cpp.git", "49baedc33bd00b24d7503822c0c2ce6274477c18"),
@@ -56,7 +56,7 @@ dependencies = [
     Dependency(PackageSpec(name="OpenSSL_jll")),
     Dependency(PackageSpec(name="Zstd_jll")),
     # Force build against Julia 1.6 headers (using compat to find available version)
-    Dependency(PackageSpec(name="libjulia_jll"), compat="1.6")
+    BuildDependency(PackageSpec(name="libjulia_jll", version="1.6.3"))
 ]
 
 # Build the tarballs
