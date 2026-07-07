@@ -39,6 +39,7 @@ make install
 
 # Install license
 install_license ${WORKSPACE}/srcdir/databento-julia/LICENSE
+install_license ${WORKSPACE}/srcdir/databento-cpp/LICENSE
 """
 
 sources, script = require_macos_sdk("10.14", sources, script)
@@ -59,7 +60,7 @@ products = [
 dependencies = [
     BuildDependency(PackageSpec(; name="libjulia_jll", version="1.11.0")),
     Dependency("libcxxwrap_julia_jll"; compat="~0.14.10"),
-    Dependency("OpenSSL_jll"),
+    Dependency("OpenSSL_jll"; compat="3.0.16"),
     Dependency("Zstd_jll"),
 ]
 
