@@ -60,7 +60,7 @@ products = [
 dependencies = [
     BuildDependency(PackageSpec(; name="libjulia_jll", version="1.11.0")),
     Dependency("libcxxwrap_julia_jll"; compat="~0.14.10"),
-    Dependency("OpenSSL_jll"),
+    Dependency("OpenSSL_jll"), # does not need a compat bound as we expand julia versions and each julia version uses a fixed OpenSSL
     Dependency("Zstd_jll"),
 ]
 
