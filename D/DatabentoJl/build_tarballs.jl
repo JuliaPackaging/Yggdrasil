@@ -10,7 +10,7 @@ version = v"0.1.0"
 # Sources
 sources = [
     # 1. Your Package Source (Public GitHub)
-    GitSource("https://github.com/harris-azmon/databento-julia.git", "49b499f35c1ad617aff37963451b06820d78ceaa"),
+    GitSource("https://github.com/harris-azmon/Databento.jl.git", "49b499f35c1ad617aff37963451b06820d78ceaa"),
 
     # 2. Databento C++ Library (v0.30.0)
     GitSource("https://github.com/databento/databento-cpp.git", "49baedc33bd00b24d7503822c0c2ce6274477c18"),
@@ -19,7 +19,7 @@ sources = [
 # Bash recipe for building
 script = raw"""
 # Move to the C++ wrapper directory
-cd $WORKSPACE/srcdir/databento-julia/deps
+cd $WORKSPACE/srcdir/Databento.jl/deps
 
 rm -rf build
 mkdir build && cd build
@@ -38,7 +38,7 @@ make -j${nproc}
 make install
 
 # Install license
-install_license ${WORKSPACE}/srcdir/databento-julia/LICENSE
+install_license ${WORKSPACE}/srcdir/Databento.jl/LICENSE
 install_license ${WORKSPACE}/srcdir/databento-cpp/LICENSE
 """
 
