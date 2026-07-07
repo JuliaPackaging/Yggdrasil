@@ -79,12 +79,6 @@ function get_script(cuda::Val{true})
             "-DCMAKE_CUDA_HOST_COMPILER=$(which clang++)" \
             "-DCMAKE_CUDA_ARCHITECTURES=75;80;86;89;90;100;103;120;121" \
 
-    # Patch redop header that is installed by configure script
-    # Patch in macro to export specific symbols 
-    cd ${WORKSPACE}/srcdir
-    atomic_patch -p1 ./proc_local_h.patch
-    atomic_patch -p1 ./proc_local_inl.patch
-
     # Go back to main dir
     cd ${WORKSPACE}/srcdir/legate
 
@@ -153,13 +147,6 @@ function get_script(cuda::Val{false})
         --cmake-executable=${host_bindir}/cmake \
         -- "-DCMAKE_TOOLCHAIN_FILE=/opt/toolchains/${bb_full_target}/target_${target}_clang.cmake" \
             "-DCMAKE_CUDA_HOST_COMPILER=$(which clang++)" \
-
-
-    # Patch redop header that is installed by configure script
-    # Patch in macro to export specific symbols 
-    cd ${WORKSPACE}/srcdir
-    atomic_patch -p1 ./proc_local_h.patch
-    atomic_patch -p1 ./proc_local_inl.patch
 
     # Go back to main dir
     cd ${WORKSPACE}/srcdir/legate
