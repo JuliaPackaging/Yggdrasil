@@ -42,14 +42,13 @@ install_license ${WORKSPACE}/srcdir/Databento.jl/LICENSE
 install_license ${WORKSPACE}/srcdir/databento-cpp/LICENSE
 """
 
-sources, script = require_macos_sdk("10.14", sources, script)
+sources, script = require_macos_sdk("11.0", sources, script)
 
 # Platforms we are targeting (Expanding ABIs for C++ compatibility)
 include("../../L/libjulia/common.jl")
 filter!(>=(v"1.10"), julia_versions)
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 filter!(p -> nbits(p) == 64, platforms)
-filter!(!Sys.isapple, platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # Products
