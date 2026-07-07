@@ -22,11 +22,6 @@ mkdir build && cd build
 
 if [[ "${target}" == *apple* ]]; then
     export MACOSX_DEPLOYMENT_TARGET=10.14
-    JLEXT="dylib"
-elif [[ "${target}" == *mingw* ]]; then
-    JLEXT="dll.a"
-else
-    JLEXT="so"
 fi
 
 # We use FETCHCONTENT_SOURCE_DIR_DATABENTO to tell CMake to use the
@@ -36,7 +31,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DCMAKE_BUILD_TYPE=Release \
       -DJlCxx_DIR=${prefix}/lib/cmake/JlCxx \
       -DJulia_INCLUDE_DIRS=${prefix}/include/julia \
-      -DJulia_LIBRARY=${prefix}/lib/libjulia.${JLEXT} \
+      -DJulia_LIBRARY=${libdir}/libjulia.${dlext} \
       -DFETCHCONTENT_SOURCE_DIR_DATABENTO=${WORKSPACE}/srcdir/databento-cpp \
       ..
 
