@@ -1,4 +1,6 @@
 using BinaryBuilder, Pkg
+# needed for libjulia_platforms and julia_versions
+include("../../L/libjulia/common.jl")
 
 name = "DatabentoJl"
 version = v"0.1.0"
@@ -43,7 +45,8 @@ install_license ${WORKSPACE}/srcdir/databento-julia/LICENSE
 """
 
 # Platforms we are targeting (Expanding ABIs for C++ compatibility)
-platforms = supported_platforms()
+# We support Julia 1.10+
+platforms = vcat(libjulia_platforms.(julia_versions[julia_versions .>= v"1.10.0"])...)
 filter!(p -> arch(p) ∈ ("x86_64", "aarch64", "powerpc64le", "riscv64"), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
@@ -54,8 +57,8 @@ products = [
 
 # Dependencies
 dependencies = [
-    # Allow resolver to pick compatible libcxxwrap-julia for libjulia 1.6
-    Dependency(PackageSpec(name="libcxxwrap_julia_jll")),
+    # Require CxxWrap 0.17.0+ to prevent std::string compilation issues on modern Julia
+    Dependency(PackageSpec(name="libcxxwrap_julia_jll"), compat="0.17.0"),
     Dependency(PackageSpec(name="OpenSSL_jll")),
     Dependency(PackageSpec(name="Zstd_jll")),
     # Use the default BuildDependency for libjulia (this will resolve to modern headers which are now supported)
@@ -64,4 +67,4 @@ dependencies = [
 
 # Build the tarballs
 # We prefer GCC 9 to ensure glibc compatibility with older linux distros (e.g. CentOS 7)
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"9")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat=libjulia_julia_compat(julia_versions[julia_versions .>= v"1.10.0"]), preferred_gcc_version=v"9")
