@@ -49,6 +49,7 @@ include("../../L/libjulia/common.jl")
 filter!(>=(v"1.10"), julia_versions)
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 filter!(p -> nbits(p) == 64, platforms)
+filter!(!Sys.isapple, platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # Products
