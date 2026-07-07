@@ -26,12 +26,11 @@ mkdir build && cd build
 
 # We use FETCHCONTENT_SOURCE_DIR_DATABENTO to tell CMake to use the
 # checked-out databento-cpp from 'sources' instead of downloading it.
-cmake -DCMAKE_INSTALL_PREFIX=$prefix \
-      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+cmake -DCMAKE_INSTALL_PREFIX="$prefix" \
+      -DCMAKE_FIND_ROOT_PATH="$prefix" \
+      -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
       -DCMAKE_BUILD_TYPE=Release \
-      -DJlCxx_DIR=${prefix}/lib/cmake/JlCxx \
-      -DJulia_INCLUDE_DIRS=${prefix}/include/julia \
-      -DJulia_LIBRARY=${libdir}/libjulia.${dlext} \
+      -DJulia_PREFIX="$prefix" \
       -DFETCHCONTENT_SOURCE_DIR_DATABENTO=${WORKSPACE}/srcdir/databento-cpp \
       ..
 
@@ -59,7 +58,7 @@ products = [
 # Dependencies
 dependencies = [
     BuildDependency(PackageSpec(; name="libjulia_jll", version="1.11.0")),
-    Dependency("libcxxwrap_julia_jll"; compat="~0.11.2"),
+    Dependency("libcxxwrap_julia_jll"; compat="~0.14.0"),
     Dependency("OpenSSL_jll"),
     Dependency("Zstd_jll"),
 ]
