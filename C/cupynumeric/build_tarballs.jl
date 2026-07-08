@@ -78,7 +78,7 @@ for platform in all_platforms
 
         cutensor_sources =  get_sources(
            "cutensor",
-           ["libcutensor", "libcutensorMg", "libcutensorMp"];
+           ["libcutensor"];
            version=v"2.6.0", # if we add back CUDA 12.x this will need to drop to ~2.3
            platform=platform,
            variant=var
