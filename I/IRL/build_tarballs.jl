@@ -77,6 +77,9 @@ find ${includedir}/irl -type f ! -name '*.h' ! -name '*.tpp' -delete 2>/dev/null
 # Standard Yggdrasil platform set. C++14 + abseil is portable; if a platform
 # fails CI, filter it here and note the gap rather than dropping it silently.
 platforms = supported_platforms()
+# riscv64-linux-gnu fails to build the C++/abseil stack (toolchain gap on this
+# tier-3 platform); drop it rather than block the whole package.
+platforms = filter(p -> arch(p) != "riscv64", platforms)
 platforms = expand_cxxstring_abis(platforms)   # libstdc++ ABI matters (C++ lib)
 
 products = [
