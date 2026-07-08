@@ -1,0 +1,84 @@
+diff --git a/libraries/liblmdb/Makefile b/libraries/liblmdb/Makefile
+index 9fd819b398..74c74e7a5c 100644
+--- a/libraries/liblmdb/Makefile
++++ b/libraries/liblmdb/Makefile
+@@ -70,9 +70,9 @@ install: $(ILIBS) $(IPROGS) $(IHDRS)
+ 	for f in $(IPROGS); do cp $$f $(DESTDIR)$(bindir); done
+ 	for f in $(ILIBS); do cp $$f $(DESTDIR)$(libdir); done
+ 	for f in $(ILIBS2); do cp $$f $(DESTDIR)$(libdir); \
+-		i=`basename -s .$(ABIVER) $$f`; rm -f $(DESTDIR)$(libdir)/$$i; \
++		i=`basename $$f .$(ABIVER)`; rm -f $(DESTDIR)$(libdir)/$$i; \
+ 		ln -s $$f $(DESTDIR)$(libdir)/$$i; \
+-		i=`basename -s .$(LIBVER) $$i`; rm -f $(DESTDIR)$(libdir)/$$i; \
++		i=`basename $$i .$(LIBVER)`; rm -f $(DESTDIR)$(libdir)/$$i; \
+ 		ln -s $$f $(DESTDIR)$(libdir)/$$i; done
+ 	for f in $(IHDRS); do cp $$f $(DESTDIR)$(includedir); done
+ 	for f in $(IDOCS); do cp $$f $(DESTDIR)$(mandir)/man1; done
+diff --git a/libraries/liblmdb/mdb.c b/libraries/liblmdb/mdb.c
+index cdf1930d09..44f7321897 100644
+--- a/libraries/liblmdb/mdb.c
++++ b/libraries/liblmdb/mdb.c
+@@ -11614,7 +11614,7 @@ mdb_env_copyfd0(MDB_env *env, HANDLE fd)
+ #endif
+ #if MDB_RPAGE_CACHE
+ #ifdef _WIN32
+-	LARGE_INTEGER	off = 0;
++	LARGE_INTEGER	off = {{0}};
+ #else
+ 	off_t	off = 0;
+ #endif
+@@ -11678,7 +11678,11 @@ mdb_env_copyfd0(MDB_env *env, HANDLE fd)
+ 	}
+ #if MDB_RPAGE_CACHE
+ 	if (MDB_REMAPPING(env->me_flags)) {
++#ifdef _WIN32
++		off.QuadPart = wsize;
++#else
+ 		off = wsize;
++#endif
+ 	}
+ #endif
+ 	wsize = w3 - wsize;
+@@ -11703,7 +11707,11 @@ mdb_env_copyfd0(MDB_env *env, HANDLE fd)
+ 			wsize -= len;
+ #if MDB_RPAGE_CACHE
+ 			if (MDB_REMAPPING(env->me_flags)) {
++#ifdef _WIN32
++				off.QuadPart += len;
++#else
+ 				off += len;
++#endif
+ 			}
+ #endif
+ 			continue;
+@@ -11946,7 +11954,8 @@ mdb_env_incr_loadfd(MDB_env *env, HANDLE fd)
+ 		return ENOMEM;
+ 
+ #ifdef _WIN32
+-		SetFilePointerEx(env->me_fd, 0, NULL, FILE_BEGIN);
++		off.QuadPart = 0;
++		SetFilePointerEx(env->me_fd, off, NULL, FILE_BEGIN);
+ #else
+ 	lseek(env->me_fd, 0, SEEK_SET);
+ #endif
+@@ -12011,12 +12020,17 @@ mdb_env_incr_loadfd(MDB_env *env, HANDLE fd)
+ 			ptr += rlen;
+ 			rsize -= rlen;
+ 		}
++#ifdef _WIN32
++		off.QuadPart = (pg-prevpg-numprev) * env->me_psize;
++#else
+ 		off = (pg-prevpg-numprev) * env->me_psize;
++#endif
+ 		rsize = numpgs * env->me_psize;
++#ifdef _WIN32
++		if (off.QuadPart) {
++			SetFilePointerEx(env->me_fd, off, NULL, FILE_CURRENT);
++#else
+ 		if (off) {
+-#ifdef _WIN32
+-			SetFilePointerEx(env->me_fd, off, NULL, FILE_CURRENT);
+-#else
+ 			lseek(env->me_fd, off, SEEK_CUR);
+ #endif
+ 		}
