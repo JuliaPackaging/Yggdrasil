@@ -84,6 +84,8 @@ function get_script(cuda::Val{true})
             -Dcutensor_LIBRARY=${libdir}/libcutensor.so \
             -Dcutensor_INCLUDE_DIR=${includedir} \
             -DBLAS_LIBRARIES=${libdir}/libopenblas.so \
+            -Dcusolvermp_LIBRARY=${libdir}/libcusolverMp.so \
+            -Dcusolvermp_INCLUDE_DIR=${includedir} \
             -Dcupynumeric_USE_CUSOLVERMP=1 \
             -DCMAKE_CUDA_ARCHITECTURES="75;80;86;89;90;100;103;120;121"
             
