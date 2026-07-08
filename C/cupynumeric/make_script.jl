@@ -5,13 +5,13 @@ function get_script(cuda::Val{true})
         export TMPDIR=${WORKSPACE}/tmpdir
         mkdir -p ${TMPDIR}
 
-        # Copy cuTensor archive to proper dirs
-        cd ${WORKSPACE}/srcdir
-        cp -a ./include/. ${includedir}
-        cp -a ./lib/. ${libdir}
-
         # Put new CMake first on path
         export PATH=${host_bindir}:$PATH
+
+        # Copy cuTensor Things
+        cd ${WORKSPACE}/srcdir/libcutensor*
+        cp -av lib/* ${libdir}/
+        cp -av include/* ${includedir}/
 
         # Necessary operations to cross compile CUDA from x86_64 to aarch64
         if [[ "${target}" == aarch64-linux-* ]]; then
@@ -125,10 +125,6 @@ function get_script(cuda::Val{false})
         export PATH=${host_bindir}:$PATH
 
         ln -s ${CUDA_HOME}/lib ${CUDA_HOME}/lib64
-
-        # Patch cupynumeric src code missing header include
-        # cd $WORKSPACE/srcdir
-        # atomic_patch -p1 cstring.patch
 
         ## BUILD TBLIS ##
         cd ${WORKSPACE}/srcdir/tblis
