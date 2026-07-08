@@ -26,14 +26,8 @@ if [[ "${target}" == *-mingw* ]]; then
     EXTRA_LDFLAGS="-Wl,--export-all-symbols"
 fi
 
-if [[ "${target}" == *-apple-* ]]; then
-    ${CC} ${CFLAGS} -std=c11 -O2 -fPIC -Ibaselib/inc -dynamiclib ${LDFLAGS} \
-        -o "${libdir}/libOpenCRG.${dlext}" baselib/src/*.c ${EXTRA_LIBS}
-else
-    ${CC} ${CFLAGS} -std=c11 -O2 -fPIC -Ibaselib/inc -shared ${LDFLAGS} ${EXTRA_LDFLAGS} \
-        -o "${libdir}/libOpenCRG.${dlext}" baselib/src/*.c ${EXTRA_LIBS}
-fi
-
+${CC} ${CFLAGS} -std=c11 -O2 -fPIC -Ibaselib/inc -shared ${LDFLAGS} ${EXTRA_LDFLAGS} \
+    -o "${libdir}/libOpenCRG.${dlext}" baselib/src/*.c ${EXTRA_LIBS}
 install -Dvm 644 baselib/inc/crgBaseLib.h "${includedir}/crgBaseLib.h"
 install_license ../LICENSE ../NOTICE
 """
