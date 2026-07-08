@@ -68,11 +68,6 @@ for platform in all_platforms
 
     if haskey(platform, "cuda") && platform["cuda"] != "none" 
 
-        # cuTensor dependency
-        push!(platform_sources, ArchiveSource("https://github.com/JuliaBinaryWrappers/CUTENSOR_jll.jl/releases/download/CUTENSOR-v2.3.1%2B0/CUTENSOR.v2.3.1.x86_64-linux-gnu-cuda+13.0.tar.gz",
-                     "bb9d29e92522d4867dcd5124dfb9151cc40eb87f8a7772dd0509bd344e393abf")
-        )
-
         cuda_ver = VersionNumber(platform["cuda"])
         var = "cuda$(cuda_ver.major)"
 
