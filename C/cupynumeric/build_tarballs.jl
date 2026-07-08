@@ -84,9 +84,9 @@ for platform in all_platforms
            variant=var
         )
         push!(platform_sources, cutensor_sources...)
+        push!(_dependencies, Dependency("cuSolverMp_jll"; compat = "0.8"))
 
         append!(_dependencies, CUDA.required_dependencies(platform, static_sdk=true))
-        append!(_dependencies, Dependency("cuSolverMp_jll"; compat = "0.8"))
 
         if arch(platform) == "aarch64"
             push!(platform_sources, CUDA.cuda_nvcc_redist_source(platform["cuda"], "x86_64"))
