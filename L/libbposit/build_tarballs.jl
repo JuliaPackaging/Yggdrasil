@@ -7,7 +7,7 @@ version = v"0.1.0"
 
 sources = [
     GitSource("https://github.com/jamesquinlan/libbposit.git",
-              "fe280133cdb52a4375bd93a17ab0b4f62b38248d"),
+              "5c4717e4c7dba1a163a2d11475cb1587b821f79e"),
 ]
 
 # Pure-C99 build: compile the single translation unit, link as a shared
@@ -15,7 +15,7 @@ sources = [
 # so we bypass it and call the cross-compiler directly.
 script = raw"""
 cd ${WORKSPACE}/srcdir/libbposit
-${CC} -Iinclude -fPIC -O3 -c src/bposit.c -o bposit.o
+${CC} -std=c99 -Iinclude -fPIC -O3 -c src/bposit.c -o bposit.o
 ${CC} -shared -o ${libdir}/libbposit.${dlext} bposit.o -lm
 install_license LICENSE
 """
