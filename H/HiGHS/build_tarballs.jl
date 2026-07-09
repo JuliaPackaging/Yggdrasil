@@ -28,8 +28,8 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fix-cli11.patch
 # Remove system CMake to use the jll version
 apk del cmake
 
-mkdir -p build
-cd build
+rm -rf build
+mkdir build
 
 if [[ "${target}" == *-mingw* ]]; then
     LBT=blastrampoline-5
