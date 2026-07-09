@@ -9,6 +9,7 @@ sources = [
         "https://github.com/ERGO-Code/HiGHS.git",
         "83960019015b0d5152df73110ff142f328edcfd2",
     ),
+    DirectorySource("./bundled"),
 ]
 
 # These are the platforms we will build for by default, unless further
@@ -21,6 +22,8 @@ platforms = filter!(p -> arch(p) != "powerpc64le", platforms)
 
 script = raw"""
 cd $WORKSPACE/srcdir/HiGHS
+
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fix-cli11.patch
 
 # Remove system CMake to use the jll version
 apk del cmake
@@ -39,6 +42,7 @@ cmake -S . -B build \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
+    -DBUILD_TESTING=OFF \
     -DHIPO=ON \
     -DBUILD_SHARED_EXTRAS_LIB=OFF \
     -DBLA_VENDOR=blastrampoline \
