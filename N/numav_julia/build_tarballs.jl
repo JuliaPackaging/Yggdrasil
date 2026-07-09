@@ -27,6 +27,7 @@ script = raw"""
         -D BIND_JULIA=TRUE \
         -D Julia_PREFIX=${prefix} \
         -D JlCxx_DIR=${prefix}/lib/cmake/JlCxx \
+        -D Boost_DIR=${prefix}/bin/cmake/Boost-1.87.0 \
         -D CMAKE_FIND_ROOT_PATH=${prefix} \
         -D CMAKE_INSTALL_PREFIX=${prefix} \
         ..
