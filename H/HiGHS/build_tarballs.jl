@@ -25,8 +25,8 @@ cd $WORKSPACE/srcdir/HiGHS
 # Remove system CMake to use the jll version
 apk del cmake
 
-mkdir -p build
-cd build
+rm -rf build
+mkdir build
 
 if [[ "${target}" == *-mingw* ]]; then
     LBT=blastrampoline-5
@@ -34,28 +34,28 @@ else
     LBT=blastrampoline
 fi
 
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+cmake -S . -B build \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
-    -DBUILD_TESTING=OFF \
     -DHIPO=ON \
+    -DBUILD_SHARED_EXTRAS_LIB=OFF \
     -DBLA_VENDOR=blastrampoline \
-    -DBLAS_LIBRARIES=\"${LBT}\" \
-    ..
+    -DBLAS_LIBRARIES=\"${LBT}\"
 
 if [[ "${target}" == *-linux-* ]]; then
-        make -j ${nproc}
+    make -C build -j ${nproc}
 else
     if [[ "${target}" == *-mingw* ]]; then
-        cmake --build . --config Release
+        cmake --build build --config Release
     else
-        cmake --build . --config Release --parallel
+        cmake --build build --config Release --parallel
     fi
 fi
-make install
+cmake --install build
 
-install_license ../LICENSE.txt
+install_license LICENSE.txt
 """
 
 products = [
