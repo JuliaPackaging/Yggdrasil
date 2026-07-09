@@ -42,6 +42,7 @@ cmake -S . -B build \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
+    -DBUILD_TESTING=OFF \
     -DHIPO=ON \
     -DBUILD_SHARED_EXTRAS_LIB=OFF \
     -DBLA_VENDOR=blastrampoline \
