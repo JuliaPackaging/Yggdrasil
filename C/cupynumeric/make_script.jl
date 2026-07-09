@@ -94,7 +94,7 @@ function get_script(cuda::Val{true})
         cmake --install build
 
         install_license $WORKSPACE/srcdir/cupynumeric*/LICENSE
-        install_license $WORKSPACE/srcdir/share/licenses/CUTENSOR/LICENSE
+        install_license ${WORKSPACE}/srcdir/libcutensor*/LICENSE
 
         mkdir -vp "${includedir}/cupynumeric/cuda"
         cp -v ${CUDA_HOME}/include/cuda.h ${includedir}/cupynumeric/cuda/cuda.h
