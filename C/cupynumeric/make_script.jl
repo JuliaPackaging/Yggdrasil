@@ -9,7 +9,9 @@ function get_script(cuda::Val{true})
         export PATH=${host_bindir}:$PATH
 
         # Copy cuTensor Things
+        # Remove static libraries to prevent them being bundled. We do not need.
         cd ${WORKSPACE}/srcdir/libcutensor*
+        rm -rf lib/*.a
         cp -av lib/* ${libdir}/
         cp -av include/* ${includedir}/
 
@@ -94,7 +96,6 @@ function get_script(cuda::Val{true})
         cmake --install build
 
         install_license $WORKSPACE/srcdir/cupynumeric*/LICENSE
-        install_license ${WORKSPACE}/srcdir/libcutensor*/LICENSE
 
         mkdir -vp "${includedir}/cupynumeric/cuda"
         cp -v ${CUDA_HOME}/include/cuda.h ${includedir}/cupynumeric/cuda/cuda.h
