@@ -3,7 +3,7 @@ using Pkg
 using BinaryBuilderBase: sanitize
 
 name = "LibSSH2"
-version = v"1.11.101"
+version = v"1.11.102"
 upstream = VersionNumber(version.major, version.minor, version.patch÷100)
 # Collection of sources required to build LibSSH2
 sources = [
@@ -16,6 +16,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libssh2*
 
+# Security patches from https://udd.debian.org/patches.cgi?src=libssh2&version=1.11.1-4
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 "${f}"
 done
