@@ -70,6 +70,7 @@ for platform in all_platforms
         cuda_ver = VersionNumber(platform["cuda"])
         var = "cuda$(cuda_ver.major)"
 
+        # The JLL does not have cutensorMp.so currently
         cutensor_sources =  get_sources(
            "cutensor",
            ["libcutensor"];
@@ -85,10 +86,6 @@ for platform in all_platforms
         if arch(platform) == "aarch64"
             push!(platform_sources, CUDA.cuda_nvcc_redist_source(platform["cuda"], "x86_64"))
         end
-
-        # Necessary for some development workflows 
-        # to re-build things locally.
-        push!(platform_products, FileProduct(["include/cupynumeric/cuda/cuda.h"], :cuda_header))
 
         script = get_script(Val{true}())
     end # else CPU-only build
