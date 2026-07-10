@@ -26,7 +26,7 @@ make -j${nproc}
 make install
 
 cd ..
-cp -r tree-sitter/queries $WORKSPACE/destdir/
+cp -vr tree-sitter/queries $WORKSPACE/destdir/
 install_license tree-sitter/LICENSE
 """
 
