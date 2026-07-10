@@ -16,6 +16,7 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/libbposit
 ${CC} -std=c99 -Iinclude -fPIC -O3 -c src/bposit.c -o bposit.o
+mkdir -p ${libdir}
 ${CC} -shared -o ${libdir}/libbposit.${dlext} bposit.o -lm
 install_license LICENSE
 """
