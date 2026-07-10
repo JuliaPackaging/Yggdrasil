@@ -3,7 +3,7 @@ using Pkg
 using BinaryBuilderBase: sanitize
 
 name = "LibSSH2"
-version = v"1.11.102"
+version = v"1.11.103"
 upstream = VersionNumber(version.major, version.minor, version.patch÷100)
 # Collection of sources required to build LibSSH2
 sources = [
