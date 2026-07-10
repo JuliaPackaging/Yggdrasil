@@ -18,27 +18,23 @@ cd ${WORKSPACE}/srcdir
 mkdir -p ${libdir}
 
 if [[ "${target}" == x86_64-linux-* ]]; then
-    cp conopt-linux-x86_64/lib/libconopt.so.4 ${libdir}/libconopt.so
-    chmod +x ${libdir}/libconopt.so
+    install -Dvm 755 conopt-linux-x86_64/lib/libconopt.so.4 ${libdir}/libconopt.so
 
 elif [[ "${target}" == aarch64-linux-* ]]; then
-    cp conopt-linux-arm64/lib/libconopt.so.4 ${libdir}/libconopt.so
-    chmod +x ${libdir}/libconopt.so
+    install -Dvm 755 conopt-linux-arm64/lib/libconopt.so.4 ${libdir}/libconopt.so
 
 elif [[ "${target}" == x86_64-apple-* ]]; then
-    cp conopt-macos-x86_64/lib/libconopt.dylib ${libdir}/libconopt.dylib
-    chmod +x ${libdir}/libconopt.dylib
+    install -Dvm 755 conopt-macos-x86_64/lib/libconopt.dylib ${libdir}/libconopt.dylib
 
 elif [[ "${target}" == aarch64-apple-* ]]; then
-    cp conopt-macos-arm64/lib/libconopt.dylib ${libdir}/libconopt.dylib
-    chmod +x ${libdir}/libconopt.dylib
+    install -Dvm 755 conopt-macos-arm64/lib/libconopt.dylib ${libdir}/libconopt.dylib
 
 elif [[ "${target}" == x86_64-w64-mingw32 ]]; then
     mkdir -p ${bindir}
-    cp conopt-win-x86_64/lib/conopt4.dll ${bindir}/conopt4.dll
+    install -Dvm 755 conopt-win-x86_64/lib/conopt4.dll ${bindir}/conopt4.dll
 elif [[ "${target}" == i686-w64-mingw32 ]]; then
     mkdir -p ${bindir}
-    cp conopt-win-i386/lib/conopt4.dll ${bindir}/conopt4.dll
+    install -Dvm 755 conopt-win-i386/lib/conopt4.dll ${bindir}/conopt4.dll
 fi
 """
 
