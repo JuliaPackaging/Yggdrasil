@@ -7,47 +7,14 @@ const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
-#=
-
-`pocl_next` is the experimental track of PoCL, built from the upcoming 7.2 branch
-(JuliaGPU/pocl#release_7_2). It is intentionally self-contained (no shared `common.jl`)
-so we are free to iterate on it without touching the stable `pocl`/`pocl_standalone`
-recipes. The goal is a JLL that needs *no* run-time helper tooling: no wrapper scripts,
-no bundled startup files, no external clang/lld/llvm-spirv. The init block does nothing
-but register the driver.
-
-Two upstream/build changes make that possible:
-
-1. JIT (upstream PR #2190): CPU host kernels are loaded in-process via LLVM ORC/JITLink
-   instead of being compiled to a shared object and dlopen()ed. JITLink is both the
-   linker and the loader, so there is no external link step:
-
-     - no `lld` invocation       -> no LLD wrapper, no LLD_unified_jll
-     - no Clang driver link step -> no Clang wrapper (the frontend runs in-process via
-                                    libclang, and codegen emits the object in-process)
-     - no startup files / libc   -> the JIT resolves libc/libm/compiler-rt via normal
-       / libgcc to bundle           process-symbol lookup, so we drop the `share/lib`
-                                    staging the 7.1 recipe needed for the external link
-
-   We also build without the Level Zero driver (`-DENABLE_LEVEL0=OFF`), the only consumer
-   of `spirv-link`, so SPIRV_Tools_jll goes away too.
-
-2. SPIR-V via the translator *library*, vendored. PoCL converts SPIR-V <-> LLVM IR with
-   the SPIRV-LLVM-Translator. Using its `llvm-spirv` *binary* would mean shipping it and
-   wrapping it (to set up its library path) at run time. Instead we build the translator
-   here as a static library and link it into libpocl. The catch (which bit us before, on
-   macOS especially) is that the translator API passes `llvm::Module`s across the ABI
-   boundary, so it must share a *single* LLVM with PoCL -- two LLVM copies means two sets
-   of global state / type uniquing and is undefined behavior. We therefore build the
-   translator against the *same* LLVM_full_jll and link it statically against LLVM's
-   component libraries (DISABLE_LLVM_LINK_LLVM_DYLIB), so libLLVMSPIRVLib.a carries only
-   translator objects whose LLVM references resolve against PoCL's own statically-linked
-   LLVM at the final link. One LLVM copy, ODR-safe, and no SPIRV_LLVM_Translator_jll.
-
-=#
+# `pocl_next` is the 7.2 track of PoCL: an OpenCL ICD driver built with the in-process
+# JIT (no run-time clang/lld/llvm-spirv tooling). The actual build lives in ../common.jl,
+# shared with the `pocl_standalone` (OpenCL-less) variant and selected via its `standalone`
+# argument (false here). See ../common.jl for the full rationale.
 
 name = "pocl_next"
 version = v"7.2.0"
+llvm_version = v"20.1.2"
 
 # Build
 
@@ -55,9 +22,10 @@ version = v"7.2.0"
 sources = [
     DirectorySource("./bundled"),
     GitSource("https://github.com/JuliaGPU/pocl",
-              "49af20c4b429d607f9cdb1f40557826ca8926753"),
-    # vendored SPIR-V translator, built as a static library against our LLVM (see above);
-    # this commit is the LLVM-20.1-compatible revision (matches LLVM_full_jll 20.1.2).
+              "f5dc26404a00a11626ae7e0a7de80c72047934e6"),
+    # vendored SPIR-V translator, built as a static library against our LLVM (see
+    # common.jl); this commit is the LLVM-20.1-compatible revision (matches
+    # LLVM_full_jll 20.1.2).
     GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git",
               "dee371987a59ed8654083c09c5f1d5c54f5db318"),
 ]
@@ -79,272 +47,6 @@ builds of LLVM we need:
 
 =#
 
-function build_script()
-    raw"""
-    # macOS SDK setup, shared by both the translator and PoCL builds below (it redirects
-    # the toolchain, so it must run before either of them).
-    if [[ "${target}" == x86_64-apple-darwin* ]]; then
-        # LLVM 20 was built against the macOS 10.14 SDK, so PoCL needs it too.
-        # We can't upgrade the SDK in the real sys-root: it lives on a read-only
-        # overlay lower layer where removing/replacing directories fails with
-        # I/O errors, and merging the SDK on top hits symlink-vs-directory
-        # conflicts. So assemble a combined sysroot in a writable scratch dir
-        # and point the toolchain at it. The copy of the sys-root carries the
-        # things the bare SDK lacks (the toolchain's C++ headers, the build-time
-        # LLVM headers under usr/local), and in the scratch copy we can replace
-        # System the usual way.
-        apple_sysroot=$WORKSPACE/srcdir/sysroot
-        cp -a /opt/${target}/${target}/sys-root $apple_sysroot
-        tar --extract --file=$WORKSPACE/srcdir/MacOSX10.14.sdk.tar.xz \
-            --directory=$WORKSPACE/srcdir --warning=no-unknown-keyword \
-            MacOSX10.14.sdk/System MacOSX10.14.sdk/usr
-        rm -rf $apple_sysroot/System
-        cp -ra $WORKSPACE/srcdir/MacOSX10.14.sdk/usr/* $apple_sysroot/usr/.
-        cp -ra $WORKSPACE/srcdir/MacOSX10.14.sdk/System $apple_sysroot/.
-        # redirect every sys-root reference (--sysroot and -isysroot) at it
-        sed -i "s!/opt/${target}/${target}/sys-root!$apple_sysroot!g" ${CMAKE_TARGET_TOOLCHAIN}
-        sed -i "s!/opt/${target}/${target}/sys-root!$apple_sysroot!g" /opt/bin/${bb_full_target}/${target}-clang*
-        export MACOSX_DEPLOYMENT_TARGET=10.14
-    fi
-
-    ##########################################################################
-    # 1. Build the vendored SPIRV-LLVM-Translator as a static library.
-    #
-    # Built against the same LLVM_full_jll as PoCL and linked statically against
-    # LLVM's component libs (DISABLE_LLVM_LINK_LLVM_DYLIB), so libLLVMSPIRVLib.a
-    # contains only translator objects; their LLVM references resolve against
-    # PoCL's own static LLVM at the final libpocl link (single LLVM, ODR-safe).
-    ##########################################################################
-    # BB's cmake toolchain pins CMAKE_INSTALL_PREFIX to ${prefix}, so the translator
-    # installs there -- conveniently right where PoCL's SetupLLVMSPIRV.cmake looks
-    # (LLVM_INCLUDE_DIRS / LLVM_LIBDIR). We link it into libpocl below and then delete
-    # its artifacts from ${prefix} at the end, so they don't ship in the JLL.
-    spirv_src=$WORKSPACE/srcdir/SPIRV-LLVM-Translator
-    pushd $spirv_src
-    install_license LICENSE.TXT
-    atomic_patch -p1 $WORKSPACE/srcdir/patches/spirv-translator-addrspacecast_null.patch
-    # link statically against LLVM's component libraries rather than the LLVM dylib.
-    # Patch both the library and the llvm-spirv tool: otherwise the tool links *both*
-    # the LLVM dylib import-lib and the static components, which is fatal on COFF/lld
-    # (duplicate symbols). The tool is built by `ninja install` (and removed afterwards),
-    # but its link must succeed for the install -- hence the lib+headers we actually use.
-    sed -i '/add_llvm_library(/a DISABLE_LLVM_LINK_LLVM_DYLIB' lib/SPIRV/CMakeLists.txt
-    sed -i '/add_llvm_tool(/a DISABLE_LLVM_LINK_LLVM_DYLIB' tools/llvm-spirv/CMakeLists.txt
-
-    SPIRV_CMAKE_FLAGS=()
-    SPIRV_CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
-    SPIRV_CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
-    if [[ "${target}" == *mingw* ]]; then
-        # on Windows, we run into "multiple definition" errors when linking with gcc
-        SPIRV_CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake)
-        SPIRV_CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-pthread")
-    else
-        SPIRV_CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
-    fi
-    SPIRV_CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=ON)
-    # the static lib is linked into the shared libpocl, so it must be PIC
-    SPIRV_CMAKE_FLAGS+=(-DCMAKE_POSITION_INDEPENDENT_CODE=ON)
-    SPIRV_CMAKE_FLAGS+=(-DLLVM_DIR=${prefix}/lib/cmake/llvm)
-    SPIRV_CMAKE_FLAGS+=(-DBASE_LLVM_VERSION=20.1)
-    SPIRV_CMAKE_FLAGS+=(-DLLVM_SPIRV_INCLUDE_TESTS=OFF)
-    if [[ "${target}" == *-apple-darwin* ]]; then
-        cmake -B build -S . -GNinja ${SPIRV_CMAKE_FLAGS[@]} \
-            -DCMAKE_CXX_FLAGS="-Wno-error=enum-constexpr-conversion -include vector"
-    else
-        cmake -B build -S . -GNinja ${SPIRV_CMAKE_FLAGS[@]}
-    fi
-    ninja -C build -j ${nproc} install
-    popd
-
-    spirv_inc=${prefix}/include/LLVMSPIRVLib
-    spirv_lib=${prefix}/lib/libLLVMSPIRVLib.a
-    echo "Vendored SPIR-V translator: lib=${spirv_lib} include=${spirv_inc}"
-    if [[ ! -f "${spirv_lib}" || ! -f "${spirv_inc}/LLVMSPIRVLib.h" ]]; then
-        echo "ERROR: vendored translator library/headers not found" >&2
-        exit 1
-    fi
-
-    ##########################################################################
-    # 2. Build PoCL.
-    ##########################################################################
-    cd $WORKSPACE/srcdir/pocl/
-    install_license LICENSE
-
-    # POCL wants a target sysroot for compiling the host kernellib (for `math.h` etc)
-    sysroot=/opt/${target}/${target}/sys-root
-    if [[ "${target}" == x86_64-apple-darwin* ]]; then
-        # use the combined sysroot assembled above
-        sysroot=$apple_sysroot
-    fi
-    if [[ "${target}" == *-mingw* ]]; then
-        sysroot_include=$sysroot/include
-    else
-        sysroot_include=$sysroot/usr/include
-    fi
-    if [[ "${target}" == *apple* ]]; then
-        # XXX: including the sysroot like this doesn't work on Apple, missing definitions like
-        #      TARGET_OS_IPHONE. it seems like these headers should be included using -isysroot,
-        #      but (a) that doesn't seem to work, and (b) isn't that already done by the cmake
-        #      toolchain file? work around the issue by inserting an include for the missing
-        #      definitions at the top of the headers included from POCL's kernel library.
-        sed -i '1s/^/#include <TargetConditionals.h>\n/' $sysroot_include/stdio.h
-    fi
-    sed -i "s|COMMENT \\"Building C to LLVM bitcode \${BC_FILE}\\"|\\"-I$sysroot_include\\"|" \
-        cmake/bitcode_rules.cmake
-
-    # our version of MinGW is ancient (?) and lacks `_aligned_malloc`
-    sed -i 's/_aligned_malloc/__mingw_aligned_malloc/g' include/vccompat.hpp
-
-    CMAKE_FLAGS=()
-
-    # Release build for best performance
-    CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
-
-    # Disable build mode
-    CMAKE_FLAGS+=(-DENABLE_POCL_BUILDING:Bool=OFF)
-
-    # Don't build tests
-    CMAKE_FLAGS+=(-DENABLE_TESTS:Bool=OFF)
-
-    # Enable optional debug messages for debuggability
-    CMAKE_FLAGS+=(-DPOCL_DEBUG_MESSAGES:Bool=ON)
-
-    # Install things into $prefix
-    CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
-
-    # Explicitly use our cmake toolchain file and tell CMake we're cross-compiling
-    CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
-    CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=ON)
-
-    # PoCL 7.2 looks for the *host* LLVM tools (clang, opt, llc, ...) in the directory
-    # of the llvm-config we pass (LLVM_CONFIG_LOCATION), whereas 7.1 used LLVM_BINDIR.
-    # Our llvm-config is a wrapper script living alone in srcdir, so assemble a bin dir
-    # that holds it alongside symlinks to the native host LLVM tools, and point
-    # WITH_LLVM_CONFIG there.
-    llvm_host_bin=$WORKSPACE/srcdir/llvm-host-bin
-    mkdir -p $llvm_host_bin
-    cp $WORKSPACE/srcdir/llvm-config $llvm_host_bin/llvm-config
-    chmod +x $llvm_host_bin/llvm-config
-    for tool in clang clang++ opt llc llvm-as llvm-dis llvm-link; do
-        ln -sf /opt/$MACHTYPE/bin/$tool $llvm_host_bin/$tool
-        # on mingw targets CMake appends .exe when searching, so provide that name too
-        # (the host tools are ELF binaries; the suffix is just what find_program looks for)
-        ln -sf /opt/$MACHTYPE/bin/$tool $llvm_host_bin/$tool.exe
-    done
-
-    # Point to relevant LLVM tools (see above). The target-side dependencies live
-    # under ${prefix} (which is a symlink to the per-target destdir).
-    ## Target-side LLVM CMake package. PoCL 7.2 requires LLVM_DIR (the target
-    ## LLVMConfig.cmake) *in addition* to the spoofed llvm-config when cross-compiling
-    ## (cmake/LLVM.cmake); their major.minor versions must agree (both LLVM 20).
-    CMAKE_FLAGS+=(-DLLVM_DIR=${prefix}/lib/cmake/llvm)
-    ## HostDependency: llvm-config, but spoofed to return Dependency's paths
-    CMAKE_FLAGS+=(-DWITH_LLVM_CONFIG=$llvm_host_bin/llvm-config)
-    ## Native toolchain: for LLVM tools to ensure they can target the right architecture
-    CMAKE_FLAGS+=(-DLLVM_BINDIR=/opt/$MACHTYPE/bin)
-    if [[ "${target}" == *mingw* ]]; then
-        # XXX: fake .exe binaries so CMake finds them (PoCL isn't good at cross-compilation)
-        for tool in clang clang++ llvm-as llvm-dis llvm-link opt llc lli; do
-            ln -s /opt/$MACHTYPE/bin/$tool /opt/$MACHTYPE/bin/$tool.exe
-        done
-    fi
-
-    # Override the target and triple, which POCL takes from `llvm-config --host-target`
-    triple=$(clang -print-target-triple)
-    CMAKE_FLAGS+=(-DLLVM_HOST_TARGET=$triple)
-    CMAKE_FLAGS+=(-DLLC_TRIPLE=$triple)
-
-    # Override the auto-detected target CPU (which POCL takes from `llc --version`)
-    CPU=$(clang --print-supported-cpus 2>&1 | grep -P '\t' | head -n 1 | sed 's/\s//g')
-    CMAKE_FLAGS+=(-DLLC_HOST_CPU_AUTO=$CPU)
-
-    # Generate a portable build
-    CMAKE_FLAGS+=(-DKERNELLIB_HOST_CPU_VARIANTS=distro)
-
-    # Build PoCL as a dynamic library loaded by the OpenCL runtime
-    CMAKE_FLAGS+=(-DENABLE_ICD:BOOL=ON)
-
-    # Load CPU host kernels in-process via ORC/JITLink instead of Clang+dlopen.
-    # This is the whole point of pocl_next: it removes the external link step
-    # (no lld, no startup files, no clang driver invocation at run time).
-    CMAKE_FLAGS+=(-DHOST_CPU_ENABLE_JIT:BOOL=ON)
-
-    # Build without the (experimental) Level Zero driver. It is the only consumer
-    # of spirv-link, so disabling it lets us drop SPIRV_Tools_jll entirely.
-    CMAKE_FLAGS+=(-DENABLE_LEVEL0:BOOL=OFF)
-
-    # XXX: work around pocl#1776, disabling FP16 support for FreeBSD
-    if [[ ${target} == *-freebsd* ]]; then
-        CMAKE_FLAGS+=(-DHOST_COMPILER_SUPPORTS_FLOAT16:BOOL=OFF)
-    fi
-
-    # Link LLVM statically so that we don't have to worry about versioning the JLL against it
-    CMAKE_FLAGS+=(-DSTATIC_LLVM:Bool=ON)
-    # XXX: we add -pthread to the flags used to link libLLVM, so need that here too
-    #      (as that is not reflected by llvm-config)
-    if [[ "${target}" == *mingw* ]]; then
-        # PoCL is built with GCC, but LLVM_full_jll and our vendored translator are
-        # clang-built. On PE/COFF the COMDAT section of <regex>'s function-local static
-        # `__nul` differs (.bss$ for clang vs .data$ for gcc), which GNU ld rejects as a
-        # multiple definition (ELF/Mach-O merge it silently). The definitions are the same
-        # template instantiation, so let ld keep the first.
-        CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-pthread -Wl,--allow-multiple-definition")
-        CMAKE_FLAGS+=(-DCMAKE_SHARED_LINKER_FLAGS="-Wl,--allow-multiple-definition")
-        CMAKE_FLAGS+=(-DCMAKE_MODULE_LINKER_FLAGS="-Wl,--allow-multiple-definition")
-    else
-        CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-pthread")
-    fi
-
-    # Our sysroot ships an old glibc whose <inttypes.h> only defines the PRI* format
-    # macros for C++ when __STDC_FORMAT_MACROS is set. PoCL's C++ sources include LLVM
-    # headers (which pull <inttypes.h>) before pocl_debug.h, so pocl_debug.h's own
-    # late `#define __STDC_FORMAT_MACROS` is too late (the include guard is already set)
-    # and PRId64/PRIu64 end up undefined (e.g. pocl_llvm_utils.cc's "Created context %"
-    # PRId64). Define it on the command line so it's set before the first include.
-    CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="-D__STDC_FORMAT_MACROS")
-
-    # Enable SPIR-V support via the vendored translator *library* (built above), linked
-    # statically into libpocl. Pre-seed the cache vars SetupLLVMSPIRV.cmake would otherwise
-    # search for, so it uses our copy and enables HAVE_LLVM_SPIRV_LIB. We do NOT set any
-    # llvm-spirv binary path, so the binary code path stays off and no wrapper is needed.
-    CMAKE_FLAGS+=(-DLLVM_SPIRV_INCLUDEDIR=${spirv_inc})
-    CMAKE_FLAGS+=(-DLLVM_SPIRV_LIB=${spirv_lib})
-
-    # PoCL's CPU autodetection doesn't work on RISC-V
-    if [[ ${target} == riscv64-* ]]; then
-        CMAKE_FLAGS+=(-DLLC_HOST_CPU=rv64gc)
-        # forcing a CPU disables distro kernellib mode, so only provide a native build
-        CMAKE_FLAGS+=(-DKERNELLIB_HOST_CPU_VARIANTS=native)
-    fi
-
-    # XXX: PoCL defaults to not using shared libraries on MinGW -- this seems to work fine?
-    CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
-
-    cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
-    ninja -C build -j ${nproc} install
-
-    # The vendored translator is now statically linked into libpocl; remove its build
-    # artifacts (static lib, generated headers, pkg-config, the unused llvm-spirv binary)
-    # from the prefix so they don't ship in the JLL.
-    rm -rf ${prefix}/include/LLVMSPIRVLib
-    rm -f ${prefix}/lib/libLLVMSPIRVLib.a \
-          ${prefix}/lib/pkgconfig/LLVMSPIRVLib.pc \
-          ${prefix}/bin/llvm-spirv ${prefix}/bin/llvm-spirv.exe
-    """
-end
-
-function init_block()
-    # No wrappers, no environment hacks: the JIT build links everything it needs
-    # (LLVM, clang, the SPIR-V translator) statically into libpocl, so there are no
-    # external tools to locate at run time. We only register the driver with the loader.
-    raw"""
-    # Register this driver with OpenCL_jll
-    if OpenCL_jll.is_available()
-        push!(OpenCL_jll.drivers, libpocl)
-    end
-    """
-end
-
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
@@ -353,11 +55,13 @@ filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
 ## PoCL doesn't support 32-bit Windows
 filter!(p -> !(arch(p) == "i686" && os(p) == "windows"), platforms)
 
+include("../common.jl")
+
 # LLVM 20 was built against the macOS 10.14 SDK, so ship it. We only use the
 # helper for the (centralized) SDK source; the install itself is done
-# non-destructively in the build script, which extracts the SDK to a scratch dir
-# and redirects the toolchain at it, rather than overwriting the read-only
-# sys-root (whose `System` tree can no longer be `rm`'d on the current rootfs).
+# non-destructively in common.jl, which extracts the SDK to a scratch dir and
+# redirects the toolchain at it, rather than overwriting the read-only sys-root
+# (whose `System` tree can no longer be `rm`'d on the current rootfs).
 sources = vcat(sources, get_macos_sdk_sources("10.14"))
 
 # The products that we will ensure are always built
@@ -375,8 +79,8 @@ products = [
 # binary (SPIRV_LLVM_Translator_jll gone). LLVM_full_jll is only a build dependency
 # because it is linked statically into libpocl.
 dependencies = [
-    HostBuildDependency(PackageSpec(name="LLVM_full_jll", version="20.1.2")),
-    BuildDependency(PackageSpec(name="LLVM_full_jll", version="20.1.2")),
+    HostBuildDependency(PackageSpec(name="LLVM_full_jll", version=string(llvm_version))),
+    BuildDependency(PackageSpec(name="LLVM_full_jll", version=string(llvm_version))),
     Dependency("OpenCL_jll"),
     Dependency("OpenCL_Headers_jll"),
     Dependency("Hwloc_jll"),
@@ -390,21 +94,28 @@ for platform in platforms
     platform_sources = deepcopy(sources)
     platform_dependencies = deepcopy(dependencies)
 
-    # for fp16, we need a vectorization library
-    if arch(platform) in ["armv6l", "aarch64"]
-        #push!(platform_dependencies, Dependency("SLEEF_jll"))
-        # XXX: PoCL hard-codes the path to libsleef
-        # `no such file or directory: '/opt/aarch64-linux-gnu/aarch64-linux-gnu/sys-root/usr/local/lib/libsleef.so'`
+    # Vectorize OpenCL math builtins via SLEEF's libmvec-ABI / SLEEF compat library
+    # (libsleefgnuabi), which the in-process JIT dlopens at run time (see common.jl for the
+    # matching CMake flags). Gated to x86_64/aarch64 on the ELF OSes where LLVM maps a veclib
+    # *and* SLEEF_jll ships libsleefgnuabi: Linux and FreeBSD (not macOS -- no GNUABI on
+    # Mach-O -- and not Windows -- no SLEEF_jll). Static linking isn't used: the JIT resolves
+    # _ZGV* symbols by dlopen, so a dynamic dependency is the natural fit.
+    if (Sys.islinux(platform) || Sys.isfreebsd(platform)) && arch(platform) in ["x86_64", "aarch64"]
+        push!(platform_dependencies, Dependency("SLEEF_jll"))
     end
-    # TODO: libsvml for x86 (part of mkl)
-    # TODO: libmvec as fallback (part of glibc 2.22+)
 
-    # on Windows, we need to use a version of GCC that supports `.drectve -exclude-symbols`
-    # or we run into export ordinal limits
+    # On Windows we now link PoCL with the Clang/lld toolchain, but still build against this
+    # GCC's MinGW sysroot and libstdc++, so its version must stay compatible with the
+    # Clang-built LLVM_full_jll's libstdc++ ABI. (Previously pinned to 13 for GNU ld's
+    # `.drectve -exclude-symbols`, used to dodge the PE export-ordinal limit; lld no longer
+    # needs that.)
+    # _Float16 host support (cl_khr_fp16) requires the host C/C++ compiler to know the
+    # `_Float16` type, which GCC only gained in v12 (HOST_COMPILER_SUPPORTS_FLOAT16 fails
+    # on GCC 10/11 -> FP16 silently disabled). Keep >=12 so FP16 is enabled on the builds.
     preferred_gcc_version = if Sys.iswindows(platform)
         v"13"
     else
-        v"10"
+        v"12"
     end
 
     push!(builds, (; platform,
@@ -426,8 +137,7 @@ for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    name, version, build.sources, build_script(),
                    [build.platform], products, build.dependencies;
-                   build.preferred_gcc_version, preferred_llvm_version=v"20",
+                   build.preferred_gcc_version,
+                   preferred_llvm_version=Base.thismajor(llvm_version),
                    julia_compat="1.6", init_block=init_block())
 end
-
-# bump

@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
 name = "libsingular_julia"
-version = v"0.47.14"
+version = v"0.47.15"
 
 # Collection of sources required to build libsingular-julia
 sources = [
@@ -59,7 +59,7 @@ dependencies = [
     # Singular.jl to ensure the right versions of libsingular_julia_jll and
     # Singular_jll are paired. This gives us flexibility in the development
     # setup there.
-    Dependency("Singular_jll", v"404.101.508"),
+    Dependency("Singular_jll", v"404.101.509"),
 ]
 
 # we want to get notified of any changes to julia_compat, and adapt `version` accordingly

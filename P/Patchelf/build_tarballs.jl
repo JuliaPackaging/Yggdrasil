@@ -3,7 +3,12 @@
 using BinaryBuilder
 
 name = "Patchelf"
+
+# NOTE: The version used for the JLL deviated from the upstream version to accommodate
+# updated Julia package compatibility constraints for JLLs. We can re-sync the versions
+# once upstream releases v0.18.2 or higher.
 version = v"0.18.0"
+ygg_version = v"0.18.1"
 
 sources = [
     ArchiveSource("https://github.com/NixOS/patchelf/releases/download/$(version)/patchelf-$(version).tar.bz2",
@@ -33,4 +38,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8")
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"8")

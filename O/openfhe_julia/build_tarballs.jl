@@ -5,9 +5,9 @@ include("common.jl")
 # If you make changes in this file, e.g., to release a new version,
 # be sure to also release a new version of `openfhe_julia_int128` as well (see `../openfhe_julia_int128/build_tarballs.jl`)
 name = "openfhe_julia"
-version = v"0.6.1"
+version = v"0.6.2"
 
-git_hash = "aa3cdae85379dcfcd79d7cec945c154fabff29b6"
+git_hash = "c811f31235ed01b4eb33119f99629720424d2875"
 
 sources, script, platforms, products, dependencies = prepare_openfhe_julia_build(name, git_hash)
 

@@ -6,18 +6,27 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "LaMEM"
-version = v"2.2.0"
+version = v"3.0.0"
 
-PETSc_COMPAT_VERSION = "~3.22.0"    
-MPItrampoline_compat_version=" 5.5.0"
-MicrosoftMPI_compat_version="~10.1.4" 
-MPICH_compat_version="~4.2.3"    
-OpenMPI_compat_version="~5.0.5"
+# NOTE: the MPI compat bounds below must match the EXACT MPI versions PETSc_jll 3.22.1 was
+# built against, since LaMEM and PETSc co-resolve the same MPI JLL per platform AND PETSc's
+# headers (petscsys.h) hard-error if the mpi.h version differs from what PETSc was configured
+# with. PETSc 3.22.1 was built with: MPICH >=4.3.0, MPItrampoline >=5.5.3, and OpenMPI 4.1.8
+# (its compat is the union [4.1.8-4, 5.0.7-5] but the published binary used 4.1.8 — pin EXACTLY
+# 4.1.8, since OpenMPI 4.1.9 exists and the petscsys.h check is strict to the subminor).
+# LaMEM 3.0.0 officially recommends PETSc 3.22.5 (also tested against 3.23.x), but as of this
+# writing PETSc_jll 3.22.1+0 is the most recent version registered/built in Yggdrasil — use it.
+PETSc_COMPAT_VERSION = "~3.22.1"
+MPItrampoline_compat_version="5.5.3 - 5"
+MicrosoftMPI_compat_version="~10.1.4"
+MPICH_compat_version="4.3.0 - 5"
+OpenMPI_compat_version="4.1.8 - 4.1.8"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/UniMainzGeo/LaMEM", 
-    "0f6a5a82f32a3db59871d6e254ae570a3100edad")
+    GitSource("https://github.com/UniMainzGeo/LaMEM",
+    "e506616926052f80d1a6c6b2307646d68c6990d6"),  # v3.0.0
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -40,8 +49,20 @@ mkdir $WORKSPACE/srcdir/LaMEM/lib
 mkdir $WORKSPACE/srcdir/LaMEM/lib/opt
 
 cd $WORKSPACE/srcdir/LaMEM/src
+
+# LaMEM 3.0.0 added an explicit `-std=c++17` flag (vs the previous reliance on PETSc's
+# `-std=gnu++17`), which switches MinGW onto strict ISO mode and hides M_PI (a GNU/POSIX
+# extension to <math.h>/<cmath>) unless _USE_MATH_DEFINES is defined before the first
+# include of <math.h>/<cmath>. src/Tensor.cpp and src/scaling.cpp use M_PI directly, so
+# without this the Windows build fails with "M_PI was not declared in this scope".
+# Setting CXXFLAGS doesn't reach the compile line (PETSc's conf/variables re-defines it),
+# so patch the define directly into the two files that need it.
+if [[ "${target}" == *mingw* ]]; then
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/mingw-use-math-defines.patch
+fi
+
 export PETSC_OPT=${libdir}/petsc/double_real_Int32/
-make mode=opt clean_all 
+make mode=opt clean_all
 make mode=opt all -j${nproc}
 #make mode=opt all
 
@@ -125,7 +146,15 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("PETSc_jll"; compat=PETSc_COMPAT_VERSION),
-    Dependency("CompilerSupportLibraries_jll")
+    Dependency("CompilerSupportLibraries_jll"),
+    # PETSc's mpiabi build links libmpif (Fortran MPI bindings); the MPI augmentation
+    # only provides MPIABI_jll (libmpi_abi), so add mpif_jll for mpiabi platforms to
+    # satisfy LaMEM's dlopen audit. Mirrors PETSc_jll's own recipe.
+    Dependency("mpif_jll"; compat="0.1.5", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)),
+    # On Windows, PETSc_jll 3.22.1 links libscalapack32 statically into LaMEM's executable,
+    # so SCALAPACK32_jll must be present in the prefix or the link fails with
+    # `ld: cannot find -lscalapack32`. (On Linux/macOS it's resolved via libpetsc itself.)
+    Dependency("SCALAPACK32_jll"; compat="2.2.3", platforms=filter(p -> Sys.iswindows(p), platforms)),
 ]
 append!(dependencies, platform_dependencies)
 
