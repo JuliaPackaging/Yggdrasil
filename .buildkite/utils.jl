@@ -74,7 +74,7 @@ function build_step(NAME, PLATFORM, PROJECT, IS_PR)
         :label => "build -- $PROJECT -- $PLATFORM",
         :agents => agent(),
         :plugins => build_plugins,
-        :timeout_in_minutes => 240,
+        :timeout_in_minutes => 300,
         :priority => IS_PR ? -2 : -1,
         :concurrency => 12,
         :concurrency_group => "yggdrasil/build/$NAME", # Could use ENV["BUILDKITE_JOB_ID"]
