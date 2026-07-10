@@ -1,10 +1,10 @@
 using BinaryBuilder, Pkg
 
 name = "librerun_query"
-version = v"0.1.0"
+version = v"0.1.1"
 
 sources = [
-    GitSource("https://github.com/BenChung/Rerun.jl.git", "2cbe6b14d1610981b4e4469cb99cca88376210f3"),
+    GitSource("https://github.com/BenChung/Rerun.jl.git", "dfd21ae793a963f41886d896e2289036f31dbf7b"),
 ]
 
 script = raw"""
