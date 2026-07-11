@@ -18,7 +18,8 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "pocl_standalone"
 version = v"7.2.0"
-llvm_version = v"20.1.2"
+llvm_version = v"22.1.1"
+macos_sdk_version = "11.0"
 
 # Build
 
@@ -28,10 +29,9 @@ sources = [
     GitSource("https://github.com/JuliaGPU/pocl",
               "f5dc26404a00a11626ae7e0a7de80c72047934e6"),
     # vendored SPIR-V translator, built as a static library against our LLVM (see
-    # common.jl); this commit is the LLVM-20.1-compatible revision (matches
-    # LLVM_full_jll 20.1.2).
+    # common.jl); this is the latest LLVM-22.1 maintenance revision.
     GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git",
-              "dee371987a59ed8654083c09c5f1d5c54f5db318"),
+              "c88a2e4a1ec77f7adc8916940afd9754c3a30fab"),
 ]
 
 #=
@@ -61,12 +61,12 @@ filter!(p -> !(arch(p) == "i686" && os(p) == "windows"), platforms)
 
 include("../common.jl")
 
-# LLVM 20 was built against the macOS 10.14 SDK, so ship it. We only use the
+# LLVM 22 was built against the macOS 11.0 SDK, so ship it. We only use the
 # helper for the (centralized) SDK source; the install itself is done
 # non-destructively in common.jl, which extracts the SDK to a scratch dir and
 # redirects the toolchain at it, rather than overwriting the read-only sys-root
 # (whose `System` tree can no longer be `rm`'d on the current rootfs).
-sources = vcat(sources, get_macos_sdk_sources("10.14"))
+sources = vcat(sources, get_macos_sdk_sources(macos_sdk_version))
 
 # The products that we will ensure are always built
 products = [
@@ -87,7 +87,7 @@ dependencies = [
     HostBuildDependency(PackageSpec(name="LLVM_full_jll", version=string(llvm_version))),
     BuildDependency(PackageSpec(name="LLVM_full_jll", version=string(llvm_version))),
     Dependency("Hwloc_jll"),
-    Dependency("Zstd_jll"), # our LLVM 20 build has LLVM_ENABLE_ZSTD=ON
+    Dependency("Zstd_jll"), # our LLVM 22 build has LLVM_ENABLE_ZSTD=ON
 ]
 
 builds = []

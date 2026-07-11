@@ -52,13 +52,15 @@ build script.
 function build_script(standalone=false)
     preheader = """
     STANDALONE=$(standalone)
+    LLVM_MAJOR_MINOR=$(llvm_version.major).$(llvm_version.minor)
+    MACOS_SDK_VERSION=$(macos_sdk_version)
     """
 
     script = preheader * raw"""
     # macOS SDK setup, shared by both the translator and PoCL builds below (it redirects
     # the toolchain, so it must run before either of them).
     if [[ "${target}" == x86_64-apple-darwin* ]]; then
-        # LLVM 20 was built against the macOS 10.14 SDK, so PoCL needs it too.
+        # Use the SDK matching the selected LLVM build.
         # We can't upgrade the SDK in the real sys-root: it lives on a read-only
         # overlay lower layer where removing/replacing directories fails with
         # I/O errors, and merging the SDK on top hits symlink-vs-directory
@@ -69,16 +71,16 @@ function build_script(standalone=false)
         # System the usual way.
         apple_sysroot=$WORKSPACE/srcdir/sysroot
         cp -a /opt/${target}/${target}/sys-root $apple_sysroot
-        tar --extract --file=$WORKSPACE/srcdir/MacOSX10.14.sdk.tar.xz \
+        tar --extract --file=$WORKSPACE/srcdir/MacOSX${MACOS_SDK_VERSION}.sdk.tar.xz \
             --directory=$WORKSPACE/srcdir --warning=no-unknown-keyword \
-            MacOSX10.14.sdk/System MacOSX10.14.sdk/usr
+            MacOSX${MACOS_SDK_VERSION}.sdk/System MacOSX${MACOS_SDK_VERSION}.sdk/usr
         rm -rf $apple_sysroot/System
-        cp -ra $WORKSPACE/srcdir/MacOSX10.14.sdk/usr/* $apple_sysroot/usr/.
-        cp -ra $WORKSPACE/srcdir/MacOSX10.14.sdk/System $apple_sysroot/.
+        cp -ra $WORKSPACE/srcdir/MacOSX${MACOS_SDK_VERSION}.sdk/usr/* $apple_sysroot/usr/.
+        cp -ra $WORKSPACE/srcdir/MacOSX${MACOS_SDK_VERSION}.sdk/System $apple_sysroot/.
         # redirect every sys-root reference (--sysroot and -isysroot) at it
         sed -i "s!/opt/${target}/${target}/sys-root!$apple_sysroot!g" ${CMAKE_TARGET_TOOLCHAIN}
         sed -i "s!/opt/${target}/${target}/sys-root!$apple_sysroot!g" /opt/bin/${bb_full_target}/${target}-clang*
-        export MACOSX_DEPLOYMENT_TARGET=10.14
+        export MACOSX_DEPLOYMENT_TARGET=${MACOS_SDK_VERSION}
     fi
 
     ##########################################################################
@@ -96,7 +98,11 @@ function build_script(standalone=false)
     spirv_src=$WORKSPACE/srcdir/SPIRV-LLVM-Translator
     pushd $spirv_src
     install_license LICENSE.TXT
-    atomic_patch -p1 $WORKSPACE/srcdir/patches/spirv-translator-addrspacecast_null.patch
+    # LLVM 20's translator needs this backport.  It is already present in the
+    # LLVM 22.1 translator, where applying it with fuzz targets unrelated code.
+    if [[ "${LLVM_MAJOR_MINOR}" == 20.* ]]; then
+        atomic_patch -p1 $WORKSPACE/srcdir/patches/spirv-translator-addrspacecast_null.patch
+    fi
     # link statically against LLVM's component libraries rather than the LLVM dylib.
     # Patch both the library and the llvm-spirv tool: otherwise the tool links *both*
     # the LLVM dylib import-lib and the static components, which is fatal on COFF/lld
@@ -119,7 +125,7 @@ function build_script(standalone=false)
     # the static lib is linked into the shared libpocl, so it must be PIC
     SPIRV_CMAKE_FLAGS+=(-DCMAKE_POSITION_INDEPENDENT_CODE=ON)
     SPIRV_CMAKE_FLAGS+=(-DLLVM_DIR=${prefix}/lib/cmake/llvm)
-    SPIRV_CMAKE_FLAGS+=(-DBASE_LLVM_VERSION=20.1)
+    SPIRV_CMAKE_FLAGS+=(-DBASE_LLVM_VERSION=${LLVM_MAJOR_MINOR})
     SPIRV_CMAKE_FLAGS+=(-DLLVM_SPIRV_INCLUDE_TESTS=OFF)
     if [[ "${target}" == *-apple-darwin* ]]; then
         cmake -B build -S . -GNinja ${SPIRV_CMAKE_FLAGS[@]} \
@@ -168,6 +174,9 @@ function build_script(standalone=false)
 
     # our version of MinGW is ancient (?) and lacks `_aligned_malloc`
     sed -i 's/_aligned_malloc/__mingw_aligned_malloc/g' include/vccompat.hpp
+    # LLVM 22 split DTLTO out of LLVMLTO. PoCL's static component list predates
+    # that split, leaving lld's llvm::lto::DTLTO vtable unresolved at load time.
+    sed -i '/  LLVMLTO/a\  LLVMDTLTO' cmake/SetupLLVMviaCMake.cmake
 
     CMAKE_FLAGS=()
 
@@ -217,7 +226,7 @@ function build_script(standalone=false)
     # under ${prefix} (which is a symlink to the per-target destdir).
     ## Target-side LLVM CMake package. PoCL 7.2 requires LLVM_DIR (the target
     ## LLVMConfig.cmake) *in addition* to the spoofed llvm-config when cross-compiling
-    ## (cmake/LLVM.cmake); their major.minor versions must agree (both LLVM 20).
+    ## (cmake/LLVM.cmake); their major.minor versions must agree.
     CMAKE_FLAGS+=(-DLLVM_DIR=${prefix}/lib/cmake/llvm)
     ## HostDependency: llvm-config, but spoofed to return Dependency's paths
     CMAKE_FLAGS+=(-DWITH_LLVM_CONFIG=$llvm_host_bin/llvm-config)
