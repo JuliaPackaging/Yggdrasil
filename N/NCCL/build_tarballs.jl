@@ -74,6 +74,11 @@ export PATH=$PATH:$CUDA_HOME/bin
 export CUDACXX=$CUDA_HOME/bin/nvcc
 export CUDA_LIB=${CUDA_HOME}/lib
 
+if [[ "$(${CUDACXX} --version)" == *"release 12.3"* ]]; then
+    # CUDA 12.3 ptxas cannot assemble GIN's system-scoped 128-bit operations.
+    export NCCL_DISABLE_GIN=1
+fi
+
 cd nccl
 make -j ${nproc} src.build CUDA_HOME=${CUDA_HOME} PREFIX=${prefix}
 

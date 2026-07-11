@@ -1,0 +1,152 @@
+--- a/nccl/src/include/alloc.h
++++ b/nccl/src/include/alloc.h
+@@ -24,6 +24,10 @@
+ #include <cuda.h>
+ #include "cudawrap.h"
+ #endif
++#if CUDART_VERSION < 12020
++// CUDA 12.0 and 12.1 do not expose host-NUMA memory locations.
++#define CU_MEM_LOCATION_TYPE_HOST_NUMA CU_MEM_LOCATION_TYPE_MAX
++#endif
+
+ #if defined(NCCL_OS_LINUX)
+ #include <unistd.h>
+--- a/nccl/src/allocator.cc
++++ b/nccl/src/allocator.cc
+@@ -342,7 +342,9 @@ ncclResult_t ncclShadowPoolAlloc(struct ncclShadowPool* pool, size_t size, void
+     props.handleTypes = cudaMemHandleTypeNone;
+     props.location.type = cudaMemLocationTypeDevice;
+     cudaGetDevice(&props.location.id);
++#if CUDART_VERSION >= 12020
+     props.maxSize = (size_t)ncclParamShadowMempoolMaxSize();
++#endif
+     CUDACHECK(cudaMemPoolCreate(&pool->memPool, &props));
+
+     pool->hbits = hbits = 4;
+--- a/nccl/src/sym_kernels.cc
++++ b/nccl/src/sym_kernels.cc
+@@ -282,7 +282,9 @@ static void queryModel_gin(struct ncclComm* comm, ncclSymkKernelId k, size_t nB
+   double ginBw = getGinBw(comm);
+   int nMaxBlocks = std::min<int>(comm->config.maxCTAs, ncclSymkMaxBlocks);
+   if (k == ncclSymkKernelId_AllGather_RailRing_LsaSTMC) {
++#if CUDART_VERSION >= 12010
+     nMaxBlocks = std::min<int>(nMaxBlocks, divUp((comm->cudaArch < 1000 ? 16 : 32), comm->nvlsResources->nHeads));
++#endif
+   }
+   int nMinBlocks = comm->config.minCTAs;
+   int nUserCTAs = std::min<int>(ncclSymkMaxBlocks, ncclParamSymCTAs());
+--- a/nccl/src/include/nccl_device/impl/gin__funcs.h
++++ b/nccl/src/include/nccl_device/impl/gin__funcs.h
+@@ -553,11 +553,13 @@ struct ncclGin {
+         while (remaining > 0) {
+           struct ncclSegmentWindow const& dstSegmentWindow = dstWin->ginMultiSegmentWins[dstSeg];
+           struct ncclSegmentWindow const& srcSegmentWindow = srcWin->ginMultiSegmentWins[srcSeg];
++#if CUDART_VERSION >= 12020 && CUDART_VERSION != 12030
+           if (!doneSysmemFence && srcSegmentWindow.memType == CU_MEM_LOCATION_TYPE_HOST_NUMA) {
+             // for safety, escalate to system regardless of what the user requested
+             localRequiredRelease = cuda::thread_scope_system;
+             doneSysmemFence = true;
+           }
++#endif
+           const size_t srcRemaining = srcSegmentWindow.segmentSize - srcSegOffset;
+           const size_t dstRemaining = dstSegmentWindow.segmentSize - dstSegOffset;
+           const size_t putSize = nccl::gin::internal::getSegmentChunkSize(srcRemaining, dstRemaining, remaining);
+--- a/nccl/src/include/nccl_device/impl/vector__funcs.h
++++ b/nccl/src/include/nccl_device/impl/vector__funcs.h
+@@ -465,7 +465,8 @@ NCCL_DEVICE_INLINE EltPack<float, 1> castPack(EltPack<__nv_bfloat16, 1> x) {
+ }
+
+ template <>
+ NCCL_DEVICE_INLINE EltPack<float, 2> castPack(EltPack<__nv_bfloat16, 2> x) {
++#if CUDART_VERSION >= 12020
+   union Bf162PackAccess {
+     EltPack<__nv_bfloat16, 2> pack;
+     __nv_bfloat162 pair;
+@@ -479,6 +480,12 @@ NCCL_DEVICE_INLINE EltPack<float, 2> castPack(EltPack<__nv_bfloat16, 2> x) {
+   in.pack = x;
+   out.pair = __bfloat1622float2(in.pair);
+   return out.pack;
++#else
++  EltPack<float, 2> out{};
++  out.elts()[0] = __bfloat162float(x.elts()[0]);
++  out.elts()[1] = __bfloat162float(x.elts()[1]);
++  return out;
++#endif
+ }
+
+ // Specialization for float -> __nv_bfloat16 conversion (downcast from accumulation type)
+@@ -484,7 +490,8 @@ NCCL_DEVICE_INLINE EltPack<__nv_bfloat16, 1> castPack(EltPack<float, 1> x) {
+ }
+
+ template <>
+ NCCL_DEVICE_INLINE EltPack<__nv_bfloat16, 2> castPack(EltPack<float, 2> x) {
++#if CUDART_VERSION >= 12020
+   union Bf162PackAccess {
+     EltPack<__nv_bfloat16, 2> pack;
+     __nv_bfloat162 pair;
+@@ -498,6 +505,12 @@ NCCL_DEVICE_INLINE EltPack<__nv_bfloat16, 2> castPack(EltPack<float, 2> x) {
+   in.pack = x;
+   out.pair = __float22bfloat162_rn(in.pair);
+   return out.pack;
++#else
++  EltPack<__nv_bfloat16, 2> out{};
++  out.elts()[0] = __float2bfloat16_rn(x.elts()[0]);
++  out.elts()[1] = __float2bfloat16_rn(x.elts()[1]);
++  return out;
++#endif
+ }
+ #endif
+
+@@ -823,3 +823,3 @@ NCCL_DEVICE_INLINE EltPack<__nv_bfloat16, 2> reducePack(OpSum<__nv_bfloat16> c
+-#if __CUDA_ARCH__ >= 530 && __CUDA_ARCH__ != 610
++#if CUDART_VERSION >= 12020 && __CUDA_ARCH__ >= 530 && __CUDA_ARCH__ != 610
+ union Bf16PackAccess2 {
+   EltPack<__nv_bfloat16, 2> pack;
+--- a/nccl/src/device/symmetric/generate.py
++++ b/nccl/src/device/symmetric/generate.py
+@@ -25,7 +25,7 @@ else:
+   os.mkdir(gensrc)
+
+ # On Windows, GIN device code is excluded; do not generate or build any GIN kernels.
+-exclude_gin = platform.system() == "Windows"
++exclude_gin = platform.system() == "Windows" or os.getenv("NCCL_DISABLE_GIN") == "1"
+
+ def paste(sep, *args):
+   return sep.join(args)
+--- a/nccl/src/include/nccl_device/impl/gin__funcs.h
++++ b/nccl/src/include/nccl_device/impl/gin__funcs.h
+@@ -537,4 +537,8 @@ struct ncclGin {
+           ncclGin_getCounterId(*this, localAction), ncclGin_isDescriptor(descriptor), ncclGin_getDescriptor(descriptor),
++#if CUDART_VERSION == 12030
++          givenRelease,
++#else
+           cuda::thread_scope_system, // for safety, escalate to system regardless of what the user requested
++#endif
+           givenRelease, optFlags);
+       } else {
+         // Multi-segment case. The puts are chunked to handle multiple registration entries and src/dst windows that
+--- a/nccl/src/include/nccl_device/impl/gin__funcs.h
++++ b/nccl/src/include/nccl_device/impl/gin__funcs.h
+@@ -546,6 +546,8 @@ struct ncclGin {
+         int dstSeg;
+         size_t dstSegOffset;
+         nccl::gin::internal::findSegmentFromWindow(dstWin, dstOffset, &dstSeg, &dstSegOffset);
++#if CUDART_VERSION >= 12020 && CUDART_VERSION != 12030
+         bool doneSysmemFence = false;
++#endif
+         size_t remaining = bytes;
+         cuda::thread_scope localRequiredRelease = requiredRelease;
+
+--- a/nccl/src/transport/nvls.cc
++++ b/nccl/src/transport/nvls.cc
+@@ -1215,6 +1215,10 @@ ncclResult_t ncclNvlsInit(struct ncclComm* comm) {
+   return ncclSuccess;
+ }
+
++ncclResult_t ncclNvlsTuning(struct ncclComm* comm) {
++  return ncclSuccess;
++}
++
+ ncclResult_t ncclNvlsBufferSetup(struct ncclComm* comm) {
+   return ncclSuccess;
+ }
