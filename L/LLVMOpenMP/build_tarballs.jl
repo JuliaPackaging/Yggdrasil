@@ -24,7 +24,7 @@ platform_config=()
 if [[ "${target}" == *-mingw* ]]; then
     # backport https://gitlab.kitware.com/cmake/cmake/-/commit/78f758a463516a78a9ec8d472080c6e61cb89c7f
     sed -i "s@/c  */Fo@-c -Fo@" /usr/share/cmake/Modules/CMakeASM_MASMInformation.cmake
-    sed -i "s@libomp_append(asmflags_local /@libomp_append(asmflags_local -@" runtime/cmake/LibompHandleFlags.cmake
+    sed -i "s@libomp_append(asmflags_local /@libomp_append(asmflags_local -@" cmake/modules/LibompHandleFlags.cmake
     if [[ "${target}" == *x86_64* ]]; then
         platform_config+=(-DLIBOMP_ASMFLAGS="-win64")
     fi
