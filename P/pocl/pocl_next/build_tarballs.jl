@@ -57,12 +57,9 @@ filter!(p -> !(arch(p) == "i686" && os(p) == "windows"), platforms)
 
 include("../common.jl")
 
-# LLVM 22 was built against the macOS 11.0 SDK, so ship it. We only use the
-# helper for the (centralized) SDK source; the install itself is done
-# non-destructively in common.jl, which extracts the SDK to a scratch dir and
-# redirects the toolchain at it, rather than overwriting the read-only sys-root
-# (whose `System` tree can no longer be `rm`'d on the current rootfs).
-sources = vcat(sources, get_macos_sdk_sources(macos_sdk_version))
+# LLVM 22 requires macOS 11.0. The shared helper installs the SDK and redirects
+# the toolchain without modifying the read-only rootfs.
+sources, macos_sdk_script = require_macos_sdk(macos_sdk_version, sources, "")
 
 # The products that we will ensure are always built
 products = [
@@ -135,7 +132,7 @@ end
 
 for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
-                   name, version, build.sources, build_script(),
+                   name, version, build.sources, macos_sdk_script * build_script(),
                    [build.platform], products, build.dependencies;
                    build.preferred_gcc_version,
                    preferred_llvm_version=Base.thismajor(llvm_version),

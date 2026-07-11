@@ -53,36 +53,9 @@ function build_script(standalone=false)
     preheader = """
     STANDALONE=$(standalone)
     LLVM_MAJOR_MINOR=$(llvm_version.major).$(llvm_version.minor)
-    MACOS_SDK_VERSION=$(macos_sdk_version)
     """
 
     script = preheader * raw"""
-    # macOS SDK setup, shared by both the translator and PoCL builds below (it redirects
-    # the toolchain, so it must run before either of them).
-    if [[ "${target}" == x86_64-apple-darwin* ]]; then
-        # Use the SDK matching the selected LLVM build.
-        # We can't upgrade the SDK in the real sys-root: it lives on a read-only
-        # overlay lower layer where removing/replacing directories fails with
-        # I/O errors, and merging the SDK on top hits symlink-vs-directory
-        # conflicts. So assemble a combined sysroot in a writable scratch dir
-        # and point the toolchain at it. The copy of the sys-root carries the
-        # things the bare SDK lacks (the toolchain's C++ headers, the build-time
-        # LLVM headers under usr/local), and in the scratch copy we can replace
-        # System the usual way.
-        apple_sysroot=$WORKSPACE/srcdir/sysroot
-        cp -a /opt/${target}/${target}/sys-root $apple_sysroot
-        tar --extract --file=$WORKSPACE/srcdir/MacOSX${MACOS_SDK_VERSION}.sdk.tar.xz \
-            --directory=$WORKSPACE/srcdir --warning=no-unknown-keyword \
-            MacOSX${MACOS_SDK_VERSION}.sdk/System MacOSX${MACOS_SDK_VERSION}.sdk/usr
-        rm -rf $apple_sysroot/System
-        cp -ra $WORKSPACE/srcdir/MacOSX${MACOS_SDK_VERSION}.sdk/usr/* $apple_sysroot/usr/.
-        cp -ra $WORKSPACE/srcdir/MacOSX${MACOS_SDK_VERSION}.sdk/System $apple_sysroot/.
-        # redirect every sys-root reference (--sysroot and -isysroot) at it
-        sed -i "s!/opt/${target}/${target}/sys-root!$apple_sysroot!g" ${CMAKE_TARGET_TOOLCHAIN}
-        sed -i "s!/opt/${target}/${target}/sys-root!$apple_sysroot!g" /opt/bin/${bb_full_target}/${target}-clang*
-        export MACOSX_DEPLOYMENT_TARGET=${MACOS_SDK_VERSION}
-    fi
-
     ##########################################################################
     # 1. Build the vendored SPIRV-LLVM-Translator as a static library.
     #
@@ -152,9 +125,10 @@ function build_script(standalone=false)
 
     # POCL wants a target sysroot for compiling the host kernellib (for `math.h` etc)
     sysroot=/opt/${target}/${target}/sys-root
-    if [[ "${target}" == x86_64-apple-darwin* ]]; then
-        # use the combined sysroot assembled above
-        sysroot=$apple_sysroot
+    if [[ "${target}" == *apple* ]]; then
+        # require_macos_sdk redirects SDKROOT on x86_64; on aarch64 it remains
+        # BinaryBuilder's default SDK root.
+        sysroot=${SDKROOT}
     fi
     if [[ "${target}" == *-mingw* ]]; then
         sysroot_include=$sysroot/include
