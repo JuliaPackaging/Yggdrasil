@@ -159,8 +159,9 @@ function gcc_script(gcc_version::VersionNumber, compiler_target::Platform)
         # Without `-sdk_version`, cctools ld64 stamps LC_BUILD_VERSION.sdk with the Darwin major
         # (e.g. 20.0), which trips macOS 26's stricter dyld LINKEDIT validator and makes the runtime
         # dylibs (-> CompilerSupportLibraries) fail to load.  Pin the (grandfathered) SDK version
-        # explicitly, like conda-forge's clang driver does.
-        if [[ "${GCC_VERSION_MAJOR}" -ge 14 ]]; then
+        # explicitly, like conda-forge's clang driver does.  Applies to GCC 13 too, since its darwin
+        # runtime dylibs feed CompilerSupportLibraries@v1.1 (Julia 1.10).
+        if [[ "${GCC_VERSION_MAJOR}" -ge 13 ]]; then
             export LDFLAGS_FOR_TARGET="${LDFLAGS_FOR_TARGET} -Wl,-sdk_version,11.0"
         fi
 
