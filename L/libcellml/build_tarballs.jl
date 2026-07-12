@@ -14,19 +14,29 @@ sources = [
 
 # https://libcellml.org/documentation/installation/build_from_source
 script = raw"""
-cd libcellml
-mkdir build && cd build
-cmake -DINSTALL_PREFIX=${prefix} \
+
+if [ -d /workspace/MacOSX10.15.sdk/usr/local/lib/cmake/zlib/ ]; then
+    ls /workspace/MacOSX10.15.sdk/usr/local/lib/cmake/zlib/
+    cat /workspace/MacOSX10.15.sdk/usr/local/lib/cmake/zlib/ZLIBConfig.cmake
+fi
+
+if [ -d /opt/x86_64-unknown-freebsd13.4/x86_64-unknown-freebsd13.4/sys-root/usr/local/lib/cmake/zlib/ ]; then
+    ls /opt/x86_64-unknown-freebsd13.4/x86_64-unknown-freebsd13.4/sys-root/usr/local/lib/cmake/zlib/
+    cat /opt/x86_64-unknown-freebsd13.4/x86_64-unknown-freebsd13.4/sys-root/usr/local/lib/cmake/zlib/ZLIBConfig.cmake
+fi
+
+cmake -S libcellml -B build-libcellml-release \
+    -DINSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DBUILD_TYPE=Release \
     -DTWAE=OFF \
     -DCOVERAGE=OFF \
     -DLLVM_COVERAGE=OFF \
-    -DUNIT_TESTS=OFF \
-    ..
-make -j${nproc}
-make install
-install_license ../LICENSE
+    -DUNIT_TESTS=OFF
+
+cmake --build build-libcellml-release
+cmake --build build-libcellml-release --target install
+install_license libcellml/LICENSE
 """
 
 sources, script = require_macos_sdk("10.15", sources, script)
