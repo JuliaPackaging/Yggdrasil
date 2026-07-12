@@ -52,10 +52,5 @@ products = [
     LibraryProduct(["libsimpleble", "simpleble"], :simpleble)
 ]
 
-# Dependencies that must be installed before this package can be built
-dependencies = [
-    Dependency(PackageSpec(name="Dbus_jll", uuid="ee1fde0b-3d02-5ea6-8484-8dfef6360eab"); platforms=filter(!Sys.iswindows, platforms))
-]
-
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"7.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products; julia_compat="1.6", preferred_gcc_version = v"7.1.0")
