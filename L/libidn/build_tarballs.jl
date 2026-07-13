@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "libidn"
-version = v"1.43.0"
+version = v"1.44.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://ftpmirror.gnu.org/gnu/libidn/libidn-$(version.major).$(version.minor).tar.gz",
-                  "bdc662c12d041b2539d0e638f3a6e741130cdb33a644ef3496963a443482d164")
+                  "499608bab3a65650a0ea52888c13a8deebe3f71408e319acd9ec52e02eb13959")
 ]
 
 # Bash recipe for building across all platforms
