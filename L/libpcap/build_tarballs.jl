@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libpcap"
-version = v"1.10.5"
+version = v"1.10.6"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/the-tcpdump-group/libpcap.git", "bbcbc9174df3298a854daee2b3e666a4b6e5383a")
+    GitSource("https://github.com/the-tcpdump-group/libpcap.git", "a999701dca5c873779281938baee6bc185a8d4dc")
 ]
 
 # Bash recipe for building across all platforms
