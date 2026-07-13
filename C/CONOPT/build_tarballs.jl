@@ -2,15 +2,15 @@ using BinaryBuilder
 using Pkg
 
 name = "CONOPT"
-version = v"4.39.0"
+version = v"4.39.1"
 
 sources = [
-    ArchiveSource("https://d37drm4t2jghv5.cloudfront.net/conopt/4.39.1/conopt-4_39_1-linux-x86_64.zip", "8c67952f2023257bad039e8db1e0757bec93125c3e474ac028685b80643ee3e1"),
-    ArchiveSource("https://d37drm4t2jghv5.cloudfront.net/conopt/4.39.1/conopt-4_39_1-linux-arm64.zip", "0afea1bfc9648ca84ded966f8fcaf6732d2ef9fe8c34c2c47e5a21abd13ecd07"),
-    ArchiveSource("https://d37drm4t2jghv5.cloudfront.net/conopt/4.39.1/conopt-4_39_1-macos-x86_64.zip", "0fa8c13407441b04c0a6cad117fce726c5519c9ec4631630f58b7eee345add43"),
-    ArchiveSource("https://d37drm4t2jghv5.cloudfront.net/conopt/4.39.1/conopt-4_39_1-macos-arm64.zip", "19a30264150eeb8016c91048468af20e6fc46a8c95c77951af8285c445379b29"),
-    ArchiveSource("https://d37drm4t2jghv5.cloudfront.net/conopt/4.39.1/conopt-4_39_1-win-x86_64.zip", "2b14505d910b9e84a19795f9cb866c5295b24236b2bded6b133463a995d18bc4"),
-    ArchiveSource("https://d37drm4t2jghv5.cloudfront.net/conopt/4.39.1/conopt-4_39_1-win-i386.zip", "399d9a40cde8e0b83e507e50d5dc1853c78831eeeed072217defdece10a26e14")
+    ArchiveSource("https://d37drm4t2jghv5.cloudfront.net/conopt/4.39.1/conopt-4_39_1-linux-x86_64.zip", "f1a42b849eb8f5760514261aea9e71e77d91762ea98b1819d9554d6d5ee430c0")),
+    ArchiveSource("https://d37drm4t2jghv5.cloudfront.net/conopt/4.39.1/conopt-4_39_1-linux-arm64.zip", "85336dbc8bce236b21fb7d0aa606c4634cc3644aba686cbcff6b81f67aabc102")),
+    ArchiveSource("https://d37drm4t2jghv5.cloudfront.net/conopt/4.39.1/conopt-4_39_1-macos-x86_64.zip", "86c3f8e50ad232e77feafbb343a8708d5ac883a10a9adc84f18bc3ce251e6cd1")),
+    ArchiveSource("https://d37drm4t2jghv5.cloudfront.net/conopt/4.39.1/conopt-4_39_1-macos-arm64.zip", "5d6f098c5f95d19cd2a8b3fae91c41135bdef636373486edddd7aa9a1cafcd02")),
+    ArchiveSource("https://d37drm4t2jghv5.cloudfront.net/conopt/4.39.1/conopt-4_39_1-win-x86_64.zip", "4435bb5eaa181fd01640fb24c382414263907cbcf1c413201163dfa8d3db888c")),
+    ArchiveSource("https://d37drm4t2jghv5.cloudfront.net/conopt/4.39.1/conopt-4_39_1-win-i386.zip", "cfeb54f3725a360d560663d860d11fa85a5e81233b0a3530e40b59676ba942c3"))
 ]
 
 script = raw"""
