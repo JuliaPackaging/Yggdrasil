@@ -76,11 +76,13 @@ elif [[ ${target} == *linux* ]]; then
     cd build_simplecble/
     make install
 
-    # Remove local dbus build artifacts from prefix. The system's
-    # libdbus-1.so.3 will be used at runtime via ld.so.cache.
+    # Remove local dbus build artifacts from prefix, but keep the shared
+    # library itself (libdbus-1.so*) so the audit's dlopen succeeds.
+    # The library will be bundled in the tarball and found via RPATH $ORIGIN
+    # at runtime, without needing Dbus_jll as a dependency.
     rm -rf ${prefix}/bin/dbus-* ${prefix}/etc/dbus-1 \
            ${prefix}/include/dbus-1.0 ${prefix}/lib/cmake/DBus1 \
-           ${prefix}/lib/dbus-1.0 ${prefix}/lib/libdbus-1* \
+           ${prefix}/lib/dbus-1.0 \
            ${prefix}/lib/pkgconfig/dbus-1.pc ${prefix}/libexec/dbus-* \
            ${prefix}/share/dbus-1 ${prefix}/share/doc/dbus \
            ${prefix}/share/xml/dbus-1
