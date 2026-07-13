@@ -5,15 +5,19 @@ using BinaryBuilder
 name = "basil"
 version = v"1.8.2"   # upstream calls this 1.8.2g; the suffix is not semver
 
-# Pinned to a maintained fork: it carries a regular-mesh (NOR) regression fix
-# that is not present in greg-houseman/basil.
 sources = [
-    GitSource("https://github.com/wenrongcao/basil.git",
-              "3133ea91345bf61ac2d3ef29f7d384dd71ee57d1"),
+    GitSource("https://github.com/greg-houseman/basil.git",
+              "a06c9ff6d05e3ee045120589b246bd5876c2fff8"),
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/basil
+
+# Restores the NOR() node-renumbering indirection that the upstream 1.7.7c ->
+# 1.8.2g merge dropped; without it every regular-mesh case dies during assembly.
+# A no-op on the triangle-mesh path. Not yet upstream.
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-fix-regular-mesh-NOR-regression.patch
 
 # Upstream's top-level Makefile is imake-generated and host-specific; we drive
 # the hand-written MakeSimple files instead and never invoke imake.
