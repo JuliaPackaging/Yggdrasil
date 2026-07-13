@@ -5,18 +5,18 @@ using Base.BinaryPlatforms: arch, os, tags
 
 # needed for libjulia_platforms and julia_versions
 const YGGDRASIL_DIR = "../../"
+include(joinpath(YGGDRASIL_DIR, "C/CUDA/common.jl"))
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 include("make_script.jl")
 
 name = "cupynumeric"
-version = v"26.1"
+version = v"26.6"
 sources = [
-    GitSource("https://github.com/nv-legate/cupynumeric.git","ae1c787828a9327ad00a076739706f41d196a043"),
+    GitSource("https://github.com/nv-legate/cupynumeric.git","ae639f37baad45700a7b41b42f5c84609bcf0bcd"),
     GitSource("https://github.com/MatthewsResearchGroup/tblis.git", "c4f81e08b2827e72335baa7bf91a245f72c43970"),
     FileSource("https://repo.anaconda.com/miniconda/Miniconda3-py311_24.3.0-0-Linux-x86_64.sh", 
-                "4da8dde69eca0d9bc31420349a204851bfa2a1c87aeb87fe0c05517797edaac4", "miniconda.sh"), 
-    # DirectorySource("./bundled")   
+                "4da8dde69eca0d9bc31420349a204851bfa2a1c87aeb87fe0c05517797edaac4", "miniconda.sh")
 ]
 
 
@@ -49,8 +49,7 @@ products = [
 ] 
 
 dependencies = [
-    Dependency("legate_jll"; compat = "=26.1"), # Legate versioning is Year.Month
-    # Dependency("CUTENSOR_jll", compat = "2.2"), # supplied via ArchiveSource
+    Dependency("legate_jll"; compat = "=26.6"), # Legate versioning is Year.Month
     Dependency("OpenBLAS32_jll"),
     HostBuildDependency(PackageSpec(; name = "CMake_jll", version = "3.31.9")),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")) 
@@ -68,22 +67,25 @@ for platform in all_platforms
 
     if haskey(platform, "cuda") && platform["cuda"] != "none" 
 
-        # cuTensor dependency
-        push!(platform_sources, ArchiveSource("https://github.com/JuliaBinaryWrappers/CUTENSOR_jll.jl/releases/download/CUTENSOR-v2.3.1%2B0/CUTENSOR.v2.3.1.x86_64-linux-gnu-cuda+13.0.tar.gz",
-                     "bb9d29e92522d4867dcd5124dfb9151cc40eb87f8a7772dd0509bd344e393abf")
+        cuda_ver = VersionNumber(platform["cuda"])
+        var = "cuda$(cuda_ver.major)"
+
+        # The JLL does not have cutensorMp.so currently
+        cutensor_sources =  get_sources(
+           "cutensor",
+           ["libcutensor"];
+           version=v"2.6.0", # if we add back CUDA 12.x this will need to drop to ~2.3
+           platform=platform,
+           variant=var
         )
+        push!(platform_sources, cutensor_sources...)
+        push!(_dependencies, Dependency("cuSolverMp_jll"; compat = "0.8"))
 
         append!(_dependencies, CUDA.required_dependencies(platform, static_sdk=true))
 
-        cuda_ver = platform["cuda"]
-
         if arch(platform) == "aarch64"
-            push!(platform_sources, CUDA.cuda_nvcc_redist_source(cuda_ver, "x86_64"))
+            push!(platform_sources, CUDA.cuda_nvcc_redist_source(platform["cuda"], "x86_64"))
         end
-
-        # Necessary for some development workflows 
-        # to re-build things locally.
-        push!(platform_products, FileProduct(["include/cupynumeric/cuda/cuda.h"], :cuda_header))
 
         script = get_script(Val{true}())
     end # else CPU-only build
