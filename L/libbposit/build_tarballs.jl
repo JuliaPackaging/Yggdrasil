@@ -15,9 +15,8 @@ sources = [
 # so we bypass it and call the cross-compiler directly.
 script = raw"""
 cd ${WORKSPACE}/srcdir/libbposit
-${CC} -std=c99 -Iinclude -fPIC -O3 -c src/bposit.c -o bposit.o
-mkdir -p ${libdir}
-${CC} -shared -o ${libdir}/libbposit.${dlext} bposit.o -lm
+make -j TARGET="libbposit.${dlext}"
+install -Dvm 755 "libbposit.${dlext}" -t "${libdir}"
 install_license LICENSE
 """
 
