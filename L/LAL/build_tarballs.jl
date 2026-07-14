@@ -91,10 +91,12 @@ platforms = filter(!Sys.iswindows, supported_platforms())
 # the ABI matrix supported by that HDF5 release; it predates MPIABI_jll.
 const hdf5_mpi_abis = (
     ("MPICH", PackageSpec(name="MPICH_jll"), "4.3.0 - 4", p -> !Sys.iswindows(p)),
-    ("MPItrampoline", PackageSpec(name="MPItrampoline_jll"), "5.5.3 - 5", p -> !Sys.iswindows(p) && !(libc(p) == "musl")),
-    # Prefer OpenMPI 5: it is HDF5-compatible and carries artifacts for the
-    # legacy libgfortran platform selected by BinaryBuilder's GCC 6 shard.
-    ("OpenMPI", PackageSpec(name="OpenMPI_jll"), "5", p -> !Sys.iswindows(p) && !(arch(p) == "armv6l" && libc(p) == "glibc")),
+    # Newer MPItrampoline releases dropped libgfortran3 artifacts that
+    # HDF5_jll v1.14.6 still requires on several platforms.
+    ("MPItrampoline", PackageSpec(name="MPItrampoline_jll"), "=5.5.3", p -> !Sys.iswindows(p) && !(libc(p) == "musl")),
+    # OpenMPI v5 dropped artifacts needed by HDF5_jll v1.14.6 (notably
+    # 32-bit Linux, FreeBSD, and RISC-V); v4.1.8 retains that matrix.
+    ("OpenMPI", PackageSpec(name="OpenMPI_jll"), "=4.1.8", p -> !Sys.iswindows(p) && !(arch(p) == "armv6l" && libc(p) == "glibc")),
 )
 
 function augment_hdf5_mpi_platforms(platforms)
