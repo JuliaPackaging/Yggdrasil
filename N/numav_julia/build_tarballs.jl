@@ -1,12 +1,12 @@
 using BinaryBuilder, Pkg
 
 name = "numav_julia"
-version = v"0.1.0"
+version = v"0.2.0"
 
 sources = [ 
     GitSource(
         "https://github.com/mmfiuza/numav.git", 
-        "bee6a3c00fa959bf1a3766a27d26aec9c2837b43"
+        "2e4f51b7c8ecceca09a4f9a7464f0017778daeb0"
     )
 ]
 
@@ -27,6 +27,7 @@ script = raw"""
         -D BIND_JULIA=TRUE \
         -D Julia_PREFIX=${prefix} \
         -D JlCxx_DIR=${prefix}/lib/cmake/JlCxx \
+        -D Boost_DIR=${prefix}/bin/cmake/Boost-1.87.0 \
         -D CMAKE_FIND_ROOT_PATH=${prefix} \
         -D CMAKE_INSTALL_PREFIX=${prefix} \
         ..
@@ -55,6 +56,7 @@ dependencies = [
     Dependency("spdlog_jll", compat="1.15.0"),
     BuildDependency(PackageSpec(name="libjulia_jll", version="1.11.0")),
     BuildDependency(PackageSpec(name="Eigen_jll", version="5.0.1")),
+    BuildDependency(PackageSpec(name="boost_jll", version="1.87.0")),
 
     # oneMKL for x86_64-linux-gnu and x86_64-w64
     Dependency("MKL_jll", compat="=2025.2.0"; platforms=mkl_platforms),
