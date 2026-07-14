@@ -7,7 +7,7 @@ version = v"0.1.0"
 
 sources = [
     GitSource("https://github.com/jamesquinlan/libbposit.git",
-              "5c4717e4c7dba1a163a2d11475cb1587b821f79e"),
+              "af67e6064b93e3feafb4ce176cbb14b1a84a32ed"),
 ]
 
 # Pure-C99 build: compile the single translation unit, link as a shared
