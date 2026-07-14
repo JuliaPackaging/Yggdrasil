@@ -6,8 +6,8 @@ name = "SimpleBLE"
 version = v"0.12.1"
 
 # Collection of sources required to complete build
-# Using libsimplecble archives for Windows and macOS (contain both libs)
-# Linux will be built from source
+# Using libsimplecble archives for Windows (contain both DLLs) and macOS (contain both dylibs)
+# Linux will be built from source; Dbus_jll provides headers/libs at build time via BuildDependency
 sources = [
     # Pre-built binaries for Windows (libsimplecble contains both DLLs)
     ArchiveSource("https://github.com/simpleble/simpleble/releases/download/v$(version)/libsimplecble_windows-x64.zip", "d6aa05c6a8f0ea710419dc82ea00c4ebbcd37a4d9644f70d79b94b6baf03c888"; unpack_target="windllx64"),
@@ -19,12 +19,6 @@ sources = [
 
     # Source code for building Linux and for license
     GitSource("https://github.com/simpleble/simpleble.git", "d1b7110644f0f9cb850d6ab43f7d461ca9d4031e"),
-
-    # dbus source: built locally for Linux to satisfy CMake find_package
-    # without pulling in Dbus_jll as a runtime dependency (which breaks
-    # communication with the system bus daemon).
-    ArchiveSource("https://dbus.freedesktop.org/releases/dbus/dbus-1.16.2.tar.xz",
-                  "0ba2a1a4b16afe7bceb2c07e9ce99a8c2c3508e5dec290dbb643384bd6beb7e2"),
 ]
 
 # Bash recipe for building across all platforms
@@ -43,28 +37,12 @@ if [[ ${target} == *mingw* ]]; then
     cp -a simpleble.dll simplecble.dll ${prefix}/bin/
 # Linux: build from source with GCC 11
 elif [[ ${target} == *linux* ]]; then
-    # Build dbus from source locally so CMake finds it, but DON'T declare
-    # Dbus_jll as a dependency — this prevents BinaryBuilder's audit from
-    # adding "using Dbus_jll" to the generated JLL wrapper, which would
-    # load Dbus_jll's bundled libdbus-1.so at runtime and break connection
-    # to the system bus daemon.
-    cd $WORKSPACE/srcdir/dbus-*
-    meson setup builddbus \
-        --buildtype=release \
-        --cross-file=${MESON_TARGET_TOOLCHAIN} \
-        --prefix=${prefix} \
-        -Ddbus_user=messagebus \
-        -Dsystem_pid_file=/var/run/dbus.pid \
-        -Dverbose_mode=false \
-        -Dinotify=auto \
-        -Dasserts=false \
-        -Duser_session=true \
-        -Dsession_socket_dir=/tmp \
-        -Dx11_autolaunch=disabled \
-        -Dmodular_tests=disabled \
-        -Dc_link_args=-lrt
-    meson compile -C builddbus
-    meson install -C builddbus
+    # Dbus_jll is available in the prefix as a BuildDependency, providing
+    # headers and libdbus-1.so for CMake's find_package(DBus1).  We DON'T
+    # declare Dbus_jll as a runtime dependency (BuildDependency only), so
+    # the generated JLL wrapper has no "using Dbus_jll".  We remove all
+    # dbus files from ${prefix} so they are not bundled in the tarball.
+    # At runtime the system's libdbus-1.so.3 is resolved by ld.so.
 
     cd $WORKSPACE/srcdir/simpleble/
     cmake -S simplecble -B build_simplecble \
@@ -76,16 +54,15 @@ elif [[ ${target} == *linux* ]]; then
     cd build_simplecble/
     make install
 
-    # Remove local dbus build artifacts from prefix, but keep the shared
-    # library itself (libdbus-1.so*) so the audit's dlopen succeeds.
-    # The library will be bundled in the tarball and found via RPATH $ORIGIN
-    # at runtime, without needing Dbus_jll as a dependency.
+    # Remove all dbus files from the prefix so they are not bundled.
+    # The system's libdbus-1.so.3 will be resolved at runtime by ld.so.
     rm -rf ${prefix}/bin/dbus-* ${prefix}/etc/dbus-1 \
            ${prefix}/include/dbus-1.0 ${prefix}/lib/cmake/DBus1 \
            ${prefix}/lib/dbus-1.0 \
            ${prefix}/lib/pkgconfig/dbus-1.pc ${prefix}/libexec/dbus-* \
            ${prefix}/share/dbus-1 ${prefix}/share/doc/dbus \
-           ${prefix}/share/xml/dbus-1
+           ${prefix}/share/xml/dbus-1 \
+           ${prefix}/lib/libdbus-1*
 # macOS: use pre-built binaries
 elif [[ ${target} == *apple* ]]; then
     if [[ ${target} == x86_64* ]]; then
@@ -124,15 +101,18 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-# NOTE: dbus-1 is built from source on Linux (see script above) instead of
-# using Dbus_jll, because BinaryBuilder's audit would otherwise add Dbus_jll
-# as a runtime dependency (via NEEDED libdbus-1.so.3), loading its bundled
-# libdbus-1.so which cannot connect to the system bus daemon.
-# Expat_jll is needed at build time for the dbus library (XML config parsing).
+# NOTE: Dbus_jll is used as a BuildDependency to provide headers and
+# libdbus-1.so for CMake's find_package(DBus1) at build time.  It is NOT
+# a runtime Dependency, so the generated JLL has no "using Dbus_jll".
+# After the build, all dbus files are removed from ${prefix} so they are
+# not bundled.  At runtime the system's libdbus-1.so.3 is resolved by ld.so.
 dependencies = [
-    BuildDependency(PackageSpec(name="Expat_jll", uuid="2e619515-83b5-522b-bb60-26c02a35a201"); platforms=filter(p -> Sys.islinux(p) && libc(p) == "glibc", platforms))
+    BuildDependency(PackageSpec(name="Dbus_jll", uuid="ee1fde0b-3d02-5ea6-8484-8dfef6360eab"); platforms=filter(p -> Sys.islinux(p), platforms))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # Using GCC 11 for Linux (available for both Linux and MinGW, though we use pre-built for Windows)
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"11")
+# dont_dlopen=true: skip the product-satisfaction dlopen check because
+# libsimpleble.so NEEDS libdbus-1.so.3 which we remove from the prefix
+# to avoid bundling (the system's libdbus is used at runtime).
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"11", dont_dlopen = true)
