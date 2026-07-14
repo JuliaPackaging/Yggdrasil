@@ -10,9 +10,6 @@ sources = [
               "af67e6064b93e3feafb4ce176cbb14b1a84a32ed"),
 ]
 
-# Pure-C99 build: compile the single translation unit, link as a shared
-# library, install to ${libdir}.  The Makefile hardcodes TARGET=libbposit.so,
-# so we bypass it and call the cross-compiler directly.
 script = raw"""
 cd ${WORKSPACE}/srcdir/libbposit
 make -j TARGET="libbposit.${dlext}"
