@@ -2,6 +2,9 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "iperf"
 version = v"3.21"
 
@@ -19,6 +22,8 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/0001-use-uint64_t-for-atomic-fallback
 make -j${nproc}
 make install
 """
+
+sources, script = require_macos_sdk("10.13", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
