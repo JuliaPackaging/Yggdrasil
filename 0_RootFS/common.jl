@@ -70,7 +70,9 @@ function get_next_shard_tag(cs)
     end
 
     last_version = VersionNumber(last_tag[length(cs.name)+2:end])
-    build_number = 0
+    # A tag without a `+N` suffix (the first deploy of a version) is build 0,
+    # so the next build number is 1 -- `+0` would alias the existing release.
+    build_number = 1
     if isa(last_version.build, Tuple{<:UInt})
         build_number = last_version.build[1] + 1
     end
