@@ -85,6 +85,11 @@ test -f ${libdir}/pkgconfig/lalsupport.pc
 
 # LALSuite's upstream package explicitly excludes Windows.
 platforms = filter(!Sys.iswindows, supported_platforms())
+# HDF5_jll v1.14.6 and MPItrampoline need a Fortran runtime despite LAL itself
+# being C-only.  libgfortran3 artifacts are no longer available from the
+# current CompilerSupportLibraries_jll, so select the supported v5 ABI.
+platforms = expand_gfortran_versions(platforms)
+filter!(p -> libgfortran_version(p) >= v"5", platforms)
 
 # HDF5_jll v1.14.6 is MPI-augmented, so LAL must expose matching artifacts and
 # runtime dependencies even though its public API is not MPI-based.  This is
