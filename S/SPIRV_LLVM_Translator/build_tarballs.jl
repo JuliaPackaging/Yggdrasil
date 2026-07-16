@@ -16,6 +16,7 @@ sources = [
     GitSource(
         "https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git",
         "c88a2e4a1ec77f7adc8916940afd9754c3a30fab"),
+    DirectorySource("bundled"),
     # LLVM 15+ requires macOS SDK 10.14
     get_macos_sdk_sources("10.14")...
 ]
@@ -23,6 +24,7 @@ sources = [
 # Bash recipe for building across all platforms
 get_script(llvm_version) = get_macos_sdk_script("10.14") * raw"""
 cd SPIRV-LLVM-Translator
+atomic_patch -p1 ../phi-duplicate-predecessors.patch
 install_license LICENSE.TXT
 
 CMAKE_FLAGS=()
