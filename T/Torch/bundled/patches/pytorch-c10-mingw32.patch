@@ -1,0 +1,37 @@
+diff --git a/c10/CMakeLists.txt b/c10/CMakeLists.txt
+index 23a0e024d35..42f27ed85c0 100644
+--- a/c10/CMakeLists.txt
++++ b/c10/CMakeLists.txt
+@@ -51,6 +51,10 @@ if(${COMPILER_SUPPORTS_HIDDEN_VISIBILITY})
+   target_compile_options(c10 PRIVATE "-fvisibility=hidden")
+ endif()
+ 
++if(WIN32)
++  set_target_properties(c10 PROPERTIES LINK_FLAGS "-Wl,--export-all-symbols")
++endif()
++
+ # ---[ Dependency of c10
+ if(${USE_GFLAGS})
+    target_link_libraries(c10 PUBLIC gflags)
+diff --git a/c10/core/impl/alloc_cpu.cpp b/c10/core/impl/alloc_cpu.cpp
+index 2570316f42c..5dbb2259a7f 100644
+--- a/c10/core/impl/alloc_cpu.cpp
++++ b/c10/core/impl/alloc_cpu.cpp
+@@ -58,7 +58,7 @@ void* alloc_cpu(size_t nbytes) {
+   void* data;
+ #ifdef __ANDROID__
+   data = memalign(gAlignment, nbytes);
+-#elif defined(_MSC_VER)
++#elif defined(_WIN32)
+   data = _aligned_malloc(nbytes, gAlignment);
+ #else
+   int err = posix_memalign(&data, gAlignment, nbytes);
+@@ -96,7 +96,7 @@ void* alloc_cpu(size_t nbytes) {
+ }
+ 
+ void free_cpu(void* data) {
+-#ifdef _MSC_VER
++#ifdef _WIN32
+   _aligned_free(data);
+ #else
+   // NOLINTNEXTLINE(cppcoreguidelines-no-malloc)
