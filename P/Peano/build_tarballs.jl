@@ -40,9 +40,16 @@ CMAKE_FLAGS+=(-DLLVM_ENABLE_ZSTD=OFF)
 CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBXML2=OFF)
 CMAKE_FLAGS+=(-DLLVM_ENABLE_ZLIB=FORCE_ON)
 
+# Ship only the tools we declare as products instead of the whole toolchain. A
+# plain `ninja install` drags in extras like nvptx-arch/amdgpu-arch plus a full
+# set of headers and libraries; listing the distribution components and building
+# `install-distribution` compiles and installs just these (and their real
+# dependencies), which also cuts the build down.
+CMAKE_FLAGS+=(-DLLVM_DISTRIBUTION_COMPONENTS="clang;clang-resource-headers;lld;llc;opt")
+
 # The LLVM build system expects to be run from the 'llvm' subdirectory
 cmake -B build -S llvm -GNinja ${CMAKE_FLAGS[@]}
-ninja -C build -j${nproc} install
+ninja -C build -j${nproc} install-distribution
 
 install_license llvm/LICENSE.TXT
 """
