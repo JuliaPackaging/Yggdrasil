@@ -100,7 +100,20 @@ CMAKE_FLAGS+=(-DAIE_BUILD_LSP_SERVER=OFF)
 CMAKE_FLAGS+=(-DAIE_RUNTIME_TARGETS=)
 CMAKE_FLAGS+=(-DAIE_RUNTIME_TEST_TARGET=)
 
-cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
+# bootgen vendors lms-hash-sigs, which ships its own endian.h stub and puts that
+# directory on the include path (tools/bootgen/CMakeLists.txt). glibc's internal
+# `#include <endian.h>` then resolves to that stub instead of the system header,
+# so __BYTE_ORDER is left undefined and <bits/waitstatus.h> compiles *both*
+# endianness branches of `union wait` -> "duplicate member __w_retcode ...".
+# Define the byte-order macros ourselves, matching glibc's exact bodies so the
+# normal (non-shadowed) translation units see no redefinition. x86_64 is little
+# endian. Applied to C and C++ (bootgen has both). The array is expanded quoted
+# below so the spaces in the flag value survive word-splitting.
+ENDIAN_DEFS="-D__LITTLE_ENDIAN=1234 -D__BIG_ENDIAN=4321 -D__PDP_ENDIAN=3412 -D__BYTE_ORDER=__LITTLE_ENDIAN"
+CMAKE_FLAGS+=(-DCMAKE_C_FLAGS="${ENDIAN_DEFS}")
+CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="${ENDIAN_DEFS}")
+
+cmake -B build -S . -GNinja "${CMAKE_FLAGS[@]}"
 # aiecc is the compile driver: it orchestrates the full lowering and links
 # bootgen-lib (built from third_party/bootgen, needs OpenSSL) for direct PDI
 # generation, so a design can be taken to a PDI without the Python stack. CDO
