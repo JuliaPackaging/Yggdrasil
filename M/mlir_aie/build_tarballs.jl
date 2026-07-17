@@ -101,10 +101,17 @@ CMAKE_FLAGS+=(-DAIE_RUNTIME_TARGETS=)
 CMAKE_FLAGS+=(-DAIE_RUNTIME_TEST_TARGET=)
 
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
-ninja -C build -j${nproc} aie-opt aie-translate
+# aiecc is the compile driver: it orchestrates the full lowering and links
+# bootgen-lib (built from third_party/bootgen, needs OpenSSL) for direct PDI
+# generation, so a design can be taken to a PDI without the Python stack. CDO
+# and the NPU instruction stream are emitted by aie-translate, which already
+# links xaienginecdo_static from the same submodule. `add_subdirectory(bootgen)`
+# and `add_subdirectory(aiecc)` are unconditional, so no extra flags are needed.
+ninja -C build -j${nproc} aie-opt aie-translate aiecc
 
 install -Dm755 build/bin/aie-opt "${bindir}/aie-opt${exeext}"
 install -Dm755 build/bin/aie-translate "${bindir}/aie-translate${exeext}"
+install -Dm755 build/bin/aiecc "${bindir}/aiecc${exeext}"
 """
 
 # mlir-aie's tools drive AIE devices from a Linux host, and the NPUs they target are
@@ -118,6 +125,7 @@ platforms = expand_cxxstring_abis(platforms)
 products = [
     ExecutableProduct("aie-opt", :aie_opt),
     ExecutableProduct("aie-translate", :aie_translate),
+    ExecutableProduct("aiecc", :aiecc),
 ]
 
 # LLVM and MLIR are built above rather than depended on, so there is nothing here
