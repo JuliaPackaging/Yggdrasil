@@ -2,25 +2,28 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 using BinaryBuilderBase
+using Base.BinaryPlatforms
+
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "Trilinos"
-# Not a real version - this is 12.12.1, but needed a bump to change julia compat
-version = v"14.4.0"
+version = v"16.2.1"
 
-# Collection of sources required to complete build
+# Collection of sources required to complete build.
 sources = [
-    GitSource("https://github.com/trilinos/Trilinos.git", "975307431d60d0859ebaa27c9169cbb1d4287513"),
+    GitSource("https://github.com/trilinos/Trilinos.git", "cf47480689f48aafd08983987d7ba083cff1654e"),
+    ArchiveSource("https://downloads.sourceforge.net/project/boost/boost/1.87.0/boost_1_87_0.tar.gz",
+                  "f55c340aa49763b1925ccf02b2e83f35fdcf634c9d5164a2acb87540173c741d"),
     DirectorySource("./bundled"),
-    # For std::aligned_alloc. The C version is in 10.15, but the C++ version is new in 11.3
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz",
-                  "cd4f08a75577145b8f05245a2975f7c81401d75e9535dcffbb879ee1deefcbf4"),
 ]
 
-# Bash recipe for building across all platforms
+# Bash recipe for building across all platforms.
 script = raw"""
-cd $WORKSPACE/srcdir
+cd ${WORKSPACE}/srcdir/Trilinos
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/kokkostpl.patch
+
+install_license LICENSE
 
 if [[ "${target}" == *-mingw* ]]; then
     BLAS_NAME=libblastrampoline-5
@@ -28,180 +31,139 @@ else
     BLAS_NAME=libblastrampoline
 fi
 
-# Update SDK version
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    pushd $WORKSPACE/srcdir/MacOSX11.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    rm -rf /opt/${target}/${target}/sys-root/usr/include/libxml2/libxml
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    popd
-    export MACOSX_DEPLOYMENT_TARGET=10.15
-fi
-
-# Use newer cmake from the HostBuildDependency
+# Use newer CMake from the HostBuildDependency.
 rm /usr/bin/cmake
 
-# Delete compiler settings from toolchain file to let Trilinos
-# autodetect mpic{c|xx}.
+# Delete compiler settings from the toolchain file so Trilinos can detect the
+# MPI wrappers provided by the selected Yggdrasil MPI dependency.
 sed -i '/CMAKE_C_COMPILER/d' ${CMAKE_TARGET_TOOLCHAIN}
 sed -i '/CMAKE_CXX_COMPILER/d' ${CMAKE_TARGET_TOOLCHAIN}
 
-# Prevent host libcurl from accidentally being linked for -musl builds
-rm /usr/lib/libcurl.so.*
-rm /usr/lib/libnghttp2.so*
-
-cd Trilinos
-atomic_patch -p1 $WORKSPACE/srcdir/patches/kokkostpl.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/tekoepetraguard.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/teuchoswinexport.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/teuchoswinexport2.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/teuchoswinexport3.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/stratikimosnotpetra.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/muslunistd.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/muslmallinfo.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/freebsd.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/nohdf5.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/ulltemplate.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/stknolonglong.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/winheadercase.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/winsigcompat.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/msmpicompat.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/rusagecompat.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/intrepid2sfinae.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/iossexplicit.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/stkalignedalloc.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/zoltan2time.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/stktypename.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/panzerhardcode.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/ztmsmpicompat.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/seacasassertnuke.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/noxheader.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/winheadercase2.patch
-
-
-mkdir trilbuild
-cd trilbuild
-install_license ${WORKSPACE}/srcdir/Trilinos/LICENSE
-SRCDIR="/workspace/srcdir/Trilinos"
-FLAGS='-O3 -fPIC'
-
-if [[ "${target}" == *86*-linux-gnu* ]]; then
-    # TODO: Can be removed after https://github.com/JuliaPackaging/BinaryBuilderBase.jl/pull/318
-    GLIBC_ARTIFACT_DIR=$(dirname $(dirname $(dirname $(realpath "${prefix}/usr/include/stdlib.h"))))
-    rsync --archive ${GLIBC_ARTIFACT_DIR}/ /opt/${target}/${target}/sys-root/
-    CMAKE_CPP_FLAGS+=("-D_GLIBCXX_HAVE_ALIGNED_ALLOC=1")
-    FLAGS+=" -D_GLIBCXX_HAVE_ALIGNED_ALLOC"
-fi
-
 # TODO: MPITrampoline embeds the wrong CC. https://github.com/JuliaPackaging/Yggdrasil/issues/7420
-export MPITRAMPOLINE_CC="$(which $CC)"
-export MPITRAMPOLINE_CXX="$(which $CXX)"
-export MPITRAMPOLINE_FC="$(which $FC)"
+export MPITRAMPOLINE_CC="$(which ${CC})"
+export MPITRAMPOLINE_CXX="$(which ${CXX})"
+export MPITRAMPOLINE_FC="$(which ${FC})"
 
-CMAKE_FLAGS="-DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}"
+export CMAKE_PREFIX_PATH="${prefix}:${libdir}/cmake:${CMAKE_PREFIX_PATH:-}"
 
-if [[ "${bb_full_target}" == *microsoftmpi* ]]; then
-    EXTRA_LDFLAGS="-L/workspace/destdir/bin -lmsmpi"
-fi
-
-# Trilinos package enables
-CMAKE_FLAGS="${CMAKE_FLAGS}
-    -DTrilinos_ENABLE_NOX=ON -DNOX_ENABLE_ABSTRACT_IMPLEMENTATION_EPETRA=ON
-    -DNOX_ENABLE_LOCA=ON
-    -DTrilinos_ENABLE_EpetraExt=ON -DEpetraExt_BUILD_BTF=ON -DEpetraExt_BUILD_EXPERIMENTAL=ON -DEpetraExt_BUILD_GRAPH_REORDERINGS=ON
-    -DTrilinos_ENABLE_ThyraEpetraAdapters=ON -DTrilinos_ENABLE_ThyraEpetraExtAdapters=ON
-    -DTrilinos_ENABLE_TrilinosCouplings=ON
-    -DTrilinos_ENABLE_Ifpack=ON
-    -DTrilinos_ENABLE_Isorropia=ON
-    -DTrilinos_ENABLE_AztecOO=ON
-    -DTrilinos_ENABLE_Belos=ON
-    -DTrilinos_ENABLE_Teuchos=ON
-    -DTrilinos_ENABLE_Amesos=ON -DAmesos_ENABLE_KLU=ON
-    -DTrilinos_ENABLE_Sacado=ON
-    -DTrilinos_ENABLE_Rythmos=ON
-    -DTrilinos_ENABLE_Tempus=ON
-    -DTrilinos_ENABLE_SEACAS=ON
-    -DTrilinos_ENABLE_Piro=ON
-    -DTrilinos_ENABLE_Stratimikos=ON
-    -DTrilinos_ENABLE_STK=ON
-    -DTrilinos_ENABLE_Amesos=ON
-    -DTrilinos_ENABLE_ML=ON
-    "
-
-# Kokkos-dependent enables
-# Kokkos is not available on all platforms, so only enable Kokkos-dependent things if it is available
-if [ -f "/workspace/destdir/lib/cmake/Kokkos/KokkosConfig.cmake" ]; then
-    CMAKE_FLAGS="${CMAKE_FLAGS}
-        -DTrilinos_ENABLE_Tpetra=ON
-        -DTrilinos_ENABLE_Teko=ON -DTEKO_HAVE_EPETRA=ON
-        -DTrilinos_ENABLE_STKMesh=ON
-        -DTrilinos_ENABLE_PanzerDiscFE=ON
-        -DTrilinos_ENABLE_Panzer=ON
-        -DTrilinos_ENABLE_PanzerCore=ON
-        -DTrilinos_ENABLE_PanzerAdaptersSTK=ON
-        -DTrilinos_ENABLE_Amesos2=ON
-        -DNOX_ENABLE_KOKKOS_SOLVER_STACK=ON"
+UMFPACK_CONFIG="$(find "${prefix}" -name UMFPACKConfig.cmake -print -quit)"
+SUITESPARSE_CONFIG="$(find "${prefix}" -name SuiteSparseConfig.cmake -print -quit)"
+UMFPACK_DIR_FLAG=()
+if [[ -n "${UMFPACK_CONFIG}" ]]; then
+    UMFPACK_DIR="$(dirname "${UMFPACK_CONFIG}")"
+    UMFPACK_DIR_FLAG=("-DUMFPACK_DIR=${UMFPACK_DIR}")
+    echo "Using UMFPACK_DIR=${UMFPACK_DIR}"
+elif [[ -n "${SUITESPARSE_CONFIG}" ]]; then
+    UMFPACK_DIR="$(dirname "${SUITESPARSE_CONFIG}")"
+    UMFPACK_DIR_FLAG=("-DUMFPACK_DIR=${UMFPACK_DIR}")
+    echo "Using SuiteSparse CMake package directory for UMFPACK_DIR=${UMFPACK_DIR}"
 else
-    CMAKE_FLAGS="${CMAKE_FLAGS} -DTPL_ENABLE_Kokkos=OFF"
+    echo "No SuiteSparse CMake package config found; using explicit UMFPACK include/library fallback"
 fi
 
-# Global Trilinos FLAGS
-CMAKE_FLAGS="${CMAKE_FLAGS}
-    -DBUILD_SHARED_LIBS=ON
-    -DTrilinos_ENABLE_ALL_OPTIONAL_PACKAGES=OFF
-    -DTrilinos_ENABLE_CXX11=ON -DCMAKE_BUILD_TYPE=Release
-    -DTrilinos_ENABLE_OpenMP=ON -DTrilinos_ENABLE_COMPLEX_DOUBLE=ON
-    -DTPL_ENABLE_X11=OFF -DTPL_ENABLE_MPI=ON
-    "
-# SuiteSparse config
-CMAKE_FLAGS="${CMAKE_FLAGS} -DTPL_ENABLE_AMD=ON -DAMD_LIBRARY_DIRS=\"/${libdir}\"
-    -DAMD_LIBRARY_NAMES=\"libsuitesparseconfig.${dlext}\;libamd.${dlext}\;libklu.${dlext}\;libcolamd.${dlext}\;libbtf.${dlext}\"
-    -DAMD_INCLUDE_DIRS=\"${prefix}/include\" -DTPL_ENABLE_UMFPACK=ON -DUMFPACK_LIBRARY_DIRS=\"/${libdir}\"
-    -DAMD_LIBRARY_NAMES=\"libumfpack.${dlext}\" -DTPL_UMFPACK_INCLUDE_DIRS=\"${prefix}/include\"
-    -DTPL_UMFPACK_LIBRARIES=\"$libdir/libumfpack.${dlext}\" -DTPL_AMD_LIBRARIES=\"$libdir/libamd.${dlext}\"
-    "
-# BLAS/LAPACK config
-CMAKE_FLAGS="${CMAKE_FLAGS}
-    -DTPL_ENABLE_BLAS=ON -DTPL_ENABLE_LAPACK=ON -DBLAS_LIBRARY_DIRS=\"${prefix}/lib\" -DBLAS_LIBRARY_NAMES=\"${BLAS_NAME}.${dlext}\"
-    -DLAPACK_LIBRARY_DIRS=\"${prefix}/lib\" -DLAPACK_LIBRARY_NAMES=\"${BLAS_NAME}.${dlext}\"
-    "
+SUITESPARSE_INCLUDE_DIRS=()
+for dir in "${prefix}/include/suitesparse" "${prefix}/include"; do
+    if [[ -f "${dir}/umfpack.h" ]]; then
+        SUITESPARSE_INCLUDE_DIRS+=("${dir}")
+        break
+    fi
+done
+if [[ ${#SUITESPARSE_INCLUDE_DIRS[@]} -eq 0 ]]; then
+    echo "Could not locate umfpack.h under ${prefix}/include" >&2
+    exit 1
+fi
 
-# Trilinos tries to run a bunch of configure tests. Tell it what the output would have been.
-CMAKE_FLAGS="${CMAKE_FLAGS}
-    -DHAVE_GCC_ABI_DEMANGLE_EXITCODE=0
-    -DHAVE_TEUCHOS_BLASFLOAT_EXITCODE=0 -DHAVE_TEUCHOS_BLASFLOAT_DOUBLE_RETURN_EXITCODE=0
-    -DCXX_COMPLEX_BLAS_WORKS_EXITCODE=0 -DLAPACK_SLAPY2_WORKS_EXITCODE=0
-    -DHAVE_TEUCHOS_LAPACKLARND_EXITCODE=0 -DKK_BLAS_RESULT_AS_POINTER_ARG_EXITCODE=0
-    -DHAVE_GCC_ABI_DEMANGLE_EXITCODE__TRYRUN_OUTPUT=''
-    -DHAVE_TEUCHOS_BLASFLOAT_EXITCODE__TRYRUN_OUTPUT=''
-    -DLAPACK_SLAPY2_WORKS_EXITCODE__TRYRUN_OUTPUT=''
-    -DCXX_COMPLEX_BLAS_WORKS_EXITCODE__TRYRUN_OUTPUT=''
-    -DHAVE_TEUCHOS_LAPACKLARND_EXITCODE__TRYRUN_OUTPUT=''
-    -DKK_BLAS_RESULT_AS_POINTER_ARG_EXITCODE__TRYRUN_OUTPUT=''
-    "
+SUITESPARSE_LIBS=()
+for lib in umfpack amd suitesparseconfig; do
+    if [[ -f "${libdir}/lib${lib}.${dlext}" ]]; then
+        SUITESPARSE_LIBS+=("${libdir}/lib${lib}.${dlext}")
+    elif [[ -f "${libdir}/lib${lib}.a" ]]; then
+        SUITESPARSE_LIBS+=("${libdir}/lib${lib}.a")
+    fi
+done
+if [[ ${#SUITESPARSE_LIBS[@]} -eq 0 ]]; then
+    echo "Could not locate SuiteSparse UMFPACK libraries under ${libdir}" >&2
+    exit 1
+fi
 
-cmake -G "Unix Makefiles" ${CMAKE_FLAGS} -DCMAKE_CXX_FLAGS="${FLAGS}" -DCMAKE_C_FLAGS="${FLAGS}" -DCMAKE_Fortran_FLAGS="${FLAGS}" -DTrilinos_EXTRA_LINK_FLAGS="${EXTRA_LDFLAGS}" $SRCDIR
+cmake -S . -B build -G "Unix Makefiles" \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_CXX_STANDARD=17 \
+    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+    -DBUILD_SHARED_LIBS=ON \
+    -DTrilinos_ENABLE_OpenMP=ON \
+    -DTrilinos_ENABLE_ALL_PACKAGES=ON \
+    -DTrilinos_ENABLE_SECONDARY_TESTED_CODE=ON \
+    -DTrilinos_ENABLE_ALL_OPTIONAL_PACKAGES=ON \
+    -DTrilinos_ENABLE_TESTS=OFF \
+    -DTrilinos_ENABLE_EXPLICIT_INSTANTIATION=ON \
+    -DTrilinos_ENABLE_ShyLU_DDFROSch=ON \
+    -DTrilinos_ENABLE_TrilinosFrameworkTests=OFF \
+    -DTrilinos_ENABLE_TrilinosATDMConfigTests=OFF \
+    -DTrilinos_ENABLE_TrilinosBuildStats=OFF \
+    -DTrilinos_ENABLE_TrilinosInstallTests=OFF \
+    -DTrilinos_ENABLE_PyTrilinos=OFF \
+    -DTrilinos_ENABLE_PyTrilinos2=OFF \
+    -DTrilinos_ENABLE_WebTrilinos=OFF \
+    -DTrilinos_ENABLE_Optika=OFF \
+    -DTrilinos_ENABLE_NewPackage=OFF \
+    -DTpetra_ENABLE_DEPRECATED_CODE=ON \
+    -DXpetra_ENABLE_DEPRECATED_CODE=ON \
+    -DTPL_ENABLE_MPI=ON \
+    -DTPL_ENABLE_Kokkos=ON \
+    -DTPL_ENABLE_BLAS=ON \
+    -DTPL_ENABLE_LAPACK=ON \
+    -DTPL_ENABLE_UMFPACK=ON \
+    "${UMFPACK_DIR_FLAG[@]}" \
+    -DTPL_UMFPACK_INCLUDE_DIRS="$(IFS=';'; echo "${SUITESPARSE_INCLUDE_DIRS[*]}")" \
+    -DTPL_UMFPACK_LIBRARIES="$(IFS=';'; echo "${SUITESPARSE_LIBS[*]}")" \
+    -DTPL_ENABLE_Boost=ON \
+    -DTPL_Boost_INCLUDE_DIRS="${WORKSPACE}/srcdir/boost_1_87_0" \
+    -DTPL_ENABLE_Netcdf=ON \
+    -DTPL_ENABLE_Matio=ON \
+    -DTPL_ENABLE_X11=OFF \
+    -DBLAS_LIBRARY_DIRS="${prefix}/lib" \
+    -DBLAS_LIBRARY_NAMES="${BLAS_NAME}.${dlext}" \
+    -DLAPACK_LIBRARY_DIRS="${prefix}/lib" \
+    -DLAPACK_LIBRARY_NAMES="${BLAS_NAME}.${dlext}" \
+    -DHAVE_GCC_ABI_DEMANGLE_EXITCODE=0 \
+    -DHAVE_TEUCHOS_BLASFLOAT_EXITCODE=0 \
+    -DHAVE_TEUCHOS_BLASFLOAT_DOUBLE_RETURN_EXITCODE=0 \
+    -DCXX_COMPLEX_BLAS_WORKS_EXITCODE=0 \
+    -DLAPACK_SLAPY2_WORKS_EXITCODE=0 \
+    -DHAVE_TEUCHOS_LAPACKLARND_EXITCODE=0 \
+    -DKK_BLAS_RESULT_AS_POINTER_ARG_EXITCODE=0 \
+    -DRUN_RESULT=0 \
+    -DHAVE_GCC_ABI_DEMANGLE_EXITCODE__TRYRUN_OUTPUT='' \
+    -DHAVE_TEUCHOS_BLASFLOAT_EXITCODE__TRYRUN_OUTPUT='' \
+    -DLAPACK_SLAPY2_WORKS_EXITCODE__TRYRUN_OUTPUT='' \
+    -DCXX_COMPLEX_BLAS_WORKS_EXITCODE__TRYRUN_OUTPUT='' \
+    -DHAVE_TEUCHOS_LAPACKLARND_EXITCODE__TRYRUN_OUTPUT='' \
+    -DKK_BLAS_RESULT_AS_POINTER_ARG_EXITCODE__TRYRUN_OUTPUT='' \
+    -DRUN_RESULT__TRYRUN_OUTPUT=OFF
 
-make -j${nprocs}
-make install
+# The full Trilinos package set has several very large C++ translation units.
+# Keep parallelism conservative so local validation and CI workers do not get
+# killed by memory pressure mid-build.
+cmake --build build --parallel 2
+cmake --install build
+
+echo "Installed Trilinos libraries:"
+find "${libdir}" -maxdepth 1 -type f \( -name "libtrilinos*.${dlext}" -o -name "libamesos2*.${dlext}" -o -name "libbelos*.${dlext}" -o -name "libifpack2*.${dlext}" -o -name "libmuelu*.${dlext}" -o -name "libshylu*.${dlext}" -o -name "libstratimikos*.${dlext}" -o -name "libteuchos*.${dlext}" -o -name "libtpetra*.${dlext}" -o -name "libxpetra*.${dlext}" \) -print | sort
+test -f "${libdir}/cmake/Trilinos/TrilinosConfig.cmake"
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
+# Start with the single platform requested for local validation. Broaden only
+# after the Linux GNU build is known to configure, build, and link.
 platforms = supported_platforms()
-
+filter!(p -> arch(p) == "x86_64" && Sys.islinux(p) && libc(p) == "glibc", platforms)
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
+filter!(p -> !(p["libgfortran_version"] in ("3.0.0", "4.0.0")), platforms)
 
-# Filter libgfortran3 - the corresponding GCC is too old to compiler some of
-# the newer C++ constructs.
-filter!(platforms) do p
-    !(p["libgfortran_version"] in ("3.0.0", "4.0.0"))
-end
-
-# MPI Handling
+# MPI handling.
 augment_platform_block = """
     using Base.BinaryPlatforms
     $(MPI.augment)
@@ -209,62 +171,38 @@ augment_platform_block = """
 """
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
-# The products that we will ensure are always built
+# The products that we ensure are always present. The artifact may install many
+# more Trilinos libraries when all packages/subpackages are enabled above.
 products = [
-    LibraryProduct("libaztecoo", :libaztecoo),
-    LibraryProduct("liblocalapack", :liblocalapack),
-    LibraryProduct("libifpack", :libifpack),
-    LibraryProduct("libloca", :libloca),
-    LibraryProduct("libzoltan", :libzoltan),
-    LibraryProduct("libisorropia", :libisorropia),
+    LibraryProduct("libamesos2", :libamesos2),
     LibraryProduct("libbelos", :libbelos),
-    LibraryProduct("libteuchosparameterlist", :libteuchosparameterlist),
-    LibraryProduct("libnoxlapack", :libnoxlapack),
-    LibraryProduct("libnox", :libnox),
-    LibraryProduct("libteuchoscore", :libteuchoscore),
-    LibraryProduct("libteuchosremainder", :libteuchosremainder),
-    LibraryProduct("liblocaepetra", :liblocaepetra),
-    LibraryProduct("libteuchosnumerics", :libteuchosnumerics),
+    LibraryProduct("libgaleri-xpetra", :libgaleri_xpetra),
+    LibraryProduct("libifpack2", :libifpack2),
+    LibraryProduct("libmuelu", :libmuelu),
+    LibraryProduct("libshylu_ddfrosch", :libshylu_ddfrosch),
+    LibraryProduct("libstratimikos", :libstratimikos),
     LibraryProduct("libteuchoscomm", :libteuchoscomm),
-    LibraryProduct("libtrilinoscouplings", :libtrilinoscouplings),
-    LibraryProduct("libepetraext", :libepetraext),
-    LibraryProduct("libtriutils", :libtriutils),
-    LibraryProduct("libbelosepetra", :libbelosepetra),
-    LibraryProduct("libepetra", :libepetra),
-    LibraryProduct("libtrilinosss", :libtrilinosss),
-    LibraryProduct("libnoxepetra", :libnoxepetra),
-    LibraryProduct("libsacado", :libsacado),
-    LibraryProduct("libamesos", :libamesos)
+    LibraryProduct("libteuchoscore", :libteuchoscore),
+    LibraryProduct("libteuchosnumerics", :libteuchosnumerics),
+    LibraryProduct("libteuchosparameterlist", :libteuchosparameterlist),
+    LibraryProduct("libtpetra", :libtpetra),
+    LibraryProduct("libxpetra", :libxpetra),
 ]
 
-# Dependencies that must be installed before this package can be built
+# Dependencies that must be installed before this package can be built.
 dependencies = [
-    Dependency(PackageSpec(name="SuiteSparse_jll", uuid="bea87d4a-7f5b-5778-9afe-8cc45184846c"))
-    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"))
-    Dependency(PackageSpec(name="Kokkos_jll", uuid="c1216c3d-6bb3-5a2b-bbbf-529b35eba709"))
-    Dependency(PackageSpec(name="NetCDF_jll", uuid="7243133f-43d8-5620-bbf4-c2c921802cf3"))
-    # For libfortran, but note that the presence of libgomp confuses OpenMP detection (see above)
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
-    Dependency(PackageSpec(name="Matio_jll", uuid="f34749e5-bf11-50ef-9bf7-447477e32da8"), compat="v1.5.24")
-    HostBuildDependency(PackageSpec(name="CMake_jll", uuid="3f4e10e2-61f2-5801-8945-23b9d642d0e6"))
+    Dependency(PackageSpec(name="SuiteSparse_jll", uuid="bea87d4a-7f5b-5778-9afe-8cc45184846c"); compat="7.12.1"),
+    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93")),
+    Dependency(PackageSpec(name="Kokkos_jll", uuid="c1216c3d-6bb3-5a2b-bbbf-529b35eba709"); compat="~4.7.4"),
+    Dependency(PackageSpec(name="NetCDF_jll", uuid="7243133f-43d8-5620-bbf4-c2c921802cf3")),
+    Dependency(PackageSpec(name="Matio_jll", uuid="f34749e5-bf11-50ef-9bf7-447477e32da8"); compat="v1.5.24"),
+    # For libfortran, and for libgomp used by Kokkos OpenMP on Linux.
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    HostBuildDependency(PackageSpec(name="CMake_jll", uuid="3f4e10e2-61f2-5801-8945-23b9d642d0e6")),
 ]
-
-# BBB bug, can select infeasible package set (https://github.com/JuliaPackaging/BinaryBuilderBase.jl/issues/328).
-# Manually set a feasible version.
-for (i, dep) in enumerate(platform_dependencies)
-    if dep.pkg.name == "MPItrampoline_jll"
-        platform_dependencies[i] = Dependency(dep.pkg; compat="5.3.1", platforms=dep.platforms)
-    end
-end
 
 append!(dependencies, platform_dependencies)
 
-push!(dependencies,
-   # On Intel Linux platforms we use glibc 2.12, but building STKMesh
-   # requires 2.16+.
-   # TODO: Can be removed after https://github.com/JuliaPackaging/BinaryBuilderBase.jl/pull/318
-   BuildDependency(PackageSpec(name = "Glibc_jll", version = v"2.17.0+3");
-                              platforms=filter(p -> libc(p) == "glibc" && proc_family(p) == "intel", platforms)))
-
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"10", julia_compat="1.10", augment_platform_block)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version=v"10", julia_compat="1.10", augment_platform_block)
