@@ -74,12 +74,13 @@ cmake --build build --parallel ${nproc}
 cmake --install build
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = supported_platforms()
+# x86_64 Linux only: that is the RyzenAI NPU host. Windows is deferred -- its
+# mingw patches are re-ported and applied in the script above and ready to go, but
+# the mingw build still hits XRT's MSVC-isms (dllimport on inline definitions
+# across many XRT_API_EXPORT headers) that need a Windows CI loop to sort out. Add
+# a Windows platform here to pick that back up.
+platforms = [Platform("x86_64", "linux"; libc = "glibc")]
 platforms = expand_cxxstring_abis(platforms)
-filter!(p -> arch(p) == "x86_64", platforms)
-filter!(p -> Sys.iswindows(p) || (Sys.islinux(p) && libc(p) == "glibc"), platforms)
 
 # The products that we will ensure are always built.
 # xbutil was dropped: 2.23 no longer builds it (replaced by xrt-smi upstream).
