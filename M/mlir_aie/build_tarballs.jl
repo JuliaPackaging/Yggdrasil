@@ -23,6 +23,9 @@ sources = [
 ]
 
 script = raw"""
+# Remove the old system CMake so that the modern HostBuildDependency version takes precedence
+apk del cmake
+
 # Phase 1: LLVM + MLIR, as mlir-aie configures it (utils/build-llvm.sh)
 #
 # Only x86_64-linux-gnu is built, and the builder is x86_64-linux-gnu, so the
@@ -58,6 +61,13 @@ ninja -C build -j${nproc} install
 
 # Phase 2: mlir-aie
 cd ${WORKSPACE}/srcdir/mlir-aie
+
+# Fetch third-party submodules (like bootgen) that GitSource ignores by default
+git submodule update --init --recursive
+
+# Fix permissions on Python generation scripts so the build system can execute them
+chmod +x utils/*.py
+chmod +x utils/*.sh
 
 install_license LICENSE
 
@@ -112,9 +122,11 @@ products = [
 
 # LLVM and MLIR are built above rather than depended on, so there is nothing here
 # but what the tools link against besides.
-dependencies = Dependency[
+dependencies = [
     Dependency("Zlib_jll"),
     Dependency("CompilerSupportLibraries_jll"),
+    Dependency("OpenSSL_jll"), # Required by the bootgen tool
+    HostBuildDependency("CMake_jll"), # Pulls in the newest stable version of CMake for the host system
 ]
 
 # MLIR needs C++17, and this much of it needs a compiler that will not fold under it.
