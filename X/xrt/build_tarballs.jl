@@ -4,42 +4,55 @@ using BinaryBuilder
 using Pkg
 
 name = "xrt"
-version = v"2.17"
+version = v"2.23.0"
 
 # Collection of sources required to complete build
+#
+# Bumped from 2.17 to the XRT the AMD XDNA (RyzenAI NPU) stack pins --
+# 202610.2.23.0, the commit the xdna-driver submodule tracks. This is the XRT
+# whose xclbinutil packages the AIE_PARTITION/PDI sections mlir-aie's aiecc emits
+# for AIE2p (npu2), and whose runtime (libxrt_coreutil) a Python-free host drives.
 sources = [
-    GitSource("https://github.com/Xilinx/XRT.git", "a75e9843c875bac0f52d34a1763e39e16fb3c9a7"),
+    GitSource("https://github.com/Xilinx/XRT.git", "94e29e87fc90ea4037452f0dffa301cd700111ee"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
+#
+# fix-install-dir.patch is gone on 2.23: upstream now sets XRT_INSTALL_DIR to "."
+# in src/CMake/xrtVariables.cmake, so nothing installs under a "xrt/" subdir.
+#
+# Several Windows mingw patches were upstreamed by XRT PR #8387 ("Improve
+# compatibility with other Compilers like MinGW") and follow-ups -- unistd.h
+# already lowercases <shlobj.h>, xclbinutil/xbutil link the mingw winsock libs
+# themselves, config_reader uses __linux__ -- so those are dropped (left unused in
+# ./bundled). The BinaryBuilder-specific ones are re-ported to 2.23:
+# no_static_boost (the mingw boost_jll is shared-only) and disable_trace (mingw
+# has no TraceLoggingProvider.h), plus aligned_malloc which still applies as-is.
 script = raw"""
 cd ${WORKSPACE}/srcdir/XRT
 install_license LICENSE
 
+# 2.23 pulls xdp, aiebu, aie-rt, gsl, elf (and more) in as submodules that
+# GitSource does not fetch, so CMake configure fails on the missing CMakeLists in
+# runtime_src/xdp and core/common/aiebu. Fetch them recursively -- the same thing
+# the mlir_aie recipe does for its own submodules. The recorded commits are used,
+# so the build stays reproducible.
+git submodule update --init --recursive
+
 if [[ "${target}" == *-linux-* ]]; then
-    # Apply patch with missing define
+    # Missing define for a large shift in the PCIe shim.
     atomic_patch -p1 ../patches/linux/huge_shift.patch
 fi
 
 if [[ "${target}" == *-w64-* ]]; then
-    # mingw patches
-    atomic_patch -p1 ../patches/windows/fix_xclbinutil_cmake.patch
-    atomic_patch -p1 ../patches/windows/remove_duplicate_type_defs.patch
-    atomic_patch -p1 ../patches/windows/disable_trace.patch
-    atomic_patch -p1 ../patches/windows/config_reader.patch
-    atomic_patch -p1 ../patches/windows/unistd.patch
-    atomic_patch -p1 ../patches/windows/ocl_bindings.patch
     atomic_patch -p1 ../patches/windows/aligned_malloc.patch
+    # BB's mingw boost_jll ships only shared libs, so use them (Boost_USE_STATIC_LIBS OFF).
     atomic_patch -p1 ../patches/windows/no_static_boost.patch
-    atomic_patch -p1 ../patches/windows/config.patch
-    atomic_patch -p1 ../patches/windows/xbutil.patch
-    atomic_patch -p1 ../patches/windows/xdp-exports.patch
-    atomic_patch -p1 ../patches/windows/xrt-core-lib.patch 
+    # mingw has no <TraceLoggingProvider.h> (Windows ETW); stub the API out.
+    atomic_patch -p1 ../patches/windows/disable_trace.patch
     export ADDITIONAL_CMAKE_CXX_FLAGS="-fpermissive -D_WINDOWS"
 fi
-
-atomic_patch -p1 ../patches/fix-install-dir.patch
 
 # Statically link to boost
 export XRT_BOOST_INSTALL=${WORKSPACE}/destdir
@@ -61,14 +74,14 @@ platforms = expand_cxxstring_abis(platforms)
 filter!(p -> arch(p) == "x86_64", platforms)
 filter!(p -> Sys.iswindows(p) || (Sys.islinux(p) && libc(p) == "glibc"), platforms)
 
-# The products that we will ensure are always built
+# The products that we will ensure are always built.
+# xbutil was dropped: 2.23 no longer builds it (replaced by xrt-smi upstream).
 products = [
     LibraryProduct("libxrt_coreutil", :libxrt_coreutil),
     LibraryProduct("libxilinxopencl", :libxilinxopencl),
     LibraryProduct("libxrt_core", :libxrt_core),
     LibraryProduct("libxdp_core", :libxdp_core),
     LibraryProduct("libxrt++", :libxrtxx),
-    ExecutableProduct(["xbutil", "unwrapped/xbutil.exe"], :xbutil),
     ExecutableProduct(["xclbinutil", "unwrapped/xclbinutil.exe"], :xclbinutil),
 ]
 
