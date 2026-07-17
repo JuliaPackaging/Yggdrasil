@@ -74,15 +74,18 @@ if [[ ${#SUITESPARSE_INCLUDE_DIRS[@]} -eq 0 ]]; then
 fi
 
 SUITESPARSE_LIBS=()
+missing=()
 for lib in umfpack amd suitesparseconfig; do
     if [[ -f "${libdir}/lib${lib}.${dlext}" ]]; then
         SUITESPARSE_LIBS+=("${libdir}/lib${lib}.${dlext}")
     elif [[ -f "${libdir}/lib${lib}.a" ]]; then
         SUITESPARSE_LIBS+=("${libdir}/lib${lib}.a")
+    else
+        missing+=("${lib}")
     fi
 done
-if [[ ${#SUITESPARSE_LIBS[@]} -eq 0 ]]; then
-    echo "Could not locate SuiteSparse UMFPACK libraries under ${libdir}" >&2
+if [[ ${#missing[@]} -ne 0 ]]; then
+    echo "Could not locate SuiteSparse libraries: ${missing[*]} under ${libdir}" >&2
     exit 1
 fi
 
