@@ -55,6 +55,9 @@ if [[ "${target}" == *-w64-* ]]; then
     atomic_patch -p1 ../patches/windows/no_static_boost.patch
     # mingw has no <TraceLoggingProvider.h> (Windows ETW); stub the API out.
     atomic_patch -p1 ../patches/windows/disable_trace.patch
+    # XRT's ssize_t/pid_t typedefs clash with mingw's; upstream's __GNU__ guard is
+    # a typo (mingw is __GNUC__), so fix the guard.
+    atomic_patch -p1 ../patches/windows/remove_duplicate_type_defs.patch
     export ADDITIONAL_CMAKE_CXX_FLAGS="-fpermissive -D_WINDOWS"
 fi
 
