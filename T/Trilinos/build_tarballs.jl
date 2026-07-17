@@ -20,6 +20,7 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/Trilinos
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/kokkostpl.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mpi-constants.patch
 
 install_license LICENSE
 
