@@ -20,7 +20,6 @@ sources = [
         "https://github.com/ROCm/llvm-project.git",
         "46fcb339fb61119b337f973c7ca9e710a319fdd0",   # see utils/clone-llvm.sh
     ),
-    DirectorySource("./bundled"),
 ]
 
 script = raw"""
@@ -61,10 +60,6 @@ ninja -C build -j${nproc} install
 cd ${WORKSPACE}/srcdir/mlir-aie
 
 install_license LICENSE
-
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 "${f}"
-done
 
 CMAKE_FLAGS=()
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
