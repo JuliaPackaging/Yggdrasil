@@ -89,6 +89,28 @@ if [[ ${#missing[@]} -ne 0 ]]; then
     exit 1
 fi
 
+NETCDF_INCLUDE_DIRS=()
+for dir in "${prefix}/include"; do
+    if [[ -f "${dir}/netcdf.h" ]]; then
+        NETCDF_INCLUDE_DIRS+=("${dir}")
+        break
+    fi
+done
+if [[ ${#NETCDF_INCLUDE_DIRS[@]} -eq 0 ]]; then
+    echo "Could not locate netcdf.h under ${prefix}/include" >&2
+    exit 1
+fi
+
+NETCDF_LIBS=()
+if [[ -f "${libdir}/libnetcdf.${dlext}" ]]; then
+    NETCDF_LIBS+=("${libdir}/libnetcdf.${dlext}")
+elif [[ -f "${libdir}/libnetcdf.a" ]]; then
+    NETCDF_LIBS+=("${libdir}/libnetcdf.a")
+else
+    echo "Could not locate NetCDF library under ${libdir}" >&2
+    exit 1
+fi
+
 cmake -S . -B build -G "Unix Makefiles" \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -125,6 +147,8 @@ cmake -S . -B build -G "Unix Makefiles" \
     -DTPL_ENABLE_Boost=ON \
     -DTPL_Boost_INCLUDE_DIRS="${WORKSPACE}/srcdir/boost_1_87_0" \
     -DTPL_ENABLE_Netcdf=ON \
+    -DTPL_Netcdf_INCLUDE_DIRS="$(IFS=';'; echo "${NETCDF_INCLUDE_DIRS[*]}")" \
+    -DTPL_Netcdf_LIBRARIES="$(IFS=';'; echo "${NETCDF_LIBS[*]}")" \
     -DTPL_ENABLE_Matio=ON \
     -DTPL_ENABLE_X11=OFF \
     -DBLAS_LIBRARY_DIRS="${prefix}/lib" \
