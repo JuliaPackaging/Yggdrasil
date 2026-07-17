@@ -94,19 +94,22 @@ for dir in "${prefix}/include"; do
         break
     fi
 done
-if [[ ${#NETCDF_INCLUDE_DIRS[@]} -eq 0 ]]; then
-    echo "Could not locate netcdf.h under ${prefix}/include" >&2
-    exit 1
-fi
 
 NETCDF_LIBS=()
 if [[ -f "${libdir}/libnetcdf.${dlext}" ]]; then
     NETCDF_LIBS+=("${libdir}/libnetcdf.${dlext}")
 elif [[ -f "${libdir}/libnetcdf.a" ]]; then
     NETCDF_LIBS+=("${libdir}/libnetcdf.a")
+fi
+
+NETCDF_ARGS=()
+if [[ ${#NETCDF_INCLUDE_DIRS[@]} -eq 0 || ${#NETCDF_LIBS[@]} -eq 0 ]]; then
+    echo "NetCDF artifact not available for ${target}; disabling Trilinos NetCDF TPL"
+    NETCDF_ARGS+=("-DTPL_ENABLE_Netcdf=OFF")
 else
-    echo "Could not locate NetCDF library under ${libdir}" >&2
-    exit 1
+    NETCDF_ARGS+=("-DTPL_ENABLE_Netcdf=ON")
+    NETCDF_ARGS+=("-DTPL_Netcdf_INCLUDE_DIRS=$(IFS=';'; echo "${NETCDF_INCLUDE_DIRS[*]}")")
+    NETCDF_ARGS+=("-DTPL_Netcdf_LIBRARIES=$(IFS=';'; echo "${NETCDF_LIBS[*]}")")
 fi
 
 cmake -S . -B build -G "Unix Makefiles" \
@@ -168,9 +171,7 @@ cmake -S . -B build -G "Unix Makefiles" \
     -DTPL_UMFPACK_LIBRARIES="$(IFS=';'; echo "${SUITESPARSE_LIBS[*]}")" \
     -DTPL_ENABLE_Boost=ON \
     -DTPL_Boost_INCLUDE_DIRS="${prefix}/include" \
-    -DTPL_ENABLE_Netcdf=ON \
-    -DTPL_Netcdf_INCLUDE_DIRS="$(IFS=';'; echo "${NETCDF_INCLUDE_DIRS[*]}")" \
-    -DTPL_Netcdf_LIBRARIES="$(IFS=';'; echo "${NETCDF_LIBS[*]}")" \
+    "${NETCDF_ARGS[@]}" \
     -DTPL_ENABLE_Matio=ON \
     -DTPL_ENABLE_X11=OFF \
     -DBLAS_LIBRARY_DIRS="${prefix}/lib" \
