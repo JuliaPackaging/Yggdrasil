@@ -126,11 +126,14 @@ cmake -S . -B build -G "Unix Makefiles" \
     -DTrilinos_ENABLE_ALL_OPTIONAL_PACKAGES=OFF \
     -DTrilinos_ENABLE_TESTS=OFF \
     -DTrilinos_ENABLE_EXPLICIT_INSTANTIATION=ON \
+    -DTrilinos_ENABLE_Amesos=ON \
     -DTrilinos_ENABLE_Amesos2=ON \
     -DTrilinos_ENABLE_Anasazi=ON \
+    -DTrilinos_ENABLE_AztecOO=ON \
     -DTrilinos_ENABLE_Belos=ON \
     -DTrilinos_ENABLE_Galeri=ON \
     -DTrilinos_ENABLE_Intrepid2=ON \
+    -DTrilinos_ENABLE_Ifpack=ON \
     -DTrilinos_ENABLE_Ifpack2=ON \
     -DTrilinos_ENABLE_KokkosKernels=ON \
     -DTrilinos_ENABLE_MueLu=ON \
