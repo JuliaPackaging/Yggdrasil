@@ -39,6 +39,9 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/nested_aggregate_insertvalue.patch
 # release/22.x backport for aggregate PHI value-id operands. Main already has a
 # broader aggregate PHI/select/freeze lowering path.
 atomic_patch -p1 $WORKSPACE/srcdir/patches/aggregate_phi_value_id.patch
+# Fix direct returns of aggregate extractvalue results, such as the LLVM IR
+# emitted for non-inlined SMatrix{1,1} returns.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/aggregate_extractvalue_return.patch
 
 install_license LICENSE.TXT
 
