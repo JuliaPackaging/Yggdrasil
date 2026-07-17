@@ -33,6 +33,10 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/XRT
 install_license LICENSE
 
+# aiebu (a submodule) requires CMake >= 3.24 on Windows, newer than the image's
+# 3.21. Drop the old system cmake so the HostBuildDependency CMake_jll below wins.
+apk del cmake
+
 # 2.23 pulls xdp, aiebu, aie-rt, gsl, elf (and more) in as submodules that
 # GitSource does not fetch, so CMake configure fails on the missing CMakeLists in
 # runtime_src/xdp and core/common/aiebu. Fetch them recursively -- the same thing
@@ -101,6 +105,7 @@ dependencies = [
     Dependency("protobuf_c_jll", platforms=filter(Sys.islinux, platforms)),
     Dependency("systemd_jll", platforms=filter(Sys.islinux, platforms)),
     Dependency("systemtap_jll", platforms=filter(Sys.islinux, platforms)),
+    HostBuildDependency("CMake_jll"), # aiebu needs CMake >= 3.24 on Windows
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
