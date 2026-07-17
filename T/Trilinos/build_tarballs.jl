@@ -13,8 +13,6 @@ version = v"16.2.1"
 # Collection of sources required to complete build.
 sources = [
     GitSource("https://github.com/trilinos/Trilinos.git", "cf47480689f48aafd08983987d7ba083cff1654e"),
-    ArchiveSource("https://downloads.sourceforge.net/project/boost/boost/1.87.0/boost_1_87_0.tar.gz",
-                  "f55c340aa49763b1925ccf02b2e83f35fdcf634c9d5164a2acb87540173c741d"),
     DirectorySource("./bundled"),
 ]
 
@@ -32,7 +30,7 @@ else
 fi
 
 # Use newer CMake from the HostBuildDependency.
-rm /usr/bin/cmake
+rm -f /usr/bin/cmake
 
 # Delete compiler settings from the toolchain file so Trilinos can detect the
 # MPI wrappers provided by the selected Yggdrasil MPI dependency.
@@ -46,8 +44,8 @@ export MPITRAMPOLINE_FC="$(which ${FC})"
 
 export CMAKE_PREFIX_PATH="${prefix}:${libdir}/cmake:${CMAKE_PREFIX_PATH:-}"
 
-UMFPACK_CONFIG="$(find "${prefix}" -name UMFPACKConfig.cmake -print -quit)"
-SUITESPARSE_CONFIG="$(find "${prefix}" -name SuiteSparseConfig.cmake -print -quit)"
+UMFPACK_CONFIG="$(find "${prefix}" -name UMFPACKConfig.cmake -print -quit 2>/dev/null || true)"
+SUITESPARSE_CONFIG="$(find "${prefix}" -name SuiteSparseConfig.cmake -print -quit 2>/dev/null || true)"
 UMFPACK_DIR_FLAG=()
 if [[ -n "${UMFPACK_CONFIG}" ]]; then
     UMFPACK_DIR="$(dirname "${UMFPACK_CONFIG}")"
@@ -119,12 +117,36 @@ cmake -S . -B build -G "Unix Makefiles" \
     -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
     -DBUILD_SHARED_LIBS=ON \
     -DTrilinos_ENABLE_OpenMP=ON \
-    -DTrilinos_ENABLE_ALL_PACKAGES=ON \
+    -DTrilinos_ENABLE_ALL_PACKAGES=OFF \
     -DTrilinos_ENABLE_SECONDARY_TESTED_CODE=ON \
-    -DTrilinos_ENABLE_ALL_OPTIONAL_PACKAGES=ON \
+    -DTrilinos_ENABLE_ALL_OPTIONAL_PACKAGES=OFF \
     -DTrilinos_ENABLE_TESTS=OFF \
     -DTrilinos_ENABLE_EXPLICIT_INSTANTIATION=ON \
+    -DTrilinos_ENABLE_Amesos2=ON \
+    -DTrilinos_ENABLE_Anasazi=ON \
+    -DTrilinos_ENABLE_Belos=ON \
+    -DTrilinos_ENABLE_Galeri=ON \
+    -DTrilinos_ENABLE_Intrepid2=ON \
+    -DTrilinos_ENABLE_Ifpack2=ON \
+    -DTrilinos_ENABLE_KokkosKernels=ON \
+    -DTrilinos_ENABLE_MueLu=ON \
+    -DTrilinos_ENABLE_NOX=ON \
+    -DTrilinos_ENABLE_Panzer=ON \
+    -DTrilinos_ENABLE_Phalanx=ON \
+    -DTrilinos_ENABLE_Piro=ON \
+    -DTrilinos_ENABLE_ROL=ON \
+    -DTrilinos_ENABLE_Sacado=ON \
+    -DTrilinos_ENABLE_Shards=ON \
     -DTrilinos_ENABLE_ShyLU_DDFROSch=ON \
+    -DTrilinos_ENABLE_Stokhos=ON \
+    -DTrilinos_ENABLE_Stratimikos=ON \
+    -DTrilinos_ENABLE_Teko=ON \
+    -DTrilinos_ENABLE_Teuchos=ON \
+    -DTrilinos_ENABLE_Tempus=ON \
+    -DTrilinos_ENABLE_Thyra=ON \
+    -DTrilinos_ENABLE_Tpetra=ON \
+    -DTrilinos_ENABLE_Xpetra=ON \
+    -DTrilinos_ENABLE_Zoltan2=ON \
     -DTrilinos_ENABLE_TrilinosFrameworkTests=OFF \
     -DTrilinos_ENABLE_TrilinosATDMConfigTests=OFF \
     -DTrilinos_ENABLE_TrilinosBuildStats=OFF \
@@ -145,7 +167,7 @@ cmake -S . -B build -G "Unix Makefiles" \
     -DTPL_UMFPACK_INCLUDE_DIRS="$(IFS=';'; echo "${SUITESPARSE_INCLUDE_DIRS[*]}")" \
     -DTPL_UMFPACK_LIBRARIES="$(IFS=';'; echo "${SUITESPARSE_LIBS[*]}")" \
     -DTPL_ENABLE_Boost=ON \
-    -DTPL_Boost_INCLUDE_DIRS="${WORKSPACE}/srcdir/boost_1_87_0" \
+    -DTPL_Boost_INCLUDE_DIRS="${prefix}/include" \
     -DTPL_ENABLE_Netcdf=ON \
     -DTPL_Netcdf_INCLUDE_DIRS="$(IFS=';'; echo "${NETCDF_INCLUDE_DIRS[*]}")" \
     -DTPL_Netcdf_LIBRARIES="$(IFS=';'; echo "${NETCDF_LIBS[*]}")" \
@@ -198,8 +220,8 @@ augment_platform_block = """
 """
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
-# The products that we ensure are always present. The artifact may install many
-# more Trilinos libraries when all packages/subpackages are enabled above.
+# The products that we ensure are always present from the broad but explicit
+# modern Kokkos/Tpetra-focused package set above.
 products = [
     LibraryProduct("libamesos2", :libamesos2),
     LibraryProduct("libbelos", :libbelos),
@@ -221,6 +243,7 @@ dependencies = [
     Dependency(PackageSpec(name="SuiteSparse_jll", uuid="bea87d4a-7f5b-5778-9afe-8cc45184846c"); compat="7.12.1"),
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93")),
     Dependency(PackageSpec(name="Kokkos_jll", uuid="c1216c3d-6bb3-5a2b-bbbf-529b35eba709"); compat="~4.7.4"),
+    Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"); compat="=1.87.0"),
     Dependency(PackageSpec(name="NetCDF_jll", uuid="7243133f-43d8-5620-bbf4-c2c921802cf3")),
     Dependency(PackageSpec(name="Matio_jll", uuid="f34749e5-bf11-50ef-9bf7-447477e32da8"); compat="v1.5.24"),
     # For libfortran, and for libgomp used by Kokkos OpenMP on Linux.
