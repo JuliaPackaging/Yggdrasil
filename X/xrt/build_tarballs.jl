@@ -47,7 +47,17 @@ git submodule update --init --recursive
 if [[ "${target}" == *-linux-* ]]; then
     # Missing define for a large shift in the PCIe shim.
     atomic_patch -p1 ../patches/linux/huge_shift.patch
+    # Make the install relocatable: derive the XRT root from the loaded
+    # libxrt_coreutil.so (via dladdr) instead of the build-time CMAKE_INSTALL_PREFIX,
+    # so the shim lib/libxrt_core.so.2 is found without XILINX_XRT being set -- a JLL
+    # artifact then opens a device without a system XRT or sourcing setup.sh.
+    atomic_patch -p1 ../patches/relocatable-xilinx-xrt.patch
 fi
+
+# Quiet by default: default Runtime.verbosity to 0, so XRT's message dispatcher --
+# which prints the "XRT build version ..." banner from its constructor -- is never
+# created on load. An xrt.ini (or XRT_INI_PATH) still raises it for debugging.
+atomic_patch -p1 ../patches/quiet-verbosity.patch
 
 if [[ "${target}" == *-w64-* ]]; then
     atomic_patch -p1 ../patches/windows/aligned_malloc.patch
@@ -112,6 +122,13 @@ dependencies = [
     HostBuildDependency("CMake_jll"), # aiebu needs CMake >= 3.24 on Windows
 ]
 
+# XRT is a relocatable install: at runtime it looks for its shim
+# (lib/libxrt_core.so.2) and driver plugins under $XILINX_XRT, and falls back to the
+# XRT_INSTALL_PREFIX baked in at build time (the /workspace/destdir build prefix)
+# when that is unset -- a path that does not exist on the host, so device open fails
+# with "No such library '/workspace/destdir/lib/libxrt_core.so.2'". Point XILINX_XRT
+# at this artifact so the JLL is self-sufficient without a system XRT / setup.sh; a
+# value the user already set (a sourced /opt/xilinx/xrt, say) is left untouched.
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     julia_compat="1.6", preferred_gcc_version=v"9")
