@@ -33,8 +33,6 @@ git submodule update --init --recursive
 if [[ "${target}" == *-linux-* ]]; then
     # Missing define for a large shift in the PCIe shim.
     atomic_patch -p1 ../patches/linux/huge_shift.patch
-    # Make the install relocatable
-    #atomic_patch -p1 ../patches/relocatable-xilinx-xrt.patch
 fi
 
 # Quiet by default
@@ -133,7 +131,7 @@ dependencies = [
     Dependency("ocl_icd_jll"),
     Dependency("rapidjson_jll"),
     Dependency("LibCURL_jll", platforms=filter(Sys.islinux, platforms); compat="7.73, 8"),
-    Dependency(PackageSpec(; name = "libdrm_jll", path = "/home/simeon/.julia/dev/libdrm_jll"), platforms=filter(Sys.islinux, platforms)),
+    Dependency("libdrm_jll", platforms=filter(Sys.islinux, platforms)),
     Dependency("Libuuid_jll", platforms=filter(Sys.islinux, platforms)),
     Dependency("LibYAML_jll", platforms=filter(Sys.islinux, platforms)),
     Dependency("Ncurses_jll", platforms=filter(Sys.islinux, platforms)),
