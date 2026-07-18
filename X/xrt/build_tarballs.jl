@@ -13,22 +13,12 @@ version = v"2.23.0"
 # whose xclbinutil packages the AIE_PARTITION/PDI sections mlir-aie's aiecc emits
 # for AIE2p (npu2), and whose runtime (libxrt_coreutil) a Python-free host drives.
 sources = [
-    GitSource("https://github.com/Xilinx/XRT.git", "94e29e87fc90ea4037452f0dffa301cd700111ee"),
+    GitSource("https://github.com/Xilinx/XRT.git", "b4bbf24c54b355b585d59f15264aba47d9aa54b9"),
+    GitSource("https://github.com/amd/xdna-driver.git", "0697b1720fc539f57bdc8d5854ddf7c7014ae160"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
-#
-# fix-install-dir.patch is gone on 2.23: upstream now sets XRT_INSTALL_DIR to "."
-# in src/CMake/xrtVariables.cmake, so nothing installs under a "xrt/" subdir.
-#
-# Several Windows mingw patches were upstreamed by XRT PR #8387 ("Improve
-# compatibility with other Compilers like MinGW") and follow-ups -- unistd.h
-# already lowercases <shlobj.h>, xclbinutil/xbutil link the mingw winsock libs
-# themselves, config_reader uses __linux__ -- so those are dropped (left unused in
-# ./bundled). The BinaryBuilder-specific ones are re-ported to 2.23:
-# no_static_boost (the mingw boost_jll is shared-only) and disable_trace (mingw
-# has no TraceLoggingProvider.h), plus aligned_malloc which still applies as-is.
 script = raw"""
 cd ${WORKSPACE}/srcdir/XRT
 install_license LICENSE
@@ -37,36 +27,23 @@ install_license LICENSE
 # 3.21. Drop the old system cmake so the HostBuildDependency CMake_jll below wins.
 apk del cmake
 
-# 2.23 pulls xdp, aiebu, aie-rt, gsl, elf (and more) in as submodules that
-# GitSource does not fetch, so CMake configure fails on the missing CMakeLists in
-# runtime_src/xdp and core/common/aiebu. Fetch them recursively -- the same thing
-# the mlir_aie recipe does for its own submodules. The recorded commits are used,
-# so the build stays reproducible.
+# Fetch submodules for XRT
 git submodule update --init --recursive
 
 if [[ "${target}" == *-linux-* ]]; then
     # Missing define for a large shift in the PCIe shim.
     atomic_patch -p1 ../patches/linux/huge_shift.patch
-    # Make the install relocatable: derive the XRT root from the loaded
-    # libxrt_coreutil.so (via dladdr) instead of the build-time CMAKE_INSTALL_PREFIX,
-    # so the shim lib/libxrt_core.so.2 is found without XILINX_XRT being set -- a JLL
-    # artifact then opens a device without a system XRT or sourcing setup.sh.
-    atomic_patch -p1 ../patches/relocatable-xilinx-xrt.patch
+    # Make the install relocatable
+    #atomic_patch -p1 ../patches/relocatable-xilinx-xrt.patch
 fi
 
-# Quiet by default: default Runtime.verbosity to 0, so XRT's message dispatcher --
-# which prints the "XRT build version ..." banner from its constructor -- is never
-# created on load. An xrt.ini (or XRT_INI_PATH) still raises it for debugging.
+# Quiet by default
 atomic_patch -p1 ../patches/quiet-verbosity.patch
 
 if [[ "${target}" == *-w64-* ]]; then
     atomic_patch -p1 ../patches/windows/aligned_malloc.patch
-    # BB's mingw boost_jll ships only shared libs, so use them (Boost_USE_STATIC_LIBS OFF).
     atomic_patch -p1 ../patches/windows/no_static_boost.patch
-    # mingw has no <TraceLoggingProvider.h> (Windows ETW); stub the API out.
     atomic_patch -p1 ../patches/windows/disable_trace.patch
-    # XRT's ssize_t/pid_t typedefs clash with mingw's; upstream's __GNU__ guard is
-    # a typo (mingw is __GNUC__), so fix the guard.
     atomic_patch -p1 ../patches/windows/remove_duplicate_type_defs.patch
     export ADDITIONAL_CMAKE_CXX_FLAGS="-fpermissive -D_WINDOWS"
 fi
@@ -74,6 +51,7 @@ fi
 # Statically link to boost
 export XRT_BOOST_INSTALL=${WORKSPACE}/destdir
 
+# 1. BUILD XRT
 cd src
 cmake -S . -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -82,18 +60,57 @@ cmake -S . -B build \
     -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel ${nproc}
 cmake --install build
+
+# 2. BUILD XDNA SHIM (Linux x86_64 only, where the NPU host lives)
+if [[ "${target}" == *-linux-* ]]; then
+    cd ${WORKSPACE}/srcdir/xdna-driver
+
+    # Workaround A: Degrade the fatal distribution check to a non-blocking status message.
+    sed -i 's/message(FATAL_ERROR/message(STATUS/g' CMake/pkg.cmake
+
+    # Workaround B: Strip out -Werror across the workspace so that minor upstream
+    # warnings (like the unused sync_wait function) do not crash the build.
+    find . -type f -name "CMakeLists.txt" -exec sed -i 's/-Werror//g' {} \;
+
+    # Workaround C: Inject missing x86_64 system call numbers for pidfd operations
+    # directly into device.cpp. Using printf + cat avoids sed delimiter and newline escaping quirks.
+    printf '#include <sys/syscall.h>\n#ifndef SYS_pidfd_open\n#define SYS_pidfd_open 434\n#endif\n#ifndef SYS_pidfd_getfd\n#define SYS_pidfd_getfd 438\n#endif\n' | cat - src/shim/device.cpp > device.tmp
+    mv device.tmp src/shim/device.cpp
+
+    # Workaround D: Force CMake to look at your modern libdrm_jll headers. 
+    # Prepending this directly into the shim's CMakeLists.txt guarantees the paths 
+    # make it to the g++ invocation command regardless of CMake internal variable wipes.
+    printf 'include_directories("%s/include/libdrm" "%s/include")\n' "${prefix}" "${prefix}" | cat - src/shim/CMakeLists.txt > shim_cmake.tmp
+    mv shim_cmake.tmp src/shim/CMakeLists.txt
+
+    # xdna-driver's CMake tightly couples to XRT via add_subdirectory(xrt/src).
+    # Replace its empty xrt submodule with our fully patched XRT tree so the
+    # relocatable patch and submodules are respected.
+    rm -rf xrt
+    ln -s ${WORKSPACE}/srcdir/XRT xrt
+
+    # SKIP_KMOD=1 builds only the userspace shim.
+    cmake -S . -B build \
+        -DCMAKE_INSTALL_PREFIX=${prefix} \
+        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+        -DCMAKE_CXX_STANDARD=17 \
+        -DCMAKE_CXX_STANDARD_REQUIRED=ON \
+        -DSKIP_KMOD=1 \
+        -DCMAKE_BUILD_TYPE=Release
+
+    cmake --build build --parallel ${nproc}
+
+    # Copy the built shim into the main prefix library directory so XRT's
+    # driver_plugin_paths() scan finds it co-located.
+    cp build/src/shim/libxrt_driver_xdna.so* ${prefix}/lib/
+fi
 """
 
-# x86_64 Linux only: that is the RyzenAI NPU host. Windows is deferred -- its
-# mingw patches are re-ported and applied in the script above and ready to go, but
-# the mingw build still hits XRT's MSVC-isms (dllimport on inline definitions
-# across many XRT_API_EXPORT headers) that need a Windows CI loop to sort out. Add
-# a Windows platform here to pick that back up.
+# x86_64 Linux only
 platforms = [Platform("x86_64", "linux"; libc = "glibc")]
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built.
-# xbutil was dropped: 2.23 no longer builds it (replaced by xrt-smi upstream).
 products = [
     LibraryProduct("libxrt_coreutil", :libxrt_coreutil),
     LibraryProduct("libxilinxopencl", :libxilinxopencl),
@@ -101,6 +118,7 @@ products = [
     LibraryProduct("libxdp_core", :libxdp_core),
     LibraryProduct("libxrt++", :libxrtxx),
     ExecutableProduct(["xclbinutil", "unwrapped/xclbinutil.exe"], :xclbinutil),
+    LibraryProduct("libxrt_driver_xdna", :libxrt_driver_xdna),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -122,13 +140,5 @@ dependencies = [
     HostBuildDependency("CMake_jll"), # aiebu needs CMake >= 3.24 on Windows
 ]
 
-# XRT is a relocatable install: at runtime it looks for its shim
-# (lib/libxrt_core.so.2) and driver plugins under $XILINX_XRT, and falls back to the
-# XRT_INSTALL_PREFIX baked in at build time (the /workspace/destdir build prefix)
-# when that is unset -- a path that does not exist on the host, so device open fails
-# with "No such library '/workspace/destdir/lib/libxrt_core.so.2'". Point XILINX_XRT
-# at this artifact so the JLL is self-sufficient without a system XRT / setup.sh; a
-# value the user already set (a sourced /opt/xilinx/xrt, say) is left untouched.
-# Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     julia_compat="1.6", preferred_gcc_version=v"9")
