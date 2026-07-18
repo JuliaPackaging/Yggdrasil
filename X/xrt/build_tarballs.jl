@@ -77,11 +77,29 @@ if [[ "${target}" == *-linux-* ]]; then
     printf '#include <sys/syscall.h>\n#ifndef SYS_pidfd_open\n#define SYS_pidfd_open 434\n#endif\n#ifndef SYS_pidfd_getfd\n#define SYS_pidfd_getfd 438\n#endif\n' | cat - src/shim/device.cpp > device.tmp
     mv device.tmp src/shim/device.cpp
 
-    # Workaround D: Force CMake to look at your modern libdrm_jll headers. 
-    # Prepending this directly into the shim's CMakeLists.txt guarantees the paths 
+    # Workaround D: Force CMake to look at your modern libdrm_jll headers.
+    # Prepending this directly into the shim's CMakeLists.txt guarantees the paths
     # make it to the g++ invocation command regardless of CMake internal variable wipes.
     printf 'include_directories("%s/include/libdrm" "%s/include")\n' "${prefix}" "${prefix}" | cat - src/shim/CMakeLists.txt > shim_cmake.tmp
     mv shim_cmake.tmp src/shim/CMakeLists.txt
+
+    # Workaround E: drop the virtio-gpu (VM-guest) backend. The shim globs it into
+    # the same .so, but it needs recent VIRTGPU blob/context-init UAPI that the
+    # libdrm headers here do not carry (DRM_IOCTL_VIRTGPU_RESOURCE_CREATE_BLOB,
+    # VIRTGPU_CONTEXT_PARAM_*, drm_virtgpu_context_init, ...). A native NPU host
+    # never uses it: each pci backend self-registers via a static ctor with no
+    # central registry, so removing these sources just leaves the virtgpu driver
+    # unregistered while the native kmq/amdxdna path still builds and links (even
+    # under -Wl,-z,defs). Re-add a newer virtgpu_drm.h here if VM guests ever matter.
+    rm -f src/shim/virtio/*.cpp
+
+    # Workaround F: the shim calls dladdr (device.cpp) and pthread_create (hwq.cpp)
+    # but its CMakeLists never links libdl/libpthread -- upstream relies on a
+    # merged-libc distro, while BB's glibc keeps them separate and -Wl,-z,defs turns
+    # the missing symbols into a link error. Append the links after the target is
+    # defined (target_link_libraries accumulates across calls).
+    echo 'find_package(Threads REQUIRED)' >> src/shim/CMakeLists.txt
+    echo 'target_link_libraries(xrt_driver_xdna PRIVATE ${CMAKE_DL_LIBS} Threads::Threads)' >> src/shim/CMakeLists.txt
 
     # xdna-driver's CMake tightly couples to XRT via add_subdirectory(xrt/src).
     # Replace its empty xrt submodule with our fully patched XRT tree so the
@@ -129,7 +147,7 @@ dependencies = [
     Dependency("ocl_icd_jll"),
     Dependency("rapidjson_jll"),
     Dependency("LibCURL_jll", platforms=filter(Sys.islinux, platforms); compat="7.73, 8"),
-    Dependency("libdrm_jll", platforms=filter(Sys.islinux, platforms)),
+    Dependency(PackageSpec(; name = "libdrm_jll", path = "/home/simeon/.julia/dev/libdrm_jll"), platforms=filter(Sys.islinux, platforms)),
     Dependency("Libuuid_jll", platforms=filter(Sys.islinux, platforms)),
     Dependency("LibYAML_jll", platforms=filter(Sys.islinux, platforms)),
     Dependency("Ncurses_jll", platforms=filter(Sys.islinux, platforms)),
