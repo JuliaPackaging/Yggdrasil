@@ -65,45 +65,32 @@ cmake --install build
 if [[ "${target}" == *-linux-* ]]; then
     cd ${WORKSPACE}/srcdir/xdna-driver
 
-    # Workaround A: Degrade the fatal distribution check to a non-blocking status message.
+    # the distro-detection check is fatal off a known distro; make it non-fatal.
     sed -i 's/message(FATAL_ERROR/message(STATUS/g' CMake/pkg.cmake
 
-    # Workaround B: Strip out -Werror across the workspace so that minor upstream
-    # warnings (like the unused sync_wait function) do not crash the build.
+    # drop -Werror so upstream warnings don't fail the build.
     find . -type f -name "CMakeLists.txt" -exec sed -i 's/-Werror//g' {} \;
 
-    # Workaround C: Inject missing x86_64 system call numbers for pidfd operations
-    # directly into device.cpp. Using printf + cat avoids sed delimiter and newline escaping quirks.
+    # device.cpp uses pidfd syscalls with no fallback; define the x86_64 numbers.
     printf '#include <sys/syscall.h>\n#ifndef SYS_pidfd_open\n#define SYS_pidfd_open 434\n#endif\n#ifndef SYS_pidfd_getfd\n#define SYS_pidfd_getfd 438\n#endif\n' | cat - src/shim/device.cpp > device.tmp
     mv device.tmp src/shim/device.cpp
 
-    # Workaround D: Force CMake to look at your modern libdrm_jll headers.
-    # Prepending this directly into the shim's CMakeLists.txt guarantees the paths
-    # make it to the g++ invocation command regardless of CMake internal variable wipes.
+    # host/platform_host.cpp includes <drm/drm.h>, but the shim never puts libdrm
+    # on its include path. Prepend it (CMAKE_CXX_FLAGS gets overwritten downstream).
     printf 'include_directories("%s/include/libdrm" "%s/include")\n' "${prefix}" "${prefix}" | cat - src/shim/CMakeLists.txt > shim_cmake.tmp
     mv shim_cmake.tmp src/shim/CMakeLists.txt
 
-    # Workaround E: drop the virtio-gpu (VM-guest) backend. The shim globs it into
-    # the same .so, but it needs recent VIRTGPU blob/context-init UAPI that the
-    # libdrm headers here do not carry (DRM_IOCTL_VIRTGPU_RESOURCE_CREATE_BLOB,
-    # VIRTGPU_CONTEXT_PARAM_*, drm_virtgpu_context_init, ...). A native NPU host
-    # never uses it: each pci backend self-registers via a static ctor with no
-    # central registry, so removing these sources just leaves the virtgpu driver
-    # unregistered while the native kmq/amdxdna path still builds and links (even
-    # under -Wl,-z,defs). Re-add a newer virtgpu_drm.h here if VM guests ever matter.
+    # drop the virtio-gpu (VM-guest) backend -- it needs VIRTGPU blob/context UAPI
+    # libdrm lacks, and a native host never uses it (backends self-register, so the
+    # virtgpu driver just goes unregistered).
     rm -f src/shim/virtio/*.cpp
 
-    # Workaround F: the shim calls dladdr (device.cpp) and pthread_create (hwq.cpp)
-    # but its CMakeLists never links libdl/libpthread -- upstream relies on a
-    # merged-libc distro, while BB's glibc keeps them separate and -Wl,-z,defs turns
-    # the missing symbols into a link error. Append the links after the target is
-    # defined (target_link_libraries accumulates across calls).
+    # link libdl (dladdr) and libpthread (pthread_create); the shim omits both,
+    # and BB's split glibc + -Wl,-z,defs make the missing symbols fatal.
     echo 'find_package(Threads REQUIRED)' >> src/shim/CMakeLists.txt
     echo 'target_link_libraries(xrt_driver_xdna PRIVATE ${CMAKE_DL_LIBS} Threads::Threads)' >> src/shim/CMakeLists.txt
 
-    # xdna-driver's CMake tightly couples to XRT via add_subdirectory(xrt/src).
-    # Replace its empty xrt submodule with our fully patched XRT tree so the
-    # relocatable patch and submodules are respected.
+    # The shim builds XRT via add_subdirectory(xrt/src); point that at our patched tree.
     rm -rf xrt
     ln -s ${WORKSPACE}/srcdir/XRT xrt
 
@@ -118,8 +105,7 @@ if [[ "${target}" == *-linux-* ]]; then
 
     cmake --build build --parallel ${nproc}
 
-    # Copy the built shim into the main prefix library directory so XRT's
-    # driver_plugin_paths() scan finds it co-located.
+    # Co-locate the shim with libxrt_core so driver_plugin_paths() finds it.
     cp build/src/shim/libxrt_driver_xdna.so* ${prefix}/lib/
 fi
 """
