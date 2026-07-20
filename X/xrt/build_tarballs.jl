@@ -66,11 +66,17 @@ cmake -S . -B build \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_CXX_FLAGS="${ADDITIONAL_CMAKE_CXX_FLAGS}" \
     -DXRT_RC_VERSION=202610.2.23.0 \
-    -DXRT_INSTALL_BIN_DIR=${bindir} \
-    -DXRT_INSTALL_LIB_DIR=${libdir} \
     -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel ${nproc}
 cmake --install build
+
+if [[ "${target}" == *-w64-* ]]; then
+    cd ${prefix}
+    mv *.dll ${libdir}/
+    mv *.exe ${bindir}/
+    mv unwrapped ${bindir}/
+    mv setup.bat xball xbmgmt xbmgmt.bat xclbinutil xclbinutil.bat xrt-smi xrt-smi.bat ${bindir}/
+fi
 
 # 2. BUILD XDNA SHIM (Linux x86_64 only, where the NPU host lives)
 if [[ "${target}" == *-linux-* ]]; then
@@ -122,7 +128,10 @@ fi
 """
 
 # x86_64 Linux only
-platforms = [Platform("x86_64", "linux"; libc = "glibc")]
+platforms = [
+    Platform("x86_64", "linux"; libc = "glibc")
+    Platform("x86_64", "windows")
+]
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built.
@@ -133,7 +142,13 @@ products = [
     LibraryProduct("libxdp_core", :libxdp_core),
     LibraryProduct("libxrt++", :libxrtxx),
     ExecutableProduct(["xclbinutil", "unwrapped/xclbinutil.exe"], :xclbinutil),
-    LibraryProduct("libxrt_driver_xdna", :libxrt_driver_xdna),
+    ExecutableProduct(["xbmgmt", "unwrapped/xbmgmt.exe"], :xbmgmt),
+    ExecutableProduct("unwrapped/xrt-capture", :xrt_capture),
+    ExecutableProduct("unwrapped/xrt-replay", :xrt_replay),
+    ExecutableProduct("unwrapped/xrt-runner", :xrt_runner),
+    ExecutableProduct(["xrt-smi", "unwrapped/xrt-smi.exe"], :xrt_smi),
+    # Only exists on Linux, but it's just a shim that's loaded dymically at runtime, so exclude it:
+    # LibraryProduct("libxrt_driver_xdna", :libxrt_driver_xdna),
 ]
 
 # Dependencies that must be installed before this package can be built
