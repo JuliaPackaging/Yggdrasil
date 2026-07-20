@@ -43,7 +43,17 @@ if [[ "${target}" == *-w64-* ]]; then
     atomic_patch -p1 ../patches/windows/no_static_boost.patch
     atomic_patch -p1 ../patches/windows/disable_trace.patch
     atomic_patch -p1 ../patches/windows/remove_duplicate_type_defs.patch
-    export ADDITIONAL_CMAKE_CXX_FLAGS="-fpermissive -D_WINDOWS"
+    atomic_patch -p1 ../patches/windows/fix_aie-pdi-transform.patch
+    atomic_patch -p1 ../patches/windows/fix_aiebu_cmake.patch
+    atomic_patch -p1 ../patches/windows/fix_XRT_CORE_COMMON_EXPORT.patch
+    atomic_patch -p1 ../patches/windows/fix_aiebu_metrics.patch
+    atomic_patch -p1 ../patches/windows/export_all_symbols.patch
+    atomic_patch -p1 ../patches/windows/no_dupenv.patch
+    atomic_patch -p1 ../patches/windows/fix_smi_symbols_export.patch
+    atomic_patch -p1 ../patches/windows/fix_OpenCL_dll_install.patch
+    # without -DXRT_API_SOURCE, gcc complains about `error: function ‘xrt::elf::elf(std::shared_ptr<xrt::elf_impl>)’ definition is marked dllimport`
+    # in XRT/src/runtime_src/core/include/xrt/experimental/xrt_elf.h:197:3
+    export ADDITIONAL_CMAKE_CXX_FLAGS="-fpermissive -D_WINDOWS -DXRT_API_SOURCE"
 fi
 
 # Statically link to boost
@@ -55,6 +65,9 @@ cmake -S . -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_CXX_FLAGS="${ADDITIONAL_CMAKE_CXX_FLAGS}" \
+    -DXRT_RC_VERSION=202610.2.23.0 \
+    -DXRT_INSTALL_BIN_DIR=${bindir} \
+    -DXRT_INSTALL_LIB_DIR=${libdir} \
     -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel ${nproc}
 cmake --install build

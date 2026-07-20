@@ -1,0 +1,15 @@
+diff --git a/src/runtime_src/core/common/aiebu/src/cpp/common/windows/metrics.cpp b/src/runtime_src/core/common/aiebu/src/cpp/common/windows/metrics.cpp
+index 3868c310..ff7c456c 100644
+--- a/src/runtime_src/core/common/aiebu/src/cpp/common/windows/metrics.cpp
++++ b/src/runtime_src/core/common/aiebu/src/cpp/common/windows/metrics.cpp
+@@ -4,7 +4,9 @@
+ 
+ #include "metrics.h"
+ 
+-#define NOMINMAX
++#ifndef NOMINMAX
++  #define NOMINMAX
++#endif
+ #include <windows.h>
+ #include <psapi.h>
+ 
