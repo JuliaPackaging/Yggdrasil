@@ -30,7 +30,7 @@ sed \
     -e 's%@PACKAGE_VCS_INFO_HEADER@%lal/LALVCSInfo.h%g' \
     -e 's%@PACKAGE_CONFIG_HEADER@%lal/LALConfig.h%g' \
     -e 's%@ID@%fd81149d68cb3c9424fcfe229e697ee534ac02ab%g' \
-    -e 's%@DATE@%2026-02-01 22:19:30 +0000%g' \
+    -e 's%@DATE@%2026-02-01 16:49:30 +0000%g' \
     -e 's%@BRANCH@%None%g' \
     -e 's%@TAG@%lal-v7.7.1%g' \
     -e 's%@AUTHOR@%Karl Wette <karl.wette@ligo.org>%g' \
@@ -47,6 +47,9 @@ export LDFLAGS="${LDFLAGS} -L${libdir}"
 export PKG_CONFIG_PATH="${libdir}/pkgconfig:${PKG_CONFIG_PATH}"
 export GSL_LIBS="-L${libdir} -lgsl -lgslcblas -lm"
 export HDF5_LIBS="-L${libdir} -lhdf5 -lhdf5_hl"
+# LAL's HDF5 probe temporarily sets CC to h5cc's compiler, which is mpicc.
+# Pin MPItrampoline's backend now so its mpicc wrapper cannot invoke itself.
+export MPITRAMPOLINE_CC="${CC}"
 
 ../configure \
     --prefix=${prefix} \
@@ -62,6 +65,7 @@ export HDF5_LIBS="-L${libdir} -lhdf5 -lhdf5_hl"
     --disable-help2man \
     --disable-gcc-flags \
     --enable-pthread-lock \
+    --with-fallback-data-path=no \
     --with-hdf5=yes
 
 cp ../lib/LALVCSInfoHeader.h lib/LALVCSInfoHeader.h
@@ -70,6 +74,13 @@ make -j${nproc} V=1 -C include
 make -j${nproc} V=1 -C lib
 make -j${nproc} V=1 -C lib install
 make install-pkgconfigDATA
+
+# pkg-config expands Zlib_jll's prefix while configuring, so remove those
+# build-only paths from the installed metadata.
+sed -i \
+    -e "s|-L${libdir} ||g" \
+    -e "s|-I${includedir} ||g" \
+    ${libdir}/pkgconfig/lalsupport.pc
 
 rm -f ${prefix}/share/man/man7/LAL_DEBUG_LEVEL.7
 rmdir ${prefix}/share/man/man7 2>/dev/null || true
@@ -81,6 +92,9 @@ test -f ${includedir}/lal/LALDict.h
 test -f ${includedir}/lal/XLALError.h
 test -f ${libdir}/pkgconfig/lal.pc
 test -f ${libdir}/pkgconfig/lalsupport.pc
+! grep -F "${prefix}" ${libdir}/pkgconfig/lal.pc
+! grep -F "${prefix}" ${libdir}/pkgconfig/lalsupport.pc
+! grep -a -F "${prefix}/share/lal" ${libdir}/liblalsupport*
 """
 
 # LALSuite's upstream package explicitly excludes Windows.
