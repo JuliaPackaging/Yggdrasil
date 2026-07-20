@@ -1,0 +1,22 @@
+diff --git a/library/Makefile b/library/Makefile
+index 7c62c1f..bbf124e 100644
+--- a/library/Makefile
++++ b/library/Makefile
+@@ -34,6 +34,9 @@ LDFLAGS=-shared
+
+ ifeq ($(OS),Windows_NT)
+   EXT=dll
++else ifeq ($(shell uname),Darwin)
++  EXT=dylib
++  CFLAGS += -fPIC
+ else
+   EXT=so
+   VER_MAJ = $(word 1,$(subst ., ,$(VERSION)))
+@@ -79,7 +82,6 @@ else
+ endif
+        # Assuming DESTDIR is set for cross-installing only, we don't need
+        # (and probably do not have) ldconfig
+-       $(if $(DESTDIR),,ldconfig)
+
+ nice:
+        mkdir -p bak/
