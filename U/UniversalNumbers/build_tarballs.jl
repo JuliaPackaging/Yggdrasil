@@ -6,12 +6,12 @@ using BinaryBuilder, Pkg
 include(joinpath("..", "..", "platforms", "macos_sdks.jl"))
 
 name = "UniversalNumbers"
-version = v"0.1.0"
+version = v"0.1.1"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/jamesquinlan/UniversalNumbers.jl.git",
-              "07adfefb0bb7fdb83b16da56f487bd88e5b768ac"),
+              "cd4dd715498a43365fb489d1285b9fb997c4338a"),
 ]
 
 # Bash recipe for building across all platforms
