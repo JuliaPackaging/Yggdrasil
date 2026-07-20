@@ -22,4 +22,3 @@
 +  }
    return sfs::path(XRT_INSTALL_PREFIX);
  }
- 

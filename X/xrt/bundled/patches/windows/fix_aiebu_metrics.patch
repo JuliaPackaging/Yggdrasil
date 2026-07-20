@@ -12,4 +12,3 @@ index 3868c310..ff7c456c 100644
 +#endif
  #include <windows.h>
  #include <psapi.h>
- 

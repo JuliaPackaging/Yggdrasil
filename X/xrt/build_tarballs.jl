@@ -127,14 +127,15 @@ if [[ "${target}" == *-linux-* ]]; then
 fi
 """
 
-# x86_64 Linux only
+# These are the platforms we will build for by default, unless further
+# platforms are passed in on the command line
 platforms = [
     Platform("x86_64", "linux"; libc = "glibc")
     Platform("x86_64", "windows")
 ]
 platforms = expand_cxxstring_abis(platforms)
 
-# The products that we will ensure are always built.
+# The products that we will ensure are always built
 products = [
     LibraryProduct("libxrt_coreutil", :libxrt_coreutil),
     LibraryProduct("libxilinxopencl", :libxilinxopencl),
@@ -170,5 +171,6 @@ dependencies = [
     HostBuildDependency("CMake_jll"), # aiebu needs CMake >= 3.24 on Windows
 ]
 
+# Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     julia_compat="1.6", preferred_gcc_version=v"9")
