@@ -14,7 +14,7 @@ version = v"0.1.0"
 # (CMakeLists.txt + src/xrtwrap.cpp). We build only that subtree here.
 sources = [
     GitSource("https://github.com/simeonschaub/XRT.jl.git",
-              "64470ed9cfa48df587419e115884b99f991250d3"),
+              "1be581bcbf8e01293d8f94853c8455c7893eef60"),
 ]
 
 # Bash recipe for building across all platforms
@@ -80,7 +80,7 @@ dependencies = [
     BuildDependency("libjulia_jll"),
     Dependency("libcxxwrap_julia_jll"; compat="0.13"),
     Dependency(PackageSpec(; name = "xrt_jll", path = "/home/simeon/.julia/dev/xrt_jll")),#; compat="2.23"),
-    Dependency("Libuuid_jll"),
+    Dependency("Libuuid_jll"; platforms=filter(Sys.islinux, platforms)),
     BuildDependency(PackageSpec(name="boost_jll", version="1.79.0")),
 ]
 
