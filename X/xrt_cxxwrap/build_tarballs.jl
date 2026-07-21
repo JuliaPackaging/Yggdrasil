@@ -13,8 +13,8 @@ version = v"0.1.0"
 # The wrapper source lives under `deps/xrt_cxxwrap/` in the XRT.jl repo
 # (CMakeLists.txt + src/xrtwrap.cpp). We build only that subtree here.
 sources = [
-    GitSource("https://github.com/pc2/XRT.jl.git",
-              "08e69cda515299a40f9c0308c4c3c1ea35ec334d"),
+    GitSource("https://github.com/simeonschaub/XRT.jl.git",
+              "64470ed9cfa48df587419e115884b99f991250d3"),
 ]
 
 # Bash recipe for building across all platforms
@@ -27,15 +27,19 @@ cd deps/xrt_cxxwrap
 # The wrapper (CMakeLists.txt + src/xrtwrap.cpp) self-adapts to both the old flat
 # and the new (>= 2.20) nested XRT header layouts, so no source patching is needed
 # here. xrt_jll, boost_jll and Libuuid_jll all install into ${prefix}; libcxxwrap's
-# JlCxx CMake package is found via CMAKE_PREFIX_PATH/find-root. XRT_VERSION_NUMBER
-# stamps the library SONAME suffix (libxrtwrap.so.<major>.<minor>) that XRT.jl's
-# `XRTWrap.libname()` looks up -- keep it in step with the xrt_jll major.minor.
+# JlCxx CMake package is found via JlCxx_DIR, and Julia_PREFIX points its bundled
+# FindJulia at libjulia_jll's julia.h (without it JlCxx's headers pull in a julia.h
+# that isn't on the include path). XRT_VERSION_NUMBER stamps the library SONAME
+# suffix (libxrtwrap.so.<major>.<minor>) that XRT.jl's `XRTWrap.libname()` looks up
+# -- keep it in step with the xrt_jll major.minor.
 XRT_VER_MM="2.23"
 
 cmake -S . -B build \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_PREFIX_PATH=${prefix} \
+    -DJlCxx_DIR=${prefix}/lib/cmake/JlCxx \
+    -DJulia_PREFIX=${prefix} \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_CXX_STANDARD=17 \
     -DXILINX_XRT=${prefix} \
@@ -51,12 +55,12 @@ VERBOSE=ON cmake --build build --config Release --target install -- -j${nproc}
 #
 # CxxWrap wrappers are built per Julia version and per C++-string ABI, so we
 # expand over libjulia's supported Julia versions like the other *_cxxwrap
-# recipes. xrt_jll (and the NPU host it drives) only exists on x86_64 Linux,
-# so that is the single base platform.
+# recipes. Only build for 64-bit Linux and Windows
 include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
-platforms = filter(p -> Sys.islinux(p) && arch(p) == "x86_64" && libc(p) == "glibc",
-                   platforms) |> expand_cxxstring_abis
+filter!(p -> (Sys.islinux(p) && libc(p) == "glibc") || Sys.iswindows(p), platforms)
+filter!(p -> arch(p) == "x86_64", platforms)
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built.
 # The library carries a versioned suffix (libxrtwrap.so.2.23) rather than a
@@ -75,7 +79,7 @@ products = [
 dependencies = [
     BuildDependency("libjulia_jll"),
     Dependency("libcxxwrap_julia_jll"; compat="0.13"),
-    Dependency("xrt_jll"; compat="2.23"),
+    Dependency(PackageSpec(; name = "xrt_jll", path = "/home/simeon/.julia/dev/xrt_jll")),#; compat="2.23"),
     Dependency("Libuuid_jll"),
     BuildDependency(PackageSpec(name="boost_jll", version="1.79.0")),
 ]
