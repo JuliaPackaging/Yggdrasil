@@ -1,14 +1,14 @@
 using BinaryBuilder, Pkg
 
 name = "libde265"
-version = v"1.0.19"
+version = v"1.1.0"
 ygg_build = 0  # NOTE: increment on rebuild of the same upstream version, reset on new libde265 version
 ygg_version = VersionNumber(version.major, version.minor, 1_000 * version.patch + ygg_build)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/strukturag/libde265/releases/download/v$(version)/libde265-$(version).tar.gz",
-                  "bb19a0b485d2643e0eeb7e91f3ab32d1ad617e7c487dbedc91214ca3dbd8d7eb"),
+                  "afc19dd28e2fc523de5952bba5224ee1d28e286c72436d2843df126cca1181fd"),
 ]
 
 # Bash recipe for building across all platforms
