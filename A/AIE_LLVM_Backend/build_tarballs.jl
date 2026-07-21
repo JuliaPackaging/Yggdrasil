@@ -9,7 +9,7 @@ version = v"21.0.0"
 sources = [
     GitSource(
         "https://github.com/Xilinx/llvm-aie.git",
-        "fca3c2f87734485a529bf2eb4b1678a54ea08970", # Replace with the specific commit mlir-aie expects
+        "fb4dce4d1f515d590ae75233a0e88c8d00af977b", # upstream only does nightly releases, so just use the latest commit
     ),
 ]
 
@@ -34,10 +34,6 @@ cd ${WORKSPACE}/srcdir/llvm-aie
 # llvm-libc's header generator (libc/utils/hdrgen) runs under the build image's
 # Python and imports PyYAML, which the base image lacks.
 apk add py3-yaml
-
-# The upstream cache turns on LLVM_CCACHE_BUILD as a *normal* (non-cache) variable,
-# which a -D flag cannot override; the BB builder has no ccache, so drop the line.
-sed -i '/LLVM_CCACHE_BUILD/d' clang/cmake/caches/Peano-AIE.cmake
 
 CMAKE_FLAGS=()
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
