@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "SPIRV_LLVM_Backend"
-version = v"22.1.7"
+version = v"22.1.8"
 
 # Collection of sources required to build SPIRV_LLVM_Backend.
 # LLVM 22 ships a single monorepo source archive (`llvm-project-X.Y.Z.src.tar.xz`).
 sources = [
     ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/llvm-project-$(version).src.tar.xz",
-                  "5cc4a3f12bba50b6bdfb4b61bdc852117a0ff2517807c3902fc13267fb93562e"),
+                  "922f1817a0df7b1489272d18134ee0087a8b068828f87ac63b9861b1a9965888"),
     DirectorySource("./bundled")
 ]
 
@@ -39,6 +39,9 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/nested_aggregate_insertvalue.patch
 # release/22.x backport for aggregate PHI value-id operands. Main already has a
 # broader aggregate PHI/select/freeze lowering path.
 atomic_patch -p1 $WORKSPACE/srcdir/patches/aggregate_phi_value_id.patch
+# Fix direct returns of aggregate extractvalue results, such as the LLVM IR
+# emitted for non-inlined SMatrix{1,1} returns.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/aggregate_extractvalue_return.patch
 
 install_license LICENSE.TXT
 

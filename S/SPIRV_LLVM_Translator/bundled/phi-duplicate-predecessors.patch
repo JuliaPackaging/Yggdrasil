@@ -1,0 +1,51 @@
+diff --git a/lib/SPIRV/SPIRVWriter.cpp b/lib/SPIRV/SPIRVWriter.cpp
+index a3bcaf97..3363a13f 100644
+--- a/lib/SPIRV/SPIRVWriter.cpp
++++ b/lib/SPIRV/SPIRVWriter.cpp
+@@ -2551,8 +2551,16 @@ LLVMToSPIRVBase::transValueWithoutDecoration(Value *V, SPIRVBasicBlock *BB,
+                                    FuncTransMode::Pointer);
+       if (Val->getType() != Ty)
+         Val = BM->addUnaryInst(OpBitcast, Ty, Val, BB);
+-      IncomingPairs.push_back(Val);
+-      IncomingPairs.push_back(transValue(Phi->getIncomingBlock(I), nullptr));
++      SPIRVValue *Block = transValue(Phi->getIncomingBlock(I), nullptr);
++      bool IsDuplicate = false;
++      for (size_t Idx = 1; Idx < IncomingPairs.size(); Idx += 2) {
++        if (IncomingPairs[Idx] == Block)
++          IsDuplicate = true;
++      }
++      if (!IsDuplicate) {
++        IncomingPairs.push_back(Val);
++        IncomingPairs.push_back(Block);
++      }
+     }
+     return mapValue(V, BM->addPhiInst(Ty, IncomingPairs, BB));
+   }
+diff --git a/test/phi-duplicate-predecessors.ll b/test/phi-duplicate-predecessors.ll
+new file mode 100644
+index 00000000..ad4cb0e5
+--- /dev/null
++++ b/test/phi-duplicate-predecessors.ll
+@@ -0,0 +1,22 @@
++; REQUIRES: spirv-dis
++; RUN: llvm-as %s -o %t.bc
++; RUN: llvm-spirv %t.bc -o %t.spv
++; RUN: spirv-val %t.spv
++; RUN: spirv-dis %t.spv | FileCheck %s
++
++; CHECK: %entry = OpLabel
++; CHECK: OpBranchConditional %[[NULL:[0-9]+]] %L815 %L815
++; CHECK: %L815 = OpLabel
++; CHECK: %v = OpPhi %ulong %ulong_0 %entry
++
++target datalayout = "e-i64:64-v16:16-v24:32-v32:32-v48:64-v96:128-v192:256-v256:256-v512:512-v1024:1024-G1"
++target triple = "spir64-unknown-unknown"
++
++define spir_kernel void @f() {
++entry:
++  br i1 undef, label %L815, label %L815
++
++L815:                                             ; preds = %entry, %entry
++  %v = phi i64 [ 0, %entry ], [ 0, %entry ]
++  ret void
++}
