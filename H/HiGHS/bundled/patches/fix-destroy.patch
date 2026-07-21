@@ -1,0 +1,11 @@
+diff --git a/highs/interfaces/highs_c_api.cpp b/highs/interfaces/highs_c_api.cpp
+index f7d52b84d2..89360cb4f8 100644
+--- a/highs/interfaces/highs_c_api.cpp
++++ b/highs/interfaces/highs_c_api.cpp
+@@ -174,7 +174,6 @@ HighsInt Highs_qpCall(
+ void* Highs_create(void) { return new Highs(); }
+
+ void Highs_destroy(void* highs) {
+-  Highs::resetGlobalScheduler(true);
+   delete (Highs*)highs;
+ }
