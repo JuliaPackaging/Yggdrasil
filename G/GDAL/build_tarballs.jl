@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "GDAL"
-upstream_version = v"3.13.1"
+upstream_version = v"3.13.2"
 # The version offset is used for two purposes:
 # - If we need to release multiple jll packages for the same GDAL
 #   library (usually for weird packaging reasons) then we increase the
@@ -22,7 +22,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 
 # Collection of sources required to build GDAL
 sources = [
-    GitSource("https://github.com/OSGeo/gdal.git", "b2e6057d1d0f2cb4c11bfdf79ab1a61def0ce9ca"),
+    GitSource("https://github.com/OSGeo/gdal.git", "b40672525acf3f5c4f29d8541aa7dcff1e18eb92"),
     DirectorySource("./bundled"),
 ]
 
@@ -222,7 +222,7 @@ dependencies = [
     Dependency("XZ_jll"; compat="5.8.3"),
     Dependency("Zlib_jll"; compat="1.2.12"),
     Dependency("Zstd_jll"; compat="1.5.7"),
-    Dependency("grok_jll"; compat="20.3.3"),
+    Dependency("grok_jll"; compat="20.3.7"),
     Dependency("libgeotiff_jll"; compat="100.702.400"),
     Dependency("libpng_jll"; compat="1.6.58"),
     Dependency("libwebp_jll"; compat="1.5.0"),
