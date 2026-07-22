@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "Soup3"
-version = v"3.2.1"
+version = v"3.6.5"
 
 # Collection of sources required to build Soup
 sources = [
     ArchiveSource("https://download.gnome.org/sources/libsoup/$(version.major).$(version.minor)/libsoup-$(version).tar.xz",
-        "b1eb3d2c3be49fbbd051a71f6532c9626bcecea69783190690cd7e4dfdf28f29"),
+        "6891765aac3e949017945c3eaebd8cc8216df772456dc9f460976fbdb7ada234"),
 ]
 
 # Bash recipe for building across all platforms
