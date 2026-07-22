@@ -9,7 +9,8 @@ version = v"0.22.1"
 sources = [
     ArchiveSource(
         "https://www.libraw.org/data/LibRaw-0.20.2.tar.gz",
-        "dc1b486c2003435733043e4e05273477326e51c3ea554c6864a4eafaff1004a6",
+"https://www.libraw.org/data/LibRaw-$(version).tar.gz",
+"a789dc4e2409e2901d93793a4e0b80c7b49d0d97cf6ad71c850eb7616acfd786",
     ),
 ]
 
