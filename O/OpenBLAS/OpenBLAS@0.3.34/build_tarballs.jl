@@ -29,6 +29,7 @@ if !isempty(platform_args)
     platforms = BinaryBuilderBase.parse_platform.(split(platform_args[1], ","))
 end
 
+powerpc64le_preferred_gcc_version = v"13"
 riscv64_preferred_gcc_version = v"15"
 # We need to disable float16 for the msan build because the msan llvm version is too old to support it
 msan_script = openblas_script(; aarch64_ilp64=true, num_64bit_threads=512, bfloat16=true, float16=false)
@@ -45,7 +46,10 @@ for (n,platform) in enumerate(platforms)
 
     scr = sanitize(platform) == "memory" ? msan_script : script
     deps = sanitize(platform) == "memory" ? msan_dependencies : dependencies
-    pref_gcc = arch(platform) == "riscv64" ? riscv64_preferred_gcc_version : preferred_gcc_version
+    pref_gcc =
+        arch(platform) == "powerpc64le" ? powerpc64le_preferred_gcc_version :
+        arch(platform) == "riscv64" ? riscv64_preferred_gcc_version :
+        preferred_gcc_version
     pref_llvm = sanitize(platform) == "memory" ? msan_preferred_llvm_version : preferred_llvm_version
 
     build_tarballs(args, name, version, sources, scr, [platform], products, deps;
