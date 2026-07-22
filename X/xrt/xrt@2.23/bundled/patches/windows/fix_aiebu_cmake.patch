@@ -1,0 +1,14 @@
+diff --git a/src/runtime_src/core/common/aiebu/cmake/linux.cmake b/src/runtime_src/core/common/aiebu/cmake/linux.cmake
+index ecacfebb..04db45b7 100644
+--- a/src/runtime_src/core/common/aiebu/cmake/linux.cmake
++++ b/src/runtime_src/core/common/aiebu/cmake/linux.cmake
+@@ -10,4 +10,8 @@ if (AIEBU_PYTHON STREQUAL "ON")
+ endif()
+ add_compile_options(-Wall -Wextra -Werror -fvisibility=hidden)
+ 
+-set(AIEBU_OS_SOURCE_DIR linux)
++if (WIN32)
++    set(AIEBU_OS_SOURCE_DIR windows)
++else()
++    set(AIEBU_OS_SOURCE_DIR linux)
++endif()
