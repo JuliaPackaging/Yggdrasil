@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "capnproto"
-version = v"0.8.0"
+version = v"1.4.0"
 
 # Collection of sources required to build capnproto
 sources = [
     ArchiveSource("https://capnproto.org/capnproto-c++-$(version).tar.gz",
-                  "d1f40e47574c65700f0ec98bf66729378efabe3c72bc0cda795037498541c10d"),
+                  "fa02378ad522b318916b9ad928d1372fc9abd43dd1f4f0392e50450f5c87828f"),
 ]
 
 # Bash recipe for building across all platforms
