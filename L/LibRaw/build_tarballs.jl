@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "LibRaw"
-version = v"0.20.2"
+version = v"0.22.1"
 
 # Collection of sources required to complete build
 sources = [
