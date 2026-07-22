@@ -15,7 +15,7 @@ using BinaryBuilder, Pkg
 
 # libjulia's platform/version helpers (libjulia_platforms, julia_versions). Resolved
 # relative to this file, so it works however the version folders include us.
-include("../../L/libjulia/common.jl")
+include(joinpath(@__DIR__, "../../L/libjulia/common.jl"))
 
 function build_xrt_cxxwrap(ARGS, version::VersionNumber)
     name = "xrt_cxxwrap"
