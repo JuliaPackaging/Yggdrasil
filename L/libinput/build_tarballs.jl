@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libinput"
-version = v"1.28.1"
+version = v"1.31.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://gitlab.freedesktop.org/libinput/libinput", "4f7b4ef0e4eb5d569df36be387579858eba349bb"),
+    GitSource("https://gitlab.freedesktop.org/libinput/libinput", "26191d396d74d505541d6311f0b4ae68d791b890"),
 ]
 
 # Bash recipe for building across all platforms
