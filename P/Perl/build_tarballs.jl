@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Perl"
-version = v"5.34.1"
+version = v"5.43.9"
 
 # Collection of sources required to build perl
 # with a few extra modules for polymake
 sources = [
-    ArchiveSource("https://www.cpan.org/src/5.0/perl-$version.tar.gz", "357951a491b0ba1ce3611263922feec78ccd581dddc24a446b033e25acf242a1"),
+    ArchiveSource("https://www.cpan.org/src/5.0/perl-$version.tar.gz", "aec72b03806f2003f97e86baf28a22a20cce912d618afadf3df1f005cda5b235"),
     ArchiveSource("https://cpan.metacpan.org/authors/id/I/IS/ISHIGAKI/JSON-4.03.tar.gz", "e41f8761a5e7b9b27af26fe5780d44550d7a6a66bf3078e337d676d07a699941"),
     ArchiveSource("https://cpan.metacpan.org/authors/id/J/JO/JOSEPHW/XML-Writer-0.900.tar.gz", "73c8f5bd3ecf2b350f4adae6d6676d52e08ecc2d7df4a9f089fa68360d400d1f"),
     ArchiveSource("https://cpan.metacpan.org/authors/id/J/JS/JSTOWE/TermReadKey-2.38.tar.gz", "5a645878dc570ac33661581fbb090ff24ebce17d43ea53fd22e105a856a47290"),
