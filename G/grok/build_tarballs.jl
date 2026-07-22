@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "grok"
-version = v"20.3.3"
+version = v"20.3.7"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/GrokImageCompression/grok/releases/download/v$(version)/source-full.tar.gz",
-                  "2b588f23202e306e0242dd5b2c8b99648bded44f118a31e57ed5dcee75cbc549"),
+                  "f2a94f903175296104996dd0fc42504761174d6f2ec8cfdac89fed1aa5f5c337"),
 ]
 
 # Bash recipe for building across all platforms
