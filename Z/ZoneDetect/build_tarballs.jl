@@ -16,7 +16,16 @@ for patch in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${patch}
 done
 
-make -C library install CC=${CC} prefix=${prefix} STRIP=
+FLAGS=(
+    CC=${CC}
+    prefix=${prefix}
+    STRIP=
+)
+if [[ "${target}" == *mingw* ]]; then
+    FLAGS+=(OS=Windows_NT)
+fi
+
+make -C library install ${FLAGS[@]}
 """
 
 platforms = supported_platforms()
