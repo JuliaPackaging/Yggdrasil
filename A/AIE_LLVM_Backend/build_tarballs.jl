@@ -35,6 +35,18 @@ cd ${WORKSPACE}/srcdir/llvm-aie
 # Python and imports PyYAML, which the base image lacks.
 apk add py3-yaml
 
+# Trim the upstream distribution to what aiecc actually shells out to at runtime:
+# clang, lld (spawned by clang's core-ELF link step), llc and opt. The cache's
+# LLVM_TOOLCHAIN_TOOLS also installs eight llvm-* utilities (~100 MiB). The
+# runtime sub-builds *build* ar/nm/objdump/readelf from build/bin regardless (via
+# the BUILTINS_*/RUNTIMES_* forwarding below), so nothing here needs them
+# installed, and cxxfilt/dwarfdump/size/symbolizer aren't used at all -- dropping
+# them from LLVM_TOOLCHAIN_TOOLS (which feeds LLVM_DISTRIBUTION_COMPONENTS) leaves
+# only llc and opt. Likewise drop clang-tools-extra from LLVM_ENABLE_PROJECTS:
+# nothing in the distribution depends on it, so it's pure configure/build cost.
+sed -i '/^  llvm-/d' clang/cmake/caches/Peano-AIE.cmake
+sed -i '/^      clang-tools-extra$/d' clang/cmake/caches/Peano-AIE.cmake
+
 CMAKE_FLAGS=()
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
