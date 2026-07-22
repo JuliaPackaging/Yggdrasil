@@ -23,13 +23,13 @@ sources = [
 # archives come from the Node.js project's community-maintained builds.
 script = raw"""
 cd ${WORKSPACE}/srcdir/
-cp -r ${target}/*/* ${prefix}/.
+cp -vr ${target}/*/* ${prefix}/.
 cd ${prefix}
 if [[ "${target}" == *-mingw* ]]; then
     for file in node.exe npm npm.cmd npx npx.cmd; do
         install -Dvm 0755 "${file}" "${bindir}/${file}"
     done
-    mv node_modules "${bindir}/."
+    mv -v node_modules "${bindir}/."
 fi
 install_license LICENSE
 """
