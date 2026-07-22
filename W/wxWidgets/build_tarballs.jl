@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "wxWidgets"
-version = v"3.2.4"
+version = v"3.2.7"
 
 version_mm = "$(version.major).$(version.minor)"
 version_no_sep = "$(version.major)$(version.minor)"
@@ -15,7 +15,7 @@ gen_libnames(lib) = ["libwx_gtk3u_$(lib)-$(version_mm)",
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/wxWidgets/wxWidgets/releases/download/v$version/wxWidgets-$version.tar.bz2", "0640e1ab716db5af2ecb7389dbef6138d7679261fbff730d23845ba838ca133e"),
+    ArchiveSource("https://github.com/wxWidgets/wxWidgets/releases/download/v$version/wxWidgets-$version.tar.bz2", "69a1722f874d91cd1c9e742b72df49e0fab02890782cf794791c3104cee868c6"),
     DirectorySource("./bundled")
 ]
 
