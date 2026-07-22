@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "AIE_LLVM_Backend"
+name = "AIE_LLVM_Toolchain"
 version = v"21.0.0"
 
 # Peano is the AMD/Xilinx fork of LLVM for compiling C/C++ to AIEngine processors.
