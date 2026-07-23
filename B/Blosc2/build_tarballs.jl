@@ -34,6 +34,9 @@ cd $WORKSPACE/srcdir/c-blosc2
 # integers).
 atomic_patch -p1 ../patches/_xsetbv.patch
 
+# The build options hide `flock` on FreeBSD <https://github.com/Blosc/c-blosc2/issues/794>
+atomic_patch -p1 ../patches/flock.patch
+
 # Clang on Apple does not (yet?) properly support `__builtin_cpu_supports`.
 # The symbol `__cpu_model` is not provided by any standard library.
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
