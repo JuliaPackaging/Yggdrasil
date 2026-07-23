@@ -1,0 +1,16 @@
+# Disable non-free partitioners
+--- src/partitioner/PartitionerManager.cpp
++++ src/partitioner/PartitionerManager.cpp
+@@ -3,2 +3,1 @@
+-#include "PartitionerKahypar.hpp"
+ #include "PartitionerNone.hpp"
+@@ -40,2 +39,2 @@
+-    case PARTITIONER_KAHYPAR:
+-      return new PartitionerKahypar(infoHyperGraph, out);
++    case PARTITIONER_KAHYPAR:
++      throw std::runtime_error("Partitioner Kahypar not supported");
+@@ -42,2 +41,2 @@
+-    case PARTITIONER_PATOH:
+-      return new PartitionerPatoh(infoHyperGraph, out);
++    case PARTITIONER_PATOH:
++      throw std::runtime_error("Partitioner PaToH not supported");
