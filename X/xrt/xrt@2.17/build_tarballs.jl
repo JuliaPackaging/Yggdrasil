@@ -4,7 +4,7 @@ using BinaryBuilder
 using Pkg
 
 name = "xrt"
-version = v"2.17"
+version = v"2.17.1"
 
 # Collection of sources required to complete build
 sources = [
