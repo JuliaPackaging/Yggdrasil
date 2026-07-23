@@ -51,7 +51,8 @@ dependencies = [
     Dependency(PackageSpec(; name="Zlib_jll"))
     Dependency(PackageSpec(; name="JpegTurbo_jll"))
     Dependency(PackageSpec(; name="JasPer_jll"))
-    Dependency(PackageSpec(; name="CompilerSupportLibraries_jll"))
+    Dependency(PackageSpec(; name="CompilerSupportLibraries_jll"); platforms=filter(!Sys.isbsd, platforms))
+    Dependency(PackageSpec(; name="LLVMOpenMP_jll"); platforms=filter(Sys.isbsd, platforms))
     Dependency(PackageSpec(; name="LittleCMS_jll"))
 ]
 
