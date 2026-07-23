@@ -1,0 +1,14 @@
+diff --git a/library/Makefile b/library/Makefile
+index 7c62c1f..69d682b 100644
+--- a/library/Makefile
++++ b/library/Makefile
+@@ -77,9 +77,6 @@ else
+ 	ln -sf $(EXECUTABLE).$(VER_MAJ).$(VER_MIN) $(DESTDIR)$(libdir)/$(EXECUTABLE).$(VER_MAJ)
+ 	ln -sf $(EXECUTABLE).$(VER_MAJ) $(DESTDIR)$(libdir)/$(EXECUTABLE)
+ endif
+-	# Assuming DESTDIR is set for cross-installing only, we don't need
+-	# (and probably do not have) ldconfig
+-	$(if $(DESTDIR),,ldconfig)
+ 
+ nice:
+ 	mkdir -p bak/
