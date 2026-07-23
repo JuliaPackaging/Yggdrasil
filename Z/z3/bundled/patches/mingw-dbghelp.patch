@@ -1,0 +1,12 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index ae57d5b2f..5d50f4fd4 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -198,6 +198,7 @@ elseif (WIN32)
+   list(APPEND Z3_COMPONENT_CXX_DEFINES "-D_WINDOWS")
+   # workaround for #7420
+   list(APPEND Z3_COMPONENT_CXX_DEFINES "-D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR")  
++  list(APPEND Z3_DEPENDENT_LIBS "dbghelp")
+ elseif (EMSCRIPTEN)
+   message(STATUS "Platform: Emscripten")
+   list(APPEND Z3_DEPENDENT_EXTRA_CXX_LINK_FLAGS

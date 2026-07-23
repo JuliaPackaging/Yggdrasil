@@ -12,11 +12,15 @@ version = v"5.0.0"
 sources = [
     ArchiveSource("https://github.com/Z3Prover/z3/releases/download/z3-$(version)/z3_solver-$(version).0.tar.gz",
                   "24d4b524c21f48c86c7058a36e83091c1fc08be28b68bf5a0f3cce5305ed8464"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/z3*/core
+
+# Reported in <https://github.com/Z3Prover/z3/issues/10171>
+atomic_patch -p1 $WORKSPACE/srcdir/patches/mingw-dbghelp.patch
 
 # Patches Z3 to work around https://github.com/ahumenberger/Z3.jl/issues/28
 patch -p0 <<EOD
