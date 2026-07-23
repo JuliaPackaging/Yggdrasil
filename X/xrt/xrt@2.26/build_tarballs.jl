@@ -38,10 +38,7 @@ fi
 # Quiet by default
 atomic_patch -p1 ../patches/quiet-verbosity.patch
 
-# xrt::device::get_info's kdma case returns a bare 0 (an int) from its exception fallback,
-# but the query result type is uint32_t, so on a device where kds_numcdmas is unsupported
-# -- an NPU -- the std::any holds an int while any_cast expects uint32_t, and every kdma
-# query throws "bad any_cast". Return uint32_t so the fallback matches the declared type.
+# fix "bad any_cast" in xrt::device::get_info's kdma case
 atomic_patch -p1 ../patches/kdma_any_cast.patch
 
 if [[ "${target}" == *-w64-* ]]; then
