@@ -6,12 +6,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "z3"
-version = v"4.16.0"
+version = v"5.0.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/Z3Prover/z3/releases/download/z3-$(version)/z3_solver-$(version).0.tar.gz",
-                  "263d9ad668966e832c2b246ba0389298a599637793da2dc01cc5e4ef4b0b6c78"),
+                  "24d4b524c21f48c86c7058a36e83091c1fc08be28b68bf5a0f3cce5305ed8464"),
 ]
 
 # Bash recipe for building across all platforms
