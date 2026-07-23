@@ -43,12 +43,14 @@ VERBOSE=ON cmake --build build --config Release --target install -- -j${nproc}
 
     dependencies = [
         BuildDependency("libjulia_jll"),
-        Dependency("libcxxwrap_julia_jll"; compat="0.13"),
+        # 0.13 has no artifacts for Julia 1.14; 0.14 covers 1.10-1.14. Must match the
+        # CxxWrap version XRT.jl uses (0.17 <-> libcxxwrap_julia 0.14).
+        Dependency("libcxxwrap_julia_jll"; compat="0.14.8"),
         Dependency("xrt_jll"; compat="~$(version.major).$(version.minor)"),
         Dependency("Libuuid_jll"; platforms=filter(Sys.islinux, platforms)),
         BuildDependency(PackageSpec(name="boost_jll", version="1.79.0")),
     ]
 
     build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-                   preferred_gcc_version=v"9", julia_compat="1.6")
+                   preferred_gcc_version=v"9", julia_compat=libjulia_julia_compat(julia_versions))
 end
