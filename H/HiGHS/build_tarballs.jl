@@ -24,6 +24,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/HiGHS
 
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fix-cli11.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fix-destroy.patch
 
 # Remove system CMake to use the jll version
 apk del cmake

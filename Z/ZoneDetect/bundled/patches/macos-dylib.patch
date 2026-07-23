@@ -1,0 +1,71 @@
+diff --git a/library/Makefile b/library/Makefile
+index 7c62c1f..553f615 100644
+--- a/library/Makefile
++++ b/library/Makefile
+@@ -25,31 +25,46 @@
+ 
+ # https://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
+ VERSION = 0.0.0
++VER_MAJ = $(word 1,$(subst ., ,$(VERSION)))
++VER_MIN = $(word 2,$(subst ., ,$(VERSION)))
+ 
+ CC?=$(CCARCH)gcc
+ STRIP?=$(CCARCH)strip
+ 
+ CFLAGS=$(if $(DEBUG),-O0 -g,-O3) -std=gnu99 -pedantic -Wall -Wextra -Wconversion -Werror -c -fmessage-length=0 -ffunction-sections -fdata-sections
+-LDFLAGS=-shared
+ 
+ ifeq ($(OS),Windows_NT)
+   EXT=dll
++  LDFLAGS=-shared
++else ifeq ($(shell uname),Darwin)
++  EXT=dylib
++  LDFLAGS=-dynamiclib -Wl,-install_name,@rpath/$(EXECUTABLE) -Wl,-current_version,$(VERSION) -Wl,-compatibility_version,$(VER_MAJ).$(VER_MIN)
++  CFLAGS += -fPIC
+ else
+   EXT=so
+-  VER_MAJ = $(word 1,$(subst ., ,$(VERSION)))
+-  VER_MIN = $(word 2,$(subst ., ,$(VERSION)))
+   CFLAGS += -fPIC
+-  LDFLAGS += -Wl,-soname=$(EXECUTABLE).$(VERSION) -Wl,--hash-style=gnu
++  LDFLAGS=-shared -Wl,-soname=$(EXECUTABLE).$(VERSION) -Wl,--hash-style=gnu
+ endif
+ 
+ prefix ?= /usr
+ libdir ?= $(prefix)/lib
+ includedir ?= $(prefix)/include
+ 
+-EXECUTABLE=libzonedetect.$(EXT)
++LIBNAME=libzonedetect
++EXECUTABLE=$(LIBNAME).$(EXT)
+ INCLUDES_SRC=zonedetect.h
+ SOURCES_SRC=zonedetect.c
+ 
++# macOS puts the version before the extension, non-Windows platforms put it after
++ifeq ($(shell uname),Darwin)
++  EXEC_VERSION=$(LIBNAME).$(VERSION).$(EXT)
++  EXEC_MAJ_MIN=$(LIBNAME).$(VER_MAJ).$(VER_MIN).$(EXT)
++  EXEC_MAJ=$(LIBNAME).$(VER_MAJ).$(EXT)
++else ifneq ($(OS),Windows_NT)
++  EXEC_VERSION=$(EXECUTABLE).$(VERSION)
++  EXEC_MAJ_MIN=$(EXECUTABLE).$(VER_MAJ).$(VER_MIN)
++  EXEC_MAJ=$(EXECUTABLE).$(VER_MAJ)
++endif
+ 
+ OBJECTS_OBJ=$(SOURCES_SRC:.c=.o)
+ 
+@@ -72,10 +87,10 @@ install: $(EXECUTABLE)
+ ifeq ($(OS),Windows_NT)
+ 	install -m 0644 $(EXECUTABLE) -t $(DESTDIR)$(libdir) $(if $(STRIP),--strip --strip-program=$(STRIP))
+ else
+-	install -m 0644 $(EXECUTABLE) -D $(DESTDIR)$(libdir)/$(EXECUTABLE).$(VERSION) $(if $(STRIP),--strip --strip-program=$(STRIP))
+-	ln -sf $(EXECUTABLE).$(VERSION) $(DESTDIR)$(libdir)/$(EXECUTABLE).$(VER_MAJ).$(VER_MIN)
+-	ln -sf $(EXECUTABLE).$(VER_MAJ).$(VER_MIN) $(DESTDIR)$(libdir)/$(EXECUTABLE).$(VER_MAJ)
+-	ln -sf $(EXECUTABLE).$(VER_MAJ) $(DESTDIR)$(libdir)/$(EXECUTABLE)
++	install -m 0644 $(EXECUTABLE) -D $(DESTDIR)$(libdir)/$(EXEC_VERSION) $(if $(STRIP),--strip --strip-program=$(STRIP))
++	ln -sf $(EXEC_VERSION) $(DESTDIR)$(libdir)/$(EXEC_MAJ_MIN)
++	ln -sf $(EXEC_MAJ_MIN) $(DESTDIR)$(libdir)/$(EXEC_MAJ)
++	ln -sf $(EXEC_MAJ) $(DESTDIR)$(libdir)/$(EXECUTABLE)
+ endif
+ 	# Assuming DESTDIR is set for cross-installing only, we don't need
+ 	# (and probably do not have) ldconfig

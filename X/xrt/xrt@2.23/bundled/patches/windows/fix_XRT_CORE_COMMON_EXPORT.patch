@@ -1,0 +1,15 @@
+diff --git a/src/runtime_src/core/common/config.h b/src/runtime_src/core/common/config.h
+index 00a4301b6..71a86dad5 100644
+--- a/src/runtime_src/core/common/config.h
++++ b/src/runtime_src/core/common/config.h
+@@ -25,7 +25,9 @@
+ #  ifdef XRT_CORE_COMMON_SOURCE
+ #   define XRT_CORE_COMMON_EXPORT __declspec(dllexport)
+ #  else
+-#   define XRT_CORE_COMMON_EXPORT __declspec(dllimport)
++#   ifdef _MSC_VER
++#    define XRT_CORE_COMMON_EXPORT __declspec(dllimport)
++#   endif
+ #  endif
+ # endif
+ #endif
