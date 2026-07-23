@@ -7,7 +7,7 @@ function build_xrt_cxxwrap(ARGS, version::VersionNumber)
     name = "xrt_cxxwrap"
 
     sources = [
-        GitSource("https://github.com/simeonschaub/XRT.jl.git",
+        GitSource("https://github.com/pc2/XRT.jl.git",
                   "a494faa6023a81d2f0c8750d93e179df97e7e7dc"),
     ]
 
