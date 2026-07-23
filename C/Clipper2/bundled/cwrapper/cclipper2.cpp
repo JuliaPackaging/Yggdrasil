@@ -589,23 +589,34 @@ static void send_paths_z(const Clipper2Lib::Paths64 &paths,
             append(output, i, CPoint64Z{pt.x, pt.y, pt.z});
 }
 
-// Clipper2's SetZ pre-seeds an intersection vertex's z before invoking the
-// registered callback: when the intersection point coincides with one of the
-// four edge endpoints it copies that endpoint's z (subject endpoints take
-// priority over clip), otherwise it assigns the engine's DefaultZ. Setting
-// DefaultZ to the sentinel and registering this callback that leaves pt.z
-// untouched therefore stamps exactly the truly-invented vertices — a callback
-// stamping unconditionally would clobber the endpoint-coincident case.
-// Registration is still required: with no callback SetZ returns early and
-// invented vertices get z = 0, indistinguishable from a tagged input vertex.
-// Callers wanting richer intersection semantics (e.g. deriving z from the
-// four contributing edge endpoints) can register their own policy instead.
-static void noop_zcb(const Clipper2Lib::Point64 & /*e1bot*/,
-                     const Clipper2Lib::Point64 & /*e1top*/,
-                     const Clipper2Lib::Point64 & /*e2bot*/,
-                     const Clipper2Lib::Point64 & /*e2top*/,
-                     Clipper2Lib::Point64 & /*pt*/)
+// Re-derives an intersection vertex's z from the four contributing edge
+// endpoints: when the intersection point coincides with one of them (x/y
+// comparison; Point64::operator== ignores z) it keeps that endpoint's z,
+// otherwise it stamps the sentinel. The engine's SetZ pre-seeds pt.z with
+// this same policy before invoking the callback (endpoint-coincident z,
+// subject priority via its argument order — subject endpoints always arrive
+// as e1bot/e1top — else DefaultZ), so on that path re-deriving is a no-op.
+// The callback cannot simply trust the pre-seed, though: DoSplitOp (reached
+// via CleanCollinear → FixSelfIntersects when an output ring self-intersects
+// from 64-bit rounding) invokes the callback directly on a point whose z
+// GetLineIntersectPt zeroed, never consulting DefaultZ — a callback leaving
+// pt.z untouched would emit an invented vertex with z = 0, indistinguishable
+// from a tagged input vertex. Registration is required either way: with no
+// callback SetZ returns early and even normal intersections get z = 0.
+// Engine paths that create intersection vertices without invoking the
+// callback at all (Split and CheckJoinLeft/Right) are beyond any callback's
+// reach; the bundled z-fill-join-split.patch adds the missing SetZ calls.
+static void sentinel_zcb(const Clipper2Lib::Point64 &e1bot,
+                         const Clipper2Lib::Point64 &e1top,
+                         const Clipper2Lib::Point64 &e2bot,
+                         const Clipper2Lib::Point64 &e2top,
+                         Clipper2Lib::Point64 &pt)
 {
+    if (pt == e1bot)      pt.z = e1bot.z;
+    else if (pt == e1top) pt.z = e1top.z;
+    else if (pt == e2bot) pt.z = e2bot.z;
+    else if (pt == e2top) pt.z = e2top.z;
+    else                  pt.z = Z_INTERSECTION;
 }
 
 // The narrow tree walk (populatenode) emitting z.
@@ -688,9 +699,10 @@ DLL_PUBLIC bool CDECL clipper64_add_clips_z(clipper64 *ptr,
     });
 }
 
-// z-carrying PolyTree execute. Arms the sentinel policy (DefaultZ + no-op
-// callback, see noop_zcb above) so intersection-created vertices are stamped
-// and endpoint-coincident ones keep their input z, then walks the tree
+// z-carrying PolyTree execute. Arms the sentinel policy (sentinel_zcb, with
+// DefaultZ as fallback for any engine path consulting it without the
+// callback) so intersection-created vertices are stamped and
+// endpoint-coincident ones keep their input z, then walks the tree
 // emitting CPoint64Z (x,y,z).
 DLL_PUBLIC bool CDECL clipper64_execute_polytree_z(clipper64 *ptr,
                                                     int clip_type, int fill_rule,
@@ -707,7 +719,7 @@ DLL_PUBLIC bool CDECL clipper64_execute_polytree_z(clipper64 *ptr,
             return false;
 
         engine(ptr)->DefaultZ = Z_INTERSECTION;
-        engine(ptr)->SetZCallback(noop_zcb);
+        engine(ptr)->SetZCallback(sentinel_zcb);
 
         Clipper2Lib::PolyTree64 pt;
         Clipper2Lib::Paths64 open_paths;
