@@ -113,6 +113,7 @@ fi"""
 
     # determine exactly which tarballs we should build
     builds = []
+    deps = []
     components = [
         "cuda_cudart",
         "cuda_cuobjdump",
@@ -141,6 +142,11 @@ fi"""
     if version >= v"12.2"
         # available earlier, but not for aarch64
         push!(components, "libnvjpeg")
+        # cuFile things
+        push!(components, "libcufile")
+        push!(components, "libcufile_rdma")
+        push!(deps, Dependency("rdma_core_jll"))
+        push!(deps, Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")))
     end
     if version >= v"13"
         push!(components, "cuda_crt")
@@ -164,7 +170,8 @@ fi"""
 
         push!(builds,
                 (; script, platforms=[platform], products=Product[],
-                   sources=get_sources("cuda", components; version, platform=augmented_platform)
+                   sources=get_sources("cuda", components; version, platform=augmented_platform,
+                   deps = deps)
         ))
     end
 
@@ -178,7 +185,7 @@ fi"""
     for (i,build) in enumerate(builds)
         build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                     name, version, build.sources, build.script,
-                    build.platforms, build.products, [];
+                    build.platforms, build.products, build.deps;
                     skip_audit=true, julia_compat="1.6", compression_format="xz")
     end
 end
