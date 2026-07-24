@@ -4,7 +4,7 @@ using BinaryBuilder
 using Pkg
 
 name = "xrt"
-version = v"2.23.0"
+version = v"2.26.0"
 
 # Collection of sources required to complete build
 #
@@ -37,6 +37,9 @@ fi
 
 # Quiet by default
 atomic_patch -p1 ../patches/quiet-verbosity.patch
+
+# fix "bad any_cast" in xrt::device::get_info's kdma case
+atomic_patch -p1 ../patches/kdma_any_cast.patch
 
 if [[ "${target}" == *-w64-* ]]; then
     atomic_patch -p1 ../patches/windows/aligned_malloc.patch
@@ -173,4 +176,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat="1.6", preferred_gcc_version=v"9")
+    julia_compat="1.6", preferred_gcc_version=v"10")
