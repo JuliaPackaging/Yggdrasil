@@ -11,7 +11,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 # So for example version 2.6.3 would become 200.600.300.
 
 name = "NetCDF"
-upstream_version = v"4.10.0"
+upstream_version = v"4.10.1"
 
 # Offset to add to the version number.  Remember to always bump this.
 version_offset = v"1.0.0"
@@ -23,7 +23,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to build NetCDF
 sources = [
     ArchiveSource("https://downloads.unidata.ucar.edu/netcdf-c/$(upstream_version)/netcdf-c-$(upstream_version).tar.gz",
-                  "bd4bfa239385802a6cbea71a2f038dadcaba756a38c56804f829ed8262e7912f"),
+                  "db3b69ff4a5ee1a7d79a5c36664d2128b752c266e966369fcf7311ec5f927564"),
 ]
 
 # HDF5.h in /workspace/artifacts/805ccba77cd286c1afc127d1e45aae324b507973/include
@@ -76,6 +76,13 @@ if [[ ${target} == *-unknown-freebsd* ]]; then
             export LIBS="-lmpi -lm -lexecinfo -lutil -lz";;
     esac
 fi
+
+# The cmake logic that detects whether `MPI_Comm_f2c` is available
+# fails for MPICH. This logic expects there to be a symbol
+# `MPI_Comm_f2c`, but MPICH uses a macro, and the symbol has a
+# different name.
+# See <https://github.com/Unidata/netcdf-c/issues/3414>.
+CONFIGURE_OPTIONS="$CONFIGURE_OPTIONS ac_cv_func_MPI_Comm_f2c=yes ac_cv_func_MPI_Info_f2c=yes"
 
 export CFLAGS=-Wno-implicit-function-declaration
 
@@ -130,7 +137,7 @@ products = [
 dependencies = [
     Dependency("Blosc_jll"; compat="1.21.6"),
     Dependency("Bzip2_jll"; compat="1.0.9"),
-    Dependency("HDF5_jll"; compat="2.1.1"),
+    Dependency("HDF5_jll"; compat="2.1.2"),
     Dependency("LibCURL_jll"; compat="7.73.0,8"),
     # We had to restrict compat with XML2 because of ABI breakage:
     # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
