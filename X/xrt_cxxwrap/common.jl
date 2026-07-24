@@ -52,5 +52,5 @@ VERBOSE=ON cmake --build build --config Release --target install -- -j${nproc}
     ]
 
     build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-                   preferred_gcc_version=v"9", julia_compat=libjulia_julia_compat(julia_versions))
+                   preferred_gcc_version=v"10", dont_dlopen=true, julia_compat=libjulia_julia_compat(julia_versions))
 end
