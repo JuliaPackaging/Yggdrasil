@@ -9,10 +9,10 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "NCCL"
-version = v"2.28.9"
+version = v"2.30.7"
 
 git_sources = [
-    GitSource("https://github.com/NVIDIA/nccl.git", "dbc86fd06e8b0c4517b95d8958a09ccacf9520c9"),
+    GitSource("https://github.com/NVIDIA/nccl.git", "73cf112295c33aee2b895f329f592f2a9b4b0f97"),
     DirectorySource("./bundled/")
 ]
 
@@ -73,6 +73,11 @@ export CUDA_HOME=${prefix}/cuda;
 export PATH=$PATH:$CUDA_HOME/bin
 export CUDACXX=$CUDA_HOME/bin/nvcc
 export CUDA_LIB=${CUDA_HOME}/lib
+
+if [[ "$(${CUDACXX} --version)" == *"release 12.3"* ]]; then
+    # CUDA 12.3 ptxas cannot assemble GIN's system-scoped 128-bit operations.
+    export NCCL_DISABLE_GIN=1
+fi
 
 cd nccl
 make -j ${nproc} src.build CUDA_HOME=${CUDA_HOME} PREFIX=${prefix}

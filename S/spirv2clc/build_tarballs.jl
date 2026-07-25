@@ -11,7 +11,7 @@ version = v"0.2"
 # Collection of sources required to build spirv2clc
 sources = [
     GitSource("https://github.com/JuliaGPU/spirv2clc",
-              "d3c8551293ba5c87b375001a6e5b20ad0b7db36a")
+              "27d5f5d2adb1938748ef6251bb8f30658eabaf85")
 ]
 
 # Bash recipe for building across all platforms

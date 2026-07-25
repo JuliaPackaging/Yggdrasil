@@ -316,4 +316,54 @@ function cuda_nvcc_redist_source(cuda_ver, arch)
     end
 end
 
+"""
+    cuda_gpu_archs(platform::Platform)
+
+Returns a list of the GPU architectures supported by the given CUDA platform.
+"""
+function cuda_gpu_archs(platform::Platform)
+    ver = VersionNumber(tags(platform)["cuda"])
+    cuda_gpu_archs(ver)
+end
+
+"""
+    cuda_gpu_archs(cuda_ver)
+
+Returns a list of the GPU architectures supported by the given CUDA version.
+"""
+function cuda_gpu_archs(cuda_ver)
+    # List roughly based on https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/
+
+    # CUDA 10 and later
+    supported_archs = [
+        "75",       # sm_75 -> Turing (RTX 20xx, T4)
+        ]
+
+    if cuda_ver >= v"11.1"
+        push!(supported_archs, "80")        # sm_80 -> Ampere (A100)
+        push!(supported_archs, "86")        # sm_86 -> Ampere (A40, RTX 30xx, RTX Ax000 Ada)
+    end
+
+
+    if cuda_ver >= v"11.8"
+        push!(supported_archs, "89")        # sm_89 -> Ada lovelace (RTX 4090/4080, L40)
+    end
+
+    if cuda_ver >= v"12.0"
+        push!(supported_archs, "90")        # sm_90 -> Hopper (H100, H200) - PTX 8.0
+    end
+
+    if cuda_ver >= v"12.8"
+        push!(supported_archs, "100")       # sm_100 -> Blackwell (B100, B200)
+        push!(supported_archs, "120")       # sm_120 -> Blackwell (RTX 50xx, RTX PRO x000 BLACKWELL)
+    end
+
+    if cuda_ver >= v"12.9"
+        push!(supported_archs, "103")       # sm_103 -> Blackwell (B300, GB300)
+        push!(supported_archs, "121")       # sm_121 -> Blackwell (DGX SPARK, DIGITS)
+    end
+
+    supported_archs
+end
+
 end

@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDNN"
-version = v"9.20.0"
+version = v"9.24.0"
 
 script = raw"""
 mkdir -p ${libdir} ${prefix}/include
@@ -77,7 +77,14 @@ for cuda_version in [v"12", v"13"]
         augmented_platform["cuda"] = CUDA.platform(cuda_version)
         should_build_platform(triplet(augmented_platform)) || continue
 
-        sources = get_sources("cudnn", ["cudnn"]; version, platform=augmented_platform,
+        source_platform = deepcopy(augmented_platform)
+        if cuda_version == v"12" && arch(source_platform) == "aarch64"
+            # cuDNN 9.24 supports Jetson, but the redist server only publishes
+            # a linux-sbsa archive for CUDA 12 aarch64.
+            source_platform["cuda_platform"] = "sbsa"
+        end
+
+        sources = get_sources("cudnn", ["cudnn"]; version, platform=source_platform,
                                variant="cuda$(cuda_version.major)")
 
         if platform == Platform("x86_64", "windows")

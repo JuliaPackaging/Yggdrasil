@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "LibFramehopUnwind"
-version = v"0.1.0"
+version = v"0.1.2"
 
 # Collection of sources required to complete build.
 # The crate has no release tags yet, so pin the source to a specific commit.
 sources = [
     GitSource("https://github.com/gbaraldi/framehopunwind.git",
-              "88850c5c6c38424f699130f18e814142c8644d05"),
+              "745330dc336f4237cac36db79b5c9b6bc15c0232"),
 ]
 
 # Bash recipe for building across all platforms

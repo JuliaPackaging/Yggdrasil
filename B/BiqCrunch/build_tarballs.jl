@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "BiqCrunch"
-version = v"2.0.1"
+version = v"2.0.2"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://gitlab.inria.fr/mbesanco/BiqCrunch/-/archive/v$(version)/BiqCrunch-v$(version).tar.gz",
-                  "45f2f5f16bda636658aac40da0d1d18b9fbdc8d22bab29f9adfe2c9467a413db")
+                  "1296e2722a6a76471219bb7a25fda59bc875f9b9ce4cdecc715fc079fc56ba69")
 ]
 
 # Bash recipe for building across all platforms

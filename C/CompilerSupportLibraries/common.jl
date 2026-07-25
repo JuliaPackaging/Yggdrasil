@@ -96,7 +96,7 @@ if [[ ${target} == *mingw* ]]; then
         # and for direct ld links of Windows executables and DLLs.
         for lib in libadvapi32.a libdbghelp.a libgcc.a libgcc_s.a libiphlpapi.a libkernel32.a libmingwex.a \
                    libmingw32.a libmsvcrt.a libmsvcrt-os.a libmoldname.a libntdll.a libole32.a libpsapi.a libsecur32.a \
-                   libshell32.a libssp.a libuser32.a libuserenv.a libuuid.a libwinmm.a libws2_32.a \
+                   libshell32.a libssp.a libsynchronization.a libuser32.a libuserenv.a libuuid.a libwinmm.a libws2_32.a \
                    libpthread.dll.a libssp.dll.a dllcrt2.o crt2.o crt2u.o crtbegin.o crtend.o; do
             qfind "/opt/${target}" -name "${lib}" -exec install -Dvm 0644 '{}' "${destdir}/${lib}" \;
         done
@@ -204,6 +204,7 @@ install_license /usr/share/licenses/GPL-3.0+
                                  FileProduct("$(destdir)/libsecur32.a", :libsecur32_a),
                                  FileProduct("$(destdir)/libshell32.a", :libshell32_a),
                                  FileProduct("$(destdir)/libssp.a", :libssp_a),
+                                 FileProduct("$(destdir)/libsynchronization.a", :libsynchronization_a),
                                  FileProduct("$(destdir)/libuser32.a", :libuser32_a),
                                  FileProduct("$(destdir)/libuserenv.a", :libuserenv_a),
                                  FileProduct("$(destdir)/libuuid.a", :libuuid_a),

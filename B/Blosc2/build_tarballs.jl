@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 
 name = "Blosc2"
 
-upstream_version = v"3.1.5"
+upstream_version = v"3.2.3"
 # We add a version offset because:
 # - Blosc2 2.15 is not ABI-compatible with Blosc2 2.14
 #   (see the release notes <https://github.com/Blosc/c-blosc2/releases/tag/v2.15.0>)
@@ -12,14 +12,15 @@ upstream_version = v"3.1.5"
 #   (the shared library SOVERSION was increased)
 # - Blosc2 2.23.1 is not ABI-compatible with Blosc2 2.23.0
 #   (the shared library SOVERSION was increased)
-version_offset = v"0.0.0"
+# - Blosc 3.2 is not ABI-compatible with Blosc2 3.1
+version_offset = v"1.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
 
 # Collection of sources required to build Blosc2
 sources = [
-    GitSource("https://github.com/Blosc/c-blosc2.git", "09c50ca121c11b0f93c8427662e28244b4a3e0b6"),
+    GitSource("https://github.com/Blosc/c-blosc2.git", "d52cbeec8afb35ada7ea62f04168e5d970d9c40b"),
     DirectorySource("bundled"),
 ]
 
@@ -32,6 +33,9 @@ cd $WORKSPACE/srcdir/c-blosc2
 # functions have incompatible return types (although both are 64-bit
 # integers).
 atomic_patch -p1 ../patches/_xsetbv.patch
+
+# The build options hide `flock` on FreeBSD <https://github.com/Blosc/c-blosc2/issues/794>
+atomic_patch -p1 ../patches/flock.patch
 
 # Clang on Apple does not (yet?) properly support `__builtin_cpu_supports`.
 # The symbol `__cpu_model` is not provided by any standard library.
