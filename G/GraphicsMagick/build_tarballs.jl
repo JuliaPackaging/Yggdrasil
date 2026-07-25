@@ -80,7 +80,7 @@ dependencies = [
     Dependency("FreeType2_jll"; compat="2.13.4"),
     # Dependency("Ghostscript_jll"),
     Dependency("Graphviz_jll"),
-    Dependency("JasPer_jll"),
+    Dependency("JasPer_jll"; compat="2.0.28"),
     Dependency("JpegTurbo_jll"),
     Dependency("Libtiff_jll"; compat="4.7.2"),
     # We had to restrict compat with XML2 because of ABI breakage:
