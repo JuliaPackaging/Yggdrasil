@@ -14,6 +14,12 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/voiage/rust
 
+# Rust's musl targets default to a static C runtime, which cannot produce the
+# shared-library product consumed by a JLL package.
+if [[ "${target}" == *-musl* ]]; then
+    export RUSTFLAGS="-C target-feature=-crt-static"
+fi
+
 cargo build \
     --release \
     --locked \
