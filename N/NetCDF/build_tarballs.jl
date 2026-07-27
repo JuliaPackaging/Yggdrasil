@@ -14,7 +14,7 @@ name = "NetCDF"
 upstream_version = v"4.10.1"
 
 # Offset to add to the version number.  Remember to always bump this.
-version_offset = v"1.0.0"
+version_offset = v"1.0.1"
 
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
@@ -87,13 +87,14 @@ export CFLAGS=-Wno-implicit-function-declaration
     --enable-shared \
     --disable-static \
     --disable-dap-remote-tests \
-    --disable-plugins \
     ${CONFIGURE_OPTIONS}
 
 make LDFLAGS="${LDFLAGS_MAKE}" -j${nproc}
 
 if [[ ${target} == x86_64-linux-gnu ]]; then
-    make check
+    # Test run_dfaltpluginpath.sh assumes HOME is set
+    # See <https://github.com/Unidata/netcdf-c/issues/3415>
+    HOME=/tmp make check
 fi
 
 make install
@@ -113,6 +114,19 @@ platforms = supported_platforms()
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
+# HDF5/NCZarr plugins
+plugins = [
+    "lib__nch5blosc",
+    "lib__nch5bzip2",
+    "lib__nch5deflate",
+    "lib__nch5fletcher32",
+    "lib__nch5shuffle",
+    "lib__nch5szip",
+    "lib__nch5zstd",
+    "lib__nczhdf5filters",
+    "lib__nczstdfilters",
+]
+
 # The products that we will ensure are always built
 products = [
     # NetCDF tools
@@ -126,6 +140,9 @@ products = [
 
     # NetCDF library
     LibraryProduct("libnetcdf", :libnetcdf),
+
+    # NetCDF plugins
+    [LibraryProduct(plugin, Symbol(plugin),["hdf5/lib/plugin"]) for plugin in plugins]...,
 ]
 
 # Dependencies that must be installed before this package can be built
