@@ -147,7 +147,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Blosc_jll"; compat="1.21.6"),
+    Dependency("Blosc_jll"; compat="1.21.7"),
     Dependency("Bzip2_jll"; compat="1.0.9"),
     Dependency("HDF5_jll"; compat="2.1.2"),
     Dependency("LibCURL_jll"; compat="7.73.0,8"),
