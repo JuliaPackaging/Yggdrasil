@@ -13,6 +13,7 @@ cd ${WORKSPACE}/srcdir/shapelib*
 autoreconf -fvi
 ./configure --prefix=${prefix} --host=$target --build=${MACHTYPE} --enable-shared --disable-static
 make install
+install_license LICENSE-MIT LICENSE-LGPL
 """
 
 platforms = supported_platforms()
