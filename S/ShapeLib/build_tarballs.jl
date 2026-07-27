@@ -9,7 +9,7 @@ sources = [
 ]
 
 script = raw"""
-cd ${WORKSPACE}/shapelib*
+cd ${WORKSPACE}/srcdir/shapelib*
 autoreconf -fvi
 ./configure --prefix=${prefix} --host=$target --build=${MACHTYPE} --enable-shared --disable-static
 make install
