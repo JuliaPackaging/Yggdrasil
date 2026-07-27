@@ -47,11 +47,6 @@ if [[ ${target} == *-mingw* ]]; then
     CONFIGURE_OPTIONS="--disable-byterange"
 fi
 
-if [[ ${target} -ne x86_64-linux-gnu ]]; then
-    # utilities are necessary to run the tests
-    CONFIGURE_OPTIONS="$CONFIGURE_OPTIONS --disable-utilities"
-fi
-
 if [[ ${target} == x86_64-linux-musl ]]; then
     # see
     # https://github.com/JuliaPackaging/Yggdrasil/blob/48af117395188f48d361a46ea929ee7563d9c2e4/A/ADIOS2/build_tarballs.jl
