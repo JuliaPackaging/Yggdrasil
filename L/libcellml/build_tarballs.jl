@@ -15,15 +15,17 @@ sources = [
 # https://libcellml.org/documentation/installation/build_from_source
 script = raw"""
 
+# ZLIB-static.cmake is missing from the following environments. We touch the file to allow the configuration to succeed.
+if [ -d /opt/aarch64-apple-darwin20/aarch64-apple-darwin20/sys-root/usr/local/lib/cmake/zlib/ ]; then
+  touch /opt/aarch64-apple-darwin20/aarch64-apple-darwin20/sys-root/usr/local/lib/cmake/zlib/ZLIB-static.cmake
+fi
 if [ -d /workspace/MacOSX10.15.sdk/usr/local/lib/cmake/zlib/ ]; then
-    ls /workspace/MacOSX10.15.sdk/usr/local/lib/cmake/zlib/
-    cat /workspace/MacOSX10.15.sdk/usr/local/lib/cmake/zlib/ZLIBConfig.cmake
     touch /workspace/MacOSX10.15.sdk/usr/local/lib/cmake/zlib/ZLIB-static.cmake
 fi
-
+if [ -d /opt/aarch64-unknown-freebsd14.1/aarch64-unknown-freebsd14.1/sys-root/usr/local/lib/cmake/zlib/ ]; then
+    touch /opt/aarch64-unknown-freebsd14.1/aarch64-unknown-freebsd14.1/sys-root/usr/local/lib/cmake/zlib/ZLIB-static.cmake
+fi
 if [ -d /opt/x86_64-unknown-freebsd13.4/x86_64-unknown-freebsd13.4/sys-root/usr/local/lib/cmake/zlib/ ]; then
-    ls /opt/x86_64-unknown-freebsd13.4/x86_64-unknown-freebsd13.4/sys-root/usr/local/lib/cmake/zlib/
-    cat /opt/x86_64-unknown-freebsd13.4/x86_64-unknown-freebsd13.4/sys-root/usr/local/lib/cmake/zlib/ZLIBConfig.cmake
     touch /opt/x86_64-unknown-freebsd13.4/x86_64-unknown-freebsd13.4/sys-root/usr/local/lib/cmake/zlib/ZLIB-static.cmake
 fi
 
