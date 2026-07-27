@@ -99,6 +99,14 @@ fi
 
 make install
 
+# Plugins on apple-darwin have the .so extension when cross-compiling
+# See <https://github.com/Unidata/netcdf-c/issues/3418>
+if [[ ${target} == *-apple-darwin* ]]; then
+    for f in ${prefix}/hdf5/lib/plugin/*.so; do
+       mv "$f" "${f%.so}.dylib"
+    done
+fi
+
 nc-config --all
 """
 
