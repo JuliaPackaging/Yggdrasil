@@ -50,7 +50,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(; name="Zlib_jll"))
     Dependency(PackageSpec(; name="JpegTurbo_jll"))
-    Dependency(PackageSpec(; name="JasPer_jll"))
+    Dependency(PackageSpec(; name="JasPer_jll"); compat="2.0.28")
     Dependency(PackageSpec(; name="CompilerSupportLibraries_jll"))
     Dependency(PackageSpec(; name="LittleCMS_jll"))
 ]

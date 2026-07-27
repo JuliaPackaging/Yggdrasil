@@ -5,16 +5,16 @@ include("../common.jl")
 const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
-gap_version = v"400.1500.0"
+gap_version = v"400.1600.0"
 name = "semigroups"
-upstream_version = "5.6.1" # when you increment this, reset offset to v"0.0.0"
+upstream_version = "5.6.3" # when you increment this, reset offset to v"0.0.0"
 offset = v"1.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL
 sources = [
     ArchiveSource("https://github.com/semigroups/Semigroups/releases/download/v$(upstream_version)/semigroups-$(upstream_version).tar.gz",
-                  "92123474c067710219f7813c0511fb418338a04e493d0d2dbfb0a88ad5c6dc9d"),
+                  "acbe1d8f3afb3ed811cab81461cc74b447e0ddf4f4f30ab47d6ef81aa21352c9"),
 ]
 
 # Bash recipe for building across all platforms
@@ -42,8 +42,6 @@ fi
     --build=${MACHTYPE} \
     --host=${target} \
     --with-gaproot=${prefix}/lib/gap \
-    --disable-hpcombi \
-    --disable-backward \
     --with-external-libsemigroups \
     "${EXTRA_FLAGS[@]}"
 make -j${nproc}
@@ -62,7 +60,7 @@ dependencies = gap_pkg_dependencies(gap_version)
 platforms = gap_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
-push!(dependencies, Dependency("libsemigroups_jll", compat = "=3.5.3"))
+push!(dependencies, Dependency("libsemigroups_jll", compat = "=3.5.5"))
 
 # The products that we will ensure are always built
 products = [

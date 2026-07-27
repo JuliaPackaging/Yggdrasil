@@ -2,16 +2,16 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 include("../common.jl")
 
-gap_version = v"400.1500.0"
+gap_version = v"400.1600.0"
 name = "float"
-upstream_version = "1.0.9" # when you increment this, reset offset to v"0.0.0"
+upstream_version = "1.0.10" # when you increment this, reset offset to v"0.0.0"
 offset = v"1.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL
 sources = [
     ArchiveSource("https://github.com/gap-packages/float/releases/download/v$(upstream_version)/float-$(upstream_version).tar.gz",
-                  "cf4e87714ef774d5d760ef252f81bcfe6d0b3bb726ae263c602c68cd5d3a495b"),
+                  "9eeecb3de00528f9852250a47eb60cd4b1ca0745b124e66d9b5e4728cf31eafc"),
 ]
 
 # Bash recipe for building across all platforms

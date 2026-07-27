@@ -25,6 +25,7 @@ elseif haskey(ENV, "JULIA_CUDA_USE_COMPAT")
 else
     missing
 end
+compat_forced = compat_preference === true
 
 libcuda_system = Sys.iswindows() ? "nvcuda" : "libcuda.so.1"
 
@@ -69,9 +70,9 @@ else
 end
 system_driver_task = @static if VERSION >= v"1.12-"
     # XXX: avoid concurrent compilation (JuliaLang/julia#59834)
-    Threads.@spawn :samepool inspect_driver(libcuda_system)
+    Threads.@spawn :samepool inspect_driver(libcuda_system; inspect_devices=true)
 else
-    Threads.@spawn inspect_driver(libcuda_system)
+    Threads.@spawn inspect_driver(libcuda_system; inspect_devices=true)
 end
 compat_driver_info = fetch(compat_driver_task)
 if compat_driver_info === nothing
@@ -85,6 +86,36 @@ if system_driver_info === nothing
     return
 end
 @debug "System driver version: $(system_driver_info.version)"
+
+if !compat_forced
+    # The forwards-compatible driver is only useful when it is newer than
+    # the system driver.
+    if compat_driver_info.version <= system_driver_info.version
+        @debug "Forwards-compatible driver is not newer than the system driver; using system driver."
+        return
+    end
+
+    # Newer driver branches can drop support for older hardware and then
+    # fail uncleanly at context creation. This was confirmed by NVIDIA for
+    # cuda-compat-13.2 on R580 kernels.
+    compat_min_cap = if compat_driver_info.version >= v"13.1"
+        v"7.5"      # r590 dropped Maxwell, Pascal and Volta
+    elseif compat_driver_info.version >= v"12.0"
+        v"5.0"      # r525 dropped Kepler
+    else
+        v"3.5"
+    end
+    unsupported = VersionNumber[]
+    for cap in system_driver_info.capabilities
+        if cap < compat_min_cap
+            push!(unsupported, cap)
+        end
+    end
+    if !isempty(unsupported)
+        @debug "Forwards-compatible driver does not support devices with compute capability $(join(unsupported, ", ")); using system driver."
+        return
+    end
+end
 
 # finally, load the forwards-compatible driver
 @debug "Using forwards-compatible CUDA driver."

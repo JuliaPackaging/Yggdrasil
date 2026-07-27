@@ -7,12 +7,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "NEO"
-version = v"25.44.36015"#.5
+version = v"26.18.38308"#.1
 
 # Collection of sources required to build this package.
 sources = [
     GitSource("https://github.com/intel/compute-runtime.git",
-              "82bc8ddc7bc420f76eb975b4b58e48e4f78b1a24"),
+              "82aab87fc932edc0558a0302d545a5bcc22edf41"),
     # patches
     DirectorySource("./bundled"),
 ]
@@ -20,22 +20,13 @@ sources = [
 # Bash recipe for building across all platforms
 function get_script(; debug::Bool)
     raw"""
-        # ocloc segfaults after successful build and before exiting. So we wrap
-        # a script around ocloc that detects when the build is reported
-        # successful and ignores the segfault.
-        atomic_patch -p0 ./patches/ocloc.patch
         # Fix OpenCL ICD installation to use prefix instead of /etc
         atomic_patch -p0 ./patches/install_to_prefix.patch
-        cp ocloc_wrapper.sh compute-runtime/shared/source/built_ins/kernels/ocloc_wrapper.sh
         mkdir -p tmpdir
         export TMPDIR=$(pwd)/tmpdir
         export CCACHE_TEMPDIR=$(pwd)/tmpdir
         cd compute-runtime
         install_license LICENSE.md
-
-        # revert a change that breaks the cxx03 build
-        # https://github.com/intel/compute-runtime/issues/708
-        git revert 18c25e5aa3fc00c7d47469713adeace08a9aec07
 
         # work around compilation failures
         ## already defined in gmmlib
@@ -45,9 +36,6 @@ function get_script(; debug::Bool)
             sed -i 's/LD_LIBRARY_PATH=/LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:/g' '{}' \;
         ## NO
         sed -i '/-Werror/d' CMakeLists.txt
-
-        # Fails because C header is used in C++ code
-        sed -i 's/inttypes\.h/cinttypes/g' level_zero/core/source/mutable_cmdlist/mutable_indirect_data.cpp
 
         CMAKE_FLAGS=()
 
@@ -82,7 +70,7 @@ function get_script(; debug::Bool)
         cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
         ninja -C build -j ${nproc} install
         # Create unversioned symlinks
-        ln -s ocloc-25.44.1 ${bindir}/ocloc
+        ln -s ocloc-26.18.1 ${bindir}/ocloc
 
 """
 end
@@ -109,9 +97,9 @@ products = [
 #       when using a non-public release, refer to the compiled manifest
 #       https://github.com/intel/compute-runtime/blob/master/manifests/manifest.yml.
 dependencies = [
-    Dependency("gmmlib_jll"; compat="=22.8.2"),
-    Dependency("libigc_jll"; compat="=2.22.2"),
-    Dependency("oneAPI_Level_Zero_Headers_jll"; compat="=1.13"),
+    Dependency("gmmlib_jll"; compat="=22.10.0"),
+    Dependency("libigc_jll"; compat="=2.34.4"),
+    Dependency("oneAPI_Level_Zero_Headers_jll"; compat="=1.16"),
 ]
 
 augment_platform_block = raw"""
