@@ -36,7 +36,7 @@ sources = [
 # library that exports `c_algencan` — the C entry point that NLPModelsAlgencan.jl
 # `ccall`s via `dlsym(..., :c_algencan)`.
 script = raw"""
-cd ${WORKSPACE}/srcdir/algencan-3.1.1
+cd ${WORKSPACE}/srcdir/algencan-*
 
 # The bundled top-level Makefile hardcodes CC := gcc-4.9, but only the Fortran
 # compiler and the archiver are used by the `algencan` (library) target. Name the
