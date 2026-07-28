@@ -13,20 +13,22 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/muscle
 
-# MUSCLE's Windows code paths assume MSVC, so mingw takes the POSIX branch and
-# calls sysconf() and includes <sys/resource.h>, neither of which it has.
+# MUSCLE's Windows code paths are all guarded on _MSC_VER, so mingw falls into
+# the POSIX branches instead.  Those don't build (no <sys/resource.h>, no
+# sysconf()) and don't link (GetPhysMemBytes() is only defined for MSVC, Linux
+# and Mach), and the ones that do compile give wrong answers on Windows.
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-support.patch
 
 cd src
-EXTRA_CXXFLAGS=""
 EXTRA_LDFLAGS=""
 if [[ "${target}" == *-mingw* ]]; then
-    # mingw defaults to a 32-bit off_t, and MUSCLE bails out with "File too big
-    # for 32-bit version" on inputs above 2GB when sizeof(off_t) == 4.
-    EXTRA_CXXFLAGS="-D_FILE_OFFSET_BITS=64"
-    EXTRA_LDFLAGS="-lpsapi"   # GetProcessMemoryInfo
+    EXTRA_LDFLAGS="-lpsapi"   # GetProcessMemoryInfo, GlobalMemoryStatusEx
 fi
-make -j${nproc} CXX=c++ CXXFLAGS="-O3 -fopenmp ${EXTRA_CXXFLAGS}" LDFLAGS2="${EXTRA_LDFLAGS}"
+
+# 32-bit targets (mingw, i686/armv6l/armv7l linux) default to a 32-bit off_t,
+# and MUSCLE bails out with "File too big for 32-bit version" on inputs above
+# 2GB when sizeof(off_t) == 4.  No-op on targets where off_t is already 64-bit.
+make -j${nproc} CXX=c++ CXXFLAGS="-O3 -fopenmp -D_FILE_OFFSET_BITS=64" LDFLAGS2="${EXTRA_LDFLAGS}"
 install -Dvm 755 "$(uname)/muscle" "${bindir}/muscle${exeext}"
 install_license ${WORKSPACE}/srcdir/muscle/LICENSE
 """
