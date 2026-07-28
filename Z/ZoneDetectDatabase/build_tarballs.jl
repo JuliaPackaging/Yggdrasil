@@ -29,8 +29,8 @@ outdir=${WORKSPACE}/destdir/share/zonedetect
 for v in 0 1; do
     mkdir -p ${outdir}/v${v}
     for r in 16 21; do
-        ./builder C "${WORKSPACE}/srcdir/naturalearth/ne_10m_admin_0_countries_lakes ${outdir}/v${v}/country${r}.bin ${r} \"Made with Natural Earth, placed in the Public Domain.\" ${v}"
-        ./builder "T ${WORKSPACE}/srcdir/timezone/combined-shapefile-with-oceans ${outdir}/v${v}/timezone${r}.bin ${r} \"Contains data from Natural Earth, placed in the Public Domain. Contains information from https://github.com/evansiroky/timezone-boundary-builder, which is made available here under the Open Database License \(ODbL\).\" ${v}"
+        ./builder C "${WORKSPACE}/srcdir/naturalearth/ne_10m_admin_0_countries_lakes" "${outdir}/v${v}/country${r}.bin" ${r} "Made with Natural Earth, placed in the Public Domain." ${v}
+        ./builder T "${WORKSPACE}/srcdir/timezone/combined-shapefile-with-oceans" "${outdir}/v${v}/timezone${r}.bin" ${r} "Contains data from Natural Earth, placed in the Public Domain. Contains information from https://github.com/evansiroky/timezone-boundary-builder, which is made available here under the Open Database License \(ODbL\)." ${v}
     done
 done
 
