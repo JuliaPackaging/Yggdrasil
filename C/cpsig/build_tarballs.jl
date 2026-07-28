@@ -19,14 +19,7 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/pysiglib/pySigLib
 
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-getenv.patch
-
-# BinaryBuilder's macOS libc++ headers do not provide <concepts>.  cpsig only
-# uses std::floating_point as a light constraint on float/double internals, so
-# remove that constraint for this portable build.
-sed -i '/#include <concepts>/d' siglib/cpsig/cppch.h
-for f in $(grep -rl "std::floating_point" siglib/cpsig || true); do
-    sed -i 's/std::floating_point /typename /g' "${f}"
-done
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/concepts-compat.patch
 
 # Replace upstream Python/JAX/CUDA-oriented root CMake with a minimal one.
 # We only build siglib/cpsig, which provides the C ABI library libcpsig.
@@ -93,7 +86,6 @@ products = [
 ]
 
 dependencies = [
-    HostBuildDependency("CMake_jll"),
 ]
 
 build_tarballs(
