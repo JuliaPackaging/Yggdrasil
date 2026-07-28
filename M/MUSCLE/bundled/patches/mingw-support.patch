@@ -1,0 +1,41 @@
+diff --git a/src/myutils.cpp b/src/myutils.cpp
+index 2426f9e..fc8a471 100644
+--- a/src/myutils.cpp
++++ b/src/myutils.cpp
+@@ -29,7 +29,18 @@
+ #include <io.h>
+ #else
+ #include <sys/time.h>
++#ifdef __MINGW32__
++// mingw-w64 has no <sys/resource.h>. The memory and core-count helpers below
++// use the Win32 APIs instead, so include the Windows headers here, at the same
++// point in the file as the _MSC_VER branch above does.
++#ifndef WIN32_LEAN_AND_MEAN
++#define WIN32_LEAN_AND_MEAN
++#endif
++#include <windows.h>
++#include <psapi.h>
++#else
+ #include <sys/resource.h>
++#endif
+ #include <unistd.h>
+ #include <errno.h>
+ #include <fcntl.h>
+@@ -977,7 +988,7 @@ void mysleep(unsigned ms)
+ 	}
+ #endif
+ 
+-#ifdef _MSC_VER
++#if defined(_MSC_VER) || defined(__MINGW32__)
+ double GetMemUseBytes()
+ 	{
+ 	HANDLE hProc = GetCurrentProcess();
+@@ -2310,7 +2321,7 @@ void ResetRand(unsigned Seed)
+ 
+ unsigned GetCPUCoreCount()
+ 	{
+-#ifdef _MSC_VER
++#if defined(_MSC_VER) || defined(__MINGW32__)
+ 	SYSTEM_INFO SI;
+ 	GetSystemInfo(&SI);
+ 	unsigned n = SI.dwNumberOfProcessors;

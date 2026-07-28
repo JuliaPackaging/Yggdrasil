@@ -6,19 +6,34 @@ version = v"5.2"
 sources = [
     GitSource("https://github.com/rcedgar/muscle.git",
                   "6c601163998616bb88991931e443c645858e162c"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/muscle/src/
-make -j${nproc} CXX=c++ CXXFLAGS="-O3 -fopenmp"
-install -Dvm 755 "$(uname)/muscle" "${bindir}/muscle"
+cd ${WORKSPACE}/srcdir/muscle
+
+# MUSCLE's Windows code paths assume MSVC, so mingw takes the POSIX branch and
+# calls sysconf() and includes <sys/resource.h>, neither of which it has.
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-support.patch
+
+cd src
+EXTRA_CXXFLAGS=""
+EXTRA_LDFLAGS=""
+if [[ "${target}" == *-mingw* ]]; then
+    # mingw defaults to a 32-bit off_t, and MUSCLE bails out with "File too big
+    # for 32-bit version" on inputs above 2GB when sizeof(off_t) == 4.
+    EXTRA_CXXFLAGS="-D_FILE_OFFSET_BITS=64"
+    EXTRA_LDFLAGS="-lpsapi"   # GetProcessMemoryInfo
+fi
+make -j${nproc} CXX=c++ CXXFLAGS="-O3 -fopenmp ${EXTRA_CXXFLAGS}" LDFLAGS2="${EXTRA_LDFLAGS}"
+install -Dvm 755 "$(uname)/muscle" "${bindir}/muscle${exeext}"
 install_license ${WORKSPACE}/srcdir/muscle/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> Sys.islinux(p) || Sys.isapple(p), supported_platforms())
+platforms = filter!(!Sys.isfreebsd, supported_platforms())
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
