@@ -22,6 +22,10 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/ZoneDetect/database/builder
 
+# `builder.cpp` assumes, without checking, that these are in the current directory, so link them here
+ln -s ${WORKSPACE}/srcdir/naturalearth ./naturalearth
+ln -s ${WORKSPACE}/srcdir/timezone ./timezone
+
 ${HOSTCXX} builder.cpp --std=c++11 -o builder -I${host_includedir} -L${host_libdir} -Wl,-rpath=${host_libdir} -lshp
 
 outdir=${WORKSPACE}/destdir/share/zonedetect
