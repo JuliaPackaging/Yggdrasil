@@ -1,9 +1,9 @@
 using BinaryBuilder, Pkg
 
 name = "S2Geography"
-version = v"0.3.0"
+version = v"0.4.0"
 sources = [
-    GitSource("https://github.com/paleolimbot/s2geography.git", "04a31a89e16e59d5a827f7251c5bbd24e2f6b919"),
+    GitSource("https://github.com/paleolimbot/s2geography.git", "ae9864593ea40537ffb19d631ba79ce9df9903c3"),
 ]
 
 script = raw"""
