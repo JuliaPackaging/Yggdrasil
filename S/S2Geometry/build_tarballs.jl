@@ -2,12 +2,15 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "S2Geometry"
-version = v"0.11.1"
+version = v"0.13.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/google/s2geometry.git", "5b5eccd54a08ae03b4467e79ffbb076d0b5f221e"),
+    GitSource("https://github.com/google/s2geometry.git", "ed62eeeaa92f19c70aeaa91e8acbd3b5c1171a57"),
     DirectorySource("./bundled"),
 ]
 
@@ -22,10 +25,15 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_EXAMPLES=OFF \
     -DBUILD_TESTS=OFF \
+    -DCMAKE_CXX_STANDARD=17 \
     ..
 make -j${nproc}
 make install
 """
+
+# Abseil is built as C++17, and the libc++ in the default Intel macOS sys-root
+# exports none of the std::bad_{variant,optional}_access symbols it needs.
+sources, script = require_macos_sdk("10.14", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
@@ -48,8 +56,9 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="3.0.15"),
-    Dependency(PackageSpec(name="abseil_cpp_jll", uuid="43133aba-3931-5066-b004-a34c79b93f2e"); compat = "20240116.2.0"),
+    Dependency(PackageSpec(name="abseil_cpp_jll", uuid="43133aba-3931-5066-b004-a34c79b93f2e"); compat = "20250814.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6", preferred_gcc_version=v"7")
+# Abseil requires <filesystem>, provided in GCC 9 or later
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6", preferred_gcc_version=v"9")
