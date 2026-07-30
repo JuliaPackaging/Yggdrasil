@@ -137,6 +137,6 @@ dependencies = [
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     preferred_gcc_version = v"14.2.0",
     lock_microarchitecture = false,
-    julia_compat = "1.9",
+    julia_compat = "1.10",
 )
  
