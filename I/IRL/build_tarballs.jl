@@ -26,11 +26,8 @@ cmake .. \
 cmake --build . --target irl_c -j${nproc}
 
 mkdir -p ${libdir} ${includedir}
-for lib in libirl libirl_c; do
-    for f in $(find . -name "${lib}.${dlext}*"); do
-        install -Dvm755 "$f" "${libdir}/$(basename $f)"
-    done
-done
+install -Dvm755 libirl.${dlext} ${libdir}/libirl.${dlext}
+install -Dvm755 libirl_c.${dlext} ${libdir}/libirl_c.${dlext}
 
 cp -rv ../irl ${includedir}/
 find ${includedir}/irl -type f ! -name '*.h' ! -name '*.tpp' -print -delete
