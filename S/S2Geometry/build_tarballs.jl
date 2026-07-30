@@ -6,11 +6,11 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "S2Geometry"
-version = v"0.13.1"
+version = v"0.14.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/google/s2geometry.git", "a37aba69f14af676e9605cd9515c8aca6cef8342"),
+    GitSource("https://github.com/google/s2geometry.git", "c24b368c67d0b8a2a109c5a75224e73a856bd8b7"),
     DirectorySource("./bundled"),
 ]
 
@@ -20,7 +20,17 @@ cd $WORKSPACE/srcdir/s2geometry
 # Upstream PR: https://github.com/google/s2geometry/pull/379
 atomic_patch -p1 ../patches/msvc_to_win32_target.patch
 mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+
+# This release pins CMAKE_OSX_DEPLOYMENT_TARGET to 10.13 before project(), which
+# lands in the cache before the toolchain file runs.  Seeding it here makes that
+# `set(... CACHE ...)` a no-op, so MACOSX_DEPLOYMENT_TARGET still wins.
+OSX_ARGS=()
+if [[ "${target}" == *-apple-* ]]; then
+    OSX_ARGS+=("-DCMAKE_OSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET}")
+fi
+
+cmake "${OSX_ARGS[@]}" \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_EXAMPLES=OFF \
