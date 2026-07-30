@@ -18,7 +18,10 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ornladios/ADIOS2.git", "f5267290f06980acaecaf54688d0980958eb86bf"),
+    # Binarybuilder cannot download this commit because it is not reachable from any branch (it's only reachable from a tag)
+    # We use the "most similar" commit.
+    # GitSource("https://github.com/ornladios/ADIOS2.git", "f5267290f06980acaecaf54688d0980958eb86bf"),
+    GitSource("https://github.com/ornladios/ADIOS2.git", "8a8feaed3ff346c896999ced7d61693af8f0ad72"),
     DirectorySource("bundled"),
 ]
 
