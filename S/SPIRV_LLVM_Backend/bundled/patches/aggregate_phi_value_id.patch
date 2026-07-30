@@ -1,0 +1,119 @@
+From 97c857814054f31ada1c5461034de146f6a46424 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Tue, 16 Jun 2026 23:31:22 +0200
+Subject: [PATCH] [SPIR-V] Lower aggregate PHI value-id operands
+
+---
+ llvm/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp | 39 ++++++++++++++-----
+ .../SPIRV/instructions/aggregate-phi.ll       | 34 ++++++++++++++++
+ 2 files changed, 63 insertions(+), 10 deletions(-)
+ create mode 100644 llvm/test/CodeGen/SPIRV/instructions/aggregate-phi.ll
+
+diff --git a/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp b/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
+index cd63899c8ab1..42199ca82448 100644
+--- a/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
++++ b/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
+@@ -1380,8 +1380,8 @@ void SPIRVEmitIntrinsics::replaceMemInstrUses(Instruction *Old,
+           B.CreateIntrinsic(Intrinsic::spv_assign_type, {New->getType()}, Args);
+       GR->addAssignPtrTypeInstr(New, AssignCI);
+       U->eraseFromParent();
+-    } else if (isMemInstrToReplace(U) || isa<ReturnInst>(U) ||
+-               isa<CallInst>(U)) {
++    } else if (isMemInstrToReplace(U) || isa<PHINode>(U) ||
++               isa<ReturnInst>(U) || isa<CallInst>(U)) {
+       U->replaceUsesOfWith(Old, New);
+     } else {
+       llvm_unreachable("illegal aggregate intrinsic user");
+@@ -2953,15 +2953,14 @@ bool SPIRVEmitIntrinsics::runOnFunction(Function &Func) {
+   preprocessUndefs(B);
+   preprocessCompositeConstants(B);
+ 
+-  // A SelectInst takes its result type from its operands.
++  // SelectInst and PHINode take their result type from their operands.
+   // preprocessCompositeConstants() rewrites composite constant arms to i32
+-  // value-ids, which leaves a select with an aggregate result type but i32
+-  // operands -- an invalid state the verifier rejects ("Select values must have
+-  // same type as select instruction"). Once both arms have been lowered to
+-  // value-ids, mutate the select's type to match; its original type is tracked
+-  // in AggrConstTypes (used to assign the SPIR-V type) and its extractvalue
+-  // users are lowered to spv_extractv by the visitor pass below.
+-  for (Instruction &I : instructions(Func))
++  // value-ids, and the visitor pass below does the same for aggregate memory
++  // instructions such as insertvalue. That can leave a select or phi with an
++  // aggregate result type but i32 operands. Once the operands are or will be
++  // lowered to value-ids, mutate the result type to match; the original type is
++  // tracked in AggrConstTypes and used to assign the SPIR-V type.
++  for (Instruction &I : instructions(Func)) {
+     if (auto *Sel = dyn_cast<SelectInst>(&I))
+       if (Sel->getType()->isAggregateType() &&
+           !Sel->getTrueValue()->getType()->isAggregateType() &&
+@@ -2969,6 +2968,26 @@ bool SPIRVEmitIntrinsics::runOnFunction(Function &Func) {
+         AggrConstTypes[Sel] = Sel->getType();
+         Sel->mutateType(B.getInt32Ty());
+       }
++    if (auto *Phi = dyn_cast<PHINode>(&I)) {
++      if (!Phi->getType()->isAggregateType())
++        continue;
++      bool AllIncomingAreValueIds = true;
++      for (Value *Incoming : Phi->incoming_values()) {
++        if (!Incoming->getType()->isAggregateType())
++          continue;
++        auto *IncomingI = dyn_cast<Instruction>(Incoming);
++        if ((IncomingI && isMemInstrToReplace(IncomingI)) ||
++            isAggrConstForceInt32(Incoming) || isa<UndefValue>(Incoming))
++          continue;
++        AllIncomingAreValueIds = false;
++        break;
++      }
++      if (AllIncomingAreValueIds) {
++        AggrConstTypes[Phi] = Phi->getType();
++        Phi->mutateType(B.getInt32Ty());
++      }
++    }
++  }
+ 
+   SmallVector<Instruction *> Worklist(
+       llvm::make_pointer_range(instructions(Func)));
+diff --git a/test/CodeGen/SPIRV/instructions/aggregate-phi.ll b/test/CodeGen/SPIRV/instructions/aggregate-phi.ll
+new file mode 100644
+index 000000000000..98de63bc5c1a
+--- /dev/null
++++ b/test/CodeGen/SPIRV/instructions/aggregate-phi.ll
+@@ -0,0 +1,34 @@
++; RUN: llc -verify-machineinstrs -O0 -mtriple=spirv64-unknown-unknown %s -o - | FileCheck %s
++; RUN: %if spirv-tools %{ llc -O0 -mtriple=spirv64-unknown-unknown %s -o - -filetype=obj | spirv-val %}
++
++; Aggregate insertvalue results feeding a phi are lowered as SPIR-V value-ids.
++; The phi must be lowered with the original aggregate SPIR-V type, while its
++; LLVM IR result type is changed to i32 to match the value-id operands.
++
++; CHECK-DAG: %[[#FLOAT:]] = OpTypeFloat 32
++; CHECK-DAG: %[[#TWO:]] = OpConstant %[[#]] 2
++; CHECK-DAG: %[[#ARRAY:]] = OpTypeArray %[[#FLOAT]] %[[#TWO]]
++; CHECK: OpFunction
++; CHECK: %[[#X:]] = OpFunctionParameter %[[#FLOAT]]
++; CHECK: %[[#Y:]] = OpFunctionParameter %[[#FLOAT]]
++; CHECK-DAG: %[[#IA:]] = OpCompositeInsert %[[#ARRAY]] %[[#X]] {{%[0-9]+}} 0
++; CHECK-DAG: %[[#IB:]] = OpCompositeInsert %[[#ARRAY]] %[[#Y]] {{%[0-9]+}} 1
++; CHECK: %[[#P:]] = OpPhi %[[#ARRAY]] %[[#IA]] {{%[0-9]+}} %[[#IB]] {{%[0-9]+}}
++; CHECK: OpStore {{%[0-9]+}} %[[#P]]
++define spir_func void @f(i1 %c, float %x, float %y, ptr %out) {
++entry:
++  br i1 %c, label %a, label %b
++
++a:
++  %ia = insertvalue [2 x float] zeroinitializer, float %x, 0
++  br label %r
++
++b:
++  %ib = insertvalue [2 x float] zeroinitializer, float %y, 1
++  br label %r
++
++r:
++  %p = phi [2 x float] [ %ia, %a ], [ %ib, %b ]
++  store [2 x float] %p, ptr %out
++  ret void
++}
+-- 
+2.47.3
+

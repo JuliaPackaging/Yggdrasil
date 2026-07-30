@@ -1,41 +1,97 @@
-## Signing the pipeline
+# Yggdrasil CI on Buildkite
 
-If you change files in this directory, you will need to re-sign the pipeline.
-For this, we are using [`cryptic-buildkite-plugin`](https://github.com/staticfloat/cryptic-buildkite-plugin).
-Install it locally by cloning the repo outside of the Yggdrasil tree:
+Yggdrasil's CI is split across **two** Buildkite pipelines so that the secret
+used to publish packages is never exposed to the (potentially untrusted)
+`build_tarballs.jl` code that runs during a build.
 
-```sh
-git clone https://github.com/staticfloat/cryptic-buildkite-plugin
+```
+                         ┌─────────────────────────────────────────────┐
+   push / PR  ─────────► │  yggdrasil  (main pipeline)                  │
+                         │                                              │
+                         │  pipeline.yml                                │
+                         │    └─ forerunner ─► generator.jl             │
+                         │         dynamically uploads, per project:    │
+                         │           • build_step   (one per platform)  │
+                         │           • wait                             │
+                         │           • trigger_registration_step ───────┼──┐
+                         └──────────────────────────────────────────────┘  │
+                                                                            │ trigger
+                                                                            ▼
+                         ┌──────────────────────────────────────────────┐
+                         │  yggdrasil-register  (register pipeline)       │
+                         │                                                │
+                         │  register_pipeline.yml                         │
+                         │    └─ register.sh ─► register_package.jl       │
+                         │         secrets: GITHUB_TOKEN                  │
+                         └────────────────────────────────────────────────┘
 ```
 
-Optionally, you can also add `/path/to/cryptic-buildkite-plugin/bin` to the PATH environment variable:
+## Why two pipelines?
 
-```sh
-PATH="/path/to/cryptic-buildkite-plugin/bin:${PATH}"
-```
+We moved off `cryptic-buildkite-plugin` to native [Buildkite
+secrets](https://buildkite.com/docs/pipelines/security/secrets/buildkite-secrets).
+Buildkite secrets are scoped per pipeline, so we use that scoping to keep the
+`GITHUB_TOKEN` (used to push the `*_jll` packages and create GitHub releases)
+readable **only** from the trusted `yggdrasil-register` pipeline.
 
-where `/path/to/cryptic-buildkite-plugin` is the path where you cloned the repository.
+The build steps run `build_tarballs.jl`, which is arbitrary code coming from
+PRs. Those steps must never have access to `GITHUB_TOKEN`. By performing the
+registration in a separate pipeline that is *triggered* (rather than running
+the registration inline in the main pipeline), the token is only ever present
+in the trusted registration job.
 
-To sign the keys, you will need the repo keys, stored in the [`cryptic_repo_keys`](./cryptic_repo_keys) subdirectory.
-You will also need the script [`shyaml`](https://github.com/luodongseu/shyaml).
-You can install it by cloning the upstream repo, or also with `pip`, which also pulls the needed dependencies:
 
-```sh
-python -m venv env      # Optional, to create a Python virtual environment
-source env/bin/activate # Optional, to activate the environment just created
-pip install shyaml
-```
+## `yggdrasil` — the main pipeline
 
-Once you are all set, you can sign the modified pipeline with the command
+* **WebUI step:** see [`0_webui.yml`](./0_webui.yml). It runs
+  `buildkite-agent pipeline upload .buildkite/pipeline.yml`.
+* [`pipeline.yml`](./pipeline.yml) uses the `JuliaCI/forerunner` plugin to
+  detect which top-level project directories changed and runs
+  [`generator.jl`](./generator.jl) for each of them.
+* [`generator.jl`](./generator.jl) generates, per project, a group with a
+  `build_step` per platform, a `wait`, and finally a
+  `trigger_registration_step`. **The `trigger_registration_step` is only
+  emitted for non-PR builds (i.e. on `master`); it is never added on PR
+  builds.** PRs therefore build the tarballs to verify they compile, but never
+  trigger the `yggdrasil-register` pipeline and never publish anything.
+* The `build_step` and `trigger_registration_step` helpers live in
+  [`utils.jl`](./utils.jl).
+* Builds upload their tarballs as Buildkite artifacts
+  (`**/products/$NAME*.tar.*`).
 
-```sh
-sign_treehashes
-```
+## `yggdrasil-register` — the register pipeline
 
-if you had added the dir to the PATH, otherwise with the explicit absolute path
+* This pipeline is only ever reached on `master`: the main pipeline emits the
+  `trigger_registration_step` exclusively for non-PR builds, so a PR can never
+  cause a registration.
+* **WebUI step:** see
+  [`0_webui_yggdrasil_register.yml`](./0_webui_yggdrasil_register.yml). It runs
+  `buildkite-agent pipeline upload .buildkite/register_pipeline.yml`.
+* [`register_pipeline.yml`](./register_pipeline.yml) defines a single step that
+  runs [`register.sh`](./register.sh) and declares
+  `secrets: [GITHUB_TOKEN]`.
+* The triggering build supplies `NAME`, `PROJECT`, `SKIP_BUILD`, `BUILD_ID`
+  (and the registry / pkg-server env) through the trigger step's `build.env`.
+* `register.sh` regenerates the `meta.json` (with `GITHUB_TOKEN` cleared, since
+  it runs project code) and then runs
+  [`.ci/register_package.jl`](../.ci/register_package.jl) with the token
+  available.
+* `register_package.jl` downloads the freshly-built tarballs from the
+  triggering build with
+  `buildkite-agent artifact download --build $BUILD_ID ...`, pushes the
+  `*_jll` package, uploads the tarballs to GitHub releases, and registers the
+  package to the General registry.
 
-```sh
-/path/to/cryptic-buildkite-plugin/bin/sign_treehashes
-```
+The registration step keeps `concurrency: 1` in the
+`yggdrasil/register` concurrency group, so registrations remain serialized
+even though they now run in their own pipeline (concurrency groups are
+cluster-wide).
 
-Remember that you will always need to have the `shyaml` script in `PATH`, which happens automatically if you activate the Python virtual environment created above.
+## Required Buildkite configuration
+
+1. Create the `yggdrasil-register` pipeline (slug **`yggdrasil-register`** —
+   the `trigger_registration_step` targets this exact slug).
+2. Point its WebUI step at
+   `buildkite-agent pipeline upload .buildkite/register_pipeline.yml`.
+3. Add the `GITHUB_TOKEN` Buildkite secret and scope it so it is readable
+   **only** by the `yggdrasil-register` pipeline.

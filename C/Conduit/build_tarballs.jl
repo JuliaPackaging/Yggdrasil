@@ -6,10 +6,10 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "Conduit"
-version = v"0.9.6"
+version = v"0.9.7"
 sources = [
     ArchiveSource("https://github.com/LLNL/conduit/releases/download/v$(version)/conduit-v$(version)-src-with-blt.tar.gz",
-		  "370780082f095ebcb5c43067b650c78325088df726488dc5c6d414e7037c847d"),
+		  "e207016e453dd360b2d9a5a1245e53a9aa26ed83fdfb02cc08fc7bfed664f923"),
     DirectorySource("bundled"),
 ]
 

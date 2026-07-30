@@ -5,11 +5,11 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "OpenEXR"
-version = v"3.4.9"
+version = v"3.4.13"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/AcademySoftwareFoundation/openexr.git", "b5fa98ac6b5fc660c0295123c1d02bbf687dbec3"),
+    GitSource("https://github.com/AcademySoftwareFoundation/openexr.git", "c1194b2cb23a1bdf76fe5e756b22e8436b9a98c9"),
     DirectorySource("bundled"),
 ]
 
