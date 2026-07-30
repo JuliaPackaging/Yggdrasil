@@ -127,32 +127,17 @@ function get_driver_info()
         return nothing
     end
 
-    if !CUDA_Driver_jll.is_available()
-        # CUDA_Driver_jll only kicks in for supported platforms (JLLWrappers.jl#50).
-        # without it we can't inspect device capabilities, so bail out rather than
-        # risk picking a toolkit that ends up being incompatible with the hardware.
-        @debug "CUDA_Driver_jll not available on this platform; not selecting an artifact"
-        return nothing
-    end
-
-    if !isdefined(CUDA_Driver_jll, :inspect_driver)
-        # the inspect_driver helper was added in a later CUDA_Driver_jll release.
-        @debug "CUDA_Driver_jll does not provide the inspect_driver helper; not selecting an artifact"
-        return nothing
-    end
-
-    # inspect the system driver (rather than CUDA_Driver_jll's chosen libcuda,
-    # which may be the forward-compatible driver bundled in its artifact). only
-    # the system driver actually changes when the user upgrades their NVIDIA
-    # driver, and it's the one we want to depend on for cache invalidation.
+    # inspect the system driver (rather than CUDA_Driver_jll.libcuda, which may
+    # be the forwards-compatible driver bundled in its artifact and which has
+    # private deps the inspection subprocess wouldn't preload). only the system
+    # driver actually changes when the user upgrades their NVIDIA driver, and
+    # it's the one we want to depend on for cache invalidation.
     libcuda_system = Sys.iswindows() ? "nvcuda" : "libcuda.so.1"
 
-    # platform augmentation runs in a Pkg subprocess where the in-memory
-    # manifest may be inconsistent (JuliaLang/Pkg.jl#3225), so the version of
-    # CUDA_Driver_jll we just loaded may have a `inspect_driver` whose
-    # signature, return shape, or behaviour doesn't match what we expect.
-    # treat any failure (signature mismatch, missing field access, etc.) the
-    # same as an unavailable inspector and bail out.
+    # platform augmentation runs in a Pkg subprocess where the in-memory manifest
+    # may be inconsistent (JuliaLang/Pkg.jl#3225), so the CUDA_Driver_jll we just
+    # loaded may not actually be the one we'd resolve against. swallow any error
+    # accessing/calling `inspect_driver` and bail out.
     info = try
         CUDA_Driver_jll.inspect_driver(libcuda_system; inspect_devices=true)
     catch err
@@ -161,19 +146,12 @@ function get_driver_info()
     end
     info === nothing && return nothing
 
-    path, version, capabilities = try
-        info.path, info.version, info.capabilities
-    catch err
-        @debug "CUDA_Driver_jll.inspect_driver returned an unexpected value: $err"
-        return nothing
-    end
-
     # register the resolved driver path as an include dependency so our
     # precompile cache is invalidated when the user upgrades their driver.
-    @debug "Adding include dependency on $path"
-    Base.include_dependency(path)
+    @debug "Adding include dependency on $(info.path)"
+    Base.include_dependency(info.path)
 
-    return (version, capabilities)
+    return (info.version, info.capabilities)
 end
 
 # CUDA toolkit support for each GPU compute capability. Maps a compute

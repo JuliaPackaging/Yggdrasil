@@ -1,0 +1,66 @@
+From db406b613633b8bcff74024c43c3f9dcd850e403 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Wed, 15 Jul 2026 15:00:12 +0200
+Subject: [PATCH] [SPIR-V] Fix direct return of aggregate extractvalue
+
+---
+ lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp       | 17 +++++++++++------
+ .../instructions/ret-single-element-array.ll   | 18 ++++++++++++++++++
+ 2 files changed, 29 insertions(+), 6 deletions(-)
+ create mode 100644 llvm/test/CodeGen/SPIRV/instructions/ret-single-element-array.ll
+
+diff --git a/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp b/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
+index 42199ca82448..92ac3f14f0ca 100644
+--- a/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
++++ b/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
+@@ -2014,12 +2014,17 @@ Instruction *SPIRVEmitIntrinsics::visitExtractValueInst(ExtractValueInst &I) {
+     Args.push_back(B.getInt32(Op));
+   auto *NewI =
+       B.CreateIntrinsic(Intrinsic::spv_extractv, {I.getType()}, {Args});
+-  // If this aggregate extract feeds another insertvalue, the extracted
+-  // composite is used as a SPIR-V value-id by llvm.spv.insertv. Keep the real
+-  // aggregate type in metadata, but expose the value itself as i32 so the
+-  // intrinsic signature remains valid.
+-  if (NewI->getType()->isAggregateType() &&
+-      any_of(I.users(), [](User *U) { return isa<InsertValueInst>(U); })) {
++  // If this aggregate extract feeds another insertvalue or a return whose type
++  // was rewritten by SPIRVPrepareFunctions, the extracted composite is used as
++  // a SPIR-V value-id. Keep the real aggregate type in metadata, but expose the
++  // value itself as i32 so the intrinsic signature remains valid.
++  if (NewI->getType()->isAggregateType() && any_of(I.users(), [](User *U) {
++        if (isa<InsertValueInst>(U))
++          return true;
++        auto *RI = dyn_cast<ReturnInst>(U);
++        return RI && RI->getFunction()->getReturnType() !=
++                         RI->getReturnValue()->getType();
++      })) {
+     AggrConstTypes[NewI] = I.getType();
+     NewI->mutateType(B.getInt32Ty());
+     replaceMemInstrUses(&I, NewI, B);
+diff --git a/test/CodeGen/SPIRV/instructions/ret-single-element-array.ll b/test/CodeGen/SPIRV/instructions/ret-single-element-array.ll
+new file mode 100644
+index 000000000000..fc1b7a74402d
+--- /dev/null
++++ b/test/CodeGen/SPIRV/instructions/ret-single-element-array.ll
+@@ -0,0 +1,18 @@
++; RUN: llc -O0 -mtriple=spirv64-unknown-unknown %s -o - | FileCheck %s
++
++; CHECK-DAG: %[[#Float:]] = OpTypeFloat 32
++; CHECK-DAG: %[[#One:]] = OpConstant %[[#]] 1
++; CHECK-DAG: %[[#Array:]] = OpTypeArray %[[#Float]] %[[#One]]
++; CHECK-DAG: %[[#Nested:]] = OpTypeArray %[[#Array]] %[[#One]]
++; CHECK: OpFunction
++; CHECK: %[[#X:]] = OpFunctionParameter %[[#Float]]
++; CHECK: %[[#NestedVal:]] = OpCompositeInsert %[[#Nested]] %[[#X]] %[[#]] 0 0
++; CHECK: %[[#Ret:]] = OpCompositeExtract %[[#Array]] %[[#NestedVal]] 0
++; CHECK: OpReturnValue %[[#Ret]]
++
++define spir_func [1 x float] @single_element_array(float %x) {
++entry:
++  %nested = insertvalue [1 x [1 x float]] zeroinitializer, float %x, 0, 0
++  %ret = extractvalue [1 x [1 x float]] %nested, 0
++  ret [1 x float] %ret
++}
+-- 
+2.55.0
+
