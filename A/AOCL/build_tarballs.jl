@@ -47,8 +47,6 @@ sources = [
               "86223910103068db48f42d9cc59c0bf3fc46fa5f"; unpack_target = "aocl-src"),
     GitSource("https://github.com/amd/aocl-compression.git",
               "ab24e65b346f48d3433f74e0fffbdc888e36736b"; unpack_target = "aocl-src"),
-    GitSource("https://github.com/amd/aocl-libmem.git",
-              "be498406b4192d3a2053bbd036813ff30605c2dd"; unpack_target = "aocl-src"),
     GitSource("https://github.com/amd/openrng.git",
               "27ade0ed417e87fddfbe7ce76f22dcda6f583cce"; unpack_target = "aocl-src"),
 ]
@@ -95,13 +93,13 @@ build_aocl_variant() {
         -DUSE_SOURCES_FROM_SUBMODULES=OFF \
         -DENABLE_AOCL_DA=OFF \
         -DENABLE_AOCL_CRYPTO=OFF \
+        -DENABLE_AOCL_LIBMEM=OFF \
         -DUTILS_PATH=${SRC} \
         -DBLAS_PATH=${SRC} \
         -DLAPACK_PATH=${SRC} \
         -DSPARSE_PATH=${SRC} \
         -DLIBM_PATH=${SRC} \
         -DCOMPRESSION_PATH=${SRC} \
-        -DLIBMEM_PATH=${SRC} \
         -DOPENRNG_PATH=${SRC}/openrng \
         "$@"
     cmake --build ${AOCL_BIY}/build --config Release --target install -j${nproc}
