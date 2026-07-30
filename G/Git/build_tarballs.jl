@@ -56,12 +56,11 @@ else
     sed -i 's/cross_compiling=yes/cross_compiling=no/' configure
 fi
 
+# Not all platforms support Rust. We thus disable Rust and use the C backend instead.
+MAKE_VARIABLES=(NO_RUST=1)
+
 # On Linux, we need at least glibc 2.25 or musl 1.1.20 to get `sys/random.h`.
 # Git does not check whether this file exists. Explicitly disable `getrandom` if this file doesn't exist.
-MAKE_VARIABLES=(
-    # The makefile sets RUST_TARGET_DIR unconditionally, we need to overwrite it
-    RUST_TARGET_DIR="target/${rust_target}/release"
-)
 if [[ "${target}" == *-linux-* ]]; then
     if [ ! -e /opt/${target}/${target}/sys-root/usr/include/sys/random.h ]; then
         MAKE_VARIABLES+=(CSPRNG_METHOD=/dev/urandom)
@@ -145,4 +144,4 @@ dependencies = [
     Dependency("Zlib_jll"; compat="1.2.12"),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:c, :rust], julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
