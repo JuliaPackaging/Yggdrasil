@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "Git"
-upstream_version = v"2.54.0"
+upstream_version = v"2.55.0"
 version = upstream_version
 
 # <https://github.com/git-for-windows/git/releases> says:
@@ -14,12 +14,12 @@ last_windows_32_bit_version = v"2.50.1"
 # Collection of sources required to build Git
 sources = [
     ArchiveSource("https://mirrors.edge.kernel.org/pub/software/scm/git/git-$(upstream_version).tar.xz",
-                  "f689162364c10de79ef89aa8dbf48731eb057e34edbbd20aca510ce0154681a3"),
+                  "457fdb04dc8728e007d4688695e6912e6f680727920f2a40bf11eacc17505357"),
     # Use FileSources instead of ArchiveSources because unpacking archives takes a long time and is not necessary on most platforms
     FileSource("https://github.com/git-for-windows/git/releases/download/v$(last_windows_32_bit_version).windows.1/Git-$(last_windows_32_bit_version)-32-bit.tar.bz2",
                "796d8f4fdd19c668e348d04390a3528df61cfc9864d1f276d9dc585a8a0ac82c"),
     FileSource("https://github.com/git-for-windows/git/releases/download/v$(upstream_version).windows.1/Git-$(upstream_version)-64-bit.tar.bz2",
-               "e1819cee60d09793dde322cdb1170e03663c41cd9265cf45246219fc5e6aeecd"),
+               "25bc3235291249f39bd463cd9fb86d9b4295b19d53d81af0238414bc68e16110"),
 ]
 
 # Bash recipe for building across all platforms
@@ -58,7 +58,10 @@ fi
 
 # On Linux, we need at least glibc 2.25 or musl 1.1.20 to get `sys/random.h`.
 # Git does not check whether this file exists. Explicitly disable `getrandom` if this file doesn't exist.
-MAKE_VARIABLES=()
+MAKE_VARIABLES=(
+    # The makefile sets RUST_TARGET_DIR unconditionally, we need to overwrite it
+    RUST_TARGET_DIR="target/${rust_target}/release"
+)
 if [[ "${target}" == *-linux-* ]]; then
     if [ ! -e /opt/${target}/${target}/sys-root/usr/include/sys/random.h ]; then
         MAKE_VARIABLES+=(CSPRNG_METHOD=/dev/urandom)
@@ -142,4 +145,4 @@ dependencies = [
     Dependency("Zlib_jll"; compat="1.2.12"),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:c, :rust], julia_compat="1.6")
