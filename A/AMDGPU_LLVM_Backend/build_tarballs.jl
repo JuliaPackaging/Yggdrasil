@@ -3,14 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "AMDGPU_LLVM_Backend"
-version = v"22.1.7"
+version = v"22.1.8"
 
 # Collection of sources required to build AMDGPU_LLVM_Backend.
 # LLVM 22 ships a single monorepo source archive (`llvm-project-X.Y.Z.src.tar.xz`).
 sources = [
     ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/llvm-project-$(version).src.tar.xz",
-                  "5cc4a3f12bba50b6bdfb4b61bdc852117a0ff2517807c3902fc13267fb93562e"),
-    DirectorySource("./bundled")
+                  "922f1817a0df7b1489272d18134ee0087a8b068828f87ac63b9861b1a9965888"),
 ]
 
 # Bash recipe for building across all platforms
@@ -48,6 +47,9 @@ CMAKE_FLAGS=()
 CMAKE_FLAGS+=(-DLLVM_TABLEGEN=${WORKSPACE}/bootstrap/bin/llvm-tblgen)
 CMAKE_FLAGS+=(-DLLVM_CONFIG_PATH=${WORKSPACE}/bootstrap/bin/llvm-config)
 
+# Tell CMake to enable lld in the target build
+CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS=lld)
+
 # Install things into $prefix
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
 
@@ -75,6 +77,7 @@ CMAKE_FLAGS+=(-DHAVE_LIBEDIT=Off)
 
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
 ninja -j${nproc} tools/llc/install
+ninja -j${nproc} tools/lld/install
 """
 
 # Only build for the host platforms where AMDGPU itself runs.
@@ -88,6 +91,7 @@ platforms = expand_cxxstring_abis(platforms)
 # The products that we will ensure are always built
 products = Product[
     ExecutableProduct("llc", :llc),
+    ExecutableProduct("lld", :lld),
 ]
 
 # Dependencies that must be installed before this package can be built
