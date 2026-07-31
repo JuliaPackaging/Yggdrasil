@@ -147,5 +147,4 @@ append!(dependencies, platform_dependencies)
 # - AMReX requires GCC 11
 # - We need GCC 14 so that gfortran understands `MACOSX_DEPLOYMENT_TARGET=14.0`
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block,
-               clang_use_lld=false, julia_compat="1.10", lock_microarchitecture=false, preferred_gcc_version=v"14")
+               augment_platform_block, julia_compat="1.10", lock_microarchitecture=false, preferred_gcc_version=v"14")
