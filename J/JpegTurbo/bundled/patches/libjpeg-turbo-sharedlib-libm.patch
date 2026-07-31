@@ -1,0 +1,32 @@
+--- a/sharedlib/CMakeLists.txt
++++ b/sharedlib/CMakeLists.txt
+@@ -111,6 +111,9 @@ if(WITH_TOOLS)
+   if(NOT WITH_SYSTEM_SPNG AND ZLIB_LIBRARY)
+     target_link_libraries(cjpeg ${ZLIB_LIBRARY})
+   endif()
++  if(UNIX)
++    target_link_libraries(cjpeg m)
++  endif()
+ 
+   add_executable(djpeg ../src/djpeg.c ../src/cdjpeg.c
+     ../src/wrapper/rdcolmap-8.c ../src/wrapper/rdcolmap-12.c
+@@ -127,6 +130,9 @@ if(WITH_TOOLS)
+   if(NOT WITH_SYSTEM_SPNG AND ZLIB_LIBRARY)
+     target_link_libraries(djpeg ${ZLIB_LIBRARY})
+   endif()
++  if(UNIX)
++    target_link_libraries(djpeg m)
++  endif()
+ 
+   add_executable(jpegtran ../src/jpegtran.c ../src/cdjpeg.c ../src/rdswitch.c
+     ../src/transupp.c)
+@@ -157,6 +163,9 @@ if(WITH_TESTS)
+     if(ZLIB_LIBRARY)
+       target_link_libraries(bmpsizetest ${ZLIB_LIBRARY})
+     endif()
++    if(UNIX)
++      target_link_libraries(bmpsizetest m)
++    endif()
+   endif()
+ endif()
+ 

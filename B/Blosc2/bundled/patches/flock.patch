@@ -1,0 +1,10 @@
+--- a/blosc/frame.c
++++ b/blosc/frame.c
+@@ -12,4 +12,7 @@
+ #define _GNU_SOURCE
+ #endif
+ #define _DARWIN_C_SOURCE
++#if defined(__FreeBSD__) && !defined(__BSD_VISIBLE)
++#define __BSD_VISIBLE 1
++#endif
+ #endif

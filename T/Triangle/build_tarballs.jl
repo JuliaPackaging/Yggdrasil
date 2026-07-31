@@ -25,6 +25,17 @@ fi
 
 $CC "${ARCHFLAGS[@]}"  "${GENERICFLAGS[@]}" -O3 -fPIC -shared -o "${libdir}/libtriangle.${dlext}" triangle.c triwrapjulia.c
 
+# Triangle's struct layout depends on REAL.  libtriangle is built with
+# REAL=double; prepend a default to triangle.h so header consumers match
+# that ABI without having to define REAL themselves.
+mkdir -p ${includedir}
+{
+    echo '#ifndef REAL'
+    echo '#define REAL double'
+    echo '#endif'
+    cat triangle.h
+} > ${includedir}/triangle.h
+
 install_license README
 """
 

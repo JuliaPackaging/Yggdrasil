@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "lexbor"
-version = v"2.4.0"
+version = v"3.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/lexbor/lexbor.git", "e01ece21c216a1ef0147cefcd77782d2d25d7d4a")
+    GitSource("https://github.com/lexbor/lexbor.git", "2ae88a1c6b5261830eff73ee12bb3cdf805f3cfe")
 ]
 
 # Bash recipe for building across all platforms
@@ -41,7 +41,9 @@ products = [
     LibraryProduct("liblexbor-selectors", :liblexbor_selectors),
     LibraryProduct("liblexbor-utils", :liblexbor_utils),
     LibraryProduct("liblexbor-punycode", :liblexbor_punycode),
-    LibraryProduct("liblexbor-html", :liblexbor_html)
+    LibraryProduct("liblexbor-html", :liblexbor_html),
+    LibraryProduct("liblexbor-engine", :liblexbor_engine),
+    LibraryProduct("liblexbor-style", :liblexbor_style)
 ]
 
 # Dependencies that must be installed before this package can be built
