@@ -8,13 +8,13 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "AMReX"
-version_string = "26.05"
+version_string = "26.07"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/AMReX-Codes/amrex/releases/download/$(version_string)/amrex-$(version_string).tar.gz",
-                  "70ec8f0e6917388b3d91a7c470648f6ce11a99096810420f1054ed98a041e315"),
+                  "d95e355ca7c5653078bd57721c28cbbda4c56b4465636b10ff680cab8ee6e56b"),
 ]
 
 # Bash recipe for building across all platforms
@@ -23,6 +23,19 @@ cd ${WORKSPACE}/srcdir/amrex
 
 # Correct HDF5 compiler wrappers
 perl -pi -e 's+-I/workspace/srcdir/hdf5-1[.]14[.]./src/H5FDsubfiling++' $(which h5pcc)
+
+if [[ "${target}" == *-apple-* ]]; then
+    # AMReX unconditionally uses `std::ostringstream::view()` (C++20, P2495), which
+    # is not yet available in the libc++/libstdc++ headers shipped with some of
+    # our cross toolchains even though the compiler itself accepts `-std=c++20`.
+    # Replace it with the equivalent (if slightly less efficient) `.str()`, which
+    # has been available since C++98 and works everywhere.
+    for f in Src/Base/AMReX_Print.H Src/Base/AMReX_VisMF.cpp Src/Base/AMReX_VisMF.H \
+             Src/Base/AMReX_FabArrayUtility.H Src/Base/AMReX_ParmParse.cpp \
+             Src/Base/AMReX.cpp Src/Base/AMReX_Utility.cpp; do
+        sed -i 's/\.view()/\.str()/g' "${f}"
+    done
+fi
 
 if [[ "${target}" == *-apple-* ]]; then
     # Install libdispatch. This is required for the MacOS linker.
@@ -134,4 +147,5 @@ append!(dependencies, platform_dependencies)
 # - AMReX requires GCC 11
 # - We need GCC 14 so that gfortran understands `MACOSX_DEPLOYMENT_TARGET=14.0`
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, clang_use_lld=false, julia_compat="1.10", preferred_gcc_version=v"14")
+               augment_platform_block,
+               clang_use_lld=false, julia_compat="1.10", lock_microarchitecture=false, preferred_gcc_version=v"14")
