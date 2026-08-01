@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "LibRaw"
-version = v"0.22.1"
+version = v"0.22.2"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource(
         "https://www.libraw.org/data/LibRaw-$(version).tar.gz",
-        "a789dc4e2409e2901d93793a4e0b80c7b49d0d97cf6ad71c850eb7616acfd786",
+        "de86b035655accff8d4010f1a221fdf50d353cb7b1422ba26f14a0db92612cfa",
     ),
 ]
 
