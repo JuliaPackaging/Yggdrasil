@@ -12,11 +12,7 @@ sources = [
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/libbposit
-if [[ ${target} == *apple* ]]; then
-    make -j TARGET="libbposit.${dlext}" LDFLAGS="-dynamiclib -install_name @rpath/libbposit.dylib"
-else
-    make -j TARGET="libbposit.${dlext}"
-fi
+make -j TARGET="libbposit.${dlext}"
 install -Dvm 755 "libbposit.${dlext}" -t "${libdir}"
 install_license LICENSE
 """
