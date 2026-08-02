@@ -7,14 +7,3 @@
 -ITOPOK = --enable-itopok=no
 +ITOPOK = --enable-itopok=yes
  
- # Graphics package.  The programs can build with GTK2, GTK3, Qt5, and
- # Qt6.  GTK2 is still the reference graphics system and is recommended
-@@ -141,7 +141,7 @@
- endif
- endif
- 
--SUBDIRS = xt_base $(SECURE) $(MOZY) $(WRSPICE) $(XIC) fastcap fasthenry
-+SUBDIRS = xt_base $(WRSPICE)
- 
- # END of user configuration section.
- #

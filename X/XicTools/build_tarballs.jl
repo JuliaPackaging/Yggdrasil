@@ -35,7 +35,7 @@ for tool in wrspice wrspiced csvtoraw multidec printtoraw mmjco; do
     mv xictools/wrspice.current/bin/${tool} ${bindir}/${tool}
     ln -sfn ../../../bin/${tool} xictools/wrspice.current/bin/${tool}
 done
-for tool in admsXml vl; do
+for tool in admsXml vl busgen capgen cubegen fastcap fasthenry fcpp lstpack lstunpack mrouter pipedgen pyragen zbuf; do
     mv xictools/bin/${tool} ${bindir}/${tool}
     ln -sfn ../../bin/${tool} xictools/bin/${tool}
 done
@@ -64,19 +64,31 @@ platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("wrspice", :wrspice),
-    ExecutableProduct("wrspiced", :wrspiced),
-    ExecutableProduct("csvtoraw", :csvtoraw),
+    ExecutableProduct("mmjco", :mmjco),
     ExecutableProduct("multidec", :multidec),
     ExecutableProduct("printtoraw", :printtoraw),
-    ExecutableProduct("mmjco", :mmjco),
+    ExecutableProduct("wrspice", :wrspice),
+    ExecutableProduct("wrspiced", :wrspiced),
     ExecutableProduct("admsXml", :admsXml),
+    ExecutableProduct("busgen", :busgen),
+    ExecutableProduct("capgen", :capgen),
+    ExecutableProduct("cubegen", :cubegen),
+    ExecutableProduct("fastcap", :fastcap),
+    ExecutableProduct("fasthenry", :fasthenry),
+    ExecutableProduct("fcpp", :fcpp),
+    ExecutableProduct("lstpack", :lstpack),
+    ExecutableProduct("lstunpack", :lstunpack),
+    ExecutableProduct("mrouter", :mrouter),
+    ExecutableProduct("pipedgen", :pipedgen),
+    ExecutableProduct("pyragen", :pyragen),
     ExecutableProduct("vl", :vl),
+    ExecutableProduct("zbuf", :zbuf),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("GSL_jll"; compat="~2.7.2"),
+    Dependency("Zlib_jll"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
