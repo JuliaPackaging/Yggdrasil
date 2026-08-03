@@ -36,10 +36,13 @@ platforms = expand_cxxstring_abis(platforms)
 
 products = [
     LibraryProduct("libs2geography", :libs2geography),
+    LibraryProduct("libs2geography_c", :libs2geography_c),
 ]
 
 dependencies = [
     Dependency(PackageSpec(name="abseil_cpp_jll", uuid="43133aba-3931-5066-b004-a34c79b93f2e"), compat="20250814.1"),
+    # Linked via the s2geography CMake target; the bound comes from S2Geometry_jll
+    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95")),
     Dependency(PackageSpec(name="S2Geometry_jll", uuid="846536d6-5c10-5069-b47f-45525c463cf9"), compat="0.14"),
     Dependency(PackageSpec(name="nanoarrow_jll", uuid="c104a5b5-1715-5fd7-8664-28eaad6c5848")),
 ]
