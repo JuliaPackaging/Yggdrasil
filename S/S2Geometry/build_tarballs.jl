@@ -6,11 +6,11 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "S2Geometry"
-version = v"0.13.0"
+version = v"0.13.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/google/s2geometry.git", "ed62eeeaa92f19c70aeaa91e8acbd3b5c1171a57"),
+    GitSource("https://github.com/google/s2geometry.git", "a37aba69f14af676e9605cd9515c8aca6cef8342"),
     DirectorySource("./bundled"),
 ]
 
