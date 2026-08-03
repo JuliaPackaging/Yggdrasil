@@ -7,14 +7,12 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "HDF5"
-version = v"2.1.1"
-# We added support for MPIABI
-ygg_version = v"2.1.2"
+version = v"2.2.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/HDFGroup/hdf5/releases/download/$(version)/hdf5-$(version).tar.gz",
-                  "efff93b5a904d66e8f626d7da60b5eedc9faf544be27dbabbaa87967b8ad798b"),
+                  "1a1ab8209b35586fbc1aa279ba76d102130b95badcb20ca329587219112d8c16"),
     DirectorySource("bundled"),
 ]
 
@@ -331,5 +329,5 @@ append!(dependencies, platform_dependencies)
 ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, clang_use_lld=false, julia_compat="1.10", preferred_gcc_version=v"12")

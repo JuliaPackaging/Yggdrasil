@@ -10,8 +10,8 @@ version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL
 sources = [
-    ArchiveSource("https://www.math.rwth-aachen.de/~Frank.Luebeck/EDIM/EDIM-$(upstream_version).tar.bz2",
-                  "b59bb607bc9831b8224410946c33b12b82b252c662803835197821c2fb18f9e2"),
+    ArchiveSource("https://www.math.rwth-aachen.de/~Frank.Luebeck/EDIM/EDIM-$(upstream_version).tar.gz",
+                  "32ebc14df670205aa08a4f1cdf22ae59e5665009e0b34ec4f5efe422c83b6a42"),
 ]
 
 # Bash recipe for building across all platforms
