@@ -1,5 +1,8 @@
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "S2Geography"
 version = v"0.4.0"
 sources = [
@@ -20,6 +23,10 @@ cmake --build build --parallel ${nproc}
 cmake --install build
 """
 
+# Abseil is built as C++17, and the libc++ in the default Intel macOS sys-root
+# exports none of the std::bad_{variant,optional}_access symbols it needs.
+sources, script = require_macos_sdk("10.14", sources, script)
+
 platforms = supported_platforms()
 filter!(p -> nbits(p) == 64, platforms)
 filter!(p -> !Sys.isfreebsd(p), platforms)
@@ -32,8 +39,8 @@ products = [
 ]
 
 dependencies = [
-    Dependency(PackageSpec(name="abseil_cpp_jll", uuid="43133aba-3931-5066-b004-a34c79b93f2e"), compat="20240116.2.0"),
-    Dependency(PackageSpec(name="S2Geometry_jll", uuid="846536d6-5c10-5069-b47f-45525c463cf9"), compat="0.11.1"),
+    Dependency(PackageSpec(name="abseil_cpp_jll", uuid="43133aba-3931-5066-b004-a34c79b93f2e"), compat="20250814.1"),
+    Dependency(PackageSpec(name="S2Geometry_jll", uuid="846536d6-5c10-5069-b47f-45525c463cf9"), compat="0.14"),
     Dependency(PackageSpec(name="nanoarrow_jll", uuid="c104a5b5-1715-5fd7-8664-28eaad6c5848")),
 ]
 
