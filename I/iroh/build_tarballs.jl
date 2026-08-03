@@ -2,6 +2,9 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "iroh"
 version = v"0.101.0"
 
@@ -44,6 +47,14 @@ install -Dvm 755 target/${rust_target}/release/*iroh_c_ffi.${dlext} -t "${libdir
 # from the generator output, so we install the checked-in copy.
 install -Dvm 644 irohnet.h "${includedir}/irohnet.h"
 """
+
+# `reqwest` pulls in `rustls-platform-verifier` -> `security-framework`, which
+# calls `SecTrustEvaluateWithError()`.  That symbol was introduced in macOS
+# 10.14, so the default 10.12 SDK used for `x86_64-apple-darwin14` fails to
+# link.  Use the same SDK the aarch64 builder already uses (11.1); the helper
+# is a no-op on aarch64 for exactly that reason.  The deployment target is kept
+# lower than the SDK so we don't needlessly raise the minimum macOS version.
+sources, script = require_macos_sdk("11.1", sources, script; deployment_target = "10.15")
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
