@@ -7,12 +7,16 @@ version = v"3.1.12"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/stephane/libmodbus.git", "9af6c16074df566551bca0a7c37443e48f216289")
+    GitSource("https://github.com/stephane/libmodbus.git", "9af6c16074df566551bca0a7c37443e48f216289"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libmodbus/
+# On FreeBSD, the configure check for netinet/ip.h fails without prerequisite
+# includes, leaving IPTOS_LOWDELAY undeclared in modbus-tcp.c
+atomic_patch -p1 ../patches/0001-check-netinet-ip-h-with-prerequisites.patch
 # Assert that the expected constant definition exists before patching
 grep -q 'const uint16_t UT_BITS_ADDRESS = 0x130' tests/unit-test.h.in || \
     (echo "ERROR: Expected 'const uint16_t UT_BITS_ADDRESS = 0x130' not found in tests/unit-test.h.in" && exit 1)
