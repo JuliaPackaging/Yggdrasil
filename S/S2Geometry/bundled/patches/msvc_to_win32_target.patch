@@ -1,12 +1,21 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -70,7 +70,7 @@ if (WITH_PYTHON)
-     find_package(Python3 COMPONENTS Interpreter Development)
+@@ -70,9 +70,14 @@ if (WITH_PYTHON)
+     find_package(Python3 COMPONENTS Interpreter Development.Module)
  endif()
  
 -if (MSVC)
+-    # Use unsigned characters
+-    add_definitions(-J)
 +if (WIN32)
-     # Use unsigned characters
-     add_definitions(-J)
++    # Use unsigned characters.  Note that GCC's `-J` takes an argument, so
++    # passing it there would silently swallow the next flag on the command line.
++    if (MSVC)
++        add_definitions(-J)
++    else()
++        add_definitions(-funsigned-char)
++    endif()
      # Make sure cmath header defines things like M_PI
+     add_definitions(-D_USE_MATH_DEFINES)
+     # Make sure Windows doesn't define min/max macros that interfere with STL
