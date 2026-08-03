@@ -1,8 +1,8 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -70,9 +70,14 @@ if (WITH_PYTHON)
-     find_package(Python3 COMPONENTS Interpreter Development.Module)
+@@ -105,9 +105,14 @@ if (WITH_PYTHON)
+     endif()
  endif()
  
 -if (MSVC)
