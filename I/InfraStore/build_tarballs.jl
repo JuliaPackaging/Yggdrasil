@@ -106,6 +106,25 @@ export CMAKE_TOOLCHAIN_FILE="${WORKSPACE}/srcdir/target_toolchain.cmake"
 # link fails with: undefined reference to `__imp_StrStrIA`.
 if [[ "${target}" == *-mingw* ]]; then
     export RUSTFLAGS="-C link-arg=-lshlwapi"
+# The musl targets enable `crt-static` by default, and under it rustc refuses to
+# emit a cdylib. Crucially it does so with a *warning*, not an error:
+#
+#   warning: dropping unsupported crate type `cdylib` for target `...-linux-musl`
+#
+# `cargo build` then succeeds having produced only the staticlib, and the build
+# instead dies further down at the install glob, with the misleading
+# `install: can't stat '...release/*infrastore_ffi.so'`. Opt out so the cdylib
+# is actually built; the result dynamically links musl libc, which is what a
+# JLL loaded by a musl Julia wants anyway.
+#
+# The auditor warns here that libgcc_s.so.1 "could not be resolved and could not
+# be auto-mapped". It is not specific to musl or to this flag: the glibc
+# artifact carries the same DT_NEEDED (it just auto-maps there), and the
+# unwinder is requested by an explicit -lgcc_s from Rust's `unwind` crate, so
+# `-C link-arg=-static-libgcc` does not remove it -- that was tried and the
+# entry survived unchanged.
+elif [[ "${target}" == *-musl* ]]; then
+    export RUSTFLAGS="-C target-feature=-crt-static"
 fi
 
 # HDF5_DIR must remain UNSET in this environment: hdf5-metno-sys only takes
@@ -145,11 +164,18 @@ products = [
     LibraryProduct("libinfrastore_ffi", :libinfrastore_ffi),
 ]
 
-# Self-contained by design: HDF5 and zlib are statically linked, so
-# there are no runtime binary dependencies. See the header comment before
-# adding any. CMake_jll is host-only: the vendored HDF5 requires CMake >= 3.26
-# and the build rootfs ships 3.21, so pull a current cmake onto the PATH (the
-# Rust `cmake` crate invokes whatever `cmake` PATH resolves to).
+# Self-contained by design: HDF5 and zlib are statically linked, so there are no
+# JLL dependencies to declare. See the header comment before adding any.
+#
+# "Self-contained" is about JLLs, not about an empty DT_NEEDED: the Linux
+# artifacts also link libgcc_s.so.1, and have since v0.1.0 -- the C runtime and
+# the unwinder come from the platform, which for a JLL means Julia's own
+# CompilerSupportLibraries_jll. BinaryBuilder's auditor auto-maps that on glibc
+# and warns it "could not be resolved" on musl; both are expected.
+#
+# CMake_jll is host-only: the vendored HDF5 requires CMake >= 3.26 and the build
+# rootfs ships 3.21, so pull a current cmake onto the PATH (the Rust `cmake`
+# crate invokes whatever `cmake` PATH resolves to).
 dependencies = [
     HostBuildDependency(PackageSpec(name = "CMake_jll", version = "3.31.9")),
 ]
@@ -158,16 +184,22 @@ build_tarballs(
     ARGS, name, version, sources, script, platforms, products, dependencies;
     compilers = [:c, :rust],
     julia_compat = "1.10",
-    # Must be >= the workspace's `rust-version`, and the workspace is on edition
-    # 2024 (Rust >= 1.85). BinaryBuilder otherwise defaults to whatever its
-    # newest Rust shard happens to be, which makes the toolchain drift silently.
+    # Must be >= the workspace's `rust-version` (currently 1.94.0), which is a
+    # floor and not a pin -- the workspace ships no `rust-toolchain` file, and
+    # upstream CI builds on stable. Pinning here only stops BinaryBuilder from
+    # silently drifting onto whatever its newest Rust shard happens to be.
     #
-    # This is a tight constraint worth watching: 1.94.0 is currently BOTH the
-    # workspace MSRV and the newest shard BinaryBuilderBase ships. Raising
-    # `rust-version` in the root Cargo.toml above 1.94 makes this JLL
-    # unbuildable until Yggdrasil publishes a matching RustBase artifact, so
-    # check the available versions before bumping the MSRV:
+    # 1.97.0 rather than the MSRV because the shard matrix is not uniform across
+    # versions: `RustToolchain` for riscv64-linux-gnu and aarch64-unknown-freebsd
+    # is published only from 1.97.0 on, and requesting a version that lacks a
+    # shard for a target fails that platform during setup with
+    # "Requested Rust toolchain ... not available on platform ...". 1.97.0's
+    # target list is a strict superset of 1.94.0's, so nothing is lost.
+    #
+    # Both directions of this constraint are worth watching when bumping the
+    # workspace MSRV -- raising `rust-version` above the newest published shard
+    # makes this JLL unbuildable. Check what exists first:
     #
     #   https://github.com/JuliaPackaging/BinaryBuilderBase.jl/blob/master/Artifacts.toml
-    preferred_rust_version = v"1.94.0",
+    preferred_rust_version = v"1.97.0",
 )
