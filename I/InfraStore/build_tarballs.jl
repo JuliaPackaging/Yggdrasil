@@ -3,14 +3,14 @@
 # This produces the `libinfrastore_ffi` binary that `InfraStore.jl` (and,
 # through it, InfrastructureSystems.jl) loads.
 #
-# HDF5/NetCDF policy: the build keeps the crate's default `vendored` feature,
-# which compiles netcdf-c, HDF5, and zlib from source and links them
+# HDF5 policy: the build keeps the crate's default `vendored` feature,
+# which compiles HDF5 and zlib from source and links them
 # statically. That pins the exact HDF5 version backing the on-disk format to
 # the one infrastore was tested against, instead of whatever HDF5_jll the
 # user's environment resolves -- the store is a data artifact with a format
 # contract (DATA_FORMAT_VERSION), not a general HDF5 surface.
 #
-# The alternative -- linking NetCDF_jll/HDF5_jll -- was built and works (see
+# The alternative -- linking HDF5_jll -- was built and works (see
 # this file's history), but was rejected deliberately:
 #
 #   * Those JLLs are MPI-augmented and publish no serial variant, so linking
@@ -19,11 +19,11 @@
 #     downstream user.
 #   * The usual one-libhdf5-per-process argument does not apply here. The
 #     cdylib exports only its own `infrastore_*` C API -- the statically
-#     linked HDF5/netcdf symbols stay local (verified with nm; Julia
+#     linked HDF5 symbols stay local (verified with nm; Julia
 #     additionally dlopens with RTLD_LOCAL|RTLD_DEEPBIND) -- so it cannot
 #     collide with HDF5.jl's copy in the same process.
 #   * The remaining hazard, two HDF5 instances opening the same file, requires
-#     a user to open a live store's .nc with HDF5.jl/NCDatasets.jl directly.
+#     a user to open a live store's .h5 with HDF5.jl/NCDatasets.jl directly.
 #     That is explicitly unsupported; the store must be accessed through
 #     InfraStore.jl.
 #
@@ -60,8 +60,8 @@ sources = [
     DirectorySource("./bundled"),
 ]
 
-# Build the FFI cdylib with the default `vendored` feature: netcdf-c, HDF5, and
-# zlib are compiled from the sources vendored by netcdf-src/hdf5-metno-src and
+# Build the FFI cdylib with the default `vendored` feature: HDF5 and
+# zlib are compiled from the sources vendored by hdf5-metno-src and
 # linked statically, so the artifact is self-contained.
 script = raw"""
 cd ${WORKSPACE}/srcdir/infrastore
@@ -76,7 +76,7 @@ done
 # behind the rootfs tools; deleting the rootfs cmake lets it win.
 apk del cmake
 
-# The vendored netcdf-c/HDF5/zlib builds run through the Rust `cmake` crate,
+# The vendored HDF5/zlib builds run through the Rust `cmake` crate,
 # which honors CMAKE_TOOLCHAIN_FILE from the environment; point it at
 # BinaryBuilder's target toolchain so those builds cross-compile.
 # hdf5-metno-src pre-seeds the try-run cache variables HDF5's cmake needs when
@@ -84,7 +84,7 @@ apk del cmake
 #
 # One value has to be neutralized: BinaryBuilder's toolchain hardcodes
 # `set(CMAKE_INSTALL_PREFIX $ENV{prefix})`, which overrides the install prefix
-# the cmake crate passes on the command line, so the intermediate HDF5/netcdf
+# the cmake crate passes on the command line, so the intermediate HDF5
 # installs land in ${prefix} instead of the crate OUT_DIRs and the dependent
 # build scripts cannot find them (hdf5-metno-sys: "H5pubconf header not found").
 #
@@ -137,7 +137,7 @@ install -Dvm644 "crates/infrastore-ffi/include/infrastore.h" \
 platforms = supported_platforms()
 
 # 32-bit targets are dropped: the on-disk format indexes arrays with 64-bit
-# offsets and lengths throughout, and the netcdf-c/HDF5 stack has never been
+# offsets and lengths throughout, and the HDF5 stack has never been
 # built or exercised against a 32-bit target here.
 filter!(p -> nbits(p) == 64, platforms)
 
@@ -145,7 +145,7 @@ products = [
     LibraryProduct("libinfrastore_ffi", :libinfrastore_ffi),
 ]
 
-# Self-contained by design: NetCDF, HDF5, and zlib are statically linked, so
+# Self-contained by design: HDF5 and zlib are statically linked, so
 # there are no runtime binary dependencies. See the header comment before
 # adding any. CMake_jll is host-only: the vendored HDF5 requires CMake >= 3.26
 # and the build rootfs ships 3.21, so pull a current cmake onto the PATH (the
