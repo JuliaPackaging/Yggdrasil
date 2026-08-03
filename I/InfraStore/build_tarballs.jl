@@ -41,21 +41,21 @@
 using BinaryBuilder, Pkg
 
 name = "InfraStore"
-version = v"0.5.0"
+version = v"0.5.1"
 
 # Pin to the commit the release tag points at. Yggdrasil requires a full commit
 # SHA here -- a tag name is not accepted -- and the commit must already be
 # pushed. Get it with:
 #
-#   git rev-parse v0.5.0^{commit}
+#   git rev-parse v0.5.1^{commit}
 #
-# This is v0.5.0 of https://github.com/NatLabRockies/infrastore. Note that only
+# This is v0.5.1 of https://github.com/NatLabRockies/infrastore. Note that only
 # changes under crates/, Cargo.toml, or Cargo.lock require a new SHA here;
 # edits to this recipe do not, since Yggdrasil builds from its own copy.
 sources = [
     GitSource(
         "https://github.com/NatLabRockies/infrastore.git",
-        "a30cd0f69640f71c8638874cb99049ae733fb889",
+        "32f95c8965f2ce4c84ccf9c2c46032fd28bae073",
     ),
     DirectorySource("./bundled"),
 ]
