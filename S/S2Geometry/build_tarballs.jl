@@ -70,5 +70,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# Abseil requires <filesystem>, provided in GCC 9 or later
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6", preferred_gcc_version=v"9")
+# Match S2Geography's compiler to preserve the MinGW C++ ABI across the DLL boundary.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6", preferred_gcc_version=v"10")
