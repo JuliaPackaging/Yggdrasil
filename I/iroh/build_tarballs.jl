@@ -80,4 +80,8 @@ dependencies = Dependency[]
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat = "1.10", compilers = [:c, :rust],
+               # The `aarch64-unknown-freebsd` Rust toolchain shard (like the
+               # `riscv64-linux-gnu` one) only exists from 1.97.0 onwards,
+               # and the default version is only 1.94.0.
+               preferred_rust_version = v"1.97.0",
                preferred_gcc_version = v"10", lock_microarchitecture = false)
