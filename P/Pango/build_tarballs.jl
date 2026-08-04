@@ -35,9 +35,15 @@ export PYTHONPATH="/tmp/meson${PYTHONPATH:+:${PYTHONPATH}}"
 export PATH="/tmp/meson/bin:${PATH}"
 meson --version
 
-# Fix target toolchain (required by meson 1.11)
+# meson 1.11 no longer defaults `subsystem` to `system` in cross files, so
+# Pango's unconditional `host_machine.subsystem()` call on darwin aborts
+# configuration.  Set it explicitly to `darwin`, which reproduces meson's
+# pre-1.11 default.  Do *not* use `macos` here: that switches on Pango's
+# CoreText/quartz backend, which has never been part of this JLL and does not
+# compile (pango/pangocoretext.c:263 assigns a PangoCoreTextFontMap* to a
+# PangoFontMap*, which our clang rejects).
 if [[ ${target} == *darwin* ]]; then
-    sed -i "/\[host_machine\]/,/^$/ s/system = 'darwin'/system = 'darwin'\nsubsystem = 'macos'/" "$MESON_TARGET_TOOLCHAIN"
+    sed -i "/\[host_machine\]/,/^$/ s/system = 'darwin'/system = 'darwin'\nsubsystem = 'darwin'/" "$MESON_TARGET_TOOLCHAIN"
 fi
 
 meson setup build \
