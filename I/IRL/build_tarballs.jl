@@ -35,6 +35,7 @@ find ${includedir}/irl -type f ! -name '*.h' ! -name '*.tpp' -print -delete
 
 platforms = supported_platforms()
 platforms = filter(p -> arch(p) != "riscv64", platforms)
+platforms = filter(p -> !(arch(p) == "armv6l" && libc(p) == "musl"), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
