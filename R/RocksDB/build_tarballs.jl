@@ -59,7 +59,15 @@ fi
 # io_uring gives RocksDB a faster async I/O backend on Linux. Upstream
 # defaults WITH_LIBURING=ON but it silently no-ops unless liburing is
 # actually discoverable; we supply it via Liburing_jll on Linux only.
-if [[ "${target}" == *linux* ]]; then
+# powerpc64le and riscv64 are further excluded: Liburing_jll's static
+# archive isn't safely linkable into a shared library on either --
+# powerpc64le fails with "ld: final link failed: bad value" (a PLT call
+# stub missing the trailing nop the ELFv2 ABI needs to restore the TOC
+# register), riscv64 fails outright with "relocation ... can not be used
+# when making a shared object; recompile with -fPIC". RocksDB itself
+# compiles cleanly on both; only linking against this dependency is
+# broken, so it's skipped there rather than dropping the whole platform.
+if [[ "${target}" == *linux* && "${target}" != *powerpc64le* && "${target}" != *riscv64* ]]; then
     CMAKE_FLAGS+=(-DWITH_LIBURING=1)
 else
     CMAKE_FLAGS+=(-DWITH_LIBURING=0)
@@ -89,7 +97,10 @@ platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 filter!(p -> arch(p) ∉ ("armv7l", "armv6l"), platforms)
 
-linux_platforms = filter(Sys.islinux, platforms)
+# Excludes powerpc64le/riscv64 too -- see the WITH_LIBURING comment in the
+# script above; no point resolving/fetching a dependency nothing links
+# against on those two architectures.
+linux_platforms = filter(p -> Sys.islinux(p) && arch(p) ∉ ("powerpc64le", "riscv64"), platforms)
 
 # The products that we will ensure are always built.
 # On Windows, RocksDB's CMakeLists.txt only applies `OUTPUT_NAME "rocksdb"` to
