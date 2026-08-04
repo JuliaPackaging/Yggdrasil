@@ -149,8 +149,6 @@ install -Dvm644 "crates/infrastore-ffi/include/infrastore.h" \
     "${includedir}/infrastore.h"
 """
 
-# This is a test to see what fails. A follow-on commit will remove failing
-# builds with reasons.
 # With no JLL binary dependencies there are no artifact-matching tags toolchain
 # mirror -- plain triplets are sufficient.
 platforms = supported_platforms()
@@ -159,6 +157,27 @@ platforms = supported_platforms()
 # offsets and lengths throughout, and the HDF5 stack has never been
 # built or exercised against a 32-bit target here.
 filter!(p -> nbits(p) == 64, platforms)
+
+# riscv64-linux-gnu and aarch64-unknown-freebsd are dropped because Yggdrasil
+# cannot currently supply a Rust toolchain for them, not because of anything in
+# this library. Yggdrasil's root Manifest.toml pins BinaryBuilderBase to an exact
+# tree (git-tree-sha1 eeb8d55d1766feb4c3a07b55f495207351058d26, v1.47.0), and
+# that tree's Artifacts.toml publishes no `RustToolchain` shard for either target
+# at any version -- setup fails with "Requested Rust toolchain ... not available
+# on platform ..." roughly 90s in, before the build script runs.
+#
+# Both targets first appear at Rust 1.97.0, added to BinaryBuilderBase master in
+# d76218a (2026-07-31), i.e. after the pinned tree. Requesting 1.97.0 here does
+# not help and is strictly worse: the version is absent from the pinned tree
+# entirely, so the earlier, platform-independent check fails EVERY target with
+# "Requested Rust toolchain 1.97.0 not available in [...]". Verified by reading
+# Artifacts.toml out of the pinned tree; do not re-attempt the bump on the
+# strength of what BinaryBuilderBase master shows.
+#
+# To restore these two: wait for Yggdrasil to advance its BinaryBuilderBase pin
+# past d76218a, then set `preferred_rust_version` to v"1.97.0" and delete this
+# filter.
+filter!(p -> !(triplet(p) in ("riscv64-linux-gnu", "aarch64-unknown-freebsd")), platforms)
 
 products = [
     LibraryProduct("libinfrastore_ffi", :libinfrastore_ffi),
@@ -189,17 +208,16 @@ build_tarballs(
     # upstream CI builds on stable. Pinning here only stops BinaryBuilder from
     # silently drifting onto whatever its newest Rust shard happens to be.
     #
-    # 1.97.0 rather than the MSRV because the shard matrix is not uniform across
-    # versions: `RustToolchain` for riscv64-linux-gnu and aarch64-unknown-freebsd
-    # is published only from 1.97.0 on, and requesting a version that lacks a
-    # shard for a target fails that platform during setup with
-    # "Requested Rust toolchain ... not available on platform ...". 1.97.0's
-    # target list is a strict superset of 1.94.0's, so nothing is lost.
+    # 1.94.0 is also the newest Rust that Yggdrasil can actually provide today,
+    # which is what bounds the platform list above -- see the filter there before
+    # changing this. Note the constraint runs both ways: raising `rust-version`
+    # in the root Cargo.toml above the newest available shard makes this JLL
+    # unbuildable.
     #
-    # Both directions of this constraint are worth watching when bumping the
-    # workspace MSRV -- raising `rust-version` above the newest published shard
-    # makes this JLL unbuildable. Check what exists first:
+    # Check availability against the BinaryBuilderBase tree that Yggdrasil's root
+    # Manifest.toml pins, NOT against BinaryBuilderBase master -- master runs
+    # ahead of the pin, and a version that exists only there fails every target:
     #
-    #   https://github.com/JuliaPackaging/BinaryBuilderBase.jl/blob/master/Artifacts.toml
-    preferred_rust_version = v"1.97.0",
+    #   git -C BinaryBuilderBase.jl cat-file -p <pinned-tree>:Artifacts.toml
+    preferred_rust_version = v"1.94.0",
 )
