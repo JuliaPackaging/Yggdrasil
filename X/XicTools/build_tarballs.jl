@@ -16,34 +16,43 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/xictools/
 cp Makefile.sample Makefile
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/malloc-2.8.6.c.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/Makefile.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/malloc-2.8.6.c.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/local_malloc-free-init.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/vardb-stdc-format-macros.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/hcimlib-no-x11.patch
 update_configure_scripts
 make config
 make all
-install -d ${prefix}/xictools/bin
-make INSTALL_PREFIX=${prefix} install
+make prefix="${prefix}" install
 install -m755 wrspice/bin/wrspice ${prefix}/xictools/wrspice.current/bin/wrspice
-rm -f ${prefix}/xictools/wrspice.current/bin/wrspice.sh
-rm -f ${prefix}/xictools/bin/wrspice
-mkdir -p ${bindir}
-cd ${prefix}
-for tool in wrspice wrspiced csvtoraw multidec printtoraw mmjco; do
-    mv xictools/wrspice.current/bin/${tool} ${bindir}/${tool}
-    ln -sfn ../../../bin/${tool} xictools/wrspice.current/bin/${tool}
-done
-for tool in admsXml vl busgen capgen cubegen fastcap fasthenry fcpp lstpack lstunpack mrouter pipedgen pyragen zbuf; do
-    mv xictools/bin/${tool} ${bindir}/${tool}
-    ln -sfn ../../bin/${tool} xictools/bin/${tool}
-done
-for tool in wrspice wrspiced csvtoraw multidec printtoraw mmjco; do
-    ln -sfn ../wrspice.current/bin/${tool} xictools/bin/${tool}
-done
-ln -sfn wrspice.current xictools/wrspice
 install_license ${WORKSPACE}/srcdir/xictools/license/LICENSE-2.0.txt
+cd ${prefix}/xictools
+FILES="wrspice.current/bin/mmjco
+wrspice.current/bin/multidec
+wrspice.current/bin/printtoraw
+wrspice.current/bin/csvtoraw
+wrspice.current/bin/wrspice
+wrspice.current/bin/wrspiced
+bin/admsXml
+bin/busgen
+bin/capgen
+bin/cubegen
+bin/fastcap
+bin/fasthenry
+bin/fcpp
+bin/lstpack
+bin/lstunpack
+bin/mrouter
+bin/pipedgen
+bin/pyragen
+bin/vl
+bin/zbuf"
+for file in $FILES; do
+    install -Dvm 755 "${file}" "${bindir}/$(basename ${file})"
+    rm "${file}"
+    ln -s "${bindir}/$(basename ${file})" "${file}"
+done
 """
 
 
@@ -67,6 +76,7 @@ products = [
     ExecutableProduct("mmjco", :mmjco),
     ExecutableProduct("multidec", :multidec),
     ExecutableProduct("printtoraw", :printtoraw),
+    ExecutableProduct("csvtoraw", :csvtoraw),
     ExecutableProduct("wrspice", :wrspice),
     ExecutableProduct("wrspiced", :wrspiced),
     ExecutableProduct("admsXml", :admsXml),
