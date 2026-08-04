@@ -13,7 +13,7 @@ script = mpfr_script()
 platforms = mpfr_platforms()
 products = mpfr_products()
 
-preferred_llvm_version = v"17"
+# We only set a preferred LLVM version for msan, otherwise we just use the latest available
 msan_preferred_llvm_version = v"13.0.1+0"
 
 # Dependencies that must be installed before this package can be built
@@ -35,9 +35,9 @@ for (n, platform) in enumerate(platforms)
     # We register the build products only after the last build
     args = n == length(platforms) ? option_args : non_register_option_args
 
-    pref_llvm = sanitize(platform) == "memory" ? msan_preferred_llvm_version : preferred_llvm_version
+    # Don't pass the kwarg at all unless we're building for msan
+    kw = sanitize(platform) == "memory" ? (; preferred_llvm_version=msan_preferred_llvm_version) : NamedTuple()
 
     build_tarballs(args, name, version, sources, script, [platform], products, dependencies;
-                   preferred_gcc_version=v"5", preferred_llvm_version=pref_llvm,
-                   julia_compat="1.6")
+                   preferred_gcc_version=v"5", julia_compat="1.6", kw...)
 end
