@@ -97,6 +97,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency("Libtiff_jll"; compat="4.5.1"),
+    Dependency("libpng_jll"),
+    Dependency("JpegTurbo_jll"),
     Dependency("GSL_jll"; compat="~2.7.2"),
     Dependency("Zlib_jll"),
     Dependency("CompilerSupportLibraries_jll"),
