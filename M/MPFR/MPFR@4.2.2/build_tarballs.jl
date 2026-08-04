@@ -15,7 +15,7 @@ products = mpfr_products()
 preferred_llvm_version = v"17"
 
 # Dependencies that must be installed before this package can be built
-dependencies = mpfr_dependencies(platforms; llvm_compilerrt_version=preferred_llvm_version)
+dependencies = mpfr_dependencies(platforms; llvm_compilerrt_version=v"13.0.1")
 
 # Build the tarballs
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
