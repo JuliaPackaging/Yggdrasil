@@ -68,10 +68,6 @@ filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms)
 # and aarch64.
 filter!(p -> arch(p) ∈ ("x86_64", "i686", "aarch64", "armv7l", "armv6l"), platforms)
 
-# Yggdrasil does not (yet!) support aarch64-*-freebsd for a modern Rust setup
-# (Remove this line once it is.)
-filter!(p -> !(arch(p) == "aarch64" && Sys.isfreebsd(p)), platforms)
-
 # The products that we will ensure are always built
 products = [
     LibraryProduct(["libiroh_c_ffi", "iroh_c_ffi"], :libiroh_c_ffi),
