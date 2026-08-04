@@ -26,8 +26,14 @@ fi
 # If we want libpangoft2 on Windows we need to explicitly enable fontconfig and freetype
 # See <https://gitlab.gnome.org/GNOME/pango/-/blob/main/README.win32.md>.
 
-# We need a newer meson
-python3 -m pip install --upgrade meson
+# We need a newer meson.  Install it into a private directory instead of using
+# `pip install --upgrade`: upgrading in place requires uninstalling the meson
+# that ships in the rootfs, and removing files under
+# /usr/lib/python3.9/site-packages fails with an I/O error on the builders.
+python3 -m pip install --ignore-installed --target=/tmp/meson meson==1.11.2
+export PYTHONPATH="/tmp/meson${PYTHONPATH:+:${PYTHONPATH}}"
+export PATH="/tmp/meson/bin:${PATH}"
+meson --version
 
 # Fix target toolchain (required by meson 1.11)
 if [[ ${target} == *darwin* ]]; then
