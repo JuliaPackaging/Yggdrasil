@@ -147,6 +147,12 @@ install -Dvm755 target/${rust_target}/release/*infrastore_ffi.${dlext} \
     "${libdir}/libinfrastore_ffi.${dlext}"
 install -Dvm644 "crates/infrastore-ffi/include/infrastore.h" \
     "${includedir}/infrastore.h"
+
+# Without this the auditor reports "Unable to find valid license file in
+# ${prefix}/share/licenses/InfraStore" on every platform and the JLL ships with
+# no copy of its BSD-3-Clause text. The path is relative to the cd at the top of
+# this script, i.e. the root of the infrastore checkout.
+install_license LICENSE
 """
 
 # With no JLL binary dependencies there are no artifact-matching tags toolchain
