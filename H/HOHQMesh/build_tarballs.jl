@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "HOHQMesh"
-version = v"1.5.5"
+version = v"1.6.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/trixi-framework/HOHQMesh/releases/download/v$(version)/HOHQMesh-v$(version).tar.gz", "5079e9d47128bb6a8b00c043b45681955b685739a468663baf043a8072a6b24d"),
+    ArchiveSource("https://github.com/trixi-framework/HOHQMesh/releases/download/v$(version)/HOHQMesh-v$(version).tar.gz", "4b609a7f66261beeea2baab8cd8db8cb82cd5fc30b00a09155b05cd0f2d00ce2"),
 ]
 
 # Bash recipe for building across all platforms
@@ -46,7 +46,7 @@ platforms = [
     Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
 ]
 
-platforms = expand_gfortran_versions(platforms)
+platforms = expand_gfortran_versions(platforms, old_abis=true)
 
 
 # The products that we will ensure are always built
