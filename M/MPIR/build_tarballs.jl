@@ -18,7 +18,7 @@ cd $WORKSPACE/srcdir/mpir
 apk add texinfo
 
 # Symlink the nasm executable into yasm to make the build use it
-ln -s ${bindir}/nasm ${bindir}/yasm
+ln -s ${host_bindir}/nasm ${host_bindir}/yasm
 
 # Our C compilers are too new for the configure script in this
 # package. We need to disable errors (that used to be warnings) for
@@ -37,9 +37,6 @@ ln -s ${bindir}/nasm ${bindir}/yasm
     CFLAGS="-Wno-error=implicit-int -Wno-error=implicit-function-declaration"
 make -j${nproc}
 make install
-
-# Remove the symlink to prevent it from being in the final tarball
-rm -f ${bindir}/yasm
 """
 
 # These are the platforms we will build for by default, unless further
