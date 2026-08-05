@@ -24,17 +24,29 @@ More-Sorensen safeguard in moresor.f90,
      ls = max( l + (d / ueucn2), ls )
 
 which raises the lower bound on the trust-region multiplier so that the
-iteration can leave the region where the matrix is indefinite.  With pval
-returned as zero that update cannot raise ls, lambda stops advancing, and
-the iteration would spin until the iteration limit is reached.  Detecting
-that ls did not increase and returning msinfo = 5 immediately gives the
-same outcome without the wasted factorizations: betra already reacts to
-msinfo = 5 by computing a dogleg direction instead.
+iteration can leave the region where the matrix is indefinite.  Rather than
+do without it, the value is reconstructed in scalcu, where the factorization
+just failed: with u(idx) = 1 and the leading block solved, the pivot the
+factorization rejected is the quadratic form u'(A + lI)u over the first idx
+unknowns, and alin and acol are still in the ordering u refers to.  Over a
+308 problem CUTEst sweep the reconstruction agrees with a patched MA57's
+real finfo%pivot to eight or more significant digits in the early
+iterations, degrading only when the true pivot falls to the level where
+summing the quadratic form cancels, at which point the value is small enough
+that the safeguard it feeds is inactive anyway.
 
-With a patched MA57 the pivot is nonzero, ls always increases, and the new
-test never fires, so a conventional build is unaffected.
---- a/sources/algencan/lssma57.f90
-+++ b/sources/algencan/lssma57.f90
+Nothing else in the algorithm is touched.  An earlier version of this patch
+also returned msinfo = 5 when ls failed to advance, to send betra to a
+dogleg direction rather than let the iteration run to the limit.  That was
+written when the pivot was left at zero and ls therefore could not advance
+at all; once the pivot is reconstructed it advances normally and the test is
+redundant.  Worse, it pre-empts the iteration limit that already bounds the
+loop: on CUTEst OPTPRLOC it fired seventy two million times without the
+limit ever being reached, turning a 2.8 second solve into a non-terminating
+one.  The safeguard has been removed and the loop left as ALGENCAN wrote it.
+diff --color -Naur a/sources/algencan/lssma57.f90 b/sources/algencan/lssma57.f90
+--- a/sources/algencan/lssma57.f90	2015-05-05 10:45:12.000000000 -0300
++++ b/sources/algencan/lssma57.f90	2026-08-05 13:41:32.591285690 -0300
 @@ -52,7 +52,16 @@
      ! FUNCTION TYPE
      logical :: lss_ma57
@@ -79,8 +91,9 @@ test never fires, so a conventional build is unaffected.
  
         lssinfo = 2
  
---- a/sources/algencan/moresor.f90
-+++ b/sources/algencan/moresor.f90
+diff --color -Naur a/sources/algencan/moresor.f90 b/sources/algencan/moresor.f90
+--- a/sources/algencan/moresor.f90	2015-05-05 10:45:12.000000000 -0300
++++ b/sources/algencan/moresor.f90	2026-08-05 13:41:32.601079332 -0300
 @@ -234,7 +234,7 @@
          l  = lu
       else
@@ -90,23 +103,7 @@ test never fires, so a conventional build is unaffected.
          chcnt = chcnt + 1
  
          if ( memfail ) then
-@@ -245,6 +245,15 @@
-         ls = max( l + (d / ueucn2), ls )
-         ll = max( ll, ls )
-         l  = ls
-+
-+        ! If ls did not advance, the iteration cannot leave the region
-+        ! where the matrix is indefinite, so stop rather than exhausting
-+        ! the iteration limit and let betra fall back to dogleg.
-+
-+        if ( ls .le. lsant ) then
-+           msinfo = 5
-+           go to 22
-+        end if
-      end if
- 
-      iter = iter + 1
-@@ -565,7 +574,7 @@
+@@ -565,7 +565,7 @@
  ! ******************************************************************
  
  subroutine scalcu(n,annz,alin,acol,aval,adiag,l,idx,u,ueucn2,wd, &
@@ -115,7 +112,7 @@ test never fires, so a conventional build is unaffected.
    
    use lsslvr
    use modalgparam, only: lsssubTR
-@@ -577,6 +586,7 @@
+@@ -577,6 +577,7 @@
    integer,      intent(in)    :: annz,idx,n
    real(kind=8), intent(in)    :: l
    real(kind=8), intent(inout) :: ueucn2
@@ -123,7 +120,7 @@ test never fires, so a conventional build is unaffected.
  
    ! ARRAY ARGUMENTS
    integer,      intent(inout) :: acol(annz),adiag(n),alin(annz)
-@@ -592,6 +602,9 @@
+@@ -592,6 +593,9 @@
    if ( idx .eq. 1 ) then
       u(idx) = 1.0d0
       ueucn2 = 1.0d0
@@ -133,7 +130,7 @@ test never fires, so a conventional build is unaffected.
       return
    end if
  
-@@ -675,6 +688,35 @@
+@@ -675,6 +679,35 @@
       end if
    end do
  
