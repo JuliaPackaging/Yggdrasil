@@ -26,6 +26,9 @@ if [[ "${bb_full_target}" == *-w64-mingw32-libgfortran[34]* ]]; then
 else
   cp HOHQMesh${exeext} ${bindir}
 fi
+
+# Install license
+install -Dvm 644 LICENSE.md "${prefix}/share/licenses/HOHQMesh/LICENSE.md"
 """
 
 # These are the platforms we will build for by default, unless further
@@ -60,4 +63,5 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9.1.0", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version = v"9.1.0", julia_compat="1.6")
