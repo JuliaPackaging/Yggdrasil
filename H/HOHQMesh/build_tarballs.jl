@@ -22,13 +22,13 @@ mkdir -p ${bindir}
 if [[ "${bb_full_target}" == *-w64-mingw32-libgfortran[34]* ]]; then
   # For some reason, on i686 with libgfortran3 or libgfortran4,
   # the executable is created without the `.exe` extension
-  cp HOHQMesh ${bindir}/HOHQMesh${exeext}
+  install -Dvm 755 HOHQMesh ${bindir}/HOHQMesh${exeext}
 else
-  cp HOHQMesh${exeext} ${bindir}
+  install -Dvm 755 HOHQMesh${exeext} ${bindir}
 fi
 
 # Install license
-install -Dvm 644 LICENSE.md "${prefix}/share/licenses/HOHQMesh/LICENSE.md"
+install_license LICENSE.md
 """
 
 # These are the platforms we will build for by default, unless further
