@@ -1,0 +1,12 @@
+import os
+
+EMSCRIPTEN_ROOT = '/opt/wasm32-unknown-emscripten/lib/emscripten'
+LLVM_ROOT = '/opt/wasm32-unknown-emscripten/lib/emscripten-fastcomp/bin'
+BINARYEN_ROOT = '/opt/wasm32-unknown-emscripten'
+NODE_JS = 'node'
+SPIDERMONKEY_ENGINE = ['js']
+V8_ENGINE = 'd8'
+JAVA = 'java'
+TEMP_DIR = '/tmp'
+COMPILER_ENGINE = NODE_JS
+JS_ENGINES = [NODE_JS]
