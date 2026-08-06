@@ -1,0 +1,20 @@
+PETSc's per-package `requires32bitintblas` defaults to 1, which makes
+configure reject any external SuiteSparse when paired with 64-bit BLAS
+indices.  Julia's stdlib SuiteSparse_jll is built against libblastrampoline
+and works correctly with 64-bit (`_64_`) BLAS symbols at runtime, so the
+check is too strict for our setup.  Override it to 0 in SuiteSparse.py.
+
+This applies cleanly to PETSc 3.24.x.
+
+diff --git a/config/BuildSystem/config/packages/SuiteSparse.py b/config/BuildSystem/config/packages/SuiteSparse.py
+index 1234567..89abcde 100644
+--- a/config/BuildSystem/config/packages/SuiteSparse.py
++++ b/config/BuildSystem/config/packages/SuiteSparse.py
+@@ -5,6 +5,7 @@ import config.package
+ class Configure(config.package.CMakePackage):
+   def __init__(self, framework):
+     config.package.CMakePackage.__init__(self, framework)
++    self.requires32bitintblas = 0
+     self.minversion        = '5.6.0'
+     self.version           = '7.11.0'
+     self.versioninclude    = 'SuiteSparse_config.h'

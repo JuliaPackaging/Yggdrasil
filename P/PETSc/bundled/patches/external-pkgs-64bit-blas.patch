@@ -1,0 +1,49 @@
+diff -ru a/config/BuildSystem/config/packages/hypre.py b/config/BuildSystem/config/packages/hypre.py
+--- a/config/BuildSystem/config/packages/hypre.py	2026-06-10 22:37:28.457877723 +0000
++++ b/config/BuildSystem/config/packages/hypre.py	2026-06-10 22:37:45.665660920 +0000
+@@ -4,6 +4,7 @@
+ class Configure(config.package.GNUPackage):
+   def __init__(self, framework):
+     config.package.GNUPackage.__init__(self, framework)
++    self.requires32bitintblas = 0
+     self.version         = '3.0.0'
+     self.minversion      = '2.14'
+     self.versionname     = 'HYPRE_RELEASE_VERSION'
+diff -ru a/config/BuildSystem/config/packages/MUMPS.py b/config/BuildSystem/config/packages/MUMPS.py
+--- a/config/BuildSystem/config/packages/MUMPS.py	2026-06-10 22:37:28.457877723 +0000
++++ b/config/BuildSystem/config/packages/MUMPS.py	2026-06-10 22:37:45.665660920 +0000
+@@ -3,6 +3,7 @@
+ class Configure(config.package.Package):
+   def __init__(self, framework):
+     config.package.Package.__init__(self, framework)
++    self.requires32bitintblas = 0
+     self.version          = '5.8.1'
+     self.minversion       = '5.2.1'
+     self.versionname      = 'MUMPS_VERSION'
+@@ -43,14 +44,11 @@
+       self.deps           = [self.blasLapack,self.flibs]
+       self.odeps          = [self.metis,self.openmp]
+     else:
+-      self.deps           = [self.scalapack,self.mpi,self.blasLapack,self.flibs]
++      self.deps           = [self.mpi,self.blasLapack,self.flibs]
+       self.odeps          = [self.metis,self.parmetis,self.ptscotch,self.hwloc,self.openmp]
+     return
+ 
+   def configureLibrary(self):
+-    for arg in ['with-64-bit-blas-indices','known-64-bit-blas-indices']:
+-      if self.argDB.get(arg):
+-        raise RuntimeError('MUMPS cannot be used with %s' % arg)
+     if self.scalartypes.precision == 'single':
+       if self.scalartypes.scalartype == 'real': l = 's'
+       else: l = 'c'
+diff -ru a/config/BuildSystem/config/packages/SuperLU_DIST.py b/config/BuildSystem/config/packages/SuperLU_DIST.py
+--- a/config/BuildSystem/config/packages/SuperLU_DIST.py	2026-06-10 22:37:28.457877723 +0000
++++ b/config/BuildSystem/config/packages/SuperLU_DIST.py	2026-06-10 22:37:45.665660920 +0000
+@@ -4,6 +4,7 @@
+ class Configure(config.package.CMakePackage):
+   def __init__(self, framework):
+     config.package.CMakePackage.__init__(self, framework)
++    self.requires32bitintblas = 0
+     self.minversion       = '6.3.0'
+     self.version          = '9.2.1'
+     self.versionname      = 'SUPERLU_DIST_MAJOR_VERSION.SUPERLU_DIST_MINOR_VERSION.SUPERLU_DIST_PATCH_VERSION'
