@@ -17,13 +17,8 @@ cd $WORKSPACE/srcdir/libmodbus/
 # On FreeBSD, the configure check for netinet/ip.h fails without prerequisite
 # includes, leaving IPTOS_LOWDELAY undeclared in modbus-tcp.c
 atomic_patch -p1 ../patches/0001-check-netinet-ip-h-with-prerequisites.patch
-# Assert that the expected constant definition exists before patching
-grep -q 'const uint16_t UT_BITS_ADDRESS = 0x130' tests/unit-test.h.in || \
-    (echo "ERROR: Expected 'const uint16_t UT_BITS_ADDRESS = 0x130' not found in tests/unit-test.h.in" && exit 1)
-# Replace the non-constant initializer expression with a literal value
-sed -i 's/const uint16_t UT_BITS_ADDRESS_INVALID_REQUEST_LENGTH = UT_BITS_ADDRESS + 2/const uint16_t UT_BITS_ADDRESS_INVALID_REQUEST_LENGTH = 0x132/g' tests/unit-test.h.in
-./autogen.sh 
-./configure --prefix=$prefix --build=${MACHTYPE} --host=${target}
+./autogen.sh
+./configure --prefix=$prefix --build=${MACHTYPE} --host=${target} --disable-tests
 make -j${nproc}
 make install
 install_license COPYING.LESSER
