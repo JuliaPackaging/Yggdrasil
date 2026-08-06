@@ -27,7 +27,7 @@ macos_sdk_version = "11.0"
 sources = [
     DirectorySource("./bundled"),
     GitSource("https://github.com/JuliaGPU/pocl",
-              "26d57406d443e0825d0d3d7c301e4eca3126ce09"),
+              "63c20286812d392031bbc6ee3c8add9ea2d32744"),
     # vendored SPIR-V translator, built as a static library against our LLVM (see
     # common.jl); this is the latest LLVM-22.1 maintenance revision.
     GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git",
