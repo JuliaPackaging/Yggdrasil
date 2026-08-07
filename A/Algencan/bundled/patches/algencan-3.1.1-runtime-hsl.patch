@@ -1,0 +1,168 @@
+Make MA57 usage a run-time decision and compute the More-Sorensen pivot
+instead of reading it from a patched MA57.
+
+ALGENCAN decides whether MA57 is usable through lss_ma57(), which is a
+compile-time constant: the real sources/algencan/lssma57.f90 returns .true.
+and the stub sources/algencan/dummy_lssma57.f90 returns .false., and the
+build system picks one of them.  That makes it impossible to ship a single
+binary that uses MA57 when it is present and the truncated Newton inner
+solver when it is not, which is what a Julia JLL package needs: the HSL
+library is distributed to licensees only, so the binary must be built and
+shipped without it and pick it up later, if the user has it.
+
+Standard HSL distributions expose the public module variable ma57_available
+in hsl_ma57_double, which is .true. only when the loaded library really
+implements MA57.  Returning it from lss_ma57() is enough to turn the whole
+existing selection logic in algencan.f90 into a run-time decision, with no
+other change to the algorithm.
+
+Building against a standard HSL also means giving up finfo%pivot, which is
+not part of ma57_finfo and is added by a local patch to MA57.  It is read
+in lssfac_ma57 and returned as pval, and its only consumer is the
+More-Sorensen safeguard in moresor.f90,
+
+     ls = max( l + (d / ueucn2), ls )
+
+which raises the lower bound on the trust-region multiplier so that the
+iteration can leave the region where the matrix is indefinite.  Rather than
+do without it, the value is reconstructed in scalcu, where the factorization
+just failed: with u(idx) = 1 and the leading block solved, the pivot the
+factorization rejected is the quadratic form u'(A + lI)u over the first idx
+unknowns, and alin and acol are still in the ordering u refers to.  Over a
+308 problem CUTEst sweep the reconstruction agrees with a patched MA57's
+real finfo%pivot to eight or more significant digits in the early
+iterations, degrading only when the true pivot falls to the level where
+summing the quadratic form cancels, at which point the value is small enough
+that the safeguard it feeds is inactive anyway.
+
+Nothing else in the algorithm is touched.  An earlier version of this patch
+also returned msinfo = 5 when ls failed to advance, to send betra to a
+dogleg direction rather than let the iteration run to the limit.  That was
+written when the pivot was left at zero and ls therefore could not advance
+at all; once the pivot is reconstructed it advances normally and the test is
+redundant.  Worse, it pre-empts the iteration limit that already bounds the
+loop: on CUTEst OPTPRLOC it fired seventy two million times without the
+limit ever being reached, turning a 2.8 second solve into a non-terminating
+one.  The safeguard has been removed and the loop left as ALGENCAN wrote it.
+diff --color -Naur a/sources/algencan/lssma57.f90 b/sources/algencan/lssma57.f90
+--- a/sources/algencan/lssma57.f90	2015-05-05 10:45:12.000000000 -0300
++++ b/sources/algencan/lssma57.f90	2026-08-05 13:41:32.591285690 -0300
+@@ -52,7 +52,16 @@
+     ! FUNCTION TYPE
+     logical :: lss_ma57
+ 
+-    lss_ma57 = .true.
++    ! ma57_available is a public module variable of hsl_ma57_double. It is
++    ! .true. when the HSL library that is actually loaded implements MA57,
++    ! and .false. when the library only provides the placeholder routines
++    ! distributed to users without an HSL licence. Returning it here turns
++    ! the MA57 availability test into a run-time query instead of a
++    ! compile-time constant, so that a single binary uses MA57 when a
++    ! licensed HSL is present and falls back to the truncated Newton inner
++    ! solver when it is not.
++
++    lss_ma57 = ma57_available
+ 
+   end function lss_ma57
+ 
+@@ -297,8 +306,15 @@
+     else if ( finfo%flag .eq. -6 ) then
+        ! MATRIX NOT POSITIVE DEFINITE
+ 
++       ! In the original code pval is abs( finfo%pivot ). The pivot field is
++       ! not part of ma57_finfo in a standard HSL distribution, it is added
++       ! by a local patch to MA57. Since pind and pval are consumed only by
++       ! the trust-region solver (moresor), which is disabled in this build,
++       ! the value is not needed and is set to zero here. The same applies to
++       ! the rank deficient case below.
++
+        pind    = finfo%more
+-       pval    = abs( finfo%pivot )
++       pval    = 0.0d0
+ 
+        lssinfo = 1
+ 
+@@ -306,7 +322,7 @@
+        ! RANK DEFICIENT MATRIX
+ 
+        pind    = finfo%more
+-       pval    = abs( finfo%pivot )
++       pval    = 0.0d0
+ 
+        lssinfo = 2
+ 
+diff --color -Naur a/sources/algencan/moresor.f90 b/sources/algencan/moresor.f90
+--- a/sources/algencan/moresor.f90	2015-05-05 10:45:12.000000000 -0300
++++ b/sources/algencan/moresor.f90	2026-08-05 13:41:32.601079332 -0300
+@@ -234,7 +234,7 @@
+         l  = lu
+      else
+         call scalcu(n,bnnz,blin,bcol,bval,bdiag,l,idx,p,ueucn2,wd, &
+-             memfail)
++             d,memfail)
+         chcnt = chcnt + 1
+ 
+         if ( memfail ) then
+@@ -565,7 +565,7 @@
+ ! ******************************************************************
+ 
+ subroutine scalcu(n,annz,alin,acol,aval,adiag,l,idx,u,ueucn2,wd, &
+-     memfail)
++     pivot,memfail)
+   
+   use lsslvr
+   use modalgparam, only: lsssubTR
+@@ -577,6 +577,7 @@
+   integer,      intent(in)    :: annz,idx,n
+   real(kind=8), intent(in)    :: l
+   real(kind=8), intent(inout) :: ueucn2
++  real(kind=8), intent(out)   :: pivot
+ 
+   ! ARRAY ARGUMENTS
+   integer,      intent(inout) :: acol(annz),adiag(n),alin(annz)
+@@ -592,6 +593,9 @@
+   if ( idx .eq. 1 ) then
+      u(idx) = 1.0d0
+      ueucn2 = 1.0d0
++     ! The ordering is not established yet at this point, so the pivot
++     ! cannot be formed here. Zero makes the caller fall back to dogleg.
++     pivot = 0.0d0
+      return
+   end if
+ 
+@@ -675,6 +679,35 @@
+      end if
+   end do
+ 
++  ! Offending pivot. With u(idx) = 1 and the leading block solved above,
++  ! the value that the factorization rejected is the quadratic form
++  ! u'(A + lI)u over the first idx unknowns. A standard HSL distribution
++  ! does not report it, ma57_finfo has no pivot field, so it is computed
++  ! here, while alin and acol are still in the ordering that u refers to.
++  ! A is symmetric with each off-diagonal entry stored once, hence the
++  ! factor of two, and l enters through the diagonal shift.
++
++  u(idx) = 1.0d0
++
++  pivot = 0.0d0
++  do i = 1,annz
++     lin = alin(i)
++     col = acol(i)
++     if ( lin .le. idx .and. col .le. idx ) then
++        if ( lin .eq. col ) then
++           pivot = pivot + aval(i) * u(lin) * u(col)
++        else
++           pivot = pivot + 2.0d0 * aval(i) * u(lin) * u(col)
++        end if
++     end if
++  end do
++
++  do i = 1,idx
++     pivot = pivot + l * u(i)**2
++  end do
++
++  pivot = abs( pivot )
++
+   ! print *,'CALL LSSUNPERMIND'
+   call lssunpermind(n,annz,alin,acol)
+ 
