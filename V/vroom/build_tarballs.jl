@@ -1,12 +1,14 @@
 using BinaryBuilder, Pkg
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "vroom"
-version = v"1.14.0"
+version = v"1.15.0"
 
 # Collection of sources required to complete build
 sources = [
-    # v1.14.0
-    GitSource("https://github.com/VROOM-Project/vroom.git", "1fd711bc8c20326dd8e9538e2c7e4cb1ebd67bdb"),
+    # v1.15.0
+    GitSource("https://github.com/VROOM-Project/vroom.git", "43dd7d0b8b560431eb555bf335cf4797eb7343c4"),
 ]
 
 # Bash recipe for building across all platforms
@@ -32,19 +34,21 @@ if [[ ${target} == *-w64-mingw32 ]]; then
     done
 fi
 cd src
-# Use GCC instead of Clang on macOS: Apple's libc++ lacks std::jthread (vroom#1062, pyvroom#106)
-# Override deployment target for GCC compatibility (Runner/default may use 14.5 which GCC rejects).
-if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
+# FreeBSD: use GCC since clang setup is incomplete for this target.
+if [[ "${target}" == *-freebsd* ]]; then
     export CC=gcc
     export CXX=g++
-    export MACOSX_DEPLOYMENT_TARGET=10.15
-    export CFLAGS="$(echo " ${CFLAGS}" | sed 's/ -mmacosx-version-min=[^ ]*//g' | sed 's/^ *//')"
-    export CXXFLAGS="$(echo " ${CXXFLAGS}" | sed 's/ -mmacosx-version-min=[^ ]*//g' | sed 's/^ *//')"
-    export LDFLAGS="$(echo " ${LDFLAGS}" | sed 's/ -Wl,-sdk_version,[^ ]*//g' | sed 's/^ *//')"
 fi
+# macOS: use default Apple clang with the macOS 15.0 SDK installed above.
+# libc++ from macOS 15.0 SDK ships `std::format` and `std::jthread`, both
+# required by vroom v1.15.0. Available GCC for aarch64-apple-darwin
+# (GCCBootstrap-12.0.1-iains) lacks `std::format`, so GCC is not an option.
 make -j${nproc}
 install -Dvm 755 ../bin/vroom${exeext} -t ${bindir}
 """
+
+# Install the macOS 15.0 SDK so libc++ has std::format + std::jthread.
+sources, script = require_macos_sdk("15.0", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
