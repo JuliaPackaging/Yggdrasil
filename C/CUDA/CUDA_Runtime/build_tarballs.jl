@@ -7,11 +7,16 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDA_Runtime"
-version = v"0.23.0"
+version = v"0.24.0"
+
+# we ship artifacts for both GA and EA/preview toolkits; the platform augmentation only
+# ever selects the latter when the user asks for it through the "version" preference.
+const toolkit_versions = [CUDA.cuda_full_versions; CUDA.cuda_prerelease_versions]
 
 augment_platform_block = """
     $(read(joinpath(@__DIR__, "platform_augmentation.jl"), String))
-    const cuda_toolkits = $(CUDA.cuda_full_versions)"""
+    const cuda_toolkits = $(toolkit_versions)
+    const cuda_prerelease_toolkits = $(CUDA.cuda_prerelease_versions)"""
 
 script = raw"""
 # rename directories, stripping the architecture and version suffix
@@ -100,7 +105,7 @@ fi
 
 # determine exactly which tarballs we should build
 builds = []
-for version in reverse(CUDA.cuda_full_versions)
+for version in reverse(toolkit_versions)
     include("build_$(version.major).$(version.minor).jl")
 
     # CUDA_Runtime contains all of the following components
