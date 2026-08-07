@@ -134,9 +134,17 @@ const cuda_full_versions = [
     v"13.3.1"
 ]
 
+# EA/preview toolkits. We do build JLLs for these, so that they can be used explicitly,
+# but they are never selected automatically: they are left out of `supported_platforms`
+# unless asked for, and CUDA_Runtime_jll's platform augmentation only ever picks one when
+# the user requests it through the "version" preference.
+const cuda_prerelease_versions = [
+    v"13.4.0"
+]
+
 function full_version(ver::VersionNumber)
     ver == Base.thisminor(ver) || error("Cannot specify a patch version")
-    for full_ver in cuda_full_versions
+    for full_ver in [cuda_full_versions; cuda_prerelease_versions]
         if ver == Base.thisminor(full_ver)
             return full_ver
         end
@@ -152,8 +160,10 @@ Return a list of supported platforms to build CUDA artifacts for.
 # Arguments
 - `min_version=v"11"`: Min. CUDA version to target.
 - `max_version=nothing`: Max. CUDA version to target.
+- `prereleases=false`: Also target EA/preview toolkits (`cuda_prerelease_versions`).
 """
-function supported_platforms(; min_version=v"11", max_version=nothing)
+function supported_platforms(; min_version=v"11", max_version=nothing,
+                               prereleases::Bool=false)
     base_platforms = [
         Platform("x86_64", "linux"; libc = "glibc"),
         Platform("aarch64", "linux"; libc = "glibc", cuda_platform = "jetson"),
@@ -164,9 +174,11 @@ function supported_platforms(; min_version=v"11", max_version=nothing)
         #Platform("x86_64", "windows"),
     ]
 
+    candidate_versions = prereleases ? [cuda_full_versions; cuda_prerelease_versions] :
+                                       cuda_full_versions
     cuda_versions = filter(v -> (isnothing(min_version) || v >= min_version) &&
                                 (isnothing(max_version) || v <= max_version),
-                           cuda_full_versions)
+                           candidate_versions)
 
     # augment with CUDA versions
     platforms = Platform[]
@@ -308,6 +320,10 @@ function cuda_nvcc_redist_source(cuda_ver, arch)
             # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_13.2.0.json
             ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-x86_64/cuda_nvcc-linux-x86_64-13.2.51-archive.tar.xz",
                           "706b996fefc59dc8d64d317fdf48d0aa84c4ae004eff43009dd918f40c5cc66a")
+        elseif cuda_ver == "13.4"
+            # See https://packages.nvidia.com/bin-archive/release/cuda/redist/redistrib_13.4.0.json
+            ArchiveSource("https://packages.nvidia.com/bin-archive/pool/linux-x86_64/5B515474-7E78-11F1-8656-C51E4F4B317F/cuda_nvcc-linux-x86_64-13.4.46-archive.tar.xz",
+                          "52e355da195b4a7ee910429680a69cdeea31834041cb65df738e0c561d5c4d69")
         else
             error("No CUDA redist available for CUDA version $cuda_ver on arch $arch")
         end
