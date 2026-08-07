@@ -1,0 +1,18 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 5e22114..e230a02 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -43,11 +43,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
+ 
+ message("Compiler ID: ${CMAKE_CXX_COMPILER_ID}")
+ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+-  add_compile_options(-Wall -pedantic -Wextra -Werror -Wmissing-declarations)
++  add_compile_options(-Wall -pedantic -Wextra -Wmissing-declarations)
+ elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+   # -Wno-dangling-reference because GCC apparently has some bugs in its implementation
+   # https://stackoverflow.com/questions/78759847/gcc-14-possibly-dangling-reference-to-a-temporary-warning-or-not-depending-on
+-  add_compile_options(-Wall -pedantic -Wextra -Werror -Wmissing-declarations -Wno-dangling-reference)
++  add_compile_options(-Wall -pedantic -Wextra -Wmissing-declarations -Wno-dangling-reference)
+ elseif(MSVC)
+   add_compile_options(/W4 /WX)
+   add_definitions(-DWINDOWS)

@@ -1,0 +1,22 @@
+diff --git a/cpp/src/bindings_capi.cpp b/cpp/src/bindings_capi.cpp
+index 15c8b14..35dabb1 100644
+--- a/cpp/src/bindings_capi.cpp
++++ b/cpp/src/bindings_capi.cpp
+@@ -285,7 +285,7 @@ void daveCommitResultGetRosterMemberIds(DAVECommitResultHandle commitResultHandl
+         return;
+     }
+     GetRosterMemberIds(
+-      std::get<discord::dave::RosterMap>(*commitResult), rosterIds, rosterIdsLength);
++      *std::get_if<discord::dave::RosterMap>(commitResult), rosterIds, rosterIdsLength);
+ }
+ 
+ void daveCommitResultGetRosterMemberSignature(DAVECommitResultHandle commitResultHandle,
+@@ -301,7 +301,7 @@ void daveCommitResultGetRosterMemberSignature(DAVECommitResultHandle commitResul
+         return;
+     }
+     GetRosterMemberSignature(
+-      std::get<discord::dave::RosterMap>(*commitResult), rosterId, signature, signatureLength);
++      *std::get_if<discord::dave::RosterMap>(commitResult), rosterId, signature, signatureLength);
+ }
+ 
+ void daveCommitResultDestroy(DAVECommitResultHandle commitResultHandle)

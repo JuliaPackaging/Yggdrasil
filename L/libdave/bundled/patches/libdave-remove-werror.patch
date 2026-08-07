@@ -1,0 +1,16 @@
+diff --git a/cpp/CMakeLists.txt b/cpp/CMakeLists.txt
+index 52058b1..717c7ba 100644
+--- a/cpp/CMakeLists.txt
++++ b/cpp/CMakeLists.txt
+@@ -22,9 +22,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
+ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+ 
+ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+-  add_compile_options(-Wall -pedantic -Wextra -Werror -Wimplicit-int-conversion)
++  add_compile_options(-Wall -pedantic -Wextra -Wimplicit-int-conversion)
+ elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+-  add_compile_options(-Wall -pedantic -Wextra -Werror)
++  add_compile_options(-Wall -pedantic -Wextra)
+ elseif(MSVC)
+   add_compile_options(/W4 /WX)
+   add_definitions(-DWINDOWS)
