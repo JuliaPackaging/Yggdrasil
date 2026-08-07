@@ -1,7 +1,7 @@
 # In addition to coin-or-common.jl, we need to modify this file to trigger a
 # rebuild.
 #
-# Last updated: 2026-01-26 
+# Last updated: 2026-05-04
 
 include("../coin-or-common.jl")
 
@@ -76,7 +76,9 @@ dependencies = [
     Dependency(PackageSpec(name="CoinUtils_jll", uuid="be027038-0da8-5614-b30d-e42594cb92df"), compat="=$(CoinUtils_version)"),
     Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70"), compat="=$(METIS_version)"),
     Dependency(PackageSpec(name="Osi_jll", uuid="7da25872-d9ce-5375-a4d3-7a845f58efdd"), compat="=$(Osi_version)"),
-    Dependency(PackageSpec(name="MUMPS_seq_jll", uuid="d7ed1dd3-d0ae-5e8e-bfb4-87a502085b8d"), compat="=$(MUMPS_seq_version_LBT)"),
+    # MUMPS may break between minor versions, but ~ should be safe because this
+    # allows only the patch version to change.
+    Dependency(PackageSpec(name="MUMPS_seq_jll", uuid="d7ed1dd3-d0ae-5e8e-bfb4-87a502085b8d"), compat="~$(MUMPS_seq_version_LBT)"),
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
