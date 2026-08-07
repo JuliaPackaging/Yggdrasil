@@ -7,8 +7,8 @@ version = v"0.9.3"
 
 # Sources required to build cimnodes_editor
 sources = [
-    GitSource("https://github.com/cimgui/cimnodes_editor.git",
-              "552cc280792e3cde4d7012ff31b4c85cf083ada8"),
+    GitSource("https://github.com/JamesWrigley/cimnodes_editor.git",
+              "c35c47e56e3109468fc6372cdc6eb44ca65d0af3"),
 
     # Clone the cimgui version CImGuiPack_jll is built with
     GitSource("https://github.com/cimgui/cimgui.git",
