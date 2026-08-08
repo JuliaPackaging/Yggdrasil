@@ -7,14 +7,18 @@ version = v"0.0.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sjp95/qkrylov.git", "c401ad20389eacb6af0df12e2d2d8f0a73817732")
+    GitSource("https://github.com/sjp95/qkrylov.git", "84b6665fceccb4f6d8ac61a61f6ba4688dd400a3")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/qkrylov*
+cd $WORKSPACE/srcdir
+if [ -d qkrylov* ]; then
+    cd qkrylov*
+fi
 
-mkdir build && cd build
+rm -rf build
+mkdir -p build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_BUILD_TYPE=Release \
