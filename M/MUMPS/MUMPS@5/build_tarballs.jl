@@ -65,7 +65,7 @@ fi
 # Keep images in the low 2 GB.
 EXTRA_LDFLAGS=()
 if [[ "${target}" == *mingw* ]]; then
-    EXTRA_LDFLAGS+=("-Wl,--disable-high-entropy-va")
+    EXTRA_LDFLAGS+=("-Wl,--disable-dynamicbase")
 fi
 
 # Override MPItrampoline's built-in compiler paths
