@@ -60,7 +60,7 @@ elif [[ ${bb_full_target} == *openmpi* ]]; then
 fi
 
 EXTRA_LDFLAGS=()
-if [[ "${target}" == *w64-mingw* ]]; then
+if [[ "${target}" == *x86_64-w64-mingw* ]]; then
     # On mingw/x86_64, cross-DLL references to un-`dllimport`ed data symbols are
     # resolved via mingw's 32-bit runtime pseudo-relocations. Under high-entropy
     # ASLR two DLLs can map >2 GB apart, overflowing the 32-bit fixup and aborting
