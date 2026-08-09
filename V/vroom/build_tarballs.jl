@@ -34,20 +34,39 @@ if [[ ${target} == *-w64-mingw32 ]]; then
     done
 fi
 cd src
+# `problems/vrp.h` uses `std::counting_semaphore` without including
+# <semaphore>: this only works with libstdc++, which pulls it in
+# transitively. Fixed upstream after v1.15.0 (commit 3bd437a, issue #1333).
+sed -i -e '/#include <set>/i #include <semaphore>' problems/vrp.h
 # FreeBSD: use GCC since clang setup is incomplete for this target.
 if [[ "${target}" == *-freebsd* ]]; then
     export CC=gcc
     export CXX=g++
 fi
 # macOS: use default Apple clang with the macOS 15.0 SDK installed above.
-# libc++ from macOS 15.0 SDK ships `std::format` and `std::jthread`, both
-# required by vroom v1.15.0. Available GCC for aarch64-apple-darwin
-# (GCCBootstrap-12.0.1-iains) lacks `std::format`, so GCC is not an option.
+# libc++ from macOS 15.0 SDK ships `std::format`, required by vroom v1.15.0.
+# Available GCC for aarch64-apple-darwin (GCCBootstrap-12.0.1-iains) lacks
+# `std::format`, so GCC is not an option.
+if [[ "${target}" == *-apple-darwin* ]]; then
+    # That libc++ (LLVM 18) hides `std::jthread` behind the experimental
+    # library, see `__thread/jthread.h`. It is header-only, so enabling it
+    # does not require linking against libc++experimental.
+    #
+    # asio v1.18.1 only detects `std::invoke_result` for MSVC and otherwise
+    # falls back to `std::result_of`, which libc++ removed in C++20 (but
+    # libstdc++ still provides). Force the `std::invoke_result` code path.
+    #
+    # The makefile assigns `CXXFLAGS` unconditionally, so the flags cannot be
+    # passed through the environment and go through `CXX` instead.
+    export CXX="${CXX} -D_LIBCPP_ENABLE_EXPERIMENTAL -DASIO_HAS_STD_INVOKE_RESULT=1"
+fi
 make -j${nproc}
 install -Dvm 755 ../bin/vroom${exeext} -t ${bindir}
 """
 
-# Install the macOS 15.0 SDK so libc++ has std::format + std::jthread.
+# Install the macOS 15.0 SDK so libc++ has std::format + std::jthread. It also
+# sets MACOSX_DEPLOYMENT_TARGET to 15.0, needed for the floating point
+# `std::to_chars` that `std::format` uses (only available from macOS 13.3).
 sources, script = require_macos_sdk("15.0", sources, script)
 
 # These are the platforms we will build for by default, unless further
