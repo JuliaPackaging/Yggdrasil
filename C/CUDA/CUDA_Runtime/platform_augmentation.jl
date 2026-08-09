@@ -265,6 +265,10 @@ function cuda_toolkit_tag()
             return thisminor(toolkit) == thisminor(cuda_version_override)
         end
 
+        # never auto-select an EA/preview toolkit; those have to be requested explicitly
+        # through the "version" preference (handled by the early return above).
+        toolkit in cuda_prerelease_toolkits && return false
+
         # enhanced compatibility
         #
         # "From CUDA 11 onwards, applications compiled with a CUDA Toolkit release
