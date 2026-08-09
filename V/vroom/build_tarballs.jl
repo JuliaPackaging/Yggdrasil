@@ -34,9 +34,7 @@ if [[ ${target} == *-w64-mingw32 ]]; then
     done
 fi
 cd src
-# `problems/vrp.h` uses `std::counting_semaphore` without including
-# <semaphore>: this only works with libstdc++, which pulls it in
-# transitively. Fixed upstream after v1.15.0 (commit 3bd437a, issue #1333).
+# Hardcode the fix https://github.com/VROOM-Project/vroom/pull/1333
 sed -i -e '/#include <set>/i #include <semaphore>' problems/vrp.h
 # FreeBSD: use GCC since clang setup is incomplete for this target.
 if [[ "${target}" == *-freebsd* ]]; then
