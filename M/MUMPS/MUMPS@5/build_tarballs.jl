@@ -59,6 +59,15 @@ elif [[ ${bb_full_target} == *openmpi* ]]; then
     MPILIBS=(-lmpi_usempif08 -lmpi_usempi_ignore_tkr -lmpi_mpifh -lmpi)
 fi
 
+# Avoid "32 bit pseudo relocation out of range" aborts on Windows:
+# mingw's 32-bit runtime pseudo-relocs (used for cross-DLL Fortran COMMON data)
+# overflow when High-Entropy ASLR places DLLs >2 GB apart.
+# Keep images in the low 2 GB.
+EXTRA_LDFLAGS=()
+if [[ "${target}" == *mingw* ]]; then
+    EXTRA_LDFLAGS+=("-Wl,--disable-high-entropy-va")
+fi
+
 # Override MPItrampoline's built-in compiler paths
 export MPITRAMPOLINE_CC=cc
 export MPITRAMPOLINE_CXX=c++
@@ -83,7 +92,7 @@ FSCOTCH="-Dscotch"
 
 make_args+=(PLAT="par" \
             OPTF="-O3 -fopenmp" \
-            OPTL="-O3 -l${OMP}" \
+            OPTL="-O3 -l${OMP} ${EXTRA_LDFLAGS[*]}" \
             OPTC="-O3 -fopenmp" \
             CDEFS=-DAdd_ \
             LMETISDIR="${libdir}" \
