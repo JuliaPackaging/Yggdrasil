@@ -17,8 +17,6 @@ git submodule update --init
 
 export CXXFLAGS="${CXXFLAGS:-} -std=c++17"
 
-atomic_patch -p1 ../patches/fix-std-function-signatures.patch
-
 mkdir build && cd build
 
 CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
@@ -52,18 +50,11 @@ augment_platform_block = """
 
 # We attempt to build for all defined platforms
 platforms = expand_gfortran_versions(expand_cxxstring_abis(supported_platforms(; exclude=!Sys.islinux)))
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.1", OpenMPI_compat="4.1.6, 5")
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
 platforms = filter(p -> libgfortran_version(p) ≠ v"3", platforms)
 
 # SLATE does not build on riscv64
 platforms = filter(p -> !(arch(p) == "riscv64"), platforms)
-
-# Avoid platforms where the MPI implementation isn't supported
-# OpenMPI
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
-# MPItrampoline
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
 products = [
     LibraryProduct("libslate", :libslate),
