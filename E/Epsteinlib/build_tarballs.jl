@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Epsteinlib"
-version = v"0.5.1"
+version = v"0.6.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/epsteinlib/epsteinlib.git", "0ce7c02717da95d4def7a14ff1ec0300b22df805")
+    GitSource("https://github.com/epsteinlib/epsteinlib.git", "a1f130459762603e4c4a507fda2b38f354de3090")
 ]
 
 # Bash recipe for building across all platforms
