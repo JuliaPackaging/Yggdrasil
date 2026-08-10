@@ -3,12 +3,6 @@
 using Base.BinaryPlatforms
 include("../common.jl")
 
-# See https://github.com/JuliaLang/Pkg.jl/issues/2942
-# Once this Pkg issue is resolved, this must be removed
-using Pkg
-uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
-delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
-
 gap_version = v"400.1600.0"
 gap_upstream_version = v"4.16.0"
 name = "JuliaInterface"
