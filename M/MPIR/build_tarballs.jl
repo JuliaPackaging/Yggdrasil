@@ -17,9 +17,6 @@ cd $WORKSPACE/srcdir/mpir
 
 apk add texinfo
 
-# Symlink the nasm executable into yasm to make the build use it
-ln -s ${host_bindir}/nasm ${host_bindir}/yasm
-
 # Our C compilers are too new for the configure script in this
 # package. We need to disable errors (that used to be warnings) for
 # implicit function declarations.
@@ -54,7 +51,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    HostBuildDependency("NASM_jll"),
+    # YASM is basically unsupported, but MPIR doesn't seem to support building
+    # with NASM (an alternative assembler) based on this upstream discussion:
+    # https://groups.google.com/g/mpir-devel/c/JU0d9Bh2MAc
+    HostBuildDependency("YASM_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
