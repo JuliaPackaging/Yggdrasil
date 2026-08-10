@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "libpsl"
-version = v"0.21.5"
+version = v"0.23.1"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/rockdaboot/libpsl/releases/download/$(version)/libpsl-$(version).tar.gz",
-                  "1dcc9ceae8b128f3c0b3f654decd0e1e891afc6ff81098f227ef260449dae208")
+                  "8fbb03054556498ba9c4cc48fcaa36a4483748c6504a65bdb9ba348f555b0e56")
 ]
 
 # Bash recipe for building across all platforms

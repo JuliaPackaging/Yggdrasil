@@ -4,12 +4,11 @@ const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MUMPS"
-version = v"5.8.2" 
-ygg_version = v"5.8.4"          # we updated compat bounds to build for MPIABI
+version = v"5.9.1"
 
 sources = [
   ArchiveSource("https://mumps-solver.org/MUMPS_$(version).tar.gz",
-                "eb515aa688e6dbab414bb6e889ff4c8b23f1691a843c68da5230a33ac4db7039")
+                "659c9b57646b5a003ac618baa1faf9dd2044e46c732b3daaccbc7158003e1b46")
 ]
 
 # Bash recipe for building across all platforms
@@ -39,6 +38,14 @@ else
   BLAS_LAPACK="-L${libdir} -lblastrampoline"
 fi
 
+if [[ "${target}" == *apple* ]] || [[ "${target}" == *freebsd* ]]; then
+    OMP=omp
+elif [[ "${target}" == *mingw* ]]; then
+    OMP=gomp-1
+else
+    OMP=gomp
+fi
+
 MPILIBS=()
 if [[ ${bb_full_target} == *microsoftmpi* ]]; then
     MPILIBS=(-lmsmpi)
@@ -50,6 +57,17 @@ elif [[ ${bb_full_target} == *mpitrampoline* ]]; then
     MPILIBS=(-lmpitrampoline)
 elif [[ ${bb_full_target} == *openmpi* ]]; then
     MPILIBS=(-lmpi_usempif08 -lmpi_usempi_ignore_tkr -lmpi_mpifh -lmpi)
+fi
+
+EXTRA_LDFLAGS=()
+if [[ "${target}" == *x86_64-w64-mingw* ]]; then
+    # On mingw/x86_64, cross-DLL references to un-`dllimport`ed data symbols are
+    # resolved via mingw's 32-bit runtime pseudo-relocations. Under high-entropy
+    # ASLR two DLLs can map >2 GB apart, overflowing the 32-bit fixup and aborting
+    # at load: "32 bit pseudo relocation ... out of range". Disabling the runtime
+    # pseudo-relocs fixes the crash and keeps ASLR fully enabled. (The link would
+    # fail here if any such data import genuinely needed a runtime fixup.)
+    EXTRA_LDFLAGS+=("-Wl,--disable-runtime-pseudo-reloc")
 fi
 
 # Override MPItrampoline's built-in compiler paths
@@ -76,7 +94,7 @@ FSCOTCH="-Dscotch"
 
 make_args+=(PLAT="par" \
             OPTF="-O3 -fopenmp" \
-            OPTL="-O3 -fopenmp" \
+            OPTL="-O3 -l${OMP} ${EXTRA_LDFLAGS[*]}" \
             OPTC="-O3 -fopenmp" \
             CDEFS=-DAdd_ \
             LMETISDIR="${libdir}" \
@@ -126,6 +144,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD systems),
+    # and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
+    # We need libgfortran from `CompilerSupportLibraries_jll` for all platforms.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70"); compat="5.1.3"),
     Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa"); compat="4.0.7"),
@@ -139,5 +161,5 @@ append!(dependencies, platform_dependencies)
 
 # Build the tarballs
 # We require Julia 1.9 since SCALAPACK32 only supports Julia 1.9
-build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.9", preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               augment_platform_block, julia_compat="1.9", preferred_gcc_version=v"9")

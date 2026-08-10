@@ -41,6 +41,10 @@ atomic_patch -p1 ../patches/quiet-verbosity.patch
 # fix "bad any_cast" in xrt::device::get_info's kdma case
 atomic_patch -p1 ../patches/kdma_any_cast.patch
 
+# don't call external grep, it spams warnings due to it picking up Julia's libpcre
+# through LD_LIBRARY_PATH
+atomic_patch -p1 ../patches/no-external-grep-in-wrappers.patch
+
 if [[ "${target}" == *-w64-* ]]; then
     atomic_patch -p1 ../patches/windows/aligned_malloc.patch
     atomic_patch -p1 ../patches/windows/no_static_boost.patch
