@@ -55,6 +55,9 @@ platforms = expand_gfortran_versions(expand_cxxstring_abis(supported_platforms(;
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.1", OpenMPI_compat="4.1.6, 5")
 platforms = filter(p -> libgfortran_version(p) ≠ v"3", platforms)
 
+# SLATE does not build on riscv64
+platforms = filter(p -> !(arch(p) == "riscv64"), platforms)
+
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
