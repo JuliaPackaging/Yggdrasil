@@ -4,8 +4,8 @@ index 0000000..50ac395
 --- /dev/null
 +++ b/CMakeLists.txt
 @@ -0,0 +1,105 @@
-+# SPDX-FileCopyrightText: 2021-2024 The Ikarus Developers mueller@ibb.uni-stuttgart.de
-+# SPDX-License-Identifier: LGPL-3.0-or-later
++# SPDX-FileCopyrightText: 2025 Henrik Jakob jakob@ibb.uni-stuttgart.de
++# SPDX-License-Identifier: GPL-3.0-or-later
 +
 +# This file is intended to generate a CMake project for the Muesli material library, and is not part of said library
 +
@@ -63,7 +63,10 @@ index 0000000..50ac395
 +install(TARGETS muesli EXPORT muesli-targets
 +  LIBRARY DESTINATION lib
 +  ARCHIVE DESTINATION lib
++  RUNTIME DESTINATION bin
 +)
++
++install(DIRECTORY muesli
 +
 +install(DIRECTORY muesli
 +  DESTINATION include/
