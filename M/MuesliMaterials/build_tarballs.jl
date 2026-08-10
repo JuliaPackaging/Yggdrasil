@@ -7,7 +7,7 @@ version = v"1.16.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://bitbucket.org/ignromero/muesli.git", "d03610adcf0294693ad033bf6f475718fb4a8ca0")
+    GitSource("https://bitbucket.org/ignromero/muesli.git", "345c6c044f6cecd347442b19aeb707a338fd5e9e")
     DirectorySource("bundled")
 ]
 
