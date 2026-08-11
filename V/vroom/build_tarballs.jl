@@ -9,6 +9,7 @@ version = v"1.15.0"
 sources = [
     # v1.15.0
     GitSource("https://github.com/VROOM-Project/vroom.git", "43dd7d0b8b560431eb555bf335cf4797eb7343c4"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -20,6 +21,8 @@ if [[ ${target} == *-w64-mingw32 ]]; then
     export LDFLAGS="-L${libdir} ${LDFLAGS}"
 fi
 cd vroom
+# https://github.com/VROOM-Project/vroom/pull/1333
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/include-semaphore.patch
 git submodule init
 git submodule update
 if [[ ${target} == *-w64-mingw32 ]]; then
@@ -34,8 +37,6 @@ if [[ ${target} == *-w64-mingw32 ]]; then
     done
 fi
 cd src
-# Hardcode the fix https://github.com/VROOM-Project/vroom/pull/1333
-sed -i -e '/#include <set>/i #include <semaphore>' problems/vrp.h
 # FreeBSD: use GCC since clang setup is incomplete for this target.
 if [[ "${target}" == *-freebsd* ]]; then
     export CC=gcc
