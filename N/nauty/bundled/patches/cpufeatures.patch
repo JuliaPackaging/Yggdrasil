@@ -1,0 +1,28 @@
+Do not give up on the popcnt and lzcnt checks when cross compiling
+
+configure works out whether the CPU supports the popcnt and lzcnt instructions
+by running a small test program. That is impossible when building for another
+system, and with no value given for the cross-compiling case configure gives up
+entirely. Assume the instructions are absent, which is what --enable-generic
+wants anyway.
+
+--- a/configure.ac
++++ b/configure.ac
+@@ -352,7 +352,7 @@
+ dnl --check if popcnt instruction is available and desired
+ AC_MSG_CHECKING(if popcnt instruction is available and requested)
+ AC_RUN_IFELSE([AC_LANG_PROGRAM([],[[if (__builtin_cpu_supports("popcnt")) return 0; else return 1;]])],
+-  popsup=1,popsup=0)
++  popsup=1,popsup=0,popsup=0)
+ 
+ AS_IF([test "$allow_popcnt" -eq 1],
+       [have_hwpopcnt=$popsup
+@@ -457,7 +457,7 @@
+ dnl --check if lzcnt instruction is available and requested
+ AC_MSG_CHECKING(if lzcnt instruction is available and requested)
+ AC_RUN_IFELSE([AC_LANG_PROGRAM([],[[if (__builtin_cpu_supports("bmi")) return 0; else return 1;]])],
+-  lzsup=1,lzsup=0)
++  lzsup=1,lzsup=0,lzsup=0)
+ AS_IF([test "$allow_clz" -eq 1],
+       [have_hwlzcnt=$lzsup
+ test -f /proc/cpuinfo && $EGREP -i "abm|bmi1" /proc/cpuinfo >/dev/null && have_hwlzcnt=1 
