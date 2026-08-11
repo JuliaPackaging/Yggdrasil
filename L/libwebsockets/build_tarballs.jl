@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libwebsockets"
-version = v"4.4.0"
+version = v"4.5.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/warmcat/libwebsockets.git", "e636b7bd133c4c0bfbdbf0d77afebdb20e09a5a2"),
+    GitSource("https://github.com/warmcat/libwebsockets.git", "929917e2af6d9b85d5874f6e8927b78d00d0ef13"),
 ]
 
 # Bash recipe for building across all platforms
@@ -24,7 +24,7 @@ export CMAKE_SHARED_LINKER_FLAGS="${EXTRA_SHARED_LDFLAGS}"
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_BUILD_TYPE=DEBUG \
     -DGENCERTS=OFF \
     -DCMAKE_C_FLAGS="${CFLAGS} -Duv_poll_init_socket=uv_poll_init" \
     -DZLIB_LIBRARY=${libdir}/libz.${dlext} \
