@@ -59,6 +59,17 @@ elif [[ ${bb_full_target} == *openmpi* ]]; then
     MPILIBS=(-lmpi_usempif08 -lmpi_usempi_ignore_tkr -lmpi_mpifh -lmpi)
 fi
 
+EXTRA_LDFLAGS=()
+if [[ "${target}" == *x86_64-w64-mingw* ]]; then
+    # On mingw/x86_64, cross-DLL references to un-`dllimport`ed data symbols are
+    # resolved via mingw's 32-bit runtime pseudo-relocations. Under high-entropy
+    # ASLR two DLLs can map >2 GB apart, overflowing the 32-bit fixup and aborting
+    # at load: "32 bit pseudo relocation ... out of range". Disabling the runtime
+    # pseudo-relocs fixes the crash and keeps ASLR fully enabled. (The link would
+    # fail here if any such data import genuinely needed a runtime fixup.)
+    EXTRA_LDFLAGS+=("-Wl,--disable-runtime-pseudo-reloc")
+fi
+
 # Override MPItrampoline's built-in compiler paths
 export MPITRAMPOLINE_CC=cc
 export MPITRAMPOLINE_CXX=c++
@@ -83,7 +94,7 @@ FSCOTCH="-Dscotch"
 
 make_args+=(PLAT="par" \
             OPTF="-O3 -fopenmp" \
-            OPTL="-O3 -l${OMP}" \
+            OPTL="-O3 -l${OMP} ${EXTRA_LDFLAGS[*]}" \
             OPTC="-O3 -fopenmp" \
             CDEFS=-DAdd_ \
             LMETISDIR="${libdir}" \
