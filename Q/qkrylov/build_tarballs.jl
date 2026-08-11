@@ -12,10 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-if [ -d qkrylov* ]; then
-    cd qkrylov*
-fi
+cd ${WORKSPACE}/srcdir/qkrylov*
 
 rm -rf build
 mkdir -p build && cd build
