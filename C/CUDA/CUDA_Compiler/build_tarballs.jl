@@ -151,7 +151,7 @@ function get_products(version::VersionNumber)
         nvjitlink_dll = version >= v"13" ? "nvJitLink_130_0" : "nvJitLink_120_0"
         push!(products, LibraryProduct(["libnvJitLink", nvjitlink_dll], :libnvJitLink))
     end
-    if version >= v"13.2"
+    if version >= v"13.1"
         push!(products, ExecutableProduct("tileiras", :tileiras))
     end
     return products
@@ -173,7 +173,7 @@ for version in compiler_versions
     if version >= v"13"
         push!(components, "libnvvm")
     end
-    if version >= v"13.2"
+    if version >= v"13.1"
         push!(components, "cuda_tileiras")
     end
 
