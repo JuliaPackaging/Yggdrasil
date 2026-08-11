@@ -7,7 +7,7 @@ version = v"0.6.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/epsteinlib/epsteinlib.git", "fb16dbc45412cdf00792bab1d8a0df4da288ea01")
+    GitSource("https://github.com/epsteinlib/epsteinlib.git", "4283b41209c6eab32ed5340a37e6e2d1708e15a3")
 ]
 
 # Bash recipe for building across all platforms
