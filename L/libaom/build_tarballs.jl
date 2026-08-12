@@ -3,22 +3,17 @@
 using BinaryBuilder, BinaryBuilderBase, Pkg
 
 name = "libaom"
-version = v"3.13.3"
+version = v"3.14.1"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://storage.googleapis.com/aom-releases/libaom-$(version).tar.gz",
-                  "446a4ae9741cb8f3eeb98c949d25f91b48cb2b8569cae975c4b737392e9024fc"),
-    DirectorySource("bundled"),
+                  "44bf90dbd23e734d50e70a8c41c285193922938bd0d3bc2ee56764d181d55ef5"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/libaom-*
-
-# Add missing stdint.h includes
-# Reported upstream as <https://aomedia.issues.chromium.org/u/1/issues/432730317>
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/inttypes.patch
 
 CMAKE_FLAGS=()
 if [[ ${target} = arm-* ]]; then
