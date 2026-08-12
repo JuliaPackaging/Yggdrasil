@@ -54,6 +54,9 @@ if [[ ${target} == *-linux-gnu ]]; then
     mv cuda_nvdisasm/bin/nvdisasm ${bindir}
     if [[ -d cuda_tileiras ]]; then
         mv cuda_tileiras/bin/tileiras ${bindir}
+        if [[ -f cuda_tileiras/bin/tileirdisasm ]]; then
+            mv cuda_tileiras/bin/tileirdisasm ${bindir}
+        fi
     fi
 elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     # normalize the layout of the library components: starting with CUDA 13 there's an
@@ -90,6 +93,9 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     mv cuda_nvdisasm/bin/nvdisasm.exe ${bindir}
     if [[ -d cuda_tileiras ]]; then
         mv cuda_tileiras/bin/tileiras.exe ${bindir}
+        if [[ -f cuda_tileiras/bin/tileirdisasm.exe ]]; then
+            mv cuda_tileiras/bin/tileirdisasm.exe ${bindir}
+        fi
     fi
 
     # Fix permissions
@@ -151,8 +157,12 @@ function get_products(version::VersionNumber)
         nvjitlink_dll = version >= v"13" ? "nvJitLink_130_0" : "nvJitLink_120_0"
         push!(products, LibraryProduct(["libnvJitLink", nvjitlink_dll], :libnvJitLink))
     end
-    if version >= v"13.2"
+    if version >= v"13.1"
         push!(products, ExecutableProduct("tileiras", :tileiras))
+    end
+    if version >= v"13.4"
+        # NVIDIA started shipping the Tile IR disassembler with CUDA 13.4
+        push!(products, ExecutableProduct("tileirdisasm", :tileirdisasm))
     end
     return products
 end
@@ -173,7 +183,7 @@ for version in compiler_versions
     if version >= v"13"
         push!(components, "libnvvm")
     end
-    if version >= v"13.2"
+    if version >= v"13.1"
         push!(components, "cuda_tileiras")
     end
 
