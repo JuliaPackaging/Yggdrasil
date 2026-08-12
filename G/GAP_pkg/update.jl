@@ -7,9 +7,9 @@ using GZip
 using JSON
 using SHA
 
-gap_upstream_version = v"4.16.0"
-gap_version = v"400.1600.000"
-gap_lib_version = v"400.1600.000"
+gap_upstream_version = v"4.16.1-beta1" # TODO: change to v"4.16.1"
+gap_version = v"400.1600.0"
+gap_lib_version = v"400.1600.90"       # TODO: change to v"400.1600.100"
 
 function download_with_sha256(url)
     io = IOBuffer()
@@ -72,7 +72,7 @@ function update_gap_pkg_recipe(dir)
 
     # new metadata from the GAP package registry
     if pkgname == "juliainterface"
-        upstream_version = "0.16.0"
+        upstream_version = "0.17.4"
         sha256 = "DUMMY"
     else
         meta = pkginfo[pkgname]
