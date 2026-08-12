@@ -35,8 +35,9 @@ case ${target} in
         # Building only for AMD processors.
         export BLI_CONFIG=amd,reference
         export BLI_THREAD=openmp
-        # Wrapper for posix_memalign calls.
+        # Wrapper for posix_memalign calls, and matching _aligned_free calls.
         patch src/memory/aligned_allocator.hpp < ${WORKSPACE}/srcdir/patches/aligned_allocator.hpp.mingw.patch
+        patch src/memory/memory_pool.hpp < ${WORKSPACE}/srcdir/patches/memory_pool.hpp.mingw.patch
         # Additional linking parameter needed for MinGW Autoconf.
         # Update Autoconf parameters and refresh.
         cd src/external/tci
