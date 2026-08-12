@@ -23,11 +23,13 @@ for i in ./Makefile.* ./configure*; do
 
 done
 
+# The `x86` meta-configuration includes `knl`, whose kernels need -mavx512pf.
+# Clang dropped that flag in LLVM 14, so list the configurations explicitly.
 case ${target} in
     # Unlike stated in Wiki, 
     # TBLIS automatically detects threading model.
     *"x86_64"*"linux"*"gnu"*) 
-        export BLI_CONFIG=x86,reference
+        export BLI_CONFIG=core2,sandybridge,haswell,skx1,skx2,amd,reference
         export BLI_THREAD=openmp
         ;;
     *"x86_64"*"w64"*)
@@ -50,11 +52,11 @@ case ${target} in
         update_configure_scripts --reconf
         ;;
     *"x86_64"*"apple"*) 
-        export BLI_CONFIG=x86,reference
+        export BLI_CONFIG=core2,sandybridge,haswell,skx1,skx2,amd,reference
         export BLI_THREAD=openmp
         ;;
     *"x86_64"*"freebsd"*) 
-        export BLI_CONFIG=x86,reference
+        export BLI_CONFIG=core2,sandybridge,haswell,skx1,skx2,amd,reference
         export BLI_THREAD=openmp
         ;;
     *)
@@ -103,4 +105,6 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"7.1.0", clang_use_lld=false)
+# GCC 7 tags the build libgfortran4, for which CompilerSupportLibraries_jll no
+# longer ships an artifact, so libgomp is missing and the products fail to dlopen.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"8.1.0", clang_use_lld=false)
