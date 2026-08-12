@@ -30,6 +30,14 @@ function download_with_sha256(url)
     end
 end
 
+# check the current branch before committing anything
+branch = readchomp(`git branch --show-current`)
+if branch in ("main", "master")
+    error("refusing to commit directly to $branch")
+elseif isempty(branch)
+    error("refusing to commit from a detached HEAD")
+end
+
 # download latest package-infos
 download_with_sha256("https://github.com/gap-system/gap/releases/download/v$(gap_upstream_version)/package-infos.json.gz")
 
@@ -83,7 +91,8 @@ function update_gap_pkg_recipe(dir)
     end
 
     # if there are no changes, do nothing
-    if old_gap_version == gap_version && old_gap_lib_version == gap_lib_version && old_upstream_version == upstream_version
+    upstream_changed = old_upstream_version != upstream_version
+    if old_gap_version == gap_version && old_gap_lib_version == gap_lib_version && !upstream_changed
         # However, detect and warn if the archive changed with the version staying fixed.
         # That should never happen, but better be paranoid
         if pkgname != "juliainterface"
@@ -91,8 +100,8 @@ function update_gap_pkg_recipe(dir)
             @assert old_sha256 == sha256
         end
         @info "skipping $pkgname"
-        return
-    elseif old_upstream_version != upstream_version
+        return false
+    elseif upstream_changed
         _old_upstream_version = VersionNumber(replace(old_upstream_version, "-" => "."))
         _upstream_version = VersionNumber(replace(upstream_version, "-" => "."))
         if _old_upstream_version.major != _upstream_version.major
@@ -126,6 +135,14 @@ function update_gap_pkg_recipe(dir)
     # write out the result
     @info "updating $pkgname"
     write(path, recipe)
+    message = if upstream_changed
+        "[GAP_pkg_$(pkgname)] Update to v$(upstream_version)"
+    else
+        "[GAP_pkg_$(pkgname)] Rebuild with GAP $(gap_upstream_version)"
+    end
+    run(`git add -- $(dir)/`)
+    run(`git commit -m $message -- $(dir)/`)
+    return true
 end
 
 # get the names of all GAP package JLL recipes
