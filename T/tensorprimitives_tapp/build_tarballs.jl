@@ -29,9 +29,6 @@ install_license LICENSE-MIT LICENSE-APACHE
 platforms = supported_platforms()
 # BinaryBuilder's Rust toolchain does not work for 32-bit Windows.
 filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
-# No Rust toolchain shard exists for these two at any available version, so
-# `choose_shards` errors on them rather than falling back.
-filter!(p -> !(triplet(p) in ("riscv64-linux-gnu", "aarch64-unknown-freebsd")), platforms)
 
 # The products that we will ensure are always built
 products = [
