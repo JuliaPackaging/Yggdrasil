@@ -24,11 +24,8 @@ crates/tensorprimitives-tapp/install.sh --prefix="${prefix}" --libdir="${libdir}
 install_license LICENSE-MIT LICENSE-APACHE
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = supported_platforms()
 # BinaryBuilder's Rust toolchain does not work for 32-bit Windows.
-filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
+platforms = supported_platforms(; exclude = p -> Sys.iswindows(p) && arch(p) == "i686")
 
 # The products that we will ensure are always built
 products = [
