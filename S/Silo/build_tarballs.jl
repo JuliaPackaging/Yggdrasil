@@ -6,20 +6,17 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "Silo"
-version = v"4.12.0"
-ygg_version = v"4.12.1"         # we bumped the version to build against the new MPIABI
+version = v"4.12.1"
+ygg_version = v"4.12.2"         # we bumped the version to build against the new MPIABI
 
 sources = [
     ArchiveSource("https://github.com/LLNL/Silo/releases/download/$(version)/Silo-$(version).tar.xz",
-                  "bde1685e4547d5dd7416bd6215b41f837efef0e4934d938ba776957afbebdff0"),
+                  "9fdf81303b8dc7fab941e365f4156fe48d0bb036cdfdcb59a7c2d218771576b6"),
     DirectorySource("bundled"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/Silo*
-
-# Correct HDF5 compatibility
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/505.patch
 
 # Correct Windows support
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/windows.patch
@@ -36,7 +33,7 @@ cmake_options=(
     -DSILO_ENABLE_BROWSER=OFF
     -DSILO_ENABLE_FORTRAN=OFF
     -DSILO_ENABLE_HDF5=ON
-    -DSILO_ENABLE_JSON=ON
+    -DSILO_ENABLE_JSON=OFF
     -DSILO_ENABLE_PYTHON_MODULE=OFF
     -DSILO_ENABLE_SHARED=ON
     -DSILO_ENABLE_SILEX=OFF
