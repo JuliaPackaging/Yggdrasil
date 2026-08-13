@@ -16,8 +16,7 @@ cd $WORKSPACE/srcdir/tensorprimitives-rs
 RFLAGS=()
 if [[ "${target}" == *-musl* ]]; then
     RFLAGS+=(-C target-feature=-crt-static);
-fi
-if [[ "${target}" == *-apple-* ]]; then
+elif [[ "${target}" == *-apple-* ]]; then
     RFLAGS+=(-C link-arg=-Wl,-install_name,@rpath/libtensorprimitives_tapp.${dlext});
 elif [[ "${target}" != *-mingw* ]]; then
     RFLAGS+=(-C link-arg=-Wl,-soname,libtensorprimitives_tapp.${dlext});
