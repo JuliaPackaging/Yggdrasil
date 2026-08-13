@@ -2,6 +2,10 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+# Include Yggdrasil platform helpers for macOS SDK management
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "qkrylov"
 version = v"0.1.0"
 
@@ -13,6 +17,10 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/qkrylov*
+
+if [[ "${target}" == *-apple-darwin* ]]; then
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+fi
 
 rm -rf build
 mkdir -p build && cd build
@@ -28,6 +36,9 @@ make -j${nproc}
 make install
 install_license ../LICENSE
 """
+
+# Request macOS SDK 10.13 or newer
+sources, script = require_macos_sdk("10.13", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
