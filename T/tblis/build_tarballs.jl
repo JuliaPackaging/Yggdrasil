@@ -85,6 +85,7 @@ platforms = [
     Platform("x86_64", "windows")
 ]
 platforms = expand_cxxstring_abis(platforms)
+platforms = expand_gfortran_versions(platforms)
 
 
 # The products that we will ensure are always built
@@ -105,6 +106,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# GCC 7 tags the build libgfortran4, for which CompilerSupportLibraries_jll no
-# longer ships an artifact, so libgomp is missing and the products fail to dlopen.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"8.1.0", clang_use_lld=false)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"7.1.0", clang_use_lld=false)
