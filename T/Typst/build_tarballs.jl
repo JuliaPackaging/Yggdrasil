@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Typst"
-version = v"0.15.0"
+version = v"0.15.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/typst/typst.git", "3ae52774b48987fc78a72ff483068cacc28e46c2")
+    GitSource("https://github.com/typst/typst.git", "9dfd3a08500b7896045f907433cf7b4b02434fad"),
 ]
 
 # Bash recipe for building across all platforms
@@ -31,10 +31,11 @@ install_license LICENSE
 # Therefore we disable musl. Maybe we can switch to a newer musl at some point.
 
 platforms = supported_platforms(; exclude = p ->
-    arch(p) == "riscv64" ||     # rust not available
-    (Sys.isfreebsd(p) && arch(p) == "aarch64") || # rust not available
-    (Sys.iswindows(p) && arch(p) == "i686") || # rust linker fails
-    libc(p) == "musl" # see above
+    #TODO arch(p) == "riscv64" ||     # rust not available
+    #TODO (Sys.isfreebsd(p) && arch(p) == "aarch64") || # rust not available
+    #TODO (Sys.iswindows(p) && arch(p) == "i686") || # rust linker fails
+    #TODO libc(p) == "musl" # see above
+    false
 )
 
 # The products that we will ensure are always built
