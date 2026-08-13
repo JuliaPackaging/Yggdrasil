@@ -152,3 +152,36 @@ filter!(startswith("GAP_pkg_"), dirs)
 for dir in dirs
     update_gap_pkg_recipe(dir)
 end
+
+#=
+# After running the above script, you can use the following commands to build and (locally) deploy the updated GAP_pkg_* JLLs:
+
+export DEPLOY_NAMESPACE=$(gh api user -q ".login")
+
+export PKGS=$(git log master..HEAD --pretty=format:%s | cut -d ' ' -f 1 | cut -c 2- | rev | cut -c 2- | rev | sort | uniq | while read -r PKG; do [ -d "$PKG" ] && echo "$PKG"; done)
+session_started=0
+for PKG in $(printf '%s\n' "$PKGS"); do
+    sleep 1
+    echo "Starting build of ${PKG}..."
+    if [ $session_started -eq 0 ]; then
+        tmux new-session -d -s GAP_pkg -c "$PKG" -n "$PKG" bash
+        session_started=1
+    else
+        tmux new-window -d -t GAP_pkg: -c "$PKG" -n "$PKG" bash
+    fi
+    tmux send -t "$PKG" "julia --project=../../../.ci build_tarballs.jl --debug --verbose --deploy=$DEPLOY_NAMESPACE/${PKG}_jll.jl" C-m
+done
+
+if [ $session_started -eq 1 ]; then
+    tmux attach-session -t GAP_pkg
+fi
+
+
+# To add all of the deployed JLLs to the current Julia environment, you can run the following commands in a Julia REPL:
+julia --project -e "using Pkg; Pkg.add([
+    PackageSpec(url=\"https://github.com/${DEPLOY_NAMESPACE}/\$(pkg)_jll.jl\")
+    for pkg in split(\"${PKGS}\")
+])"
+
+
+=#
