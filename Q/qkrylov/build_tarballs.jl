@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "qkrylov"
-version = v"0.0.2"
+version = v"0.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sjp95/qkrylov.git", "84b6665fceccb4f6d8ac61a61f6ba4688dd400a3")
+    GitSource("https://github.com/sjp95/qkrylov.git", "34fdc86177467773cb9e00230ec11142957f3950")
 ]
 
 # Bash recipe for building across all platforms
