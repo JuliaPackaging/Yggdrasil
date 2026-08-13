@@ -31,11 +31,8 @@ install_license LICENSE
 # Therefore we disable musl. Maybe we can switch to a newer musl at some point.
 
 platforms = supported_platforms(; exclude = p ->
-    #TODO arch(p) == "riscv64" ||     # rust not available
-    #TODO (Sys.isfreebsd(p) && arch(p) == "aarch64") || # rust not available
-    #TODO (Sys.iswindows(p) && arch(p) == "i686") || # rust linker fails
-    #TODO libc(p) == "musl" # see above
-    false
+    (Sys.iswindows(p) && arch(p) == "i686") || # rust linker fails
+    libc(p) == "musl" # see above
 )
 
 # The products that we will ensure are always built
