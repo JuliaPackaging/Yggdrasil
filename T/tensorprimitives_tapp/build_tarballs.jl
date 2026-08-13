@@ -35,7 +35,6 @@ filter!(p -> !(triplet(p) in ("riscv64-linux-gnu", "aarch64-unknown-freebsd")), 
 
 # The products that we will ensure are always built
 products = [
-    # Two names: on mingw the DLL has no `lib` prefix.
     LibraryProduct(["libtensorprimitives_tapp", "tensorprimitives_tapp"], :libtensorprimitives_tapp),
     FileProduct("include/tapp.h", :tapp_h)
 ]
