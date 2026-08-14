@@ -3,8 +3,8 @@ using BinaryBuilder
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
-version = v"18.1.4"
-git_sha = "e6c3289804a67ea0bb6a86fadbe454dd93b8d855"
+version = v"22.1.8"
+git_sha = "e013073558445169e8732e25fa86e9913bfdd24e" # llvmorg-22.1.8
 
 script = raw"""
 # We want to exit the program if errors occur.
@@ -136,10 +136,10 @@ sources = [
     GitSource("https://github.com/llvm/llvm-project.git", git_sha),
 ]
 
-# LLVM 15 requires macOS SDK 10.14, see
+# LLVM 22 requires macOS SDK 11.0 (LLVM 15-21 needed 10.14), see
 # <https://github.com/JuliaPackaging/Yggdrasil/pull/5592#issuecomment-1309525112> and
 # references therein.
-sources, script = require_macos_sdk("10.14", sources, script)
+sources, script = require_macos_sdk("11.0", sources, script)
 
 platforms = expand_cxxstring_abis(supported_platforms())
 filter!(p -> arch(p) ∈ ("x86_64", "aarch64") && os(p) ∈ ("linux", "macos"), platforms)
@@ -148,6 +148,7 @@ products = [
     ExecutableProduct("llvm-bolt", :llvm_bolt),
     ExecutableProduct("llvm-boltdiff", :llvm_boltdiff),
     ExecutableProduct("llvm-bolt-heatmap", :llvm_bolt_heatmap),
+    ExecutableProduct("llvm-bolt-binary-analysis", :llvm_bolt_binary_analysis),
     ExecutableProduct("merge-fdata", :merge_fdata),
     ExecutableProduct("perf2bolt", :perf2bolt),
 ]
@@ -161,4 +162,4 @@ dependencies = [
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"10", preferred_llvm_version=v"16", julia_compat="1.6")
+               preferred_gcc_version=v"10", preferred_llvm_version=v"18", julia_compat="1.6")
