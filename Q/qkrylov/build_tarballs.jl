@@ -18,10 +18,6 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/qkrylov*
 
-if [[ "${target}" == *-apple-darwin* ]]; then
-    export MACOSX_DEPLOYMENT_TARGET=10.13
-fi
-
 rm -rf build
 mkdir -p build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
