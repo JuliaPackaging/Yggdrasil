@@ -35,14 +35,14 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libnvpl_blacs_ilp64_mpich", :libnvpl_blacs_ilp64_mpich),
-    LibraryProduct("libnvpl_blacs_ilp64_openmpi3", :libnvpl_blacs_ilp64_openmpi3),
-    LibraryProduct("libnvpl_blacs_ilp64_openmpi4", :libnvpl_blacs_ilp64_openmpi4),
-    LibraryProduct("libnvpl_blacs_ilp64_openmpi5", :libnvpl_blacs_ilp64_openmpi5),
-    LibraryProduct("libnvpl_blacs_lp64_mpich", :libnvpl_blacs_lp64_mpich),
-    LibraryProduct("libnvpl_blacs_lp64_openmpi3", :libnvpl_blacs_lp64_openmpi3),
-    LibraryProduct("libnvpl_blacs_lp64_openmpi4", :libnvpl_blacs_lp64_openmpi4),
-    LibraryProduct("libnvpl_blacs_lp64_openmpi5", :libnvpl_blacs_lp64_openmpi5),
+    LibraryProduct("libnvpl_blacs_ilp64_mpich", :libnvpl_blacs_ilp64_mpich; dont_dlopen=true),
+    LibraryProduct("libnvpl_blacs_ilp64_openmpi3", :libnvpl_blacs_ilp64_openmpi3; dont_dlopen=true),
+    LibraryProduct("libnvpl_blacs_ilp64_openmpi4", :libnvpl_blacs_ilp64_openmpi4; dont_dlopen=true),
+    LibraryProduct("libnvpl_blacs_ilp64_openmpi5", :libnvpl_blacs_ilp64_openmpi5; dont_dlopen=true),
+    LibraryProduct("libnvpl_blacs_lp64_mpich", :libnvpl_blacs_lp64_mpich; dont_dlopen=true),
+    LibraryProduct("libnvpl_blacs_lp64_openmpi3", :libnvpl_blacs_lp64_openmpi3; dont_dlopen=true),
+    LibraryProduct("libnvpl_blacs_lp64_openmpi4", :libnvpl_blacs_lp64_openmpi4; dont_dlopen=true),
+    LibraryProduct("libnvpl_blacs_lp64_openmpi5", :libnvpl_blacs_lp64_openmpi5; dont_dlopen=true),
     LibraryProduct("libnvpl_blas_core", :libnvpl_blas_core),
     LibraryProduct("libnvpl_blas_ilp64_gomp", :libnvpl_blas_ilp64_gomp),
     LibraryProduct("libnvpl_blas_ilp64_seq", :libnvpl_blas_ilp64_seq),
@@ -56,8 +56,8 @@ products = [
     LibraryProduct("libnvpl_lapack_lp64_seq", :libnvpl_lapack_lp64_seq),
     LibraryProduct("libnvpl_rand_mt", :libnvpl_rand_mt),
     LibraryProduct("libnvpl_rand", :libnvpl_rand),
-    LibraryProduct("libnvpl_scalapack_ilp64", :libnvpl_scalapack_ilp64),
-    LibraryProduct("libnvpl_scalapack_lp64", :libnvpl_scalapack_lp64),
+    LibraryProduct("libnvpl_scalapack_ilp64", :libnvpl_scalapack_ilp64; dont_dlopen=true),
+    LibraryProduct("libnvpl_scalapack_lp64", :libnvpl_scalapack_lp64; dont_dlopen=true),
     LibraryProduct("libnvpl_sparse", :libnvpl_sparse),
     LibraryProduct("libnvpl_tensor", :libnvpl_tensor),
 ]
