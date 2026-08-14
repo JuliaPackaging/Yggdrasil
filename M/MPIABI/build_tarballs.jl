@@ -7,14 +7,11 @@ name = "MPIABI"
 # We use semver for this package. Since this represents and ABI, and
 # not a package, it doesn't make sense to follow e.g. MPI's or
 # OpenMPI's released versions.
-#
-# We are currently at version 0.1 because some details of the ABI are still being hashed out, e.g. the library SOVERSION.
-version = v"0.1.5"
+version = v"1.0.0"
 
 # The MPI ABI does not provide Fortran bindings. Packages using this
 # ABI should use a different package, e.g.
-# [mpif](https://github.com/eschnett/mpif) or
-# [vapaa](https://github.com/jeffhammond/vapaa), to provide Fortran
+# [mpif](https://github.com/eschnett/mpif), to provide Fortran
 # bindings on top of this MPIABI.
 
 sources = [
@@ -23,12 +20,26 @@ sources = [
     # This corresponds to the MPI standard 5.0, MPI ABI 1.0.
     GitSource("https://github.com/mpi-forum/mpi-abi-stubs", "e3a9e9b16f86099723d287b6ab477626ab4956b8"),
 
-    # MPICH source, implementing the C bindings
-    ArchiveSource("https://www.mpich.org/static/downloads/5.0.1/mpich-5.0.1.tar.gz",
-                  "8c1832a13ddacf071685069f5fadfd1f2877a29e1a628652892c65211b1f3327"),
-    FileSource("https://github.com/pmodels/mpich/commit/689a0869c8f58167e3b0b5db13f8ce8db5f24009.patch?full_index=1",
-               "0cfb0980cd8b4debc7899fdb247aa3c4cb27b52e58e1a1f1bec1b096ec318f32";
-               filename="689a0869c8f58167e3b0b5db13f8ce8db5f24009.patch"),
+    # MPICH source, implementing the C bindings.
+    #
+    # We build from a commit on `main` rather than from the 5.0.1 release.
+    # This avoids a few patches that we would otherwise have to apply.
+    GitSource("https://github.com/pmodels/mpich", "ab53493dad85ffee0fc95812b250e1c8dacf7982"),
+
+    # MPICH's submodules, at the commits that the MPICH commit above records.
+    # The release tarball bundled these; a Git checkout does not, and the build
+    # sandbox cannot run `git submodule update`, so they come as their own
+    # sources. `modules/ucx` is deliberately absent: we never select the ucx
+    # netmod, and it has a nested submodule of its own. See `--without-ucx`
+    # below.
+    GitSource("https://github.com/pmodels/hwloc", "42bebfa5e4b96c99c2482645c8eb86d4755ef23b";
+              unpack_target="mpich-modules"),
+    GitSource("https://github.com/pmodels/json-c", "79ad1c9b9fcc846e6bc31f47b801d11ba6d8613a";
+              unpack_target="mpich-modules"),
+    GitSource("https://github.com/pmodels/libfabric", "090c8f066d4a9e54f324a26fb019554512ddd8e0";
+              unpack_target="mpich-modules"),
+    GitSource("https://github.com/pmodels/mydef_boot", "ea2d6852486755eb12e255f760e2eb62f5446329";
+              unpack_target="mpich-modules"),
 
     # Patches
     DirectorySource("bundled"),
@@ -39,22 +50,34 @@ script = raw"""
 # Build MPICH.
 #
 # MPICH is our default implementation.
-# In the future we will introduce a mechanism to swap out MPICH for another MPI implementation.
 
-cd ${WORKSPACE}/srcdir/mpich*
+cd ${WORKSPACE}/srcdir/mpich
+
+# Put MPICH's submodules in place. The checkout has them as empty gitlink
+# directories; `autogen.sh` needs real source trees there.
+mkdir -p modules
+for module in ${WORKSPACE}/srcdir/mpich-modules/*; do
+    rm -rf modules/$(basename ${module})
+    mv ${module} modules/
+done
 
 # MPICH does not include `<pthread_np.h>` on FreeBSD: <https://github.com/pmodels/mpich/issues/6821>.
 # (The MPICH developers say that this is a bug in MPICH and that
 # `<pthread_np.h>` should not actually be used on FreeBSD.)
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pthread_np.patch
 
-# Correct 32-bit bug in MPICH <https://github.com/pmodels/mpich/pull/7776>
-atomic_patch -p1 ${WORKSPACE}/srcdir/689a0869c8f58167e3b0b5db13f8ce8db5f24009.patch
-
-# Add C bindings missing from the MPI ABI
+# Add some Fortran-related C bindings that are not present in the MPI ABI
 cp ${WORKSPACE}/srcdir/files/fortran_binding_abi.c src/binding/abi/fortran_binding_abi.c
 perl -pi -e 's!src/binding/abi/c_binding_abi.c!src/binding/abi/c_binding_abi.c src/binding/abi/fortran_binding_abi.c!' src/binding/abi/Makefile.mk
-./autogen.sh
+# Fail loudly if upstream renamed the file we hooked into. Without this the
+# bindings would silently be left out of the library, and the failure would only
+# show up much later as undefined symbols when something links against it.
+grep -q 'fortran_binding_abi\.c' src/binding/abi/Makefile.mk
+
+# `--without-ucx`: `autogen.sh` insists on every submodule it might need being
+# checked out, and we do not ship `modules/ucx` (see the sources above). The ucx
+# netmod is never selected by the `--with-device` options below.
+./autogen.sh --without-ucx
 
 # - Do not install doc and man files which contain files which clashing names on
 #   case-insensitive file systems:
@@ -64,7 +87,7 @@ perl -pi -e 's!src/binding/abi/c_binding_abi.c!src/binding/abi/c_binding_abi.c s
 #   file `src/mpi/coll/mpir_coll.c`. It seems we need to avoid
 #   `alwaysinline`.
 # - We configure with Fortran although we do not provide any Fortran
-#   bindings. This ensures that the C API still supports Fortran types.
+#   bindings. This ensures that the C API still supports the Fortran types.
 configure_flags=(
     --build=${MACHTYPE}
     --disable-dependency-tracking
@@ -72,6 +95,7 @@ configure_flags=(
     --enable-fortran
     --enable-cxx=no
     --enable-fast=O3,ndebug,alwaysinline
+    --enable-shared=yes
     --enable-static=no
     --enable-mpi-abi
     --host=${target}
@@ -88,8 +112,7 @@ if [[ "${target}" == *-apple-* ]]; then
     )
 fi
 
-# Define some obscure undocumented variables needed for cross compilation of
-# the Fortran bindings.  See for example
+# Define variables needed for cross compilation of the Fortran bindings.  See for example
 # * https://stackoverflow.com/q/56759636/2442087
 # * https://github.com/pmodels/mpich/blob/d10400d7a8238dc3c8464184238202ecacfb53c7/doc/installguide/cfile
 export CROSS_F77_SIZEOF_INTEGER=4
@@ -147,8 +170,13 @@ fi
 
 ./configure "${configure_flags[@]}"
 
-# Disable MPI_File_{c2f,f2c} that shouldn't be there <https://github.com/pmodels/mpich/pull/7777>
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mpich-disable-file.patch
+# Stop here if libtool decided against shared libraries anyway, rather than
+# building for many minutes and failing much later with a confusing error.
+if ! grep -q '^build_libtool_libs=yes' libtool; then
+    echo "error: configure did not enable shared libraries:" >&2
+    grep '^build_libtool_libs=\|^can_build_shared=' libtool >&2
+    exit 1
+fi
 
 # Remove empty `-l` flags from libtool
 # (Why are they there? They should not be.)
@@ -161,52 +189,70 @@ sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
 make -j${nproc}
 make install
 
-# Remove all that provide the MPICH ABI (instead of the MPI ABI)
-
-ls -lR ${prefix}
-
-rm ${bindir}/mpicc_abi
-rm ${bindir}/mpichversion       # needs libmpi.so
-rm ${bindir}/mpicxx_abi
-rm ${bindir}/mpif77
-rm ${bindir}/mpif90
-rm ${bindir}/mpifort
-rm ${bindir}/mpivars            # needs libmpi.so
 # Switch compiler wrappers to using the MPI ABI, and correct the install directory
 sed -i -e 's/mpi_abi=no/mpi_abi=yes/' ${bindir}/mpicc
 sed -i -e 's/mpi_abi=no/mpi_abi=yes/' ${bindir}/mpicxx
 
-rm ${includedir}/mpi.h
-rm ${includedir}/mpi.mod
-rm ${includedir}/mpi_abi.h
-rm ${includedir}/mpi_base.mod
-rm -f ${includedir}/mpi_c_interface.mod
-rm -f ${includedir}/mpi_c_interface_cdesc.mod
-rm -f ${includedir}/mpi_c_interface_glue.mod
-rm -f ${includedir}/mpi_c_interface_nobuf.mod
-rm -f ${includedir}/mpi_c_interface_types.mod
-rm ${includedir}/mpi_constants.mod
-rm -f ${includedir}/mpi_f08.mod
-rm -f ${includedir}/mpi_f08_callbacks.mod
-rm -f ${includedir}/mpi_f08_compile_constants.mod
-rm -f ${includedir}/mpi_f08_link_constants.mod
-rm -f ${includedir}/mpi_f08_types.mod
-rm ${includedir}/mpi_proto.h
-rm ${includedir}/mpi_sizeofs.mod
-rm ${includedir}/mpif.h
-rm ${includedir}/pmpi_base.mod
-rm -f ${includedir}/pmpi_f08.mod
+# Expose the standard ABI only: remove everything that provides MPICH's own ABI
+# (its `mpi.h`, its Fortran modules, its non-ABI libraries and wrappers). A
+# consumer that still finds any of these can silently build against them instead
+# of against the ABI.
+#
+# A pattern that matches nothing is a warning rather than an error: upstream
+# renames files from time to time, and a stale entry should not break the build.
+# Unmatched globs stay literal here, so the `-e` test below rejects them.
 
-rm ${libdir}/libfmpich.*
-rm ${libdir}/libmpi.*
-rm ${libdir}/libmpich.*
-rm ${libdir}/libmpichcxx.*
-rm ${libdir}/libmpichf90.*
-rm ${libdir}/libmpifort.*
-rm ${libdir}/libmpl.*
-rm ${libdir}/libopa.*
-rm -f ${libdir}/libpmpi.*
-rm ${libdir}/pkgconfig/mpich.pc
+ls -lR ${prefix}
+
+prune=(
+    ${bindir}/mpicc_abi
+    ${bindir}/mpichversion      # needs libmpi.so
+    ${bindir}/mpicxx_abi
+    ${bindir}/mpif77
+    ${bindir}/mpif90
+    ${bindir}/mpifort           # mpif installs its own `mpifort`
+    ${bindir}/mpivars           # needs libmpi.so
+
+    ${includedir}/mpi.h         # replaced by the official ABI header below
+    ${includedir}/mpi.mod
+    ${includedir}/mpi_abi.h
+    ${includedir}/mpi_base.mod
+    ${includedir}/mpi_c_interface.mod
+    ${includedir}/mpi_c_interface_cdesc.mod
+    ${includedir}/mpi_c_interface_glue.mod
+    ${includedir}/mpi_c_interface_nobuf.mod
+    ${includedir}/mpi_c_interface_types.mod
+    ${includedir}/mpi_constants.mod
+    ${includedir}/mpi_f08.mod
+    ${includedir}/mpi_f08_callbacks.mod
+    ${includedir}/mpi_f08_compile_constants.mod
+    ${includedir}/mpi_f08_link_constants.mod
+    ${includedir}/mpi_f08_types.mod
+    ${includedir}/mpi_proto.h
+    ${includedir}/mpi_sizeofs.mod
+    ${includedir}/mpif.h
+    ${includedir}/mpix.h
+    ${includedir}/pmpi_base.mod
+    ${includedir}/pmpi_f08.mod
+
+    ${libdir}/libfmpich.*
+    ${libdir}/libmpi.*          # the non-ABI library
+    ${libdir}/libmpich.*
+    ${libdir}/libmpichcxx.*
+    ${libdir}/libmpichf90.*
+    ${libdir}/libmpifort.*
+    ${libdir}/libmpl.*
+    ${libdir}/libopa.*
+    ${libdir}/libpmpi.*
+    ${libdir}/pkgconfig/mpich.pc
+)
+for path in "${prune[@]}"; do
+    if [[ -e ${path} || -L ${path} ]]; then
+        rm -rf "${path}"
+    else
+        echo "warning: ${path} does not exist; has MPICH's install layout changed?"
+    fi
+done
 
 ls -lR ${prefix}
 
