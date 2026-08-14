@@ -66,6 +66,14 @@ done
 # `<pthread_np.h>` should not actually be used on FreeBSD.)
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pthread_np.patch
 
+# On FreeBSD, `__builtin_cpu_supports` references `__cpu_model`, which our
+# toolchain only provides via the shared `libgcc_s`. Linking a shared library
+# against a data symbol in another shared library is not possible, and the link
+# of `libmpifort.so` fails with a `R_X86_64_PC32` relocation error. MPL already
+# disables these builtins on macOS; do the same on FreeBSD. MPL then falls back
+# to its own `cpuid`-based CPU feature detection.
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/builtin_cpu_supports.patch
+
 # Add some Fortran-related C bindings that are not present in the MPI ABI
 cp ${WORKSPACE}/srcdir/files/fortran_binding_abi.c src/binding/abi/fortran_binding_abi.c
 perl -pi -e 's!src/binding/abi/c_binding_abi.c!src/binding/abi/c_binding_abi.c src/binding/abi/fortran_binding_abi.c!' src/binding/abi/Makefile.mk
@@ -83,9 +91,11 @@ grep -q 'fortran_binding_abi\.c' src/binding/abi/Makefile.mk
 #   case-insensitive file systems:
 #   * https://github.com/JuliaPackaging/Yggdrasil/pull/315
 #   * https://github.com/JuliaPackaging/Yggdrasil/issues/6344
-# - `--enable-fast=all,O3` leads to very long compile times for the
-#   file `src/mpi/coll/mpir_coll.c`. It seems we need to avoid
-#   `alwaysinline`.
+# - `alwaysinline` leads to very long compile times for the generated file
+#   `src/mpi/coll/mpir_coll.c`, to the point where the build looks hung. It is
+#   worst with the `ch4:ofi` device we use on macOS: `ch4` inlines the whole
+#   netmod and shm fast path into its callers, and `alwaysinline` then forces
+#   all of it into every collective in that one file.
 # - We configure with Fortran although we do not provide any Fortran
 #   bindings. This ensures that the C API still supports the Fortran types.
 configure_flags=(
@@ -94,7 +104,7 @@ configure_flags=(
     --disable-doc
     --enable-fortran
     --enable-cxx=no
-    --enable-fast=O3,ndebug,alwaysinline
+    --enable-fast=O3,ndebug
     --enable-shared=yes
     --enable-static=no
     --enable-mpi-abi
