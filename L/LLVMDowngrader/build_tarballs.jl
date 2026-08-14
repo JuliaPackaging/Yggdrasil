@@ -21,7 +21,7 @@ llvm_version = v"22.1.8+0"
 
 sources = [
     GitSource("https://github.com/JuliaLLVM/llvm-downgrade",
-              "93ece11c88ab5c99423619729b8b483b9262dd3d"),
+              "3d7b762387c71cc6ad578da79f11fcad273d3bd3"),
     # We also ship the `llvm-dis` from each LLVM release whose bitcode the
     # downgrader emits (as `llvm-dis-5` / `llvm-dis-7` / `llvm-dis-14` /
     # `llvm-dis-15` / `llvm-dis-18`), so the
