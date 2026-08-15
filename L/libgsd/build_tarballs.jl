@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libgsd"
-version = v"3.2.1"
+version = v"3.4.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/glotzerlab/gsd.git", "ad2417d0dbc455d1fb5aab525a919b36bc7f0851")
+    GitSource("https://github.com/glotzerlab/gsd.git", "434efac5e4af78096ee1da6c1918d0717e953c41")
 ]
 
 # Bash recipe for building across all platforms
