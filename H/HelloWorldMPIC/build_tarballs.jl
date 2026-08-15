@@ -7,7 +7,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "HelloWorldMPIC"
-version = v"1.0.0"
+version = v"1.0.1"
 
 # No sources, we're just building the testsuite
 sources = [
