@@ -10,13 +10,17 @@ version = v"22.1.8"
 sources = [
     ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/llvm-project-$(version).src.tar.xz",
                   "922f1817a0df7b1489272d18134ee0087a8b068828f87ac63b9861b1a9965888"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 mv llvm-project-* llvm-project
 
-cd llvm-project/llvm
+cd llvm-project
+atomic_patch -p1 ../amdgpu-i128-datalayout.patch
+
+cd llvm
 LLVM_SRCDIR=$(pwd)
 
 install_license LICENSE.TXT
