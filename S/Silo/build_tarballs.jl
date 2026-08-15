@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "Silo"
 version = v"4.12.1"
-ygg_version = v"4.12.2"         # we bumped the version to build against the new MPIABI
+ygg_version = v"4.12.3"         # we bumped the version to build against the new MPIABI
 
 sources = [
     ArchiveSource("https://github.com/LLNL/Silo/releases/download/$(version)/Silo-$(version).tar.xz",
@@ -71,7 +71,7 @@ products = [
 ]
 
 dependencies = [
-    Dependency("HDF5_jll"; compat="2.1.1"),
+    Dependency("HDF5_jll"; compat="2.2.1"),
     Dependency("Zlib_jll"; compat="1.2.12"),
 ]
 append!(dependencies, platform_dependencies)
