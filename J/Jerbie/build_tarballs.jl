@@ -29,10 +29,7 @@ cd $WORKSPACE/srcdir/Jerbie.jl/Jerbie.jl/deps/egg-jerbie
 # a minimal diff (preprocess-only instead of execute) to the fetched source.
 patch -d "$WORKSPACE/srcdir/gmp-mpfr-sys-fixed" -p1 < gmp-mpfr-sys-cross-compile-fix.diff
 
-cat >> Cargo.toml <<EOF
-[patch.crates-io]
-gmp-mpfr-sys = { path = "$WORKSPACE/srcdir/gmp-mpfr-sys-fixed" }
-EOF
+patch -p1 < gmp-mpfr-sys-cargo-patch.diff
 
 # musl needs crt-static disabled for cdylib
 if [[ "${target}" == *-musl* ]]; then
