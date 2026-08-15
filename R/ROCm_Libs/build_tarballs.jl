@@ -4,16 +4,13 @@ using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
-# ROCm_Libs repackages the GPU vendor libraries (rocBLAS, rocSPARSE, rocSOLVER, rocRAND,
+# Repackage the ROCm vendor libraries (rocBLAS, rocSPARSE, rocSOLVER, rocRAND,
 # rocFFT and MIOpen, together with their private in-bundle dependencies hipBLASLt,
-# rocRoller and rocm_kpack) from AMD's TheRock distribution tarballs. The ROCm runtime
-# itself (HIP, hiprtc, comgr, roctracer, HSA) is *not* included: the vendor libraries
-# resolve those from whatever ROCm distribution the loading package (e.g. AMDGPU.jl)
-# has set up.
-#
-# TheRock publishes one bundle per GPU architecture family, so artifacts are additionally
-# tagged with (and selected by) the "rocm_arch" platform tag, as well as a "rocm" tag
-# encoding the major.minor version of the distribution they were taken from.
+# rocRoller and rocm_kpack) from AMD's TheRock tarballs. All the compiler/llvm stuff
+# we build ourselves, so we can ship much smaller tarballs by excluding these
+
+# This does platform augmentation with the ROCm arch as well as the ROCm version,
+# so we don't have to ship huge tarballs with code for every architecture possible
 
 name = "ROCm_Libs"
 version = v"7.14.0"
@@ -55,12 +52,12 @@ augment_platform_block = """
 script = raw"""
 cd ${WORKSPACE}/srcdir
 
-# Windows bundles wrap everything in a top-level directory; Linux ones extract flat
+# Windows bundles wrap everything in a top-level directory, Linux doesn't
 if compgen -G "therock-dist-*" > /dev/null; then
     cd therock-dist-*
 fi
 
-# licenses (renamed, so components don't clobber each other)
+# rename licenses
 mkdir -p ${WORKSPACE}/licenses
 for doc in rocblas hipblaslt rocroller rocsparse rocsolver rocrand rocfft miopen-hip; do
     if [[ -f share/doc/${doc}/LICENSE.md ]]; then
@@ -86,8 +83,7 @@ if [[ ${target} == *-linux-gnu ]]; then
     mv lib/libMIOpenCKGroupedConv_*.so ${libdir} || true
 
     # the small rocm_sysdeps libraries the above link against, resolved through their
-    # `$ORIGIN/rocm_sysdeps/lib` RUNPATH entry. everything else (HIP, hiprtc, comgr,
-    # roctracer) is deliberately left to the ROCm runtime used at load time.
+    # `$ORIGIN/rocm_sysdeps/lib` RUNPATH entry
     mkdir -p ${libdir}/rocm_sysdeps/lib
     for dep in zstd bz2 sqlite3 z; do
         mv lib/rocm_sysdeps/lib/librocm_sysdeps_${dep}.so* ${libdir}/rocm_sysdeps/lib || true

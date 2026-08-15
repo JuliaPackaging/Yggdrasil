@@ -199,8 +199,8 @@ function rocm_version_tag()
 
     if local_preference === true
         # the artifact selection below never matches when using a local ROCm
-        # (see `rocm_comparison_strategy`), so the tag value doesn't matter much;
-        # still try to reflect the local version for informational purposes.
+        # (see `rocm_comparison_strategy`), so the tag value doesn't matter much,
+        # but try to still reflect the local version
         if override === missing
             version = get_hip_runtime_version()
             version === nothing && return nothing
