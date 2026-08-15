@@ -10,16 +10,14 @@ version = v"22.1.8"
 sources = [
     ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/llvm-project-$(version).src.tar.xz",
                   "922f1817a0df7b1489272d18134ee0087a8b068828f87ac63b9861b1a9965888"),
+    GitSource("https://github.com/ROCm/llvm-project",
+              "46fcb339fb61119b337f973c7ca9e710a319fdd0"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-mv llvm-project-* llvm-project
-
-cd llvm-project/llvm
+cd llvm-project-*/llvm
 LLVM_SRCDIR=$(pwd)
-
-install_license LICENSE.TXT
 
 # The very first thing we need to do is to build llvm-tblgen for x86_64-linux-muslc
 # This is because LLVM's cross-compile setup is kind of borked, so we just
@@ -78,6 +76,25 @@ CMAKE_FLAGS+=(-DHAVE_LIBEDIT=Off)
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
 ninja -j${nproc} tools/llc/install
 ninja -j${nproc} tools/lld/install
+
+# build device libs, those live in the ROCm llvm fork
+# `ockl/src/workitem.cl` includes `amdhsa_abi.h`, which LLVM_full_jll's Clang doesn't have so just copy it
+cp ${WORKSPACE}/srcdir/llvm-project/clang/lib/Headers/amdhsa_abi.h \
+   ${WORKSPACE}/srcdir/llvm-project/amd/device-libs/ockl/inc/
+mkdir ${WORKSPACE}/build-device-libs && cd ${WORKSPACE}/build-device-libs
+CMAKE_FLAGS=()
+CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
+CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
+# `prepare-builtins` must run during the build, so build it with the host toolchain
+CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN})
+# Locate the host LLVM/Clang cmake packages from LLVM_full_jll
+CMAKE_FLAGS+=(-DCMAKE_PREFIX_PATH=${host_prefix})
+cmake -GNinja ${WORKSPACE}/srcdir/llvm-project/amd/device-libs ${CMAKE_FLAGS[@]}
+ninja -j${nproc} install
+
+# combine the upstream LLVM and device libs licenses
+cat ${LLVM_SRCDIR}/LICENSE.TXT ${WORKSPACE}/srcdir/llvm-project/amd/device-libs/LICENSE.TXT > LICENSE.TXT
+install_license LICENSE.TXT
 """
 
 # Only build for the host platforms where AMDGPU itself runs.
@@ -92,11 +109,15 @@ platforms = expand_cxxstring_abis(platforms)
 products = Product[
     ExecutableProduct("llc", :llc),
     ExecutableProduct("lld", :lld),
+    FileProduct("amdgcn/bitcode/", :bitcode_path),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Zlib_jll")
+    # Host LLVM+Clang toolchain for compiling the device libraries to bitcode;
+    # matches the LLVM version we build here.
+    HostBuildDependency(PackageSpec(; name="LLVM_full_jll", version=v"22.1.8+0"))
 ]
 
 build_tarballs(ARGS, name, version, sources, script,
