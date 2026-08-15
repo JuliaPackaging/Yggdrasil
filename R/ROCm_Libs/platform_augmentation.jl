@@ -5,12 +5,6 @@
 #    matched against the devices detected on the host;
 #  - "rocm": the major.minor version of the ROCm distribution the libraries were
 #    taken from, selectable through the "version" preference.
-#
-# NOTE: the device detection logic is derived from AMDGPU.jl's
-#       `.pkg/platform_augmentation.jl` (with a simplified Windows path); the goal
-#       is for this JLL to become the canonical implementation, with AMDGPU.jl
-#       delegating to `ROCm_Libs_jll.augment_platform!` the way CUDA.jl delegates
-#       to CUDA_Runtime_jll.
 
 using Base.BinaryPlatforms
 using Base: thismajor, thisminor
@@ -88,6 +82,8 @@ function rocm_arch_linux()
     return arch
 end
 
+# XXX: Windows is vibe-coded and only tested at a surface level on wine
+# Testers wanted!
 function windows_video_device_names()
     # DISPLAY_DEVICEW layout: DWORD cb; WCHAR DeviceName[32]; WCHAR DeviceString[128];
     #                         DWORD StateFlags; WCHAR DeviceID[128]; WCHAR DeviceKey[128]

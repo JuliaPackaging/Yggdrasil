@@ -16,7 +16,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 # encoding the major.minor version of the distribution they were taken from.
 
 name = "ROCm_Libs"
-version = v"0.1.0"
+version = v"7.14.0"
 
 const rocm_versions = [v"7.14.0"]
 
