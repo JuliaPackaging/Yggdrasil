@@ -16,7 +16,7 @@ name = "Jerbie"
 version = v"0.1.0"
 
 sources = [
-    GitSource("https://github.com/JuliaSymbolics/Jerbie.jl.git", "30b6c8cd6bb598abfdfebad06eca10dae3b4ae24"),
+    GitSource("https://github.com/JuliaSymbolics/Jerbie.jl.git", "11488f00023b4e70553d95c29290df5e053e9164"),
     GitSource("https://gitlab.com/tspiteri/gmp-mpfr-sys.git", "b22a67c56a0dabda1a30c261f98833bd7f2526f8"; unpack_target="gmp-mpfr-sys-fixed"),
 ]
 
