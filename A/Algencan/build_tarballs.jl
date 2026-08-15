@@ -17,10 +17,10 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/algencan-*
 
-# Makes Algencan query HSL's ma57_available at run time instead of deciding at
-# compile time, so one binary uses MA57 when a licensed HSL is installed and
-# falls back to truncated Newton otherwise. Also drops Algencan's use of
-# finfo%pivot, a field only a locally patched MA57 provides.
+# Makes Algencan query HSL's maNN_available at run time instead of deciding at
+# compile time, so one binary may use MANN when a licensed HSL is installed.
+# If MA57 is not available it falls back to truncated Newton. Also drops
+# Algencan's use of finfo%pivot, a field only a locally patched MA57 provides.
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/algencan-3.1.1-runtime-hsl.patch
 
 # sources/algencan/Makefile picks the real lssmaNN.o over the stub for each
@@ -78,9 +78,8 @@ products = [
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     # The registered HSL_jll is versioned 4.x while the licensed packages use
-    # dates, so both schemes have to be admitted, as Ipopt.jl does. 4.0.8 is
-    # the first registered release whose Fortran modules match the licensed
-    # library for MA86 and MA97; 2023 releases predate libhsl_subset entirely.
+    # dates, so both schemes have to be admitted. 4.0.8 is the first
+    # registered release with full support for MA86 and MA97.
     Dependency("HSL_jll"; compat="4.0.8, 2024, 2025"),
 ]
 
