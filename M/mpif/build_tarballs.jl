@@ -20,6 +20,15 @@ cmake_args=(
     -DBUILD_SHARED_LIBS=ON
     -DMPI_HOME=${prefix}
 )
+# mpif's callback registry uses C11 atomics, and on AArch64 clang turns an
+# acq_rel compare-exchange into a call to __aarch64_cas4_acq_rel. That helper
+# is in compiler-rt's builtins or in libgcc >= 10, and neither is on the link
+# line: libmpif has Fortran sources, so CMake links it with gfortran, whose
+# libgcc here is GCC 9.1's. Inline the atomics instead -- they are cold.
+# https://github.com/eschnett/mpif/issues/5 -- drop this once mpif probes for it.
+if [[ "${target}" == aarch64-*freebsd* ]]; then
+    cmake_args+=(-DCMAKE_C_FLAGS=-mno-outline-atomics)
+fi
 cmake -Bbuild ${cmake_args[@]}
 cmake --build build --parallel ${nproc}
 cmake --install build
