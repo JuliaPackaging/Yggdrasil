@@ -23,7 +23,7 @@ ${CC} -std=c99 -fPIC gsd/gsd.c -shared -o "${libdir}/libgsd.${dlext}"
 platforms = supported_platforms()
 # Windows cant be build since the source code implicitly requires commands from unistd.h which only exist for unix and unix-like systems
 platforms = filter!(!Sys.iswindows, platforms)
-
+platforms = filter!(x->arch(x)!="riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [
