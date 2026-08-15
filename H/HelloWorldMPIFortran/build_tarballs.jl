@@ -7,7 +7,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "HelloWorldMPIFortran"
-version = v"1.0.0"
+version = v"1.0.1"
 
 # No sources, we're just building the testsuite
 sources = [
@@ -64,6 +64,7 @@ platforms, platform_dependencies = MPI.augment_platforms(platforms)
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    Dependency("mpif_jll"; compat="1.0.0", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)), # MPI Fortran bindings
 ]
 append!(dependencies, platform_dependencies)
 
