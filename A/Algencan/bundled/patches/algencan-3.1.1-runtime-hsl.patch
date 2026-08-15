@@ -45,8 +45,17 @@ loop: on CUTEst OPTPRLOC it fired seventy two million times without the
 limit ever being reached, turning a 2.8 second solve into a non-terminating
 one.  The safeguard has been removed and the loop left as ALGENCAN wrote it.
 diff --color -Naur a/sources/algencan/lssma57.f90 b/sources/algencan/lssma57.f90
+The same one line change is made for MA86 and MA97, whose lss_ma86() and
+lss_ma97() were compile time constants too.  They are not defaults: ALGENCAN
+prefers MA57 for both the trust region and the Newton systems whenever it is
+available, and the trust region accepts MA57 alone.  They are reachable through
+the specification file, and fparam.f90 guards each choice with lss_ma86() or
+lss_ma97(), so compiled against the stubs a licensee asking for MA86 silently
+receives MA57 instead.
+
+diff --color -Naur a/sources/algencan/lssma57.f90 b/sources/algencan/lssma57.f90
 --- a/sources/algencan/lssma57.f90	2015-05-05 10:45:12.000000000 -0300
-+++ b/sources/algencan/lssma57.f90	2026-08-05 13:41:32.591285690 -0300
++++ b/sources/algencan/lssma57.f90	2026-08-10 16:28:10.444951005 -0300
 @@ -52,7 +52,16 @@
      ! FUNCTION TYPE
      logical :: lss_ma57
@@ -91,9 +100,41 @@ diff --color -Naur a/sources/algencan/lssma57.f90 b/sources/algencan/lssma57.f90
  
         lssinfo = 2
  
+diff --color -Naur a/sources/algencan/lssma86.f90 b/sources/algencan/lssma86.f90
+--- a/sources/algencan/lssma86.f90	2015-05-05 10:45:12.000000000 -0300
++++ b/sources/algencan/lssma86.f90	2026-08-10 16:28:10.460496106 -0300
+@@ -45,7 +45,11 @@
+     ! FUNCTION TYPE
+     logical :: lss_ma86
+ 
+-    lss_ma86 = .true.
++    ! ma86_available is a public module variable of hsl_ma86_double. It is
++    ! true only when the loaded library really implements MA86, so
++    ! returning it makes the choice a run time one, exactly as for MA57.
++
++    lss_ma86 = ma86_available
+ 
+   end function lss_ma86
+ 
+diff --color -Naur a/sources/algencan/lssma97.f90 b/sources/algencan/lssma97.f90
+--- a/sources/algencan/lssma97.f90	2015-05-05 10:45:12.000000000 -0300
++++ b/sources/algencan/lssma97.f90	2026-08-10 16:28:10.460542938 -0300
+@@ -40,7 +40,11 @@
+     ! FUNCTION TYPE
+     logical :: lss_ma97
+ 
+-    lss_ma97 = .true.
++    ! ma97_available is a public module variable of hsl_ma97_double. It is
++    ! true only when the loaded library really implements MA97, so
++    ! returning it makes the choice a run time one, exactly as for MA57.
++
++    lss_ma97 = ma97_available
+ 
+   end function lss_ma97
+ 
 diff --color -Naur a/sources/algencan/moresor.f90 b/sources/algencan/moresor.f90
 --- a/sources/algencan/moresor.f90	2015-05-05 10:45:12.000000000 -0300
-+++ b/sources/algencan/moresor.f90	2026-08-05 13:41:32.601079332 -0300
++++ b/sources/algencan/moresor.f90	2026-08-10 16:28:10.445216837 -0300
 @@ -234,7 +234,7 @@
          l  = lu
       else
@@ -125,7 +166,7 @@ diff --color -Naur a/sources/algencan/moresor.f90 b/sources/algencan/moresor.f90
       u(idx) = 1.0d0
       ueucn2 = 1.0d0
 +     ! The ordering is not established yet at this point, so the pivot
-+     ! cannot be formed here. Zero makes the caller fall back to dogleg.
++     ! cannot be formed here.
 +     pivot = 0.0d0
       return
    end if

@@ -23,14 +23,19 @@ cd ${WORKSPACE}/srcdir/algencan-*
 # finfo%pivot, a field only a locally patched MA57 provides.
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/algencan-3.1.1-runtime-hsl.patch
 
-# sources/algencan/Makefile selects the real lssma57.o over the stub when
-# hsl_ma57_double.mod is found in HSLSRC. Only that module is linked in, so
-# MA86 and MA97 keep their stubs.
+# sources/algencan/Makefile picks the real lssmaNN.o over the stub for each
+# solver whose module it finds in HSLSRC. ALGENCAN still prefers MA57, and the
+# trust region accepts nothing else; MA86 and MA97 are reachable through the
+# specification file.
 mkdir -p hsldetect
-ln -s ${prefix}/modules/hsl_ma57_double.mod hsldetect/
+for m in ma57 ma86 ma97; do
+    ln -s ${prefix}/modules/hsl_${m}_double.mod hsldetect/
+done
 
+# OPENMPFLAG is defined in the root Makefile, which this call bypasses, so it
+# has to be repeated to keep upstream's default.
 make -C sources/algencan lib \
-     FC=gfortran AR=ar \
+     FC=gfortran AR=ar OPENMPFLAG=-fopenmp \
      FFLAGS="-O3 -ffree-form -fPIC -I${prefix}/modules" \
      HSLSRC=${PWD}/hsldetect
 
@@ -63,16 +68,20 @@ products = [
     LibraryProduct("libalgencan", :libalgencan; dont_dlopen=true),
 ]
 
-# libhsl_subset is linked for the hsl_ma57_double module symbols and for
-# ma57_available. The public artifact is a stub, so no licensed code enters the
-# build; users with a licence override the artifact.
+# libhsl_subset is linked for the hsl_maNN_double module symbols and for the
+# maNN_available flags. The public artifact is a stub, so no licensed code
+# enters the build; users with a licence override the artifact.
 #
 # Note for consumers: libhsl_subset is LP64, and Julia registers only an ILP64
 # BLAS backend by default, so an LP64 one has to be forwarded to
 # libblastrampoline, as HSL.jl and Ipopt.jl do.
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("HSL_jll"),
+    # The registered HSL_jll is versioned 4.x while the licensed packages use
+    # dates, so both schemes have to be admitted, as Ipopt.jl does. 4.0.8 is
+    # the first registered release whose Fortran modules match the licensed
+    # library for MA86 and MA97; 2023 releases predate libhsl_subset entirely.
+    Dependency("HSL_jll"; compat="4.0.8, 2024, 2025"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products,
