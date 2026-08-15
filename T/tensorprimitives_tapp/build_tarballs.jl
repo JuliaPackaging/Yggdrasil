@@ -39,10 +39,6 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built.
-# There are none: this is native Rust. The two unresolved-library warnings the
-# audit emits are expected and have no JLL to point at -- libgcc_s.so.1, which
-# every Rust cdylib needs for its unwinder and which Julia ships, and
-# bcryptprimitives.dll on Windows, imported by Rust's standard library.
 dependencies = Dependency[
 ]
 
