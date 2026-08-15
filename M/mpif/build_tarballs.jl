@@ -5,10 +5,10 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 # Collection of sources required to build mpi-abi-stubs
 name = "mpif"
-version = v"0.1.7"
+version = v"1.0.0"
 
 sources = [
-    GitSource("https://github.com/eschnett/mpif", "d40209744cb0452c79ef11b847dc1282cdd07221"),
+    GitSource("https://github.com/eschnett/mpif", "9caecc3ce4f4eabad27dad4e1dae05ff7df21b32"),
 ]
 
 script = raw"""
@@ -52,5 +52,6 @@ products = [
 ]
 
 # Build the tarballs.
+# mpif requires at least gfortran 8
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"8")
