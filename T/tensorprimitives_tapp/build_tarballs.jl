@@ -13,15 +13,9 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/tensorprimitives-rs
-RFLAGS=()
 if [[ "${target}" == *-musl* ]]; then
-    RFLAGS+=(-C target-feature=-crt-static);
-elif [[ "${target}" == *-apple-* ]]; then
-    RFLAGS+=(-C link-arg=-Wl,-install_name,@rpath/libtensorprimitives_tapp.${dlext});
-elif [[ "${target}" != *-mingw* ]]; then
-    RFLAGS+=(-C link-arg=-Wl,-soname,libtensorprimitives_tapp.${dlext});
+    export RUSTFLAGS="-C target-feature=-crt-static"
 fi
-export RUSTFLAGS="${RFLAGS[@]}"
 export CARGO_PROFILE_RELEASE_DEBUG=0
 export CARGO_TARGET_DIR=${WORKSPACE}/target
 cargo build --release --locked -j${nproc} --target ${rust_target} -p tensorprimitives-tapp
