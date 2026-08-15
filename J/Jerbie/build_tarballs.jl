@@ -27,7 +27,7 @@ cd $WORKSPACE/srcdir/Jerbie.jl/Jerbie.jl/deps/egg-jerbie
 # executes a test binary to read off preprocessor macros, which fails when
 # cross-compiling (can't run a Darwin binary on the Linux BB sandbox). Apply
 # a minimal diff (preprocess-only instead of execute) to the fetched source.
-patch -d "$WORKSPACE/srcdir/gmp-mpfr-sys-fixed" -p1 < gmp-mpfr-sys-cross-compile-fix.diff
+patch -d "$WORKSPACE/srcdir/gmp-mpfr-sys-fixed/gmp-mpfr-sys" -p1 < gmp-mpfr-sys-cross-compile-fix.diff
 
 patch -p1 < gmp-mpfr-sys-cargo-patch.diff
 
@@ -38,7 +38,7 @@ fi
 
 cargo build --release --features gmp-mpfr-sys/use-system-libs
 install -Dvm 755 target/${rust_target}/release/*jerbie.${dlext} "${libdir}/libjerbie.${dlext}"
-install_license ../../../LICENSE "$WORKSPACE/srcdir/gmp-mpfr-sys-fixed/LICENSE-LGPL.md"
+install_license ../../../LICENSE "$WORKSPACE/srcdir/gmp-mpfr-sys-fixed/gmp-mpfr-sys/LICENSE-LGPL.md"
 """
 
 platforms = supported_platforms()
