@@ -4,7 +4,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 version = v"22.1.8"
-git_sha = "e013073558445169e8732e25fa86e9913bfdd24e" # llvmorg-22.1.8
+git_sha = "ca7933e47d3a3451d81e72ac174dcb5aa28b59d1" # llvmorg-22.1.8
 
 script = raw"""
 # We want to exit the program if errors occur.
