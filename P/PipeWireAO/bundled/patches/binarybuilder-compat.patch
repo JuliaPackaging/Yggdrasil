@@ -1,0 +1,62 @@
+diff --git a/spa/tests/meson.build b/spa/tests/meson.build
+index 01e7eea70..4065ba33c 100644
+--- a/spa/tests/meson.build
++++ b/spa/tests/meson.build
+@@ -4,7 +4,7 @@
+ # Do it for C++ if possible (picks up C++-specific errors), otherwise for C.
+ find = find_program('find', required: false)
+ summary({'find (for header testing)': find.found()}, bool_yn: true, section: 'Optional programs')
+-if find.found()
++if get_option('tests').allowed() and find.found()
+   spa_headers = run_command(find,
+                             meson.project_source_root() / 'spa' / 'include',
+                             '-name', '*.h',
+diff --git a/spa/plugins/audioconvert/meson.build b/spa/plugins/audioconvert/meson.build
+index f1db583a9..93df242c3 100644
+--- a/spa/plugins/audioconvert/meson.build
++++ b/spa/plugins/audioconvert/meson.build
+@@ -7,11 +7,7 @@ simd_cargs = []
+ simd_dependencies = []
+ 
+ opt_flags = []
+-if host_machine.cpu_family() != 'alpha'
+-  opt_flags += '-Ofast'
+-else
+-  opt_flags += '-O3'
+-endif
++opt_flags += '-O3'
+ 
+ audioconvert_c = static_library('audioconvert_c',
+   [ 'channelmix-ops-c.c',
+diff --git a/spa/plugins/support/logger.c b/spa/plugins/support/logger.c
+--- a/spa/plugins/support/logger.c
++++ b/spa/plugins/support/logger.c
+@@ -11,7 +11,6 @@
+ #include <errno.h>
+ #include <stdio.h>
+ #include <time.h>
+-#include <threads.h>
+ #include <fnmatch.h>
+ 
+ #include <spa/support/log.h>
+@@ -97,7 +96,7 @@ impl_log_logtv(void *object,
+ 	spa_strbuf_append(&msg, "%s[%s]", prefix, levels[level]);
+ 
+ #ifdef HAVE_GETTID
+-	static thread_local pid_t tid;
++	static _Thread_local pid_t tid;
+ 	if (SPA_UNLIKELY(tid == 0))
+ 		tid = gettid();
+ 
+diff --git a/spa/plugins/filter-graph/meson.build b/spa/plugins/filter-graph/meson.build
+--- a/spa/plugins/filter-graph/meson.build
++++ b/spa/plugins/filter-graph/meson.build
+@@ -72,7 +72,7 @@ spa_filter_graph_plugin_builtin = shared_library('spa-filter-graph-plugin-builti
+   include_directories : [configinc],
+   install : true,
+   install_dir : spa_plugindir / 'filter-graph',
+-  dependencies : [ filter_graph_dependencies ],
++  dependencies : [ filter_graph_dependencies, pthread_lib ],
+   objects : audioconvert_c.extract_objects('biquad.c')
+ )
+ 
