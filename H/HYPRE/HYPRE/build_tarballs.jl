@@ -5,7 +5,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "HYPRE"
 version = v"3.1.0"
-offset = 1
+offset = 2
 ygg_version = VersionNumber(version.major, version.minor, 100 * version.patch + offset)
 
 sources = [
