@@ -239,6 +239,18 @@ build_petsc()
 
     mkdir $libdir/petsc/${PETSC_CONFIG}
 
+    # On AArch64, clang defaults to outline atomics, i.e. it turns atomic
+    # operations into calls to helpers such as `__aarch64_ldadd8_acq_rel`. Those
+    # helpers live in compiler-rt's builtins or in libgcc >= 10, and neither is
+    # on the link line here: the link uses GCC 9.1's libgcc, so the symbols
+    # remain undefined in `libpetsc.so`. Inline the atomics instead.
+    ATOMICS_CFLAGS=""
+    ATOMICS_CXXFLAGS=""
+    if [[ "${target}" == aarch64-*freebsd* ]]; then
+        ATOMICS_CFLAGS="-mno-outline-atomics"
+        ATOMICS_CXXFLAGS=--CXXFLAGS="-mno-outline-atomics"
+    fi
+
     # Step 1: build static libraries of external packages (happens during configure)
     # Note that mpicc etc. should be indicated rather than ${CC} to compile external packages
     ./configure --prefix=${libdir}/petsc/${PETSC_CONFIG} \
@@ -250,7 +262,8 @@ build_petsc()
         --FOPTFLAGS=${_FOPTFLAGS}  \
         --with-blaslapack-lib=${BLAS_LAPACK_LIB}  \
         --with-blaslapack-suffix="" \
-        --CFLAGS='-fno-stack-protector -Wno-incompatible-pointer-types' \
+        --CFLAGS="-fno-stack-protector -Wno-incompatible-pointer-types ${ATOMICS_CFLAGS}" \
+        ${ATOMICS_CXXFLAGS} \
         --FFLAGS="${MPI_FFLAGS} ${FFLAGS[*]}"  \
         --LDFLAGS="${LIBFLAGS}"  \
         --CC_LINKER_FLAGS="${CLINK_FLAGS}" \
@@ -287,6 +300,10 @@ build_petsc()
     elif [[ "${target}" == powerpc64le-* ]]; then
         export CFLAGS="-fPIC"
         export FFLAGS="-fPIC"
+    elif [[ -n "${ATOMICS_CFLAGS}" ]]; then
+        # `make` below overrides the CFLAGS that were determined by `configure`,
+        # so the flag has to be repeated here
+        export CFLAGS="${ATOMICS_CFLAGS}"
     fi
 
     make -j${nproc} \
