@@ -17,6 +17,10 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/algencan-*
 
+# lssma97.f90 ships with CRLF line endings; normalise them so the patch below
+# does not have to carry CRLF context lines.
+sed -i 's/\r$//' sources/algencan/lssma97.f90
+
 # Makes Algencan query HSL's maNN_available at run time instead of deciding at
 # compile time, so one binary may use MANN when a licensed HSL is installed.
 # If MA57 is not available it falls back to truncated Newton. Also drops
@@ -77,10 +81,7 @@ products = [
 # libblastrampoline, as HSL.jl and Ipopt.jl do.
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    # The registered HSL_jll is versioned 4.x while the licensed packages use
-    # dates, so both schemes have to be admitted. 4.0.8 is the first
-    # registered release with full support for MA86 and MA97.
-    Dependency("HSL_jll"; compat="4.0.8, 2024, 2025"),
+    Dependency("HSL_jll"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products,
