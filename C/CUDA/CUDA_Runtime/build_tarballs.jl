@@ -7,11 +7,18 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDA_Runtime"
-version = v"0.23.0"
+version = v"0.24.1"
+
+# we ship artifacts for both GA and EA/preview toolkits; the platform augmentation only
+# ever selects the latter when the user asks for it through the "version" preference.
+const toolkit_versions = [CUDA.cuda_full_versions; CUDA.cuda_prerelease_versions]
 
 augment_platform_block = """
-    $(read(joinpath(@__DIR__, "platform_augmentation.jl"), String))
-    const cuda_toolkits = $(CUDA.cuda_full_versions)"""
+    const CUDA_jll_uuids = [Base.UUID("76a88914-d11a-5bdc-97e0-2f5a05c973a2")]
+    $(read(joinpath(@__DIR__, "toolkit_selection.jl"), String))
+    const cuda_toolkits = $(toolkit_versions)
+    const cuda_prerelease_toolkits = $(CUDA.cuda_prerelease_versions)
+    $(read(joinpath(@__DIR__, "platform_augmentation.jl"), String))"""
 
 script = raw"""
 # rename directories, stripping the architecture and version suffix
@@ -31,19 +38,6 @@ if [[ ${target} == *-linux-gnu ]]; then
     mv cuda_cupti/lib/libcupti.so* ${libdir}
     mv cuda_cupti/lib/libnvperf_host.so* ${libdir}
     mv cuda_cupti/lib/libnvperf_target.so* ${libdir}
-
-    if [[ -d cuda_nvcc/nvvm ]]; then
-        mv cuda_nvcc/nvvm/lib64/libnvvm.so* ${libdir}
-    else
-        mv libnvvm/nvvm/lib64/libnvvm.so* ${libdir}
-    fi
-
-    mv cuda_nvrtc/lib/libnvrtc.so* ${libdir}
-    mv cuda_nvrtc/lib/libnvrtc-builtins.so* ${libdir}
-
-    if [[ -d libnvjitlink ]]; then
-        mv libnvjitlink/lib/libnvJitLink.so* ${libdir}
-    fi
 
     mv libcufft/lib/libcufft.so* libcufft/lib/libcufftw.so* ${libdir}
 
@@ -70,19 +64,6 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     mv cuda_cupti/bin/nvperf_host.dll* ${libdir}
     mv cuda_cupti/bin/nvperf_target.dll* ${libdir}
 
-    if [[ -d cuda_nvcc/nvvm ]]; then
-        mv cuda_nvcc/nvvm/bin/nvvm64_*.dll ${bindir}
-    else
-        mv libnvvm/nvvm/bin/nvvm64_*.dll ${bindir}
-    fi
-
-    mv cuda_nvrtc/bin/nvrtc64_* ${bindir}
-    mv cuda_nvrtc/bin/nvrtc-builtins64_* ${bindir}
-
-    if [[ -d libnvjitlink ]]; then
-        mv libnvjitlink/bin/nvJitLink_*.dll ${bindir}
-    fi
-
     mv libcufft/bin/cufft64_*.dll libcufft/bin/cufftw64_*.dll ${bindir}
 
     mv libcublas/bin/cublas64_*.dll libcublas/bin/cublasLt64_*.dll ${bindir}
@@ -100,7 +81,7 @@ fi
 
 # determine exactly which tarballs we should build
 builds = []
-for version in reverse(CUDA.cuda_full_versions)
+for version in reverse(toolkit_versions)
     include("build_$(version.major).$(version.minor).jl")
 
     # CUDA_Runtime contains all of the following components
@@ -108,8 +89,6 @@ for version in reverse(CUDA.cuda_full_versions)
     components = [
         "cuda_cudart",
         "cuda_cupti",
-        "cuda_nvcc",
-        "cuda_nvrtc",
 
         "libcublas",
         "libcufft",
@@ -117,12 +96,6 @@ for version in reverse(CUDA.cuda_full_versions)
         "libcusolver",
         "libcusparse",
     ]
-    if version >= v"12"
-        push!(components, "libnvjitlink")
-    end
-    if version >= v"13"
-        push!(components, "libnvvm")
-    end
 
     platforms = if version >= v"13"
         [Platform("x86_64", "linux"),
@@ -160,16 +133,36 @@ for version in reverse(CUDA.cuda_full_versions)
 
         if Base.thisminor(version) == v"10.2"
             push!(builds,
-                (; dependencies=[Dependency("CUDA_Driver_jll", v"13.3"; compat="13"),
+                (; dependencies=[Dependency("CUDA_Driver_jll", v"13.3.1"; compat="13.3.1 - 13"),
                                  BuildDependency(PackageSpec(name="CUDA_SDK_jll", version="10.2.89"))],
                    script=get_script(), platforms=[augmented_platform], products=get_products(platform),
-                   sources=[]
+                   sources=[], init_block=""
             ))
         else
+            # the runtime libraries may link against libraries from CUDA_Compiler_jll with
+            # major-versioned sonames (e.g. libnvJitLink), so detect the mismatched pairs
+            # that can result from setting the version preference on only one of the JLLs
+            # (e.g. from a LocalPreferences.toml predating the runtime/compiler split).
+            init_block = """
+                if isdefined(CUDA_Compiler_jll, :cuda_version)
+                    let runtime = v"$(version.major).$(version.minor)",
+                        compiler = Base.thisminor(CUDA_Compiler_jll.cuda_version)
+                        if compiler.major != runtime.major
+                            @error \"\"\"CUDA_Runtime_jll provides CUDA \$runtime, but CUDA_Compiler_jll provides CUDA \$compiler.
+                                       These versions need to have the same major version; call `CUDA.set_runtime_version!` to
+                                       reconfigure both, or remove stale entries from your LocalPreferences.toml.\"\"\"
+                        elseif compiler < runtime
+                            @warn \"\"\"CUDA_Runtime_jll provides CUDA \$runtime, which is newer than CUDA_Compiler_jll's CUDA \$compiler.
+                                      This is an unsupported combination; call `CUDA.set_runtime_version!` to reconfigure both.\"\"\"
+                        end
+                    end
+                end"""
             push!(builds,
-                (; dependencies=[Dependency("CUDA_Driver_jll", v"13.3"; compat="13")],
+                (; dependencies=[Dependency("CUDA_Driver_jll", v"13.3.1"; compat="13.3.1 - 13"),
+                                 Dependency("CUDA_Compiler_jll"; compat="0.5")],
                    script, platforms=[augmented_platform], products=get_products(platform),
-                   sources=get_sources("cuda", components; version, platform=augmented_platform)
+                   sources=get_sources("cuda", components; version, platform=augmented_platform),
+                   init_block
             ))
         end
     end
@@ -186,7 +179,7 @@ for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    name, version, build.sources, build.script,
                    build.platforms, build.products, build.dependencies;
-                   julia_compat="1.6", augment_platform_block,
+                   julia_compat="1.6", augment_platform_block, init_block=build.init_block,
                    lazy_artifacts=true, skip_audit=true, dont_dlopen=true)
 end
 

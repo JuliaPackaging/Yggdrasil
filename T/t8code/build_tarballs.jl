@@ -8,8 +8,8 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "t8code"
-version = v"4.0.7"
-commit_hash = "610eda1d465cf7123ea87d86d3a528c30b91b28f"
+version = v"4.0.8"
+commit_hash = "56c9b8d201101d54a9c89e7746b81b15df76e9fe"
 
 sources = [GitSource("https://github.com/DLR-AMR/t8code", commit_hash),
            DirectorySource("./bundled")]

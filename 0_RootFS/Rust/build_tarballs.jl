@@ -20,12 +20,19 @@ rustup_name = "RustStage1"
 rustup_version = v"1.24.3"
 
 # This is the version of the Rust toolchain we install
-version = v"1.94.0"
+version = v"1.97.0"
+# NOTE: The commit won't be necessary once the aarch64-unknown-freebsd workaround is removed
+rust_commit = "2d8144b7880597b6e6d3dfd63a9a9efae3f533d3"
 
 sources = [
     # We'll use rustup to install rust
     FileSource("https://static.rust-lang.org/rustup/archive/$(rustup_version)/x86_64-unknown-linux-musl/rustup-init",
                "bdf022eb7cba403d0285bb62cbc47211f610caec24589a72af70e1e900663be9"),
+    # We'll temporarily use this to install the `aarch64-unknown-freebsd` target, which has
+    # release assets, but not in the expected location, which means they're not installable
+    # via `rustup` in the same way as for other platforms.
+    ArchiveSource("https://ci-artifacts.rust-lang.org/rustc-builds/$(rust_commit)/rust-std-$(version)-aarch64-unknown-freebsd.tar.xz",
+                  "fc3ba566b040d87a58b287a03967f431fd47748950230fb5ff39ec29af4fd137")
 ]
 
 # Check if deploy flag is set
@@ -44,7 +51,7 @@ chmod +x rustup-init
 # Collection of all rust targets we will download toolchains for:
 RUST_TARGETS=(
     aarch64-apple-darwin
-    # aarch64-unknown-freebsd   # toolchain is not available
+    aarch64-unknown-freebsd
     aarch64-unknown-linux-gnu
     aarch64-unknown-linux-musl
     arm-unknown-linux-gnueabihf
@@ -55,7 +62,7 @@ RUST_TARGETS=(
     i686-unknown-linux-gnu
     i686-unknown-linux-musl
     powerpc64le-unknown-linux-gnu
-    # riscv64-unknown-linux-gnu   # toolchain is not available
+    riscv64gc-unknown-linux-gnu
     x86_64-apple-darwin
     x86_64-pc-windows-gnu
     x86_64-unknown-freebsd
@@ -65,7 +72,14 @@ RUST_TARGETS=(
 
 for rust_target in "${RUST_TARGETS[@]}"; do
     # Install our target-specific stuffs for the toolchain we're requesting
-    ${CARGO_HOME}/bin/rustup target add --toolchain ${version} ${rust_target}
+    # TODO: Remove the target-specific workaround
+    if [ "${rust_target}" = "aarch64-unknown-freebsd" ]; then
+        cd ${WORKSPACE}/srcdir/rust-std-${version}-${rust_target}/
+        ./install.sh --prefix=$(${CARGO_HOME}/bin/rustup run ${version} rustc --print sysroot)
+        cd ..
+    else
+        ${CARGO_HOME}/bin/rustup target add --toolchain ${version} ${rust_target}
+    fi
 done
 
 # We're going to bundle cargo-edit since it's a useful dep
@@ -93,9 +107,6 @@ rust_host = Platform("x86_64", "linux"; libc="musl")
 rust_host_triplet = map_rust_target(rust_host)
 
 rust_platforms = supported_platforms()
-# Skip unsupported platforms (see `RUST_TARGETS` above)
-filter!(p -> !(arch(p) == "aarch64" && Sys.isfreebsd(p)), rust_platforms)
-filter!(p -> !(arch(p) == "riscv64"), rust_platforms)
 
 for target_platform in rust_platforms
     rust_target_triplet = map_rust_target(target_platform)

@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "LibRaw"
-version = v"0.20.2"
+version = v"0.22.2"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource(
-        "https://www.libraw.org/data/LibRaw-0.20.2.tar.gz",
-        "dc1b486c2003435733043e4e05273477326e51c3ea554c6864a4eafaff1004a6",
+        "https://www.libraw.org/data/LibRaw-$(version).tar.gz",
+        "de86b035655accff8d4010f1a221fdf50d353cb7b1422ba26f14a0db92612cfa",
     ),
 ]
 
@@ -18,7 +18,7 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd LibRaw-*
 autoreconf --install
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-openmp
 make -j${nproc}
 make install
 exit

@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "JIL"
-version = v"0.1.0"
+version = v"0.1.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://git.renater.fr/anonscm/git/jil/jil.git", "83010839c6f6a7758bba784d1a241669b07becd5")
+    GitSource("https://git.renater.fr/anonscm/git/jil/jil.git", "ab56a4be6c37fce27b87b7867865f71dba035d55")
 ]
 
 # Bash recipe for building across all platforms
@@ -44,10 +44,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
-    BuildDependency(PackageSpec(name="OpenCL_Headers_jll", uuid="a7aa756b-2b7f-562a-9e9d-e94076c5c8ee")),
-    Dependency(PackageSpec(name="OpenCL_jll", uuid="6cb37087-e8b6-5417-8430-1f242f1e46e4")),
-]
+dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script,
