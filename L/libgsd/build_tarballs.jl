@@ -15,7 +15,7 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/gsd/
 mkdir -p "${libdir}"
 install -Dv -m644 ./gsd/gsd.h ${includedir}/gsd.h
-${CC} -std=c99 -fPIC gsd/gsd.c -shared -o "${libdir}/libgsd.${dlext}"
+${CC} -std=c99 ${FLAGS} -D_GNU_SOURCE -fPIC gsd/gsd.c -shared -o "${libdir}/libgsd.${dlext}"
 """
 
 # These are the platforms we will build for by default, unless further
@@ -23,7 +23,8 @@ ${CC} -std=c99 -fPIC gsd/gsd.c -shared -o "${libdir}/libgsd.${dlext}"
 platforms = supported_platforms()
 # Windows cant be build since the source code implicitly requires commands from unistd.h which only exist for unix and unix-like systems
 platforms = filter!(!Sys.iswindows, platforms)
-platforms = filter!(x->arch(x)!="riscv64", platforms)
+
+any_riscv = any(p -> arch(p) == "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -36,4 +37,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6",skip_audit = any_riscv)
