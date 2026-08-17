@@ -8,7 +8,6 @@ version = v"2025.05.28"
 
 sources = [
     GitSource("https://github.com/icl-utk-edu/slate.git", "f8348a7c3de4f8fc60f5b8f78134df25ebc9061b"),
-    DirectorySource(joinpath(@__DIR__, "bundled")),
 ]
 
 script = raw"""
