@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "Pango"
-version = v"1.58.0"
+version = v"1.58.0+1"
 
 # Collection of sources required to build Pango: https://download.gnome.org/sources/pango/
 sources = [
@@ -78,7 +78,7 @@ dependencies = [
     Dependency("FreeType2_jll"; compat="2.13.4"),
     Dependency("FriBidi_jll"; compat="1.0.17"),
     Dependency("Glib_jll"; compat="2.84.0"),
-    Dependency("HarfBuzz_jll"; compat="8.5.1"),
+    Dependency("HarfBuzz_jll"; compat="100.14002"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
