@@ -1,0 +1,68 @@
+From edab30232da40be46a4d66b926c9e1bcc276885e Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Tue, 16 Jun 2026 22:20:24 +0200
+Subject: [PATCH] [SPIR-V] Lower nested aggregate insertvalue operands
+
+Co-authored-by: Codex <noreply@openai.com>
+---
+ llvm/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp | 11 ++++++++
+ .../insertvalue-nested-extractvalue.ll        | 25 +++++++++++++++++++
+ 2 files changed, 36 insertions(+)
+ create mode 100644 llvm/test/CodeGen/SPIRV/instructions/insertvalue-nested-extractvalue.ll
+
+diff --git a/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp b/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
+index ce2c86c17c5d..cd63899c8ab1 100644
+--- a/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
++++ b/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
+@@ -2014,6 +2014,17 @@ Instruction *SPIRVEmitIntrinsics::visitExtractValueInst(ExtractValueInst &I) {
+     Args.push_back(B.getInt32(Op));
+   auto *NewI =
+       B.CreateIntrinsic(Intrinsic::spv_extractv, {I.getType()}, {Args});
++  // If this aggregate extract feeds another insertvalue, the extracted
++  // composite is used as a SPIR-V value-id by llvm.spv.insertv. Keep the real
++  // aggregate type in metadata, but expose the value itself as i32 so the
++  // intrinsic signature remains valid.
++  if (NewI->getType()->isAggregateType() &&
++      any_of(I.users(), [](User *U) { return isa<InsertValueInst>(U); })) {
++    AggrConstTypes[NewI] = I.getType();
++    NewI->mutateType(B.getInt32Ty());
++    replaceMemInstrUses(&I, NewI, B);
++    return NewI;
++  }
+   replaceAllUsesWithAndErase(B, &I, NewI);
+   return NewI;
+ }
+diff --git a/test/CodeGen/SPIRV/instructions/insertvalue-nested-extractvalue.ll b/test/CodeGen/SPIRV/instructions/insertvalue-nested-extractvalue.ll
+new file mode 100644
+index 000000000000..81262cff6924
+--- /dev/null
++++ b/test/CodeGen/SPIRV/instructions/insertvalue-nested-extractvalue.ll
+@@ -0,0 +1,25 @@
++; RUN: llc -verify-machineinstrs -O0 -mtriple=spirv64-unknown-unknown %s -o - | FileCheck %s
++; RUN: %if spirv-tools %{ llc -O0 -mtriple=spirv64-unknown-unknown %s -o - -filetype=obj | spirv-val %}
++
++; A nested aggregate extractvalue can produce an aggregate that is then used as
++; the base of another insertvalue. The intermediate aggregate must be lowered as
++; an i32 SPIR-V value-id before it is passed to llvm.spv.insertv.
++
++; CHECK-DAG: %[[#I64:]] = OpTypeInt 64
++; CHECK-DAG: %[[#ONE:]] = OpConstant %[[#]] 1
++; CHECK-DAG: %[[#INNER:]] = OpTypeArray %[[#I64]] %[[#ONE]]
++; CHECK-DAG: %[[#OUTER:]] = OpTypeArray %[[#INNER]] %[[#ONE]]
++
++; CHECK: OpFunction
++; CHECK: %[[#A:]] = OpFunctionParameter %[[#OUTER]]
++; CHECK: %[[#X:]] = OpFunctionParameter %[[#I64]]
++; CHECK: %[[#E:]] = OpCompositeExtract %[[#INNER]] %[[#A]] 0
++; CHECK: %[[#I:]] = OpCompositeInsert %[[#INNER]] %[[#X]] %[[#E]] 0
++; CHECK: %[[#R:]] = OpCompositeInsert %[[#OUTER]] %[[#I]] %[[#A]] 0
++; CHECK: OpReturnValue %[[#R]]
++define spir_func [1 x [1 x i64]] @f([1 x [1 x i64]] %a, i64 %x) {
++  %e = extractvalue [1 x [1 x i64]] %a, 0
++  %i = insertvalue [1 x i64] %e, i64 %x, 0
++  %r = insertvalue [1 x [1 x i64]] %a, [1 x i64] %i, 0
++  ret [1 x [1 x i64]] %r
++}
+-- 
+2.47.3
+

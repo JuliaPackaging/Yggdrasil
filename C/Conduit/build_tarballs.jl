@@ -6,10 +6,11 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "Conduit"
-version = v"0.9.6"
+version = v"0.9.7"
+ygg_version = v"0.9.8"
 sources = [
     ArchiveSource("https://github.com/LLNL/conduit/releases/download/v$(version)/conduit-v$(version)-src-with-blt.tar.gz",
-		  "370780082f095ebcb5c43067b650c78325088df726488dc5c6d414e7037c847d"),
+		  "e207016e453dd360b2d9a5a1245e53a9aa26ed83fdfb02cc08fc7bfed664f923"),
     DirectorySource("bundled"),
 ]
 
@@ -85,8 +86,8 @@ dependencies = [
                platforms=filter(!Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
                platforms=filter(Sys.isbsd, platforms)),
-    Dependency(PackageSpec(name="HDF5_jll"); compat="2.1.2"),
-    Dependency(PackageSpec(name="Silo_jll"); compat="4.12.1"),
+    Dependency(PackageSpec(name="HDF5_jll"); compat="2.2.1"),
+    Dependency(PackageSpec(name="Silo_jll"); compat="4.12.3"),
     Dependency(PackageSpec(name="Zlib_jll"); compat="1.2.12"),
     Dependency(PackageSpec(name="zfp_jll"); compat="1.0.2"),
 ]
@@ -96,5 +97,5 @@ append!(dependencies, platform_dependencies)
 # (MPItrampoline will skip its automatic initialization.)
 ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; 
 	       augment_platform_block, julia_compat="1.10", preferred_gcc_version=v"8")

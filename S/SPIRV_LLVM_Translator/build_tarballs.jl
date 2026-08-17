@@ -8,15 +8,15 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "SPIRV_LLVM_Translator"
-version = v"21.1.1"
-llvm_version = v"21.1.2"
+version = v"22.1.4"
+llvm_version = v"22.1.1+0"
 
 # Collection of sources required to build the package
 sources = [
     GitSource(
         "https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git",
-        "29758b55816c14abb3e4142d42aca7a95bf46710"),
-    DirectorySource("./bundled"),
+        "c88a2e4a1ec77f7adc8916940afd9754c3a30fab"),
+    DirectorySource("bundled"),
     # LLVM 15+ requires macOS SDK 10.14
     get_macos_sdk_sources("10.14")...
 ]
@@ -24,7 +24,7 @@ sources = [
 # Bash recipe for building across all platforms
 get_script(llvm_version) = get_macos_sdk_script("10.14") * raw"""
 cd SPIRV-LLVM-Translator
-atomic_patch -p1 ../addrspacecast_null.patch
+atomic_patch -p1 ../phi-duplicate-predecessors.patch
 install_license LICENSE.TXT
 
 CMAKE_FLAGS=()

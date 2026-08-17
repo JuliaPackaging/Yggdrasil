@@ -37,4 +37,4 @@ for (i, build) in enumerate(builds)
                    augment_platform_block)
 end
 
-# bump
+# rebuild trigger: 1

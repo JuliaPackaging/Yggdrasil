@@ -2,16 +2,16 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 include("../common.jl")
 
-gap_version = v"400.1500.0"
+gap_version = v"400.1600.0"
 name = "NormalizInterface"
-upstream_version = "1.4.1" # when you increment this, reset offset to v"0.0.0"
+upstream_version = "1.5.1" # when you increment this, reset offset to v"0.0.0"
 offset = v"1.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL
 sources = [
     ArchiveSource("https://github.com/gap-packages/NormalizInterface/releases/download/v$(upstream_version)/NormalizInterface-$(upstream_version).tar.gz",
-                  "b186c1719f9110bbf96600283a7ab201851ab46571c00487be004a264063b572"),
+                  "ec72746c3261f73ff643fd56d26537ce8b69a5ede7e33cd43078af82dcc2343a"),
 ]
 
 # Bash recipe for building across all platforms
@@ -32,7 +32,7 @@ dependencies = gap_pkg_dependencies(gap_version)
 platforms = gap_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
-push!(dependencies, Dependency("normaliz_jll", compat = "~300.1001.502"))
+push!(dependencies, Dependency("normaliz_jll", compat = "~300.1100.100"))
 
 # The products that we will ensure are always built
 products = [

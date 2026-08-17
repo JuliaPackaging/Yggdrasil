@@ -1,0 +1,294 @@
+Subject: [PATCH] Fix regular-mesh (NOR) regression introduced by the 1.7.7c -> 1.8.2g merge
+
+The 1.8.2g merge dropped the NOR() node-renumbering indirection on the
+assumption that node numbering is the identity. That holds for triangle
+meshes but NOT for regular meshes, where NORDER() re-sorts the equation
+numbering. On a regular mesh the boundary-condition tables are then built
+against the wrong node indices, and the run dies during assembly with a
+bogus "ALLOWED SPACE IN STK EXCEEDED".
+
+  * vsbcon.f: restore NOR() in VSBTAB / VSBTAB2 / VSBCON / VSBCBE.
+  * crust.f:  restore NOR() in DFSTEP mesh advection.
+  * basil.F:  pass NOR to DFSTEP.
+
+Every change is an exact no-op when NOR(k) == k, so the triangle-mesh path
+is unaffected (verified byte-identical solutions on a triangle-mesh case).
+
+diff --git a/basilsrc/basil.F b/basilsrc/basil.F
+index f2ea419..57bc81d 100644
+--- a/basilsrc/basil.F
++++ b/basilsrc/basil.F
+@@ -1152,7 +1152,7 @@ C
+ C
+ C      Deform the finite element mesh using the current velocity
+ C
+-        CALL DFSTEP(DTP,EXTS,EYTS,EX,EY,UVPTS,LEM,
++        CALL DFSTEP(DTP,EXTS,EYTS,EX,EY,UVPTS,NOR,LEM,
+      :              INTV(INUP),INTV(INE),INTV(INN),INTV(INCOMP),
+      :              IOFF,RLV(ITBXOFF),RLV(ITBYOFF),
+      :              RLV(IVELXO),RLV(IVELYO),
+diff --git a/basilsrc/crust.f b/basilsrc/crust.f
+index 61c871f..436d5d5 100644
+--- a/basilsrc/crust.f
++++ b/basilsrc/crust.f
+@@ -207,7 +207,7 @@ C     WRITE(*,*)'T,DT,IDT0,DEFLIM,DVMX=',T,DT,IDT0,DEFLIM,DVMX
+ C
+       RETURN
+       END
+-      SUBROUTINE DFSTEP(DT,EXTS,EYTS,EX,EY,UVP,LEM,NUP,NE,NN,
++      SUBROUTINE DFSTEP(DT,EXTS,EYTS,EX,EY,UVP,NOR,LEM,NUP,NE,NN,
+      :                  NCOMP,IOFF,TBXOFF,TBYOFF,VELXO,VELYO,
+      :                  IFLT,IFBC1,IFEQV,NFP,NFPF3,
+      :                  SEGMIN,LSEGMIN,SHAPEMIN,LSHAPEMIN,
+@@ -222,6 +222,7 @@ C    the NOR(NUP) array is removed as no longer necessary.
+ C
+       INCLUDE 'limits.parameters'
+       DIMENSION EX(NUP),EY(NUP),UVP(NUP,2),LEM(6,NE)
++      DIMENSION NOR(NUP)
+       DIMENSION IFBC1(NFP),IFEQV(NFP)
+       DIMENSION EXTS(NUP),EYTS(NUP)
+       DIMENSION SD2(3)
+@@ -235,14 +236,17 @@ C
+ C
+ C    the basic vertex update process follows
+ C
+-      DO NI=1,NN
+-        EX(NI)=EXTS(NI) + DT*UVP(NI,1)
+-        EY(NI)=EYTS(NI) + DT*UVP(NI,2)
++      DO N=1,NUP
++        NI=NOR(N)
++        IF((NI.GE.1).AND.(NI.LE.NN))THEN
++          EX(NI)=EXTS(NI) + DT*UVP(N,1)
++          EY(NI)=EYTS(NI) + DT*UVP(N,2)
+ C
+ C     correction for thin spherical sheet
+ C
+-        IF(NCOMP.EQ.-1)THEN
+-          EX(NI)=EX(NI) + DT*EXTS(NI)*UVP(NI,2)/TAN(EYTS(NI))
++          IF(NCOMP.EQ.-1)THEN
++            EX(NI)=EX(NI) + DT*EXTS(NI)*UVP(N,2)/TAN(EYTS(NI))
++          ENDIF
+         ENDIF
+       ENDDO
+ C
+@@ -278,12 +282,12 @@ C   than arrange for it to be only done once on a given midpoint
+ C   In general a midpoint is shared by two elements.
+ C
+       DO JEL=1,NE
+-        NJ1=LEM(1,JEL)
+-        NJ2=LEM(2,JEL)
+-        NJ3=LEM(3,JEL)
+-        NJ4=LEM(4,JEL)
+-        NJ5=LEM(5,JEL)
+-        NJ6=LEM(6,JEL)
++        NJ1=NOR(LEM(1,JEL))
++        NJ2=NOR(LEM(2,JEL))
++        NJ3=NOR(LEM(3,JEL))
++        NJ4=NOR(LEM(4,JEL))
++        NJ5=NOR(LEM(5,JEL))
++        NJ6=NOR(LEM(6,JEL))
+         EX(NJ4)=(EX(NJ3)+EX(NJ1))*0.5
+         EX(NJ5)=(EX(NJ1)+EX(NJ2))*0.5
+         EX(NJ6)=(EX(NJ2)+EX(NJ3))*0.5
+@@ -305,8 +309,8 @@ C
+         DO 10 K1=1,3
+           K2=MOD(K1,3)+1
+           K3=MOD(K1+1,3)+1
+-          LK2=LEM(K2,N)
+-          LK3=LEM(K3,N)
++          LK2=NOR(LEM(K2,N))
++          LK3=NOR(LEM(K3,N))
+           BY=EY(LK2)-EY(LK3)
+           CX=EX(LK3)-EX(LK2)
+           SD2(K1)=BY*BY + CX*CX
+@@ -337,7 +341,8 @@ C
+    25 CONTINUE
+       SEGMIN=SQRT(SEGSQMIN)
+       NODE=LEM(LANGKIN,LANGMIN)
+-      WRITE(*,10110)ANGMIN/DTOR,LANGMIN,LANGKIN,NODE,EX(NODE),EY(NODE)
++      WRITE(*,10110)ANGMIN/DTOR,LANGMIN,LANGKIN,NODE,
++     :              EX(NOR(NODE)),EY(NOR(NODE))
+ 10110 FORMAT('smallest angle',F9.4,' node: ',3I5,' (x,y) =',2F9.4)
+       RETURN
+       END
+diff --git a/basilsrc/vsbcon.f b/basilsrc/vsbcon.f
+index f1a6eb0..bd9d30b 100644
+--- a/basilsrc/vsbcon.f
++++ b/basilsrc/vsbcon.f
+@@ -60,7 +60,7 @@ C
+           K1=LEM(J1,N)
+           K2=LEM(J2,N)
+           K4=LEM(J4,N)
+-          LK4=K4
++          LK4=NOR(K4)
+           XM=EX(LK4)
+           YM=EY(LK4)
+           XT1=XM-XZERO
+@@ -172,7 +172,7 @@ C
+ C
+       DO 300 I=1,NE
+         DO K=4,6
+-          ITEMP=LEM(K,I)-NN
++          ITEMP=NOR(LEM(K,I))-NN
+           IF((ITEMP.LE.0).OR.(ITEMP.GT.NMP) ) THEN
+             WRITE(6,10500)K,I,ITEMP
+ 10500       FORMAT('VSBTAB2 problem, stopping; K, I, ITEMP =',3I7)
+@@ -264,11 +264,11 @@ C
+       XMAX=0
+       XMIN=1
+       DO 600 I=1,NBP
+-        IF(EX(IBC(I)).GT.XMAX) THEN
+-          XMAX=EX(IBC(I))
++        IF(EX(NOR(IBC(I))).GT.XMAX) THEN
++          XMAX=EX(NOR(IBC(I)))
+         END IF
+-        IF(EX(IBC(I)).LT.XMIN) THEN
+-          XMIN=EX(IBC(I))
++        IF(EX(NOR(IBC(I))).LT.XMIN) THEN
++          XMIN=EX(NOR(IBC(I)))
+         END IF
+   600 CONTINUE
+ C
+@@ -279,24 +279,24 @@ C
+       YMINX=1
+       YMAXX=0
+       DO 601 I=1,NBP
+-        IF((EX(IBC(I))-XMIN.LT.EPS).AND.
+-     :    (EY(IBC(I))).LT.YMINM) THEN
+-          YMINM=EY(IBC(I))
++        IF((EX(NOR(IBC(I)))-XMIN.LT.EPS).AND.
++     :    (EY(NOR(IBC(I)))).LT.YMINM) THEN
++          YMINM=EY(NOR(IBC(I)))
+           KORNER(1)=IBC(I)
+         END IF
+-        IF((EX(IBC(I))-XMIN.LT.EPS).AND.
+-     :    (EY(IBC(I))).GT.YMAXM) THEN
+-          YMAXM=EY(IBC(I))
++        IF((EX(NOR(IBC(I)))-XMIN.LT.EPS).AND.
++     :    (EY(NOR(IBC(I)))).GT.YMAXM) THEN
++          YMAXM=EY(NOR(IBC(I)))
+           KORNER(4)=IBC(I)
+         END IF
+-        IF((XMAX-EX(IBC(I)).LT.EPS).AND.
+-     :    (EY(IBC(I))).GT.YMAXX) THEN
+-          YMAXX=EY(IBC(I))
++        IF((XMAX-EX(NOR(IBC(I))).LT.EPS).AND.
++     :    (EY(NOR(IBC(I)))).GT.YMAXX) THEN
++          YMAXX=EY(NOR(IBC(I)))
+           KORNER(3)=IBC(I)
+         END IF
+-        IF((XMAX-EX(IBC(I)).LT.EPS).AND.
+-     :    (EY(IBC(I))).LT.YMINX) THEN
+-          YMINX=EY(IBC(I))
++        IF((XMAX-EX(NOR(IBC(I))).LT.EPS).AND.
++     :    (EY(NOR(IBC(I)))).LT.YMINX) THEN
++          YMINX=EY(NOR(IBC(I)))
+           KORNER(2)=IBC(I)
+         END IF
+   601 CONTINUE
+@@ -396,8 +396,8 @@ C   'ON' statements are processed here
+ C
+       IF(INSTR(J1:J1+1).EQ.'ON')THEN
+         CALL VSBCON(INSTR,IPR,XLEN,YLEN,BIG,IFLTTIPS,EX,EY,QBND,
+-     :              TANDF,ARGAN,HLENSC,CENTLNG,CT0,IDEFTYP,LEM,IBC,
+-     :              IBNGH,IBCTYP,ISEG,NSEG,NUP,NE,NN,NBP,LBC,
++     :              TANDF,ARGAN,HLENSC,CENTLNG,CT0,IDEFTYP,NOR,LEM,
++     :              IBC,IBNGH,IBCTYP,ISEG,NSEG,NUP,NE,NN,NBP,LBC,
+      :              LUW,LSC,IDBUG,IERR)
+         IF (IERR.NE.0)GO TO 50
+ C
+@@ -418,7 +418,7 @@ C   'BETWEEN, POLE, CREF' statements are processed by this routine
+ C
+       ELSE
+         CALL VSBCBE(INSTR,IPR,BIG,EX,EY,QBND,TANDF,ARGAN,HLENSC,
+-     :              CENTLNG,CT0,ROTIX,DPHI,LEM,IBC,IBNGH,IBCTYP,
++     :              CENTLNG,CT0,ROTIX,DPHI,NOR,LEM,IBC,IBNGH,IBCTYP,
+      :              NCOMP,NUP,NE,NN,NBP,XPT0,YPT0,POLEP,
+      :              IPOLE,IDEFTYP,LBC,LUW,LSC,IDBUG,IERR)
+         IF (IERR.NE.0) GO TO 50
+@@ -582,7 +582,7 @@ C
+ C****************************************************************************************
+ C
+       SUBROUTINE VSBCON(INSTR,IPR,XLEN,YLEN,BIG,IFLTTIPS,EX,EY,QBND,
+-     :                  TANDF,ARGAN,HLENSC,CENTLNG,CT0,IDEFTYP,LEM,
++     :                  TANDF,ARGAN,HLENSC,CENTLNG,CT0,IDEFTYP,NOR,LEM,
+      :                  IBC,IBNGH,IBCTYP,ISEG,NSEG,NUP,NE,NN,NBP,LBC,
+      :                  LUW,LSC,IDBUG,IERR)
+ C
+@@ -629,6 +629,7 @@ C
+       DIMENSION EX(NUP)
+       DIMENSION EY(NUP)
+       DIMENSION LEM(6,NE)
++      DIMENSION NOR(NUP)
+       DIMENSION QBND(NBP*2)
+       DIMENSION IBC(NBP),IBNGH(NBP*2),IBCTYP(NBP*2)
+       CHARACTER IYX*1
+@@ -685,12 +686,15 @@ C
+         NODE=IBC(JX)
+         NODEA=IBNGH(JX)
+         NODEB=IBNGH(JY)
+-        XN=EX(NODE)
+-        YN=EY(NODE)
+-        XNA=EX(NODEA)
+-        YNA=EY(NODEA)
+-        XNB=EX(NODEB)
+-        YNB=EY(NODEB)
++        NNODE=NOR(NODE)
++        NNODEA=NOR(NODEA)
++        NNODEB=NOR(NODEB)
++        XN=EX(NNODE)
++        YN=EY(NNODE)
++        XNA=EX(NNODEA)
++        YNA=EY(NNODEA)
++        XNB=EX(NNODEB)
++        YNB=EY(NNODEB)
+         NCORNA=0         ! remains zero if NODEA not on set segment
+         NCORNB=0         ! remains zero if NODEB not on set segment
+         NODSET=0         ! to be changed if BC to be set
+@@ -866,7 +870,7 @@ C
+             DLENA=SQRT(XDIFA*XDIFA+YDIFA*YDIFA)
+             DLENB=SQRT(XDIFB*XDIFB+YDIFB*YDIFB)
+ C
+-            IF(NODE.LE.NN)THEN                   ! if a vertex node
++            IF(NNODE.LE.NN)THEN                  ! if a vertex node
+               PC=PVERT
+               DLEN=DLENA+DLENB
+               XBIF=XDIFA+XDIFB
+@@ -1001,7 +1005,7 @@ C
+ C****************************************************************************************
+ C
+       SUBROUTINE VSBCBE(INSTR,IPR,BIG,EX,EY,QBND,TANDF,ARGAN,HLENSC,
+-     :                  CENTLNG,CT0,ROTIX,DPHI,LEM,IBC,IBNGH,
++     :                  CENTLNG,CT0,ROTIX,DPHI,NOR,LEM,IBC,IBNGH,
+      :                  IBCTYP,NCOMP,NUP,NE,NN,NBP,XPT0,YPT0,
+      :                  POLEP,IPOLE,IDEFTYP,
+      :                  LBC,LUW,LSC,IDBUG,IERR)
+@@ -1044,6 +1048,7 @@ C
+       DIMENSION EX(NUP)
+       DIMENSION EY(NUP)
+       DIMENSION LEM(6,NE)
++      DIMENSION NOR(NUP)
+       DIMENSION QBND(NBP*2)
+       DIMENSION IBC(NBP),IBNGH(NBP*2),IBCTYP(NBP*2)
+       DIMENSION POLEP(3,MAXPOLE),POLET(3),TANDF(2)
+@@ -1088,8 +1093,7 @@ C     CALL MITPRT(IBNGH,NBP,2,2*NBP,6)
+         IF((IBCTYP(JX).LT.10).OR.(IBCTYP(JX).GT.500))THEN     !don't hit fault nodes
+           JY=JX+NBP
+           NODE=IBC(JX)
+-          NNODE=NODE
+-          NNODE=IBC(JX)
++          NNODE=NOR(NODE)
+           XN=EX(NNODE)
+           YN=EY(NNODE)
+           AZ=ATAN2((YN-YPT0),(XN-XPT0))   ! relative to CREF
+@@ -1108,8 +1112,8 @@ C
+             IF(IUT(1:1).EQ.'T'.OR.IUT(1:1).EQ.'F')THEN
+               NODEA=IBNGH(JX)
+               NODEB=IBNGH(JY)
+-              NNODEA=NODEA
+-              NNODEB=NODEB
++              NNODEA=NOR(NODEA)
++              NNODEB=NOR(NODEB)
+               XNA=EX(NNODEA)
+               YNA=EY(NNODEA)
+               XNB=EX(NNODEB)

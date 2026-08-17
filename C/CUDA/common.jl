@@ -2,21 +2,38 @@ using JSON3, Downloads
 using BinaryBuilder
 using Base: thisminor
 
+# GA releases have historically been published to developer.download.nvidia.com, while
+# EA/preview releases (and possibly everything, going forward) only appear on
+# packages.nvidia.com's bin-archive service. The latter serves the very same JSON manifest
+# format from a different root, the only difference being that the relative paths point
+# into a content-addressed pool instead of sitting next to the manifest.
+redist_roots(product::String) = [
+    "https://developer.download.nvidia.com/compute/$product/redist",
+    "https://packages.nvidia.com/bin-archive/release/$product/redist",
+]
+
 function get_sources(product::String, components::Vector{String};
                      version::Union{VersionNumber,String}, platform::Platform,
                      variant::Union{Nothing,String}=nothing)
-    root = "https://developer.download.nvidia.com/compute/$product/redist"
-
-    url = "$root/redistrib_$(version).json"
-    json = sprint(io->Downloads.download(url, io))
-    parse_sources(json, product, components; version, platform, variant)
+    errors = []
+    for root in redist_roots(product)
+        url = "$root/redistrib_$(version).json"
+        json = try
+            sprint(io->Downloads.download(url, io))
+        catch err
+            push!(errors, url => err)
+            continue
+        end
+        return parse_sources(json, product, components; version, platform, variant, root)
+    end
+    error("Could not download a redistributable manifest for $product $version:\n" *
+          join(("  $url: $(sprint(showerror, err))" for (url, err) in errors), "\n"))
 end
 # XXX: split, for now, so that we can use this with manual JSON
 function parse_sources(json::String, product::String, components::Vector{String};
                        version::Union{VersionNumber,String}, platform::Platform,
-                       variant::Union{Nothing,String}=nothing)
-    root = "https://developer.download.nvidia.com/compute/$product/redist"
-
+                       variant::Union{Nothing,String}=nothing,
+                       root::String=first(redist_roots(product)))
     redist = JSON3.read(json)
     if !haskey(platform, "cuda")
         error("Please provide a platform that has the 'cuda' tag set, indicating which CUDA toolkit version this product is to be used with.")
@@ -70,10 +87,26 @@ function parse_sources(json::String, product::String, components::Vector{String}
         end
 
         push!(sources, ArchiveSource(
-            "$root/$(data["relative_path"])", data["sha256"]
+            resolve_redist_url(root, data["relative_path"]), data["sha256"]
         ))
     end
     sources
+end
+
+# resolve a manifest-relative path against the directory the manifest lives in, folding
+# away any ".." segments (bin-archive manifests use e.g. ../../../pool/<platform>/<uuid>/).
+# libcurl would normalize these anyway, but the URL also ends up in build metadata.
+function resolve_redist_url(root::String, relative_path::AbstractString)
+    resolved = String[]
+    for part in split("$root/$relative_path", '/')
+        if part == ".."
+            isempty(resolved) && error("Invalid relative path $relative_path")
+            pop!(resolved)
+        elseif part != "."
+            push!(resolved, part)
+        end
+    end
+    join(resolved, '/')
 end
 
 function build_sdk(name::String, version::VersionNumber, platforms::Vector{Platform};
@@ -114,7 +147,6 @@ fi"""
     # determine exactly which tarballs we should build
     builds = []
     components = [
-        "cuda_cccl",
         "cuda_cudart",
         "cuda_cuobjdump",
         "cuda_cupti",
@@ -146,6 +178,11 @@ fi"""
     if version >= v"13"
         push!(components, "cuda_crt")
         push!(components, "libnvvm")
+    end
+    if version >= v"13.3"
+        push!(components, "cccl")
+    else
+        push!(components, "cuda_cccl")
     end
     for platform in platforms
         should_build_platform(triplet(platform)) || continue

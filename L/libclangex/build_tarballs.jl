@@ -10,12 +10,12 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "libclangex"
 repo = "https://github.com/Gnimuc/ClangCompiler.jl.git"
-version = v"0.2.0"
+version = v"0.4.1"
 
 llvm_versions = [v"18.1.7"]
 
 sources = [
-    GitSource(repo, "7d599c3f41a183aae68e53f510915d64bbad3da7")
+    GitSource(repo, "3c8af018bd12787956d53986f1a9ba0f9eb08275")
 ]
 
 # Bash recipe for building across all platforms
@@ -48,7 +48,7 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
     llvm_name = llvm_assertions ? "LLVM_full_assert_jll" : "LLVM_full_jll"
     dependencies = [
         RuntimeDependency("Clang_jll"),
-        BuildDependency(PackageSpec(name=llvm_name, version=llvm_version))
+        BuildDependency(PackageSpec(name=llvm_name, version=string(llvm_version)))
     ]
 
     # The products that we will ensure are always built
@@ -98,4 +98,4 @@ for (i,build) in enumerate(builds)
                    augment_platform_block)
 end
 
-# bump
+# rebuild trigger: 1
