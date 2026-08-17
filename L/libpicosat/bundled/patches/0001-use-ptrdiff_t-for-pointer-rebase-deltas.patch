@@ -1,0 +1,123 @@
+Use ptrdiff_t, not long, for pointer-rebase deltas (fixes crashes on Windows x64)
+
+enlarge() reallocates the solver's literal and rank arrays, then rebases every
+stored Lit*/Rnk* by the byte distance the arrays moved. It held that distance in
+a `long`.
+
+On LLP64 -- which is Windows x64 -- `long` is 32 bits while pointers are 64, so
+whenever realloc moves an array more than 2GB the delta is truncated and every
+rebased pointer is left pointing at garbage. `sizeof(Lit) == 1`, so the delta is
+a raw byte distance and 2GB is reachable on ordinary problems. The next solve
+then dereferences wild pointers inside bcp()/prop2() and segfaults.
+
+ptrdiff_t is the natural type of the expression (`ps->lits - old_lits` is
+pointer difference), so this is a no-op on LP64 (Linux, macOS) and on 32-bit
+targets, where long is already wide enough.
+
+Observed as an EXCEPTION_ACCESS_VIOLATION in bcp on Windows x64 with a
+truncating delta of 3187172336 logged three lines before the crash (it becomes
+-1107794960 as a 32-bit long, a rebase error of exactly 2^32 bytes).
+
+Upstream picosat has had no release since 965 (2014) and has no public VCS or
+issue tracker, so there is nowhere to send this.
+
+--- a/picosat.c
++++ b/picosat.c
+@@ -28,6 +28,7 @@
+ #include <ctype.h>
+ #include <stdarg.h>
+ #include <stdint.h>
++#include <stddef.h>
+ 
+ #include "picosat.h"
+ 
+@@ -2802,7 +2803,7 @@
+ }
+ 
+ static void
+-fix_trail_lits (PS * ps, long delta)
++fix_trail_lits (PS * ps, ptrdiff_t delta)
+ {
+   Lit **p;
+   for (p = ps->trail; p < ps->thead; p++)
+@@ -2811,7 +2812,7 @@
+ 
+ #ifdef NO_BINARY_CLAUSES
+ static void
+-fix_impl_lits (PS * ps, long delta)
++fix_impl_lits (PS * ps, ptrdiff_t delta)
+ {
+   Ltk * s;
+   Lit ** p;
+@@ -2823,7 +2824,7 @@
+ #endif
+ 
+ static void
+-fix_clause_lits (PS * ps, long delta)
++fix_clause_lits (PS * ps, ptrdiff_t delta)
+ {
+   Cls **p, *clause;
+   Lit **q, *lit, **eol;
+@@ -2847,7 +2848,7 @@
+ }
+ 
+ static void
+-fix_added_lits (PS * ps, long delta)
++fix_added_lits (PS * ps, ptrdiff_t delta)
+ {
+   Lit **p;
+   for (p = ps->added; p < ps->ahead; p++)
+@@ -2855,7 +2856,7 @@
+ }
+ 
+ static void
+-fix_assumed_lits (PS * ps, long delta)
++fix_assumed_lits (PS * ps, ptrdiff_t delta)
+ {
+   Lit **p;
+   for (p = ps->als; p < ps->alshead; p++)
+@@ -2863,7 +2864,7 @@
+ }
+ 
+ static void
+-fix_cls_lits (PS * ps, long delta)
++fix_cls_lits (PS * ps, ptrdiff_t delta)
+ {
+   Lit **p;
+   for (p = ps->CLS; p < ps->clshead; p++)
+@@ -2871,7 +2872,7 @@
+ }
+ 
+ static void
+-fix_heap_rnks (PS * ps, long delta)
++fix_heap_rnks (PS * ps, ptrdiff_t delta)
+ {
+   Rnk **p;
+ 
+@@ -2882,7 +2883,7 @@
+ #ifndef NADC
+ 
+ static void
+-fix_ado (long delta, Lit ** ado)
++fix_ado (ptrdiff_t delta, Lit ** ado)
+ {
+   Lit ** p;
+   for (p = ado; *p; p++)
+@@ -2890,7 +2891,7 @@
+ }
+ 
+ static void
+-fix_ados (PS * ps, long delta)
++fix_ados (PS * ps, ptrdiff_t delta)
+ {
+   Lit *** p;
+ 
+@@ -2903,7 +2904,7 @@
+ static void
+ enlarge (PS * ps, unsigned new_size_vars)
+ {
+-  long rnks_delta, lits_delta;
++  ptrdiff_t rnks_delta, lits_delta;
+   Lit *old_lits = ps->lits;
+   Rnk *old_rnks = ps->rnks;
+ 

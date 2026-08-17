@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "PTSCOTCH"
-version = v"7.0.5"
+version = v"7.0.6"
 scotch_jll_version = v"7.0.4"
 
 # Collection of sources required to complete build

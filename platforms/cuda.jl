@@ -76,6 +76,61 @@ const augment = """
         return platform
     end"""
 
+# augmentation block for artifacts that depend on the CUDA compiler (i.e., the JIT
+# stack: nvrtc/nvJitLink) rather than on the CUDA runtime. selection follows
+# CUDA_Compiler_jll, which picks a toolkit independently from the runtime. the "cuda"
+# tag names the oldest compatible toolkit series, so an artifact also matches newer
+# JIT stacks from the same major series. unlike CUDA_Compiler_jll's own artifacts,
+# dependent artifacts may still be used with a compatible local toolkit.
+const compiler_augment = """
+    using Base.BinaryPlatforms
+
+    try
+        using CUDA_Compiler_jll
+    catch
+        # during initial package installation, CUDA_Compiler_jll may not be available.
+        # in that case, we just won't select an artifact.
+    end
+
+    function cuda_comparison_strategy(_a::String, _b::String, a_requested::Bool, b_requested::Bool)
+        # if either isn't a version number (e.g. "none"), perform a simple equality check
+        a = tryparse(VersionNumber, _a)
+        b = tryparse(VersionNumber, _b)
+        if a === nothing || b === nothing
+            return _a == _b
+        end
+
+        # if both are explicitly requested, require equality
+        if a_requested && b_requested
+            return Base.thisminor(a) == Base.thisminor(b)
+        end
+
+        # otherwise, an artifact is compatible with a JIT stack from the same major
+        # series that is at least as new as the artifact's minimum toolkit
+        function is_compatible(artifact::VersionNumber, host::VersionNumber)
+            artifact.major == host.major &&
+            Base.thisminor(artifact) <= Base.thisminor(host)
+        end
+        if a_requested
+            is_compatible(b, a)
+        else
+            is_compatible(a, b)
+        end
+    end
+
+    function augment_platform!(platform::Platform)
+        if !@isdefined(CUDA_Compiler_jll)
+            # don't set to nothing or Pkg will download any artifact
+            platform["cuda"] = "none"
+        elseif !haskey(platform, "cuda")
+            # CUDA_Compiler_jll owns driver inspection and preference handling.
+            CUDA_Compiler_jll.augment_platform!(platform)
+        end
+        BinaryPlatforms.set_compare_strategy!(platform, "cuda", cuda_comparison_strategy)
+
+        return platform
+    end"""
+
 # a special version of the platform augmentation block that only sets "cuda_platform"
 # (for use with packages that only ship a single version and don't depend on the runtime)
 # XXX: keep in sync with CUDA_Runtime_jll's platform augmentation

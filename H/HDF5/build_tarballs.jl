@@ -8,6 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "HDF5"
 version = v"2.2.0"
+ygg_version = v"2.2.1"          # Rebuilt with newer MPIABI/mpif
 
 # Collection of sources required to complete build
 sources = [
@@ -320,7 +321,7 @@ dependencies = [
     Dependency("aws_c_s3_jll"; compat="0.11.2"),
     Dependency("dlfcn_win32_jll"; platforms=filter(Sys.iswindows, platforms)),
     Dependency("libaec_jll"; compat="1.1.4"), # This is the successor of szlib
-    Dependency("mpif_jll"; compat="0.1.5", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)), # MPI Fortran bindings
+    Dependency("mpif_jll"; compat="1.0.0", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)), # MPI Fortran bindings
 ]
 append!(dependencies, platform_dependencies)
 
@@ -329,5 +330,5 @@ append!(dependencies, platform_dependencies)
 ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                augment_platform_block, clang_use_lld=false, julia_compat="1.10", preferred_gcc_version=v"12")
