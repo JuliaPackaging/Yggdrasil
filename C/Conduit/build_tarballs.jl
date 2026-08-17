@@ -97,5 +97,5 @@ append!(dependencies, platform_dependencies)
 # (MPItrampoline will skip its automatic initialization.)
 ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; 
 	       augment_platform_block, julia_compat="1.10", preferred_gcc_version=v"8")
