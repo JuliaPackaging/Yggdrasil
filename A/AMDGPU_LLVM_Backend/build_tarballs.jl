@@ -12,10 +12,18 @@ sources = [
                   "922f1817a0df7b1489272d18134ee0087a8b068828f87ac63b9861b1a9965888"),
     GitSource("https://github.com/ROCm/llvm-project",
               "46fcb339fb61119b337f973c7ca9e710a319fdd0"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+# Apply backported patches to the upstream LLVM sources
+pushd llvm-project-*
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 ${f}
+done
+popd
+
 cd llvm-project-*/llvm
 LLVM_SRCDIR=$(pwd)
 
