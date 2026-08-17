@@ -3,7 +3,7 @@ using BinaryBuilder
 name = "DecFP"
 upstream_version = "20U3"
 # when updating build_tarballs.jl bump patch to 301, 302...
-ygg_version = v"2.0.300"
+ygg_version = v"2.0.301"
 
 sources = [
     ArchiveSource("https://www.netlib.org/misc/intel/IntelRDFPMathLib$(upstream_version).tar.gz",
@@ -32,8 +32,12 @@ if [[ ${target} == *-w64-* ]]; then
     objext="obj"
 elif [[ ${target} == *-darwin* ]]; then
     HOST_OS="Darwin"
-    # clang causes failed tests on x86_64
-    CC="gcc"
+    # use clang instead of gcc to avoid https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/1339
+    CC="clang"
+    if [[ ${target} == x86_64* ]]; then
+        # avoid local test failure with clang -O1/2
+        CFLAGS_OPT+=" -O0"
+    fi
     CFLAGS_OPT+=" -DBID_SIZE_LONG=8"
     objext="o"
 elif [[ ${target} == *-freebsd* ]]; then
