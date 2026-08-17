@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "libgiac_julia"
-version = v"0.5.0"
+version = v"0.5.1"
 
 # Collection of sources required to build libgiac_julia
 sources = [
     GitSource(
-        "https://github.com/s-celles/libgiac-julia-wrapper.git",
-        "490207923b75678ace5409e16ed5bc134bd9c7d9"
+        "https://github.com/JuliaGiac/libgiac-julia-wrapper.git",
+        "f641b57bfba6e0b0186f2a84497ed07225da0db2"
     ),
 ]
 
@@ -53,8 +53,6 @@ install_license LICENSE
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
-# libcxxwrap_julia_jll v0.14.x does not yet have artifacts for Julia 1.13+
-filter!(p -> VersionNumber(p["julia_version"]) < v"1.13", platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -66,7 +64,10 @@ products = [
 dependencies = [
     BuildDependency("libjulia_jll"),
     Dependency("libcxxwrap_julia_jll"; compat="~0.14"),
-    Dependency("GIAC_jll"; compat="2.0.1"),
+    # Exact bound, not a caret range: GIAC 2.0.2 changed the memory layout of
+    # giac::gen (GIAC_TYPE_ON_8BITS), so this CxxWrap shim is tied to one GIAC
+    # ABI, not to a semver-compatible range of them.
+    Dependency("GIAC_jll"; compat="=2.0.2"),
     Dependency("GMP_jll"),
     Dependency("MPFR_jll"),
 ]
