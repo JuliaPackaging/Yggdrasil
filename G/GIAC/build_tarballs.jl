@@ -10,10 +10,10 @@ name = "GIAC"
 version = v"2.0.2"
 
 # Collection of sources required to build GIAC
-# Using the Meson-based fork from https://github.com/s-celles/giac
+# Using the Meson-based fork from https://github.com/JuliaGiac/giac
 sources = [
-    GitSource("https://github.com/s-celles/giac.git",
-        "64fdcefb45d0599e60083e785a3cc033e74714ee"),  # dev branch + GIAC_TYPE_ON_8BITS default
+    GitSource("https://github.com/JuliaGiac/giac.git",
+        "4034ebea6ba338c0fc049e4a36d2ac1802b40c32"),  # dev branch + GIAC_TYPE_ON_8BITS default + PARI fixes
 ]
 
 # Bash recipe for building across all platforms
@@ -69,7 +69,8 @@ Libs: -L\${libdir} -lglpk
 Cflags: -I\${includedir}
 EOF
 
-# Configure with Meson, disabling all optional dependencies
+# Configure with Meson. GSL/LAPACK/GLPK/PARI are enabled; the remaining
+# optional dependencies are disabled.
 meson setup build \
     --cross-file="${MESON_TARGET_TOOLCHAIN}" \
     --buildtype=release \
