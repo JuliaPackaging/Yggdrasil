@@ -22,8 +22,7 @@ make -j${nproc}
 
 # `make install` does not put the binary under ${prefix}; install it and
 # Geometry/ together manually so an executable-relative lookup finds both.
-mkdir -p "${prefix}/bin"
-cp src/orbifolder/orbifolder "${prefix}/bin/"
+install -Dvm 755 src/orbifolder/orbifolder "${prefix}/bin/orbifolder"
 cp -r Geometry "${prefix}/bin/Geometry"
 
 install_license COPYING

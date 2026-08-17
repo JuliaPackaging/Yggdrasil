@@ -27,8 +27,7 @@ make -j${nproc}
 
 # `nonSUSYorbifolder` is noinst_PROGRAMS; install it and Geometry/ together
 # manually so an executable-relative lookup finds both.
-mkdir -p "${prefix}/bin"
-cp nonSUSYorbifolder "${prefix}/bin/"
+install -Dvm 755 nonSUSYorbifolder "${prefix}/bin/nonSUSYorbifolder"
 cp -r Geometry "${prefix}/bin/Geometry"
 
 install_license COPYING
