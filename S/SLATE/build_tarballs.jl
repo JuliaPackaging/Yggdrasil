@@ -14,16 +14,11 @@ script = raw"""
 cd slate
 git submodule update --init
 
-export CXXFLAGS="${CXXFLAGS:-} -std=c++17"
-
 mkdir build && cd build
 
 CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
     -DCMAKE_BUILD_TYPE="Release"
-    -DCMAKE_CXX_STANDARD=17
-    -DCMAKE_CXX_STANDARD_REQUIRED=ON
-    -DCMAKE_CXX_EXTENSIONS=OFF
     -DBUILD_SHARED_LIBS=ON
     -Dblas=openblas
     -Dgpu_backend=none
@@ -49,7 +44,7 @@ augment_platform_block = """
 
 # We attempt to build for all defined platforms
 platforms = expand_gfortran_versions(expand_cxxstring_abis(supported_platforms(; exclude=!Sys.islinux)))
-platforms, platform_dependencies = MPI.augment_platforms(platforms)
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.1", OpenMPI_compat="4.1.6, 5")
 platforms = filter(p -> libgfortran_version(p) ≠ v"3", platforms)
 
 # SLATE does not build on riscv64
