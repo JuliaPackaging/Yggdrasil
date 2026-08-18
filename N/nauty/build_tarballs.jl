@@ -33,14 +33,11 @@ rm -f ${prefix}/lib/*.la
 export CPPFLAGS="${CPPFLAGS} -I${prefix}/include"
 export LDFLAGS="${LDFLAGS} -L${prefix}/lib"
 
-EXEEXT=""
 EXTRA_TARGETS=(checks6 sumlines)
 EXTRA_CONFIGURE_FLAGS=()
 LIBDIR_FLAG="--libdir=${libdir}"
 
 if [[ "${target}" == *-mingw* ]]; then
-    EXEEXT=".exe"
-
     # sumlines needs two POSIX headers that Windows does not have.
     EXTRA_TARGETS=(checks6)
 
@@ -91,10 +88,10 @@ make install TLSinstall "${EXTRA_TARGETS[@]}"
 # The Windows compiler does not add .exe to what it builds, so take whichever
 # name is there and install it under the name Windows needs.
 for p in "${EXTRA_TARGETS[@]}"; do
-    if [[ -f ${p}${EXEEXT} ]]; then
-        cp ${p}${EXEEXT} ${bindir}/${p}${EXEEXT}
+    if [[ -f ${p}${exeext} ]]; then
+        install -Dvm 755 ${p}${exeext} ${bindir}/${p}${exeext}
     else
-        cp ${p} ${bindir}/${p}${EXEEXT}
+        install -Dvm 755 ${p} ${bindir}/${p}${exeext}
     fi
 done
 
