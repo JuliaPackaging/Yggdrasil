@@ -13,7 +13,7 @@ version = v"2.0.2"
 # Using the Meson-based fork from https://github.com/JuliaGiac/giac
 sources = [
     GitSource("https://github.com/JuliaGiac/giac.git",
-        "4034ebea6ba338c0fc049e4a36d2ac1802b40c32"),  # dev branch + GIAC_TYPE_ON_8BITS default + PARI fixes
+        "42d064e3ea3525b9e7a6fa3ffd3caeb99e2bea3a"),  # dev branch + GIAC_TYPE_ON_8BITS default + PARI/darwin fixes
 ]
 
 # Bash recipe for building across all platforms
