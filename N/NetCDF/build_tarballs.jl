@@ -14,7 +14,7 @@ name = "NetCDF"
 upstream_version = v"4.10.1"
 
 # Offset to add to the version number.  Remember to always bump this.
-version_offset = v"1.0.0"
+version_offset = v"1.0.1"
 
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
@@ -137,7 +137,7 @@ products = [
 dependencies = [
     Dependency("Blosc_jll"; compat="1.21.6"),
     Dependency("Bzip2_jll"; compat="1.0.9"),
-    Dependency("HDF5_jll"; compat="2.1.2"),
+    Dependency("HDF5_jll"; compat="2.2.1"),
     Dependency("LibCURL_jll"; compat="7.73.0,8"),
     # We had to restrict compat with XML2 because of ABI breakage:
     # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268

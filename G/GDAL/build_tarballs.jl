@@ -15,7 +15,7 @@ upstream_version = v"3.13.2"
 # - Minor versions of GDAL are usually binary incompatible because
 #   they increase the shared library soname. To encode this, we
 #   increase the major version number of the version offset.
-version_offset = v"5.0.0"
+version_offset = v"5.0.1"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -203,13 +203,13 @@ dependencies = [
     Dependency("Expat_jll"; compat="2.6.5"),
     Dependency("GEOS_jll"; compat="3.13.1"),
     Dependency("HDF4_jll"; compat="4.3.1"),
-    Dependency("HDF5_jll"; compat="2.1.2"),
+    Dependency("HDF5_jll"; compat="2.2.1"),
     Dependency("LERC_jll"; compat="4.0.1"),
     Dependency("LibCURL_jll"; compat="7.73,8"),
     Dependency("LibPQ_jll"; compat="16.8"),
     Dependency("Libtiff_jll"; compat="4.7.2"),
     Dependency("Lz4_jll"; compat="1.10.1"),
-    Dependency("NetCDF_jll"; compat="401.1000.0"),
+    Dependency("NetCDF_jll"; compat="401.1000.101"),
     Dependency("OpenJpeg_jll"; compat="2.5.4"),
     Dependency("PCRE2_jll"; compat="10.42.0"),
     Dependency("PROJ_jll"; compat="902.500.100"),

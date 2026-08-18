@@ -16,6 +16,12 @@ name = "CUDA_Driver"
 cuda_version = v"13.3.0"
 driver_version = "610.43.02"
 
+# the JLL version tracks `cuda_version`, but can diverge in the patch digit when the
+# wrapper code changes in ways consumers need to express compat bounds against (Julia
+# package resolution cannot distinguish build numbers). 13.3.1: introduction of the
+# toolkit selection library in the toplevel block.
+version = v"13.3.1"
+
 script = raw"""
     # Build the driver inspection binary. On Linux/macOS we need -ldl for
     # dlopen/dlsym/dlinfo, and -D_GNU_SOURCE to expose dlinfo/RTLD_DI_LINKMAP;
@@ -108,16 +114,19 @@ non_platform_ARGS = filter(arg -> startswith(arg, "--"), ARGS)
 # `--register` should only be passed to the latest `build_tarballs` invocation
 non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
 
-augment_platform_block = """
-augment_platform! = identity
-
-$(read(joinpath(@__DIR__, "inspect_driver.jl"), String))
-"""
+# driver inspection and toolkit selection functionality, shared with the platform
+# augmentation hooks of dependent JLLs (which access it with `using CUDA_Driver_jll`)
+# and with CUDA.jl. this goes into the module's `toplevel_block` so that it is defined
+# unconditionally, even on platforms without a matching artifact. we deliberately do
+# not use an `augment_platform_block` here: it would be included both in the module
+# and in Pkg's artifact-selection subprocess, and its mere presence makes every Pkg
+# resolve spawn such a subprocess for this JLL.
+toplevel_block = read(joinpath(@__DIR__, "toplevel.jl"), String)
 
 for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
-                   name, cuda_version, build.sources, script,
+                   name, version, build.sources, script,
                    build.platforms, build.products, dependencies;
                    skip_audit=true, init_block, julia_compat="1.10",
-                   augment_platform_block)
+                   toplevel_block)
 end

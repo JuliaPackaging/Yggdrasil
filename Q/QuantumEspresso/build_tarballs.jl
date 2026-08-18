@@ -6,7 +6,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 name = "QuantumEspresso"
 # Separate to avoid padding to 3 components
 raw_version = "7.5"
-version = VersionNumber(raw_version)
+version = v"7.5.1"              # we rebuilt with a newer MPIABI
 
 # Minor updates of libxc bump the libtool "current" version which is part of the .so file's name.
 # (For example libxc 6.0.x -> 6.1.x bumped "current" from 12 to 13)
@@ -135,8 +135,8 @@ dependencies = [
     Dependency("FFTW_jll"),
     Dependency(PackageSpec(name="Libxc_jll", uuid="a56a6d9d-ad03-58af-ab61-878bf78270d6"); compat=Libxc_jll_range),
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
-    Dependency(PackageSpec(name="SCALAPACK32_jll", uuid="aabda75e-bfe4-5a37-92e3-ffe54af3c273"); compat="2.2.3"),
-    Dependency("mpif_jll"; compat="0.1.7", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)), # MPI Fortran bindings
+    Dependency(PackageSpec(name="SCALAPACK32_jll", uuid="aabda75e-bfe4-5a37-92e3-ffe54af3c273"); compat="2.2.302"),
+    Dependency("mpif_jll"; compat="1.0.0", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)), # MPI Fortran bindings
 ]
 append!(dependencies, platform_dependencies)
 
