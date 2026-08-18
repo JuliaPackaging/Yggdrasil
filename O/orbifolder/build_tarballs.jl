@@ -30,7 +30,7 @@ install_license COPYING
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; exclude=p -> Sys.iswindows(p) || Sys.isapple(p)))
+platforms = expand_cxxstring_abis(supported_platforms(; exclude=p -> Sys.iswindows(p) || Sys.isapple(p) || Sys.isfreebsd(p)))
 
 # The products that we will ensure are always built
 products = [
