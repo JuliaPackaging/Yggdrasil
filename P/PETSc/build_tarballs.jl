@@ -411,7 +411,7 @@ augment_platform_block = """
 """
 
 # We attempt to build for all defined platforms
-platforms = expand_gfortran_versions(supported_platforms())
+platforms = expand_cxxstring_abis(expand_gfortran_versions(supported_platforms()))
 
 filter!(platforms) do p
     # i686-linux-musl fails with: undefined reference to `__stack_chk_fail_local'
