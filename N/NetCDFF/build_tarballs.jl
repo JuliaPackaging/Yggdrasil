@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "NetCDFF"
-version = v"4.6.2"
+version = v"4.6.4"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://downloads.unidata.ucar.edu/netcdf-fortran/$(version)/netcdf-fortran-$(version).tar.gz",
-                  "df26b99d9003c93a8bc287b58172bf1c279676f8c10d6dd0daf8bc7204877096"),
+                  "98159c1e0f63b3b59bb5eda12f2d80126f5b1aad93032d1490989a5752e0df99"),
 ]
 
 # Bash recipe for building across all platforms
@@ -56,9 +56,9 @@ dependencies = [
     # Without OpenMPI as build dependency the build fails on 32-bit
     # platforms. Other packages (e.g. GDAL_jll) have the same problem
     # and solve it in the same way.
-    BuildDependency(PackageSpec(; name="OpenMPI_jll", version="4.1.8");
+    BuildDependency(PackageSpec(; name="OpenMPI_jll", version="4.1.9");
                     platforms=filter(p -> (nbits(p)==32 || Sys.isfreebsd(p)), platforms)),
-    Dependency(PackageSpec(name="NetCDF_jll", uuid="7243133f-43d8-5620-bbf4-c2c921802cf3"); compat="401.900.300"),
+    Dependency(PackageSpec(name="NetCDF_jll", uuid="7243133f-43d8-5620-bbf4-c2c921802cf3"); compat="401.1000.101"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
