@@ -109,10 +109,10 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Zlib_jll"),
-    # Pin to OCCT_jll >= 7.9.3 (the current release). Netgen requires OCCT >= 7.8,
-    # the version that introduced the modern toolkit names (TKDESTEP/TKDEIGES/
-    # TKDESTL) it links against.
-    Dependency("OCCT_jll"; compat="7.9.3"),
+    # Netgen needs OCCT >= 7.8 for TKDESTEP/TKDEIGES/TKDESTL. OCCT_jll never
+    # shipped a 7.8 series; the first published JLL with those libraries is
+    # 7.9.2. Caret bound so later 7.9.x remain selectable.
+    Dependency("OCCT_jll"; compat="7.9.2"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
