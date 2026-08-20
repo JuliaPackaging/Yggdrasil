@@ -56,12 +56,15 @@ meson install -C builddir
 install_license LICENSE
 """
 
-# PipeWireAO is Linux-native. Add AVX2 beside the portable x86-64 baseline;
-# other supported Linux architectures retain their generic builds.
-platforms = filter(p -> Sys.islinux(p) && libc(p) == "glibc", supported_platforms())
+# PipeWireAO is Linux-native. Publish only the AO deployment architectures:
+# an aarch64 baseline plus baseline, AVX2, and AVX-512 x86-64 artifacts.
+platforms = filter(
+    p -> Sys.islinux(p) && libc(p) == "glibc" && arch(p) in ("aarch64", "x86_64"),
+    supported_platforms(),
+)
 platforms = expand_microarchitectures(
     platforms,
-    ["x86_64", "avx2"];
+    ["x86_64", "avx2", "avx512"];
     filter=p -> arch(p) == "x86_64",
 )
 
