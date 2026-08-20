@@ -73,8 +73,19 @@ if [[ "${target}" == *freebsd* ]]; then
 fi
 
 OPTIONS=(
+    # SCOTCH forces `MPI_DETERMINE_LIBRARY_VERSION`, which `FindMPI` implements
+    # with `try_run`. Pre-seed the results for every MPI language component,
+    # otherwise CMake bails out when cross-compiling.
     -DMPI_RUN_RESULT_C_libver_mpi_normal=1
     -DMPI_RUN_RESULT_C_libver_mpi_normal__TRYRUN_OUTPUT=""
+    # `FindMPI` picks whichever Fortran binding is the "highest" available, so
+    # seed all three candidates
+    -DMPI_RUN_RESULT_Fortran_libver_mpi_F08_MODULE=1
+    -DMPI_RUN_RESULT_Fortran_libver_mpi_F08_MODULE__TRYRUN_OUTPUT=""
+    -DMPI_RUN_RESULT_Fortran_libver_mpi_F90_MODULE=1
+    -DMPI_RUN_RESULT_Fortran_libver_mpi_F90_MODULE__TRYRUN_OUTPUT=""
+    -DMPI_RUN_RESULT_Fortran_libver_mpi_F77_HEADER=1
+    -DMPI_RUN_RESULT_Fortran_libver_mpi_F77_HEADER__TRYRUN_OUTPUT=""
     -DBUILD_LIBESMUMPS=ON
     -DBUILD_LIBSCOTCHMETIS=ON
     -DBUILD_PTSCOTCH=ON
