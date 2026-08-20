@@ -19,6 +19,8 @@ cd $WORKSPACE/srcdir/openexr*
 
 # We are building with old kernel headers that do not define `HWCAP_SVE2`
 atomic_patch -p1 $WORKSPACE/srcdir/patches/sve2.patch
+# We are building with an old glibc that does not define `AT_HWCAP2`
+atomic_patch -p1 $WORKSPACE/srcdir/patches/hwcap2.patch
 
 cmake -B build -G Ninja \
     -DBUILD_TESTING=OFF \
