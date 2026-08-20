@@ -10,7 +10,7 @@ version = v"1.7.0"
 sources = [
     GitSource(
         "https://github.com/DarrylGamroth/PipeWireAO.git",
-        "6ba6627b3489b9e5c6bceb19c485cd0b27b2651e",
+        "d48418553fd372fc69cb7042a8370c099750a0ee",
     ),
     DirectorySource("./bundled"),
 ]
