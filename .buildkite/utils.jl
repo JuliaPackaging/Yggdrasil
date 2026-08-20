@@ -81,7 +81,9 @@ function build_step(NAME, PLATFORM, PROJECT, IS_PR)
         :commands => [script],
         :env => build_env,
         :artifacts => [
-            "**/products/$NAME*.tar.*"
+            "**/products/$NAME*.tar.*",
+            # Reuse the hashes and product locations computed while packaging.
+            "**/products/$NAME*.meta.json",
         ],
     )
 end
