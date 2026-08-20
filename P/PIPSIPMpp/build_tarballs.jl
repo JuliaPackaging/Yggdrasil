@@ -105,8 +105,8 @@ augment_platform_block = """
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)   # C++ code: std::string ABI matters
 
-# PIPS-IPM++ is POSIX + MPI. No Windows, and no musl or 32-bit targets.
-filter!(!Sys.iswindows, platforms)
+# For now only Linux
+filter!(Sys.islinux, platforms)
 filter!(p -> arch(p) in ("x86_64", "aarch64"), platforms)
 filter!(p -> libc(p) != "musl", platforms)
 
