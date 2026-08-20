@@ -7,9 +7,9 @@ using GZip
 using JSON
 using SHA
 
-gap_upstream_version = v"4.16.0"
-gap_version = v"400.1600.000"
-gap_lib_version = v"400.1600.000"
+gap_upstream_version = v"4.16.1-beta1" # TODO: change to v"4.16.1"
+gap_version = v"400.1600.0"
+gap_lib_version = v"400.1600.90"       # TODO: change to v"400.1600.100"
 
 function download_with_sha256(url)
     io = IOBuffer()
@@ -28,6 +28,14 @@ function download_with_sha256(url)
     if expected_shasum != actual_shasum
         error("expected checksum $(expected_shasum), actual checksum $(actual_shasum)")
     end
+end
+
+# check the current branch before committing anything
+branch = readchomp(`git branch --show-current`)
+if branch in ("main", "master")
+    error("refusing to commit directly to $branch")
+elseif isempty(branch)
+    error("refusing to commit from a detached HEAD")
 end
 
 # download latest package-infos
@@ -64,7 +72,7 @@ function update_gap_pkg_recipe(dir)
 
     # new metadata from the GAP package registry
     if pkgname == "juliainterface"
-        upstream_version = "0.16.0"
+        upstream_version = "0.17.4"
         sha256 = "DUMMY"
     else
         meta = pkginfo[pkgname]
@@ -83,7 +91,8 @@ function update_gap_pkg_recipe(dir)
     end
 
     # if there are no changes, do nothing
-    if old_gap_version == gap_version && old_gap_lib_version == gap_lib_version && old_upstream_version == upstream_version
+    upstream_changed = old_upstream_version != upstream_version
+    if old_gap_version == gap_version && old_gap_lib_version == gap_lib_version && !upstream_changed
         # However, detect and warn if the archive changed with the version staying fixed.
         # That should never happen, but better be paranoid
         if pkgname != "juliainterface"
@@ -91,8 +100,8 @@ function update_gap_pkg_recipe(dir)
             @assert old_sha256 == sha256
         end
         @info "skipping $pkgname"
-        return
-    elseif old_upstream_version != upstream_version
+        return false
+    elseif upstream_changed
         _old_upstream_version = VersionNumber(replace(old_upstream_version, "-" => "."))
         _upstream_version = VersionNumber(replace(upstream_version, "-" => "."))
         if _old_upstream_version.major != _upstream_version.major
@@ -126,6 +135,14 @@ function update_gap_pkg_recipe(dir)
     # write out the result
     @info "updating $pkgname"
     write(path, recipe)
+    message = if upstream_changed
+        "[GAP_pkg_$(pkgname)] Update to v$(upstream_version)"
+    else
+        "[GAP_pkg_$(pkgname)] Rebuild with GAP $(gap_upstream_version)"
+    end
+    run(`git add -- $(dir)/`)
+    run(`git commit -m $message -- $(dir)/`)
+    return true
 end
 
 # get the names of all GAP package JLL recipes
@@ -135,3 +152,36 @@ filter!(startswith("GAP_pkg_"), dirs)
 for dir in dirs
     update_gap_pkg_recipe(dir)
 end
+
+#=
+# After running the above script, you can use the following commands to build and (locally) deploy the updated GAP_pkg_* JLLs:
+
+export DEPLOY_NAMESPACE=$(gh api user -q ".login")
+
+export PKGS=$(git log master..HEAD --pretty=format:%s | cut -d ' ' -f 1 | cut -c 2- | rev | cut -c 2- | rev | sort | uniq | while read -r PKG; do [ -d "$PKG" ] && echo "$PKG"; done)
+session_started=0
+for PKG in $(printf '%s\n' "$PKGS"); do
+    sleep 1
+    echo "Starting build of ${PKG}..."
+    if [ $session_started -eq 0 ]; then
+        tmux new-session -d -s GAP_pkg -c "$PKG" -n "$PKG" bash
+        session_started=1
+    else
+        tmux new-window -d -t GAP_pkg: -c "$PKG" -n "$PKG" bash
+    fi
+    tmux send -t "$PKG" "julia --project=../../../.ci build_tarballs.jl --debug --verbose --deploy=$DEPLOY_NAMESPACE/${PKG}_jll.jl" C-m
+done
+
+if [ $session_started -eq 1 ]; then
+    tmux attach-session -t GAP_pkg
+fi
+
+
+# To add all of the deployed JLLs to the current Julia environment, you can run the following commands in a Julia REPL:
+julia --project -e "using Pkg; Pkg.add([
+    PackageSpec(url=\"https://github.com/${DEPLOY_NAMESPACE}/\$(pkg)_jll.jl\")
+    for pkg in split(\"${PKGS}\")
+])"
+
+
+=#
