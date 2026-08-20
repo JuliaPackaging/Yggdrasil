@@ -10,7 +10,7 @@ version = v"1.7.0"
 sources = [
     GitSource(
         "https://github.com/DarrylGamroth/PipeWireAO.git",
-        "3eed4fe5f45d19f71413736b00f2eb02af93f0dd",
+        "75e98a1596aeb3027117da096c6b0efac70134c4",
     ),
     DirectorySource("./bundled"),
 ]
@@ -78,6 +78,7 @@ augment_platform_block = """
 
 products = [
     LibraryProduct("libpipewire-ao-0.3", :libpipewire_ao),
+    LibraryProduct("libspa-ao", :libspa_ao, "lib/spa-ao-0.2"),
     LibraryProduct(
         "libspa-support",
         :libspa_support,
