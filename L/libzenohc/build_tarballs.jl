@@ -36,7 +36,8 @@ cmake -S .. -B . \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DZENOHC_CUSTOM_TARGET=${rust_target} \
-    -DZENOHC_BUILD_WITH_SHARED_MEMORY=TRUE
+    -DZENOHC_BUILD_WITH_SHARED_MEMORY=TRUE \
+    -DZENOHC_BUILD_WITH_UNSTABLE_API=TRUE
 cmake --build . --target install --config Release --parallel ${nproc}
 """
 

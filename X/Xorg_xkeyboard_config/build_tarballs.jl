@@ -22,8 +22,7 @@ ninja -j${nproc}
 ninja install
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
+# The files are identical for all platforms.
 platforms = [AnyPlatform()]
 
 products = Product[

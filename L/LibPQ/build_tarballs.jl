@@ -3,18 +3,18 @@
 using BinaryBuilder
 
 name = "LibPQ"
-version = v"16.13"
-tzcode_version = "2026a"
+version = v"16.14"
+tzcode_version = "2026b"
 
 # Collection of sources required to build LibPQ
 sources = [
     GitSource(
         "https://github.com/postgres/postgres.git",
-        "776479eed63aac4185e57adaf7db1ce0810a4d3e",
+        "0d1c00c624fa7367d4a895f44381887757289682",
     ),
     ArchiveSource(
         "https://data.iana.org/time-zones/releases/tzcode$tzcode_version.tar.gz",
-        "f80a17a2eddd2b54041f9c98d75b0aa8038b016d7c5de72892a146d9938740e1",
+        "37e9ed8427f5d3521c22fc58e293cbfb043d70eedf1003870b33f363f61ca344",
         unpack_target="zic-build",
     ),
 ]

@@ -2,13 +2,12 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 name = "GraphicsMagick"
-version = v"1.3.46"
-ygg_version = v"1.3.47"
+version = v"1.3.48"
 
 # Collection of sources required to build GraphicsMagick
 sources = [
     ArchiveSource("https://sourceforge.net/projects/graphicsmagick/files/graphicsmagick/$(version)/GraphicsMagick-$(version).tar.xz",
-                  "c7c706a505e9c6c3764156bb94a0c9644d79131785df15a89c9f8721d1abd061"),
+                  "9218eb78179110f91371066ab75cb3b4dd034b9bb464b29ce9bab7a11979232b"),
     DirectorySource("./bundled"),
 ]
 
@@ -80,7 +79,7 @@ dependencies = [
     Dependency("FreeType2_jll"; compat="2.13.4"),
     # Dependency("Ghostscript_jll"),
     Dependency("Graphviz_jll"),
-    Dependency("JasPer_jll"),
+    Dependency("JasPer_jll"; compat="2.0.28"),
     Dependency("JpegTurbo_jll"),
     Dependency("Libtiff_jll"; compat="4.7.2"),
     # We had to restrict compat with XML2 because of ABI breakage:
@@ -112,5 +111,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", clang_use_lld=false)

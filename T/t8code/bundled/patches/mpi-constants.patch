@@ -1,5 +1,6 @@
---- a/sc/src/sc.c
-+++ b/sc/src/sc.c
+--- a/build/_deps/sc-src/src/sc.c
++++ b/build/_deps/sc-src/src/sc.c
+
 @@ -98,7 +98,10 @@
  static int          default_abort_mismatch = 1;
  
@@ -12,8 +13,8 @@
  
  static FILE        *sc_log_stream = NULL;
  static sc_log_handler_t sc_default_log_handler = sc_log_handler;
---- a/sc/src/sc_mpi.c
-+++ b/sc/src/sc_mpi.c
+--- a/build/_deps/sc-src/src/sc_mpi.c
++++ b/build/_deps/sc-src/src/sc_mpi.c
 @@ -523,7 +523,10 @@
  #if defined(SC_ENABLE_MPI) && defined (SC_ENABLE_MPICOMMSHARED)
  
@@ -26,8 +27,8 @@
  
  static int
  sc_mpi_node_comms_destroy (sc_MPI_Comm comm, int comm_keyval,
---- a/sc/src/sc_shmem.c
-+++ b/sc/src/sc_shmem.c
+--- a/build/_deps/sc-src/src/sc_shmem.c
++++ b/build/_deps/sc-src/src/sc_shmem.c
 @@ -30,7 +30,10 @@
  #endif
  
