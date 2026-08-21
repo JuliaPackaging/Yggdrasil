@@ -3,16 +3,27 @@
 using BinaryBuilder, Pkg
 
 name = "power_grid_model_c"
-version = v"1.12.0"
+version = v"1.13.145"
 
 # Collection of sources required to complete build
 sources = [
            ArchiveSource("https://github.com/PowerGridModel/power-grid-model/releases/download/v$(version)/power_grid_model-$(version).tar.gz", 
-                      "b38be158af11541759b7b2c01e1baab099f8f22fe453237d7814a8698bb67745")
+                      "b38be158af11541759b7b2c01e1baab099f8f22fe453237d7814a8698bb67745"),
+           ArchiveSource("https://github.com/joseluisq/MacOSX-SDKs/releases/download/15.0/MacOSX15.0.sdk.tar.xz",
+                      "9df0293776fdc8a2060281faef929bf2fe1874c1f9368993e7a4ef87b1207f98"),
           ]
 
 # Bash recipe for building across all platforms.
 script = raw"""
+if [[ "${target}" == *-apple-darwin* ]]; then
+    # Install a newer SDK which supports C++20
+    # including std::format and concepts... which were added even later than c++20 support
+    apple_sdk_root=$WORKSPACE/srcdir/MacOSX15.0.sdk
+    sed -i "s!/opt/$target/$target/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
+    sed -i "s!/opt/$target/$target/sys-root!$apple_sdk_root!" /opt/bin/$bb_full_target/$target-clang++
+    export MACOSX_DEPLOYMENT_TARGET=15.0
+    export CXXFLAGS="-fexperimental-library -DBOOST_NO_CXX98_FUNCTION_BASE"
+fi
 apk del cmake
 cd $WORKSPACE/srcdir/power_grid_model-1.12.0
 cmake -B build -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_CXX_STANDARD=20 -DCMAKE_BUILD_TYPE=Release
@@ -31,10 +42,8 @@ platforms = filter!(p -> !(arch(p) == "i686"), platforms)
 # the riscv64 platform has no-boost implementation, remove
 platforms = filter!(p -> !(arch(p) == "riscv64"), platforms)
 
-# Apple build reports "fatal error: 'concepts' file not found"
-# it needs a higher version of boost_jll, 
-# whhich in turn needs an upgrade of msgpack_jll. maybe later, remove.
-platforms = filter(p -> !Sys.isapple(p), platforms)
+# x86_64-apple-darwin14 (macOS 10.10) lacks std::aligned_alloc; needs 10.15+
+platforms = filter!(p -> !(Sys.isapple(p) && arch(p) == "x86_64"), platforms)
 
 # cmake reprts "Could NOT find Boost (missing: Boost_INCLUDE_DIR)",
 # on aarch64-unknown-freebsd, remove
@@ -53,7 +62,6 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-                Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"))
                 Dependency(PackageSpec(name="Eigen_jll", uuid="bc6bbf8a-a594-5541-9c57-10b0d0312c70"))
                 Dependency(PackageSpec(name="nlohmann_json_jll", uuid="7c7c7bd4-5f1c-5db3-8b3f-fcf8282f06da"))
                 Dependency(PackageSpec(name="msgpack_cxx_jll", uuid="b129c591-c9d9-59ef-8959-ff59aa278493"))
