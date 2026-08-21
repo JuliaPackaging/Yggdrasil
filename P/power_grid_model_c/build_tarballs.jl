@@ -8,7 +8,7 @@ version = v"1.13.145"
 # Collection of sources required to complete build
 sources = [
            ArchiveSource("https://github.com/PowerGridModel/power-grid-model/releases/download/v$(version)/power_grid_model-$(version).tar.gz", 
-                      "b38be158af11541759b7b2c01e1baab099f8f22fe453237d7814a8698bb67745"),
+                      "6738ddd1b9b289223709b4b842af3d663a72eaa8beb4b2de12ad0be02e89c8cd"),
            ArchiveSource("https://github.com/joseluisq/MacOSX-SDKs/releases/download/15.0/MacOSX15.0.sdk.tar.xz",
                       "9df0293776fdc8a2060281faef929bf2fe1874c1f9368993e7a4ef87b1207f98"),
           ]
@@ -25,11 +25,11 @@ if [[ "${target}" == *-apple-darwin* ]]; then
     export CXXFLAGS="-fexperimental-library -DBOOST_NO_CXX98_FUNCTION_BASE"
 fi
 apk del cmake
-cd $WORKSPACE/srcdir/power_grid_model-1.12.0
+cd $WORKSPACE/srcdir/power_grid_model-*
 cmake -B build -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_CXX_STANDARD=20 -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel ${nproc}
 cmake --install build
-install_license $WORKSPACE/srcdir/power_grid_model-1.12.0/LICENSE
+install_license $WORKSPACE/srcdir/power_grid_model-*/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
