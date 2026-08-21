@@ -1,15 +1,3 @@
-# This script clones gmp-mpfr-sys (LGPL-3.0+) fresh at build time and patches
-# its build.rs (gmp-mpfr-sys-cross-compile-fix.diff) for cross-compile safety.
-# build.rs itself carries its own permissive notice:
-#
-#   Copyright © 2017-2026 Trevor Spiteri
-#
-#   Copying and distribution of this file, with or without
-#   modification, are permitted in any medium without royalty provided
-#   the copyright notice and this notice are preserved. This file is
-#   offered as-is, without any warranty.
-#
-# We also install a copy of gmp-mpfr-sys's LGPL license alongside Jerbie's.
 using BinaryBuilder, Pkg
 
 name = "Jerbie"
