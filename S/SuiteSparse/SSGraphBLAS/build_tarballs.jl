@@ -26,7 +26,9 @@ CMAKE_OPTIONS+=(
         --debug-trycompile
     )
 if [[ "$target" == *-mingw* ]]; then
-    CMAKE_OPTIONS+="-DGBNCPUFEAT=1"
+    CMAKE_OPTIONS+=(
+        "-DGBNCPUFEAT=1"
+    )
 fi
 """ * build_script(; use_omp=true)
 
