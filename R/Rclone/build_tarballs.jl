@@ -21,6 +21,11 @@ cd rclone*
 # We are losing "version information and icon resources" in our `rclone` executable.
 atomic_patch -p0 ../patches/make.patch
 
+# Keep Go's scratch dir ($WORK) out of the sandbox's small /tmp: the linker
+# mmaps the full rclone binary there, which can hit ENOSPC on loaded agents.
+export GOTMPDIR=${WORKSPACE}/gotmp
+mkdir -p ${GOTMPDIR}
+
 make
 
 # install manually as `make install` doesn't include $exeext
