@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "blockSQP2"
-version = v"0.1.3"
+version = v"0.2.0"
 sources = [
     GitSource("https://github.com/ReWittmann/blockSQP2.git", "dbc680e22228516b7e38e5f5b199287a3bcdcabe"),
 ]
