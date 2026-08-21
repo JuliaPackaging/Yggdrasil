@@ -6,6 +6,7 @@ sources = [
     GitSource("https://github.com/ReWittmann/blockSQP2.git", "dbc680e22228516b7e38e5f5b199287a3bcdcabe"),
 ]
 
+
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 macos_sdk_sources["26.1"] = FileSource("https://github.com/joseluisq/macosx-sdks/releases/download/26.1/MacOSX26.1.sdk.tar.xz",
