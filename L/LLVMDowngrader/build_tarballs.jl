@@ -6,7 +6,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "LLVMDowngrader"
-version = v"0.9.0"
+version = v"0.9.1"
 
 # Build the standalone `llvm-downgrade` out-of-tree against a prebuilt LLVM
 # (LLVM_full_jll), statically linked so the tool is self-contained and usable
@@ -21,7 +21,7 @@ llvm_version = v"22.1.8+0"
 
 sources = [
     GitSource("https://github.com/JuliaLLVM/llvm-downgrade",
-              "8d3e5921423294a203870acef8027cbea2a35c36"),
+              "6ab0b538c9302bd44f1d2a02f8d064ba9c5f2efb"),
     # We also ship the `llvm-dis` from each LLVM release whose bitcode the
     # downgrader emits (as `llvm-dis-5` / `llvm-dis-7` / `llvm-dis-14` /
     # `llvm-dis-15` / `llvm-dis-18`), so the
