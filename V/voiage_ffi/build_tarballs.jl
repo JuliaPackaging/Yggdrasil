@@ -41,6 +41,7 @@ install_license ../LICENSE
 platforms = supported_platforms()
 filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms) # Rust toolchain is not available on aarch64-unknown-freebsd
 filter!(p -> arch(p) != "riscv64", platforms) # Rust toolchain is not available on riscv64
+filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms) # Rust toolchain cannot link i686-w64-mingw32 unwinding symbols
 
 products = [
     LibraryProduct("libvoiage_ffi", :libvoiage_ffi),
