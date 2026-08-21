@@ -2,12 +2,12 @@ using BinaryBuilder
 using Pkg
 
 name = "voiage_ffi"
-version = v"2.0.0"
+version = v"2.1.0"
 
 sources = [
     GitSource(
         "https://github.com/edithatogo/voiage.git",
-        "e849e89152c306e79c96d0a8a9815ee5faca0529",
+        "964a0fc334ece9509387cd07d43776adf38be240",
     ),
 ]
 
