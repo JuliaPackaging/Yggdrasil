@@ -38,15 +38,9 @@ install -Dvm 755 \
 install_license ../LICENSE
 """
 
-platforms = [
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("x86_64", "macos"),
-    Platform("aarch64", "macos"),
-    Platform("x86_64", "windows"),
-]
+platforms = supported_platforms()
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms) # Rust toolchain is not available on aarch64-unknown-freebsd
+filter!(p -> arch(p) != "riscv64", platforms) # Rust toolchain is not available on riscv64
 
 products = [
     LibraryProduct("libvoiage_ffi", :libvoiage_ffi),
