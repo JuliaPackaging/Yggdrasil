@@ -29,8 +29,7 @@ mkdir -p ${GOTMPDIR}
 make
 
 # install manually as `make install` doesn't include $exeext
-install -d ${bindir}
-install -t ${bindir} ${GOPATH}/bin/rclone${exeext}
+install -Dvm 755 "${GOPATH}/bin/rclone${exeext}" -t "${bindir}"
 """
 
 # These are the platforms we will build for by default, unless further
