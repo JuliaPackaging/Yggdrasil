@@ -10,12 +10,12 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "libclangex"
 repo = "https://github.com/Gnimuc/ClangCompiler.jl.git"
-version = v"0.4.1"
+version = v"0.4.2"
 
 llvm_versions = [v"18.1.7"]
 
 sources = [
-    GitSource(repo, "3c8af018bd12787956d53986f1a9ba0f9eb08275")
+    GitSource(repo, "ee22ce3047283addf5edcaf5dffcf2cec9e51828")
 ]
 
 # Bash recipe for building across all platforms
