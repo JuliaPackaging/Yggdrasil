@@ -35,6 +35,8 @@ target_include_directories(cimplot3d PRIVATE
 target_compile_definitions(cimplot3d PRIVATE
     IMGUI_DISABLE_OBSOLETE_FUNCTIONS=1
     IMGUI_ENABLE_TEST_ENGINE
+    IMGUI_ENABLE_FREETYPE
+    IMGUI_USE_WCHAR32
 )
 
 target_link_libraries(cimplot3d PRIVATE ${CIMGUI_LIBRARY})
