@@ -1,6 +1,12 @@
 # Update the GAP_pkg_* recipes to match GAP / GAP_lib
 # Execute from the G/GAP_pkg/ directory, e.g.:
 # julia --project=. update.jl
+#
+# Each package update is committed on its own branch `update/GAP_pkg_<name>`;
+# at the end an octopus merge of all those branches is created on the
+# original branch. To push all update branches:
+#
+#   git for-each-ref --format='%(refname:short)' 'refs/heads/update/GAP_pkg_*' | xargs -n1 git push -u origin
 
 import Downloads
 using GZip
@@ -100,7 +106,7 @@ function update_gap_pkg_recipe(dir)
             @assert old_sha256 == sha256
         end
         @info "skipping $pkgname"
-        return false
+        return nothing
     elseif upstream_changed
         _old_upstream_version = VersionNumber(replace(old_upstream_version, "-" => "."))
         _upstream_version = VersionNumber(replace(upstream_version, "-" => "."))
@@ -140,17 +146,30 @@ function update_gap_pkg_recipe(dir)
     else
         "[GAP_pkg_$(pkgname)] Rebuild with GAP $(gap_upstream_version)"
     end
+
+    # commit on a branch of its own; the pending changes are carried over by
+    # `git switch`, so the base branch stays untouched
+    topic = "update/$(dir)"
+    run(`git switch -C $topic`)
     run(`git add -- $(dir)/`)
     run(`git commit -m $message -- $(dir)/`)
-    return true
+    run(`git switch $branch`)
+    return topic
 end
 
 # get the names of all GAP package JLL recipes
 dirs = readdir()
 filter!(startswith("GAP_pkg_"), dirs)
 
-for dir in dirs
-    update_gap_pkg_recipe(dir)
+topics = filter(!isnothing, map(update_gap_pkg_recipe, dirs))
+
+# combine all update branches into a single octopus merge on the original
+# branch; the branches touch disjoint directories, so this never conflicts
+if isempty(topics)
+    @info "nothing to do"
+else
+    message = "Update GAP packages for GAP $(gap_upstream_version)"
+    run(`git merge --no-ff -m $message $(topics)`)
 end
 
 #=
