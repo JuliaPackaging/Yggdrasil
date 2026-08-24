@@ -1,6 +1,6 @@
 name = "LLVM"
-llvm_full_version = v"21.1.8+0"
-libllvm_version = v"21.1.8+0"
+llvm_full_version = v"21.1.8+1"
+libllvm_version = v"21.1.8+2"
 
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
@@ -36,4 +36,5 @@ for (i, build) in enumerate(builds)
                    skip_audit=true, julia_compat="1.14",
                    augment_platform_block)
 end
-#!
+
+# rebuild trigger: 1

@@ -7,19 +7,21 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "ADIOS2"
-upstream_version = v"2.11.0"
+upstream_version = v"2.12.1"
 
 # ADIOS2 2.11 is not compatible with ADIOS2 2.10. The C++ bindings differ.
-version_offset = v"1.0.3"
+# ADIOS2 2.12 is not compatible with ADIOS2 2.11. The C++ bindings differ.
+version_offset = v"2.0.1"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ornladios/ADIOS2.git", "a3eb1ab7d713165f457377a925c0c4f3f4dcf0e5"),
-    FileSource("https://github.com/user-attachments/files/24653341/ADIOS2-PR4801-PR4804.patch",
-               "bbd0445f300d3035c09a193dfeaa86d2910b7e33a25229aa739f4ccf4eb3bb3e"),
+    # Binarybuilder cannot download this commit because it is not reachable from any branch (it's only reachable from a tag)
+    # We use the "most similar" commit.
+    # GitSource("https://github.com/ornladios/ADIOS2.git", "f5267290f06980acaecaf54688d0980958eb86bf"),
+    GitSource("https://github.com/ornladios/ADIOS2.git", "8a8feaed3ff346c896999ced7d61693af8f0ad72"),
     DirectorySource("bundled"),
 ]
 
@@ -33,18 +35,10 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/clock_gettime.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/arm8_rt_call_link.patch
 # Declare `htons`. See <https://github.com/ornladios/ADIOS2/issues/3926>.
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/htons.patch
-# # Apply mingw32 fixes; see <https://github.com/ornladios/ADIOS2/issues/4192>
-# atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw32.patch
-# Avoid run-time checks while cross-building
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/ffs.patch
 # Correct library dependencies
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cmakelists.patch
 # Correct C includes
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cinttypes.patch
-
-# Add function to determine string length.
-# Will probably become unnecessary in the next minor version of ADIOS2.
-atomic_patch -p1 ${WORKSPACE}/srcdir/ADIOS2-PR4801-PR4804.patch
 
 # pkg-config is very slow because `abseil_cpp` installed about 200 `*.pc` files.
 # Pretend that `protobuf` does not require `abseil_cpp`.
@@ -72,9 +66,12 @@ cmakeopts=(
     -DADIOS2_USE_Fortran=OFF
     -DADIOS2_USE_MPI=ON
     -DADIOS2_USE_PNG=ON
+    -DADIOS2_USE_SZ3=ON
     -DADIOS2_USE_ZFP=ON
     -DADIOS2_USE_ZeroMQ=ON
     -DMPI_HOME=${prefix}
+    -DFFS_FLOAT_FORMAT_TEST="0"
+    -DFFS_FLOAT_FORMAT_TEST__TRYRUN_OUTPUT="Format_IEEE_754_littleendian"   # or "Format_IEEE_754_bigendian"
 )
 
 if [[ ${bb_full_target} == *microsoftmpi* ]]; then
@@ -200,20 +197,21 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="Blosc2_jll"); compat="202.2200.0"),
+    Dependency(PackageSpec(name="Blosc2_jll"); compat="301.200.300"),
     Dependency(PackageSpec(name="Bzip2_jll"); compat="1.0.9"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency(PackageSpec(name="HDF5_jll"); compat="2.1.1"),
+    Dependency(PackageSpec(name="HDF5_jll"); compat="2.2.1"),
     Dependency(PackageSpec(name="Libffi_jll"); compat="~3.4.7"),
     Dependency(PackageSpec(name="MGARD_jll"); compat="1.6.0"),
+    Dependency(PackageSpec(name="SZ3_jll"); compat="300.300.200"),
     Dependency(PackageSpec(name="ZeroMQ_jll"); compat="4.3.6"),
     Dependency(PackageSpec(name="Zstd_jll")),
-    Dependency(PackageSpec(name="libpng_jll"); compat="1.6.47"),
+    Dependency(PackageSpec(name="libpng_jll"); compat="1.6.58"),
     BuildDependency(PackageSpec(name="nlohmann_json_jll")),
     Dependency(PackageSpec(name="protoc_jll")),
     #TODO Dependency(PackageSpec(name="ProtocolBuffers_jll"); compat="3.16.0"),
     Dependency(PackageSpec(name="pugixml_jll"); compat="1.14.1"),
-    Dependency(PackageSpec(name="yaml_cpp_jll"); compat="0.8.1"),
+    Dependency(PackageSpec(name="yaml_cpp_jll"); compat="0.9.0"),
     Dependency(PackageSpec(name="zfp_jll"); compat="1.0.2"),
 ]
 append!(dependencies, platform_dependencies)

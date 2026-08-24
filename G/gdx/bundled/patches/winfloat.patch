@@ -1,0 +1,12 @@
+diff --git a/src/rtl/math_p3.cpp b/src/rtl/math_p3.cpp
+index 614d369..0a3bdb3 100644
+--- a/src/rtl/math_p3.cpp
++++ b/src/rtl/math_p3.cpp
+@@ -23,6 +23,7 @@
+  * SOFTWARE.
+  */
+
++#include "float.h"
+ #include "math_p3.hpp"
+
+ #include <cfenv>

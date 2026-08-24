@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Pango"
-version = v"1.57.0"
+version = v"1.58.0"
 
 # Collection of sources required to build Pango: https://download.gnome.org/sources/pango/
 sources = [
     ArchiveSource("http://ftp.gnome.org/pub/GNOME/sources/pango/$(version.major).$(version.minor)/pango-$(version).tar.xz",
-                  "890640c841dae77d3ae3d8fe8953784b930fa241b17423e6120c7bfdf8b891e7"),
+                  "bc5bad6213ad4886a47d1e80292fd850b64159b50db67917a43d9ea80ee2298a"),
 ]
 
 # Bash recipe for building across all platforms
@@ -26,22 +26,35 @@ fi
 # If we want libpangoft2 on Windows we need to explicitly enable fontconfig and freetype
 # See <https://gitlab.gnome.org/GNOME/pango/-/blob/main/README.win32.md>.
 
-# We need to update pip
-python3 -m pip install --upgrade pip setuptools wheel
-pip3 install gi-docgen
-# We need a newer meson
-python3 -m pip install --upgrade meson
+# We need a newer meson.  Install it into a private directory instead of using
+# `pip install --upgrade`: upgrading in place requires uninstalling the meson
+# that ships in the rootfs, and removing files under
+# /usr/lib/python3.9/site-packages fails with an I/O error on the builders.
+python3 -m pip install --ignore-installed --target=/tmp/meson meson==1.11.2
+export PYTHONPATH="/tmp/meson${PYTHONPATH:+:${PYTHONPATH}}"
+export PATH="/tmp/meson/bin:${PATH}"
+meson --version
 
-mkdir build && cd build
-meson --cross-file="${MESON_TARGET_TOOLCHAIN}" \
+# meson 1.11 no longer defaults `subsystem` to `system` in cross files, so
+# Pango's unconditional `host_machine.subsystem()` call on darwin aborts
+# configuration.  Set it explicitly to `darwin`, which reproduces meson's
+# pre-1.11 default.  Do *not* use `macos` here: that switches on Pango's
+# CoreText/quartz backend, which has never been part of this JLL and does not
+# compile (pango/pangocoretext.c:263 assigns a PangoCoreTextFontMap* to a
+# PangoFontMap*, which our clang rejects).
+if [[ ${target} == *darwin* ]]; then
+    sed -i "/\[host_machine\]/,/^$/ s/system = 'darwin'/system = 'darwin'\nsubsystem = 'darwin'/" "$MESON_TARGET_TOOLCHAIN"
+fi
+
+meson setup build \
+    --cross-file="${MESON_TARGET_TOOLCHAIN}" \
     -Dintrospection=disabled \
     -Dfontconfig=enabled \
-    -Dfreetype=enabled \
-    ..
-ninja -j${nproc}
-ninja install
+    -Dfreetype=enabled
+ninja -C build -j${nproc}
+ninja -C build install
 
-install_license ../COPYING
+install_license COPYING
 """
 
 # These are the platforms we will build for by default, unless further

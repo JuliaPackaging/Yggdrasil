@@ -20,19 +20,14 @@ using BinaryBuilder, Pkg
 # changes its major version. It simply seemed sensible to apply the same transformation
 # to all components.
 
-# See https://github.com/JuliaLang/Pkg.jl/issues/2942
-# Once this Pkg issue is resolved, this must be removed
-uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
-delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
-
 name = "GAP"
-upstream_version = v"4.15.1"
-version = v"400.1500.101"
+upstream_version = v"4.16.1"
+version = v"400.1600.100"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/gap-$(upstream_version)-core.tar.gz",
-                  "2a81d008e1638f638a035b1cd981ca39436bdabbef8c29b15b24fceb2af678e4"),
+                  "b4433a540a2f746d14b1645a0e95b3d499afb180aa421ebfd62b427f2b0cf74f"),
     DirectorySource("./bundled"),
 ]
 

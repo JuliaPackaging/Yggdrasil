@@ -7,14 +7,13 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "HDF5"
-version = v"2.1.0"
-# We added support for MPIABI
-ygg_version = v"2.1.1"
+version = v"2.2.0"
+ygg_version = v"2.2.1"          # Rebuilt with newer MPIABI/mpif
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/HDFGroup/hdf5/releases/download/$(version)/hdf5-$(version).tar.gz",
-                  "ce7f5515a95d588b8606c3fb50643f8b88ac52ffbbde9c63bb1edca6a256e964"),
+                  "1a1ab8209b35586fbc1aa279ba76d102130b95badcb20ca329587219112d8c16"),
     DirectorySource("bundled"),
 ]
 
@@ -322,7 +321,7 @@ dependencies = [
     Dependency("aws_c_s3_jll"; compat="0.11.2"),
     Dependency("dlfcn_win32_jll"; platforms=filter(Sys.iswindows, platforms)),
     Dependency("libaec_jll"; compat="1.1.4"), # This is the successor of szlib
-    Dependency("mpif_jll"; compat="0.1.5", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)), # MPI Fortran bindings
+    Dependency("mpif_jll"; compat="1.0.0", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)), # MPI Fortran bindings
 ]
 append!(dependencies, platform_dependencies)
 

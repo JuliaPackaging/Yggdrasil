@@ -1,10 +1,11 @@
 using BinaryBuilder, Pkg
 
 name = "blockSQP2"
-version = v"0.1.1"
+version = v"0.2.0"
 sources = [
-    GitSource("https://github.com/ReWittmann/blockSQP2.git", "70cdd7dca3b6e48c80022f071e4df39b68c247cf"),
+    GitSource("https://github.com/ReWittmann/blockSQP2.git", "dbc680e22228516b7e38e5f5b199287a3bcdcabe"),
 ]
+
 
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))

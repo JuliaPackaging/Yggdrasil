@@ -57,6 +57,11 @@ if [[ "${target}" == *-apple-* ]]; then
     )
 fi
 
+# SDL2 video/audio are disabled by default in mpv 0.41; enable them explicitly
+# Vulkan is disabled: not native on macOS, stdcall ABI issues on 32-bit Windows,
+# and SDL2+OpenGL provide sufficient video output for a JLL package
+FLAGS+=(-Dsdl2-video=enabled -Dsdl2-audio=enabled -Dvulkan=disabled)
+
 meson setup build --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release "${FLAGS[@]}"
 meson compile -C build
 meson install -C build
@@ -72,7 +77,8 @@ filter!(p -> arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("mpv", :mpv)
+    ExecutableProduct("mpv", :mpv),
+    LibraryProduct("libmpv", :libmpv),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -81,6 +87,7 @@ dependencies = [
     BuildDependency("Xorg_xorgproto_jll"),
     Dependency("Libiconv_jll"),
     Dependency("SDL2_jll"),
+    Dependency("Shaderc_jll"),
     Dependency("Zlib_jll"),
     Dependency("FFMPEG_jll"; compat="7.1"),
     Dependency("Lua_jll"),

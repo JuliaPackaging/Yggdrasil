@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "LERC"
-version = v"4.0.1" # Corresponds to upstream v4.0.0
+version = v"4.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Esri/lerc", "fbeb481120b79d05163f8544c645e9975920526f"),
+    GitSource("https://github.com/Esri/lerc", "fa0ae1b00903cc55e321d5c0165746310092adf8"),
 ]
 
 # Bash recipe for building across all platforms
@@ -40,5 +40,3 @@ dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
-
-# Build trigger: 2

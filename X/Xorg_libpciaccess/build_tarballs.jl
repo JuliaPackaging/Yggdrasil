@@ -3,12 +3,13 @@
 using BinaryBuilder
 
 name = "Xorg_libpciaccess"
-version = v"0.18.1"
+version_str = "0.19"
+version = VersionNumber(version_str)
 
 # Collection of sources required to build Libpciaccess
 sources = [
-    ArchiveSource("https://xorg.freedesktop.org/releases/individual/lib/libpciaccess-$(version).tar.xz",
-                  "4af43444b38adb5545d0ed1c2ce46d9608cc47b31c2387fc5181656765a6fa76"),
+    ArchiveSource("https://xorg.freedesktop.org/releases/individual/lib/libpciaccess-$(version_str).tar.xz",
+                  "3c55aa86c82e54a4e3109786f0463530d53b36b6d1cfd14616454f985dd2aa43"),
 ]
 
 # Bash recipe for building across all platforms
@@ -36,4 +37,4 @@ dependencies = [
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6")
+               julia_compat="1.6", preferred_gcc_version=v"5")

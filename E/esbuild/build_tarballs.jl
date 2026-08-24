@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "esbuild"
-version = v"0.25.0"
+version = v"0.25.5"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/evanw/esbuild.git", "e9174d671b1882758cd32ac5e146200f5bee3e45")
+    GitSource("https://github.com/evanw/esbuild.git", "ea453bf687c8e5cf3c5f11aae372c5ca33be0c98")
 ]
 
 # Bash recipe for building across all platforms

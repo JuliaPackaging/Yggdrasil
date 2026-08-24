@@ -1,21 +1,70 @@
 cmake_minimum_required(VERSION 3.10)
 project(dummysizes LANGUAGES C)
 
+if (NOT DEFINED SCOTCH_VERSION)
+  message(FATAL_ERROR "must define SCOTCH_VERSION")
+endif()
+if (NOT DEFINED SCOTCH_RELEASE)
+  message(FATAL_ERROR "must define SCOTCH_RELEASE")
+endif()
+if (NOT DEFINED SCOTCH_PATCHLEVEL)
+  message(FATAL_ERROR "must define SCOTCH_PATCHLEVEL")
+endif()
+
+if(INTSIZE STREQUAL "32")
+  message(STATUS "Integer size is 32 bits")
+  add_definitions(-DINTSIZE32)
+elseif(INTSIZE STREQUAL "64")
+  message(STATUS "Integer size is 64 bits")
+  add_definitions(-DINTSIZE64)
+else()
+  message(FATAL_ERROR "Invalid integer size value ${INTSIZE}")
+endif()
+
+add_definitions(-DSCOTCH_VERSION_NUM=${SCOTCH_VERSION}
+  -DSCOTCH_RELEASE_NUM=${SCOTCH_RELEASE}
+  -DSCOTCH_PATCHLEVEL_NUM=${SCOTCH_PATCHLEVEL})
+
 set(GENERATED_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/include)
 file(MAKE_DIRECTORY ${GENERATED_INCLUDE_DIR})
 
 option(BUILD_PTSCOTCH "Build PT-Scotch" ON)
+option(THREADS "Use multi-threading in Scotch and PT-Scotch" ON)
+
+# mock size of pthread_mutex_t for cross compilation
+option(PTHREAD_MUTEX_SIZE "set size of pthread_mutex_t for cross compilation" "")
+
+if (${PTHREAD_MUTEX_SIZE})
+  add_definitions(-DPTHREAD_MUTEX_SIZE=${PTHREAD_MUTEX_SIZE})
+endif()
+
+# for accuracy, this cmakefile must replicate _all_ definitions
+# from the real cmakelists that might affect struct sizes
+
+# Thread support in Scotch
+if(THREADS)
+  find_package(Threads)
+  if(Threads_FOUND)
+    add_definitions(-DCOMMON_PTHREAD -DSCOTCH_PTHREAD)
+    # assume mpi thread multiple is okay,
+    # which is true for conda-forge providers
+    add_definitions(-DSCOTCH_PTHREAD_MPI)
+  endif()
+  if(CMAKE_USE_WIN32_THREADS_INIT)
+    add_definitions(-DCOMMON_THREAD_WIN32)
+  endif()
+  if(LINUX)
+    add_definitions(-DCOMMON_PTHREAD_AFFINITY_LINUX)
+  endif()
+endif()
+
 
 add_executable(dummysizes ../libscotch/dummysizes.c)
 set_target_properties(dummysizes PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 if(BUILD_PTSCOTCH)
-  # find_package(MPI COMPONENTS C)
-  # if(NOT MPI_C_FOUND)
-  #   message(FATAL_ERROR "MPI required to compile PT-Scotch")
-  # endif()
+  # No MPI is available for the build platform; `mpi.h` suffices to determine struct sizes
   add_executable(ptdummysizes ../libscotch/dummysizes.c)
   set_target_properties(ptdummysizes PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-  # target_link_libraries(ptdummysizes PRIVATE MPI::MPI_C)
   add_dependencies(ptdummysizes scotch_h)
   set_target_properties(ptdummysizes PROPERTIES
     COMPILE_FLAGS -DSCOTCH_PTSCOTCH)

@@ -5,27 +5,30 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "OpenEXR"
-version = v"3.4.4"
+version = v"3.4.14"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/AcademySoftwareFoundation/openexr.git", "741ecb82ccdb291ce5b04713fc6c03208753575e"),
+    GitSource("https://github.com/AcademySoftwareFoundation/openexr.git", "777d231a179de1711d2a942810d9559216ab3f4c"),
     DirectorySource("bundled"),
 ]
-
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/openexr*
-cmake -B build -G Ninja \
-    -DBUILD_TESTING=OFF \
-    -DOPENEXR_INSTALL_TOOLS=OFF \
-    -DOPENEXR_INSTALL_EXAMPLES=OFF \
-    -DCMAKE_INSTALL_PREFIX=$prefix \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release
+
 # We are building with old kernel headers that do not define `HWCAP_SVE2`
 atomic_patch -p1 $WORKSPACE/srcdir/patches/sve2.patch
+# We are building with an old glibc that does not define `AT_HWCAP2`
+atomic_patch -p1 $WORKSPACE/srcdir/patches/hwcap2.patch
+
+cmake -B build -G Ninja \
+    -DBUILD_TESTING=OFF \
+    -DOPENEXR_BUILD_TOOLS=OFF \
+    -DOPENEXR_BUILD_EXAMPLES=OFF \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel ${nproc}
 cmake --install build
 install_license LICENSE.md
