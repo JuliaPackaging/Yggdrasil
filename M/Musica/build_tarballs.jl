@@ -12,6 +12,7 @@ using BinaryBuilder, Pkg
 
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "Musica"
 version = v"0.16.7"
@@ -47,7 +48,8 @@ cmake -B build -G Ninja \
     -DMUSICA_ENABLE_CARMA=OFF \
     -DMUSICA_ENABLE_TESTS=OFF \
     -DMUSICA_ENABLE_INSTALL=ON \
-    -DMUSICA_BUILD_SHARED_LIBS=ON 
+    -DMUSICA_BUILD_SHARED_LIBS=ON \
+    -DCMAKE_CXX_SCAN_FOR_MODULES=OFF # this was causing an issue on freebsd when on
 
 cmake --build build --parallel ${nproc}
 cmake --install build
@@ -73,6 +75,16 @@ filter!(p -> arch(p) != "armv6l", platforms)
 filter!(p -> arch(p) != "armv7l", platforms)
 filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
 
+# TUV-x does not call MPI directly, but it links against a parallel
+# HDF5-enabled NetCDF, so it links explicitly against MPI libraries.
+augment_platform_block = """
+    using Base.BinaryPlatforms
+    $(MPI.augment)
+    augment_platform!(platform::Platform) = augment_mpi!(platform)
+    """
+
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libmusica_julia", :libmusica_julia),
@@ -86,14 +98,17 @@ dependencies = [
     BuildDependency("libjulia_jll"),
     Dependency("libcxxwrap_julia_jll"; compat="~0.14.9"),
     HostBuildDependency(PackageSpec(name="CMake_jll", version="3.31.9")),
-     HostBuildDependency(PackageSpec(name="Ninja_jll", uuid="76642167-d241-5cee-8c94-7a494e8cb7b7")),
-    Dependency(PackageSpec(name="NetCDF_jll", uuid="7243133f-43d8-5620-bbf4-c2c921802cf3")),
-    Dependency(PackageSpec(name="NetCDFF_jll", uuid="78e728a9-57fe-5d11-897c-5014b89e5f84")),
+    HostBuildDependency(PackageSpec(name="Ninja_jll", uuid="76642167-d241-5cee-8c94-7a494e8cb7b7")),
+    Dependency(PackageSpec(name="NetCDF_jll", uuid="7243133f-43d8-5620-bbf4-c2c921802cf3"); compat="401.1000.101"),
+    Dependency(PackageSpec(name="NetCDFF_jll", uuid="78e728a9-57fe-5d11-897c-5014b89e5f84"); compat="4.6.4"),
+    Dependency("HDF5_jll"; compat="2.2.1"),
 ]
+append!(dependencies, platform_dependencies)
 
 # Build the tarballs
 build_tarballs(
     ARGS, name, version, sources, script, platforms, products, dependencies;
+    augment_platform_block,
     julia_compat=libjulia_julia_compat(julia_versions),
     preferred_gcc_version=v"13",
     dont_dlopen=true
