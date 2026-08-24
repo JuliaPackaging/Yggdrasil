@@ -49,7 +49,8 @@ cmake -B build -G Ninja \
     -DMUSICA_ENABLE_TESTS=OFF \
     -DMUSICA_ENABLE_INSTALL=ON \
     -DMUSICA_BUILD_SHARED_LIBS=ON \
-    -DCMAKE_CXX_SCAN_FOR_MODULES=OFF # this was causing an issue on freebsd when on
+    -DCMAKE_CXX_SCAN_FOR_MODULES=OFF \
+    -DTUVX_BUILD_CLI=OFF 
 
 cmake --build build --parallel ${nproc}
 cmake --install build
@@ -74,6 +75,13 @@ platforms = expand_cxxstring_abis(platforms)
 filter!(p -> arch(p) != "armv6l", platforms)
 filter!(p -> arch(p) != "armv7l", platforms)
 filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
+
+# NetCDFF_jll does not ship a linkable import library on Windows (its build
+# script never passes --out-implib when hand-building libnetcdff.dll, and then
+# deletes the remaining static libs), so Fortran code cannot link -lnetcdff on
+# this platform. See N/NetCDFF/build_tarballs.jl. FLEXPART drops Windows for a
+# similar Fortran/Windows linking reason; do the same here until upstream is fixed.
+filter!(!Sys.iswindows, platforms)
 
 # TUV-x does not call MPI directly, but it links against a parallel
 # HDF5-enabled NetCDF, so it links explicitly against MPI libraries.
