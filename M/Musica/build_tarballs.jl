@@ -30,6 +30,9 @@ cd $WORKSPACE/srcdir/musica
 # Needs cmake >= 3.24 provided by jll
 apk del cmake
 
+# Update Ninja — the sandbox's built-in ninja (1.9) is too old for Fortran support
+cp ${host_prefix}/bin/ninja /usr/bin/ninja
+
 # Configure MUSICA with Julia wrapper enabled
 cmake -B build -G Ninja \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -83,6 +86,7 @@ dependencies = [
     BuildDependency("libjulia_jll"),
     Dependency("libcxxwrap_julia_jll"; compat="~0.14.9"),
     HostBuildDependency(PackageSpec(name="CMake_jll", version="3.31.9")),
+     HostBuildDependency(PackageSpec(name="Ninja_jll", uuid="76642167-d241-5cee-8c94-7a494e8cb7b7")),
     Dependency(PackageSpec(name="NetCDF_jll", uuid="7243133f-43d8-5620-bbf4-c2c921802cf3")),
     Dependency(PackageSpec(name="NetCDFF_jll", uuid="78e728a9-57fe-5d11-897c-5014b89e5f84")),
 ]
