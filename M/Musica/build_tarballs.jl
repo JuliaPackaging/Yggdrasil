@@ -14,12 +14,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "Musica"
-version = v"0.16.0"
+version = v"0.16.7"
 
 # Collection of sources required to build Musica
 sources = [
     GitSource("https://github.com/NCAR/musica.git",
-              "f5c24f6c59fea0a0ccaeca6906b6e7032add0591")
+              "71abef833c92d22756b47861d712eb162a4bc137")
 ]
 
 # Bash recipe for building across all platforms
@@ -40,7 +40,7 @@ cmake -B build -G Ninja \
     -DMUSICA_BUILD_C_CXX_INTERFACE=ON \
     -DMUSICA_ENABLE_JULIA=ON \
     -DMUSICA_ENABLE_MICM=ON \
-    -DMUSICA_ENABLE_TUVX=OFF \
+    -DMUSICA_ENABLE_TUVX=ON \
     -DMUSICA_ENABLE_CARMA=OFF \
     -DMUSICA_ENABLE_TESTS=OFF \
     -DMUSICA_ENABLE_INSTALL=ON \
@@ -83,6 +83,8 @@ dependencies = [
     BuildDependency("libjulia_jll"),
     Dependency("libcxxwrap_julia_jll"; compat="~0.14.9"),
     HostBuildDependency(PackageSpec(name="CMake_jll", version="3.31.9")),
+    Dependency(PackageSpec(name="NetCDF_jll", uuid="7243133f-43d8-5620-bbf4-c2c921802cf3")),
+    Dependency(PackageSpec(name="NetCDFF_jll", uuid="78e728a9-57fe-5d11-897c-5014b89e5f84")),
 ]
 
 # Build the tarballs
