@@ -1,0 +1,18 @@
+diff --git a/Makefile b/Makefile
+--- a/Makefile
++++ b/Makefile
+@@ -112,6 +112,14 @@ ifneq (,$(filter $(TARGET_SYS),Darwin iOS))
+   INSTALL_SOSHORT2= $(INSTALL_DYLIBSHORT2)
+   LDCONFIG= :
+   SED_PC+= -e "s| -Wl,-E||"
++else ifeq (Windows,$(TARGET_SYS))
++  # XXX: This hard-codes the ABI version from src/Makefile and duplicates some
++  # variables: `FILE_T` is `TARGET_T`, `FILE_A` is `TARGET_DLLDOTANAME`, and
++  # `FILE_SO` is `TARGET_DLLNAME`. We should eventually clean up this godforsaken
++  # mess.
++  FILE_T= luajit.exe
++  FILE_A= libluajit-5.1.dll.a
++  FILE_SO= lua51.dll
+ endif
+
+ ##############################################################################

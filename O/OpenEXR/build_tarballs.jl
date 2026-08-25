@@ -5,14 +5,13 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "OpenEXR"
-version = v"3.4.8"
+version = v"3.4.14"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/AcademySoftwareFoundation/openexr.git", "adbd2a588b47b1f6d02557571d8e36a91084da8a"),
+    GitSource("https://github.com/AcademySoftwareFoundation/openexr.git", "777d231a179de1711d2a942810d9559216ab3f4c"),
     DirectorySource("bundled"),
 ]
-
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -20,6 +19,8 @@ cd $WORKSPACE/srcdir/openexr*
 
 # We are building with old kernel headers that do not define `HWCAP_SVE2`
 atomic_patch -p1 $WORKSPACE/srcdir/patches/sve2.patch
+# We are building with an old glibc that does not define `AT_HWCAP2`
+atomic_patch -p1 $WORKSPACE/srcdir/patches/hwcap2.patch
 
 cmake -B build -G Ninja \
     -DBUILD_TESTING=OFF \

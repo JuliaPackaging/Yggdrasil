@@ -47,6 +47,7 @@ CFLAGS="-D_POSIX_C_SOURCE='200809L' -D__BSD_VISIBLE=${BSD_VISIBLE}" cmake .. \
 # platform, so we have to explicitly override it to use the binary for the host.
 cmake -DWAYLAND_SCANNER_EXECUTABLE="$host_bindir/wayland-scanner" ..
 
+make update_mappings
 make -j${nproc}
 make install
 """

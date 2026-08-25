@@ -51,6 +51,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    # YASM is basically unsupported, but MPIR doesn't seem to support building
+    # with NASM (an alternative assembler) based on this upstream discussion:
+    # https://groups.google.com/g/mpir-devel/c/JU0d9Bh2MAc
     HostBuildDependency("YASM_jll"),
 ]
 

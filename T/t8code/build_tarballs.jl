@@ -8,8 +8,8 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "t8code"
-version = v"4.0.1"
-commit_hash = "44f449b28321ab6a3053edfcf2d14c6dfe796d23"
+version = v"4.0.8"
+commit_hash = "56c9b8d201101d54a9c89e7746b81b15df76e9fe"
 
 sources = [GitSource("https://github.com/DLR-AMR/t8code", commit_hash),
            DirectorySource("./bundled")]
@@ -17,18 +17,8 @@ sources = [GitSource("https://github.com/DLR-AMR/t8code", commit_hash),
 script = raw"""
 cd $WORKSPACE/srcdir/t8code
 
-# fetch sc and p4est
-git submodule init
-git submodule update
-
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi-constants.patch"
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/inttypes.patch"
-
 # Microsoft MPI is still 2.0 but has the required features; remove the strict 3.0 requirement
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi2.patch"
-
-# Fixes for mingw, which is WIN32 for cmake, but uses Linux syntax
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mingw.patch"
 
 # Show CMake where to find `mpiexec`.
 if [[ "${target}" == *-mingw* ]]; then
@@ -53,14 +43,22 @@ cmake . \
       -DT8CODE_BUILD_TUTORIALS=OFF \
       -DT8CODE_ENABLE_MPI=ON
 
+# Fixes for mingw, which is WIN32 for cmake, but uses Linux syntax
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mingw.patch"
+
+# Fixes for "initializer element is not constant" in sc
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi-constants.patch"
+
 make -C build -j ${nproc}
 make -C build -j ${nproc} install
 """
 
 # We need some C++20
-# std::visit introduced in macOS 10.14, 'range' in namespace 'std::ranges' from 14.0 on
+# - std::visit introduced in macOS 10.14
+# - range in namespace 'std::ranges' from 14.0 on
+# - std::filesystem::path introduced in macOS 10.15
 # target chosen as lowest working version
-sources, script = require_macos_sdk("14.0", sources, script; deployment_target="10.14")
+sources, script = require_macos_sdk("14.0", sources, script; deployment_target="10.15")
 
 augment_platform_block = """
     using Base.BinaryPlatforms

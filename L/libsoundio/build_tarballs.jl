@@ -22,8 +22,11 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/fix-mingw-guid-redefinition.patch
 CMAKE_FLAGS=("-DCMAKE_INSTALL_PREFIX=$prefix"
              "-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}"
              "-DCMAKE_BUILD_TYPE=Release"
-             "-DCMAKE_C_FLAGS_RELEASE=-O3 -DNDEBUG -funroll-loops -fno-plt"
              "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON"
+             "-DCMAKE_C_FLAGS_RELEASE=-O3 -DNDEBUG -funroll-loops -fno-plt"
+             "-DCMAKE_CXX_FLAGS_RELEASE=-O3 -DNDEBUG -funroll-loops -fno-plt"
+             "-DCMAKE_EXE_LINKER_FLAGS_RELEASE=-Wl,-O1"
+             "-DCMAKE_SHARED_LINKER_FLAGS_RELEASE=-Wl,-O1"
              "-DBUILD_STATIC_LIBS=OFF"
              "-DBUILD_EXAMPLE_PROGRAMS=OFF"
              "-DBUILD_TESTS=OFF"
@@ -69,4 +72,4 @@ dependencies = [
 ]
 
 # Build the tarballs
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"8")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"13.2.0")

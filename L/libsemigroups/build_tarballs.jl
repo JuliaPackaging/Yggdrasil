@@ -4,12 +4,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "libsemigroups"
-version = v"3.5.4"
+version = v"3.6.1"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/libsemigroups/libsemigroups.git",
-              "d044c6bfefbff48c8ae7547d760215d14d843376"),  # v3.5.4
+              "12bf4c58a79b1ba91da8227c77dff7cad883c38b"),  # v3.6.1
 ]
 
 # Bash recipe for building across all platforms
@@ -20,8 +20,11 @@ cd libsemigroups
 ./autogen.sh
 export CPPFLAGS="-I${prefix}/include"
 
-# Disable HPCombi on all platforms
+# Enable HPCombi only on macOS arm builds
 HPCOMBI_FLAG="--disable-hpcombi"
+if [[ "${target}" == aarch64-apple-darwin* ]]; then
+    HPCOMBI_FLAG="--enable-hpcombi"
+fi
 
 ./configure --prefix=${prefix} \
             --build=${MACHTYPE} \

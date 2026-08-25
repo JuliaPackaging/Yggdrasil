@@ -5,12 +5,11 @@ using BinaryBuilder, Pkg
 include(joinpath("..", "..", "platforms", "macos_sdks.jl"))
 
 name = "OSRM"
-version = v"6.0.0"
+version = v"26.4.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Project-OSRM/osrm-backend.git", "01605f7589e6fe68df3fc690ad001b687128aba7"),
-    get_macos_sdk_sources("14.5")...
+    GitSource("https://github.com/Project-OSRM/osrm-backend.git", "d3e0a354350b3e370e9124d43bcf6e22e85cf11c"),
 ]
 
 script = raw"""
@@ -21,16 +20,14 @@ CMAKE_FLAGS=(
     -DCMAKE_INSTALL_PREFIX=${prefix}
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
     -DCMAKE_BUILD_TYPE=Release
-    -DCMAKE_CXX_STANDARD=20
     -DCMAKE_PREFIX_PATH=${prefix}
     -DBUILD_SHARED_LIBS=ON
-    -DBUILD_TESTING=OFF
 )
 
 # Linux specific handling
 if [[ "${target}" == *-linux-* ]]; then
     ### CMake flags
-    CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="-Wno-array-bounds -Wno-uninitialized -Wno-error")
+    CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="-Wno-array-bounds -Wno-uninitialized -Wno-shift-count-overflow -Wno-error")
 
     if [[ "${target}" == *-linux-musl* ]]; then
         ### OSRM-backend Patching
@@ -46,23 +43,6 @@ fi
 
 # Apple specific handling
 if [[ "${target}" == *-apple-darwin* ]]; then
-    ### SDK extraction
-    apple_sdk_root=$WORKSPACE/srcdir/MacOSX14.5.sdk
-    mkdir -p "$apple_sdk_root"
-    echo "Extracting MacOSX14.5.tar.xz (this may take a while)"
-    tar --extract --file=${WORKSPACE}/srcdir/MacOSX14.5.tar.xz --directory="$apple_sdk_root" --strip-components=1 --warning=no-unknown-keyword MacOSX14.5.sdk/System MacOSX14.5.sdk/usr
-    sed -i "s!/opt/$target/$target/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
-    sed -i "s!/opt/$target/$target/sys-root!$apple_sdk_root!" /opt/bin/$bb_full_target/$target-clang++
-    export MACOSX_DEPLOYMENT_TARGET=14.5
-
-    ### OSRM-backend Patching
-    # Exclude duplicate intersection files from GUIDANCE for platforms that link to EXTRACTOR
-    sed -i 's|file(GLOB GuidanceGlob src/guidance/\*\.cpp src/extractor/intersection/\*\.cpp)|file(GLOB GuidanceGlob src/guidance/*.cpp)|' CMakeLists.txt
-    # Replace the osrm_guidance library definition with version that links to EXTRACTOR
-    sed -i '/^add_library(osrm_guidance $<TARGET_OBJECTS:GUIDANCE> $<TARGET_OBJECTS:UTIL>)$/c\
-add_library(osrm_guidance $<TARGET_OBJECTS:GUIDANCE> $<TARGET_OBJECTS:UTIL> $<TARGET_OBJECTS:MICROTAR>)\
-target_link_libraries(osrm_guidance PRIVATE EXTRACTOR ${LUA_LIBRARIES} BZip2::BZip2 ZLIB::ZLIB EXPAT::EXPAT Boost::iostreams TBB::tbb)' CMakeLists.txt
-
     ### CMake flags
     CMAKE_FLAGS+=(
         -DENABLE_LTO=OFF
@@ -79,27 +59,11 @@ fi
 
 # Windows specific handling
 if [[ "${target}" == *-mingw* ]]; then
-    ### OSRM-backend Patching
-    # Ensure console executables by stripping WIN32 from add_executable invocations
-    find . -name "CMakeLists.txt" -o -name "*.cmake" | while read f; do
-        sed -i '/add_executable(/,/)/{s/ WIN32//g;}' "$f"
-        sed -i 's/add_executable(\([^ ]*\) WIN32 /add_executable(\1 /g' "$f"
-        sed -i 's/add_executable(\([^ ]*\) WIN32)/add_executable(\1)/g' "$f"
-    done
-    # Remove rpath flag for Windows
-    sed -i '/set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,origin")/d' CMakeLists.txt
-    # Exclude duplicate intersection files from GUIDANCE for platforms that link to EXTRACTOR
-    sed -i 's|file(GLOB GuidanceGlob src/guidance/\*\.cpp src/extractor/intersection/\*\.cpp)|file(GLOB GuidanceGlob src/guidance/*.cpp)|' CMakeLists.txt
-    # Replace the osrm_guidance library definition with version that links to EXTRACTOR
-    sed -i '/^add_library(osrm_guidance $<TARGET_OBJECTS:GUIDANCE> $<TARGET_OBJECTS:UTIL>)$/c\
-add_library(osrm_guidance $<TARGET_OBJECTS:GUIDANCE> $<TARGET_OBJECTS:UTIL> $<TARGET_OBJECTS:MICROTAR>)\
-target_link_libraries(osrm_guidance PRIVATE EXTRACTOR ${LUA_LIBRARIES} BZip2::BZip2 ZLIB::ZLIB EXPAT::EXPAT Boost::iostreams TBB::tbb)' CMakeLists.txt
-
     ### CMake flags
     LTO_FLAGS="-fno-lto"
     CMAKE_FLAGS+=(
         -DENABLE_LTO=OFF
-        -DCMAKE_CXX_FLAGS="-Wno-array-bounds -Wno-uninitialized -Wno-unused-parameter -Wno-maybe-uninitialized ${LTO_FLAGS} -Wno-error -Wno-pedantic"
+        -DCMAKE_CXX_FLAGS="-Wno-array-bounds -Wno-uninitialized -Wno-unused-parameter -Wno-maybe-uninitialized -Wno-shift-count-overflow ${LTO_FLAGS} -Wno-error -Wno-pedantic"
         -DCMAKE_CXX_FLAGS_RELEASE="-O3 -DNDEBUG ${LTO_FLAGS}"
         -DCMAKE_EXE_LINKER_FLAGS="${LTO_FLAGS} -Wl,-subsystem,console -L${libdir} -ltbb12 -lz"
         -DCMAKE_SHARED_LINKER_FLAGS="${LTO_FLAGS} -Wl,--export-all-symbols -L${libdir} -ltbb12 -lz"
@@ -145,7 +109,7 @@ install_license "${WORKSPACE}/srcdir/osrm-backend/LICENSE.TXT"
 """
 
 platforms = supported_platforms()
-platforms = filter(p -> Sys.islinux(p) || Sys.isapple(p) || Sys.iswindows(p), platforms)
+platforms = filter(p -> !Sys.isfreebsd(p), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -157,7 +121,8 @@ products = [
     ExecutableProduct("osrm-routed", :osrm_routed),
     ExecutableProduct("osrm-datastore", :osrm_datastore),
     ExecutableProduct("osrm-components", :osrm_components),
-    LibraryProduct("libosrm", :libosrm; dont_dlopen=true),  # Cannot be loaded in sandbox
+    ExecutableProduct("osrm-io-benchmark", :osrm_io_benchmark),
+    LibraryProduct("libosrm", :libosrm; dont_dlopen = true),  # Cannot be loaded in sandbox
     FileProduct("profiles/bicycle.lua", :bicycle_lua),
     FileProduct("profiles/car.lua", :car_lua),
     FileProduct("profiles/foot.lua", :foot_lua),
@@ -172,6 +137,7 @@ products = [
     FileProduct("profiles/lib/tags.lua", :lib_tags_lua),
     FileProduct("profiles/lib/way_handlers.lua", :lib_way_handlers_lua),
     FileProduct("profiles/lib/guidance.lua", :lib_guidance_lua),
+    FileProduct("profiles/lib/obstacles.lua", :lib_obstacles_lua),
     FileProduct("profiles/lib/pprint.lua", :lib_pprint_lua),
     FileProduct("profiles/lib/sequence.lua", :lib_sequence_lua),
     FileProduct("profiles/lib/traffic_signal.lua", :lib_traffic_signal_lua),
@@ -179,16 +145,18 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("boost_jll"; compat="=1.87.0"),
-    Dependency("Lua_jll"; compat="~5.4.9"),
-    Dependency("oneTBB_jll"; compat="2022.0.0"),
-    Dependency("Expat_jll"; compat="2.6.5"),
-    Dependency("XML2_jll"; compat="~2.14.1"),
-    Dependency("libzip_jll"),
+    Dependency("boost_jll"; compat = "=1.87.0"),
+    Dependency("Lua_jll"; compat = "~5.4.9"),
+    Dependency("oneTBB_jll"; compat = "2022.0.0"),
+    Dependency("Expat_jll"; compat = "2.6.5"),
     Dependency("Bzip2_jll"),
     Dependency("Zlib_jll"),
 ]
 
+sources, script = require_macos_sdk("14.5", sources, script)
+
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.10", preferred_gcc_version=v"13")
+build_tarballs(
+    ARGS, name, version, sources, script, platforms, products, dependencies;
+    julia_compat = "1.10", preferred_gcc_version = v"13"
+)
