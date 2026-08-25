@@ -1,5 +1,8 @@
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "libsparseir"
 version = v"0.8.4"
 
@@ -17,10 +20,6 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/sparse-ir-rs/
 install_license LICENSE
 
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    export MACOSX_DEPLOYMENT_TARGET=10.12
-fi
-
 if [[ "${target}" == *mingw* ]]; then
     export RUSTFLAGS="-C link-arg=-L${libdir} -C link-arg=-lblastrampoline-5"
     export CARGO_PROFILE_RELEASE_DEBUG=line-tables-only
@@ -37,6 +36,9 @@ fi
 
 cp sparse-ir-capi/include/sparseir/sparseir.h ${includedir}
 """
+
+# Install a newer SDK containing the libc++ atomic symbols required by spindle.
+sources, script = require_macos_sdk("11.0", sources, script)
 
 platforms = supported_platforms()
 # Build fails: warning: dropping unsupported crate type `cdylib` for target `aarch64-unknown-linux-musl`
