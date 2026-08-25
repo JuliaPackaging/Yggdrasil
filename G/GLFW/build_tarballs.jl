@@ -1,8 +1,8 @@
 using BinaryBuilder
 
 name = "GLFW"
-version = "3.5"
-ygg_version = "3.5.1"
+
+version = v"3.5.1"
 
 # Collection of sources required to build glfw
 sources = [
@@ -78,5 +78,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, VersionNumber(ygg_version), sources, script, platforms, products, dependencies; 
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
                julia_compat="1.6")
