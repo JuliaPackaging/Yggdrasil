@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_compression"
-version = v"0.3.2"
+version = v"0.3.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-compression.git", "f951ab2b819fc6993b6e5e6cfef64b1a1554bfc8"),
+    GitSource("https://github.com/awslabs/aws-c-compression.git", "978bf83abfa5182eb9482577f6864e86e7dfdf43"),
 ]
 
 # Bash recipe for building across all platforms
@@ -36,7 +36,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("aws_c_common_jll"; compat="0.12.3"),
+    Dependency("aws_c_common_jll"; compat="0.13.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
