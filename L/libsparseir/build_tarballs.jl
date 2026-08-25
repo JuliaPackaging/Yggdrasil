@@ -17,6 +17,10 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/sparse-ir-rs/
 install_license LICENSE
 
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    export MACOSX_DEPLOYMENT_TARGET=10.12
+fi
+
 if [[ "${target}" == *mingw* ]]; then
     export RUSTFLAGS="-C link-arg=-L${libdir} -C link-arg=-lblastrampoline-5"
     export CARGO_PROFILE_RELEASE_DEBUG=line-tables-only
@@ -35,8 +39,6 @@ cp sparse-ir-capi/include/sparseir/sparseir.h ${includedir}
 """
 
 platforms = supported_platforms()
-# Build fails: deployment target in MACOSX_DEPLOYMENT_TARGET was set to 10.10, but the minimum supported by `rustc` is 10.12
-filter!(p -> !(arch(p) == "x86_64" && os(p) == "macos"), platforms)
 # Build fails: warning: dropping unsupported crate type `cdylib` for target `aarch64-unknown-linux-musl`
 filter!(p -> !(arch(p) == "aarch64" && os(p) == "linux" && libc(p) == "musl"), platforms)
 # Build fails: Couldn't open /proc/mounts
