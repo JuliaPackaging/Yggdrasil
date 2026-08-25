@@ -1,13 +1,13 @@
 using BinaryBuilder
 
 name = "GLFW"
-version = "3.4"
-ygg_version = "3.4.1"
+version = "3.5"
+ygg_version = "3.5.1"
 
 # Collection of sources required to build glfw
 sources = [
     GitSource("https://github.com/glfw/glfw.git",
-              "7b6aead9fb88b3623e3b3725ebb42670cbe4c579")
+              "d9d6f0f1f967807ffade6598ea9a631ebaf37a56")
 ]
 
 # Bash recipe for building across all platforms
