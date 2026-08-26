@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDA_Compiler"
-version = v"0.5.1"
+version = v"0.5.2"
 
 const toolkit_versions = [CUDA.cuda_full_versions; CUDA.cuda_prerelease_versions]
 const compiler_versions = filter(v -> v >= v"11.4", toolkit_versions)
@@ -148,20 +148,29 @@ function get_products(version::VersionNumber)
                                    "nvrtc64_112_0"
     nvrtc_builtins_dll = "nvrtc-builtins64_$(version.major)$(version.minor)"
 
+    # The libraries are not dlopen'ed at init time. Nothing in this artifact needs them
+    # pre-loaded (ptxas, nvlink, nvdisasm and tileiras only link against libc), and the
+    # artifact is lazy: on systems without CUDA the platform augmentation still selects an
+    # artifact (see `cuda_default_toolkit`), so an eager `dlopen` in `__init__` turns any
+    # missing or incomplete artifact into an InitError that breaks precompilation of every
+    # dependent package (JuliaGPU/CUDA.jl#3242). Consumers can still `ccall` into these
+    # libraries through their path variables, which are set regardless.
     products = [
         FileProduct(["lib/libcudadevrt.a", "lib/cudadevrt.lib"], :libcudadevrt),
         FileProduct("nvvm/libdevice/libdevice.10.bc", :libdevice),
         LibraryProduct(["libnvvm", "nvvm64_40_0"], :libnvvm,
-                       ["nvvm/lib64", "nvvm/bin/x64", "nvvm/bin"]),
-        LibraryProduct(["libnvrtc", nvrtc_dll], :libnvrtc),
-        LibraryProduct(["libnvrtc-builtins", nvrtc_builtins_dll], :libnvrtc_builtins),
+                       ["nvvm/lib64", "nvvm/bin/x64", "nvvm/bin"]; dont_dlopen=true),
+        LibraryProduct(["libnvrtc", nvrtc_dll], :libnvrtc; dont_dlopen=true),
+        LibraryProduct(["libnvrtc-builtins", nvrtc_builtins_dll], :libnvrtc_builtins;
+                       dont_dlopen=true),
         ExecutableProduct("ptxas", :ptxas),
         ExecutableProduct("nvdisasm", :nvdisasm),
         ExecutableProduct("nvlink", :nvlink),
     ]
     if version >= v"12"
         nvjitlink_dll = version >= v"13" ? "nvJitLink_130_0" : "nvJitLink_120_0"
-        push!(products, LibraryProduct(["libnvJitLink", nvjitlink_dll], :libnvJitLink))
+        push!(products, LibraryProduct(["libnvJitLink", nvjitlink_dll], :libnvJitLink;
+                                       dont_dlopen=true))
     end
     if version >= v"13.1"
         push!(products, ExecutableProduct("tileiras", :tileiras))
