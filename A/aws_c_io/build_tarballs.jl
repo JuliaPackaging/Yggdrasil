@@ -6,11 +6,11 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "aws_c_io"
-version = v"0.27.0"
+version = v"1.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-io.git", "bdfd85e293965439146bc30a70379e7889c27bb7"),
+    GitSource("https://github.com/awslabs/aws-c-io.git", "1685abcd331dcced3da63b8d4cd3ced38a8bb14a"),
 ]
 
 # Bash recipe for building across all platforms
@@ -36,6 +36,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DBUILD_TESTING=OFF \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
+    -DUSE_S2N=OFF \
     ..
 cmake --build . -j${nproc} --target install
 """
