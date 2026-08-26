@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Elfutils"
-version = v"0.189"
+version = v"0.196"
 
 # Collection of sources required to build Elfutils
 sources = [
     ArchiveSource("https://sourceware.org/elfutils/ftp/$(version.major).$(version.minor)/elfutils-$(version.major).$(version.minor).tar.bz2",
-                  "39bd8f1a338e2b7cd4abc3ff11a0eddc6e690f69578a57478d8179b4148708c8"),
+                  "fd5cc6b77ad6773cac93cb3f415f9318ac3b3455eecf801f6b4a742c4f6c7209"),
     DirectorySource("./bundled"),
 ]
 
@@ -30,6 +30,20 @@ if [[ ${target} = *-musl* ]] ; then
     tail -n +2 /usr/include/sys/cdefs.h >$prefix/include/sys/cdefs.h
     autoreconf -vif
 fi
+
+# The arm/aarch64 initreg backends include the raw kernel UAPI <linux/uio.h>
+# after "system.h" has already pulled in glibc's <bits/uio.h> via <fcntl.h>.
+# Neither header guards against the other on our sysroots, so `struct iovec`
+# ends up defined twice.  They only need `struct iovec`, so use glibc's own
+# <sys/uio.h>, which is properly guarded.
+for f in backends/aarch64_initreg.c backends/arm_initreg.c; do
+    sed -i -E 's|^#[[:space:]]*include[[:space:]]+<linux/uio\.h>|# include <sys/uio.h>|' "$f"
+    if grep -q '<linux/uio\.h>' "$f"; then
+        echo "ERROR: failed to replace <linux/uio.h> in $f" >&2
+        exit 1
+    fi
+done
+
 export CC=gcc
 export CXX=g++
 CFLAGS="-Wno-error=unused-result" CPPFLAGS="-I${prefix}/include" ./configure \
@@ -75,9 +89,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Zlib_jll"),
-    # Future versions of bzip2 should allow a more relaxed compat because the
-    # soname of the macOS library shouldn't change at every patch release.
-    Dependency("Bzip2_jll"; compat="1.0.8"),
+    Dependency("Bzip2_jll"; compat="1.0.9"),
     Dependency("XZ_jll"),
     Dependency("argp_standalone_jll"),
     Dependency("fts_jll"),
@@ -86,4 +98,5 @@ dependencies = [
 
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"9")
