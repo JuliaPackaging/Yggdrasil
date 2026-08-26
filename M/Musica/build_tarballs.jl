@@ -40,6 +40,25 @@ apk del cmake
 # Update Ninja — the sandbox's built-in ninja (1.9) is too old for Fortran support
 cp ${host_prefix}/bin/ninja /usr/bin/ninja
 
+# On macOS, the darwin `ld` bundled with newer GCC shards (needed for SDK 14.5
+# support) is missing libBlocksRuntime/libdispatch and can't even run. clang
+# already links C++ fine via lld on this platform, so swap gfortran/collect2's
+# linker for the same lld binary. lld needs -arch/-platform_version explicitly,
+# since collect2 doesn't pass them the way it would for the legacy ld it thinks
+# it's calling.
+EXTRA_LD_FLAGS=""
+if [[ "${target}" == *-apple-darwin* ]]; then
+    LLD_PATH=$(find /opt -iname "*-ld64.lld" -type f 2>/dev/null | head -1)
+    if [[ -n "${LLD_PATH}" ]]; then
+        cp -v "${LLD_PATH}" "/opt/${target}/bin/${target}-ld"
+    fi
+    case "${target}" in
+        x86_64-apple-darwin*) LD_ARCH="x86_64" ;;
+        aarch64-apple-darwin*) LD_ARCH="arm64" ;;
+    esac
+    EXTRA_LD_FLAGS="-Wl,-arch,${LD_ARCH} -Wl,-platform_version,macos,${macosx_deployment_target},${macos_sdk_version}"
+fi
+
 # Configure MUSICA with Julia wrapper enabled
 cmake -B build -G Ninja \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -56,7 +75,9 @@ cmake -B build -G Ninja \
     -DMUSICA_ENABLE_INSTALL=ON \
     -DMUSICA_BUILD_SHARED_LIBS=ON \
     -DCMAKE_CXX_SCAN_FOR_MODULES=OFF \
-    -DTUVX_BUILD_CLI=OFF 
+    -DTUVX_BUILD_CLI=OFF \
+    -DCMAKE_EXE_LINKER_FLAGS="${EXTRA_LD_FLAGS}" \
+    -DCMAKE_SHARED_LINKER_FLAGS="${EXTRA_LD_FLAGS}"
 
 cmake --build build --parallel ${nproc}
 cmake --install build
