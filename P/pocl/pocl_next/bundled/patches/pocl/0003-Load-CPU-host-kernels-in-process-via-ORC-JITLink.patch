@@ -1,0 +1,2897 @@
+From e0de78db03448f841c98ad2ff4a906a17f97b928 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Thu, 9 Jul 2026 11:10:30 +0200
+Subject: [PATCH 3/6] Load CPU host kernels in-process via ORC/JITLink
+
+Add an ORC LLJIT loader for CPU work-group objects so supported hosts can link and load kernel objects in-process without writing a shared library, calling dlopen(), or executing an external linker.
+
+Keep the linker path available through POCL_CPU_JIT=0 or unsupported JITLink targets, and use in-process lld where available. Exported program binaries link JIT objects into shared libraries when possible, while the ordinary cache keeps distinct object and shared-library variants.
+
+Teach the JIT symbol model about libpocl, configured vector math libraries, compiler-rt/libgcc helpers, kernel-library builtins, printf flush, and MinGW helper symbols. Add focused CPU JIT smoke coverage.
+---
+ CMakeLists.txt                              | 124 ++++
+ cmake/SetupLLD.cmake                        |   3 +-
+ cmake/SetupLLVMviaCMake.cmake               |  10 +
+ cmake/test_jit_svml_failure.cmake           |  18 +
+ cmake/test_jit_svml_success.cmake           |  23 +
+ config.h.in.cmake                           |  16 +
+ doc/sphinx/source/cpu.rst                   |  53 +-
+ doc/sphinx/source/notes_7_2.rst             |   9 +
+ doc/sphinx/source/using.rst                 |  10 +
+ examples/vecadd/CMakeLists.txt              |   7 +
+ examples/vecbuiltin/CMakeLists.txt          |  19 +
+ include/pocl_cache.h                        |  10 +
+ lib/CL/CMakeLists.txt                       |   3 +
+ lib/CL/devices/common.c                     | 404 ++++++++---
+ lib/CL/devices/common.h                     |   8 +-
+ lib/CL/devices/common_driver.c              |  48 ++
+ lib/CL/devices/common_utils.c               |  15 +
+ lib/CL/pocl_binary.c                        |  14 +-
+ lib/CL/pocl_cache.c                         |  71 +-
+ lib/CL/pocl_cl.h                            |  19 +
+ lib/CL/pocl_llvm.h                          |   5 +-
+ lib/CL/pocl_llvm_api.h                      |   6 +
+ lib/CL/pocl_llvm_build.cc                   |  17 +-
+ lib/CL/pocl_llvm_orc.cc                     | 719 ++++++++++++++++++++
+ lib/CL/pocl_llvm_orc.h                      |  75 ++
+ lib/CL/pocl_llvm_spirv.cc                   |   2 +-
+ lib/CL/pocl_llvm_wg.cc                      | 144 +++-
+ lib/llvmopencl/linker.cpp                   |  69 +-
+ lib/llvmopencl/linker.h                     |   8 +-
+ tests/CMakeLists.txt                        |  28 +
+ tests/kernel/CMakeLists.txt                 |   9 +
+ tests/regression/CMakeLists.txt             |   5 +-
+ tests/regression/test_large_stack_frame.cpp |  69 ++
+ 33 files changed, 1849 insertions(+), 191 deletions(-)
+ create mode 100644 cmake/test_jit_svml_failure.cmake
+ create mode 100644 cmake/test_jit_svml_success.cmake
+ create mode 100644 lib/CL/pocl_llvm_orc.cc
+ create mode 100644 lib/CL/pocl_llvm_orc.h
+ create mode 100644 tests/regression/test_large_stack_frame.cpp
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 0e2546862..96f04accc 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1120,6 +1120,100 @@ if(ENABLE_LLVM AND ENABLE_HOST_CPU_DEVICES AND (NOT ENABLE_CONFORMANCE) AND (LLV
+   endif()
+ endif()
+ 
++# Record the compiler runtime archive for the JIT. The Clang-driver final link
++# used to add libgcc/compiler-rt implicitly; the in-process JIT needs the same
++# helper symbols (e.g. __truncdfhf2 for FP16 conversions) available through ORC.
++set(HOST_CPU_COMPILER_RT_LIBRARY "")
++set(HOST_CPU_COMPILER_RT_LIBRARY_SOURCE "" CACHE FILEPATH "Compiler runtime archive to install for CPU JIT kernels")
++if(HOST_CPU_ENABLE_JIT)
++  set(POCL_COMPILER_RT_LIBRARY "${HOST_CPU_COMPILER_RT_LIBRARY_SOURCE}")
++  if(NOT POCL_COMPILER_RT_LIBRARY)
++    # `-print-libgcc-file-name` is a GCC option; clang's answer may name a nonexistent archive
++    # (cross MinGW/clang). Fall back to `-print-file-name=libgcc.a` and require it to exist.
++    execute_process(
++      COMMAND "${CMAKE_C_COMPILER}" -print-libgcc-file-name
++      OUTPUT_VARIABLE POCL_COMPILER_RT_LIBRARY
++      OUTPUT_STRIP_TRAILING_WHITESPACE
++      ERROR_QUIET)
++    if(NOT (POCL_COMPILER_RT_LIBRARY AND EXISTS "${POCL_COMPILER_RT_LIBRARY}"))
++      execute_process(
++        COMMAND "${CMAKE_C_COMPILER}" -print-file-name=libgcc.a
++        OUTPUT_VARIABLE POCL_COMPILER_RT_LIBRARY
++        OUTPUT_STRIP_TRAILING_WHITESPACE
++        ERROR_QUIET)
++    endif()
++  endif()
++  if(POCL_COMPILER_RT_LIBRARY AND EXISTS "${POCL_COMPILER_RT_LIBRARY}")
++    get_filename_component(POCL_COMPILER_RT_LIBRARY_NAME
++      "${POCL_COMPILER_RT_LIBRARY}" NAME)
++    install(FILES "${POCL_COMPILER_RT_LIBRARY}"
++      DESTINATION "${POCL_INSTALL_PRIVATE_DATADIR_REL}" COMPONENT "lib")
++    set(HOST_CPU_COMPILER_RT_LIBRARY "${POCL_COMPILER_RT_LIBRARY_NAME}")
++  elseif(HOST_COMPILER_SUPPORTS_FLOAT16)
++    # Warn rather than silently ship a driver whose FP16 kernels can't JIT (__truncdfhf2).
++    message(WARNING
++      "Could not locate a compiler runtime archive (libgcc/compiler-rt) for the CPU JIT. "
++      "FP16 kernels that emit soft-float helpers such as __truncdfhf2 will fail to resolve "
++      "at run time. Point PoCL at one with -DHOST_CPU_COMPILER_RT_LIBRARY_SOURCE=<libgcc.a>.")
++  endif()
++endif()
++
++# Record the SONAME of the SLEEF library for the JIT to link against
++set(HOST_CPU_SLEEF_LIBRARY "")
++set(HOST_CPU_SLEEF_LIBRARY_FALLBACK "")
++if(ENABLE_HOST_CPU_VECTORIZE_SLEEF AND LIBSLEEF)
++  set(HOST_CPU_SLEEF_LIBRARY "${LIBSLEEF}")
++  if(CMAKE_OBJDUMP)
++    execute_process(
++      COMMAND "${CMAKE_OBJDUMP}" -p "${LIBSLEEF}"
++      OUTPUT_VARIABLE POCL_SLEEF_OBJDUMP_OUTPUT
++      ERROR_QUIET
++      RESULT_VARIABLE POCL_SLEEF_OBJDUMP_RESULT)
++    if(POCL_SLEEF_OBJDUMP_RESULT STREQUAL "0")
++      string(REGEX MATCH "SONAME[ \t]+([^ \r\n]+)"
++             POCL_SLEEF_SONAME_MATCH "${POCL_SLEEF_OBJDUMP_OUTPUT}")
++      if(POCL_SLEEF_SONAME_MATCH)
++        set(HOST_CPU_SLEEF_LIBRARY "${CMAKE_MATCH_1}")
++        set(HOST_CPU_SLEEF_LIBRARY_FALLBACK "${LIBSLEEF}")
++      endif()
++    endif()
++  endif()
++endif()
++
++# Record the SONAME of the libmvec library for the JIT to dlopen at run time. LIBMVEC may be
++# the system libmvec (SONAME libmvec.so.1) or a libmvec-ABI-compatible replacement pointed at
++# via -DLIBMVEC=... (e.g. SLEEF's libsleefgnuabi.so); recording the SONAME lets the JIT resolve
++# the vectorized _ZGV* math symbols without relying on a system libmvec (absent on musl / old
++# glibc). Mirrors the SLEEF recording above.
++set(HOST_CPU_LIBMVEC_LIBRARY "")
++set(HOST_CPU_LIBMVEC_LIBRARY_FALLBACK "")
++if(ENABLE_HOST_CPU_VECTORIZE_LIBMVEC AND LIBMVEC)
++  set(HOST_CPU_LIBMVEC_LIBRARY "${LIBMVEC}")
++  if(CMAKE_OBJDUMP)
++    execute_process(
++      COMMAND "${CMAKE_OBJDUMP}" -p "${LIBMVEC}"
++      OUTPUT_VARIABLE POCL_LIBMVEC_OBJDUMP_OUTPUT
++      ERROR_QUIET
++      RESULT_VARIABLE POCL_LIBMVEC_OBJDUMP_RESULT)
++    if(POCL_LIBMVEC_OBJDUMP_RESULT STREQUAL "0")
++      string(REGEX MATCH "SONAME[ \t]+([^ \r\n]+)"
++             POCL_LIBMVEC_SONAME_MATCH "${POCL_LIBMVEC_OBJDUMP_OUTPUT}")
++      if(POCL_LIBMVEC_SONAME_MATCH)
++        set(HOST_CPU_LIBMVEC_LIBRARY "${CMAKE_MATCH_1}")
++        set(HOST_CPU_LIBMVEC_LIBRARY_FALLBACK "${LIBMVEC}")
++      endif()
++    endif()
++  endif()
++endif()
++
++# Record the paths to the SVML static libraries for the JIT to link against.
++set(HOST_CPU_SVML_LIBRARY "")
++set(HOST_CPU_IRC_LIBRARY "")
++if(ENABLE_HOST_CPU_VECTORIZE_SVML AND LIBSVML AND LIBIRC)
++  set(HOST_CPU_SVML_LIBRARY "${LIBSVML}")
++  set(HOST_CPU_IRC_LIBRARY "${LIBIRC}")
++endif()
++
+ ######################################################################################
+ ######################################################################################
+ 
+@@ -1236,6 +1330,35 @@ if(ENABLE_HOST_CPU_DEVICES AND ENABLE_SPIRV AND (NOT MSVC) AND (HOST_DEVICE_ADDR
+   set(HOST_CPU_ENABLE_SPIRV ON)
+ endif()
+ 
++# The JIT for CPU devices is supported on
++#   - non-Windows platforms whose architecture has a JITLink ELF/Mach-O
++#     backend (x86(-64), AArch64, ARM32, RISC-V, PPC64, LoongArch); s390x,
++#     MIPS and SPARC have none, so they keep the Clang+dlopen path;
++#   - Windows x86_64 (MinGW) via JITLink's COFF_x86_64 backend. Windows arm64
++#     has no COFF_aarch64 backend, and MSVC keeps its existing link paths
++#     (in-process lld-link, or the Clang driver).
++set(HOST_CPU_JIT_SUPPORTED OFF)
++if(ENABLE_HOST_CPU_DEVICES AND ENABLE_LLVM)
++  if((NOT WIN32) AND (CMAKE_SYSTEM_PROCESSOR MATCHES
++     "^(x86_64|amd64|AMD64|i[3-6]86|aarch64|arm64|arm.*|riscv32|riscv64|ppc64|ppc64le|powerpc64|powerpc64le|loongarch64)$"))
++    set(HOST_CPU_JIT_SUPPORTED ON)
++  elseif(MINGW
++         AND (CMAKE_SIZEOF_VOID_P EQUAL 8)
++         AND (CMAKE_SYSTEM_PROCESSOR MATCHES "(x86_64|AMD64|amd64|x64)"))
++    # Windows x86_64 (MinGW): JITLink's COFF_x86_64 backend; no COFF_aarch64.
++    set(HOST_CPU_JIT_SUPPORTED ON)
++  endif()
++endif()
++
++option(HOST_CPU_ENABLE_JIT
++       "JIT CPU kernels via ORC/JITLink instead of Clang+dlopen."
++       ${HOST_CPU_JIT_SUPPORTED})
++if(HOST_CPU_ENABLE_JIT AND NOT HOST_CPU_JIT_SUPPORTED)
++  message(FATAL_ERROR "HOST_CPU_ENABLE_JIT was requested, but JITLink has no "
++          "backend for this platform "
++          "(${CMAKE_SYSTEM_NAME}/${CMAKE_SYSTEM_PROCESSOR}).")
++endif()
++
+ ######################################################################################
+ 
+ set(HAVE_DLFCN_H OFF CACHE BOOL "dlopen" FORCE)
+@@ -2848,6 +2971,7 @@ if (ENABLE_LLVM)
+   MESSAGE(STATUS "ENABLE_HOST_CPU_VECTORIZE_LIBMVEC: ${ENABLE_HOST_CPU_VECTORIZE_LIBMVEC}")
+   MESSAGE(STATUS "ENABLE_HOST_CPU_VECTORIZE_SVML: ${ENABLE_HOST_CPU_VECTORIZE_SVML}")
+   MESSAGE(STATUS "ENABLE_HOST_CPU_VECTORIZE_BUILTINS: ${ENABLE_HOST_CPU_VECTORIZE_BUILTINS}")
++  MESSAGE(STATUS "HOST_CPU_ENABLE_JIT: ${HOST_CPU_ENABLE_JIT}")
+   endif()
+ endif()
+ MESSAGE(STATUS "")
+diff --git a/cmake/SetupLLD.cmake b/cmake/SetupLLD.cmake
+index a24a9acc6..237a0d9ca 100644
+--- a/cmake/SetupLLD.cmake
++++ b/cmake/SetupLLD.cmake
+@@ -2,7 +2,8 @@
+ # through lld's library API instead of invoking the Clang driver, which needs
+ # no external toolchain (no linker to exec, no startup files). This keeps
+ # kernel linking -- and with it poclbinary export -- working in deployments
+-# that ship no host toolchain at all. On Windows (MSVC) the kernel
++# that ship no host toolchain at all (see also the JIT, which loads the
++# kernel objects without linking them). On Windows (MSVC) the kernel
+ # binaries are additionally linked without the C runtime, against bundled
+ # helper objects, so they need no VS Build Tools at run time either.
+ #
+diff --git a/cmake/SetupLLVMviaCMake.cmake b/cmake/SetupLLVMviaCMake.cmake
+index 1d1047cd6..afc3219e6 100644
+--- a/cmake/SetupLLVMviaCMake.cmake
++++ b/cmake/SetupLLVMviaCMake.cmake
+@@ -152,6 +152,16 @@ set(POCL_LLVM_COMPONENTS
+   LLVMWindowsDriver
+ )
+ 
++# CPU devices use ORC LLJIT + JITLink for the JIT
++if(ENABLE_HOST_CPU_DEVICES)
++  list(APPEND POCL_LLVM_COMPONENTS
++    LLVMOrcJIT
++    LLVMJITLink
++    LLVMOrcTargetProcess
++    LLVMOrcShared
++    LLVMRuntimeDyld)
++endif()
++
+ if("X86" IN_LIST LLVM_TARGETS_TO_BUILD)
+   list(APPEND POCL_LLVM_COMPONENTS
+     LLVMX86CodeGen
+diff --git a/cmake/test_jit_svml_failure.cmake b/cmake/test_jit_svml_failure.cmake
+new file mode 100644
+index 000000000..e32f4ebaf
+--- /dev/null
++++ b/cmake/test_jit_svml_failure.cmake
+@@ -0,0 +1,18 @@
++if(NOT DEFINED test_cmd)
++  message(FATAL_ERROR "test_cmd is required")
++endif()
++
++execute_process(
++  COMMAND "${test_cmd}"
++  RESULT_VARIABLE result
++  OUTPUT_VARIABLE stdout
++  ERROR_VARIABLE stderr)
++
++if(result EQUAL 0)
++  message(FATAL_ERROR "SVML fault-injection test unexpectedly succeeded")
++endif()
++
++set(output "${stdout}\n${stderr}")
++if(NOT output MATCHES "injected SVML provider failure \\(POCL_FAULT_INJECT_JIT_SVML\\)")
++  message(FATAL_ERROR "SVML fault-injection error was not reported:\n${output}")
++endif()
+diff --git a/cmake/test_jit_svml_success.cmake b/cmake/test_jit_svml_success.cmake
+new file mode 100644
+index 000000000..1a052a371
+--- /dev/null
++++ b/cmake/test_jit_svml_success.cmake
+@@ -0,0 +1,23 @@
++if(NOT DEFINED test_cmd OR NOT DEFINED cache_dir)
++  message(FATAL_ERROR "test_cmd and cache_dir are required")
++endif()
++
++file(REMOVE_RECURSE "${cache_dir}")
++file(MAKE_DIRECTORY "${cache_dir}")
++
++foreach(phase cold warm)
++  execute_process(
++    COMMAND "${CMAKE_COMMAND}" -E env "POCL_CACHE_DIR=${cache_dir}" "${test_cmd}"
++    RESULT_VARIABLE result
++    OUTPUT_VARIABLE stdout
++    ERROR_VARIABLE stderr)
++  if(result OR NOT "${stdout}${stderr}" MATCHES "OK")
++    message(FATAL_ERROR "SVML ${phase}-cache run failed:\n${stdout}\n${stderr}")
++  endif()
++  string(REGEX MATCHALL "activating lazy SVML archive provider" activations
++         "${stdout}\n${stderr}")
++  list(LENGTH activations activation_count)
++  if(NOT activation_count EQUAL 1)
++    message(FATAL_ERROR "SVML ${phase}-cache run activated ${activation_count} times")
++  endif()
++endforeach()
+diff --git a/config.h.in.cmake b/config.h.in.cmake
+index 7783db2bd..a221a9b8d 100644
+--- a/config.h.in.cmake
++++ b/config.h.in.cmake
+@@ -180,14 +180,30 @@
+ 
+ #cmakedefine HOST_CPU_ENABLE_SPIRV
+ 
++#cmakedefine HOST_CPU_ENABLE_JIT
++
++#cmakedefine HOST_CPU_COMPILER_RT_LIBRARY "@HOST_CPU_COMPILER_RT_LIBRARY@"
++
+ #cmakedefine ENABLE_HOST_CPU_VECTORIZE_BUILTINS
+ 
+ #cmakedefine ENABLE_HOST_CPU_VECTORIZE_LIBMVEC
+ 
++#cmakedefine HOST_CPU_LIBMVEC_LIBRARY "@HOST_CPU_LIBMVEC_LIBRARY@"
++
++#cmakedefine HOST_CPU_LIBMVEC_LIBRARY_FALLBACK "@HOST_CPU_LIBMVEC_LIBRARY_FALLBACK@"
++
+ #cmakedefine ENABLE_HOST_CPU_VECTORIZE_SLEEF
+ 
++#cmakedefine HOST_CPU_SLEEF_LIBRARY "@HOST_CPU_SLEEF_LIBRARY@"
++
++#cmakedefine HOST_CPU_SLEEF_LIBRARY_FALLBACK "@HOST_CPU_SLEEF_LIBRARY_FALLBACK@"
++
+ #cmakedefine ENABLE_HOST_CPU_VECTORIZE_SVML
+ 
++#cmakedefine HOST_CPU_SVML_LIBRARY "@HOST_CPU_SVML_LIBRARY@"
++
++#cmakedefine HOST_CPU_IRC_LIBRARY "@HOST_CPU_IRC_LIBRARY@"
++
+ #define HOST_LD_FLAGS  "@HOST_LD_FLAGS@"
+ 
+ #define HOST_LLC_FLAGS  "@HOST_LLC_FLAGS@"
+diff --git a/doc/sphinx/source/cpu.rst b/doc/sphinx/source/cpu.rst
+index ab3502b0a..a3bdedecd 100644
+--- a/doc/sphinx/source/cpu.rst
++++ b/doc/sphinx/source/cpu.rst
+@@ -59,23 +59,46 @@ always uses all cores and has no subdevice support.
+ 
+ The TBB driver can be tuned with at runtime with environment variables, see :ref:`pocl-env-variables`.
+ 
+-.. _cpu-linking:
++.. _cpu-jit:
+ 
+ ========================
+-Kernel linking
++In-process kernel JIT
+ ========================
+ 
+-A CPU driver turns each kernel into native code by generating a relocatable
+-object, which it then links into a shared library that PoCL loads with
+-``dlopen()``. Where lld is available at build time (``CPU_USE_LLD_LINK``),
+-that link happens in-process through lld's library API: nothing is exec'd and
+-no startup files are needed, since the kernel binary's undefined symbols
+-resolve at ``dlopen()`` time. This keeps kernel compilation -- and with it
+-poclbinary export -- working in deployments that ship no host toolchain at
+-all. Should the in-process link fail, or when PoCL was built without lld, the
+-object is handed to the Clang driver, which needs a toolchain present at run
+-time: a linker to exec, plus the C startup files and default libraries.
++A CPU driver compiles each kernel to a relocatable object, then links and loads
++it. By default PoCL uses LLVM ORC LLJIT with the JITLink object-linking layer:
++the cached final artifact is the object variant (``OBJ_EXT``, ``.so.o`` on
++Unix), with no shared library written and no OS loader involved.
+ 
+-On Windows (MSVC) the in-process link also avoids the C runtime, linking
+-against bundled helper objects instead, so kernel compilation needs no VS
+-Build Tools at run time either.
++With ``POCL_CPU_JIT=0`` or when the JIT is unavailable, PoCL links the object
++into a shared library and loads it with ``dlopen()``. If ``CPU_USE_LLD_LINK``
++was enabled, this link also runs in-process through lld. Otherwise PoCL invokes
++the Clang driver and needs a host linker, startup files, and default libraries.
++The link path is useful where runtime code generation is forbidden but shared
++libraries are allowed.
++
++JIT symbol resolution is deliberately fixed: process-visible C/libm symbols,
++libpocl and its private dependencies, configured vector-math libraries,
++compiler-rt/libgcc helpers, selected kernel-library bitcode for late PoCL
++builtins, and explicit host ABI callbacks such as printf flush and the MinGW
++stack probe. New unresolved symbols should be assigned to one of those classes,
++or explained before adding a special-case binding.
++
++The JIT is the default on supported hosts: ELF, Mach-O, and Windows x86-64
++(MinGW). Windows arm64 and MSVC builds use the link path. Disable the JIT with
++``-DHOST_CPU_ENABLE_JIT=OFF`` at build time or ``POCL_CPU_JIT=0`` for one run.
++
++Exported program binaries remain mode-independent when export-time linking
++succeeds: ``clGetProgramInfo(CL_PROGRAM_BINARIES)`` serializes linked shared
++libraries, so consumers without JIT or LLVM can load them. For JIT-produced
++cache entries, export first links the cached ``OBJ_EXT`` artifacts into shared
++libraries and skips those object files. If that link fails, PoCL serializes the
++objects as a fallback; those binaries require a JIT-enabled consumer or an
++LLVM-enabled non-JIT consumer that can link the objects on import.
++
++The ordinary kernel cache is mode-specific. A JIT device looks for the JIT
++object and does not fall back to a sibling shared library. ORC can only use that
++file through OS dynamic loading, which is the non-JIT path. On a bad object PoCL
++regenerates the object from program IR when possible. A non-JIT device looks for
++the shared library, and if only a JIT object is present and LLVM is available,
++links it into the shared-library variant before loading.
+diff --git a/doc/sphinx/source/notes_7_2.rst b/doc/sphinx/source/notes_7_2.rst
+index dc6f3b106..6931c383e 100644
+--- a/doc/sphinx/source/notes_7_2.rst
++++ b/doc/sphinx/source/notes_7_2.rst
+@@ -142,6 +142,15 @@ CPU driver
+   fallback when the in-process link fails, and is still used when PoCL was
+   built without lld.
+ 
++* The CPU drivers can now load kernels in-process with LLVM's ORC JIT and the
++  JITLink object-linking layer, instead of linking each kernel into a shared
++  library and loading it with ``dlopen()``. This also drops the dependency on
++  the OS loader, so it works with the kernel cache on a ``noexec`` filesystem
++  and in statically linked deployments. It is controlled by the new
++  ``-DHOST_CPU_ENABLE_JIT`` CMake option, on by default on ELF and Mach-O
++  hosts and on Windows x86-64 (MinGW). Set ``POCL_CPU_JIT=0`` to fall back to
++  the link-and-``dlopen()`` path at run time. See :ref:`cpu-jit`.
++
+ ===================================
+ Deprecation/feature removal notices
+ ===================================
+diff --git a/doc/sphinx/source/using.rst b/doc/sphinx/source/using.rst
+index 9e169b588..87e2ce479 100644
+--- a/doc/sphinx/source/using.rst
++++ b/doc/sphinx/source/using.rst
+@@ -137,6 +137,16 @@ pocl.
+  default cache directory will be used, which is ``$XDG_CACHE_HOME/pocl/kcache``
+  (if set) or ``$HOME/.cache/pocl/kcache/`` on Unix-like systems.
+ 
++- **POCL_CPU_JIT**
++
++ Specific to the CPU drivers, and only effective when PoCL was built with
++ ``-DHOST_CPU_ENABLE_JIT=ON``. Set to 0 to link kernels into shared libraries
++ and ``dlopen()`` them (in-process through lld where compiled in, through the
++ Clang driver otherwise) rather than loading them with the in-process
++ ORC/JITLink loader. Read once at device initialization; defaults to 1. Use it
++ to work around a JIT-specific problem without rebuilding PoCL. See
++ :ref:`cpu-jit`.
++
+ - **POCL_CPU_LOCAL_MEM_SIZE**
+ 
+  Set the local memory size of the CPU devices (cpu, cpu-minimal, cpu-tbb) to the
+diff --git a/examples/vecadd/CMakeLists.txt b/examples/vecadd/CMakeLists.txt
+index 7d5459bfd..13f00d35d 100644
+--- a/examples/vecadd/CMakeLists.txt
++++ b/examples/vecadd/CMakeLists.txt
+@@ -33,6 +33,13 @@ add_test(NAME "examples/vecadd" COMMAND "vecadd")
+ 
+ add_test(NAME "examples/vecadd_large_grid" COMMAND "vecadd" "128000" "128" "10000" "100" "1" "1")
+ 
++if(ENABLE_HOST_CPU_VECTORIZE_SVML)
++  # The SVML provider must remain dormant for an unrelated JIT kernel.
++  add_cpu_jit_test("vecadd_no_svml" vecadd)
++  set_tests_properties("cpu_jit/vecadd_no_svml" PROPERTIES
++    ENVIRONMENT "POCL_DEVICES=cpu;POCL_CPU_JIT=1;POCL_WORK_GROUP_METHOD=loopvec;POCL_KERNEL_CACHE=0;POCL_FAULT_INJECT_JIT_SVML=1")
++endif()
++
+ set(PROPS)
+ if(NOT ENABLE_ANYSAN)
+   set(PROPS
+diff --git a/examples/vecbuiltin/CMakeLists.txt b/examples/vecbuiltin/CMakeLists.txt
+index 665d2d228..a12678efa 100644
+--- a/examples/vecbuiltin/CMakeLists.txt
++++ b/examples/vecbuiltin/CMakeLists.txt
+@@ -41,6 +41,25 @@ add_symlink_to_built_opencl_dynlib("vecbuiltin")
+ 
+ add_test_pocl(NAME "examples/vecbuiltin" COMMAND "vecbuiltin" LLVM_FILECHECK "vecbuiltin.fc" WORKITEM_HANDLER "loopvec")
+ 
++if(ENABLE_HOST_CPU_VECTORIZE_SVML)
++  add_test(NAME "cpu_jit/vecbuiltin_svml"
++    COMMAND "${CMAKE_COMMAND}" "-Dtest_cmd=$<TARGET_FILE:vecbuiltin>"
++            "-Dcache_dir=${CMAKE_CURRENT_BINARY_DIR}/jit-svml-cache"
++            "-P" "${CMAKE_SOURCE_DIR}/cmake/test_jit_svml_success.cmake")
++  set_tests_properties("cpu_jit/vecbuiltin_svml" PROPERTIES
++    ENVIRONMENT "POCL_DEVICES=cpu;POCL_CPU_JIT=1;POCL_WORK_GROUP_METHOD=loopvec;POCL_KERNEL_CACHE=1;POCL_DEBUG=llvm"
++    LABELS "cpu_jit"
++    DEPENDS "pocl_version_check")
++
++  add_test(NAME "cpu_jit/vecbuiltin_svml_fault"
++    COMMAND "${CMAKE_COMMAND}" "-Dtest_cmd=$<TARGET_FILE:vecbuiltin>"
++            "-P" "${CMAKE_SOURCE_DIR}/cmake/test_jit_svml_failure.cmake")
++  set_tests_properties("cpu_jit/vecbuiltin_svml_fault" PROPERTIES
++    ENVIRONMENT "POCL_DEVICES=cpu;POCL_CPU_JIT=1;POCL_WORK_GROUP_METHOD=loopvec;POCL_KERNEL_CACHE=0;POCL_FAULT_INJECT_JIT_SVML=1"
++    LABELS "cpu_jit"
++    DEPENDS "pocl_version_check")
++endif()
++
+ set_tests_properties(
+   "examples/vecbuiltin"
+   PROPERTIES
+diff --git a/include/pocl_cache.h b/include/pocl_cache.h
+index 303e4b792..bdc5030cb 100644
+--- a/include/pocl_cache.h
++++ b/include/pocl_cache.h
+@@ -160,6 +160,16 @@ void pocl_cache_final_binary_path (char *final_binary_path, cl_program program,
+                                    unsigned device_i, cl_kernel kernel,
+                                    _cl_command_node *command, int specialize);
+ 
++POCL_EXPORT
++void pocl_cache_final_binary_variant_path (char *final_binary_path,
++                                           cl_program program,
++                                           unsigned device_i, cl_kernel kernel,
++                                           _cl_command_node *command,
++                                           int specialize, int jit_object);
++
++POCL_EXPORT
++int pocl_cache_object_shlib_variant (char *so_path, const char *path);
++
+ 
+ #ifdef __cplusplus
+ }
+diff --git a/lib/CL/CMakeLists.txt b/lib/CL/CMakeLists.txt
+index 6e553121b..fc92ca82c 100644
+--- a/lib/CL/CMakeLists.txt
++++ b/lib/CL/CMakeLists.txt
+@@ -277,6 +277,9 @@ if (ENABLE_LLVM)
+   if(ENABLE_SPIRV)
+     list(APPEND EXTRA_LLVM_SOURCES "pocl_llvm_spirv.cc")
+   endif()
++  if(HOST_CPU_ENABLE_JIT)
++    list(APPEND EXTRA_LLVM_SOURCES "pocl_llvm_orc.cc")
++  endif()
+   set(LLVM_API_SOURCES "pocl_llvm_build.cc" "pocl_llvm_metadata.cc" "pocl_llvm_utils.cc" "pocl_llvm_wg.cc" ${EXTRA_LLVM_SOURCES})
+ 
+   pocl_build_clang_llvm_object(lib_cl_llvm ${LLVM_API_SOURCES})
+diff --git a/lib/CL/devices/common.c b/lib/CL/devices/common.c
+index f41bf4937..75fc5b2d3 100644
+--- a/lib/CL/devices/common.c
++++ b/lib/CL/devices/common.c
+@@ -51,6 +51,9 @@
+ #include "pocl_cache.h"
+ #include "pocl_debug.h"
+ #include "pocl_dynlib.h"
++#ifdef HOST_CPU_ENABLE_JIT
++#include "pocl_llvm_orc.h"
++#endif
+ #include "pocl_file_util.h"
+ #include "pocl_image_util.h"
+ #include "pocl_mem_management.h"
+@@ -120,10 +123,9 @@ link_with_clang_driver (cl_device_id device, const char *objfile,
+   cmd_line[last_arg_idx++] = "-noimplib";
+ #endif
+ 
+-  /* ENABLE_PRINTF_IMMEDIATE_FLUSH results in "pocl_flush_printf_buffer"
+-   * symbol referenced in the built kernel.so; however that function exists
+-   * only on the host side, therefore link to libpocl.so which provides it
+-   */
++  /* ENABLE_PRINTF_IMMEDIATE_FLUSH references the host-side
++   * "pocl_flush_printf_buffer" symbol from the kernel shared library, so link
++   * to libpocl.so which provides it. */
+ #ifdef ENABLE_PRINTF_IMMEDIATE_FLUSH
+ #ifdef HAVE_DLFCN_H
+   const char *fname = pocl_dynlib_pathname ((void *)pocl_cache_tempname);
+@@ -142,23 +144,22 @@ link_with_clang_driver (cl_device_id device, const char *objfile,
+   return pocl_invoke_clang (device->llvm_target_triplet, cmd_line);
+ }
+ 
+-/* Links a compiled kernel object into the final shared library the dynamic
+-   loader can pick up, through the device's custom finalization step if it
+-   has one, in-process lld where compiled in, and the Clang driver otherwise.
+-   The object file is left in place. */
+-static int
++/* Links a kernel object into the shared library used by the dynamic loader.
++   ORC/JITLink is the separate object-loader path; lld and Clang are final
++   linkers for the shared-library path. The object file is left in place. */
++int
+ pocl_link_final_binary (cl_device_id device, const char *objfile,
+                         const char *final_binary_path)
+ {
+   int error;
+ 
+-  /* Temporary filename for kernel.so. Create it next to the final binary
++  /* Create the temporary shared library next to the final binary
+      to enable a potential customized finalization step to create multiple
+      files next to it. */
+   char tmp_module[POCL_MAX_PATHNAME_LENGTH];
+   if (pocl_mk_tempname (tmp_module, final_binary_path, SHARED_LIB_EXT, NULL))
+     {
+-      POCL_MSG_PRINT_LLVM ("Creating temporary kernel.so file"
++      POCL_MSG_PRINT_LLVM ("Creating temporary shared-library file"
+                            " for %s FAILED\n",
+                            final_binary_path);
+       return -1;
+@@ -196,16 +197,16 @@ pocl_link_final_binary (cl_device_id device, const char *objfile,
+     }
+   if (error)
+     {
+-      POCL_MSG_PRINT_LLVM ("Linking kernel.so.o -> kernel.so has failed\n");
++      POCL_MSG_PRINT_LLVM ("Linking kernel object to shared library failed\n");
+       return error;
+     }
+ 
+-  /* rename temporary kernel.so */
++  /* rename temporary shared library */
+   error = pocl_rename (tmp_module, final_binary_path);
+ 
+   if (error)
+     POCL_MSG_PRINT_LLVM (
+-        "Renaming temporary kernel.so to final ('%s') has failed.\n",
++        "Renaming temporary shared library to final ('%s') failed.\n",
+         final_binary_path);
+ 
+   return error;
+@@ -233,7 +234,7 @@ llvm_codegen (char *output, unsigned device_i, cl_kernel kernel,
+   pocl_cache_work_group_function_path (parallel_bc_path, program, device_i,
+                                        kernel, command, specialize);
+ 
+-  /* $/kernel.so */
++  /* Cached final artifact: OBJ_EXT under JIT, SHARED_LIB_EXT otherwise. */
+   char final_binary_path[POCL_MAX_PATHNAME_LENGTH];
+   pocl_cache_final_binary_path (final_binary_path, program, device_i, kernel,
+                                 command, specialize);
+@@ -317,7 +318,7 @@ llvm_codegen (char *output, unsigned device_i, cl_kernel kernel,
+   if (pocl_exists (final_binary_path))
+     goto FINISH;
+ 
+-  /* Write temporary kernel.so.o, required for the final linking step */
++  /* Write temporary kernel object, required for the final linking step. */
+   error = pocl_cache_write_kernel_objfile (tmp_objfile, objfile, objfile_size);
+   if (error)
+     {
+@@ -331,11 +332,24 @@ llvm_codegen (char *output, unsigned device_i, cl_kernel kernel,
+                           tmp_objfile, (size_t)objfile_size);
+     }
+ 
++  /* JIT devices load the kernel object in-process, so it is itself the final
++     artifact: no shared library, no external linker. Publish it under its
++     cached name and return. */
++  if (pocl_cpu_device_uses_jit (device))
++    {
++      error = pocl_rename (tmp_objfile, final_binary_path);
++      if (error)
++        POCL_MSG_PRINT_LLVM (
++          "Renaming temporary kernel object to final ('%s') failed.\n",
++          final_binary_path);
++      goto FINISH;
++    }
++
+   error = pocl_link_final_binary (device, tmp_objfile, final_binary_path);
+   if (error)
+     goto FINISH;
+ 
+-  /* if LEAVE_COMPILER_FILES, rename temporary kernel.so.o, else delete it */
++  /* If requested, keep the temporary kernel object next to the shared library. */
+   if (pocl_get_bool_option ("POCL_LEAVE_KERNEL_COMPILER_TEMP_FILES", 0))
+     {
+       char objfile_path[POCL_MAX_PATHNAME_LENGTH];
+@@ -344,14 +358,14 @@ llvm_codegen (char *output, unsigned device_i, cl_kernel kernel,
+       error = pocl_rename (tmp_objfile, objfile_path);
+       if (error)
+         POCL_MSG_PRINT_LLVM (
+-            "Renaming temporary kernel.so.o to final %s has failed.\n",
++            "Renaming temporary kernel object to final %s failed.\n",
+             objfile_path);
+     }
+   else
+     {
+       error = pocl_remove (tmp_objfile);
+       if (error)
+-        POCL_MSG_PRINT_LLVM ("Removing temporary kernel.so.o has failed.\n");
++        POCL_MSG_PRINT_LLVM ("Removing temporary kernel object failed.\n");
+     }
+ 
+ FINISH:
+@@ -978,8 +992,8 @@ pocl_cmd_max_grid_dim_width (_cl_command_run *cmd)
+ 
+ /* CPU driver stuff */
+ 
+-typedef struct pocl_dlhandle_cache_item pocl_dlhandle_cache_item;
+-struct pocl_dlhandle_cache_item
++typedef struct pocl_module_cache_item pocl_module_cache_item;
++struct pocl_module_cache_item
+ {
+   pocl_kernel_hash_t hash;
+ 
+@@ -993,70 +1007,86 @@ struct pocl_dlhandle_cache_item
+   size_t max_grid_dim_width;
+ 
+   void *wg;
+-  void *dlhandle;
+-  pocl_dlhandle_cache_item *next;
+-  pocl_dlhandle_cache_item *prev;
++  void *module_handle;
++  /* If nonzero, module_handle is an ORC/JITLink handle. Otherwise it is a
++     native shared-library handle. */
++  int is_jit;
++  pocl_module_cache_item *next;
++  pocl_module_cache_item *prev;
+   unsigned ref_count;
+ };
+ 
+-static pocl_dlhandle_cache_item *pocl_dlhandle_cache;
++static pocl_module_cache_item *pocl_module_cache;
+ static pocl_lock_t pocl_llvm_codegen_lock;
+-static pocl_lock_t pocl_dlhandle_lock;
+-static int pocl_dlhandle_cache_initialized;
++static pocl_lock_t pocl_module_cache_lock;
++static int pocl_module_cache_initialized;
+ 
+ /* only to be called in basic/pthread/<other cpu driver> init */
+ void
+ pocl_init_dlhandle_cache ()
+ {
+-  if (!pocl_dlhandle_cache_initialized)
++  if (!pocl_module_cache_initialized)
+     {
+       POCL_INIT_LOCK (pocl_llvm_codegen_lock);
+-      POCL_INIT_LOCK (pocl_dlhandle_lock);
+-      pocl_dlhandle_cache_initialized = 1;
+-   }
++      POCL_INIT_LOCK (pocl_module_cache_lock);
++      pocl_module_cache_initialized = 1;
++    }
+ }
+ 
+ static unsigned handle_count = 0;
+ #define MAX_CACHE_ITEMS 128
+ 
+-/* must be called with pocl_dlhandle_lock LOCKED */
+-static pocl_dlhandle_cache_item *
+-get_new_dlhandle_cache_item ()
++/* Unloads a cache item's kernel module with the loader that loaded it. */
++static void
++release_module_handle (pocl_module_cache_item *ci)
+ {
+-  pocl_dlhandle_cache_item *ci = NULL;
+-  const char *dl_error = NULL;
++#ifdef HOST_CPU_ENABLE_JIT
++  if (ci->is_jit)
++    {
++      pocl_jit_unload (ci->module_handle);
++      return;
++    }
++#endif
++  pocl_dynlib_close (ci->module_handle);
++}
++
++/* must be called with pocl_module_cache_lock LOCKED */
++static pocl_module_cache_item *
++get_new_module_cache_item ()
++{
++  pocl_module_cache_item *ci = NULL;
+ 
+-  if (pocl_dlhandle_cache)
++  if (pocl_module_cache)
+     {
+-      ci = pocl_dlhandle_cache->prev;
+-      while (ci->ref_count > 0 && ci != pocl_dlhandle_cache)
++      ci = pocl_module_cache->prev;
++      while (ci->ref_count > 0 && ci != pocl_module_cache)
+         ci = ci->prev;
+     }
+ 
+-  if ((handle_count >= MAX_CACHE_ITEMS) && ci && (ci != pocl_dlhandle_cache))
++  if ((handle_count >= MAX_CACHE_ITEMS) && ci && (ci != pocl_module_cache))
+     {
+-      DL_DELETE (pocl_dlhandle_cache, ci);
+-      pocl_dynlib_close (ci->dlhandle);
+-      memset (ci, 0, sizeof (pocl_dlhandle_cache_item));
++      DL_DELETE (pocl_module_cache, ci);
++      release_module_handle (ci);
++      memset (ci, 0, sizeof (pocl_module_cache_item));
+     }
+   else
+     {
+       ++handle_count;
+-      ci = (pocl_dlhandle_cache_item *)calloc (
+-          1, sizeof (pocl_dlhandle_cache_item));
++      ci = (pocl_module_cache_item *)calloc (
++          1, sizeof (pocl_module_cache_item));
+     }
+ 
+   return ci;
+ }
+ 
+ void
+-pocl_release_dlhandle_cache (void *dlhandle_cache_item)
++pocl_release_dlhandle_cache (void *module_cache_item)
+ {
+-  pocl_dlhandle_cache_item *tmp = NULL, *ci = dlhandle_cache_item;
++  pocl_module_cache_item *tmp = NULL, *ci = module_cache_item;
+ 
+-  POCL_LOCK (pocl_dlhandle_lock);
++  POCL_LOCK (pocl_module_cache_lock);
+   int found = CL_FALSE;
+-  DL_FOREACH (pocl_dlhandle_cache, tmp)
++  DL_FOREACH (pocl_module_cache, tmp)
+   {
+     if (tmp == ci)
+       {
+@@ -1068,19 +1098,130 @@ pocl_release_dlhandle_cache (void *dlhandle_cache_item)
+   assert (found == CL_TRUE);
+   assert (ci->ref_count > 0);
+   --ci->ref_count;
+-  POCL_UNLOCK (pocl_dlhandle_lock);
++  POCL_UNLOCK (pocl_module_cache_lock);
+ }
+ 
++/**
++ * Whether a final-binary path names a JIT-loadable kernel object rather than
++ * a shared library, going by the distinct artifact-variant extensions (see
++ * pocl_cache_final_binary_variant_path()).
++ */
++static int
++final_binary_is_jit_object (const char *path)
++{
++  size_t len = strlen (path);
++  size_t ext_len = strlen (OBJ_EXT);
++  return len > ext_len && strcmp (path + len - ext_len, OBJ_EXT) == 0;
++}
++
++static int
++probe_jit_object (char *module_fn, _cl_command_node *command, int specialized)
++{
++  cl_kernel k = command->command.run.kernel;
++  cl_program p = k->program;
++  unsigned dev_i = command->program_device_i;
++  pocl_cache_final_binary_variant_path (module_fn, p, dev_i, k, command,
++                                        specialized, 1);
++  return pocl_exists (module_fn);
++}
++
++static int
++probe_shared_library (char *module_fn, _cl_command_node *command,
++                      int specialized)
++{
++  cl_kernel k = command->command.run.kernel;
++  cl_program p = k->program;
++  unsigned dev_i = command->program_device_i;
++  pocl_cache_final_binary_variant_path (module_fn, p, dev_i, k, command,
++                                        specialized, 0);
++  if (pocl_exists (module_fn))
++    return 1;
++
++#ifdef ENABLE_LLVM
++  char obj_path[POCL_MAX_PATHNAME_LENGTH];
++  pocl_cache_final_binary_variant_path (obj_path, p, dev_i, k, command,
++                                        specialized, 1);
++  if (!pocl_exists (obj_path))
++    return 0;
++
++  POCL_LOCK (pocl_llvm_codegen_lock);
++  int error = pocl_link_final_binary (command->device, obj_path, module_fn);
++  POCL_UNLOCK (pocl_llvm_codegen_lock);
++  if (error == 0)
++    return 1;
++  POCL_MSG_WARN ("Linking the cached kernel object %s failed.\n", obj_path);
++#endif
++  return 0;
++}
++
++/* JIT mode only consumes OBJ_EXT. Shared-library mode consumes SHARED_LIB_EXT,
++   or links an OBJ_EXT fallback into SHARED_LIB_EXT when LLVM is available. */
++static int
++probe_final_binary (char *module_fn, _cl_command_node *command,
++                    int specialized)
++{
++  if (pocl_cpu_device_uses_jit (command->device))
++    return probe_jit_object (module_fn, command, specialized);
++  return probe_shared_library (module_fn, command, specialized);
++}
++
++#ifdef HOST_CPU_ENABLE_JIT
++/* A JIT cache hit is only a fast path. If loading or linking the object fails,
++   remove that object, regenerate it from IR, and retry the JIT load once. */
++static int
++regenerate_cached_jit_object (pocl_module_cache_item *ci, char *module_fn,
++                              _cl_command_node *command, int specialize)
++{
++#ifdef ENABLE_LLVM
++  _cl_command_run *run_cmd = &command->command.run;
++
++#ifndef ENABLE_MLIR
++  if (run_cmd->kernel->program->binaries[command->program_device_i] == NULL)
++    return -1;
++#endif
++
++  if (ci->module_handle != NULL)
++    {
++      release_module_handle (ci);
++      ci->module_handle = NULL;
++      ci->wg = NULL;
++    }
++
++  if (pocl_exists (module_fn) && pocl_remove (module_fn))
++    {
++      POCL_MSG_WARN ("Removing stale JIT kernel object \"%s\" failed.\n",
++                     module_fn);
++      return -1;
++    }
++
++  POCL_LOCK (pocl_llvm_codegen_lock);
++  int err = llvm_codegen (module_fn, command->program_device_i,
++                          run_cmd->kernel, command->device, command,
++                          specialize);
++  POCL_UNLOCK (pocl_llvm_codegen_lock);
++  if (err)
++    return err;
++
++  ci->is_jit = 1;
++  ci->module_handle = pocl_jit_load_object (module_fn, run_cmd->kernel->name);
++  return ci->module_handle == NULL ? -1 : 0;
++#else
++  return -1;
++#endif
++}
++#endif
++
+ /**
+  * Checks if a built binary is found in the disk for the given kernel command,
+  * if not, builds the kernel, caches it, and returns the file name of the
+  * end result.
+  *
+- * \param module_fn [out] The file name of the final binary.
++ * \param module_fn [out] The file name of the final binary; its extension
++ * tells the load method (see final_binary_is_jit_object()).
+  * \param command The kernel run command.
+  * \param specialized 1 if should check the per-command specialized one instead
+  * of the generic one.
+- * \returns The filename of the built binary in the disk.
++ * \returns CL_SUCCESS if module_fn names a loadable binary.
+  */
+ int
+ pocl_check_kernel_disk_cache (char *module_fn,
+@@ -1095,9 +1236,7 @@ pocl_check_kernel_disk_cache (char *module_fn,
+   /* First try to find a static WG binary for the local size as they
+      are always more efficient than the dynamic ones.  Also, in case
+      of reqd_wg_size, there might not be a dynamic sized one at all.  */
+-  pocl_cache_final_binary_path (module_fn, p, dev_i, k, command, specialized);
+-
+-  if (pocl_exists (module_fn))
++  if (probe_final_binary (module_fn, command, specialized))
+     {
+       POCL_MSG_PRINT_INFO ("Using a cached WG function: %s\n", module_fn);
+       return CL_SUCCESS;
+@@ -1139,14 +1278,11 @@ pocl_check_kernel_disk_cache (char *module_fn,
+     {
+       /* First try to find a specialized WG binary, if allowed by the
+          command. */
+-      if (!run_cmd->force_generic_wg_func)
+-        pocl_cache_final_binary_path (module_fn, p, dev_i, k, command, 1);
+-
+-      if (run_cmd->force_generic_wg_func || !pocl_exists (module_fn))
++      if (run_cmd->force_generic_wg_func
++          || !probe_final_binary (module_fn, command, 1))
+         {
+           /* Then check for a dynamic (non-specialized) kernel. */
+-          pocl_cache_final_binary_path (module_fn, p, dev_i, k, command, 0);
+-          if (!pocl_exists (module_fn))
++          if (!probe_final_binary (module_fn, command, 0))
+             {
+               POCL_MSG_ERR ("Generic WG function binary does not exist.\n");
+               return -1;
+@@ -1162,16 +1298,13 @@ pocl_check_kernel_disk_cache (char *module_fn,
+ }
+ 
+ 
+-/* Look for a dlhandle in the dlhandle cache for the given kernel command.
+-   If found, push the handle up in the cache to improve cache hit speed,
+-   and return it. Otherwise return NULL. The caller should hold
+-   pocl_dlhandle_lock. */
+-static pocl_dlhandle_cache_item *
+-fetch_dlhandle_cache_item (_cl_command_run *run_cmd, int specialize)
++/* Look for a loaded kernel module for the given kernel command. */
++static pocl_module_cache_item *
++fetch_module_cache_item (_cl_command_run *run_cmd, int specialize)
+ {
+-  pocl_dlhandle_cache_item *ci = NULL, *tmp = NULL;
++  pocl_module_cache_item *ci = NULL, *tmp = NULL;
+   size_t max_grid_width = pocl_cmd_max_grid_dim_width (run_cmd);
+-  DL_FOREACH_SAFE (pocl_dlhandle_cache, ci, tmp)
++  DL_FOREACH_SAFE (pocl_module_cache, ci, tmp)
+   {
+     if ((memcmp (ci->hash, run_cmd->hash, sizeof (pocl_kernel_hash_t)) == 0)
+         && (ci->local_wgs[0] == run_cmd->pc.local_size[0])
+@@ -1184,8 +1317,8 @@ fetch_dlhandle_cache_item (_cl_command_run *run_cmd, int specialize)
+                 && run_cmd->pc.global_offset[2] == 0)))
+       {
+         /* move to the front of the line */
+-        DL_DELETE (pocl_dlhandle_cache, ci);
+-        DL_PREPEND (pocl_dlhandle_cache, ci);
++        DL_DELETE (pocl_module_cache, ci);
++        DL_PREPEND (pocl_module_cache, ci);
+         run_cmd->wg = ci->wg;
+         return ci;
+       }
+@@ -1206,7 +1339,7 @@ fetch_dlhandle_cache_item (_cl_command_run *run_cmd, int specialize)
+  * This can be useful in case we're just pre-compiling kernels
+  * (or compiling them for binaries), and not actually need them immediately.
+  *
+- * Returns: a dynlib handle cache item as void*; this needs to be given
++ * Returns: a module cache item as void*; this needs to be given
+  * to pocl_release_dlhandle_cache(), if it was retained */
+ void *
+ pocl_check_kernel_dlhandle_cache (_cl_command_node *command,
+@@ -1214,7 +1347,7 @@ pocl_check_kernel_dlhandle_cache (_cl_command_node *command,
+                                   int specialize)
+ {
+   char *workgroup_string = NULL;
+-  pocl_dlhandle_cache_item *ci = NULL;
++  pocl_module_cache_item *ci = NULL;
+   _cl_command_run *run_cmd = &command->command.run;
+ 
+   /* Brute force mechanism to test relying on generic work-group functions
+@@ -1222,17 +1355,17 @@ pocl_check_kernel_dlhandle_cache (_cl_command_node *command,
+   if (!pocl_get_bool_option("POCL_WORK_GROUP_SPECIALIZATION", 1))
+     specialize = 0;
+ 
+-  POCL_LOCK (pocl_dlhandle_lock);
+-  ci = fetch_dlhandle_cache_item (run_cmd, specialize);
++  POCL_LOCK (pocl_module_cache_lock);
++  ci = fetch_module_cache_item (run_cmd, specialize);
+   if (ci != NULL)
+     {
+       if (retain) ++ci->ref_count;
+-      POCL_UNLOCK (pocl_dlhandle_lock);
++      POCL_UNLOCK (pocl_module_cache_lock);
+       return ci;
+     }
+ 
+-  /* Not found, build a new kernel and cache its dlhandle. */
+-  ci = get_new_dlhandle_cache_item ();
++  /* Not found, build and cache a new kernel module. */
++  ci = get_new_module_cache_item ();
+   memcpy (ci->hash, run_cmd->hash, sizeof (pocl_kernel_hash_t));
+   ci->local_wgs[0] = run_cmd->pc.local_size[0];
+   ci->local_wgs[1] = run_cmd->pc.local_size[1];
+@@ -1247,22 +1380,47 @@ pocl_check_kernel_dlhandle_cache (_cl_command_node *command,
+   ci->max_grid_dim_width = max_grid_width;
+ 
+   char module_fn[POCL_MAX_PATHNAME_LENGTH];
++
+   int err = pocl_check_kernel_disk_cache (module_fn, command, specialize);
+   if (err)
+     {
+       free (ci);
+-      POCL_UNLOCK (pocl_dlhandle_lock);
++      POCL_UNLOCK (pocl_module_cache_lock);
+       return NULL;
+     }
+ 
+-  ci->dlhandle = pocl_dynlib_open (module_fn, 0, 1);
+-  if (ci->dlhandle == NULL)
++  /* The load method follows the found artifact: a JIT kernel object is loaded
++     in-process via ORC/JITLink, a shared library is dlopen()ed (see
++     probe_final_binary()). */
++  ci->is_jit = final_binary_is_jit_object (module_fn);
++#ifdef HOST_CPU_ENABLE_JIT
++  /* A JIT object is only produced or accepted when the device's JIT came up
++     at init (see pocl_cpu_device_uses_jit()). */
++  if (ci->is_jit)
++    ci->module_handle = pocl_jit_load_object (module_fn, run_cmd->kernel->name);
++  else
++#endif
++    ci->module_handle = pocl_dynlib_open (module_fn, 0, 1);
++
++#ifdef HOST_CPU_ENABLE_JIT
++  if (ci->module_handle == NULL && ci->is_jit)
+     {
+-      POCL_MSG_ERR ("pocl_dynlib_open(\"%s\") failed.\n"
+-                    "note: this may be caused by missing symbols "
+-                    " in the kernel binary\n.",
+-                    module_fn);
+-      POCL_UNLOCK (pocl_dlhandle_lock);
++      POCL_MSG_WARN ("loading cached JIT kernel object \"%s\" failed;"
++                     " regenerating it\n",
++                     module_fn);
++      regenerate_cached_jit_object (ci, module_fn, command, specialize);
++    }
++#endif
++
++  if (ci->module_handle == NULL)
++    {
++      POCL_MSG_ERR ("loading kernel binary \"%s\" failed.%s\n",
++                    module_fn,
++                    ci->is_jit
++                        ? ""
++                        : "\nnote: this may be caused by missing symbols"
++                          " in the kernel binary.");
++      POCL_UNLOCK (pocl_module_cache_lock);
+       free (ci);
+       return NULL;
+     }
+@@ -1272,32 +1430,74 @@ pocl_check_kernel_dlhandle_cache (_cl_command_node *command,
+   snprintf (workgroup_string, workgroup_len, "_pocl_kernel_%s_workgroup",
+             run_cmd->kernel->name);
+ 
+-  ci->wg = pocl_dynlib_symbol_address (ci->dlhandle, workgroup_string);
+-
+-  if (ci->wg == NULL)
++#ifdef HOST_CPU_ENABLE_JIT
++  /* ORC mangles the unmangled name for the target (e.g. adds the leading
++     underscore on Mach-O), so the JIT path needs no separate fallback. */
++  if (ci->is_jit)
++    ci->wg = pocl_jit_lookup (ci->module_handle, workgroup_string);
++  else
++#endif
+     {
+-      // Older OSX dyld APIs need the name without the underscore.
+-      snprintf (workgroup_string, workgroup_len, "pocl_kernel_%s_workgroup",
+-                run_cmd->kernel->name);
+-      ci->wg = pocl_dynlib_symbol_address (ci->dlhandle, workgroup_string);
+-
++      ci->wg = pocl_dynlib_symbol_address (ci->module_handle, workgroup_string);
+       if (ci->wg == NULL)
+         {
+-          POCL_MSG_ERR ("pocl_dynlib_symbol_address(\"%s\", \"%s\") failed.\n"
++          // Older OSX dyld APIs need the name without the underscore.
++          snprintf (workgroup_string, workgroup_len,
++                    "pocl_kernel_%s_workgroup", run_cmd->kernel->name);
++          ci->wg
++            = pocl_dynlib_symbol_address (ci->module_handle, workgroup_string);
++        }
++    }
++
++  if (ci->wg == NULL)
++    {
++      int recovered = 0;
++#ifdef HOST_CPU_ENABLE_JIT
++      if (ci->is_jit)
++        {
++          /* The JIT links the object on first lookup, so its lookup error
++             carries the real diagnostic (unresolved symbols, relocation
++             problems). */
++          const char *jit_error = pocl_jit_last_error ();
++          POCL_MSG_WARN ("looking up \"%s\" in cached JIT kernel object"
++                         " \"%s\" failed: %s; regenerating it\n",
++                         workgroup_string, module_fn,
++                         jit_error != NULL ? jit_error : "unknown error");
++          if (regenerate_cached_jit_object (ci, module_fn, command,
++                                            specialize) == 0)
++            ci->wg = pocl_jit_lookup (ci->module_handle, workgroup_string);
++          recovered = ci->wg != NULL;
++          if (!recovered)
++            {
++              jit_error = pocl_jit_last_error ();
++              POCL_MSG_ERR ("regenerated JIT kernel object \"%s\" failed"
++                            " to load or resolve \"%s\": %s\n",
++                            module_fn, workgroup_string,
++                            jit_error != NULL ? jit_error : "unknown error");
++            }
++        }
++      else
++#endif
++        {
++          POCL_MSG_ERR ("looking up \"%s\" in kernel binary \"%s\" failed.\n"
+                         "note: missing symbols in the kernel binary might be"
+                         " reported as 'file not found' errors.\n",
+-                        module_fn, workgroup_string);
+-          POCL_UNLOCK (pocl_dlhandle_lock);
+-          free (ci);
+-          free (workgroup_string);
+-          return NULL;
++                        workgroup_string, module_fn);
+         }
++      if (recovered)
++        goto FOUND_WORKGROUP;
++      release_module_handle (ci);
++      POCL_UNLOCK (pocl_module_cache_lock);
++      free (ci);
++      free (workgroup_string);
++      return NULL;
+     }
+ 
++FOUND_WORKGROUP:
+   run_cmd->wg = ci->wg;
+-  DL_PREPEND (pocl_dlhandle_cache, ci);
++  DL_PREPEND (pocl_module_cache, ci);
+ 
+-  POCL_UNLOCK (pocl_dlhandle_lock);
++  POCL_UNLOCK (pocl_module_cache_lock);
+   free (workgroup_string);
+   return ci;
+ }
+diff --git a/lib/CL/devices/common.h b/lib/CL/devices/common.h
+index f784cae79..210fcd33e 100644
+--- a/lib/CL/devices/common.h
++++ b/lib/CL/devices/common.h
+@@ -94,6 +94,12 @@ int pocl_check_kernel_disk_cache (char *module_fn,
+                                   _cl_command_node *cmd,
+                                   int specialized);
+ 
++#ifdef ENABLE_LLVM
++POCL_EXPORT
++int pocl_link_final_binary (cl_device_id device, const char *objfile,
++                            const char *final_binary_path);
++#endif
++
+ POCL_EXPORT
+ size_t pocl_cmd_max_grid_dim_width (_cl_command_run *cmd);
+ 
+@@ -103,7 +109,7 @@ void *pocl_check_kernel_dlhandle_cache (_cl_command_node *command,
+                                         int specialize);
+ 
+ POCL_EXPORT
+-void pocl_release_dlhandle_cache (void *dlhandle_cache_item);
++void pocl_release_dlhandle_cache (void *module_cache_item);
+ 
+ POCL_EXPORT
+ void pocl_setup_device_for_system_memory(cl_device_id device);
+diff --git a/lib/CL/devices/common_driver.c b/lib/CL/devices/common_driver.c
+index 3d662076a..0a3e605d9 100644
+--- a/lib/CL/devices/common_driver.c
++++ b/lib/CL/devices/common_driver.c
+@@ -48,6 +48,7 @@
+ #include "pocl_mlir.h"
+ #endif
+ 
++#include "common.h"
+ #include "common_driver.h"
+ 
+ #define APPEND_TO_BUILD_LOG_RET(err, ...)                                     \
+@@ -919,6 +920,45 @@ pocl_driver_supports_binary (cl_device_id device, size_t length,
+ #endif
+ }
+ 
++#ifdef ENABLE_LLVM
++/* Recursively links every JIT kernel object in 'path' whose shared library
++   variant is missing. An exported binary must carry the shared libraries: a
++   JIT device caches only the kernel objects, which an LLVM-less consumer --
++   the primary deployment target of poclbinaries -- cannot load or link.
++   Objects whose shared library exists are then skipped at serialization
++   (see pocl_binary.c). */
++static void
++link_jit_objects (cl_device_id device, const char *path)
++{
++  switch (pocl_get_file_type (path))
++    {
++    default:
++      return;
++    case POCL_FS_REGULAR:
++      {
++        char so_path[POCL_MAX_PATHNAME_LENGTH];
++        if (!pocl_cache_object_shlib_variant (so_path, path)
++            || pocl_exists (so_path))
++          return;
++        if (pocl_link_final_binary (device, path, so_path))
++          POCL_MSG_WARN ("Linking %s for the exported binary failed.\n",
++                         path);
++        return;
++      }
++    case POCL_FS_DIRECTORY:
++      {
++        pocl_dir_iter d;
++        if (pocl_dir_iterator (path, &d))
++          return;
++        while (pocl_dir_next_entry (d))
++          link_jit_objects (device, pocl_dir_iter_get_path (d));
++        pocl_release_dir_iterator (&d);
++        return;
++      }
++    }
++}
++#endif
++
+ /* Build the dynamic WG sized parallel.bc and device specific code,
+    for each kernel. This must be called *after* metadata has been setup  */
+ int
+@@ -1056,6 +1096,14 @@ pocl_driver_build_poclbinary (cl_program program, cl_uint device_i)
+       return CL_INVALID_OPERATION;
+     }
+ 
++#ifdef ENABLE_LLVM
++  {
++    char program_dir[POCL_MAX_PATHNAME_LENGTH];
++    pocl_cache_program_path (program_dir, program, device_i);
++    link_jit_objects (device, program_dir);
++  }
++#endif
++
+   POCL_UNLOCK_OBJ (program);
+   return CL_SUCCESS;
+ }
+diff --git a/lib/CL/devices/common_utils.c b/lib/CL/devices/common_utils.c
+index c5ec6a281..450c4e6da 100644
+--- a/lib/CL/devices/common_utils.c
++++ b/lib/CL/devices/common_utils.c
+@@ -36,6 +36,9 @@
+ #ifdef ENABLE_LLVM
+ #include "pocl_llvm.h"
+ #endif
++#ifdef HOST_CPU_ENABLE_JIT
++#include "pocl_llvm_orc.h"
++#endif
+ #include "pocl_mem_management.h"
+ #include "pocl_runtime_config.h"
+ #include "pocl_tensor_util.h"
+@@ -315,6 +318,18 @@ pocl_cpu_init_common (cl_device_id device, unsigned dev_i)
+ 
+   pocl_init_default_device_infos (device, HOST_DEVICE_EXTENSIONS);
+ 
++#ifdef HOST_CPU_ENABLE_JIT
++  /* Bring up the process-global JIT and latch the device's load mode for its
++     lifetime (see pocl_cpu_device_uses_jit()). A bring-up failure
++     (unsupported triple, executor setup) is not transient, so the device
++     permanently keeps the linker path. */
++  if (device->ops->finalize_binary == NULL
++      && pocl_get_bool_option ("POCL_CPU_JIT", 1)
++      && pocl_jit_initialize (device->llvm_target_triplet, device->llvm_cpu)
++           == 0)
++    device->uses_cpu_jit = CL_TRUE;
++#endif
++
+ #ifdef HOST_CPU_ENABLE_SPIRV
+   device->supported_spirv_extensions = HOST_DEVICE_SPV_EXTENSIONS;
+ 
+diff --git a/lib/CL/pocl_binary.c b/lib/CL/pocl_binary.c
+index bf5b0c0c1..2643dd0b8 100644
+--- a/lib/CL/pocl_binary.c
++++ b/lib/CL/pocl_binary.c
+@@ -346,13 +346,25 @@ static unsigned char *
+ recursively_serialize_path (const char *path, size_t basedir_offset,
+                             unsigned char *buffer)
+ {
+-
+   switch (pocl_get_file_type (path))
+     {
+     default:
+       POCL_MSG_WARN ("Skipping non-file/-directory: '%s'\n", path);
+       return buffer;
+     case POCL_FS_REGULAR:
++      /* A kernel object (OBJ_EXT) whose shared library variant exists is a
++         private cache artifact: consumers dlopen the shared library, or JIT
++         an equivalent object from the program IR, so don't ship it (see
++         pocl_driver_build_poclbinary()). Without the shared library (the
++         export-time link failed, e.g. for lack of a toolchain) ship the
++         object as a fallback only JIT-enabled or linker-equipped consumers
++         can load. */
++      {
++        char so_path[POCL_MAX_PATHNAME_LENGTH];
++        if (pocl_cache_object_shlib_variant (so_path, path)
++            && pocl_exists (so_path))
++          return buffer;
++      }
+       return serialize_file (path, basedir_offset, buffer);
+     case POCL_FS_DIRECTORY:
+       {
+diff --git a/lib/CL/pocl_cache.c b/lib/CL/pocl_cache.c
+index 9b9b225ba..1c6f02e0e 100644
+--- a/lib/CL/pocl_cache.c
++++ b/lib/CL/pocl_cache.c
+@@ -245,13 +245,18 @@ pocl_cache_work_group_function_path (char *parallel_bc_path,
+                                    specialize);
+ }
+ 
+-/* Return the final binary path for the given work-group function.
+-   If specialized is 1, find the WG function specialized for the
+-   given command's properties, if 0, return the path to a generic version. */
++/* Return the final binary path for the given work-group function, naming
++   either the JIT-loadable relocatable object (OBJ_EXT) or the linked shared
++   library variant of the artifact; the distinct extensions keep the two from
++   colliding in the cache dir. If specialized is 1, find the WG function
++   specialized for the given command's properties, if 0, return the path to a
++   generic version. */
+ void
+-pocl_cache_final_binary_path (char *final_binary_path, cl_program program,
+-                              unsigned device_i, cl_kernel kernel,
+-                              _cl_command_node *command, int specialized)
++pocl_cache_final_binary_variant_path (char *final_binary_path,
++                                      cl_program program, unsigned device_i,
++                                      cl_kernel kernel,
++                                      _cl_command_node *command,
++                                      int specialized, int jit_object)
+ {
+   assert (kernel->name);
+ 
+@@ -270,13 +275,12 @@ pocl_cache_final_binary_path (char *final_binary_path, cl_program program,
+     {
+       char file_name[POCL_MAX_FILENAME_LENGTH + 1];
+       pocl_hash_clipped_name (kernel->name, &file_name[0]);
+-      bytes_written = snprintf (final_binary_name, POCL_MAX_PATHNAME_LENGTH,
+-#ifdef _WIN32
+-                                "/%s.dll",
+-#else
+-                                "/%s.so",
+-#endif
+-                                file_name);
++      if (jit_object)
++        bytes_written = snprintf (final_binary_name, POCL_MAX_PATHNAME_LENGTH,
++                                  "/%s" OBJ_EXT, file_name);
++      else
++        bytes_written = snprintf (final_binary_name, POCL_MAX_PATHNAME_LENGTH,
++                                  "/%s" SHARED_LIB_EXT, file_name);
+     }
+ 
+   assert (bytes_written > 0 && bytes_written < POCL_MAX_PATHNAME_LENGTH);
+@@ -286,6 +290,47 @@ pocl_cache_final_binary_path (char *final_binary_path, cl_program program,
+                                    specialized);
+ }
+ 
++/* If 'path' names a cached kernel object (the OBJ_EXT artifact variant of a
++   final binary; see pocl_cache_final_binary_variant_path()), write the path
++   of its shared-library sibling variant into 'so_path' and return 1. Returns
++   0 for other files, including leftover temporary objects of already-linked
++   libraries ("<kernel>.dll.o", kept by POCL_LEAVE_KERNEL_COMPILER_TEMP_FILES
++   on platforms where OBJ_EXT doesn't embed SHARED_LIB_EXT). */
++int
++pocl_cache_object_shlib_variant (char *so_path, const char *path)
++{
++  size_t len = strlen (path);
++  size_t obj_ext_len = strlen (OBJ_EXT);
++  size_t so_ext_len = strlen (SHARED_LIB_EXT);
++  if (len <= obj_ext_len || strcmp (path + len - obj_ext_len, OBJ_EXT) != 0)
++    return 0;
++  size_t stem_len = len - obj_ext_len;
++  if (stem_len >= so_ext_len
++      && strcmp (path + stem_len - so_ext_len, SHARED_LIB_EXT) == 0)
++    return 0;
++  if (stem_len + so_ext_len >= POCL_MAX_PATHNAME_LENGTH)
++    return 0;
++  memcpy (so_path, path, stem_len);
++  strcpy (so_path + stem_len, SHARED_LIB_EXT);
++  return 1;
++}
++
++/* Return the path of the final binary a device generates for the given
++   work-group function: a JIT device produces the kernel object to load
++   in-process, the others a linked shared library (see
++   pocl_cpu_device_uses_jit()). */
++void
++pocl_cache_final_binary_path (char *final_binary_path, cl_program program,
++                              unsigned device_i, cl_kernel kernel,
++                              _cl_command_node *command, int specialized)
++{
++  int jit_object
++    = pocl_cpu_device_uses_jit (kernel->program->devices[device_i]);
++  pocl_cache_final_binary_variant_path (final_binary_path, program, device_i,
++                                        kernel, command, specialized,
++                                        jit_object);
++}
++
+ /******************************************************************************/
+ /******************************************************************************/
+ 
+diff --git a/lib/CL/pocl_cl.h b/lib/CL/pocl_cl.h
+index 21dabd67c..82929136b 100644
+--- a/lib/CL/pocl_cl.h
++++ b/lib/CL/pocl_cl.h
+@@ -1198,6 +1198,10 @@ struct _cl_device_id {
+    * This pass adds checks of input operands to div/rem so that UB is
+    * never triggered. */
+   cl_bool run_sanitize_divrem_pass;
++  /* CL_TRUE for CPU host devices that load kernel objects in-process via the
++   * ORC/JITLink JIT; latched in pocl_cpu_init_common() (see
++   * pocl_cpu_device_uses_jit()). */
++  cl_bool uses_cpu_jit;
+ 
+   /* If CL_TRUE, pocl_llvm_build_program will ignore pocl's OpenCL headers
+    * that perform built-in renames during OpenCL C build and relies on
+@@ -1441,6 +1445,21 @@ struct _cl_device_id {
+   struct _cl_device_id *next;
+ };
+ 
++/* Whether a CPU host device loads kernel objects in-process via the ORC/JITLink
++   JIT (HOST_CPU_ENABLE_JIT) instead of linking them into a shared library and
++   dlopen()ing it. Latched for the device's lifetime in pocl_cpu_init_common():
++   a device qualifies when it has no custom binary finalizer (custom back-ends
++   set finalize_binary and keep the link path), POCL_CPU_JIT is left on, and the
++   process-global JIT came up. This single gate decides codegen's code model and
++   the cached artifact variant. JIT devices use OBJ_EXT; non-JIT devices use
++   SHARED_LIB_EXT, linking a cached OBJ_EXT fallback only when LLVM is available
++   (see pocl_check_kernel_disk_cache()). */
++static inline int
++pocl_cpu_device_uses_jit (cl_device_id device)
++{
++  return device->uses_cpu_jit;
++}
++
+ #define DEVICE_SVM_FINEGR(dev) (dev->svm_caps & (CL_DEVICE_SVM_FINE_GRAIN_BUFFER \
+                                               | CL_DEVICE_SVM_FINE_GRAIN_SYSTEM))
+ #define DEVICE_SVM_ATOM(dev) (dev->svm_caps & CL_DEVICE_SVM_ATOMICS)
+diff --git a/lib/CL/pocl_llvm.h b/lib/CL/pocl_llvm.h
+index e5343a445..702a5c5cf 100644
+--- a/lib/CL/pocl_llvm.h
++++ b/lib/CL/pocl_llvm.h
+@@ -212,6 +212,7 @@ extern "C" {
+                          const char* MCPU,
+                          const char *Features,
+                          cl_device_type DevType,
++                         int ForJIT,
+                          pocl_lock_t *Lock,
+                          void *Modp, int EmitAsm,
+                          int EmitObj, char **Output, uint64_t *OutputSize);
+@@ -231,8 +232,8 @@ extern "C" {
+    * Link a kernel object into a shared library in-process through lld's
+    * library API. This bundles the linker into libpocl, dropping the
+    * dependency on an external toolchain: nothing is exec'd and no startup
+-   * files are needed: symbols the kernel binary leaves undefined resolve
+-   * when it is dlopen()ed.
++   * files are needed. Symbols the kernel binary leaves undefined resolve
++   * when it is dlopen()ed, the same way the JIT resolves them.
+    *
+    * @param Device the device whose target to link for
+    * @param InFile the input object file
+diff --git a/lib/CL/pocl_llvm_api.h b/lib/CL/pocl_llvm_api.h
+index 87c294eb2..afceac2f5 100644
+--- a/lib/CL/pocl_llvm_api.h
++++ b/lib/CL/pocl_llvm_api.h
+@@ -133,6 +133,12 @@ struct PoclLLVMContextData
+ #endif
+ };
+ 
++/* Return the device's OpenCL C built-in function library bitcode, parsed into
++ * the context's LLVMContext and cached in its kernelLibraryMap. Returns NULL if
++ * the library cannot be found. */
++llvm::Module *getKernelLibrary(cl_device_id device,
++                               PoclLLVMContextData *llvm_ctx);
++
+ #ifdef __GNUC__
+ #pragma GCC visibility pop
+ #endif
+diff --git a/lib/CL/pocl_llvm_build.cc b/lib/CL/pocl_llvm_build.cc
+index 97b4889d6..80e3e8ef7 100644
+--- a/lib/CL/pocl_llvm_build.cc
++++ b/lib/CL/pocl_llvm_build.cc
+@@ -166,9 +166,6 @@ static void get_build_log(cl_program program,
+   appendToProgramBuildLog(program, device_i, log);
+ }
+ 
+-static llvm::Module *getKernelLibrary(cl_device_id device,
+-                                      PoclLLVMContextData *llvm_ctx);
+-
+ /**
+  * Runs various LLVM "passes" on the program.bc LLVM module;
+  * the passes are not real LLVM passes, but perhaps it will make sense
+@@ -204,7 +201,8 @@ static bool generateProgramBC(PoclLLVMContextData *Context, llvm::Module *Mod,
+   if (Program->compiler_options)
+     Opts.assign(Program->compiler_options);
+   bool DebugRequested = (Opts.find("-g") != std::string::npos);
+-  if (link(Mod, BuiltinLib, Log, Device, !DebugRequested))
++  if (link(Mod, BuiltinLib, Log, Device, !DebugRequested,
++           /*ErrorOnUnresolved=*/true))
+     return true;
+ 
+   raw_string_ostream OS(Log);
+@@ -1046,8 +1044,8 @@ int pocl_llvm_link_program(cl_program program, unsigned device_i,
+  * Return the OpenCL C built-in function library bitcode
+  * for the given device.
+  */
+-static llvm::Module *getKernelLibrary(cl_device_id device,
+-                                      PoclLLVMContextData *llvm_ctx) {
++llvm::Module *getKernelLibrary(cl_device_id device,
++                               PoclLLVMContextData *llvm_ctx) {
+   Triple triple(device->llvm_target_triplet);
+   llvm::LLVMContext *llvmContext = llvm_ctx->Context;
+   kernelLibraryMapTy *kernelLibraryMap = llvm_ctx->kernelLibraryMap;
+@@ -1229,7 +1227,8 @@ int pocl_invoke_lld_link(cl_device_id Device, const char *InFile,
+   // The flags the Clang driver would pass to the linker are HOST_LD_FLAGS
+   // (-shared -nostartfiles and friends), expressed here in ld terms.
+   // Symbols the kernel binary leaves undefined resolve when it is
+-  // dlopen()ed, so no C runtime or startup files are needed at link time.
++  // dlopen()ed, the same way the JIT resolves them, so no C runtime or
++  // startup files are needed at link time.
+ #ifdef __APPLE__
+   ArgStorage.push_back(
+       llvm::Triple(Device->llvm_target_triplet).getArchName().str());
+@@ -1261,8 +1260,8 @@ int pocl_invoke_lld_link(cl_device_id Device, const char *InFile,
+ #endif
+ #endif
+ 
+-  // lld is not re-entrant; serialize links here instead of relying on the
+-  // callers' locking.
++  // lld is not re-entrant; the codegen lock does not cover all callers
++  // (poclbinary export links outside of it), so serialize here.
+   static std::mutex LLDMutex;
+   std::lock_guard<std::mutex> Guard(LLDMutex);
+ 
+diff --git a/lib/CL/pocl_llvm_orc.cc b/lib/CL/pocl_llvm_orc.cc
+new file mode 100644
+index 000000000..ad7f3f05f
+--- /dev/null
++++ b/lib/CL/pocl_llvm_orc.cc
+@@ -0,0 +1,719 @@
++/* OpenCL runtime library: in-process JIT linking and loading of kernel object
++   files via LLVM ORC + JITLink.
++
++   Copyright (c) 2026 PoCL developers
++
++   Permission is hereby granted, free of charge, to any person obtaining a copy
++   of this software and associated documentation files (the "Software"), to
++   deal in the Software without restriction, including without limitation the
++   rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
++   sell copies of the Software, and to permit persons to whom the Software is
++   furnished to do so, subject to the following conditions:
++
++   The above copyright notice and this permission notice shall be included in
++   all copies or substantial portions of the Software.
++
++   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
++   IN THE SOFTWARE.
++*/
++
++#include "config.h"
++
++#include "pocl_debug.h"
++#include "pocl_dynlib.h"
++#include "pocl_file_util.h"
++#include "pocl_llvm.h"
++#include "pocl_llvm_orc.h"
++#include "pocl_util.h"
++
++#include <llvm/ADT/StringSet.h>
++#include <llvm/ExecutionEngine/JITLink/JITLinkMemoryManager.h>
++#include <llvm/ExecutionEngine/JITSymbol.h>
++#include <llvm/ExecutionEngine/Orc/Core.h>
++#include <llvm/ExecutionEngine/Orc/ExecutionUtils.h>
++#include <llvm/ExecutionEngine/Orc/JITTargetMachineBuilder.h>
++#include <llvm/ExecutionEngine/Orc/LLJIT.h>
++#include <llvm/ExecutionEngine/Orc/ObjectFileInterface.h>
++#include <llvm/ExecutionEngine/Orc/ObjectLinkingLayer.h>
++#include <llvm/ExecutionEngine/Orc/Shared/ExecutorSymbolDef.h>
++#include <llvm/Object/Archive.h>
++#include <llvm/Support/Error.h>
++#include <llvm/Support/MemoryBuffer.h>
++#include <llvm/TargetParser/Triple.h>
++
++/* absoluteSymbols() moved from Core.h to its own header around LLVM 20. */
++#if __has_include(<llvm/ExecutionEngine/Orc/AbsoluteSymbols.h>)
++#include <llvm/ExecutionEngine/Orc/AbsoluteSymbols.h>
++#endif
++
++#include <cstdint>
++#include <cstdlib>
++#include <memory>
++#include <mutex>
++#include <set>
++#include <string>
++#include <vector>
++
++using namespace llvm;
++using namespace llvm::orc;
++
++#ifdef ENABLE_PRINTF_IMMEDIATE_FLUSH
++/* Host-side printf flush callback referenced by kernels built with immediate
++   flush; defined in libpocl (lib/CL/devices/printf_buffer.c). */
++extern "C" void pocl_flush_printf_buffer(char *buffer, uint32_t buffer_size);
++#endif
++
++#ifdef __MINGW32__
++/* MinGW kernel objects reference the libgcc/compiler-rt stack probe
++   ___chkstk_ms (emitted for frames > 4KB), which no Windows system DLL
++   exports. libpocl links against a libgcc/compiler-rt that provides it, so
++   defineHostSymbols() hands that copy to kernels as an absolute symbol. The
++   COFF JIT's large code model keeps it reachable; see GetTargetMachine() in
++   pocl_llvm_wg.cc. */
++extern "C" void ___chkstk_ms(void);
++
++/* Same story for the FP16 soft-float conversion helpers codegen emits for
++   double/float <-> _Float16: defined in libgcc, exported by no DLL. Loading
++   libgcc.a into the JIT to supply them does NOT work here -- their COFF members
++   carry .pdata/.xdata SEH unwind whose IMAGE_REL_AMD64_ADDR32NB fixups JITLink
++   cannot relocate into the high-mapped kernel image ("out of range of Pointer32
++   fixup"). Hand kernels libpocl's own statically-linked copies instead.
++
++   But mingw's libgcc uses the legacy soft-float ABI for these: the half is
++   carried in a GPR as an unsigned short, whereas LLVM's codegen calls them with
++   the _Float16 ABI, passing/returning the half in the low 16 bits of an XMM
++   register. Handing kernels libgcc's symbols directly therefore moves the half
++   through the wrong register -- e.g. `fptrunc double to half` (emitted for the
++   FP16 pow/atan2 builtins, which round a double result) reads a stale XMM0 and
++   returns garbage. Wrap libgcc's routines in the _Float16 ABI and inject the
++   wrappers. On f16c CPUs the half<->float pair is done in hardware, so only the
++   double conversions strictly need this, but wrap all four for CPUs without
++   f16c. (The Windows JIT build uses the Clang toolchain, which supports
++   _Float16.) */
++/* libgcc's routines, reached under private names via asm labels so we can give
++   them their real (integer-GPR) prototypes without clashing with the compiler's
++   builtin declarations. */
++extern "C" {
++unsigned short poclLibgccTruncSFHF2(float) __asm__("__truncsfhf2");
++unsigned short poclLibgccTruncDFHF2(double) __asm__("__truncdfhf2");
++float poclLibgccExtendHFSF2(unsigned short) __asm__("__extendhfsf2");
++double poclLibgccExtendHFDF2(unsigned short) __asm__("__extendhfdf2");
++}
++
++static _Float16 poclTruncSFHF2(float A) {
++  unsigned short H = poclLibgccTruncSFHF2(A);
++  _Float16 R;
++  __builtin_memcpy(&R, &H, sizeof R);
++  return R;
++}
++static _Float16 poclTruncDFHF2(double A) {
++  unsigned short H = poclLibgccTruncDFHF2(A);
++  _Float16 R;
++  __builtin_memcpy(&R, &H, sizeof R);
++  return R;
++}
++static float poclExtendHFSF2(_Float16 A) {
++  unsigned short H;
++  __builtin_memcpy(&H, &A, sizeof H);
++  return poclLibgccExtendHFSF2(H);
++}
++static double poclExtendHFDF2(_Float16 A) {
++  unsigned short H;
++  __builtin_memcpy(&H, &A, sizeof H);
++  return poclLibgccExtendHFDF2(H);
++}
++#endif
++
++namespace {
++
++/* Process-global JIT shared by all CPU host devices, created on the first
++   pocl_jit_initialize() call. JITMutex serializes access. Intentionally never
++   deleted: a destructor would unmap the JIT'd code at exit, but scheduler
++   threads (joined only under POCL_ENABLE_UNINIT) may still be running it. The
++   linker path leaks its kernel .so handles for the same reason. */
++LLJIT *TheJIT = nullptr;
++std::mutex JITMutex;
++
++/* Set when LLJIT creation fails, after which pocl_jit_initialize() fails fast.
++   Never reset, since the failure (unsupported triple, executor setup) is not
++   transient. */
++bool JITFailed = false;
++
++/* Keeps each JITDylib name unique within the ExecutionSession; touched only
++   under JITMutex. */
++uint64_t JDCounter = 0;
++
++/* Most recent pocl_jit_lookup() failure text, returned by
++   pocl_jit_last_error() (a dlerror() analogue). Guarded by JITMutex. */
++std::string LastLookupError;
++
++/* ORC symbol source model.
++
++   Kernel objects can only refer to symbols introduced by codegen, the linked
++   kernel library, or PoCL's host ABI. Keep each source class mapped to one
++   ORC mechanism, mirroring what the shared-library link path provided:
++
++   - Process/global scope: LLJIT's default process-symbol generator. This is
++     the JIT analogue of loader-visible process symbols.
++   - libpocl and its private dependency closure: DynamicLibrarySearchGenerator
++     on libpocl's own handle. This mirrors a kernel shared library's DT_NEEDED
++     edge to libpocl and, on POSIX, libpocl's dependencies such as libgcc_s or
++     libm when the ICD loader used RTLD_LOCAL.
++   - Configure-time vector math library: DynamicLibrarySearchGenerator for
++     shared veclibs (libmvec, SLEEF), or a request-driven archive generator for
++     static SVML/libirc. These are the same absolute link inputs the non-JIT
++     final link receives.
++   - Compiler runtime helpers: StaticLibraryDefinitionGenerator for the
++     installed compiler-rt/libgcc archive. This replaces the Clang driver's
++     implicit runtime library link.
++   - Host ABI callbacks and platform helper symbols: absoluteSymbols in the
++     process-symbols JITDylib. This covers deliberately hidden libpocl entry
++     points such as the printf flush callback and MinGW's stack probe.
++
++   PoCL kernel-library builtins are not a runtime source: they are linked into
++   the kernel object at IR time before codegen (see linkKernelLibraryForJIT in
++   pocl_llvm_wg.cc), so the object is self-contained for them.
++
++   A new unresolved CPU-kernel symbol should fit one of these buckets; if it
++   does not, first identify which codegen or ABI rule introduced it and then
++   add the corresponding generator here rather than treating it as a one-off. */
++
++/* Make a dynamic library's symbols (e.g. libmvec's _ZGVdN8v_expf, or
++   libpocl's own dependency chain) resolvable by JIT'd kernels. Attaches a
++   DynamicLibrarySearchGenerator for the library to the process-symbols
++   JITDylib, which every kernel JITDylib links against (LLJIT links each
++   JITDylib it creates against the process-symbols JITDylib by default).
++   Lookups are then served from the library's own handle through the JIT's
++   generator chain; on POSIX that dlsym scope includes the library's
++   dependencies. Returns false (and leaves the JIT usable) if the library
++   cannot be loaded. */
++static bool addLibrarySearchGenerator(const char *Library) {
++  if (!Library || !Library[0])
++    return false;
++  JITDylibSP PSJD = TheJIT->getProcessSymbolsJITDylib();
++  if (!PSJD)
++    return false;
++  Expected<std::unique_ptr<DynamicLibrarySearchGenerator>> Gen =
++      DynamicLibrarySearchGenerator::Load(
++          Library, TheJIT->getDataLayout().getGlobalPrefix());
++  if (!Gen) {
++    consumeError(Gen.takeError());
++    return false;
++  }
++  PSJD->addGenerator(std::move(*Gen));
++  return true;
++}
++
++/* Make a static archive's members resolvable by JIT'd kernels. JITLink pulls
++   members in lazily, materializing only those that satisfy a referenced symbol,
++   like a static link. Used for SVML, whose __svml_* symbols ship only in
++   Intel's libsvml.a (helpers in libirc.a). Attaches a
++   StaticLibraryDefinitionGenerator to the process-symbols JITDylib that every
++   kernel JITDylib links against. Returns false if the archive cannot be loaded,
++   leaving the JIT usable. */
++static bool loadStaticArchive(const char *Path) {
++  if (!Path || !Path[0])
++    return false;
++  JITDylibSP PSJD = TheJIT->getProcessSymbolsJITDylib();
++  if (!PSJD)
++    return false;
++  Expected<std::unique_ptr<StaticLibraryDefinitionGenerator>> Gen =
++      StaticLibraryDefinitionGenerator::Load(TheJIT->getObjLinkingLayer(),
++                                             Path);
++  if (!Gen) {
++    consumeError(Gen.takeError());
++    return false;
++  }
++  PSJD->addGenerator(std::move(*Gen));
++  return true;
++}
++
++/* Load an archive by absolute path, or by filename from PoCL's private data dir. */
++static bool loadPrivateStaticArchive(const char *Path) {
++  if (!Path || !Path[0])
++    return false;
++  if (pocl_exists(Path))
++    return loadStaticArchive(Path);
++
++  char PrivateDir[POCL_MAX_PATHNAME_LENGTH];
++  pocl_get_private_datadir(PrivateDir);
++  std::string FullPath = std::string(PrivateDir) + "/" + Path;
++  if (pocl_exists(FullPath.c_str()))
++    return loadStaticArchive(FullPath.c_str());
++
++  return loadStaticArchive(Path);
++}
++
++/* Unlike StaticLibraryDefinitionGenerator, this does not build an archive-wide
++   symbol map at JIT initialization. SVML is only needed after vectorized
++   builtins introduce a __svml_* reference, so keep the archive paths until
++   that first lookup and then consult only the requested archive-index names. */
++class LazySVMLDefinitionGenerator : public DefinitionGenerator {
++  struct IndexedArchive {
++    std::string Path;
++    std::unique_ptr<MemoryBuffer> Buffer;
++    std::unique_ptr<object::Archive> Archive;
++    std::set<uint64_t> LoadedOffsets;
++  };
++
++  struct SelectedMember {
++    IndexedArchive *Source;
++    uint64_t Offset;
++    MemoryBufferRef Buffer;
++  };
++
++public:
++  LazySVMLDefinitionGenerator(ObjectLayer &Layer, StringRef IRCPath,
++                              StringRef SVMLPath, char GlobalPrefix)
++      : Layer(Layer), IRCPath(IRCPath), SVMLPath(SVMLPath),
++        GlobalPrefix(GlobalPrefix) {}
++
++  Error tryToGenerate(LookupState &, LookupKind K, JITDylib &JD,
++                      JITDylibLookupFlags,
++                      const SymbolLookupSet &Symbols) override {
++    if (K != LookupKind::Static)
++      return Error::success();
++
++    if (!Active) {
++      bool NeedsSVML = false;
++      for (const auto &[Name, _] : Symbols)
++        if (isSVMLName(*Name)) {
++          NeedsSVML = true;
++          break;
++        }
++      if (!NeedsSVML)
++        return Error::success();
++
++      /* Keep this before opening either archive: it is the deterministic test
++         that unrelated JIT lookups leave the provider untouched. */
++      if (getenv("POCL_FAULT_INJECT_JIT_SVML"))
++        return createStringError(
++            inconvertibleErrorCode(),
++            "injected SVML provider failure (POCL_FAULT_INJECT_JIT_SVML)");
++
++      if (Error Err = activate())
++        return Err;
++    }
++
++    StringSet<> Requested;
++    for (const auto &[Name, _] : Symbols)
++      Requested.insert(*Name);
++
++    std::vector<SelectedMember> Members;
++    if (Error Err = selectMembers(*IRC, Requested, Members))
++      return Err;
++    if (!Requested.empty())
++      if (Error Err = selectMembers(*SVML, Requested, Members))
++        return Err;
++
++    for (const SelectedMember &Member : Members)
++      if (Error Err = addMember(JD, Member))
++        return Err;
++
++    return Error::success();
++  }
++
++private:
++  bool isSVMLName(StringRef Name) const {
++    if (GlobalPrefix != '\0') {
++      if (Name.empty() || Name.front() != GlobalPrefix)
++        return false;
++      Name = Name.drop_front();
++    }
++    return Name.starts_with("__svml_");
++  }
++
++  static Error openArchive(std::unique_ptr<IndexedArchive> &Out,
++                           StringRef Path) {
++    ErrorOr<std::unique_ptr<MemoryBuffer>> Buffer = MemoryBuffer::getFile(
++        Path, /*IsText=*/false, /*RequiresNullTerminator=*/false);
++    if (!Buffer)
++      return createStringError(inconvertibleErrorCode(),
++                               "pocl_jit: could not open SVML archive '%s': %s",
++                               Path.str().c_str(),
++                               Buffer.getError().message().c_str());
++
++    Expected<std::unique_ptr<object::Archive>> Archive =
++        object::Archive::create((*Buffer)->getMemBufferRef());
++    if (!Archive)
++      return createStringError(
++          inconvertibleErrorCode(),
++          "pocl_jit: could not parse SVML archive '%s': %s", Path.str().c_str(),
++          toString(Archive.takeError()).c_str());
++    if (!(*Archive)->hasSymbolTable())
++      return createStringError(
++          inconvertibleErrorCode(),
++          "pocl_jit: SVML archive '%s' has no symbol table",
++          Path.str().c_str());
++
++    auto Indexed = std::make_unique<IndexedArchive>();
++    Indexed->Path = Path.str();
++    Indexed->Buffer = std::move(*Buffer);
++    Indexed->Archive = std::move(*Archive);
++    Out = std::move(Indexed);
++    return Error::success();
++  }
++
++  Error activate() {
++    if (Error Err = openArchive(IRC, IRCPath))
++      return Err;
++    if (Error Err = openArchive(SVML, SVMLPath))
++      return Err;
++    Active = true;
++    POCL_MSG_PRINT_LLVM("pocl_jit: activating lazy SVML archive provider\n");
++    return Error::success();
++  }
++
++  static Error selectMembers(IndexedArchive &Source, StringSet<> &Requested,
++                             std::vector<SelectedMember> &Members) {
++    std::set<uint64_t> SelectedOffsets;
++    for (const object::Archive::Symbol &Symbol : Source.Archive->symbols()) {
++      StringRef Name = Symbol.getName();
++      if (Requested.find(Name) == Requested.end())
++        continue;
++
++      Expected<object::Archive::Child> Child = Symbol.getMember();
++      if (!Child)
++        return Child.takeError();
++      uint64_t Offset = Child->getDataOffset();
++      Requested.erase(Name);
++      if (Source.LoadedOffsets.count(Offset) ||
++          !SelectedOffsets.insert(Offset).second)
++        continue;
++
++      Expected<MemoryBufferRef> Buffer = Child->getMemoryBufferRef();
++      if (!Buffer)
++        return Buffer.takeError();
++      Members.push_back({&Source, Offset, *Buffer});
++    }
++    return Error::success();
++  }
++
++  Error addMember(JITDylib &JD, const SelectedMember &Member) {
++    std::string Identifier =
++        (Member.Source->Path + "[" + std::to_string(Member.Offset) + "](" +
++         Member.Buffer.getBufferIdentifier().str() + ")");
++    std::unique_ptr<MemoryBuffer> Buffer =
++        MemoryBuffer::getMemBuffer(Member.Buffer.getBuffer(), Identifier,
++                                   /*RequiresNullTerminator=*/false);
++    auto Interface = getObjectFileInterface(Layer.getExecutionSession(),
++                                            Buffer->getMemBufferRef());
++    if (!Interface)
++      return Interface.takeError();
++    if (Error Err = Layer.add(JD, std::move(Buffer), std::move(*Interface)))
++      return Err;
++
++    Member.Source->LoadedOffsets.insert(Member.Offset);
++    POCL_MSG_PRINT_LLVM("pocl_jit: materializing SVML archive member %s\n",
++                        Identifier.c_str());
++    return Error::success();
++  }
++
++  ObjectLayer &Layer;
++  std::string IRCPath;
++  std::string SVMLPath;
++  char GlobalPrefix;
++  bool Active = false;
++  std::unique_ptr<IndexedArchive> IRC;
++  std::unique_ptr<IndexedArchive> SVML;
++};
++
++static bool addLazySVMLGenerator(const char *IRCPath, const char *SVMLPath) {
++  if (!IRCPath || !IRCPath[0] || !SVMLPath || !SVMLPath[0])
++    return false;
++  JITDylibSP PSJD = TheJIT->getProcessSymbolsJITDylib();
++  if (!PSJD)
++    return false;
++  PSJD->addGenerator(std::make_unique<LazySVMLDefinitionGenerator>(
++      TheJIT->getObjLinkingLayer(), IRCPath, SVMLPath,
++      TheJIT->getDataLayout().getGlobalPrefix()));
++  return true;
++}
++
++/* Inject symbols that kernel objects reference but that are linked into libpocl
++   rather than exported by a process library: PoCL's own host callbacks and, on
++   Windows, the libgcc/compiler-rt stack probe. Defining them as absolute
++   symbols makes resolution independent of libpocl's (deliberately hidden)
++   dynamic-symbol visibility. They are constant for the process, so this is done
++   once at init into the process-symbols JITDylib that every kernel JITDylib
++   links against. Everything else (libc/libm/compiler-rt and msvcrt's mem*
++   helpers) resolves via the JIT's default process-symbol search, backed up on
++   POSIX by a search of libpocl's own handle (see pocl_jit_initialize). */
++void defineHostSymbols(JITDylib &JD) {
++  SymbolMap Syms;
++#ifdef ENABLE_PRINTF_IMMEDIATE_FLUSH
++  Syms[TheJIT->mangleAndIntern("pocl_flush_printf_buffer")] = {
++      ExecutorAddr::fromPtr(&pocl_flush_printf_buffer),
++      JITSymbolFlags::Exported | JITSymbolFlags::Callable};
++#endif
++#ifdef __MINGW32__
++  Syms[TheJIT->mangleAndIntern("___chkstk_ms")] = {
++      ExecutorAddr::fromPtr(&___chkstk_ms),
++      JITSymbolFlags::Exported | JITSymbolFlags::Callable};
++  Syms[TheJIT->mangleAndIntern("__truncsfhf2")] = {
++      ExecutorAddr::fromPtr(&poclTruncSFHF2),
++      JITSymbolFlags::Exported | JITSymbolFlags::Callable};
++  Syms[TheJIT->mangleAndIntern("__truncdfhf2")] = {
++      ExecutorAddr::fromPtr(&poclTruncDFHF2),
++      JITSymbolFlags::Exported | JITSymbolFlags::Callable};
++  Syms[TheJIT->mangleAndIntern("__extendhfsf2")] = {
++      ExecutorAddr::fromPtr(&poclExtendHFSF2),
++      JITSymbolFlags::Exported | JITSymbolFlags::Callable};
++  Syms[TheJIT->mangleAndIntern("__extendhfdf2")] = {
++      ExecutorAddr::fromPtr(&poclExtendHFDF2),
++      JITSymbolFlags::Exported | JITSymbolFlags::Callable};
++#endif
++  if (Syms.empty())
++    return;
++  if (Error Err = JD.define(absoluteSymbols(std::move(Syms))))
++    POCL_MSG_ERR("pocl_jit: failed to define host symbols: %s\n",
++                 toString(std::move(Err)).c_str());
++}
++
++} // namespace
++
++int pocl_jit_initialize(const char *TripleStr, const char *CPU) {
++  std::lock_guard<std::mutex> Lock(JITMutex);
++  if (TheJIT)
++    return 0;
++  if (JITFailed)
++    return -1;
++
++  /* Called from device init, which runs before clCreateContext's
++     InitializeLLVM() call, so register the native target (and the rest of
++     the one-time LLVM setup) here. InitializeLLVM() is idempotent. */
++  InitializeLLVM();
++
++  LLJITBuilder Builder;
++
++  /* Force the JITLink object-linking layer (LLJIT defaults to RuntimeDyld).
++     JITLink resolves relocations, maps code into executable memory, and
++     registers EH frames in-process, so no external linker is needed. The
++     creator callback signature varies by LLVM release:
++        LLVM <= 20 : (ExecutionSession&, const Triple&)
++        LLVM 21, 22: (ExecutionSession&)
++        LLVM >= 23 : (ExecutionSession&, jitlink::JITLinkMemoryManager&)
++     In each case we build an ObjectLinkingLayer, which uses the
++     ExecutorProcessControl's in-process memory manager by default. */
++  Builder.setObjectLinkingLayerCreator(
++#if LLVM_MAJOR >= 23
++      [](ExecutionSession &ES, jitlink::JITLinkMemoryManager &MM)
++          -> Expected<std::unique_ptr<ObjectLayer>> {
++        return std::make_unique<ObjectLinkingLayer>(ES, MM);
++      }
++#elif LLVM_MAJOR >= 21
++      [](ExecutionSession &ES) -> Expected<std::unique_ptr<ObjectLayer>> {
++        return std::make_unique<ObjectLinkingLayer>(ES);
++      }
++#else
++      [](ExecutionSession &ES,
++         const llvm::Triple &) -> Expected<std::unique_ptr<ObjectLayer>> {
++        return std::make_unique<ObjectLinkingLayer>(ES);
++      }
++#endif
++  );
++
++  /* Normalize the triple (e.g. "x86_64-w64-mingw32" -> "...-windows-gnu") so the
++     JIT's target machine and data layout use the COFF/Win64 form that matches the
++     kernel objects codegen emits; see GetTargetMachine() in pocl_llvm_wg.cc. */
++  JITTargetMachineBuilder JTMB{
++      llvm::Triple(llvm::Triple::normalize(TripleStr ? TripleStr : ""))};
++  if (CPU && CPU[0])
++    JTMB.setCPU(CPU);
++  Builder.setJITTargetMachineBuilder(std::move(JTMB));
++
++  Expected<std::unique_ptr<LLJIT>> JIT = Builder.create();
++  /* Test hook: simulate an environment where the JIT cannot be brought up
++     (unsupported triple, executor setup failure) to exercise the linker
++     fallback; see test_jit_fallback.jl. */
++  if (JIT && getenv("POCL_FAULT_INJECT_JIT"))
++    JIT = createStringError(inconvertibleErrorCode(),
++                            "injected failure (POCL_FAULT_INJECT_JIT)");
++  if (!JIT) {
++    POCL_MSG_WARN("pocl_jit: LLJIT creation failed: %s;"
++                  " falling back to linking kernel binaries\n",
++                  toString(JIT.takeError()).c_str());
++    JITFailed = true;
++    return -1;
++  }
++  TheJIT = JIT->release();
++
++  /* Define PoCL's host callbacks (and the Windows stack probe) once, into the
++     process-symbols JITDylib that every kernel JITDylib links against. */
++  if (JITDylibSP PSJD = TheJIT->getProcessSymbolsJITDylib())
++    defineHostSymbols(*PSJD);
++
++#ifdef HOST_CPU_COMPILER_RT_LIBRARY
++  if (!loadPrivateStaticArchive(HOST_CPU_COMPILER_RT_LIBRARY))
++    POCL_MSG_WARN(
++        "pocl_jit: could not load the compiler runtime archive '%s'; kernels "
++        "needing compiler-rt/libgcc helpers may fail to resolve symbols\n",
++        HOST_CPU_COMPILER_RT_LIBRARY);
++#endif
++
++#ifdef HAVE_DLFCN_H
++  /* The JIT's default process-symbol search uses the global dlsym scope, which
++     misses libpocl's private dependencies (libgcc_s for builtins like
++     __aeabi_uldivmod or __extendhfsf2, libm before glibc 2.34) when an ICD
++     loader dlopen'd libpocl RTLD_LOCAL. Also search libpocl's own handle, whose
++     dlsym scope covers its dependency chain, the way each kernel .so's implicit
++     -lgcc and DT_NEEDED entries do on the link path. This pins libpocl in
++     memory, which the process-lifetime JIT does anyway. On failure (e.g.
++     libpocl linked statically) kernels fall back to the process-global
++     lookup. */
++  const char *SelfPath =
++      pocl_dynlib_pathname(reinterpret_cast<void *>(&pocl_jit_initialize));
++  if (!addLibrarySearchGenerator(SelfPath))
++    POCL_MSG_PRINT_LLVM(
++        "pocl_jit: could not add libpocl's own libraries ('%s') to the symbol "
++        "search; kernels needing libpocl's private dependencies (libgcc_s, "
++        "libm) may fail to resolve symbols if those are not process-global\n",
++        SelfPath ? SelfPath : "<unknown>");
++#endif
++
++  /* CPU codegen vectorizes libm calls (expf, sinf, ...) into a vector-math
++     library's symbols (e.g. _ZGVdN8v_expf, __svml_expf8). The library is chosen
++     at configure time, matching codegen's veclib selection in pocl_llvm_wg.cc;
++     expose that same one to the JIT so the symbols resolve. */
++#if defined(ENABLE_HOST_CPU_VECTORIZE_LIBMVEC)
++  /* The configured SONAME first (e.g. SLEEF's libsleefgnuabi.so.3 when LIBMVEC was pointed
++     at it, so we don't depend on a system libmvec), then the configure-time path, then the
++     plain glibc SONAME as a last resort. */
++  const char *Candidates[] = {
++#ifdef HOST_CPU_LIBMVEC_LIBRARY
++      HOST_CPU_LIBMVEC_LIBRARY,
++#endif
++#ifdef HOST_CPU_LIBMVEC_LIBRARY_FALLBACK
++      HOST_CPU_LIBMVEC_LIBRARY_FALLBACK,
++#endif
++      "libmvec.so.1",
++  };
++  bool VecMathLoaded = false;
++  for (const char *VecMathLib : Candidates)
++    if ((VecMathLoaded = addLibrarySearchGenerator(VecMathLib)))
++      break;
++  if (!VecMathLoaded)
++    POCL_MSG_WARN(
++        "pocl_jit: could not load the libmvec vector-math library; vectorized "
++        "math kernels may fail to resolve their symbols\n");
++#elif defined(ENABLE_HOST_CPU_VECTORIZE_SLEEF)
++  /* The configured SONAME first, then the configure-time path, then the
++     plain library name as a last resort. */
++  const char *Candidates[] = {
++#ifdef HOST_CPU_SLEEF_LIBRARY
++      HOST_CPU_SLEEF_LIBRARY,
++#endif
++#ifdef HOST_CPU_SLEEF_LIBRARY_FALLBACK
++      HOST_CPU_SLEEF_LIBRARY_FALLBACK,
++#endif
++      "libsleef.so",
++  };
++  bool VecMathLoaded = false;
++  for (const char *VecMathLib : Candidates)
++    if ((VecMathLoaded = addLibrarySearchGenerator(VecMathLib)))
++      break;
++  if (!VecMathLoaded)
++    POCL_MSG_WARN(
++        "pocl_jit: could not load the SLEEF vector-math library; vectorized "
++        "math kernels may fail to resolve their symbols\n");
++#elif defined(ENABLE_HOST_CPU_VECTORIZE_SVML)
++  /* Do not index either archive here. Most cached kernels do not need SVML,
++     and the local generator opens both archives only after a __svml_* lookup.
++     Once active it also handles the non-SVML libirc helpers introduced by a
++     materialized libsvml member. */
++  bool VecMathLoaded = false;
++#if defined(HOST_CPU_IRC_LIBRARY) && defined(HOST_CPU_SVML_LIBRARY)
++  VecMathLoaded =
++      addLazySVMLGenerator(HOST_CPU_IRC_LIBRARY, HOST_CPU_SVML_LIBRARY);
++#endif
++  if (!VecMathLoaded)
++    POCL_MSG_WARN(
++        "pocl_jit: could not configure the lazy SVML archive provider; "
++        "vectorized math kernels may fail to resolve their symbols\n");
++#endif
++
++  return 0;
++}
++
++void *pocl_jit_load_object(const char *Path, const char *UniqName) {
++  std::lock_guard<std::mutex> Lock(JITMutex);
++  if (!TheJIT) {
++    POCL_MSG_ERR("pocl_jit: load_object called before initialize\n");
++    return nullptr;
++  }
++
++  ErrorOr<std::unique_ptr<MemoryBuffer>> Buf = MemoryBuffer::getFile(
++      Path, /*IsText=*/false, /*RequiresNullTerminator=*/false);
++  if (!Buf) {
++    POCL_MSG_ERR("pocl_jit: cannot read object '%s': %s\n", Path,
++                 Buf.getError().message().c_str());
++    return nullptr;
++  }
++
++  /* Give each loaded object its own JITDylib so symbol names never collide
++     across kernels/specializations and can be unloaded independently. The
++     JITDylib pointer doubles as the opaque module handle. */
++  std::string Name = std::string(UniqName ? UniqName : "kernel") + "#" +
++                     std::to_string(JDCounter++);
++  Expected<JITDylib &> JD = TheJIT->createJITDylib(std::move(Name));
++  if (!JD) {
++    POCL_MSG_ERR("pocl_jit: createJITDylib failed: %s\n",
++                 toString(JD.takeError()).c_str());
++    return nullptr;
++  }
++
++  if (Error Err = TheJIT->addObjectFile(*JD, std::move(*Buf))) {
++    POCL_MSG_ERR("pocl_jit: addObjectFile('%s') failed: %s\n", Path,
++                 toString(std::move(Err)).c_str());
++    if (Error RmErr = TheJIT->getExecutionSession().removeJITDylib(*JD))
++      consumeError(std::move(RmErr));
++    return nullptr;
++  }
++
++  return &*JD;
++}
++
++void *pocl_jit_lookup(void *Handle, const char *SymbolName) {
++  std::lock_guard<std::mutex> Lock(JITMutex);
++  JITDylib *JD = static_cast<JITDylib *>(Handle);
++  if (!TheJIT || JD == nullptr)
++    return nullptr;
++
++  /* ORC mangles the unmangled name for the target (e.g. adds the leading
++     underscore on Mach-O), so we pass the plain C symbol name. Linking and
++     relocation of the object happen here, on first lookup. */
++  Expected<ExecutorAddr> Addr = TheJIT->lookup(*JD, SymbolName);
++  if (!Addr) {
++    /* Leave reporting to the caller, which retrieves the diagnostic through
++       pocl_jit_last_error() (the dlerror() pattern), so only record it
++       instead of printing an error here. */
++    LastLookupError = toString(Addr.takeError());
++    POCL_MSG_PRINT_LLVM("pocl_jit: lookup('%s') failed: %s\n", SymbolName,
++                        LastLookupError.c_str());
++    return nullptr;
++  }
++  return reinterpret_cast<void *>(Addr->getValue());
++}
++
++const char *pocl_jit_last_error(void) {
++  std::lock_guard<std::mutex> Lock(JITMutex);
++  return LastLookupError.empty() ? nullptr : LastLookupError.c_str();
++}
++
++int pocl_jit_unload(void *Handle) {
++  std::lock_guard<std::mutex> Lock(JITMutex);
++  JITDylib *JD = static_cast<JITDylib *>(Handle);
++  if (JD == nullptr)
++    return 0;
++  if (TheJIT) {
++    if (Error Err = TheJIT->getExecutionSession().removeJITDylib(*JD))
++      POCL_MSG_ERR("pocl_jit: removeJITDylib failed: %s\n",
++                   toString(std::move(Err)).c_str());
++  }
++  return 1;
++}
+diff --git a/lib/CL/pocl_llvm_orc.h b/lib/CL/pocl_llvm_orc.h
+new file mode 100644
+index 000000000..687aac476
+--- /dev/null
++++ b/lib/CL/pocl_llvm_orc.h
+@@ -0,0 +1,75 @@
++/* OpenCL runtime library: in-process JIT linking and loading of kernel object
++   files via LLVM ORC + JITLink.
++
++   Copyright (c) 2026 PoCL developers
++
++   Permission is hereby granted, free of charge, to any person obtaining a copy
++   of this software and associated documentation files (the "Software"), to
++   deal in the Software without restriction, including without limitation the
++   rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
++   sell copies of the Software, and to permit persons to whom the Software is
++   furnished to do so, subject to the following conditions:
++
++   The above copyright notice and this permission notice shall be included in
++   all copies or substantial portions of the Software.
++
++   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
++   IN THE SOFTWARE.
++*/
++
++/* In-process JIT linking and loading of CPU host-device kernel objects via an
++   ORC LLJIT whose object-linking layer is JITLink. JITLink is both the linker
++   and the loader: it resolves relocations, maps the kernel code into
++   executable memory, and registers EH frames, without spawning an external
++   linker and without producing an on-disk shared object. */
++
++#ifndef POCL_LLVM_ORC_H
++#define POCL_LLVM_ORC_H
++
++#ifdef __cplusplus
++extern "C"
++{
++#endif
++
++/* Create the process-global LLJIT that loads kernel objects. Called from
++   CPU device init; idempotent and thread-safe. The triple determines the
++   JIT's data layout (and thus symbol mangling). Returns 0 on success. A
++   failure to create the JIT is latched internally and every later call
++   fails fast; device init uses the result to permanently route the device
++   through the linker path (see pocl_cpu_device_uses_jit()). */
++int pocl_jit_initialize (const char *triple,
++                         const char *cpu);
++
++/* Read a relocatable kernel object file from 'path' and stage it for
++   in-process JIT-linking in a fresh isolated JITDylib, returning an opaque
++   handle (NULL on failure). Relocation and linking are deferred until the
++   first pocl_jit_lookup() on the handle. 'uniq_name' is used only for
++   diagnostics and need not be unique. */
++void *pocl_jit_load_object (const char *path, const char *uniq_name);
++
++/* Look up an (unmangled) symbol in a previously loaded object. Returns the
++   executable address, or NULL on failure; the failure text is then available
++   from pocl_jit_last_error(). */
++void *pocl_jit_lookup (void *handle, const char *symbol_name);
++
++/* Text of the most recent pocl_jit_lookup() failure (a dlerror() analogue),
++   or NULL if no lookup has failed yet. With JITLink the first lookup is where
++   linking happens, so this is the diagnostic that names unresolved symbols or
++   relocation problems. The returned pointer is valid until the next failing
++   lookup; use (or copy) it immediately. */
++const char *pocl_jit_last_error (void);
++
++/* Unload a previously loaded object, reclaiming its code and memory.
++   Returns nonzero on success. */
++int pocl_jit_unload (void *handle);
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif
+diff --git a/lib/CL/pocl_llvm_spirv.cc b/lib/CL/pocl_llvm_spirv.cc
+index eb2cbaf1c..d157a1996 100644
+--- a/lib/CL/pocl_llvm_spirv.cc
++++ b/lib/CL/pocl_llvm_spirv.cc
+@@ -811,7 +811,7 @@ static int convertBCorSPV(char *InputPath,
+   }
+   pocl_lock_t Lock;
+   POCL_INIT_LOCK(Lock);
+-  if (pocl_llvm_codegen2(Triple, "", "", CL_DEVICE_TYPE_GPU, &Lock,
++  if (pocl_llvm_codegen2(Triple, "", "", CL_DEVICE_TYPE_GPU, /*ForJIT=*/0, &Lock,
+                          Mod, CL_FALSE, CL_TRUE, &Content, &ContentSize) != CL_SUCCESS) {
+     BuildLog->append("failed to convert LLVM IR to SPIR-V "
+                      "using LLVM SPIRV backend\n");
+diff --git a/lib/CL/pocl_llvm_wg.cc b/lib/CL/pocl_llvm_wg.cc
+index 85e5ca59a..baed8c4a1 100644
+--- a/lib/CL/pocl_llvm_wg.cc
++++ b/lib/CL/pocl_llvm_wg.cc
+@@ -29,7 +29,10 @@
+ #include "CompilerWarnings.h"
+ IGNORE_COMPILER_WARNING("-Wmaybe-uninitialized")
+ #include <llvm/ADT/StringRef.h>
++#include <llvm/ADT/StringSet.h>
+ #include <llvm/ADT/Twine.h>
++#include <llvm/IR/InstIterator.h>
++#include <llvm/IR/InstrTypes.h>
+ #include <llvm/TargetParser/Triple.h>
+ POP_COMPILER_DIAGS
+ IGNORE_COMPILER_WARNING("-Wunused-parameter")
+@@ -49,6 +52,7 @@ IGNORE_COMPILER_WARNING("-Wunused-parameter")
+ #include <llvm/Support/CodeGen.h>
+ #include <llvm/Target/TargetMachine.h>
+ #include <llvm/Target/TargetOptions.h>
++#include <llvm/Transforms/IPO/Internalize.h>
+ #include <llvm/Transforms/Utils/Cloning.h>
+ // legacy PassManager is needed for CodeGen, even if new PM is used for IR
+ #include <llvm/IR/LegacyPassManager.h>
+@@ -114,17 +118,32 @@ static bool enableDebugLogs() {
+ }
+ 
+ // Returns the TargetMachine instance or zero if no triple is provided.
++// ForJIT selects a code model suitable for the in-process ORC/JITLink JIT (see
++// pocl_llvm_orc.cc); it only changes codegen on COFF targets.
+ static TargetMachine *GetTargetMachine(const char* TripleStr,
+                                        const char* MCPU = "",
+-                                       const char* Features = "") {
++                                       const char* Features = "",
++                                       bool ForJIT = false) {
+ 
+   std::string Error;
+ 
++  // Normalize the triple before handing it to codegen. A configure-time triple
++  // like "x86_64-w64-mingw32" (LLVM's own default target triple on MinGW, so
++  // what LLC_TRIPLE picks up from a cmake LLVM package) has an OS component
++  // ("mingw32") that llvm::Triple does not recognize, so it falls back to the
++  // ELF object format and the System V ABI -- yielding kernels the COFF/Win64
++  // host then calls with the wrong calling convention (a crash). clang and llc
++  // normalize the triple to "x86_64-w64-windows-gnu" (OS=Win32 => COFF) before
++  // codegen; do the same here so both the object format and the code-model
++  // decision below match the host ABI. A no-op for already-canonical triples.
++  std::string TripleNorm = llvm::Triple::normalize(TripleStr);
++  llvm::Triple TheTriple(TripleNorm);
++
+ #if LLVM_MAJOR < 22
+-  const Target *TheTarget = TargetRegistry::lookupTarget(TripleStr,
++  const Target *TheTarget = TargetRegistry::lookupTarget(TripleNorm,
+                                                          Error);
+ #else
+-  const Target *TheTarget = TargetRegistry::lookupTarget(Triple(TripleStr),
++  const Target *TheTarget = TargetRegistry::lookupTarget(TheTriple,
+                                                          Error);
+ #endif
+ 
+@@ -133,14 +152,26 @@ static TargetMachine *GetTargetMachine(const char* TripleStr,
+     return nullptr;
+   }
+ 
++  // JITLink's COFF/x86-64 backend does not synthesize far-call stubs (its ELF
++  // and Mach-O backends do). Under the small code model a kernel's +-2GB
++  // PC-relative call to a runtime helper mapped far from the JIT-allocated code
++  // overflows: the libgcc stack probe (___chkstk_ms) and msvcrt's mem* helpers
++  // both live in libraries outside that range. The large code model emits
++  // 64-bit indirect calls instead, so they resolve wherever they are. Hence the
++  // COFF JIT only; ELF/Mach-O and the linker-based paths are fine with small +
++  // PIC.
++  CodeModel::Model CM = CodeModel::Small;
++  if (ForJIT && TheTriple.isOSBinFormatCOFF())
++    CM = CodeModel::Large;
++
+   TargetMachine *TM = TheTarget->createTargetMachine(
+ #if LLVM_MAJOR < 22
+-      TripleStr,
++      TripleNorm,
+ #else
+-      Triple(TripleStr),
++      TheTriple,
+ #endif
+       MCPU, Features, TargetOptions(),
+-      Reloc::PIC_, CodeModel::Small,
++      Reloc::PIC_, CM,
+       CodeGenOptLevel::Aggressive);
+ 
+   assert(TM != NULL && "llvm target has no targetMachine constructor");
+@@ -945,6 +976,91 @@ pocl_llvm_run_pocl_passes(llvm::Module *Bitcode,
+   return 0;
+ }
+ 
++#ifdef HOST_CPU_ENABLE_JIT
++/* Make an in-process JIT work-group object self-contained.
++
++   The JIT links each kernel object in isolation, so every builtin the kernel
++   references must be defined in the object. Two things leave them unresolved:
++
++   - A pocl pass can leave a call whose callee Function still belongs to the
++     program / kernel-library module (they share the LLVMContext). Such a
++     cross-module reference is absent from this module's symbol table.
++   - clBuildProgram's callgraph-selective link only copied the builtins the
++     program IR referenced at that point; e.g. FP16 vector math helpers
++     (_cl_sinDv4_Dh, ...) can still be referenced but undefined here.
++
++   The shared-library path resolves both at the final .so link. Do the
++   equivalent at IR time: localize the cross-module references, copy the
++   referenced builtin bodies from the device kernel library, then internalize
++   everything but the launcher(s) and run GlobalDCE so the object neither
++   leaves builtins undefined nor exports them. Mirrors the CUDA linkLibDevice
++   flow. */
++static int linkKernelLibraryForJIT(llvm::Module *ParallelBC,
++                                   cl_device_id Device,
++                                   PoclLLVMContextData *PoCLLLVMContext) {
++  llvm::Module *KernelLib = getKernelLibrary(Device, PoCLLLVMContext);
++  if (KernelLib == nullptr) {
++    POCL_MSG_ERR("pocl_jit: cannot load the kernel library to finalize the "
++                 "work-group object\n");
++    return -1;
++  }
++
++  // Rewrite calls whose callee still lives in another module to a local
++  // declaration of the same name, so the selective linker below -- which finds
++  // undefined symbols by walking this module's function list -- resolves them
++  // like any other builtin. Restricted to builtins the kernel library actually
++  // defines; anything else (libc/libm/compiler-rt) is left for the JIT to
++  // resolve from process symbols. That also covers pocl host callbacks such as
++  // pocl_flush_printf_buffer when ENABLE_PRINTF_IMMEDIATE_FLUSH is enabled:
++  // defineHostSymbols() provides it as an absolute ORC symbol, and the
++  // program-stage link inserts the declaration only after its unresolved-symbol
++  // check has already run.
++  for (llvm::Function &F : *ParallelBC) {
++    for (llvm::Instruction &I : llvm::instructions(F)) {
++      auto *CB = llvm::dyn_cast<llvm::CallBase>(&I);
++      if (CB == nullptr)
++        continue;
++      llvm::Function *Callee = CB->getCalledFunction();
++      if (Callee == nullptr || Callee->getParent() == ParallelBC ||
++          Callee->isIntrinsic())
++        continue;
++      llvm::Function *LibFunc = KernelLib->getFunction(Callee->getName());
++      if (LibFunc == nullptr || LibFunc->isDeclaration())
++        continue;
++      llvm::FunctionCallee Local = ParallelBC->getOrInsertFunction(
++          Callee->getName(), Callee->getFunctionType());
++      if (auto *LF = llvm::dyn_cast<llvm::Function>(Local.getCallee()))
++        LF->copyAttributesFrom(Callee);
++      CB->setCalledFunction(Local);
++    }
++  }
++
++  // The Workgroup pass leaves only the launcher(s) with external linkage, and
++  // the builtins the link is about to copy in arrive external too. Remember the
++  // current entry points so we can internalize the copied builtins afterwards.
++  llvm::StringSet<> EntryPoints;
++  for (llvm::Function &F : *ParallelBC)
++    if (!F.isDeclaration() && !F.hasLocalLinkage())
++      EntryPoints.insert(F.getName());
++
++  std::string Log;
++  if (link(ParallelBC, KernelLib, Log, Device, /*StripAllDebugInfo=*/true,
++           /*ErrorOnUnresolved=*/false)) {
++    POCL_MSG_ERR("pocl_jit: linking the kernel library into the work-group "
++                 "object failed:\n%s\n",
++                 Log.c_str());
++    return -1;
++  }
++
++  auto PreserveEntryPoints = [&EntryPoints](const llvm::GlobalValue &GV) {
++    return EntryPoints.contains(GV.getName());
++  };
++  internalizeModule(*ParallelBC, PreserveEntryPoints);
++  populateModulePM(nullptr, ParallelBC, /*OptL=*/3);
++  return 0;
++}
++#endif
++
+ int pocl_llvm_generate_workgroup_function_nowrite(
+     unsigned DeviceI, cl_device_id Device, cl_kernel Kernel,
+     _cl_command_node *Command, void **Output, int Specialize) {
+@@ -980,6 +1096,14 @@ int pocl_llvm_generate_workgroup_function_nowrite(
+                                       PoCLLLVMContext, Program, Kernel, Device,
+                                       Specialize);
+ 
++#ifdef HOST_CPU_ENABLE_JIT
++  // The JIT links each kernel object in isolation, so it must carry every
++  // builtin it references (see linkKernelLibraryForJIT). The shared-library
++  // path resolves those at the final link and is left untouched.
++  if (res == 0 && pocl_cpu_device_uses_jit(Device))
++    res = linkKernelLibraryForJIT(ParallelBC, Device, PoCLLLVMContext);
++#endif
++
+   std::string FinalizerCommand =
+       pocl_get_string_option("POCL_BITCODE_FINALIZER", "");
+   if (!FinalizerCommand.empty()) {
+@@ -1226,7 +1350,7 @@ static TargetLibraryInfoImpl *initPassManagerForCodeGen(legacy::PassManager &PM,
+  * Output native object file (<kernel>.so.o). */
+ int pocl_llvm_codegen2(const char* TTriple, const char* MCPU,
+                        const char *Features, cl_device_type DevType,
+-                       pocl_lock_t *Lock, void *Modp, int EmitAsm,
++                       int ForJIT, pocl_lock_t *Lock, void *Modp, int EmitAsm,
+                        int EmitObj, char **Output, uint64_t *OutputSize) {
+ 
+   PoclCompilerMutexGuard LockHolder(Lock);
+@@ -1251,7 +1375,8 @@ int pocl_llvm_codegen2(const char* TTriple, const char* MCPU,
+     }
+   }
+ 
+-  std::unique_ptr<llvm::TargetMachine> TM(GetTargetMachine(TTriple, MCPU, Features));
++  std::unique_ptr<llvm::TargetMachine> TM(
++      GetTargetMachine(TTriple, MCPU, Features, ForJIT));
+   llvm::TargetMachine *Target = TM.get();
+ 
+   // First try direct object code generation from LLVM, if supported by the
+@@ -1380,7 +1505,8 @@ int pocl_llvm_codegen(cl_device_id Device, cl_program Program,
+   PoclLLVMContextData *LLVMCtx = (PoclLLVMContextData *)Ctx->llvm_context_data;
+ 
+   return pocl_llvm_codegen2 (Device->llvm_target_triplet, Device->llvm_cpu,
+-                            Features, Device->type, &LLVMCtx->Lock,
++                            Features, Device->type,
++                            pocl_cpu_device_uses_jit (Device), &LLVMCtx->Lock,
+                             Modp, EmitAsm, EmitObj, Output, OutputSize);
+ }
+ 
+diff --git a/lib/llvmopencl/linker.cpp b/lib/llvmopencl/linker.cpp
+index 69b395e79..9554e2225 100644
+--- a/lib/llvmopencl/linker.cpp
++++ b/lib/llvmopencl/linker.cpp
+@@ -889,7 +889,7 @@ static void replaceIntrinsics(llvm::Module *Program, const llvm::Module *Lib,
+ using namespace pocl;
+ 
+ int link(llvm::Module *Program, const llvm::Module *Lib, std::string &Log,
+-         cl_device_id ClDev, bool StripAllDebugInfo) {
++         cl_device_id ClDev, bool StripAllDebugInfo, bool ErrorOnUnresolved) {
+ 
+   assert(Program);
+   assert(Lib);
+@@ -985,45 +985,47 @@ int link(llvm::Module *Program, const llvm::Module *Lib, std::string &Log,
+   convertAddrSpaceOperator(Program->getFunction("__to_private"), Log);
+   convertAddrSpaceOperator(Program->getFunction("__to_global"), Log);
+ 
+-  // check all function declarations in the program
+-  // *after* we have linked functions from the library
+-  DeclaredFunctions.clear();
+-  for (auto &F : *Program) {
+-    if (F.isDeclaration()) {
+-      DB_PRINT("Post-link: %s is not defined\n", F.getName().data());
+-      DeclaredFunctions.insert(F.getName());
+-      continue;
++  if (ErrorOnUnresolved) {
++    // check all function declarations in the program
++    // *after* we have linked functions from the library
++    DeclaredFunctions.clear();
++    for (auto &F : *Program) {
++      if (F.isDeclaration()) {
++        DB_PRINT("Post-link: %s is not defined\n", F.getName().data());
++        DeclaredFunctions.insert(F.getName());
++        continue;
++      }
+     }
+-  }
+ 
+-  bool FoundAllUndefined = true;
+-  // this one is a handled with a special pocl LLVM pass
+-  StringRef pocl_sampler_handler("__translate_sampler_initializer");
++    bool FoundAllUndefined = true;
++    // this one is a handled with a special pocl LLVM pass
++    StringRef pocl_sampler_handler("__translate_sampler_initializer");
+ 
+-  if (!modIsNvptx(Program)) {
+-    for (auto &DeclIter : DeclaredFunctions) {
+-      llvm::StringRef FName = DeclIter.getKey();
+-      Function *F = Program->getFunction(FName);
++    if (!modIsNvptx(Program)) {
++      for (auto &DeclIter : DeclaredFunctions) {
++        llvm::StringRef FName = DeclIter.getKey();
++        Function *F = Program->getFunction(FName);
+ 
+-      if ((F == NULL) ||
+-          (F->isDeclaration() &&
+-           // A target might want to expose the C99 printf in
+-           // case not supporting the OpenCL 1.2 printf.
+-           F->getName() != "printf" && F->getName() != pocl_sampler_handler &&
+-           !F->getName().starts_with("llvm.") &&
+-           F->getName() != BARRIER_FUNCTION_NAME &&
+-           F->getName() != "__pocl_local_mem_alloca" &&
+-           F->getName() != "__pocl_work_group_alloca")) {
+-        Log.append("Cannot find symbol ");
+-        Log.append(FName.str());
+-        Log.append(" in kernel library\n");
+-        FoundAllUndefined = false;
++        if ((F == NULL) ||
++            (F->isDeclaration() &&
++             // A target might want to expose the C99 printf in
++             // case not supporting the OpenCL 1.2 printf.
++             F->getName() != "printf" && F->getName() != pocl_sampler_handler &&
++             !F->getName().starts_with("llvm.") &&
++             F->getName() != BARRIER_FUNCTION_NAME &&
++             F->getName() != "__pocl_local_mem_alloca" &&
++             F->getName() != "__pocl_work_group_alloca")) {
++          Log.append("Cannot find symbol ");
++          Log.append(FName.str());
++          Log.append(" in kernel library\n");
++          FoundAllUndefined = false;
++        }
+       }
+     }
+-  }
+ 
+-  if (!FoundAllUndefined)
+-    return -1;
++    if (!FoundAllUndefined)
++      return -1;
++  }
+ 
+   shared_copy(Program, Lib, Log, vvm);
+ 
+@@ -1279,4 +1281,3 @@ bool moveProgramScopeVarsOutOfProgramBc(llvm::LLVMContext *Context,
+ }
+ 
+ /* vim: set expandtab ts=2 : */
+-
+diff --git a/lib/llvmopencl/linker.h b/lib/llvmopencl/linker.h
+index afe9f6a7e..b42cf597f 100644
+--- a/lib/llvmopencl/linker.h
++++ b/lib/llvmopencl/linker.h
+@@ -39,10 +39,14 @@
+  * this is faster than calling llvm::Linker and then
+  * running DCE.
+  *
+- * log is used to report errors if we run into undefined symbols
++ * log is used to report errors if we run into undefined symbols.
++ *
++ * If ErrorOnUnresolved is false, declarations that lib does not define are
++ * left in place for a later resolution stage such as the dynamic linker or the
++ * ORC JIT process-symbol search.
+  */
+ int link(llvm::Module *Program, const llvm::Module *Lib, std::string &Log,
+-         cl_device_id ClDev, bool StripAllDebugInfo);
++         cl_device_id ClDev, bool StripAllDebugInfo, bool ErrorOnUnresolved);
+ 
+ int copyKernelFromBitcode(const char* Name, llvm::Module *ParallelBC,
+                           const llvm::Module *Program,
+diff --git a/tests/CMakeLists.txt b/tests/CMakeLists.txt
+index add73e049..7a1310afd 100644
+--- a/tests/CMakeLists.txt
++++ b/tests/CMakeLists.txt
+@@ -27,6 +27,34 @@ set_opencl_header_includes()
+ 
+ add_test(NAME pocl_version_check COMMAND test_version)
+ 
++function(add_cpu_jit_test TEST_NAME TEST_TARGET)
++  if(NOT (ENABLE_HOST_CPU_DEVICES AND HOST_CPU_ENABLE_JIT))
++    return()
++  endif()
++
++  set(FULL_TEST_NAME "cpu_jit/${TEST_NAME}")
++  set(RUN_CMD "$<TARGET_FILE:${TEST_TARGET}>")
++  foreach(TEST_ARG ${ARGN})
++    set(RUN_CMD "${RUN_CMD}####${TEST_ARG}")
++  endforeach()
++
++  add_test(NAME "${FULL_TEST_NAME}"
++    COMMAND "${CMAKE_COMMAND}" "-Dtest_cmd=${RUN_CMD}"
++            "-P" "${CMAKE_SOURCE_DIR}/cmake/run_test.cmake")
++  set_tests_properties("${FULL_TEST_NAME}"
++    PROPERTIES
++      ENVIRONMENT "POCL_DEVICES=cpu;POCL_CPU_JIT=1;POCL_WORK_GROUP_METHOD=loopvec"
++      LABELS "cpu_jit"
++      PASS_REGULAR_EXPRESSION "OK"
++      FAIL_REGULAR_EXPRESSION "FAIL"
++      SKIP_RETURN_CODE 77
++      DEPENDS "pocl_version_check")
++  if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.16)
++    set_tests_properties("${FULL_TEST_NAME}" PROPERTIES
++      SKIP_REGULAR_EXPRESSION "SKIP")
++  endif()
++endfunction()
++
+ if(ENABLE_HOST_CPU_DEVICES)
+     # If basic OpenCL device is not included, we assume the device is chosen using
+     # the POCL_DEVICES env. Otherwise, use the basic dev to check that we are using
+diff --git a/tests/kernel/CMakeLists.txt b/tests/kernel/CMakeLists.txt
+index 749bfb322..481203c77 100644
+--- a/tests/kernel/CMakeLists.txt
++++ b/tests/kernel/CMakeLists.txt
+@@ -63,6 +63,9 @@ add_test_pocl(NAME "kernel/test_min_max"
+ 
+ add_test_pocl(NAME "kernel/test_length_distance"
+               COMMAND "kernel" "test_length_distance")
++if(ENABLE_HOST_CPU_VECTORIZE_BUILTINS)
++  add_cpu_jit_test("vector_math" kernel "test_length_distance")
++endif()
+ 
+ add_test_pocl(NAME "kernel/test_fmin_fmax_fma"
+               COMMAND "kernel" "test_fmin_fmax_fma")
+@@ -107,6 +110,9 @@ endif()
+ 
+ add_test_pocl(NAME "kernel/test_halfs"
+               COMMAND "kernel" "test_halfs")
++if(HOST_CPU_ENABLE_CL_KHR_FP16)
++  add_cpu_jit_test("compiler_rt_fp16" kernel "test_halfs")
++endif()
+ 
+ # convert_type_{4,8,16} + hadd/as_type/bitselect produce very large kernels
+ # that can cause LLVM to spend extremely long time on optimization,
+@@ -236,6 +242,9 @@ add_test_pocl(NAME "kernel/test_ucharn"
+ add_test_pocl(NAME "kernel/test_printf"
+               EXPECTED_OUTPUT "test_printf_expout.txt"
+               COMMAND "kernel" "test_printf")
++if(ENABLE_PRINTF_IMMEDIATE_FLUSH)
++  add_cpu_jit_test("printf_flush" kernel "test_printf")
++endif()
+ 
+ add_test_pocl(NAME "kernel/test_printf_vectors"
+               EXPECTED_OUTPUT "test_printf_vectors_expout.txt"
+diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
+index 16bf3b378..57aa91cd8 100644
+--- a/tests/regression/CMakeLists.txt
++++ b/tests/regression/CMakeLists.txt
+@@ -58,7 +58,7 @@ set(PROGRAMS_TO_BUILD test_barrier_between_for_loops test_early_return
+   test_workitem_func_outside_kernel test_program_scope_vars test_issue_1548
+   test_issue_1525 test_issue_1608 test_issue_1826 test_builtin_regression
+   test_mem_host_ptr_issue test_issue_1962 test_issue_2005
+-  test_global_atomics
++  test_global_atomics test_large_stack_frame
+ )
+ if(UNIX)
+   list(APPEND PROGRAMS_TO_BUILD test_issue_2174)
+@@ -91,6 +91,8 @@ endif()
+ add_test_pocl(NAME "regression/test_issue_231" COMMAND "test_issue_231")
+ 
+ add_test_pocl(NAME "regression/test_global_atomics" COMMAND "test_global_atomics")
++add_cpu_jit_test("atomics" test_global_atomics)
++add_cpu_jit_test("stack_probe" test_large_stack_frame)
+ 
+ add_test_pocl(NAME "regression/test_issue_445" COMMAND "test_issue_445")
+ 
+@@ -114,6 +116,7 @@ add_test_pocl(NAME "regression/test_issue_1826" COMMAND "test_issue_1826")
+ 
+ add_test_pocl(NAME "regression/test_builtin_regression"
+   COMMAND "test_builtin_regression")
++add_cpu_jit_test("kernel_library" test_builtin_regression)
+ 
+ 
+ add_test_pocl(NAME "regression/test_mem_host_ptr_issue"
+diff --git a/tests/regression/test_large_stack_frame.cpp b/tests/regression/test_large_stack_frame.cpp
+new file mode 100644
+index 000000000..4d5de6dad
+--- /dev/null
++++ b/tests/regression/test_large_stack_frame.cpp
+@@ -0,0 +1,69 @@
++// Regression test for CPU kernels whose private stack frame is large enough to
++// require a target ABI stack-probe helper (___chkstk_ms on x86_64 MinGW).
++
++#define CL_HPP_TARGET_OPENCL_VERSION 300
++#define CL_HPP_ENABLE_EXCEPTIONS
++#include <CL/opencl.hpp>
++
++#include <cstdint>
++#include <iostream>
++#include <vector>
++
++static const char *Source = R"RAW(
++__kernel void large_stack_frame(__global uint *out) {
++  const uint gid = get_global_id(0);
++  volatile uint scratch[2048];
++
++  for (uint i = 0; i < 2048; ++i)
++    scratch[i] = (i * 33u) ^ (gid + 17u);
++
++  uint acc = 0;
++  for (uint i = 0; i < 2048; ++i)
++    acc += scratch[i];
++
++  out[gid] = acc;
++}
++)RAW";
++
++static uint32_t expected(uint32_t Gid) {
++  uint32_t Acc = 0;
++  for (uint32_t I = 0; I < 2048; ++I)
++    Acc += (I * 33u) ^ (Gid + 17u);
++  return Acc;
++}
++
++int main() try {
++  cl::Device Device = cl::Device::getDefault();
++  cl::Context Context = cl::Context::getDefault();
++  cl::CommandQueue Queue = cl::CommandQueue::getDefault();
++
++  cl::Program Program(Context, Source);
++  Program.build({Device});
++
++  constexpr size_t N = 16;
++  std::vector<cl_uint> Out(N, 0);
++  cl::Buffer OutBuf(Context, CL_MEM_WRITE_ONLY, Out.size() * sizeof(cl_uint));
++
++  cl::Kernel Kernel(Program, "large_stack_frame");
++  Kernel.setArg(0, OutBuf);
++  Queue.enqueueNDRangeKernel(Kernel, cl::NullRange, cl::NDRange(N),
++                             cl::NullRange);
++  Queue.enqueueReadBuffer(OutBuf, CL_TRUE, 0, Out.size() * sizeof(cl_uint),
++                          Out.data());
++
++  for (size_t I = 0; I < Out.size(); ++I) {
++    uint32_t Want = expected(static_cast<uint32_t>(I));
++    if (Out[I] != Want) {
++      std::cout << "FAIL at " << I << ": got " << Out[I] << ", expected "
++                << Want << "\n";
++      return EXIT_FAILURE;
++    }
++  }
++
++  std::cout << "OK\n";
++  return EXIT_SUCCESS;
++} catch (cl::Error &Err) {
++  std::cout << "FAIL with OpenCL error = " << Err.what() << " (" << Err.err()
++            << ")\n";
++  return EXIT_FAILURE;
++}
+\ No newline at end of file
