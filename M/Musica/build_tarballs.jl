@@ -1,18 +1,23 @@
 # Build script for Musica_jll
+#
+# This recipe needs a BinaryBuilderBase.jl version newer than any tagged
+# release (specifically, a version that includes
+# https://github.com/JuliaPackaging/BinaryBuilderBase.jl/pull/473, which
+# fixes GCC 15.2 support on aarch64-apple-darwin). CI already gets this
+# through Yggdrasil's own ../../.ci/Project.toml, which pins
+# BinaryBuilderBase.jl to its master branch. To match CI locally, run Julia
+# with that same project instead of a bare `julia build_tarballs.jl`:
+#
+#   julia --project=../../.ci -e 'import Pkg; Pkg.instantiate()'
+#
 # To test locally:
-#   julia build_tarballs.jl --verbose --debug
+#   julia --project=../../.ci build_tarballs.jl --verbose --debug
 #
 # To build for a specific platform:
-#   julia build_tarballs.jl x86_64-linux-gnu-cxx11
+#   julia --project=../../.ci build_tarballs.jl x86_64-linux-gnu-cxx11
 #
-# To create a local installation 
-#  julia build_tarballs.jl --deploy=local "aarch64-apple-darwin-julia_version+1.11"
-
-import Pkg
-# https://github.com/JuliaPackaging/BinaryBuilderBase.jl/pull/473
-# allows for gcc 15.2 to be used. It's not yet in the released version of BinaryBuilderBase.jl, 
-# but we need it to build Musica on aarch64-apple-darwin (M1/M2) because the default gcc 12.0.1-iains is broken for that platform.
-Pkg.add(url="https://github.com/JuliaPackaging/BinaryBuilderBase.jl", rev="edf4a8fab7cfbf0bb131eb9e7be4d6ca31fa5f9f")
+# To create a local installation
+#   julia --project=../../.ci build_tarballs.jl --deploy=local "aarch64-apple-darwin-julia_version+1.11"
 
 using BinaryBuilder, Pkg
 
