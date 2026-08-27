@@ -39,10 +39,7 @@ else
         -DCMAKE_CUDA_COMPILER=$prefix/cuda/bin/nvcc \
         -DCMAKE_CUDA_FLAGS=\"-L${prefix}/cuda/lib\" \
         -DCMAKE_EXE_LINKER_FLAGS=-Wl,--allow-shlib-undefined \
-        -DKokkos_ARCH_VOLTA70=ON \
         -DKokkos_ARCH_AMPERE80=ON \
-        -DKokkos_ARCH_ADA89=ON \
-        -DKokkos_ARCH_HOPPER90=ON \
     "
 fi
 
