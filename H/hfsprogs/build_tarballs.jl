@@ -52,6 +52,24 @@ if [[ "${target}" == *freebsd* ]]; then
     sed -i '/^#define __APPLE_API_PRIVATE$/d' include/missing.h include/sys/appleapiopts.h
 fi
 
+if [[ "${target}" == *-musl* ]]; then
+    # The sources declare every prototype through the 4.4BSD __P() macro, which
+    # glibc, Darwin and FreeBSD still provide in <sys/cdefs.h>. musl ships no
+    # <sys/cdefs.h> at all, so __P survives into the token stream and every
+    # declaration is a syntax error. Force-include a definition ahead of the
+    # translation unit rather than patching ~40 declarations.
+    mkdir -p compat
+    cat > compat/cdefs_shim.h <<'EOF'
+#ifndef HFSPROGS_COMPAT_CDEFS_H
+#define HFSPROGS_COMPAT_CDEFS_H
+#ifndef __P
+#define __P(protos) protos
+#endif
+#endif
+EOF
+    export CFLAGS="${CFLAGS} -include ${PWD}/compat/cdefs_shim.h"
+fi
+
 if [[ "${target}" != *-linux-* ]]; then
     # We keep -DLINUX=1 on Darwin and FreeBSD too. The `#else` branch is
     # Apple's original code, and its device-size probe has no S_ISREG case at
