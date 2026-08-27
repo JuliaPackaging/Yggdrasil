@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDA_Runtime"
-version = v"0.24.1"
+version = v"0.24.2"
 
 # we ship artifacts for both GA and EA/preview toolkits; the platform augmentation only
 # ever selects the latter when the user asks for it through the "version" preference.
@@ -159,7 +159,7 @@ for version in reverse(toolkit_versions)
                 end"""
             push!(builds,
                 (; dependencies=[Dependency("CUDA_Driver_jll", v"13.3.1"; compat="13.3.1 - 13"),
-                                 Dependency("CUDA_Compiler_jll"; compat="0.5")],
+                                 Dependency("CUDA_Compiler_jll"; compat="0.6")],
                    script, platforms=[augmented_platform], products=get_products(platform),
                    sources=get_sources("cuda", components; version, platform=augmented_platform),
                    init_block
