@@ -37,7 +37,6 @@ else
         -DKokkos_ENABLE_CUDA=ON \
         -DCMAKE_CUDA_HOST_COMPILER=$CXX \
         -DCMAKE_CUDA_COMPILER=$prefix/cuda/bin/nvcc \
-        -DCMAKE_CUDA_FLAGS=\"-L${prefix}/cuda/lib\" \
         -DCMAKE_EXE_LINKER_FLAGS=-Wl,--allow-shlib-undefined \
         -DKokkos_ARCH_AMPERE80=ON \
     "
@@ -81,8 +80,8 @@ for p in cpu_platforms
     end
 end
 
-# CUDA platforms (Linux x86_64 for CUDA 12+)
-cuda_platforms = expand_cxxstring_abis(CUDA.supported_platforms(min_version=v"12.0"))
+# CUDA platforms (Linux x86_64 for CUDA 12)
+cuda_platforms = expand_cxxstring_abis(CUDA.supported_platforms(min_version=v"12.0", max_version=v"12.999"))
 filter!(p -> arch(p) == "x86_64", cuda_platforms)
 
 all_platforms = [cpu_platforms; cuda_platforms]
