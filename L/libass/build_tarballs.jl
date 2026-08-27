@@ -14,6 +14,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libass-*
 apk add nasm
+# On FreeBSD, HarfBuzz_jll ships its pkg-config files in libdata/pkgconfig
+export PKG_CONFIG_PATH="${PKG_CONFIG_PATH:+${PKG_CONFIG_PATH}:}${prefix}/libdata/pkgconfig"
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-require-system-font-provider --disable-static
 make -j${nproc}
 make install
