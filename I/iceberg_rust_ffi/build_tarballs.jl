@@ -9,6 +9,14 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+if [[ "${target}" == "aarch64-apple-darwin"* ]]; then
+    # aws-lc-sys (pulled in via rustls/hyper-rustls) requires the NEON and
+    # crypto extensions to be statically enabled on Apple aarch64 (every
+    # Apple Silicon CPU has them, but this clang does not enable them for
+    # bare arm64-apple-macosx). Same fix as the rcodesign recipe.
+    export CFLAGS="${CFLAGS} -march=armv8-a+crypto"
+fi
+
 cd ${WORKSPACE}/srcdir/RustyIceberg.jl/iceberg_rust_ffi/
 
 # Build the library with native compilation
@@ -40,8 +48,12 @@ dependencies = Dependency[
 # iceberg-rust's MSRV is 1.94; pin explicitly rather than relying on
 # BinaryBuilder's default (the single newest Rust version known across all
 # toolchain shards), which isn't necessarily published for every platform yet.
+#
+# lock_microarchitecture=false: the compiler wrappers otherwise reject the
+# -march flag aarch64-apple-darwin needs above (see rcodesign's recipe,
+# which hits the same aws-lc-sys requirement).
 build_tarballs(
     ARGS, name, version, sources, script, platforms, products, dependencies;
     compilers=[:c, :rust], julia_compat="1.10", preferred_gcc_version=v"5", dont_dlopen=true,
-    preferred_rust_version=v"1.94",
+    preferred_rust_version=v"1.94", lock_microarchitecture=false,
 )
