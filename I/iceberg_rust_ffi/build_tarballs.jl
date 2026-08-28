@@ -9,11 +9,14 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-if [[ "${target}" == "aarch64-apple-darwin"* ]]; then
+if [[ "${target}" == aarch64-* ]]; then
     # aws-lc-sys (pulled in via rustls/hyper-rustls) requires the NEON and
-    # crypto extensions to be statically enabled on Apple aarch64 (every
-    # Apple Silicon CPU has them, but this clang does not enable them for
-    # bare arm64-apple-macosx). Same fix as the rcodesign recipe.
+    # crypto extensions to be statically enabled on aarch64 (every real
+    # aarch64 CPU has them, but neither clang's bare arm64-apple-macosx
+    # target nor the aarch64-linux-gnu assembler enable them by default,
+    # so aws-lc-sys's hand-written crypto assembly fails to assemble:
+    # "selected processor does not support `aese ...'" etc). Same fix as
+    # the rcodesign recipe (for Apple) and needed for aarch64-linux-gnu too.
     export CFLAGS="${CFLAGS} -march=armv8-a+crypto"
 fi
 
