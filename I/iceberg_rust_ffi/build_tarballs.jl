@@ -37,8 +37,11 @@ dependencies = Dependency[
     Dependency("OpenSSL_jll"; compat="3.0.14")
 ]
 
-# Build the tarballs
+# iceberg-rust's MSRV is 1.94; pin explicitly rather than relying on
+# BinaryBuilder's default (the single newest Rust version known across all
+# toolchain shards), which isn't necessarily published for every platform yet.
 build_tarballs(
     ARGS, name, version, sources, script, platforms, products, dependencies;
     compilers=[:c, :rust], julia_compat="1.10", preferred_gcc_version=v"5", dont_dlopen=true,
+    preferred_rust_version=v"1.94",
 )
