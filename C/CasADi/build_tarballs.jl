@@ -50,6 +50,13 @@ if [[ "${target}" == *mingw* ]]; then
     sed -i 's/-lasl//g' ${prefix}/lib/pkgconfig/*.pc
 fi
 
+# HiGHS_jll has no powerpc64le build, so the dependency (and this flag) are
+# scoped to the platforms where it exists.
+HIGHS_FLAG="-DWITH_HIGHS=OFF"
+if [[ "${target}" != powerpc64le-* ]]; then
+    HIGHS_FLAG="-DWITH_HIGHS=ON"
+fi
+
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_INSTALL_BINDIR=${bindir} \
     -DCMAKE_INSTALL_LIBDIR=${libdir} \
@@ -62,6 +69,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DBLAS_LIBRARIES="${LBT}" \
     -DWITH_IPOPT=ON \
     -DWITH_BONMIN=ON \
+    ${HIGHS_FLAG} \
     -DWITH_CLP=ON \
     -DWITH_CBC=ON \
     -DWITH_QPOASES=ON \
@@ -87,11 +95,16 @@ platforms = expand_cxxstring_abis(platforms)
 filter!(p -> arch(p) != "riscv64" && !Sys.isfreebsd(p),
     platforms)
 
+# HiGHS_jll filters out powerpc64le (see H/HiGHS/build_tarballs.jl), so the
+# highs plugin exists on every platform except that one.
+highs_platforms = filter(p -> arch(p) != "powerpc64le", platforms)
+
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("Ipopt_jll"; compat="300.1400.1901"),
     Dependency("Bonmin_jll"; compat="100.800.902"),
-    Dependency("libblastrampoline_jll"; compat="5.4.0")
+    Dependency("libblastrampoline_jll"; compat="5.4.0"),
+    Dependency("HiGHS_jll"; compat="1.15.1", platforms=highs_platforms)
 ]
 
 products = [
@@ -134,15 +147,23 @@ products = [
     LibraryProduct("libcasadi_xmlfile_tinyxml", :libcasadi_xmlfile_tinyxml),
 ]
 
-build_tarballs(
-    ARGS,
-    name,
-    version,
-    sources,
-    script,
-    platforms,
-    products,
-    dependencies;
-    preferred_gcc_version = v"8",
-    julia_compat = "1.6",
-)
+highs_product = LibraryProduct("libcasadi_conic_highs", :libcasadi_conic_highs)
+
+# One build_tarballs call per platform, so the products list can differ: the
+# highs plugin is absent on powerpc64le. This is the same idiom B/blasfeo uses.
+for platform in platforms
+    should_build_platform(triplet(platform)) || continue
+    platform_products = arch(platform) == "powerpc64le" ? products : [products; highs_product]
+    build_tarballs(
+        ARGS,
+        name,
+        version,
+        sources,
+        script,
+        [platform],
+        platform_products,
+        dependencies;
+        preferred_gcc_version = v"8",
+        julia_compat = "1.6",
+    )
+end
