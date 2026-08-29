@@ -73,6 +73,11 @@ if [[ -n "${BLASFEO_LIBFILE}" ]]; then
     # resolve it; removed again after install so it never reaches the tarball.
     mkdir -p ${BLASFEO_ROOT}/lib/cmake/blasfeo
     cat > ${BLASFEO_ROOT}/lib/cmake/blasfeo/blasfeo-config.cmake <<EOCFG
+    # fatrop's own targets do not all pick up the include directory from the
+    # imported target, so put it on the compiler flags the ExternalProject
+    # inherits as well.
+    export CXXFLAGS="${CXXFLAGS} -I${BLASFEO_ROOT}/include"
+    export CFLAGS="${CFLAGS} -I${BLASFEO_ROOT}/include"
 if(NOT TARGET blasfeo::blasfeo)
   add_library(blasfeo::blasfeo UNKNOWN IMPORTED)
   set_target_properties(blasfeo::blasfeo PROPERTIES
