@@ -84,6 +84,20 @@ fi
 # removed, and let the patched CMake pick libosqp_builtin_double via
 # find_library (CMAKE_DISABLE_FIND_PACKAGE_OSQP keeps the shipped, single-
 # precision CMake config from winning first).
+# OSQP stays off. CMAKE_DISABLE_FIND_PACKAGE_OSQP was meant to stop the config
+# OSQP_jll ships (which points osqp::osqp at the single-precision build) from
+# winning before the patched branch runs, but it turns "found the wrong thing"
+# into "not found", and CasADi hard-errors at CMakeLists.txt:1291:
+#
+#   OSQP not found on your system yet required. Set WITH_BUILD_OSQP or
+#   WITH_BUILD_REQUIRED ON to build this required package from source.
+#
+# The fix is to let find_package succeed and have the patch retarget the
+# existing imported target -- set_target_properties works on imported targets --
+# rather than trying to create a second one. Left for a follow-up so that fatrop
+# and libzip can be validated first. The header prep below is kept because it is
+# correct and will be needed then.
+#
 # Best effort: if the headers cannot be prepared, drop OSQP rather than fail the
 # whole build. Copy the headers file by file into a directory we created, so
 # there is no `cp -r` directory-semantics ambiguity, and report what we saw.
@@ -98,8 +112,7 @@ if [[ -n "${OSQP_CFG}" ]]; then
     cp "${OSQP_SRC}"/*.h "${OSQP_INC}"/ || true
     if [[ -f "${OSQP_INC}/osqp_configure.h" ]]; then
         sed -i '/^#define OSQP_USE_FLOAT$/d' "${OSQP_INC}/osqp_configure.h"
-        OSQP_FLAGS="-DWITH_OSQP=ON -DCMAKE_DISABLE_FIND_PACKAGE_OSQP=ON -DOSQP_INCLUDE_DIR=${OSQP_INC}"
-        echo "OSQP: headers prepared from ${OSQP_SRC}"
+        echo "OSQP: headers prepared from ${OSQP_SRC} (plugin still off, see below)"
     else
         echo "OSQP: copy from ${OSQP_SRC} produced nothing; disabling. Source holds:"
         ls -la "${OSQP_SRC}" | head -20
