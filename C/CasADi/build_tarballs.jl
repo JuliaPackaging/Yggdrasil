@@ -42,6 +42,14 @@ else
     LBT="${libdir}/libblastrampoline.${dlext}"
 fi
 
+# cbc.pc carries `-lasl` on every platform, which links fine everywhere except
+# Windows: ASL_jll's recipe only ever does `cp libasl.${dlext} ${libdir}`, so on
+# mingw it ships libasl.dll with no import library and `-lasl` has nothing to
+# resolve against. The ASL symbols are already inside libCbc.dll, so drop it.
+if [[ "${target}" == *mingw* ]]; then
+    sed -i 's/-lasl//g' ${prefix}/lib/pkgconfig/*.pc
+fi
+
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_INSTALL_BINDIR=${bindir} \
     -DCMAKE_INSTALL_LIBDIR=${libdir} \
