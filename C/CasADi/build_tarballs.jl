@@ -58,6 +58,24 @@ else
     LBT="${libdir}/libblastrampoline.${dlext}"
 fi
 
+# fatrop, built from the vendored checkout against blasfeo_jll. Locate blasfeo
+# by finding the library rather than naming a directory: FindBLASFEO.cmake looks
+# under $BLASFEO, and the JLL's own layout is not something to assume.
+BLASFEO_LIBFILE=$(find ${prefix} -name 'libblasfeo.*' 2>/dev/null | head -1)
+FATROP_FLAGS="-DWITH_FATROP=OFF -DWITH_BLASFEO=OFF"
+if [[ -n "${BLASFEO_LIBFILE}" ]]; then
+    BLASFEO_ROOT=$(dirname "$(dirname "${BLASFEO_LIBFILE}")")
+    echo "Found blasfeo at ${BLASFEO_LIBFILE}, root ${BLASFEO_ROOT}"
+    export BLASFEO=${BLASFEO_ROOT}
+    FATROP_FLAGS="-DWITH_BLASFEO=ON -DWITH_FATROP=ON -DWITH_BUILD_FATROP=ON"
+    FATROP_FLAGS="${FATROP_FLAGS} -DBUILD_FATROP_GIT_REPO=${WORKSPACE}/srcdir/fatrop"
+    FATROP_FLAGS="${FATROP_FLAGS} -DBUILD_FATROP_VERSION=2d8c5198a47890a55bb872ed4f895484c7769f74"
+    FATROP_FLAGS="${FATROP_FLAGS} -DBUILD_FATROP_GIT_SHALLOW=OFF"
+else
+    echo "No blasfeo in ${prefix}; fatrop disabled. Prefix contents:"
+    ls -la ${prefix}
+fi
+
 # OSQP is parked. The plugin itself works, but OSQP_jll ships one header tree
 # for its single- and double-precision builds with `#define OSQP_USE_FLOAT` in
 # it, so OSQPFloat is float and CasADi's double-only interface will not compile.
