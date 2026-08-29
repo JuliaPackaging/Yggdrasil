@@ -210,8 +210,13 @@ highs_platforms = filter(p -> arch(p) != "powerpc64le", platforms)
 # blasfeo_jll ships x86_64 (linux glibc+musl, windows, macOS) and aarch64 macOS
 # only; its artifacts carry a march tag but resolve fine for an untagged
 # platform, so CasADi does not need microarchitecture expansion of its own.
-fatrop_platforms = filter(p -> arch(p) == "x86_64" || (arch(p) == "aarch64" && Sys.isapple(p)),
-    platforms)
+# Linux x86_64 only. macOS has two separate blockers, both upstream of this
+# recipe: fatrop's ip_utils.cpp hits "call to 'abs' is ambiguous" under clang,
+# and CasADi's casadi_blas_blasfeo shim fails to link with undefined
+# blasfeo_blas_dgemm / daxpy / ddot because blasfeo_jll is built without
+# blasfeo's optional BLAS API. Linux only tolerates the latter because shared
+# libraries there may carry undefined symbols; that plugin would fail on use.
+fatrop_platforms = filter(p -> arch(p) == "x86_64" && Sys.islinux(p), platforms)
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
