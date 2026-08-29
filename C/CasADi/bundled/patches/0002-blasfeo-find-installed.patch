@@ -1,0 +1,28 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1579,8 +1579,23 @@
+         PATTERN "blasfeo*.h"
+         PATTERN "hpipm*.h")
+   else()
+-    #add_library(lapack INTERFACE)
+-    #target_link_libraries(lapack INTERFACE ${LAPACK_LIBRARIES})
++    # Use a BLASFEO that is already installed (FindBLASFEO honours the BLASFEO
++    # environment variable) rather than building one. Both the imported target
++    # and BLASFEO_PATH are needed downstream: fatrop and hpipm link the former
++    # and pass the latter into their own CMake.
++    if(NOT BLASFEO_FOUND)
++      message(FATAL_ERROR "WITH_BLASFEO is on but BLASFEO was not found. Set the "
++        "BLASFEO environment variable, or enable WITH_BUILD_BLASFEO.")
++    endif()
++    if(NOT TARGET blasfeo)
++      add_library(blasfeo UNKNOWN IMPORTED)
++      set_target_properties(blasfeo PROPERTIES
++        IMPORTED_LOCATION "${BLASFEO_LIB}"
++        INTERFACE_INCLUDE_DIRECTORIES "${BLASFEO_INCLUDE_DIR}")
++    endif()
++    get_filename_component(BLASFEO_PATH "${BLASFEO_INCLUDE_DIR}" DIRECTORY)
++    message(STATUS "BLASFEO library: ${BLASFEO_LIB}")
++    message(STATUS "BLASFEO prefix:  ${BLASFEO_PATH}")
+   endif()
+ endif()
+ 

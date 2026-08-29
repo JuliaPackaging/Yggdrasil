@@ -1,0 +1,33 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -2538,6 +2538,30 @@
+       DESTINATION "${INCLUDE_PREFIX}")
+       create_import_library(osqp osqp)
+     set(WITH_OSQP_V1 ON CACHE BOOL "Use v1 ABI of OSQP")
++  elseif(NOT TARGET osqp::osqp)
++    # Use an OSQP that is already installed on the system instead of cloning
++    # one at build time. OSQP_LIBRARY and OSQP_INCLUDE_DIR may be supplied by
++    # the caller; otherwise look in the usual places. The suffixed name comes
++    # from OSQP's own OSQP_LIB_SUFFIX option, which distributors use to ship
++    # several precision/algebra variants side by side.
++    if(NOT OSQP_LIBRARY)
++      find_library(OSQP_LIBRARY NAMES osqp osqp_builtin_double)
++    endif()
++    if(NOT OSQP_INCLUDE_DIR)
++      find_path(OSQP_INCLUDE_DIR osqp_api_functions.h PATH_SUFFIXES osqp)
++    endif()
++    if(NOT OSQP_LIBRARY OR NOT OSQP_INCLUDE_DIR)
++      message(FATAL_ERROR "WITH_OSQP is on but OSQP was not found. Set "
++        "OSQP_LIBRARY and OSQP_INCLUDE_DIR, or enable WITH_BUILD_OSQP.")
++    endif()
++    message(STATUS "OSQP library: ${OSQP_LIBRARY}")
++    message(STATUS "OSQP headers: ${OSQP_INCLUDE_DIR}")
++    add_library(osqp UNKNOWN IMPORTED)
++    set_target_properties(osqp PROPERTIES
++      IMPORTED_LOCATION "${OSQP_LIBRARY}"
++      INTERFACE_INCLUDE_DIRECTORIES "${OSQP_INCLUDE_DIR}")
++    add_library(osqp::osqp INTERFACE IMPORTED)
++    set_target_properties(osqp::osqp PROPERTIES INTERFACE_LINK_LIBRARIES osqp)
+   endif()
+ endif()
+ add_feature_info(osqp-interface WITH_OSQP "Interface to QP solver OSQP.")
