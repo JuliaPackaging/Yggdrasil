@@ -49,6 +49,10 @@ sources = [
               "8a0b4ba0e53c1a0fabfcb1c1d849baa43947c3a8"; unpack_target = "aocl-src"),
     GitSource("https://github.com/amd/openrng.git",
               "12c9003e91b6136178b25f8ec5ab7c60b710097e"; unpack_target = "aocl-src"),
+    GitSource("https://github.com/amd/aocl-fftz.git",
+              "faf92348350621db1738a19901a953a1ca245265"; unpack_target = "aocl-src"),
+    GitSource("https://github.com/amd/aocl-dlp.git",
+              "fe36da707e6f25e8b3e2b742dfa5957d4484fca5"; unpack_target = "aocl-src"),
 ]
 
 script = raw"""
@@ -100,7 +104,9 @@ build_aocl_variant() {
         -DSPARSE_PATH=${SRC} \
         -DLIBM_PATH=${SRC} \
         -DCOMPRESSION_PATH=${SRC} \
-        -DOPENRNG_PATH=${SRC}/openrng \
+        -DOPENRNG_PATH=${SRC} \
+        -DFFTZ_PATH=${SRC} \
+        -DDLP_PATH=${SRC} \
         "$@"
     cmake --build ${AOCL_BIY}/build --config Release --target install -j${nproc}
 }
