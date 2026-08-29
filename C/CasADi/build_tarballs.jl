@@ -1,5 +1,9 @@
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+# For should_build_platform
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+
 name = "CasADi"
 
 version = v"3.8.0"
@@ -15,6 +19,11 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/casadi
 install_license LICENSE.txt
+
+for p in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 "${p}"
+done
+
 mkdir -p build
 cd build
 
@@ -70,6 +79,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DWITH_IPOPT=ON \
     -DWITH_BONMIN=ON \
     ${HIGHS_FLAG} \
+    -DWITH_OSQP=ON \
     -DWITH_CLP=ON \
     -DWITH_CBC=ON \
     -DWITH_QPOASES=ON \
@@ -104,7 +114,8 @@ dependencies = [
     Dependency("Ipopt_jll"; compat="300.1400.1901"),
     Dependency("Bonmin_jll"; compat="100.800.902"),
     Dependency("libblastrampoline_jll"; compat="5.4.0"),
-    Dependency("HiGHS_jll"; compat="1.15.1", platforms=highs_platforms)
+    Dependency("HiGHS_jll"; compat="1.15.1", platforms=highs_platforms),
+    Dependency("OSQP_jll"; compat="100.0.0")
 ]
 
 products = [
@@ -114,6 +125,7 @@ products = [
     LibraryProduct("libcasadi_conic_clp", :libcasadi_conic_clp),
     LibraryProduct("libcasadi_conic_ipqp", :libcasadi_conic_ipqp),
     LibraryProduct("libcasadi_conic_nlpsol", :libcasadi_conic_nlpsol),
+    LibraryProduct("libcasadi_conic_osqp", :libcasadi_conic_osqp),
     LibraryProduct("libcasadi_conic_qpoases", :libcasadi_conic_qpoases),
     LibraryProduct("libcasadi_conic_qrqp", :libcasadi_conic_qrqp),
     LibraryProduct("libcasadi_importer_shell", :libcasadi_importer_shell),
