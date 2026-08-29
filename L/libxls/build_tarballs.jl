@@ -12,6 +12,9 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libxls-*/
+# libxls 1.6.3 adds -D_spawnv=spawnv to CFLAGS on mingw, which conflicts with
+# the spawnv declaration in mingw-w64's process.h when compiling xls2csv.
+sed -i 's/-D_spawnv=spawnv//' configure
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     ac_cv_func_malloc_0_nonnull=yes \
     ac_cv_func_realloc_0_nonnull=yes 
