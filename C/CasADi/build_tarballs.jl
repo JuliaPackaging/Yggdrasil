@@ -33,6 +33,9 @@ export CFLAGS="${CFLAGS} -fPIC"
 # Clp_jll and Cbc_jll already link against, so we do not pull a second BLAS
 # into the prefix. Pre-setting LAPACK_LIBRARIES makes CasADi skip its
 # find_package(LAPACK) (see the `if(NOT LAPACK_LIBRARIES)` in CMakeLists.txt).
+# BLAS_LIBRARIES must be set too: external_packages/qpOASES/CMakeLists.txt does
+# `target_link_libraries(casadi_qpoases lapack ${BLAS_LIBRARIES})`, and an unset
+# BLAS_LIBRARIES expands to FALSE, which reaches the linker as -lFALSE.
 if [[ "${target}" == *mingw* ]]; then
     LBT="${libdir}/libblastrampoline-5.${dlext}"
 else
@@ -48,6 +51,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD} \
     -DWITH_LAPACK=ON \
     -DLAPACK_LIBRARIES="${LBT}" \
+    -DBLAS_LIBRARIES="${LBT}" \
     -DWITH_IPOPT=ON \
     -DWITH_BONMIN=ON \
     -DWITH_CLP=ON \
