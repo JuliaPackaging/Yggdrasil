@@ -67,6 +67,19 @@ if [[ -n "${BLASFEO_LIBFILE}" ]]; then
     BLASFEO_ROOT=$(dirname "$(dirname "${BLASFEO_LIBFILE}")")
     echo "Found blasfeo at ${BLASFEO_LIBFILE}, root ${BLASFEO_ROOT}"
     export BLASFEO=${BLASFEO_ROOT}
+    # fatrop does `find_package(blasfeo REQUIRED)` in config mode and links
+    # blasfeo::blasfeo, but blasfeo_jll ships only include/ and lib/ -- no CMake
+    # package files at all. Drop in a minimal config so the ExternalProject can
+    # resolve it; removed again after install so it never reaches the tarball.
+    mkdir -p ${BLASFEO_ROOT}/lib/cmake/blasfeo
+    cat > ${BLASFEO_ROOT}/lib/cmake/blasfeo/blasfeo-config.cmake <<EOCFG
+if(NOT TARGET blasfeo::blasfeo)
+  add_library(blasfeo::blasfeo UNKNOWN IMPORTED)
+  set_target_properties(blasfeo::blasfeo PROPERTIES
+    IMPORTED_LOCATION "${BLASFEO_LIBFILE}"
+    INTERFACE_INCLUDE_DIRECTORIES "${BLASFEO_ROOT}/include")
+endif()
+EOCFG
     FATROP_FLAGS="-DWITH_BLASFEO=ON -DWITH_FATROP=ON -DWITH_BUILD_FATROP=ON"
     FATROP_FLAGS="${FATROP_FLAGS} -DBUILD_FATROP_GIT_REPO=${WORKSPACE}/srcdir/fatrop"
     FATROP_FLAGS="${FATROP_FLAGS} -DBUILD_FATROP_VERSION=2d8c5198a47890a55bb872ed4f895484c7769f74"
@@ -162,6 +175,9 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 
 make -j ${nproc}
 make install
+
+# The blasfeo CMake shim was only needed during the build.
+rm -rf ${prefix}/blasfeo/lib/cmake
 
 # Build amplexe
 cd $WORKSPACE/srcdir
