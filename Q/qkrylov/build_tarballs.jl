@@ -13,7 +13,7 @@ version = v"0.1.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sjp95/qkrylov.git", "330b7a4abcd86e78488401db25b4f7d20209ae92")
+    GitSource("https://github.com/sjp95/qkrylov.git", "9d1160736de86937cd39f63121c8d7188208669b")
 ]
 
 # Bash recipe for building across all platforms
@@ -37,7 +37,9 @@ else
         -DKokkos_ENABLE_CUDA=ON \
         -DCMAKE_CUDA_HOST_COMPILER=$CXX \
         -DCMAKE_CUDA_COMPILER=$prefix/cuda/bin/nvcc \
+        -DCMAKE_CUDA_FLAGS=\"-gencode arch=compute_80,code=compute_80\" \
         -DCMAKE_EXE_LINKER_FLAGS=-Wl,--allow-shlib-undefined \
+        -DCMAKE_SHARED_LINKER_FLAGS=-Wl,--allow-shlib-undefined \
         -DKokkos_ARCH_AMPERE80=ON \
     "
 fi
