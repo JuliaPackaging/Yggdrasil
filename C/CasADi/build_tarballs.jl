@@ -38,6 +38,11 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD} \
     -DWITH_IPOPT=ON \
     -DWITH_BONMIN=ON \
+    -DWITH_CLP=ON \
+    -DWITH_CBC=ON \
+    -DWITH_QPOASES=ON \
+    -DWITH_NO_QPOASES_BANNER=ON \
+    -DWITH_BLOCKSQP=ON \
     -DWITH_EXAMPLES=OFF \
     -DWITH_DEEPBIND=OFF \
     ..
@@ -67,8 +72,11 @@ dependencies = [
 products = [
     ExecutableProduct("amplexe", :amplexe),
     LibraryProduct("libcasadi", :libcasadi),
+    LibraryProduct("libcasadi_conic_cbc", :libcasadi_conic_cbc),
+    LibraryProduct("libcasadi_conic_clp", :libcasadi_conic_clp),
     LibraryProduct("libcasadi_conic_ipqp", :libcasadi_conic_ipqp),
     LibraryProduct("libcasadi_conic_nlpsol", :libcasadi_conic_nlpsol),
+    LibraryProduct("libcasadi_conic_qpoases", :libcasadi_conic_qpoases),
     LibraryProduct("libcasadi_conic_qrqp", :libcasadi_conic_qrqp),
     LibraryProduct("libcasadi_importer_shell", :libcasadi_importer_shell),
     LibraryProduct("libcasadi_integrator_collocation", :libcasadi_integrator_collocation),
@@ -84,6 +92,7 @@ products = [
     LibraryProduct("libcasadi_linsol_qr", :libcasadi_linsol_qr),
     LibraryProduct("libcasadi_linsol_symbolicqr", :libcasadi_linsol_symbolicqr),
     LibraryProduct("libcasadi_linsol_tridiag", :libcasadi_linsol_tridiag),
+    LibraryProduct("libcasadi_nlpsol_blocksqp", :libcasadi_nlpsol_blocksqp),
     LibraryProduct("libcasadi_nlpsol_feasiblesqpmethod", :libcasadi_nlpsol_feasiblesqpmethod),
     LibraryProduct("libcasadi_nlpsol_ipopt", :libcasadi_nlpsol_ipopt),
     LibraryProduct("libcasadi_nlpsol_qrsqp", :libcasadi_nlpsol_qrsqp),
