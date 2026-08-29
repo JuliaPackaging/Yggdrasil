@@ -13,6 +13,13 @@ sources = [
         "https://github.com/casadi/casadi.git",
         "83b3cec864e42c5b64a07e85d4adf91da71458b1",
     ),
+    # Vendored so ExternalProject_Add can clone it from disk: Yggdrasil fetches
+    # sources outside the sandbox, and CasADi's BUILD_FATROP_GIT_REPO is a cache
+    # variable we can redirect at the local checkout.
+    GitSource(
+        "https://github.com/jgillis/fatrop.git",
+        "2d8c5198a47890a55bb872ed4f895484c7769f74",  # v1.1.8.mod
+    ),
     DirectorySource("./bundled"),
 ]
 
@@ -59,6 +66,18 @@ fi
 # removed, and let the patched CMake pick libosqp_builtin_double via
 # find_library (CMAKE_DISABLE_FIND_PACKAGE_OSQP keeps the shipped, single-
 # precision CMake config from winning first).
+# blasfeo_jll installs into <prefix>/blasfeo/{include,lib} rather than straight
+# into the prefix, and FindBLASFEO.cmake looks under $BLASFEO. Only x86_64 (all
+# OSes) and aarch64 macOS have blasfeo artifacts, so fatrop is limited to those.
+FATROP_FLAGS="-DWITH_FATROP=OFF -DWITH_BLASFEO=OFF"
+if [[ -d "${prefix}/blasfeo" ]]; then
+    export BLASFEO=${prefix}/blasfeo
+    FATROP_FLAGS="-DWITH_BLASFEO=ON -DWITH_FATROP=ON -DWITH_BUILD_FATROP=ON"
+    FATROP_FLAGS="${FATROP_FLAGS} -DBUILD_FATROP_GIT_REPO=${WORKSPACE}/srcdir/fatrop"
+    FATROP_FLAGS="${FATROP_FLAGS} -DBUILD_FATROP_VERSION=2d8c5198a47890a55bb872ed4f895484c7769f74"
+    FATROP_FLAGS="${FATROP_FLAGS} -DBUILD_FATROP_GIT_SHALLOW=OFF"
+fi
+
 OSQP_INC=${WORKSPACE}/srcdir/osqp-double-include
 mkdir -p ${OSQP_INC}
 cp -r ${includedir}/osqp ${OSQP_INC}/
@@ -92,6 +111,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DWITH_IPOPT=ON \
     -DWITH_BONMIN=ON \
     ${HIGHS_FLAG} \
+    ${FATROP_FLAGS} \
     -DWITH_OSQP=ON \
     -DCMAKE_DISABLE_FIND_PACKAGE_OSQP=ON \
     -DOSQP_INCLUDE_DIR="${OSQP_INC}/osqp" \
@@ -124,13 +144,20 @@ filter!(p -> arch(p) != "riscv64" && !Sys.isfreebsd(p),
 # highs plugin exists on every platform except that one.
 highs_platforms = filter(p -> arch(p) != "powerpc64le", platforms)
 
+# blasfeo_jll ships x86_64 (linux glibc+musl, windows, macOS) and aarch64 macOS
+# only; its artifacts carry a march tag but resolve fine for an untagged
+# platform, so CasADi does not need microarchitecture expansion of its own.
+fatrop_platforms = filter(p -> arch(p) == "x86_64" || (arch(p) == "aarch64" && Sys.isapple(p)),
+    platforms)
+
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("Ipopt_jll"; compat="300.1400.1901"),
     Dependency("Bonmin_jll"; compat="100.800.902"),
     Dependency("libblastrampoline_jll"; compat="5.4.0"),
     Dependency("HiGHS_jll"; compat="1.15.1", platforms=highs_platforms),
-    Dependency("OSQP_jll"; compat="100.0.0")
+    Dependency("OSQP_jll"; compat="100.0.0"),
+    Dependency("blasfeo_jll"; compat="0.1.4", platforms=fatrop_platforms)
 ]
 
 products = [
@@ -175,12 +202,16 @@ products = [
 ]
 
 highs_product = LibraryProduct("libcasadi_conic_highs", :libcasadi_conic_highs)
+fatrop_product = LibraryProduct("libcasadi_nlpsol_fatrop", :libcasadi_nlpsol_fatrop)
 
 # One build_tarballs call per platform, so the products list can differ: the
 # highs plugin is absent on powerpc64le. This is the same idiom B/blasfeo uses.
 for platform in platforms
     should_build_platform(triplet(platform)) || continue
     platform_products = arch(platform) == "powerpc64le" ? products : [products; highs_product]
+    if platform in fatrop_platforms
+        platform_products = [platform_products; fatrop_product]
+    end
     build_tarballs(
         ARGS,
         name,
