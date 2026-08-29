@@ -131,6 +131,8 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DWITH_LAPACK=ON \
     -DLAPACK_LIBRARIES="${LBT}" \
     -DBLAS_LIBRARIES="${LBT}" \
+    -DWITH_ZLIB=ON \
+    -DWITH_LIBZIP=ON \
     -DWITH_IPOPT=ON \
     -DWITH_BONMIN=ON \
     ${HIGHS_FLAG} \
@@ -176,6 +178,8 @@ dependencies = [
     Dependency("Ipopt_jll"; compat="300.1400.1901"),
     Dependency("Bonmin_jll"; compat="100.800.902"),
     Dependency("libblastrampoline_jll"; compat="5.4.0"),
+    Dependency("Zlib_jll"),
+    Dependency("libzip_jll"; compat="1.11.3"),
     Dependency("HiGHS_jll"; compat="1.15.1", platforms=highs_platforms),
     Dependency("OSQP_jll"; compat="100.0.0"),
     Dependency("blasfeo_jll"; compat="0.1.4", platforms=fatrop_platforms)
