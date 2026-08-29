@@ -84,17 +84,27 @@ fi
 # removed, and let the patched CMake pick libosqp_builtin_double via
 # find_library (CMAKE_DISABLE_FIND_PACKAGE_OSQP keeps the shipped, single-
 # precision CMake config from winning first).
+# Best effort: if the headers cannot be prepared, drop OSQP rather than fail the
+# whole build. Copy the headers file by file into a directory we created, so
+# there is no `cp -r` directory-semantics ambiguity, and report what we saw.
+OSQP_FLAGS="-DWITH_OSQP=OFF"
 OSQP_CFG=$(find -L ${prefix} -name osqp_configure.h 2>/dev/null | head -1)
-if [[ -z "${OSQP_CFG}" ]]; then
-    echo "osqp_configure.h not found under ${prefix}"
-    exit 1
+echo "OSQP: osqp_configure.h -> '${OSQP_CFG}'"
+if [[ -n "${OSQP_CFG}" ]]; then
+    OSQP_SRC=$(dirname "${OSQP_CFG}")
+    OSQP_INC=${WORKSPACE}/srcdir/osqp-double-include/osqp
+    rm -rf "${OSQP_INC}"
+    mkdir -p "${OSQP_INC}"
+    cp "${OSQP_SRC}"/*.h "${OSQP_INC}"/ || true
+    if [[ -f "${OSQP_INC}/osqp_configure.h" ]]; then
+        sed -i '/^#define OSQP_USE_FLOAT$/d' "${OSQP_INC}/osqp_configure.h"
+        OSQP_FLAGS="-DWITH_OSQP=ON -DCMAKE_DISABLE_FIND_PACKAGE_OSQP=ON -DOSQP_INCLUDE_DIR=${OSQP_INC}"
+        echo "OSQP: headers prepared from ${OSQP_SRC}"
+    else
+        echo "OSQP: copy from ${OSQP_SRC} produced nothing; disabling. Source holds:"
+        ls -la "${OSQP_SRC}" | head -20
+    fi
 fi
-OSQP_INC=${WORKSPACE}/srcdir/osqp-double-include
-rm -rf ${OSQP_INC}
-mkdir -p ${OSQP_INC}
-cp -r "$(dirname ${OSQP_CFG})" ${OSQP_INC}/osqp
-sed -i '/^#define OSQP_USE_FLOAT$/d' ${OSQP_INC}/osqp/osqp_configure.h
-echo "OSQP headers copied from $(dirname ${OSQP_CFG})"
 
 # cbc.pc carries `-lasl` on every platform, which links fine everywhere except
 # Windows: ASL_jll's recipe only ever does `cp libasl.${dlext} ${libdir}`, so on
@@ -125,9 +135,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DWITH_BONMIN=ON \
     ${HIGHS_FLAG} \
     ${FATROP_FLAGS} \
-    -DWITH_OSQP=ON \
-    -DCMAKE_DISABLE_FIND_PACKAGE_OSQP=ON \
-    -DOSQP_INCLUDE_DIR="${OSQP_INC}/osqp" \
+    ${OSQP_FLAGS} \
     -DWITH_CLP=ON \
     -DWITH_CBC=ON \
     -DWITH_QPOASES=ON \
@@ -180,7 +188,6 @@ products = [
     LibraryProduct("libcasadi_conic_clp", :libcasadi_conic_clp),
     LibraryProduct("libcasadi_conic_ipqp", :libcasadi_conic_ipqp),
     LibraryProduct("libcasadi_conic_nlpsol", :libcasadi_conic_nlpsol),
-    LibraryProduct("libcasadi_conic_osqp", :libcasadi_conic_osqp),
     LibraryProduct("libcasadi_conic_qpoases", :libcasadi_conic_qpoases),
     LibraryProduct("libcasadi_conic_qrqp", :libcasadi_conic_qrqp),
     LibraryProduct("libcasadi_importer_shell", :libcasadi_importer_shell),
