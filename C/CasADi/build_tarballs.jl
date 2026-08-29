@@ -51,6 +51,19 @@ else
     LBT="${libdir}/libblastrampoline.${dlext}"
 fi
 
+# OSQP_jll installs a single- and a double-precision build into one prefix, and
+# the single one lands last: lib/cmake/osqp points osqp::osqp at
+# libosqp_builtin_single, and include/osqp/osqp_configure.h carries
+# `#define OSQP_USE_FLOAT`, so OSQPFloat is float for everyone. CasADi's
+# interface is double-only. Take a private copy of the headers with that define
+# removed, and let the patched CMake pick libosqp_builtin_double via
+# find_library (CMAKE_DISABLE_FIND_PACKAGE_OSQP keeps the shipped, single-
+# precision CMake config from winning first).
+OSQP_INC=${WORKSPACE}/srcdir/osqp-double-include
+mkdir -p ${OSQP_INC}
+cp -r ${includedir}/osqp ${OSQP_INC}/
+sed -i '/^#define OSQP_USE_FLOAT$/d' ${OSQP_INC}/osqp/osqp_configure.h
+
 # cbc.pc carries `-lasl` on every platform, which links fine everywhere except
 # Windows: ASL_jll's recipe only ever does `cp libasl.${dlext} ${libdir}`, so on
 # mingw it ships libasl.dll with no import library and `-lasl` has nothing to
@@ -80,6 +93,8 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DWITH_BONMIN=ON \
     ${HIGHS_FLAG} \
     -DWITH_OSQP=ON \
+    -DCMAKE_DISABLE_FIND_PACKAGE_OSQP=ON \
+    -DOSQP_INCLUDE_DIR="${OSQP_INC}/osqp" \
     -DWITH_CLP=ON \
     -DWITH_CBC=ON \
     -DWITH_QPOASES=ON \
