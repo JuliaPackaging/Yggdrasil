@@ -29,6 +29,16 @@ fi
 export CXXFLAGS="-fPIC ${CXX_STANDARD} -I${includedir}/coin-or"
 export CFLAGS="${CFLAGS} -fPIC"
 
+# LAPACK via libblastrampoline, the same BLAS/LAPACK shim that Ipopt_jll,
+# Clp_jll and Cbc_jll already link against, so we do not pull a second BLAS
+# into the prefix. Pre-setting LAPACK_LIBRARIES makes CasADi skip its
+# find_package(LAPACK) (see the `if(NOT LAPACK_LIBRARIES)` in CMakeLists.txt).
+if [[ "${target}" == *mingw* ]]; then
+    LBT="${libdir}/libblastrampoline-5.${dlext}"
+else
+    LBT="${libdir}/libblastrampoline.${dlext}"
+fi
+
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_INSTALL_BINDIR=${bindir} \
     -DCMAKE_INSTALL_LIBDIR=${libdir} \
@@ -36,6 +46,8 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD} \
+    -DWITH_LAPACK=ON \
+    -DLAPACK_LIBRARIES="${LBT}" \
     -DWITH_IPOPT=ON \
     -DWITH_BONMIN=ON \
     -DWITH_CLP=ON \
@@ -66,7 +78,8 @@ filter!(p -> arch(p) != "riscv64" && !Sys.isfreebsd(p),
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("Ipopt_jll"; compat="300.1400.1901"),
-    Dependency("Bonmin_jll"; compat="100.800.902")
+    Dependency("Bonmin_jll"; compat="100.800.902"),
+    Dependency("libblastrampoline_jll"; compat="5.4.0")
 ]
 
 products = [
@@ -87,6 +100,8 @@ products = [
     LibraryProduct("libcasadi_interpolant_linear", :libcasadi_interpolant_linear),
     LibraryProduct("libcasadi_linsol_csparse", :libcasadi_linsol_csparse),
     LibraryProduct("libcasadi_linsol_csparsecholesky", :libcasadi_linsol_csparsecholesky),
+    LibraryProduct("libcasadi_linsol_lapacklu", :libcasadi_linsol_lapacklu),
+    LibraryProduct("libcasadi_linsol_lapackqr", :libcasadi_linsol_lapackqr),
     LibraryProduct("libcasadi_linsol_ldl", :libcasadi_linsol_ldl),
     LibraryProduct("libcasadi_linsol_lsqr", :libcasadi_linsol_lsqr),
     LibraryProduct("libcasadi_linsol_qr", :libcasadi_linsol_qr),
