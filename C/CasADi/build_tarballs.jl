@@ -78,10 +78,19 @@ if [[ -d "${prefix}/blasfeo" ]]; then
     FATROP_FLAGS="${FATROP_FLAGS} -DBUILD_FATROP_GIT_SHALLOW=OFF"
 fi
 
+OSQP_CFG=$(find ${prefix} -name osqp_configure.h | head -1)
+if [[ -z "${OSQP_CFG}" ]]; then
+    echo "osqp_configure.h not found under ${prefix}; osqp files present:"
+    find ${prefix} -iname '*osqp*' | head -40
+    exit 1
+fi
 OSQP_INC=${WORKSPACE}/srcdir/osqp-double-include
+rm -rf ${OSQP_INC}
 mkdir -p ${OSQP_INC}
-cp -r ${includedir}/osqp ${OSQP_INC}/
+cp -r "$(dirname ${OSQP_CFG})" ${OSQP_INC}/osqp
 sed -i '/^#define OSQP_USE_FLOAT$/d' ${OSQP_INC}/osqp/osqp_configure.h
+echo "OSQP headers copied from $(dirname ${OSQP_CFG})"
+grep -c OSQP_USE_FLOAT ${OSQP_INC}/osqp/osqp_configure.h || echo "OSQP_USE_FLOAT define removed"
 
 # cbc.pc carries `-lasl` on every platform, which links fine everywhere except
 # Windows: ASL_jll's recipe only ever does `cp libasl.${dlext} ${libdir}`, so on
