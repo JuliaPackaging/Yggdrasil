@@ -61,7 +61,7 @@ fi
 # fatrop, built from the vendored checkout against blasfeo_jll. Locate blasfeo
 # by finding the library rather than naming a directory: FindBLASFEO.cmake looks
 # under $BLASFEO, and the JLL's own layout is not something to assume.
-BLASFEO_LIBFILE=$(find ${prefix} -name 'libblasfeo.*' 2>/dev/null | head -1)
+BLASFEO_LIBFILE=$(find -L ${prefix} -name 'libblasfeo.*' 2>/dev/null | head -1)
 FATROP_FLAGS="-DWITH_FATROP=OFF -DWITH_BLASFEO=OFF"
 if [[ -n "${BLASFEO_LIBFILE}" ]]; then
     BLASFEO_ROOT=$(dirname "$(dirname "${BLASFEO_LIBFILE}")")
@@ -76,12 +76,25 @@ else
     ls -la ${prefix}
 fi
 
-# OSQP is parked. The plugin itself works, but OSQP_jll ships one header tree
-# for its single- and double-precision builds with `#define OSQP_USE_FLOAT` in
-# it, so OSQPFloat is float and CasADi's double-only interface will not compile.
-# Sanitising the headers from the shell needs the layout in the prefix, which is
-# not what the artifact looks like; that belongs in the CMake patch, where
-# find_path has already resolved the directory. Re-enable once that is written.
+# OSQP_jll installs a single- and a double-precision build into one prefix, and
+# the single one lands last: lib/cmake/osqp points osqp::osqp at
+# libosqp_builtin_single, and include/osqp/osqp_configure.h carries
+# `#define OSQP_USE_FLOAT`, so OSQPFloat is float for everyone. CasADi's
+# interface is double-only. Take a private copy of the headers with that define
+# removed, and let the patched CMake pick libosqp_builtin_double via
+# find_library (CMAKE_DISABLE_FIND_PACKAGE_OSQP keeps the shipped, single-
+# precision CMake config from winning first).
+OSQP_CFG=$(find -L ${prefix} -name osqp_configure.h 2>/dev/null | head -1)
+if [[ -z "${OSQP_CFG}" ]]; then
+    echo "osqp_configure.h not found under ${prefix}"
+    exit 1
+fi
+OSQP_INC=${WORKSPACE}/srcdir/osqp-double-include
+rm -rf ${OSQP_INC}
+mkdir -p ${OSQP_INC}
+cp -r "$(dirname ${OSQP_CFG})" ${OSQP_INC}/osqp
+sed -i '/^#define OSQP_USE_FLOAT$/d' ${OSQP_INC}/osqp/osqp_configure.h
+echo "OSQP headers copied from $(dirname ${OSQP_CFG})"
 
 # cbc.pc carries `-lasl` on every platform, which links fine everywhere except
 # Windows: ASL_jll's recipe only ever does `cp libasl.${dlext} ${libdir}`, so on
@@ -112,7 +125,9 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DWITH_BONMIN=ON \
     ${HIGHS_FLAG} \
     ${FATROP_FLAGS} \
-    -DWITH_OSQP=OFF \
+    -DWITH_OSQP=ON \
+    -DCMAKE_DISABLE_FIND_PACKAGE_OSQP=ON \
+    -DOSQP_INCLUDE_DIR="${OSQP_INC}/osqp" \
     -DWITH_CLP=ON \
     -DWITH_CBC=ON \
     -DWITH_QPOASES=ON \
@@ -154,6 +169,7 @@ dependencies = [
     Dependency("Bonmin_jll"; compat="100.800.902"),
     Dependency("libblastrampoline_jll"; compat="5.4.0"),
     Dependency("HiGHS_jll"; compat="1.15.1", platforms=highs_platforms),
+    Dependency("OSQP_jll"; compat="100.0.0"),
     Dependency("blasfeo_jll"; compat="0.1.4", platforms=fatrop_platforms)
 ]
 
@@ -164,6 +180,7 @@ products = [
     LibraryProduct("libcasadi_conic_clp", :libcasadi_conic_clp),
     LibraryProduct("libcasadi_conic_ipqp", :libcasadi_conic_ipqp),
     LibraryProduct("libcasadi_conic_nlpsol", :libcasadi_conic_nlpsol),
+    LibraryProduct("libcasadi_conic_osqp", :libcasadi_conic_osqp),
     LibraryProduct("libcasadi_conic_qpoases", :libcasadi_conic_qpoases),
     LibraryProduct("libcasadi_conic_qrqp", :libcasadi_conic_qrqp),
     LibraryProduct("libcasadi_importer_shell", :libcasadi_importer_shell),
