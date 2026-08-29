@@ -73,11 +73,6 @@ if [[ -n "${BLASFEO_LIBFILE}" ]]; then
     # resolve it; removed again after install so it never reaches the tarball.
     mkdir -p ${BLASFEO_ROOT}/lib/cmake/blasfeo
     cat > ${BLASFEO_ROOT}/lib/cmake/blasfeo/blasfeo-config.cmake <<EOCFG
-    # fatrop's own targets do not all pick up the include directory from the
-    # imported target, so put it on the compiler flags the ExternalProject
-    # inherits as well.
-    export CXXFLAGS="${CXXFLAGS} -I${BLASFEO_ROOT}/include"
-    export CFLAGS="${CFLAGS} -I${BLASFEO_ROOT}/include"
 if(NOT TARGET blasfeo::blasfeo)
   add_library(blasfeo::blasfeo UNKNOWN IMPORTED)
   set_target_properties(blasfeo::blasfeo PROPERTIES
@@ -85,6 +80,10 @@ if(NOT TARGET blasfeo::blasfeo)
     INTERFACE_INCLUDE_DIRECTORIES "${BLASFEO_ROOT}/include")
 endif()
 EOCFG
+    # fatrop's own targets do not all pick up the include directory from the
+    # imported target, so put it on the compiler flags the sub-build inherits.
+    export CXXFLAGS="${CXXFLAGS} -I${BLASFEO_ROOT}/include"
+    export CFLAGS="${CFLAGS} -I${BLASFEO_ROOT}/include"
     FATROP_FLAGS="-DWITH_BLASFEO=ON -DWITH_FATROP=ON -DWITH_BUILD_FATROP=ON"
     FATROP_FLAGS="${FATROP_FLAGS} -DBUILD_FATROP_GIT_REPO=${WORKSPACE}/srcdir/fatrop"
     FATROP_FLAGS="${FATROP_FLAGS} -DBUILD_FATROP_VERSION=2d8c5198a47890a55bb872ed4f895484c7769f74"
