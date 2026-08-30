@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDA_Compiler"
-version = v"0.5.1"
+version = v"0.6.0"
 
 const toolkit_versions = [CUDA.cuda_full_versions; CUDA.cuda_prerelease_versions]
 const compiler_versions = filter(v -> v >= v"11.4", toolkit_versions)
@@ -22,7 +22,6 @@ augment_platform_block = """
     $(read(joinpath(@__DIR__, "..", "CUDA_Runtime", "toolkit_selection.jl"), String))
     const cuda_toolkits = $(compiler_versions)
     const cuda_prerelease_toolkits = $(CUDA.cuda_prerelease_versions)
-    const cuda_default_toolkit = $(repr(Base.thisminor(last(CUDA.cuda_full_versions))))
     $(read(joinpath(@__DIR__, "platform_augmentation.jl"), String))"""
 
 script = raw"""
@@ -148,6 +147,12 @@ function get_products(version::VersionNumber)
                                    "nvrtc64_112_0"
     nvrtc_builtins_dll = "nvrtc-builtins64_$(version.major)$(version.minor)"
 
+    # NOTE: the libraries must be dlopen'ed eagerly (the default), even though nothing here
+    # calls into them. Other CUDA libraries pick them up by soname at run time: libcusolver,
+    # libcusparse and libcufft link against or dlopen `libnvJitLink.so.$major`, and cuBLASLt,
+    # cuFFT, cuDNN and cuTENSOR dlopen `libnvrtc.so.$major`, which in turn dlopens
+    # `libnvrtc-builtins.so.$major.$minor`. None of them have a RUNPATH, so those lookups
+    # only succeed because this JLL has already loaded the libraries.
     products = [
         FileProduct(["lib/libcudadevrt.a", "lib/cudadevrt.lib"], :libcudadevrt),
         FileProduct("nvvm/libdevice/libdevice.10.bc", :libdevice),

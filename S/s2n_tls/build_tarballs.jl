@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "s2n_tls"
-version = v"1.7.3"
+version = v"1.7.8"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/aws/s2n-tls.git", "211695cb91f5b74b64a81ebb3045ec3d7d5ab264"),
+    GitSource("https://github.com/aws/s2n-tls.git", "3b975bf3fd9a50def97573afa859e8eb83931928"),
 ]
 
 # Bash recipe for building across all platforms

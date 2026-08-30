@@ -3,18 +3,18 @@
 using Base.BinaryPlatforms
 include("../common.jl")
 
-gap_version = v"400.1600.0"
-gap_upstream_version = v"4.16.0"
+gap_version = v"400.1600.100"
+gap_upstream_version = v"4.16.1"
 name = "JuliaInterface"
 upstream_version = "0.17.4" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
+offset = v"0.0.1" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL
 sources = [
     GitSource("https://github.com/oscar-system/GAP.jl", "99d5f8b27c7cad6aa23611b5567ab75f2ddba174"),
     ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(gap_upstream_version)/gap-$(gap_upstream_version).tar.gz",
-                  "aaa296b32a5d7bf25fd80f241d23ec1f58b74e991ae730fafe40e54eb3af6e7e"),
+                  "df7d116f03c426dac24bf7c76ea11416b29c5a48eac12f97811d80ec215f7f69"),
 ]
 
 # Bash recipe for building across all platforms

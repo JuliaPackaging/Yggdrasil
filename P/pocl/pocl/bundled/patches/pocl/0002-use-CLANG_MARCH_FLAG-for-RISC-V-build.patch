@@ -1,0 +1,22 @@
+From 6831fe8c5f45777918f74a4d39bf1bbd5072729b Mon Sep 17 00:00:00 2001
+From: Simeon David Schaub <simeon@schaub.rocks>
+Date: Wed, 15 Oct 2025 11:00:08 +0200
+Subject: [PATCH 02/16] use `CLANG_MARCH_FLAG` for RISC-V build
+
+---
+ lib/kernel/host/CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lib/kernel/host/CMakeLists.txt b/lib/kernel/host/CMakeLists.txt
+index 217e6001f..6a4ed2d1a 100644
+--- a/lib/kernel/host/CMakeLists.txt
++++ b/lib/kernel/host/CMakeLists.txt
+@@ -657,7 +657,7 @@ endif()
+ if(X86)
+   x86_distro_variant_to_flags("${VARIANT}" LLC_CPUFLAGS CLANG_CPUFLAGS)
+ elseif(RISCV)
+-  set(CLANG_CPUFLAGS "-mcpu=${VARIANT} -mabi=${HOST_CPU_TARGET_ABI}")
++  set(CLANG_CPUFLAGS "${CLANG_MARCH_FLAG}${VARIANT} -mabi=${HOST_CPU_TARGET_ABI}")
+ 
+   if(LLVM_MARCH)
+     set(CLANG_CPUFLAGS "${CLANG_CPUFLAGS} -march=${LLVM_MARCH}")

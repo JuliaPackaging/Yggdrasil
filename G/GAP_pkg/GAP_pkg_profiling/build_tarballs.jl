@@ -2,16 +2,16 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 include("../common.jl")
 
-gap_version = v"400.1600.0"
+gap_version = v"400.1600.100"
 name = "profiling"
-upstream_version = "2.6.2" # when you increment this, reset offset to v"0.0.0"
-offset = v"1.0.1" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
+upstream_version = "2.6.3" # when you increment this, reset offset to v"0.0.0"
+offset = v"1.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL
 sources = [
     ArchiveSource("https://github.com/gap-packages/profiling/releases/download/v$(upstream_version)/profiling-$(upstream_version).tar.gz",
-                  "bc8bb0839ee400915df1c809ba9ba131c34bd022d194db4d4828115d7dbf8e99"),
+                  "bbc4868237b88d54eedf4419ace6743dbff16ce32bdc0ebb3bf7f8d65beee335"),
 ]
 
 # Bash recipe for building across all platforms

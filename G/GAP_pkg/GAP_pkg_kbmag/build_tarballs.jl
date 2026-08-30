@@ -3,7 +3,7 @@
 include("../common.jl")
 
 name = "kbmag"
-upstream_version = "1.5.11" # when you increment this, reset offset to v"0.0.0"
+upstream_version = "1.6.0" # when you increment this, reset offset to v"0.0.0"
 offset = v"1.0.0" # increment this when rebuilding with unchanged upstream_version
 version = offset_version(upstream_version, offset)
 
@@ -12,7 +12,7 @@ version = offset_version(upstream_version, offset)
 # Collection of sources required to build this JLL
 sources = [
     ArchiveSource("https://github.com/gap-packages/kbmag/releases/download/v$(upstream_version)/kbmag-$(upstream_version).tar.gz",
-                  "3112924625b3b2b5d0ae1a84fe7babccaaa900b0044dca37fbf33f8b3f455682"),
+                  "de28d1dcaabbca77561ab74a0a66588358938e58ad4dcadb1a8e479e36c7228a"),
 ]
 
 # Bash recipe for building across all platforms
