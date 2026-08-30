@@ -2,12 +2,12 @@ using BinaryBuilder, Pkg
 
 name = "CasADi"
 
-version = v"3.7.3" # upstream is 3.7.2; bump Yggdrasil version because we updated compat bounds
+version = v"3.8.0"
 
 sources = [
     GitSource(
         "https://github.com/casadi/casadi.git",
-        "f959d3175a444d763e4eda4aece48f4c5f4a6f90",
+        "83b3cec864e42c5b64a07e85d4adf91da71458b1",
     ),
     DirectorySource("./bundled"),
 ]
