@@ -35,7 +35,7 @@ products = [
 ]
 
 dependencies = [
-    Dependency("OpenSSL_jll"; compat="~$(version.major).$(version.minor).$(version.patch)"),
+    Dependency("OpenSSL_jll"; compat="=$(version.major).$(version.minor).$(version.patch)"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
