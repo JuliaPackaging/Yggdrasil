@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_s3"
-version = v"0.12.8"
+version = v"0.13.7"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-s3.git", "448ec5e49eb181687f9af39b0d3b83a563b15039"),
+    GitSource("https://github.com/awslabs/aws-c-s3.git", "2e74399ae4393f426d462fe56beed8b4a6c90f51"),
 ]
 
 # Bash recipe for building across all platforms
