@@ -7,9 +7,7 @@ include("utils.jl")
 name = "pandoc_crossref"
 
 crossref_ver = "0.3.25"
-# this is the listed minimum supported pandoc version
-# changelog where this minimum version was introduced: https://github.com/lierdakil/pandoc-crossref/releases/tag/v0.3.22
-panddoc_jll_version = v"3.8.2"
+panddoc_jll_version = v"3.10.1"
 version = pandoc_crossref_jll_version(crossref_ver)
 
 url_prefix = "https://github.com/lierdakil/pandoc-crossref/releases/download/v$(crossref_ver)/pandoc-crossref"
