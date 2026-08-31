@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_event_stream"
-version = v"0.7.2"
+version = v"1.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-event-stream.git", "f18e12078b3e53a3f2ac9c5853ddc3502b09938d"),
+    GitSource("https://github.com/awslabs/aws-c-event-stream.git", "d32600bfecc6616cab0c478f96ea5a779f03e05e"),
 ]
 
 # Bash recipe for building across all platforms
