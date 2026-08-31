@@ -123,6 +123,17 @@ function build_script(standalone=false)
     cd $WORKSPACE/srcdir/pocl/
     install_license LICENSE
 
+    # Apply our patch series on top of upstream release_7_2 (`git format-patch` exports; the
+    # binary SPIR-V test inputs are excluded since we don't build the tests):
+    # - 0001: MinGW Clang/lld toolchain support (JuliaGPU-only, not upstreamed)
+    # - 0002: FP16 host math overloads (upstream PR #2224, in `main`)
+    # - 0003: in-process JIT via ORC/JITLink (upstream PR #2190, in `main`)
+    # - 0004: CanonicalizeBarriers fix for reconverging barrier successors (upstream PR #2281)
+    # - 0005, 0006: UnreachablesToReturns fix for issue #1958 (upstream PR #2280)
+    for patch in $WORKSPACE/srcdir/patches/pocl/*.patch; do
+        atomic_patch -p1 $patch
+    done
+
     # POCL wants a target sysroot for compiling the host kernellib (for `math.h` etc)
     sysroot=/opt/${target}/${target}/sys-root
     if [[ "${target}" == *apple* ]]; then

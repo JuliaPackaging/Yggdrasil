@@ -1,0 +1,68 @@
+From cd0d3970227e09382f57a5c715d42ed62e1baf00 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Wed, 10 Jun 2026 10:43:49 +0200
+Subject: [PATCH 08/16] Hide statically-linked LLVM symbols on macOS in the
+ CMake-package setup
+
+When LLVM is found through LLVMConfig.cmake (SetupLLVMviaCMake.cmake,
+mandatory when cross-compiling since LLVM_DIR is required), the LLVM and
+Clang static archives were linked into libpocl as plain imported
+targets, re-exporting every LLVM symbol. On ELF this is harmless
+because libpocl links with --exclude-libs,ALL, but Mach-O's ld64 has no
+such flag: the ~19k exported LLVM symbols include thousands of weak
+definitions (cl::opt vtables, template instantiations) that dyld
+coalesces across images. Any host application that carries its own,
+different LLVM then resolves libpocl's weak references against the
+host's copy, crashing on the first virtual call with a wild jump.
+Observed with Julia, which loads its own libLLVM (18) and whose
+libraries carry weak instantiations of the same LLVM header templates:
+loading a libpocl statically linked against LLVM 20 crashed with a bus
+error inside InitializeLLVM during plain clCreateContext, libpocl's
+cl::opt registration having been coalesced onto the LLVM-18 host code.
+
+SetupLLVMviaBinary.cmake already solves this for the llvm-config path
+by loading the archives with ld64's -hidden-l, which marks every symbol
+they contribute private-extern. Do the same in the CMake-package path:
+on APPLE with STATIC_LLVM and VISIBILITY_HIDDEN, convert the component
+targets to -Wl,-hidden-l<name> flags (component target names equal the
+archive base names), walking each target's INTERFACE_LINK_LIBRARIES
+transitively -- unwrapping $<LINK_ONLY:...> entries so those components
+are hidden rather than relinked plainly -- and keeping the non-LLVM
+dependencies (m, ZLIB::ZLIB, zstd::libzstd_*, ...) on the regular link
+list. Also load a static libLLVMSPIRVLib through -hidden-l, since its
+objects carry the same weak LLVM template instantiations.
+
+With this, a macOS libpocl built via the CMake package path exports the
+same minimal symbol set as the llvm-config path (417 vs. 54539 before,
+none of them LLVM, no weak externals), and coexists with a second LLVM
+in the process.
+
+Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+---
+ lib/CL/CMakeLists.txt | 13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
+
+diff --git a/lib/CL/CMakeLists.txt b/lib/CL/CMakeLists.txt
+index 471b80aab..6028f059b 100644
+--- a/lib/CL/CMakeLists.txt
++++ b/lib/CL/CMakeLists.txt
+@@ -357,7 +357,18 @@ if(ENABLE_LLVM)
+   list(APPEND POCL_PRIVATE_LINK_LIBRARIES ${LLVM_SYSLIBS})
+ 
+   if (HAVE_LLVM_SPIRV_LIB)
+-    list(PREPEND POCL_PRIVATE_LINK_LIBRARIES ${LLVM_SPIRV_LIB})
++    if(APPLE AND VISIBILITY_HIDDEN AND LLVM_SPIRV_LIB MATCHES "\\.a$")
++      # like the LLVM/Clang archives (see LLVM.cmake), keep the
++      # translator's symbols (including weak LLVM template instantiations from
++      # its objects) out of libpocl's exports; ld64 has no --exclude-libs, so
++      # load the archive with -hidden-l instead.
++      get_filename_component(LLVM_SPIRV_LIB_DIR "${LLVM_SPIRV_LIB}" DIRECTORY)
++      get_filename_component(LLVM_SPIRV_LIB_NAME "${LLVM_SPIRV_LIB}" NAME_WE)
++      string(REGEX REPLACE "^lib" "" LLVM_SPIRV_LIB_NAME "${LLVM_SPIRV_LIB_NAME}")
++      list(PREPEND POCL_PRIVATE_LINK_LIBRARIES "-L${LLVM_SPIRV_LIB_DIR}" "-Wl,-hidden-l${LLVM_SPIRV_LIB_NAME}")
++    else()
++      list(PREPEND POCL_PRIVATE_LINK_LIBRARIES ${LLVM_SPIRV_LIB})
++    endif()
+   endif()
+ endif()
+ 
