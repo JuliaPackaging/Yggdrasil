@@ -1,0 +1,11 @@
+--- a/cmake/base-config-ix.cmake
++++ b/cmake/base-config-ix.cmake
+@@ -254,7 +254,7 @@
+     elseif("${COMPILER_RT_DEFAULT_TARGET_ARCH}" MATCHES "aarch32")
+       test_target_arch(aarch32 "" "-march=armv8-a")
+     elseif("${COMPILER_RT_DEFAULT_TARGET_ARCH}" MATCHES "aarch64")
+-      test_target_arch(aarch64 "" "-march=armv8-a")
++      test_target_arch(aarch64 "" "")
+     elseif("${COMPILER_RT_DEFAULT_TARGET_ARCH}" MATCHES "riscv32")
+       test_target_arch(riscv32 "" "")
+     elseif("${COMPILER_RT_DEFAULT_TARGET_ARCH}" MATCHES "riscv64")
