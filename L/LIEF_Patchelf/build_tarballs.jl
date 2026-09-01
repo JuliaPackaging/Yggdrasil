@@ -19,6 +19,7 @@ apk del cmake
 cd ${WORKSPACE}/srcdir/LIEF
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-undef-major-minor.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0002-drop-tls-backend.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0003-static-runtime-link-args.patch
 
 # A detached checkout has no tag to describe, so stamp the version by hand.
 export LIEF_VERSION_ENV=1.0.0
@@ -90,38 +91,27 @@ test -f ${precompiled}/lib/liblief-sys.a
 export LIEF_RUST_PRECOMPILED=${precompiled}
 
 # Both archives are static, so LIEF and its vendored dependencies are always
-# absorbed into the binary; the flags below only concern the system runtime.
+# absorbed into the binary; what is left is the system runtime. Patch 0003
+# adds a build.rs that emits the linker arguments for that; the CRT itself is
+# a codegen choice, so it has to come from RUSTFLAGS.
 case "${target}" in
-    *-mingw*)
-        # link-cplusplus emits a bare -lstdc++ that -static-libstdc++ cannot
-        # override, so silence cc's detection and link the archive by path.
-        export CXXSTDLIB=""
-        libstdcxx=$(${CXX} -print-file-name=libstdc++.a)
-        test -f "${libstdcxx}"
-        RUSTFLAGS="${RUSTFLAGS} -C target-feature=+crt-static"
-        RUSTFLAGS="${RUSTFLAGS} -C link-arg=-static -C link-arg=-static-libgcc"
-        # link-args land after -lmingwex, so repeat what libstdc++.a needs.
-        RUSTFLAGS="${RUSTFLAGS} -C link-arg=-Wl,--start-group"
-        RUSTFLAGS="${RUSTFLAGS} -C link-arg=${libstdcxx}"
-        RUSTFLAGS="${RUSTFLAGS} -C link-arg=-lmingwex -C link-arg=-lmsvcrt"
-        RUSTFLAGS="${RUSTFLAGS} -C link-arg=-lkernel32 -C link-arg=-luser32"
-        RUSTFLAGS="${RUSTFLAGS} -C link-arg=-ladvapi32"
-        RUSTFLAGS="${RUSTFLAGS} -C link-arg=-Wl,--end-group"
-        ;;
     *-apple-darwin*)
         # Apple ships no static libSystem, and libc++ is an OS component with
         # a stable ABI, so darwin links both dynamically and needs no flags.
+        ;;
+    *-mingw*)
+        # link-cplusplus emits a bare -lstdc++ that -static-libstdc++ cannot
+        # override, so silence cc's detection; build.rs links it by path.
+        export CXXSTDLIB=""
+        export RUSTFLAGS="${RUSTFLAGS} -C target-feature=+crt-static"
         ;;
     *)
         # Linux and FreeBSD. Under the default PIC model, +crt-static emits
         # -static-pie and wants an rcrt1.o the sysroot lacks; a non-PIE link
         # uses the ordinary crt1.o instead.
-        RUSTFLAGS="${RUSTFLAGS} -C target-feature=+crt-static"
-        RUSTFLAGS="${RUSTFLAGS} -C relocation-model=static"
-        RUSTFLAGS="${RUSTFLAGS} -C link-arg=-static-libgcc"
+        export RUSTFLAGS="${RUSTFLAGS} -C target-feature=+crt-static -C relocation-model=static"
         ;;
 esac
-export RUSTFLAGS
 
 # No --locked: patch 0002 prunes rustls, so the lockfile must be updated.
 cargo build --release --manifest-path tools/Cargo.toml -p lief-patchelf
