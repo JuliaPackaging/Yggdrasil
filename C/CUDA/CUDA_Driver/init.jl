@@ -57,9 +57,15 @@ if Libdl.dlopen(libcuda_system, Libdl.RTLD_NOLOAD; throw_error=false) !== nothin
     return
 end
 
-# only reference the compat-driver dependency products now that we've
-# confirmed they exist (helper-only builds don't declare these symbols).
-libcuda_deps = [libcuda_debugger, libnvidia_nvvm, libnvidia_ptxjitcompiler, libnvidia_gpucomp, libnvidia_tileiras]
+# collect the compat driver's dependent libraries. not every artifact declares
+# every product (helper-only builds declare none, and the L4T compat drivers lack
+# the newer desktop-only libraries), so only reference those that exist.
+libcuda_deps = String[]
+for dep in [:libcuda_debugger, :libnvidia_nvvm, :libnvidia_ptxjitcompiler,
+            :libnvidia_gpucomp, :libnvidia_tileiras]
+    isdefined(@__MODULE__, dep) || continue
+    push!(libcuda_deps, getfield(@__MODULE__, dep))
+end
 
 # fetch driver details
 compat_driver_task = @static if VERSION >= v"1.12-"
@@ -76,13 +82,13 @@ else
 end
 compat_driver_info = fetch(compat_driver_task)
 if compat_driver_info === nothing
-    @debug "Failed to load forwards-compatible driver."
+    @debug "Forwards-compatible driver is not usable (see above for details); using system driver."
     return
 end
 @debug "Forwards compatible driver version: $(compat_driver_info.version)"
 system_driver_info = fetch(system_driver_task)
 if system_driver_info === nothing
-    @debug "Failed to load system driver."
+    @debug "Could not query the system driver (see above for details); using system driver."
     return
 end
 @debug "System driver version: $(system_driver_info.version)"
