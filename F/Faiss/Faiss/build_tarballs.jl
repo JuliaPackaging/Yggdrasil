@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "Faiss"
-version = v"1.9.0"
+version = v"1.10.0"
 
 include(joinpath(@__DIR__, "..", "common.jl"))
 
