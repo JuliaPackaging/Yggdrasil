@@ -19,8 +19,9 @@ driver_version = "610.43.02"
 # the JLL version tracks `cuda_version`, but can diverge in the patch digit when the
 # wrapper code changes in ways consumers need to express compat bounds against (Julia
 # package resolution cannot distinguish build numbers). 13.3.1: introduction of the
-# toolkit selection library in the toplevel block.
-version = v"13.3.1"
+# toolkit selection library in the toplevel block. 13.3.2: detailed driver-inspection
+# failure diagnostics (dependency load vs. dlopen vs. cuInit failures).
+version = v"13.3.2"
 
 script = raw"""
     # Build the driver inspection binary. On Linux/macOS we need -ldl for

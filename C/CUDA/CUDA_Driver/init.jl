@@ -76,13 +76,13 @@ else
 end
 compat_driver_info = fetch(compat_driver_task)
 if compat_driver_info === nothing
-    @debug "Failed to load forwards-compatible driver."
+    @debug "Forwards-compatible driver is not usable (see above for details); using system driver."
     return
 end
 @debug "Forwards compatible driver version: $(compat_driver_info.version)"
 system_driver_info = fetch(system_driver_task)
 if system_driver_info === nothing
-    @debug "Failed to load system driver."
+    @debug "Could not query the system driver (see above for details); using system driver."
     return
 end
 @debug "System driver version: $(system_driver_info.version)"

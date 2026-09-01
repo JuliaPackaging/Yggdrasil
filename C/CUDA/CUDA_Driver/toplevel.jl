@@ -14,45 +14,60 @@ const selection_api = v"1"
 
 using Base: thismajor, thisminor
 
-# Precompile the process-spawning and version-parsing hot path of `inspect_driver`,
-# because platform augmentation hooks call it from Pkg's `select_artifacts.jl`
-# subprocess, which runs with `--compile=min`.
+# Precompile statements for the process-spawning and version-parsing hot path of
+# `inspect_driver`, because platform augmentation hooks call it from Pkg's
+# `select_artifacts.jl` subprocess, which runs with `--compile=min`. The entry
+# points are precompiled at the bottom of this file (which caches their inferable
+# callees as well); Base methods only reached through dynamic dispatch are listed
+# here explicitly.
 precompile(Tuple{typeof(Base.cmd_gen), Tuple{Tuple{Base.Cmd}, Tuple{String}, Tuple{Bool}, Tuple{Array{String, 1}}}})
 precompile(Tuple{typeof(Base.arg_gen), Bool})
-precompile(Tuple{typeof(Base.read), Base.Cmd, Type{String}})
-precompile(Tuple{typeof(Base.readlines), Base.IOBuffer})
 precompile(Tuple{typeof(Base.push!), Array{Base.VersionNumber, 1}, Base.VersionNumber})
-precompile(Tuple{typeof(Base.Iterators.enumerate), Array{Base.VersionNumber, 1}})
-precompile(Tuple{typeof(Base.iterate), Base.Iterators.Enumerate{Array{Base.VersionNumber, 1}}})
-precompile(Tuple{typeof(Base.iterate), Base.Iterators.Enumerate{Array{Base.VersionNumber, 1}}, Tuple{Int64, Int64}})
-precompile(Tuple{typeof(Base.indexed_iterate), Tuple{Int64, Base.VersionNumber}, Int64})
-precompile(Tuple{typeof(Base.indexed_iterate), Tuple{Int64, Base.VersionNumber}, Int64, Int64})
 
 """
     inspect_driver(driver, deps=String[]; inspect_devices=false)
 
 Invoke the `cuda_inspect_driver` helper in a subprocess to query a CUDA driver
-without dlopen'ing it in the caller's process. Returns `nothing` on failure,
-otherwise a NamedTuple `(; path, version, capabilities)` where `path` is the
-resolved absolute path to the driver, `version` is the driver's reported
-version, and `capabilities` is a `Vector{VersionNumber}` of device compute
-capabilities — empty when `inspect_devices` is `false`.
+without dlopen'ing it in the caller's process. The helper verifies the driver
+actually works by calling `cuInit` (dlopen and `cuDriverGetVersion` succeed even
+on a driver that mismatches the loaded kernel-mode driver). Returns `nothing` on
+failure, logging the helper's diagnostic at debug level so that e.g. a driver
+failing `cuInit` can be told apart from one that failed to load; otherwise a
+NamedTuple `(; path, version, capabilities)` where `path` is the resolved
+absolute path to the driver, `version` is the driver's reported version, and
+`capabilities` is a `Vector{VersionNumber}` of device compute capabilities —
+empty when `inspect_devices` is `false`.
 """
 function inspect_driver(driver, deps=String[]; inspect_devices::Bool=false)
     # the helper executable is an artifact product, which does not exist on platforms
     # without a matching artifact (or before this module has been initialized).
     @isdefined(cuda_inspect_driver_path) || return nothing
     cmd = `$cuda_inspect_driver_path $driver $inspect_devices $deps`
-    output = try
-        read(cmd, String)
+    out = IOBuffer()
+    err = IOBuffer()
+    proc = try
+        run(pipeline(ignorestatus(cmd); stdout=out, stderr=err))
     catch _
+        # spawn failure (e.g. missing or non-executable helper)
+        @debug "Could not launch the driver inspection helper for $driver"
         return nothing
     end
-    lines = readlines(IOBuffer(output))
-    length(lines) < 2 && return nothing
+    if !success(proc)
+        reason = strip(String(take!(err)))
+        @debug "Inspection of driver $driver failed" * (isempty(reason) ? "" : ": $reason")
+        return nothing
+    end
+    lines = readlines(seekstart(out))
+    if length(lines) < 2
+        @debug "Inspection of driver $driver returned unexpected output"
+        return nothing
+    end
     path = lines[1]
     version = tryparse(VersionNumber, lines[2])
-    version === nothing && return nothing
+    if version === nothing
+        @debug "Inspection of driver $driver reported an unparseable version: $(lines[2])"
+        return nothing
+    end
     capabilities = VersionNumber[]
     if inspect_devices
         for i in 3:length(lines)
@@ -227,3 +242,10 @@ function select_cuda_toolkit(toolkits::Vector{VersionNumber},
     @debug "Selected CUDA toolkit: $cuda_toolkit"
     return cuda_toolkit
 end
+
+# precompile the entry points used by platform augmentation hooks (see above)
+precompile(inspect_driver, (String,))
+precompile(inspect_driver, (String, Vector{String}))
+precompile(Core.kwcall, (@NamedTuple{inspect_devices::Bool}, typeof(inspect_driver), String))
+precompile(get_driver_info, ())
+precompile(select_cuda_toolkit, (Vector{VersionNumber}, Vector{VersionNumber}))
