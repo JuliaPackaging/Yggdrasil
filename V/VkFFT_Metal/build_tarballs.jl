@@ -7,7 +7,8 @@ name = "VkFFT_Metal"
 version = v"0.1.0"
 
 # Must be the same libvkfft commit VkFFT_CUDA and VkFFT_OpenCL build.
-const libvkfft_commit = "c608fa9e2fe6a65ba8e51b46cc3f4f570cf163ab"
+# This is the commit the v0.1.0 tag points at.
+const libvkfft_commit = "8d20a59e32bcacdc8ae09ba71ce4589719cd7257"
 
 # VkFFT is a submodule of libvkfft and GitSource does not fetch submodules, so
 # it is a source of its own. This is v1.3.4, the commit lib/VkFFT points at.
