@@ -59,8 +59,9 @@ end
 
 # collect the compat driver's dependent libraries. not every artifact declares
 # every product (helper-only builds declare none, and the L4T compat drivers lack
-# the newer desktop-only libraries), so only reference those that exist.
-libcuda_deps = String[]
+# the newer desktop-only libraries), so only reference those that exist. this is a
+# global because `get_driver_info` needs the same list to inspect the driver we load.
+global libcuda_deps = String[]
 for dep in [:libcuda_debugger, :libnvidia_nvvm, :libnvidia_ptxjitcompiler,
             :libnvidia_gpucomp, :libnvidia_tileiras]
     isdefined(@__MODULE__, dep) || continue

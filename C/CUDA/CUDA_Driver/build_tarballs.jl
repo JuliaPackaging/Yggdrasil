@@ -21,8 +21,9 @@ driver_version = "610.43.02"
 # package resolution cannot distinguish build numbers). 13.3.1: introduction of the
 # toolkit selection library in the toplevel block. 13.3.2: detailed driver-inspection
 # failure diagnostics and the `tegra` platform tag with per-KMD-generation artifacts
-# shipping the L4T compatibility drivers.
-version = v"13.3.2"
+# shipping the L4T compatibility drivers. 13.3.3: report the driver we actually load,
+# rather than always the system one, when selecting a CUDA toolkit.
+version = v"13.3.3"
 
 # the Tegra compat drivers to ship, per kernel-mode driver generation (the `tegra`
 # platform tag; see tegra_detection.jl). NVIDIA built L4T compat UMDs against the r35
