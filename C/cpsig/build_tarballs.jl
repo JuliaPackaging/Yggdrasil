@@ -58,6 +58,11 @@ install(FILES
 )
 EOF
 
+# The macOS libc++ lacks <concepts>; search this shim only after system headers.
+if [[ "${target}" == *-apple-* ]]; then
+    export CXXFLAGS="-idirafter ${WORKSPACE}/srcdir/macos-compat ${CXXFLAGS}"
+fi
+
 CMAKE_FLAGS=()
 if [[ "${target}" == x86_64-apple-* ]]; then
     CMAKE_FLAGS+=("-DCMAKE_OSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET}")
