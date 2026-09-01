@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Zenith"
-version = v"0.12.0"
+version = v"0.14.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/bvaisvil/zenith/archive/refs/tags/$(version).tar.gz",
-                  "2b33892be95149550c84179b341e304c4222e3489bc121ea8c8346e075433aa6"),
+    GitSource("https://github.com/bvaisvil/zenith.git",
+              "3c8d41a963925a9ef84ecfb18cec98f9da1cc690"),
 ]
 
 # Bash recipe for building across all platforms
@@ -16,6 +16,9 @@ script = raw"""
 cd $WORKSPACE/srcdir/zenith*/
 # Get rid of misleading settings
 rm -rf .cargo
+# Set some environment variables
+export HOST_CC="${HOSTCC}"
+export TARGET="${CARGO_BUILD_TARGET}"
 cargo build --release
 install -Dvm 755 "target/${rust_target}/release/zenith${exeext}" "${bindir}/zenith${exeext}"
 """
