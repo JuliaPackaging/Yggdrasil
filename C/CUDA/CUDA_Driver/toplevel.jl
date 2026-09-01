@@ -12,6 +12,14 @@
 # last-resort version marker for consumers to check.
 const selection_api = v"1"
 
+# `__init__` picks between the system driver and the bundled forwards-compatible one
+# based on this preference, and `get_driver_info` reports whichever it picked, so
+# dependent JLLs bake the preference into the artifact they select. Base keys
+# compile-time preferences by the recording module's own UUID, so they cannot register
+# it themselves; recording it here invalidates our cache, and theirs along with it.
+Base.record_compiletime_preference(Base.UUID("4ee394cb-3365-5eb0-8335-949819d2adfc"),
+                                   "compat")
+
 using Base: thismajor, thisminor
 
 """
@@ -101,22 +109,31 @@ end
 """
     get_driver_info()
 
-Query the system CUDA driver, returning `nothing` on failure, or a tuple
+Query the CUDA driver, returning `nothing` on failure, or a tuple
 `(driver_version, device_capabilities)`.
+
+This inspects `libcuda`, i.e. whichever of the system driver and the bundled
+forwards-compatible driver `__init__` settled on, so that the reported version is the
+one code in this session will actually be running against.
 
 When called during precompilation (e.g. from a dependent JLL's platform augmentation
 hook), the resolved driver path is registered as an include dependency, invalidating
 the precompilation cache when the user upgrades their NVIDIA driver.
 """
 function get_driver_info()
-    # inspect the system driver (rather than `libcuda`, which may be the
-    # forwards-compatible driver bundled in our artifact and which has private deps the
-    # inspection subprocess wouldn't preload). only the system driver actually changes
-    # when the user upgrades their NVIDIA driver, and it's the one we want to depend on
-    # for cache invalidation.
-    libcuda_system = Sys.iswindows() ? "nvcuda" : "libcuda.so.1"
+    # `libcuda` is set by `__init__`, so it does not exist on platforms without a
+    # matching artifact (where there is no driver to speak of anyway).
+    @isdefined(libcuda) || return nothing
 
-    info = inspect_driver(libcuda_system; inspect_devices=true)
+    # the forwards-compatible driver has private dependencies that the inspection
+    # subprocess has to preload; `__init__` collected them while probing it.
+    deps = if @isdefined(libcuda_compat) && libcuda == libcuda_compat
+        libcuda_deps
+    else
+        String[]
+    end
+
+    info = inspect_driver(libcuda, deps; inspect_devices=true)
     info === nothing && return nothing
 
     @debug "Adding include dependency on $(info.path)"
