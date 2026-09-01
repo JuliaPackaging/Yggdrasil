@@ -27,17 +27,15 @@ else
 end
 compat_forced = compat_preference === true
 
+# if anything goes wrong, we keep using the system driver: `libcuda` already holds its
+# name (set unconditionally in the module's toplevel block), and only gets replaced at
+# the very end when we decide to load the forwards-compatible driver instead.
 libcuda_system = Sys.iswindows() ? "nvcuda" : "libcuda.so.1"
-
-# if anything goes wrong, we'll use the system driver
-global libcuda = libcuda_system
 
 # check if we even have an artifact
 if @isdefined(libcuda_compat)
     @debug "Forward-compatible driver found at $libcuda_compat"
 else
-    # the JLL ships only the cuda_inspect_driver helper on this platform
-    # (e.g. Windows). nothing to do but keep using the system driver.
     @debug "No forward-compatible driver available for your platform."
     return
 end
@@ -58,9 +56,9 @@ if Libdl.dlopen(libcuda_system, Libdl.RTLD_NOLOAD; throw_error=false) !== nothin
 end
 
 # collect the compat driver's dependent libraries. not every artifact declares
-# every product (helper-only builds declare none, and the L4T compat drivers lack
-# the newer desktop-only libraries), so only reference those that exist. this is a
-# global because `get_driver_info` needs the same list to inspect the driver we load.
+# every product (the L4T compat drivers lack the newer desktop-only libraries), so
+# only reference those that exist. this is a global because dependents inspecting
+# the driver we loaded need to preload the same list.
 global libcuda_deps = String[]
 for dep in [:libcuda_debugger, :libnvidia_nvvm, :libnvidia_ptxjitcompiler,
             :libnvidia_gpucomp, :libnvidia_tileiras]
