@@ -1,8 +1,8 @@
-diff --git a/siglib/cpsig/log_sig_cache.cpp b/siglib/cpsig/log_sig_cache.cpp
-index 7d7f94d..55f7565 100644
---- a/siglib/cpsig/log_sig_cache.cpp
-+++ b/siglib/cpsig/log_sig_cache.cpp
-@@ -98,15 +98,9 @@ void set_cache_dir_(const char* dir) {
+diff --git a/siglib/cpsig/cache_lifecycle/log_sig_cache.cpp b/siglib/cpsig/cache_lifecycle/log_sig_cache.cpp
+index 047dcf0..84e560e 100644
+--- a/siglib/cpsig/cache_lifecycle/log_sig_cache.cpp
++++ b/siglib/cpsig/cache_lifecycle/log_sig_cache.cpp
+@@ -72,15 +72,9 @@ void set_cache_dir_(const char* dir) {
  
  void set_default_cache_dir() {
  #ifdef _WIN32
@@ -20,7 +20,7 @@ index 7d7f94d..55f7565 100644
  #elif __APPLE__
  	const char* home = std::getenv("HOME");
  	if (!home)
-@@ -136,9 +130,6 @@ void set_default_cache_dir() {
+@@ -108,9 +102,6 @@ void set_default_cache_dir() {
  			cache_dir = dir_path;
  	}
  
@@ -29,4 +29,4 @@ index 7d7f94d..55f7565 100644
 -#endif
  }
  
- void set_basis_cache(uint64_t dimension, uint64_t degree, int method, bool use_disk) {
+ void prepare_basis_cache(uint64_t dimension, uint64_t degree, int method, bool use_disk) {

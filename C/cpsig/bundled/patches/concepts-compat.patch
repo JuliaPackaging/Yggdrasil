@@ -2,7 +2,7 @@ diff --git a/siglib/cpsig/cppch.h b/siglib/cpsig/cppch.h
 index 98b384e..b5a7e0b 100644
 --- a/siglib/cpsig/cppch.h
 +++ b/siglib/cpsig/cppch.h
-@@ -36,7 +36,15 @@
+@@ -31,7 +31,15 @@
  #include <mutex>
  #include <shared_mutex>
  #include <functional>

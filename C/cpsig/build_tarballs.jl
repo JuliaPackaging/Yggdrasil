@@ -4,12 +4,13 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "cpsig"
-version = v"3.1.0"
+# Upstream main currently identifies as v4.0.0rc2; Yggdrasil recipe versions use X.Y.Z.
+version = v"4.0.0"
 
 sources = [
     GitSource(
         "https://github.com/daniil-shmelev/pySigLib.git",
-        "377c712121cee078ec08bdf01cc6b76cc6f7fbd0";
+        "8bbd69c2779a3d51cb7ddbd59a302b4654d00e80";
         unpack_target = "pysiglib",
     ),
     DirectorySource("./bundled"),
@@ -20,6 +21,7 @@ cd ${WORKSPACE}/srcdir/pysiglib/pySigLib
 
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-getenv.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/concepts-compat.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/onetbb-jll.patch
 
 # Replace upstream Python/JAX/CUDA-oriented root CMake with a minimal one.
 # We only build siglib/cpsig, which provides the C ABI library libcpsig.
@@ -86,6 +88,9 @@ products = [
 ]
 
 dependencies = [
+    Dependency("oneTBB_jll"; compat = "2022.3"),
+    # libcpsig links libgcc_s on Linux; the auditor needs an explicit JLL mapping.
+    Dependency("CompilerSupportLibraries_jll"),
 ]
 
 build_tarballs(
