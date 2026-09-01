@@ -20,8 +20,22 @@ driver_version = "610.43.02"
 # wrapper code changes in ways consumers need to express compat bounds against (Julia
 # package resolution cannot distinguish build numbers). 13.3.1: introduction of the
 # toolkit selection library in the toplevel block. 13.3.2: detailed driver-inspection
-# failure diagnostics (dependency load vs. dlopen vs. cuInit failures).
+# failure diagnostics and the `tegra` platform tag with per-KMD-generation artifacts
+# shipping the L4T compatibility drivers.
 version = v"13.3.2"
+
+# the Tegra compat drivers to ship, per kernel-mode driver generation (the `tegra`
+# platform tag; see tegra_detection.jl). NVIDIA built L4T compat UMDs against the r35
+# KMD through CUDA 12.2 and against r36 through 12.9; only the newest UMD per KMD
+# generation is worth shipping (any older toolkit runs on a newer same-major UMD).
+# no compat driver exists for r32 (JetPack 4), and from r38 (JetPack 7) on the
+# driver ships with the L4T BSP itself, so those get helper-only artifacts.
+tegra_compat_drivers = [
+    # tegra tag => (cuda version of the redist manifest, compat driver version)
+    "35" => (v"12.2.2", v"12.2.34086590"),
+    "36" => (v"12.9.1", v"12.9.40580548"),
+]
+tegra_helper_only = ["32", "38"]
 
 script = raw"""
     # Build the driver inspection binary. On Linux/macOS we need -ldl for
@@ -36,12 +50,14 @@ script = raw"""
     fi
 
     # Install the forwards-compatible driver from the CUDA toolkit. NVIDIA only
-    # ships this on Linux.
-    if [[ ${target} == *-linux-gnu ]]; then
+    # ships this on Linux. Helper-only builds have no cuda_compat source.
+    if [[ ${target} == *-linux-gnu ]] && compgen -G "${WORKSPACE}/srcdir/cuda_compat*" >/dev/null; then
         mkdir -p ${libdir}
         cd ${WORKSPACE}/srcdir/cuda_compat*
         install_license LICENSE
         mv compat/* ${libdir}
+        # the L4T packages also contain MPS executables; keep those in bindir
+        mv ${libdir}/nvidia-cuda-mps-* ${bindir} 2>/dev/null || true
     fi
 """
 
@@ -61,6 +77,7 @@ init_block = map(eachline(IOBuffer(init_block))) do line
     end |> join
 
 helper_product = ExecutableProduct("cuda_inspect_driver", :cuda_inspect_driver)
+# the datacenter/sbsa compat driver, as shipped with the CUDA toolkit
 compat_products = [
     LibraryProduct("libcuda", :libcuda_compat;                            dont_dlopen=true),
     LibraryProduct("libcudadebugger", :libcuda_debugger;                  dont_dlopen=true),
@@ -70,21 +87,28 @@ compat_products = [
     LibraryProduct("libnvidia-tileiras", :libnvidia_tileiras;             dont_dlopen=true),
     helper_product,
 ]
+# the L4T compat drivers lack the newer desktop-only libraries; init.jl only
+# references products that are actually defined for the selected artifact
+l4t_compat_products = [
+    LibraryProduct("libcuda", :libcuda_compat;                            dont_dlopen=true),
+    LibraryProduct("libcudadebugger", :libcuda_debugger;                  dont_dlopen=true),
+    LibraryProduct("libnvidia-nvvm", :libnvidia_nvvm;                     dont_dlopen=true),
+    LibraryProduct("libnvidia-ptxjitcompiler", :libnvidia_ptxjitcompiler; dont_dlopen=true),
+    helper_product,
+]
 
 dependencies = []
 
-# Platforms that ship the forwards-compatible driver alongside the helper.
-compat_platforms = [Platform("x86_64", "linux"),
-                    Platform("aarch64", "linux")]
-
-# Platforms where we only build the cuda_inspect_driver helper, without a
-# forwards-compatible libcuda. CUDA_Runtime_jll's platform augmentation needs
-# the JLL to be `is_available()` on these platforms so it can pick a runtime
-# artifact based on the system driver.
-helper_only_platforms = [Platform("x86_64", "windows")]
+# Every artifact carries an explicit value for the `tegra` tag matching what
+# `augment_platform!` computes. This leaves no untagged artifact that could match
+# every Tegra generation; in particular, a Tegra host must never receive the
+# SBSA/datacenter compat driver, which cannot drive the Tegra iGPU.
 
 builds = []
-for platform in compat_platforms
+
+# platforms that ship the datacenter forwards-compatible driver alongside the helper
+for platform in [Platform("x86_64", "linux"; tegra="none"),
+                 Platform("aarch64", "linux"; tegra="none")]
     augmented_platform = deepcopy(platform)
     augmented_platform["cuda"] = CUDA.platform(cuda_version)
     should_build_platform(triplet(augmented_platform)) || continue
@@ -99,6 +123,32 @@ for platform in compat_platforms
 
     push!(builds, (; platforms=[platform], sources, products=compat_products))
 end
+
+# Tegra generations with an L4T compat driver
+for (tegra, (manifest_version, compat_version)) in tegra_compat_drivers
+    platform = Platform("aarch64", "linux"; tegra)
+    augmented_platform = deepcopy(platform)
+    augmented_platform["cuda"] = CUDA.platform(compat_version)
+    should_build_platform(triplet(augmented_platform)) || continue
+
+    # `get_sources` needs the cuda_platform tag to map pre-13 aarch64 onto the
+    # Tegra (`linux-aarch64`) entries of the redist manifest
+    source_platform = deepcopy(augmented_platform)
+    source_platform["cuda_platform"] = "jetson"
+    sources = get_sources("cuda", ["cuda_compat"]; version=manifest_version,
+                          platform=source_platform)
+    push!(sources, DirectorySource("./src"))
+
+    push!(builds, (; platforms=[platform], sources, products=l4t_compat_products))
+end
+
+# platforms where we only build the cuda_inspect_driver helper, without a
+# forwards-compatible libcuda: Windows (NVIDIA doesn't ship one), and Tegra
+# generations without an applicable compat driver. CUDA_Runtime_jll's platform
+# augmentation needs the JLL to be `is_available()` on these platforms so it
+# can pick a runtime artifact based on the system driver.
+helper_only_platforms = [Platform("x86_64", "windows"; tegra="none");
+                         [Platform("aarch64", "linux"; tegra) for tegra in tegra_helper_only]]
 for platform in helper_only_platforms
     augmented_platform = deepcopy(platform)
     augmented_platform["cuda"] = CUDA.platform(cuda_version)
@@ -115,13 +165,34 @@ non_platform_ARGS = filter(arg -> startswith(arg, "--"), ARGS)
 # `--register` should only be passed to the latest `build_tarballs` invocation
 non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
 
+# Private Tegra routing, spliced into the self-contained augmentation block.
+# Reusable detection helpers are exposed by the unconditional toplevel block.
+tegra_detection = read(joinpath(@__DIR__, "tegra_detection.jl"), String)
+
+# platform augmentation: set the `tegra` tag so that Tegra hosts select the
+# artifact with the compat driver matching their kernel-mode driver generation.
+# Re-adding this block makes Pkg spawn an artifact-selection subprocess for this
+# JLL during package operations (add/instantiate/etc), not during ordinary use.
+augment_platform_block = """
+    using Base.BinaryPlatforms
+
+    $(tegra_detection)
+
+    function augment_platform!(platform::Platform)
+        haskey(platform, "tegra") && return platform
+        platform["tegra"] = _tegra_artifact_generation()
+        return platform
+    end"""
+
 # driver inspection and toolkit selection functionality, shared with the platform
 # augmentation hooks of dependent JLLs (which access it with `using CUDA_Driver_jll`)
 # and with CUDA.jl. this goes into the module's `toplevel_block` so that it is defined
-# unconditionally, even on platforms without a matching artifact. we deliberately do
-# not use an `augment_platform_block` here: it would be included both in the module
-# and in Pkg's artifact-selection subprocess, and its mere presence makes every Pkg
-# resolve spawn such a subprocess for this JLL.
+# unconditionally, even on platforms without a matching artifact.
+#
+# The augmentation block is also included in the JLL module, so the toplevel block
+# can expose the private Tegra detection through public wrappers without repeating its
+# definitions (which would cause method-overwrite errors during precompilation). The
+# clamped artifact-generation function remains an implementation detail.
 toplevel_block = read(joinpath(@__DIR__, "toplevel.jl"), String)
 
 for (i,build) in enumerate(builds)
@@ -129,5 +200,5 @@ for (i,build) in enumerate(builds)
                    name, version, build.sources, script,
                    build.platforms, build.products, dependencies;
                    skip_audit=true, init_block, julia_compat="1.10",
-                   toplevel_block)
+                   augment_platform_block, toplevel_block)
 end

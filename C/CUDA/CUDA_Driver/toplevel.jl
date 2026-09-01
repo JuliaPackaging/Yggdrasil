@@ -14,6 +14,25 @@ const selection_api = v"1"
 
 using Base: thismajor, thisminor
 
+"""
+    is_tegra()
+
+Return whether the host is an NVIDIA Tegra system. This definition is available
+even when CUDA_Driver_jll has no matching artifact.
+"""
+is_tegra() = _is_tegra()
+
+"""
+    l4t_version()
+
+Return the NVIDIA Linux for Tegra release as a `VersionNumber`, or `nothing` if
+it is unavailable or cannot be parsed. Unlike CUDA_Driver_jll's private artifact
+routing tag, this reports the complete release (for example, `v"35.6.5"`) without
+clamping. This definition is available even when CUDA_Driver_jll has no matching
+artifact.
+"""
+l4t_version() = _l4t_version()
+
 # Precompile statements for the process-spawning and version-parsing hot path of
 # `inspect_driver`, because platform augmentation hooks call it from Pkg's
 # `select_artifacts.jl` subprocess, which runs with `--compile=min`. The entry
