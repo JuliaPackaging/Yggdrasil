@@ -5,14 +5,20 @@ using BinaryBuilder, Pkg
 name = "LIEF_Patchelf"
 version = v"1.0.0"
 
+# 1.0.0 is the newest release carrying tools/lief-patchelf.
+commit = "d05b3499b6934137e917c009a4df0a9dc8cb11c5"
+
 sources = [
-    # 1.0.0 is the newest release carrying tools/lief-patchelf.
-    GitSource("https://github.com/lief-project/LIEF.git",
-              "d05b3499b6934137e917c009a4df0a9dc8cb11c5"),
+    GitSource("https://github.com/lief-project/LIEF.git", commit),
     DirectorySource("./bundled"),
 ]
 
-script = raw"""
+# A detached checkout has no tag to describe, so stamp the version by hand.
+script = """
+export LIEF_VERSION_ENV=$(version)
+export LIEF_COMMIT=$(commit)
+export LIEF_BRANCH=main
+""" * raw"""
 # LIEF requires CMake >= 3.24; the build environment ships 3.21.
 apk del cmake
 
@@ -20,11 +26,6 @@ cd ${WORKSPACE}/srcdir/LIEF
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-undef-major-minor.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0002-drop-tls-backend.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0003-static-runtime-link-args.patch
-
-# A detached checkout has no tag to describe, so stamp the version by hand.
-export LIEF_VERSION_ENV=1.0.0
-export LIEF_COMMIT=d05b3499b6934137e917c009a4df0a9dc8cb11c5
-export LIEF_BRANCH=main
 
 export TMPDIR=${WORKSPACE}/tmp
 mkdir -p ${TMPDIR}
