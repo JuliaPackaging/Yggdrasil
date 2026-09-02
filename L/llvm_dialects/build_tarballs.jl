@@ -14,11 +14,13 @@ llvm_versions = [v"21.1.8+0", v"22.1.8+0"]
 
 sources = [
     GitSource(repo, "deefc4d6bbd4c50ad97ee4aa5771defcea0f9bb7"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd llvm-dialects
+atomic_patch -p1 ../patches/0001-cmake-fix-tblgen-dylib-link-on-windows.patch
 
 CMAKE_FLAGS=()
 # Release build for best performance
@@ -26,7 +28,13 @@ CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 # Install things into $prefix
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
 # Explicitly use our cmake toolchain file and tell CMake we're cross-compiling
-CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+if [[ "${target}" == *mingw* ]]; then
+    # LLVM_full is built with Clang/LLD on Windows (see L/LLVM/common.jl);
+    # use the same toolchain here.
+    CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake)
+else
+    CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+fi
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=ON)
 # Tell CMake where LLVM is
 CMAKE_FLAGS+=(-DLLVM_DIR="${prefix}/lib/cmake/llvm")
