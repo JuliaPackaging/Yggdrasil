@@ -99,7 +99,7 @@ SHOT_version = offset_version(v"1.1.0", v"0.0.0")
 
 # Third-party packages needed by COIN-OR libraries.
 Julia_compat_version = "1.6"
-ASL_version = v"0.1.3"
+ASL_version = v"0.1.4"
 METIS_version = v"5.1.3"
 MUMPS_seq_version_LBT = v"500.900.100"
 SPRAL_version_LBT = v"2025.9.18"
