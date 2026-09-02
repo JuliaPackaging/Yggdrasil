@@ -16,8 +16,7 @@ sources = [
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-# Disable riscv and powerpc for now
-platforms = filter!(p -> arch(p) != "riscv64", platforms)
+# Disable powerpc for now
 platforms = filter!(p -> arch(p) != "powerpc64le", platforms)
 
 script = raw"""
