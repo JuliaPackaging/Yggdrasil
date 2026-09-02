@@ -131,35 +131,6 @@ const compiler_augment = """
         return platform
     end"""
 
-# a special version of the platform augmentation block that only sets "cuda_platform"
-# (for use with packages that only ship a single version and don't depend on the runtime)
-# XXX: keep in sync with CUDA_Runtime_jll's platform augmentation
-const platform_augment = """
-    function is_tegra()
-        if isfile("/etc/nv_tegra_release")
-            return true
-        end
-        if isfile("/proc/device-tree/compatible") &&
-            contains(read("/proc/device-tree/compatible", String), "tegra")
-            return true
-        end
-        return false
-    end
-
-    function augment_platform!(platform::Platform)
-        haskey(platform, "cuda_platform") && return platform
-
-        if Sys.islinux() && arch(platform) == "aarch64" && version < v"13"
-            platform["cuda_platform"] = if is_tegra()
-                "jetson"
-            else
-                "sbsa"
-            end
-        end
-
-        return platform
-    end"""
-
 function platform(cuda::VersionNumber)
     return "$(cuda.major).$(cuda.minor)"
 end

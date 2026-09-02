@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDA_Compiler"
-version = v"0.6.0"
+version = v"0.6.1"
 
 const toolkit_versions = [CUDA.cuda_full_versions; CUDA.cuda_prerelease_versions]
 const compiler_versions = filter(v -> v >= v"11.4", toolkit_versions)
@@ -108,8 +108,10 @@ fi
 """
 
 dependencies = [
-    # 13.3.1: first version providing the toolkit selection library our hook calls into
-    Dependency("CUDA_Driver_jll", v"13.3.1"; compat="13.3.1 - 13"),
+    # 13.3.4: first version defining `libcuda` on every platform (which our platform
+    # augmentation hook reads) and recording the `compat` preference the selection
+    # baked into our cache depends on
+    Dependency("CUDA_Driver_jll", v"13.3.4"; compat="13.3.4 - 13"),
 ]
 
 function get_platforms(version::VersionNumber)
@@ -225,7 +227,7 @@ for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    name, version, build.sources, build.script,
                    build.platforms, build.products, dependencies;
-                   julia_compat="1.6", lazy_artifacts=true,
+                   julia_compat="1.10", lazy_artifacts=true,
                    augment_platform_block, build.init_block)
 end
 
