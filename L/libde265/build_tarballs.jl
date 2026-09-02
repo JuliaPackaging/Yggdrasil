@@ -23,6 +23,16 @@ args+=(-DCMAKE_BUILD_TYPE=RELEASE)
 args+=(-DCMAKE_EXE_LINKER_FLAGS="-pthread")
 args+=(-DCMAKE_SHARED_LINKER_FLAGS="-pthread")
 
+# The AVX2/AVX-512 dispatch code uses `__builtin_cpu_supports`, which
+# requires the libgcc helpers `__cpu_model` and `__cpu_indicator_init`.
+# These are not provided by the macOS Clang toolchain, so the link fails
+# with undefined symbols. Disable these kernels; the SSE ones remain.
+# (These options have no effect on the aarch64 macOS build.)
+if [[ ${target} == *-apple-darwin* ]]; then
+    args+=(-DENABLE_AVX2=OFF)
+    args+=(-DENABLE_AVX512=OFF)
+fi
+
 cmake -B build -S . "${args[@]}"
 
 cmake --build build --parallel $nproc
@@ -60,7 +70,10 @@ products = [LibraryProduct("libde265", :libde265)]
 dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
+# We need at least GCC 10 to avoid a GCC `.seh_savexmm` bug on mingw
+# (<https://gcc.gnu.org/bugzilla/show_bug.cgi?id=65782>) when assembling
+# the AVX-512 kernels.
 build_tarballs(
     ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
-    julia_compat="1.6", preferred_gcc_version=v"7",
+    julia_compat="1.6", preferred_gcc_version=v"10",
 )
