@@ -35,7 +35,7 @@ version = "1.11.0"
 
 [[deps.BinaryBuilder]]
 deps = ["ArgParse", "BinaryBuilderBase", "Binutils_jll", "Dates", "Downloads", "GitHub", "HTTP", "JLD2", "JSON", "LibGit2", "Libdl", "Logging", "LoggingExtras", "ObjectFile", "Patchelf_jll", "Pkg", "PkgLicenses", "REPL", "Random", "Registrator", "RegistryTools", "SHA", "Scratch", "Sockets", "TOML", "UUIDs", "ghr_jll"]
-git-tree-sha1 = "b5ba5a241c60fcf112bea1b2f9d8a6890653527f"
+git-tree-sha1 = "429eceecef3e3e550d952519ac1f98b2422a6e1b"
 repo-rev = "master"
 repo-url = "https://github.com/JuliaPackaging/BinaryBuilder.jl.git"
 uuid = "12aac903-9f7c-5d81-afc2-d9565ea332ae"
