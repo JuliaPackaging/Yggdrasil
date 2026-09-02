@@ -15,34 +15,26 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/elfutils-*/
-if [[ ${target} = *-musl* ]] ; then
-    for patchfile in $WORKSPACE/srcdir/patches/*; do
-        atomic_patch -p1 $patchfile
-    done
-    cp $WORKSPACE/srcdir/error.h src/
-    cp $WORKSPACE/srcdir/error.h lib/
 
-    # install missing headers and `autopoint` 
-    apk add bsd-compat-headers gettext-dev 
+atomic_patch -p1 $WORKSPACE/srcdir/patches/initreg-sys-uio.patch
+
+if [[ ${target} = *-musl* ]] ; then
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/fix-aarch64_fregs.patch
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/musl-asm-ptrace-h.patch
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/musl-macros.patch
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/musl-strndupa.patch
+
+    cp $WORKSPACE/srcdir/files/error.h src/
+    cp $WORKSPACE/srcdir/files/error.h lib/
+
+    # install missing headers and `autopoint`
+    apk add bsd-compat-headers gettext-dev
     # /usr/include isn't in search path of cross-cc, so copy cdefs.h
     mkdir -p $prefix/include/sys
     # Skip warning macro at top of file
     tail -n +2 /usr/include/sys/cdefs.h >$prefix/include/sys/cdefs.h
     autoreconf -vif
 fi
-
-# The arm/aarch64 initreg backends include the raw kernel UAPI <linux/uio.h>
-# after "system.h" has already pulled in glibc's <bits/uio.h> via <fcntl.h>.
-# Neither header guards against the other on our sysroots, so `struct iovec`
-# ends up defined twice.  They only need `struct iovec`, so use glibc's own
-# <sys/uio.h>, which is properly guarded.
-for f in backends/aarch64_initreg.c backends/arm_initreg.c; do
-    sed -i -E 's|^#[[:space:]]*include[[:space:]]+<linux/uio\.h>|# include <sys/uio.h>|' "$f"
-    if grep -q '<linux/uio\.h>' "$f"; then
-        echo "ERROR: failed to replace <linux/uio.h> in $f" >&2
-        exit 1
-    fi
-done
 
 export CC=gcc
 export CXX=g++
