@@ -36,12 +36,15 @@ sources = [
               "586dc5e6c8012c3e4b01c79389375cbe96bdb1da"),
     GitSource("https://github.com/steinbergmedia/vst3_cmake.git",
               "054c9143cbb8d47fc4694e473f2ee3b4d951a8f5"),
+    # std::aligned_alloc (C++) needs the macOS 11.3 SDK; the rootfs SDK is older.
+    FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz",
+               "cd4f08a75577145b8f05245a2975f7c81401d75e9535dcffbb879ee1deefcbf4"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/vst3sdk
 # Put the submodules where the SDK's CMake expects them.
-rmdir base pluginterfaces public.sdk cmake 2>/dev/null || true
+rmdir base pluginterfaces public.sdk cmake
 mv ../vst3_base base
 mv ../vst3_pluginterfaces pluginterfaces
 mv ../vst3_public_sdk public.sdk
@@ -52,11 +55,29 @@ mkdir -p vstgui4 doc tutorials
 install_license LICENSE.txt
 
 if [[ "${target}" == *-apple-* ]]; then
-    # std::aligned_alloc is not in libc++'s std:: for the macOS SDK the
-    # toolchain uses; the SDK already has a posix_memalign path for older
-    # deployment targets, so use it on every macOS target.
-    sed -i '/#if SMTG_OS_MACOS && defined(MAC_OS_X_VERSION_MIN_REQUIRED)/{N;s/.*/#if SMTG_OS_MACOS \/* BinaryBuilder: posix_memalign on every macOS target *\//}' \
-        public.sdk/source/vst/utility/alignedalloc.h
+    # alignedalloc.h uses std::aligned_alloc from a 10.15 deployment target on
+    # (aarch64 targets 11.0) and posix_memalign below it; the rootfs SDK has
+    # neither aligned_alloc nor MAC_OS_X_VERSION_10_15, so both paths need the
+    # 11.3 SDK. The rootfs sys-root is a read-only overlay layer whose
+    # directories cannot be replaced, so install the SDK into a scratch copy
+    # of it and point the toolchain there (as P/pocl and S/SLEEF do).
+    apple_sysroot=${WORKSPACE}/srcdir/sysroot
+    cp -a /opt/${target}/${target}/sys-root ${apple_sysroot}
+    tar --extract --file=${WORKSPACE}/srcdir/MacOSX11.3.sdk.tar.xz \
+        --directory=${WORKSPACE}/srcdir --warning=no-unknown-keyword \
+        MacOSX11.3.sdk/System MacOSX11.3.sdk/usr
+    rm -rf ${apple_sysroot}/System ${apple_sysroot}/usr/include/c++ ${apple_sysroot}/usr/include/libxml2
+    cp -ra ${WORKSPACE}/srcdir/MacOSX11.3.sdk/System ${apple_sysroot}/.
+    cp -ra ${WORKSPACE}/srcdir/MacOSX11.3.sdk/usr/* ${apple_sysroot}/usr/.
+    sed -i "s!/opt/${target}/${target}/sys-root!${apple_sysroot}!g" \
+        ${CMAKE_TARGET_TOOLCHAIN} /opt/bin/${bb_full_target}/${target}-{cc,c++,clang,clang++}
+    # clang turns SDKROOT into -isysroot, which beats --sysroot for headers.
+    export SDKROOT=${apple_sysroot}
+    if [[ "${target}" == x86_64-* ]]; then
+        # std::filesystem (used by the hosting code) and std::aligned_alloc
+        # are available from macOS 10.15; aarch64 already targets 11.0.
+        export MACOSX_DEPLOYMENT_TARGET=10.15
+    fi
 elif [[ "${target}" == *-mingw* ]]; then
     # mingw's libstdc++ has no std::aligned_alloc either; the SDK's MSVC path
     # (_aligned_malloc / _aligned_free from <malloc.h>) works with mingw too.
@@ -111,25 +132,35 @@ cmake -B build -G Ninja "${PLATFORM_FLAGS[@]}" \
 cmake --build build --parallel ${nproc} --target \
     base pluginterfaces sdk sdk_common sdk_hosting again-sample-accurate adelay
 
+# The SDK's CMake (SMTG_ConfigureCmakeGenerator.cmake) drops the per-config
+# subdirectory on Windows.
+if [[ "${target}" == *-mingw* ]]; then
+    BUILD_LIBDIR=build/lib
+    BUILD_VST3DIR=build/VST3
+else
+    BUILD_LIBDIR=build/lib/Release
+    BUILD_VST3DIR=build/VST3/Release
+fi
+
 # Static libraries.
-mkdir -p ${prefix}/lib/vst3sdk
-cp build/lib/Release/*.a ${prefix}/lib/vst3sdk/ 2>/dev/null || cp build/lib/*.a ${prefix}/lib/vst3sdk/
+mkdir -vp ${prefix}/lib/vst3sdk
+cp -v ${BUILD_LIBDIR}/*.a ${prefix}/lib/vst3sdk/
 
 # The source tree as headers + directly-compiled sources.
-mkdir -p ${includedir}/vst3sdk
-cp -r pluginterfaces base public.sdk ${includedir}/vst3sdk/
-rm -rf ${includedir}/vst3sdk/public.sdk/samples/vst/mda-vst3/*/media \
-       ${includedir}/vst3sdk/public.sdk/samples/vst-hosting \
-       ${includedir}/vst3sdk/base/build ${includedir}/vst3sdk/*/.git*
-find ${includedir}/vst3sdk -name '*.png' -o -name '*.jpg' -o -name '*.uidesc' -o -name '*.rc' | xargs rm -f
+mkdir -vp ${includedir}/vst3sdk
+cp -vr pluginterfaces base public.sdk ${includedir}/vst3sdk/
+rm -rfv ${includedir}/vst3sdk/public.sdk/samples/vst/mda-vst3/*/media \
+        ${includedir}/vst3sdk/public.sdk/samples/vst-hosting \
+        ${includedir}/vst3sdk/base/build ${includedir}/vst3sdk/*/.git*
+find ${includedir}/vst3sdk -type f \
+    \( -name '*.png' -o -name '*.jpg' -o -name '*.uidesc' -o -name '*.rc' -o -name '.git*' \) \
+    -print -delete
 
-# Example plugin bundles (GUI-free), for hosting tests.
-mkdir -p ${prefix}/lib/vst3
-if [[ -d build/VST3/Release ]]; then
-    cp -r build/VST3/Release/*.vst3 ${prefix}/lib/vst3/
-else
-    cp -r build/VST3/*.vst3 ${prefix}/lib/vst3/
-fi
+# Example plugin bundles (GUI-free), for hosting tests. Only the two built
+# above: on macOS the SDK's CMake lays out a bundle skeleton for every
+# plugin target at configure time.
+mkdir -vp ${prefix}/lib/vst3
+cp -vr ${BUILD_VST3DIR}/{again-sample-accurate,adelay}.vst3 ${prefix}/lib/vst3/
 """
 
 # The SDK targets Linux, macOS and Windows; nothing else.
@@ -149,6 +180,8 @@ products = [
 
 dependencies = [
     HostBuildDependency(PackageSpec(; name="CMake_jll")),   # the SDK wants CMake >= 3.25
+    # The example plugin bundles link libstdc++/libgcc_s.
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
 # C++17 with std::filesystem in the hosting code: GCC 9 or newer.
