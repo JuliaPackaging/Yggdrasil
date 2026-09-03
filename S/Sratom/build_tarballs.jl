@@ -15,13 +15,6 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/sratom-*
 install_license COPYING
-if [[ "${target}" == *-apple-* ]]; then
-    # The cross file names the cctools ld64 as the linker, which meson cannot
-    # identify (it rejects --version and prints its banner to stdout), while
-    # the clang wrapper links with lld, which meson detects fine. Let meson use
-    # the compiler's linker.
-    sed -i -E '/^[a-z_]*ld = /d' "${MESON_TARGET_TOOLCHAIN}"
-fi
 meson setup build --cross-file="${MESON_TARGET_TOOLCHAIN}" --buildtype=release \
     -Ddefault_library=shared \
     -Ddocs=disabled -Dtests=disabled
