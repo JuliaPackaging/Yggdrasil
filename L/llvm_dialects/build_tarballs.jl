@@ -13,14 +13,12 @@ version = v"0.1.0"
 llvm_versions = [v"21.1.8+0", v"22.1.8+0"]
 
 sources = [
-    GitSource(repo, "deefc4d6bbd4c50ad97ee4aa5771defcea0f9bb7"),
-    DirectorySource("./bundled"),
+    GitSource(repo, "dfdfc4beb4f950212736489cf6cc47b7077eaa32"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd llvm-dialects
-atomic_patch -p1 ../patches/0001-cmake-fix-tblgen-dylib-link-on-windows.patch
 
 CMAKE_FLAGS=()
 # Release build for best performance
