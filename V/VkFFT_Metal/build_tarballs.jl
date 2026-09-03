@@ -10,20 +10,13 @@ version = v"0.1.0"
 # This is the commit the v0.1.0 tag points at.
 const libvkfft_commit = "8d20a59e32bcacdc8ae09ba71ce4589719cd7257"
 
-# VkFFT is a submodule of libvkfft and GitSource does not fetch submodules, so
-# it is a source of its own. This is v1.3.4, the commit lib/VkFFT points at.
-const vkfft_commit = "066a17c17068c0f11c9298d848c2976c71fad1c1"
-
 sources = [
     GitSource("https://github.com/PaulVirally/libvkfft.git", libvkfft_commit),
-    GitSource("https://github.com/DTolm/VkFFT.git", vkfft_commit),
 ]
 
 script = raw"""
-cd ${WORKSPACE}/srcdir
-rm -rf libvkfft/lib/VkFFT
-mv VkFFT libvkfft/lib/VkFFT
-cd libvkfft
+cd ${WORKSPACE}/srcdir/libvkfft
+git submodule update --init # VkFFT itself (v1.3.4) is a submodule in lib/VkFFT
 
 install_license LICENSE.md lib/VkFFT/LICENSE
 
@@ -50,8 +43,7 @@ cmake --install build
 # through the Objective-C runtime, so none of it needs a recent OS to load.
 sources, script = require_macos_sdk("14.0", sources, script; deployment_target="10.15")
 
-# Backend 5 is macOS only. An explicit pair says so at the platform list rather
-# than leaving it to a FATAL_ERROR inside CMake.
+# Metal backend (backend 5) is macOS only
 platforms = [Platform("x86_64", "macos"), Platform("aarch64", "macos")]
 
 products = [
