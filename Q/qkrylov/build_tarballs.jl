@@ -13,7 +13,7 @@ version = v"0.1.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sjp95/qkrylov.git", "9d1160736de86937cd39f63121c8d7188208669b")
+    GitSource("https://github.com/sjp95/qkrylov.git", "5f6e2e928c1f46ae031b0fb3d7993d1ec18d7719")
 ]
 
 # Bash recipe for building across all platforms
@@ -31,13 +31,12 @@ else
     CUDA_OPTION="ON"
     export PATH=$PATH:$prefix/cuda/bin/
     export CUDA_PATH=$prefix/cuda/
-    [ -f $prefix/cuda/lib/libcuda.so ] || ln -s $prefix/cuda/lib/stubs/libcuda.so $prefix/cuda/lib/libcuda.so
     [ -e $prefix/cuda/lib64 ] || ln -s $prefix/cuda/lib $prefix/cuda/lib64
     cmake_cuda_args="\
         -DKokkos_ENABLE_CUDA=ON \
         -DCMAKE_CUDA_HOST_COMPILER=$CXX \
         -DCMAKE_CUDA_COMPILER=$prefix/cuda/bin/nvcc \
-        -DCMAKE_CUDA_FLAGS=-gencode=arch=compute_80,code=compute_80 \
+        -DCMAKE_CUDA_ARCHITECTURES=${CUDAARCHS} \
         -DCMAKE_EXE_LINKER_FLAGS=-Wl,--allow-shlib-undefined \
         -DCMAKE_SHARED_LINKER_FLAGS=-Wl,--allow-shlib-undefined \
         -DKokkos_ARCH_AMPERE80=ON \
@@ -59,9 +58,8 @@ make -j${nproc}
 make install
 install_license ../LICENSE
 
-# Clean up CUDA stub
+# Clean up lib64 symlink
 if [[ "${bb_full_target}" != *cuda\+none* && "${bb_full_target}" == *cuda* ]]; then
-    [ -L $prefix/cuda/lib/libcuda.so ] && rm -f $prefix/cuda/lib/libcuda.so
     [ -L $prefix/cuda/lib64 ] && rm -f $prefix/cuda/lib64
 fi
 """
@@ -82,8 +80,8 @@ for p in cpu_platforms
     end
 end
 
-# CUDA platforms (Linux x86_64 for CUDA 12)
-cuda_platforms = expand_cxxstring_abis(CUDA.supported_platforms(min_version=v"12.0", max_version=v"12.999"))
+# CUDA platforms (Linux x86_64 for CUDA 12 and CUDA 13)
+cuda_platforms = expand_cxxstring_abis(CUDA.supported_platforms(min_version=v"12.0"))
 filter!(p -> arch(p) == "x86_64", cuda_platforms)
 
 all_platforms = [cpu_platforms; cuda_platforms]
@@ -103,12 +101,17 @@ dependencies = AbstractDependency[
 for platform in all_platforms
     should_build_platform(triplet(platform)) || continue
     _dependencies = copy(dependencies)
+    _script = script
     is_cuda = haskey(platform, "cuda") && platform["cuda"] != "none"
     if is_cuda
         append!(_dependencies, CUDA.required_dependencies(platform; static_sdk=true))
         push!(_dependencies, Dependency(PackageSpec(name="CUDA_Driver_jll")))
+        cudaarchs = join(CUDA.cuda_gpu_archs(platform), ";")
+        _script = """
+        export CUDAARCHS=\"$(cudaarchs)\"
+        """ * script
     end
-    build_tarballs(ARGS, name, version, sources, script, [platform],
+    build_tarballs(ARGS, name, version, sources, _script, [platform],
                    products, _dependencies;
                    augment_platform_block,
                    julia_compat="1.10",
