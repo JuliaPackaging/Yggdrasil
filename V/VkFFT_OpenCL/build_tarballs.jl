@@ -7,41 +7,30 @@ version = v"0.1.0"
 # This is the commit the v0.1.0 tag points at.
 const libvkfft_commit = "8d20a59e32bcacdc8ae09ba71ce4589719cd7257"
 
-# VkFFT is a submodule of libvkfft and GitSource does not fetch submodules, so
-# it is a source of its own. This is v1.3.4, the commit lib/VkFFT points at.
-const vkfft_commit = "066a17c17068c0f11c9298d848c2976c71fad1c1"
-
 sources = [
     GitSource("https://github.com/PaulVirally/libvkfft.git", libvkfft_commit),
-    GitSource("https://github.com/DTolm/VkFFT.git", vkfft_commit),
 ]
 
 script = raw"""
-cd ${WORKSPACE}/srcdir
-rm -rf libvkfft/lib/VkFFT
-mv VkFFT libvkfft/lib/VkFFT
-cd libvkfft
+cd ${WORKSPACE}/srcdir/libvkfft
+git submodule update --init # VkFFT itself (v1.3.4) is a submodule in lib/VkFFT
 
 install_license LICENSE.md lib/VkFFT/LICENSE
 
-opencl_library=${libdir}/libOpenCL.${dlext}
-if [[ "${target}" == *-mingw* ]]; then
-    # TODO: unverified against a real Windows build of OpenCL_jll.
-    opencl_library=${prefix}/lib/libOpenCL.dll.a
-fi
-
-# TODO: VKFFT_OPENCL_FORCE_ICD_LOADER does not exist in libvkfft yet. Its CMake
-# takes the `-framework OpenCL` branch unconditionally on APPLE.
+# FindOpenCL locates the ICD loader from OpenCL_jll and the headers from
+# OpenCL_Headers_jll under ${prefix}. On macOS the SDK's OpenCL.framework would
+# otherwise be found first, and libvkfft has to call the same loader OpenCL.jl
+# does, so frameworks are excluded from the search.
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_PREFIX_PATH=${prefix} \
+    -DCMAKE_FIND_FRAMEWORK=NEVER \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DVKFFT_BACKEND=3 \
     -DVKFFT_MAX_FFT_DIMENSIONS=12 \
     -DVKFFT_WRAPPER_BUILD_TESTS=OFF \
-    -DVKFFT_OPENCL_FORCE_ICD_LOADER=ON \
-    -DOpenCL_LIBRARY=${opencl_library} \
-    -DOpenCL_INCLUDE_DIR=${includedir}
+    -DVKFFT_OPENCL_FORCE_ICD_LOADER=ON
 cmake --build build --parallel ${nproc}
 cmake --install build
 """
