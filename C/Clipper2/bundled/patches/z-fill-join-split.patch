@@ -1,0 +1,77 @@
+In the USINGZ build, stamp the z of vertices created on the join/split
+paths. Upstream applies its z policy (SetZ: endpoint-coincident z with
+subject priority, else DefaultZ, then the user callback) only where
+IntersectEdges creates output points directly. Three call sites create
+output points from an intersection point whose z GetLineIntersectPt left
+as 0 and never invoke SetZ, so those vertices reach the output with z = 0
+regardless of any registered callback or DefaultZ:
+
+  - Split -> AddLocalMinPoly (joined edges split at an intersection)
+  - CheckJoinLeft -> AddLocalMaxPoly
+  - CheckJoinRight -> AddLocalMaxPoly
+
+Apply SetZ to the returned OutPt at each site, mirroring the existing
+IntersectEdges sites (nullptr-guarded where AddLocalMaxPoly can fail).
+No behavior change without USINGZ, and none under USINGZ unless a
+z callback is registered (SetZ returns early otherwise).
+
+Found by fuzzing the cwrapper's z-sentinel contract; the related
+DoSplitOp gap is handled in the wrapper's z callback (see sentinel_zcb
+in cwrapper/cclipper2.cpp).
+
+--- before/Clipper2/CPP/Clipper2Lib/src/clipper.engine.cpp	2025-12-19 23:37:45.000000000 +0100
++++ after/Clipper2/CPP/Clipper2Lib/src/clipper.engine.cpp	2026-07-23 14:28:28.362461400 +0200
+@@ -2799,13 +2799,23 @@
+     {
+       e.join_with = JoinWith::NoJoin;
+       e.next_in_ael->join_with = JoinWith::NoJoin;
++#ifdef USINGZ
++      OutPt* op = AddLocalMinPoly(e, *e.next_in_ael, pt, true);
++      if (zCallback_) SetZ(e, *e.next_in_ael, op->pt);
++#else
+       AddLocalMinPoly(e, *e.next_in_ael, pt, true);
++#endif
+     }
+     else
+     {
+       e.join_with = JoinWith::NoJoin;
+       e.prev_in_ael->join_with = JoinWith::NoJoin;
++#ifdef USINGZ
++      OutPt* op = AddLocalMinPoly(*e.prev_in_ael, e, pt, true);
++      if (zCallback_) SetZ(*e.prev_in_ael, e, op->pt);
++#else
+       AddLocalMinPoly(*e.prev_in_ael, e, pt, true);
++#endif
+     }
+   }
+ 
+@@ -2828,7 +2838,14 @@
+     if (!IsCollinear(e.top, pt, prev->top)) return;
+ 
+     if (e.outrec->idx == prev->outrec->idx)
++    {
++#ifdef USINGZ
++      OutPt* op = AddLocalMaxPoly(*prev, e, pt);
++      if (zCallback_ && op) SetZ(*prev, e, op->pt);
++#else
+       AddLocalMaxPoly(*prev, e, pt);
++#endif
++    }
+     else if (e.outrec->idx < prev->outrec->idx)
+       JoinOutrecPaths(e, *prev);
+     else
+@@ -2856,7 +2873,14 @@
+     if (!IsCollinear(e.top, pt, next->top)) return;
+ 
+     if (e.outrec->idx == next->outrec->idx)
++    {
++#ifdef USINGZ
++      OutPt* op = AddLocalMaxPoly(e, *next, pt);
++      if (zCallback_ && op) SetZ(e, *next, op->pt);
++#else
+       AddLocalMaxPoly(e, *next, pt);
++#endif
++    }
+     else if (e.outrec->idx < next->outrec->idx)
+       JoinOutrecPaths(e, *next);
+     else
