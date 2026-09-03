@@ -9,13 +9,13 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 
 name = "XDiag"
-version = v"0.5.0"
+version = v"0.5.1"
 
 include("../../L/libjulia/common.jl")
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awietek/xdiag.git", "37d15e4ed81cc482d09435ecb0f80ce7393d9c26")
+    GitSource("https://github.com/awietek/xdiag.git", "b8ba4173ec1d232eabaf185b0fbbe55bedc177a6")
 ]
 
 

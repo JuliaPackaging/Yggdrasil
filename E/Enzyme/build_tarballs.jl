@@ -30,9 +30,6 @@ platforms = expand_cxxstring_abis(supported_platforms())
 # Exclude aarch64 FreeBSD for the time being
 filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
-# Disable riscv for now
-platforms = filter!(p -> arch(p) != "riscv64", platforms)
-
 # Exclude i686-linux-musl.
 platforms = filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
 
