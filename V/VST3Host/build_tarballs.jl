@@ -1,6 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 # The headless VST3 host from AudioPlugins.jl (https://github.com/SciML/AudioPlugins.jl):
 # one C++ translation unit, `csrc/vst3_host.cpp`, exposing an extern "C" ABI
@@ -14,7 +14,7 @@ version = v"1.3.0"
 
 sources = [
     GitSource("https://github.com/SciML/AudioPlugins.jl.git",
-              "14de157d7edb617e58d15d674b4cc23fcd4d0935"),  # SciML/AudioPlugins.jl PR "VST3 host: headless C++ shim" -- update to the merge commit if squashed
+              "14de157d7edb617e58d15d674b4cc23fcd4d0935"),  # SciML/AudioPlugins.jl PR 5 "VST3 host: headless C++ shim" (merged with a merge commit; reachable from main)
 ]
 
 script = raw"""
@@ -55,6 +55,8 @@ products = [
 
 dependencies = [
     BuildDependency("vst3sdk_jll"),
+    # The host links libstdc++ and libgcc_s.
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
