@@ -179,12 +179,19 @@ non_platform_ARGS = filter(arg -> startswith(arg, "--"), ARGS)
 # `--register` should only be passed to the latest `build_tarballs` invocation
 non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
 
+# The audit is expected to complain about these vendor binaries: mixed C++ string ABIs
+# (CUPTI and nvperf use cxx03, the rest cxx11), libgcc_s not being in the prefix, and
+# libraries that cannot be dlopen'ed on the host because they depend on CUDA_Compiler_jll
+# (libnvJitLink). None of that is fatal (`ignore_audit_errors` defaults to `true`), and
+# the audit is still valuable: it adds an `$ORIGIN` RUNPATH to the few libraries that
+# lack one (e.g. CUDA 10.2's libcublas, or libcusolverMg), which otherwise resolve
+# their dependencies through the system loader and can pick up a local CUDA toolkit.
 for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    name, version, build.sources, build.script,
                    build.platforms, build.products, build.dependencies;
                    julia_compat="1.10", augment_platform_block, init_block=build.init_block,
-                   lazy_artifacts=true, skip_audit=true, dont_dlopen=true)
+                   lazy_artifacts=true, dont_dlopen=true)
 end
 
 # bump
