@@ -123,9 +123,6 @@ install_license LICENSE
 """
 
 platforms = supported_platforms()
-# The 32-bit mingw libgcc unwinds with SJLJ and so defines no _Unwind_Resume,
-# which the prebuilt i686-pc-windows-gnu std references.
-filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms)
 
 products = [
     ExecutableProduct("lief-patchelf", :lief_patchelf),
