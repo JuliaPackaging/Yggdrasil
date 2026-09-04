@@ -95,14 +95,13 @@ platforms = [
     filter(p -> Sys.isfreebsd(p) && arch(p) == "x86_64", supported_platforms());
 ]
 
-# On Windows the CMake builds drop the `lib` prefix (acados.dll, hpipm.dll, blasfeo.dll). The libraries
-# are not dlopened at init: libacados depends on libhpipm and libblasfeo, and the wrapper would open
-# libacados first, so an LD_LIBRARY_PATH pointing at another acados installation (common for acados
-# users) would supply the dependencies. Consumers open blasfeo, hpipm, acados by path in that order.
+# On Windows the CMake builds drop the `lib` prefix (acados.dll, hpipm.dll, blasfeo.dll). Listed in
+# dependency order (libacados needs libhpipm and libblasfeo), so that the wrapper opens the dependencies
+# first and an LD_LIBRARY_PATH pointing at another acados installation cannot supply them.
 products = [
-    LibraryProduct(["libacados", "acados"], :libacados; dont_dlopen = true),
-    LibraryProduct(["libhpipm", "hpipm"], :libhpipm; dont_dlopen = true),
-    LibraryProduct(["libblasfeo", "blasfeo"], :libblasfeo; dont_dlopen = true),
+    LibraryProduct(["libblasfeo", "blasfeo"], :libblasfeo),
+    LibraryProduct(["libhpipm", "hpipm"], :libhpipm),
+    LibraryProduct(["libacados", "acados"], :libacados),
     FileProduct("share/acados/c_templates_tera/acados_solver.in.c", :acados_solver_template),   # dirname(...) is the templates dir
 ]
 
