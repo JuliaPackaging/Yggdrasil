@@ -65,7 +65,7 @@ for cuda_version in [v"11", v"12"], platform in platforms
     augmented_platform["cuda"] = CUDA.platform(cuda_version)
     should_build_platform(triplet(augmented_platform)) || continue
 
-    sources = get_sources("cudnn", ["cudnn"]; version, platform,
+    sources = get_sources("cudnn", ["cudnn"]; version, platform=augmented_platform,
                            variant="cuda$(cuda_version.major)")
 
     if platform == Platform("x86_64", "windows")
@@ -91,3 +91,4 @@ for (i,build) in enumerate(builds)
                    julia_compat="1.6", augment_platform_block, dont_dlopen=true)
 end
 
+# bump
