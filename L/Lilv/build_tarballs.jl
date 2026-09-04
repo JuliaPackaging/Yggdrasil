@@ -22,6 +22,9 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/lilv-*
 install_license COPYING
+# On FreeBSD the meson-built JLLs (Zix, Serd, lv2, Sord, ...) ship their pkg-config
+# files in libdata/pkgconfig, which is not on the default search path.
+export PKG_CONFIG_PATH="${PKG_CONFIG_PATH:+${PKG_CONFIG_PATH}:}${prefix}/libdata/pkgconfig"
 meson setup build --cross-file="${MESON_TARGET_TOOLCHAIN}" --buildtype=release \
     -Ddefault_library=shared \
     -Dbindings_cpp=disabled -Dbindings_py=disabled -Ddocs=disabled \
