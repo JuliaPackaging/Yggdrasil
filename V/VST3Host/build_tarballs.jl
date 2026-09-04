@@ -10,7 +10,7 @@ using BinaryBuilder, Pkg
 # companion of CLAPHost and LV2Host; the version tracks the AudioPlugins.jl
 # release whose `csrc/` is built.
 name = "VST3Host"
-version = v"1.3.0"
+version = v"1.2.0"
 
 sources = [
     GitSource("https://github.com/SciML/AudioPlugins.jl.git",
