@@ -25,14 +25,17 @@ sources = [
 ]
 
 # BLASFEO's kernels are selected at compile time by TARGET (no runtime dispatch), so the recipe
-# builds one variant per microarchitecture tag, as B/blasfeo does: GENERIC C code as the fallback,
-# X64_INTEL_SANDY_BRIDGE for avx, X64_INTEL_HASWELL for avx2 (also what avx512 hosts get), and
-# ARMV8A_APPLE_M1 on Apple silicon. HPIPM has AVX and GENERIC variants.
+# builds one variant per microarchitecture tag, as B/blasfeo does (the tag must match the host's
+# exactly, so every x86_64 tag is built): GENERIC C code as the fallback, X64_INTEL_SANDY_BRIDGE for
+# avx, X64_INTEL_HASWELL for avx2 and avx512 (BLASFEO's AVX-512 targets are tuned for specific chips),
+# and ARMV8A_APPLE_M1 on Apple silicon. HPIPM has AVX and GENERIC variants.
 function get_script(; platform::Platform)
     if arch(platform) == "x86_64" && haskey(platform, "march")
         blasfeo_target, hpipm_target = if platform["march"] == "avx"
-            "X64_INTEL_SANDY_BRIDGE", "AVX"
-        elseif platform["march"] == "avx2"
+            # BLASFEO's Sandy Bridge target misses single-precision kernels under MinGW (undefined
+            # kernel_sgemm_nt_16x4_lib8), so Windows gets the generic kernels there
+            Sys.iswindows(platform) ? "GENERIC" : "X64_INTEL_SANDY_BRIDGE", "AVX"
+        elseif platform["march"] in ("avx2", "avx512")
             "X64_INTEL_HASWELL", "AVX"
         else
             "GENERIC", "GENERIC"
@@ -84,9 +87,9 @@ install_license LICENSE LICENSE-blasfeo.txt LICENSE-hpipm.txt
 end
 
 platforms = [
-    expand_microarchitectures(filter(p -> Sys.islinux(p) && arch(p) == "x86_64", supported_platforms()), ["x86_64", "avx", "avx2"]);
-    expand_microarchitectures(filter(p -> Sys.iswindows(p) && arch(p) == "x86_64", supported_platforms()), ["x86_64", "avx", "avx2"]);
-    expand_microarchitectures(filter(p -> Sys.isapple(p) && arch(p) == "x86_64", supported_platforms()), ["x86_64", "avx", "avx2"]);
+    expand_microarchitectures(filter(p -> Sys.islinux(p) && arch(p) == "x86_64", supported_platforms()), ["x86_64", "avx", "avx2", "avx512"]);
+    expand_microarchitectures(filter(p -> Sys.iswindows(p) && arch(p) == "x86_64", supported_platforms()), ["x86_64", "avx", "avx2", "avx512"]);
+    expand_microarchitectures(filter(p -> Sys.isapple(p) && arch(p) == "x86_64", supported_platforms()), ["x86_64", "avx", "avx2", "avx512"]);
     expand_microarchitectures(filter(p -> Sys.isapple(p) && arch(p) == "aarch64", supported_platforms()), ["apple_m1"]);
     filter(p -> Sys.islinux(p) && arch(p) == "aarch64", supported_platforms());
     filter(p -> Sys.isfreebsd(p) && arch(p) == "x86_64", supported_platforms());
