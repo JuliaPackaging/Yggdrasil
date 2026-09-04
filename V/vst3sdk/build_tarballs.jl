@@ -36,9 +36,9 @@ sources = [
               "586dc5e6c8012c3e4b01c79389375cbe96bdb1da"),
     GitSource("https://github.com/steinbergmedia/vst3_cmake.git",
               "054c9143cbb8d47fc4694e473f2ee3b4d951a8f5"),
-    # std::aligned_alloc (C++) needs the macOS 11.3 SDK; the rootfs SDK is older.
-    FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz",
-               "cd4f08a75577145b8f05245a2975f7c81401d75e9535dcffbb879ee1deefcbf4"),
+    # For std::aligned_alloc: the C++ version is new in the 11.3 SDK's libc++.
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz",
+                  "cd4f08a75577145b8f05245a2975f7c81401d75e9535dcffbb879ee1deefcbf4"),
 ]
 
 script = raw"""
@@ -55,27 +55,15 @@ mkdir -p vstgui4 doc tutorials
 install_license LICENSE.txt
 
 if [[ "${target}" == *-apple-* ]]; then
-    # alignedalloc.h uses std::aligned_alloc from a 10.15 deployment target on
-    # (aarch64 targets 11.0) and posix_memalign below it; the rootfs SDK has
-    # neither aligned_alloc nor MAC_OS_X_VERSION_10_15, so both paths need the
-    # 11.3 SDK. The rootfs sys-root is a read-only overlay layer whose
-    # directories cannot be replaced, so install the SDK into a scratch copy
-    # of it and point the toolchain there (as P/pocl and S/SLEEF do).
-    apple_sysroot=${WORKSPACE}/srcdir/sysroot
-    cp -a /opt/${target}/${target}/sys-root ${apple_sysroot}
-    tar --extract --file=${WORKSPACE}/srcdir/MacOSX11.3.sdk.tar.xz \
-        --directory=${WORKSPACE}/srcdir --warning=no-unknown-keyword \
-        MacOSX11.3.sdk/System MacOSX11.3.sdk/usr
-    rm -rf ${apple_sysroot}/System ${apple_sysroot}/usr/include/c++ ${apple_sysroot}/usr/include/libxml2
-    cp -ra ${WORKSPACE}/srcdir/MacOSX11.3.sdk/System ${apple_sysroot}/.
-    cp -ra ${WORKSPACE}/srcdir/MacOSX11.3.sdk/usr/* ${apple_sysroot}/usr/.
-    sed -i "s!/opt/${target}/${target}/sys-root!${apple_sysroot}!g" \
-        ${CMAKE_TARGET_TOOLCHAIN} /opt/bin/${bb_full_target}/${target}-{cc,c++,clang,clang++}
-    # clang turns SDKROOT into -isysroot, which beats --sysroot for headers.
-    export SDKROOT=${apple_sysroot}
+    # Update SDK version: std::aligned_alloc (and, on x86_64, std::filesystem
+    # in the hosting code) need the 11.3 SDK and a 10.15 deployment target.
+    pushd ${WORKSPACE}/srcdir/MacOSX11.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    rm -rf /opt/${target}/${target}/sys-root/usr/include/libxml2/libxml
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    popd
     if [[ "${target}" == x86_64-* ]]; then
-        # std::filesystem (used by the hosting code) and std::aligned_alloc
-        # are available from macOS 10.15; aarch64 already targets 11.0.
         export MACOSX_DEPLOYMENT_TARGET=10.15
     fi
 elif [[ "${target}" == *-mingw* ]]; then
