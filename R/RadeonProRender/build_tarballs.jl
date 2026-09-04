@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "RadeonProRender"
-version = v"3.1.5"
+version = v"3.1.6"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/GPUOpen-LibrariesAndSDKs/RadeonProRenderSDK.git", "40cfdbcb7362927f833a2ee09458a63f029ee69d")
+    GitSource("https://github.com/GPUOpen-LibrariesAndSDKs/RadeonProRenderSDK.git", "bdf485a8c4f25ef50c187deb3f7e81c166f24fa0")
 ]
 
 # TODO, also ship headers for Clang.jl generation!?
@@ -28,7 +28,7 @@ cp -Rv inc/* "${includedir}"
 
 # TODO, can we add centos7?
 platforms = [
-    Platform("x86_64", "linux"),
+    Platform("x86_64", "linux"; libc_version=v"2.34"),
     Platform("x86_64", "macos"),
     Platform("aarch64", "macos"),
     Platform("x86_64", "windows")
@@ -72,4 +72,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.10")
