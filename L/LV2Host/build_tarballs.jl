@@ -8,7 +8,7 @@ using BinaryBuilder
 # CLAPHost (C/CLAPHost); the version tracks the AudioPlugins.jl release whose
 # `csrc/` is built.
 name = "LV2Host"
-version = v"1.2.0"
+version = v"1.1.0"
 
 # Collection of sources required to complete build
 sources = [
