@@ -1,0 +1,20 @@
+diff --git a/siglib/cpsig/cppch.h b/siglib/cpsig/cppch.h
+index 98b384e..b5a7e0b 100644
+--- a/siglib/cpsig/cppch.h
++++ b/siglib/cpsig/cppch.h
+@@ -31,7 +31,15 @@
+ #include <mutex>
+ #include <shared_mutex>
+ #include <functional>
++#if __has_include(<concepts>)
+ #include <concepts>
++#else
++#include <type_traits>
++namespace std {
++template<typename T>
++concept floating_point = is_floating_point<T>::value;
++}
++#endif
+ #include <variant>
+ #include <set>
+ #include <map>
