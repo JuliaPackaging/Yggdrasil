@@ -34,6 +34,18 @@ if [[ "${target}" == *-musl* ]]; then
     export RUSTFLAGS="-C target-feature=-crt-static"
 fi
 
+# The checked-in `Cargo.lock` pins `netdev` 0.44.0, which gates the FreeBSD
+# `SIOCGIFXMEDIA` ioctl constant on `target_arch = "x86_64"` and therefore
+# fails to compile for `aarch64-unknown-freebsd` with
+#     error[E0425]: cannot find value `SIOCGIFXMEDIA` in this scope
+# netdev 0.45.0 widened that to `target_pointer_width = "64"` (and added
+# 32-bit arm/fallback arms).  `netdev` is pulled in via `netwatch`, whose
+# 0.19.0 release requires `netdev ^0.44`; the semver-compatible `netwatch`
+# 0.19.1 requires `netdev ^0.45`, so bumping `netwatch` is what lets the fixed
+# `netdev` in.  Do this on all platforms so that every build resolves the same
+# dependency versions.
+cargo update --package netwatch --precise 0.19.1
+
 # The crate declares crate-type = ["staticlib", "cdylib", "lib"]; ask for just
 # the cdylib so that we don't pay for building the static library as well.
 cargo rustc --release --lib --crate-type=cdylib
