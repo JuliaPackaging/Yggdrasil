@@ -14,14 +14,14 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 name = "Enzyme"
 repo = "https://github.com/EnzymeAD/Enzyme.git"
 
-auto_version = "refs/tags/v0.0.291"
+auto_version = "refs/tags/v0.0.292"
 version = VersionNumber(split(auto_version, "/")[end])
 
 llvm_versions = [v"15.0.7", v"16.0.6", v"18.1.7", v"20.1.8"]
 
 # Collection of sources required to build attr
 sources = [
-    GitSource(repo, "fc6bb335b90ef09c2c16b413a408cafcc836086b"),
+    GitSource(repo, "272285f96c3f3cc191ccb70a4007d93c2678224a"),
 ]
 
 # These are the platforms we will build for by default, unless further
@@ -29,6 +29,9 @@ sources = [
 platforms = expand_cxxstring_abis(supported_platforms())
 # Exclude aarch64 FreeBSD for the time being
 filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+
+# Disable riscv for now
+platforms = filter!(p -> arch(p) != "riscv64", platforms)
 
 # Exclude i686-linux-musl.
 platforms = filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
