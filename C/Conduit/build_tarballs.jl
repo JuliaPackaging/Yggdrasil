@@ -6,16 +6,18 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "Conduit"
-version = v"0.9.7"
-ygg_version = v"0.9.8"
+version = v"0.9.8"
+ygg_version = v"0.9.9"
 sources = [
     ArchiveSource("https://github.com/LLNL/conduit/releases/download/v$(version)/conduit-v$(version)-src-with-blt.tar.gz",
-		  "e207016e453dd360b2d9a5a1245e53a9aa26ed83fdfb02cc08fc7bfed664f923"),
+		  "4f6e95b517030ee24d42e6065e295447647fa621c232b8c4590291852d9d26b1"),
     DirectorySource("bundled"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/conduit*
+
+apk del cmake
 
 # Provide C wrapper for some functions that generate example output, to make them callable from Julia
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/blueprint_mesh_examples_generate.patch
@@ -80,6 +82,7 @@ products = [
 # - Python
 
 dependencies = [
+    HostBuildDependency("CMake_jll"), # we need cmake 3.26 or newer
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae");
