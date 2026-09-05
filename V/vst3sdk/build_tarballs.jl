@@ -2,6 +2,9 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 # The Steinberg VST 3 SDK (https://github.com/steinbergmedia/vst3sdk), MIT
 # since version 3.8 (LICENSE.txt at the pinned tag is the MIT text; older
 # tags carried a GPLv3 / proprietary dual licence and must not be used).
@@ -36,9 +39,6 @@ sources = [
               "586dc5e6c8012c3e4b01c79389375cbe96bdb1da"),
     GitSource("https://github.com/steinbergmedia/vst3_cmake.git",
               "054c9143cbb8d47fc4694e473f2ee3b4d951a8f5"),
-    # std::aligned_alloc (C++) needs the macOS 11.3 SDK; the rootfs SDK is older.
-    FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz",
-               "cd4f08a75577145b8f05245a2975f7c81401d75e9535dcffbb879ee1deefcbf4"),
 ]
 
 script = raw"""
@@ -54,29 +54,7 @@ mkdir -p vstgui4 doc tutorials
 
 install_license LICENSE.txt
 
-if [[ "${target}" == *-apple-* ]]; then
-    # std::aligned_alloc (and, on x86_64, std::filesystem in the hosting code)
-    # need the 11.3 SDK. Replacing System in the rootfs sys-root fails on the
-    # current CI rootfs (rm: I/O error, see S/SLEEF), so build a scratch copy
-    # of the sys-root with the SDK in it and point the toolchain there.
-    apple_sysroot=${WORKSPACE}/srcdir/sysroot
-    cp -a /opt/${target}/${target}/sys-root ${apple_sysroot}
-    tar --extract --file=${WORKSPACE}/srcdir/MacOSX11.3.sdk.tar.xz \
-        --directory=${WORKSPACE}/srcdir --warning=no-unknown-keyword \
-        MacOSX11.3.sdk/System MacOSX11.3.sdk/usr
-    rm -rf ${apple_sysroot}/System ${apple_sysroot}/usr/include/c++ ${apple_sysroot}/usr/include/libxml2
-    cp -ra ${WORKSPACE}/srcdir/MacOSX11.3.sdk/System ${apple_sysroot}/.
-    cp -ra ${WORKSPACE}/srcdir/MacOSX11.3.sdk/usr/* ${apple_sysroot}/usr/.
-    sed -i "s!/opt/${target}/${target}/sys-root!${apple_sysroot}!g" \
-        ${CMAKE_TARGET_TOOLCHAIN} /opt/bin/${bb_full_target}/${target}-{cc,c++,clang,clang++}
-    # clang turns SDKROOT into -isysroot, which beats --sysroot for headers.
-    export SDKROOT=${apple_sysroot}
-    if [[ "${target}" == x86_64-* ]]; then
-        # std::filesystem (used by the hosting code) and std::aligned_alloc
-        # are available from macOS 10.15; aarch64 already targets 11.0.
-        export MACOSX_DEPLOYMENT_TARGET=10.15
-    fi
-elif [[ "${target}" == *-mingw* ]]; then
+if [[ "${target}" == *-mingw* ]]; then
     # mingw's libstdc++ has no std::aligned_alloc either; the SDK's MSVC path
     # (_aligned_malloc / _aligned_free from <malloc.h>) works with mingw too.
     sed -i 's/defined(_MSC_VER)/defined(_WIN32)/g' public.sdk/source/vst/utility/alignedalloc.h
@@ -160,6 +138,10 @@ find ${includedir}/vst3sdk -type f \
 mkdir -vp ${prefix}/lib/vst3
 cp -vr ${BUILD_VST3DIR}/{again-sample-accurate,adelay}.vst3 ${prefix}/lib/vst3/
 """
+
+# std::aligned_alloc, and std::filesystem in the hosting code, need a newer SDK
+# than the rootfs default; both are available from macOS 10.15.
+sources, script = require_macos_sdk("11.3", sources, script; deployment_target="10.15")
 
 # The SDK targets Linux, macOS and Windows; nothing else.
 platforms = filter(p -> Sys.islinux(p) || Sys.isapple(p) || Sys.iswindows(p), supported_platforms())
