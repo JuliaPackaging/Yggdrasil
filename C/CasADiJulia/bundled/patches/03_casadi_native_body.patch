@@ -1,0 +1,20 @@
+--- a/swig/julia/CasADiNative.jl
++++ b/swig/julia/CasADiNative.jl
+@@ -1,7 +1,6 @@
+ # CasADiNative.jl -- handwritten ergonomics layer over the SWIG-generated module.
+ # Prototype of what ships as the package's src/CasADi.jl; the generated
+ # casadi.jl stays untouched underneath.
+-module CasADiNative
+ 
+ include(joinpath(@__DIR__, "casadi.jl"))
+ using .casadi
+@@ -576,8 +575,7 @@
+ for _n in names(casadi; all=true)
+     _s = Base.string(_n)
+     (Base.isempty(_s) || _s[1] == '_' || _s[1] == '#' || _s[1] == '@') && continue
+-    (Base.isdefined(CasADiNative, _n) || !Base.isdefined(casadi, _n)) && continue
++    (Base.isdefined(@__MODULE__, _n) || !Base.isdefined(casadi, _n)) && continue
+     @eval const $_n = casadi.$_n
+ end
+ 
+-end # module CasADiNative
