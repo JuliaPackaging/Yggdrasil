@@ -1,0 +1,13 @@
+diff --git a/src/i_joystick.c b/src/i_joystick.c
+index a292781..286cc16 100644
+--- a/src/i_joystick.c
++++ b/src/i_joystick.c
+@@ -157,7 +157,7 @@ void I_InitJoystick(void)
+ 
+     // Initialized okay!
+ 
+-    printf("I_InitJoystick: %s\n", SDL_JoystickName(joystick_index));
++    printf("I_InitJoystick: %s\n", SDL_JoystickName(joystick));
+ 
+     I_AtExit(I_ShutdownJoystick, true);
+ }

@@ -2,6 +2,9 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "Valhalla"
 version = v"3.5.1"
 
@@ -9,25 +12,11 @@ version = v"3.5.1"
 sources = [
     GitSource("https://github.com/valhalla/valhalla.git", "d377c8ace9ea88dfa989466258bf738b1080f22a"),
     DirectorySource("./bundled"),
-    ArchiveSource("https://github.com/realjf/MacOSX-SDKs/releases/download/v0.0.1/MacOSX12.3.sdk.tar.xz",
-                  "a511c1cf1ebfe6fe3b8ec005374b9c05e89ac28b3d4eb468873f59800c02b030"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/valhalla/
-
-# Handle Mac SDK <10.14 errors
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    # Install a newer SDK which supports C++20
-    pushd $WORKSPACE/srcdir/MacOSX12.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    rm -rf /opt/${target}/${target}/sys-root/usr/*
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    popd
-    export MACOSX_DEPLOYMENT_TARGET=12.3
-fi
 
 git submodule update --init --recursive
 
@@ -81,6 +70,9 @@ make -j${nproc} install
 install_license ../LICENSE.md
 """
 
+# Install a newer SDK which supports C++20
+sources, script = require_macos_sdk("12.3", sources, script)
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
@@ -94,7 +86,7 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    HostBuildDependency(PackageSpec(name="protoc_jll", version=v"105.29.3"))
+    HostBuildDependency(PackageSpec(name="protoc_jll", version="105.29.3"))
     Dependency("boost_jll"; compat="=1.87.0")
     Dependency("GEOS_jll"; compat="3.13.1")
     Dependency("LibCURL_jll"; compat="7.73,8")

@@ -22,8 +22,8 @@ import Pkg.Types: VersionSpec
 # to all components.
 
 name = "polymake"
-upstream_version = v"4.14"
-version_offset = v"0.0.0"
+upstream_version = v"4.15"
+version_offset = v"0.0.5"
 version = VersionNumber(upstream_version.major*100+version_offset.major,
                         upstream_version.minor*100+version_offset.minor,
                         version_offset.patch)
@@ -31,7 +31,7 @@ version = VersionNumber(upstream_version.major*100+version_offset.major,
 # Collection of sources required to build polymake
 sources = [
     ArchiveSource("https://polymake.org/lib/exe/fetch.php/download/polymake-$(upstream_version.major).$(upstream_version.minor).tar.bz2",
-                  "d9e71420c65adda127d7bf06e5c888562f3358c13fc04955954ccaca8f968ec6"),
+                  "5a50dc9ef35c0c1da032dd9ada5feec5ed7c5dde58325bc4db72c9da3e68a687"),
     DirectorySource("./bundled")
 ]
 
@@ -149,7 +149,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    HostBuildDependency(PackageSpec(name="Perl_jll", version=v"5.34.1")),
+    HostBuildDependency(PackageSpec(name="Perl_jll", version="5.34.1")),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD systems),
     # and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
@@ -157,7 +157,7 @@ dependencies = [
 
     Dependency("GMP_jll", v"6.2.1"),
     Dependency("MPFR_jll", v"4.1.1"),
-    Dependency("FLINT_jll", compat = "~301.300.0"),
+    Dependency("FLINT_jll", compat = "~301.600.0"),
     Dependency("MongoC_jll", compat = "~1.28.1"),
     Dependency("PPL_jll", compat = "~1.2.1"),
     Dependency("Perl_jll", compat = "=5.34.1"),
@@ -166,7 +166,10 @@ dependencies = [
     Dependency("boost_jll", compat = "=1.87.0"),
     Dependency("cddlib_jll", compat = "~0.94.15"),
     Dependency("lrslib_jll", compat = "~0.3.3"),
-    Dependency("normaliz_jll", compat = "~300.1001.501"),
+    Dependency("normaliz_jll", compat = "~300.1100.101"),
+    
+    # workaround: use older OpenBLAS32 build to avoid hang on native platforms, see https://github.com/JuliaPackaging/Yggdrasil/pull/13665
+    BuildDependency(PackageSpec("OpenBLAS32_jll", v"0.3.30+0")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

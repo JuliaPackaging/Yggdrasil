@@ -3,15 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "spglib"
-version = v"2.4.0"
+version = v"2.7.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/spglib/spglib.git", "e6bdd0bafcb60ff26c7ce9ff95d13c43e56d995f")
+    GitSource("https://github.com/spglib/spglib.git", "12355c77fb7c505a55f52cae36341d73b781a065")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+# Needs CMake >= 3.25 provided via HostBuildDependency
+apk del cmake
+
 cd $WORKSPACE/srcdir/spglib
 args=""
 if [[ ! -z "${CMAKE_TARGET_TOOLCHAIN}" ]]; then
@@ -35,7 +38,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    HostBuildDependency(PackageSpec(; name="CMake_jll", version = "3.31.6"))  # Need CMake > 3.25
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

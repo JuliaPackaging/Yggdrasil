@@ -1,0 +1,11 @@
+--- a/src/dft/compat.h
++++ b/src/dft/compat.h
+@@ -20,7 +20,7 @@
+ 
+ #else
+ 
+-#include <Windows.h>
++#include <windows.h>
+ #include <io.h>
+ #include <signal.h>
+ #include <setjmp.h>

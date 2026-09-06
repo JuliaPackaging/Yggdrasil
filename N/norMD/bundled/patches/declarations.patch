@@ -1,0 +1,37 @@
+From 6ca56cdf405a02b245f7a1405d4c66624f276f3e Mon Sep 17 00:00:00 2001
+From: Max Horn <max@quendi.de>
+Date: Wed, 7 Jan 2026 20:10:27 +0100
+Subject: [PATCH 2/6] Fix implicit declarations
+
+---
+ init.c  | 1 +
+ score.h | 4 ++++
+ 2 files changed, 5 insertions(+)
+
+diff --git a/init.c b/init.c
+index e328d95..4fb884e 100644
+--- a/init.c
++++ b/init.c
+@@ -3,6 +3,7 @@
+ /* DES was here SEPT.  1994 */
+ #include <stdio.h>
+ #include <stdlib.h>
++#include <string.h>
+ #include "score.h"
+ 
+ /*
+diff --git a/score.h b/score.h
+index 1e59e46..ed17a1b 100644
+--- a/score.h
++++ b/score.h
+@@ -756,3 +756,7 @@ void *ckrealloc(void *ptr,size_t bytes);
+ float max_score(int nseqs,int len,Boolean *fragment);
+ float md_score(ALNPTR mult_aln,int colix,float matrix[NUMRES][NUMRES],float **weight,float totweight,Boolean *fragment);
+ void calc_groups(int seed,float cutoff,int nseqs,float **pcid,int *seqgroup,int *groupseed);
++
++/* readmatrix.c */
++void get_default_matrix(void);
++int readmatrix(FILE *fd);
+-- 
+2.52.0
+

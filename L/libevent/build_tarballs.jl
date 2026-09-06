@@ -3,6 +3,9 @@
 using BinaryBuilder, Pkg
 using BinaryBuilderBase: get_addable_spec
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+
 name = "libevent"
 libevent_version =v"2.1.12"
 # We update to 2.1.15 because we updated our dependencies
@@ -48,8 +51,6 @@ products_unix = [
 dependencies = [
     Dependency(get_addable_spec("OpenSSL_jll", v"3.0.15+2"); compat="3.0.15"),
 ]
-
-include("../../fancy_toys.jl")
 
 platforms_unix = filter(!Sys.iswindows, platforms)
 platforms_windows = filter(Sys.iswindows, platforms)

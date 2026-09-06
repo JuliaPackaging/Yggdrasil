@@ -1,6 +1,6 @@
 --- a/lib/Support/Unix/Path.inc
 +++ b/lib/Support/Unix/Path.inc
-@@ -1487,7 +1487,7 @@
+@@ -1493,7 +1493,7 @@ std::error_code copy_file(const Twine &From, const Twine &To) {
    std::string FromS = From.str();
    std::string ToS = To.str();
  #if __has_builtin(__builtin_available)

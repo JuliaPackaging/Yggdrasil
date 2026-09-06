@@ -71,9 +71,8 @@ products = [
 augment_platform_block = """
     using Base.BinaryPlatforms
     $(LLVM.augment)
-    function augment_platform!(platform::Platform)
-        augment_llvm!(platform)
-    end"""
+    augment_platform!(platform::Platform) = augment_llvm!(platform)
+"""
 
 builds = []
 for llvm_version in llvm_versions

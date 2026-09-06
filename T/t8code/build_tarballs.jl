@@ -4,21 +4,21 @@ using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
 const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "t8code"
-version = v"3.0.1"
+version = v"4.0.8"
+commit_hash = "56c9b8d201101d54a9c89e7746b81b15df76e9fe"
 
-tarball = "https://github.com/DLR-AMR/t8code/releases/download/v$(version)/T8CODE-$(version)-Source.tar.gz"
-sha256sum = "71732ac0f898feed1af8a81c2deac2e5031e37e94384d3e5b10d1b5861be24d0"
-
-sources = [ArchiveSource(tarball, sha256sum), DirectorySource("./bundled")]
+sources = [GitSource("https://github.com/DLR-AMR/t8code", commit_hash),
+           DirectorySource("./bundled")]
 
 script = raw"""
-cd $WORKSPACE/srcdir/T8CODE*
+cd $WORKSPACE/srcdir/t8code
 
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi-constants.patch"
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/p4est.patch"
+# Microsoft MPI is still 2.0 but has the required features; remove the strict 3.0 requirement
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi2.patch"
 
 # Show CMake where to find `mpiexec`.
 if [[ "${target}" == *-mingw* ]]; then
@@ -29,22 +29,36 @@ cmake . \
       -B build \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+      -DCMAKE_CXX_FLAGS="-std=c++20" \
       -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_TESTING=OFF \
       -DP4EST_BUILD_TESTING=OFF \
       -DSC_BUILD_TESTING=OFF \
+      -DINSTALL_GTEST=OFF \
       -DT8CODE_BUILD_BENCHMARKS=OFF \
       -DT8CODE_BUILD_DOCUMENTATION=OFF \
       -DT8CODE_BUILD_EXAMPLES=OFF \
-      -DT8CODE_BUILD_EXAMPLES=OFF \
+      -DT8CODE_BUILD_FORTRAN_INTERFACE=OFF \
       -DT8CODE_BUILD_TESTS=OFF \
       -DT8CODE_BUILD_TUTORIALS=OFF \
-      -DT8CODE_ENABLE_MPI=ON \
-      -DP4EST_ENABLE_MPIIO=OFF
+      -DT8CODE_ENABLE_MPI=ON
+
+# Fixes for mingw, which is WIN32 for cmake, but uses Linux syntax
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mingw.patch"
+
+# Fixes for "initializer element is not constant" in sc
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi-constants.patch"
 
 make -C build -j ${nproc}
 make -C build -j ${nproc} install
 """
+
+# We need some C++20
+# - std::visit introduced in macOS 10.14
+# - range in namespace 'std::ranges' from 14.0 on
+# - std::filesystem::path introduced in macOS 10.15
+# target chosen as lowest working version
+sources, script = require_macos_sdk("14.0", sources, script; deployment_target="10.15")
 
 augment_platform_block = """
     using Base.BinaryPlatforms
@@ -54,22 +68,13 @@ augment_platform_block = """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
-# p4est with MPI enabled does not compile for 32 bit Windows
-platforms = filter(p -> !(Sys.iswindows(p) && nbits(p) == 32), platforms)
+platforms = supported_platforms(; experimental=false)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
 
-# Disable OpenMPI since it doesn't build. This could probably be fixed
-# via more explicit MPI configuraiton options.
-platforms = filter(p -> p["mpi"] ≠ "openmpi", platforms)
-
-# Avoid platforms where the MPI implementation isn't supported
-# OpenMPI
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
-# MPItrampoline
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
+# Avoid platforms where MPItrampoline isn't supported
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && p["arch"] == "riscv64"), platforms)
 
 # The products that we will ensure are always built
 products = [

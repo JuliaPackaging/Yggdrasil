@@ -56,7 +56,7 @@ dependencies = [
     # Need a host gettext for msgfmt
     HostBuildDependency("Gettext_jll"),
     # Need a host glib for glib-compile-resources
-    HostBuildDependency(PackageSpec(; name="Glib_jll", version=v"2.84.0")),
+    HostBuildDependency(PackageSpec(; name="Glib_jll", version="2.84.0")),
     Dependency("Glib_jll"; compat="2.84.0"),
     Dependency("JpegTurbo_jll"; compat="3.1.1"),
     Dependency("libpng_jll"; compat="1.6.47"),

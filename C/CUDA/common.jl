@@ -2,22 +2,43 @@ using JSON3, Downloads
 using BinaryBuilder
 using Base: thisminor
 
+# GA releases have historically been published to developer.download.nvidia.com, while
+# EA/preview releases (and possibly everything, going forward) only appear on
+# packages.nvidia.com's bin-archive service. The latter serves the very same JSON manifest
+# format from a different root, the only difference being that the relative paths point
+# into a content-addressed pool instead of sitting next to the manifest.
+redist_roots(product::String) = [
+    "https://developer.download.nvidia.com/compute/$product/redist",
+    "https://packages.nvidia.com/bin-archive/release/$product/redist",
+]
+
 function get_sources(product::String, components::Vector{String};
                      version::Union{VersionNumber,String}, platform::Platform,
                      variant::Union{Nothing,String}=nothing)
-    root = "https://developer.download.nvidia.com/compute/$product/redist"
-
-    url = "$root/redistrib_$(version).json"
-    json = sprint(io->Downloads.download(url, io))
-    parse_sources(json, product, components; version, platform, variant)
+    errors = []
+    for root in redist_roots(product)
+        url = "$root/redistrib_$(version).json"
+        json = try
+            sprint(io->Downloads.download(url, io))
+        catch err
+            push!(errors, url => err)
+            continue
+        end
+        return parse_sources(json, product, components; version, platform, variant, root)
+    end
+    error("Could not download a redistributable manifest for $product $version:\n" *
+          join(("  $url: $(sprint(showerror, err))" for (url, err) in errors), "\n"))
 end
 # XXX: split, for now, so that we can use this with manual JSON
 function parse_sources(json::String, product::String, components::Vector{String};
                        version::Union{VersionNumber,String}, platform::Platform,
-                       variant::Union{Nothing,String}=nothing)
-    root = "https://developer.download.nvidia.com/compute/$product/redist"
-
+                       variant::Union{Nothing,String}=nothing,
+                       root::String=first(redist_roots(product)))
     redist = JSON3.read(json)
+    if !haskey(platform, "cuda")
+        error("Please provide a platform that has the 'cuda' tag set, indicating which CUDA toolkit version this product is to be used with.")
+    end
+    cuda_version = platform["cuda"]
     architecture = if Sys.islinux(platform)
         libc(platform) == "glibc" || error("Only glibc is supported on Linux")
         if arch(platform) == "x86_64"
@@ -25,7 +46,7 @@ function parse_sources(json::String, product::String, components::Vector{String}
         elseif arch(platform) == "powerpc64le"
             "linux-ppc64le"
         elseif arch(platform) == "aarch64"
-            if VersionNumber(version) >= v"13"
+            if VersionNumber(cuda_version) >= v"13"
                 haskey(platform, "cuda_platform") && error("CUDA 13 uses unified ARM platforms")
                 "linux-sbsa"
             else
@@ -66,10 +87,26 @@ function parse_sources(json::String, product::String, components::Vector{String}
         end
 
         push!(sources, ArchiveSource(
-            "$root/$(data["relative_path"])", data["sha256"]
+            resolve_redist_url(root, data["relative_path"]), data["sha256"]
         ))
     end
     sources
+end
+
+# resolve a manifest-relative path against the directory the manifest lives in, folding
+# away any ".." segments (bin-archive manifests use e.g. ../../../pool/<platform>/<uuid>/).
+# libcurl would normalize these anyway, but the URL also ends up in build metadata.
+function resolve_redist_url(root::String, relative_path::AbstractString)
+    resolved = String[]
+    for part in split("$root/$relative_path", '/')
+        if part == ".."
+            isempty(resolved) && error("Invalid relative path $relative_path")
+            pop!(resolved)
+        elseif part != "."
+            push!(resolved, part)
+        end
+    end
+    join(resolved, '/')
 end
 
 function build_sdk(name::String, version::VersionNumber, platforms::Vector{Platform};
@@ -110,7 +147,6 @@ fi"""
     # determine exactly which tarballs we should build
     builds = []
     components = [
-        "cuda_cccl",
         "cuda_cudart",
         "cuda_cuobjdump",
         "cuda_cupti",
@@ -139,12 +175,29 @@ fi"""
         # available earlier, but not for aarch64
         push!(components, "libnvjpeg")
     end
+    if version >= v"13"
+        push!(components, "cuda_crt")
+        push!(components, "libnvvm")
+    end
+    if version >= v"13.3"
+        push!(components, "cccl")
+    else
+        push!(components, "cuda_cccl")
+    end
     for platform in platforms
         should_build_platform(triplet(platform)) || continue
 
+        # add the CUDA tag to the platform used by get_sources to determine compatibility.
+        # note that this is different from `version`, since `get_sources` is also used by
+        # recipes to select products (e.g. CUDNN) whose version differs from the CTK one.
+        # we don't actually use the augmented platform to generate a JLL since the CUDA SDK
+        # JLLs also need to be loadable on systems without CUDA (i.e. the musl builders).
+        augmented_platform = deepcopy(platform)
+        augmented_platform["cuda"] = CUDA.platform(version)
+
         push!(builds,
                 (; script, platforms=[platform], products=Product[],
-                   sources=get_sources("cuda", components; version, platform)
+                   sources=get_sources("cuda", components; version, platform=augmented_platform)
         ))
     end
 

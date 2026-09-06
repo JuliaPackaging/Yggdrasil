@@ -18,11 +18,11 @@
 using BinaryBuilder, Pkg
 
 name = "FMM3D"
-version = v"1.0.1"
+version = v"2.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/flatironinstitute/FMM3D.git", "9228240c090d1b8386617728ffa14372fe967b1a")
+    GitSource("https://github.com/flatironinstitute/FMM3D.git", "70455e020be1ff64445757cf71ae361f741ea282")
 ]
 
 # Bash recipe for building across all platforms

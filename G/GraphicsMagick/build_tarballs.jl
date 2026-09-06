@@ -2,13 +2,12 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 name = "GraphicsMagick"
-version = v"1.3.45"
-ygg_version = v"1.3.46"
+version = v"1.3.48"
 
 # Collection of sources required to build GraphicsMagick
 sources = [
     ArchiveSource("https://sourceforge.net/projects/graphicsmagick/files/graphicsmagick/$(version)/GraphicsMagick-$(version).tar.xz",
-                  "dcea5167414f7c805557de2d7a47a9b3147bcbf617b91f5f0f4afe5e6543026b"),
+                  "9218eb78179110f91371066ab75cb3b4dd034b9bb464b29ce9bab7a11979232b"),
     DirectorySource("./bundled"),
 ]
 
@@ -76,20 +75,23 @@ dependencies = [
     # `CompilerSupportLibraries_jll` everywhere else.
     # Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
     # Dependency("LLVMOpenMP_jll"; platforms=filter(Sys.isbsd, platforms)),
-    Dependency("Bzip2_jll"; compat="1.0.8"),
-    Dependency("FreeType2_jll"; compat="2.10.4"),
+    Dependency("Bzip2_jll"; compat="1.0.9"),
+    Dependency("FreeType2_jll"; compat="2.13.4"),
     # Dependency("Ghostscript_jll"),
     Dependency("Graphviz_jll"),
-    Dependency("JasPer_jll"),
+    Dependency("JasPer_jll"; compat="2.0.28"),
     Dependency("JpegTurbo_jll"),
-    Dependency("Libtiff_jll"; compat="~4.5.1"),
-    Dependency("XML2_jll"),
+    Dependency("Libtiff_jll"; compat="4.7.2"),
+    # We had to restrict compat with XML2 because of ABI breakage:
+    # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
+    # Updating to `compat="~2.14.1"` is likely possible without problems but requires rebuilding this package
+    Dependency("XML2_jll"; compat="~2.13.6"),
     Dependency("XZ_jll"),
     Dependency("Zlib_jll"),
     Dependency("Zstd_jll"),
     # Dependency("gperftools_jll"),
     Dependency("libpng_jll"),
-    Dependency("libwebp_jll"; compat="1.2.4"),
+    Dependency("libwebp_jll"; compat="1.6.0"),
     # TODO:
     # - ralcgm <http://www.agocg.ac.uk/train/cgm/ralcgm.htm>
     # - cdraw <https://www.dechifro.org/dcraw/>
@@ -109,5 +111,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", clang_use_lld=false)

@@ -1,0 +1,13 @@
+diff --git before/CMakeLists.txt after/CMakeLists.txt
+index 50fb5d7..728b2d4 100644
+--- before/CMakeLists.txt
++++ after/CMakeLists.txt
+@@ -9,7 +9,7 @@ project(slow5lib)
+ #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -O2 -std=gnu99 -fopenmp")
+ IF (CMAKE_BUILD_TYPE STREQUAL "Debug")
+     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -O0 -std=c99")
+-ELSEIF()
++ELSE()
+     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -O2 -std=c99")
+ ENDIF()
+ 

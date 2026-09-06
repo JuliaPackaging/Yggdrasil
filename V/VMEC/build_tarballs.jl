@@ -74,9 +74,7 @@ fi
 augment_platform_block = """
     using Base.BinaryPlatforms
     $(MPI.augment)
-    function augment_platform!(platform::Platform)
-        augment_mpi!(platform)
-    end
+    augment_platform!(platform::Platform) = augment_mpi!(platform)
 """
 
 platforms = expand_gfortran_versions(supported_platforms())

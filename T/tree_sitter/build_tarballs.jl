@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "tree_sitter"
-version = v"0.20.6"
+version = v"0.26.9"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource(
-        "https://github.com/tree-sitter/tree-sitter/archive/refs/tags/v$(version).tar.gz",
-        "4d37eaef8a402a385998ff9aca3e1043b4a3bba899bceeff27a7178e1165b9de"
+    GitSource(
+        "https://github.com/tree-sitter/tree-sitter.git",
+        "7f534862c3ec939c3a6ee147f7600ef5c1bf900f"
     ),
     DirectorySource("./bundled")
 ]
@@ -17,7 +17,6 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-mv tree-sitter-* tree-sitter
 
 BUILD_FLAGS=(-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
 mkdir build && cd build

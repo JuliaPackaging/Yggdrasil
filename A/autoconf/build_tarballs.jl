@@ -1,13 +1,13 @@
 using BinaryBuilder
 
 name = "autoconf"
-version = v"2.71"
+version = v"2.73"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/autoconf/autoconf-$(version.major).$(version.minor).tar.xz",
-                  "f14c83cfebcc9427f2c3cea7258bd90df972d92eb26752da4ddad81c87a0faa4"),
-    DirectorySource("./patches"; target="patches"),
+    ArchiveSource("https://ftpmirror.gnu.org/gnu/autoconf/autoconf-$(version.major).$(version.minor).tar.xz",
+                  "9fd672b1c8425fac2fa67fa0477b990987268b90ff36d5f016dae57be0d6b52e"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms

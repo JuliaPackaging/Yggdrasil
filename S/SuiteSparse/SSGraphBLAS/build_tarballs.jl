@@ -1,12 +1,19 @@
 include("../common.jl")
 
 name = "SSGraphBLAS"
-version = v"9.3.1"
+version = v"10.5.0"
 
-SS_version_str = "7.10.1"
-SS_version = VersionNumber(SS_version_str)
+function gb_to_ss_version(version::VersionNumber)
+    # Version map started when GraphBLAS decoupled from SS dependency. Everything before here
+    # has a dependency on SS in the registry and can't be rebuilt easily.
+    ss_version = Dict(
+        v"10.3.1" => v"7.12.2",
+        v"10.5.0" => v"7.14.0",
+    )
+    return ss_version[version]
+end
 
-sources = suitesparse_sources(SS_version)
+sources = suitesparse_sources(gb_to_ss_version(version))
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -15,12 +22,13 @@ script = raw"""
 export GRAPHBLAS_CACHE_PATH=/workspace/srcdir
 PROJECTS_TO_BUILD="graphblas"
 CMAKE_OPTIONS+=(
-        -DSUITESPARSE_USE_SYSTEM_SUITESPARSE_CONFIG=ON
         -DGRAPHBLAS_CROSS_TOOLCHAIN_FLAGS_NATIVE="-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN}"
         --debug-trycompile
     )
 if [[ "$target" == *-mingw* ]]; then
-    CMAKE_OPTIONS+="-DGBNCPUFEAT=1"
+    CMAKE_OPTIONS+=(
+        "-DGBNCPUFEAT=1"
+    )
 fi
 """ * build_script(; use_omp=true)
 
@@ -29,13 +37,13 @@ products = [
     LibraryProduct("libgraphblas", :libgraphblas),
 ]
 
-# Add dependency on SuiteSparse_jll
 dependencies = append!(dependencies, [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
-    Dependency("SuiteSparse_jll"; compat = "=$SS_version_str")
+
+    # SSGraphBlas is actually independent from SuiteSparse, so there is no need to have any dependencies on it.
 ])
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, 
-               products, dependencies; preferred_gcc_version=v"9", julia_compat="1.12")
+build_tarballs(ARGS, name, version, sources, script, platforms,
+               products, dependencies; preferred_gcc_version=v"9", julia_compat="1.10")

@@ -1,12 +1,11 @@
 using BinaryBuilder
 
 name = "Lua"
-version = v"5.4.7"
-ygg_version = v"5.4.8" # version increment to pick up riscv
+version = v"5.5.1"
 
 sources = [
     ArchiveSource("https://www.lua.org/ftp/lua-$(version).tar.gz",
-                  "9fbf5e28ef86c69858f6d3d34eccc32e911c1a28b4120ff3e84aaa70cfbf1e30"),
+                  "1c4b4068d67061f2a2231ad2b5422e77acea1487ea9890f6320af614f4373dce"),
     DirectorySource("./bundled"),
 ]
 
@@ -32,7 +31,7 @@ fi
 # XXX: Work around Lua apparently not understanding its own Windows setup
 if [[ ${target} == *-mingw* ]]; then
     TO_BIN="lua.exe luac.exe"
-    TO_LIB="lua54.dll"
+    TO_LIB="lua55.dll"
 else
     TO_BIN="lua luac"
     TO_LIB="liblua.${dlext}"
@@ -49,12 +48,12 @@ platforms = supported_platforms()
 products = [
     ExecutableProduct("lua", :lua),
     ExecutableProduct("luac", :luac),
-    LibraryProduct(["liblua", "lua54"], :liblua),
+    LibraryProduct(["liblua", "lua55"], :liblua),
 ]
 
 dependencies = [
     Dependency("Readline_jll"),
 ]
 
-build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6")

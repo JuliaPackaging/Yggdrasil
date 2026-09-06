@@ -1,0 +1,15 @@
+diff --git a/src/rdrand.c b/src/rdrand.c
+index 77d02cfc..df562f7c 100644
+--- a/src/rdrand.c
++++ b/src/rdrand.c
+@@ -34,8 +34,10 @@
+ #ifndef _WIN32
+ /* getentropy() can be present in one of these two */
+ #include <unistd.h>
++#if HAVE_GETENTROPY /* sys/random.h is missing on glibc < 2.25; the getentropy() call is already guarded by this macro */
+ #include <sys/random.h>
+ #endif
++#endif
+ 
+ #ifdef HAVE_OSSL_SECURE_RAND_BYTES
+ #include <openssl/rand.h>

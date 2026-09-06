@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "dlfcn_win32"
-version = v"1.4.1"
+version = v"1.4.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/dlfcn-win32/dlfcn-win32.git", "057dcdd6899b5a9c5abf6c47607cb95816e053a2")
+    GitSource("https://github.com/dlfcn-win32/dlfcn-win32.git", "3b52e651f385df00045dd8966407fd9de57fc94b"),
 ]
 
 dependencies = Dependency[
@@ -34,4 +34,4 @@ products = Product[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

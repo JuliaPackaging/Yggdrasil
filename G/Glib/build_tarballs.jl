@@ -1,50 +1,42 @@
 using BinaryBuilder
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "Glib"
-version = v"2.84.3"
+# Odd minor versions are development versions; skip them
+version = v"2.88.3"
 
 # Collection of sources required to build Glib
 sources = [
     ArchiveSource("https://ftp.gnome.org/pub/gnome/sources/glib/$(version.major).$(version.minor)/glib-$(version).tar.xz",
-                  "aa4f87c3225bf57ca85f320888f7484901a17934ca37023c3bd8435a72db863e"),
-    FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
-               "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4"),
-    FileSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
-               "ba6b430aed72c63a3768531f6a3ffc2b0fde2c57a3b251450dcf489a894f0894"),
+                  "ab24d24e698dfa1e408b7bcdb508f4aafc906185a8b8ce72fdf79bbbdc9b383b"),
     DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    rm -rf /opt/${target}/${target}/sys-root/System
-    tar --extract --file=${WORKSPACE}/srcdir/MacOSX10.13.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX10.13.sdk/System MacOSX10.13.sdk/usr
-    export MACOSX_DEPLOYMENT_TARGET=10.13
-fi
-
-if [[ "${target}" == *-mingw* ]]; then
-    cd $WORKSPACE/srcdir
-    tar xjf ${WORKSPACE}/srcdir/mingw-w64-v10.0.0.tar.bz2
-    cd mingw*/mingw-w64-headers
-    ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target
-    make install
-
-    cd ../mingw-w64-crt
-    if [ ${target} == "i686-w64-mingw32" ]; then
-        _crt_configure_args="--disable-lib64 --enable-lib32"
-    elif [ ${target} == "x86_64-w64-mingw32" ]; then
-        _crt_configure_args="--disable-lib32 --enable-lib64"
-    fi
-    ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target --enable-wildcard ${_crt_configure_args}
-    make -j${nproc}
-    make install
-fi
-
 cd $WORKSPACE/srcdir/glib-*
 install_license COPYING
 
 # meson shouldn't be so opinionated (mesonbuild/meson#4542 is incomplete)
 sed -i '/Werror=unused-command-line-argument/d' /usr/lib/python3.9/site-packages/mesonbuild/compilers/mixins/clang.py
+
+# tell meson about the target system
+if [[ "${target}" == *-darwin* ]]; then
+    sed -i "/^\[host_machine\]/a subsystem = 'macos'" "$MESON_TARGET_TOOLCHAIN"
+
+    # GLib checks MAC_OS_X_VERSION_MIN_REQUIRED via AvailabilityMacros.h, which is
+    # only set correctly if -mmacosx-version-min is passed explicitly.
+    # require_macos_sdk() only ensures the SDK is mounted; it does not add this
+    # flag to the Meson cross file, so add it ourselves for every relevant
+    # compile/link args array.
+    MACOS_MIN_VERSION="10.13"   # keep in sync with require_macos_sdk() call below
+    for args in c_args cpp_args objc_args objcpp_args fortran_args \
+                c_link_args cpp_link_args objc_link_args objcpp_link_args fortran_link_args; do
+        sed -i "s/\(${args} = \[[^]]*\)\]/\1, '-mmacosx-version-min=${MACOS_MIN_VERSION}']/" "${MESON_TARGET_TOOLCHAIN}"
+    done
+fi
 
 if [[ "${target}" == *-freebsd* ]]; then
     # Adapt patch relative to `xattr` from
@@ -53,6 +45,15 @@ if [[ "${target}" == *-freebsd* ]]; then
     #     Don't fail if getxattr is not available. The code is already ready
     #     for this case with some small configure changes.
     atomic_patch -p1 ../patches/freebsd-have_xattr.patch
+fi
+
+if [[ "${target}" == *-mingw32* ]]; then
+    # gwin32packageparser.c needs windows.applicationmodel.core.h (WinRT/UWP
+    # headers), which this mingw-w64 toolchain shard lacks. It's only used for
+    # UWP package-identity enumeration (gwin32appinfo.c's uwp_package_cb call),
+    # not core GLib functionality, so stub it out when the header is missing
+    # rather than failing the whole build.
+    cp ../files/gwin32packageparser.c gio/gwin32packageparser.c
 fi
 
 mkdir build_glib && cd build_glib
@@ -85,6 +86,8 @@ sed -i.bak 's/csrDT/csrD/' build.ninja
 ninja -j${nproc} --verbose
 ninja install
 """
+
+sources, script = require_macos_sdk("10.13", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line

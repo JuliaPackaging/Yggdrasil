@@ -3,8 +3,8 @@
 include("../common.jl")
 
 name = "simpcomp"
-upstream_version = "2.1.14" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version
+upstream_version = "2.1.15" # when you increment this, reset offset to v"0.0.0"
+offset = v"1.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # This package only produces an executable and does not need GAP for this at all.
@@ -12,7 +12,7 @@ version = offset_version(upstream_version, offset)
 # Collection of sources required to build this JLL
 sources = [
     ArchiveSource("https://github.com/simpcomp-team/simpcomp/releases/download/v$(upstream_version)/simpcomp-$(upstream_version).tar.gz",
-                  "2a1a33068b038776d6932f13b5eb63d32b0799906a2ec190f585b2931d724dcd"),
+                  "7588487ffc818181e9f900438160e555af8f0807c50e003e684754627d53b70b"),
 ]
 
 # Bash recipe for building across all platforms
@@ -32,6 +32,7 @@ install_license COPYING
 name = gap_pkg_name(name)
 
 platforms = gap_platforms()
+platforms = expand_cxxstring_abis(platforms)
 
 dependencies = Dependency[
 ]
@@ -43,5 +44,6 @@ products = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"7")
+               julia_compat="1.10", preferred_gcc_version=v"7")
 
+# rebuild trigger: 1

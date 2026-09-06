@@ -3,33 +3,37 @@
 using BinaryBuilder
 
 name = "Git"
-version = v"2.50.1"
+upstream_version = v"2.55.0"
+version = upstream_version
 
 # <https://github.com/git-for-windows/git/releases> says:
 # "Git for Windows v2.48.1 was the last version to ship with the i686 ("32-bit") variant of the installer, portable Git and archive."
-last_windows_32_bit_version = v"2.48.1"
+# But v2.50.1 was made available "after warranty" to address critical vulnerabilities: https://github.com/git-for-windows/git/releases/tag/v2.50.1.windows.1
+last_windows_32_bit_version = v"2.50.1"
 
 # Collection of sources required to build Git
 sources = [
-    ArchiveSource("https://mirrors.edge.kernel.org/pub/software/scm/git/git-$(version).tar.xz",
-                  "7e3e6c36decbd8f1eedd14d42db6674be03671c2204864befa2a41756c5c8fc4"),
-    ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(last_windows_32_bit_version).windows.1/Git-$(last_windows_32_bit_version)-32-bit.tar.bz2",
-                  "41af3c80fd618855ad20b441f5f47763cece1ed07f6849ecbdb43066d0aa1dfd"; unpack_target = "i686-w64-mingw32"),
-    ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/Git-$(version)-64-bit.tar.bz2",
-                  "9131f40e26985205432a1aa8583b3a90b5a64f3c6cc9324b2b63f05cb3448222"; unpack_target = "x86_64-w64-mingw32"),
+    ArchiveSource("https://mirrors.edge.kernel.org/pub/software/scm/git/git-$(upstream_version).tar.xz",
+                  "457fdb04dc8728e007d4688695e6912e6f680727920f2a40bf11eacc17505357"),
+    # Use FileSources instead of ArchiveSources because unpacking archives takes a long time and is not necessary on most platforms
+    FileSource("https://github.com/git-for-windows/git/releases/download/v$(last_windows_32_bit_version).windows.1/Git-$(last_windows_32_bit_version)-32-bit.tar.bz2",
+               "796d8f4fdd19c668e348d04390a3528df61cfc9864d1f276d9dc585a8a0ac82c"),
+    FileSource("https://github.com/git-for-windows/git/releases/download/v$(upstream_version).windows.1/Git-$(upstream_version)-64-bit.tar.bz2",
+               "25bc3235291249f39bd463cd9fb86d9b4295b19d53d81af0238414bc68e16110"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 install_license ${WORKSPACE}/srcdir/git-*/COPYING
 
-if [[ "${target}" == *-mingw* ]]; then
-    cd ${WORKSPACE}/srcdir/${target}
+if [[ ${target} == *-mingw* ]]; then
+    # Fast path for Windows: just unpack the tarballs in the prefix
+    cd ${prefix}
+    tar xjf ${WORKSPACE}/srcdir/Git-*-${nbits}-bit.tar.bz2
     # Delete symbolic links, which can't be created on Windows
     echo "Deleting symbolic links..."
     find . -type l -print -delete
-    # Fast path for Windows: just copy the content of the tarball to the prefix
-    cp -r * ${prefix}
+    mv * ${prefix}
     exit
 fi
 
@@ -52,9 +56,11 @@ else
     sed -i 's/cross_compiling=yes/cross_compiling=no/' configure
 fi
 
+# Not all platforms support Rust. We thus disable Rust and use the C backend instead.
+MAKE_VARIABLES=(NO_RUST=1)
+
 # On Linux, we need at least glibc 2.25 or musl 1.1.20 to get `sys/random.h`.
 # Git does not check whether this file exists. Explicitly disable `getrandom` if this file doesn't exist.
-MAKE_VARIABLES=()
 if [[ "${target}" == *-linux-* ]]; then
     if [ ! -e /opt/${target}/${target}/sys-root/usr/include/sys/random.h ]; then
         MAKE_VARIABLES+=(CSPRNG_METHOD=/dev/urandom)
@@ -120,6 +126,7 @@ fi
 """
 
 platforms = supported_platforms()
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [

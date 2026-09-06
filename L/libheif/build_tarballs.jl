@@ -1,19 +1,22 @@
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "libheif"
-version = v"1.20.1"
+version = v"1.23.2"
 ygg_build = 0  # NOTE: increment on rebuild of the same upstream version, reset on new libheifversion
 ygg_version = VersionNumber(version.major, version.minor, 1_000 * version.patch + ygg_build)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/strukturag/libheif/releases/download/v$(version)/libheif-$(version).tar.gz",
-                  "55cc76b77c533151fc78ba58ef5ad18562e84da403ed749c3ae017abaf1e2090"),
+    GitSource("https://github.com/strukturag/libheif.git",
+              "78c9746aea226b22885e8d35241353ce669c4ea5"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libheif-*
+cd $WORKSPACE/srcdir/libheif
 
 mkdir build
 
@@ -29,7 +32,11 @@ cmake -B build -S . "${args[@]}"
 
 cmake --build build --parallel $nproc
 cmake --install build
+
+install_license COPYING
 """
+
+sources, script = require_macos_sdk("11.3", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
@@ -47,11 +54,14 @@ dependencies = [
     # Dependency("libpng_jll"),  # examples
     Dependency("brotli_jll"),
     Dependency("LERC_jll"),
-    Dependency("Zlib_jll"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
+# We need GCC 10 for C++20
 build_tarballs(
     ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
-    julia_compat="1.6", preferred_gcc_version = v"9"  # needs CXX20 - build errors on gcc8
+    julia_compat="1.6", preferred_gcc_version=v"10"
 )
+
+# build trigger: 1

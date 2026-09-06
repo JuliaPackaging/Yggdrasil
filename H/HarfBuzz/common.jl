@@ -6,14 +6,24 @@ function build_harfbuzz(ARGS, name::String)
 
     icu = name == "HarfBuzz_ICU"
 
-    version = v"8.5.0"
-    # Bump Yggdrasil version because we updated libffi_jll
-    ygg_version = v"8.5.1"
+    # Harfbuzz's non-breaking major releases have started incurring
+    # some compatibility troubles for me as I try to use HarfBuzz_jll,
+    # since a compat like "2.8.1" doesn't include the compatible v8 or
+    # v14 or any other hypothetical release. HarfBuzz does promise
+    # that their API/ABI has been stable since v0 and will continue to
+    # be nonbreaking through major version bumps. See:
+    # https://github.com/harfbuzz/harfbuzz#api-stability
+
+    # We smooth this over with an invented version number:
+    # VersionNumber(100, 1000*major + minor, patch).
+
+    version = v"14.3.0"
+    ygg_version = VersionNumber(100, 1000 * version.major + version.minor, version.patch)
 
     # Collection of sources required to build Harfbuzz
     sources = [
         ArchiveSource("https://github.com/harfbuzz/harfbuzz/releases/download/$(version)/harfbuzz-$(version).tar.xz",
-                      "77e4f7f98f3d86bf8788b53e6832fb96279956e1c3961988ea3d4b7ca41ddc27"),
+                      "16070d77cfc4ba1f1e7327e83bf9b3f55898081cabdb94e56a33e04fc8874eae"),
         DirectorySource("../bundled"),
     ]
 
@@ -26,6 +36,8 @@ cd $WORKSPACE/srcdir/harfbuzz-*/
 # On MacOS, bypass broken check for CoreText
 if [[ "${target}" == *-apple-darwin* ]]; then
     atomic_patch -p1 ../patches/coretext-check-bypass.patch
+    # MacOS must not define a macro `verify` that clashes with HarfBuzz
+    cpp_args='-D__ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES=0'
 fi
 
 # We need C++20 for the `auto` in template parameters.
@@ -35,6 +47,7 @@ meson .. \
     --cross-file="${MESON_TARGET_TOOLCHAIN}" \
     --buildtype=release \
     -Dcpp_std=c++20 \
+    -Dcpp_args="${cpp_args}" \
     -Dcairo=enabled \
     -Dfreetype=enabled \
     -Dglib=enabled \
@@ -47,7 +60,8 @@ meson .. \
     -Dicu_builtin=false \
     -Dcoretext=enabled \
     -Dgdi=enabled \
-    -Ddirectwrite=enabled
+    -Ddirectwrite=enabled \
+    -Dutilities=disabled
 ninja -j${nproc}
 if [[ "${ICU}" == true ]]; then
     # Remove directories with symbol files (they confuse the `cp` command below)

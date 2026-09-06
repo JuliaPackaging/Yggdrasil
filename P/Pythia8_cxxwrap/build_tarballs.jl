@@ -8,12 +8,12 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "Pythia8_cxxwrap"
-version = v"0.2.2"
+version = v"0.3.0"
 
 # Collection of sources required to build Pythia8_cxxwrap  
 sources = [
     GitSource("https://github.com/peremato/Pythia8_cxxwrap.git",
-              "e12656061ab3c0e7127c9a9900603ba89fde0d8f"),
+              "b2e52688415ffc1e1c28807e812b05ad73334868"),
 ]
 
 # Bash recipe for building across all platforms
@@ -36,15 +36,14 @@ install_license Pythia8_cxxwrap/LICENSE
 include("../../L/libjulia/common.jl")
 
 # Filter Julia versions:
-# - 1.13 is not supported by libcxxwrap_julia_jll v0.13 (to be changed in the future!)
 # - Remove versions below current LTS (1.10)
-filter!(x -> x < v"1.13" && x >= v"1.10", julia_versions)
+filter!(x -> x >= v"1.10", julia_versions)
 
 # platforms supported by libjulia
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 
 # platforms supported by Pythia8
-platforms = filter(p -> libc(p) != "musl" && os(p) != "freebsd" && os(p) != "windows", platforms) |> expand_cxxstring_abis
+platforms = filter(p -> libc(p) != "musl" && os(p) != "freebsd" && os(p) != "windows" && arch(p) != "riscv64", platforms) |> expand_cxxstring_abis
 
 # The products that we will ensure are always built
 products = [
@@ -55,7 +54,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("libjulia_jll"),
-    Dependency("libcxxwrap_julia_jll"; compat="0.13.2"),
+    Dependency("libcxxwrap_julia_jll"; compat="0.14.4"),
     Dependency("PYTHIA_jll"; compat = "8.312.0"),
 ]
 

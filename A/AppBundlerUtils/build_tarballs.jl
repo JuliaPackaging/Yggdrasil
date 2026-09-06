@@ -3,21 +3,21 @@
 using BinaryBuilder, Pkg
 
 name = "AppBundlerUtils"
-version = v"0.1.5"
+version = v"0.4.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/PeaceFounder/AppBundler.jl.git", "dfddaa473e9e8a11cee95ede5cd351051907f2d3")
+    GitSource("https://github.com/PeaceFounder/AppBundler.jl.git", "776473409906752c12dbc0c80bcb6c110f626f67")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/AppBundler.jl/recipes/macos
+cd $WORKSPACE/srcdir/AppBundler.jl/utils
 
-$CC -o launcher launcher.c
+$CC -o macos_launcher macos_launcher.c
 
 install_license $WORKSPACE/srcdir/AppBundler.jl/LICENSE
-install -Dvm 755 "launcher" "${bindir}/macos_launcher"
+install -Dvm 755 "macos_launcher" "${bindir}/macos_launcher"
 """
 
 # These are the platforms we will build for by default, unless further

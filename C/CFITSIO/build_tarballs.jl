@@ -3,13 +3,12 @@
 using BinaryBuilder
 
 name = "CFITSIO"
-version = v"4.6.2"
+version = v"4.6.4"
 
 # Collection of sources required to build CFITSIO
 sources = [
-    ArchiveSource("http://heasarc.gsfc.nasa.gov/FTP/software/fitsio/c/cfitsio-$(version).tar.gz",
-                  "66fd078cc0bea896b0d44b120d46d6805421a5361d3a5ad84d9f397b1b5de2cb"),
-    # DirectorySource("./bundled"),
+    ArchiveSource("https://heasarc.gsfc.nasa.gov/FTP/software/fitsio/c/cfitsio-$(version).tar.gz",
+                  "227b637b91c9820ea96f39a65eb087f053de567d82f4338e2884f123f8183c55"),
 ]
 
 # Bash recipe for building across all platforms

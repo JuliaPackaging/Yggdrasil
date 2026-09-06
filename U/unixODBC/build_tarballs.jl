@@ -3,23 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "unixODBC"
-version = v"2.3.12"
+version = v"2.3.14"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/lurcher/unixODBC.git",
-              "c335dbf3fa25b524e935e98cf26b96a2e13f5c81"),
-    DirectorySource("./bundled"),	      
+              "9a814155d60c44632b23d7b1bb47b17206e21db0"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/unixODBC*
 
-# Don't use `clock_realtime` if it isn't available
-cd DriverManager
-atomic_patch -p0 ../../patches/clock_gettime.patch
-cd ..
 autoreconf -fiv
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-libiconv-prefix=${prefix} \

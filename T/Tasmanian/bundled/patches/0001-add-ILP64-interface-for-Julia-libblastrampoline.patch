@@ -1,17 +1,5 @@
-From 84de84fea155b62c3875048ca53cec355bf4583b Mon Sep 17 00:00:00 2001
-From: MichelJuillard <michel.juillard@mjui.fr>
-Date: Sun, 22 Sep 2024 11:35:33 +0200
-Subject: [PATCH] add ILP64 interface for Julia libblasstrampoline
-
----
- InterfaceTPL/tsgTPLWrappers.hpp   | 2 +-
- SparseGrids/gridtestUnitTests.cpp | 2 +-
- SparseGrids/tsgLinearSolvers.cpp  | 2 +-
- SparseGrids/tsgLinearSolvers.hpp  | 2 +-
- 4 files changed, 4 insertions(+), 4 deletions(-)
-
 diff --git a/InterfaceTPL/tsgTPLWrappers.hpp b/InterfaceTPL/tsgTPLWrappers.hpp
-index 1c6d87d5..bd950a93 100644
+index 1c6d87d5..0f5389db 100644
 --- a/InterfaceTPL/tsgTPLWrappers.hpp
 +++ b/InterfaceTPL/tsgTPLWrappers.hpp
 @@ -60,7 +60,7 @@
@@ -50,7 +38,7 @@ index c0b699c3..7a51a2c3 100644
      }else{
          computeILU();
 diff --git a/SparseGrids/tsgLinearSolvers.hpp b/SparseGrids/tsgLinearSolvers.hpp
-index 2011a1da..d92a2fce 100644
+index 2011a1da..f60b6310 100644
 --- a/SparseGrids/tsgLinearSolvers.hpp
 +++ b/SparseGrids/tsgLinearSolvers.hpp
 @@ -225,7 +225,7 @@ private:
@@ -58,10 +46,7 @@ index 2011a1da..d92a2fce 100644
      std::vector<double> vals, ilu;
      std::vector<double> dense; // if using the dense format
 -    std::vector<int> ipiv; // pivots for the dense factorize
-+    std::vector<int64_t> ipiv; // pivots for the dense factorize
++  std::vector<int64_t> ipiv; // pivots for the dense factorize
  
      GpuVector<double> gpu_dense; // GPU factors
      GpuVector<int_gpu_lapack> gpu_ipiv;
--- 
-2.43.0
-

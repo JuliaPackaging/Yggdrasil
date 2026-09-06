@@ -3,30 +3,45 @@
 using BinaryBuilder, Pkg
 
 name = "SPIRV_LLVM_Backend"
-version = v"20.1.5"
+version = v"22.1.8"
 
-# Collection of sources required to build SPIRV_LLVM_Backend
+# Collection of sources required to build SPIRV_LLVM_Backend.
+# LLVM 22 ships a single monorepo source archive (`llvm-project-X.Y.Z.src.tar.xz`).
 sources = [
-    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/llvm-$(version).src.tar.xz",
-                  "9a9a80ca4c0d902531f2b43e9e4d6c36b57cdd5702430e0b54567bf273bd32c1"),
-    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/cmake-$(version).src.tar.xz",
-                  "1b5abaa2686c6c0e1f394113d0b2e026ff3cb9e11b6a2294c4f3883f1b02c89c"),
-    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/third-party-$(version).src.tar.xz",
-                  "8667f47185bee07f7c7988ead7161b0d9e41a1a01d5d7afd8f325c607641470c"),
+    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/llvm-project-$(version).src.tar.xz",
+                  "922f1817a0df7b1489272d18134ee0087a8b068828f87ac63b9861b1a9965888"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-mv llvm-* llvm
-mv cmake-* cmake
-mv third-party-* third-party
+mv llvm-project-* llvm-project
 
-cd llvm
+cd llvm-project/llvm
 LLVM_SRCDIR=$(pwd)
 
+# Workaround for building with an old macOS SDK that lacks a working
+# __builtin_available (still applicable on LLVM 22).
 atomic_patch -p1 $WORKSPACE/srcdir/patches/avoid_builtin_available.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/fix_insertvalue.patch
+# https://github.com/llvm/llvm-project/pull/164175 (fixes #163777); landed on
+# main after the release/22.x branch, so still needed on 22.1.7.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/alloca_aggregate_type.patch
+# Backport of the composite-constant-arm fix from
+# https://github.com/llvm/llvm-project/pull/201417 ("[SPIR-V] Lower select
+# instructions with aggregate operands").
+atomic_patch -p1 $WORKSPACE/srcdir/patches/select_composite_constant.patch
+# Backport of https://github.com/llvm/llvm-project/pull/201523
+atomic_patch -p1 $WORKSPACE/srcdir/patches/printf_format_string_lookup.patch
+# Backport of https://github.com/llvm/llvm-project/pull/204231
+atomic_patch -p1 $WORKSPACE/srcdir/patches/minmax_i1.patch
+# Backport of https://github.com/llvm/llvm-project/pull/204239
+atomic_patch -p1 $WORKSPACE/srcdir/patches/nested_aggregate_insertvalue.patch
+# release/22.x backport for aggregate PHI value-id operands. Main already has a
+# broader aggregate PHI/select/freeze lowering path.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/aggregate_phi_value_id.patch
+# Fix direct returns of aggregate extractvalue results, such as the LLVM IR
+# emitted for non-inlined SMatrix{1,1} returns.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/aggregate_extractvalue_return.patch
 
 install_license LICENSE.TXT
 

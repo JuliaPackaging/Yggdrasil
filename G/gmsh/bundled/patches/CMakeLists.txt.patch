@@ -1,0 +1,20 @@
+--- /dev/null
++++ b/CMakeLists.txt
+@@ -1830,7 +1830,7 @@
+
+ # OS specific linker options
+ if(WIN32 AND NOT MSVC)
+-  set(FLAGS "-Wl,--stack,16777216 -Wl,--image-base -Wl,0x10000000 -static")
++  set(FLAGS "-Wl,--stack,16777216 -Wl,--image-base -Wl,0x10000000")
+   if(HAVE_FLTK)
+     set(APPFLAGS "${FLAGS} -municode -mwindows")
+     if(HAVE_64BIT_SIZE_T)
+@@ -2304,7 +2304,7 @@
+       add_executable(${TEST} WIN32 ${TESTFILE})
+       target_link_libraries(${TEST} shared)
+       if(WIN32 AND NOT MSVC)
+-        set(FLAGS "-static")
++#        set(FLAGS "-static")
+         if(HAVE_FLTK)
+           set(FLAGS "${FLAGS} -mwindows")
+         else()

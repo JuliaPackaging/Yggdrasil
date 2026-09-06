@@ -7,14 +7,16 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 include("../common.jl")
 
 name = "LLD_unified"
-version = v"0.1"
+version = v"0.1.4"
 llvm_full_versions = [
-    v"15.0.7+10",
-    v"16.0.6+4",
-    v"17.0.6+5",
-    v"18.1.7+3",
-    v"19.1.7+1",
-    v"20.1.2+0",
+    v"15.0.7+12",               # Julia 1.10
+    v"16.0.6+6",                # Julia 1.11
+    # v"17.0.6+5",
+    v"18.1.7+3",                # Julia 1.12
+    # v"19.1.7+2",
+    v"20.1.8+2",                # Julia 1.13
+    v"21.1.8+1",
+    v"22.1.8+1",                # Julia 1.15
 ]
 
 augment_platform_block = """
@@ -22,9 +24,8 @@ augment_platform_block = """
 
     $(LLVM.augment)
 
-    function augment_platform!(platform::Platform)
-        augment_llvm!(platform)
-    end"""
+    augment_platform!(platform::Platform) = augment_llvm!(platform)
+"""
 
 # determine exactly which tarballs we should build
 builds = []
@@ -63,4 +64,4 @@ for (i, build) in enumerate(builds)
                    augment_platform_block)
 end
 
-# build
+# rebuild trigger: 1

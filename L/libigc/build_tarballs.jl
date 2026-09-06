@@ -7,7 +7,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "libigc"
-version = v"2.14.1"
+version = v"2.34.4"
 
 # IGC depends on LLVM, a custom Clang, and a Khronos tool. Instead of building these pieces
 # separately, taking care to match versions and apply Intel-specific patches where needed
@@ -27,13 +27,14 @@ version = v"2.14.1"
 #       see https://github.com/intel/intel-graphics-compiler/blob/master/.github/workflows/build-IGC.yml
 #
 sources = [
-    GitSource("https://github.com/intel/intel-graphics-compiler.git", "8044f62975eafe840d09ed00560385dab0bf9854"),
-    GitSource("https://github.com/intel/opencl-clang.git", "7eef46576eca117685ae431735c2725ddb889260" #= branch ocl-open-150 =#),
-    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "b3d425c0b265ee9f583894892ae0b0a192a2137c" #= branch llvm_release_150 =#),
-    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "f289d047f49fb60488301ec62bafab85573668cc" #= tag v2025.1.rc1 =#),
-    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "0e710677989b4326ac974fd80c5308191ed80965"), #= main =#
-    GitSource("https://github.com/intel/vc-intrinsics.git", "46286b96fb9eee9fa4fcf8b8ecf74a8c01af4c1a" #= tag v0.23.1 =#),
-    GitSource("https://github.com/llvm/llvm-project.git", "8dfdcc7b7bf66834a761bd8de445840ef68e4d1a" #= tag llvmorg-15.0.7 =#),
+    GitSource("https://github.com/intel/intel-graphics-compiler.git", "5cebb69c84658ac2befba89f81c5ce9022f02f68" #= tag v2.34.4 =#),
+    GitSource("https://github.com/intel/opencl-clang.git", "07e7c931d8bdb38549a907cf04fd06a278f7cdce" #= branch ocl-open-160 =#),
+    # Bumped past the release to include ae16e2b4, so that we can use the LLVM SPIRV back-end
+    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "04d01b35ab3d76730c46020c6ae78a3163fc8518" #= branch llvm_release_160 =#),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "28a883ba4c67f58a9540fb0651c647bb02883622" #= main =#),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "9268f3057354a2cb65991ba5f38b16d81e803692"), #= main =#
+    GitSource("https://github.com/intel/vc-intrinsics.git", "27f7c4f34738f5eaf7a045b77edf8d9e034443d8" #= tag v0.25.0 =#),
+    GitSource("https://github.com/llvm/llvm-project.git", "7cbf1a2591520c2491aa35339f227775f4d3adf6" #= tag llvmorg-16.0.6 =#),
     # patches
     DirectorySource("./bundled"),
 ]
@@ -59,16 +60,18 @@ function get_script(; debug::Bool)
         # Work around compilation failures
         # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86678
         atomic_patch -p0 patches/gcc-constexpr_assert_bug.patch
+        # Fix iterator ambiguity with C++20 and LLVM 15
+        atomic_patch -p0 patches/fix-iterator-ambiguity.patch
         # https://reviews.llvm.org/D64388
         sed -i '/add_subdirectory/i add_definitions(-D__STDC_FORMAT_MACROS)' intel-graphics-compiler/external/llvm/llvm.cmake
 
+        # Avoid "No space left on device"
+        mkdir -p tmpdir
+        export TMPDIR=$(pwd)/tmpdir
+        export CCACHE_TEMPDIR=$(pwd)/tmpdir
+
         cd intel-graphics-compiler
         install_license LICENSE.md
-
-        # Need these device IDs
-        git cherry-pick 4185ee4c7eb49d09119884c63e88241a6715eb48
-        git cherry-pick 09046b0c259e46dfbdbfb1d548f18abc116ae512
-
 
         CMAKE_FLAGS=()
 
@@ -175,3 +178,5 @@ for platform in platforms, debug in (false, true)
                    products, dependencies; preferred_gcc_version=v"11", augment_platform_block,
                    julia_compat = "1.6", lock_microarchitecture=false)
 end
+
+# bump

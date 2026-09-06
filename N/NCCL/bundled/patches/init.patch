@@ -1,0 +1,10 @@
+--- a/nccl/src/os/linux.cc
++++ b/nccl/src/os/linux.cc
+@@ -140,7 +140,6 @@ static ncclResult_t setCpuStackSize() {
+
+     // Change the default pthread stack size (via a nonportable API as the feature is not available in std::thread)
+     PTHREADCHECK(pthread_attr_setstacksize(&attr, SAFE_STACK_SIZE), "pthread_attr_setstacksize");
+-    PTHREADCHECK(pthread_setattr_default_np(&attr), "pthread_setattr_default_np");
+   }
+
+   PTHREADCHECK(pthread_attr_destroy(&attr), "pthread_attr_destroy");

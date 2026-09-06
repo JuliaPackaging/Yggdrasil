@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "coreutils"
-version = v"9.7"
+version = v"9.11"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/coreutils/coreutils-$(version.major).$(version.minor).tar.xz",
-                  "e8bb26ad0293f9b5a1fc43fb42ba970e312c66ce92c1b0b16713d7500db251bf")
+    ArchiveSource("https://ftpmirror.gnu.org/gnu/coreutils/coreutils-$(version.major).$(version.minor).tar.xz",
+                  "394024eda0a5955217ceda9cd1201e65dc8fa3aa29c2951135a49521d57c3cc3"),
 ]
 
 # Bash recipe for building across all platforms
@@ -99,8 +99,8 @@ products = [
     ExecutableProduct("unexpand", :unexpand),
     ExecutableProduct("cp", :cp_bin),
     ExecutableProduct("ln", :ln),
-    ExecutableProduct("runcon", :runcon),
-    ExecutableProduct("kill", :kill_bin),
+    # [removed in 9.9] ExecutableProduct("runcon", :runcon),
+    # [removed in 9.10] ExecutableProduct("kill", :kill_bin),
     ExecutableProduct("mkfifo", :mkfifo),
     ExecutableProduct("tac", :tac),
     ExecutableProduct("echo", :echo),
@@ -109,7 +109,7 @@ products = [
     ExecutableProduct("rm", :rm_bin),
     ExecutableProduct("pinky", :pinky),
     ExecutableProduct("pr", :pr),
-    ExecutableProduct("chcon", :chcon),
+    # [removed in 9.9] ExecutableProduct("chcon", :chcon),
     ExecutableProduct("tty", :tty),
     ExecutableProduct("touch", :touch_bin),
     ExecutableProduct("df", :df),
@@ -148,7 +148,7 @@ products = [
     ExecutableProduct("join", :join_bin),
     ExecutableProduct("id", :id),
     ExecutableProduct("mktemp", :mktemp_bin),
-    ExecutableProduct("uptime", :uptime),
+    # [removed in 9.10] ExecutableProduct("uptime", :uptime),
     ExecutableProduct("stdbuf", :stdbuf),
     ExecutableProduct("uniq", :uniq),
     ExecutableProduct("dd", :dd),

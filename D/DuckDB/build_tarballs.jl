@@ -2,12 +2,14 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+include("../../platforms/macos_sdks.jl")
+
 name = "DuckDB"
-version = v"1.3.2"
+version = v"1.5.5"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/duckdb/duckdb.git", "0b83e5d2f68bc02dfefde74b846bd039f078affa"),
+    GitSource("https://github.com/duckdb/duckdb.git", "d8cdaa33fda8df955cc76ef58a280f68f4cd43fa"),
 ]
 
 # Bash recipe for building across all platforms
@@ -73,6 +75,11 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
 ]
+
+# The default macOS 10.12 SDK (and even 10.15) has a libc++ that doesn't provide
+# std::hash for enum types (LWG 2148). Use SDK 14.0 which definitely includes it.
+# DuckDB itself targets macOS 11.0, so we set that as the deployment target.
+sources, script = require_macos_sdk("14.0", sources, script; deployment_target="11.0")
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"6.1.0", julia_compat="1.6")

@@ -2,11 +2,12 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-version = v"1.0.0"
+version = v"2.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/flame/blis.git", "6d0ab74f6975fdf4d19cee06d946b09b6ca89656"),
+    GitSource("https://github.com/flame/blis.git",
+              "e8566eb3e773fb54d11b33e371d13f22d2941e50"),
     DirectorySource("../bundled")
 ]
 
@@ -32,43 +33,50 @@ function blis_script(;blis32::Bool=false)
 
     case ${target} in
 
-        *"x86_64"*"linux"*) 
+        *"x86_64"*"linux"*)
             export BLI_CONFIG=x86_64
             export BLI_THREAD=openmp
             ;;
-        *"x86_64"*"w64"*) 
+        *"aarch64"*"linux"*)
+            export BLI_CONFIG=arm64
+            export BLI_THREAD=openmp
+            ;;
+        *"arm"*"linux"*)
+            export BLI_CONFIG=arm32
+            export BLI_THREAD=none
+            ;;
+        *"x86_64"*"w64"*)
             # MinGW doesn't support savexmm instructions
             # Build only for AMD processors.
             export BLI_CONFIG=amd64
             export BLI_THREAD=openmp
             ;;
-        *"x86_64"*"apple"*) 
-            export BLI_CONFIG=x86_64
-            export BLI_THREAD=openmp
-            ;;
-        *"x86_64"*"freebsd"*) 
+        *"x86_64"*"apple"*)
             export BLI_CONFIG=x86_64
             export BLI_THREAD=openmp
             ;;
         *"aarch64"*"apple"*)
-            # Metaconfig arm64 is not needed here.
-            # All Mac processors should have equal or higher specs then firestorm
             export BLI_CONFIG=firestorm
             export BLI_THREAD=openmp
             ;;
-        *"aarch64"*"linux"*) 
+        *"x86_64"*"freebsd"*)
+            export BLI_CONFIG=x86_64
+            export BLI_THREAD=openmp
+            ;;
+        *"aarch64"*"freebsd"*)
             export BLI_CONFIG=arm64
             export BLI_THREAD=openmp
             ;;
-        *"arm"*"linux"*) 
-            export BLI_CONFIG=arm32
-            export BLI_THREAD=none
+       *"powerpc64le"*)
+            export BLI_CONFIG=power
+            export BLI_THREAD=openmp
             ;;
-        *)
+       *)
             # Default (Generic) configuration without optimized kernel.
+            # For now, RISC-V uses the generic kernels here until upstream implements a meta target: https://github.com/flame/blis/issues/902
             export BLI_CONFIG=generic
             export BLI_THREAD=none
-            ;; 
+            ;;
 
     esac
 
@@ -78,6 +86,20 @@ function blis_script(;blis32::Bool=false)
         atomic_patch -p1 ${WORKSPACE}/srcdir/patches/bli_macro_defs.h.f77suffix64.patch
         atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cblas_f77suffix64.patch
     fi
+
+    # Replace cblas function names to have _64 suffixes
+    if [[ "${BLIS32}" != "true" ]]; then
+       cd frame/compat/cblas/src
+       sed -i -E "s/cblas_([a-zA-Z0-9_]+)/cblas_\164_/g" cblas.h
+       for fname in *.c extra/*.c; do
+           sed -i -E "/^#/!s/cblas_([a-zA-Z0-9_]+)\(/cblas_\164_\(/g" $fname
+       done
+       for fname in extra/*.c; do
+           sed -i -E "/^#s/cblas_([a-zA-Z0-9_]+)\"/cblas_\164_\"/g" $fname
+           sed -i -E "/attribute/s/cblas_([a-zA-Z0-9_]+)/cblas_\164_/g" $fname
+       done
+       cd ../../../..
+    fi   
 
     # Include A64FX in Arm64 metaconfig.
     if [ ${BLI_CONFIG} = arm64 ]; then
@@ -101,15 +123,16 @@ function blis_script(;blis32::Bool=false)
     else
         export BLI_F77BITS=${nbits}
     fi
+
     ./configure --enable-cblas -p ${prefix} -t ${BLI_THREAD} -b ${BLI_F77BITS} ${BLI_CONFIG}
     make -j${nproc}
     make install
 
     # Static library is not needed.
-    rm ${prefix}/lib/libblis.a
+    rm -f ${prefix}/lib/libblis.a
 
     # Rename .dll for Windows targets.
-    if [[ "${target}" == *"x86_64"*"w64"* ]]; then
+    if [[ "${target}" == *mingw* ]]; then
         mkdir -p ${libdir}
         mv ${prefix}/lib/libblis.4.dll ${libdir}/libblis.dll
     fi
@@ -145,16 +168,7 @@ end
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("x86_64", "linux"; libc="musl"),
-    Platform("armv7l", "linux"; libc="glibc"),
-    Platform("x86_64", "windows"),
-    Platform("x86_64", "macos"),
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("aarch64", "linux"; libc="glibc"),
-    Platform("aarch64", "macos"),
-    Platform("x86_64", "freebsd")
-]
+platforms = supported_platforms()
 
 # Dependencies that must be installed before this package can be built
 dependencies = [

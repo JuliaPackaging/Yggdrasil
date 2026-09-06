@@ -1,0 +1,8 @@
+diff --color -ur a/tools/qmltestrunner/CMakeLists.txt b/tools/qmltestrunner/CMakeLists.txt
+--- a/tools/qmltestrunner/CMakeLists.txt	2026-01-21 12:37:05.000000000 +0100
++++ b/tools/qmltestrunner/CMakeLists.txt	2026-02-21 19:25:36.160445568 +0100
+@@ -52,4 +52,3 @@
+ )
+ qt_internal_return_unless_building_tools()
+ 
+-qt_internal_add_entitlements_to_qmltestrunner(${target_name})

@@ -5,10 +5,7 @@ using BinaryBuilderBase: sanitize
 
 name = "PCRE2"
 
-# We are temporarily switching back to building version 10.42 to build
-# this version for newer architectures.
-version_string = "10.42"
-# version_string = "10.45"
+version_string = "10.48"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
@@ -16,7 +13,7 @@ sources = [
     # We use an archive because (a) the archives are signed, hence
     # presumably immutable, and (b) the git source uses submodules.
     ArchiveSource("https://github.com/PCRE2Project/pcre2/releases/download/pcre2-$(version.major).$(version.minor)/pcre2-$(version.major).$(version.minor).tar.bz2",
-                  "8d36cd8cb6ea2a4c2bb358ff6411b0c788633a2a45dabbf1aeb4b701d1b5e840"),
+                  "b6c68fdf6f3ac31388b50aa89ff0fc49c00c987c16e7b5146491d12003f2c8ed"),
 ]
 
 # Bash recipe for building across all platforms
@@ -32,6 +29,7 @@ fi
 export CFLAGS="${CFLAGS} -O3"
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
+    --disable-symvers \
     --enable-jit \
     --enable-pcre2-16 \
     --enable-pcre2-32
@@ -65,7 +63,7 @@ llvm_version = v"13.0.1"
 dependencies = [
     BuildDependency(PackageSpec(name="LLVMCompilerRT_jll",
                                 uuid="4e17d02c-6bf5-513e-be62-445f41c75a11",
-                                version=llvm_version);
+                                version=string(llvm_version));
                     platforms=filter(p -> sanitize(p)=="memory", platforms)),
 
 ]

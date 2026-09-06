@@ -4,7 +4,7 @@
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
  * terms governing use, modification, and redistribution, is contained in    *
- * the COPYING file, which can be found at the root of the source code       *
+ * the LICENSE file, which can be found at the root of the source code       *
  * distribution tree, or in https://www.hdfgroup.org/licenses.               *
  * If you do not have access to either file, you may request a copy from     *
  * help@hdfgroup.org.                                                        *
@@ -29,7 +29,7 @@ typedef struct {c_int_8 a; c_int_8 b;} c_int_16;
 #define c_float_4 float
 #define c_float_8 double
 #define c_float_10 long double
-#define c_float_16 __float128
+#define c_float_16 long double
 
 typedef c_int_8 haddr_t_f;
 typedef c_hsize_t_8 hsize_t_f;

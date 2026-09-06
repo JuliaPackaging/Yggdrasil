@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "oneTBB"
-version = v"2022.0.0"
+version = v"2022.3.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/oneapi-src/oneTBB.git",
-              "0c0ff192a2304e114bc9e6557582dfba101360ff"),
+              "f1862f38f83568d96e814e469ab61f88336cc595"),
     DirectorySource("./bundled"),
 ]
 
@@ -21,7 +21,7 @@ if [[ ${target} == *mingw* ]]; then
 
     # `CreateSemaphoreEx` requires at least Windows Vista/Server 2008:
     # https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-createsemaphoreexa
-    export CXXFLAGS="-D_WIN32_WINNT=0x0600"
+    export CXXFLAGS="-D_WIN32_WINNT=0x0600 -DLOAD_LIBRARY_SAFE_CURRENT_DIRS=LOAD_LIBRARY_SEARCH_DEFAULT_DIRS"
 fi
 
 if [[ ${target} == i686-linux-musl* ]]; then
@@ -63,4 +63,4 @@ dependencies = Dependency[
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"9")
+               julia_compat="1.6", lazy_artifacts=true, preferred_gcc_version=v"9")

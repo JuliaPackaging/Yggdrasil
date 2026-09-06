@@ -1,0 +1,94 @@
+diff --git a/source/world_builder/parameters.cc b/source/world_builder/parameters.cc
+index 8fabdb9d..cd5cbd00 100644
+--- a/source/world_builder/parameters.cc
++++ b/source/world_builder/parameters.cc
+@@ -291,40 +291,6 @@ namespace WorldBuilder
+     return return_value;
+   }
+ 
+-  template<>
+-  size_t
+-  Parameters::get(const std::string &name)
+-  {
+-    const std::string base = this->get_full_json_path();
+-    const Value *value = Pointer((base + "/" + name).c_str()).Get(parameters);
+-
+-#ifdef debug
+-    bool required = false;
+-    if (Pointer((base + "/required").c_str()).Get(declarations) != NULL)
+-      {
+-        for (auto &v : Pointer((base + "/required").c_str()).Get(declarations)->GetArray())
+-          {
+-            if (v.GetString() == name)
+-              {
+-                required = true;
+-              }
+-          }
+-      }
+-
+-    WBAssert(value != NULL || required == false,
+-             "Internal error: Value \"" << base << '/' << name << "/type\" not found in the input file, while it was set as required.");
+-#endif
+-    if (value == nullptr)
+-      {
+-        value = Pointer((get_full_json_schema_path() + "/" + name + "/default value").c_str()).Get(declarations);
+-        WBAssertThrow(value != nullptr,
+-                      "internal error: could not retrieve the default value at: "
+-                      << base + "/" + name + "/default value");
+-      }
+-
+-    return value->GetUint();
+-  }
+-
+   template<>
+   unsigned int
+   Parameters::get(const std::string &name)
+@@ -1788,48 +1754,6 @@ namespace WorldBuilder
+     return vector;
+   }
+ 
+-  template<>
+-  std::vector<size_t>
+-  Parameters::get_vector(const std::string &name)
+-  {
+-    std::vector<size_t> vector;
+-    const std::string strict_base = this->get_full_json_path();
+-    if (Pointer((strict_base + "/" + name).c_str()).Get(parameters) != nullptr)
+-      {
+-        Value *array = Pointer((strict_base  + "/" + name).c_str()).Get(parameters);
+-
+-        for (size_t i = 0; i < array->Size(); ++i )
+-          {
+-            const std::string base = (strict_base + "/").append(name).append("/").append(std::to_string(i));
+-
+-            vector.push_back(Pointer(base.c_str()).Get(parameters)->GetUint());
+-          }
+-      }
+-    else
+-      {
+-        const Value *value = Pointer((this->get_full_json_schema_path()  + "/" + name + "/minItems").c_str()).Get(declarations);
+-        WBAssertThrow(value != nullptr,
+-                      "internal error: could not retrieve the minItems value at: "
+-                      << this->get_full_json_schema_path() + "/" + name + "/minItems");
+-
+-        const size_t min_size = value->GetUint();
+-
+-        value = Pointer((this->get_full_json_schema_path()  + "/" + name + "/items/default value").c_str()).Get(declarations);
+-        WBAssertThrow(value != nullptr,
+-                      "internal error: could not retrieve the default value at: "
+-                      << this->get_full_json_schema_path() + "/" + name + "/default value");
+-
+-        const size_t default_value = value->GetUint();
+-
+-        // set to min size
+-        for (size_t i = 0; i < min_size; ++i)
+-          {
+-            vector.push_back(default_value);
+-          }
+-      }
+-    return vector;
+-  }
+-
+   template<>
+   std::vector<unsigned int>
+   Parameters::get_vector(const std::string &name)

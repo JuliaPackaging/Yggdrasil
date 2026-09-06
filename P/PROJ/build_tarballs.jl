@@ -1,9 +1,11 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
-using BinaryBuilderBase: get_addable_spec
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "PROJ"
-upstream_version = v"9.6.2"
+upstream_version = v"9.8.1"
 version_offset = v"2.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
@@ -12,7 +14,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://download.osgeo.org/proj/proj-$upstream_version.tar.gz",
-                  "53d0cafaee3bb2390264a38668ed31d90787de05e71378ad7a8f35bb34c575d1")
+                  "af5b731c145c1d13c4e3b4eeb7d167e94e845e440f71e3496b4ed8dae0291960")
 ]
 
 # Bash recipe for building across all platforms
@@ -57,6 +59,8 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 make -j${nproc}
 make install
 """
+
+sources, script = require_macos_sdk("10.14", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line

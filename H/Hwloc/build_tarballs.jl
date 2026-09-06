@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Hwloc"
-version = v"2.12.1"
+version = v"2.14.0"
 
 # Collection of sources required to build hwloc
 sources = [
     ArchiveSource("https://download.open-mpi.org/release/hwloc/v$(version.major).$(version.minor)/hwloc-$(version).tar.bz2",
-                  "38a90328bb86259f9bb2fe1dc57fd841e111d1e6358012bef23dfd95d21dc66b")
+                  "966b9bb3e9f29f8d65ce8d106779e457f40e246a645e584b100772a42f9ae94b")
 ]
 
 # Bash recipe for building across all platforms
@@ -17,6 +17,13 @@ cd $WORKSPACE/srcdir/hwloc-*
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
+
+# hwloc's Makefile installs README/NEWS/COPYING directly into ${prefix} on Windows;
+# move them to a proper location
+if [ -f ${prefix}/README.txt ]; then
+    mkdir -p ${prefix}/share/doc/hwloc
+    mv -v ${prefix}/README.txt ${prefix}/NEWS.txt ${prefix}/COPYING.txt ${prefix}/share/doc/hwloc/
+fi
 """
 
 # These are the platforms we will build for by default, unless further
@@ -30,7 +37,9 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    Dependency("XML2_jll"; compat="~2.13.6"),
+    Dependency("Xorg_libpciaccess_jll"; platforms=filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

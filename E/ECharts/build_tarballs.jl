@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "ECharts"
-version = v"5.5.1"
+version = v"6.0.0"
 sources = GitSource[]
 
 script = "version=$(version)\n" * raw"""

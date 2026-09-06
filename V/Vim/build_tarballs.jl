@@ -1,5 +1,8 @@
 using BinaryBuilder, BinaryBuilderBase, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+
 name = "Vim"
 version = v"9.1.0"  # Update this to match desired Vim version
 
@@ -71,8 +74,6 @@ dependencies = [
 ]
 
 # Build the tarballs
-include("../../fancy_toys.jl")
-
 if any(should_build_platform.(triplet.(platforms_windows)))
     build_tarballs(ARGS, name, version, sources, script, platforms_windows, products_windows, dependencies; julia_compat="1.6")
 end

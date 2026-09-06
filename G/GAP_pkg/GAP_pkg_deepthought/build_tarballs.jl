@@ -2,16 +2,16 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 include("../common.jl")
 
-gap_version = v"400.1400.5"
+gap_version = v"400.1600.100"
 name = "deepthought"
-upstream_version = "1.0.7" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.1" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
+upstream_version = "1.0.10" # when you increment this, reset offset to v"0.0.0"
+offset = v"1.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL
 sources = [
     ArchiveSource("https://github.com/gap-packages/DeepThought/releases/download/v$(upstream_version)/DeepThought-$(upstream_version).tar.gz",
-                  "01d89babd2f62307bb0c4fe42303c6c645192ca6141ce02299c1c240e92ea93a"),
+                  "6dd757a515e83284658b9e51375117fff9ddc304ae366946c41d423fe2f6d90e"),
 ]
 
 # Bash recipe for building across all platforms
@@ -38,6 +38,6 @@ products = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"7")
+               julia_compat="1.10", preferred_gcc_version=v"7")
 
 # rebuild trigger: 1

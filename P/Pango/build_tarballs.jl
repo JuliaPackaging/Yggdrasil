@@ -3,36 +3,20 @@
 using BinaryBuilder
 
 name = "Pango"
-version = v"1.56.3"
+version = v"1.58.2"
 
 # Collection of sources required to build Pango: https://download.gnome.org/sources/pango/
 sources = [
     ArchiveSource("http://ftp.gnome.org/pub/GNOME/sources/pango/$(version.major).$(version.minor)/pango-$(version).tar.xz",
-                  "2606252bc25cd8d24e1b7f7e92c3a272b37acd6734347b73b47a482834ba2491"),
-    ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v11.0.0.tar.bz2",
-                  "bd0ea1633bd830204cc23a696889335e9d4a32b8619439ee17f22188695fcc5f"),
+                  "342385b6ca3b7c73455d7c80a13b7dbe4489e00bc3bd4c5bd6ed4dce421e374a"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 
-if [[ "${target}" == *-mingw* ]]; then
-    cd $WORKSPACE/srcdir/mingw*/mingw-w64-headers
-    ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target
-    make install
+apk add glib-dev
 
-    cd ../mingw-w64-crt/
-    if [ ${target} == "i686-w64-mingw32" ]; then
-        _crt_configure_args="--disable-lib64 --enable-lib32"
-    elif [ ${target} == "x86_64-w64-mingw32" ]; then
-        _crt_configure_args="--disable-lib32 --enable-lib64"
-    fi
-    ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target --enable-wildcard ${_crt_configure_args}
-    make -j${nproc}
-    make install
-fi
-
-cd $WORKSPACE/srcdir/pango*/
+cd $WORKSPACE/srcdir/pango*
 
 if [[ "${target}" == "${MACHTYPE}" ]]; then
     # When building for the host platform, the system libexpat is picked up
@@ -42,17 +26,35 @@ fi
 # If we want libpangoft2 on Windows we need to explicitly enable fontconfig and freetype
 # See <https://gitlab.gnome.org/GNOME/pango/-/blob/main/README.win32.md>.
 
-pip3 install gi-docgen
-mkdir build && cd build
-meson --cross-file="${MESON_TARGET_TOOLCHAIN}" \
+# We need a newer meson.  Install it into a private directory instead of using
+# `pip install --upgrade`: upgrading in place requires uninstalling the meson
+# that ships in the rootfs, and removing files under
+# /usr/lib/python3.9/site-packages fails with an I/O error on the builders.
+python3 -m pip install --ignore-installed --target=/tmp/meson meson==1.11.2
+export PYTHONPATH="/tmp/meson${PYTHONPATH:+:${PYTHONPATH}}"
+export PATH="/tmp/meson/bin:${PATH}"
+meson --version
+
+# meson 1.11 no longer defaults `subsystem` to `system` in cross files, so
+# Pango's unconditional `host_machine.subsystem()` call on darwin aborts
+# configuration.  Set it explicitly to `darwin`, which reproduces meson's
+# pre-1.11 default.  Do *not* use `macos` here: that switches on Pango's
+# CoreText/quartz backend, which has never been part of this JLL and does not
+# compile (pango/pangocoretext.c:263 assigns a PangoCoreTextFontMap* to a
+# PangoFontMap*, which our clang rejects).
+if [[ ${target} == *darwin* ]]; then
+    sed -i "/\[host_machine\]/,/^$/ s/system = 'darwin'/system = 'darwin'\nsubsystem = 'darwin'/" "$MESON_TARGET_TOOLCHAIN"
+fi
+
+meson setup build \
+    --cross-file="${MESON_TARGET_TOOLCHAIN}" \
     -Dintrospection=disabled \
     -Dfontconfig=enabled \
-    -Dfreetype=enabled \
-    ..
-ninja -j${nproc}
-ninja install
+    -Dfreetype=enabled
+ninja -C build -j${nproc}
+ninja -C build install
 
-install_license ../COPYING
+install_license COPYING
 """
 
 # These are the platforms we will build for by default, unless further
@@ -68,14 +70,15 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    HostBuildDependency("Gettext_jll"),
     HostBuildDependency("gperf_jll"),
+    BuildDependency("Xorg_xorgproto_jll"; platforms=filter(p -> Sys.isfreebsd(p) || Sys.islinux(p), platforms)),
     Dependency("Cairo_jll"; compat="1.18.5"),
-    Dependency("Fontconfig_jll"; compat="2.16.0"),
+    Dependency("Fontconfig_jll"; compat="2.17.1"),
     Dependency("FreeType2_jll"; compat="2.13.4"),
     Dependency("FriBidi_jll"; compat="1.0.17"),
-    Dependency("Glib_jll"; compat="2.84.0"),
-    Dependency("HarfBuzz_jll"; compat="8.5.1"),
-    BuildDependency("Xorg_xorgproto_jll"; platforms=filter(p -> Sys.isfreebsd(p) || Sys.islinux(p), platforms)),
+    Dependency("Glib_jll"; compat="2.88.3"),
+    Dependency("HarfBuzz_jll"; compat="100.14003"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

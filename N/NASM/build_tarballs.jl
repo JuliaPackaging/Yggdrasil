@@ -3,22 +3,40 @@
 using BinaryBuilder, Pkg
 
 name = "NASM"
-version_string = "2.16.03"
+version_string = "3.02"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.nasm.us/pub/nasm/releasebuilds/$(version_string)/nasm-$(version_string).tar.xz",
-                  "1412a1c760bbd05db026b6c0d1657affd6631cd0a63cddb6f73cc6d4aa616148"),
+    GitSource("https://github.com/netwide-assembler/nasm", "4a56d66ed9626d5a3ded5414c9d8b7f1a48ce065"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/nasm-*
+cd $WORKSPACE/srcdir/nasm*
 ./autogen.sh 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-zlib=${prefix}
+
+# Fix broken <stdbool.h> detection
+# (This is an autoconf problem. It is looking for macros, but C23 switched to using keywords.
+#  Future autoconfs will fix this, I'm sure.)
+# There are apparently two flavours for disabling a setting; the
+# `#undef` might be in comments or not. Handle both.
+sed -i -e 's+/\* #undef HAVE_STDBOOL_H \*/+#define HAVE_STDBOOL_H 1+' config/config.h
+sed -i -e 's+/#undef HAVE_STDBOOL_H/+#define HAVE_STDBOOL_H 1+' config/config.h
+
 make -j${nproc}
+
+# Create fake manpages to make the installer happy
+:> nasm.1
+:> ndisasm.1
+
 make install
+
+# Uninstall the fake manpages
+rm ${prefix}/share/man/man1/nasm.1
+rm ${prefix}/share/man/man1/ndisasm.1
+
 install_license LICENSE
 """
 
@@ -34,6 +52,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
+    Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

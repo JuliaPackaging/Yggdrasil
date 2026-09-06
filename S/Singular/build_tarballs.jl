@@ -28,8 +28,8 @@ import Pkg.Types: VersionSpec
 #
 name = "Singular"
 
-upstream_version = v"4.4.1-1" # 4.4.1
-version_offset = v"0.0.9"
+upstream_version = v"4.4.1-5" # 4.4.1p5
+version_offset = v"0.1.10"
 
 version = VersionNumber(upstream_version.major * 100 + upstream_version.minor + version_offset.major,
                         upstream_version.patch * 100 + version_offset.minor,
@@ -37,7 +37,7 @@ version = VersionNumber(upstream_version.major * 100 + upstream_version.minor + 
 
 # Collection of sources required to build Singular
 sources = [
-    GitSource("https://github.com/Singular/Singular.git", "595d7167e6e019d45d9a4f1e18ae741df1f3c41d"),
+    GitSource("https://github.com/Singular/Singular.git", "4b94dd6192b03ad331b9963327db199e0c3e73de"),
     #ArchiveSource("https://www.mathematik.uni-kl.de/ftp/pub/Math/Singular/SOURCES/$(upstream_version.major)-$(upstream_version.minor)-$(upstream_version.patch)/singular-$(upstream_version).tar.gz",
     #              "5b0f6c036b4a6f58bf620204b004ec6ca3a5007acc8352fec55eade2fc9d63f6"),
     #DirectorySource("./bundled")
@@ -67,7 +67,8 @@ fi
     --enable-p-procs-static \
     --disable-p-procs-dynamic \
     --enable-gfanlib \
-    --with-readline=no \
+    --without-readline \
+    --without-ntl \
     --with-gmp=$prefix \
     --with-flint=$prefix \
     --without-python \
@@ -109,11 +110,11 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("cddlib_jll"),
-    Dependency(PackageSpec(name="FLINT_jll"), compat = "~301.300.101"),
+    Dependency(PackageSpec(name="FLINT_jll"), compat = "~301.600.000"),
     Dependency("GMP_jll", v"6.2.1"),
     Dependency("MPFR_jll", v"4.1.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    preferred_gcc_version=v"6", julia_compat = "1.6")
+    preferred_gcc_version=v"8", julia_compat = "1.10")

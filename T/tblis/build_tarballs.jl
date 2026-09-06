@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "tblis"
-version = v"1.2.0"
+version = v"1.3.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/devinamatthews/tblis.git", "3e4c4b82943726c443b6f408c9c9791dcad7a847")
+    GitSource("https://github.com/devinamatthews/tblis.git", "c4f81e08b2827e72335baa7bf91a245f72c43970")
     DirectorySource("./bundled")
 ]
 
@@ -23,26 +23,23 @@ for i in ./Makefile.* ./configure*; do
 
 done
 
+# The `x86` meta-configuration includes `knl`, whose kernels need -mavx512pf.
+# Clang dropped that flag in LLVM 14, so list the configurations explicitly.
 case ${target} in
     # Unlike stated in Wiki, 
     # TBLIS automatically detects threading model.
     *"x86_64"*"linux"*"gnu"*) 
-        export BLI_CONFIG=x86,reference
+        export BLI_CONFIG=core2,sandybridge,haswell,skx1,skx2,amd,reference
         export BLI_THREAD=openmp
-        ;;
-    *"x86_64"*"linux"*"musl"*)
-        export BLI_CONFIG=x86,reference
-        export BLI_THREAD=pthreads
-        export CC=clang
-        export CXX=clang++
         ;;
     *"x86_64"*"w64"*)
         # Windows lacks support for some instructions.
         # Building only for AMD processors.
         export BLI_CONFIG=amd,reference
         export BLI_THREAD=openmp
-        # Wrapper for posix_memalign calls.
+        # Wrapper for posix_memalign calls, and matching _aligned_free calls.
         patch src/memory/aligned_allocator.hpp < ${WORKSPACE}/srcdir/patches/aligned_allocator.hpp.mingw.patch
+        patch src/memory/memory_pool.hpp < ${WORKSPACE}/srcdir/patches/memory_pool.hpp.mingw.patch
         # Additional linking parameter needed for MinGW Autoconf.
         # Update Autoconf parameters and refresh.
         cd src/external/tci
@@ -55,11 +52,11 @@ case ${target} in
         update_configure_scripts --reconf
         ;;
     *"x86_64"*"apple"*) 
-        export BLI_CONFIG=x86,reference
+        export BLI_CONFIG=core2,sandybridge,haswell,skx1,skx2,amd,reference
         export BLI_THREAD=openmp
         ;;
     *"x86_64"*"freebsd"*) 
-        export BLI_CONFIG=x86,reference
+        export BLI_CONFIG=core2,sandybridge,haswell,skx1,skx2,amd,reference
         export BLI_THREAD=openmp
         ;;
     *)
@@ -83,12 +80,12 @@ install_license LICENSE
 # platforms are passed in on the command line
 platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
-    Platform("x86_64", "linux"; libc="musl", cxxstring_abi = "cxx11"),
     Platform("x86_64", "macos"),
     Platform("x86_64", "freebsd"),
     Platform("x86_64", "windows")
 ]
 platforms = expand_cxxstring_abis(platforms)
+platforms = expand_gfortran_versions(platforms)
 
 
 # The products that we will ensure are always built
@@ -109,4 +106,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"7.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"7.1.0", clang_use_lld=false)

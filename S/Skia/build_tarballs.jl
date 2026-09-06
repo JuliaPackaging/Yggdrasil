@@ -2,6 +2,9 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "Skia"
 version = v"0.40.1"
 
@@ -16,10 +19,7 @@ sources = [
    # These two have some kind of source dependency. 
    GitSource("https://skia.googlesource.com/external/github.com/google/wuffs-mirror-release-c.git","e3f919ccfe3ef542cfc983a82146070258fb57f8"),
    GitSource("https://chromium.googlesource.com/chromium/src/third_party/zlib","646b7f569718921d7d4b5b8e22572ff6c76f2596"),
-   # Need 10.15 SDK for Mac
-   FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz","2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
-
 
 
 # These are the platforms we will build for by default, unless further
@@ -70,7 +70,7 @@ mv wuffs-mirror-release-c wuffs
 mv freetype2 freetype
 
 # Move dependencies to the correct location
-mv !(cskia|skia|patches|MacOSX10.15.sdk.tar.xz) skia/third_party/externals/
+mv !(cskia|skia|patches) skia/third_party/externals/
 
 
 cd skia
@@ -102,12 +102,6 @@ fi
 
 
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    # Work around the issue
-    export MACOSX_DEPLOYMENT_TARGET=10.15
-    # ...and install a newer SDK
-    rm -rf /opt/${target}/${target}/sys-root/System
-    tar --extract --file=${WORKSPACE}/srcdir/MacOSX10.15.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX10.15.sdk/System MacOSX10.15.sdk/usr
-
 PLATFORM_ARGS="
 skia_use_x11=false \
 target_os=\\"mac\\" 
@@ -169,5 +163,6 @@ cd out/Dynamic/
 install -Dvm 755 "libskia.${dlext}" "${libdir}/libskia.${dlext}"
 """
 
+sources, script = require_macos_sdk("10.15", sources, script)
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version= v"11.1.0", preferred_llvm_version = v"15.0.7", julia_compat="1.10")

@@ -2,31 +2,22 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "Geant4"
-version = v"11.3.2"
+version = v"11.4.1"
 
 # Collection of sources required to build
 sources = [
     ArchiveSource("https://gitlab.cern.ch/geant4/geant4/-/archive/v$(version)/geant4-v$(version).tar.gz",
-                  "077edca6aa3b3940f351cf9a948457cad3fb117f215b88c52cce315e1a07fd7a"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
+                  "99dcf5f9d4f806fb8c4fde85cb2674a42e4ca19833143464ff7efa55c1852140"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/geant4-*/
-
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    # Install a newer SDK which supports `std::filesystem`
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    export MACOSX_DEPLOYMENT_TARGET=10.15
-    popd
-fi
 
 if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 ../patches/windows.patch
@@ -39,9 +30,6 @@ if [[ "${target}" != *-w64-* && "${target}" != *-apple-* ]]; then
 fi
 if [[ "${target}" == *-apple-* ]]; then
     FLAGS+=(-DGEANT4_USE_SYSTEM_ZLIB=ON)
-fi
-if [[ "${target}" == *-w64-* ]]; then
-    FLAGS+=(-DGEANT4_BUILD_MULTITHREADED=OFF)
 fi
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -57,6 +45,9 @@ make install
 
 install_license ../LICENSE
 """
+
+# Install a newer SDK which supports `std::filesystem`
+sources, script = require_macos_sdk("10.15", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
@@ -93,9 +84,9 @@ products = [
     LibraryProduct("libG4VRML", :libG4VRML),
     LibraryProduct("libG4readout", :libG4Readout),
     LibraryProduct("libG4RayTracer", :libG4RayTracer),
-    LibraryProduct("libG4visHepRep", :libG4VisHepRep),
     LibraryProduct("libG4Tree", :libG4Tree),
-    LibraryProduct("libG4processes", :libG4Processes),
+    LibraryProduct("libG4processes_core", :libG4Processes_core),
+    LibraryProduct("libG4processes_hadronic", :libG4Processes_hadronic),
     LibraryProduct("libG4global", :libG4Global),
     LibraryProduct("libG4tracking", :libG4Tracking),
     LibraryProduct("libG4intercoms", :libG4Intercoms),

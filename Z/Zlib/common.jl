@@ -11,6 +11,7 @@ function configure_zlib_build(upstream_version::VersionNumber;
     versions_tags = Dict(
         v"1.2.12" => "21767c654d31d2dccdde4330529775c6c5fd5389",
         v"1.3.1" => "51b7f2abdade71cd9bb0e7a373ef2610ec6f9daf",
+        v"1.3.2" => "da607da739fa6047df13e66a2af6b8bec7c2a498",
     )
 
     name = "Zlib"
@@ -28,12 +29,16 @@ function configure_zlib_build(upstream_version::VersionNumber;
         cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
     fi
     # We use `-DUNIX=true` to ensure that it is always named `libz` instead of `libzlib` or something absolutely absurd like that.
-    cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DUNIX=true \
-        -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-        ..
+    options=(
+        -DCMAKE_INSTALL_PREFIX=${prefix}
+        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+        -DCMAKE_BUILD_TYPE=Release
+        -DUNIX=true
+        -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+        -DZLIB_BUILD_TESTING=OFF
+        -DZLIB_BUILD_STATIC=OFF
+    )
+    cmake "${options[@]}" ..
     make install -j${nproc}
     install_license ../README
     """
@@ -46,7 +51,8 @@ function configure_zlib_build(upstream_version::VersionNumber;
     ]
 
     dependencies = [
-        BuildDependency(PackageSpec(; name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version); platforms=filter(p -> sanitize(p)=="memory", platforms)),
+        BuildDependency(PackageSpec(; name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=string(llvm_version));
+                        platforms=filter(p -> sanitize(p)=="memory", platforms)),
     ]
 
     return name, version, sources, script, platforms, products, dependencies

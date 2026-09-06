@@ -1,0 +1,14 @@
+diff --git a/lib/SPIRV/SPIRVWriter.cpp b/lib/SPIRV/SPIRVWriter.cpp
+index d668ee89..4ae4f7ca 100644
+--- a/lib/SPIRV/SPIRVWriter.cpp
++++ b/lib/SPIRV/SPIRVWriter.cpp
+@@ -1628,6 +1628,9 @@ SPIRVValue *LLVMToSPIRVBase::transUnaryInst(UnaryInstruction *U,
+       } else {
+         BOC = OpCrossWorkgroupCastToPtrINTEL;
+       }
++    } else if (isa<ConstantPointerNull>(Cast->getPointerOperand())) {
++      SPIRVType *TransTy = transScavengedType(U);
++      return BM->addNullConstant(bcast<SPIRVTypePointer>(TransTy));
+     } else {
+       getErrorLog().checkError(
+           SrcAddrSpace == SPIRAS_Generic, SPIRVEC_InvalidModule, U,

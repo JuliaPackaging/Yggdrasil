@@ -4,30 +4,20 @@
 
 using BinaryBuilder
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 # Set sources and other environment variables.
 name = "mlpack"
-source_version = v"4.6.2"
+source_version = v"4.8.0"
 version = source_version
 sources = [
     ArchiveSource("https://www.mlpack.org/files/mlpack-$(source_version).tar.gz",
-                  "2fe772da383a935645ced07a07b51942ca178d38129df3bf685890bc3c1752cf"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-                  "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
+                  "0ab06e5c506c7ed5f072faa4c04477c65624e4a1ff62eee8c0d996ef850ec51c"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/mlpack-*/
-
-# On macOS, we need to compile with 10.14 as a target to work around
-# std::optional availability issues.
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    export MACOSX_DEPLOYMENT_TARGET=10.14
-    popd
-fi
 
 mkdir build && cd build
 
@@ -109,6 +99,10 @@ fi
 install_license ../LICENSE.txt
 """
 
+# On macOS, we need to compile with 10.14 as a target to work around
+# std::optional availability issues.
+sources, script = require_macos_sdk("10.14", sources, script)
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.
 platforms = expand_cxxstring_abis(supported_platforms())
@@ -121,14 +115,25 @@ products = [
     LibraryProduct("libmlpack_julia_util", :libmlpack_julia_util),
     # Each of these contains a mlpackMain() implementation for the given
     # binding.
-    LibraryProduct("libmlpack_julia_adaboost", :libmlpack_julia_adaboost),
+    LibraryProduct("libmlpack_julia_adaboost_train",
+        :libmlpack_julia_adaboost_train),
+    LibraryProduct("libmlpack_julia_adaboost_classify",
+        :libmlpack_julia_adaboost_classify),
+    LibraryProduct("libmlpack_julia_adaboost_probabilities",
+        :libmlpack_julia_adaboost_probabilities),
     LibraryProduct("libmlpack_julia_approx_kfn", :libmlpack_julia_approx_kfn),
-    LibraryProduct("libmlpack_julia_bayesian_linear_regression",
-        :libmlpack_julia_bayesian_linear_regression),
+    LibraryProduct("libmlpack_julia_bayesian_linear_regression_train",
+        :libmlpack_julia_bayesian_linear_regression_train),
+    LibraryProduct("libmlpack_julia_bayesian_linear_regression_predict",
+        :libmlpack_julia_bayesian_linear_regression_predict),
     LibraryProduct("libmlpack_julia_cf", :libmlpack_julia_cf),
     LibraryProduct("libmlpack_julia_dbscan", :libmlpack_julia_dbscan),
-    LibraryProduct("libmlpack_julia_decision_tree",
-        :libmlpack_julia_decision_tree),
+    LibraryProduct("libmlpack_julia_decision_tree_train",
+        :libmlpack_julia_decision_tree_train),
+    LibraryProduct("libmlpack_julia_decision_tree_classify",
+        :libmlpack_julia_decision_tree_classify),
+    LibraryProduct("libmlpack_julia_decision_tree_probabilities",
+        :libmlpack_julia_decision_tree_probabilities),
     LibraryProduct("libmlpack_julia_det", :libmlpack_julia_det),
     LibraryProduct("libmlpack_julia_emst", :libmlpack_julia_emst),
     LibraryProduct("libmlpack_julia_fastmks", :libmlpack_julia_fastmks),
@@ -152,15 +157,22 @@ products = [
     LibraryProduct("libmlpack_julia_kmeans", :libmlpack_julia_kmeans),
     LibraryProduct("libmlpack_julia_knn", :libmlpack_julia_knn),
     LibraryProduct("libmlpack_julia_krann", :libmlpack_julia_krann),
-    LibraryProduct("libmlpack_julia_lars", :libmlpack_julia_lars),
-    LibraryProduct("libmlpack_julia_linear_regression",
-        :libmlpack_julia_linear_regression),
+    LibraryProduct("libmlpack_julia_lars_train", :libmlpack_julia_lars_train),
+    LibraryProduct("libmlpack_julia_lars_predict", :libmlpack_julia_lars_predict),
+    LibraryProduct("libmlpack_julia_linear_regression_train",
+        :libmlpack_julia_linear_regression_train),
+    LibraryProduct("libmlpack_julia_linear_regression_predict",
+        :libmlpack_julia_linear_regression_predict),
     LibraryProduct("libmlpack_julia_linear_svm", :libmlpack_julia_linear_svm),
     LibraryProduct("libmlpack_julia_lmnn", :libmlpack_julia_lmnn),
     LibraryProduct("libmlpack_julia_local_coordinate_coding",
         :libmlpack_julia_local_coordinate_coding),
-    LibraryProduct("libmlpack_julia_logistic_regression",
-        :libmlpack_julia_logistic_regression),
+    LibraryProduct("libmlpack_julia_logistic_regression_train",
+        :libmlpack_julia_logistic_regression_train),
+    LibraryProduct("libmlpack_julia_logistic_regression_classify",
+        :libmlpack_julia_logistic_regression_classify),
+    LibraryProduct("libmlpack_julia_logistic_regression_probabilities",
+        :libmlpack_julia_logistic_regression_probabilities),
     LibraryProduct("libmlpack_julia_lsh", :libmlpack_julia_lsh),
     LibraryProduct("libmlpack_julia_mean_shift", :libmlpack_julia_mean_shift),
     LibraryProduct("libmlpack_julia_nbc", :libmlpack_julia_nbc),
@@ -179,8 +191,12 @@ products = [
     LibraryProduct("libmlpack_julia_preprocess_split",
         :libmlpack_julia_preprocess_split),
     LibraryProduct("libmlpack_julia_radical", :libmlpack_julia_radical),
-    LibraryProduct("libmlpack_julia_random_forest",
-        :libmlpack_julia_random_forest),
+    LibraryProduct("libmlpack_julia_random_forest_train",
+        :libmlpack_julia_random_forest_train),
+    LibraryProduct("libmlpack_julia_random_forest_classify",
+        :libmlpack_julia_random_forest_classify),
+    LibraryProduct("libmlpack_julia_random_forest_probabilities",
+        :libmlpack_julia_random_forest_probabilities),
     LibraryProduct("libmlpack_julia_softmax_regression",
         :libmlpack_julia_softmax_regression),
     LibraryProduct("libmlpack_julia_sparse_coding",
@@ -202,4 +218,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"9", julia_compat="1.7")
