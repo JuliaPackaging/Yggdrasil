@@ -3,14 +3,19 @@
 using BinaryBuilder
 
 name = "Python"
-version = v"3.11.12"
+version = v"3.12.14"
 
 # Collection of sources required to build Python
 sources = [
     ArchiveSource("https://www.python.org/ftp/python/$(version)/$(name)-$(version).tar.xz",
-                  "849da87af4df137710c1796e276a955f7a85c9f971081067c8f565d15c352a09"),
-    FileSource("https://repo.anaconda.com/miniconda/Miniconda3-py311_24.3.0-0-Linux-x86_64.sh", 
-                "4da8dde69eca0d9bc31420349a204851bfa2a1c87aeb87fe0c05517797edaac4", "miniconda.sh"),
+                  "5c8462af5790baf43a321a1559dbe0db06d1be4300fb85fb53c40060668e548a"),
+    # Deliberately an installer from the same 24.3.0 generation as the py311 one
+    # this replaced: Miniconda installers from 24.11 onwards gate on
+    # `ldd --version` reporting GLIBC >= 2.28, which fails outright in
+    # BinaryBuilder's musl sandbox ("Installer requires GLIBC >=2.28, but system
+    # has ."). Do not casually bump this to the newest available.
+    FileSource("https://repo.anaconda.com/miniconda/Miniconda3-py312_24.3.0-0-Linux-x86_64.sh",
+                "96a44849ff17e960eeb8877ecd9055246381c4d4f2d031263b63fa7e2e930af1", "miniconda.sh"),
     DirectorySource("./bundled"),
 ]
 
@@ -22,8 +27,8 @@ apk add autoconf-archive
 # Having a global `python3` screws things up a bit, so get rid of that
 rm -f $(which python3)
 
-# Install miniconda to get python 3.11 necessary for cross-compilation
-# This requriement is new in Python 3.11
+# Install miniconda to get the build python necessary for cross-compilation
+# (--with-build-python must be at least the version being built).
 cd ${WORKSPACE}/srcdir
 bash miniconda.sh -b -p ${host_bindir}/miniconda
 
@@ -124,5 +129,8 @@ ENV["PYTHONHOME"] = artifact_dir
 """
 
 # Build the tarballs, and possibly a `build.jl` as well.
+# Python 3.12 uses C11 thread-local storage (`_Thread_local` in
+# pycore_pystate.h). BinaryBuilder's default GCC 4.8.5 defaults to gnu89 and
+# fails with "unknown type name '_Thread_local'"; GCC >= 5 defaults to gnu11.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               init_block, julia_compat = "1.6")
+               init_block, julia_compat = "1.6", preferred_gcc_version = v"9")
