@@ -7,10 +7,13 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDA_Compiler"
-version = v"0.5.1"
+version = v"0.6.2"
 
 const toolkit_versions = [CUDA.cuda_full_versions; CUDA.cuda_prerelease_versions]
-const compiler_versions = filter(v -> v >= v"11.4", toolkit_versions)
+const compiler_versions = filter(v -> v >= v"11.4" || Base.thisminor(v) == v"10.2", toolkit_versions)
+
+# CUDA 10.2 is repackaged from CUDA_SDK_jll (no redistributables exist for it)
+include("build_10.2.jl")
 
 # preferences are read from our own namespace first, falling back to CUDA_Runtime_jll's:
 # LocalPreferences.toml files predating the runtime/compiler split only pin the runtime,
@@ -22,7 +25,6 @@ augment_platform_block = """
     $(read(joinpath(@__DIR__, "..", "CUDA_Runtime", "toolkit_selection.jl"), String))
     const cuda_toolkits = $(compiler_versions)
     const cuda_prerelease_toolkits = $(CUDA.cuda_prerelease_versions)
-    const cuda_default_toolkit = $(repr(Base.thisminor(last(CUDA.cuda_full_versions))))
     $(read(joinpath(@__DIR__, "platform_augmentation.jl"), String))"""
 
 script = raw"""
@@ -109,8 +111,10 @@ fi
 """
 
 dependencies = [
-    # 13.3.1: first version providing the toolkit selection library our hook calls into
-    Dependency("CUDA_Driver_jll", v"13.3.1"; compat="13.3.1 - 13"),
+    # 13.3.4: first version defining `libcuda` on every platform (which our platform
+    # augmentation hook reads) and recording the `compat` preference the selection
+    # baked into our cache depends on
+    Dependency("CUDA_Driver_jll", v"13.3.4"; compat="13.3.4 - 13"),
 ]
 
 function get_platforms(version::VersionNumber)
@@ -129,6 +133,9 @@ function get_platforms(version::VersionNumber)
         arch(platform) == "aarch64" || return true
 
         minor = Base.thisminor(version)
+        if minor == v"10.2" && platform["cuda_platform"] != "jetson"
+            return false
+        end
         if v"11" <= minor < v"11.8" && platform["cuda_platform"] == "jetson"
             return false
         end
@@ -148,6 +155,12 @@ function get_products(version::VersionNumber)
                                    "nvrtc64_112_0"
     nvrtc_builtins_dll = "nvrtc-builtins64_$(version.major)$(version.minor)"
 
+    # NOTE: the libraries must be dlopen'ed eagerly (the default), even though nothing here
+    # calls into them. Other CUDA libraries pick them up by soname at run time: libcusolver,
+    # libcusparse and libcufft link against or dlopen `libnvJitLink.so.$major`, and cuBLASLt,
+    # cuFFT, cuDNN and cuTENSOR dlopen `libnvrtc.so.$major`, which in turn dlopens
+    # `libnvrtc-builtins.so.$major.$minor`. None of them have a RUNPATH, so those lookups
+    # only succeed because this JLL has already loaded the libraries.
     products = [
         FileProduct(["lib/libcudadevrt.a", "lib/cudadevrt.lib"], :libcudadevrt),
         FileProduct("nvvm/libdevice/libdevice.10.bc", :libdevice),
@@ -200,10 +213,24 @@ for version in compiler_versions
         augmented_platform["cuda"] = CUDA.platform(version)
         should_build_platform(triplet(augmented_platform)) || continue
 
-        push!(builds,
-            (; script, platforms=[augmented_platform], products=get_products(version), init_block,
-               sources=get_sources("cuda", components; version, platform=augmented_platform),
-        ))
+        if Base.thisminor(version) == v"10.2"
+            # our CUDA 10.2 SDK build only provides Jetson binaries on aarch64
+            if arch(platform) == "aarch64" && platform["cuda_platform"] != "jetson"
+                continue
+            end
+            push!(builds,
+                (; script=get_script(), platforms=[augmented_platform], products=get_products(),
+                   init_block, sources=[],
+                   dependencies=[dependencies;
+                                 BuildDependency(PackageSpec(name="CUDA_SDK_jll", version="10.2.89"))],
+            ))
+        else
+            push!(builds,
+                (; script, platforms=[augmented_platform], products=get_products(version), init_block,
+                   sources=get_sources("cuda", components; version, platform=augmented_platform),
+                   dependencies,
+            ))
+        end
     end
 end
 
@@ -219,8 +246,8 @@ end
 for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    name, version, build.sources, build.script,
-                   build.platforms, build.products, dependencies;
-                   julia_compat="1.6", lazy_artifacts=true,
+                   build.platforms, build.products, build.dependencies;
+                   julia_compat="1.10", lazy_artifacts=true,
                    augment_platform_block, build.init_block)
 end
 

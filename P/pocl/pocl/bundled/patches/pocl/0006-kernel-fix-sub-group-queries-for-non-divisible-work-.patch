@@ -1,0 +1,113 @@
+From 7601a14db32d3ec48900dcb71dfcee8fb80a7037 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Wed, 10 Jun 2026 17:31:21 +0200
+Subject: [PATCH 06/16] kernel: fix sub-group queries for non-divisible
+ work-group sizes
+
+When the work-group size is not evenly divisible by the sub-group size
+(e.g. with intel_reqd_sub_group_size set to a value larger than, or not
+dividing, the work-group size), the last sub-group of a work-group is
+smaller than the maximum sub-group size. The generic CPU implementation
+did not account for this:
+
+- get_num_sub_groups() used truncating division, returning 0 for
+  work-groups smaller than the sub-group size, and undercounting
+  whenever there is a partial trailing sub-group;
+- get_sub_group_size() always returned the maximum sub-group size,
+  even for the (smaller) last sub-group, causing the sub-group
+  reductions/scans/ballot to access work-items beyond the work-group;
+- get_enqueued_num_sub_groups() hardcoded 1.
+
+Also fix the CUDA implementation of get_num_sub_groups(), which
+counted the sub-groups of the entire NDRange instead of those of a
+single work-group.
+
+Fixes part of #2181.
+
+Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+---
+ lib/kernel/subgroups.cl | 54 ++++++++++++++++++++++++++---------------
+ 1 file changed, 34 insertions(+), 20 deletions(-)
+
+diff --git a/lib/kernel/subgroups.cl b/lib/kernel/subgroups.cl
+index 283747747..ca12f3498 100644
+--- a/lib/kernel/subgroups.cl
++++ b/lib/kernel/subgroups.cl
+@@ -36,6 +36,7 @@ extern uint _pocl_sub_group_size;
+ size_t _CL_OVERLOADABLE get_local_id (unsigned int dimindx);
+ size_t _CL_OVERLOADABLE get_local_linear_id (void);
+ size_t _CL_OVERLOADABLE get_local_size (unsigned int dimindx);
++size_t _CL_OVERLOADABLE get_enqueued_local_size (unsigned int dimindx);
+ 
+ void _CL_OVERLOADABLE _CL_CONVERGENT work_group_barrier(cl_mem_fence_flags);
+ void _CL_OVERLOADABLE
+@@ -68,29 +69,10 @@ sub_group_all (int predicate)
+   return sub_group_reduce_min ((unsigned)predicate);
+ }
+ 
+-uint _CL_OVERLOADABLE
+-get_sub_group_size (void)
+-{
+-  return _pocl_sub_group_size;
+-}
+-
+ uint _CL_OVERLOADABLE
+ get_max_sub_group_size (void)
+ {
+-  return get_sub_group_size ();
+-}
+-
+-uint _CL_OVERLOADABLE
+-get_num_sub_groups (void)
+-{
+-  return (uint)get_local_size (0) * get_local_size (1) * get_local_size (2)
+-         / get_max_sub_group_size ();
+-}
+-
+-uint _CL_OVERLOADABLE
+-get_enqueued_num_sub_groups (void)
+-{
+-  return 1;
++  return _pocl_sub_group_size;
+ }
+ 
+ uint _CL_OVERLOADABLE
+@@ -99,6 +81,38 @@ get_sub_group_id (void)
+   return (uint)get_local_linear_id () / get_max_sub_group_size ();
+ }
+ 
++uint _CL_OVERLOADABLE
++get_sub_group_size (void)
++{
++  /* The last sub-group of the work-group can have fewer work-items than
++     the maximum sub-group size when the work-group size is not evenly
++     divisible by it. */
++  uint wg_size
++    = (uint)get_local_size (0) * get_local_size (1) * get_local_size (2);
++  uint remaining = wg_size - get_sub_group_id () * get_max_sub_group_size ();
++  return remaining < get_max_sub_group_size () ? remaining
++                                               : get_max_sub_group_size ();
++}
++
++uint _CL_OVERLOADABLE
++get_num_sub_groups (void)
++{
++  /* Round up to account for a possibly smaller last sub-group. */
++  uint wg_size
++    = (uint)get_local_size (0) * get_local_size (1) * get_local_size (2);
++  return (wg_size + get_max_sub_group_size () - 1)
++         / get_max_sub_group_size ();
++}
++
++uint _CL_OVERLOADABLE
++get_enqueued_num_sub_groups (void)
++{
++  uint wg_size = (uint)get_enqueued_local_size (0)
++                 * get_enqueued_local_size (1) * get_enqueued_local_size (2);
++  return (wg_size + get_max_sub_group_size () - 1)
++         / get_max_sub_group_size ();
++}
++
+ uint _CL_OVERLOADABLE
+ get_sub_group_local_id (void)
+ {

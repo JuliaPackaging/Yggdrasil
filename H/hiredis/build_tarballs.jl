@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "hiredis"
-version = v"1.1.0"
+version = v"1.4.1"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/redis/hiredis.git",
-              "c14775b4e48334e0262c9f168887578f4a368b5d"),
+              "616f2286ba5503f74ae96e720623fa11dbc690af"),
     DirectorySource("./bundled"),
 ]
 
@@ -19,6 +19,7 @@ cd $WORKSPACE/srcdir/hiredis/
 atomic_patch -p1 ../patches/link-hiredis-ssl.patch
 make -j${nproc} \
     USE_SSL=1 \
+    USE_WERROR=0 \
     PREFIX="${prefix}" \
     OPENSSL_PREFIX="${prefix}" \
     LIBRARY_PATH=$(basename "${libdir}") \
@@ -40,7 +41,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="1.1.13"),
+    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="3.5.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

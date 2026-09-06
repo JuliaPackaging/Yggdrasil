@@ -4,12 +4,13 @@
 # append `cuda_toolkits` and `cuda_prerelease_toolkits`, and append an
 # `augment_platform!` implementation.
 #
-# The driver-dependent parts of the selection -- inspecting the driver and its devices,
-# and the capability database -- live in CUDA_Driver_jll's toplevel block; see
-# `select_cuda_toolkit` there. Only what must keep working when that package cannot be
-# loaded (which can happen during initial installation, cf. JuliaLang/Pkg.jl#3225) is
-# inlined here: preference handling, and the version-override and local-toolkit paths,
-# so that precompiling with a fixed version works without CUDA_Driver_jll or a driver.
+# This code is self-contained: it needs nothing from CUDA_Driver_jll except the name of
+# the driver that package decided to load (`CUDA_Driver_jll.libcuda`), and falls back to
+# the system driver when even that is unavailable (which can happen during initial
+# installation, cf. JuliaLang/Pkg.jl#3225). The driver is queried in-process: this hook
+# runs in throwaway processes (Pkg's artifact-selection subprocess, or the JLL's
+# precompilation process) that have already loaded the chosen driver, so there is no
+# reason to inspect it from a helper process like CUDA_Driver_jll's `__init__` does.
 
 using Base.BinaryPlatforms
 
@@ -94,14 +95,14 @@ end
 # - the wrong version of CUDA_Driver_jll may be available
 #
 # because of that, we need to be very careful about using that dependency: guard the
-# import, and treat any error calling into it (including UndefVarError from versions
-# predating the selection library) as "no selection possible".
+# import, and only ever read `libcuda` from it (defined on every platform since 13.3.4),
+# falling back to the system driver when that is not possible.
 #
 # ref: https://github.com/JuliaLang/Pkg.jl/issues/3225
 try
     using CUDA_Driver_jll
 catch err
-    # handled in cuda_toolkit_tag below
+    # handled in get_driver_info below
 end
 
 # get the version of the local CUDA toolkit by querying the system libcudart
@@ -143,6 +144,249 @@ function get_runtime_version()
     end
 
     cudaRuntimeGetVersion(runtime_handle)
+end
+
+# query the CUDA driver, returning `nothing` on failure, or a tuple
+# `(driver_version, device_capabilities)`.
+#
+# this inspects `CUDA_Driver_jll.libcuda`, i.e. whichever of the system driver and the
+# bundled forwards-compatible driver its `__init__` settled on, so that the toolkit we
+# select is sized for the driver code in this session will actually run against. when
+# CUDA_Driver_jll cannot be loaded, we look at the system driver instead.
+#
+# when called during precompilation (i.e., from the JLL's own precompilation process),
+# the resolved driver path is registered as an include dependency, invalidating the
+# precompilation cache when the user upgrades their NVIDIA driver.
+function get_driver_info()
+    system_driver = Sys.iswindows() ? "nvcuda" : "libcuda.so.1"
+    libcuda = if @isdefined(CUDA_Driver_jll) && isdefined(CUDA_Driver_jll, :libcuda)
+        CUDA_Driver_jll.libcuda
+    else
+        @debug "CUDA_Driver_jll is not available; inspecting the system driver"
+        system_driver
+    end
+
+    driver_handle = Libdl.dlopen(libcuda; throw_error=false)
+    if driver_handle === nothing
+        @debug "Failed to load CUDA driver $libcuda"
+        return nothing
+    end
+
+    # minimal API call wrappers we need
+    function lookup(name)
+        function_handle = Libdl.dlsym(driver_handle, name; throw_error=false)
+        if function_handle === nothing
+            @debug "Driver library seems invalid (does not contain '$name')"
+        end
+        return function_handle
+    end
+    version_fn = lookup("cuDriverGetVersion")
+    version_fn === nothing && return nothing
+    version_ref = Ref{Cint}()
+    status = ccall(version_fn, Cint, (Ptr{Cint},), version_ref)
+    if status != 0
+        @debug "Call to 'cuDriverGetVersion' failed with status $status"
+        return nothing
+    end
+    major, ver = divrem(version_ref[], 1000)
+    minor, patch = divrem(ver, 10)
+    version = VersionNumber(major, minor, patch)
+
+    # the device capabilities let us narrow the selection down to toolkits that support
+    # the user's hardware, but they are only a refinement: the driver version alone
+    # already determines a usable toolkit. so when `cuInit` fails -- no device visible
+    # (CUDA_ERROR_NO_DEVICE, 100), the kernel-mode driver not loaded or mismatching the
+    # library after an upgrade without a reboot (803), a driver too old for its own
+    # library, ... -- we still select on the version: the resulting installation is
+    # correct as soon as the system is fixed, whereas baking `none` into the selection
+    # would leave the user without a toolkit until something re-triggers it.
+    init_fn = lookup("cuInit")
+    init_fn === nothing && return nothing
+    capabilities = VersionNumber[]
+    status = ccall(init_fn, Cint, (Cuint,), 0)
+    if status == 100
+        @debug "Call to 'cuInit' reported no CUDA-capable device; selecting on the driver version alone"
+    elseif status != 0
+        @debug "Call to 'cuInit' failed with status $status; selecting on the driver version alone"
+    else
+        count_fn = lookup("cuDeviceGetCount")
+        get_fn = lookup("cuDeviceGet")
+        attr_fn = lookup("cuDeviceGetAttribute")
+        (count_fn === nothing || get_fn === nothing || attr_fn === nothing) && return (version, capabilities)
+        count_ref = Ref{Cint}()
+        status = ccall(count_fn, Cint, (Ptr{Cint},), count_ref)
+        if status != 0
+            @debug "Call to 'cuDeviceGetCount' failed with status $status; selecting on the driver version alone"
+            count_ref[] = 0
+        end
+        for i in 0:count_ref[]-1
+            dev_ref = Ref{Cint}()
+            status = ccall(get_fn, Cint, (Ptr{Cint}, Cint), dev_ref, i)
+            if status != 0
+                @debug "Call to 'cuDeviceGet' failed with status $status; ignoring device $i"
+                continue
+            end
+            major_ref = Ref{Cint}()
+            minor_ref = Ref{Cint}()
+            # CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR = 75, ..._MINOR = 76
+            status = ccall(attr_fn, Cint, (Ptr{Cint}, Cint, Cint), major_ref, 75, dev_ref[])
+            if status == 0
+                status = ccall(attr_fn, Cint, (Ptr{Cint}, Cint, Cint), minor_ref, 76, dev_ref[])
+            end
+            if status != 0
+                @debug "Call to 'cuDeviceGetAttribute' failed with status $status; ignoring device $i"
+                continue
+            end
+            push!(capabilities, VersionNumber(major_ref[], minor_ref[]))
+        end
+    end
+
+    # invalidate the precompilation cache when the driver changes.
+    #
+    # NOTE: when CUDA_Driver_jll adopted the bundled forwards-compatible driver, this only
+    # covers that driver; the system driver, on which CUDA_Driver_jll's decision depends,
+    # cannot be located from here (it shares its SONAME with the loaded compat driver, so
+    # dlopen'ing it by name just returns the latter). A system driver upgrade then does
+    # not invalidate the baked selection; the `compat` preference recorded by
+    # CUDA_Driver_jll does at least cover the user changing their mind.
+    driver_path = Libdl.dlpath(driver_handle)
+    @debug "Adding include dependency on $driver_path"
+    Base.include_dependency(driver_path)
+
+    return (version, capabilities)
+end
+
+# CUDA toolkit support for each GPU compute capability. Maps a compute
+# capability to a `(lo, hi)` tuple of inclusive toolkit version bounds:
+# `lo` is the toolkit that introduced support for the architecture, `hi` is
+# the last toolkit that still supports it (toolkits drop architecture support
+# over time). `v"99"` is used as an open-ended upper bound for capabilities
+# still supported by current toolkits.
+#
+# Keep in sync with `ptxas_cap_db` in CUDACore/src/compatibility.jl, where these bounds
+# are measured (by pinning `CUDA_SDK_jll` to each release and reading the `--gpu-name`
+# list off that toolkit's ptxas) rather than inferred.
+const cuda_cap_db = Dict{VersionNumber, NTuple{2, VersionNumber}}(
+    v"1.0"   => (v"0",     v"6.5"),
+    v"1.1"   => (v"0",     v"6.5"),
+    v"1.2"   => (v"0",     v"6.5"),
+    v"1.3"   => (v"0",     v"6.5"),
+    v"2.0"   => (v"0",     v"8.0"),
+    v"2.1"   => (v"0",     v"8.0"),
+    v"3.0"   => (v"4.2",   v"10.2"),
+    v"3.2"   => (v"6.0",   v"10.2"),
+    v"3.5"   => (v"5.0",   v"11.8"),
+    v"3.7"   => (v"6.5",   v"11.8"),
+    v"5.0"   => (v"6.0",   v"12.9"),
+    v"5.2"   => (v"7.0",   v"12.9"),
+    v"5.3"   => (v"7.5",   v"12.9"),
+    v"6.0"   => (v"8.0",   v"12.9"),
+    v"6.1"   => (v"8.0",   v"12.9"),
+    v"6.2"   => (v"8.0",   v"12.9"),
+    v"7.0"   => (v"9.0",   v"12.9"),
+    v"7.2"   => (v"9.2",   v"12.9"),
+    v"7.5"   => (v"10.0",  v"99"),
+    v"8.0"   => (v"11.0",  v"99"),
+    v"8.6"   => (v"11.1",  v"99"),
+    v"8.7"   => (v"11.4",  v"99"),
+    v"8.8"   => (v"13.0",  v"99"),
+    v"8.9"   => (v"11.8",  v"99"),
+    v"9.0"   => (v"11.8",  v"99"),
+    v"10.0"  => (v"12.8",  v"99"),
+    v"10.1"  => (v"12.8",  v"12.9"),
+    v"10.3"  => (v"12.9",  v"99"),
+    v"10.7"  => (v"13.4",  v"99"),
+    v"11.0"  => (v"13.0",  v"99"),
+    v"12.0"  => (v"12.8",  v"99"),
+    v"12.1"  => (v"12.9",  v"99"),
+)
+
+# Jetson library ceilings. NVIDIA builds the Tegra (`linux-aarch64`) redistributables for
+# the JetPack generation they belong to: from CUDA 12.6 on, the Jetson cuBLAS binaries
+# only carry SASS for sm_87 (Orin) and newer, dropping Xavier (sm_7.2) even though the
+# toolkit's ptxas still targets it (`cuda_cap_db` says 12.9). Code CUDA.jl compiles itself
+# keeps working, but every vendor library fails with CUBLAS_STATUS_ARCH_MISMATCH or a
+# launch failure. So on Tegra hosts, a device additionally bounds the selection by the
+# newest Jetson redistributable that still ships its SASS. Measured with
+# `cuobjdump --list-elf` on the Jetson artifacts of CUDA_Runtime_jll.
+const jetson_cap_db = Dict{VersionNumber, NTuple{2, VersionNumber}}(
+    v"7.2"   => (v"9.2",   v"12.5"),
+)
+
+# select the best CUDA toolkit from `toolkits` (an ascending list of candidate versions)
+# for the driver and its devices, or `nothing` if the driver cannot be queried or no
+# candidate is compatible. Toolkits listed in `prerelease_toolkits` are never selected
+# automatically.
+function select_cuda_toolkit(toolkits::Vector{VersionNumber},
+                             prerelease_toolkits::Vector{VersionNumber})
+    driver_info = get_driver_info()
+    if driver_info === nothing
+        @debug "Failed to query the CUDA driver and its devices"
+        return nothing
+    end
+    cuda_driver_version, device_capabilities = driver_info
+    @debug "CUDA driver version: $cuda_driver_version"
+    if isempty(device_capabilities)
+        @debug "No CUDA devices visible"
+    else
+        @debug "CUDA device compute capabilities: $(join(device_capabilities, ", "))"
+    end
+
+    # "[...] applications built against any of the older CUDA Toolkits always continued
+    #  to function on newer drivers due to binary backward compatibility"
+    compatible_toolkits = filter(toolkits) do toolkit
+        # never auto-select an EA/preview toolkit; those have to be requested explicitly
+        # through the "version" preference.
+        toolkit in prerelease_toolkits && return false
+
+        # enhanced compatibility
+        #
+        # "From CUDA 11 onwards, applications compiled with a CUDA Toolkit release
+        #  from within a CUDA major release family can run, with limited feature-set,
+        #  on systems having at least the minimum required driver version"
+        if cuda_driver_version >= v"11"
+            thismajor(toolkit) <= thismajor(cuda_driver_version)
+        else
+            thisminor(toolkit) <= thisminor(cuda_driver_version)
+        end
+    end
+    if isempty(compatible_toolkits)
+        @error "CUDA driver $(cuda_driver_version) is not compatible with any supported CUDA toolkit ($(join(toolkits, ", ", " or ")))"
+        return nothing
+    end
+
+    # narrow the candidate toolkits to those that support the user's hardware,
+    # giving priority to the newest devices: walk device capabilities from
+    # newest to oldest, intersecting the candidate set with toolkits supporting
+    # each. if an older device cannot be supported alongside newer ones, drop
+    # it rather than discard the whole selection, as the user almost certainly
+    # cares more about their newest hardware working than their oldest.
+    if !isempty(device_capabilities)
+        supports_capability(toolkit, cap) = let minor = thisminor(toolkit)
+            # capabilities absent from `cuda_cap_db` are presumed unsupported:
+            # they're either future architectures that need a newer toolkit
+            # than anything we know about, or fictional. either way no toolkit
+            # in our list is known to handle them.
+            haskey(cuda_cap_db, cap) || return false
+            lo, hi = cuda_cap_db[cap]
+            if is_tegra() && haskey(jetson_cap_db, cap)
+                lo, hi = jetson_cap_db[cap]
+            end
+            lo <= minor <= hi
+        end
+        for cap in sort(unique(device_capabilities); rev=true)
+            subset = filter(t -> supports_capability(t, cap), compatible_toolkits)
+            if isempty(subset)
+                @debug "No remaining toolkit supports device with compute capability $cap; dropping it from the selection"
+            else
+                compatible_toolkits = subset
+            end
+        end
+    end
+
+    cuda_toolkit = thisminor(last(compatible_toolkits))
+    @debug "Selected CUDA toolkit: $cuda_toolkit"
+    return cuda_toolkit
 end
 
 # returns the value for the "cuda" tag we should use in the platform ("$MAJOR.$MINOR")
@@ -191,14 +435,13 @@ function cuda_toolkit_tag()
         return "$(cuda_toolkit.major).$(cuda_toolkit.minor)"
     end
 
-    # otherwise, delegate to CUDA_Driver_jll, which inspects the driver to determine its
-    # version and the compute capability of each visible device.
+    # otherwise, inspect the driver to determine its version and the compute capability
+    # of each visible device, and pick the newest toolkit that fits.
     cuda_toolkit = try
-        CUDA_Driver_jll.select_cuda_toolkit(cuda_toolkits, cuda_prerelease_toolkits)
+        select_cuda_toolkit(cuda_toolkits, cuda_prerelease_toolkits)
     catch err
-        # CUDA_Driver_jll not loadable, a version predating the selection library,
-        # or driver inspection went wrong: don't select an artifact.
-        @debug "Could not select a CUDA toolkit through CUDA_Driver_jll" exception=err
+        # an error here would abort the Pkg operation; don't select an artifact instead.
+        @debug "Could not select a CUDA toolkit" exception=err
         return nothing
     end
     cuda_toolkit === nothing && return nothing

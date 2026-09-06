@@ -22,7 +22,7 @@ used to publish packages is never exposed to the (potentially untrusted)
                          │                                                │
                          │  register_pipeline.yml                         │
                          │    └─ register.sh ─► register_package.jl       │
-                         │         secrets: GITHUB_TOKEN                  │
+                         │         publication secrets                    │
                          └────────────────────────────────────────────────┘
 ```
 
@@ -30,14 +30,14 @@ used to publish packages is never exposed to the (potentially untrusted)
 
 We moved off `cryptic-buildkite-plugin` to native [Buildkite
 secrets](https://buildkite.com/docs/pipelines/security/secrets/buildkite-secrets).
-Buildkite secrets are scoped per pipeline, so we use that scoping to keep the
-`GITHUB_TOKEN` (used to push the `*_jll` packages and create GitHub releases)
-readable **only** from the trusted `yggdrasil-register` pipeline.
+Buildkite secrets are scoped per pipeline, so the tokens used to push `*_jll`
+packages, create releases, and register packages
+are readable **only** from the trusted `yggdrasil-register` pipeline.
 
 The build steps run `build_tarballs.jl`, which is arbitrary code coming from
-PRs. Those steps must never have access to `GITHUB_TOKEN`. By performing the
+PRs. Those steps must never have access to publication tokens. By performing the
 registration in a separate pipeline that is *triggered* (rather than running
-the registration inline in the main pipeline), the token is only ever present
+the registration inline in the main pipeline), the tokens are only ever present
 in the trusted registration job.
 
 
@@ -56,8 +56,7 @@ in the trusted registration job.
   trigger the `yggdrasil-register` pipeline and never publish anything.
 * The `build_step` and `trigger_registration_step` helpers live in
   [`utils.jl`](./utils.jl).
-* Builds upload their tarballs as Buildkite artifacts
-  (`**/products/$NAME*.tar.*`).
+* Builds upload tarballs and their metadata sidecars as Buildkite artifacts.
 
 ## `yggdrasil-register` — the register pipeline
 
@@ -67,25 +66,24 @@ in the trusted registration job.
 * **WebUI step:** see
   [`0_webui_yggdrasil_register.yml`](./0_webui_yggdrasil_register.yml). It runs
   `buildkite-agent pipeline upload .buildkite/register_pipeline.yml`.
-* [`register_pipeline.yml`](./register_pipeline.yml) defines a single step that
-  runs [`register.sh`](./register.sh) and declares
-  `secrets: [GITHUB_TOKEN]`.
+* [`register_pipeline.yml`](./register_pipeline.yml) runs
+  [`register.sh`](./register.sh) inside a concurrency gate and declares both
+  publication secrets.
 * The triggering build supplies `NAME`, `PROJECT`, `SKIP_BUILD`, `BUILD_ID`
   (and the registry / pkg-server env) through the trigger step's `build.env`.
-* `register.sh` regenerates the `meta.json` (with `GITHUB_TOKEN` cleared, since
-  it runs project code) and then runs
-  [`.ci/register_package.jl`](../.ci/register_package.jl) with the token
+* `register.sh` regenerates the `meta.json` with both publication tokens cleared,
+  starts Julia with multiple threads, and then runs
+  [`.ci/register_package.jl`](../.ci/register_package.jl) with the tokens
   available.
-* `register_package.jl` downloads the freshly-built tarballs from the
+* `register_package.jl` downloads the freshly-built tarballs and metadata from the
   triggering build with
   `buildkite-agent artifact download --build $BUILD_ID ...`, pushes the
   `*_jll` package, uploads the tarballs to GitHub releases, and registers the
   package to the General registry.
 
-The registration step keeps `concurrency: 1` in the
-`yggdrasil/register` concurrency group, so registrations remain serialized
-even though they now run in their own pipeline (concurrency groups are
-cluster-wide).
+The register pipeline uses a global concurrency gate to keep at most three
+registrations in flight. The registration step also has a per-package concurrency
+group, so two builds cannot register the same JLL concurrently.
 
 ## Required Buildkite configuration
 
@@ -93,5 +91,5 @@ cluster-wide).
    the `trigger_registration_step` targets this exact slug).
 2. Point its WebUI step at
    `buildkite-agent pipeline upload .buildkite/register_pipeline.yml`.
-3. Add the `GITHUB_TOKEN` Buildkite secret and scope it so it is readable
-   **only** by the `yggdrasil-register` pipeline.
+3. Add the `GITHUB_TOKEN` and `REGISTRY_GITHUB_TOKEN` Buildkite secrets and scope
+   them so they are readable **only** by the `yggdrasil-register` pipeline.

@@ -16,8 +16,7 @@ sources = [
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-# Disable riscv and powerpc for now
-platforms = filter!(p -> arch(p) != "riscv64", platforms)
+# Disable powerpc for now
 platforms = filter!(p -> arch(p) != "powerpc64le", platforms)
 
 script = raw"""
@@ -32,10 +31,11 @@ apk del cmake
 rm -rf build
 mkdir build
 
-if [[ "${target}" == *-mingw* ]]; then
-    LBT=blastrampoline-5
+# See https://github.com/jump-dev/HiGHS.jl/issues/331
+if [[ "${target}" == i686-* ]]; then
+    FFLOAT_STORE="-ffloat-store"
 else
-    LBT=blastrampoline
+    FFLOAT_STORE=""
 fi
 
 cmake -S . -B build \
@@ -44,10 +44,11 @@ cmake -S . -B build \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
     -DBUILD_TESTING=OFF \
+    -DCMAKE_C_FLAGS="${FFLOAT_STORE}" \
+    -DCMAKE_CXX_FLAGS="${FFLOAT_STORE}" \
     -DHIPO=ON \
     -DBUILD_SHARED_EXTRAS_LIB=OFF \
-    -DBLA_VENDOR=blastrampoline \
-    -DBLAS_LIBRARIES=\"${LBT}\"
+    -DBLA_VENDOR=libblastrampoline
 
 if [[ "${target}" == *-linux-* ]]; then
     make -C build -j ${nproc}

@@ -1,0 +1,13 @@
+diff --git a/api/rust/crates/lief-build/Cargo.toml b/api/rust/crates/lief-build/Cargo.toml
+index 93c996a..54c9339 100644
+--- a/api/rust/crates/lief-build/Cargo.toml
++++ b/api/rust/crates/lief-build/Cargo.toml
+@@ -16,5 +16,7 @@ semver      = { workspace = true }
+ 
+ [features]
+ default    = ["rustls-tls"]
+-rustls-tls = ["reqwest/rustls"]
++# LIEF_RUST_PRECOMPILED bypasses the download, so no TLS backend is
++# needed; dropping it keeps aws-lc-sys out of cross builds.
++rustls-tls = []
+ native-tls = ["reqwest/native-tls"]
