@@ -2,60 +2,66 @@ using BinaryBuilder, Pkg
 
 name = "HiGHS"
 
-version = v"1.14.0"
+version = v"1.15.1"
 
 sources = [
     GitSource(
         "https://github.com/ERGO-Code/HiGHS.git",
-        "7df0786de3088c832297e5ed821db236d8fab281",
+        "04024d701f79feb8e2f18bc3df0dffc04ef05088",
     ),
+    DirectorySource("./bundled"),
 ]
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-# Disable riscv and powerpc for now
-platforms = filter!(p -> arch(p) != "riscv64", platforms)
+# Disable powerpc for now
 platforms = filter!(p -> arch(p) != "powerpc64le", platforms)
 
 script = raw"""
 cd $WORKSPACE/srcdir/HiGHS
 
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fix-cli11.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fix-destroy.patch
+
 # Remove system CMake to use the jll version
 apk del cmake
 
-mkdir -p build
-cd build
+rm -rf build
+mkdir build
 
-if [[ "${target}" == *-mingw* ]]; then
-    LBT=blastrampoline-5
+# See https://github.com/jump-dev/HiGHS.jl/issues/331
+if [[ "${target}" == i686-* ]]; then
+    FFLOAT_STORE="-ffloat-store"
 else
-    LBT=blastrampoline
+    FFLOAT_STORE=""
 fi
 
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+cmake -S . -B build \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
     -DBUILD_TESTING=OFF \
+    -DCMAKE_C_FLAGS="${FFLOAT_STORE}" \
+    -DCMAKE_CXX_FLAGS="${FFLOAT_STORE}" \
     -DHIPO=ON \
-    -DBLA_VENDOR=blastrampoline \
-    -DBLAS_LIBRARIES=\"${LBT}\" \
-    ..
+    -DBUILD_SHARED_EXTRAS_LIB=OFF \
+    -DBLA_VENDOR=libblastrampoline
 
 if [[ "${target}" == *-linux-* ]]; then
-        make -j ${nproc}
+    make -C build -j ${nproc}
 else
     if [[ "${target}" == *-mingw* ]]; then
-        cmake --build . --config Release
+        cmake --build build --config Release
     else
-        cmake --build . --config Release --parallel
+        cmake --build build --config Release --parallel
     fi
 fi
-make install
+cmake --install build
 
-install_license ../LICENSE.txt
+install_license LICENSE.txt
 """
 
 products = [
@@ -81,6 +87,6 @@ build_tarballs(
     platforms,
     products,
     dependencies;
-    preferred_gcc_version = v"6",
+    preferred_gcc_version = v"11",
     julia_compat = "1.10",
 )

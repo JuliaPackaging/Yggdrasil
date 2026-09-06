@@ -1,0 +1,14 @@
+diff --git a/Utilities/cmlibuv/src/unix/thread.c b/Utilities/cmlibuv/src/unix/thread.c
+index 8994b5b..3d0595d 100644
+--- a/Utilities/cmlibuv/src/unix/thread.c
++++ b/Utilities/cmlibuv/src/unix/thread.c
+@@ -936,7 +936,9 @@ int uv__thread_setname(const char* name) {
+ }
+ #endif
+ 
++/* musl only gained pthread_getname_np in 1.2.3; BinaryBuilder ships 1.1.19. */
+ #if (defined(__ANDROID_API__) && __ANDROID_API__ < 26) || \
++    (defined(__linux__) && !defined(__GLIBC__) && !defined(__ANDROID__)) || \
+     defined(_AIX) || \
+     defined(__MVS__) || \
+     defined(__PASE__) || \

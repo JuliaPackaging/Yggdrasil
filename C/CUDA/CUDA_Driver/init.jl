@@ -25,12 +25,12 @@ elseif haskey(ENV, "JULIA_CUDA_USE_COMPAT")
 else
     missing
 end
+compat_forced = compat_preference === true
 
-libcuda_deps = [libcuda_debugger, libnvidia_nvvm, libnvidia_ptxjitcompiler, libnvidia_gpucomp, libnvidia_tileiras]
+# if anything goes wrong, we keep using the system driver: `libcuda` already holds its
+# name (set unconditionally in the module's toplevel block), and only gets replaced at
+# the very end when we decide to load the forwards-compatible driver instead.
 libcuda_system = Sys.iswindows() ? "nvcuda" : "libcuda.so.1"
-
-# if anything goes wrong, we'll use the system driver
-global libcuda = libcuda_system
 
 # check if we even have an artifact
 if @isdefined(libcuda_compat)
@@ -55,31 +55,15 @@ if Libdl.dlopen(libcuda_system, Libdl.RTLD_NOLOAD; throw_error=false) !== nothin
     return
 end
 
-# helper function to load a driver, query its version, and optionally query device
-# capabilities. needs to happen in a separate process because dlclose is unreliable.
-function inspect_driver(driver, deps=String[]; inspect_devices=false)
-    cmd = `$(cuda_inspect_driver()) $driver $inspect_devices $deps`
-
-    # run the command
-    output = try
-        read(cmd, String)
-    catch _
-        return nothing
-    end
-
-    # parse the versions
-    lines = readlines(IOBuffer(output))
-    isempty(lines) && return nothing
-    driver_version = parse(VersionNumber, lines[1])
-    if inspect_devices
-        device_capabilities = VersionNumber[]
-        for i in 2:length(lines)
-            push!(device_capabilities, parse(VersionNumber, lines[i]))
-        end
-        return driver_version, device_capabilities
-    else
-        return driver_version
-    end
+# collect the compat driver's dependent libraries. not every artifact declares
+# every product (the L4T compat drivers lack the newer desktop-only libraries), so
+# only reference those that exist. this is a global because dependents inspecting
+# the driver we loaded need to preload the same list.
+global libcuda_deps = String[]
+for dep in [:libcuda_debugger, :libnvidia_nvvm, :libnvidia_ptxjitcompiler,
+            :libnvidia_gpucomp, :libnvidia_tileiras]
+    isdefined(@__MODULE__, dep) || continue
+    push!(libcuda_deps, getfield(@__MODULE__, dep))
 end
 
 # fetch driver details
@@ -95,33 +79,45 @@ system_driver_task = @static if VERSION >= v"1.12-"
 else
     Threads.@spawn inspect_driver(libcuda_system; inspect_devices=true)
 end
-compat_driver_details = fetch(compat_driver_task)
-if compat_driver_details === nothing
-    @debug "Failed to load forwards-compatible driver."
+compat_driver_info = fetch(compat_driver_task)
+if compat_driver_info === nothing
+    @debug "Forwards-compatible driver is not usable (see above for details); using system driver."
     return
 end
-compat_driver_version = compat_driver_details::VersionNumber
-@debug "Forwards compatible driver version: $compat_driver_version"
-system_driver_details = fetch(system_driver_task)
-if system_driver_details === nothing
-    @debug "Failed to load system driver."
+@debug "Forwards compatible driver version: $(compat_driver_info.version)"
+system_driver_info = fetch(system_driver_task)
+if system_driver_info === nothing
+    @debug "Could not query the system driver (see above for details); using system driver."
     return
 end
-system_driver_version = system_driver_details[1]::VersionNumber
-device_capabilities = system_driver_details[2]::Vector{VersionNumber}
-@debug "System driver version: $system_driver_version"
+@debug "System driver version: $(system_driver_info.version)"
 
-# determine if loading the forwards-compatible driver would exclude devices
-for (dev, cap) in enumerate(device_capabilities)
-    # CUDA 12 deprecated Kepler
-    if compat_driver_version >= v"12" && system_driver_version < v"12" && v"3.0" <= cap <= v"3.5"
-        @debug "Loading forwards-compatible driver would exclude device $dev with capability $cap"
+if !compat_forced
+    # The forwards-compatible driver is only useful when it is newer than
+    # the system driver.
+    if compat_driver_info.version <= system_driver_info.version
+        @debug "Forwards-compatible driver is not newer than the system driver; using system driver."
         return
     end
 
-    # CUDA 13 deprecated Maxwell, Pascal, and Volta
-    if compat_driver_version >= v"13" && system_driver_version < v"13" && v"5.0" <= cap <= v"7.2"
-        @debug "Loading forwards-compatible driver would exclude device $dev with capability $cap"
+    # Newer driver branches can drop support for older hardware and then
+    # fail uncleanly at context creation. This was confirmed by NVIDIA for
+    # cuda-compat-13.2 on R580 kernels.
+    compat_min_cap = if compat_driver_info.version >= v"13.1"
+        v"7.5"      # r590 dropped Maxwell, Pascal and Volta
+    elseif compat_driver_info.version >= v"12.0"
+        v"5.0"      # r525 dropped Kepler
+    else
+        v"3.5"
+    end
+    unsupported = VersionNumber[]
+    for cap in system_driver_info.capabilities
+        if cap < compat_min_cap
+            push!(unsupported, cap)
+        end
+    end
+    if !isempty(unsupported)
+        @debug "Forwards-compatible driver does not support devices with compute capability $(join(unsupported, ", ")); using system driver."
         return
     end
 end

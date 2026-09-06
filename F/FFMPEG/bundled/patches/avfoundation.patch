@@ -1,0 +1,8 @@
+--- a/libavdevice/avfoundation.m
++++ b/libavdevice/avfoundation.m
+@@ -761,4 +761,4 @@ static void list_formats(AVFormatContext *s) {
+ }
+ 
+-static NSArray* getDevicesWithMediaType(AVMediaType mediaType) {
++static NSArray* getDevicesWithMediaType(NSString *mediaType) {
+     if (@available(macOS 10.15, *)) {

@@ -1,0 +1,18 @@
+--- a/xt_base/malloc/local_malloc.cc
++++ b/xt_base/malloc/local_malloc.cc
+@@ -553,8 +553,14 @@ sMemory::mem_free(void *p)
+ #endif
+ {
+-    if (mem_state == m_pending)
++    // free(nullptr) is always a no-op.
++    if (!p)
++        return;
++
++    // free() may be called before malloc() during dynamic-loader and
++    // C++ runtime initialization, so initialize mem_free_ptr here too.
++    if (!mem_init_check())
+         return;
+ 
+ #ifdef ENABLE_MONITOR
+     mem_mon_free_hook(p);
+ #endif

@@ -7,15 +7,16 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 include("../common.jl")
 
 name = "LLVM_utils_unified"
-version = v"0.1.0"
+version = v"0.1.2"
 llvm_full_versions = [
     v"15.0.7+12",               # Julia 1.10
     v"16.0.6+6",                # Julia 1.11
     # v"17.0.6+5",
     v"18.1.7+5",                # Julia 1.12
     # v"19.1.7+2",
-    v"20.1.8+0",                # Julia 1.13
-    v"21.1.8+0",                # Julia 1.14
+    v"20.1.8+2",                # Julia 1.13
+    v"21.1.8+1",
+    v"22.1.8+1",                # Julia 1.15
 ]
 
 augment_platform_block = """
@@ -507,6 +508,107 @@ const tools_lists = Dict(
     "yaml2obj",
     "yaml-bench",
   ],
+  22 => [
+    "amdgpu-arch",
+    "bugpoint",
+    "count",
+    "diagtool",
+    "FileCheck",
+    "find-all-symbols",
+    "llc",
+    "lli",
+    "lli-child-target",
+    "llvm-addr2line",
+    "llvm-ar",
+    "llvm-as",
+    "llvm-bcanalyzer",
+    "llvm-bitcode-strip",
+    "llvm-cas",
+    "llvm-cat",
+    "llvm-cfi-verify",
+    "llvm-cgdata",
+    "llvm-cov",
+    "llvm-c-test",
+    "llvm-ctxprof-util",
+    "llvm-cvtres",
+    "llvm-cxxdump",
+    "llvm-cxxfilt",
+    "llvm-cxxmap",
+    "llvm-debuginfo-analyzer",
+    "llvm-debuginfod",
+    "llvm-debuginfod-find",
+    "llvm-diff",
+    "llvm-dis",
+    "llvm-dlltool",
+    "llvm-dwarfdump",
+    "llvm-dwarfutil",
+    "llvm-dwp",
+    "llvm-extract",
+    "llvm-gsymutil",
+    "llvm-ifs",
+    "llvm-install-name-tool",
+    "llvm-ir2vec",
+    "llvm-jitlink",
+    "llvm-jitlink-executor",
+    "llvm-lib",
+    "llvm-libtool-darwin",
+    "llvm-link",
+    "llvm-lipo",
+    "llvm-lto",
+    "llvm-lto2",
+    "llvm-mc",
+    "llvm-mca",
+    "llvm-ml",
+    "llvm-ml64",
+    "llvm-modextract",
+    "llvm-nm",
+    "llvm-objcopy",
+    "llvm-objdump",
+    "llvm-offload-binary",
+    "llvm-offload-wrapper",
+    "llvm-opt-report",
+    "llvm-otool",
+    "llvm-pdbutil",
+    "llvm-PerfectShuffle",
+    "llvm-profdata",
+    "llvm-profgen",
+    "llvm-ranlib",
+    "llvm-rc",
+    "llvm-readelf",
+    "llvm-readobj",
+    "llvm-readtapi",
+    "llvm-reduce",
+    "llvm-remarkutil",
+    "llvm-rtdyld",
+    "llvm-sim",
+    "llvm-size",
+    "llvm-split",
+    "llvm-stress",
+    "llvm-strings",
+    "llvm-strip",
+    "llvm-symbolizer",
+    "llvm-tblgen",
+    "llvm-test-mustache-spec",
+    "llvm-tli-checker",
+    "llvm-undname",
+    "llvm-windres",
+    "llvm-xray",
+    "modularize",
+    "not",
+    "nvptx-arch",
+    "obj2yaml",
+    "offload-arch",
+    "opt",
+    "pp-trace",
+    "reduce-chunk-list",
+    "sancov",
+    "sanstats",
+    "split-file",
+    "UnicodeNameMappingGenerator",
+    "verify-uselistorder",
+    "yaml2obj",
+    "yaml-bench",
+  ],
 )
 
 # `configure_extraction` reads `tools_list` from the enclosing scope; we rebind
@@ -555,3 +657,5 @@ for (i, build) in enumerate(builds)
                    skip_audit=true, dont_dlopen=true, julia_compat="1.10",
                    augment_platform_block)
 end
+
+# rebuild trigger: 1

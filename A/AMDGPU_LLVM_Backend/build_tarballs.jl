@@ -1,0 +1,133 @@
+# Note that this script can accept some limited command-line arguments, run
+# `julia build_tarballs.jl --help` to see a usage message.
+using BinaryBuilder, Pkg
+
+name = "AMDGPU_LLVM_Backend"
+version = v"22.1.8"
+
+# Collection of sources required to build AMDGPU_LLVM_Backend.
+# LLVM 22 ships a single monorepo source archive (`llvm-project-X.Y.Z.src.tar.xz`).
+sources = [
+    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/llvm-project-$(version).src.tar.xz",
+                  "922f1817a0df7b1489272d18134ee0087a8b068828f87ac63b9861b1a9965888"),
+    GitSource("https://github.com/ROCm/llvm-project",
+              "46fcb339fb61119b337f973c7ca9e710a319fdd0"),
+    DirectorySource("./bundled"),
+]
+
+# Bash recipe for building across all platforms
+script = raw"""
+# Apply backported patches to the upstream LLVM sources
+pushd llvm-project-*
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 ${f}
+done
+popd
+
+cd llvm-project-*/llvm
+LLVM_SRCDIR=$(pwd)
+
+# The very first thing we need to do is to build llvm-tblgen for x86_64-linux-muslc
+# This is because LLVM's cross-compile setup is kind of borked, so we just
+# build the tools natively ourselves, directly.  :/
+
+# Build llvm-tblgen and llvm-config
+mkdir ${WORKSPACE}/bootstrap
+pushd ${WORKSPACE}/bootstrap
+CMAKE_FLAGS=()
+CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING=host)
+CMAKE_FLAGS+=(-DLLVM_HOST_TRIPLE=${MACHTYPE})
+CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
+CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm')
+CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=False)
+CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN})
+cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
+ninja -j${nproc} llvm-tblgen llvm-config
+popd
+
+# Let's do the actual build within the `build` subdirectory
+mkdir ${WORKSPACE}/build && cd ${WORKSPACE}/build
+CMAKE_FLAGS=()
+
+# Tell LLVM where our pre-built tblgen tools are
+CMAKE_FLAGS+=(-DLLVM_TABLEGEN=${WORKSPACE}/bootstrap/bin/llvm-tblgen)
+CMAKE_FLAGS+=(-DLLVM_CONFIG_PATH=${WORKSPACE}/bootstrap/bin/llvm-config)
+
+# Tell CMake to enable lld in the target build
+CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS=lld)
+
+# Install things into $prefix
+CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
+
+# Explicitly use our cmake toolchain file and tell CMake we're cross-compiling
+CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=ON)
+
+# Release build for best performance
+CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
+
+# Only build the AMDGPU back-end
+CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD=AMDGPU)
+
+# Turn on ZLIB
+CMAKE_FLAGS+=(-DLLVM_ENABLE_ZLIB=ON)
+# Turn off XML2 and ZSTD to avoid unnecessary dependencies
+CMAKE_FLAGS+=(-DLLVM_ENABLE_ZSTD=OFF)
+CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBXML2=OFF)
+
+# Disable useless things like docs, terminfo, etc....
+CMAKE_FLAGS+=(-DLLVM_INCLUDE_DOCS=Off)
+CMAKE_FLAGS+=(-DLLVM_ENABLE_TERMINFO=Off)
+CMAKE_FLAGS+=(-DHAVE_HISTEDIT_H=Off)
+CMAKE_FLAGS+=(-DHAVE_LIBEDIT=Off)
+
+cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
+ninja -j${nproc} tools/llc/install
+ninja -j${nproc} tools/lld/install
+
+# build device libs, those live in the ROCm llvm fork
+# `ockl/src/workitem.cl` includes `amdhsa_abi.h`, which LLVM_full_jll's Clang doesn't have so just copy it
+cp ${WORKSPACE}/srcdir/llvm-project/clang/lib/Headers/amdhsa_abi.h \
+   ${WORKSPACE}/srcdir/llvm-project/amd/device-libs/ockl/inc/
+mkdir ${WORKSPACE}/build-device-libs && cd ${WORKSPACE}/build-device-libs
+CMAKE_FLAGS=()
+CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
+CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
+# `prepare-builtins` must run during the build, so build it with the host toolchain
+CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN})
+# Locate the host LLVM/Clang cmake packages from LLVM_full_jll
+CMAKE_FLAGS+=(-DCMAKE_PREFIX_PATH=${host_prefix})
+cmake -GNinja ${WORKSPACE}/srcdir/llvm-project/amd/device-libs ${CMAKE_FLAGS[@]}
+ninja -j${nproc} install
+
+# combine the upstream LLVM and device libs licenses
+cat ${LLVM_SRCDIR}/LICENSE.TXT ${WORKSPACE}/srcdir/llvm-project/amd/device-libs/LICENSE.TXT > LICENSE.TXT
+install_license LICENSE.TXT
+"""
+
+# Only build for the host platforms where AMDGPU itself runs.
+platforms = [
+    Platform("x86_64",  "linux";   libc="glibc"),
+    Platform("aarch64", "linux";   libc="glibc"),
+    Platform("x86_64",  "windows"),
+]
+platforms = expand_cxxstring_abis(platforms)
+
+# The products that we will ensure are always built
+products = Product[
+    ExecutableProduct("llc", :llc),
+    ExecutableProduct("lld", :lld),
+    FileProduct("amdgcn/bitcode/", :bitcode_path),
+]
+
+# Dependencies that must be installed before this package can be built
+dependencies = [
+    Dependency("Zlib_jll")
+    # Host LLVM+Clang toolchain for compiling the device libraries to bitcode;
+    # matches the LLVM version we build here.
+    HostBuildDependency(PackageSpec(; name="LLVM_full_jll", version=v"22.1.8+0"))
+]
+
+build_tarballs(ARGS, name, version, sources, script,
+               platforms, products, dependencies;
+               preferred_gcc_version=v"10", julia_compat="1.6")

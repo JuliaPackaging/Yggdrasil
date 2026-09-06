@@ -3,36 +3,28 @@
 using BinaryBuilder, Pkg
 
 name = "LLVMOpenMP"
-version = v"18.1.7"
-# We bumped the version number to build for riscv64
-ygg_version = v"18.1.8"
+version = v"22.1.7"
+ygg_version = version
 
 sources = [
     ArchiveSource(
-        "https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/openmp-$(version).src.tar.xz",
-        "6523c898d754d466b77b64ddca8fd0185c5aeb7f24260ddb0fae5779eb31cee3"
-    ),
-    # we need a bunch of additional cmake files to build the subproject separately
-    # see: https://github.com/llvm/llvm-project/issues/53281#issuecomment-1260187944
-    ArchiveSource(
-        "https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/cmake-$(version).src.tar.xz",
-        "f0b67599f51cddcdbe604c35b6de97f2d0a447e18b9c30df300c82bf1ee25bd7"
+        "https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/llvm-project-$(version).src.tar.xz",
+        "5cc4a3f12bba50b6bdfb4b61bdc852117a0ff2517807c3902fc13267fb93562e"
     ),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/openmp-*/
-mv ../cmake-* ../cmake
+cd $WORKSPACE/srcdir/llvm-project-*/openmp
 # https://github.com/msys2/MINGW-packages/blob/d440dcb738/mingw-w64-clang/0901-cast-to-make-gcc-happy.patch
-atomic_patch -p1 ../patches/0901-cast-to-make-gcc-happy.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/0901-cast-to-make-gcc-happy.patch
 
 platform_config=()
 if [[ "${target}" == *-mingw* ]]; then
     # backport https://gitlab.kitware.com/cmake/cmake/-/commit/78f758a463516a78a9ec8d472080c6e61cb89c7f
     sed -i "s@/c  */Fo@-c -Fo@" /usr/share/cmake/Modules/CMakeASM_MASMInformation.cmake
-    sed -i "s@libomp_append(asmflags_local /@libomp_append(asmflags_local -@" runtime/cmake/LibompHandleFlags.cmake
+    sed -i "s@libomp_append(asmflags_local /@libomp_append(asmflags_local -@" cmake/modules/LibompHandleFlags.cmake
     if [[ "${target}" == *x86_64* ]]; then
         platform_config+=(-DLIBOMP_ASMFLAGS="-win64")
     fi
