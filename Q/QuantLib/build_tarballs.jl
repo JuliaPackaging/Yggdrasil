@@ -78,8 +78,7 @@ if [[ ${target} == *mingw* ]]; then
     # QuantLib's install() for ql_library specifies ARCHIVE+LIBRARY but no
     # RUNTIME, so the import library (.dll.a) is installed to lib/ but the
     # actual DLL is left in the build tree. Copy it into bin/ ourselves.
-    mkdir -p ${prefix}/bin
-    cp ql/libQuantLib.dll ${prefix}/bin/
+    install -Dvm 755 ql/libQuantLib.dll -t "${libdir}"
 fi
 """
 
