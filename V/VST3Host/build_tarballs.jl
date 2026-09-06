@@ -2,6 +2,9 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 # The headless VST3 host from AudioPlugins.jl (https://github.com/SciML/AudioPlugins.jl):
 # one C++ translation unit, `csrc/vst3_host.cpp`, exposing an extern "C" ABI
 # of scalar doubles for hosting VST3 audio plugins. Built against the SDK from
@@ -45,6 +48,11 @@ ${CXX} -std=c++17 -O2 -fPIC -shared -fvisibility=hidden -fvisibility-inlines-hid
     -L"${SDKLIB}" -lsdk_hosting -lsdk_common -lsdk -lbase -lpluginterfaces ${EXTRA_LIBS}
 install -Dm644 csrc/vst3_host.h "${includedir}/vst3_host.h"
 """
+
+# Same SDK and deployment target as vst3sdk: the hosting sources use
+# std::filesystem, and -fobjc-arc below 10.11 would need libarclite, which
+# current SDKs no longer ship.
+sources, script = require_macos_sdk("11.3", sources, script; deployment_target="10.15")
 
 platforms = filter(p -> Sys.islinux(p) || Sys.isapple(p) || Sys.iswindows(p), supported_platforms())
 platforms = expand_cxxstring_abis(platforms)
