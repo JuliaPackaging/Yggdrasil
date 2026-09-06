@@ -1,0 +1,12 @@
+# Fix types for portability
+--- src/problem/circuit/ParserCircuit.cpp
++++ src/problem/circuit/ParserCircuit.cpp
+@@ -111,1 +111,1 @@
+-      u_int32_t var;
++      uint32_t var;
+
+--- 3rdParty/bipe/src/solver/Solver.hpp
++++ 3rdParty/bipe/src/solver/Solver.hpp
+@@ -51,1 +51,1 @@
+-using Var = u_int32_t;
++using Var = uint32_t;
