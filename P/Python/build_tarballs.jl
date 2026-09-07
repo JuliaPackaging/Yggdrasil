@@ -90,7 +90,14 @@ conf_args+=(--with-ensurepip=no)
 conf_args+=(--disable-test-modules)
 conf_args+=(--with-system-expat)
 conf_args+=(--with-system-ffi)
-conf_args+=(--with-system-libmpdec)
+# Not --with-system-libmpdec: CPython 3.12 sets libmpdec_machine=universal on
+# Darwin (configure.ac), so LIBMPDEC_CFLAGS gets -DUNIVERSAL instead of
+# -DCONFIG_64, and _decimal.c then fails with "No valid combination of
+# CONFIG_64, CONFIG_32 and _PyHASH_BITS" -- that path only works with the
+# bundled libmpdec.  3.11 hid this by skipping unbuildable modules in setup.py,
+# which is why the registered 3.11.12 ships no _decimal on Darwin or riscv64.
+# Python 3.12 still bundles libmpdec, so use it and drop LibMPDec_jll.
+# NOTE: the bundled copy is gone in 3.13; revisit at the next bump.
 conf_args+=(--enable-optimizations)
 conf_args+=(ac_cv_file__dev_ptmx=no)
 conf_args+=(ac_cv_file__dev_ptc=no)
@@ -123,9 +130,13 @@ products = Product[
 dependencies = [
     Dependency("Expat_jll"; compat="2.6.5"),
     Dependency("Bzip2_jll"; compat="1.0.9"),
-    Dependency("Libffi_jll"; compat="~3.4.6"),
+    # Pin the build version: with only `compat`, BinaryBuilder builds against the
+    # oldest version the bound allows, and Libffi_jll 3.4.6+0 has no riscv64 or
+    # aarch64-unknown-freebsd build (3.4.6+3 was the first), so _ctypes cannot
+    # find ffi.h there.  3.11 skipped the module silently via setup.py -- the
+    # registered 3.11.12 ships no _ctypes on riscv64 -- while 3.12 fails hard.
+    Dependency("Libffi_jll", v"3.4.7"; compat="~3.4.6"),
     Dependency("SQLite_jll"),
-    Dependency("LibMPDec_jll"; compat="2.5.1"),
     Dependency("Zlib_jll"),
     Dependency("XZ_jll"),
     Dependency("OpenSSL_jll"; compat="3.0.16"),
