@@ -1,0 +1,20 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 0de63cf..bd2dd55 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -65,6 +65,15 @@ ENDIF(NOT CMAKE_BUILD_TYPE)
+ 
+ find_package(CUDAToolkit 12.0 REQUIRED)
+ 
++# CUDA 13.1+ requires C++17 for Thrust and CUDA C++ Core Libraries
++if(CUDAToolkit_VERSION VERSION_GREATER_EQUAL "13.1")
++  message(STATUS "CUDA ${CUDAToolkit_VERSION} detected, setting C++17 standard")
++  set(CMAKE_CXX_STANDARD 17 CACHE STRING "C++ standard" FORCE)
++  set(CMAKE_CXX_STANDARD_REQUIRED ON)
++  set(CMAKE_CUDA_STANDARD 17 CACHE STRING "CUDA C++ standard" FORCE)
++  set(CMAKE_CUDA_STANDARD_REQUIRED ON)
++endif()
++
+ # update/define the compilation flags.
+ IF(WIN32)
+   set(CMAKE_C_FLAGS                "/DWIN32 /D_WINDOWS /W3 /bigobj" CACHE STRING "" FORCE)
