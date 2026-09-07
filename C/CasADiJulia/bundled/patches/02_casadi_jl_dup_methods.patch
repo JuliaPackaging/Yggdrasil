@@ -1,0 +1,53 @@
+--- a/swig/julia/target/source/casadi.jl
++++ b/swig/julia/target/source/casadi.jl
+@@ -3974,7 +3974,6 @@
+ is_null(self::SharedObject) = GC.@preserve self begin _check(ccall((:_swig_GenSharedObject_GenSharedObject_is_null__SWIG_0, _lib), Cuchar, (Ptr{Cvoid}, ), self.ptr, )) != 0 end
+ __hash__(self::SharedObject) = GC.@preserve self begin Int(_check(ccall((:_swig_GenSharedObject_GenSharedObject___hash____SWIG_0, _lib), Clonglong, (Ptr{Cvoid}, ), self.ptr, ))) end
+ debug_repr(self::GenWeakRef) = GC.@preserve self begin _takestr(ccall((:_swig_GenSharedObject_GenSharedObject_debug_repr__SWIG_0, _lib), Ptr{UInt8}, (Ptr{Cvoid}, ), self.ptr, )) end
+-is_null(self::GenWeakRef) = GC.@preserve self begin _check(ccall((:_swig_GenSharedObject_GenSharedObject_is_null__SWIG_0, _lib), Cuchar, (Ptr{Cvoid}, ), self.ptr, )) != 0 end
+ __hash__(self::GenWeakRef) = GC.@preserve self begin Int(_check(ccall((:_swig_GenSharedObject_GenSharedObject___hash____SWIG_0, _lib), Clonglong, (Ptr{Cvoid}, ), self.ptr, ))) end
+ bounded(::Type{OptiAdvanced}, args...) = bounded(Opti, args...)
+ variable(self::OptiAdvanced) = GC.@preserve self begin MX(_check(ccall((:_swig_Opti_Opti_variable__SWIG_0, _lib), Ptr{Cvoid}, (Ptr{Cvoid}, Any, Any, Any, ), self.ptr, 1, 1, "full", ))) end
+@@ -4294,7 +4293,6 @@
+ colind(self::SX) = GC.@preserve self begin _check(ccall((:_swig_GenSX_GenSX_colind__SWIG_0, _lib), Any, (Ptr{Cvoid}, ), self.ptr, ))::Vector{Int64} end
+ row(self::SX, el::Integer) = GC.@preserve self begin Int(_check(ccall((:_swig_GenSX_GenSX_row__SWIG_1, _lib), Clonglong, (Ptr{Cvoid}, Any, ), self.ptr, el, ))) end
+ colind(self::SX, col::Integer) = GC.@preserve self begin Int(_check(ccall((:_swig_GenSX_GenSX_colind__SWIG_1, _lib), Clonglong, (Ptr{Cvoid}, Any, ), self.ptr, col, ))) end
+-sparsity(self::SX) = GC.@preserve self begin Sparsity(_check(ccall((:_swig_GenSX_GenSX_sparsity__SWIG_0, _lib), Ptr{Cvoid}, (Ptr{Cvoid}, ), self.ptr, ))) end
+ class_name(self::Linsol) = GC.@preserve self begin _takestr(ccall((:_swig_SharedObject_SharedObject_class_name__SWIG_0, _lib), Ptr{UInt8}, (Ptr{Cvoid}, ), self.ptr, )) end
+ disp(self::Linsol) = GC.@preserve self begin (ccall((:_swig_SharedObject_SharedObject_disp__SWIG_0, _lib), Cvoid, (Ptr{Cvoid}, Any, ), self.ptr, false, ); _check(nothing)) end
+ disp(self::Linsol, more::Bool) = GC.@preserve self begin (ccall((:_swig_SharedObject_SharedObject_disp__SWIG_0, _lib), Cvoid, (Ptr{Cvoid}, Any, ), self.ptr, more, ); _check(nothing)) end
+@@ -4398,7 +4396,6 @@
+ has_option(self::Callback, option_name::AbstractString) = _check(ccall((:_swig_Function_Function_has_option__SWIG_0, _lib), Cuchar, (Any, Any, ), self, option_name, )) != 0
+ change_option(self::Callback, option_name::AbstractString, option_value::GenericType) = (ccall((:_swig_Function_Function_change_option__SWIG_0, _lib), Cvoid, (Any, Any, Any, ), self, option_name, option_value, ); _check(nothing))
+ reset_dump_count(self::Callback) = (ccall((:_swig_Function_Function_reset_dump_count__SWIG_0, _lib), Cvoid, (Any, ), self, ); _check(nothing))
+-uses_output(self::Callback) = _check(ccall((:_swig_Function_Function_uses_output__SWIG_0, _lib), Cuchar, (Any, ), self, )) != 0
+ jacobian(self::Callback) = Function(_check(ccall((:_swig_Function_Function_jacobian__SWIG_0, _lib), Ptr{Cvoid}, (Any, ), self, )))
+ function call(self::Callback, arg::Any)
+     if ccall((:_swig_can__swig_Function_Function_call__SWIG_0, _lib), Cint, (Any, Any, Any, Any, ), self, arg, false, false, ) != 0
+@@ -4579,10 +4576,6 @@
+ is_null(self::Callback) = GC.@preserve self begin _check(ccall((:_swig_GenSharedObject_GenSharedObject_is_null__SWIG_0, _lib), Cuchar, (Ptr{Cvoid}, ), self.ptr, )) != 0 end
+ __hash__(self::Callback) = GC.@preserve self begin Int(_check(ccall((:_swig_GenSharedObject_GenSharedObject___hash____SWIG_0, _lib), Clonglong, (Ptr{Cvoid}, ), self.ptr, ))) end
+ class_name(self::Opti) = GC.@preserve self begin _takestr(ccall((:_swig_SharedObject_SharedObject_class_name__SWIG_0, _lib), Ptr{UInt8}, (Ptr{Cvoid}, ), self.ptr, )) end
+-disp(self::Opti) = GC.@preserve self begin (ccall((:_swig_SharedObject_SharedObject_disp__SWIG_0, _lib), Cvoid, (Ptr{Cvoid}, Any, ), self.ptr, false, ); _check(nothing)) end
+-disp(self::Opti, more::Bool) = GC.@preserve self begin (ccall((:_swig_SharedObject_SharedObject_disp__SWIG_0, _lib), Cvoid, (Ptr{Cvoid}, Any, ), self.ptr, more, ); _check(nothing)) end
+-str(self::Opti) = GC.@preserve self begin _takestr(ccall((:_swig_SharedObject_SharedObject_str__SWIG_0, _lib), Ptr{UInt8}, (Ptr{Cvoid}, Any, ), self.ptr, false, )) end
+-str(self::Opti, more::Bool) = GC.@preserve self begin _takestr(ccall((:_swig_SharedObject_SharedObject_str__SWIG_0, _lib), Ptr{UInt8}, (Ptr{Cvoid}, Any, ), self.ptr, more, )) end
+ print_ptr(self::Opti) = GC.@preserve self begin (ccall((:_swig_SharedObject_SharedObject_print_ptr__SWIG_0, _lib), Cvoid, (Ptr{Cvoid}, ), self.ptr, ); _check(nothing)) end
+ debug_repr(self::Opti) = GC.@preserve self begin _takestr(ccall((:_swig_GenSharedObject_GenSharedObject_debug_repr__SWIG_0, _lib), Ptr{UInt8}, (Ptr{Cvoid}, ), self.ptr, )) end
+ is_null(self::Opti) = GC.@preserve self begin _check(ccall((:_swig_GenSharedObject_GenSharedObject_is_null__SWIG_0, _lib), Cuchar, (Ptr{Cvoid}, ), self.ptr, )) != 0 end
+@@ -4627,7 +4620,6 @@
+ colind(self::DM) = GC.@preserve self begin _check(ccall((:_swig_GenDM_GenDM_colind__SWIG_0, _lib), Any, (Ptr{Cvoid}, ), self.ptr, ))::Vector{Int64} end
+ row(self::DM, el::Integer) = GC.@preserve self begin Int(_check(ccall((:_swig_GenDM_GenDM_row__SWIG_1, _lib), Clonglong, (Ptr{Cvoid}, Any, ), self.ptr, el, ))) end
+ colind(self::DM, col::Integer) = GC.@preserve self begin Int(_check(ccall((:_swig_GenDM_GenDM_colind__SWIG_1, _lib), Clonglong, (Ptr{Cvoid}, Any, ), self.ptr, col, ))) end
+-sparsity(self::DM) = GC.@preserve self begin Sparsity(_check(ccall((:_swig_GenDM_GenDM_sparsity__SWIG_0, _lib), Ptr{Cvoid}, (Ptr{Cvoid}, ), self.ptr, ))) end
+ class_name(self::DaeBuilder) = GC.@preserve self begin _takestr(ccall((:_swig_SharedObject_SharedObject_class_name__SWIG_0, _lib), Ptr{UInt8}, (Ptr{Cvoid}, ), self.ptr, )) end
+ disp(self::DaeBuilder) = GC.@preserve self begin (ccall((:_swig_SharedObject_SharedObject_disp__SWIG_0, _lib), Cvoid, (Ptr{Cvoid}, Any, ), self.ptr, false, ); _check(nothing)) end
+ disp(self::DaeBuilder, more::Bool) = GC.@preserve self begin (ccall((:_swig_SharedObject_SharedObject_disp__SWIG_0, _lib), Cvoid, (Ptr{Cvoid}, Any, ), self.ptr, more, ); _check(nothing)) end
+@@ -4668,7 +4660,6 @@
+ colind(self::MX) = GC.@preserve self begin _check(ccall((:_swig_GenMX_GenMX_colind__SWIG_0, _lib), Any, (Ptr{Cvoid}, ), self.ptr, ))::Vector{Int64} end
+ row(self::MX, el::Integer) = GC.@preserve self begin Int(_check(ccall((:_swig_GenMX_GenMX_row__SWIG_1, _lib), Clonglong, (Ptr{Cvoid}, Any, ), self.ptr, el, ))) end
+ colind(self::MX, col::Integer) = GC.@preserve self begin Int(_check(ccall((:_swig_GenMX_GenMX_colind__SWIG_1, _lib), Clonglong, (Ptr{Cvoid}, Any, ), self.ptr, col, ))) end
+-sparsity(self::MX) = GC.@preserve self begin Sparsity(_check(ccall((:_swig_GenMX_GenMX_sparsity__SWIG_0, _lib), Ptr{Cvoid}, (Ptr{Cvoid}, ), self.ptr, ))) end
+ class_name(self::MX) = GC.@preserve self begin _takestr(ccall((:_swig_SharedObject_SharedObject_class_name__SWIG_0, _lib), Ptr{UInt8}, (Ptr{Cvoid}, ), self.ptr, )) end
+ disp(self::MX) = GC.@preserve self begin (ccall((:_swig_SharedObject_SharedObject_disp__SWIG_0, _lib), Cvoid, (Ptr{Cvoid}, Any, ), self.ptr, false, ); _check(nothing)) end
+ disp(self::MX, more::Bool) = GC.@preserve self begin (ccall((:_swig_SharedObject_SharedObject_disp__SWIG_0, _lib), Cvoid, (Ptr{Cvoid}, Any, ), self.ptr, more, ); _check(nothing)) end
