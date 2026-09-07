@@ -32,9 +32,6 @@ make install
 
 # Chafa itself does not support Windows
 platforms = filter!(!Sys.iswindows, supported_platforms())
-# Remove this when we build a newer version for which we can target the former
-# experimental platforms
-filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64") && arch(p) != "armv6l", platforms)
 
 products = [
     LibraryProduct("libchafa", :libchafa),
