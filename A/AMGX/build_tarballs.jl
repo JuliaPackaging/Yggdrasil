@@ -72,6 +72,10 @@ products = [
 # explicit list it would only build for `90;100;120`, which excludes Ampere.
 const amgx_archs = ["70", "75", "80", "86", "89", "90", "100", "120"]
 
+# GCC 11 is the first version that defaults to -std=gnu++17. CUDA 13 ships
+# CCCL 3 (Thrust, CUB, libcu++), which refuses to compile as anything older,
+# and AMGX does not set the standard itself.
+#
 # Build for all supported CUDA toolkits
 for platform in platforms
     should_build_platform(triplet(platform)) || continue
@@ -84,5 +88,5 @@ for platform in platforms
     build_tarballs(ARGS, name, version, sources, platform_script, [platform],
                    products, dependencies; lazy_artifacts=true,
                    julia_compat="1.6", augment_platform_block=CUDA.augment,
-                   dont_dlopen=true, preferred_gcc_version=v"9")
+                   dont_dlopen=true, preferred_gcc_version=v"11")
 end
