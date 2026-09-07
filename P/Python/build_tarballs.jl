@@ -64,7 +64,14 @@ mkdir build_host && cd build_host
 
 # Override `bb_target`, `CC`, etc... to give this `./configure` the impression
 # that we are actually targeting `${MACHTYPE}` and not `${target}`
-bb_target=${MACHTYPE} CC=${HOSTCC} CPPFLAGS=-I/usr/include LDFLAGS="-L/lib -L/usr/lib" ../configure --host="${MACHTYPE}" --build="${MACHTYPE}"
+# Confine pkg-config to the rootfs: ${prefix}/lib/pkgconfig has the *target's*
+# bzip2.pc/liblzma.pc, and PKG_CHECK_MODULES feeds their -L flags to the host
+# compiler ("cannot find -lbz2").  3.11 skipped such modules via setup.py; 3.12
+# builds them from configure-generated Makefile rules, so the build fails.
+bb_target=${MACHTYPE} CC=${HOSTCC} CPPFLAGS=-I/usr/include LDFLAGS="-L/lib -L/usr/lib" \
+    PKG_CONFIG_PATH="" PKG_CONFIG_LIBDIR="/usr/lib/pkgconfig:/usr/share/pkgconfig" \
+    PKG_CONFIG_SYSROOT_DIR="" \
+    ../configure --host="${MACHTYPE}" --build="${MACHTYPE}"
 make -j${nproc} python sharedmods
 
 # Next, build target version
