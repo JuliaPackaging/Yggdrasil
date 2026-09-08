@@ -32,6 +32,17 @@ fi
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0002-fix-mkdir.mingw.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0004-fix-mkdtemp.mingw.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0005-fix-setenv.mingw.patch"
+
+# The Autotools build of 2.18.x was not kept in sync with the Meson build:
+# `configure.ac` is missing the `xlocale.h` check that `src/fcint.h` needs for
+# `locale_t` and the `LC_*_MASK` constants on macOS and FreeBSD, it is missing
+# the `_vsnprintf_l` check that keeps Windows out of the `FcLocaleSetCurrent`
+# code path, and the `Makefile.am`s never picked up `fcconffile.c`/`fc-genconf`.
+# Reported as <https://gitlab.freedesktop.org/fontconfig/fontconfig/-/work_items/561>
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0006-configure-check-xlocale.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0007-configure-check-vsnprintf_l.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0008-build-fcconffile-and-fc-genconf.patch"
+
 autoreconf
 # The `va_copy` check in `m4/va_copy.m4` uses `AC_RUN_IFELSE` without a
 # cross-compiling fallback, so preseed its cache variable: all our compilers
@@ -55,6 +66,7 @@ products = [
     ExecutableProduct("fc-cache", :fc_cache),
     ExecutableProduct("fc-cat", :fc_cat),
     ExecutableProduct("fc-conflist", :fc_conflist),
+    ExecutableProduct("fc-genconf", :fc_genconf),
     ExecutableProduct("fc-list", :fc_list),
     ExecutableProduct("fc-match", :fc_match),
     ExecutableProduct("fc-pattern", :fc_pattern),
