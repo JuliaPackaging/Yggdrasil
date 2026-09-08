@@ -1,28 +1,67 @@
-Do not give up on the popcnt and lzcnt checks when cross compiling
+Decide the popcnt and lzcnt settings from the target, not from the build machine
 
 configure works out whether the CPU supports the popcnt and lzcnt instructions
 by running a small test program. That is impossible when building for another
 system, and with no value given for the cross-compiling case configure gives up
-entirely. Assume the instructions are absent, which is what --enable-generic
-wants anyway.
+entirely. The patch asks the compiler instead: __POPCNT__ and __LZCNT__ are defined 
+exactly when the compiler is allowed to emit those instructions for the target, which 
+is the question the run-time test was approximating.
+
+The checks that follow read /proc/cpuinfo, sysctl and isainfo, all of which
+describe the machine running configure rather than the one being built for. In a
+native build the two are the same and these are a reasonable fallback, but when
+cross-compiling they answer the wrong question. The patch runs them only when not 
+cross-compiling.
 
 --- a/configure.ac
 +++ b/configure.ac
-@@ -352,7 +352,7 @@
+@@ -352,15 +352,22 @@
  dnl --check if popcnt instruction is available and desired
  AC_MSG_CHECKING(if popcnt instruction is available and requested)
  AC_RUN_IFELSE([AC_LANG_PROGRAM([],[[if (__builtin_cpu_supports("popcnt")) return 0; else return 1;]])],
 -  popsup=1,popsup=0)
-+  popsup=1,popsup=0,popsup=0)
++  popsup=1,popsup=0,
++  [AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
++#ifndef __POPCNT__
++# error popcnt not enabled for this target
++#endif
++]],[])],popsup=1,popsup=0)])
  
  AS_IF([test "$allow_popcnt" -eq 1],
        [have_hwpopcnt=$popsup
-@@ -457,7 +457,7 @@
+-test -f /proc/cpuinfo && $EGREP -i popcnt /proc/cpuinfo >/dev/null && have_hwpopcnt=1 
++AS_IF([test "x$cross_compiling" = xno],[
++test -f /proc/cpuinfo && $EGREP -i popcnt /proc/cpuinfo >/dev/null && have_hwpopcnt=1
+ test $have_hwpopcnt -eq 0 && sysctl machdep.cpu.features 2>/dev/null | $EGREP -i popcnt >/dev/null && have_hwpopcnt=1
+ test $have_hwpopcnt -eq 0 && isainfo -x -v 2>/dev/null | $EGREP -i popc >/dev/null && have_hwpopcnt=1
+ test $have_hwpopcnt -eq 0 && isainfo -v 2>/dev/null | $EGREP -i popc >/dev/null && have_hwpopcnt=1
+ test $have_hwpopcnt -eq 0 && test $is_freebsd -eq 1 && sysctl -a 2>/dev/null | $EGREP -i "Features*POPCNT" >/dev/null && have_hwpopcnt=1
++])
+ test $have_hwpopcnt -eq 0 && test $is_ARM64 -eq 1 && have_hwpopcnt=1
+ ],
+       [have_hwpopcnt=0
+@@ -457,15 +464,22 @@
  dnl --check if lzcnt instruction is available and requested
  AC_MSG_CHECKING(if lzcnt instruction is available and requested)
  AC_RUN_IFELSE([AC_LANG_PROGRAM([],[[if (__builtin_cpu_supports("bmi")) return 0; else return 1;]])],
 -  lzsup=1,lzsup=0)
-+  lzsup=1,lzsup=0,lzsup=0)
++  lzsup=1,lzsup=0,
++  [AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
++#ifndef __LZCNT__
++# error lzcnt not enabled for this target
++#endif
++]],[])],lzsup=1,lzsup=0)])
  AS_IF([test "$allow_clz" -eq 1],
        [have_hwlzcnt=$lzsup
- test -f /proc/cpuinfo && $EGREP -i "abm|bmi1" /proc/cpuinfo >/dev/null && have_hwlzcnt=1 
+-test -f /proc/cpuinfo && $EGREP -i "abm|bmi1" /proc/cpuinfo >/dev/null && have_hwlzcnt=1 
++AS_IF([test "x$cross_compiling" = xno],[
++test -f /proc/cpuinfo && $EGREP -i "abm|bmi1" /proc/cpuinfo >/dev/null && have_hwlzcnt=1
+ test $have_hwlzcnt -eq 0 && sysctl machdep.cpu.features 2>/dev/null | $EGREP -i "bmi1|abm" >/dev/null && have_hwlzcnt=1
+ test $have_hwlzcnt -eq 0 && sysctl machdep.cpu.extfeatures 2>/dev/null | $EGREP -i "lzcnt" >/dev/null && have_hwlzcnt=1
+ test $have_hwlzcnt -eq 0 && isainfo -x -v 2>/dev/null | $EGREP -i "bmi1|abm" >/dev/null && have_hwlzcnt=1
+ test $have_hwlzcnt -eq 0 && isainfo -v 2>/dev/null | $EGREP -i "bmi1|abm" >/dev/null && have_hwlzcnt=1
+ test $have_hwlzcnt -eq 0 && test $is_freebsd -eq 1 && sysctl -a 2>/dev/null | $EGREP -i "Features*BMI1" >/dev/null && have_hwlzcnt=1
++])
+ test $have_hwlzcnt -eq 0 && test $is_ARM64 -eq 1 && have_hwlzcnt=1 ],
+       [have_hwlzcnt=0])
+ AC_MSG_RESULT($have_hwlzcnt)

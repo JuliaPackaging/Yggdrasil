@@ -67,14 +67,14 @@ fi
 # environment has, and autoreconf would replace it with the older one.
 autoconf --force
 
-# We use --enable-generic to ensure maximum hardware compatibility and we
-# use --disable-popcnt to disable the `popcnt` CPU instruction on x86.
+# --enable-generic keeps -march=native out of the flags. Which CPU instructions
+# are used is then left to configure, which (thanks to cpufeatures.patch) asks the
+# compiler about the target.
 ./configure --prefix=$prefix \
 	    --build=${MACHTYPE} \
 	    --host=${target} \
 	    --enable-generic \
 	    --enable-shared \
-	    --disable-popcnt \
 	    ${LIBDIR_FLAG} \
 	    --bindir=${bindir} \
 	    "${EXTRA_CONFIGURE_FLAGS[@]}"
