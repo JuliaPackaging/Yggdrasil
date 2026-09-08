@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "FFMPEG"
-version_string = "8.1.2"   # when patch number is zero, they use X.Y format
+version_string = "9.0" # when patch number is zero, they use X.Y format
 version = VersionNumber(version_string)
 
 # Collection of sources required to build FFMPEG
@@ -14,7 +14,7 @@ macos_sdk_version = "10.13"
 sources = [
     ArchiveSource(
         "https://ffmpeg.org/releases/ffmpeg-$(version_string).tar.xz",
-        "464beb5e7bf0c311e68b45ae2f04e9cc2af88851abb4082231742a74d97b524c",
+        "7f607a00dd0d28a729d5a4811205812eef01cf6ef6155025febb6f36a9062d52",
     ),
     DirectorySource("../bundled"),
     get_macos_sdk_sources(macos_sdk_version)...

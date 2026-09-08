@@ -5,7 +5,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "PETSc"
-version = v"3.22.1"
+version = v"3.22.2"
 petsc_version = v"3.22.0"
 
 # Collection of sources required to build PETSc.
@@ -239,6 +239,18 @@ build_petsc()
 
     mkdir $libdir/petsc/${PETSC_CONFIG}
 
+    # On AArch64, clang defaults to outline atomics, i.e. it turns atomic
+    # operations into calls to helpers such as `__aarch64_ldadd8_acq_rel`. Those
+    # helpers live in compiler-rt's builtins or in libgcc >= 10, and neither is
+    # on the link line here: the link uses GCC 9.1's libgcc, so the symbols
+    # remain undefined in `libpetsc.so`. Inline the atomics instead.
+    ATOMICS_CFLAGS=""
+    ATOMICS_CXXFLAGS=""
+    if [[ "${target}" == aarch64-*freebsd* ]]; then
+        ATOMICS_CFLAGS="-mno-outline-atomics"
+        ATOMICS_CXXFLAGS=--CXXFLAGS="-mno-outline-atomics"
+    fi
+
     # Step 1: build static libraries of external packages (happens during configure)
     # Note that mpicc etc. should be indicated rather than ${CC} to compile external packages
     ./configure --prefix=${libdir}/petsc/${PETSC_CONFIG} \
@@ -250,7 +262,8 @@ build_petsc()
         --FOPTFLAGS=${_FOPTFLAGS}  \
         --with-blaslapack-lib=${BLAS_LAPACK_LIB}  \
         --with-blaslapack-suffix="" \
-        --CFLAGS='-fno-stack-protector -Wno-incompatible-pointer-types' \
+        --CFLAGS="-fno-stack-protector -Wno-incompatible-pointer-types ${ATOMICS_CFLAGS}" \
+        ${ATOMICS_CXXFLAGS} \
         --FFLAGS="${MPI_FFLAGS} ${FFLAGS[*]}"  \
         --LDFLAGS="${LIBFLAGS}"  \
         --CC_LINKER_FLAGS="${CLINK_FLAGS}" \
@@ -287,6 +300,10 @@ build_petsc()
     elif [[ "${target}" == powerpc64le-* ]]; then
         export CFLAGS="-fPIC"
         export FFLAGS="-fPIC"
+    elif [[ -n "${ATOMICS_CFLAGS}" ]]; then
+        # `make` below overrides the CFLAGS that were determined by `configure`,
+        # so the flag has to be repeated here
+        export CFLAGS="${ATOMICS_CFLAGS}"
     fi
 
     make -j${nproc} \
@@ -394,7 +411,7 @@ augment_platform_block = """
 """
 
 # We attempt to build for all defined platforms
-platforms = expand_gfortran_versions(supported_platforms())
+platforms = expand_cxxstring_abis(expand_gfortran_versions(supported_platforms()))
 
 filter!(platforms) do p
     # i686-linux-musl fails with: undefined reference to `__stack_chk_fail_local'
@@ -427,11 +444,11 @@ products = [
 
 dependencies = [
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
-    Dependency(PackageSpec(name="SCALAPACK32_jll", uuid="aabda75e-bfe4-5a37-92e3-ffe54af3c273"); compat="2.2.3"),
+    Dependency(PackageSpec(name="SCALAPACK32_jll", uuid="aabda75e-bfe4-5a37-92e3-ffe54af3c273"); compat="2.2.302"),
 
     BuildDependency("LLVMCompilerRT_jll"; platforms=[Platform("aarch64", "macos")]),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency("mpif_jll"; compat="0.1.5", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)), # MPI Fortran bindings
+    Dependency("mpif_jll"; compat="1.0.0", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)), # MPI Fortran bindings
 
     HostBuildDependency(PackageSpec(; name="CMake_jll"))
 ]

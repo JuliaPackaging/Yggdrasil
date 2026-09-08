@@ -25,11 +25,11 @@ const llvm_tags = Dict(
     v"15.0.7" => "e2f3049e01e343508a9a5d893ef561a3e42ea7f2", # julia-15.0.7-12
     v"16.0.6" => "422179dd6ee8d6b84023f922f3a0864db6e07c68", # julia-16.0.6-5
     v"17.0.6" => "0007e48608221f440dce2ea0d3e4f561fc10d3c6", # julia-17.0.6-5
-    v"18.1.7" => "32719222d3ea71ed0b19c2cb75fa6f76713fda20", # julia-18.1.7-4
+    v"18.1.7" => "b21227453160289e6dc3d23bd53c55b5e1aabe1e", # julia-18.1.7-5
     v"19.1.7" => "ccda9ec62497d9de88ca7090a749e52a89f62132", # julia-19.1.7-2
-    v"20.1.8" => "5b9f96366ce26dfc8ca91697ef0a57894791d95e", # julia-20.1.8-0
-    v"21.1.8" => "7cd4442d4a6c949de43c1e2c0e20334ee59aa154", # julia-21.1.8-0
-    v"22.1.8" => "bb28dd22e7ad95ca869437f5e773603b6561fc9b", # julia-22.1.8-0
+    v"20.1.8" => "24bdfdd813f4117f0464fd0dac5b4bce43ed1388", # julia-20.1.8-2
+    v"21.1.8" => "151034ef71856c7406f58c150dba7d419dbd063d", # julia-21.1.8-1
+    v"22.1.8" => "4df0bb28e9e4d59f293433a1e325a46479da5174", # julia-22.1.8-1
 )
 
 const buildscript = raw"""

@@ -7,6 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "VTK"
 version = v"9.6.2"
+ygg_version = v"9.6.3"
 
 # No sources, we're just building the testsuite
 sources = [
@@ -335,14 +336,14 @@ products = [
 dependencies = [
     HostBuildDependency("CMake_jll"),
 
-    Dependency("CGNS_jll"; compat="4.5.1"),           # cgns
+    Dependency("CGNS_jll"; compat="4.5.2"),           # cgns
     Dependency("Expat_jll"; compat="2.7.1"),          # expat
     Dependency("FreeType2_jll"; compat="2.13.4"),     # freetype
-    Dependency("HDF5_jll"; compat="~2.1.2"),          # hdf5
+    Dependency("HDF5_jll"; compat="2.2.1"),           # hdf5
     Dependency("JpegTurbo_jll"; compat="3.1.2"),      # jpeg
     Dependency("Libtiff_jll"; compat="4.7.1"),        # tiff
     Dependency("Lz4_jll"; compat="1.10.1"),           # lz4
-    Dependency("NetCDF_jll"; compat="401.1000.000"),  # netcdf
+    Dependency("NetCDF_jll"; compat="401.1000.101"),  # netcdf
     Dependency("Ogg_jll"; compat="1.3.6"),            # ogg
     Dependency("PROJ_jll"; compat="902.600.200"),     # libproj
     Dependency("SQLite_jll"; compat="3.48.0"),        # sqlite
@@ -422,5 +423,5 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 # Build the tarballs.
 # VTK requires GCC 8
 # We would need GCC 13 on Windows for the new `[[...]]`` attribute syntax.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"8")

@@ -1,4 +1,4 @@
-# Build counter: 0
+# Build counter: 1
 include("../common.jl")
 
 name = "SuiteSparse32"

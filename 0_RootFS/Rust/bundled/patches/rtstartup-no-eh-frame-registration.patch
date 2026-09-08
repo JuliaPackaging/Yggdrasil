@@ -1,0 +1,13 @@
+--- a/library/rtstartup/rsbegin.rs
++++ b/library/rtstartup/rsbegin.rs
+@@ -54,7 +54,9 @@
+ // enumerating currently loaded modules via the dl_iterate_phdr() API and
+ // finding their ".eh_frame" sections); Others, like Windows, require modules
+ // to actively register their unwind info sections via unwinder API.
+-#[cfg(all(target_os = "windows", target_arch = "x86", target_env = "gnu"))]
++// BinaryBuilder: nothing unwinds here (panic=abort, SJLJ libgcc), so do not
++// register .eh_frame with libgcc's DWARF unwinder on startup.
++#[cfg(any())]
+ pub mod eh_frames {
+     #[no_mangle]
+     #[unsafe(link_section = ".eh_frame")]

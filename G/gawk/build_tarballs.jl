@@ -16,6 +16,10 @@ cd $WORKSPACE/srcdir/gawk*/
 # Add missing #include for `_NSGetExecutablePath`
 atomic_patch -p1 $WORKSPACE/srcdir/patches/gawk_nsgep.patch
 
+# Apply workaround for v5.4.1 layout bug
+# (see https://lists.gnu.org/archive/html/bug-gawk/2026-07/msg00020.html)
+atomic_patch -p1 $WORKSPACE/srcdir/patches/gawk_node_alignment.patch
+
 apk add texinfo
 
 CONFIGURE_ARGS=()

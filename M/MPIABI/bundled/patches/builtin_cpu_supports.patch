@@ -1,0 +1,13 @@
+diff --git a/src/mpl/src/arch/mpl_arch_x86.c b/src/mpl/src/arch/mpl_arch_x86.c
+index 6e1b9df68..bd1e5a8e1 100644
+--- a/src/mpl/src/arch/mpl_arch_x86.c
++++ b/src/mpl/src/arch/mpl_arch_x86.c
+@@ -6,7 +6,7 @@
+ #include "mpl.h"
+ #include "mpl_base.h"
+
+-#ifdef __APPLE__
++#if defined(__APPLE__) || defined(__FreeBSD__)
+ #undef MPL_HAVE_BUILTIN_CPU_SUPPORTS
+ #endif
+

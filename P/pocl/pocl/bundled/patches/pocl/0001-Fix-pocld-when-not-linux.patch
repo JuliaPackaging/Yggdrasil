@@ -1,0 +1,92 @@
+From 88d13768ec58869a416021c7356c43f3e53a872f Mon Sep 17 00:00:00 2001
+From: Matthias Diener <mdiener@illinois.edu>
+Date: Fri, 23 May 2025 15:22:23 -0500
+Subject: [PATCH 01/16] Fix pocld when not linux
+
+Co-authored-by: Isuru Fernando <isuruf@gmail.com>
+---
+ lib/CL/pocl_networking.c   | 3 ++-
+ pocld/connection.cc        | 2 ++
+ pocld/daemon.cc            | 7 +++++++
+ pocld/shared_cl_context.cc | 2 +-
+ 4 files changed, 12 insertions(+), 2 deletions(-)
+
+diff --git a/lib/CL/pocl_networking.c b/lib/CL/pocl_networking.c
+index ca35f04f7..987e7b001 100644
+--- a/lib/CL/pocl_networking.c
++++ b/lib/CL/pocl_networking.c
+@@ -164,13 +164,14 @@ pocl_freeaddrinfo (struct addrinfo *ai)
+ {
+   if (ai)
+     {
++#ifdef HAVE_LINUX_VSOCK_H
+       if (ai->ai_family == AF_VSOCK)
+         {
+           free (ai->ai_canonname);
+           free (ai);
+           return;
+         }
+-
++#endif
+       freeaddrinfo (ai);
+     }
+ }
+diff --git a/pocld/connection.cc b/pocld/connection.cc
+index 503a1521b..eb88ce31a 100644
+--- a/pocld/connection.cc
++++ b/pocld/connection.cc
+@@ -47,9 +47,11 @@ void Connection::configure(bool LowLatency) {
+     // function only actually checks whether ai_family is AF_VSOCK
+     pocl_remote_client_set_socket_options(Fd, BufSize, LowLatency, AF_UNSPEC);
+     break;
++#ifdef HAVE_LINUX_VSOCK_H
+   case TransportDomain_Vsock:
+     pocl_remote_client_set_socket_options(Fd, BufSize, LowLatency, AF_VSOCK);
+     break;
++#endif
+   default:
+     break;
+   }
+diff --git a/pocld/daemon.cc b/pocld/daemon.cc
+index c924059e8..e97be8c7f 100644
+--- a/pocld/daemon.cc
++++ b/pocld/daemon.cc
+@@ -580,18 +580,25 @@ int PoclDaemon::launch(std::string ListenAddress, struct ServerPorts &Ports,
+   addrinfo *ai = ResolvedAddress;
+   NumListenFds = 0;
+   for (addrinfo *ai = ResolvedAddress; ai; ai = ai->ai_next) {
++#ifdef HAVE_LINUX_VSOCK_H
+     if (ai->ai_family != AF_INET && ai->ai_family != AF_INET6 &&
+         ai->ai_family != AF_VSOCK)
+       continue;
++#else
++    if (ai->ai_family != AF_INET && ai->ai_family != AF_INET6)
++      continue;
++#endif
+     struct sockaddr *base_addr = ai->ai_addr;
+     int base_addrlen = ai->ai_addrlen;
+     std::string addr_string = describe_sockaddr(base_addr, base_addrlen);
++#ifdef HAVE_LINUX_VSOCK_H
+     if (UseVsock && ai->ai_family != AF_VSOCK) {
+       POCL_MSG_ERR("Using vsock requires using the correct address "
+                    "vsock:<cid>, instead of %s\n",
+                    addr_string.c_str());
+       break;
+     }
++#endif
+     int FdCommand = -1;
+     int FdStream = -1;
+     transport_domain_t Domain =
+diff --git a/pocld/shared_cl_context.cc b/pocld/shared_cl_context.cc
+index 7b410c534..02acec9e4 100644
+--- a/pocld/shared_cl_context.cc
++++ b/pocld/shared_cl_context.cc
+@@ -699,7 +699,7 @@ SharedCLContext::SharedCLContext(cl::Platform *p, unsigned pid,
+     if (MaxMemAllocSize < MaxSVMAllocSize)
+       MaxSVMAllocSize = MaxMemAllocSize;
+ 
+-    MaxTotalAllocatableSVM = std::min(MaxTotalAllocatableSVM,
++    MaxTotalAllocatableSVM = std::min(MaxTotalAllocatableSVM, (size_t)
+                                       Dev.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>());
+   }
+ 

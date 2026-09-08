@@ -4,42 +4,17 @@ using BinaryBuilder, Pkg
 using BinaryBuilderBase: get_addable_spec
 
 name = "rsync"
-version = v"3.4.4"
+version = v"3.5.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://download.samba.org/pub/rsync/src/rsync-$(version).tar.gz",
-                  "bd88cf82fa653da32314fb229136407c5c90f80d1758d8f4b091767877d8fa96"),
-    DirectorySource("bundled"),
+                  "c7ffd1ef653e99540f661e47cb00b7f9cad1ee6b972399b16f93d672656e0d33"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/rsync-*
-
-# rsync 3.4.3 unconditionally includes <linux/openat2.h>, which only
-#     exists on Linux 5.6+, and not in some of our older platforms.
-#     Check the target sysroot.
-# The patch provides a fallback declaration for `openat2`.
-# At run time, the code checks whether the kernel supports `openat2`,
-#     and uses a slower fallback if not.
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/openat2.patch
-if echo '#include <linux/openat2.h>' | ${CC} -E -x c - >/dev/null 2>&1; then
-    export CPPFLAGS="${CPPFLAGS:-} -DHAVE_LINUX_OPENAT2_H=1"
-fi
-
-# rsync 3.4.3 uses mknodat()/mkfifoat() unconditionally in its symlink-race-
-#     safe do_mknod_at(). macOS only added them in 13 (Ventura).
-# The patch falls back to the existing plain do_mknod() implementation
-#     when the SDK is too old.
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mknodat.patch
-if ${CC} -Werror=implicit-function-declaration -c -x c - -o /dev/null 2>/dev/null <<'EOF'
-#include <sys/stat.h>
-int probe(void) { return mknodat(0, "", 0, 0); }
-EOF
-then
-    export CPPFLAGS="${CPPFLAGS:-} -DHAVE_MKNODAT=1"
-fi
 
 CONFIGURE_FLAGS=(--prefix=${prefix} --build=${MACHTYPE} --host=${target})
 # prefer to use JLLs instead of included deps

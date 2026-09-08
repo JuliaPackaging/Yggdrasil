@@ -7,7 +7,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "HelloWorldMPIFortran"
-version = v"1.0.0"
+version = v"1.0.1"
 
 # No sources, we're just building the testsuite
 sources = [
@@ -64,6 +64,7 @@ platforms, platform_dependencies = MPI.augment_platforms(platforms)
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    Dependency("mpif_jll"; compat="1.0.0", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)), # MPI Fortran bindings
 ]
 append!(dependencies, platform_dependencies)
 
@@ -78,5 +79,6 @@ products = [
 ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # Build the tarballs.
+# The MPICH Fortran bindings require at least GCC 9.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"5")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"9")

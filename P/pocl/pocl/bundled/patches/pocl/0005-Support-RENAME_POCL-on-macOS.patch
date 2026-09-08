@@ -1,0 +1,46 @@
+From b26ca6e72179c06ae7d25948b3d504300eb68ac7 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Mon, 8 Jun 2026 17:37:54 +0200
+Subject: [PATCH 05/16] Support RENAME_POCL on macOS
+
+On Apple, pocl_cl.h hardcoded `POname(name) name`, so building with
+-DENABLE_ICD=OFF -DRENAME_POCL=ON had no effect there: the library still
+exported the unprefixed cl* entrypoints instead of the PO-prefixed ones.
+
+Gate the Apple symbol macros on `RENAME_POCL && !BUILD_ICD`, mirroring the
+ELF path: rename to PO<name>, forward-declare the PO-prefixed entrypoints via
+POdeclsym (so internal callers see a prototype), and export them through
+POCL_EXPORT's default visibility. The ICD build (BUILD_ICD defined) is
+unaffected. Apple has no ELF-style aliases, so the unprefixed cl* names are
+not provided in this mode (as is already the case on ELF with RENAME_POCL).
+---
+ lib/CL/pocl_cl.h | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/lib/CL/pocl_cl.h b/lib/CL/pocl_cl.h
+index 2da055797..4d8bc1e9f 100644
+--- a/lib/CL/pocl_cl.h
++++ b/lib/CL/pocl_cl.h
+@@ -262,9 +262,22 @@ extern pocl_obj_id_t last_object_id;
+ #ifdef __APPLE__
+ /* Note: OSX doesn't support aliases because it doesn't use ELF */
+ 
++#if defined(RENAME_POCL) && !defined(BUILD_ICD)
++/* Rename the OpenCL API entrypoints to PO<name>, so the (directly linkable)
++ * library can coexist with another OpenCL implementation in the same process.
++ * Apple has no ELF-style symbol aliases, so unlike the ELF path we cannot also
++ * export the unprefixed cl* names; only the PO-prefixed ones are provided.
++ * As on the ELF path, POdeclsym forward-declares the PO-prefixed entrypoints
++ * (so internal callers see a prototype) and POCL_EXPORT gives them default
++ * visibility so they are exported from the library. */
++#  define POname(name) PO##name
++#  define POdeclsym(name) POCL_EXPORT __typeof__ (name) PO##name;
++#  define POdeclsymExport(name) POdeclsym(name)
++#else
+ #  define POname(name) name
+ #  define POdeclsym(name)
+ #  define POdeclsymExport(name)
++#endif
+ #  define POsym(name)
+ #  define POsymAlways(name)
+ 

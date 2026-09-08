@@ -5,7 +5,8 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "HYPRE"
 version = v"3.1.0"
-ygg_version = v"3.1.1"
+offset = 2
+ygg_version = VersionNumber(version.major, version.minor, 100 * version.patch + offset)
 
 sources = [
     GitSource("https://github.com/hypre-space/hypre.git", "9dc9e18aed6a945a95f966e57daacfb1c269f6ec") # Tag v3.1.0

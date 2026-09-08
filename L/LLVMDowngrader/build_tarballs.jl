@@ -6,7 +6,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "LLVMDowngrader"
-version = v"0.8.3"
+version = v"0.9.1"
 
 # Build the standalone `llvm-downgrade` out-of-tree against a prebuilt LLVM
 # (LLVM_full_jll), statically linked so the tool is self-contained and usable
@@ -14,16 +14,17 @@ version = v"0.8.3"
 #
 # Because LLVM's bitcode reader is backwards compatible (any bitcode since 3.0,
 # auto-upgraded on load), this single tool ingests bitcode from any LLVM up to
-# its own version and emits the legacy 5.0/7.0/14.0 formats. So it is ONE
+# its own version and emits the legacy 5.0/7.0/14.0/15.0/18.0 formats. So it is ONE
 # universal build -- not one per consumer LLVM version, and not augmented by
-# llvm_version. Built against LLVM 21; track the newest LLVM as new ones land.
-llvm_version = v"21.1.8+0"
+# llvm_version. Built against LLVM 22; track the newest LLVM as new ones land.
+llvm_version = v"22.1.8+0"
 
 sources = [
     GitSource("https://github.com/JuliaLLVM/llvm-downgrade",
-              "5995472423989b01a3368611c993c9b0d6197622"),
+              "6ab0b538c9302bd44f1d2a02f8d064ba9c5f2efb"),
     # We also ship the `llvm-dis` from each LLVM release whose bitcode the
-    # downgrader emits (as `llvm-dis-5` / `llvm-dis-7` / `llvm-dis-14`), so the
+    # downgrader emits (as `llvm-dis-5` / `llvm-dis-7` / `llvm-dis-14` /
+    # `llvm-dis-15` / `llvm-dis-18`), so the
     # downgraded bitcode can be disassembled with a matching disassembler. These
     # are built from the upstream release sources and are version-independent.
     ArchiveSource("https://releases.llvm.org/5.0.2/llvm-5.0.2.src.tar.xz",
@@ -32,6 +33,17 @@ sources = [
                   "1bcc9b285074ded87b88faaedddb88e6b5d6c331dfcfb57d7f3393dd622b3764"),
     ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-14.0.6/llvm-14.0.6.src.tar.xz",
                   "050922ecaaca5781fdf6631ea92bc715183f202f9d2f15147226f023414f619a"),
+    # LLVM >= 15 splits the shared cmake modules out of llvm-*.src; each release's
+    # `cmake` dir must sit next to its llvm source dir (see the dis15/dis18 setup
+    # in the script).
+    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.7/llvm-15.0.7.src.tar.xz",
+                  "4ad8b2cc8003c86d0078d15d987d84e3a739f24aae9033865c027abae93ee7a4"),
+    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.7/cmake-15.0.7.src.tar.xz",
+                  "8986f29b634fdaa9862eedda78513969fe9788301c9f2d938f4c10a3e7a3e7ea"),
+    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.8/llvm-18.1.8.src.tar.xz",
+                  "f68cf90f369bc7d0158ba70d860b0cb34dbc163d6ff0ebc6cfa5e515b9b2e28d"),
+    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.8/cmake-18.1.8.src.tar.xz",
+                  "59badef592dd34893cd319d42b323aaa990b452d05c7180ff20f23ab1b41e837"),
     DirectorySource("./bundled"),
 ]
 
@@ -124,6 +136,17 @@ build_old_llvm_dis() {
 build_old_llvm_dis "${WORKSPACE}/srcdir/llvm-5.0.2.src" 5
 build_old_llvm_dis "${WORKSPACE}/srcdir/llvm-7.1.0.src" 7
 build_old_llvm_dis "${WORKSPACE}/srcdir/llvm-14.0.6.src" 14
+
+# LLVM >= 15 standalone builds expect the release's shared `cmake` module dir as
+# a sibling named exactly `cmake`; give each release its own parent dir so the
+# two releases' cmake dirs don't collide.
+mkdir -p ${WORKSPACE}/srcdir/dis15 ${WORKSPACE}/srcdir/dis18
+mv ${WORKSPACE}/srcdir/llvm-15.0.7.src ${WORKSPACE}/srcdir/dis15/llvm
+mv ${WORKSPACE}/srcdir/cmake-15.0.7.src ${WORKSPACE}/srcdir/dis15/cmake
+mv ${WORKSPACE}/srcdir/llvm-18.1.8.src ${WORKSPACE}/srcdir/dis18/llvm
+mv ${WORKSPACE}/srcdir/cmake-18.1.8.src ${WORKSPACE}/srcdir/dis18/cmake
+build_old_llvm_dis "${WORKSPACE}/srcdir/dis15/llvm" 15
+build_old_llvm_dis "${WORKSPACE}/srcdir/dis18/llvm" 18
 """
 
 # LLVM 15+ (hence LLVM_full_jll) is built against the macOS 10.14 SDK with a
@@ -138,6 +161,8 @@ products = Product[
     ExecutableProduct("llvm-dis-5", :llvm_dis_5),
     ExecutableProduct("llvm-dis-7", :llvm_dis_7),
     ExecutableProduct("llvm-dis-14", :llvm_dis_14),
+    ExecutableProduct("llvm-dis-15", :llvm_dis_15),
+    ExecutableProduct("llvm-dis-18", :llvm_dis_18),
 ]
 
 # A single, version-agnostic artifact: selected by platform alone, with no

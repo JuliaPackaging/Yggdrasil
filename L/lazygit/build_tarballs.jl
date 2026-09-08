@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "lazygit"
-version = v"0.61.1"
+version = v"0.65.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/jesseduffield/lazygit.git", "d167063b4f45d044524f3fba97f850d1eec3f95c"),
+    GitSource("https://github.com/jesseduffield/lazygit.git", "c07f4d381b90419583b7ce04f87379654d983ebc"),
 ]
 
 # Bash recipe for building across all platforms

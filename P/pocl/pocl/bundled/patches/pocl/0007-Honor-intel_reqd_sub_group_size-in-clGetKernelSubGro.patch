@@ -1,0 +1,473 @@
+From 10149732dc89dbef75592d4aacde730cb53c7c20 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Wed, 10 Jun 2026 17:31:35 +0200
+Subject: [PATCH 07/16] Honor intel_reqd_sub_group_size in
+ clGetKernelSubGroupInfo
+
+The host-side sub-group queries assumed the sub-group size always
+equals the local X dimension, ignoring a sub-group size required with
+the intel_reqd_sub_group_size kernel attribute. This made
+CL_KERNEL_MAX_SUB_GROUP_SIZE_FOR_NDRANGE and
+CL_KERNEL_SUB_GROUP_COUNT_FOR_NDRANGE disagree with the device-side
+get_max_sub_group_size() and get_num_sub_groups() builtins, breaking
+applications that size per-sub-group state using the host queries and
+index it on the device (e.g. the OpenCL.jl device RNG).
+
+Extract the attribute into the kernel metadata, store it in pocl
+binaries (format version 12; flag-gated so version 11 binaries still
+deserialize), and use it in the CPU drivers' sub-group queries, with
+the sub-group count rounded up to account for a smaller trailing
+sub-group, matching the device-side builtins. Also implement the
+CL_KERNEL_COMPILE_SUB_GROUP_SIZE_INTEL query from
+cl_intel_required_subgroup_size.
+
+Add a regression test verifying that the host- and device-side
+sub-group queries agree, with and without the attribute, including
+work-group sizes that are not evenly divisible by the sub-group size.
+
+Fixes #2181.
+
+Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+---
+ lib/CL/clGetKernelSubGroupInfo.c      |   7 +-
+ lib/CL/devices/basic/basic.c          |  31 +++--
+ lib/CL/pocl_binary.c                  |  25 +++-
+ lib/CL/pocl_cl.h                      |   3 +
+ lib/CL/pocl_llvm_metadata.cc          |  17 +++
+ tests/runtime/CMakeLists.txt          |   5 +-
+ tests/runtime/test_subgroup_queries.c | 193 ++++++++++++++++++++++++++
+ 7 files changed, 265 insertions(+), 16 deletions(-)
+ create mode 100644 tests/runtime/test_subgroup_queries.c
+
+diff --git a/lib/CL/clGetKernelSubGroupInfo.c b/lib/CL/clGetKernelSubGroupInfo.c
+index a44706429..e2cbe6c84 100644
+--- a/lib/CL/clGetKernelSubGroupInfo.c
++++ b/lib/CL/clGetKernelSubGroupInfo.c
+@@ -70,7 +70,8 @@ CL_API_ENTRY cl_int CL_API_ENTRY POname (clGetKernelSubGroupInfo) (
+   POCL_RETURN_ERROR_ON ((dev_i == CL_UINT_MAX), CL_INVALID_KERNEL,
+                         "the kernel was not built for this device\n");
+ 
+-  if (param_name == CL_KERNEL_MAX_SUB_GROUP_SIZE_FOR_NDRANGE)
++  if (param_name == CL_KERNEL_MAX_SUB_GROUP_SIZE_FOR_NDRANGE
++      || param_name == CL_KERNEL_SUB_GROUP_COUNT_FOR_NDRANGE)
+     {
+       POCL_RETURN_ERROR_ON ((input_value == NULL
+                              || input_value_size < sizeof (size_t)
+@@ -95,6 +96,10 @@ CL_API_ENTRY cl_int CL_API_ENTRY POname (clGetKernelSubGroupInfo) (
+       else
+         POCL_RETURN_GETINFO (size_t, 0);
+ 
++    case CL_KERNEL_COMPILE_SUB_GROUP_SIZE_INTEL:
++      /* Returns 0 if the intel_reqd_sub_group_size attribute is not set. */
++      POCL_RETURN_GETINFO (size_t, kernel->meta->reqd_sub_group_size);
++
+     default:
+       POCL_RETURN_ERROR_ON ((realdev->ops->get_subgroup_info_ext == NULL),
+                             CL_INVALID_VALUE,
+diff --git a/lib/CL/devices/basic/basic.c b/lib/CL/devices/basic/basic.c
+index 008f1fad5..f5ca05ba8 100644
+--- a/lib/CL/devices/basic/basic.c
++++ b/lib/CL/devices/basic/basic.c
+@@ -919,25 +919,32 @@ pocl_basic_get_subgroup_info_ext (cl_device_id device,
+                                   void *param_value,
+                                   size_t *param_value_size_ret)
+ {
++  /* The SG size is the size required with the intel_reqd_sub_group_size
++     kernel attribute, otherwise WG_x. This must be kept in sync with the
++     device-side implementation in lib/kernel/subgroups.cl. */
++  size_t sg_size = kernel->meta->reqd_sub_group_size;
++  if (sg_size == 0 && input_value != NULL && input_value_size >= sizeof (size_t))
++    sg_size = ((size_t *)input_value)[0];
++
+   switch (param_name)
+     {
+     case CL_KERNEL_MAX_SUB_GROUP_SIZE_FOR_NDRANGE:
+       {
+-        /* For now assume SG == WG_x. */
+-        POCL_RETURN_GETINFO (size_t, ((size_t *)input_value)[0]);
++        POCL_RETURN_GETINFO (size_t, sg_size);
+       }
+     case CL_KERNEL_SUB_GROUP_COUNT_FOR_NDRANGE:
+       {
+-        /* For now assume SG == WG_x and thus we have WG_size_y*WG_size_z of
+-           them per WG. */
+-        POCL_RETURN_GETINFO (
+-          size_t,
+-          min (device->max_num_sub_groups,
+-               (input_value_size > sizeof (size_t) ? ((size_t *)input_value)[1]
+-                                                   : 1)
+-                 * (input_value_size > sizeof (size_t) * 2
+-                      ? ((size_t *)input_value)[2]
+-                      : 1)));
++        size_t wg_size = ((size_t *)input_value)[0]
++                         * (input_value_size > sizeof (size_t)
++                              ? ((size_t *)input_value)[1]
++                              : 1)
++                         * (input_value_size > sizeof (size_t) * 2
++                              ? ((size_t *)input_value)[2]
++                              : 1);
++        /* Round up to account for a possibly smaller last SG. */
++        size_t sg_count = sg_size ? (wg_size + sg_size - 1) / sg_size : 0;
++        POCL_RETURN_GETINFO (size_t,
++                             min (device->max_num_sub_groups, sg_count));
+       }
+     case CL_KERNEL_LOCAL_SIZE_FOR_SUB_GROUP_COUNT:
+       {
+diff --git a/lib/CL/pocl_binary.c b/lib/CL/pocl_binary.c
+index bf2389a21..bf5b0c0c1 100644
+--- a/lib/CL/pocl_binary.c
++++ b/lib/CL/pocl_binary.c
+@@ -52,10 +52,11 @@
+ /* changes for version 8: compilation parameters are stored in module metadata
+  * changes for version 9: support other than "program.bc" files in root dir
+  * changes for version 10: support program scope variables
+- * changes for version 11: support extra subgroup & workgroup metadata */
++ * changes for version 11: support extra subgroup & workgroup metadata
++ * changes for version 12: store the required sub-group size */
+ 
+ #define FIRST_SUPPORTED_POCLCC_VERSION 9
+-#define POCLCC_VERSION 11
++#define POCLCC_VERSION 12
+ 
+ /* pocl binary structures */
+ 
+@@ -68,6 +69,7 @@
+ 
+ #define POCL_KERNEL_HAS_WORKG_META (1 << 1)
+ #define POCL_KERNEL_HAS_SUBG_META (1 << 2)
++#define POCL_KERNEL_HAS_REQD_SUBG_SIZE (1 << 3)
+ 
+ typedef struct pocl_binary_kernel_s
+ {
+@@ -108,6 +110,9 @@ typedef struct pocl_binary_kernel_s
+   /* required work-group size */
+   uint64_t reqd_wg_size[OPENCL_MAX_DIMENSION];
+ 
++  /* required sub-group size */
++  uint32_t reqd_sub_group_size;
++
+   /* Stores: cl_bitfield kernel->meta->has_arg_metadata */
+   uint32_t has_arg_metadata;
+   /* Stores: extra flags (POCL_KERNEL_HAS) */
+@@ -438,6 +443,8 @@ pocl_binary_serialize_kernel_to_buffer(cl_program program,
+       || (meta->preferred_wg_multiple
+           && meta->preferred_wg_multiple[device_i]))
+     flags |= POCL_KERNEL_HAS_WORKG_META;
++  if (meta->reqd_sub_group_size)
++    flags |= POCL_KERNEL_HAS_REQD_SUBG_SIZE;
+   BUFFER_STORE (flags, uint32_t);
+ 
+   if (flags & POCL_KERNEL_HAS_SUBG_META)
+@@ -477,6 +484,12 @@ pocl_binary_serialize_kernel_to_buffer(cl_program program,
+       BUFFER_STORE (tmp, uint32_t);
+     }
+ 
++  if (flags & POCL_KERNEL_HAS_REQD_SUBG_SIZE)
++    {
++      uint32_t tmp = meta->reqd_sub_group_size;
++      BUFFER_STORE (tmp, uint32_t);
++    }
++
+   /***********************************************************************/
+   unsigned char *start = buffer;
+   for (i = 0; i < meta->num_args; i++)
+@@ -644,6 +657,11 @@ pocl_binary_deserialize_kernel_from_buffer (pocl_binary *b,
+           BUFFER_READ (kernel->spill_mem_size, uint32_t);
+         }
+ 
++      if (kernel->flags & POCL_KERNEL_HAS_REQD_SUBG_SIZE)
++        {
++          BUFFER_READ (kernel->reqd_sub_group_size, uint32_t);
++        }
++
+       meta->arg_info = calloc (kernel->num_args, sizeof (struct pocl_argument_info));
+       POCL_RETURN_ERROR_COND ((!meta->arg_info), CL_OUT_OF_HOST_MEMORY);
+ 
+@@ -948,6 +966,9 @@ pocl_binary_get_kernels_metadata (cl_program program, unsigned device_i)
+           km->spill_mem_size[device_i] = k.spill_mem_size;
+         }
+ 
++      if (k.flags & POCL_KERNEL_HAS_REQD_SUBG_SIZE)
++        km->reqd_sub_group_size = k.reqd_sub_group_size;
++
+       unsigned l;
+       for (l = 0; l < OPENCL_MAX_DIMENSION; l++)
+         {
+diff --git a/lib/CL/pocl_cl.h b/lib/CL/pocl_cl.h
+index 4d8bc1e9f..8ad2f9ad0 100644
+--- a/lib/CL/pocl_cl.h
++++ b/lib/CL/pocl_cl.h
+@@ -1882,6 +1882,9 @@ typedef struct pocl_kernel_metadata_s
+   size_t reqd_wg_size[OPENCL_MAX_DIMENSION];
+   size_t wg_size_hint[OPENCL_MAX_DIMENSION];
+   char vectypehint[16];
++  /* required sub-group size set with the intel_reqd_sub_group_size kernel
++     attribute; 0 if not set */
++  size_t reqd_sub_group_size;
+ 
+   /* if we know the size of _every_ kernel argument, we store
+    * the total size here. see struct _cl_kernel on why */
+diff --git a/lib/CL/pocl_llvm_metadata.cc b/lib/CL/pocl_llvm_metadata.cc
+index 19b1263ed..59fccc7c8 100644
+--- a/lib/CL/pocl_llvm_metadata.cc
++++ b/lib/CL/pocl_llvm_metadata.cc
+@@ -569,6 +569,16 @@ int pocl_llvm_get_kernels_metadata(cl_program program, unsigned device_i) {
+                    ReqdWGSize->getOperand(2))->getValue()))->getLimitedValue();
+     }
+ 
++    llvm::MDNode *ReqdSGSize =
++        KernelFunction->getMetadata("intel_reqd_sub_group_size");
++    if (ReqdSGSize != nullptr) {
++      meta->reqd_sub_group_size =
++          (llvm::cast<ConstantInt>(
++               llvm::dyn_cast<ConstantAsMetadata>(ReqdSGSize->getOperand(0))
++                   ->getValue()))
++              ->getLimitedValue();
++    }
++
+     llvm::MDNode *WGSizeHint =
+         KernelFunction->getMetadata("work_group_size_hint");
+     if (WGSizeHint != nullptr) {
+@@ -673,6 +683,13 @@ int pocl_llvm_get_kernels_metadata(cl_program program, unsigned device_i) {
+               << ", " << reqdz << " )))";
+     }
+ 
++    if (meta->reqd_sub_group_size) {
++      if (attrstr.tellp() > 0)
++        attrstr << " ";
++      attrstr << "__attribute__((intel_reqd_sub_group_size("
++              << meta->reqd_sub_group_size << ")))";
++    }
++
+     if (wghintx || wghinty || wghintz) {
+       meta->wg_size_hint[0] = wghintx;
+       meta->wg_size_hint[1] = wghinty;
+diff --git a/tests/runtime/CMakeLists.txt b/tests/runtime/CMakeLists.txt
+index 1154f36a7..5b2f4b929 100644
+--- a/tests/runtime/CMakeLists.txt
++++ b/tests/runtime/CMakeLists.txt
+@@ -47,7 +47,7 @@ set(C_PROGRAMS_TO_BUILD test_clFinish test_clGetDeviceInfo test_clGetEventInfo
+   test_cl_pocl_content_size test_cl_pocl_content_size_migration
+   test_deviceside_enqueue test_command_buffer test_command_buffer_images
+   test_command_buffer_multi_device test_queue_creation_with_hints
+-  test_remote_discovery test_dbk_color_convert)
++  test_remote_discovery test_dbk_color_convert test_subgroup_queries)
+ 
+ if(HAVE_ONNXRT)
+   list(APPEND C_PROGRAMS_TO_BUILD test_dbk_onnx_inference)
+@@ -112,6 +112,8 @@ add_test_pocl(NAME "runtime/clCreateKernel" COMMAND "test_clCreateKernel" WORKIT
+ 
+ add_test_pocl(NAME "runtime/clGetKernelArgInfo" COMMAND "test_clGetKernelArgInfo" WORKITEM_HANDLER "loopvec")
+ 
++add_test_pocl(NAME "runtime/test_subgroup_queries" COMMAND "test_subgroup_queries" WORKITEM_HANDLER "loopvec")
++
+ add_test_pocl(NAME "runtime/clSetEventCallback"
+               COMMAND "test_clSetEventCallback"
+               EXPECTED_OUTPUT "test_clSetEventCallback_expout.txt"
+@@ -242,6 +244,7 @@ set_tests_properties( "runtime/clGetDeviceInfo" "runtime/clEnqueueNativeKernel"
+   "runtime/test_queue_creation_with_hints"
+   "runtime/clGetKernelArgInfo"
+   "runtime/clCreateSubDevices"
++  "runtime/test_subgroup_queries"
+   PROPERTIES
+     COST 2.0
+     PROCESSORS 1
+diff --git a/tests/runtime/test_subgroup_queries.c b/tests/runtime/test_subgroup_queries.c
+new file mode 100644
+index 000000000..6c51e0196
+--- /dev/null
++++ b/tests/runtime/test_subgroup_queries.c
+@@ -0,0 +1,193 @@
++/* Test that the host-side (clGetKernelSubGroupInfo) and device-side
++   (get_num_sub_groups etc.) sub-group queries agree, also when a sub-group
++   size is required with the intel_reqd_sub_group_size kernel attribute
++   (issue #2181).
++
++   Copyright (c) 2026 Tim Besard
++
++   Permission is hereby granted, free of charge, to any person obtaining a
++   copy of this software and associated documentation files (the "Software"),
++   to deal in the Software without restriction, including without limitation
++   the rights to use, copy, modify, merge, publish, distribute, sublicense,
++   and/or sell copies of the Software, and to permit persons to whom the
++   Software is furnished to do so, subject to the following conditions:
++
++   The above copyright notice and this permission notice shall be included in
++   all copies or substantial portions of the Software.
++
++   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
++   DEALINGS IN THE SOFTWARE.
++*/
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++
++#include "poclu.h"
++
++#define REQD_SG_SIZE 32
++
++static const char *SRC_TEMPLATE =
++  "%s\n"
++  "__kernel void\n"
++  "probe (__global uint *num, __global uint *max_size, __global uint *size,\n"
++  "       __global uint *id)\n"
++  "{\n"
++  "  size_t i = get_local_linear_id ();\n"
++  "  num[i] = get_num_sub_groups ();\n"
++  "  max_size[i] = get_max_sub_group_size ();\n"
++  "  size[i] = get_sub_group_size ();\n"
++  "  id[i] = get_sub_group_id ();\n"
++  "}\n";
++
++static const size_t LOCAL_SIZES[][3] = {
++  { 1, 1, 1 }, { 3, 1, 1 }, { 1, 3, 1 },
++  { 32, 1, 1 }, { 33, 1, 1 }, { 64, 1, 1 },
++};
++#define NUM_LOCAL_SIZES (sizeof (LOCAL_SIZES) / sizeof (LOCAL_SIZES[0]))
++#define MAX_LOCAL_SIZE 64
++
++static int
++check_variant (cl_context ctx, cl_device_id dev, cl_command_queue queue,
++               int with_attr)
++{
++  cl_int err;
++  char src[2048];
++  char attr[128] = "";
++  if (with_attr)
++    snprintf (attr, sizeof (attr),
++              "__attribute__ ((intel_reqd_sub_group_size (%d)))",
++              REQD_SG_SIZE);
++  snprintf (src, sizeof (src), SRC_TEMPLATE, attr);
++
++  const char *src_ptr = src;
++  cl_program program = clCreateProgramWithSource (ctx, 1, &src_ptr, NULL,
++                                                  &err);
++  CHECK_OPENCL_ERROR_IN ("clCreateProgramWithSource");
++  err = clBuildProgram (program, 1, &dev, NULL, NULL, NULL);
++  if (err != CL_SUCCESS)
++    poclu_show_program_build_log (program);
++  CHECK_OPENCL_ERROR_IN ("clBuildProgram");
++  cl_kernel kernel = clCreateKernel (program, "probe", &err);
++  CHECK_OPENCL_ERROR_IN ("clCreateKernel");
++
++#ifdef CL_KERNEL_COMPILE_SUB_GROUP_SIZE_INTEL
++  size_t compile_sg_size = 0;
++  err = clGetKernelSubGroupInfo (kernel, dev,
++                                 CL_KERNEL_COMPILE_SUB_GROUP_SIZE_INTEL, 0,
++                                 NULL, sizeof (compile_sg_size),
++                                 &compile_sg_size, NULL);
++  if (err == CL_SUCCESS)
++    TEST_ASSERT (compile_sg_size == (with_attr ? REQD_SG_SIZE : 0));
++#endif
++
++  cl_mem bufs[4];
++  for (unsigned i = 0; i < 4; ++i)
++    {
++      bufs[i] = clCreateBuffer (ctx, CL_MEM_READ_WRITE,
++                                sizeof (cl_uint) * MAX_LOCAL_SIZE, NULL,
++                                &err);
++      CHECK_OPENCL_ERROR_IN ("clCreateBuffer");
++      CHECK_CL_ERROR (clSetKernelArg (kernel, i, sizeof (cl_mem), &bufs[i]));
++    }
++
++  size_t max_wg_size = 0;
++  CHECK_CL_ERROR (clGetDeviceInfo (dev, CL_DEVICE_MAX_WORK_GROUP_SIZE,
++                                   sizeof (max_wg_size), &max_wg_size, NULL));
++
++  for (size_t l = 0; l < NUM_LOCAL_SIZES; ++l)
++    {
++      const size_t *ls = LOCAL_SIZES[l];
++      const size_t wg_size = ls[0] * ls[1] * ls[2];
++      if (wg_size > max_wg_size)
++        continue;
++
++      size_t host_max = 0, host_count = 0;
++      CHECK_CL_ERROR (clGetKernelSubGroupInfo (
++        kernel, dev, CL_KERNEL_MAX_SUB_GROUP_SIZE_FOR_NDRANGE,
++        sizeof (size_t) * 3, ls, sizeof (host_max), &host_max, NULL));
++      CHECK_CL_ERROR (clGetKernelSubGroupInfo (
++        kernel, dev, CL_KERNEL_SUB_GROUP_COUNT_FOR_NDRANGE,
++        sizeof (size_t) * 3, ls, sizeof (host_count), &host_count, NULL));
++
++      TEST_ASSERT (host_max > 0);
++      if (with_attr)
++        TEST_ASSERT (host_max == REQD_SG_SIZE);
++      /* the count must include a possibly smaller trailing sub-group */
++      TEST_ASSERT (host_count == (wg_size + host_max - 1) / host_max);
++
++      CHECK_CL_ERROR (clEnqueueNDRangeKernel (queue, kernel, 3, NULL, ls, ls,
++                                              0, NULL, NULL));
++
++      cl_uint dev_num[MAX_LOCAL_SIZE], dev_max[MAX_LOCAL_SIZE],
++        dev_size[MAX_LOCAL_SIZE], dev_id[MAX_LOCAL_SIZE];
++      cl_uint *results[4] = { dev_num, dev_max, dev_size, dev_id };
++      for (unsigned i = 0; i < 4; ++i)
++        CHECK_CL_ERROR (clEnqueueReadBuffer (queue, bufs[i], CL_TRUE, 0,
++                                             sizeof (cl_uint) * wg_size,
++                                             results[i], 0, NULL, NULL));
++
++      for (size_t i = 0; i < wg_size; ++i)
++        {
++          /* the device-side queries must agree with the host */
++          TEST_ASSERT (dev_num[i] == host_count);
++          TEST_ASSERT (dev_max[i] == host_max);
++
++          /* every work-item must see the actual size of its sub-group,
++             where the last sub-group may be smaller than the maximum */
++          size_t sg = i / host_max;
++          size_t expected_size = wg_size - sg * host_max;
++          if (expected_size > host_max)
++            expected_size = host_max;
++          TEST_ASSERT (dev_id[i] == sg);
++          TEST_ASSERT (dev_size[i] == expected_size);
++        }
++    }
++
++  for (unsigned i = 0; i < 4; ++i)
++    CHECK_CL_ERROR (clReleaseMemObject (bufs[i]));
++  CHECK_CL_ERROR (clReleaseKernel (kernel));
++  CHECK_CL_ERROR (clReleaseProgram (program));
++  return CL_SUCCESS;
++}
++
++int
++main (int argc, char **argv)
++{
++  cl_context ctx;
++  cl_device_id dev;
++  cl_command_queue queue;
++  cl_platform_id platform;
++
++  CHECK_CL_ERROR (poclu_get_any_device2 (&ctx, &dev, &queue, &platform));
++
++  cl_uint max_num_sub_groups = 0;
++  clGetDeviceInfo (dev, CL_DEVICE_MAX_NUM_SUB_GROUPS,
++                   sizeof (max_num_sub_groups), &max_num_sub_groups, NULL);
++  if (max_num_sub_groups == 0)
++    {
++      printf ("SKIP: device does not support sub-groups\n");
++      return 77;
++    }
++
++  CHECK_CL_ERROR (check_variant (ctx, dev, queue, 0));
++
++  /* only test intel_reqd_sub_group_size where supported */
++  char extensions[4096];
++  CHECK_CL_ERROR (clGetDeviceInfo (dev, CL_DEVICE_EXTENSIONS,
++                                   sizeof (extensions), extensions, NULL));
++  if (strstr (extensions, "cl_intel_required_subgroup_size") != NULL)
++    CHECK_CL_ERROR (check_variant (ctx, dev, queue, 1));
++
++  CHECK_CL_ERROR (clReleaseCommandQueue (queue));
++  CHECK_CL_ERROR (clReleaseContext (ctx));
++  CHECK_CL_ERROR (clUnloadPlatformCompiler (platform));
++
++  printf ("OK\n");
++  return EXIT_SUCCESS;
++}

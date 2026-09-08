@@ -1,0 +1,29 @@
+From 468fc8e5a8e08512880c8cdf3343d44312dd3334 Mon Sep 17 00:00:00 2001
+From: Reuben Gardos Reid <5456207+ReubenJ@users.noreply.github.com>
+Date: Sat, 15 Aug 2026 11:53:01 +0200
+Subject: [PATCH] `Windows.h` -> `windows.h` for cross-compiling
+
+Without this change, cross-compilation with MinGW fails because the file
+is actually `windows.h` and Linux file systems are case-sensitive. The
+build was successful on Windows because its file system is not
+case-sensitive.
+---
+ libgringo/gringo/shared_mutex.hh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/libgringo/gringo/shared_mutex.hh b/libgringo/gringo/shared_mutex.hh
+index 8d7249a5..83210c65 100644
+--- a/libgringo/gringo/shared_mutex.hh
++++ b/libgringo/gringo/shared_mutex.hh
+@@ -19,7 +19,7 @@
+ #if GRINGO_PLATFORM_WINDOWS
+ #define WIN32_LEAN_AND_MEAN
+ #define NOMINMAX
+-#include <Windows.h>
++#include <windows.h>
+ #elif GRINGO_PLATFORM_POSIX
+ #include <pthread.h>
+ #else
+-- 
+2.53.0
+

@@ -1,0 +1,40 @@
+# Settings match src/ci/run.sh for dist builds. The rustup toolchain in
+# ${WORKSPACE}/rust is the stage0 compiler (local-rebuild), via its proxies.
+[build]
+build = "x86_64-unknown-linux-musl"
+host = ["x86_64-unknown-linux-musl"]
+target = ["i686-pc-windows-gnu"]
+rustc = "/workspace/rust/bin/rustc"
+cargo = "/workspace/rust/bin/cargo"
+local-rebuild = true
+vendor = true
+docs = false
+extended = false
+patch-binaries-for-nix = false
+optimized-compiler-builtins = true
+
+[llvm]
+download-ci-llvm = false
+
+[rust]
+channel = "stable"
+remap-debuginfo = true
+codegen-units-std = 1
+debuginfo-level-std = 1
+
+[dist]
+compression-formats = ["gz"]
+
+[target.x86_64-unknown-linux-musl]
+cc = "x86_64-linux-musl-gcc"
+cxx = "x86_64-linux-musl-g++"
+ar = "x86_64-linux-musl-ar"
+linker = "x86_64-linux-musl-gcc"
+musl-root = "/opt/x86_64-linux-musl/x86_64-linux-musl/sys-root/usr"
+
+[target.i686-pc-windows-gnu]
+cc = "i686-w64-mingw32-gcc"
+cxx = "i686-w64-mingw32-g++"
+ar = "i686-w64-mingw32-ar"
+ranlib = "i686-w64-mingw32-ranlib"
+linker = "i686-w64-mingw32-gcc"

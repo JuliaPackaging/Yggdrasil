@@ -1,0 +1,392 @@
+From 0fc39852bcb9f1f89bba371be00fd2e906d503d8 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Tue, 14 Jul 2026 18:37:46 +0200
+Subject: [PATCH 11/16] llvmopencl: guard implicit barriers by source dominance
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+ImplicitConditionalBarriers can select an insertion block nested below a divergent guard. If another path bypasses that block and still reaches the source barrier, work-item-loop lowering can execute the guarded path for non-participating work-items.
+
+Require the insertion block to dominate the source barrier. This reuses the source barrier’s all-or-none execution guarantee while preserving dynamically uniform lane-indexed bounds checks before inlined subgroup shuffles. Add regressions for both the bypassing and dynamically uniform cases.
+---
+ lib/llvmopencl/ImplicitConditionalBarriers.cc |  10 +-
+ tests/regression/CMakeLists.txt               |   6 +
+ .../test_divergent_implicit_barrier_entry.c   | 148 +++++++++++++++++
+ .../test_uniform_implicit_barrier_entry.c     | 153 ++++++++++++++++++
+ 4 files changed, 313 insertions(+), 4 deletions(-)
+ create mode 100644 tests/regression/test_divergent_implicit_barrier_entry.c
+ create mode 100644 tests/regression/test_uniform_implicit_barrier_entry.c
+
+diff --git a/lib/llvmopencl/ImplicitConditionalBarriers.cc b/lib/llvmopencl/ImplicitConditionalBarriers.cc
+index f8b4635b4..c4519e255 100644
+--- a/lib/llvmopencl/ImplicitConditionalBarriers.cc
++++ b/lib/llvmopencl/ImplicitConditionalBarriers.cc
+@@ -34,8 +34,6 @@ IGNORE_COMPILER_WARNING("-Wmaybe-uninitialized")
+ #include "DebugHelpers.h"
+ #include "ImplicitConditionalBarriers.h"
+ #include "LLVMUtils.h"
+-#include "VariableUniformityAnalysis.h"
+-#include "VariableUniformityAnalysisResult.hh"
+ #include "Workgroup.h"
+ #include "WorkitemHandlerChooser.h"
+ POP_COMPILER_DIAGS
+@@ -95,7 +93,6 @@ ImplicitConditionalBarriers::run(llvm::Function &F,
+   llvm::LoopInfo &LI = FAM.getResult<LoopAnalysis>(F);
+ 
+   PreservedAnalyses PAChanged = PreservedAnalyses::none();
+-  PAChanged.preserve<VariableUniformityAnalysis>();
+   PAChanged.preserve<WorkitemHandlerChooser>();
+   PAChanged.preserve<LoopAnalysis>();
+ 
+@@ -155,7 +152,12 @@ ImplicitConditionalBarriers::run(llvm::Function &F,
+       if (Pred == BB) break; // Traced across a loop edge, skip this case.
+     }
+ 
+-    if (Barrier::hasOnlyBarrier(Pos)) continue;
++    if (Barrier::hasOnlyBarrier(Pos) || !DT.dominates(Pos, BB))
++      continue;
++
++    // Let the source barrier's all-or-none execution guarantee apply to the
++    // implicit barrier only when every path to the source crosses Pos.
++
+     // Inject a barrier at the beginning of the BB and let the
+     // CanonicalizeBarrier to clean it up (split to a separate BB).
+ 
+diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
+index 0458e6583..81755d624 100644
+--- a/tests/regression/CMakeLists.txt
++++ b/tests/regression/CMakeLists.txt
+@@ -31,6 +31,8 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
+      test_issue_1711 test_issue_1794 test_issue_1747
+      test_rematerialized_alloca_load_with_outside_pr_users
+      test_peeled_wi_global_id
++     test_divergent_implicit_barrier_entry
++     test_uniform_implicit_barrier_entry
+      test_usm_indirect_ptrs
+ )
+ foreach(PROG ${C_PROGRAMS_TO_BUILD})
+@@ -143,6 +145,10 @@ add_test_pocl(NAME "regression/test_issue_1747" COMMAND "test_issue_1747" "0" "$
+ 
+ add_test_pocl(NAME "regression/peeled_wi_global_id" WORKITEM_HANDLER "loopvec;cbs;" COMMAND "test_peeled_wi_global_id" LABELS ${SPIRV_LABELS})
+ 
++add_test_pocl(NAME "regression/divergent_implicit_barrier_entry" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_divergent_implicit_barrier_entry")
++
++add_test_pocl(NAME "regression/uniform_implicit_barrier_entry" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_uniform_implicit_barrier_entry")
++
+ add_test_pocl(NAME "regression/test_usm_indirect_ptrs" COMMAND "test_usm_indirect_ptrs")
+ 
+ add_test_pocl(NAME "regression/test_issue_893" COMMAND "test_issue_893")
+diff --git a/tests/regression/test_divergent_implicit_barrier_entry.c b/tests/regression/test_divergent_implicit_barrier_entry.c
+new file mode 100644
+index 000000000..3025ca65c
+--- /dev/null
++++ b/tests/regression/test_divergent_implicit_barrier_entry.c
+@@ -0,0 +1,148 @@
++// Copyright (c) 2026 PoCL developers
++//
++// Permission is hereby granted, free of charge, to any person obtaining a copy
++// of this software and associated documentation files (the "Software"), to deal
++// in the Software without restriction, including without limitation the rights
++// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++// copies of the Software, and to permit persons to whom the Software is
++// furnished to do so, subject to the following conditions:
++//
++// The above copyright notice and this permission notice shall be included in
++// all copies or substantial portions of the Software.
++//
++// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++// THE SOFTWARE.
++
++#include "pocl_opencl.h"
++
++#include <stdio.h>
++#include <stdlib.h>
++
++#define CHECK_ERROR(err)                                                       \
++  do {                                                                         \
++    if ((err) != CL_SUCCESS) {                                                 \
++      fprintf(stderr, "OpenCL error %d at %s:%d\\n", (err), __FILE__,          \
++              __LINE__);                                                       \
++      goto error;                                                              \
++    }                                                                          \
++  } while (0)
++
++static const char KernelSource[] =
++    "__kernel void test_kernel(__global int *out,\n"
++    "                          __global const int *input,\n"
++    "                          uint active_n, uint logical_len) {\n"
++    "  __local int temp;\n"
++    "  size_t i = get_local_id(0);\n"
++    "  if (i == 0) temp = 0;\n"
++    "  barrier(CLK_LOCAL_MEM_FENCE);\n"
++    "  if (i < active_n) {\n"
++    "    if (i >= logical_len) return;\n"
++    "    if (input[i] < 0) temp = 1;\n"
++    "  }\n"
++    "  barrier(CLK_LOCAL_MEM_FENCE);\n"
++    "  if (i == 0) out[0] = temp;\n"
++    "}\n";
++
++int main(void) {
++  const cl_int input[] = {0, 0, -1, 0, 0, 0, 0, 0};
++  const cl_uint active_n = 2;
++  const cl_uint logical_len = 2;
++  cl_int output = -1;
++  const size_t work_size = 8;
++  cl_int err;
++  cl_uint num_platforms;
++  cl_platform_id *platforms = NULL;
++  cl_context context = NULL;
++  cl_command_queue queue = NULL;
++  cl_program program = NULL;
++  cl_kernel kernel = NULL;
++  cl_mem output_buffer = NULL;
++  cl_mem input_buffer = NULL;
++  int result = 1;
++
++  err = clGetPlatformIDs(0, NULL, &num_platforms);
++  CHECK_ERROR(err);
++  if (num_platforms == 0) {
++    puts("SKIP: no OpenCL platforms");
++    return 77;
++  }
++  platforms = malloc(num_platforms * sizeof(*platforms));
++  if (platforms == NULL)
++    goto error;
++  err = clGetPlatformIDs(num_platforms, platforms, NULL);
++  CHECK_ERROR(err);
++
++  cl_device_id device;
++  err = clGetDeviceIDs(platforms[0], CL_DEVICE_TYPE_ALL, 1, &device, NULL);
++  CHECK_ERROR(err);
++  context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
++  CHECK_ERROR(err);
++  const cl_queue_properties properties[] = {0};
++  queue = clCreateCommandQueueWithProperties(context, device, properties, &err);
++  CHECK_ERROR(err);
++
++  const char *sources[] = {KernelSource};
++  program = clCreateProgramWithSource(context, 1, sources, NULL, &err);
++  CHECK_ERROR(err);
++  err = clBuildProgram(program, 1, &device, NULL, NULL, NULL);
++  if (err != CL_SUCCESS) {
++    size_t log_size = 0;
++    clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, 0, NULL,
++                          &log_size);
++    char *log = malloc(log_size);
++    if (log != NULL) {
++      clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, log_size,
++                            log, NULL);
++      fprintf(stderr, "Build error:\\n%s\\n", log);
++      free(log);
++    }
++    goto error;
++  }
++  kernel = clCreateKernel(program, "test_kernel", &err);
++  CHECK_ERROR(err);
++  output_buffer =
++      clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
++                     sizeof(output), &output, &err);
++  CHECK_ERROR(err);
++  input_buffer =
++      clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
++                     sizeof(input), (void *)input, &err);
++  CHECK_ERROR(err);
++
++  CHECK_ERROR(clSetKernelArg(kernel, 0, sizeof(output_buffer), &output_buffer));
++  CHECK_ERROR(clSetKernelArg(kernel, 1, sizeof(input_buffer), &input_buffer));
++  CHECK_ERROR(clSetKernelArg(kernel, 2, sizeof(active_n), &active_n));
++  CHECK_ERROR(clSetKernelArg(kernel, 3, sizeof(logical_len), &logical_len));
++  CHECK_ERROR(clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &work_size,
++                                     &work_size, 0, NULL, NULL));
++  CHECK_ERROR(clEnqueueReadBuffer(queue, output_buffer, CL_TRUE, 0,
++                                  sizeof(output), &output, 0, NULL, NULL));
++
++  if (output != 0) {
++    fprintf(stderr, "output = %d, expected 0\\n", output);
++    goto error;
++  }
++  puts("OK");
++  result = 0;
++
++error:
++  free(platforms);
++  if (input_buffer != NULL)
++    clReleaseMemObject(input_buffer);
++  if (output_buffer != NULL)
++    clReleaseMemObject(output_buffer);
++  if (kernel != NULL)
++    clReleaseKernel(kernel);
++  if (program != NULL)
++    clReleaseProgram(program);
++  if (queue != NULL)
++    clReleaseCommandQueue(queue);
++  if (context != NULL)
++    clReleaseContext(context);
++  return result;
++}
+diff --git a/tests/regression/test_uniform_implicit_barrier_entry.c b/tests/regression/test_uniform_implicit_barrier_entry.c
+new file mode 100644
+index 000000000..454ddb632
+--- /dev/null
++++ b/tests/regression/test_uniform_implicit_barrier_entry.c
+@@ -0,0 +1,153 @@
++// Copyright (c) 2026 PoCL developers
++//
++// Permission is hereby granted, free of charge, to any person obtaining a copy
++// of this software and associated documentation files (the "Software"), to deal
++// in the Software without restriction, including without limitation the rights
++// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++// copies of the Software, and to permit persons to whom the Software is
++// furnished to do so, subject to the following conditions:
++//
++// The above copyright notice and this permission notice shall be included in
++// all copies or substantial portions of the Software.
++//
++// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++// THE SOFTWARE.
++
++/*
++  The bounds check depends on the work-item id, but logical_len equals the
++  work-group size at launch, so every work-item reaches sub_group_shuffle.
++  The builtin is flattened before ImplicitConditionalBarriers and contains a
++  barrier. Its normal path dominates that barrier, so an implicit barrier is
++  legal even though VariableUniformityAnalysis cannot prove the condition
++  uniform.
++*/
++
++#include "pocl_opencl.h"
++
++#include <stdio.h>
++#include <stdlib.h>
++
++#define CHECK_ERROR(err)                                                       \
++  do {                                                                         \
++    if ((err) != CL_SUCCESS) {                                                 \
++      fprintf(stderr, "OpenCL error %d at %s:%d\n", (err), __FILE__,           \
++              __LINE__);                                                       \
++      goto error;                                                              \
++    }                                                                          \
++  } while (0)
++
++static const char KernelSource[] =
++    "#pragma OPENCL EXTENSION cl_khr_subgroups : enable\n"
++    "__kernel void test_kernel(__global int *out,\n"
++    "                          __global const int *input,\n"
++    "                          uint logical_len) {\n"
++    "  uint i = get_sub_group_local_id();\n"
++    "  if (i >= logical_len) return;\n"
++    "  uint j = get_sub_group_size() - i - 1;\n"
++    "  out[i] = sub_group_shuffle(input[i], j);\n"
++    "}\n";
++
++int main(void) {
++  const cl_int input[] = {0, 1, 2, 3, 4, 5, 6, 7};
++  cl_int output[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
++  const cl_uint logical_len = 8;
++  const size_t work_size = 8;
++  cl_int err;
++  cl_uint num_platforms;
++  cl_platform_id *platforms = NULL;
++  cl_context context = NULL;
++  cl_command_queue queue = NULL;
++  cl_program program = NULL;
++  cl_kernel kernel = NULL;
++  cl_mem output_buffer = NULL;
++  cl_mem input_buffer = NULL;
++  int result = 1;
++
++  err = clGetPlatformIDs(0, NULL, &num_platforms);
++  CHECK_ERROR(err);
++  if (num_platforms == 0) {
++    puts("SKIP: no OpenCL platforms");
++    return 77;
++  }
++  platforms = malloc(num_platforms * sizeof(*platforms));
++  if (platforms == NULL)
++    goto error;
++  err = clGetPlatformIDs(num_platforms, platforms, NULL);
++  CHECK_ERROR(err);
++
++  cl_device_id device;
++  err = clGetDeviceIDs(platforms[0], CL_DEVICE_TYPE_ALL, 1, &device, NULL);
++  CHECK_ERROR(err);
++  context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
++  CHECK_ERROR(err);
++  const cl_queue_properties properties[] = {0};
++  queue = clCreateCommandQueueWithProperties(context, device, properties, &err);
++  CHECK_ERROR(err);
++
++  const char *sources[] = {KernelSource};
++  program = clCreateProgramWithSource(context, 1, sources, NULL, &err);
++  CHECK_ERROR(err);
++  err = clBuildProgram(program, 1, &device, "-cl-std=CL3.0", NULL, NULL);
++  if (err != CL_SUCCESS) {
++    size_t log_size = 0;
++    clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, 0, NULL,
++                          &log_size);
++    char *log = malloc(log_size);
++    if (log != NULL) {
++      clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, log_size,
++                            log, NULL);
++      fprintf(stderr, "Build error:\n%s\n", log);
++      free(log);
++    }
++    goto error;
++  }
++  kernel = clCreateKernel(program, "test_kernel", &err);
++  CHECK_ERROR(err);
++  output_buffer =
++      clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
++                     sizeof(output), output, &err);
++  CHECK_ERROR(err);
++  input_buffer =
++      clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
++                     sizeof(input), (void *)input, &err);
++  CHECK_ERROR(err);
++
++  CHECK_ERROR(clSetKernelArg(kernel, 0, sizeof(output_buffer), &output_buffer));
++  CHECK_ERROR(clSetKernelArg(kernel, 1, sizeof(input_buffer), &input_buffer));
++  CHECK_ERROR(clSetKernelArg(kernel, 2, sizeof(logical_len), &logical_len));
++  CHECK_ERROR(clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &work_size,
++                                     &work_size, 0, NULL, NULL));
++  CHECK_ERROR(clEnqueueReadBuffer(queue, output_buffer, CL_TRUE, 0,
++                                  sizeof(output), output, 0, NULL, NULL));
++
++  for (size_t i = 0; i < work_size; ++i) {
++    if (output[i] != input[work_size - i - 1]) {
++      fprintf(stderr, "output[%zu] = %d, expected %d\n", i, output[i],
++              input[work_size - i - 1]);
++      goto error;
++    }
++  }
++  puts("OK");
++  result = 0;
++
++error:
++  free(platforms);
++  if (input_buffer != NULL)
++    clReleaseMemObject(input_buffer);
++  if (output_buffer != NULL)
++    clReleaseMemObject(output_buffer);
++  if (kernel != NULL)
++    clReleaseKernel(kernel);
++  if (program != NULL)
++    clReleaseProgram(program);
++  if (queue != NULL)
++    clReleaseCommandQueue(queue);
++  if (context != NULL)
++    clReleaseContext(context);
++  return result;
++}

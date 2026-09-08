@@ -5,10 +5,10 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 # Collection of sources required to build mpi-abi-stubs
 name = "mpif"
-version = v"0.1.7"
+version = v"1.0.0"
 
 sources = [
-    GitSource("https://github.com/eschnett/mpif", "d40209744cb0452c79ef11b847dc1282cdd07221"),
+    GitSource("https://github.com/eschnett/mpif", "9caecc3ce4f4eabad27dad4e1dae05ff7df21b32"),
 ]
 
 script = raw"""
@@ -20,6 +20,15 @@ cmake_args=(
     -DBUILD_SHARED_LIBS=ON
     -DMPI_HOME=${prefix}
 )
+# mpif's callback registry uses C11 atomics, and on AArch64 clang turns an
+# acq_rel compare-exchange into a call to __aarch64_cas4_acq_rel. That helper
+# is in compiler-rt's builtins or in libgcc >= 10, and neither is on the link
+# line: libmpif has Fortran sources, so CMake links it with gfortran, whose
+# libgcc here is GCC 9.1's. Inline the atomics instead -- they are cold.
+# https://github.com/eschnett/mpif/issues/5 -- drop this once mpif probes for it.
+if [[ "${target}" == aarch64-*freebsd* ]]; then
+    cmake_args+=(-DCMAKE_C_FLAGS=-mno-outline-atomics)
+fi
 cmake -Bbuild ${cmake_args[@]}
 cmake --build build --parallel ${nproc}
 cmake --install build
@@ -52,5 +61,6 @@ products = [
 ]
 
 # Build the tarballs.
+# mpif requires at least gfortran 8
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"8")

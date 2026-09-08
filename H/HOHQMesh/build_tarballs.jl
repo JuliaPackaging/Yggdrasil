@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "HOHQMesh"
-version = v"1.5.5"
+version = v"1.6.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/trixi-framework/HOHQMesh/releases/download/v$(version)/HOHQMesh-v$(version).tar.gz", "5079e9d47128bb6a8b00c043b45681955b685739a468663baf043a8072a6b24d"),
+    ArchiveSource("https://github.com/trixi-framework/HOHQMesh/releases/download/v$(version)/HOHQMesh-v$(version).tar.gz", "ba7866d9c5464453daa130af579f51c45a9011c1935c76cfef9818d8a2117a28"),
 ]
 
 # Bash recipe for building across all platforms
@@ -22,10 +22,13 @@ mkdir -p ${bindir}
 if [[ "${bb_full_target}" == *-w64-mingw32-libgfortran[34]* ]]; then
   # For some reason, on i686 with libgfortran3 or libgfortran4,
   # the executable is created without the `.exe` extension
-  cp HOHQMesh ${bindir}/HOHQMesh${exeext}
+  install -Dvm 755 HOHQMesh ${bindir}/HOHQMesh${exeext}
 else
-  cp HOHQMesh${exeext} ${bindir}
+  install -Dvm 755 HOHQMesh${exeext} ${bindir}
 fi
+
+# Install license
+install_license LICENSE.md
 """
 
 # These are the platforms we will build for by default, unless further
@@ -46,7 +49,7 @@ platforms = [
     Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
 ]
 
-platforms = expand_gfortran_versions(platforms)
+platforms = expand_gfortran_versions(platforms, old_abis=true)
 
 
 # The products that we will ensure are always built
@@ -60,4 +63,5 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9.1.0", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version = v"9.1.0", julia_compat="1.6")

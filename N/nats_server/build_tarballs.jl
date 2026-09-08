@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "nats_server"
-version = v"2.10.18"
+version = v"2.14.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/nats-io/nats-server.git", "57d23acf2737d692c24116476e12111c6499d96b")
+    GitSource("https://github.com/nats-io/nats-server.git", "9b17a586be69c9ff36e4c84a421ca47da410b561")
 
 ]
 

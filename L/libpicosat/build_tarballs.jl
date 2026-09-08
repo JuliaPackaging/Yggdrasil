@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "libpicosat"
-version = v"965.0.1"
+version = v"965.0.2"
 
 # Collection of sources required to complete build
 sources = [
@@ -15,6 +15,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/picosat*
 cp ../{Makefile,config.h} .
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 ${f}
+done
 if [[ ${target} == *musl* ]]; then
     sed -i 's!sys/unistd.h!unistd.h!g' picosat.c
 fi
