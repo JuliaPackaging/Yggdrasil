@@ -65,6 +65,7 @@ function build_step(NAME, PLATFORM, PROJECT, IS_PR)
         "BINARYBUILDER_USE_CCACHE" => "true",
         "BINARYBUILDER_STORAGE_DIR" => "/cache/yggdrasil",
         "BINARYBUILDER_CCACHE_DIR" => "/sharedcache/ccache",
+        "BINARYBUILDER_CLONES_DIR" => "/sharedcache/clones",
         "BINARYBUILDER_NPROC" => "16", # Limit parallelism somewhat to avoid OOM for LLVM
         "AWS_DEFAULT_REGION" => "us-east-1",
     ))
