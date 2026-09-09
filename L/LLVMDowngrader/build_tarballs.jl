@@ -39,10 +39,25 @@ install_license LICENSE.TXT
 # the same API, and a few lines of Julia (or C, against the installed header)
 # reproduce it. The test suite needs legacy disassemblers we don't ship here,
 # so it is disabled for the package build.
+# On Windows, build with the Clang/LLD toolchain, like LLVM_full_jll and the
+# GPU back-end libraries. A DLL linked by GNU ld gets a 32-bit-range image base
+# without ASLR, and when the loader has to relocate it (its preferred base is
+# occupied, e.g. by Julia 1.10's libLLVMExtra), the first thread-local access
+# inside the library faults on Julia 1.10's mingw runtime
+# (JuliaGPU/GPUCompiler.jl#930). LLD's output (0x180000000 base, dynamic base)
+# is relocated on every load and works.
+if [[ "${target}" == *mingw* ]]; then
+    TOOLCHAIN=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake
+    CXX_FLAGS="-pthread"
+else
+    TOOLCHAIN=${CMAKE_TARGET_TOOLCHAIN}
+    CXX_FLAGS=""
+fi
 cmake -B build -S . -GNinja \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN} \
+    -DCMAKE_CXX_FLAGS="${CXX_FLAGS}" \
     -DCMAKE_CROSSCOMPILING:BOOL=ON \
     -DLLVM_DIR=${prefix}/lib/cmake/llvm \
     -DLLVM_LINK_LLVM_DYLIB=OFF \
