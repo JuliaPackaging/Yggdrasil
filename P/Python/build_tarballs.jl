@@ -130,12 +130,7 @@ products = Product[
 dependencies = [
     Dependency("Expat_jll"; compat="2.6.5"),
     Dependency("Bzip2_jll"; compat="1.0.9"),
-    # Pin the build version: with only `compat`, BinaryBuilder builds against the
-    # oldest version the bound allows, and Libffi_jll 3.4.6+0 has no riscv64 or
-    # aarch64-unknown-freebsd build (3.4.6+3 was the first), so _ctypes cannot
-    # find ffi.h there.  3.11 skipped the module silently via setup.py -- the
-    # registered 3.11.12 ships no _ctypes on riscv64 -- while 3.12 fails hard.
-    Dependency("Libffi_jll", v"3.4.7"; compat="~3.4.6"),
+    Dependency("Libffi_jll"; compat="~3.4.7"),
     Dependency("SQLite_jll"),
     Dependency("Zlib_jll"),
     Dependency("XZ_jll"),
