@@ -209,6 +209,12 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
   mod.add_type<jlcxx::Parametric<jlcxx::TypeVar<1>>>("ListDigraphArcMap")
     .apply_combination<ApplyArcMap<ListDigraph>, ValueTypes>(WrapArcMapListDigraph());
 
+  // Keep the concrete names used before the maps became parametric.
+  mod.set_const("ListGraphNodeMapInt", static_cast<jl_datatype_t*>(jlcxx::julia_base_type<ListGraph::NodeMap<int>>()));
+  mod.set_const("ListDigraphNodeMapInt", static_cast<jl_datatype_t*>(jlcxx::julia_base_type<ListDigraph::NodeMap<int>>()));
+  mod.set_const("ListGraphEdgeMapInt", static_cast<jl_datatype_t*>(jlcxx::julia_base_type<ListGraph::EdgeMap<int>>()));
+  mod.set_const("ListDigraphArcMapInt", static_cast<jl_datatype_t*>(jlcxx::julia_base_type<ListDigraph::ArcMap<int>>()));
+
   mod.method("ListGraphNodeFromId", [](int i) { return ListGraph::nodeFromId(i); });
   mod.method("ListGraphEdgeFromId", [](int i) { return ListGraph::edgeFromId(i); });
   mod.method("ListDigraphNodeFromId", [](int i) { return ListDigraph::nodeFromId(i); });
@@ -256,9 +262,14 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
   REGISTER_MCF_ALGO(CapacityScaling3,"CapacityScaling", ValueTypesNoNarrow, ValueTypesNoNarrow)
   REGISTER_MCF_ALGO(CycleCanceling,  "CycleCanceling",  ValueTypes,         ValueTypes)
 
+  mod.set_const("NetworkSimplexListDigraphIntInt", static_cast<jl_datatype_t*>(jlcxx::julia_base_type<NetworkSimplex<ListDigraph, int, int>>()));
+
   // ProblemType constants are the same for all algorithms — register once
   using AnyAlgo = NetworkSimplex<ListDigraph, int32_t, int32_t>;
   mod.method("ProblemTypeInfeasible", []() { return static_cast<int>(AnyAlgo::INFEASIBLE); });
   mod.method("ProblemTypeOptimal",    []() { return static_cast<int>(AnyAlgo::OPTIMAL);    });
   mod.method("ProblemTypeUnbounded",  []() { return static_cast<int>(AnyAlgo::UNBOUNDED);  });
+  mod.method("NetworkSimplexProblemTypeInfeasible", []() { return static_cast<int>(AnyAlgo::INFEASIBLE); });
+  mod.method("NetworkSimplexProblemTypeOptimal",    []() { return static_cast<int>(AnyAlgo::OPTIMAL);    });
+  mod.method("NetworkSimplexProblemTypeUnbounded",  []() { return static_cast<int>(AnyAlgo::UNBOUNDED);  });
 }
