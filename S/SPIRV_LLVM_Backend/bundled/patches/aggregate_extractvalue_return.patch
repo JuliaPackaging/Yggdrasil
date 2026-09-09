@@ -1,22 +1,11 @@
-From db406b613633b8bcff74024c43c3f9dcd850e403 Mon Sep 17 00:00:00 2001
-From: Tim Besard <tim.besard@gmail.com>
-Date: Wed, 15 Jul 2026 15:00:12 +0200
-Subject: [PATCH] [SPIR-V] Fix direct return of aggregate extractvalue
-
----
- lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp       | 17 +++++++++++------
- .../instructions/ret-single-element-array.ll   | 18 ++++++++++++++++++
- 2 files changed, 29 insertions(+), 6 deletions(-)
- create mode 100644 llvm/test/CodeGen/SPIRV/instructions/ret-single-element-array.ll
-
 diff --git a/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp b/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
-index 42199ca82448..92ac3f14f0ca 100644
+index 93724b2b6afb..a07be05cc651 100644
 --- a/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
 +++ b/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
-@@ -2014,12 +2014,17 @@ Instruction *SPIRVEmitIntrinsics::visitExtractValueInst(ExtractValueInst &I) {
+@@ -2454,12 +2454,17 @@ Instruction *SPIRVEmitIntrinsics::visitExtractValueInst(ExtractValueInst &I) {
      Args.push_back(B.getInt32(Op));
-   auto *NewI =
-       B.CreateIntrinsic(Intrinsic::spv_extractv, {I.getType()}, {Args});
+   Instruction *NewI = B.CreateIntrinsicWithoutFolding(Intrinsic::spv_extractv,
+                                                       {I.getType()}, {Args});
 -  // If this aggregate extract feeds another insertvalue, the extracted
 -  // composite is used as a SPIR-V value-id by llvm.spv.insertv. Keep the real
 -  // aggregate type in metadata, but expose the value itself as i32 so the
@@ -61,6 +50,3 @@ index 000000000000..fc1b7a74402d
 +  %ret = extractvalue [1 x [1 x float]] %nested, 0
 +  ret [1 x float] %ret
 +}
--- 
-2.55.0
-
