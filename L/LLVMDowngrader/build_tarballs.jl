@@ -6,11 +6,14 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "LLVMDowngrader"
-version = v"0.9.1"
+version = v"0.10.0"
 
-# Build the standalone `llvm-downgrade` out-of-tree against a prebuilt LLVM
-# (LLVM_full_jll), statically linked so the tool is self-contained and usable
-# outside a Julia environment.
+# Build `libllvm_downgrade`, a shared library with a small C API (see
+# include/llvm-downgrade.h upstream) over the legacy bitcode writers,
+# replacing the `llvm-downgrade` executable. It is built out-of-tree
+# against a prebuilt LLVM (LLVM_full_jll), statically linked with every LLVM
+# symbol hidden, so consumers (GPUCompiler, AMDGPU.jl, Metal.jl) can call it
+# in-process next to Julia's own LLVM instead of spawning the tool.
 #
 # Because LLVM's bitcode reader is backwards compatible (any bitcode since 3.0,
 # auto-upgraded on load), this single tool ingests bitcode from any LLVM up to
@@ -21,30 +24,7 @@ llvm_version = v"22.1.8+0"
 
 sources = [
     GitSource("https://github.com/JuliaLLVM/llvm-downgrade",
-              "6ab0b538c9302bd44f1d2a02f8d064ba9c5f2efb"),
-    # We also ship the `llvm-dis` from each LLVM release whose bitcode the
-    # downgrader emits (as `llvm-dis-5` / `llvm-dis-7` / `llvm-dis-14` /
-    # `llvm-dis-15` / `llvm-dis-18`), so the
-    # downgraded bitcode can be disassembled with a matching disassembler. These
-    # are built from the upstream release sources and are version-independent.
-    ArchiveSource("https://releases.llvm.org/5.0.2/llvm-5.0.2.src.tar.xz",
-                  "d522eda97835a9c75f0b88ddc81437e5edbb87dc2740686cb8647763855c2b3c"),
-    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-7.1.0/llvm-7.1.0.src.tar.xz",
-                  "1bcc9b285074ded87b88faaedddb88e6b5d6c331dfcfb57d7f3393dd622b3764"),
-    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-14.0.6/llvm-14.0.6.src.tar.xz",
-                  "050922ecaaca5781fdf6631ea92bc715183f202f9d2f15147226f023414f619a"),
-    # LLVM >= 15 splits the shared cmake modules out of llvm-*.src; each release's
-    # `cmake` dir must sit next to its llvm source dir (see the dis15/dis18 setup
-    # in the script).
-    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.7/llvm-15.0.7.src.tar.xz",
-                  "4ad8b2cc8003c86d0078d15d987d84e3a739f24aae9033865c027abae93ee7a4"),
-    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.7/cmake-15.0.7.src.tar.xz",
-                  "8986f29b634fdaa9862eedda78513969fe9788301c9f2d938f4c10a3e7a3e7ea"),
-    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.8/llvm-18.1.8.src.tar.xz",
-                  "f68cf90f369bc7d0158ba70d860b0cb34dbc163d6ff0ebc6cfa5e515b9b2e28d"),
-    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.8/cmake-18.1.8.src.tar.xz",
-                  "59badef592dd34893cd319d42b323aaa990b452d05c7180ff20f23ab1b41e837"),
-    DirectorySource("./bundled"),
+              "07fde16ec0df7cb4bf3602c3479b5478dadd198a"),
 ]
 
 # Bash recipe for building across all platforms
@@ -53,9 +33,12 @@ cd ${WORKSPACE}/srcdir/llvm-downgrade
 install_license LICENSE.TXT
 
 # Build out-of-tree against the prebuilt LLVM from LLVM_full_jll, statically
-# linking the LLVM component archives so `llvm-downgrade` has no runtime libLLVM
-# dependency. The test suite needs legacy disassemblers we don't ship here, so
-# it is disabled for the package build.
+# linking the LLVM component archives so `libllvm_downgrade` has no runtime
+# libLLVM dependency (and hides every LLVM symbol, see upstream's CMakeLists).
+# Only the library is shipped: the `llvm-downgrade` tool is a thin driver over
+# the same API, and a few lines of Julia (or C, against the installed header)
+# reproduce it. The test suite needs legacy disassemblers we don't ship here,
+# so it is disabled for the package build.
 cmake -B build -S . -GNinja \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -63,90 +46,18 @@ cmake -B build -S . -GNinja \
     -DCMAKE_CROSSCOMPILING:BOOL=ON \
     -DLLVM_DIR=${prefix}/lib/cmake/llvm \
     -DLLVM_LINK_LLVM_DYLIB=OFF \
+    -DLLVMDG_BUILD_TOOL=OFF \
     -DLLVMDG_BUILD_TESTS=OFF
 ninja -C build -j${nproc} install
 
-# Build `llvm-dis` from the old LLVM releases whose bitcode the downgrader emits,
-# so the downgraded IR can be disassembled with a matching disassembler. These are
-# self-contained source builds (no LLVM_full_jll): a native llvm-tblgen/llvm-config
-# bootstrap, then a cross build of just `llvm-dis` (no backends) to keep it quick.
-# The ancient releases (5/7) need a couple of source tweaks to build with a modern
-# CMake/toolchain (see bundled/patches); LLVM 14 builds cleanly, so the patch is
-# applied only when one exists.
-build_old_llvm_dis() {
-    local llvm_src="$1"
-    local suffix="$2"
-
-    # apply the build-compatibility patches, if this release needs any
-    local patch="${WORKSPACE}/srcdir/patches/llvm${suffix}-cmake-policy-and-regex-guard.patch"
-    if [ -f "${patch}" ]; then
-        pushd "${llvm_src}"
-        atomic_patch -p1 "${patch}"
-        popd
-    fi
-
-    # native bootstrap: build a host llvm-tblgen/llvm-config matching this version
-    mkdir -p "${WORKSPACE}/dis-bootstrap-${suffix}"
-    pushd "${WORKSPACE}/dis-bootstrap-${suffix}"
-    cmake -GNinja "${llvm_src}" \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_CROSSCOMPILING=False \
-        -DCMAKE_TOOLCHAIN_FILE="${CMAKE_HOST_TOOLCHAIN}" \
-        -DLLVM_HOST_TRIPLE="${MACHTYPE}" \
-        -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
-        -DLLVM_TARGETS_TO_BUILD="" \
-        -DLLVM_INCLUDE_TESTS=OFF \
-        -DLLVM_INCLUDE_EXAMPLES=OFF \
-        -DLLVM_INCLUDE_BENCHMARKS=OFF \
-        -DLLVM_INCLUDE_DOCS=OFF \
-        -DLLVM_ENABLE_TERMINFO=OFF \
-        -DLLVM_ENABLE_ZLIB=OFF \
-        -DLLVM_ENABLE_ZSTD=OFF \
-        -DLLVM_ENABLE_LIBXML2=OFF
-    ninja -j${nproc} llvm-tblgen llvm-config
-    popd
-
-    # cross build: just `llvm-dis`, then install + rename to `llvm-dis-${suffix}`
-    mkdir -p "${WORKSPACE}/dis-build-${suffix}"
-    pushd "${WORKSPACE}/dis-build-${suffix}"
-    cmake -GNinja "${llvm_src}" \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_CROSSCOMPILING:BOOL=ON \
-        -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
-        -DCMAKE_INSTALL_PREFIX="${prefix}" \
-        -DLLVM_TABLEGEN="${WORKSPACE}/dis-bootstrap-${suffix}/bin/llvm-tblgen" \
-        -DLLVM_CONFIG_PATH="${WORKSPACE}/dis-bootstrap-${suffix}/bin/llvm-config" \
-        -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
-        -DLLVM_TARGETS_TO_BUILD="" \
-        -DLLVM_INCLUDE_TESTS=OFF \
-        -DLLVM_INCLUDE_EXAMPLES=OFF \
-        -DLLVM_INCLUDE_BENCHMARKS=OFF \
-        -DLLVM_INCLUDE_DOCS=OFF \
-        -DLLVM_ENABLE_TERMINFO=OFF \
-        -DLLVM_ENABLE_ZLIB=OFF \
-        -DLLVM_ENABLE_ZSTD=OFF \
-        -DLLVM_ENABLE_LIBXML2=OFF \
-        -DHAVE_HISTEDIT_H=OFF \
-        -DHAVE_LIBEDIT=OFF
-    ninja -j${nproc} tools/llvm-dis/install
-    mv "${bindir}/llvm-dis${exeext}" "${bindir}/llvm-dis-${suffix}${exeext}"
-    popd
-}
-
-build_old_llvm_dis "${WORKSPACE}/srcdir/llvm-5.0.2.src" 5
-build_old_llvm_dis "${WORKSPACE}/srcdir/llvm-7.1.0.src" 7
-build_old_llvm_dis "${WORKSPACE}/srcdir/llvm-14.0.6.src" 14
-
-# LLVM >= 15 standalone builds expect the release's shared `cmake` module dir as
-# a sibling named exactly `cmake`; give each release its own parent dir so the
-# two releases' cmake dirs don't collide.
-mkdir -p ${WORKSPACE}/srcdir/dis15 ${WORKSPACE}/srcdir/dis18
-mv ${WORKSPACE}/srcdir/llvm-15.0.7.src ${WORKSPACE}/srcdir/dis15/llvm
-mv ${WORKSPACE}/srcdir/cmake-15.0.7.src ${WORKSPACE}/srcdir/dis15/cmake
-mv ${WORKSPACE}/srcdir/llvm-18.1.8.src ${WORKSPACE}/srcdir/dis18/llvm
-mv ${WORKSPACE}/srcdir/cmake-18.1.8.src ${WORKSPACE}/srcdir/dis18/cmake
-build_old_llvm_dis "${WORKSPACE}/srcdir/dis15/llvm" 15
-build_old_llvm_dis "${WORKSPACE}/srcdir/dis18/llvm" 18
+# Show what got exported: only the LLVMDG* API, and (on ELF) no STB_GNU_UNIQUE
+# symbols, which would defeat the isolation.
+if [[ "${target}" == *-linux-* || "${target}" == *-freebsd* ]]; then
+    echo "exported symbols:"; nm -D --defined-only ${libdir}/libllvm_downgrade.${dlext} | grep -v ' [wv] '
+    echo "STB_GNU_UNIQUE symbols: $(readelf -Ws ${libdir}/libllvm_downgrade.${dlext} | grep -c UNIQUE)"
+elif [[ "${target}" == *-apple-* ]]; then
+    echo "exported symbols:"; nm -gU ${libdir}/libllvm_downgrade.${dlext}
+fi
 """
 
 # LLVM 15+ (hence LLVM_full_jll) is built against the macOS 10.14 SDK with a
@@ -155,14 +66,13 @@ build_old_llvm_dis "${WORKSPACE}/srcdir/dis18/llvm" 18
 # link the prebuilt LLVM. (No effect on non-macOS or Apple Silicon.)
 sources, script = require_macos_sdk("10.14", sources, script)
 
-# The products that we will ensure are always built
+# The products that we will ensure are always built. The library is not
+# dlopen'ed at `__init__` time; the first `ccall` into it loads it on demand.
+# The legacy `llvm-dis-*` disassemblers are no longer shipped: their only
+# consumer was the textual form of Metal's AIR, which Julia's own LLVM can
+# produce by parsing the downgraded bitcode.
 products = Product[
-    ExecutableProduct("llvm-downgrade", :llvm_downgrade),
-    ExecutableProduct("llvm-dis-5", :llvm_dis_5),
-    ExecutableProduct("llvm-dis-7", :llvm_dis_7),
-    ExecutableProduct("llvm-dis-14", :llvm_dis_14),
-    ExecutableProduct("llvm-dis-15", :llvm_dis_15),
-    ExecutableProduct("llvm-dis-18", :llvm_dis_18),
+    LibraryProduct("libllvm_downgrade", :libllvm_downgrade; dont_dlopen=true),
 ]
 
 # A single, version-agnostic artifact: selected by platform alone, with no
