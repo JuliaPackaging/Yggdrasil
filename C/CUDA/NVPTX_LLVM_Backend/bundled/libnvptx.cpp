@@ -2,7 +2,8 @@
 //
 // Implements the C API in libnvptx.h on top of LLVM's NVPTX back-end: what
 // `llc -mtriple=nvptx64-nvidia-cuda -mcpu=... -mattr=+ptx.. -filetype=asm`
-// does, without the driver, the command-line parser, or the file system.
+// does, without the driver or the file system (the command-line parser is
+// only used to set one hidden NVPTX option, see NVPTXCompile).
 //
 // No `cl::opt` is registered by this file. That keeps the library loadable next
 // to another LLVM (Julia's own, or a sibling back-end library) in one process:
@@ -27,6 +28,7 @@
 #include "llvm/MC/MCSubtargetInfo.h"
 #include "llvm/MC/TargetRegistry.h"
 #include "llvm/Support/CodeGen.h"
+#include "llvm/Support/CommandLine.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/PrettyStackTrace.h"
@@ -309,8 +311,18 @@ int NVPTXCompile(const char *Bitcode, size_t Length,
     // module's triple and datalayout are the target's, whatever it claimed.
     TargetOptions TO;
     TO.MCOptions.AsmVerbose = Options->Verbose != 0;
-    if (Options->FMAContraction)
-      TO.AllowFPOpFusion = FPOpFusion::Fast;
+    // FMAContraction is what `-nvptx-fma-level=1` did: emit `mul.f32`/`add.f32`
+    // without the `.rn` rounding modifier so that ptxas may contract them (as
+    // nvcc does), while LLVM's own DAG-level fusion stays gated on `contract`
+    // fast-math flags. `AllowFPOpFusion::Fast` (llc's `-fp-contract=fast`)
+    // would instead fuse every eligible pair in the DAG combiner. The level is
+    // a hidden NVPTX `cl::opt` that only counts when it has an occurrence, so
+    // set it through the (library-private) command-line parser on every call.
+    cl::ResetAllOptionOccurrences();
+    if (Options->FMAContraction) {
+      const char *const Args[] = {"libnvptx", "-nvptx-fma-level=1"};
+      cl::ParseCommandLineOptions(2, Args, "", &nulls());
+    }
     S->TM.reset(TheTarget.createTargetMachine(TT, Options->CPU, Features, TO,
                                               std::nullopt, std::nullopt,
                                               OptLevel));
