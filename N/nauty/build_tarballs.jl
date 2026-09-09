@@ -12,7 +12,9 @@ version = v"2.9.3"
 
 # Collection of sources required to build nauty
 sources = [
-    ArchiveSource("https://pallini.di.uniroma1.it/nauty$(upstream_version.major)_$(upstream_version.minor)_$(upstream_version.patch).tar.gz",
+    # The usual pallini.di.uniroma1.it has an expired certificate and is currently broken.
+    # This loads the tarball from McKay's website. The file should be identical.
+    ArchiveSource("https://users.cecs.anu.edu.au/~bdm/nauty/nauty$(upstream_version.major)_$(upstream_version.minor)_$(upstream_version.patch).tar.gz",
 		  "9fc4edae04f88a0f5883985be3b39cf7f898fd6cc96e96b9ee25452743cc1b5b"),
     DirectorySource("./bundled")
 ]
