@@ -3,13 +3,20 @@
 using BinaryBuilder, Pkg
 
 name = "AMDGPU_LLVM_Backend"
-version = v"22.1.8"
+version = v"23.1.1"
+llvm_version = v"23.1.1"
 
+# This JLL ships `libamdgpu`, a shared library exposing a small, typed C API (see
+# bundled/libamdgpu.h) over a statically linked, symbol-hidden LLVM AMDGPU
+# back-end and lld, replacing the `llc` and `lld` executables, plus the ROCm
+# device libraries as bitcode. The package version tracks the embedded LLVM's
+# (also reported at runtime by `AMDGPUGetLLVMVersion`).
+#
 # Collection of sources required to build AMDGPU_LLVM_Backend.
-# LLVM 22 ships a single monorepo source archive (`llvm-project-X.Y.Z.src.tar.xz`).
+# LLVM ships a single monorepo source archive (`llvm-project-X.Y.Z.src.tar.xz`).
 sources = [
-    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/llvm-project-$(version).src.tar.xz",
-                  "922f1817a0df7b1489272d18134ee0087a8b068828f87ac63b9861b1a9965888"),
+    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-$(llvm_version)/llvm-project-$(llvm_version).src.tar.xz",
+                  "ebe9be46fe8756d58c5b198ffad0fa2a766257add81a4dc52179bfacc7888ee6"),
     GitSource("https://github.com/ROCm/llvm-project",
               "46fcb339fb61119b337f973c7ca9e710a319fdd0"),
     DirectorySource("./bundled"),
@@ -17,7 +24,13 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-# Apply backported patches to the upstream LLVM sources
+# Apply backported patches to the upstream LLVM sources.
+# LLVM installs process-wide signal handlers (and, on Windows, an unhandled-
+# exception filter) when it registers files to remove on crash, e.g. for lld's
+# output file, and when a CrashRecoveryContext is enabled. Embedded in Julia,
+# which synchronises its threads with SIGSEGV, those handlers are fatal: they
+# intercept the host's signals and re-raise them with a different siginfo.
+# Make every such installation a no-op; the library never wants them.
 pushd llvm-project-*
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
@@ -59,8 +72,21 @@ CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS=lld)
 # Install things into $prefix
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
 
-# Explicitly use our cmake toolchain file and tell CMake we're cross-compiling
-CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+# Explicitly use our cmake toolchain file and tell CMake we're cross-compiling.
+# On Windows, build with the Clang/LLD toolchain: the library below is linked
+# with lld (GNU ld is pathologically slow producing a DLL out of large static
+# LLVM archives), and mixing GCC-built archives into a Clang/LLD link is not a
+# combination we want to debug.
+if [[ "${target}" == *mingw* ]]; then
+    CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake)
+    CXX_FLAGS="-pthread"
+else
+    CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+    # glibc treats STB_GNU_UNIQUE symbols as process-unique regardless of
+    # visibility, which would let two LLVMs in one process share state.
+    CXX_FLAGS="-fno-gnu-unique"
+fi
+CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="${CXX_FLAGS}")
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=ON)
 
 # Release build for best performance
@@ -82,8 +108,51 @@ CMAKE_FLAGS+=(-DHAVE_HISTEDIT_H=Off)
 CMAKE_FLAGS+=(-DHAVE_LIBEDIT=Off)
 
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
-ninja -j${nproc} tools/llc/install
-ninja -j${nproc} tools/lld/install
+# Building `llc` and `lld` builds exactly the component archives the library
+# needs; the executables themselves are not shipped.
+ninja -j${nproc} llc lld
+
+# Build libamdgpu: one translation unit over the static LLVM and lld component
+# archives, with every LLVM symbol hidden so only the AMDGPU* API is exported.
+# That isolation is what allows loading the library next to Julia's own LLVM
+# (or a sibling back-end library) in one process. The API TU is compiled with
+# exceptions so that a `report_fatal_error` can be turned into an error return.
+cd ${WORKSPACE}/srcdir
+COMMON_FLAGS=(-O2 -std=c++17 -fPIC
+    -fvisibility=hidden -fvisibility-inlines-hidden -fno-rtti -fexceptions
+    -ffunction-sections -fdata-sections
+    -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS
+    -I${LLVM_SRCDIR}/include -I${WORKSPACE}/build/include
+    -I${LLVM_SRCDIR}/../lld/include)
+LLVM_LIBS=(-Wl,--start-group ${WORKSPACE}/build/lib/libLLVM*.a ${WORKSPACE}/build/lib/liblld*.a -Wl,--end-group)
+if [[ "${target}" == *mingw* ]]; then
+    # Clang/LLD, see above. Export only the dllexport'd API: auto-export would
+    # overflow the 64K PE export limit with the static LLVM.
+    LINKER=${target}-clang++
+    COMMON_FLAGS+=(-pthread)
+    LINK_FLAGS=(-Wl,--exclude-all-symbols -Wl,--gc-sections
+        -L${prefix}/lib -lz -lole32 -luuid -lpsapi -lshell32 -ladvapi32 -lws2_32 -lntdll)
+else
+    LINKER=${CXX}
+    COMMON_FLAGS+=(-fno-gnu-unique)
+    # Export exactly the functions declared in the header.
+    API=$(sed -n 's/.*\b\(AMDGPU[A-Za-z0-9]*\)(.*/\1/p' libamdgpu.h | sort -u)
+    echo "{ global: $(printf '%s; ' ${API}) local: *; };" > libamdgpu.map
+    LINK_FLAGS=(-Wl,--exclude-libs,ALL -Wl,-Bsymbolic -Wl,--gc-sections -Wl,-z,defs
+        -Wl,--version-script=libamdgpu.map
+        -L${prefix}/lib -lz -lpthread -ldl -lm)
+fi
+mkdir -p ${libdir} ${includedir}
+${LINKER} -shared -o ${libdir}/libamdgpu.${dlext} ${COMMON_FLAGS[@]} libamdgpu.cpp \
+    ${LLVM_LIBS[@]} ${LINK_FLAGS[@]}
+install -Dm644 libamdgpu.h ${includedir}/libamdgpu.h
+
+# Show what got exported: only the AMDGPU* API, and (on ELF) no STB_GNU_UNIQUE
+# symbols, which would defeat the isolation.
+if [[ "${target}" == *linux* ]]; then
+    echo "exported symbols:"; nm -D --defined-only ${libdir}/libamdgpu.${dlext} | grep -v ' [wv] '
+    echo "STB_GNU_UNIQUE symbols: $(readelf -Ws ${libdir}/libamdgpu.${dlext} | grep -c UNIQUE)"
+fi
 
 # build device libs, those live in the ROCm llvm fork
 # `ockl/src/workitem.cl` includes `amdhsa_abi.h`, which LLVM_full_jll's Clang doesn't have so just copy it
@@ -114,17 +183,18 @@ platforms = [
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
+# `libamdgpu` is not dlopen'ed at `__init__` time: it is tens of MB, and the
+# first `ccall` into it loads it on demand.
 products = Product[
-    ExecutableProduct("llc", :llc),
-    ExecutableProduct("lld", :lld),
+    LibraryProduct("libamdgpu", :libamdgpu; dont_dlopen=true),
     FileProduct("amdgcn/bitcode/", :bitcode_path),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Zlib_jll")
-    # Host LLVM+Clang toolchain for compiling the device libraries to bitcode;
-    # matches the LLVM version we build here.
+    # Host LLVM+Clang toolchain for compiling the device libraries to bitcode.
+    # It may trail the LLVM built here: its bitcode is auto-upgraded on load.
     HostBuildDependency(PackageSpec(; name="LLVM_full_jll", version=v"22.1.8+0"))
 ]
 
