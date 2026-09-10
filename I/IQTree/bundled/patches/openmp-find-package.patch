@@ -1,0 +1,61 @@
+Use find_package(OpenMP) on Linux and macOS instead of the bundled libomp.a.
+
+The bundled lib/libomp.a and liblinux_arm/libomp.a are built against glibc
+(reference `__sysconf`) and fail to link on musl. The bundled libmac/libomp.a
+references `___chkstk_darwin`, an x86-only stack-probe builtin that BB's
+clang-rt doesn't ship - link fails on x86_64-apple-darwin (aarch64-darwin
+isn't affected). Switching both branches to find_package(OpenMP) picks up
+libgomp from CompilerSupportLibraries_jll on Linux and libomp from
+LLVMOpenMP_jll on macOS. FreeBSD and Windows branches are unchanged.
+
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -549,42 +549,12 @@
+     # Path of the bundled LLVM libomp.a for different platforms.
+     set(BUNDLED_OMP_LIB "")
+
+-    if(APPLE)
+-    	if(OSX_NATIVE_ARCHITECTURE STREQUAL "arm64")
+-            if(MACOS_MAJOR_VERSION GREATER_EQUAL 26)
+-                message("Using libmac26_m1 for macOS ${MACOS_VERSION}")
+-                link_directories(${PROJECT_SOURCE_DIR}/libmac26_m1)
+-                LIST(APPEND STATIC_LIBS "${PROJECT_SOURCE_DIR}/libmac26_m1/libomp.a" "${PROJECT_SOURCE_DIR}/libmac_m1/libz.a")
+-                set(BUNDLED_OMP_LIB "${PROJECT_SOURCE_DIR}/libmac26_m1/libomp.a")
+-            else()
+-                link_directories(${PROJECT_SOURCE_DIR}/libmac_m1)
+-                LIST(APPEND STATIC_LIBS "${PROJECT_SOURCE_DIR}/libmac_m1/libomp.a" "${PROJECT_SOURCE_DIR}/libmac_m1/libz.a")
+-                set(BUNDLED_OMP_LIB "${PROJECT_SOURCE_DIR}/libmac_m1/libomp.a")
+-            endif()
+-    	else()
+-    		if(MACOS_MAJOR_VERSION GREATER_EQUAL 26)
+-                message("Using libmac26 for macOS ${MACOS_VERSION}")
+-                link_directories(${PROJECT_SOURCE_DIR}/libmac26)
+-                LIST(APPEND STATIC_LIBS "${PROJECT_SOURCE_DIR}/libmac26/libomp.a" "${PROJECT_SOURCE_DIR}/libmac/libz.a")
+-                set(BUNDLED_OMP_LIB "${PROJECT_SOURCE_DIR}/libmac26/libomp.a")
+-            else()
+-            	link_directories(${PROJECT_SOURCE_DIR}/libmac)
+-            	LIST(APPEND STATIC_LIBS "${PROJECT_SOURCE_DIR}/libmac/libomp.a" "${PROJECT_SOURCE_DIR}/libmac/libz.a")
+-                set(BUNDLED_OMP_LIB "${PROJECT_SOURCE_DIR}/libmac/libomp.a")
+-            endif()
+-      endif()
+-    elseif (UNIX AND NOT ${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD")
+-      if (__ARM_NEON)
+-        link_directories(${PROJECT_SOURCE_DIR}/liblinux_arm)
+-        LIST(APPEND STATIC_LIBS "${PROJECT_SOURCE_DIR}/liblinux_arm/libomp.a" "${PROJECT_SOURCE_DIR}/liblinux_arm/libz.a")
+-        set(BUNDLED_OMP_LIB "${PROJECT_SOURCE_DIR}/liblinux_arm/libomp.a")
+-      elseif(BUILD_LIB)
+-        find_package(OpenMP)
+-      else()
+-        link_directories(${PROJECT_SOURCE_DIR}/lib)
+-        LIST(APPEND STATIC_LIBS "${PROJECT_SOURCE_DIR}/lib/libomp.a" "${PROJECT_SOURCE_DIR}/lib/libz.a")
+-        set(BUNDLED_OMP_LIB "${PROJECT_SOURCE_DIR}/lib/libomp.a")
+-      endif()
++    if(APPLE OR (UNIX AND NOT ${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD"))
++      # Bundled libomp.a is glibc-linked on Linux (breaks musl) and references
++      # ___chkstk_darwin on x86_64 macOS (BB's clang-rt lacks it). Use system
++      # OpenMP - libgomp via CompilerSupportLibraries_jll on Linux, libomp via
++      # LLVMOpenMP_jll on macOS.
++      find_package(OpenMP REQUIRED)
+     elseif (WIN32)
+         link_directories(${PROJECT_SOURCE_DIR}/lib)
+     endif()
