@@ -171,6 +171,7 @@ function build_script(standalone=false)
     # - 0010: MinGW Clang/lld toolchain support (JuliaGPU-only, not upstreamed)
     # - 0014: CanonicalizeBarriers fix for reconverging barrier successors (upstream PR #2281)
     # - 0015, 0016: UnreachablesToReturns fix for issue #1958 (upstream PR #2280)
+    # - 0017: independent SVM/USM indirect pointer lists in clSetKernelExecInfo (upstream PR #2305)
     # - all others: backports of fixes that landed in upstream `main`
     for patch in $WORKSPACE/srcdir/patches/pocl/*.patch; do
         atomic_patch -p1 $patch

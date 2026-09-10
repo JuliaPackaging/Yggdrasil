@@ -1,25 +1,29 @@
 using BinaryBuilder, Pkg, BinaryBuilderBase
 
-const YGGDRASIL_DIR = "../.."
+const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "C/CUDA/common.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
-# TODO: Ship nvToolsExt.h with NVTX_jll and use here instead of patching it out.
-#       AMGX includes <nvtx3/nvToolsExt.h>, but CUDA_SDK_jll does not ship the
-#       `cuda_nvtx` redistributable component, so NVTX ranges stay disabled.
+# This is the distributed build of AMGX. It is a separate package rather than a
+# variant of AMGX_jll because MPI support changes the ABI: it defines
+# AMGX_WITH_MPI, links MPI::MPI_CXX, and exposes the distributed entry points.
+# Users who do not need MPI should keep using AMGX_jll, which stays a single
+# build per CUDA version instead of one per MPI ABI.
+#
+# The sources and patches are shared with ../build_tarballs.jl -- keep the two
+# in step when updating AMGX.
 
-name = "AMGX"
+name = "AMGX_MPI"
 version = v"2.5.0"
 
-# Collection of sources required to complete build
-base_sources = [
+sources = [
     GitSource("https://github.com/NVIDIA/AMGX.git",
               "cc1cebdbb32b14d33762d4ddabcb2e23c1669f47"),
-    DirectorySource("./bundled")
+    DirectorySource("../bundled")
 ]
 
-# Bash recipe for building across all platforms
 script = raw"""
 # nvcc writes to /tmp, which is a small tmpfs in our sandbox.
 # make it use the workspace instead
@@ -69,14 +73,25 @@ install_license LICENSES/BSD-3-Clause.txt
 
 mkdir build
 cd build
+# AMGX enables MPI whenever `find_package(MPI)` succeeds, defining AMGX_WITH_MPI
+# and linking MPI::MPI_CXX. Point it at the MPI from the JLL explicitly so it
+# cannot pick up anything else.
 cmake -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_CUDA_COMPILER=$prefix/cuda/bin/nvcc \
       -DCMAKE_CUDA_FLAGS="-L${prefix}/cuda/lib" \
       -DCMAKE_CUDA_ARCHITECTURES="${CUDA_ARCHS}" \
+      -DMPI_C_COMPILER=${bindir}/mpicc \
+      -DMPI_CXX_COMPILER=${bindir}/mpicxx \
       -Wno-dev \
-      ..
+      .. > cmake.log 2>&1 || { cat cmake.log; exit 1; }
+cat cmake.log
+
+# AMGX prints this once `find_package(MPI)` has succeeded and AMGX_WITH_MPI is
+# set. Fail loudly rather than silently shipping a non-MPI build under this name.
+grep -q "This is a MPI build:TRUE" cmake.log || \
+  { echo "ERROR: MPI was not detected; refusing to build AMGX_MPI without MPI"; exit 1; }
 
 make -j${nproc} install
 
@@ -90,51 +105,71 @@ if [[ "${target}" == aarch64-linux-* ]]; then
 fi
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line.
-#
-# AMGX 2.5 requires CUDA 12.0 or later (`find_package(CUDAToolkit 12.0 REQUIRED)`).
+# AMGX 2.5 requires CUDA 12.0 or later, and nvcc only cross-compiles to Linux.
 platforms = CUDA.supported_platforms(; min_version=v"12")
 filter!(p -> arch(p) in ("x86_64", "aarch64"), platforms)
 
-# The products that we will ensure are always built
+platforms, mpi_dependencies = MPI.augment_platforms(platforms)
+
+# Only MPItrampoline to begin with. Expanding over every ABI would multiply an
+# already large CUDA matrix by four (136 builds), and MPItrampoline is the one
+# that can be retargeted at another MPI at runtime through MPIPreferences, so it
+# is the most useful single choice. The other ABIs can be added later if there
+# is demand; `mpi_dependencies` is already platform-constrained, so dropping
+# platforms here is enough.
+filter!(p -> p["mpi"] == "mpitrampoline", platforms)
+
+# Selection has to consider both the CUDA toolkit and the MPI ABI.
+augment_platform_block = """
+    using Base.BinaryPlatforms
+
+    module __CUDA
+        $(CUDA.augment)
+    end
+
+    $(MPI.augment)
+
+    function augment_platform!(platform::Platform)
+        augment_mpi!(platform)
+        __CUDA.augment_platform!(platform)
+    end
+"""
+
 products = [
     LibraryProduct("libamgxsh", :libamgxsh),
 ]
 
 # AMGX 2.5 dropped support for everything below Volta, and only knows about the
-# architectures listed in `CUDA_ALLOW_ARCH` in its CMakeLists.txt. Without an
-# explicit list it would only build for `90;100;120`, which excludes Ampere.
+# architectures listed in `CUDA_ALLOW_ARCH` in its CMakeLists.txt.
 const amgx_archs = ["70", "75", "80", "86", "89", "90", "100", "120"]
 
-# GCC 11 is the first version that defaults to -std=gnu++17. CUDA 13 ships
-# CCCL 3 (Thrust, CUB, libcu++), which refuses to compile as anything older,
-# and AMGX does not set the standard itself.
-#
-# Build for all supported CUDA toolkits
+# Don't look for `mpiwrapper.so` when BinaryBuilder examines and `dlopen`s the
+# shared libraries. (MPItrampoline will skip its automatic initialization.)
+ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
+
 for platform in platforms
     should_build_platform(triplet(platform)) || continue
 
-    dependencies = CUDA.required_dependencies(platform; static_sdk=true)
+    dependencies = AbstractDependency[mpi_dependencies...]
+    append!(dependencies, CUDA.required_dependencies(platform; static_sdk=true))
 
-    # aarch64 additionally needs the host x86_64 nvcc to actually run the compile
-    sources = BinaryBuilder.AbstractSource[base_sources...]
+    sources_platform = BinaryBuilder.AbstractSource[sources...]
     if arch(platform) == "aarch64"
         cuda_version = VersionNumber(platform["cuda"])
         components = ["cuda_nvcc"]
         cuda_version >= v"13" && push!(components, "libnvvm")
         x86_platform = deepcopy(platform)
         x86_platform["arch"] = "x86_64"
-        append!(sources, get_sources("cuda", components;
-                                     version=CUDA.full_version(cuda_version),
-                                     platform=x86_platform))
+        append!(sources_platform, get_sources("cuda", components;
+                                              version=CUDA.full_version(cuda_version),
+                                              platform=x86_platform))
     end
 
     archs = filter(in(amgx_archs), CUDA.cuda_gpu_archs(platform))
     platform_script = "CUDA_ARCHS=\"$(join(archs, ";"))\"\n" * script
 
-    build_tarballs(ARGS, name, version, sources, platform_script, [platform],
+    build_tarballs(ARGS, name, version, sources_platform, platform_script, [platform],
                    products, dependencies; lazy_artifacts=true,
-                   julia_compat="1.10", augment_platform_block=CUDA.augment,
+                   julia_compat="1.10", augment_platform_block,
                    dont_dlopen=true, preferred_gcc_version=v"12")
 end

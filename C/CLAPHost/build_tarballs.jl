@@ -7,14 +7,17 @@ using BinaryBuilder
 # for hosting CLAP audio plugins. CLAP itself is header-only (MIT) and vendored
 # in the same repository, so this builds with nothing but a C compiler.
 #
-# The version tracks the AudioPlugins.jl release whose `csrc/` is built.
+# CLAPHost_jll 1.0.0 was built from an earlier AudioPlugins.jl commit that
+# already carried Project.toml version 1.0.0, so the JLL version can no longer
+# equal the package version: 1.0.1 is the registered AudioPlugins v1.0.0
+# sources, with Windows.
 name = "CLAPHost"
-version = v"1.0.0"
+version = v"1.0.1"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/SciML/AudioPlugins.jl.git",
-              "a371d82d5a5a476280f8d0ef0571f2768b5f70c8"),  # v1.0.0
+              "1ba3d23b08c0159f66782a831f89cb729339d325"),  # v1.0.0 (registered)
 ]
 
 # Bash recipe for building across all platforms
@@ -32,9 +35,7 @@ ${CC} -std=gnu99 -O2 -fPIC -shared -Wall -Wextra \
 install -Dm644 csrc/clap_host.h "${includedir}/clap_host.h"
 """
 
-# The host resolves plugins with dlopen(); Windows needs a LoadLibrary shim
-# that the sources do not have yet, so it is excluded until they do.
-platforms = filter(!Sys.iswindows, supported_platforms())
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
