@@ -1,5 +1,7 @@
 using BinaryBuilder
 
+include(joinpath("..", "..", "platforms", "macos_sdks.jl"))
+
 name = "simdutf"
 version = v"9.1.1"
 
@@ -25,6 +27,8 @@ cmake --install build
 install_license LICENSE-APACHE LICENSE-MIT
 """
 
+sources, script = require_macos_sdk("10.14", sources, script)
+
 platforms = expand_cxxstring_abis(supported_platforms())
 
 products = [
@@ -36,4 +40,4 @@ products = [
 dependencies = []
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6")
+               julia_compat="1.6", preferred_gcc_version=v"9")
