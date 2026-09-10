@@ -4,29 +4,43 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "libcellml"
-version = v"0.6.3"
+version = v"0.7.0"
 
 sources = [
     GitSource(
         "https://github.com/cellml/libcellml",
-        "7269e4a234b133e930722acd11acd04e4cad31b4"),
+        "ac6ed5c348418e273e428a28ec156c0b14ec106b"),
 ]
 
 # https://libcellml.org/documentation/installation/build_from_source
 script = raw"""
-cd libcellml
-mkdir build && cd build
-cmake -DINSTALL_PREFIX=${prefix} \
+
+# ZLIB-static.cmake is missing from the following environments. We touch the file to allow the configuration to succeed.
+if [ -d /opt/aarch64-apple-darwin20/aarch64-apple-darwin20/sys-root/usr/local/lib/cmake/zlib/ ]; then
+  touch /opt/aarch64-apple-darwin20/aarch64-apple-darwin20/sys-root/usr/local/lib/cmake/zlib/ZLIB-static.cmake
+fi
+if [ -d /workspace/MacOSX10.15.sdk/usr/local/lib/cmake/zlib/ ]; then
+    touch /workspace/MacOSX10.15.sdk/usr/local/lib/cmake/zlib/ZLIB-static.cmake
+fi
+if [ -d /opt/aarch64-unknown-freebsd14.1/aarch64-unknown-freebsd14.1/sys-root/usr/local/lib/cmake/zlib/ ]; then
+    touch /opt/aarch64-unknown-freebsd14.1/aarch64-unknown-freebsd14.1/sys-root/usr/local/lib/cmake/zlib/ZLIB-static.cmake
+fi
+if [ -d /opt/x86_64-unknown-freebsd13.4/x86_64-unknown-freebsd13.4/sys-root/usr/local/lib/cmake/zlib/ ]; then
+    touch /opt/x86_64-unknown-freebsd13.4/x86_64-unknown-freebsd13.4/sys-root/usr/local/lib/cmake/zlib/ZLIB-static.cmake
+fi
+
+cmake -S libcellml -B build-libcellml-release \
+    -DINSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DBUILD_TYPE=Release \
     -DTWAE=OFF \
     -DCOVERAGE=OFF \
     -DLLVM_COVERAGE=OFF \
-    -DUNIT_TESTS=OFF \
-    ..
-make -j${nproc}
-make install
-install_license ../LICENSE
+    -DUNIT_TESTS=OFF
+
+cmake --build build-libcellml-release
+cmake --build build-libcellml-release --target install
+install_license libcellml/LICENSE
 """
 
 sources, script = require_macos_sdk("10.15", sources, script)
@@ -39,10 +53,8 @@ products = [
 ]
 
 dependencies = [
-    # XML2 apparently had a breaking change, so it's important to specify the compat bound:
-    # https://github.com/JuliaPackaging/Yggdrasil/pull/9673#issuecomment-2434514026
-    Dependency("XML2_jll"; compat="~2.13.4"),
+    Dependency("XML2_jll"),
     Dependency("Zlib_jll"),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8")
