@@ -39,8 +39,10 @@
 #include "llvm/Target/TargetOptions.h"
 #include "llvm/TargetParser/Triple.h"
 
+#include <clocale>
 #include <cstdlib>
 #include <cstring>
+#include <exception>
 #include <mutex>
 #include <string>
 #include <vector>
@@ -88,6 +90,32 @@ struct FatalError {
 [[noreturn]] void throwingFatalErrorHandler(void *, const char *Reason, bool) {
   throw FatalError{Reason};
 }
+
+// Pin the calling thread's C locale to "C" for the duration of a call. The host
+// sets the locale from the user's environment (Julia calls setlocale(LC_ALL, "")),
+// and with a non-"C" LC_COLLATE msvcrt's strxfrm fails, which libstdc++ 15 turns
+// into a std::system_error from std::regex (used by the SPIR-V back-end's
+// builtin lookup, see JuliaGPU/GPUCompiler.jl#930). msvcrt's locale is per thread
+// once so configured, so this does not touch the host's other threads.
+#if defined(_WIN32)
+struct ScopedCLocale {
+  int PrevConfig;
+  std::string Prev;
+  ScopedCLocale() : PrevConfig(_configthreadlocale(_ENABLE_PER_THREAD_LOCALE)) {
+    if (const char *L = setlocale(LC_ALL, nullptr))
+      Prev = L;
+    setlocale(LC_ALL, "C");
+  }
+  ~ScopedCLocale() {
+    if (!Prev.empty())
+      setlocale(LC_ALL, Prev.c_str());
+    if (PrevConfig != -1)
+      _configthreadlocale(PrevConfig);
+  }
+};
+#else
+struct ScopedCLocale {};
+#endif
 
 // Formats diagnostics exactly like llc's LLCDiagnosticHandler and routes them
 // to the user's callback, remembering errors for the failure message.
@@ -240,6 +268,7 @@ int NVPTXCompile(const char *Bitcode, size_t Length,
                  NVPTXDiagnosticCallback Handler, void *HandlerContext,
                  NVPTXMemoryBufferRef *OutPTX, char **OutMessage) {
   std::lock_guard<std::mutex> Guard(APILock);
+  ScopedCLocale Locale;
   initializeTarget();
   if (OutMessage) *OutMessage = nullptr;
   if (OutPTX) *OutPTX = nullptr;
@@ -379,6 +408,12 @@ int NVPTXCompile(const char *Bitcode, size_t Length,
     while (!E.Message.empty() && E.Message.back() == '\n')
       E.Message.pop_back();
     return fail("LLVM ERROR: " + E.Message);
+  } catch (std::exception &E) {
+    // e.g. libstdc++ throwing from std::regex. Never let a C++ exception unwind
+    // into the host: on Windows that dies with STATUS_BAD_FUNCTION_TABLE.
+    RestorePrettyStackState(PrettyStack);
+    S = nullptr; // leaked on purpose
+    return fail(std::string("C++ exception: ") + E.what());
   }
 }
 
