@@ -27,7 +27,7 @@ cmake --install build
 install_license LICENSE-APACHE LICENSE-MIT
 """
 
-sources, script = require_macos_sdk("10.15", sources, script)
+sources, script = require_macos_sdk("15.0", sources, script)
 
 platforms = expand_cxxstring_abis(supported_platforms())
 
