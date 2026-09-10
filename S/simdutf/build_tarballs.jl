@@ -27,7 +27,7 @@ cmake --install build
 install_license LICENSE-APACHE LICENSE-MIT
 """
 
-sources, script = require_macos_sdk("10.14", sources, script)
+sources, script = require_macos_sdk("10.15", sources, script)
 
 platforms = expand_cxxstring_abis(supported_platforms())
 
@@ -40,4 +40,4 @@ products = [
 dependencies = []
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"9")
+               julia_compat="1.6", preferred_gcc_version=v"11")
