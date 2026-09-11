@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libgsd"
-version = v"3.2.1"
+version = v"3.4.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/glotzerlab/gsd.git", "ad2417d0dbc455d1fb5aab525a919b36bc7f0851")
+    GitSource("https://github.com/glotzerlab/gsd.git", "434efac5e4af78096ee1da6c1918d0717e953c41")
 ]
 
 # Bash recipe for building across all platforms
@@ -15,7 +15,7 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/gsd/
 mkdir -p "${libdir}"
 install -Dv -m644 ./gsd/gsd.h ${includedir}/gsd.h
-${CC} -std=c99 -fPIC gsd/gsd.c -shared -o "${libdir}/libgsd.${dlext}"
+${CC} -std=c99 ${FLAGS} -D_GNU_SOURCE -fPIC gsd/gsd.c -shared -o "${libdir}/libgsd.${dlext}"
 """
 
 # These are the platforms we will build for by default, unless further
@@ -24,6 +24,7 @@ platforms = supported_platforms()
 # Windows cant be build since the source code implicitly requires commands from unistd.h which only exist for unix and unix-like systems
 platforms = filter!(!Sys.iswindows, platforms)
 
+any_riscv = any(p -> arch(p) == "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [
