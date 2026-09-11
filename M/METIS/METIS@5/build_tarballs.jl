@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "METIS"
-version = v"5.1.3" # <-- This is a lie, we're bumping to 5.1.1 to create a Julia v1.6+ release with experimental platforms
+version = v"5.1.4" # <-- This is a lie (upstream is 5.1.0/5.1.1): 5.1.4 = per-variant ELF symbol versions, so that consumers can pin it
 
 # Collection of sources required to build METIS
 sources = [
@@ -30,6 +30,20 @@ build_metis()
 {
     METIS_PREFIX=${4:-${libdir}/metis/${1}}
     mkdir -p ${METIS_PREFIX}
+    # All four variants export the same symbol names (METIS_*, libmetis__*, gk_*).  On ELF
+    # the dynamic linker resolves a name once per process, so two variants loaded together
+    # (e.g. libmetis via MUMPS and libmetis_Int64_Real32 via SuperLU_DIST's Int64 library)
+    # silently share one implementation and corrupt memory.  Give each variant its own
+    # symbol version node: consumers linked against it carry versioned references that
+    # cannot bind to another variant, while dlsym() by name keeps working (default
+    # versions).  macOS (two-level namespace) and Windows (imports bound to a DLL name)
+    # do not have this problem and have no symbol versioning, so ELF targets only.
+    LINKER_FLAGS=""
+    if [[ "${target}" != *-apple-* && "${target}" != *-mingw* ]]; then
+        VERSION_NODE=$(echo "${1}" | tr '[:lower:]' '[:upper:]')
+        echo "${VERSION_NODE} { global: *; };" > ${WORKSPACE}/srcdir/${1}.map
+        LINKER_FLAGS="-Wl,--version-script=${WORKSPACE}/srcdir/${1}.map"
+    fi
     cmake $WORKSPACE/srcdir/METIS/ \
         -DCMAKE_INSTALL_PREFIX=${METIS_PREFIX} \
         -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
@@ -37,6 +51,7 @@ build_metis()
         -DGKLIB_PATH=$WORKSPACE/srcdir/METIS/GKlib \
         -DSHARED=1 \
         -DCMAKE_C_FLAGS="-DIDXTYPEWIDTH=${2} -DREALTYPEWIDTH=${3}" \
+        -DCMAKE_SHARED_LINKER_FLAGS="${LINKER_FLAGS}" \
         -DBINARY_NAME="${1}"
     make -j${nproc} install
 }
@@ -68,4 +83,4 @@ dependencies = Dependency[]
 # Build the tarballs
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
 
-# Build trigger: 2
+# Build trigger: 3 (symbol versions per variant)
