@@ -39,14 +39,23 @@ export MPITRAMPOLINE_CXX="$(which $CXX)"
 export MPITRAMPOLINE_FC="$(which $FC)"
 
 if [[ "${target}" == *-mingw* ]]; then
-    # PETSc is built without MPI on Windows: linking against MSMPI
-    # produces an mingw-w64 32-bit pseudo-relocation runtime failure
-    # that has not been resolved (see PETSc_jll < 3.22 history).
-    USE_MPI=0
+    # MS-MPI, linked directly against msmpi.dll (MicrosoftMPI_jll).  PETSc used to be
+    # built without MPI here because every process died at load with
+    #   Mingw-w64 runtime failure: 32 bit pseudo relocation ... out of range
+    # The one and only runtime pseudo-relocation in libpetsc came from PETSc's *Fortran*
+    # bindings: src/sys/ftn-src/somefort.F90 calls MPI_Abort, i.e. msmpi.dll's Fortran entry
+    # mpi_abort_, and ld resolves that call with a 32-bit runtime fixup that cannot reach the
+    # system msmpi.dll mapped above 2 GB.  PETSc's C code imports msmpi.dll cleanly (MS-MPI
+    # defines MPI_IN_PLACE/MPI_BOTTOM/MPI_STATUS_IGNORE as macros and declares its two data
+    # exports dllimport).  Building without the Fortran bindings -- which no Julia consumer
+    # uses -- leaves zero pseudo-relocations and MPI works.
+    USE_MPI=1
     MPI_FFLAGS=""
-    MPI_LIBS=""
-    MPI_INC=""
+    MPI_LIBS=--with-mpi-lib="${libdir}/msmpi.${dlext}"
+    MPI_INC=--with-mpi-include=${includedir}
+    FORTRAN_BINDINGS=0
 else
+    FORTRAN_BINDINGS=1
     # Build against every MPI ABI Yggdrasil offers.  MPIABI alone is not
     # enough in practice: many MPI installations on HPC systems are not
     # (yet) configured to provide the new MPI ABI, so MPICH,
@@ -190,8 +199,8 @@ build_petsc()
     fi
 
     if [[ "${target}" == *-mingw* ]]; then
-        # No MPI on Windows: use raw compilers, and skip the
-        # external packages that require an MPI build environment.
+        # Windows: no mpicc/mpifort wrappers for MS-MPI, use the raw compilers with
+        # --with-mpi-lib/-include; the external packages are not built for Windows here.
         MPI_CC=${CC}
         MPI_FC=${FC}
         MPI_CXX=${CXX}
@@ -357,6 +366,7 @@ build_petsc()
         --with-debugging=${DEBUG_FLAG} \
         --with-batch \
         --with-mpi=${USE_MPI} \
+        --with-fortran-bindings=${FORTRAN_BINDINGS} \
         ${MPI_LIBS} \
         ${MPI_INC} \
         --with-sowing=0 \
@@ -518,9 +528,8 @@ filter!(p -> nbits(p) != 32, platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
-# All MPI ABIs (MPIABI, MPICH, MPItrampoline, OpenMPI) are built.  On
-# Windows only MicrosoftMPI exists as a platform tag, and PETSc itself is
-# configured with --with-mpi=0 there (see script above).
+# All MPI ABIs (MPIABI, MPICH, MPItrampoline, OpenMPI) are built; on
+# Windows the only MPI is MicrosoftMPI (see script above).
 
 products = [
     ExecutableProduct("ex4", :ex4),
