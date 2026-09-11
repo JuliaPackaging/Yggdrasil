@@ -139,6 +139,9 @@ sed -i '/target_link_libraries(cuda-tile-tblgen/,/)/ s/)/  pthread\n)/' tools/cu
 ## Fix missing include
 sed -i 's|#include <vector>|#include <vector>\n#include <unordered_map>|' \
   tools/cuda-tile-tblgen/CudaTileOp.h
+## Only give the native tablegen tools an .exe suffix when the host is Windows,
+## not when cross-compiling for a Windows target
+sed -i 's/CMAKE_HOST_WIN32 OR WIN32 OR/CMAKE_HOST_WIN32 OR/' CMakeLists.txt
 
 mkdir build
 cd build/
