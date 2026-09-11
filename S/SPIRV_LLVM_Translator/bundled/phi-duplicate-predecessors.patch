@@ -1,8 +1,8 @@
 diff --git a/lib/SPIRV/SPIRVWriter.cpp b/lib/SPIRV/SPIRVWriter.cpp
-index a3bcaf97..3363a13f 100644
+index d2b564a6..9dfe6bb0 100644
 --- a/lib/SPIRV/SPIRVWriter.cpp
 +++ b/lib/SPIRV/SPIRVWriter.cpp
-@@ -2551,8 +2551,16 @@ LLVMToSPIRVBase::transValueWithoutDecoration(Value *V, SPIRVBasicBlock *BB,
+@@ -2650,8 +2650,16 @@ LLVMToSPIRVBase::transValueWithoutDecoration(Value *V, SPIRVBasicBlock *BB,
                                     FuncTransMode::Pointer);
        if (Val->getType() != Ty)
          Val = BM->addUnaryInst(OpBitcast, Ty, Val, BB);
