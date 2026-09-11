@@ -127,9 +127,6 @@ build_petsc()
     if [ "${1}" == "double" ]; then
         USE_SUPERLU_DIST=1
     fi
-    if [[ "${target}" == *-mingw* ]]; then
-        USE_SUPERLU_DIST=0
-    fi
 
     # SuiteSparse from Julia's stdlib SuiteSparse_jll (Int64-only,
     # double-precision only), on all platforms including Windows.  PETSc's
@@ -141,8 +138,8 @@ build_petsc()
     fi
 
     # External MUMPS from MUMPS_jll (stock 32-bit integers; PETSc's
-    # supported PetscMUMPSInt=int32 path), on all platforms including
-    # Windows (MUMPS_jll builds against MS-MPI there since 5.9.1).
+    # supported PetscMUMPSInt=int32 path).  Like SuperLU_DIST and hypre it
+    # is enabled on Windows too: all three JLLs build against MS-MPI.
     USE_MUMPS=0
     if [ "${1}" == "double" ] && [ "${2}" == "real" ]; then
         USE_MUMPS=1
@@ -195,7 +192,7 @@ build_petsc()
     fi
 
     USE_HYPRE=0
-    if [ "${1}" == "double" ] && [ "${2}" == "real" ] && [[ "${target}" != *-mingw* ]]; then
+    if [ "${1}" == "double" ] && [ "${2}" == "real" ]; then
         USE_HYPRE=1
     fi
 
@@ -257,9 +254,10 @@ build_petsc()
     # the factorization corrupts memory or hangs.  Hence the Int64 variants
     # take the `_metis64` MUMPS flavour and the Int32 variants the stock
     # one, matching the libsuperlu_dist_Int64/Int32 they link.
-    # On Windows SuperLU_DIST is not built, so there is nothing to agree with and the
-    # stock flavour serves both integer widths (PE imports are bound to a DLL name, so
-    # two METIS variants could not collide there anyway).
+    # SuperLU_DIST_jll's Windows libraries are built without METIS/ParMETIS, so there
+    # is nothing to agree with and the stock flavour serves both integer widths (PE
+    # imports are bound to a DLL name, so two METIS variants could not collide there
+    # anyway).
     if [ ${USE_MUMPS} == 1 ]; then
         if [ "${3}" == "Int64" ] && [[ "${target}" != *-mingw* ]]; then
             MUMPS_SUFFIX="par_metis64"
@@ -582,13 +580,10 @@ dependencies = [
     # (OpenBLAS32 >= 0.3.33 auto-forwards), needed by MUMPS internally.
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2");
                compat="0.3.33"),
-    Dependency(PackageSpec(name="HYPRE64_jll"); compat="3.1.0",
-               platforms=filter(!Sys.iswindows, platforms)),
+    Dependency(PackageSpec(name="HYPRE64_jll"); compat="3.1.0"),
     # Stock (32-bit HYPRE_BigInt) hypre for the Int32 PetscInt variants.
-    Dependency(PackageSpec(name="HYPRE_jll"); compat="3.1.2",
-               platforms=filter(!Sys.iswindows, platforms)),
-    Dependency(PackageSpec(name="SuperLU_DIST_jll"); compat="9.2.2",
-               platforms=filter(!Sys.iswindows, platforms)),
+    Dependency(PackageSpec(name="HYPRE_jll"); compat="3.1.2"),
+    Dependency(PackageSpec(name="SuperLU_DIST_jll"); compat="9.2.2"),
     Dependency(PackageSpec(name="TetGen_jll"); compat="1.6.0"),
     Dependency(PackageSpec(name="Triangle_jll"); compat="1.6.3"),
     # Julia's stdlib SuiteSparse (Int64 / SuiteSparse_long).  PETSc binds
