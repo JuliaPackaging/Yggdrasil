@@ -6,7 +6,9 @@
 # MUMPS_jll keeps its stock 32-bit integers (PETSc's supported
 # PetscMUMPSInt=int32 path) and brings its own LP64 SCALAPACK32 and BLAS
 # (forwarded to OpenBLAS32 through libblastrampoline's LP64 slot) as
-# private shared-library dependencies.  PETSc links no ScaLAPACK of its
+# private shared-library dependencies.  The Int64 variants use MUMPS_jll's
+# `_metis64` flavour so that MUMPS and SuperLU_DIST agree on the METIS
+# integer width (see MUMPS_ARGS below).  PETSc links no ScaLAPACK of its
 # own.  Nothing is built or linked statically.
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
@@ -110,7 +112,8 @@ build_petsc()
         USE_INT64=0
     fi
 
-    # A SuperLU_DIST build is (now) available on most systems, but only works for double precision
+    # SuperLU_DIST from SuperLU_DIST_jll (double precision only); the
+    # library matching PetscInt is selected below.
     USE_SUPERLU_DIST=0
     if [ "${1}" == "double" ]; then
         USE_SUPERLU_DIST=1
@@ -217,45 +220,55 @@ build_petsc()
 
     # hypre's integer width must match PetscInt: HYPRE64_jll (64-bit
     # HYPRE_BigInt) for Int64 builds, stock HYPRE_jll for Int32 builds.
-    # Both JLLs install HYPRE_config.h into ${includedir} and only one
-    # survives the prefix merge, so stage a header copy whose
-    # HYPRE_BIGINT define matches the library being linked.
+    # HYPRE64_jll (>= 3.1.0+2) installs its public headers -- including
+    # HYPRE_config.h, which records HYPRE_BIGINT -- under include/HYPRE64
+    # so that both JLLs are co-installable; stock HYPRE_jll keeps them in
+    # ${includedir}.
     if [ ${USE_HYPRE} == 1 ]; then
-        HYPRE_INC=$(pwd)/hypre_include_${3}
-        mkdir -p ${HYPRE_INC}
-        cp ${includedir}/HYPRE*.h ${HYPRE_INC}/
         if [ "${3}" == "Int64" ]; then
             HYPRE_LIB="libHYPRE64"
-            grep -q "^#define HYPRE_BIGINT" ${HYPRE_INC}/HYPRE_config.h || echo "#define HYPRE_BIGINT 1" >> ${HYPRE_INC}/HYPRE_config.h
+            HYPRE_INC=${includedir}/HYPRE64
         else
             HYPRE_LIB="libHYPRE"
-            sed -i '/^#define HYPRE_BIGINT/d;/^#define HYPRE_MIXEDINT/d' ${HYPRE_INC}/HYPRE_config.h
+            HYPRE_INC=${includedir}
         fi
         HYPRE_ARGS="--with-hypre=1 --with-hypre-include=${HYPRE_INC} --with-hypre-lib=${libdir}/${HYPRE_LIB}.${dlext}"
     else
         HYPRE_ARGS="--with-hypre=0"
     fi
 
+    # MUMPS_jll ships two flavours of the same 32-bit-integer MUMPS that
+    # differ only in the METIS/ParMETIS they are ordered with: the stock
+    # libdmumpspar uses the 32-bit-index libmetis/libparmetis, while
+    # libdmumpspar_metis64 uses libmetis_Int64_Real32/libparmetis_Int64_Real32
+    # (MUMPS converts its 32-bit arrays for a 64-bit METIS internally).
+    # SuperLU_DIST_jll's libsuperlu_dist_Int64 needs the 64-bit-index
+    # METIS, and both METIS flavours export identical METIS_*/ParMETIS_*
+    # symbol names, so within one process every library must agree on the
+    # METIS integer width: otherwise the dynamic linker binds e.g.
+    # SuperLU_DIST's METIS_NodeND to the 32-bit METIS loaded by MUMPS and
+    # the factorization corrupts memory or hangs.  Hence the Int64 variants
+    # take the `_metis64` MUMPS flavour and the Int32 variants the stock
+    # one, matching the libsuperlu_dist_Int64/Int32 they link.
     if [ ${USE_MUMPS} == 1 ]; then
-        MUMPS_ARGS="--with-mumps=1 --with-mumps-include=${includedir} --with-mumps-lib=[${libdir}/libdmumpspar.${dlext},${libdir}/libmumps_commonpar.${dlext},${libdir}/libpordpar.${dlext}]"
+        if [ "${3}" == "Int64" ]; then
+            MUMPS_SUFFIX="par_metis64"
+        else
+            MUMPS_SUFFIX="par"
+        fi
+        MUMPS_ARGS="--with-mumps=1 --with-mumps-include=${includedir} --with-mumps-lib=[${libdir}/libdmumps${MUMPS_SUFFIX}.${dlext},${libdir}/libmumps_common${MUMPS_SUFFIX}.${dlext},${libdir}/libpord${MUMPS_SUFFIX}.${dlext}]"
     else
         MUMPS_ARGS="--with-mumps=0"
     fi
 
-    # SuperLU_DIST's index width must match PetscInt; SuperLU_DIST_jll
-    # ships both libsuperlu_dist_Int32 and libsuperlu_dist_Int64, but only
-    # one set of headers, whose superlu_dist_config.h is the Int64 one
-    # (XSDK_INDEX_SIZE 64).  For Int32 builds stage a corrected header
-    # copy and pass it as the SuperLU_DIST include dir; configure places
-    # user-specified package includes ahead of ${includedir} in its tests.
+    # SuperLU_DIST's index width must match PetscInt.  SuperLU_DIST_jll
+    # ships libsuperlu_dist_Int32 and libsuperlu_dist_Int64 and (since
+    # 9.2.2) a self-contained per-width header copy under
+    # include/superlu_dist_Int{32,64}; the top-level headers in
+    # ${includedir} are the Int64 ones.  Configure places user-specified
+    # package includes ahead of ${includedir} in its tests.
     if [ ${USE_SUPERLU_DIST} == 1 ]; then
-        SLU_INC=${includedir}
-        if [ "${3}" == "Int32" ]; then
-            SLU_INC=$(pwd)/superlu_include_Int32
-            mkdir -p ${SLU_INC}
-            cp ${includedir}/superlu*.h* ${SLU_INC}/
-            sed -i 's/#define XSDK_INDEX_SIZE 64/#define XSDK_INDEX_SIZE 32/' ${SLU_INC}/superlu_dist_config.h
-        fi
+        SLU_INC=${includedir}/superlu_dist_${3}
         SUPERLU_DIST_ARGS="--with-superlu_dist=1 --with-superlu_dist-include=${SLU_INC} --with-superlu_dist-lib=${libdir}/libsuperlu_dist_${3}.${dlext}"
     else
         SUPERLU_DIST_ARGS="--with-superlu_dist=0"
@@ -361,11 +374,14 @@ build_petsc()
         --with-shared-libraries=1 \
         --with-clean=1
 
-    # The PETSC_ARCH include dir precedes every package include (and
-    # ${includedir}) on PETSc compile lines, so the staged
-    # SuperLU_DIST/hypre headers also win during the library build.  This
-    # must happen after configure: --with-clean recreates the arch dir.
-    if [ ${USE_SUPERLU_DIST} == 1 ] && [ "${3}" == "Int32" ]; then
+    # ${includedir} also holds the *other* integer width's
+    # superlu_dist_config.h / HYPRE_config.h (SuperLU_DIST's top-level
+    # Int64 headers, HYPRE_jll's 32-bit ones) and -I${includedir} is on
+    # every PETSc compile line.  The PETSC_ARCH include dir precedes every
+    # package include (and ${includedir}), so copy the selected headers
+    # there to make sure they win during the library build.  This must
+    # happen after configure: --with-clean recreates the arch dir.
+    if [ ${USE_SUPERLU_DIST} == 1 ]; then
         cp ${SLU_INC}/superlu*.h* ${target}_${PETSC_CONFIG}/include/
     fi
     if [ ${USE_HYPRE} == 1 ]; then
@@ -516,9 +532,10 @@ products = [
     # All libpetsc variants are dont_dlopen: the Int64 and Int32 flavors
     # link external packages with identical exported symbols but
     # different integer ABIs (libHYPRE64 vs libHYPRE, the two
-    # libsuperlu_dist flavors), so eagerly dlopening all of them into
-    # one flat ELF namespace would cross-bind those symbols.  Consumers
-    # (PETSc.jl) dlopen just the variant(s) they use.
+    # libsuperlu_dist flavors and their 32-/64-bit METIS), so eagerly
+    # dlopening all of them into one flat ELF namespace would cross-bind
+    # those symbols.  Consumers (PETSc.jl) dlopen just the variant(s)
+    # they use.
     #
     # Default build, equivalent to Float64_Real_Int64
     LibraryProduct("libpetsc_double_real_Int64", :libpetsc, "\$libdir/petsc/double_real_Int64/lib"; dont_dlopen=true),
@@ -548,9 +565,9 @@ dependencies = [
                platforms=filter(!Sys.iswindows, platforms)),
     # Stock 32-bit-integer MUMPS.  Its shared libraries privately link
     # SCALAPACK32_jll's libscalapack32 and call unsuffixed LP64 BLAS
-    # through libblastrampoline.
+    # through libblastrampoline.  >= 5.9.3 for the `_metis64` flavour.
     Dependency(PackageSpec(name="MUMPS_jll", uuid="ca64183c-ec4f-5579-95d5-17e128c21291");
-               compat="5.8.4", platforms=filter(!Sys.iswindows, platforms)),
+               compat="5.9.3", platforms=filter(!Sys.iswindows, platforms)),
     # Fills libblastrampoline's LP64 forwarding slots at load time
     # (OpenBLAS32 >= 0.3.33 auto-forwards), needed by MUMPS internally.
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2");
@@ -558,9 +575,9 @@ dependencies = [
     Dependency(PackageSpec(name="HYPRE64_jll"); compat="3.1.0",
                platforms=filter(!Sys.iswindows, platforms)),
     # Stock (32-bit HYPRE_BigInt) hypre for the Int32 PetscInt variants.
-    Dependency(PackageSpec(name="HYPRE_jll"); compat="3.1.0",
+    Dependency(PackageSpec(name="HYPRE_jll"); compat="3.1.2",
                platforms=filter(!Sys.iswindows, platforms)),
-    Dependency(PackageSpec(name="SuperLU_DIST_jll"); compat="9.2.1",
+    Dependency(PackageSpec(name="SuperLU_DIST_jll"); compat="9.2.2",
                platforms=filter(!Sys.iswindows, platforms)),
     Dependency(PackageSpec(name="TetGen_jll"); compat="1.6.0"),
     Dependency(PackageSpec(name="Triangle_jll"); compat="1.6.3"),
