@@ -5,7 +5,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MUMPS"
 version = v"5.9.1"
-ygg_version = v"5.9.2"
+ygg_version = v"5.9.3"
 
 sources = [
   ArchiveSource("https://mumps-solver.org/MUMPS_$(version).tar.gz",
@@ -69,6 +69,18 @@ if [[ "${target}" == *x86_64-w64-mingw* ]]; then
     # pseudo-relocs fixes the crash and keeps ASLR fully enabled. (The link would
     # fail here if any such data import genuinely needed a runtime fixup.)
     EXTRA_LDFLAGS+=("-Wl,--disable-runtime-pseudo-reloc")
+fi
+if [[ "${target}" == *-apple-* ]]; then
+    # MPICH's Fortran sentinels (MPI_IN_PLACE, MPI_BOTTOM, MPI_STATUS_IGNORE, ...) are
+    # members of COMMON blocks (/MPIPRIV1/ etc.) that every Fortran object including
+    # mpif.h defines, and libmpifort recognizes them by address.  With macOS' two-level
+    # namespace each dylib keeps its own copy of these commons, so the sentinels MUMPS
+    # passes are never recognized by MPICH: every multi-rank run corrupts memory
+    # (SIGBUS/SIGSEGV in the solve phase, garbage from MPI_IN_PLACE reductions, ParMETIS
+    # "empty subgraph").  MPICH's own `mpifort` wrapper links with -commons,use_dylibs on
+    # Darwin for exactly this reason; we link with $FC -lmpifort directly, so add it here
+    # (the linker then resolves the commons against libmpifort's definitions).
+    EXTRA_LDFLAGS+=("-Wl,-commons,use_dylibs")
 fi
 
 # Override MPItrampoline's built-in compiler paths
