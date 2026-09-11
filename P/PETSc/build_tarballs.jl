@@ -140,10 +140,10 @@ build_petsc()
     fi
 
     # External MUMPS from MUMPS_jll (stock 32-bit integers; PETSc's
-    # supported PetscMUMPSInt=int32 path).  Not on Windows: PETSc has
-    # MPI disabled there.
+    # supported PetscMUMPSInt=int32 path), on all platforms including
+    # Windows (MUMPS_jll builds against MS-MPI there since 5.9.1).
     USE_MUMPS=0
-    if [ "${1}" == "double" ] && [ "${2}" == "real" ] && [[ "${target}" != *-mingw* ]]; then
+    if [ "${1}" == "double" ] && [ "${2}" == "real" ]; then
         USE_MUMPS=1
     fi
 
@@ -200,7 +200,7 @@ build_petsc()
 
     if [[ "${target}" == *-mingw* ]]; then
         # Windows: no mpicc/mpifort wrappers for MS-MPI, use the raw compilers with
-        # --with-mpi-lib/-include; the external packages are not built for Windows here.
+        # --with-mpi-lib/-include.  Of the external packages only MUMPS is enabled here.
         MPI_CC=${CC}
         MPI_FC=${FC}
         MPI_CXX=${CXX}
@@ -259,8 +259,11 @@ build_petsc()
     # the factorization corrupts memory or hangs.  Hence the Int64 variants
     # take the `_metis64` MUMPS flavour and the Int32 variants the stock
     # one, matching the libsuperlu_dist_Int64/Int32 they link.
+    # On Windows SuperLU_DIST is not built, so there is nothing to agree with and the
+    # stock flavour serves both integer widths (PE imports are bound to a DLL name, so
+    # two METIS variants could not collide there anyway).
     if [ ${USE_MUMPS} == 1 ]; then
-        if [ "${3}" == "Int64" ]; then
+        if [ "${3}" == "Int64" ] && [[ "${target}" != *-mingw* ]]; then
             MUMPS_SUFFIX="par_metis64"
         else
             MUMPS_SUFFIX="par"
@@ -576,11 +579,11 @@ dependencies = [
     # SCALAPACK32_jll's libscalapack32 and call unsuffixed LP64 BLAS
     # through libblastrampoline.  >= 5.9.3 for the `_metis64` flavour.
     Dependency(PackageSpec(name="MUMPS_jll", uuid="ca64183c-ec4f-5579-95d5-17e128c21291");
-               compat="5.9.3", platforms=filter(!Sys.iswindows, platforms)),
+               compat="5.9.3"),
     # Fills libblastrampoline's LP64 forwarding slots at load time
     # (OpenBLAS32 >= 0.3.33 auto-forwards), needed by MUMPS internally.
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2");
-               compat="0.3.33", platforms=filter(!Sys.iswindows, platforms)),
+               compat="0.3.33"),
     Dependency(PackageSpec(name="HYPRE64_jll"); compat="3.1.0",
                platforms=filter(!Sys.iswindows, platforms)),
     # Stock (32-bit HYPRE_BigInt) hypre for the Int32 PetscInt variants.
