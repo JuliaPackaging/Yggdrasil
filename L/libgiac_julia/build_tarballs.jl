@@ -63,7 +63,10 @@ products = [
 # We do not provide all the compats since julia_version is in use
 dependencies = [
     BuildDependency("libjulia_jll"),
-    Dependency("libcxxwrap_julia_jll"; compat="~0.14"),
+    # Lower bound, not `~0.14`: BinaryBuilder installs the oldest version
+    # satisfying the compat, and v0.14.0 is the only 0.14.x without artifacts
+    # for Julia 1.13/1.14, so JlCxx would go missing on those platforms.
+    Dependency("libcxxwrap_julia_jll"; compat="0.14.10"),
     # Exact bound, not a caret range: GIAC 2.0.2 changed the memory layout of
     # giac::gen (GIAC_TYPE_ON_8BITS), so this CxxWrap shim is tied to one GIAC
     # ABI, not to a semver-compatible range of them.
