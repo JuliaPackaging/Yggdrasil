@@ -1,0 +1,66 @@
+Subject: [PATCH] build: don't install glibc-only libc_nonshared.a on musl targets (#63085)
+
+Backport of https://github.com/JuliaLang/julia/pull/63084 to release-1.13,
+https://github.com/JuliaLang/julia/pull/63085, which will be available in 1.13.1.
+
+`libc_nonshared.a` is a glibc implementation detail, and CSL ships none for
+`*-linux-musl*`, so the unconditional copies for `OS == Linux` abort the
+build on musl targets. Gate them on a new `LIBC` variable instead.
+
+diff --git a/Make.inc b/Make.inc
+index 7a8f2885d3d01..40ca053b2a643 100644
+--- a/Make.inc
++++ b/Make.inc
+@@ -1440,6 +1440,17 @@ BB_TRIPLET := $(subst $(SPACE),-,$(filter-out cxx%,$(filter-out libgfortran%,$(s
+ 
+ LIBGFORTRAN_VERSION := $(subst libgfortran,,$(filter libgfortran%,$(subst -,$(SPACE),$(BB_TRIPLET_LIBGFORTRAN))))
+ 
++# The C library of the target. This only matters on Linux, where it is either glibc
++# (`*-linux-gnu*`) or musl (`*-linux-musl*`) as recorded in the normalized triplet;
++# it is left empty elsewhere.
++ifeq ($(OS),Linux)
++ifneq (,$(findstring musl,$(BB_TRIPLET)))
++LIBC := musl
++else
++LIBC := glibc
++endif
++endif
++
+ # CSL_NEXT_GLIBCXX_VERSION is a triple of the symbols representing support for whatever
+ # the next libstdc++ version would be. This is used for two things.
+ # 1. Whether the system libraries are new enough, if we need to use the libs bundled with CSL
+diff --git a/Makefile b/Makefile
+index b48e507319bbe..98632a3134f0a 100644
+--- a/Makefile
++++ b/Makefile
+@@ -439,7 +439,7 @@ ifneq ($(OS),Darwin)
+ 	$(INSTALL_M) $(build_libdir)/crtn.o $(DESTDIR)$(private_libdir)/
+ 	$(INSTALL_M) $(build_libdir)/crtbeginS.o $(DESTDIR)$(private_libdir)/
+ 	$(INSTALL_M) $(build_libdir)/crtendS.o $(DESTDIR)$(private_libdir)/
+-ifeq ($(OS),Linux)
++ifeq ($(LIBC),glibc)
+ 	$(INSTALL_M) $(build_libdir)/libc_nonshared.a $(DESTDIR)$(private_libdir)/
+ endif
+ endif
+diff --git a/deps/csl.mk b/deps/csl.mk
+index 6882c1005270d..c511675422006 100644
+--- a/deps/csl.mk
++++ b/deps/csl.mk
+@@ -146,7 +146,7 @@ $(eval $(call copy_csl_static,crti.o))
+ $(eval $(call copy_csl_static,crtn.o))
+ $(eval $(call copy_csl_static,crtbeginS.o))
+ $(eval $(call copy_csl_static,crtendS.o))
+-ifeq ($(OS),Linux) # glibc-specific
++ifeq ($(LIBC),glibc)
+ $(eval $(call copy_csl_static,libc_nonshared.a))
+ endif
+ endif
+@@ -216,7 +216,7 @@ install-csl:
+ 	cp -a $(build_libdir)/gcc/$(BB_TRIPLET)/$(GCC_VERSION)/crtbeginS.o $(build_libdir)/
+ 	cp -a $(build_libdir)/gcc/$(BB_TRIPLET)/$(GCC_VERSION)/crtendS.o $(build_libdir)/
+ 	ln -sf $(call versioned_libname,libgcc_s,1) $(build_shlibdir)/libgcc_s.$(SHLIB_EXT)
+-ifeq ($(OS),Linux)
++ifeq ($(LIBC),glibc)
+ 	cp -a $(build_libdir)/gcc/$(BB_TRIPLET)/$(GCC_VERSION)/libc_nonshared.a $(build_libdir)/
+ endif
+ endif
