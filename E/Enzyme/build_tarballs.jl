@@ -21,7 +21,7 @@ llvm_versions = [v"15.0.7", v"16.0.6", v"18.1.7", v"20.1.8"]
 
 # Collection of sources required to build attr
 sources = [
-    GitSource(repo, "4336efa3bb08dc1aed3c3d22212b51163b8ba967"),
+    GitSource(repo, "83b9a361f52e32cfb393cb05db2ba034c951cbd7"),
 ]
 
 # These are the platforms we will build for by default, unless further
