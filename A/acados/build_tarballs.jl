@@ -111,6 +111,10 @@ dependencies = [
 
 for platform in platforms
     should_build_platform(platform) || continue
+    # mingw-gcc before v10 fails to assemble the AVX-512 code ("invalid register for .seh_savexmm"),
+    # see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=65782. As in B/blasfeo, v"10" is the value
+    # `preferred_gcc_version` needs to select a compiler without the bug.
+    gcc_version = Sys.iswindows(platform) && platform["march"] == "avx512" ? v"10" : nothing
     build_tarballs(ARGS, name, version, sources, script, [platform], products, dependencies;
-                   julia_compat = "1.6", augment_platform_block)
+                   julia_compat = "1.6", augment_platform_block, preferred_gcc_version = gcc_version)
 end
