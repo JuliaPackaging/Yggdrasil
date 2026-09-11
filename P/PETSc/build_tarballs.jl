@@ -132,8 +132,9 @@ build_petsc()
     fi
 
     # SuiteSparse from Julia's stdlib SuiteSparse_jll (Int64-only,
-    # double-precision only).  PETSc's umfpack glue calls _dl_/_zl_
-    # symbols, which match what SuiteSparse_jll exports.
+    # double-precision only), on all platforms including Windows.  PETSc's
+    # umfpack glue calls _dl_/_zl_ symbols, which match what SuiteSparse_jll
+    # exports.
     USE_SUITESPARSE=0
     if [ "${1}" == "double" ]; then
         USE_SUITESPARSE=1
@@ -200,13 +201,10 @@ build_petsc()
 
     if [[ "${target}" == *-mingw* ]]; then
         # Windows: no mpicc/mpifort wrappers for MS-MPI, use the raw compilers with
-        # --with-mpi-lib/-include.  Of the external packages only MUMPS is enabled here.
+        # --with-mpi-lib/-include.
         MPI_CC=${CC}
         MPI_FC=${FC}
         MPI_CXX=${CXX}
-        USE_SUPERLU_DIST=0
-        USE_SUITESPARSE=0
-        USE_HYPRE=0
     else
         MPI_CC=mpicc
         MPI_FC=mpifort
