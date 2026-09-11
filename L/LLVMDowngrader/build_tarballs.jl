@@ -6,7 +6,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "LLVMDowngrader"
-version = v"0.10.0"
+version = v"0.11.0"
 
 # Build `libllvm_downgrade`, a shared library with a small C API (see
 # include/llvm-downgrade.h upstream) over the legacy bitcode writers,
@@ -19,12 +19,12 @@ version = v"0.10.0"
 # auto-upgraded on load), this single tool ingests bitcode from any LLVM up to
 # its own version and emits the legacy 5.0/7.0/14.0/15.0/18.0 formats. So it is ONE
 # universal build -- not one per consumer LLVM version, and not augmented by
-# llvm_version. Built against LLVM 22; track the newest LLVM as new ones land.
-llvm_version = v"22.1.8+0"
+# llvm_version. Built against LLVM 23; track the newest LLVM as new ones land.
+llvm_version = v"23.1.1+0"
 
 sources = [
     GitSource("https://github.com/JuliaLLVM/llvm-downgrade",
-              "07fde16ec0df7cb4bf3602c3479b5478dadd198a"),
+              "4244e2a1ec56dd9c714755453ba840a48a0b5ee5"),
 ]
 
 # Bash recipe for building across all platforms
@@ -75,11 +75,11 @@ elif [[ "${target}" == *-apple-* ]]; then
 fi
 """
 
-# LLVM 15+ (hence LLVM_full_jll) is built against the macOS 10.14 SDK with a
-# 10.14 deployment target, so linking its objects needs the same. The
-# x86_64-apple-darwin toolchain otherwise defaults to macOS 10.10, which fails to
-# link the prebuilt LLVM. (No effect on non-macOS or Apple Silicon.)
-sources, script = require_macos_sdk("10.14", sources, script)
+# LLVM_full_jll 22+ is built against the macOS 11.0 SDK with an 11.0 deployment
+# target, and LLVM 23's headers no longer compile against the older SDK's libc++.
+# The x86_64-apple-darwin toolchain otherwise defaults to macOS 10.10, which fails
+# to link the prebuilt LLVM. (No effect on non-macOS or Apple Silicon.)
+sources, script = require_macos_sdk("11.0", sources, script)
 
 # The products that we will ensure are always built. The library is not
 # dlopen'ed at `__init__` time; the first `ccall` into it loads it on demand.
