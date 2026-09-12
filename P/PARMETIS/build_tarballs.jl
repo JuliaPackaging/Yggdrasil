@@ -4,7 +4,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "PARMETIS"
-version = v"4.0.8" # <-- This is a lie, we're bumping to 4.0.8 since we are adding new dependencies and building all library versions.
+version = v"4.0.9" # <-- This is a lie: upstream is 4.0.3, bumped for the per-variant ELF symbol versions
 parmetis_version = v"4.0.3"
 
 # Collection of sources required to build PARMETIS.
@@ -54,6 +54,13 @@ build_parmetis()
         PARMETIS_NAME="par${METIS_NAME}"
         METIS_PATH="${libdir}/metis/${METIS_NAME}"
     fi
+    # one ELF symbol version per variant, as in METIS_jll
+    LINKER_FLAGS=""
+    if [[ "${target}" != *-apple-* && "${target}" != *-mingw* ]]; then
+        VERSION_NODE=$(echo "${PARMETIS_NAME}" | tr '[:lower:]' '[:upper:]')
+        echo "${VERSION_NODE} { global: *; };" > ${WORKSPACE}/srcdir/${PARMETIS_NAME}.map
+        LINKER_FLAGS="-Wl,--version-script=${WORKSPACE}/srcdir/${PARMETIS_NAME}.map"
+    fi
     cmake .. \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -64,6 +71,7 @@ build_parmetis()
     -DMPI_INCLUDE_PATH="${prefix}/include" \
     -DMPI_LIBRARIES="${mpi_libraries}" \
     -DCMAKE_C_FLAGS="-DIDXTYPEWIDTH=${1} -DREALTYPEWIDTH=${2}" \
+    -DCMAKE_SHARED_LINKER_FLAGS="${LINKER_FLAGS}" \
     -DBINARY_NAME="${PARMETIS_NAME}" \
     -DMETIS_LIBRARY="${METIS_NAME}"
     
@@ -98,7 +106,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70"); compat="5.1.3"),
+    Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70"); compat="5.1.4"),
 ]
 append!(dependencies, platform_dependencies)
 
