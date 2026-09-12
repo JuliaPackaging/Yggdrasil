@@ -44,6 +44,12 @@ build_metis()
         echo "${VERSION_NODE} { global: *; };" > ${WORKSPACE}/srcdir/${1}.map
         LINKER_FLAGS="-Wl,--version-script=${WORKSPACE}/srcdir/${1}.map"
     fi
+    if [[ "${target}" == *-freebsd* ]]; then
+        # GKlib's error.c calls backtrace(), which FreeBSD keeps in libexecinfo rather
+        # than libc.  Without it libmetis.so carries unresolved references and lld
+        # refuses to link the METIS programs against it (--no-allow-shlib-undefined).
+        LINKER_FLAGS="${LINKER_FLAGS} -lexecinfo"
+    fi
     cmake $WORKSPACE/srcdir/METIS/ \
         -DCMAKE_INSTALL_PREFIX=${METIS_PREFIX} \
         -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
