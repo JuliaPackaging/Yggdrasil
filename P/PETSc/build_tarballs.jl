@@ -1,15 +1,6 @@
-# PETSc linked against Julia's stdlib ILP64 SuiteSparse_jll, which forces
-# ILP64 BLAS (via libblastrampoline `_64_` suffixes) for PETSc itself.
-# Every other external package comes from Yggdrasil-built shared JLLs in
-# its most convenient form: HYPRE64_jll/HYPRE_jll and SuperLU_DIST_jll's
-# Int64/Int32 libraries are selected to match PetscInt per variant;
-# MUMPS_jll keeps its stock 32-bit integers (PETSc's supported
-# PetscMUMPSInt=int32 path) and brings its own LP64 SCALAPACK32 and BLAS
-# (forwarded to OpenBLAS32 through libblastrampoline's LP64 slot) as
-# private shared-library dependencies.  The Int64 variants use MUMPS_jll's
-# `_metis64` flavour so that MUMPS and SuperLU_DIST agree on the METIS
-# integer width (see MUMPS_ARGS below).  PETSc links no ScaLAPACK of its
-# own.  Nothing is built or linked statically.
+# PETSc against Julia's ILP64 SuiteSparse_jll and BLAS (libblastrampoline `_64_`); all
+# other external packages come from their JLLs as shared libraries, HYPRE/SuperLU_DIST
+# in the integer width of PetscInt, MUMPS with its stock 32-bit integers.
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
@@ -39,16 +30,8 @@ export MPITRAMPOLINE_CXX="$(which $CXX)"
 export MPITRAMPOLINE_FC="$(which $FC)"
 
 if [[ "${target}" == *-mingw* ]]; then
-    # MS-MPI, linked directly against msmpi.dll (MicrosoftMPI_jll).  PETSc used to be
-    # built without MPI here because every process died at load with
-    #   Mingw-w64 runtime failure: 32 bit pseudo relocation ... out of range
-    # The one and only runtime pseudo-relocation in libpetsc came from PETSc's *Fortran*
-    # bindings: src/sys/ftn-src/somefort.F90 calls MPI_Abort, i.e. msmpi.dll's Fortran entry
-    # mpi_abort_, and ld resolves that call with a 32-bit runtime fixup that cannot reach the
-    # system msmpi.dll mapped above 2 GB.  PETSc's C code imports msmpi.dll cleanly (MS-MPI
-    # defines MPI_IN_PLACE/MPI_BOTTOM/MPI_STATUS_IGNORE as macros and declares its two data
-    # exports dllimport).  Building without the Fortran bindings -- which no Julia consumer
-    # uses -- leaves zero pseudo-relocations and MPI works.
+    # MS-MPI without PETSc's Fortran bindings: their direct mpi_abort_ call left a 32-bit
+    # runtime pseudo-relocation that aborted every process at load.
     USE_MPI=1
     MPI_FFLAGS=""
     MPI_LIBS=--with-mpi-lib="${libdir}/msmpi.${dlext}"
@@ -128,18 +111,13 @@ build_petsc()
         USE_SUPERLU_DIST=1
     fi
 
-    # SuiteSparse from Julia's stdlib SuiteSparse_jll (Int64-only,
-    # double-precision only), on all platforms including Windows.  PETSc's
-    # umfpack glue calls _dl_/_zl_ symbols, which match what SuiteSparse_jll
-    # exports.
+    # SuiteSparse from Julia's stdlib SuiteSparse_jll (Int64, double precision only).
     USE_SUITESPARSE=0
     if [ "${1}" == "double" ]; then
         USE_SUITESPARSE=1
     fi
 
-    # External MUMPS from MUMPS_jll (stock 32-bit integers; PETSc's
-    # supported PetscMUMPSInt=int32 path).  Like SuperLU_DIST and hypre it
-    # is enabled on Windows too: all three JLLs build against MS-MPI.
+    # MUMPS from MUMPS_jll (stock 32-bit integers, PETSc's PetscMUMPSInt=int32 path).
     USE_MUMPS=0
     if [ "${1}" == "double" ] && [ "${2}" == "real" ]; then
         USE_MUMPS=1
@@ -197,8 +175,7 @@ build_petsc()
     fi
 
     if [[ "${target}" == *-mingw* ]]; then
-        # Windows: no mpicc/mpifort wrappers for MS-MPI, use the raw compilers with
-        # --with-mpi-lib/-include.
+        # Windows: no MPI compiler wrappers for MS-MPI.
         MPI_CC=${CC}
         MPI_FC=${FC}
         MPI_CXX=${CXX}
@@ -222,12 +199,7 @@ build_petsc()
          USE_TETGEN=1
     fi
 
-    # hypre's integer width must match PetscInt: HYPRE64_jll (64-bit
-    # HYPRE_BigInt) for Int64 builds, stock HYPRE_jll for Int32 builds.
-    # HYPRE64_jll (>= 3.1.0+2) installs its public headers -- including
-    # HYPRE_config.h, which records HYPRE_BIGINT -- under include/HYPRE64
-    # so that both JLLs are co-installable; stock HYPRE_jll keeps them in
-    # ${includedir}.
+    # hypre in the width of PetscInt; HYPRE64_jll keeps its headers under include/HYPRE64.
     if [ ${USE_HYPRE} == 1 ]; then
         if [ "${3}" == "Int64" ]; then
             HYPRE_LIB="libHYPRE64"
@@ -241,23 +213,8 @@ build_petsc()
         HYPRE_ARGS="--with-hypre=0"
     fi
 
-    # MUMPS_jll ships two flavours of the same 32-bit-integer MUMPS that
-    # differ only in the METIS/ParMETIS they are ordered with: the stock
-    # libdmumpspar uses the 32-bit-index libmetis/libparmetis, while
-    # libdmumpspar_metis64 uses libmetis_Int64_Real32/libparmetis_Int64_Real32
-    # (MUMPS converts its 32-bit arrays for a 64-bit METIS internally).
-    # SuperLU_DIST_jll's libsuperlu_dist_Int64 needs the 64-bit-index
-    # METIS, and both METIS flavours export identical METIS_*/ParMETIS_*
-    # symbol names, so within one process every library must agree on the
-    # METIS integer width: otherwise the dynamic linker binds e.g.
-    # SuperLU_DIST's METIS_NodeND to the 32-bit METIS loaded by MUMPS and
-    # the factorization corrupts memory or hangs.  Hence the Int64 variants
-    # take the `_metis64` MUMPS flavour and the Int32 variants the stock
-    # one, matching the libsuperlu_dist_Int64/Int32 they link.
-    # SuperLU_DIST_jll's Windows libraries are built without METIS/ParMETIS, so there
-    # is nothing to agree with and the stock flavour serves both integer widths (PE
-    # imports are bound to a DLL name, so two METIS variants could not collide there
-    # anyway).
+    # The Int64 variants take MUMPS_jll's `_metis64` flavour so that MUMPS and
+    # libsuperlu_dist_Int64 agree on the METIS width (ELF only; SuperLU_DIST has no METIS on Windows).
     if [ ${USE_MUMPS} == 1 ]; then
         if [ "${3}" == "Int64" ] && [[ "${target}" != *-mingw* ]]; then
             MUMPS_SUFFIX="par_metis64"
@@ -269,12 +226,7 @@ build_petsc()
         MUMPS_ARGS="--with-mumps=0"
     fi
 
-    # SuperLU_DIST's index width must match PetscInt.  SuperLU_DIST_jll
-    # ships libsuperlu_dist_Int32 and libsuperlu_dist_Int64 and (since
-    # 9.2.2) a self-contained per-width header copy under
-    # include/superlu_dist_Int{32,64}; the top-level headers in
-    # ${includedir} are the Int64 ones.  Configure places user-specified
-    # package includes ahead of ${includedir} in its tests.
+    # SuperLU_DIST in the width of PetscInt; per-width headers under include/superlu_dist_Int{32,64}.
     if [ ${USE_SUPERLU_DIST} == 1 ]; then
         SLU_INC=${includedir}/superlu_dist_${3}
         SUPERLU_DIST_ARGS="--with-superlu_dist=1 --with-superlu_dist-include=${SLU_INC} --with-superlu_dist-lib=${libdir}/libsuperlu_dist_${3}.${dlext}"
@@ -344,9 +296,7 @@ build_petsc()
         ATOMICS_CFLAGS="-mno-outline-atomics"
     fi
 
-    # Configure against the external packages' shared libraries from their JLLs
-    # (nothing is downloaded or built statically here); the MPI compiler wrappers
-    # are passed so that configure sees the same MPI as the external packages.
+    # Configure against the external packages' shared libraries.
     ./configure --prefix=${libdir}/petsc/${PETSC_CONFIG} \
         --CC=${MPI_CC} \
         --FC=${MPI_FC} \
@@ -384,13 +334,8 @@ build_petsc()
         --with-shared-libraries=1 \
         --with-clean=1
 
-    # ${includedir} also holds the *other* integer width's
-    # superlu_dist_config.h / HYPRE_config.h (SuperLU_DIST's top-level
-    # Int64 headers, HYPRE_jll's 32-bit ones) and -I${includedir} is on
-    # every PETSc compile line.  The PETSC_ARCH include dir precedes every
-    # package include (and ${includedir}), so copy the selected headers
-    # there to make sure they win during the library build.  This must
-    # happen after configure: --with-clean recreates the arch dir.
+    # Let the selected width's superlu_dist/HYPRE headers win over the other width's copies
+    # in ${includedir} (after configure: --with-clean recreates the arch include dir).
     if [ ${USE_SUPERLU_DIST} == 1 ]; then
         cp ${SLU_INC}/superlu*.h* ${target}_${PETSC_CONFIG}/include/
     fi
@@ -528,8 +473,7 @@ filter!(p -> nbits(p) != 32, platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
-# All MPI ABIs (MPIABI, MPICH, MPItrampoline, OpenMPI) are built; on
-# Windows the only MPI is MicrosoftMPI (see script above).
+# All MPI ABIs are built; Windows uses MicrosoftMPI.
 
 products = [
     ExecutableProduct("ex4", :ex4),
@@ -538,13 +482,8 @@ products = [
     ExecutableProduct("ex19_int32", :ex19_int32),
     ExecutableProduct("ex19_int64_deb", :ex19_int64_deb),
 
-    # All libpetsc variants are dont_dlopen: the Int64 and Int32 flavors
-    # link external packages with identical exported symbols but
-    # different integer ABIs (libHYPRE64 vs libHYPRE, the two
-    # libsuperlu_dist flavors and their 32-/64-bit METIS), so eagerly
-    # dlopening all of them into one flat ELF namespace would cross-bind
-    # those symbols.  Consumers (PETSc.jl) dlopen just the variant(s)
-    # they use.
+    # dont_dlopen: the Int64 and Int32 variants link external packages with identical symbol
+    # names but different integer ABIs, so consumers dlopen only the variant they use.
     #
     # Default build, equivalent to Float64_Real_Int64
     LibraryProduct("libpetsc_double_real_Int64", :libpetsc, "\$libdir/petsc/double_real_Int64/lib"; dont_dlopen=true),
@@ -572,13 +511,10 @@ dependencies = [
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93");
                compat="5.11.2",
                platforms=filter(!Sys.iswindows, platforms)),
-    # Stock 32-bit-integer MUMPS.  Its shared libraries privately link
-    # SCALAPACK32_jll's libscalapack32 and call unsuffixed LP64 BLAS
-    # through libblastrampoline.  >= 5.9.3 for the `_metis64` flavour.
+    # >= 5.9.3 for the `_metis64` flavour; MUMPS calls LP64 BLAS through libblastrampoline.
     Dependency(PackageSpec(name="MUMPS_jll", uuid="ca64183c-ec4f-5579-95d5-17e128c21291");
                compat="5.9.3"),
-    # Fills libblastrampoline's LP64 forwarding slots at load time
-    # (OpenBLAS32 >= 0.3.33 auto-forwards), needed by MUMPS internally.
+    # >= 0.3.33 auto-forwards into libblastrampoline's LP64 slot (used by MUMPS).
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2");
                compat="0.3.33"),
     # >= 3.1.0+3: libHYPRE64.dll carries its own name on Windows
