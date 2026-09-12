@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "METIS"
-version = v"5.1.4" # <-- This is a lie (upstream is 5.1.0/5.1.1): 5.1.4 = per-variant ELF symbol versions, so that consumers can pin it
+version = v"5.1.4" # <-- This is a lie: upstream is 5.1.0, bumped for the per-variant ELF symbol versions
 
 # Collection of sources required to build METIS
 sources = [
@@ -30,14 +30,7 @@ build_metis()
 {
     METIS_PREFIX=${4:-${libdir}/metis/${1}}
     mkdir -p ${METIS_PREFIX}
-    # All four variants export the same symbol names (METIS_*, libmetis__*, gk_*).  On ELF
-    # the dynamic linker resolves a name once per process, so two variants loaded together
-    # (e.g. libmetis via MUMPS and libmetis_Int64_Real32 via SuperLU_DIST's Int64 library)
-    # silently share one implementation and corrupt memory.  Give each variant its own
-    # symbol version node: consumers linked against it carry versioned references that
-    # cannot bind to another variant, while dlsym() by name keeps working (default
-    # versions).  macOS (two-level namespace) and Windows (imports bound to a DLL name)
-    # do not have this problem and have no symbol versioning, so ELF targets only.
+    # one ELF symbol version per variant, so that two variants can coexist in a process
     LINKER_FLAGS=""
     if [[ "${target}" != *-apple-* && "${target}" != *-mingw* ]]; then
         VERSION_NODE=$(echo "${1}" | tr '[:lower:]' '[:upper:]')
@@ -45,9 +38,7 @@ build_metis()
         LINKER_FLAGS="-Wl,--version-script=${WORKSPACE}/srcdir/${1}.map"
     fi
     if [[ "${target}" == *-freebsd* ]]; then
-        # GKlib's error.c calls backtrace(), which FreeBSD keeps in libexecinfo rather
-        # than libc.  Without it libmetis.so carries unresolved references and lld
-        # refuses to link the METIS programs against it (--no-allow-shlib-undefined).
+        # backtrace() lives in libexecinfo on FreeBSD
         LINKER_FLAGS="${LINKER_FLAGS} -lexecinfo"
     fi
     cmake $WORKSPACE/srcdir/METIS/ \
@@ -89,4 +80,4 @@ dependencies = Dependency[]
 # Build the tarballs
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
 
-# Build trigger: 3 (symbol versions per variant)
+# Build trigger: 3
