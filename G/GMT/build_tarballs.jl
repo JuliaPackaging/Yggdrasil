@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "GMT"
-version = v"6.7.1"
+version = v"6.7.2"
 GSHHG_VERSION="2.3.7"
 DCW_VERSION="2.2.0"
 
@@ -88,4 +88,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"11")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.10", preferred_gcc_version = v"11")
