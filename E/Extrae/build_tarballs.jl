@@ -10,9 +10,9 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 
 name = "Extrae"
-version = v"4.2.0"
+version = v"4.2.15"
 sources = [
-    ArchiveSource("https://ftp.tools.bsc.es/extrae/extrae-$version-src.tar.bz2", "7b83a1ed008440bbc1bda88297d2d0e9256780db1cf8401b3c12718451f8919a"),
+    ArchiveSource("https://ftp.tools.bsc.es/extrae/extrae-$version-src.tar.bz2", "49f42ed3fe026a5faabb6838d26c62b6d14144a50549374c8b25d90675927132"),
     DirectorySource(joinpath(@__DIR__, "bundled")),
 ]
 
@@ -26,8 +26,8 @@ if [[ -f "${prefix}/usr/include/bits/mman-linux.h" ]]; then
 fi
 
 # Work around https://github.com/bsc-performance-tools/extrae/issues/103
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-Add-missing-XML2_CFLAGS.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0002-Add-missing-lxml2.patch
+# atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-Add-missing-XML2_CFLAGS.patch
+# atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0002-Add-missing-lxml2.patch
 
 if [[ $bb_target = aarch64* ]]; then
     export ENABLE_ARM64=1
