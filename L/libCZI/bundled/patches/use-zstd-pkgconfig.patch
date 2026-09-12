@@ -1,0 +1,22 @@
+diff --git a/Src/libCZI/CMakeLists.txt b/Src/libCZI/CMakeLists.txt
+index 79b2b83..57587ca 100644
+--- a/Src/libCZI/CMakeLists.txt
++++ b/Src/libCZI/CMakeLists.txt
+@@ -283,14 +283,9 @@ endif()
+
+
+ if (LIBCZI_BUILD_PREFER_EXTERNALPACKAGE_ZSTD)
+-  find_package(zstd CONFIG REQUIRED)
+-  if (TARGET zstd::libzstd_static)               # static triplet
+-    set(LIBCZI_ZSTD_LINK_TARGET "zstd::libzstd_static")
+-  elseif (TARGET zstd::libzstd_shared)           # shared triplet
+-    set(LIBCZI_ZSTD_LINK_TARGET "zstd::libzstd_shared")
+-  else()
+-    message(FATAL_ERROR "No suitable zstd target found")
+-  endif()
++  find_package(PkgConfig REQUIRED)
++  pkg_check_modules(ZSTD REQUIRED IMPORTED_TARGET libzstd)
++  set(LIBCZI_ZSTD_LINK_TARGET "PkgConfig::ZSTD")
+ else()
+   FetchContent_Declare(
+     zstd
