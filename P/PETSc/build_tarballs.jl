@@ -195,15 +195,6 @@ build_petsc()
     if [ "${1}" == "double" ] && [ "${2}" == "real" ]; then
         USE_HYPRE=1
     fi
-    # HYPRE64_jll's Windows library is renamed to libHYPRE64.dll only after
-    # linking, so its export directory still carries the name libHYPRE.dll
-    # and every consumer records an import of *that* name: at run time the
-    # Int64 variants would load HYPRE_jll's 32-bit-integer libHYPRE.dll.
-    # Until HYPRE64_jll sets the output name at link time, hypre stays off
-    # for the Int64 variants on Windows (the Int32 ones use HYPRE_jll).
-    if [[ "${target}" == *-mingw* ]] && [ "${3}" == "Int64" ]; then
-        USE_HYPRE=0
-    fi
 
     if [[ "${target}" == *-mingw* ]]; then
         # Windows: no mpicc/mpifort wrappers for MS-MPI, use the raw compilers with
@@ -590,9 +581,8 @@ dependencies = [
     # (OpenBLAS32 >= 0.3.33 auto-forwards), needed by MUMPS internally.
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2");
                compat="0.3.33"),
-    # Not on Windows: see the USE_HYPRE block (libHYPRE64.dll's internal name).
-    Dependency(PackageSpec(name="HYPRE64_jll"); compat="3.1.0",
-               platforms=filter(!Sys.iswindows, platforms)),
+    # >= 3.1.0+3: libHYPRE64.dll carries its own name on Windows
+    Dependency(PackageSpec(name="HYPRE64_jll"); compat="3.1.0"),
     # Stock (32-bit HYPRE_BigInt) hypre for the Int32 PetscInt variants.
     Dependency(PackageSpec(name="HYPRE_jll"); compat="3.1.2"),
     Dependency(PackageSpec(name="SuperLU_DIST_jll"); compat="9.2.2"),
