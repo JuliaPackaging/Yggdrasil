@@ -71,15 +71,7 @@ if [[ "${target}" == *x86_64-w64-mingw* ]]; then
     EXTRA_LDFLAGS+=("-Wl,--disable-runtime-pseudo-reloc")
 fi
 if [[ "${target}" == *-apple-* ]]; then
-    # MPICH's Fortran sentinels (MPI_IN_PLACE, MPI_BOTTOM, MPI_STATUS_IGNORE, ...) are
-    # members of COMMON blocks (/MPIPRIV1/ etc.) that every Fortran object including
-    # mpif.h defines, and libmpifort recognizes them by address.  With macOS' two-level
-    # namespace each dylib keeps its own copy of these commons, so the sentinels MUMPS
-    # passes are never recognized by MPICH: every multi-rank run corrupts memory
-    # (SIGBUS/SIGSEGV in the solve phase, garbage from MPI_IN_PLACE reductions, ParMETIS
-    # "empty subgraph").  MPICH's own `mpifort` wrapper links with -commons,use_dylibs on
-    # Darwin for exactly this reason; we link with $FC -lmpifort directly, so add it here
-    # (the linker then resolves the commons against libmpifort's definitions).
+    # let MPICH's Fortran sentinel COMMON blocks resolve to libmpifort's copies
     EXTRA_LDFLAGS+=("-Wl,-commons,use_dylibs")
 fi
 
