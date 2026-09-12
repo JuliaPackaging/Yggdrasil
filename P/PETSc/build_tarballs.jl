@@ -353,8 +353,9 @@ build_petsc()
         ATOMICS_CFLAGS="-mno-outline-atomics"
     fi
 
-    # Step 1: build static libraries of external packages (happens during configure)
-    # Note that mpicc etc. should be indicated rather than ${CC} to compile external packages
+    # Configure against the external packages' shared libraries from their JLLs
+    # (nothing is downloaded or built statically here); the MPI compiler wrappers
+    # are passed so that configure sees the same MPI as the external packages.
     ./configure --prefix=${libdir}/petsc/${PETSC_CONFIG} \
         --CC=${MPI_CC} \
         --FC=${MPI_FC} \
