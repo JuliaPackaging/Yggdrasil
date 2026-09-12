@@ -1,0 +1,68 @@
+Build and install the command-line tools correctly on Windows
+
+nauty links all 51 of its tools with libtool, but none of them actually uses a
+libtool library -- they are all built from plain object files, so libtool adds
+nothing to the link. What it does add on Windows is a small stand-in program
+that starts the real one. When building for Windows from Linux, libtool cannot
+work out the paths that stand-in needs:
+
+    libtool: error: Could not determine the host path corresponding to
+    libtool: error:   '/prefix/lib:/prefix/bin'
+    libtool: error: Continuing, but uninstalled executables may not work.
+
+and the tools it leaves behind then fail to start. Link the tools with the
+compiler directly, which is all they ever needed. -no-undefined goes too, as
+that is a libtool setting for shared libraries.
+
+Two related fixes:
+
+  - The install step looks for the tools under the names they had while
+    building, but Windows programs need a .exe on the end. Install them one at
+    a time, taking whichever name is present and always ending up with .exe,
+    and stop at the first failure -- a plain loop only reports whether its last
+    step worked, so a tool that fails to install is otherwise skipped quietly
+    and only noticed much later.
+
+  - showg is the one tool that was already linked with the compiler rather than
+    libtool, and it was the one tool that went missing from the Windows build.
+    Link it the same way as all the others so there is only one path to get
+    wrong.
+
+Finally, take the shared library naming from configure rather than always
+putting the version number in, so Windows gets libnauty.dll while every other
+system keeps the name it has now.
+
+--- a/makefile.in
++++ b/makefile.in
+@@ -28,8 +28,8 @@
+ top_builddir=.
+ LIBTOOL=@LIBTOOL@
+ LTC=${LIBTOOL} --mode=compile ${CCC} -c 
+-LTL=${LIBTOOL} --mode=link ${CCC} ${CYGNOUN} -rpath ${DESTDIR}${libdir} -release ${RELEASE} ${LDFLAGS}
+-LTP=${LIBTOOL} --mode=link ${CCC} ${CYGNOUN} ${LDFLAGS}
++LTL=${LIBTOOL} --mode=link ${CCC} ${CYGNOUN} -rpath ${DESTDIR}${libdir} @libversionflag@ ${LDFLAGS}
++LTP=${CCC} ${LDFLAGS}
+ CCOBJ=${LTC} -o $@
+ 
+ INSTALL=@INSTALL@
+@@ -770,7 +770,7 @@
+ 	${LTP} -o bliss2dre bliss2dre.c gtools${XO} ${XNAUTYO}
+ 
+ showg : showg.c
+-	${CCC} -o showg showg.c ${LDFLAGS}
++	${LTP} -o showg showg.c
+ 
+ readg : showg
+ 	echo "*** readg is now called showg ***"
+@@ -1009,7 +1009,10 @@
+ 
+ install : all ${GLIBS}
+ 	${MKDIR_P} ${DESTDIR}${bindir} ${DESTDIR}${includedir} ${DESTDIR}${libdir} ${DESTDIR}${pkgconfigdir}
+-	${INSTALL} ${GTOOLS} ${DESTDIR}${bindir}
++	for p in ${GTOOLS} ; do \
++	   if [ -f $$p${EXEEXT} ] ; then f=$$p${EXEEXT} ; else f=$$p ; fi ; \
++	   ${INSTALL} $$f ${DESTDIR}${bindir}/$$p${EXEEXT} || exit 1 ; \
++	done
+ 	${INSTALL_DATA} ${GTOOLSH} nausha.h ${DESTDIR}${includedir}
+ 	${LIBTOOL} --mode=install ${INSTALL} ${GLIBS} ${DESTDIR}${libdir}
+ 	${LIBTOOL} --mode=finish ${DESTDIR}${libdir}
