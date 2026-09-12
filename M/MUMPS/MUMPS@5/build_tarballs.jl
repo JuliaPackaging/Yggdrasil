@@ -5,7 +5,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MUMPS"
 version = v"5.9.1"
-ygg_version = v"5.9.2"
+ygg_version = v"5.9.3"
 
 sources = [
   ArchiveSource("https://mumps-solver.org/MUMPS_$(version).tar.gz",
@@ -69,6 +69,10 @@ if [[ "${target}" == *x86_64-w64-mingw* ]]; then
     # pseudo-relocs fixes the crash and keeps ASLR fully enabled. (The link would
     # fail here if any such data import genuinely needed a runtime fixup.)
     EXTRA_LDFLAGS+=("-Wl,--disable-runtime-pseudo-reloc")
+fi
+if [[ "${target}" == *-apple-* ]]; then
+    # let MPICH's Fortran sentinel COMMON blocks resolve to libmpifort's copies
+    EXTRA_LDFLAGS+=("-Wl,-commons,use_dylibs")
 fi
 
 # Override MPItrampoline's built-in compiler paths
