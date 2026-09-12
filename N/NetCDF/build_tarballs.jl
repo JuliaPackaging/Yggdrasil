@@ -47,11 +47,6 @@ if [[ ${target} == *-mingw* ]]; then
     CONFIGURE_OPTIONS="--disable-byterange"
 fi
 
-if [[ ${target} -ne x86_64-linux-gnu ]]; then
-    # utilities are necessary to run the tests
-    CONFIGURE_OPTIONS="$CONFIGURE_OPTIONS --disable-utilities"
-fi
-
 if [[ ${target} == x86_64-linux-musl ]]; then
     # see
     # https://github.com/JuliaPackaging/Yggdrasil/blob/48af117395188f48d361a46ea929ee7563d9c2e4/A/ADIOS2/build_tarballs.jl
@@ -92,16 +87,25 @@ export CFLAGS=-Wno-implicit-function-declaration
     --enable-shared \
     --disable-static \
     --disable-dap-remote-tests \
-    --disable-plugins \
     ${CONFIGURE_OPTIONS}
 
 make LDFLAGS="${LDFLAGS_MAKE}" -j${nproc}
 
 if [[ ${target} == x86_64-linux-gnu ]]; then
-    make check
+    # Test run_dfaltpluginpath.sh assumes HOME is set
+    # See <https://github.com/Unidata/netcdf-c/issues/3415>
+    HOME=/tmp make check
 fi
 
 make install
+
+# Plugins on apple-darwin have the .so extension when cross-compiling
+# See <https://github.com/Unidata/netcdf-c/issues/3418>
+if [[ ${target} == *-apple-darwin* ]]; then
+    for f in ${prefix}/hdf5/lib/plugin/*.so; do
+       mv "$f" "${f%.so}.dylib"
+    done
+fi
 
 nc-config --all
 """
@@ -118,6 +122,19 @@ platforms = supported_platforms()
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
+# HDF5/NCZarr plugins
+plugins = [
+    "lib__nch5blosc",
+    "lib__nch5bzip2",
+    "lib__nch5deflate",
+    "lib__nch5fletcher32",
+    "lib__nch5shuffle",
+    "lib__nch5szip",
+    "lib__nch5zstd",
+    "lib__nczhdf5filters",
+    "lib__nczstdfilters",
+]
+
 # The products that we will ensure are always built
 products = [
     # NetCDF tools
@@ -131,11 +148,14 @@ products = [
 
     # NetCDF library
     LibraryProduct("libnetcdf", :libnetcdf),
+
+    # NetCDF plugins
+    [LibraryProduct(plugin, Symbol(plugin),["hdf5/lib/plugin"]) for plugin in plugins]...,
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Blosc_jll"; compat="1.21.6"),
+    Dependency("Blosc_jll"; compat="1.21.7"),
     Dependency("Bzip2_jll"; compat="1.0.9"),
     Dependency("HDF5_jll"; compat="2.2.1"),
     Dependency("LibCURL_jll"; compat="7.73.0,8"),
