@@ -4,7 +4,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "PARMETIS"
-version = v"4.0.9" # <-- This is a lie: 4.0.9 = rebuild with per-variant ELF symbol versions against the versioned METIS_jll 5.1.4
+version = v"4.0.9" # <-- This is a lie: upstream is 4.0.3, bumped for the per-variant ELF symbol versions
 parmetis_version = v"4.0.3"
 
 # Collection of sources required to build PARMETIS.
@@ -54,9 +54,7 @@ build_parmetis()
         PARMETIS_NAME="par${METIS_NAME}"
         METIS_PATH="${libdir}/metis/${METIS_NAME}"
     fi
-    # The four ParMETIS variants export identical symbol names (ParMETIS_V3_*, libparmetis__*);
-    # like METIS_jll, give each its own ELF symbol version so that two variants can coexist in
-    # one process (see the comment in M/METIS/METIS@5).  ELF targets only.
+    # one ELF symbol version per variant, as in METIS_jll
     LINKER_FLAGS=""
     if [[ "${target}" != *-apple-* && "${target}" != *-mingw* ]]; then
         VERSION_NODE=$(echo "${PARMETIS_NAME}" | tr '[:lower:]' '[:upper:]')
