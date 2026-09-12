@@ -5,7 +5,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MUMPS"
 version = v"5.9.1"
-ygg_version = v"5.9.2"
+ygg_version = v"5.9.3"
 
 sources = [
   ArchiveSource("https://mumps-solver.org/MUMPS_$(version).tar.gz",
@@ -93,14 +93,10 @@ FSCOTCH="-Dscotch"
 # LSCOTCH="-lptesmumps -lptscotch -lptscotcherr"
 # FSCOTCH="-Dptscotch"
 
-make_args+=(PLAT="par" \
-            OPTF="-O3 -fopenmp" \
+# Make arguments shared by both flavours below.
+make_args+=(OPTF="-O3 -fopenmp" \
             OPTL="-O3 -l${OMP} ${EXTRA_LDFLAGS[*]}" \
-            OPTC="-O3 -fopenmp" \
             CDEFS=-DAdd_ \
-            LMETISDIR="${libdir}" \
-            IMETIS="-I${includedir}" \
-            LMETIS="-L${libdir} -lparmetis -lmetis" \
             LSCOTCHDIR=${libdir} \
             ISCOTCH="-I${includedir}" \
             LSCOTCH="${LSCOTCH}" \
@@ -112,16 +108,47 @@ make_args+=(PLAT="par" \
             FC="${MPIFC} ${FFLAGS[@]}" \
             FL="${MPIFL}" \
             RANLIB="echo" \
-            LPORD="-L./PORD/lib -lpordpar" \
             LIBBLAS="${BLAS_LAPACK}" \
             LAPACK="${BLAS_LAPACK}" \
             SCALAP="-L${libdir} -lscalapack32" \
             INCPAR="-I${includedir}" \
             LIBPAR="-L${libdir} -lscalapack32 ${BLAS_LAPACK} ${MPILIBS[*]}")
 
-make -j${nproc} allshared "${make_args[@]}"
+# Flavour 1 (stock): lib{s,d,c,z}mumpspar, libmumps_commonpar, libpordpar,
+# ordered with the 32-bit-index libmetis/libparmetis.
+make -j${nproc} allshared "${make_args[@]}" \
+    PLAT="par" \
+    OPTC="-O3 -fopenmp" \
+    LMETISDIR="${libdir}" \
+    IMETIS="-I${includedir}" \
+    LMETIS="-L${libdir} -lparmetis -lmetis" \
+    LPORD="-L./PORD/lib -lpordpar"
 
 cp include/*.h ${includedir}
+cp lib/*.${dlext} ${libdir}
+
+# Flavour 2: lib{s,d,c,z}mumpspar_metis64, libmumps_commonpar_metis64,
+# libpordpar_metis64.  Same 32-bit MUMPS integers and identical headers,
+# but ordered with the 64-bit-index libmetis_Int64_Real32 /
+# libparmetis_Int64_Real32 (MUMPS >= 5.7 converts its 32-bit arrays for
+# a METIS/ParMETIS with IDXTYPEWIDTH=64).  Intended for consumers that
+# also load SuperLU_DIST_jll's libsuperlu_dist_Int64 -- e.g. the
+# 64-bit-PetscInt variants of PETSc_jll: that library needs the 64-bit
+# METIS, and since both METIS flavours export identical symbol names only
+# one of them can live in a process.  METIS_jll's metis.h only defaults
+# IDXTYPEWIDTH/REALTYPEWIDTH when they are undefined, hence the explicit
+# -D flags.
+(cd src && make clean)
+(cd examples && make clean)
+rm -f PORD/lib/*.o lib/*.${dlext}
+make -j${nproc} allshared "${make_args[@]}" \
+    PLAT="par_metis64" \
+    OPTC="-O3 -fopenmp -DIDXTYPEWIDTH=64 -DREALTYPEWIDTH=32" \
+    LMETISDIR="${libdir}/metis/metis_Int64_Real32/lib" \
+    IMETIS="-I${libdir}/metis/metis_Int64_Real32/include -I${includedir}" \
+    LMETIS="-L${libdir} -lparmetis_Int64_Real32 -L${libdir}/metis/metis_Int64_Real32/lib -lmetis_Int64_Real32" \
+    LPORD="-L./PORD/lib -lpordpar_metis64"
+
 cp lib/*.${dlext} ${libdir}
 """
 
@@ -141,6 +168,11 @@ products = [
     LibraryProduct("libdmumpspar", :libdmumpspar),
     LibraryProduct("libcmumpspar", :libcmumpspar),
     LibraryProduct("libzmumpspar", :libzmumpspar),
+    # Same MUMPS, ordered with the 64-bit-index METIS/ParMETIS (see script)
+    LibraryProduct("libsmumpspar_metis64", :libsmumpspar_metis64),
+    LibraryProduct("libdmumpspar_metis64", :libdmumpspar_metis64),
+    LibraryProduct("libcmumpspar_metis64", :libcmumpspar_metis64),
+    LibraryProduct("libzmumpspar_metis64", :libzmumpspar_metis64),
 ]
 
 # Dependencies that must be installed before this package can be built
