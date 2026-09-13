@@ -41,8 +41,8 @@ function exclude(p)
         #       |                       ~~~~~~~~~~~~~~~^~~~~~~~
         return true
     elseif Sys.iswindows(p)
-        # In file included from /workspace/srcdir/neper-4.5.0/src/contrib/scotch/src/libscotch/library_error_exit.c:62:0:
-        # /workspace/srcdir/neper-4.5.0/src/contrib/scotch/src/libscotch/common.h:130:71: fatal error: sys/wait.h: No such file or directory
+        # The bundled ut library runs gmsh via fork/waitpid and locates the
+        # executable through /proc/self/exe; upstream supports Windows only via WSL
         return true
     end
     return false
@@ -58,7 +58,7 @@ dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="GSL_jll", uuid="1b77fbbe-d8ee-58f0-85f9-836ddc23a7a4"); compat="~2.7.2"),
     Dependency(PackageSpec(name="NLopt_jll", uuid="079eb43e-fd8e-5478-9966-2cf3e3edb778"); compat="2.7.1 - 2.9"),
-    Dependency(PackageSpec(name="SCOTCH_jll", uuid="a8d0f55d-b80e-548d-aff6-1a04c175f0f9"); compat="6.1.3"),
+    Dependency(PackageSpec(name="SCOTCH_jll", uuid="a8d0f55d-b80e-548d-aff6-1a04c175f0f9"); compat="~7.0.11"),
     RuntimeDependency(PackageSpec(name="gmsh_jll", uuid="630162c2-fc9b-58b3-9910-8442a8a132e6")),
 ]
 
