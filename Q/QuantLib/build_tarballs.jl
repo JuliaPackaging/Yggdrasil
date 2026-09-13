@@ -6,10 +6,10 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "QuantLib"
-version = v"1.42.1"
+version = v"1.43.0"
 
 sources = [
-    GitSource("https://github.com/lballabio/QuantLib.git", "099987f0ca2c11c505dc4348cdb9ce01a598e1e5"),
+    GitSource("https://github.com/lballabio/QuantLib.git", "6b57206e04598f092efee66e3b367efc84771995"),
 ]
 
 # Bash recipe for building across all platforms
