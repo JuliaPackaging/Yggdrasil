@@ -1,6 +1,3 @@
-# PETSc against Julia's ILP64 SuiteSparse_jll and BLAS (libblastrampoline `_64_`); all
-# other external packages come from their JLLs as shared libraries, HYPRE/SuperLU_DIST
-# in the integer width of PetscInt, MUMPS with its stock 32-bit integers.
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
@@ -104,20 +101,16 @@ build_petsc()
         USE_INT64=0
     fi
 
-    # SuperLU_DIST from SuperLU_DIST_jll (double precision only); the
-    # library matching PetscInt is selected below.
     USE_SUPERLU_DIST=0
     if [ "${1}" == "double" ]; then
         USE_SUPERLU_DIST=1
     fi
 
-    # SuiteSparse from Julia's stdlib SuiteSparse_jll (Int64, double precision only).
     USE_SUITESPARSE=0
     if [ "${1}" == "double" ]; then
         USE_SUITESPARSE=1
     fi
 
-    # MUMPS from MUMPS_jll (stock 32-bit integers, PETSc's PetscMUMPSInt=int32 path).
     USE_MUMPS=0
     if [ "${1}" == "double" ] && [ "${2}" == "real" ]; then
         USE_MUMPS=1
@@ -175,7 +168,6 @@ build_petsc()
     fi
 
     if [[ "${target}" == *-mingw* ]]; then
-        # Windows: no MPI compiler wrappers for MS-MPI.
         MPI_CC=${CC}
         MPI_FC=${FC}
         MPI_CXX=${CXX}
@@ -199,7 +191,6 @@ build_petsc()
          USE_TETGEN=1
     fi
 
-    # hypre in the width of PetscInt; HYPRE64_jll keeps its headers under include/HYPRE64.
     if [ ${USE_HYPRE} == 1 ]; then
         if [ "${3}" == "Int64" ]; then
             HYPRE_LIB="libHYPRE64"
@@ -213,8 +204,6 @@ build_petsc()
         HYPRE_ARGS="--with-hypre=0"
     fi
 
-    # The Int64 variants take MUMPS_jll's `_metis64` flavour so that MUMPS and
-    # libsuperlu_dist_Int64 agree on the METIS width (ELF only; SuperLU_DIST has no METIS on Windows).
     if [ ${USE_MUMPS} == 1 ]; then
         if [ "${3}" == "Int64" ] && [[ "${target}" != *-mingw* ]]; then
             MUMPS_SUFFIX="par_metis64"
@@ -226,7 +215,6 @@ build_petsc()
         MUMPS_ARGS="--with-mumps=0"
     fi
 
-    # SuperLU_DIST in the width of PetscInt; per-width headers under include/superlu_dist_Int{32,64}.
     if [ ${USE_SUPERLU_DIST} == 1 ]; then
         SLU_INC=${includedir}/superlu_dist_${3}
         SUPERLU_DIST_ARGS="--with-superlu_dist=1 --with-superlu_dist-include=${SLU_INC} --with-superlu_dist-lib=${libdir}/libsuperlu_dist_${3}.${dlext}"
@@ -296,7 +284,6 @@ build_petsc()
         ATOMICS_CFLAGS="-mno-outline-atomics"
     fi
 
-    # Configure against the external packages' shared libraries.
     ./configure --prefix=${libdir}/petsc/${PETSC_CONFIG} \
         --CC=${MPI_CC} \
         --FC=${MPI_FC} \
@@ -473,8 +460,6 @@ filter!(p -> nbits(p) != 32, platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
-# All MPI ABIs are built; Windows uses MicrosoftMPI.
-
 products = [
     ExecutableProduct("ex4", :ex4),
     ExecutableProduct("ex42", :ex42),
@@ -514,7 +499,6 @@ dependencies = [
     # >= 5.9.3 for the `_metis64` flavour; MUMPS calls LP64 BLAS through libblastrampoline.
     Dependency(PackageSpec(name="MUMPS_jll", uuid="ca64183c-ec4f-5579-95d5-17e128c21291");
                compat="5.9.3"),
-    # >= 0.3.33 auto-forwards into libblastrampoline's LP64 slot (used by MUMPS).
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2");
                compat="0.3.33"),
     # >= 3.1.0+3: libHYPRE64.dll carries its own name on Windows
