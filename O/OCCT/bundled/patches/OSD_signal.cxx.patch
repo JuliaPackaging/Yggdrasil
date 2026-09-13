@@ -1,8 +1,8 @@
 --- /dev/null
-+++ b/src/OSD/OSD_signal.cxx
-@@ -761,9 +761,9 @@
-
-   #include <signal.h>
++++ b/src/FoundationClasses/TKernel/OSD/OSD_signal.cxx
+@@ -765,9 +765,9 @@
+   #endif
+ typedef void (*SIG_PFV)(int);
 
 -  #if !defined(__ANDROID__) && !defined(__QNX__) && !defined(__EMSCRIPTEN__) && defined(__GLIBC__)
 -    #include <sys/signal.h>
@@ -13,9 +13,9 @@
 
    #define _OSD_FPX (FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW)
 
-@@ -994,17 +994,17 @@
+@@ -989,17 +989,17 @@
 
- void OSD::SetFloatingSignal(Standard_Boolean theFloatingSignal)
+ void OSD::SetFloatingSignal(bool theFloatingSignal)
  {
 -  #if defined(__linux__) && defined(__GLIBC__)
 -  feclearexcept(FE_ALL_EXCEPT);
@@ -42,9 +42,9 @@
    int                 aSunStat     = 0;
    sigfpe_handler_type anFpeHandler = (theFloatingSignal ? (sigfpe_handler_type)Handler : NULL);
    aSunStat                         = ieee_handler("set", "invalid", anFpeHandler);
-@@ -1025,11 +1025,11 @@
+@@ -1020,11 +1020,11 @@
 
- Standard_Boolean OSD::ToCatchFloatingSignals()
+ bool OSD::ToCatchFloatingSignals()
  {
 -  #if defined(__linux__) && defined(__GLIBC__)
 -  return (fegetexcept() & _OSD_FPX) != 0;
@@ -52,7 +52,7 @@
 +  //#if defined(__linux__) && defined(__GLIBC__)
 +  //return (fegetexcept() & _OSD_FPX) != 0;
 +  //#else
-   return Standard_False;
+   return false;
 -  #endif
 +  //#endif
  }
