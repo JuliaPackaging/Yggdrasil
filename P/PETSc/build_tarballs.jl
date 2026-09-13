@@ -205,12 +205,7 @@ build_petsc()
     fi
 
     if [ ${USE_MUMPS} == 1 ]; then
-        if [ "${3}" == "Int64" ] && [[ "${target}" != *-mingw* ]]; then
-            MUMPS_SUFFIX="par_metis64"
-        else
-            MUMPS_SUFFIX="par"
-        fi
-        MUMPS_ARGS="--with-mumps=1 --with-mumps-include=${includedir} --with-mumps-lib=[${libdir}/libdmumps${MUMPS_SUFFIX}.${dlext},${libdir}/libmumps_common${MUMPS_SUFFIX}.${dlext},${libdir}/libpord${MUMPS_SUFFIX}.${dlext}]"
+        MUMPS_ARGS="--with-mumps=1 --with-mumps-include=${includedir} --with-mumps-lib=[${libdir}/libdmumpspar.${dlext},${libdir}/libmumps_commonpar.${dlext},${libdir}/libpordpar.${dlext}]"
     else
         MUMPS_ARGS="--with-mumps=0"
     fi
@@ -496,16 +491,16 @@ dependencies = [
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93");
                compat="5.11.2",
                platforms=filter(!Sys.iswindows, platforms)),
-    # >= 5.9.3 for the `_metis64` flavour; MUMPS calls LP64 BLAS through libblastrampoline.
+    # >= 5.9.4 and SuperLU_DIST >= 9.2.3: both link the symbol-versioned METIS/ParMETIS.
     Dependency(PackageSpec(name="MUMPS_jll", uuid="ca64183c-ec4f-5579-95d5-17e128c21291");
-               compat="5.9.3"),
+               compat="5.9.4"),
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2");
                compat="0.3.33"),
     # >= 3.1.0+3: libHYPRE64.dll carries its own name on Windows
     Dependency(PackageSpec(name="HYPRE64_jll"); compat="3.1.0"),
     # Stock (32-bit HYPRE_BigInt) hypre for the Int32 PetscInt variants.
     Dependency(PackageSpec(name="HYPRE_jll"); compat="3.1.2"),
-    Dependency(PackageSpec(name="SuperLU_DIST_jll"); compat="9.2.2"),
+    Dependency(PackageSpec(name="SuperLU_DIST_jll"); compat="9.2.3"),
     Dependency(PackageSpec(name="TetGen_jll"); compat="1.6.0"),
     Dependency(PackageSpec(name="Triangle_jll"); compat="1.6.3"),
     # Julia's stdlib SuiteSparse (Int64 / SuiteSparse_long).  PETSc binds
