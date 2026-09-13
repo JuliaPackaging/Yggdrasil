@@ -32,12 +32,10 @@ if [[ ${target} == *-w64-* ]]; then
     objext="obj"
 elif [[ ${target} == *-darwin* ]]; then
     HOST_OS="Darwin"
-    # use clang instead of gcc to avoid https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/1339
-    CC="clang"
-    if [[ ${target} == x86_64* ]]; then
-        # avoid local test failure with clang -O1/2
-        CFLAGS_OPT+=" -O0"
-    fi
+    # Use the default compiler (clang): BinaryBuilder's gcc links libgcc_s with an
+    # absolute /workspace path, so the dylib fails to load on user machines
+    # (https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/1339,
+    # https://github.com/JuliaMath/DecFP.jl/issues/195).
     CFLAGS_OPT+=" -DBID_SIZE_LONG=8"
     objext="o"
 elif [[ ${target} == *-freebsd* ]]; then
