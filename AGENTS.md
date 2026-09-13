@@ -110,7 +110,7 @@ Always add `_jll` suffix: `Dependency("Zlib_jll")`
 
 - Every `Dependency` gets a `compat=` bound: `Dependency("Zlib_jll"; compat="1.2.13")`.
 - Never remove or loosen an existing bound. Compat strings are set unions, so `"3.0, 3.5"` means the same as `"3.0"`.
-- BinaryBuilder builds against the *oldest* version satisfying the bound. Raise the lower bound to pick up newer artifacts.
+- By default BinaryBuilder builds against the *oldest* version satisfying the bound, so raising the lower bound picks up newer artifacts. A positional pin (`Dependency("X_jll", v"1.2")` or `Dependency(PackageSpec("X_jll", v"1.2"))`) overrides the default: check for one before relying on `compat` alone, and keep it inside the bound or the build errors.
 - Changing any compat bound, including `julia_compat`, requires bumping the JLL version. Pkg cannot re-register an existing version.
 - Header-only or build-time-only packages are `BuildDependency`, so they are not installed on users' machines.
 - Anything linking `libgfortran` needs `expand_gfortran_versions(platforms)` and `Dependency("CompilerSupportLibraries_jll")`. Don't paper over it with `preferred_gcc_version`.
@@ -138,7 +138,7 @@ Use `preferred_gcc_version=v"X"` for (see [available GCC versions](https://githu
 
 ### Patches
 
-- Use patch files in `bundled/patches/`, never `sed`/`perl` edits of sources. Sed silently breaks when upstream changes.
+- Use patch files in `bundled/patches/` for source changes, never `sed`/`perl`: sed silently stops matching when upstream changes. The one exception is stripping flags such as `-march` or `-ffast-math` from build files (see [Unsupported Build Flags](#unsupported-build-flags)), where a miss is harmless.
 - Each patch starts with a one-line description and a link to the upstream PR or issue. Report fixes upstream.
 - Never use a personal fork or branch as a source. Keep the upstream source and carry a patch.
 - Prefer a compiler flag over a patch when one suffices.
@@ -260,7 +260,7 @@ Concrete rules:
 - Use `CUDA.cuda_gpu_archs(platform)` for `-DCMAKE_CUDA_ARCHITECTURES` (see `A/AMGX`).
 - **Build flags:** point CMake at the bundled toolkit with `-DCMAKE_CUDA_COMPILER=$prefix/cuda/bin/nvcc -DCMAKE_CUDA_FLAGS="-L${prefix}/cuda/lib"`. `nvcc` writes scratch to `/tmp` (small tmpfs in the sandbox); redirect with `export TMPDIR=${WORKSPACE}/tmpdir`.
 - Pass **`static_sdk=true`** to `required_dependencies` when linking static CUDA libs (e.g. AMGX); this adds `CUDA_SDK_static_jll` as a `BuildDependency`.
-- Always pass **`dont_dlopen=true`** and **`lazy_artifacts=true`** to `build_tarballs` for CUDA consumers — the runtime libs must not be dlopened at JLL init time.
+- Always pass **`dont_dlopen=true`** and **`lazy_artifacts=true`** to `build_tarballs` for CUDA consumers — the sandbox has no driver, so the audit cannot dlopen the libraries. This does not stop the JLL from loading them at init; use `LibraryProduct(...; dont_dlopen=true)` for that.
 - **NVIDIA redistributable archive** SHAs are published per CUDA release in `redistrib_<version>.json`; `cuda_nvcc_redist_source` / `get_sources` in `platforms/cuda.jl` and `C/CUDA/common.jl` handle this — prefer them over hand-rolled `ArchiveSource` URLs.
 
 ## Build Script Reference
@@ -358,13 +358,15 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
     preferred_llvm_version=v"13",          # LLVM version
     compilers=[:c, :rust],                 # Additional compilers
     clang_use_lld=false,                   # Opt out of LLD when clang links
-    dont_dlopen=true,                      # Skip dlopen check at JLL init (GPU libs, plugins)
+    dont_dlopen=true,                      # Skip dlopen during the build audit only; the JLL still loads at init
     skip_audit=true,                       # Last resort; say why in the PR
     init_block="...",                      # Julia code run at JLL __init__
 )
 ```
 
 `RuntimeDependency` declares a JLL needed at runtime but not at build time.
+
+To stop the JLL itself from dlopening a library at init (GPU libs, plugins), set it on the product: `LibraryProduct("libfoo", :libfoo; dont_dlopen=true)`.
 
 Note: `julia_compat` is the **JLL's** Julia compat bound, independent of the Julia
 version required to *run* BinaryBuilder.jl itself (see [Prerequisites](#prerequisites)).
