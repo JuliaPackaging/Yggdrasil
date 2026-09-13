@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "libgiac_julia"
-version = v"0.5.1"
+version = v"0.5.2"
 
 # Collection of sources required to build libgiac_julia
 sources = [
@@ -64,7 +64,7 @@ products = [
 dependencies = [
     BuildDependency("libjulia_jll"),
     Dependency("libcxxwrap_julia_jll"; compat="0.14.10"),
-    Dependency("GIAC_jll"; compat="=2.0.2"),
+    Dependency("GIAC_jll"; compat="=2.0.3"),
     Dependency("GMP_jll"),
     Dependency("MPFR_jll"),
 ]
