@@ -1,0 +1,16 @@
+diff --git a/aocl_dtl/aocltpdef.h b/aocl_dtl/aocltpdef.h
+index 8551dbe2c..cc0281616 100644
+--- a/aocl_dtl/aocltpdef.h
++++ b/aocl_dtl/aocltpdef.h
+@@ -15,11 +15,7 @@
+ #include <memory.h>
+ #include <time.h>
+ #include <math.h>
+-#ifndef _WIN32
+ #include <sys/types.h>
+-#else
+-typedef int pid_t;
+-#endif
+ 
+ typedef double                  Double;
+ typedef float                   Float;
