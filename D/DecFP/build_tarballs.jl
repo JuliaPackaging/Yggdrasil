@@ -1,21 +1,19 @@
 using BinaryBuilder
 
 name = "DecFP"
-upstream_version = "20U3"
-# when updating build_tarballs.jl bump patch to 301, 302...
-ygg_version = v"2.0.301"
+upstream_version = "20U4"
+# when updating build_tarballs.jl bump patch to 401, 402...
+ygg_version = v"2.0.400"
 
 sources = [
     ArchiveSource("https://www.netlib.org/misc/intel/IntelRDFPMathLib$(upstream_version).tar.gz",
-                  "13f6924b2ed71df9b137a7df98706a0dcc3b43c283a0e32f8b6eadca4305136a"),
+                  "1df86132e7a31fd74d784fee1c679b21a088f73a8ec979cfaf784c200392e125"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir
-atomic_patch -p1 patches/long_string.patch
-atomic_patch -p1 patches/memory.patch
 atomic_patch -p1 patches/windows.patch
 atomic_patch -p1 patches/align.patch
 cd LIBRARY
@@ -59,7 +57,7 @@ fi
 export CC CFLAGS_OPT
 make _HOST_ARCH="${HOST_ARCH}" _HOST_OS="${HOST_OS}" CALL_BY_REF=0 GLOBAL_RND=0 GLOBAL_FLAGS=0 UNCHANGED_BINARY_FLAGS=0 NO_BINARY80=1
 mkdir -p "${libdir}"
-${CC} -shared -o "${libdir}/libbid.${dlext}" *.${objext}
+${CC} -shared -o "${libdir}/libbid.${dlext}" *.${objext} -lm
 install_license ../eula.txt
 """
 
