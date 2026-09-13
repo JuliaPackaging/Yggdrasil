@@ -22,7 +22,10 @@ if [[ ${nbits} == 64 ]]; then
 else
     HOST_ARCH="x86"
 fi
-CFLAGS_OPT="-O2 -fPIC -fsigned-char"
+# __QNX__ makes bid_functions.h take fexcept_t from <fenv.h> instead of
+# typedef'ing it, which conflicts with the system definition on non-x86
+# glibc and on mingw.
+CFLAGS_OPT="-O2 -fPIC -fsigned-char -D__QNX__"
 if [[ ${target} == *-w64-* ]]; then
     HOST_OS="Windows_NT"
     CC="clang"
@@ -39,14 +42,11 @@ elif [[ ${target} == *-darwin* ]]; then
 elif [[ ${target} == *-freebsd* ]]; then
     HOST_OS="FreeBSD"
     CC="clang"
-    CFLAGS_OPT+=" -D__QNX__ -D__linux -DBID_SIZE_LONG=8"
+    CFLAGS_OPT+=" -D__linux -DBID_SIZE_LONG=8"
     objext="o"
 else
     HOST_OS="Linux"
     CC="gcc"
-    if [[ ${target} == *-musl* ]]; then
-        CFLAGS_OPT+=" -D__QNX__"
-    fi
     if [[ ${nbits} == 64 ]]; then
         CFLAGS_OPT+=" -DBID_SIZE_LONG=8"
     else
