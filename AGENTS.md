@@ -426,6 +426,10 @@ mkdir build && cd build
 cmake ../package-source
 ```
 
+### Rebuilding Without Recipe Changes
+
+To rebuild the same upstream version (new platform, fixed toolchain shard), bump the `# Build trigger: N` line at the end of `build_tarballs.jl`, adding it as `1` if missing. Don't add comments for this, and leave `version` alone; the build number is assigned at registration. The exception is a JLL old enough that a rebuild would change its `JLLWrappers` compat: General rejects build-number-only releases with different compat, so bump the patch version instead (GLPK 5.0 → 5.0.1). Explain why in the PR.
+
 ## Testing Locally
 
 ```bash
@@ -489,7 +493,7 @@ Examples:
 - One recipe per PR. Never touch another recipe's files, even whitespace: any change to a `build_tarballs.jl` triggers re-registration.
 - Don't edit `.ci/Manifest.toml`; maintainers do that with the Update Manifest workflow.
 - Don't add non-recipe files (e.g. `.gitattributes`) under a recipe directory.
-- CI only rebuilds a recipe when a file inside its directory changes. To rebuild the same upstream version, bump the build number (`v"1.2.3+1"`).
+- CI only rebuilds a recipe when a file inside its directory changes. To rebuild the same upstream version, bump the `# Build trigger: N` line (see [Rebuilding Without Recipe Changes](#rebuilding-without-recipe-changes)).
 - Stacked PRs from a fork don't work on GitHub.
 - Contributors cannot retry Buildkite jobs; ask a maintainer.
 
