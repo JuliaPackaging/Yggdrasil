@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Pango"
-version = v"1.58.0"
+version = v"1.58.2"
 
 # Collection of sources required to build Pango: https://download.gnome.org/sources/pango/
 sources = [
     ArchiveSource("http://ftp.gnome.org/pub/GNOME/sources/pango/$(version.major).$(version.minor)/pango-$(version).tar.xz",
-                  "bc5bad6213ad4886a47d1e80292fd850b64159b50db67917a43d9ea80ee2298a"),
+                  "342385b6ca3b7c73455d7c80a13b7dbe4489e00bc3bd4c5bd6ed4dce421e374a"),
 ]
 
 # Bash recipe for building across all platforms
@@ -74,11 +74,11 @@ dependencies = [
     HostBuildDependency("gperf_jll"),
     BuildDependency("Xorg_xorgproto_jll"; platforms=filter(p -> Sys.isfreebsd(p) || Sys.islinux(p), platforms)),
     Dependency("Cairo_jll"; compat="1.18.5"),
-    Dependency("Fontconfig_jll"; compat="2.16.0"),
+    Dependency("Fontconfig_jll"; compat="2.17.1"),
     Dependency("FreeType2_jll"; compat="2.13.4"),
     Dependency("FriBidi_jll"; compat="1.0.17"),
-    Dependency("Glib_jll"; compat="2.84.0"),
-    Dependency("HarfBuzz_jll"; compat="8.5.1"),
+    Dependency("Glib_jll"; compat="2.88.3"),
+    Dependency("HarfBuzz_jll"; compat="100.14003"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

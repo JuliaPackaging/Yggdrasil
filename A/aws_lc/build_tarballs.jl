@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "aws_lc"
-version = v"1.73.0"
+version = v"5.8.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-lc.git", "44766fa7daa88e5afc7fc6de3311c48eeeb02f39"),
+    GitSource("https://github.com/awslabs/aws-lc.git", "a3d1e685552f05a9ad04a2946962c03e97bdecac"),
     DirectorySource("./bundled"),
 ]
 

@@ -29,26 +29,30 @@
 using BinaryBuilder, Pkg
 
 name = "AOCL"
-version = v"5.3.1"
+version = v"5.3.2"
 
-# Pinned to the AOCL-5.3.1-Submodules tag and its recorded submodule commits
+# Pinned to the AOCL-5.3.2-Submodules tag and its recorded submodule commits
 sources = [
     GitSource("https://github.com/amd/aocl.git",
-              "5018beb662bca63d29ace70da51ce322e76d9909"),
+              "2fab7ee97dfce6ebc3cb0522c254a3653429f472"),
     GitSource("https://github.com/amd/aocl-utils.git",
-              "deb418767224511d146fc5e6841a55a6f69e5e79"; unpack_target = "aocl-src"),
+              "ba4afcf0247008dc257479c5ae2b5f5300ecaa7b"; unpack_target = "aocl-src"),
     GitSource("https://github.com/amd/blis.git",
-              "9212e3b464ef3310b093d4405222ec79afd147b4"; unpack_target = "aocl-src"),
+              "25cad99a6840855ade0a49871197f48ee0e1d317"; unpack_target = "aocl-src"),
     GitSource("https://github.com/amd/libflame.git",
-              "954fc2601f65b06e64eb5b55164d8881063a1ee1"; unpack_target = "aocl-src"),
+              "3b3251adec5beb1844028661319cb4b44b326a20"; unpack_target = "aocl-src"),
     GitSource("https://github.com/amd/aocl-sparse.git",
-              "2e62fd859dfc40dcc1df2fc96e5994f9fd49eef4"; unpack_target = "aocl-src"),
+              "3cfff9a70f736d133d67e99c6543f84a2e7324fe"; unpack_target = "aocl-src"),
     GitSource("https://github.com/amd/aocl-libm-ose.git",
-              "86223910103068db48f42d9cc59c0bf3fc46fa5f"; unpack_target = "aocl-src"),
+              "29fd054f383e6c5e2dec2fce781d5220059f1836"; unpack_target = "aocl-src"),
     GitSource("https://github.com/amd/aocl-compression.git",
-              "ab24e65b346f48d3433f74e0fffbdc888e36736b"; unpack_target = "aocl-src"),
+              "8a0b4ba0e53c1a0fabfcb1c1d849baa43947c3a8"; unpack_target = "aocl-src"),
     GitSource("https://github.com/amd/openrng.git",
-              "27ade0ed417e87fddfbe7ce76f22dcda6f583cce"; unpack_target = "aocl-src"),
+              "12c9003e91b6136178b25f8ec5ab7c60b710097e"; unpack_target = "aocl-src"),
+    GitSource("https://github.com/amd/aocl-fftz.git",
+              "faf92348350621db1738a19901a953a1ca245265"; unpack_target = "aocl-src"),
+    GitSource("https://github.com/amd/aocl-dlp.git",
+              "fe36da707e6f25e8b3e2b742dfa5957d4484fca5"; unpack_target = "aocl-src"),
 ]
 
 script = raw"""
@@ -100,7 +104,9 @@ build_aocl_variant() {
         -DSPARSE_PATH=${SRC} \
         -DLIBM_PATH=${SRC} \
         -DCOMPRESSION_PATH=${SRC} \
-        -DOPENRNG_PATH=${SRC}/openrng \
+        -DOPENRNG_PATH=${SRC} \
+        -DFFTZ_PATH=${SRC} \
+        -DDLP_PATH=${SRC} \
         "$@"
     cmake --build ${AOCL_BIY}/build --config Release --target install -j${nproc}
 }

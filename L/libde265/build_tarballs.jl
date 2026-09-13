@@ -1,14 +1,14 @@
 using BinaryBuilder, Pkg
 
 name = "libde265"
-version = v"1.1.0"
+version = v"1.1.1"
 ygg_build = 0  # NOTE: increment on rebuild of the same upstream version, reset on new libde265 version
 ygg_version = VersionNumber(version.major, version.minor, 1_000 * version.patch + ygg_build)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/strukturag/libde265/releases/download/v$(version)/libde265-$(version).tar.gz",
-                  "afc19dd28e2fc523de5952bba5224ee1d28e286c72436d2843df126cca1181fd"),
+                  "fd48a927e94ed74fc7ce8829d222b9d8599fcbfe8b6448ba66705babc56ab219"),
 ]
 
 # Bash recipe for building across all platforms
@@ -22,6 +22,16 @@ args+=(-DCMAKE_INSTALL_PREFIX=$prefix)
 args+=(-DCMAKE_BUILD_TYPE=RELEASE)
 args+=(-DCMAKE_EXE_LINKER_FLAGS="-pthread")
 args+=(-DCMAKE_SHARED_LINKER_FLAGS="-pthread")
+
+# The AVX2/AVX-512 dispatch code uses `__builtin_cpu_supports`, which
+# requires the libgcc helpers `__cpu_model` and `__cpu_indicator_init`.
+# These are not provided by the macOS Clang toolchain, so the link fails
+# with undefined symbols. Disable these kernels; the SSE ones remain.
+# (These options have no effect on the aarch64 macOS build.)
+if [[ ${target} == *-apple-darwin* ]]; then
+    args+=(-DENABLE_AVX2=OFF)
+    args+=(-DENABLE_AVX512=OFF)
+fi
 
 cmake -B build -S . "${args[@]}"
 
@@ -60,7 +70,10 @@ products = [LibraryProduct("libde265", :libde265)]
 dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
+# We need at least GCC 10 to avoid a GCC `.seh_savexmm` bug on mingw
+# (<https://gcc.gnu.org/bugzilla/show_bug.cgi?id=65782>) when assembling
+# the AVX-512 kernels.
 build_tarballs(
     ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
-    julia_compat="1.6", preferred_gcc_version=v"7",
+    julia_compat="1.6", preferred_gcc_version=v"10",
 )
