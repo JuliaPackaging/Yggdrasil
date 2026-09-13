@@ -117,6 +117,12 @@ Use `preferred_gcc_version=v"X"` for (see [available GCC versions](https://githu
 - **Musl bugs**: Use GCC ≥6 to avoid `posix_memalign` issues
 - Default is GCC 4.8.5 for maximum compatibility
 
+### Style
+
+- Prefer writing less. Every line in a recipe, script, or patch should earn its place.
+- Keep comments minimal. Only comment code that is genuinely tricky (non-obvious workarounds, platform quirks, ABI hacks) and say *why*, not *what*.
+- Do not comment obvious steps (`# configure`, `# build`, `# install`) or restate what the code already says.
+
 ### Unsupported Build Flags
 
 Products should not force using certain CPUs or instruction sets (e.g., the `march` or `mcpu` flags), unless they perform their own selection of the appropriate code for the current processor at runtime.
