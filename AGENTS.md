@@ -147,7 +147,7 @@ Use `preferred_gcc_version=v"X"` for (see [available GCC versions](https://githu
 
 - Start from `supported_platforms()` and remove with `filter!`, one comment per exclusion saying what breaks. Never hand-list platforms.
 - Filter by property, e.g. `nbits(p) == 64`, not by enumerating architectures.
-- `Sys.isbsd(p)` matches macOS. Use `Sys.isfreebsd(p)`.
+- `Sys.isbsd(p)` also matches macOS. To target FreeBSD alone, use `Sys.isfreebsd(p)`.
 - Newer macOS SDK: `include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))` then `sources, script = require_macos_sdk("11.0", sources, script)`. Never set `MACOSX_DEPLOYMENT_TARGET` by hand or edit the sysroot.
 - Windows x86_64 load-time abort "32 bit pseudo relocation out of range": try `-Wl,--disable-runtime-pseudo-reloc`, else link `-static-libstdc++ -static-libgcc`.
 
@@ -414,7 +414,7 @@ export PKG_CONFIG_PATH="${prefix}/lib/pkgconfig:${PKG_CONFIG_PATH}"
 
 ### Multi-Variant Recipes
 
-Put shared logic in `PackageName/common.jl` and one `build_tarballs.jl` per variant in subdirectories (`S/SCALAPACK/{SCALAPACK,SCALAPACK32,SCALAPACK64}`). Keep an old major version alongside a new one with `PackageName@x.y/` directories.
+Put shared logic in `PackageName/common.jl` and one `build_tarballs.jl` per variant in subdirectories (`S/SCALAPACK/{SCALAPACK,SCALAPACK32,SCALAPACK64}`). Keep an old version alongside a new one in a `PackageName@<version>/` directory, with as many version components as needed to tell them apart (`T/TetGen/TetGen@1.5`, `L/LLVM/Clang@18`).
 
 ### Platform Augmentation Helpers
 
@@ -430,7 +430,7 @@ cmake ../package-source
 
 ### Rebuilding Without Recipe Changes
 
-To rebuild the same upstream version (new platform, fixed toolchain shard), bump the `# Build trigger: N` line at the end of `build_tarballs.jl`, adding it as `1` if missing. Don't add comments for this, and leave `version` alone; the build number is assigned at registration. The exception is a JLL old enough that a rebuild would change its `JLLWrappers` compat: General rejects build-number-only releases with different compat, so bump the patch version instead (GLPK 5.0 → 5.0.1). Explain why in the PR.
+To rebuild the same upstream version (new platform, fixed toolchain shard), bump the `# Build trigger: N` line at the end of `build_tarballs.jl`, adding it as `1` if missing. Don't add comments for this, and leave `version` alone: a build number cannot be set by hand, registration bumps it automatically when the version is unchanged. The exception is a JLL old enough that a rebuild would change its `JLLWrappers` compat: General rejects build-number-only releases with different compat, so bump the patch version instead (GLPK 5.0 → 5.0.1). Explain why in the PR.
 
 ## Testing Locally
 
@@ -496,7 +496,7 @@ Examples:
 - Don't edit `.ci/Manifest.toml`; maintainers do that with the Update Manifest workflow.
 - Don't add non-recipe files (e.g. `.gitattributes`) under a recipe directory.
 - CI only rebuilds a recipe when a file inside its directory changes. To rebuild the same upstream version, bump the `# Build trigger: N` line (see [Rebuilding Without Recipe Changes](#rebuilding-without-recipe-changes)).
-- Stacked PRs from a fork don't work on GitHub.
+- Don't stack PRs. A PR that depends on another's JLL cannot pass CI until that JLL is registered, so wait for the first to merge.
 - Contributors cannot retry Buildkite jobs; ask a maintainer.
 
 ## Testing JLL Packages Before Merging
