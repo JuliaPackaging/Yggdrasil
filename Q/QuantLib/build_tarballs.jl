@@ -30,6 +30,12 @@ CMAKE_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release
     -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
     -DQL_EXTRA_SAFETY_CHECKS=ON
+    # Only build the library. The examples, test suite and benchmark are ~40
+    # extra executables that we don't ship; building them roughly doubles the
+    # build time and auditing them made some platforms hang until the CI
+    # timeout. The benchmark lives under test-suite/, so it is covered too.
+    -DQL_BUILD_EXAMPLES=OFF
+    -DQL_BUILD_TEST_SUITE=OFF
     # Force shared library on all platforms. On UNIX this matches the upstream
     # default (BUILD_SHARED_LIBS=${UNIX}); on MinGW it overrides the static-only
     # default so we ship a DLL.
@@ -38,15 +44,6 @@ CMAKE_FLAGS=(
     # MinGW DLL has its symbols visible; QuantLib doesn't use __declspec(dllexport).
     -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON
 )
-
-if [[ ${target} == *mingw* ]]; then
-    # The library and Examples link fine on MinGW, but quantlib-test-suite.exe
-    # and quantlib-benchmark.exe fail to link because their CMake config doesn't
-    # add libboost_unit_test_framework to the link line. They're never shipped
-    # anyway, so just skip building them on MinGW. Other platforms keep them on
-    # for compile-coverage.
-    CMAKE_FLAGS+=(-DQL_BUILD_TEST_SUITE=OFF -DQL_BUILD_BENCHMARK=OFF)
-fi
 
 CXX_EXTRA_FLAGS=""
 if [[ ${target} == *darwin* || ${target} == *freebsd* ]]; then
@@ -94,6 +91,8 @@ products = [
 
 dependencies = [
     Dependency("boost_jll"; compat="=1.87.0"),
+    # libQuantLib links to libgcc_s
+    Dependency("CompilerSupportLibraries_jll"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
