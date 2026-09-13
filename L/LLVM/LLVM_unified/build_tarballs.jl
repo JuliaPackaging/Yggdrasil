@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 include("../common.jl")
 
 name = "LLVM_unified"
-version = v"0.1.2"
+version = v"0.1.3"
 llvm_full_versions = [
     v"15.0.7+12",               # Julia 1.10
     v"16.0.6+6",                # Julia 1.11
@@ -17,6 +17,7 @@ llvm_full_versions = [
     v"20.1.8+2",                # Julia 1.13
     v"21.1.8+1",                # Julia 1.14
     v"22.1.8+1",                # Julia 1.15
+    v"23.1.1+0",
 ]
 
 augment_platform_block = """

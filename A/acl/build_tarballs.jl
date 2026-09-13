@@ -3,14 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "acl"
-version = v"2.3.2"
-# We bumped the version number to support new architectures
-ygg_version = v"2.3.3"
+version = v"2.4.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("http://download.savannah.nongnu.org/releases/acl/acl-$(version).tar.xz",
-                  "97203a72cae99ab89a067fe2210c1cbf052bc492b479eca7d226d9830883b0bd")
+                  "e661131456d2708a01c614a0f400e11d7d1bfaeb6f3e74b75bb980b72f0161a3")
 ]
 
 # Bash recipe for building across all platforms
@@ -42,4 +40,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"5")
