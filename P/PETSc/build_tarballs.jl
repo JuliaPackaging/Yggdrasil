@@ -212,7 +212,16 @@ build_petsc()
 
     if [ ${USE_SUPERLU_DIST} == 1 ]; then
         SLU_INC=${includedir}/superlu_dist_${3}
-        SUPERLU_DIST_ARGS="--with-superlu_dist=1 --with-superlu_dist-include=${SLU_INC} --with-superlu_dist-lib=${libdir}/libsuperlu_dist_${3}.${dlext}"
+        SUPERLU_DIST_LIBS="${libdir}/libsuperlu_dist_${3}.${dlext}"
+        if [[ "${target}" == *-apple-* ]]; then
+            # ld64 does not resolve libsuperlu_dist's @rpath reference to METIS, so name it explicitly
+            if [ "${3}" == "Int64" ]; then
+                SUPERLU_DIST_LIBS="${SUPERLU_DIST_LIBS},${libdir}/metis/metis_Int64_Real32/lib/libmetis_Int64_Real32.${dlext}"
+            else
+                SUPERLU_DIST_LIBS="${SUPERLU_DIST_LIBS},${libdir}/libmetis.${dlext}"
+            fi
+        fi
+        SUPERLU_DIST_ARGS="--with-superlu_dist=1 --with-superlu_dist-include=${SLU_INC} --with-superlu_dist-lib=[${SUPERLU_DIST_LIBS}]"
     else
         SUPERLU_DIST_ARGS="--with-superlu_dist=0"
     fi
