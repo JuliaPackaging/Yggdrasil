@@ -1,0 +1,14 @@
+Guard the only unconditional omp.h include so that building with -DHAVE_OPENMP=OFF works.
+Upstream does not support multithreading on macOS: https://neper.info/doc/introduction.html#installing-neper
+
+diff --git a/src/neut/neut_mesh/neut_mesh_op/neut_mesh_op_.h b/src/neut/neut_mesh/neut_mesh_op/neut_mesh_op_.h
+index d66217e7..39d0b1bc 100644
+--- a/src/neut/neut_mesh/neut_mesh_op/neut_mesh_op_.h
++++ b/src/neut/neut_mesh/neut_mesh_op/neut_mesh_op_.h
+@@ -7,4 +7,6 @@
+ #include<limits.h>
+ #include<string.h>
+ #include"neut.h"
++#ifdef HAVE_OPENMP
+ #include"omp.h"
++#endif
