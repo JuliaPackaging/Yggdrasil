@@ -1,10 +1,7 @@
 using BinaryBuilder
 
-const YGGDRASIL_DIR = "../.."
-include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
-
-version = v"22.1.8"
-git_sha = "ca7933e47d3a3451d81e72ac174dcb5aa28b59d1" # llvmorg-22.1.8
+version = v"23.1.1"
+git_sha = "6dfe1677ab8dffbc6ec13d53a1e0215d75147689" # llvmorg-23.1.1
 
 script = raw"""
 # We want to exit the program if errors occur.
@@ -94,21 +91,6 @@ CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
 # `ld -v`, which is hilariously wrong.
 CMAKE_FLAGS+=(-DLLVM_HOST_TRIPLE=${target})
 
-# Most targets use the actual target string, but we disagree on `aarch64-darwin` and `arm64-darwin`
-CMAKE_TARGET=${target}
-
-if [[ "${target}" == *apple* ]]; then
-    # On OSX, we need to override LLVM's looking around for our SDK
-    # We need to link against libc++ on OSX
-    CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBCXX=ON)
-
-    # If we're building for Apple, CMake gets confused with `aarch64-apple-darwin` and instead prefers
-    # `arm64-apple-darwin`.  If this issue persists, we may have to change our triplet printing.
-    if [[ "${target}" == aarch64* ]]; then
-        CMAKE_TARGET=arm64-${target#*-}
-    fi
-fi
-
 GCC_VERSION=$(gcc --version | head -1 | awk '{ print $3 }' | cut -d. -f1)
 if [[ $version -le 10 && "${target}" == aarch64-linux* ]]; then
     CMAKE_C_FLAGS+=(-mno-outline-atomics)
@@ -116,9 +98,9 @@ if [[ $version -le 10 && "${target}" == aarch64-linux* ]]; then
 fi
 
 # Tell LLVM which compiler target to use, because it loses track for some reason
-CMAKE_FLAGS+=(-DCMAKE_C_COMPILER_TARGET=${CMAKE_TARGET})
-CMAKE_FLAGS+=(-DCMAKE_CXX_COMPILER_TARGET=${CMAKE_TARGET})
-CMAKE_FLAGS+=(-DCMAKE_ASM_COMPILER_TARGET=${CMAKE_TARGET})
+CMAKE_FLAGS+=(-DCMAKE_C_COMPILER_TARGET=${target})
+CMAKE_FLAGS+=(-DCMAKE_CXX_COMPILER_TARGET=${target})
+CMAKE_FLAGS+=(-DCMAKE_ASM_COMPILER_TARGET=${target})
 
 # Defaults to off when crosscompiling, starting from LLVM 18
 CMAKE_FLAGS+=(-DBOLT_ENABLE_RUNTIME=ON)
@@ -136,13 +118,9 @@ sources = [
     GitSource("https://github.com/llvm/llvm-project.git", git_sha),
 ]
 
-# LLVM 22 requires macOS SDK 11.0 (LLVM 15-21 needed 10.14), see
-# <https://github.com/JuliaPackaging/Yggdrasil/pull/5592#issuecomment-1309525112> and
-# references therein.
-sources, script = require_macos_sdk("11.0", sources, script)
-
+# BOLT only optimizes ELF binaries, so we only ship it for Linux.
 platforms = expand_cxxstring_abis(supported_platforms())
-filter!(p -> arch(p) ∈ ("x86_64", "aarch64") && os(p) ∈ ("linux", "macos"), platforms)
+filter!(p -> arch(p) ∈ ("x86_64", "aarch64") && Sys.islinux(p), platforms)
 
 products = [
     ExecutableProduct("llvm-bolt", :llvm_bolt),
