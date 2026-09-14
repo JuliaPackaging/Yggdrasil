@@ -62,4 +62,4 @@ dependencies = [
     RuntimeDependency(PackageSpec(name="gmsh_jll", uuid="630162c2-fc9b-58b3-9910-8442a8a132e6")),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"6") # GCC 5: ambiguous isnan(double&) in neut_odf
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"7") # GCC 5: ambiguous isnan(double&) in neut_odf; GCC 6: ICE on aarch64 in neut_elt
