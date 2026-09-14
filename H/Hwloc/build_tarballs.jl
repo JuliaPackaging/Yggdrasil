@@ -38,7 +38,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("XML2_jll"; compat="~2.13.6"),
+    Dependency("XML2_jll"; compat="~2.15.3"),
     Dependency("Xorg_libpciaccess_jll"; platforms=filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
 ]
 
