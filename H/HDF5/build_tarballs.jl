@@ -52,8 +52,6 @@ if [[ ${target} == i686-w64-* ]]; then
     ros3_vdf=OFF
 fi
 
-parallel=ON
-
 cmake_options=(
     -DCMAKE_BUILD_TYPE=Release
     -DCMAKE_INSTALL_PREFIX=${prefix}
@@ -76,7 +74,7 @@ cmake_options=(
     -DHDF5_ENABLE_MAP_API=ON
     -DHDF5_ENABLE_MIRROR_VFD=ON
     -DHDF5_ENABLE_NONSTANDARD_FEATURE_FLOAT16=${float16}
-    -DHDF5_ENABLE_PARALLEL=${parallel}
+    -DHDF5_ENABLE_PARALLEL=ON
     -DHDF5_ENABLE_ROS3_VFD=${ros3_vfd}
     -DHDF5_ENABLE_SUBFILING_VFD=ON
     -DHDF5_ENABLE_SZIP_SUPPORT=ON
