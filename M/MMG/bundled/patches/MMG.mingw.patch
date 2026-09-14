@@ -1,6 +1,10 @@
---- /dev/null
+LinearElasticity_jll does not ship an import library on Windows, so look for
+the DLL itself instead of `libElas.dll.a`: MinGW's linker can link directly
+against a DLL.
+
+--- a/cmake/modules/FindElas.cmake
 +++ b/cmake/modules/FindElas.cmake
-@@ -39,15 +39,25 @@ FIND_PATH(ELAS_INCLUDE_DIR
+@@ -39,13 +39,14 @@ FIND_PATH(ELAS_INCLUDE_DIR
  
  # Check for elas library (search in common locations in order to prevent
  # modifications in ELAS installation)
@@ -16,15 +20,4 @@
 +  PATH_SUFFIXES bin ../bin lib ../lib
    DOC "The ELAS library"
    )
-+#FIND_LIBRARY(ELAS_LIBRARY
-+#  NAMES Elas Elas${ELAS_LIB_SUFFIX}
-+#  HINTS ${ELAS_LIBRARY}
-+#  $ENV{ELAS_LIBRARY}
-+#  $ENV{HOME}/lib
-+#  ${ELAS_DIR}/lib
-+#  $ENV{ELAS_DIR}/lib
-+#  DOC "The ELAS library"
-+#  )
  
- INCLUDE(FindPackageHandleStandardArgs)
- FIND_PACKAGE_HANDLE_STANDARD_ARGS(ELAS DEFAULT_MSG

@@ -22,7 +22,7 @@ using BinaryBuilder, Pkg
 
 name = "GAP"
 upstream_version = v"4.16.1"
-version = v"400.1600.100"
+version = v"400.1600.101"
 
 # Collection of sources required to complete build
 sources = [
@@ -128,7 +128,7 @@ dependencies = [
     Dependency("GMP_jll"),
     Dependency("Readline_jll"; compat="8.2.13"),
     Dependency("Zlib_jll"),
-    BuildDependency(PackageSpec(;name="libjulia_jll", version="1.11.0")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version="1.11.2")),
 ]
 
 # we want to get notified of any changes to julia_compat, and adapt `version` accordingly
