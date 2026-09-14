@@ -238,6 +238,8 @@ build_petsc()
         TRIANGLE_ARGS="--with-triangle=0"
     fi
 
+    HDF5_ARGS="--with-hdf5=1 --with-hdf5-include=${includedir} --with-hdf5-lib=[${libdir}/libhdf5_hl.${dlext},${libdir}/libhdf5.${dlext}]"
+
     # Define our toolchain for PETSc and all the other packages it configures recursively
     #
     # Don't know how to properly pass `CMAKE_INSTALL_PREFIX` to
@@ -319,6 +321,7 @@ build_petsc()
         ${SUPERLU_DIST_ARGS} \
         ${HYPRE_ARGS} \
         ${MUMPS_ARGS} \
+        ${HDF5_ARGS} \
         ${TETGEN_ARGS} \
         ${TRIANGLE_ARGS} \
         --with-library-name-suffix=_${PETSC_CONFIG} \
@@ -510,6 +513,7 @@ dependencies = [
     # Stock (32-bit HYPRE_BigInt) hypre for the Int32 PetscInt variants.
     Dependency(PackageSpec(name="HYPRE_jll"); compat="3.1.2"),
     Dependency(PackageSpec(name="SuperLU_DIST_jll"); compat="9.2.3"),
+    Dependency(PackageSpec(name="HDF5_jll"); compat="2.2.2"),
     Dependency(PackageSpec(name="TetGen_jll"); compat="1.6.0"),
     Dependency(PackageSpec(name="Triangle_jll"); compat="1.6.3"),
     # Julia's stdlib SuiteSparse (Int64 / SuiteSparse_long).  PETSc binds
