@@ -10,8 +10,11 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 name = "finufft"
 version = v"2.6.0"
 commit_hash = "287ad85a1b3a466a082d61704ea4848d288376d3" # CURRENT MASTER, NOT 2.6.0
-preferred_gcc_version = v"11"
+# GCC >= 13 is recommended for FINUFFT, performance depends on
+# compiler and how well it vectorizes code.
+preferred_gcc_version = v"13"
 preferred_llvm_version = v"13.0.1+1"
+julia_compat = "1.9" # = FINUFFT.jl compat
 
 # Collection of sources required to complete build
 sources = [
@@ -23,9 +26,11 @@ script = raw"""
 cd $WORKSPACE/srcdir/finufft*/
 apk del cmake
 
-# BinaryBuilder's aarch64 sysroot lacks the AT_HWCAP2 definition expected by
-# xsimd 14.3.0. AT_HWCAP2 is Linux auxv entry 26.
-export CXXFLAGS="${CXXFLAGS} -DAT_HWCAP2=26"
+if [[ "${target}" == *-linux-gnu* ]]; then
+    # Older BinaryBuilder glibc sysroots lack the AT_HWCAP2 definition expected
+    # by xsimd 14.3.0. AT_HWCAP2 is Linux auxv entry 26.
+    export CXXFLAGS="${CXXFLAGS} -DAT_HWCAP2=26"
+fi
 
 if [[ "${target}" == *-freebsd* ]]; then
     # Core detection not working on FreeBSD, and warning kills compilation
@@ -93,9 +98,8 @@ dependencies = [
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isfreebsd, platforms)),
     # CMake needs higher version than what is bundled.
     HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.31.9+0")),
-
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=preferred_gcc_version, preferred_llvm_version=preferred_llvm_version, julia_compat="1.6", augment_platform_block)
+               preferred_gcc_version=preferred_gcc_version, preferred_llvm_version=preferred_llvm_version, julia_compat=julia_compat, augment_platform_block)
