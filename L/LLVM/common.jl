@@ -409,6 +409,18 @@ if [[ "${target}" == *musl* ]]; then
     # Taken from https://git.alpinelinux.org/cgit/aports/tree/main/compiler-rt/APKBUILD
     CMAKE_FLAGS+=(-DCOMPILER_RT_BUILD_SANITIZERS=OFF)
     CMAKE_FLAGS+=(-DCOMPILER_RT_BUILD_XRAY=OFF)
+    if [[ "${target}" != x86_64-* ]]; then
+        # memprof and ctx_profile only support x86_64, but enabling them still builds
+        # sanitizer_common, which does not compile against musl on ARM and AArch64.
+        CMAKE_FLAGS+=(-DCOMPILER_RT_BUILD_MEMPROF=OFF)
+        CMAKE_FLAGS+=(-DCOMPILER_RT_BUILD_CTX_PROFILE=OFF)
+    fi
+fi
+
+if [[ "${LLVM_MAJ_VER}" -ge "22" ]] && [[ "${target}" == arm* ]]; then
+    # The optimized Arm FP assembly needs ARMv7 and a newer GNU assembler than ours;
+    # use the generic C builtins instead.
+    CMAKE_FLAGS+=(-DCOMPILER_RT_ARM_OPTIMIZED_FP=OFF)
 fi
 
 if [[ "${target}" == *freebsd* ]]; then
