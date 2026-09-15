@@ -161,16 +161,15 @@ const cuda_full_versions = [
     v"13.0.2",
     v"13.1.1",
     v"13.2.1",
-    v"13.3.1"
+    v"13.3.1",
+    v"13.4.1"
 ]
 
 # EA/preview toolkits. We do build JLLs for these, so that they can be used explicitly,
 # but they are never selected automatically: they are left out of `supported_platforms`
 # unless asked for, and CUDA_Runtime_jll's platform augmentation only ever picks one when
 # the user requests it through the "version" preference.
-const cuda_prerelease_versions = [
-    v"13.4.0"
-]
+const cuda_prerelease_versions = VersionNumber[]
 
 function full_version(ver::VersionNumber)
     ver == Base.thisminor(ver) || error("Cannot specify a patch version")
@@ -351,9 +350,9 @@ function cuda_nvcc_redist_source(cuda_ver, arch)
             ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-x86_64/cuda_nvcc-linux-x86_64-13.2.51-archive.tar.xz",
                           "706b996fefc59dc8d64d317fdf48d0aa84c4ae004eff43009dd918f40c5cc66a")
         elseif cuda_ver == "13.4"
-            # See https://packages.nvidia.com/bin-archive/release/cuda/redist/redistrib_13.4.0.json
-            ArchiveSource("https://packages.nvidia.com/bin-archive/pool/linux-x86_64/5B515474-7E78-11F1-8656-C51E4F4B317F/cuda_nvcc-linux-x86_64-13.4.46-archive.tar.xz",
-                          "52e355da195b4a7ee910429680a69cdeea31834041cb65df738e0c561d5c4d69")
+            # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_13.4.1.json
+            ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-x86_64/cuda_nvcc-linux-x86_64-13.4.59-archive.tar.xz",
+                          "0c08d1df80b5d0bd081778d392446ab50a6a54b047c0136b39c8dbfdf2cfed3f")
         else
             error("No CUDA redist available for CUDA version $cuda_ver on arch $arch")
         end

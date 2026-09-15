@@ -3,52 +3,57 @@
 using BinaryBuilder
 
 name = "MMG"
-version = v"5.6.0"
+version = v"5.8.0"
 
 # Collection of sources required to build MMG
 sources = [
-    GitSource("https://github.com/MmgTools/mmg", "889d408419b5c48833c249695987cf6ec699d399"),
+    GitSource("https://github.com/MmgTools/mmg", "4d8232c8aebfed877935d75d4d4a67e850962422"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-# Install genheader for host platform
-cp -r ${WORKSPACE}/srcdir/mmg ${WORKSPACE}/srcdir/mmg-genheader
-cd ${WORKSPACE}/srcdir/mmg-genheader
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/genheader.patch"
-mkdir build
-cd build
-cmake .. \
-    -DCMAKE_INSTALL_PREFIX=${host_prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release
-make -j${nproc}
-make install
-cd ${WORKSPACE}/srcdir && rm -r ${WORKSPACE}/srcdir/mmg-genheader
-
-# Install MMG
 cd ${WORKSPACE}/srcdir/mmg
+
+# MMG builds a small helper program, `genheader`, and runs it at build time to
+# generate the Fortran headers.  That does not work when cross-compiling, so
+# build it for the host first and put it on the PATH: when cross-compiling,
+# CMake does not substitute the `genheader` target name in the custom command
+# with the (unrunnable) target executable, and falls back to searching PATH.
+cmake -B build-host \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DUSE_SCOTCH=OFF \
+    -DUSE_ELAS=OFF \
+    -DUSE_VTK=OFF
+cmake --build build-host --parallel ${nproc} --target genheader
+install -Dvm 755 build-host/bin/genheader "${host_bindir}/genheader"
+rm -rf build-host
+
 if [[ "${target}" == *mingw* ]]; then
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/MMG.mingw.patch"
-    USE_SCOTCH=OFF
-else
-    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/MMG.patch"
-    USE_SCOTCH=ON
 fi
-mkdir build
-cd build
-cmake .. \
+
+# `FindSCOTCH.cmake` wants to run a test program to determine `sizeof(SCOTCH_Num)`,
+# which is impossible when cross-compiling.  SCOTCH_jll is built with 32-bit
+# integers, so pre-seed the result of the `check_c_source_runs` call.
+# Old glibc hides the `PRId32` & co. macros from C++ unless `__STDC_FORMAT_MACROS`
+# is defined.
+cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
-    -DUSE_SCOTCH=${USE_SCOTCH} \
+    -DUSE_SCOTCH=ON \
+    -DSCOTCH_DIR=${prefix} \
+    -DSCOTCH_Num_4_EXITCODE=0 \
+    -DSCOTCH_Num_4_EXITCODE__TRYRUN_OUTPUT="" \
     -DUSE_ELAS=ON \
-    -DUSE_VTK=OFF
-make -j${nproc}
-make install
-install_license ../LICENSE
+    -DUSE_VTK=OFF \
+    -DCMAKE_CXX_FLAGS="-D__STDC_FORMAT_MACROS"
+cmake --build build --parallel ${nproc}
+cmake --install build
+install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
@@ -66,13 +71,12 @@ products = [
     ExecutableProduct("mmgs_O3", :mmgs_O3)
 ]
 
-# SCOTCH is only available on non-Windows platforms
-scotch_platforms = filter(!Sys.iswindows, platforms)
-
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("LinearElasticity_jll"),
-    Dependency("SCOTCH_jll", platforms=scotch_platforms, compat="6.1.3")
+    # Keep the SCOTCH compat in sync with MUMPS_jll, so that both can be
+    # installed together: https://github.com/JuliaPackaging/Yggdrasil/issues/14340
+    Dependency("SCOTCH_jll"; compat="~7.0.7")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
