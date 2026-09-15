@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "power_grid_model_c"
-version = v"1.13.145"
+version = v"1.13.172"
 
 # Collection of sources required to complete build
 sources = [
