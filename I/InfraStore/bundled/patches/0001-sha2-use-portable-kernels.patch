@@ -1,0 +1,21 @@
+Use sha2's portable SHA-256 kernels instead of the `asm` ones.
+
+The `asm` feature pulls in sha2-asm, whose ARMv8 crypto-extension kernels
+require the compiler to target a CPU with those extensions. BinaryBuilder
+forbids forcing an arch via -march, so they cannot be assembled in this
+environment.
+
+Dropping the feature costs throughput on aarch64 only. x86_64 is unaffected
+in practice: the portable implementation still detects SHA-NI at runtime.
+
+--- a/crates/infrastore-core/Cargo.toml
++++ b/crates/infrastore-core/Cargo.toml
+@@ -41,7 +41,7 @@
+ # Apple Silicon. sha2-asm does not build under MSVC, so Windows MSVC keeps the
+ # portable implementation (x86_64 still auto-detects SHA-NI at runtime).
+ [target.'cfg(not(target_env = "msvc"))'.dependencies]
+-sha2 = { workspace = true, features = ["asm"] }
++sha2 = { workspace = true }
+ 
+ [target.'cfg(target_env = "msvc")'.dependencies]
+ sha2 = { workspace = true }
