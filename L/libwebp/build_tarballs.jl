@@ -4,6 +4,9 @@ using BinaryBuilder
 
 name = "libwebp"
 version = v"1.6.0"
+# Bump the patch level of the JLL version when the recipe changes without a new upstream release,
+# e.g. to rebuild against a new major version of a dependency. Reset to `version` on the next upstream release.
+ygg_version = v"1.6.1" # Rebuilt against Giflib_jll 6
 
 # Collection of sources required to build libwebp
 sources = [
@@ -55,5 +58,5 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # We need at least GCC 10 for aarch64-linux-gnu
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"10")
