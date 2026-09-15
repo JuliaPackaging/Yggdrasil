@@ -1,15 +1,10 @@
 using BinaryBuilder, Pkg
 
 name = "VkFFT_OpenCL"
-version = v"0.1.0"
 
-# Must be the same libvkfft commit VkFFT_CUDA and VkFFT_Metal build
-# This is the commit the v0.1.0 tag points at.
-const libvkfft_commit = "8d20a59e32bcacdc8ae09ba71ce4589719cd7257"
-
-sources = [
-    GitSource("https://github.com/PaulVirally/libvkfft.git", libvkfft_commit),
-]
+# version, the libvkfft commit, the sources and the products are shared
+# with the other two VkFFT packages.
+include(joinpath(@__DIR__, "..", "common.jl"))
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/libvkfft
@@ -36,10 +31,6 @@ cmake --install build
 """
 
 platforms = supported_platforms()
-
-products = [
-    LibraryProduct("libvkfft", :libvkfft),
-]
 
 dependencies = [
     BuildDependency(PackageSpec(; name="OpenCL_Headers_jll", version="2025.06.13")),
