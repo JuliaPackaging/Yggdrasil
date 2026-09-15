@@ -433,6 +433,14 @@ ninja -j${nproc} -vv
 # Install!
 ninja install
 
+# A failed compiler-rt architecture probe can silently disable every runtime.
+if [[ "${LLVM_MAJ_VER}" -ge "22" ]] && [[ "${target}" == *linux* || "${target}" == *mingw* ]]; then
+    if ! compgen -G "${prefix}/lib/clang/${LLVM_MAJ_VER}/lib/*/libclang_rt.profile*.a" > /dev/null; then
+        echo "ERROR: compiler-rt installed no profile runtime for ${target}" >&2
+        exit 1
+    fi
+fi
+
 if [[ "${LLVM_MAJ_VER}" -ge "16" ]]; then
     # We can now tell cmake to put the dlls in the right place, and the verifier doesn't find them
     if [[ "${target}" == *mingw* ]]; then
