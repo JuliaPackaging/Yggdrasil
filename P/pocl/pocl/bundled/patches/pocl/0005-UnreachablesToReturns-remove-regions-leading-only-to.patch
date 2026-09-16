@@ -1,7 +1,7 @@
-From 799b5dd8d75e34add9a6d3c14aec4a0fb1d40dc0 Mon Sep 17 00:00:00 2001
+From 58d4c982e445c5560dad3f6c30564462c1b55dc1 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Mon, 17 Aug 2026 14:11:19 +0200
-Subject: [PATCH 15/16] UnreachablesToReturns: remove regions leading only to
+Subject: [PATCH 5/6] UnreachablesToReturns: remove regions leading only to
  unreachable
 
 For the loop handlers, this pass used to detach only blocks ending in
@@ -27,14 +27,14 @@ Fixes #1958.
 
 (cherry picked from commit a1b5abfe68fa4afb26b260789808896472a0e6cb)
 ---
- lib/llvmopencl/UnreachablesToReturns.cc | 254 ++++++++++--------------
+ lib/llvmopencl/UnreachablesToReturns.cc | 252 ++++++++++--------------
  tests/regression/CMakeLists.txt         |   4 +-
  tests/regression/test_issue_1958.c      | 168 ++++++++++++++++
- 3 files changed, 280 insertions(+), 146 deletions(-)
+ 3 files changed, 279 insertions(+), 145 deletions(-)
  create mode 100644 tests/regression/test_issue_1958.c
 
 diff --git a/lib/llvmopencl/UnreachablesToReturns.cc b/lib/llvmopencl/UnreachablesToReturns.cc
-index 96ad3757e..a63157e43 100644
+index ba3cda03c..a63157e43 100644
 --- a/lib/llvmopencl/UnreachablesToReturns.cc
 +++ b/lib/llvmopencl/UnreachablesToReturns.cc
 @@ -9,12 +9,11 @@
@@ -55,15 +55,6 @@ index 96ad3757e..a63157e43 100644
  //
  // Note that neither handling is recursive. Therefore all non-kernel functions
  // that have an unreachable inst, must be inlined before this Pass is run.
-@@ -120,7 +119,7 @@ static bool convertUnreachablesToReturns(Function &F) {
-   for (Function::iterator I = F.begin(), E = F.end(); I != E; ++I) {
-     BasicBlock &BB = *I;
-     assert(BB.getTerminator());
--    if ((BB.sizeWithoutDebug() == 1) && isa<ReturnInst>(BB.getTerminator())) {
-+    if ((BB.size() == 1) && isa<ReturnInst>(BB.getTerminator())) {
-       RetBB = &BB;
-       break;
-     }
 @@ -150,164 +149,129 @@ static bool convertUnreachablesToReturns(Function &F) {
    return true;
  }
@@ -333,7 +324,7 @@ index 96ad3757e..a63157e43 100644
  }
  
 diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
-index 8c309f4a3..1bb244970 100644
+index a47eebf39..364a27029 100644
 --- a/tests/regression/CMakeLists.txt
 +++ b/tests/regression/CMakeLists.txt
 @@ -28,7 +28,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
@@ -345,7 +336,7 @@ index 8c309f4a3..1bb244970 100644
       test_rematerialized_alloca_load_with_outside_pr_users
       test_peeled_wi_global_id
       test_barrier_divergent_skip
-@@ -144,6 +144,8 @@ add_test_pocl(NAME "regression/test_issue_1794b" COMMAND "test_issue_1794" "0" "
+@@ -159,6 +159,8 @@ add_test_pocl(NAME "regression/test_issue_1794b" COMMAND "test_issue_1794" "0" "
  
  add_test_pocl(NAME "regression/test_issue_1747" COMMAND "test_issue_1747" "0" "${CMAKE_CURRENT_SOURCE_DIR}/test_issue_1747.spv" LABELS ${SPIRV_LABELS})
  

@@ -1,7 +1,7 @@
-From 6f3e8027391c82648aafa42857002664edbc3917 Mon Sep 17 00:00:00 2001
+From a0aaebfe1196ed6ae621c9d4da0223ad63da4e54 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Wed, 26 Aug 2026 16:01:47 +0200
-Subject: [PATCH 16/16] UnreachablesToReturns: keep loops with side effects
+Subject: [PATCH 6/6] UnreachablesToReturns: keep loops with side effects
 
 Deleting every block that can reach an unreachable but not a return also
 removed intentional infinite loops that merely contain a guarded abort path,
@@ -111,7 +111,7 @@ index a63157e43..f7420788c 100644
      if (!LiveBBs.count(&BB))
        continue;
 diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
-index 1bb244970..fa5f4f24a 100644
+index 364a27029..538e63ac7 100644
 --- a/tests/regression/CMakeLists.txt
 +++ b/tests/regression/CMakeLists.txt
 @@ -29,6 +29,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
@@ -122,7 +122,7 @@ index 1bb244970..fa5f4f24a 100644
       test_rematerialized_alloca_load_with_outside_pr_users
       test_peeled_wi_global_id
       test_barrier_divergent_skip
-@@ -146,6 +147,8 @@ add_test_pocl(NAME "regression/test_issue_1747" COMMAND "test_issue_1747" "0" "$
+@@ -161,6 +162,8 @@ add_test_pocl(NAME "regression/test_issue_1747" COMMAND "test_issue_1747" "0" "$
  
  add_test_pocl(NAME "regression/test_issue_1958" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_issue_1958" LABELS ${SPIRV_LABELS})
  
@@ -131,10 +131,10 @@ index 1bb244970..fa5f4f24a 100644
  add_test_pocl(NAME "regression/peeled_wi_global_id" WORKITEM_HANDLER "loopvec;cbs;" COMMAND "test_peeled_wi_global_id" LABELS ${SPIRV_LABELS})
  
  add_test_pocl(NAME "regression/barrier_divergent_skip" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_barrier_divergent_skip" LABELS ${SPIRV_LABELS})
-@@ -334,6 +337,9 @@ set_property(TEST
-   "regression/test_flatten_barrier_subs_cbs"
-   "regression/infinite_loop_loopvec"
+@@ -356,6 +359,9 @@ set_property(TEST
    "regression/infinite_loop_cbs"
+   "regression/infinite_loop_with_barrier_loopvec"
+   "regression/infinite_loop_with_barrier_cbs"
 +  "regression/unreachable_in_infinite_loop_loops"
 +  "regression/unreachable_in_infinite_loop_loopvec"
 +  "regression/unreachable_in_infinite_loop_cbs"
