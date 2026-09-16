@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "CHICKEN"
-version = v"5.4.0"
+version = v"6.0.0"
 
 sources = [
     ArchiveSource("https://code.call-cc.org/releases/$version/chicken-$version.tar.gz",
-                  "3c5d4aa61c1167bf6d9bf9eaf891da7630ba9f5f3c15bf09515a7039bfcdec5f")
+                  "92835552b1b687ad26737e429b5aba36510bf429f8816ec0f6d336c8cb41f443")
 ]
 
 script = raw"""
@@ -62,9 +62,6 @@ fi
 
 platforms = supported_platforms()
 
-# NOTE: We could include Feathers, the graphical debugger, alongside the other products,
-# but it's distributed as a .tcl file with an accompanying shell script that just invokes
-# `wish`, and we would need to take a dependency on Tk_jll.
 products = [
     ExecutableProduct("chicken", :chicken),
     ExecutableProduct("chicken-do", :chicken_do),
