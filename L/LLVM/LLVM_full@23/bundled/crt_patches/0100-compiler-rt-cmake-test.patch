@@ -1,0 +1,26 @@
+Use the wrapper-selected architecture; BinaryBuilder ARM targets use hard-float.
+https://github.com/JuliaPackaging/Yggdrasil/pull/12953
+
+--- a/cmake/base-config-ix.cmake
++++ b/cmake/base-config-ix.cmake
+@@ -302,17 +302,14 @@
+       if(WIN32)
+         test_target_arch(arm "" "" "")
+       else()
+-        test_target_arch(armv4t "" "-march=armv4t" "-mfloat-abi=soft")
+-        test_target_arch(armv6m "" "-march=armv6m" "-mfloat-abi=soft")
+-        test_target_arch(arm "" "-march=armv7-a" "-mfloat-abi=soft")
+-        test_target_arch(armhf "" "-march=armv7-a" "-mfloat-abi=hard")
++        test_target_arch(armhf "" "")
+       endif()
+     elseif("${COMPILER_RT_DEFAULT_TARGET_ARCH}" MATCHES "avr")
+       test_target_arch(avr "__AVR__" "--target=avr")
+     elseif("${COMPILER_RT_DEFAULT_TARGET_ARCH}" MATCHES "aarch32")
+-      test_target_arch(aarch32 "" "-march=armv8-a")
++      test_target_arch(aarch32 "" "")
+     elseif("${COMPILER_RT_DEFAULT_TARGET_ARCH}" MATCHES "aarch64")
+-      test_target_arch(aarch64 "" "-march=armv8-a")
++      test_target_arch(aarch64 "" "")
+     elseif("${COMPILER_RT_DEFAULT_TARGET_ARCH}" MATCHES "riscv32")
+       test_target_arch(riscv32 "" "")
+     elseif("${COMPILER_RT_DEFAULT_TARGET_ARCH}" MATCHES "riscv64")
