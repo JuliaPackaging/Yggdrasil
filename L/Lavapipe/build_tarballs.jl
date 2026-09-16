@@ -57,15 +57,15 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 # Mesa >= 26.1 requires Python >= 3.10 while the rootfs ships 3.9, so hand it the
-# interpreter from Python_jll with our sdists on its path. It has to be a wrapper rather
-# than plain exports: meson itself runs on the rootfs' 3.9, and a global PYTHONHOME points
-# that interpreter at a 3.12 stdlib, which kills meson before it starts.
+# interpreter from Python_jll, wrapped. Both exports have to stay inside the wrapper:
+# LD_LIBRARY_PATH because its pyexpat needs that Python's own libexpat rather than the
+# rootfs' older one, and PYTHONPATH because meson walks python_exec_list and takes the first
+# interpreter that can import mako and yaml -- set it globally and meson picks the bare
+# python3.12 next to the wrapper, which then cannot load pyexpat.
 mkdir -p ${WORKSPACE}/srcdir/pybin
 cat > ${WORKSPACE}/srcdir/pybin/python3 <<EOF
 #!/bin/bash
-# Its extension modules (pyexpat) need this Python's own libexpat, not the rootfs' older one.
 export LD_LIBRARY_PATH=${host_prefix}/lib:\${LD_LIBRARY_PATH}
-export PYTHONHOME=${host_prefix}
 export PYTHONPATH=$(echo ${WORKSPACE}/srcdir/mako-*):$(echo ${WORKSPACE}/srcdir/markupsafe-*/src):$(echo ${WORKSPACE}/srcdir/packaging-*/src):$(echo ${WORKSPACE}/srcdir/pyyaml-*/lib)
 exec ${host_prefix}/bin/python3 "\$@"
 EOF
@@ -262,10 +262,22 @@ sources, script = require_macos_sdk(macos_sdk_version, sources, script)
 # The products that we will ensure are always built
 products = [
     LibraryProduct(["libvulkan_lvp", "vulkan_lvp"], :libvulkan_lvp),
-    # Point the Vulkan loader here with VK_ADD_DRIVER_FILES (which *adds* to the drivers
-    # the loader finds, unlike VK_DRIVER_FILES, so a real GPU stays enumerable alongside).
     FileProduct("share/vulkan/icd.d/lvp_icd.json", :lvp_icd),
 ]
+
+# Register the driver with the Vulkan loader. There is no loader-side driver list to push to
+# the way the OpenCL driver JLLs use `OpenCL_jll.drivers`, so this goes through the loader's
+# own discovery mechanism: VK_ADD_DRIVER_FILES *adds* to the drivers it finds, unlike
+# VK_DRIVER_FILES, so a real GPU stays enumerable alongside this one. The loader reads it at
+# vkCreateInstance, so setting it in __init__ is early enough.
+init_block = raw"""
+let sep = Sys.iswindows() ? ';' : ':',
+    found = split(get(ENV, "VK_ADD_DRIVER_FILES", ""), sep; keepempty=false)
+    if !(lvp_icd in found)
+        ENV["VK_ADD_DRIVER_FILES"] = join(vcat(found, lvp_icd), sep)
+    end
+end
+"""
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
@@ -306,9 +318,9 @@ other_platforms = setdiff(platforms, windows_platforms)
 
 if any(should_build_platform.(triplet.(windows_platforms)))
     build_tarballs(ARGS, name, version, sources, script, windows_platforms, products, dependencies;
-                   julia_compat="1.6", preferred_gcc_version=v"15")
+                   julia_compat="1.6", preferred_gcc_version=v"15", init_block)
 end
 if any(should_build_platform.(triplet.(other_platforms)))
     build_tarballs(ARGS, name, version, sources, script, other_platforms, products, dependencies;
-                   julia_compat="1.6", preferred_gcc_version=v"12")
+                   julia_compat="1.6", preferred_gcc_version=v"12", init_block)
 end
