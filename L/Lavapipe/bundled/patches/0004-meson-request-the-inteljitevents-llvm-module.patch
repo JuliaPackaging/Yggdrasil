@@ -1,0 +1,17 @@
+meson: ask llvm-config for inteljitevents
+
+gallivm calls createIntelJITEventListener() whenever llvm-config.h advertises
+LLVM_USE_INTEL_JITEVENTS, but Mesa never requests the module that defines it.
+optional_modules keeps this a no-op for LLVM builds without it.
+
+--- a/meson.build
++++ b/meson.build
+@@ -1960,7 +1960,7 @@
+ endif
+ 
+ llvm_modules = ['bitwriter', 'engine', 'mcdisassembler', 'mcjit', 'core', 'executionengine', 'scalaropts', 'transformutils', 'instcombine']
+-llvm_optional_modules = ['coroutines']
++llvm_optional_modules = ['coroutines', 'inteljitevents']
+ if with_amd_vk or with_gallium_radeonsi
+   llvm_modules += ['amdgpu', 'bitreader', 'ipo']
+ endif

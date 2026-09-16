@@ -1,0 +1,17 @@
+meson: look LLVM up with config-tool on Windows too
+
+method: 'auto' lets meson pick the CMake finder, which walks past the llvm-config given in
+the cross file and emits a -L pointing at the build machine's LLVM, leaving every LLVM
+symbol undefined at link time.
+
+--- a/meson.build
++++ b/meson.build
+@@ -2003,7 +2003,7 @@
+ 
+ dep_llvm = dependency(
+   'llvm',
+-  method : host_machine.system() == 'windows' ? 'auto' : 'config-tool',
++  method : 'config-tool',
+   version : _llvm_version,
+   modules : llvm_modules,
+   optional_modules : llvm_optional_modules,
