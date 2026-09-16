@@ -1,0 +1,37 @@
+From 9d52d6600b5717f2c20a42d3862754014937f849 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Tue, 16 Jun 2026 18:53:47 +0200
+Subject: [PATCH 09/16] cmake: gate the SIGFPE handler on x86-64, not all x86
+
+The SIGFPE handler (lib/CL/devices/signal_handlers.c) skips the faulting
+floating-point instruction from within the handler, which is implemented only
+for x86-64: the relevant code, including pocl_ignore_sigfpe_for_thread(), is
+guarded by `#ifdef __x86_64__`. The CMake default was gated on X86, which also
+matches 32-bit x86 (i686). There the option defaulted on, so the pthread
+scheduler compiled its `#ifdef ENABLE_SIGFPE_HANDLER` call to
+pocl_ignore_sigfpe_for_thread(), which has no definition on i686.
+
+This stays latent while the CPU driver is a separate dlopen()ed module (shared
+objects tolerate undefined symbols), but breaks linking once the driver is
+linked into libpocl (ENABLE_LOADABLE_DRIVERS=OFF): the poclcc and example
+executables then fail with
+`undefined reference to pocl_ignore_sigfpe_for_thread`.
+
+Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+---
+ CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 8c3fbe7a2..a9dfacbbc 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -786,7 +786,7 @@ endif()
+ # SIGFPE and SIGUSR2
+ if(UNIX AND (CMAKE_SYSTEM_NAME MATCHES "Linux"))
+   # this is now handled by a LLVM pass
+-  if(ENABLE_HOST_CPU_DEVICES AND X86 AND
++  if(ENABLE_HOST_CPU_DEVICES AND X86_64 AND
+      (NOT ENABLE_HOST_CPU_DEVICES_OPENMP) AND
+      (NOT ENABLE_TBB_DEVICE))
+     set(DEFAULT_SIGFPE ON)

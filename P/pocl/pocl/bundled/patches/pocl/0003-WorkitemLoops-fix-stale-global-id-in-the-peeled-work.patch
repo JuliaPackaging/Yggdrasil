@@ -1,0 +1,215 @@
+From be4f9bb9c30d4807b94e1d4eae5a688e515d3111 Mon Sep 17 00:00:00 2001
+From: Michal Babej <90404+franz@users.noreply.github.com>
+Date: Sat, 30 May 2026 10:34:35 +0300
+Subject: [PATCH 03/16] WorkitemLoops: fix stale global id in the peeled
+ work-item
+
+---
+ lib/llvmopencl/WorkitemLoops.cc             |   4 +
+ tests/regression/CMakeLists.txt             |   3 +
+ tests/regression/test_peeled_wi_global_id.c | 160 ++++++++++++++++++++
+ 3 files changed, 167 insertions(+)
+ create mode 100644 tests/regression/test_peeled_wi_global_id.c
+
+diff --git a/lib/llvmopencl/WorkitemLoops.cc b/lib/llvmopencl/WorkitemLoops.cc
+index 4589cd6f2..7386dda73 100644
+--- a/lib/llvmopencl/WorkitemLoops.cc
++++ b/lib/llvmopencl/WorkitemLoops.cc
+@@ -672,6 +672,10 @@ bool WorkitemLoopsImpl::processFunction(Function &F) {
+     PR->insertPrologue(0, 0, 0);
+     builder.SetInsertPoint(&*(PR->entryBB()->getFirstInsertionPt()));
+     builder.CreateStore(ConstantInt::get(ST, 1), LocalIdXFirstVar);
++    // insertPrologue() reset the local ids to 0; re-base the global ids too,
++    // else the peeled WI reads a stale (loop-updated) global id.
++    for (int Dim = 0; Dim < 3; ++Dim)
++      builder.CreateStore(getGlobalIdOrigin(Dim), GlobalIdIterators[Dim]);
+   }
+ 
+   if (!WGDynamicLocalSize)
+diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
+index c8b8e6ea3..44fd7ea07 100644
+--- a/tests/regression/CMakeLists.txt
++++ b/tests/regression/CMakeLists.txt
+@@ -30,6 +30,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
+      test_llvm_segfault_issue_889
+      test_issue_1711 test_issue_1794 test_issue_1747
+      test_rematerialized_alloca_load_with_outside_pr_users
++     test_peeled_wi_global_id
+ )
+ foreach(PROG ${C_PROGRAMS_TO_BUILD})
+   add_executable("${PROG}" "${PROG}.c")
+@@ -139,6 +140,8 @@ add_test_pocl(NAME "regression/test_issue_1794b" COMMAND "test_issue_1794" "0" "
+ 
+ add_test_pocl(NAME "regression/test_issue_1747" COMMAND "test_issue_1747" "0" "${CMAKE_CURRENT_SOURCE_DIR}/test_issue_1747.spv" LABELS ${SPIRV_LABELS})
+ 
++add_test_pocl(NAME "regression/peeled_wi_global_id" WORKITEM_HANDLER "loopvec;cbs;" COMMAND "test_peeled_wi_global_id" LABELS ${SPIRV_LABELS})
++
+ add_test_pocl(NAME "regression/test_issue_893" COMMAND "test_issue_893")
+ 
+ add_test_pocl(NAME "regression/test_flatten_barrier_subs" COMMAND "test_flatten_barrier_subs" EXPECTED_OUTPUT "test_flatten_barrier_subs.output")
+diff --git a/tests/regression/test_peeled_wi_global_id.c b/tests/regression/test_peeled_wi_global_id.c
+new file mode 100644
+index 000000000..733972b44
+--- /dev/null
++++ b/tests/regression/test_peeled_wi_global_id.c
+@@ -0,0 +1,160 @@
++// Copyright (c) 2026 PoCL developers
++//
++// Permission is hereby granted, free of charge, to any person obtaining a copy
++// of this software and associated documentation files (the "Software"), to deal
++// in the Software without restriction, including without limitation the rights
++// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++// copies of the Software, and to permit persons to whom the Software is
++// furnished to do so, subject to the following conditions:
++//
++// The above copyright notice and this permission notice shall be included in
++// all copies or substantial portions of the Software.
++//
++// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++// THE SOFTWARE.
++
++/*
++  Reduced from a Julia KernelAbstractions kernel (get_global_id reduced via
++  llvm-reduce). The kernel is, per work-item:
++
++      if (get_local_id(0) > 7) return;   // work-item-varying, dead for localsize 8
++      barrier();
++      A[get_global_id(0)] = get_global_id(0) + 1;
++
++  The varying early-return before the barrier makes WorkitemLoops peel work-item
++  (0,0,0). The peeled copy used to read a stale global id (the loop-updated value),
++  so get_global_id(0) returned the work-group size instead of 0: element 0 was
++  left untouched. Launched as global=local=8, the correct result is {1,..,8}.
++*/
++
++#include "pocl_opencl.h"
++
++#include <stdio.h>
++#include <stdlib.h>
++
++// Mirrors the Julia argument layout the SPIR-V kernel expects.
++typedef struct { cl_long ndrange; cl_long numblocks; } Ctx;
++typedef struct { cl_long *ptr; size_t maxsize; size_t dim1; size_t len; } DeviceArray;
++
++#define CHECK_ERROR(err)                                                       \
++  if (err != CL_SUCCESS) {                                                     \
++    printf("OpenCL Error %d at %s:%d\n", err, __FILE__, __LINE__);             \
++    return 1;                                                                  \
++  }
++
++static const char *KERNEL_NAME =
++    "_Z7gpu_mwe16CompilerMetadataI11DynamicSize12DynamicCheckv16CartesianIndices"
++    "ILi1E5TupleI5OneToI5Int64EEE7NDRangeILi1ES0_10StaticSizeI4_8__ES8_vEE13CL"
++    "DeviceArrayIS5_Li1ELi1EE";
++
++int main(int argc, char **argv) {
++  cl_uint platform_index = argc > 1 ? (cl_uint)atoi(argv[1]) : 0;
++  cl_int err;
++
++  cl_uint num_platforms;
++  CHECK_ERROR(clGetPlatformIDs(0, NULL, &num_platforms));
++  if (platform_index >= num_platforms) {
++    printf("Platform index %u out of range\n", platform_index);
++    return 1;
++  }
++  cl_platform_id *platforms = malloc(sizeof(cl_platform_id) * num_platforms);
++  CHECK_ERROR(clGetPlatformIDs(num_platforms, platforms, NULL));
++  cl_platform_id platform = platforms[platform_index];
++  free(platforms);
++
++  cl_device_id device;
++  CHECK_ERROR(clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, 1, &device, NULL));
++
++  if (!poclu_device_supports_il(device, "SPIR-V_1.0")) {
++    printf("SKIP: The test requires support for SPIR-V 1.0\n");
++    return 77;
++  }
++
++  // The reduced kernel's barrier lowers to a sub_group_barrier, so the program
++  // only links on devices whose builtin library has the subgroup builtins.
++  if (!poclu_supports_extension(device, "cl_khr_subgroups")) {
++    printf("SKIP: The test requires cl_khr_subgroups\n");
++    return 77;
++  }
++
++  cl_context context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
++  CHECK_ERROR(err);
++  cl_queue_properties props[] = {0};
++  cl_command_queue queue =
++      clCreateCommandQueueWithProperties(context, device, props, &err);
++  CHECK_ERROR(err);
++
++  const size_t N = 8;
++  DeviceArray A = {NULL, sizeof(cl_long) * N, N, N};
++  A.ptr = clSVMAlloc(context, CL_MEM_READ_WRITE, sizeof(cl_long) * N, 0);
++  if (A.ptr == NULL) {
++    printf("SVM allocation failed\n");
++    return 1;
++  }
++  for (size_t i = 0; i < N; i++)
++    A.ptr[i] = -1;
++
++  FILE *f = fopen(SRCDIR "/test_peeled_wi_global_id.spv", "rb");
++  if (!f) {
++    printf("Failed to open test_peeled_wi_global_id.spv\n");
++    return 1;
++  }
++  fseek(f, 0, SEEK_END);
++  size_t size = ftell(f);
++  fseek(f, 0, SEEK_SET);
++  unsigned char *binary = malloc(size);
++  fread(binary, 1, size, f);
++  fclose(f);
++
++  cl_program program = clCreateProgramWithIL(context, binary, size, &err);
++  CHECK_ERROR(err);
++  err = clBuildProgram(program, 1, &device, NULL, NULL, NULL);
++  if (err != CL_SUCCESS) {
++    size_t log_size;
++    clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, 0, NULL,
++                          &log_size);
++    char *log = malloc(log_size);
++    clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, log_size, log,
++                          NULL);
++    printf("Build error:\n%s\n", log);
++    return 1;
++  }
++  cl_kernel kernel = clCreateKernel(program, KERNEL_NAME, &err);
++  CHECK_ERROR(err);
++
++  Ctx ctx = {(cl_long)N, 1};
++  void *svm_ptrs[] = {A.ptr};
++  CHECK_ERROR(clSetKernelExecInfo(kernel, CL_KERNEL_EXEC_INFO_SVM_PTRS,
++                                  sizeof(void *), svm_ptrs));
++  CHECK_ERROR(clSetKernelArg(kernel, 0, sizeof(Ctx), &ctx));
++  CHECK_ERROR(clSetKernelArg(kernel, 1, sizeof(DeviceArray), &A));
++
++  size_t global_size = N, local_size = N;
++  CHECK_ERROR(clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global_size,
++                                     &local_size, 0, NULL, NULL));
++  CHECK_ERROR(clFinish(queue));
++
++  int failed = 0;
++  for (size_t i = 0; i < N; i++)
++    if (A.ptr[i] != (cl_long)(i + 1)) {
++      printf("A[%zu] = %lld, expected %zu\n", i, (long long)A.ptr[i], i + 1);
++      failed = 1;
++    }
++
++  clSVMFree(context, A.ptr);
++  clReleaseKernel(kernel);
++  clReleaseProgram(program);
++  clReleaseCommandQueue(queue);
++  clReleaseContext(context);
++  free(binary);
++
++  if (failed)
++    return 1;
++  printf("OK\n");
++  return 0;
++}
