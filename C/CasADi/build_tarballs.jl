@@ -2,12 +2,12 @@ using BinaryBuilder, Pkg
 
 name = "CasADi"
 
-version = v"3.8.0"
+version = v"3.8.1"
 
 sources = [
     GitSource(
         "https://github.com/casadi/casadi.git",
-        "83b3cec864e42c5b64a07e85d4adf91da71458b1",
+        "dafc81035257e0e57db5c65b2ac851a6239fb1c4",
     ),
     DirectorySource("./bundled"),
 ]
@@ -93,6 +93,7 @@ products = [
     LibraryProduct("libcasadi_rootfinder_fast_newton", :libcasadi_rootfinder_fast_newton),
     LibraryProduct("libcasadi_rootfinder_kinsol", :libcasadi_rootfinder_kinsol),
     LibraryProduct("libcasadi_rootfinder_newton", :libcasadi_rootfinder_newton),
+    LibraryProduct("libcasadi_rootfinder_bisection", :libcasadi_rootfinder_bisection),
     LibraryProduct("libcasadi_rootfinder_nlpsol", :libcasadi_rootfinder_nlpsol),
     LibraryProduct("libcasadi_sundials_common", :libcasadi_sundials_common),
     LibraryProduct("libcasadi_xmlfile_tinyxml", :libcasadi_xmlfile_tinyxml),
