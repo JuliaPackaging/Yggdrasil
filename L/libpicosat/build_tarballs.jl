@@ -3,24 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "libpicosat"
-version = v"965.0.2"
+version = v"965.0.3"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://fmv.jku.at/picosat/picosat-965.tar.gz", "15169b4f28ba8f628f353f6f75a100845cdef4a2244f101a02b6e5a26e46a754"),
-    DirectorySource("./bundled")
-    ]
+    GitSource("https://github.com/JuliaLang/PicoSAT.git", "be39918064860d3887b4175a68752539803142b3"),
+    DirectorySource("./bundled"),
+]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/picosat*
+cd $WORKSPACE/srcdir/PicoSAT
 cp ../{Makefile,config.h} .
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
-if [[ ${target} == *musl* ]]; then
-    sed -i 's!sys/unistd.h!unistd.h!g' picosat.c
-fi
 make libpicosat.${dlext}
 make install
 install_license LICENSE
@@ -41,4 +35,3 @@ dependencies = Dependency[]
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"5.2.0", julia_compat="1.6")
 
-# rebuild comment
