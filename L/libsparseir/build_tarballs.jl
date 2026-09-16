@@ -1,5 +1,8 @@
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "libsparseir"
 version = v"0.8.4"
 
@@ -34,9 +37,10 @@ fi
 cp sparse-ir-capi/include/sparseir/sparseir.h ${includedir}
 """
 
+# Install a newer SDK containing the libc++ atomic symbols required by spindle.
+sources, script = require_macos_sdk("11.0", sources, script)
+
 platforms = supported_platforms()
-# Build fails: deployment target in MACOSX_DEPLOYMENT_TARGET was set to 10.10, but the minimum supported by `rustc` is 10.12
-filter!(p -> !(arch(p) == "x86_64" && os(p) == "macos"), platforms)
 # Build fails: warning: dropping unsupported crate type `cdylib` for target `aarch64-unknown-linux-musl`
 filter!(p -> !(arch(p) == "aarch64" && os(p) == "linux" && libc(p) == "musl"), platforms)
 # Build fails: Couldn't open /proc/mounts

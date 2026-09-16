@@ -17,13 +17,13 @@ function build_harfbuzz(ARGS, name::String)
     # We smooth this over with an invented version number:
     # VersionNumber(100, 1000*major + minor, patch).
 
-    version = v"14.2.1"
+    version = v"14.4.0"
     ygg_version = VersionNumber(100, 1000 * version.major + version.minor, version.patch)
 
     # Collection of sources required to build Harfbuzz
     sources = [
         ArchiveSource("https://github.com/harfbuzz/harfbuzz/releases/download/$(version)/harfbuzz-$(version).tar.xz",
-                      "a54a5d8e9380a41fbb762ce367bcbf7704792dfca0d93f1bbca86c5a57902e0e"),
+                      "2357ed966c6ced7bfa720b0640c0231065af01158fbea215093ffa15aed44371"),
         DirectorySource("../bundled"),
     ]
 

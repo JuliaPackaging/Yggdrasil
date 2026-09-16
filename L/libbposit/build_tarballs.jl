@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libbposit"
-version = v"0.1.0"
+version = v"0.1.1"
 
 sources = [
     GitSource("https://github.com/jamesquinlan/libbposit.git",
-              "af67e6064b93e3feafb4ce176cbb14b1a84a32ed"),
+              "f70a2915c03929bcc923f2e60df206371b89fa8c"),
 ]
 
 script = raw"""

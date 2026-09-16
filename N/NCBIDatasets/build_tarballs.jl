@@ -9,7 +9,7 @@
 using BinaryBuilder
 
 name = "NCBIDatasets"
-version = v"18.32.0"
+version = v"18.34.0"
 
 # The pinned GitSource is solely for LICENSE.md (the binary zips bundle no license).
 release = "https://github.com/ncbi/datasets/releases/download/v$(version)"

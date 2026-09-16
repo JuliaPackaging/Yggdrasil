@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "XZ"
-version = v"5.8.3"
+version = v"5.8.4"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/tukaani-project/xz",
-              "4b73f2ec19a99ef465282fbce633e8deb33691b3")
+              "d3e650e63c110e830fd5391e7f8b45df0b91d3da")
 ]
 
 # Bash recipe for building across all platforms

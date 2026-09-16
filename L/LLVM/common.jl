@@ -25,11 +25,12 @@ const llvm_tags = Dict(
     v"15.0.7" => "e2f3049e01e343508a9a5d893ef561a3e42ea7f2", # julia-15.0.7-12
     v"16.0.6" => "422179dd6ee8d6b84023f922f3a0864db6e07c68", # julia-16.0.6-5
     v"17.0.6" => "0007e48608221f440dce2ea0d3e4f561fc10d3c6", # julia-17.0.6-5
-    v"18.1.7" => "32719222d3ea71ed0b19c2cb75fa6f76713fda20", # julia-18.1.7-4
+    v"18.1.7" => "b21227453160289e6dc3d23bd53c55b5e1aabe1e", # julia-18.1.7-5
     v"19.1.7" => "ccda9ec62497d9de88ca7090a749e52a89f62132", # julia-19.1.7-2
-    v"20.1.8" => "5b9f96366ce26dfc8ca91697ef0a57894791d95e", # julia-20.1.8-0
-    v"21.1.8" => "7cd4442d4a6c949de43c1e2c0e20334ee59aa154", # julia-21.1.8-0
-    v"22.1.8" => "bb28dd22e7ad95ca869437f5e773603b6561fc9b", # julia-22.1.8-0
+    v"20.1.8" => "24bdfdd813f4117f0464fd0dac5b4bce43ed1388", # julia-20.1.8-2
+    v"21.1.8" => "151034ef71856c7406f58c150dba7d419dbd063d", # julia-21.1.8-1
+    v"22.1.8" => "4df0bb28e9e4d59f293433a1e325a46479da5174", # julia-22.1.8-1
+    v"23.1.1" => "fbe0dc11974bf1e4f6380eae95101d36fa0650b8", # julia-release/23.x (julia-23.1.1-1 + 2)
 )
 
 const buildscript = raw"""
@@ -408,6 +409,18 @@ if [[ "${target}" == *musl* ]]; then
     # Taken from https://git.alpinelinux.org/cgit/aports/tree/main/compiler-rt/APKBUILD
     CMAKE_FLAGS+=(-DCOMPILER_RT_BUILD_SANITIZERS=OFF)
     CMAKE_FLAGS+=(-DCOMPILER_RT_BUILD_XRAY=OFF)
+    if [[ "${target}" != x86_64-* ]]; then
+        # memprof and ctx_profile only support x86_64, but enabling them still builds
+        # sanitizer_common, which does not compile against musl on ARM and AArch64.
+        CMAKE_FLAGS+=(-DCOMPILER_RT_BUILD_MEMPROF=OFF)
+        CMAKE_FLAGS+=(-DCOMPILER_RT_BUILD_CTX_PROFILE=OFF)
+    fi
+fi
+
+if [[ "${LLVM_MAJ_VER}" -ge "22" ]] && [[ "${target}" == arm* ]]; then
+    # The optimized Arm FP assembly needs ARMv7 and a newer GNU assembler than ours;
+    # use the generic C builtins instead.
+    CMAKE_FLAGS+=(-DCOMPILER_RT_ARM_OPTIMIZED_FP=OFF)
 fi
 
 if [[ "${target}" == *freebsd* ]]; then
@@ -431,6 +444,14 @@ ninja -j${nproc} -vv
 
 # Install!
 ninja install
+
+# A failed compiler-rt architecture probe can silently disable every runtime.
+if [[ "${LLVM_MAJ_VER}" -ge "22" ]] && [[ "${target}" == *linux* || "${target}" == *mingw* || "${target}" == *freebsd* ]]; then
+    if ! compgen -G "${prefix}/lib/clang/${LLVM_MAJ_VER}/lib/*/libclang_rt.profile*.a" > /dev/null; then
+        echo "ERROR: compiler-rt installed no profile runtime for ${target}" >&2
+        exit 1
+    fi
+fi
 
 if [[ "${LLVM_MAJ_VER}" -ge "16" ]]; then
     # We can now tell cmake to put the dlls in the right place, and the verifier doesn't find them

@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUTENSOR"
-version = v"2.5.0"
+version = v"2.7.0"
 
 script = raw"""
 mkdir -p ${libdir} ${prefix}/include
@@ -84,3 +84,5 @@ for (i,build) in enumerate(builds)
                    build.platforms, products, dependencies;
                    julia_compat="1.6", augment_platform_block, dont_dlopen=true)
 end
+
+# bump

@@ -6,11 +6,11 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "aws_c_cal"
-version = v"0.9.13"
+version = v"1.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-cal.git", "1cb9412158890201a6ffceed779f90fe1f48180c"),
+    GitSource("https://github.com/awslabs/aws-c-cal.git", "2441187f3bdbe0f0fe7fa5dd1736be98227ad556"),
 ]
 
 # Bash recipe for building across all platforms
@@ -43,7 +43,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("aws_c_common_jll"; compat="0.12.6"),
+    Dependency("aws_c_common_jll"; compat="1.0.0"),
     BuildDependency("aws_lc_jll"),
 ]
 

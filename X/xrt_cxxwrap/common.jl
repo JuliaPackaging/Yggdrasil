@@ -8,7 +8,7 @@ function build_xrt_cxxwrap(ARGS, version::VersionNumber)
 
     sources = [
         GitSource("https://github.com/pc2/XRT.jl.git",
-                  "270ff0683d4e9edf99ac82122331913a251ce5aa"),
+                  "3592cc771d19687bca24512bf9e7ac614dedd4ae"),
     ]
 
     script = "XRT_VER_MM=$(version.major).$(version.minor)\n" * raw"""

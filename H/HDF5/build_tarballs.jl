@@ -7,14 +7,13 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "HDF5"
-version = v"2.1.1"
-# We added support for MPIABI
-ygg_version = v"2.1.2"
+version = v"2.2.0"
+ygg_version = v"2.2.2"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/HDFGroup/hdf5/releases/download/$(version)/hdf5-$(version).tar.gz",
-                  "efff93b5a904d66e8f626d7da60b5eedc9faf544be27dbabbaa87967b8ad798b"),
+                  "1a1ab8209b35586fbc1aa279ba76d102130b95badcb20ca329587219112d8c16"),
     DirectorySource("bundled"),
 ]
 
@@ -53,12 +52,6 @@ if [[ ${target} == i686-w64-* ]]; then
     ros3_vdf=OFF
 fi
 
-# MPI does not support Fortran
-parallel=ON
-if [[ ${target} == *-w64-* ]]; then
-    parallel=OFF
-fi
-
 cmake_options=(
     -DCMAKE_BUILD_TYPE=Release
     -DCMAKE_INSTALL_PREFIX=${prefix}
@@ -81,7 +74,7 @@ cmake_options=(
     -DHDF5_ENABLE_MAP_API=ON
     -DHDF5_ENABLE_MIRROR_VFD=ON
     -DHDF5_ENABLE_NONSTANDARD_FEATURE_FLOAT16=${float16}
-    -DHDF5_ENABLE_PARALLEL=${parallel}
+    -DHDF5_ENABLE_PARALLEL=ON
     -DHDF5_ENABLE_ROS3_VFD=${ros3_vfd}
     -DHDF5_ENABLE_SUBFILING_VFD=ON
     -DHDF5_ENABLE_SZIP_SUPPORT=ON
@@ -101,6 +94,19 @@ if [[ ${bb_full_target} == *mpiabi* ]]; then
 else
     cmake_options+=(
         -DMPI_HOME=${prefix}
+    )
+fi
+
+if [[ ${target} == *-w64-* ]]; then
+    # MS-MPI: its Fortran wrapper library cannot be linked with gfortran, but msmpi.dll
+    # exports the gfortran-mangled entry points; mpif.h needs -fallow-invalid-boz.
+    cmake_options+=(
+        -DMPI_GUESS_LIBRARY_NAME=MSMPI
+        -DMPI_C_LIBRARIES=msmpi64
+        -DMPI_CXX_LIBRARIES=msmpi64
+        -DMPI_Fortran_LIBRARIES=${libdir}/msmpi.${dlext}
+        -DMPI_Fortran_INCLUDE_DIRS=${includedir}
+        -DCMAKE_Fortran_FLAGS=-fallow-invalid-boz
     )
 fi
 
@@ -322,7 +328,7 @@ dependencies = [
     Dependency("aws_c_s3_jll"; compat="0.11.2"),
     Dependency("dlfcn_win32_jll"; platforms=filter(Sys.iswindows, platforms)),
     Dependency("libaec_jll"; compat="1.1.4"), # This is the successor of szlib
-    Dependency("mpif_jll"; compat="0.1.5", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)), # MPI Fortran bindings
+    Dependency("mpif_jll"; compat="1.0.0", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)), # MPI Fortran bindings
 ]
 append!(dependencies, platform_dependencies)
 

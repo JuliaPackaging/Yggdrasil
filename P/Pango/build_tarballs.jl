@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Pango"
-version = v"1.57.1"
+version = v"1.58.2"
 
 # Collection of sources required to build Pango: https://download.gnome.org/sources/pango/
 sources = [
     ArchiveSource("http://ftp.gnome.org/pub/GNOME/sources/pango/$(version.major).$(version.minor)/pango-$(version).tar.xz",
-                  "e65d6d117080dc3aeeb7d8b4b3b518f7383aa2e6cfce23117c623cd624764c2f"),
+                  "342385b6ca3b7c73455d7c80a13b7dbe4489e00bc3bd4c5bd6ed4dce421e374a"),
 ]
 
 # Bash recipe for building across all platforms
@@ -26,12 +26,24 @@ fi
 # If we want libpangoft2 on Windows we need to explicitly enable fontconfig and freetype
 # See <https://gitlab.gnome.org/GNOME/pango/-/blob/main/README.win32.md>.
 
-# We need a newer meson
-python3 -m pip install --upgrade meson
+# We need a newer meson.  Install it into a private directory instead of using
+# `pip install --upgrade`: upgrading in place requires uninstalling the meson
+# that ships in the rootfs, and removing files under
+# /usr/lib/python3.9/site-packages fails with an I/O error on the builders.
+python3 -m pip install --ignore-installed --target=/tmp/meson meson==1.11.2
+export PYTHONPATH="/tmp/meson${PYTHONPATH:+:${PYTHONPATH}}"
+export PATH="/tmp/meson/bin:${PATH}"
+meson --version
 
-# Fix target toolchain (required by meson 1.11)
+# meson 1.11 no longer defaults `subsystem` to `system` in cross files, so
+# Pango's unconditional `host_machine.subsystem()` call on darwin aborts
+# configuration.  Set it explicitly to `darwin`, which reproduces meson's
+# pre-1.11 default.  Do *not* use `macos` here: that switches on Pango's
+# CoreText/quartz backend, which has never been part of this JLL and does not
+# compile (pango/pangocoretext.c:263 assigns a PangoCoreTextFontMap* to a
+# PangoFontMap*, which our clang rejects).
 if [[ ${target} == *darwin* ]]; then
-    sed -i "/\[host_machine\]/,/^$/ s/system = 'darwin'/system = 'darwin'\nsubsystem = 'macos'/" "$MESON_TARGET_TOOLCHAIN"
+    sed -i "/\[host_machine\]/,/^$/ s/system = 'darwin'/system = 'darwin'\nsubsystem = 'darwin'/" "$MESON_TARGET_TOOLCHAIN"
 fi
 
 meson setup build \
@@ -62,11 +74,11 @@ dependencies = [
     HostBuildDependency("gperf_jll"),
     BuildDependency("Xorg_xorgproto_jll"; platforms=filter(p -> Sys.isfreebsd(p) || Sys.islinux(p), platforms)),
     Dependency("Cairo_jll"; compat="1.18.5"),
-    Dependency("Fontconfig_jll"; compat="2.16.0"),
+    Dependency("Fontconfig_jll"; compat="2.17.1"),
     Dependency("FreeType2_jll"; compat="2.13.4"),
     Dependency("FriBidi_jll"; compat="1.0.17"),
-    Dependency("Glib_jll"; compat="2.84.0"),
-    Dependency("HarfBuzz_jll"; compat="8.5.1"),
+    Dependency("Glib_jll"; compat="2.88.3"),
+    Dependency("HarfBuzz_jll"; compat="100.14003"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

@@ -51,7 +51,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     # Avengers; ASSEMBLE!
-    HostBuildDependency("YASM_jll"),
+    HostBuildDependency("NASM_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
