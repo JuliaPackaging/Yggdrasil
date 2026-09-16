@@ -17,7 +17,7 @@ git_repo = "https://github.com/JuliaInterop/libcxxwrap-julia.git"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource(git_repo, "51a1b065bfb1603ec524f40a7edf183084cf2d1e"),
+    GitSource(git_repo, "ee8a49b403ced7669c8fa56cec860f567f6510aa"),
 ]
 
 # Bash recipe for building across all platforms
@@ -53,7 +53,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(;name="libjulia_jll", version="1.11.1")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version="1.11.2")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
