@@ -9,7 +9,7 @@ include("../../L/libjulia/common.jl")
 filter!(>=(v"1.10"), julia_versions)
 
 name = "libpolymake_julia"
-version = v"0.14.9"
+version = v"0.14.10"
 
 # reminder: change the above version when changing the supported julia versions
 # julia_versions is now taken from libjulia/common.jl and filtered
@@ -59,7 +59,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(;name="libjulia_jll", version="1.11.0")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version="1.11.2")),
     BuildDependency("GMP_jll"),
     BuildDependency("MPFR_jll"),
 
@@ -67,7 +67,7 @@ dependencies = [
     Dependency("FLINT_jll", compat = "~301.600.0"),
     Dependency("TOPCOM_jll"; compat = "~0.17.8"),
     Dependency("lib4ti2_jll"; compat = "^1.6.10"),
-    Dependency("libcxxwrap_julia_jll"; compat = "~0.14.9"),
+    Dependency("libcxxwrap_julia_jll"; compat = "~0.14.11"),
     Dependency("polymake_jll"; compat = "~400.1500.5"),
 
     HostBuildDependency(PackageSpec(name="Perl_jll", version="5.34.1")),
