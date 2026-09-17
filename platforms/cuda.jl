@@ -25,7 +25,11 @@ const augment = """
     const preferences = Base.get_preferences(CUDA_Runtime_jll_uuid)
     Base.record_compiletime_preference(CUDA_Runtime_jll_uuid, "version")
     Base.record_compiletime_preference(CUDA_Runtime_jll_uuid, "local")
-    const local_toolkit = something(tryparse(Bool, get(preferences, "local", "false")), false)
+    # the `local` preference is a boolean, but CUDA.jl's `set_runtime_version!` writes it
+    # as a string, and hand-written LocalPreferences.toml files use either spelling.
+    const local_toolkit = let pref = get(preferences, "local", false)
+        pref isa Bool ? pref : something(tryparse(Bool, pref), false)
+    end
 
     function cuda_comparison_strategy(_a::String, _b::String, a_requested::Bool, b_requested::Bool)
         # if we're using a local toolkit, we can't use artifacts
@@ -127,35 +131,6 @@ const compiler_augment = """
             CUDA_Compiler_jll.augment_platform!(platform)
         end
         BinaryPlatforms.set_compare_strategy!(platform, "cuda", cuda_comparison_strategy)
-
-        return platform
-    end"""
-
-# a special version of the platform augmentation block that only sets "cuda_platform"
-# (for use with packages that only ship a single version and don't depend on the runtime)
-# XXX: keep in sync with CUDA_Runtime_jll's platform augmentation
-const platform_augment = """
-    function is_tegra()
-        if isfile("/etc/nv_tegra_release")
-            return true
-        end
-        if isfile("/proc/device-tree/compatible") &&
-            contains(read("/proc/device-tree/compatible", String), "tegra")
-            return true
-        end
-        return false
-    end
-
-    function augment_platform!(platform::Platform)
-        haskey(platform, "cuda_platform") && return platform
-
-        if Sys.islinux() && arch(platform) == "aarch64" && version < v"13"
-            platform["cuda_platform"] = if is_tegra()
-                "jetson"
-            else
-                "sbsa"
-            end
-        end
 
         return platform
     end"""

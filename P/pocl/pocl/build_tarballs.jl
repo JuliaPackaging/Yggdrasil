@@ -16,8 +16,8 @@ llvm_version = v"20.1.2"
 # Collection of sources required to complete build
 sources = [
     DirectorySource("./bundled"),
-    GitSource("https://github.com/juliagpu/pocl",
-              "763e259ff4bb3003280b991bbe99d4a9b712e051"),
+    GitSource("https://github.com/pocl/pocl",
+              "a6f7e5cc223cdf6254ff62ea1f37a9aa8a52d778"), # tag v7.1
     # vendored SPIR-V translator, built as a static library against our LLVM (see
     # the build script below); this commit is the LLVM-20.1-compatible revision (matches
     # LLVM_full_jll 20.1.2).
@@ -165,6 +165,16 @@ function build_script(standalone=false)
     ##########################################################################
     cd $WORKSPACE/srcdir/pocl/
     install_license LICENSE
+
+    # Apply our patch series on top of upstream v7.1 (`git format-patch` exports; the
+    # binary SPIR-V test inputs are excluded since we don't build the tests):
+    # - 0010: MinGW Clang/lld toolchain support (JuliaGPU-only, not upstreamed)
+    # - 0014: CanonicalizeBarriers fix for reconverging barrier successors (upstream PR #2281)
+    # - 0015, 0016: UnreachablesToReturns fix for issue #1958 (upstream PR #2280)
+    # - all others: backports of fixes that landed in upstream `main`
+    for patch in $WORKSPACE/srcdir/patches/pocl/*.patch; do
+        atomic_patch -p1 $patch
+    done
 
     # POCL wants a target sysroot for compiling the host kernellib (for `math.h` etc)
     sysroot=/opt/${target}/${target}/sys-root

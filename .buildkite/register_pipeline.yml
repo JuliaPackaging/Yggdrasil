@@ -13,6 +13,19 @@
 # The `NAME`, `PROJECT`, `SKIP_BUILD`, `BUILD_ID` (and the registry/pkg-server)
 # environment variables are supplied by the triggering build.
 steps:
+  # Bound the number of registration builds in flight. The closing step is ordered
+  # ahead of later builds' opening steps, so this pair forms a Buildkite concurrency gate.
+  - label: ":pipeline: Enter registration gate"
+    command: "true"
+    concurrency: 3
+    concurrency_group: "yggdrasil/register"
+    agents:
+      queue: "yggdrasil"
+      arch: "x86_64"
+      os: "linux"
+
+  - wait
+
   - label: "register -- ${NAME}"
     priority: 10
     agents:
@@ -26,9 +39,23 @@ steps:
           version: "1.12.4"
       - JuliaCI/merge-commit: ~
     timeout_in_minutes: 90
+    # Do not let two builds choose a wrapper version for the same package concurrently.
     concurrency: 1
-    concurrency_group: "yggdrasil/register"
+    concurrency_group: "yggdrasil/register/${NAME}"
     command: .buildkite/register.sh
     secrets:
       - GITHUB_TOKEN
       - REGISTRY_GITHUB_TOKEN
+
+  # Always release the global gate, including after a failed registration.
+  - wait: ~
+    continue_on_failure: true
+
+  - label: ":pipeline: Leave registration gate"
+    command: "true"
+    concurrency: 3
+    concurrency_group: "yggdrasil/register"
+    agents:
+      queue: "yggdrasil"
+      arch: "x86_64"
+      os: "linux"
