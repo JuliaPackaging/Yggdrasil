@@ -130,6 +130,7 @@ function build_script(standalone=false)
     # - 0003: in-process JIT via ORC/JITLink (upstream PR #2190, in `main`)
     # - 0004: CanonicalizeBarriers fix for reconverging barrier successors (upstream PR #2281)
     # - 0005, 0006: UnreachablesToReturns fix for issue #1958 (upstream PR #2280)
+    # - 0007: independent SVM/USM indirect pointer lists in clSetKernelExecInfo (upstream PR #2305)
     for patch in $WORKSPACE/srcdir/patches/pocl/*.patch; do
         atomic_patch -p1 $patch
     done
