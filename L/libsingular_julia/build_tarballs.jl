@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
 name = "libsingular_julia"
-version = v"0.47.15"
+version = v"0.47.16"
 
 # Collection of sources required to build libsingular-julia
 sources = [
