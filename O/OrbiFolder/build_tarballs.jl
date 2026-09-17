@@ -2,17 +2,21 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "orbifolder"
+name = "OrbiFolder"
 version = v"1.2.1"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://orbifolder.hepforge.org/source/V1.2.1/orbifolder-1.2.1.tgz",
                   "607c38fc54942e8306abe3919d7928df78c9316b2cb79b7629f8b1dd02b69584"),
+    GitSource("https://github.com/StringsIFUNAM/nonSUSYorbifolder.git",
+              "c917adea59b788872ac00bc41239dd791afc4ff1"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+# orbifolder (SUSY)
 cd $WORKSPACE/srcdir/orbifolder-1.2.1
 
 update_configure_scripts
@@ -26,6 +30,23 @@ install -Dvm 755 src/orbifolder/orbifolder "${prefix}/bin/orbifolder"
 cp -r Geometry "${prefix}/bin/Geometry"
 
 install_license COPYING
+
+# nonSUSYorbifolder
+cd $WORKSPACE/srcdir/nonSUSYorbifolder
+
+# configure.ac calls AX_PATH_GSL, normally provided by autoconf-archive; ship it directly
+cp "${WORKSPACE}/srcdir/m4/ax_path_gsl.m4" m4/
+
+autoreconf -fi
+
+CPPFLAGS="-I${prefix}/include" LDFLAGS="-L${prefix}/lib" \
+    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+make -j${nproc}
+
+# `nonSUSYorbifolder` is noinst_PROGRAMS; install it and Geometry/ together
+# manually so an executable-relative lookup finds both.
+install -Dvm 755 nonSUSYorbifolder "${prefix}/bin/nonSUSYorbifolder"
+cp -r Geometry "${prefix}/bin/Geometry"
 """
 
 # These are the platforms we will build for by default, unless further
@@ -35,12 +56,14 @@ platforms = expand_cxxstring_abis(supported_platforms(; exclude=p -> Sys.iswindo
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("orbifolder", :orbifolder),
+    ExecutableProduct("nonSUSYorbifolder", :nonSUSYorbifolder),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="GSL_jll", uuid="1b77fbbe-d8ee-58f0-85f9-836ddc23a7a4")),
     Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75")),
+    Dependency(PackageSpec(name="Readline_jll", uuid="05236dd9-4125-5232-aa7c-9ec0c9b2c25a")),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
