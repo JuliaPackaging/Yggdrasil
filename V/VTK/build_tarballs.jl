@@ -6,13 +6,12 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "VTK"
-version = v"9.6.2"
-ygg_version = v"9.6.3"
+version = v"9.7.0"
 
 # No sources, we're just building the testsuite
 sources = [
     ArchiveSource("https://vtk.org/files/release/$(version.major).$(version.minor)/VTK-$(version).tar.gz",
-                  "aed12cec12a9609179bf66329070266627ca64244a10856a452b2a17ffb04a1d"),
+                  "affdb7a15ec34ee0174407f911ab70b646c7af01161818bbab4e1160b7eff720"),
     DirectorySource("bundled"),
 ]
 
@@ -81,9 +80,11 @@ opts=(
     -DTEST_LFS_WORKS_RUN:STRING=0
     -DHDF5_NO_FIND_PACKAGE_CONFIG_FILE=TRUE
     -DHDF5_PREFER_PARALLEL=TRUE
+    -DVTK_JPEG_ENABLE_SIMD=ON
     -DVTK_MODULE_USE_EXTERNAL_VTK_cgns=ON
     -DVTK_MODULE_USE_EXTERNAL_VTK_expat=ON
     -DVTK_MODULE_USE_EXTERNAL_VTK_exprtk=ON
+    -DVTK_MODULE_USE_EXTERNAL_VTK_ffmpeg=ON
     -DVTK_MODULE_USE_EXTERNAL_VTK_freetype=ON
     -DVTK_MODULE_USE_EXTERNAL_VTK_hdf5=ON
     -DVTK_MODULE_USE_EXTERNAL_VTK_jpeg=ON
@@ -338,8 +339,9 @@ dependencies = [
 
     Dependency("CGNS_jll"; compat="4.5.2"),           # cgns
     Dependency("Expat_jll"; compat="2.7.1"),          # expat
+    Dependency("FFMPEG_nogpl_jll"; compat="9.0.0"),   # ffmpeg
     Dependency("FreeType2_jll"; compat="2.13.4"),     # freetype
-    Dependency("HDF5_jll"; compat="2.2.1"),           # hdf5
+    Dependency("HDF5_jll"; compat="2.2.2"),           # hdf5
     Dependency("JpegTurbo_jll"; compat="3.1.2"),      # jpeg
     Dependency("Libtiff_jll"; compat="4.7.1"),        # tiff
     Dependency("Lz4_jll"; compat="1.10.1"),           # lz4
@@ -416,6 +418,7 @@ dependencies = [
 ]
 append!(dependencies, platform_dependencies)
 
+# We don't support MPItrampoline quite yet:
 # Don't look for `mpiwrapper.so` when BinaryBuilder examines and `dlopen`s the shared libraries.
 # (MPItrampoline will skip its automatic initialization.)
 ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
@@ -423,5 +426,5 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 # Build the tarballs.
 # VTK requires GCC 8
 # We would need GCC 13 on Windows for the new `[[...]]`` attribute syntax.
-build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"8")
