@@ -65,7 +65,7 @@ products = [
     ExecutableProduct("chicken-uninstall", :chicken_uninstall),
     ExecutableProduct("csc", :chicken_csc),
     ExecutableProduct("csi", :chicken_csi),
-    FileProduct("lib/libchicken.a", :libchicken_a),
+    FileProduct("lib/libchicken-static.a", :libchicken_static),
     FileProduct("include/chicken/chicken.h", :chicken_h),
     FileProduct("include/chicken/chicken-config.h", :chicken_config_h),
     LibraryProduct("libchicken", :libchicken),
