@@ -1,5 +1,5 @@
 name = "Clang"
-llvm_full_version = v"23.1.1+1"
+llvm_full_version = v"23.1.1+2"
 libllvm_version = v"23.1.1+1"
 
 using BinaryBuilder, Pkg

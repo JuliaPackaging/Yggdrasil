@@ -1,7 +1,7 @@
-From d33a1f38402d097a4647135a941ccb7fe36eac25 Mon Sep 17 00:00:00 2001
+From 260b630d657474d1fc1ba84773b4a3993e6b4c7c Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Fri, 4 Sep 2026 14:43:00 +0200
-Subject: [PATCH 17/17] clSetKernelExecInfo: keep SVM and USM pointer lists
+Subject: [PATCH 7/7] clSetKernelExecInfo: keep SVM and USM pointer lists
  independent
 
 CL_KERNEL_EXEC_INFO_SVM_PTRS and CL_KERNEL_EXEC_INFO_USM_PTRS_INTEL both
@@ -49,10 +49,10 @@ index 321ead47f..fca868ae8 100644
          return ret_val;
        }
 diff --git a/lib/CL/pocl_cl.h b/lib/CL/pocl_cl.h
-index 8ad2f9ad0..bed309631 100644
+index 82929136b..254bf5444 100644
 --- a/lib/CL/pocl_cl.h
 +++ b/lib/CL/pocl_cl.h
-@@ -2013,6 +2013,8 @@ typedef struct _pocl_ptr_list_node pocl_ptr_list;
+@@ -2033,6 +2033,8 @@ typedef struct _pocl_ptr_list_node pocl_ptr_list;
  struct _pocl_ptr_list_node
  {
    void *ptr;
@@ -121,18 +121,18 @@ index 0906e2f71..9b43dcc80 100644
  /* Increments a buffer's reference counter. */
  #define POCL_RETAIN_BUFFER_UNLOCKED(__OBJ__)                                  \
 diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
-index fa5f4f24a..9ecf81ac6 100644
+index 538e63ac7..2419e4a95 100644
 --- a/tests/regression/CMakeLists.txt
 +++ b/tests/regression/CMakeLists.txt
-@@ -35,6 +35,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
-      test_barrier_divergent_skip
+@@ -36,6 +36,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
       test_divergent_implicit_barrier_entry
       test_uniform_implicit_barrier_entry
+      test_localmem_load_across_barrier
 +     test_indirect_ptrs
       test_usm_indirect_ptrs
  )
  foreach(PROG ${C_PROGRAMS_TO_BUILD})
-@@ -43,6 +44,8 @@ foreach(PROG ${C_PROGRAMS_TO_BUILD})
+@@ -44,6 +45,8 @@ foreach(PROG ${C_PROGRAMS_TO_BUILD})
    add_symlink_to_built_opencl_dynlib("${PROG}")
  endforeach()
  
@@ -141,9 +141,9 @@ index fa5f4f24a..9ecf81ac6 100644
  
  set(PROGRAMS_TO_BUILD test_barrier_between_for_loops test_early_return
    test_for_with_var_iteration_count test_id_dependent_computation
-@@ -157,6 +160,8 @@ add_test_pocl(NAME "regression/divergent_implicit_barrier_entry" WORKITEM_HANDLE
+@@ -174,6 +177,8 @@ add_test_pocl(NAME "regression/uniform_implicit_barrier_entry" WORKITEM_HANDLER
  
- add_test_pocl(NAME "regression/uniform_implicit_barrier_entry" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_uniform_implicit_barrier_entry")
+ add_test_pocl(NAME "regression/localmem_load_across_barrier" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_localmem_load_across_barrier")
  
 +add_test_pocl(NAME "regression/test_indirect_ptrs" COMMAND "test_indirect_ptrs")
 +

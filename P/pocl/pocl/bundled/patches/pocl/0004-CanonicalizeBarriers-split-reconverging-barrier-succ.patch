@@ -1,7 +1,7 @@
-From 763e259ff4bb3003280b991bbe99d4a9b712e051 Mon Sep 17 00:00:00 2001
+From 33d0aeda4bd53e561d9c12f3b51f93d423cb56fc Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Mon, 17 Aug 2026 15:57:39 +0200
-Subject: [PATCH 14/16] CanonicalizeBarriers: split reconverging barrier
+Subject: [PATCH 4/6] CanonicalizeBarriers: split reconverging barrier
  successors
 
 Parallel-region formation treats successors of a barrier block as entries of
@@ -90,7 +90,7 @@ index 9dc1dad19..d30b23a88 100644
      if (HasNonBranchInstructionsAfterBarrier) {
        BasicBlock *new_b = SplitBlock(b, (*i)->getNextNode());
 diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
-index 81755d624..8c309f4a3 100644
+index 57aa91cd8..a47eebf39 100644
 --- a/tests/regression/CMakeLists.txt
 +++ b/tests/regression/CMakeLists.txt
 @@ -31,6 +31,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
@@ -100,8 +100,8 @@ index 81755d624..8c309f4a3 100644
 +     test_barrier_divergent_skip
       test_divergent_implicit_barrier_entry
       test_uniform_implicit_barrier_entry
-      test_usm_indirect_ptrs
-@@ -145,6 +146,8 @@ add_test_pocl(NAME "regression/test_issue_1747" COMMAND "test_issue_1747" "0" "$
+      test_localmem_load_across_barrier
+@@ -160,6 +161,8 @@ add_test_pocl(NAME "regression/test_issue_1747" COMMAND "test_issue_1747" "0" "$
  
  add_test_pocl(NAME "regression/peeled_wi_global_id" WORKITEM_HANDLER "loopvec;cbs;" COMMAND "test_peeled_wi_global_id" LABELS ${SPIRV_LABELS})
  
