@@ -3,16 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "NASM"
-version_string = "3.01"
+version_string = "3.02"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    # ArchiveSource("https://www.nasm.us/pub/nasm/releasebuilds/$(version_string)/nasm-$(version_string).tar.xz",
-    #               "b7324cbe86e767b65f26f467ed8b12ad80e124e3ccb89076855c98e43a9eddd4"),
-    # The 3.01 release does not work on modern C compilers; see <https://github.com/netwide-assembler/nasm/issues/169>.
-    # This is actually from the `master` branch a few commits after the 3.01 release, to include a few critical bug fixes.
-    GitSource("https://github.com/netwide-assembler/nasm", "746e7c9efa37cec9a44d84a1e96b8c38f385cc1f"),
+    GitSource("https://github.com/netwide-assembler/nasm", "4a56d66ed9626d5a3ded5414c9d8b7f1a48ce065"),
 ]
 
 # Bash recipe for building across all platforms

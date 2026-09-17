@@ -1,0 +1,19 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 0cb5ac3a..bf40c1c7 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -491,7 +491,13 @@ endif()
+ 
+ 
+ # Make sure that the whole library is loaded, so the registration is done correctly.
+-if(NOT APPLE AND NOT MSVC)
++# This is only necessary when WorldBuilder is a static library: a shared
++# library already exposes all of its symbols to its consumers, and forcing
++# --whole-archive/-force_load on its import library on top of that can cause
++# duplicate-symbol link errors (e.g. with MinGW).
++if(BUILD_SHARED_LIBS)
++  SET(GWB_LIBRARY_WHOLE ${WB_TARGET})
++elseif(NOT APPLE AND NOT MSVC)
+   SET(GWB_LIBRARY_WHOLE -Wl,--whole-archive ${WB_TARGET} -Wl,--no-whole-archive)
+ elseif(MSVC)
+   SET(GWB_LIBRARY_WHOLE ${WB_TARGET})

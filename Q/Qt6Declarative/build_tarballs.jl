@@ -90,9 +90,11 @@ include("../Qt6Base/common.jl")
 products = [
     LibraryProduct(["Qt6LabsAnimation", "libQt6LabsAnimation", "QtLabsAnimation"], :libqt6labsanimation),
     LibraryProduct(["Qt6LabsFolderListModel", "libQt6LabsFolderListModel", "QtLabsFolderListModel"], :libqt6labsfolderlistmodel),
+    LibraryProduct(["Qt6LabsPlatform", "libQt6LabsPlatform", "QtLabsPlatform"], :libqt6labsplatform),
     LibraryProduct(["Qt6LabsQmlModels", "libQt6LabsQmlModels", "QtLabsQmlModels"], :libqt6labsqmlmodels),
     LibraryProduct(["Qt6LabsSettings", "libQt6LabsSettings", "QtLabsSettings"], :libqt6labssettings),
     LibraryProduct(["Qt6LabsSharedImage", "libQt6LabsSharedImage", "QtLabsSharedImage"], :libqt6labssharedimage),
+    LibraryProduct(["Qt6LabsSynchronizer", "libQt6LabsSynchronizer", "QtLabsSynchronizer"], :libqt6labssynchronizer),
     LibraryProduct(["Qt6LabsWavefrontMesh", "libQt6LabsWavefrontMesh", "QtLabsWavefrontMesh"], :libqt6labswavefrontmesh),
     LibraryProduct(["Qt6Qml", "libQt6Qml", "QtQml"], :libqt6qml),
     LibraryProduct(["Qt6QmlCompiler", "libQt6QmlCompiler", "QtQmlCompiler"], :libqt6qmlcompiler),
@@ -124,6 +126,9 @@ products = [
     LibraryProduct(["Qt6QuickShapes", "libQt6QuickShapes", "QtQuickShapes"], :libqt6quickshapes),
     LibraryProduct(["Qt6QuickTemplates2", "libQt6QuickTemplates2", "QtQuickTemplates2"], :libqt6quicktemplates2),
     LibraryProduct(["Qt6QuickTest", "libQt6QuickTest", "QtQuickTest"], :libqt6quicktest),
+    LibraryProduct(["Qt6QuickVectorImageGenerator", "libQt6QuickVectorImageGenerator", "QtQuickVectorImageGenerator"], :libqt6quickvectorimagegenerator),
+    LibraryProduct(["Qt6QuickVectorImageHelpers", "libQt6QuickVectorImageHelpers", "QtQuickVectorImageHelpers"], :libqt6quickvectorimagehelpers),
+    LibraryProduct(["Qt6QuickVectorImage", "libQt6QuickVectorImage", "QtQuickVectorImage"], :libqt6quickvectorimage),
     LibraryProduct(["Qt6QuickWidgets", "libQt6QuickWidgets", "QtQuickWidgets"], :libqt6quickwidgets),
 ]
 

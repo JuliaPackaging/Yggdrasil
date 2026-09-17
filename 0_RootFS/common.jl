@@ -57,6 +57,17 @@ function publish_artifact(repo::AbstractString, tag::AbstractString, hash::Base.
     end
 end
 
+# HACK (2026-07, remove eventually): GCCBootstrap 14.3.0 tarballs are recorded in
+# BinaryBuilderBase's Artifacts.toml under the v14.2.0 artifact names, because
+# `available_gcc_builds` still identifies the GCC 14 toolchain as v14.2.0 (the
+# 14.3.0 content was slotted into the existing stanzas by hand, see
+# JuliaPackaging/BinaryBuilderBase.jl#486). Until BBB is bumped to know about
+# 14.3.0 (rename the stanzas + update `available_gcc_builds`), deploys of 14.3.0
+# must upload assets/tags under v14.3.0 but look up and bind the Artifacts.toml
+# entries under v14.2.0.
+shard_bind_version(name, version) =
+    (name == "GCCBootstrap" && version == v"14.3.0") ? v"14.2.0" : version
+
 function get_next_shard_tag(cs)
     artifacts_toml = joinpath(dirname(dirname(pathof(BinaryBuilderBase))), "Artifacts.toml")
     meta = artifact_meta(BinaryBuilderBase.artifact_name(cs), artifacts_toml; platform=cs.host)
@@ -70,7 +81,9 @@ function get_next_shard_tag(cs)
     end
 
     last_version = VersionNumber(last_tag[length(cs.name)+2:end])
-    build_number = 0
+    # A tag without a `+N` suffix (the first deploy of a version) is build 0,
+    # so the next build number is 1 -- `+0` would alias the existing release.
+    build_number = 1
     if isa(last_version.build, Tuple{<:UInt})
         build_number = last_version.build[1] + 1
     end
@@ -87,7 +100,17 @@ end
 
 function upload_compiler_shard(repo, name, version, hash, archive_type; platform=host_platform, target=nothing)
     cs = CompilerShard(name, version, platform, archive_type; target=target)
-    tag = get_next_shard_tag(cs)
+    # The tag lookup must consult the entry the shard is *recorded* under in the
+    # BBB Artifacts.toml, which may differ from the upload name (see shard_bind_version).
+    bind_cs = CompilerShard(name, shard_bind_version(name, version), platform, archive_type; target=target)
+    tag = get_next_shard_tag(bind_cs)
+    # Releases are always tagged by the *upload* version. If the lookup produced
+    # something else (e.g. the bind-version fallback because the entry is missing),
+    # the active BBB Artifacts.toml is stale/inconsistent -- bail before uploading.
+    if !startswith(tag, "$(name)-v$(version)")
+        error("Computed release tag $(tag) does not match shard version $(version); " *
+              "is the active BinaryBuilderBase's Artifacts.toml up to date?")
+    end
     filename = BinaryBuilderBase.artifact_name(cs)
     tarball_hash = publish_artifact(repo, tag, hash, filename)
 
@@ -124,9 +147,10 @@ function upload_and_insert_shards(repo, name, version, unpacked_hash, squashfs_h
         squashfs_dl_info = upload_compiler_shard(repo, name, version, squashfs_hash, :squashfs; platform=platform, target=target)
     end
 
-    # Insert these final versions into BB
-    insert_compiler_shard(name, version, unpacked_hash, :unpacked; download_info=unpacked_dl_info, platform=platform, target=target)
-    insert_compiler_shard(name, version, squashfs_hash, :squashfs; download_info=squashfs_dl_info, platform=platform, target=target)
+    # Insert these final versions into BB, under the name BBB looks shards up by
+    # (see shard_bind_version).
+    insert_compiler_shard(name, shard_bind_version(name, version), unpacked_hash, :unpacked; download_info=unpacked_dl_info, platform=platform, target=target)
+    insert_compiler_shard(name, shard_bind_version(name, version), squashfs_hash, :squashfs; download_info=squashfs_dl_info, platform=platform, target=target)
 end
 
 function upload_and_insert_shards(repo, name, version, build_info; target=nothing)

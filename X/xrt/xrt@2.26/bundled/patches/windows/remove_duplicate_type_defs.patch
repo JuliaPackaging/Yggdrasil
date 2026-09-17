@@ -1,0 +1,15 @@
+MinGW already defines ssize_t/pid_t, so XRT's typedefs conflict. Upstream tried
+to guard them but used __GNU__ (GNU Hurd), which MinGW never defines -- so the
+guard never fires. Use __GNUC__ (this is a Windows-only header, so the only
+non-MSVC compiler here is MinGW gcc).
+--- a/src/runtime_src/core/include/xrt/detail/windows/types.h
++++ b/src/runtime_src/core/include/xrt/detail/windows/types.h
+@@ -19,7 +19,7 @@
+
+ #include <stdint.h>
+
+-#ifndef __GNU__
++#ifndef __GNUC__
+ typedef int64_t ssize_t;
+ typedef int pid_t;
+ #endif

@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "tree_sitter_matlab"
-version = v"1.2.10"
+version = v"1.3.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource(
         "https://github.com/acristoffers/tree-sitter-matlab.git",
-        "1bccabdbd420a9c3c3f96f36d7f9e65b3d9c88ef"
+        "c892c8530e70e4a96e0b130c820e8989925fb9a1"
     ),
     DirectorySource("./bundled")
 ]

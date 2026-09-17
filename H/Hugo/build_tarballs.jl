@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "Hugo"
-version = v"0.118.2"
+version = v"0.163.3"
 
 # Collection of sources required to complete build
 sources = [
     GitSource(
         "https://github.com/gohugoio/hugo.git",
-        "da7983ac4b94d97d776d7c2405040de97e95c03d",
+        "4d22555aebf458d5d150500c9ac4bee5b24cf0d3",
     ),
 ]
 

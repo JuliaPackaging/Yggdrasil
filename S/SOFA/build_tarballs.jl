@@ -1,12 +1,12 @@
 using BinaryBuilder, Pkg
 
 name = "SOFA"
-version = v"2019.07.22"   # Match the SOFA release date
+version = v"2023.10.11"   # Match the SOFA release date
 
 sources = [
     ArchiveSource(
-        "https://github.com/JuliaAstro/SOFA.jl/releases/download/sofa-c-20190722/sofa_c-20190722.tar.gz",
-        "c4434822ef7428962d49c56dc417b61f691f47cf39187abf08f1f785f8297346",
+        "https://github.com/JuliaAstro/SOFA.jl/releases/download/sofa-c-20231011/sofa_c-20231011.tar.gz",
+        "4ba42ae6c9ded54e8e8313c0b33bb245f453f988761d47ed2da5c4ae4ac94b92",
     ),
 ]
 

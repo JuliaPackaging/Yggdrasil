@@ -1,12 +1,12 @@
 using BinaryBuilder, Pkg
 
 name = "Randompack"
-version = v"0.1.6"
+version = v"0.1.10"
 
 sources = [
   GitSource(
     "https://github.com/jonasson2/randompack.git",
-    "7801c82bfef0af3617ae9918dba2119c9252c9f5",
+    "67b128131973b9d7b38bdad702edba23b39c8fbd",
   ),
 ]
 

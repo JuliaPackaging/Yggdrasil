@@ -69,7 +69,7 @@ fi
 """
 
 # Override the default platforms
-platforms = CUDA.supported_platforms(; min_version=v"11.8")
+platforms = CUDA.supported_platforms(; min_version=v"11.8", max_version=v"13.3")
 platforms = expand_gfortran_versions(platforms)
 platforms = remove_unsupported_platforms(platforms)
 

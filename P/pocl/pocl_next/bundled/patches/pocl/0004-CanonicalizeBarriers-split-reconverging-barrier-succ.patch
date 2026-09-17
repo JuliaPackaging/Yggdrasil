@@ -1,0 +1,284 @@
+From 33d0aeda4bd53e561d9c12f3b51f93d423cb56fc Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Mon, 17 Aug 2026 15:57:39 +0200
+Subject: [PATCH 4/6] CanonicalizeBarriers: split reconverging barrier
+ successors
+
+Parallel-region formation treats successors of a barrier block as entries of
+disjoint regions. Bounds-checked Julia kernels can instead branch around a
+variable-trip loop and reconverge at the next barrier, producing a malformed
+region and aborting work-group function generation.
+
+Detect successors that reach a common block before crossing another barrier
+and move their branch to a common post-barrier block. Successors ending at
+distinct barriers retain the existing conditional-barrier handling.
+
+Add a reduced SPIR-V regression that builds and executes with the loops,
+loopvec, and CBS handlers.
+
+Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+---
+ lib/llvmopencl/CanonicalizeBarriers.cc        |  38 +++-
+ tests/regression/CMakeLists.txt               |   3 +
+ .../regression/test_barrier_divergent_skip.c  | 166 ++++++++++++++++++
+ 3 files changed, 204 insertions(+), 3 deletions(-)
+ create mode 100644 tests/regression/test_barrier_divergent_skip.c
+
+diff --git a/lib/llvmopencl/CanonicalizeBarriers.cc b/lib/llvmopencl/CanonicalizeBarriers.cc
+index 9dc1dad19..d30b23a88 100644
+--- a/lib/llvmopencl/CanonicalizeBarriers.cc
++++ b/lib/llvmopencl/CanonicalizeBarriers.cc
+@@ -29,6 +29,9 @@ IGNORE_COMPILER_WARNING("-Wmaybe-uninitialized")
+ #include <llvm/ADT/Twine.h>
+ POP_COMPILER_DIAGS
+ IGNORE_COMPILER_WARNING("-Wunused-parameter")
++#include <llvm/ADT/SmallPtrSet.h>
++#include <llvm/ADT/SmallVector.h>
++#include <llvm/IR/CFG.h>
+ #include <llvm/IR/Dominators.h>
+ #include <llvm/IR/Instructions.h>
+ #include <llvm/IR/Module.h>
+@@ -60,6 +63,31 @@ static bool processFunction(Function &F, WorkitemHandlerType Handler);
+ 
+ using InstructionSet = std::set<llvm::Instruction *>;
+ 
++// Parallel region formation treats successors of a barrier block as entries
++// of disjoint regions. If the successors reconverge before another barrier,
++// the branch instead belongs to a single region and needs a common entry.
++static bool successorsReconverge(llvm::Instruction *T) {
++  llvm::SmallPtrSet<llvm::BasicBlock *, 16> Reached;
++  for (unsigned Succ = 0, Num = T->getNumSuccessors(); Succ < Num; ++Succ) {
++    llvm::SmallPtrSet<llvm::BasicBlock *, 16> Visited;
++    llvm::SmallVector<llvm::BasicBlock *, 16> WorkList{T->getSuccessor(Succ)};
++    while (!WorkList.empty()) {
++      llvm::BasicBlock *BB = WorkList.pop_back_val();
++      if (!Visited.insert(BB).second)
++        continue;
++      // Include barrier blocks in the search, but do not cross them.
++      if (Reached.count(BB))
++        return true;
++      if (Barrier::hasBarrier(BB))
++        continue;
++      for (llvm::BasicBlock *SuccBB : successors(BB))
++        WorkList.push_back(SuccBB);
++    }
++    Reached.insert(Visited.begin(), Visited.end());
++  }
++  return false;
++}
++
+ static bool canonicalizeBarriers(Function &F, WorkitemHandlerType Handler) {
+   bool changed = false;
+ 
+@@ -149,11 +177,15 @@ static bool processFunction(Function &F, WorkitemHandlerType Handler) {
+     //     (t->getPrevNode() != *i)) {
+     // Change: barriers with several successors are all right
+     // they just start several parallel regions. Simplifies
+-    // loop handling.
++    // loop handling. Reconverging successors, however, belong to a single
++    // region and need a common post-barrier entry.
++
++    const bool MustSplitSuccessors =
++        t->getNumSuccessors() > 1 &&
++        (Handler == WorkitemHandlerType::CBS || successorsReconverge(t));
+ 
+     const bool HasNonBranchInstructionsAfterBarrier =
+-        t->getPrevNode() != *i ||
+-        (Handler == WorkitemHandlerType::CBS && t->getNumSuccessors() > 1);
++        t->getPrevNode() != *i || MustSplitSuccessors;
+ 
+     if (HasNonBranchInstructionsAfterBarrier) {
+       BasicBlock *new_b = SplitBlock(b, (*i)->getNextNode());
+diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
+index 57aa91cd8..a47eebf39 100644
+--- a/tests/regression/CMakeLists.txt
++++ b/tests/regression/CMakeLists.txt
+@@ -31,6 +31,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
+      test_issue_1711 test_issue_1794 test_issue_1747
+      test_rematerialized_alloca_load_with_outside_pr_users
+      test_peeled_wi_global_id
++     test_barrier_divergent_skip
+      test_divergent_implicit_barrier_entry
+      test_uniform_implicit_barrier_entry
+      test_localmem_load_across_barrier
+@@ -160,6 +161,8 @@ add_test_pocl(NAME "regression/test_issue_1747" COMMAND "test_issue_1747" "0" "$
+ 
+ add_test_pocl(NAME "regression/peeled_wi_global_id" WORKITEM_HANDLER "loopvec;cbs;" COMMAND "test_peeled_wi_global_id" LABELS ${SPIRV_LABELS})
+ 
++add_test_pocl(NAME "regression/barrier_divergent_skip" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_barrier_divergent_skip" LABELS ${SPIRV_LABELS})
++
+ add_test_pocl(NAME "regression/divergent_implicit_barrier_entry" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_divergent_implicit_barrier_entry")
+ 
+ add_test_pocl(NAME "regression/uniform_implicit_barrier_entry" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_uniform_implicit_barrier_entry")
+diff --git a/tests/regression/test_barrier_divergent_skip.c b/tests/regression/test_barrier_divergent_skip.c
+new file mode 100644
+index 000000000..69b1b29fd
+--- /dev/null
++++ b/tests/regression/test_barrier_divergent_skip.c
+@@ -0,0 +1,166 @@
++// Copyright (c) 2026 PoCL developers
++//
++// Permission is hereby granted, free of charge, to any person obtaining a copy
++// of this software and associated documentation files (the "Software"), to deal
++// in the Software without restriction, including without limitation the rights
++// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++// copies of the Software, and to permit persons to whom the Software is
++// furnished to do so, subject to the following conditions:
++//
++// The above copyright notice and this permission notice shall be included in
++// all copies or substantial portions of the Software.
++//
++// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++// THE SOFTWARE.
++
++/*
++  Reduced from a bounds-checked KernelAbstractions.jl radix-sort kernel. One
++  arm of a branch after a barrier skips a variable-trip loop, then reconverges
++  with the other arm at the next barrier:
++
++      barrier();
++      br i1 %skip, label %join, label %loop
++      ...
++      join:                  ; reconvergence point
++      barrier();
++
++  Treating the successors as disjoint region entries produced a malformed
++  region ending at the loop latch. Building the work-group function then
++  aborted in ParallelRegion::chainAfter.
++
++  The crash happened when building the work-group function; completing the
++  build and a launch with correct results is the test. The launch takes the
++  skip path in all work-items so the barrier behavior is defined.
++*/
++
++#include "pocl_opencl.h"
++
++#include <stdio.h>
++#include <stdlib.h>
++#ifndef _WIN32
++#include <unistd.h>
++#endif
++
++#define CHECK_ERROR(err)                                                       \
++  if (err != CL_SUCCESS) {                                                     \
++    printf("OpenCL Error %d at %s:%d\n", err, __FILE__, __LINE__);             \
++    return 1;                                                                  \
++  }
++
++int main(int argc, char **argv) {
++  cl_uint platform_index = argc > 1 ? (cl_uint)atoi(argv[1]) : 0;
++  cl_int err;
++
++#ifndef _WIN32
++  // Fail quickly instead of tripping the much larger ctest timeout in case
++  // a regressed build hangs.
++  alarm(300);
++#endif
++
++  cl_uint num_platforms;
++  CHECK_ERROR(clGetPlatformIDs(0, NULL, &num_platforms));
++  if (platform_index >= num_platforms) {
++    printf("Platform index %u out of range\n", platform_index);
++    return 1;
++  }
++  cl_platform_id *platforms = malloc(sizeof(cl_platform_id) * num_platforms);
++  CHECK_ERROR(clGetPlatformIDs(num_platforms, platforms, NULL));
++  cl_platform_id platform = platforms[platform_index];
++  free(platforms);
++
++  cl_device_id device;
++  CHECK_ERROR(clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, 1, &device, NULL));
++
++  if (!poclu_device_supports_il(device, "SPIR-V_1.0")) {
++    printf("SKIP: The test requires support for SPIR-V 1.0\n");
++    return 77;
++  }
++
++  cl_context context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
++  CHECK_ERROR(err);
++  cl_queue_properties props[] = {0};
++  cl_command_queue queue =
++      clCreateCommandQueueWithProperties(context, device, props, &err);
++  CHECK_ERROR(err);
++
++  FILE *f = fopen(SRCDIR "/test_barrier_divergent_skip.spv", "rb");
++  if (!f) {
++    printf("Failed to open test_barrier_divergent_skip.spv\n");
++    return 1;
++  }
++  fseek(f, 0, SEEK_END);
++  size_t size = ftell(f);
++  fseek(f, 0, SEEK_SET);
++  unsigned char *binary = malloc(size);
++  if (fread(binary, 1, size, f) != size) {
++    printf("Failed to read SPIR-V\n");
++    free(binary);
++    fclose(f);
++    return 1;
++  }
++  fclose(f);
++
++  cl_program program = clCreateProgramWithIL(context, binary, size, &err);
++  CHECK_ERROR(err);
++  err = clBuildProgram(program, 1, &device, NULL, NULL, NULL);
++  if (err != CL_SUCCESS) {
++    size_t log_size;
++    clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, 0, NULL,
++                          &log_size);
++    char *log = malloc(log_size);
++    clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, log_size, log,
++                          NULL);
++    printf("Build error:\n%s\n", log);
++    return 1;
++  }
++
++  // Building the work-group function is what used to crash; force it even
++  // when the driver would otherwise defer compilation to launch time.
++  size_t binary_size;
++  CHECK_ERROR(clGetProgramInfo(program, CL_PROGRAM_BINARY_SIZES,
++                               sizeof(binary_size), &binary_size, NULL));
++
++  cl_kernel kernel = clCreateKernel(program, "vartrip", &err);
++  CHECK_ERROR(err);
++
++  // All work-items enter the barrier and take the loop-skipping arm, so the
++  // barrier behavior is defined and every work-item stores 42.
++  const size_t local_size = 64, global_size = 128;
++  const cl_long opaque = 0;
++  const cl_uchar enter = 1, skip = 1, exitl = 1;
++  cl_int result[128];
++  cl_mem out =
++      clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(result), NULL, &err);
++  CHECK_ERROR(err);
++  CHECK_ERROR(clSetKernelArg(kernel, 0, sizeof(out), &out));
++  CHECK_ERROR(clSetKernelArg(kernel, 1, sizeof(opaque), &opaque));
++  CHECK_ERROR(clSetKernelArg(kernel, 2, sizeof(enter), &enter));
++  CHECK_ERROR(clSetKernelArg(kernel, 3, sizeof(skip), &skip));
++  CHECK_ERROR(clSetKernelArg(kernel, 4, sizeof(exitl), &exitl));
++  CHECK_ERROR(clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global_size,
++                                     &local_size, 0, NULL, NULL));
++  CHECK_ERROR(clEnqueueReadBuffer(queue, out, CL_TRUE, 0, sizeof(result),
++                                  result, 0, NULL, NULL));
++
++  for (size_t i = 0; i < global_size; ++i) {
++    if (result[i] != 42) {
++      printf("FAIL at %zu: got %d, expected 42\n", i, result[i]);
++      return 1;
++    }
++  }
++
++  clReleaseMemObject(out);
++  clReleaseKernel(kernel);
++  clReleaseProgram(program);
++  clReleaseCommandQueue(queue);
++  clReleaseContext(context);
++  free(binary);
++
++  printf("OK\n");
++  return 0;
++}

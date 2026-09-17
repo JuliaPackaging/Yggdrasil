@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "jemalloc"
-version = v"5.3.0"
+version = v"5.3.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/jemalloc/jemalloc.git", "54eaed1d8b56b1aa528be3bdd1877e59c56fa90c")
+    GitSource("https://github.com/jemalloc/jemalloc.git", "81034ce1f1373e37dc865038e1bc8eeecf559ce8")
 ]
 
 # Bash recipe for building across all platforms
@@ -23,7 +23,6 @@ fi
 
 make -j${nproc}
 make install
-
 """
 
 # These are the platforms we will build for by default, unless further

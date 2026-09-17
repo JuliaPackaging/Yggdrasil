@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "SpFFT"
 version = v"1.1.1"
-ygg_version = v"1.1.2"          # we bumped the version to update MPI compat bounds
+ygg_version = v"1.1.3"          # we bumped the version to update MPI compat bounds
 
 sources = [
    GitSource("https://github.com/eth-cscs/SpFFT/", "34391bc8c5e2b8add000e38fdc6ce68896184d10")

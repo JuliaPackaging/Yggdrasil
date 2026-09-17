@@ -1,0 +1,106 @@
+diff --git before/rerun/CMakeLists.txt after/rerun/CMakeLists.txt
+# this: 
+# turns off all of the compile targets except for rerun_c
+# disables loguru - not needed for rerun_c alone, and doesn't work on mingw
+# makes rerun_c build as a shared library
+# makes CMake happy with aforementioned shared librariness (need to invoke the target since rerun_cpp won't anymore)
+--- before/rerun/CMakeLists.txt
++++ after/rerun/CMakeLists.txt
+@@ -137,41 +137,7 @@
+ set(RERUN_REPOSITORY YES)
+
+ # ------------------------------------------------------------------------------
+-# Loguru logging library (https://github.com/emilk/loguru):
+-set(CMAKE_DL_LIBS "dl") # Required by Loguru for backtraces
+-
+-# Loguru, see https://github.com/emilk/loguru/blob/4adaa185883e3c04da25913579c451d3c32cfac1/loguru_cmake_example/CMakeLists.txt
+-include(FetchContent)
+-FetchContent_Declare(LoguruGitRepo
+-    GIT_REPOSITORY "https://github.com/emilk/loguru" # can be a filesystem path
+-    GIT_TAG "master"
+-)
+-
+-# Loguru does not support being build with BUILD_SHARED_LIBS=ON on Windows
+-# so we always compile it with BUILD_SHARED_LIBS=OFF on Windows
+-if(MSVC AND BUILD_SHARED_LIBS)
+-    set(BUILD_SHARED_LIBS_RERUN_SDK ${BUILD_SHARED_LIBS})
+-    set(BUILD_SHARED_LIBS OFF)
+-endif()
+-
+-FetchContent_MakeAvailable(LoguruGitRepo) # defines target 'loguru::loguru'
+-
+-if(MSVC AND BUILD_SHARED_LIBS_RERUN_SDK)
+-    set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_RERUN_SDK})
+-endif()
+-
+-# Set any loguru compile-time flags before calling MakeAvailable()
+-# Stacktraces are not yet supported on Windows.
+-if(NOT WIN32)
+-    set(LOGURU_STACKTRACES 1)
+-endif()
+-
+-# ------------------------------------------------------------------------------
+ add_subdirectory(crates/top/rerun_c) # The Rerun C SDK library, must be included before the C++ SDK.
+-add_subdirectory(rerun_cpp) # The Rerun C++ SDK library.
+-add_subdirectory(examples/cpp)
+-add_subdirectory(tests/cpp)
+-add_subdirectory(docs/snippets)
+
+ # ------------------------------------------------------------------------------
+ # Setup an 'all_targets' target that depends on all targets in the project.
+diff --git before/rerun/crates/top/rerun_c/CMakeLists.txt after/rerun/crates/top/rerun_c/CMakeLists.txt
+--- before/rerun/crates/top/rerun_c/CMakeLists.txt
++++ after/rerun/crates/top/rerun_c/CMakeLists.txt
+@@ -34,14 +34,26 @@ else()
+     message(FATAL_ERROR "Unsupported platform.")
+ endif()
+
++# Rust names the cdylib without a `lib` prefix on Windows (rerun_c.dll).
++if(WIN32)
++    set(RERUN_C_SHARED_PREFIX "")
++else()
++    set(RERUN_C_SHARED_PREFIX ${CMAKE_SHARED_LIBRARY_PREFIX})
++endif()
++set(RERUN_C_SHARED_ARTIFACT
++    ${CARGO_TARGET_DIR}/$ENV{CARGO_BUILD_TARGET}/${RUST_BUILD_TYPE}/${RERUN_C_SHARED_PREFIX}rerun_c${CMAKE_SHARED_LIBRARY_SUFFIX})
++
+ # Setup rerun_c library
+-add_library(rerun_c STATIC IMPORTED GLOBAL)
++add_library(rerun_c SHARED IMPORTED GLOBAL)
+ set_target_properties(rerun_c PROPERTIES IMPORTED_LOCATION ${RERUN_C_BUILD_ARTIFACT})
+
++add_library(rerun_c_shared SHARED IMPORTED GLOBAL)
++set_target_properties(rerun_c_shared PROPERTIES IMPORTED_LOCATION ${RERUN_C_SHARED_ARTIFACT})
++
+ # Just depend on all rust and toml files, it's hard to know which files exactly are relevant.
+ file(GLOB_RECURSE RERUN_C_SOURCES LIST_DIRECTORIES FALSE "${PROJECT_SOURCE_DIR}/crates/*.rs" "${PROJECT_SOURCE_DIR}/crates/*.toml")
+ add_custom_command(
+-    OUTPUT ${RERUN_C_BUILD_ARTIFACT}
++    OUTPUT ${RERUN_C_BUILD_ARTIFACT} ${RERUN_C_SHARED_ARTIFACT}
+     DEPENDS ${RERUN_C_SOURCES}
+     COMMAND cargo build ${CARGO_BUILD_FLAG} -p rerun_c
+     COMMENT "Building rerun_c from source"
+@@ -49,5 +61,10 @@ add_custom_command(
+ )
+
+ # In CMake you can't depend on an output file directly. We have to wrap this in a target that rerun_c then depends on.
+-add_custom_target(rerun_c_build DEPENDS "${RERUN_C_BUILD_ARTIFACT}")
++add_custom_target(rerun_c_build ALL DEPENDS "${RERUN_C_BUILD_ARTIFACT}" "${RERUN_C_SHARED_ARTIFACT}")
+ add_dependencies(rerun_c rerun_c_build)
++add_dependencies(rerun_c_shared rerun_c_build)
++
++# The C++ SDK normally installs rerun_c; it is not built in this configuration,
++# so install the shared library here instead.
++install(IMPORTED_RUNTIME_ARTIFACTS rerun_c_shared LIBRARY DESTINATION lib RUNTIME DESTINATION bin)
+diff --git before/rerun/crates/top/rerun_c/Cargo.toml after/rerun/crates/top/rerun_c/Cargo.toml
+--- before/rerun/crates/top/rerun_c/Cargo.toml
++++ after/rerun/crates/top/rerun_c/Cargo.toml
+@@ -28,7 +28,7 @@ all-features = true
+ targets = ["x86_64-unknown-linux-gnu", "wasm32-unknown-unknown"]
+
+ [lib]
+-crate-type = ["staticlib"]
++crate-type = ["staticlib", "cdylib"]
+ name = "rerun_c"
+ doctest = false
+ test = false

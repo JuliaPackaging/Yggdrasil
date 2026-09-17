@@ -23,12 +23,8 @@ cd LICENSES
 install_license FSFAP.txt LGPL-2.1-or-later.txt
 """
 
-# The files are identical for all platforms, and in principle we could
-# use `AnyPlatform()` instead. However this artifact contains symlinks
-# which have to be replaced with copies on Windows, and for that to
-# happen we need to build it for Windows specifically (and hence for
-# all other platforms as well)
-platforms = supported_platforms()
+# The files are identical for all platforms.
+platforms = [AnyPlatform()]
 
 # The products that we will ensure are always built
 products = Product[

@@ -3,7 +3,7 @@
 include("../common.jl")
 
 name = "guava"
-upstream_version = "3.20" # when you increment this, reset offset to v"0.0.0"
+upstream_version = "3.21" # when you increment this, reset offset to v"0.0.0"
 offset = v"1.0.0" # increment this when rebuilding with unchanged upstream_version
 version = offset_version(upstream_version, offset)
 
@@ -12,7 +12,7 @@ version = offset_version(upstream_version, offset)
 # Collection of sources required to build this JLL
 sources = [
     ArchiveSource("https://github.com/gap-packages/guava/releases/download/v$(upstream_version)/guava-$(upstream_version).tar.gz",
-                  "a6a19aae3dc8d32569d2c98715c3de84df88e65819ce70bdb7595850de5cbe56"),
+                  "00c27b50a0969cc6f93db314009e67ae6e205d51a33e6864097dba5a65482fa3"),
 ]
 
 # Bash recipe for building across all platforms

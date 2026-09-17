@@ -1,0 +1,20 @@
+--- a/Tensor.cpp
++++ b/Tensor.cpp
+@@ -10,6 +10,7 @@
+ //---------------------------------------------------------------------------
+ //..... LOCAL LEVEL INTEGRATION ALGORITHMS FOR CONSTITUTIVE EQUATIONS  ......
+ //---------------------------------------------------------------------------
++#define _USE_MATH_DEFINES
+ #include "LaMEM.h"
+ #include "Tensor.h"
+ #include "tools.h"
+--- a/scaling.cpp
++++ b/scaling.cpp
+@@ -10,6 +10,7 @@
+ //---------------------------------------------------------------------------
+ //..........................   SCALING ROUTINES   ...........................
+ //---------------------------------------------------------------------------
++#define _USE_MATH_DEFINES
+ #include "LaMEM.h"
+ #include "scaling.h"
+ #include "parsing.h"
