@@ -46,7 +46,7 @@ fi
 
 # We need `-lrt` on glibc Linux, apparently only on x86-64
 if [[ ${target} == x86_64-linux-gnu ]]; then
-    OPTS+=(LIBRARIES="-lm -lrt")
+    OPTS+=(LIBRARIES="-lm -ldl -lrt")
 fi
 
 # Only disable the x86-64 if we're compiling for a different architecture. I can't for the
