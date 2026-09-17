@@ -24,11 +24,12 @@ platforms = supported_platforms()
 # runs `clang -Wl,--version`, which ld64 rejects
 filter!(!Sys.isapple, platforms)
 
-# Headers plus a small static library of the COM GUIDs; nothing shared to dlopen
+# Headers plus a small static library of the COM GUIDs; nothing shared to dlopen. The
+# pkg-config file is installed too, but it is not declared: meson puts it in
+# libdata/pkgconfig on FreeBSD and lib/pkgconfig everywhere else.
 products = [
     FileProduct("include/directx/d3d12.h", :d3d12_h),
     FileProduct("lib/libDirectX-Guids.a", :libDirectX_Guids),
-    FileProduct("lib/pkgconfig/DirectX-Headers.pc", :DirectX_Headers_pc),
 ]
 
 dependencies = Dependency[]
