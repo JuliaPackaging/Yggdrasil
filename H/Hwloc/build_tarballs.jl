@@ -4,6 +4,9 @@ using BinaryBuilder
 
 name = "Hwloc"
 version = v"2.14.0"
+# Bump the patch level of the JLL version when the recipe changes without a new upstream release,
+# e.g. to rebuild against a new ABI of a dependency. Reset to `version` on the next upstream release.
+ygg_version = v"2.14.1" # Rebuilt against XML2_jll 2.15
 
 # Collection of sources required to build hwloc
 sources = [
@@ -38,9 +41,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("XML2_jll"; compat="~2.13.6"),
+    Dependency("XML2_jll"; compat="~2.15.3"),
     Dependency("Xorg_libpciaccess_jll"; platforms=filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6")

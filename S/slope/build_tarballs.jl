@@ -4,10 +4,10 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "slope"
-version = v"6.3.0"
+version = v"6.5.2"
 
 sources = [
-    GitSource("https://github.com/jolars/libslope.git", "25c165ed1e52ee99da57c81d42ba5c504f1c98b4"),
+    GitSource("https://github.com/jolars/libslope.git", "a9899cbf3677ea63236d54dc18626ad3a5aeddc6"),
 ]
 
 # Bash recipe for building across all platforms

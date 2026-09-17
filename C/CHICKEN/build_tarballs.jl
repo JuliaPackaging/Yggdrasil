@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "CHICKEN"
-version = v"5.4.0"
+version = v"6.0.0"
 
 sources = [
     ArchiveSource("https://code.call-cc.org/releases/$version/chicken-$version.tar.gz",
-                  "3c5d4aa61c1167bf6d9bf9eaf891da7630ba9f5f3c15bf09515a7039bfcdec5f")
+                  "92835552b1b687ad26737e429b5aba36510bf429f8816ec0f6d336c8cb41f443")
 ]
 
 script = raw"""
@@ -16,13 +16,7 @@ if [[ ${target} == *-apple-* ]]; then
 elif [[ ${target} == *-freebsd* ]]; then
     PLATFORM=bsd
 elif [[ ${target} == *-mingw* ]]; then
-    # There are three Windows-related values recognized here: mingw, mingw-msys, and
-    # linux-cross-mingw. The first assumes backslash path delimiters when building, which
-    # doesn't work in the BinaryBuilder environment; the second assumes cmd.exe names and
-    # backslash path delimiters for compiled code running on the target, which is maybe
-    # fine; and the last builds a compiler that emits binaries for Windows, but the compiler
-    # itself is intended to run on Linux, which is not what we want.
-    PLATFORM=mingw-msys
+    PLATFORM=mingw
 else
     PLATFORM=linux
 fi
@@ -50,6 +44,11 @@ elif [ "${tarch}" = "powerpc64le" ]; then
     tarch="ppc64"
 fi
 
+# We need `-lrt` on glibc Linux, apparently only on x86-64
+if [[ ${target} == x86_64-linux-gnu ]]; then
+    OPTS+=(LIBRARIES="-lm -ldl -lrt")
+fi
+
 # Only disable the x86-64 if we're compiling for a different architecture. I can't for the
 # life of me get the quoting to work correctly for the target feature specification when
 # putting it into the array, so I'll just admit defeat and separate the `make` calls.
@@ -62,9 +61,6 @@ fi
 
 platforms = supported_platforms()
 
-# NOTE: We could include Feathers, the graphical debugger, alongside the other products,
-# but it's distributed as a .tcl file with an accompanying shell script that just invokes
-# `wish`, and we would need to take a dependency on Tk_jll.
 products = [
     ExecutableProduct("chicken", :chicken),
     ExecutableProduct("chicken-do", :chicken_do),
@@ -74,7 +70,7 @@ products = [
     ExecutableProduct("chicken-uninstall", :chicken_uninstall),
     ExecutableProduct("csc", :chicken_csc),
     ExecutableProduct("csi", :chicken_csi),
-    FileProduct("lib/libchicken.a", :libchicken_a),
+    FileProduct("lib/libchicken-static.a", :libchicken_static),
     FileProduct("include/chicken/chicken.h", :chicken_h),
     FileProduct("include/chicken/chicken-config.h", :chicken_config_h),
     LibraryProduct("libchicken", :libchicken),

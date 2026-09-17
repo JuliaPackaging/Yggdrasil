@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Libgcrypt"
-version = v"1.12.2"
+version = v"1.12.4"
 
 # Collection of sources required to build libgcrypt
 sources = [
     ArchiveSource("https://gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-$(version).tar.bz2",
-                  "7ce33c2492221a0436f96a8500215e9f3e3dcb5fd26a757cd415e7a843babd5e"),
+                  "d77f68f48879510e79a2f65977ccc68981781ea0923e5bdffac2a193ea3d660e"),
 ]
 
 # Bash recipe for building across all platforms
@@ -45,7 +45,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Libgpg_error_jll"; compat="1.58"),
+    Dependency("Libgpg_error_jll"; compat="1.60"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

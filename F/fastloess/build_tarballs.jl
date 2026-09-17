@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "fastloess"
-version = v"1.0.0"
+version = v"1.1.0"
 
 # Update the commit hash when releasing a new version
 sources = [
-	GitSource("https://github.com/thisisamirv/loess-project.git", "5f42e6e2ae1f5a93f0a1ac4447da0c7bd895c245"),
+	GitSource("https://github.com/thisisamirv/loess-project.git", "1e44f184e6f00cfdd21b8bc1b020cc2b0a13f76a"),
 ]
 
 # Build script
