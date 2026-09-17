@@ -16,13 +16,7 @@ if [[ ${target} == *-apple-* ]]; then
 elif [[ ${target} == *-freebsd* ]]; then
     PLATFORM=bsd
 elif [[ ${target} == *-mingw* ]]; then
-    # There are three Windows-related values recognized here: mingw, mingw-msys, and
-    # linux-cross-mingw. The first assumes backslash path delimiters when building, which
-    # doesn't work in the BinaryBuilder environment; the second assumes cmd.exe names and
-    # backslash path delimiters for compiled code running on the target, which is maybe
-    # fine; and the last builds a compiler that emits binaries for Windows, but the compiler
-    # itself is intended to run on Linux, which is not what we want.
-    PLATFORM=mingw-msys
+    PLATFORM=mingw
 else
     PLATFORM=linux
 fi
