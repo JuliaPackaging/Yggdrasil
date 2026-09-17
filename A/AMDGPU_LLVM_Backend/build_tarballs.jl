@@ -1,6 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, Pkg
+using BinaryBuilder
 
 name = "AMDGPU_LLVM_Backend"
 version = v"23.1.1"
@@ -17,8 +17,9 @@ llvm_version = v"23.1.1"
 sources = [
     ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-$(llvm_version)/llvm-project-$(llvm_version).src.tar.xz",
                   "ebe9be46fe8756d58c5b198ffad0fa2a766257add81a4dc52179bfacc7888ee6"),
+    # ROCm's fork, for the device libraries (TheRock 10.0).
     GitSource("https://github.com/ROCm/llvm-project",
-              "46fcb339fb61119b337f973c7ca9e710a319fdd0"),
+              "8f497e0992fb7513f7f78a6f6b6f1056c375e961"),
     DirectorySource("./bundled"),
 ]
 
@@ -43,19 +44,39 @@ LLVM_SRCDIR=$(pwd)
 # The very first thing we need to do is to build llvm-tblgen for x86_64-linux-muslc
 # This is because LLVM's cross-compile setup is kind of borked, so we just
 # build the tools natively ourselves, directly.  :/
+#
+# The same host build also provides the Clang/LLVM tools the ROCm device
+# libraries are compiled with below (clang, llvm-link, opt and the LLVM
+# libraries linked into its `prepare-builtins`), so that they come from the
+# very same LLVM checkout as the back-end shipped here, rather than from a
+# separately versioned LLVM_full_jll.
 
-# Build llvm-tblgen and llvm-config
+# Build llvm-tblgen, llvm-config and a host clang
 mkdir ${WORKSPACE}/bootstrap
 pushd ${WORKSPACE}/bootstrap
 CMAKE_FLAGS=()
-CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING=host)
+# The device libraries are compiled for `amdgcn-amd-amdhsa`, and their
+# compile tests emit code objects, so the host clang needs the AMDGPU back-end too.
+CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING='host;AMDGPU')
 CMAKE_FLAGS+=(-DLLVM_HOST_TRIPLE=${MACHTYPE})
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
-CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm')
+CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='clang')
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=False)
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN})
+# Keep the host build lean: these tools only ever run inside this build.
+CMAKE_FLAGS+=(-DLLVM_ENABLE_ZLIB=OFF)
+CMAKE_FLAGS+=(-DLLVM_ENABLE_ZSTD=OFF)
+CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBXML2=OFF)
+CMAKE_FLAGS+=(-DLLVM_INCLUDE_DOCS=OFF)
+CMAKE_FLAGS+=(-DLLVM_INCLUDE_EXAMPLES=OFF)
+CMAKE_FLAGS+=(-DLLVM_INCLUDE_TESTS=OFF)
+CMAKE_FLAGS+=(-DLLVM_INCLUDE_BENCHMARKS=OFF)
+CMAKE_FLAGS+=(-DCLANG_ENABLE_ARCMT=OFF)
+CMAKE_FLAGS+=(-DCLANG_ENABLE_STATIC_ANALYZER=OFF)
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
-ninja -j${nproc} llvm-tblgen llvm-config
+# `clang` pulls in `clang-resource-headers`, which is where the device
+# libraries pick up `amdhsa_abi.h` from.
+ninja -j${nproc} llvm-tblgen llvm-config clang llvm-link opt
 popd
 
 # Let's do the actual build within the `build` subdirectory
@@ -154,18 +175,20 @@ if [[ "${target}" == *linux* ]]; then
     echo "STB_GNU_UNIQUE symbols: $(readelf -Ws ${libdir}/libamdgpu.${dlext} | grep -c UNIQUE)"
 fi
 
-# build device libs, those live in the ROCm llvm fork
-# `ockl/src/workitem.cl` includes `amdhsa_abi.h`, which LLVM_full_jll's Clang doesn't have so just copy it
-cp ${WORKSPACE}/srcdir/llvm-project/clang/lib/Headers/amdhsa_abi.h \
-   ${WORKSPACE}/srcdir/llvm-project/amd/device-libs/ockl/inc/
+# Build the device libs, those live in the ROCm llvm fork. They are compiled
+# to bitcode with the host clang built above; its bitcode is written by the
+# same LLVM version as the back-end, so no auto-upgrade is needed on load.
 mkdir ${WORKSPACE}/build-device-libs && cd ${WORKSPACE}/build-device-libs
 CMAKE_FLAGS=()
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 # `prepare-builtins` must run during the build, so build it with the host toolchain
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN})
-# Locate the host LLVM/Clang cmake packages from LLVM_full_jll
-CMAKE_FLAGS+=(-DCMAKE_PREFIX_PATH=${host_prefix})
+# Point the LLVM/Clang cmake packages at the host build tree. Nothing gets
+# installed from there: its exported targets (clang, llvm-link, opt, the LLVM
+# component archives) already reference the binaries built above in place.
+CMAKE_FLAGS+=(-DLLVM_DIR=${WORKSPACE}/bootstrap/lib/cmake/llvm)
+CMAKE_FLAGS+=(-DClang_DIR=${WORKSPACE}/bootstrap/lib/cmake/clang)
 cmake -GNinja ${WORKSPACE}/srcdir/llvm-project/amd/device-libs ${CMAKE_FLAGS[@]}
 ninja -j${nproc} install
 
@@ -192,10 +215,7 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Zlib_jll")
-    # Host LLVM+Clang toolchain for compiling the device libraries to bitcode.
-    # It may trail the LLVM built here: its bitcode is auto-upgraded on load.
-    HostBuildDependency(PackageSpec(; name="LLVM_full_jll", version=v"22.1.8+0"))
+    Dependency("Zlib_jll"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script,
