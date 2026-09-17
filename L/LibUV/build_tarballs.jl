@@ -8,7 +8,7 @@ version = v"2"
 # Collection of sources required to build libuv
 sources = [
     GitSource("https://github.com/JuliaLang/libuv.git",
-              "b21d6d84e46f6c97ecbc8e4e8a8ea6ad98049ea8"),
+              "e6b9850fbef2b4778e6a81bb277d3e59a2779402"),
 ]
 
 # Bash recipe for building across all platforms
@@ -55,4 +55,4 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
                # We need GCC 4.9+ for stdatomic.h
                julia_compat="1.6", preferred_gcc_version=v"5", preferred_llvm_version=llvm_version)
 
-# Build trigger: 1
+# Build trigger: 2

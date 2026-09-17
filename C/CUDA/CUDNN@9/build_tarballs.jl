@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDNN"
-version = v"9.20.0"
+version = v"9.24.0"
 
 script = raw"""
 mkdir -p ${libdir} ${prefix}/include
@@ -52,10 +52,14 @@ products = [
     # shim layer
     LibraryProduct(["libcudnn", "cudnn64_$(version.major)"], :libcudnn),
 
-    # internal libraries that need to be available
+    # internal libraries that need to be available: cuDNN loads these at run time by
+    # bare name, which on Windows only resolves if the library has already been loaded
+    # into the process (the graph DLL uses `LoadLibrary` without a search path).
     LibraryProduct(["libcudnn_engines_precompiled", "cudnn_engines_precompiled64_$(version.major)"], :libcudnn_engines_precompiled),
     LibraryProduct(["libcudnn_heuristic", "cudnn_heuristic64_$(version.major)"], :libcudnn_heuristic),
     LibraryProduct(["libcudnn_engines_runtime_compiled", "cudnn_engines_runtime_compiled64_$(version.major)"], :libcudnn_engines_runtime_compiled),
+    LibraryProduct(["libcudnn_engines_tensor_ir", "cudnn_engines_tensor_ir64_$(version.major)"], :libcudnn_engines_tensor_ir),
+    LibraryProduct(["libcudnn_ext", "cudnn_ext64_$(version.major)"], :libcudnn_ext),
 ]
 
 dependencies = [RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll"))]
@@ -77,7 +81,14 @@ for cuda_version in [v"12", v"13"]
         augmented_platform["cuda"] = CUDA.platform(cuda_version)
         should_build_platform(triplet(augmented_platform)) || continue
 
-        sources = get_sources("cudnn", ["cudnn"]; version, platform=augmented_platform,
+        source_platform = deepcopy(augmented_platform)
+        if cuda_version == v"12" && arch(source_platform) == "aarch64"
+            # cuDNN 9.24 supports Jetson, but the redist server only publishes
+            # a linux-sbsa archive for CUDA 12 aarch64.
+            source_platform["cuda_platform"] = "sbsa"
+        end
+
+        sources = get_sources("cudnn", ["cudnn"]; version, platform=source_platform,
                                variant="cuda$(cuda_version.major)")
 
         if platform == Platform("x86_64", "windows")
@@ -104,3 +115,4 @@ for (i,build) in enumerate(builds)
                    julia_compat="1.6", augment_platform_block, dont_dlopen=true)
 end
 
+# bump

@@ -25,18 +25,17 @@ elseif haskey(ENV, "JULIA_CUDA_USE_COMPAT")
 else
     missing
 end
+compat_forced = compat_preference === true
 
+# if anything goes wrong, we keep using the system driver: `libcuda` already holds its
+# name (set unconditionally in the module's toplevel block), and only gets replaced at
+# the very end when we decide to load the forwards-compatible driver instead.
 libcuda_system = Sys.iswindows() ? "nvcuda" : "libcuda.so.1"
-
-# if anything goes wrong, we'll use the system driver
-global libcuda = libcuda_system
 
 # check if we even have an artifact
 if @isdefined(libcuda_compat)
     @debug "Forward-compatible driver found at $libcuda_compat"
 else
-    # the JLL ships only the cuda_inspect_driver helper on this platform
-    # (e.g. Windows). nothing to do but keep using the system driver.
     @debug "No forward-compatible driver available for your platform."
     return
 end
@@ -56,9 +55,16 @@ if Libdl.dlopen(libcuda_system, Libdl.RTLD_NOLOAD; throw_error=false) !== nothin
     return
 end
 
-# only reference the compat-driver dependency products now that we've
-# confirmed they exist (helper-only builds don't declare these symbols).
-libcuda_deps = [libcuda_debugger, libnvidia_nvvm, libnvidia_ptxjitcompiler, libnvidia_gpucomp, libnvidia_tileiras]
+# collect the compat driver's dependent libraries. not every artifact declares
+# every product (the L4T compat drivers lack the newer desktop-only libraries), so
+# only reference those that exist. this is a global because dependents inspecting
+# the driver we loaded need to preload the same list.
+global libcuda_deps = String[]
+for dep in [:libcuda_debugger, :libnvidia_nvvm, :libnvidia_ptxjitcompiler,
+            :libnvidia_gpucomp, :libnvidia_tileiras]
+    isdefined(@__MODULE__, dep) || continue
+    push!(libcuda_deps, getfield(@__MODULE__, dep))
+end
 
 # fetch driver details
 compat_driver_task = @static if VERSION >= v"1.12-"
@@ -69,22 +75,52 @@ else
 end
 system_driver_task = @static if VERSION >= v"1.12-"
     # XXX: avoid concurrent compilation (JuliaLang/julia#59834)
-    Threads.@spawn :samepool inspect_driver(libcuda_system)
+    Threads.@spawn :samepool inspect_driver(libcuda_system; inspect_devices=true)
 else
-    Threads.@spawn inspect_driver(libcuda_system)
+    Threads.@spawn inspect_driver(libcuda_system; inspect_devices=true)
 end
 compat_driver_info = fetch(compat_driver_task)
 if compat_driver_info === nothing
-    @debug "Failed to load forwards-compatible driver."
+    @debug "Forwards-compatible driver is not usable (see above for details); using system driver."
     return
 end
 @debug "Forwards compatible driver version: $(compat_driver_info.version)"
 system_driver_info = fetch(system_driver_task)
 if system_driver_info === nothing
-    @debug "Failed to load system driver."
+    @debug "Could not query the system driver (see above for details); using system driver."
     return
 end
 @debug "System driver version: $(system_driver_info.version)"
+
+if !compat_forced
+    # The forwards-compatible driver is only useful when it is newer than
+    # the system driver.
+    if compat_driver_info.version <= system_driver_info.version
+        @debug "Forwards-compatible driver is not newer than the system driver; using system driver."
+        return
+    end
+
+    # Newer driver branches can drop support for older hardware and then
+    # fail uncleanly at context creation. This was confirmed by NVIDIA for
+    # cuda-compat-13.2 on R580 kernels.
+    compat_min_cap = if compat_driver_info.version >= v"13.1"
+        v"7.5"      # r590 dropped Maxwell, Pascal and Volta
+    elseif compat_driver_info.version >= v"12.0"
+        v"5.0"      # r525 dropped Kepler
+    else
+        v"3.5"
+    end
+    unsupported = VersionNumber[]
+    for cap in system_driver_info.capabilities
+        if cap < compat_min_cap
+            push!(unsupported, cap)
+        end
+    end
+    if !isempty(unsupported)
+        @debug "Forwards-compatible driver does not support devices with compute capability $(join(unsupported, ", ")); using system driver."
+        return
+    end
+end
 
 # finally, load the forwards-compatible driver
 @debug "Using forwards-compatible CUDA driver."

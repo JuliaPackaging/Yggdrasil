@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "gawk"
-version = v"5.4.0"
+version = v"5.4.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://git.savannah.gnu.org/git/gawk.git", "c86b958ce5d651147d39eb147c439dae1dbfd949"),
+    GitSource("https://git.savannah.gnu.org/git/gawk.git", "52af7f12758da12db0ddbdb117a84e0685cd2f72"),
     DirectorySource("bundled"),
 ]
 
@@ -15,6 +15,10 @@ cd $WORKSPACE/srcdir/gawk*/
 
 # Add missing #include for `_NSGetExecutablePath`
 atomic_patch -p1 $WORKSPACE/srcdir/patches/gawk_nsgep.patch
+
+# Apply workaround for v5.4.1 layout bug
+# (see https://lists.gnu.org/archive/html/bug-gawk/2026-07/msg00020.html)
+atomic_patch -p1 $WORKSPACE/srcdir/patches/gawk_node_alignment.patch
 
 apk add texinfo
 

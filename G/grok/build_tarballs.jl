@@ -3,13 +3,12 @@
 using BinaryBuilder
 
 name = "grok"
-version = v"20.3.2"
+version = v"20.3.7"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/GrokImageCompression/grok/releases/download/v$(version)/source-full.tar.gz",
-                  "e51302338564648bcd966429bb5bea9d48e3a3958820df77bf691f7d678aa810"),
-    DirectorySource("bundled"),
+                  "f2a94f903175296104996dd0fc42504761174d6f2ec8cfdac89fed1aa5f5c337"),
 ]
 
 # Bash recipe for building across all platforms
@@ -18,10 +17,6 @@ cd ${WORKSPACE}/srcdir/grok*
 
 # Use our own, newer cmake
 apk del cmake
-
-# The include file problems and the namespace problem have been reporte as
-# <https://github.com/GrokImageCompression/grok/issues/404>.
-atomic_patch -p1  ${WORKSPACE}/srcdir/patches/cinttypes.patch
 
 # Use proper C++ include headers
 find examples -type f \( -name '*.h' -o -name '*.cpp' \) -exec sed -i 's/#include <inttypes\.h>/#include <cinttypes>/g' {} +

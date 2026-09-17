@@ -2,6 +2,12 @@
 using BinaryBuilder, Pkg, LibGit2
 using BinaryBuilderBase: get_addable_spec, sanitize, proc_family
 
+# Centralized, non-destructive macOS SDK provisioning (require_macos_sdk). The old
+# approach `rm`'d the toolchain's sys-root to swap in an older SDK, which now fails
+# on the read-only-overlay rootfs; the helper instead extracts the SDK to a scratch
+# dir and redirects SDKROOT + the toolchains/wrappers at it.
+include(joinpath(@__DIR__, "..", "..", "platforms", "macos_sdks.jl"))
+
 # Everybody is just going to use the same set of platforms
 
 const llvm_tags = Dict(
@@ -16,13 +22,15 @@ const llvm_tags = Dict(
     v"13.0.1" => "8a2ae8c8064a0544814c6fac7dd0c4a9aa29a7e6", # julia-13.0.1-3
     v"14.0.5" => "73db33ead13c3596f53408ad6d1de4d0f2270adb", # julia-14.0.5-3
     v"14.0.6" => "5c82f5309b10fab0adf6a94969e0dddffdb3dbce", # julia-14.0.6-3
-    v"15.0.7" => "0c48966310cc204874416a445d25e31fabadea4b", # julia-15.0.7-11
+    v"15.0.7" => "e2f3049e01e343508a9a5d893ef561a3e42ea7f2", # julia-15.0.7-12
     v"16.0.6" => "422179dd6ee8d6b84023f922f3a0864db6e07c68", # julia-16.0.6-5
     v"17.0.6" => "0007e48608221f440dce2ea0d3e4f561fc10d3c6", # julia-17.0.6-5
-    v"18.1.7" => "32719222d3ea71ed0b19c2cb75fa6f76713fda20", # julia-18.1.7-4
+    v"18.1.7" => "b21227453160289e6dc3d23bd53c55b5e1aabe1e", # julia-18.1.7-5
     v"19.1.7" => "ccda9ec62497d9de88ca7090a749e52a89f62132", # julia-19.1.7-2
-    v"20.1.8" => "5b9f96366ce26dfc8ca91697ef0a57894791d95e", # julia-20.1.8-0
-    v"21.1.8" => "7cd4442d4a6c949de43c1e2c0e20334ee59aa154", # julia-21.1.8-0
+    v"20.1.8" => "9cba7d4b7efbbc8d3755144e3deb741de8011b41", # julia-20.1.8-3
+    v"21.1.8" => "151034ef71856c7406f58c150dba7d419dbd063d", # julia-21.1.8-1
+    v"22.1.8" => "4df0bb28e9e4d59f293433a1e325a46479da5174", # julia-22.1.8-1
+    v"23.1.1" => "fbe0dc11974bf1e4f6380eae95101d36fa0650b8", # julia-release/23.x (julia-23.1.1-1 + 2)
 )
 
 const buildscript = raw"""
@@ -32,18 +40,6 @@ set -o errexit
 # Increase max file descriptors
 fd_lim=$(ulimit -n -H)
 ulimit -n $fd_lim
-
-if [[ ("${target}" == x86_64-apple-darwin*) && ! -z "${LLVM_UPDATE_MAC_SDK}" ]]; then
-    # LLVM 15 requires macOS SDK 10.14, see
-    # <https://github.com/JuliaPackaging/Yggdrasil/pull/5592#issuecomment-1309525112> and
-    # references therein.
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    export MACOSX_DEPLOYMENT_TARGET=10.14
-    popd
-fi
 
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     # Install msan runtime (for clang)
@@ -335,8 +331,25 @@ CMAKE_FLAGS+=(-DLLVM_HOST_TRIPLE=${target})
 CMAKE_TARGET=${target}
 
 if [[ "${target}" == *apple* ]]; then
-    # On OSX, we need to override LLVM's looking around for our SDK
-    CMAKE_FLAGS+=(-DDARWIN_macosx_CACHED_SYSROOT:STRING=/opt/${target}/${target}/sys-root)
+    # On OSX, we need to override LLVM's looking around for our SDK. Follow ${SDKROOT}
+    # rather than hard-coding the toolchain sys-root: require_macos_sdk (see
+    # configure_build) redirects SDKROOT at the scratch SDK on x86_64; on aarch64
+    # SDKROOT is BB's default sys-root, so this is correct on both.
+    CMAKE_FLAGS+=(-DDARWIN_macosx_CACHED_SYSROOT:STRING=${SDKROOT})
+    # zstd (LLVM_ENABLE_ZSTD, >= 20) makes libLLVM link Zstd_jll's libzstd, whose
+    # install name is @rpath/libzstd.1.dylib. LLVM's loadable-module plugins (test/
+    # example plugins, clang analyzer sample plugins) link build-tree libLLVM.dylib
+    # with -flat_namespace, under which ld64.lld eagerly resolves libLLVM's transitive
+    # @rpath/libzstd via libLLVM's *own* rpath. The build-tree install rpath
+    # (@loader_path/../lib) points at build/lib where libzstd isn't, so it fails.
+    # Setting CMAKE_BUILD_RPATH stops AddLLVM.cmake from forcing the install rpath on
+    # build-tree binaries (llvm_setup_rpath only does that when CMAKE_BUILD_RPATH is
+    # empty) and gives build-tree libLLVM an absolute rpath to ${prefix}/lib, where
+    # libzstd actually is. INSTALL_RPATH is still @loader_path/../lib, so nothing
+    # leaks into the shipped artifact.
+    if [[ "${LLVM_MAJ_VER}" -ge "20" ]]; then
+        CMAKE_FLAGS+=(-DCMAKE_BUILD_RPATH=${prefix}/lib)
+    fi
     if [[ "${LLVM_MAJ_VER}" -ge "15" ]]; then
         CMAKE_FLAGS+=(-DDARWIN_macosx_OVERRIDE_SDK_VERSION:STRING="${MACOSX_DEPLOYMENT_TARGET}")
     else
@@ -396,6 +409,18 @@ if [[ "${target}" == *musl* ]]; then
     # Taken from https://git.alpinelinux.org/cgit/aports/tree/main/compiler-rt/APKBUILD
     CMAKE_FLAGS+=(-DCOMPILER_RT_BUILD_SANITIZERS=OFF)
     CMAKE_FLAGS+=(-DCOMPILER_RT_BUILD_XRAY=OFF)
+    if [[ "${target}" != x86_64-* ]]; then
+        # memprof and ctx_profile only support x86_64, but enabling them still builds
+        # sanitizer_common, which does not compile against musl on ARM and AArch64.
+        CMAKE_FLAGS+=(-DCOMPILER_RT_BUILD_MEMPROF=OFF)
+        CMAKE_FLAGS+=(-DCOMPILER_RT_BUILD_CTX_PROFILE=OFF)
+    fi
+fi
+
+if [[ "${LLVM_MAJ_VER}" -ge "22" ]] && [[ "${target}" == arm* ]]; then
+    # The optimized Arm FP assembly needs ARMv7 and a newer GNU assembler than ours;
+    # use the generic C builtins instead.
+    CMAKE_FLAGS+=(-DCOMPILER_RT_ARM_OPTIMIZED_FP=OFF)
 fi
 
 if [[ "${target}" == *freebsd* ]]; then
@@ -419,6 +444,14 @@ ninja -j${nproc} -vv
 
 # Install!
 ninja install
+
+# A failed compiler-rt architecture probe can silently disable every runtime.
+if [[ "${LLVM_MAJ_VER}" -ge "22" ]] && [[ "${target}" == *linux* || "${target}" == *mingw* || "${target}" == *freebsd* ]]; then
+    if ! compgen -G "${prefix}/lib/clang/${LLVM_MAJ_VER}/lib/*/libclang_rt.profile*.a" > /dev/null; then
+        echo "ERROR: compiler-rt installed no profile runtime for ${target}" >&2
+        exit 1
+    fi
+fi
 
 if [[ "${LLVM_MAJ_VER}" -ge "16" ]]; then
     # We can now tell cmake to put the dlls in the right place, and the verifier doesn't find them
@@ -728,14 +761,18 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     if version >= v"20"
         push!(dependencies, Dependency("Zstd_jll")) # for debuginfo
     end
+    script = config * buildscript
     if update_sdk
-        config *= "LLVM_UPDATE_MAC_SDK=1\n"
-        push!(sources,
-            ArchiveSource(
-                "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-                "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
+        # LLVM 22.1 raised its minimum macOS deployment target to 11.0
+        # (https://discourse.llvm.org/t/89751); compiler-rt's sanitizer_mac.cpp then
+        # references KERN_DENIED, a Mach return code only present in the macOS 11 SDK.
+        # So ship the 11.0 SDK for >= 22 (10.14 remains fine for 15..21). The helper
+        # only redirects x86_64-apple-darwin; aarch64-apple-darwin already uses an
+        # 11.1 SDK, so both Apple platforms end up >= 11.0.
+        sdk_version = version >= v"22" ? "11.0" : "10.14"
+        sources, script = require_macos_sdk(sdk_version, sources, script)
     end
-    return name, custom_version, sources, config * buildscript, platforms, products, dependencies
+    return name, custom_version, sources, script, platforms, products, dependencies
 end
 
 function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=nothing;

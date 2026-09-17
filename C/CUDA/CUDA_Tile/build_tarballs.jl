@@ -3,14 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "CUDA_Tile"
-version = v"13.2.0"
+version = v"13.4.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/NVIDIA/cuda-tile",
-              "0859212ad19f71133a9b940c05323286cbf28a05"),
+              "7e8e2e68fa219716103824c01f7303367cf7df8d"),
     GitSource("https://github.com/llvm/llvm-project.git",
-              "13c00cbc2aa2ddc9aae2e72b02bc6cb2a482e0e7")    # see cmake/IncludeLLVM.cmake
+              "9ebb067a8a2b4b0705f06d59c77d36dfab98333f")    # see cmake/IncludeLLVM.cmake
 ]
 
 # Bash recipe for building across all platforms
@@ -139,6 +139,9 @@ sed -i '/target_link_libraries(cuda-tile-tblgen/,/)/ s/)/  pthread\n)/' tools/cu
 ## Fix missing include
 sed -i 's|#include <vector>|#include <vector>\n#include <unordered_map>|' \
   tools/cuda-tile-tblgen/CudaTileOp.h
+## Only give the native tablegen tools an .exe suffix when the host is Windows,
+## not when cross-compiling for a Windows target
+sed -i 's/CMAKE_HOST_WIN32 OR WIN32 OR/CMAKE_HOST_WIN32 OR/' CMakeLists.txt
 
 mkdir build
 cd build/

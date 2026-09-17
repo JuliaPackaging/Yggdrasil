@@ -69,3 +69,5 @@ for (i, build) in enumerate(builds)
         build.platforms, products, dependencies;
         julia_compat="1.6", augment_platform_block, dont_dlopen=true)
 end
+
+# bump

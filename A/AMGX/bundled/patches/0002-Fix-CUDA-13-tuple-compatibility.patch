@@ -1,0 +1,72 @@
+diff --git a/include/basic_types.h b/include/basic_types.h
+index 7a4a8b1f..2d5858f4 100644
+--- a/include/basic_types.h
++++ b/include/basic_types.h
+@@ -4,6 +4,26 @@
+ 
+ #pragma once
+ 
++#include <thrust/version.h>
++
++// CCCL 3 removed the legacy thrust::tuple API in favor of cuda::std::tuple.
++// Keep the existing wrapped Thrust namespace usable by AMGX and CUSP.
++#if THRUST_MAJOR_VERSION >= 3
++#include <cuda/std/tuple>
++namespace amgx
++{
++namespace thrust
++{
++using ::cuda::std::get;
++using ::cuda::std::make_tuple;
++using ::cuda::std::tuple;
++using ::cuda::std::tuple_size;
++}
++}
++#else
++#include <thrust/tuple.h>
++#endif
++
+ #ifdef _WIN32
+ #pragma warning (push)
+ #pragma warning (disable : 4244 4267 4521)
+@@ -163,4 +183,3 @@ struct TemplateMode
+ };
+ 
+ }//namespace amgx
+-
+diff --git a/include/cusp/detail/device/conversion.h b/include/cusp/detail/device/conversion.h
+index 1d30f027..585496a4 100644
+--- a/include/cusp/detail/device/conversion.h
++++ b/include/cusp/detail/device/conversion.h
+@@ -21,7 +21,7 @@
+ #include <thrust/scan.h>
+ #include <thrust/scatter.h>
+ #include <thrust/sequence.h>
+-#include <thrust/tuple.h>
++#include <basic_types.h>
+ 
+ #include <thrust/iterator/constant_iterator.h>
+ #include <thrust/iterator/counting_iterator.h>
+@@ -831,4 +831,3 @@ void ell_to_hyb(const Matrix1& src, Matrix2& dst)
+ } // end namespace device
+ } // end namespace detail
+ } // end namespace cusp
+-
+diff --git a/include/cusp/gallery/stencil.inl b/include/cusp/gallery/stencil.inl
+index b4f5f131..5eb060b7 100644
+--- a/include/cusp/gallery/stencil.inl
++++ b/include/cusp/gallery/stencil.inl
+@@ -5,7 +5,7 @@
+ #include <cusp/copy.h>
+ #include <cusp/dia_matrix.h>
+ 
+-#include <thrust/tuple.h>
++#include <basic_types.h>
+ #include <thrust/reduce.h>
+ #include <thrust/scan.h>
+ #include <thrust/count.h>
+@@ -195,4 +195,3 @@ void generate_matrix_from_stencil(      MatrixType& matrix,
+                             
+ } // end namespace gallery
+ } // end namespace cusp
+-

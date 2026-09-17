@@ -1,0 +1,9 @@
+[deps]
+BinaryBuilder = "12aac903-9f7c-5d81-afc2-d9565ea332ae"
+BinaryBuilderBase = "7f725544-6523-48cd-82d1-3fa08ff4056e"
+ClaudeMCPTools = "b9bb1685-6a70-41d7-9793-2f9fb633d966"
+
+[sources]
+ClaudeMCPTools = {url = "https://github.com/JuliaBench/ClaudeMCPTools.jl", rev="main"}
+BinaryBuilder = {rev = "master", url = "https://github.com/JuliaPackaging/BinaryBuilder.jl.git"}
+BinaryBuilderBase = {rev = "master", url = "https://github.com/JuliaPackaging/BinaryBuilderBase.jl.git"}

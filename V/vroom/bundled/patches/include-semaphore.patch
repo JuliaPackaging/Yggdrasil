@@ -1,0 +1,21 @@
+From 3bd437aa5951040593d535336a3d7cf86b6ac405 Mon Sep 17 00:00:00 2001
+From: Michael Cho <michael@michaelcho.dev>
+Date: Thu, 12 Mar 2026 21:40:30 -0400
+Subject: [PATCH] Add include to fix std::counting_semaphore usage
+
+---
+ src/problems/vrp.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/problems/vrp.h b/src/problems/vrp.h
+index 57a4af8cb..c21e0d15f 100644
+--- a/src/problems/vrp.h
++++ b/src/problems/vrp.h
+@@ -14,6 +14,7 @@ All rights reserved (see LICENSE).
+ #include <mutex>
+ #include <numeric>
+ #include <ranges>
++#include <semaphore>
+ #include <set>
+ #include <thread>
+ 

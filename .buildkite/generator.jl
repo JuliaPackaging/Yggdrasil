@@ -59,9 +59,7 @@ if PROJECT ∈ EXCLUDED_NAMES
     exit()
 end
 
-# Remove secret from environment
-sanitize(cmd) = addenv(cmd, Dict("BUILDKITE_PLUGIN_CRYPTIC_BASE64_SIGNED_JOB_ID_SECRET" => nothing))
-exec(cmd) = @assert success(pipeline(sanitize(cmd), stderr=stderr, stdout=stdout))
+exec(cmd) = @assert success(pipeline(cmd, stderr=stderr, stdout=stdout))
 
 YGGDRASIL_BASE = dirname(@__DIR__)
 julia(args) = `$(Base.julia_cmd()) --project=$(YGGDRASIL_BASE)/.ci $args`
@@ -119,12 +117,12 @@ if SKIP_BUILD
 else
     for PLATFORM in PLATFORMS
         println("    $(PLATFORM): building")
-        push!(STEPS, build_step(NAME, PLATFORM, PROJECT))
+        push!(STEPS, build_step(NAME, PLATFORM, PROJECT, IS_PR))
     end
 end
 if !IS_PR
     push!(STEPS, wait_step())
-    push!(STEPS, register_step(NAME, PROJECT, SKIP_BUILD, length(PLATFORMS)))
+    push!(STEPS, trigger_registration_step(NAME, PROJECT, SKIP_BUILD, length(PLATFORMS)))
 end
 if !isempty(STEPS)
     definition = Dict(

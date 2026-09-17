@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "Eigen"
-version = v"3.4.1"
+version = v"5.0.1"
 
 sources = [
     GitSource("https://gitlab.com/libeigen/eigen.git",
-              "b66188b5dfd147265bfa9ec47595ca0db72d21f5")
+              "bc3b39870ecb690a623a3f49149a358b95c5781d")
 ]
 
 # Bash recipe for building across all platforms

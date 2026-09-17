@@ -1,0 +1,127 @@
+From 5a2b1fb17acd50cd0d88723164bc3d732a323aa2 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Tue, 16 Jun 2026 20:57:30 +0200
+Subject: [PATCH] [SPIRV] Legalize i1 min/max before selection
+
+LLVM i1 maps to OpTypeBool, while the SPIR-V extended min/max instructions require integer scalar or vector types. Keep s1 out of the extended-integer legality rule, scalarize boolean vectors, and widen scalar i1 lanes before instruction selection.
+
+Add coverage for scalar signed/unsigned i1 min/max and a vector boolean case, including the arbitrary-precision integer extension mode that previously selected an invalid boolean OpExtInst.
+
+Co-authored-by: Codex <noreply@openai.com>
+---
+ llvm/lib/Target/SPIRV/SPIRVLegalizerInfo.cpp  | 11 +++-
+ .../SPIRV/llvm-intrinsics/minmax-i1.ll        | 64 +++++++++++++++++++
+ 2 files changed, 72 insertions(+), 3 deletions(-)
+ create mode 100644 llvm/test/CodeGen/SPIRV/llvm-intrinsics/minmax-i1.ll
+
+diff --git a/lib/Target/SPIRV/SPIRVLegalizerInfo.cpp b/lib/Target/SPIRV/SPIRVLegalizerInfo.cpp
+index f6587ba068c0..d4e128dd9155 100644
+--- a/lib/Target/SPIRV/SPIRVLegalizerInfo.cpp
++++ b/lib/Target/SPIRV/SPIRVLegalizerInfo.cpp
+@@ -130,6 +130,7 @@ SPIRVLegalizerInfo::SPIRVLegalizerInfo(const SPIRVSubtarget &ST) {
+       v8s16, v8s32, v8s64, v16s8, v16s16, v16s32, v16s64};
+ 
+   auto allBoolScalarsAndVectors = {s1, v2s1, v3s1, v4s1, v8s1, v16s1};
++  auto allBoolVectors = {v2s1, v3s1, v4s1, v8s1, v16s1};
+ 
+   auto allIntScalars = {s8, s16, s32, s64, s128};
+ 
+@@ -152,10 +153,11 @@ SPIRVLegalizerInfo::SPIRVLegalizerInfo(const SPIRVSubtarget &ST) {
+           SPIRV::Extension::SPV_ALTERA_arbitrary_precision_integers) ||
+       ST.canUseExtension(SPIRV::Extension::SPV_KHR_bit_instructions) ||
+       ST.canUseExtension(SPIRV::Extension::SPV_INTEL_int4);
+-  auto extendedScalarsAndVectors =
++  auto extendedIntScalarsAndVectors =
+       [IsExtendedInts](const LegalityQuery &Query) {
+         const LLT Ty = Query.Types[0];
+-        return IsExtendedInts && Ty.isValid() && !Ty.isPointerOrPointerVector();
++        return IsExtendedInts && Ty.isValid() &&
++               !Ty.isPointerOrPointerVector() && Ty.getScalarSizeInBits() > 1;
+       };
+   auto extendedScalarsAndVectorsProduct = [IsExtendedInts](
+                                               const LegalityQuery &Query) {
+@@ -318,7 +320,10 @@ SPIRVLegalizerInfo::SPIRVLegalizerInfo(const SPIRVSubtarget &ST) {
+                                G_BITREVERSE, G_SADDSAT, G_UADDSAT, G_SSUBSAT,
+                                G_USUBSAT, G_SCMP, G_UCMP})
+       .legalFor(allIntScalarsAndVectors)
+-      .legalIf(extendedScalarsAndVectors);
++      .legalIf(extendedIntScalarsAndVectors)
++      // LLVM i1 maps to OpTypeBool, not OpTypeInt.
++      .scalarizeIf(typeInSet(0, allBoolVectors), 0)
++      .minScalar(0, s32);
+ 
+   getActionDefinitionsBuilder(G_STRICT_FLDEXP)
+       .legalForCartesianProduct(allFloatScalarsAndVectors, allIntScalars);
+diff --git a/test/CodeGen/SPIRV/llvm-intrinsics/minmax-i1.ll b/test/CodeGen/SPIRV/llvm-intrinsics/minmax-i1.ll
+new file mode 100644
+index 000000000000..012d787d9635
+--- /dev/null
++++ b/test/CodeGen/SPIRV/llvm-intrinsics/minmax-i1.ll
+@@ -0,0 +1,64 @@
++; RUN: llc -O0 -verify-machineinstrs -mtriple=spirv64-unknown-unknown %s -o - | FileCheck %s
++; RUN: llc -O0 -verify-machineinstrs -mtriple=spirv64-unknown-unknown --spirv-ext=+SPV_ALTERA_arbitrary_precision_integers %s -o - | FileCheck %s
++
++; CHECK-DAG: %[[#BOOL:]] = OpTypeBool
++; CHECK-DAG: %[[#INT:]] = OpTypeInt 32 0
++; CHECK-DAG: %[[#VBOOL:]] = OpTypeVector %[[#BOOL]] 2
++; CHECK-DAG: %[[#ZERO:]] = OpConstantNull %[[#INT]]
++; CHECK-DAG: %[[#ONE:]] = OpConstant %[[#INT]] 1
++
++define spir_func i1 @test_umin_i1(i1 %a, i1 %b) {
++entry:
++; CHECK: OpSelect %[[#INT]] %[[#]] %[[#ONE]] %[[#ZERO]]
++; CHECK: OpSelect %[[#INT]] %[[#]] %[[#ONE]] %[[#ZERO]]
++; CHECK: OpExtInst %[[#INT]] %[[#]] u_min %[[#]] %[[#]]
++; CHECK: OpBitwiseAnd %[[#INT]] %[[#]] %[[#ONE]]
++; CHECK: OpINotEqual %[[#BOOL]] %[[#]] %[[#ZERO]]
++  %r = call i1 @llvm.umin.i1(i1 %a, i1 %b)
++  ret i1 %r
++}
++
++define spir_func i1 @test_umax_i1(i1 %a, i1 %b) {
++entry:
++; CHECK: OpExtInst %[[#INT]] %[[#]] u_max %[[#]] %[[#]]
++; CHECK: OpINotEqual %[[#BOOL]] %[[#]] %[[#ZERO]]
++  %r = call i1 @llvm.umax.i1(i1 %a, i1 %b)
++  ret i1 %r
++}
++
++define spir_func i1 @test_smin_i1(i1 %a, i1 %b) {
++entry:
++; CHECK: OpExtInst %[[#INT]] %[[#]] s_min %[[#]] %[[#]]
++; CHECK: OpINotEqual %[[#BOOL]] %[[#]] %[[#ZERO]]
++  %r = call i1 @llvm.smin.i1(i1 %a, i1 %b)
++  ret i1 %r
++}
++
++define spir_func i1 @test_smax_i1(i1 %a, i1 %b) {
++entry:
++; CHECK: OpExtInst %[[#INT]] %[[#]] s_max %[[#]] %[[#]]
++; CHECK: OpINotEqual %[[#BOOL]] %[[#]] %[[#ZERO]]
++  %r = call i1 @llvm.smax.i1(i1 %a, i1 %b)
++  ret i1 %r
++}
++
++define spir_func <2 x i1> @test_umin_v2i1(<2 x i1> %a, <2 x i1> %b) {
++entry:
++; CHECK: OpCompositeExtract %[[#BOOL]] %[[#]] 0
++; CHECK: OpCompositeExtract %[[#BOOL]] %[[#]] 1
++; CHECK: OpCompositeExtract %[[#BOOL]] %[[#]] 0
++; CHECK: OpCompositeExtract %[[#BOOL]] %[[#]] 1
++; CHECK: OpExtInst %[[#INT]] %[[#]] u_min %[[#]] %[[#]]
++; CHECK: OpINotEqual %[[#BOOL]] %[[#]] %[[#ZERO]]
++; CHECK: OpExtInst %[[#INT]] %[[#]] u_min %[[#]] %[[#]]
++; CHECK: OpINotEqual %[[#BOOL]] %[[#]] %[[#ZERO]]
++; CHECK: OpCompositeConstruct %[[#VBOOL]] %[[#]] %[[#]]
++  %r = call <2 x i1> @llvm.umin.v2i1(<2 x i1> %a, <2 x i1> %b)
++  ret <2 x i1> %r
++}
++
++declare i1 @llvm.umin.i1(i1, i1)
++declare i1 @llvm.umax.i1(i1, i1)
++declare i1 @llvm.smin.i1(i1, i1)
++declare i1 @llvm.smax.i1(i1, i1)
++declare <2 x i1> @llvm.umin.v2i1(<2 x i1>, <2 x i1>)
+-- 
+2.47.3
+

@@ -2,6 +2,54 @@
 
 #include "mpi_abi.h"
 
+// On Darwin the public MPI_* symbols must be weak definitions, matching the
+// other implementations of the MPI standard ABI (and what MPICH's own binding
+// generator now emits for its half of the library): a
+// Mach-O client linked against a weak-exporting libmpi_abi binds MPI_*
+// through a weak-def-only lookup that a strong definition does not satisfy,
+// so mixing export styles breaks substituting one implementation's
+// libmpi_abi for another's under an already-linked application. The pragmas
+// mark the definitions below weak; ELF needs nothing, its lookup not
+// distinguishing weak definitions from strong ones. f2c_abi_openmpi.c is the
+// same decision made for the other implementation's toolbox.
+//
+// The list is exactly what this file defines, and that is the whole rule. The
+// MPI_*_fromint and MPI_*_toint the bodies below call belong to the MPI, not to
+// mpif, so they are deliberately absent: `#pragma weak` on a name this
+// translation unit does not define makes the *reference* weak rather than a
+// definition, which would turn a genuinely missing accessor from a link error
+// into a null call at run time. Measured with `nm -m`: a pragma'd undefined
+// name becomes "(undefined) weak external", an unpragma'd one stays
+// "(undefined) external". f2c_abi_openmpi.c names none of them either.
+#if defined(__APPLE__)
+#pragma weak MPI_Comm_c2f
+#pragma weak MPI_Comm_f2c
+#pragma weak MPI_Errhandler_c2f
+#pragma weak MPI_Errhandler_f2c
+#pragma weak MPI_File_c2f
+#pragma weak MPI_File_f2c
+#pragma weak MPI_Group_c2f
+#pragma weak MPI_Group_f2c
+#pragma weak MPI_Info_c2f
+#pragma weak MPI_Info_f2c
+#pragma weak MPI_Message_c2f
+#pragma weak MPI_Message_f2c
+#pragma weak MPI_Op_c2f
+#pragma weak MPI_Op_f2c
+#pragma weak MPI_Request_c2f
+#pragma weak MPI_Request_f2c
+#pragma weak MPI_Session_c2f
+#pragma weak MPI_Session_f2c
+#pragma weak MPI_Status_c2f
+#pragma weak MPI_Status_c2f08
+#pragma weak MPI_Status_f082c
+#pragma weak MPI_Status_f2c
+#pragma weak MPI_Type_c2f
+#pragma weak MPI_Type_f2c
+#pragma weak MPI_Win_c2f
+#pragma weak MPI_Win_f2c
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 // Types
 
@@ -12,6 +60,14 @@ typedef MPI_Status MPI_F08_Status;
 ////////////////////////////////////////////////////////////////////////////////
 // Constants
 
+// Null, and deliberately not what fortran/mpi.h.patch defines these as. That
+// patch points them at the COMMON blocks mpif's Fortran sentinels live in, which
+// is what MPI-5.0 19.3.5 wants of them -- but this file becomes part of MPICH's
+// ABI library, which is built before mpif and does not link it, so it cannot
+// name mpif's symbols. The consequence is that the guards below do not recognise
+// an mpif Fortran status sentinel; passing one here is erroneous anyway (19.3.5:
+// "then the call is erroneous"), so it goes undiagnosed rather than wrong. See
+// MISSING.md.
 #define MPI_F_STATUS_IGNORE ((MPI_Fint *)MPI_STATUS_IGNORE)
 #define MPI_F_STATUSES_IGNORE ((MPI_Fint *)MPI_STATUSES_IGNORE)
 #define MPI_F08_STATUS_IGNORE ((MPI_F08_Status *)MPI_STATUS_IGNORE)

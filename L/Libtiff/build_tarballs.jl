@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "Libtiff"
-upstream_version = v"4.7.1"
-version = v"4.7.2" # Different version number because we needed to change compat bound, in the future we can go back to follow upstream
+upstream_version = v"4.7.2"
+version = v"4.7.3" # Different version number because we needed to change compat bound, in the future we can go back to follow upstream
 
 # Collection of sources required to build Libtiff
 sources = [
     ArchiveSource("https://download.osgeo.org/libtiff/tiff-$(upstream_version).tar.xz",
-                  "b92017489bdc1db3a4c97191aa4b75366673cb746de0dce5d7a749d5954681ba"),
+                  "4996f0c4f93094719b1ca5c6279b20e588773ba8a247533e486416fb662ddb88"),
 ]
 
 # Bash recipe for building across all platforms

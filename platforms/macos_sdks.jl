@@ -108,20 +108,43 @@ function get_macos_sdk_script(version::String; deployment_target::String = versi
         macosx_deployment_target=$deployment_target
         """ *
     raw"""
+    # Move the SDK tarball out of `srcdir` on all platforms: any extra entry
+    # in there defeats the automatic installation of license files, which
+    # expects `srcdir` to contain a single top-level source directory.
+    mv ${WORKSPACE}/srcdir/MacOSX${macos_sdk_version}.sdk.tar.xz ${WORKSPACE}/
     if [[ "${target}" == """*arch*raw"""-apple-darwin* ]]; then
+        # Extract SDK. Also outside of `srcdir`, for the same reason.
         echo "Extracting MacOSX${macos_sdk_version}.sdk.tar.xz (this may take a while)"
-        rm -rf /opt/${target}/${target}/sys-root/System
-        rm -rf /opt/${target}/${target}/sys-root/usr/include/libxml2/libxml
-        # extract the tarball into the sys-root so all compilers pick it up
-        # automatically, and use --warning=no-unknown-keyword to hide harmless
-        # warnings about unsupported pax header keywords like "SCHILY.fflags"
-        tar --extract \
-            --file=${WORKSPACE}/srcdir/MacOSX${macos_sdk_version}.sdk.tar.xz \
-            --directory="/opt/${target}/${target}/sys-root/." \
-            --strip-components=1 \
-            --warning=no-unknown-keyword \
-            MacOSX${macos_sdk_version}.sdk/System \
-            MacOSX${macos_sdk_version}.sdk/usr
+        tar \
+            --extract \
+            --file=${WORKSPACE}/MacOSX${macos_sdk_version}.sdk.tar.xz \
+            --directory=${WORKSPACE} \
+            --warning=no-unknown-keyword
+        old_sdkroot=${SDKROOT}
+        new_sdkroot=${WORKSPACE}/MacOSX${macos_sdk_version}.sdk
+        # Make sure libc++ header files are available at `usr/include/c++/v1`.
+        # Some SDKs ship their own (e.g. 15.0), which we leave alone; for those
+        # that don't, symlink the ones from the default SDK. Note we symlink
+        # the `v1` subdirectory rather than the whole `c++` directory: some
+        # SDKs (e.g. 10.13) contain `usr/include/c++/4.2.1` (but no `v1`), and
+        # symlinking `c++` onto that existing directory would silently create
+        # a nested `c++/c++` link, so libc++ headers like <new> are not found.
+        if [[ ! -d ${new_sdkroot}/usr/include/c++/v1 ]]; then
+            mkdir -p ${new_sdkroot}/usr/include/c++
+            ln -sT ${old_sdkroot}/usr/include/c++/v1 ${new_sdkroot}/usr/include/c++/v1
+        fi
+        # In the build environment `usr/local` of the default sys-root is a
+        # symlink to the destdir prefix, which puts the header files of the
+        # dependencies on the compilers' default search path. No SDK ships a
+        # `usr/local`, so replicate that symlink in the new SDK. `-T` makes
+        # this fail loudly should some SDK ship a `usr/local` after all,
+        # instead of silently creating a nested `usr/local/local` link.
+        ln -sT ${old_sdkroot}/usr/local ${new_sdkroot}/usr/local
+        # Fix toolchain files
+        sed -i -e "s+${old_sdkroot}+${new_sdkroot}+" ${MESON_TARGET_TOOLCHAIN} ${CMAKE_TARGET_TOOLCHAIN}
+        # Fix compiler wrappers
+        sed -i -e "s+${old_sdkroot}+${new_sdkroot}+" $(find /opt/bin/${target}* -type f -print)
+        SDKROOT=${new_sdkroot}
         export MACOSX_DEPLOYMENT_TARGET=${macosx_deployment_target}
     fi
     """

@@ -1,0 +1,36 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 9ed43468..19bdcc74 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -243,14 +243,24 @@ if(OSQP_ALGEBRA_CUDA)
+   # Locate the individual CUDA libraries and create targets for them
+   find_package(CUDAToolkit)
+
+-  # sm_75 -> Turing support
+-  if(OSQP_USE_FLOAT)
+-    set(CMAKE_CUDA_ARCHITECTURES 52 75)
+-    # set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --gpu-architecture=compute_52 --gpu-code=sm_52,sm_75")
++  if(CUDA_VERSION VERSION_GREATER_EQUAL "12.8")
++    # CUB, Thrust and libcu++ requires C++17 in 13+ CUDA versions
++    set(CMAKE_CUDA_STANDARD 17)
+   else()
+-    # To use doubles we need compute capability 6.0 for atomic operations
+-    set(CMAKE_CUDA_ARCHITECTURES 60 75)
+-    # set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --gpu-architecture=compute_60 --gpu-code=sm_60,sm_75")
++    # CUB requires C++14 in pre-13 CUDA versions
++    set(CMAKE_CUDA_STANDARD 14)
++  endif()
++
++  if(NOT CMAKE_CUDA_ARCHITECTURES)
++    # sm_75 -> Turing support
++    if(OSQP_USE_FLOAT)
++      set(CMAKE_CUDA_ARCHITECTURES 52 75)
++      # set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --gpu-architecture=compute_52 --gpu-code=sm_52,sm_75")
++    else()
++      # To use doubles we need compute capability 6.0 for atomic operations
++      set(CMAKE_CUDA_ARCHITECTURES 60 75)
++      # set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --gpu-architecture=compute_60 --gpu-code=sm_60,sm_75")
++    endif()
+   endif()
+ endif()
+

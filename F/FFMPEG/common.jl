@@ -6,25 +6,34 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "FFMPEG"
-version_string = "8.1"   # when patch number is zero, they use X.Y format
+version_string = "9.0" # when patch number is zero, they use X.Y format
 version = VersionNumber(version_string)
 
 # Collection of sources required to build FFMPEG
+macos_sdk_version = "10.13"
 sources = [
     ArchiveSource(
         "https://ffmpeg.org/releases/ffmpeg-$(version_string).tar.xz",
-        "b072aed6871998cce9b36e7774033105ca29e33632be5b6347f3206898e0756a",
+        "7f607a00dd0d28a729d5a4811205812eef01cf6ef6155025febb6f36a9062d52",
     ),
-    ## FFmpeg 6.1.1 does not work with macos 10.13 or earlier.
-    get_macos_sdk_sources("10.13")...
+    DirectorySource("../bundled"),
+    get_macos_sdk_sources(macos_sdk_version)...
 ]
 
 # Bash recipe for building across all platforms
 # TODO: Theora once it's available
 function script(; ffplay=false, gpl=true)
-    "FFPLAY=$(ffplay)\nGPL=$(gpl)\n" * get_macos_sdk_script("10.13") * raw"""
+    "FFPLAY=$(ffplay)\nGPL=$(gpl)\n" * get_macos_sdk_script(macos_sdk_version) * raw"""
 cd $WORKSPACE/srcdir
 cd ffmpeg-*/
+
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    # AVMediaType is declared as NSString by the SDK and as enum by FFMPEG. Avoid the conflict.
+    # This only happens on x86_64, it does not happen on aarch64.
+    # Maybe our choice to build for darwin14 is the culprit? We're building for darwin20 on aarch64.
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/avfoundation.patch
+fi
+
 sed -i 's/-lflite"/-lflite -lasound"/' configure
 
 if [[ "${target}" == *-linux-* ]]; then

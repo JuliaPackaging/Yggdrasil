@@ -1,18 +1,18 @@
 using BinaryBuilder, Pkg
 
-# Collection of pre-build quarto binaries
+# Collection of pre-built qdrant binaries
 name = "Qdrant"
-qdrant_ver = "1.17.1"
+qdrant_ver = "1.18.3"
 version = VersionNumber(qdrant_ver)
 
 url_prefix = "https://github.com/qdrant/qdrant/releases/download/v$(qdrant_ver)/qdrant-"
 sources = [
-    ArchiveSource("$(url_prefix)x86_64-unknown-linux-musl.tar.gz", "4028d5e753de53bda82fa487df25353f668e785c3dfff66dfa636e2203a82b3a"; unpack_target="x86_64-linux-musl"),
-    ArchiveSource("$(url_prefix)x86_64-unknown-linux-gnu.tar.gz", "318a3b1c548161ad476f9ff70b654787a20fc46685e3e1c2b7dd88b363ef3d58"; unpack_target="x86_64-linux-gnu"),
-    ArchiveSource("$(url_prefix)aarch64-unknown-linux-musl.tar.gz", "9347a4db839f53fe123cc775bd87e4dd02f6c2750783bea02ea4fcae9c923164"; unpack_target="aarch64-linux-musl"),
-    ArchiveSource("$(url_prefix)x86_64-apple-darwin.tar.gz", "d7308c504afa58eb4aa2bd0c655252c324aea04891ac079b6b8764b33fa7dc15"; unpack_target="x86_64-apple-darwin14"),
-    ArchiveSource("$(url_prefix)aarch64-apple-darwin.tar.gz", "adf795d7c2ac9d93677517fd58b119e9bb5bc8fc5143ac9b581a6f8264def8da"; unpack_target="aarch64-apple-darwin20"),
-    ArchiveSource("$(url_prefix)x86_64-pc-windows-msvc.zip", "fe28df5993a9f9830b1e7290e2e341becf3c91366941b73b4322a05e4f91585c"; unpack_target="x86_64-w64-mingw32"),
+    ArchiveSource("$(url_prefix)x86_64-unknown-linux-musl.tar.gz", "b4faedcdf8c9577bf1c8f2ab9b454636b87e056c116c99d49bd4f9fb2e634285"; unpack_target="x86_64-linux-musl"),
+    ArchiveSource("$(url_prefix)x86_64-unknown-linux-gnu.tar.gz", "60663a254cf421dba4db45710872895cd3a714fe1e6978f7927923b5cfae4718"; unpack_target="x86_64-linux-gnu"),
+    ArchiveSource("$(url_prefix)aarch64-unknown-linux-musl.tar.gz", "1e738b45f90935c383b4076c30f377f390964cb5962b5bff24439812d157dc24"; unpack_target="aarch64-linux-musl"),
+    ArchiveSource("$(url_prefix)x86_64-apple-darwin.tar.gz", "45bdd4642e7f25611e9cd74f9f91482b27c5376840cd8dc476da67b87abe25a6"; unpack_target="x86_64-apple-darwin14"),
+    ArchiveSource("$(url_prefix)aarch64-apple-darwin.tar.gz", "0cb040a261035c316779bd7b4cca2e6ab39faf62640d6918bbbe320e2a9a6547"; unpack_target="aarch64-apple-darwin20"),
+    ArchiveSource("$(url_prefix)x86_64-pc-windows-msvc.zip", "984619bbd4032ace578656174c465c5d6b71d1267ecad5b7b4c21cc6549ca833"; unpack_target="x86_64-w64-mingw32"),
     FileSource("https://raw.githubusercontent.com/qdrant/qdrant/refs/tags/v$(qdrant_ver)/LICENSE", "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"),
     ]
 

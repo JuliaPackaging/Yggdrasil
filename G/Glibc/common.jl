@@ -108,6 +108,12 @@ function glibc_platforms(version)
     # v2.19 is the minimum version of ARM support
     min_arch_version!(platforms, version, v"2.19", ("armv7l", "armv6l", "aarch64"))
 
+    # riscv64 requires glibc v2.27+, and the v2.34 build currently trips a
+    # binutils 2.43.1 assertion (elfnn-riscv.c:3447) at link time; the riscv64
+    # target sysroot uses glibc 2.35 built in 0_RootFS instead, so exclude
+    # riscv64 here until the binutils bug is resolved.
+    filter!(p -> arch(p) != "riscv64", platforms)
+
     return platforms
 end
 
