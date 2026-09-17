@@ -44,6 +44,11 @@ elif [ "${tarch}" = "powerpc64le" ]; then
     tarch="ppc64"
 fi
 
+# We need `-lrt` on glibc Linux, apparently only on x86-64
+if [[ ${target} == x86_64-linux-gnu ]]; then
+    OPTS+=(LIBRARIES="-lm -lrt")
+fi
+
 # Only disable the x86-64 if we're compiling for a different architecture. I can't for the
 # life of me get the quoting to work correctly for the target feature specification when
 # putting it into the array, so I'll just admit defeat and separate the `make` calls.
