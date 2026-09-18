@@ -5,7 +5,7 @@ version = v"0.5.0"
 
 sources = [
     GitSource("https://github.com/brandynlucca/SpheroidalWaves.jl.git",
-              "a56162cd3988479ae66650f8bbbb8b4f3b0d72a4"),
+              "70874f2eb281ccc09f7367014d41411fdd83ddfb"),
 ]
 
 script = raw"""
@@ -21,7 +21,14 @@ install_license LICENSE
 
 # Set platforms (negative specifications)
 # REFER: https://github.com/JuliaPackaging/Yggdrasil/blob/master/AGENTS.md#platforms
-platforms = expand_gfortran_versions(supported_platforms())
+platforms = supported_platforms()
+
+# gfortran has no REAL(16)/__float128 (quadmath) support on 32-bit ARM or
+# PowerPC64LE, so `selected_real_kind(33)`/quad precision fails
+filter!(p -> !(arch(p) in ("armv6l", "armv7l", "powerpc64le")), platforms)
+
+# Update platforms
+platforms = expand_gfortran_versions(platforms)
 
 products = [
     LibraryProduct(["libspheroidal_batch_double","spheroidal_batch_double"],:libspheroidal_batch_double),
