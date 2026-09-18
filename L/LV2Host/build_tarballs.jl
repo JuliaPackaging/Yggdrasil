@@ -7,13 +7,21 @@ using BinaryBuilder
 # for hosting LV2 audio plugins, with discovery through lilv. The companion of
 # CLAPHost (C/CLAPHost); the version tracks the AudioPlugins.jl release whose
 # `csrc/` is built.
+#
+# 1.1.1 rebuilds from a tree carrying SciML/AudioPlugins.jl#61, which lifted a
+# fixed 256-entry descriptor cache in `lv2_host_scan`. An LV2 search path
+# holding more plugins than that was reported as holding 256, silently, and
+# indistinguishably from a path that really does: the LSP collection alone is
+# 198 plugins, and a search path routinely adds the system directories on top.
+# Patch rather than minor: the fix adds no exported symbol and changes no
+# signature, so `lv2_host.h` and the ABI are identical to 1.1.0's.
 name = "LV2Host"
-version = v"1.1.0"
+version = v"1.1.1"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/SciML/AudioPlugins.jl.git",
-              "c3239f3c339ba80c56b15e9a720d10e17518abfd"),  # SciML/AudioPlugins.jl PR "LV2 host: discovery through lilv" -- update to the merge commit if squashed
+              "4513dab988a101d617e730878a0e40598eb02857"),  # SciML/AudioPlugins.jl#61, on main at v1.3.0
 ]
 
 # Bash recipe for building across all platforms
