@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "Chafa"
-version = v"1.8.0"
+version = v"1.18.2"
 
 sources = [
     ArchiveSource("https://hpjansson.org/chafa/releases/chafa-$(version).tar.xz",
-                  "21ff652d836ba207098c40c459652b2f1de6c8a64fbffc62e7c6319ced32286b"),
+                  "0b8d9ba9f347e8b6c0c71878217c9b0e478b4a42aa4babea0bf20840567239c2"),
 ]
 
 script = raw"""
@@ -32,9 +32,6 @@ make install
 
 # Chafa itself does not support Windows
 platforms = filter!(!Sys.iswindows, supported_platforms())
-# Remove this when we build a newer version for which we can target the former
-# experimental platforms
-filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64") && arch(p) != "armv6l", platforms)
 
 products = [
     LibraryProduct("libchafa", :libchafa),
@@ -42,10 +39,11 @@ products = [
 ]
 
 dependencies = [
-    Dependency("FreeType2_jll"; compat="2.10.4"),
-    Dependency("Glib_jll"; compat="2.59.0"),
-    Dependency("ImageMagick_jll"),
+    Dependency("FreeType2_jll"; compat="2.14.3"),
+    Dependency("Glib_jll"; compat="2.88.3"),
+    Dependency("ImageMagick_jll"; compat="7.1.2029"),
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"5")
