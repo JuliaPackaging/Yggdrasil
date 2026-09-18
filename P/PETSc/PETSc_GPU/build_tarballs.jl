@@ -58,7 +58,10 @@ for platform in platforms
     deps = AbstractDependency[dependencies...]
     append!(deps, CUDA.required_dependencies(platform))
     platform_script = "CUDA_ARCHS=\"$(join(CUDA.cuda_gpu_archs(platform), ","))\"\n" * script
+    # nvcc rejects a host GCC newer than the toolkit supports: CUDA < 12.4 caps out below
+    # Yggdrasil's GCC 13.2, and CUDA 13's CCCL needs the C++17 default of GCC >= 12.
+    gcc_version = VersionNumber(platform["cuda"]) < v"12.4" ? v"12" : v"13"
     build_tarballs(ARGS, name, version, sources, platform_script, [platform], products, deps;
-                   augment_platform_block, julia_compat="1.12", preferred_gcc_version=v"13",
+                   augment_platform_block, julia_compat="1.12", preferred_gcc_version=gcc_version,
                    lazy_artifacts=true, dont_dlopen=true)
 end
