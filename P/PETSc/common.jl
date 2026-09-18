@@ -199,6 +199,9 @@ build_petsc()
         MPI_CXX=mpicxx
         if [[ "${bb_full_target}" == *mpiabi* ]]; then
             export MPIF_FCLIBS='-lmpif -lmpi_abi'
+            # mpif_jll's mpifort wrapper hardcodes the gfortran of the platform it was built
+            # for, which does not exist when an extra tag (cuda) changes ${bb_full_target}
+            mpifort --version >/dev/null 2>&1 || MPI_FC=${FC}
         elif [[ "${bb_full_target}" == *mpitrampoline* ]]; then
             # MPItrampoline only ships `mpifc`
             MPI_FC=mpifc
