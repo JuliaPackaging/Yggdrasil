@@ -7,13 +7,13 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 include("make_script.jl")
 
 name = "cunumeric_jl_wrapper"
-version = v"26.06.2" 
+version = v"26.06.3" 
 sources = [
-    GitSource("https://github.com/JuliaLegate/cuNumeric.jl.git","51a2f402386eb77f0cba4711db439fa0f6a0438e"),
+    GitSource("https://github.com/JuliaLegate/cuNumeric.jl.git","9f47cce3f9562218e739dcefef2ee9a2e821aed6"),
 ]
 
 MIN_JULIA_VERSION = v"1.10"
-MAX_JULIA_VERSION = v"1.12.999"
+MAX_JULIA_VERSION = v"1.13.999"
 
 # These should match the cupynumeric_jll build_tarballs script
 MIN_CUDA_VERSION = v"13.0"
