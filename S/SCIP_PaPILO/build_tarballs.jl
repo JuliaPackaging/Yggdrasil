@@ -7,14 +7,14 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "SCIP_PaPILO"
 
-upstream_version = v"10.0.3"
-version = VersionNumber(upstream_version.major * 100, upstream_version.minor * 100, upstream_version.patch * 100 + 1)
+upstream_version = v"10.1.0"
+version = VersionNumber(upstream_version.major * 100, upstream_version.minor * 100, upstream_version.patch * 100 )
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource(
         "https://github.com/scipopt/scip/releases/download/v$(upstream_version)/scipoptsuite-$(upstream_version).tgz",
-        "b6af618adc62c2f945a531f28eaf65f152a201913fa261000a5b711d5968aa85",
+        "c0739d5524269baa5ccdc77d78810cc17843dec083000d46ddf889e770ceaeb8",
     ),
     DirectorySource("./bundled/")
 ]
