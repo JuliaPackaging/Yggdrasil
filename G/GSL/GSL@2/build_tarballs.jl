@@ -5,8 +5,7 @@ using BinaryBuilder
 name = "GSL"
 version_string = "2.8"
 version = VersionNumber(version_string)
-# We bumped the version because we built for new architectures
-ygg_version = v"2.8.1"
+ygg_version = v"2.8.2"
 
 # Collection of sources required to build GSL
 sources = [
@@ -27,6 +26,7 @@ fi
 
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-remove-unknown-ld-option.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/ieee_interface.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/n_tries_positive_in_siman.patch
 update_configure_scripts
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static
 make -j${nproc}
