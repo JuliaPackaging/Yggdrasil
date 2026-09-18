@@ -19,14 +19,9 @@ cmake --install build-binarybuilder
 install_license LICENSE
 """
 
-# Start with the platforms currently distributed by the package. Quad precision
-# and the Fortran/OpenMP runtime must be validated on each before expanding it.
-platforms = expand_gfortran_versions([
-    Platform("x86_64","linux";libc="glibc"),
-    Platform("x86_64","windows"),
-    Platform("x86_64","macos"),
-    Platform("aarch64","macos"),
-])
+# Set platforms (negative specifications)
+# REFER: https://github.com/JuliaPackaging/Yggdrasil/blob/master/AGENTS.md#platforms
+platforms = expand_gfortran_versions(supported_platforms())
 
 products = [
     LibraryProduct(["libspheroidal_batch_double","spheroidal_batch_double"],:libspheroidal_batch_double),
