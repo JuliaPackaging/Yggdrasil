@@ -79,6 +79,7 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     preferred_gcc_version=v"8",
+    preferred_llvm_version=v"18.1.7", # polymake 4.15 headers fail with clang 23
     clang_use_lld=false,
     julia_compat=julia_compat)
 
