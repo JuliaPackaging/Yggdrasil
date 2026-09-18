@@ -100,6 +100,9 @@ fi
 # Remove `-march` flags
 sed -i 's/cpuflags="-march=$cpu"/cpuflags=""/g' configure
 
+# On FreeBSD, HarfBuzz_jll ships its pkg-config files in libdata/pkgconfig
+export PKG_CONFIG_PATH="${PKG_CONFIG_PATH:+${PKG_CONFIG_PATH}:}${prefix}/libdata/pkgconfig"
+
 ./configure            \
   --enable-cross-compile \
   --cross-prefix=/opt/${target}/bin/${target}- \
