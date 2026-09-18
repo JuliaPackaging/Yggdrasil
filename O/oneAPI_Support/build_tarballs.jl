@@ -232,7 +232,7 @@ products = [
 dependencies = [
     BuildDependency("oneAPI_Level_Zero_Headers_jll"),
     # the headers the wrappers in oneAPI.jl/deps were generated from; keep in sync with the toolkit above
-    BuildDependency(PackageSpec(name="oneAPI_Support_Headers_jll", version=v"2026.1.0")),
+    BuildDependency(PackageSpec(name="oneAPI_Support_Headers_jll", version=v"2026.1.0+0")),
     Dependency("oneAPI_Level_Zero_Loader_jll"),
     Dependency("OpenCL_jll"),
     Dependency("Hwloc_jll"),
