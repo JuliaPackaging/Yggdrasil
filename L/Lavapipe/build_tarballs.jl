@@ -27,14 +27,6 @@ macos_sdk_version = "11.0"
 sources = [
     ArchiveSource("https://archive.mesa3d.org/mesa-$(version).tar.xz",
                   "eeb29ca7e56cfaa8e8a79538dcf834e3b18e501c31bef5145e959ea437cc4216"),
-    # Lavapipe's ray-tracing acceleration structures are built by GLSL shaders that Mesa
-    # compiles during the build (`with_bvh` in meson.build) with a glslangValidator running
-    # on the *build* machine. Mesa requires >= 12.2 and glslang_jll is still 11.7.0, so
-    # build one for the host; once glslang_jll is bumped this can be a HostBuildDependency.
-    # 15.0.0 is the last tag whose cmake_minimum_required (3.17.2) the rootfs' CMake
-    # 3.21.7 satisfies; 15.1+ wants 3.27.
-    GitSource("https://github.com/KhronosGroup/glslang.git",
-              "46ef757e048e760b46601e6e77ae0cb72c97bd2f"), # tag 15.0.0
     # Mesa only accepts an interpreter that has mako, packaging and yaml (meson.build's
     # python_exec_list loop), and the rootfs' py3-* packages belong to its Python 3.9,
     # which Mesa no longer accepts at all. Carry the sdists and put them on the newer
@@ -47,10 +39,6 @@ sources = [
                   "94edc256424af38762eb31306eed28beb9f0efc50a8837492c9d6fd6004aed79"),
     ArchiveSource("https://files.pythonhosted.org/packages/05/8e/961c0007c59b8dd7729d542c61a4d537767a59645b82a0b521206e1e25c2/pyyaml-6.0.3.tar.gz",
                   "d76623373421df22fb4cf8817020cbb7ef15c725b9d5e45f17e189bfc384190f"),
-    # Mesa's Win32 WSI includes <directx/d3d12.h> unconditionally, and there is no
-    # DirectX_Headers_jll to depend on. Headers only, MIT, tiny to build.
-    GitSource("https://github.com/microsoft/DirectX-Headers.git",
-              "ee479f0bd5f7b884f202bcf0c3f076cc050dd256"), # tag v1.619.5
     DirectorySource("./bundled"),
 ]
 
@@ -74,34 +62,6 @@ chmod +x ${WORKSPACE}/srcdir/pybin/python3
 export PATH=${WORKSPACE}/srcdir/pybin:${PATH}
 python3 --version
 python3 -c "import mako, yaml; from packaging.version import Version; print('mako', mako.__version__)"
-
-# glslangValidator for the build machine, used by Mesa to compile the BVH shaders. The
-# SPIR-V optimizer is off because Mesa invokes glslang without it (`-V --target-env
-# spirv1.5`, src/vulkan/runtime/bvh/meson.build) and enabling it would drag in SPIRV-Tools.
-cmake -B ${WORKSPACE}/srcdir/glslang/build -S ${WORKSPACE}/srcdir/glslang -GNinja \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} \
-    -DCMAKE_INSTALL_PREFIX=${host_prefix} \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DENABLE_OPT=OFF \
-    -DBUILD_EXTERNAL=OFF \
-    -DGLSLANG_TESTS=OFF \
-    -DENABLE_HLSL=OFF \
-    -DENABLE_SPVREMAPPER=OFF
-ninja -C ${WORKSPACE}/srcdir/glslang/build -j${nproc} install
-glslangValidator --version
-
-if [[ "${target}" == *-mingw* ]]; then
-    # Mesa's Win32 WSI includes <directx/d3d12.h> even with d3d12 itself off. Install the
-    # headers outside ${prefix} -- they are a build-time dependency and have no business in
-    # the shipped artifact -- and let pkg-config point Mesa at them.
-    dxheaders=${WORKSPACE}/srcdir/dxheaders
-    meson setup ${WORKSPACE}/srcdir/DirectX-Headers/build ${WORKSPACE}/srcdir/DirectX-Headers \
-        --cross-file="${MESON_TARGET_TOOLCHAIN}" \
-        --prefix=${dxheaders} \
-        -D build-test=false
-    ninja -C ${WORKSPACE}/srcdir/DirectX-Headers/build -j${nproc} install
-    export PKG_CONFIG_PATH=${dxheaders}/lib/pkgconfig:${PKG_CONFIG_PATH}
-fi
 
 cd ${WORKSPACE}/srcdir/mesa-*
 
@@ -282,10 +242,12 @@ end
 # Dependencies that must be installed before this package can be built
 dependencies = [
     # LLVM twice: the target build to link against, and the host build for an executable
-    # `llvm-config` whose output the shim rewrites to the target prefix.
+    # llvm-config whose output the shim rewrites to the target prefix.
     HostBuildDependency(PackageSpec(name="LLVM_full_jll", version=string(llvm_version))),
     HostBuildDependency("Python_jll"),
     BuildDependency(PackageSpec(name="LLVM_full_jll", version=string(llvm_version))),
+    BuildDependency(PackageSpec(name="glslang_jll")),
+    BuildDependency(PackageSpec(name="DirectX_Headers_jll")),
     Dependency("Zlib_jll"; compat="1.2.12"),
     Dependency("Expat_jll"; compat="2.6.5"),
     Dependency("Zstd_jll"; compat="1.5.7"), # the LLVM 22 build has LLVM_ENABLE_ZSTD=ON
