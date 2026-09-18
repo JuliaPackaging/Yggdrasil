@@ -1,0 +1,11 @@
+#pragma once
+
+#include <type_traits>
+
+namespace std {
+template<typename T>
+concept floating_point = is_floating_point<T>::value;
+
+template<typename T, typename U>
+concept same_as = is_same<T, U>::value && is_same<U, T>::value;
+}
