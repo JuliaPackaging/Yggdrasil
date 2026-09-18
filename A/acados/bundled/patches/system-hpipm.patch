@@ -1,0 +1,77 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index ea7ae62a..d6b21e4b 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -101,6 +101,11 @@ mark_as_advanced(ACADOS_WITH_SYSTEM_BLASFEO)
+ if(ACADOS_WITH_SYSTEM_BLASFEO)
+     message(WARNING "The ACADOS_WITH_SYSTEM_BLASFEO option is enabled. ACADOS is tested by its developers only with ACADOS_WITH_SYSTEM_BLASFEO=OFF, when using an external blasfeo may sure that everything works as expected.")
+ endif()
++option(ACADOS_WITH_SYSTEM_HPIPM "If ON, use hpipm found via find_package(hpipm) instead of compiling it" OFF)
++mark_as_advanced(ACADOS_WITH_SYSTEM_HPIPM)
++if(ACADOS_WITH_SYSTEM_HPIPM)
++    message(WARNING "The ACADOS_WITH_SYSTEM_HPIPM option is enabled. ACADOS is tested by its developers only with ACADOS_WITH_SYSTEM_HPIPM=OFF, when using an external hpipm make sure that everything works as expected.")
++endif()
+ 
+ # Set custom path
+ set(EXTERNAL_SRC_DIR ${PROJECT_SOURCE_DIR}/external)
+diff --git a/acados/CMakeLists.txt b/acados/CMakeLists.txt
+index 282f0d66..ff3ebbf0 100644
+--- a/acados/CMakeLists.txt
++++ b/acados/CMakeLists.txt
+@@ -75,11 +75,15 @@ add_library(acados ${ACADOS_SRC})
+ 
+ target_include_directories(acados PUBLIC
+         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}> # to be able to include "acados/header.h"
+-        $<BUILD_INTERFACE:${EXTERNAL_SRC_DIR}/hpipm/include>
+         $<BUILD_INTERFACE:${EXTERNAL_SRC_DIR}>
+         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/interfaces>
+         $<INSTALL_INTERFACE:include>)
+ 
++if(NOT ACADOS_WITH_SYSTEM_HPIPM)
++    target_include_directories(acados PUBLIC
++        $<BUILD_INTERFACE:${EXTERNAL_SRC_DIR}/hpipm/include>)
++endif()
++
+ if(NOT ACADOS_WITH_SYSTEM_BLASFEO)
+     target_include_directories(acados PUBLIC
+         $<BUILD_INTERFACE:${EXTERNAL_SRC_DIR}/blasfeo/include>)
+diff --git a/external/CMakeLists.txt b/external/CMakeLists.txt
+index 20460c2b..2198e8b7 100644
+--- a/external/CMakeLists.txt
++++ b/external/CMakeLists.txt
+@@ -49,16 +49,27 @@ else()
+ endif()
+ 
+ # When HPIPM is used as part of acados
+-if(ACADOS_WITH_SYSTEM_BLASFEO)
+-    set(HPIPM_FIND_BLASFEO ON CACHE BOOL "" FORCE)
++if(ACADOS_WITH_SYSTEM_HPIPM)
++    find_package(hpipm REQUIRED)
++    # the acados library is defined in a sibling directory, which only sees a global imported target
++    set_target_properties(hpipm PROPERTIES IMPORTED_GLOBAL TRUE)
++    # acados includes the HPIPM headers as "hpipm/include/<header>.h", that is, relative to the
++    # parent of the directory the installed headers live in
++    get_target_property(HPIPM_SYSTEM_INCLUDE_DIR hpipm INTERFACE_INCLUDE_DIRECTORIES)
++    get_filename_component(HPIPM_SYSTEM_INCLUDE_ROOT "${HPIPM_SYSTEM_INCLUDE_DIR}/../.." ABSOLUTE)
++    target_include_directories(hpipm INTERFACE ${HPIPM_SYSTEM_INCLUDE_ROOT})
+ else()
+-    set(HPIPM_BLASFEO_PATH ${BLASFEO_SRC_DIR} CACHE STRING "Set CPU architecture target" FORCE)
++    if(ACADOS_WITH_SYSTEM_BLASFEO)
++        set(HPIPM_FIND_BLASFEO ON CACHE BOOL "" FORCE)
++    else()
++        set(HPIPM_BLASFEO_PATH ${BLASFEO_SRC_DIR} CACHE STRING "Set CPU architecture target" FORCE)
++    endif()
++    set(HPIPM_BLASFEO_LIB OFF CACHE BOOL "Turn off BLASFEO from HPIPM" FORCE)
++    set(HPIPM_HEADERS_INSTALLATION_DIRECTORY "include/hpipm/include" CACHE STRING "")
++    set(TARGET ${HPIPM_TARGET} CACHE STRING "Set CPU architecture target" FORCE)
++    set(HPIPM_TESTING OFF CACHE BOOL "Tests disabled" FORCE)
++    add_subdirectory(hpipm)
+ endif()
+-set(HPIPM_BLASFEO_LIB OFF CACHE BOOL "Turn off BLASFEO from HPIPM" FORCE)
+-set(HPIPM_HEADERS_INSTALLATION_DIRECTORY "include/hpipm/include" CACHE STRING "")
+-set(TARGET ${HPIPM_TARGET} CACHE STRING "Set CPU architecture target" FORCE)
+-set(HPIPM_TESTING OFF CACHE BOOL "Tests disabled" FORCE)
+-add_subdirectory(hpipm)
+ 
+ if(ACADOS_WITH_HPMPC)
+ 	# TODO: The following definition should go ASAP!
