@@ -1,0 +1,37 @@
+From: Erik Schnetter <schnetter@gmail.com>
+Subject: [PATCH] build: compile fcconffile.c and build fc-genconf
+
+The Autotools build was never updated for the fc-genconf feature added in
+2.18.0: src/fcconffile.c is missing from libfontconfig_la_SOURCES (it is
+listed in src/meson.build), and fc-genconf is missing from SUBDIRS even
+though configure.ac generates fc-genconf/Makefile.
+
+FcConfigFileGenerate() is declared in the public header
+fontconfig/fontconfig.h.in, so on Windows the generated .def file exports
+a symbol that no object defines:
+
+    Cannot export FcConfigFileGenerate: symbol not defined
+
+On other platforms the symbol is silently absent from the shared library.
+
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -137,6 +137,7 @@
+ 	fccache.c \
+ 	fccfg.c \
+ 	fccharset.c \
++	fcconffile.c \
+ 	fccompat.c \
+ 	fcdbg.c \
+ 	fcdefault.c \
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -22,7 +22,7 @@
+ #  PERFORMANCE OF THIS SOFTWARE.
+ 
+ SUBDIRS=fontconfig fc-case fc-lang fc-const fc-genericfamily src \
+-	fc-cache fc-cat fc-conflist fc-list fc-match \
++	fc-cache fc-cat fc-conflist fc-genconf fc-list fc-match \
+ 	fc-pattern fc-query fc-scan fc-validate conf.d \
+ 	its po po-conf test
+ if ENABLE_DOCS
