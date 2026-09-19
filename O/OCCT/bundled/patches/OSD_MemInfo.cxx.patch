@@ -1,5 +1,5 @@
 --- /dev/null
-+++ b/src/OSD/OSD_MemInfo.cxx
++++ b/src/FoundationClasses/TKernel/OSD/OSD_MemInfo.cxx
 @@ -143,20 +143,20 @@
    #elif defined(__EMSCRIPTEN__)
    if (IsActive(MemHeapUsage) || IsActive(MemWorkingSet) || IsActive(MemWorkingSetPeak))
