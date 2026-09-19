@@ -54,7 +54,7 @@ products = [
 dependencies = [
     Dependency("cupynumeric_jll"; compat = "~26.6"), # versioning is Year.Month
     Dependency("legate_jll"; compat = "~26.6"),
-    Dependency("libcxxwrap_julia_jll"; compat="0.14.3"),
+    Dependency("libcxxwrap_julia_jll"; compat="0.14.11"),
     BuildDependency("libjulia_jll"),
     HostBuildDependency(PackageSpec(; name = "CMake_jll", version = "3.31.9")),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")) 
