@@ -7,7 +7,7 @@ name = "Moreau_CPU"
 version = v"0.4.1"
 sources = [
     GitSource("https://github.com/moreau-project/moreau.git",
-        "b55848f0006333ef1ed2819171c0b835ce65d57d"),
+        "799c9fdc0d3cb7675e723a3fb9eb413015a64f93"),
 ]
 
 script = raw"""
