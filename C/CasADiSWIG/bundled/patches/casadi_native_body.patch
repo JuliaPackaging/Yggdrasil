@@ -1,0 +1,18 @@
+Expose the ergonomics layer as a body for the consuming CasADiNative module.
+Context: https://github.com/JuliaPackaging/Yggdrasil/pull/14661
+
+--- a/swig/julia/CasADiNative.jl
++++ b/swig/julia/CasADiNative.jl
+@@ -1,7 +1,6 @@
+ # CasADiNative.jl -- handwritten ergonomics layer over the SWIG-generated module.
+ # Prototype of what ships as the package's src/CasADi.jl; the generated
+ # casadi.jl stays untouched underneath.
+-module CasADiNative
+
+ include(joinpath(@__DIR__, "casadi.jl"))
+ using .casadi
+@@ -582,4 +581,3 @@
+     @eval const $_n = casadi.$_n
+ end
+
+-end # module CasADiNative
