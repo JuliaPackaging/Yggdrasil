@@ -12,7 +12,7 @@ include(joinpath(YGGDRASIL_DIR, "C", "CUDA", "common.jl"))
 name = "Moreau_CUDA"
 version = v"0.4.1"
 base_sources = [GitSource("https://github.com/moreau-project/moreau.git",
-    "b55848f0006333ef1ed2819171c0b835ce65d57d")]
+    "799c9fdc0d3cb7675e723a3fb9eb413015a64f93")]
 script = raw"""
 cd ${WORKSPACE}/srcdir/moreau
 install_license LICENSE NOTICE
