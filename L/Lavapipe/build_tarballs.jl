@@ -213,6 +213,8 @@ filter!(p -> arch(p) != "riscv64", platforms)
 # is enabled. Nothing to fix on this side; it needs that JLL rebuilt.
 filter!(p -> !Sys.isfreebsd(p), platforms)
 platforms = expand_cxxstring_abis(platforms)
+windows_platforms = filter(Sys.iswindows, platforms)
+other_platforms = setdiff(platforms, windows_platforms)
 
 # x86_64-apple-darwin only (the ARM builder already defaults to 11.1): the default Intel
 # deployment target is 10.12, and libc++ marks std::optional::value() unavailable before
@@ -246,8 +248,9 @@ dependencies = [
     HostBuildDependency(PackageSpec(name="LLVM_full_jll", version=string(llvm_version))),
     HostBuildDependency("Python_jll"),
     BuildDependency(PackageSpec(name="LLVM_full_jll", version=string(llvm_version))),
-    BuildDependency(PackageSpec(name="glslang_jll")),
-    BuildDependency(PackageSpec(name="DirectX_Headers_jll")),
+    HostBuildDependency(PackageSpec(name="glslang_jll", version=v"15.0.0+0")),
+    BuildDependency(PackageSpec(name="DirectX_Headers_jll", version=v"1.619.5+0");
+                    platforms=windows_platforms),
     Dependency("Zlib_jll"; compat="1.2.12"),
     Dependency("Expat_jll"; compat="2.6.5"),
     Dependency("Zstd_jll"; compat="1.5.7"), # the LLVM 22 build has LLVM_ENABLE_ZSTD=ON
@@ -275,9 +278,6 @@ append!(dependencies, [
 # base corrupts it and the first thread_local read faults inside vkCreateDevice.
 # x86_64-apple-darwin cannot have GCC 15: that shard's ld64 needs a libdispatch.so that
 # ships in no shard. Hence two builds over disjoint platform sets.
-windows_platforms = filter(Sys.iswindows, platforms)
-other_platforms = setdiff(platforms, windows_platforms)
-
 if any(should_build_platform.(triplet.(windows_platforms)))
     build_tarballs(ARGS, name, version, sources, script, windows_platforms, products, dependencies;
                    julia_compat="1.6", preferred_gcc_version=v"15", init_block)
