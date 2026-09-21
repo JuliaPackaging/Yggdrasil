@@ -25,6 +25,8 @@ ompi_cv_fortran_kind_value_0='0'
 ompi_cv_fortran_kind_value_C_DOUBLE='8'
 ompi_cv_fortran_kind_value_C_DOUBLE_COMPLEX='8'
 ompi_cv_fortran_kind_value_C_FLOAT='4'
+ompi_cv_fortran_kind_value_C_FLOAT128='16'
+ompi_cv_fortran_kind_value_C_FLOAT128_COMPLEX='16'
 ompi_cv_fortran_kind_value_C_FLOAT_COMPLEX='4'
 ompi_cv_fortran_kind_value_C_INT16_T='2'
 ompi_cv_fortran_kind_value_C_INT32_T='4'
@@ -65,3 +67,10 @@ ompi_cv_real16_c_equiv='yes'
 
 ompi_cv_fortran_alignment_type_test_mpi_handle_='    4'
 ompi_cv_fortran_sizeof_type_test_mpi_handle_='4'
+
+# On powerpc64le, gfortran's REAL*16 is IBM extended double ("double-double"),
+# which matches the bit format of C `long double`, not that of IEEE binary128
+# (`_Float128`). OpenMPI 5.0.11 started preferring `_Float128`, so pin the C
+# types explicitly to keep the correct mapping.
+opal_cv_find_type_REAL_16='long double'
+opal_cv_find_type_COMPLEX_32='long double _Complex'
