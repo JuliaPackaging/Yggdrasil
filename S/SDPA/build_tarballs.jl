@@ -23,7 +23,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "SDPA"
 upstream_version = v"7.3.19"
-version_offset = v"0.0.0" # reset to 0.0.0 once the upstream version changes
+version_offset = v"0.0.1" # reset to 0.0.0 once the upstream version changes
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -149,9 +149,6 @@ filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 filter!(p -> libgfortran_version(p) >= v"5", platforms)
-# Temporarily disable Julia@1.13 until https://github.com/JuliaPackaging/Yggdrasil/pull/11683
-# is fixed.
-filter!(p -> VersionNumber(p["julia_version"]) < v"1.13", platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
