@@ -12,15 +12,14 @@ version = v"1.6.0"
 #
 
 sources = [
-    ArchiveSource("https://wias-berlin.de/software/tetgen/1.5/src/tetgen1.6.0.zip",
-                  "e7bbbb4fb8f47f0adc3b46b26ab172557ebb90808c06e21b902b2166717af582"),
+    GitSource("https://codeberg.org/TetGen/TetGen","535f9c41f44abc832a7bbf2c9c7af003d1c18f3c"),
     DirectorySource("cwrapper", target="cwrapper"),
 ]
 
 script = raw"""
 mkdir -p ${libdir}
 
-cd $WORKSPACE/srcdir/tetgen1.6.0
+cd $WORKSPACE/srcdir/TetGen
 
 #
 # Patch tetgen.h with operators delegating new/delete to malloc/free for C/Julia compatibility.
