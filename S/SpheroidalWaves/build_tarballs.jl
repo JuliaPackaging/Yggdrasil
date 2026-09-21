@@ -19,7 +19,7 @@ cmake --install build-binarybuilder
 install_license LICENSE
 """
 
-# Set platforms (negative specifications)
+# Set platforms
 platforms = supported_platforms()
 
 # gfortran has no REAL(16)/__float128 (quadmath) support on 32-bit ARM or
