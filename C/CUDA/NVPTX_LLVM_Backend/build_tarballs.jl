@@ -3,8 +3,8 @@
 using BinaryBuilder, Pkg
 
 name = "NVPTX_LLVM_Backend"
-version = v"23.1.1"
-llvm_version = v"23.1.1"
+version = v"23.1.2"
+llvm_version = v"23.1.2"
 
 # This JLL ships `libnvptx`, a shared library exposing a small, typed C API (see
 # bundled/libnvptx.h) over a statically linked, symbol-hidden LLVM NVPTX
@@ -15,7 +15,7 @@ llvm_version = v"23.1.1"
 # LLVM ships a single monorepo source archive (`llvm-project-X.Y.Z.src.tar.xz`).
 sources = [
     ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-$(llvm_version)/llvm-project-$(llvm_version).src.tar.xz",
-                  "ebe9be46fe8756d58c5b198ffad0fa2a766257add81a4dc52179bfacc7888ee6"),
+                  "c98bbef08a2b4c2613cd50e9aa9ae7b69b1fe6c16b2c40373bc0ab6116fdf78a"),
     DirectorySource("./bundled")
 ]
 
