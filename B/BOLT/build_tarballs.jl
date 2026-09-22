@@ -1,7 +1,7 @@
 using BinaryBuilder
 
-version = v"23.1.1"
-git_sha = "6dfe1677ab8dffbc6ec13d53a1e0215d75147689" # llvmorg-23.1.1
+version = v"23.1.2"
+git_sha = "85ac560262434c9ccfc0c183ec22d4138ed647fb" # llvmorg-23.1.2
 
 script = raw"""
 # We want to exit the program if errors occur.
@@ -11,7 +11,13 @@ set -o errexit
 fd_lim=$(ulimit -n -H)
 ulimit -n $fd_lim
 
-cd ${WORKSPACE}/srcdir/llvm-project/llvm
+cd ${WORKSPACE}/srcdir/llvm-project
+
+# Backport of llvm/llvm-project#215415: don't relax same-function ADRs in large
+# non-simple AArch64 functions, which made BOLT fail on a ThinLTO libLLVM.
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/bolt-aarch64-adr-relaxation-non-simple.patch
+
+cd llvm
 LLVM_SRCDIR=$(pwd)
 
 # Let's do the actual build within the `build` subdirectory
@@ -116,6 +122,7 @@ install_license ${WORKSPACE}/srcdir/llvm-project/bolt/LICENSE.TXT
 
 sources = [
     GitSource("https://github.com/llvm/llvm-project.git", git_sha),
+    DirectorySource("./bundled"),
 ]
 
 # BOLT only optimizes ELF binaries, so we only ship it for Linux.
