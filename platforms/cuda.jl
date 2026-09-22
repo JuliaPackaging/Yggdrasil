@@ -162,7 +162,7 @@ const cuda_full_versions = [
     v"13.1.1",
     v"13.2.1",
     v"13.3.1",
-    v"13.4.1"
+    v"13.4.2"
 ]
 
 # EA/preview toolkits. We do build JLLs for these, so that they can be used explicitly,
@@ -350,9 +350,9 @@ function cuda_nvcc_redist_source(cuda_ver, arch)
             ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-x86_64/cuda_nvcc-linux-x86_64-13.2.51-archive.tar.xz",
                           "706b996fefc59dc8d64d317fdf48d0aa84c4ae004eff43009dd918f40c5cc66a")
         elseif cuda_ver == "13.4"
-            # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_13.4.1.json
-            ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-x86_64/cuda_nvcc-linux-x86_64-13.4.59-archive.tar.xz",
-                          "0c08d1df80b5d0bd081778d392446ab50a6a54b047c0136b39c8dbfdf2cfed3f")
+            # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_13.4.2.json
+            ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-x86_64/cuda_nvcc-linux-x86_64-13.4.92-archive.tar.xz",
+                          "60998f40cc9df5826b2a846e2dcc328133fbc5ef539398ce0a21cf5dcac7193d")
         else
             error("No CUDA redist available for CUDA version $cuda_ver on arch $arch")
         end
