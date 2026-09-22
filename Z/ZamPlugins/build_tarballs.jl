@@ -6,33 +6,21 @@ using BinaryBuilder
 # as headless CLAP modules: compressors including multiband and the ZaMaximX2
 # limiter, EQs, gates, delay/echo, tube and phono emulation, granular.
 #
-# GPL-2.0-or-later. Every plugin source in the tree carries "either version 2 of
-# the License, or (at your option) any later version" and the repository's
-# COPYING is the GPLv2 text.
-#
-# Sixteen of the nineteen plugins upstream builds by default. The three left out
-# are left out on purpose:
-#
-#   * ZamVerb and ZamHeadX2 link the bundled zita-convolver 4.0.0, which is
-#     GPL-3.0-**or-later** (lib/zita-convolver-4.0.0/zita-convolver.h: "either
-#     version 3 of the License, or (at your option) any later version"). Those
-#     two binaries would therefore be GPL-3.0-or-later while everything else
-#     here is GPL-2.0-or-later, and shipping them in an artifact labelled
-#     GPL-2.0-or-later would misstate what a user has.
-#   * ZamNoise needs fftw3f. It is licence-compatible (FFTW is
-#     GPL-2.0-or-later), but it is the only plugin that would pull a numerical
-#     dependency into the artifact, so it is a separate decision.
-#
+# GPL-2.0-or-later: every plugin source says "either version 2 ... or any later
+# version". Sixteen of the nineteen plugins upstream builds by default:
+#   * ZamVerb and ZamHeadX2 link bundled zita-convolver 4.0.0, which is
+#     GPL-3.0-or-later, so shipping them would misstate the artifact's licence.
+#   * ZamNoise needs fftw3f -- licence-compatible, but the only plugin that
+#     would pull a numerical dependency in, so a separate decision.
 # ZamChild670, ZamPiano, ZamSFZ and ZamSynth are not in upstream's default
-# PLUGINS list and are not built here either.
+# PLUGINS list.
 name = "ZamPlugins"
 version = v"4.5.0"
 
 # Collection of sources required to complete build
 sources = [
-    # 4.5 is the release tag; upstream publishes no source tarball, so the
-    # repository and its DPF submodule are fetched separately -- GitSource does
-    # not recurse into submodules.
+    # No source tarball upstream, and GitSource does not recurse into
+    # submodules, so the repo and its DPF submodule are fetched separately.
     GitSource("https://github.com/zamaudio/zam-plugins.git",
               "64cb54aa983a4caf1526060283fd87201c06ec49"),
     GitSource("https://github.com/DISTRHO/DPF.git",
@@ -46,37 +34,31 @@ mv DPF/* zam-plugins/dpf/
 cd zam-plugins
 install_license COPYING NOTICE.DPF
 
-# DPF's own BASE_OPTS is `-O3 -ffast-math ...` plus per-architecture `-mtune`
-# and SIMD flags. `-ffast-math` is rejected by the build environment, and
-# overriding the variable from the command line is what displaces the whole
-# definition rather than fighting the conditionals that append to it; the
-# architecture flags are the build environment's business anyway.
+# DPF's BASE_OPTS carries `-ffast-math`, which the build environment rejects,
+# plus per-architecture flags that are its business rather than ours.
+# Overriding from the command line displaces the whole definition.
 BASE_OPTS="-O3 -fdata-sections -ffunction-sections"
 
 for p in ZamAutoSat ZamComp ZamCompX2 ZamDelay ZamDynamicEQ ZamEcho ZamEQ2 \
          ZamGate ZamGateX2 ZamGEQ31 ZamGrains ZaMaximX2 ZamPhono ZamTube \
          ZaMultiComp ZaMultiCompX2; do
-    # HAVE_OPENGL=false takes DPF down to UI_TYPE=none, which is what keeps
-    # X11, OpenGL and cairo out of the build. It has to be a command-line
-    # variable, not an exported one: DPF assigns HAVE_OPENGL=true outright on
-    # Windows and macOS, and a makefile assignment beats the environment.
-    # Only the CLAP wrapper is built, so the LADSPA/LV2/VST2/VST3/AU wrappers
-    # and the JACK standalone are never linked either.
+    # HAVE_OPENGL=false takes DPF to UI_TYPE=none, keeping X11, OpenGL and
+    # cairo out. It must be a command-line variable: DPF assigns
+    # HAVE_OPENGL=true outright on Windows and macOS, and a makefile
+    # assignment beats the environment.
     make -C "plugins/${p}" clap -j${nproc} HAVE_OPENGL=false BASE_OPTS="${BASE_OPTS}"
 done
 
-# `${prefix}/lib/clap` rather than `${libdir}/clap`, so that the modules sit at
-# one path on every platform: a JLL hands the path out itself, and on Windows
-# `${libdir}` is `bin`, which would make the product paths platform-dependent
-# for no gain.
+# `lib/clap` rather than `${libdir}/clap`, which is `bin` on Windows, so the
+# product paths are the same on every platform.
 mkdir -p "${prefix}/lib/clap"
 cp -r bin/*.clap "${prefix}/lib/clap/"
 """
 
 # The products that we will ensure are always built
 products = [
-    # `.clap` modules are declared as files: they are shared objects under a
-    # name LibraryProduct does not recognise, and a bundle directory on macOS.
+    # Files, not libraries: a `.clap` is a shared object under a name
+    # LibraryProduct does not recognise, and a bundle directory on macOS.
     FileProduct("lib/clap/ZamAutoSat.clap", :zam_autosat_clap),
     FileProduct("lib/clap/ZamComp.clap", :zam_comp_clap),
     FileProduct("lib/clap/ZamCompX2.clap", :zam_comp_x2_clap),
@@ -99,8 +81,7 @@ platforms = supported_platforms()
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    # libgcc_s, which the C++ artifacts link and the auditor cannot otherwise
-    # resolve.
+    # libgcc_s, which the C++ artifacts link.
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
