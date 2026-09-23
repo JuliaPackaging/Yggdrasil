@@ -67,6 +67,9 @@ augment_platform_block = """
 platforms = supported_platforms()
 # yaxt (and therefore YAC) is not available on Windows.
 filter!(!Sys.iswindows, platforms)
+# libfyaml_jll v0.7.12+0 has no builds for riscv64 and aarch64-freebsd yet
+# (rebuild in #14897); drop this filter once they are registered.
+filter!(p -> !(arch(p) == "riscv64" || (Sys.isfreebsd(p) && arch(p) == "aarch64")), platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
