@@ -238,14 +238,18 @@ cuda_products = [
 # ---------------------------------------------------------------------------
 
 # Platform selection is handled per build below, so `build_tarballs` must not
-# filter on the positional platform argument itself. Select by exact triplet:
+# filter on the positional platform argument itself. Select by exact tag set:
 # `platforms_match` treats a missing "cuda" tag as a wildcard, so a CPU triplet
 # would also pick up every CUDA build (and vice versa), and a CI job for one
-# platform would build them all serially.
+# platform would build them all serially. Comparing `triplet` strings is not
+# enough either: tag order in `triplet(p)` follows insertion order, while CI
+# passes the sorted form (`cuda+12.2-cuda_platform+sbsa`).
 const requested_triplets = let args = filter(a -> !startswith(a, "--"), ARGS)
     isempty(args) ? nothing : Set(String.(split(join(args, ","), ",")))
 end
-wanted(p) = requested_triplets === nothing || triplet(p) in requested_triplets
+const requested_tags = requested_triplets === nothing ? nothing :
+    Set(Base.BinaryPlatforms.tags(parse(Platform, t)) for t in requested_triplets)
+wanted(p) = requested_tags === nothing || Base.BinaryPlatforms.tags(p) in requested_tags
 
 non_platform_ARGS = filter(arg -> startswith(arg, "--"), ARGS)
 # `--register` should only be passed to the last `build_tarballs` invocation
