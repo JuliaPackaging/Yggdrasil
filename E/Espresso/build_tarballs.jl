@@ -5,8 +5,8 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 # espresso
 name = "Espresso"
-version = v"1.0.0"
-upstream_version = "2.0.0"
+version = v"1.1.1"
+upstream_version = "1.1.1"
 
 # Collection of sources required to complete build
 sources = [
