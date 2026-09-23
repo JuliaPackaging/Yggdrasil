@@ -128,7 +128,7 @@ dependencies = [
     Dependency("GMP_jll"),
     Dependency("Readline_jll"; compat="8.2.13"),
     Dependency("Zlib_jll"),
-    BuildDependency(PackageSpec(;name="libjulia_jll", version="1.11.2")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version="1.11.3")),
 ]
 
 # we want to get notified of any changes to julia_compat, and adapt `version` accordingly
