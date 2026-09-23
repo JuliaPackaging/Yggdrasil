@@ -13,15 +13,28 @@ stored value is young, so at worst it puts an old object into the
 remembered set needlessly.
 
 Upstream puts the compatibility macro in `src/gasman.h`, which by then
-includes `<julia.h>` and holds an inlined `CHANGED_BAG`. v4.16.1 does
-neither, so the macro goes into `src/julia_gc.h` and `CHANGED_BAG` is
-patched where it still lives, in `src/julia_gc.c`.
+includes `<julia.h>`. In v4.16.1 no installed header includes Julia
+headers, and `gac` does not put Julia's include dir on the search path,
+so the macro must not go into a header: it is defined in the two `.c`
+files that use it, after their `<julia.h>` include.
 
 diff --git a/src/julia_gc.c b/src/julia_gc.c
-index 568b567..c11e738 100644
+index 568b567..987113a 100644
 --- a/src/julia_gc.c
 +++ b/src/julia_gc.c
-@@ -871,15 +871,15 @@ BOOL IsGapObj(void * p)
+@@ -43,6 +43,11 @@
+ #include <julia_gcext.h>
+ #include <julia_threads.h>    // for jl_get_ptls_states
+ 
++// Julia 1.14 renamed `jl_gc_wb_back` to `jl_gc_wb_object`
++// (JuliaLang/julia#63299).
++#if JULIA_VERSION_MAJOR == 1 && JULIA_VERSION_MINOR < 14
++#define jl_gc_wb_object jl_gc_wb_back
++#endif
+ 
+ /****************************************************************************
+ **
+@@ -871,15 +876,15 @@ BOOL IsGapObj(void * p)
  
  void CHANGED_BAG(Bag bag)
  {
@@ -40,7 +53,7 @@ index 568b567..c11e738 100644
  }
  
  UInt CollectBags(UInt size, UInt full)
-@@ -970,7 +970,7 @@ Bag NewBag(UInt type, UInt size)
+@@ -970,7 +975,7 @@ Bag NewBag(UInt type, UInt size)
  
      // change the masterpointer to reference the new bag memory
      bag->body = header + 1;
@@ -49,7 +62,7 @@ index 568b567..c11e738 100644
  
      // return the identifier of the new bag
      return bag;
-@@ -1004,7 +1004,7 @@ UInt ResizeBag(Bag bag, UInt new_size)
+@@ -1004,7 +1009,7 @@ UInt ResizeBag(Bag bag, UInt new_size)
  
          // update the master pointer
          bag->body = header + 1;
@@ -58,29 +71,24 @@ index 568b567..c11e738 100644
      }
  
      // update the size
-diff --git a/src/julia_gc.h b/src/julia_gc.h
-index 24ee936..e7dfbaf 100644
---- a/src/julia_gc.h
-+++ b/src/julia_gc.h
-@@ -13,6 +13,13 @@
- #ifndef GAP_JULIA_GC_H
- #define GAP_JULIA_GC_H
- 
+diff --git a/src/weakptr.c b/src/weakptr.c
+index 8d27774..9895dcf 100644
+--- a/src/weakptr.c
++++ b/src/weakptr.c
+@@ -40,6 +40,12 @@
+ #ifdef USE_JULIA_GC
+ #include "julia.h"
+ #include "julia_gc.h"
++
 +// Julia 1.14 renamed `jl_gc_wb_back` to `jl_gc_wb_object`
 +// (JuliaLang/julia#63299).
-+#include <julia_version.h>
 +#if JULIA_VERSION_MAJOR == 1 && JULIA_VERSION_MINOR < 14
 +#define jl_gc_wb_object jl_gc_wb_back
 +#endif
-+
- /****************************************************************************
- **
- *F  MarkJuliaObj(<obj>) . . . . . . . . . . . . . . . . . . mark Julia object
-diff --git a/src/weakptr.c b/src/weakptr.c
-index 8d27774..2dc4871 100644
---- a/src/weakptr.c
-+++ b/src/weakptr.c
-@@ -152,12 +152,12 @@ static inline void SET_ELM_WPOBJ(Obj list, UInt pos, Obj val)
+ #endif
+ 
+ #define RequireWPObj(funcname, op)                                           \
+@@ -152,12 +158,12 @@ static inline void SET_ELM_WPOBJ(Obj list, UInt pos, Obj val)
      }
      if (!IS_BAG_REF(ptr[pos])) {
          ptr[pos] = (Bag)jl_gc_new_weakref((jl_value_t *)val);
