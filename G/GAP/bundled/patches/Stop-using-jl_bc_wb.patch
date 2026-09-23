@@ -1,0 +1,102 @@
+From 8f5f75fb0eb5621e7db59b3d61bfb9e5c541ad69 Mon Sep 17 00:00:00 2001
+From: Max Horn <max@quendi.de>
+Date: Wed, 23 Sep 2026 11:29:05 +0200
+Subject: [PATCH] julia-gc: Stop using Julia write barriers whose API changed
+ (#6587)
+
+Julia 1.14 adds a third argument to `jl_gc_wb`, the address of the slot
+being written (JuliaLang/julia#62737), and renames `jl_gc_wb_back` to
+`jl_gc_wb_object` (JuliaLang/julia#63299).
+
+Call `jl_gc_wb_object` instead of `jl_gc_wb`, and map it to
+`jl_gc_wb_back` for Julia before 1.14. It skips the check whether the
+stored value is young, so at worst it puts an old object into the
+remembered set needlessly. `CHANGED_BAG` already works this way.
+
+Assisted-by: Claude Code (Opus 5.5)
+
+This patch is bundled with GAP v4.17.0 and should be dropped once GAP is
+updated to v4.17.0.
+---
+ src/gasman.h   | 9 +++++++--
+ src/julia_gc.c | 8 ++++----
+ src/weakptr.c  | 4 ++--
+ 3 files changed, 13 insertions(+), 8 deletions(-)
+
+diff --git a/src/gasman.h b/src/gasman.h
+index 9292d9e62..a8206c8e3 100644
+--- a/src/gasman.h
++++ b/src/gasman.h
+@@ -377,10 +377,15 @@ extern "C++" {
+ }
+ #endif
+ 
++// Julia 1.14 renamed `jl_gc_wb_back` (JuliaLang/julia#63299)
++#if JULIA_VERSION_MAJOR == 1 && JULIA_VERSION_MINOR < 14
++#define jl_gc_wb_object jl_gc_wb_back
++#endif
++
+ EXPORT_INLINE void CHANGED_BAG(Bag bag)
+ {
+-    // The following is a copy of Julia's write barrier `jl_gc_wb_back` and
+-    // must be kept in sync with it. We cannot just call `jl_gc_wb_back`, as
++    // The following is a copy of Julia's write barrier `jl_gc_wb_object` and
++    // must be kept in sync with it. We cannot just call `jl_gc_wb_object`, as
+     // Julia declares it `static inline`, and C forbids referencing an
+     // identifier with internal linkage from an inline function with external
+     // linkage. Marking `CHANGED_BAG` as `static inline` instead is not an
+diff --git a/src/julia_gc.c b/src/julia_gc.c
+index ae03229ad..23c988ab0 100644
+--- a/src/julia_gc.c
++++ b/src/julia_gc.c
+@@ -850,8 +850,8 @@ void SwapMasterPoint(Bag bag1, Bag bag2)
+ {
+     SWAP(UInt *, bag1->body, bag2->body);
+ 
+-    jl_gc_wb((void *)bag1, BAG_HEADER(bag1));
+-    jl_gc_wb((void *)bag2, BAG_HEADER(bag2));
++    jl_gc_wb_object((void *)bag1);
++    jl_gc_wb_object((void *)bag2);
+ }
+ 
+ UInt CollectBags(UInt size, UInt full)
+@@ -942,7 +942,7 @@ Bag NewBag(UInt type, UInt size)
+ 
+     // change the masterpointer to reference the new bag memory
+     bag->body = header + 1;
+-    jl_gc_wb_back((void *)bag);
++    jl_gc_wb_object((void *)bag);
+ 
+     // return the identifier of the new bag
+     return bag;
+@@ -976,7 +976,7 @@ UInt ResizeBag(Bag bag, UInt new_size)
+ 
+         // update the master pointer
+         bag->body = header + 1;
+-        jl_gc_wb_back((void *)bag);
++        jl_gc_wb_object((void *)bag);
+     }
+ 
+     // update the size
+diff --git a/src/weakptr.c b/src/weakptr.c
+index f99e8bde3..8f07f3d91 100644
+--- a/src/weakptr.c
++++ b/src/weakptr.c
+@@ -152,12 +152,12 @@ static inline void SET_ELM_WPOBJ(Obj list, UInt pos, Obj val)
+     }
+     if (!IS_BAG_REF(ptr[pos])) {
+         ptr[pos] = (Bag)jl_gc_new_weakref((jl_value_t *)val);
+-        jl_gc_wb_back(BAG_HEADER(list));
++        jl_gc_wb_object(BAG_HEADER(list));
+     }
+     else {
+         jl_weakref_t * wref = (jl_weakref_t *)(ptr[pos]);
+         wref->value = (jl_value_t *)val;
+-        jl_gc_wb(wref, BAG_HEADER(val));
++        jl_gc_wb_object(wref);
+     }
+ #endif
+ }
+-- 
+2.55.0
+
