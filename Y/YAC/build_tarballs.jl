@@ -90,7 +90,10 @@ dependencies = [
     Dependency("yaxt_jll"; compat="0.12.1"),
     Dependency("libfyaml_jll"; compat="0.7.12"),
     Dependency("NetCDF_jll"; compat="401.1000.101"),
-    Dependency("OpenBLAS32_jll"; compat="0.3.34"),
+    # 0.3.24 is the newest OpenBLAS32_jll available for Julia 1.10. YAC only calls
+    # LAPACK routines (dgesv_, dgetrf_, dgetri_, dsytrf_, dsytri_) that every
+    # 0.3.x release exports under the same `libopenblas.so` soname.
+    Dependency("OpenBLAS32_jll"; compat="0.3.24"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 append!(dependencies, platform_dependencies)
