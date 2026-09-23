@@ -16,12 +16,12 @@ using BinaryBuilder
 # Patch rather than minor: the fix adds no exported symbol and changes no
 # signature, so `lv2_host.h` and the ABI are identical to 1.1.0's.
 name = "LV2Host"
-version = v"1.1.1"
+version = v"1.2.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/SciML/AudioPlugins.jl.git",
-              "4513dab988a101d617e730878a0e40598eb02857"),  # SciML/AudioPlugins.jl#61, on main at v1.3.0
+              "f48574da93f3fac9f3d612c16b60657043320c35"),  # SciML/AudioPlugins.jl main
 ]
 
 # Bash recipe for building across all platforms
