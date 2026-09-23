@@ -39,10 +39,6 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
 
-# Avoid forcing -march on riscv64 (BinaryBuilder disallows explicit -march)
-sed -i -e 's/list(APPEND ARCH_FLAGS "-march=${MARCH_STR}" -mabi=lp64d)/list(APPEND ARCH_FLAGS -mabi=lp64d)/' ggml/src/ggml-cpu/CMakeLists.txt
-sed -i -e 's/list(APPEND ARCH_FLAGS -march=rv64gc_v -mabi=lp64d)/list(APPEND ARCH_FLAGS -mabi=lp64d)/' ggml/src/ggml-cpu/CMakeLists.txt
-
 EXTRA_CMAKE_ARGS=()
 EXE_LDFLAGS=""
 
