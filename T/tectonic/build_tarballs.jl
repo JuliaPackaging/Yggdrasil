@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "tectonic"
-version = v"0.16.9"
+version = v"0.17.0"
 
 # Collection of sources required to build tar
 sources = [
     GitSource("https://github.com/tectonic-typesetting/tectonic.git",
-              "66b6654103501b0a4a6926a7c450264be59cf927"),
+              "8c0126a9653239a2e6e0a5274af9b8510f643030"),
 ]
 
 # Bash recipe for building across all platforms
@@ -43,12 +43,15 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Fontconfig_jll"),
-    Dependency("FreeType2_jll"; compat="2.10.4"),
-    Dependency("Graphite2_jll"),
-    Dependency("HarfBuzz_jll"; compat="2.8.1 - 100"),
-    Dependency("HarfBuzz_ICU_jll"),
-    Dependency("ICU_jll"; compat="69.1"),
+    Dependency("Fontconfig_jll"; compat="2.17.1"),
+    Dependency("FreeType2_jll"; compat="2.13.4"),
+    Dependency("Graphite2_jll"; compat="1.3.15"),
+    # HarfBuzz_ICU_jll ≥ 8.5.1 is built against ICU 76, and the ICU symbols
+    # carry the major version in their names, so the ICU pin here has to
+    # match the one HarfBuzz_ICU_jll was built with.
+    Dependency("HarfBuzz_jll"; compat="100.14003"),
+    Dependency("HarfBuzz_ICU_jll"; compat="100.14003"),
+    Dependency("ICU_jll"; compat="76.2"),
     Dependency("OpenSSL_jll"; compat="3.0.8"),
     Dependency("Zlib_jll"),
     Dependency("libpng_jll"),
