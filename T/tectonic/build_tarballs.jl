@@ -2,6 +2,9 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "tectonic"
 version = v"0.17.0"
 
@@ -17,6 +20,16 @@ cd ${WORKSPACE}/srcdir/tectonic
 
 if [[ "${target}" == *-mingw* ]]; then
     export RUSTFLAGS="-Clink-args=-L${libdir}"
+fi
+
+# On FreeBSD, HarfBuzz_jll ships its pkg-config files in libdata/pkgconfig
+export PKG_CONFIG_PATH="${PKG_CONFIG_PATH:+${PKG_CONFIG_PATH}:}${prefix}/libdata/pkgconfig"
+
+if [[ "${target}" == powerpc64le-* ]]; then
+    # `aws-lc-sys` (rustls' crypto provider) reads AT_HWCAP2 in cpu_ppc64le.c.
+    # The glibc headers of our powerpc64le toolchain predate that constant
+    # (it has been 26 since Linux 3.10), so define it ourselves.
+    export CFLAGS_powerpc64le_unknown_linux_gnu="-DAT_HWCAP2=26"
 fi
 
 cargo build --release --locked --features external-harfbuzz
@@ -36,6 +49,13 @@ filter!(p -> !(arch(p) == "aarch64" && Sys.isfreebsd(p)), platforms)
 filter!(p -> !(arch(p) == "riscv64"), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
+# `reqwest` pulls in `rustls-platform-verifier` -> `security-framework`, which
+# calls `SecTrustEvaluateWithError()`. That symbol was introduced in macOS 10.14,
+# so the default SDK used for `x86_64-apple-darwin14` fails to link. Use the
+# same SDK the aarch64 builder already uses; the deployment target is kept
+# lower than the SDK so the minimum macOS version does not rise needlessly.
+sources, script = require_macos_sdk("11.1", sources, script; deployment_target = "10.15")
+
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("tectonic", :tectonic),
@@ -52,7 +72,8 @@ dependencies = [
     Dependency("HarfBuzz_jll"; compat="100.14003"),
     Dependency("HarfBuzz_ICU_jll"; compat="100.14003"),
     Dependency("ICU_jll"; compat="76.2"),
-    Dependency("OpenSSL_jll"; compat="3.0.8"),
+    # tectonic 0.17 fetches bundles through reqwest with rustls; OpenSSL is no
+    # longer linked (there is no openssl-sys in the build), so OpenSSL_jll is gone.
     Dependency("Zlib_jll"),
     Dependency("libpng_jll"),
 ]
