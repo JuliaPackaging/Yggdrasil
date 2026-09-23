@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "TetGen"
-version = v"1.6.0"
+version = v"1.6.1"
 
 #
 # Artifact builder for TetGen (c) Hang Si, see project home page https://tetgen.org
@@ -12,7 +12,7 @@ version = v"1.6.0"
 #
 
 sources = [
-    GitSource("https://codeberg.org/TetGen/TetGen","535f9c41f44abc832a7bbf2c9c7af003d1c18f3c"),
+    GitSource("https://codeberg.org/TetGen/TetGen","205515773c72c0f2d0d8a16db200a32d748345eb"),
     DirectorySource("cwrapper", target="cwrapper"),
 ]
 
@@ -50,6 +50,7 @@ install_license $WORKSPACE/srcdir/cwrapper/LICENSE
 """
 
 platforms = supported_platforms()
+platforms = expand_cxxstring_abis(platforms)
 
 products = [
     LibraryProduct("libtet", :libtet)
