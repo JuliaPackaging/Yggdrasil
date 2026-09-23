@@ -1,0 +1,1651 @@
+Read 2D/3D velocity models from netCDF (vmodel_type = velm) and write volumetric 3D snapshots (vol_v, vol_u, vol_ps).
+Upstream PR: https://github.com/OpenSWPC/OpenSWPC/pull/19
+
+diff --git a/src/shared/m_rdvelm.f90 b/src/shared/m_rdvelm.f90
+new file mode 100644
+index 0000000..a3da6fc
+--- /dev/null
++++ b/src/shared/m_rdvelm.f90
+@@ -0,0 +1,297 @@
++#include "../shared/m_debug.h"
++module m_rdvelm
++
++    !! Read 2D/3D velocity model from netcdf
++    !!
++    !! Jacob  This project is released under the MIT license.
++
++    use m_std
++    use m_debug
++    use netcdf
++    implicit none
++
++    private
++    public :: rdvelm__2d
++    public :: rdvelm__3d
++
++contains
++
++    subroutine rdvelm__2d(ib, ie, kb, ke, fn_velm, mu, rho, lambda, Qp, Qs)
++
++        integer, intent(in)  :: ib, ie
++        integer, intent(in)  :: kb, ke
++        character(*), intent(in)  :: fn_velm
++        real(SP), intent(out) :: mu(kb:ke, ib:ie)
++        real(SP), intent(out) :: rho(kb:ke, ib:ie)
++        real(SP), intent(out) :: lambda(kb:ke, ib:ie)
++        real(SP), intent(out) :: Qp(kb:ke, ib:ie)
++        real(SP), intent(out) :: Qs(kb:ke, ib:ie)
++
++        real(SP), allocatable :: hhmu(:, :), hhrho(:,:), hhlam(:,:), hhQp(:,:), hhQs(:,:)
++        real(SP), allocatable :: hhvp(:,:), hhvs(:,:)
++        integer :: i, k, ii, kk
++        integer :: ncid, muid, rhoid, lamid, qpid, qsid, vpid, vsid
++        logical :: haveMu, haveLam, haveVp, haveVs, haveRho, haveQp, haveQs
++        character(80) :: xn, zn
++        integer :: nxc, nzc !< netcdf volume size
++
++        
++        call debug(fn_velm)
++        call assert(nf90_open(fn_velm, NF90_NOWRITE, ncid) == NF90_NOERR)
++        !! size
++        call assert(nf90_inquire_dimension(ncid, 1, xn, nxc) == NF90_NOERR)
++        call assert(nf90_inquire_dimension(ncid, 2, zn, nzc) == NF90_NOERR)
++        haveMu  = (nf90_inq_varid(ncid, "mu",     muid)  == NF90_NOERR)
++        haveRho = (nf90_inq_varid(ncid, "rho",    rhoid) == NF90_NOERR)
++        haveLam = (nf90_inq_varid(ncid, "lambda", lamid) == NF90_NOERR)
++        haveQp  = (nf90_inq_varid(ncid, "Qp",     qpid)  == NF90_NOERR)
++        haveQs  = (nf90_inq_varid(ncid, "Qs",     qsid)  == NF90_NOERR)
++        haveVp  = (nf90_inq_varid(ncid, "Vp",     vpid)  == NF90_NOERR)
++        if (.not. haveVp) haveVp = (nf90_inq_varid(ncid, "vp", vpid) == NF90_NOERR)
++        haveVs  = (nf90_inq_varid(ncid, "Vs",     vsid)  == NF90_NOERR)
++        if (.not. haveVs) haveVs = (nf90_inq_varid(ncid, "vs", vsid) == NF90_NOERR)
++
++        if (.not. haveRho) then
++            call debug('rdvelm__2d: rho not found in NetCDF file')
++            call assert(.false.)
++        end if
++        if (.not. haveMu .and. .not. (haveVs .and. haveRho)) then
++            call debug('rdvelm__2d: mu missing and cannot derive from Vs*rho')
++            call assert(.false.)
++        end if
++        if (.not. haveLam .and. .not. (haveVp .and. (haveMu .or. (haveVs .and. haveRho)))) then
++            call debug('rdvelm__2d: lambda missing and cannot derive from Vp, Vs, rho')
++            call assert(.false.)
++        end if
++        
++
++        if (haveMu)  call debug(muid)
++        call debug(rhoid)
++        if (haveLam) call debug(lamid)
++        if (haveQp)  call debug(qpid)
++        if (haveQs)  call debug(qsid)
++        call debug(ncid)
++
++        if (haveMu) then
++            allocate (hhmu(nxc, nzc))
++            call assert(nf90_get_var(ncid, muid, hhmu) == NF90_NOERR)
++        else
++            allocate (hhvs(nxc, nzc))
++            call assert(nf90_get_var(ncid, vsid, hhvs) == NF90_NOERR)
++        end if
++        allocate (hhrho(nxc, nzc))
++        call assert(nf90_get_var(ncid, rhoid, hhrho) == NF90_NOERR)
++        if (haveLam) then
++            allocate (hhlam(nxc, nzc))
++            call assert(nf90_get_var(ncid, lamid, hhlam) == NF90_NOERR)
++        else
++            allocate (hhvp(nxc, nzc))
++            call assert(nf90_get_var(ncid, vpid, hhvp) == NF90_NOERR)
++        end if
++        allocate (hhQp(nxc, nzc))
++        if (haveQp) then
++            call assert(nf90_get_var(ncid, qpid, hhQp) == NF90_NOERR)
++        else
++            hhQp = 1.0e9_SP
++        end if
++        allocate (hhQs(nxc, nzc))
++        if (haveQs) then
++            call assert(nf90_get_var(ncid, qsid, hhQs) == NF90_NOERR)
++        else
++            hhQs = 1.0e9_SP
++        end if
++
++        do k = kb, min(ke, nzc)
++
++            if (k <= 0) then
++                kk = k + nzc
++            else
++                kk = k
++            end if
++
++            do i = ib, ie
++                ii = mod(i, nxc)
++                if (ii <= 0) ii = ii + nxc
++                rho(k, i) = hhrho(ii, kk)
++                if (haveMu) then
++                    mu(k, i) = hhmu(ii, kk)
++                else
++                    mu(k, i) = rho(k, i) * hhvs(ii, kk) * hhvs(ii, kk)
++                end if
++                if (haveLam) then
++                    lambda(k, i) = hhlam(ii, kk)
++                else
++                    lambda(k, i) = rho(k, i) * hhvp(ii, kk) * hhvp(ii, kk) - 2.0_SP * mu(k, i)
++                end if
++                Qp(k, i) = hhQp(ii, kk)
++                Qs(k, i) = hhQs(ii, kk)
++            end do
++        end do
++
++        if (allocated(hhmu)) deallocate (hhmu)
++        deallocate (hhrho)
++        if (allocated(hhlam)) deallocate (hhlam)
++        if (allocated(hhvp))  deallocate (hhvp)
++        if (allocated(hhvs))  deallocate (hhvs)
++        deallocate (hhQp)
++        deallocate (hhQs)
++        
++
++        !! bottom cyclic part
++        do k = nzc + 1, ke
++            kk = mod(k, nzc)
++            if (kk <= 0) kk = kk + nzc
++            mu(k, ib:ie) = mu(kk, ib:ie)
++            rho(k, ib:ie) = rho(kk, ib:ie)
++            lambda(k, ib:ie) = lambda(kk, ib:ie)
++            Qp(k, ib:ie) = Qp(kk, ib:ie)
++            Qs(k, ib:ie) = Qs(kk, ib:ie)
++        end do
++
++    end subroutine rdvelm__2d
++
++    
++    subroutine rdvelm__3d(ib, ie, jb, je, kb, ke, fn_velm, mu, rho, lambda, Qp, Qs)
++
++        integer, intent(in)  :: ib, ie
++        integer, intent(in)  :: jb, je
++        integer, intent(in)  :: kb, ke
++        character(*), intent(in)  :: fn_velm
++        real(SP), intent(out) :: mu(kb:ke, ib:ie, jb:je)
++        real(SP), intent(out) :: rho(kb:ke, ib:ie, jb:je)
++        real(SP), intent(out) :: lambda(kb:ke, ib:ie, jb:je)
++        real(SP), intent(out) :: Qp(kb:ke, ib:ie, jb:je)
++        real(SP), intent(out) :: Qs(kb:ke, ib:ie, jb:je)
++
++        real(SP), allocatable :: hhmu(:, :), hhrho(:,:), hhlam(:,:), hhQp(:,:), hhQs(:,:)
++        real(SP), allocatable :: hhvp(:,:), hhvs(:,:)
++        integer :: i, j, k, ii, jj, kk
++        integer :: ncid, muid, rhoid, lamid, qpid, qsid, vpid, vsid
++        logical :: haveMu, haveLam, haveVp, haveVs, haveRho, haveQp, haveQs
++        character(80) :: xn, yn, zn
++        integer :: nxc, nyc, nzc !< netcdf volume size
++        integer :: st(3), ct(3)
++
++        call assert(nf90_open(fn_velm, NF90_NOWRITE, ncid) == NF90_NOERR)
++        !! size
++        call assert(nf90_inquire_dimension(ncid, 1, xn, nxc) == NF90_NOERR)
++        call assert(nf90_inquire_dimension(ncid, 2, yn, nyc) == NF90_NOERR)
++        call assert(nf90_inquire_dimension(ncid, 3, zn, nzc) == NF90_NOERR)
++        haveMu  = (nf90_inq_varid(ncid, "mu",     muid)  == NF90_NOERR)
++        haveRho = (nf90_inq_varid(ncid, "rho",    rhoid) == NF90_NOERR)
++        haveLam = (nf90_inq_varid(ncid, "lambda", lamid) == NF90_NOERR)
++        haveQp  = (nf90_inq_varid(ncid, "Qp",     qpid)  == NF90_NOERR)
++        haveQs  = (nf90_inq_varid(ncid, "Qs",     qsid)  == NF90_NOERR)
++        haveVp  = (nf90_inq_varid(ncid, "Vp",     vpid)  == NF90_NOERR)
++        if (.not. haveVp) haveVp = (nf90_inq_varid(ncid, "vp", vpid) == NF90_NOERR)
++        haveVs  = (nf90_inq_varid(ncid, "Vs",     vsid)  == NF90_NOERR)
++        if (.not. haveVs) haveVs = (nf90_inq_varid(ncid, "vs", vsid) == NF90_NOERR)
++
++        if (.not. haveRho) then
++            call debug('rdvelm__3d: rho not found in NetCDF file')
++            call assert(.false.)
++        end if
++        if (.not. haveMu .and. .not. (haveVs .and. haveRho)) then
++            call debug('rdvelm__3d: mu missing and cannot derive from Vs*rho')
++            call assert(.false.)
++        end if
++        if (.not. haveLam .and. .not. (haveVp .and. (haveMu .or. (haveVs .and. haveRho)))) then
++            call debug('rdvelm__3d: lambda missing and cannot derive from Vp, Vs, rho')
++            call assert(.false.)
++        end if
++        
++        if (haveMu) then
++            allocate (hhmu(nxc, nyc))
++        else
++            allocate (hhvs(nxc, nyc))
++        end if
++        allocate (hhrho(nxc, nyc))
++        if (haveLam) then
++            allocate (hhlam(nxc, nyc))
++        else
++            allocate (hhvp(nxc, nyc))
++        end if
++        allocate (hhQp(nxc, nyc))
++        allocate (hhQs(nxc, nyc))
++        
++        st(1:3) = (/1, 1, 1/)
++        ct(1:3) = (/nxc, nyc, 1/)
++
++        do k = kb, min(ke, nzc)
++
++            if (k <= 0) then
++                kk = k + nzc
++            else
++                kk = k
++            end if
++
++            st(3) = kk
++            if (haveMu) then
++                call assert(nf90_get_var(ncid, muid,  hhmu,  start=st, count=ct) == NF90_NOERR)
++            else
++                call assert(nf90_get_var(ncid, vsid,  hhvs,  start=st, count=ct) == NF90_NOERR)
++            end if
++            call assert(nf90_get_var(ncid, rhoid, hhrho, start=st, count=ct) == NF90_NOERR)
++            if (haveLam) then
++                call assert(nf90_get_var(ncid, lamid, hhlam, start=st, count=ct) == NF90_NOERR)
++            else
++                call assert(nf90_get_var(ncid, vpid,  hhvp,  start=st, count=ct) == NF90_NOERR)
++            end if
++            if (haveQp) then
++                call assert(nf90_get_var(ncid, qpid,  hhQp,  start=st, count=ct) == NF90_NOERR)
++            else
++                hhQp = 1.0e9_SP
++            end if
++            if (haveQs) then
++                call assert(nf90_get_var(ncid, qsid,  hhQs,  start=st, count=ct) == NF90_NOERR)
++            else
++                hhQs = 1.0e9_SP
++            end if
++
++            do j = jb, je
++
++                jj = mod(j, nyc)
++                if (jj <= 0) jj = jj + nyc
++
++                do i = ib, ie
++                    ii = mod(i, nxc)
++                    if (ii <= 0) ii = ii + nxc
++                    if (haveMu) then
++                        mu(k, i, j) = hhmu(ii, jj)
++                    else
++                        mu(k, i, j) = hhrho(ii, jj) * hhvs(ii, jj) * hhvs(ii, jj)
++                    end if
++                    rho(k, i, j) = hhrho(ii, jj)
++                    if (haveLam) then
++                        lambda(k, i, j) = hhlam(ii, jj)
++                    else
++                        lambda(k, i, j) = hhrho(ii, jj) * hhvp(ii, jj) * hhvp(ii, jj) - 2.0_SP * mu(k, i, j)
++                    end if
++                    Qp(k, i, j) = hhQp(ii, jj)
++                    Qs(k, i, j) = hhQs(ii, jj)
++                end do
++            end do
++
++        end do
++
++        if (allocated(hhmu)) deallocate (hhmu)
++        deallocate (hhrho)
++        if (allocated(hhlam)) deallocate (hhlam)
++        if (allocated(hhvp))  deallocate (hhvp)
++        if (allocated(hhvs))  deallocate (hhvs)
++        deallocate (hhQp)
++        deallocate (hhQs)
++
++        !! bottom cyclic part
++        do k = nzc + 1, ke
++            kk = mod(k, nzc)
++            mu(k, ib:ie, jb:je) = mu(kk, ib:ie, jb:je)
++            rho(k, ib:ie, jb:je) = rho(kk, ib:ie, jb:je)
++            lambda(k, ib:ie, jb:je) = lambda(kk, ib:ie, jb:je)
++            Qp(k, ib:ie, jb:je) = Qp(kk, ib:ie, jb:je)
++            Qs(k, ib:ie, jb:je) = Qs(kk, ib:ie, jb:je)
++        end do
++
++    end subroutine rdvelm__3d
++
++end module m_rdvelm
+diff --git a/src/swpc_3d/m_medium.f90 b/src/swpc_3d/m_medium.f90
+index c5b3bf0..dd3ff04 100644
+--- a/src/swpc_3d/m_medium.f90
++++ b/src/swpc_3d/m_medium.f90
+@@ -17,6 +17,7 @@ module m_medium
+     use m_vmodel_lgm
+     use m_vmodel_user
+     use m_vmodel_ggm
++    use m_vmodel_velm
+     use m_vmodel_uni_rmed
+     use m_vmodel_grd_rmed
+     use m_vmodel_lhm_rmed
+@@ -102,6 +103,9 @@ contains
+             case ('lhm')
+                 call vmodel_lhm(io_prm, ibeg_m, iend_m, jbeg_m, jend_m, kbeg_m, kend_m, xc, yc, zc, vcut, &
+                                 rho, lam, mu, taup, taus, bddep)
++            case ('velm')
++                call vmodel_velm(io_prm, ibeg_m, iend_m, jbeg_m, jend_m, kbeg_m, kend_m, xc, yc, zc, vcut, &
++                                rho, lam, mu, taup, taus, bddep)
+             case ('uni_rmed')
+                 call vmodel_uni_rmed(io_prm, ibeg_m, iend_m, jbeg_m, jend_m, kbeg_m, kend_m, xc, yc, zc, vcut, &
+                                      rho, lam, mu, taup, taus, bddep)
+diff --git a/src/swpc_3d/m_snap.f90 b/src/swpc_3d/m_snap.f90
+index 1dc6615..8d4e6b2 100644
+--- a/src/swpc_3d/m_snap.f90
++++ b/src/swpc_3d/m_snap.f90
+@@ -51,6 +51,7 @@ module m_snap
+         !! variables for netcdf mode
+         integer :: did_x1, did_x2, did_t ! dimension id for independent vars
+         integer :: vid_x1, vid_x2, vid_t ! variable  id for independent vars
++        integer :: did_x3, vid_x3
+         integer :: varid(10)           ! variable  id for dependent vars
+         integer :: medid(10)            ! medium array id
+         real    :: vmax(10), vmin(10)  ! max/min of dependent vars
+@@ -59,7 +60,7 @@ module m_snap
+ 
+     end type snp
+ 
+-    type(snp) :: xy_ps, yz_ps, xz_ps, fs_ps, ob_ps, xy_v, yz_v, xz_v, fs_v, ob_v, xy_u, yz_u, xz_u, fs_u, ob_u
++    type(snp) :: xy_ps, yz_ps, xz_ps, fs_ps, ob_ps, xy_v, yz_v, xz_v, fs_v, ob_v, xy_u, yz_u, xz_u, fs_u, ob_u, vol_v, vol_u, vol_ps
+ 
+     ! switch
+     integer   :: ntdec_s                            !< time step decimation factor: Snap and Waves
+@@ -80,6 +81,8 @@ module m_snap
+     ! displacement snapshot buffer
+     real(SP), allocatable :: buf_yz_u(:,:,:), buf_xz_u(:,:,:), buf_xy_u(:,:,:), buf_fs_u(:,:,:), buf_ob_u(:,:,:)
+     real(SP), allocatable :: max_ob_v(:,:,:), max_ob_u(:,:,:), max_fs_v(:,:,:), max_fs_u(:,:,:)
++    ! volumetric displacement accumulator (local decimated block)
++    real(SP), allocatable :: acc_vol_u(:,:,:,:)
+ 
+     ! cross-section data MPI communicator
+     integer :: mpi_comm_xz, mpi_comm_yz
+@@ -121,6 +124,9 @@ contains
+         call readini(io_prm, 'jdec', jdec, 1)
+         call readini(io_prm, 'kdec', kdec, 1)
+         call readini(io_prm, 'ntdec_s', ntdec_s, 10)
++        call readini(io_prm, 'vol_v%sw', vol_v%sw, .false.)
++        call readini(io_prm, 'vol_u%sw', vol_u%sw, .false.)
++        call readini(io_prm, 'vol_ps%sw', vol_ps%sw, .false.)
+ 
+         !! snapshot size#2013-0440
+         nxs = (nx + (idec / 2)) / idec
+@@ -171,6 +177,9 @@ contains
+         ob_v%ionode = mod(6, nproc)
+         ob_u%ionode = mod(7, nproc)
+         ob_ps%ionode = mod(8, nproc)
++        vol_v%ionode = mod(9, nproc)
++        vol_u%ionode = mod(10, nproc)
++        vol_ps%ionode = mod(11, nproc)
+ 
+         call global__getnode(1, j0_xz, idum, idy_xz)
+         call global__getnode(i0_yz, 1, idx_yz, idum)
+@@ -247,6 +256,40 @@ contains
+         xy_ps%coordinate = 'xy'; xy_v%coordinate = 'xy'; xy_u%coordinate = 'xy'; 
+         ob_ps%coordinate = 'ob'; ob_v%coordinate = 'ob'; ob_u%coordinate = 'ob'; 
+         fs_ps%coordinate = 'fs'; fs_v%coordinate = 'fs'; fs_u%coordinate = 'fs'; 
++
++        ! volumetric velocity
++        vol_v%nsnp = 3
++        vol_v%nmed = 3
++        vol_v%snaptype  = 'v3'
++        vol_v%coordinate = '3d'
++        vol_v%vname(1) = 'Vx'; vol_v%vname(2) = 'Vy'; vol_v%vname(3) = 'Vz'
++        vol_v%vunit(1) = 'm/s'; vol_v%vunit(2) = 'm/s'; vol_v%vunit(3) = 'm/s'
++        vol_v%vname(4)='rho';    vol_v%vunit(4)='10^3 kg/cm^3'
++        vol_v%vname(5)='lambda'; vol_v%vunit(5)='10^9 Pa'
++        vol_v%vname(6)='mu';     vol_v%vunit(6)='10^9 Pa'
++
++        ! volumetric displacement
++        vol_u%nsnp = 3
++        vol_u%nmed = 3
++        vol_u%snaptype  = 'u3'
++        vol_u%coordinate = '3d'
++        vol_u%vname(1) = 'Ux'; vol_u%vname(2) = 'Uy'; vol_u%vname(3) = 'Uz'
++        vol_u%vunit(1) = 'm'; vol_u%vunit(2) = 'm'; vol_u%vunit(3) = 'm'
++        vol_u%vname(4)='rho';    vol_u%vunit(4)='10^3 kg/cm^3'
++        vol_u%vname(5)='lambda'; vol_u%vunit(5)='10^9 Pa'
++        vol_u%vname(6)='mu';     vol_u%vunit(6)='10^9 Pa'
++
++        ! volumetric P&S amplitude
++        vol_ps%nsnp = 4
++        vol_ps%nmed = 3
++        vol_ps%snaptype  = 'ps'
++        vol_ps%coordinate = '3d'
++        vol_ps%vname(1) = 'div'; vol_ps%vname(2) = 'rot_x'; vol_ps%vname(3) = 'rot_y'; vol_ps%vname(4) = 'rot_z'
++        vol_ps%vunit(1) = '1/s'; vol_ps%vunit(2) = '1/s'; vol_ps%vunit(3) = '1/s'; vol_ps%vunit(4) = '1/s'
++        vol_ps%vname(5)='rho';    vol_ps%vunit(5)='10^3 kg/cm^3'
++        vol_ps%vname(6)='lambda'; vol_ps%vunit(6)='10^9 Pa'
++        vol_ps%vname(7)='mu';     vol_ps%vunit(7)='10^9 Pa'
++
+         !! output settings
+ 
+         if (yz_ps%sw) call newfile_yz_nc(trim(odir)//'/'//trim(title)//'.3d.yz.ps.nc', yz_ps)
+@@ -267,6 +310,10 @@ contains
+         if (fs_u%sw) call newfile_xy_nc(trim(odir)//'/'//trim(title)//'.3d.fs.u.nc', fs_u)
+         if (ob_u%sw) call newfile_xy_nc(trim(odir)//'/'//trim(title)//'.3d.ob.u.nc', ob_u)
+ 
++        if (vol_v%sw) call newfile_vol_nc(trim(odir)//'/'//trim(title)//'.3d.vol.v.nc', vol_v)
++        if (vol_u%sw) call newfile_vol_nc(trim(odir)//'/'//trim(title)//'.3d.vol.u.nc', vol_u)
++        if (vol_ps%sw) call newfile_vol_nc(trim(odir)//'/'//trim(title)//'.3d.vol.ps.nc', vol_ps)
++
+ 
+         !! for taking derivatives
+         r20x = 1.0_MP / dx
+@@ -280,6 +327,9 @@ contains
+         allocate (buf_fs_u(nxs, nys, 3), source=0.0)
+         allocate (buf_ob_u(nxs, nys, 3), source=0.0)
+ 
++        ! local volumetric accumulator sized by decimated local block
++        allocate (acc_vol_u(is1-is0+1, js1-js0+1, ks1-ks0+1, 3), source=0.0)
++
+         !! maximum amplitude buffers
+         allocate (max_ob_v(nxs, nys, 3), source=0.0)
+         allocate (max_ob_u(nxs, nys, 3), source=0.0)
+@@ -916,6 +966,10 @@ contains
+         if (fs_u%sw) call wbuf_fs_u(it)
+         if (ob_u%sw) call wbuf_ob_u(it)
+ 
++        if (vol_v%sw) call wbuf_vol_v(it)
++        if (vol_u%sw) call wbuf_vol_u(it)
++        if (vol_ps%sw) call wbuf_vol_ps(it)
++
+         call pwatch__off("snap__write")
+ 
+     end subroutine snap__write
+@@ -2140,6 +2194,10 @@ contains
+             end if
+         end if
+ 
++        if (vol_v%sw .and. myid == vol_v%ionode) call close_nc(vol_v)
++        if (vol_u%sw .and. myid == vol_u%ionode) call close_nc(vol_u)
++        if (vol_ps%sw .and. myid == vol_ps%ionode) call close_nc(vol_ps)
++
+ 
+         call pwatch__off('snap__closefiles')
+ 
+@@ -2234,5 +2292,547 @@ contains
+ 
+     end subroutine pack_3D
+ 
++    subroutine newfile_vol_nc(fname, hdr)
++        character(*), intent(in)     :: fname
++        type(snp),     intent(inout) :: hdr
++        integer :: err
++
++        if (myid == hdr%ionode) then
++            hdr%vmax = 0.0
++            hdr%vmin = 0.0
++            hdr%na1  = na / idec
++            hdr%na2  = na / jdec
++            hdr%ds1  = idec * dx
++            hdr%ds2  = jdec * dy
++
++            call nc_chk(nf90_create(trim(fname), NF90_CLOBBER, hdr%io))
++            call write_nc_header_vol(hdr)
++            call nc_chk(nf90_enddef(hdr%io))
++
++            call nc_chk(nf90_put_var(hdr%io, hdr%vid_x1, xsnp))
++            call nc_chk(nf90_put_var(hdr%io, hdr%vid_x2, ysnp))
++            call nc_chk(nf90_put_var(hdr%io, hdr%vid_x3, zsnp))
++        end if
++
++        ! IMPORTANT: all ranks must participate, or ionode will hang in mpi_recv
++        call mpi_barrier(mpi_comm_world, err)
++        call wbuf_vol_med_once_hdr(hdr)
++
++    end subroutine newfile_vol_nc
++
++    subroutine write_nc_header_vol(hdr)
++        type(snp), intent(inout) :: hdr
++        integer :: i, ntime, m
++
++        ! dims
++        call nc_chk(nf90_def_dim(hdr%io, 'x', nxs, hdr%did_x1))
++        call nc_chk(nf90_def_dim(hdr%io, 'y', nys, hdr%did_x2))
++        call nc_chk(nf90_def_dim(hdr%io, 'z', nzs, hdr%did_x3))
++        call nc_chk(nf90_def_dim(hdr%io, 't', NF90_UNLIMITED, hdr%did_t))
++
++        ! coords
++        call nc_chk(nf90_def_var(hdr%io, 'x', NF90_REAL, hdr%did_x1, hdr%vid_x1))
++        call nc_chk(nf90_def_var(hdr%io, 'y', NF90_REAL, hdr%did_x2, hdr%vid_x2))
++        call nc_chk(nf90_def_var(hdr%io, 'z', NF90_REAL, hdr%did_x3, hdr%vid_x3))
++        call nc_chk(nf90_def_var(hdr%io, 't', NF90_REAL, hdr%did_t, hdr%vid_t))
++
++        call nc_chk(nf90_put_att(hdr%io, hdr%vid_x1, 'long_name', 'x'))
++        call nc_chk(nf90_put_att(hdr%io, hdr%vid_x2, 'long_name', 'y'))
++        call nc_chk(nf90_put_att(hdr%io, hdr%vid_x3, 'long_name', 'z'))
++        call nc_chk(nf90_put_att(hdr%io, hdr%vid_x1, 'units', 'km'))
++        call nc_chk(nf90_put_att(hdr%io, hdr%vid_x2, 'units', 'km'))
++        call nc_chk(nf90_put_att(hdr%io, hdr%vid_x3, 'units', 'km'))
++        call nc_chk(nf90_put_att(hdr%io, hdr%vid_t,  'units', 's'))
++        call nc_chk(nf90_put_att(hdr%io, hdr%vid_t,  'long_name', 't'))
++
++        ! number of time-dependent variables
++        if (hdr%snaptype == 'ps') then
++            ntime = 4
++        else
++            ntime = 3
++        end if
++
++        ! time-dependent variables: x,y,z,t
++        do i = 1, ntime
++            call nc_chk(nf90_def_var(hdr%io, trim(hdr%vname(i)), NF90_REAL, &
++                 (/hdr%did_x1,hdr%did_x2,hdr%did_x3,hdr%did_t/), hdr%varid(i)))
++            call nc_chk(nf90_put_att(hdr%io, hdr%varid(i), 'units', trim(hdr%vunit(i))))
++        end do
++
++        ! medium variables (if any): x,y,z (NO time)
++        do m = 1, hdr%nmed
++            i = ntime + m
++            call nc_chk(nf90_def_var(hdr%io, trim(hdr%vname(i)), NF90_REAL, &
++                 (/hdr%did_x1,hdr%did_x2,hdr%did_x3/), hdr%varid(i)))
++            call nc_chk(nf90_put_att(hdr%io, hdr%varid(i), 'units', trim(hdr%vunit(i))))
++            hdr%medid(m) = hdr%varid(i)
++        end do
++
++        ! global attrs (minimal, consistent)
++        call nc_chk(nf90_put_att(hdr%io, NF90_GLOBAL, 'generated_by', 'SWPC'))
++        call nc_chk(nf90_put_att(hdr%io, NF90_GLOBAL, 'codetype', CODE_TYPE))
++        call nc_chk(nf90_put_att(hdr%io, NF90_GLOBAL, 'hdrver', HEADER_VERSION))
++        call nc_chk(nf90_put_att(hdr%io, NF90_GLOBAL, 'title', trim(title)))
++        call nc_chk(nf90_put_att(hdr%io, NF90_GLOBAL, 'exedate', exedate))
++        call nc_chk(nf90_put_att(hdr%io, NF90_GLOBAL, 'coordinate', '3d'))
++        call nc_chk(nf90_put_att(hdr%io, NF90_GLOBAL, 'datatype', hdr%snaptype))
++        call nc_chk(nf90_put_att(hdr%io, NF90_GLOBAL, 'dt', dt * ntdec_s))
++    end subroutine write_nc_header_vol
++
++    subroutine wbuf_vol_v(it)
++        integer, intent(in) :: it
++
++        integer :: ii, jj, kk, i, j, k
++        integer :: r, err
++        integer :: hdr_i(6)
++        integer :: nxL, nyL, nzL, nloc
++        integer :: stt(4), cnt(4)
++        real(SP), allocatable :: sbuf(:)
++        real(SP), allocatable, save :: gVx(:,:,:), gVy(:,:,:), gVz(:,:,:)
++
++        if (mod(it - 1, ntdec_s) /= 0) return
++
++        ! pack local decimated block: (ii, jj, kk) -> (i, j, k) grid
++        nxL = is1 - is0 + 1
++        nyL = js1 - js0 + 1
++        nzL = ks1 - ks0 + 1
++        nloc = nxL * nyL * nzL
++
++        allocate(sbuf(3 * nloc), source=0.0)
++
++        ! local pack order: i-fast, then j, then k
++        ! index = ((kk-ks0)*nxL*nyL) + ((jj-js0)*nxL) + (ii-is0) + 1
++        do kk = ks0, ks1
++            do jj = js0, js1
++                do ii = is0, is1
++                    k = kk * kdec - kdec/2
++                    j = jj * jdec - jdec/2
++                    i = ii * idec - idec/2
++
++                    r = ( (kk-ks0)*nxL*nyL + (jj-js0)*nxL + (ii-is0) ) + 1
++
++                    sbuf(0*nloc + r) = Vx(k,i,j) * UC * M0
++                    sbuf(1*nloc + r) = Vy(k,i,j) * UC * M0
++                    sbuf(2*nloc + r) = Vz(k,i,j) * UC * M0
++                end do
++            end do
++        end do
++
++        if (myid /= vol_v%ionode) then
++            hdr_i = (/is0,is1, js0,js1, ks0,ks1/)
++            call mpi_send(hdr_i, 6, MPI_INTEGER, vol_v%ionode, 900, mpi_comm_world, err)
++            call mpi_send(sbuf, 3*nloc, MPI_REAL, vol_v%ionode, 901, mpi_comm_world, err)
++            deallocate(sbuf)
++            return
++        end if
++
++        ! ionode: allocate globals once
++        if (.not. allocated(gVx)) then
++            allocate(gVx(nxs,nys,nzs), source=0.0_SP)
++            allocate(gVy(nxs,nys,nzs), source=0.0_SP)
++            allocate(gVz(nxs,nys,nzs), source=0.0_SP)
++        end if
++
++        gVx = 0.0_SP; gVy = 0.0_SP; gVz = 0.0_SP
++
++        ! place my own block
++        call unpack_block(is0,is1,js0,js1,ks0,ks1, sbuf, gVx, gVy, gVz)
++
++        ! receive from others
++        do r = 0, nproc-1
++            if (r == vol_v%ionode) cycle
++            call mpi_recv(hdr_i, 6, MPI_INTEGER, r, 900, mpi_comm_world, MPI_STATUS_IGNORE, err)
++            nxL = hdr_i(2) - hdr_i(1) + 1
++            nyL = hdr_i(4) - hdr_i(3) + 1
++            nzL = hdr_i(6) - hdr_i(5) + 1
++            nloc = nxL*nyL*nzL
++
++            deallocate(sbuf)
++            allocate(sbuf(3*nloc), source=0.0)
++            call mpi_recv(sbuf, 3*nloc, MPI_REAL, r, 901, mpi_comm_world, MPI_STATUS_IGNORE, err)
++
++            call unpack_block(hdr_i(1),hdr_i(2),hdr_i(3),hdr_i(4),hdr_i(5),hdr_i(6), sbuf, gVx, gVy, gVz)
++        end do
++
++        ! write one time-slab to netcdf
++        stt = (/1,1,1, it/ntdec_s + 1/)
++        cnt = (/nxs,nys,nzs, 1/)
++        call nc_chk(nf90_put_var(vol_v%io, vol_v%varid(1), gVx, start=stt, count=cnt))
++        call nc_chk(nf90_put_var(vol_v%io, vol_v%varid(2), gVy, start=stt, count=cnt))
++        call nc_chk(nf90_put_var(vol_v%io, vol_v%varid(3), gVz, start=stt, count=cnt))
++        call nc_chk(nf90_put_var(vol_v%io, vol_v%vid_t, it*dt, start=(/it/ntdec_s + 1/)))
++
++        vol_v%vmax(1) = max(vol_v%vmax(1), maxval(gVx)); vol_v%vmin(1) = min(vol_v%vmin(1), minval(gVx))
++        vol_v%vmax(2) = max(vol_v%vmax(2), maxval(gVy)); vol_v%vmin(2) = min(vol_v%vmin(2), minval(gVy))
++        vol_v%vmax(3) = max(vol_v%vmax(3), maxval(gVz)); vol_v%vmin(3) = min(vol_v%vmin(3), minval(gVz))
++
++        call nc_chk(nf90_redef(vol_v%io))
++        call nc_chk(nf90_put_att(vol_v%io, vol_v%varid(1), 'actual_range', (/vol_v%vmin(1), vol_v%vmax(1)/)))
++        call nc_chk(nf90_put_att(vol_v%io, vol_v%varid(2), 'actual_range', (/vol_v%vmin(2), vol_v%vmax(2)/)))
++        call nc_chk(nf90_put_att(vol_v%io, vol_v%varid(3), 'actual_range', (/vol_v%vmin(3), vol_v%vmax(3)/)))
++        call nc_chk(nf90_enddef(vol_v%io))
++
++        deallocate(sbuf)
++    end subroutine wbuf_vol_v
++
++    subroutine wbuf_vol_u(it)
++        integer, intent(in) :: it
++
++        integer :: ii, jj, kk, i, j, k
++        integer :: r, err
++        integer :: hdr_i(6)
++        integer :: nxL, nyL, nzL, nloc
++        integer :: stt(4), cnt(4)
++        real(SP), allocatable :: sbuf(:)
++        real(SP), allocatable, save :: gUx(:,:,:), gUy(:,:,:), gUz(:,:,:)
++
++        ! integrate velocity to displacement on every time step
++        do kk = ks0, ks1
++            do jj = js0, js1
++                do ii = is0, is1
++                    k = kk * kdec - kdec/2
++                    j = jj * jdec - jdec/2
++                    i = ii * idec - idec/2
++                    acc_vol_u(ii-is0+1, jj-js0+1, kk-ks0+1, 1) = acc_vol_u(ii-is0+1, jj-js0+1, kk-ks0+1, 1) + Vx(k,i,j) * UC * M0 * dt
++                    acc_vol_u(ii-is0+1, jj-js0+1, kk-ks0+1, 2) = acc_vol_u(ii-is0+1, jj-js0+1, kk-ks0+1, 2) + Vy(k,i,j) * UC * M0 * dt
++                    acc_vol_u(ii-is0+1, jj-js0+1, kk-ks0+1, 3) = acc_vol_u(ii-is0+1, jj-js0+1, kk-ks0+1, 3) + Vz(k,i,j) * UC * M0 * dt
++                end do
++            end do
++        end do
++
++        if (mod(it - 1, ntdec_s) /= 0) return
++
++        nxL = is1 - is0 + 1
++        nyL = js1 - js0 + 1
++        nzL = ks1 - ks0 + 1
++        nloc = nxL * nyL * nzL
++
++        allocate(sbuf(3 * nloc), source=0.0)
++
++        ! local pack order: i-fast, then j, then k from accumulator
++        do kk = ks0, ks1
++            do jj = js0, js1
++                do ii = is0, is1
++                    r = ( (kk-ks0)*nxL*nyL + (jj-js0)*nxL + (ii-is0) ) + 1
++                    sbuf(0*nloc + r) = acc_vol_u(ii-is0+1, jj-js0+1, kk-ks0+1, 1)
++                    sbuf(1*nloc + r) = acc_vol_u(ii-is0+1, jj-js0+1, kk-ks0+1, 2)
++                    sbuf(2*nloc + r) = acc_vol_u(ii-is0+1, jj-js0+1, kk-ks0+1, 3)
++                end do
++            end do
++        end do
++
++        if (myid /= vol_u%ionode) then
++            hdr_i = (/is0,is1, js0,js1, ks0,ks1/)
++            call mpi_send(hdr_i, 6, MPI_INTEGER, vol_u%ionode, 900, mpi_comm_world, err)
++            call mpi_send(sbuf, 3*nloc, MPI_REAL, vol_u%ionode, 901, mpi_comm_world, err)
++            deallocate(sbuf)
++            return
++        end if
++
++        ! ionode: allocate globals once
++        if (.not. allocated(gUx)) then
++            allocate(gUx(nxs,nys,nzs), source=0.0_SP)
++            allocate(gUy(nxs,nys,nzs), source=0.0_SP)
++            allocate(gUz(nxs,nys,nzs), source=0.0_SP)
++        end if
++
++        gUx = 0.0_SP; gUy = 0.0_SP; gUz = 0.0_SP
++
++        ! place my own block
++        call unpack_block(is0,is1,js0,js1,ks0,ks1, sbuf, gUx, gUy, gUz)
++
++        ! receive from others
++        do r = 0, nproc-1
++            if (r == vol_u%ionode) cycle
++            call mpi_recv(hdr_i, 6, MPI_INTEGER, r, 900, mpi_comm_world, MPI_STATUS_IGNORE, err)
++            nxL = hdr_i(2) - hdr_i(1) + 1
++            nyL = hdr_i(4) - hdr_i(3) + 1
++            nzL = hdr_i(6) - hdr_i(5) + 1
++            nloc = nxL*nyL*nzL
++
++            deallocate(sbuf)
++            allocate(sbuf(3*nloc), source=0.0)
++            call mpi_recv(sbuf, 3*nloc, MPI_REAL, r, 901, mpi_comm_world, MPI_STATUS_IGNORE, err)
++
++            call unpack_block(hdr_i(1),hdr_i(2),hdr_i(3),hdr_i(4),hdr_i(5),hdr_i(6), sbuf, gUx, gUy, gUz)
++        end do
++
++        ! write one time-slab to netcdf
++        stt = (/1,1,1, it/ntdec_s + 1/)
++        cnt = (/nxs,nys,nzs, 1/)
++        call nc_chk(nf90_put_var(vol_u%io, vol_u%varid(1), gUx, start=stt, count=cnt))
++        call nc_chk(nf90_put_var(vol_u%io, vol_u%varid(2), gUy, start=stt, count=cnt))
++        call nc_chk(nf90_put_var(vol_u%io, vol_u%varid(3), gUz, start=stt, count=cnt))
++        call nc_chk(nf90_put_var(vol_u%io, vol_u%vid_t, it*dt, start=(/it/ntdec_s + 1/)))
++
++        vol_u%vmax(1) = max(vol_u%vmax(1), maxval(gUx)); vol_u%vmin(1) = min(vol_u%vmin(1), minval(gUx))
++        vol_u%vmax(2) = max(vol_u%vmax(2), maxval(gUy)); vol_u%vmin(2) = min(vol_u%vmin(2), minval(gUy))
++        vol_u%vmax(3) = max(vol_u%vmax(3), maxval(gUz)); vol_u%vmin(3) = min(vol_u%vmin(3), minval(gUz))
++
++        call nc_chk(nf90_redef(vol_u%io))
++        call nc_chk(nf90_put_att(vol_u%io, vol_u%varid(1), 'actual_range', (/vol_u%vmin(1), vol_u%vmax(1)/)))
++        call nc_chk(nf90_put_att(vol_u%io, vol_u%varid(2), 'actual_range', (/vol_u%vmin(2), vol_u%vmax(2)/)))
++        call nc_chk(nf90_put_att(vol_u%io, vol_u%varid(3), 'actual_range', (/vol_u%vmin(3), vol_u%vmax(3)/)))
++        call nc_chk(nf90_enddef(vol_u%io))
++
++        deallocate(sbuf)
++    end subroutine wbuf_vol_u
++
++    subroutine wbuf_vol_ps(it)
++        integer, intent(in) :: it
++
++        integer :: ii, jj, kk, i, j, k
++        integer :: r, err
++        integer :: hdr_i(6)
++        integer :: nxL, nyL, nzL, nloc
++        integer :: stt(4), cnt(4)
++        real(SP) :: div, rx, ry, rz
++        real(SP), allocatable :: sbuf(:)
++        real(SP), allocatable, save :: gD(:,:,:), gRx(:,:,:), gRy(:,:,:), gRz(:,:,:)
++
++        if (mod(it - 1, ntdec_s) /= 0) return
++
++        ! local decimated block size
++        nxL = is1 - is0 + 1
++        nyL = js1 - js0 + 1
++        nzL = ks1 - ks0 + 1
++        nloc = nxL * nyL * nzL
++
++        allocate(sbuf(4 * nloc), source=0.0)
++
++        ! compute PS variables at decimated points and pack: i-fast, then j, then k
++        do kk = ks0, ks1
++            do jj = js0, js1
++                do ii = is0, is1
++                    k = kk * kdec - kdec/2
++                    j = jj * jdec - jdec/2
++                    i = ii * idec - idec/2
++
++                    div = real( (Vx(k  ,i  ,j  ) - Vx(k  ,i-1,j  )) * r20x &
++                             + (Vy(k  ,i  ,j  ) - Vy(k  ,i  ,j-1)) * r20y &
++                             + (Vz(k  ,i  ,j  ) - Vz(k-1,i  ,j  )) * r20z )
++                    rx  = real( (Vz(k  ,i  ,j+1) - Vz(k  ,i  ,j  )) * r20y &
++                             - (Vy(k+1,i  ,j  ) - Vy(k  ,i  ,j  )) * r20z )
++                    ry  = real( (Vx(k+1,i  ,j  ) - Vx(k  ,i  ,j  )) * r20z &
++                             - (Vz(k  ,i+1,j  ) - Vz(k  ,i  ,j  )) * r20x )
++                    rz  = real( (Vy(k  ,i+1,j  ) - Vy(k  ,i  ,j  )) * r20x &
++                             - (Vx(k  ,i  ,j+1) - Vx(k  ,i  ,j  )) * r20y )
++
++                    ! masking
++                    div = div * lam(k,i,j) / (abs(lam(k,i,j)) + epsilon(1.0))
++                    rx  = rx  * abs(Syz(k,i,j)) / (abs(Syz(k,i,j)) + epsilon(1.0_SP))
++                    ry  = ry  * abs(Sxz(k,i,j)) / (abs(Sxz(k,i,j)) + epsilon(1.0_SP))
++                    rz  = rz  * abs(Sxy(k,i,j)) / (abs(Sxy(k,i,j)) + epsilon(1.0_SP))
++
++                    r = ( (kk-ks0)*nxL*nyL + (jj-js0)*nxL + (ii-is0) ) + 1
++                    sbuf(0*nloc + r) = div * UC * M0 * 1e-3
++                    sbuf(1*nloc + r) = rx  * UC * M0 * 1e-3
++                    sbuf(2*nloc + r) = ry  * UC * M0 * 1e-3
++                    sbuf(3*nloc + r) = rz  * UC * M0 * 1e-3
++                end do
++            end do
++        end do
++
++        if (myid /= vol_ps%ionode) then
++            hdr_i = (/is0,is1, js0,js1, ks0,ks1/)
++            call mpi_send(hdr_i, 6, MPI_INTEGER, vol_ps%ionode, 902, mpi_comm_world, err)
++            call mpi_send(sbuf, 4*nloc, MPI_REAL, vol_ps%ionode, 903, mpi_comm_world, err)
++            deallocate(sbuf)
++            return
++        end if
++
++        ! ionode: allocate globals once
++        if (.not. allocated(gD)) then
++            allocate(gD (nxs,nys,nzs), source=0.0_SP)
++            allocate(gRx(nxs,nys,nzs), source=0.0_SP)
++            allocate(gRy(nxs,nys,nzs), source=0.0_SP)
++            allocate(gRz(nxs,nys,nzs), source=0.0_SP)
++        end if
++
++        gD = 0.0_SP; gRx = 0.0_SP; gRy = 0.0_SP; gRz = 0.0_SP
++
++        call unpack_block4(is0,is1,js0,js1,ks0,ks1, sbuf, gD, gRx, gRy, gRz)
++
++        do r = 0, nproc-1
++            if (r == vol_ps%ionode) cycle
++            call mpi_recv(hdr_i, 6, MPI_INTEGER, r, 902, mpi_comm_world, MPI_STATUS_IGNORE, err)
++            nxL = hdr_i(2) - hdr_i(1) + 1
++            nyL = hdr_i(4) - hdr_i(3) + 1
++            nzL = hdr_i(6) - hdr_i(5) + 1
++            nloc = nxL*nyL*nzL
++
++            deallocate(sbuf)
++            allocate(sbuf(4*nloc), source=0.0)
++            call mpi_recv(sbuf, 4*nloc, MPI_REAL, r, 903, mpi_comm_world, MPI_STATUS_IGNORE, err)
++
++            call unpack_block4(hdr_i(1),hdr_i(2),hdr_i(3),hdr_i(4),hdr_i(5),hdr_i(6), sbuf, gD, gRx, gRy, gRz)
++        end do
++
++        ! write one time-slab to netcdf
++        stt = (/1,1,1, it/ntdec_s + 1/)
++        cnt = (/nxs,nys,nzs, 1/)
++        call nc_chk(nf90_put_var(vol_ps%io, vol_ps%varid(1), gD , start=stt, count=cnt))
++        call nc_chk(nf90_put_var(vol_ps%io, vol_ps%varid(2), gRx, start=stt, count=cnt))
++        call nc_chk(nf90_put_var(vol_ps%io, vol_ps%varid(3), gRy, start=stt, count=cnt))
++        call nc_chk(nf90_put_var(vol_ps%io, vol_ps%varid(4), gRz, start=stt, count=cnt))
++        call nc_chk(nf90_put_var(vol_ps%io, vol_ps%vid_t, it*dt, start=(/it/ntdec_s + 1/)))
++
++        vol_ps%vmax(1) = max(vol_ps%vmax(1), maxval(gD )); vol_ps%vmin(1) = min(vol_ps%vmin(1), minval(gD ))
++        vol_ps%vmax(2) = max(vol_ps%vmax(2), maxval(gRx)); vol_ps%vmin(2) = min(vol_ps%vmin(2), minval(gRx))
++        vol_ps%vmax(3) = max(vol_ps%vmax(3), maxval(gRy)); vol_ps%vmin(3) = min(vol_ps%vmin(3), minval(gRy))
++        vol_ps%vmax(4) = max(vol_ps%vmax(4), maxval(gRz)); vol_ps%vmin(4) = min(vol_ps%vmin(4), minval(gRz))
++
++        call nc_chk(nf90_redef(vol_ps%io))
++        call nc_chk(nf90_put_att(vol_ps%io, vol_ps%varid(1), 'actual_range', (/vol_ps%vmin(1), vol_ps%vmax(1)/)))
++        call nc_chk(nf90_put_att(vol_ps%io, vol_ps%varid(2), 'actual_range', (/vol_ps%vmin(2), vol_ps%vmax(2)/)))
++        call nc_chk(nf90_put_att(vol_ps%io, vol_ps%varid(3), 'actual_range', (/vol_ps%vmin(3), vol_ps%vmax(3)/)))
++        call nc_chk(nf90_put_att(vol_ps%io, vol_ps%varid(4), 'actual_range', (/vol_ps%vmin(4), vol_ps%vmax(4)/)))
++        call nc_chk(nf90_enddef(vol_ps%io))
++
++        deallocate(sbuf)
++    end subroutine wbuf_vol_ps
++
++    subroutine unpack_block4(is0L,is1L,js0L,js1L,ks0L,ks1L, sbuf, g1, g2, g3, g4)
++        integer, intent(in) :: is0L,is1L,js0L,js1L,ks0L,ks1L
++        real(SP), intent(in) :: sbuf(:)
++        real(SP), intent(inout) :: g1(nxs,nys,nzs), g2(nxs,nys,nzs), g3(nxs,nys,nzs), g4(nxs,nys,nzs)
++
++        integer :: ii,jj,kk, nxL,nyL,nzL, nloc, r
++
++        nxL = is1L - is0L + 1
++        nyL = js1L - js0L + 1
++        nzL = ks1L - ks0L + 1
++        nloc = nxL*nyL*nzL
++
++        do kk = ks0L, ks1L
++            do jj = js0L, js1L
++                do ii = is0L, is1L
++                    r = ( (kk-ks0L)*nxL*nyL + (jj-js0L)*nxL + (ii-is0L) ) + 1
++                    g1(ii,jj,kk) = sbuf(0*nloc + r)
++                    g2(ii,jj,kk) = sbuf(1*nloc + r)
++                    g3(ii,jj,kk) = sbuf(2*nloc + r)
++                    g4(ii,jj,kk) = sbuf(3*nloc + r)
++                end do
++            end do
++        end do
++    end subroutine unpack_block4
++
++    subroutine unpack_block(is0L,is1L,js0L,js1L,ks0L,ks1L, sbuf, gVx, gVy, gVz)
++        integer, intent(in) :: is0L,is1L,js0L,js1L,ks0L,ks1L
++        real(SP), intent(in) :: sbuf(:)
++        real(SP), intent(inout) :: gVx(nxs,nys,nzs), gVy(nxs,nys,nzs), gVz(nxs,nys,nzs)
++
++        integer :: ii,jj,kk, nxL,nyL,nzL, nloc, r
++
++        nxL = is1L - is0L + 1
++        nyL = js1L - js0L + 1
++        nzL = ks1L - ks0L + 1
++        nloc = nxL*nyL*nzL
++
++        do kk = ks0L, ks1L
++            do jj = js0L, js1L
++                do ii = is0L, is1L
++                    r = ( (kk-ks0L)*nxL*nyL + (jj-js0L)*nxL + (ii-is0L) ) + 1
++                    gVx(ii,jj,kk) = sbuf(0*nloc + r)
++                    gVy(ii,jj,kk) = sbuf(1*nloc + r)
++                    gVz(ii,jj,kk) = sbuf(2*nloc + r)
++                end do
++            end do
++        end do
++    end subroutine unpack_block
++
++    subroutine unpack_block_med(is0L,is1L,js0L,js1L,ks0L,ks1L, sbuf, gR, gL, gM)
++        integer, intent(in) :: is0L,is1L,js0L,js1L,ks0L,ks1L
++        real(SP), intent(in) :: sbuf(:)
++        real(SP), intent(inout) :: gR(nxs,nys,nzs), gL(nxs,nys,nzs), gM(nxs,nys,nzs)
++
++        integer :: ii,jj,kk, nxL,nyL,nzL, nloc, r
++
++        nxL = is1L - is0L + 1
++        nyL = js1L - js0L + 1
++        nzL = ks1L - ks0L + 1
++        nloc = nxL*nyL*nzL
++
++        do kk = ks0L, ks1L
++            do jj = js0L, js1L
++                do ii = is0L, is1L
++                    r = ( (kk-ks0L)*nxL*nyL + (jj-js0L)*nxL + (ii-is0L) ) + 1
++                    gR(ii,jj,kk) = sbuf(0*nloc + r)
++                    gL(ii,jj,kk) = sbuf(1*nloc + r)
++                    gM(ii,jj,kk) = sbuf(2*nloc + r)
++                end do
++            end do
++        end do
++    end subroutine unpack_block_med
++
++    subroutine wbuf_vol_med_once_hdr(hdr)
++        type(snp), intent(in) :: hdr
++
++        integer :: ii, jj, kk, i, j, k
++        integer :: r, err
++        integer :: hdr_i(6)
++        integer :: nxL, nyL, nzL, nloc
++        real(SP), allocatable :: sbuf(:)
++        real(SP), allocatable, save :: gR(:,:,:), gL(:,:,:), gM(:,:,:)
++
++        nxL = is1 - is0 + 1
++        nyL = js1 - js0 + 1
++        nzL = ks1 - ks0 + 1
++        nloc = nxL * nyL * nzL
++
++        allocate(sbuf(3*nloc), source=0.0_SP)
++
++        do kk = ks0, ks1
++            do jj = js0, js1
++                do ii = is0, is1
++                    k = kk * kdec - kdec/2
++                    j = jj * jdec - jdec/2
++                    i = ii * idec - idec/2
++                    r = ( (kk-ks0)*nxL*nyL + (jj-js0)*nxL + (ii-is0) ) + 1
++                    sbuf(0*nloc + r) = rho(k,i,j)
++                    sbuf(1*nloc + r) = lam(k,i,j)
++                    sbuf(2*nloc + r) = mu(k,i,j)
++                end do
++            end do
++        end do
++
++        if (myid /= hdr%ionode) then
++            hdr_i = (/is0,is1, js0,js1, ks0,ks1/)
++            call mpi_send(hdr_i, 6, MPI_INTEGER, hdr%ionode, 910, mpi_comm_world, err)
++            call mpi_send(sbuf, 3*nloc, MPI_REAL,    hdr%ionode, 911, mpi_comm_world, err)
++            deallocate(sbuf)
++            return
++        end if
++
++        if (.not. allocated(gR)) then
++            allocate(gR(nxs,nys,nzs), source=0.0_SP)
++            allocate(gL(nxs,nys,nzs), source=0.0_SP)
++            allocate(gM(nxs,nys,nzs), source=0.0_SP)
++        end if
++
++        gR = 0.0_SP; gL = 0.0_SP; gM = 0.0_SP
++        call unpack_block_med(is0,is1,js0,js1,ks0,ks1, sbuf, gR, gL, gM)
++
++        do r = 0, nproc-1
++            if (r == hdr%ionode) cycle
++            call mpi_recv(hdr_i, 6, MPI_INTEGER, r, 910, mpi_comm_world, MPI_STATUS_IGNORE, err)
++            nxL = hdr_i(2) - hdr_i(1) + 1
++            nyL = hdr_i(4) - hdr_i(3) + 1
++            nzL = hdr_i(6) - hdr_i(5) + 1
++            nloc = nxL*nyL*nzL
++            deallocate(sbuf)
++            allocate(sbuf(3*nloc), source=0.0_SP)
++            call mpi_recv(sbuf, 3*nloc, MPI_REAL, r, 911, mpi_comm_world, MPI_STATUS_IGNORE, err)
++            call unpack_block_med(hdr_i(1),hdr_i(2),hdr_i(3),hdr_i(4),hdr_i(5),hdr_i(6), sbuf, gR, gL, gM)
++        end do
++
++        call nc_chk(nf90_put_var(hdr%io, hdr%varid(hdr%nsnp+1), gR))
++        call nc_chk(nf90_put_var(hdr%io, hdr%varid(hdr%nsnp+2), gL))
++        call nc_chk(nf90_put_var(hdr%io, hdr%varid(hdr%nsnp+3), gM))
++        call nc_chk(nf90_sync(hdr%io))
++
++        deallocate(sbuf)
++    end subroutine wbuf_vol_med_once_hdr
++
+ end module m_snap
+ 
+diff --git a/src/swpc_3d/m_vmodel_velm.f90 b/src/swpc_3d/m_vmodel_velm.f90
+new file mode 100644
+index 0000000..4a2a7ee
+--- /dev/null
++++ b/src/swpc_3d/m_vmodel_velm.f90
+@@ -0,0 +1,130 @@
++#include "../shared/m_debug.h"
++module m_vmodel_velm
++
++    !! 3D velocity model read from disk
++    !!
++    !! Boris Kaus, JGU Mainz. This project is released under the MIT license.
++
++    use m_std
++    use m_debug
++    use m_readini
++    use m_global
++    use m_seawater
++    use m_rdvelm
++
++    implicit none
++    private
++    save
++
++    public :: vmodel_velm
++
++contains
++
++    subroutine vmodel_velm(io_prm, i0, i1, j0, j1, k0, k1, xc, yc, zc, vcut, rho, lam, mu, Qp, Qs, bd)
++
++        !! Define medium velocity, density and attenuation
++
++        integer, intent(in)  :: io_prm
++        integer, intent(in)  :: i0, i1                          !< i-region
++        integer, intent(in)  :: j0, j1                          !< j-region
++        integer, intent(in)  :: k0, k1                          !< k-region
++        real(SP), intent(in)  :: xc(i0:i1)                      !< x-coordinate location
++        real(SP), intent(in)  :: yc(j0:j1)                      !< y-coordinate location
++        real(SP), intent(in)  :: zc(k0:k1)                      !< z-coordinate location
++        real(SP), intent(in)  :: vcut                           !< cut-off minimum velocity
++        real(SP), intent(out) :: rho(k0:k1, i0:i1, j0:j1)       !< mass density [g/cm^3]
++        real(SP), intent(out) :: lam(k0:k1, i0:i1, j0:j1)       !< Lame's parameter lambda [ (g/cm^3) * (km/s) ]
++        real(SP), intent(out) :: mu(k0:k1, i0:i1, j0:j1)        !< Lame's parameter mu     [ (g/cm^3) * (km/s) ]
++        real(SP), intent(out) :: qp(k0:k1, i0:i1, j0:j1)        !< P-wave attenuation
++        real(SP), intent(out) :: qs(k0:k1, i0:i1, j0:j1)        !< S-wave attenuation
++        real(SP), intent(out) :: bd(i0:i1, j0:j1, 0:NBD)        !< Boundary depths
++
++        integer  :: i, j, k
++        real(SP) :: topo0
++        real(SP) :: vp1, vs1
++        real(SP) :: dum
++        character(256) :: dir_velm, fn_velm
++        logical :: is_exist
++
++        logical :: use_munk
++        logical :: earth_flattening
++        real(SP) :: zs(k0:k1) ! spherical depth for earth_flattening
++        real(SP) :: Cv(k0:k1) ! velocity scaling coefficient for earth_flattening
++
++        call readini(io_prm, 'topo0', topo0, 0.0)
++
++        !! Read 3D velocity model from disk
++        call readini(io_prm, 'dir_velm', dir_velm, '')
++        call readini(io_prm, 'fn_velm', fn_velm, '')
++        fn_velm = trim(dir_velm)//'/'//trim(fn_velm)
++        inquire (file=fn_velm, exist=is_exist)
++        call assert(is_exist)
++        call rdvelm__3d(i0, i1, j0, j1, k0, k1, fn_velm, mu, rho, lam, Qp, Qs)
++
++        !! seawater
++        call readini(io_prm, 'munk_profile', use_munk, .false.)
++        call seawater__init(use_munk)
++
++        call readini(io_prm, 'earth_flattening', earth_flattening, .false.)
++        if (earth_flattening) then
++            do k = k0, k1
++                zs(k) = R_EARTH - R_EARTH * exp(-zc(k) / R_EARTH)
++                Cv(k) = exp(zc(k) / R_EARTH)
++            end do
++        else
++            zs(:) = zc(:)
++            Cv(:) = 1.0
++        end if
++
++        do j = j0, j1
++            do i = i0, i1
++
++                !! define topography shape here
++                bd(i, j, 0) = topo0
++
++                do k = k0, k1
++
++                    if (zs(k) > bd(i, j, 0)) then
++                        !! central domain - already read from file above
++
++                    else if (zc(k) > 0.0) then
++
++                        !! ocean column
++                        vp1 = Cv(k) * seawater__vel(zs(k))
++                        vs1 = 0.0
++
++                        rho(k, i, j) = 1.0
++                        mu(k, i, j) = rho(k, i, j) * vs1 * vs1
++                        lam(k, i, j) = rho(k, i, j) * (vp1 * vp1 - 2 * vs1 * vs1)
++                        qp(k, i, j) = 1000000.0 ! effectively no attenuation in ocean column
++                        qs(k, i, j) = 1000000.0
++
++                    else
++
++                        !! air column
++                        vp1 = 0.0
++                        vs1 = 0.0
++
++                        rho(k, i, j) = 0.001
++                        mu(k, i, j) = rho(k, i, j) * vs1 * vs1
++                        lam(k, i, j) = rho(k, i, j) * (vp1 * vp1 - 2 * vs1 * vs1)
++                        qp(k, i, j) = 10.0 ! artificially strong attenuation in air-column
++                        qs(k, i, j) = 10.0 ! artificially strong attenuation in air-column
++
++                    end if
++                end do
++            end do
++        end do
++
++        ! dummy value
++        bd(:, :, 1:NBD) = -9999
++
++        ! substitute to a dummy variable for avoiding compiler warnings
++        dum = xc(i0)
++        dum = yc(j0)
++        dum = zc(k0)
++        dum = vcut
++
++    end subroutine vmodel_velm
++
++end module m_vmodel_velm
+diff --git a/src/swpc_3d/makefile b/src/swpc_3d/makefile
+index 01a66d6..bd63280 100644
+--- a/src/swpc_3d/makefile
++++ b/src/swpc_3d/makefile
+@@ -37,6 +37,7 @@ s_vmodel2 = m_vmodel_grd.f90 # requires netcdf
+ s_vmodel3 = m_vmodel_lhm.f90 # laterally homogeneous medium
+ s_vmodel4 = m_vmodel_lgm.f90 # linear gradient model
+ s_vmodel5 = m_vmodel_ggm.f90 # grid + gradient model
++s_vmodel6 = m_vmodel_velm.f90 # 3D velocity structure from file
+ s_vmodel1r = m_vmodel_uni_rmed.f90 # homogeneous structure
+ s_vmodel2r = m_vmodel_grd_rmed.f90 # requires netcdf
+ s_vmodel3r = m_vmodel_lhm_rmed.f90 # homogeneous structure
+@@ -72,6 +73,7 @@ s_rdrmed   = m_rdrmed.f90
+ s_seawater = m_seawater.f90
+ s_version  = m_version.f90
+ s_tar      = m_tar.f90
++s_rdvelm   = m_rdvelm.f90
+ 
+ ## main program
+ s_main      = main.f90
+@@ -96,6 +98,7 @@ o_rdrmed   = $(s_rdrmed:.f90=.o)
+ o_seawater = $(s_seawater:.f90=.o)
+ o_version  = $(s_version:.f90=.o)
+ o_tar      = $(s_tar:.f90=.o)
++o_rdvelm   = $(s_rdvelm:.f90=.o)
+ 
+ o_global   = $(s_global:.f90=.o)
+ o_kernel   = $(s_kernel:.f90=.o)
+@@ -114,6 +117,7 @@ o_vmodel2  = $(s_vmodel2:.f90=.o)
+ o_vmodel3  = $(s_vmodel3:.f90=.o)
+ o_vmodel4  = $(s_vmodel4:.f90=.o)
+ o_vmodel5  = $(s_vmodel5:.f90=.o)
++o_vmodel6  = $(s_vmodel6:.f90=.o)
+ o_vmodel1r  = $(s_vmodel1r:.f90=.o)
+ o_vmodel2r  = $(s_vmodel2r:.f90=.o)
+ o_vmodel3r  = $(s_vmodel3r:.f90=.o)
+@@ -141,6 +145,7 @@ $(o_geomap):   $(s_geomap)   $(o_std) $(o_gk) $(o_pdebug)
+ $(o_rdrmed):   $(s_rdrmed)   $(o_std) $(o_pdebug)
+ $(o_seawater): $(s_seawater) $(o_std)
+ $(o_tar):      $(s_tar)
++$(o_rdvelm):   $(s_rdvelm)   $(o_std) $(o_pdebug)
+ 
+ $(o_snap):   $(s_snap)   $(o_std) $(o_global) $(o_pwatch) $(o_fdtool) $(o_readini) $(o_geomap) $(o_pdebug)
+ $(o_global):   $(s_global)   $(o_std) $(o_fdtool) $(o_pwatch) $(o_pwatch) $(o_daytim) $(o_readini) $(o_pdebug)
+@@ -148,7 +153,7 @@ $(o_fdtool):   $(s_fdtool)   $(o_std) $(o_pdebug)
+ $(o_source):   $(s_source)   $(o_std) $(o_global) $(o_fdtool) $(o_pwatch) $(o_readini) $(o_geomap) $(o_pdebug)
+ $(o_kernel):   $(s_kernel)   $(o_std) $(o_global) $(o_pwatch) $(o_medium) $(o_readini) $(o_pdebug)
+ $(o_report):   $(s_report)   $(o_std) $(o_global) $(o_kernel) $(o_pwatch) $(o_readini) $(o_pdebug) $(o_version)
+-$(o_medium):   $(s_medium)   $(o_std) $(o_global) $(o_pwatch) $(o_readini) $(o_vmodel0) $(o_vmodel1) $(o_vmodel2) $(o_vmodel3) $(o_pdebug) $(o_vmodel1r) $(o_vmodel2r) $(o_vmodel3r) $(o_vmodel4) $(o_vmodel4r) $(o_vmodel5)
++$(o_medium):   $(s_medium)   $(o_std) $(o_global) $(o_pwatch) $(o_readini) $(o_vmodel0) $(o_vmodel1) $(o_vmodel2) $(o_vmodel3) $(o_pdebug) $(o_vmodel1r) $(o_vmodel2r) $(o_vmodel3r) $(o_vmodel4) $(o_vmodel4r) $(o_vmodel5) $(o_vmodel6)
+ $(o_absorb):   $(s_absorb)   $(o_std) $(o_global) $(o_absorb_p) $(o_absorb_c) $(o_pwatch) $(o_pdebug)
+ $(o_absorb_c): $(s_absorb_c) $(o_std) $(o_fdtool) $(o_global) $(o_pdebug)
+ $(o_absorb_p): $(s_absorb_p) $(o_std) $(o_fdtool) $(o_global) $(o_readini) $(o_pdebug)
+@@ -158,6 +163,7 @@ $(o_vmodel2):  $(s_vmodel2)  $(o_std) $(o_system) $(o_global) $(o_fdtool) $(o_bi
+ $(o_vmodel3):  $(s_vmodel3)  $(o_std) $(o_global) $(o_readini)  $(o_pdebug) $(o_seawater)
+ $(o_vmodel4):  $(s_vmodel4)  $(o_std) $(o_global) $(o_readini)  $(o_pdebug) $(o_seawater)
+ $(o_vmodel5):  $(s_vmodel5)  $(o_std) $(o_global) $(o_readini)  $(o_pdebug) $(o_seawater)
++$(o_vmodel6):  $(s_vmodel6)  $(o_std) $(o_global) $(o_readini)  $(o_pdebug) $(o_seawater) $(o_rdvelm)
+ $(o_vmodel1r):  $(s_vmodel1r)  $(o_std) $(o_global) $(o_readini)  $(o_pdebug) $(o_rdrmed) $(o_seawater)
+ $(o_vmodel2r):  $(s_vmodel2)  $(o_std) $(o_system) $(o_global) $(o_fdtool) $(o_bicubic) $(o_readini)   $(o_geomap) $(o_pdebug)  $(o_rdrmed) $(o_fdtool) $(o_seawater)
+ $(o_vmodel3r):  $(s_vmodel3)  $(o_std) $(o_global) $(o_readini)  $(o_pdebug)  $(o_rdrmed) $(o_fdtool) $(o_seawater)
+@@ -175,7 +181,7 @@ $(o_wav): $(s_wav) $(o_std) $(o_global) $(o_pwatch) $(o_readini) $(o_geomap) $(o
+ ## Targets
+ ##
+ 
+-../../bin/swpc_3d.x: $(s_main) $(o_std) $(o_version) $(o_pdebug) $(o_system) $(o_fdtool) $(o_global) $(o_kernel) $(o_getopt) $(o_source) $(o_medium) $(o_report) $(o_pwatch) $(o_snap) $(o_absorb) $(o_absorb_p) $(o_absorb_c) $(o_vmodel1) $(o_vmodel2) $(o_vmodel3) $(o_gk) $(o_bicubic) $(o_daytim) $(o_sac)  $(o_readini)  $(o_geomap) $(o_green) $(o_rdrmed) $(o_vmodel1r)  $(o_vmodel2r) $(o_vmodel3r) $(o_vmodel0) $(o_vmodel4) $(o_vmodel4r) $(o_seawater) $(o_wav) $(o_tar) $(o_vmodel5)
++../../bin/swpc_3d.x: $(s_main) $(o_std) $(o_version) $(o_pdebug) $(o_system) $(o_fdtool) $(o_global) $(o_kernel) $(o_getopt) $(o_source) $(o_medium) $(o_report) $(o_pwatch) $(o_snap) $(o_absorb) $(o_absorb_p) $(o_absorb_c) $(o_vmodel1) $(o_vmodel2) $(o_vmodel3) $(o_gk) $(o_bicubic) $(o_daytim) $(o_sac)  $(o_readini)  $(o_geomap) $(o_green) $(o_rdrmed) $(o_vmodel1r)  $(o_vmodel2r) $(o_vmodel3r) $(o_vmodel0) $(o_vmodel4) $(o_vmodel4r) $(o_seawater) $(o_wav) $(o_tar) $(o_vmodel5) $(o_vmodel6) $(o_rdvelm)
+ 	$(FC) $(NCINC) $(NCLIB) $(FFLAGS)  -o $@ $^  $(NETCDF)
+ 
+ clean:
+diff --git a/src/swpc_psv/m_medium.f90 b/src/swpc_psv/m_medium.f90
+index 2e602db..38497b0 100644
+--- a/src/swpc_psv/m_medium.f90
++++ b/src/swpc_psv/m_medium.f90
+@@ -19,6 +19,7 @@ module m_medium
+     use m_vmodel_grd_rmed
+     use m_vmodel_lgm
+     use m_vmodel_lgm_rmed
++    use m_vmodel_velm
+     use m_fdtool
+     use mpi
+ 
+@@ -98,6 +99,9 @@ contains
+             case ('lhm')
+                 call vmodel_lhm(io_prm, ibeg_m, iend_m, kbeg_m, kend_m, xc, zc, vcut, rho, lam, mu, taup, taus, bddep)
+ 
++            case ('velm')
++                call vmodel_velm(io_prm, ibeg_m, iend_m, kbeg_m, kend_m, xc, zc, vcut, rho, lam, mu, taup, taus, bddep)
++
+             case ('lgm')
+                 call vmodel_lgm(io_prm, ibeg_m, iend_m, kbeg_m, kend_m, xc, zc, vcut, rho, lam, mu, taup, taus, bddep)
+ 
+diff --git a/src/swpc_psv/m_vmodel_velm.f90 b/src/swpc_psv/m_vmodel_velm.f90
+new file mode 100644
+index 0000000..b789fdc
+--- /dev/null
++++ b/src/swpc_psv/m_vmodel_velm.f90
+@@ -0,0 +1,123 @@
++#include "../shared/m_debug.h"
++module m_vmodel_velm
++
++    !! 2D velocity model read from a netCDF file
++    !!
++    !! Boris Kaus, JGU Mainz. This project is released under the MIT license.
++
++    use m_std
++    use m_debug
++    use m_readini
++    use m_global
++    use m_seawater
++    use m_rdvelm
++    implicit none
++    private
++    save
++
++    public :: vmodel_velm
++
++contains
++
++    subroutine vmodel_velm(io_prm, i0, i1, k0, k1, xc, zc, vcut, rho, lam, mu, Qp, Qs, bd)
++
++        integer, intent(in)  :: io_prm
++        integer, intent(in)  :: i0, i1                  !< i-region
++        integer, intent(in)  :: k0, k1                  !< k-region
++        real(SP), intent(in)  :: xc(i0:i1)           !< x-coordinate location
++        real(SP), intent(in)  :: zc(k0:k1)           !< z-coordinate location
++        real(SP), intent(in)  :: vcut                    !< cut-off minimum velocity
++        real(SP), intent(out) :: rho(k0:k1, i0:i1)    !< mass density [g/cm^3]
++        real(SP), intent(out) :: lam(k0:k1, i0:i1)    !< Lame's parameter lambda [ (g/cm^3) * (km/s) ]
++        real(SP), intent(out) :: mu(k0:k1, i0:i1)    !< Lame's parameter mu     [ (g/cm^3) * (km/s) ]
++        real(SP), intent(out) :: qp(k0:k1, i0:i1)    !< P-wave attenuation
++        real(SP), intent(out) :: qs(k0:k1, i0:i1)    !< S-wave attenuation
++        real(SP), intent(out) :: bd(i0:i1, 0:NBD)    !< Boundary depths
++
++        integer  :: i, k
++        real(SP) :: topo0
++        real(SP) :: vp1, vs1
++        real(SP) :: dum
++        character(256) :: dir_velm, fn_velm
++        logical :: is_exist
++        logical :: use_munk
++        logical :: earth_flattening
++        real(SP) :: zs(k0:k1) ! spherical depth for earth_flattening
++        real(SP) :: Cv(k0:k1) ! velocity scaling coefficient for earth_flattening
++
++        call readini(io_prm, 'topo0', topo0, 0.0)
++
++        call readini(io_prm, 'dir_velm', dir_velm, '')
++        call readini(io_prm, 'fn_velm', fn_velm, '')
++        fn_velm = trim(dir_velm)//'/'//trim(fn_velm)
++        inquire (file=fn_velm, exist=is_exist)
++        call assert(is_exist)
++        call rdvelm__2d(i0, i1, k0, k1, fn_velm, mu, rho, lam, qp, qs)
++
++        !! seawater
++        call readini(io_prm, 'munk_profile', use_munk, .false.)
++        call seawater__init(use_munk)
++
++        call readini(io_prm, 'earth_flattening', earth_flattening, .false.)
++        if (earth_flattening) then
++            do k = k0, k1
++                zs(k) = R_EARTH - R_EARTH * exp(-zc(k) / R_EARTH)
++                Cv(k) = exp(zc(k) / R_EARTH)
++            end do
++        else
++            zs(:) = zc(:)
++            Cv(:) = 1.0
++        end if
++
++        if (.not. fullspace_mode) then
++            do i = i0, i1
++
++                !! topography
++                bd(i, 0) = topo0
++
++                do k = k0, k1
++
++                    if (zs(k) > bd(i, 0)) then
++
++                        !! elastic medium: keep the values read from file
++
++                    else if (zc(k) > 0.0) then
++
++                        !! ocean column
++
++                        vp1 = Cv(k) * seawater__vel(zs(k))
++                        vs1 = 0.0
++
++                        rho(k, i) = 1.0
++                        mu(k, i) = rho(k, i) * vs1 * vs1
++                        lam(k, i) = rho(k, i) * (vp1 * vp1 - 2 * vs1 * vs1)
++                        qp(k, i) = 1000000.0 ! effectively no attenuation in ocean column
++                        qs(k, i) = 1000000.0
++
++                    else
++
++                        !! air column
++
++                        vp1 = 0.0
++                        vs1 = 0.0
++
++                        rho(k, i) = 0.001
++                        mu(k, i) = rho(k, i) * vs1 * vs1
++                        lam(k, i) = rho(k, i) * (vp1 * vp1 - 2 * vs1 * vs1)
++                        qp(k, i) = 10.0 ! artificially strong attenuation in air-column
++                        qs(k, i) = 10.0 ! artificially strong attenuation in air-column
++
++                    end if
++                end do
++            end do
++        end if
++
++        ! dummy value
++        bd(:, 1:NBD) = -9999
++        dum = xc(i0)
++        dum = zc(k0)
++        dum = vcut
++
++    end subroutine vmodel_velm
++
++end module m_vmodel_velm
+diff --git a/src/swpc_psv/makefile b/src/swpc_psv/makefile
+index e882a52..db60a7a 100644
+--- a/src/swpc_psv/makefile
++++ b/src/swpc_psv/makefile
+@@ -47,6 +47,7 @@ s_vmodel1  = m_vmodel_uni.f90
+ s_vmodel2  = m_vmodel_grd.f90
+ s_vmodel3  = m_vmodel_lhm.f90
+ s_vmodel4  = m_vmodel_lgm.f90
++s_vmodel5  = m_vmodel_velm.f90
+ s_vmodel1r = m_vmodel_uni_rmed.f90
+ s_vmodel2r = m_vmodel_grd_rmed.f90
+ s_vmodel3r = m_vmodel_lhm_rmed.f90
+@@ -65,6 +66,7 @@ s_readini  = m_readini.f90
+ s_geomap   = m_geomap.f90
+ s_pdebug   = m_pdebug.f90
+ s_rdrmed   = m_rdrmed.f90
++s_rdvelm   = m_rdvelm.f90
+ s_seawater = m_seawater.f90
+ s_version  = m_version.f90
+ s_tar      = m_tar.f90
+@@ -89,6 +91,7 @@ o_sac      = $(s_sac:.f90=.o)
+ o_readini  = $(s_readini:.f90=.o)
+ o_geomap   = $(s_geomap:.f90=.o)
+ o_rdrmed   = $(s_rdrmed:.f90=.o)
++o_rdvelm   = $(s_rdvelm:.f90=.o)
+ o_seawater = $(s_seawater:.f90=.o)
+ o_version  = $(s_version:.f90=.o)
+ o_tar      = $(s_tar:.f90=.o)
+@@ -109,6 +112,7 @@ o_vmodel1  = $(s_vmodel1:.f90=.o)
+ o_vmodel2  = $(s_vmodel2:.f90=.o)
+ o_vmodel3  = $(s_vmodel3:.f90=.o)
+ o_vmodel4  = $(s_vmodel4:.f90=.o)
++o_vmodel5  = $(s_vmodel5:.f90=.o)
+ o_vmodel1r = $(s_vmodel1r:.f90=.o)
+ o_vmodel2r = $(s_vmodel2r:.f90=.o)
+ o_vmodel3r = $(s_vmodel3r:.f90=.o)
+@@ -130,6 +134,7 @@ $(o_sac):      $(s_sac)      $(o_std)  $(o_tar)
+ $(o_readini):  $(s_readini)  $(o_std) $(o_system) $(o_pdebug)
+ $(o_geomap):   $(s_geomap)   $(o_std) $(o_gk) $(o_pdebug)
+ $(o_rdrmed):   $(s_rdrmed)   $(o_std) $(o_pdebug)
++$(o_rdvelm):   $(s_rdvelm)   $(o_std) $(o_pdebug)
+ $(o_seawater): $(s_seawater) $(o_std)
+ $(o_version):  $(s_version)
+ $(o_tar):      $(s_tar)
+@@ -141,7 +146,7 @@ $(o_fdtool):  $(s_fdtool)  $(o_std) $(o_pdebug)
+ $(o_source):  $(s_source)  $(o_std) $(o_global) $(o_fdtool) $(o_pwatch) $(o_readini) $(o_geomap) $(o_pdebug)
+ $(o_kernel):  $(s_kernel)  $(o_std) $(o_global) $(o_pwatch) $(o_medium) $(o_readini) $(o_pdebug)
+ $(o_report):  $(s_report)  $(o_std) $(o_global) $(o_kernel) $(o_pwatch) $(o_readini) $(o_pdebug) $(o_version)
+-$(o_medium):  $(s_medium)  $(o_std) $(o_global) $(o_pwatch) $(o_readini) $(o_vmodel1) $(o_vmodel2) $(o_vmodel3) $(o_vmodel1r) $(o_vmodel3r) $(o_pdebug) $(o_vmodel2r) $(o_vmodel0) $(o_vmodel4) $(o_vmodel4r)
++$(o_medium):  $(s_medium)  $(o_std) $(o_global) $(o_pwatch) $(o_readini) $(o_vmodel1) $(o_vmodel2) $(o_vmodel3) $(o_vmodel1r) $(o_vmodel3r) $(o_pdebug) $(o_vmodel2r) $(o_vmodel0) $(o_vmodel4) $(o_vmodel4r) $(o_vmodel5)
+ $(o_absorb):  $(s_absorb)  $(o_std) $(o_global) $(o_pwatch) $(o_readini) $(o_absorb_p) $(o_absorb_c)  $(o_pdebug)
+ $(o_absorb_c):  $(s_absorb_c)  $(o_std) $(o_fdtool) $(o_global) $(o_pdebug)
+ $(o_absorb_p):  $(s_absorb_p)  $(o_std) $(o_fdtool) $(o_global) $(o_readini) $(o_pdebug)
+@@ -150,6 +155,7 @@ $(o_vmodel1): $(s_vmodel1) $(o_std) $(o_global) $(o_readini)  $(o_pdebug) $(o_se
+ $(o_vmodel2): $(s_vmodel2) $(o_std) $(o_global) $(o_system) $(o_fdtool) $(o_bicubic) $(o_readini)   $(o_geomap) $(o_pdebug) $(o_seawater)
+ $(o_vmodel3): $(s_vmodel3) $(o_std) $(o_global) $(o_readini)  $(o_pdebug) $(o_seawater)
+ $(o_vmodel4): $(s_vmodel4) $(o_std) $(o_global) $(o_readini)  $(o_pdebug) $(o_seawater)
++$(o_vmodel5): $(s_vmodel5) $(o_std) $(o_global) $(o_readini)  $(o_pdebug) $(o_seawater) $(o_rdvelm)
+ $(o_vmodel1r): $(s_vmodel1r) $(o_std) $(o_global) $(o_readini)  $(o_pdebug) $(o_rdrmed) $(o_seawater)
+ $(o_vmodel2r): $(s_vmodel2r) $(o_std) $(o_global) $(o_system) $(o_fdtool) $(o_bicubic) $(o_readini)   $(o_geomap) $(o_pdebug) $(o_rdrmed) $(o_fdtool) $(o_seawater)
+ $(o_vmodel3r): $(s_vmodel3r) $(o_std) $(o_global) $(o_readini)  $(o_pdebug) $(o_rdrmed) $(o_fdtool) $(o_seawater)
+@@ -166,7 +172,7 @@ $(o_pdebug):  $(s_pdebug) $(o_std)
+ ## Targets
+ ##
+ 
+-../../bin/swpc_psv.x: $(s_main) $(o_std) $(o_system) $(o_fdtool) $(o_global) $(o_kernel) $(o_getopt) $(o_source) $(o_medium) $(o_report) $(o_pwatch) $(o_snap) $(o_absorb)  $(o_gk) $(o_bicubic) $(o_daytim) $(o_sac) $(o_readini)  $(o_geomap) $(o_absorb_p) $(o_absorb_c) $(o_vmodel1) $(o_vmodel2) $(o_vmodel3) $(o_vmodel4) $(o_pdebug) $(o_vmodel1r) $(o_rdrmed) $(o_vmodel3r) $(o_vmodel4r) $(o_vmodel2r) $(o_vmodel0) $(o_seawater) $(o_version) $(o_wav) $(o_tar)
++../../bin/swpc_psv.x: $(s_main) $(o_std) $(o_system) $(o_fdtool) $(o_global) $(o_kernel) $(o_getopt) $(o_source) $(o_medium) $(o_report) $(o_pwatch) $(o_snap) $(o_absorb)  $(o_gk) $(o_bicubic) $(o_daytim) $(o_sac) $(o_readini)  $(o_geomap) $(o_absorb_p) $(o_absorb_c) $(o_vmodel1) $(o_vmodel2) $(o_vmodel3) $(o_vmodel4) $(o_pdebug) $(o_vmodel1r) $(o_rdrmed) $(o_vmodel3r) $(o_vmodel4r) $(o_vmodel2r) $(o_vmodel0) $(o_seawater) $(o_version) $(o_wav) $(o_tar) $(o_vmodel5) $(o_rdvelm)
+ 	$(FC) $(NCINC) $(NCLIB)  $(FFLAGS) -o $@ $^ $(NETCDF)
+ 
+ clean:
+diff --git a/src/swpc_sh/m_medium.f90 b/src/swpc_sh/m_medium.f90
+index b99675b..6afc78a 100644
+--- a/src/swpc_sh/m_medium.f90
++++ b/src/swpc_sh/m_medium.f90
+@@ -19,6 +19,7 @@ module m_medium
+     use m_vmodel_lhm_rmed
+     use m_vmodel_grd_rmed
+     use m_vmodel_lgm_rmed
++    use m_vmodel_velm
+     use m_fdtool
+     use mpi
+     implicit none
+@@ -105,6 +106,9 @@ contains
+             case ('lhm')
+                 call vmodel_lhm(io_prm, ibeg_m, iend_m, kbeg_m, kend_m, xc, zc, vcut, rho, lam, mu, taup, taus, bddep)
+ 
++            case ('velm')
++                call vmodel_velm(io_prm, ibeg_m, iend_m, kbeg_m, kend_m, xc, zc, vcut, rho, lam, mu, taup, taus, bddep)
++
+             case ('lgm')
+                 call vmodel_lgm(io_prm, ibeg_m, iend_m, kbeg_m, kend_m, xc, zc, vcut, rho, lam, mu, taup, taus, bddep)
+ 
+diff --git a/src/swpc_sh/m_vmodel_velm.f90 b/src/swpc_sh/m_vmodel_velm.f90
+new file mode 100644
+index 0000000..93c38ea
+--- /dev/null
++++ b/src/swpc_sh/m_vmodel_velm.f90
+@@ -0,0 +1,116 @@
++#include "../shared/m_debug.h"
++module m_vmodel_velm
++
++    !! 2D velocity model read from a netCDF file
++    !!
++    !! Boris Kaus, JGU Mainz. This project is released under the MIT license.
++
++    use m_std
++    use m_debug
++    use m_readini
++    use m_global
++    use m_rdvelm
++    implicit none
++    private
++    save
++
++    public :: vmodel_velm
++
++contains
++
++    subroutine vmodel_velm(io_prm, i0, i1, k0, k1, xc, zc, vcut, rho, lam, mu, Qp, Qs, bd)
++
++        integer, intent(in)  :: io_prm
++        integer, intent(in)  :: i0, i1                  !< i-region
++        integer, intent(in)  :: k0, k1                  !< k-region
++        real(SP), intent(in)  :: xc(i0:i1)           !< x-coordinate location
++        real(SP), intent(in)  :: zc(k0:k1)           !< z-coordinate location
++        real(SP), intent(in)  :: vcut                    !< cut-off minimum velocity
++        real(SP), intent(out) :: rho(k0:k1, i0:i1)    !< mass density [g/cm^3]
++        real(SP), intent(out) :: lam(k0:k1, i0:i1)    !< Lame's parameter lambda [ (g/cm^3) * (km/s) ]
++        real(SP), intent(out) :: mu(k0:k1, i0:i1)    !< Lame's parameter mu     [ (g/cm^3) * (km/s) ]
++        real(SP), intent(out) :: qp(k0:k1, i0:i1)    !< P-wave attenuation
++        real(SP), intent(out) :: qs(k0:k1, i0:i1)    !< S-wave attenuation
++        real(SP), intent(out) :: bd(i0:i1, 0:NBD)    !< Boundary depths
++
++        integer  :: i, k
++        real(SP) :: topo0
++        real(SP) :: vp1, vs1
++        real(SP) :: dum
++        character(256) :: dir_velm, fn_velm
++        logical :: is_exist
++        logical :: earth_flattening
++        real(SP) :: zs(k0:k1) ! spherical depth for earth_flattening
++        real(SP) :: Cv(k0:k1) ! velocity scaling coefficient for earth_flattening
++
++        call readini(io_prm, 'topo0', topo0, 0.0)
++
++        call readini(io_prm, 'dir_velm', dir_velm, '')
++        call readini(io_prm, 'fn_velm', fn_velm, '')
++        fn_velm = trim(dir_velm)//'/'//trim(fn_velm)
++        inquire (file=fn_velm, exist=is_exist)
++        call assert(is_exist)
++        call rdvelm__2d(i0, i1, k0, k1, fn_velm, mu, rho, lam, qp, qs)
++
++        call readini(io_prm, 'earth_flattening', earth_flattening, .false.)
++        if (earth_flattening) then
++            do k = k0, k1
++                zs(k) = R_EARTH - R_EARTH * exp(-zc(k) / R_EARTH)
++                Cv(k) = exp(zc(k) / R_EARTH)
++            end do
++        else
++            zs(:) = zc(:)
++            Cv(:) = 1.0
++        end if
++
++        if (.not. fullspace_mode) then
++            do i = i0, i1
++
++                bd(i, 0) = topo0
++
++                do k = k0, k1
++
++                    if (zs(k) > bd(i, 0)) then
++
++                        !! elastic medium: keep the values read from file
++
++                    else if (zs(k) > 0.0) then
++
++                        !! ocean column
++                        !! Munk's profile is not necessary in SH mode as S-waves do not penetrate to the ocean
++                        vp1 = Cv(k) * 1.5
++                        vs1 = 0.0
++
++                        rho(k, i) = Cv(k)**(-5) * 1.0
++                        mu(k, i) = rho(k, i) * vs1 * vs1
++                        lam(k, i) = rho(k, i) * (vp1 * vp1 - 2 * vs1 * vs1)
++                        qp(k, i) = 1000000.0 ! effectively no attenuation in ocean column
++                        qs(k, i) = 1000000.0
++
++                    else
++
++                        !! air column
++
++                        vp1 = 0.0
++                        vs1 = 0.0
++
++                        rho(k, i) = 0.001
++                        mu(k, i) = rho(k, i) * vs1 * vs1
++                        lam(k, i) = rho(k, i) * (vp1 * vp1 - 2 * vs1 * vs1)
++                        qp(k, i) = 10.0 ! artificially strong attenuation in air-column
++                        qs(k, i) = 10.0 ! artificially strong attenuation in air-column
++
++                    end if
++                end do
++            end do
++        end if
++
++        ! dummy value
++        bd(:, 1:NBD) = -9999
++        dum = xc(i0)
++        dum = zc(k0)
++        dum = vcut
++
++    end subroutine vmodel_velm
++
++end module m_vmodel_velm
+diff --git a/src/swpc_sh/makefile b/src/swpc_sh/makefile
+index f887ba9..ad1ce0c 100644
+--- a/src/swpc_sh/makefile
++++ b/src/swpc_sh/makefile
+@@ -49,6 +49,7 @@ s_vmodel1  = m_vmodel_uni.f90
+ s_vmodel2  = m_vmodel_grd.f90
+ s_vmodel3  = m_vmodel_lhm.f90
+ s_vmodel4  = m_vmodel_lgm.f90
++s_vmodel5  = m_vmodel_velm.f90
+ s_vmodel1r = m_vmodel_uni_rmed.f90
+ s_vmodel2r = m_vmodel_grd_rmed.f90
+ s_vmodel3r = m_vmodel_lhm_rmed.f90
+@@ -67,6 +68,7 @@ s_readini = m_readini.f90
+ s_geomap  = m_geomap.f90
+ s_pdebug  = m_pdebug.f90
+ s_rdrmed  = m_rdrmed.f90
++s_rdvelm  = m_rdvelm.f90
+ s_version = m_version.f90
+ s_tar     = m_tar.f90
+ 
+@@ -90,6 +92,7 @@ o_sac     = $(s_sac:.f90=.o)
+ o_readini = $(s_readini:.f90=.o)
+ o_geomap  = $(s_geomap:.f90=.o)
+ o_rdrmed  = $(s_rdrmed:.f90=.o)
++o_rdvelm  = $(s_rdvelm:.f90=.o)
+ o_version = $(s_version:.f90=.o)
+ o_tar     = $(s_tar:.f90=.o)
+ 
+@@ -109,6 +112,7 @@ o_vmodel1 = $(s_vmodel1:.f90=.o)
+ o_vmodel2 = $(s_vmodel2:.f90=.o)
+ o_vmodel3 = $(s_vmodel3:.f90=.o)
+ o_vmodel4 = $(s_vmodel4:.f90=.o)
++o_vmodel5 = $(s_vmodel5:.f90=.o)
+ o_vmodel1r = $(s_vmodel1r:.f90=.o)
+ o_vmodel2r = $(s_vmodel2r:.f90=.o)
+ o_vmodel3r = $(s_vmodel3r:.f90=.o)
+@@ -130,6 +134,7 @@ $(o_sac):     $(s_sac)     $(o_std) $(o_tar)
+ $(o_readini): $(s_readini) $(o_std) $(o_system) $(o_pdebug)
+ $(o_geomap):  $(s_geomap)  $(o_std) $(o_gk)
+ $(o_rdrmed):  $(s_rdrmed)  $(o_std) $(o_pdebug)
++$(o_rdvelm):  $(s_rdvelm)  $(o_std) $(o_pdebug)
+ $(o_version): $(s_version) 
+ $(o_tar):     $(s_tar)    
+ 
+@@ -140,7 +145,7 @@ $(o_fdtool):  $(s_fdtool)  $(o_std) $(o_pdebug)
+ $(o_source):  $(s_source)  $(o_std) $(o_global) $(o_fdtool) $(o_pwatch) $(o_readini) $(o_geomap) $(o_pdebug)
+ $(o_kernel):  $(s_kernel)  $(o_std) $(o_global) $(o_pwatch) $(o_medium) $(o_readini) $(o_pdebug)
+ $(o_report):  $(s_report)  $(o_std) $(o_global) $(o_kernel) $(o_pwatch) $(o_readini) $(o_pdebug) $(o_version)
+-$(o_medium):  $(s_medium)  $(o_std) $(o_global) $(o_pwatch) $(o_readini) $(o_vmodel1) $(o_vmodel2) $(o_vmodel3) $(o_vmodel4) $(o_pdebug) $(o_vmodel1r) $(o_vmodel3r) $(o_vmodel2r) $(o_vmodel0) $(o_vmodel4) $(o_vmodel4r)
++$(o_medium):  $(s_medium)  $(o_std) $(o_global) $(o_pwatch) $(o_readini) $(o_vmodel1) $(o_vmodel2) $(o_vmodel3) $(o_vmodel4) $(o_pdebug) $(o_vmodel1r) $(o_vmodel3r) $(o_vmodel2r) $(o_vmodel0) $(o_vmodel4) $(o_vmodel4r) $(o_vmodel5)
+ $(o_absorb):  $(s_absorb)  $(o_std) $(o_global) $(o_pwatch) $(o_readini) $(o_absorb_p) $(o_absorb_c)  $(o_pdebug)
+ $(o_absorb_c):  $(s_absorb_c)  $(o_std) $(o_fdtool) $(o_global) $(o_pdebug)
+ $(o_absorb_p):  $(s_absorb_p)  $(o_std) $(o_fdtool) $(o_global) $(o_readini) $(o_pdebug)
+@@ -149,6 +154,7 @@ $(o_vmodel1): $(s_vmodel1) $(o_std) $(o_global) $(o_readini)  $(o_pdebug)
+ $(o_vmodel2): $(s_vmodel2) $(o_std) $(o_system) $(o_global) $(o_fdtool) $(o_bicubic) $(o_readini) $(o_geomap) $(o_pdebug)
+ $(o_vmodel3): $(s_vmodel3) $(o_std) $(o_global) $(o_readini)  $(o_pdebug)
+ $(o_vmodel4): $(s_vmodel4) $(o_std) $(o_global) $(o_readini)  $(o_pdebug)
++$(o_vmodel5): $(s_vmodel5) $(o_std) $(o_global) $(o_readini)  $(o_pdebug) $(o_rdvelm)
+ 
+ $(o_vmodel1r): $(s_vmodel1r) $(o_std) $(o_global) $(o_readini)  $(o_pdebug) $(o_rdrmed)
+ $(o_vmodel2r): $(s_vmodel2r) $(o_std) $(o_global) $(o_system) $(o_fdtool) $(o_bicubic) $(o_readini) $(o_geomap) $(o_pdebug) $(o_rdrmed) $(o_fdtool)
+@@ -166,7 +172,7 @@ $(o_vmodel4r): $(s_vmodel4r) $(o_std) $(o_global) $(o_readini)  $(o_pdebug) $(o_
+ ## Targets
+ ##
+ 
+-../../bin/swpc_sh.x: $(s_main) $(o_std) $(o_system) $(o_fdtool) $(o_global) $(o_kernel) $(o_getopt) $(o_source) $(o_medium) $(o_report) $(o_pwatch) $(o_snap) $(o_absorb)  $(o_gk) $(o_bicubic) $(o_daytim) $(o_sac) $(o_readini) $(o_geomap) $(o_absorb_p) $(o_absorb_c) $(o_vmodel1) $(o_vmodel2) $(o_vmodel3)  $(o_pdebug) $(o_rdrmed) $(o_vmodel1r) $(o_rdrmed) $(o_vmodel3r) $(o_vmodel2r) $(o_vmodel0) $(o_version) $(o_wav) $(o_vmodel4) $(o_vmodel4r) $(o_tar)
++../../bin/swpc_sh.x: $(s_main) $(o_std) $(o_system) $(o_fdtool) $(o_global) $(o_kernel) $(o_getopt) $(o_source) $(o_medium) $(o_report) $(o_pwatch) $(o_snap) $(o_absorb)  $(o_gk) $(o_bicubic) $(o_daytim) $(o_sac) $(o_readini) $(o_geomap) $(o_absorb_p) $(o_absorb_c) $(o_vmodel1) $(o_vmodel2) $(o_vmodel3)  $(o_pdebug) $(o_rdrmed) $(o_vmodel1r) $(o_rdrmed) $(o_vmodel3r) $(o_vmodel2r) $(o_vmodel0) $(o_version) $(o_wav) $(o_vmodel4) $(o_vmodel4r) $(o_tar) $(o_vmodel5) $(o_rdvelm)
+ 	$(FC) $(NCINC)  $(NCLIB)  $(FFLAGS) -o $@ $^ $(NETCDF)
+ 
+ clean:
