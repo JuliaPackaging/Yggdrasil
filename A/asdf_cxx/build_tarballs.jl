@@ -1,5 +1,8 @@
 using BinaryBuilder
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 # ASDF - Advanced Scientific Data Format, a C++ implementation
 
 name = "asdf_cxx"
@@ -22,6 +25,10 @@ cmake --build build --parallel $nproc
 cmake --install build
 install_license LICENSE.rst
 """
+
+# The x86_64 _Float16 conversion helpers `__extendhfsf2` and `__truncsfhf2`
+# are only in libSystem since macOS 10.11
+sources, script = require_macos_sdk("10.12", sources, script)
 
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
