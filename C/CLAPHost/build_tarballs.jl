@@ -23,12 +23,12 @@ using BinaryBuilder
 # feature-keyword getters that a bundle registry needs to classify what it
 # found.
 name = "CLAPHost"
-version = v"1.1.0"
+version = v"1.2.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/SciML/AudioPlugins.jl.git",
-              "c423763d0d367f3119574eba102714200b4bdb13"),  # main, Project.toml v1.4.0 (unreleased); the merge of SciML/AudioPlugins.jl#30, with #40's unbounded scan. The same commit Airwindows_jll is built from, so host and collection come from one tree.
+              "f48574da93f3fac9f3d612c16b60657043320c35"),  # SciML/AudioPlugins.jl main
 ]
 
 # Bash recipe for building across all platforms
