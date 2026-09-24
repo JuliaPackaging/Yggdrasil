@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "Chafa"
-version = v"1.18.2"
+version = v"1.18.3"
 
 sources = [
     ArchiveSource("https://hpjansson.org/chafa/releases/chafa-$(version).tar.xz",
-                  "0b8d9ba9f347e8b6c0c71878217c9b0e478b4a42aa4babea0bf20840567239c2"),
+                  "fb995ef21dce6c73dd0dd454ba3e0f7fac08e053ea16060a2e5ce69a3746ee27"),
 ]
 
 script = raw"""
@@ -46,4 +46,4 @@ dependencies = [
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"5")
+               julia_compat="1.10", preferred_gcc_version=v"5")
