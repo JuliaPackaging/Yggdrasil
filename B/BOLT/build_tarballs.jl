@@ -13,9 +13,16 @@ ulimit -n $fd_lim
 
 cd ${WORKSPACE}/srcdir/llvm-project
 
-# Backport of llvm/llvm-project#215415: don't relax same-function ADRs in large
-# non-simple AArch64 functions, which made BOLT fail on a ThinLTO libLLVM.
+# Backport of https://github.com/llvm/llvm-project/pull/215415:
+# don't relax same-function ADRs in large non-simple AArch64 functions,
+# which made BOLT fail on a ThinLTO libLLVM.
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/bolt-aarch64-adr-relaxation-non-simple.patch
+
+# Backport of https://github.com/llvm/llvm-project/pull/226076:
+# with --update-debug-sections, forward DW_FORM_ref_udata references
+# (e.g. in GNU as units such as libgcc's lse.S) were sized wrongly,
+# corrupting .debug_info.
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/bolt-dwarf-ref-udata-forward-refs.patch
 
 cd llvm
 LLVM_SRCDIR=$(pwd)
