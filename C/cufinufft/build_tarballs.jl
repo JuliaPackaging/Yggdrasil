@@ -12,9 +12,10 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 # needed for CUDA cuda, and would produce a giant amount of artifacts)
 
 name = "cufinufft"
-version = v"2.5.1"
-commit_hash = "679d9ae59fe0146c50da360e5a3fee70ae3aa646"
-preferred_gcc_version=v"11"
+version = v"2.6.0"
+commit_hash = "287ad85a1b3a466a082d61704ea4848d288376d3" # CURRENT MASTER, NOT 2.6.0
+preferred_gcc_version = v"13" # Will not build otherwise
+julia_compat = "1.9" # = FINUFFT.jl compat
 
 # Collection of sources required to complete build
 sources = [
@@ -53,8 +54,8 @@ cmake --install .
 unlink $prefix/cuda/lib64
 """
 
-# Build for all supported CUDA >= v11.8. Only one v11.x should be sufficient.
-platforms = expand_cxxstring_abis(CUDA.supported_platforms(min_version=v"11.8"))
+# Build for all supported CUDA >= v12.4, which is minimum supported by library
+platforms = expand_cxxstring_abis(CUDA.supported_platforms(min_version=v"12.4"))
 
 # Cmake toolchain breaks on aarch64, so only x86_64 for now
 filter!(p -> arch(p)=="x86_64", platforms)
@@ -68,7 +69,7 @@ products = [
 # NVTX_jll is needed for nvToolsExt. (tested with v3.1.0+2)
 # CMake needs higher version than what is bundled
 dependencies = [Dependency("NVTX_jll"),
-                HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.24.3+0"))]
+                HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.31.9+0"))]
 
 for platform in platforms
     should_build_platform(triplet(platform)) || continue
@@ -97,7 +98,7 @@ for platform in platforms
     build_tarballs(ARGS, name, version, sources, platform_script, [platform],
                    products, [dependencies; cuda_deps];
                    preferred_gcc_version=preferred_gcc_version,
-                   julia_compat="1.6",
+                   julia_compat=julia_compat,
                    augment_platform_block=CUDA.augment,
                    lazy_artifacts=true
                    )
