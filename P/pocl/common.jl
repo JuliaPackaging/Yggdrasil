@@ -71,11 +71,6 @@ function build_script(standalone=false)
     spirv_src=$WORKSPACE/srcdir/SPIRV-LLVM-Translator
     pushd $spirv_src
     install_license LICENSE.TXT
-    # LLVM 20's translator needs this backport.  It is already present in the
-    # LLVM 22.1 translator, where applying it with fuzz targets unrelated code.
-    if [[ "${LLVM_MAJOR_MINOR}" == 20.* ]]; then
-        atomic_patch -p1 $WORKSPACE/srcdir/patches/spirv-translator-addrspacecast_null.patch
-    fi
     # link statically against LLVM's component libraries rather than the LLVM dylib.
     # Patch both the library and the llvm-spirv tool: otherwise the tool links *both*
     # the LLVM dylib import-lib and the static components, which is fatal on COFF/lld

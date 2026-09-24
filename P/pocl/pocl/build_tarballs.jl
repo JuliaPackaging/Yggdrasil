@@ -22,11 +22,11 @@ macos_sdk_version = "11.0"
 sources = [
     DirectorySource("./bundled"),
     GitSource("https://github.com/pocl/pocl",
-              "73ae321bde8025287c0ba57b5fb8907ab7b4ae78"), # release_7_2
+              "888c9774b94590fff1afef003154ca2c0ea66605"), # tag v7.2
     # vendored SPIR-V translator, built as a static library against our LLVM (see
     # common.jl); this is the latest LLVM-22.1 maintenance revision.
     GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git",
-              "c88a2e4a1ec77f7adc8916940afd9754c3a30fab"),
+              "0e67244861402a51b071414d7cb231a052b1ce03"),
 ]
 
 #=

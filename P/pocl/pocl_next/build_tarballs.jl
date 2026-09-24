@@ -27,7 +27,7 @@ sources = [
     # vendored SPIR-V translator, built as a static library against our LLVM (see
     # common.jl); this is the latest LLVM-22.1 maintenance revision.
     GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git",
-              "9bad0e4753275221d2ddc8496312e565c49f5f4b"),
+              "0e67244861402a51b071414d7cb231a052b1ce03"),
 ]
 
 #=
