@@ -81,6 +81,10 @@ if [[ "${target}" == aarch64-apple-* ]]; then
     MAKE_EXTRA+=(LDFLAGS="${LDFLAGS}")
 elif [[ "${target}" == *-mingw* ]]; then
     MAKE_EXTRA+=(XWIN="${target}")
+elif [[ "${target}" == *-freebsd* ]]; then
+    # lv2_jll is built with meson, which installs lv2.pc under libdata/pkgconfig
+    # on FreeBSD; that directory is not on BinaryBuilder's default search path.
+    export PKG_CONFIG_PATH="${prefix}/libdata/pkgconfig:${PKG_CONFIG_PATH}"
 fi
 
 for d in balance.lv2 controlfilter.lv2 matrixmixer.lv2 mididebug.lv2 \
