@@ -1,5 +1,24 @@
+From 5d8ba1c663cc1e644a6c41448ad8e2d334ba9f8e Mon Sep 17 00:00:00 2001
+From: Frederik Harwath <frederik.harwath@amd.com>
+Date: Thu, 13 Aug 2026 12:13:50 +0200
+Subject: [PATCH] [AMDGPU] Fix si-pre-emit-peephole to preserve S_AND when SCC
+ is alive (#215829)
+
+The optimization in si-pre-emit-peephole that removes S_AND_B64 after
+V_CMP instructions does not check if the implicit SCC def is alive. This
+causes miscompiles when the SCC value is used by subsequent
+instructions.
+
+Fixes #215745
+---
+ llvm/lib/Target/AMDGPU/SIPreEmitPeephole.cpp  |  6 +-
+ .../CodeGen/AMDGPU/insert-skip-from-vcc.mir   | 19 ++++
+ ...eemit-peephole-scc-liveness-issue215745.ll | 87 +++++++++++++++++++
+ 3 files changed, 110 insertions(+), 2 deletions(-)
+ create mode 100644 llvm/test/CodeGen/AMDGPU/preemit-peephole-scc-liveness-issue215745.ll
+
 diff --git a/llvm/lib/Target/AMDGPU/SIPreEmitPeephole.cpp b/llvm/lib/Target/AMDGPU/SIPreEmitPeephole.cpp
-index e43e753e1314d..7f87fbc0448b3 100644
+index e43e753e1314..7f87fbc0448b 100644
 --- a/llvm/lib/Target/AMDGPU/SIPreEmitPeephole.cpp
 +++ b/llvm/lib/Target/AMDGPU/SIPreEmitPeephole.cpp
 @@ -237,14 +237,16 @@ bool SIPreEmitPeephole::optimizeVccBranch(MachineInstr &MI) const {
@@ -22,7 +41,7 @@ index e43e753e1314d..7f87fbc0448b3 100644
          (M->getOperand(1).getImm() != -1 && M->getOperand(1).getImm() != 0))
        return Changed;
 diff --git a/llvm/test/CodeGen/AMDGPU/insert-skip-from-vcc.mir b/llvm/test/CodeGen/AMDGPU/insert-skip-from-vcc.mir
-index 27f84ca8e3b5c..3081a2c1d1fe1 100644
+index 27f84ca8e3b5..3081a2c1d1fe 100644
 --- a/llvm/test/CodeGen/AMDGPU/insert-skip-from-vcc.mir
 +++ b/llvm/test/CodeGen/AMDGPU/insert-skip-from-vcc.mir
 @@ -708,3 +708,22 @@ body:             |
@@ -50,7 +69,7 @@ index 27f84ca8e3b5c..3081a2c1d1fe1 100644
 +...
 diff --git a/llvm/test/CodeGen/AMDGPU/preemit-peephole-scc-liveness-issue215745.ll b/llvm/test/CodeGen/AMDGPU/preemit-peephole-scc-liveness-issue215745.ll
 new file mode 100644
-index 0000000000000..046d234db4d48
+index 000000000000..046d234db4d4
 --- /dev/null
 +++ b/llvm/test/CodeGen/AMDGPU/preemit-peephole-scc-liveness-issue215745.ll
 @@ -0,0 +1,87 @@
@@ -141,3 +160,6 @@ index 0000000000000..046d234db4d48
 +  %done = icmp eq i64 0, %bound
 +  br i1 %done, label %outer, label %inner
 +}
+-- 
+2.55.0
+

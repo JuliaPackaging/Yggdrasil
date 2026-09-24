@@ -7,14 +7,28 @@ using BinaryBuilder
 # for hosting CLAP audio plugins. CLAP itself is header-only (MIT) and vendored
 # in the same repository, so this builds with nothing but a C compiler.
 #
-# The version tracks the AudioPlugins.jl release whose `csrc/` is built.
+# CLAPHost_jll 1.0.0 was built from an earlier AudioPlugins.jl commit that
+# already carried Project.toml version 1.0.0, so the JLL version can no longer
+# equal the package version: 1.0.1 is the registered AudioPlugins v1.0.0
+# sources, with Windows.
+#
+# 1.1.0 rebuilds from a tree carrying SciML/AudioPlugins.jl#40, which lifted a
+# fixed 32-entry descriptor cache in `clap_host_scan`. A CLAP module may hold
+# hundreds of plugins in one file -- the Airwindows collection that
+# Airwindows_jll ships is 504 -- and 1.0.1 reported any such module as holding
+# 32, silently and indistinguishably from a module that really is that small.
+# Airwindows_jll is unusable without this rebuild. Minor rather than patch
+# because the scan ABI also *gained* functions (additive, nothing removed or
+# changed): clap_host_scan_count, and the vendor/version/description and
+# feature-keyword getters that a bundle registry needs to classify what it
+# found.
 name = "CLAPHost"
-version = v"1.0.0"
+version = v"1.2.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/SciML/AudioPlugins.jl.git",
-              "a371d82d5a5a476280f8d0ef0571f2768b5f70c8"),  # v1.0.0
+              "f48574da93f3fac9f3d612c16b60657043320c35"),  # SciML/AudioPlugins.jl main
 ]
 
 # Bash recipe for building across all platforms
@@ -32,9 +46,7 @@ ${CC} -std=gnu99 -O2 -fPIC -shared -Wall -Wextra \
 install -Dm644 csrc/clap_host.h "${includedir}/clap_host.h"
 """
 
-# The host resolves plugins with dlopen(); Windows needs a LoadLibrary shim
-# that the sources do not have yet, so it is excluded until they do.
-platforms = filter(!Sys.iswindows, supported_platforms())
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [

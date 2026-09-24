@@ -32,7 +32,7 @@ agent() = Dict(
 plugins() = Pair{String, Union{Nothing, Dict}}[
     "JuliaCI/julia#v1" => Dict(
         "persist_depot_dirs" => "packages,artifacts,compiled",
-        "version" => "1.12.4",
+        "version" => "1.12.7",
         "artifacts_size_limit" => string(120 << 30), # 120 GiB
     ),
     "JuliaCI/merge-commit" => nothing
@@ -65,6 +65,7 @@ function build_step(NAME, PLATFORM, PROJECT, IS_PR)
         "BINARYBUILDER_USE_CCACHE" => "true",
         "BINARYBUILDER_STORAGE_DIR" => "/cache/yggdrasil",
         "BINARYBUILDER_CCACHE_DIR" => "/sharedcache/ccache",
+        "BINARYBUILDER_CLONES_DIR" => "/sharedcache/clones",
         "BINARYBUILDER_NPROC" => "16", # Limit parallelism somewhat to avoid OOM for LLVM
         "AWS_DEFAULT_REGION" => "us-east-1",
     ))

@@ -1,0 +1,152 @@
+From 339506926c61e7bd4b546aaa5ba0ccb0da7f7686 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Thu, 24 Sep 2026 09:07:51 +0200
+Subject: [PATCH 9/9] Don't force LLVM to register its signal handlers
+
+pocl_install_sigfpe_handler registered a dummy file for removal on signal,
+only to make LLVM install its signal handlers before PoCL's SIGFPE handler, as
+LLVM would otherwise do so later when writing the preprocessed source. Now that
+preprocessing happens in memory, this is unnecessary, and it made the first
+clGetDeviceIDs on x86-64 replace the host application's SIGSEGV, SIGBUS, etc.
+handlers.
+
+Extend the regression test to check that device initialization keeps them too.
+---
+ lib/CL/devices/devices.c                |  4 ----
+ lib/CL/devices/signal_handlers.c        | 28 +++----------------------
+ lib/CL/pocl_llvm.h                      |  3 ---
+ lib/CL/pocl_llvm_utils.cc               | 10 ---------
+ lib/CL/pocl_util.h                      |  1 -
+ tests/regression/test_signal_handlers.c |  8 ++++---
+ 6 files changed, 8 insertions(+), 46 deletions(-)
+
+diff --git a/lib/CL/devices/devices.c b/lib/CL/devices/devices.c
+index bd9150ce8..a56582043 100644
+--- a/lib/CL/devices/devices.c
++++ b/lib/CL/devices/devices.c
+@@ -456,10 +456,6 @@ pocl_uninit_devices ()
+     }
+ 
+ FINISH:
+-#ifdef ENABLE_SIGFPE_HANDLER
+-  pocl_destroy_sigfpe_handler ();
+-#endif
+-
+   devices_active = 0;
+   POCL_UNLOCK (pocl_init_lock);
+ 
+diff --git a/lib/CL/devices/signal_handlers.c b/lib/CL/devices/signal_handlers.c
+index 02d8c7200..0641ae3cf 100644
+--- a/lib/CL/devices/signal_handlers.c
++++ b/lib/CL/devices/signal_handlers.c
+@@ -231,27 +231,13 @@ sigfpe_signal_handler (int signo, siginfo_t *si, void *data)
+ 
+ #endif
+ 
+-static char signal_empty_file[POCL_MAX_PATHNAME_LENGTH];
+-
+ void
+ pocl_install_sigfpe_handler ()
+ {
+ #ifdef __x86_64__
+-
+-#ifdef ENABLE_LLVM
+-  /* This is required to force LLVM to register its signal
+-   * handlers, before pocl registers its own SIGFPE handler.
+-   * LLVM otherwise calls this via
+-   *    pocl_llvm_build_program ->
+-   *    clang::PrintPreprocessedAction ->
+-   *    CreateOutputFile -> RemoveFileOnSignal
+-   * Registering our handlers before LLVM creates its sigaltstack
+-   * leads to interesting crashes & bugs later.
+-   */
+-  pocl_cache_tempname (signal_empty_file, NULL, NULL);
+-  pocl_llvm_remove_file_on_signal_create (signal_empty_file);
+-#endif
+-
++  /* Don't make LLVM register its signal handlers here: they replace the
++   * host application's process-wide handlers (e.g. the SIGSEGV handler that
++   * Julia uses for GC safepoints), and reset to SIG_DFL on delivery. */
+   POCL_MSG_PRINT_GENERAL ("Installing SIGFPE handler...\n");
+ 
+   sigfpe_action.sa_flags = SA_RESTART | SA_SIGINFO;
+@@ -263,11 +249,3 @@ pocl_install_sigfpe_handler ()
+   assert (0 && "this code path should not be possible");
+ #endif
+ }
+-
+-void
+-pocl_destroy_sigfpe_handler ()
+-{
+-#ifdef ENABLE_LLVM
+-  pocl_llvm_remove_file_on_signal_destroy (signal_empty_file);
+-#endif
+-}
+diff --git a/lib/CL/pocl_llvm.h b/lib/CL/pocl_llvm.h
+index 702a5c5cf..d0cc19a9c 100644
+--- a/lib/CL/pocl_llvm.h
++++ b/lib/CL/pocl_llvm.h
+@@ -120,9 +120,6 @@ extern "C" {
+   POCL_EXPORT
+   void pocl_destroy_llvm_module (void *modp, cl_context ctx);
+ 
+-  int pocl_llvm_remove_file_on_signal_create (const char *file);
+-  int pocl_llvm_remove_file_on_signal_destroy (const char *file);
+-
+   void pocl_llvm_create_context (cl_context ctx);
+   void pocl_llvm_release_context (cl_context ctx);
+ 
+diff --git a/lib/CL/pocl_llvm_utils.cc b/lib/CL/pocl_llvm_utils.cc
+index b8cb335f0..28da7ca8a 100644
+--- a/lib/CL/pocl_llvm_utils.cc
++++ b/lib/CL/pocl_llvm_utils.cc
+@@ -439,16 +439,6 @@ void cpu_setup_vector_widths(cl_device_id dev) {
+   }
+ }
+ 
+-int pocl_llvm_remove_file_on_signal_create(const char *file) {
+-  return llvm::sys::RemoveFileOnSignal(
+-            StringRef(file)) ? 0 : -1;
+-}
+-
+-int pocl_llvm_remove_file_on_signal_destroy(const char *file) {
+-  llvm::sys::RunInterruptHandlers();
+-  return 0;
+-}
+-
+ /*
+  * Use one global LLVMContext across all LLVM bitcodes. This is because
+  * we want to cache the bitcode IR libraries and reuse them when linking
+diff --git a/lib/CL/pocl_util.h b/lib/CL/pocl_util.h
+index 87c162e85..a8ffa2eae 100644
+--- a/lib/CL/pocl_util.h
++++ b/lib/CL/pocl_util.h
+@@ -55,7 +55,6 @@ float byteswap_float (float word, char should_swap);
+ 
+ #ifdef ENABLE_SIGFPE_HANDLER
+ void pocl_install_sigfpe_handler ();
+-void pocl_destroy_sigfpe_handler ();
+ POCL_EXPORT
+ void pocl_ignore_sigfpe_for_thread (pocl_thread_t thr);
+ #endif
+diff --git a/tests/regression/test_signal_handlers.c b/tests/regression/test_signal_handlers.c
+index 2b9018e67..c7d12b709 100644
+--- a/tests/regression/test_signal_handlers.c
++++ b/tests/regression/test_signal_handlers.c
+@@ -86,11 +86,13 @@ main ()
+   cl_context context;
+   cl_device_id device;
+   cl_command_queue queue;
+-  cl_int err = poclu_get_any_device (&context, &device, &queue);
+-  CHECK_ERROR (err);
+-
+   install_host_handlers ();
+ 
++  cl_int err = poclu_get_any_device (&context, &device, &queue);
++  CHECK_ERROR (err);
++  if (check_host_handlers ("device initialization") != EXIT_SUCCESS)
++    return EXIT_FAILURE;
++
+   const char *source = "#define VALUE 42\n"
+                        "__kernel void k (__global int *out) {\n"
+                        "  *out = VALUE;\n"

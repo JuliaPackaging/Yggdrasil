@@ -2,14 +2,23 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "SPIRV_LLVM_Backend"
-version = v"22.1.8"
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
+name = "SPIRV_LLVM_Backend"
+version = v"23.1.1"
+llvm_version = v"23.1.1"
+
+# This JLL ships `libspirv`, a shared library exposing a small, typed C API (see
+# bundled/libspirv.h) over a statically linked, symbol-hidden LLVM SPIR-V
+# back-end, replacing the `llc` executable. The package version tracks the
+# embedded LLVM's (also reported at runtime by `SPIRVGetLLVMVersion`).
+#
 # Collection of sources required to build SPIRV_LLVM_Backend.
-# LLVM 22 ships a single monorepo source archive (`llvm-project-X.Y.Z.src.tar.xz`).
+# LLVM ships a single monorepo source archive (`llvm-project-X.Y.Z.src.tar.xz`).
 sources = [
-    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/llvm-project-$(version).src.tar.xz",
-                  "922f1817a0df7b1489272d18134ee0087a8b068828f87ac63b9861b1a9965888"),
+    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-$(llvm_version)/llvm-project-$(llvm_version).src.tar.xz",
+                  "ebe9be46fe8756d58c5b198ffad0fa2a766257add81a4dc52179bfacc7888ee6"),
     DirectorySource("./bundled")
 ]
 
@@ -21,24 +30,21 @@ cd llvm-project/llvm
 LLVM_SRCDIR=$(pwd)
 
 # Workaround for building with an old macOS SDK that lacks a working
-# __builtin_available (still applicable on LLVM 22).
+# __builtin_available (still applicable on LLVM 23).
+# LLVM installs process-wide signal handlers (and, on Windows, an unhandled-
+# exception filter) when it registers files to remove on crash, e.g. for lld's
+# output file, and when a CrashRecoveryContext is enabled. Embedded in Julia,
+# which synchronises its threads with SIGSEGV, those handlers are fatal: they
+# intercept the host's signals and re-raise them with a different siginfo.
+# Make every such installation a no-op; the library never wants them.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/no-process-wide-handlers.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/avoid_builtin_available.patch
-# https://github.com/llvm/llvm-project/pull/164175 (fixes #163777); landed on
-# main after the release/22.x branch, so still needed on 22.1.7.
-atomic_patch -p1 $WORKSPACE/srcdir/patches/alloca_aggregate_type.patch
-# Backport of the composite-constant-arm fix from
-# https://github.com/llvm/llvm-project/pull/201417 ("[SPIR-V] Lower select
-# instructions with aggregate operands").
-atomic_patch -p1 $WORKSPACE/srcdir/patches/select_composite_constant.patch
-# Backport of https://github.com/llvm/llvm-project/pull/201523
-atomic_patch -p1 $WORKSPACE/srcdir/patches/printf_format_string_lookup.patch
-# Backport of https://github.com/llvm/llvm-project/pull/204231
+# Backport of https://github.com/llvm/llvm-project/pull/204231 ("[SPIRV]
+# Legalize i1 min/max before selection"; merged after the 23.x branch).
 atomic_patch -p1 $WORKSPACE/srcdir/patches/minmax_i1.patch
-# Backport of https://github.com/llvm/llvm-project/pull/204239
+# Backport of https://github.com/llvm/llvm-project/pull/204239 ("[SPIR-V] Lower
+# nested aggregate insertvalue operands"; merged after the 23.x branch).
 atomic_patch -p1 $WORKSPACE/srcdir/patches/nested_aggregate_insertvalue.patch
-# release/22.x backport for aggregate PHI value-id operands. Main already has a
-# broader aggregate PHI/select/freeze lowering path.
-atomic_patch -p1 $WORKSPACE/srcdir/patches/aggregate_phi_value_id.patch
 # Fix direct returns of aggregate extractvalue results, such as the LLVM IR
 # emitted for non-inlined SMatrix{1,1} returns.
 atomic_patch -p1 $WORKSPACE/srcdir/patches/aggregate_extractvalue_return.patch
@@ -74,8 +80,26 @@ CMAKE_FLAGS+=(-DLLVM_CONFIG_PATH=${WORKSPACE}/bootstrap/bin/llvm-config)
 # Install things into $prefix
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
 
-# Explicitly use our cmake toolchain file and tell CMake we're cross-compiling
-CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+# Explicitly use our cmake toolchain file and tell CMake we're cross-compiling.
+# On Windows, build with the Clang/LLD toolchain: the library below is linked
+# with lld (GNU ld is pathologically slow producing a DLL out of large static
+# LLVM archives), and mixing GCC-built archives into a Clang/LLD link is not a
+# combination we want to debug.
+if [[ "${target}" == *mingw* ]]; then
+    CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake)
+    CXX_FLAGS="-pthread"
+elif [[ "${target}" == *-linux-* ]]; then
+    CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+    # glibc treats STB_GNU_UNIQUE symbols as process-unique regardless of
+    # visibility, which would let two LLVMs in one process share state. The
+    # flag is GCC-only (FreeBSD and macOS build with clang, which never emits
+    # such symbols).
+    CXX_FLAGS="-fno-gnu-unique"
+else
+    CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+    CXX_FLAGS=""
+fi
+CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="${CXX_FLAGS}")
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=ON)
 
 # Release build for best performance
@@ -97,7 +121,73 @@ CMAKE_FLAGS+=(-DHAVE_HISTEDIT_H=Off)
 CMAKE_FLAGS+=(-DHAVE_LIBEDIT=Off)
 
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
-ninja -j${nproc} tools/llc/install
+# Building `llc` builds exactly the component archives the library needs; the
+# executable itself is not shipped.
+ninja -j${nproc} llc
+
+# Build libspirv: one translation unit over the static component archives, with
+# every LLVM symbol hidden so only the SPIRV* API is exported. That isolation is
+# what allows loading the library next to Julia's own LLVM (or a sibling
+# back-end library) in one process. The API TU is compiled with exceptions so
+# that a `report_fatal_error` can be turned into an error return. It uses the
+# back-end's private headers (extension handling), hence the in-tree includes.
+cd ${WORKSPACE}/srcdir
+COMMON_FLAGS=(-O2 -std=c++17 -fPIC
+    -fvisibility=hidden -fvisibility-inlines-hidden -fno-rtti -fexceptions
+    -ffunction-sections -fdata-sections
+    -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS
+    -I${LLVM_SRCDIR}/include -I${WORKSPACE}/build/include
+    -I${LLVM_SRCDIR}/lib/Target/SPIRV -I${WORKSPACE}/build/lib/Target/SPIRV)
+if [[ "${target}" == *-apple-* ]]; then
+    # ld64 resolves across archives on its own and has no --start-group.
+    LLVM_LIBS=(${WORKSPACE}/build/lib/libLLVM*.a)
+else
+    LLVM_LIBS=(-Wl,--start-group ${WORKSPACE}/build/lib/libLLVM*.a -Wl,--end-group)
+fi
+# The functions declared in the header are exactly what gets exported.
+API=$(sed -n 's/.*\b\(SPIRV[A-Za-z0-9]*\)(.*/\1/p' libspirv.h | sort -u)
+if [[ "${target}" == *mingw* ]]; then
+    # Clang/LLD, see above. Export only the dllexport'd API: auto-export would
+    # overflow the 64K PE export limit with the static LLVM.
+    LINKER=${target}-clang++
+    COMMON_FLAGS+=(-pthread)
+    LINK_FLAGS=(-Wl,--exclude-all-symbols -Wl,--gc-sections
+        -L${prefix}/lib -lz -lole32 -luuid -lpsapi -lshell32 -ladvapi32 -lws2_32 -lntdll)
+elif [[ "${target}" == *-apple-* ]]; then
+    LINKER=${CXX}
+    printf '_%s\n' ${API} > libspirv.exports
+    LINK_FLAGS=(-Wl,-exported_symbols_list,libspirv.exports -Wl,-dead_strip
+        -L${prefix}/lib -lz -lpthread -ldl -lm)
+else
+    LINKER=${CXX}
+    if [[ "${target}" == *-linux-* ]]; then
+        COMMON_FLAGS+=(-fno-gnu-unique)
+    fi
+    echo "{ global: $(printf '%s; ' ${API}) local: *; };" > libspirv.map
+    LINK_FLAGS=(-Wl,--exclude-libs,ALL -Wl,-Bsymbolic -Wl,--gc-sections
+        -Wl,--version-script=libspirv.map
+        -L${prefix}/lib -lz -lpthread -lm)
+    if [[ "${target}" == *-freebsd* ]]; then
+        # No -z defs: `environ`, which LLVM's process support references, is
+        # defined by the executable's startup code on FreeBSD, not by libc.
+        LINK_FLAGS+=(-lexecinfo)
+    else
+        LINK_FLAGS+=(-Wl,-z,defs -ldl)
+    fi
+fi
+mkdir -p ${libdir} ${includedir}
+${LINKER} -shared -o ${libdir}/libspirv.${dlext} ${COMMON_FLAGS[@]} libspirv.cpp \
+    ${LLVM_LIBS[@]} ${LINK_FLAGS[@]}
+install -Dm644 libspirv.h ${includedir}/libspirv.h
+
+# Show what got exported: only the SPIRV* API, and (on ELF) no STB_GNU_UNIQUE
+# symbols, which would defeat the isolation.
+if [[ "${target}" == *-linux-* || "${target}" == *-freebsd* ]]; then
+    echo "exported symbols:"; nm -D --defined-only ${libdir}/libspirv.${dlext} | grep -v ' [wv] '
+    echo "STB_GNU_UNIQUE symbols: $(readelf -Ws ${libdir}/libspirv.${dlext} | grep -c UNIQUE)"
+elif [[ "${target}" == *-apple-* ]]; then
+    echo "exported symbols:"; nm -gU ${libdir}/libspirv.${dlext}
+fi
 """
 
 # These are the platforms we will build for by default, unless further
@@ -105,8 +195,10 @@ ninja -j${nproc} tools/llc/install
 platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
+# `libspirv` is not dlopen'ed at `__init__` time: it is tens of MB, and the first
+# `ccall` into it loads it on demand.
 products = Product[
-    ExecutableProduct("llc", :llc),
+    LibraryProduct("libspirv", :libspirv; dont_dlopen=true),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -114,6 +206,13 @@ dependencies = [
     Dependency("Zlib_jll")
 ]
 
+# LLVM 22 raised its minimum macOS deployment target to 11.0, and LLVM 23's
+# headers no longer compile against the older SDK's libc++. The helper only
+# redirects x86_64-apple-darwin; aarch64-apple-darwin already uses an 11.1 SDK.
+sources, script = require_macos_sdk("11.0", sources, script)
+
 build_tarballs(ARGS, name, version, sources, script,
                platforms, products, dependencies;
                preferred_gcc_version=v"10", julia_compat="1.6")
+
+# bump

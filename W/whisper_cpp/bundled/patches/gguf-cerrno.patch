@@ -1,0 +1,13 @@
+Add missing <cerrno> include: gguf.cpp calls strerror(errno) and fails to
+build on macOS without it. Fixed upstream by ggml-org/llama.cpp#28566
+(synced to whisper.cpp after v1.9.3); drop this patch on the next ggml sync.
+--- a/ggml/src/gguf.cpp
++++ b/ggml/src/gguf.cpp
+@@ -9,6 +9,7 @@
+ #include <cstdio>
+ #include <cstdlib>
+ #include <cstring>
++#include <cerrno>
+ #include <map>
+ #include <new>
+ #include <stdexcept>

@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "LERC"
-version = v"4.1.0"
+version = v"4.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Esri/lerc", "fa0ae1b00903cc55e321d5c0165746310092adf8"),
+    GitSource("https://github.com/Esri/lerc", "e534980e11992cc5f11864b0dcff1af6a27cee0d"),
 ]
 
 # Bash recipe for building across all platforms

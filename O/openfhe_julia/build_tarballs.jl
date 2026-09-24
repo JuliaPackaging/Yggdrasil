@@ -16,3 +16,4 @@ push!(dependencies, Dependency(PackageSpec(name="OpenFHE_jll", uuid="a2687184-f1
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.10", preferred_gcc_version = v"9")
+# Build Trigger: 1

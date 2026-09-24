@@ -4,11 +4,11 @@ using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
 name = "MAGEMin"
-version = v"2.0.2"
+version = v"2.0.4"
 
 # Collection of sources required to complete build
 sources = [GitSource("https://github.com/ComputationalThermodynamics/MAGEMin", 
-                    "9245a65b603545462daa4fb786f2ed3aed907832")                 ]
+                    "a09537602701e753f5f36cc508f90b0b403d9eeb")                 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
