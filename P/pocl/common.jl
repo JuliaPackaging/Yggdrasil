@@ -118,7 +118,7 @@ function build_script(standalone=false)
     cd $WORKSPACE/srcdir/pocl/
     install_license LICENSE
 
-    # Apply our patch series on top of upstream release_7_2 (`git format-patch` exports; the
+    # Apply our patch series on top of upstream v7.2 (`git format-patch` exports; the
     # binary SPIR-V test inputs are excluded since we don't build the tests):
     # - 0001: MinGW Clang/lld toolchain support (JuliaGPU-only, not upstreamed)
     # - 0002: FP16 host math overloads (upstream PR #2224, in `main`)
@@ -126,6 +126,8 @@ function build_script(standalone=false)
     # - 0004: CanonicalizeBarriers fix for reconverging barrier successors (upstream PR #2281)
     # - 0005, 0006: UnreachablesToReturns fix for issue #1958 (upstream PR #2280)
     # - 0007: independent SVM/USM indirect pointer lists in clSetKernelExecInfo (upstream PR #2305)
+    # - 0008, 0009: keep LLVM from replacing the host's SIGSEGV/SIGBUS handlers, which kills
+    #   Julia's GC safepoints (upstream PRs #2339, #2340; JuliaGPU/OpenCL.jl#487)
     for patch in $WORKSPACE/srcdir/patches/pocl/*.patch; do
         atomic_patch -p1 $patch
     done
