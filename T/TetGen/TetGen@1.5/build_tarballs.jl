@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "TetGen"
-version = v"1.5.4"
+version = v"1.5.5"
 
 #
 # Artifact builder for TetGen (c) Hang Si, see project home page https://tetgen.org
@@ -17,7 +17,6 @@ version = v"1.5.4"
 #
 # For 1.5.1 use the same upstream  source as in tetgenbuilder
 # Tentative upstream source for 1.6:
-# "http://www.tetgen.org/1.5/src/tetgen1.6.0.zip" => "e7bbbb4fb8f47f0adc3b46b26ab172557ebb90808c06e21b902b2166717af582"
 sources = [
     GitSource("https://github.com/ufz/tetgen.git","3f75905af7407ab0de1cd1dc92a1b77d6bdacbb7"),
     DirectorySource("cwrapper",target="cwrapper")
@@ -73,5 +72,3 @@ dependencies = [
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
-
-# Build trigger: 1
