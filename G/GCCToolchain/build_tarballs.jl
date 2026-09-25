@@ -18,9 +18,11 @@
 # is built with, because Julia ships CSL's libstdc++/libgcc_s/libgfortran and binaries
 # built against newer GCC headers could need symbols that runtime lacks. We use exactly
 # that version: sources and patches are those of `0_RootFS/GCCBootstrap@15` (the
-# shards CSL v1.5 is built from), code generation options are the same as in
-# `0_RootFS/gcc_common.jl`, and the target runtime libraries are built by those very
-# shards; the build fails if libstdc++'s configuration differs from theirs.
+# shards CSL v1.5 is built from), the default architectures and runtime configuration
+# are the same as in `0_RootFS/gcc_common.jl`, and the target runtime libraries are
+# built by those very shards; the build fails if libstdc++'s configuration differs from
+# theirs. The one intentional difference: on Windows, as MSYS2's GCC, vector moves are
+# unaligned by default (see below).
 # Bump this recipe together with CSL, never before.
 
 using BinaryBuilder
@@ -36,6 +38,8 @@ sources = [
     filter(s -> !(s isa DirectorySource) && !occursin(r"/glibc-", s.url),
            gcc_sources(version, Platform("x86_64", "linux")))...,
     DirectorySource("../../0_RootFS/GCCBootstrap@15/bundled"; follow_symlinks=true),
+    # Our own patches
+    DirectorySource("./bundled"; target="GCCToolchain"),
     # The kernel headers of the previous (GCC 9) toolchain of Julia's CI images, newer
     # than the shards' (4.20.9)
     ArchiveSource("https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.15.14.tar.xz",
@@ -162,6 +166,14 @@ done
 for p in ${WORKSPACE}/srcdir/patches/gcc/*.patch; do
     atomic_patch -p1 "${p}"
 done
+# On 64-bit Windows, GCC cannot realign the stack (SEH), so AVX stack slots that need
+# 32-byte alignment can be under-aligned, and code built with AVX enabled (e.g.
+# `-march=native`) crashes on the aligned vector moves GCC uses for them (GCC PR 54412,
+# fixed on GCC master after 16.x). As MSYS2's GCC, use unaligned vector moves by default
+# on MinGW targets (`-malign-vector-insn` restores aligned ones).
+if [[ "${target}" == *-mingw* ]]; then
+    atomic_patch -p1 ${WORKSPACE}/srcdir/GCCToolchain/patches/mingw-no-align-vector-insn.patch
+fi
 
 # Default architectures, as GCCBootstrap (and therefore CSL)
 GCC_CONF_ARGS=()
