@@ -32,6 +32,18 @@ export CPPFLAGS="-DSQLITE_ENABLE_COLUMN_METADATA=1 \
                  -DSQLITE_ENABLE_MATH_FUNCTIONS \
                  -DSQLITE_USE_URI"
 
+# SQLite 3.49 switched to autosetup, which links the shared library without an
+# SONAME unless `--soname` is given.  The auditor then fills the SONAME in from
+# the file name, so the ABI name became `libsqlite3.so.<version>` and changed on
+# every release, breaking dependents linked against `libsqlite3.so.0`.
+# `--soname` is ELF-only, so macOS is fixed up after `make install`, and Windows
+# keeps its historical `libsqlite3-0.dll` name.
+# See https://sqlite.org/src/forumpost/5a3b44f510df8ded
+SONAME_FLAGS=()
+if [[ ${target} == *-linux-* ]] || [[ ${target} == *-freebsd* ]]; then
+    SONAME_FLAGS=(--soname=legacy)
+fi
+
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=$target \
@@ -39,9 +51,18 @@ export CPPFLAGS="-DSQLITE_ENABLE_COLUMN_METADATA=1 \
     --enable-fts3 \
     --enable-fts4 \
     --enable-fts5 \
-    --enable-rtree
+    --enable-rtree \
+    "${SONAME_FLAGS[@]}"
 make -j${nproc}
 make install
+
+if [[ ${target} == *-apple-darwin* ]]; then
+    # Same problem: the dylib id became `@rpath/libsqlite3.dylib` instead of the
+    # `@rpath/libsqlite3.0.dylib` that dependents are linked against.
+    install_name_tool -id @rpath/libsqlite3.0.dylib \
+        "$(readlink -f "${libdir}/libsqlite3.0.dylib")"
+fi
+
 install_license "${WORKSPACE}/srcdir/LICENSE"
 """
 
