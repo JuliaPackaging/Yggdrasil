@@ -1,16 +1,17 @@
-using BinaryBuilder
+using BinaryBuilder2, BinaryBuilder2.Compat
 
 name = "HelloWorldCxx"
-version = v"1.1.1"
+version = v"1.1.2"
 
 # No sources, we're just building the testsuite
 sources = [
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 mkdir -p ${prefix}/bin
-c++ -o ${prefix}/bin/hello_world${exeext} -g -O2 /usr/share/testsuite/cxx/hello_world/hello_world.cc
+c++ -o ${prefix}/bin/hello_world${exeext} -g -O2 hello_world.cc
 install_license /usr/share/licenses/MIT
 """
 
