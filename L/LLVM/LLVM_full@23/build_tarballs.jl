@@ -7,4 +7,4 @@ include("../common.jl")
 # the clang 16 bootstrap cannot codegen compiler-rt's `preserve_all` handlers.
 build_tarballs(ARGS, configure_build(ARGS, version; experimental_platforms=true)...;
                preferred_gcc_version=v"10", preferred_llvm_version=v"18", julia_compat="1.6")
-# Build trigger: 1
+# Build trigger: 4

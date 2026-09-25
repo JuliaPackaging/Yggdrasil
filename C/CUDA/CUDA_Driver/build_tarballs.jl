@@ -14,7 +14,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDA_Driver"
 cuda_version = v"13.3.0"
-driver_version = "610.43.02"
+driver_version = "610.57.04"
 
 # the JLL version tracks `cuda_version`, but can diverge in the patch digit when the
 # wrapper code changes in ways consumers need to express compat bounds against (Julia
@@ -26,8 +26,9 @@ driver_version = "610.43.02"
 # decision only; toolkit selection moved to CUDA_Runtime_jll/CUDA_Compiler_jll, so the
 # selection library is gone and `libcuda` is defined on every platform (the helper-only
 # artifacts for Windows and non-L4T Tegra generations, which only existed to serve that
-# library, are gone too).
-version = v"13.3.4"
+# library, are gone too). 13.3.5: the newer 610.57.04 compat driver, which NVIDIA only
+# publishes as a datacenter driver redist (the CUDA 13.3.x toolkits ship 610.43.02).
+version = v"13.3.5"
 
 # the Tegra compat drivers to ship, per kernel-mode driver generation (the `tegra`
 # platform tag; see tegra_detection.jl). NVIDIA built L4T compat UMDs against the r35
@@ -115,11 +116,11 @@ for platform in [Platform("x86_64", "linux"; tegra="none"),
     should_build_platform(triplet(augmented_platform)) || continue
 
     # for the cuda compatibility library shipped as part of the CUDA toolkit
-    sources = get_sources("cuda", ["cuda_compat"]; version=cuda_version,
-                          platform=augmented_platform, variant="cuda$(cuda_version.major).$(cuda_version.minor)")
-    # for the datacenter driver
-    #sources = get_sources("nvidia-driver", ["cuda_compat"]; version=driver_version,
+    #sources = get_sources("cuda", ["cuda_compat"]; version=cuda_version,
     #                      platform=augmented_platform, variant="cuda$(cuda_version.major).$(cuda_version.minor)")
+    # for the datacenter driver
+    sources = get_sources("nvidia-driver", ["cuda_compat"]; version=driver_version,
+                          platform=augmented_platform, variant="cuda$(cuda_version.major).$(cuda_version.minor)")
     push!(sources, DirectorySource("./src"))
 
     push!(builds, (; platforms=[platform], sources, products=compat_products))

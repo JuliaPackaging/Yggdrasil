@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "TetGen"
-version = v"1.6.0"
+version = v"1.6.1"
 
 #
 # Artifact builder for TetGen (c) Hang Si, see project home page https://tetgen.org
@@ -12,15 +12,14 @@ version = v"1.6.0"
 #
 
 sources = [
-    ArchiveSource("https://wias-berlin.de/software/tetgen/1.5/src/tetgen1.6.0.zip",
-                  "e7bbbb4fb8f47f0adc3b46b26ab172557ebb90808c06e21b902b2166717af582"),
+    GitSource("https://codeberg.org/TetGen/TetGen","205515773c72c0f2d0d8a16db200a32d748345eb"),
     DirectorySource("cwrapper", target="cwrapper"),
 ]
 
 script = raw"""
 mkdir -p ${libdir}
 
-cd $WORKSPACE/srcdir/tetgen1.6.0
+cd $WORKSPACE/srcdir/TetGen
 
 #
 # Patch tetgen.h with operators delegating new/delete to malloc/free for C/Julia compatibility.
@@ -51,6 +50,7 @@ install_license $WORKSPACE/srcdir/cwrapper/LICENSE
 """
 
 platforms = supported_platforms()
+platforms = expand_cxxstring_abis(platforms)
 
 products = [
     LibraryProduct("libtet", :libtet)
