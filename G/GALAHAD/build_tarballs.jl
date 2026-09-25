@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "GALAHAD"
-version = v"5.5.1"
+version = v"5.5.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ralna/GALAHAD.git", "e5b872c27f2f8d597b91ef75896e8f02c0550ddc")
+    GitSource("https://github.com/ralna/GALAHAD.git", "e5b15008643f85144e940676f278035441a58f13")
 ]
 
 # Bash recipe for building across all platforms
@@ -19,10 +19,8 @@ cd ${WORKSPACE}/srcdir/GALAHAD
 
 if [[ "${target}" == *mingw* ]]; then
   LBT="blastrampoline-5"
-  HWLOC="hwloc-15"
 else
   LBT="blastrampoline"
-  HWLOC="hwloc"
 fi
 
 QUADRUPLE="true"
@@ -33,7 +31,6 @@ fi
 meson setup builddir_int32 --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
                            --prefix=$prefix \
                            -Dint64=false \
-                           -Dlibhwloc=$HWLOC \
                            -Dlibblas=$LBT \
                            -Dliblapack=$LBT \
                            -Dlibsmumps=smumps \
@@ -55,7 +52,6 @@ meson compile -C builddir_int32
 meson setup builddir_int64 --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
                            --prefix=$prefix \
                            -Dint64=true \
-                           -Dlibhwloc=$HWLOC \
                            -Dlibblas=$LBT \
                            -Dliblapack=$LBT \
                            -Dlibsmumps= \
@@ -78,7 +74,6 @@ if [[ "$QUADRUPLE" == "true" ]]; then
     meson setup builddir_quad_int32 --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
                                     --prefix=$prefix \
                                     -Dint64=false \
-                                    -Dlibhwloc=$HWLOC \
                                     -Dlibblas= \
                                     -Dliblapack= \
                                     -Dlibsmumps= \
@@ -100,7 +95,6 @@ if [[ "$QUADRUPLE" == "true" ]]; then
     meson setup builddir_quad_int64 --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
                                     --prefix=$prefix \
                                     -Dint64=true \
-                                    -Dlibhwloc=$HWLOC \
                                     -Dlibblas= \
                                     -Dliblapack= \
                                     -Dlibsmumps= \
@@ -288,10 +282,9 @@ dependencies = [
     HostBuildDependency(PackageSpec(name="Ninja_jll", uuid="76642167-d241-5cee-8c94-7a494e8cb7b7")),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
-    Dependency(PackageSpec(name="Hwloc_jll", uuid="e33a78d0-f292-5ffc-b300-72abe9b543c8")),
-    Dependency(PackageSpec(name="MUMPS_seq_jll", uuid="d7ed1dd3-d0ae-5e8e-bfb4-87a502085b8d"), compat="~500.900.0"),
+    Dependency(PackageSpec(name="MUMPS_seq_jll", uuid="d7ed1dd3-d0ae-5e8e-bfb4-87a502085b8d"), compat="~500.900.100"),
     Dependency(PackageSpec(name="HSL_jll", uuid="017b0a0e-03f4-516a-9b91-836bbd1904dd")),
-    Dependency(PackageSpec(name="CUTEst_jll", uuid="bb5f6f25-f23d-57fd-8f90-3ef7bad1d825"), compat="2.5.6"),
+    Dependency(PackageSpec(name="CUTEst_jll", uuid="bb5f6f25-f23d-57fd-8f90-3ef7bad1d825"), compat="2.7.0"),
     ## Dependency(PackageSpec(name="PaStiX_jll", uuid="46e5285b-ff06-5712-adf2-cc145d39f096")),
 ]
 
