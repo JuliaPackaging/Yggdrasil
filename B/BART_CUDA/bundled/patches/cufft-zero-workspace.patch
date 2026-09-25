@@ -1,0 +1,39 @@
+Avoid allocating a zero-byte cuFFT workspace, which corrupts BART's GPU pointer tracking.
+Upstream submission pending; cuFFT permits zero workspace:
+https://docs.nvidia.com/cuda/cufft/index.html#cufftmakeplanmany
+
+diff --git a/src/num/fft-cuda.c b/src/num/fft-cuda.c
+--- a/src/num/fft-cuda.c
++++ b/src/num/fft-cuda.c
+@@ -364,14 +364,18 @@ static void fft_cuda_exec_int(struct fft_cuda_plan_s* cuplan, complex float* dst
+ 	size_t workspace_size = cuplan->workspace_size;
+ 	cufftHandle cufft = cuplan->cufft;
+ 
+-	void* workspace = md_alloc_gpu(1, MAKE_ARRAY(1l), workspace_size);
++	void* workspace = (0 < workspace_size) ? md_alloc_gpu(1, MAKE_ARRAY(1l), workspace_size) : NULL;
+ 
+-	CUDA_ERROR_PTR(dst, src, workspace);
++	CUDA_ERROR_PTR(dst, src);
+ 
+ #pragma omp critical(bart_cufft_streams)
+ 	{
+ 		CUFFT_ERROR(cufftSetStream(cufft, cuda_get_stream()));
+-		CUFFT_ERROR(cufftSetWorkArea(cufft, workspace));
++		if (NULL != workspace) {
++
++			CUDA_ERROR_PTR(workspace);
++			CUFFT_ERROR(cufftSetWorkArea(cufft, workspace));
++		}
+ 
+ 		for (int i = 0; i < cuplan->batch; i++)
+ 			CUFFT_ERROR(cufftExecC2C(cufft,
+@@ -380,7 +384,8 @@ static void fft_cuda_exec_int(struct fft_cuda_plan_s* cuplan, complex float* dst
+ 						 (!cuplan->backwards) ? CUFFT_FORWARD : CUFFT_INVERSE));
+ 	}
+ 
+-	md_free(workspace);
++	if (NULL != workspace)
++		md_free(workspace);
+ 
+ 	if (NULL != cuplan->chain)
+ 		fft_cuda_exec(cuplan->chain, dst, dst);
