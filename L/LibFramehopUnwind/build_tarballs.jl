@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "LibFramehopUnwind"
-version = v"0.1.2"
+version = v"0.1.3"
 
 # Collection of sources required to complete build.
 # The crate has no release tags yet, so pin the source to a specific commit.
