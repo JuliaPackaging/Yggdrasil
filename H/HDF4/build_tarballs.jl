@@ -4,13 +4,13 @@ using BinaryBuilder, Pkg
 
 name = "HDF4"
 # We bumped the version number to build without NetCDF support.
-hdf4_version = v"4.3.1"
-version = v"4.3.2"
+hdf4_version = v"4.4.0"
+version = v"5.4.0"         # 4.4.0 is incompatible with 4.3.1
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/HDFGroup/hdf4/releases/download/hdf$(hdf4_version)/hdf$(hdf4_version).tar.gz",
-                  "a2c69eb752aee385b73d4255e4387134dd5e182780d64da0a5cb0d6e1d3dea3b"),
+                  "f69afb6362529c606f05fb4c95279316497c68bea9ed7794683b31544163e286"),
 ]
 
 # Bash recipe for building across all platforms
@@ -72,10 +72,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="JpegTurbo_jll", uuid="aacddb02-875f-59d6-b918-886e6ef4fbf8"); compat="3.1.1"),
+    Dependency(PackageSpec(name="JpegTurbo_jll", uuid="aacddb02-875f-59d6-b918-886e6ef4fbf8"); compat="3.2.0"),
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"); compat="1.2.12"),
-    Dependency(PackageSpec(name="libaec_jll", uuid="477f73a3-ac25-53e9-8cc3-50b2fa2566f0"); compat="1.1.3"),
+    Dependency(PackageSpec(name="libaec_jll", uuid="477f73a3-ac25-53e9-8cc3-50b2fa2566f0"); compat="1.1.7"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"5")
