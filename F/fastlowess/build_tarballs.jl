@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "fastlowess"
-version = v"4.0.0"
+version = v"4.1.0"
 
 # Update the commit hash when releasing a new version
 sources = [
-	GitSource("https://github.com/thisisamirv/lowess-project.git", "0dbaee9fc35f1f4f09f3f1d1d32b872353e27cdc"),
+	GitSource("https://github.com/thisisamirv/lowess-project.git", "a5016ea03a0c46c6d7ff8ce595571bdc748672ba"),
 ]
 
 # Build script
@@ -32,7 +32,6 @@ platforms = supported_platforms()
 
 # Filter out platforms not supported by Rust
 filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms)
-filter!(p -> libc(p) != "musl", platforms)
 filter!(p -> !Sys.isfreebsd(p), platforms)
 filter!(p -> arch(p) != "riscv64", platforms)
 
