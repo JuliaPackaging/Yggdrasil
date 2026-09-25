@@ -1,0 +1,18 @@
+Description: The n_tries parameter has to be positive
+Author: Dirk Eddelbuettel <edd@debian.org>
+Bug-Debian: https://bugs.debian.org/1086206
+Bug: https://lists.gnu.org/archive/html/bug-gsl/2024-09/msg00000.html
+Last-Update: 2024-10-28
+
+--- gsl-2.8+dfsg.orig/siman/siman.c
++++ gsl-2.8+dfsg/siman/siman.c
+@@ -197,6 +197,9 @@ gsl_siman_solve_many (const gsl_rng * r,
+   double u;                     /* throw the die to choose a new "x" */
+   int n_iter;
+ 
++  /* this function requires that n_tries be positive */
++  assert(params.n_tries > 0);
++
+   if (print_position) {
+     printf ("#-iter    temperature       position");
+     printf ("         delta_pos        energy\n");
