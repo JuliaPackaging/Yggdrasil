@@ -1,0 +1,15 @@
+Remove <uuid/uuid.h> from hfs_format.h. It is only needed for uuid_string_t,
+which include/missing.h already defines, and nothing links against libuuid.
+
+diff --git a/include/hfs/hfs_format.h b/include/hfs/hfs_format.h
+index db182e8..bce8494 100644
+--- a/include/hfs/hfs_format.h
++++ b/include/hfs/hfs_format.h
+@@ -770,7 +770,6 @@ enum {
+ 	kHFSBinaryCompare = 0xBC  /* binary compare (case-sensitive) */
+ };
+ 
+-#include <uuid/uuid.h>
+ 
+ /* JournalInfoBlock - Structure that describes where our journal lives */
+ 

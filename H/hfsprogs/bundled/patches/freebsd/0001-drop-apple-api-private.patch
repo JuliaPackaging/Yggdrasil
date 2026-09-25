@@ -1,0 +1,28 @@
+Do not define __APPLE_API_PRIVATE. On FreeBSD it makes <bsm/audit.h> include
+<mach/port.h>, which does not exist there. The block it gates in hfs_format.h
+is unused by newfs_hfs.
+
+diff --git a/include/missing.h b/include/missing.h
+index 50c994a..4340137 100644
+--- a/include/missing.h
++++ b/include/missing.h
+@@ -7,7 +7,6 @@
+ #include <stdint.h>
+ 
+ typedef	char uuid_string_t[37];
+-#define __APPLE_API_PRIVATE
+ #define __APPLE_API_UNSTABLE
+ 
+ #define __diskdev_cmds_version "540.1-Linux"
+diff --git a/include/sys/appleapiopts.h b/include/sys/appleapiopts.h
+index 2ecde9d..e5e3daa 100644
+--- a/include/sys/appleapiopts.h
++++ b/include/sys/appleapiopts.h
+@@ -43,7 +43,6 @@
+ #endif /* __APPLE_API_UNSTABLE */
+ 
+ #ifndef __APPLE_API_PRIVATE
+-#define __APPLE_API_PRIVATE
+ #endif /* __APPLE_API_PRIVATE */
+ 
+ #ifndef __APPLE_API_OBSOLETE
