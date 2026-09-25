@@ -25,11 +25,7 @@ if [[ "${target}" == *-musl* ]]; then
 fi
 
 cargo rustc --release --locked --lib --crate-type=cdylib --target=${rust_target}
-if [[ "${target}" == *-mingw* ]]; then
-    install -Dvm755 "target/${rust_target}/release/lancedb.dll" "${bindir}/lancedb.dll"
-else
-    install -Dvm755 "target/${rust_target}/release/liblancedb.${dlext}" "${libdir}/liblancedb.${dlext}"
-fi
+install -Dvm755 "target/${rust_target}/release/*lancedb.${dlext}" -t "${libdir}"
 install -Dvm644 include/lancedb.h "${includedir}/lancedb.h"
 """
 
