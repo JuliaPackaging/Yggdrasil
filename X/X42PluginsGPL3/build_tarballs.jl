@@ -76,7 +76,7 @@ dependencies = [
     Dependency("FFTW_jll"; compat = "3.3.11"),
     Dependency("libsndfile_jll"; compat = "1.2.2"),
     Dependency("libsamplerate_jll"; compat = "0.1.10"),
-    Dependency("CompilerSupportLibraries_jll"),
+    Dependency("CompilerSupportLibraries_jll", v"1.5.7"; compat = "1.0.5"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
