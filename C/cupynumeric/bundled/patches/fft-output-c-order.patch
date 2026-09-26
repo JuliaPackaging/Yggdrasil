@@ -1,0 +1,15 @@
+--- a/src/cupynumeric/mapper.cc
++++ b/src/cupynumeric/mapper.cc
+@@ -51,8 +51,10 @@
+       auto inputs  = task.inputs();
+       auto outputs = task.outputs();
+       mappings.push_back(StoreMapping::default_mapping(inputs[0].data(), options.front()));
+-      mappings.push_back(
+-        StoreMapping::default_mapping(outputs[0].data(), options.front(), true /*exact*/));
++      // The GPU kernel writes cuFFT output in place and asserts a dense row-major
++      // instance, so an existing instance in another ordering must not be reused.
++      mappings.push_back(StoreMapping::default_mapping(
++        outputs[0].data(), options.front(), true /*exact*/, DimOrdering::c_order()));
+       return mappings;
+     }
+     case CUPYNUMERIC_TRANSPOSE_COPY_2D: {
