@@ -25,7 +25,7 @@ if [[ "${target}" == *-musl* ]]; then
 fi
 
 cargo rustc --release --locked --lib --crate-type=cdylib --target=${rust_target}
-install -Dvm755 "target/${rust_target}/release/*lancedb.${dlext}" -t "${libdir}"
+install -Dvm755 "target/${rust_target}/release/"*lancedb."${dlext}" -t "${libdir}"
 install -Dvm644 include/lancedb.h "${includedir}/lancedb.h"
 """
 
