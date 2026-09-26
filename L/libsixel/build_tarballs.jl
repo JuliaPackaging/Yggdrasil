@@ -24,7 +24,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libsixel/
+cd $WORKSPACE/srcdir/libsixel
 
 update_configure_scripts
 
