@@ -8,7 +8,7 @@ version = v"0.33.0"
 
 sources = [
     GitSource("https://github.com/lancedb/lancedb-c.git",
-              "a4ac1c0343a8959cfc5b3d462c640b4d3b09c8dd"),
+              "b817cb3dcdd81f8191c161de21632db9d2331129"),
 ]
 
 script = raw"""
