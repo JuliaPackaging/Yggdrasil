@@ -3,17 +3,22 @@
 using BinaryBuilder, Pkg
 
 name = "wget2"
-version = v"2.2.1"
+version = v"2.3.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://ftpmirror.gnu.org/gnu/wget/wget2-$(version).tar.gz",
-                  "d7544b13e37f18e601244fce5f5f40688ac1d6ab9541e0fbb01a32ee1fb447b4")
+                  "4f1915b2a55a789a15f2f9ada7cc44bca81418e648f76fd88a7f4dd028b2149f"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/wget2*
+
+# Fix undeclared `sockfd` in TCP Fast Open fallback (Linux only);
+# backport of upstream commit db600f40, remove for wget2 > 2.3.0
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/tcp_fastopen_sockfd.patch
 
 if [[ ${target} == x86_64-linux-musl ]]; then
     # Avoid finding the host Brotli libraries
