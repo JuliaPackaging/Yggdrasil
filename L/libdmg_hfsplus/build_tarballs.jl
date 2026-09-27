@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libdmg_hfsplus"
-version = v"0.5.0"
+version = v"0.5.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/mozilla/libdmg-hfsplus.git", "d6287b5afc2406b398de42f74eba432f2123b937")
+    GitSource("https://github.com/JanisErdmanis/libdmg-hfsplus.git", "3ba2d902f1752156d3c7b07990555bed21b8f159")
 ]
 
 # Bash recipe for building across all platforms
@@ -18,6 +18,7 @@ script = raw"""
         -DCMAKE_INSTALL_PREFIX=${prefix} \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
         -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_C_STANDARD=99 \
         -DZLIB_INCLUDE_DIR=${includedir} \
         -DZLIB_LIBRARY="${libdir}/libz.${dlext}" \
         -DBZIP2_INCLUDE_DIR=${includedir}  \
