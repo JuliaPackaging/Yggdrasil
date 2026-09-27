@@ -20,6 +20,15 @@ cd $WORKSPACE/srcdir/wget2*
 # backport of upstream commit db600f40, remove for wget2 > 2.3.0
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/tcp_fastopen_sockfd.patch
 
+# Fix quoting of `GNULIB_LIBS` in `configure`, which otherwise ends up empty
+# (e.g. CoreFoundation is not linked on macOS); equivalent to upstream commit
+# e80d42ac (which fixes `configure.ac`), remove for wget2 > 2.3.0
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/gnulib_libs_quoting.patch
+
+# Windows: <wincrypt.h> defines `OCSP_REQUEST` and `OCSP_RESPONSE` as macros,
+# clashing with the OpenSSL types
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/openssl_wincrypt_ocsp.patch
+
 if [[ ${target} == x86_64-linux-musl ]]; then
     # Avoid finding the host Brotli libraries
     rm /usr/lib/libbrotli*
@@ -28,7 +37,7 @@ fi
 if [[ ${target} == *-w64-mingw32 ]]; then
     # There is no pkgconfig info for OpenSSL on Windows
     export OPENSSL_CFLAGS="-I${includedir}"
-    export OPENSSL_LIBS="-L${libdir} -lssl"
+    export OPENSSL_LIBS="-L${libdir} -lssl -lcrypto"
 fi
 
 ./configure \
