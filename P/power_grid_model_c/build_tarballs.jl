@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "power_grid_model_c"
-version = v"1.13.172"
+version = v"1.13.176"
 
 # Collection of sources required to complete build
 sources = [
            ArchiveSource("https://github.com/PowerGridModel/power-grid-model/releases/download/v$(version)/power_grid_model-$(version).tar.gz", 
-                      "6738ddd1b9b289223709b4b842af3d663a72eaa8beb4b2de12ad0be02e89c8cd"),
+                      "40af117a8353451d5c69c9902471e72f0cf9f1e98201a93a873dd4ff912d02d2"),
            ArchiveSource("https://github.com/joseluisq/MacOSX-SDKs/releases/download/15.0/MacOSX15.0.sdk.tar.xz",
                       "9df0293776fdc8a2060281faef929bf2fe1874c1f9368993e7a4ef87b1207f98"),
           ]
