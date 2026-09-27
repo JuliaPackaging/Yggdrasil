@@ -1,13 +1,13 @@
 using BinaryBuilder
 
 name = "GLFW"
-version = "3.4"
-ygg_version = "3.4.1"
+
+version = v"3.5.1"
 
 # Collection of sources required to build glfw
 sources = [
     GitSource("https://github.com/glfw/glfw.git",
-              "7b6aead9fb88b3623e3b3725ebb42670cbe4c579")
+              "d9d6f0f1f967807ffade6598ea9a631ebaf37a56")
 ]
 
 # Bash recipe for building across all platforms
@@ -47,6 +47,7 @@ CFLAGS="-D_POSIX_C_SOURCE='200809L' -D__BSD_VISIBLE=${BSD_VISIBLE}" cmake .. \
 # platform, so we have to explicitly override it to use the binary for the host.
 cmake -DWAYLAND_SCANNER_EXECUTABLE="$host_bindir/wayland-scanner" ..
 
+make update_mappings
 make -j${nproc}
 make install
 """
@@ -77,5 +78,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, VersionNumber(ygg_version), sources, script, platforms, products, dependencies; 
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
                julia_compat="1.6")

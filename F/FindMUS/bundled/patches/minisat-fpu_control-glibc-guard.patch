@@ -1,0 +1,21 @@
+Gate the vendored MiniSat's <fpu_control.h> include on __GLIBC__.
+
+musl libc lacks glibc's <fpu_control.h>, but MiniSat includes it under a bare
+__linux__ guard. The header is only actually used (in System.cc) when the _FPU_*
+macros are defined, so restricting the include to glibc lets the build succeed on
+musl targets while leaving glibc targets (where the header and macros remain
+available) unchanged.
+
+diff --git a/mapsolvers/minisat/minisat/utils/System.h b/mapsolvers/minisat/minisat/utils/System.h
+index a51d4c2..031014e 100644
+--- a/mapsolvers/minisat/minisat/utils/System.h
++++ b/mapsolvers/minisat/minisat/utils/System.h
+@@ -21,7 +21,7 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
+ #ifndef Minisat_System_h
+ #define Minisat_System_h
+ 
+-#if defined(__linux__)
++#if defined(__linux__) && defined(__GLIBC__)
+ #include <fpu_control.h>
+ #endif
+ 

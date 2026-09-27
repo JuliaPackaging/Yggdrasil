@@ -3,20 +3,20 @@
 using BinaryBuilder
 
 name = "Xorg_libXinerama"
-version = v"1.1.5"
+version = v"1.1.6"
 # We bumped the version number to build for riscv64
-ygg_version = v"1.1.6"
+ygg_version = v"1.1.7"
 
 # Collection of sources required to build libXinerama
 sources = [
     ArchiveSource("https://www.x.org/archive/individual/lib/libXinerama-$(version).tar.gz",
-                  "2efa855cb42dc620eff3b77700d8655695e09aaa318f791f201fa60afa72b95c"),
+                  "c74ee3d05e473671bf86285e2dece345485200bb042bea1540b1e30ff3f74bae"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libXinerama-*/
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=yes
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=yes --enable-static=no
 make -j${nproc}
 make install
 """

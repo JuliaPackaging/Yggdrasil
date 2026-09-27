@@ -2,18 +2,20 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 name = "libass"
-version = v"0.17.4"
+version = v"0.17.5"
 
 # Collection of sources required to build libass
 sources = [
     ArchiveSource("https://github.com/libass/libass/releases/download/$(version)/libass-$(version).tar.xz",
-                  "78f1179b838d025e9c26e8fef33f8092f65611444ffa1bfc0cfac6a33511a05a"),
+                  "2dca25c0e0c837ddf00b52011b3f82cac1e4ddd3ad018227806b0c2288864acc"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libass-*
 apk add nasm
+# On FreeBSD, HarfBuzz_jll ships its pkg-config files in libdata/pkgconfig
+export PKG_CONFIG_PATH="${PKG_CONFIG_PATH:+${PKG_CONFIG_PATH}:}${prefix}/libdata/pkgconfig"
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-require-system-font-provider --disable-static
 make -j${nproc}
 make install
@@ -32,7 +34,7 @@ products = [
 dependencies = [
     Dependency("FreeType2_jll"; compat="2.13.4"),
     Dependency("FriBidi_jll"),
-    Dependency("HarfBuzz_jll"; compat="8.5.1"),
+    Dependency("HarfBuzz_jll"; compat="100.14003"),
     Dependency("Bzip2_jll"; compat="1.0.9"),
     Dependency("Zlib_jll"),
 ]

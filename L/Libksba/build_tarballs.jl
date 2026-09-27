@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "Libksba"
-version = v"1.6.7"
-ygg_version = v"1.6.8"          # Rebuilt for new architectures
+version = v"1.6.8"
+ygg_version = v"1.6.9"          # Rebuilt for new architectures
 
 # Collection of sources required to build libgcrypt
 sources = [
     ArchiveSource("https://gnupg.org/ftp/gcrypt/libksba/libksba-$(version).tar.bz2",
-                  "cf72510b8ebb4eb6693eef765749d83677a03c79291a311040a5bfd79baab763"),
+                  "0f4510f1c7a679c3545990a31479f391ad45d84e039176309d42f80cf41743f5"),
     DirectorySource("bundled"),
 ]
 

@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "P11Kit"
-version = v"0.25.10"
+version = v"0.26.2"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/p11-glue/p11-kit/releases/download/$(version)/p11-kit-$(version).tar.xz",
-                  "a62a137a966fb3a9bbfa670b4422161e369ddea216be51425e3be0ab2096e408"),
+                  "09fd9f44da4813a3141e73d5e7cf7008e5660d0405f13d56c15e1da9dcecf828"),
 ]
 
 # Bash recipe for building across all platforms

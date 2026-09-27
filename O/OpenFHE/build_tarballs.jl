@@ -5,8 +5,8 @@ include("common.jl")
 # If you make changes in this file, e.g., to release a new version,
 # be sure to also release a new version of `OpenFHE_int128` as well (see `../OpenFHE_int128/build_tarballs.jl`)
 name = "OpenFHE"
-version = v"1.4.2"
-git_hash = "aa391988d354d4360f390f223a90e0d1b98839d7"
+version = v"1.5.1"
+git_hash = "1306d14f8c26bb6150d3e6ad54f28dfe1007689e"
 
 sources, script, platforms, products, dependencies = prepare_openfhe_build(name, git_hash)
 

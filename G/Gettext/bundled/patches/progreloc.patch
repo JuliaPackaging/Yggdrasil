@@ -1,0 +1,24 @@
+diff --git a/lib/progreloc.c b/lib/progreloc.c
+index bac7cd0096c7e547ffc6ae1ab916c500b67e1f7e..3596043171d21429f04c99567059e2b5f2be05ca 100644 (file)
+--- a/gettext-runtime/gnulib-lib/progreloc.c
++++ b/gettext-runtime/gnulib-lib/progreloc.c
+@@ -259,7 +259,6 @@ find_executable (const char *argv0)
+     char *link = xreadlink (buf);
+     if (link != NULL && link[0] != '[')
+       return link;
+-    }
+     if (executable_fd < 0)
+       executable_fd = open (buf, O_EXEC | O_CLOEXEC, 0);
+   }
+diff --git a/lib/progreloc.c b/lib/progreloc.c
+index bac7cd0096c7e547ffc6ae1ab916c500b67e1f7e..3596043171d21429f04c99567059e2b5f2be05ca 100644 (file)
+--- a/gettext-tools/gnulib-lib/progreloc.c
++++ b/gettext-tools/gnulib-lib/progreloc.c
+@@ -259,7 +259,6 @@ find_executable (const char *argv0)
+     char *link = xreadlink (buf);
+     if (link != NULL && link[0] != '[')
+       return link;
+-    }
+     if (executable_fd < 0)
+       executable_fd = open (buf, O_EXEC | O_CLOEXEC, 0);
+   }

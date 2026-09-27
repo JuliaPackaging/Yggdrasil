@@ -38,10 +38,11 @@ function get_script(cuda::Val{true})
             -DCMAKE_INSTALL_PREFIX=${prefix} \
             -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
             -DJulia_PREFIX=${prefix} \
-            ../legate_jl_wrapper/
+            -DLEGATE_WRAPPER_ENABLE_CUDA=ON \
+            ../Legate.jl/lib/legate_jl_wrapper/
 
         VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
-        install_license $WORKSPACE/srcdir/legate_jl_wrapper*/LICENSE
+        install_license $WORKSPACE/srcdir/Legate.jl/lib/legate_jl_wrapper*/LICENSE
     """
     return script
 end
@@ -62,10 +63,11 @@ function get_script(cuda::Val{false})
             -DCMAKE_INSTALL_PREFIX=${prefix} \
             -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
             -DJulia_PREFIX=${prefix} \
-            ../legate_jl_wrapper/
+            -DLEGATE_WRAPPER_ENABLE_CUDA=OFF \
+            ../Legate.jl/lib/legate_jl_wrapper/
 
         VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
-        install_license $WORKSPACE/srcdir/legate_jl_wrapper*/LICENSE
+        install_license $WORKSPACE/srcdir/Legate.jl/lib/legate_jl_wrapper*/LICENSE  
     """
     return script
 end

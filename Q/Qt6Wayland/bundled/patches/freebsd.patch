@@ -1,0 +1,12 @@
+diff --color -ur a/CMakeLists.txt b/CMakeLists.txt
+--- a/CMakeLists.txt	2026-01-22 20:41:58.000000000 +0100
++++ b/CMakeLists.txt	2026-02-22 15:42:31.888345182 +0100
+@@ -18,7 +18,7 @@
+ )
+ qt_internal_project_setup()
+ 
+-if(NOT MACOS AND NOT QNX AND (ANDROID OR NOT LINUX))
++if(NOT MACOS AND NOT QNX AND (ANDROID OR NOT LINUX) AND NOT FREEBSD)
+     message(NOTICE "Skipping the build as the condition \"LINUX OR MACOS OR QNX\" is not met.")
+     return()
+ endif()

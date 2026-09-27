@@ -1,0 +1,18 @@
+diff --git a/squashfs-tools/mksquashfs.c b/squashfs-tools/mksquashfs.c
+index 153ff31b..9df46548 100644
+--- a/squashfs-tools/mksquashfs.c
++++ b/squashfs-tools/mksquashfs.c
+@@ -83,6 +83,13 @@
+ #include "alloc.h"
+ #include "virt_disk_pos.h"
+
++/* macOS / Darwin compat */
++#if defined __APPLE__ || defined __DARWIN__
++#  define st_atim st_atimespec
++#  define st_mtim st_mtimespec
++#  define st_ctim st_ctimespec
++#endif
++
+ /* Compression options */
+ int noF = FALSE;
+ int noI = FALSE;

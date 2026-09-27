@@ -6,18 +6,17 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "Silo"
-version = v"4.12.0"
+version = v"4.12.1"
+ygg_version = v"4.12.3"         # we bumped the version to build against the new MPIABI
+
 sources = [
     ArchiveSource("https://github.com/LLNL/Silo/releases/download/$(version)/Silo-$(version).tar.xz",
-                  "bde1685e4547d5dd7416bd6215b41f837efef0e4934d938ba776957afbebdff0"),
+                  "9fdf81303b8dc7fab941e365f4156fe48d0bb036cdfdcb59a7c2d218771576b6"),
     DirectorySource("bundled"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/Silo*
-
-# Correct HDF5 compatibility
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/505.patch
 
 # Correct Windows support
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/windows.patch
@@ -34,7 +33,7 @@ cmake_options=(
     -DSILO_ENABLE_BROWSER=OFF
     -DSILO_ENABLE_FORTRAN=OFF
     -DSILO_ENABLE_HDF5=ON
-    -DSILO_ENABLE_JSON=ON
+    -DSILO_ENABLE_JSON=OFF
     -DSILO_ENABLE_PYTHON_MODULE=OFF
     -DSILO_ENABLE_SHARED=ON
     -DSILO_ENABLE_SILEX=OFF
@@ -62,7 +61,7 @@ augment_platform_block = """
     using Base.BinaryPlatforms
     $(MPI.augment)
     augment_platform!(platform::Platform) = augment_mpi!(platform)
-"""
+    """
 
 platforms = expand_cxxstring_abis(supported_platforms())
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
@@ -72,7 +71,7 @@ products = [
 ]
 
 dependencies = [
-    Dependency("HDF5_jll"; compat="2.0.0"),
+    Dependency("HDF5_jll"; compat="2.2.1"),
     Dependency("Zlib_jll"; compat="1.2.12"),
 ]
 append!(dependencies, platform_dependencies)
@@ -82,5 +81,5 @@ append!(dependencies, platform_dependencies)
 ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # We need to use at least GCC 8 to ensure that we get at least libgfortran5, which we need for HDF5.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                augment_platform_block, julia_compat="1.10", preferred_gcc_version=v"8")

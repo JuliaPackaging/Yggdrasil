@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "MPC"
-version = v"1.3.1"
+version = v"1.4.1"
 
 # Collection of sources required to build MPC
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/mpc/mpc-$(version).tar.gz",
-                  "ab642492f5cf882b74aa0cb730cd410a81edcdbec895183ce930e706c1c759b8"),
+    ArchiveSource("https://ftpmirror.gnu.org/gnu/mpc/mpc-$(version).tar.xz",
+                  "91204cd32f164bd3b7c992d4a6a8ce6519511aadab30f78b6982d0bf8d73e931"),
 ]
 
 # Bash recipe for building across all platforms
@@ -42,8 +42,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GMP_jll"; compat="6.2.0"),
-    Dependency("MPFR_jll", v"4.1.1"),
+    Dependency("GMP_jll"; compat="6.2.1"),
+    Dependency("MPFR_jll"; compat="4.1.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

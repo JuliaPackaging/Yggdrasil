@@ -1,0 +1,20 @@
+--- a/xt_base/ginterf/hcimlib.cc
++++ b/xt_base/ginterf/hcimlib.cc
+@@ -489,3 +489,17 @@
+ #endif
+ #endif
+ #endif
++
++#if !defined(WITH_QT5) && !defined(WITH_QT6)
++#if !defined(WIN32) && !defined(WITH_X11)
++// Fallback for builds with no rendering back end (neither Windows GDI
++// nor X11):  the IM hardcopy driver class is still compiled and its
++// vtable emitted, so IMdev::NewDraw must exist or linking fails with
++// an undefined reference.  The driver is inoperative in this case.
++GRdraw *
++ginterf::IMdev::NewDraw(int)
++{
++    return (0);
++}
++#endif
++#endif

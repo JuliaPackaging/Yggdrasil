@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "libzenohc"
-version = v"1.6.2"
+version = v"1.9.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource(
         "https://github.com/eclipse-zenoh/zenoh-c.git",
-        "f376456ccf75ed837a21a186bdf5191cba50eb3b",
+        "499de93af63e6a7d3497313f544e666fea1d33fd",
     ),
 ]
 
@@ -36,7 +36,8 @@ cmake -S .. -B . \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DZENOHC_CUSTOM_TARGET=${rust_target} \
-    -DZENOHC_BUILD_WITH_SHARED_MEMORY=TRUE
+    -DZENOHC_BUILD_WITH_SHARED_MEMORY=TRUE \
+    -DZENOHC_BUILD_WITH_UNSTABLE_API=TRUE
 cmake --build . --target install --config Release --parallel ${nproc}
 """
 

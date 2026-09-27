@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "Qt6Base"
-version = v"6.8.2"
+version = v"6.10.2"
 
 # Set this to true first when updating the version. It will build only for the host (linux musl).
 # After that JLL is in the registry, set this to false to build for the other platforms, using
@@ -13,11 +13,14 @@ const host_build = false
 # Collection of sources required to build qt6
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtbase-everywhere-src-$version.tar.xz",
-                  "012043ce6d411e6e8a91fdc4e05e6bedcfa10fcb1347d3c33908f7fdd10dfe05"),
+                  "aeb78d29291a2b5fd53cb55950f8f5065b4978c25fb1d77f627d695ab9adf21e"),
     DirectorySource("./bundled"),
 ]
 
 script = raw"""
+# Need newer cmake from JLL
+apk del cmake
+
 cd $WORKSPACE/srcdir
 
 BIN_DIR="/opt/bin/${bb_full_target}"
@@ -34,7 +37,7 @@ commonoptions=" \
 -openssl-linked  -nomake examples -release \
 "
 
-commoncmakeoptions="-DCMAKE_PREFIX_PATH=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DQT_HOST_PATH=$host_prefix -DQT_FEATURE_openssl_linked=ON"
+commoncmakeoptions="-DCMAKE_PREFIX_PATH=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DQT_HOST_PATH=$host_prefix -DQT_FEATURE_openssl_linked=ON -DWaylandScanner_EXECUTABLE=$host_bindir/wayland-scanner"
 
 export LD_LIBRARY_PATH=$host_libdir:$host_prefix/lib64:$LD_LIBRARY_PATH
 export OPENSSL_LIBS="-L${libdir} -lssl -lcrypto"
@@ -162,7 +165,7 @@ dependencies = [
     Dependency("Glib_jll", v"2.59.0"; compat="2.59.0"),
     Dependency("Zlib_jll"),
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("OpenSSL_jll"; compat="3.0.8"),
+    Dependency("OpenSSL_jll"; compat="3.5.1"),
     Dependency("Vulkan_Loader_jll"),
     BuildDependency(PackageSpec(name="LLVM_full_jll", version=qt_llvm_version)),
     BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=qt_llvm_version);
@@ -173,6 +176,7 @@ dependencies = [
     BuildDependency("Xorg_xproto_jll"),
     BuildDependency("Xorg_glproto_jll"),
     BuildDependency("Vulkan_Headers_jll"),
+    HostBuildDependency("CMake_jll"),
 ]
 
 if !host_build

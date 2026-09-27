@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "libexif"
-version = v"0.6.24"
+version = v"0.6.26"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/libexif/libexif/releases/download/v0.6.24/libexif-0.6.24.tar.bz2", 
-    "d47564c433b733d83b6704c70477e0a4067811d184ec565258ac563d8223f6ae"),
+    ArchiveSource("https://github.com/libexif/libexif/releases/download/v$version/libexif-$version.tar.bz2", 
+    "0830ed253fceeb60444fb309598bc8a9491d3007dc054aad3a50a347c5597c57"),
 ]
 
 # Bash recipe for building across all platforms

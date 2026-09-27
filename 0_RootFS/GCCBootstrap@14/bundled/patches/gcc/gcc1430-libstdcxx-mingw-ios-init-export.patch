@@ -1,0 +1,31 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Keno Fischer <keno@juliahub.com>
+Date: Mon, 22 Jun 2026 23:45:00 +0000
+Subject: [PATCH] libstdc++: Restore ios_base_library_init export on MinGW
+
+gcc-14.3.0 backported PR116159, which only emits the
+std::ios_base_library_init() ABI marker on ELF targets.  Keep the
+corresponding <iostream> reference disabled on MinGW (the header-side
+change is already upstream in 14.3.0), but provide the symbol in
+libstdc++ for compatibility with C++ objects that were linked against an
+import library exposing it (e.g. binaries built with the previous
+gcc-14.2.0 mingw runtime).
+---
+ libstdc++-v3/src/c++98/ios_init.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/libstdc++-v3/src/c++98/ios_init.cc b/libstdc++-v3/src/c++98/ios_init.cc
+index a597a471d1e..c2030dde71c 100644
+--- a/libstdc++-v3/src/c++98/ios_init.cc
++++ b/libstdc++-v3/src/c++98/ios_init.cc
+@@ -199,7 +199,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
+     return __ret;
+   }
+
+-#if defined(_GLIBCXX_SYMVER_GNU) && defined(__ELF__)
++#if defined(_GLIBCXX_SYMVER_GNU) && (defined(__ELF__) || defined(__MINGW32__))
+ #pragma GCC diagnostic ignored "-Wattribute-alias"
+
+   void ios_base_library_init (void)
+--
+2.43.0

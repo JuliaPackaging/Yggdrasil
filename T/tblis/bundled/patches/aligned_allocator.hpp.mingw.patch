@@ -1,13 +1,29 @@
---- aligned_allocator.hpp	2020-09-24 16:33:17.771220891 +0900
-+++ aligned_allocator.hpp	2020-09-24 16:35:19.754294209 +0900
-@@ -2,6 +2,10 @@
+--- aligned_allocator.hpp
++++ aligned_allocator.hpp
+@@ -2,8 +2,17 @@
  #define _TBLIS_ALIGNED_ALLOCATOR_HPP_
  
  #include <cstdlib>
-+inline int posix_memalign(void **memptr, size_t alignment, size_t size)
-+{ *memptr = 0; *memptr = _aligned_malloc(alignment, size); 
-+   return (*memptr == 0 && size != 0); }
-+
++#include <cerrno>
  #include <new>
  
++/* MinGW provides no posix_memalign; emulate it with _aligned_malloc. Memory
++   obtained this way must be released with _aligned_free, not free. */
++inline int posix_memalign(void **memptr, size_t alignment, size_t size)
++{
++    *memptr = _aligned_malloc(size, alignment);
++    return *memptr ? 0 : errno;
++}
++
  #if TBLIS_HAVE_HBWMALLOC_H
+ #include <hbwmalloc.h>
+ #endif
+@@ -46,7 +55,7 @@
+ #if TBLIS_HAVE_HBWMALLOC_H
+         hbw_free(ptr);
+ #else
+-        free(ptr);
++        _aligned_free(ptr);
+ #endif
+     }
+ 

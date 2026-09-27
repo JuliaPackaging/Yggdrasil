@@ -1,10 +1,16 @@
 using BinaryBuilder, Pkg
 
+include(joinpath("..", "..", "platforms", "macos_sdks.jl"))
+
+# OSRM moved to a versioning scheme of year.month.patch, meaning major and minor versions
+# might or might not contain breaking changes. The C interface libosrmc remains on a SemVer
+# versioning scheme. To guarantee interoperability, we build a dedicated interface version
+# for each supported OSRM release following their versioning.
 name = "libosrmc"
-version = v"6.0.2"
+version = v"26.4.0"
 
 sources = [
-    GitSource("https://github.com/moviro-hub/libosrmc.git", "7602918805032eb740ad6bd78e551b876d470759"),
+    GitSource("https://github.com/moviro-hub/libosrmc.git", "40473483dbe07bff05e6a5b640226c99fe5271dd"),
 ]
 
 script = raw"""
@@ -13,20 +19,15 @@ cd ${WORKSPACE}/srcdir/libosrmc/libosrmc
 # Set PKG_CONFIG_PATH for OSRM discovery
 export PKG_CONFIG_PATH="${prefix}/lib/pkgconfig:${PKG_CONFIG_PATH}"
 
-# macOS-specific setup
-if [[ "${target}" == *-apple-* ]]; then
-    export MACOSX_DEPLOYMENT_TARGET=11.0
-    export EXTRA_CXXFLAGS="-mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET}"
-fi
-
 # Build using Makefile
 make -j${nproc} PREFIX=${prefix}
 make install PREFIX=${prefix}
+
+install_license "${WORKSPACE}/srcdir/libosrmc/LICENSE"
 """
 
 platforms = supported_platforms()
-# Linux, macOS (ARM only), Windows
-platforms = filter(p -> Sys.islinux(p) || Sys.isapple(p) && arch(p) == "aarch64" || Sys.iswindows(p), platforms)
+platforms = filter(p -> !Sys.isfreebsd(p), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
@@ -36,22 +37,16 @@ products = [
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("OSRM_jll"; compat = "6.0.0"),
+    Dependency("OSRM_jll"; compat = "~26.4.0"),
     Dependency("boost_jll"; compat = "=1.87.0"),
     Dependency("Expat_jll"; compat = "2.6.5"),
     Dependency("Zlib_jll"),
     Dependency("Bzip2_jll"),
 ]
 
+sources, script = require_macos_sdk("10.15", sources, script)
+
 build_tarballs(
-    ARGS,
-    name,
-    version,
-    sources,
-    script,
-    platforms,
-    products,
-    dependencies;
-    julia_compat = "1.10",
-    preferred_gcc_version = v"13",
+    ARGS, name, version, sources, script, platforms, products, dependencies;
+    julia_compat = "1.10", preferred_gcc_version = v"13",
 )

@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "tree_sitter_ocaml"
-version = v"0.24.2"
+version = v"0.25.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource(
         "https://github.com/tree-sitter/tree-sitter-ocaml.git",
-        "0cc270ff90ca09c29d0f2f9dec69ddfef55a3eff"
+        "6902a86ab5b3b80c622030210aae2d8cb95eb775"
     ),
     DirectorySource("./bundled")
 ]

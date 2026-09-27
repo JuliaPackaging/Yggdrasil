@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "squashfs_tools"
-version = v"4.7.2"
+version = v"4.7.5"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/plougher/squashfs-tools.git", "99d23a31b471433c51e9c145aeba2ab1536e34df"),
+    GitSource("https://github.com/plougher/squashfs-tools.git", "708c59ae80853b0845017c33b42e56061cc546cd"),
     DirectorySource("bundled"),
 ]
 
@@ -15,8 +15,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/squashfs-tools/squashfs-tools
 
-# Reported as <https://github.com/plougher/squashfs-tools/issues/324>
-atomic_patch -p1 $WORKSPACE/srcdir/patches/nprocessors_compat.patch
+# Darwin uses `st_atimespec` instead of `st_atim`
+# See <https://github.com/plougher/squashfs-tools/issues/358>.
+atomic_patch -p2 $WORKSPACE/srcdir/patches/st_atim.patch
 
 args=(XZ_SUPPORT=1 LZO_SUPPORT=1 LZ4_SUPPORT=1 ZSTD_SUPPORT=1)
 if [[ "${target}" == *-mingw* ]] || [[ "${target}" == *-freebsd* ]]; then

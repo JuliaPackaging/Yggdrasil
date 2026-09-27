@@ -2,13 +2,16 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "Arrow"
-version = v"19.0.1"
+version = v"24.0.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/apache/arrow/releases/download/apache-arrow-$version/apache-arrow-$version.tar.gz",
-                  "acb76266e8b0c2fbb7eb15d542fbb462a73b3fd1e32b80fad6c2fafd95a51160"),
+                  "9a8094d24fa33b90c672ab77fdda253f29300c8b0dd3f0b8e55a29dbd98b82c9"),
     DirectorySource("bundled"),
 ]
 
@@ -16,8 +19,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/apache-arrow-*
 
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/boost.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/parquet.patch
+apk del cmake
+
 if [[ $target == *mingw32* ]]; then
     # This hard-codes the name and location of the zstd library and
     # must not be applied on other architectures
@@ -57,16 +60,22 @@ CMAKE_FLAGS=(
 )
 
 if [[ $target == *mingw32* ]]; then
-    # Cmake doesn't find the zstd library on Windows. It does find
+    # Cmake doesn't find Boost nor zstd on Windows. (It does find
     # zstd, but it somehow can't determine the path to the actual
-    # library.
-    CMAKE_FLAGS+=(-DZSTD_LIB="${prefix}/lib/libzstd.dll.a")
+    # library.)
+    CMAKE_FLAGS+=(
+        -DBoost_DIR=${prefix}/bin/cmake/Boost-1.87.0
+        -DZSTD_LIB="${prefix}/lib/libzstd.dll.a"
+    )
 fi
 
 cmake -B cmake-build "${CMAKE_FLAGS[@]}"
 cmake --build cmake-build --parallel ${nproc}
 cmake --install cmake-build
 """
+
+# Require SDK 12.3
+sources, script = require_macos_sdk("12.3", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
@@ -81,6 +90,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    HostBuildDependency("CMake_jll"),
     Dependency("Bzip2_jll"; compat="1.0.9"),
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
     Dependency("Lz4_jll"),
@@ -89,6 +99,7 @@ dependencies = [
     Dependency("Zstd_jll"; compat="1.5.7"),
     Dependency("boost_jll"; compat="=1.87.0"),
     Dependency("brotli_jll"; compat="1.1.1"),
+    Dependency("rapidjson_jll"; compat="1.1.1"),
     Dependency("snappy_jll"; compat="1.2.2"),
 ]
 

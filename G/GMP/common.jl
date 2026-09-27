@@ -67,7 +67,7 @@ install_license COPYING*
 
     # Dependencies that must be installed before this package can be built
     dependencies = [
-        BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
+        BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=string(llvm_version));
                         platforms=filter(p -> sanitize(p)=="memory", platforms)),
     ]
 

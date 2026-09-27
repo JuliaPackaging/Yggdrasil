@@ -3,15 +3,15 @@
 using BinaryBuilder
 
 name = "f4ncgb"
-upstream_version = v"0.3.4"
-version_offset = v"0.0.0"
+upstream_version = v"1.0.1"
+version_offset = v"0.0.1"
 version = VersionNumber(upstream_version.major*100+version_offset.major,
                         upstream_version.minor*100+version_offset.minor,
                         upstream_version.patch*100+version_offset.patch)
 
 sources = [
     GitSource("https://gitlab.sai.jku.at/f4ncgb/f4ncgb.git",
-              "37c78bb5cf778ce25064ee9ffcf0650274589be1"),
+              "236e7a362ae5584525952ba735f9147037203ff7"),
     ArchiveSource("https://github.com/joseluisq/MacOSX-SDKs/releases/download/15.0/MacOSX15.0.sdk.tar.xz",
                   "9df0293776fdc8a2060281faef929bf2fe1874c1f9368993e7a4ef87b1207f98"),
 ]
@@ -65,13 +65,11 @@ products = [
     LibraryProduct("libf4ncgb", :libf4ncgb)
 ]
 
-
-
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("GMP_jll", v"6.2.1"),
     Dependency("MPFR_jll", v"4.2.0"),
-    Dependency("FLINT_jll", compat = "~301.400.000"),
+    Dependency("FLINT_jll", compat = "~301.600.000"),
     Dependency("boost_jll", compat = "=1.87.0"),
 ]
 

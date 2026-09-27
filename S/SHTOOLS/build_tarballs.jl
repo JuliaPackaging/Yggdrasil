@@ -2,11 +2,9 @@ using BinaryBuilder
 
 # Collection of sources required to build SHTOOLS
 name = "SHTOOLS"
-version = v"4.13.1"
-# We bumped the version number because we built for new architectures
-ygg_version = v"4.13.2"
+version = v"4.14.1"
 sources = [
-    GitSource("https://github.com/SHTOOLS/SHTOOLS", "4c7fd73fd61f863351fdc067294c8538acc70d89"),
+    GitSource("https://github.com/SHTOOLS/SHTOOLS", "98c15efd26b224859e1a8f8ab0c1298368657f59"),
 ]
 
 # Bash recipe for building across all platforms
@@ -54,5 +52,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"5")

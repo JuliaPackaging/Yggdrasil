@@ -1,0 +1,32 @@
+diff --color -ur a/config.tests/quick3d_assimp/CMakeLists.txt b/config.tests/quick3d_assimp/CMakeLists.txt
+--- a/config.tests/quick3d_assimp/CMakeLists.txt	2026-01-22 21:42:28.000000000 +0100
++++ b/config.tests/quick3d_assimp/CMakeLists.txt	2026-02-27 21:57:09.526792919 +0100
+@@ -5,6 +5,7 @@
+ 
+ cmake_minimum_required(VERSION 3.16)
+ project(config_test_quick3d_assimp LANGUAGES C CXX)
++set(CMAKE_BUILD_TYPE "Release")
+ 
+ if(DEFINED QT_CONFIG_COMPILE_TEST_CMAKE_SYSTEM_PREFIX_PATH)
+     set(CMAKE_SYSTEM_PREFIX_PATH "${QT_CONFIG_COMPILE_TEST_CMAKE_SYSTEM_PREFIX_PATH}")
+diff --color -ur a/src/plugins/assetimporters/configure.cmake b/src/plugins/assetimporters/configure.cmake
+--- a/src/plugins/assetimporters/configure.cmake	2026-01-22 21:42:28.000000000 +0100
++++ b/src/plugins/assetimporters/configure.cmake	2026-02-27 21:57:27.010397302 +0100
+@@ -13,7 +13,7 @@
+ 
+ #### Libraries
+ 
+-qt_find_package(WrapQuick3DAssimp 5.1.6 PROVIDED_TARGETS WrapQuick3DAssimp::WrapQuick3DAssimp MODULE_NAME assetimporters QMAKE_LIB quick3d_assimp)
++qt_find_package(WrapQuick3DAssimp 6 PROVIDED_TARGETS WrapQuick3DAssimp::WrapQuick3DAssimp MODULE_NAME assetimporters QMAKE_LIB quick3d_assimp)
+ 
+ # Work around QTBUG-115064
+ # Assimp depends on draco_X, but only one of the two targets gets promoted by qt_find_package
+@@ -35,7 +35,7 @@
+                    LABEL "Assimp"
+                    PROJECT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../../config.tests/quick3d_assimp"
+                    LIBRARIES WrapQuick3DAssimp::WrapQuick3DAssimp
+-                   PACKAGES PACKAGE WrapQuick3DAssimp 5.1.6)
++                   PACKAGES PACKAGE WrapQuick3DAssimp 6)
+ 
+ 
+ #### Tests

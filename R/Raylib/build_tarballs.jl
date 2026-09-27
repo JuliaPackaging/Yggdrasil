@@ -3,16 +3,15 @@
 using BinaryBuilder, Pkg
 
 name = "Raylib"
-version = v"5.5.0"
+version = v"6.0.0"
+ygg_version = v"6.0.1"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/raysan5/raylib.git",
-              "c1ab645ca298a2801097931d1079b10ff7eb9df8"),
+              "dbc56a87da87d973a9c5baa4e7438a9d20121d28"),
     GitSource("https://github.com/raysan5/raygui.git",
-              "25c8c65a6e5f0f4d4b564a0343861898c6f2778b"),
-    GitSource("https://github.com/raysan5/physac.git",
-              "4a8e17f263fb8e1150b3fbafc96f880c7d7a4833"),
+              "b256d4552b4105912d0556541a03862bdc5c0777"),
     DirectorySource("./bundled"),
 ]
 
@@ -20,7 +19,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/raylib/src/
 
-atomic_patch -p1 ../../patches/make-install-everywhere.patch
+atomic_patch ../../patches/make-install-everywhere.patch
 
 export CFLAGS="-D_POSIX_C_SOURCE=200112L"
 
@@ -42,7 +41,11 @@ if [[ "${target}" == *-mingw* ]]; then
 fi
 
 make raygui.c
-make -j${nproc} USE_EXTERNAL_GLFW=TRUE RAYLIB_LIBTYPE=SHARED RAYLIB_MODULE_RAYGUI=TRUE RAYLIB_MODULE_PHYSAC=TRUE "${FLAGS[@]}"
+make -j${nproc} \
+    OPENGL_VERSION=4.3 \
+    GRAPHICS=GRAPHICS_API_OPENGL_43 \
+    USE_EXTERNAL_GLFW=TRUE RAYLIB_LIBTYPE=SHARED RAYLIB_MODULE_RAYGUI=TRUE RAYLIB_MODULE_PHYSAC=TRUE \
+    "${FLAGS[@]}"
 make install RAYLIB_LIBTYPE=SHARED DESTDIR="${prefix}" RAYLIB_INSTALL_PATH="${libdir}"
 install_license ../LICENSE
 """
@@ -71,5 +74,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                preferred_gcc_version=v"7", julia_compat="1.6")

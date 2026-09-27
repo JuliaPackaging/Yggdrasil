@@ -1,0 +1,20 @@
+--- memory_pool.hpp
++++ memory_pool.hpp
+@@ -95,7 +95,7 @@
+                 #if TBLIS_HAVE_HBWMALLOC_H
+                 hbw_free(entry.first);
+                 #else
+-                free(entry.first);
++                _aligned_free(entry.first);
+                 #endif
+             }
+             _free_list.clear();
+@@ -130,7 +130,7 @@
+                     #if TBLIS_HAVE_HBWMALLOC_H
+                     hbw_free(entry.first);
+                     #else
+-                    free(entry.first);
++                    _aligned_free(entry.first);
+                     #endif
+                 }
+             }

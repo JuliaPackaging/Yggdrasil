@@ -1,13 +1,16 @@
 using BinaryBuilder
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 # ASDF - Advanced Scientific Data Format, a C++ implementation
 
 name = "asdf_cxx"
-version = v"7.3.2"
+version = v"8.0.1"
 
 # Collection of sources required to build asdf-cxx
 sources = [
-    GitSource("https://github.com/eschnett/asdf-cxx", "abfdeb28d3d5b11f94f3937c082e3c5747710678"),
+    GitSource("https://github.com/eschnett/asdf-cxx", "abaa4a92d41c10e5c16ccbfbd7857a0a8bc19533"),
 ]
 
 # Bash recipe for building across all platforms
@@ -23,18 +26,23 @@ cmake --install build
 install_license LICENSE.rst
 """
 
+# The x86_64 _Float16 conversion helpers `__extendhfsf2` and `__truncsfhf2`
+# are only in libSystem since macOS 10.11
+sources, script = require_macos_sdk("10.12", sources, script)
+
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Blosc2_jll"; compat="201.1500.0"),
-    Dependency("Blosc_jll"; compat="1.21.1"),
-    Dependency("Bzip2_jll"; compat="1.0.8"),
-    Dependency("OpenSSL_jll"; compat="3.0.10"),
+    Dependency("Blosc2_jll"; compat="301.300.300"),
+    Dependency("Blosc_jll"; compat="1.21.7"),
+    Dependency("Bzip2_jll"; compat="1.0.9"),
+    Dependency("Lz4_jll"; compat="1.10.1"),
+    Dependency("OpenSSL_jll"; compat="3.5.0"),
     Dependency("Zlib_jll"),
-    Dependency("Zstd_jll"),
-    Dependency("yaml_cpp_jll"),
+    Dependency("Zstd_jll"; compat="1.5.7"),
+    Dependency("yaml_cpp_jll"; compat="0.9.0"),
 ]
 
 # The products that we will ensure are always built

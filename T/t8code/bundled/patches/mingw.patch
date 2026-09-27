@@ -1,0 +1,12 @@
+--- a/build/_deps/sc-src/cmake/config.cmake
++++ b/build/_deps/sc-src/cmake/config.cmake
+
+@@ -184,7 +184,7 @@
+ check_symbol_exists(gettimeofday sys/time.h SC_HAVE_GETTIMEOFDAY)
+ 
+ if(WIN32)
+-  set(WINSOCK_LIBRARIES wsock32 ws2_32 Iphlpapi)
++  set(WINSOCK_LIBRARIES wsock32 ws2_32 iphlpapi)
+ endif()
+ 
+ check_include_file(libgen.h SC_HAVE_LIBGEN_H)

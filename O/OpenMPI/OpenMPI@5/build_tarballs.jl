@@ -5,10 +5,11 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "OpenMPI"
 # Note that OpenMPI 5 is ABI compatible with OpenMPI 4
-version = v"5.0.9"
+version = v"5.0.11"
+ygg_version = v"5.0.12"
 sources = [
     ArchiveSource("https://download.open-mpi.org/release/open-mpi/v$(version.major).$(version.minor)/openmpi-$(version).tar.gz",
-                  "be35ac3aae68609dedf56a3c6480cb1b0af9ae40b98cc83ef27bc859084a9aa8"),
+                  "77a402c64c22f1bd8a504f76fd411df23e36e168eedce6c9bcd12c8c0cd0619a"),
     DirectorySource("bundled"),
 ]
 
@@ -19,6 +20,15 @@ script = raw"""
 
 # Enter the funzone
 cd ${WORKSPACE}/srcdir/openmpi-*
+
+# OpenMPI 5.0.11 switched REAL*16/COMPLEX*32 from `long double`/`long double
+# _Complex` to `_Float128`/`_Float128 _Complex` (correct: gfortran's REAL*16 is
+# binary128, not x87), but only finished the REAL*16 half. COMPLEX*32 is left
+# without an ISO_C_BINDING KIND mapping, without an OMPI datatype initializer,
+# and without a reduction op type, so MPI_COMPLEX32 gets disabled. Complete it,
+# so that MPI_COMPLEX32 is again exactly a pair of MPI_REAL16.
+# Reported upstream as <https://github.com/open-mpi/ompi/issues/14471>.
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fix-complex32-kind-mapping.patch
 
 if [[ "${target}" == aarch64-apple-* ]]; then
     # Build internal `libevent` without `-Wl,--no-undefined`
@@ -124,5 +134,5 @@ ENV["OPAL_PREFIX"] = artifact_dir
 """
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                augment_platform_block, init_block, julia_compat="1.6", preferred_gcc_version=v"5", clang_use_lld=false)

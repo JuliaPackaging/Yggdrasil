@@ -1,22 +1,23 @@
 using BinaryBuilder
+import BinaryBuilderBase
 import Pkg: PackageSpec
 using Base.BinaryPlatforms: arch, os, tags
 
 # needed for libjulia_platforms and julia_versions
 const YGGDRASIL_DIR = "../../"
+include(joinpath(YGGDRASIL_DIR, "C/CUDA/common.jl"))
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 include("make_script.jl")
 
 name = "cupynumeric"
-version = v"25.10.2"
+version = v"26.6.1"
 sources = [
-    GitSource("https://github.com/nv-legate/cupynumeric.git","66d872d22d66d78f42e91778a6b1c731e796d1f4"),
+    GitSource("https://github.com/nv-legate/cupynumeric.git","7d7836ce7bf54b0ed7f422fb62b62de732775e0d"),
     GitSource("https://github.com/MatthewsResearchGroup/tblis.git", "c4f81e08b2827e72335baa7bf91a245f72c43970"),
     FileSource("https://repo.anaconda.com/miniconda/Miniconda3-py311_24.3.0-0-Linux-x86_64.sh", 
                 "4da8dde69eca0d9bc31420349a204851bfa2a1c87aeb87fe0c05517797edaac4", "miniconda.sh"),
     DirectorySource("./bundled")
-    
 ]
 
 
@@ -49,8 +50,7 @@ products = [
 ] 
 
 dependencies = [
-    Dependency("legate_jll"; compat = "~25.10.1"), # Legate versioning is Year.Month
-    # Dependency("CUTENSOR_jll", compat = "2.2"), # supplied via ArchiveSource
+    Dependency("legate_jll"; compat = "=26.6"), # Legate versioning is Year.Month
     Dependency("OpenBLAS32_jll"),
     HostBuildDependency(PackageSpec(; name = "CMake_jll", version = "3.31.9")),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")) 
@@ -61,23 +61,31 @@ for platform in all_platforms
     should_build_platform(triplet(platform)) || continue
 
     platform_sources = BinaryBuilder.AbstractSource[sources...]
+    platform_products = BinaryBuilderBase.Product[products...]
 
     _dependencies = copy(dependencies)
     script = get_script(Val{false}())
 
     if haskey(platform, "cuda") && platform["cuda"] != "none" 
 
-        # cuTensor dependency
-        push!(platform_sources, ArchiveSource("https://github.com/JuliaBinaryWrappers/CUTENSOR_jll.jl/releases/download/CUTENSOR-v2.3.1%2B0/CUTENSOR.v2.3.1.x86_64-linux-gnu-cuda+13.0.tar.gz",
-                     "bb9d29e92522d4867dcd5124dfb9151cc40eb87f8a7772dd0509bd344e393abf")
+        cuda_ver = VersionNumber(platform["cuda"])
+        var = "cuda$(cuda_ver.major)"
+
+        # The JLL does not have cutensorMp.so currently
+        cutensor_sources =  get_sources(
+           "cutensor",
+           ["libcutensor"];
+           version=v"2.6.0", # if we add back CUDA 12.x this will need to drop to ~2.3
+           platform=platform,
+           variant=var
         )
+        push!(platform_sources, cutensor_sources...)
+        push!(_dependencies, Dependency("cuSolverMp_jll"; compat = "0.8"))
 
         append!(_dependencies, CUDA.required_dependencies(platform, static_sdk=true))
 
-        cuda_ver = platform["cuda"]
-
         if arch(platform) == "aarch64"
-            push!(platform_sources, CUDA.cuda_nvcc_redist_source(cuda_ver, "x86_64"))
+            push!(platform_sources, CUDA.cuda_nvcc_redist_source(platform["cuda"], "x86_64"))
         end
 
         script = get_script(Val{true}())
@@ -85,11 +93,10 @@ for platform in all_platforms
 
     build_tarballs(
         ARGS, name, version, platform_sources, 
-        script, [platform], products, _dependencies;
+        script, [platform], platform_products, _dependencies;
         julia_compat = "1.10", 
         preferred_gcc_version = v"11",
         lazy_artifacts = true, dont_dlopen = true,
         augment_platform_block = CUDA.augment
     )
-
 end

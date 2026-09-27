@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "gmsh"
-version = v"4.15.0"
+version = v"4.15.2"
 
 # Collection of sources required to build Gmsh
 sources = [
     ArchiveSource("https://gmsh.info/src/gmsh-$(version)-source.tgz",
-                  "abb2632715bd7d0130ded7144fd6263635cd7dea883b8df61ba4da58ce6a1dfe"),
+                  "be3f66f225d27ba9fa014f07e83169285da8a051b0e8ab7103d88066b39bdd3e"),
     DirectorySource("./bundled")
     ]
 
@@ -65,7 +65,7 @@ dependencies = [
     Dependency("FreeType2_jll"; compat="2.13.4"),
     Dependency("GLU_jll"; platforms=x11_platforms),
     Dependency("GMP_jll"; compat="6.2"),
-    Dependency("HDF5_jll"; compat="~1.14.6"),
+    Dependency("HDF5_jll"; compat="~2.1.2"),
     Dependency("JpegTurbo_jll"),
     Dependency("Libglvnd_jll"; platforms=x11_platforms),
     Dependency("libpng_jll"),

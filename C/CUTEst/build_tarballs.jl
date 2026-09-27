@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "CUTEst"
-version = v"2.6.0"
+version = v"2.7.0"
 
 # Collection of sources required to build CUTEst
 sources = [
-    GitSource("https://github.com/ralna/CUTEst.git", "1db1e4a15243eea0cd3da3f6dfec4cb35f1a9500"),
+    GitSource("https://github.com/ralna/CUTEst.git", "5e7633a0eefcb3f9c0143181daba7cd5538c7f17"),
 ]
 
 # Bash recipe for building across all platforms
@@ -25,6 +25,7 @@ cd ${WORKSPACE}/srcdir/CUTEst
 
 meson setup builddir --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
                      --prefix=$prefix \
+                     -Dtests=false \
                      -Dquadruple=${QUADRUPLE}
 
 meson compile -C builddir
@@ -33,6 +34,7 @@ meson install -C builddir
 meson setup builddir_shared --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
                             --prefix=$prefix \
                             -Dquadruple=${QUADRUPLE} \
+                            -Dtests=false \
                             -Ddefault_library=shared
 
 meson compile -C builddir_shared

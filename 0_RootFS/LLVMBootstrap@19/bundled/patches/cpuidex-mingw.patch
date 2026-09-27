@@ -1,0 +1,15 @@
+On Windows, mingw's <intrin.h> already declares __cpuidex (non-static), while
+clang's cpuid.h also defines it (static __inline, added in llvm-project#97785).
+Including both yields "static declaration of '__cpuidex' follows non-static
+declaration". The upstream guard only skips clang's definition when __cpuidex is
+a builtin (-fms-extensions / MSVC), not for mingw-gnu. Also skip it on _WIN32 so
+the platform header owns __cpuidex (matches clang<=18 behavior on Windows).
+
+--- a/clang/lib/Headers/cpuid.h
++++ b/clang/lib/Headers/cpuid.h
+@@ -343,4 +343,4 @@
+ // In some configurations, __cpuidex is defined as a builtin (primarily
+ // -fms-extensions) which will conflict with the __cpuidex definition below.
+-#if !(__has_builtin(__cpuidex))
++#if !(__has_builtin(__cpuidex)) && !defined(_WIN32)
+ static __inline void __cpuidex(int __cpu_info[4], int __leaf, int __subleaf) {

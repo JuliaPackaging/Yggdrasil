@@ -1,29 +1,47 @@
 using BinaryBuilder
 
 name = "LMDB"
-version = v"0.9.33"
+version = v"1.0.0"
 
-# No sources, we're just building the testsuite
 sources = [
-    ArchiveSource("https://git.openldap.org/openldap/openldap/-/archive/LMDB_$(version)/openldap-LMDB_$(version).tar.gz",
-                  "476801f5239c88c7de61c3390502a5d13965ecedef80105b5fb0fcb8373d1e53"),
+    GitSource("https://git.openldap.org/openldap/openldap.git",
+              "2562c3297402d82bbc049c7e645515edb4079eba"),  # LMDB_1.0.0
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 # - CC: mdb_env_close0 segfaults on MacOS because CC is set to gcc in Makefile
 # - rm: remove man files (it does not make sense)
-# - exeext: Makefile does not support extensions - need to rename execuables manually
+# - exeext: Makefile does not support extensions - need to rename executables manually
 script = raw"""
-cd ${WORKSPACE}/srcdir/openldap-*/libraries/liblmdb
-make CC=${CC} SOEXT=.${dlext} -j${nproc}
-make CC=${CC} SOEXT=.${dlext} ILIBS=liblmdb.${dlext} prefix=${prefix} install
+cd ${WORKSPACE}/srcdir/openldap
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fix-lmdb-1.0-platform-builds.patch
+cd libraries/liblmdb
+
+make_args=(CC=${CC} SOEXT=.${dlext})
+if [[ "${target}" == *-apple-* ]]; then
+    make_args+=(LDL= VERSION_OPT="-Wl,-install_name,@rpath/liblmdb.${dlext} -Wl,-current_version,1.0")
+elif [[ "${target}" == *-mingw* ]]; then
+    make_args+=(LDL= VERSION_OPT=)
+elif [[ "${target}" == *-freebsd* ]]; then
+    make_args+=(LDL=)
+fi
+
+make "${make_args[@]}" -j${nproc}
+make "${make_args[@]}" ILIBS=liblmdb.${dlext} prefix=${prefix} install
+if [[ "${target}" == *-mingw* ]]; then
+    rm -f "${libdir}/liblmdb.${dlext}" "${libdir}/liblmdb.${dlext}.1"
+    cp "liblmdb.${dlext}.1.0" "${libdir}/liblmdb.${dlext}"
+    rm -f "${libdir}/liblmdb.${dlext}.1.0"
+    rm -f "${prefix}/lib/liblmdb.${dlext}" "${prefix}/lib/liblmdb.${dlext}.1" "${prefix}/lib/liblmdb.${dlext}.1.0"
+fi
 rm -rf ${prefix}/share
 if [ -n "${exeext}" ]; then
     for f in ${bindir}/mdb_*; do
         mv "${f}" "${f}${exeext}"
     done
 fi
-install_license ${WORKSPACE}/srcdir/openldap-*/libraries/liblmdb/LICENSE
+install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
@@ -33,6 +51,7 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("mdb_copy", :mdb_copy),
+    ExecutableProduct("mdb_drop", :mdb_drop),
     ExecutableProduct("mdb_dump", :mdb_dump),
     ExecutableProduct("mdb_load", :mdb_load),
     ExecutableProduct("mdb_stat", :mdb_stat),

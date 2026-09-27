@@ -3,18 +3,20 @@
 using BinaryBuilder
 
 name = "GnuPG"
-version = v"2.5.17"
+version = v"2.5.22"
 
 # Collection of sources required to build libgcrypt
 sources = [
     ArchiveSource("https://gnupg.org/ftp/gcrypt/gnupg/gnupg-$(version).tar.bz2",
-                  "2c1fbe20e2958fd8fb53cf37d7c38e84a900edc0d561a1c4af4bc3a10888685d"),
+                  "96e27b020ad26510388e06f5f07f3f70a4ed8916ee995f1b72b7a024e6d9d87e"),
     DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/gnupg-*
+# `time_t` is used without including <time.h>
+atomic_patch -p1 ../patches/time_t.patch
 # Use Windows LDAP
 FLAGS=(LDAPLIBS="-lwldap32")
 if [[ "${target}" == *86*-linux-gnu ]]; then
@@ -61,7 +63,7 @@ dependencies = [
     HostBuildDependency("Libgpg_error_jll"),
     # We need this to run a host msgfmt executable
     HostBuildDependency("Gettext_jll"),
-    Dependency("OpenSSL_jll"; compat="3.0.15"),
+    Dependency("OpenSSL_jll"; compat="3.0.16"),
     Dependency("Libksba_jll"; compat="1.6.8"),
     Dependency("Libgcrypt_jll"; compat="1.11.2"),
     Dependency("Libgpg_error_jll"; compat="1.58"),

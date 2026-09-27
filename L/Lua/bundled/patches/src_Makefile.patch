@@ -1,5 +1,5 @@
 diff --git a/src/Makefile b/src/Makefile
-index b771196..227243a 100644
+index 317cb85..8b3316b 100644
 --- a/src/Makefile
 +++ b/src/Makefile
 @@ -6,8 +6,8 @@
@@ -13,29 +13,26 @@ index b771196..227243a 100644
  LDFLAGS= $(SYSLDFLAGS) $(MYLDFLAGS)
  LIBS= -lm $(SYSLIBS) $(MYLIBS)
  
-@@ -26,13 +26,20 @@
- MYOBJS=
- 
+@@ -28,11 +28,18 @@ MYOBJS=
  # Special flags for compiler modules; -Os reduces code size.
--CMCFLAGS= 
-+CMCFLAGS=
-+
+ CMCFLAGS= 
+ 
 +ifeq ($(DLEXT),dylib)
 +SOFLAGS := -dynamiclib
 +else
 +SOFLAGS := -shared
 +endif
- 
++
  # == END OF USER SETTINGS -- NO NEED TO CHANGE ANYTHING BELOW THIS LINE =======
  
- PLATS= guess aix bsd c89 freebsd generic ios linux macosx mingw posix solaris
+ PLATS= guess aix bsd c89 freebsd generic ios linux linux-readline macosx mingw posix solaris
  
  LUA_A=	liblua.a
 +LUA_SO=	liblua.$(DLEXT)
  CORE_O=	lapi.o lcode.o lctype.o ldebug.o ldo.o ldump.o lfunc.o lgc.o llex.o lmem.o lobject.o lopcodes.o lparser.o lstate.o lstring.o ltable.o ltm.o lundump.o lvm.o lzio.o
  LIB_O=	lauxlib.o lbaselib.o lcorolib.o ldblib.o liolib.o lmathlib.o loadlib.o loslib.o lstrlib.o ltablib.o lutf8lib.o linit.o
  BASE_O= $(CORE_O) $(LIB_O) $(MYOBJS)
-@@ -44,7 +51,7 @@
+@@ -44,7 +51,7 @@ LUAC_T=	luac
  LUAC_O=	luac.o
  
  ALL_O= $(BASE_O) $(LUA_O) $(LUAC_O)
@@ -44,7 +41,7 @@ index b771196..227243a 100644
  ALL_A= $(LUA_A)
  
  # Targets start here.
-@@ -60,6 +67,9 @@
+@@ -60,6 +67,9 @@ $(LUA_A): $(BASE_O)
  	$(AR) $@ $(BASE_O)
  	$(RANLIB) $@
  
@@ -54,12 +51,12 @@ index b771196..227243a 100644
  $(LUA_T): $(LUA_O) $(LUA_A)
  	$(CC) -o $@ $(LDFLAGS) $(LUA_O) $(LUA_A) $(LIBS)
  
-@@ -124,7 +134,7 @@
- 	$(MAKE) $(ALL) SYSCFLAGS="-DLUA_USE_LINUX" SYSLIBS="-Wl,-E -ldl"
+@@ -127,7 +137,7 @@ linux-readline:
+ 	$(MAKE) $(ALL) SYSCFLAGS="-DLUA_USE_LINUX -DLUA_USE_READLINE" SYSLIBS="-Wl,-E -ldl -lreadline"
  
  Darwin macos macosx:
--	$(MAKE) $(ALL) SYSCFLAGS="-DLUA_USE_MACOSX -DLUA_USE_READLINE" SYSLIBS="-lreadline"
-+	$(MAKE) $(ALL) SYSCFLAGS="-DLUA_USE_MACOSX -DLUA_USE_READLINE -fno-common" SYSLIBS="-lreadline"
+-	$(MAKE) $(ALL) SYSCFLAGS="-DLUA_USE_MACOSX" SYSLIBS="-lreadline"
++	$(MAKE) $(ALL) SYSCFLAGS="-DLUA_USE_MACOSX -fno-common" SYSLIBS="-lreadline"
  
  mingw:
  	$(MAKE) "LUA_A=lua55.dll" "LUA_T=lua.exe" \

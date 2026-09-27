@@ -1,0 +1,32 @@
+From 1dc78b572da39619d7ecad78a526dd2fabe0bfcd Mon Sep 17 00:00:00 2001
+From: Albert Kharisov <albkharisov@gmail.com>
+Date: Tue, 16 Dec 2025 18:52:30 +0400
+Subject: [PATCH] Fix memory leak in issue #46
+
+Fix memory leak found in
+https://github.com/BertoldVdb/ZoneDetect/issues/46.
+Free memory which is not used nor freed nor returned
+from a function.
+---
+ library/zonedetect.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/library/zonedetect.c b/library/zonedetect.c
+index 899c09b..5fcb076 100644
+--- a/library/zonedetect.c
++++ b/library/zonedetect.c
+@@ -618,6 +618,7 @@ float* ZDPolygonToList(const ZoneDetect *library, uint32_t polygonId, size_t* le
+         flData[i] = ZDFixedPointToFloat(lat, 90, library->precision);
+         flData[i+1] = ZDFixedPointToFloat(lon, 180, library->precision);
+     }
++    free(data);
+ 
+     if(lengthPtr) {
+         *lengthPtr = length;
+@@ -1257,4 +1258,4 @@ char* ZDHelperSimpleLookupString(const ZoneDetect* library, float lat, float lon
+ void ZDHelperSimpleLookupStringFree(char* str)
+ {
+     free(str);
+-}
+\ No newline at end of file
++}

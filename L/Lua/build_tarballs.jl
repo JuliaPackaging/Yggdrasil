@@ -1,12 +1,11 @@
 using BinaryBuilder
 
 name = "Lua"
-version = v"5.5.0"
-ygg_version = v"5.5.0"
+version = v"5.5.1"
 
 sources = [
     ArchiveSource("https://www.lua.org/ftp/lua-$(version).tar.gz",
-                  "57ccc32bbbd005cab75bcc52444052535af691789dba2b9016d5c50640d68b3d"),
+                  "1c4b4068d67061f2a2231ad2b5422e77acea1487ea9890f6320af614f4373dce"),
     DirectorySource("./bundled"),
 ]
 
@@ -56,5 +55,5 @@ dependencies = [
     Dependency("Readline_jll"),
 ]
 
-build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6")

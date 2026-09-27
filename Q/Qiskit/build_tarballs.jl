@@ -2,18 +2,38 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "Qiskit"
-version = v"2.2.3"
+version = v"2.5.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Qiskit/qiskit.git", "8f33595f5b9e9c99b7aa81002655d13f48c8ac1b")
+    GitSource("https://github.com/Qiskit/qiskit.git", "c1c01ada399af13e495c27b9b22b4ff942bbad7e")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+# not enough space in /tmp
+export TMPDIR=$WORKSPACE/tmp
+mkdir -p $TMPDIR
+
+# not enough space in /
+export OLD_CARGO_HOME="$CARGO_HOME"
+export CARGO_HOME=$WORKSPACE/cargo-home
+cp -a $OLD_CARGO_HOME $CARGO_HOME
+
 cd $WORKSPACE/srcdir/qiskit
-export PYO3_PYTHON=/usr/bin/python3
+
+# The current Qiskit C API build instructions say to use a Makefile that is
+# improperly formed and not suitable for cross compilation.  So, instead,
+# we invoke Cargo directly and copy the handful of files that result to their
+# proper location.  Upstream issue: https://github.com/Qiskit/qiskit/issues/16250
+env -u CARGO_BUILD_TARGET -u rust_target ${MACHTYPE}-cargo build -p qiskit-bindgen-cli
+env -u CARGO_BUILD_TARGET -u rust_target ./target/debug/qiskit-bindgen-cli install -c crates/cext -o dist/c/include
+
+export PYO3_PYTHON=${host_bindir}/python3
 export PYO3_CROSS_LIB_DIR=$WORKSPACE/destdir/lib
 export RUSTFLAGS="-L ${libdir}"
 
@@ -24,17 +44,15 @@ if [[ "${target}" == *-musl* ]]; then
     export RUSTFLAGS="${RUSTFLAGS} -C target-feature=-crt-static"
 fi
 
-# The current Qiskit C API build instructions say to use a Makefile that is
-# improperly formed and not suitable for cross compilation.  So, instead,
-# we invoke Cargo directly and copy the handful of files that result to their
-# proper location.
 cargo rustc --release --crate-type cdylib -p qiskit-cext
 install -Dvm 755 "target/${rust_target}/release/libqiskit_cext.${dlext}" "${libdir}/libqiskit.${dlext}"
-mkdir -p "${includedir}/qiskit"
-cp -v target/qiskit.h "${includedir}"
-cp -v crates/cext/include/complex.h "${includedir}/qiskit"
+cp -vr dist/c/include/* "${includedir}"
 install_license LICENSE.txt
 """
+
+# Install a newer SDK which contains `__ZNSt3__120__libcpp_atomic_waitEPVKvx`
+# and related symbols on x86_64-apple-darwin
+sources, script = require_macos_sdk("11.0", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
@@ -58,8 +76,11 @@ dependencies = [
     BuildDependency(PackageSpec(name="cbindgen_jll", uuid="a52b955f-5256-5bb0-8795-313e28591558"))
     # libpython is required at run time until
     # https://github.com/Qiskit/qiskit/issues/14240 is fixed, which is
-    # currently targeted for Qiskit 2.3.0.
-    Dependency(PackageSpec(name="Python_jll", uuid="93d3a430-8e7c-50da-8e8d-3dfcfb3baf05"))
+    # currently targeted for Qiskit 2.6 or later.
+    Dependency(PackageSpec(name="Python_jll", uuid="93d3a430-8e7c-50da-8e8d-3dfcfb3baf05"); compat="~3.11")
+    # Python 3.10 or higher is required by the build process, but at the moment
+    # only Python 3.9 is available in the base image, hence the following requirement.
+    HostBuildDependency(PackageSpec(name="Python_jll", uuid="93d3a430-8e7c-50da-8e8d-3dfcfb3baf05"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

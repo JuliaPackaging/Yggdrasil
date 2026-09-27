@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Keno Fischer <keno@juliahub.com>
+Date: Mon, 22 Jun 2026 23:55:00 +0000
+Subject: [PATCH] libstdc++: Only use iostream init reference for ELF
+
+Backport the header-side portion of PR116159 to GCC 13.  The reference to
+std::ios_base_library_init() is an ELF symbol-versioning mechanism and should
+not be emitted by MinGW headers.
+---
+ libstdc++-v3/include/std/iostream | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/libstdc++-v3/include/std/iostream b/libstdc++-v3/include/std/iostream
+index 384f0380265..bb8661c4dd1 100644
+--- a/libstdc++-v3/include/std/iostream
++++ b/libstdc++-v3/include/std/iostream
+@@ -78,6 +78,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
+       && __has_attribute(__init_priority__))
+   static ios_base::Init __ioinit;
+-#elif defined(_GLIBCXX_SYMVER_GNU)
++#elif defined(_GLIBCXX_SYMVER_GNU) && defined(__ELF__)
+   __extension__ __asm (".globl _ZSt21ios_base_library_initv");
+ #endif
+ 
+-- 
+2.43.0

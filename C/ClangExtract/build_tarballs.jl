@@ -152,3 +152,5 @@ for (i,build) in enumerate(builds)
                    preferred_gcc_version=v"9", julia_compat="1.6",
                    augment_platform_block)
 end
+
+# trigger rebuild: 1

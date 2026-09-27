@@ -3,17 +3,20 @@
 using BinaryBuilder, Pkg
 
 name = "Qt6QuickTimeline"
-version = v"6.8.2"
+version = v"6.10.2"
 
 # Collection of sources required to build qt6
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtquicktimeline-everywhere-src-$version.tar.xz",
-                  "c33dbceed9fabb3d7f6731a68aee602bad5a04bb6f0a473792e61858c0bc1aaa"),
+                  "7032d8b758d21fdf790dde0d070e1c82819abcf5ee7194dbf21589dbdfd36324"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
 ]
 
 script = raw"""
+# Need newer cmake from JLL
+apk del cmake
+
 cd $WORKSPACE/srcdir
 
 mkdir build
@@ -80,6 +83,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    HostBuildDependency("CMake_jll"),
     HostBuildDependency("Qt6Base_jll"),
     HostBuildDependency("Qt6Declarative_jll"),
     Dependency("Qt6Base_jll"; compat="="*string(version)),

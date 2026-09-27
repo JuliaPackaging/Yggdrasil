@@ -5,9 +5,10 @@ using BinaryBuilderBase: get_addable_spec
 
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 # list of supported Julia versions
-julia_full_versions = [v"1.10.0", v"1.11.1", v"1.12.0", v"1.13.0-DEV", v"1.14.0-DEV"]
+julia_full_versions = [v"1.10.0", v"1.11.1", v"1.12.0", v"1.13.0", v"1.14.0-DEV"]
 libjulia_min_julia_version = Base.thispatch(minimum(julia_full_versions))
 if ! @isdefined julia_versions
     julia_versions = Base.thispatch.(julia_full_versions)
@@ -75,16 +76,12 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         v"1.10.0" => "a4136608265c5d9186ae4767e94ddc948b19b43f760aba3501a161290852054d",
         v"1.11.1" => "895549f40b21dee66b6380e30811f40d2d938c2baba0750de69c9a183cccd756",
         v"1.12.0" => "c4f84dd858c36fbad010ebc4a73700f0dbb8c0f573c0734b9f7ae3f8fed0bba8",
+        v"1.13.0" => "5558c3328cd15c4ef32d1009ccda9aa43401e0436adf1177d1a34ecb0eb5f926",
     )
 
-    if version == v"1.13.0-DEV"
+    if version == v"1.14.0-DEV"
         sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "abd8457ca85370eefe3788cfa13a6233773ea16f"),
-            DirectorySource("./bundled"),
-        ]
-    elseif version == v"1.14.0-DEV"
-        sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "b63991c5b0aaf83b40603503457baa1ef98e7b98"),
+            GitSource("https://github.com/JuliaLang/julia.git", "70fd79710386d113d55d0f88eac52556c2bf653c"),
             DirectorySource("./bundled"),
         ]
     else
@@ -168,7 +165,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         LLVMVERMAJOR=20
         LLVMVERMINOR=1
     elif [[ "${version}" == 1.14.* ]]; then
-        LLVMVERMAJOR=20
+        LLVMVERMAJOR=22
         LLVMVERMINOR=1
     else
         echo "Error, LLVM version not specified"
@@ -259,6 +256,9 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
 
     # julia expects libuv-julia.a
     override LIBUV=${prefix}/lib/libuv.a
+
+    # julia needs the static version of utf8proc
+    override LIBUTF8PROC=${prefix}/lib/libutf8proc.a
 
     override BB_TRIPLET_LIBGFORTRAN_CXXABI=${BB_TRIPLET_LIBGFORTRAN_CXXABI}
     override USE_BINARYBUILDER=1
@@ -403,17 +403,20 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     elseif version.major == 1 && version.minor == 13
         push!(dependencies, BuildDependency("OpenSSL_jll")),
         push!(dependencies, BuildDependency("Zstd_jll")),
-        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"20.1.8+0")))
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"20.1.8+2")))
     elseif version.major == 1 && version.minor == 14
         push!(dependencies, BuildDependency("OpenSSL_jll")),
         push!(dependencies, BuildDependency("Zstd_jll")),
-        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"20.1.8+0")))
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"22.1.8+1")))
     else
         error("Unsupported Julia version")
     end
 
     # gcc 7 and gcc 8 crash on aarch64-linux when encountering some bfloat16 intrinsics
     gcc_ver = version >= v"1.11.0-" ? v"9" : v"7"
+
+    # Julia requires macOS SDK >= 10.14
+    sources, script = require_macos_sdk("10.14", sources, script)
 
     if any(should_build_platform.(triplet.(platforms)))
         build_tarballs(ARGS, name, jllversion, sources, script, platforms, products, dependencies;

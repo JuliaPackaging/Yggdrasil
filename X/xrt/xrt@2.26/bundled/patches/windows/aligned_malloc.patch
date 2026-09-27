@@ -1,0 +1,21 @@
+--- a/src/runtime_src/core/common/memalign.h
++++ b/src/runtime_src/core/common/memalign.h
+@@ -21,6 +21,18 @@
+ #include <memory>
+ #include <stdexcept>
+ 
++// Add memalgin definitions here since
++// they are not present because of a bug:
++// https://sourceforge.net/p/mingw-w64/bugs/192/
++extern void * _aligned_malloc(
++    size_t size,
++    size_t alignment
++);
++
++extern void _aligned_free (
++   void *memblock
++);
++
+ namespace xrt_core {
+ 
+ inline int

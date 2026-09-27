@@ -1,0 +1,302 @@
+From a0aaebfe1196ed6ae621c9d4da0223ad63da4e54 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Wed, 26 Aug 2026 16:01:47 +0200
+Subject: [PATCH 6/6] UnreachablesToReturns: keep loops with side effects
+
+Deleting every block that can reach an unreachable but not a return also
+removed intentional infinite loops that merely contain a guarded abort path,
+e.g. `while (1) { if (c) { printf(...); unreachable; } out[0] = 1; }`, along
+with their observable side effects. Treat blocks of a cycle containing
+side-effecting instructions as live, so only the unreachable-bound exit is
+removed from such loops. Side-effect-free loops like the printf string-length
+loop from issue #1958 remain deletable.
+
+Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+(cherry picked from commit e0e27c765520cf761756155db944c51af9a294fe)
+---
+ lib/llvmopencl/UnreachablesToReturns.cc       |  44 ++++-
+ tests/regression/CMakeLists.txt               |   6 +
+ .../test_unreachable_in_infinite_loop.c       | 153 ++++++++++++++++++
+ 3 files changed, 197 insertions(+), 6 deletions(-)
+ create mode 100644 tests/regression/test_unreachable_in_infinite_loop.c
+
+diff --git a/lib/llvmopencl/UnreachablesToReturns.cc b/lib/llvmopencl/UnreachablesToReturns.cc
+index a63157e43..f7420788c 100644
+--- a/lib/llvmopencl/UnreachablesToReturns.cc
++++ b/lib/llvmopencl/UnreachablesToReturns.cc
+@@ -10,10 +10,10 @@
+ // is able to handle these.
+ //
+ // for LOOPVEC handler, we delete regions which can reach an unreachable inst
+-// but cannot reach the function's return. Branches from live blocks into the
+-// deleted region are made unconditional (to the live branch), and switch cases
+-// leading to it are removed. This preserves the PoCL 6.0 behavior that commit
+-// 89bc42187 sought to restore.
++// but can reach neither the function's return nor a loop with side effects.
++// Branches from live blocks into the deleted region are made unconditional (to
++// the live branch), and switch cases leading to it are removed. This preserves
++// the PoCL 6.0 behavior that commit 89bc42187 sought to restore.
+ //
+ // Note that neither handling is recursive. Therefore all non-kernel functions
+ // that have an unreachable inst, must be inlined before this Pass is run.
+@@ -44,6 +44,7 @@ IGNORE_COMPILER_WARNING("-Wmaybe-uninitialized")
+ #include <llvm/ADT/Twine.h>
+ POP_COMPILER_DIAGS
+ IGNORE_COMPILER_WARNING("-Wunused-parameter")
++#include <llvm/ADT/SCCIterator.h>
+ #include <llvm/ADT/SmallPtrSet.h>
+ #include <llvm/IR/CFG.h>
+ #include <llvm/IR/Constants.h>
+@@ -158,6 +159,11 @@ static bool convertUnreachablesToReturns(Function &F) {
+ // blocks would sever such a loop's exit edge and leave behind an infinite
+ // loop that never reaches the parallel region exit, breaking WorkitemLoops
+ // (issue #1958), so delete the doomed blocks wholesale.
++//
++// Loops with side effects are exempt: an intentional infinite loop such as
++// `while (1) { if (c) abort(); write_pipe(...); }` never reaches a return
++// either, but deleting it would discard observable behavior. Only the
++// unreachable-bound path out of such a loop is removed, as before.
+ static bool deleteBlocksWithUnreachable(Function &F) {
+ 
+   SmallBBSet UnreachableBBs;
+@@ -170,7 +176,9 @@ static bool deleteBlocksWithUnreachable(Function &F) {
+   if (UnreachableBBs.empty())
+     return false;
+ 
+-  // Collect the live blocks, i.e. those that can reach a return.
++  // Collect the live blocks, i.e. those that can reach a return or a loop
++  // with side effects. A loop without side effects (like the string-length
++  // loop mentioned above) is not observable and remains deletable.
+   SmallBBSet LiveBBs;
+   SmallVector<BasicBlock *, 16> WorkList;
+   for (BasicBlock &BB : F) {
+@@ -179,6 +187,29 @@ static bool deleteBlocksWithUnreachable(Function &F) {
+       WorkList.push_back(&BB);
+     }
+   }
++  for (scc_iterator<Function *> I = scc_begin(&F), E = scc_end(&F); I != E;
++       ++I) {
++    if (!I.hasCycle())
++      continue;
++    bool HasSideEffects = false;
++    for (BasicBlock *BB : *I) {
++      for (Instruction &Inst : *BB) {
++        if (!Inst.isTerminator() && Inst.mayHaveSideEffects()) {
++          HasSideEffects = true;
++          break;
++        }
++      }
++      if (HasSideEffects)
++        break;
++    }
++    if (!HasSideEffects)
++      continue;
++    LLVM_DEBUG(dbgs() << "Keeping loop with side effects, header: "
++                      << (*I).front()->getName().str() << "\n");
++    for (BasicBlock *BB : *I)
++      if (LiveBBs.insert(BB).second)
++        WorkList.push_back(BB);
++  }
+   while (!WorkList.empty()) {
+     BasicBlock *BB = WorkList.pop_back_val();
+     for (BasicBlock *Pred : predecessors(BB))
+@@ -206,7 +237,8 @@ static bool deleteBlocksWithUnreachable(Function &F) {
+ 
+   // Retarget terminators of live blocks to only branch to live blocks. Note
+   // that an edge from a doomed block to a live block cannot exist, and that
+-  // a live block always has at least one live successor.
++  // a live block always has at least one live successor (blocks of a kept
++  // loop have a successor within that loop).
+   for (BasicBlock &BB : F) {
+     if (!LiveBBs.count(&BB))
+       continue;
+diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
+index 364a27029..538e63ac7 100644
+--- a/tests/regression/CMakeLists.txt
++++ b/tests/regression/CMakeLists.txt
+@@ -29,6 +29,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
+      test_assign_loop_variable_to_privvar_makes_it_local_2
+      test_llvm_segfault_issue_889
+      test_issue_1711 test_issue_1794 test_issue_1747 test_issue_1958
++     test_unreachable_in_infinite_loop
+      test_rematerialized_alloca_load_with_outside_pr_users
+      test_peeled_wi_global_id
+      test_barrier_divergent_skip
+@@ -161,6 +162,8 @@ add_test_pocl(NAME "regression/test_issue_1747" COMMAND "test_issue_1747" "0" "$
+ 
+ add_test_pocl(NAME "regression/test_issue_1958" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_issue_1958" LABELS ${SPIRV_LABELS})
+ 
++add_test_pocl(NAME "regression/unreachable_in_infinite_loop" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_unreachable_in_infinite_loop")
++
+ add_test_pocl(NAME "regression/peeled_wi_global_id" WORKITEM_HANDLER "loopvec;cbs;" COMMAND "test_peeled_wi_global_id" LABELS ${SPIRV_LABELS})
+ 
+ add_test_pocl(NAME "regression/barrier_divergent_skip" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_barrier_divergent_skip" LABELS ${SPIRV_LABELS})
+@@ -356,6 +359,9 @@ set_property(TEST
+   "regression/infinite_loop_cbs"
+   "regression/infinite_loop_with_barrier_loopvec"
+   "regression/infinite_loop_with_barrier_cbs"
++  "regression/unreachable_in_infinite_loop_loops"
++  "regression/unreachable_in_infinite_loop_loopvec"
++  "regression/unreachable_in_infinite_loop_cbs"
+   APPEND PROPERTY LABELS "mingw_fail")
+ 
+ # Label tests that work with CUDA backend
+diff --git a/tests/regression/test_unreachable_in_infinite_loop.c b/tests/regression/test_unreachable_in_infinite_loop.c
+new file mode 100644
+index 000000000..7e488f9ac
+--- /dev/null
++++ b/tests/regression/test_unreachable_in_infinite_loop.c
+@@ -0,0 +1,153 @@
++// Copyright (c) 2026 PoCL developers
++//
++// Permission is hereby granted, free of charge, to any person obtaining a copy
++// of this software and associated documentation files (the "Software"), to deal
++// in the Software without restriction, including without limitation the rights
++// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++// copies of the Software, and to permit persons to whom the Software is
++// furnished to do so, subject to the following conditions:
++//
++// The above copyright notice and this permission notice shall be included in
++// all copies or substantial portions of the Software.
++//
++// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++// THE SOFTWARE.
++
++/*
++  An intentional infinite loop with observable side effects that also contains
++  a path to an unreachable instruction (here: printf followed by
++  __builtin_unreachable(), which clang does not fold into an assumption).
++
++  For the work-item loop handlers, ConvertUnreachablesToReturns deletes the
++  region that can only lead to the unreachable. The loop can reach the
++  unreachable and cannot reach the kernel's return, so an overly eager
++  deletion removed the whole loop, including its store, and the kernel
++  returned immediately. Only the unreachable path may be removed; the loop
++  itself must remain, so a launch that never takes the unreachable path must
++  never complete.
++
++  The check mirrors test_infinite_loop.cpp: give the kernel some time, verify
++  it is still running, then replace the process to get rid of the spinning
++  kernel thread.
++*/
++
++#include "pocl_opencl.h"
++
++#include <stdio.h>
++#include <stdlib.h>
++#ifdef _WIN32
++#include <windows.h>
++#define sleep_ms(MS) Sleep(MS)
++#else
++#include <unistd.h>
++#define sleep_ms(MS) usleep((MS) * 1000)
++#endif
++
++#define CHECK_ERROR(err)                                                       \
++  if (err != CL_SUCCESS) {                                                     \
++    printf("OpenCL Error %d at %s:%d\n", err, __FILE__, __LINE__);             \
++    return 1;                                                                  \
++  }
++
++static const char KernelSource[] =
++    "kernel void test_kernel(global volatile int *out, int early_exit,\n"
++    "                        global const int *abort_flags) {\n"
++    "  if (early_exit)\n"
++    "    return;\n"
++    "  while (1) {\n"
++    "    if (abort_flags[get_global_id(0)]) {\n"
++    "      printf(\"aborting\\n\");\n"
++    "      __builtin_unreachable();\n"
++    "    }\n"
++    "    out[0] = 1;\n"
++    "  }\n"
++    "}\n";
++
++int main(int argc, char **argv) {
++  cl_int err;
++
++  cl_platform_id platform;
++  CHECK_ERROR(clGetPlatformIDs(1, &platform, NULL));
++  cl_device_id device;
++  CHECK_ERROR(clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, 1, &device, NULL));
++
++  cl_context context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
++  CHECK_ERROR(err);
++  cl_queue_properties props[] = {0};
++  cl_command_queue queue =
++      clCreateCommandQueueWithProperties(context, device, props, &err);
++  CHECK_ERROR(err);
++
++  const char *sources[] = {KernelSource};
++  cl_program program =
++      clCreateProgramWithSource(context, 1, sources, NULL, &err);
++  CHECK_ERROR(err);
++  err = clBuildProgram(program, 1, &device, NULL, NULL, NULL);
++  if (err != CL_SUCCESS) {
++    size_t log_size;
++    clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, 0, NULL,
++                          &log_size);
++    char *log = malloc(log_size);
++    clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, log_size, log,
++                          NULL);
++    printf("Build error:\n%s\n", log);
++    return 1;
++  }
++  cl_kernel kernel = clCreateKernel(program, "test_kernel", &err);
++  CHECK_ERROR(err);
++
++  const size_t global_size = 4;
++  cl_int out = 0;
++  cl_int abort_flags[4] = {0, 0, 0, 0};
++  cl_mem out_buf =
++      clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
++                     sizeof(out), &out, &err);
++  CHECK_ERROR(err);
++  cl_mem flags_buf =
++      clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
++                     sizeof(abort_flags), abort_flags, &err);
++  CHECK_ERROR(err);
++  CHECK_ERROR(clSetKernelArg(kernel, 0, sizeof(out_buf), &out_buf));
++  CHECK_ERROR(clSetKernelArg(kernel, 2, sizeof(flags_buf), &flags_buf));
++
++  // The early exit must still work.
++  cl_int early_exit = 1;
++  CHECK_ERROR(clSetKernelArg(kernel, 1, sizeof(early_exit), &early_exit));
++  CHECK_ERROR(clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global_size,
++                                     &global_size, 0, NULL, NULL));
++  CHECK_ERROR(clFinish(queue));
++
++  // Without the early exit, the kernel must spin forever.
++  early_exit = 0;
++  CHECK_ERROR(clSetKernelArg(kernel, 1, sizeof(early_exit), &early_exit));
++  cl_event event;
++  CHECK_ERROR(clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global_size,
++                                     &global_size, 0, NULL, &event));
++  CHECK_ERROR(clFlush(queue));
++
++  sleep_ms(1500);
++
++  cl_int status;
++  CHECK_ERROR(clGetEventInfo(event, CL_EVENT_COMMAND_EXECUTION_STATUS,
++                             sizeof(status), &status, NULL));
++  if (status == CL_COMPLETE) {
++    printf("FAIL: the infinite loop was compiled away\n");
++    return 1;
++  }
++
++  printf("OK\n");
++  fflush(stdout);
++  // Force exit of the process regardless of the running kernel thread by
++  // replacing the process with a dummy process.
++#ifdef _WIN32
++  ExitProcess(EXIT_SUCCESS);
++#else
++  execlp("true", "true", NULL);
++#endif
++  return 0;
++}
