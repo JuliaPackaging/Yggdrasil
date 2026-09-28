@@ -28,7 +28,7 @@ version = v"1.3.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/SciML/AudioPlugins.jl.git",
-              "6a32d6d23da3aab8167d92ebb6d5cb82158c94a6"),  # SciML/AudioPlugins.jl#81
+              "9f1e627de09bf92a0fa5ec7a6505d307fb6b9b7f"),  # SciML/AudioPlugins.jl v1.7.0
 ]
 
 # Bash recipe for building across all platforms
