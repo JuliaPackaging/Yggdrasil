@@ -3,14 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "gdk_pixbuf"
-version = v"2.42.12"
-# We bumped the version because we updated the dependencies to build for riscv64
-ygg_version = v"2.42.13"
+version = v"2.44.8"
 
 # Collection of sources required to build gdk-pixbuf
 sources = [
     ArchiveSource("https://gitlab.gnome.org/GNOME/gdk-pixbuf/-/archive/$(version)/gdk-pixbuf-$(version).tar.bz2",
-                  "c608eb59eb3a697de108961c7d64303e5bcd645c2a95da9a9fe60419dfaa56f6"),
+                  "dac855ad56db6f1ae6af60a46e77d8edce418b4935737a52d42f0f7683cb6e51"),
 ]
 
 # Bash recipe for building across all platforms
@@ -25,10 +23,16 @@ sed -i 's+glib_genmarshal=${bindir}+'"glib_genmarshal=${host_bindir}"'+' ${host_
 sed -i 's+gobject_query=${bindir}+'"gobject_query=${host_bindir}"'+' ${host_libdir}/pkgconfig/glib-2.0.pc
 sed -i 's+glib_mkenums=${bindir}+'"glib_mkenums=${host_bindir}"'+' ${host_libdir}/pkgconfig/glib-2.0.pc
 
+# Glycin is a Rust image loading library that is not packaged in Yggdrasil.
+# Its option defaults to `auto`, but gdk-pixbuf promotes it to `enabled` on
+# Linux, which turns a missing glycin into a hard configure error.
 meson .. \
     -Dman=false \
     -Dinstalled_tests=false \
     -Dgio_sniffing=false \
+    -Dglycin=disabled \
+    -Dpng=enabled \
+    -Djpeg=enabled \
     --cross-file="${MESON_TARGET_TOOLCHAIN}"
 ninja -j${nproc}
 ninja install
@@ -67,5 +71,5 @@ dependencies = [
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"6")
