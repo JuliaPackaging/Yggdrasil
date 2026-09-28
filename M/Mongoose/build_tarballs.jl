@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Mongoose"
-version = v"7.21.0"
+version = v"7.23.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/cesanta/mongoose.git", "b1c2ffe1a0aa13e3d94075b1a2c66b8b43ac9116"),
+    GitSource("https://github.com/cesanta/mongoose.git", "02bdbb9ed6f0a8f7c42228c6e7cb35d748b60551"),
     DirectorySource("./bundled"),
 ]
 
