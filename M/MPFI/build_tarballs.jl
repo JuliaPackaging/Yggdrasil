@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "MPFI"
-version = v"1.5.4"
-# We needed to bump the version to build for new architectures
-ygg_version = v"1.5.6"
+version = v"1.5.5"
+# The JLL version is ahead of the upstream one (earlier bumps for new architectures)
+ygg_version = v"1.5.7"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/arpra-project/mpfi", "446e21250c82c9d156e7b83b6119013943664942"),
+    GitSource("https://gitlab.inria.fr/mpfi/mpfi.git", "918adeef5e938baa677fa5fd8a7d72757e8335ea"),
 ]
 
 # Bash recipe for building across all platforms
