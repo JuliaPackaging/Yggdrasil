@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "LLVMExtra"
 repo = "https://github.com/maleadt/LLVM.jl.git"
-version = v"0.0.47"
+version = v"0.0.48"
 
 llvm_versions = [v"15.0.7+12", v"16.0.6+6", v"18.1.7+5", v"20.1.8+0", v"21.1.8+0", v"22.1.8+0"]
 
@@ -106,8 +106,8 @@ for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    name, version, build.sources, script,
                    build.platforms, build.products, build.dependencies;
-                   preferred_gcc_version=v"8", julia_compat="1.6",
-                   augment_platform_block, lazy_artifacts=true)
+                   preferred_gcc_version=v"8", julia_compat="1.10",
+                   augment_platform_block)
 end
 
 # rebuild trigger: 1
