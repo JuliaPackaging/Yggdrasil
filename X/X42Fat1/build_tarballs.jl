@@ -8,17 +8,16 @@ version = v"2025.6.6"
 sources = [
     GitSource("https://github.com/x42/fat1.lv2.git",
               "e61b0c093b3941fe960c2f99188cebd934bf6dbd"),
-    # fat1 COPYING is GPLv2; resampler*.cc is v3-or-later — ship GPLv3 text from darc.
-    GitSource("https://github.com/x42/darc.lv2.git",
-              "0a00cdec44e80f282df4ca08bafcebb6c0499612"),
+    # fat1 COPYING is GPLv2; resampler*.cc is v3-or-later.
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir
 
-mkdir -p "${prefix}/share/licenses/X42Fat1"
-cp fat1.lv2/COPYING "${prefix}/share/licenses/X42Fat1/COPYING"
-cp darc.lv2/COPYING "${prefix}/share/licenses/X42Fat1/COPYING.resampler"
+install_license fat1.lv2/COPYING
+cp -v COPYING.GPL3 COPYING.resampler
+install_license COPYING.resampler
 
 # Upstream OPTIMIZATIONS carry -ffast-math and -msse*; displace them from the command line.
 OPTIMIZATIONS="-O3 -fomit-frame-pointer -fno-finite-math-only -DNDEBUG"
