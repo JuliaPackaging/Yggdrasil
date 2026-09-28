@@ -5,7 +5,7 @@ using BinaryBuilderBase: sanitize
 
 name = "PCRE2"
 
-version_string = "10.48"
+version_string = "10.49"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
@@ -13,7 +13,7 @@ sources = [
     # We use an archive because (a) the archives are signed, hence
     # presumably immutable, and (b) the git source uses submodules.
     ArchiveSource("https://github.com/PCRE2Project/pcre2/releases/download/pcre2-$(version.major).$(version.minor)/pcre2-$(version.major).$(version.minor).tar.bz2",
-                  "b6c68fdf6f3ac31388b50aa89ff0fc49c00c987c16e7b5146491d12003f2c8ed"),
+                  "53c156e1ba416a20da8e65395daa132da0d80e76910424caca3fcdae7831d384"),
 ]
 
 # Bash recipe for building across all platforms
