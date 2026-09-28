@@ -45,7 +45,7 @@ find "${prefix}/share/lv2" -name lv2syms -delete
 
 products = [
     FileProduct("share/lv2/dpl.lv2/manifest.ttl", :dpl_lv2),
-    LibraryProduct("dpl", :dpl_bin, "share/lv2/dpl.lv2"; dont_dlopen = true),
+    LibraryProduct("dpl", :dpl_bin, "share/lv2/dpl.lv2"),
 ]
 
 platforms = supported_platforms()

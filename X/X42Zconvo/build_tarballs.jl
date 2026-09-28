@@ -8,16 +8,14 @@ version = v"2025.6.6"
 sources = [
     GitSource("https://github.com/x42/zconvo.lv2.git",
               "ec2ff40b5f9701fdc2e3944657f3737b89be4b18"),
-    # zconvo COPYING is GPLv2; zeta-convolver is v3-or-later.
-    DirectorySource("./bundled"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir
 
 install_license zconvo.lv2/COPYING
-cp -v COPYING.GPL3 COPYING.zeta-convolver
-install_license COPYING.zeta-convolver
+# zconvo COPYING is GPLv2; zeta-convolver is v3-or-later.
+install_license /usr/share/licenses/GPL-3.0+
 
 # Upstream OPTIMIZATIONS carry -ffast-math and -msse*; displace them from the command line.
 OPTIMIZATIONS="-O3 -fomit-frame-pointer -fno-finite-math-only -DNDEBUG"
@@ -40,7 +38,7 @@ make -C zconvo.lv2 install "${MAKE_EXTRA[@]}"
 
 products = [
     FileProduct("share/lv2/zeroconvo.lv2/manifest.ttl", :zconvo_lv2),
-    LibraryProduct("zeroconvolv", :zconvo_bin, "share/lv2/zeroconvo.lv2"; dont_dlopen = true),
+    LibraryProduct("zeroconvolv", :zconvo_bin, "share/lv2/zeroconvo.lv2"),
 ]
 
 platforms = expand_cxxstring_abis(supported_platforms())

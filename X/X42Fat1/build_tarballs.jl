@@ -8,16 +8,14 @@ version = v"2025.6.6"
 sources = [
     GitSource("https://github.com/x42/fat1.lv2.git",
               "e61b0c093b3941fe960c2f99188cebd934bf6dbd"),
-    # fat1 COPYING is GPLv2; resampler*.cc is v3-or-later.
-    DirectorySource("./bundled"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir
 
 install_license fat1.lv2/COPYING
-cp -v COPYING.GPL3 COPYING.resampler
-install_license COPYING.resampler
+# fat1 COPYING is GPLv2; resampler*.cc is v3-or-later.
+install_license /usr/share/licenses/GPL-3.0+
 
 # Upstream OPTIMIZATIONS carry -ffast-math and -msse*; displace them from the command line.
 OPTIMIZATIONS="-O3 -fomit-frame-pointer -fno-finite-math-only -DNDEBUG"
@@ -48,7 +46,7 @@ find "${prefix}/share/lv2" -name lv2syms -delete
 
 products = [
     FileProduct("share/lv2/fat1.lv2/manifest.ttl", :fat1_lv2),
-    LibraryProduct("fat1", :fat1_bin, "share/lv2/fat1.lv2"; dont_dlopen = true),
+    LibraryProduct("fat1", :fat1_bin, "share/lv2/fat1.lv2"),
 ]
 
 platforms = supported_platforms()
