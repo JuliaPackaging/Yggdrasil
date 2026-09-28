@@ -130,6 +130,8 @@ function build_script(standalone=false)
     #   Julia's GC safepoints (upstream PRs #2339, #2340; JuliaGPU/OpenCL.jl#487)
     # - 0010: keep UnreachablesToReturns from deleting the entry block of a kernel reduced to
     #   `unreachable` (upstream PR #2346; JuliaGPU/OpenCL.jl#509)
+    # - 0011: keep WorkitemLoops from rematerializing allocas without an initializer store
+    #   (upstream PR #2345; JuliaGPU/OpenCL.jl#510)
     for patch in $WORKSPACE/srcdir/patches/pocl/*.patch; do
         atomic_patch -p1 $patch
     done
