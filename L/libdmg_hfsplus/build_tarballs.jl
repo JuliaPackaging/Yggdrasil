@@ -7,12 +7,14 @@ version = v"0.5.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/JanisErdmanis/libdmg-hfsplus.git", "3ba2d902f1752156d3c7b07990555bed21b8f159")
+    GitSource("https://github.com/mozilla/libdmg-hfsplus.git", "ec239599c1f234a4e01ae3fe51214d0c77e5baa3"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
     cd $WORKSPACE/srcdir/libdmg-hfsplus
+    atomic_patch -p1 ../patches/0001-Fix-32-bit-overflow-in-block-to-byte-conversions-for.patch
 
     cmake -B build \
         -DCMAKE_INSTALL_PREFIX=${prefix} \
