@@ -128,6 +128,8 @@ function build_script(standalone=false)
     # - 0007: independent SVM/USM indirect pointer lists in clSetKernelExecInfo (upstream PR #2305)
     # - 0008, 0009: keep LLVM from replacing the host's SIGSEGV/SIGBUS handlers, which kills
     #   Julia's GC safepoints (upstream PRs #2339, #2340; JuliaGPU/OpenCL.jl#487)
+    # - 0010: keep UnreachablesToReturns from deleting the entry block of a kernel reduced to
+    #   `unreachable` (upstream PR #2346; JuliaGPU/OpenCL.jl#509)
     for patch in $WORKSPACE/srcdir/patches/pocl/*.patch; do
         atomic_patch -p1 $patch
     done
