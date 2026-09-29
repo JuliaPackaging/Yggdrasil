@@ -13,11 +13,13 @@ version = v"0.7.2"
 # Collection of sources required to build DACE
 sources = [
     GitSource("https://github.com/UoA-AstroGroup/dace", "bc26842ae5c6936f9e008a2dc0d9227a8d982acc"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/dace
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/current-dependencies.patch
 
 cmake . -B build \
     -DJulia_PREFIX=${prefix} \
@@ -50,7 +52,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency(PackageSpec(name="libjulia_jll", version="1.11.3")),
-    BuildDependency(PackageSpec(name="Eigen_jll", version="3.4.0")),
+    BuildDependency(PackageSpec(name="Eigen_jll", version="5.0.1")),
     Dependency("libcxxwrap_julia_jll"; compat="~0.14.11"),
 ]
 

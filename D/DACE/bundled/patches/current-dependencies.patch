@@ -1,0 +1,121 @@
+Require Eigen 5 and use its imported CMake target with current Julia wrapper libraries.
+Upstream: https://github.com/UoA-AstroGroup/dace/pull/10
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index de79e6f..93ec4e3 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1,4 +1,4 @@
+-cmake_minimum_required (VERSION 3.10)
++cmake_minimum_required (VERSION 3.13)
+ 
+ # since MacOS 10.14 (XCode 10.0), default includes are no longer installed to /usr/include or /usr/local/include
+ # the SDK to use must be specified explicitly in CMAKE_OSX_SYSROOT as it seems at least cmake 3.12.4 does not find it automatically if left empty
+@@ -72,13 +72,12 @@ option(WITH_EIGEN "Include additional linear algebra routines delegated to Eigen
+ option(WITH_JULIA "Build the Julia interface" OFF)
+ 
+ if(WITH_EIGEN)
+-  find_package(Eigen3 3.4 REQUIRED)
++  find_package(Eigen3 5 REQUIRED NO_MODULE)
+   add_definitions(-DWITH_EIGEN)
+   message(STATUS "Found Eigen3 v${Eigen3_VERSION}: ${Eigen3_DIR}")
+-  set(Eigen3_INCLUDE_DIRS "${Eigen3_DIR}/../../../include")
+ endif()
+ if(WITH_JULIA)
+-  find_package(JlCxx REQUIRED)
++  find_package(JlCxx 0.14.11 REQUIRED)
+   message(STATUS "Found JlCxx v${JlCxx_VERSION}: ${JlCxx_DIR}")
+ endif()
+ 
+@@ -129,9 +128,6 @@ configure_file(core/include/dace/config.h.in core/include/dace/config.h)
+ # process the subdirectories with actual code
+ add_subdirectory(core/contrib)
+ add_subdirectory(core)
+-if(WITH_EIGEN)
+-  include_directories(${Eigen3_INCLUDE_DIRS})
+-endif()
+ if(WITH_JULIA)
+   add_subdirectory(interfaces/julia)
+ endif()
+@@ -147,10 +143,17 @@ if(WITH_JULIA)
+ else()
+   add_library(dace SHARED $<TARGET_OBJECTS:c_core> $<TARGET_OBJECTS:c_core_contrib> $<TARGET_OBJECTS:dacecxx>)
+ endif()
++add_library(dace_s STATIC $<TARGET_OBJECTS:c_core_s> $<TARGET_OBJECTS:c_core_contrib_s> $<TARGET_OBJECTS:dacecxx_s>)
+ if(WITH_EIGEN)
++  foreach(target dacecxx dacecxx_s dace dace_s)
++    target_link_libraries(${target} PUBLIC Eigen3::Eigen)
++  endforeach()
+   target_compile_definitions(dace PUBLIC WITH_EIGEN)
++  target_compile_definitions(dace_s PUBLIC WITH_EIGEN)
++  if(WITH_JULIA)
++    target_link_libraries(dacejulia PUBLIC Eigen3::Eigen)
++  endif()
+ endif()
+-add_library(dace_s STATIC $<TARGET_OBJECTS:c_core_s> $<TARGET_OBJECTS:c_core_contrib_s> $<TARGET_OBJECTS:dacecxx_s>)
+ 
+ # hard code all required include directories when building from source (C++ includes, core includes, config.h include)
+ target_include_directories(dace INTERFACE $<INSTALL_INTERFACE:include>
+@@ -214,7 +217,7 @@ export(EXPORT dace
+ 
+ configure_file("cmake/daceConfig.cmake"
+   "${CMAKE_CURRENT_BINARY_DIR}/dace/daceConfig.cmake"
+-  COPYONLY
++  @ONLY
+ )
+ 
+ # install cmake package files
+diff --git a/cmake/daceConfig.cmake b/cmake/daceConfig.cmake
+index 88cf314..3b0e0f0 100644
+--- a/cmake/daceConfig.cmake
++++ b/cmake/daceConfig.cmake
+@@ -1 +1,8 @@
++include(CMakeFindDependencyMacro)
++if(@WITH_EIGEN@)
++  find_dependency(Eigen3 @Eigen3_VERSION@ NO_MODULE)
++endif()
++if(@WITH_JULIA@)
++  find_dependency(JlCxx @JlCxx_VERSION@ CONFIG)
++endif()
+ include("${CMAKE_CURRENT_LIST_DIR}/dace.cmake")
+diff --git a/interfaces/cxx/include/dace/AlgebraicMatrix_t.h b/interfaces/cxx/include/dace/AlgebraicMatrix_t.h
+index e045ca0..f7e852b 100644
+--- a/interfaces/cxx/include/dace/AlgebraicMatrix_t.h
++++ b/interfaces/cxx/include/dace/AlgebraicMatrix_t.h
+@@ -37,8 +37,8 @@
+ #include <string>
+ 
+ #ifdef WITH_EIGEN
+-#include <eigen3/Eigen/Core>
+-#include <eigen3/Eigen/Eigenvalues>
++#include <Eigen/Core>
++#include <Eigen/Eigenvalues>
+ #endif /* WITH_EIGEN */
+ 
+ // DACE classes
+diff --git a/interfaces/cxx/include/dace/AlgebraicVector.h b/interfaces/cxx/include/dace/AlgebraicVector.h
+index 7e3aabf..e72daaf 100644
+--- a/interfaces/cxx/include/dace/AlgebraicVector.h
++++ b/interfaces/cxx/include/dace/AlgebraicVector.h
+@@ -33,7 +33,7 @@
+ #include <vector>
+ #include <initializer_list>
+ #ifdef WITH_EIGEN
+-#include <eigen3/Eigen/Core>
++#include <Eigen/Core>
+ #endif /* WITH_EIGEN */
+ 
+ // DACE classes required for interface definition (DA.h needed for DA::getMaxOrder(), DA::getMaxVariables() default arguments)
+diff --git a/interfaces/cxx/include/dace/DA.h b/interfaces/cxx/include/dace/DA.h
+index 0ff4470..2356bcb 100644
+--- a/interfaces/cxx/include/dace/DA.h
++++ b/interfaces/cxx/include/dace/DA.h
+@@ -41,7 +41,7 @@
+ #include <initializer_list>
+ #include <cmath>
+ #ifdef WITH_EIGEN
+-#include <eigen3/Eigen/Core>
++#include <Eigen/Core>
+ #endif /* WITH_EIGEN */
+ 
+ #include "dace/dacecore.h"
