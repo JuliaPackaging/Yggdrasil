@@ -20,11 +20,6 @@ function prepare_openfhe_build(name::String, git_hash::String)
     script = raw"""
     cd $WORKSPACE/srcdir/openfhe-development/
 
-    # Set proper install directories for libraries on Windows
-    if [[ "${target}" == *-mingw* ]]; then
-      atomic_patch -p1 "${WORKSPACE}/srcdir/patches/windows-fix-cmake-libdir.patch"
-    fi
-
     mkdir build && cd build
 
     cmake .. \
