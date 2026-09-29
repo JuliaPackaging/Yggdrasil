@@ -50,7 +50,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency(PackageSpec(name="libjulia_jll", version="1.11.3")),
-    BuildDependency("Eigen_jll"),
+    BuildDependency(PackageSpec(name="Eigen_jll", version="3.4.0")),
     Dependency("libcxxwrap_julia_jll"; compat="~0.14.11"),
 ]
 
