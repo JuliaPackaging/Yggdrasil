@@ -16,6 +16,8 @@ script = raw"""
 cd $WORKSPACE/srcdir/mongoose
 mkdir -p ${libdir}
 
+cp ../mg_conn_get_fn_data.c .
+
 FLAGS="-fPIC -O2 -shared \
   -DMG_TLS=MG_TLS_BUILTIN \
   -DMG_ENABLE_IPV6=1 \
@@ -27,7 +29,7 @@ if [[ "${target}" == *mingw* ]]; then
     LIBS="-lws2_32"
 fi
 
-cc ${FLAGS} mongoose.c ../mg_conn_get_fn_data.c -o ${libdir}/libmongoose.${dlext} ${LIBS}
+${CC} ${FLAGS} mongoose.c mg_conn_get_fn_data.c -o ${libdir}/libmongoose.${dlext} ${LIBS}
 
 install_license LICENSE
 """
