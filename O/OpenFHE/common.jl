@@ -10,7 +10,6 @@ function prepare_openfhe_build(name::String, git_hash::String)
     sources = [
         GitSource("https://github.com/openfheorg/openfhe-development.git",
                   git_hash),
-        DirectorySource("../OpenFHE/bundled")
     ]
 
     # Set native size for bash recipe
