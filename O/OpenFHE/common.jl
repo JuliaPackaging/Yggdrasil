@@ -35,6 +35,7 @@ function prepare_openfhe_build(name::String, git_hash::String)
       -DWITH_BE4=ON \
       -DBUILD_UNITTESTS=OFF \
       -DBUILD_BENCHMARKS=OFF \
+      -DBUILD_EXAMPLES=OFF \
       -DNATIVE_SIZE=""" * "$native_size" *
     raw"""
     
