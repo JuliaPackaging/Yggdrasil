@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 #
 # This package repackages the `openssl` CLI executable from OpenSSL_jll.
-# 
+#
 # Background: Starting with Julia 1.12, OpenSSL_jll became a standard library
 # with the `openssl` executable removed to minimize the standard library footprint.
 # This separate package provides the CLI tool for users who need it.
@@ -15,7 +15,7 @@
 using BinaryBuilder
 
 name = "OpenSSL_CLI"
-version = v"3.5.7"
+version = v"3.5.8"
 
 # No sources needed - we're repackaging from OpenSSL_jll
 sources = []
@@ -35,7 +35,7 @@ products = [
 ]
 
 dependencies = [
-    Dependency("OpenSSL_jll"; compat="~$(version.major).$(version.minor).$(version.patch)"),
+    Dependency("OpenSSL_jll"; compat="=$(version.major).$(version.minor).$(version.patch)"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;

@@ -1,0 +1,16 @@
+--- a/libwget/net.c	2026-09-26 15:59:49
++++ b/libwget/net.c	2026-09-26 15:59:56
+@@ -993,11 +993,11 @@
+ 				/* fallback from fastopen, e.g. when fastopen is disabled in system */
+ 				tcp->tcp_fastopen = 0;
+ 
+-				set_socket_timeout(sockfd, tcp->connect_timeout);
++				set_socket_timeout(tcp->sockfd, tcp->connect_timeout);
+ 
+ 				int rc = connect(tcp->sockfd, tcp->connect_addrinfo->ai_addr, tcp->connect_addrinfo->ai_addrlen);
+ 
+-				set_socket_timeout(sockfd, tcp->timeout);
++				set_socket_timeout(tcp->sockfd, tcp->timeout);
+ 
+ 				if (rc < 0
+ 					&& errno != EAGAIN

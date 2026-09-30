@@ -3,8 +3,8 @@
 using BinaryBuilder, Pkg
 
 name = "NVPTX_LLVM_Backend"
-version = v"23.1.1"
-llvm_version = v"23.1.1"
+version = v"23.1.2"
+llvm_version = v"23.1.2"
 
 # This JLL ships `libnvptx`, a shared library exposing a small, typed C API (see
 # bundled/libnvptx.h) over a statically linked, symbol-hidden LLVM NVPTX
@@ -15,7 +15,7 @@ llvm_version = v"23.1.1"
 # LLVM ships a single monorepo source archive (`llvm-project-X.Y.Z.src.tar.xz`).
 sources = [
     ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-$(llvm_version)/llvm-project-$(llvm_version).src.tar.xz",
-                  "ebe9be46fe8756d58c5b198ffad0fa2a766257add81a4dc52179bfacc7888ee6"),
+                  "c98bbef08a2b4c2613cd50e9aa9ae7b69b1fe6c16b2c40373bc0ab6116fdf78a"),
     DirectorySource("./bundled")
 ]
 
@@ -40,9 +40,15 @@ LLVM_SRCDIR=$(pwd)
 # assembler comment. Strings can contain non-ASCII bytes (e.g. Julia identifiers
 # of inlined functions), which ptxas before CUDA 13.1 rejects even in comments
 # (JuliaGPU/CUDA.jl#3274). Escape them.
+# Backport of https://github.com/llvm/llvm-project/pull/206154 ("[NVPTX] Set default
+# value of nvptx-allow-ftz-atomics to true"; merged after the 23.x branch), undoing
+# the CAS-loop lowering of atomicrmw fadd that #200732 made the default whenever the
+# function's denormal mode disagrees with atom.add's fixed FTZ behavior, which
+# regressed performance. Code changes only; the test updates are left out.
 atomic_patch -p1 $WORKSPACE/srcdir/patches/no-process-wide-handlers.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/lower-allocas-to-local-as.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/escape-debug-str-comments.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/allow-ftz-atomics-by-default.patch
 
 install_license LICENSE.TXT
 

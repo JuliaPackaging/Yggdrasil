@@ -29,18 +29,15 @@ version = v"1.9.3"
 sources = [
     GitSource("https://github.com/ggml-org/whisper.cpp.git",
               "371b5a7561823ab2bb32142d2751e35e7534727b"),  # v1.9.3
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
-cd $WORKSPACE/srcdir/whisper.cpp*
+cd ${WORKSPACE}/srcdir/whisper.cpp*
 
-# Avoid forcing -march on riscv64 (BinaryBuilder disallows explicit -march)
-sed -i -e 's/list(APPEND ARCH_FLAGS "-march=${MARCH_STR}" -mabi=lp64d)/list(APPEND ARCH_FLAGS -mabi=lp64d)/' ggml/src/ggml-cpu/CMakeLists.txt
-sed -i -e 's/list(APPEND ARCH_FLAGS -march=rv64gc_v -mabi=lp64d)/list(APPEND ARCH_FLAGS -mabi=lp64d)/' ggml/src/ggml-cpu/CMakeLists.txt
-# Guard the Windows thread power throttling API, which mingw's headers lack
-sed -i -e 's/#if _WIN32_WINNT >= 0x0602/#if _WIN32_WINNT >= 0x0602 \&\& defined(THREAD_POWER_THROTTLING_CURRENT_VERSION)/' ggml/src/ggml-cpu/ggml-cpu.c
-# gguf.cpp uses errno without including <cerrno> (fails on macOS)
-grep -q '<cerrno>' ggml/src/gguf.cpp || sed -i '1i#include <cerrno>' ggml/src/gguf.cpp
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 ${f}
+done
 
 EXTRA_CMAKE_ARGS=()
 EXE_LDFLAGS=""
@@ -62,8 +59,13 @@ elif [[ "${target}" == x86_64-apple-darwin* ]]; then
 fi
 
 # CUDA (only for platforms tagged cuda=<version>)
-cuda_version=${bb_full_target##*-cuda+}
-if [[ $bb_full_target == *cuda* ]] && [[ $cuda_version != none ]]; then
+cuda_version=none
+if [[ ${bb_full_target} == *-cuda+* ]]; then
+    # ${bb_full_target} looks like aarch64-linux-gnu-cxx11-cuda+12.2-cuda_platform+jetson
+    cuda_version=${bb_full_target##*-cuda+}
+    cuda_version=${cuda_version%%-*}
+fi
+if [[ ${cuda_version} != none ]]; then
     # nvcc writes to /tmp, which is a small tmpfs in our sandbox
     export TMPDIR=${WORKSPACE}/tmpdir
     mkdir -p ${TMPDIR}
@@ -71,23 +73,34 @@ if [[ $bb_full_target == *cuda* ]] && [[ $cuda_version != none ]]; then
     export CUDA_HOME=${prefix}/cuda
     export PATH=${PATH}:${CUDA_HOME}/bin
 
+    # Require exactly one match so a renamed/absent archive fails here instead
+    # of later in cp with a confusing error.
+    unique_source_dir() {
+        local dirs=(${WORKSPACE}/srcdir/$2)
+        if [[ ${#dirs[@]} -ne 1 || ! -d "${dirs[0]}" ]]; then
+            echo "ERROR: expected exactly one $2 in \${WORKSPACE}/srcdir, got: ${dirs[*]}" >&2
+            exit 1
+        fi
+        printf -v "$1" '%s' "${dirs[0]}"
+    }
+
     if [[ "${target}" == aarch64-linux-* ]]; then
         # nvcc is not a cross compiler: run the x86_64 host nvcc (from the
         # cuda_nvcc redist added to the sources for aarch64 builds) against the
         # aarch64 CUDA SDK that CUDA_SDK_jll put in ${prefix}/cuda.
         export LD_LIBRARY_PATH="/usr/lib/csl-musl-x86_64:/usr/lib/csl-glibc-x86_64:${LD_LIBRARY_PATH}"
 
-        NVCC_DIR=(/workspace/srcdir/cuda_nvcc-linux-x86_64-*-archive)
+        unique_source_dir NVCC_DIR 'cuda_nvcc-linux-x86_64-*-archive'
         rm -rf ${CUDA_HOME}/bin
-        cp -a "${NVCC_DIR[0]}/bin" ${CUDA_HOME}/bin
+        cp -a "${NVCC_DIR}/bin" ${CUDA_HOME}/bin
 
         # CUDA <= 12.x ships nvvm inside cuda_nvcc; CUDA >= 13 ships it separately
-        if [[ -d "${NVCC_DIR[0]}/nvvm/bin" ]]; then
-            NVVM_DIR="${NVCC_DIR[0]}"
+        if [[ -d "${NVCC_DIR}/nvvm/bin" ]]; then
+            NVVM_DIR="${NVCC_DIR}"
         else
-            NVVM_DIR_ARR=(/workspace/srcdir/libnvvm-linux-x86_64-*-archive)
-            NVVM_DIR="${NVVM_DIR_ARR[0]}"
+            unique_source_dir NVVM_DIR 'libnvvm-linux-x86_64-*-archive'
         fi
+        mkdir -p ${CUDA_HOME}/nvvm
         rm -rf ${CUDA_HOME}/nvvm/bin ${CUDA_HOME}/nvvm/lib64
         cp -a "${NVVM_DIR}/nvvm/bin" ${CUDA_HOME}/nvvm/bin
         [[ -d "${NVVM_DIR}/nvvm/lib64" ]] && cp -a "${NVVM_DIR}/nvvm/lib64" ${CUDA_HOME}/nvvm/lib64
@@ -102,12 +115,12 @@ if [[ $bb_full_target == *cuda* ]] && [[ $cuda_version != none ]]; then
     # (libcudart.so, libcudadevrt.a, no libcudart_static.a). So point nvcc at the
     # right directory and link the shared runtime, which is what we want anyway:
     # CUDA_Runtime_jll provides libcudart/libcublas at run time.
-    [[ -e ${CUDA_HOME}/lib64 ]] || ln -s lib ${CUDA_HOME}/lib64
+    [[ -e ${CUDA_HOME}/lib64 || -L ${CUDA_HOME}/lib64 ]] || ln -s lib ${CUDA_HOME}/lib64
     export CUDAFLAGS="-cudart=shared"
     # ggml-cuda links the driver API; libggml-cuda ends up needing libcuda.so.1 (the
     # real soname, provided by the driver at run time) but the SDK stubs directory
     # only has libcuda.so, so give ld the soname it will look for.
-    [[ -e ${CUDA_HOME}/lib/stubs/libcuda.so.1 ]] || ln -s libcuda.so ${CUDA_HOME}/lib/stubs/libcuda.so.1
+    [[ -e ${CUDA_HOME}/lib/stubs/libcuda.so.1 || -L ${CUDA_HOME}/lib/stubs/libcuda.so.1 ]] || ln -s libcuda.so ${CUDA_HOME}/lib/stubs/libcuda.so.1
 
     # The executables link against libggml-cuda, whose own DT_NEEDED entries
     # (libcudart, libcublas, libcuda) must be resolvable by ld at link time.
@@ -152,7 +165,7 @@ cmake --install build
 
 install_license LICENSE
 
-if [[ $bb_full_target == *cuda* ]] && [[ $cuda_version != none ]]; then
+if [[ ${cuda_version} != none ]]; then
     # keep the CUDA SDK out of the products
     rm -rf ${prefix}/cuda
 fi
@@ -203,6 +216,12 @@ cuda_versions = ("12.2", "12.6", "12.8", "13.0")
 
 cuda_platforms = CUDA.supported_platforms(; min_version = v"12.2")
 filter!(p -> arch(p) in ("x86_64", "aarch64") && p["cuda"] in cuda_versions, cuda_platforms)
+# Fail loudly if platforms/cuda.jl ever stops offering a version/arch we ship;
+# the filter above would otherwise just produce fewer CUDA variants.
+for cuda_ver in cuda_versions, a in ("x86_64", "aarch64")
+    any(p -> arch(p) == a && p["cuda"] == cuda_ver, cuda_platforms) ||
+        error("CUDA.supported_platforms no longer offers cuda=$(cuda_ver) for $(a); update cuda_versions")
+end
 cuda_platforms = expand_cxxstring_abis(cuda_platforms)
 
 cuda_products = [
@@ -215,14 +234,18 @@ cuda_products = [
 # ---------------------------------------------------------------------------
 
 # Platform selection is handled per build below, so `build_tarballs` must not
-# filter on the positional platform argument itself. Select by exact triplet:
+# filter on the positional platform argument itself. Select by exact tag set:
 # `platforms_match` treats a missing "cuda" tag as a wildcard, so a CPU triplet
 # would also pick up every CUDA build (and vice versa), and a CI job for one
-# platform would build them all serially.
+# platform would build them all serially. Comparing `triplet` strings is not
+# enough either: tag order in `triplet(p)` follows insertion order, while CI
+# passes the sorted form (`cuda+12.2-cuda_platform+sbsa`).
 const requested_triplets = let args = filter(a -> !startswith(a, "--"), ARGS)
-    isempty(args) ? nothing : Set(String.(split(args[1], ",")))
+    isempty(args) ? nothing : Set(String.(split(join(args, ","), ",")))
 end
-wanted(p) = requested_triplets === nothing || triplet(p) in requested_triplets
+const requested_tags = requested_triplets === nothing ? nothing :
+    Set(Base.BinaryPlatforms.tags(parse(Platform, t)) for t in requested_triplets)
+wanted(p) = requested_tags === nothing || Base.BinaryPlatforms.tags(p) in requested_tags
 
 non_platform_ARGS = filter(arg -> startswith(arg, "--"), ARGS)
 # `--register` should only be passed to the last `build_tarballs` invocation
@@ -232,8 +255,29 @@ builds = []
 
 for platform in platforms
     wanted(platform) || continue
-    push!(builds, (; platform, sources, products = cpu_products,
+    # Metal is enabled on aarch64-apple; declaring the backend library means a
+    # silently broken Metal build fails the audit instead of shipping CPU-only.
+    products = Sys.isapple(platform) && arch(platform) == "aarch64" ?
+        [cpu_products; LibraryProduct(["libggml-metal", "ggml-metal"], :libggml_metal)] :
+        cpu_products
+    push!(builds, (; platform, sources, products,
                      dependencies, dont_dlopen = false))
+end
+
+# get_sources() hits NVIDIA's redist server once per call; the x86_64 host
+# archives are identical for jetson/sbsa, so fetch once per CUDA version.
+const x86_cuda_sources = Dict{VersionNumber, Vector{BinaryBuilder.AbstractSource}}()
+function host_nvcc_sources(platform)
+    cuda_ver = VersionNumber(platform["cuda"])
+    get!(x86_cuda_sources, cuda_ver) do
+        # host (x86_64) nvcc, plus libnvvm which is a separate redist from CUDA 13 on
+        components = ["cuda_nvcc"]
+        cuda_ver >= v"13" && push!(components, "libnvvm")
+        x86_platform = deepcopy(platform)
+        x86_platform["arch"] = "x86_64"
+        BinaryBuilder.AbstractSource[get_sources("cuda", components; platform = x86_platform,
+                                                 version = CUDA.full_version(cuda_ver))...]
+    end
 end
 
 for platform in cuda_platforms
@@ -241,15 +285,7 @@ for platform in cuda_platforms
 
     platform_sources = BinaryBuilder.AbstractSource[sources...]
     if arch(platform) == "aarch64"
-        # host (x86_64) nvcc, plus libnvvm which is a separate redist from CUDA 13 on
-        cuda_ver = VersionNumber(platform["cuda"])
-        components = ["cuda_nvcc"]
-        cuda_ver >= v"13" && push!(components, "libnvvm")
-        x86_platform = deepcopy(platform)
-        x86_platform["arch"] = "x86_64"
-        append!(platform_sources,
-                get_sources("cuda", components; platform = x86_platform,
-                            version = CUDA.full_version(cuda_ver)))
+        append!(platform_sources, host_nvcc_sources(platform))
     end
 
     push!(builds, (; platform, sources = platform_sources, products = cuda_products,
@@ -257,12 +293,17 @@ for platform in cuda_platforms
                      dont_dlopen = true))   # libcuda is not available in the sandbox
 end
 
+# A triplet that matches nothing must fail loudly: silently producing zero
+# builds makes a CI job "succeed" while its tarball is missing at registration.
+isempty(builds) && error("No platform matched the requested triplet(s): $(join(something(requested_triplets, []), ", "))")
+
 for (i, build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    name, version, build.sources, script, [build.platform],
                    build.products, build.dependencies;
                    julia_compat = "1.10",
                    preferred_gcc_version = v"10",
+                   lazy_artifacts = true,
                    augment_platform_block = CUDA.augment,
                    dont_dlopen = build.dont_dlopen)
 end

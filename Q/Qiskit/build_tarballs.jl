@@ -76,8 +76,8 @@ dependencies = [
     BuildDependency(PackageSpec(name="cbindgen_jll", uuid="a52b955f-5256-5bb0-8795-313e28591558"))
     # libpython is required at run time until
     # https://github.com/Qiskit/qiskit/issues/14240 is fixed, which is
-    # currently targeted for Qiskit 2.4.0.
-    Dependency(PackageSpec(name="Python_jll", uuid="93d3a430-8e7c-50da-8e8d-3dfcfb3baf05"))
+    # currently targeted for Qiskit 2.6 or later.
+    Dependency(PackageSpec(name="Python_jll", uuid="93d3a430-8e7c-50da-8e8d-3dfcfb3baf05"); compat="~3.11")
     # Python 3.10 or higher is required by the build process, but at the moment
     # only Python 3.9 is available in the base image, hence the following requirement.
     HostBuildDependency(PackageSpec(name="Python_jll", uuid="93d3a430-8e7c-50da-8e8d-3dfcfb3baf05"))

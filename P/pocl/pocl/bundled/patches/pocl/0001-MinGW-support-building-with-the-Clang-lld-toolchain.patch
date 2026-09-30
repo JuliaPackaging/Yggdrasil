@@ -1,0 +1,118 @@
+From b0d12a8768dadb66f4ea1bb771e8d1006642dae9 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Fri, 26 Jun 2026 13:09:13 +0200
+Subject: [PATCH 1/6] MinGW: support building with the Clang/lld toolchain
+
+GNU ld is pathologically slow at linking the static LLVM/Clang archives
+into a PE/COFF DLL (tens of minutes for libpocl). ld.lld is far faster,
+but its COFF driver doesn't implement GNU ld's --exclude-libs, which
+libpocl used to keep the static-lib symbols out of its auto-generated
+export table. Without that, auto-exporting the whole static LLVM blob
+overflows the 64K PE export-ordinal limit.
+
+Switch MinGW to the MSVC-style export model, which works with both GNU ld
+and lld:
+
+- stamp __declspec(dllexport) on the OpenCL API for any Windows toolchain
+  (defined(_WIN32)), not just _MSC_VER;
+- define EXPORT_POCL_LIB / IMPORT_POCL_LIB for any WIN32 shared build, not
+  just MSVC;
+- export only the dllexport'd symbols (--exclude-all-symbols) instead of
+  auto-export-minus-static-libs (--exclude-libs).
+
+Because libpocl now exports only its public API, its internal symbols are
+no longer visible to separately-dlopen'd driver modules, so consumers must
+build with ENABLE_LOADABLE_DRIVERS=OFF (drivers linked into libpocl).
+
+Also make the spirv_fix_atomic_compare_exchange helper compile its own copy
+of spirv_parser.cc in the non-ICD case, mirroring the ICD branch, so it no
+longer relies on SPIRVParser being exported from libpocl.
+
+Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+---
+ bin/CMakeLists.txt    |  3 ++-
+ include/pocl.h        |  2 +-
+ lib/CL/CMakeLists.txt | 12 ++++++------
+ 3 files changed, 9 insertions(+), 8 deletions(-)
+
+diff --git a/bin/CMakeLists.txt b/bin/CMakeLists.txt
+index 6f2c8b3f0..6f7286c0e 100644
+--- a/bin/CMakeLists.txt
++++ b/bin/CMakeLists.txt
+@@ -34,7 +34,8 @@ if(ENABLE_SPIRV)
+     # Avoid POCL_EXPORT here
+     target_compile_definitions(spirv_fix_atomic_compare_exchange PRIVATE SPIRV_PARSER_LIB)
+   else()
+-    add_executable(spirv_fix_atomic_compare_exchange spirv_fix_atomic_compare_exchange.cc)
++    add_executable(spirv_fix_atomic_compare_exchange spirv_fix_atomic_compare_exchange.cc "${SPVSRC}/spirv_parser.hh" "${SPVSRC}/spirv_parser.cc")
++    target_compile_definitions(spirv_fix_atomic_compare_exchange PRIVATE SPIRV_PARSER_LIB)
+   endif()
+   harden(spirv_fix_atomic_compare_exchange)
+   target_link_libraries(spirv_fix_atomic_compare_exchange poclu ${OPENCL_LIBS})
+diff --git a/include/pocl.h b/include/pocl.h
+index 3269f931b..76dd71333 100644
+--- a/include/pocl.h
++++ b/include/pocl.h
+@@ -40,7 +40,7 @@
+    0 marks an invalid/undefined object. */
+ typedef uint64_t pocl_obj_id_t;
+ 
+-#if defined(EXPORT_POCL_LIB) && defined(_MSC_VER)
++#if defined(EXPORT_POCL_LIB) && defined(_WIN32)
+ /* To successfully export OpenCL API, the dllexport must be placed on
+  * both the declaration and the definition as MSVC requires that both
+  * of them have the same attributes.
+diff --git a/lib/CL/CMakeLists.txt b/lib/CL/CMakeLists.txt
+index e18427ccb..6e553121b 100644
+--- a/lib/CL/CMakeLists.txt
++++ b/lib/CL/CMakeLists.txt
+@@ -260,7 +260,7 @@ else()
+ endif()
+ 
+ add_library("pocl_cache" OBJECT "pocl_cache.c")
+-if(BUILD_SHARED_LIBS AND MSVC)
++if(BUILD_SHARED_LIBS AND WIN32)
+   # Inject __declspec(dllexport).
+   target_compile_definitions("pocl_cache" PRIVATE EXPORT_POCL_LIB)
+   target_compile_definitions("pocl_cache" INTERFACE IMPORT_POCL_LIB)
+@@ -319,7 +319,7 @@ if (ENABLE_LLVM)
+     endif()
+   endif()
+ 
+-  if(BUILD_SHARED_LIBS AND MSVC)
++  if(BUILD_SHARED_LIBS AND WIN32)
+     # Inject __declspec(dllexport).
+     target_compile_definitions(lib_cl_llvm PRIVATE EXPORT_POCL_LIB)
+     target_compile_definitions(lib_cl_llvm INTERFACE IMPORT_POCL_LIB)
+@@ -359,7 +359,7 @@ add_library("libpocl_unlinked_objs" OBJECT ${POCL_LIB_SOURCES})
+ target_include_directories(libpocl_unlinked_objs
+   PRIVATE ${CMAKE_SOURCE_DIR}/thirdparty/STC/include)
+ 
+-if(BUILD_SHARED_LIBS AND MSVC)
++if(BUILD_SHARED_LIBS AND WIN32)
+   # Inject __declspec(dllexport).
+   target_compile_definitions(libpocl_unlinked_objs PRIVATE EXPORT_POCL_LIB)
+   target_compile_definitions(libpocl_unlinked_objs INTERFACE IMPORT_POCL_LIB)
+@@ -439,7 +439,7 @@ set(POCL_TRANSITIVE_LIBS ${POCL_PRIVATE_LINK_LIST} PARENT_SCOPE)
+ #################################################################
+ 
+ add_library("${POCL_LIBRARY_NAME}" ${LIBPOCL_OBJS})
+-if(BUILD_SHARED_LIBS AND MSVC)
++if(BUILD_SHARED_LIBS AND WIN32)
+   # Inject __declspec(dllexport).
+   target_compile_definitions("${POCL_LIBRARY_NAME}" PRIVATE EXPORT_POCL_LIB)
+   target_compile_definitions("${POCL_LIBRARY_NAME}" INTERFACE IMPORT_POCL_LIB)
+@@ -447,11 +447,11 @@ endif()
+ 
+ harden("${POCL_LIBRARY_NAME}")
+ 
+-if((UNIX OR MINGW) AND (NOT APPLE))
++if(UNIX AND (NOT APPLE))
+   target_link_options("${POCL_LIBRARY_NAME}" PRIVATE "LINKER:--exclude-libs,ALL")
+ endif()
+ if(MINGW)
+-  target_link_options("${POCL_LIBRARY_NAME}" PRIVATE "LINKER:--enable-auto-import,--enable-runtime-pseudo-reloc")
++  target_link_options("${POCL_LIBRARY_NAME}" PRIVATE "LINKER:--exclude-all-symbols,--enable-auto-import,--enable-runtime-pseudo-reloc")
+ endif()
+ 
+ set_target_properties("${POCL_LIBRARY_NAME}" PROPERTIES SOVERSION "${LIB_API_VERSION}"

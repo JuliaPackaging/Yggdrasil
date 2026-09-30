@@ -11,13 +11,24 @@ using BinaryBuilder
 # already carried Project.toml version 1.0.0, so the JLL version can no longer
 # equal the package version: 1.0.1 is the registered AudioPlugins v1.0.0
 # sources, with Windows.
+#
+# 1.1.0 rebuilds from a tree carrying SciML/AudioPlugins.jl#40, which lifted a
+# fixed 32-entry descriptor cache in `clap_host_scan`. A CLAP module may hold
+# hundreds of plugins in one file -- the Airwindows collection that
+# Airwindows_jll ships is 504 -- and 1.0.1 reported any such module as holding
+# 32, silently and indistinguishably from a module that really is that small.
+# Airwindows_jll is unusable without this rebuild. Minor rather than patch
+# because the scan ABI also *gained* functions (additive, nothing removed or
+# changed): clap_host_scan_count, and the vendor/version/description and
+# feature-keyword getters that a bundle registry needs to classify what it
+# found.
 name = "CLAPHost"
-version = v"1.0.1"
+version = v"1.2.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/SciML/AudioPlugins.jl.git",
-              "1ba3d23b08c0159f66782a831f89cb729339d325"),  # v1.0.0 (registered)
+              "f48574da93f3fac9f3d612c16b60657043320c35"),  # SciML/AudioPlugins.jl main
 ]
 
 # Bash recipe for building across all platforms
