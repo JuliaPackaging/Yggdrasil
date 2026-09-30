@@ -48,6 +48,10 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/nested_aggregate_insertvalue.patch
 # Fix direct returns of aggregate extractvalue results, such as the LLVM IR
 # emitted for non-inlined SMatrix{1,1} returns.
 atomic_patch -p1 $WORKSPACE/srcdir/patches/aggregate_extractvalue_return.patch
+# Backport of https://github.com/llvm/llvm-project/pull/227599 ("[SPIR-V] Fix
+# pointee types of pointers extracted from or inserted into aggregates"; still
+# open upstream), for Julia's bits-union return values.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/aggregate_member_pointee_types.patch
 
 install_license LICENSE.TXT
 
