@@ -32,13 +32,8 @@ flags=(
     swig/julia/target/source/casadiJULIA_wrap.cxx
     -L"${libdir}"
     -lcasadi
+    -ljulia
 )
-
-if [[ "${target}" == *-apple-* ]]; then
-    flags+=(-undefined dynamic_lookup)
-elif [[ "${target}" == *-mingw* ]]; then
-    flags+=(-ljulia)
-fi
 
 ${CXX} "${flags[@]}" -o "${pkgdir}/libcasadi_wrap.${dlext}"
 
@@ -60,8 +55,7 @@ products = [
     LibraryProduct(
         "libcasadi_wrap",
         :libcasadi_wrap,
-        "share/CasADiSWIG";
-        dont_dlopen=true,
+        "share/CasADiSWIG",
     ),
     FileProduct(
         "share/CasADiSWIG/casadi.jl",
