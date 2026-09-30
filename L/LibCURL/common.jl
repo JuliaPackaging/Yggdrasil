@@ -30,6 +30,9 @@ const curl_hashes = Dict(
     v"8.19.0" => "2a2c11db4c122691aa23b4363befda1bfd801770bfebf41e1d21cee4f2ab0f71",
     v"8.20.0" => "fc5819cad3f9f5482669adcdc49a782c15f36d2a0715b395b06d9173593d2dc0",
     v"8.21.0" => "d9b327997999045a24cda50f3983e69e51c516bd8be6ef9842fc7f99135e33bb",
+    # See `LibCURL@8.21-nozstd/build_tarballs.jl`
+    v"8.21.1" => "d9b327997999045a24cda50f3983e69e51c516bd8be6ef9842fc7f99135e33bb",
+    v"8.21.2" => "d9b327997999045a24cda50f3983e69e51c516bd8be6ef9842fc7f99135e33bb",
     v"8.22.0" => "d54dd598bf05927a726deb38df31c6a255ba83ff1de57c5d1464dac3ed8f44a1",
 )
 
