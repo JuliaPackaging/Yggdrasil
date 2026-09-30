@@ -3,10 +3,9 @@
 using BinaryBuilder, Pkg
 using BinaryBuilderBase: sanitize
 
-# `widths` lists the code unit widths (8, 16, 32) whose libraries are built
-function build_pcre2(ARGS, name::String, widths::Vector{Int})
-    version_string = "10.49"
-    version = VersionNumber(version_string)
+# `version` is the package version; its major and minor components select the upstream release.
+# `widths` lists the code unit widths (8, 16, 32) whose libraries are built.
+function build_pcre2(ARGS, name::String, version::VersionNumber, widths::Vector{Int})
 
     # Collection of sources required to complete build
     sources = [
