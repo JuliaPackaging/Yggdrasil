@@ -214,3 +214,5 @@ sources, script = require_macos_sdk("11.0", sources, script)
 build_tarballs(ARGS, name, version, sources, script,
                platforms, products, dependencies;
                preferred_gcc_version=v"10", julia_compat="1.6")
+
+# bump

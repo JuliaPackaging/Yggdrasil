@@ -7,13 +7,13 @@
 using BinaryBuilder, Pkg
 
 name = "GIAC"
-version = v"2.0.2"
+version = v"2.0.3"
 
 # Collection of sources required to build GIAC
 # Using the Meson-based fork from https://github.com/JuliaGiac/giac
 sources = [
     GitSource("https://github.com/JuliaGiac/giac.git",
-        "42d064e3ea3525b9e7a6fa3ffd3caeb99e2bea3a"),  # dev branch + GIAC_TYPE_ON_8BITS default + PARI/darwin fixes
+        "21d9192abc95473579b24e5ed8b8ed8cf750bcf0"),  # v2.0.3: MinGW MPFR parsing fix + GIAC_TYPE_ON_8BITS default
 ]
 
 # Bash recipe for building across all platforms

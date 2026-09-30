@@ -1,9 +1,9 @@
 using BinaryBuilder
 
 name = "gametracer"
-version = v"0.2.1"
+version = v"0.3.0"
 
-const GIT_SHA = "49ba14e396ddc21fbcd54621e610d355b7106c5e"
+const GIT_SHA = "e22cdd1cf424eeb691d3e1e9aea6b6db505242f5"
 
 sources = [
     GitSource("https://github.com/QuantEcon/gametracer.git", GIT_SHA),

@@ -4,7 +4,7 @@ steps:
     plugins:
       - JuliaCI/julia#v1:
           persist_depot_dirs: packages,artifacts,compiled
-          version: "1.12.6"
+          version: "1.12.7"
           artifacts_size_limit: "187904819200" # 175GiB
       - JuliaCI/merge-commit: ~
       - JuliaCI/forerunner#v1:

@@ -36,8 +36,13 @@ LLVM_SRCDIR=$(pwd)
 # which synchronises its threads with SIGSEGV, those handlers are fatal: they
 # intercept the host's signals and re-raise them with a different siginfo.
 # Make every such installation a no-op; the library never wants them.
+# Since LLVM 23 (1a23bca645dc), the DWARF string pool echoes each string into an
+# assembler comment. Strings can contain non-ASCII bytes (e.g. Julia identifiers
+# of inlined functions), which ptxas before CUDA 13.1 rejects even in comments
+# (JuliaGPU/CUDA.jl#3274). Escape them.
 atomic_patch -p1 $WORKSPACE/srcdir/patches/no-process-wide-handlers.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/lower-allocas-to-local-as.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/escape-debug-str-comments.patch
 
 install_license LICENSE.TXT
 

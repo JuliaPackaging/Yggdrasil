@@ -5,7 +5,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MUMPS"
 version = v"5.9.1"
-ygg_version = v"5.9.2"
+ygg_version = v"5.9.4"
 
 sources = [
   ArchiveSource("https://mumps-solver.org/MUMPS_$(version).tar.gz",
@@ -69,6 +69,10 @@ if [[ "${target}" == *x86_64-w64-mingw* ]]; then
     # pseudo-relocs fixes the crash and keeps ASLR fully enabled. (The link would
     # fail here if any such data import genuinely needed a runtime fixup.)
     EXTRA_LDFLAGS+=("-Wl,--disable-runtime-pseudo-reloc")
+fi
+if [[ "${target}" == *-apple-* ]]; then
+    # let MPICH's Fortran sentinel COMMON blocks resolve to libmpifort's copies
+    EXTRA_LDFLAGS+=("-Wl,-commons,use_dylibs")
 fi
 
 # Override MPItrampoline's built-in compiler paths
@@ -150,8 +154,8 @@ dependencies = [
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
     # We need libgfortran from `CompilerSupportLibraries_jll` for all platforms.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70"); compat="5.1.3"),
-    Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa"); compat="4.0.8"),
+    Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70"); compat="5.1.4"),
+    Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa"); compat="4.0.9"),
     Dependency(PackageSpec(name="SCOTCH_jll", uuid="a8d0f55d-b80e-548d-aff6-1a04c175f0f9"); compat="~7.0.7"),
     # Dependency(PackageSpec(name="PTSCOTCH_jll", uuid="b3ec0f5a-9838-5c9b-9e77-5f2c6a4b089f"); compat="~7.0.6"),
     Dependency(PackageSpec(name="SCALAPACK32_jll", uuid="aabda75e-bfe4-5a37-92e3-ffe54af3c273"); compat="2.2.302"),

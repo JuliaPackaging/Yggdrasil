@@ -25,6 +25,15 @@ sed -i '$i\
 #define hypre_F90_NAME_LAPACK(name,NAME) name##_64_\
 ' utilities/_hypre_fortran.h
 
+# Name the library libHYPRE64 at link time rather than renaming libHYPRE
+# afterwards: the ELF SONAME, the Mach-O install name and the PE export
+# directory name are all derived from the output name, and a DLL renamed
+# after linking keeps "libHYPRE.dll" in its export directory, so every
+# Windows consumer linked against it imports HYPRE_jll's 32-bit-integer
+# libHYPRE.dll at run time instead.
+sed -i '/^add_library(${PROJECT_NAME})$/a set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME HYPRE64)' CMakeLists.txt
+grep -q "OUTPUT_NAME HYPRE64" CMakeLists.txt
+
 if [[ "${target}" == *mingw* ]]; then
     LBT=(-lblastrampoline-5)
 else
@@ -62,19 +71,6 @@ cmake .. \
 make -j${nproc}
 make install
 
-cd ${libdir}
-old_files=$(ls libHYPRE.* 2>/dev/null || true)
-for f in $old_files; do
-    new=${f/libHYPRE/libHYPRE64}
-    if [ -L "$f" ]; then
-        tgt=$(readlink "$f")
-        rm -f "$f"
-        ln -sf "${tgt/libHYPRE/libHYPRE64}" "$new"
-    elif [ -f "$f" ]; then
-        mv -v "$f" "$new"
-    fi
-done
-
 # Move the headers into their own subdirectory: stock HYPRE_jll installs
 # the same header names (notably HYPRE_config.h, which records the
 # integer width) into ${includedir}, and the two packages must be
@@ -82,21 +78,6 @@ done
 # (e.g. PETSc).
 mkdir -p ${includedir}/HYPRE64
 mv ${includedir}/HYPRE*.h ${includedir}/HYPRE64/
-
-if [[ "${target}" == *apple* ]]; then
-    install_name_tool -id "@rpath/libHYPRE64.${dlext}" ${libdir}/libHYPRE64.${dlext}
-elif [[ "${target}" == *mingw* ]]; then
-    :
-else
-    real_lib=$(find ${libdir} -maxdepth 1 -name 'libHYPRE64.so.*' -not -type l | head -1)
-    if [ -n "$real_lib" ]; then
-        soname=$(patchelf --print-soname "$real_lib")
-        case "$soname" in
-            libHYPRE64.*) ;;
-            libHYPRE.*) patchelf --set-soname "${soname/libHYPRE/libHYPRE64}" "$real_lib" ;;
-        esac
-    fi
-fi
 """
 
 augment_platform_block = """

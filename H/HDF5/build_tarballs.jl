@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "HDF5"
 version = v"2.2.0"
-ygg_version = v"2.2.1"          # Rebuilt with newer MPIABI/mpif
+ygg_version = v"2.2.2"
 
 # Collection of sources required to complete build
 sources = [
@@ -52,12 +52,6 @@ if [[ ${target} == i686-w64-* ]]; then
     ros3_vdf=OFF
 fi
 
-# MPI does not support Fortran
-parallel=ON
-if [[ ${target} == *-w64-* ]]; then
-    parallel=OFF
-fi
-
 cmake_options=(
     -DCMAKE_BUILD_TYPE=Release
     -DCMAKE_INSTALL_PREFIX=${prefix}
@@ -80,7 +74,7 @@ cmake_options=(
     -DHDF5_ENABLE_MAP_API=ON
     -DHDF5_ENABLE_MIRROR_VFD=ON
     -DHDF5_ENABLE_NONSTANDARD_FEATURE_FLOAT16=${float16}
-    -DHDF5_ENABLE_PARALLEL=${parallel}
+    -DHDF5_ENABLE_PARALLEL=ON
     -DHDF5_ENABLE_ROS3_VFD=${ros3_vfd}
     -DHDF5_ENABLE_SUBFILING_VFD=ON
     -DHDF5_ENABLE_SZIP_SUPPORT=ON
@@ -100,6 +94,19 @@ if [[ ${bb_full_target} == *mpiabi* ]]; then
 else
     cmake_options+=(
         -DMPI_HOME=${prefix}
+    )
+fi
+
+if [[ ${target} == *-w64-* ]]; then
+    # MS-MPI: its Fortran wrapper library cannot be linked with gfortran, but msmpi.dll
+    # exports the gfortran-mangled entry points; mpif.h needs -fallow-invalid-boz.
+    cmake_options+=(
+        -DMPI_GUESS_LIBRARY_NAME=MSMPI
+        -DMPI_C_LIBRARIES=msmpi64
+        -DMPI_CXX_LIBRARIES=msmpi64
+        -DMPI_Fortran_LIBRARIES=${libdir}/msmpi.${dlext}
+        -DMPI_Fortran_INCLUDE_DIRS=${includedir}
+        -DCMAKE_Fortran_FLAGS=-fallow-invalid-boz
     )
 fi
 
