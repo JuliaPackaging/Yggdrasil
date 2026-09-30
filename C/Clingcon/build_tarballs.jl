@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Clingcon"
-version = v"5.0.0"
+version = v"5.2.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/potassco/clingcon.git", "586b23ceadff349051dd0a58467679a3758199cb")
+    GitSource("https://github.com/potassco/clingcon.git", "8c476557facf9fc996ec67053a01b6273fd9baba")
 ]
 
 # Bash recipe for building across all platforms
@@ -18,9 +18,10 @@ cmake -G Ninja \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    -DPYCLINGCON_ENABLE=OFF \
-    -DCMAKE_CXX_FLAGS="-std=c++17" \
     -DCMAKE_INSTALL_LIBDIR=lib \
+    -DPYCLINGCON_ENABLE=OFF \
+    -DCLINGCON_BUILD_TESTS=OFF \
+    -DCLINGCON_BUILD_SHARED=ON \
     ..
 cmake --build . --target install
 """
@@ -37,7 +38,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Clingo_jll")
+    # clingcon links only against libclingo's C ABI (`libclingo.so.4`), but that
+    # soname is not encoded in the JLL, so pair it with the clingo series it was
+    # built against and rebuild on the next one.
+    Dependency("Clingo_jll"; compat="~5.8.2")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
