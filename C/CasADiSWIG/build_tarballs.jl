@@ -45,7 +45,7 @@ install -Dvm644 swig/julia/CasADiNative.jl "${pkgdir}/casadi_native_body.jl"
 
 # The wrapper uses Julia C API accessors whose inline definitions are tied to
 # the Julia minor ABI. Each build covers every patch release in its minor line.
-filter!(v -> v.minor in (10, 11, 12), julia_versions)
+filter!(v -> v.minor in (10, 11, 12, 13), julia_versions)
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 # Match the platforms available from CasADi_jll.
