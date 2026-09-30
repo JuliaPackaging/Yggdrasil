@@ -1,9 +1,4 @@
-// Stable, version-independent C shims for Mongoose.jl.
-//
-// Compiled into libmongoose by the Yggdrasil build. All symbols use the
-// `mgjl_` prefix so they can never collide with upstream Mongoose additions.
-// Each wrapper hides a struct field or a variadic/format detail that is
-// awkward or unsafe to replicate through Julia's FFI.
+// All symbols use the `mgjl_` prefix so they can never collide with upstream Mongoose additions.
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -18,10 +13,7 @@ void *mgjl_conn_get_fn_data(struct mg_connection *c) {
   return c == NULL ? NULL : c->fn_data;
 }
 
-// Peer IP (no port), NUL-terminated in buf. Returns the length actually
-// written (never more than len - 1), or 0 when c is NULL. IPv4 is
-// dotted-quad; IPv6 is zero-padded, no brackets. `strlen` (not the
-// mg_snprintf return) keeps the result in-bounds on truncation.
+// Peer IP (no port), NUL-terminated in buf.
 int mgjl_conn_get_remote_ip(const struct mg_connection *c, char *buf,
                             size_t len) {
   const uint8_t *p;
