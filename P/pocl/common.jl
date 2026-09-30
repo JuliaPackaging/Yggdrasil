@@ -132,6 +132,8 @@ function build_script(standalone=false)
     #   `unreachable` (upstream PR #2346; JuliaGPU/OpenCL.jl#509)
     # - 0011: keep WorkitemLoops from rematerializing allocas without an initializer store
     #   (upstream PR #2345; JuliaGPU/OpenCL.jl#510)
+    # - 0012: keep frexp on libclc when vectorizing builtins, avoiding a vector llvm.frexp
+    #   miscompile on x86 below AVX2 (upstream PR #2355; JuliaGPU/OpenCL.jl#506)
     for patch in $WORKSPACE/srcdir/patches/pocl/*.patch; do
         atomic_patch -p1 $patch
     done

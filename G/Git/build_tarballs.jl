@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "Git"
-upstream_version = v"2.55.0"
+upstream_version = v"2.56.0"
 version = upstream_version
 
 # <https://github.com/git-for-windows/git/releases> says:
@@ -14,12 +14,12 @@ last_windows_32_bit_version = v"2.50.1"
 # Collection of sources required to build Git
 sources = [
     ArchiveSource("https://mirrors.edge.kernel.org/pub/software/scm/git/git-$(upstream_version).tar.xz",
-                  "457fdb04dc8728e007d4688695e6912e6f680727920f2a40bf11eacc17505357"),
+                  "26c56c296b38c0695b26fa95f475f1d01704d2d38e73465ca30b0b2f5dc789d3"),
     # Use FileSources instead of ArchiveSources because unpacking archives takes a long time and is not necessary on most platforms
     FileSource("https://github.com/git-for-windows/git/releases/download/v$(last_windows_32_bit_version).windows.1/Git-$(last_windows_32_bit_version)-32-bit.tar.bz2",
                "796d8f4fdd19c668e348d04390a3528df61cfc9864d1f276d9dc585a8a0ac82c"),
     FileSource("https://github.com/git-for-windows/git/releases/download/v$(upstream_version).windows.1/Git-$(upstream_version)-64-bit.tar.bz2",
-               "25bc3235291249f39bd463cd9fb86d9b4295b19d53d81af0238414bc68e16110"),
+               "fdf531fb5c003fff0fed1b3ef282134c9186518f284c2e10860214ce127a973b"),
 ]
 
 # Bash recipe for building across all platforms
