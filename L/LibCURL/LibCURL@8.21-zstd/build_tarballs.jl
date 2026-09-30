@@ -10,6 +10,6 @@ include("../common.jl")
 #   This ensures that a "naive" user will not see our 8.21.1 which lacks zstd support.
 #   You need to use 8.21.1 explicitly to avoid zstd support.
 
-build_libcurl(ARGS, "LibCURL", v"8.21.0"; ygg_version=v"8.21.1", with_zstd=false)
+build_libcurl(ARGS, "LibCURL", v"8.21.0"; ygg_version=v"8.21.2", with_zstd=true)
 
 # Build trigger: 0

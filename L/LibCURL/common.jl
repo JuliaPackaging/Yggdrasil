@@ -30,13 +30,10 @@ const curl_hashes = Dict(
     v"8.19.0" => "2a2c11db4c122691aa23b4363befda1bfd801770bfebf41e1d21cee4f2ab0f71",
     v"8.20.0" => "fc5819cad3f9f5482669adcdc49a782c15f36d2a0715b395b06d9173593d2dc0",
     v"8.21.0" => "d9b327997999045a24cda50f3983e69e51c516bd8be6ef9842fc7f99135e33bb",
-    # See `LibCURL@8.21-nozstd/build_tarballs.jl`
-    v"8.21.1" => "d9b327997999045a24cda50f3983e69e51c516bd8be6ef9842fc7f99135e33bb",
-    v"8.21.2" => "d9b327997999045a24cda50f3983e69e51c516bd8be6ef9842fc7f99135e33bb",
     v"8.22.0" => "d54dd598bf05927a726deb38df31c6a255ba83ff1de57c5d1464dac3ed8f44a1",
 )
 
-function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=false)
+function build_libcurl(ARGS, name::String, version::VersionNumber; ygg_version=version, with_zstd=false)
     hash = curl_hashes[version]
 
     if name == "CURL"
@@ -229,10 +226,10 @@ function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=fal
 
     if this_is_curl_jll
         # Curl_jll depends on LibCURL_jll
-        push!(dependencies, Dependency("LibCURL_jll"; compat="$(version)"))
+        push!(dependencies, Dependency("LibCURL_jll"; compat="$(ygg_version)"))
     end
 
     # Build the tarballs, and possibly a `build.jl` as well.
-    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+    build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                    julia_compat="1.8", preferred_llvm_version=llvm_version)
 end
