@@ -1,0 +1,29 @@
+--- a/configure
++++ b/configure
+@@ -316,7 +316,7 @@
+ then
+ if [ ! "`$feature.exe 2>>configure.log|tr -d '\r'`" = "hello world" ]
+ then
+-die "execution of '$feature.exe' failed"
++    :  # skip: cannot execute cross-compiled test binary
+ fi
+ else
+ die "test compilation '$feature.cpp'"
+@@ -355,7 +355,7 @@
+ then
+ msg "compiler supports all required C99/C++11 extensions"
+ else
+-die "checking compilation without '-std=c++11' failed"
++msg "assuming C++11 support (execution check skipped under cross-compilation)"
+ fi
+ else
+ CXXFLAGS="$CXXFLAGS -std=c++11"
+@@ -365,7 +365,7 @@
+ then
+ msg "using '-std=c++11' for all required C99/C++11 extensions"
+ else
+-die "checking compilation with '-std=c++11' failed"
++msg "assuming C++11 support via -std=c++11 (execution check skipped under cross-compilation)"
+ fi
+ else
+ die "compiler does not support C99/C++11 even with '-std=c++11'"
