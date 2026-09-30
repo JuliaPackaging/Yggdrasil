@@ -1,3 +1,3 @@
 include("../common.jl")
 
-build_pcre2(ARGS, "PCRE2", false)
+build_pcre2(ARGS, "PCRE2", [8])

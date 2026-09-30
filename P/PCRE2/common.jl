@@ -3,7 +3,8 @@
 using BinaryBuilder, Pkg
 using BinaryBuilderBase: sanitize
 
-function build_pcre2(ARGS, name::String, only8::Bool)
+# `widths` lists the code unit widths (8, 16, 32) whose libraries are built
+function build_pcre2(ARGS, name::String, widths::Vector{Int})
     version_string = "10.49"
     version = VersionNumber(version_string)
 
@@ -16,7 +17,7 @@ function build_pcre2(ARGS, name::String, only8::Bool)
     ]
 
     # Bash recipe for building across all platforms
-    script = "ONLY8=$(only8)\n" * raw"""
+    script = "WIDTHS=\"$(join(widths, ' '))\"\n" * raw"""
 cd $WORKSPACE/srcdir/pcre2*
 
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
@@ -27,11 +28,14 @@ fi
 # Force optimization
 export CFLAGS="${CFLAGS} -O3"
 
-# The 8-bit library is always built
 config_flags=()
-if [[ "${ONLY8}" != true ]]; then
-    config_flags+=(--enable-pcre2-16 --enable-pcre2-32)
-fi
+for width in 8 16 32; do
+    if [[ " ${WIDTHS} " == *" ${width} "* ]]; then
+        config_flags+=(--enable-pcre2-${width})
+    else
+        config_flags+=(--disable-pcre2-${width})
+    fi
+done
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --disable-symvers \
@@ -41,13 +45,11 @@ fi
 make -j${nproc}
 make install
 
-# On windows we need libcpre2-8.dll as well
+# On windows we also need libpcre2-${width}.dll
 if [[ ${target} == *mingw* ]]; then
-    ln -s libpcre2-8-0.dll  ${libdir}/libpcre2-8.dll
-    if [[ "${ONLY8}" != true ]]; then
-        ln -s libpcre2-16-0.dll ${libdir}/libpcre2-16.dll
-        ln -s libpcre2-32-0.dll ${libdir}/libpcre2-32.dll
-    fi
+    for width in ${WIDTHS}; do
+        ln -s libpcre2-${width}-0.dll ${libdir}/libpcre2-${width}.dll
+    done
 fi
 """
 
@@ -57,15 +59,7 @@ fi
     push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 
     # The products that we will ensure are always built
-    products = [
-        LibraryProduct("libpcre2-8", :libpcre2_8),
-    ]
-    if !only8
-        append!(products, [
-            LibraryProduct("libpcre2-16", :libpcre2_16),
-            LibraryProduct("libpcre2-32", :libpcre2_32),
-        ])
-    end
+    products = [LibraryProduct("libpcre2-$(width)", Symbol("libpcre2_$(width)")) for width in widths]
 
     llvm_version = v"13.0.1"
 
