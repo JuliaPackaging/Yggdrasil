@@ -110,7 +110,6 @@ void mgjl_tls_init_mem(struct mg_connection *c,
 
 // Sizes of the structs Mongoose.jl mirrors, for a startup sanity check.
 size_t mgjl_sizeof_mgr(void) { return sizeof(struct mg_mgr); }
-size_t mgjl_sizeof_conn(void) { return sizeof(struct mg_connection); }
 size_t mgjl_sizeof_str(void) { return sizeof(struct mg_str); }
 size_t mgjl_sizeof_http_header(void) { return sizeof(struct mg_http_header); }
 size_t mgjl_sizeof_http_message(void) {
