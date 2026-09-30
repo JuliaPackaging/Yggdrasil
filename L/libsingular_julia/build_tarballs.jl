@@ -4,11 +4,11 @@ using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
 name = "libsingular_julia"
-version = v"0.47.16"
+version = v"0.47.17"
 
 # Collection of sources required to build libsingular-julia
 sources = [
-    GitSource("https://github.com/oscar-system/Singular.jl.git", "dfae02c4c58a2591d9a6048daf36f782efa3ea27"),
+    GitSource("https://github.com/oscar-system/Singular.jl.git", "94fd0656ac3bc05f82b50572e2fdb55552312a12"),
 ]
 
 # Bash recipe for building across all platforms
