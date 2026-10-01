@@ -1,15 +1,15 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
-version = v"1.18.4"
+version = v"1.18.6"
 # We bumped the version number because we updated the dependencies (for new architectures)
-ygg_version = v"1.18.7"
+ygg_version = v"1.18.8"
 
 name = "Cairo"
 
 sources = [
-    ArchiveSource("https://cairographics.org/releases/cairo-1.18.4.tar.xz",
-                  "445ed8208a6e4823de1226a74ca319d3600e83f6369f99b14265006599c32ccb"),
+    ArchiveSource("https://cairographics.org/releases/cairo-$(version).tar.xz",
+                  "1c767308174337a74694da0f3ec069c271452163a1ef4540964c50c301f157d4"),
 ]
 
 # Bash recipe for building across all platforms
