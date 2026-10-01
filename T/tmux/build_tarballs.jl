@@ -19,6 +19,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/tmux-*
+# jemalloc_jll uses the default `je_` symbol prefix on macOS
+export CPPFLAGS="-DJEMALLOC_MANGLE"
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-TERM=screen --enable-utf8proc
 make -j${nproc}
 make install
