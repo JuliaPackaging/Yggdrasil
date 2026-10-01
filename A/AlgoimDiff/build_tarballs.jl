@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "AlgoimDiff"
-version = v"1.1.0"
+version = v"1.2.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/jehicken/algoim.git", 
-        "5528fe12c6449d85dcf7960e48ed6e165bfd185b")
+        "c052754f0366591a25f1d0c15fdc77542362e9b6")
 ]
 
 # Bash recipe for building across all platforms
@@ -21,10 +21,10 @@ $CXX -shared -o "${libdir}/libcutquad.${dlext}" cutquad.o -lopenblas
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(;
-    exclude=p->!Sys.islinux(p) || (libc(p) == "musl" && arch(p) == "i686")
-)
-platforms = expand_cxxstring_abis(platforms)
+filtered_platforms = filter(supported_platforms()) do p
+    Sys.islinux(p) && arch(p) == "x86_64"
+end
+platforms = expand_cxxstring_abis(filtered_platforms)
 
 # The products that we will ensure are always built
 products = [
