@@ -1,5 +1,6 @@
 # Ignore intermediate and final build products
 build/
+archive/
 */**/build
 */**/products
 
@@ -7,7 +8,8 @@ build/
 *.swp
 
 # Ignore meta.json files
-meta.json
+*.meta.json
+*.platform.list
 
 .DS_Store
 
