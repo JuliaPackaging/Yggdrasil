@@ -26,12 +26,18 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 # Apply backported patches to the upstream LLVM sources.
-# LLVM installs process-wide signal handlers (and, on Windows, an unhandled-
-# exception filter) when it registers files to remove on crash, e.g. for lld's
-# output file, and when a CrashRecoveryContext is enabled. Embedded in Julia,
-# which synchronises its threads with SIGSEGV, those handlers are fatal: they
-# intercept the host's signals and re-raise them with a different siginfo.
-# Make every such installation a no-op; the library never wants them.
+# - no-process-wide-handlers: LLVM installs process-wide signal handlers (and,
+#   on Windows, an unhandled-exception filter) when it registers files to
+#   remove on crash, e.g. for lld's output file, and when a CrashRecoveryContext
+#   is enabled. Embedded in Julia, which synchronises its threads with SIGSEGV,
+#   those handlers are fatal: they intercept the host's signals and re-raise
+#   them with a different siginfo. Make every such installation a no-op; the
+#   library never wants them.
+# - 214518-i128-datalayout-default: llvm/llvm-project#214518, align i128 to
+#   128 bits by default like clang's `__int128`, so that `i128` kernel
+#   arguments land at the offsets HIP/clang expect.
+# - 215829-amdgpu-fix-si-pre-emit-peephole-scc: llvm/llvm-project#215829,
+#   miscompile fix in si-pre-emit-peephole.
 pushd llvm-project-*
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
