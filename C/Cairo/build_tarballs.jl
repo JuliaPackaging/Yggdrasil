@@ -10,6 +10,7 @@ name = "Cairo"
 sources = [
     ArchiveSource("https://cairographics.org/releases/cairo-$(version).tar.xz",
                   "1c767308174337a74694da0f3ec069c271452163a1ef4540964c50c301f157d4"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -30,6 +31,12 @@ elif [[ "${target}" == "${MACHTYPE}" ]]; then
     # Remove system libexpat to avoid confusion
     rm /usr/lib/libexpat.so*
 fi
+
+# Our MinGW headers are too old to declare `CO_MTA_USAGE_COOKIE`
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/01-mingw-co-mta-usage-cookie.patch
+# `cairo_win32_dwrite_finalize` is called even when DWrite is disabled
+# <https://gitlab.freedesktop.org/cairo/cairo/-/work_items/982>
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/02-dwrite-finalize-guard.patch
 
 if [[ "${target}" == *-freebsd* ]]; then
     # Fix the error: undefined reference to `backtrace_symbols'
