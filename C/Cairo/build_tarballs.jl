@@ -1,15 +1,16 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
-version = v"1.18.4"
+version = v"1.18.6"
 # We bumped the version number because we updated the dependencies (for new architectures)
-ygg_version = v"1.18.7"
+ygg_version = v"1.18.8"
 
 name = "Cairo"
 
 sources = [
-    ArchiveSource("https://cairographics.org/releases/cairo-1.18.4.tar.xz",
-                  "445ed8208a6e4823de1226a74ca319d3600e83f6369f99b14265006599c32ccb"),
+    ArchiveSource("https://cairographics.org/releases/cairo-$(version).tar.xz",
+                  "1c767308174337a74694da0f3ec069c271452163a1ef4540964c50c301f157d4"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -30,6 +31,12 @@ elif [[ "${target}" == "${MACHTYPE}" ]]; then
     # Remove system libexpat to avoid confusion
     rm /usr/lib/libexpat.so*
 fi
+
+# Our MinGW headers are too old to declare `CO_MTA_USAGE_COOKIE`
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/01-mingw-co-mta-usage-cookie.patch
+# `cairo_win32_dwrite_finalize` is called even when DWrite is disabled
+# <https://gitlab.freedesktop.org/cairo/cairo/-/work_items/982>
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/02-dwrite-finalize-guard.patch
 
 if [[ "${target}" == *-freebsd* ]]; then
     # Fix the error: undefined reference to `backtrace_symbols'
