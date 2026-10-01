@@ -8,12 +8,12 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "LLVMExtra"
 repo = "https://github.com/maleadt/LLVM.jl.git"
-version = v"0.0.48"
+version = v"0.0.49"
 
 llvm_versions = [v"15.0.7+12", v"16.0.6+6", v"18.1.7+5", v"20.1.8+0", v"21.1.8+0", v"22.1.8+0"]
 
 sources = [
-    GitSource(repo, "bee0d4831af0c3b5d609b3259a77ff26cf3dcd9a"),
+    GitSource(repo, "00573c86046fd7e141a9a05563feec5c05eb629b"),
 ]
 
 # Bash recipe for building across all platforms
@@ -73,7 +73,7 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
         filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
     end
     ## We only have LLVM builds for AArch64 BSD starting from LLVM 18
-    if version < v"18"
+    if llvm_version < v"18"
         filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
     end
     ## We only have LLVM builds for RISC-V starting from LLVM 19
