@@ -23,12 +23,12 @@ using BinaryBuilder
 # feature-keyword getters that a bundle registry needs to classify what it
 # found.
 name = "CLAPHost"
-version = v"1.2.0"
+version = v"1.3.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/SciML/AudioPlugins.jl.git",
-              "f48574da93f3fac9f3d612c16b60657043320c35"),  # SciML/AudioPlugins.jl main
+              "9f1e627de09bf92a0fa5ec7a6505d307fb6b9b7f"),  # SciML/AudioPlugins.jl v1.7.0
 ]
 
 # Bash recipe for building across all platforms
