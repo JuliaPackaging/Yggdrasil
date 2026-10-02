@@ -140,8 +140,7 @@ void mgjl_set_log_level(int level) { mg_log_level = level; }
 
 // --- ABI introspection ---
 
-// Sizes of the read-only struct mirrors Mongoose.jl keeps, for a startup
-// sanity check.
+// Sizes of the read-only struct mirrors Mongoose.jl keeps, for a startup sanity check.
 size_t mgjl_sizeof_str(void) { return sizeof(struct mg_str); }
 size_t mgjl_sizeof_http_header(void) { return sizeof(struct mg_http_header); }
 size_t mgjl_sizeof_http_message(void) {
