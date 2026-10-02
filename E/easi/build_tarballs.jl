@@ -19,17 +19,17 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/easi*
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/windows.patch
 
-# ASAGI (and with it NetCDF/HDF5) is not available on Windows. Elsewhere it is located with
-# pkg-config, as SeisSol 1.3 does, so that easi's exported targets do not refer to the CMake
-# target asagi::asagi-shared of the ASAGI CMake package.
+# ASAGI is located with pkg-config, as SeisSol 1.3 does, so that easi's exported targets do not
+# refer to the CMake target asagi::asagi-shared of the ASAGI CMake package.
+cmake_args=(-DASAGI=ON
+            -DCMAKE_DISABLE_FIND_PACKAGE_asagi=ON
+            -DNetCDF_INCLUDE_DIR=${includedir})
 if [[ "${target}" == *-mingw* ]]; then
-    cmake_args=(-DASAGI=OFF -DLUA_LIBRARY=${libdir}/lua54.dll)
+    # the NetCDF and Lua libraries are called libnetcdf-<soversion>.dll and lua54.dll on Windows
+    cmake_args+=(-DLUA_LIBRARY=${libdir}/lua54.dll)
 else
-    cmake_args=(-DASAGI=ON
-                -DCMAKE_DISABLE_FIND_PACKAGE_asagi=ON
-                -DLUA_LIBRARY=${libdir}/liblua.${dlext}
-                -DNetCDF_INCLUDE_DIR=${includedir}
-                -DNetCDF_LIBRARY=${libdir}/libnetcdf.${dlext})
+    cmake_args+=(-DLUA_LIBRARY=${libdir}/liblua.${dlext}
+                 -DNetCDF_LIBRARY=${libdir}/libnetcdf.${dlext})
 fi
 
 cmake -B build \
@@ -64,12 +64,12 @@ products = [
 ]
 
 dependencies = [
-    Dependency("ASAGI_jll"; compat = "1.0.1", platforms = filter(!Sys.iswindows, platforms)),
+    Dependency("ASAGI_jll"; compat = "1.0.1"),
     Dependency("CompilerSupportLibraries_jll"; platforms = filter(!Sys.isapple, platforms)),
-    Dependency("HDF5_jll"; compat = "2.2.2", platforms = filter(!Sys.iswindows, platforms)),
+    Dependency("HDF5_jll"; compat = "2.2.2"),
     Dependency("LLVMOpenMP_jll"; platforms = filter(Sys.isapple, platforms)),
     Dependency("Lua_jll"; compat = "~5.4.9"),
-    Dependency("NetCDF_jll"; compat = "401.1000.101", platforms = filter(!Sys.iswindows, platforms)),
+    Dependency("NetCDF_jll"; compat = "401.1000.101"),
     Dependency("yaml_cpp_jll"; compat = "0.9.0"),
 ]
 append!(dependencies, platform_dependencies)
