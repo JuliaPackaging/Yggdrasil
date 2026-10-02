@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "Mongoose"
-version = v"7.23.0"
+version = v"7.23.1"
 
 # Collection of sources required to complete build
 sources = [
