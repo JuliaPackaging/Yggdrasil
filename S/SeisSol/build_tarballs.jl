@@ -50,11 +50,12 @@ python3 -m pip install numpy setuptools ${WORKSPACE}/srcdir/PSpaMM
 # x86_64 (AVX2), PSpaMM on aarch64 (NEON)
 cmake_args=()
 if [[ "${target}" == *-mingw* ]]; then
-    # No ASAGI/NetCDF and no generated kernels on Windows
+    # No generated kernels on Windows. Its NetCDF has no parallel support: see netcdf-serial.patch.
+    # Let CMake find the library, which is called libnetcdf-<soversion>.dll there.
     host_arch=noarch
     gemm_tools=none
     export CXXFLAGS="-D_USE_MATH_DEFINES"
-    cmake_args+=(-DASAGI=OFF -DNETCDF=OFF -DCMAKE_CXX_STANDARD_LIBRARIES=-lws2_32)
+    cmake_args+=(-DASAGI=ON -DNETCDF=ON -DNetCDF_INCLUDE_DIR=${includedir} -DCMAKE_CXX_STANDARD_LIBRARIES=-lws2_32)
 elif [[ "${target}" == x86_64-* ]]; then
     host_arch=hsw
     gemm_tools="LIBXSMM,PSpaMM"
