@@ -86,9 +86,7 @@ dependencies = [
 ]
 
 init_block = raw"""
-if !haskey(ENV, "OPAL_PREFIX")
-    ENV["OPAL_PREFIX"] = artifact_dir
-end
+get!(ENV, "OPAL_PREFIX", artifact_dir)
 """
 
 # Build the tarballs, and possibly a `build.jl` as well.
