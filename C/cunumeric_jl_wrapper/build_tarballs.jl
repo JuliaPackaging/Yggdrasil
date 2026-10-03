@@ -7,9 +7,9 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 include("make_script.jl")
 
 name = "cunumeric_jl_wrapper"
-version = v"26.6.4" 
+version = v"26.6.5" 
 sources = [
-    GitSource("https://github.com/JuliaLegate/cuNumeric.jl.git","50e3f8ed4b92bb2e4b44a90d156f2852f9b086cd"),
+    GitSource("https://github.com/JuliaLegate/cuNumeric.jl.git","ee9695bf50e19295acc21cfcd80d1cafe232233a"),
 ]
 
 MIN_JULIA_VERSION = v"1.10"
@@ -52,7 +52,7 @@ products = [
 ] 
 
 dependencies = [
-    Dependency("cupynumeric_jll"; compat = "~26.6"), # versioning is Year.Month
+    Dependency("cupynumeric_jll"; compat = "~26.6.1"), # versioning is Year.Month
     Dependency("legate_jll"; compat = "~26.6"),
     Dependency("libcxxwrap_julia_jll"; compat="0.14.11"),
     BuildDependency("libjulia_jll"),
