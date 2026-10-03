@@ -1,0 +1,63 @@
+Include the standard headers that are used; libc++ does not provide them transitively.
+https://github.com/SeisSol/SeisSol (upstream PR to be opened)
+
+diff --git a/src/Initializer/Tree/Lut.h b/src/Initializer/Tree/Lut.h
+--- a/src/Initializer/Tree/Lut.h
++++ b/src/Initializer/Tree/Lut.h
+@@ -42,6 +42,9 @@
+ #ifndef INITIALIZER_TREE_LUT_HPP_
+ #define INITIALIZER_TREE_LUT_HPP_
+ 
++#include <array>
++#include <vector>
++
+ #include "LTSTree.h"
+ #include "Layer.h"
+ 
+diff --git a/src/Numerical/ODEInt.h b/src/Numerical/ODEInt.h
+--- a/src/Numerical/ODEInt.h
++++ b/src/Numerical/ODEInt.h
+@@ -6,6 +6,7 @@
+ #include "Kernels/Precision.h"
+ #include "ODEVector.h"
+ #include <cassert>
++#include <vector>
+ 
+ namespace seissol::ode {
+ 
+diff --git a/src/Numerical/ODEVector.h b/src/Numerical/ODEVector.h
+--- a/src/Numerical/ODEVector.h
++++ b/src/Numerical/ODEVector.h
+@@ -3,6 +3,8 @@
+ 
+ #include "Kernels/Precision.h"
+ 
++#include <vector>
++
+ namespace seissol::ode {
+ 
+ /**
+diff --git a/submodules/PUML/Element.h b/submodules/PUML/Element.h
+--- a/submodules/PUML/Element.h
++++ b/submodules/PUML/Element.h
+@@ -13,6 +13,7 @@
+ #ifndef PUML_ELEMENT_H
+ #define PUML_ELEMENT_H
+ 
++#include <array>
+ #include <vector>
+ 
+ #include "Topology.h"
+diff --git a/src/Initializer/BatchRecorders/DataTypes/ConditionalTable.h b/src/Initializer/BatchRecorders/DataTypes/ConditionalTable.h
+index afd4b79..654b28b 100644
+--- a/src/Initializer/BatchRecorders/DataTypes/ConditionalTable.h
++++ b/src/Initializer/BatchRecorders/DataTypes/ConditionalTable.h
+@@ -6,6 +6,8 @@
+ #include "EncodedConstants.h"
+ #include "Table.h"
+ 
++#include <unordered_map>
++
+ namespace seissol::initializer::recording {
+ using ConditionalPointersToRealsTable =
+     std::unordered_map<ConditionalKey, PointersToRealsTable, ConditionalHash<ConditionalKey>>;

@@ -1,0 +1,76 @@
+Build against a netCDF without parallel support (no netcdf_par.h, e.g. on Windows): netCDF meshes and the netCDF loop statistics then report that they are unavailable.
+https://github.com/SeisSol/SeisSol (upstream PR to be opened)
+
+diff --git a/src/Geometry/NetcdfReader.cpp b/src/Geometry/NetcdfReader.cpp
+--- a/src/Geometry/NetcdfReader.cpp
++++ b/src/Geometry/NetcdfReader.cpp
+@@ -16,9 +16,10 @@
+ #ifndef NETCDF_PASSIVE
+ 
+ #include <netcdf.h>
+-#ifdef USE_MPI
++#if defined(USE_MPI) && __has_include(<netcdf_par.h>)
+ #include <netcdf_par.h>
+-#endif // USE_MPI
++#define SEISSOL_NETCDF_PARALLEL
++#endif
+ 
+ #endif // NETCDF_PASSIVE
+ 
+@@ -47,9 +48,11 @@
+   masterRank = -1;
+ 
+   if (commMaster != MPI_COMM_NULL) {
+-#ifdef NETCDF_PASSIVE
++#if defined(NETCDF_PASSIVE)
+     logError() << "netCDF master found with netCDF passive support only";
+-#else  // NETCDF_PASSIVE
++#elif !defined(SEISSOL_NETCDF_PARALLEL)
++    logError() << "Reading netCDF meshes requires a netCDF library with parallel support";
++#else
+     MPI_Comm_rank(commMaster, &masterRank);
+     checkNcError(nc_open_par(meshFile, NC_NETCDF4 | NC_MPIIO, commMaster, MPI_INFO_NULL, &ncFile));
+ #endif // NETCDF_PASSIVE
+@@ -601,7 +604,7 @@
+ 
+ void NetcdfReader::collectiveAccess(int ncFile, int ncVar) {
+ #ifdef USE_MPI
+-#ifndef NETCDF_PASSIVE
++#if !defined(NETCDF_PASSIVE) && defined(SEISSOL_NETCDF_PARALLEL)
+   checkNcError(nc_var_par_access(ncFile, ncVar, NC_COLLECTIVE));
+ #else  // NETCDF_PASSIVE
+   assert(false);
+diff --git a/src/Monitoring/LoopStatistics.cpp b/src/Monitoring/LoopStatistics.cpp
+--- a/src/Monitoring/LoopStatistics.cpp
++++ b/src/Monitoring/LoopStatistics.cpp
+@@ -57,9 +57,10 @@
+ #include <netcdf.h>
+ #include <ostream>
+ #include <sstream>
+-#ifdef USE_MPI
++#if defined(USE_MPI) && __has_include(<netcdf_par.h>)
+ #include <netcdf_par.h>
+-#endif // USE_MPI
++#define SEISSOL_NETCDF_PARALLEL
++#endif
+ #endif // USE_NETCDF
+ 
+ #include "Monitoring/Stopwatch.h"
+@@ -283,7 +284,7 @@
+   if (isLoopStatisticsNetcdfOutputOn) {
+     const auto loopStatFile = outputPrefix + "-loopStat-";
+     const auto rank = MPI::mpi.rank();
+-#if defined(USE_NETCDF) && defined(USE_MPI)
++#if defined(USE_NETCDF) && defined(SEISSOL_NETCDF_PARALLEL)
+     logInfo(rank) << "Starting to write loop statistics samples to disk.";
+     const unsigned nRegions = regions.size();
+     for (unsigned region = 0; region < nRegions; ++region) {
+@@ -390,7 +391,7 @@
+     }
+     logInfo(rank) << "Finished writing loop statistics samples.";
+ #else
+-    logWarning(rank) << "Writing loop statistics requires NetCDF and MPI.";
++    logWarning(rank) << "Writing loop statistics requires NetCDF with parallel support and MPI.";
+ #endif
+   }
+ }
