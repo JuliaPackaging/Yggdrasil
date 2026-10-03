@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 function yggdrasil_version(version::VersionNumber, offset::VersionNumber)
-    max_offset = v"10.100.1000"
+    max_offset = v"1.10.100"
     @assert offset < max_offset
     VersionNumber(
         max_offset.major * version.major + offset.major,
