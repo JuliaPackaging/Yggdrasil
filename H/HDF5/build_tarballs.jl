@@ -47,9 +47,9 @@ if [[ ${target} == x86_64-apple-darwin* || ${target} == x86_64-unknown-freebsd* 
 fi
 
 # `aws_c_s3_jll` has not been built
-ros3_vdf=ON
+ros3_vfd=ON
 if [[ ${target} == i686-w64-* ]]; then
-    ros3_vdf=OFF
+    ros3_vfd=OFF
 fi
 
 cmake_options=(
