@@ -134,6 +134,8 @@ function build_script(standalone=false)
     #   (upstream PR #2345; JuliaGPU/OpenCL.jl#510)
     # - 0012: keep frexp on libclc when vectorizing builtins, avoiding a vector llvm.frexp
     #   miscompile on x86 below AVX2 (upstream PR #2355; JuliaGPU/OpenCL.jl#506)
+    # - 0013: clSetCPUMaxComputeUnitsPOCL, to size the CPU thread pool without changing the
+    #   process environment (upstream PR #2371; JuliaGPU/KernelAbstractions.jl#821)
     for patch in $WORKSPACE/srcdir/patches/pocl/*.patch; do
         atomic_patch -p1 $patch
     done
