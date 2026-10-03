@@ -46,7 +46,7 @@ if [[ ${target} == x86_64-apple-darwin* || ${target} == x86_64-unknown-freebsd* 
     float16=OFF
 fi
 
-# `aws_c_s3_jll` has not been built
+# `aws_c_s3_jll` is not built for i686 Windows
 ros3_vfd=ON
 if [[ ${target} == i686-w64-* ]]; then
     ros3_vfd=OFF
