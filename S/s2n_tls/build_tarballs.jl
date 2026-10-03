@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "s2n_tls"
-version = v"1.7.10"
+version = v"1.7.11"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/aws/s2n-tls.git", "bce022f4195c290175b70e925e08a458221608f0"),
+    GitSource("https://github.com/aws/s2n-tls.git", "b170000016fb44fa4dfdd86ed0b75bd28241e707"),
     DirectorySource("./bundled"),
 ]
 
