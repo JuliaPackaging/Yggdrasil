@@ -139,6 +139,9 @@ function build_script(standalone=false)
     # - 0014: share local memory across WorkitemLoops region replicas, fixing sub-group
     #   collectives after a branch with an early exit (upstream PR #2239, in `main`;
     #   JuliaGPU/OpenCL.jl#526, JuliaGPU/KernelAbstractions.jl#831)
+    # - 0015: include the kernel compiler sources in the kernel cache key, so that rebuilds
+    #   with kernel compiler patches don't reuse the previous build's cached binaries
+    #   (upstream PR #2374)
     for patch in $WORKSPACE/srcdir/patches/pocl/*.patch; do
         atomic_patch -p1 $patch
     done
