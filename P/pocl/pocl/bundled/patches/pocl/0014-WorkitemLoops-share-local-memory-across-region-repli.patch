@@ -1,0 +1,74 @@
+From 8fa5d27329aee3b9f7604043845c2091601fcece Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Fri, 17 Jul 2026 22:12:10 +0200
+Subject: [PATCH] WorkitemLoops: share local memory across region replicas
+
+Work-item loop unrolling and conditional barrier handling replicate parallel regions. If a region contains a compiler-expanded local-memory allocation, lowering the original and cloned calls independently gives each replica different storage. Subgroup operations then read incomplete data after their barrier.
+
+Make peeled and unrolled replicas reuse the allocation call from the original region before local-memory calls are lowered. Add a regression that forces region unrolling around a subgroup shuffle and fails with both loops handlers before the fix.
+---
+ lib/llvmopencl/WorkitemLoops.cc | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+
+diff --git a/lib/llvmopencl/WorkitemLoops.cc b/lib/llvmopencl/WorkitemLoops.cc
+index fae889eca..518ffb17e 100644
+--- a/lib/llvmopencl/WorkitemLoops.cc
++++ b/lib/llvmopencl/WorkitemLoops.cc
+@@ -133,6 +133,8 @@ private:
+   void fixMultiRegionVariables(ParallelRegion *Region);
+   void addContextSaveRestore(llvm::Instruction *instruction);
+   void releaseParallelRegions();
++  void shareReplicatedLocalMemAllocas(
++      ParallelRegion &Region, llvm::ValueToValueMapTy &ReferenceMap);
+ 
+   // Returns an instruction in the entry block which computes the
+   // total size of work-items in the work-group. If it doesn't
+@@ -451,6 +453,29 @@ void WorkitemLoopsImpl::releaseParallelRegions() {
+   }
+ }
+ 
++void WorkitemLoopsImpl::shareReplicatedLocalMemAllocas(
++    ParallelRegion &Region, ValueToValueMapTy &ReferenceMap) {
++  for (BasicBlock *BB : Region) {
++    for (Instruction &I : *BB) {
++      auto *Original = dyn_cast<CallInst>(&I);
++      if (Original == nullptr || Original->getCalledFunction() == nullptr ||
++          (Original->getCalledFunction() != LocalMemAllocaFuncDecl &&
++           Original->getCalledFunction() != WorkGroupAllocaFuncDecl))
++        continue;
++
++      auto *Replica = dyn_cast_or_null<CallInst>(ReferenceMap.lookup(Original));
++      if (Replica == nullptr || Replica == Original)
++        continue;
++
++      // Region replicas execute different work-items of the same work group.
++      // They must share local memory originating from the same allocation.
++      Replica->replaceAllUsesWith(Original);
++      ReferenceMap[Original] = Original;
++      Replica->eraseFromParent();
++    }
++  }
++}
++
+ bool WorkitemLoopsImpl::processFunction(Function &F) {
+ 
+   releaseParallelRegions();
+@@ -545,6 +570,7 @@ bool WorkitemLoopsImpl::processFunction(Function &F) {
+       LLVM_DEBUG(dbgs() << "Conditional region, peeling the first iteration\n");
+ 
+       ParallelRegion *replica = PRegion->replicate(reference_map, ".peeled_wi");
++      shareReplicatedLocalMemAllocas(*PRegion, reference_map);
+       replica->chainAfter(PRegion);
+       replica->purge();
+ 
+@@ -586,6 +612,7 @@ bool WorkitemLoopsImpl::processFunction(Function &F) {
+         for (unsigned c = 1; c < UnrollCount; ++c) {
+           ParallelRegion *UnrolledPR =
+               PRegion->replicate(reference_map, ".unrolled_wi");
++          shareReplicatedLocalMemAllocas(*PRegion, reference_map);
+           UnrolledPR->chainAfter(prev);
+           prev = UnrolledPR;
+           lastBB = UnrolledPR->exitBB();
+-- 
+2.56.0
+
