@@ -4,12 +4,12 @@ const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MUMPS64"
-version = v"5.9.0"
-ygg_version = v"5.9.1"
+version = v"5.9.1"
+ygg_version = v"5.9.2"
 
 sources = [
   ArchiveSource("https://mumps-solver.org/MUMPS_$(version).tar.gz",
-                "02c6efdb91749ec0f82351d40f3f860547272a1eb1d899126a4265b4d6bcc4ca")
+                "659c9b57646b5a003ac618baa1faf9dd2044e46c732b3daaccbc7158003e1b46")
 ]
 
 # ILP64 parallel MUMPS: -fdefault-integer-8 / -DINTSIZE64, BLAS/LAPACK via

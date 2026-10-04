@@ -55,16 +55,28 @@ function mvdir(src, dest)
     end
 end
 
-function download_cached_binaries(download_dir)
+function download_cached_binaries(download_dir, build_meta_dir)
     NAME = ENV["NAME"]
     PROJECT = ENV["PROJECT"]
     BUILD_ID = ENV["BUILD_ID"]
+
     artifacts = "$(PROJECT)/products/$(NAME)*.tar.*"
     cmd = `buildkite-agent artifact download --build $BUILD_ID $artifacts $download_dir`
     if !success(pipeline(cmd; stderr))
         error("Download failed")
     end
     mvdir(joinpath(download_dir, PROJECT, "products"), download_dir)
+
+    # Keep build metadata out of `download_dir`, which is uploaded as release assets.
+    meta = "$(PROJECT)/products/$(NAME)*.meta.json"
+    cmd = `buildkite-agent artifact download --build $BUILD_ID $meta $build_meta_dir`
+    downloaded = joinpath(build_meta_dir, PROJECT, "products")
+    # Older builds have no sidecars; BinaryBuilder will inspect their tarballs instead.
+    if success(pipeline(cmd; stderr)) && isdir(downloaded)
+        mvdir(downloaded, build_meta_dir)
+    else
+        @info "No build metadata sidecars in this build; tarballs will be unpacked instead"
+    end
 end
 
 function download_binaries_from_release(download_dir)
@@ -98,16 +110,18 @@ for json_obj in [merged, objs_unmerged...]
     json_obj["dependencies"] = Dependency[dep for dep in json_obj["dependencies"] if BinaryBuilderBase.is_runtime_dependency(dep)]
 end
 skip_build = get(ENV, "SKIP_BUILD", "false") == "true"
+# This directory is separate because `download_dir` is uploaded to GitHub.
+build_meta_dir = mktempdir()
 mktempdir() do download_dir
     # Grab the binaries for our package
     if skip_build
         # We only want to update the wrappers, so download the tarballs from the
-        # latest build.
+        # latest build. Released tarballs do not include metadata sidecars.
         download_binaries_from_release(download_dir)
     else
         # We are going to publish the new binaries we've just baked, take them
         # out of the cache while they're hot.
-        download_cached_binaries(download_dir)
+        download_cached_binaries(download_dir, build_meta_dir)
     end
 
     # Push up the JLL package (pointing to as-of-yet missing tarballs)
@@ -119,7 +133,7 @@ mktempdir() do download_dir
     # This loop over the unmerged objects necessary in the event that we have multiple packages being built by a single build_tarballs.jl
     for (i,json_obj) in enumerate(objs_unmerged)
         from_scratch = (i == 1)
-        BinaryBuilder.rebuild_jll_package(json_obj; download_dir, upload_prefix, verbose, from_scratch)
+        BinaryBuilder.rebuild_jll_package(json_obj; download_dir, build_meta_dir, upload_prefix, verbose, from_scratch)
     end
 
     # Restore Artifacts.toml

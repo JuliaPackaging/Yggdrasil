@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "LibFramehopUnwind"
-version = v"0.1.2"
+version = v"0.1.3"
 
 # Collection of sources required to complete build.
 # The crate has no release tags yet, so pin the source to a specific commit.
 sources = [
     GitSource("https://github.com/gbaraldi/framehopunwind.git",
-              "745330dc336f4237cac36db79b5c9b6bc15c0232"),
+              "9c7fefc911d72f68a579b6ebe4c9eae5c4b84d25"),
 ]
 
 # Bash recipe for building across all platforms
@@ -39,6 +39,8 @@ install -Dvm 0644 "${RELDIR}/libframehopunwind.a" "${prefix}/lib/libframehopunwi
 install -Dvm 0644 include/framehopunwind.h "${includedir}/framehopunwind.h"
 
 install_license LICENSE-MIT LICENSE-APACHE
+install -Dvm 0644 vendor/framehop/LICENSE-MIT "${prefix}/share/licenses/LibFramehopUnwind/framehop/LICENSE-MIT"
+install -Dvm 0644 vendor/framehop/LICENSE-APACHE "${prefix}/share/licenses/LibFramehopUnwind/framehop/LICENSE-APACHE"
 """
 
 # These are the platforms we will build for by default, unless further

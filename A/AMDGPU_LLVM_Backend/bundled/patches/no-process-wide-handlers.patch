@@ -1,0 +1,113 @@
+diff --git a/llvm/lib/Support/CrashRecoveryContext.cpp b/llvm/lib/Support/CrashRecoveryContext.cpp
+index 493ba951fd3e..60c565d4b441 100644
+--- a/llvm/lib/Support/CrashRecoveryContext.cpp
++++ b/llvm/lib/Support/CrashRecoveryContext.cpp
+@@ -316,24 +316,12 @@ static LLVM_THREAD_LOCAL const void* sCurrentExceptionHandle;
+ 
+ static void
+ installExceptionOrSignalHandlers(bool NeedsPOSIXUtilitySignalHandling) {
+-  // We can set up vectored exception handling now.  We will install our
+-  // handler as the front of the list, though there's no assurances that
+-  // it will remain at the front (another call could install itself before
+-  // our handler).  This 1) isn't likely, and 2) shouldn't cause problems.
+-  PVOID handle = ::AddVectoredExceptionHandler(1, ExceptionHandler);
+-  sCurrentExceptionHandle = handle;
++  // Embedded in a host process: no process-wide exception handler. Recovery
++  // from exitLld() and friends goes through HandleExit's longjmp, not here.
++  (void)ExceptionHandler;
+ }
+ 
+-static void uninstallExceptionOrSignalHandlers() {
+-  PVOID currentHandle = const_cast<PVOID>(sCurrentExceptionHandle);
+-  if (currentHandle) {
+-    // Now we can remove the vectored exception handler from the chain
+-    ::RemoveVectoredExceptionHandler(currentHandle);
+-
+-    // Reset the handle in our thread-local set.
+-    sCurrentExceptionHandle = NULL;
+-  }
+-}
++static void uninstallExceptionOrSignalHandlers() {}
+ 
+ #else // !_WIN32
+ 
+@@ -398,29 +386,14 @@ static void CrashRecoverySignalHandler(int Signal) {
+ 
+ static void
+ installExceptionOrSignalHandlers(bool NeedsPOSIXUtilitySignalHandling) {
+-  // Setup the signal handler.
+-  struct sigaction Handler;
+-  Handler.sa_handler = CrashRecoverySignalHandler;
+-  Handler.sa_flags = 0;
+-  sigemptyset(&Handler.sa_mask);
+-
+-  for (unsigned i = 0; i != NumSignals; ++i) {
+-    if (NeedsPOSIXUtilitySignalHandling) {
+-      // Don't install the new handler if the signal disposition is SIG_IGN.
+-      struct sigaction act;
+-      if (sigaction(Signals[i], NULL, &act) == 0 && act.sa_handler != SIG_IGN)
+-        sigaction(Signals[i], &Handler, &PrevActions[i]);
+-    } else {
+-      sigaction(Signals[i], &Handler, &PrevActions[i]);
+-    }
+-  }
++  // Embedded in a host process (Julia) that owns the signal dispositions: no
++  // handlers. Recovery from exitLld() and friends goes through HandleExit's
++  // longjmp, not here.
++  (void)CrashRecoverySignalHandler;
++  (void)PrevActions;
+ }
+ 
+-static void uninstallExceptionOrSignalHandlers() {
+-  // Restore the previous signal handlers.
+-  for (unsigned i = 0; i != NumSignals; ++i)
+-    sigaction(Signals[i], &PrevActions[i], nullptr);
+-}
++static void uninstallExceptionOrSignalHandlers() {}
+ 
+ #endif // !_WIN32
+ 
+diff --git a/llvm/lib/Support/Unix/Signals.inc b/llvm/lib/Support/Unix/Signals.inc
+index 772fa37b004a..c57783a219ac 100644
+--- a/llvm/lib/Support/Unix/Signals.inc
++++ b/llvm/lib/Support/Unix/Signals.inc
+@@ -322,6 +322,10 @@ static void CreateSigAltStack() {}
+ 
+ static void RegisterHandlers(
+     bool NeedsPOSIXUtilitySignalHandling = false) { // Not signal-safe.
++  // This LLVM is embedded in a host process (Julia) that owns the process's
++  // signal dispositions: never install handlers. Callbacks and files to remove
++  // are still recorded, they just never run on a signal.
++  return;
+   // The mutex prevents other threads from registering handlers while we're
+   // doing it. We also have to protect the handlers and their count because
+   // a signal handler could fire while we're registering handlers.
+diff --git a/llvm/lib/Support/Windows/Signals.inc b/llvm/lib/Support/Windows/Signals.inc
+index ec55af04c9c2..a3da7a3d9e65 100644
+--- a/llvm/lib/Support/Windows/Signals.inc
++++ b/llvm/lib/Support/Windows/Signals.inc
+@@ -403,9 +403,10 @@ static void RegisterHandler() {
+   // can't proceed until the globals are updated.
+   EnterCriticalSection(&CriticalSection);
+ 
++  // Embedded in a host process (Julia) that owns these: install nothing.
+   RegisteredUnhandledExceptionFilter = true;
+-  OldFilter = SetUnhandledExceptionFilter(LLVMUnhandledExceptionFilter);
+-  SetConsoleCtrlHandler(LLVMConsoleCtrlHandler, TRUE);
++  (void)LLVMUnhandledExceptionFilter;
++  (void)LLVMConsoleCtrlHandler;
+ 
+   // IMPORTANT NOTE: Caller must call LeaveCriticalSection(&CriticalSection) or
+   // else multi-threading problems will ensue.
+@@ -451,8 +452,9 @@ void sys::DontRemoveFileOnSignal(StringRef Filename) {
+ }
+ 
+ void sys::DisableSystemDialogsOnCrash() {
+-  // Crash to stack trace handler on abort.
+-  signal(SIGABRT, HandleAbort);
++  // Embedded in a host process (Julia): leave SIGABRT and the error mode alone.
++  (void)HandleAbort;
++  return;
+ 
+   // The following functions are not reliably accessible on MinGW.
+ #ifdef _MSC_VER

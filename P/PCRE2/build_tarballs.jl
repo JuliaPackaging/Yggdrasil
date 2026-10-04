@@ -5,7 +5,7 @@ using BinaryBuilderBase: sanitize
 
 name = "PCRE2"
 
-version_string = "10.47"
+version_string = "10.49"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
@@ -13,7 +13,7 @@ sources = [
     # We use an archive because (a) the archives are signed, hence
     # presumably immutable, and (b) the git source uses submodules.
     ArchiveSource("https://github.com/PCRE2Project/pcre2/releases/download/pcre2-$(version.major).$(version.minor)/pcre2-$(version.major).$(version.minor).tar.bz2",
-                  "47fe8c99461250d42f89e6e8fdaeba9da057855d06eb7fc08d9ca03fd08d7bc7"),
+                  "53c156e1ba416a20da8e65395daa132da0d80e76910424caca3fcdae7831d384"),
 ]
 
 # Bash recipe for building across all platforms
@@ -63,7 +63,7 @@ llvm_version = v"13.0.1"
 dependencies = [
     BuildDependency(PackageSpec(name="LLVMCompilerRT_jll",
                                 uuid="4e17d02c-6bf5-513e-be62-445f41c75a11",
-                                version=llvm_version);
+                                version=string(llvm_version));
                     platforms=filter(p -> sanitize(p)=="memory", platforms)),
 
 ]

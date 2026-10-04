@@ -1,0 +1,14 @@
+--- a/src/win32/cairo-win32-system.c
++++ b/src/win32/cairo-win32-system.c
+@@ -52,6 +52,11 @@
+ 
+ #include <stdbool.h>
+ 
++/* Older MinGW headers do not declare CO_MTA_USAGE_COOKIE */
++#ifdef __MINGW32__
++#define CO_MTA_USAGE_COOKIE HANDLE
++#endif
++
+ typedef HRESULT (__stdcall *pCoIncrementMTAUsage_t) (CO_MTA_USAGE_COOKIE*);
+ typedef HRESULT (__stdcall *pCoDecrementMTAUsage_t) (CO_MTA_USAGE_COOKIE);
+ 

@@ -1,0 +1,19 @@
+GCC's -Wreturn-type does not consider a switch over every enumerator to be
+exhaustive, so `context::fpa_rounding_mode()` trips -Werror=return-type.
+Turn the last case into `default:` so the switch is exhaustive for GCC too
+without introducing unreachable code (which clang's warning set dislikes).
+
+Reported upstream as <https://github.com/Z3Prover/z3/issues/10584>.
+
+diff --git a/src/api/c++/z3++.h b/src/api/c++/z3++.h
+--- a/src/api/c++/z3++.h
++++ b/src/api/c++/z3++.h
+@@ -4152,7 +4152,7 @@
+         case RNE: return expr(*this, Z3_mk_fpa_rne(m_ctx));
+         case RTP: return expr(*this, Z3_mk_fpa_rtp(m_ctx));
+         case RTN: return expr(*this, Z3_mk_fpa_rtn(m_ctx));
+-        case RTZ: return expr(*this, Z3_mk_fpa_rtz(m_ctx));
++        default:  return expr(*this, Z3_mk_fpa_rtz(m_ctx));
+         }
+     }
+ 

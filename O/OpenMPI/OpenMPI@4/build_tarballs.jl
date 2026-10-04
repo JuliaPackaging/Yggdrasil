@@ -5,7 +5,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "OpenMPI"
 version = v"4.1.8"
-ygg_version = v"4.1.9"
+ygg_version = v"4.1.10"
 sources = [
     ArchiveSource("https://download.open-mpi.org/release/open-mpi/v$(version.major).$(version.minor)/openmpi-$(version).tar.gz",
                   "fb41086bbed9300baa2f3d7572491facfe5257412fa524ec5a396aa9101d5c62"),
@@ -86,7 +86,7 @@ dependencies = [
 ]
 
 init_block = raw"""
-ENV["OPAL_PREFIX"] = artifact_dir
+get!(ENV, "OPAL_PREFIX", artifact_dir)
 """
 
 # Build the tarballs, and possibly a `build.jl` as well.

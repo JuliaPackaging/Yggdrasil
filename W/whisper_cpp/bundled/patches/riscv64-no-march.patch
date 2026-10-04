@@ -1,0 +1,22 @@
+BinaryBuilder's compiler wrappers reject an explicit -march; drop it on riscv64
+and let the toolchain default apply. Not changed upstream as of v1.9.3.
+--- a/ggml/src/ggml-cpu/CMakeLists.txt
++++ b/ggml/src/ggml-cpu/CMakeLists.txt
+@@ -498,7 +498,7 @@
+                 endif()
+             endif()
+ 
+-            list(APPEND ARCH_FLAGS "-march=${MARCH_STR}" -mabi=lp64d)
++            list(APPEND ARCH_FLAGS -mabi=lp64d)
+         else()
+             # Begin with the lowest baseline
+             set(ARCH_DEFINITIONS "")
+@@ -506,7 +506,7 @@
+             if (GGML_INTERNAL_RVV)
+                 message(STATUS "RVV enabled")
+                 list(APPEND ARCH_DEFINITIONS GGML_USE_RVV)
+-                list(APPEND ARCH_FLAGS -march=rv64gc_v -mabi=lp64d)
++                list(APPEND ARCH_FLAGS -mabi=lp64d)
+             endif()
+ 
+             ggml_add_cpu_backend_features(${GGML_CPU_NAME} riscv ${ARCH_DEFINITIONS})

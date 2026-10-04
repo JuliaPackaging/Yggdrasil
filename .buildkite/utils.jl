@@ -32,7 +32,7 @@ agent() = Dict(
 plugins() = Pair{String, Union{Nothing, Dict}}[
     "JuliaCI/julia#v1" => Dict(
         "persist_depot_dirs" => "packages,artifacts,compiled",
-        "version" => "1.12.4",
+        "version" => "1.12.7",
         "artifacts_size_limit" => string(120 << 30), # 120 GiB
     ),
     "JuliaCI/merge-commit" => nothing
@@ -65,6 +65,7 @@ function build_step(NAME, PLATFORM, PROJECT, IS_PR)
         "BINARYBUILDER_USE_CCACHE" => "true",
         "BINARYBUILDER_STORAGE_DIR" => "/cache/yggdrasil",
         "BINARYBUILDER_CCACHE_DIR" => "/sharedcache/ccache",
+        "BINARYBUILDER_CLONES_DIR" => "/sharedcache/clones",
         "BINARYBUILDER_NPROC" => "16", # Limit parallelism somewhat to avoid OOM for LLVM
         "AWS_DEFAULT_REGION" => "us-east-1",
     ))
@@ -81,7 +82,9 @@ function build_step(NAME, PLATFORM, PROJECT, IS_PR)
         :commands => [script],
         :env => build_env,
         :artifacts => [
-            "**/products/$NAME*.tar.*"
+            "**/products/$NAME*.tar.*",
+            # Reuse the hashes and product locations computed while packaging.
+            "**/products/$NAME*.meta.json",
         ],
     )
 end
@@ -94,14 +97,13 @@ function trigger_registration_step(NAME, PROJECT, SKIP_BUILD, NUM_PLATFORMS)
     if SKIP_BUILD
         register_env["SKIP_BUILD"] = "true"
     end
-    # For packages with a large number of platforms, trying to upload several release
-    # artifacts at once with `ghr` results in exceeding GitHub's API secondary rate limits.
+    # Trying to upload too many release artifacts at once with `ghr` results in exceeding
+    # GitHub's API secondary rate limits.
     # Ref: <https://github.com/JuliaPackaging/BinaryBuilder.jl/pull/1334>.
-    if NUM_PLATFORMS > 80
-        concurrency = 4
-        @info "Reducing ghr concurrency" NAME NUM_PLATFORMS concurrency
-        register_env["BINARYBUILDER_GHR_CONCURRENCY"] = string(concurrency)
-    end
+    # The registration gate admits three jobs, so cap each upload at four requests.
+    concurrency = 4
+    @info "Setting ghr concurrency" NAME concurrency
+    register_env["BINARYBUILDER_GHR_CONCURRENCY"] = string(concurrency)
 
     # Registration needs the `GITHUB_TOKEN` Buildkite secret, which is only
     # readable from the dedicated `yggdrasil-register` pipeline.  Keeping it out

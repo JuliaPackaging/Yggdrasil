@@ -13,7 +13,9 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 # argument (false here). See ../common.jl for the full rationale.
 
 name = "pocl_next"
-version = v"7.2.0"
+# upstream v7.2 plus our patch series; 7.2.1 because the series adds API
+# (cl_pocl_cpu_compute_units) that users need to be able to require
+version = v"7.2.1"
 llvm_version = v"22.1.1"
 macos_sdk_version = "11.0"
 
@@ -22,12 +24,12 @@ macos_sdk_version = "11.0"
 # Collection of sources required to complete build
 sources = [
     DirectorySource("./bundled"),
-    GitSource("https://github.com/JuliaGPU/pocl",
-              "63c20286812d392031bbc6ee3c8add9ea2d32744"),
+    GitSource("https://github.com/pocl/pocl",
+              "888c9774b94590fff1afef003154ca2c0ea66605"), # tag v7.2
     # vendored SPIR-V translator, built as a static library against our LLVM (see
     # common.jl); this is the latest LLVM-22.1 maintenance revision.
     GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git",
-              "c88a2e4a1ec77f7adc8916940afd9754c3a30fab"),
+              "0e67244861402a51b071414d7cb231a052b1ce03"),
 ]
 
 #=
@@ -136,5 +138,7 @@ for (i,build) in enumerate(builds)
                    [build.platform], products, build.dependencies;
                    build.preferred_gcc_version,
                    preferred_llvm_version=Base.thismajor(llvm_version),
-                   julia_compat="1.6", init_block=init_block())
+                   # libpocl needs the libgcc_s of GCC 12 (for its FP16 helpers), which Julia
+                   # bundles since 1.8; 1.10 is the oldest version the users of these JLLs support
+                   julia_compat="1.10", init_block=init_block())
 end

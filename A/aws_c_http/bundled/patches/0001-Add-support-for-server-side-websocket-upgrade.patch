@@ -1,27 +1,11 @@
-From 6769dc80f0b2954a80a6ae1b93b3cc621fbd7568 Mon Sep 17 00:00:00 2001
-From: Jacob Quinn <quinn.jacobd@gmail.com>
-Date: Tue, 18 Mar 2025 21:48:25 -0600
-Subject: [PATCH] Add support for server-side websocket upgrade
-
----
- include/aws/http/private/h1_encoder.h     |   1 +
- include/aws/http/private/websocket_impl.h |  11 ++
- include/aws/http/websocket.h              |  85 ++++++++++++++
- source/h1_connection.c                    |   3 +-
- source/h1_encoder.c                       |   2 +
- source/websocket.c                        | 136 ++++++++++++++++++++++
- source/websocket_bootstrap.c              |   8 +-
- tests/test_connection_manager.c           |   6 +-
- 8 files changed, 240 insertions(+), 12 deletions(-)
-
 diff --git a/include/aws/http/private/h1_encoder.h b/include/aws/http/private/h1_encoder.h
-index 8f82b23..cbcc97d 100644
+index e09b970..0b509a8 100644
 --- a/include/aws/http/private/h1_encoder.h
 +++ b/include/aws/http/private/h1_encoder.h
-@@ -48,6 +48,7 @@ struct aws_h1_encoder_message {
-     uint64_t content_length;
+@@ -58,6 +58,7 @@ struct aws_h1_encoder_message {
      bool has_connection_close_header;
      bool has_chunked_encoding_header;
+     bool has_manual_data_writes;
 +    bool is_switching_protocols;
  };
  
@@ -158,7 +142,7 @@ index 39703b4..5dc7bed 100644
  AWS_POP_SANE_WARNING_LEVEL
  
 diff --git a/source/h1_connection.c b/source/h1_connection.c
-index 40839d2..6c68c8b 100644
+index 106b04a..c5bd77e 100644
 --- a/source/h1_connection.c
 +++ b/source/h1_connection.c
 @@ -621,7 +621,8 @@ static void s_stream_complete(struct aws_h1_stream *stream, int error_code) {
@@ -172,10 +156,10 @@ index 40839d2..6c68c8b 100644
              error_code = AWS_ERROR_HTTP_PROTOCOL_SWITCH_FAILURE;
              s_shutdown_due_to_error(connection, error_code);
 diff --git a/source/h1_encoder.c b/source/h1_encoder.c
-index aecc019..2d34898 100644
+index a441c34..e1e81f4 100644
 --- a/source/h1_encoder.c
 +++ b/source/h1_encoder.c
-@@ -363,6 +363,8 @@ int aws_h1_encoder_message_init_from_response(
+@@ -393,6 +393,8 @@ int aws_h1_encoder_message_init_from_response(
  
      struct aws_byte_cursor status_text = aws_byte_cursor_from_c_str(aws_http_status_text(status_int));
  
@@ -371,23 +355,3 @@ index 6c66c85..367f5be 100644
      struct aws_byte_cursor sec_websocket_key,
      struct aws_byte_buf *out_buf,
      struct aws_allocator *alloc) {
-diff --git a/tests/test_connection_manager.c b/tests/test_connection_manager.c
-index 9fe82ae..d4d19a5 100644
---- a/tests/test_connection_manager.c
-+++ b/tests/test_connection_manager.c
-@@ -161,11 +161,7 @@ static int s_cm_tester_init(struct cm_tester_options *options) {
-         clock_fn = options->mock_table->aws_high_res_clock_get_ticks;
-     }
- 
--    struct aws_event_loop_group_options elg_options = {
--        .loop_count = 1,
--        .clock_override = clock_fn,
--    };
--    tester->event_loop_group = aws_event_loop_group_new(tester->allocator, &elg_options);
-+    tester->event_loop_group = aws_event_loop_group_new(tester->allocator, clock_fn, 1, NULL, NULL, NULL);
- 
-     struct aws_host_resolver_default_options resolver_options = {
-         .el_group = tester->event_loop_group,
--- 
-2.39.5 (Apple Git-154)
-

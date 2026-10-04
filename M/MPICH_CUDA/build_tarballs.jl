@@ -7,11 +7,11 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 
 name = "MPICH_CUDA"
-version = v"5.0.1"
+version = v"5.0.2"
 
 sources = [
     ArchiveSource("https://www.mpich.org/static/downloads/$(version)/mpich-$(version).tar.gz",
-                  "8c1832a13ddacf071685069f5fadfd1f2877a29e1a628652892c65211b1f3327"),
+                  "928c2f18d350a91443fe8024ad01ce2c6009e9c551e0a73e797fc567f119137d"),
 ]
 
 script = raw"""

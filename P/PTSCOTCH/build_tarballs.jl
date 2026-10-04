@@ -6,43 +6,60 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "PTSCOTCH"
-version = v"7.0.6"
-scotch_jll_version = v"7.0.4"
+version = v"7.0.11"
+scotch_jll_version = version
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://gitlab.inria.fr/scotch/scotch", "82ec87f558f4acb7ccb69a079f531be380504c92"),
+    GitSource("https://gitlab.inria.fr/scotch/scotch", "626b88ce70edabb993bbee463f6c28ae2899af69"),
+    # conda-forge patches for cross-building
+    GitSource("https://github.com/conda-forge/scotch-feedstock", "73cc602e57759cd4a12823586aa46e29d7a7e6f7"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/scotch*
+cd ${WORKSPACE}/srcdir/scotch
 
-# https://github.com/conda-forge/scotch-feedstock
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-  atomic_patch -p1 ${f}
-done
+# Apply conda-forge patches
+atomic_patch -p1 $WORKSPACE/srcdir/scotch-feedstock/recipe/0001-put-metis-headers-in-include-scotch.patch
+atomic_patch -p1 $WORKSPACE/srcdir/scotch-feedstock/recipe/0002-fix-ptesmumps.h.patch
+atomic_patch -p1 $WORKSPACE/srcdir/scotch-feedstock/recipe/0003-win-fix-ssize_t.patch
+atomic_patch -p1 $WORKSPACE/srcdir/scotch-feedstock/recipe/0004-win-fix-context.c.patch
+atomic_patch -p1 $WORKSPACE/srcdir/scotch-feedstock/recipe/0005-use-external-dummysizes.patch
+atomic_patch -p1 $WORKSPACE/srcdir/scotch-feedstock/recipe/0006-win-fix-graph-match-scan.patch
+atomic_patch -p1 $WORKSPACE/srcdir/scotch-feedstock/recipe/0007-allow-overriding-pthread_mutex_t-size.patch
 
-# We don't want to break the ABI if we have a new release.
-sed s/'set_target_properties(scotch PROPERTIES VERSION'/'#set_target_properties(scotch PROPERTIES VERSION'/ -i src/libscotch/CMakeLists.txt
-sed s/'  ${SCOTCH_VERSION}.${SCOTCH_RELEASE}.${SCOTCH_PATCHLEVEL})'/'#  ${SCOTCH_VERSION}.${SCOTCH_RELEASE}.${SCOTCH_PATCHLEVEL})'/ -i src/libscotch/CMakeLists.txt
-sed s/'    VERSION ${SCOTCH_VERSION}.${SCOTCH_RELEASE}.${SCOTCH_PATCHLEVEL}'/'#    VERSION ${SCOTCH_VERSION}.${SCOTCH_RELEASE}.${SCOTCH_PATCHLEVEL}'/ -i src/libscotch/CMakeLists.txt
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mpi-constants.patch
+
+################################################################################
+
+# SCOTCH builds helper programs `dummysizes` and `ptdummysizes`, and runs them to
+# extract sizes of datatypes. This does not work when cross-building.
+# We build them ahead of time with the host compiler.
 
 mkdir -p src/dummysizes/build-host
-cd src/dummysizes/build-host
-cp ${WORKSPACE}/srcdir/patches/CMakeLists-dummysizes.txt ../CMakeLists.txt
+cd src/dummysizes
+cp ${WORKSPACE}/srcdir/patches/CMakeLists-dummysizes.txt CMakeLists.txt
 
-CC=${CC_BUILD} cmake .. \
-    -DBUILD_PTSCOTCH=ON \
+OPTIONS=(
+    -DBUILD_PTSCOTCH=ON
     -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN}
+    -DINTSIZE="32"
+    -DSCOTCH_PATCHLEVEL=11
+    -DSCOTCH_RELEASE=0
+    -DSCOTCH_VERSION=7
+    -DTHREADS=ON
+)
+cmake -B build-host ${OPTIONS[@]}
+cmake --build build-host --parallel ${nproc}
 
-# make -j${nproc}
-make
+################################################################################
 
-cd ${WORKSPACE}/srcdir/scotch*
-mkdir build
-cd build
+# Now build PT-SCOTCH
+
+cd ${WORKSPACE}/srcdir/scotch
 
 FLAGS=""
 if [[ "${target}" == *linux* ]]; then
@@ -55,31 +72,42 @@ if [[ "${target}" == *freebsd* ]]; then
     FLAGS="-Dcpu_set_t=cpuset_t -D__BSD_VISIBLE"
 fi
 
-CFLAGS=$FLAGS cmake .. \
-    -DMPI_RUN_RESULT_C_libver_mpi_normal=1 \
-    -DMPI_RUN_RESULT_C_libver_mpi_normal__TRYRUN_OUTPUT="" \
-    -DCMAKE_VERBOSE_MAKEFILE=ON \
-    -DBUILD_SHARED_LIBS=ON \
-    -DCMAKE_INSTALL_PREFIX=$prefix \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DINTSIZE="32" \
-    -DTHREADS=ON \
-    -DMPI_THREAD_MULTIPLE=ON \
-    -DBUILD_PTSCOTCH=ON \
-    -DBUILD_LIBESMUMPS=ON \
-    -DBUILD_LIBSCOTCHMETIS=ON \
-    -DBUILD_DUMMYSIZES=OFF \
+OPTIONS=(
+    # SCOTCH forces `MPI_DETERMINE_LIBRARY_VERSION`, which `FindMPI` implements
+    # with `try_run`. Pre-seed the results for every MPI language component,
+    # otherwise CMake bails out when cross-compiling.
+    -DMPI_RUN_RESULT_C_libver_mpi_normal=1
+    -DMPI_RUN_RESULT_C_libver_mpi_normal__TRYRUN_OUTPUT=""
+    # `FindMPI` picks whichever Fortran binding is the "highest" available, so
+    # seed all three candidates
+    -DMPI_RUN_RESULT_Fortran_libver_mpi_F08_MODULE=1
+    -DMPI_RUN_RESULT_Fortran_libver_mpi_F08_MODULE__TRYRUN_OUTPUT=""
+    -DMPI_RUN_RESULT_Fortran_libver_mpi_F90_MODULE=1
+    -DMPI_RUN_RESULT_Fortran_libver_mpi_F90_MODULE__TRYRUN_OUTPUT=""
+    -DMPI_RUN_RESULT_Fortran_libver_mpi_F77_HEADER=1
+    -DMPI_RUN_RESULT_Fortran_libver_mpi_F77_HEADER__TRYRUN_OUTPUT=""
+    -DBUILD_LIBESMUMPS=ON
+    -DBUILD_LIBSCOTCHMETIS=ON
+    -DBUILD_PTSCOTCH=ON
+    -DBUILD_SHARED_LIBS=ON
+    -DBUILD_DUMMYSIZES=OFF
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_INSTALL_PREFIX=$prefix
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+    -DENABLE_TESTS=OFF
     -DINSTALL_METIS_HEADERS=OFF
+    -DINTSIZE="32"
+    -DMPI_THREAD_MULTIPLE=ON
+    -DTHREADS=ON
+)
 
-# make -j${nproc}
-make
+CFLAGS=$FLAGS cmake -B build ${OPTIONS[@]}
+cmake --build build --parallel ${nproc}
 
-# make install
-cp lib/libpt*.$dlext $libdir
-cp src/include/pt*.h $includedir
+# `libscotch` and friends come from `SCOTCH_jll`; only install the PT-SCOTCH part
+cmake --install build --component libptscotch
 
-install_license ../LICENSE_en.txt
+install_license ${WORKSPACE}/srcdir/scotch/LICENSE_en.txt
 """
 
 augment_platform_block = """

@@ -3,7 +3,7 @@
 include("../common.jl")
 
 name = "cohomolo"
-upstream_version = "1.6.12" # when you increment this, reset offset to v"0.0.0"
+upstream_version = "1.7.0" # when you increment this, reset offset to v"0.0.0"
 offset = v"1.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
@@ -12,7 +12,7 @@ version = offset_version(upstream_version, offset)
 # Collection of sources required to build this JLL
 sources = [
     ArchiveSource("https://github.com/gap-packages/cohomolo/releases/download/v$(upstream_version)/cohomolo-$(upstream_version).tar.gz",
-                  "9f68a987685affd3510a21c4a7d2b1260a6a98f237c5ac76531e4980616532a8"),
+                  "456a1506194ba66c75838933bed07076ad2f4f29be27b7d23410de6537df6c1b"),
 ]
 
 # Bash recipe for building across all platforms

@@ -255,5 +255,9 @@ for (i, build) in enumerate(builds)
         julia_compat="1.10",
         # selection is keyed on the compiler, not the runtime (see above)
         augment_platform_block=CUDA.compiler_augment,
+        lazy_artifacts=true,
+        dont_dlopen=true,
         preferred_gcc_version=v"13")
 end
+
+# bump

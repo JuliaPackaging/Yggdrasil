@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "FFMPEG"
-version_string = "9.0" # when patch number is zero, they use X.Y format
+version_string = "9.0.2" # when patch number is zero, they use X.Y format
 version = VersionNumber(version_string)
 
 # Collection of sources required to build FFMPEG
@@ -14,7 +14,7 @@ macos_sdk_version = "10.13"
 sources = [
     ArchiveSource(
         "https://ffmpeg.org/releases/ffmpeg-$(version_string).tar.xz",
-        "7f607a00dd0d28a729d5a4811205812eef01cf6ef6155025febb6f36a9062d52",
+        "8c3850283eb25fa026482078a04051e0be17347b09ef81a0849bec15a96e002e",
     ),
     DirectorySource("../bundled"),
     get_macos_sdk_sources(macos_sdk_version)...
@@ -99,6 +99,9 @@ fi
 
 # Remove `-march` flags
 sed -i 's/cpuflags="-march=$cpu"/cpuflags=""/g' configure
+
+# On FreeBSD, HarfBuzz_jll ships its pkg-config files in libdata/pkgconfig
+export PKG_CONFIG_PATH="${PKG_CONFIG_PATH:+${PKG_CONFIG_PATH}:}${prefix}/libdata/pkgconfig"
 
 ./configure            \
   --enable-cross-compile \
