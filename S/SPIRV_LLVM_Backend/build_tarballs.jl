@@ -52,6 +52,10 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/aggregate_extractvalue_return.patch
 # pointee types of pointers extracted from or inserted into aggregates"; still
 # open upstream), for Julia's bits-union return values.
 atomic_patch -p1 $WORKSPACE/srcdir/patches/aggregate_member_pointee_types.patch
+# Backport of https://github.com/llvm/llvm-project/pull/209232 ("[SPIR-V]
+# Preserve signed i1 semantics in sitofp"; merged after the 23.x branch), so
+# that `sitofp i1 true` gives -1.0 instead of 1.0.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/sitofp_signed_i1.patch
 
 install_license LICENSE.TXT
 
