@@ -1,12 +1,12 @@
 using BinaryBuilder, Pkg
 
 name = "lwbgt"
-version = v"1.0.0"
+version = v"1.1.0"
 
 sources = [
     GitSource(
         "https://github.com/zyf0717/lwbgt.git",
-        "5b16131eff01c67a5bfa2bdd71df8f41a313422d",
+        "b6c49eff1d34738ae40f1d6b51a62cc3a5d0e83d",
     ),
 ]
 
@@ -19,6 +19,7 @@ cmake -B build \
     -DBUILD_TESTING=OFF
 cmake --build build --parallel ${nproc}
 cmake --install build
+install_license LICENSE NOTICE src/LicenseRef-UChicago-Argonne-WBGT-1.1.txt
 """
 
 platforms = supported_platforms()
