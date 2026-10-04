@@ -1,0 +1,18 @@
+lavapipe: restore vulkan_icd_link_args
+
+26.2.2's target passes only [ld_args_bsymbolic, ld_args_gc_sections], so
+src/vulkan/vulkan.sym never applies and the ICD exports every symbol of the statically
+linked LLVM. Upstream main has since restored it on this target; this backports that to
+26.2.2.
+
+--- a/src/gallium/targets/lavapipe/meson.build
++++ b/src/gallium/targets/lavapipe/meson.build
+@@ -8,7 +8,7 @@
+   link_whole : [ liblavapipe_st ],
+   link_with : [libpipe_loader_static, libgallium, libwsw, libswdri, libws_null, libswkmsdri ],
+   gnu_symbol_visibility : 'hidden',
+-  link_args : [ld_args_bsymbolic, ld_args_gc_sections],
++  link_args : [vulkan_icd_link_args, ld_args_bsymbolic, ld_args_gc_sections],
+   # On Apple systems, "weak" is actually "weak_import", which is slightly different.
+   # The linker still expects a definition for weak symbols at build time, just not at runtime.
+   # We have to forcibly ignore undefined symbols, which unfortunately applies to all symbols.

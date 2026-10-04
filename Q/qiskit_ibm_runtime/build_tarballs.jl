@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "qiskit_ibm_runtime"
-version = v"0.38.1"
+version = v"0.39.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Qiskit/qiskit-ibm-runtime-c.git", "b7e4838640b56610c25d3776036dcf1ef7766fea")
+    GitSource("https://github.com/Qiskit/qiskit-ibm-runtime-c.git", "a390629a7bbd8fec1a43b3fcab5ae3c202f25ced")
 ]
 
 # Bash recipe for building across all platforms
@@ -51,7 +51,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency(PackageSpec(name="cbindgen_jll", uuid="a52b955f-5256-5bb0-8795-313e28591558"))
-    Dependency(PackageSpec(name="Qiskit_jll", uuid="b54e8e98-f244-53b3-a8e8-4727a4907f76"); compat="~2.4.1")
+    Dependency(PackageSpec(name="Qiskit_jll", uuid="b54e8e98-f244-53b3-a8e8-4727a4907f76"); compat="~2.5.0")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

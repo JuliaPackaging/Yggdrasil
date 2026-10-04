@@ -154,6 +154,8 @@ components:
   M/MKL_Headers/:
     - amontoison
     - imciner2
+  M/MPIABI/:
+    - eschnett
   M/MPICH/:
     - eschnett
   M/MPItrampoline/:
