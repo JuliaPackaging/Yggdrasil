@@ -13,9 +13,9 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 # argument (false here). See ../common.jl for the full rationale.
 
 name = "pocl_next"
-# upstream v7.2 plus our patch series; 7.2.1 because the series adds API
-# (cl_pocl_cpu_compute_units) that users need to be able to require
-version = v"7.2.1"
+# upstream v7.2 plus our patch series; bumped past 7.2 when the series changes API
+# (7.2.1 added cl_pocl_cpu_compute_units, 7.2.2 removed it again)
+version = v"7.2.2"
 llvm_version = v"22.1.1"
 macos_sdk_version = "11.0"
 
