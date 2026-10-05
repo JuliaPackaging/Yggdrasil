@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "HDF5"
 version = v"2.2.0"
-ygg_version = v"2.2.2"
+ygg_version = v"2.2.3"
 
 # Collection of sources required to complete build
 sources = [
@@ -46,10 +46,10 @@ if [[ ${target} == x86_64-apple-darwin* || ${target} == x86_64-unknown-freebsd* 
     float16=OFF
 fi
 
-# `aws_c_s3_jll` has not been built
-ros3_vdf=ON
+# `aws_c_s3_jll` is not built for i686 Windows
+ros3_vfd=ON
 if [[ ${target} == i686-w64-* ]]; then
-    ros3_vdf=OFF
+    ros3_vfd=OFF
 fi
 
 cmake_options=(
