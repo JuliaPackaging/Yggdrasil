@@ -8,13 +8,11 @@ version = v"1.7.11"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/aws/s2n-tls.git", "b170000016fb44fa4dfdd86ed0b75bd28241e707"),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/s2n-tls
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/remove-unused-main-thread.patch
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_PREFIX_PATH=${prefix} \
