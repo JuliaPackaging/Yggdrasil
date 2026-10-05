@@ -134,14 +134,14 @@ function build_script(standalone=false)
     #   (upstream PR #2345; JuliaGPU/OpenCL.jl#510)
     # - 0012: keep frexp on libclc when vectorizing builtins, avoiding a vector llvm.frexp
     #   miscompile on x86 below AVX2 (upstream PR #2355; JuliaGPU/OpenCL.jl#506)
-    # - 0013: clSetCPUMaxComputeUnitsPOCL, to size the CPU thread pool without changing the
-    #   process environment (upstream PR #2371; JuliaGPU/KernelAbstractions.jl#821)
-    # - 0014: share local memory across WorkitemLoops region replicas, fixing sub-group
+    # - 0013: share local memory across WorkitemLoops region replicas, fixing sub-group
     #   collectives after a branch with an early exit (upstream PR #2239, in `main`;
     #   JuliaGPU/OpenCL.jl#526, JuliaGPU/KernelAbstractions.jl#831)
-    # - 0015: include the kernel compiler sources in the kernel cache key, so that rebuilds
+    # - 0014: include the kernel compiler sources in the kernel cache key, so that rebuilds
     #   with kernel compiler patches don't reuse the previous build's cached binaries
     #   (upstream PR #2374)
+    # - 0015, 0016: only wake up the CPU worker threads a command can use, making small
+    #   kernel launches and subdevices cheap (upstream PR #2371)
     for patch in $WORKSPACE/srcdir/patches/pocl/*.patch; do
         atomic_patch -p1 $patch
     done
