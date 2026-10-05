@@ -12,20 +12,33 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 # in, so the result is self-contained and exports only the C surface). The
 # companion of CLAPHost and LV2Host; the version tracks the AudioPlugins.jl
 # release whose `csrc/` is built.
+#
+# 1.3.0 is a minor bump: it adds the live-session ABI (`ap_live_*` symbols,
+# `csrc/clap_live.h` and `csrc/live_device.h`) alongside `vst3_host.h`; the
+# existing `vst3_host_*` ABI is unchanged.
 name = "VST3Host"
-version = v"1.2.0"
+version = v"1.3.0"
 
 sources = [
     GitSource("https://github.com/SciML/AudioPlugins.jl.git",
-              "14de157d7edb617e58d15d674b4cc23fcd4d0935"),  # SciML/AudioPlugins.jl PR 5 "VST3 host: headless C++ shim" (merged with a merge commit; reachable from main)
+              "c7a6aee21c0fe6673ffb92df3a8599f9ee99648c"),  # SciML/AudioPlugins.jl main (PR 89, native live sessions)
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/AudioPlugins.jl
-install_license LICENSE
+install_license LICENSE csrc/vendor/CLAP-LICENSE csrc/vendor/miniaudio.LICENSE
 
 SDK=${includedir}/vst3sdk
 SDKLIB=${prefix}/lib/vst3sdk
+LIVE_LIBS="-pthread -lm"
+if [[ "${target}" == *-mingw* ]]; then
+    LIVE_LIBS="${LIVE_LIBS} -lavrt -lole32 -luuid -luser32 -lwinmm"
+elif [[ "${target}" == *-apple-* ]]; then
+    LIVE_LIBS="${LIVE_LIBS} -framework CoreFoundation -framework CoreAudio -framework AudioToolbox"
+else
+    LIVE_LIBS="${LIVE_LIBS} -ldl"
+fi
+
 mkdir -p "${libdir}"
 
 HOSTING=${SDK}/public.sdk/source/vst/hosting
@@ -41,12 +54,18 @@ else
     EXTRA_LIBS="-ldl -lpthread"
 fi
 
+${CC} -std=gnu11 -O2 -fPIC -fvisibility=hidden -DAP_LIVE_WITH_DEVICE \
+    -c csrc/clap_live.c -o clap_live.o
+${CC} -std=gnu11 -O2 -fPIC -fvisibility=hidden -DAP_LIVE_WITH_DEVICE \
+    -c csrc/live_device.c -o live_device.o
 ${CXX} -std=c++17 -O2 -fPIC -shared -fvisibility=hidden -fvisibility-inlines-hidden \
     ${EXTRA_FLAGS:-} -DRELEASE=1 -I"${SDK}" \
     -o "${libdir}/libvst3_host.${dlext}" \
-    csrc/vst3_host.cpp ${HOSTING}/plugprovider.cpp ${MODULE} \
-    -L"${SDKLIB}" -lsdk_hosting -lsdk_common -lsdk -lbase -lpluginterfaces ${EXTRA_LIBS}
+    csrc/vst3_host.cpp csrc/vst3_live.cpp clap_live.o live_device.o ${HOSTING}/plugprovider.cpp ${MODULE} \
+    -L"${SDKLIB}" -lsdk_hosting -lsdk_common -lsdk -lbase -lpluginterfaces ${EXTRA_LIBS} ${LIVE_LIBS}
 install -Dm644 csrc/vst3_host.h "${includedir}/vst3_host.h"
+install -Dm644 csrc/clap_live.h "${includedir}/clap_live.h"
+install -Dm644 csrc/live_device.h "${includedir}/live_device.h"
 """
 
 # Same SDK and deployment target as vst3sdk: the hosting sources use
