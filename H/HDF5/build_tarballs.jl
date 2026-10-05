@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "HDF5"
 version = v"2.2.0"
-ygg_version = v"2.2.2"
+ygg_version = v"2.2.3"
 
 # Collection of sources required to complete build
 sources = [
