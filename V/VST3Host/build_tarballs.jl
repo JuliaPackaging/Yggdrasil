@@ -34,7 +34,8 @@ LIVE_LIBS="-pthread -lm"
 if [[ "${target}" == *-mingw* ]]; then
     LIVE_LIBS="${LIVE_LIBS} -lavrt -lole32 -luuid -luser32 -lwinmm"
 elif [[ "${target}" == *-apple-* ]]; then
-    LIVE_LIBS="${LIVE_LIBS} -framework CoreFoundation -framework CoreAudio -framework AudioToolbox"
+    # __builtin_available needs ___isPlatformVersionAtLeast from compiler-rt
+    LIVE_LIBS="${LIVE_LIBS} -framework CoreFoundation -framework CoreAudio -framework AudioToolbox -L${libdir}/darwin -lclang_rt.osx"
 else
     LIVE_LIBS="${LIVE_LIBS} -ldl"
 fi
@@ -84,6 +85,7 @@ dependencies = [
     BuildDependency("vst3sdk_jll"),
     # The host links libstdc++ and libgcc_s.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    BuildDependency("LLVMCompilerRT_jll"; platforms = filter(Sys.isapple, platforms)),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;

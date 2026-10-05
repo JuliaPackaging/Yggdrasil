@@ -46,7 +46,8 @@ LIVE_LIBS="-pthread -lm"
 if [[ "${target}" == *-mingw* ]]; then
     LIVE_LIBS="${LIVE_LIBS} -lavrt -lole32 -luuid -luser32 -lwinmm"
 elif [[ "${target}" == *-apple-* ]]; then
-    LIVE_LIBS="${LIVE_LIBS} -framework CoreFoundation -framework CoreAudio -framework AudioToolbox"
+    # __builtin_available needs ___isPlatformVersionAtLeast from compiler-rt
+    LIVE_LIBS="${LIVE_LIBS} -framework CoreFoundation -framework CoreAudio -framework AudioToolbox -L${libdir}/darwin -lclang_rt.osx"
 else
     LIVE_LIBS="${LIVE_LIBS} -ldl"
 fi
@@ -70,7 +71,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    BuildDependency("LLVMCompilerRT_jll"; platforms = filter(Sys.isapple, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
