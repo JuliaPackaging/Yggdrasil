@@ -1,0 +1,69 @@
+Subject: [PATCH] [AMDGPU] Select a 64-bit i128 alignment through the ABI name
+
+The AMDGPU data layout ignores the ABI name. Let "i128:64" select a variant
+that aligns i128 to 64 bits, like the data layout default did before
+llvm/llvm-project#214518, so that a frontend whose host ABI aligns i128 that
+way (Julia before 1.12) can lay out kernel arguments like the host does. The
+target machine passes `Options.MCOptions.ABIName` to `computeDataLayout`, as
+NVPTX does with "shortptr", so that the target's and the module's data
+layouts stay identical.
+
+Not upstream: the only user is libamdgpu, which sets the ABI name from the
+module's data layout.
+---
+diff -ru a/llvm/lib/Target/AMDGPU/AMDGPUTargetMachine.cpp b/llvm/lib/Target/AMDGPU/AMDGPUTargetMachine.cpp
+--- a/llvm/lib/Target/AMDGPU/AMDGPUTargetMachine.cpp
++++ b/llvm/lib/Target/AMDGPU/AMDGPUTargetMachine.cpp
+@@ -874,7 +874,8 @@
+                                          std::optional<CodeModel::Model> CM,
+                                          CodeGenOptLevel OptLevel)
+     : CodeGenTargetMachineImpl(
+-          T, TT.computeDataLayout(), TT, getGPUOrDefault(TT, CPU), FS, Options,
++          T, TT.computeDataLayout(Options.MCOptions.getABIName()), TT,
++          getGPUOrDefault(TT, CPU), FS, Options,
+           getEffectiveRelocModel(), getEffectiveCodeModel(CM, CodeModel::Small),
+           OptLevel),
+       TLOF(createTLOF(getTargetTriple())) {
+diff -ru a/llvm/lib/TargetParser/TargetDataLayout.cpp b/llvm/lib/TargetParser/TargetDataLayout.cpp
+--- a/llvm/lib/TargetParser/TargetDataLayout.cpp
++++ b/llvm/lib/TargetParser/TargetDataLayout.cpp
+@@ -260,7 +260,7 @@
+   return Ret;
+ }
+ 
+-static std::string computeAMDDataLayout(const Triple &TT) {
++static std::string computeAMDDataLayout(const Triple &TT, StringRef ABIName) {
+   if (TT.getArch() == Triple::r600) {
+     // 32-bit pointers.
+     return "e-m:e-p:32:32-i64:64-v16:16-v24:32-v32:32-v48:64-v96:128"
+@@ -273,10 +273,18 @@
+   // (address space 7), and 128-bit non-integral buffer resourcees (address
+   // space 8) which cannot be non-trivilally accessed by LLVM memory operations
+   // like getelementptr.
+-  return "e-m:e-p:64:64-p1:64:64-p2:32:32-p3:32:32-p4:64:64-p5:32:32-p6:32:32"
+-         "-p7:160:256:256:32-p8:128:128:128:48-p9:192:256:256:32-i64:64-"
+-         "v16:16-v24:32-v32:32-v48:64-v96:128-v192:256-v256:256-v512:512-"
++  //
++  // i128 takes the 128-bit default alignment, unless the ABI name asks for
++  // 64 bits ("i128:64"): a frontend whose host ABI aligns i128 that way (e.g.
++  // Julia before 1.12) needs kernel arguments laid out like the host's.
++  std::string Ret =
++      "e-m:e-p:64:64-p1:64:64-p2:32:32-p3:32:32-p4:64:64-p5:32:32-p6:32:32"
++      "-p7:160:256:256:32-p8:128:128:128:48-p9:192:256:256:32-i64:64-";
++  if (ABIName == "i128:64")
++    Ret += "i128:64-";
++  Ret += "v16:16-v24:32-v32:32-v48:64-v96:128-v192:256-v256:256-v512:512-"
+          "v1024:1024-v2048:2048-n32:64-S32-A5-G1-ni:7:8:9";
++  return Ret;
+ }
+ 
+ static std::string computeRISCVDataLayout(const Triple &TT, StringRef ABIName) {
+@@ -603,7 +611,7 @@
+     return computePowerDataLayout(*this, ABIName);
+   case Triple::amdgpu:
+   case Triple::r600:
+-    return computeAMDDataLayout(*this);
++    return computeAMDDataLayout(*this, ABIName);
+   case Triple::riscv32:
+   case Triple::riscv64:
+   case Triple::riscv32be:
