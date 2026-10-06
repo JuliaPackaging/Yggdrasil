@@ -8,15 +8,12 @@ version = v"1.0.0"
 
 sources = [
     GitSource("https://codeberg.org/mrirecon/bart.git", "37f3c5f0feaf0a19a7fca85c926ad74101f4a034"),
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
-# Supply C11 threads through the packaged glibc sysroot, as in Yggdrasil's systemd recipe.
-if [[ -f "${prefix}/usr/include/threads.h" ]]; then
-    glibc_root=$(dirname $(dirname $(dirname $(realpath "${prefix}/usr/include/threads.h"))))
-    rsync --archive "${glibc_root}/" "/opt/${target}/${target}/sys-root/"
-fi
 cd ${WORKSPACE}/srcdir/bart
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pthread-fallback.patch # Support sysroots without C11 threads.
 
 options=(
     AR="${target}-ar"
@@ -41,7 +38,7 @@ if [[ ${target} == aarch64-apple-* ]]; then
 fi
 
 ${host_bindir}/make -j${nproc} "${options[@]}" bart
-git diff --exit-code HEAD
+git diff --check
 install -Dvm755 bart "${bindir}/bart"
 install_license LICENSE
 """
@@ -62,16 +59,13 @@ products = [ExecutableProduct("bart", :bart)]
 dependencies = [
     # BART's batched archive mode requires GNU Make 4.4.1 or newer.
     HostBuildDependency(PackageSpec(name="GNUMake_jll", version=v"4.4.1+0")),
-    # The default glibc sysroots predate C11 threads.
-    BuildDependency(PackageSpec(name="Glibc_jll", version=v"2.34.0+1");
-        platforms=filter(Sys.islinux, platforms)),
     BuildDependency("LLVMCompilerRT_jll"; platforms=filter(p -> Sys.isapple(p) && arch(p) == "aarch64", platforms)),
     Dependency("FFTW_jll"; compat="3.3.11"),
     # BART runs in a separate process without Julia's initialized BLAS backend.
     Dependency("OpenBLAS32_jll"; compat="0.3.23"),
     Dependency("libpng_jll"; compat="1.6.43"),
     Dependency("CompilerSupportLibraries_jll"; compat="1.0.5", platforms=filter(!Sys.isapple, platforms)),
-    Dependency("LLVMOpenMP_jll"; compat="15.0.7", platforms=filter(Sys.isapple, platforms)),
+    Dependency("LLVMOpenMP_jll"; compat="15.0.7 - 23", platforms=filter(Sys.isapple, platforms)),
 ]
 
 # BART 1 requires GCC 12 or newer; macOS uses Clang.
