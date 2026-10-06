@@ -56,6 +56,15 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/aggregate_member_pointee_types.patch
 # Preserve signed i1 semantics in sitofp"; merged after the 23.x branch), so
 # that `sitofp i1 true` gives -1.0 instead of 1.0.
 atomic_patch -p1 $WORKSPACE/srcdir/patches/sitofp_signed_i1.patch
+# Backport of https://github.com/llvm/llvm-project/pull/229444 ("[SPIRV] Don't
+# cache SyncScope IDs across LLVMContexts in getMemScope"; still open
+# upstream): with a fresh context per compilation, later modules got wrong
+# atomic scopes (e.g. Subgroup instead of Device).
+atomic_patch -p1 $WORKSPACE/srcdir/patches/getmemscope_per_context.patch
+# Backport of https://github.com/llvm/llvm-project/pull/223023 ("[SPIR-V] Add
+# storage class bits to fence and generic atomic semantics"; merged after the
+# 23.x branch), without which fences order no memory.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/fence_storage_class.patch
 
 install_license LICENSE.TXT
 
