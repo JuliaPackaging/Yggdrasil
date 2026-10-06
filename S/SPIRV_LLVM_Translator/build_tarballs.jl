@@ -36,6 +36,9 @@ atomic_patch -p1 ../phi-duplicate-predecessors.patch
 # ("Add storage class semantics to LLVM fence translation"), without which a
 # fence orders no memory at all.
 atomic_patch -p1 ../fence-storage-class.patch
+# Reject atomicrmw uinc_wrap, udec_wrap, usub_cond and usub_sat instead of
+# crashing (they have no SPIR-V opcode).
+atomic_patch -p1 ../atomicrmw-unsupported-int.patch
 install_license LICENSE.TXT
 
 CMAKE_FLAGS=()
