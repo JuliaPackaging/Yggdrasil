@@ -3,8 +3,8 @@
 using BinaryBuilder
 
 name = "AMDGPU_LLVM_Backend"
-version = v"23.1.1"
-llvm_version = v"23.1.1"
+version = v"23.1.3"
+llvm_version = v"23.1.3"
 
 # This JLL ships `libamdgpu`, a shared library exposing a small, typed C API (see
 # bundled/libamdgpu.h) over a statically linked, symbol-hidden LLVM AMDGPU
@@ -16,7 +16,7 @@ llvm_version = v"23.1.1"
 # LLVM ships a single monorepo source archive (`llvm-project-X.Y.Z.src.tar.xz`).
 sources = [
     ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-$(llvm_version)/llvm-project-$(llvm_version).src.tar.xz",
-                  "ebe9be46fe8756d58c5b198ffad0fa2a766257add81a4dc52179bfacc7888ee6"),
+                  "c44186a7762ed28954be72e5ff6df9808e0779d4f1bf014ecc4e7e211d31ee34"),
     # ROCm's fork, for the device libraries (TheRock 10.0).
     GitSource("https://github.com/ROCm/llvm-project",
               "8f497e0992fb7513f7f78a6f6b6f1056c375e961"),
@@ -38,6 +38,10 @@ script = raw"""
 #   arguments land at the offsets HIP/clang expect.
 # - 215829-amdgpu-fix-si-pre-emit-peephole-scc: llvm/llvm-project#215829,
 #   miscompile fix in si-pre-emit-peephole.
+# - 229471-amdgpu-fix-usub-sat-lds-flat: llvm/llvm-project#229471 (not merged
+#   yet, backported from its head cef234bcb436), expand `atomicrmw usub_sat`
+#   to a cmpxchg loop on LDS and flat where the target lacks the instruction,
+#   instead of failing to select it (llvm/llvm-project#229442).
 # - amdgpu-i128-abi-name (not upstream): the ABI name "i128:64" selects an
 #   AMDGPU datalayout that aligns i128 to 64 bits, for hosts whose ABI does
 #   (Julia before 1.12); libamdgpu sets it from the module's datalayout.
