@@ -45,10 +45,24 @@ LLVM_SRCDIR=$(pwd)
 # the CAS-loop lowering of atomicrmw fadd that #200732 made the default whenever the
 # function's denormal mode disagrees with atom.add's fixed FTZ behavior, which
 # regressed performance. Code changes only; the test updates are left out.
+# Atomics, for front-ends that emit plain LLVM atomics with an ordering and a scope
+# (UnsafeAtomics.jl, Atomix.jl), which 23.x doesn't lower correctly before sm_70:
+# - https://github.com/llvm/llvm-project/pull/222449 (merged after the 23.x branch)
+#   brackets ordered atomicrmw and cmpxchg with membars; 23.x silently relaxed them.
+# - Ordered loads and stores are emulated the same way, where 23.x (and main) fail
+#   with a fatal error. This is the pre-sm_70 part of the still open
+#   https://github.com/llvm/llvm-project/pull/201468.
+# - The floating-point part of https://github.com/llvm/llvm-project/pull/221425
+#   (merged after the 23.x branch) selects `atomicrmw fsub` as an atom.add of the
+#   negated value instead of a compare-and-swap loop.
+# Code changes only; the test updates are left out.
 atomic_patch -p1 $WORKSPACE/srcdir/patches/no-process-wide-handlers.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/lower-allocas-to-local-as.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/escape-debug-str-comments.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/allow-ftz-atomics-by-default.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/pre-sm70-ordered-atomics.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/pre-sm70-ordered-loads-stores.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/atomic-fsub-to-fadd.patch
 
 install_license LICENSE.TXT
 

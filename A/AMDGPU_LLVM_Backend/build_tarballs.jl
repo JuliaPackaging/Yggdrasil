@@ -38,6 +38,9 @@ script = raw"""
 #   arguments land at the offsets HIP/clang expect.
 # - 215829-amdgpu-fix-si-pre-emit-peephole-scc: llvm/llvm-project#215829,
 #   miscompile fix in si-pre-emit-peephole.
+# - amdgpu-i128-abi-name (not upstream): the ABI name "i128:64" selects an
+#   AMDGPU datalayout that aligns i128 to 64 bits, for hosts whose ABI does
+#   (Julia before 1.12); libamdgpu sets it from the module's datalayout.
 pushd llvm-project-*
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}

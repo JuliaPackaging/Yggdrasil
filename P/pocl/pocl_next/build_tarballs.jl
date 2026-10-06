@@ -13,7 +13,9 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 # argument (false here). See ../common.jl for the full rationale.
 
 name = "pocl_next"
-version = v"7.2.0"
+# upstream v7.2 plus our patch series; bumped past 7.2 when the series changes API
+# (7.2.1 added cl_pocl_cpu_compute_units, 7.2.2 removed it again)
+version = v"7.2.2"
 llvm_version = v"22.1.1"
 macos_sdk_version = "11.0"
 
@@ -136,5 +138,7 @@ for (i,build) in enumerate(builds)
                    [build.platform], products, build.dependencies;
                    build.preferred_gcc_version,
                    preferred_llvm_version=Base.thismajor(llvm_version),
-                   julia_compat="1.6", init_block=init_block())
+                   # libpocl needs the libgcc_s of GCC 12 (for its FP16 helpers), which Julia
+                   # bundles since 1.8; 1.10 is the oldest version the users of these JLLs support
+                   julia_compat="1.10", init_block=init_block())
 end
