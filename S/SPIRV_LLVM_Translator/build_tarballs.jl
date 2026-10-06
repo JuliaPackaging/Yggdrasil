@@ -14,14 +14,14 @@ llvm_version = v"23.1.1+0"
 # This JLL ships `libllvm_spirv`, a shared library exposing a small, typed C API
 # (see bundled/libllvm_spirv.h) over a statically linked, symbol-hidden build of
 # the Khronos translator (LLVM IR -> SPIR-V), replacing the `llvm-spirv`
-# executable. The package version tracks the embedded LLVM's and the
-# translator's release (also reported at runtime by `LLVMSPIRVGetLLVMVersion`).
+# executable. The package version tracks the embedded LLVM's (also reported at
+# runtime by `LLVMSPIRVGetLLVMVersion`), not the translator's release.
 
 # Collection of sources required to build the package
 sources = [
     GitSource(
         "https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git",
-        "c808623558686b7b285cabfa71542a93a5390f55"),
+        "e65dde28ce8f12ef7245914fa2850260328669e4"), # v23.1.2
     DirectorySource("bundled"),
     # LLVM 22 raised its minimum macOS deployment target to 11.0, and LLVM 23's
     # headers no longer compile against the older SDK's libc++.
@@ -32,6 +32,10 @@ sources = [
 get_script(llvm_version) = get_macos_sdk_script("11.0") * raw"""
 cd SPIRV-LLVM-Translator
 atomic_patch -p1 ../phi-duplicate-predecessors.patch
+# Backport of https://github.com/KhronosGroup/SPIRV-LLVM-Translator/pull/4030
+# ("Add storage class semantics to LLVM fence translation"), without which a
+# fence orders no memory at all.
+atomic_patch -p1 ../fence-storage-class.patch
 install_license LICENSE.TXT
 
 CMAKE_FLAGS=()
