@@ -7,13 +7,12 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "deal_II"
-version = v"9.7.1"
+version = v"9.8.0"
 
 # collection of sources required to complete build
 sources = [
   ArchiveSource("https://dealii.org/downloads/dealii-$(version).tar.gz",
-                "0f2096ef83db54fdcebe9f3d148fa713f63f1c3f567941b53bcb4a1a8ea7de43")
-  DirectorySource("./bundled/")
+                "d8d66aac57baad145a752d3f11cf72cfa9457e3f99ae09e5c8d5c9259a83aee1")
 ]
 
 # bash recipe for building across all platforms
@@ -38,7 +37,7 @@ cmake_options=(
   -DDEAL_II_WITH_COMPLEX_VALUES=OFF \
   -DDEAL_II_WITH_GINKGO=OFF \
   -DDEAL_II_WITH_GMSH=OFF \
-  -DDEAL_II_WITH_GSL=ON \
+  -DDEAL_II_WITH_GSL=OFF \
   -DDEAL_II_WITH_HDF5=OFF \
   -DDEAL_II_WITH_KOKKOS=ON \
   -DDEAL_II_WITH_LAPACK=ON \
@@ -84,14 +83,6 @@ export MPITRAMPOLINE_CC="${CC}"
 export MPITRAMPOLINE_CXX="${CXX}"
 export MPITRAMPOLINE_FC="${FC}"
 
-# apply patches
-cd $WORKSPACE/srcdir/dealii-*
-
-# fixes issue in triangulation class causing problems in another (tbr) package
-# (until deal.II v9.8 is published)
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/triangulation.patch"
-cd ..
-
 # build deal.II
 mkdir build
 cd build
@@ -134,10 +125,6 @@ platforms = filter(p -> nbits(p) == 64, platforms)
 # due to HDF5
 sources, script = require_macos_sdk("14.0", sources, script)
 
-# due to GSL
-platforms = filter(p -> p["arch"] != "riscv64", platforms)
-platforms = filter(p -> p["os"] != "freebsd", platforms)
-
 # Windows builds with MinGW are not supported by deal.II
 # see https://github.com/dealii/dealii/wiki/Windows#cygwin--minggw
 platforms = filter(p -> !Sys.iswindows(p), platforms)
@@ -158,15 +145,12 @@ dependencies = [
                                 uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267")),
 #  Dependency(PackageSpec(name="OCCT_jll",
 #                         uuid="baad4e97-8daa-5946-aac2-2edac59d34e1")),
-  Dependency(PackageSpec(name="GSL_jll",
-                         uuid="1b77fbbe-d8ee-58f0-85f9-836ddc23a7a4"),
-             compat="~2.7.2"),
   Dependency(PackageSpec(name="HDF5_jll",
                          uuid="0234f1f7-429e-5d53-9886-15a909be8d59")),
 #  Dependency(PackageSpec(name="gmsh_jll",
 #                         uuid="630162c2-fc9b-58b3-9910-8442a8a132e6")),
-  Dependency(PackageSpec(name="muparser_jll",
-                         uuid="888e69b1-873b-5047-a2fc-24c07cbe9dc8")),
+#  Dependency(PackageSpec(name="muparser_jll",
+#                         uuid="888e69b1-873b-5047-a2fc-24c07cbe9dc8")),
   Dependency(PackageSpec(name="OpenBLAS32_jll",
                          uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
   Dependency(PackageSpec(name="P4est_jll",
@@ -182,4 +166,4 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products,
                dependencies; augment_platform_block, julia_compat="1.10",
-               preferred_gcc_version = v"9.1.0")
+               preferred_gcc_version = v"10.1.0")
