@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "fastloess"
-version = v"2.0.0"
+version = v"3.0.0"
 
 # Update the commit hash when releasing a new version
 sources = [
-	GitSource("https://github.com/thisisamirv/loess-project.git", "1ecd93c32ca4582d922bca47568d8fcd196fd997"),
+    GitSource("https://github.com/thisisamirv/loess-project.git", "2c234939e91b2d7376d6a4cfb92790029c0472c5"),
 ]
 
 # Build script
@@ -32,13 +32,12 @@ platforms = supported_platforms()
 
 # Filter out platforms not supported by Rust
 filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms)
-filter!(p -> libc(p) != "musl", platforms)
 filter!(p -> !Sys.isfreebsd(p), platforms)
 filter!(p -> arch(p) != "riscv64", platforms)
 
 # Products
 products = [
-	LibraryProduct(["libfastloess_jl", "fastloess_jl"], :libfastloess_jl; dont_dlopen = true),
+    LibraryProduct(["libfastloess_jl", "fastloess_jl"], :libfastloess_jl; dont_dlopen=true),
 ]
 
 # No JLL dependencies required
@@ -46,7 +45,7 @@ dependencies = Dependency[]
 
 # Build with Rust compiler support
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-	julia_compat = "1.6",
-	compilers = [:rust, :c],
-	preferred_gcc_version = v"10",
-	lock_microarchitecture = false)
+    julia_compat="1.6",
+    compilers=[:rust, :c],
+    preferred_gcc_version=v"10",
+    lock_microarchitecture=false)
