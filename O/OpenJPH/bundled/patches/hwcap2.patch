@@ -1,0 +1,14 @@
+--- a/src/core/others/ojph_arch.cpp
++++ b/src/core/others/ojph_arch.cpp
+@@ -240,6 +240,11 @@ namespace ojph {
+       #include <sys/auxv.h>
+       #include <asm/cputable.h>
+ 
++      // Compatibility for older glibc versions that do not define `AT_HWCAP2`
++      #ifndef AT_HWCAP2
++      #  define AT_HWCAP2 26
++      #endif
++
+       bool init_cpu_ext_level(int& level) {
+         unsigned long hwcap = getauxval(AT_HWCAP);
+         unsigned long hwcap2 = getauxval(AT_HWCAP2);
