@@ -18,6 +18,10 @@ export RUSTFLAGS="-C linker=${CC}"
 if [[ "${target}" == *-linux-* ]]; then
 	RUSTFLAGS="${RUSTFLAGS} -C link-arg=-fuse-ld=bfd"
 fi
+if [[ "${rust_target}" == *-linux-musl* ]]; then
+    # Musl targets default to a fully static CRT, which does not support cdylib.
+    RUSTFLAGS="${RUSTFLAGS} -C target-feature=-crt-static"
+fi
 # Build the release library
 cargo build --release --target ${rust_target} --target-dir target
 # Install the shared library
