@@ -5,11 +5,13 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "OpenEXR"
-version = v"3.4.16"
+version = v"3.5.2"
+# Note: Different minor versions of `OpenEXR_jll` are not ABI compatible.
+# All downstream packages know this and use explicit compat bounds.
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/AcademySoftwareFoundation/openexr.git", "37d012e2faa04dbf00ca169682ee1eb6d9e8603e"),
+    GitSource("https://github.com/AcademySoftwareFoundation/openexr.git", "69b2604fc76e370615438bdc8d2cd95b9349c12e"),
     DirectorySource("bundled"),
 ]
 
@@ -45,11 +47,11 @@ platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libOpenEXRUtil-3_4", :libOpenEXRUtil),
-    LibraryProduct("libOpenEXRCore-3_4", :libOpenEXRCore),
-    LibraryProduct("libOpenEXR-3_4", :libOpenEXR),
-    LibraryProduct("libIlmThread-3_4", :libIlmThread),
-    LibraryProduct("libIex-3_4", :libIex),
+    LibraryProduct("libOpenEXRUtil-3_5", :libOpenEXRUtil),
+    LibraryProduct("libOpenEXRCore-3_5", :libOpenEXRCore),
+    LibraryProduct("libOpenEXR-3_5", :libOpenEXR),
+    LibraryProduct("libIlmThread-3_5", :libIlmThread),
+    LibraryProduct("libIex-3_5", :libIex),
 ]
 
 # Dependencies that must be installed before this package can be built
