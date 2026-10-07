@@ -1,0 +1,28 @@
+zune-capi: initialise the ZImage from zil_zimg_new with ptr::write
+
+Assigning through `*ptr` drops the old value first, and after a bare
+`libc::malloc` that old value is uninitialised memory, so the drop glue for
+`ZImage` runs over garbage and the first `zil_zimg_new()` in a C program dies
+with SIGILL.  `ptr::write` moves the value into place without dropping, and a
+null check keeps a failed `malloc` from being written through.  The remaining
+`*img = ..` assignments in this file all target a pointer `zil_zimg_new` has
+already initialised, so they are correct as they stand.
+
+--- a/crates/zune-capi/src/image.rs
++++ b/crates/zune-capi/src/image.rs
+@@ -156,9 +156,12 @@
+ /// This is the preferred way to initialize this, not via memset or malloc+sizeof
+ #[no_mangle]
+ pub extern "C" fn zil_zimg_new() -> *mut ZImage {
+-    let ptr = unsafe { libc::malloc(std::mem::size_of::<ZImage>()) }.cast();
+-    unsafe { *ptr = ZImage::new(vec![], BitDepth::Unknown, 1, 1, ColorSpace::Unknown) };
+-    ptr
++    let image: *mut ZImage = unsafe { libc::malloc(std::mem::size_of::<ZImage>()) }.cast();
++    if image.is_null() {
++        return ptr::null_mut();
++    }
++    unsafe { image.write(ZImage::new(vec![], BitDepth::Unknown, 1, 1, ColorSpace::Unknown)) };
++    image
+ }
+ /// Free an image
+ ///
