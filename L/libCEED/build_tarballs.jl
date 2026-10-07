@@ -3,23 +3,24 @@
 using BinaryBuilder, Pkg
 
 name = "libCEED"
-version = v"0.12.0"
+version = v"1.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/CEED/libCEED.git", "4018a20a98d451fac24765d3ddb936861647ce8d"),
+    GitSource("https://github.com/CEED/libCEED.git", "8a374e8d5d8d33fd19ce69a93026384ec1046a86"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libCEED*
-make -j${nproc} MEMCHK=0 CC_VENDOR=gcc
-make install MEMCHK=0 CC_VENDOR=gcc
+make -j${nproc} OPT='$(MARCHFLAG) $(OPT.$(CC_VENDOR)) $(OMP_SIMD_FLAG) -O3' MEMCHK=0 CC_VENDOR=gcc
+make install OPT='$(MARCHFLAG) $(OPT.$(CC_VENDOR)) $(OMP_SIMD_FLAG) -O3' MEMCHK=0 CC_VENDOR=gcc
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(exclude=Sys.iswindows)
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
