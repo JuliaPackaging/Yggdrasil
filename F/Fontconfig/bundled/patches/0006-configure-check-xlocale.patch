@@ -1,0 +1,23 @@
+From: Erik Schnetter <schnetter@gmail.com>
+Subject: [PATCH] configure: check for xlocale.h
+
+Since 2.18.0, src/fcint.h and src/fcstr.c include <xlocale.h> if
+HAVE_XLOCALE_H is defined, and fcint.h unconditionally uses locale_t
+and the LC_*_MASK constants.  The Meson build checks for xlocale.h,
+but configure.ac was never updated, so HAVE_XLOCALE_H is never defined
+by the Autotools build.  On platforms where those declarations live in
+<xlocale.h> rather than <locale.h> (macOS, FreeBSD) the build then
+fails with "unknown type name 'locale_t'" and "use of undeclared
+identifier 'LC_CTYPE_MASK'".
+
+--- a/configure.ac
++++ b/configure.ac
+@@ -195,7 +195,7 @@
+ AC_CHECK_INCLUDES_DEFAULT
+ AC_PROG_EGREP
+ 
+-AC_CHECK_HEADERS([dirent.h fcntl.h stdlib.h string.h unistd.h sys/statvfs.h sys/vfs.h sys/statfs.h sys/param.h sys/mount.h])
++AC_CHECK_HEADERS([dirent.h fcntl.h stdlib.h string.h unistd.h sys/statvfs.h sys/vfs.h sys/statfs.h sys/param.h sys/mount.h xlocale.h])
+ AX_CREATE_STDINT_H([src/fcstdint.h])
+ 
+ # Checks for typedefs, structures, and compiler characteristics.
