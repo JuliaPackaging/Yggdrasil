@@ -19,18 +19,29 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/openexr*
 
-# We are building with old kernel headers that do not define `HWCAP_SVE2`
-atomic_patch -p1 $WORKSPACE/srcdir/patches/sve2.patch
-# We are building with an old glibc that does not define `AT_HWCAP2`
-atomic_patch -p1 $WORKSPACE/srcdir/patches/hwcap2.patch
+#TODO # We are building with old kernel headers that do not define `HWCAP_SVE2`
+#TODO atomic_patch -p1 $WORKSPACE/srcdir/patches/sve2.patch
+#TODO # We are building with an old glibc that does not define `AT_HWCAP2`
+#TODO atomic_patch -p1 $WORKSPACE/srcdir/patches/hwcap2.patch
 
-cmake -B build -G Ninja \
-    -DBUILD_TESTING=OFF \
-    -DOPENEXR_BUILD_TOOLS=OFF \
-    -DOPENEXR_BUILD_EXAMPLES=OFF \
-    -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+cmake_options=(
+    -DBUILD_TESTING=OFF
+    -DOPENEXR_BUILD_TOOLS=OFF
+    -DOPENEXR_BUILD_EXAMPLES=OFF
+    -DCMAKE_INSTALL_PREFIX=${prefix}
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
     -DCMAKE_BUILD_TYPE=Release
+)
+
+# Disable run-time CPU detection on x86_64-apple
+# (avoid `ld64.lld: error: undefined symbol: __cpu_model`)
+if [[ "${target}" == x86_64-apple-* ]]; then
+    cmake_options+=(
+        -DOPENEXR_ENABLE_X86_SIMD=OFF
+    )
+fi
+
+cmake -Bbuild -GNinja "${cmake_options[@]}"
 cmake --build build --parallel ${nproc}
 cmake --install build
 install_license LICENSE.md
@@ -58,7 +69,10 @@ products = [
 dependencies = [
     # Minor releases of `Imath_jll` are breaking, patch releases are not
     Dependency("Imath_jll"; compat="~3.2.2"),
-    Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
+    Dependency("OpenJPH_jll"; compat="0.32.0"),
+    Dependency("Zlib_jll"),
+    Dependency("Zstd_jll"; compat="1.5.7"),
+    Dependency("libdeflate_jll"; compat="1.26"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
