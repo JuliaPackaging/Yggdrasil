@@ -62,6 +62,9 @@ function get_script(; debug::Bool)
         atomic_patch -p0 patches/gcc-constexpr_assert_bug.patch
         # Fix iterator ambiguity with C++20 and LLVM 15
         atomic_patch -p0 patches/fix-iterator-ambiguity.patch
+        # Don't put overflowing word/byte integer results in the accumulator
+        # https://github.com/JuliaGPU/oneAPI.jl/issues/670
+        atomic_patch -p0 patches/narrow-int-acc-dst.patch
         # https://reviews.llvm.org/D64388
         sed -i '/add_subdirectory/i add_definitions(-D__STDC_FORMAT_MACROS)' intel-graphics-compiler/external/llvm/llvm.cmake
 
@@ -129,7 +132,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    HostBuildDependency("CMake_jll"),
+    # CMake 4 rejects the cmake_minimum_required of the bundled SPIRV-Tools
+    HostBuildDependency(PackageSpec(; name="CMake_jll", version="3.31.9")),
 ]
 
 augment_platform_block = raw"""
@@ -179,4 +183,3 @@ for platform in platforms, debug in (false, true)
                    julia_compat = "1.6", lock_microarchitecture=false)
 end
 
-# bump
