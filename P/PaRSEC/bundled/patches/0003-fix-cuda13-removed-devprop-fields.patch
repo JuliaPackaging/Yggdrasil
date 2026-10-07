@@ -1,0 +1,33 @@
+--- a/parsec/mca/device/cuda/device_cuda_module.c	2026-05-11 17:27:11.280135627 -0700
++++ b/parsec/mca/device/cuda/device_cuda_module.c	2026-05-11 17:27:11.289156547 -0700
+@@ -427,10 +427,18 @@
+     szName    = prop.name;
+     major     = prop.major;
+     minor     = prop.minor;
++#if CUDART_VERSION < 13000
+     freqHz    = prop.clockRate * 1000;  /* clockRate is in KHz */
++#else
++    freqHz    = 0;  /* clockRate removed in CUDA 13.0 */
++#endif
+     concurrency = prop.concurrentKernels;
+     streaming_multiprocessor = prop.multiProcessorCount;
++#if CUDART_VERSION < 13000
+     computemode = prop.computeMode;
++#else
++    computemode = 0;  /* computeMode removed in CUDA 13.0 */
++#endif
+ 
+     // We use calloc because we need some fields to be zero-initialized to ensure graceful handling of errors
+     cuda_device = (parsec_device_cuda_module_t*)calloc(1, sizeof(parsec_device_cuda_module_t));
+@@ -591,7 +599,11 @@
+                       freqHz*1e-9f, streaming_multiprocessor, cuda_device->major, cuda_device->minor,
+                       (concurrency == 1)? "yes": "no", computemode,
+                       device->gflops_guess? "GUESS": "", fp64*1e-3, fp32*1e-3, fp16*1e-3, tf32*1e-3,
++#if CUDART_VERSION < 13000
+                       2.0*prop.memoryClockRate*(prop.memoryBusWidth/8)/1.0e6, prop.memoryClockRate*1e-6, prop.memoryBusWidth, gpu_device->mem_block_size*gpu_device->mem_nb_blocks/1024.f/1024.f/1024.f);
++#else
++                      0.0, 0.0, prop.memoryBusWidth, gpu_device->mem_block_size*gpu_device->mem_nb_blocks/1024.f/1024.f/1024.f);
++#endif
+     }
+ 
+     *module = device;
