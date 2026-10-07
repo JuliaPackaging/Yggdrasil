@@ -142,6 +142,9 @@ function build_script(standalone=false)
     #   (upstream PR #2374)
     # - 0015, 0016: only wake up the CPU worker threads a command can use, making small
     #   kernel launches and subdevices cheap (upstream PR #2371)
+    # - 0017: drop a freed SVM/USM allocation's shadow device-address entry at free time, so
+    #   reallocating the same address doesn't yield an allocation without a shadow buffer
+    #   (upstream PR #2361, in `main`)
     for patch in $WORKSPACE/srcdir/patches/pocl/*.patch; do
         atomic_patch -p1 $patch
     done
