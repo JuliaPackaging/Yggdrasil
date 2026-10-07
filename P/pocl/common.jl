@@ -137,9 +137,6 @@ function build_script(standalone=false)
     # - 0013: share local memory across WorkitemLoops region replicas, fixing sub-group
     #   collectives after a branch with an early exit (upstream PR #2239, in `main`;
     #   JuliaGPU/OpenCL.jl#526, JuliaGPU/KernelAbstractions.jl#831)
-    # - 0014: include the kernel compiler sources in the kernel cache key, so that rebuilds
-    #   with kernel compiler patches don't reuse the previous build's cached binaries
-    #   (upstream PR #2374)
     # - 0015, 0016: only wake up the CPU worker threads a command can use, making small
     #   kernel launches and subdevices cheap (upstream PR #2371)
     # - 0017: drop a freed SVM/USM allocation's shadow device-address entry at free time, so
@@ -191,6 +188,11 @@ function build_script(standalone=false)
 
     # Enable optional debug messages for debuggability
     CMAKE_FLAGS+=(-DPOCL_DEBUG_MESSAGES:Bool=ON)
+
+    # Tag the version with a hash of our patch series. The version seeds the kernel cache
+    # key, so rebuilds with a different series don't reuse previously cached binaries.
+    patches_hash=$(cat $WORKSPACE/srcdir/patches/pocl/*.patch | sha256sum | cut -c1-12)
+    sed -i "s/^set(VERSION_SUFFIX_FIXED_TEXT \"\")/set(VERSION_SUFFIX_FIXED_TEXT \"~julia-${patches_hash}\")/" CMakeLists.txt
 
     # Install things into $prefix
     CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
