@@ -40,4 +40,4 @@ dependencies = Dependency[
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", compression_format="xz")
 
-# Build trigger: 1
+# Build trigger: 2
