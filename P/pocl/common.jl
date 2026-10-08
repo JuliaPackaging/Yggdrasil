@@ -142,6 +142,10 @@ function build_script(standalone=false)
     # - 0017: drop a freed SVM/USM allocation's shadow device-address entry at free time, so
     #   reallocating the same address doesn't yield an allocation without a shadow buffer
     #   (upstream PR #2361, in `main`)
+    # - 0018, 0019: create the CPU worker threads with an 8 MiB stack, which was intended but
+    #   never took effect (512 KiB on macOS, 1-2 MiB on Windows) (upstream PR #2383)
+    # - 0020: estimate kernel stack use after SROA, so that the -O0 locals of builtins like
+    #   hypot don't lower CL_KERNEL_WORK_GROUP_SIZE (upstream PR #2384)
     for patch in $WORKSPACE/srcdir/patches/pocl/*.patch; do
         atomic_patch -p1 $patch
     done
@@ -255,11 +259,11 @@ function build_script(standalone=false)
 
     # Each work-item's private memory is laid out on the worker thread's stack
     # and replicated across the work-group, so a private-heavy kernel at a large
-    # work-group size can overflow the default thread stack (only 512 KB on
-    # macOS, 1 MB on Windows) and crash. Enabling this makes PoCL estimate the
-    # per-work-item stack usage and clamp the kernel's reported
-    # CL_KERNEL_WORK_GROUP_SIZE accordingly, so launches fit (and over-large ones
-    # are rejected with CL_INVALID_WORK_GROUP_SIZE) instead of segfaulting.
+    # work-group size can overflow the 8 MiB worker stack and crash. Enabling this
+    # makes PoCL estimate the per-work-item stack usage and clamp the kernel's
+    # reported CL_KERNEL_WORK_GROUP_SIZE accordingly, so launches fit (and
+    # over-large ones are rejected with CL_INVALID_WORK_GROUP_SIZE) instead of
+    # crashing. The estimate doesn't cover values that live across barriers.
     CMAKE_FLAGS+=(-DHOST_CPU_ENABLE_STACK_SIZE_CHECK:Bool=ON)
 
     if [[ "${STANDALONE}" == "true" ]]; then
