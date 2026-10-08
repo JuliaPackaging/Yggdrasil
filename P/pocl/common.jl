@@ -146,6 +146,9 @@ function build_script(standalone=false)
     #   never took effect (512 KiB on macOS, 1-2 MiB on Windows) (upstream PR #2383)
     # - 0020: estimate kernel stack use after SROA, so that the -O0 locals of builtins like
     #   hypot don't lower CL_KERNEL_WORK_GROUP_SIZE (upstream PR #2384)
+    # - 0021: build the FP16 builtins without double-precision helpers, whose
+    #   llvm.roundeven lowers to a roundeven libcall missing on Windows below SSE4.1
+    #   (upstream commit 7fd676ef1, in `main`; JuliaGPU/OpenCL.jl#539)
     for patch in $WORKSPACE/srcdir/patches/pocl/*.patch; do
         atomic_patch -p1 $patch
     done
