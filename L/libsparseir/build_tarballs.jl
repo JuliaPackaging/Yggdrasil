@@ -20,15 +20,30 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/sparse-ir-rs/
 install_license LICENSE
 
+# The double-double arithmetic uses `f64::mul_add`; without the instruction that
+# is a call to the software implementation of `fma` in libm, which makes the SVE
+# about three times slower.  Setting RUSTFLAGS replaces the flags in
+# `.cargo/config.toml` rather than adding to them, so the feature has to be
+# repeated here.  Every platform built below has it: it is mandatory on aarch64,
+# present on x86-64 since 2013 and available on powerpc64le.
+#
+# The workspace profile builds with a single codegen unit, which is the most
+# memory-hungry way to compile the SIMD-heavy dependencies: `strided-kernel`
+# died with a rustc segmentation fault on both x86-64 and aarch64 until the job
+# ran on an agent with more free memory
+# (https://github.com/SpM-lab/sparse-ir-rs/issues/333).  Letting the crates use
+# more codegen units, and building two at a time, keeps the peak down.
+export CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16
+export CARGO_PROFILE_RELEASE_DEBUG=line-tables-only
+export CARGO_BUILD_JOBS=2
+
 if [[ "${target}" == *mingw* ]]; then
-    export RUSTFLAGS="-C link-arg=-L${libdir} -C link-arg=-lblastrampoline-5"
-    export CARGO_PROFILE_RELEASE_DEBUG=line-tables-only
+    export RUSTFLAGS="-C target-feature=+fma -C link-arg=-L${libdir} -C link-arg=-lblastrampoline-5"
     cargo build --release --features system-blas
     install -D -m 755 "target/${rust_target}/release/sparse_ir_capi.${dlext}" \
         "${libdir}/libsparse_ir_capi.${dlext}"
 else
-    export RUSTFLAGS="-C link-arg=-lblastrampoline"
-    export CARGO_PROFILE_RELEASE_DEBUG=line-tables-only
+    export RUSTFLAGS="-C target-feature=+fma -C link-arg=-lblastrampoline"
     cargo build --release --features system-blas
     install -D -m 755 "target/${rust_target}/release/libsparse_ir_capi.${dlext}" \
         "${libdir}/libsparse_ir_capi.${dlext}"
