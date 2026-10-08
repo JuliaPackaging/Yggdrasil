@@ -1,3 +1,4 @@
 [deps]
 BinaryBuilder2 = "12aac903-9f7c-5d81-afc2-d9565ea332af"
+BinaryBuilderAuditor = "53524979-5234-6e31-4220-6120654b694c"
 YAML = "ddb6d928-2868-570f-bddf-ab3f9cf99eb6"
