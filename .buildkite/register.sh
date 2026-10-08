@@ -23,6 +23,11 @@ if [[ -z "${PROJECT:-}" ]]; then
     exit 1
 fi
 
+# LibGit2 (used by `push_jll_package`) only reads the commit identity from git config, not env vars
+echo "--- Setting up git"
+git config --global user.name "jlbuild"
+git config --global user.email "juliabuildbot@gmail.com"
+
 if [[ "${JULIA_PROJECT}" == *"/bb2_project"* ]]; then
     echo "--- [BB2] Downloading artifacts..."
     buildkite-agent artifact download --build "${BUILD_ID}" "${PROJECT}/products/*" "${YGGDRASIL_BASE}"

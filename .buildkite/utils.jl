@@ -102,12 +102,6 @@ function env()
         "JULIA_PKG_SERVER_REGISTRY_PREFERENCE" => "eager",
         "JULIA_REGISTRYCI_AUTOMERGE" => "true",
         "YGGDRASIL" => "true",
-
-        # Insert git config values here so that commits during registration work
-        "GIT_COMMITTER_NAME" => "jlbuild",
-        "GIT_AUTHOR_NAME" => "jlbuild",
-        "GIT_COMMITTER_EMAIL" => "juliabuildbot@gmail.com",
-        "GIT_AUTHOR_EMAIL" => "juliabuildbot@gmail.com",
         "GIT_CONFIG_NOSYSTEM" => "true",
     )
 
