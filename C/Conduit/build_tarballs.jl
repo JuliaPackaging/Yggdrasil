@@ -21,6 +21,7 @@ apk del cmake
 
 # Provide C wrapper for some functions that generate example output, to make them callable from Julia
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/blueprint_mesh_examples_generate.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/relay_mpi_errhandler_mpiapi.patch
 
 options=(
     -DCMAKE_BUILD_TYPE=Release
@@ -31,6 +32,7 @@ options=(
     -DENABLE_EXAMPLES=OFF
     -DENABLE_UTILS=ON
     -DENABLE_DOCS=OFF
+    -DENABLE_MPI=ON
     -DENABLE_RELAY_WEBSERVER=OFF
     -DENABLE_COVERAGE=OFF
     -DENABLE_PYTHON=OFF
@@ -42,12 +44,6 @@ options=(
     -DZFP_DIR=${prefix}
     -DZLIB_DIR=${prefix}
 )
-if [[ ${target} == i686*-mingw* ]]; then
-    # Conduit has build errors with MicrosoftMPI on 32-bit Intel, disable it
-    options+=(-DENABLE_MPI=OFF)
-else
-    options+=(-DENABLE_MPI=ON)
-fi
 
 cmake -Bbuild "${options[@]}" src
 cmake --build build --parallel ${nproc}
