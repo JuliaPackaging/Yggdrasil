@@ -2,7 +2,7 @@
 
 julia_version = "1.12.7"
 manifest_format = "2.0"
-project_hash = "f43ce102636991893b567e0ead79cd7d961942b7"
+project_hash = "ca6ba147a5980d00fb924332b88f6b26e665645c"
 
 [[deps.ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
@@ -24,17 +24,20 @@ version = "1.11.0"
 
 [[deps.BinaryBuilder2]]
 deps = ["Artifacts", "BinaryBuilderAuditor", "BinaryBuilderGitUtils", "BinaryBuilderPlatformExtensions", "BinaryBuilderProducts", "BinaryBuilderSources", "BinaryBuilderToolchains", "Ccache_jll", "ChromeTracing", "Dates", "Downloads", "Git", "HistoricalStdlibVersions", "Infiltrator", "JLLGenerator", "JLLPrefixes", "KeywordArgumentExtraction", "LazyJLLWrappers", "Libdl", "LocalRegistry", "Logging", "LoggingExtras", "MultiHashParsing", "ObjectFile", "OrderedCollections", "OutputCollectors", "Pkg", "PrecompileTools", "Preferences", "Random", "Reexport", "RegistryTools", "SHA", "Sandbox", "Scratch", "ScratchSpaceGarbageCollector", "StructEquality", "StyledStrings", "TOML", "Test", "TimerOutputs", "TreeArchival", "UserNSSandbox_jll", "gh_cli_jll"]
-git-tree-sha1 = "2caebe1bce7e2e5b9e1deb4ae52dfa47fefc067b"
+git-tree-sha1 = "7b692817601856802f1226836b777ee00513d4f7"
 repo-rev = "main"
 repo-url = "https://github.com/JuliaPackaging/BinaryBuilder2.jl.git"
 uuid = "12aac903-9f7c-5d81-afc2-d9565ea332af"
-version = "1.1.1"
+version = "1.2.0"
 
 [[deps.BinaryBuilderAuditor]]
 deps = ["BinaryBuilderPlatformExtensions", "BinaryBuilderProducts", "BinaryBuilderSources", "BinaryBuilderToolchains", "JLLGenerator", "ObjectFile", "Pkg", "StyledStrings"]
-git-tree-sha1 = "c06c6041912cc68ac1fe62d29259bcaf7b767dcc"
+git-tree-sha1 = "ac8da2128e6d7488a5a04a828bd17cd96d9368e3"
+repo-rev = "main"
+repo-subdir = "BinaryBuilderAuditor.jl"
+repo-url = "https://github.com/JuliaPackaging/BinaryBuilder2.jl.git"
 uuid = "53524979-5234-6e31-4220-6120654b694c"
-version = "0.2.1"
+version = "0.3.0"
 
 [[deps.BinaryBuilderGitUtils]]
 deps = ["Git", "Git_jll", "MultiHashParsing", "gh_cli_jll"]
