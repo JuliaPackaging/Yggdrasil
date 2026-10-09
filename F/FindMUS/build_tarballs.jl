@@ -40,6 +40,9 @@ products = [
 ]
 
 platforms = supported_platforms()
+# Same exclusions as MiniZinc_jll
+filter!(p -> !(os(p) == "freebsd"), platforms)
+filter!(p -> !(arch(p) == "i686" && Sys.iswindows(p)), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 dependencies = [
