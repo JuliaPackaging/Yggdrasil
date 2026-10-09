@@ -13,6 +13,9 @@ sources = [
 
 script = raw"""
 cd $WORKSPACE/srcdir/chuffed
+
+sed -i 's/#include <Windows\.h>/#include <windows.h>/' chuffed/support/misc.h chuffed/globals/blackbox.h
+
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -41,6 +44,6 @@ build_tarballs(
     platforms,
     products,
     dependencies;
-    preferred_gcc_version = v"5",
+    preferred_gcc_version = v"12",
     julia_compat = "1.6",
 )
