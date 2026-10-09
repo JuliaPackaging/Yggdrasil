@@ -200,7 +200,7 @@ struct BB1RegisterStep <: AbstractRegisterStep
     num_platforms::Int
 end
 
-step_key(rs::BB1RegisterStep) = "register-$(safe_name(rs.name))"
+step_key(rs::BB1RegisterStep) = "register-$(safe_name(rs.project))"
 
 struct BB2RegisterStep <: AbstractRegisterStep
     name::String
