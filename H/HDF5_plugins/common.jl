@@ -40,9 +40,10 @@ hdf5_plugin_product(libname) =
 
 # Every filter is built against HDF5_jll for `H5PLextern.h` and the `H5Z`/`H5E`
 # API. The coupling is tight on purpose: the plugin release `2.2.x` targets
-# HDF5 `2.2.x`, so only HDF5_jll 2.2.* is allowed. Bump both together.
+# HDF5 `2.2.x`, so only HDF5_jll 2.2.* is allowed; `2.2.3` is the first build that is
+# published for all platforms (same HDF5 2.2.0 library). Bump both together.
 hdf5_plugin_dependencies(platform_dependencies, deps...) = [
-    Dependency("HDF5_jll"; compat="~2.2"),
+    Dependency("HDF5_jll"; compat="~2.2.3"),
     deps...,
     platform_dependencies...,
 ]
