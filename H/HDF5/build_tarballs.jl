@@ -325,7 +325,7 @@ dependencies = [
     Dependency("LibCURL_jll"; compat="7.73, 8"),
     Dependency("OpenSSL_jll"; compat="3.0.16"),
     Dependency("Zlib_jll"; compat="1.2.12"),
-    Dependency("aws_c_s3_jll"; compat="1"),
+    Dependency("aws_c_s3_jll"; compat="1.3.1"),
     Dependency("dlfcn_win32_jll"; platforms=filter(Sys.iswindows, platforms)),
     Dependency("libaec_jll"; compat="1.1.4"), # This is the successor of szlib
     Dependency("mpif_jll"; compat="1.0.0", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)), # MPI Fortran bindings
