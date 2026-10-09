@@ -1,7 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
-using BinaryBuilderBase: get_addable_spec
 
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
@@ -21,10 +20,7 @@ cd $WORKSPACE/srcdir/gtk*
 
 # We need to run some commands with a native Glib
 apk update
-apk add glib-dev py3-pip
-
-# we need a newer meson (>= 1.5.0)
-pip3 install -U meson
+apk add glib-dev
 
 # meson shouldn't be so opinionated (mesonbuild/meson#4542 is incomplete)
 sed -i '/Werror=unused-command-line-argument/d' /usr/lib/python3.9/site-packages/mesonbuild/compilers/mixins/clang.py
@@ -123,8 +119,7 @@ dependencies = [
     # Need a native `sassc`
     HostBuildDependency("SassC_jll"),
     # Need a host Wayland for wayland-scanner
-    #TODO HostBuildDependency("Wayland_jll"; platforms=x11_platforms),
-    HostBuildDependency(get_addable_spec("Wayland_jll", v"1.23.1+0"); platforms=x11_platforms),
+    HostBuildDependency("Wayland_jll"; platforms=x11_platforms),
     BuildDependency("Xorg_xorgproto_jll"; platforms=x11_platforms),
     # Build needs a header from but does not link to libdrm
     BuildDependency("libdrm_jll"; platforms=x11_platforms),
