@@ -24,7 +24,21 @@ hdf5_plugins_sources() = [
 # The plugins therefore have to be built for the same `mpi` platform tags as
 # HDF5_jll, so that each one is built against, and selected together with, the
 # matching HDF5_jll artifact. Returns `(platforms, platform_dependencies)`.
-hdf5_plugins_platforms() = MPI.augment_platforms(supported_platforms())
+#
+# HDF5_jll is only published for `libgfortran` 5 and the `cxx11` string ABI.
+# Without these tags BinaryBuilder resolves HDF5_jll for `libgfortran3`/`cxx03`
+# platforms, finds no artifact, and the headers are missing. Expand the ABI tags
+# like the HDF5 recipe does and keep only the platforms HDF5_jll is available for.
+function hdf5_plugins_platforms()
+    platforms = supported_platforms()
+    platforms = expand_cxxstring_abis(platforms)
+    platforms = expand_gfortran_versions(platforms)
+    filter!(platforms) do p
+        VersionNumber(get(tags(p), "libgfortran_version", "0")) >= v"5" &&
+            get(tags(p), "cxxstring_abi", "cxx11") != "cxx03"
+    end
+    return MPI.augment_platforms(platforms)
+end
 
 # Select the artifact matching the user's MPIPreferences, like HDF5_jll does
 const hdf5_plugin_augment_platform_block = """
