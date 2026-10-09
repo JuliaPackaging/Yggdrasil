@@ -2,9 +2,27 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "mongoose.h"
+
+// --- Manager ---
+
+// Allocate and initialise a manager; free it with mgjl_mgr_free().
+struct mg_mgr *mgjl_mgr_new(void) {
+  struct mg_mgr *mgr = (struct mg_mgr *) calloc(1, sizeof(*mgr));
+  if (mgr != NULL) mg_mgr_init(mgr);
+  return mgr;
+}
+
+// Tear down a manager allocated by mgjl_mgr_new().
+void mgjl_mgr_free(struct mg_mgr *mgr) {
+  if (mgr != NULL) {
+    mg_mgr_free(mgr);
+    free(mgr);
+  }
+}
 
 // --- Connection ---
 
@@ -64,6 +82,15 @@ void mgjl_http_reply_bin(struct mg_connection *c, int code, const char *headers,
                 len);
 }
 
+// mg_http_serve_dir() with only root_dir set (mongoose defaults for the rest).
+void mgjl_http_serve_dir(struct mg_connection *c, struct mg_http_message *hm,
+                         const char *root_dir) {
+  struct mg_http_serve_opts opts;
+  memset(&opts, 0, sizeof(opts));
+  opts.root_dir = root_dir;
+  mg_http_serve_dir(c, hm, &opts);
+}
+
 // --- WebSocket ---
 
 // Send a CLOSE frame (optional RFC 6455 status code + reason, truncated to
@@ -106,19 +133,20 @@ void mgjl_tls_init_mem(struct mg_connection *c,
   mg_tls_init(c, &opts);
 }
 
+// --- Logging ---
+
+// mg_log_set() macro equivalent.
+void mgjl_set_log_level(int level) { mg_log_level = level; }
+
 // --- ABI introspection ---
 
-// Sizes of the structs Mongoose.jl mirrors, for a startup sanity check.
-size_t mgjl_sizeof_mgr(void) { return sizeof(struct mg_mgr); }
+// Sizes of the read-only struct mirrors Mongoose.jl keeps, for a startup sanity check.
 size_t mgjl_sizeof_str(void) { return sizeof(struct mg_str); }
 size_t mgjl_sizeof_http_header(void) { return sizeof(struct mg_http_header); }
 size_t mgjl_sizeof_http_message(void) {
   return sizeof(struct mg_http_message);
 }
 size_t mgjl_sizeof_ws_message(void) { return sizeof(struct mg_ws_message); }
-size_t mgjl_sizeof_serve_opts(void) {
-  return sizeof(struct mg_http_serve_opts);
-}
 
 // MG_VERSION of the linked library, e.g. "7.23".
 const char *mgjl_version(void) { return MG_VERSION; }

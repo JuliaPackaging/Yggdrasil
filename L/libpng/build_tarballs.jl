@@ -26,6 +26,11 @@ if [[ "${target}" == *-darwin* ]]; then
     #    error: linker command failed with exit code 1 (use -v to see invocation)
     FLAGS+=(-DPNG_FRAMEWORK=OFF)
 fi
+if [[ "${target}" != *-darwin* ]]; then
+    # The version script probe links an executable with `local: *`, which lld >= 19
+    # rejects on FreeBSD, dropping the `PNG16_0` symbol versions. Skip the probe.
+    FLAGS+=(-DHAVE_LD_VERSION_SCRIPT=ON)
+fi
 if [[ "${target}" == riscv64* ]]; then
     # Need to explicitly add `-lm`
     FLAGS+=(

@@ -73,7 +73,7 @@ in the trusted registration job.
   (and the registry / pkg-server env) through the trigger step's `build.env`.
 * `register.sh` regenerates the `meta.json` with both publication tokens cleared,
   starts Julia with multiple threads, and then runs
-  [`.ci/register_package.jl`](../.ci/register_package.jl) with the tokens
+  [`.ci/bb1_project/register_package.jl`](../.ci/bb1_project/register_package.jl) with the tokens
   available.
 * `register_package.jl` downloads the freshly-built tarballs and metadata from the
   triggering build with

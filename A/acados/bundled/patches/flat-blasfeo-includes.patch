@@ -1,0 +1,32 @@
+diff --git a/acados/ocp_nlp/ocp_nlp_sqp_with_feasible_qp.c b/acados/ocp_nlp/ocp_nlp_sqp_with_feasible_qp.c
+index 297afc80..144a9421 100644
+--- a/acados/ocp_nlp/ocp_nlp_sqp_with_feasible_qp.c
++++ b/acados/ocp_nlp/ocp_nlp_sqp_with_feasible_qp.c
+@@ -42,9 +42,9 @@
+ #endif
+ 
+ // blasfeo
+-#include "blasfeo/include/blasfeo_d_aux.h"
+-#include "blasfeo/include/blasfeo_d_aux_ext_dep.h"
+-#include "blasfeo/include/blasfeo_d_blas.h"
++#include "blasfeo_d_aux.h"
++#include "blasfeo_d_aux_ext_dep.h"
++#include "blasfeo_d_blas.h"
+ 
+ // acados
+ #include "acados/ocp_nlp/ocp_nlp_common.h"
+diff --git a/interfaces/acados_c/ocp_nlp_interface.c b/interfaces/acados_c/ocp_nlp_interface.c
+index f342da07..73d48771 100644
+--- a/interfaces/acados_c/ocp_nlp_interface.c
++++ b/interfaces/acados_c/ocp_nlp_interface.c
+@@ -66,8 +66,8 @@
+ #include "acados/utils/strsep.h"
+ 
+ // blasfeo
+-#include "blasfeo/include/blasfeo_d_blas.h"
+-#include "blasfeo/include/blasfeo_d_aux.h"
++#include "blasfeo_d_blas.h"
++#include "blasfeo_d_aux.h"
+ 
+ /************************************************
+ * plan

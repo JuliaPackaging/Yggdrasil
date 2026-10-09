@@ -137,11 +137,18 @@ function build_script(standalone=false)
     # - 0013: share local memory across WorkitemLoops region replicas, fixing sub-group
     #   collectives after a branch with an early exit (upstream PR #2239, in `main`;
     #   JuliaGPU/OpenCL.jl#526, JuliaGPU/KernelAbstractions.jl#831)
-    # - 0014: include the kernel compiler sources in the kernel cache key, so that rebuilds
-    #   with kernel compiler patches don't reuse the previous build's cached binaries
-    #   (upstream PR #2374)
     # - 0015, 0016: only wake up the CPU worker threads a command can use, making small
     #   kernel launches and subdevices cheap (upstream PR #2371)
+    # - 0017: drop a freed SVM/USM allocation's shadow device-address entry at free time, so
+    #   reallocating the same address doesn't yield an allocation without a shadow buffer
+    #   (upstream PR #2361, in `main`)
+    # - 0018, 0019: create the CPU worker threads with an 8 MiB stack, which was intended but
+    #   never took effect (512 KiB on macOS, 1-2 MiB on Windows) (upstream PR #2383)
+    # - 0020: estimate kernel stack use after SROA, so that the -O0 locals of builtins like
+    #   hypot don't lower CL_KERNEL_WORK_GROUP_SIZE (upstream PR #2384)
+    # - 0021: build the FP16 builtins without double-precision helpers, whose
+    #   llvm.roundeven lowers to a roundeven libcall missing on Windows below SSE4.1
+    #   (upstream commit 7fd676ef1, in `main`; JuliaGPU/OpenCL.jl#539)
     for patch in $WORKSPACE/srcdir/patches/pocl/*.patch; do
         atomic_patch -p1 $patch
     done
@@ -188,6 +195,11 @@ function build_script(standalone=false)
 
     # Enable optional debug messages for debuggability
     CMAKE_FLAGS+=(-DPOCL_DEBUG_MESSAGES:Bool=ON)
+
+    # Tag the version with a hash of our patch series. The version seeds the kernel cache
+    # key, so rebuilds with a different series don't reuse previously cached binaries.
+    patches_hash=$(cat $WORKSPACE/srcdir/patches/pocl/*.patch | sha256sum | cut -c1-12)
+    sed -i "s/^set(VERSION_SUFFIX_FIXED_TEXT \"\")/set(VERSION_SUFFIX_FIXED_TEXT \"~julia-${patches_hash}\")/" CMakeLists.txt
 
     # Install things into $prefix
     CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
@@ -250,11 +262,11 @@ function build_script(standalone=false)
 
     # Each work-item's private memory is laid out on the worker thread's stack
     # and replicated across the work-group, so a private-heavy kernel at a large
-    # work-group size can overflow the default thread stack (only 512 KB on
-    # macOS, 1 MB on Windows) and crash. Enabling this makes PoCL estimate the
-    # per-work-item stack usage and clamp the kernel's reported
-    # CL_KERNEL_WORK_GROUP_SIZE accordingly, so launches fit (and over-large ones
-    # are rejected with CL_INVALID_WORK_GROUP_SIZE) instead of segfaulting.
+    # work-group size can overflow the 8 MiB worker stack and crash. Enabling this
+    # makes PoCL estimate the per-work-item stack usage and clamp the kernel's
+    # reported CL_KERNEL_WORK_GROUP_SIZE accordingly, so launches fit (and
+    # over-large ones are rejected with CL_INVALID_WORK_GROUP_SIZE) instead of
+    # crashing. The estimate doesn't cover values that live across barriers.
     CMAKE_FLAGS+=(-DHOST_CPU_ENABLE_STACK_SIZE_CHECK:Bool=ON)
 
     if [[ "${STANDALONE}" == "true" ]]; then
