@@ -54,7 +54,7 @@ products = [
 # platforms are passed in on the command line
 platforms = supported_platforms()
 filter!(p -> !(os(p) == "freebsd"), platforms)
-filter!(p -> arch(p) == "i686" && Sys.iswindows(p), platforms)
+filter!(p -> !(arch(p) == "i686" && Sys.iswindows(p)), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 dependencies = [
