@@ -1,61 +1,5 @@
---- a/include/minizinc/file_utils.hh
-+++ b/include/minizinc/file_utils.hh
-@@ -15,12 +15,16 @@
- #include <vector>
- 
- // Macro so that we can use overloaded wide versions of fstream::open for Windows
--#ifdef _WIN32
-+#if defined(_WIN32) && !defined(__MINGW32__)
- #define FILE_PATH(path) MiniZinc::FileUtils::utf8_to_wide(path)
- #else
- #define FILE_PATH(path) (path)
- #endif
- 
-+#ifdef __MINGW32__
-+    #define realpath(N,R) _fullpath((R),(N),PATH_MAX)
-+#endif
-+
- namespace MiniZinc {
- namespace FileUtils {
-
---- a/minizinc.cpp
-+++ b/minizinc.cpp
-@@ -89,7 +89,7 @@ int run(const std::string& exe, const std::vector<std::string>& args, bool jsonS
- 
- }  // namespace
- 
--#ifdef _WIN32
-+#if defined(_WIN32) && !defined(__MINGW32__)
- #include <minizinc/interrupt.hh>
- 
- int wmain(int argc, wchar_t* argv[], wchar_t* envp[]) {
-@@ -121,7 +121,9 @@ int wmain(int argc, wchar_t* argv[], wchar_t* envp[]) {
- }
- #else
- int main(int argc, const char** argv) {
-+  #if !defined(__MINGW32__)
-   OverflowHandler::install(argv);
-+  #endif
-   std::vector<std::string> args(argc - 1);
-   bool jsonStream = false;
-   for (int i = 1; i < argc; i++) {
---- a/include/minizinc/process.hh
-+++ b/include/minizinc/process.hh
-@@ -225,11 +225,11 @@ public:
-     std::condition_variable cv;
- 
-     std::deque<std::string> outputQueue;
--    thread thrStdout(&ReadPipePrint<S2O>, g_hChildStd_OUT_Rd, &doneStdout, nullptr, &outputQueue,
-+    std::thread thrStdout(&ReadPipePrint<S2O>, g_hChildStd_OUT_Rd, &doneStdout, nullptr, &outputQueue,
-                      &pipeMutex, &cv_mutex, &cv);
--    thread thrStderr(&ReadPipePrint<S2O>, g_hChildStd_ERR_Rd, &doneStderr, &_pS2Out->getLog(),
-+    std::thread thrStderr(&ReadPipePrint<S2O>, g_hChildStd_ERR_Rd, &doneStderr, &_pS2Out->getLog(),
-                      nullptr, &pipeMutex, nullptr, nullptr);
--    thread thrTimeout([&] {
-+    std::thread thrTimeout([&] {
-       auto shouldStop = [&] { return hadInterrupt || (doneStderr && doneStdout); };
-       std::unique_lock<std::mutex> lck(_interruptMutex);
-       if (_timelimit != 0) {
+diff --git a/solvers/MIP/MIP_cplex_wrap.cpp b/solvers/MIP/MIP_cplex_wrap.cpp
+index cbb2bdc4..a7fad1f1 100644
 --- a/solvers/MIP/MIP_cplex_wrap.cpp
 +++ b/solvers/MIP/MIP_cplex_wrap.cpp
 @@ -61,7 +61,7 @@ void* dll_open(const std::string& file) {
@@ -67,11 +11,13 @@
  #else
    void* ret = dlsym(dll, sym);
  #endif
+diff --git a/solvers/MIP/MIP_gurobi_wrap.cpp b/solvers/MIP/MIP_gurobi_wrap.cpp
+index 0d41c811..1e5750be 100644
 --- a/solvers/MIP/MIP_gurobi_wrap.cpp
 +++ b/solvers/MIP/MIP_gurobi_wrap.cpp
-@@ -263,7 +263,7 @@ void* dll_open(const char* file) {
+@@ -268,7 +268,7 @@ void* dll_open(const char* file) {
  }
- void* dll_sym(void* dll, const char* sym) {
+ void* try_dll_sym(void* dll, const char* sym) {
  #ifdef _WIN32
 -  void* ret = GetProcAddress((HMODULE)dll, sym);
 +  void* ret = (void*)GetProcAddress((HMODULE)dll, sym);
