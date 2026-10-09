@@ -27,7 +27,7 @@ cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_PREFIX_PATH=${prefix} \
+    -DCMAKE_PREFIX_PATH="${prefix};${prefix}/CMake" \
     -DCMAKE_CXX_FLAGS="-D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS"
 cmake --build build --parallel ${nproc}
 cmake --install build
