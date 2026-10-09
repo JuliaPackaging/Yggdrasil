@@ -52,9 +52,9 @@ products = [
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(;
-    exclude = p -> Sys.isbsd(p) || (arch(p) == "i686" && Sys.iswindows(p)),
-)
+platforms = supported_platforms()
+filter!(p -> !(os(p) == "freebsd"), platforms)
+filter!(p -> arch(p) == "i686" && Sys.iswindows(p), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 dependencies = [
