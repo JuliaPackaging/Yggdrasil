@@ -1,0 +1,48 @@
+Fix the 2D solvers: swpc_sh exchanged single-precision Vy halos as MPI_DOUBLE_PRECISION (heap corruption), swpc_psv left its MPI halo buffers uninitialised (NaN ghost cells at MPI_PROC_NULL edges).
+To be reported upstream (https://github.com/OpenSWPC/OpenSWPC); not fixed in develop as of 2026-09-23.
+
+diff --git a/src/swpc_psv/m_global.f90 b/src/swpc_psv/m_global.f90
+index bb32054..85858c3 100644
+--- a/src/swpc_psv/m_global.f90
++++ b/src/swpc_psv/m_global.f90
+@@ -238,10 +238,10 @@ contains
+ 
+         ! MPI coordinate
+         allocate (itbl(-1:nproc_x))
+-        allocate (sbuf_V_ip(3 * nz), sbuf_V_im(3 * nz))
+-        allocate (rbuf_V_ip(3 * nz), rbuf_V_im(3 * nz))
+-        allocate (sbuf_S_ip(3 * nz), sbuf_S_im(3 * nz))
+-        allocate (rbuf_S_ip(3 * nz), rbuf_S_im(3 * nz))
++        allocate (sbuf_V_ip(3 * nz), sbuf_V_im(3 * nz), source=0.0_SP)
++        allocate (rbuf_V_ip(3 * nz), rbuf_V_im(3 * nz), source=0.0_SP)
++        allocate (sbuf_S_ip(3 * nz), sbuf_S_im(3 * nz), source=0.0_MP)
++        allocate (rbuf_S_ip(3 * nz), rbuf_S_im(3 * nz), source=0.0_MP)
+ 
+         ! MPI communication table
+         call set_mpi_table
+diff --git a/src/swpc_sh/m_global.f90 b/src/swpc_sh/m_global.f90
+index d01af28..b0b4ea1 100644
+--- a/src/swpc_sh/m_global.f90
++++ b/src/swpc_sh/m_global.f90
+@@ -338,8 +338,8 @@ contains
+         call pwatch__on("global__comm_vel")
+ 
+         !$acc host_data use_device(rbuf_V_ip, rbuf_V_im)
+-        call mpi_irecv(rbuf_V_ip, 2 * nz, mpi_precision, itbl(idx+1), 1, mpi_comm_world, req(1), err)
+-        call mpi_irecv(rbuf_V_im, 2 * nz, mpi_precision, itbl(idx-1), 2, mpi_comm_world, req(2), err)
++        call mpi_irecv(rbuf_V_ip, 2 * nz, mpi_real, itbl(idx+1), 1, mpi_comm_world, req(1), err)
++        call mpi_irecv(rbuf_V_im, 2 * nz, mpi_real, itbl(idx-1), 2, mpi_comm_world, req(2), err)
+         !$acc end host_data
+ 
+         !$acc kernels present(Vy, sbuf_V_ip, sbuf_V_im)
+@@ -352,8 +352,8 @@ contains
+         !$acc end kernels
+ 
+         !$acc host_data use_device(sbuf_V_ip, sbuf_V_im)
+-        call mpi_isend(sbuf_V_ip, 2 * nz, mpi_precision, itbl(idx+1), 2, mpi_comm_world, req(3), err)
+-        call mpi_isend(sbuf_V_im, 2 * nz, mpi_precision, itbl(idx-1), 1, mpi_comm_world, req(4), err)
++        call mpi_isend(sbuf_V_ip, 2 * nz, mpi_real, itbl(idx+1), 2, mpi_comm_world, req(3), err)
++        call mpi_isend(sbuf_V_im, 2 * nz, mpi_real, itbl(idx-1), 1, mpi_comm_world, req(4), err)
+         !$acc end host_data
+ 
+         call mpi_waitall(4, req, istatus, err)
