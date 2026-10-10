@@ -2,7 +2,6 @@
 import Pkg
 
 Base.set_active_project(@__DIR__)
-using YAML
 
 const PROJECTS = copy(ARGS)
 const DEBUG = !haskey(ENV, "BUILDKITE")
@@ -30,6 +29,8 @@ end
 
 # Instantiate, to install all necessary packages like YAML (not BinaryBuilder)
 Pkg.instantiate()
+
+using YAML
 
 include("utils.jl")
 
