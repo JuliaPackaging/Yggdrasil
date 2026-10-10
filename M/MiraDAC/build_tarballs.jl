@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "MiraDAC"
-version = v"1.1.3"
+version = v"1.1.4"
 
 # The SymEngine commit of cmake/symengine_pin.txt at the MiraDAC commit below; the build script
 # checks it against that file. A GitSource, not the pin's tarball: BinaryBuilder rejects
@@ -12,7 +12,7 @@ symengine_commit = "153b7e98f310bccaae586dab6b49284ccd5f4174"
 
 sources = [
     GitSource("https://github.com/zhanghe9704/MiraDAC.git",
-              "4da1849c923b6639027b2fccf3d4d3e201e4bb30"),  # tag v1.1.3
+              "05af9438bfe336da3d1db3734887787787d9566b"),  # tag v1.1.4
     GitSource("https://github.com/symengine/symengine.git", symengine_commit),
 ]
 
@@ -117,7 +117,7 @@ linux_platforms = [
 # cxxstring ABI to expand. The darwin legs need capi/CMakeLists.txt from after "capi: choose the
 # exported-symbol mechanism per linker", the MinGW legs from after "capi: restrict MinGW DLL
 # exports with a generated .def file" and the musl legs from after "Gate AVX2 IFUNC dispatch on
-# glibc" — the GitSource commit above (v1.1.3) includes all three.
+# glibc" — the GitSource commit above (v1.1.4) includes all three.
 platforms = vcat(
     expand_cxxstring_abis(linux_platforms),
     Platform("x86_64", "freebsd"),
