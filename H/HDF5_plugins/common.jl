@@ -9,6 +9,7 @@
 # JLLs, so we compile the plugin source file(s) directly and link them against
 # the codec JLL and HDF5_jll.
 using BinaryBuilder, Pkg
+using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
