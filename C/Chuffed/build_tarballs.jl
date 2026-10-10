@@ -2,17 +2,21 @@ using BinaryBuilder, Pkg
 
 name = "Chuffed"
 
-version = v"0.13.2"
+version = v"0.14.0"
 
 sources = [
     GitSource(
         "https://github.com/chuffed/chuffed.git",
-        "2016f7eb7943a86b9ce93bb70b821d701667a5ca",
+        "f698d5623bb0c2bcd497388ba966f0436d62caf4",
     ),
 ]
 
 script = raw"""
 cd $WORKSPACE/srcdir/chuffed
+
+sed -i 's/#include <Windows\.h>/#include <windows.h>/' chuffed/support/misc.h chuffed/globals/blackbox.h
+sed -i 's/operator\[\](unsigned int index)/operator[](int index)/' chuffed/support/vec.h
+
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -41,6 +45,6 @@ build_tarballs(
     platforms,
     products,
     dependencies;
-    preferred_gcc_version = v"5",
+    preferred_gcc_version = v"12",
     julia_compat = "1.6",
 )

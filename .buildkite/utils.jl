@@ -200,7 +200,7 @@ struct BB1RegisterStep <: AbstractRegisterStep
     num_platforms::Int
 end
 
-step_key(rs::BB1RegisterStep) = "register-$(rs.name)"
+step_key(rs::BB1RegisterStep) = "register-$(safe_name(rs.project))"
 
 struct BB2RegisterStep <: AbstractRegisterStep
     name::String
@@ -208,7 +208,7 @@ struct BB2RegisterStep <: AbstractRegisterStep
 
     dependencies::Vector{AbstractStep}
 end
-step_key(rs::BB2RegisterStep) = "register-$(rs.name)"
+step_key(rs::BB2RegisterStep) = "register-$(safe_name(rs.name))"
 universe_name(rs::BB2RegisterStep) = "$(safe_name(rs.project))-$(YGGDRASIL_COMMIT)"
 
 function render(rs::AbstractRegisterStep)

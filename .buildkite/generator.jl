@@ -62,9 +62,10 @@ for project in PROJECTS
 end
 
 function bb1_build_steps!(group_steps, project)
-    # determine the name, removing any trailing version number
-    # (`L/LLVM/LLVM@14` results in `NAME = "LLVM"`)
+    # `L/LLVM/LLVM@14` has basename `LLVM@14`, but its tarballs and JLL are
+    # named `LLVM`, which is what registration needs to find them.
     project_basename = basename(project)
+    jll_name = first(split(project_basename, "@"))
 
     # We always invoke a `build_tarballs.jl` file from its own directory to generate the platform list
     cd(project) do
@@ -100,7 +101,7 @@ function bb1_build_steps!(group_steps, project)
     if SHOULD_REGISTER
         push!(steps, wait_step())
         push!(steps, render(BB1RegisterStep(
-            project_basename,
+            jll_name,
             project,
             should_skip_builds,
             length(platforms),
