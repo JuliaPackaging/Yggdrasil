@@ -21,6 +21,7 @@ cd $WORKSPACE/srcdir/gtk*
 
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/gdkdmabuf-memfd-seals.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/roaring-freebsd-bswap.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/gdkpng-freebsd-setjmp.patch
 
 # We need to run some commands with a native Glib
 apk update
