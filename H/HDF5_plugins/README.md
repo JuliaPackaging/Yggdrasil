@@ -6,18 +6,10 @@ JLL names are `H5Z<filter>C`: the `H5Z` prefix is HDF5's filter namespace and th
 
 | JLL | Filter id | Library | Codec dependency |
 |---|---|---|---|
-| `H5ZbitgroomC_jll` | 32022 | `libh5bitgroom` | – |
-| `H5ZbitroundC_jll` | 32032 | `libh5bitround` | – |
-| `H5ZgranularbrC_jll` | 32023 | `libh5granular_bitround` | – |
-| `H5ZbloscC_jll` | 32001 | `libh5blosc` | `Blosc_jll` |
-| `H5Zblosc2C_jll` | 32026 | `libh5blosc2` | `Blosc2_jll` |
-| `H5ZbshufC_jll` | 32008 | `libh5bshuf` | `Lz4_jll`, `Zstd_jll` (bitshuffle bundled upstream) |
-| `H5Zbzip2C_jll` | 307 | `libh5bz2` | `Bzip2_jll` |
-| `H5ZjpegC_jll` | 32019 | `libh5jpeg` | `JpegTurbo_jll` |
-| `H5Zlz4C_jll` | 32004 | `libh5lz4` | `Lz4_jll` |
-| `H5ZlzfC_jll` | 32000 | `libh5lzf` | – (liblzf bundled upstream) |
-| `H5ZzfpC_jll` | 32013 | `libh5zzfp` | `zfp_jll` |
 | `H5ZzstdC_jll` | 32015 | `libh5zstd` | `Zstd_jll` |
+
+The remaining filters of hdf5_plugins (bitgroom, bitround, granular bitround,
+blosc, blosc2, bitshuffle, bzip2, jpeg, lz4, lzf, zfp) are added one per pull request.
 
 ## Versioning and HDF5_jll
 
