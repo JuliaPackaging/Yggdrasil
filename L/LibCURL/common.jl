@@ -33,7 +33,7 @@ const curl_hashes = Dict(
     v"8.22.0" => "d54dd598bf05927a726deb38df31c6a255ba83ff1de57c5d1464dac3ed8f44a1",
 )
 
-function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=false)
+function build_libcurl(ARGS, name::String, version::VersionNumber; ygg_version=version, with_zstd=false, static_zstd=false)
     hash = curl_hashes[version]
 
     if name == "CURL"
@@ -50,6 +50,13 @@ function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=fal
         ArchiveSource("https://curl.se/download/curl-$(version).tar.gz", hash),
         DirectorySource("../patches"),
     ]
+    if static_zstd
+        with_zstd || throw(ArgumentError("static_zstd=true requires with_zstd=true"))
+        # Link zstd statically into libcurl so that we do not depend on Zstd_jll
+        push!(sources,
+              ArchiveSource("https://github.com/facebook/zstd/releases/download/v1.5.7/zstd-1.5.7.tar.gz",
+                            "eb33e51f49a15e023950cd7825ca74a4a2b43db8354825ac24fc1b7ee09e6fa3"))
+    end
     if version == v"8.13"
         unpack_macosx_sdk = get_macos_sdk_script("10.13")
         append!(sources, get_macos_sdk_sources("10.13"))
@@ -68,6 +75,9 @@ function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=fal
     if with_zstd
 	config *= "HAVE_ZSTD=true\n"
     end
+    if static_zstd
+        config *= "STATIC_ZSTD=true\n"
+    end
     if without_nss
         config *= "WITHOUT_NSS=true\n"
     end
@@ -83,6 +93,25 @@ function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=fal
 
     # Bash recipe for building across all platforms
     script = config * unpack_macosx_sdk * raw"""
+    if [[ ${STATIC_ZSTD} == true ]]; then
+        # Build a private static zstd library that we link into libcurl. curl only needs
+        # streaming decompression, so we omit compression and the dictionary builder
+        # (this also avoids the `qsort_r` and threading problems that `Zstd_jll` patches).
+        # The code needs to be position independent since it ends up in a shared library,
+        # and its symbols must not be exported from libcurl.
+        cd $WORKSPACE/srcdir/zstd-*
+        zstd_cppflags="-DZSTDLIB_VISIBLE= -DZSTDERRORLIB_VISIBLE= -DZDICTLIB_VISIBLE="
+        zstd_cflags="-O3 -fPIC"
+        if [[ ${target} != *mingw* ]]; then
+            zstd_cflags="${zstd_cflags} -fvisibility=hidden"
+        fi
+        CPPFLAGS="${zstd_cppflags}" CFLAGS="${zstd_cflags}" \
+            make -C lib -j${nproc} libzstd.a ZSTD_LIB_COMPRESSION=0 ZSTD_LIB_DICTBUILDER=0 ZSTD_LIB_DEPRECATED=0
+        zstd_prefix=$WORKSPACE/zstd-static
+        install -Dm 644 lib/libzstd.a ${zstd_prefix}/lib/libzstd.a
+        install -Dm 644 lib/zstd.h lib/zstd_errors.h -t ${zstd_prefix}/include
+    fi
+
     cd $WORKSPACE/srcdir/curl-*
 
     if [[ ${APPLY_MEMDUP_PATCH} == true ]]; then
@@ -117,8 +146,17 @@ function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=fal
         --with-zlib=${prefix}
     )
 
-    if [[ ${HAVE_ZSTD} == true ]]; then
+    if [[ ${STATIC_ZSTD} == true ]]; then
+        FLAGS+=(--with-zstd=${zstd_prefix})
+        if [[ ${target} == *mingw* ]]; then
+            # Otherwise libtool refuses to link a static archive into a DLL
+            FLAGS+=(lt_cv_deplibs_check_method=pass_all)
+        fi
+    elif [[ ${HAVE_ZSTD} == true ]]; then
         FLAGS+=(--with-zstd=${prefix})
+    else
+        # Prevent configure from auto-detecting zstd
+        FLAGS+=(--without-zstd)
     fi
 
     if [[ ${WITHOUT_NSS} == true ]]; then
@@ -181,6 +219,13 @@ function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=fal
         make install
         # ...but remove `curl`
         rm "${bindir}/curl${exeext}"
+        if [[ ${STATIC_ZSTD} == true ]]; then
+            # zstd is linked into libcurl; do not let pkg-config look for a libzstd package
+            sed -i -e '/^Requires.private:/s/ *libzstd//' \
+                   -e '/^Libs.private:/s/ *-L[^ ]*zstd-static[^ ]*//g' \
+                   -e '/^Libs.private:/s/ *-lzstd//g' \
+                   ${prefix}/lib/pkgconfig/libcurl.pc
+        fi
     fi
     install_license COPYING
     """
@@ -220,16 +265,16 @@ function build_libcurl(ARGS, name::String, version::VersionNumber; with_zstd=fal
                         platforms=filter(p -> sanitize(p)=="memory", platforms)),
     ]
 
-    if with_zstd
+    if with_zstd && !static_zstd
         push!(dependencies, Dependency("Zstd_jll"))
     end
 
     if this_is_curl_jll
         # Curl_jll depends on LibCURL_jll
-        push!(dependencies, Dependency("LibCURL_jll"; compat="$(version)"))
+        push!(dependencies, Dependency("LibCURL_jll"; compat="$(ygg_version)"))
     end
 
     # Build the tarballs, and possibly a `build.jl` as well.
-    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+    build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                    julia_compat="1.8", preferred_llvm_version=llvm_version)
 end
