@@ -1,0 +1,63 @@
+execinfo.h (backtrace) does not exist on Windows and musl; skip the backtrace where it is missing.
+https://github.com/TUM-I5/utils (upstream PR to be opened)
+
+diff --git a/submodules/async/submodules/utils/logger.h b/submodules/async/submodules/utils/logger.h
+--- a/submodules/async/submodules/utils/logger.h
++++ b/submodules/async/submodules/utils/logger.h
+@@ -42,7 +42,10 @@
+ #include <algorithm>
+ #include <cstdlib>
+ #include <ctime>
++#if __has_include(<execinfo.h>)
+ #include <execinfo.h>
++#define UTILS_HAVE_BACKTRACE
++#endif
+ #include <iostream>
+ #include <sstream>
+ #include <vector>
+@@ -169,6 +172,7 @@
+ 								// does not exit the program
+ 
+ 				// Backtrace
++#ifdef UTILS_HAVE_BACKTRACE
+ 				if (BACKTRACE_SIZE > 0) {
+ 					void *buffer[BACKTRACE_SIZE];
+ 					int nptrs = backtrace(buffer, BACKTRACE_SIZE);
+@@ -184,6 +188,7 @@
+ 					// Write backtrace to stderr
+ 					std::cerr << outputBuffer.str() << std::flush;
+ 				}
++#endif
+ 
+ 				LOG_ABORT;
+ 			}
+diff --git a/submodules/utils/logger.h b/submodules/utils/logger.h
+--- a/submodules/utils/logger.h
++++ b/submodules/utils/logger.h
+@@ -42,7 +42,10 @@
+ #include <algorithm>
+ #include <cstdlib>
+ #include <ctime>
++#if __has_include(<execinfo.h>)
+ #include <execinfo.h>
++#define UTILS_HAVE_BACKTRACE
++#endif
+ #include <iostream>
+ #include <sstream>
+ #include <vector>
+@@ -169,6 +172,7 @@
+ 								// does not exit the program
+ 
+ 				// Backtrace
++#ifdef UTILS_HAVE_BACKTRACE
+ 				if (BACKTRACE_SIZE > 0) {
+ 					void *buffer[BACKTRACE_SIZE];
+ 					int nptrs = backtrace(buffer, BACKTRACE_SIZE);
+@@ -184,6 +188,7 @@
+ 					// Write backtrace to stderr
+ 					std::cerr << outputBuffer.str() << std::flush;
+ 				}
++#endif
+ 
+ 				LOG_ABORT;
+ 			}

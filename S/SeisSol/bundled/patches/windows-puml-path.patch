@@ -1,0 +1,51 @@
+Split "filename:/dataset" at the last colon: the file name of a Windows path contains one (drive letter).
+https://github.com/TUM-I5/PUML2 (upstream PR to be opened)
+
+diff --git a/submodules/PUML/PUML.h b/submodules/PUML/PUML.h
+--- a/submodules/PUML/PUML.h
++++ b/submodules/PUML/PUML.h
+@@ -266,6 +266,20 @@
+ 	}
+ #endif // USE_MPI
+ 
++	/**
++	 * Splits "filename:/dataset" at the last colon, so that file names with a drive letter
++	 * ("C:\\data\\mesh.h5:/connect") work.
++	 */
++	static std::vector<std::string> splitFileDataset(const char* name)
++	{
++		const std::string full(name);
++		const auto pos = full.rfind(':');
++		if (pos == std::string::npos) {
++			return {full};
++		}
++		return {full.substr(0, pos), full.substr(pos + 1)};
++	}
++
+ 	void open(const char* cellName, const char* vertexName)
+ 	{
+ 		int rank = 0;
+@@ -275,12 +289,12 @@
+ 		MPI_Comm_size(m_comm, &procs);
+ #endif // USE_MPI
+ 
+-		std::vector<std::string> cellNames = utils::StringUtils::split(cellName, ':');
++		std::vector<std::string> cellNames = splitFileDataset(cellName);
+ 		if (cellNames.size() != 2) {
+ 			logError() << "Cells name must have the form \"filename:/dataset\"";
+ 		}
+ 
+-		std::vector<std::string> vertexNames = utils::StringUtils::split(vertexName, ':');
++		std::vector<std::string> vertexNames = splitFileDataset(vertexName);
+ 		if (vertexNames.size() != 2) {
+ 			logError() << "Vertices name must have the form \"filename:/dataset\"";
+ 		}
+@@ -461,7 +475,7 @@
+ #endif // USE_MPI
+ 
+ 		auto cellDistributor = Distributor(m_originalTotalSize[0], procs);
+-		std::vector<std::string> dataNames = utils::StringUtils::split(dataName, ':');
++		std::vector<std::string> dataNames = splitFileDataset(dataName);
+ 		if (dataNames.size() != 2) {
+ 			logError() << "Data name must have the form \"filename:/dataset\"";
+ 		}
