@@ -6,24 +6,34 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "GTK4"
-version = v"4.18.6"
+version = v"4.22.5"
 
 # Collection of sources required to build GTK
 sources = [
     ArchiveSource("https://download.gnome.org/sources/gtk/$(version.major).$(version.minor)/gtk-$(version).tar.xz",
-                  "e1817c650ddc3261f9a8345b3b22a26a5d80af154630dedc03cc7becefffd0fa"),
+                  "7fd725deb2cb3f8dc218ad862c5056ff8548f49d3b0e4081796e444c22d19686"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/gtk*
 
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/gdkdmabuf-memfd-seals.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/roaring-freebsd-bswap.patch
+
 # We need to run some commands with a native Glib
 apk update
-apk add glib-dev
+apk add glib-dev py3-pip
+
+# GTK requires meson >= 1.5.0. Install it into a private directory: upgrading in
+# place would have to uninstall the rootfs meson, and the rootfs is read-only.
+python3 -m pip install --ignore-installed --target=/tmp/meson meson==1.11.2
+export PYTHONPATH="/tmp/meson${PYTHONPATH:+:${PYTHONPATH}}"
+export PATH="/tmp/meson/bin:${PATH}"
 
 # meson shouldn't be so opinionated (mesonbuild/meson#4542 is incomplete)
-sed -i '/Werror=unused-command-line-argument/d' /usr/lib/python3.9/site-packages/mesonbuild/compilers/mixins/clang.py
+sed -i '/Werror=unused-command-line-argument/d' /tmp/meson/mesonbuild/compilers/mixins/clang.py
 
 # This is awful, I know
 ln -sf /usr/bin/glib-compile-resources ${bindir}/glib-compile-resources
@@ -135,7 +145,7 @@ dependencies = [
     Dependency("Libtiff_jll"; compat="4.7.1"),
     Dependency("PCRE2_jll"; compat="10.42"),
     Dependency("Pango_jll"; compat="1.56.3"),
-    Dependency("Wayland_jll"; platforms=x11_platforms),
+    Dependency("Wayland_jll"; compat="1.24.0", platforms=x11_platforms),
     Dependency("Wayland_protocols_jll"; compat="1.44", platforms=x11_platforms),
     Dependency("Xorg_libX11_jll"; platforms=x11_platforms),
     Dependency("Xorg_libXcursor_jll"; platforms=x11_platforms),
