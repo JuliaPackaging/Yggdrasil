@@ -1,20 +1,67 @@
 --- a/mpi.h
 +++ b/mpi.h
-@@ -1899,7 +1899,74 @@
- int PMPI_T_source_get_info(int source_index, char *name, int *name_len, char *desc, int *desc_len, MPI_T_source_order *ordering, MPI_Count *ticks_per_second, MPI_Count *max_ticks, MPI_Info *info);
+@@ -941,11 +941,9 @@
+ int MPI_Pready(int partition, MPI_Request request);
+ int MPI_Pready_list(int length, const int array_of_partitions[], MPI_Request request);
+ int MPI_Pready_range(int partition_low, int partition_high, MPI_Request request);
+-int MPI_Precv_init(void *buf, int partitions, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Info info, MPI_Request *request);
+-int MPI_Precv_init_c(void *buf, int partitions, MPI_Count count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Info info, MPI_Request *request);
++int MPI_Precv_init(void *buf, int partitions, MPI_Count count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Info info, MPI_Request *request);
+ int MPI_Probe(int source, int tag, MPI_Comm comm, MPI_Status *status);
+-int MPI_Psend_init(const void *buf, int partitions, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Info info, MPI_Request *request);
+-int MPI_Psend_init_c(const void *buf, int partitions, MPI_Count count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Info info, MPI_Request *request);
++int MPI_Psend_init(const void *buf, int partitions, MPI_Count count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Info info, MPI_Request *request);
+ int MPI_Publish_name(const char *service_name, MPI_Info info, const char *port_name);
+ int MPI_Put(const void *origin_addr, int origin_count, MPI_Datatype origin_datatype, int target_rank, MPI_Aint target_disp, int target_count, MPI_Datatype target_datatype, MPI_Win win);
+ int MPI_Put_c(const void *origin_addr, MPI_Count origin_count, MPI_Datatype origin_datatype, int target_rank, MPI_Aint target_disp, MPI_Count target_count, MPI_Datatype target_datatype, MPI_Win win);
+@@ -1609,11 +1607,9 @@
+ int PMPI_Pready(int partition, MPI_Request request);
+ int PMPI_Pready_list(int length, const int array_of_partitions[], MPI_Request request);
+ int PMPI_Pready_range(int partition_low, int partition_high, MPI_Request request);
+-int PMPI_Precv_init(void *buf, int partitions, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Info info, MPI_Request *request);
+-int PMPI_Precv_init_c(void *buf, int partitions, MPI_Count count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Info info, MPI_Request *request);
++int PMPI_Precv_init(void *buf, int partitions, MPI_Count count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Info info, MPI_Request *request);
+ int PMPI_Probe(int source, int tag, MPI_Comm comm, MPI_Status *status);
+-int PMPI_Psend_init(const void *buf, int partitions, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Info info, MPI_Request *request);
+-int PMPI_Psend_init_c(const void *buf, int partitions, MPI_Count count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Info info, MPI_Request *request);
++int PMPI_Psend_init(const void *buf, int partitions, MPI_Count count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Info info, MPI_Request *request);
+ int PMPI_Publish_name(const char *service_name, MPI_Info info, const char *port_name);
+ int PMPI_Put(const void *origin_addr, int origin_count, MPI_Datatype origin_datatype, int target_rank, MPI_Aint target_disp, int target_count, MPI_Datatype target_datatype, MPI_Win win);
+ int PMPI_Put_c(const void *origin_addr, MPI_Count origin_count, MPI_Datatype origin_datatype, int target_rank, MPI_Aint target_disp, MPI_Count target_count, MPI_Datatype target_datatype, MPI_Win win);
+@@ -1896,6 +1892,93 @@
  int PMPI_T_source_get_num(int *num_sources);
  int PMPI_T_source_get_timestamp(int source_index, MPI_Count *timestamp);
-+
+ 
 +/* Fortran declarations */
 +
 +typedef int MPI_Fint;
 +
 +typedef MPI_Status MPI_F08_Status;
 +
-+#define MPI_F_STATUS_IGNORE     ((MPI_Fint*)MPI_STATUS_IGNORE)
-+#define MPI_F_STATUSES_IGNORE   ((MPI_Fint*)MPI_STATUSES_IGNORE)
-+#define MPI_F08_STATUS_IGNORE   ((MPI_F08_Status*)MPI_STATUS_IGNORE)
-+#define MPI_F08_STATUSES_IGNORE ((MPI_F08_Status*)MPI_STATUSES_IGNORE)
++/* MPI-5.0 19.3.5 asks for "two global variables of type MPI_Fint*,
++   MPI_F_STATUS_IGNORE and MPI_F_STATUSES_IGNORE, ... declared in mpi.h. They
++   can be used to test, in C, whether f_status is the Fortran value of
++   MPI_STATUS_IGNORE or MPI_STATUSES_IGNORE", and its rationale notes that
++   "this constant need not have the same value in Fortran and C".
++
++   mpif's Fortran sentinels are COMMON blocks of its own, whose storage
++   src/mpif_constants.c defines, so these name that storage rather than the C
++   null pointer. Only code that uses one of the four macros needs the symbol,
++   and such code is by definition linking mpif's Fortran bindings.
++
++   All four used to be MPI_STATUS_IGNORE, i.e. null, which made them
++   indistinguishable -- a C layer could not tell an mpi_f08 status sentinel from
++   an mpif.h one. Now each names its own object. */
++
++extern const MPI_Fint mpif_status_ignore_[];
++extern const MPI_Fint mpif_statuses_ignore_[];
++extern const MPI_Fint mpif_f08_status_ignore_[];
++extern const MPI_Fint mpif_f08_statuses_ignore_[];
++
++#define MPI_F_STATUS_IGNORE     ((MPI_Fint*)mpif_status_ignore_)
++#define MPI_F_STATUSES_IGNORE   ((MPI_Fint*)mpif_statuses_ignore_)
++#define MPI_F08_STATUS_IGNORE   ((MPI_F08_Status*)mpif_f08_status_ignore_)
++#define MPI_F08_STATUSES_IGNORE ((MPI_F08_Status*)mpif_f08_statuses_ignore_)
 +
 +int PMPI_Status_f2c(const MPI_Fint *f_status, MPI_Status *c_status);
 +int PMPI_Status_c2f(const MPI_Status *c_status, MPI_Fint *f_status);
@@ -71,7 +118,7 @@
 +MPI_Fint MPI_Type_c2f(MPI_Datatype datatype);
 +MPI_Win MPI_Win_f2c(MPI_Fint win);
 +MPI_Fint MPI_Win_c2f(MPI_Win win);
- 
++
  #if defined(__cplusplus)
  }
  #endif

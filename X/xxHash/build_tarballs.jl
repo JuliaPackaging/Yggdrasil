@@ -3,23 +3,23 @@
 using BinaryBuilder, Pkg
 
 name = "xxHash"
-version = v"0.8.3"
+version = v"0.8.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Cyan4973/xxHash.git", "e626a72bc2321cd320e953a0ccf1584cad60f363"),
+    GitSource("https://github.com/Cyan4973/xxHash.git", "c87183a77d67f7d37e3d2d1b7eaac5e7c695e4f0"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/xxHash/
-cmake -B build -G Ninja \
+cmake -B builddir -G Ninja \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    cmake_unofficial
-cmake --build build --parallel ${nproc}
-cmake --install build
+    build/cmake
+cmake --build builddir --parallel ${nproc}
+cmake --install builddir
 """
 
 # These are the platforms we will build for by default, unless further

@@ -3,11 +3,11 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "CGNS"
-version = v"4.5.1"
+version = v"4.5.2"
 
 sources = [
     GitSource("https://github.com/CGNS/CGNS.git",
-              "bbce5f0ec594ae4d066893370965d3b77136b13c"),
+              "3a972d92559787a49c5f9a54974ea1946ecb9d21"),
 ]
 
 script = raw"""
@@ -56,10 +56,10 @@ products = [
 ]
 
 dependencies = [
-    Dependency("HDF5_jll"; compat="~2.1.1"),
+    Dependency("HDF5_jll"; compat="2.2.1"),
 ]
 append!(dependencies, platform_dependencies)
 
-# We need at least GCC 5 for the HDF5 libraries
+# We need at least GCC 8 for MPICH
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"8")

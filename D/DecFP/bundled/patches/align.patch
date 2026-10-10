@@ -50,3 +50,19 @@ diff -ru a/TESTS/test_bid_functions.h b/TESTS/test_bid_functions.h
  #else
  #define BID_ALIGN(n)
  #endif
+diff -ru a/LIBRARY/float128/dpml_ux.h b/LIBRARY/float128/dpml_ux.h
+--- a/LIBRARY/float128/dpml_ux.h
++++ b/LIBRARY/float128/dpml_ux.h
+@@ -40,10 +40,10 @@
+ 
+ /* Alignment macros for 16-byte floating point types _Quad and _Decimal128. */
+ #if defined(_WIN32)||defined(_WIN64)
+-    #define F128_ALIGN_16 __declspec(align(16))
++    #define F128_ALIGN_16 // keep in sync with BID_ALIGN in bid_functions.h: Julia does not support user specified alignment of structs
+ #else
+ #if !defined(HPUX_OS)
+-    #define F128_ALIGN_16 __attribute__((aligned(16)))
++    #define F128_ALIGN_16 // keep in sync with BID_ALIGN in bid_functions.h: Julia does not support user specified alignment of structs
+ #else
+     #define F128_ALIGN_16 
+ #endif

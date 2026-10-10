@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "LinearElasticity"
-version = v"5.0"
+version = v"5.0.1" # upstream is still 5.0; bumped because a rebuild changes the JLLWrappers compat, which a build-number-only release cannot
 
 # Collection of sources required to build MMG
 sources = [

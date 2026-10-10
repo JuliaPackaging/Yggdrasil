@@ -61,14 +61,14 @@ Bonmin_version = offset_version(Bonmin_upstream_version, Bonmin_version_offset)
 Couenne_version = offset_version(v"0.5.8", v"0.0.2")
 Couenne_gitsha = "7154f7a9b3cd84be378d02b483d090b76fc79ce8"
 
-Cbc_version = offset_version(v"2.10.12", v"0.0.0")
-Cbc_gitsha = "782d275a8efa569eb818551561b424948e19653c"
+Cbc_version = offset_version(v"2.10.13", v"0.0.0")
+Cbc_gitsha = "8e898d0a4ab7bb5b202c2ebbf3f2d2c0823c1e9d"
 
-Cgl_version = offset_version(v"0.60.9", v"0.0.0")
-Cgl_gitsha = "1d91b9ccb57eafbb7c07e994089a0f124358ffbd"
+Cgl_version = offset_version(v"0.60.10", v"0.0.0")
+Cgl_gitsha = "1a63715dbb33997701b896f62afec7651a2b3cac"
 
-Clp_version = offset_version(v"1.17.10", v"0.0.1")
-Clp_gitsha = "9a3efaa9ecefeb2a6088a447c9f66c6f31edbed9"
+Clp_version = offset_version(v"1.17.11", v"0.0.1")
+Clp_gitsha = "9310c186d546e21d482be3455166ee6fb4cd6302"
 
 Osi_version = offset_version(v"0.108.12", v"0.0.0")
 Osi_gitsha = "b3dbb7c910a9992717b1107542606262296a0e7e"
@@ -76,10 +76,8 @@ Osi_gitsha = "b3dbb7c910a9992717b1107542606262296a0e7e"
 CoinUtils_version = offset_version(v"2.11.13", v"0.0.0")
 CoinUtils_gitsha = "1f3484e0578944a506452e1e35360c09e1490315"
 
-Ipopt_upstream_version = v"3.14.19"
-Ipopt_gitsha = "2695946fa79d2e84f3034e065e788933a81466eb"
-Ipopt_verson_offset = v"0.0.2"
-Ipopt_version = offset_version(Ipopt_upstream_version, Ipopt_verson_offset)
+Ipopt_version = offset_version(v"3.14.20", v"0.0.0")
+Ipopt_gitsha = "1e71ba4eeef0514549587448123ea6fdcb2b0ccd"
 
 ALPS_version = offset_version(v"1.5.12", v"0.0.0")
 ALPS_gitsha = "c90858e4ca11c7f81168cd14dc137742fa3510f0"
@@ -101,10 +99,9 @@ SHOT_version = offset_version(v"1.1.0", v"0.0.0")
 
 # Third-party packages needed by COIN-OR libraries.
 Julia_compat_version = "1.6"
-ASL_version = v"0.1.3"
-METIS_version = v"5.1.2"
-MUMPS_seq_version = v"5.4.1"
-MUMPS_seq_version_LBT = v"500.900.000"
+ASL_version = v"0.1.5"
+METIS_version = v"5.1.3"
+MUMPS_seq_version_LBT = v"500.900.100"
 SPRAL_version_LBT = v"2025.9.18"
 OpenBLAS32_version = v"0.3.26"
 
@@ -112,4 +109,3 @@ OpenBLAS32_version = v"0.3.26"
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
 platforms = filter!(!Sys.isfreebsd, platforms)
-filter!(p -> arch(p) != "riscv64", platforms)

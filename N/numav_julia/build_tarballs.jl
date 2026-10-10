@@ -1,12 +1,12 @@
 using BinaryBuilder, Pkg
 
 name = "numav_julia"
-version = v"0.2.0"
+version = v"0.3.1"
 
 sources = [ 
     GitSource(
-        "https://github.com/mmfiuza/numav.git", 
-        "2e4f51b7c8ecceca09a4f9a7464f0017778daeb0"
+        "https://github.com/mmfiuza/Numav.jl.git", 
+        "42f4f7a3d9ea2f661e09c21447deacfbfd094c3d"
     )
 ]
 
@@ -19,7 +19,7 @@ script = raw"""
         SOLVER=EIGEN
     fi
     
-    cd ${WORKSPACE}/srcdir/numav && mkdir build && cd build
+    cd ${WORKSPACE}/srcdir/Numav.jl/c++ && mkdir build && cd build
     cmake \
         -D CMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
         -D CMAKE_BUILD_TYPE=Release \
@@ -27,7 +27,6 @@ script = raw"""
         -D BIND_JULIA=TRUE \
         -D Julia_PREFIX=${prefix} \
         -D JlCxx_DIR=${prefix}/lib/cmake/JlCxx \
-        -D Boost_DIR=${prefix}/bin/cmake/Boost-1.87.0 \
         -D CMAKE_FIND_ROOT_PATH=${prefix} \
         -D CMAKE_INSTALL_PREFIX=${prefix} \
         ..
@@ -52,11 +51,8 @@ mkl_platforms = filter(p ->
 
 dependencies = [
     Dependency("libcxxwrap_julia_jll", compat="0.14.10"),
-    Dependency("HDF5_jll", compat="2.1"),
-    Dependency("spdlog_jll", compat="1.15.0"),
     BuildDependency(PackageSpec(name="libjulia_jll", version="1.11.0")),
     BuildDependency(PackageSpec(name="Eigen_jll", version="5.0.1")),
-    BuildDependency(PackageSpec(name="boost_jll", version="1.87.0")),
 
     # oneMKL for x86_64-linux-gnu and x86_64-w64
     Dependency("MKL_jll", compat="=2025.2.0"; platforms=mkl_platforms),
@@ -65,6 +61,24 @@ dependencies = [
         platforms=mkl_platforms
     ),
 ]
+
+build_from_local_directory = false # for local debugging only
+if build_from_local_directory
+    run(
+        `sh -c "
+            rm -rf build &&
+            rm -rf c++/build &&
+            rm -rf products &&
+            rm -rf /tmp/binary_builder &&
+            mkdir /tmp/binary_builder &&
+            mkdir /tmp/binary_builder/Numav.jl &&
+            cp -r . /tmp/binary_builder/Numav.jl
+        "`
+    )
+    sources = [
+        DirectorySource("/tmp/binary_builder")
+    ]
+end
 
 build_tarballs(
     ARGS, name, version, sources, script, platforms, products, dependencies;

@@ -1,11 +1,11 @@
 using BinaryBuilder, Pkg
 
 name = "NOMAD"
-version = v"4.5.1"
+version = v"4.6.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/bbopt/nomad.git", "d6e2c8c9dbfa275485f5c134198c372adb54f2ad"),
+    GitSource("https://github.com/bbopt/nomad.git", "aa007d31d9e9ce47fba5d6cf0d4d62466ed10d08"),
 ]
 
 # Bash recipe for building across all platforms
@@ -46,7 +46,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+    Dependency(PackageSpec(name = "CompilerSupportLibraries_jll", uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="v1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"8", julia_compat = "v1.6")

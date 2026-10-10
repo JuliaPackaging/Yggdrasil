@@ -1,34 +1,26 @@
-using Base.BinaryPlatforms
-
-try
-    using CUDA_Runtime_jll
-catch
-    # during initial package installation, CUDA_Runtime_jll may not be available.
-    # in that case, we just won't select an artifact.
-end
-
-# can't use Preferences for the same reason
-const CUDA_Runtime_jll_uuid = Base.UUID("76a88914-d11a-5bdc-97e0-2f5a05c973a2")
-const preferences = Base.get_preferences(CUDA_Runtime_jll_uuid)
-Base.record_compiletime_preference(CUDA_Runtime_jll_uuid, "version")
-Base.record_compiletime_preference(CUDA_Runtime_jll_uuid, "local")
+# NOTE: this file is preceded by `toolkit_selection.jl` (shared with CUDA_Runtime_jll).
 
 function augment_platform!(platform::Platform)
-    # When CUDA is not available, default to last known version.
-    # This ensures the JLL is also functional on systems without a GPU.
-    last_known_version = "13"
+    if !haskey(platform, "cuda")
+        # use "none" when no CUDA toolkit could be selected (no driver, no preference), just
+        # like CUDA_Runtime_jll does. This makes `is_available()` false, instead of selecting
+        # a (lazy) artifact whose libraries would then be eagerly dlopen'ed at load time on
+        # a system that cannot use them (JuliaGPU/CUDA.jl#3242). Systems without a GPU that
+        # want to precompile or cross-compile should set the version preference explicitly.
+        # We can't just leave off the platform tag or Pkg would select *any* artifact.
+        platform["cuda"] = something(cuda_toolkit_tag(), "none")
+    end
+    BinaryPlatforms.set_compare_strategy!(platform, "cuda", cuda_comparison_strategy)
 
-    platform["cuda"] = if @isdefined(CUDA_Runtime_jll)
-        cuda = CUDA_Runtime_jll.cuda_toolkit_tag()
-        if cuda === nothing
-            last_known_version
+    platform["cuda_local"] = string(local_preference !== missing && local_preference)
+
+    # if we're on an arm64 platform, identify the CUDA subplatform
+    if Sys.islinux() && arch(platform) == "aarch64"
+        platform["cuda_platform"] = if is_tegra()
+            "jetson"
         else
-            # extract major version
-            cuda_version = parse(VersionNumber, cuda)
-            "$(cuda_version.major)"
+            "sbsa"
         end
-    else
-        last_known_version
     end
 
     return platform

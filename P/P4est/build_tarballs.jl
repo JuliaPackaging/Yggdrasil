@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "P4est"
 p4est_version = v"2.8.7"
-version = v"2.8.8"
+version = v"2.8.9"
 
 # Collection of sources required to complete build
 sources = [

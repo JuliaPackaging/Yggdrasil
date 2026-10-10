@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "s5cmd"
-version = v"2.0.0"
+version = v"2.3.0"
 
-# Collection of sources required to build ghr
+# Collection of sources required to build s5cmd
 sources = [
     GitSource("https://github.com/peak/s5cmd.git",
-              "35bb2fa9ee3d31209a6c6c7de895b888bc35bfd3"),
+              "991c9fbc16709341b4bac04513232a1445941f63"),
 ]
 
 # Bash recipe for building across all platforms
@@ -18,7 +18,7 @@ mkdir -p ${bindir}
 
 # the Makefile redefines compiler env vars, so we roll our own invocation
 go build -o ${bindir} -mod=vendor \
-         -ldflags "-X=github.com/peak/s5cmd/version.Version=2.0.0 -X=github.com/peak/s5cmd/version.GitCommit=35bb2fa9ee3d31209a6c6c7de895b888bc35bfd3"
+         -ldflags "-X=github.com/peak/s5cmd/v2/version.Version=2.3.0 -X=github.com/peak/s5cmd/v2/version.GitCommit=991c9fbc16709341b4bac04513232a1445941f63"
 """
 
 # These are the platforms we will build for by default, unless further

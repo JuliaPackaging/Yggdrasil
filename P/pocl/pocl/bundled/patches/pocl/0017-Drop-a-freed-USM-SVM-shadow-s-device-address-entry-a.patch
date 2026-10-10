@@ -1,0 +1,230 @@
+From cb41d6c313d047aeb51a9d7da31854206dff32ec Mon Sep 17 00:00:00 2001
+From: Paulius Velesko <pvelesko@pglc.io>
+Date: Thu, 1 Oct 2026 09:40:02 +0300
+Subject: [PATCH] Drop a freed USM/SVM shadow's device-address entry at free
+ time
+
+clMemAllocINTEL and clSVMAlloc create a shadow cl_mem with
+CL_MEM_DEVICE_PRIVATE_ADDRESS_EXT and CL_MEM_USE_HOST_PTR over the new
+allocation, and clCreateBuffer registers that shadow's device address
+as a second (BDA) entry in the context's raw pointer table.
+clMemFreeINTEL and clSVMFree only removed the vm_ptr entry, freed the
+memory and released the shadow. The BDA entry was erased in
+clReleaseMemObject when the shadow's refcount reached zero, but a
+command that used the allocation holds a reference until
+pocl_free_event_node runs in pocl_update_event_finished, which is after
+the event has been set to CL_COMPLETE. An application may free as soon
+as the command reports complete (the USM spec only requires commands
+using the pointer to be complete), reallocate the same range, and have
+the new shadow's registration fail with "Overlapping BDA pointer!".
+The allocator then hands out a pointer whose shadow is NULL and the
+next copy to it crashes.
+
+Erase the shadow's entries under the context lock in the same critical
+section that removes the vm_ptr entry, so the range is released before
+the memory can be reused. The later erase in clReleaseMemObject becomes
+a no-op for these shadows.
+
+The enqueued free (CL_COMMAND_SVM_FREE without a user callback) in
+devices/common.c duplicated clSVMFree's teardown, with the same
+ordering. Call clSVMFree instead, as the CUDA and Level Zero drivers
+already do. This also frees through the context's SVM allocation
+device, which allocated the memory, and decrements svm_buffer_c.
+
+The test polls the copy event rather than waiting on it: a blocking
+wait usually returns after the command's cleanup. Current main failed
+10 of 10 runs with polling and 0 or 1 of 10 with clWaitForEvents or
+clFinish on a SpacemiT K3 CPU device. With polling, the first failure
+came within a few hundred iterations on the K3 and on an x86-64 host,
+with rare outliers past 15000 on x86-64; each loop runs 10000.
+
+Seen as an intermittent SIGSEGV in pocl_svm_memcpy_common from chipStar
+HIP tests on macOS (Apple silicon) and RISC-V (SpacemiT K3):
+https://github.com/CHIP-SPV/chipStar/issues/1594
+
+(cherry picked from commit c62a9efdb8e14d1ce02cd0077e8f039a288359f8)
+---
+ lib/CL/clMemFreeINTEL.c                  |  4 ++
+ lib/CL/clSVMFree.c                       |  4 ++
+ lib/CL/devices/common.c                  | 15 +---
+ tests/regression/CMakeLists.txt          |  3 +
+ tests/regression/test_usm_free_realloc.c | 90 ++++++++++++++++++++++++
+ 5 files changed, 102 insertions(+), 14 deletions(-)
+ create mode 100644 tests/regression/test_usm_free_realloc.c
+
+diff --git a/lib/CL/clMemFreeINTEL.c b/lib/CL/clMemFreeINTEL.c
+index 7924249e9..e5c16fc81 100644
+--- a/lib/CL/clMemFreeINTEL.c
++++ b/lib/CL/clMemFreeINTEL.c
+@@ -90,6 +90,10 @@ pocl_mem_free_intel (cl_context context, void *usm_pointer, cl_bool blocking)
+   pocl_raw_ptr *item
+     = pocl_raw_ptr_set_lookup_with_vm_ptr (context->raw_ptrs, usm_pointer);
+   pocl_raw_ptr_set_remove (context->raw_ptrs, item);
++  /* The shadow may outlive this call; its range is free for reuse now. */
++  if (item && item->shadow_cl_mem)
++    pocl_raw_ptr_set_erase_all_by_shadow_mem (context->raw_ptrs,
++                                              item->shadow_cl_mem);
+   POCL_UNLOCK_OBJ (context);
+   POCL_RETURN_ERROR_ON (
+       (item == NULL), CL_INVALID_VALUE,
+diff --git a/lib/CL/clSVMFree.c b/lib/CL/clSVMFree.c
+index 9b499cbd5..b90ff8b64 100644
+--- a/lib/CL/clSVMFree.c
++++ b/lib/CL/clSVMFree.c
+@@ -52,6 +52,10 @@ POname(clSVMFree)(cl_context context,
+   pocl_raw_ptr *item
+     = pocl_raw_ptr_set_lookup_with_vm_ptr (context->raw_ptrs, svm_pointer);
+   pocl_raw_ptr_set_remove (context->raw_ptrs, item);
++  /* The shadow may outlive this call; its range is free for reuse now. */
++  if (item && item->shadow_cl_mem)
++    pocl_raw_ptr_set_erase_all_by_shadow_mem (context->raw_ptrs,
++                                              item->shadow_cl_mem);
+   POCL_UNLOCK_OBJ (context);
+ 
+   if (item == NULL)
+diff --git a/lib/CL/devices/common.c b/lib/CL/devices/common.c
+index 75fc5b2d3..dc833dca1 100644
+--- a/lib/CL/devices/common.c
++++ b/lib/CL/devices/common.c
+@@ -755,20 +755,7 @@ pocl_exec_command (_cl_command_node *node)
+            cmd->svm_free.data);
+       else
+         for (i = 0; i < cmd->svm_free.num_svm_pointers; i++)
+-          {
+-            void *ptr = cmd->svm_free.svm_pointers[i];
+-            POCL_LOCK_OBJ (event->context);
+-            pocl_raw_ptr *item = pocl_raw_ptr_set_lookup_with_vm_ptr (
+-              event->context->raw_ptrs, ptr);
+-            cl_mem shadow_mem = item->shadow_cl_mem;
+-            assert (item);
+-            pocl_raw_ptr_set_erase (event->context->raw_ptrs, item);
+-            POCL_UNLOCK_OBJ (event->context);
+-            POname (clReleaseContext) (event->context);
+-            if (shadow_mem)
+-              POname (clReleaseMemObject) (shadow_mem);
+-            dev->ops->svm_free (dev, ptr);
+-          }
++          POname (clSVMFree) (event->context, cmd->svm_free.svm_pointers[i]);
+       POCL_UPDATE_EVENT_COMPLETE_MSG (event, "Event SVM Free              ");
+       break;
+ 
+diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
+index 259a0a647..0eb3a588a 100644
+--- a/tests/regression/CMakeLists.txt
++++ b/tests/regression/CMakeLists.txt
+@@ -41,6 +41,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
+      test_indirect_ptrs
+      test_usm_indirect_ptrs
+      test_frexp_kernellib
++     test_usm_free_realloc
+ )
+ if(UNIX)
+   list(APPEND C_PROGRAMS_TO_BUILD test_signal_handlers)
+@@ -201,6 +202,8 @@ if(X86 AND KERNELLIB_HOST_DISTRO_VARIANTS)
+   endforeach()
+ endif()
+ 
++add_test_pocl(NAME "regression/test_usm_free_realloc" COMMAND "test_usm_free_realloc" WORKITEM_HANDLER "loopvec")
++
+ add_test_pocl(NAME "regression/test_issue_893" COMMAND "test_issue_893")
+ 
+ add_test_pocl(NAME "regression/test_flatten_barrier_subs" COMMAND "test_flatten_barrier_subs" EXPECTED_OUTPUT "test_flatten_barrier_subs.output")
+diff --git a/tests/regression/test_usm_free_realloc.c b/tests/regression/test_usm_free_realloc.c
+new file mode 100644
+index 000000000..e587ffa82
+--- /dev/null
++++ b/tests/regression/test_usm_free_realloc.c
+@@ -0,0 +1,90 @@
++/* Regression test: a USM/SVM allocation freed as soon as its last command is
++   CL_COMPLETE must leave its range free for the next allocation.
++
++   Copyright (c) 2026 pocl developers
++
++   Permission is hereby granted, free of charge, to any person obtaining a copy
++   of this software and associated documentation files (the "Software"), to
++   deal in the Software without restriction, including without limitation the
++   rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
++   sell copies of the Software, and to permit persons to whom the Software is
++   furnished to do so, subject to the following conditions:
++
++   The above copyright notice and this permission notice shall be included in
++   all copies or substantial portions of the Software.
++
++   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
++   IN THE SOFTWARE.
++*/
++
++#include "pocl_opencl.h"
++
++#include <CL/cl_ext.h>
++#include <stdio.h>
++#include <stdlib.h>
++
++#define SIZE 4096
++
++int
++main (void)
++{
++  cl_context context;
++  cl_device_id device;
++  cl_command_queue queue;
++  cl_platform_id platform;
++  static char host[SIZE];
++
++  CHECK_CL_ERROR (
++    poclu_get_any_device2 (&context, &device, &queue, &platform));
++
++  clDeviceMemAllocINTEL_fn DeviceMemAlloc
++    = clGetExtensionFunctionAddressForPlatform (platform,
++                                                "clDeviceMemAllocINTEL");
++  clMemFreeINTEL_fn MemFree
++    = clGetExtensionFunctionAddressForPlatform (platform, "clMemFreeINTEL");
++  clEnqueueMemcpyINTEL_fn EnqueueMemcpy
++    = clGetExtensionFunctionAddressForPlatform (platform,
++                                                "clEnqueueMemcpyINTEL");
++
++  for (int svm = 0; svm < 2; ++svm)
++    for (int i = 0; i < 10000; ++i)
++      {
++        cl_int err = CL_SUCCESS;
++        void *ptr = svm ? clSVMAlloc (context, CL_MEM_READ_WRITE, SIZE, 0)
++                        : DeviceMemAlloc (context, device, NULL, SIZE, 0,
++                                          &err);
++        CHECK_CL_ERROR (err);
++        TEST_ASSERT (ptr != NULL);
++        cl_event ev = NULL;
++        CHECK_CL_ERROR (
++          svm ? clEnqueueSVMMemcpy (queue, CL_FALSE, ptr, host, SIZE, 0, NULL,
++                                    &ev)
++              : EnqueueMemcpy (queue, CL_FALSE, ptr, host, SIZE, 0, NULL,
++                               &ev));
++        CHECK_CL_ERROR (clFlush (queue));
++        /* Poll: a blocking wait usually returns after the command's cleanup,
++           which hides the bug. */
++        cl_int status;
++        do
++          CHECK_CL_ERROR (clGetEventInfo (ev,
++                                          CL_EVENT_COMMAND_EXECUTION_STATUS,
++                                          sizeof (status), &status, NULL));
++        while (status > CL_COMPLETE);
++        TEST_ASSERT (status == CL_COMPLETE);
++        CHECK_CL_ERROR (clReleaseEvent (ev));
++        if (svm)
++          clSVMFree (context, ptr);
++        else
++          CHECK_CL_ERROR (MemFree (context, ptr));
++      }
++
++  CHECK_CL_ERROR (clReleaseCommandQueue (queue));
++  CHECK_CL_ERROR (clReleaseContext (context));
++  printf ("OK\n");
++  return EXIT_SUCCESS;
++}
+-- 
+2.55.0
+

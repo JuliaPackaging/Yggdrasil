@@ -5,6 +5,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MUMPS"
 version = v"5.9.1"
+ygg_version = v"5.9.4"
 
 sources = [
   ArchiveSource("https://mumps-solver.org/MUMPS_$(version).tar.gz",
@@ -59,6 +60,21 @@ elif [[ ${bb_full_target} == *openmpi* ]]; then
     MPILIBS=(-lmpi_usempif08 -lmpi_usempi_ignore_tkr -lmpi_mpifh -lmpi)
 fi
 
+EXTRA_LDFLAGS=()
+if [[ "${target}" == *x86_64-w64-mingw* ]]; then
+    # On mingw/x86_64, cross-DLL references to un-`dllimport`ed data symbols are
+    # resolved via mingw's 32-bit runtime pseudo-relocations. Under high-entropy
+    # ASLR two DLLs can map >2 GB apart, overflowing the 32-bit fixup and aborting
+    # at load: "32 bit pseudo relocation ... out of range". Disabling the runtime
+    # pseudo-relocs fixes the crash and keeps ASLR fully enabled. (The link would
+    # fail here if any such data import genuinely needed a runtime fixup.)
+    EXTRA_LDFLAGS+=("-Wl,--disable-runtime-pseudo-reloc")
+fi
+if [[ "${target}" == *-apple-* ]]; then
+    # let MPICH's Fortran sentinel COMMON blocks resolve to libmpifort's copies
+    EXTRA_LDFLAGS+=("-Wl,-commons,use_dylibs")
+fi
+
 # Override MPItrampoline's built-in compiler paths
 export MPITRAMPOLINE_CC=cc
 export MPITRAMPOLINE_CXX=c++
@@ -83,7 +99,7 @@ FSCOTCH="-Dscotch"
 
 make_args+=(PLAT="par" \
             OPTF="-O3 -fopenmp" \
-            OPTL="-O3 -l${OMP}" \
+            OPTL="-O3 -l${OMP} ${EXTRA_LDFLAGS[*]}" \
             OPTC="-O3 -fopenmp" \
             CDEFS=-DAdd_ \
             LMETISDIR="${libdir}" \
@@ -138,17 +154,17 @@ dependencies = [
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
     # We need libgfortran from `CompilerSupportLibraries_jll` for all platforms.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70"); compat="5.1.3"),
-    Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa"); compat="4.0.7"),
+    Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70"); compat="5.1.4"),
+    Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa"); compat="4.0.9"),
     Dependency(PackageSpec(name="SCOTCH_jll", uuid="a8d0f55d-b80e-548d-aff6-1a04c175f0f9"); compat="~7.0.7"),
     # Dependency(PackageSpec(name="PTSCOTCH_jll", uuid="b3ec0f5a-9838-5c9b-9e77-5f2c6a4b089f"); compat="~7.0.6"),
-    Dependency(PackageSpec(name="SCALAPACK32_jll", uuid="aabda75e-bfe4-5a37-92e3-ffe54af3c273"); compat="2.2.3"),
+    Dependency(PackageSpec(name="SCALAPACK32_jll", uuid="aabda75e-bfe4-5a37-92e3-ffe54af3c273"); compat="2.2.302"),
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
-    Dependency("mpif_jll"; compat="0.1.5", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)), # MPI Fortran bindings
+    Dependency("mpif_jll"; compat="1.0.0", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)), # MPI Fortran bindings
 ]
 append!(dependencies, platform_dependencies)
 
 # Build the tarballs
 # We require Julia 1.9 since SCALAPACK32 only supports Julia 1.9
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                augment_platform_block, julia_compat="1.9", preferred_gcc_version=v"9")

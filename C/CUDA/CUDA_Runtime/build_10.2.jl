@@ -88,6 +88,7 @@ function get_products(platform)
     [
         LibraryProduct(["libcudart", "cudart64_102"], :libcudart),
         LibraryProduct(["libcufft", "cufft64_10"], :libcufft),
+        LibraryProduct(["libcublasLt", "cublasLt64_10"], :libcublasLt),
         LibraryProduct(["libcublas", "cublas64_10"], :libcublas),
         LibraryProduct(["libcusparse", "cusparse64_10"], :libcusparse),
         LibraryProduct(["libcusolver", "cusolver64_10"], :libcusolver),

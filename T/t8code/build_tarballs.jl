@@ -8,8 +8,8 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "t8code"
-version = v"4.0.8"
-commit_hash = "56c9b8d201101d54a9c89e7746b81b15df76e9fe"
+version = v"4.0.10"
+commit_hash = "bfc4e39f2286248ce0bfbe719b0a2d2c9dcac112"
 
 sources = [GitSource("https://github.com/DLR-AMR/t8code", commit_hash),
            DirectorySource("./bundled")]
@@ -91,4 +91,4 @@ append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"12.1.0", clang_use_lld=false)
+               augment_platform_block, julia_compat="1.10", preferred_gcc_version = v"13.2.0", clang_use_lld=false)

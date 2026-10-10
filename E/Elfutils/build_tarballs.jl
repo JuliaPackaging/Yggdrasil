@@ -3,33 +3,39 @@
 using BinaryBuilder, Pkg
 
 name = "Elfutils"
-version = v"0.189"
+version = v"0.196"
 
 # Collection of sources required to build Elfutils
 sources = [
     ArchiveSource("https://sourceware.org/elfutils/ftp/$(version.major).$(version.minor)/elfutils-$(version.major).$(version.minor).tar.bz2",
-                  "39bd8f1a338e2b7cd4abc3ff11a0eddc6e690f69578a57478d8179b4148708c8"),
+                  "fd5cc6b77ad6773cac93cb3f415f9318ac3b3455eecf801f6b4a742c4f6c7209"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/elfutils-*/
-if [[ ${target} = *-musl* ]] ; then
-    for patchfile in $WORKSPACE/srcdir/patches/*; do
-        atomic_patch -p1 $patchfile
-    done
-    cp $WORKSPACE/srcdir/error.h src/
-    cp $WORKSPACE/srcdir/error.h lib/
 
-    # install missing headers and `autopoint` 
-    apk add bsd-compat-headers gettext-dev 
+atomic_patch -p1 $WORKSPACE/srcdir/patches/initreg-sys-uio.patch
+
+if [[ ${target} = *-musl* ]] ; then
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/fix-aarch64_fregs.patch
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/musl-asm-ptrace-h.patch
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/musl-macros.patch
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/musl-strndupa.patch
+
+    cp $WORKSPACE/srcdir/files/error.h src/
+    cp $WORKSPACE/srcdir/files/error.h lib/
+
+    # install missing headers and `autopoint`
+    apk add bsd-compat-headers gettext-dev
     # /usr/include isn't in search path of cross-cc, so copy cdefs.h
     mkdir -p $prefix/include/sys
     # Skip warning macro at top of file
     tail -n +2 /usr/include/sys/cdefs.h >$prefix/include/sys/cdefs.h
     autoreconf -vif
 fi
+
 export CC=gcc
 export CXX=g++
 CFLAGS="-Wno-error=unused-result" CPPFLAGS="-I${prefix}/include" ./configure \
@@ -75,9 +81,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Zlib_jll"),
-    # Future versions of bzip2 should allow a more relaxed compat because the
-    # soname of the macOS library shouldn't change at every patch release.
-    Dependency("Bzip2_jll"; compat="1.0.8"),
+    Dependency("Bzip2_jll"; compat="1.0.9"),
     Dependency("XZ_jll"),
     Dependency("argp_standalone_jll"),
     Dependency("fts_jll"),
@@ -86,4 +90,5 @@ dependencies = [
 
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"9")

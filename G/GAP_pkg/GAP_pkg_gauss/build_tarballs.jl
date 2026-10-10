@@ -2,16 +2,16 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 include("../common.jl")
 
-gap_version = v"400.1600.0"
+gap_version = v"400.1600.100"
 name = "gauss"
-upstream_version = "2025.12-01" # when you increment this, reset offset to v"0.0.0"
+upstream_version = "2026.07-01" # when you increment this, reset offset to v"0.0.0"
 offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL
 sources = [
     ArchiveSource("https://github.com/homalg-project/homalg_project/releases/download/Gauss-$(upstream_version)/Gauss-$(upstream_version).tar.gz",
-                  "f13701e6d9a5585eb8be795349c880176bbc2b925d9f827790c607040c03207a"),
+                  "aa235aed6684d98dff9454c30d25c5a4d58ceae686ef9efdf062c339ef9d951a"),
 ]
 
 # Bash recipe for building across all platforms

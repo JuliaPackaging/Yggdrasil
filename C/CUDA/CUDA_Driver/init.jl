@@ -27,17 +27,15 @@ else
 end
 compat_forced = compat_preference === true
 
+# if anything goes wrong, we keep using the system driver: `libcuda` already holds its
+# name (set unconditionally in the module's toplevel block), and only gets replaced at
+# the very end when we decide to load the forwards-compatible driver instead.
 libcuda_system = Sys.iswindows() ? "nvcuda" : "libcuda.so.1"
-
-# if anything goes wrong, we'll use the system driver
-global libcuda = libcuda_system
 
 # check if we even have an artifact
 if @isdefined(libcuda_compat)
     @debug "Forward-compatible driver found at $libcuda_compat"
 else
-    # the JLL ships only the cuda_inspect_driver helper on this platform
-    # (e.g. Windows). nothing to do but keep using the system driver.
     @debug "No forward-compatible driver available for your platform."
     return
 end
@@ -57,9 +55,16 @@ if Libdl.dlopen(libcuda_system, Libdl.RTLD_NOLOAD; throw_error=false) !== nothin
     return
 end
 
-# only reference the compat-driver dependency products now that we've
-# confirmed they exist (helper-only builds don't declare these symbols).
-libcuda_deps = [libcuda_debugger, libnvidia_nvvm, libnvidia_ptxjitcompiler, libnvidia_gpucomp, libnvidia_tileiras]
+# collect the compat driver's dependent libraries. not every artifact declares
+# every product (the L4T compat drivers lack the newer desktop-only libraries), so
+# only reference those that exist. this is a global because dependents inspecting
+# the driver we loaded need to preload the same list.
+global libcuda_deps = String[]
+for dep in [:libcuda_debugger, :libnvidia_nvvm, :libnvidia_ptxjitcompiler,
+            :libnvidia_gpucomp, :libnvidia_tileiras]
+    isdefined(@__MODULE__, dep) || continue
+    push!(libcuda_deps, getfield(@__MODULE__, dep))
+end
 
 # fetch driver details
 compat_driver_task = @static if VERSION >= v"1.12-"
@@ -76,13 +81,13 @@ else
 end
 compat_driver_info = fetch(compat_driver_task)
 if compat_driver_info === nothing
-    @debug "Failed to load forwards-compatible driver."
+    @debug "Forwards-compatible driver is not usable (see above for details); using system driver."
     return
 end
 @debug "Forwards compatible driver version: $(compat_driver_info.version)"
 system_driver_info = fetch(system_driver_task)
 if system_driver_info === nothing
-    @debug "Failed to load system driver."
+    @debug "Could not query the system driver (see above for details); using system driver."
     return
 end
 @debug "System driver version: $(system_driver_info.version)"

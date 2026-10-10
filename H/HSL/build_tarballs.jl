@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "HSL"
-version = v"4.0.7"
+version = v"4.0.8"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ralna/libHSL.git", "616bf515475a7faf00edf06ce7750712cf873dd9")
+    GitSource("https://github.com/ralna/libHSL.git", "3241c8afe76b0809a2c56476328d61a47330df76")
 ]
 
 # Bash recipe for building across all platforms

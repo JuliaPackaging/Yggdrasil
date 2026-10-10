@@ -71,11 +71,6 @@ function build_script(standalone=false)
     spirv_src=$WORKSPACE/srcdir/SPIRV-LLVM-Translator
     pushd $spirv_src
     install_license LICENSE.TXT
-    # LLVM 20's translator needs this backport.  It is already present in the
-    # LLVM 22.1 translator, where applying it with fuzz targets unrelated code.
-    if [[ "${LLVM_MAJOR_MINOR}" == 20.* ]]; then
-        atomic_patch -p1 $WORKSPACE/srcdir/patches/spirv-translator-addrspacecast_null.patch
-    fi
     # link statically against LLVM's component libraries rather than the LLVM dylib.
     # Patch both the library and the llvm-spirv tool: otherwise the tool links *both*
     # the LLVM dylib import-lib and the static components, which is fatal on COFF/lld
@@ -123,6 +118,41 @@ function build_script(standalone=false)
     cd $WORKSPACE/srcdir/pocl/
     install_license LICENSE
 
+    # Apply our patch series on top of upstream v7.2 (`git format-patch` exports; the
+    # binary SPIR-V test inputs are excluded since we don't build the tests):
+    # - 0001: MinGW Clang/lld toolchain support (JuliaGPU-only, not upstreamed)
+    # - 0002: FP16 host math overloads (upstream PR #2224, in `main`)
+    # - 0003: in-process JIT via ORC/JITLink (upstream PR #2190, in `main`)
+    # - 0004: CanonicalizeBarriers fix for reconverging barrier successors (upstream PR #2281)
+    # - 0005, 0006: UnreachablesToReturns fix for issue #1958 (upstream PR #2280)
+    # - 0007: independent SVM/USM indirect pointer lists in clSetKernelExecInfo (upstream PR #2305)
+    # - 0008, 0009: keep LLVM from replacing the host's SIGSEGV/SIGBUS handlers, which kills
+    #   Julia's GC safepoints (upstream PRs #2339, #2340; JuliaGPU/OpenCL.jl#487)
+    # - 0010: keep UnreachablesToReturns from deleting the entry block of a kernel reduced to
+    #   `unreachable` (upstream PR #2346; JuliaGPU/OpenCL.jl#509)
+    # - 0011: keep WorkitemLoops from rematerializing allocas without an initializer store
+    #   (upstream PR #2345; JuliaGPU/OpenCL.jl#510)
+    # - 0012: keep frexp on libclc when vectorizing builtins, avoiding a vector llvm.frexp
+    #   miscompile on x86 below AVX2 (upstream PR #2355; JuliaGPU/OpenCL.jl#506)
+    # - 0013: share local memory across WorkitemLoops region replicas, fixing sub-group
+    #   collectives after a branch with an early exit (upstream PR #2239, in `main`;
+    #   JuliaGPU/OpenCL.jl#526, JuliaGPU/KernelAbstractions.jl#831)
+    # - 0015, 0016: only wake up the CPU worker threads a command can use, making small
+    #   kernel launches and subdevices cheap (upstream PR #2371)
+    # - 0017: drop a freed SVM/USM allocation's shadow device-address entry at free time, so
+    #   reallocating the same address doesn't yield an allocation without a shadow buffer
+    #   (upstream PR #2361, in `main`)
+    # - 0018, 0019: create the CPU worker threads with an 8 MiB stack, which was intended but
+    #   never took effect (512 KiB on macOS, 1-2 MiB on Windows) (upstream PR #2383)
+    # - 0020: estimate kernel stack use after SROA, so that the -O0 locals of builtins like
+    #   hypot don't lower CL_KERNEL_WORK_GROUP_SIZE (upstream PR #2384)
+    # - 0021: build the FP16 builtins without double-precision helpers, whose
+    #   llvm.roundeven lowers to a roundeven libcall missing on Windows below SSE4.1
+    #   (upstream commit 7fd676ef1, in `main`; JuliaGPU/OpenCL.jl#539)
+    for patch in $WORKSPACE/srcdir/patches/pocl/*.patch; do
+        atomic_patch -p1 $patch
+    done
+
     # POCL wants a target sysroot for compiling the host kernellib (for `math.h` etc)
     sysroot=/opt/${target}/${target}/sys-root
     if [[ "${target}" == *apple* ]]; then
@@ -165,6 +195,11 @@ function build_script(standalone=false)
 
     # Enable optional debug messages for debuggability
     CMAKE_FLAGS+=(-DPOCL_DEBUG_MESSAGES:Bool=ON)
+
+    # Tag the version with a hash of our patch series. The version seeds the kernel cache
+    # key, so rebuilds with a different series don't reuse previously cached binaries.
+    patches_hash=$(cat $WORKSPACE/srcdir/patches/pocl/*.patch | sha256sum | cut -c1-12)
+    sed -i "s/^set(VERSION_SUFFIX_FIXED_TEXT \"\")/set(VERSION_SUFFIX_FIXED_TEXT \"~julia-${patches_hash}\")/" CMakeLists.txt
 
     # Install things into $prefix
     CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
@@ -227,11 +262,11 @@ function build_script(standalone=false)
 
     # Each work-item's private memory is laid out on the worker thread's stack
     # and replicated across the work-group, so a private-heavy kernel at a large
-    # work-group size can overflow the default thread stack (only 512 KB on
-    # macOS, 1 MB on Windows) and crash. Enabling this makes PoCL estimate the
-    # per-work-item stack usage and clamp the kernel's reported
-    # CL_KERNEL_WORK_GROUP_SIZE accordingly, so launches fit (and over-large ones
-    # are rejected with CL_INVALID_WORK_GROUP_SIZE) instead of segfaulting.
+    # work-group size can overflow the 8 MiB worker stack and crash. Enabling this
+    # makes PoCL estimate the per-work-item stack usage and clamp the kernel's
+    # reported CL_KERNEL_WORK_GROUP_SIZE accordingly, so launches fit (and
+    # over-large ones are rejected with CL_INVALID_WORK_GROUP_SIZE) instead of
+    # crashing. The estimate doesn't cover values that live across barriers.
     CMAKE_FLAGS+=(-DHOST_CPU_ENABLE_STACK_SIZE_CHECK:Bool=ON)
 
     if [[ "${STANDALONE}" == "true" ]]; then

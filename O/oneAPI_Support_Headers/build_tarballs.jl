@@ -3,25 +3,25 @@
 using BinaryBuilder, Pkg
 
 name = "oneAPI_Support_Headers"
-version = v"2025.3.1"
+version = v"2026.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    # https://pypi.org/project/onemkl-sycl-include/2025.3.1/
-    FileSource("https://files.pythonhosted.org/packages/79/70/d64211c4cf78490b273d449a7a4bd62e11a2a61c0b6b8dbef6b7c179c244/onemkl_sycl_include-2025.3.1-py2.py3-none-manylinux_2_28_x86_64.whl",
-               "8cf08d257ecf004f71f6c70b49da9793332daef7e556ab062f342071900fe435"; filename="oneapi-headers.whl"),
+    # https://pypi.org/project/onemkl-sycl-include/2026.1.0/
+    FileSource("https://files.pythonhosted.org/packages/5e/2b/5ecba7eebf0a14eb394d5d5c36aa3469e1b3dd4eb9e9898a2ed22a9d87b4/onemkl_sycl_include-2026.1.0-py2.py3-none-manylinux_2_28_x86_64.whl",
+               "e2ed8aec7531613c908086d542539548397482afc765528dbdbe913752566298"; filename="oneapi-headers.whl"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 unzip -d oneapi-headers oneapi-headers.whl
-cd oneapi-headers/onemkl_sycl_include-2025.3.1.data/data
+cd oneapi-headers/onemkl_sycl_include-2026.1.0.data/data
 
 mkdir $includedir
 cp -r include/oneapi $includedir
 
-install_license $WORKSPACE/srcdir/oneapi-headers/onemkl_sycl_include-2025.3.1.dist-info/LICENSE.txt
+install_license $WORKSPACE/srcdir/oneapi-headers/onemkl_sycl_include-2026.1.0.dist-info/LICENSE.txt
 """
 
 # These are the platforms we will build for by default, unless further

@@ -7,6 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "SuperLU_DIST"
 version = v"9.2.1"
+ygg_version = v"9.2.3"
 
 # Collection of sources required to complete build
 sources = [
@@ -124,8 +125,8 @@ dependencies = [
     # 1.12) only supports OpenBLAS32 0.3.9 - 0.3.32, so pinning 0.3.33 makes
     # dependency resolution unsatisfiable.
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"); compat="0.3.32"),
-    Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa"); platforms=filter(!Sys.iswindows, platforms), compat="4.0.7"),
-    Dependency("METIS_jll"; compat="5.1.3"),
+    Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa"); platforms=filter(!Sys.iswindows, platforms), compat="4.0.9"),
+    Dependency("METIS_jll"; compat="5.1.4"),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
@@ -142,5 +143,5 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 # Require GCC 8 to avoid `error: libgfortran.so.4: cannot open shared object file`
 # CI suggests that this generally works on most systems [1.6 - nightly (1.11)], apart
 # from a failure on 1.8 & windows, which is why julia compat is set to 1.9
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                augment_platform_block, julia_compat="1.9", preferred_gcc_version=v"8")

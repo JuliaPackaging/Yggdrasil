@@ -312,5 +312,21 @@ extern "C"
     
     return jl_out;
   }
+
+  void save_poly(TetGenIOf64 jl_in, char *fstub)
+  {
+    tetgenio in;
+    copy_tetio(&jl_in, &in);
+    in.save_poly(fstub);
+    in.initialize(); 
+  }
+  
+  void save_nodes(TetGenIOf64 jl_in, char *fstub)
+  {
+    tetgenio in;
+    copy_tetio(&jl_in, &in);
+    in.save_nodes(fstub);
+    in.initialize(); 
+  }
   
 }
