@@ -26,8 +26,7 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/roaring-freebsd-bswap.patch
 apk update
 apk add glib-dev py3-pip
 
-# GTK requires meson >= 1.5.0. Install it into a private directory: upgrading in
-# place would have to uninstall the rootfs meson, and the rootfs is read-only.
+# GTK requires meson >= 1.5.0. Install it into a private directory following Pango recipe.
 python3 -m pip install --ignore-installed --target=/tmp/meson meson==1.11.2
 export PYTHONPATH="/tmp/meson${PYTHONPATH:+:${PYTHONPATH}}"
 export PATH="/tmp/meson/bin:${PATH}"
