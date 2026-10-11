@@ -10,8 +10,6 @@
 # the codec JLL and HDF5_jll.
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
-const YGGDRASIL_DIR = "../.."
-include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 # Version of the hdf5_plugins release (tag `2.2.0`, which targets HDF5 2.2.0)
 const hdf5_plugins_version = v"2.2.0"
@@ -21,10 +19,8 @@ hdf5_plugins_sources() = [
               "2b62ec75a6ea848899ef61bee8e034f8bab01f52"),
 ]
 
-# HDF5_jll is only published as MPI variants, and its headers include `mpi.h`.
-# The plugins therefore have to be built for the same `mpi` platform tags as
-# HDF5_jll, so that each one is built against, and selected together with, the
-# matching HDF5_jll artifact. Returns `(platforms, platform_dependencies)`.
+# The plugins do not use MPI, so they are built once per platform instead of once
+# per MPI variant, and work with every HDF5_jll variant.
 #
 # HDF5_jll is only published for `libgfortran` 5 and the `cxx11` string ABI.
 # Without these tags BinaryBuilder resolves HDF5_jll for `libgfortran3`/`cxx03`
@@ -38,15 +34,8 @@ function hdf5_plugins_platforms()
         VersionNumber(get(tags(p), "libgfortran_version", "0")) >= v"5" &&
             get(tags(p), "cxxstring_abi", "cxx11") != "cxx03"
     end
-    return MPI.augment_platforms(platforms)
+    return platforms
 end
-
-# Select the artifact matching the user's MPIPreferences, like HDF5_jll does
-const hdf5_plugin_augment_platform_block = """
-    using Base.BinaryPlatforms
-    $(MPI.augment)
-    augment_platform!(platform::Platform) = augment_mpi!(platform)
-    """
 
 # The upstream filters are installed as loadable modules into `lib/plugin`.
 # Keep that layout so the directory can be added to `HDF5_PLUGIN_PATH`.
@@ -57,10 +46,16 @@ hdf5_plugin_product(libname) =
 # API. The coupling is tight on purpose: the plugin release `2.2.x` targets
 # HDF5 `2.2.x`, so only HDF5_jll 2.2.* is allowed; `2.2.3` is the first build that is
 # published for all platforms (same HDF5 2.2.0 library). Bump both together.
-hdf5_plugin_dependencies(platform_dependencies, deps...) = [
+#
+# HDF5_jll is only published as MPI variants and its headers include `mpi.h`
+# (which of the variants is installed at build time does not matter). The plugin
+# never calls the MPI parts of the API, so an MPI implementation is only needed
+# for its header at build time and is not a dependency of the resulting JLL.
+hdf5_plugin_dependencies(platforms, deps...) = [
     Dependency("HDF5_jll"; compat="~2.2.3"),
     deps...,
-    platform_dependencies...,
+    BuildDependency("MPICH_jll"; platforms=filter(!Sys.iswindows, platforms)),
+    BuildDependency("MicrosoftMPI_jll"; platforms=filter(Sys.iswindows, platforms)),
 ]
 
 # Prelude shared by all recipes. Upstream generates `<name>_config.h` headers

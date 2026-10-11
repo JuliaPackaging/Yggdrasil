@@ -14,9 +14,13 @@ blosc, blosc2, bitshuffle, bzip2, jpeg, lz4, lzf, zfp) are added one per pull re
 ## Versioning and HDF5_jll
 
 All recipes share `common.jl`. They are versioned like the hdf5_plugins release
-(`2.2.0`) and depend on `HDF5_jll` with `compat = "~2.2"`: bump both together.
-HDF5_jll only exists as MPI variants and its headers include `mpi.h`, so the
-plugins use the same `mpi` platform augmentation as `H/HDF5`.
+(`2.2.0`) and depend on `HDF5_jll` with `compat = "~2.2.3"`: bump both together.
+
+The plugins do not use MPI, so they are built once per platform, not once per MPI
+variant, and work with every HDF5_jll variant. HDF5_jll's headers include `mpi.h`,
+so an MPI implementation (`MPICH_jll`, `MicrosoftMPI_jll` on Windows) is a
+build-only dependency. Platforms are limited to the `libgfortran` 5 / `cxx11`
+tags HDF5_jll is published for.
 
 ## Loading
 

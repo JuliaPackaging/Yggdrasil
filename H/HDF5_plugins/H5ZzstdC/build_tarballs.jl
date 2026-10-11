@@ -12,14 +12,14 @@ sources = hdf5_plugins_sources()
 # Bash recipe for building across all platforms
 script = hdf5_plugin_script("libh5zstd", ["ZSTD/src/H5Zzstd.c"]; libs=raw"-lzstd")
 
-platforms, platform_dependencies = hdf5_plugins_platforms()
+platforms = hdf5_plugins_platforms()
 
 products = [
     hdf5_plugin_product("libh5zstd"),
 ]
 
-dependencies = hdf5_plugin_dependencies(platform_dependencies,
+dependencies = hdf5_plugin_dependencies(platforms,
     Dependency("Zstd_jll"; compat="1.5.7"))
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block=hdf5_plugin_augment_platform_block, julia_compat="1.10")
+               julia_compat="1.10")
