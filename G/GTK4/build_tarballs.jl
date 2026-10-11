@@ -165,4 +165,4 @@ dependencies = [
 # We need at least GCC 8 to support `__VA_OPT__`
 # We need at least GCC 9 to avoid linker problems on x86_64-linux-musl
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"9")
+               clang_use_lld=false, julia_compat="1.9", preferred_gcc_version=v"9")
