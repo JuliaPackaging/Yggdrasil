@@ -79,6 +79,10 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
 fi
 """
 
+# several Windows DLLs (CUPTI and nvperf, and cuSOLVER since CUDA 13) are MSVC-built and
+# link the Visual C++ runtime dynamically.
+msvc_runtime = RuntimeDependency("MSVCRuntime_jll"; platforms=[Platform("x86_64", "windows")])
+
 # determine exactly which tarballs we should build
 builds = []
 for version in reverse(toolkit_versions)
@@ -134,7 +138,8 @@ for version in reverse(toolkit_versions)
         if Base.thisminor(version) == v"10.2"
             push!(builds,
                 (; dependencies=[Dependency("CUDA_Driver_jll", v"13.3.4"; compat="13.3.4 - 13"),
-                                 BuildDependency(PackageSpec(name="CUDA_SDK_jll", version="10.2.89"))],
+                                 BuildDependency(PackageSpec(name="CUDA_SDK_jll", version="10.2.89")),
+                                 msvc_runtime],
                    script=get_script(), platforms=[augmented_platform], products=get_products(platform),
                    sources=[], init_block=""
             ))
@@ -164,7 +169,8 @@ for version in reverse(toolkit_versions)
             # an older compiler would trigger the "runtime newer than compiler" warning above.
             push!(builds,
                 (; dependencies=[Dependency("CUDA_Driver_jll", v"13.3.4"; compat="13.3.4 - 13"),
-                                 RuntimeDependency("CUDA_Compiler_jll"; compat="0.6.3")],
+                                 RuntimeDependency("CUDA_Compiler_jll"; compat="0.6.3"),
+                                 msvc_runtime],
                    script, platforms=[augmented_platform], products=get_products(platform),
                    sources=get_sources("cuda", components; version, platform=augmented_platform),
                    init_block
