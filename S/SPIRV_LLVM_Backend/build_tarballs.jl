@@ -65,6 +65,10 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/getmemscope_per_context.patch
 # storage class bits to fence and generic atomic semantics"; merged after the
 # 23.x branch), without which fences order no memory.
 atomic_patch -p1 $WORKSPACE/srcdir/patches/fence_storage_class.patch
+# Backport of https://github.com/llvm/llvm-project/pull/229720 ("[SPIR-V] Type
+# the format string of unmangled printf calls as i8"; approved upstream), without
+# which IGC asserts on kernels with multiple printf format strings.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/printf_unmangled.patch
 
 install_license LICENSE.TXT
 

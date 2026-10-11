@@ -65,6 +65,9 @@ function get_script(; debug::Bool)
         # Don't put overflowing word/byte integer results in the accumulator
         # https://github.com/JuliaGPU/oneAPI.jl/issues/670
         atomic_patch -p0 patches/narrow-int-acc-dst.patch
+        # Don't erase PromoteSubByte's replacements of loop-carried i1 values
+        # https://github.com/JuliaGPU/oneAPI.jl/issues/678
+        atomic_patch -p0 patches/promote-sub-byte-visit.patch
         # https://reviews.llvm.org/D64388
         sed -i '/add_subdirectory/i add_definitions(-D__STDC_FORMAT_MACROS)' intel-graphics-compiler/external/llvm/llvm.cmake
 

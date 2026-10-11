@@ -1,0 +1,31 @@
+--- intel-graphics-compiler/IGC/AdaptorOCL/preprocess_spvir/PromoteSubByte.cpp
++++ intel-graphics-compiler/IGC/AdaptorOCL/preprocess_spvir/PromoteSubByte.cpp
+@@ -21,6 +21,7 @@
+ #include <llvm/IR/Function.h>
+ #include <llvm/IR/InlineAsm.h>
+ #include <llvm/IR/Instructions.h>
++#include <llvm/IR/InstIterator.h>
+ #include <llvm/Demangle/Demangle.h>
+ #include <llvm/IR/Mangler.h>
+ #include <llvm/Support/Regex.h>
+@@ -83,7 +84,19 @@
+     changed |= getOrCreatePromotedValue(&globalVariable) != &globalVariable;
+   }
+ 
+-  visit(module);
++  // Promoting an instruction can recursively promote instructions further down in its block
++  // (through PHI nodes) and insert their replacements there. Visit only the instructions that
++  // existed before promotion: visiting a replacement would promote it again and make cleanUp()
++  // erase it while it still has users.
++  SmallVector<Instruction *, 128> originalInstructions;
++  for (auto &function : module) {
++    for (auto &instruction : instructions(function)) {
++      originalInstructions.push_back(&instruction);
++    }
++  }
++  for (auto *instruction : originalInstructions) {
++    visit(*instruction);
++  }
+ 
+   while (!promotionQueue.empty()) {
+     auto value = promotionQueue.front();

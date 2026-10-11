@@ -1,0 +1,17 @@
+Use the MPI calling convention for the error handler (fixes MS-MPI on 32-bit Windows)
+
+--- a/src/libs/relay/conduit_relay_mpi.cpp	2026-10-08 07:30:43
++++ b/src/libs/relay/conduit_relay_mpi.cpp	2026-10-08 07:30:43
+@@ -314,7 +314,12 @@
+     }
+ 
+     /// MPI calls this function to handle errors.
++#ifdef MPIAPI
++    // MS-MPI requires the __stdcall calling convention on 32-bit Windows
++    static void MPIAPI handler(MPI_Comm * /*comm*/,
++#else
+     static void handler(MPI_Comm * /*comm*/,
++#endif
+                         int      * /*errcode*/,
+                         ...)
+     {
