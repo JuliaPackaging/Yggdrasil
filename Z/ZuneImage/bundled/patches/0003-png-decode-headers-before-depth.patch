@@ -1,0 +1,21 @@
+zune-capi: decode PNG headers before asking the decoder for the depth
+
+`PngDecoder::depth()` returns `None` until the headers have been parsed, and
+the PNG arm of `imdecode_inner` calls it straight after `PngDecoder::new`, so
+the `unwrap()` always panics and the unwind out of an `extern "C"` function
+aborts every C-side PNG decode.  `decode_headers()` returns
+`Result<(), PngDecodeErrors>`, which the existing `From` impl lets `?` convert,
+and it is idempotent, so the call `decode_into` makes internally is a no-op.
+The PPM and PSD arms already decode headers first; the arms that only call
+`decode_into` let the decoder do it.
+
+--- a/crates/zune-capi/src/imread.rs
++++ b/crates/zune-capi/src/imread.rs
+@@ -380,6 +380,7 @@
+                 // we expect the caller to have appropriately taken care of allocating enough to hold 16 bit
+                 //
+                 let mut decoder = PngDecoder::new(data);
++                decoder.decode_headers()?;
+ 
+                 match decoder.depth().unwrap() {
+                     BitDepth::Eight => {
