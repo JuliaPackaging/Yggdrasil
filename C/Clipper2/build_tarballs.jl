@@ -8,8 +8,6 @@ version = v"2.0.1"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/AngusJohnson/Clipper2.git", "21ebba05db8894f0c7217ad35ea518080f324946"),
-    # Clipper2 patches tied to the Clipper2 pin above are bundled;
-    # a version bump that obsoletes them only changes the recipe
     DirectorySource("./bundled")
 ]
 
@@ -57,7 +55,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# GCC 10 is the newest compiler compatible with the declared julia_compat:
-# Julia 1.6 ships libstdc++ from GCC 10, so GCC 11+ output (GLIBCXX_3.4.29)
-# would not load there. Clipper2 itself only needs C++17.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"10")
