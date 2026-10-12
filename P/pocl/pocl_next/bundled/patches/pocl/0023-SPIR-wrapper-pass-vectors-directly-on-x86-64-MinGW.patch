@@ -18,6 +18,8 @@ ABI and is left alone. The generated wrappers for other targets are
 unchanged.
 
 (cherry picked from commit e1d5c29f35d3c97110661183539dd416ad6117a3)
+[Yggdrasil: also match the unnormalized x86_64-w64-mingw32 triple, which
+the recipe passes as LLC_TRIPLE instead of llvm-config's windows-gnu one]
 ---
  cmake/bitcode_rules.cmake                |  5 +++++
  lib/kernel/SPIR/generate_spir_wrapper.py | 23 ++++++++++++++++++-----
@@ -32,7 +34,7 @@ index 24518c7e4..ed339cae9 100644
    endif()
  
 +  # clang passes vectors directly on x86-64 MinGW, unlike System V (and MSVC)
-+  if(ARCH STREQUAL "cpu_x86" AND LLC_TRIPLE MATCHES "-windows-gnu")
++  if(ARCH STREQUAL "cpu_x86" AND LLC_TRIPLE MATCHES "-windows-gnu|-mingw32")
 +    list(APPEND EXTRA_OPT "--mingw")
 +  endif()
 +
