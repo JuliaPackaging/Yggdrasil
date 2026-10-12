@@ -75,6 +75,11 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/printf_unmangled.patch
 # "Unsupported Integer width!", e.g. for KernelAbstractions sub-group shuffles of
 # structs with a Bool field.
 atomic_patch -p1 $WORKSPACE/srcdir/patches/bool_vector_bitcast_wide.patch
+# Backport of https://github.com/llvm/llvm-project/pull/231173 ("[SPIR-V] Fix
+# FPFastMathDefault type lookup for calls and post-isel registers"; open
+# upstream), without which kernels with an FPFastMathDefault execution mode
+# segfault when MachineCSE hoists a floating-point instruction at -O2.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/fp_fast_math_default_type.patch
 
 install_license LICENSE.TXT
 
