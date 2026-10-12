@@ -153,7 +153,8 @@ function build_script(standalone=false)
     #   shuffles (upstream PR #2394; JuliaGPU/KernelAbstractions.jl#864)
     # - 0023: pass vectors directly in the SPIR wrappers of the MinGW kernel library, whose
     #   mismatched calls left e.g. the vector sub-group shuffles unlinked on Windows
-    #   (upstream PR #2381; JuliaGPU/KernelAbstractions.jl#831)
+    #   (upstream PR #2381, also matching our unnormalized mingw32 LLC_TRIPLE;
+    #   JuliaGPU/KernelAbstractions.jl#831)
     for patch in $WORKSPACE/srcdir/patches/pocl/*.patch; do
         atomic_patch -p1 $patch
     done
