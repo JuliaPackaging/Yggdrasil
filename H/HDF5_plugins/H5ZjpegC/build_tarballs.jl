@@ -19,7 +19,7 @@ products = [
 ]
 
 dependencies = hdf5_plugin_dependencies(platforms,
-    Dependency("JpegTurbo_jll"; compat="3.0.1"))
+    Dependency("JpegTurbo_jll"; compat="3.2.0"))
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.10")
