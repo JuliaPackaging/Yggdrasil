@@ -23,10 +23,6 @@ install_license LICENSE-MIT LICENSE-APACHE
 """
 
 platforms = supported_platforms()
-# BinaryBuilder does not provide usable Rust toolchains for these targets.
-filter!(p -> arch(p) != "riscv64", platforms)
-filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
-filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms)
 
 products = [
     ExecutableProduct("pumpkin-solver", :pumpkin_solver),
