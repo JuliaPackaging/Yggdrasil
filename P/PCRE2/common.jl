@@ -5,7 +5,9 @@ using BinaryBuilderBase: sanitize
 
 # `version` is the package version; its major and minor components select the upstream release.
 # `widths` lists the code unit widths (8, 16, 32) whose libraries are built.
-function build_pcre2(ARGS, name::String, version::VersionNumber, widths::Vector{Int})
+# `julia_compat` is the Julia compat bound of the package.
+function build_pcre2(ARGS, name::String, version::VersionNumber, widths::Vector{Int};
+                     julia_compat::String="1.9")
 
     # Collection of sources required to complete build
     sources = [
@@ -73,5 +75,5 @@ fi
     # Need at least GCC XXX for asm instructions on i686
     # (We could instead patch the asm instructions.)
     build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-                   julia_compat="1.10", preferred_gcc_version=v"5", preferred_llvm_version=llvm_version)
+                   julia_compat, preferred_gcc_version=v"5", preferred_llvm_version=llvm_version)
 end
