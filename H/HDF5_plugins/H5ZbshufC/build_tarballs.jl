@@ -19,7 +19,7 @@ products = [
 ]
 
 dependencies = hdf5_plugin_dependencies(platforms,
-    Dependency("Lz4_jll"; compat="1.10.0"),
+    Dependency("Lz4_jll"; compat="1.10.1"),
     Dependency("Zstd_jll"; compat="1.5.7"))
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
