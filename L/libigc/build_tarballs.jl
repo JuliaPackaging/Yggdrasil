@@ -68,6 +68,9 @@ function get_script(; debug::Bool)
         # Don't erase PromoteSubByte's replacements of loop-carried i1 values
         # https://github.com/JuliaGPU/oneAPI.jl/issues/678
         atomic_patch -p0 patches/promote-sub-byte-visit.patch
+        # Don't leave PHIs of with.overflow results pointing at the erased intrinsic
+        # https://buildkite.com/julialang/oneapi-dot-jl/builds/1800
+        atomic_patch -p0 patches/legalization-overflow-phi.patch
         # https://reviews.llvm.org/D64388
         sed -i '/add_subdirectory/i add_definitions(-D__STDC_FORMAT_MACROS)' intel-graphics-compiler/external/llvm/llvm.cmake
 
