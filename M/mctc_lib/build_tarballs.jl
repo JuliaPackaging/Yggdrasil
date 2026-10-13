@@ -12,6 +12,12 @@ sources = [
 
 # JSON input needs jonquil, which is not packaged yet
 script = raw"""
+# The rootfs ships meson 1.8.0, which upstream rejects because of a known bug.
+# Install a newer meson into a private directory, as done in P/Pango.
+python3 -m pip install --ignore-installed --target=/tmp/meson meson==1.11.2
+export PYTHONPATH="/tmp/meson${PYTHONPATH:+:${PYTHONPATH}}"
+export PATH="/tmp/meson/bin:${PATH}"
+
 cd ${WORKSPACE}/srcdir/mctc-lib
 meson setup build \
     --cross-file="${MESON_TARGET_TOOLCHAIN}" \
