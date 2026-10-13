@@ -1,14 +1,13 @@
-version = v"1.10.2"
+version = v"1.11.0"
 
 sources = [
-    GitSource("https://github.com/onnx/onnx.git", "da889e6b95750350726d149bf447bf0cd1245964"),
+    GitSource("https://github.com/onnx/onnx.git", "96046b8ccfb8e6fa82f6b2b34b3d56add2e8849c"),
     DirectorySource(joinpath(@__DIR__, "bundled")),
 ]
 
 script = raw"""
 cd onnx
 
-atomic_patch -p1 ../patches/onnx-onnxifi_dummy.patch
 atomic_patch -p1 ../patches/onnx-mingw32.patch
 atomic_patch -p1 ../patches/onnx-mingw32-linking.patch
 
