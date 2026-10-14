@@ -7,7 +7,7 @@ version = v"1.19.9"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/JuliaLang/juliaup.git", "f12e43abb626bbad9217e8941661fa67b35053d1")
+    ArchiveSource("https://github.com/JuliaLang/juliaup/archive/refs/tags/$(version).tar.gz", "faf3fb713d1f6609bfd8820074e4685a26a2c389d8c26ad1fef379d06025d766")
 ]
 
 # Bash recipe for building across all platforms
