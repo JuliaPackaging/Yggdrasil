@@ -1,6 +1,8 @@
+diff --git intel-graphics-compiler/IGC/Compiler/LegalizationPass.cpp intel-graphics-compiler/IGC/Compiler/LegalizationPass.cpp
+index 1d336e261..75089a562 100644
 --- intel-graphics-compiler/IGC/Compiler/LegalizationPass.cpp
 +++ intel-graphics-compiler/IGC/Compiler/LegalizationPass.cpp
-@@ -1604,6 +1604,54 @@ void Legalization::visitAlloca(AllocaInst &I) {
+@@ -1604,6 +1604,60 @@ void Legalization::visitAlloca(AllocaInst &I) {
    }
  }
  
@@ -44,6 +46,12 @@
 +    }
 +    U->replaceUsesOfWith(&phi, aggregate);
 +  }
++
++  // The PHI is erased at the end of the pass together with its extracts, which still refer to
++  // it. Drop its incoming values now so that visiting another of its incoming intrinsics does
++  // not split (and queue for removal) the same PHI again.
++  for (unsigned j = 0; j < numIncoming; ++j)
++    phi.setIncomingValue(j, UndefValue::get(STy));
 +  m_instructionsToRemove.push_back(&phi);
 +
 +  // PHIs of i1 are not legal; the visitor will not come back to blocks it has already
@@ -55,7 +63,7 @@
  void Legalization::visitIntrinsicInst(llvm::IntrinsicInst &I) {
    m_ctx->m_instrTypes.numInsts++;
    IGCLLVM::IRBuilder<> Builder(&I);
-@@ -1812,11 +1860,34 @@ void Legalization::visitIntrinsicInst(llvm::IntrinsicInst &I) {
+@@ -1812,11 +1866,34 @@ void Legalization::visitIntrinsicInst(llvm::IntrinsicInst &I) {
  
      // llvm.x.with.overflow returns a struct, where the first element is the operation result,
      // and the second is the overflow flag.
@@ -92,6 +100,8 @@
          continue;
        }
  
+diff --git intel-graphics-compiler/IGC/Compiler/LegalizationPass.hpp intel-graphics-compiler/IGC/Compiler/LegalizationPass.hpp
+index c98982f00..071d43474 100644
 --- intel-graphics-compiler/IGC/Compiler/LegalizationPass.hpp
 +++ intel-graphics-compiler/IGC/Compiler/LegalizationPass.hpp
 @@ -71,6 +71,7 @@ public:
