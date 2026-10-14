@@ -14,6 +14,10 @@ script = hdf5_plugin_script("libh5lz4", ["LZ4/src/H5Zlz4.c"]; libs=raw"-llz4 ${w
 winsock_libs=
 if [[ ${target} == *-mingw* ]]; then
     winsock_libs=-lws2_32
+    plugin_flags+=(-DHAVE_WINSOCK2_H)
+else
+    # upstream gets these from its generated config header
+    plugin_flags+=(-DHAVE_ARPA_INET_H -DHAVE_NETINET_IN_H)
 fi
 """)
 
