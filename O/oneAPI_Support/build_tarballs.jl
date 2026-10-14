@@ -252,5 +252,5 @@ for (idx, (platform, sources)) in enumerate(platform_sources)
         args = ARGS
     end
     build_tarballs(args, name, version, [generic_sources; sources], script, [platform],
-                   products, dependencies; preferred_gcc_version=v"8")
+                   products, dependencies; preferred_gcc_version=v"8", julia_compat="1.10"))
 end
