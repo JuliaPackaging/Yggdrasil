@@ -19,7 +19,7 @@ products = [
 ]
 
 dependencies = hdf5_plugin_dependencies(platforms,
-    Dependency("Bzip2_jll"; compat="1.0.8"))
+    Dependency("Bzip2_jll"; compat="1.0.9"))
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.10")
