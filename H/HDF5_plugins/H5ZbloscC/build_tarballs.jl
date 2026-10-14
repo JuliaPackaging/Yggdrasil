@@ -10,7 +10,7 @@ version = hdf5_plugins_version
 sources = hdf5_plugins_sources()
 
 # Bash recipe for building across all platforms
-script = hdf5_plugin_script("libh5blosc", ["BLOSC/src/H5Zblosc.c"]; libs=raw"-lblosc")
+script = hdf5_plugin_script("libh5blosc", ["BLOSC/src/H5Zblosc.c"]; cflags="-Wno-error=incompatible-pointer-types", libs=raw"-lblosc")
 
 platforms = hdf5_plugins_platforms()
 
