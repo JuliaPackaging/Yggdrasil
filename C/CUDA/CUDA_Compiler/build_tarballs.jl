@@ -250,3 +250,5 @@ for (i,build) in enumerate(builds)
                    julia_compat="1.10", lazy_artifacts=true,
                    augment_platform_block, build.init_block)
 end
+
+# bump
