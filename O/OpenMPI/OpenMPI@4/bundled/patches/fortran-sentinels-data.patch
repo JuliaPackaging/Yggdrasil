@@ -1,6 +1,7 @@
 Define the Fortran sentinels (MPI_IN_PLACE etc.) as initialized data, not in .bss,
 and link libmpi_usempi_ignore_tkr against libmpi so that it doesn't define its own.
-See <https://github.com/JuliaPackaging/Yggdrasil/issues/15133>.
+Upstream: <https://github.com/open-mpi/ompi/issues/14646>.
+See also <https://github.com/JuliaPackaging/Yggdrasil/issues/15133>.
 
 --- a/ompi/mpi/fortran/base/gen-mpi-mangling.pl
 +++ b/ompi/mpi/fortran/base/gen-mpi-mangling.pl

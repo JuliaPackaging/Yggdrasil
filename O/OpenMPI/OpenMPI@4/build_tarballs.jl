@@ -23,7 +23,8 @@ cd ${WORKSPACE}/srcdir/openmpi-*
 atomic_patch -p1 ../patches/0001-ompi-mca-sharedfp-sm-Include-missing-sys-stat.h-in-s.patch
 
 # Fortran COMMON blocks in shared libraries (e.g. MUMPS) otherwise get private
-# copies of MPI_IN_PLACE etc. when loaded with RTLD_DEEPBIND
+# copies of MPI_IN_PLACE etc. when loaded with RTLD_DEEPBIND.
+# Reported upstream as <https://github.com/open-mpi/ompi/issues/14646>.
 atomic_patch -p1 ../patches/fortran-sentinels-data.patch
 
 if [[ "${target}" == *-freebsd* ]]; then

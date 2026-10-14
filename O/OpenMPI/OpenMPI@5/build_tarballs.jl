@@ -31,7 +31,8 @@ cd ${WORKSPACE}/srcdir/openmpi-*
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fix-complex32-kind-mapping.patch
 
 # Fortran COMMON blocks in shared libraries (e.g. MUMPS) otherwise get private
-# copies of MPI_IN_PLACE etc. when loaded with RTLD_DEEPBIND
+# copies of MPI_IN_PLACE etc. when loaded with RTLD_DEEPBIND.
+# Reported upstream as <https://github.com/open-mpi/ompi/issues/14646>.
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fortran-sentinels-data.patch
 
 if [[ "${target}" == aarch64-apple-* ]]; then
