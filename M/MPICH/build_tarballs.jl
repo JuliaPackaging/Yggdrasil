@@ -24,6 +24,7 @@ cd ${WORKSPACE}/srcdir/mpich*
 # (The MPICH developers say that this is a bug in MPICH and that
 # `<pthread_np.h>` should not actually be used on FreeBSD.)
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pthread_np.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fortran_sentinels_data.patch
 
 # - Do not install doc and man files which contain files which clashing names on
 #   case-insensitive file systems:
@@ -142,8 +143,7 @@ end
 products = [
     # MPICH
     LibraryProduct("libmpicxx", :libmpicxx),
-    # Global, so that libraries loaded later (e.g. MUMPS) use libmpifort's MPI_IN_PLACE etc.
-    LibraryProduct("libmpifort", :libmpifort; dlopen_flags=[:RTLD_LAZY, :RTLD_DEEPBIND, :RTLD_GLOBAL]),
+    LibraryProduct("libmpifort", :libmpifort),
     LibraryProduct("libmpi", :libmpi),
     ExecutableProduct("mpiexec", :mpiexec),
 ]
