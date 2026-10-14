@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "AzStorage"
-version = v"0.9.1"
+version = v"0.9.2"
 
 # Collection of sources required to build AzStorage
 sources = [
     GitSource(
         "https://github.com/ChevronETC/AzStorage.jl.git",
-        "f0783fbb41980d4183e6a4042e2a4f9ca40bfdb2"
+        "b2d76fe2516d5787be1f0ab4b6cc46e1a4c2700a"
     )
 ]
 

@@ -4,8 +4,8 @@ This guide helps AI agents generate correct `build_tarballs.jl` recipes for Bina
 
 ## Prerequisites
 
-- **BinaryBuilder.jl**: Requires at least Julia 1.12.
-- **Supported Platforms**: Linux (glibc and musl for x86_64, i686, aarch64, armv7l, armv6l, ppc64le, riscv64), Windows (x86_64, i686), macOS (x86_64, aarch64), FreeBSD (x86_64, aarch64)
+- **Julia**: Use Julia 1.12 (CI runs 1.12.7; `.ci/Manifest.toml` is resolved for it).
+- **Supported Platforms**: Linux glibc (x86_64, i686, aarch64, armv7l, armv6l, ppc64le, riscv64), Linux musl (x86_64, i686, aarch64, armv7l, armv6l), Windows (x86_64, i686), macOS (x86_64, aarch64), FreeBSD (x86_64, aarch64)
 - Use `supported_platforms()` to get all available platforms
 
 ## Essential Structure
@@ -13,7 +13,7 @@ This guide helps AI agents generate correct `build_tarballs.jl` recipes for Bina
 Every `build_tarballs.jl` file follows this pattern:
 
 ```julia
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "PackageName"              # Valid Julia identifier (no spaces/dashes/dots)
 version = v"X.Y.Z"                # Only major.minor.patch (no prerelease/build tags)
@@ -53,7 +53,7 @@ optional arguments).
 ### Naming
 
 - **Name**: Must be a valid Julia identifier. Replace spaces/dashes with underscores. Generally match upstream casing, but use what makes most sense.
-- **Version**: Only `X.Y.Z` format. Truncate any `-alpha`, `+build`, or 4+ level versions.
+- **Version**: Only `X.Y.Z` format. Truncate any `-alpha`, `+build`, or 4+ level versions. Yggdrasil itself uses `+N` to rebuild the same upstream version.
 - **Products**: Export symbols should match the library/executable names (as symbols: `:libname`), but use what makes sense for the package.
 
 ### Sources
@@ -108,14 +108,58 @@ Every declared product must actually be produced by the build on every supported
 
 Always add `_jll` suffix: `Dependency("Zlib_jll")`
 
+- Every `Dependency` gets a `compat=` bound: `Dependency("Zlib_jll"; compat="1.2.13")`.
+- Never remove or loosen an existing bound. Compat strings are set unions, so `"3.0, 3.5"` means the same as `"3.0"`.
+- By default BinaryBuilder builds against the *oldest* version satisfying the bound, so raising the lower bound picks up newer artifacts. A positional pin (`Dependency("X_jll", v"1.2")` or `Dependency(PackageSpec("X_jll", v"1.2"))`) overrides the default: check for one before relying on `compat` alone, and keep it inside the bound or the build errors.
+- Changing any compat bound, including `julia_compat`, requires bumping the JLL version. Pkg cannot re-register an existing version.
+- Header-only or build-time-only packages are `BuildDependency`, so they are not installed on users' machines.
+- Anything linking `libgfortran` needs `expand_gfortran_versions(platforms)` and `Dependency("CompilerSupportLibraries_jll")`. Don't paper over it with `preferred_gcc_version`.
+- OpenMP: `CompilerSupportLibraries_jll` on non-BSD, `LLVMOpenMP_jll` on FreeBSD and macOS. Never mix headers from one with the runtime of the other.
+
 ### GCC Version Selection
 
 Use `preferred_gcc_version=v"X"` for (see [available GCC versions](https://github.com/JuliaPackaging/Yggdrasil/blob/master/RootFS.md#compiler-shards)):
 
-- **C++ code**: Use oldest GCC that compiles (≤10 for Julia v1.6 compatibility)
-- **Dependencies built with newer GCC**: Match or exceed their GCC version
+- **C++ code**: Use oldest GCC that compiles (≤10 for Julia v1.6 compatibility). Reviewers reject unexplained high versions; state the reason whenever you raise it.
+- **Dependencies built with newer GCC**: Match or exceed their GCC version. Keep a library and its CxxWrap wrapper on the same GCC.
 - **Musl bugs**: Use GCC ≥6 to avoid `posix_memalign` issues
-- Default is GCC 4.8.5 for maximum compatibility
+- Default is GCC 4.8.5; 15.2 is the newest available.
+- Clang is the opposite: latest by default. Set `preferred_llvm_version` only when required (e.g. msan).
+
+### Style
+
+- Prefer writing less. Every line in a recipe, script, or patch should earn its place.
+- Keep comments minimal. Only comment code that is genuinely tricky (non-obvious workarounds, platform quirks, ABI hacks) and say *why*, not *what*.
+- Do not comment obvious steps (`# configure`, `# build`, `# install`) or restate what the code already says.
+- Comments describe the current state, never the change history. That belongs in the PR text.
+- Do not assert facts about the build environment you have not verified in CI. Reviewers have caught invented justifications.
+- Remove debugging residue: `ls`, `exit`, commented-out code, conditional `cd`, unused dependencies or patches.
+- 4-space indentation, no tabs, one argument per line in long lists, newline at end of file.
+
+### Patches
+
+- Use patch files in `bundled/patches/` for source changes, never `sed`/`perl`: sed silently stops matching when upstream changes. The one exception is stripping flags such as `-march` or `-ffast-math` from build files (see [Unsupported Build Flags](#unsupported-build-flags)), where a miss is harmless.
+- Each patch starts with a one-line description and a link to the upstream PR or issue. Report fixes upstream.
+- Never use a personal fork or branch as a source. Keep the upstream source and carry a patch.
+- Prefer a compiler flag over a patch when one suffices.
+
+### Platforms
+
+- Start from `supported_platforms()` and remove with `filter!`, one comment per exclusion saying what breaks. Never hand-list platforms.
+- Filter by property, e.g. `nbits(p) == 64`, not by enumerating architectures.
+- `Sys.isbsd(p)` also matches macOS. To target FreeBSD alone, use `Sys.isfreebsd(p)`.
+- Newer macOS SDK: `include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))` then `sources, script = require_macos_sdk("11.0", sources, script)`. Never set `MACOSX_DEPLOYMENT_TARGET` by hand or edit the sysroot.
+- Windows x86_64 load-time abort "32 bit pseudo relocation out of range": try `-Wl,--disable-runtime-pseudo-reloc`, else link `-static-libstdc++ -static-libgcc`.
+
+### Shell Script Conventions
+
+- Use `install -Dvm 755 src ${bindir}/dst` and `install_license LICENSE` instead of `cp`/`mv`. Add `-v` to `mkdir`, `cp`, `rm`.
+- Never hide errors: no `|| true`, `2>/dev/null`, or `cp A || cp B`. Install declared products unconditionally; the audit fails on missing ones anyway.
+- Use `${includedir}`, `${libdir}`, `${dlext}`, `${CC}`, `${CXX}`, not `${prefix}/include` or hardcoded compiler names.
+- Don't set soname/install_name flags; the auditor does that. Don't set the C++ standard; upstream owns it.
+- Use the upstream build system. Don't hand-invoke `${CC}` to bypass a Makefile.
+- Interpolate `$(version)` into URLs and use globs like `cd package-*`; never repeat a version literal.
+- The auditor requires a license under `share/licenses/<name>`. Install licenses for every bundled third-party project.
 
 ### Unsupported Build Flags
 
@@ -155,16 +199,14 @@ For these complex dependencies, consult existing recipes in the repository (sear
 
 MPI recipes use a platform-tag augmentation scheme so a single set of JLLs can be retargeted at runtime via `MPIPreferences.jl`. Five ABIs are supported (`MPIABI`, `MPICH`, `MPItrampoline`, `OpenMPI`, `MicrosoftMPI`); the orchestration lives in `platforms/mpi.jl`.
 
-Standard recipe shape (see `H/HYPRE/build_tarballs.jl`, `P/PETSc/build_tarballs.jl`, `S/SCALAPACK/build_tarballs.jl`):
+Standard recipe shape (see `H/HYPRE/common.jl`, `P/PETSc/build_tarballs.jl`, `S/SCALAPACK/common.jl`):
 
 ```julia
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 # ...
 platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)   # if Fortran code
-platforms, platform_dependencies = MPI.augment_platforms(platforms;
-                                                        MPICH_compat="5",
-                                                        OpenMPI_compat="4.1.9, 5.0.11")
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
 augment_platform_block = """
     using Base.BinaryPlatforms
     $(MPI.augment)
@@ -174,14 +216,15 @@ append!(dependencies, platform_dependencies)
 build_tarballs(...; augment_platform_block, ...)
 ```
 
-`MPI.augment_platforms` expands each base platform into one variant per allowed ABI, adds an `mpi=<abi>` tag, and returns the matching `Dependency` list (including `MPIPreferences`).
+`MPI.augment_platforms` expands each base platform into one variant per allowed ABI, adds an `mpi=<abi>` tag, and returns the matching `Dependency` list (including `MPIPreferences`). Its default compat bounds are good; only pass `MPICH_compat=` etc. when a package genuinely needs it.
 
 Recurring gotchas:
 
-- **MPItrampoline** does not support musl, Windows, or FreeBSD; **OpenMPI** is unavailable on `armv6l-linux-gnu`. The `mpi_abis` table in `platforms/mpi.jl` encodes most of this, but downstream recipes often still drop unsupported combinations with `filter!(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)` etc. (see `C/COSMA`, `C/COSTA`, `C/CryptoMiniSat`).
+- **MPItrampoline** does not support musl or Windows; **OpenMPI** is unavailable on `armv6l-linux-gnu`. The `mpi_abis` table in `platforms/mpi.jl` already encodes this; don't re-filter in the recipe.
 - **Fortran-bearing libraries** must call `expand_gfortran_versions(platforms)` *before* `MPI.augment_platforms`; C++-heavy packages often also need `expand_cxxstring_abis`.
 - **Per-ABI linking** is selected with `if [[ ${bb_full_target} == *mpiabi* ]]; then …` blocks; each ABI exposes a different set of libraries (`libmpitrampoline`, `libmpi`+`libmpifort`, `libmpi`+`libmpi_mpifh`+`libmpi_usempif08`, `msmpi64`). `P/PETSc/build_tarballs.jl` is the canonical reference.
-- **Windows (MicrosoftMPI)** needs `-DMPI_HOME=${prefix} -DMPI_GUESS_LIBRARY_NAME=MSMPI` and `-DMPI_${lang}_LIBRARIES=msmpi64` for CMake; see `H/HYPRE/build_tarballs.jl`.
+- **Windows (MicrosoftMPI)** needs `-DMPI_HOME=${prefix} -DMPI_GUESS_LIBRARY_NAME=MSMPI` and `-DMPI_${lang}_LIBRARIES=msmpi64` for CMake; see `H/HYPRE/common.jl`.
+- MPI-flavored dependencies must use the same compat (including the exact OpenMPI pin) as the JLL they were built against.
 
 ### CUDA packages
 
@@ -210,12 +253,14 @@ end
 
 Concrete rules:
 
-- **Platforms:** Linux `x86_64-glibc`, Linux `aarch64-glibc` (split into `cuda_platform=jetson` vs `sbsa` for CUDA <13; unified for CUDA ≥13), and Windows `x86_64` (with caveats — `nvcc` is not a cross-compiler, so most recipes skip Windows). Musl and macOS are unsupported.
-- **Supported toolkit versions** are listed in `CUDA.cuda_full_versions` in `platforms/cuda.jl`. Build one variant per CUDA minor; the `cuda=$MAJOR.$MINOR` platform tag drives selection.
-- **`CUDA.augment` block is required** on consumers — it reads `CUDA_Runtime_jll` `Preferences` (`version`, `local`), detects driver capabilities via `CUDA_Driver_jll.inspect_driver`, and picks the highest-compatible toolkit. Compute-capability support is encoded in `cuda_cap_db` in `C/CUDA/CUDA_Runtime/platform_augmentation.jl`.
+- **Platforms:** Linux `x86_64-glibc` and `aarch64-glibc` only (aarch64 split into `cuda_platform=jetson` vs `sbsa` for CUDA <13). Windows, musl, and macOS are unsupported.
+- **Supported toolkit versions** are listed in `CUDA.cuda_full_versions` in `platforms/cuda.jl`; pre-release toolkits need `CUDA.supported_platforms(; prereleases=true)`. Build one variant per CUDA minor; the `cuda=$MAJOR.$MINOR` platform tag drives selection.
+- **Select platforms by exact triplet** in multi-variant loops. `platforms_match` treats a missing `cuda` tag as a wildcard and will serialise every variant into one job.
+- **`CUDA.augment` block is required** on consumers — it reads `CUDA_Runtime_jll` `Preferences` (`version`, `local`), detects driver capabilities via `CUDA_Driver_jll.inspect_driver`, and picks the highest-compatible toolkit. Consumers of the JIT stack use `CUDA.compiler_augment` instead. Compute-capability support is encoded in `cuda_cap_db` in `C/CUDA/CUDA_Runtime/toolkit_selection.jl`.
+- Use `CUDA.cuda_gpu_archs(platform)` for `-DCMAKE_CUDA_ARCHITECTURES` (see `A/AMGX`).
 - **Build flags:** point CMake at the bundled toolkit with `-DCMAKE_CUDA_COMPILER=$prefix/cuda/bin/nvcc -DCMAKE_CUDA_FLAGS="-L${prefix}/cuda/lib"`. `nvcc` writes scratch to `/tmp` (small tmpfs in the sandbox); redirect with `export TMPDIR=${WORKSPACE}/tmpdir`.
 - Pass **`static_sdk=true`** to `required_dependencies` when linking static CUDA libs (e.g. AMGX); this adds `CUDA_SDK_static_jll` as a `BuildDependency`.
-- Always pass **`dont_dlopen=true`** and **`lazy_artifacts=true`** to `build_tarballs` for CUDA consumers — the runtime libs must not be dlopened at JLL init time.
+- Always pass **`dont_dlopen=true`** and **`lazy_artifacts=true`** to `build_tarballs` for CUDA consumers — the sandbox has no driver, so the audit cannot dlopen the libraries. This does not stop the JLL from loading them at init; use `LibraryProduct(...; dont_dlopen=true)` for that.
 - **NVIDIA redistributable archive** SHAs are published per CUDA release in `redistrib_<version>.json`; `cuda_nvcc_redist_source` / `get_sources` in `platforms/cuda.jl` and `C/CUDA/common.jl` handle this — prefer them over hand-rolled `ArchiveSource` URLs.
 
 ## Build Script Reference
@@ -281,11 +326,11 @@ make install PREFIX=${prefix}
 go build -o ${bindir}/executable
 ```
 
-**Rust** (add `compilers=[:c, :rust]`):
+**Rust** (add `compilers=[:c, :rust]`; toolchain 1.97 supports riscv64 and FreeBSD aarch64):
 
 ```bash
 cargo build --release
-install -Dm755 target/*/release/executable ${bindir}/executable
+install -Dvm755 target/*/release/executable ${bindir}/executable
 ```
 
 ### Platform-Specific Logic
@@ -312,9 +357,16 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
     preferred_gcc_version=v"8",            # GCC version
     preferred_llvm_version=v"13",          # LLVM version
     compilers=[:c, :rust],                 # Additional compilers
-    clang_use_lld=false,                   # Use LLD linker
+    clang_use_lld=false,                   # Opt out of LLD when clang links
+    dont_dlopen=true,                      # Skip dlopen during the build audit only; the JLL still loads at init
+    skip_audit=true,                       # Last resort; say why in the PR
+    init_block="...",                      # Julia code run at JLL __init__
 )
 ```
+
+`RuntimeDependency` declares a JLL needed at runtime but not at build time.
+
+To stop the JLL itself from dlopening a library at init (GPU libs, plugins), set it on the product: `LibraryProduct("libfoo", :libfoo; dont_dlopen=true)`.
 
 Note: `julia_compat` is the **JLL's** Julia compat bound, independent of the Julia
 version required to *run* BinaryBuilder.jl itself (see [Prerequisites](#prerequisites)).
@@ -360,6 +412,14 @@ export LDFLAGS="-L${libdir}"
 export PKG_CONFIG_PATH="${prefix}/lib/pkgconfig:${PKG_CONFIG_PATH}"
 ```
 
+### Multi-Variant Recipes
+
+Put shared logic in `PackageName/common.jl` and one `build_tarballs.jl` per variant in subdirectories (`S/SCALAPACK/{SCALAPACK,SCALAPACK32,SCALAPACK64}`). Keep an old version alongside a new one in a `PackageName@<version>/` directory, with as many version components as needed to tell them apart (`T/TetGen/TetGen@1.5`, `L/LLVM/Clang@18`).
+
+### Platform Augmentation Helpers
+
+`platforms/` also provides `llvm.jl` (`LLVM.augment`, `LLVM.platform`, adds an `llvm_version` tag) and `microarchitectures.jl` (`MicroArchitectures.augment`, `expand_microarchitectures`). Follow an existing consumer.
+
 ### Out-of-Source Builds
 
 ```bash
@@ -367,6 +427,10 @@ cd ${WORKSPACE}/srcdir
 mkdir build && cd build
 cmake ../package-source
 ```
+
+### Rebuilding Without Recipe Changes
+
+To rebuild the same upstream version (new platform, fixed toolchain shard), bump the `# Build trigger: N` line at the end of `build_tarballs.jl`, adding it as `1` if missing. Don't add comments for this, and leave `version` alone: a build number cannot be set by hand, registration bumps it automatically when the version is unchanged. The exception is a JLL old enough that a rebuild would change its `JLLWrappers` compat: General rejects build-number-only releases with different compat, so bump the patch version instead (GLPK 5.0 → 5.0.1). Explain why in the PR.
 
 ## Testing Locally
 
@@ -424,7 +488,16 @@ Examples:
 - `[CMake] Add OpenSSL dependency`
 - `[FFMPEG] Fix build on FreeBSD`
 
-Use `[skip build]` to publish JLL without rebuilding (for metadata-only changes like compat bounds).
+`[skip build]` republishes the JLL without rebuilding (metadata-only changes such as compat bounds). Put it in the body of every commit in the push, never in the header line.
+
+## Pull Requests
+
+- One recipe per PR. Never touch another recipe's files, even whitespace: any change to a `build_tarballs.jl` triggers re-registration.
+- Don't edit `.ci/Manifest.toml`; maintainers do that with the Update Manifest workflow.
+- Don't add non-recipe files (e.g. `.gitattributes`) under a recipe directory.
+- CI only rebuilds a recipe when a file inside its directory changes. To rebuild the same upstream version, bump the `# Build trigger: N` line (see [Rebuilding Without Recipe Changes](#rebuilding-without-recipe-changes)).
+- Don't stack PRs. A PR that depends on another's JLL cannot pass CI until that JLL is registered, so wait for the first to merge.
+- Contributors cannot retry Buildkite jobs; ask a maintainer.
 
 ## Testing JLL Packages Before Merging
 
@@ -573,7 +646,7 @@ For complex packages, you can also:
 
 - **Simple C library**: `Z/Zstd/build_tarballs.jl`
 - **CMake with dependencies**: `C/CMake/build_tarballs.jl`
-- **Autotools with patches**: Look for recipes with `bundled/patches/`
+- **Autotools with patches**: `Z/Zstd/build_tarballs.jl` (`bundled/patches/`)
 - **Platform-specific builds**: `G/Git/build_tarballs.jl`
 - **Multiple sources**: `L/libftd2xx/build_tarballs.jl`
 
@@ -585,12 +658,13 @@ This repo ships an MCP server for AI coding agents, configured in `.mcp.json`:
   interactive BinaryBuilder cross-compilation sandbox. Tools: `sandbox_start`,
   `sandbox_exec`, `sandbox_stop`, `sandbox_list`, `sandbox_str_replace_editor`.
 
-The server runs from the `.ci/` Julia environment. On a fresh checkout it must
-be instantiated once, otherwise the agent will fail to connect to `bb-sandbox`
-because the server crashes on startup with a missing-package error
+The server runs from the `.claude/` Julia environment and shells out to `.ci/`
+for `build_tarballs.jl --debug`. On a fresh checkout instantiate both once,
+otherwise `bb-sandbox` fails to connect with a missing-package error
 (e.g. `ClaudeMCPTools`). From the repo root:
 
 ```bash
+julia --project=.claude -e 'using Pkg; Pkg.instantiate()'
 julia --project=.ci -e 'using Pkg; Pkg.instantiate()'
 ```
 

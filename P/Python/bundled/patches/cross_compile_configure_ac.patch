@@ -1,9 +1,9 @@
 diff --git a/configure.ac b/configure.ac
-index 7051dc109a..474fdcbd82 100644
+index 1a02d19..879af0b 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -530,44 +530,12 @@
- AC_MSG_CHECKING(MACHDEP)
+@@ -535,44 +535,12 @@ AC_ARG_VAR([MACHDEP], [name for machine-dependent library files])
+ AC_MSG_CHECKING([MACHDEP])
  if test -z "$MACHDEP"
  then
 -    # avoid using uname for cross builds
@@ -47,9 +47,9 @@ index 7051dc109a..474fdcbd82 100644
      fi
      ac_md_system=`echo $ac_sys_system |
  			tr -d '[/ ]' | tr '[[A-Z]]' '[[a-z]]'`
-@@ -595,31 +563,14 @@
+@@ -600,31 +568,14 @@ AC_MSG_RESULT(["$MACHDEP"])
  
- AC_SUBST(_PYTHON_HOST_PLATFORM)
+ AC_SUBST([_PYTHON_HOST_PLATFORM])
  if test "$cross_compiling" = yes; then
 -	case "$host" in
 -	*-*-linux*)

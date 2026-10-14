@@ -22,10 +22,6 @@ cmake -B builddir -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_
 cmake --build builddir --parallel ${nprocs}
 cmake --install builddir
 
-if [[ "${target}" == *-mingw* ]]; then
-    # cmake install only grabs the .dll.a and leaves the actual .dll behind, manually move it 
-    install -Dvm 755 builddir/libmuesli.dll -t "${libdir}"
-fi
 """
 
 platforms = supported_platforms()

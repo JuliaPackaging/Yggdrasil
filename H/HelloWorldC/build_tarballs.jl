@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "HelloWorldC"
-version = v"1.4.2"
+version = v"1.4.4"
 
 # No sources, we're just building the testsuite
 sources = [
@@ -39,3 +39,5 @@ dependencies = Dependency[
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", compression_format="xz")
+
+# Build trigger: 2

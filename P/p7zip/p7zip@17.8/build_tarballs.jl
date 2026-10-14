@@ -5,14 +5,14 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "p7zip"
 # Upstream uses CalVer
-upstream_version = "26.02"
+upstream_version = "26.04"
 compact_version = replace(upstream_version, "."=>"")
-version = v"17.8.2"
+version = v"17.8.4"
 
 # Collection of sources required to build p7zip
 sources = [
     ArchiveSource("https://github.com/ip7z/7zip/releases/download/$(upstream_version)/7z$(compact_version)-src.tar.xz",
-                  "cf967c98bca02a4b8b16375f441825a8e141362f14be1969bbec8e1ca0bff9dd";
+                  "9691944c0fe0d01bb49373a704fb983fd33bc98b1738695179dfbf99ac1734f6";
                   unpack_target="7z"),
 ]
 

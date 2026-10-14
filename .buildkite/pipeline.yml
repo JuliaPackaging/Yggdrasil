@@ -4,8 +4,8 @@ steps:
     plugins:
       - JuliaCI/julia#v1:
           persist_depot_dirs: packages,artifacts,compiled
-          version: "1.12.6"
-          artifacts_size_limit: "214748364800" # 200GB
+          version: "1.12.7"
+          artifacts_size_limit: "187904819200" # 175GiB
       - JuliaCI/merge-commit: ~
       - JuliaCI/forerunner#v1:
           watch:
@@ -14,6 +14,9 @@ steps:
           path_processor: .buildkite/path_processors/per-project
           target: .buildkite/generator.jl
           target_type: command
+    artifacts:
+      - "*.meta.json"
+      - "*.platforms.list"
     agents:
       queue: "yggdrasil"
       arch:  "x86_64"
@@ -27,4 +30,6 @@ steps:
       # Use eager registry to not have to wait for updates of the conservative registry
       JULIA_PKG_SERVER_REGISTRY_PREFERENCE: eager
       JULIA_REGISTRYCI_AUTOMERGE: true
+      # Use this to debug problems in BinaryBuilder2, especially hash selection related issues:
+      JULIA_DEBUG: BinaryBuilder2
     timeout_in_minutes: 60

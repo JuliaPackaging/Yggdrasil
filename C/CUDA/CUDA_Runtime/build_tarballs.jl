@@ -7,14 +7,14 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDA_Runtime"
-version = v"0.24.0"
+version = v"0.25.0"
 
 # we ship artifacts for both GA and EA/preview toolkits; the platform augmentation only
 # ever selects the latter when the user asks for it through the "version" preference.
 const toolkit_versions = [CUDA.cuda_full_versions; CUDA.cuda_prerelease_versions]
 
 augment_platform_block = """
-    const CUDA_jll_uuid = Base.UUID("76a88914-d11a-5bdc-97e0-2f5a05c973a2")
+    const CUDA_jll_uuids = [Base.UUID("76a88914-d11a-5bdc-97e0-2f5a05c973a2")]
     $(read(joinpath(@__DIR__, "toolkit_selection.jl"), String))
     const cuda_toolkits = $(toolkit_versions)
     const cuda_prerelease_toolkits = $(CUDA.cuda_prerelease_versions)
@@ -79,6 +79,10 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
 fi
 """
 
+# several Windows DLLs (CUPTI and nvperf, and cuSOLVER since CUDA 13) are MSVC-built and
+# link the Visual C++ runtime dynamically.
+msvc_runtime = RuntimeDependency("MSVCRuntime_jll"; platforms=[Platform("x86_64", "windows")])
+
 # determine exactly which tarballs we should build
 builds = []
 for version in reverse(toolkit_versions)
@@ -133,17 +137,43 @@ for version in reverse(toolkit_versions)
 
         if Base.thisminor(version) == v"10.2"
             push!(builds,
-                (; dependencies=[Dependency("CUDA_Driver_jll", v"13.3"; compat="13"),
-                                 BuildDependency(PackageSpec(name="CUDA_SDK_jll", version="10.2.89"))],
+                (; dependencies=[Dependency("CUDA_Driver_jll", v"13.3.4"; compat="13.3.4 - 13"),
+                                 BuildDependency(PackageSpec(name="CUDA_SDK_jll", version="10.2.89")),
+                                 msvc_runtime],
                    script=get_script(), platforms=[augmented_platform], products=get_products(platform),
-                   sources=[]
+                   sources=[], init_block=""
             ))
         else
+            # the runtime libraries may link against libraries from CUDA_Compiler_jll with
+            # major-versioned sonames (e.g. libnvJitLink), so detect the mismatched pairs
+            # that can result from setting the version preference on only one of the JLLs
+            # (e.g. from a LocalPreferences.toml predating the runtime/compiler split).
+            init_block = """
+                if isdefined(CUDA_Compiler_jll, :cuda_version)
+                    let runtime = v"$(version.major).$(version.minor)",
+                        compiler = Base.thisminor(CUDA_Compiler_jll.cuda_version)
+                        if compiler.major != runtime.major
+                            @error \"\"\"CUDA_Runtime_jll provides CUDA \$runtime, but CUDA_Compiler_jll provides CUDA \$compiler.
+                                       These versions need to have the same major version; call `CUDA.set_runtime_version!` to
+                                       reconfigure both, or remove stale entries from your LocalPreferences.toml.\"\"\"
+                        elseif compiler < runtime
+                            @warn \"\"\"CUDA_Runtime_jll provides CUDA \$runtime, which is newer than CUDA_Compiler_jll's CUDA \$compiler.
+                                      This is an unsupported combination; call `CUDA.set_runtime_version!` to reconfigure both.\"\"\"
+                        end
+                    end
+                end"""
+            # CUDA_Compiler_jll is only needed at run time (see the init block above), so it
+            # is not installed in the build prefix. That also means building does not require
+            # a registered CUDA_Compiler_jll compatible with the CUDA_Driver_jll we depend on.
+            # 0.6.3 is the first version that auto-selects the same toolkits we do (13.4 GA);
+            # an older compiler would trigger the "runtime newer than compiler" warning above.
             push!(builds,
-                (; dependencies=[Dependency("CUDA_Driver_jll", v"13.3"; compat="13"),
-                                 Dependency("CUDA_Compiler_jll"; compat="0.5")],
+                (; dependencies=[Dependency("CUDA_Driver_jll", v"13.3.4"; compat="13.3.4 - 13"),
+                                 RuntimeDependency("CUDA_Compiler_jll"; compat="0.6.3"),
+                                 msvc_runtime],
                    script, platforms=[augmented_platform], products=get_products(platform),
-                   sources=get_sources("cuda", components; version, platform=augmented_platform)
+                   sources=get_sources("cuda", components; version, platform=augmented_platform),
+                   init_block
             ))
         end
     end
@@ -156,12 +186,19 @@ non_platform_ARGS = filter(arg -> startswith(arg, "--"), ARGS)
 # `--register` should only be passed to the latest `build_tarballs` invocation
 non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
 
+# The audit is expected to complain about these vendor binaries: mixed C++ string ABIs
+# (CUPTI and nvperf use cxx03, the rest cxx11), libgcc_s not being in the prefix, and
+# libraries that cannot be dlopen'ed on the host because they depend on CUDA_Compiler_jll
+# (libnvJitLink). None of that is fatal (`ignore_audit_errors` defaults to `true`), and
+# the audit is still valuable: it adds an `$ORIGIN` RUNPATH to the few libraries that
+# lack one (e.g. CUDA 10.2's libcublas, or libcusolverMg), which otherwise resolve
+# their dependencies through the system loader and can pick up a local CUDA toolkit.
 for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    name, version, build.sources, build.script,
                    build.platforms, build.products, build.dependencies;
-                   julia_compat="1.6", augment_platform_block,
-                   lazy_artifacts=true, skip_audit=true, dont_dlopen=true)
+                   julia_compat="1.10", augment_platform_block, init_block=build.init_block,
+                   lazy_artifacts=true, dont_dlopen=true)
 end
 
 # bump

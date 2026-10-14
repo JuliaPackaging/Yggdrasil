@@ -1,0 +1,241 @@
+From 8183f3a364730437561e74e88caa5be0e7b58fea Mon Sep 17 00:00:00 2001
+From: Arseniy Obolenskiy <arseniy.obolenskiy@amd.com>
+Date: Mon, 21 Sep 2026 14:30:04 +0200
+Subject: [PATCH] [SPIR-V] Add storage class bits to fence and generic atomic
+ semantics (#223023)
+
+A barrier only orders the memory it names, and we named none, so fences
+ordered nothing
+
+Name every class the target can reach, generic pointers had the same gap
+in atomics
+
+[Backported to 23.1.1: getMemSemanticsWithStorageClass() does not exist
+on 23.x, and its Vulkan special case never applies to fences (always
+acquire or stronger), so OR the bits in directly. The CHECK updates to
+AtomicBuiltinsFloat.ll and the SPV_EXT_long_vector tests are dropped, as
+those tests differ or don't exist on 23.x.]
+---
+ lib/Target/SPIRV/SPIRVInstructionSelector.cpp |  9 ++++-
+ lib/Target/SPIRV/SPIRVUtils.cpp               |  4 +++
+ .../atomicrmw-storage-class-semantics.ll      | 10 ++++++
+ test/CodeGen/SPIRV/fence-shader.ll            | 34 ++++++++++++++++++
+ test/CodeGen/SPIRV/fence.ll                   | 36 +++++++++++++------
+ .../AtomicCompareExchangeExplicit_cl20.ll     | 17 ++++-----
+ .../transcoding/AtomicCompareExchange_cl20.ll |  2 +-
+ 7 files changed, 92 insertions(+), 20 deletions(-)
+ create mode 100644 llvm/test/CodeGen/SPIRV/fence-shader.ll
+
+diff --git a/lib/Target/SPIRV/SPIRVInstructionSelector.cpp b/lib/Target/SPIRV/SPIRVInstructionSelector.cpp
+index 6d91335fc41e..7955036e511d 100644
+--- a/lib/Target/SPIRV/SPIRVInstructionSelector.cpp
++++ b/lib/Target/SPIRV/SPIRVInstructionSelector.cpp
+@@ -2609,7 +2609,14 @@ bool SPIRVInstructionSelector::selectUnmergeValues(MachineInstr &I) const {
+ 
+ bool SPIRVInstructionSelector::selectFence(MachineInstr &I) const {
+   AtomicOrdering AO = AtomicOrdering(I.getOperand(0).getImm());
+-  uint32_t MemSem = static_cast<uint32_t>(getMemSemantics(AO));
++  uint32_t ScSem = STI.isShader()
++                       ? SPIRV::MemorySemantics::UniformMemory |
++                             SPIRV::MemorySemantics::WorkgroupMemory |
++                             SPIRV::MemorySemantics::ImageMemory
++                       : SPIRV::MemorySemantics::WorkgroupMemory |
++                             SPIRV::MemorySemantics::CrossWorkgroupMemory |
++                             SPIRV::MemorySemantics::ImageMemory;
++  uint32_t MemSem = static_cast<uint32_t>(getMemSemantics(AO)) | ScSem;
+   Register MemSemReg = buildI32Constant(MemSem, I);
+   SyncScope::ID Ord = SyncScope::ID(I.getOperand(1).getImm());
+   uint32_t Scope = static_cast<uint32_t>(
+diff --git a/lib/Target/SPIRV/SPIRVUtils.cpp b/lib/Target/SPIRV/SPIRVUtils.cpp
+index 36fa933404e1..d0131296f3ed 100644
+--- a/lib/Target/SPIRV/SPIRVUtils.cpp
++++ b/lib/Target/SPIRV/SPIRVUtils.cpp
+@@ -406,6 +406,10 @@ getMemSemanticsForStorageClass(SPIRV::StorageClass::StorageClass SC) {
+     return SPIRV::MemorySemantics::WorkgroupMemory;
+   case SPIRV::StorageClass::CrossWorkgroup:
+     return SPIRV::MemorySemantics::CrossWorkgroupMemory;
++  case SPIRV::StorageClass::Generic:
++    return SPIRV::MemorySemantics::MemorySemantics(
++        SPIRV::MemorySemantics::WorkgroupMemory |
++        SPIRV::MemorySemantics::CrossWorkgroupMemory);
+   case SPIRV::StorageClass::AtomicCounter:
+     return SPIRV::MemorySemantics::AtomicCounterMemory;
+   case SPIRV::StorageClass::Image:
+diff --git a/test/CodeGen/SPIRV/atomicrmw-storage-class-semantics.ll b/test/CodeGen/SPIRV/atomicrmw-storage-class-semantics.ll
+index f1c61b8be07a..9ef59107d770 100644
+--- a/test/CodeGen/SPIRV/atomicrmw-storage-class-semantics.ll
++++ b/test/CodeGen/SPIRV/atomicrmw-storage-class-semantics.ll
+@@ -16,6 +16,7 @@
+ ; AcquireRelease       = 0x008 =   8 -> with CrossWorkgroup: 520, with Workgroup: 264
+ ; SequentiallyConsistent = 0x010 = 16 -> with CrossWorkgroup: 528, with Workgroup: 272
+ ; Acquire              = 0x002 =   2 -> with CrossWorkgroup: 514
++; CrossWorkgroupMemory (0x200) | WorkgroupMemory (0x100) = 768 -> with AcquireRelease: 776
+ 
+ ; CHECK-DAG: %[[#Int:]] = OpTypeInt 32 0
+ ; CHECK-DAG: %[[#MemSem_AcqRel_CW:]] = OpConstant %[[#Int]] 520
+@@ -23,6 +24,7 @@
+ ; CHECK-DAG: %[[#MemSem_Acquire_CW:]] = OpConstant %[[#Int]] 514
+ ; CHECK-DAG: %[[#MemSem_AcqRel_WG:]] = OpConstant %[[#Int]] 264
+ ; CHECK-DAG: %[[#MemSem_SeqCst_WG:]] = OpConstant %[[#Int]] 272
++; CHECK-DAG: %[[#MemSem_AcqRel_GEN:]] = OpConstant %[[#Int]] 776
+ 
+ @g_cw = common dso_local addrspace(1) global i32 0, align 4
+ @g_wg = common dso_local addrspace(3) global i32 0, align 4
+@@ -56,3 +58,11 @@ entry:
+ 
+   ret void
+ }
++
++define dso_local spir_func void @test_generic(ptr addrspace(4) %p) {
++entry:
++  ; CHECK: OpAtomicIAdd %[[#Int]] %{{[0-9]+}} %{{[0-9]+}} %[[#MemSem_AcqRel_GEN]] %{{[0-9]+}}
++  %0 = atomicrmw add ptr addrspace(4) %p, i32 1 acq_rel
++
++  ret void
++}
+diff --git a/test/CodeGen/SPIRV/fence-shader.ll b/test/CodeGen/SPIRV/fence-shader.ll
+new file mode 100644
+index 000000000000..eb15226234d6
+--- /dev/null
++++ b/test/CodeGen/SPIRV/fence-shader.ll
+@@ -0,0 +1,34 @@
++; RUN: llc -O0 -mtriple=spirv-unknown-vulkan %s -o - | FileCheck %s
++; RUN: %if spirv-tools %{ llc -O0 -mtriple=spirv-unknown-vulkan %s -o - -filetype=obj | spirv-val %}
++
++; CHECK-DAG: %[[#Int:]] = OpTypeInt 32 0
++; CHECK-DAG: %[[#ScopeCrossDevice:]] = OpConstantNull %[[#Int]]
++; CHECK-DAG: %[[#ScopeWorkgroup:]] = OpConstant %[[#Int]] 2{{$}}
++; CHECK-DAG: %[[#Acquire:]] = OpConstant %[[#Int]] 2370
++; CHECK-DAG: %[[#Release:]] = OpConstant %[[#Int]] 2372
++; CHECK-DAG: %[[#AcqRel:]] = OpConstant %[[#Int]] 2376
++; CHECK-DAG: %[[#SeqCst:]] = OpConstant %[[#Int]] 2384
++
++; CHECK: OpMemoryBarrier %[[#ScopeCrossDevice]] %[[#Acquire]]
++define void @fence_acquire() {
++  fence acquire
++  ret void
++}
++
++; CHECK: OpMemoryBarrier %[[#ScopeCrossDevice]] %[[#Release]]
++define void @fence_release() {
++  fence release
++  ret void
++}
++
++; CHECK: OpMemoryBarrier %[[#ScopeCrossDevice]] %[[#AcqRel]]
++define void @fence_acq_rel() {
++  fence acq_rel
++  ret void
++}
++
++; CHECK: OpMemoryBarrier %[[#ScopeWorkgroup]] %[[#SeqCst]]
++define void @fence_workgroup_seq_cst() {
++  fence syncscope("workgroup") seq_cst
++  ret void
++}
+diff --git a/test/CodeGen/SPIRV/fence.ll b/test/CodeGen/SPIRV/fence.ll
+index c7496c15f2c9..7d319b393ada 100644
+--- a/test/CodeGen/SPIRV/fence.ll
++++ b/test/CodeGen/SPIRV/fence.ll
+@@ -3,18 +3,27 @@
+ 
+ ; CHECK-DAG: OpName %[[#GetScope:]] "_Z8getScopev"
+ ; CHECK-DAG: %[[#Long:]] = OpTypeInt 32 0
+-; CHECK-DAG: %[[#WrkGrpConst2:]] = OpConstant %[[#Long]] 2
++; CHECK-DAG: %[[#ScopeWorkgroup:]] = OpConstant %[[#Long]] 2{{$}}
+ ; CHECK-DAG: %[[#ScopeAllSvmDevices:]] = OpConstantNull %[[#Long]]
+-; CHECK-DAG: %[[#InvocationConst4:]] = OpConstant %[[#Long]] 4
+-; CHECK-DAG: %[[#Const8:]] = OpConstant %[[#Long]] 8
+-; CHECK-DAG: %[[#Const16:]] = OpConstant %[[#Long]] 16
+-; CHECK-DAG: %[[#Const3:]] = OpConstant %[[#Long]] 3
++; CHECK-DAG: %[[#ScopeInvocation:]] = OpConstant %[[#Long]] 4{{$}}
++; CHECK-DAG: %[[#Acquire:]] = OpConstant %[[#Long]] 2818
++; CHECK-DAG: %[[#Release:]] = OpConstant %[[#Long]] 2820
++; CHECK-DAG: %[[#AcqRel:]] = OpConstant %[[#Long]] 2824
++; CHECK-DAG: %[[#SeqCst:]] = OpConstant %[[#Long]] 2832
++; CHECK-DAG: %[[#Const3:]] = OpConstant %[[#Long]] 3{{$}}
+ ; CHECK-DAG: %[[#Const912:]] = OpConstant %[[#Long]] 912
+-; CHECK: OpMemoryBarrier %[[#ScopeAllSvmDevices]] %[[#WrkGrpConst2]]
+-; CHECK: OpMemoryBarrier %[[#ScopeAllSvmDevices]] %[[#InvocationConst4]]
+-; CHECK: OpMemoryBarrier %[[#ScopeAllSvmDevices]] %[[#Const8]]
+-; CHECK: OpMemoryBarrier %[[#InvocationConst4]] %[[#Const16]]
+-; CHECK: OpMemoryBarrier %[[#WrkGrpConst2]] %[[#InvocationConst4]]
++; CHECK-DAG: %[[#Const42:]] = OpConstant %[[#Long]] 42
++; CHECK-DAG: %[[#Const1:]] = OpConstant %[[#Long]] 1{{$}}
++; CHECK-DAG: %[[#RelaxedCW:]] = OpConstant %[[#Long]] 512
++; CHECK: OpMemoryBarrier %[[#ScopeAllSvmDevices]] %[[#Acquire]]
++; CHECK: OpMemoryBarrier %[[#ScopeAllSvmDevices]] %[[#Release]]
++; CHECK: OpMemoryBarrier %[[#ScopeAllSvmDevices]] %[[#AcqRel]]
++; CHECK: OpMemoryBarrier %[[#ScopeInvocation]] %[[#SeqCst]]
++; CHECK: OpMemoryBarrier %[[#ScopeWorkgroup]] %[[#Release]]
++; CHECK: OpFunctionEnd
++; CHECK: OpStore %[[#]] %[[#Const42]]
++; CHECK: OpMemoryBarrier %[[#ScopeAllSvmDevices]] %[[#Release]]
++; CHECK: OpAtomicStore %[[#]] %[[#ScopeAllSvmDevices]] %[[#RelaxedCW]] %[[#Const1]]
+ ; CHECK: OpFunctionEnd
+ ; CHECK: %[[#ScopeId:]] = OpFunctionCall %[[#Long]] %[[#GetScope]]
+ ; CHECK: OpControlBarrier %[[#Const3]] %[[#ScopeId:]] %[[#Const912]]
+@@ -44,6 +53,13 @@ define spir_kernel void @fence_test_kernel5(ptr addrspace(1) noalias %s.ascast)
+   ret void
+ }
+ 
++define spir_kernel void @fence_test_publish(ptr addrspace(1) %data, ptr addrspace(1) %flag) {
++  store i32 42, ptr addrspace(1) %data, align 4
++  fence release
++  store atomic i32 1, ptr addrspace(1) %flag monotonic, align 4
++  ret void
++}
++
+ define spir_func void @barrier_test1() {
+   %scope = call noundef i32 @_Z8getScopev()
+   call void @_Z22__spirv_ControlBarrieriii(i32 noundef 3, i32 noundef %scope, i32 noundef 912)
+diff --git a/test/CodeGen/SPIRV/transcoding/AtomicCompareExchangeExplicit_cl20.ll b/test/CodeGen/SPIRV/transcoding/AtomicCompareExchangeExplicit_cl20.ll
+index d568a923da1b..7865f8b5b682 100644
+--- a/test/CodeGen/SPIRV/transcoding/AtomicCompareExchangeExplicit_cl20.ll
++++ b/test/CodeGen/SPIRV/transcoding/AtomicCompareExchangeExplicit_cl20.ll
+@@ -29,20 +29,21 @@
+ 
+ ; CHECK-SPIRV: %[[#int:]] = OpTypeInt 32 0
+ ;; Constants below correspond to the SPIR-V spec
+-; CHECK-SPIRV: %[[#RelaxedMemSem:]] = OpConstantNull %[[#int]]
+-; CHECK-SPIRV: %[[#WorkgroupScope:]] = OpConstant %[[#int]] 2{{$}}
++; CHECK-SPIRV-DAG: %[[#WorkgroupScope:]] = OpConstant %[[#int]] 2{{$}}
+ ; CHECK-SPIRV-DAG: %[[#DeviceScope:]] = OpConstant %[[#int]] 1{{$}}
+-; CHECK-SPIRV-DAG: %[[#ReleaseMemSem:]] = OpConstant %[[#int]] 4{{$}}
+-; CHECK-SPIRV-DAG: %[[#AcqRelMemSem:]] = OpConstant %[[#int]] 8{{$}}
++; CHECK-SPIRV-DAG: %[[#RelaxedMemSem:]] = OpConstant %[[#int]] 768
++; CHECK-SPIRV-DAG: %[[#AcquireMemSem:]] = OpConstant %[[#int]] 770
++; CHECK-SPIRV-DAG: %[[#ReleaseMemSem:]] = OpConstant %[[#int]] 772
++; CHECK-SPIRV-DAG: %[[#AcqRelMemSem:]] = OpConstant %[[#int]] 776
+ 
+ ; CHECK-SPIRV: %[[#]] = OpAtomicCompareExchange %[[#]] %[[#]] %[[#DeviceScope]] %[[#ReleaseMemSem]] %[[#RelaxedMemSem]]
+ ; CHECK-SPIRV: %[[#]] = OpAtomicCompareExchange %[[#]] %[[#]] %[[#WorkgroupScope]] %[[#AcqRelMemSem]] %[[#RelaxedMemSem]]
+ ; CHECK-SPIRV: %[[#]] = OpAtomicCompareExchangeWeak %[[#]] %[[#]] %[[#DeviceScope]] %[[#ReleaseMemSem]] %[[#RelaxedMemSem]]
+ ; CHECK-SPIRV: %[[#]] = OpAtomicCompareExchangeWeak %[[#]] %[[#]] %[[#WorkgroupScope]] %[[#AcqRelMemSem]] %[[#RelaxedMemSem]]
+-; CHECK-SPIRV: %[[#]] = OpAtomicCompareExchange %[[#]] %[[#]] %[[#DeviceScope]] %[[#ReleaseMemSem]] %[[#WorkgroupScope]]
+-; CHECK-SPIRV: %[[#]] = OpAtomicCompareExchangeWeak %[[#]] %[[#]] %[[#DeviceScope]] %[[#ReleaseMemSem]] %[[#WorkgroupScope]]
+-; CHECK-SPIRV: %[[#]] = OpAtomicCompareExchange %[[#]] %[[#]] %[[#WorkgroupScope]] %[[#ReleaseMemSem]] %[[#WorkgroupScope]]
+-; CHECK-SPIRV: %[[#]] = OpAtomicCompareExchangeWeak %[[#]] %[[#]] %[[#WorkgroupScope]] %[[#ReleaseMemSem]] %[[#WorkgroupScope]]
++; CHECK-SPIRV: %[[#]] = OpAtomicCompareExchange %[[#]] %[[#]] %[[#DeviceScope]] %[[#ReleaseMemSem]] %[[#AcquireMemSem]]
++; CHECK-SPIRV: %[[#]] = OpAtomicCompareExchangeWeak %[[#]] %[[#]] %[[#DeviceScope]] %[[#ReleaseMemSem]] %[[#AcquireMemSem]]
++; CHECK-SPIRV: %[[#]] = OpAtomicCompareExchange %[[#]] %[[#]] %[[#WorkgroupScope]] %[[#ReleaseMemSem]] %[[#AcquireMemSem]]
++; CHECK-SPIRV: %[[#]] = OpAtomicCompareExchangeWeak %[[#]] %[[#]] %[[#WorkgroupScope]] %[[#ReleaseMemSem]] %[[#AcquireMemSem]]
+ 
+ define dso_local spir_kernel void @testAtomicCompareExchangeExplicit_cl20(ptr addrspace(1) noundef %object, ptr addrspace(1) noundef %expected, i32 noundef %desired) local_unnamed_addr {
+ entry:
+diff --git a/test/CodeGen/SPIRV/transcoding/AtomicCompareExchange_cl20.ll b/test/CodeGen/SPIRV/transcoding/AtomicCompareExchange_cl20.ll
+index 83573737df9e..8574fcd73719 100644
+--- a/test/CodeGen/SPIRV/transcoding/AtomicCompareExchange_cl20.ll
++++ b/test/CodeGen/SPIRV/transcoding/AtomicCompareExchange_cl20.ll
+@@ -6,7 +6,7 @@
+ ; CHECK-DAG: %[[#int:]] = OpTypeInt 32 0
+ ; CHECK-DAG: %[[#int8:]] = OpTypeInt 8 0
+ ; CHECK-DAG: %[[#DeviceScope:]] =  OpConstant %[[#int]] 1
+-; CHECK-DAG: %[[#SequentiallyConsistent_MS:]] = OpConstant %[[#int]] 16
++; CHECK-DAG: %[[#SequentiallyConsistent_MS:]] = OpConstant %[[#int]] 784
+ ; CHECK-DAG: %[[#int_ptr:]] = OpTypePointer Generic %[[#int]]
+ ; CHECK-DAG: %[[#int_ptr8:]] = OpTypePointer Generic %[[#int8]]
+ ; CHECK-DAG: %[[#bool:]] = OpTypeBool
+-- 
+2.55.0
+

@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_iot"
-version = v"0.2.1"
+version = v"1.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-iot.git", "9f0c152ed76af1a45d99fb98286707aa23c728af"),
+    GitSource("https://github.com/awslabs/aws-c-iot.git", "6a63b7e26f872938c08db6904c5f124250e493e5"),
 ]
 
 # Bash recipe for building across all platforms
@@ -36,7 +36,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("aws_c_mqtt_jll"; compat="0.12.2"),
+    Dependency("aws_c_mqtt_jll"; compat="1.0.0"),
     BuildDependency("aws_lc_jll"),
 ]
 

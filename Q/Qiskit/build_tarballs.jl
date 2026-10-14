@@ -6,11 +6,11 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "Qiskit"
-version = v"2.4.2"
+version = v"2.5.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Qiskit/qiskit.git", "5a1cf3159aedad954767956d6a5c81a06d043d71")
+    GitSource("https://github.com/Qiskit/qiskit.git", "c1c01ada399af13e495c27b9b22b4ff942bbad7e")
 ]
 
 # Bash recipe for building across all platforms
@@ -30,8 +30,8 @@ cd $WORKSPACE/srcdir/qiskit
 # improperly formed and not suitable for cross compilation.  So, instead,
 # we invoke Cargo directly and copy the handful of files that result to their
 # proper location.  Upstream issue: https://github.com/Qiskit/qiskit/issues/16250
-env -u CARGO_BUILD_TARGET -u rust_target ${MACHTYPE}-cargo build -p qiskit-bindgen-c
-env -u CARGO_BUILD_TARGET -u rust_target ./target/debug/qiskit-bindgen-c crates/cext dist/c/include
+env -u CARGO_BUILD_TARGET -u rust_target ${MACHTYPE}-cargo build -p qiskit-bindgen-cli
+env -u CARGO_BUILD_TARGET -u rust_target ./target/debug/qiskit-bindgen-cli install -c crates/cext -o dist/c/include
 
 export PYO3_PYTHON=${host_bindir}/python3
 export PYO3_CROSS_LIB_DIR=$WORKSPACE/destdir/lib
@@ -76,8 +76,8 @@ dependencies = [
     BuildDependency(PackageSpec(name="cbindgen_jll", uuid="a52b955f-5256-5bb0-8795-313e28591558"))
     # libpython is required at run time until
     # https://github.com/Qiskit/qiskit/issues/14240 is fixed, which is
-    # currently targeted for Qiskit 2.4.0.
-    Dependency(PackageSpec(name="Python_jll", uuid="93d3a430-8e7c-50da-8e8d-3dfcfb3baf05"))
+    # currently targeted for Qiskit 2.6 or later.
+    Dependency(PackageSpec(name="Python_jll", uuid="93d3a430-8e7c-50da-8e8d-3dfcfb3baf05"); compat="~3.11")
     # Python 3.10 or higher is required by the build process, but at the moment
     # only Python 3.9 is available in the base image, hence the following requirement.
     HostBuildDependency(PackageSpec(name="Python_jll", uuid="93d3a430-8e7c-50da-8e8d-3dfcfb3baf05"))

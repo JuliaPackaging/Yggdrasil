@@ -1,10 +1,11 @@
 using BinaryBuilder, Pkg
 
 name = "blockSQP2"
-version = v"0.1.2"
+version = v"0.2.1"
 sources = [
-    GitSource("https://github.com/ReWittmann/blockSQP2.git", "fa8dd689fb2e180e956bea35a5104c4f7cfd5aeb"),
+    GitSource("https://github.com/ReWittmann/blockSQP2.git", "038875c2e6aeae521e4009996b8408907f12382a"),
 ]
+
 
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
@@ -71,7 +72,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="MUMPS_seq_jll",
                 uuid="d7ed1dd3-d0ae-5e8e-bfb4-87a502085b8d"),
-                compat="500.800.200"),
+                compat="500.900.100"),
     # Already pulled in by MUMPS_seq_jll:
     # Dependency(PackageSpec(name="libblastrampoline_jll", 
     #             uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), 

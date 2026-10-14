@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libzip"
-version = v"1.11.3"
+version = v"1.11.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/nih-at/libzip.git", "f30f5290de485348442d168cd7b2eb714d1f20f9")
+    GitSource("https://github.com/nih-at/libzip.git", "6f8a0cdd24a0dc6cce9dac4a7679da784ab124ea")
 ]
 
 # Bash recipe for building across all platforms

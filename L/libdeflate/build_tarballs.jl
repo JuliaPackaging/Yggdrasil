@@ -6,13 +6,13 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "libdeflate"
-version = v"1.25"
+version = v"1.26"
 
 # Collection of sources required to complete build
 sources = [
     GitSource(
         "https://github.com/ebiggers/libdeflate",
-        "c8c56a20f8f621e6a966b716b31f1dedab6a41e3"
+        "92e6a0db9fa848d742f9eb286c92afc60f2c3dda"
     ),
 ]
 
@@ -43,4 +43,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"13", julia_compat="1.6")

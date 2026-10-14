@@ -6,7 +6,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 name = "SCALAPACK"
 version = v"2.2.3"
 # ygg_version.patch = 100 * version.patch + offset; bump `offset` for rebuilds.
-offset = 0
+offset = 1
 ygg_version = VersionNumber(version.major, version.minor, 100 * version.patch + offset)
 
 sources = [
@@ -120,7 +120,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
-    Dependency("mpif_jll"; compat="0.1.5", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)), # MPI Fortran bindings
+    Dependency("mpif_jll"; compat="1.0.0", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)), # MPI Fortran bindings
     HostBuildDependency(PackageSpec(; name="CMake_jll")),
 ]
 append!(dependencies, platform_dependencies)

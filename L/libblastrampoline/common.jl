@@ -14,6 +14,7 @@ function lbt_sources(version::VersionNumber; kwargs...)
         v"5.13.1" => "f26278e83ddc9035ae7695da597f1a5b26a4c62b",
         v"5.14.0" => "4cca50aa5101a4ed5f2c85e4760090a23d4aa5a5",
         v"5.15.0" => "072b5f67895bec0b92f8c83194567c1c48e9833d",
+        v"5.16.0" => "59700e7c5fb1c7de16e3d3b533c967c7bbea417a",
     )
 
     return [
@@ -31,7 +32,7 @@ if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
 fi
 
-make -j${nproc} prefix=${prefix} install
+make -j${nproc} prefix=${prefix} LBT_THREADSAFE=1 install
 """
 
 # These are the platforms we will build for by default, unless further

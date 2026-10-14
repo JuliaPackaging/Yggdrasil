@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "Algencan"
-version = v"3.1.1"
+version = v"3.1.2"
 
 # Collection of sources required to complete build
 # Mirror of the upstream tarball, which lives at a personal academic URL.
@@ -9,7 +9,7 @@ version = v"3.1.1"
 sources = [
     ArchiveSource(
         "https://github.com/pjssilva/NLPModelsAlgencan.jl/releases/download/algencan-$(version)/algencan-$(version).tgz",
-        "ab2a5496e9da49c508f68809cc339f9a604407329be24e3299bd7c21f14d6188",
+        "1b23f4e20222f0026133984d87cb63b1e4aaf7be7b23fc4a80cac6f4d779e52d",
     ),
     DirectorySource("./bundled"),
 ]
@@ -17,20 +17,29 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/algencan-*
 
-# Makes Algencan query HSL's ma57_available at run time instead of deciding at
-# compile time, so one binary uses MA57 when a licensed HSL is installed and
-# falls back to truncated Newton otherwise. Also drops Algencan's use of
-# finfo%pivot, a field only a locally patched MA57 provides.
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/algencan-3.1.1-runtime-hsl.patch
+# lssma97.f90 ships with CRLF line endings; normalise them so the patch below
+# does not have to carry CRLF context lines.
+sed -i 's/\r$//' sources/algencan/lssma97.f90
 
-# sources/algencan/Makefile selects the real lssma57.o over the stub when
-# hsl_ma57_double.mod is found in HSLSRC. Only that module is linked in, so
-# MA86 and MA97 keep their stubs.
+# Makes Algencan query HSL's maNN_available at run time instead of deciding at
+# compile time, so one binary may use MANN when a licensed HSL is installed.
+# If MA57 is not available it falls back to truncated Newton. Also drops
+# Algencan's use of finfo%pivot, a field only a locally patched MA57 provides.
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/algencan-3.1.2-runtime-hsl.patch
+
+# sources/algencan/Makefile picks the real lssmaNN.o over the stub for each
+# solver whose module it finds in HSLSRC. ALGENCAN still prefers MA57, and the
+# trust region accepts nothing else; MA86 and MA97 are reachable through the
+# specification file.
 mkdir -p hsldetect
-ln -s ${prefix}/modules/hsl_ma57_double.mod hsldetect/
+for m in ma57 ma86 ma97; do
+    ln -s ${prefix}/modules/hsl_${m}_double.mod hsldetect/
+done
 
+# OPENMPFLAG is defined in the root Makefile, which this call bypasses, so it
+# has to be repeated to keep upstream's default.
 make -C sources/algencan lib \
-     FC=gfortran AR=ar \
+     FC=gfortran AR=ar OPENMPFLAG=-fopenmp \
      FFLAGS="-O3 -ffree-form -fPIC -I${prefix}/modules" \
      HSLSRC=${PWD}/hsldetect
 
@@ -57,15 +66,15 @@ install_license license.txt
 platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
 
-# dont_dlopen: Algencan keeps state in Fortran common blocks, so consumers load
-# and unload the library around each solve.
+# dont_dlopen: consumers resolve the library path and dlopen it themselves,
+# asserting it is not already resident, so the JLL must not open it at init.
 products = [
     LibraryProduct("libalgencan", :libalgencan; dont_dlopen=true),
 ]
 
-# libhsl_subset is linked for the hsl_ma57_double module symbols and for
-# ma57_available. The public artifact is a stub, so no licensed code enters the
-# build; users with a licence override the artifact.
+# libhsl_subset is linked for the hsl_maNN_double module symbols and for the
+# maNN_available flags. The public artifact is a stub, so no licensed code
+# enters the build; users with a licence override the artifact.
 #
 # Note for consumers: libhsl_subset is LP64, and Julia registers only an ILP64
 # BLAS backend by default, so an LP64 one has to be forwarded to

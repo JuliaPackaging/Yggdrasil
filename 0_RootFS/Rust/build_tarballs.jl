@@ -12,6 +12,7 @@ using BinaryBuilderBase, BinaryBuilder, Pkg.Artifacts
 using BinaryBuilderBase: map_rust_target
 
 include("../common.jl")
+include("windows_abort_std.jl")
 
 # We first download Rustup, and use that to install rust
 rustup_name = "RustStage1"
@@ -21,13 +22,13 @@ rustup_version = v"1.24.3"
 
 # This is the version of the Rust toolchain we install
 version = v"1.97.0"
-# NOTE: The commit won't be necessary once the aarch64-unknown-freebsd workaround is removed
 rust_commit = "2d8144b7880597b6e6d3dfd63a9a9efae3f533d3"
 
+# We'll use rustup to install rust
+rustup_source = FileSource("https://static.rust-lang.org/rustup/archive/$(rustup_version)/x86_64-unknown-linux-musl/rustup-init",
+                           "bdf022eb7cba403d0285bb62cbc47211f610caec24589a72af70e1e900663be9")
 sources = [
-    # We'll use rustup to install rust
-    FileSource("https://static.rust-lang.org/rustup/archive/$(rustup_version)/x86_64-unknown-linux-musl/rustup-init",
-               "bdf022eb7cba403d0285bb62cbc47211f610caec24589a72af70e1e900663be9"),
+    rustup_source,
     # We'll temporarily use this to install the `aarch64-unknown-freebsd` target, which has
     # release assets, but not in the expected location, which means they're not installable
     # via `rustup` in the same way as for other platforms.
@@ -101,6 +102,9 @@ build_info = build_tarballs(ndARGS, rustup_name, rustup_version, sources, script
 # We don't actually need the .tar.gz it creates, so delete that to save space
 rm(joinpath("products", first(values(build_info))[1]))
 
+# Rebuild std for i686-pc-windows-gnu with panic=abort (see windows_abort_std.jl)
+abort_std_path = build_abort_std(ndARGS, version, rust_commit, rustup_source)
+
 # Take the hash of the unpacked Rustup artifact, then split it into a bunch of smaller ones
 mega_rust_path = artifact_path(first(values(build_info))[3])
 rust_host = Platform("x86_64", "linux"; libc="musl")
@@ -113,6 +117,9 @@ for target_platform in rust_platforms
     @info("Generating artifacts for $(rust_target_triplet)...")
     unpacked_hash = create_artifact() do dir
         srcpath = joinpath(mega_rust_path, "toolchains", "$(version)-$(rust_host_triplet)", "lib", "rustlib", rust_target_triplet)
+        if platforms_match(target_platform, abort_std_platform)
+            srcpath = abort_std_path
+        end
         dstpath = joinpath(dir, "toolchains", "$(version)-$(rust_host_triplet)", "lib", "rustlib")
         mkpath(dstpath)
         cp(srcpath, joinpath(dstpath, rust_target_triplet))

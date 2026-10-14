@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "telnet"
-version = v"2.7.0"
+version = v"2.8.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://ftp.gnu.org/gnu/inetutils/inetutils-$(version.major).$(version.minor).tar.gz",
-                  "a156be1cde3c5c0ffefc262180d9369a60484087907aa554c62787d2f40ec086")
+                  "57b3cf4f77555992881e5ba2a09a63b05aa2c56342a60ed4305b5f45938390b5")
 ]
 
 # Bash recipe for building across all platforms

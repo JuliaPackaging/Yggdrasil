@@ -11,7 +11,7 @@ upstream_version = v"2.12.1"
 
 # ADIOS2 2.11 is not compatible with ADIOS2 2.10. The C++ bindings differ.
 # ADIOS2 2.12 is not compatible with ADIOS2 2.11. The C++ bindings differ.
-version_offset = v"2.0.0"
+version_offset = v"2.0.1"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -197,10 +197,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="Blosc2_jll"); compat="300.0.200"),
+    Dependency(PackageSpec(name="Blosc2_jll"); compat="301.200.300"),
     Dependency(PackageSpec(name="Bzip2_jll"); compat="1.0.9"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency(PackageSpec(name="HDF5_jll"); compat="2.1.2"),
+    Dependency(PackageSpec(name="HDF5_jll"); compat="2.2.1"),
     Dependency(PackageSpec(name="Libffi_jll"); compat="~3.4.7"),
     Dependency(PackageSpec(name="MGARD_jll"); compat="1.6.0"),
     Dependency(PackageSpec(name="SZ3_jll"); compat="300.300.200"),

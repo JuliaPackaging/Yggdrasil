@@ -2,10 +2,10 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 include("../common.jl")
 
-gap_version = v"400.1600.0"
+gap_version = v"400.1600.100"
 name = "NormalizInterface"
 upstream_version = "1.5.1" # when you increment this, reset offset to v"0.0.0"
-offset = v"1.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
+offset = v"1.0.1" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL

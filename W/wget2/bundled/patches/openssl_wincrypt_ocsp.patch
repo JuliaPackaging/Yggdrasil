@@ -1,0 +1,12 @@
+--- a/libwget/ssl_openssl.c
++++ b/libwget/ssl_openssl.c
+@@ -38,6 +38,9 @@
+ 
+ #ifdef _WIN32
+ #  include <w32sock.h>
++// <wincrypt.h> (via <windows.h>) defines these as macros, clashing with OpenSSL types
++#  undef OCSP_REQUEST
++#  undef OCSP_RESPONSE
+ #else
+ #  define FD_TO_SOCKET(x) (x)
+ #  define SOCKET_TO_FD(x) (x)

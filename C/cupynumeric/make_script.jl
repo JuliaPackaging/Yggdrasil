@@ -74,6 +74,9 @@ function get_script(cuda::Val{true})
         ## Install cuPyNumeric ##
         cd ${WORKSPACE}/srcdir/cupynumeric
 
+        # Map the FFT output in C order; the GPU kernel asserts a dense row-major instance.
+        atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fft-output-c-order.patch
+
         mkdir build
         cmake -S . -B build \
             -Dlegate_ROOT:STRING=${prefix} \
@@ -162,6 +165,9 @@ function get_script(cuda::Val{false})
         make -j ${nproc} && make install
 
         cd ${WORKSPACE}/srcdir/cupynumeric
+
+        # Map the FFT output in C order; the GPU kernel asserts a dense row-major instance.
+        atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fft-output-c-order.patch
 
         mkdir build
         cmake -S . -B build \

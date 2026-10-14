@@ -3,28 +3,28 @@
 using BinaryBuilder, Pkg
 
 name = "LLVMOpenMP"
-version = v"22.1.7"
+version = v"23.1.1"
 ygg_version = version
 
 sources = [
     ArchiveSource(
         "https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/llvm-project-$(version).src.tar.xz",
-        "5cc4a3f12bba50b6bdfb4b61bdc852117a0ff2517807c3902fc13267fb93562e"
+        "ebe9be46fe8756d58c5b198ffad0fa2a766257add81a4dc52179bfacc7888ee6"
     ),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/llvm-project-*/openmp
+cd $WORKSPACE/srcdir/llvm-project-*/
 # https://github.com/msys2/MINGW-packages/blob/d440dcb738/mingw-w64-clang/0901-cast-to-make-gcc-happy.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/0901-cast-to-make-gcc-happy.patch
+atomic_patch -p1 --directory=openmp $WORKSPACE/srcdir/patches/0901-cast-to-make-gcc-happy.patch
 
 platform_config=()
 if [[ "${target}" == *-mingw* ]]; then
     # backport https://gitlab.kitware.com/cmake/cmake/-/commit/78f758a463516a78a9ec8d472080c6e61cb89c7f
     sed -i "s@/c  */Fo@-c -Fo@" /usr/share/cmake/Modules/CMakeASM_MASMInformation.cmake
-    sed -i "s@libomp_append(asmflags_local /@libomp_append(asmflags_local -@" cmake/modules/LibompHandleFlags.cmake
+    sed -i "s@libomp_append(asmflags_local /@libomp_append(asmflags_local -@" openmp/cmake/modules/LibompHandleFlags.cmake
     if [[ "${target}" == *x86_64* ]]; then
         platform_config+=(-DLIBOMP_ASMFLAGS="-win64")
     fi
@@ -34,17 +34,22 @@ elif [[ "${target}" == aarch64-apple-* ]]; then
     # `libclang_rt.osx.a` from LLVM compiler-rt.
     platform_config+=(-DCMAKE_SHARED_LINKER_FLAGS="-L${libdir}/darwin -lclang_rt.osx")
 fi
+# LLVM 23 removed the standalone `openmp/` build; go through `runtimes/` instead.
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
+    -DLLVM_ENABLE_RUNTIMES=openmp \
+    -DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=OFF \
+    -DLLVM_INCLUDE_TESTS=OFF \
+    -DLLVM_INCLUDE_DOCS=OFF \
     -DLIBOMP_INSTALL_ALIASES=OFF \
     -DOPENMP_ENABLE_LIBOMPTARGET=OFF \
     "${platform_config[@]}" \
-    ..
+    ../runtimes
 make -j${nproc}
 make install
 
-install_license ../LICENSE.TXT
+install_license ../openmp/LICENSE.TXT
 """
 
 # These are the platforms we will build for by default, unless further
