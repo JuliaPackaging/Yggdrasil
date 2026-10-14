@@ -142,7 +142,8 @@ end
 products = [
     # MPICH
     LibraryProduct("libmpicxx", :libmpicxx),
-    LibraryProduct("libmpifort", :libmpifort),
+    # Global, so that libraries loaded later (e.g. MUMPS) use libmpifort's MPI_IN_PLACE etc.
+    LibraryProduct("libmpifort", :libmpifort; dlopen_flags=[:RTLD_LAZY, :RTLD_DEEPBIND, :RTLD_GLOBAL]),
     LibraryProduct("libmpi", :libmpi),
     ExecutableProduct("mpiexec", :mpiexec),
 ]
