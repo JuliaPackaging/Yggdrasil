@@ -4,7 +4,7 @@ This guide helps AI agents generate correct `build_tarballs.jl` recipes for Bina
 
 ## Prerequisites
 
-- **Julia**: Use Julia 1.12 (CI runs 1.12.7; `.ci/Manifest.toml` is resolved for it).
+- **Julia**: Use Julia 1.13 (CI runs 1.13.2; `.ci/Manifest.toml` is resolved for it).
 - **Supported Platforms**: Linux glibc (x86_64, i686, aarch64, armv7l, armv6l, ppc64le, riscv64), Linux musl (x86_64, i686, aarch64, armv7l, armv6l), Windows (x86_64, i686), macOS (x86_64, aarch64), FreeBSD (x86_64, aarch64)
 - Use `supported_platforms()` to get all available platforms
 
