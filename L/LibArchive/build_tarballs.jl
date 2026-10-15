@@ -21,6 +21,7 @@ export CPPFLAGS="-I${includedir}"
     --with-expat \
     --with-openssl \
     --without-xml2 \
+    --without-xmllite \
     --without-nettle \
     --disable-static
 make -j${nproc}
@@ -34,9 +35,10 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libarchive", :libarchive),
+    ExecutableProduct("bsdcat", :bsdcat),
     ExecutableProduct("bsdcpio", :bsdcpio),
     ExecutableProduct("bsdtar", :bsdtar),
-    ExecutableProduct("bsdcat", :bsdcat)
+    ExecutableProduct("bsdunzip", :bsdunzip),
 ]
 
 # Dependencies that must be installed before this package can be built
