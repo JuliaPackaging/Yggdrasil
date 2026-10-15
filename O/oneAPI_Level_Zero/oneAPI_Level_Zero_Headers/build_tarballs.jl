@@ -27,4 +27,4 @@ products = [
 dependencies = Dependency[]
 
 build_tarballs(ARGS, name, api_version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6")
+               julia_compat="1.10")
