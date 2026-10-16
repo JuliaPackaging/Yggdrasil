@@ -1,0 +1,27 @@
+From: Erik Schnetter <schnetter@gmail.com>
+Subject: [PATCH] configure: check for _vsnprintf_l
+
+meson.build checks for `_vsnprintf_l`, but configure.ac does not, so the
+Autotools build never defines HAVE__VSNPRINTF_L.  On Windows the
+FcStrDupVapFormat chain in src/fcint.h then falls through to the
+HAVE_VASPRINTF branch, which calls FcLocaleSetCurrent() -- a function
+src/fccompat.c only defines `#ifndef _WIN32`.  The result is a link
+failure for libfontconfig:
+
+    fcstr.o: In function `FcStrDupVaFormat':
+    src/fcstr.c:121: undefined reference to `FcLocaleSetCurrent'
+
+Check the declaration (with <stdio.h> included, since mingw-w64 provides
+`_vsnprintf_l` as an inline function when targeting UCRT) so that Windows
+uses the intended locale-argument branch instead.
+
+--- a/configure.ac
++++ b/configure.ac
+@@ -212,6 +212,8 @@
+ 
+ AC_CHECK_DECL([mkostemp],[AC_DEFINE_UNQUOTED([HAVE_MKOSTEMP],[1],[Define to 1 if you have the 'mkostemp' function.])],[],[#include <stdlib.h>])
+ 
++AC_CHECK_DECL([_vsnprintf_l],[AC_DEFINE_UNQUOTED([HAVE__VSNPRINTF_L],[1],[Define to 1 if you have the '_vsnprintf_l' function.])],[],[#include <stdio.h>])
++
+ AC_SEARCH_LIBS([fabs], [m], [], [AC_MSG_ERROR([unable to find the fabs() function])])
+ 
