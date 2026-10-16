@@ -5,7 +5,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MUMPS"
 version = v"5.9.1"
-ygg_version = v"5.9.4"
+ygg_version = v"5.9.5"
 
 sources = [
   ArchiveSource("https://mumps-solver.org/MUMPS_$(version).tar.gz",
@@ -140,11 +140,12 @@ platforms = expand_gfortran_versions(platforms)
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # The products that we will ensure are always built
+# No RTLD_DEEPBIND: it makes MUMPS use its own copies of MPI_IN_PLACE etc.
 products = [
-    LibraryProduct("libsmumpspar", :libsmumpspar),
-    LibraryProduct("libdmumpspar", :libdmumpspar),
-    LibraryProduct("libcmumpspar", :libcmumpspar),
-    LibraryProduct("libzmumpspar", :libzmumpspar),
+    LibraryProduct("libsmumpspar", :libsmumpspar; dlopen_flags=[:RTLD_LAZY]),
+    LibraryProduct("libdmumpspar", :libdmumpspar; dlopen_flags=[:RTLD_LAZY]),
+    LibraryProduct("libcmumpspar", :libcmumpspar; dlopen_flags=[:RTLD_LAZY]),
+    LibraryProduct("libzmumpspar", :libzmumpspar; dlopen_flags=[:RTLD_LAZY]),
 ]
 
 # Dependencies that must be installed before this package can be built
