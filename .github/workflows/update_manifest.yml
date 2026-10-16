@@ -24,7 +24,7 @@ jobs:
           cache-registries: "true"
           cache-compiled: "true"
       - name: Instantiate the manifest
-        shell: julia --project=.ci --color=yes {0}
+        shell: julia --project=.ci/bb1_project --color=yes {0}
         run: |
           using Pkg
           Pkg.instantiate()
