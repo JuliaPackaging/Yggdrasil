@@ -1,13 +1,8 @@
 using BinaryBuilder, Pkg
 using BinaryBuilder: download_source
 
-# Read in input `.json` file
-json = String(read(ARGS[1]))
-buff = IOBuffer(strip(json))
-objs = []
-while !eof(buff)
-    push!(objs, BinaryBuilder.JSON.parse(buff))
-end
+# Read in input `.json` file, which has one JSON object per line
+objs = [BinaryBuilder.JSON.parse(line; dicttype=Dict) for line in eachline(ARGS[1]) if !isempty(strip(line))]
 
 # Merge the multiple outputs into one
 merged = BinaryBuilder.merge_json_objects(objs)

@@ -87,6 +87,15 @@ dependencies = [
     BuildDependency(PackageSpec(name="LLVM_full_jll", version=string(llvm_version))),
     Dependency("Hwloc_jll"),
     Dependency("Zstd_jll"), # our LLVM 22 build has LLVM_ENABLE_ZSTD=ON
+    # Vectorize OpenCL math builtins via SLEEF's libmvec-ABI library (libsleefgnuabi), which
+    # the in-process JIT dlopens at run time (see common.jl for the matching CMake flags). Only
+    # on x86_64/aarch64 Linux and FreeBSD, the ELF targets where LLVM maps a veclib *and*
+    # SLEEF_jll ships libsleefgnuabi (macOS has no GNUABI variant, Windows has no SLEEF_jll).
+    # This has to be declared here, not per platform in the loop below: the JLL's Project.toml
+    # comes from the last (registering) `build_tarballs` call, which isn't one of these.
+    Dependency("SLEEF_jll"; platforms=filter(platforms) do p
+        (Sys.islinux(p) || Sys.isfreebsd(p)) && arch(p) in ["x86_64", "aarch64"]
+    end),
 ]
 
 builds = []
@@ -95,17 +104,6 @@ for platform in platforms
 
     platform_sources = deepcopy(sources)
     platform_dependencies = deepcopy(dependencies)
-
-    # Vectorize OpenCL math builtins via SLEEF's libmvec-ABI / SLEEF compat library
-    # (libsleefgnuabi), which the in-process JIT dlopens at run time (see common.jl for the
-    # matching CMake flags). Gated to x86_64/aarch64 on the ELF OSes where LLVM maps a veclib
-    # *and* SLEEF_jll ships libsleefgnuabi: Linux and FreeBSD (not macOS -- no GNUABI on
-    # Mach-O -- and not Windows -- no SLEEF_jll). Even though this is the "standalone"
-    # (JLL-dependency-free in spirit) build, a dynamic SLEEF_jll dep is the natural fit: the
-    # JIT resolves _ZGV* symbols by dlopen, not by static linking.
-    if (Sys.islinux(platform) || Sys.isfreebsd(platform)) && arch(platform) in ["x86_64", "aarch64"]
-        push!(platform_dependencies, Dependency("SLEEF_jll"))
-    end
 
     # On Windows we now link PoCL with the Clang/lld toolchain, but still build against this
     # GCC's MinGW sysroot and libstdc++, so its version must stay compatible with the
@@ -147,4 +145,4 @@ for (i,build) in enumerate(builds)
                    julia_compat="1.10", init_block=init_block(true))
 end
 
-# Build trigger: 12
+# Build trigger: 13
