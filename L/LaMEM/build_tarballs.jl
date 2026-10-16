@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "LaMEM"
-version = v"3.3.0"
+version = v"3.4.0"
 
 # PETSc_jll 3.25.4 uses MPI.augment_platforms' default compat bounds; LaMEM must resolve the
 # same MPI per platform because petscsys.h errors out when mpi.h reports a different version.
@@ -15,8 +15,7 @@ PETSc_COMPAT_VERSION = "3.25.4"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/UniMainzGeo/LaMEM",
-    "eb306fc4740b07169eefa87469fafcd372db5c41"),  # v3.3.0
-    DirectorySource("./bundled"),
+    "6124aa7d2c6861d379c4b4598a0259b892a12149"),  # v3.4.0
 ]
 
 # Bash recipe for building across all platforms
@@ -38,22 +37,7 @@ mkdir $WORKSPACE/srcdir/LaMEM/dep/opt
 mkdir $WORKSPACE/srcdir/LaMEM/lib
 mkdir $WORKSPACE/srcdir/LaMEM/lib/opt
 
-cd $WORKSPACE/srcdir/LaMEM
-
-atomic_patch -p1 $WORKSPACE/srcdir/patches/stdc-format-macros.patch
-
 cd $WORKSPACE/srcdir/LaMEM/src
-
-# LaMEM 3.0.0 added an explicit `-std=c++17` flag (vs the previous reliance on PETSc's
-# `-std=gnu++17`), which switches MinGW onto strict ISO mode and hides M_PI (a GNU/POSIX
-# extension to <math.h>/<cmath>) unless _USE_MATH_DEFINES is defined before the first
-# include of <math.h>/<cmath>. src/Tensor.cpp and src/scaling.cpp use M_PI directly, so
-# without this the Windows build fails with "M_PI was not declared in this scope".
-# Setting CXXFLAGS doesn't reach the compile line (PETSc's conf/variables re-defines it),
-# so patch the define directly into the two files that need it.
-if [[ "${target}" == *mingw* ]]; then
-    atomic_patch -p1 $WORKSPACE/srcdir/patches/mingw-use-math-defines.patch
-fi
 
 export PETSC_OPT=${libdir}/petsc/double_real_Int32/
 export FASTSCAPE_LIB=${libdir}
