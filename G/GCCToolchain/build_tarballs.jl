@@ -4,6 +4,8 @@
 #
 # Each tarball is a complete compiler for one platform that runs on, and targets, that
 # same platform (host == target): GCC, binutils, and a sysroot with the C library.
+# Its platform is that of the host, with the target in `target_*` tags as
+# BinaryBuilder2's `CrossPlatform` encodes it; select one by host and target.
 # - Linux: an old glibc (that of the GCCBootstrap shards: 2.17, or 2.19 on
 #   aarch64/armv7l) and Linux kernel headers, so that everything it builds runs on old
 #   distributions.
@@ -288,7 +290,18 @@ if [[ "${target}" == *-mingw* ]]; then
 fi
 """
 
-platforms = [
+# The platform of a toolchain that runs on `host` and targets `target`: the host
+# platform, with every tag of the target prefixed by `target_`, as BinaryBuilder2's
+# `CrossPlatform` encodes it.
+function cross_platform(host::Platform, target::Platform)
+    platform = deepcopy(host)
+    for (tag, value) in Base.BinaryPlatforms.tags(target)
+        platform["target_" * tag] = value
+    end
+    return platform
+end
+
+native_platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
     Platform("i686", "linux"; libc="glibc"),
     Platform("aarch64", "linux"; libc="glibc"),
@@ -297,6 +310,19 @@ platforms = [
     Platform("i686", "windows"),
     Platform("x86_64", "windows"),
 ]
+platforms = [cross_platform(p, p) for p in native_platforms]
+
+# When the JLL is loaded, without a target in the platform, select the native toolchain
+augment_platform_block = """
+    using Base.BinaryPlatforms
+    function augment_platform!(platform::Platform)
+        haskey(platform, "target_arch") && return platform
+        for tag in ("arch", "os", "libc", "call_abi")
+            haskey(platform, tag) && (platform["target_" * tag] = platform[tag])
+        end
+        return platform
+    end
+    """
 
 # A toolchain to install, not a library to load: no products (as `G/GCCBootstrap`).
 products = Product[]
@@ -304,4 +330,5 @@ products = Product[]
 dependencies = Dependency[]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"15", skip_audit=true, julia_compat="1.6")
+               preferred_gcc_version=v"15", skip_audit=true, julia_compat="1.6",
+               augment_platform_block)
