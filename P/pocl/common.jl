@@ -149,6 +149,15 @@ function build_script(standalone=false)
     # - 0021: build the FP16 builtins without double-precision helpers, whose
     #   llvm.roundeven lowers to a roundeven libcall missing on Windows below SSE4.1
     #   (upstream commit 7fd676ef1, in `main`; JuliaGPU/OpenCL.jl#539)
+    # - 0022: accept SPIR-V using SPV_INTEL_subgroups again, lost in 7.2, for vector sub-group
+    #   shuffles (upstream PR #2394; JuliaGPU/KernelAbstractions.jl#864)
+    # - 0023: pass vectors directly in the SPIR wrappers of the MinGW kernel library, whose
+    #   mismatched calls left e.g. the vector sub-group shuffles unlinked on Windows
+    #   (upstream PR #2381, also matching our unnormalized mingw32 LLC_TRIPLE;
+    #   JuliaGPU/KernelAbstractions.jl#831)
+    # - 0024: convert half printf arguments in software instead of through _Float16, whose
+    #   libgcc helpers need libgcc_s >= GCC 12 and kept libpocl from loading next to an older
+    #   system libgcc_s, e.g. under `nsys profile` (upstream PR #2403)
     for patch in $WORKSPACE/srcdir/patches/pocl/*.patch; do
         atomic_patch -p1 $patch
     done

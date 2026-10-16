@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "catch22"
-version = v"0.6.0"
+version = v"0.7.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource(
         "https://github.com/DynamicsAndNeuralSystems/catch22.git",
-        "9ff9da7335f21e8ad3a862ed0a874297ab029b54"
+        "068220ae5d5aac3e966104f17e8e430cf32c445d"
     ),
 ]
 

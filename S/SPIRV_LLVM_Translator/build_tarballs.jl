@@ -39,6 +39,10 @@ atomic_patch -p1 ../fence-storage-class.patch
 # Reject atomicrmw uinc_wrap, udec_wrap, usub_cond and usub_sat instead of
 # crashing (they have no SPIR-V opcode).
 atomic_patch -p1 ../atomicrmw-unsupported-int.patch
+# Backport of https://github.com/KhronosGroup/SPIRV-LLVM-Translator/pull/3918
+# ("Preserve signed i1 semantics in sitofp lowering"), without which
+# `sitofp i1 true` yields 1.0 instead of -1.0.
+atomic_patch -p1 ../sitofp-bool.patch
 install_license LICENSE.TXT
 
 CMAKE_FLAGS=()
