@@ -27,10 +27,10 @@ const llvm_tags = Dict(
     v"17.0.6" => "0007e48608221f440dce2ea0d3e4f561fc10d3c6", # julia-17.0.6-5
     v"18.1.7" => "b21227453160289e6dc3d23bd53c55b5e1aabe1e", # julia-18.1.7-5
     v"19.1.7" => "ccda9ec62497d9de88ca7090a749e52a89f62132", # julia-19.1.7-2
-    v"20.1.8" => "24bdfdd813f4117f0464fd0dac5b4bce43ed1388", # julia-20.1.8-2
+    v"20.1.8" => "9cba7d4b7efbbc8d3755144e3deb741de8011b41", # julia-20.1.8-3
     v"21.1.8" => "151034ef71856c7406f58c150dba7d419dbd063d", # julia-21.1.8-1
     v"22.1.8" => "4df0bb28e9e4d59f293433a1e325a46479da5174", # julia-22.1.8-1
-    v"23.1.1" => "fbe0dc11974bf1e4f6380eae95101d36fa0650b8", # julia-release/23.x (julia-23.1.1-1 + 2)
+    v"23.1.4" => "2dddcc9eaa8e807adca996be736ac95e5698cd8c", # julia-23.1.4-0
 )
 
 const buildscript = raw"""
@@ -775,6 +775,19 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     return name, custom_version, sources, script, platforms, products, dependencies
 end
 
+# Like `should_build_platform`, but a plain request doesn't select the msan platform:
+# `platforms_match` treats the missing `sanitize` tag as a wildcard, which made every
+# x86_64-linux-gnu job build both variants.
+function should_build_extraction(platform)
+    requested = filter(arg -> !startswith(arg, "--"), ARGS)
+    isempty(requested) && return true
+    isone(length(requested)) || return false
+    return any(split(only(requested), ",")) do request
+        platforms_match(platform, request) &&
+            sanitize(parse(Platform, request)) == sanitize(platform)
+    end
+end
+
 function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=nothing;
                               experimental_platforms=false, assert=false,
                               augmentation=false, dont_dlopen=true)
@@ -882,7 +895,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
             augmented_platform = deepcopy(platform)
             augmented_platform[LLVM.platform_name] = LLVM.platform(version, assert)
 
-            should_build_platform(triplet(augmented_platform)) || continue
+            should_build_extraction(augmented_platform) || continue
             push!(augmented_platforms, augmented_platform)
         end
         platforms = augmented_platforms

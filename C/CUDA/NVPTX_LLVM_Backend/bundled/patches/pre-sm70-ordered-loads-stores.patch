@@ -1,0 +1,52 @@
+[NVPTX] Emulate ordered loads and stores before sm_70 with fences
+The pre-sm_70 part of https://github.com/llvm/llvm-project/pull/201468 (open)
+
+diff --git a/lib/Target/NVPTX/NVPTXISelLowering.cpp b/lib/Target/NVPTX/NVPTXISelLowering.cpp
+index e98eb1e9f2d7..2cce9d56716f 100644
+--- a/lib/Target/NVPTX/NVPTXISelLowering.cpp
++++ b/lib/Target/NVPTX/NVPTXISelLowering.cpp
+@@ -7611,6 +7611,12 @@ bool NVPTXTargetLowering::shouldInsertFencesForAtomic(
+     return shouldExpandAtomicRMWInIR(RI) == AtomicExpansionKind::CmpXChg ||
+            !STI.hasMemoryOrdering() ||
+            RI->getOrdering() == AtomicOrdering::SequentiallyConsistent;
++  // Before sm_70, ld and st have no memory-order qualifiers: ordered loads and
++  // stores are emulated with a relaxed access bracketed by membars.
++  if (auto *LI = dyn_cast<LoadInst>(I))
++    return !STI.hasMemoryOrdering() && isAcquireOrStronger(LI->getOrdering());
++  if (auto *SI = dyn_cast<StoreInst>(I))
++    return !STI.hasMemoryOrdering() && isReleaseOrStronger(SI->getOrdering());
+   return false;
+ }
+ 
+@@ -7658,6 +7664,15 @@ Instruction *NVPTXTargetLowering::emitLeadingFence(IRBuilderBase &Builder,
+   // assert, because AtomicExpandPass will have modified the memory order
+   // between the initial call to shouldInsertFencesForAtomic() and the call to
+   // this function.
++  // Emulated ordered loads and stores (before sm_70) follow the PTX atomics
++  // ABI, with a fence in the instruction's scope: seq_cst accesses and release
++  // stores are preceded by a fence.
++  if (isa<LoadInst>(Inst) || isa<StoreInst>(Inst)) {
++    if (Ord == AtomicOrdering::SequentiallyConsistent ||
++        (isa<StoreInst>(Inst) && isReleaseOrStronger(Ord)))
++      return Builder.CreateFence(Ord, *getAtomicSyncScopeID(Inst));
++    return nullptr;
++  }
+   if (!isa<AtomicCmpXchgInst>(Inst) && !isa<AtomicRMWInst>(Inst))
+     return TargetLoweringBase::emitLeadingFence(Builder, Inst, Ord);
+ 
+@@ -7681,6 +7696,15 @@ Instruction *NVPTXTargetLowering::emitTrailingFence(IRBuilderBase &Builder,
+   // `Inst` before its memory order was modified. See `emitLeadingFence` for why
+   // this cannot be enforced with an assert.  Specialize for cmpxchg and
+   // atomicrmw
++  // Emulated acquire loads are followed by a fence in their scope.
++  if (auto *LI = dyn_cast<LoadInst>(Inst)) {
++    if (isAcquireOrStronger(Ord))
++      return Builder.CreateFence(AtomicOrdering::Acquire,
++                                 LI->getSyncScopeID());
++    return nullptr;
++  }
++  if (isa<StoreInst>(Inst))
++    return nullptr;
+   auto *CI = dyn_cast<AtomicCmpXchgInst>(Inst);
+   auto *RI = dyn_cast<AtomicRMWInst>(Inst);
+   if (!CI && !RI)

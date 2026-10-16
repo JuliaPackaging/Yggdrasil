@@ -1,0 +1,122 @@
+From eb1af3f71b9d5f5aa2d3ef3c7a63c6db46a20d7f Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Thu, 8 Oct 2026 16:10:07 +0200
+Subject: [PATCH] SPIR wrapper: pass vectors directly on x86-64 MinGW
+
+generate_spir_wrapper.py always applies the System V rewrites for x86-64:
+2 x float is coerced to double, and vectors wider than the register size
+are passed byval and returned sret. The MinGW kernel library, built for
+an x86_64-w64-windows-gnu triple, takes every vector directly, so the
+wrapper's call doesn't match the definition and SPIR-V kernels calling
+e.g. sin on a 16 x double fail to link ("Symbols not found:
+_Z7_cl_sinDv16_d").
+
+Add a --mingw mode that disables these rewrites, the same way the CUDA
+target already does, and select it in generate_cpu_spir_wrapper for x86
+when LLC_TRIPLE is a windows-gnu triple. MSVC uses a different vector
+ABI and is left alone. The generated wrappers for other targets are
+unchanged.
+
+(cherry picked from commit e1d5c29f35d3c97110661183539dd416ad6117a3)
+[Yggdrasil: also match the unnormalized x86_64-w64-mingw32 triple, which
+the recipe passes as LLC_TRIPLE instead of llvm-config's windows-gnu one]
+---
+ cmake/bitcode_rules.cmake                |  5 +++++
+ lib/kernel/SPIR/generate_spir_wrapper.py | 23 ++++++++++++++++++-----
+ 2 files changed, 23 insertions(+), 5 deletions(-)
+
+diff --git a/cmake/bitcode_rules.cmake b/cmake/bitcode_rules.cmake
+index 24518c7e4..ed339cae9 100644
+--- a/cmake/bitcode_rules.cmake
++++ b/cmake/bitcode_rules.cmake
+@@ -277,6 +277,11 @@ function(generate_cpu_spir_wrapper ARCH SUBDIR SIZE OUTPUT)
+     set(EXTRA_OPT "--fp16" "-g")
+   endif()
+ 
++  # clang passes vectors directly on x86-64 MinGW, unlike System V (and MSVC)
++  if(ARCH STREQUAL "cpu_x86" AND LLC_TRIPLE MATCHES "-windows-gnu|-mingw32")
++    list(APPEND EXTRA_OPT "--mingw")
++  endif()
++
+   add_custom_command( OUTPUT "${FNAME}"
+       DEPENDS "${CMAKE_SOURCE_DIR}/lib/kernel/SPIR/generate_spir_wrapper.py"
+       COMMAND "${HOST_PYTHON3}" "${CMAKE_SOURCE_DIR}/lib/kernel/SPIR/generate_spir_wrapper.py" ${EXTRA_OPT} "-t" "${ARCH}" "-r" "${SIZE}" "${FNAME}"
+diff --git a/lib/kernel/SPIR/generate_spir_wrapper.py b/lib/kernel/SPIR/generate_spir_wrapper.py
+index 7e1e6c20e..0be521c8b 100644
+--- a/lib/kernel/SPIR/generate_spir_wrapper.py
++++ b/lib/kernel/SPIR/generate_spir_wrapper.py
+@@ -10,7 +10,7 @@
+ #
+ # output is LLVM IR text format.
+ #
+-# Usage: python3 generate_spir_wrapper.py [-q] [-g] [-t <target>] [-r <register_size>] OUTPUT
++# Usage: python3 generate_spir_wrapper.py [-q] [-g] [-m] [-t <target>] [-r <register_size>] OUTPUT
+ # ... place the file in the target-specific lib/kernel subdirectory.
+ #
+ # Notes for CPU SPIR wrapper:
+@@ -23,6 +23,9 @@
+ #    even if the mangled names are the same, because the calling conv
+ #    is different for SPIR and some LLVM pass will remove the calls
+ #    with mismatched calling conv.
++# 4) the above applies to the System V and AArch64/RISC-V ABIs. On x86-64 MinGW,
++#    clang passes and returns all vectors directly (the backend lowers the large
++#    ones itself), so the wrappers must not do any of this; see --mingw.
+ #
+ # Notes for CUDA SPIR wrapper:
+ # 1) mangling is not required for CUDA
+@@ -55,6 +58,11 @@ parser.add_argument('-g', '--generic-as',
+ 	action='store_true',
+ 	help="generate also Generic AS wrappers")
+ 
++parser.add_argument('-m', '--mingw',
++	dest='mingw',
++	action='store_true',
++	help="target the x86-64 MinGW ABI (cpu_x86 only): pass vectors directly")
++
+ parser.add_argument('--fp16',
+ 	dest='fp16',
+ 	action='store_true',
+@@ -62,6 +70,9 @@ parser.add_argument('--fp16',
+ 
+ args = parser.parse_args()
+ 
++if args.mingw and args.target != 'cpu_x86':
++	parser.error('--mingw is only supported for the cpu_x86 target')
++
+ # function prefix used by PoCL's kernel library
+ POCL_LIB_PREFIX = "_cl_"
+ 
+@@ -79,6 +90,8 @@ X86_CALLING_ABI = (args.target == 'cpu_x86')
+ ARM_CALLING_ABI = (args.target == 'cpu_arm')
+ RISCV64_CALLING_ABI = (args.target == 'cpu_riscv')
+ SPIR_CALLING_ABI = (args.target == 'cuda')
++# the x86-64 MinGW ABI needs no argument rewriting, same as SPIR
++PLAIN_VECTOR_ABI = SPIR_CALLING_ABI or args.mingw
+ 
+ # size of the largest CPU (SIMD) register. Values larger than this
+ # will be passed with byval/sret
+@@ -719,8 +732,8 @@ def replace_arg_type(argtype, replacement):
+ 
+ # coerce vector type arguments (leave other types alone)
+ def coerce_llvm_vector_type(type):
+-	# only for ARM & X86 & RISCV, not SPIR
+-	if SPIR_CALLING_ABI:
++	# only for ARM & X86 & RISCV, not SPIR or MinGW
++	if PLAIN_VECTOR_ABI:
+ 		return type
+ 	if type in COERCE_VECTOR_MAP:
+ 		return COERCE_VECTOR_MAP[type]
+@@ -729,8 +742,8 @@ def coerce_llvm_vector_type(type):
+ 
+ # get arg type for types larger than cpu reg size
+ def byval_llvm_vector_type(type):
+-	# only for ARM & X86 & RISCV, not SPIR
+-	if SPIR_CALLING_ABI:
++	# only for ARM & X86 & RISCV, not SPIR or MinGW
++	if PLAIN_VECTOR_ABI:
+ 		return type
+ 	if type not in BYVAL_VECTOR_MAP:
+ 		return type
+-- 
+2.56.0
+

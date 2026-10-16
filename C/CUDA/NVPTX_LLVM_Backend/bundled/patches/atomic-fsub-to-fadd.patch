@@ -1,0 +1,127 @@
+[AtomicExpand] Implement FSUB -> FADD(-x) for NVPTX
+The floating-point part of https://github.com/llvm/llvm-project/pull/221425
+
+diff --git a/lib/CodeGen/AtomicExpandPass.cpp b/lib/CodeGen/AtomicExpandPass.cpp
+index 6985a7a48147..e7ceb6e912ef 100644
+--- a/lib/CodeGen/AtomicExpandPass.cpp
++++ b/lib/CodeGen/AtomicExpandPass.cpp
+@@ -105,6 +105,7 @@ private:
+   bool tryExpandAtomicStore(StoreInst *SI);
+   void expandAtomicStoreToXChg(StoreInst *SI);
+   bool tryExpandAtomicRMW(AtomicRMWInst *AI);
++  void expandAtomicSubToAdd(AtomicRMWInst *AI);
+   AtomicRMWInst *convertAtomicXchgToIntegerType(AtomicRMWInst *RMWI);
+   Value *
+   insertRMWLLSCLoop(IRBuilderBase &Builder, Type *ResultTy, Value *Addr,
+@@ -775,6 +776,28 @@ static void createCmpXchgInstFun(IRBuilderBase &Builder, Value *Addr,
+     NewLoaded = Builder.CreateBitCast(NewLoaded, OrigTy);
+ }
+ 
++void AtomicExpandImpl::expandAtomicSubToAdd(AtomicRMWInst *AI) {
++  ReplacementIRBuilder Builder(AI, *DL);
++  AtomicRMWInst::BinOp NewOp;
++  Value *NewVal;
++
++  switch (AI->getOperation()) {
++  case AtomicRMWInst::Sub:
++    NewOp = AtomicRMWInst::Add;
++    NewVal = Builder.CreateNeg(AI->getValOperand(), "neg");
++    break;
++  case AtomicRMWInst::FSub:
++    NewOp = AtomicRMWInst::FAdd;
++    NewVal = Builder.CreateFNeg(AI->getValOperand(), "fneg");
++    break;
++  default:
++    llvm_unreachable("unsupported atomicrmw expansion");
++  }
++
++  AI->setOperation(NewOp);
++  AI->setOperand(1, NewVal);
++}
++
+ bool AtomicExpandImpl::tryExpandAtomicRMW(AtomicRMWInst *AI) {
+   LLVMContext &Ctx = AI->getModule()->getContext();
+   TargetLowering::AtomicExpansionKind Kind = TLI->shouldExpandAtomicRMWInIR(AI);
+@@ -843,6 +866,9 @@ bool AtomicExpandImpl::tryExpandAtomicRMW(AtomicRMWInst *AI) {
+     TLI->emitCmpArithAtomicRMWIntrinsic(AI);
+     return true;
+   }
++  case TargetLoweringBase::AtomicExpansionKind::Expand:
++    expandAtomicSubToAdd(AI);
++    return true;
+   case TargetLoweringBase::AtomicExpansionKind::NotAtomic:
+     return lowerAtomicRMWInst(AI);
+   case TargetLoweringBase::AtomicExpansionKind::CustomExpand:
+diff --git a/lib/Target/NVPTX/NVPTXISelLowering.cpp b/lib/Target/NVPTX/NVPTXISelLowering.cpp
+index 2cce9d56716f..da8d7d07e7d3 100644
+--- a/lib/Target/NVPTX/NVPTXISelLowering.cpp
++++ b/lib/Target/NVPTX/NVPTXISelLowering.cpp
+@@ -7468,8 +7468,9 @@ NVPTXTargetLowering::AtomicExpansionKind
+ NVPTXTargetLowering::shouldExpandAtomicRMWInIR(const AtomicRMWInst *AI) const {
+   Type *Ty = AI->getValOperand()->getType();
+ 
+-  // Try to lower LLVM atomicrmw fadd to PTX atomic.add.  This is complicated
+-  // by the weird FTZ behavior PTX atom.add has:
++  // Try to lower LLVM atomicrmw fadd/fsub to PTX atomic.add. Fsub is first
++  // expanded to an fadd with a negated operand. This is complicated by the
++  // weird FTZ behavior PTX atom.add has:
+   //   - atom.add.f32 on global memory flushes denormals
+   //   - atom.add.f32 on shared memory does not flush denormals
+   //   - atom.add.f16 and atomic.add.bf16 never flush denormals
+@@ -7479,10 +7480,15 @@ NVPTXTargetLowering::shouldExpandAtomicRMWInIR(const AtomicRMWInst *AI) const {
+   // atomic.add.bf16; even though it never flushes denormals, we never flush
+   // bf16 denormals when doing regular arithmetic, even when FTZ is enabled.
+   if (AI->isFloatingPointOperation() &&
+-      AI->getOperation() == AtomicRMWInst::BinOp::FAdd) {
++      (AI->getOperation() == AtomicRMWInst::BinOp::FAdd ||
++       AI->getOperation() == AtomicRMWInst::BinOp::FSub)) {
+     const bool FTZ =
+         AI->getFunction()->getDenormalMode(APFloat::IEEEsingle()).Output ==
+         DenormalMode::PreserveSign;
++    AtomicExpansionKind ExpansionKind =
++        AI->getOperation() == AtomicRMWInst::BinOp::FSub
++            ? AtomicExpansionKind::Expand
++            : AtomicExpansionKind::None;
+ 
+     // AllowFTZAtomics forces atom.add regardless of the FTZ mismatch.
+     if (Ty->isFloatTy()) {
+@@ -7497,19 +7503,19 @@ NVPTXTargetLowering::shouldExpandAtomicRMWInIR(const AtomicRMWInst *AI) const {
+         break;
+       }
+       if (UseNative)
+-        return AtomicExpansionKind::None;
++        return ExpansionKind;
+     }
+ 
+     if (Ty->isHalfTy() && (!FTZ || AllowFTZAtomics) &&
+         STI.getSmVersion() >= 70 && STI.getPTXVersion() >= 63)
+-      return AtomicExpansionKind::None;
++      return ExpansionKind;
+ 
+     if (Ty->isBFloatTy() && STI.getSmVersion() >= 90 &&
+         STI.getPTXVersion() >= 78)
+-      return AtomicExpansionKind::None;
++      return ExpansionKind;
+ 
+     if (Ty->isDoubleTy() && STI.hasAtomAddF64())
+-      return AtomicExpansionKind::None;
++      return ExpansionKind;
+   }
+ 
+   // PTX's only atomic fp op is `add`; all other ops expand to a CAS loop.
+@@ -7649,9 +7655,12 @@ AtomicOrdering NVPTXTargetLowering::atomicOperationOrderAfterFenceSplit(
+           STI.getMinCmpXchgSizeInBits())
+     return AtomicOrdering::Acquire;
+   else if (auto *RI = dyn_cast<AtomicRMWInst>(I);
+-           RI && RI->getOrdering() == AtomicOrdering::SequentiallyConsistent &&
+-           shouldExpandAtomicRMWInIR(RI) == AtomicExpansionKind::None)
+-    return AtomicOrdering::Acquire;
++           RI && RI->getOrdering() == AtomicOrdering::SequentiallyConsistent) {
++    AtomicExpansionKind ExpansionKind = shouldExpandAtomicRMWInIR(RI);
++    if (ExpansionKind == AtomicExpansionKind::None ||
++        ExpansionKind == AtomicExpansionKind::Expand)
++      return AtomicOrdering::Acquire;
++  }
+ 
+   return AtomicOrdering::Monotonic;
+ }

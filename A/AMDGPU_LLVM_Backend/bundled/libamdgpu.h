@@ -64,7 +64,10 @@ typedef struct {
 /* Compile a module (bitcode or textual IR, `Length` bytes at `Bitcode`) for
  * amdgcn-amd-amdhsa with the PIC relocation model. Bitcode from any LLVM older
  * than the one embedded is auto-upgraded on load. The module's own triple and
- * datalayout are overridden by the target's. On success returns 0 and sets
+ * datalayout are overridden by the target's; only if the module aligns i128 to
+ * 64 bits does the target's datalayout do so too (the default is 128 bits). This
+ * lets a host whose ABI aligns i128 to 64 bits (Julia before 1.12) lay out
+ * kernel arguments the same way. On success returns 0 and sets
  * `*OutBuffer`; on failure returns nonzero and sets `*OutMessage`. A fatal LLVM
  * error (`report_fatal_error`) is reported the same way and leaves the library
  * usable, at the cost of leaking that call's state. */

@@ -29,12 +29,12 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "Musica"
-version = v"0.16.7"
+version = v"0.17.1"
 
 # Collection of sources required to build Musica
 sources = [
     GitSource("https://github.com/NCAR/musica.git",
-              "71abef833c92d22756b47861d712eb162a4bc137")
+              "1e2de376005dc4faac74364c586f5ea3a517a2f9")
 ]
 
 # Bash recipe for building across all platforms
@@ -65,6 +65,8 @@ cmake -B build -G Ninja \
     -DMUSICA_BUILD_C_CXX_INTERFACE=ON \
     -DMUSICA_ENABLE_JULIA=ON \
     -DMUSICA_ENABLE_MICM=ON \
+    -DMUSICA_ENABLE_MIAM=OFF \
+    -DMUSICA_ENABLE_MIEM=OFF \
     -DMUSICA_ENABLE_TUVX=ON \
     -DMUSICA_ENABLE_CARMA=OFF \
     -DMUSICA_ENABLE_TESTS=OFF \

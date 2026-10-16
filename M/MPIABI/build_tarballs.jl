@@ -7,7 +7,7 @@ name = "MPIABI"
 # We use semver for this package. Since this represents and ABI, and
 # not a package, it doesn't make sense to follow e.g. MPI's or
 # OpenMPI's released versions.
-version = v"1.0.0"
+version = v"1.0.1"
 
 # The MPI ABI does not provide Fortran bindings. Packages using this
 # ABI should use a different package, e.g.
@@ -21,25 +21,8 @@ sources = [
     GitSource("https://github.com/mpi-forum/mpi-abi-stubs", "e3a9e9b16f86099723d287b6ab477626ab4956b8"),
 
     # MPICH source, implementing the C bindings.
-    #
-    # We build from a commit on `main` rather than from the 5.0.1 release.
-    # This avoids a few patches that we would otherwise have to apply.
-    GitSource("https://github.com/pmodels/mpich", "ab53493dad85ffee0fc95812b250e1c8dacf7982"),
-
-    # MPICH's submodules, at the commits that the MPICH commit above records.
-    # The release tarball bundled these; a Git checkout does not, and the build
-    # sandbox cannot run `git submodule update`, so they come as their own
-    # sources. `modules/ucx` is deliberately absent: we never select the ucx
-    # netmod, and it has a nested submodule of its own. See `--without-ucx`
-    # below.
-    GitSource("https://github.com/pmodels/hwloc", "42bebfa5e4b96c99c2482645c8eb86d4755ef23b";
-              unpack_target="mpich-modules"),
-    GitSource("https://github.com/pmodels/json-c", "79ad1c9b9fcc846e6bc31f47b801d11ba6d8613a";
-              unpack_target="mpich-modules"),
-    GitSource("https://github.com/pmodels/libfabric", "090c8f066d4a9e54f324a26fb019554512ddd8e0";
-              unpack_target="mpich-modules"),
-    GitSource("https://github.com/pmodels/mydef_boot", "ea2d6852486755eb12e255f760e2eb62f5446329";
-              unpack_target="mpich-modules"),
+    ArchiveSource("https://www.mpich.org/static/downloads/5.0.2/mpich-5.0.2.tar.gz",
+                  "928c2f18d350a91443fe8024ad01ce2c6009e9c551e0a73e797fc567f119137d"),
 
     # Patches
     DirectorySource("bundled"),
@@ -51,15 +34,7 @@ script = raw"""
 #
 # MPICH is our default implementation.
 
-cd ${WORKSPACE}/srcdir/mpich
-
-# Put MPICH's submodules in place. The checkout has them as empty gitlink
-# directories; `autogen.sh` needs real source trees there.
-mkdir -p modules
-for module in ${WORKSPACE}/srcdir/mpich-modules/*; do
-    rm -rf modules/$(basename ${module})
-    mv ${module} modules/
-done
+cd ${WORKSPACE}/srcdir/mpich*
 
 # MPICH does not include `<pthread_np.h>` on FreeBSD: <https://github.com/pmodels/mpich/issues/6821>.
 # (The MPICH developers say that this is a bug in MPICH and that
@@ -82,9 +57,12 @@ perl -pi -e 's!src/binding/abi/c_binding_abi.c!src/binding/abi/c_binding_abi.c s
 # show up much later as undefined symbols when something links against it.
 grep -q 'fortran_binding_abi\.c' src/binding/abi/Makefile.mk
 
-# `--without-ucx`: `autogen.sh` insists on every submodule it might need being
-# checked out, and we do not ship `modules/ucx` (see the sources above). The ucx
-# netmod is never selected by the `--with-device` options below.
+# We need to re-run `autogen.sh` because we added a source file to
+# `src/binding/abi/Makefile.mk` above, and the tarball's pre-generated
+# `Makefile.in` does not know about it.
+#
+# `--without-ucx`: the ucx netmod is never selected by the `--with-device`
+# options below, so there is no point in running `autogen.sh` in `modules/ucx`.
 ./autogen.sh --without-ucx
 
 # - Do not install doc and man files which contain files which clashing names on

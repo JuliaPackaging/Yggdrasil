@@ -7,7 +7,7 @@ gap_version = v"400.1600.100"
 gap_upstream_version = v"4.16.1"
 name = "JuliaInterface"
 upstream_version = "0.17.4" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.2" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
+offset = v"0.0.3" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL
@@ -75,7 +75,7 @@ dependencies = [
     HostBuildDependency("Zlib_jll"),
 
     Dependency("GAP_jll", gap_version),
-    BuildDependency(PackageSpec(;name="libjulia_jll", version="1.11.2")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version="1.11.3")),
 ]
 
 # The products that we will ensure are always built

@@ -1,0 +1,257 @@
+From cfa62b063390c9ac0df3bcfa4087ac6cfc4b089d Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Thu, 24 Sep 2026 09:04:50 +0200
+Subject: [PATCH 8/9] Preprocess OpenCL C into memory instead of a temporary
+ file
+
+The preprocessed source only serves as the program cache key, but
+clang::PrintPreprocessedAction wrote it to a temporary file that was read back.
+Clang registers its output files for removal on signal, which makes LLVM
+install process-wide handlers for SIGSEGV, SIGBUS, etc., replacing the host
+application's. These reset to SIG_DFL when they fire, which kills hosts that
+rely on their own handlers, e.g. Julia, whose GC safepoints fault on purpose.
+
+Print the preprocessed output into a string instead, and add a regression test
+checking that building a program leaves the host's handlers in place.
+---
+ lib/CL/pocl_llvm_build.cc               |  49 ++++++-----
+ tests/regression/CMakeLists.txt         |   4 +
+ tests/regression/test_signal_handlers.c | 112 ++++++++++++++++++++++++
+ 3 files changed, 143 insertions(+), 22 deletions(-)
+ create mode 100644 tests/regression/test_signal_handlers.c
+
+diff --git a/lib/CL/pocl_llvm_build.cc b/lib/CL/pocl_llvm_build.cc
+index 80e3e8ef7..b39fe188d 100644
+--- a/lib/CL/pocl_llvm_build.cc
++++ b/lib/CL/pocl_llvm_build.cc
+@@ -40,6 +40,7 @@ IGNORE_COMPILER_WARNING("-Wstrict-aliasing")
+ #include <clang/Frontend/FrontendActions.h>
+ #include <clang/Frontend/TextDiagnosticBuffer.h>
+ #include <clang/Frontend/TextDiagnosticPrinter.h>
++#include <clang/Frontend/Utils.h>
+ 
+ #ifdef CPU_USE_LLD_LINK
+ #include <lld/Common/Driver.h>
+@@ -104,6 +105,26 @@ POP_COMPILER_DIAGS
+ #endif
+ 
+ 
++// Like clang::PrintPreprocessedAction, but printing into a string instead of
++// an output file. Clang's output files are removed on signal, which makes LLVM
++// install process-wide handlers for SIGSEGV etc., replacing the host's.
++class PrintPreprocessedToStringAction : public clang::PreprocessorFrontendAction {
++  std::string &Output;
++
++public:
++  PrintPreprocessedToStringAction(std::string &Output) : Output(Output) {}
++
++protected:
++  void ExecuteAction() override {
++    clang::CompilerInstance &CI = getCompilerInstance();
++    llvm::raw_string_ostream OS(Output);
++    clang::DoPrintPreprocessedInput(CI.getPreprocessor(), &OS,
++                                    CI.getPreprocessorOutputOpts());
++  }
++
++  bool hasPCHSupport() const override { return true; }
++};
++
+ // Unlink input sources
+ static inline int
+ unlink_source(FrontendOptions &fe)
+@@ -297,9 +318,7 @@ int pocl_llvm_build_program(cl_program program,
+                             const char **header_include_names,
+                             int linking_program)
+ {
+-  char tempfile[POCL_MAX_PATHNAME_LENGTH];
+   char program_bc_path[POCL_MAX_PATHNAME_LENGTH];
+-  tempfile[0] = 0;
+   llvm::Module *mod = nullptr;
+   char temp_include_dir[POCL_MAX_PATHNAME_LENGTH];
+   std::string user_options(program->compiler_options ? program->compiler_options
+@@ -709,28 +728,16 @@ int pocl_llvm_build_program(cl_program program,
+   poo.ShowMacros = 1;
+   poo.RewriteIncludes = 0;
+ 
+-  error = pocl_cache_tempname(tempfile, ".preproc.cl", NULL);
+-  assert(error == 0);
+-  fe.OutputFile.assign((const char *)tempfile);
+-
+-  bool success = true;
+-  clang::PrintPreprocessedAction Preprocess;
+-  success = CI.ExecuteAction(Preprocess);
+-  char *PreprocessedOut = nullptr;
+-  uint64_t PreprocessedSize = 0;
+-
+-  if (success) {
+-    pocl_read_file(tempfile, &PreprocessedOut, &PreprocessedSize);
+-  }
+-  /* always remove preprocessed output - the sources are in different files */
+-  pocl_remove(tempfile);
++  std::string PreprocessedOut;
++  PrintPreprocessedToStringAction Preprocess(PreprocessedOut);
++  bool success = CI.ExecuteAction(Preprocess);
+ 
+   if (pocl_get_bool_option("POCL_LEAVE_KERNEL_COMPILER_TEMP_FILES", 0) == 0) {
+     if (num_input_headers > 0)
+       pocl_rm_rf(temp_include_dir);
+   }
+ 
+-  if (PreprocessedOut == nullptr) {
++  if (!success) {
+     pocl_cache_create_program_cachedir(program, device_i, program->source,
+                                        strlen(program->source),
+                                        program_bc_path);
+@@ -739,10 +746,8 @@ int pocl_llvm_build_program(cl_program program,
+     return CL_BUILD_PROGRAM_FAILURE;
+   }
+ 
+-  pocl_cache_create_program_cachedir(program, device_i, PreprocessedOut,
+-                                     static_cast<size_t>(PreprocessedSize), program_bc_path);
+-
+-  POCL_MEM_FREE(PreprocessedOut);
++  pocl_cache_create_program_cachedir(program, device_i, PreprocessedOut.data(),
++                                     PreprocessedOut.size(), program_bc_path);
+ 
+   unlink_source(fe);
+ 
+diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
+index 2419e4a95..36137e9f6 100644
+--- a/tests/regression/CMakeLists.txt
++++ b/tests/regression/CMakeLists.txt
+@@ -39,6 +39,9 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
+      test_indirect_ptrs
+      test_usm_indirect_ptrs
+ )
++if(UNIX)
++  list(APPEND C_PROGRAMS_TO_BUILD test_signal_handlers)
++endif()
+ foreach(PROG ${C_PROGRAMS_TO_BUILD})
+   add_executable("${PROG}" "${PROG}.c")
+   target_link_libraries("${PROG}" ${POCLU_LINK_OPTIONS})
+@@ -133,6 +136,7 @@ add_test_pocl(NAME "regression/test_issue_2005" COMMAND "test_issue_2005")
+ 
+ if(UNIX)
+   add_test_pocl(NAME "regression/test_issue_2174" COMMAND "test_issue_2174")
++  add_test_pocl(NAME "regression/test_signal_handlers" COMMAND "test_signal_handlers")
+ endif()
+ 
+ add_test_pocl(NAME "regression/test_workitem_func_outside_kernel" COMMAND "test_workitem_func_outside_kernel")
+diff --git a/tests/regression/test_signal_handlers.c b/tests/regression/test_signal_handlers.c
+new file mode 100644
+index 000000000..2b9018e67
+--- /dev/null
++++ b/tests/regression/test_signal_handlers.c
+@@ -0,0 +1,112 @@
++/* Copyright (c) 2026 PoCL Developers
++
++   Permission is hereby granted, free of charge, to any person obtaining a copy
++   of this software and associated documentation files (the "Software"), to
++   deal in the Software without restriction, including without limitation the
++   rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
++   sell copies of the Software, and to permit persons to whom the Software is
++   furnished to do so, subject to the following conditions:
++
++   The above copyright notice and this permission notice shall be included in
++   all copies or substantial portions of the Software.
++
++   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
++   IN THE SOFTWARE.
++*/
++
++/* PoCL must not replace the host application's signal handlers, e.g. by
++   making LLVM register its crash handlers. */
++
++#include "pocl_opencl.h"
++
++#include <signal.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <unistd.h>
++
++#include "poclu.h"
++
++#define CHECK_ERROR(err)                                                      \
++  if (err != CL_SUCCESS)                                                      \
++    {                                                                         \
++      printf ("OpenCL error %d at %s:%d\n", err, __FILE__, __LINE__);         \
++      return EXIT_FAILURE;                                                    \
++    }
++
++static const int host_signals[] = { SIGSEGV, SIGBUS, SIGILL };
++#define NUM_HOST_SIGNALS (sizeof (host_signals) / sizeof (host_signals[0]))
++
++static void
++host_handler (int sig, siginfo_t *info, void *context)
++{
++  (void)sig;
++  (void)info;
++  (void)context;
++  _exit (EXIT_FAILURE);
++}
++
++static void
++install_host_handlers ()
++{
++  struct sigaction action;
++  memset (&action, 0, sizeof (action));
++  action.sa_sigaction = host_handler;
++  action.sa_flags = SA_SIGINFO;
++  sigemptyset (&action.sa_mask);
++  for (unsigned i = 0; i < NUM_HOST_SIGNALS; ++i)
++    sigaction (host_signals[i], &action, NULL);
++}
++
++static int
++check_host_handlers (const char *after)
++{
++  for (unsigned i = 0; i < NUM_HOST_SIGNALS; ++i)
++    {
++      struct sigaction action;
++      sigaction (host_signals[i], NULL, &action);
++      if (action.sa_sigaction != host_handler)
++        {
++          printf ("handler for signal %d replaced after %s\n",
++                  host_signals[i], after);
++          return EXIT_FAILURE;
++        }
++    }
++  return EXIT_SUCCESS;
++}
++
++int
++main ()
++{
++  cl_context context;
++  cl_device_id device;
++  cl_command_queue queue;
++  cl_int err = poclu_get_any_device (&context, &device, &queue);
++  CHECK_ERROR (err);
++
++  install_host_handlers ();
++
++  const char *source = "#define VALUE 42\n"
++                       "__kernel void k (__global int *out) {\n"
++                       "  *out = VALUE;\n"
++                       "}\n";
++  cl_program program
++      = clCreateProgramWithSource (context, 1, &source, NULL, &err);
++  CHECK_ERROR (err);
++  err = clBuildProgram (program, 1, &device, NULL, NULL, NULL);
++  CHECK_ERROR (err);
++  if (check_host_handlers ("building a program") != EXIT_SUCCESS)
++    return EXIT_FAILURE;
++
++  CHECK_ERROR (clReleaseProgram (program));
++  CHECK_ERROR (clReleaseCommandQueue (queue));
++  CHECK_ERROR (clReleaseContext (context));
++
++  printf ("OK\n");
++  return EXIT_SUCCESS;
++}

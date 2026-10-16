@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "Algencan"
-version = v"3.1.1"
+version = v"3.1.2"
 
 # Collection of sources required to complete build
 # Mirror of the upstream tarball, which lives at a personal academic URL.
@@ -9,7 +9,7 @@ version = v"3.1.1"
 sources = [
     ArchiveSource(
         "https://github.com/pjssilva/NLPModelsAlgencan.jl/releases/download/algencan-$(version)/algencan-$(version).tgz",
-        "ab2a5496e9da49c508f68809cc339f9a604407329be24e3299bd7c21f14d6188",
+        "1b23f4e20222f0026133984d87cb63b1e4aaf7be7b23fc4a80cac6f4d779e52d",
     ),
     DirectorySource("./bundled"),
 ]
@@ -25,7 +25,7 @@ sed -i 's/\r$//' sources/algencan/lssma97.f90
 # compile time, so one binary may use MANN when a licensed HSL is installed.
 # If MA57 is not available it falls back to truncated Newton. Also drops
 # Algencan's use of finfo%pivot, a field only a locally patched MA57 provides.
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/algencan-3.1.1-runtime-hsl.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/algencan-3.1.2-runtime-hsl.patch
 
 # sources/algencan/Makefile picks the real lssmaNN.o over the stub for each
 # solver whose module it finds in HSLSRC. ALGENCAN still prefers MA57, and the
@@ -66,8 +66,8 @@ install_license license.txt
 platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
 
-# dont_dlopen: Algencan keeps state in Fortran common blocks, so consumers load
-# and unload the library around each solve.
+# dont_dlopen: consumers resolve the library path and dlopen it themselves,
+# asserting it is not already resident, so the JLL must not open it at init.
 products = [
     LibraryProduct("libalgencan", :libalgencan; dont_dlopen=true),
 ]

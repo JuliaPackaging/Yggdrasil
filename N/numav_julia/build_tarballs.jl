@@ -1,12 +1,12 @@
 using BinaryBuilder, Pkg
 
 name = "numav_julia"
-version = v"0.3.0"
+version = v"0.3.1"
 
 sources = [ 
     GitSource(
         "https://github.com/mmfiuza/Numav.jl.git", 
-        "89188a61e498a029381eb930fe670e1f7d8bc8df"
+        "42f4f7a3d9ea2f661e09c21447deacfbfd094c3d"
     )
 ]
 
@@ -61,6 +61,24 @@ dependencies = [
         platforms=mkl_platforms
     ),
 ]
+
+build_from_local_directory = false # for local debugging only
+if build_from_local_directory
+    run(
+        `sh -c "
+            rm -rf build &&
+            rm -rf c++/build &&
+            rm -rf products &&
+            rm -rf /tmp/binary_builder &&
+            mkdir /tmp/binary_builder &&
+            mkdir /tmp/binary_builder/Numav.jl &&
+            cp -r . /tmp/binary_builder/Numav.jl
+        "`
+    )
+    sources = [
+        DirectorySource("/tmp/binary_builder")
+    ]
+end
 
 build_tarballs(
     ARGS, name, version, sources, script, platforms, products, dependencies;

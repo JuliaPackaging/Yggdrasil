@@ -1,0 +1,18 @@
+Define __STDC_FORMAT_MACROS before <inttypes.h>.
+
+glibc < 2.18 hides PRIu64 and friends from C++ unless this macro is defined, so the
+paraViewOut* sources fail to compile against the older glibc of cross-compilation
+sysroots.  Reported upstream: https://github.com/UniMainzGeo/LaMEM
+
+--- a/src/LaMEM.h
++++ b/src/LaMEM.h
+@@ -24,6 +24,9 @@
+ #include <string.h>
+ #include <math.h>
+ #include <float.h>
++#ifndef __STDC_FORMAT_MACROS
++#define __STDC_FORMAT_MACROS
++#endif
+ #include <inttypes.h>
+ #include <sys/stat.h>
+ #include <petsc.h>
