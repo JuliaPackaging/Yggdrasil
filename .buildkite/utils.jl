@@ -37,11 +37,11 @@ function check_pkgserver_latency(; tolerance = Hour(1))
     end
 end
 
-# Cleanup `.meta.json` or `.platform.list` files from previous BB1 runs
+# Cleanup `.meta.json`, `.platform.list` or `.reuse.json` files from previous BB1 runs
 function cleanup_metadata!()
     for (root, _, files) in walkdir(YGGDRASIL_BASE)
         for file in files
-            if endswith(file, ".meta.json") || endswith(file, ".platforms.list")
+            if endswith(file, ".meta.json") || endswith(file, ".platforms.list") || endswith(file, ".reuse.json")
                 rm(joinpath(root, file))
             end
         end

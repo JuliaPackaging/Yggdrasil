@@ -14,8 +14,8 @@ ghr_jll = "07c12ed4-43bc-5495-8a2a-d5838ef8d533"
 squashfs_tools_jll = "eed32e3e-a7c5-5bf9-9121-5cf3ab653887"
 
 [sources]
-BinaryBuilder = {rev = "master", url = "https://github.com/JuliaPackaging/BinaryBuilder.jl.git"}
-BinaryBuilderBase = {rev = "master", url = "https://github.com/JuliaPackaging/BinaryBuilderBase.jl.git"}
+BinaryBuilder = {rev = "tb/partial-reuse", url = "https://github.com/JuliaPackaging/BinaryBuilder.jl.git"}
+BinaryBuilderBase = {rev = "tb/lossless-dependency-json", url = "https://github.com/JuliaPackaging/BinaryBuilderBase.jl.git"}
 
 [compat]
 HistoricalStdlibVersions = "2"
