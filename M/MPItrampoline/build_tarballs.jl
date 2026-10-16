@@ -24,7 +24,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 name = "MPItrampoline"
 
 mpitrampoline_version = v"5.5.1"
-version = v"5.5.6"
+version = v"5.5.7"
 mpich_version = "4.3.2"
 mpiconstants_version = v"1.5.0"
 mpiwrapper_version = v"2.11.1"
@@ -36,6 +36,7 @@ sources = [
     ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version)/mpich-$(mpich_version).tar.gz",
                   "47d774587a7156a53752218c811c852e70ac44db9c502dc3f399b4cb817e3818"),
     GitSource("https://github.com/eschnett/MPIwrapper", "070c4e1b8a98fbe63ea8f84d046effb813c9febb"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -202,6 +203,7 @@ else
 fi
 
 cd $WORKSPACE/srcdir/MPItrampoline*
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fortran_sentinels_data.patch
 cmake -B build \
     -DCMAKE_BUILD_TYPE_TYPE=RelWithDebInfo \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \

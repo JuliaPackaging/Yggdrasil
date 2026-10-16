@@ -8,6 +8,7 @@ JLL names are `H5Z<filter>C`: the `H5Z` prefix is HDF5's filter namespace and th
 |---|---|---|---|
 | `H5ZzstdC_jll` | 32015 | `libh5zstd` | `Zstd_jll` |
 | `H5ZjpegC_jll` | 32019 | `libh5jpeg` | `JpegTurbo_jll` |
+| `H5ZzfpC_jll` | 32013 | `libh5zzfp` | `zfp_jll` |
 
 The remaining filters of hdf5_plugins (bitgroom, bitround, granular bitround,
 blosc, blosc2, bitshuffle, bzip2, jpeg, lz4, lzf, zfp) are added one per pull request.

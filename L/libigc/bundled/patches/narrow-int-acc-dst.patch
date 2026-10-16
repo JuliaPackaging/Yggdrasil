@@ -1,8 +1,11 @@
-diff --git a/visa/G4_IR.cpp b/visa/G4_IR.cpp
-index 5535a5bd2..49319906f 100644
+Don't keep overflowing word/byte integer results in the accumulator (oneAPI.jl#670).
+Upstream: https://github.com/intel/intel-graphics-compiler/pull/449
+
+diff --git intel-graphics-compiler/visa/G4_IR.cpp intel-graphics-compiler/visa/G4_IR.cpp
+index 024d2b4f0..1542d1d63 100644
 --- intel-graphics-compiler/visa/G4_IR.cpp
 +++ intel-graphics-compiler/visa/G4_IR.cpp
-@@ -7555,6 +7555,22 @@ bool G4_INST::canDstBeAcc() const {
+@@ -7723,6 +7723,22 @@ bool G4_INST::canDstBeAcc() const {
      return false;
    }
  
