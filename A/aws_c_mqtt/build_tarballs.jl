@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_mqtt"
-version = v"1.1.1"
+version = v"1.1.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-mqtt.git", "affc6b1a33c7b9606e288834701e1a22f102d207"),
+    GitSource("https://github.com/awslabs/aws-c-mqtt.git", "390cb09cc0cae7e2e7c2fb082ea459420d3b6a5c"),
 ]
 
 # Bash recipe for building across all platforms
@@ -36,7 +36,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("aws_c_http_jll"; compat="1.1.0"),
+    Dependency("aws_c_http_jll"; compat="1.1.1"),
     Dependency("aws_c_io_jll"; compat="1.1.0"),
     BuildDependency("aws_lc_jll"),
 ]
