@@ -775,6 +775,19 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     return name, custom_version, sources, script, platforms, products, dependencies
 end
 
+# Like `should_build_platform`, but a plain request doesn't select the msan platform:
+# `platforms_match` treats the missing `sanitize` tag as a wildcard, which made every
+# x86_64-linux-gnu job build both variants.
+function should_build_extraction(platform)
+    requested = filter(arg -> !startswith(arg, "--"), ARGS)
+    isempty(requested) && return true
+    isone(length(requested)) || return false
+    return any(split(only(requested), ",")) do request
+        platforms_match(platform, request) &&
+            sanitize(parse(Platform, request)) == sanitize(platform)
+    end
+end
+
 function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=nothing;
                               experimental_platforms=false, assert=false,
                               augmentation=false, dont_dlopen=true)
@@ -882,7 +895,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
             augmented_platform = deepcopy(platform)
             augmented_platform[LLVM.platform_name] = LLVM.platform(version, assert)
 
-            should_build_platform(triplet(augmented_platform)) || continue
+            should_build_extraction(augmented_platform) || continue
             push!(augmented_platforms, augmented_platform)
         end
         platforms = augmented_platforms
