@@ -22,6 +22,8 @@ function get_script(; debug::Bool)
     raw"""
         # Fix OpenCL ICD installation to use prefix instead of /etc
         atomic_patch -p0 ./patches/install_to_prefix.patch
+        # Make SIGSEGV handler chaining thread-safe (intel/compute-runtime#1009)
+        atomic_patch -p0 ./patches/page_fault_handler_thread_local.patch
         mkdir -p tmpdir
         export TMPDIR=$(pwd)/tmpdir
         export CCACHE_TEMPDIR=$(pwd)/tmpdir
