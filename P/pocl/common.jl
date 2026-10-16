@@ -155,6 +155,9 @@ function build_script(standalone=false)
     #   mismatched calls left e.g. the vector sub-group shuffles unlinked on Windows
     #   (upstream PR #2381, also matching our unnormalized mingw32 LLC_TRIPLE;
     #   JuliaGPU/KernelAbstractions.jl#831)
+    # - 0024: convert half printf arguments in software instead of through _Float16, whose
+    #   libgcc helpers need libgcc_s >= GCC 12 and kept libpocl from loading next to an older
+    #   system libgcc_s, e.g. under `nsys profile` (upstream PR #2403)
     for patch in $WORKSPACE/srcdir/patches/pocl/*.patch; do
         atomic_patch -p1 $patch
     done
