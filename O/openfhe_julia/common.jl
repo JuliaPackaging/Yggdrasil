@@ -68,6 +68,8 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
     make install
     """
 
+    # require macos 10.12 for `shared_mutex`, see https://github.com/JuliaPackaging/Yggdrasil/pull/15087#issuecomment-6123365654
+    sources, script = require_macos_sdk("14.5", sources, script; deployment_target="10.12")
     # These are the platforms we will build for by default, unless further
     # platforms are passed in on the command line
     # Required Julia version is v1.10
