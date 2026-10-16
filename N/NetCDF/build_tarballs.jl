@@ -2,29 +2,11 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
-const YGGDRASIL_DIR = "../.."
-include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
-
-# The version of this JLL is decoupled from the upstream version.
-# Whenever we package a new upstream release, we initially map its
-# version X.Y.Z to X00.Y00.Z00 (i.e., multiply each component by 100).
-# So for example version 2.6.3 would become 200.600.300.
+include("common.jl")
 
 name = "NetCDF"
-upstream_version = v"4.10.1"
-
-# Offset to add to the version number.  Remember to always bump this.
-version_offset = v"1.0.1"
-
-version = VersionNumber(upstream_version.major * 100 + version_offset.major,
-                        upstream_version.minor * 100 + version_offset.minor,
-                        upstream_version.patch * 100 + version_offset.patch)
-
-# Collection of sources required to build NetCDF
-sources = [
-    ArchiveSource("https://downloads.unidata.ucar.edu/netcdf-c/$(upstream_version)/netcdf-c-$(upstream_version).tar.gz",
-                  "db3b69ff4a5ee1a7d79a5c36664d2128b752c266e966369fcf7311ec5f927564"),
-]
+version = netcdf_core_version
+sources = netcdf_sources
 
 # HDF5.h in /workspace/artifacts/805ccba77cd286c1afc127d1e45aae324b507973/include
 # Bash recipe for building across all platforms
@@ -99,41 +81,20 @@ fi
 
 make install
 
-# Plugins on apple-darwin have the .so extension when cross-compiling
-# See <https://github.com/Unidata/netcdf-c/issues/3418>
-if [[ ${target} == *-apple-darwin* ]]; then
-    for f in ${prefix}/hdf5/lib/plugin/*.so; do
-       mv "$f" "${f%.so}.dylib"
-    done
-fi
+# The plugins are packaged separately (NCH5* and NCZ* packages). They are
+# compiled against the headers installed above and the `config.h` this
+# library was configured with.
+install -Dm644 config.h ${prefix}/""" * netcdf_config_dir * raw"""/config.h
+
+# Plugins are not part of this package
+rm -rf ${prefix}/hdf5/lib/plugin
 
 nc-config --all
 """
 
-augment_platform_block = """
-    using Base.BinaryPlatforms
-    $(MPI.augment)
-    augment_platform!(platform::Platform) = augment_mpi!(platform)
-"""
-
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
-
-platforms, platform_dependencies = MPI.augment_platforms(platforms)
-
-# HDF5/NCZarr plugins
-plugins = [
-    "lib__nch5blosc",
-    "lib__nch5bzip2",
-    "lib__nch5deflate",
-    "lib__nch5fletcher32",
-    "lib__nch5shuffle",
-    "lib__nch5szip",
-    "lib__nch5zstd",
-    "lib__nczhdf5filters",
-    "lib__nczstdfilters",
-]
+platforms, platform_dependencies = netcdf_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -148,16 +109,16 @@ products = [
 
     # NetCDF library
     LibraryProduct("libnetcdf", :libnetcdf),
-
-    # NetCDF plugins
-    [LibraryProduct(plugin, Symbol(plugin),["hdf5/lib/plugin"]) for plugin in plugins]...,
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    # The compression libraries are needed by libnetcdf itself, not only by the plugins:
+    # `configure` links against them and enables `nc_def_var_zstandard`, `nc_def_var_blosc`, etc.,
+    # which otherwise silently do nothing.
     Dependency("Blosc_jll"; compat="1.21.7"),
     Dependency("Bzip2_jll"; compat="1.0.9"),
-    Dependency("HDF5_jll"; compat="2.2.1"),
+    netcdf_hdf5_dependency,
     Dependency("LibCURL_jll"; compat="7.73.0,8"),
     # We had to restrict compat with XML2 because of ABI breakage:
     # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
@@ -177,4 +138,4 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 # Build the tarballs, and possibly a `build.jl` as well.
 # We need at least GCC 8 to lock into the `libgfortran5` Fortran ABI for our Fortran dependencies
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"8")
+               augment_platform_block=netcdf_augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"8")
