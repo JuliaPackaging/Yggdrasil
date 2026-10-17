@@ -43,6 +43,10 @@ atomic_patch -p1 ../atomicrmw-unsupported-int.patch
 # ("Preserve signed i1 semantics in sitofp lowering"), without which
 # `sitofp i1 true` yields 1.0 instead of -1.0.
 atomic_patch -p1 ../sitofp-bool.patch
+# Backport of https://github.com/KhronosGroup/SPIRV-LLVM-Translator/pull/4032
+# ("Translate llvm.minimum/maximum with NaN-propagating semantics"), without
+# which `llvm.minimum`/`llvm.maximum` ignore NaNs and don't order signed zeros.
+atomic_patch -p1 ../minimum-maximum.patch
 install_license LICENSE.TXT
 
 CMAKE_FLAGS=()
