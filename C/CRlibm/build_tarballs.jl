@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "CRlibm"
-version = v"1.0.1"
+version = v"1.0.2"
 
 # Collection of sources required to complete build
 sources = [
@@ -21,7 +21,9 @@ done
 
 update_configure_scripts 
 export CFLAGS="-fPIC"
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+# The double-extended `log` sets the x87 control word to 53-bit precision and
+# does not restore the caller's value, which changes the results of other x87 code.
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-double-extended
 make -C scs_lib
 make -j${nproc} libcrlibm.a
 mkdir -p ${libdir}
