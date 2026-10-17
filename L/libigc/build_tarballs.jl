@@ -67,6 +67,8 @@ function get_script(; debug::Bool)
         # Don't leave PHIs of with.overflow results pointing at the erased intrinsic
         # https://github.com/JuliaGPU/oneAPI.jl/issues/691
         atomic_patch -p0 patches/legalization-overflow-phi.patch
+        # Don't merge reads of input variables that are redefined in the kernel
+        atomic_patch -p0 patches/merge-scalars-redefined-input.patch
         # https://reviews.llvm.org/D64388
         sed -i '/add_subdirectory/i add_definitions(-D__STDC_FORMAT_MACROS)' intel-graphics-compiler/external/llvm/llvm.cmake
 
