@@ -1,12 +1,17 @@
-# Native GCC toolchains, used by Julia's CI images (JuliaCI/rootfs-images'
-# `package_linux`), where they are installed at `/usr/local`, and on Windows to build
-# code against the same C and C++ runtime that Julia ships.
+# GCC toolchains, used by Julia's CI images (JuliaCI/rootfs-images' `package_linux`),
+# where they are installed at `/usr/local`, and on Windows to build code against the
+# same C and C++ runtime that Julia ships.
 #
-# Each tarball is a complete compiler for one platform that runs on, and targets, that
-# same platform (host == target): GCC, binutils, and a sysroot with the C library.
+# Each tarball is a complete compiler: GCC, binutils, and a sysroot with the C library.
+# Most run on, and target, the same platform (host == target). One runs on x86_64 Linux
+# and targets riscv64 Linux, for Julia's riscv64 builds, which are cross-compiled on
+# x86_64 and run what they build under qemu-user; it installs next to the native x86_64
+# toolchain.
+# Its platform is that of the host, with the target in `target_*` tags as
+# BinaryBuilder2's `CrossPlatform` encodes it; select one by host and target.
 # - Linux: an old glibc (that of the GCCBootstrap shards: 2.17, or 2.19 on
-#   aarch64/armv7l) and Linux kernel headers, so that everything it builds runs on old
-#   distributions.
+#   aarch64/armv7l, 2.35 on riscv64) and Linux kernel headers, so that everything it
+#   builds runs on old distributions.
 # - Windows: the MinGW-w64 headers, CRT and winpthreads of the GCCBootstrap shards, in
 #   GCC's default MinGW layout (`<sysroot>/mingw/{include,lib}`), which Clang's MinGW
 #   driver also finds when given the installation as `--sysroot`. The host executables
@@ -26,8 +31,10 @@
 # Bump this recipe together with CSL, never before.
 
 using BinaryBuilder
+using BinaryBuilderBase: aatriplet
 
 include("../../0_RootFS/gcc_sources.jl")
+include("../../fancy_toys.jl")
 
 name = "GCCToolchain"
 version = v"15.2.0"
@@ -50,16 +57,19 @@ script = "GCC_VERSION=$(version)\n" * raw"""
 cd ${WORKSPACE}/srcdir
 
 # We build on ${MACHTYPE} (x86_64-linux-musl) a compiler that runs on ${target}
-# and generates code for ${target} (a "Canadian cross" with host == target).
+# and generates code for ${COMPILER_TARGET} (a "Canadian cross"; host == target for the
+# native toolchains).
 #
-# Use the unwrapped GCCBootstrap compilers of the same GCC version, both for the host
-# code and for the target runtime libraries: BinaryBuilder's wrappers add flags we do
-# not want here (-march, extra library paths, rpath-links). Their sysroot has the
-# glibc we build against (2.17 or 2.19 depending on the architecture).
+# Use the unwrapped GCCBootstrap compilers of the same GCC version: those for ${target}
+# for the host code, those for ${COMPILER_TARGET} (in ${TARGET_BOOTSTRAP}) for the target
+# runtime libraries. BinaryBuilder's wrappers add flags we do not want here (-march,
+# extra library paths, rpath-links). The target shard's sysroot has the glibc we build
+# against (2.17 or 2.19 depending on the architecture, 2.35 on riscv64).
 BB_TOOLCHAIN=/opt/${target}/bin/${target}
+TARGET_TOOLCHAIN=${TARGET_BOOTSTRAP}/bin/${COMPILER_TARGET}
 for tool in CC:gcc CXX:g++ GCC:gcc GFORTRAN:gfortran AR:ar AS:as LD:ld NM:nm \
             RANLIB:ranlib STRIP:strip OBJCOPY:objcopy OBJDUMP:objdump READELF:readelf; do
-    export ${tool%%:*}_FOR_TARGET=${BB_TOOLCHAIN}-${tool##*:}
+    export ${tool%%:*}_FOR_TARGET=${TARGET_TOOLCHAIN}-${tool##*:}
 done
 export CC=${BB_TOOLCHAIN}-gcc CXX=${BB_TOOLCHAIN}-g++
 export AR=${BB_TOOLCHAIN}-ar AS=${BB_TOOLCHAIN}-as LD=${BB_TOOLCHAIN}-ld NM=${BB_TOOLCHAIN}-nm
@@ -70,8 +80,8 @@ export OBJCOPY=${BB_TOOLCHAIN}-objcopy OBJDUMP=${BB_TOOLCHAIN}-objdump READELF=$
 export CC_FOR_BUILD=${CC_BUILD} CXX_FOR_BUILD="${CXX_BUILD} -static-libstdc++ -static-libgcc"
 unset CFLAGS CXXFLAGS CPPFLAGS LDFLAGS FC
 
-sysroot=${prefix}/${target}/sys-root
-shard_sysroot=/opt/${target}/${target}/sys-root
+sysroot=${prefix}/${COMPILER_TARGET}/sys-root
+shard_sysroot=${TARGET_BOOTSTRAP}/${COMPILER_TARGET}/sys-root
 
 if [[ "${target}" == *-mingw* ]]; then
     # Native MinGW toolchains are installed without a target prefix.
@@ -81,8 +91,12 @@ if [[ "${target}" == *-mingw* ]]; then
     # it). Spelled `--static`, because libtool takes `-static` to mean building
     # static libraries only (e.g. no LTO plugin).
     HOST_LDFLAGS="--static"
-else
+elif [[ "${COMPILER_TARGET}" == "${target}" ]]; then
     PROGRAM_PREFIX=(--program-prefix=${target}-)
+    HOST_LDFLAGS=
+else
+    # Cross compilers get the target prefix by default
+    PROGRAM_PREFIX=()
     HOST_LDFLAGS=
 fi
 
@@ -105,11 +119,12 @@ else
     rm -rf ${sysroot}/workspace ${sysroot}/usr/share/{info,man,locale}
 
     # Replace the shard's (older) kernel headers
-    case "${target}" in
+    case "${COMPILER_TARGET}" in
         x86_64-*|i686-*) karch=x86 ;;
         aarch64-*) karch=arm64 ;;
         arm*) karch=arm ;;
         powerpc64le-*) karch=powerpc ;;
+        riscv64-*) karch=riscv ;;
     esac
     for d in asm asm-generic drm linux misc mtd rdma sound video xen; do
         rm -rf ${sysroot}/usr/include/${d}
@@ -127,7 +142,7 @@ LDFLAGS="${HOST_LDFLAGS}" ../configure \
     --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
-    --target=${target} \
+    --target=${COMPILER_TARGET} \
     --with-sysroot=${sysroot} \
     "${PROGRAM_PREFIX[@]}" \
     --disable-werror \
@@ -177,7 +192,7 @@ fi
 
 # Default architectures, as GCCBootstrap (and therefore CSL)
 GCC_CONF_ARGS=()
-case "${target}" in
+case "${COMPILER_TARGET}" in
     arm*hf) GCC_CONF_ARGS+=(--with-float=hard --with-arch=armv6 --with-fpu=vfp) ;;
     x86_64-*) GCC_CONF_ARGS+=(--with-arch=x86-64) ;;
     i686-*) GCC_CONF_ARGS+=(--with-arch=pentium4) ;;
@@ -197,7 +212,7 @@ LDFLAGS="${HOST_LDFLAGS}" ${WORKSPACE}/srcdir/gcc-*/configure \
     --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
-    --target=${target} \
+    --target=${COMPILER_TARGET} \
     --with-sysroot=${sysroot} \
     "${PROGRAM_PREFIX[@]}" \
     --enable-languages=c,c++,fortran \
@@ -222,8 +237,8 @@ make install
 # With version-specific runtime libraries, libgcc_s still ends up in the OS library
 # directory next to GCC's (lib/gcc/<target>/lib64 on 64-bit targets), where the driver
 # does not look. Move it next to the other runtime libraries.
-gcc_libdir=${prefix}/lib/gcc/${target}/${GCC_VERSION}
-for d in ${prefix}/lib/gcc/${target}/lib*; do
+gcc_libdir=${prefix}/lib/gcc/${COMPILER_TARGET}/${GCC_VERSION}
+for d in ${prefix}/lib/gcc/${COMPILER_TARGET}/lib*; do
     [[ -d "${d}" ]] || continue
     mv ${d}/libgcc_s* ${gcc_libdir}/
     rmdir ${d}
@@ -237,8 +252,8 @@ fi
 
 ## Clean up
 
-# As host == target, GCC also installs its drivers as `<target>-<program>`, which the
-# program prefix turns into `<target>-<target>-<program>`
+# For native toolchains, GCC also installs its drivers as `<target>-<program>`, which
+# the program prefix turns into `<target>-<target>-<program>`
 rm -f ${prefix}/bin/${target}-${target}-*
 
 # Documentation, misleading libtool archives, and the (empty) include directory
@@ -248,17 +263,33 @@ rmdir ${prefix}/include 2>/dev/null || true
 
 # The C++ library must be configured exactly like the one CompilerSupportLibraries
 # ships, i.e. the GCCBootstrap shard's
-cmp ${prefix}/lib/gcc/${target}/${GCC_VERSION}/include/c++/${target}/bits/c++config.h \
-    /opt/${target}/${target}/include/c++/${GCC_VERSION}/${target}/bits/c++config.h
+cmp ${gcc_libdir}/include/c++/${COMPILER_TARGET}/bits/c++config.h \
+    ${TARGET_BOOTSTRAP}/${COMPILER_TARGET}/include/c++/${GCC_VERSION}/${COMPILER_TARGET}/bits/c++config.h
 
 # Strip the host executables (not the target libraries)
-for f in ${prefix}/bin/* ${prefix}/${target}/bin/* ${prefix}/libexec/gcc/${target}/*/*; do
+for f in ${prefix}/bin/* ${prefix}/${COMPILER_TARGET}/bin/* ${prefix}/libexec/gcc/${COMPILER_TARGET}/*/*; do
     [[ -f "${f}" && ! -L "${f}" ]] || continue
     [[ "$(basename "${f}")" == lib*.dll ]] && continue
     if file -b "${f}" | grep -q -E '^(ELF|PE32)'; then
         ${STRIP} "${f}"
     fi
 done
+
+if [[ "${COMPILER_TARGET}" != "${target}" ]]; then
+    # Programs built by a cross compiler are run on the target, or under qemu-user with
+    # the sysroot as their root (`-L`), where the dynamic loader's default search path
+    # does not include GCC's runtime library directory. Link them into the C library's.
+    libc_dir=$(dirname $(find ${sysroot} -name libc.so.6))
+    to_prefix=$(echo ${libc_dir#${prefix}/} | sed 's|[^/][^/]*|..|g')
+    for lib in libstdc++.so.6 libgcc_s.so.1 libatomic.so.1 libgfortran.so.5 libgomp.so.1; do
+        [[ -e ${gcc_libdir}/${lib} ]]
+        ln -s ${to_prefix}/lib/gcc/${COMPILER_TARGET}/${GCC_VERSION}/${lib} ${libc_dir}/${lib}
+    done
+
+    # Leave the host-side files that are not specific to the target to the native
+    # toolchain, so that both can be installed in the same prefix
+    rm -r ${prefix}/lib/bfd-plugins ${prefix}/share/gcc-${GCC_VERSION}
+fi
 
 if [[ "${target}" == *-mingw* ]]; then
     # As on other native MinGW toolchains, and so that `cc` does not find another one
@@ -288,7 +319,18 @@ if [[ "${target}" == *-mingw* ]]; then
 fi
 """
 
-platforms = [
+# The platform of a toolchain that runs on `host` and targets `target`: the host
+# platform, with every tag of the target prefixed by `target_`, as BinaryBuilder2's
+# `CrossPlatform` encodes it.
+function cross_platform(host::Platform, target::Platform)
+    platform = deepcopy(host)
+    for (tag, value) in Base.BinaryPlatforms.tags(target)
+        platform["target_" * tag] = value
+    end
+    return platform
+end
+
+native_platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
     Platform("i686", "linux"; libc="glibc"),
     Platform("aarch64", "linux"; libc="glibc"),
@@ -297,11 +339,61 @@ platforms = [
     Platform("i686", "windows"),
     Platform("x86_64", "windows"),
 ]
+toolchains = [
+    [host => host for host in native_platforms];
+    # For Julia's riscv64 builds, cross-compiled on x86_64 and run under qemu-user
+    Platform("x86_64", "linux"; libc="glibc") => Platform("riscv64", "linux"; libc="glibc");
+]
+
+# BinaryBuilder only mounts the GCCBootstrap shard of the platform we build for (the
+# host), so a cross toolchain gets the target's as a source. Its sysroot has glibc 2.35.
+target_bootstraps = Dict(
+    Platform("riscv64", "linux"; libc="glibc") => ArchiveSource(
+        "https://github.com/JuliaPackaging/Yggdrasil/releases/download/GCCBootstrap-v15.2.0+0/GCCBootstrap-riscv64-linux-gnu.v15.2.0.x86_64-linux-musl.unpacked.tar.gz",
+        "308fe445e7d91c89c00f569ac4ca744abbf7104fc476e993958b95950b5eeef7";
+        unpack_target="GCCBootstrap-riscv64-linux-gnu"),
+)
+
+# When the JLL is loaded, without a target in the platform, select the native toolchain
+augment_platform_block = """
+    using Base.BinaryPlatforms
+    function augment_platform!(platform::Platform)
+        haskey(platform, "target_arch") && return platform
+        for tag in ("arch", "os", "libc", "call_abi")
+            haskey(platform, tag) && (platform["target_" * tag] = platform[tag])
+        end
+        return platform
+    end
+    """
 
 # A toolchain to install, not a library to load: no products (as `G/GCCBootstrap`).
 products = Product[]
 
 dependencies = Dependency[]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"15", skip_audit=true, julia_compat="1.6")
+# `build_tarballs` builds the platforms given on the command line instead of the ones
+# passed to it, so pass it only the options: a platform requested without its target
+# tags matches several toolchains here, and each must keep its own platform.
+build_args = filter(startswith("--"), ARGS)
+
+for (host, target) in toolchains
+    platform = cross_platform(host, target)
+    should_build_platform(platform) || continue
+
+    if host == target
+        platform_sources = sources
+        bootstrap = "/opt/$(aatriplet(target))"
+    else
+        bootstrap_source = target_bootstraps[target]
+        platform_sources = [sources; bootstrap_source]
+        bootstrap = "\${WORKSPACE}/srcdir/$(bootstrap_source.unpack_target)"
+    end
+    platform_script = """
+        COMPILER_TARGET=$(aatriplet(target))
+        TARGET_BOOTSTRAP=$(bootstrap)
+        """ * script
+
+    build_tarballs(build_args, name, version, platform_sources, platform_script, [platform],
+                   products, dependencies; preferred_gcc_version=v"15", skip_audit=true,
+                   julia_compat="1.6", augment_platform_block)
+end
