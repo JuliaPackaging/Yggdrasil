@@ -1,0 +1,12 @@
+--- a/swig/julia/target/source/casadiJULIA_wrap.cxx
++++ b/swig/julia/target/source/casadiJULIA_wrap.cxx
+@@ -1842,6 +1842,9 @@
+       // Treat Null
+       if (is_null(p)) return false;
+ 
++      // SWIG_AsVal(bool) accepts any whole number; only Bool is a bool
++      if (!jl_typeis(p, jl_bool_type)) return false;
++
+       // Standard typemaps
+       if (SWIG_IsOK(SWIG_AsVal_bool (p, m ? *m : 0))) return true;
+ 
