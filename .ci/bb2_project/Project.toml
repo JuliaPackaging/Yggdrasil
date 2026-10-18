@@ -1,6 +1,10 @@
 [deps]
 BinaryBuilder2 = "12aac903-9f7c-5d81-afc2-d9565ea332af"
 BinaryBuilderAuditor = "53524979-5234-6e31-4220-6120654b694c"
+BinaryBuilderGitUtils = "654d7472-7548-7361-4832-74694762694c"
+BinaryBuilderProducts = "21737265-7a69-6e4f-4974-6375646f7270"
+BinaryBuilderSources = "316c416d-4527-6863-7465-466137743047"
+JLLGenerator = "73536572-7074-4e69-5270-206c4c6a2061"
 YAML = "ddb6d928-2868-570f-bddf-ab3f9cf99eb6"
 
 [sources]

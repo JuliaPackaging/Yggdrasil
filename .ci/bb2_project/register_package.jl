@@ -4,7 +4,7 @@ using BinaryBuilder2: import_archives
 meta = BuildMeta(;
     universe_name=get(ENV, "BB2_UNIVERSE", nothing),
     deploy_org="JuliaBinaryWrappers",
-    register=true,
+    register="JuliaRegistries/General",
 )
 
 # Import archives from `products`

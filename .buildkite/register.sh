@@ -32,9 +32,21 @@ if [[ "${JULIA_PROJECT}" == *"/bb2_project"* ]]; then
     echo "--- [BB2] Downloading artifacts..."
     buildkite-agent artifact download --build "${BUILD_ID}" "${PROJECT}/products/*" "${YGGDRASIL_BASE}"
 
+    # BB2 takes its tokens from the `access_tokens` preference rather than the environment
+    PREFS_TOML="${JULIA_PROJECT}/LocalPreferences.toml"
+    trap 'rm -f "${PREFS_TOML}"' EXIT
+    (umask 077; cat > "${PREFS_TOML}" <<EOF
+[BinaryBuilder2.access_tokens."github.com"]
+JuliaBinaryWrappers = "${GITHUB_TOKEN}"
+
+[BinaryBuilder2.access_tokens."github.com".JuliaRegistries]
+General = "${REGISTRY_GITHUB_TOKEN}"
+EOF
+    )
+
     echo "--- [BB2] Registering ${NAME}..."
     cd "${PROJECT}"
-    julia "${JULIA_PROJECT}/register_package.jl" --verbose
+    env -u GITHUB_TOKEN -u REGISTRY_GITHUB_TOKEN julia "${JULIA_PROJECT}/register_package.jl" --verbose
     exit 0
 fi
 
