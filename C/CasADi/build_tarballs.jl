@@ -15,6 +15,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/casadi
 install_license LICENSE.txt
+# ipqp fixes from casadi main (uninitialized status, undersized KKT work vector)
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/ipqp_fixes.patch
 mkdir -p build
 cd build
 
