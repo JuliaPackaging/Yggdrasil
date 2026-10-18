@@ -34,6 +34,10 @@ flags=(
     -lcasadi
     -ljulia
 )
+if [[ "${target}" == *-mingw* ]]; then
+    # The 3.8.1 generated wrappers lack dllexport; fixed upstream in casadi's SWIG.
+    flags+=(-Wl,--export-all-symbols)
+fi
 
 ${CXX} "${flags[@]}" -o "${pkgdir}/libcasadi_wrap.${dlext}"
 
