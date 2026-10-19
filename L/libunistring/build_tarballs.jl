@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "libunistring"
-version = v"1.5"
+version_str = "1.5"
+version = VersionNumber(version_str)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftpmirror.gnu.org/gnu/libunistring/libunistring-$(version.major).$(version.minor).tar.xz",
+    ArchiveSource("https://ftpmirror.gnu.org/gnu/libunistring/libunistring-$(version_str).tar.xz",
                   "fe89007a8a414ae4790b816b86859e877d3ab135db3c37f06541ff7e85ac344b")
 ]
 
