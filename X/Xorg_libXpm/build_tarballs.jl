@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Xorg_libXpm"
-version = v"3.5.19"
+version = v"3.5.20"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://www.x.org/archive/individual/lib/libXpm-$(version).tar.xz",
-                  "ad3576d689221a39dc728f0e0dc02ca7bb6a0d724c9a77fd1bfa1e9af83be900"),
+                  "c064ead03e4dde78afdeb121fe0b644d25c550444cf903fbdc537f1a78f3ef74"),
 ]
 
 # Bash recipe for building across all platforms
