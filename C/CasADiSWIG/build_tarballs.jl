@@ -20,6 +20,7 @@ install_license LICENSE.txt
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/casadi_native_body.patch"
 # casadi#4445
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/julia_bool_options.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/julia_linearalgebra.patch"
 
 pkgdir="${prefix}/share/CasADiSWIG"
 mkdir -pv "${pkgdir}"
