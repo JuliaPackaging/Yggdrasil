@@ -1,0 +1,485 @@
+From 35b15c7a340878c437fd009c07c90fd98fe552e4 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Mon, 28 Sep 2026 15:29:38 +0200
+Subject: [PATCH] Remove the SIGFPE handler
+
+On x86-64, device initialization installed a process-wide SIGFPE handler that
+skipped integer divisions by zero in the pthread driver's worker threads, and
+otherwise chained to the previous handler. This replaced the host
+application's handler, and the chaining called the saved action unconditionally,
+so with the default disposition (SIG_DFL, a null pointer) a division by zero in
+the host application raised SIGSEGV instead of SIGFPE. It also didn't cover the
+basic driver, which runs kernels on the application's thread, and disabled the
+SanitizeUBofDivRem pass, so an integer division by zero in a kernel crashed
+there.
+
+Always use the SanitizeUBofDivRem pass on x86 instead, as OpenMP and TBB builds
+already did, and remove the ENABLE_SIGFPE_HANDLER option. Include a marker in
+the CPU device build hash, so program binaries built without the pass are
+rejected instead of trapping.
+
+Extend test_signal_handlers to check SIGFPE and to launch a kernel dividing by
+zero, also with the basic driver.
+
+(cherry picked from commit f17b6af2bb4ac9cd280c924170ef3499bb43af46)
+---
+ CMakeLists.txt                             |  13 +-
+ config.h.in.cmake                          |   2 -
+ lib/CL/devices/CMakeLists.txt              |   2 +-
+ lib/CL/devices/common.c                    |   4 +-
+ lib/CL/devices/common_utils.c              |   4 +-
+ lib/CL/devices/devices.c                   |   3 -
+ lib/CL/devices/pthread/pthread_scheduler.c |   3 -
+ lib/CL/devices/signal_handlers.c           | 165 ---------------------
+ lib/CL/pocl_llvm_wg.cc                     |   2 +
+ lib/CL/pocl_util.h                         |   6 -
+ tests/regression/CMakeLists.txt            |   8 +
+ tests/regression/test_signal_handlers.c    |  49 +++++-
+ 12 files changed, 60 insertions(+), 201 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 19e947a71..4edc20203 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -842,20 +842,10 @@ else()
+ 
+ endif()
+ 
+-# SIGFPE and SIGUSR2
++# SIGUSR2
+ if(UNIX AND (CMAKE_SYSTEM_NAME MATCHES "Linux"))
+-  # this is now handled by a LLVM pass
+-  if(ENABLE_HOST_CPU_DEVICES AND X86_64 AND
+-     (NOT ENABLE_HOST_CPU_DEVICES_OPENMP) AND
+-     (NOT ENABLE_TBB_DEVICE))
+-    set(DEFAULT_SIGFPE ON)
+-  else()
+-    set(DEFAULT_SIGFPE OFF)
+-  endif()
+-  option(ENABLE_SIGFPE_HANDLER "enable SIGFPE signal handler" ${DEFAULT_SIGFPE})
+   option(ENABLE_SIGUSR2_HANDLER "enable SIGUSR2 signal handler" ON)
+ else()
+-  set(ENABLE_SIGFPE_HANDLER OFF CACHE INTERNAL "enable SIGFPE signal handler" FORCE)
+   set(ENABLE_SIGUSR2_HANDLER OFF CACHE INTERNAL "enable SIGUSR2 signal handler" FORCE)
+ endif()
+ 
+@@ -3070,7 +3060,6 @@ MESSAGE(STATUS "ENABLE_RDMA: ${ENABLE_RDMA}")
+ MESSAGE(STATUS "ENABLE_CL_GET_GL_CONTEXT: ${ENABLE_CL_GET_GL_CONTEXT}")
+ MESSAGE(STATUS "ENABLE_OPENGL_INTEROP: ${ENABLE_OPENGL_INTEROP}")
+ MESSAGE(STATUS "ENABLE_EGL_INTEROP: ${ENABLE_EGL_INTEROP}")
+-MESSAGE(STATUS "ENABLE_SIGFPE_HANDLER: ${ENABLE_SIGFPE_HANDLER}")
+ MESSAGE(STATUS "ENABLE_SIGUSR2_HANDLER: ${ENABLE_SIGUSR2_HANDLER}")
+ MESSAGE(STATUS "ENABLE_SLEEF: ${ENABLE_SLEEF}")
+ MESSAGE(STATUS "ENABLE_SPIRV: ${ENABLE_SPIRV}")
+diff --git a/config.h.in.cmake b/config.h.in.cmake
+index a221a9b8d..e73c27588 100644
+--- a/config.h.in.cmake
++++ b/config.h.in.cmake
+@@ -51,8 +51,6 @@
+ 
+ #cmakedefine ENABLE_PRINTF_IMMEDIATE_FLUSH
+ 
+-#cmakedefine ENABLE_SIGFPE_HANDLER
+-
+ #cmakedefine ENABLE_SIGUSR2_HANDLER
+ 
+ #cmakedefine ENABLE_REMOTE_DISCOVERY_AVAHI
+diff --git a/lib/CL/devices/CMakeLists.txt b/lib/CL/devices/CMakeLists.txt
+index a94af9ee2..d0345c879 100644
+--- a/lib/CL/devices/CMakeLists.txt
++++ b/lib/CL/devices/CMakeLists.txt
+@@ -206,7 +206,7 @@ if(ENABLE_HOST_CPU_DEVICES)
+   list(APPEND POCL_DEVICES_SOURCES common_utils.h common_utils.c)
+ endif()
+ 
+-if(ENABLE_SIGFPE_HANDLER OR ENABLE_SIGUSR2_HANDLER)
++if(ENABLE_SIGUSR2_HANDLER)
+   list(APPEND POCL_DEVICES_SOURCES signal_handlers.c)
+ endif()
+ 
+diff --git a/lib/CL/devices/common.c b/lib/CL/devices/common.c
+index dc833dca1..cdab08b6c 100644
+--- a/lib/CL/devices/common.c
++++ b/lib/CL/devices/common.c
+@@ -870,7 +870,9 @@ char *
+ pocl_cpu_build_hash (cl_device_id device)
+ {
+   char *res = calloc(1000, sizeof(char));
+-  snprintf (res, 1000, "cpu-%s-%s", HOST_DEVICE_BUILD_HASH,
++  /* "divrem": kernels no longer rely on a SIGFPE handler to survive integer
++     division by zero, so reject binaries built when they did. */
++  snprintf (res, 1000, "cpu-%s-%s-divrem", HOST_DEVICE_BUILD_HASH,
+             device->llvm_cpu);
+   return res;
+ }
+diff --git a/lib/CL/devices/common_utils.c b/lib/CL/devices/common_utils.c
+index 450c4e6da..64a966ec9 100644
+--- a/lib/CL/devices/common_utils.c
++++ b/lib/CL/devices/common_utils.c
+@@ -309,10 +309,10 @@ pocl_cpu_init_common (cl_device_id device, unsigned dev_i)
+     device->kernellib_subdir = "host";
+   device->llvm_abi = pocl_get_llvm_cpu_abi ();
+ 
+-#ifndef ENABLE_SIGFPE_HANDLER
++  /* x86 traps on integer division by zero and INT_MIN / -1, which must not
++     happen in OpenCL: sanitize the operands so the division can't trap. */
+   if (strstr (OCL_KERNEL_TARGET, "x86") != NULL)
+     device->run_sanitize_divrem_pass = CL_TRUE;
+-#endif
+ 
+ #endif
+ 
+diff --git a/lib/CL/devices/devices.c b/lib/CL/devices/devices.c
+index a56582043..659f358f0 100644
+--- a/lib/CL/devices/devices.c
++++ b/lib/CL/devices/devices.c
+@@ -675,9 +675,6 @@ pocl_init_devices (cl_platform_id platform)
+     sleep (delay);
+ #endif
+ 
+-#ifdef ENABLE_SIGFPE_HANDLER
+-  pocl_install_sigfpe_handler ();
+-#endif
+ #ifdef ENABLE_SIGUSR2_HANDLER
+   if (pocl_get_bool_option ("POCL_SIGUSR2_HANDLER", 0))
+     {
+diff --git a/lib/CL/devices/pthread/pthread_scheduler.c b/lib/CL/devices/pthread/pthread_scheduler.c
+index 2e2de8574..1a79f575c 100644
+--- a/lib/CL/devices/pthread/pthread_scheduler.c
++++ b/lib/CL/devices/pthread/pthread_scheduler.c
+@@ -150,9 +150,6 @@ pthread_scheduler_init (cl_device_id device)
+       POCL_CREATE_THREAD_WITH_STACK_SIZE (
+         scheduler.thread_pool[i].thread, pocl_pthread_driver_thread,
+         (void *)&scheduler.thread_pool[i], WORKER_STACK_SIZE);
+-#ifdef ENABLE_SIGFPE_HANDLER
+-      pocl_ignore_sigfpe_for_thread (scheduler.thread_pool[i].thread);
+-#endif
+     }
+ 
+   POCL_WAIT_BARRIER (scheduler.init_barrier);
+diff --git a/lib/CL/devices/signal_handlers.c b/lib/CL/devices/signal_handlers.c
+index 0641ae3cf..26c39f3a3 100644
+--- a/lib/CL/devices/signal_handlers.c
++++ b/lib/CL/devices/signal_handlers.c
+@@ -13,12 +13,9 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <sys/types.h>
+-#include <ucontext.h>
+ #include <unistd.h>
+ 
+-#include "pocl_cache.h"
+ #include "pocl_cl.h"
+-#include "pocl_llvm.h"
+ #include "pocl_util.h"
+ 
+ static struct sigaction sigusr2_action, old_sigusr2_action;
+@@ -87,165 +84,3 @@ pocl_install_sigusr2_handler ()
+   int res = sigaction (SIGUSR2, &sigusr2_action, &old_sigusr2_action);
+   assert (res == 0);
+ }
+-
+-/* This ugly hack is an (optional, partial) solution to the problem
+- *
+- * OpenCL 1.2 specification, 6.3 Operators :
+- *
+- * A divide by zero with integer types does not cause an exception
+- * but will result in an unspecified value. Division by zero for
+- * floating-point types will result in ±infinity or NaN as
+- * prescribed by the IEEE-754 standard.
+- *
+- * FPU exceptions are masked by default on x86 linux, but integer divide
+- * is not and there doesn't seem any sane way to mask it.
+- *
+- * This solution only works on Linux (possibly BSD) with SIGFPE handler.
+- *
+- * More platform-independent solution exists in LLVM pass
+- * lib/llvmopencl/SanitizeUBofDivRem.cc
+- */
+-
+-#ifdef __x86_64__
+-
+-#define DIV_OPCODE_SIZE 1
+-#define DIV_OPCODE_MASK 0xf6
+-
+-/* F6 /6, F6 /7, F7 /6, F7 /7 */
+-#define DIV_OPCODE_1 0xf6
+-#define DIV_OPCODE_2 0xf7
+-#define DIV_MODRM_OPCODE_EXT_1 0x38 //  /7
+-#define DIV_MODRM_OPCODE_EXT_2 0x30 //  /6
+-
+-#define MODRM_SIZE 1
+-#define MODRM_MASK 0xC0
+-#define REG2_MASK 0x38
+-#define REG1_MASK 0x07
+-#define ADDR_MODE_INDIRECT_ONE_BYTE_OFFSET 0x40
+-#define ADDR_MODE_INDIRECT_FOUR_BYTE_OFFSET 0x80
+-#define ADDR_MODE_INDIRECT 0x0
+-#define ADDR_MODE_REGISTER_ONLY 0xC0
+-#define REG_SP 0x4
+-#define REG_BP 0x5
+-#define SIB_BYTE 1
+-#define IP_RELATIVE_INDEXING 4
+-
+-static struct sigaction sigfpe_action, old_sigfpe_action;
+-
+-/* list of threads (e.g. of CPU driver), for which the SIGFPE should be
+- * ignored. for all threads not on this list, the original handler is invoked
+- */
+-static pocl_thread_t ignored_thread_ids[2048];
+-static unsigned num_ignored_threads = 0;
+-
+-void
+-pocl_ignore_sigfpe_for_thread (pocl_thread_t thr)
+-{
+-  unsigned current_idx
+-      = __atomic_fetch_add (&num_ignored_threads, 1, __ATOMIC_SEQ_CST);
+-  __atomic_store_n (ignored_thread_ids + current_idx, thr, __ATOMIC_SEQ_CST);
+-}
+-
+-static void
+-sigfpe_signal_handler (int signo, siginfo_t *si, void *data)
+-{
+-  ucontext_t *uc;
+-  uc = (ucontext_t *)data;
+-  unsigned char *eip = (unsigned char *)(uc->uc_mcontext.gregs[REG_RIP]);
+-
+-  if ((signo == SIGFPE)
+-      && ((si->si_code == FPE_INTDIV) || (si->si_code == FPE_INTOVF)))
+-    {
+-      /* SIGFPE is delivered to the thread that caused the div-by-zero.
+-       * check if the thread is on the list of threads we should ignore.
+-       */
+-      pocl_thread_t ID = POCL_THREAD_SELF();
+-      int found = 0;
+-      unsigned max_threads
+-          = __atomic_load_n (&num_ignored_threads, __ATOMIC_SEQ_CST);
+-      for (unsigned i = 0; i < max_threads; ++i)
+-        {
+-          if (ID == ignored_thread_ids[i])
+-            {
+-              found = 1;
+-              break;
+-            }
+-        }
+-      /* if it's not on the list, run the original handler. */
+-      if (!found)
+-        goto ORIGINAL_HANDLER;
+-
+-      /* Luckily for us, div-by-0 exceptions do NOT advance the IP register,
+-       * so we have to disassemble the instruction (to know its length)
+-       * and move IP past it. */
+-      unsigned n = 0;
+-
+-      /* skip all prefixes */
+-      while ((n < 4) && ((eip[n] & DIV_OPCODE_MASK) != DIV_OPCODE_MASK))
+-        ++n;
+-
+-      /* too much prefixes = decoding failed */
+-      if (n >= 4)
+-        goto ORIGINAL_HANDLER;
+-
+-      /* check opcode */
+-      unsigned opcode = eip[n];
+-      if ((opcode != DIV_OPCODE_1) && (opcode != DIV_OPCODE_2))
+-        goto ORIGINAL_HANDLER;
+-      n += DIV_OPCODE_SIZE;
+-
+-      unsigned modrm = eip[n];
+-      unsigned modmask = modrm & MODRM_MASK;
+-      unsigned reg1mask = modrm & REG1_MASK;
+-      unsigned reg2mask = modrm & REG2_MASK;
+-      /* check opcode extension in ModR/M reg2 */
+-      if ((reg2mask != DIV_MODRM_OPCODE_EXT_1)
+-          && (reg2mask != DIV_MODRM_OPCODE_EXT_2))
+-        goto ORIGINAL_HANDLER;
+-      n += MODRM_SIZE;
+-
+-      /* handle immediates/registers */
+-      if (modmask == ADDR_MODE_INDIRECT_ONE_BYTE_OFFSET)
+-        n += 1;
+-      if (modmask == ADDR_MODE_INDIRECT_FOUR_BYTE_OFFSET)
+-        n += 4;
+-      if (modmask == ADDR_MODE_INDIRECT)
+-        n += 0;
+-      if (modmask != ADDR_MODE_REGISTER_ONLY)
+-        {
+-          if (reg1mask == REG_SP)
+-            n += SIB_BYTE;
+-          if (reg1mask == REG_BP)
+-            n += IP_RELATIVE_INDEXING;
+-        }
+-
+-      uc->uc_mcontext.gregs[REG_RIP] += n;
+-      return;
+-    }
+-  else
+-    {
+-    ORIGINAL_HANDLER:
+-      (*old_sigfpe_action.sa_sigaction) (signo, si, data);
+-    }
+-}
+-
+-#endif
+-
+-void
+-pocl_install_sigfpe_handler ()
+-{
+-#ifdef __x86_64__
+-  /* Don't make LLVM register its signal handlers here: they replace the
+-   * host application's process-wide handlers (e.g. the SIGSEGV handler that
+-   * Julia uses for GC safepoints), and reset to SIG_DFL on delivery. */
+-  POCL_MSG_PRINT_GENERAL ("Installing SIGFPE handler...\n");
+-
+-  sigfpe_action.sa_flags = SA_RESTART | SA_SIGINFO;
+-  sigfpe_action.sa_sigaction = sigfpe_signal_handler;
+-  int res = sigaction (SIGFPE, &sigfpe_action, &old_sigfpe_action);
+-  assert (res == 0);
+-#else
+-  // this should be handled by CMake
+-  assert (0 && "this code path should not be possible");
+-#endif
+-}
+diff --git a/lib/CL/pocl_llvm_wg.cc b/lib/CL/pocl_llvm_wg.cc
+index baed8c4a1..b2f54460f 100644
+--- a/lib/CL/pocl_llvm_wg.cc
++++ b/lib/CL/pocl_llvm_wg.cc
+@@ -497,6 +497,8 @@ static void addStage1PassesToPipeline(cl_device_id Dev,
+   // don't forget to register it in registerPassBuilderPasses
+   addPass(Passes, "fix-min-legal-vec-size", PassType::Module);
+   addPass(Passes, "inline-kernels");
++  // Sanitize integer div/rem before optimizing: LLVM treats division by zero
++  // as UB, and can e.g. remove a later check of the divisor against zero.
+   if (Dev->run_sanitize_divrem_pass)
+     addPass(Passes, "sanitize-ub-of-div-rem");
+ 
+diff --git a/lib/CL/pocl_util.h b/lib/CL/pocl_util.h
+index a8ffa2eae..df6d5c23f 100644
+--- a/lib/CL/pocl_util.h
++++ b/lib/CL/pocl_util.h
+@@ -53,12 +53,6 @@ uint32_t pocl_byteswap_uint32_t (uint32_t word, char should_swap);
+ float byteswap_float (float word, char should_swap);
+ 
+ 
+-#ifdef ENABLE_SIGFPE_HANDLER
+-void pocl_install_sigfpe_handler ();
+-POCL_EXPORT
+-void pocl_ignore_sigfpe_for_thread (pocl_thread_t thr);
+-#endif
+-
+ #ifdef ENABLE_SIGUSR2_HANDLER
+ void pocl_install_sigusr2_handler ();
+ #endif
+diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
+index f2ce94e75..aca46e0f0 100644
+--- a/tests/regression/CMakeLists.txt
++++ b/tests/regression/CMakeLists.txt
+@@ -145,6 +145,14 @@ add_test_pocl(NAME "regression/test_issue_2005" COMMAND "test_issue_2005")
+ if(UNIX)
+   add_test_pocl(NAME "regression/test_issue_2174" COMMAND "test_issue_2174")
+   add_test_pocl(NAME "regression/test_signal_handlers" COMMAND "test_signal_handlers")
++  # The basic driver runs kernels on the application's thread.
++  if(BUILD_BASIC)
++    add_test_pocl(NAME "regression/test_signal_handlers_basic" COMMAND "test_signal_handlers")
++    foreach(VARIANT loopvec cbs)
++      set_tests_properties("regression/test_signal_handlers_basic_${VARIANT}" PROPERTIES
++        ENVIRONMENT "POCL_WORK_GROUP_METHOD=${VARIANT};POCL_DEVICES=basic")
++    endforeach()
++  endif()
+ endif()
+ 
+ add_test_pocl(NAME "regression/test_workitem_func_outside_kernel" COMMAND "test_workitem_func_outside_kernel")
+diff --git a/tests/regression/test_signal_handlers.c b/tests/regression/test_signal_handlers.c
+index c7d12b709..98e793e19 100644
+--- a/tests/regression/test_signal_handlers.c
++++ b/tests/regression/test_signal_handlers.c
+@@ -20,10 +20,13 @@
+ */
+ 
+ /* PoCL must not replace the host application's signal handlers, e.g. by
+-   making LLVM register its crash handlers. */
++   making LLVM register its crash handlers, nor rely on them: an integer
++   division by zero in a kernel must not raise SIGFPE, even when the kernel runs
++   on the host application's thread (as with the basic driver). */
+ 
+ #include "pocl_opencl.h"
+ 
++#include <limits.h>
+ #include <signal.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+@@ -39,7 +42,7 @@
+       return EXIT_FAILURE;                                                    \
+     }
+ 
+-static const int host_signals[] = { SIGSEGV, SIGBUS, SIGILL };
++static const int host_signals[] = { SIGSEGV, SIGBUS, SIGILL, SIGFPE };
+ #define NUM_HOST_SIGNALS (sizeof (host_signals) / sizeof (host_signals[0]))
+ 
+ static void
+@@ -48,6 +51,9 @@ host_handler (int sig, siginfo_t *info, void *context)
+   (void)sig;
+   (void)info;
+   (void)context;
++  static const char msg[] = "host signal handler called\n";
++  ssize_t res = write (STDOUT_FILENO, msg, sizeof (msg) - 1);
++  (void)res;
+   _exit (EXIT_FAILURE);
+ }
+ 
+@@ -93,10 +99,12 @@ main ()
+   if (check_host_handlers ("device initialization") != EXIT_SUCCESS)
+     return EXIT_FAILURE;
+ 
+-  const char *source = "#define VALUE 42\n"
+-                       "__kernel void k (__global int *out) {\n"
+-                       "  *out = VALUE;\n"
+-                       "}\n";
++  const char *source
++      = "__kernel void k (__global const int *num, __global const int *den,\n"
++        "                 __global int *out) {\n"
++        "  size_t i = get_global_id (0);\n"
++        "  out[i] = num[i] / den[i] + num[i] % den[i];\n"
++        "}\n";
+   cl_program program
+       = clCreateProgramWithSource (context, 1, &source, NULL, &err);
+   CHECK_ERROR (err);
+@@ -105,6 +113,35 @@ main ()
+   if (check_host_handlers ("building a program") != EXIT_SUCCESS)
+     return EXIT_FAILURE;
+ 
++  /* The results are unspecified; the kernel must merely not trap. */
++  cl_int num[] = { 1, INT_MIN };
++  cl_int den[] = { 0, -1 };
++  cl_mem num_buf = clCreateBuffer (
++      context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof (num), num, &err);
++  CHECK_ERROR (err);
++  cl_mem den_buf = clCreateBuffer (
++      context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof (den), den, &err);
++  CHECK_ERROR (err);
++  cl_mem out_buf
++      = clCreateBuffer (context, CL_MEM_WRITE_ONLY, sizeof (num), NULL, &err);
++  CHECK_ERROR (err);
++  cl_kernel kernel = clCreateKernel (program, "k", &err);
++  CHECK_ERROR (err);
++  CHECK_ERROR (clSetKernelArg (kernel, 0, sizeof (cl_mem), &num_buf));
++  CHECK_ERROR (clSetKernelArg (kernel, 1, sizeof (cl_mem), &den_buf));
++  CHECK_ERROR (clSetKernelArg (kernel, 2, sizeof (cl_mem), &out_buf));
++  size_t global_size = 2;
++  CHECK_ERROR (clEnqueueNDRangeKernel (queue, kernel, 1, NULL, &global_size,
++                                       NULL, 0, NULL, NULL));
++  CHECK_ERROR (clFinish (queue));
++  if (check_host_handlers ("running a kernel") != EXIT_SUCCESS)
++    return EXIT_FAILURE;
++
++  CHECK_ERROR (clReleaseKernel (kernel));
++  CHECK_ERROR (clReleaseMemObject (num_buf));
++  CHECK_ERROR (clReleaseMemObject (den_buf));
++  CHECK_ERROR (clReleaseMemObject (out_buf));
++
+   CHECK_ERROR (clReleaseProgram (program));
+   CHECK_ERROR (clReleaseCommandQueue (queue));
+   CHECK_ERROR (clReleaseContext (context));
+-- 
+2.56.0
+
