@@ -36,9 +36,7 @@ include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 filter!(!Sys.iswindows, platforms) # Singular does not support Windows
 
-# Exclude aarch64 FreeBSD for the time being
-filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
-filter!(p -> !(arch(p) == "riscv64"), platforms)
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms) # reinterpret_cast of NULL fails, as FreeBSD 14 defines it as nullptr
 
 platforms = expand_cxxstring_abis(platforms)
 
