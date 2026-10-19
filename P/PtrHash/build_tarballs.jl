@@ -10,12 +10,12 @@ sources = [
     GitSource("https://github.com/RagnarGrootKoerkamp/PtrHash.git",
               "7da31136d1c8952ac6cd4e54dffa27a8453329cb"), # v2.1.2
     # C ABI wrapper crate (`ptr_hash` is a pure Rust library without a C API)
-    DirectorySource("./bundled"),
+    DirectorySource("./bundled"; target="ptrhash_c"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/bundled
+cd ${WORKSPACE}/srcdir/ptrhash_c
 # Build the wrapper against the dependency versions locked by PtrHash
 cp ../PtrHash/Cargo.lock .
 cargo build --release --verbose
