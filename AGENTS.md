@@ -59,7 +59,7 @@ optional arguments).
 ### Sources
 
 - **ArchiveSource**: For tarballs (`.tar.gz`, `.tar.xz`, `.zip`). Always include SHA256 hash.
-- **GitSource**: For git repos. Use specific commit hash, not branch names. For a release, also pass `tag="v1.2.3"`: the build fails unless the tag points to the hash.
+- **GitSource**: For git repos. Use specific commit hash, not branch names. When building a release, also pass its `tag="v1.2.3"` so reviewers see which release it is; the build checks that the tag indeed points to the hash.
 - **DirectorySource**: For local patches. Place patches in `bundled/patches/` subdirectory.
 - Build **one package per recipe**. Don't bundle multiple packages—use dependencies instead.
 
