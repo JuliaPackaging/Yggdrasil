@@ -81,7 +81,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
 
     if version == v"1.14.0-DEV"
         sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "70fd79710386d113d55d0f88eac52556c2bf653c"),
+            GitSource("https://github.com/JuliaLang/julia.git", "08e5253dc0d8af12b2f3071b0e95232e5a2080ec"),
             DirectorySource("./bundled"),
         ]
     else
@@ -165,7 +165,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         LLVMVERMAJOR=20
         LLVMVERMINOR=1
     elif [[ "${version}" == 1.14.* ]]; then
-        LLVMVERMAJOR=22
+        LLVMVERMAJOR=23
         LLVMVERMINOR=1
     else
         echo "Error, LLVM version not specified"
@@ -407,7 +407,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     elseif version.major == 1 && version.minor == 14
         push!(dependencies, BuildDependency("OpenSSL_jll")),
         push!(dependencies, BuildDependency("Zstd_jll")),
-        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"22.1.8+1")))
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"23.1.4+0")))
     else
         error("Unsupported Julia version")
     end
