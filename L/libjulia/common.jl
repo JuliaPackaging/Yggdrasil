@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 # list of supported Julia versions
-julia_full_versions = [v"1.10.0", v"1.11.1", v"1.12.0", v"1.13.0", v"1.14.0-DEV"]
+julia_full_versions = [v"1.10.0", v"1.11.1", v"1.12.0", v"1.13.0", v"1.14.0-DEV", v"1.15.0-DEV"]
 libjulia_min_julia_version = Base.thispatch(minimum(julia_full_versions))
 if ! @isdefined julia_versions
     julia_versions = Base.thispatch.(julia_full_versions)
@@ -26,6 +26,7 @@ end
 # julia v1.12: v1.10.9  - today
 # julia v1.13: v1.10.15 - today
 # julia v1.14: v1.11.0  - today
+# julia v1.15: v1.11.4  - today
 
 # return the platforms supported by libjulia
 function julia_supported_platforms(julia_version)
@@ -82,6 +83,11 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     if version == v"1.14.0-DEV"
         sources = [
             GitSource("https://github.com/JuliaLang/julia.git", "08e5253dc0d8af12b2f3071b0e95232e5a2080ec"),
+            DirectorySource("./bundled"),
+        ]
+    elseif version == v"1.15.0-DEV"
+        sources = [
+            GitSource("https://github.com/JuliaLang/julia.git", "eac1f2ee6c5156525a15d163313259c3b75558a3"),
             DirectorySource("./bundled"),
         ]
     else
@@ -167,6 +173,9 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     elif [[ "${version}" == 1.14.* ]]; then
         LLVMVERMAJOR=23
         LLVMVERMINOR=1
+    elif [[ "${version}" == 1.15.* ]]; then
+        LLVMVERMAJOR=23
+        LLVMVERMINOR=1
     else
         echo "Error, LLVM version not specified"
         exit 1
@@ -195,7 +204,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         LLVMLINK="${LLVMLINK} -lz -lzstd"
     fi
 
-    if [[ "${target}" == *mingw* ]] && [[ "${version}" == 1.1[3-4].* ]]; then
+    if [[ "${target}" == *mingw* ]] && [[ "${version}" == 1.1[3-5].* ]]; then
         # Help the linker to find the winternl.h symbols introduced in https://github.com/JuliaLang/julia/pull/59877
         LLVMLINK="${LLVMLINK} -lntdll"
     fi
@@ -405,6 +414,10 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         push!(dependencies, BuildDependency("Zstd_jll")),
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"20.1.8+2")))
     elseif version.major == 1 && version.minor == 14
+        push!(dependencies, BuildDependency("OpenSSL_jll")),
+        push!(dependencies, BuildDependency("Zstd_jll")),
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"23.1.4+0")))
+    elseif version.major == 1 && version.minor == 15
         push!(dependencies, BuildDependency("OpenSSL_jll")),
         push!(dependencies, BuildDependency("Zstd_jll")),
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"23.1.4+0")))
