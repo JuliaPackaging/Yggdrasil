@@ -59,7 +59,7 @@ optional arguments).
 ### Sources
 
 - **ArchiveSource**: For tarballs (`.tar.gz`, `.tar.xz`, `.zip`). Always include SHA256 hash.
-- **GitSource**: For git repos. Use specific commit hash, not branch names.
+- **GitSource**: For git repos. Use specific commit hash, not branch names. For a release, also pass `tag="v1.2.3"`: the build fails unless the tag points to the hash.
 - **DirectorySource**: For local patches. Place patches in `bundled/patches/` subdirectory.
 - Build **one package per recipe**. Don't bundle multiple packages—use dependencies instead.
 
@@ -73,7 +73,7 @@ Instead:
 
    ```julia
    sources = [
-       GitSource("https://github.com/owner/repo.git", "full_commit_hash"),
+       GitSource("https://github.com/owner/repo.git", "full_commit_hash"; tag="v$(version)"),
    ]
    ```
 
@@ -88,8 +88,10 @@ Instead:
 To find the commit hash for a tag:
 
 ```bash
-git ls-remote https://github.com/owner/repo.git refs/tags/v1.0.0
+git ls-remote https://github.com/owner/repo.git v1.0.0 'v1.0.0^{}'
 ```
+
+If this prints two lines, the tag is annotated: use the hash of the `^{}` line. The other is the tag object, not a commit, and fails the `tag` check.
 
 ### Products
 
