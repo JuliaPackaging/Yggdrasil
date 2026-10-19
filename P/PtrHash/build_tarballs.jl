@@ -47,7 +47,6 @@ products = [
 dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# The dependencies of `ptr_hash` require the 2024 edition, i.e. Rust >= 1.85.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", compilers=[:c, :rust], preferred_rust_version=v"1.87.0",
+               julia_compat="1.6", compilers=[:c, :rust],
                lock_microarchitecture=false)
