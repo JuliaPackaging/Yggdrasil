@@ -16,6 +16,10 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/ptrhash_c
+if [[ "${target}" == *-musl* ]]; then
+    # musl targets link statically by default, which cannot produce a cdylib
+    export RUSTFLAGS="-C target-feature=-crt-static"
+fi
 # Build the wrapper against the dependency versions locked by PtrHash
 cp ../PtrHash/Cargo.lock .
 cargo build --release --verbose
@@ -31,6 +35,8 @@ filter!(p -> !(arch(p) == "i686" && Sys.iswindows(p)), platforms)
 # We don't have rust for these platforms
 filter!(p -> !(arch(p) == "aarch64" && Sys.isfreebsd(p)), platforms)
 filter!(p -> arch(p) != "riscv64", platforms)
+# `sucds` requires 64-bit pointers
+filter!(p -> nbits(p) == 64, platforms)
 
 # The products that we will ensure are always built
 products = [
