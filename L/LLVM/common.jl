@@ -180,10 +180,12 @@ if [[ "${ASSERTS}" == "1" ]]; then
     CMAKE_FLAGS+=(-DLLVM_ENABLE_ASSERTIONS:BOOL=ON)
 fi
 
-# build for our host arch and our GPU targets NVidia and AMD
 TARGETS=(host)
 
-if [[ "${target}" != *-apple-darwin* ]]; then
+# GPUCompiler generates AMDGPU and NVPTX code with the stand-alone
+# AMDGPU_LLVM_Backend_jll and NVPTX_LLVM_Backend_jll, so LLVM 23 and later
+# leave these targets out.
+if [[ "${target}" != *-apple-darwin* ]] && [[ "${LLVM_MAJ_VER}" -lt "23" ]]; then
     TARGETS+=(AMDGPU NVPTX)
 fi
 
