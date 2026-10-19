@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
 name = "libsingular_julia"
-version = v"0.47.17"
+version = v"0.47.18"
 
 # Collection of sources required to build libsingular-julia
 sources = [
@@ -51,10 +51,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(;name="libjulia_jll", version="1.11.2")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version="1.11.4")),
     BuildDependency("GMP_jll"),
     BuildDependency("MPFR_jll"),
-    Dependency("libcxxwrap_julia_jll"; compat = "~0.14.11"),
+    Dependency("libcxxwrap_julia_jll"; compat = "~0.14.12"),
     # we do not set a compat entry for Singular_jll -- instead we leave it to
     # Singular.jl to ensure the right versions of libsingular_julia_jll and
     # Singular_jll are paired. This gives us flexibility in the development
