@@ -20,7 +20,6 @@ cmake . -B build \
    -DCMAKE_INSTALL_PREFIX="$prefix" \
    -DCMAKE_FIND_ROOT_PATH="$prefix" \
    -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
-   -DCMAKE_CXX_STANDARD=14 \
    -DCMAKE_BUILD_TYPE=Release
 
 VERBOSE=ON cmake --build build --config Release --target install -- -j${nproc}
@@ -34,7 +33,6 @@ install_license ../../LICENSE.md
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl")
-filter!(>=(v"1.10"), julia_versions)
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 filter!(!Sys.iswindows, platforms) # Singular does not support Windows
 
