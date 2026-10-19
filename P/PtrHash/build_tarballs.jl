@@ -1,0 +1,47 @@
+# Note that this script can accept some limited command-line arguments, run
+# `julia build_tarballs.jl --help` to see a usage message.
+using BinaryBuilder, Pkg
+
+name = "PtrHash"
+version = v"2.1.2"
+
+# Collection of sources required to complete build
+sources = [
+    GitSource("https://github.com/RagnarGrootKoerkamp/PtrHash.git",
+              "7da31136d1c8952ac6cd4e54dffa27a8453329cb"), # v2.1.2
+    # C ABI wrapper crate (`ptr_hash` is a pure Rust library without a C API)
+    DirectorySource("./bundled"),
+]
+
+# Bash recipe for building across all platforms
+script = raw"""
+cd ${WORKSPACE}/srcdir/bundled
+# Build the wrapper against the dependency versions locked by PtrHash
+cp ../PtrHash/Cargo.lock .
+cargo build --release --verbose
+install -Dvm 0755 "target/${rust_target}/release/"*ptrhash".${dlext}" "${libdir}/libptrhash.${dlext}"
+install_license ../PtrHash/LICENSE
+"""
+
+# These are the platforms we will build for by default, unless further
+# platforms are passed in on the command line
+platforms = supported_platforms()
+# Rust toolchain for i686 Windows is unusable
+filter!(p -> !(arch(p) == "i686" && Sys.iswindows(p)), platforms)
+# We don't have rust for these platforms
+filter!(p -> !(arch(p) == "aarch64" && Sys.isfreebsd(p)), platforms)
+filter!(p -> arch(p) != "riscv64", platforms)
+
+# The products that we will ensure are always built
+products = [
+    LibraryProduct("libptrhash", :libptrhash),
+]
+
+# Dependencies that must be installed before this package can be built
+dependencies = Dependency[]
+
+# Build the tarballs, and possibly a `build.jl` as well.
+# The dependencies of `ptr_hash` require the 2024 edition, i.e. Rust >= 1.85.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", compilers=[:c, :rust], preferred_rust_version=v"1.87.0",
+               lock_microarchitecture=false)

@@ -1,0 +1,14 @@
+[package]
+name = "ptrhash_c"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "ptrhash"
+crate-type = ["cdylib"]
+
+[dependencies]
+ptr_hash = { path = "../PtrHash" }
+
+[profile.release]
+lto = "thin"
