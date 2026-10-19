@@ -1,4 +1,7 @@
 using BinaryBuilder, Pkg
+using Base.BinaryPlatforms
+
+include(joinpath(@__DIR__, "..", "..", "platforms", "mpi.jl"))
 
 name = "LALSuite"
 version = v"7.26.16"
@@ -23,7 +26,12 @@ export LDFLAGS="${LDFLAGS} -L${libdir}"
 export PKG_CONFIG_PATH="${libdir}/pkgconfig:${PKG_CONFIG_PATH}"
 export GSL_LIBS="-L${libdir} -lgsl -lgslcblas -lm"
 export HDF5_LIBS="-L${libdir} -lhdf5_hl -lhdf5"
+export MPITRAMPOLINE_CC="${CC}"
 export SOURCE_DATE_EPOCH=1790889543
+if [[ ${target} == aarch64-apple-* ]]; then
+    # Complex division on macOS ARM64 requires compiler-rt's __divdc3/__divsc3.
+    export LDFLAGS="${LDFLAGS} -L${libdir}/darwin -lclang_rt.osx"
+fi
 
 # Build only these two components, in dependency order. Avoid installing programs,
 # Python modules, test executables, and documentation from their top-level targets.
@@ -92,6 +100,9 @@ platforms = supported_platforms()
 filter!(p -> Sys.isapple(p) || (Sys.islinux(p) && libc(p) == "glibc"), platforms)
 # These are the four native release-validation targets requested by the consumer.
 filter!(p -> arch(p) in ("x86_64", "aarch64"), platforms)
+# HDF5's Fortran runtime uses the supported libgfortran5 ABI.
+platforms = expand_gfortran_versions(platforms)
+filter!(p -> libgfortran_version(p) == v"5", platforms)
 
 products = [
     LibraryProduct("liblal", :liblal; dont_dlopen = true),
@@ -99,16 +110,47 @@ products = [
     LibraryProduct("liblalsimulation", :liblalsimulation; dont_dlopen = true),
 ]
 
-# The last serial HDF5_jll release avoids introducing an MPI runtime into LAL.
-# It provides all four required platforms and the HDF5 API used by this release.
 dependencies = [
     Dependency("FFTW_jll", v"3.3.11"; compat = "=3.3.11"),
     Dependency("GSL_jll", v"2.8.1"; compat = "=2.8.1"),
-    Dependency("HDF5_jll", v"1.12.2"; compat = "=1.12.2"),
+    Dependency("HDF5_jll", v"1.14.6"; compat = "=1.14.6"),
     Dependency("Zlib_jll", v"1.3.1"; compat = "=1.3.1"),
+    Dependency("CompilerSupportLibraries_jll"; compat = "1"),
+    BuildDependency(
+        PackageSpec(name = "LLVMCompilerRT_jll", version = v"16.0.6");
+        platforms = filter(p -> Sys.isapple(p) && arch(p) == "aarch64", platforms),
+    ),
 ]
+
+# HDF5 1.14.6 predates the MPIABI variant. Match its three supported Unix ABIs.
+mpi_platforms = AbstractPlatform[]
+for (abi, package, compat) in (
+        ("MPICH", "MPICH_jll", "4.3.0 - 4"),
+        ("OpenMPI", "OpenMPI_jll", "=4.1.8"),
+        ("MPItrampoline", "MPItrampoline_jll", "=5.5.3"),
+    )
+    variants = deepcopy(platforms)
+    foreach(p -> p["mpi"] = abi, variants)
+    append!(mpi_platforms, variants)
+    push!(dependencies, Dependency(package; compat, platforms = variants))
+end
+platforms = mpi_platforms
+push!(
+    dependencies,
+    RuntimeDependency(
+        PackageSpec(name = "MPIPreferences", uuid = "3da0fdf6-3ccc-4f1b-acd9-58baa6c99267");
+        compat = "0.1", top_level = true,
+    ),
+)
+augment_platform_block = """
+using Base.BinaryPlatforms
+$(MPI.augment)
+augment_platform!(platform::Platform) = augment_mpi!(platform)
+"""
+
+ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 build_tarballs(
     ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat = "1.12", preferred_gcc_version = v"8",
+    julia_compat = "1.12", preferred_gcc_version = v"8", augment_platform_block,
 )
