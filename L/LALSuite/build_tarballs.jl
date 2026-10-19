@@ -117,7 +117,10 @@ dependencies = [
     Dependency("Zlib_jll", v"1.3.1"; compat = "=1.3.1"),
     Dependency("CompilerSupportLibraries_jll"; compat = "1"),
     BuildDependency(
-        PackageSpec(name = "LLVMCompilerRT_jll", version = v"16.0.6");
+        PackageSpec(
+            name = "LLVMCompilerRT_jll", uuid = "4e17d02c-6bf5-513e-be62-445f41c75a11",
+            version = v"16.0.6+1",
+        );
         platforms = filter(p -> Sys.isapple(p) && arch(p) == "aarch64", platforms),
     ),
 ]
