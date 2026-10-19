@@ -14,6 +14,10 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd libzip
+if [[ ${target} == *-mingw* ]]; then
+    # Our mingw-w64 `intsafe.h` lacks `DWORD_MAX`
+    export CFLAGS="-DDWORD_MAX=0xffffffffUL"
+fi
 cmake -B build -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel ${nproc}
 cmake --install build
