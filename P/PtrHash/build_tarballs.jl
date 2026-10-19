@@ -30,11 +30,6 @@ install_license ../PtrHash/LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-# Rust toolchain for i686 Windows is unusable
-filter!(p -> !(arch(p) == "i686" && Sys.iswindows(p)), platforms)
-# We don't have rust for these platforms
-filter!(p -> !(arch(p) == "aarch64" && Sys.isfreebsd(p)), platforms)
-filter!(p -> arch(p) != "riscv64", platforms)
 # `sucds` requires 64-bit pointers
 filter!(p -> nbits(p) == 64, platforms)
 
