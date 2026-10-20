@@ -4,7 +4,7 @@ This guide helps AI agents generate correct `build_tarballs.jl` recipes for Bina
 
 ## Prerequisites
 
-- **Julia**: Use Julia 1.13 (CI runs 1.13.2; `.ci/bb1_project/Manifest.toml` is resolved for it, and the repo-root `Project.toml`/`Manifest.toml` are symlinks to it).
+- **Julia**: Use Julia 1.13, installed with [juliaup](https://github.com/JuliaLang/juliaup) so `julia +1.13` works (CI runs 1.13.2; `.ci/bb1_project/Manifest.toml` is resolved for it, and the repo-root `Project.toml`/`Manifest.toml` are symlinks to it).
 - **Supported Platforms**: Linux glibc (x86_64, i686, aarch64, armv7l, armv6l, ppc64le, riscv64), Linux musl (x86_64, i686, aarch64, armv7l, armv6l), Windows (x86_64, i686), macOS (x86_64, aarch64), FreeBSD (x86_64, aarch64)
 - Use `supported_platforms()` to get all available platforms
 
@@ -47,7 +47,7 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
 ## Critical Rules
 
 These are the hard requirements every recipe must satisfy. Special Dependencies,
-File Organization, Commit Messages and Pull Requests are rules too. Everything from
+File Organization, Commit Messages, Pull Requests and Testing are rules too. Everything from
 [Build Script Reference](#build-script-reference) onward is non-normative reference material.
 
 ### Naming
@@ -190,11 +190,11 @@ done
 Some dependencies require special handling:
 
 - **LLVM packages**: Must use `LLVM_full_jll` and match the version used by the Julia version. Requires careful ABI compatibility.
-- **MPI packages**: Need `MPIPreferences.jl` configuration and must use `MPItrampoline_jll` for cross-implementation compatibility.
+- **MPI packages**: Use `MPI.augment_platforms` from `platforms/mpi.jl`, which adds one variant per MPI ABI and the matching dependencies; see [MPI packages](#mpi-packages).
 - **BLAS/LAPACK packages**: Should link against `libblastrampoline_jll` rather than a concrete BLAS implementation, so downstream Julia users can swap implementations at runtime.
 - **CUDA packages**: Use `CUDA.required_dependencies` to get the necessary runtime dependencies. Must handle different CUDA versions. GPU code needs special compilation flags.
 
-For these complex dependencies, consult existing recipes in the repository (search for `LLVM_full_jll`, `MPItrampoline_jll`, `libblastrampoline_jll`, or `CUDA.required_dependencies`).
+For these complex dependencies, consult existing recipes in the repository (search for `LLVM_full_jll`, `MPI.augment_platforms`, `libblastrampoline_jll`, or `CUDA.required_dependencies`).
 
 ### MPI packages
 
@@ -295,10 +295,10 @@ Examples:
 
   ```bash
   git fetch origin master
-  git worktree add -b <branch> ../Yggdrasil-<branch> origin/master
+  git worktree add --no-track -b <branch> ../<dir> origin/master
   ```
 
-  After the PR merges, `git worktree remove ../Yggdrasil-<branch>` and `git branch -D <branch>`.
+  Use a `<dir>` without slashes, e.g. `Yggdrasil-zlib`. `--no-track` keeps the branch from tracking `master`; push it with `git push -u origin <branch>`. After the PR merges, `git worktree remove --force ../<dir>` (`--force` discards untracked build output such as `products/`) and `git branch -D <branch>`.
 - One recipe per PR. Never touch another recipe's files, even whitespace: any change to a `build_tarballs.jl` triggers re-registration.
 - Don't edit the `.ci/bb1_project` or `.ci/bb2_project` manifests; maintainers do that with the Update Manifest workflow.
 - Don't add non-recipe files (e.g. `.gitattributes`) under a recipe directory.
@@ -310,22 +310,14 @@ Examples:
 
 Test the generated JLL locally before merging, so a broken package is not automatically registered in General.
 
-### Build
+### Build and Generate the JLL
 
 ```bash
 cd X/PackageName
-julia --project=/path/to/Yggdrasil build_tarballs.jl --verbose --debug x86_64-linux-gnu
+julia --project=/path/to/Yggdrasil build_tarballs.jl --verbose --deploy=local x86_64-linux-gnu
 ```
 
-The trailing triplet builds only that platform; omit it to build all of them. Use it for local testing only, never narrow `platforms` in the recipe to match. `--debug` drops into the sandbox shell on failure. Tarballs land in `products/`. On macOS, local builds need Docker.
-
-### Generate the JLL
-
-```bash
-julia --project=/path/to/Yggdrasil build_tarballs.jl --deploy=local x86_64-linux-gnu
-```
-
-This builds and writes a local JLL package to `~/.julia/dev/PackageName_jll/`.
+This puts tarballs in `products/` and writes a local JLL package to `~/.julia/dev/PackageName_jll/`. The trailing triplet builds only that platform; omit it to build all of them. Use it for local testing only, never narrow `platforms` in the recipe to match. While iterating on a failing build, add `--debug` to drop into the sandbox shell on failure. On macOS, local builds need Docker.
 
 ### Test the JLL Package
 
@@ -532,7 +524,7 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fix.patch
 
 ```julia
 platforms = supported_platforms()
-# Say what breaks, e.g. "upstream assumes 64-bit pointers"
+# Upstream assumes 64-bit pointers
 filter!(p -> nbits(p) == 64, platforms)
 
 # Expand C++ string ABI variants
@@ -635,9 +627,9 @@ Interpolate `version_string` into URLs, tags, and directory names, and `version`
 
 ## Reference Examples
 
-- **Simple C library**: `Z/Zstd/build_tarballs.jl`
-- **CMake with dependencies**: `C/CMake/build_tarballs.jl`
+- **Autotools with patches**: `S/sshpass/build_tarballs.jl` (`bundled/patches/`)
 - **Meson with patches**: `Z/Zstd/build_tarballs.jl` (`bundled/patches/`)
+- **CMake with dependencies**: `C/CMake/build_tarballs.jl`
 - **Platform-specific builds**: `G/Git/build_tarballs.jl`
 - **Multiple sources**: `L/libftd2xx/build_tarballs.jl`
 
@@ -651,7 +643,8 @@ This repo ships an MCP server for AI coding agents, configured in `.mcp.json`:
 
 The server runs from the `.claude/` Julia environment and shells out to the
 repo-root project of the checkout it lives in for `build_tarballs.jl --debug`.
-It starts Julia as `julia +1.13`, so it needs juliaup with 1.13 installed.
+Both `.mcp.json` and the server start Julia as `julia +1.13`, so it needs
+juliaup with 1.13 installed.
 `.claude/Manifest.toml` is not checked in, so it resolves against the latest
 `[sources]` branches. On a fresh checkout or worktree instantiate both once,
 otherwise `bb-sandbox` fails to connect with a missing-package error (e.g.
@@ -665,9 +658,10 @@ julia +1.13 --project -e 'using Pkg; Pkg.instantiate()'
 After that, the agent's MCP status should show `bb-sandbox` connected.
 
 `sandbox_start` takes an absolute `build_tarballs_path`, so a server started in
-the main checkout can build a recipe in any worktree. The recipe runs against
-the main checkout's root project; that is fine as long as the worktree's
-`Project.toml` and `Manifest.toml` match it.
+the main checkout can build a recipe in any worktree. The recipe then runs
+against the main checkout's root project, so keep that checkout's `master` up to
+date with `git pull`. To use the worktree's own project instead, start the agent
+from the worktree so it launches that worktree's server.
 
 ## Additional Resources
 

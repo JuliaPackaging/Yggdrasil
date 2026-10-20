@@ -3,6 +3,7 @@
     "bb-sandbox": {
       "command": "julia",
       "args": [
+        "+1.13",
         "--project=.claude",
         ".claude/mcp-bb-sandbox/server.jl"
       ]
