@@ -20,7 +20,13 @@ script = raw"""
 cd $WORKSPACE/srcdir/msolve/
 ./autogen.sh
 
-ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes ./configure --with-gnu-ld --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+ac_cv_func_malloc_0_nonnull=yes \
+ac_cv_func_realloc_0_nonnull=yes \
+./configure \
+    --with-gnu-ld \
+    --prefix=${prefix} \
+    --build=${MACHTYPE} \
+    --host=${target}
 make -j${nproc}
 make install
 """
