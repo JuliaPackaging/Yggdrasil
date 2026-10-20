@@ -6,11 +6,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "PDAL"
-version = v"2.9.0"
+# 2.10 breaks the ABI of 2.9 (libpdalcpp.so.20); dependents need `compat="~2.10"`
+version = v"2.10.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/PDAL/PDAL.git", "795f0d9858dba72074fa3a4736282b1d2635620b"),
+    GitSource("https://github.com/PDAL/PDAL.git", "27008f6241be44585c866a29dfc13bb16d678dab"; tag="$(version)"),
     DirectorySource("bundled"),
 ]
 
@@ -34,6 +35,8 @@ mkdir -p build/dimbuilder && cd build/dimbuilder
 
 #make sure we're back in source dir
 cd $WORKSPACE/srcdir/PDAL*
+
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw_plugin_names.patch
 
 # `time_t` and `struct stat` are inconsistent on 32-bit Windows
 if [[ "${target}" == i686-w64* ]]; then
