@@ -4,12 +4,13 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "OpenUSD"
-version = v"25.11.0"
+tag = "v25.11"
+version = VersionNumber(tag)
 
 sources = [
     GitSource("https://github.com/PixarAnimationStudios/OpenUSD.git",
               "363a7c8da8d1937072a5f0989e91faf72eb1fa76";
-              tag="v25.11"),
+              tag),
     DirectorySource("./bundled"),
 ]
 
