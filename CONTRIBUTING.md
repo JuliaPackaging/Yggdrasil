@@ -91,9 +91,12 @@ To minimise build times, we have a complex building infrastructure to cache as m
 
 * BinaryBuilder uses by default [`ccache`](https://ccache.dev/) to cache compilers artifacts where possible;
 * on Yggdrasil we cache all successful builds, to avoid rebuilding packages unneedlessly.
-  This cache is indexed by the git tree hash of the directory where the `build_tarballs.jl` file is.
+  This cache in indexed by:
 
-This means that if you trigger a build which doesn't change it after a successful run, then a build will not actually happen.
+  * the git tree hash of the directory where the `build_tarballs.jl` file is
+  * the hash of the [`.ci/Manifest.toml`](.ci/Manifest.toml) file.
+
+This means that if you trigger a build which changes neither of them after a successful run, then a build will not actually happen.
 For this reason, please ***refrain from running builds which only rebase/merge your branch on the default branch*** after a fully successful build: there will be no build log, and reviewers will have a much harder time than necessary to find the audit logs.
 These rebuilds are also completely useless, as the build artifacts will in most cases be [bit-by-bit identical](https://docs.binarybuilder.org/stable/#Reproducibility) to the previous ones, only causing waste of time, resources, and energy.
 
