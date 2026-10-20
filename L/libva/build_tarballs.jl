@@ -16,6 +16,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libva
 
+# On FreeBSD, libdrm_jll ships its pkg-config files in libdata/pkgconfig
+export PKG_CONFIG_PATH="${PKG_CONFIG_PATH:+${PKG_CONFIG_PATH}:}${prefix}/libdata/pkgconfig"
+
 meson setup builddir \
     --cross-file=${MESON_TARGET_TOOLCHAIN} \
     --buildtype=release \
