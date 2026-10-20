@@ -37,6 +37,7 @@ mkdir -p build/dimbuilder && cd build/dimbuilder
 cd $WORKSPACE/srcdir/PDAL*
 
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw_plugin_names.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/macos_libcxx_sort.patch
 
 # `time_t` and `struct stat` are inconsistent on 32-bit Windows
 if [[ "${target}" == i686-w64* ]]; then
