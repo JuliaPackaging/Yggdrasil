@@ -63,4 +63,4 @@ products = [
 # Build the tarballs.
 # mpif requires at least gfortran 8
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"8")
+               augment_platform_block, julia_compat="1.10", preferred_gcc_version=v"8")
