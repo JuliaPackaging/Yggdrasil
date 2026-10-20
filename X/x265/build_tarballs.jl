@@ -9,11 +9,13 @@ version = v"4.2"
 # Collection of sources required to build x265
 sources = [
     GitSource("https://bitbucket.org/multicoreware/x265_git.git", "e444744c03978c1fb4e037168967020cf2648427"; tag="$(version.major).$(version.minor)"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/x265_git
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/i686-plt-call.patch
 
 # x265 builds for multiple architectures, using `-march` and `-mcpu`
 # options, and then dispatches at run time. To support that, we need to
