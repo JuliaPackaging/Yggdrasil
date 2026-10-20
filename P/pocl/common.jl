@@ -166,6 +166,8 @@ function build_script(standalone=false)
     #   SPIR-V (upstream PR #2349, in `main`)
     # - 0027: compute INT_MIN of the operand's width in SanitizeUBofDivRem, which LLVM's
     #   assertions reject for widths below 64 bits (upstream PR #2397, in `main`)
+    # - 0028, 0029: fail commands whose wait-list dependency had already failed instead of
+    #   running them, which could crash a worker thread (upstream PR #2214, in `main`)
     for patch in $WORKSPACE/srcdir/patches/pocl/*.patch; do
         atomic_patch -p1 $patch
     done
