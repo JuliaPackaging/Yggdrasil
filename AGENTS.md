@@ -4,7 +4,8 @@ This guide helps AI agents generate correct `build_tarballs.jl` recipes for Bina
 
 ## Prerequisites
 
-- **Julia**: Use Julia 1.13, installed with [juliaup](https://github.com/JuliaLang/juliaup) so `julia +1.13` works (CI runs 1.13.2; `.ci/bb1_project/Manifest.toml` is resolved for it, and the repo-root `Project.toml`/`Manifest.toml` are symlinks to it).
+- **Julia**: Use the version named by `julia_version` at the top of the repo-root `Manifest.toml`, which is what CI runs. With [juliaup](https://github.com/JuliaLang/juliaup), make it the default channel.
+- **Project**: Use the repo-root project. Plain `--project` finds it from almost any directory in the repo.
 - **Supported Platforms**: Linux glibc (x86_64, i686, aarch64, armv7l, armv6l, ppc64le, riscv64), Linux musl (x86_64, i686, aarch64, armv7l, armv6l), Windows (x86_64, i686), macOS (x86_64, aarch64), FreeBSD (x86_64, aarch64)
 - Use `supported_platforms()` to get all available platforms
 
@@ -314,7 +315,7 @@ Test the generated JLL locally before merging, so a broken package is not automa
 
 ```bash
 cd X/PackageName
-julia --project=/path/to/Yggdrasil build_tarballs.jl --verbose --deploy=local x86_64-linux-gnu
+julia --project build_tarballs.jl --verbose --deploy=local x86_64-linux-gnu
 ```
 
 This puts tarballs in `products/` and writes a local JLL package to `~/.julia/dev/PackageName_jll/`. The trailing triplet builds only that platform; omit it to build all of them. Use it for local testing only, never narrow `platforms` in the recipe to match. While iterating on a failing build, add `--debug` to drop into the sandbox shell on failure. On macOS, local builds need Docker.
@@ -643,16 +644,16 @@ This repo ships an MCP server for AI coding agents, configured in `.mcp.json`:
 
 The server runs from the `.claude/` Julia environment and shells out to the
 repo-root project of the checkout it lives in for `build_tarballs.jl --debug`.
-Both `.mcp.json` and the server start Julia as `julia +1.13`, so it needs
-juliaup with 1.13 installed.
+The server and its subprocesses run on the `julia` found on `PATH`, so it must
+be the version from [Prerequisites](#prerequisites).
 `.claude/Manifest.toml` is not checked in, so it resolves against the latest
 `[sources]` branches. On a fresh checkout or worktree instantiate both once,
 otherwise `bb-sandbox` fails to connect with a missing-package error (e.g.
 `ClaudeMCPTools`). From the checkout root:
 
 ```bash
-julia +1.13 --project=.claude -e 'using Pkg; Pkg.instantiate()'
-julia +1.13 --project -e 'using Pkg; Pkg.instantiate()'
+julia --project=.claude -e 'using Pkg; Pkg.instantiate()'
+julia --project -e 'using Pkg; Pkg.instantiate()'
 ```
 
 After that, the agent's MCP status should show `bb-sandbox` connected.

@@ -18,7 +18,7 @@ const PROJECT_ROOT = dirname(dirname(SERVER_DIR))  # .claude/mcp-bb-sandbox -> .
 const CLAUDE_PROJECT = joinpath(PROJECT_ROOT, ".claude")
 const RUN_SHELL_SCRIPT = joinpath(SERVER_DIR, "run_shell.jl")
 
-const JULIA_CMD = ["julia", "+1.13"]
+const JULIA_CMD = [joinpath(Sys.BINDIR, Base.julia_exename())]  # same Julia as the server
 
 function log_msg(msg)
     println(stderr, "[bb-sandbox] ", msg)
