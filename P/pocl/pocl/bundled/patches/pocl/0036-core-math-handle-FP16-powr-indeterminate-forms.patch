@@ -1,0 +1,40 @@
+From e570e579bedab6ad622a825f77491c6b53ffe8ee Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Thu, 2 Jul 2026 13:56:01 +0200
+Subject: [PATCH] core-math: handle FP16 powr indeterminate forms
+
+powr is implemented on top of the half `pow` builtin, which returns 1 for the
+indeterminate forms 1^inf, 0^0 and inf^0. powr must instead return NaN for all
+three (OpenCL powr special values). Add the three overrides between the x<0 and
+the NaN-propagation checks; the vector overloads inherit the fix through
+DEFINE_FP16_EXPR_V_VV.
+
+This fixes the CTS math_brute_force powr fp16 failure reported when building
+with FP16 forced on under ENABLE_CONFORMANCE (powr(1, inf) returned 1 instead
+of NaN).
+
+Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+(cherry picked from commit ed1a18051784e7f7351d13eb50d475dc97cc10c6)
+---
+ lib/kernel/core-math/promotedf16.cl | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/lib/kernel/core-math/promotedf16.cl b/lib/kernel/core-math/promotedf16.cl
+index 9a275303e..c03e39316 100644
+--- a/lib/kernel/core-math/promotedf16.cl
++++ b/lib/kernel/core-math/promotedf16.cl
+@@ -248,6 +248,11 @@ powr (half x, half y)
+   x = (xu == (ushort)0x8000) ? (half)0 : x;       /* -0 -> +0 */
+   half r = pow (x, y);
+   r = (xu > (ushort)0x8000) ? (half)NAN : r;       /* x < 0 -> NaN */
++  /* pow() returns 1 for the indeterminate forms, but powr() must return NaN:
++     powr(1, +-inf), powr(+-0, +-0) and powr(+inf, +-0) are all NaN. */
++  r = (x == (half)1 && isinf (y)) ? (half)NAN : r;       /* 1^inf   */
++  r = (x == (half)0 && y == (half)0) ? (half)NAN : r;    /* 0^0     */
++  r = (isinf (x) && y == (half)0) ? (half)NAN : r;       /* inf^0   */
+   r = isnan (x) ? (half)NAN : r;
+   r = isnan (y) ? (half)NAN : r;
+   return r;
+-- 
+2.56.0
+
