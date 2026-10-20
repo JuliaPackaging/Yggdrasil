@@ -4,11 +4,11 @@ using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
 name = "libsingular_julia"
-version = v"0.47.17"
+version = v"0.47.18"
 
 # Collection of sources required to build libsingular-julia
 sources = [
-    GitSource("https://github.com/oscar-system/Singular.jl.git", "94fd0656ac3bc05f82b50572e2fdb55552312a12"),
+    GitSource("https://github.com/oscar-system/Singular.jl.git", "ed003f3ea067fe75f05015c863f4bb065e6c1110"),
 ]
 
 # Bash recipe for building across all platforms
@@ -20,7 +20,6 @@ cmake . -B build \
    -DCMAKE_INSTALL_PREFIX="$prefix" \
    -DCMAKE_FIND_ROOT_PATH="$prefix" \
    -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
-   -DCMAKE_CXX_STANDARD=14 \
    -DCMAKE_BUILD_TYPE=Release
 
 VERBOSE=ON cmake --build build --config Release --target install -- -j${nproc}
@@ -34,13 +33,8 @@ install_license ../../LICENSE.md
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl")
-filter!(>=(v"1.10"), julia_versions)
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 filter!(!Sys.iswindows, platforms) # Singular does not support Windows
-
-# Exclude aarch64 FreeBSD for the time being
-filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
-filter!(p -> !(arch(p) == "riscv64"), platforms)
 
 platforms = expand_cxxstring_abis(platforms)
 
@@ -51,10 +45,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(;name="libjulia_jll", version="1.11.2")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version="1.11.4")),
     BuildDependency("GMP_jll"),
     BuildDependency("MPFR_jll"),
-    Dependency("libcxxwrap_julia_jll"; compat = "~0.14.11"),
+    Dependency("libcxxwrap_julia_jll"; compat = "~0.14.12"),
     # we do not set a compat entry for Singular_jll -- instead we leave it to
     # Singular.jl to ensure the right versions of libsingular_julia_jll and
     # Singular_jll are paired. This gives us flexibility in the development
