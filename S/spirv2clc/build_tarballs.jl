@@ -6,12 +6,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "spirv2clc"
-version = v"0.2.5"
+version = v"0.2.6"
 
 # Collection of sources required to build spirv2clc
 sources = [
     GitSource("https://github.com/JuliaGPU/spirv2clc",
-              "1eea7ba6d36f11349a4598b52253e585f50e1865")
+              "53e9d993b1154debdc36033034039d08f77cc076")
 ]
 
 # Bash recipe for building across all platforms
@@ -48,27 +48,28 @@ CMAKE_FLAGS+=(-DSPIRV2CLC_UPDATE_SUBMODULES=OFF)
 # OpenCL test layer here, so skip configuring/building them entirely.
 CMAKE_FLAGS+=(-DBUILD_TESTING=OFF)
 
-# XXX: the library only has a C++ API, so we don't ship it; build just the tool.
-#CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
-
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
-ninja -C build -j ${nproc} spirv2clc
+ninja -C build -j ${nproc} spirv2clc libspirv2clc-c
 
-# Install only the `tools` component, i.e. the command-line translator. The
-# build also produces libspirv2clc (a C++-only library) and vendored
-# SPIR-V/OpenCL headers, none of which are useful as a JLL.
+# Install the command-line translator (`tools`) and the shared library with the
+# C API and its header (`c_api`). The build also produces a static library with
+# a C++ API and vendored SPIR-V/OpenCL headers, which are of no use in a JLL.
 cmake --install build --component tools
+cmake --install build --component c_api
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.
-# We only ship a standalone executable (no C++ library), so there is no ABI
-# boundary for consumers and the C++ string ABI variants would be redundant.
+# The library only exports a C API, so there is no C++ ABI boundary for
+# consumers and the C++ string ABI variants would be redundant.
 platforms = supported_platforms()
 
-# The products that we will ensure are always built
+# The products that we will ensure are always built. `libspirv2clc` is not
+# dlopen'ed at `__init__` time: most users never need it (only devices without
+# SPIR-V support do), and the first `ccall` into it loads it on demand.
 products = [
     ExecutableProduct("spirv2clc", :spirv2clc),
+    LibraryProduct("libspirv2clc", :libspirv2clc; dont_dlopen=true),
 ]
 
 # Dependencies that must be installed before this package can be built
