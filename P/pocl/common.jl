@@ -170,6 +170,9 @@ function build_script(standalone=false)
     #   running them, which could crash a worker thread (upstream PR #2214, in `main`)
     # - 0030: report the error when clCreateBuffer can't register a buffer's device address,
     #   instead of returning NULL with CL_SUCCESS (upstream PR #2376 at 56d635dc8)
+    # - 0031: fill system SVM pointers (e.g. malloc'd memory) in clEnqueueSVMMemFill and
+    #   clEnqueueMemFillINTEL directly instead of crashing on their missing shadow buffer
+    #   (upstream PR #2378 at 08673f845; JuliaGPU/OpenCL.jl#536)
     for patch in $WORKSPACE/srcdir/patches/pocl/*.patch; do
         atomic_patch -p1 $patch
     done
