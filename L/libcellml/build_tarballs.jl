@@ -4,12 +4,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "libcellml"
-version = v"0.7.0"
+version = v"0.7.2"
 
 sources = [
     GitSource(
         "https://github.com/cellml/libcellml",
-        "ac6ed5c348418e273e428a28ec156c0b14ec106b"),
+        "84e1b9daed0b0276b272a74d0270a44729c382ba"),
 ]
 
 # https://libcellml.org/documentation/installation/build_from_source
