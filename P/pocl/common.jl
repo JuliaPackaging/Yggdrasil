@@ -185,6 +185,9 @@ function build_script(standalone=false)
     #   in `main`)
     # - 0037: use the CORE-math rsqrt for FP16, as 1/sqrt isn't accurate enough (upstream
     #   commit 154ffcace, in `main`)
+    # - 0038-0040: implement clEnqueueWaitForEvents, a stub returning CL_INVALID_OPERATION, by
+    #   forwarding to clEnqueueBarrierWithWaitList (upstream PR #2377, in `main`, without its
+    #   remote and CUDA driver commits; JuliaGPU/OpenCL.jl#538)
     for patch in $WORKSPACE/srcdir/patches/pocl/*.patch; do
         atomic_patch -p1 $patch
     done
