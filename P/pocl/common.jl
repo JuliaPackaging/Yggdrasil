@@ -173,6 +173,8 @@ function build_script(standalone=false)
     # - 0031: fill system SVM pointers (e.g. malloc'd memory) in clEnqueueSVMMemFill and
     #   clEnqueueMemFillINTEL directly instead of crashing on their missing shadow buffer
     #   (upstream PR #2378 at 08673f845; JuliaGPU/OpenCL.jl#536)
+    # - 0032: return the binaries of programs that haven't been built from clGetProgramInfo
+    #   (upstream PR #2379 at 023e7171c; JuliaGPU/OpenCL.jl#537)
     for patch in $WORKSPACE/srcdir/patches/pocl/*.patch; do
         atomic_patch -p1 $patch
     done
