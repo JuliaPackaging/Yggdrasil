@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Gzip"
-version = v"1.14.0"
+version = v"1.15.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://ftp.gnu.org/gnu/gzip/gzip-$(version.major).$(version.minor).tar.xz",
-                  "01a7b881bd220bfdf615f97b8718f80bdfd3f6add385b993dcf6efd14e8c0ac6"),
+                  "9aa0cc780dec156b8282844833b342ab7cb08c25d2cd9a1869cdd0df31deff48"),
 ]
 
 # Bash recipe for building across all platforms
