@@ -19,7 +19,7 @@ const CI_PROJECT = joinpath(PROJECT_ROOT, ".ci", "bb1_project")
 const CLAUDE_PROJECT = joinpath(PROJECT_ROOT, ".claude")
 const RUN_SHELL_SCRIPT = joinpath(SERVER_DIR, "run_shell.jl")
 
-const JULIA_CMD = ["julia", "+1.12"]
+const JULIA_CMD = ["julia", "+1.13"]
 
 function log_msg(msg)
     println(stderr, "[bb-sandbox] ", msg)
