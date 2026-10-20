@@ -4,7 +4,7 @@ This guide helps AI agents generate correct `build_tarballs.jl` recipes for Bina
 
 ## Prerequisites
 
-- **Julia**: Use Julia 1.13 (CI runs 1.13.2; `.ci/Manifest.toml` is resolved for it).
+- **Julia**: Use Julia 1.13 (CI runs 1.13.2).
 - **Supported Platforms**: Linux glibc (x86_64, i686, aarch64, armv7l, armv6l, ppc64le, riscv64), Linux musl (x86_64, i686, aarch64, armv7l, armv6l), Windows (x86_64, i686), macOS (x86_64, aarch64), FreeBSD (x86_64, aarch64)
 - Use `supported_platforms()` to get all available platforms
 
@@ -495,7 +495,6 @@ Examples:
 ## Pull Requests
 
 - One recipe per PR. Never touch another recipe's files, even whitespace: any change to a `build_tarballs.jl` triggers re-registration.
-- Don't edit `.ci/Manifest.toml`; maintainers do that with the Update Manifest workflow.
 - Don't add non-recipe files (e.g. `.gitattributes`) under a recipe directory.
 - CI only rebuilds a recipe when a file inside its directory changes. To rebuild the same upstream version, bump the `# Build trigger: N` line (see [Rebuilding Without Recipe Changes](#rebuilding-without-recipe-changes)).
 - Don't stack PRs. A PR that depends on another's JLL cannot pass CI until that JLL is registered, so wait for the first to merge.

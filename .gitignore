@@ -14,3 +14,5 @@ archive/
 .DS_Store
 
 .claude/Manifest.toml
+.ci/bb1_project/Manifest.toml
+.ci/bb2_project/Manifest.toml
