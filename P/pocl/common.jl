@@ -168,6 +168,8 @@ function build_script(standalone=false)
     #   assertions reject for widths below 64 bits (upstream PR #2397, in `main`)
     # - 0028, 0029: fail commands whose wait-list dependency had already failed instead of
     #   running them, which could crash a worker thread (upstream PR #2214, in `main`)
+    # - 0030: report the error when clCreateBuffer can't register a buffer's device address,
+    #   instead of returning NULL with CL_SUCCESS (upstream PR #2376 at 56d635dc8)
     for patch in $WORKSPACE/srcdir/patches/pocl/*.patch; do
         atomic_patch -p1 $patch
     done
