@@ -1,4 +1,4 @@
-From 0d69ac9cbea3816d294e1c36adfab1150cbeefe0 Mon Sep 17 00:00:00 2001
+From cba9407b3b6a6d715556a363bf1c363c089d3dfa Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Mon, 19 Oct 2026 17:20:40 +0200
 Subject: [PATCH] Report the stack estimate as CL_KERNEL_PRIVATE_MEM_SIZE on
@@ -35,10 +35,10 @@ index 04f200158..f169c2b98 100644
            POCL_RETURN_GETINFO (cl_ulong, 0);
        }
 diff --git a/lib/CL/pocl_llvm_build.cc b/lib/CL/pocl_llvm_build.cc
-index 17ca771d0..3dbf4f400 100644
+index 70df41f52..f6da4866b 100644
 --- a/lib/CL/pocl_llvm_build.cc
 +++ b/lib/CL/pocl_llvm_build.cc
-@@ -226,7 +226,10 @@ static bool generateProgramBC(PoclLLVMContextData *Context, llvm::Module *Mod,
+@@ -231,7 +231,10 @@ static bool generateProgramBC(PoclLLVMContextData *Context, llvm::Module *Mod,
             /*ErrorOnUnresolved=*/true))
      return true;
  
@@ -80,11 +80,11 @@ index d80e8d1b6..645786a67 100644
              Device->work_group_stack_size / EstStackSize;
          if (meta->max_workgroup_size == nullptr)
 diff --git a/tests/runtime/test_cl_pocl_host_kernel.c b/tests/runtime/test_cl_pocl_host_kernel.c
-index 963274915..cd2c542e1 100644
+index 9bab90608..656c3c04c 100644
 --- a/tests/runtime/test_cl_pocl_host_kernel.c
 +++ b/tests/runtime/test_cl_pocl_host_kernel.c
-@@ -69,6 +69,13 @@ static const char *source
-     "  out[i] = 1;\n"
+@@ -74,6 +74,13 @@ static const char *source
+     "  out[0] = v + v;\n"
      "}\n"
      "\n"
 +    "kernel void big_private (global int *out, int x) {\n"
@@ -97,7 +97,7 @@ index 963274915..cd2c542e1 100644
      "#ifndef NO_IMAGES\n"
      "kernel void image (read_only image2d_t img) {}\n"
      "#endif\n";
-@@ -387,6 +394,17 @@ main (void)
+@@ -426,6 +433,17 @@ main (void)
    if (test_ids (ids, device, offset))
      return EXIT_FAILURE;
  

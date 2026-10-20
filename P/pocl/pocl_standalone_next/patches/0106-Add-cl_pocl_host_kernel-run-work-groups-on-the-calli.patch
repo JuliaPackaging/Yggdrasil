@@ -1,4 +1,4 @@
-From ac9ba99e327b13bb426c9a2344b25729a914671c Mon Sep 17 00:00:00 2001
+From bd219c60f1ab77dd403533d5af2bc22d60e6bcc3 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Mon, 19 Oct 2026 17:18:29 +0200
 Subject: [PATCH] Add cl_pocl_host_kernel: run work-groups on the calling
@@ -22,19 +22,19 @@ a few nanoseconds.
 ---
  CMakeLists.txt                                |   2 +-
  doc/sphinx/source/extensions.rst              |  17 +
- include/CL/cl_ext_pocl.h                      |  98 ++++
+ include/CL/cl_ext_pocl.h                      | 100 ++++
  lib/CL/CMakeLists.txt                         |   1 +
  ...clGetExtensionFunctionAddressForPlatform.c |  12 +
- lib/CL/clHostKernelPOCL.c                     | 301 ++++++++++++
+ lib/CL/clHostKernelPOCL.c                     | 319 +++++++++++
  lib/CL/devices/basic/basic.c                  |   3 +
  lib/CL/devices/common.c                       |   1 +
- lib/CL/devices/common_utils.c                 | 218 ++++++++
+ lib/CL/devices/common_utils.c                 | 232 ++++++++
  lib/CL/devices/common_utils.h                 |  17 +
- lib/CL/pocl_cl.h                              |  46 ++
+ lib/CL/pocl_cl.h                              |  50 ++
  lib/CL/pocl_intfn.h                           |   7 +
  tests/runtime/CMakeLists.txt                  |  15 +
- tests/runtime/test_cl_pocl_host_kernel.c      | 464 ++++++++++++++++++
- 14 files changed, 1201 insertions(+), 1 deletion(-)
+ tests/runtime/test_cl_pocl_host_kernel.c      | 504 ++++++++++++++++++
+ 14 files changed, 1279 insertions(+), 1 deletion(-)
  create mode 100644 lib/CL/clHostKernelPOCL.c
  create mode 100644 tests/runtime/test_cl_pocl_host_kernel.c
 
@@ -80,10 +80,10 @@ index faf3cc399..9041de343 100644
  ~~~~~~~~~~~~~~~~~~~~~~~
  
 diff --git a/include/CL/cl_ext_pocl.h b/include/CL/cl_ext_pocl.h
-index c2b031e80..04a72f221 100644
+index c2b031e80..e10db2605 100644
 --- a/include/CL/cl_ext_pocl.h
 +++ b/include/CL/cl_ext_pocl.h
-@@ -473,6 +473,104 @@ extern CL_API_ENTRY cl_int CL_API_CALL clSetKernelArgDevicePointerEXT (
+@@ -473,6 +473,106 @@ extern CL_API_ENTRY cl_int CL_API_CALL clSetKernelArgDevicePointerEXT (
  
  #endif // cl_khr_command_buffer
  
@@ -106,7 +106,9 @@ index c2b031e80..04a72f221 100644
 + * are done. It takes no locks and doesn't allocate. arg_values[i] points to
 + * the value of argument i, as clSetKernelArg would take it, except that
 + * pointer arguments take the address the kernel uses (an SVM, USM or device
-+ * address); entries for __local arguments are ignored. scratch must point to
++ * address) and that the value of a struct must be aligned to the struct's
++ * alignment (values of other types are copied if they aren't aligned);
++ * entries for __local arguments are ignored. scratch must point to
 + * CL_HOST_KERNEL_SCRATCH_SIZE_POCL bytes aligned to
 + * CL_HOST_KERNEL_SCRATCH_ALIGNMENT_POCL that no concurrent call uses; it
 + * holds the __local memory and the printf buffer. On x86 and AArch64, the
@@ -225,10 +227,10 @@ index 7b9d934ba..d544c8b3c 100644
  
 diff --git a/lib/CL/clHostKernelPOCL.c b/lib/CL/clHostKernelPOCL.c
 new file mode 100644
-index 000000000..7ec7d3c88
+index 000000000..1279ac673
 --- /dev/null
 +++ b/lib/CL/clHostKernelPOCL.c
-@@ -0,0 +1,301 @@
+@@ -0,0 +1,319 @@
 +/* OpenCL runtime library: cl_pocl_host_kernel
 +
 +   Copyright (c) 2026 PoCL developers
@@ -295,6 +297,7 @@ index 000000000..7ec7d3c88
 +    POname (clReleaseKernel) (hk->kernel);
 +  POCL_DESTROY_OBJECT (hk);
 +  POCL_MEM_FREE (hk->local_offsets);
++  POCL_MEM_FREE (hk->arg_alignment_masks);
 +  POCL_MEM_FREE (hk);
 +}
 +
@@ -386,6 +389,10 @@ index 000000000..7ec7d3c88
 +  hk->local_offsets
 +    = malloc (sizeof (size_t) * (meta->num_args + meta->num_locals + 1));
 +  POCL_GOTO_ERROR_COND ((hk->local_offsets == NULL), CL_OUT_OF_HOST_MEMORY);
++  hk->arg_alignment_masks
++    = calloc (meta->num_args + meta->num_locals + 1, sizeof (size_t));
++  POCL_GOTO_ERROR_COND ((hk->arg_alignment_masks == NULL),
++                        CL_OUT_OF_HOST_MEMORY);
 +
 +  size_t offset = 0;
 +  for (cl_uint i = 0; i < meta->num_args; ++i)
@@ -404,10 +411,23 @@ index 000000000..7ec7d3c88
 +            CL_OUT_OF_RESOURCES, "__local argument %u doesn't fit\n", i);
 +        }
 +      else
-+        POCL_GOTO_ERROR_ON (
-+          (ai->type == POCL_ARG_TYPE_IMAGE || ai->type == POCL_ARG_TYPE_SAMPLER
-+           || ai->type == POCL_ARG_TYPE_PIPE),
-+          CL_INVALID_KERNEL, "argument %u is an image, sampler or pipe\n", i);
++        {
++          POCL_GOTO_ERROR_ON ((ai->type == POCL_ARG_TYPE_IMAGE
++                               || ai->type == POCL_ARG_TYPE_SAMPLER
++                               || ai->type == POCL_ARG_TYPE_PIPE),
++                              CL_INVALID_KERNEL,
++                              "argument %u is an image, sampler or pipe\n", i);
++          /* The work-group function loads scalars and vectors with their
++             preferred alignment, which OpenCL C makes their size rounded up
++             to a power of two. The size of structs isn't known. */
++          if (ai->type_size > 0)
++            {
++              size_t align = pocl_size_ceil2 (ai->type_size);
++              if (align > MAX_EXTENDED_ALIGNMENT)
++                align = MAX_EXTENDED_ALIGNMENT;
++              hk->arg_alignment_masks[i] = align - 1;
++            }
++        }
 +    }
 +  for (cl_uint i = 0; i < meta->num_locals; ++i)
 +    {
@@ -557,7 +577,7 @@ index 627d1abd9..17a09e4e9 100644
        { CL_MAKE_VERSION (0, 1, 0), "cl_exp_defined_builtin_kernels" } };
  
 diff --git a/lib/CL/devices/common_utils.c b/lib/CL/devices/common_utils.c
-index 64a966ec9..129ec4c23 100644
+index 64a966ec9..49295f7ef 100644
 --- a/lib/CL/devices/common_utils.c
 +++ b/lib/CL/devices/common_utils.c
 @@ -30,6 +30,7 @@
@@ -568,7 +588,7 @@ index 64a966ec9..129ec4c23 100644
  #include "common_utils.h"
  #include "cpuinfo.h"
  #include "pocl_builtin_kernels.h"
-@@ -184,6 +185,223 @@ pocl_cpu_setup_rm_and_ftz (cl_device_id dev, cl_program prog)
+@@ -184,6 +185,237 @@ pocl_cpu_setup_rm_and_ftz (cl_device_id dev, cl_program prog)
    pocl_set_default_rm ();
  }
  
@@ -735,7 +755,21 @@ index 64a966ec9..129ec4c23 100644
 +    {
 +      size_t offset = hk->local_offsets[i];
 +      if (offset == SIZE_MAX)
-+        args[i] = (void *)arg_values[i];
++        {
++          void *value = (void *)arg_values[i];
++          size_t mask = hk->arg_alignment_masks[i];
++          /* clSetKernelArg copies values into aligned storage; do the same
++             for those that need it. */
++          if (((uintptr_t)value & mask) != 0)
++            {
++              size_t size = hk->kernel->meta->arg_info[i].type_size;
++              char *copy = alloca (size + mask);
++              copy = (char *)(((uintptr_t)copy + mask) & ~(uintptr_t)mask);
++              memcpy (copy, value, size);
++              value = copy;
++            }
++          args[i] = value;
++        }
 +      else
 +        {
 +          local_ptrs[i] = s + offset;
@@ -821,7 +855,7 @@ index f7669ea78..212f1dd71 100644
  }
  #endif
 diff --git a/lib/CL/pocl_cl.h b/lib/CL/pocl_cl.h
-index cb6cba27f..20722456f 100644
+index cb6cba27f..b75769925 100644
 --- a/lib/CL/pocl_cl.h
 +++ b/lib/CL/pocl_cl.h
 @@ -892,6 +892,23 @@ struct pocl_device_ops {
@@ -848,7 +882,7 @@ index cb6cba27f..20722456f 100644
    /** Perform initialization steps and can return additional
     * build options that are required for the device.
     *
-@@ -2088,6 +2105,35 @@ struct _cl_kernel {
+@@ -2088,6 +2105,39 @@ struct _cl_kernel {
    struct _cl_kernel *next;
  };
  
@@ -870,6 +904,10 @@ index cb6cba27f..20722456f 100644
 +     of the __local buffer in the scratch area, or SIZE_MAX for arguments
 +     that aren't __local. */
 +  size_t *local_offsets;
++  /* For the explicit arguments followed by the automatic locals: the
++     alignment that the work-group function loads a value with, minus one,
++     or 0 where it isn't known (structs) or there's no value (__local). */
++  size_t *arg_alignment_masks;
 +  /* The scratch area holds the __local buffers followed by the printf
 +     buffer. */
 +  size_t local_mem_size;
@@ -944,10 +982,10 @@ index f25234628..304a65573 100644
  add_test(NAME "runtime/test_command_buffer" COMMAND "test_command_buffer")
 diff --git a/tests/runtime/test_cl_pocl_host_kernel.c b/tests/runtime/test_cl_pocl_host_kernel.c
 new file mode 100644
-index 000000000..963274915
+index 000000000..9bab90608
 --- /dev/null
 +++ b/tests/runtime/test_cl_pocl_host_kernel.c
-@@ -0,0 +1,464 @@
+@@ -0,0 +1,504 @@
 +/* Tests for the cl_pocl_host_kernel extension.
 +
 +   Copyright (c) 2026 PoCL developers
@@ -979,6 +1017,7 @@ index 000000000..963274915
 +#include <pthread.h>
 +#include <stdio.h>
 +#include <stdlib.h>
++#include <string.h>
 +
 +#include "poclu.h"
 +
@@ -1017,6 +1056,10 @@ index 000000000..963274915
 +    "  if (i == 3)\n"
 +    "    __builtin_trap ();\n"
 +    "  out[i] = 1;\n"
++    "}\n"
++    "\n"
++    "kernel void vector (global float16 *out, float16 v) {\n"
++    "  out[0] = v + v;\n"
 +    "}\n"
 +    "\n"
 +    "#ifndef NO_IMAGES\n"
@@ -1277,6 +1320,37 @@ index 000000000..963274915
 +  return EXIT_SUCCESS;
 +}
 +
++/* A float16 is loaded with 64-byte alignment, so a value that isn't aligned
++   must be copied first. */
++static int
++test_arg_alignment (cl_kernel kernel, cl_device_id device)
++{
++  const size_t local = 1, num_groups = 1;
++  cl_int err;
++  cl_host_kernel_pocl hk = create_hk (kernel, device, 1, &local, &err);
++  CHECK_CL_ERROR (err);
++  void *scratch = alloc_scratch (hk);
++
++  cl_float16 out;
++  cl_float16 *outp = &out;
++  _Alignas (64) unsigned char storage[64 + sizeof (cl_float16)];
++  for (int offset = 0; offset <= 4; offset += 4)
++    {
++      cl_float16 v = { { 0 } };
++      v.s[0] = 1;
++      v.s[15] = 2;
++      memcpy (storage + offset, &v, sizeof (v));
++      const void *args[2] = { &outp, storage + offset };
++      memset (&out, 0, sizeof (out));
++      CHECK_CL_ERROR (run_hk (hk, args, &num_groups, NULL, 0, 1, scratch));
++      TEST_ASSERT (out.s[0] == 2 && out.s[15] == 4);
++    }
++
++  free (scratch);
++  CHECK_CL_ERROR (release_hk (hk));
++  return EXIT_SUCCESS;
++}
++
 +int
 +main (void)
 +{
@@ -1328,10 +1402,13 @@ index 000000000..963274915
 +  CHECK_CL_ERROR (err);
 +  cl_kernel trap = clCreateKernel (program, "trap", &err);
 +  CHECK_CL_ERROR (err);
++  cl_kernel vector = clCreateKernel (program, "vector", &err);
++  CHECK_CL_ERROR (err);
 +
 +  if (test_ids (ids, device, NULL) || test_group_sums (group_sums, device)
 +      || test_fp_env (rounding, device)
-+      || test_trap (trap, context, queue, device))
++      || test_trap (trap, context, queue, device)
++      || test_arg_alignment (vector, device))
 +    return EXIT_FAILURE;
 +  const size_t offset[2] = { 3, 70000 };
 +  if (test_ids (ids, device, offset))
@@ -1386,6 +1463,7 @@ index 000000000..963274915
 +  CHECK_CL_ERROR (clReleaseKernel (group_sums));
 +  CHECK_CL_ERROR (clReleaseKernel (rounding));
 +  CHECK_CL_ERROR (clReleaseKernel (trap));
++  CHECK_CL_ERROR (clReleaseKernel (vector));
 +  /* While handles exist, the program keeps a kernel and can't be rebuilt. */
 +  TEST_ASSERT (clBuildProgram (program, 1, &device, options, NULL, NULL)
 +               == CL_INVALID_OPERATION);
