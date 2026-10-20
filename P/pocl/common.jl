@@ -161,6 +161,9 @@ function build_script(standalone=false)
     # - 0025: keep CPU worker threads that are going to sleep from missing their wake-up
     #   signal, which 0016 made possible and which slowly shrank the pool to a few threads
     #   (upstream PR #2386)
+    # - 0026: fold x / x to 1 instead of 0 in SanitizeUBofDivRem, which runs on x86 builds
+    #   without the SIGFPE handler (Windows, macOS), miscompiling e.g. Julia's `x ÷ x` from
+    #   SPIR-V (upstream PR #2349, in `main`)
     for patch in $WORKSPACE/srcdir/patches/pocl/*.patch; do
         atomic_patch -p1 $patch
     done
