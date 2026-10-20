@@ -12,7 +12,7 @@ version = VersionNumber(upstream_version.major*100+version_offset.major,
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/algebraic-solving/msolve.git", "cc044551f8e202d00691990fd3fd0b1226a88ea2")
+    GitSource("https://github.com/algebraic-solving/msolve.git", "cc044551f8e202d00691990fd3fd0b1226a88ea2"; tag="v$(upstream_version)")
 ]
 
 # Bash recipe for building across all platforms
