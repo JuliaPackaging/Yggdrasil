@@ -1,11 +1,12 @@
 using BinaryBuilder
 
 name = "LMDB"
-version = v"1.0.0"
+version = v"1.0.2"
 
 sources = [
     GitSource("https://git.openldap.org/openldap/openldap.git",
-              "2562c3297402d82bbc049c7e645515edb4079eba"),  # LMDB_1.0.0
+              "c279e0477c713076893e8c2b1a6337e421c15867";
+              tag="LMDB_$(version)"),
     DirectorySource("./bundled"),
 ]
 
