@@ -188,6 +188,9 @@ function build_script(standalone=false)
     # - 0038-0040: implement clEnqueueWaitForEvents, a stub returning CL_INVALID_OPERATION, by
     #   forwarding to clEnqueueBarrierWithWaitList (upstream PR #2377, in `main`, without its
     #   remote and CUDA driver commits; JuliaGPU/OpenCL.jl#538)
+    # - 0041: pass group ids to work-group functions as size_t instead of ulong, which is 32
+    #   bits on 64-bit Windows and left the high half of group_z uninitialized (upstream PR
+    #   #2410)
     for patch in $WORKSPACE/srcdir/patches/pocl/*.patch; do
         atomic_patch -p1 $patch
     done

@@ -1,4 +1,4 @@
-From bd219c60f1ab77dd403533d5af2bc22d60e6bcc3 Mon Sep 17 00:00:00 2001
+From 171a85a6f535a6cb3755895cc38436a7689838c8 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Mon, 19 Oct 2026 17:18:29 +0200
 Subject: [PATCH] Add cl_pocl_host_kernel: run work-groups on the calling
@@ -25,7 +25,7 @@ a few nanoseconds.
  include/CL/cl_ext_pocl.h                      | 100 ++++
  lib/CL/CMakeLists.txt                         |   1 +
  ...clGetExtensionFunctionAddressForPlatform.c |  12 +
- lib/CL/clHostKernelPOCL.c                     | 319 +++++++++++
+ lib/CL/clHostKernelPOCL.c                     | 319 ++++++++++
  lib/CL/devices/basic/basic.c                  |   3 +
  lib/CL/devices/common.c                       |   1 +
  lib/CL/devices/common_utils.c                 | 232 ++++++++
@@ -33,8 +33,8 @@ a few nanoseconds.
  lib/CL/pocl_cl.h                              |  50 ++
  lib/CL/pocl_intfn.h                           |   7 +
  tests/runtime/CMakeLists.txt                  |  15 +
- tests/runtime/test_cl_pocl_host_kernel.c      | 504 ++++++++++++++++++
- 14 files changed, 1279 insertions(+), 1 deletion(-)
+ tests/runtime/test_cl_pocl_host_kernel.c      | 555 ++++++++++++++++++
+ 14 files changed, 1330 insertions(+), 1 deletion(-)
  create mode 100644 lib/CL/clHostKernelPOCL.c
  create mode 100644 tests/runtime/test_cl_pocl_host_kernel.c
 
@@ -982,10 +982,10 @@ index f25234628..304a65573 100644
  add_test(NAME "runtime/test_command_buffer" COMMAND "test_command_buffer")
 diff --git a/tests/runtime/test_cl_pocl_host_kernel.c b/tests/runtime/test_cl_pocl_host_kernel.c
 new file mode 100644
-index 000000000..9bab90608
+index 000000000..5a2ef3611
 --- /dev/null
 +++ b/tests/runtime/test_cl_pocl_host_kernel.c
-@@ -0,0 +1,504 @@
+@@ -0,0 +1,555 @@
 +/* Tests for the cl_pocl_host_kernel extension.
 +
 +   Copyright (c) 2026 PoCL developers
@@ -1060,6 +1060,13 @@ index 000000000..9bab90608
 +    "\n"
 +    "kernel void vector (global float16 *out, float16 v) {\n"
 +    "  out[0] = v + v;\n"
++    "}\n"
++    "\n"
++    "kernel void group_ids (global int *out) {\n"
++    "  size_t x = get_group_id (0), y = get_group_id (1), z = get_group_id (2);\n"
++    "  if (x < get_num_groups (0) && y < get_num_groups (1)\n"
++    "      && z < get_num_groups (2))\n"
++    "    out[(z * get_num_groups (1) + y) * get_num_groups (0) + x] = 1;\n"
 +    "}\n"
 +    "\n"
 +    "#ifndef NO_IMAGES\n"
@@ -1351,6 +1358,46 @@ index 000000000..9bab90608
 +  return EXIT_SUCCESS;
 +}
 +
++/* On Win64, group_z is passed on the stack. Dirty it first, so a group id that
++   is only partially written shows. */
++static __attribute__ ((noinline)) void
++dirty_stack (void)
++{
++  volatile unsigned char junk[16384];
++  for (size_t i = 0; i < sizeof (junk); ++i)
++    junk[i] = 0xff;
++}
++
++static int
++test_group_ids (cl_kernel kernel, cl_device_id device)
++{
++  const size_t local[3] = { 1, 1, 1 }, num_groups[3] = { 2, 3, 4 };
++  enum
++  {
++    N = 2 * 3 * 4
++  };
++  cl_int err;
++  cl_host_kernel_pocl hk = create_hk (kernel, device, 3, local, &err);
++  CHECK_CL_ERROR (err);
++  void *scratch = alloc_scratch (hk);
++
++  int out[N] = { 0 };
++  int *outp = out;
++  const void *args[1] = { &outp };
++  dirty_stack ();
++  CHECK_CL_ERROR (run_hk (hk, args, num_groups, NULL, 0, N, scratch));
++  for (int i = 0; i < N; ++i)
++    if (out[i] != 1)
++      {
++        printf ("FAIL: group %d didn't run with its ids\n", i);
++        return EXIT_FAILURE;
++      }
++
++  free (scratch);
++  CHECK_CL_ERROR (release_hk (hk));
++  return EXIT_SUCCESS;
++}
++
 +int
 +main (void)
 +{
@@ -1404,11 +1451,14 @@ index 000000000..9bab90608
 +  CHECK_CL_ERROR (err);
 +  cl_kernel vector = clCreateKernel (program, "vector", &err);
 +  CHECK_CL_ERROR (err);
++  cl_kernel group_ids = clCreateKernel (program, "group_ids", &err);
++  CHECK_CL_ERROR (err);
 +
 +  if (test_ids (ids, device, NULL) || test_group_sums (group_sums, device)
 +      || test_fp_env (rounding, device)
 +      || test_trap (trap, context, queue, device)
-+      || test_arg_alignment (vector, device))
++      || test_arg_alignment (vector, device)
++      || test_group_ids (group_ids, device))
 +    return EXIT_FAILURE;
 +  const size_t offset[2] = { 3, 70000 };
 +  if (test_ids (ids, device, offset))
@@ -1464,6 +1514,7 @@ index 000000000..9bab90608
 +  CHECK_CL_ERROR (clReleaseKernel (rounding));
 +  CHECK_CL_ERROR (clReleaseKernel (trap));
 +  CHECK_CL_ERROR (clReleaseKernel (vector));
++  CHECK_CL_ERROR (clReleaseKernel (group_ids));
 +  /* While handles exist, the program keeps a kernel and can't be rebuilt. */
 +  TEST_ASSERT (clBuildProgram (program, 1, &device, options, NULL, NULL)
 +               == CL_INVALID_OPERATION);
