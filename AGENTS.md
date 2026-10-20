@@ -660,14 +660,15 @@ This repo ships an MCP server for AI coding agents, configured in `.mcp.json`:
   interactive BinaryBuilder cross-compilation sandbox. Tools: `sandbox_start`,
   `sandbox_exec`, `sandbox_stop`, `sandbox_list`, `sandbox_str_replace_editor`.
 
-The server runs from the `.claude/` Julia environment and shells out to `.ci/`
-for `build_tarballs.jl --debug`. On a fresh checkout instantiate both once,
-otherwise `bb-sandbox` fails to connect with a missing-package error
-(e.g. `ClaudeMCPTools`). From the repo root:
+The server runs from the `.claude/` Julia environment and shells out to the
+repo-root project for `build_tarballs.jl --debug`. `.claude/Manifest.toml` is
+not checked in, so it resolves against the latest `[sources]` branches. On a
+fresh checkout instantiate both once, otherwise `bb-sandbox` fails to connect
+with a missing-package error (e.g. `ClaudeMCPTools`). From the repo root:
 
 ```bash
 julia --project=.claude -e 'using Pkg; Pkg.instantiate()'
-julia --project=.ci -e 'using Pkg; Pkg.instantiate()'
+julia --project -e 'using Pkg; Pkg.instantiate()'
 ```
 
 After that, the agent's MCP status should show `bb-sandbox` connected.
