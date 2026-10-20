@@ -49,11 +49,6 @@ cmake -B build \
     -DPXR_BUILD_DOCUMENTATION=OFF
 cmake --build build --parallel ${nproc}
 cmake --install build
-if [[ "${target}" == *-mingw* ]]; then
-    # Plugins are found in usd/ next to libusd_plug, so move both into ${libdir}
-    mkdir -pv ${libdir}
-    mv -v ${prefix}/lib/*.dll ${prefix}/lib/usd ${libdir}
-fi
 install_license LICENSE.txt NOTICE.txt
 """
 
