@@ -6,7 +6,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "LLVMDowngrader"
-version = v"0.12.1"
+version = v"0.12.2"
 
 # Build `libllvm_downgrade`, a shared library with a small C API (see
 # include/llvm-downgrade.h upstream) over the legacy bitcode writers,
@@ -113,5 +113,4 @@ dependencies = [
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products,
-               dependencies; preferred_gcc_version=v"10", julia_compat="1.6",
-               lazy_artifacts=true)
+               dependencies; preferred_gcc_version=v"10", julia_compat="1.6")
