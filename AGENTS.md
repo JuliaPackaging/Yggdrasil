@@ -533,6 +533,14 @@ Examples:
 
 ## Pull Requests
 
+- Work on each PR in its own git worktree, and keep the main checkout on `master`:
+
+  ```bash
+  git fetch origin master
+  git worktree add -b <branch> ../Yggdrasil-<branch> origin/master
+  ```
+
+  After the PR merges, `git worktree remove ../Yggdrasil-<branch>` and `git branch -D <branch>`.
 - One recipe per PR. Never touch another recipe's files, even whitespace: any change to a `build_tarballs.jl` triggers re-registration.
 - Don't edit `.ci/Manifest.toml`; maintainers do that with the Update Manifest workflow.
 - Don't add non-recipe files (e.g. `.gitattributes`) under a recipe directory.
@@ -700,17 +708,24 @@ This repo ships an MCP server for AI coding agents, configured in `.mcp.json`:
   `sandbox_exec`, `sandbox_stop`, `sandbox_list`, `sandbox_str_replace_editor`.
 
 The server runs from the `.claude/` Julia environment and shells out to the
-repo-root project for `build_tarballs.jl --debug`. `.claude/Manifest.toml` is
-not checked in, so it resolves against the latest `[sources]` branches. On a
-fresh checkout instantiate both once, otherwise `bb-sandbox` fails to connect
-with a missing-package error (e.g. `ClaudeMCPTools`). From the repo root:
+repo-root project of the checkout it lives in for `build_tarballs.jl --debug`.
+It starts Julia as `julia +1.13`, so it needs juliaup with 1.13 installed.
+`.claude/Manifest.toml` is not checked in, so it resolves against the latest
+`[sources]` branches. On a fresh checkout or worktree instantiate both once,
+otherwise `bb-sandbox` fails to connect with a missing-package error (e.g.
+`ClaudeMCPTools`). From the checkout root:
 
 ```bash
-julia --project=.claude -e 'using Pkg; Pkg.instantiate()'
-julia --project -e 'using Pkg; Pkg.instantiate()'
+julia +1.13 --project=.claude -e 'using Pkg; Pkg.instantiate()'
+julia +1.13 --project -e 'using Pkg; Pkg.instantiate()'
 ```
 
 After that, the agent's MCP status should show `bb-sandbox` connected.
+
+`sandbox_start` takes an absolute `build_tarballs_path`, so a server started in
+the main checkout can build a recipe in any worktree. The recipe runs against
+the main checkout's root project; that is fine as long as the worktree's
+`Project.toml` and `Manifest.toml` match it.
 
 ## Additional Resources
 
