@@ -15,7 +15,6 @@ using ClaudeMCPTools
 
 const SERVER_DIR = @__DIR__
 const PROJECT_ROOT = dirname(dirname(SERVER_DIR))  # .claude/mcp-bb-sandbox -> .claude -> root
-const CI_PROJECT = joinpath(PROJECT_ROOT, ".ci", "bb1_project")
 const CLAUDE_PROJECT = joinpath(PROJECT_ROOT, ".claude")
 const RUN_SHELL_SCRIPT = joinpath(SERVER_DIR, "run_shell.jl")
 
@@ -43,7 +42,7 @@ function make_sandbox_cmd(params::AbstractDict)
         isfile(bt_path) || error("build_tarballs.jl not found: $bt_path")
         bt_dir = dirname(bt_path)
         metadata["build_tarballs_path"] = bt_path
-        cmd = Cmd(`$(JULIA_CMD) --project=$CI_PROJECT $bt_path --debug=$debug_mode $platform`; dir=bt_dir)
+        cmd = Cmd(`$(JULIA_CMD) --project=$PROJECT_ROOT $bt_path --debug=$debug_mode $platform`; dir=bt_dir)
         log_msg("Using build_tarballs: $bt_path (debug=$debug_mode)")
     else
         cmd = Cmd(`$(JULIA_CMD) --project=$CLAUDE_PROJECT $RUN_SHELL_SCRIPT $platform $PROJECT_ROOT`; dir=PROJECT_ROOT)
