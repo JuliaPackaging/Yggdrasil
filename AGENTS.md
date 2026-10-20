@@ -4,7 +4,7 @@ This guide helps AI agents generate correct `build_tarballs.jl` recipes for Bina
 
 ## Prerequisites
 
-- **Julia**: Use Julia 1.13 (CI runs 1.13.2; `.ci/Manifest.toml` is resolved for it).
+- **Julia**: Use Julia 1.13 (CI runs 1.13.2; `.ci/bb1_project/Manifest.toml` is resolved for it, and the repo-root `Project.toml`/`Manifest.toml` are symlinks to it).
 - **Supported Platforms**: Linux glibc (x86_64, i686, aarch64, armv7l, armv6l, ppc64le, riscv64), Linux musl (x86_64, i686, aarch64, armv7l, armv6l), Windows (x86_64, i686), macOS (x86_64, aarch64), FreeBSD (x86_64, aarch64)
 - Use `supported_platforms()` to get all available platforms
 
@@ -401,9 +401,6 @@ platforms = expand_cxxstring_abis(platforms)
 
 # Expand Fortran library versions (only for Fortran codes)
 platforms = expand_gfortran_versions(platforms)
-
-# Specific platforms
-platforms = [Platform("x86_64", "linux"), Platform("x86_64", "macos")]
 ```
 
 ### Setting Environment Variables
@@ -421,14 +418,6 @@ Put shared logic in `PackageName/common.jl` and one `build_tarballs.jl` per vari
 ### Platform Augmentation Helpers
 
 `platforms/` also provides `llvm.jl` (`LLVM.augment`, `LLVM.platform`, adds an `llvm_version` tag) and `microarchitectures.jl` (`MicroArchitectures.augment`, `expand_microarchitectures`). Follow an existing consumer.
-
-### Out-of-Source Builds
-
-```bash
-cd ${WORKSPACE}/srcdir
-mkdir build && cd build
-cmake ../package-source
-```
 
 ### Rebuilding Without Recipe Changes
 
@@ -542,7 +531,7 @@ Examples:
 
   After the PR merges, `git worktree remove ../Yggdrasil-<branch>` and `git branch -D <branch>`.
 - One recipe per PR. Never touch another recipe's files, even whitespace: any change to a `build_tarballs.jl` triggers re-registration.
-- Don't edit `.ci/Manifest.toml`; maintainers do that with the Update Manifest workflow.
+- Don't edit the `.ci/bb1_project` or `.ci/bb2_project` manifests; maintainers do that with the Update Manifest workflow.
 - Don't add non-recipe files (e.g. `.gitattributes`) under a recipe directory.
 - CI only rebuilds a recipe when a file inside its directory changes. To rebuild the same upstream version, bump the `# Build trigger: N` line (see [Rebuilding Without Recipe Changes](#rebuilding-without-recipe-changes)).
 - Don't stack PRs. A PR that depends on another's JLL cannot pass CI until that JLL is registered, so wait for the first to merge.
@@ -576,20 +565,6 @@ julia --project=/path/to/Yggdrasil build_tarballs.jl --verbose
 This creates tarballs in the `products/` directory.
 
 ### Step 2: Generate the JLL Package
-
-Use BinaryBuilder to create a local JLL package from your build:
-
-```julia
-using BinaryBuilder
-
-# Change to your package directory
-cd("E/Electron")
-
-# Run the build script to generate JLLs
-run(`julia --project=/path/to/Yggdrasil build_tarballs.jl --deploy=local`)
-```
-
-Or directly from the command line:
 
 ```bash
 julia --project=/path/to/Yggdrasil build_tarballs.jl --deploy=local
@@ -655,13 +630,13 @@ rm -rf products/
 rm -rf ~/.julia/dev/PackageName_jll/
 ```
 
-### Alternative: Use GitHub Actions Preview
+### Alternative: Use CI Artifacts
 
 For complex packages, you can also:
 
 1. Push your branch to GitHub
-2. Wait for the CI to build (creates artifacts)
-3. Download the artifacts from the GitHub Actions run
+2. Wait for the Buildkite build jobs to finish
+3. Download the `products/*` tarballs from each job's Artifacts tab
 4. Test the prebuilt binaries locally
 
 ### Common Issues When Testing
@@ -695,7 +670,7 @@ For complex packages, you can also:
 
 - **Simple C library**: `Z/Zstd/build_tarballs.jl`
 - **CMake with dependencies**: `C/CMake/build_tarballs.jl`
-- **Autotools with patches**: `Z/Zstd/build_tarballs.jl` (`bundled/patches/`)
+- **Meson with patches**: `Z/Zstd/build_tarballs.jl` (`bundled/patches/`)
 - **Platform-specific builds**: `G/Git/build_tarballs.jl`
 - **Multiple sources**: `L/libftd2xx/build_tarballs.jl`
 
