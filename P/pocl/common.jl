@@ -158,6 +158,36 @@ function build_script(standalone=false)
     # - 0024: convert half printf arguments in software instead of through _Float16, whose
     #   libgcc helpers need libgcc_s >= GCC 12 and kept libpocl from loading next to an older
     #   system libgcc_s, e.g. under `nsys profile` (upstream PR #2403)
+    # - 0025: keep CPU worker threads that are going to sleep from missing their wake-up
+    #   signal, which 0016 made possible and which slowly shrank the pool to a few threads
+    #   (upstream PR #2386)
+    # - 0026: fold x / x to 1 instead of 0 in SanitizeUBofDivRem, which runs on x86 builds
+    #   without the SIGFPE handler (Windows, macOS), miscompiling e.g. Julia's `x ÷ x` from
+    #   SPIR-V (upstream PR #2349, in `main`)
+    # - 0027: compute INT_MIN of the operand's width in SanitizeUBofDivRem, which LLVM's
+    #   assertions reject for widths below 64 bits (upstream PR #2397, in `main`)
+    # - 0028, 0029: fail commands whose wait-list dependency had already failed instead of
+    #   running them, which could crash a worker thread (upstream PR #2214, in `main`)
+    # - 0030: report the error when clCreateBuffer can't register a buffer's device address,
+    #   instead of returning NULL with CL_SUCCESS (upstream PR #2376 at 56d635dc8)
+    # - 0031: fill system SVM pointers (e.g. malloc'd memory) in clEnqueueSVMMemFill and
+    #   clEnqueueMemFillINTEL directly instead of crashing on their missing shadow buffer
+    #   (upstream PR #2378 at 08673f845; JuliaGPU/OpenCL.jl#536)
+    # - 0032: return the binaries of programs that haven't been built from clGetProgramInfo
+    #   (upstream PR #2379 at 023e7171c; JuliaGPU/OpenCL.jl#537)
+    # - 0033: link kernels against the vector-math library loaded at run time rather than its
+    #   configure-time path in the build sandbox, which made every kernel link fail without the
+    #   JIT and exported binaries lack native code (upstream PR #2380 at 7169f6086;
+    #   JuliaGPU/OpenCL.jl#540)
+    # - 0034, 0035: return correctly signed zeros from sinpi, cospi, tanpi and atanpi
+    #   (upstream PR #2322, in `main`)
+    # - 0036: return NaN from FP16 powr for 1^inf, 0^0 and inf^0 (upstream commit ed1a18051,
+    #   in `main`)
+    # - 0037: use the CORE-math rsqrt for FP16, as 1/sqrt isn't accurate enough (upstream
+    #   commit 154ffcace, in `main`)
+    # - 0038-0040: implement clEnqueueWaitForEvents, a stub returning CL_INVALID_OPERATION, by
+    #   forwarding to clEnqueueBarrierWithWaitList (upstream PR #2377, in `main`, without its
+    #   remote and CUDA driver commits; JuliaGPU/OpenCL.jl#538)
     for patch in $WORKSPACE/srcdir/patches/pocl/*.patch; do
         atomic_patch -p1 $patch
     done

@@ -1,4 +1,4 @@
-From bd38d1896d4011c5ca527666817f950c5b829eaa Mon Sep 17 00:00:00 2001
+From 7aa193d3fa1a271f6ded0fa21babe6dec22a2fc7 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Mon, 28 Sep 2026 15:23:44 +0200
 Subject: [PATCH] SanitizeUBofDivRem: fold x / x to 1, not 0
