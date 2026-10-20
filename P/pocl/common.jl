@@ -164,6 +164,8 @@ function build_script(standalone=false)
     # - 0026: fold x / x to 1 instead of 0 in SanitizeUBofDivRem, which runs on x86 builds
     #   without the SIGFPE handler (Windows, macOS), miscompiling e.g. Julia's `x ÷ x` from
     #   SPIR-V (upstream PR #2349, in `main`)
+    # - 0027: compute INT_MIN of the operand's width in SanitizeUBofDivRem, which LLVM's
+    #   assertions reject for widths below 64 bits (upstream PR #2397, in `main`)
     for patch in $WORKSPACE/srcdir/patches/pocl/*.patch; do
         atomic_patch -p1 $patch
     done
