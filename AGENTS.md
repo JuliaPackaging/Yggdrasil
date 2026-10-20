@@ -37,7 +37,7 @@ products = [
 ]
 
 dependencies = [
-    Dependency("SomeDep_jll"),
+    Dependency("SomeDep_jll"; compat="1.2.3"),
     # BuildDependency("BuildOnlyDep_jll"),
 ]
 
@@ -46,9 +46,9 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
 
 ## Critical Rules
 
-These are the hard requirements every recipe must satisfy. The "Build Script Reference"
-section below is non-normative reference material (env vars, common build systems,
-optional arguments).
+These are the hard requirements every recipe must satisfy. Special Dependencies,
+File Organization, Commit Messages and Pull Requests are rules too. Everything from
+[Build Script Reference](#build-script-reference) onward is non-normative reference material.
 
 ### Naming
 
@@ -108,8 +108,7 @@ Every declared product must actually be produced by the build on every supported
 - **BuildDependency**: Build-time only (not a dependency for the final JLL)
 - **HostBuildDependency**: Build-time only dependency that needs to run on the build host, not target (not a dependency for the final JLL)
 
-Always add `_jll` suffix: `Dependency("Zlib_jll")`
-
+- Always add the `_jll` suffix.
 - Every `Dependency` gets a `compat=` bound: `Dependency("Zlib_jll"; compat="1.2.13")`.
 - Never remove or loosen an existing bound. Compat strings are set unions, so `"3.0, 3.5"` means the same as `"3.0"`.
 - By default BinaryBuilder builds against the *oldest* version satisfying the bound, so raising the lower bound picks up newer artifacts. A positional pin (`Dependency("X_jll", v"1.2")` or `Dependency(PackageSpec("X_jll", v"1.2"))`) overrides the default: check for one before relying on `compat` alone, and keep it inside the bound or the build errors.
@@ -265,6 +264,145 @@ Concrete rules:
 - Always pass **`dont_dlopen=true`** and **`lazy_artifacts=true`** to `build_tarballs` for CUDA consumers — the sandbox has no driver, so the audit cannot dlopen the libraries. This does not stop the JLL from loading them at init; use `LibraryProduct(...; dont_dlopen=true)` for that.
 - **NVIDIA redistributable archive** SHAs are published per CUDA release in `redistrib_<version>.json`; `cuda_nvcc_redist_source` / `get_sources` in `platforms/cuda.jl` and `C/CUDA/common.jl` handle this — prefer them over hand-rolled `ArchiveSource` URLs.
 
+## File Organization
+
+```text
+PackageName/
+├── build_tarballs.jl
+└── bundled/
+    └── patches/
+        ├── fix1.patch
+        └── fix2.patch
+```
+
+Place in alphabetical directory: `X/XYZ/build_tarballs.jl`
+
+## Commit Messages
+
+Format: `[PackageName] Brief description`
+
+Examples:
+
+- `[Zlib] Update to v1.3.1`
+- `[CMake] Add OpenSSL dependency`
+- `[FFMPEG] Fix build on FreeBSD`
+
+`[skip build]` republishes the JLL without rebuilding (metadata-only changes such as compat bounds). Put it in the body of every commit in the push, never in the header line.
+
+## Pull Requests
+
+- Work on each PR in its own git worktree, and keep the main checkout on `master`:
+
+  ```bash
+  git fetch origin master
+  git worktree add -b <branch> ../Yggdrasil-<branch> origin/master
+  ```
+
+  After the PR merges, `git worktree remove ../Yggdrasil-<branch>` and `git branch -D <branch>`.
+- One recipe per PR. Never touch another recipe's files, even whitespace: any change to a `build_tarballs.jl` triggers re-registration.
+- Don't edit the `.ci/bb1_project` or `.ci/bb2_project` manifests; maintainers do that with the Update Manifest workflow.
+- Don't add non-recipe files (e.g. `.gitattributes`) under a recipe directory.
+- CI only rebuilds a recipe when a file inside its directory changes. To rebuild the same upstream version, bump the `# Build trigger: N` line (see [Rebuilding Without Recipe Changes](#rebuilding-without-recipe-changes)).
+- Don't stack PRs. A PR that depends on another's JLL cannot pass CI until that JLL is registered, so wait for the first to merge.
+- Contributors cannot retry Buildkite jobs; ask a maintainer.
+
+## Testing
+
+Test the generated JLL locally before merging, so a broken package is not automatically registered in General.
+
+### Build
+
+```bash
+cd X/PackageName
+julia --project=/path/to/Yggdrasil build_tarballs.jl --verbose --debug x86_64-linux-gnu
+```
+
+The trailing triplet builds only that platform; omit it to build all of them. Use it for local testing only, never narrow `platforms` in the recipe to match. `--debug` drops into the sandbox shell on failure. Tarballs land in `products/`. On macOS, local builds need Docker.
+
+### Generate the JLL
+
+```bash
+julia --project=/path/to/Yggdrasil build_tarballs.jl --deploy=local x86_64-linux-gnu
+```
+
+This builds and writes a local JLL package to `~/.julia/dev/PackageName_jll/`.
+
+### Test the JLL Package
+
+Create a test script to verify the JLL works:
+
+```julia
+using Pkg
+
+# Add the local JLL package
+Pkg.develop(path=expanduser("~/.julia/dev/PackageName_jll"))
+
+# Now test it
+using PackageName_jll
+
+# Test that products are accessible
+@info "Package path:" PackageName_jll.artifact_dir
+
+# JLLs export each ExecutableProduct as a function named after its symbol.
+# E.g. for `ExecutableProduct("zstd", :zstd)` the wrapper is `Zstd_jll.zstd()`,
+# which returns a Cmd usable with `run` or string interpolation.
+# Replace `executable_name` below with your actual product symbol.
+@info "Executable Cmd:" PackageName_jll.executable_name()
+
+# Try running the executable (if applicable)
+run(`$(PackageName_jll.executable_name()) --version`)
+```
+
+### Test with Dependencies
+
+If your package will be used by other Julia packages, test the integration:
+
+```julia
+# Create a temporary test environment
+using Pkg
+Pkg.activate(mktempdir())
+
+# Add your local JLL
+Pkg.develop(path=expanduser("~/.julia/dev/PackageName_jll"))
+
+# Add a package that should use your JLL
+Pkg.add("SomePackageThatUsesYourJLL")
+
+# Test that it works
+using SomePackageThatUsesYourJLL
+# ... run tests ...
+```
+
+### Clean Up Before Pushing
+
+After testing, clean up the local build artifacts:
+
+```bash
+# Remove generated products
+rm -rfv products/
+
+# Remove the local JLL dev package (optional)
+rm -rfv ~/.julia/dev/PackageName_jll/
+```
+
+### Alternative: Use CI Artifacts
+
+For complex packages, you can also:
+
+1. Push your branch to GitHub
+2. Wait for the Buildkite build jobs to finish
+3. Download the `products/*` tarballs from each job's Artifacts tab
+4. Test the prebuilt binaries locally
+
+### What to Test
+
+- [ ] All products are accessible and have correct paths
+- [ ] Executables run without errors (at minimum `--version` or `--help`)
+- [ ] Libraries can be loaded (`dlopen` doesn't fail)
+- [ ] Dependencies are correctly linked
+- [ ] Platform-specific behavior works (if applicable)
+- [ ] Package imports without warnings or errors
+
 ## Build Script Reference
 
 Reference material for writing the `script` block — environment variables, common
@@ -393,8 +531,9 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fix.patch
 ### Platform Filtering
 
 ```julia
-# Only 64-bit platforms
-platforms = filter(p -> nbits(p) == 64, supported_platforms())
+platforms = supported_platforms()
+# Say what breaks, e.g. "upstream assumes 64-bit pointers"
+filter!(p -> nbits(p) == 64, platforms)
 
 # Expand C++ string ABI variants
 platforms = expand_cxxstring_abis(platforms)
@@ -462,184 +601,21 @@ sources = [
 
 Interpolate `version_string` into URLs, tags, and directory names, and `version` everywhere a `VersionNumber` is needed. Existing recipes call it `version_string` or `version_str`; follow the recipe at hand. The two mechanisms combine, e.g. `G/GSL/GSL@2` has `version_string = "2.8"` and `ygg_version = v"2.8.1"`. Upstream versions with four or more components (`"2.1.12.5"`) do not parse as a `VersionNumber`, so set `version` by hand instead.
 
-## Testing Locally
+## Troubleshooting
 
-```bash
-julia --project=/path/to/Yggdrasil build_tarballs.jl --verbose --debug
-```
+### Build Failures
 
-Use `--debug` to get interactive shell on failure.
+**Can't find headers/libraries**: set the flags in [Setting Environment Variables](#setting-environment-variables).
 
-**Note**: On macOS, you need Docker installed for local testing.
+**Old `config.sub`/`config.guess`**: call `update_configure_scripts` (see [Common Build Systems](#common-build-systems)).
 
-## Common Issues
+**Foreign executable error**: Can't run cross-compiled executables. Patch build system or build tools natively.
 
-### Can't find headers/libraries
+**Missing shared library on PowerPC**: Regenerate configure: `autoreconf -vi` before `./configure`
 
-Add `-I${includedir}` to `CPPFLAGS` or `CFLAGS`/`CXXFLAGS`
-Add `-L${libdir}` to `LDFLAGS`
+**Link errors about unrecognized relocations**: Increase `preferred_gcc_version` to match dependencies
 
-### Old `config.sub`/`config.guess`
-
-Call `update_configure_scripts` before `./configure`
-
-### Foreign executable error
-
-Can't run cross-compiled executables. Patch build system or build tools natively.
-
-### Missing shared library on PowerPC
-
-Regenerate configure: `autoreconf -vi` before `./configure`
-
-### Link errors about unrecognized relocations
-
-Increase `preferred_gcc_version` to match dependencies
-
-## File Organization
-
-```text
-PackageName/
-├── build_tarballs.jl
-└── bundled/
-    └── patches/
-        ├── fix1.patch
-        └── fix2.patch
-```
-
-Place in alphabetical directory: `X/XYZ/build_tarballs.jl`
-
-## Commit Messages
-
-Format: `[PackageName] Brief description`
-
-Examples:
-
-- `[Zlib] Update to v1.3.1`
-- `[CMake] Add OpenSSL dependency`
-- `[FFMPEG] Fix build on FreeBSD`
-
-`[skip build]` republishes the JLL without rebuilding (metadata-only changes such as compat bounds). Put it in the body of every commit in the push, never in the header line.
-
-## Pull Requests
-
-- Work on each PR in its own git worktree, and keep the main checkout on `master`:
-
-  ```bash
-  git fetch origin master
-  git worktree add -b <branch> ../Yggdrasil-<branch> origin/master
-  ```
-
-  After the PR merges, `git worktree remove ../Yggdrasil-<branch>` and `git branch -D <branch>`.
-- One recipe per PR. Never touch another recipe's files, even whitespace: any change to a `build_tarballs.jl` triggers re-registration.
-- Don't edit the `.ci/bb1_project` or `.ci/bb2_project` manifests; maintainers do that with the Update Manifest workflow.
-- Don't add non-recipe files (e.g. `.gitattributes`) under a recipe directory.
-- CI only rebuilds a recipe when a file inside its directory changes. To rebuild the same upstream version, bump the `# Build trigger: N` line (see [Rebuilding Without Recipe Changes](#rebuilding-without-recipe-changes)).
-- Don't stack PRs. A PR that depends on another's JLL cannot pass CI until that JLL is registered, so wait for the first to merge.
-- Contributors cannot retry Buildkite jobs; ask a maintainer.
-
-## Testing JLL Packages Before Merging
-
-Before merging a Yggdrasil PR, you should test the generated JLL package locally to ensure it works correctly. This avoids automatic registration of broken packages in the General registry.
-
-### Step 0: Speed Up Testing (Optional)
-
-For faster local testing, build only for your current platform by passing it as an argument to the build script:
-
-```bash
-julia --project=/path/to/Yggdrasil build_tarballs.jl --verbose --debug x86_64-linux-gnu
-# Or for your current platform:
-# x86_64-apple-darwin20 (macOS x86_64)
-# aarch64-apple-darwin20 (macOS ARM64)
-# x86_64-w64-mingw32 (Windows x86_64)
-```
-
-**Important**: Don't commit platform-specific builds - this is for local testing only.
-
-### Step 1: Build the Package Locally
-
-```bash
-cd PackageName
-julia --project=/path/to/Yggdrasil build_tarballs.jl --verbose
-```
-
-This creates tarballs in the `products/` directory.
-
-### Step 2: Generate the JLL Package
-
-```bash
-julia --project=/path/to/Yggdrasil build_tarballs.jl --deploy=local
-```
-
-This generates a local JLL package in `~/.julia/dev/PackageName_jll/`.
-
-### Step 3: Test the JLL Package
-
-Create a test script to verify the JLL works:
-
-```julia
-using Pkg
-
-# Add the local JLL package
-Pkg.develop(path=expanduser("~/.julia/dev/PackageName_jll"))
-
-# Now test it
-using PackageName_jll
-
-# Test that products are accessible
-@info "Package path:" PackageName_jll.artifact_dir
-
-# JLLs export each ExecutableProduct as a function named after its symbol.
-# E.g. for `ExecutableProduct("zstd", :zstd)` the wrapper is `Zstd_jll.zstd()`,
-# which returns a Cmd usable with `run` or string interpolation.
-# Replace `executable_name` below with your actual product symbol.
-@info "Executable Cmd:" PackageName_jll.executable_name()
-
-# Try running the executable (if applicable)
-run(`$(PackageName_jll.executable_name()) --version`)
-```
-
-### Step 4: Test with Dependencies
-
-If your package will be used by other Julia packages, test the integration:
-
-```julia
-# Create a temporary test environment
-using Pkg
-Pkg.activate(mktempdir())
-
-# Add your local JLL
-Pkg.develop(path=expanduser("~/.julia/dev/PackageName_jll"))
-
-# Add a package that should use your JLL
-Pkg.add("SomePackageThatUsesYourJLL")
-
-# Test that it works
-using SomePackageThatUsesYourJLL
-# ... run tests ...
-```
-
-### Step 5: Clean Up Before Pushing
-
-After testing, clean up the local build artifacts:
-
-```bash
-# Remove generated products
-rm -rf products/
-
-# Remove the local JLL dev package (optional)
-rm -rf ~/.julia/dev/PackageName_jll/
-```
-
-### Alternative: Use CI Artifacts
-
-For complex packages, you can also:
-
-1. Push your branch to GitHub
-2. Wait for the Buildkite build jobs to finish
-3. Download the `products/*` tarballs from each job's Artifacts tab
-4. Test the prebuilt binaries locally
-
-### Common Issues When Testing
+### JLL Testing
 
 **JLL not found after `Pkg.develop`**:
 
@@ -656,15 +632,6 @@ For complex packages, you can also:
 
 - Use a fresh Julia environment for testing
 - Check that dependencies have correct compat bounds
-
-### What to Test
-
-- [ ] All products are accessible and have correct paths
-- [ ] Executables run without errors (at minimum `--version` or `--help`)
-- [ ] Libraries can be loaded (`dlopen` doesn't fail)
-- [ ] Dependencies are correctly linked
-- [ ] Platform-specific behavior works (if applicable)
-- [ ] Package imports without warnings or errors
 
 ## Reference Examples
 
