@@ -8,7 +8,7 @@ version = v"0.47.18"
 
 # Collection of sources required to build libsingular-julia
 sources = [
-    GitSource("https://github.com/oscar-system/Singular.jl.git", "94fd0656ac3bc05f82b50572e2fdb55552312a12"),
+    GitSource("https://github.com/oscar-system/Singular.jl.git", "ed003f3ea067fe75f05015c863f4bb065e6c1110"),
 ]
 
 # Bash recipe for building across all platforms
@@ -35,8 +35,6 @@ install_license ../../LICENSE.md
 include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 filter!(!Sys.iswindows, platforms) # Singular does not support Windows
-
-filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms) # reinterpret_cast of NULL fails, as FreeBSD 14 defines it as nullptr
 
 platforms = expand_cxxstring_abis(platforms)
 
