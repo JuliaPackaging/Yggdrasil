@@ -1,10 +1,10 @@
 using BinaryBuilder
 
 name    = "Git_LFS"
-version = v"3.7.1"
+version = v"3.8.0"
 
 sources = [
-    GitSource("https://github.com/git-lfs/git-lfs.git", "b84b33847fe6458f36ef521534dc0eac953cb379")
+    GitSource("https://github.com/git-lfs/git-lfs.git", "aece9221f8c09221a14395d964806b956289bc07"; tag="v$(version)")
 ]
 
 # Bash recipe for building across all platforms
