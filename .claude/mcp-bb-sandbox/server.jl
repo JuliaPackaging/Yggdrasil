@@ -15,7 +15,7 @@ using ClaudeMCPTools
 
 const SERVER_DIR = @__DIR__
 const PROJECT_ROOT = dirname(dirname(SERVER_DIR))  # .claude/mcp-bb-sandbox -> .claude -> root
-const CI_PROJECT = joinpath(PROJECT_ROOT, ".ci")
+const CI_PROJECT = joinpath(PROJECT_ROOT, ".ci", "bb1_project")
 const CLAUDE_PROJECT = joinpath(PROJECT_ROOT, ".claude")
 const RUN_SHELL_SCRIPT = joinpath(SERVER_DIR, "run_shell.jl")
 
