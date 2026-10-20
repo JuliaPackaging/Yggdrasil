@@ -158,6 +158,9 @@ function build_script(standalone=false)
     # - 0024: convert half printf arguments in software instead of through _Float16, whose
     #   libgcc helpers need libgcc_s >= GCC 12 and kept libpocl from loading next to an older
     #   system libgcc_s, e.g. under `nsys profile` (upstream PR #2403)
+    # - 0025: keep CPU worker threads that are going to sleep from missing their wake-up
+    #   signal, which 0016 made possible and which slowly shrank the pool to a few threads
+    #   (upstream PR #2386)
     for patch in $WORKSPACE/srcdir/patches/pocl/*.patch; do
         atomic_patch -p1 $patch
     done
