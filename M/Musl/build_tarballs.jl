@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "Musl"
-version = v"1.2.3"
+version = v"1.2.6"
 
 # sources to build, such as mingw32, our patches, etc....
 sources = [
     ArchiveSource("https://www.musl-libc.org/releases/musl-$(version).tar.gz",
-                  "7d5b0b6062521e4627e099e4c9dc8248d32a30285e959b7eecaa780cf8cfd4a4"),
+                  "d585fd3b613c66151fc3249e8ed44f77020cb5e6c1e635a616d3f9f82460512a"),
 ]
 
 # Bash recipe for building across all platforms

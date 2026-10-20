@@ -3,16 +3,20 @@
 using BinaryBuilder
 
 name = "CMake"
-version = v"3.31.9"
+version = v"4.4.1"
 
 # Collection of sources required to build CMake
 sources = [
-    GitSource("https://github.com/Kitware/CMake", "622044ce334c8fcae63037077b212bdecf096976"),
+    GitSource("https://github.com/Kitware/CMake", "d1cffecacdfd7d6fb0cda0d1e0bf1ba30b967019"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/CMake
+
+# The musl in our toolchains (1.1.19) predates pthread_getname_np (musl 1.2.3)
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cmlibuv-musl-pthread_getname_np.patch
 
 cmake -B build -G Ninja \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -21,6 +25,8 @@ cmake -B build -G Ninja \
     -DBUILD_TESTING:BOOL=OFF
 cmake --build build --parallel ${nproc}
 cmake --install build
+
+install_license LICENSE.rst
 """
 
 # Build for all supported platforms.

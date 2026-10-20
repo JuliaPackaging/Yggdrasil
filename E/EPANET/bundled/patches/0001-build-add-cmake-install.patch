@@ -1,0 +1,76 @@
+From 8eef044e58769e67b5395d77182d87c258999778 Mon Sep 17 00:00:00 2001
+From: Chengyu HAN <cyhan.dev@outlook.com>
+Date: Thu, 5 Feb 2026 13:17:56 +0800
+Subject: [PATCH] build: add cmake-install
+
+---
+ CMakeLists.txt             | 17 +++++++++++++++++
+ run/CMakeLists.txt         |  4 ++++
+ src/outfile/CMakeLists.txt | 10 ++++++++++
+ 3 files changed, 31 insertions(+)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 5fdcd7c..361a697 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -29,6 +29,8 @@ cmake_minimum_required (VERSION 2.8.8)
+ 
+ project(EPANET)
+ 
++include(GNUInstallDirs)
++
+ # Append local dir to module search path
+ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+ 
+@@ -100,3 +102,18 @@ ELSE(TRUE)
+ ENDIF(MSVC AND "${CMAKE_VS_PLATFORM_NAME}" MATCHES "(Win32)")
+ 
+ target_include_directories(epanet2 PUBLIC ${PROJECT_SOURCE_DIR}/include)
++
++# Install steps
++install(TARGETS epanet2
++    EXPORT epanet2Targets
++    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
++    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
++    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
++)
++install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
++    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
++    FILES_MATCHING PATTERN "*.h"
++)
++install(FILES LICENSE
++    DESTINATION ${CMAKE_INSTALL_DATADIR}/licenses/${PROJECT_NAME}
++)
+diff --git a/run/CMakeLists.txt b/run/CMakeLists.txt
+index 6420176..306d996 100644
+--- a/run/CMakeLists.txt
++++ b/run/CMakeLists.txt
+@@ -31,3 +31,7 @@ if(NOT WIN32)
+ else(NOT WIN32)
+     target_link_libraries(runepanet LINK_PUBLIC epanet2)
+ endif(NOT WIN32)
++
++install(TARGETS runepanet
++    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
++)
+diff --git a/src/outfile/CMakeLists.txt b/src/outfile/CMakeLists.txt
+index 04587f9..4e08406 100644
+--- a/src/outfile/CMakeLists.txt
++++ b/src/outfile/CMakeLists.txt
+@@ -46,3 +46,13 @@ generate_export_header(epanet-output
+ 
+ file(COPY ${CMAKE_CURRENT_BINARY_DIR}/epanet_output_export.h DESTINATION
+   ${CMAKE_CURRENT_SOURCE_DIR}/include)
++
++install(TARGETS epanet-output
++    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
++    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
++    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
++)
++install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
++    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
++    FILES_MATCHING PATTERN "*.h"
++)
+-- 
+2.49.0.windows.1
+

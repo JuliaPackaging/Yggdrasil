@@ -1,48 +1,83 @@
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "libsparseir"
-version = v"0.6.0"
+version = v"0.13.0"
 
 # Collection of sources required to complete build
 sources = [
-    # libsparseir v0.6.0
+    # sparse-ir-rs v0.13.0
     GitSource(
-        "https://github.com/SpM-lab/libsparseir.git",
-        "ae7d8330b7e452cb31b5ded76c5a656f336906a4",
+        "https://github.com/SpM-lab/sparse-ir-rs.git",
+        "396c1b02380f3af310d016572363decbc72fc4e7",
     ),
-    # libxprec v0.7.0
-    GitSource(
-        "https://github.com/tuwien-cms/libxprec.git",
-        "d35f3fa9a962d3f96a1eef63132030fd869c183a"
-    )
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/libsparseir/
+cd ${WORKSPACE}/srcdir/sparse-ir-rs/
 install_license LICENSE
+
+# The double-double arithmetic uses `f64::mul_add`; without the instruction that
+# is a call to the software implementation of `fma` in libm, which makes the SVE
+# about three times slower.  Setting RUSTFLAGS replaces the flags in
+# `.cargo/config.toml` rather than adding to them, so the feature has to be
+# repeated here.  Every platform built below has it: it is mandatory on aarch64,
+# present on x86-64 since 2013 and available on powerpc64le.
+#
+# The workspace profile builds with a single codegen unit, which is the most
+# memory-hungry way to compile the SIMD-heavy dependencies: `strided-kernel`
+# died with a rustc segmentation fault on both x86-64 and aarch64 until the job
+# ran on an agent with more free memory
+# (https://github.com/SpM-lab/sparse-ir-rs/issues/333).  Letting the crates use
+# more codegen units, and building two at a time, keeps the peak down.
+export CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16
+export CARGO_PROFILE_RELEASE_DEBUG=line-tables-only
+export CARGO_BUILD_JOBS=2
+
 if [[ "${target}" == *mingw* ]]; then
-  LBT="${libdir}/libblastrampoline-5.dll"
+    export RUSTFLAGS="-C target-feature=+fma -C link-arg=-L${libdir} -C link-arg=-lblastrampoline-5"
+    cargo build --release --features system-blas
+    install -D -m 755 "target/${rust_target}/release/sparse_ir_capi.${dlext}" \
+        "${libdir}/libsparse_ir_capi.${dlext}"
 else
-  LBT="-lblastrampoline"
+    export RUSTFLAGS="-C target-feature=+fma -C link-arg=-lblastrampoline"
+    cargo build --release --features system-blas
+    install -D -m 755 "target/${rust_target}/release/libsparse_ir_capi.${dlext}" \
+        "${libdir}/libsparse_ir_capi.${dlext}"
 fi
 
-${CXX} -O3 -fPIC -shared -std=c++11 -I${includedir}/eigen3/ -Iinclude -I../libxprec/include ${LBT} src/*.cpp -o ${libdir}/libsparseir.${dlext}
-cp include/sparseir/sparseir.h include/sparseir/spir_status.h include/sparseir/version.h ${includedir}
+cp sparse-ir-capi/include/sparseir/sparseir.h ${includedir}
 """
 
+# Install a newer SDK containing the libc++ atomic symbols required by spindle.
+sources, script = require_macos_sdk("11.0", sources, script)
+
 platforms = supported_platforms()
-platforms = expand_cxxstring_abis(platforms)
+# Build fails: warning: dropping unsupported crate type `cdylib` for target `aarch64-unknown-linux-musl`
+filter!(p -> !(arch(p) == "aarch64" && os(p) == "linux" && libc(p) == "musl"), platforms)
+# Build fails: Couldn't open /proc/mounts
+filter!(p -> !(arch(p) == "x86_64" && os(p) == "linux" && libc(p) == "musl"), platforms)
+# Build fails: ERROR: LoadError: Requested Rust toolchain 1.87.0 not available on platform aarch64-unknown-freebsd
+filter!(p -> !(arch(p) == "aarch64" && os(p) == "freebsd"), platforms)
+# Build fails: warning: dropping unsupported crate type `cdylib` for target `arm-unknown-linux-musleabihf`
+filter!(p -> !(arch(p) == "armv6l"), platforms)
+# Build fails: warning: dropping unsupported crate type `cdylib` for target `armv7-unknown-linux-musleabihf`
+filter!(p -> !(arch(p) == "armv7l"), platforms)
+# Build fails: error: IP-relative addressing requires 64-bit mode
+filter!(p -> !(arch(p) == "i686"), platforms)
+# Build fails: ERROR: LoadError: Requested Rust toolchain 1.87.0 not available on platform riscv64-linux-gnu
+filter!(p -> !(arch(p) == "riscv64"), platforms)
 
 products = [
-    LibraryProduct("libsparseir", :libsparseir),
+    LibraryProduct("libsparse_ir_capi", :libsparseir),
 ]
 
 dependencies = [
-    Dependency("CompilerSupportLibraries_jll"),
-    BuildDependency("Eigen_jll"),
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat="1.10", compilers=[:c, :cxx], preferred_gcc_version=v"8")
+    julia_compat="1.10", compilers=[:c, :rust])

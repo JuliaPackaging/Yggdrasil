@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Xorg_libXxf86vm"
-version = v"1.1.6"
+version = v"1.1.7"
 
 # Collection of sources required to build libXxf86vm
 sources = [
     ArchiveSource("https://www.x.org/archive/individual/lib/libXxf86vm-$(version).tar.xz",
-                  "96af414c73ce1d5449ad04be7f9f27fa8330f844b6dda843ef22e3e1befb3ee3"),
+                  "ae50c0f669e0af5a67cc4cd0f54f21d64a64d2660af883e80e95d3fe51b945d8"),
 ]
 
 # Bash recipe for building across all platforms

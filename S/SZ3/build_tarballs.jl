@@ -3,13 +3,21 @@
 using BinaryBuilder, Pkg
 
 name = "SZ3"
-SZ3_version = v"3.1.7"
-version = v"3.1.8"
+upstream_version = v"3.3.2"
+
+# SZ3 is a C++ header-only library. It's very unlikely to be ABI
+# stable. We probably want to create a new major version for each
+# release we make.
+version_offset = v"0.0.0"
+
+version = VersionNumber(upstream_version.major * 100 + version_offset.major,
+                        upstream_version.minor * 100 + version_offset.minor,
+                        upstream_version.patch * 100 + version_offset.patch)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/szcompressor/SZ3/releases/download/v$(SZ3_version)/SZ3-$(SZ3_version).zip",
-                  "cf3ba7fae82f9483c4089963b9951ba9bf6b9eca5f712727fb92f2390b778aa8"),
+    ArchiveSource("https://github.com/szcompressor/SZ3/releases/download/v$(upstream_version)/SZ3-v$(upstream_version).zip",
+                  "8eadebe5cb5739fc8346d7bf911db66626fc92d1d27e67bc8f962d0d152ef342"),
 ]
 
 # Bash recipe for building across all platforms
@@ -17,17 +25,19 @@ script = raw"""
 cd ${WORKSPACE}/srcdir
 cd SZ3-*
 
+# Building the SZ3 HDF5 filter adds a direct dependency on the MPI libraries. That's a very heavy dependendy,
+# and so we disable building the filter. We could re-enable it as separate package, e.g. `hdf5sz3`.
 hdf5_options=
-if test -f "${includedir}/hdf5.h"; then
-    # HDF5 is available, use it
-    hdf5_options='-DBUILD_H5Z_FILTER=ON'
-else
-    # Create an empty library
-    echo 'int SZ_no_hdf5;' >hdf5sz3.cxx
-    c++ -fPIC -c hdf5sz3.cxx
-    c++ -shared -o libhdf5sz3.${dlext} hdf5sz3.o
-    install -Dvm 755 "libhdf5sz3.${dlext}" "${libdir}/libhdf5sz3.${dlext}"
-fi
+# if test -f "${includedir}/hdf5.h"; then
+#     # HDF5 is available, use it
+#     hdf5_options='-DBUILD_H5Z_FILTER=ON'
+# else
+#     # Create an empty library
+#     echo 'int SZ_no_hdf5;' >hdf5sz3.cxx
+#     c++ -fPIC -c hdf5sz3.cxx
+#     c++ -shared -o libhdf5sz3.${dlext} hdf5sz3.o
+#     install -Dvm 755 "libhdf5sz3.${dlext}" "${libdir}/libhdf5sz3.${dlext}"
+# fi
 
 mkdir build
 cd build
@@ -56,17 +66,13 @@ platforms = expand_cxxstring_abis(platforms)
 # SZ3 requires a 64-bit architecture (and Windows uses 32-bit size_t?)
 filter!(p -> nbits(p) ≥ 64 && !Sys.iswindows(p), platforms)
 
-# There are C++ build errors with musl: the type `uint` is not declared.
-# Try re-enabling this for version > 3.1.7.
-filter!(p -> libc(p) ≠ "musl", platforms)
-
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("mdz", :mdz),
     ExecutableProduct("mdz_smoke_test", :mdz_smoke_test),
     ExecutableProduct("sz3", :sz3),
     ExecutableProduct("sz3_smoke_test", :sz3_smoke_test),
-    LibraryProduct("libhdf5sz3", :libhdf5sz3),
+    # LibraryProduct("libhdf5sz3", :libhdf5sz3),
     LibraryProduct("libSZ3c", :libSZ3c),
 ]
 
@@ -79,10 +85,7 @@ dependencies = [
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
                platforms=filter(Sys.isbsd, platforms)),
     Dependency("GSL_jll"),
-    # We had to restrict compat with HDF5 because of ABI breakage:
-    # https://github.com/JuliaPackaging/Yggdrasil/pull/10347#issuecomment-2662923973
-    # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
-    Dependency("HDF5_jll"; compat="1.14.0 - 1.14.3"),
+    # Dependency("HDF5_jll"; compat="2.1.2"),
     Dependency("Zstd_jll"),
 ]
 

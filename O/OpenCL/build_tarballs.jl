@@ -43,7 +43,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(; name="OpenCL_Headers_jll", version=v"2024.10.24"))
+    BuildDependency(PackageSpec(; name="OpenCL_Headers_jll", version="2024.10.24"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

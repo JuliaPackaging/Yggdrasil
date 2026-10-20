@@ -6,11 +6,11 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "PlutoBook"
-version = v"0.9.0"
+version = v"0.12.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/plutoprint/plutobook.git", "d18e317a76da51816240c203253bfabb72208011"),
+    GitSource("https://github.com/plutoprint/plutobook.git", "1fb1dea07adac92bdf7de492786076c4237ef596"),
 ]
 
 # Bash recipe for building across all platforms

@@ -3,30 +3,35 @@
 using BinaryBuilder
 
 name = "XicTools"
-version = v"4.3.19"
+version = v"4.3.23"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/wrcad/xictools", "c7a50a5fcd71966730e45a5358b8507227ae098c"),
-    DirectorySource("./bundled")
+    GitSource("https://github.com/wrcad/xictools",
+              "a51c6b6386ad923b9da4e66d11513dc2e0fe3997"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/xictools/
 cp Makefile.sample Makefile
-atomic_patch -p0 ${WORKSPACE}/srcdir/patches/Makefile.patch
-atomic_patch -p0 ${WORKSPACE}/srcdir/patches/malloc-2.8.6.c.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/Makefile.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/malloc-2.8.6.c.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/local_malloc-free-init.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/vardb-stdc-format-macros.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/hcimlib-no-x11.patch
 update_configure_scripts
 make config
 make all
-make prefix="${prefix}/usr" install
+make prefix="${prefix}" install
+install -m755 wrspice/bin/wrspice ${prefix}/xictools/wrspice.current/bin/wrspice
 install_license ${WORKSPACE}/srcdir/xictools/license/LICENSE-2.0.txt
-cd ${prefix}/usr/xictools
+cd ${prefix}/xictools
 FILES="wrspice.current/bin/mmjco
 wrspice.current/bin/multidec
 wrspice.current/bin/printtoraw
-wrspice.current/bin/proc2mod
+wrspice.current/bin/csvtoraw
 wrspice.current/bin/wrspice
 wrspice.current/bin/wrspiced
 bin/admsXml
@@ -42,10 +47,6 @@ bin/mrouter
 bin/pipedgen
 bin/pyragen
 bin/vl
-xic.current/bin/wrencode
-xic.current/bin/wrdecode
-xic.current/bin/wrsetpass
-xic.current/bin/xic
 bin/zbuf"
 for file in $FILES; do
     install -Dvm 755 "${file}" "${bindir}/$(basename ${file})"
@@ -72,37 +73,32 @@ platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-	    ExecutableProduct("mmjco", :mmjco),
-	    ExecutableProduct("multidec", :multidec),
-	    ExecutableProduct("printtoraw", :printtoraw),
-	    ExecutableProduct("proc2mod", :proc2mod),
-	    ExecutableProduct("wrspice", :wrspice),
-	    ExecutableProduct("wrspiced", :wrspiced),
-	    ExecutableProduct("admsXml", :admsXml),
-	    ExecutableProduct("busgen", :busgen),
-	    ExecutableProduct("capgen", :capgen),
-	    ExecutableProduct("cubegen", :cubegen),
-	    ExecutableProduct("fastcap", :fastcap),
-	    ExecutableProduct("fasthenry", :fasthenry),
-	    ExecutableProduct("fcpp", :fcpp),
-	    ExecutableProduct("lstpack", :lstpack),
-	    ExecutableProduct("lstunpack", :lstunpack),
-	    ExecutableProduct("mrouter", :mrouter),
-	    ExecutableProduct("pipedgen", :pipedgen),
-	    ExecutableProduct("pyragen", :pyragen),
-	    ExecutableProduct("vl", :vl),
-	    ExecutableProduct("wrdecode", :wrdecode),
-	    ExecutableProduct("wrencode", :wrencode),
-	    ExecutableProduct("xic", :xic),
-	    ExecutableProduct("zbuf", :zbuf),
-	    ]
+    ExecutableProduct("mmjco", :mmjco),
+    ExecutableProduct("multidec", :multidec),
+    ExecutableProduct("printtoraw", :printtoraw),
+    ExecutableProduct("csvtoraw", :csvtoraw),
+    ExecutableProduct("wrspice", :wrspice),
+    ExecutableProduct("wrspiced", :wrspiced),
+    ExecutableProduct("admsXml", :admsXml),
+    ExecutableProduct("busgen", :busgen),
+    ExecutableProduct("capgen", :capgen),
+    ExecutableProduct("cubegen", :cubegen),
+    ExecutableProduct("fastcap", :fastcap),
+    ExecutableProduct("fasthenry", :fasthenry),
+    ExecutableProduct("fcpp", :fcpp),
+    ExecutableProduct("lstpack", :lstpack),
+    ExecutableProduct("lstunpack", :lstunpack),
+    ExecutableProduct("mrouter", :mrouter),
+    ExecutableProduct("pipedgen", :pipedgen),
+    ExecutableProduct("pyragen", :pyragen),
+    ExecutableProduct("vl", :vl),
+    ExecutableProduct("zbuf", :zbuf),
+]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Libtiff_jll"; compat="4.5.1"),
-    Dependency("libpng_jll"),
-    Dependency("JpegTurbo_jll"),
     Dependency("GSL_jll"; compat="~2.7.2"),
+    Dependency("Zlib_jll"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 

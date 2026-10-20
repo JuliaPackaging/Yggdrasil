@@ -1,0 +1,126 @@
+diff --git a/scripts/cmake/FindLocalLLVM.cmake b/scripts/cmake/FindLocalLLVM.cmake
+index 8937b3a83..25e290baf 100644
+--- a/scripts/cmake/FindLocalLLVM.cmake
++++ b/scripts/cmake/FindLocalLLVM.cmake
+@@ -78,34 +78,52 @@ endif()
+ # clang executable, which in, e.g., Ubuntu, lives in a package separate from
+ # libclang-cpp.so.
+ 
+-try_run(TRY_CLANG_RUNS TRY_CLANG_COMPILES ${CMAKE_CURRENT_BINARY_DIR}
+-        ${PROJECT_SOURCE_DIR}/scripts/cmake/try_clang.cc
+-        CMAKE_FLAGS -DINCLUDE_DIRECTORIES=${CLANG_INCLUDE_DIRS}
+-        LINK_LIBRARIES ${ESBMC_CLANG_LIBS}
+-        COMPILE_OUTPUT_VARIABLE TRY_CLANG_COMPILE_OUTPUT
+-        RUN_OUTPUT_VARIABLE CLANG_RESOURCE_DIR)
+-
+-if (NOT TRY_CLANG_COMPILES)
+-  message(FATAL_ERROR "Cannot compile against Clang: ${TRY_CLANG_COMPILE_OUTPUT}")
++if(CMAKE_CROSSCOMPILING)
++  # When cross-compiling we cannot run host binaries, so just verify that
++  # we can compile against Clang and compute CLANG_RESOURCE_DIR from the
++  # LLVM version variables that are already available.
++  try_compile(TRY_CLANG_COMPILES ${CMAKE_CURRENT_BINARY_DIR}
++              ${PROJECT_SOURCE_DIR}/scripts/cmake/try_clang.cc
++              CMAKE_FLAGS -DINCLUDE_DIRECTORIES=${CLANG_INCLUDE_DIRS}
++              LINK_LIBRARIES ${ESBMC_CLANG_LIBS}
++              OUTPUT_VARIABLE TRY_CLANG_COMPILE_OUTPUT)
++  if (NOT TRY_CLANG_COMPILES)
++    message(FATAL_ERROR "Cannot compile against Clang: ${TRY_CLANG_COMPILE_OUTPUT}")
++  endif()
++else()
++  try_run(TRY_CLANG_RUNS TRY_CLANG_COMPILES ${CMAKE_CURRENT_BINARY_DIR}
++          ${PROJECT_SOURCE_DIR}/scripts/cmake/try_clang.cc
++          CMAKE_FLAGS -DINCLUDE_DIRECTORIES=${CLANG_INCLUDE_DIRS}
++          LINK_LIBRARIES ${ESBMC_CLANG_LIBS}
++          COMPILE_OUTPUT_VARIABLE TRY_CLANG_COMPILE_OUTPUT
++          RUN_OUTPUT_VARIABLE CLANG_RESOURCE_DIR)
++  if (NOT TRY_CLANG_COMPILES)
++    message(FATAL_ERROR "Cannot compile against Clang: ${TRY_CLANG_COMPILE_OUTPUT}")
++  endif()
++  if (TRY_CLANG_RUNS EQUAL 0)
++    string(STRIP "${CLANG_RESOURCE_DIR}" CLANG_RESOURCE_DIR)
++    # see clang-toolings's injectResourceDir():
++    # <https://clang.llvm.org/doxygen/Tooling_8cpp_source.html#l00462>
++    if (NOT ("${CLANG_RESOURCE_DIR}" STREQUAL ""))
++      set(CLANG_RESOURCE_DIR "${CLANG_INSTALL_PREFIX}/bin/${CLANG_RESOURCE_DIR}")
++    endif()
++  endif()
+ endif()
+ 
+-if (TRY_CLANG_RUNS EQUAL 0)
+-  string(STRIP "${CLANG_RESOURCE_DIR}" CLANG_RESOURCE_DIR)
+-  # see clang-toolings's injectResourceDir():
+-  # <https://clang.llvm.org/doxygen/Tooling_8cpp_source.html#l00462>
+-  if (NOT ("${CLANG_RESOURCE_DIR}" STREQUAL ""))
+-    set(CLANG_RESOURCE_DIR "${CLANG_INSTALL_PREFIX}/bin/${CLANG_RESOURCE_DIR}")
+-  elseif (${LLVM_VERSION_MAJOR} LESS 16)
++# Fallback: compute CLANG_RESOURCE_DIR from LLVM version if not yet determined
++if (NOT CLANG_RESOURCE_DIR OR "${CLANG_RESOURCE_DIR}" STREQUAL "")
++  if (${LLVM_VERSION_MAJOR} LESS 16)
+     set(CLANG_RESOURCE_DIR "${CLANG_INSTALL_PREFIX}/lib${LLVM_LIBDIR_SUFFIX}/clang/${LLVM_VERSION_MAJOR}.${LLVM_VERSION_MINOR}.${LLVM_VERSION_PATCH}")
+   else()
+     set(CLANG_RESOURCE_DIR "${CLANG_INSTALL_PREFIX}/lib${LLVM_LIBDIR_SUFFIX}/clang/${LLVM_VERSION_MAJOR}")
+   endif()
+-  message(STATUS "Clang resource dir: ${CLANG_RESOURCE_DIR}")
+-  set(ESBMC_CLANG_HEADER_DIR "${CLANG_RESOURCE_DIR}/include")
+-  if (NOT IS_DIRECTORY "${ESBMC_CLANG_HEADER_DIR}")
+-    message(STATUS "Failed to determine path to Clang headers: not a directory: ${ESBMC_CLANG_HEADER_DIR}")
+-    unset(ESBMC_CLANG_HEADER_DIR)
+-  endif()
++endif()
++
++message(STATUS "Clang resource dir: ${CLANG_RESOURCE_DIR}")
++set(ESBMC_CLANG_HEADER_DIR "${CLANG_RESOURCE_DIR}/include")
++if (NOT IS_DIRECTORY "${ESBMC_CLANG_HEADER_DIR}")
++  message(STATUS "Failed to determine path to Clang headers: not a directory: ${ESBMC_CLANG_HEADER_DIR}")
++  unset(ESBMC_CLANG_HEADER_DIR)
+ endif()
+ 
+ if (NOT ${OVERRIDE_CLANG_HEADER_DIR} STREQUAL "")
+diff --git a/src/solvers/z3/CMakeLists.txt b/src/solvers/z3/CMakeLists.txt
+index 1911c633e..facc24e89 100644
+--- a/src/solvers/z3/CMakeLists.txt
++++ b/src/solvers/z3/CMakeLists.txt
+@@ -24,19 +24,35 @@ if(ENABLE_Z3)
+         message(FATAL_ERROR "Could not find libz3, please check Z3_DIR")
+     endif()
+ 
+-    try_run(Z3_RUNS Z3_COMPILES ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/try_z3.c
+-            CMAKE_FLAGS -DINCLUDE_DIRECTORIES=${Z3_INCLUDE_DIRS}
+-            LINK_LIBRARIES ${Z3_LIB} ${OS_Z3_LIBS}
+-            COMPILE_OUTPUT_VARIABLE Z3COMPILESTR
+-            RUN_OUTPUT_VARIABLE Z3_VERSION)
++    if(CMAKE_CROSSCOMPILING)
++        # When cross-compiling we cannot run target binaries.
++        # Verify Z3 compiles and extract version from header.
++        try_compile(Z3_COMPILES ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/try_z3.c
++                    CMAKE_FLAGS -DINCLUDE_DIRECTORIES=${Z3_INCLUDE_DIRS}
++                    LINK_LIBRARIES ${Z3_LIB} ${OS_Z3_LIBS}
++                    OUTPUT_VARIABLE Z3COMPILESTR)
++        # Read version components from z3_version.h
++        foreach(_comp MAJOR MINOR BUILD REVISION)
++            file(STRINGS "${Z3_INCLUDE_DIRS}/z3_version.h" _line REGEX "#define Z3_${_comp}_VERSION +([0-9]+)")
++            string(REGEX REPLACE ".* ([0-9]+)" "\\1" _val "${_line}")
++            set(_z3_${_comp} "${_val}")
++        endforeach()
++        set(Z3_VERSION "${_z3_MAJOR}.${_z3_MINOR}.${_z3_BUILD}.${_z3_REVISION}")
++    else()
++        try_run(Z3_RUNS Z3_COMPILES ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/try_z3.c
++                CMAKE_FLAGS -DINCLUDE_DIRECTORIES=${Z3_INCLUDE_DIRS}
++                LINK_LIBRARIES ${Z3_LIB} ${OS_Z3_LIBS}
++                COMPILE_OUTPUT_VARIABLE Z3COMPILESTR
++                RUN_OUTPUT_VARIABLE Z3_VERSION)
++        string(REGEX MATCH "(Z3 )?([0-9]+.[0-9]+.[0-9]+.[0-9]+)" REGEX_OUTPUT ${Z3_VERSION})
++        set(Z3_VERSION "${CMAKE_MATCH_2}")
++    endif()
+ 
+     if(NOT Z3_COMPILES)
+         message(FATAL_ERROR "Could not use Z3: \n${Z3COMPILESTR}")
+     endif()
+ 
+     message(STATUS "Using Z3 at: ${Z3_LIB}")
+-    string(REGEX MATCH "(Z3 )?([0-9]+.[0-9]+.[0-9]+.[0-9]+)"  REGEX_OUTPUT ${Z3_VERSION})
+-    set(Z3_VERSION "${CMAKE_MATCH_2}")
+     message(STATUS "Z3 version: ${Z3_VERSION}")
+     if(Z3_VERSION VERSION_LESS Z3_MIN_VERSION)
+         message(FATAL_ERROR "Expected version ${Z3_MIN_VERSION} or greater")

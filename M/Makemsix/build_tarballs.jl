@@ -131,7 +131,7 @@ dependencies = [
     Dependency("Zlib_jll", compat="1.2.13"),
     Dependency("Xerces_jll", compat="3.2.4"),
     Dependency("OpenSSL_jll", compat="3.0.16"),
-    HostBuildDependency(PackageSpec(; name="CMake_jll", version=v"3.31.6")),
+    HostBuildDependency(PackageSpec(; name="CMake_jll", version="3.31.6")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

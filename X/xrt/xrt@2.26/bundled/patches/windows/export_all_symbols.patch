@@ -1,0 +1,12 @@
+diff --git a/src/runtime_src/core/common/CMakeLists.txt b/src/runtime_src/core/common/CMakeLists.txt
+index 113695a5b..067e55358 100644
+--- a/src/runtime_src/core/common/CMakeLists.txt
++++ b/src/runtime_src/core/common/CMakeLists.txt
+@@ -98,6 +98,7 @@ add_library(xrt_coreutil_static STATIC
+ set_target_properties(xrt_coreutil PROPERTIES
+   VERSION ${XRT_VERSION_STRING}
+   SOVERSION ${XRT_SOVERSION}
++  WINDOWS_EXPORT_ALL_SYMBOLS ON
+   )
+ 
+ if (NOT WIN32)

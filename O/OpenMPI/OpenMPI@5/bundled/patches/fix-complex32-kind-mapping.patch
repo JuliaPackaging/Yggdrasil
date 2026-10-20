@@ -1,0 +1,386 @@
+Fix Fortran REAL*16 / COMPLEX*32 (MPI_REAL16 / MPI_COMPLEX32) in OpenMPI 5.0.11.
+
+5.0.11 changed the C type backing Fortran REAL*16 and COMPLEX*32 from
+`long double` / `long double _Complex` to `_Float128` / `_Float128 _Complex`.
+The REAL*16 half is a real bug fix: on x86_64 gfortran's REAL*16 is IEEE
+binary128 while C's `long double` is the x87 80-bit format, so MPI_REAL16
+reductions were being done in the wrong format.  But COMPLEX(K) is by
+definition a pair of REAL(K), so the two mappings have to agree -- and the
+COMPLEX*32 half of the change was left incomplete at three levels:
+
+1. configure: OMPI_FORTRAN_CHECK's C-type -> ISO_C_BINDING KIND case
+   statement gained entries for `_Float128`/`__float128` but not for their
+   _Complex forms, so `ofc_type_kind` keeps its default value of 0, the
+   `-le 0` check fires, and configure prints
+
+       configure: WARNING: Compiler COMPLEX*32 and _Float128 _Complex
+       mismatch; MPI datatype unsupported
+
+   leaving OMPI_HAVE_FORTRAN_COMPLEX32=0 -- MPI_COMPLEX32 silently becomes
+   MPI_DATATYPE_NULL.  (Verified against a native 5.0.11 build with
+   gcc/gfortran 11.4 on x86_64; 5.0.10 gives OMPI_HAVE_FORTRAN_COMPLEX32=1.)
+
+2. ompi/datatype: OMPI_KIND_FORTRAN_COMPLEX32 is token-pasted into
+   OMPI_DATATYPE_INITIALIZER_##TYPE, and no C_FLOAT128_COMPLEX alias exists,
+   so ompi_datatype_module.c fails to compile.  The underlying OPAL type is
+   already fully implemented (OPAL_DATATYPE_FLOAT128_COMPLEX = 27, with its
+   initializer, copy functions, pack/unpack cases, size table and datatype
+   object) and ompi_mpi_complex32 is already registered at
+   OMPI_DATATYPE_MPI_COMPLEX32 -- only the OMPI -> OPAL alias is missing.
+
+3. ompi/op: ompi_op_ddt_map[] maps MPI_COMPLEX32 to
+   OMPI_OP_BASE_TYPE_##OMPI_KIND_FORTRAN_COMPLEX32, and there is no
+   OMPI_OP_BASE_TYPE_C_FLOAT128_COMPLEX, so ompi/op/op.c fails to compile.
+   Add the enum value, the corresponding MPI_SUM / MPI_PROD reduction
+   functions (2-buffer and 3-buffer), and the dispatch-table entry, all
+   following the existing c_long_double_complex pattern and guarded the same
+   way OPAL guards its float128 complex support.
+
+With this, MPI_COMPLEX32 is exactly a pair of MPI_REAL16, the Fortran and C
+types agree, and reductions are performed in binary128 rather than x87.
+
+Platforms whose Fortran REAL*16 is not IEEE binary128 -- notably
+powerpc64le, where it is IBM extended double ("double-double") matching C
+`long double` -- must pin opal_cv_find_type_REAL_16 and
+opal_cv_find_type_COMPLEX_32 to the `long double` forms instead; see
+bundled/files/powerpc64le-linux-gnu.
+
+NOTE: this patch deliberately touches only the generated `configure`, and not
+config/ompi_fortran_check.m4 / config/ompi_setup_mpi_fortran.m4 which it was
+generated from.  Patching the m4 sources makes them newer than aclocal.m4 /
+configure / Makefile.in, which triggers automake's maintainer-mode
+regeneration during `make`; the build environment has no usable
+aclocal/autoconf/automake, so that fails with
+"possibly undefined macro: AC_MSG_ERROR".  The other three files are plain
+C sources/headers and are not autotools inputs, so patching them is safe.
+
+--- a/ompi/datatype/ompi_datatype_internal.h
++++ b/ompi/datatype/ompi_datatype_internal.h
+@@ -614,6 +614,7 @@
+ #define OMPI_DATATYPE_INITIALIZER_C_FLOAT_COMPLEX       OPAL_DATATYPE_INITIALIZER_FLOAT_COMPLEX
+ #define OMPI_DATATYPE_INITIALIZER_C_DOUBLE_COMPLEX      OPAL_DATATYPE_INITIALIZER_DOUBLE_COMPLEX
+ #define OMPI_DATATYPE_INITIALIZER_C_LONG_DOUBLE_COMPLEX OPAL_DATATYPE_INITIALIZER_LONG_DOUBLE_COMPLEX
++#define OMPI_DATATYPE_INITIALIZER_C_FLOAT128_COMPLEX    OPAL_DATATYPE_INITIALIZER_FLOAT128_COMPLEX
+ 
+ /*
+  * Following are the structured types, that cannot be represented
+--- a/ompi/mca/op/op.h
++++ b/ompi/mca/op/op.h
+@@ -167,6 +167,8 @@
+     OMPI_OP_BASE_TYPE_C_DOUBLE_COMPLEX,
+     /* long double complex */
+     OMPI_OP_BASE_TYPE_C_LONG_DOUBLE_COMPLEX,
++    /* __float128 / _Float128 complex */
++    OMPI_OP_BASE_TYPE_C_FLOAT128_COMPLEX,
+ 
+     /** Byte */
+     OMPI_OP_BASE_TYPE_BYTE,
+--- a/ompi/mca/op/base/op_base_functions.c
++++ b/ompi/mca/op/base/op_base_functions.c
+@@ -348,6 +348,11 @@
+ OP_FUNC(sum, c_float_complex, float _Complex, +=)
+ OP_FUNC(sum, c_double_complex, double _Complex, +=)
+ OP_FUNC(sum, c_long_double_complex, long double _Complex, +=)
++#if defined(HAVE__FLOAT128) && defined(HAVE__FLOAT128__COMPLEX)
++OP_FUNC(sum, c_float128_complex, _Float128 _Complex, +=)
++#elif defined(HAVE___FLOAT128) && defined(HAVE___FLOAT128__COMPLEX)
++OP_FUNC(sum, c_float128_complex, __float128 _Complex, +=)
++#endif
+ 
+ /*************************************************************************
+  * Product
+@@ -420,6 +425,11 @@
+ OP_FUNC(prod, c_float_complex, float _Complex, *=)
+ OP_FUNC(prod, c_double_complex, double _Complex, *=)
+ OP_FUNC(prod, c_long_double_complex, long double _Complex, *=)
++#if defined(HAVE__FLOAT128) && defined(HAVE__FLOAT128__COMPLEX)
++OP_FUNC(prod, c_float128_complex, _Float128 _Complex, *=)
++#elif defined(HAVE___FLOAT128) && defined(HAVE___FLOAT128__COMPLEX)
++OP_FUNC(prod, c_float128_complex, __float128 _Complex, *=)
++#endif
+ 
+ /*************************************************************************
+  * Logical AND
+@@ -1008,6 +1018,11 @@
+ OP_FUNC_3BUF(sum, c_float_complex, float _Complex, +)
+ OP_FUNC_3BUF(sum, c_double_complex, double _Complex, +)
+ OP_FUNC_3BUF(sum, c_long_double_complex, long double _Complex, +)
++#if defined(HAVE__FLOAT128) && defined(HAVE__FLOAT128__COMPLEX)
++OP_FUNC_3BUF(sum, c_float128_complex, _Float128 _Complex, +)
++#elif defined(HAVE___FLOAT128) && defined(HAVE___FLOAT128__COMPLEX)
++OP_FUNC_3BUF(sum, c_float128_complex, __float128 _Complex, +)
++#endif
+ 
+ /*************************************************************************
+  * Product
+@@ -1080,6 +1095,11 @@
+ OP_FUNC_3BUF(prod, c_float_complex, float _Complex, *)
+ OP_FUNC_3BUF(prod, c_double_complex, double _Complex, *)
+ OP_FUNC_3BUF(prod, c_long_double_complex, long double _Complex, *)
++#if defined(HAVE__FLOAT128) && defined(HAVE__FLOAT128__COMPLEX)
++OP_FUNC_3BUF(prod, c_float128_complex, _Float128 _Complex, *)
++#elif defined(HAVE___FLOAT128) && defined(HAVE___FLOAT128__COMPLEX)
++OP_FUNC_3BUF(prod, c_float128_complex, __float128 _Complex, *)
++#endif
+ 
+ /*************************************************************************
+  * Logical AND
+@@ -1492,12 +1512,19 @@
+ #define FLOAT_COMPLEX(name, ftype) ompi_op_base_##ftype##_##name##_c_float_complex
+ #define DOUBLE_COMPLEX(name, ftype) ompi_op_base_##ftype##_##name##_c_double_complex
+ #define LONG_DOUBLE_COMPLEX(name, ftype) ompi_op_base_##ftype##_##name##_c_long_double_complex
++#if (defined(HAVE__FLOAT128) && defined(HAVE__FLOAT128__COMPLEX)) \
++ || (defined(HAVE___FLOAT128) && defined(HAVE___FLOAT128__COMPLEX))
++#define FLOAT128_COMPLEX(name, ftype) ompi_op_base_##ftype##_##name##_c_float128_complex
++#else
++#define FLOAT128_COMPLEX(name, ftype) NULL
++#endif
+ 
+ #define COMPLEX(name, ftype)                                                  \
+     [OMPI_OP_BASE_TYPE_C_SHORT_FLOAT_COMPLEX] = SHORT_FLOAT_COMPLEX(name, ftype), \
+     [OMPI_OP_BASE_TYPE_C_FLOAT_COMPLEX] = FLOAT_COMPLEX(name, ftype),         \
+     [OMPI_OP_BASE_TYPE_C_DOUBLE_COMPLEX] = DOUBLE_COMPLEX(name, ftype),       \
+-    [OMPI_OP_BASE_TYPE_C_LONG_DOUBLE_COMPLEX] = LONG_DOUBLE_COMPLEX(name, ftype)
++    [OMPI_OP_BASE_TYPE_C_LONG_DOUBLE_COMPLEX] = LONG_DOUBLE_COMPLEX(name, ftype), \
++    [OMPI_OP_BASE_TYPE_C_FLOAT128_COMPLEX] = FLOAT128_COMPLEX(name, ftype)
+ 
+ /** Byte ****************************************************************/
+ 
+--- a/configure
++++ b/configure
+@@ -31540,6 +31540,8 @@
+             long*double*_Complex) ofc_type_kind=C_LONG_DOUBLE_COMPLEX ;;
+             opal_short_float_t)   ofc_type_kind=C_SHORT_FLOAT         ;;
+             opal_short_float_complex_t) ofc_type_kind=C_SHORT_FLOAT_COMPLEX ;;
++            _Float128*_Complex)   ofc_type_kind=C_FLOAT128_COMPLEX    ;;
++            __float128*_Complex)  ofc_type_kind=C_FLOAT128_COMPLEX    ;;
+             _Float128)            ofc_type_kind=C_FLOAT128            ;;
+             __float128)           ofc_type_kind=C_FLOAT128            ;;
+             *)
+@@ -32291,6 +32293,8 @@
+             long*double*_Complex) ofc_type_kind=C_LONG_DOUBLE_COMPLEX ;;
+             opal_short_float_t)   ofc_type_kind=C_SHORT_FLOAT         ;;
+             opal_short_float_complex_t) ofc_type_kind=C_SHORT_FLOAT_COMPLEX ;;
++            _Float128*_Complex)   ofc_type_kind=C_FLOAT128_COMPLEX    ;;
++            __float128*_Complex)  ofc_type_kind=C_FLOAT128_COMPLEX    ;;
+             _Float128)            ofc_type_kind=C_FLOAT128            ;;
+             __float128)           ofc_type_kind=C_FLOAT128            ;;
+             *)
+@@ -33053,6 +33057,8 @@
+             long*double*_Complex) ofc_type_kind=C_LONG_DOUBLE_COMPLEX ;;
+             opal_short_float_t)   ofc_type_kind=C_SHORT_FLOAT         ;;
+             opal_short_float_complex_t) ofc_type_kind=C_SHORT_FLOAT_COMPLEX ;;
++            _Float128*_Complex)   ofc_type_kind=C_FLOAT128_COMPLEX    ;;
++            __float128*_Complex)  ofc_type_kind=C_FLOAT128_COMPLEX    ;;
+             _Float128)            ofc_type_kind=C_FLOAT128            ;;
+             __float128)           ofc_type_kind=C_FLOAT128            ;;
+             *)
+@@ -33810,6 +33816,8 @@
+             long*double*_Complex) ofc_type_kind=C_LONG_DOUBLE_COMPLEX ;;
+             opal_short_float_t)   ofc_type_kind=C_SHORT_FLOAT         ;;
+             opal_short_float_complex_t) ofc_type_kind=C_SHORT_FLOAT_COMPLEX ;;
++            _Float128*_Complex)   ofc_type_kind=C_FLOAT128_COMPLEX    ;;
++            __float128*_Complex)  ofc_type_kind=C_FLOAT128_COMPLEX    ;;
+             _Float128)            ofc_type_kind=C_FLOAT128            ;;
+             __float128)           ofc_type_kind=C_FLOAT128            ;;
+             *)
+@@ -34557,6 +34565,8 @@
+             long*double*_Complex) ofc_type_kind=C_LONG_DOUBLE_COMPLEX ;;
+             opal_short_float_t)   ofc_type_kind=C_SHORT_FLOAT         ;;
+             opal_short_float_complex_t) ofc_type_kind=C_SHORT_FLOAT_COMPLEX ;;
++            _Float128*_Complex)   ofc_type_kind=C_FLOAT128_COMPLEX    ;;
++            __float128*_Complex)  ofc_type_kind=C_FLOAT128_COMPLEX    ;;
+             _Float128)            ofc_type_kind=C_FLOAT128            ;;
+             __float128)           ofc_type_kind=C_FLOAT128            ;;
+             *)
+@@ -35299,6 +35309,8 @@
+             long*double*_Complex) ofc_type_kind=C_LONG_DOUBLE_COMPLEX ;;
+             opal_short_float_t)   ofc_type_kind=C_SHORT_FLOAT         ;;
+             opal_short_float_complex_t) ofc_type_kind=C_SHORT_FLOAT_COMPLEX ;;
++            _Float128*_Complex)   ofc_type_kind=C_FLOAT128_COMPLEX    ;;
++            __float128*_Complex)  ofc_type_kind=C_FLOAT128_COMPLEX    ;;
+             _Float128)            ofc_type_kind=C_FLOAT128            ;;
+             __float128)           ofc_type_kind=C_FLOAT128            ;;
+             *)
+@@ -36045,6 +36057,8 @@
+             long*double*_Complex) ofc_type_kind=C_LONG_DOUBLE_COMPLEX ;;
+             opal_short_float_t)   ofc_type_kind=C_SHORT_FLOAT         ;;
+             opal_short_float_complex_t) ofc_type_kind=C_SHORT_FLOAT_COMPLEX ;;
++            _Float128*_Complex)   ofc_type_kind=C_FLOAT128_COMPLEX    ;;
++            __float128*_Complex)  ofc_type_kind=C_FLOAT128_COMPLEX    ;;
+             _Float128)            ofc_type_kind=C_FLOAT128            ;;
+             __float128)           ofc_type_kind=C_FLOAT128            ;;
+             *)
+@@ -36802,6 +36816,8 @@
+             long*double*_Complex) ofc_type_kind=C_LONG_DOUBLE_COMPLEX ;;
+             opal_short_float_t)   ofc_type_kind=C_SHORT_FLOAT         ;;
+             opal_short_float_complex_t) ofc_type_kind=C_SHORT_FLOAT_COMPLEX ;;
++            _Float128*_Complex)   ofc_type_kind=C_FLOAT128_COMPLEX    ;;
++            __float128*_Complex)  ofc_type_kind=C_FLOAT128_COMPLEX    ;;
+             _Float128)            ofc_type_kind=C_FLOAT128            ;;
+             __float128)           ofc_type_kind=C_FLOAT128            ;;
+             *)
+@@ -37559,6 +37575,8 @@
+             long*double*_Complex) ofc_type_kind=C_LONG_DOUBLE_COMPLEX ;;
+             opal_short_float_t)   ofc_type_kind=C_SHORT_FLOAT         ;;
+             opal_short_float_complex_t) ofc_type_kind=C_SHORT_FLOAT_COMPLEX ;;
++            _Float128*_Complex)   ofc_type_kind=C_FLOAT128_COMPLEX    ;;
++            __float128*_Complex)  ofc_type_kind=C_FLOAT128_COMPLEX    ;;
+             _Float128)            ofc_type_kind=C_FLOAT128            ;;
+             __float128)           ofc_type_kind=C_FLOAT128            ;;
+             *)
+@@ -38306,6 +38324,8 @@
+             long*double*_Complex) ofc_type_kind=C_LONG_DOUBLE_COMPLEX ;;
+             opal_short_float_t)   ofc_type_kind=C_SHORT_FLOAT         ;;
+             opal_short_float_complex_t) ofc_type_kind=C_SHORT_FLOAT_COMPLEX ;;
++            _Float128*_Complex)   ofc_type_kind=C_FLOAT128_COMPLEX    ;;
++            __float128*_Complex)  ofc_type_kind=C_FLOAT128_COMPLEX    ;;
+             _Float128)            ofc_type_kind=C_FLOAT128            ;;
+             __float128)           ofc_type_kind=C_FLOAT128            ;;
+             *)
+@@ -39048,6 +39068,8 @@
+             long*double*_Complex) ofc_type_kind=C_LONG_DOUBLE_COMPLEX ;;
+             opal_short_float_t)   ofc_type_kind=C_SHORT_FLOAT         ;;
+             opal_short_float_complex_t) ofc_type_kind=C_SHORT_FLOAT_COMPLEX ;;
++            _Float128*_Complex)   ofc_type_kind=C_FLOAT128_COMPLEX    ;;
++            __float128*_Complex)  ofc_type_kind=C_FLOAT128_COMPLEX    ;;
+             _Float128)            ofc_type_kind=C_FLOAT128            ;;
+             __float128)           ofc_type_kind=C_FLOAT128            ;;
+             *)
+@@ -39790,6 +39812,8 @@
+             long*double*_Complex) ofc_type_kind=C_LONG_DOUBLE_COMPLEX ;;
+             opal_short_float_t)   ofc_type_kind=C_SHORT_FLOAT         ;;
+             opal_short_float_complex_t) ofc_type_kind=C_SHORT_FLOAT_COMPLEX ;;
++            _Float128*_Complex)   ofc_type_kind=C_FLOAT128_COMPLEX    ;;
++            __float128*_Complex)  ofc_type_kind=C_FLOAT128_COMPLEX    ;;
+             _Float128)            ofc_type_kind=C_FLOAT128            ;;
+             __float128)           ofc_type_kind=C_FLOAT128            ;;
+             *)
+@@ -40536,6 +40560,8 @@
+             long*double*_Complex) ofc_type_kind=C_LONG_DOUBLE_COMPLEX ;;
+             opal_short_float_t)   ofc_type_kind=C_SHORT_FLOAT         ;;
+             opal_short_float_complex_t) ofc_type_kind=C_SHORT_FLOAT_COMPLEX ;;
++            _Float128*_Complex)   ofc_type_kind=C_FLOAT128_COMPLEX    ;;
++            __float128*_Complex)  ofc_type_kind=C_FLOAT128_COMPLEX    ;;
+             _Float128)            ofc_type_kind=C_FLOAT128            ;;
+             __float128)           ofc_type_kind=C_FLOAT128            ;;
+             *)
+@@ -41283,6 +41309,8 @@
+             long*double*_Complex) ofc_type_kind=C_LONG_DOUBLE_COMPLEX ;;
+             opal_short_float_t)   ofc_type_kind=C_SHORT_FLOAT         ;;
+             opal_short_float_complex_t) ofc_type_kind=C_SHORT_FLOAT_COMPLEX ;;
++            _Float128*_Complex)   ofc_type_kind=C_FLOAT128_COMPLEX    ;;
++            __float128*_Complex)  ofc_type_kind=C_FLOAT128_COMPLEX    ;;
+             _Float128)            ofc_type_kind=C_FLOAT128            ;;
+             __float128)           ofc_type_kind=C_FLOAT128            ;;
+             *)
+@@ -42030,6 +42058,8 @@
+             long*double*_Complex) ofc_type_kind=C_LONG_DOUBLE_COMPLEX ;;
+             opal_short_float_t)   ofc_type_kind=C_SHORT_FLOAT         ;;
+             opal_short_float_complex_t) ofc_type_kind=C_SHORT_FLOAT_COMPLEX ;;
++            _Float128*_Complex)   ofc_type_kind=C_FLOAT128_COMPLEX    ;;
++            __float128*_Complex)  ofc_type_kind=C_FLOAT128_COMPLEX    ;;
+             _Float128)            ofc_type_kind=C_FLOAT128            ;;
+             __float128)           ofc_type_kind=C_FLOAT128            ;;
+             *)
+@@ -42777,6 +42807,8 @@
+             long*double*_Complex) ofc_type_kind=C_LONG_DOUBLE_COMPLEX ;;
+             opal_short_float_t)   ofc_type_kind=C_SHORT_FLOAT         ;;
+             opal_short_float_complex_t) ofc_type_kind=C_SHORT_FLOAT_COMPLEX ;;
++            _Float128*_Complex)   ofc_type_kind=C_FLOAT128_COMPLEX    ;;
++            __float128*_Complex)  ofc_type_kind=C_FLOAT128_COMPLEX    ;;
+             _Float128)            ofc_type_kind=C_FLOAT128            ;;
+             __float128)           ofc_type_kind=C_FLOAT128            ;;
+             *)
+@@ -43534,6 +43566,8 @@
+             long*double*_Complex) ofc_type_kind=C_LONG_DOUBLE_COMPLEX ;;
+             opal_short_float_t)   ofc_type_kind=C_SHORT_FLOAT         ;;
+             opal_short_float_complex_t) ofc_type_kind=C_SHORT_FLOAT_COMPLEX ;;
++            _Float128*_Complex)   ofc_type_kind=C_FLOAT128_COMPLEX    ;;
++            __float128*_Complex)  ofc_type_kind=C_FLOAT128_COMPLEX    ;;
+             _Float128)            ofc_type_kind=C_FLOAT128            ;;
+             __float128)           ofc_type_kind=C_FLOAT128            ;;
+             *)
+@@ -44859,6 +44893,8 @@
+             long*double*_Complex) ofc_type_kind=C_LONG_DOUBLE_COMPLEX ;;
+             opal_short_float_t)   ofc_type_kind=C_SHORT_FLOAT         ;;
+             opal_short_float_complex_t) ofc_type_kind=C_SHORT_FLOAT_COMPLEX ;;
++            _Float128*_Complex)   ofc_type_kind=C_FLOAT128_COMPLEX    ;;
++            __float128*_Complex)  ofc_type_kind=C_FLOAT128_COMPLEX    ;;
+             _Float128)            ofc_type_kind=C_FLOAT128            ;;
+             __float128)           ofc_type_kind=C_FLOAT128            ;;
+             *)
+@@ -45605,6 +45641,8 @@
+             long*double*_Complex) ofc_type_kind=C_LONG_DOUBLE_COMPLEX ;;
+             opal_short_float_t)   ofc_type_kind=C_SHORT_FLOAT         ;;
+             opal_short_float_complex_t) ofc_type_kind=C_SHORT_FLOAT_COMPLEX ;;
++            _Float128*_Complex)   ofc_type_kind=C_FLOAT128_COMPLEX    ;;
++            __float128*_Complex)  ofc_type_kind=C_FLOAT128_COMPLEX    ;;
+             _Float128)            ofc_type_kind=C_FLOAT128            ;;
+             __float128)           ofc_type_kind=C_FLOAT128            ;;
+             *)
+@@ -46364,6 +46402,8 @@
+             long*double*_Complex) ofc_type_kind=C_LONG_DOUBLE_COMPLEX ;;
+             opal_short_float_t)   ofc_type_kind=C_SHORT_FLOAT         ;;
+             opal_short_float_complex_t) ofc_type_kind=C_SHORT_FLOAT_COMPLEX ;;
++            _Float128*_Complex)   ofc_type_kind=C_FLOAT128_COMPLEX    ;;
++            __float128*_Complex)  ofc_type_kind=C_FLOAT128_COMPLEX    ;;
+             _Float128)            ofc_type_kind=C_FLOAT128            ;;
+             __float128)           ofc_type_kind=C_FLOAT128            ;;
+             *)
+@@ -47111,6 +47151,8 @@
+             long*double*_Complex) ofc_type_kind=C_LONG_DOUBLE_COMPLEX ;;
+             opal_short_float_t)   ofc_type_kind=C_SHORT_FLOAT         ;;
+             opal_short_float_complex_t) ofc_type_kind=C_SHORT_FLOAT_COMPLEX ;;
++            _Float128*_Complex)   ofc_type_kind=C_FLOAT128_COMPLEX    ;;
++            __float128*_Complex)  ofc_type_kind=C_FLOAT128_COMPLEX    ;;
+             _Float128)            ofc_type_kind=C_FLOAT128            ;;
+             __float128)           ofc_type_kind=C_FLOAT128            ;;
+             *)
+@@ -47858,6 +47900,8 @@
+             long*double*_Complex) ofc_type_kind=C_LONG_DOUBLE_COMPLEX ;;
+             opal_short_float_t)   ofc_type_kind=C_SHORT_FLOAT         ;;
+             opal_short_float_complex_t) ofc_type_kind=C_SHORT_FLOAT_COMPLEX ;;
++            _Float128*_Complex)   ofc_type_kind=C_FLOAT128_COMPLEX    ;;
++            __float128*_Complex)  ofc_type_kind=C_FLOAT128_COMPLEX    ;;
+             _Float128)            ofc_type_kind=C_FLOAT128            ;;
+             __float128)           ofc_type_kind=C_FLOAT128            ;;
+             *)
+@@ -48353,8 +48397,8 @@
+                        fi
+                    fi
+ if test -z "$oft_real_type"; then
+-                       if test "$ac_cv_sizeof___float__Complex" = "$oft_target_size" ; then
+-                           oft_real_type="__float _Complex"
++                       if test "$ac_cv_sizeof___float128__Complex" = "$oft_target_size" ; then
++                           oft_real_type="__float128 _Complex"
+                        fi
+                    fi
+ if test -z "$oft_real_type"; then
+@@ -48615,6 +48659,8 @@
+             long*double*_Complex) ofc_type_kind=C_LONG_DOUBLE_COMPLEX ;;
+             opal_short_float_t)   ofc_type_kind=C_SHORT_FLOAT         ;;
+             opal_short_float_complex_t) ofc_type_kind=C_SHORT_FLOAT_COMPLEX ;;
++            _Float128*_Complex)   ofc_type_kind=C_FLOAT128_COMPLEX    ;;
++            __float128*_Complex)  ofc_type_kind=C_FLOAT128_COMPLEX    ;;
+             _Float128)            ofc_type_kind=C_FLOAT128            ;;
+             __float128)           ofc_type_kind=C_FLOAT128            ;;
+             *)
+@@ -48825,7 +48871,7 @@
+ 
+ printf "%s\n" "#define OMPI_KIND_FORTRAN_COMPLEX32 $ofc_type_kind" >>confdefs.h
+ 
+-    if test "_Float128 _Complex, __float _Complex, long double _Complex, double _Complex, float _Complex, short float _Complex, opal_short_float_complex_t" != "" && test "$ofc_define_type" = "yes"; then
++    if test "_Float128 _Complex, __float128 _Complex, long double _Complex, double _Complex, float _Complex, short float _Complex, opal_short_float_complex_t" != "" && test "$ofc_define_type" = "yes"; then
+ 
+ printf "%s\n" "#define ompi_fortran_complex32_t $ofc_c_type" >>confdefs.h
+ 
+@@ -49363,6 +49409,8 @@
+             long*double*_Complex) ofc_type_kind=C_LONG_DOUBLE_COMPLEX ;;
+             opal_short_float_t)   ofc_type_kind=C_SHORT_FLOAT         ;;
+             opal_short_float_complex_t) ofc_type_kind=C_SHORT_FLOAT_COMPLEX ;;
++            _Float128*_Complex)   ofc_type_kind=C_FLOAT128_COMPLEX    ;;
++            __float128*_Complex)  ofc_type_kind=C_FLOAT128_COMPLEX    ;;
+             _Float128)            ofc_type_kind=C_FLOAT128            ;;
+             __float128)           ofc_type_kind=C_FLOAT128            ;;
+             *)

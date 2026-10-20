@@ -1,0 +1,25 @@
+diff --git a/IGC/VectorCompiler/lib/GenXCodeGen/GenXStructSplitter.cpp b/IGC/VectorCompiler/lib/GenXCodeGen/GenXStructSplitter.cpp
+index 12345678..87654321 100644
+--- intel-graphics-compiler/IGC/VectorCompiler/lib/GenXCodeGen/GenXStructSplitter.cpp
++++ intel-graphics-compiler/IGC/VectorCompiler/lib/GenXCodeGen/GenXStructSplitter.cpp
+@@ -832,15 +832,16 @@ void DependencyGraph::processNode(Node &SNode) {
+       // In case of simplification: type will be substituted directly, without
+       // structure.
+       // F { float } C { F, float } C_BS -> { float , float }
+-      llvm::for_each(SNode.parents(), [&](Node *ParentNode) {
++      for (Node *ParentNode : SNode.parents()) {
+         remakeParent(*ParentNode, SNode, GeneratedTypesInOrder);
+-      });
++      }
+     }
+   }
+
+   // Removes dependencies.
+-  llvm::for_each(SNode.parents(),
+-                 [&SNode](Node *ParentNode) { ParentNode->eraseChild(SNode); });
++  for (Node *ParentNode : SNode.parents()) {
++    ParentNode->eraseChild(SNode);
++  }
+ }
+
+ //

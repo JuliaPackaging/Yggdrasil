@@ -3,20 +3,20 @@
 using BinaryBuilder
 
 name = "Xorg_libXext"
-version = v"1.3.6"
+version = v"1.3.7"
 # We bumped the version because we built for riscv64
-ygg_version = v"1.3.7"
+ygg_version = v"1.3.8"
 
 # Collection of sources required to build libXext
 sources = [
     ArchiveSource("https://www.x.org/archive/individual/lib/libXext-$(version).tar.xz",
-                  "edb59fa23994e405fdc5b400afdf5820ae6160b94f35e3dc3da4457a16e89753"),
+                  "6c643c7035cdacf67afd68f25d01b90ef889d546c9fcd7c0adf7c2cf91e3a32d"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libXext-*
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=yes
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=yes --enable-static=no
 make -j${nproc}
 make install
 """

@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "TVMFFI"
-version = v"0.1.2"
+version = v"0.1.5"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/apache/tvm-ffi.git", "c1df05f3555d4e2a9e1a32822c0f41ccb8467251")
+    GitSource("https://github.com/apache/tvm-ffi.git", "25c25aec22acadcf1aeb839297fe156bc0cf7183")
 ]
 
 # Bash recipe for building across all platforms
@@ -21,6 +21,7 @@ cmake \
     -DTVM_FFI_ATTACH_DEBUG_SYMBOLS=ON \
     -DTVM_FFI_BUILD_TESTS=OFF \
     -DTVM_FFI_BUILD_PYTHON_MODULE=OFF \
+    -DTVM_FFI_BACKTRACE_ON_SEGFAULT=OFF \
     -B ../../build
 cmake --build ../../build
 cmake --install ../../build
@@ -29,8 +30,7 @@ install_license LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
-platforms = filter(!Sys.iswindows, platforms)
+platforms = supported_platforms(exclude=Sys.iswindows)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built

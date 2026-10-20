@@ -7,7 +7,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "libigc"
-version = v"2.18.5"
+version = v"2.41.5"
 
 # IGC depends on LLVM, a custom Clang, and a Khronos tool. Instead of building these pieces
 # separately, taking care to match versions and apply Intel-specific patches where needed
@@ -27,13 +27,13 @@ version = v"2.18.5"
 #       see https://github.com/intel/intel-graphics-compiler/blob/master/.github/workflows/build-IGC.yml
 #
 sources = [
-    GitSource("https://github.com/intel/intel-graphics-compiler.git", "bd67908e0b06013e83ee02c9f3ff10cf976ed96a"),
-    GitSource("https://github.com/intel/opencl-clang.git", "7eef46576eca117685ae431735c2725ddb889260" #= branch ocl-open-150 =#),
-    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "a077a090060f953ba7dd024208980ca837233d87" #= branch llvm_release_150 =#),
-    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "28a883ba4c67f58a9540fb0651c647bb02883622" #= tag v2025.1.rc1 =#),
-    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "04b76709bf40a7ce8df3382060ef3620f19de566"), #= main =#
-    GitSource("https://github.com/intel/vc-intrinsics.git", "46286b96fb9eee9fa4fcf8b8ecf74a8c01af4c1a" #= tag v0.23.1 =#),
-    GitSource("https://github.com/llvm/llvm-project.git", "8dfdcc7b7bf66834a761bd8de445840ef68e4d1a" #= tag llvmorg-15.0.7 =#),
+    GitSource("https://github.com/intel/intel-graphics-compiler.git", "f05f218e6f0b888823c5678e1f64e91e597ea2dc" #= tag v2.41.5 =#),
+    GitSource("https://github.com/intel/opencl-clang.git", "b953eceebb0abc6ea954a14545420e3f97540a77" #= branch ocl-open-220 =#),
+    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "27afcfe385cf542197dfde8c658e1f5ff53fc2fc" #= branch llvm_release_220 =#),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "f80351511e9c4672e284842c7b124315c511078a" #= main =#),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "575b6512579ebde466ed3dfc04e413439d14d95d"), #= main =#
+    GitSource("https://github.com/intel/vc-intrinsics.git", "27f7c4f34738f5eaf7a045b77edf8d9e034443d8" #= tag v0.25.0 =#),
+    GitSource("https://github.com/llvm/llvm-project.git", "ca7933e47d3a3451d81e72ac174dcb5aa28b59d1" #= tag llvmorg-22.1.8 =#),
     # patches
     DirectorySource("./bundled"),
 ]
@@ -56,11 +56,19 @@ function get_script(; debug::Bool)
         mv opencl-clang llvm-project/llvm/projects/opencl-clang
         mv SPIRV-LLVM-Translator llvm-project/llvm/projects/llvm-spirv
 
-        # Work around compilation failures
-        # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86678
-        atomic_patch -p0 patches/gcc-constexpr_assert_bug.patch
-        # Fix iterator ambiguity with C++20 and LLVM 15
+        # GCC 11 can't resolve llvm::for_each over unordered_set ranges in C++20 mode
         atomic_patch -p0 patches/fix-iterator-ambiguity.patch
+        # Don't put overflowing word/byte integer results in the accumulator
+        # https://github.com/JuliaGPU/oneAPI.jl/issues/670
+        atomic_patch -p0 patches/narrow-int-acc-dst.patch
+        # Don't erase PromoteSubByte's replacements of loop-carried i1 values
+        # https://github.com/JuliaGPU/oneAPI.jl/issues/678
+        atomic_patch -p0 patches/promote-sub-byte-visit.patch
+        # Don't leave PHIs of with.overflow results pointing at the erased intrinsic
+        # https://github.com/JuliaGPU/oneAPI.jl/issues/691
+        atomic_patch -p0 patches/legalization-overflow-phi.patch
+        # Don't merge reads of input variables that are redefined in the kernel
+        atomic_patch -p0 patches/merge-scalars-redefined-input.patch
         # https://reviews.llvm.org/D64388
         sed -i '/add_subdirectory/i add_definitions(-D__STDC_FORMAT_MACROS)' intel-graphics-compiler/external/llvm/llvm.cmake
 
@@ -79,6 +87,10 @@ function get_script(; debug::Bool)
 
         # Install things into $prefix
         CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
+
+        # IGC's CMake still defaults to LLVM 17, but releases are built against the LLVM in
+        # their Dependencies revisions table
+        CMAKE_FLAGS+=(-DIGC_OPTION__LLVM_PREFERRED_VERSION=22.1.8)
 
         # NOTE: igc currently can't cross compile due to a variety of issues:
         # - https://github.com/intel/intel-graphics-compiler/issues/131
@@ -128,7 +140,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    HostBuildDependency("CMake_jll"),
+    # CMake 4 rejects the cmake_minimum_required of the bundled SPIRV-Tools
+    HostBuildDependency(PackageSpec(; name="CMake_jll", version="3.31.9")),
 ]
 
 augment_platform_block = raw"""
@@ -175,5 +188,6 @@ for platform in platforms, debug in (false, true)
     # GCC <9 triggers: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86678 (for debug)
     build_tarballs(ARGS, name, version, sources, get_script(; debug), [augmented_platform],
                    products, dependencies; preferred_gcc_version=v"11", augment_platform_block,
-                   julia_compat = "1.6", lock_microarchitecture=false)
+                   julia_compat = "1.10", lock_microarchitecture=false)
 end
+

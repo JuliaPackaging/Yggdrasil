@@ -2,87 +2,41 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-const YGGDRASIL_DIR = "../.."
-include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
-
 name = "Qt6WebSockets"
-version = v"6.5.2"
+version = v"6.8.2"
 
 # Collection of sources required to build qt6
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtwebsockets-everywhere-src-$version.tar.xz",
-                  "204bd7b0dffb54c934abc6cf0eb5e3016f11b3c9721a67b4875a6b21bb8b5c76"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.0-11.1/MacOSX11.1.sdk.tar.xz",
-                  "9b86eab03176c56bb526de30daa50fa819937c54b280364784ce431885341bf6"),
+                  "919df562ba3446c8393992d112085ad2d96d23aaf802b1cd7a30bf3ba2fe8cbe"),
 ]
 
 script = raw"""
-cd $WORKSPACE/srcdir
+cd $WORKSPACE/srcdir/qt*
 
-mkdir build
-cd build/
-qtsrcdir=`ls -d ../qtwebsockets-*`
+cmake -G Ninja \
+    -DQT_HOST_PATH=$host_prefix \
+    -DPython_ROOT_DIR=/usr \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_PREFIX_PATH=$host_prefix \
+    -DCMAKE_FIND_ROOT_PATH=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DQT_NO_APPLE_SDK_AND_XCODE_CHECK=ON \
+    -DCMAKE_BUILD_TYPE=Release \
+    -B build
 
-case "$bb_full_target" in
+cmake --build build --parallel ${nproc}
+cmake --install build
 
-    x86_64-linux-musl-libgfortran5-cxx11)
-        cmake -G Ninja \
-            -DCMAKE_INSTALL_PREFIX=${prefix} \
-            -DCMAKE_FIND_ROOT_PATH=$prefix \
-            -DCMAKE_BUILD_TYPE=Release \
-            $qtsrcdir
-    ;;
-
-    *apple-darwin*)
-        apple_sdk_root=$WORKSPACE/srcdir/MacOSX11.1.sdk
-        sed -i "s!/opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
-        deployarg="-DCMAKE_OSX_DEPLOYMENT_TARGET=10.14"
-        cmake -G Ninja \
-            -DQT_HOST_PATH=$host_prefix \
-            -DPython_ROOT_DIR=/usr \
-            -DCMAKE_INSTALL_PREFIX=${prefix} \
-            -DCMAKE_PREFIX_PATH=$host_prefix \
-            -DCMAKE_FIND_ROOT_PATH=$prefix \
-            -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-            -DCMAKE_SYSROOT=$apple_sdk_root \
-            -DCMAKE_FRAMEWORK_PATH=$apple_sdk_root/System/Library/Frameworks \
-            -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15 \
-            -DCMAKE_BUILD_TYPE=Release \
-            $qtsrcdir
-    ;;
-
-    *)
-        cmake -G Ninja \
-            -DQT_HOST_PATH=$host_prefix \
-            -DPython_ROOT_DIR=/usr \
-            -DCMAKE_INSTALL_PREFIX=${prefix} \
-            -DCMAKE_PREFIX_PATH=$host_prefix \
-            -DCMAKE_FIND_ROOT_PATH=$prefix \
-            -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-            -DCMAKE_BUILD_TYPE=Release \
-            $qtsrcdir
-    ;;
-
-esac
-
-cmake --build . --parallel ${nproc}
-cmake --install .
-install_license $WORKSPACE/srcdir/qt*-src-*/LICENSES/LGPL-3.0-only.txt
+install_license LICENSES/LGPL-3.0-only.txt
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = expand_cxxstring_abis(filter(!Sys.isapple, supported_platforms()))
-filter!(p -> arch(p) != "armv6l", platforms) # No OpenGL on armv6
-platforms_macos = [ Platform("x86_64", "macos"), Platform("aarch64", "macos") ]
+# Get the common Qt platforms
+include("../Qt6Base/common.jl")
 
 # The products that we will ensure are always built
 products = [
     LibraryProduct(["Qt6WebSockets", "libQt6WebSockets", "QtWebSockets"], :libqt6websockets),
-]
-
-products_macos = [
-    FrameworkProduct("QtWebSockets", :libqt6websockets),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -93,10 +47,4 @@ dependencies = [
     Dependency("Qt6Declarative_jll"; compat="="*string(version)),
 ]
 
-if any(should_build_platform.(triplet.(platforms_macos)))
-    build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"10", julia_compat="1.6")
-end
-
-if any(should_build_platform.(triplet.(platforms)))
-    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"10", julia_compat="1.6")
-end
+build_qt(name, version, sources, script, products, dependencies)

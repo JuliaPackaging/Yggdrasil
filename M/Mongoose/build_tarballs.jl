@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Mongoose"
-version = v"7.19.0"
+version = v"7.23.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/cesanta/mongoose.git", "739d78a45a8fa6595498df67d11cac3e39af8c0e"),
+    GitSource("https://github.com/cesanta/mongoose.git", "02bdbb9ed6f0a8f7c42228c6e7cb35d748b60551"),
     DirectorySource("./bundled"),
 ]
 
@@ -16,13 +16,18 @@ script = raw"""
 cd $WORKSPACE/srcdir/mongoose
 mkdir -p ${libdir}
 
-atomic_patch -p1 ../patches/add-mg_conn_get_fn_data-helper.patch
+FLAGS="-fPIC -O2 -shared \
+  -DMG_TLS=MG_TLS_BUILTIN \
+  -DMG_ENABLE_IPV6=1 \
+  -DMG_IO_SIZE=32768 \
+  -DMG_MAX_RECV_SIZE=10485760"
 
 LIBS=""
 if [[ "${target}" == *mingw* ]]; then
     LIBS="-lws2_32"
 fi
-cc -fPIC -O2 -shared mongoose.c -o ${libdir}/libmongoose.${dlext} ${LIBS}
+
+${CC} ${FLAGS} -I. mongoose.c $WORKSPACE/srcdir/mg_julia_helpers.c -o ${libdir}/libmongoose.${dlext} ${LIBS}
 
 install_license LICENSE
 """

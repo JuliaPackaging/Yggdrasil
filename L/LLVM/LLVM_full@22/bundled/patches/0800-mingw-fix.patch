@@ -1,0 +1,13 @@
+diff --git a/compiler-rt/lib/fuzzer/FuzzerExtFunctionsWindows.cpp b/compiler-rt/lib/fuzzer/FuzzerExtFunctionsWindows.cpp
+index dfc32ac9db29..7d0c7573f2e0 100644
+--- a/compiler-rt/lib/fuzzer/FuzzerExtFunctionsWindows.cpp
++++ b/compiler-rt/lib/fuzzer/FuzzerExtFunctionsWindows.cpp
+@@ -24,7 +24,7 @@ using namespace fuzzer;
+ #if LIBFUZZER_MSVC
+ #define GET_FUNCTION_ADDRESS(fn) &fn
+ #else
+-#define GET_FUNCTION_ADDRESS(fn) __builtin_function_start(fn)
++#define GET_FUNCTION_ADDRESS(fn) (void *)(&fn)
+ #endif // LIBFUZER_MSVC
+
+ // Copied from compiler-rt/lib/sanitizer_common/sanitizer_win_defs.h

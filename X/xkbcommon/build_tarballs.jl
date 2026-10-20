@@ -3,11 +3,11 @@
 using BinaryBuilder
 
 name = "xkbcommon"
-version = v"1.9.2"
+version = v"1.13.0"
 
 # Collection of sources required to build xkbcommon
 sources = [
-    GitSource("https://github.com/xkbcommon/libxkbcommon", "dd642359f8d43c09968e34ca7f1eb1121b2dfd70"),
+    GitSource("https://github.com/xkbcommon/libxkbcommon", "3049d310694fd70f1269bf48a1200aa4259e79b1"),
 ]
 
 # Bash recipe for building across all platforms

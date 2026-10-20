@@ -2,16 +2,16 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 include("../common.jl")
 
-gap_version = v"400.1500.0"
+gap_version = v"400.1600.100"
 name = "EDIM"
 upstream_version = "1.3.8" # when you increment this, reset offset to v"0.0.0"
-offset = v"1.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
+offset = v"1.0.2" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL
 sources = [
-    ArchiveSource("https://www.math.rwth-aachen.de/~Frank.Luebeck/EDIM/EDIM-$(upstream_version).tar.bz2",
-                  "b59bb607bc9831b8224410946c33b12b82b252c662803835197821c2fb18f9e2"),
+    ArchiveSource("https://www.math.rwth-aachen.de/~Frank.Luebeck/EDIM/EDIM-$(upstream_version).tar.gz",
+                  "32ebc14df670205aa08a4f1cdf22ae59e5665009e0b34ec4f5efe422c83b6a42"),
 ]
 
 # Bash recipe for building across all platforms

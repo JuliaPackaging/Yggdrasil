@@ -5,6 +5,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "OpenMPI"
 version = v"4.1.8"
+ygg_version = v"4.1.11"
 sources = [
     ArchiveSource("https://download.open-mpi.org/release/open-mpi/v$(version.major).$(version.minor)/openmpi-$(version).tar.gz",
                   "fb41086bbed9300baa2f3d7572491facfe5257412fa524ec5a396aa9101d5c62"),
@@ -20,6 +21,11 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/openmpi-*
 
 atomic_patch -p1 ../patches/0001-ompi-mca-sharedfp-sm-Include-missing-sys-stat.h-in-s.patch
+
+# Fortran COMMON blocks in shared libraries (e.g. MUMPS) otherwise get private
+# copies of MPI_IN_PLACE etc. when loaded with RTLD_DEEPBIND.
+# Reported upstream as <https://github.com/open-mpi/ompi/issues/14646>.
+atomic_patch -p1 ../patches/fortran-sentinels-data.patch
 
 if [[ "${target}" == *-freebsd* ]]; then
     # Help compiler find `complib/cl_types.h`
@@ -80,15 +86,14 @@ products = [
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    #TODO Enable this at the next version number change:
-    #TODO Dependency("Zlib_jll"; compat="1.2.12"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
     RuntimeDependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267"); compat="0.1", top_level=true),
 ]
 
 init_block = raw"""
-ENV["OPAL_PREFIX"] = artifact_dir
+get!(ENV, "OPAL_PREFIX", artifact_dir)
 """
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                augment_platform_block, clang_use_lld=false, init_block, julia_compat="1.6", preferred_gcc_version=v"5")

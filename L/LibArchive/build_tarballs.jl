@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "LibArchive"
-version = v"3.8.3"
+version = v"3.8.10"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://www.libarchive.org/downloads/libarchive-$(version).tar.xz",
-                  "90e21f2b89f19391ce7b90f6e48ed9fde5394d23ad30ae256fb8236b38b99788"),
+                  "56cad765459d5ee25a3b761f90c47d99379d28297fbfb72d908880d6b875fb96"),
 ]
 
 # Bash recipe for building across all platforms
@@ -21,6 +21,7 @@ export CPPFLAGS="-I${includedir}"
     --with-expat \
     --with-openssl \
     --without-xml2 \
+    --without-xmllite \
     --without-nettle \
     --disable-static
 make -j${nproc}
@@ -34,9 +35,10 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libarchive", :libarchive),
+    ExecutableProduct("bsdcat", :bsdcat),
     ExecutableProduct("bsdcpio", :bsdcpio),
     ExecutableProduct("bsdtar", :bsdtar),
-    ExecutableProduct("bsdcat", :bsdcat)
+    ExecutableProduct("bsdunzip", :bsdunzip),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -54,4 +56,6 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+# We need GCC 5 for safe integer intrinsics.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"5")

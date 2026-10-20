@@ -73,3 +73,14 @@ index 461d0141a0a..d45631602e6 100644
  #  include <sys/types.h>
  #  include <windows.h>
  
+--- a/source/global/management/include/G4Types.hh
++++ b/source/global/management/include/G4Types.hh
+@@ -71,6 +71,8 @@
+ #  define G4MTGLOB_DLL
+ #endif
+ 
++// Define _USE_MATH_DEFINES before any include of complex, math, etc.
++#define _USE_MATH_DEFINES
+ #include <complex>
+ 
+ // Definitions for Thread Local Storage

@@ -3,12 +3,13 @@
 using BinaryBuilder
 
 name = "Libksba"
-version = v"1.6.7"
+version = v"1.6.8"
+ygg_version = v"1.6.9"          # Rebuilt for new architectures
 
 # Collection of sources required to build libgcrypt
 sources = [
     ArchiveSource("https://gnupg.org/ftp/gcrypt/libksba/libksba-$(version).tar.bz2",
-                  "cf72510b8ebb4eb6693eef765749d83677a03c79291a311040a5bfd79baab763"),
+                  "0f4510f1c7a679c3545990a31479f391ad45d84e039176309d42f80cf41743f5"),
     DirectorySource("bundled"),
 ]
 
@@ -36,9 +37,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Libgpg_error_jll"; compat="1.50.0"),
+    Dependency("Libgpg_error_jll"; compat="1.58"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                julia_compat="1.6")

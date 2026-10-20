@@ -70,8 +70,10 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
 
     # These are the platforms we will build for by default, unless further
     # platforms are passed in on the command line
-    # Required Julia version is v1.10, v1.13 is not supported yet
-    filter!(v -> v >= v"1.10" && v < v"1.13", julia_versions)
+    # Required Julia version is v1.10
+    # This is the place to filter out pre-release versions of julia if they cause build problems. See https://github.com/hpsc-lab/OpenFHE.jl/issues/137
+    # Julia 1.14 is still in DEV and not building successfully. Move to < v.1.15 once julia 1.14 stable is released
+    filter!(v -> v >= v"1.10" && v < v"1.14", julia_versions)
     platforms = vcat(libjulia_platforms.(julia_versions)...)
 
     # We cannot build with musl since OpenFHE requires the `execinfo.h` header for `backtrace`
@@ -106,7 +108,7 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
 
     # Dependencies that must be installed before this package can be built
     dependencies = [
-        BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.11.0")),
+        BuildDependency(PackageSpec(;name="libjulia_jll", version="1.11.0")),
         Dependency("libcxxwrap_julia_jll"; compat="0.14.4"),
         # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
         # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.

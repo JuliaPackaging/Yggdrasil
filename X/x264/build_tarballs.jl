@@ -8,7 +8,7 @@ name = "x264"
 major_version = 0
 # Find the value of `X264_BUILD` in the header file `x264.h`:
 # https://code.videolan.org/videolan/x264/-/blob/master/x264.h?ref_type=heads#L48
-x264_build = 164
+x264_build = 165
 # Upstream doesn't have proper releases, so we need to make up version numbers a
 # bit. Versioning scheme is convoluted, follow me: we add and offset of "10_000" to the
 # major version (inflated by 1000) because we need a major version larger than the previous
@@ -17,12 +17,12 @@ x264_build = 164
 # new builds/versions.
 version = VersionNumber(10_000 + 1000 * major_version + x264_build, # Major version
                         0, # Minor version
-                        1) # Patch version
+                        0) # Patch version
 
 # Collection of sources required to build x264
 sources = [
     GitSource("https://code.videolan.org/videolan/x264.git",
-              "52f7694ddd35209cb95225e7acce91d8a30cb57d"),
+              "0e48d072c28b6e5283d94109391f8efbb52593f2"),
 ]
 
 # Bash recipe for building across all platforms

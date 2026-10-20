@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUTENSOR"
-version = v"2.3.1"
+version = v"2.8.1"
 
 script = raw"""
 mkdir -p ${libdir} ${prefix}/include
@@ -49,7 +49,9 @@ products = [
 dependencies = [
     RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")),
     RuntimeDependency(PackageSpec(name="CompilerSupportLibraries_jll",
-                                  uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+                                  uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    # the Windows DLLs are MSVC-built and link the Visual C++ runtime dynamically
+    RuntimeDependency("MSVCRuntime_jll"; platforms=[Platform("x86_64", "windows")]),
 ]
 
 platforms = [Platform("x86_64", "linux"),
@@ -84,3 +86,5 @@ for (i,build) in enumerate(builds)
                    build.platforms, products, dependencies;
                    julia_compat="1.6", augment_platform_block, dont_dlopen=true)
 end
+
+# bump

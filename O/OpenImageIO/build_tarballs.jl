@@ -1,13 +1,15 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, BinaryBuilderBase, Pkg
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "OpenImageIO"
-version = v"2.5.11"
+version = v"3.1.8"              # This is 3.1.8.0
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/AcademySoftwareFoundation/OpenImageIO", "7141852ffe2186438a1759919b073cad49da642e"),
+    GitSource("https://github.com/AcademySoftwareFoundation/OpenImageIO", "63098ef0652e739ff4397df89974f91991d62c19"),
 ]
 
 # Bash recipe for building across all platforms
@@ -23,7 +25,10 @@ cmake -B build-dir -G Ninja \
     -DUSE_PYTHON=0
 cmake --build build-dir --parallel ${nproc}
 cmake --install build-dir
+install_license LICENSE.md RELICENSING.md
 """
+
+sources, script = require_macos_sdk("11.0", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
@@ -45,18 +50,19 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("FFMPEG_jll"; compat="6.1.1"),
-    Dependency("FreeType2_jll"; compat="2.13.1"),
-    Dependency("Giflib_jll"; compat="5.2.1"),
-    Dependency("JpegTurbo_jll"; compat="3.0.1"),
-    Dependency("Libtiff_jll"; compat="4.5.1"),
-    Dependency("OpenEXR_jll"; compat="~3.2.4"),
-    Dependency("OpenJpeg_jll"; compat="2.5.0"),
+    Dependency("FFMPEG_jll"; compat="8.0.1"),
+    Dependency("FreeType2_jll"; compat="2.13.4"),
+    Dependency("Giflib_jll"; compat="5.2.3"),
+    Dependency("JpegTurbo_jll"; compat="3.1.4"),
+    Dependency("Libtiff_jll"; compat="4.7.2"),
+    Dependency("OpenColorIO_jll"; compat="2.5.0"),
+    Dependency("OpenEXR_jll"; compat="~3.4.4"),
+    Dependency("OpenJpeg_jll"; compat="2.5.4"),
     Dependency("Zlib_jll"; compat="1.2.12"),
-    Dependency("boost_jll"; compat="=1.76.0"),
-    Dependency("libpng_jll"; compat="1.6.38"),
-    Dependency("libwebp_jll"; compat="1.2.4"),
-    Dependency("pugixml_jll"; compat="1.11.0"),
+    Dependency("boost_jll"; compat="=1.87.0"),
+    Dependency("libpng_jll"; compat="1.6.53"),
+    Dependency("libwebp_jll"; compat="1.6.0"),
+    Dependency("pugixml_jll"; compat="1.15.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

@@ -3,17 +3,31 @@
 using BinaryBuilder, Pkg
 
 name = "wget2"
-version = v"2.2.0"
+version = v"2.3.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/wget/wget2-$(version).tar.gz",
-                  "2b3b9c85b7fb26d33ca5f41f1f8daca71838d869a19b406063aa5c655294d357")
+    ArchiveSource("https://ftpmirror.gnu.org/gnu/wget/wget2-$(version).tar.gz",
+                  "4f1915b2a55a789a15f2f9ada7cc44bca81418e648f76fd88a7f4dd028b2149f"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/wget2*
+
+# Fix undeclared `sockfd` in TCP Fast Open fallback (Linux only);
+# backport of upstream commit db600f40, remove for wget2 > 2.3.0
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/tcp_fastopen_sockfd.patch
+
+# Fix quoting of `GNULIB_LIBS` in `configure`, which otherwise ends up empty
+# (e.g. CoreFoundation is not linked on macOS); equivalent to upstream commit
+# e80d42ac (which fixes `configure.ac`), remove for wget2 > 2.3.0
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/gnulib_libs_quoting.patch
+
+# Windows: <wincrypt.h> defines `OCSP_REQUEST` and `OCSP_RESPONSE` as macros,
+# clashing with the OpenSSL types
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/openssl_wincrypt_ocsp.patch
 
 if [[ ${target} == x86_64-linux-musl ]]; then
     # Avoid finding the host Brotli libraries
@@ -23,7 +37,7 @@ fi
 if [[ ${target} == *-w64-mingw32 ]]; then
     # There is no pkgconfig info for OpenSSL on Windows
     export OPENSSL_CFLAGS="-I${includedir}"
-    export OPENSSL_LIBS="-L${libdir} -lssl"
+    export OPENSSL_LIBS="-L${libdir} -lssl -lcrypto"
 fi
 
 ./configure \
@@ -69,15 +83,14 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Bzip2_jll"; compat="1.0.8"),
+    Dependency("Bzip2_jll"; compat="1.0.9"),
     Dependency("Gettext_jll"; compat="=0.21.0"),
-    Dependency("OpenSSL_jll"; compat="3.0.15"),
-    Dependency("PCRE2_jll"),
-    Dependency("XZ_jll"; compat="5.6.3"),
+    Dependency("OpenSSL_jll"; compat="3.0.16"),
+    Dependency("PCRE2_jll"; compat="10.42.0"),
+    Dependency("XZ_jll"; compat="5.8.2"),
     Dependency("Zlib_jll"),
-    # Zstd seems to define the function `mbrtowc` on Windows (it shouldn't)
-    Dependency("Zstd_jll"; compat="1.5.6", platforms=filter(!Sys.iswindows, platforms)),
-    Dependency("brotli_jll"; compat="1.1.0"),
+    Dependency("Zstd_jll"; compat="1.5.7"),
+    Dependency("brotli_jll"; compat="1.2.0"),
     Dependency("libidn2_jll"; compat="2.3.7"),
     Dependency("libpsl_jll"; compat="0.21.5"),
 ]

@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "LEMON"
-version = v"1.3.3"
+version = v"1.3.6"
 upstreamversion = v"1.3.1"
 min_jl_version = v"1.9"
 
@@ -33,10 +33,12 @@ cd ..
 # I guess the LEMON devs were funny and decided to call some of their build products emon so that the gcc flag is -lemon instead of -llemon (but not on windows)
 if [[ "${target}" == *mingw* ]]; then
     LIBLEMON=lemon
+    EXTRA_CXXFLAGS="-Wa,-mbig-obj"
 else
     LIBLEMON=emon
+    EXTRA_CXXFLAGS=""
 fi
-$CXX -shared -std=c++17 -O3 -fPIC -o ${libdir}/liblemoncxxwrap.${dlext} cxxwrap/lemoncxxwrap.cpp -I$includedir/julia -L${libdir} -l${LIBLEMON} -ljulia -lcxxwrap_julia
+$CXX -shared -std=c++17 -O3 -fPIC ${EXTRA_CXXFLAGS} -o ${libdir}/liblemoncxxwrap.${dlext} cxxwrap/lemoncxxwrap.cpp -I$includedir -I$includedir/julia -L${libdir} -l${LIBLEMON} -ljulia -lcxxwrap_julia
 """
 
 # These are the platforms we will build for by default, unless further
@@ -59,10 +61,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("libcxxwrap_julia_jll"; compat = "~0.14.4"),
+    # Keep on newer 0.14.x so julia_version+1.14 platforms get complete cxxwrap artifacts
+    # (including jlcxx headers needed at build time).
+    Dependency("libcxxwrap_julia_jll"; compat = "~0.14.9"),
     BuildDependency("libjulia_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat=string(min_jl_version), preferred_gcc_version = v"7.1.0")
-

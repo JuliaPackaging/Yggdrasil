@@ -24,7 +24,9 @@ install_license LICENSE.GPL2
 
 # build-time dependencies that aren't packaged as JLLs
 apk add coreutils
-pip install jinja2
+# pin MarkupSafe to the 2.x series: 3.x only ships an sdist for our Python,
+# whose pyproject.toml trips up the sandbox's old pip
+pip install jinja2 "markupsafe<3"
 
 meson --cross-file=${MESON_TARGET_TOOLCHAIN} build \
     -Dmode=release \
@@ -67,7 +69,7 @@ dependencies = [
     # systemd requires glibc 2.16. we only package glibc 2.17,
     # which isn't compatible with current Linux kernel headers,
     # so use the next packaged version
-    BuildDependency(PackageSpec(name = "Glibc_jll", version = v"2.19");
+    BuildDependency(PackageSpec(name = "Glibc_jll", version = "2.19");
                     platforms=glibc_platforms),
 
     HostBuildDependency("gperf_jll"),

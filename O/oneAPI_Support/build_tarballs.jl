@@ -4,11 +4,11 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "oneAPI_Support"
-version = v"0.9.2"
+version = v"0.11.0"
 
 generic_sources = [
     GitSource("https://github.com/JuliaGPU/oneAPI.jl",
-              "719d893822f736af58589dfb46444c56f83519cb")
+              "5093529311e36f530c5990e4b0b3669452c45d8c")
 ]
 platforms = expand_cxxstring_abis([Platform("x86_64", "linux"; libc="glibc")])
 platform_sources = Dict(
@@ -16,143 +16,153 @@ platform_sources = Dict(
     # https://conda.anaconda.org/intel/linux-64
     platform => [
         FileSource(
-            "https://software.repos.intel.com/python/conda/linux-64/compiler_shared-2025.2.0-intel_766.conda",
-            "5adbaa605f2fb1d1abc01b3bb92b15dd3b0a2d17d83e10632267b7c2db81f96d",
+            "https://software.repos.intel.com/python/conda/linux-64/compiler_shared-2026.1.0-intel_235.conda",
+            "7e8a0ced69174ccf64481fae89fcc32761be8865f13cbbfa1e7b3b3cdcece307",
             filename="compiler_shared",
         ),
         FileSource(
-            "https://software.repos.intel.com/python/conda/linux-64/dpcpp-cpp-rt-2025.2.0-intel_766.conda",
-            "72b0cd92ef6822a6d135cb5918fbd22351f78ef67ded2bbf48e939cc96f09b28",
+            "https://software.repos.intel.com/python/conda/linux-64/dpcpp-cpp-rt-2026.1.0-intel_235.conda",
+            "66fe74fc4af763fd8c3d4a87bd8b1c4a115adf922efe6f6ed1254a8d9b6aa72b",
             filename="dpcpp-cpp-rt",
         ),
         FileSource(
-            "https://software.repos.intel.com/python/conda/linux-64/dpcpp_impl_linux-64-2025.2.0-intel_766.conda",
-            "799c13a0c1da92c8748068746c7433bb3540bce75d58b8cb80a396895a74e683",
+            "https://software.repos.intel.com/python/conda/linux-64/dpcpp_impl_linux-64-2026.1.0-intel_235.conda",
+            "6e7fccd4837ece044776813fc071841032e278769beb5c5b0f928c2e92dc9bc0",
             filename="dpcpp_impl_linux-64",
         ),
         FileSource(
-            "https://software.repos.intel.com/python/conda/linux-64/dpcpp_linux-64-2025.2.0-intel_766.conda",
-            "85ac32ce4cc04e43a823fab651f58d50b88cdac055e54e2ac2979d86ce2ac7bc",
+            "https://software.repos.intel.com/python/conda/linux-64/dpcpp_linux-64-2026.1.0-intel_235.conda",
+            "81fb9bc4a464ec1e80ace28c18747a05cca2f53d3aaf5b33744288f77ee636d6",
             filename="dpcpp_linux-64",
         ),
         FileSource(
-            "https://software.repos.intel.com/python/conda/linux-64/intel-cmplr-lib-rt-2025.2.0-intel_766.conda",
-            "d93bb638b85773694d8f8d462a3cc81805b01cb1c25b85359874c6d57f555504",
+            "https://software.repos.intel.com/python/conda/linux-64/intel-cmplr-lib-rt-2026.1.0-intel_235.conda",
+            "a88c146e1764c621c21058891281e8e578c7971142a810fb956e796f71c4dc1f",
             filename="intel-cmplr-lib-rt",
         ),
         FileSource(
-            "https://software.repos.intel.com/python/conda/linux-64/intel-cmplr-lib-ur-2025.2.0-intel_766.conda",
-            "de1e0f84c2d5e3f9cf3fbb72d6e309c5504ef85633342ebc26c39f01320aa80a",
+            "https://software.repos.intel.com/python/conda/linux-64/intel-cmplr-lib-ur-2026.1.0-intel_235.conda",
+            "c2ba8da30430912617ef3a33f965ac309718555512ba6ee5ed176c49ca3a4a51",
             filename="intel-cmplr-lib-ur",
         ),
         FileSource(
-            "https://software.repos.intel.com/python/conda/linux-64/intel-cmplr-lic-rt-2025.2.0-intel_766.conda",
-            "09a5b746348997b89573ba5d1fdaa5334d9e097eefb3ad7079d30e54342e6f6b",
+            "https://software.repos.intel.com/python/conda/linux-64/intel-cmplr-lic-rt-2026.1.0-intel_235.conda",
+            "b174730821f9d769378900443a936b49369e09c9b26fdfa984a79024ae5bf157",
             filename="intel-cmplr-lic-rt",
         ),
         FileSource(
-            "https://software.repos.intel.com/python/conda/linux-64/intel-opencl-rt-2025.2.0-intel_766.conda",
-            "ecdcefe9abb6937a0f070b6398f31aa99b11fed0a4d6910c182e62b97bc11218",
+            "https://software.repos.intel.com/python/conda/linux-64/intel-opencl-rt-2026.1.0-intel_235.conda",
+            "035d3f4af3c05113799b4f42e53b91acc86b8cb90edb287622e6b570e29f1bbc",
             filename="intel-opencl-rt",
         ),
         FileSource(
-            "https://software.repos.intel.com/python/conda/linux-64/intel-openmp-2025.2.0-intel_766.conda",
-            "192b1cb550a82d3d81761db2310e24c3b8bb7f7f9c28ad22b1f63ee98f366b92",
+            "https://software.repos.intel.com/python/conda/linux-64/intel-openmp-2026.1.0-intel_235.conda",
+            "835aa8a1379fecdc348b5ee8814de2f9efd2df5836a45956b99a40347a9c5c22",
             filename="intel-openmp",
         ),
         FileSource(
-            "https://software.repos.intel.com/python/conda/linux-64/intel-sycl-rt-2025.2.0-intel_766.conda",
-            "5183872e85c1ad972ca38d459bc9e294109aca478b9fbc048195e40a5a3d6f0b",
+            "https://software.repos.intel.com/python/conda/linux-64/intel-sycl-rt-2026.1.0-intel_235.conda",
+            "2f5cc1b5f299825dcb7e55b7122034f325f33870787ccd4ed8864ee1dd7ec859",
             filename="intel-sycl-rt",
         ),
 
         FileSource(
-            "https://software.repos.intel.com/python/conda/linux-64/mkl-2025.2.0-intel_628.conda",
-            "3d6ac337434cb3d6f2e50229d5ab948eb83ea4a7364c2ce7e4fa40a4bbca3f90",
+            "https://software.repos.intel.com/python/conda/linux-64/mkl-2026.1.0-intel_236.conda",
+            "7c42de217537b7c859dd82173b5cc36eefc17422d25dd70250f935e7489faf14",
             filename="mkl",
         ),
         FileSource(
-            "https://software.repos.intel.com/python/conda/linux-64/mkl-devel-2025.2.0-intel_628.conda",
-            "41cd0618c0faf8934d6c9661e559ded53048cdf39b430eb152e6c2c156949f41",
+            "https://software.repos.intel.com/python/conda/linux-64/mkl-devel-2026.1.0-intel_236.conda",
+            "19f9c6490d9f211c35298eb553258dfebaa996a013479732e42668da43691492",
             filename="mkl-devel",
         ),
         FileSource(
-            "https://software.repos.intel.com/python/conda/linux-64/mkl-devel-dpcpp-2025.2.0-intel_628.conda",
-            "b60be992607a7c8f4977ad51539f3528a474d555bbc424412d30df5ef2887d59",
+            "https://software.repos.intel.com/python/conda/linux-64/mkl-devel-dpcpp-2026.1.0-intel_236.conda",
+            "32d8e7276444671357ba0f69179cbeee24757bca2934d6af25c7956959fb64b0",
             filename="mkl-devel-dpcpp",
         ),
         FileSource(
-            "https://software.repos.intel.com/python/conda/linux-64/mkl-dpcpp-2025.2.0-intel_628.conda",
-            "226c7ce815412a1facef0cf7744ba1997125927a4021b3525775619951e3934f",
+            "https://software.repos.intel.com/python/conda/linux-64/mkl-dpcpp-2026.1.0-intel_236.conda",
+            "e4066ebdb0352a05c8596b9f047bd9d3ed416cc2ee5d179740b11b541bbad6df",
             filename="mkl-dpcpp",
         ),
         FileSource(
-            "https://software.repos.intel.com/python/conda/linux-64/mkl-include-2025.2.0-intel_628.conda",
-            "b8485a410756687dae93c2b83f58a01bf38e94c32279d845f72e8c0d60de83ab",
+            "https://software.repos.intel.com/python/conda/linux-64/mkl-include-2026.1.0-intel_236.conda",
+            "6f5e9476564543871ed49ba64e4bd3843cfea894bdf7e040cdf24c6fa7d35ee7",
             filename="mkl-include",
         ),
 
         FileSource(
-            "https://software.repos.intel.com/python/conda/linux-64/onemkl-sycl-blas-2025.2.0-intel_628.conda",
-            "f9cbb4403dfe2131bafefae974b43824512ef80a069a54dcebf82afe85d07afb",
+            "https://software.repos.intel.com/python/conda/linux-64/onemkl-license-2026.1.0-intel_236.conda",
+            "ef5f0792d1af3c2b6da0d951637060125e6bc063768a6c71746fc3d357b0d452",
+            filename="onemkl-license",
+        ),
+        FileSource(
+            "https://software.repos.intel.com/python/conda/linux-64/onemkl-sycl-blas-2026.1.0-intel_236.conda",
+            "63d92a1a338cdfd053244205f9d3a411529a856299012dbb2bc860198faa5a2a",
             filename="onemkl-sycl-blas",
         ),
         FileSource(
-            "https://software.repos.intel.com/python/conda/linux-64/onemkl-sycl-datafitting-2025.2.0-intel_628.conda",
-            "585495feb1cad8fe32203b253fb04c308a810fb7453bc9fe6533dfb3d7704c60",
+            "https://software.repos.intel.com/python/conda/linux-64/onemkl-sycl-datafitting-2026.1.0-intel_236.conda",
+            "a9f97c54f8bd2bc877d23f7181f3157994f9782121d65e36b64ba223c744a9b7",
             filename="onemkl-sycl-datafitting",
         ),
         FileSource(
-            "https://software.repos.intel.com/python/conda/linux-64/onemkl-sycl-dft-2025.2.0-intel_628.conda",
-            "5a38332caca76926c413228682fc8d05c0f5bb90198f6c7173911de39b04d918",
+            "https://software.repos.intel.com/python/conda/linux-64/onemkl-sycl-dft-2026.1.0-intel_236.conda",
+            "f7635f49123952c90bb2914d257e99eb42e270c17aa38ef2be4f051b50a927cb",
             filename="onemkl-sycl-dft",
         ),
         FileSource(
-            "https://software.repos.intel.com/python/conda/linux-64/onemkl-sycl-lapack-2025.2.0-intel_628.conda",
-            "41ee24eeefe481a3f4e029cbd023e606d058f30d8eca97bc6eb9ab978558de03",
+            "https://software.repos.intel.com/python/conda/linux-64/onemkl-sycl-include-2026.1.0-intel_236.conda",
+            "dd5a6708327e2918f334982770926362b0ec3287af761369f0dcd89c6262e202",
+            filename="onemkl-sycl-include",
+        ),
+        FileSource(
+            "https://software.repos.intel.com/python/conda/linux-64/onemkl-sycl-lapack-2026.1.0-intel_236.conda",
+            "3cc047fadbf02f014b02be5eb0a473277f54ac1b7430c3515a7d9ffc1f6c0b4c",
             filename="onemkl-sycl-lapack",
         ),
         FileSource(
-            "https://software.repos.intel.com/python/conda/linux-64/onemkl-sycl-rng-2025.2.0-intel_628.conda",
-            "b3a9007dff182c3e6652836f0d9161047c5cb1e756863b6389221b1ecf41c12a",
+            "https://software.repos.intel.com/python/conda/linux-64/onemkl-sycl-rng-2026.1.0-intel_236.conda",
+            "3aaf130954b5889844d098de0eee72693590495606ba42d5fc4edf80dcb6370f",
             filename="onemkl-sycl-rng",
         ),
         FileSource(
-            "https://software.repos.intel.com/python/conda/linux-64/onemkl-sycl-sparse-2025.2.0-intel_628.conda",
-            "c53cc29da116f10b68494929d46acf6a407488f4fceaab99ddfbadbde086da90",
+            "https://software.repos.intel.com/python/conda/linux-64/onemkl-sycl-sparse-2026.1.0-intel_236.conda",
+            "a06ee503ab7215e74f029b4aa8ac33cba49bc9c0d59ae4349c051860b3977260",
             filename="onemkl-sycl-sparse",
         ),
         FileSource(
-            "https://software.repos.intel.com/python/conda/linux-64/onemkl-sycl-stats-2025.2.0-intel_628.conda",
-            "2ebb028163df45e7954514d96c366495c5202694f6bd4ae0fdc395e740dae8bc",
+            "https://software.repos.intel.com/python/conda/linux-64/onemkl-sycl-stats-2026.1.0-intel_236.conda",
+            "a4014b106f87c556dd9467bb58dc37e5153647ba5aec33a5aac2fe82b6140a6a",
             filename="onemkl-sycl-stats",
         ),
         FileSource(
-            "https://software.repos.intel.com/python/conda/linux-64/onemkl-sycl-vm-2025.2.0-intel_628.conda",
-            "12ba270cb2d16d5c3c9045f7234fbd779294a92123299d03898ac28e6ef6ff69",
+            "https://software.repos.intel.com/python/conda/linux-64/onemkl-sycl-vm-2026.1.0-intel_236.conda",
+            "4c56a4f5f1a5979d545fe13f121fadc334b3d4ea295d4d7a8ce806f39c00d013",
             filename="onemkl-sycl-vm",
         ),
 
         FileSource(
-            "https://software.repos.intel.com/python/conda/linux-64/tbb-2022.2.0-intel_507.conda",
-            "b806f156ed362a16473d1e0a93c768c4ecca2f2a6397f525c4905d34593cc68a",
+            "https://software.repos.intel.com/python/conda/linux-64/tbb-2023.1.0-intel_151.conda",
+            "9df775ed413fe80423f37e6563b8af586ec1ec44097da1595095ec5e31cd5a16",
             filename="tbb",
         ),
         FileSource(
-            "https://software.repos.intel.com/python/conda/linux-64/tbb-devel-2022.2.0-intel_507.conda",
-            "9dbb31455b1759fb9031e6828fd05cdd4e1893934b2e437112a16581038775ba",
+            "https://software.repos.intel.com/python/conda/linux-64/tbb-devel-2023.1.0-intel_151.conda",
+            "56906e12a28f7a2a639a124f5070b805146a9edb9d02aa48cfeb7decc50db197",
             filename="tbb-devel",
         ),
 
         FileSource(
-            "https://software.repos.intel.com/python/conda/linux-64/tcm-1.4.0-intel_345.conda",
-            "27583e316ca872175860f4e2063770de95841cb5c5af49aee46a1c64f537dd1c",
+            "https://software.repos.intel.com/python/conda/linux-64/tcm-1.5.0-intel_489.conda",
+            "594d122995085e639ac1383b6e39786f3617bbf8ac447cbcd2914ed1f2214c74",
             filename="tcm",
         ),
 
         FileSource(
-            "https://software.repos.intel.com/python/conda/linux-64/umf-0.11.0-intel_394.conda",
-            "6db8267c1cf39012e8e09a6359fe4641217910fc22483cf07df4b9aea49aa863",
+            "https://software.repos.intel.com/python/conda/linux-64/umf-1.1.0-intel_340.conda",
+            "3414521045ed05a60ea8d3046ae0eb474bf045eebc296ac86e28f58efdb5ed42",
             filename="umf",
         ),
     ]
@@ -162,9 +172,10 @@ platform_sources = Dict(
 script = raw"""
 for package in compiler_shared dpcpp-cpp-rt dpcpp_impl_linux-64 dpcpp_linux-64 intel-cmplr-lib-rt \
                intel-cmplr-lib-ur intel-cmplr-lic-rt intel-opencl-rt intel-openmp intel-sycl-rt mkl \
-               mkl-devel mkl-devel-dpcpp mkl-dpcpp mkl-include onemkl-sycl-blas onemkl-sycl-datafitting \
-               onemkl-sycl-dft onemkl-sycl-lapack onemkl-sycl-rng onemkl-sycl-sparse onemkl-sycl-stats \
-               onemkl-sycl-vm tbb tbb-devel tcm umf; do
+               mkl-devel mkl-devel-dpcpp mkl-dpcpp mkl-include onemkl-license onemkl-sycl-blas \
+               onemkl-sycl-datafitting onemkl-sycl-dft onemkl-sycl-include onemkl-sycl-lapack \
+               onemkl-sycl-rng onemkl-sycl-sparse onemkl-sycl-stats onemkl-sycl-vm tbb tbb-devel \
+               tcm umf; do
     unzip -o ${package} -d "${WORKSPACE}/srcdir"
 done
 
@@ -220,7 +231,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("oneAPI_Level_Zero_Headers_jll"),
-    BuildDependency("oneAPI_Support_Headers_jll"),
+    # the headers the wrappers in oneAPI.jl/deps were generated from; keep in sync with the toolkit above
+    BuildDependency(PackageSpec(name="oneAPI_Support_Headers_jll", version=v"2026.1.0+0")),
     Dependency("oneAPI_Level_Zero_Loader_jll"),
     Dependency("OpenCL_jll"),
     Dependency("Hwloc_jll"),
@@ -240,5 +252,5 @@ for (idx, (platform, sources)) in enumerate(platform_sources)
         args = ARGS
     end
     build_tarballs(args, name, version, [generic_sources; sources], script, [platform],
-                   products, dependencies; preferred_gcc_version=v"8")
+                   products, dependencies; preferred_gcc_version=v"8", julia_compat="1.10"))
 end

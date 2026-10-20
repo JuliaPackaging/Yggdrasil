@@ -4,7 +4,7 @@
 !                                                                             *
 !   This file is part of HDF5.  The full HDF5 copyright notice, including     *
 !   terms governing use, modification, and redistribution, is contained in    *
-!   the COPYING file, which can be found at the root of the source code       *
+!   the LICENSE file, which can be found at the root of the source code       *
 !   distribution tree, or in https://www.hdfgroup.org/licenses.               *
 !   If you do not have access to either file, you may request a copy from     *
 !   help@hdfgroup.org.                                                        *
@@ -24,7 +24,7 @@
         INTEGER, PARAMETER :: HSSIZE_T = 8
         INTEGER, PARAMETER :: OFF_T = 8
         INTEGER, PARAMETER :: SIZE_T = 4
-        INTEGER, PARAMETER :: TIME_T = 4
+        INTEGER, PARAMETER :: TIME_T = 8
         INTEGER, PARAMETER :: Fortran_INTEGER = 4
         INTEGER, DIMENSION(1:4), PARAMETER :: Fortran_INTEGER_AVAIL_KINDS = (/1,2,4,8/)
         INTEGER, PARAMETER :: Fortran_REAL_C_FLOAT = 4

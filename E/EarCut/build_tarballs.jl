@@ -3,11 +3,10 @@
 using BinaryBuilder
 
 name = "EarCut"
-# use https://github.com/mapbox/earcut.hpp/releases/tag/v2.2.4
-version = v"2.2.4"
+version = v"3.2.3"
 sources = [
     GitSource("https://github.com/mapbox/earcut.hpp.git",
-              "4811a2b69b91f6127a75e780de6e2113609ddabb"),
+              "c68c8835ccff2b7532d31d8fa8dfcf398f629498"),
     DirectorySource("./bundled")
 
 ]
@@ -16,7 +15,7 @@ sources = [
 script = raw"""
 cp $WORKSPACE/srcdir/earcut.hpp/include/mapbox/earcut.hpp ./earcut.h
 mkdir "${libdir}"
-${CXX} -std=c++11 -fPIC -shared -o "${libdir}/libearcut.${dlext}" cwrapper.cpp
+${CXX} -std=c++14 -fPIC -shared -o "${libdir}/libearcut.${dlext}" cwrapper.cpp
 install_license earcut.hpp/LICENSE
 """
 
@@ -34,4 +33,5 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"5")

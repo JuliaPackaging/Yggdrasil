@@ -1,0 +1,11 @@
+diff -ru gnupg-2.5.18/tests/gpgscm/scheme.c gnupg-2.5.18.new/tests/gpgscm/scheme.c
+--- gnupg-2.5.18/tests/gpgscm/scheme.c	2026-02-24 04:51:43
++++ gnupg-2.5.18.new/tests/gpgscm/scheme.c	2026-03-26 11:36:02
+@@ -36,6 +36,7 @@
+ #include <stdint.h>
+ #include <float.h>
+ #include <ctype.h>
++#include <time.h>
+ 
+ #if USE_STRCASECMP
+ #include <strings.h>

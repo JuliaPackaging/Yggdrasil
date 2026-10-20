@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Ninja"
-version = v"1.13.1"
+version = v"1.13.2"
 
 # Collection of sources required to build ninja
 sources = [
-    GitSource("https://github.com/ninja-build/ninja", "79feac0f3e3bc9da9effc586cd5fea41e7550051"),
+    GitSource("https://github.com/ninja-build/ninja", "3441b633c2fe2c494e958780ba0f4227b1327634"; tag="v$(version)"),
 ]
 
 # Bash recipe for building across all platforms

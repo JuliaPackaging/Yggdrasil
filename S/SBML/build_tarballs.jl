@@ -2,11 +2,11 @@
 using BinaryBuilder, Pkg
 
 name = "SBML"
-version = v"5.20.1"
+version = v"5.21.0"
 sources = [
     GitSource(
         "https://github.com/sbmlteam/libsbml.git",
-        "c30da11bcfd2200a6b518c3dd0f59e81254637d6")
+        "db4dc4f0d6887cd7cef4761b9606142356d2b735")
 ]
 
 script = raw"""

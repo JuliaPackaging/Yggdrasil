@@ -1,0 +1,14 @@
+--- compute-runtime/package.cmake.original	2025-08-14 21:19:17.045175056 -0500
++++ compute-runtime/package.cmake	2025-08-14 21:20:49.708282078 -0500
+@@ -46,9 +46,9 @@
+   if(NOT DEFINED OCL_ICD_VENDORDIR)
+     if("${os_name}" STREQUAL "clear-linux-os")
+       # clear-linux-os distribution avoids /etc for distribution defaults.
+-      set(OCL_ICD_VENDORDIR "/usr/share/defaults/etc/OpenCL/vendors")
++      set(OCL_ICD_VENDORDIR "${CMAKE_INSTALL_PREFIX}/share/defaults/etc/OpenCL/vendors")
+     else()
+-      set(OCL_ICD_VENDORDIR "/etc/OpenCL/vendors")
++      set(OCL_ICD_VENDORDIR "${CMAKE_INSTALL_PREFIX}/etc/OpenCL/vendors")
+     endif()
+   endif()
+

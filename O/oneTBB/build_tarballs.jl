@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "oneTBB"
-version = v"2022.0.0"
+version = v"2023.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/oneapi-src/oneTBB.git",
-              "0c0ff192a2304e114bc9e6557582dfba101360ff"),
+    GitSource("https://github.com/uxlfoundation/oneTBB.git",
+              "3046c8b0c29df995980003ea24f4d78c80ec0c8d"),
     DirectorySource("./bundled"),
 ]
 
@@ -21,7 +21,7 @@ if [[ ${target} == *mingw* ]]; then
 
     # `CreateSemaphoreEx` requires at least Windows Vista/Server 2008:
     # https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-createsemaphoreexa
-    export CXXFLAGS="-D_WIN32_WINNT=0x0600"
+    export CXXFLAGS="-D_WIN32_WINNT=0x0600 -DLOAD_LIBRARY_SAFE_CURRENT_DIRS=LOAD_LIBRARY_SEARCH_DEFAULT_DIRS"
 fi
 
 if [[ ${target} == i686-linux-musl* ]]; then

@@ -1,0 +1,331 @@
+From 7aa193d3fa1a271f6ded0fa21babe6dec22a2fc7 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Mon, 28 Sep 2026 15:23:44 +0200
+Subject: [PATCH] SanitizeUBofDivRem: fold x / x to 1, not 0
+
+The pass replaced a division or remainder of a value by itself with 0, which
+is only correct for the remainder. Clang already folds x / x for OpenCL C, but
+SPIR-V input is not folded, so e.g. a SPIR-V `sdiv %x, %x` returned 0 on
+builds that run the pass (x86 builds without the SIGFPE handler).
+
+Add a regression test with a SPIR-V kernel that divides values by themselves,
+by zero, and INT_MIN by -1.
+
+(cherry picked from commit 9448868fd8056b3f44fb866141247d8df9ebe988)
+---
+ lib/llvmopencl/SanitizeUBofDivRem.cc     |   7 +-
+ tests/regression/CMakeLists.txt          |   3 +
+ tests/regression/test_sanitize_divrem.c  | 190 +++++++++++++++++++++++
+ tests/regression/test_sanitize_divrem.ll |  64 ++++++++
+ 4 files changed, 262 insertions(+), 2 deletions(-)
+ create mode 100644 tests/regression/test_sanitize_divrem.c
+ create mode 100644 tests/regression/test_sanitize_divrem.ll
+
+diff --git a/lib/llvmopencl/SanitizeUBofDivRem.cc b/lib/llvmopencl/SanitizeUBofDivRem.cc
+index 38ed5474e..411da4271 100644
+--- a/lib/llvmopencl/SanitizeUBofDivRem.cc
++++ b/lib/llvmopencl/SanitizeUBofDivRem.cc
+@@ -120,8 +120,11 @@ static bool sanitizeUBofDivRem(llvm::Function &F) {
+       Value *Dividend = BinI->getOperand(0);
+       Value *Divisor = BinI->getOperand(1);
+       if (Dividend == Divisor) {
+-        Value *One = ConstantInt::get(BinI->getType(), 0);
+-        BinI->replaceAllUsesWith(One);
++        // x / x == 1 and x % x == 0; the result for x == 0 is unspecified.
++        bool IsDiv = BinI->getOpcode() == Instruction::SDiv ||
++                     BinI->getOpcode() == Instruction::UDiv;
++        Value *Result = ConstantInt::get(BinI->getType(), IsDiv ? 1 : 0);
++        BinI->replaceAllUsesWith(Result);
+         BinI->eraseFromParent();
+         Changed = true;
+         continue;
+diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
+index a46a3d268..f2ce94e75 100644
+--- a/tests/regression/CMakeLists.txt
++++ b/tests/regression/CMakeLists.txt
+@@ -45,6 +45,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
+      test_usm_free_realloc
+      test_large_private_workgroup
+      test_stack_estimate_builtins
++     test_sanitize_divrem
+ )
+ if(UNIX)
+   list(APPEND C_PROGRAMS_TO_BUILD test_signal_handlers)
+@@ -215,6 +216,8 @@ add_test_pocl(NAME "regression/test_large_private_workgroup"
+ add_test_pocl(NAME "regression/test_stack_estimate_builtins"
+   COMMAND "test_stack_estimate_builtins" WORKITEM_HANDLER "loopvec")
+ 
++add_test_pocl(NAME "regression/test_sanitize_divrem" COMMAND "test_sanitize_divrem" LABELS ${SPIRV_LABELS})
++
+ add_test_pocl(NAME "regression/test_issue_893" COMMAND "test_issue_893")
+ 
+ add_test_pocl(NAME "regression/test_flatten_barrier_subs" COMMAND "test_flatten_barrier_subs" EXPECTED_OUTPUT "test_flatten_barrier_subs.output")
+diff --git a/tests/regression/test_sanitize_divrem.c b/tests/regression/test_sanitize_divrem.c
+new file mode 100644
+index 000000000..ecc87c49a
+--- /dev/null
++++ b/tests/regression/test_sanitize_divrem.c
+@@ -0,0 +1,190 @@
++// Copyright (c) 2026 PoCL developers
++//
++// Permission is hereby granted, free of charge, to any person obtaining a copy
++// of this software and associated documentation files (the "Software"), to deal
++// in the Software without restriction, including without limitation the rights
++// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++// copies of the Software, and to permit persons to whom the Software is
++// furnished to do so, subject to the following conditions:
++//
++// The above copyright notice and this permission notice shall be included in
++// all copies or substantial portions of the Software.
++//
++// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++// THE SOFTWARE.
++
++/*
++  Integer division and remainder must not trap in OpenCL: dividing by zero or
++  INT_MIN by -1 gives an unspecified value. On x86, the SanitizeUBofDivRem pass
++  (or the SIGFPE handler, where enabled) takes care of this. The pass folds a
++  value divided by itself to a constant; it used to fold x / x to 0 instead
++  of 1. Clang folds x / x itself for OpenCL C, but SPIR-V input is not folded,
++  so the kernel is given as SPIR-V, generated from test_sanitize_divrem.ll with
++
++      llvm-as test_sanitize_divrem.ll
++      llvm-spirv --spirv-max-version=1.0 test_sanitize_divrem.bc
++
++  Per work-item i, it computes x / x and x % x (signed and unsigned, scalar and
++  <4 x i32>) and n / d and n % d for runtime n and d, which include d == 0 and
++  INT_MIN / -1.
++*/
++
++#include "pocl_opencl.h"
++
++#include <limits.h>
++#include <stdio.h>
++#include <stdlib.h>
++
++#define CHECK_ERROR(err)                                                       \
++  if (err != CL_SUCCESS) {                                                     \
++    printf("OpenCL Error %d at %s:%d\n", err, __FILE__, __LINE__);             \
++    return 1;                                                                  \
++  }
++
++#define N 4
++
++int main(int argc, char **argv) {
++  cl_uint platform_index = argc > 1 ? (cl_uint)atoi(argv[1]) : 0;
++  cl_int err;
++
++  cl_uint num_platforms;
++  CHECK_ERROR(clGetPlatformIDs(0, NULL, &num_platforms));
++  if (platform_index >= num_platforms) {
++    printf("Platform index %u out of range\n", platform_index);
++    return 1;
++  }
++  cl_platform_id *platforms = malloc(sizeof(cl_platform_id) * num_platforms);
++  CHECK_ERROR(clGetPlatformIDs(num_platforms, platforms, NULL));
++  cl_platform_id platform = platforms[platform_index];
++  free(platforms);
++
++  cl_device_id device;
++  CHECK_ERROR(clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, 1, &device, NULL));
++
++  if (!poclu_device_supports_il(device, "SPIR-V_1.0")) {
++    printf("SKIP: The test requires support for SPIR-V 1.0\n");
++    return 77;
++  }
++
++  cl_context context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
++  CHECK_ERROR(err);
++  cl_queue_properties props[] = {0};
++  cl_command_queue queue =
++      clCreateCommandQueueWithProperties(context, device, props, &err);
++  CHECK_ERROR(err);
++
++  FILE *f = fopen(SRCDIR "/test_sanitize_divrem.spv", "rb");
++  if (!f) {
++    printf("Failed to open test_sanitize_divrem.spv\n");
++    return 1;
++  }
++  fseek(f, 0, SEEK_END);
++  size_t size = ftell(f);
++  fseek(f, 0, SEEK_SET);
++  unsigned char *binary = malloc(size);
++  if (fread(binary, 1, size, f) != size) {
++    printf("Failed to read SPIR-V\n");
++    free(binary);
++    fclose(f);
++    return 1;
++  }
++  fclose(f);
++
++  cl_program program = clCreateProgramWithIL(context, binary, size, &err);
++  CHECK_ERROR(err);
++  CHECK_ERROR(clBuildProgram(program, 1, &device, NULL, NULL, NULL));
++  cl_kernel kernel = clCreateKernel(program, "divrem", &err);
++  CHECK_ERROR(err);
++
++  cl_int x[N] = {1, 7, -3, INT_MAX};
++  cl_int v[N * 4] = {1,  -1,      2,  INT_MIN, 3, -5,      9,       100,
++                     -8, INT_MAX, 13, 42,      6, INT_MIN, INT_MAX, -1};
++  cl_int num[N] = {7, INT_MIN, 7, -9};
++  cl_int den[N] = {0, -1, 2, 4};
++  cl_int out[N * 8];
++  cl_int vout[N * 16];
++
++  cl_mem bufs[6];
++  bufs[0] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
++                           sizeof(x), x, &err);
++  CHECK_ERROR(err);
++  bufs[1] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
++                           sizeof(v), v, &err);
++  CHECK_ERROR(err);
++  bufs[2] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
++                           sizeof(num), num, &err);
++  CHECK_ERROR(err);
++  bufs[3] = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
++                           sizeof(den), den, &err);
++  CHECK_ERROR(err);
++  bufs[4] = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(out), NULL, &err);
++  CHECK_ERROR(err);
++  bufs[5] =
++      clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(vout), NULL, &err);
++  CHECK_ERROR(err);
++  for (cl_uint i = 0; i < 6; i++)
++    CHECK_ERROR(clSetKernelArg(kernel, i, sizeof(cl_mem), &bufs[i]));
++
++  size_t global_size = N;
++  CHECK_ERROR(clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global_size, NULL,
++                                     0, NULL, NULL));
++  CHECK_ERROR(clEnqueueReadBuffer(queue, bufs[4], CL_TRUE, 0, sizeof(out), out,
++                                  0, NULL, NULL));
++  CHECK_ERROR(clEnqueueReadBuffer(queue, bufs[5], CL_TRUE, 0, sizeof(vout),
++                                  vout, 0, NULL, NULL));
++
++  int errors = 0;
++#define EXPECT(what, got, expected)                                            \
++  if ((got) != (expected)) {                                                   \
++    printf("%s: got %d, expected %d\n", what, (int)(got), (int)(expected));    \
++    errors++;                                                                  \
++  }
++
++  for (int i = 0; i < N; i++) {
++    // x / x and x % x (all x are nonzero)
++    EXPECT("x / x (signed)", out[i * 8 + 0], 1);
++    EXPECT("x / x (unsigned)", out[i * 8 + 1], 1);
++    EXPECT("x % x (signed)", out[i * 8 + 2], 0);
++    EXPECT("x % x (unsigned)", out[i * 8 + 3], 0);
++    for (int j = 0; j < 4; j++) {
++      EXPECT("v / v (signed)", vout[i * 16 + 0 + j], 1);
++      EXPECT("v / v (unsigned)", vout[i * 16 + 4 + j], 1);
++      EXPECT("v % v (signed)", vout[i * 16 + 8 + j], 0);
++      EXPECT("v % v (unsigned)", vout[i * 16 + 12 + j], 0);
++    }
++  }
++
++  // n / d and n % d: the results for d == 0 and signed INT_MIN / -1 are
++  // unspecified, so only check that computing them did not trap, and check
++  // the defined ones.
++  EXPECT("INT_MIN / -1 (unsigned)", out[1 * 8 + 5], 0);
++  EXPECT("INT_MIN % -1 (unsigned)", (cl_uint)out[1 * 8 + 7], (cl_uint)INT_MIN);
++  EXPECT("7 / 2 (signed)", out[2 * 8 + 4], 3);
++  EXPECT("7 / 2 (unsigned)", out[2 * 8 + 5], 3);
++  EXPECT("7 % 2 (signed)", out[2 * 8 + 6], 1);
++  EXPECT("7 % 2 (unsigned)", out[2 * 8 + 7], 1);
++  EXPECT("-9 / 4 (signed)", out[3 * 8 + 4], -2);
++  EXPECT("-9 / 4 (unsigned)", (cl_uint)out[3 * 8 + 5], (cl_uint)-9 / 4);
++  EXPECT("-9 % 4 (signed)", out[3 * 8 + 6], -1);
++  EXPECT("-9 % 4 (unsigned)", (cl_uint)out[3 * 8 + 7], (cl_uint)-9 % 4);
++
++  for (int i = 0; i < 6; i++)
++    clReleaseMemObject(bufs[i]);
++  clReleaseKernel(kernel);
++  clReleaseProgram(program);
++  clReleaseCommandQueue(queue);
++  clReleaseContext(context);
++  free(binary);
++
++  if (errors) {
++    printf("FAIL: %d errors\n", errors);
++    return 1;
++  }
++  printf("OK\n");
++  return 0;
++}
+diff --git a/tests/regression/test_sanitize_divrem.ll b/tests/regression/test_sanitize_divrem.ll
+new file mode 100644
+index 000000000..38a5e7d14
+--- /dev/null
++++ b/tests/regression/test_sanitize_divrem.ll
+@@ -0,0 +1,64 @@
++target datalayout = "e-i64:64-v16:16-v24:32-v32:32-v48:64-v96:128-v192:256-v256:256-v512:512-v1024:1024"
++target triple = "spir64-unknown-unknown"
++
++declare spir_func i64 @_Z13get_global_idj(i32)
++
++define spir_kernel void @divrem(ptr addrspace(1) %x, ptr addrspace(1) %v,
++                                ptr addrspace(1) %num, ptr addrspace(1) %den,
++                                ptr addrspace(1) %out, ptr addrspace(1) %vout) {
++  %i = call spir_func i64 @_Z13get_global_idj(i32 0)
++
++  ; x / x, x % x
++  %px = getelementptr i32, ptr addrspace(1) %x, i64 %i
++  %xv = load i32, ptr addrspace(1) %px
++  %xsd = sdiv i32 %xv, %xv
++  %xud = udiv i32 %xv, %xv
++  %xsr = srem i32 %xv, %xv
++  %xur = urem i32 %xv, %xv
++
++  ; n / d, n % d with runtime divisors (including 0 and INT_MIN / -1)
++  %pn = getelementptr i32, ptr addrspace(1) %num, i64 %i
++  %pd = getelementptr i32, ptr addrspace(1) %den, i64 %i
++  %n = load i32, ptr addrspace(1) %pn
++  %d = load i32, ptr addrspace(1) %pd
++  %sd = sdiv i32 %n, %d
++  %ud = udiv i32 %n, %d
++  %sr = srem i32 %n, %d
++  %ur = urem i32 %n, %d
++
++  %o = mul i64 %i, 8
++  %o0 = getelementptr i32, ptr addrspace(1) %out, i64 %o
++  store i32 %xsd, ptr addrspace(1) %o0
++  %o1 = getelementptr i32, ptr addrspace(1) %o0, i64 1
++  store i32 %xud, ptr addrspace(1) %o1
++  %o2 = getelementptr i32, ptr addrspace(1) %o0, i64 2
++  store i32 %xsr, ptr addrspace(1) %o2
++  %o3 = getelementptr i32, ptr addrspace(1) %o0, i64 3
++  store i32 %xur, ptr addrspace(1) %o3
++  %o4 = getelementptr i32, ptr addrspace(1) %o0, i64 4
++  store i32 %sd, ptr addrspace(1) %o4
++  %o5 = getelementptr i32, ptr addrspace(1) %o0, i64 5
++  store i32 %ud, ptr addrspace(1) %o5
++  %o6 = getelementptr i32, ptr addrspace(1) %o0, i64 6
++  store i32 %sr, ptr addrspace(1) %o6
++  %o7 = getelementptr i32, ptr addrspace(1) %o0, i64 7
++  store i32 %ur, ptr addrspace(1) %o7
++
++  ; v / v, v % v on vectors
++  %pv = getelementptr <4 x i32>, ptr addrspace(1) %v, i64 %i
++  %vv = load <4 x i32>, ptr addrspace(1) %pv
++  %vsd = sdiv <4 x i32> %vv, %vv
++  %vud = udiv <4 x i32> %vv, %vv
++  %vsr = srem <4 x i32> %vv, %vv
++  %vur = urem <4 x i32> %vv, %vv
++  %vo = mul i64 %i, 4
++  %vo0 = getelementptr <4 x i32>, ptr addrspace(1) %vout, i64 %vo
++  store <4 x i32> %vsd, ptr addrspace(1) %vo0
++  %vo1 = getelementptr <4 x i32>, ptr addrspace(1) %vo0, i64 1
++  store <4 x i32> %vud, ptr addrspace(1) %vo1
++  %vo2 = getelementptr <4 x i32>, ptr addrspace(1) %vo0, i64 2
++  store <4 x i32> %vsr, ptr addrspace(1) %vo2
++  %vo3 = getelementptr <4 x i32>, ptr addrspace(1) %vo0, i64 3
++  store <4 x i32> %vur, ptr addrspace(1) %vo3
++  ret void
++}
+-- 
+2.56.0
+

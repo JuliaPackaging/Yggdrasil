@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "cuQuantum"
-version_str = "25.09.0"
+version_str = "26.09.0"
 version = VersionNumber(version_str)
 
 # Bash recipe for building across all platforms
@@ -26,7 +26,7 @@ augment_platform_block = CUDA.augment
 
 dependencies = [
     RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")),
-    RuntimeDependency(PackageSpec(name="CUTENSOR_jll"), compat="2.3.1")
+    RuntimeDependency(PackageSpec(name="CUTENSOR_jll"), compat="2.8.1")
 ]
 
 # The products that we will ensure are always built
@@ -34,6 +34,8 @@ products = [
     LibraryProduct("libcustatevec", :libcustatevec),
     LibraryProduct("libcutensornet", :libcutensornet),
     LibraryProduct("libcudensitymat", :libcudensitymat),
+    LibraryProduct("libcupauliprop", :libcupauliprop),
+    LibraryProduct("libcustabilizer", :libcustabilizer),
 ]
 
 platforms = [Platform("x86_64", "linux"),
@@ -67,3 +69,5 @@ for (i, build) in enumerate(builds)
         build.platforms, products, dependencies;
         julia_compat="1.6", augment_platform_block, dont_dlopen=true)
 end
+
+# bump

@@ -1,0 +1,110 @@
+MinGW build fixes, partly ported from https://github.com/PixarAnimationStudios/OpenUSD/pull/2946
+
+diff --git a/pxr/base/arch/CMakeLists.txt b/pxr/base/arch/CMakeLists.txt
+index 5243787..9fbc7be 100644
+--- a/pxr/base/arch/CMakeLists.txt
++++ b/pxr/base/arch/CMakeLists.txt
+@@ -8,7 +8,7 @@ if(NOT EMSCRIPTEN)
+     set(PLATFORM_LIBS ${M_LIB})
+ endif()
+ if(WIN32)
+-    set(PLATFORM_LIBS Ws2_32.lib Dbghelp.lib ${PLATFORM_LIBS})
++    set(PLATFORM_LIBS ws2_32 dbghelp ${PLATFORM_LIBS})
+ endif()
+ 
+ pxr_library(arch
+diff --git a/pxr/base/arch/attributes.cpp b/pxr/base/arch/attributes.cpp
+index 1309d6f..e0f0c47 100644
+--- a/pxr/base/arch/attributes.cpp
++++ b/pxr/base/arch/attributes.cpp
+@@ -254,7 +254,8 @@ static void InstallDyldCallbacks()
+ 
+ PXR_NAMESPACE_CLOSE_SCOPE
+ 
+-#elif defined(ARCH_OS_WINDOWS)
++#elif defined(ARCH_OS_WINDOWS) && \
++    !defined(ARCH_COMPILER_GCC) && !defined(ARCH_COMPILER_CLANG)
+ 
+ #include <Windows.h>
+ #include <algorithm>
+diff --git a/pxr/base/arch/errno.cpp b/pxr/base/arch/errno.cpp
+index 3f87c6f..4ca7d07 100644
+--- a/pxr/base/arch/errno.cpp
++++ b/pxr/base/arch/errno.cpp
+@@ -53,7 +53,7 @@ ArchStrerror(int errorCode)
+     //
+     char* result = strerror_r(errorCode, msg_buf, sizeof(msg_buf));
+     return std::string(result);
+-#elif !defined(ARCH_COMPILER_MSVC)
++#elif !defined(ARCH_OS_WINDOWS)
+     strerror_r(errorCode, msg_buf, 256);
+ #else
+     strerror_s(msg_buf, 256, errorCode);
+diff --git a/pxr/base/arch/export.h b/pxr/base/arch/export.h
+index 06246ab..db09733 100644
+--- a/pxr/base/arch/export.h
++++ b/pxr/base/arch/export.h
+@@ -142,7 +142,9 @@
+ #if defined(ARCH_OS_WINDOWS)
+ #   if defined(ARCH_COMPILER_GCC) && ARCH_COMPILER_GCC_MAJOR >= 4 || defined(ARCH_COMPILER_CLANG)
+ #       define ARCH_EXPORT __attribute__((dllexport))
+-#       define ARCH_IMPORT __attribute__((dllimport))
++// GCC rejects dllimport on the inline members of classes that export only
++// some members; the linker's auto-import resolves these imports instead.
++#       define ARCH_IMPORT
+ #       define ARCH_HIDDEN
+ #       define ARCH_EXPORT_TYPE
+ #   else
+diff --git a/pxr/base/arch/fileSystem.cpp b/pxr/base/arch/fileSystem.cpp
+index 96d3aba..86e8677 100644
+--- a/pxr/base/arch/fileSystem.cpp
++++ b/pxr/base/arch/fileSystem.cpp
+@@ -32,6 +32,7 @@
+ #include <functional>
+ #include <io.h>
+ #include <process.h>
++#include <share.h>
+ #include <Windows.h>
+ #include <WinIoCtl.h>
+ #else
+diff --git a/pxr/base/arch/library.cpp b/pxr/base/arch/library.cpp
+index 184e8ca..51a519a 100644
+--- a/pxr/base/arch/library.cpp
++++ b/pxr/base/arch/library.cpp
+@@ -72,7 +72,7 @@ int ArchLibraryClose(void* handle)
+ void* ArchLibraryGetSymbolAddress(void* handle, const char* name)
+ {
+ #if defined(ARCH_OS_WINDOWS)
+-    return GetProcAddress(reinterpret_cast<HMODULE>(handle), name);
++    return (void*)GetProcAddress(reinterpret_cast<HMODULE>(handle), name);
+ #else
+     return dlsym(handle, name);
+ #endif
+diff --git a/pxr/base/tf/CMakeLists.txt b/pxr/base/tf/CMakeLists.txt
+index 1b1aa9d..69d4b96 100644
+--- a/pxr/base/tf/CMakeLists.txt
++++ b/pxr/base/tf/CMakeLists.txt
+@@ -5,7 +5,7 @@ set(PXR_PACKAGE tf)
+ set(PXR_PREFIX pxr/base)
+ 
+ if(WIN32)
+-    set(WINLIBS Shlwapi.lib)
++    set(WINLIBS shlwapi)
+ endif()
+ 
+ # Add a test that WindowsImportWrapper adds entries on the PATH in the correct order, to ensure
+diff --git a/pxr/pxrConfig.cmake.in b/pxr/pxrConfig.cmake.in
+index b83cf3d..ecd01b0 100644
+--- a/pxr/pxrConfig.cmake.in
++++ b/pxr/pxrConfig.cmake.in
+@@ -131,8 +131,8 @@ foreach(lib ${libs})
+ endforeach()
+ if(NOT @BUILD_SHARED_LIBS@)
+     if(WIN32)
+-        list(APPEND PXR_LIBRARIES Shlwapi.lib)
+-        list(APPEND PXR_LIBRARIES Dbghelp.lib)
++        list(APPEND PXR_LIBRARIES shlwapi)
++        list(APPEND PXR_LIBRARIES dbghelp)
+     endif()
+     add_definitions(-DPXR_STATIC)
+ endif()

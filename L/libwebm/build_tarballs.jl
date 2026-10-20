@@ -3,11 +3,11 @@
 using BinaryBuilder
 
 name = "libwebm"
-version = v"1.0.31"
+version = v"1.0.32"
 
 # Collection of sources required to build libwebm
 sources = [
-    GitSource("https://github.com/webmproject/libwebm", "6745fd29e0245fc584b0bb9f65018ea2366fe7fb"),
+    GitSource("https://github.com/webmproject/libwebm", "f2a982d748b80586ae53b89a2e6ebbc305848b8c"),
 ]
 
 # Bash recipe for building across all platforms

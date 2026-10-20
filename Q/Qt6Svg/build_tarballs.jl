@@ -3,17 +3,20 @@
 using BinaryBuilder, Pkg
 
 name = "Qt6Svg"
-version = v"6.8.2"
+version = v"6.10.2"
 
 # Collection of sources required to build qt6
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtsvg-everywhere-src-$version.tar.xz",
-                  "aa2579f21ca66d19cbcf31d87e9067e07932635d36869c8239d4decd0a9dc1fa"),
+                  "f07ff80f38caf235187200345392ca7479445ddf49a36c3694cd52a735dad6e1"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
 ]
 
 script = raw"""
+# Need newer cmake from JLL
+apk del cmake
+
 cd $WORKSPACE/srcdir
 
 mkdir build
@@ -81,6 +84,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    HostBuildDependency("CMake_jll"),
     HostBuildDependency("Qt6Base_jll"),
     Dependency("Qt6Base_jll"; compat="="*string(version)),
 ]

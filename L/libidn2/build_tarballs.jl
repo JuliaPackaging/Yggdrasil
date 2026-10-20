@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "libidn2"
-version = v"2.3.7"
+version = v"2.3.8"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/libidn/libidn2-$(version).tar.gz",
-                  "4c21a791b610b9519b9d0e12b8097bf2f359b12f8dd92647611a929e6bfd7d64"),
+    ArchiveSource("https://ftpmirror.gnu.org/gnu/libidn/libidn2-$(version).tar.gz",
+                  "f557911bf6171621e1f72ff35f5b1825bb35b52ed45325dcdee931e5d3c0787a"),
 ]
 
 # Bash recipe for building across all platforms
@@ -30,7 +30,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental = true)
+platforms = supported_platforms()
 
 
 # The products that we will ensure are always built

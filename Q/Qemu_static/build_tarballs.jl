@@ -80,7 +80,7 @@ dependencies = [
     BuildDependency("Libiconv_jll"),
 
     # qemu needs glibc >=2.14 for CLOCK_BOOTTIME
-    BuildDependency(PackageSpec(name = "Glibc_jll", version = v"2.17");
+    BuildDependency(PackageSpec(name = "Glibc_jll", version = "2.17");
                     platforms=glibc_platforms),
 ]
 

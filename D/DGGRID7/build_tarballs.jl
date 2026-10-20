@@ -37,7 +37,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 # mpi error on built 686-linux, copied from GDAL because GDAL_jll is a dependency
 dependencies = [
-    BuildDependency(PackageSpec(; name="OpenMPI_jll", version=v"4.1.8"); platforms=filter(p -> nbits(p)==32, platforms)),
+    BuildDependency(PackageSpec(; name="OpenMPI_jll", version="4.1.8"); platforms=filter(p -> nbits(p)==32, platforms)),
     Dependency(PackageSpec(name="GDAL_jll", uuid="a7073274-a066-55f0-b90d-d619367d196c"); compat="~v303.1100.100")
 ]
 

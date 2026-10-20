@@ -1,0 +1,85 @@
+From dd1338e674621d5841df742c23b12da9c9827efe Mon Sep 17 00:00:00 2001
+From: Sven van Haastregt <sven.vanhaastregt@arm.com>
+Date: Tue, 22 Sep 2026 16:38:50 +0200
+Subject: [PATCH] Add storage class semantics to LLVM fence translation (#4030)
+
+Mimic SPIR-V backend handling introduced by llvm-project commit
+61978757eca5 ("[SPIR-V] Add storage class bits to fence and generic
+atomic semantics (#223023)", 2026-09-21).
+
+Also add missing CHECK lines for `fence_test_kernel5`.
+---
+ lib/SPIRV/SPIRVWriter.cpp      |  7 +++++++
+ test/transcoding/fence_inst.ll | 25 +++++++++++++++----------
+ 2 files changed, 22 insertions(+), 10 deletions(-)
+
+diff --git a/lib/SPIRV/SPIRVWriter.cpp b/lib/SPIRV/SPIRVWriter.cpp
+index b266f830..2f5bf652 100644
+--- a/lib/SPIRV/SPIRVWriter.cpp
++++ b/lib/SPIRV/SPIRVWriter.cpp
+@@ -5704,6 +5704,13 @@ SPIRVValue *LLVMToSPIRVBase::transFenceInst(FenceInst *FI,
+     break;
+   }
+ 
++  // A fence is not associated with a particular memory object, so make its
++  // memory semantics cover every storage class reachable in the OpenCL
++  // environment.
++  MemorySemantics |= MemorySemanticsWorkgroupMemoryMask |
++                     MemorySemanticsCrossWorkgroupMemoryMask |
++                     MemorySemanticsImageMemoryMask;
++
+   Module *M = FI->getParent()->getModule();
+   spv::Scope S = toSPIRVScope(FI->getContext(), FI->getSyncScopeID());
+ 
+diff --git a/test/transcoding/fence_inst.ll b/test/transcoding/fence_inst.ll
+index ddeca220..7c0c49a6 100644
+--- a/test/transcoding/fence_inst.ll
++++ b/test/transcoding/fence_inst.ll
+@@ -18,29 +18,34 @@
+ ; CHECK-SPIRV: Constant [[#UINT]] [[#CD:]] 0
+ 
+ ; 0x2 Workgroup
+-; CHECK-SPIRV: Constant [[#UINT]] [[#ID1:]] 2
+-; CHECK-SPIRV: Constant [[#UINT]] [[#ID2:]] 4
+-; CHECK-SPIRV: Constant [[#UINT]] [[#ID3:]] 8
+-; CHECK-SPIRV: Constant [[#UINT]] [[#ID4:]] 16
++; CHECK-SPIRV-DAG: Constant [[#UINT]] [[#ID1:]] 2818
++; CHECK-SPIRV-DAG: Constant [[#UINT]] [[#ID2:]] 2820
++; CHECK-SPIRV-DAG: Constant [[#UINT]] [[#ID3:]] 2824
++; CHECK-SPIRV-DAG: Constant [[#UINT]] [[#ID4:]] 2832
++; CHECK-SPIRV-DAG: Constant [[#UINT]] [[#NUM4:]] 4
++; CHECK-SPIRV-DAG: Constant [[#UINT]] [[#NUM2:]] 2
+ 
+ ; CHECK-SPIRV: MemoryBarrier [[#CD]] [[#ID1]]
+ ; CHECK-SPIRV: MemoryBarrier [[#CD]] [[#ID2]]
+ ; CHECK-SPIRV: MemoryBarrier [[#CD]] [[#ID3]]
+-; CHECK-SPIRV: MemoryBarrier [[#ID2]] [[#ID4]]
+-; CHECK-SPIRV: MemoryBarrier [[#ID1]] [[#ID2]]
++; CHECK-SPIRV: MemoryBarrier [[#NUM4]] [[#ID4]]
++; CHECK-SPIRV: MemoryBarrier [[#NUM2]] [[#ID2]]
+ 
+ 
+ ; CHECK-LLVM: define spir_kernel void @fence_test_kernel1{{.*}} #0 {{.*}}
+-; CHECK-LLVM-NEXT: call spir_func void @_Z9mem_fencej(i32 0)
++; CHECK-LLVM-NEXT: call spir_func void @_Z9mem_fencej(i32 7)
+ 
+ ; CHECK-LLVM: define spir_kernel void @fence_test_kernel2{{.*}} #0 {{.*}}
+-; CHECK-LLVM-NEXT: call spir_func void @_Z9mem_fencej(i32 0)
++; CHECK-LLVM-NEXT: call spir_func void @_Z9mem_fencej(i32 7)
+ 
+ ; CHECK-LLVM: define spir_kernel void @fence_test_kernel3{{.*}} #0 {{.*}}
+-; CHECK-LLVM-NEXT: call spir_func void @_Z9mem_fencej(i32 0)
++; CHECK-LLVM-NEXT: call spir_func void @_Z9mem_fencej(i32 7)
+ 
+ ; CHECK-LLVM: define spir_kernel void @fence_test_kernel4{{.*}} #0 {{.*}}
+-; CHECK-LLVM-NEXT: call spir_func void @_Z9mem_fencej(i32 0)
++; CHECK-LLVM-NEXT: call spir_func void @_Z9mem_fencej(i32 7)
++
++; CHECK-LLVM: define spir_kernel void @fence_test_kernel5{{.*}} #0 {{.*}}
++; CHECK-LLVM-NEXT: call spir_func void @_Z9mem_fencej(i32 7)
+ 
+ ; ModuleID = 'fence_inst.bc'
+ target datalayout = "e-i64:64-v16:16-v24:32-v32:32-v48:64-v96:128-v192:256-v256:256-v512:512-v1024:1024-n8:16:32:64"
+-- 
+2.55.0
+

@@ -1,20 +1,15 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, Pkg
-
-# See https://github.com/JuliaLang/Pkg.jl/issues/2942
-# Once this Pkg issue is resolved, this must be removed
-uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
-delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
+using BinaryBuilder
 
 name = "rustfft"
-version = v"0.5.1"
-julia_versions = [v"1.10", v"1.11", v"1.12"]
+version = v"0.6.0"
+julia_versions = [v"1.10", v"1.11", v"1.12", v"1.13"]
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/Taaitaaiger/rustfft-jl.git",
-              "3cb9dc40222ef10bff671408262079f492f06c99"),
+              "dc1bbde5580f75af0a2e19aeb58bd5559ee52bce"),
 ]
 
 # Bash recipe for building across all platforms
@@ -28,8 +23,8 @@ install -Dvm 0755 "target/${rust_target}/release/"*rustfft_jl".${dlext}" "${libd
 include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 
-# 32-bit Windows and AArch64 FreeBSD are not supported
-is_excluded(p) = (Sys.iswindows(p) && nbits(p) == 32) || (Sys.isfreebsd(p) && arch(p) == "aarch64")
+# 32-bit Windows is not supported
+is_excluded(p) = Sys.iswindows(p) && nbits(p) == 32
 filter!(!is_excluded, platforms)
 
 # The products that we will ensure are always built

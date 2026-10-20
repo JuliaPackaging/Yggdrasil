@@ -132,7 +132,7 @@ cudampi_products = [
 dependencies = [
     # `MADV_HUGEPAGE` and `MAP_HUGE_SHIFT` require glibc 2.19, but we only
     # package glibc 2.17 on some architectures.
-    BuildDependency(PackageSpec(name="Glibc_jll", version=v"2.19"); platforms=glibc_platforms),
+    BuildDependency(PackageSpec(name="Glibc_jll", version="2.19"); platforms=glibc_platforms),
     Dependency("Binutils_jll"; compat="~2.41"),
     Dependency("LibUnwind_jll"),
     Dependency("PAPI_jll"; compat="~7.1"),

@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "METIS"
-version = v"5.1.3" # <-- This is a lie, we're bumping to 5.1.1 to create a Julia v1.6+ release with experimental platforms
+version = v"5.1.4" # <-- This is a lie: upstream is 5.1.0, bumped for the per-variant ELF symbol versions
 
 # Collection of sources required to build METIS
 sources = [
@@ -30,6 +30,17 @@ build_metis()
 {
     METIS_PREFIX=${4:-${libdir}/metis/${1}}
     mkdir -p ${METIS_PREFIX}
+    # one ELF symbol version per variant, so that two variants can coexist in a process
+    LINKER_FLAGS=""
+    if [[ "${target}" != *-apple-* && "${target}" != *-mingw* ]]; then
+        VERSION_NODE=$(echo "${1}" | tr '[:lower:]' '[:upper:]')
+        echo "${VERSION_NODE} { global: *; };" > ${WORKSPACE}/srcdir/${1}.map
+        LINKER_FLAGS="-Wl,--version-script=${WORKSPACE}/srcdir/${1}.map"
+    fi
+    if [[ "${target}" == *-freebsd* ]]; then
+        # backtrace() lives in libexecinfo on FreeBSD
+        LINKER_FLAGS="${LINKER_FLAGS} -lexecinfo"
+    fi
     cmake $WORKSPACE/srcdir/METIS/ \
         -DCMAKE_INSTALL_PREFIX=${METIS_PREFIX} \
         -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
@@ -37,6 +48,7 @@ build_metis()
         -DGKLIB_PATH=$WORKSPACE/srcdir/METIS/GKlib \
         -DSHARED=1 \
         -DCMAKE_C_FLAGS="-DIDXTYPEWIDTH=${2} -DREALTYPEWIDTH=${3}" \
+        -DCMAKE_SHARED_LINKER_FLAGS="${LINKER_FLAGS}" \
         -DBINARY_NAME="${1}"
     make -j${nproc} install
 }
@@ -68,4 +80,4 @@ dependencies = Dependency[]
 # Build the tarballs
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
 
-# Build trigger: 2
+# Build trigger: 3

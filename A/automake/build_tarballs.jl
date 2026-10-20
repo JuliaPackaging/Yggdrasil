@@ -1,12 +1,13 @@
 using BinaryBuilder
 
 name = "automake"
-version = v"1.16.5"
+version_str = "1.19"
+version = VersionNumber(version_str)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/automake/automake-$(version).tar.xz",
-                  "f01d58cd6d9d77fbdca9eb4bbd5ead1988228fdb73d6f7a201f5f8d6b118b469")
+    ArchiveSource("https://ftpmirror.gnu.org/gnu/automake/automake-$(version_str).tar.xz",
+                  "e3e2c2e3abf37898138db5b6c1d1dc35c9160c5978be7947d2c741705251d445")
 ]
 
 # Bash recipe for building across all platforms

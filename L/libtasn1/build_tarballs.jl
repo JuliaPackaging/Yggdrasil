@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "libtasn1"
-version = v"4.19.0"
+version = v"4.21.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/libtasn1/libtasn1-$(version).tar.gz",
-                  "1613f0ac1cf484d6ec0ce3b8c06d56263cc7242f1c23b30d82d23de345a63f7a")
+    ArchiveSource("https://ftpmirror.gnu.org/gnu/libtasn1/libtasn1-$(version).tar.gz",
+                  "1d8a444a223cc5464240777346e125de51d8e6abf0b8bac742ac84609167dc87")
 ]
 
 # Bash recipe for building across all platforms

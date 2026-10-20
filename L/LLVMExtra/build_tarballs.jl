@@ -7,13 +7,13 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "LLVMExtra"
-repo = "https://github.com/maleadt/LLVM.jl.git"
-version = v"0.0.38"
+repo = "https://github.com/JuliaLLVM/LLVM.jl.git"
+version = v"0.0.55"
 
-llvm_versions = [v"15.0.7", v"16.0.6", v"18.1.7", v"20.1.8"]
+llvm_versions = [v"15.0.7+12", v"16.0.6+6", v"18.1.7+5", v"20.1.8+0", v"21.1.8+0", v"22.1.8+0", v"23.1.3+0"]
 
 sources = [
-    GitSource(repo, "4d55835dca597672dac00ef55ca555550acbf790"),
+    GitSource(repo, "c901291db8410dfc3f323aa287cfd318e4eb648a"),
 ]
 
 # Bash recipe for building across all platforms
@@ -73,7 +73,7 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
         filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
     end
     ## We only have LLVM builds for AArch64 BSD starting from LLVM 18
-    if version < v"18"
+    if llvm_version < v"18"
         filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
     end
     ## We only have LLVM builds for RISC-V starting from LLVM 19
@@ -106,7 +106,8 @@ for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    name, version, build.sources, script,
                    build.platforms, build.products, build.dependencies;
-                   preferred_gcc_version=v"8", julia_compat="1.6",
-                   augment_platform_block, lazy_artifacts=true)
+                   preferred_gcc_version=v"8", julia_compat="1.10",
+                   augment_platform_block)
 end
 
+# rebuild trigger: 1

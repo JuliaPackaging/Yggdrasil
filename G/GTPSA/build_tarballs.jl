@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "GTPSA"
-version = v"1.6.1"
+version = v"1.7.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/mattsignorelli/gtpsa.git", "6147f1ce0977cfcb79c3225108c32594faad9047")
+    GitSource("https://github.com/mattsignorelli/gtpsa.git", "28bd95b43b9db7d09d3e8b8f191d9c411f6ba064")
 ]
 
 # Bash recipe for building across all platforms
@@ -16,11 +16,10 @@ sources = [
 # Furthermore, GCC >= 12.1 is also required because 11.1.0 throws an internal compiler error
 # when trying to compile GTPSA_jll  >= v1.6.1
 script = raw"""
-cd $WORKSPACE/srcdir
-cd gtpsa/
-cmake . -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release
-make -j${nproc}
-make install
+cd $WORKSPACE/srcdir/gtpsa
+cmake -B $WORKSPACE/build -S . -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release
+cmake --build $WORKSPACE/build --parallel ${nproc}
+cmake --install $WORKSPACE/build
 """
 
 # These are the platforms we will build for by default, unless further

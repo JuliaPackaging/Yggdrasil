@@ -1,0 +1,63 @@
+diff --git a/public/client/windows/TracyETW.cpp b/public/client/windows/TracyETW.cpp
+--- a/public/client/windows/TracyETW.cpp
++++ b/public/client/windows/TracyETW.cpp
+@@ -3,6 +3,59 @@
+ #include <evntcons.h>
+ #include <evntrace.h>
+ 
++// MinGW compatibility - define missing ETW types and constants from Windows 10+ SDK
++#if defined(__MINGW32__) || defined(__MINGW64__)
++
++// Type definitions (same as TRACEHANDLE)
++#ifndef CONTROLTRACE_ID
++typedef ULONG64 CONTROLTRACE_ID;
++#endif
++
++#ifndef PROCESSTRACE_HANDLE
++typedef ULONG64 PROCESSTRACE_HANDLE;
++#endif
++
++#ifndef INVALID_PROCESSTRACE_HANDLE
++#define INVALID_PROCESSTRACE_HANDLE ((PROCESSTRACE_HANDLE)INVALID_HANDLE_VALUE)
++#endif
++
++// EVENT_FILTER_EVENT_ID structure (Windows 10+)
++#ifndef EVENT_FILTER_TYPE_EVENT_ID
++#define EVENT_FILTER_TYPE_EVENT_ID 0x80000200
++typedef struct _EVENT_FILTER_EVENT_ID {
++    BOOLEAN FilterIn;
++    UCHAR Reserved;
++    USHORT Count;
++    USHORT Events[ANYSIZE_ARRAY];
++} EVENT_FILTER_EVENT_ID, *PEVENT_FILTER_EVENT_ID;
++#endif
++
++// Enable property for ignoring keyword 0
++#ifndef EVENT_ENABLE_PROPERTY_IGNORE_KEYWORD_0
++#define EVENT_ENABLE_PROPERTY_IGNORE_KEYWORD_0 0x00000010
++#endif
++
++// System provider GUIDs (from Windows 10 SDK evntrace.h)
++// {E8109B99-0C2F-4AE1-A827-B7E67B8B5012}
++DEFINE_GUID(SystemProcessProviderGuid, 0xE8109B99, 0x0C2F, 0x4AE1, 0xA8, 0x27, 0xB7, 0xE6, 0x7B, 0x8B, 0x50, 0x12);
++// {E8109B99-0C2F-4AE1-A827-B7E67B8B5019}
++DEFINE_GUID(SystemProfileProviderGuid, 0xE8109B99, 0x0C2F, 0x4AE1, 0xA8, 0x27, 0xB7, 0xE6, 0x7B, 0x8B, 0x50, 0x19);
++// {E8109B99-0C2F-4AE1-A827-B7E67B8B5018}
++DEFINE_GUID(SystemSchedulerProviderGuid, 0xE8109B99, 0x0C2F, 0x4AE1, 0xA8, 0x27, 0xB7, 0xE6, 0x7B, 0x8B, 0x50, 0x18);
++
++// System provider keyword constants
++#ifndef SYSTEM_PROCESS_KW_THREAD
++#define SYSTEM_PROCESS_KW_THREAD 0x0002ULL
++#endif
++#ifndef SYSTEM_SCHEDULER_KW_CONTEXT_SWITCH
++#define SYSTEM_SCHEDULER_KW_CONTEXT_SWITCH 0x0004ULL
++#endif
++#ifndef SYSTEM_SCHEDULER_KW_DISPATCHER
++#define SYSTEM_SCHEDULER_KW_DISPATCHER 0x0008ULL
++#endif
++
++#endif // __MINGW32__ || __MINGW64__
++
+ #include <stdio.h>
+ #include <thread>
+ 

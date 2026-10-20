@@ -1,0 +1,62 @@
+From 79fcb027c55b8a78a28838b381a8d5dcde0323fc Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Tue, 6 Oct 2026 17:28:26 +0200
+Subject: [PATCH] Reject integer atomicrmw operations without a SPIR-V opcode
+
+Only nand was rejected; uinc_wrap, udec_wrap, usub_cond and usub_sat
+fell through to LLVMSPIRVAtomicRmwOpCodeMap::map, which has no entry for
+them, and the translator crashed. Accept exactly the operations the map
+covers.
+---
+ lib/SPIRV/SPIRVWriter.cpp                  |  2 +-
+ test/negative/atomicrmw-unsupported-int.ll | 25 ++++++++++++++++++++++
+ 2 files changed, 26 insertions(+), 1 deletion(-)
+ create mode 100644 test/negative/atomicrmw-unsupported-int.ll
+
+diff --git a/lib/SPIRV/SPIRVWriter.cpp b/lib/SPIRV/SPIRVWriter.cpp
+index 005fa0da..4e70f60e 100644
+--- a/lib/SPIRV/SPIRVWriter.cpp
++++ b/lib/SPIRV/SPIRVWriter.cpp
+@@ -2813,7 +2813,7 @@ LLVMToSPIRVBase::transValueWithoutDecoration(Value *V, SPIRVBasicBlock *BB,
+         AtomicRMWInst::isFPOperation(Op)
+             ? (Op == AtomicRMWInst::FAdd || Op == AtomicRMWInst::FSub ||
+                Op == AtomicRMWInst::FMin || Op == AtomicRMWInst::FMax)
+-            : Op != AtomicRMWInst::Nand;
++            : LLVMSPIRVAtomicRmwOpCodeMap::find(Op);
+     if (!BM->getErrorLog().checkError(
+             SupportedAtomicInst, SPIRVEC_InvalidInstruction, V,
+             "Atomic " + AtomicRMWInst::getOperationName(Op).str() +
+diff --git a/test/negative/atomicrmw-unsupported-int.ll b/test/negative/atomicrmw-unsupported-int.ll
+new file mode 100644
+index 00000000..e2446b57
+--- /dev/null
++++ b/test/negative/atomicrmw-unsupported-int.ll
+@@ -0,0 +1,25 @@
++; Check that integer atomicrmw operations without a SPIR-V opcode are reported
++; as unsupported instead of crashing the writer.
++;
++; The writer stops at the first unsupported instruction, so each operation is
++; translated from its own copy of the module.
++
++; RUN: sed -e 's/OP/uinc_wrap/' %s | llvm-as -o %t.bc
++; RUN: not llvm-spirv %t.bc -o %t.spv 2>&1 | FileCheck %s -DOP=uinc_wrap
++; RUN: sed -e 's/OP/udec_wrap/' %s | llvm-as -o %t.bc
++; RUN: not llvm-spirv %t.bc -o %t.spv 2>&1 | FileCheck %s -DOP=udec_wrap
++; RUN: sed -e 's/OP/usub_cond/' %s | llvm-as -o %t.bc
++; RUN: not llvm-spirv %t.bc -o %t.spv 2>&1 | FileCheck %s -DOP=usub_cond
++; RUN: sed -e 's/OP/usub_sat/' %s | llvm-as -o %t.bc
++; RUN: not llvm-spirv %t.bc -o %t.spv 2>&1 | FileCheck %s -DOP=usub_sat
++
++; CHECK: InvalidInstruction: Can't translate llvm instruction:
++; CHECK: Atomic [[OP]] is not supported in SPIR-V!
++
++target datalayout = "e-i64:64-v16:16-v24:32-v32:32-v48:64-v96:128-v192:256-v256:256-v512:512-v1024:1024"
++target triple = "spir64-unknown-unknown"
++
++define spir_kernel void @test(ptr addrspace(1) %p) {
++  %r = atomicrmw OP ptr addrspace(1) %p, i32 1 monotonic
++  ret void
++}
+-- 
+2.55.0
+

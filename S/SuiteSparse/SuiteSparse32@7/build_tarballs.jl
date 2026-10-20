@@ -1,8 +1,8 @@
-# Build counter: 0
+# Build counter: 1
 include("../common.jl")
 
 name = "SuiteSparse32"
-version = v"7.11.0"
+version = v"7.12.1"
 
 sources = suitesparse_sources(version)
 

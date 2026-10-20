@@ -9,23 +9,19 @@ const PRODUCTS = [FileProduct("amdgcn/bitcode/", :bitcode_path)]
 # TODO bundle multiple devlibs & select based on Julia LLVM.
 const URLS = Dict(
     v"7.0.2" => (
-                 "https://www.rpmfind.net/linux/fedora/linux/development/rawhide/Everything/x86_64/os/Packages/r/rocm-device-libs-20-4.rocm7.0.2.fc44.x86_64.rpm",
-                 "d9e430f3992ec2823b1ccc59e661133f7ee02bb0af1f5b9a8542245bf024cd34",
+        "https://repo.radeon.com/rocm/apt/7.0.2/pool/main/r/rocm-device-libs7.0.2/rocm-device-libs7.0.2_1.0.0.70002-56~22.04_amd64.deb",
+        "536f54c9073c1d88d7583c61e4ca6436d491dac850d7268c4185df51947bd01d",
     )
 )
 
 function configure_build(version)
     buildscript = raw"""
-    apk update
-    apk add rpm2cpio
-
     cd ${WORKSPACE}/srcdir/
 
-    prefix="${WORKSPACE}/destdir"
-
-    rpm2cpio rocm-device-libs-20-4.rocm7.0.2.fc44.x86_64.rpm | cpio -idmv
-    mv usr/lib64/rocm/llvm/lib/clang/20/amdgcn ${WORKSPACE}/destdir
-    install_license usr/share/licenses/rocm-device-libs/LICENSE.TXT
+    ar x *.deb
+    tar xf data.tar.*
+    cp -rvp $(find opt -type d -name "amdgcn" | head -1) ${prefix}/amdgcn
+    install_license opt/rocm-7.0.2/share/doc/ROCm-Device-Libs/LICENSE.TXT
     """
 
     sources = [FileSource(URLS[version]...)]

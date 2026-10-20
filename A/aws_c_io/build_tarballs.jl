@@ -6,11 +6,11 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "aws_c_io"
-version = v"0.23.3"
+version = v"1.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-io.git", "9cf142c08c28d5b1195aae09d2c05a6d17502e09"),
+    GitSource("https://github.com/awslabs/aws-c-io.git", "850979fb03c308fca965774092b3d017a2096bb1"),
 ]
 
 # Bash recipe for building across all platforms
@@ -36,6 +36,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DBUILD_TESTING=OFF \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
+    -DUSE_S2N=OFF \
     ..
 cmake --build . -j${nproc} --target install
 """
@@ -54,9 +55,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("s2n_tls_jll"; compat="1.6.0", platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
-    Dependency("aws_c_cal_jll"; compat="0.9.8"),
-    Dependency("aws_c_common_jll"; compat="0.12.5"),
+    Dependency("s2n_tls_jll"; compat="1.7.11", platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
+    Dependency("aws_c_cal_jll"; compat="1.0.0"),
+    Dependency("aws_c_common_jll"; compat="1.0.3"),
     BuildDependency("aws_lc_jll"),
 ]
 

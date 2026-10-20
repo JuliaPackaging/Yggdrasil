@@ -1,0 +1,45 @@
+MinGW has no <TraceLoggingProvider.h> (Windows ETW), so guard the include and
+stub the TraceLogging macros to no-ops. More robust than commenting out every
+call site, which drifts across XRT versions.
+--- a/src/runtime_src/core/common/detail/windows/trace.h
++++ b/src/runtime_src/core/common/detail/windows/trace.h
+@@ -23,7 +23,17 @@
+ #include "core/common/trace.h"
+ #include <memory>
+ #include <windows.h>
+-#include <TraceLoggingProvider.h>
++#ifdef __MINGW32__
++// MinGW has no TraceLoggingProvider.h (Windows ETW); stub the API to no-ops.
++# define TRACELOGGING_DECLARE_PROVIDER(...)
++# define TRACELOGGING_DEFINE_PROVIDER(...)
++# define TraceLoggingRegister(...)
++# define TraceLoggingUnregister(...)
++# define TraceLoggingWrite(...)
++# define TraceLoggingValue(...)
++#else
++# include <TraceLoggingProvider.h>
++#endif
+
+ // Forward declare the logging provider object.  The provider
+ // is defined in a single compilation unit (core/common/trace.cpp).
+--- a/src/runtime_src/core/common/detail/windows/trace_init.h
++++ b/src/runtime_src/core/common/detail/windows/trace_init.h
+@@ -27,7 +27,17 @@
+ // ...
+
+ #include <windows.h>
+-#include <TraceLoggingProvider.h>
++#ifdef __MINGW32__
++// MinGW has no TraceLoggingProvider.h (Windows ETW); stub the API to no-ops.
++# define TRACELOGGING_DECLARE_PROVIDER(...)
++# define TRACELOGGING_DEFINE_PROVIDER(...)
++# define TraceLoggingRegister(...)
++# define TraceLoggingUnregister(...)
++# define TraceLoggingWrite(...)
++# define TraceLoggingValue(...)
++#else
++# include <TraceLoggingProvider.h>
++#endif
+
+ // [System.Diagnostics.Tracing.EventSource]::new("XRT").Guid
+ // e3e140bd-8a94-50be-2264-48e444a715db

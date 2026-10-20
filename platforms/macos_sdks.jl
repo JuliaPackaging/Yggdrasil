@@ -27,25 +27,25 @@ const macos_sdk_sources = Dict{String,FileSource}(
                    "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
     "11.0" =>
         FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.0-11.1/MacOSX11.0.sdk.tar.xz",
-                    "d3feee3ef9c6016b526e1901013f264467bb927865a03422a9cb925991cc9783"),
+                   "c8a9ff16196be43c35b699dd293f0c0563f1239c99caa6b3d53882e556a209bd"),
     "11.1" =>
         FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.0-11.1/MacOSX11.1.sdk.tar.xz",
-                    "9b86eab03176c56bb526de30daa50fa819937c54b280364784ce431885341bf6"),
+                   "9b86eab03176c56bb526de30daa50fa819937c54b280364784ce431885341bf6"),
     "11.3" =>
         FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz",
                    "cd4f08a75577145b8f05245a2975f7c81401d75e9535dcffbb879ee1deefcbf4"),
     "12.3" =>
         FileSource("https://github.com/realjf/MacOSX-SDKs/releases/download/v0.0.1/MacOSX12.3.sdk.tar.xz",
-                    "a511c1cf1ebfe6fe3b8ec005374b9c05e89ac28b3d4eb468873f59800c02b030"),
+                   "a511c1cf1ebfe6fe3b8ec005374b9c05e89ac28b3d4eb468873f59800c02b030"),
     "14.0" =>
         FileSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                    "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
     "14.5" =>
-        FileSource("https://github.com/alexey-lysiuk/macos-sdk/releases/download/14.5/MacOSX14.5.tar.xz",
-                   "f6acc6209db9d56b67fcaf91ec1defe48722e9eb13dc21fb91cfeceb1489e57e"),
+        FileSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.5/MacOSX14.5.sdk.tar.xz",
+                   "d2b7784a8b63cfcc686059aef6f1065dc8d2aaeddc39245738f4c0cd9ca6165a"),
     "15.0" =>
         FileSource("https://github.com/joseluisq/MacOSX-SDKs/releases/download/15.0/MacOSX15.0.sdk.tar.xz",
-                    "9df0293776fdc8a2060281faef929bf2fe1874c1f9368993e7a4ef87b1207f98"),
+                   "9df0293776fdc8a2060281faef929bf2fe1874c1f9368993e7a4ef87b1207f98"),
 )
 
 """
@@ -108,20 +108,43 @@ function get_macos_sdk_script(version::String; deployment_target::String = versi
         macosx_deployment_target=$deployment_target
         """ *
     raw"""
+    # Move the SDK tarball out of `srcdir` on all platforms: any extra entry
+    # in there defeats the automatic installation of license files, which
+    # expects `srcdir` to contain a single top-level source directory.
+    mv ${WORKSPACE}/srcdir/MacOSX${macos_sdk_version}.sdk.tar.xz ${WORKSPACE}/
     if [[ "${target}" == """*arch*raw"""-apple-darwin* ]]; then
+        # Extract SDK. Also outside of `srcdir`, for the same reason.
         echo "Extracting MacOSX${macos_sdk_version}.sdk.tar.xz (this may take a while)"
-        rm -rf /opt/${target}/${target}/sys-root/System
-        rm -rf /opt/${target}/${target}/sys-root/usr/include/libxml2/libxml
-        # extract the tarball into the sys-root so all compilers pick it up
-        # automatically, and use --warning=no-unknown-keyword to hide harmless
-        # warnings about unsupported pax header keywords like "SCHILY.fflags"
-        tar --extract \
-            --file=${WORKSPACE}/srcdir/MacOSX${macos_sdk_version}.sdk.tar.xz \
-            --directory="/opt/${target}/${target}/sys-root/." \
-            --strip-components=1 \
-            --warning=no-unknown-keyword \
-            MacOSX${macos_sdk_version}.sdk/System \
-            MacOSX${macos_sdk_version}.sdk/usr
+        tar \
+            --extract \
+            --file=${WORKSPACE}/MacOSX${macos_sdk_version}.sdk.tar.xz \
+            --directory=${WORKSPACE} \
+            --warning=no-unknown-keyword
+        old_sdkroot=${SDKROOT}
+        new_sdkroot=${WORKSPACE}/MacOSX${macos_sdk_version}.sdk
+        # Make sure libc++ header files are available at `usr/include/c++/v1`.
+        # Some SDKs ship their own (e.g. 15.0), which we leave alone; for those
+        # that don't, symlink the ones from the default SDK. Note we symlink
+        # the `v1` subdirectory rather than the whole `c++` directory: some
+        # SDKs (e.g. 10.13) contain `usr/include/c++/4.2.1` (but no `v1`), and
+        # symlinking `c++` onto that existing directory would silently create
+        # a nested `c++/c++` link, so libc++ headers like <new> are not found.
+        if [[ ! -d ${new_sdkroot}/usr/include/c++/v1 ]]; then
+            mkdir -p ${new_sdkroot}/usr/include/c++
+            ln -sT ${old_sdkroot}/usr/include/c++/v1 ${new_sdkroot}/usr/include/c++/v1
+        fi
+        # In the build environment `usr/local` of the default sys-root is a
+        # symlink to the destdir prefix, which puts the header files of the
+        # dependencies on the compilers' default search path. No SDK ships a
+        # `usr/local`, so replicate that symlink in the new SDK. `-T` makes
+        # this fail loudly should some SDK ship a `usr/local` after all,
+        # instead of silently creating a nested `usr/local/local` link.
+        ln -sT ${old_sdkroot}/usr/local ${new_sdkroot}/usr/local
+        # Fix toolchain files
+        sed -i -e "s+${old_sdkroot}+${new_sdkroot}+" ${MESON_TARGET_TOOLCHAIN} ${CMAKE_TARGET_TOOLCHAIN}
+        # Fix compiler wrappers
+        sed -i -e "s+${old_sdkroot}+${new_sdkroot}+" $(find /opt/bin/${target}* -type f -print)
+        SDKROOT=${new_sdkroot}
         export MACOSX_DEPLOYMENT_TARGET=${macosx_deployment_target}
     fi
     """

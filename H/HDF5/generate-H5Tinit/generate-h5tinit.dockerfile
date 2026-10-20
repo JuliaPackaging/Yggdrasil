@@ -1,41 +1,53 @@
 # Run `docker build --file generate-h5tinit.dockerfile --build-arg cpuarch=amd64 --progress plain .`
 
 ARG cpuarch=amd64 # amd64, arm32v5, arm32v7, arm64v8, i386, mips64le, ppc64le, riscv64, s390x
-ARG osversion=12.9
+ARG osversion=13.1
 
-FROM ${cpuarch}/debian:${osversion}
+FROM ${cpuarch}/debian:${osversion}-slim
 
 # Install packages
 ENV DEBIAN_FRONTEND=noninteractive
+ARG gccversion=14
 RUN apt-get update && \
     apt-get --yes --no-install-recommends install \
         ca-certificates \
         cmake \
-        g++ \
-        gfortran \
+        g++-${gccversion} \
+        gcc-${gccversion} \
+        gfortran-${gccversion} \
         make \
         ninja-build \
         wget
 
 # Download and build HDF5
-ADD https://support.hdfgroup.org/releases/hdf5/v1_14/v1_14_5/downloads/hdf5-1.14.5.tar.gz hdf5-1.14.5.tar.gz
-RUN tar xzf hdf5-1.14.5.tar.gz
-WORKDIR hdf5-1.14.5
-RUN mkdir build
-WORKDIR build
-RUN ../configure --enable-cxx --enable-fortran
-RUN make -j${nproc} -C fortran/src H5fortran_types.F90 H5f90i_gen.h H5_gen.F90
-RUN make -j${nproc} -C hl/fortran/src H5LTff_gen.F90 H5TBff_gen.F90
-# RUN cmake -Bbuilddir -GNinja \
-#     -DCMAKE_INSTALL_PREFIX=/hdf5 \
-#     -DHDF5_BUILD_CPP_LIB=ON \
-#     -DHDF5_BUILD_DOC=OFF \
-#     -DHDF5_BUILD_EXAMPLES=OFF \
-#     -DHDF5_BUILD_FORTRAN=ON \
-#     -DHDF5_BUILD_HL_LIB=ON \
-#     -DHDF5_BUILD_TOOLS=OFF \
-#     -DHDF5_ENABLE_SZIP_SUPPORT=OFF \
-#     -DHDF5_ENABLE_Z_LIB_SUPPORT=OFF \
-#     -DONLY_SHARED_LIBS=ON
-# RUN cmake --build builddir
-# RUN cmake --install builddir
+ARG commit
+ADD https://github.com/HDFGroup/hdf5/archive/${commit}.tar.gz hdf5-${commit}.tar.gz
+RUN tar xzf hdf5-${commit}.tar.gz
+WORKDIR hdf5-${commit}
+# Our arm64v8 would detect that `__float128` is supported. However, our Yggdrasil build system does not.
+# Sabotage the `__float128` detection to ensure it fails.
+RUN if [ ${cpuarch} = arm64v8 ]; then sed -i -e 's/__float128/__float129/g' config/HDFTests.c; fi
+RUN sed -i -e 's/__float128/__float129/g' config/HDFTests.c
+RUN cmake -Bbuilddir -GNinja \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_C_COMPILER=gcc-${gccversion} \
+        -DCMAKE_CXX_COMPILER=g++-${gccversion} \
+        -DCMAKE_Fortran_COMPILER=gfortran-${gccversion} \
+        -DCMAKE_INSTALL_PREFIX=/hdf5 \
+        -DBUILD_SHARED_LIBS=ON \
+        -DBUILD_STATIC_LIBS=OFF \
+        -DBUILD_TESTING=OFF \
+        -DHDF5_BUILD_CPP_LIB=ON \
+        -DHDF5_BUILD_DOC=OFF \
+        -DHDF5_BUILD_EXAMPLES=OFF \
+        -DHDF5_BUILD_FORTRAN=ON \
+        -DHDF5_BUILD_HL_LIB=ON \
+        -DHDF5_BUILD_TOOLS=OFF \
+        -DHDF5_ENABLE_NONSTANDARD_FEATURE_FLOAT16=ON \
+        -DHDF5_ENABLE_SZIP_SUPPORT=OFF \
+        -DHDF5_ENABLE_ZLIB_SUPPORT=OFF \
+        -DH5_FLOAT16_CONVERSION_FUNCS_LINK=ON \
+        -DH5_FLOAT16_CONVERSION_FUNCS_LINK_NO_FLAGS=ON \
+        -DH5_LDOUBLE_TO_FLOAT16_CORRECT=ON
+RUN cmake --build builddir
+RUN cmake --install builddir
