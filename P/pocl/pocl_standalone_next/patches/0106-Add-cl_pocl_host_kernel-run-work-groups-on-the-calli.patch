@@ -1,4 +1,4 @@
-From 790a788dc4f2ffbd7ffbe83617b6c7faccc7ed92 Mon Sep 17 00:00:00 2001
+From ac9ba99e327b13bb426c9a2344b25729a914671c Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Mon, 19 Oct 2026 17:18:29 +0200
 Subject: [PATCH] Add cl_pocl_host_kernel: run work-groups on the calling
@@ -39,10 +39,10 @@ a few nanoseconds.
  create mode 100644 tests/runtime/test_cl_pocl_host_kernel.c
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 4edc20203..9c1b4330d 100644
+index b570a4995..ddc7726ca 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -1833,7 +1833,7 @@ if(NOT ENABLE_CONFORMANCE)
+@@ -1837,7 +1837,7 @@ if(NOT ENABLE_CONFORMANCE)
    set(HOST_DEVICE_EXTENSIONS "${HOST_DEVICE_EXTENSIONS} \
        cl_pocl_svm_rect cl_pocl_command_buffer_svm \
        cl_khr_command_buffer cl_khr_command_buffer_multi_device cl_khr_command_buffer_mutable_dispatch \
@@ -531,7 +531,7 @@ index 000000000..7ec7d3c88
 +}
 +POsym (clRunHostKernelPOCL)
 diff --git a/lib/CL/devices/basic/basic.c b/lib/CL/devices/basic/basic.c
-index 2fd258c62..80f83a205 100644
+index 540efc142..d6ecea130 100644
 --- a/lib/CL/devices/basic/basic.c
 +++ b/lib/CL/devices/basic/basic.c
 @@ -110,6 +110,9 @@ pocl_basic_init_device_ops(struct pocl_device_ops *ops)
@@ -545,10 +545,10 @@ index 2fd258c62..80f83a205 100644
    ops->build_source = pocl_driver_build_source;
    ops->link_program = pocl_driver_link_program;
 diff --git a/lib/CL/devices/common.c b/lib/CL/devices/common.c
-index 812ed2ed2..59b8c24e6 100644
+index 627d1abd9..17a09e4e9 100644
 --- a/lib/CL/devices/common.c
 +++ b/lib/CL/devices/common.c
-@@ -2148,6 +2148,7 @@ static const cl_name_version OPENCL_EXTENSIONS[]
+@@ -2167,6 +2167,7 @@ static const cl_name_version OPENCL_EXTENSIONS[]
        { CL_MAKE_VERSION (0, 9, 0), "cl_pocl_command_buffer_svm" },
        { CL_MAKE_VERSION (0, 9, 0), "cl_pocl_command_buffer_host_buffer" },
        { CL_MAKE_VERSION (0, 9, 0), "cl_pocl_command_buffer_host_exec" },
@@ -821,7 +821,7 @@ index f7669ea78..212f1dd71 100644
  }
  #endif
 diff --git a/lib/CL/pocl_cl.h b/lib/CL/pocl_cl.h
-index 254bf5444..479677f8c 100644
+index cb6cba27f..20722456f 100644
 --- a/lib/CL/pocl_cl.h
 +++ b/lib/CL/pocl_cl.h
 @@ -892,6 +892,23 @@ struct pocl_device_ops {
@@ -903,11 +903,11 @@ index f238433b6..cd2c92b3c 100644
  POdeclsym (clSetKernelArgDevicePointerEXT)
  
 diff --git a/tests/runtime/CMakeLists.txt b/tests/runtime/CMakeLists.txt
-index bdf05688d..dfe215ffb 100644
+index f25234628..304a65573 100644
 --- a/tests/runtime/CMakeLists.txt
 +++ b/tests/runtime/CMakeLists.txt
-@@ -53,6 +53,10 @@ if(HAVE_ONNXRT)
-   list(APPEND C_PROGRAMS_TO_BUILD test_dbk_onnx_inference)
+@@ -58,6 +58,10 @@ if(ENABLE_HOST_CPU_DEVICES AND NOT ENABLE_HOST_CPU_DEVICES_OPENMP)
+   list(APPEND C_PROGRAMS_TO_BUILD test_worker_wakeup)
  endif()
  
 +if(UNIX)
@@ -917,7 +917,7 @@ index bdf05688d..dfe215ffb 100644
  set(CXX_PROGRAMS_TO_BUILD test_device_address test_svm test_large_buf
    test_subbuffers test_compile_n_link test_dbk_matmul test_tensor_view
    test_dbk_convert test_dbk_set_rows)
-@@ -67,6 +71,10 @@ foreach(PROG ${C_PROGRAMS_TO_BUILD})
+@@ -72,6 +76,10 @@ foreach(PROG ${C_PROGRAMS_TO_BUILD})
    add_symlink_to_built_opencl_dynlib("${PROG}")
  endforeach()
  
@@ -928,7 +928,7 @@ index bdf05688d..dfe215ffb 100644
  foreach(PROG ${CXX_PROGRAMS_TO_BUILD})
    set_source_files_properties( "${PROG}.cpp" PROPERTIES LANGUAGE CXX )
    add_executable("${PROG}" "${PROG}.cpp")
-@@ -141,6 +149,13 @@ add_test_pocl(NAME "runtime/clSetMemObjectDestructorCallback" COMMAND  "test_clS
+@@ -160,6 +168,13 @@ add_test_pocl(NAME "runtime/clSetMemObjectDestructorCallback" COMMAND  "test_clS
  
  add_test(NAME "runtime/test_cl_pocl_content_size" COMMAND "test_cl_pocl_content_size")
  
