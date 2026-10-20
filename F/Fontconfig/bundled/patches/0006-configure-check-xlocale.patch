@@ -1,5 +1,6 @@
 From: Erik Schnetter <schnetter@gmail.com>
 Subject: [PATCH] configure: check for xlocale.h
+Upstream: https://gitlab.freedesktop.org/fontconfig/fontconfig/-/work_items/561
 
 Since 2.18.0, src/fcint.h and src/fcstr.c include <xlocale.h> if
 HAVE_XLOCALE_H is defined, and fcint.h unconditionally uses locale_t

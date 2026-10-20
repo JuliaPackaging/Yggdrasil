@@ -1,5 +1,6 @@
 From: Erik Schnetter <schnetter@gmail.com>
 Subject: [PATCH] configure: check for _vsnprintf_l
+Upstream: https://gitlab.freedesktop.org/fontconfig/fontconfig/-/work_items/561
 
 meson.build checks for `_vsnprintf_l`, but configure.ac does not, so the
 Autotools build never defines HAVE__VSNPRINTF_L.  On Windows the

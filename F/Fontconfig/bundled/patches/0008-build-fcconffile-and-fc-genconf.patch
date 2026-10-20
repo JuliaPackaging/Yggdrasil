@@ -1,5 +1,6 @@
 From: Erik Schnetter <schnetter@gmail.com>
 Subject: [PATCH] build: compile fcconffile.c and build fc-genconf
+Upstream: https://gitlab.freedesktop.org/fontconfig/fontconfig/-/work_items/561
 
 The Autotools build was never updated for the fc-genconf feature added in
 2.18.0: src/fcconffile.c is missing from libfontconfig_la_SOURCES (it is
