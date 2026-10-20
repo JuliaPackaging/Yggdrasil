@@ -1,0 +1,55 @@
+From 11043d635d73e1907df84c5ac7e4267728314778 Mon Sep 17 00:00:00 2001
+From: Michal Babej <michal.babej@intel.com>
+Date: Sat, 8 Aug 2026 23:50:18 +0300
+Subject: [PATCH] lib/kernel: use CORE-math version of rsqrt for FP16 inputs
+
+the version in lib/kernel/rsqrt.cl doesn't have enough precision to pass CTS
+
+(cherry picked from commit 154ffcace91f9bfd2a57e0ed77ec22e9919f3558)
+---
+ lib/kernel/host/CMakeLists.txt | 4 ++--
+ lib/kernel/rsqrt.cl            | 5 ++---
+ 2 files changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/lib/kernel/host/CMakeLists.txt b/lib/kernel/host/CMakeLists.txt
+index 478ee14ea..4c62894f4 100644
+--- a/lib/kernel/host/CMakeLists.txt
++++ b/lib/kernel/host/CMakeLists.txt
+@@ -357,7 +357,7 @@ if(HOST_CPU_ENABLE_CL_KHR_FP16)
+     foreach(FILE IN ITEMS
+         acospif16.cl  hypotf16.cl    log2p1f16.cl    acoshf16.cl     exp10m1f16.cl
+         atanhf16.cl   cospif16.cl    exp2m1f16.cl    log10p1f16.cl   asinhf16.cl
+-        atanpif16.cl  log1pf16.cl     sincosf16.cl    asinpif16.cl
++        atanpif16.cl  log1pf16.cl     sincosf16.cl    asinpif16.cl   rsqrtf16.cl
+         cbrtf16.cl    expm1f16.cl     tanpif16.cl     sinpif16.cl
+         # FP16 ops with no native FP16 builtin and no SLEEF FP16 path: not
+         # covered by the vectorized generic builtins above, so needed here too.
+@@ -369,7 +369,7 @@ if(HOST_CPU_ENABLE_CL_KHR_FP16)
+     foreach(FILE IN ITEMS
+         acosf16.cl    exp10f16.cl     hypotf16.cl    log2p1f16.cl   sinhf16.cl
+         acoshf16.cl   cosf16.cl       exp10m1f16.cl  logf16.cl      sinpif16.cl
+-        acospif16.cl  atanf16.cl     coshf16.cl      exp2f16.cl     log10f16.cl
++        acospif16.cl  atanf16.cl     coshf16.cl      exp2f16.cl     log10f16.cl    rsqrtf16.cl
+         asinf16.cl    atanhf16.cl    cospif16.cl     exp2m1f16.cl   log10p1f16.cl  tanf16.cl
+         asinhf16.cl   atanpif16.cl   expf16.cl      log1pf16.cl    sincosf16.cl  tanhf16.cl
+         asinpif16.cl  cbrtf16.cl     expm1f16.cl    log2f16.cl     sinf16.cl     tanpif16.cl
+diff --git a/lib/kernel/rsqrt.cl b/lib/kernel/rsqrt.cl
+index ba48d93ba..8678011d7 100644
+--- a/lib/kernel/rsqrt.cl
++++ b/lib/kernel/rsqrt.cl
+@@ -24,10 +24,9 @@
+ 
+ #include "templates.h"
+ 
+-/* rsqrt the expression depends on sqrt builtin */
+-#if !__has_builtin(__builtin_sqrtf16)
++/* disable the fp16 version of rsqrt. It doesn't have enough precision to pass
++ * the CTS math test */
+ #undef __IF_FP16
+ #define __IF_FP16(X)
+-#endif
+ 
+ DEFINE_EXPR_V_V(rsqrt, (stype)1/sqrt(a))
+-- 
+2.56.0
+

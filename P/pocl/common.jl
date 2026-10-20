@@ -183,6 +183,8 @@ function build_script(standalone=false)
     #   (upstream PR #2322, in `main`)
     # - 0036: return NaN from FP16 powr for 1^inf, 0^0 and inf^0 (upstream commit ed1a18051,
     #   in `main`)
+    # - 0037: use the CORE-math rsqrt for FP16, as 1/sqrt isn't accurate enough (upstream
+    #   commit 154ffcace, in `main`)
     for patch in $WORKSPACE/srcdir/patches/pocl/*.patch; do
         atomic_patch -p1 $patch
     done
