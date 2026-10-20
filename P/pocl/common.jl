@@ -175,6 +175,10 @@ function build_script(standalone=false)
     #   (upstream PR #2378 at 08673f845; JuliaGPU/OpenCL.jl#536)
     # - 0032: return the binaries of programs that haven't been built from clGetProgramInfo
     #   (upstream PR #2379 at 023e7171c; JuliaGPU/OpenCL.jl#537)
+    # - 0033: link kernels against the vector-math library loaded at run time rather than its
+    #   configure-time path in the build sandbox, which made every kernel link fail without the
+    #   JIT and exported binaries lack native code (upstream PR #2380 at 7169f6086;
+    #   JuliaGPU/OpenCL.jl#540)
     for patch in $WORKSPACE/srcdir/patches/pocl/*.patch; do
         atomic_patch -p1 $patch
     done
