@@ -9,11 +9,13 @@ version = v"1.15.0"
 sources = [
     ArchiveSource("https://ftp.gnu.org/gnu/gzip/gzip-$(version.major).$(version.minor).tar.xz",
                   "9aa0cc780dec156b8282844833b342ab7cb08c25d2cd9a1869cdd0df31deff48"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/gzip-*/
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/aarch64-head-macro.patch
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
