@@ -62,6 +62,6 @@ dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat="1.6",                    # Minimum Julia version
+    julia_compat="1.10",                   # Minimum Julia version
     preferred_gcc_version=v"8",            # GCC version
 )
