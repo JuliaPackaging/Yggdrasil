@@ -420,7 +420,10 @@ function build_script(standalone=false)
 
     # PoCL's CPU autodetection doesn't work on RISC-V
     if [[ ${target} == riscv64-* ]]; then
-        CMAKE_FLAGS+=(-DLLC_HOST_CPU=rv64gc)
+        # PoCL passes this as the LLVM target CPU at run time, so it has to be a CPU name
+        # rather than an ISA string like rv64gc (which LLVM rejects). sifive-u54 implements
+        # exactly RV64GC, the baseline we build everything else for.
+        CMAKE_FLAGS+=(-DLLC_HOST_CPU=sifive-u54)
         # forcing a CPU disables distro kernellib mode, so only provide a native build
         CMAKE_FLAGS+=(-DKERNELLIB_HOST_CPU_VARIANTS=native)
     fi
