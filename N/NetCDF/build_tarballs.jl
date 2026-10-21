@@ -83,8 +83,10 @@ make install
 
 # The plugins are packaged separately (NCH5* and NCZ* packages). They are
 # compiled against the headers installed above and the `config.h` this
-# library was configured with.
+# library was configured with. `config.h` ends with `#include "ncconfigure.h"`,
+# a header netcdf-c does not install, so install it alongside.
 install -Dm644 config.h ${prefix}/""" * netcdf_config_dir * raw"""/config.h
+install -Dm644 include/ncconfigure.h ${prefix}/""" * netcdf_config_dir * raw"""/ncconfigure.h
 
 # Plugins are not part of this package
 rm -rf ${prefix}/hdf5/lib/plugin
