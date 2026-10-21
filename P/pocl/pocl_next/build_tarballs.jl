@@ -141,3 +141,5 @@ for (i,build) in enumerate(builds)
                    # bundles since 1.8; 1.10 is the oldest version the users of these JLLs support
                    julia_compat="1.10", init_block=init_block())
 end
+
+# Build trigger: 1
