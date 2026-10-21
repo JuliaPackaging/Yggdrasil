@@ -4,8 +4,8 @@ name = "Chafa"
 version = v"1.18.3"
 
 sources = [
-    ArchiveSource("https://hpjansson.org/chafa/releases/chafa-$(version).tar.xz",
-                  "fb995ef21dce6c73dd0dd454ba3e0f7fac08e053ea16060a2e5ce69a3746ee27"),
+    GitSource("https://github.com/hpjansson/chafa", "3b160556b3a6107196b614de1eb0634844144e15";
+              tag="$(version"),
 ]
 
 script = raw"""
