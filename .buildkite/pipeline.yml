@@ -17,6 +17,7 @@ steps:
     artifacts:
       - "*.meta.json"
       - "*.platforms.list"
+      - "*.reuse.json"
     agents:
       queue: "yggdrasil"
       arch:  "x86_64"
