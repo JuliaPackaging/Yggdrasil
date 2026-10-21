@@ -78,6 +78,10 @@ cd ${WORKSPACE}/srcdir/netcdf-c*/plugins
 mkdir -p ${WORKSPACE}/plugin-config
 sed -E '/^#[[:space:]]*define[[:space:]]+HAVE_(BLOSC|ZSTD|SZ|BZ2|LOCAL_BZ2)([[:space:]]|$)/d' \
     ${prefix}/${CONFIG_DIR}/config.h > ${WORKSPACE}/plugin-config/config.h
+# `config.h` includes `ncconfigure.h`, which includes `config.h` again. Keep it
+# next to the filtered `config.h`: quoted includes search the including file's
+# directory first, so it would otherwise find the unfiltered one.
+cp ${prefix}/${CONFIG_DIR}/ncconfigure.h ${WORKSPACE}/plugin-config/ncconfigure.h
 
 CFLAGS="-O2 -fPIC -Wno-implicit-function-declaration"
 CPPFLAGS="-DHAVE_CONFIG_H ${DEFINES} -I${WORKSPACE}/plugin-config -I. -I${includedir}"
