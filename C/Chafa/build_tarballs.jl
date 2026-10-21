@@ -9,7 +9,7 @@ sources = [
 ]
 
 script = raw"""
-cd ${WORKSPACE}/srcdir/chafa-*/
+cd ${WORKSPACE}/srcdir/chafa
 
 if [[ "${target}" == *darwin* ]]; then
     # For some reason building with Clang for macOS doesn't work
