@@ -5,7 +5,7 @@ version = v"1.18.3"
 
 sources = [
     GitSource("https://github.com/hpjansson/chafa", "3b160556b3a6107196b614de1eb0634844144e15";
-              tag="$(version"),
+              tag="$(version)")
 ]
 
 script = raw"""
