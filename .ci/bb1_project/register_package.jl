@@ -103,7 +103,10 @@ function fetch_reused_metadata(plan, objs, build_meta_dir)
         end
         if meta === nothing || meta[1] != r["sha256"] || bytes2hex(meta[2].bytes) != r["git-tree-sha1"]
             tarball = joinpath(build_meta_dir, tarball_name)
-            BinaryBuilderBase.download_verify(r["url"], r["sha256"], tarball)
+            # A JLL with many platforms means hundreds of large downloads from GitHub,
+            # some of which stall.
+            retry(() -> BinaryBuilderBase.download_verify(r["url"], r["sha256"], tarball);
+                  delays=ExponentialBackOff(n=4, first_delay=10))()
             tarball_hash, git_hash, products_info = BinaryBuilder.inspect_tarball(tarball, platform, obj["products"])
             if bytes2hex(git_hash.bytes) != r["git-tree-sha1"]
                 error("$(tarball_name) does not have the tree hash recorded in the previous release")
