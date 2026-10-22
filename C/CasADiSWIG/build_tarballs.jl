@@ -18,6 +18,9 @@ cd ${WORKSPACE}/srcdir
 install_license LICENSE.txt
 
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/casadi_native_body.patch"
+# casadi#4445
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/julia_bool_options.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/julia_linearalgebra.patch"
 
 pkgdir="${prefix}/share/CasADiSWIG"
 mkdir -pv "${pkgdir}"
@@ -34,6 +37,10 @@ flags=(
     -lcasadi
     -ljulia
 )
+if [[ "${target}" == *-mingw* ]]; then
+    # The 3.8.1 generated wrappers lack dllexport; fixed upstream in casadi's SWIG.
+    flags+=(-Wl,--export-all-symbols)
+fi
 
 ${CXX} "${flags[@]}" -o "${pkgdir}/libcasadi_wrap.${dlext}"
 
