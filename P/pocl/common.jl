@@ -239,9 +239,15 @@ function build_script(standalone=false)
     CMAKE_FLAGS+=(-DPOCL_DEBUG_MESSAGES:Bool=ON)
 
     # Tag the version with a hash of our patch series. The version seeds the kernel cache
-    # key, so rebuilds with a different series don't reuse previously cached binaries.
+    # key, so rebuilds with a different series don't reuse previously cached binaries, and
+    # it lets users tell these builds apart from upstream ones that lack our patches.
+    # (`\\"`, as `\"` in this raw string would reach the shell as a bare quote.)
     patches_hash=$(cat $WORKSPACE/srcdir/patches/pocl/*.patch | sha256sum | cut -c1-12)
-    sed -i "s/^set(VERSION_SUFFIX_FIXED_TEXT \"\")/set(VERSION_SUFFIX_FIXED_TEXT \"~julia-${patches_hash}\")/" CMakeLists.txt
+    sed -i "s/^set(VERSION_SUFFIX_FIXED_TEXT \\"\\")/set(VERSION_SUFFIX_FIXED_TEXT \\"~julia-${patches_hash}\\")/" CMakeLists.txt
+    if ! grep -q "^set(VERSION_SUFFIX_FIXED_TEXT \\"~julia-${patches_hash}\\")" CMakeLists.txt; then
+        echo "ERROR: failed to tag the PoCL version" >&2
+        exit 1
+    fi
 
     # Install things into $prefix
     CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
