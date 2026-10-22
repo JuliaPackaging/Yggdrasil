@@ -59,9 +59,6 @@ filter!(PROJECTS) do project
     return true
 end
 
-# Clear out any old `.meta.json` files in the Yggdrasil root
-cleanup_metadata!()
-
 # Immediately read in all projects, and ensure that they are either all BB2 projects, or none of them are:
 bb2_projects = String[]
 bb1_projects = String[]
@@ -78,6 +75,7 @@ function bb1_build_steps!(group_steps, project)
     # named `LLVM`, which is what registration needs to find them.
     project_basename = basename(project)
     jll_name = first(split(project_basename, "@"))
+    cleanup_metadata!(project_basename)
 
     # We always invoke a `build_tarballs.jl` file from its own directory to generate the platform list
     cd(project) do

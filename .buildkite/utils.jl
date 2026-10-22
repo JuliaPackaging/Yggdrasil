@@ -38,14 +38,12 @@ function check_pkgserver_latency(; tolerance = Hour(1))
     end
 end
 
-# Cleanup `.meta.json`, `.platform.list` or `.reuse.json` files from previous BB1 runs
-function cleanup_metadata!()
-    for (root, _, files) in walkdir(YGGDRASIL_BASE)
-        for file in files
-            if endswith(file, ".meta.json") || endswith(file, ".platforms.list") || endswith(file, ".reuse.json")
-                rm(joinpath(root, file))
-            end
-        end
+# Remove a project's metadata files left over from a previous BB1 run.  The generator runs
+# once per project in the same checkout, and the launcher uploads the files of every project
+# afterwards, so this must not touch the files of other projects.
+function cleanup_metadata!(project_basename)
+    for ext in (".meta.json", ".platforms.list", ".reuse.json")
+        rm(joinpath(YGGDRASIL_BASE, project_basename * ext); force=true)
     end
 end
 
