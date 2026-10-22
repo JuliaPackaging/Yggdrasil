@@ -1,0 +1,17 @@
+diff --git a/src/drivers/sdl/lv_sdl_window.c b/src/drivers/sdl/lv_sdl_window.c
+index 9a89271c5..4fdf52760 100644
+--- a/src/drivers/sdl/lv_sdl_window.c
++++ b/src/drivers/sdl/lv_sdl_window.c
+@@ -410,7 +410,11 @@ static void * sdl_draw_buf_realloc_aligned(void * ptr, size_t new_size)
+     /* Size must be multiple of align, See: https://en.cppreference.com/w/c/memory/aligned_alloc */
+ 
+ #define BUF_ALIGN (LV_DRAW_BUF_ALIGN < sizeof(void *) ? sizeof(void *) : LV_DRAW_BUF_ALIGN)
+-    return aligned_alloc(BUF_ALIGN, LV_ALIGN_UP(new_size, BUF_ALIGN));
++    // MacOS SDK version 14 does not support aligned_malloc()
++    ptr = NULL;
++    posix_memalign(&ptr, BUF_ALIGN, LV_ALIGN_UP(new_size, BUF_ALIGN));
++    return ptr;
++
+ #else
+     return _aligned_malloc(LV_ALIGN_UP(new_size, LV_DRAW_BUF_ALIGN), LV_DRAW_BUF_ALIGN);
+ #endif /* _WIN32 */

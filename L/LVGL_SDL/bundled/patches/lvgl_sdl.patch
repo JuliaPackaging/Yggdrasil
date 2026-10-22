@@ -1,0 +1,327 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 8751ddc07..51337276a 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1,5 +1,10 @@
+ cmake_minimum_required(VERSION 3.12.4)
+ 
++set(CMAKE_C_STANDARD 99)
++set(CMAKE_CXX_STANDARD 17)
++set(CMAKE_CXX_STANDARD_REQUIRED ON)
++
++
+ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+ 
+ if(NOT ESP_PLATFORM)
+@@ -22,6 +27,10 @@ else()
+   include(${CMAKE_CURRENT_LIST_DIR}/env_support/cmake/custom.cmake)
+ endif()
+ 
++find_package(SDL2 REQUIRED SDL2)
++target_include_directories(lvgl PUBLIC ${SDL2_INCLUDE_DIRS})
++target_link_libraries(lvgl lvgl::thorvg ${SDL2_LIBRARIES})
++
+ #[[
+     unfortunately CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS does not work for global data. 
+     for global data we still need decl specs.
+@@ -37,4 +46,4 @@ if (MSVC)
+     INTERFACE LV_ATTRIBUTE_EXTERN_DATA=__declspec\(dllimport\)
+     PRIVATE LV_ATTRIBUTE_EXTERN_DATA=__declspec\(dllexport\)
+   )
+-endif()
+\ No newline at end of file
++endif()
+diff --git a/env_support/cmake/custom.cmake b/env_support/cmake/custom.cmake
+index e4cd36376..eaf808d93 100644
+--- a/env_support/cmake/custom.cmake
++++ b/env_support/cmake/custom.cmake
+@@ -49,7 +49,7 @@ if(NOT LV_CONF_BUILD_DISABLE_THORVG_INTERNAL)
+     add_library(lvgl_thorvg ${THORVG_SOURCES})
+     add_library(lvgl::thorvg ALIAS lvgl_thorvg)
+     target_include_directories(lvgl_thorvg SYSTEM PUBLIC ${LVGL_ROOT_DIR}/src/libs/thorvg)
+-    target_link_libraries(lvgl_thorvg PUBLIC lvgl)
++    # Circular dependency!   target_link_libraries(lvgl_thorvg PUBLIC lvgl)
+ endif()
+ 
+ if(NOT (CMAKE_C_COMPILER_ID STREQUAL "MSVC"))
+diff --git a/lv_conf_template.h b/lv_conf_template.h
+index 1ff84cb75..ed4209ee1 100644
+--- a/lv_conf_template.h
++++ b/lv_conf_template.h
+@@ -12,7 +12,7 @@
+  */
+ 
+ /* clang-format off */
+-#if 0 /* Set this to "1" to enable content */
++#if 1 /* Set this to "1" to enable content */
+ 
+ #ifndef LV_CONF_H
+ #define LV_CONF_H
+@@ -27,7 +27,7 @@
+  *====================*/
+ 
+ /** Color depth: 1 (I1), 8 (L8), 16 (RGB565), 24 (RGB888), 32 (XRGB8888) */
+-#define LV_COLOR_DEPTH 16
++#define LV_COLOR_DEPTH 32
+ 
+ /*=========================
+    STDLIB WRAPPER SETTINGS
+@@ -69,7 +69,7 @@
+ 
+ #if LV_USE_STDLIB_MALLOC == LV_STDLIB_BUILTIN
+     /** Size of memory available for `lv_malloc()` in bytes (>= 2kB) */
+-    #define LV_MEM_SIZE (64 * 1024U)          /**< [bytes] */
++    #define LV_MEM_SIZE (1204 * 1024U)          /**< [bytes] */
+ 
+     /** Size of the memory expand for `lv_malloc()` in bytes */
+     #define LV_MEM_POOL_EXPAND_SIZE 0
+@@ -379,7 +379,7 @@
+ #define LV_COLOR_MIX_ROUND_OFS  0
+ 
+ /** Add 2 x 32-bit variables to each `lv_obj_t` to speed up getting style properties */
+-#define LV_OBJ_STYLE_CACHE      0
++#define LV_OBJ_STYLE_CACHE      1
+ 
+ /** Add `id` field to `lv_obj_t` */
+ #define LV_USE_OBJ_ID           0
+@@ -466,11 +466,11 @@
+ #define LV_ATTRIBUTE_EXTERN_DATA
+ 
+ /** Use `float` as `lv_value_precise_t` */
+-#define LV_USE_FLOAT            0
++#define LV_USE_FLOAT            1
+ 
+ /** Enable matrix support
+  *  - Requires `LV_USE_FLOAT = 1` */
+-#define LV_USE_MATRIX           0
++#define LV_USE_MATRIX           1
+ 
+ /** Include `lvgl_private.h` in `lvgl.h` to access internal data and functions by default */
+ #define LV_USE_PRIVATE_API		0
+@@ -485,14 +485,14 @@
+ #define LV_FONT_MONTSERRAT_10 0
+ #define LV_FONT_MONTSERRAT_12 0
+ #define LV_FONT_MONTSERRAT_14 1
+-#define LV_FONT_MONTSERRAT_16 0
+-#define LV_FONT_MONTSERRAT_18 0
+-#define LV_FONT_MONTSERRAT_20 0
+-#define LV_FONT_MONTSERRAT_22 0
+-#define LV_FONT_MONTSERRAT_24 0
+-#define LV_FONT_MONTSERRAT_26 0
+-#define LV_FONT_MONTSERRAT_28 0
+-#define LV_FONT_MONTSERRAT_30 0
++#define LV_FONT_MONTSERRAT_16 1
++#define LV_FONT_MONTSERRAT_18 1
++#define LV_FONT_MONTSERRAT_20 1
++#define LV_FONT_MONTSERRAT_22 1
++#define LV_FONT_MONTSERRAT_24 1
++#define LV_FONT_MONTSERRAT_26 1
++#define LV_FONT_MONTSERRAT_28 1
++#define LV_FONT_MONTSERRAT_30 1
+ #define LV_FONT_MONTSERRAT_32 0
+ #define LV_FONT_MONTSERRAT_34 0
+ #define LV_FONT_MONTSERRAT_36 0
+@@ -510,8 +510,8 @@
+ #define LV_FONT_SIMSUN_16_CJK            0  /**< 1000 most common CJK radicals */
+ 
+ /** Pixel perfect monospaced fonts */
+-#define LV_FONT_UNSCII_8  0
+-#define LV_FONT_UNSCII_16 0
++#define LV_FONT_UNSCII_8  1
++#define LV_FONT_UNSCII_16 1
+ 
+ /** Optionally declare custom fonts here.
+  *
+@@ -730,9 +730,9 @@
+ #define LV_FS_DEFAULT_DRIVE_LETTER '\0'
+ 
+ /** API for fopen, fread, etc. */
+-#define LV_USE_FS_STDIO 0
++#define LV_USE_FS_STDIO 1
+ #if LV_USE_FS_STDIO
+-    #define LV_FS_STDIO_LETTER '\0'     /**< Set an upper cased letter on which the drive will accessible (e.g. 'A') */
++    #define LV_FS_STDIO_LETTER 'A'      /**< Set an upper cased letter on which the drive will accessible (e.g. 'A') */
+     #define LV_FS_STDIO_PATH ""         /**< Set the working directory. File/directory paths will be appended to it. */
+     #define LV_FS_STDIO_CACHE_SIZE 0    /**< >0 to cache this number of bytes in lv_fs_read() */
+ #endif
+@@ -785,7 +785,7 @@
+ #endif
+ 
+ /** LODEPNG decoder library */
+-#define LV_USE_LODEPNG 0
++#define LV_USE_LODEPNG 1
+ 
+ /** PNG decoder(libpng) library */
+ #define LV_USE_LIBPNG 0
+@@ -816,7 +816,7 @@
+ #define LV_USE_RLE 0
+ 
+ /** QR code library */
+-#define LV_USE_QRCODE 0
++#define LV_USE_QRCODE 1
+ 
+ /** Barcode code library */
+ #define LV_USE_BARCODE 0
+@@ -833,10 +833,10 @@
+ #endif
+ 
+ /** Built-in TTF decoder */
+-#define LV_USE_TINY_TTF 0
++#define LV_USE_TINY_TTF 1
+ #if LV_USE_TINY_TTF
+     /* Enable loading TTF data from files */
+-    #define LV_TINY_TTF_FILE_SUPPORT 0
++    #define LV_TINY_TTF_FILE_SUPPORT 1
+     #define LV_TINY_TTF_CACHE_GLYPH_CNT 256
+ #endif
+ 
+@@ -845,16 +845,16 @@
+ 
+ /** Enable Vector Graphic APIs
+  *  - Requires `LV_USE_MATRIX = 1` */
+-#define LV_USE_VECTOR_GRAPHIC  0
++#define LV_USE_VECTOR_GRAPHIC  1
+ 
+ /** Enable ThorVG (vector graphics library) from the src/libs folder */
+-#define LV_USE_THORVG_INTERNAL 0
++#define LV_USE_THORVG_INTERNAL 1
+ 
+ /** Enable ThorVG by assuming that its installed and linked to the project */
+ #define LV_USE_THORVG_EXTERNAL 0
+ 
+ /** Use lvgl built-in LZ4 lib */
+-#define LV_USE_LZ4_INTERNAL  0
++#define LV_USE_LZ4_INTERNAL  1
+ 
+ /** Use external LZ4 library */
+ #define LV_USE_LZ4_EXTERNAL  0
+@@ -936,7 +936,7 @@
+ #define LV_USE_FRAGMENT 0
+ 
+ /** 1: Support using images as font in label or span widgets */
+-#define LV_USE_IMGFONT 0
++#define LV_USE_IMGFONT 1
+ 
+ /** 1: Enable an observer pattern implementation */
+ #define LV_USE_OBSERVER 1
+@@ -985,7 +985,7 @@
+  *==================*/
+ 
+ /** Use SDL to open window on PC and handle mouse and keyboard. */
+-#define LV_USE_SDL              0
++#define LV_USE_SDL              1
+ #if LV_USE_SDL
+     #define LV_SDL_INCLUDE_PATH     <SDL2/SDL.h>
+     #define LV_SDL_RENDER_MODE      LV_DISPLAY_RENDER_MODE_DIRECT   /**< LV_DISPLAY_RENDER_MODE_DIRECT is recommended for best performance */
+diff --git a/src/font/lv_font.c b/src/font/lv_font.c
+index 35ae352e3..eb4887ece 100644
+--- a/src/font/lv_font.c
++++ b/src/font/lv_font.c
+@@ -144,6 +144,94 @@ const lv_font_t * lv_font_default(void)
+     return LV_FONT_DEFAULT;
+ }
+ 
++const lv_font_t * lv_font(uint8_t size)
++{
++#if LV_FONT_MONTSERRAT_8
++    if (size == 8) return &lv_font_montserrat_8;
++#endif
++
++#if LV_FONT_MONTSERRAT_10
++    if (size == 10) return &lv_font_montserrat_10;
++#endif
++
++#if LV_FONT_MONTSERRAT_12
++    if (size == 12) return &lv_font_montserrat_12;
++#endif
++
++#if LV_FONT_MONTSERRAT_14
++    if (size == 14) return &lv_font_montserrat_14;
++#endif
++
++#if LV_FONT_MONTSERRAT_16
++    if (size == 16) return &lv_font_montserrat_16;
++#endif
++
++#if LV_FONT_MONTSERRAT_18
++    if (size == 18) return &lv_font_montserrat_18;
++#endif
++
++#if LV_FONT_MONTSERRAT_20
++    if (size == 20) return &lv_font_montserrat_20;
++#endif
++
++#if LV_FONT_MONTSERRAT_22
++    if (size == 22) return &lv_font_montserrat_22;
++#endif
++
++#if LV_FONT_MONTSERRAT_24
++    if (size == 24) return &lv_font_montserrat_24;
++#endif
++
++#if LV_FONT_MONTSERRAT_26
++    if (size == 26) return &lv_font_montserrat_26;
++#endif
++
++#if LV_FONT_MONTSERRAT_28
++    if (size == 28) return &lv_font_montserrat_28;
++#endif
++
++#if LV_FONT_MONTSERRAT_30
++    if (size == 30) return &lv_font_montserrat_30;
++#endif
++
++#if LV_FONT_MONTSERRAT_32
++    if (size == 32) return &lv_font_montserrat_32;
++#endif
++
++#if LV_FONT_MONTSERRAT_34
++    if (size == 34) return &lv_font_montserrat_34;
++#endif
++
++#if LV_FONT_MONTSERRAT_36
++    if (size == 36) return &lv_font_montserrat_36;
++#endif
++
++#if LV_FONT_MONTSERRAT_38
++    if (size == 38) return &lv_font_montserrat_38;
++#endif
++
++#if LV_FONT_MONTSERRAT_40
++    if (size == 40) return &lv_font_montserrat_40;
++#endif
++
++#if LV_FONT_MONTSERRAT_42
++    if (size == 42) return &lv_font_montserrat_42;
++#endif
++
++#if LV_FONT_MONTSERRAT_44
++    if (size == 44) return &lv_font_montserrat_44;
++#endif
++
++#if LV_FONT_MONTSERRAT_46
++    if (size == 46) return &lv_font_montserrat_46;
++#endif
++
++#if LV_FONT_MONTSERRAT_48
++    if (size == 48) return &lv_font_montserrat_48;
++#endif
++    return LV_FONT_DEFAULT;
++}
++
+ /**********************
+  *   STATIC FUNCTIONS
+  **********************/
+diff --git a/src/font/lv_font.h b/src/font/lv_font.h
+index 2f172b9f8..b2ec1d914 100644
+--- a/src/font/lv_font.h
++++ b/src/font/lv_font.h
+@@ -289,6 +289,8 @@ LV_FONT_CUSTOM_DECLARE
+  */
+ const lv_font_t * lv_font_default(void);
+ 
++const lv_font_t * lv_font(uint8_t size);
++
+ #ifdef __cplusplus
+ } /*extern "C"*/
+ #endif
