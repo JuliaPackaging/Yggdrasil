@@ -1,0 +1,8 @@
+- aarch64-linux-gnu-cxx03
+- aarch64-linux-gnu-cxx11
+- i686-linux-gnu-cxx03
+- i686-linux-gnu-cxx11
+- powerpc64le-linux-gnu-cxx03
+- powerpc64le-linux-gnu-cxx11
+- x86_64-linux-gnu-cxx03
+- x86_64-linux-gnu-cxx11
