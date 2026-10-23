@@ -80,4 +80,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 llvm_version = v"13.0.1+1"
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"9.1.0", preferred_llvm_version=llvm_version)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.10", preferred_gcc_version = v"9.1.0", preferred_llvm_version=llvm_version)
