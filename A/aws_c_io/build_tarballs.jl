@@ -7,6 +7,8 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "aws_c_io"
 version = v"1.1.0"
+# The SONAME contains major.minor, and minor releases may break the ABI.
+# Downstream recipes must restrict compat to one minor version, e.g. compat="~1.2.3".
 
 # Collection of sources required to complete build
 sources = [
@@ -56,8 +58,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("s2n_tls_jll"; compat="1.7.11", platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
-    Dependency("aws_c_cal_jll"; compat="1.0.0"),
-    Dependency("aws_c_common_jll"; compat="1.0.3"),
+    Dependency("aws_c_cal_jll"; compat="~1.0.0"),
+    Dependency("aws_c_common_jll"; compat="~1.0.3"),
     BuildDependency("aws_lc_jll"),
 ]
 
