@@ -54,6 +54,6 @@ products = [
 dependencies = []
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# We need at least GCC 7 for newer C++ features
+# GEOS 3.15 requires C++17 std::filesystem support, use GCC 9 or newer
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"7")
+               julia_compat="1.6", preferred_gcc_version=v"9")
