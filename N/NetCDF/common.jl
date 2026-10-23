@@ -143,5 +143,5 @@ function build_netcdf_plugin(ARGS, name, plugin, plugin_sources, extra_dependenc
     build_tarballs(ARGS, name, netcdf_jll_version(version_offset), netcdf_sources, script,
                    platforms, products, dependencies;
                    augment_platform_block=netcdf_augment_platform_block,
-                   julia_compat="1.6", preferred_gcc_version=v"8")
+                   julia_compat="1.10", preferred_gcc_version=v"8")
 end
