@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "ICU"
-version = v"76.1"
-ygg_version = v"76.2"
+version = v"79.1"
+ygg_version = v"79.1"
 
 # Collection of sources required to build ICU
 sources = [
     GitSource("https://github.com/unicode-org/icu.git",
-              "8eca245c7484ac6cc179e3e5f7c1ea7680810f39"),
+              "ddc6b66926bfac6036144ca9902992a0d6d50af9"),
     DirectorySource("./bundled"),
 ]
 
