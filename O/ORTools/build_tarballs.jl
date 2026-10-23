@@ -51,10 +51,12 @@ if [[ "$target" == *mingw* ]]; then
     # The bzip2 built by OR-Tools is installed as libbz2.dll, but its internal
     # DLL name is bz2-1.dll, which is what libortools.dll then imports. Windows
     # can't resolve that import, so libortools.dll fails to load. Link against
-    # Bzip2_jll's static libbz2.a instead. BUILD_BZip2 can't be turned off while
+    # Bzip2_jll's libbz2-1.dll instead. Bzip2_jll ships no import library, so
+    # point FindBZip2 straight at the DLL. BUILD_BZip2 can't be turned off while
     # BUILD_DEPS=ON (it is a CMAKE_DEPENDENT_OPTION), so enable the other
     # bundled dependencies one by one instead.
     CMAKE_DEPS_ARGS=(
+        -DBZIP2_LIBRARY_RELEASE:FILEPATH=${prefix}/bin/libbz2-1.dll
         -DBUILD_DEPS:BOOL=OFF
         -DBUILD_ZLIB:BOOL=ON
         -DBUILD_absl:BOOL=ON
@@ -209,8 +211,8 @@ dependencies = [
     # OR-Tools needs a dlopen-compatible shim on Windows
     # See: https://github.com/google/or-tools/issues/4073
     Dependency("dlfcn_win32_jll"; platforms = filter(Sys.iswindows, platforms)),
-    # Provides the static libbz2.a that libortools is linked against on Windows
-    BuildDependency("Bzip2_jll"; platforms = filter(Sys.iswindows, platforms)),
+    # Provides libbz2-1.dll, which libortools imports on Windows
+    Dependency("Bzip2_jll"; platforms = filter(Sys.iswindows, platforms)),
 ]
 
 # Require macOS SDK 10.15 for complete C++17 filesystem support on x86_64
