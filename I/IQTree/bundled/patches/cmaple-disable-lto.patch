@@ -1,0 +1,27 @@
+Disable LTO in cmaple.
+
+cmaple enables CMAKE_INTERPROCEDURAL_OPTIMIZATION on macOS, Linux x86_64,
+and FreeBSD. LTO archiving expects a clang-aware ar (llvm-ar) that BB's
+cross-toolchains don't ship, so the link step fails with
+`"CMAKE_CXX_COMPILER_AR-NOTFOUND" cr libcmaple_utils.a`. LTO is a perf
+optimization (not correctness); turning it off costs a few percent on
+the cmaple code path.
+
+--- a/cmaple/CMakeLists.txt
++++ b/cmaple/CMakeLists.txt
+@@ -81,12 +81,9 @@ project(cmaple)
+     set(CMAKE_POLICY_DEFAULT_CMP0135 NEW)
+ endif()
+ 
+-if (((${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm" OR ${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch") AND (NOT APPLE AND UNIX))
+-    OR WIN32)
+-    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE) # Disable IPO (LTO) for Linux ARM
+-else()
+-    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE) # Enable IPO (LTO) by default
+-endif()
++# LTO disabled for BB cross-compiles: target toolchains don't ship an
++# llvm-ar compatible archiver, so the LTO link step fails.
++set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE)
+ 
+ # The version number.
+ set (cmaple_VERSION_MAJOR 2)
