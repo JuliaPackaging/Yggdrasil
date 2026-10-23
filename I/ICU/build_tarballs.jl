@@ -4,7 +4,6 @@ using BinaryBuilder
 
 name = "ICU"
 version = v"79.1"
-ygg_version = v"79.1"
 
 # Collection of sources required to build ICU
 sources = [
@@ -22,6 +21,7 @@ cd $WORKSPACE/srcdir/icu
 # _no_ dependencies (not even `libc`).  See this bug report for more:
 # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=653457
 atomic_patch -p1 $WORKSPACE/srcdir/patches/yes_stdlibs.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/measunit_extra-fabs.patch
 
 cd icu4c
 
@@ -84,5 +84,5 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"9")
