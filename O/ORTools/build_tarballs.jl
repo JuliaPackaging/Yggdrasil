@@ -43,16 +43,32 @@ export RANLIB=$HOSTRANLIB
 export READELF=$HOSTREADELF
 export STRIP=$HOSTSTRIP
 
+CMAKE_DEPS_ARGS=(-DBUILD_DEPS:BOOL=ON)
 if [[ "$target" == *mingw* ]]; then
     # MinGW doesn't expose M_PI unless _USE_MATH_DEFINES is set
     # See: https://learn.microsoft.com/en-us/cpp/c-runtime-library/math-constants?view=msvc-170
     export CXXFLAGS="${CXXFLAGS} -D_USE_MATH_DEFINES"
+    # The bzip2 built by OR-Tools is installed as libbz2.dll, but its internal
+    # DLL name is bz2-1.dll, which is what libortools.dll then imports. Windows
+    # can't resolve that import, so libortools.dll fails to load. Link against
+    # Bzip2_jll's static libbz2.a instead. BUILD_BZip2 can't be turned off while
+    # BUILD_DEPS=ON (it is a CMAKE_DEPENDENT_OPTION), so enable the other
+    # bundled dependencies one by one instead.
+    CMAKE_DEPS_ARGS=(
+        -DBUILD_DEPS:BOOL=OFF
+        -DBUILD_ZLIB:BOOL=ON
+        -DBUILD_absl:BOOL=ON
+        -DBUILD_Protobuf:BOOL=ON
+        -DBUILD_Eigen3:BOOL=ON
+        -DBUILD_re2:BOOL=ON
+        -DBUILD_BZip2:BOOL=OFF
+    )
 fi
 
 cmake -S. -Bbuild \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DBUILD_DEPS:BOOL=ON \
+    "${CMAKE_DEPS_ARGS[@]}" \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_TESTING:BOOL=OFF \
     -DBUILD_EXAMPLES:BOOL=OFF \
@@ -193,6 +209,8 @@ dependencies = [
     # OR-Tools needs a dlopen-compatible shim on Windows
     # See: https://github.com/google/or-tools/issues/4073
     Dependency("dlfcn_win32_jll"; platforms = filter(Sys.iswindows, platforms)),
+    # Provides the static libbz2.a that libortools is linked against on Windows
+    BuildDependency("Bzip2_jll"; platforms = filter(Sys.iswindows, platforms)),
 ]
 
 # Require macOS SDK 10.15 for complete C++17 filesystem support on x86_64
