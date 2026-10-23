@@ -8,7 +8,8 @@ version = v"79.1"
 # Collection of sources required to build ICU
 sources = [
     GitSource("https://github.com/unicode-org/icu.git",
-              "ddc6b66926bfac6036144ca9902992a0d6d50af9"),
+              "ddc6b66926bfac6036144ca9902992a0d6d50af9";
+              tag="release-$(version.major).$(version.minor)"),
     DirectorySource("./bundled"),
 ]
 
