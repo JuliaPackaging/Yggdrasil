@@ -1,7 +1,7 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
-include("../NetCDF/common.jl")
+include("../common.jl")
 
 # NetCDF plugin: HDF5 Blosc filter.
 # Built from the plugin sources of netcdf-c against NetCDF_jll, see

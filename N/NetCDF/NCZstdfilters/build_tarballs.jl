@@ -1,7 +1,7 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
-include("../NetCDF/common.jl")
+include("../common.jl")
 
 # NetCDF plugin: NCZarr codecs for the bzip2, zstd and blosc filters.
 # These only translate between NCZarr codec JSON and HDF5 filter parameters; the

@@ -1,17 +1,15 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
-include("../NetCDF/common.jl")
+include("../common.jl")
 
-# NetCDF plugin: HDF5 bzip2 filter.
+# NetCDF plugin: HDF5 Fletcher32 checksum filter.
 # Built from the plugin sources of netcdf-c against NetCDF_jll, see
 # N/NetCDF/common.jl.
 
-name = "NCH5bzip2"
+name = "NCH5fletcher32"
 
-build_netcdf_plugin(ARGS, name, "lib__nch5bzip2", ["H5Zbzip2.c"],
-                    [
-    Dependency("Bzip2_jll"; compat="1.0.9"),
-];
+build_netcdf_plugin(ARGS, name, "lib__nch5fletcher32", ["H5Zfletcher32.c", "H5checksum.c"],
+                    [];
                     defines=[],
-                    libs=["-lbz2"])
+                    libs=[])

@@ -1,5 +1,5 @@
 # Shared definitions for the NetCDF core recipe (N/NetCDF) and the separately
-# packaged NetCDF plugins (N/NCH5*, N/NCZ*).
+# packaged NetCDF plugins (the NCH5* and NCZ* subdirectories of N/NetCDF).
 #
 # All of these recipes are built from the same netcdf-c release. The plugins
 # are compiled directly from netcdf-c's `plugins/` directory against the
