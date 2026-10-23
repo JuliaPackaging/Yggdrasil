@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_http"
-version = v"1.1.0"
+version = v"1.1.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-http.git", "4bc3ba209d9a44b1afaba21920655c406e79bd76"),
+    GitSource("https://github.com/awslabs/aws-c-http.git", "4610fb7a62a2341c4b4f67bbf30eed259d6a4f9c"),
     DirectorySource("./bundled"),
 ]
 

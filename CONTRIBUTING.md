@@ -20,7 +20,7 @@ In most cases it is sufficient to change only these two properties of the recipe
 
 ### Update version of an existing recipe
 
-If you want to build a newer version of an existing recipe, in the first instance you only need to update in the `build_tarballs.jl` script of the package of your interest the version number and the source (you will likely need to update URL and checksum, for an `ArchiveSource`, or the Git revision for a `GitSource`).
+If you want to build a newer version of an existing recipe, in the first instance you only need to update in the `build_tarballs.jl` script of the package of your interest the version number and the source (you will likely need to update URL and checksum, for an `ArchiveSource`, or the Git revision and `tag` keyword for a `GitSource`).
 Other things you may need to change include:
 
 * the build script, in case the build system changed in the newer version;

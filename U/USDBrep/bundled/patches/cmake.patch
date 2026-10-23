@@ -1,0 +1,71 @@
+Add a CMake build, replacing upstream's premake/Packman build that cannot run in the sandbox. Not upstreamable as is.
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+new file mode 100644
+index 0000000..d57a749
+--- /dev/null
++++ b/CMakeLists.txt
+@@ -0,0 +1,63 @@
++cmake_minimum_required(VERSION 3.24)
++project(usd_brep LANGUAGES CXX)
++
++set(CMAKE_CXX_STANDARD 17)
++set(CMAKE_CXX_STANDARD_REQUIRED ON)
++
++find_package(pxr REQUIRED)
++find_package(TBB REQUIRED)
++include(GNUInstallDirs)
++
++add_compile_definitions(NOMINMAX SM_GRAPHICS_CALLBACKS=1 TBB_SUPPRESS_DEPRECATED_MESSAGES)
++
++set(USD_LIBS ar arch gf js kind pcp plug sdf sdr tf trace usd usdGeom usdLux usdShade usdUtils usdVol vt work)
++
++function(usd_brep_library name type)
++    cmake_parse_arguments(ARG "HIDDEN" "" "INCLUDES;LINKS;DEFINES" ${ARGN})
++    file(GLOB srcs CONFIGURE_DEPENDS source/${name}/src/*.cpp)
++    add_library(${name} ${type} ${srcs})
++    target_include_directories(${name} PUBLIC
++        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/source/${name}/inc>
++        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/usd_brep>)
++    foreach(inc IN LISTS ARG_INCLUDES)
++        target_include_directories(${name} PUBLIC source/${inc}/inc)
++    endforeach()
++    target_link_libraries(${name} PUBLIC ${ARG_LINKS})
++    target_compile_definitions(${name} PRIVATE ${ARG_DEFINES})
++    if(ARG_HIDDEN)
++        set_target_properties(${name} PROPERTIES CXX_VISIBILITY_PRESET hidden)
++    endif()
++    if(type STREQUAL "STATIC")
++        set_target_properties(${name} PROPERTIES POSITION_INDEPENDENT_CODE ON)
++    else()
++        install(TARGETS ${name})
++        file(GLOB hdrs source/${name}/inc/*.h)
++        install(FILES ${hdrs} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/usd_brep)
++    endif()
++endfunction()
++
++usd_brep_library(SMLib SHARED LINKS TBB::tbb TBB::tbbmalloc)
++usd_brep_library(SM_API SHARED LINKS SMLib DEFINES SM_API_EXPORTS)
++usd_brep_library(BREP_USD_DATA SHARED HIDDEN LINKS ${USD_LIBS} TBB::tbb DEFINES USDBREP_ENABLE_EXPORTS)
++usd_brep_library(USD_BREP_UTILS SHARED HIDDEN LINKS BREP_USD_DATA DEFINES USD_BREP_ENABLE_EXPORTS)
++usd_brep_library(BREP_SM_USD SHARED LINKS SMLib BREP_USD_DATA DEFINES SMU_ENABLE_EXPORTS)
++usd_brep_library(SM_API_USD SHARED LINKS SM_API BREP_SM_USD DEFINES SM_API_USD_EXPORTS)
++usd_brep_library(BREP_STAGING STATIC HIDDEN LINKS BREP_USD_DATA)
++usd_brep_library(OCCT_BREP_IMPORT STATIC HIDDEN LINKS BREP_STAGING)
++usd_brep_library(OCCT_BREP_EXPORT STATIC HIDDEN INCLUDES OCCT_BREP_IMPORT LINKS USD_BREP_UTILS)
++
++foreach(tool occt_to_usd occt_dump)
++    add_executable(${tool} tools/occt_to_usd/${tool}.cpp)
++    target_link_libraries(${tool} PRIVATE OCCT_BREP_IMPORT)
++endforeach()
++add_executable(usd_to_occt tools/usd_to_occt/usd_to_occt.cpp)
++target_link_libraries(usd_to_occt PRIVATE OCCT_BREP_EXPORT)
++foreach(tool smtess_usd brep_geometry_validator)
++    file(GLOB srcs CONFIGURE_DEPENDS tools/${tool}/src/*.cpp)
++    add_executable(${tool} ${srcs})
++    target_link_libraries(${tool} PRIVATE BREP_SM_USD ${CMAKE_DL_LIBS})
++endforeach()
++install(TARGETS occt_to_usd occt_dump usd_to_occt smtess_usd brep_geometry_validator)
++
++# Upstream's release layout, where brep_geometry_validator looks for it relative to bin/
++install(DIRECTORY source/schema/omniSolid/resources/ DESTINATION omniSolid/resources)

@@ -1,0 +1,17 @@
+Initialize `ec` in Triangulate: the v2.0.1 tag leaves it uninitialized, which
+GCC's -Wmaybe-uninitialized promotes to an error under Clipper2's own -Werror.
+Fixed upstream in https://github.com/AngusJohnson/Clipper2/commit/6a36be1c8b28e06800f09121820fa188acf6ed13
+(issue #1052), but not yet in a tagged release.
+
+diff --git before/Clipper2/CPP/Clipper2Lib/src/clipper.triangulation.cpp after/Clipper2/CPP/Clipper2Lib/src/clipper.triangulation.cpp
+--- before/Clipper2/CPP/Clipper2Lib/src/clipper.triangulation.cpp
++++ after/Clipper2/CPP/Clipper2Lib/src/clipper.triangulation.cpp
+@@ -1202,7 +1202,7 @@
+
+   TriangulateResult Triangulate(const PathsD& pp, int decPlaces, PathsD& solution, bool useDelaunay)
+   {
+-    int ec;
++    int ec = 0;
+     double scale;
+     TriangulateResult result;
+     if (decPlaces <= 0) scale = 1;

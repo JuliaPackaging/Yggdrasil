@@ -1,0 +1,47 @@
+From 7d704c822466c050c0ee92c1100146bff8ac6b62 Mon Sep 17 00:00:00 2001
+From: Woody Chow <woodychow@google.com>
+Date: Tue, 13 Oct 2026 02:07:13 +0000
+Subject: [PATCH] Fix IntMin calculation in SanitizeUBofDivRem pass
+
+In fixSignedDivRem(), `(int64_t)1 << (T->getScalarSizeInBits() - 1)`
+shifts 1 in a 64-bit signed integer, producing a positive value
+(+2^(N-1)) for integer bit widths N < 64 (e.g., +2147483648 for i32)
+rather than the minimum signed N-bit value (-2^(N-1)).
+
+Previously, ConstantInt::getSigned(T, IntMin) silently truncated bits
+above N. Since llvm/llvm-project@a83c89495ba6
+(https://github.com/llvm/llvm-project/commit/a83c89495ba6),
+ConstantInt::getSigned() defaults `ImplicitTrunc` to false and asserts
+`llvm::isIntN(BitWidth, val)` in APInt's constructor, which aborts when
+compiling any kernel with non-constant signed 8-, 16-, or 32-bit integer
+division or remainder.
+
+Use APInt::getSignedMinValue(T->getScalarSizeInBits()) and
+ConstantInt::get(T, IntMin) to construct the exact N-bit signed minimum
+value across all integer bit widths and LLVM versions.
+
+Co-authored-by: Gemini 4 Argon
+(cherry picked from commit 52e1fbb2040950078fde797d50313c358d41200d)
+---
+ lib/llvmopencl/SanitizeUBofDivRem.cc | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/lib/llvmopencl/SanitizeUBofDivRem.cc b/lib/llvmopencl/SanitizeUBofDivRem.cc
+index 411da4271..e8292bb1e 100644
+--- a/lib/llvmopencl/SanitizeUBofDivRem.cc
++++ b/lib/llvmopencl/SanitizeUBofDivRem.cc
+@@ -82,9 +82,9 @@ static void fixSignedDivRem(IRBuilder<> &Builder, BinaryOperator *BinI,
+   Value *Condition1 = Builder.CreateCmp(CmpInst::Predicate::ICMP_EQ, Divisor,
+                                         ConstantInt::getSigned(T, -1));
+   // smallest negative value representable in given integer bit width
+-  int64_t IntMin = (int64_t)1 << (T->getScalarSizeInBits() - 1);
++  APInt IntMin = APInt::getSignedMinValue(T->getScalarSizeInBits());
+   Value *Condition2 = Builder.CreateCmp(CmpInst::Predicate::ICMP_EQ, Dividend,
+-                                        ConstantInt::getSigned(T, IntMin));
++                                        ConstantInt::get(T, IntMin));
+   Value *BothConds = Builder.CreateAnd(Condition1, Condition2);
+   Value *ConditionZExt = Builder.CreateZExt(BothConds, Dividend->getType());
+   Value *FixedDividend = Builder.CreateAdd(Dividend, ConditionZExt);
+-- 
+2.56.0
+

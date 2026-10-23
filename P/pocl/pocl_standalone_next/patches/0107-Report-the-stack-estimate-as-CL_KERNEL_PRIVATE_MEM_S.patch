@@ -1,0 +1,120 @@
+From 0c56f2ce81f43101eb608f6be466f54757e3a228 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Mon, 19 Oct 2026 17:20:40 +0200
+Subject: [PATCH] Report the stack estimate as CL_KERNEL_PRIVATE_MEM_SIZE on
+ CPUs
+
+The per-work-item stack estimate was only used to limit
+CL_KERNEL_WORK_GROUP_SIZE when the device's stack size is known, and
+CL_KERNEL_PRIVATE_MEM_SIZE always returned 0 on CPU devices. Report the
+estimate there, so that users of cl_pocl_host_kernel, which run work-groups
+on their own threads' stacks, can tell whether a work-group fits. The value
+is already serialized in poclbinaries.
+
+Also return the query's value as a cl_ulong, as the specification says,
+rather than a size_t, which left the upper half of the caller's value
+undefined on 32-bit hosts.
+---
+ lib/CL/clGetKernelWorkGroupInfo.c        |  2 +-
+ lib/CL/pocl_llvm_build.cc                |  5 ++++-
+ lib/CL/pocl_llvm_metadata.cc             | 18 +++++++++++-------
+ tests/runtime/test_cl_pocl_host_kernel.c | 18 ++++++++++++++++++
+ 4 files changed, 34 insertions(+), 9 deletions(-)
+
+diff --git a/lib/CL/clGetKernelWorkGroupInfo.c b/lib/CL/clGetKernelWorkGroupInfo.c
+index 04f200158..f169c2b98 100644
+--- a/lib/CL/clGetKernelWorkGroupInfo.c
++++ b/lib/CL/clGetKernelWorkGroupInfo.c
+@@ -130,7 +130,7 @@ POname(clGetKernelWorkGroupInfo)
+     case CL_KERNEL_PRIVATE_MEM_SIZE:
+       {
+         if (kernel->meta->private_mem_size)
+-          POCL_RETURN_GETINFO (size_t, kernel->meta->private_mem_size[dev_i]);
++          POCL_RETURN_GETINFO (cl_ulong, kernel->meta->private_mem_size[dev_i]);
+         else
+           POCL_RETURN_GETINFO (cl_ulong, 0);
+       }
+diff --git a/lib/CL/pocl_llvm_build.cc b/lib/CL/pocl_llvm_build.cc
+index 70df41f52..f6da4866b 100644
+--- a/lib/CL/pocl_llvm_build.cc
++++ b/lib/CL/pocl_llvm_build.cc
+@@ -231,7 +231,10 @@ static bool generateProgramBC(PoclLLVMContextData *Context, llvm::Module *Mod,
+            /*ErrorOnUnresolved=*/true))
+     return true;
+ 
+-  if (Device->work_group_stack_size > 0) {
++  // The estimate limits the work-group size on devices with a known stack
++  // size, and is reported as CL_KERNEL_PRIVATE_MEM_SIZE on CPUs.
++  if (Device->work_group_stack_size > 0
++      || (Device->type & CL_DEVICE_TYPE_CPU)) {
+     bool Optimized = (Opts.find("-cl-opt-disable") == std::string::npos);
+     estimateKernelStackSizes(Mod, Optimized);
+   }
+diff --git a/lib/CL/pocl_llvm_metadata.cc b/lib/CL/pocl_llvm_metadata.cc
+index d80e8d1b6..645786a67 100644
+--- a/lib/CL/pocl_llvm_metadata.cc
++++ b/lib/CL/pocl_llvm_metadata.cc
+@@ -746,13 +746,17 @@ int pocl_llvm_get_kernels_metadata(cl_program program, unsigned device_i) {
+      * has some problem that hinders optimization, allocas might
+      * not be optimized away at all. In that case, the estimated
+      * stack size might be the actual stack size.
+-     * Set the kernel limit on workgroup size accordingly. */
+-    if (Device->work_group_stack_size > 0) {
+-      unsigned long EstStackSize = 0;
+-      std::string MetadataKey(meta->name);
+-      MetadataKey.append(".meta.est.stack.size");
+-      if (getModuleIntMetadata(*input, MetadataKey.c_str(), EstStackSize) &&
+-          EstStackSize > 0) {
++     * Set the kernel limit on workgroup size accordingly. On CPUs, where
++     * the work-item data lives on the stack, also report the estimate as
++     * CL_KERNEL_PRIVATE_MEM_SIZE (per work-item). */
++    unsigned long EstStackSize = 0;
++    std::string MetadataKey(meta->name);
++    MetadataKey.append(".meta.est.stack.size");
++    if (getModuleIntMetadata(*input, MetadataKey.c_str(), EstStackSize) &&
++        EstStackSize > 0) {
++      if (Device->type & CL_DEVICE_TYPE_CPU)
++        meta->private_mem_size[device_i] = EstStackSize;
++      if (Device->work_group_stack_size > 0) {
+         size_t WorkItemsStackLimit =
+             Device->work_group_stack_size / EstStackSize;
+         if (meta->max_workgroup_size == nullptr)
+diff --git a/tests/runtime/test_cl_pocl_host_kernel.c b/tests/runtime/test_cl_pocl_host_kernel.c
+index 5a2ef3611..7859cd60d 100644
+--- a/tests/runtime/test_cl_pocl_host_kernel.c
++++ b/tests/runtime/test_cl_pocl_host_kernel.c
+@@ -81,6 +81,13 @@ static const char *source
+     "    out[(z * get_num_groups (1) + y) * get_num_groups (0) + x] = 1;\n"
+     "}\n"
+     "\n"
++    "kernel void big_private (global int *out, int x) {\n"
++    "  volatile int a[256];\n"
++    "  for (int i = 0; i < 256; ++i)\n"
++    "    a[i] = i * x;\n"
++    "  out[0] = a[x & 255];\n"
++    "}\n"
++    "\n"
+     "#ifndef NO_IMAGES\n"
+     "kernel void image (read_only image2d_t img) {}\n"
+     "#endif\n";
+@@ -476,6 +483,17 @@ main (void)
+   if (test_ids (ids, device, offset))
+     return EXIT_FAILURE;
+ 
++  /* The stack estimate, which decides whether a work-group fits on the
++     calling thread's stack, is reported per work-item. */
++  cl_kernel big_private = clCreateKernel (program, "big_private", &err);
++  CHECK_CL_ERROR (err);
++  cl_ulong private_mem = 0;
++  CHECK_CL_ERROR (clGetKernelWorkGroupInfo (
++      big_private, device, CL_KERNEL_PRIVATE_MEM_SIZE, sizeof (private_mem),
++      &private_mem, NULL));
++  TEST_ASSERT (private_mem >= 256 * sizeof (cl_int));
++  CHECK_CL_ERROR (clReleaseKernel (big_private));
++
+   /* Invalid uses. */
+   size_t bad_local[4] = { 1, 1, 1, 1 };
+   TEST_ASSERT (create_hk (ids, device, 4, bad_local, &err) == NULL);
+-- 
+2.56.0
+

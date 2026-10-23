@@ -35,7 +35,7 @@ if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
 fi
 
-export CFLAGS="-DPI -fPIC"
+export CFLAGS="-O2 -DPI -fPIC"
 # liblzma is linked statically, don't re-export its symbols
 export LDFLAGS="-Wl,--exclude-libs=liblzma.a"
 if [[ "${target}" == aarch64-linux-* ]]; then

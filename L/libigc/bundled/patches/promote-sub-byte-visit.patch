@@ -1,14 +1,11 @@
+Don't promote PromoteSubByte's own replacement instructions (oneAPI.jl#678).
+Upstream: https://github.com/intel/intel-graphics-compiler/pull/450
+
+diff --git intel-graphics-compiler/IGC/AdaptorOCL/preprocess_spvir/PromoteSubByte.cpp intel-graphics-compiler/IGC/AdaptorOCL/preprocess_spvir/PromoteSubByte.cpp
+index b428da405..23c80ad51 100644
 --- intel-graphics-compiler/IGC/AdaptorOCL/preprocess_spvir/PromoteSubByte.cpp
 +++ intel-graphics-compiler/IGC/AdaptorOCL/preprocess_spvir/PromoteSubByte.cpp
-@@ -21,6 +21,7 @@
- #include <llvm/IR/Function.h>
- #include <llvm/IR/InlineAsm.h>
- #include <llvm/IR/Instructions.h>
-+#include <llvm/IR/InstIterator.h>
- #include <llvm/Demangle/Demangle.h>
- #include <llvm/IR/Mangler.h>
- #include <llvm/Support/Regex.h>
-@@ -83,7 +84,19 @@
+@@ -97,7 +97,19 @@ bool PromoteSubByte::run(Module &module) {
      changed |= getOrCreatePromotedValue(&globalVariable) != &globalVariable;
    }
  

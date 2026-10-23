@@ -6,11 +6,11 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "Qiskit"
-version = v"2.5.2"
+version = v"2.6.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Qiskit/qiskit.git", "c1c01ada399af13e495c27b9b22b4ff942bbad7e")
+    GitSource("https://github.com/Qiskit/qiskit.git", "65094a013073e4bda53c2b341056ab9ade0eb1bd")
 ]
 
 # Bash recipe for building across all platforms
@@ -75,9 +75,9 @@ products = [
 dependencies = [
     BuildDependency(PackageSpec(name="cbindgen_jll", uuid="a52b955f-5256-5bb0-8795-313e28591558"))
     # libpython is required at run time until
-    # https://github.com/Qiskit/qiskit/issues/14240 is fixed, which is
-    # currently targeted for Qiskit 2.6 or later.
-    Dependency(PackageSpec(name="Python_jll", uuid="93d3a430-8e7c-50da-8e8d-3dfcfb3baf05"); compat="~3.11")
+    # https://github.com/Qiskit/qiskit/issues/14240 is fixed.  That issue is
+    # still open as of 2.6.0.
+    Dependency(PackageSpec(name="Python_jll", uuid="93d3a430-8e7c-50da-8e8d-3dfcfb3baf05"); compat="~3.12.14")
     # Python 3.10 or higher is required by the build process, but at the moment
     # only Python 3.9 is available in the base image, hence the following requirement.
     HostBuildDependency(PackageSpec(name="Python_jll", uuid="93d3a430-8e7c-50da-8e8d-3dfcfb3baf05"))

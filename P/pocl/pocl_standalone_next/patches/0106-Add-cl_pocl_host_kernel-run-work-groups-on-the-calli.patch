@@ -1,0 +1,1546 @@
+From 171a85a6f535a6cb3755895cc38436a7689838c8 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Mon, 19 Oct 2026 17:18:29 +0200
+Subject: [PATCH] Add cl_pocl_host_kernel: run work-groups on the calling
+ thread
+
+A draft extension for the CPU drivers that lets an application run a
+kernel's work-groups on its own threads. clCreateHostKernelPOCL prepares a
+kernel for one device and local size: it looks up the work-group function
+specialized on the local size but generic in grid size and offset, runs
+program-scope initializers and records the __local argument sizes.
+clRunHostKernelPOCL then runs any range of work-groups of a grid on the
+calling thread, synchronously, with no command, event, lock or allocation;
+the caller provides the argument values and a scratch area for __local
+memory and printf, and the caller's floating-point mode is restored on
+return.
+
+This is meant for language runtimes that schedule work themselves, e.g.
+KernelAbstractions.jl, for which a one-work-group launch through a command
+queue costs several microseconds while the work-group function itself takes
+a few nanoseconds.
+---
+ CMakeLists.txt                                |   2 +-
+ doc/sphinx/source/extensions.rst              |  17 +
+ include/CL/cl_ext_pocl.h                      | 100 ++++
+ lib/CL/CMakeLists.txt                         |   1 +
+ ...clGetExtensionFunctionAddressForPlatform.c |  12 +
+ lib/CL/clHostKernelPOCL.c                     | 319 ++++++++++
+ lib/CL/devices/basic/basic.c                  |   3 +
+ lib/CL/devices/common.c                       |   1 +
+ lib/CL/devices/common_utils.c                 | 232 ++++++++
+ lib/CL/devices/common_utils.h                 |  17 +
+ lib/CL/pocl_cl.h                              |  50 ++
+ lib/CL/pocl_intfn.h                           |   7 +
+ tests/runtime/CMakeLists.txt                  |  15 +
+ tests/runtime/test_cl_pocl_host_kernel.c      | 555 ++++++++++++++++++
+ 14 files changed, 1330 insertions(+), 1 deletion(-)
+ create mode 100644 lib/CL/clHostKernelPOCL.c
+ create mode 100644 tests/runtime/test_cl_pocl_host_kernel.c
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index b570a4995..ddc7726ca 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1837,7 +1837,7 @@ if(NOT ENABLE_CONFORMANCE)
+   set(HOST_DEVICE_EXTENSIONS "${HOST_DEVICE_EXTENSIONS} \
+       cl_pocl_svm_rect cl_pocl_command_buffer_svm \
+       cl_khr_command_buffer cl_khr_command_buffer_multi_device cl_khr_command_buffer_mutable_dispatch \
+-      cl_pocl_command_buffer_host_buffer")
++      cl_pocl_command_buffer_host_buffer cl_pocl_host_kernel")
+ 
+   if (HAVE_LIBXSMM OR HAVE_ONNXRT OR HAVE_LIBJPEG_TURBO OR HAVE_OPENCV)
+     set(HOST_DEVICE_EXTENSIONS "${HOST_DEVICE_EXTENSIONS} \
+diff --git a/doc/sphinx/source/extensions.rst b/doc/sphinx/source/extensions.rst
+index faf3cc399..9041de343 100644
+--- a/doc/sphinx/source/extensions.rst
++++ b/doc/sphinx/source/extensions.rst
+@@ -27,6 +27,23 @@ e.g. when the data is compressed and its exact
+ length is not known ahead of time.
+ 
+ 
++cl_pocl_host_kernel
++~~~~~~~~~~~~~~~~~~~
++
++A draft extension for CPU devices whose kernels run in the host process
++(``cpu``, ``cpu-minimal``, ``cpu-tbb``). It lets an application run the
++work-groups of a kernel on its own threads, synchronously and without command
++queues, events or locks, so that very small launches cost little more than a
++function call and the application's own scheduler (e.g. a language runtime's
++thread pool) decides where work-groups run.
++
++``clCreateHostKernelPOCL`` prepares a kernel for one device and local size,
++and ``clRunHostKernelPOCL`` runs a range of the work-groups of a grid on the
++calling thread, given the argument values and a scratch area for ``__local``
++memory and printf. Work-groups may run in any order and concurrently, so they
++must not wait on each other. See ``include/CL/cl_ext_pocl.h`` for the full
++description.
++
+ cl_khr_command_buffer
+ ~~~~~~~~~~~~~~~~~~~~~~~
+ 
+diff --git a/include/CL/cl_ext_pocl.h b/include/CL/cl_ext_pocl.h
+index c2b031e80..e10db2605 100644
+--- a/include/CL/cl_ext_pocl.h
++++ b/include/CL/cl_ext_pocl.h
+@@ -473,6 +473,106 @@ extern CL_API_ENTRY cl_int CL_API_CALL clSetKernelArgDevicePointerEXT (
+ 
+ #endif // cl_khr_command_buffer
+ 
++/* cl_pocl_host_kernel (draft): run work-groups of a kernel synchronously on
++ * the calling thread, without command queues or events, so that the
++ * application can schedule them on its own threads. Only CPU devices whose
++ * kernels execute in the host process support it.
++ *
++ * clCreateHostKernelPOCL prepares a kernel for one local size on one device:
++ * it compiles (or looks up) the work-group function, runs the initializers of
++ * program-scope variables and records the sizes of the __local arguments
++ * (which must have been set with clSetKernelArg). The handle doesn't depend on
++ * the kernel's argument values. It retains the kernel, so the application may
++ * release the kernel and program, but can't rebuild the program, while the
++ * handle is alive.
++ *
++ * clRunHostKernelPOCL runs the work-groups with linear indices
++ * [first_group, first_group + group_count) of a grid of num_groups groups
++ * (dimension 0 varying fastest) on the calling thread and returns when they
++ * are done. It takes no locks and doesn't allocate. arg_values[i] points to
++ * the value of argument i, as clSetKernelArg would take it, except that
++ * pointer arguments take the address the kernel uses (an SVM, USM or device
++ * address) and that the value of a struct must be aligned to the struct's
++ * alignment (values of other types are copied if they aren't aligned);
++ * entries for __local arguments are ignored. scratch must point to
++ * CL_HOST_KERNEL_SCRATCH_SIZE_POCL bytes aligned to
++ * CL_HOST_KERNEL_SCRATCH_ALIGNMENT_POCL that no concurrent call uses; it
++ * holds the __local memory and the printf buffer. On x86 and AArch64, the
++ * kernel runs in its own floating-point environment (round to nearest,
++ * denormal handling per the build options, all exceptions masked), and the
++ * caller's (including its exception flags) is restored on return.
++ *
++ * Work-groups may be run in any order, from any number of threads and
++ * concurrently, so they must not wait on each other. Only kernels without
++ * image, sampler or pipe arguments are supported. The call returns
++ * CL_OUT_OF_RESOURCES, after finishing its range, if a work-group reported a
++ * failure, which happens in the same cases (depending on the work-item
++ * handler) as a command queue launch of the kernel failing.
++ *
++ * The enum values below are provisional and not registered with Khronos. */
++
++#ifndef cl_pocl_host_kernel
++#define cl_pocl_host_kernel 1
++
++#define CL_POCL_HOST_KERNEL_EXTENSION_NAME "cl_pocl_host_kernel"
++
++typedef struct _cl_host_kernel_pocl *cl_host_kernel_pocl;
++typedef cl_uint cl_host_kernel_info_pocl;
++
++/* cl_host_kernel_info_pocl */
++#define CL_HOST_KERNEL_REFERENCE_COUNT_POCL 0x4510
++#define CL_HOST_KERNEL_SCRATCH_SIZE_POCL 0x4511
++#define CL_HOST_KERNEL_SCRATCH_ALIGNMENT_POCL 0x4512
++
++/* error codes */
++#define CL_INVALID_HOST_KERNEL_POCL -1200
++
++typedef cl_host_kernel_pocl (CL_API_CALL *clCreateHostKernelPOCL_fn) (
++    cl_kernel kernel, cl_device_id device, cl_uint work_dim,
++    const size_t *local_work_size, cl_int *errcode_ret);
++
++typedef cl_int (CL_API_CALL *clGetHostKernelInfoPOCL_fn) (
++    cl_host_kernel_pocl host_kernel, cl_host_kernel_info_pocl param_name,
++    size_t param_value_size, void *param_value,
++    size_t *param_value_size_ret);
++
++typedef cl_int (CL_API_CALL *clRetainHostKernelPOCL_fn) (
++    cl_host_kernel_pocl host_kernel);
++
++typedef cl_int (CL_API_CALL *clReleaseHostKernelPOCL_fn) (
++    cl_host_kernel_pocl host_kernel);
++
++typedef cl_int (CL_API_CALL *clRunHostKernelPOCL_fn) (
++    cl_host_kernel_pocl host_kernel, const void *const *arg_values,
++    const size_t *num_groups, const size_t *global_work_offset,
++    size_t first_group, size_t group_count, void *scratch);
++
++#ifndef CL_NO_PROTOTYPES
++
++extern CL_API_ENTRY cl_host_kernel_pocl CL_API_CALL clCreateHostKernelPOCL (
++    cl_kernel kernel, cl_device_id device, cl_uint work_dim,
++    const size_t *local_work_size, cl_int *errcode_ret);
++
++extern CL_API_ENTRY cl_int CL_API_CALL clGetHostKernelInfoPOCL (
++    cl_host_kernel_pocl host_kernel, cl_host_kernel_info_pocl param_name,
++    size_t param_value_size, void *param_value,
++    size_t *param_value_size_ret);
++
++extern CL_API_ENTRY cl_int CL_API_CALL
++clRetainHostKernelPOCL (cl_host_kernel_pocl host_kernel);
++
++extern CL_API_ENTRY cl_int CL_API_CALL
++clReleaseHostKernelPOCL (cl_host_kernel_pocl host_kernel);
++
++extern CL_API_ENTRY cl_int CL_API_CALL clRunHostKernelPOCL (
++    cl_host_kernel_pocl host_kernel, const void *const *arg_values,
++    const size_t *num_groups, const size_t *global_work_offset,
++    size_t first_group, size_t group_count, void *scratch);
++
++#endif /* CL_NO_PROTOTYPES */
++
++#endif /* cl_pocl_host_kernel */
++
+ #ifdef __cplusplus
+ }
+ #endif
+diff --git a/lib/CL/CMakeLists.txt b/lib/CL/CMakeLists.txt
+index fc92ca82c..884fc4c2c 100644
+--- a/lib/CL/CMakeLists.txt
++++ b/lib/CL/CMakeLists.txt
+@@ -136,6 +136,7 @@ set(POCL_LIB_SOURCES  "clCreateContextFromType.c"
+                    "clCreateSubDevices.c"
+                    "clUnloadPlatformCompiler.c"
+                    "clSetContentSizeBufferPoCL.c"
++                   "clHostKernelPOCL.c"
+                    "clCreatePipe.c"
+                    "clGetPipeInfo.c"
+                    "clSetProgramReleaseCallback.c"
+diff --git a/lib/CL/clGetExtensionFunctionAddressForPlatform.c b/lib/CL/clGetExtensionFunctionAddressForPlatform.c
+index 7b9d934ba..d544c8b3c 100644
+--- a/lib/CL/clGetExtensionFunctionAddressForPlatform.c
++++ b/lib/CL/clGetExtensionFunctionAddressForPlatform.c
+@@ -67,6 +67,18 @@ CL_API_SUFFIX__VERSION_1_2
+   if (strcmp (func_name, "clSetContentSizeBufferPoCL") == 0)
+     return (void *)&POname (clSetContentSizeBufferPoCL);
+ 
++  /* cl_pocl_host_kernel */
++  if (strcmp (func_name, "clCreateHostKernelPOCL") == 0)
++    return (void *)&POname (clCreateHostKernelPOCL);
++  if (strcmp (func_name, "clGetHostKernelInfoPOCL") == 0)
++    return (void *)&POname (clGetHostKernelInfoPOCL);
++  if (strcmp (func_name, "clRetainHostKernelPOCL") == 0)
++    return (void *)&POname (clRetainHostKernelPOCL);
++  if (strcmp (func_name, "clReleaseHostKernelPOCL") == 0)
++    return (void *)&POname (clReleaseHostKernelPOCL);
++  if (strcmp (func_name, "clRunHostKernelPOCL") == 0)
++    return (void *)&POname (clRunHostKernelPOCL);
++
+   if (strcmp (func_name, "clGetPlatformInfo") == 0)
+     return (void *)&POname(clGetPlatformInfo);
+ 
+diff --git a/lib/CL/clHostKernelPOCL.c b/lib/CL/clHostKernelPOCL.c
+new file mode 100644
+index 000000000..1279ac673
+--- /dev/null
++++ b/lib/CL/clHostKernelPOCL.c
+@@ -0,0 +1,319 @@
++/* OpenCL runtime library: cl_pocl_host_kernel
++
++   Copyright (c) 2026 PoCL developers
++
++   Permission is hereby granted, free of charge, to any person obtaining a copy
++   of this software and associated documentation files (the "Software"), to
++   deal in the Software without restriction, including without limitation the
++   rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
++   sell copies of the Software, and to permit persons to whom the Software is
++   furnished to do so, subject to the following conditions:
++
++   The above copyright notice and this permission notice shall be included in
++   all copies or substantial portions of the Software.
++
++   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
++   IN THE SOFTWARE.
++*/
++
++#include "pocl_cl.h"
++#include "pocl_util.h"
++
++/* Reserves SIZE bytes of __local memory at *OFFSET, keeping the total within
++   LIMIT. */
++static int
++reserve_local (size_t *offset, size_t size, size_t limit)
++{
++  if (size > limit || *offset > limit - size)
++    return 0;
++  *offset += size;
++  *offset = (*offset + MAX_EXTENDED_ALIGNMENT - 1)
++            & ~(size_t)(MAX_EXTENDED_ALIGNMENT - 1);
++  return 1;
++}
++
++static int
++mul_overflows (size_t a, size_t b, size_t *res)
++{
++#if defined(__GNUC__) || defined(__clang__)
++  return __builtin_mul_overflow (a, b, res);
++#else
++  *res = a * b;
++  return a != 0 && *res / a != b;
++#endif
++}
++
++static int
++add_overflows (size_t a, size_t b, size_t *res)
++{
++  *res = a + b;
++  return *res < a;
++}
++
++static void
++free_host_kernel (cl_host_kernel_pocl hk)
++{
++  if (hk->device_data != NULL)
++    hk->device->ops->free_host_kernel (hk->device, hk);
++  if (hk->kernel != NULL)
++    POname (clReleaseKernel) (hk->kernel);
++  POCL_DESTROY_OBJECT (hk);
++  POCL_MEM_FREE (hk->local_offsets);
++  POCL_MEM_FREE (hk->arg_alignment_masks);
++  POCL_MEM_FREE (hk);
++}
++
++CL_API_ENTRY cl_host_kernel_pocl CL_API_CALL
++POname (clCreateHostKernelPOCL) (cl_kernel kernel,
++                                 cl_device_id device,
++                                 cl_uint work_dim,
++                                 const size_t *local_work_size,
++                                 cl_int *errcode_ret)
++{
++  cl_int errcode = CL_SUCCESS;
++  cl_host_kernel_pocl hk = NULL;
++
++  POCL_GOTO_ERROR_COND ((!IS_CL_OBJECT_VALID (kernel)), CL_INVALID_KERNEL);
++  POCL_GOTO_ERROR_COND ((!IS_CL_OBJECT_VALID (device)), CL_INVALID_DEVICE);
++  POCL_GOTO_ERROR_ON (
++    (!pocl_device_is_associated_with_kernel (device, kernel)),
++    CL_INVALID_DEVICE, "the kernel's context doesn't contain the device\n");
++
++  /* Programs are built for the root device of a sub-device. */
++  cl_device_id realdev = pocl_real_dev (device);
++  POCL_GOTO_ERROR_ON (
++    (realdev->ops->create_host_kernel == NULL), CL_INVALID_OPERATION,
++    "device %s doesn't support cl_pocl_host_kernel\n", realdev->short_name);
++
++  cl_program program = kernel->program;
++  pocl_kernel_metadata_t *meta = kernel->meta;
++  cl_uint dev_i = CL_UINT_MAX;
++  for (cl_uint i = 0; i < program->num_devices; ++i)
++    if (program->devices[i] == realdev)
++      dev_i = i;
++  POCL_GOTO_ERROR_ON ((dev_i == CL_UINT_MAX), CL_INVALID_PROGRAM_EXECUTABLE,
++                      "the kernel was not built for this device\n");
++  POCL_GOTO_ERROR_ON ((program->builtin_kernel_attributes != NULL),
++                      CL_INVALID_KERNEL,
++                      "built-in kernels can't be host kernels\n");
++
++  POCL_GOTO_ERROR_COND (
++    (work_dim < 1 || work_dim > realdev->max_work_item_dimensions),
++    CL_INVALID_WORK_DIMENSION);
++  POCL_GOTO_ERROR_COND ((local_work_size == NULL), CL_INVALID_WORK_GROUP_SIZE);
++
++  size_t local_size[3] = { 1, 1, 1 };
++  size_t wg_size = 1;
++  for (cl_uint d = 0; d < work_dim; ++d)
++    {
++      local_size[d] = local_work_size[d];
++      POCL_GOTO_ERROR_ON ((local_size[d] == 0
++                           || local_size[d] > realdev->max_work_item_sizes[d]),
++                          CL_INVALID_WORK_ITEM_SIZE,
++                          "local size %zu in dimension %u is out of range\n",
++                          local_size[d], d);
++      POCL_GOTO_ERROR_ON ((mul_overflows (wg_size, local_size[d], &wg_size)),
++                          CL_INVALID_WORK_GROUP_SIZE,
++                          "the work-group size overflows\n");
++    }
++  size_t max_wg_size
++    = meta->max_workgroup_size && meta->max_workgroup_size[dev_i] > 0
++        ? meta->max_workgroup_size[dev_i]
++        : realdev->max_work_group_size;
++  POCL_GOTO_ERROR_ON ((wg_size > max_wg_size), CL_INVALID_WORK_GROUP_SIZE,
++                      "work-group size %zu exceeds the kernel's maximum "
++                      "%zu\n",
++                      wg_size, max_wg_size);
++  if (meta->reqd_wg_size[0] > 0)
++    POCL_GOTO_ERROR_ON (
++      (local_size[0] != meta->reqd_wg_size[0]
++       || local_size[1] != meta->reqd_wg_size[1]
++       || local_size[2] != meta->reqd_wg_size[2]),
++      CL_INVALID_WORK_GROUP_SIZE,
++      "the local size doesn't match the kernel's reqd_work_group_size\n");
++
++  hk = calloc (1, sizeof (struct _cl_host_kernel_pocl));
++  POCL_GOTO_ERROR_COND ((hk == NULL), CL_OUT_OF_HOST_MEMORY);
++  POCL_INIT_OBJECT_NO_ICD (hk);
++  /* The kernel keeps the program, its global variables and the module
++     cache entry valid: OpenCL doesn't allow rebuilding a program that has
++     kernels. */
++  POname (clRetainKernel) (kernel);
++  hk->kernel = kernel;
++  hk->program = program;
++  hk->device = realdev;
++  hk->program_device_i = dev_i;
++  hk->work_dim = work_dim;
++  memcpy (hk->local_size, local_size, sizeof (local_size));
++  hk->num_args = meta->num_args;
++  hk->num_locals = meta->num_locals;
++
++  hk->local_offsets
++    = malloc (sizeof (size_t) * (meta->num_args + meta->num_locals + 1));
++  POCL_GOTO_ERROR_COND ((hk->local_offsets == NULL), CL_OUT_OF_HOST_MEMORY);
++  hk->arg_alignment_masks
++    = calloc (meta->num_args + meta->num_locals + 1, sizeof (size_t));
++  POCL_GOTO_ERROR_COND ((hk->arg_alignment_masks == NULL),
++                        CL_OUT_OF_HOST_MEMORY);
++
++  size_t offset = 0;
++  for (cl_uint i = 0; i < meta->num_args; ++i)
++    {
++      struct pocl_argument_info *ai = &meta->arg_info[i];
++      hk->local_offsets[i] = SIZE_MAX;
++      if (ARG_IS_LOCAL (meta->arg_info[i]))
++        {
++          POCL_GOTO_ERROR_ON (
++            (!kernel->dyn_arguments[i].is_set), CL_INVALID_KERNEL_ARGS,
++            "the size of __local argument %u isn't set\n", i);
++          hk->local_offsets[i] = offset;
++          POCL_GOTO_ERROR_ON (
++            (!reserve_local (&offset, kernel->dyn_arguments[i].size,
++                             realdev->local_mem_size)),
++            CL_OUT_OF_RESOURCES, "__local argument %u doesn't fit\n", i);
++        }
++      else
++        {
++          POCL_GOTO_ERROR_ON ((ai->type == POCL_ARG_TYPE_IMAGE
++                               || ai->type == POCL_ARG_TYPE_SAMPLER
++                               || ai->type == POCL_ARG_TYPE_PIPE),
++                              CL_INVALID_KERNEL,
++                              "argument %u is an image, sampler or pipe\n", i);
++          /* The work-group function loads scalars and vectors with their
++             preferred alignment, which OpenCL C makes their size rounded up
++             to a power of two. The size of structs isn't known. */
++          if (ai->type_size > 0)
++            {
++              size_t align = pocl_size_ceil2 (ai->type_size);
++              if (align > MAX_EXTENDED_ALIGNMENT)
++                align = MAX_EXTENDED_ALIGNMENT;
++              hk->arg_alignment_masks[i] = align - 1;
++            }
++        }
++    }
++  for (cl_uint i = 0; i < meta->num_locals; ++i)
++    {
++      hk->local_offsets[meta->num_args + i] = offset;
++      POCL_GOTO_ERROR_ON ((!reserve_local (&offset, meta->local_sizes[i],
++                                           realdev->local_mem_size)),
++                          CL_OUT_OF_RESOURCES,
++                          "the kernel's __local variables don't fit\n");
++    }
++  hk->local_mem_size = offset;
++  /* Kernels flush the printf buffer after every printf with
++     ENABLE_PRINTF_IMMEDIATE_FLUSH, otherwise the run loop flushes it after
++     every work-group that printed. */
++  hk->printf_buffer_size = realdev->printf_buffer_size;
++  hk->scratch_size = hk->local_mem_size + hk->printf_buffer_size;
++
++  errcode = realdev->ops->create_host_kernel (realdev, kernel, hk);
++  if (errcode != CL_SUCCESS)
++    goto ERROR;
++
++  if (errcode_ret)
++    *errcode_ret = CL_SUCCESS;
++  return hk;
++
++ERROR:
++  if (hk)
++    free_host_kernel (hk);
++  if (errcode_ret)
++    *errcode_ret = errcode;
++  return NULL;
++}
++POsym (clCreateHostKernelPOCL)
++
++  CL_API_ENTRY cl_int CL_API_CALL
++  POname (clGetHostKernelInfoPOCL) (cl_host_kernel_pocl host_kernel,
++                                    cl_host_kernel_info_pocl param_name,
++                                    size_t param_value_size,
++                                    void *param_value,
++                                    size_t *param_value_size_ret)
++{
++  POCL_RETURN_ERROR_COND ((!IS_CL_OBJECT_VALID (host_kernel)),
++                          CL_INVALID_HOST_KERNEL_POCL);
++
++  switch (param_name)
++    {
++    case CL_HOST_KERNEL_REFERENCE_COUNT_POCL:
++      POCL_RETURN_GETINFO (cl_uint, (cl_uint)host_kernel->pocl_refcount);
++    case CL_HOST_KERNEL_SCRATCH_SIZE_POCL:
++      POCL_RETURN_GETINFO (size_t, host_kernel->scratch_size);
++    case CL_HOST_KERNEL_SCRATCH_ALIGNMENT_POCL:
++      POCL_RETURN_GETINFO (size_t, (size_t)MAX_EXTENDED_ALIGNMENT);
++    default:
++      return CL_INVALID_VALUE;
++    }
++}
++POsym (clGetHostKernelInfoPOCL)
++
++  CL_API_ENTRY cl_int CL_API_CALL
++  POname (clRetainHostKernelPOCL) (cl_host_kernel_pocl host_kernel)
++{
++  POCL_RETURN_ERROR_COND ((!IS_CL_OBJECT_VALID (host_kernel)),
++                          CL_INVALID_HOST_KERNEL_POCL);
++  POCL_RETAIN_OBJECT (host_kernel);
++  return CL_SUCCESS;
++}
++POsym (clRetainHostKernelPOCL)
++
++  CL_API_ENTRY cl_int CL_API_CALL
++  POname (clReleaseHostKernelPOCL) (cl_host_kernel_pocl host_kernel)
++{
++  POCL_RETURN_ERROR_COND ((!IS_CL_OBJECT_VALID (host_kernel)),
++                          CL_INVALID_HOST_KERNEL_POCL);
++  int new_refcount;
++  POCL_RELEASE_OBJECT (host_kernel, new_refcount);
++  if (new_refcount == 0)
++    free_host_kernel (host_kernel);
++  return CL_SUCCESS;
++}
++POsym (clReleaseHostKernelPOCL)
++
++  CL_API_ENTRY cl_int CL_API_CALL
++  POname (clRunHostKernelPOCL) (cl_host_kernel_pocl host_kernel,
++                                const void *const *arg_values,
++                                const size_t *num_groups,
++                                const size_t *global_work_offset,
++                                size_t first_group,
++                                size_t group_count,
++                                void *scratch)
++{
++  POCL_RETURN_ERROR_COND ((!IS_CL_OBJECT_VALID (host_kernel)),
++                          CL_INVALID_HOST_KERNEL_POCL);
++  POCL_RETURN_ERROR_COND ((num_groups == NULL), CL_INVALID_VALUE);
++  POCL_RETURN_ERROR_COND ((arg_values == NULL && host_kernel->num_args > 0),
++                          CL_INVALID_KERNEL_ARGS);
++  POCL_RETURN_ERROR_COND (
++    (((uintptr_t)scratch & (MAX_EXTENDED_ALIGNMENT - 1)) != 0),
++    CL_INVALID_VALUE);
++  POCL_RETURN_ERROR_COND ((scratch == NULL), CL_INVALID_VALUE);
++
++  size_t total = 1;
++  for (cl_uint d = 0; d < host_kernel->work_dim; ++d)
++    {
++      size_t global, extent;
++      POCL_RETURN_ERROR_ON (
++        (mul_overflows (num_groups[d], host_kernel->local_size[d], &global)
++         || (global_work_offset != NULL
++             && add_overflows (global, global_work_offset[d], &extent))
++         || mul_overflows (total, num_groups[d], &total)),
++        CL_INVALID_GLOBAL_WORK_SIZE, "the grid is too large\n");
++    }
++  POCL_RETURN_ERROR_ON (
++    (first_group > total || group_count > total - first_group),
++    CL_INVALID_VALUE, "work-groups [%zu, %zu) are outside the grid\n",
++    first_group, first_group + group_count);
++  if (group_count == 0)
++    return CL_SUCCESS;
++
++  return host_kernel->device->ops->run_host_kernel (
++    host_kernel, arg_values, num_groups, global_work_offset, first_group,
++    group_count, scratch);
++}
++POsym (clRunHostKernelPOCL)
+diff --git a/lib/CL/devices/basic/basic.c b/lib/CL/devices/basic/basic.c
+index 540efc142..d6ecea130 100644
+--- a/lib/CL/devices/basic/basic.c
++++ b/lib/CL/devices/basic/basic.c
+@@ -110,6 +110,9 @@ pocl_basic_init_device_ops(struct pocl_device_ops *ops)
+ 
+   ops->run = pocl_basic_run;
+   ops->run_native = pocl_basic_run_native;
++  ops->create_host_kernel = pocl_cpu_create_host_kernel;
++  ops->free_host_kernel = pocl_cpu_free_host_kernel;
++  ops->run_host_kernel = pocl_cpu_run_host_kernel;
+ 
+   ops->build_source = pocl_driver_build_source;
+   ops->link_program = pocl_driver_link_program;
+diff --git a/lib/CL/devices/common.c b/lib/CL/devices/common.c
+index 627d1abd9..17a09e4e9 100644
+--- a/lib/CL/devices/common.c
++++ b/lib/CL/devices/common.c
+@@ -2167,6 +2167,7 @@ static const cl_name_version OPENCL_EXTENSIONS[]
+       { CL_MAKE_VERSION (0, 9, 0), "cl_pocl_command_buffer_svm" },
+       { CL_MAKE_VERSION (0, 9, 0), "cl_pocl_command_buffer_host_buffer" },
+       { CL_MAKE_VERSION (0, 9, 0), "cl_pocl_command_buffer_host_exec" },
++      { CL_MAKE_VERSION (0, 1, 0), "cl_pocl_host_kernel" },
+       { CL_MAKE_VERSION (0, 1, 0), "cl_exp_tensor" },
+       { CL_MAKE_VERSION (0, 1, 0), "cl_exp_defined_builtin_kernels" } };
+ 
+diff --git a/lib/CL/devices/common_utils.c b/lib/CL/devices/common_utils.c
+index 64a966ec9..49295f7ef 100644
+--- a/lib/CL/devices/common_utils.c
++++ b/lib/CL/devices/common_utils.c
+@@ -30,6 +30,7 @@
+ #include "config2.h"
+ 
+ #include "common.h"
++#include "common_driver.h"
+ #include "common_utils.h"
+ #include "cpuinfo.h"
+ #include "pocl_builtin_kernels.h"
+@@ -184,6 +185,237 @@ pocl_cpu_setup_rm_and_ftz (cl_device_id dev, cl_program prog)
+   pocl_set_default_rm ();
+ }
+ 
++/* cl_pocl_host_kernel: the floating-point environment kernels run in (round
++   to nearest, FTZ per the build, all exceptions masked), entered and left
++   around a run on an application thread. Each register is read once and only
++   written when the modes differ, which they usually don't. */
++#if defined(POCL_ON_X86) && defined(_MM_FLUSH_ZERO_MASK)                      \
++  && defined(_MM_DENORMALS_ZERO_MASK)
++#define HOST_KERNEL_FP_X86
++typedef struct
++{
++  unsigned mxcsr;
++} host_fp_env;
++#elif defined(__aarch64__) && (defined(__GNUC__) || defined(__clang__))
++#define HOST_KERNEL_FP_AARCH64
++typedef struct
++{
++  uint64_t fpcr;
++  uint64_t fpsr;
++} host_fp_env;
++/* FPCR: rounding mode (RMode), flush-to-zero (FZ, FZ16, and FIZ and AH with
++   FEAT_AFP) and the exception trap enables (IDE, IXE, UFE, OFE, DZE, IOE). */
++#define FPCR_RMODE (UINT64_C (3) << 22)
++#define FPCR_FZ (UINT64_C (1) << 24)
++#define FPCR_FZ16 (UINT64_C (1) << 19)
++#define FPCR_AFP (UINT64_C (3))
++#define FPCR_TRAPS UINT64_C (0x9f00)
++#else
++typedef struct
++{
++  int unused;
++} host_fp_env;
++#endif
++
++static inline void
++enter_kernel_fp_mode (unsigned ftz, host_fp_env *caller)
++{
++#if defined(HOST_KERNEL_FP_X86)
++  caller->mxcsr = _mm_getcsr ();
++  unsigned kernel
++    = (caller->mxcsr
++       & ~(_MM_FLUSH_ZERO_MASK | _MM_DENORMALS_ZERO_MASK | _MM_ROUND_MASK))
++      | _MM_MASK_MASK | _MM_ROUND_NEAREST
++      | (ftz ? (_MM_FLUSH_ZERO_ON | _MM_DENORMALS_ZERO_ON) : 0);
++  if (kernel != caller->mxcsr)
++    _mm_setcsr (kernel);
++#elif defined(HOST_KERNEL_FP_AARCH64)
++  __asm__ volatile ("mrs %0, fpcr" : "=r"(caller->fpcr));
++  __asm__ volatile ("mrs %0, fpsr" : "=r"(caller->fpsr));
++  uint64_t kernel
++    = (caller->fpcr
++       & ~(FPCR_RMODE | FPCR_FZ | FPCR_FZ16 | FPCR_AFP | FPCR_TRAPS))
++      | (ftz ? (FPCR_FZ | FPCR_FZ16) : 0);
++  if (kernel != caller->fpcr)
++    __asm__ volatile ("msr fpcr, %0" : : "r"(kernel));
++#else
++  (void)ftz;
++  (void)caller;
++#endif
++}
++
++/* Restores the caller's environment, including its exception flags. */
++static inline void
++leave_kernel_fp_mode (const host_fp_env *caller)
++{
++#if defined(HOST_KERNEL_FP_X86)
++  if (_mm_getcsr () != caller->mxcsr)
++    _mm_setcsr (caller->mxcsr);
++#elif defined(HOST_KERNEL_FP_AARCH64)
++  uint64_t fpcr, fpsr;
++  __asm__ volatile ("mrs %0, fpcr" : "=r"(fpcr));
++  __asm__ volatile ("mrs %0, fpsr" : "=r"(fpsr));
++  if (fpcr != caller->fpcr)
++    __asm__ volatile ("msr fpcr, %0" : : "r"(caller->fpcr));
++  if (fpsr != caller->fpsr)
++    __asm__ volatile ("msr fpsr, %0" : : "r"(caller->fpsr));
++#else
++  (void)caller;
++#endif
++}
++
++cl_int
++pocl_cpu_create_host_kernel (cl_device_id device,
++                             cl_kernel kernel,
++                             cl_host_kernel_pocl hk)
++{
++  cl_program program = kernel->program;
++  cl_uint dev_i = hk->program_device_i;
++
++  if (device->device_alloca_locals)
++    return CL_INVALID_OPERATION;
++
++  int err = pocl_driver_build_gvar_init_kernel (program, dev_i, device,
++                                                pocl_cpu_gvar_init_callback);
++  if (err != CL_SUCCESS)
++    return err == CL_OUT_OF_HOST_MEMORY ? err : CL_INVALID_PROGRAM_EXECUTABLE;
++
++  /* The work-group function specialized on the local size only: generic in
++     the grid size and global offset, so that it can run any range of any
++     grid. The grid here is wider than any launch so that this cache entry is
++     never a small-grid function, and serves all host kernels with this local
++     size. */
++  _cl_command_node cmd;
++  memset (&cmd, 0, sizeof (cmd));
++  cmd.type = CL_COMMAND_NDRANGE_KERNEL;
++  cmd.device = device;
++  cmd.program_device_i = dev_i;
++  _cl_command_run *run = &cmd.command.run;
++  run->kernel = kernel;
++  run->hash = kernel->meta->build_hash[dev_i];
++  run->force_large_grid_wg_func = 1;
++  run->pc.work_dim = hk->work_dim;
++  for (unsigned d = 0; d < 3; ++d)
++    {
++      run->pc.local_size[d] = hk->local_size[d];
++      run->pc.num_groups[d] = 1;
++      run->pc.global_offset[d] = 1;
++    }
++  run->pc.num_groups[0] = (SIZE_MAX / 4) / hk->local_size[0];
++
++  void *ci = pocl_check_kernel_dlhandle_cache (&cmd, CL_TRUE, CL_TRUE);
++  if (ci == NULL)
++    return CL_INVALID_PROGRAM_EXECUTABLE;
++  hk->device_data = ci;
++  hk->wg = run->wg;
++
++  memset (&hk->pc, 0, sizeof (hk->pc));
++  hk->pc.work_dim = hk->work_dim;
++  memcpy (hk->pc.local_size, hk->local_size, sizeof (hk->pc.local_size));
++  hk->pc.printf_buffer_capacity = hk->printf_buffer_size;
++  hk->pc.global_var_buffer = program->gvar_storage[dev_i];
++
++  cl_device_fp_config supports_any_denorms
++    = (device->half_fp_config | device->single_fp_config
++       | device->double_fp_config)
++      & CL_FP_DENORM;
++  hk->fp_mode = supports_any_denorms ? program->flush_denorms : 1;
++  return CL_SUCCESS;
++}
++
++void
++pocl_cpu_free_host_kernel (cl_device_id device, cl_host_kernel_pocl hk)
++{
++  pocl_release_dlhandle_cache (hk->device_data);
++  hk->device_data = NULL;
++}
++
++cl_int
++pocl_cpu_run_host_kernel (cl_host_kernel_pocl hk,
++                          const void *const *arg_values,
++                          const size_t *num_groups,
++                          const size_t *global_offset,
++                          size_t first_group,
++                          size_t group_count,
++                          void *scratch)
++{
++  const unsigned n = hk->num_args + hk->num_locals;
++  void **args = alloca (sizeof (void *) * (n + 1));
++  void **local_ptrs = alloca (sizeof (void *) * (n + 1));
++  char *s = (char *)scratch;
++
++  for (unsigned i = 0; i < n; ++i)
++    {
++      size_t offset = hk->local_offsets[i];
++      if (offset == SIZE_MAX)
++        {
++          void *value = (void *)arg_values[i];
++          size_t mask = hk->arg_alignment_masks[i];
++          /* clSetKernelArg copies values into aligned storage; do the same
++             for those that need it. */
++          if (((uintptr_t)value & mask) != 0)
++            {
++              size_t size = hk->kernel->meta->arg_info[i].type_size;
++              char *copy = alloca (size + mask);
++              copy = (char *)(((uintptr_t)copy + mask) & ~(uintptr_t)mask);
++              memcpy (copy, value, size);
++              value = copy;
++            }
++          args[i] = value;
++        }
++      else
++        {
++          local_ptrs[i] = s + offset;
++          args[i] = &local_ptrs[i];
++        }
++    }
++  args[n] = NULL;
++
++  struct pocl_context pc = hk->pc;
++  for (unsigned d = 0; d < 3; ++d)
++    {
++      pc.num_groups[d] = d < hk->work_dim ? num_groups[d] : 1;
++      pc.global_offset[d]
++        = global_offset != NULL && d < hk->work_dim ? global_offset[d] : 0;
++    }
++  uint32_t position = 0;
++  pc.printf_buffer = (uchar *)(s + hk->local_mem_size);
++  pc.printf_buffer_position = &position;
++
++  host_fp_env caller_fp_env;
++  enter_kernel_fp_mode (hk->fp_mode, &caller_fp_env);
++
++  pocl_workgroup_func wg = (pocl_workgroup_func)hk->wg;
++  size_t x = first_group % pc.num_groups[0];
++  size_t yz = first_group / pc.num_groups[0];
++  size_t y = yz % pc.num_groups[1];
++  size_t z = yz / pc.num_groups[1];
++  for (size_t i = 0; i < group_count; ++i)
++    {
++      wg ((uint8_t *)args, (uint8_t *)&pc, x, y, z);
++#ifndef ENABLE_PRINTF_IMMEDIATE_FLUSH
++      if (position > 0)
++        {
++          pocl_write_printf_buffer ((char *)pc.printf_buffer, position);
++          position = 0;
++        }
++#endif
++      if (++x == pc.num_groups[0])
++        {
++          x = 0;
++          if (++y == pc.num_groups[1])
++            {
++              y = 0;
++              ++z;
++            }
++        }
++    }
++
++  leave_kernel_fp_mode (&caller_fp_env);
++
++  return pc.execution_failed ? CL_OUT_OF_RESOURCES : CL_SUCCESS;
++}
++
+ #ifdef HAVE_LIBXSMM
+ #include <libxsmm.h>
+ #endif
+diff --git a/lib/CL/devices/common_utils.h b/lib/CL/devices/common_utils.h
+index f7669ea78..212f1dd71 100644
+--- a/lib/CL/devices/common_utils.h
++++ b/lib/CL/devices/common_utils.h
+@@ -142,6 +142,23 @@ void pocl_cpu_restore_rm_and_ftz (unsigned rm, unsigned ftz);
+ POCL_EXPORT
+ void pocl_cpu_setup_rm_and_ftz (cl_device_id dev, cl_program prog);
+ 
++POCL_EXPORT
++cl_int pocl_cpu_create_host_kernel (cl_device_id device,
++                                    cl_kernel kernel,
++                                    cl_host_kernel_pocl hk);
++
++POCL_EXPORT
++void pocl_cpu_free_host_kernel (cl_device_id device, cl_host_kernel_pocl hk);
++
++POCL_EXPORT
++cl_int pocl_cpu_run_host_kernel (cl_host_kernel_pocl hk,
++                                 const void *const *arg_values,
++                                 const size_t *num_groups,
++                                 const size_t *global_offset,
++                                 size_t first_group,
++                                 size_t group_count,
++                                 void *scratch);
++
+ #ifdef __cplusplus
+ }
+ #endif
+diff --git a/lib/CL/pocl_cl.h b/lib/CL/pocl_cl.h
+index cb6cba27f..b75769925 100644
+--- a/lib/CL/pocl_cl.h
++++ b/lib/CL/pocl_cl.h
+@@ -892,6 +892,23 @@ struct pocl_device_ops {
+   /* For clEnqueueNativeKernel. May be NULL. */
+   void (*run_native) (void *data, _cl_command_node *cmd);
+ 
++  /* cl_pocl_host_kernel, for devices whose kernels run in the host process.
++     May be NULL. create_host_kernel sets up the device-specific fields of HK
++     (the work-group function and the context template) after the generic
++     ones, free_host_kernel releases them, and run_host_kernel implements
++     clRunHostKernelPOCL on validated arguments. */
++  cl_int (*create_host_kernel) (cl_device_id device,
++                                cl_kernel kernel,
++                                cl_host_kernel_pocl hk);
++  void (*free_host_kernel) (cl_device_id device, cl_host_kernel_pocl hk);
++  cl_int (*run_host_kernel) (cl_host_kernel_pocl hk,
++                             const void *const *arg_values,
++                             const size_t *num_groups,
++                             const size_t *global_offset,
++                             size_t first_group,
++                             size_t group_count,
++                             void *scratch);
++
+   /** Perform initialization steps and can return additional
+    * build options that are required for the device.
+    *
+@@ -2088,6 +2105,39 @@ struct _cl_kernel {
+   struct _cl_kernel *next;
+ };
+ 
++/* cl_pocl_host_kernel. Immutable after creation. */
++struct _cl_host_kernel_pocl
++{
++  POCL_OBJECT;
++  /* The root device, which the program is built for. */
++  cl_device_id device;
++  /* Retained, so that the program can't be rebuilt. */
++  cl_kernel kernel;
++  cl_program program;
++  cl_uint program_device_i;
++  cl_uint work_dim;
++  size_t local_size[3];
++  cl_uint num_args;
++  cl_uint num_locals;
++  /* For the explicit arguments followed by the automatic locals: the offset
++     of the __local buffer in the scratch area, or SIZE_MAX for arguments
++     that aren't __local. */
++  size_t *local_offsets;
++  /* For the explicit arguments followed by the automatic locals: the
++     alignment that the work-group function loads a value with, minus one,
++     or 0 where it isn't known (structs) or there's no value (__local). */
++  size_t *arg_alignment_masks;
++  /* The scratch area holds the __local buffers followed by the printf
++     buffer. */
++  size_t local_mem_size;
++  size_t printf_buffer_size;
++  size_t scratch_size;
++  struct pocl_context pc;
++  void *wg;
++  void *device_data;
++  unsigned fp_mode;
++};
++
+ typedef struct event_callback_item event_callback_item;
+ struct event_callback_item
+ {
+diff --git a/lib/CL/pocl_intfn.h b/lib/CL/pocl_intfn.h
+index f238433b6..cd2c92b3c 100644
+--- a/lib/CL/pocl_intfn.h
++++ b/lib/CL/pocl_intfn.h
+@@ -223,6 +223,13 @@ POdeclsym (clGetMutableCommandInfoKHR)
+ POdeclsym(clEnqueueSVMMemFillRectPOCL)
+ POdeclsym(clEnqueueSVMMemcpyRectPOCL)
+ 
++/* cl_pocl_host_kernel */
++POdeclsym (clCreateHostKernelPOCL)
++POdeclsym (clGetHostKernelInfoPOCL)
++POdeclsym (clRetainHostKernelPOCL)
++POdeclsym (clReleaseHostKernelPOCL)
++POdeclsym (clRunHostKernelPOCL)
++
+ /* cl_ext_buffer_device_address */
+ POdeclsym (clSetKernelArgDevicePointerEXT)
+ 
+diff --git a/tests/runtime/CMakeLists.txt b/tests/runtime/CMakeLists.txt
+index f25234628..304a65573 100644
+--- a/tests/runtime/CMakeLists.txt
++++ b/tests/runtime/CMakeLists.txt
+@@ -58,6 +58,10 @@ if(ENABLE_HOST_CPU_DEVICES AND NOT ENABLE_HOST_CPU_DEVICES_OPENMP)
+   list(APPEND C_PROGRAMS_TO_BUILD test_worker_wakeup)
+ endif()
+ 
++if(UNIX)
++  list(APPEND C_PROGRAMS_TO_BUILD test_cl_pocl_host_kernel)
++endif()
++
+ set(CXX_PROGRAMS_TO_BUILD test_device_address test_svm test_large_buf
+   test_subbuffers test_compile_n_link test_dbk_matmul test_tensor_view
+   test_dbk_convert test_dbk_set_rows)
+@@ -72,6 +76,10 @@ foreach(PROG ${C_PROGRAMS_TO_BUILD})
+   add_symlink_to_built_opencl_dynlib("${PROG}")
+ endforeach()
+ 
++if(UNIX)
++  target_link_libraries(test_cl_pocl_host_kernel ${PTHREAD_LIBRARY})
++endif()
++
+ foreach(PROG ${CXX_PROGRAMS_TO_BUILD})
+   set_source_files_properties( "${PROG}.cpp" PROPERTIES LANGUAGE CXX )
+   add_executable("${PROG}" "${PROG}.cpp")
+@@ -160,6 +168,13 @@ add_test_pocl(NAME "runtime/clSetMemObjectDestructorCallback" COMMAND  "test_clS
+ 
+ add_test(NAME "runtime/test_cl_pocl_content_size" COMMAND "test_cl_pocl_content_size")
+ 
++if(UNIX)
++  add_test_pocl(NAME "runtime/test_cl_pocl_host_kernel"
++                WORKITEM_HANDLER "loopvec;cbs"
++                COMMAND "test_cl_pocl_host_kernel")
++  add_cpu_jit_test("cl_pocl_host_kernel" test_cl_pocl_host_kernel)
++endif()
++
+ add_test_pocl(NAME "runtime/test_deviceside_enqueue" COMMAND "test_deviceside_enqueue" WORKITEM_HANDLER "loopvec")
+ 
+ add_test(NAME "runtime/test_command_buffer" COMMAND "test_command_buffer")
+diff --git a/tests/runtime/test_cl_pocl_host_kernel.c b/tests/runtime/test_cl_pocl_host_kernel.c
+new file mode 100644
+index 000000000..5a2ef3611
+--- /dev/null
++++ b/tests/runtime/test_cl_pocl_host_kernel.c
+@@ -0,0 +1,555 @@
++/* Tests for the cl_pocl_host_kernel extension.
++
++   Copyright (c) 2026 PoCL developers
++
++   Permission is hereby granted, free of charge, to any person obtaining a copy
++   of this software and associated documentation files (the "Software"), to
++   deal in the Software without restriction, including without limitation the
++   rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
++   sell copies of the Software, and to permit persons to whom the Software is
++   furnished to do so, subject to the following conditions:
++
++   The above copyright notice and this permission notice shall be included in
++   all copies or substantial portions of the Software.
++
++   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
++   IN THE SOFTWARE.
++*/
++
++#define _GNU_SOURCE /* feenableexcept */
++#include "pocl_opencl.h"
++
++#include <fenv.h>
++#include <math.h>
++#include <pthread.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++
++#include "poclu.h"
++
++static const char *source
++  = "global int base = 1000;\n"
++    "\n"
++    "kernel void ids (global int *out, int add) {\n"
++    "  size_t x = get_global_id (0), y = get_global_id (1);\n"
++    "  out[y * get_global_size (0) + x - get_global_offset (0)\n"
++    "      - get_global_offset (1) * get_global_size (0)]\n"
++    "      = base + add + (int)(y * 100 + x);\n"
++    "}\n"
++    "\n"
++    "kernel void group_sums (global const int *in, global int *out,\n"
++    "                        local int *scratch) {\n"
++    "  local int total;\n"
++    "  size_t l = get_local_id (0);\n"
++    "  scratch[l] = in[get_global_id (0)];\n"
++    "  if (l == 0)\n"
++    "    total = 0;\n"
++    "  barrier (CLK_LOCAL_MEM_FENCE);\n"
++    "  if (l == 0)\n"
++    "    for (size_t i = 0; i < get_local_size (0); ++i)\n"
++    "      total += scratch[i];\n"
++    "  barrier (CLK_LOCAL_MEM_FENCE);\n"
++    "  if (l == get_local_size (0) - 1)\n"
++    "    out[get_group_id (0)] = total;\n"
++    "}\n"
++    "\n"
++    "kernel void rounding (global float *out, float a, float b) {\n"
++    "  out[0] = a / b;\n"
++    "}\n"
++    "\n"
++    "kernel void trap (global int *out) {\n"
++    "  size_t i = get_global_id (0);\n"
++    "  if (i == 3)\n"
++    "    __builtin_trap ();\n"
++    "  out[i] = 1;\n"
++    "}\n"
++    "\n"
++    "kernel void vector (global float16 *out, float16 v) {\n"
++    "  out[0] = v + v;\n"
++    "}\n"
++    "\n"
++    "kernel void group_ids (global int *out) {\n"
++    "  size_t x = get_group_id (0), y = get_group_id (1), z = get_group_id (2);\n"
++    "  if (x < get_num_groups (0) && y < get_num_groups (1)\n"
++    "      && z < get_num_groups (2))\n"
++    "    out[(z * get_num_groups (1) + y) * get_num_groups (0) + x] = 1;\n"
++    "}\n"
++    "\n"
++    "#ifndef NO_IMAGES\n"
++    "kernel void image (read_only image2d_t img) {}\n"
++    "#endif\n";
++
++static clCreateHostKernelPOCL_fn create_hk;
++static clGetHostKernelInfoPOCL_fn get_hk_info;
++static clRetainHostKernelPOCL_fn retain_hk;
++static clReleaseHostKernelPOCL_fn release_hk;
++static clRunHostKernelPOCL_fn run_hk;
++
++static void *
++alloc_scratch (cl_host_kernel_pocl hk)
++{
++  size_t size, align;
++  cl_int err = get_hk_info (hk, CL_HOST_KERNEL_SCRATCH_SIZE_POCL,
++                            sizeof (size), &size, NULL);
++  if (err != CL_SUCCESS)
++    return NULL;
++  err = get_hk_info (hk, CL_HOST_KERNEL_SCRATCH_ALIGNMENT_POCL, sizeof (align),
++                     &align, NULL);
++  if (err != CL_SUCCESS)
++    return NULL;
++  void *p = NULL;
++  if (posix_memalign (&p, align, size) != 0)
++    return NULL;
++  return p;
++}
++
++/* A 2D grid split into ranges of work-groups that several threads run
++   concurrently through one handle, each with its own scratch area. */
++
++#define NX 64
++#define NY 24
++#define LX 8
++#define LY 2
++#define NTHREADS 4
++
++struct ids_job
++{
++  cl_host_kernel_pocl hk;
++  const void *const *args;
++  const size_t *num_groups;
++  const size_t *offset;
++  size_t first, count;
++  cl_int err;
++};
++
++static void *
++run_ids_job (void *p)
++{
++  struct ids_job *job = (struct ids_job *)p;
++  void *scratch = alloc_scratch (job->hk);
++  /* Each thread runs its range in pieces of 5 groups. */
++  for (size_t i = 0; i < job->count && job->err == CL_SUCCESS; i += 5)
++    {
++      size_t n = job->count - i < 5 ? job->count - i : 5;
++      job->err = run_hk (job->hk, job->args, job->num_groups, job->offset,
++                         job->first + i, n, scratch);
++    }
++  free (scratch);
++  return NULL;
++}
++
++static int
++test_ids (cl_kernel kernel, cl_device_id device, const size_t *offset)
++{
++  const size_t local[2] = { LX, LY };
++  cl_int err;
++  cl_host_kernel_pocl hk = create_hk (kernel, device, 2, local, &err);
++  CHECK_CL_ERROR (err);
++
++  int *out = malloc (sizeof (int) * NX * NY);
++  for (size_t i = 0; i < NX * NY; ++i)
++    out[i] = -1;
++  int add = 7;
++  const void *args[2] = { &out, &add };
++  const size_t num_groups[2] = { NX / LX, NY / LY };
++  const size_t total = num_groups[0] * num_groups[1];
++
++  pthread_t threads[NTHREADS];
++  struct ids_job jobs[NTHREADS];
++  for (int t = 0; t < NTHREADS; ++t)
++    {
++      size_t first = total * t / NTHREADS;
++      size_t last = total * (t + 1) / NTHREADS;
++      struct ids_job job
++        = { hk, args, num_groups, offset, first, last - first, CL_SUCCESS };
++      jobs[t] = job;
++      TEST_ASSERT (pthread_create (&threads[t], NULL, run_ids_job, &jobs[t])
++                   == 0);
++    }
++  for (int t = 0; t < NTHREADS; ++t)
++    {
++      pthread_join (threads[t], NULL);
++      CHECK_CL_ERROR (jobs[t].err);
++    }
++
++  size_t ox = offset ? offset[0] : 0, oy = offset ? offset[1] : 0;
++  for (size_t y = 0; y < NY; ++y)
++    for (size_t x = 0; x < NX; ++x)
++      {
++        int expected = 1000 + add + (int)((y + oy) * 100 + (x + ox));
++        if (out[y * NX + x] != expected)
++          {
++            printf ("FAIL: ids[%zu, %zu] = %d, expected %d\n", x, y,
++                    out[y * NX + x], expected);
++            return EXIT_FAILURE;
++          }
++      }
++
++  free (out);
++  CHECK_CL_ERROR (release_hk (hk));
++  return EXIT_SUCCESS;
++}
++
++/* __local arguments and automatic locals, with barriers. The local argument
++   size is taken at creation, so changing it afterwards has no effect. */
++static int
++test_group_sums (cl_kernel kernel, cl_device_id device)
++{
++  enum
++  {
++    L = 32,
++    G = 16
++  };
++  cl_int err;
++  CHECK_CL_ERROR (clSetKernelArg (kernel, 2, L * sizeof (cl_int), NULL));
++  const size_t local = L;
++  cl_host_kernel_pocl hk = create_hk (kernel, device, 1, &local, &err);
++  CHECK_CL_ERROR (err);
++  CHECK_CL_ERROR (clSetKernelArg (kernel, 2, sizeof (cl_int), NULL));
++
++  int *in = malloc (sizeof (int) * L * G);
++  int *out = malloc (sizeof (int) * G);
++  for (int i = 0; i < L * G; ++i)
++    in[i] = i;
++  const void *args[3] = { &in, &out, NULL };
++  const size_t num_groups = G;
++  void *scratch = alloc_scratch (hk);
++  CHECK_CL_ERROR (run_hk (hk, args, &num_groups, NULL, 0, G, scratch));
++
++  for (int g = 0; g < G; ++g)
++    {
++      int expected = 0;
++      for (int i = 0; i < L; ++i)
++        expected += g * L + i;
++      if (out[g] != expected)
++        {
++          printf ("FAIL: group_sums[%d] = %d, expected %d\n", g, out[g],
++                  expected);
++          return EXIT_FAILURE;
++        }
++    }
++
++  free (scratch);
++  free (in);
++  free (out);
++  CHECK_CL_ERROR (release_hk (hk));
++  return EXIT_SUCCESS;
++}
++
++/* The kernel runs with round-to-nearest, and the caller's rounding mode and
++   exception flags survive the call. */
++static int
++test_fp_env (cl_kernel kernel, cl_device_id device)
++{
++#if defined(__x86_64__) || defined(__i386__)
++  cl_int err;
++  const size_t local = 1;
++  cl_host_kernel_pocl hk = create_hk (kernel, device, 1, &local, &err);
++  CHECK_CL_ERROR (err);
++
++  float out = 0.0f, a = 1.0f, b = 3.0f;
++  float *outp = &out;
++  const void *args[3] = { &outp, &a, &b };
++  const size_t num_groups = 1;
++  void *scratch = alloc_scratch (hk);
++
++  TEST_ASSERT (fesetround (FE_UPWARD) == 0);
++  feclearexcept (FE_ALL_EXCEPT);
++  feraiseexcept (FE_DIVBYZERO);
++  err = run_hk (hk, args, &num_groups, NULL, 0, 1, scratch);
++  int rounding = fegetround ();
++  int divbyzero = fetestexcept (FE_DIVBYZERO);
++  int inexact = fetestexcept (FE_INEXACT);
++  fesetround (FE_TONEAREST);
++  feclearexcept (FE_ALL_EXCEPT);
++  CHECK_CL_ERROR (err);
++
++  volatile float va = 1.0f, vb = 3.0f;
++  float nearest = va / vb;
++  TEST_ASSERT (out == nearest);
++  TEST_ASSERT (rounding == FE_UPWARD);
++  TEST_ASSERT (divbyzero);
++  TEST_ASSERT (!inexact);
++
++#ifdef __GLIBC__
++  /* Exceptions the caller unmasked don't trap in the kernel. */
++  b = 0.0f;
++  feenableexcept (FE_DIVBYZERO);
++  err = run_hk (hk, args, &num_groups, NULL, 0, 1, scratch);
++  int enabled = fegetexcept ();
++  fedisableexcept (FE_ALL_EXCEPT);
++  feclearexcept (FE_ALL_EXCEPT);
++  CHECK_CL_ERROR (err);
++  TEST_ASSERT (out == INFINITY);
++  TEST_ASSERT (enabled == FE_DIVBYZERO);
++#endif
++
++  free (scratch);
++  CHECK_CL_ERROR (release_hk (hk));
++#endif
++  return EXIT_SUCCESS;
++}
++
++/* A trapping work-item doesn't end the call, and is reported exactly when the
++   same launch through a command queue fails. */
++static int
++test_trap (cl_kernel kernel,
++           cl_context context,
++           cl_command_queue queue,
++           cl_device_id device)
++{
++  cl_int err;
++  const size_t local = 4, global = 16;
++
++  cl_mem buf = clCreateBuffer (context, CL_MEM_READ_WRITE, 16 * sizeof (int),
++                               NULL, &err);
++  CHECK_CL_ERROR (err);
++  CHECK_CL_ERROR (clSetKernelArg (kernel, 0, sizeof (cl_mem), &buf));
++  cl_event ev;
++  CHECK_CL_ERROR (clEnqueueNDRangeKernel (queue, kernel, 1, NULL, &global,
++                                          &local, 0, NULL, &ev));
++  clWaitForEvents (1, &ev);
++  cl_int status;
++  CHECK_CL_ERROR (clGetEventInfo (ev, CL_EVENT_COMMAND_EXECUTION_STATUS,
++                                  sizeof (status), &status, NULL));
++  CHECK_CL_ERROR (clReleaseEvent (ev));
++  CHECK_CL_ERROR (clReleaseMemObject (buf));
++  clFinish (queue);
++
++  cl_host_kernel_pocl hk = create_hk (kernel, device, 1, &local, &err);
++  CHECK_CL_ERROR (err);
++  int out[16] = { 0 };
++  int *outp = out;
++  const void *args[1] = { &outp };
++  const size_t num_groups = global / local;
++  void *scratch = alloc_scratch (hk);
++  err = run_hk (hk, args, &num_groups, NULL, 0, num_groups, scratch);
++  TEST_ASSERT (err == (status < 0 ? CL_OUT_OF_RESOURCES : CL_SUCCESS));
++  for (int i = 4; i < 16; ++i)
++    TEST_ASSERT (out[i] == 1);
++
++  free (scratch);
++  CHECK_CL_ERROR (release_hk (hk));
++  return EXIT_SUCCESS;
++}
++
++/* A float16 is loaded with 64-byte alignment, so a value that isn't aligned
++   must be copied first. */
++static int
++test_arg_alignment (cl_kernel kernel, cl_device_id device)
++{
++  const size_t local = 1, num_groups = 1;
++  cl_int err;
++  cl_host_kernel_pocl hk = create_hk (kernel, device, 1, &local, &err);
++  CHECK_CL_ERROR (err);
++  void *scratch = alloc_scratch (hk);
++
++  cl_float16 out;
++  cl_float16 *outp = &out;
++  _Alignas (64) unsigned char storage[64 + sizeof (cl_float16)];
++  for (int offset = 0; offset <= 4; offset += 4)
++    {
++      cl_float16 v = { { 0 } };
++      v.s[0] = 1;
++      v.s[15] = 2;
++      memcpy (storage + offset, &v, sizeof (v));
++      const void *args[2] = { &outp, storage + offset };
++      memset (&out, 0, sizeof (out));
++      CHECK_CL_ERROR (run_hk (hk, args, &num_groups, NULL, 0, 1, scratch));
++      TEST_ASSERT (out.s[0] == 2 && out.s[15] == 4);
++    }
++
++  free (scratch);
++  CHECK_CL_ERROR (release_hk (hk));
++  return EXIT_SUCCESS;
++}
++
++/* On Win64, group_z is passed on the stack. Dirty it first, so a group id that
++   is only partially written shows. */
++static __attribute__ ((noinline)) void
++dirty_stack (void)
++{
++  volatile unsigned char junk[16384];
++  for (size_t i = 0; i < sizeof (junk); ++i)
++    junk[i] = 0xff;
++}
++
++static int
++test_group_ids (cl_kernel kernel, cl_device_id device)
++{
++  const size_t local[3] = { 1, 1, 1 }, num_groups[3] = { 2, 3, 4 };
++  enum
++  {
++    N = 2 * 3 * 4
++  };
++  cl_int err;
++  cl_host_kernel_pocl hk = create_hk (kernel, device, 3, local, &err);
++  CHECK_CL_ERROR (err);
++  void *scratch = alloc_scratch (hk);
++
++  int out[N] = { 0 };
++  int *outp = out;
++  const void *args[1] = { &outp };
++  dirty_stack ();
++  CHECK_CL_ERROR (run_hk (hk, args, num_groups, NULL, 0, N, scratch));
++  for (int i = 0; i < N; ++i)
++    if (out[i] != 1)
++      {
++        printf ("FAIL: group %d didn't run with its ids\n", i);
++        return EXIT_FAILURE;
++      }
++
++  free (scratch);
++  CHECK_CL_ERROR (release_hk (hk));
++  return EXIT_SUCCESS;
++}
++
++int
++main (void)
++{
++  cl_int err;
++  cl_platform_id platform;
++  cl_device_id device;
++  cl_context context;
++  cl_command_queue queue;
++
++  CHECK_CL_ERROR (
++    poclu_get_any_device2 (&context, &device, &queue, &platform));
++
++  if (!poclu_supports_extension (device, "cl_pocl_host_kernel"))
++    {
++      printf ("SKIP: the device doesn't support cl_pocl_host_kernel\n");
++      return 77;
++    }
++
++  create_hk
++    = (clCreateHostKernelPOCL_fn)clGetExtensionFunctionAddressForPlatform (
++      platform, "clCreateHostKernelPOCL");
++  get_hk_info
++    = (clGetHostKernelInfoPOCL_fn)clGetExtensionFunctionAddressForPlatform (
++      platform, "clGetHostKernelInfoPOCL");
++  retain_hk
++    = (clRetainHostKernelPOCL_fn)clGetExtensionFunctionAddressForPlatform (
++      platform, "clRetainHostKernelPOCL");
++  release_hk
++    = (clReleaseHostKernelPOCL_fn)clGetExtensionFunctionAddressForPlatform (
++      platform, "clReleaseHostKernelPOCL");
++  run_hk = (clRunHostKernelPOCL_fn)clGetExtensionFunctionAddressForPlatform (
++    platform, "clRunHostKernelPOCL");
++  TEST_ASSERT (create_hk && get_hk_info && retain_hk && release_hk && run_hk);
++
++  cl_bool images = CL_FALSE;
++  CHECK_CL_ERROR (clGetDeviceInfo (device, CL_DEVICE_IMAGE_SUPPORT,
++                                   sizeof (images), &images, NULL));
++  const char *options = images ? "-cl-std=CL3.0" : "-cl-std=CL3.0 -DNO_IMAGES";
++  cl_program program
++    = clCreateProgramWithSource (context, 1, &source, NULL, &err);
++  CHECK_CL_ERROR (err);
++  CHECK_CL_ERROR (clBuildProgram (program, 1, &device, options, NULL, NULL));
++
++  cl_kernel ids = clCreateKernel (program, "ids", &err);
++  CHECK_CL_ERROR (err);
++  cl_kernel group_sums = clCreateKernel (program, "group_sums", &err);
++  CHECK_CL_ERROR (err);
++  cl_kernel rounding = clCreateKernel (program, "rounding", &err);
++  CHECK_CL_ERROR (err);
++  cl_kernel trap = clCreateKernel (program, "trap", &err);
++  CHECK_CL_ERROR (err);
++  cl_kernel vector = clCreateKernel (program, "vector", &err);
++  CHECK_CL_ERROR (err);
++  cl_kernel group_ids = clCreateKernel (program, "group_ids", &err);
++  CHECK_CL_ERROR (err);
++
++  if (test_ids (ids, device, NULL) || test_group_sums (group_sums, device)
++      || test_fp_env (rounding, device)
++      || test_trap (trap, context, queue, device)
++      || test_arg_alignment (vector, device)
++      || test_group_ids (group_ids, device))
++    return EXIT_FAILURE;
++  const size_t offset[2] = { 3, 70000 };
++  if (test_ids (ids, device, offset))
++    return EXIT_FAILURE;
++
++  /* Invalid uses. */
++  size_t bad_local[4] = { 1, 1, 1, 1 };
++  TEST_ASSERT (create_hk (ids, device, 4, bad_local, &err) == NULL);
++  TEST_ASSERT (err == CL_INVALID_WORK_DIMENSION);
++  size_t huge_local = (size_t)1 << 40;
++  TEST_ASSERT (create_hk (ids, device, 1, &huge_local, &err) == NULL);
++  TEST_ASSERT (err == CL_INVALID_WORK_ITEM_SIZE);
++  cl_kernel unset = clCreateKernel (program, "group_sums", &err);
++  CHECK_CL_ERROR (err);
++  const size_t local = 4;
++  TEST_ASSERT (create_hk (unset, device, 1, &local, &err) == NULL);
++  TEST_ASSERT (err == CL_INVALID_KERNEL_ARGS);
++  CHECK_CL_ERROR (clReleaseKernel (unset));
++  if (images)
++    {
++      cl_kernel image = clCreateKernel (program, "image", &err);
++      CHECK_CL_ERROR (err);
++      TEST_ASSERT (create_hk (image, device, 1, &local, &err) == NULL);
++      TEST_ASSERT (err == CL_INVALID_KERNEL);
++      CHECK_CL_ERROR (clReleaseKernel (image));
++    }
++
++  /* The handle outlives the kernel and the program, and keeps the program's
++     global variables. */
++  const size_t ids_local[2] = { LX, LY };
++  cl_host_kernel_pocl hk = create_hk (ids, device, 2, ids_local, &err);
++  CHECK_CL_ERROR (err);
++  CHECK_CL_ERROR (retain_hk (hk));
++  cl_uint refcount = 0;
++  CHECK_CL_ERROR (get_hk_info (hk, CL_HOST_KERNEL_REFERENCE_COUNT_POCL,
++                               sizeof (refcount), &refcount, NULL));
++  TEST_ASSERT (refcount == 2);
++  CHECK_CL_ERROR (release_hk (hk));
++
++  /* A __local argument larger than the device's local memory. */
++  cl_kernel big_local = clCreateKernel (program, "group_sums", &err);
++  CHECK_CL_ERROR (err);
++  if (clSetKernelArg (big_local, 2, SIZE_MAX, NULL) == CL_SUCCESS)
++    {
++      const size_t one = 1;
++      TEST_ASSERT (create_hk (big_local, device, 1, &one, &err) == NULL);
++      TEST_ASSERT (err == CL_OUT_OF_RESOURCES);
++    }
++  CHECK_CL_ERROR (clReleaseKernel (big_local));
++
++  CHECK_CL_ERROR (clReleaseKernel (ids));
++  CHECK_CL_ERROR (clReleaseKernel (group_sums));
++  CHECK_CL_ERROR (clReleaseKernel (rounding));
++  CHECK_CL_ERROR (clReleaseKernel (trap));
++  CHECK_CL_ERROR (clReleaseKernel (vector));
++  CHECK_CL_ERROR (clReleaseKernel (group_ids));
++  /* While handles exist, the program keeps a kernel and can't be rebuilt. */
++  TEST_ASSERT (clBuildProgram (program, 1, &device, options, NULL, NULL)
++               == CL_INVALID_OPERATION);
++
++  CHECK_CL_ERROR (clReleaseProgram (program));
++
++  int out[LX * LY];
++  int *outp = out;
++  int add = 1;
++  const void *args[2] = { &outp, &add };
++  const size_t num_groups[2] = { 1, 1 };
++  void *scratch = alloc_scratch (hk);
++  TEST_ASSERT (run_hk (hk, args, num_groups, NULL, 1, 1, scratch)
++               == CL_INVALID_VALUE);
++  CHECK_CL_ERROR (run_hk (hk, args, num_groups, NULL, 0, 1, scratch));
++  TEST_ASSERT (out[LX + 1] == 1000 + add + 101);
++  free (scratch);
++  CHECK_CL_ERROR (release_hk (hk));
++
++  CHECK_CL_ERROR (clReleaseCommandQueue (queue));
++  CHECK_CL_ERROR (clReleaseContext (context));
++  CHECK_CL_ERROR (clUnloadPlatformCompiler (platform));
++
++  printf ("OK\n");
++  return EXIT_SUCCESS;
++}
+-- 
+2.56.0
+

@@ -9,7 +9,8 @@ version = v"3.6.1"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/libsemigroups/libsemigroups.git",
-              "12bf4c58a79b1ba91da8227c77dff7cad883c38b"),  # v3.6.1
+              "12bf4c58a79b1ba91da8227c77dff7cad883c38b";
+              tag="v$(version)"),
 ]
 
 # Bash recipe for building across all platforms
@@ -18,7 +19,7 @@ cd libsemigroups
 
 # Generate configure script
 ./autogen.sh
-export CPPFLAGS="-I${prefix}/include"
+export CPPFLAGS="-I${includedir}"
 
 # Enable HPCombi only on macOS arm builds
 HPCOMBI_FLAG="--disable-hpcombi"
