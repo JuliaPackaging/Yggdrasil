@@ -20,6 +20,11 @@ export PATH="/tmp/meson/bin:${PATH}"
 
 cd ${WORKSPACE}/srcdir/simple-dftd3
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/optional-mstore.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/no-ieee-arithmetic.patch
+
+# On FreeBSD, meson-built dependencies ship their pkg-config files in libdata/pkgconfig,
+# which is not on the default search path.
+export PKG_CONFIG_PATH="${PKG_CONFIG_PATH:+${PKG_CONFIG_PATH}:}${prefix}/libdata/pkgconfig"
 
 # GCC is used for C as well so that meson's OpenMP check succeeds for both languages
 meson setup build \
@@ -33,10 +38,7 @@ meson install -C build
 install_license COPYING COPYING.LESSER
 """
 
-platforms = supported_platforms()
-platforms = expand_gfortran_versions(platforms)
-# Uses the .mod files of mctc_lib_jll, keep the whole stack on the same GCC
-filter!(p -> libgfortran_version(p) >= v"5", platforms)
+platforms = expand_gfortran_versions(supported_platforms())
 
 products = [
     LibraryProduct(["libs-dftd3", "libs-dftd3-1"], :libsdftd3),
