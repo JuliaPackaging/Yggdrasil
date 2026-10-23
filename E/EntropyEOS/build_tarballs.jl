@@ -34,12 +34,14 @@ products = [
     ExecutableProduct("eos_test", :eos_test),
 ]
 
-# HDF5_jll's headers include `mpi.h`, which an MPI implementation provides at build time.
+# HDF5_jll's headers include `mpi.h`, and linking against `libhdf5` needs the MPI library
+# it was built with, which an MPI implementation provides at build time. OpenMPI 5 is
+# not available on 32-bit platforms, so we use OpenMPI 4.
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
     Dependency("HDF5_jll"; compat="2.2.3"),
     Dependency("LLVMOpenMP_jll"; platforms=filter(Sys.isbsd, platforms)),
-    BuildDependency("MPICH_jll"; platforms=filter(!Sys.iswindows, platforms)),
+    BuildDependency(PackageSpec(; name="OpenMPI_jll", version="4.1.11"); platforms=filter(!Sys.iswindows, platforms)),
     BuildDependency("MicrosoftMPI_jll"; platforms=filter(Sys.iswindows, platforms)),
 ]
 
