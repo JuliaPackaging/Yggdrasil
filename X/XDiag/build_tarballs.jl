@@ -2,20 +2,14 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-# See https://github.com/JuliaLang/Pkg.jl/issues/2942
-# Once this Pkg issue is resolved, this must be removed
-uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
-delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
-
-
 name = "XDiag"
-version = v"0.5.1"
+version = v"0.6.0"
 
 include("../../L/libjulia/common.jl")
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awietek/xdiag.git", "b8ba4173ec1d232eabaf185b0fbbe55bedc177a6")
+    GitSource("https://github.com/awietek/xdiag.git", "27065537a743c642c35efa0e1b5ae4f326fd984c")
 ]
 
 
@@ -68,7 +62,7 @@ cmake --install build
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
-filter!(p -> (nbits(p) != 32 && os(p) != "freebsd") && p.tags["julia_version"] !="1.14.0", platforms)
+filter!(p -> (nbits(p) != 32 && os(p) != "freebsd"), platforms)
 
 # The products that we will ensure are always built
 products = [
