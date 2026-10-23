@@ -37,6 +37,17 @@ include("utils.jl")
 # Give a warning if the pkgserver is too far behind
 check_pkgserver_latency()
 
+# Projects whose unchanged platforms reuse the tarballs of the previous release instead of
+# being rebuilt, see `.ci/bb1_project/plan_reuse.jl`.
+const REUSE_TARBALLS = Set{String}([
+    "C/CUDA/CUDA_Compiler",
+    "C/CUDA/CUDA_Runtime",
+    "L/LLVM/Clang_unified",
+    "L/LLVM/LLD_unified",
+    "L/LLVM/LLVM_unified",
+    "L/LLVM/LLVM_utils_unified",
+])
+
 # If there are scary projects we need to exclude, we list them here. (Used to contain `LLVM`)
 EXCLUDED_NAMES = Set{String}([])
 
@@ -47,9 +58,6 @@ filter!(PROJECTS) do project
     end
     return true
 end
-
-# Clear out any old `.meta.json` files in the Yggdrasil root
-cleanup_metadata!()
 
 # Immediately read in all projects, and ensure that they are either all BB2 projects, or none of them are:
 bb2_projects = String[]
@@ -67,6 +75,7 @@ function bb1_build_steps!(group_steps, project)
     # named `LLVM`, which is what registration needs to find them.
     project_basename = basename(project)
     jll_name = first(split(project_basename, "@"))
+    cleanup_metadata!(project_basename)
 
     # We always invoke a `build_tarballs.jl` file from its own directory to generate the platform list
     cd(project) do
@@ -75,11 +84,19 @@ function bb1_build_steps!(group_steps, project)
         julia(`--compile=min ./build_tarballs.jl --meta-json="$(json_path)"`; julia_project = bb1_julia_project)
 
         # Generate platforms
-        julia(`$(bb1_julia_project)/generate_platforms.jl "$(json_path)" $(YGGDRASIL_BASE)/$(project_basename).platforms.list`)
+        platforms_path = "$(YGGDRASIL_BASE)/$(project_basename).platforms.list"
+        julia(`$(bb1_julia_project)/generate_platforms.jl "$(json_path)" $(platforms_path)`)
+
+        if project in REUSE_TARBALLS && !contains(COMMIT_MSG, SKIP_BUILD_COOKIE)
+            println("[$(project)] Determining which tarballs can be reused...")
+            plan_path = "$(YGGDRASIL_BASE)/$(project_basename).reuse.json"
+            julia(`$(bb1_julia_project)/plan_reuse.jl $(project) $(jll_name) $(json_path) $(platforms_path) $(plan_path)`)
+        end
     end
 
     platforms = split(readchomp(joinpath(YGGDRASIL_BASE, "$(project_basename).platforms.list")))
-    if isempty(platforms)
+    all_reused = isempty(platforms) && isfile(joinpath(YGGDRASIL_BASE, "$(project_basename).reuse.json"))
+    if isempty(platforms) && !all_reused
         @error("Unable to determine the proper platforms", project_basename)
         exit(1)
     end

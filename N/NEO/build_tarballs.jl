@@ -24,6 +24,8 @@ function get_script(; debug::Bool)
         atomic_patch -p0 ./patches/install_to_prefix.patch
         # Make SIGSEGV handler chaining thread-safe (intel/compute-runtime#1009)
         atomic_patch -p0 ./patches/page_fault_handler_thread_local.patch
+        # Don't write the UC tag update into a full regular command list buffer
+        atomic_patch -p0 ./patches/uc_tag_update_epilogue_stream.patch
         mkdir -p tmpdir
         export TMPDIR=$(pwd)/tmpdir
         export CCACHE_TEMPDIR=$(pwd)/tmpdir

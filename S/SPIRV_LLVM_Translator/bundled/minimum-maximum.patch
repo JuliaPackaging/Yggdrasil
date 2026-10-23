@@ -1,0 +1,409 @@
+From b166305b7a4ec0d567b14c5d623f7ffc6876aed5 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Tue, 13 Oct 2026 19:13:57 +0200
+Subject: [PATCH] Translate llvm.minimum/maximum with NaN-propagating semantics
+ (#4032)
+
+Fixes #3282: `llvm.minimum`/`llvm.maximum` were translated to OpenCL.std
+`fmin`/`fmax`, which ignore NaN operands. They also don't order -0.0
+before +0.0, which `llvm.minimum`/`llvm.maximum` require.
+
+Assisted by: Opus 5.5
+---
+ lib/SPIRV/SPIRVRegularizeLLVM.cpp             |  41 +++-
+ lib/SPIRV/SPIRVRegularizeLLVM.h               |   7 +
+ lib/SPIRV/SPIRVUtil.cpp                       |   2 -
+ lib/SPIRV/SPIRVWriter.cpp                     |   4 -
+ .../bfloat16_math.ll                          |  22 +++
+ test/llvm-intrinsics/fp-intrinsics.ll         |  10 +-
+ test/llvm-intrinsics/minimum-maximum.ll       | 184 ++++++++++++++++++
+ 7 files changed, 261 insertions(+), 9 deletions(-)
+ create mode 100644 test/llvm-intrinsics/minimum-maximum.ll
+
+diff --git a/lib/SPIRV/SPIRVRegularizeLLVM.cpp b/lib/SPIRV/SPIRVRegularizeLLVM.cpp
+index 19a8c47e..a61c03dc 100644
+--- a/lib/SPIRV/SPIRVRegularizeLLVM.cpp
++++ b/lib/SPIRV/SPIRVRegularizeLLVM.cpp
+@@ -234,6 +234,41 @@ void SPIRVRegularizeLLVMBase::buildUMulWithOverflowFunc(Function *UMulFunc) {
+   Builder.CreateRet(Res);
+ }
+ 
++void SPIRVRegularizeLLVMBase::lowerFMinimumMaximum(IntrinsicInst *II) {
++  // For llvm.minimum (llvm.maximum is symmetrical):
++  //   %m = call @llvm.minnum(%x, %y)
++  //   ; unless nsz: for non-NaN operands, the result has the sign of %x if
++  //   ; that is set (maximum: clear), and the sign of %y otherwise. This only
++  //   ; changes %m if it is a zero of the wrong sign.
++  //   %xsign = call @llvm.copysign(1.0, %x)
++  //   %xneg = fcmp olt %xsign, 0.0
++  //   %s = select %xneg, %x, %y
++  //   %m.s = call @llvm.copysign(%m, %s)
++  //   ; unless nnan
++  //   %uno = fcmp uno %x, %y
++  //   %res = select %uno, NaN, %m.s
++  bool IsMax = II->getIntrinsicID() == Intrinsic::maximum;
++  Value *X = II->getArgOperand(0);
++  Value *Y = II->getArgOperand(1);
++  Type *Ty = II->getType();
++  IRBuilder<> Builder(II);
++  Value *Res = Builder.CreateIntrinsic(
++      IsMax ? Intrinsic::maxnum : Intrinsic::minnum, {Ty}, {X, Y}, II);
++  if (!II->hasNoSignedZeros()) {
++    Value *XSign = Builder.CreateCopySign(ConstantFP::get(Ty, 1.0), X);
++    Value *XNeg = Builder.CreateFCmpOLT(XSign, ConstantFP::getZero(Ty));
++    Value *Sign = IsMax ? Builder.CreateSelect(XNeg, Y, X)
++                        : Builder.CreateSelect(XNeg, X, Y);
++    Res = Builder.CreateCopySign(Res, Sign);
++  }
++  if (!II->hasNoNaNs()) {
++    Value *Uno = Builder.CreateFCmpUNO(X, Y);
++    Res = Builder.CreateSelect(Uno, ConstantFP::getQNaN(Ty), Res);
++  }
++  Res->takeName(II);
++  II->replaceAllUsesWith(Res);
++}
++
+ void SPIRVRegularizeLLVMBase::lowerUMulWithOverflow(
+     IntrinsicInst *UMulIntrinsic) {
+   // Get a separate function - otherwise, we'd have to rework the CFG of the
+@@ -644,7 +679,11 @@ bool SPIRVRegularizeLLVMBase::regularize() {
+               lowerFunnelShift(II);
+             else if (II->getIntrinsicID() == Intrinsic::umul_with_overflow)
+               lowerUMulWithOverflow(II);
+-            else if (II->getIntrinsicID() == Intrinsic::uadd_with_overflow) {
++            else if (II->getIntrinsicID() == Intrinsic::minimum ||
++                     II->getIntrinsicID() == Intrinsic::maximum) {
++              lowerFMinimumMaximum(II);
++              ToErase.push_back(II);
++            } else if (II->getIntrinsicID() == Intrinsic::uadd_with_overflow) {
+               BuiltinFuncMangleInfo Info;
+               std::string MangledName =
+                   mangleBuiltin("__spirv_IAddCarry",
+diff --git a/lib/SPIRV/SPIRVRegularizeLLVM.h b/lib/SPIRV/SPIRVRegularizeLLVM.h
+index 42b73a1a..1d95d71a 100644
+--- a/lib/SPIRV/SPIRVRegularizeLLVM.h
++++ b/lib/SPIRV/SPIRVRegularizeLLVM.h
+@@ -79,6 +79,13 @@ public:
+   void lowerUMulWithOverflow(llvm::IntrinsicInst *UMulIntrinsic);
+   void buildUMulWithOverflowFunc(llvm::Function *UMulFunc);
+ 
++  /// @llvm.minimum.* and @llvm.maximum.* return NaN if either operand is NaN
++  /// and order -0.0 before +0.0, whereas OpenCL.std fmin/fmax return the other
++  /// operand for a NaN and may return either zero. Expand them into
++  /// @llvm.minnum.*/@llvm.maxnum.* with fix-ups for signed zeros (unless nsz)
++  /// and NaNs (unless nnan).
++  void lowerFMinimumMaximum(llvm::IntrinsicInst *II);
++
+   // For some cases Clang emits VectorExtractDynamic as:
+   // void @_Z28__spirv_VectorExtractDynamic(<Ty>* sret(<Ty>), jointMatrix, idx);
+   // Instead of:
+diff --git a/lib/SPIRV/SPIRVUtil.cpp b/lib/SPIRV/SPIRVUtil.cpp
+index ac3cfd65..04d93dd4 100644
+--- a/lib/SPIRV/SPIRVUtil.cpp
++++ b/lib/SPIRV/SPIRVUtil.cpp
+@@ -1970,10 +1970,8 @@ bool checkTypeForSPIRVExtendedInstLowering(IntrinsicInst *II, SPIRVModule *BM) {
+   case Intrinsic::log10:
+   case Intrinsic::log2:
+   case Intrinsic::maximumnum:
+-  case Intrinsic::maximum:
+   case Intrinsic::maxnum:
+   case Intrinsic::minimumnum:
+-  case Intrinsic::minimum:
+   case Intrinsic::minnum:
+   case Intrinsic::nearbyint:
+   case Intrinsic::pow:
+diff --git a/lib/SPIRV/SPIRVWriter.cpp b/lib/SPIRV/SPIRVWriter.cpp
+index 4e70f60e..9f32fe08 100644
+--- a/lib/SPIRV/SPIRVWriter.cpp
++++ b/lib/SPIRV/SPIRVWriter.cpp
+@@ -4283,11 +4283,9 @@ static SPIRVWord getBuiltinIdForIntrinsic(Intrinsic::ID IID) {
+   case Intrinsic::log2:
+     return OpenCLLIB::Log2;
+   case Intrinsic::maximumnum:
+-  case Intrinsic::maximum:
+   case Intrinsic::maxnum:
+     return OpenCLLIB::Fmax;
+   case Intrinsic::minimumnum:
+-  case Intrinsic::minimum:
+   case Intrinsic::minnum:
+     return OpenCLLIB::Fmin;
+   case Intrinsic::nearbyint:
+@@ -4582,10 +4580,8 @@ SPIRVValue *LLVMToSPIRVBase::transIntrinsicInst(IntrinsicInst *II,
+   case Intrinsic::pow:
+   case Intrinsic::powi:
+   case Intrinsic::maximumnum:
+-  case Intrinsic::maximum:
+   case Intrinsic::maxnum:
+   case Intrinsic::minimumnum:
+-  case Intrinsic::minimum:
+   case Intrinsic::minnum: {
+     if (!checkTypeForSPIRVExtendedInstLowering(II, BM))
+       break;
+diff --git a/test/extensions/INTEL/SPV_INTEL_bfloat16_arithmetic/bfloat16_math.ll b/test/extensions/INTEL/SPV_INTEL_bfloat16_arithmetic/bfloat16_math.ll
+index 5732690b..34a598e5 100644
+--- a/test/extensions/INTEL/SPV_INTEL_bfloat16_arithmetic/bfloat16_math.ll
++++ b/test/extensions/INTEL/SPV_INTEL_bfloat16_arithmetic/bfloat16_math.ll
+@@ -70,6 +70,12 @@ target triple = "spirv64-unknown-unknown"
+ ; CHECK-SPIRV: 8 ExtInst [[BFLOAT]] [[#]] [[#]] fma [[DATA1]] [[DATA2]] [[DATA3]]
+ ; CHECK-SPIRV: 7 ExtInst [[BFLOAT]] [[#]] [[#]] fmax [[DATA1]] [[DATA2]]
+ ; CHECK-SPIRV: 7 ExtInst [[BFLOAT]] [[#]] [[#]] fmin [[DATA1]] [[DATA2]]
++; CHECK-SPIRV: 7 ExtInst [[BFLOAT]] [[#]] [[#]] fmax [[DATA1]] [[DATA2]]
++; CHECK-SPIRV: 7 ExtInst [[BFLOAT]] [[#]] [[#]] copysign [[#]] [[DATA1]]
++; CHECK-SPIRV: 5 Unordered [[#]] [[#]] [[DATA1]] [[DATA2]]
++; CHECK-SPIRV: 7 ExtInst [[BFLOAT]] [[#]] [[#]] fmin [[DATA1]] [[DATA2]]
++; CHECK-SPIRV: 7 ExtInst [[BFLOAT]] [[#]] [[#]] copysign [[#]] [[DATA1]]
++; CHECK-SPIRV: 5 Unordered [[#]] [[#]] [[DATA1]] [[DATA2]]
+ ; CHECK-SPIRV: 8 ExtInst [[BFLOAT]] [[#]] [[#]] mad [[DATA1]] [[DATA2]] [[DATA3]]
+ ; CHECK-SPIRV: 6 ExtInst [[BFLOAT]] [[#]] [[#]] nan [[DATA1]]
+ ; CHECK-SPIRV: 6 ExtInst [[BFLOAT]] [[#]] [[#]] native_cos [[DATA1]]
+@@ -139,6 +145,20 @@ target triple = "spirv64-unknown-unknown"
+ ; CHECK-LLVM: %fma = call spir_func bfloat @_Z3fmaDF16bDF16bDF16b(bfloat [[DATA1]], bfloat [[DATA2]], bfloat [[DATA3]])
+ ; CHECK-LLVM: %fmax = call spir_func bfloat @_Z4fmaxDF16bDF16b(bfloat [[DATA1]], bfloat [[DATA2]])
+ ; CHECK-LLVM: %fmin = call spir_func bfloat @_Z4fminDF16bDF16b(bfloat [[DATA1]], bfloat [[DATA2]])
++; CHECK-LLVM: [[FMAXIMUMM:%[0-9]+]] = call spir_func bfloat @_Z4fmaxDF16bDF16b(bfloat [[DATA1]], bfloat [[DATA2]])
++; CHECK-LLVM-NEXT: [[FMAXIMUMXSIGN:%[0-9]+]] = call spir_func bfloat @_Z8copysignDF16bDF16b(bfloat 1.000000e+00, bfloat [[DATA1]])
++; CHECK-LLVM-NEXT: [[FMAXIMUMXNEG:%[0-9]+]] = fcmp olt bfloat [[FMAXIMUMXSIGN]], 0.000000e+00
++; CHECK-LLVM-NEXT: [[FMAXIMUMS:%[0-9]+]] = select i1 [[FMAXIMUMXNEG]], bfloat [[DATA2]], bfloat [[DATA1]]
++; CHECK-LLVM-NEXT: [[FMAXIMUMMS:%[0-9]+]] = call spir_func bfloat @_Z8copysignDF16bDF16b(bfloat [[FMAXIMUMM]], bfloat [[FMAXIMUMS]])
++; CHECK-LLVM-NEXT: [[FMAXIMUMUNO:%[0-9]+]] = fcmp uno bfloat [[DATA1]], [[DATA2]]
++; CHECK-LLVM-NEXT: %fmaximum = select i1 [[FMAXIMUMUNO]], bfloat +qnan, bfloat [[FMAXIMUMMS]]
++; CHECK-LLVM: [[FMINIMUMM:%[0-9]+]] = call spir_func bfloat @_Z4fminDF16bDF16b(bfloat [[DATA1]], bfloat [[DATA2]])
++; CHECK-LLVM-NEXT: [[FMINIMUMXSIGN:%[0-9]+]] = call spir_func bfloat @_Z8copysignDF16bDF16b(bfloat 1.000000e+00, bfloat [[DATA1]])
++; CHECK-LLVM-NEXT: [[FMINIMUMXNEG:%[0-9]+]] = fcmp olt bfloat [[FMINIMUMXSIGN]], 0.000000e+00
++; CHECK-LLVM-NEXT: [[FMINIMUMS:%[0-9]+]] = select i1 [[FMINIMUMXNEG]], bfloat [[DATA1]], bfloat [[DATA2]]
++; CHECK-LLVM-NEXT: [[FMINIMUMMS:%[0-9]+]] = call spir_func bfloat @_Z8copysignDF16bDF16b(bfloat [[FMINIMUMM]], bfloat [[FMINIMUMS]])
++; CHECK-LLVM-NEXT: [[FMINIMUMUNO:%[0-9]+]] = fcmp uno bfloat [[DATA1]], [[DATA2]]
++; CHECK-LLVM-NEXT: %fminimum = select i1 [[FMINIMUMUNO]], bfloat +qnan, bfloat [[FMINIMUMMS]]
+ ; CHECK-LLVM: %mad = call spir_func bfloat @_Z3madDF16bDF16bDF16b(bfloat [[DATA1]], bfloat [[DATA2]], bfloat [[DATA3]])
+ ; CHECK-LLVM: %nan = call spir_func bfloat @_Z3nanDF16b(bfloat [[DATA1]])
+ ; CHECK-LLVM: %native_cos = call spir_func bfloat @_Z10native_cosDF16b(bfloat [[DATA1]])
+@@ -239,6 +259,8 @@ entry:
+   %fma = call bfloat @llvm.fma.bfloat(bfloat %data1, bfloat %data2, bfloat %data3)
+   %fmax = call bfloat @llvm.maxnum.bfloat(bfloat %data1, bfloat %data2)
+   %fmin = call bfloat @llvm.minnum.bfloat(bfloat %data1, bfloat %data2)
++  %fmaximum = call bfloat @llvm.maximum.bfloat(bfloat %data1, bfloat %data2)
++  %fminimum = call bfloat @llvm.minimum.bfloat(bfloat %data1, bfloat %data2)
+   %mad = call bfloat @llvm.fmuladd.bfloat(bfloat %data1, bfloat %data2, bfloat %data3)
+   %nan = call spir_func bfloat @_Z3nanDF16b(bfloat %data1)
+   %native_cos = call spir_func bfloat @_Z10native_cosDF16b(bfloat %data1)
+diff --git a/test/llvm-intrinsics/fp-intrinsics.ll b/test/llvm-intrinsics/fp-intrinsics.ll
+index 77db9adf..0ad041a2 100644
+--- a/test/llvm-intrinsics/fp-intrinsics.ll
++++ b/test/llvm-intrinsics/fp-intrinsics.ll
+@@ -229,7 +229,10 @@ declare float @llvm.maxnum.f32(float, float)
+ ; CHECK: Function
+ ; CHECK: FunctionParameter {{[0-9]+}} [[x:[0-9]+]]
+ ; CHECK: FunctionParameter {{[0-9]+}} [[y:[0-9]+]]
+-; CHECK: ExtInst {{[0-9]+}} [[res:[0-9]+]] {{[0-9]+}} fmin [[x]] [[y]]
++; CHECK: ExtInst {{[0-9]+}} [[m:[0-9]+]] {{[0-9]+}} fmin [[x]] [[y]]
++; CHECK: ExtInst {{[0-9]+}} [[m_sign:[0-9]+]] {{[0-9]+}} copysign [[m]] {{[0-9]+}}
++; CHECK: Unordered {{[0-9]+}} [[uno:[0-9]+]] [[x]] [[y]]
++; CHECK: Select {{[0-9]+}} [[res:[0-9]+]] [[uno]] {{[0-9]+}} [[m_sign]]
+ ; CHECK: ReturnValue [[res]]
+ 
+ define spir_func float @TestMinimum(float %x, float %y) {
+@@ -257,7 +260,10 @@ declare float @llvm.minimumnum.f32(float, float)
+ ; CHECK: Function
+ ; CHECK: FunctionParameter {{[0-9]+}} [[x:[0-9]+]]
+ ; CHECK: FunctionParameter {{[0-9]+}} [[y:[0-9]+]]
+-; CHECK: ExtInst {{[0-9]+}} [[res:[0-9]+]] {{[0-9]+}} fmax [[x]] [[y]]
++; CHECK: ExtInst {{[0-9]+}} [[m:[0-9]+]] {{[0-9]+}} fmax [[x]] [[y]]
++; CHECK: ExtInst {{[0-9]+}} [[m_sign:[0-9]+]] {{[0-9]+}} copysign [[m]] {{[0-9]+}}
++; CHECK: Unordered {{[0-9]+}} [[uno:[0-9]+]] [[x]] [[y]]
++; CHECK: Select {{[0-9]+}} [[res:[0-9]+]] [[uno]] {{[0-9]+}} [[m_sign]]
+ ; CHECK: ReturnValue [[res]]
+ 
+ define spir_func float @TestMaximum(float %x, float %y) {
+diff --git a/test/llvm-intrinsics/minimum-maximum.ll b/test/llvm-intrinsics/minimum-maximum.ll
+new file mode 100644
+index 00000000..6c7d1215
+--- /dev/null
++++ b/test/llvm-intrinsics/minimum-maximum.ll
+@@ -0,0 +1,184 @@
++; llvm.minimum/llvm.maximum return NaN if either operand is NaN and order -0.0
++; before +0.0. OpenCL.std fmin/fmax instead return the non-NaN operand and may
++; return either zero, so the translator adds the missing fix-ups around them,
++; skipping the ones made unnecessary by the nnan/nsz fast-math flags.
++
++; RUN: llvm-as %s -o %t.bc
++; RUN: llvm-spirv -s %t.bc -o - | llvm-dis -o - | FileCheck %s
++; RUN: llvm-spirv %t.bc -o %t.spv
++; RUN: spirv-val %t.spv
++
++; The declarations precede their uses, so they are still used when visited by
++; SPIRVRegularizeLLVM. Make sure they don't end up as imported functions.
++; RUN: llvm-spirv %t.bc -spirv-allow-unknown-intrinsics -spirv-text -o - \
++; RUN:   | FileCheck %s --check-prefix=CHECK-SPIRV \
++; RUN:     --implicit-check-not=llvm.minimum --implicit-check-not=llvm.maximum
++
++target datalayout = "e-i64:64-v16:16-v24:32-v32:32-v48:64-v96:128-v192:256-v256:256-v512:512-v1024:1024-n8:16:32:64"
++target triple = "spir64-unknown-unknown"
++
++declare float @llvm.minimum.f32(float, float)
++declare float @llvm.maximum.f32(float, float)
++declare half @llvm.minimum.f16(half, half)
++declare double @llvm.maximum.f64(double, double)
++declare <4 x float> @llvm.minimum.v4f32(<4 x float>, <4 x float>)
++declare <2 x double> @llvm.maximum.v2f64(<2 x double>, <2 x double>)
++declare <2 x half> @llvm.minimum.v2f16(<2 x half>, <2 x half>)
++declare <2 x half> @llvm.maximum.v2f16(<2 x half>, <2 x half>)
++
++; CHECK-SPIRV-DAG: TypeBool [[#Bool:]]
++; CHECK-SPIRV-DAG: TypeFloat [[#Float:]] 32
++; CHECK-SPIRV-DAG: Constant [[#Float]] [[#FloatOne:]] 1065353216
++; CHECK-SPIRV-DAG: Constant [[#Float]] [[#FloatZero:]] 0{{ *$}}
++; CHECK-SPIRV-DAG: Constant [[#Float]] [[#FloatNaN:]] 2143289344
++
++; CHECK-SPIRV: Function [[#Float]] [[#]]
++; CHECK-SPIRV-NEXT: FunctionParameter [[#Float]] [[#X:]]
++; CHECK-SPIRV-NEXT: FunctionParameter [[#Float]] [[#Y:]]
++; CHECK-SPIRV: ExtInst [[#Float]] [[#M:]] [[#]] fmin [[#X]] [[#Y]]
++; CHECK-SPIRV-NEXT: ExtInst [[#Float]] [[#XSign:]] [[#]] copysign [[#FloatOne]] [[#X]]
++; CHECK-SPIRV-NEXT: FOrdLessThan [[#Bool]] [[#XNeg:]] [[#XSign]] [[#FloatZero]]
++; CHECK-SPIRV-NEXT: Select [[#Float]] [[#S:]] [[#XNeg]] [[#X]] [[#Y]]
++; CHECK-SPIRV-NEXT: ExtInst [[#Float]] [[#MS:]] [[#]] copysign [[#M]] [[#S]]
++; CHECK-SPIRV-NEXT: Unordered [[#Bool]] [[#Uno:]] [[#X]] [[#Y]]
++; CHECK-SPIRV-NEXT: Select [[#Float]] [[#Res:]] [[#Uno]] [[#FloatNaN]] [[#MS]]
++; CHECK-SPIRV-NEXT: ReturnValue [[#Res]]
++
++; CHECK-LABEL: define spir_func float @minimum_f32(
++; CHECK-NEXT: %[[M:[0-9]+]] = call float @llvm.minnum.f32(float %x, float %y)
++; CHECK-NEXT: %[[XSIGN:[0-9]+]] = call float @llvm.copysign.f32(float 1.000000e+00, float %x)
++; CHECK-NEXT: %[[XNEG:[0-9]+]] = fcmp olt float %[[XSIGN]], 0.000000e+00
++; CHECK-NEXT: %[[S:[0-9]+]] = select i1 %[[XNEG]], float %x, float %y
++; CHECK-NEXT: %[[MS:[0-9]+]] = call float @llvm.copysign.f32(float %[[M]], float %[[S]])
++; CHECK-NEXT: %[[UNO:[0-9]+]] = fcmp uno float %x, %y
++; CHECK-NEXT: %r = select i1 %[[UNO]], float +qnan, float %[[MS]]
++; CHECK-NEXT: ret float %r
++define spir_func float @minimum_f32(float %x, float %y) {
++  %r = call float @llvm.minimum.f32(float %x, float %y)
++  ret float %r
++}
++
++; CHECK-LABEL: define spir_func float @maximum_f32(
++; CHECK-NEXT: %[[M:[0-9]+]] = call float @llvm.maxnum.f32(float %x, float %y)
++; CHECK-NEXT: %[[XSIGN:[0-9]+]] = call float @llvm.copysign.f32(float 1.000000e+00, float %x)
++; CHECK-NEXT: %[[XNEG:[0-9]+]] = fcmp olt float %[[XSIGN]], 0.000000e+00
++; CHECK-NEXT: %[[S:[0-9]+]] = select i1 %[[XNEG]], float %y, float %x
++; CHECK-NEXT: %[[MS:[0-9]+]] = call float @llvm.copysign.f32(float %[[M]], float %[[S]])
++; CHECK-NEXT: %[[UNO:[0-9]+]] = fcmp uno float %x, %y
++; CHECK-NEXT: %r = select i1 %[[UNO]], float +qnan, float %[[MS]]
++; CHECK-NEXT: ret float %r
++define spir_func float @maximum_f32(float %x, float %y) {
++  %r = call float @llvm.maximum.f32(float %x, float %y)
++  ret float %r
++}
++
++; CHECK-LABEL: define spir_func half @minimum_f16(
++; CHECK-NEXT: %[[M:[0-9]+]] = call half @llvm.minnum.f16(half %x, half %y)
++; CHECK-NEXT: %[[XSIGN:[0-9]+]] = call half @llvm.copysign.f16(half 1.000000e+00, half %x)
++; CHECK-NEXT: %[[XNEG:[0-9]+]] = fcmp olt half %[[XSIGN]], 0.000000e+00
++; CHECK-NEXT: %[[S:[0-9]+]] = select i1 %[[XNEG]], half %x, half %y
++; CHECK-NEXT: %[[MS:[0-9]+]] = call half @llvm.copysign.f16(half %[[M]], half %[[S]])
++; CHECK-NEXT: %[[UNO:[0-9]+]] = fcmp uno half %x, %y
++; CHECK-NEXT: %r = select i1 %[[UNO]], half +qnan, half %[[MS]]
++; CHECK-NEXT: ret half %r
++define spir_func half @minimum_f16(half %x, half %y) {
++  %r = call half @llvm.minimum.f16(half %x, half %y)
++  ret half %r
++}
++
++; CHECK-LABEL: define spir_func double @maximum_f64(
++; CHECK-NEXT: %[[M:[0-9]+]] = call double @llvm.maxnum.f64(double %x, double %y)
++; CHECK-NEXT: %[[XSIGN:[0-9]+]] = call double @llvm.copysign.f64(double 1.000000e+00, double %x)
++; CHECK-NEXT: %[[XNEG:[0-9]+]] = fcmp olt double %[[XSIGN]], 0.000000e+00
++; CHECK-NEXT: %[[S:[0-9]+]] = select i1 %[[XNEG]], double %y, double %x
++; CHECK-NEXT: %[[MS:[0-9]+]] = call double @llvm.copysign.f64(double %[[M]], double %[[S]])
++; CHECK-NEXT: %[[UNO:[0-9]+]] = fcmp uno double %x, %y
++; CHECK-NEXT: %r = select i1 %[[UNO]], double +qnan, double %[[MS]]
++; CHECK-NEXT: ret double %r
++define spir_func double @maximum_f64(double %x, double %y) {
++  %r = call double @llvm.maximum.f64(double %x, double %y)
++  ret double %r
++}
++
++; CHECK-LABEL: define spir_func <4 x float> @minimum_v4f32(
++; CHECK-NEXT: %[[M:[0-9]+]] = call <4 x float> @llvm.minnum.v4f32(<4 x float> %x, <4 x float> %y)
++; CHECK-NEXT: %[[XSIGN:[0-9]+]] = call <4 x float> @llvm.copysign.v4f32(<4 x float> splat (float 1.000000e+00), <4 x float> %x)
++; CHECK-NEXT: %[[XNEG:[0-9]+]] = fcmp olt <4 x float> %[[XSIGN]], zeroinitializer
++; CHECK-NEXT: %[[S:[0-9]+]] = select <4 x i1> %[[XNEG]], <4 x float> %x, <4 x float> %y
++; CHECK-NEXT: %[[MS:[0-9]+]] = call <4 x float> @llvm.copysign.v4f32(<4 x float> %[[M]], <4 x float> %[[S]])
++; CHECK-NEXT: %[[UNO:[0-9]+]] = fcmp uno <4 x float> %x, %y
++; CHECK-NEXT: %r = select <4 x i1> %[[UNO]], <4 x float> splat (float +qnan), <4 x float> %[[MS]]
++; CHECK-NEXT: ret <4 x float> %r
++define spir_func <4 x float> @minimum_v4f32(<4 x float> %x, <4 x float> %y) {
++  %r = call <4 x float> @llvm.minimum.v4f32(<4 x float> %x, <4 x float> %y)
++  ret <4 x float> %r
++}
++
++; CHECK-LABEL: define spir_func <2 x double> @maximum_v2f64(
++; CHECK-NEXT: %[[M:[0-9]+]] = call <2 x double> @llvm.maxnum.v2f64(<2 x double> %x, <2 x double> %y)
++; CHECK-NEXT: %[[XSIGN:[0-9]+]] = call <2 x double> @llvm.copysign.v2f64(<2 x double> splat (double 1.000000e+00), <2 x double> %x)
++; CHECK-NEXT: %[[XNEG:[0-9]+]] = fcmp olt <2 x double> %[[XSIGN]], zeroinitializer
++; CHECK-NEXT: %[[S:[0-9]+]] = select <2 x i1> %[[XNEG]], <2 x double> %y, <2 x double> %x
++; CHECK-NEXT: %[[MS:[0-9]+]] = call <2 x double> @llvm.copysign.v2f64(<2 x double> %[[M]], <2 x double> %[[S]])
++; CHECK-NEXT: %[[UNO:[0-9]+]] = fcmp uno <2 x double> %x, %y
++; CHECK-NEXT: %r = select <2 x i1> %[[UNO]], <2 x double> splat (double +qnan), <2 x double> %[[MS]]
++; CHECK-NEXT: ret <2 x double> %r
++define spir_func <2 x double> @maximum_v2f64(<2 x double> %x, <2 x double> %y) {
++  %r = call <2 x double> @llvm.maximum.v2f64(<2 x double> %x, <2 x double> %y)
++  ret <2 x double> %r
++}
++
++; CHECK-LABEL: define spir_func <2 x half> @maximum_v2f16(
++; CHECK-NEXT: %[[M:[0-9]+]] = call <2 x half> @llvm.maxnum.v2f16(<2 x half> %x, <2 x half> %y)
++; CHECK-NEXT: %[[XSIGN:[0-9]+]] = call <2 x half> @llvm.copysign.v2f16(<2 x half> splat (half 1.000000e+00), <2 x half> %x)
++; CHECK-NEXT: %[[XNEG:[0-9]+]] = fcmp olt <2 x half> %[[XSIGN]], zeroinitializer
++; CHECK-NEXT: %[[S:[0-9]+]] = select <2 x i1> %[[XNEG]], <2 x half> %y, <2 x half> %x
++; CHECK-NEXT: %[[MS:[0-9]+]] = call <2 x half> @llvm.copysign.v2f16(<2 x half> %[[M]], <2 x half> %[[S]])
++; CHECK-NEXT: %[[UNO:[0-9]+]] = fcmp uno <2 x half> %x, %y
++; CHECK-NEXT: %r = select <2 x i1> %[[UNO]], <2 x half> splat (half +qnan), <2 x half> %[[MS]]
++; CHECK-NEXT: ret <2 x half> %r
++define spir_func <2 x half> @maximum_v2f16(<2 x half> %x, <2 x half> %y) {
++  %r = call <2 x half> @llvm.maximum.v2f16(<2 x half> %x, <2 x half> %y)
++  ret <2 x half> %r
++}
++
++; nnan: no NaN fix-up.
++; CHECK-LABEL: define spir_func float @minimum_f32_nnan(
++; CHECK-NEXT: %[[M:[0-9]+]] = call nnan float @llvm.minnum.f32(float %x, float %y)
++; CHECK-NEXT: %[[XSIGN:[0-9]+]] = call float @llvm.copysign.f32(float 1.000000e+00, float %x)
++; CHECK-NEXT: %[[XNEG:[0-9]+]] = fcmp olt float %[[XSIGN]], 0.000000e+00
++; CHECK-NEXT: %[[S:[0-9]+]] = select i1 %[[XNEG]], float %x, float %y
++; CHECK-NEXT: %r = call float @llvm.copysign.f32(float %[[M]], float %[[S]])
++; CHECK-NEXT: ret float %r
++define spir_func float @minimum_f32_nnan(float %x, float %y) {
++  %r = call nnan float @llvm.minimum.f32(float %x, float %y)
++  ret float %r
++}
++
++; nsz: no signed-zero fix-up.
++; CHECK-LABEL: define spir_func float @maximum_f32_nsz(
++; CHECK-NEXT: %[[M:[0-9]+]] = call nsz float @llvm.maxnum.f32(float %x, float %y)
++; CHECK-NEXT: %[[UNO:[0-9]+]] = fcmp uno float %x, %y
++; CHECK-NEXT: %r = select i1 %[[UNO]], float +qnan, float %[[M]]
++; CHECK-NEXT: ret float %r
++define spir_func float @maximum_f32_nsz(float %x, float %y) {
++  %r = call nsz float @llvm.maximum.f32(float %x, float %y)
++  ret float %r
++}
++
++; nnan nsz: plain fmin.
++; CHECK-LABEL: define spir_func <2 x half> @minimum_v2f16_nnan_nsz(
++; CHECK-NEXT: %r = call nnan nsz <2 x half> @llvm.minnum.v2f16(<2 x half> %x, <2 x half> %y)
++; CHECK-NEXT: ret <2 x half> %r
++define spir_func <2 x half> @minimum_v2f16_nnan_nsz(<2 x half> %x, <2 x half> %y) {
++  %r = call nnan nsz <2 x half> @llvm.minimum.v2f16(<2 x half> %x, <2 x half> %y)
++  ret <2 x half> %r
++}
++
++; CHECK-LABEL: define spir_func float @maximum_f32_fast(
++; CHECK-NEXT: %r = call fast float @llvm.maxnum.f32(float %x, float %y)
++; CHECK-NEXT: ret float %r
++define spir_func float @maximum_f32_fast(float %x, float %y) {
++  %r = call fast float @llvm.maximum.f32(float %x, float %y)
++  ret float %r
++}
+-- 
+2.56.0
+

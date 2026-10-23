@@ -4,11 +4,11 @@ using BinaryBuilder
 
 name = "Patchelf"
 
-version = v"0.19.1"
+version = v"0.19.2"
 
 sources = [
     ArchiveSource("https://github.com/NixOS/patchelf/releases/download/$(version)/patchelf-$(version).tar.bz2",
-                  "2cce01de93653829f6ab68a20c2ec275e1c00a946110704a27e928d2e6e88716"),
+                  "d4ad9a4e5c689e09119ce2f30a94b0e8b4f98c78590123ea21665e34c6928801"),
 ]
 
 # Bash recipe for building across all platforms

@@ -80,6 +80,15 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/bool_vector_bitcast_wide.patch
 # upstream), without which kernels with an FPFastMathDefault execution mode
 # segfault when MachineCSE hoists a floating-point instruction at -O2.
 atomic_patch -p1 $WORKSPACE/srcdir/patches/fp_fast_math_default_type.patch
+# Backport of https://github.com/llvm/llvm-project/pull/225667 ("[SPIR-V] Lower
+# llvm.minimum/maximum instead of selecting fmin/fmax"; merged after the 23.x
+# branch), without which `llvm.minimum`/`llvm.maximum` ignore NaNs and don't
+# order signed zeros. 23.x lacks SPV_EXT_long_vector, so its long-vector
+# changes and tests are left out. Shaders need the `copysign` lowering of
+# https://github.com/llvm/llvm-project/pull/217421 (also merged after 23.x;
+# only its SPIR-V part is backported).
+atomic_patch -p1 $WORKSPACE/srcdir/patches/copysign_shader.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/fminimum_fmaximum.patch
 
 install_license LICENSE.TXT
 

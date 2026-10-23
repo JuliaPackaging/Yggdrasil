@@ -47,6 +47,7 @@ fi
 mkdir output && cd output
 
 meson .. --cross-file=${MESON_TARGET_TOOLCHAIN} \
+    --buildtype=release \
     -Dfreetype=enabled \
     -Dfontconfig=enabled \
     -Dtee=enabled \

@@ -1,4 +1,5 @@
 import Downloads, Pkg, YAML
+using SHA: sha256
 using Dates
 
 function check_pkgserver_latency(; tolerance = Hour(1))
@@ -37,14 +38,12 @@ function check_pkgserver_latency(; tolerance = Hour(1))
     end
 end
 
-# Cleanup `.meta.json` or `.platform.list` files from previous BB1 runs
-function cleanup_metadata!()
-    for (root, _, files) in walkdir(YGGDRASIL_BASE)
-        for file in files
-            if endswith(file, ".meta.json") || endswith(file, ".platforms.list")
-                rm(joinpath(root, file))
-            end
-        end
+# Remove a project's metadata files left over from a previous BB1 run.  The generator runs
+# once per project in the same checkout, and the launcher uploads the files of every project
+# afterwards, so this must not touch the files of other projects.
+function cleanup_metadata!(project_basename)
+    for ext in (".meta.json", ".platforms.list", ".reuse.json")
+        rm(joinpath(YGGDRASIL_BASE, project_basename * ext); force=true)
     end
 end
 
@@ -123,7 +122,13 @@ struct BB1BuildStep <: AbstractBuildStep
     platform::String
 end
 
-bb1_step_key(project_name::String, platform::String) = "$(safe_name(project_name))--$(safe_name(platform))"
+function bb1_step_key(project_name::String, platform::String)
+    key = "$(safe_name(project_name))--$(safe_name(platform))"
+    # Buildkite rejects keys longer than 100 characters, which platforms with several
+    # tags (e.g. cross toolchains) can exceed; keep such keys unique with a hash.
+    length(key) <= 100 && return key
+    return "$(first(key, 90))-$(bytes2hex(sha256(key))[1:9])"
+end
 step_key(bs::BB1BuildStep) = bb1_step_key(bs.project, bs.platform)
 
 struct BB2BuildStep <: AbstractBuildStep

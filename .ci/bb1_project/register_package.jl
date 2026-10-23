@@ -1,4 +1,5 @@
 using BinaryBuilder, BinaryBuilderBase, Downloads, Pkg
+using Base.BinaryPlatforms
 using GitHub: authenticate
 
 # FIXME: Golang auto-upgrades to HTTP2, this can cause issue like https://github.com/google/go-github/issues/2113
@@ -50,7 +51,7 @@ function mvdir(src, dest)
     end
 end
 
-function download_cached_binaries(download_dir, build_meta_dir)
+function download_cached_binaries(download_dir, build_meta_dir; all_reused::Bool=false)
     NAME = ENV["NAME"]
     PROJECT = ENV["PROJECT"]
     BUILD_ID = ENV["BUILD_ID"]
@@ -58,11 +59,13 @@ function download_cached_binaries(download_dir, build_meta_dir)
     artifacts = "$(PROJECT)/products/$(NAME)*.tar.*"
     cmd = `buildkite-agent artifact download --build $BUILD_ID $artifacts $download_dir`
     if !success(pipeline(cmd; stderr))
+        # Nothing was built when every tarball is reused
+        all_reused && return
         error("Download failed")
     end
     mvdir(joinpath(download_dir, PROJECT, "products"), download_dir)
 
-    # Keep build metadata out of `download_dir`, which is uploaded as release assets.
+    # Build metadata is uploaded separately, after the tarballs have been matched up.
     meta = "$(PROJECT)/products/$(NAME)*.meta.json"
     cmd = `buildkite-agent artifact download --build $BUILD_ID $meta $build_meta_dir`
     downloaded = joinpath(build_meta_dir, PROJECT, "products")
@@ -71,6 +74,46 @@ function download_cached_binaries(download_dir, build_meta_dir)
         mvdir(downloaded, build_meta_dir)
     else
         @info "No build metadata sidecars in this build; tarballs will be unpacked instead"
+    end
+end
+
+# The tarballs that `plan_reuse.jl` decided to keep from the previous release, if any
+function download_reuse_plan()
+    plan = "$(basename(ENV["PROJECT"])).reuse.json"
+    dir = mktempdir()
+    cmd = `buildkite-agent artifact download --build $(ENV["BUILD_ID"]) $plan $dir`
+    success(pipeline(cmd; stderr)) || return nothing
+    return BinaryBuilder.JSON.parsefile(joinpath(dir, plan); dicttype=Dict)
+end
+
+# Reused tarballs are not downloaded, so their metadata must come from their sidecar.
+# The previous release has it, unless it predates reuse: then recover it from the tarball.
+function fetch_reused_metadata(plan, objs, build_meta_dir)
+    previous_tag = replace(plan["previous"]["tag"], "+" => "%2B")
+    asyncmap(plan["reused"]; ntasks=8) do r
+        platform = parse(Platform, r["platform"])
+        obj = only(o for o in objs if any(p -> triplet(p) == triplet(platform), o["platforms"]))
+        tarball_name = basename(r["url"])
+        sidecar = joinpath(build_meta_dir, basename(BinaryBuilder.build_meta_path(tarball_name)))
+        meta = try
+            Downloads.download("https://github.com/$(repo)/releases/download/$(previous_tag)/$(basename(sidecar))", sidecar)
+            BinaryBuilder.read_build_meta(tarball_name, obj["products"]; meta_dir=build_meta_dir, verify=false)
+        catch
+            nothing
+        end
+        if meta === nothing || meta[1] != r["sha256"] || bytes2hex(meta[2].bytes) != r["git-tree-sha1"]
+            tarball = joinpath(build_meta_dir, tarball_name)
+            # A JLL with many platforms means hundreds of large downloads from GitHub,
+            # some of which stall.
+            retry(() -> BinaryBuilderBase.download_verify(r["url"], r["sha256"], tarball);
+                  delays=ExponentialBackOff(n=4, first_delay=10))()
+            tarball_hash, git_hash, products_info = BinaryBuilder.inspect_tarball(tarball, platform, obj["products"])
+            if bytes2hex(git_hash.bytes) != r["git-tree-sha1"]
+                error("$(tarball_name) does not have the tree hash recorded in the previous release")
+            end
+            BinaryBuilder.write_build_meta(tarball, tarball_hash, git_hash, products_info)
+            rm(tarball)
+        end
     end
 end
 
@@ -105,6 +148,8 @@ for json_obj in [merged, objs_unmerged...]
     json_obj["dependencies"] = Dependency[dep for dep in json_obj["dependencies"] if BinaryBuilderBase.is_runtime_dependency(dep)]
 end
 skip_build = get(ENV, "SKIP_BUILD", "false") == "true"
+reuse_plan = skip_build ? nothing : download_reuse_plan()
+reused = reuse_plan === nothing ? Dict{String,Any}[] : reuse_plan["reused"]
 # This directory is separate because `download_dir` is uploaded to GitHub.
 build_meta_dir = mktempdir()
 mktempdir() do download_dir
@@ -116,7 +161,9 @@ mktempdir() do download_dir
     else
         # We are going to publish the new binaries we've just baked, take them
         # out of the cache while they're hot.
-        download_cached_binaries(download_dir, build_meta_dir)
+        download_cached_binaries(download_dir, build_meta_dir;
+                                 all_reused=length(reused) == length(merged["platforms"]))
+        isempty(reused) || fetch_reused_metadata(reuse_plan, objs_unmerged, build_meta_dir)
     end
 
     # Push up the JLL package (pointing to as-of-yet missing tarballs)
@@ -128,7 +175,9 @@ mktempdir() do download_dir
     # This loop over the unmerged objects necessary in the event that we have multiple packages being built by a single build_tarballs.jl
     for (i,json_obj) in enumerate(objs_unmerged)
         from_scratch = (i == 1)
-        BinaryBuilder.rebuild_jll_package(json_obj; download_dir, build_meta_dir, upload_prefix, verbose, from_scratch)
+        obj_triplets = Set(triplet.(json_obj["platforms"]))
+        reused_urls = String[r["url"] for r in reused if triplet(parse(Platform, r["platform"])) in obj_triplets]
+        BinaryBuilder.rebuild_jll_package(json_obj; download_dir, build_meta_dir, upload_prefix, verbose, from_scratch, reused_urls)
     end
 
     # Restore Artifacts.toml
@@ -140,6 +189,11 @@ mktempdir() do download_dir
     BinaryBuilder.push_jll_package(name, build_version)
 
     if !skip_build
+        # Publish the build metadata along with the tarballs, so that a later release can
+        # reuse them without unpacking them.
+        for file in readdir(build_meta_dir)
+            endswith(file, ".meta.json") && cp(joinpath(build_meta_dir, file), joinpath(download_dir, file))
+        end
         # Upload the tarballs to GitHub releases
         BinaryBuilder.upload_to_github_releases(repo, tag, download_dir; verbose=verbose)
     end

@@ -1,0 +1,194 @@
+From a6bf0288572b676c626f27f46e4e859c43e7ba69 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Mon, 19 Oct 2026 17:07:11 +0200
+Subject: [PATCH] Account for the z extent and global offset in the grid width
+
+pocl_cmd_max_grid_dim_width multiplied the z local size with itself instead
+of with the number of groups, and ignored the global offset. A grid that is
+wide only in z, or that is small but offset far from the origin, therefore
+got the work-group function specialized for small grids, whose range
+assumptions on the group counts and global offsets then let the optimizer
+fold e.g. get_num_groups(2) > 65535 or get_global_offset(0) > 65535 to false.
+---
+ lib/CL/devices/common.c           |  11 ++-
+ tests/regression/CMakeLists.txt   |   3 +
+ tests/regression/test_tall_grid.c | 121 ++++++++++++++++++++++++++++++
+ 3 files changed, 131 insertions(+), 4 deletions(-)
+ create mode 100644 tests/regression/test_tall_grid.c
+
+diff --git a/lib/CL/devices/common.c b/lib/CL/devices/common.c
+index cdab08b6c..812ed2ed2 100644
+--- a/lib/CL/devices/common.c
++++ b/lib/CL/devices/common.c
+@@ -969,13 +969,16 @@ pocl_fill_dev_sampler_t (dev_sampler_t *ds, struct pocl_argument *parg)
+ }
+ 
+ /* Returns the width of the widest dimension in the grid of the given
+-   run command. */
++   run command, counted from the origin: the small-grid work-group functions
++   assume that both the group counts and the global offsets are bounded. */
+ size_t
+ pocl_cmd_max_grid_dim_width (_cl_command_run *cmd)
+ {
+-  return max (max (cmd->pc.local_size[0] * cmd->pc.num_groups[0],
+-                   cmd->pc.local_size[1] * cmd->pc.num_groups[1]),
+-              cmd->pc.local_size[2] * cmd->pc.local_size[2]);
++  size_t width = 0;
++  for (unsigned d = 0; d < 3; ++d)
++    width = max (width, cmd->pc.global_offset[d]
++                          + cmd->pc.local_size[d] * cmd->pc.num_groups[d]);
++  return width;
+ }
+ 
+ 
+diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
+index aca46e0f0..a1130bb41 100644
+--- a/tests/regression/CMakeLists.txt
++++ b/tests/regression/CMakeLists.txt
+@@ -46,6 +46,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
+      test_large_private_workgroup
+      test_stack_estimate_builtins
+      test_sanitize_divrem
++     test_tall_grid
+ )
+ if(UNIX)
+   list(APPEND C_PROGRAMS_TO_BUILD test_signal_handlers)
+@@ -199,6 +200,8 @@ add_test_pocl(NAME "regression/spirv_intel_subgroups" WORKITEM_HANDLER "loops;lo
+ 
+ add_test_pocl(NAME "regression/divergent_implicit_barrier_entry" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_divergent_implicit_barrier_entry")
+ 
++add_test_pocl(NAME "regression/tall_grid" COMMAND "test_tall_grid")
++
+ add_test_pocl(NAME "regression/uniform_implicit_barrier_entry" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_uniform_implicit_barrier_entry")
+ 
+ add_test_pocl(NAME "regression/localmem_load_across_barrier" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_localmem_load_across_barrier")
+diff --git a/tests/regression/test_tall_grid.c b/tests/regression/test_tall_grid.c
+new file mode 100644
+index 000000000..f03aa5362
+--- /dev/null
++++ b/tests/regression/test_tall_grid.c
+@@ -0,0 +1,121 @@
++// Copyright (c) 2026 PoCL developers
++//
++// Permission is hereby granted, free of charge, to any person obtaining a copy
++// of this software and associated documentation files (the "Software"), to deal
++// in the Software without restriction, including without limitation the rights
++// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++// copies of the Software, and to permit persons to whom the Software is
++// furnished to do so, subject to the following conditions:
++//
++// The above copyright notice and this permission notice shall be included in
++// all copies or substantial portions of the Software.
++//
++// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++// THE SOFTWARE.
++
++/*
++  A grid that is only wide in its third dimension, or that is small but far
++  away from the origin, must not get the work-group function specialized for
++  small grids: that one tells the optimizer that the group counts and global
++  offsets are below the specialization limit (65535 on CPUs), so the kernels
++  below would see get_num_groups(2) and get_global_offset(0) <= 65535
++  regardless of the launch.
++*/
++
++#include "pocl_opencl.h"
++
++#include <stdio.h>
++#include <stdlib.h>
++
++#define CHECK_ERROR(err)                                                      \
++  if (err != CL_SUCCESS)                                                      \
++    {                                                                         \
++      printf ("OpenCL Error %d at %s:%d\n", err, __FILE__, __LINE__);         \
++      return EXIT_FAILURE;                                                    \
++    }
++
++static const char *source
++  = "kernel void tall (global uint *out) {\n"
++    "  if (get_global_id (2) == get_global_size (2) - 1)\n"
++    "    out[0] = get_num_groups (2) > 65535 ? get_num_groups (2) : 0;\n"
++    "}\n"
++    "kernel void offset (global uint *out) {\n"
++    "  out[0] = get_global_offset (0) > 65535 ? get_global_offset (0) : 0;\n"
++    "}\n";
++
++static int
++run (cl_context context,
++     cl_command_queue queue,
++     cl_program program,
++     const char *name,
++     const size_t *offset,
++     const size_t *global,
++     cl_uint expected)
++{
++  cl_int err;
++  cl_kernel kernel = clCreateKernel (program, name, &err);
++  CHECK_ERROR (err);
++
++  cl_uint result = 0;
++  cl_mem out
++    = clCreateBuffer (context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
++                      sizeof (result), &result, &err);
++  CHECK_ERROR (err);
++  CHECK_ERROR (clSetKernelArg (kernel, 0, sizeof (cl_mem), &out));
++
++  const size_t local[3] = { 1, 1, 1 };
++  CHECK_ERROR (clEnqueueNDRangeKernel (queue, kernel, 3, offset, global, local,
++                                       0, NULL, NULL));
++  CHECK_ERROR (clEnqueueReadBuffer (queue, out, CL_TRUE, 0, sizeof (result),
++                                    &result, 0, NULL, NULL));
++
++  CHECK_ERROR (clReleaseMemObject (out));
++  CHECK_ERROR (clReleaseKernel (kernel));
++
++  if (result != expected)
++    {
++      printf ("FAIL: kernel %s returned %u, expected %u\n", name, result,
++              expected);
++      return EXIT_FAILURE;
++    }
++  return EXIT_SUCCESS;
++}
++
++int
++main (void)
++{
++  cl_int err;
++  cl_platform_id platform;
++  cl_device_id device;
++  cl_context context;
++  cl_command_queue queue;
++
++  CHECK_ERROR (poclu_get_any_device2 (&context, &device, &queue, &platform));
++
++  cl_program program
++    = clCreateProgramWithSource (context, 1, &source, NULL, &err);
++  CHECK_ERROR (err);
++  CHECK_ERROR (clBuildProgram (program, 1, &device, NULL, NULL, NULL));
++  const size_t tall_global[3] = { 1, 1, 70000 };
++  int failed = run (context, queue, program, "tall", NULL, tall_global, 70000);
++
++  const size_t offset[3] = { 100000, 0, 0 };
++  const size_t small_global[3] = { 1, 1, 1 };
++  failed
++    |= run (context, queue, program, "offset", offset, small_global, 100000);
++
++  CHECK_ERROR (clReleaseProgram (program));
++  CHECK_ERROR (clReleaseCommandQueue (queue));
++  CHECK_ERROR (clReleaseContext (context));
++  CHECK_ERROR (clUnloadPlatformCompiler (platform));
++
++  if (failed)
++    return EXIT_FAILURE;
++  printf ("OK\n");
++  return EXIT_SUCCESS;
++}
+-- 
+2.56.0
+

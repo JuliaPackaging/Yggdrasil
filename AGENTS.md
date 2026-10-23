@@ -4,7 +4,8 @@ This guide helps AI agents generate correct `build_tarballs.jl` recipes for Bina
 
 ## Prerequisites
 
-- **Julia**: Use Julia 1.13 (CI runs 1.13.2; `.ci/Manifest.toml` is resolved for it).
+- **Julia**: Use the version named by `julia_version` at the top of the repo-root `Manifest.toml`, which is what CI runs.
+- **Project**: Use the repo-root Project.toml.
 - **Supported Platforms**: Linux glibc (x86_64, i686, aarch64, armv7l, armv6l, ppc64le, riscv64), Linux musl (x86_64, i686, aarch64, armv7l, armv6l), Windows (x86_64, i686), macOS (x86_64, aarch64), FreeBSD (x86_64, aarch64)
 - Use `supported_platforms()` to get all available platforms
 
@@ -37,7 +38,7 @@ products = [
 ]
 
 dependencies = [
-    Dependency("SomeDep_jll"),
+    Dependency("SomeDep_jll"; compat="1.2.3"),
     # BuildDependency("BuildOnlyDep_jll"),
 ]
 
@@ -46,20 +47,20 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
 
 ## Critical Rules
 
-These are the hard requirements every recipe must satisfy. The "Build Script Reference"
-section below is non-normative reference material (env vars, common build systems,
-optional arguments).
+These are the hard requirements every recipe must satisfy. Special Dependencies,
+File Organization, Commit Messages, Pull Requests and Testing are rules too. Everything from
+[Build Script Reference](#build-script-reference) onward is non-normative reference material.
 
 ### Naming
 
 - **Name**: Must be a valid Julia identifier. Replace spaces/dashes with underscores. Generally match upstream casing, but use what makes most sense.
-- **Version**: Only `X.Y.Z` format. Truncate any `-alpha`, `+build`, or 4+ level versions. Yggdrasil itself uses `+N` to rebuild the same upstream version.
+- **Version**: Only `X.Y.Z` format. Truncate any `-alpha`, `+build`, or 4+ level versions. Yggdrasil itself uses `+N` to rebuild the same upstream version. When the JLL version or the upstream spelling differs from `version`, see [Upstream and JLL Versions](#upstream-and-jll-versions).
 - **Products**: Export symbols should match the library/executable names (as symbols: `:libname`), but use what makes sense for the package.
 
 ### Sources
 
 - **ArchiveSource**: For tarballs (`.tar.gz`, `.tar.xz`, `.zip`). Always include SHA256 hash.
-- **GitSource**: For git repos. Use specific commit hash, not branch names.
+- **GitSource**: For git repos. Use specific commit hash, not branch names. When building a release, also pass its `tag="v$(version)"` so reviewers see which release it is; the build checks that the tag indeed points to the hash.
 - **DirectorySource**: For local patches. Place patches in `bundled/patches/` subdirectory.
 - Build **one package per recipe**. Don't bundle multiple packages—use dependencies instead.
 
@@ -73,7 +74,7 @@ Instead:
 
    ```julia
    sources = [
-       GitSource("https://github.com/owner/repo.git", "full_commit_hash"),
+       GitSource("https://github.com/owner/repo.git", "full_commit_hash"; tag="v$(version)"),
    ]
    ```
 
@@ -88,8 +89,10 @@ Instead:
 To find the commit hash for a tag:
 
 ```bash
-git ls-remote https://github.com/owner/repo.git refs/tags/v1.0.0
+git ls-remote https://github.com/owner/repo.git v1.0.0 'v1.0.0^{}'
 ```
+
+If this prints two lines, the tag is annotated: use the hash of the `^{}` line. The other is the tag object, not a commit, and fails the `tag` check.
 
 ### Products
 
@@ -106,8 +109,7 @@ Every declared product must actually be produced by the build on every supported
 - **BuildDependency**: Build-time only (not a dependency for the final JLL)
 - **HostBuildDependency**: Build-time only dependency that needs to run on the build host, not target (not a dependency for the final JLL)
 
-Always add `_jll` suffix: `Dependency("Zlib_jll")`
-
+- Always add the `_jll` suffix.
 - Every `Dependency` gets a `compat=` bound: `Dependency("Zlib_jll"; compat="1.2.13")`.
 - Never remove or loosen an existing bound. Compat strings are set unions, so `"3.0, 3.5"` means the same as `"3.0"`.
 - By default BinaryBuilder builds against the *oldest* version satisfying the bound, so raising the lower bound picks up newer artifacts. A positional pin (`Dependency("X_jll", v"1.2")` or `Dependency(PackageSpec("X_jll", v"1.2"))`) overrides the default: check for one before relying on `compat` alone, and keep it inside the bound or the build errors.
@@ -189,11 +191,11 @@ done
 Some dependencies require special handling:
 
 - **LLVM packages**: Must use `LLVM_full_jll` and match the version used by the Julia version. Requires careful ABI compatibility.
-- **MPI packages**: Need `MPIPreferences.jl` configuration and must use `MPItrampoline_jll` for cross-implementation compatibility.
+- **MPI packages**: Use `MPI.augment_platforms` from `platforms/mpi.jl`, which adds one variant per MPI ABI and the matching dependencies; see [MPI packages](#mpi-packages).
 - **BLAS/LAPACK packages**: Should link against `libblastrampoline_jll` rather than a concrete BLAS implementation, so downstream Julia users can swap implementations at runtime.
 - **CUDA packages**: Use `CUDA.required_dependencies` to get the necessary runtime dependencies. Must handle different CUDA versions. GPU code needs special compilation flags.
 
-For these complex dependencies, consult existing recipes in the repository (search for `LLVM_full_jll`, `MPItrampoline_jll`, `libblastrampoline_jll`, or `CUDA.required_dependencies`).
+For these complex dependencies, consult existing recipes in the repository (search for `LLVM_full_jll`, `MPI.augment_platforms`, `libblastrampoline_jll`, or `CUDA.required_dependencies`).
 
 ### MPI packages
 
@@ -262,6 +264,137 @@ Concrete rules:
 - Pass **`static_sdk=true`** to `required_dependencies` when linking static CUDA libs (e.g. AMGX); this adds `CUDA_SDK_static_jll` as a `BuildDependency`.
 - Always pass **`dont_dlopen=true`** and **`lazy_artifacts=true`** to `build_tarballs` for CUDA consumers — the sandbox has no driver, so the audit cannot dlopen the libraries. This does not stop the JLL from loading them at init; use `LibraryProduct(...; dont_dlopen=true)` for that.
 - **NVIDIA redistributable archive** SHAs are published per CUDA release in `redistrib_<version>.json`; `cuda_nvcc_redist_source` / `get_sources` in `platforms/cuda.jl` and `C/CUDA/common.jl` handle this — prefer them over hand-rolled `ArchiveSource` URLs.
+
+## File Organization
+
+```text
+PackageName/
+├── build_tarballs.jl
+└── bundled/
+    └── patches/
+        ├── fix1.patch
+        └── fix2.patch
+```
+
+Place in alphabetical directory: `X/XYZ/build_tarballs.jl`
+
+## Commit Messages
+
+Format: `[PackageName] Brief description`
+
+Examples:
+
+- `[Zlib] Update to v1.3.1`
+- `[CMake] Add OpenSSL dependency`
+- `[FFMPEG] Fix build on FreeBSD`
+
+`[skip build]` republishes the JLL without rebuilding (metadata-only changes such as compat bounds). Put it in the body of every commit in the push, never in the header line.
+
+## Pull Requests
+
+- Work on each PR in its own git worktree, and keep the main checkout on `master`:
+
+  ```bash
+  git fetch origin master
+  git worktree add --no-track -b <branch> ../<dir> origin/master
+  ```
+
+  Use a `<dir>` without slashes, e.g. `Yggdrasil-zlib`. `--no-track` keeps the branch from tracking `master`; push it with `git push -u origin <branch>`. After the PR merges, `git worktree remove --force ../<dir>` (`--force` discards untracked build output such as `products/`) and `git branch -D <branch>`.
+- One recipe per PR. Never touch another recipe's files, even whitespace: any change to a `build_tarballs.jl` triggers re-registration.
+- Don't edit the `.ci/bb1_project` or `.ci/bb2_project` manifests; maintainers do that with the Update Manifest workflow.
+- Don't add non-recipe files (e.g. `.gitattributes`) under a recipe directory.
+- CI only rebuilds a recipe when a file inside its directory changes. To rebuild the same upstream version, bump the `# Build trigger: N` line (see [Rebuilding Without Recipe Changes](#rebuilding-without-recipe-changes)).
+- Don't stack PRs. A PR that depends on another's JLL cannot pass CI until that JLL is registered, so wait for the first to merge.
+- Contributors cannot retry Buildkite jobs; ask a maintainer.
+
+## Testing
+
+Test the generated JLL locally before merging, so a broken package is not automatically registered in General.
+
+### Build and Generate the JLL
+
+```bash
+cd X/PackageName
+julia --project build_tarballs.jl --verbose --deploy=local x86_64-linux-gnu
+```
+
+This puts tarballs in `products/` and writes a local JLL package to `~/.julia/dev/PackageName_jll/`. The trailing triplet builds only that platform; omit it to build all of them. Use it for local testing only, never narrow `platforms` in the recipe to match. While iterating on a failing build, add `--debug` to drop into the sandbox shell on failure. On macOS, local builds need Docker.
+
+### Test the JLL Package
+
+Create a test script to verify the JLL works:
+
+```julia
+using Pkg
+
+# Add the local JLL package
+Pkg.develop(path=expanduser("~/.julia/dev/PackageName_jll"))
+
+# Now test it
+using PackageName_jll
+
+# Test that products are accessible
+@info "Package path:" PackageName_jll.artifact_dir
+
+# JLLs export each ExecutableProduct as a function named after its symbol.
+# E.g. for `ExecutableProduct("zstd", :zstd)` the wrapper is `Zstd_jll.zstd()`,
+# which returns a Cmd usable with `run` or string interpolation.
+# Replace `executable_name` below with your actual product symbol.
+@info "Executable Cmd:" PackageName_jll.executable_name()
+
+# Try running the executable (if applicable)
+run(`$(PackageName_jll.executable_name()) --version`)
+```
+
+### Test with Dependencies
+
+If your package will be used by other Julia packages, test the integration:
+
+```julia
+# Create a temporary test environment
+using Pkg
+Pkg.activate(mktempdir())
+
+# Add your local JLL
+Pkg.develop(path=expanduser("~/.julia/dev/PackageName_jll"))
+
+# Add a package that should use your JLL
+Pkg.add("SomePackageThatUsesYourJLL")
+
+# Test that it works
+using SomePackageThatUsesYourJLL
+# ... run tests ...
+```
+
+### Clean Up Before Pushing
+
+After testing, clean up the local build artifacts:
+
+```bash
+# Remove generated products
+rm -rfv products/
+
+# Remove the local JLL dev package (optional)
+rm -rfv ~/.julia/dev/PackageName_jll/
+```
+
+### Alternative: Use CI Artifacts
+
+For complex packages, you can also:
+
+1. Push your branch to GitHub
+2. Wait for the Buildkite build jobs to finish
+3. Download the `products/*` tarballs from each job's Artifacts tab
+4. Test the prebuilt binaries locally
+
+### What to Test
+
+- [ ] All products are accessible and have correct paths
+- [ ] Executables run without errors (at minimum `--version` or `--help`)
+- [ ] Libraries can be loaded (`dlopen` doesn't fail)
+- [ ] Dependencies are correctly linked
+- [ ] Platform-specific behavior works (if applicable)
+- [ ] Package imports without warnings or errors
 
 ## Build Script Reference
 
@@ -391,17 +524,15 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fix.patch
 ### Platform Filtering
 
 ```julia
-# Only 64-bit platforms
-platforms = filter(p -> nbits(p) == 64, supported_platforms())
+platforms = supported_platforms()
+# Upstream assumes 64-bit pointers
+filter!(p -> nbits(p) == 64, platforms)
 
 # Expand C++ string ABI variants
 platforms = expand_cxxstring_abis(platforms)
 
 # Expand Fortran library versions (only for Fortran codes)
 platforms = expand_gfortran_versions(platforms)
-
-# Specific platforms
-platforms = [Platform("x86_64", "linux"), Platform("x86_64", "macos")]
 ```
 
 ### Setting Environment Variables
@@ -420,202 +551,64 @@ Put shared logic in `PackageName/common.jl` and one `build_tarballs.jl` per vari
 
 `platforms/` also provides `llvm.jl` (`LLVM.augment`, `LLVM.platform`, adds an `llvm_version` tag) and `microarchitectures.jl` (`MicroArchitectures.augment`, `expand_microarchitectures`). Follow an existing consumer.
 
-### Out-of-Source Builds
-
-```bash
-cd ${WORKSPACE}/srcdir
-mkdir build && cd build
-cmake ../package-source
-```
-
 ### Rebuilding Without Recipe Changes
 
-To rebuild the same upstream version (new platform, fixed toolchain shard), bump the `# Build trigger: N` line at the end of `build_tarballs.jl`, adding it as `1` if missing. Don't add comments for this, and leave `version` alone: a build number cannot be set by hand, registration bumps it automatically when the version is unchanged. The exception is a JLL old enough that a rebuild would change its `JLLWrappers` compat: General rejects build-number-only releases with different compat, so bump the patch version instead (GLPK 5.0 → 5.0.1). Explain why in the PR.
+To rebuild the same upstream version (new platform, fixed toolchain shard), bump the `# Build trigger: N` line at the end of `build_tarballs.jl`, adding it as `1` if missing. Don't add comments for this, and leave `version` alone: a build number cannot be set by hand, registration bumps it automatically when the version is unchanged. The exception is a JLL old enough that a rebuild would change its `JLLWrappers` compat: General rejects build-number-only releases with different compat, so bump the patch version instead (GLPK 5.0 → 5.0.1), using `ygg_version` (see below). Explain why in the PR.
 
-## Testing Locally
+### Upstream and JLL Versions
 
-```bash
-julia --project=/path/to/Yggdrasil build_tarballs.jl --verbose --debug
-```
-
-Use `--debug` to get interactive shell on failure.
-
-**Note**: On macOS, you need Docker installed for local testing.
-
-## Common Issues
-
-### Can't find headers/libraries
-
-Add `-I${includedir}` to `CPPFLAGS` or `CFLAGS`/`CXXFLAGS`
-Add `-L${libdir}` to `LDFLAGS`
-
-### Old `config.sub`/`config.guess`
-
-Call `update_configure_scripts` before `./configure`
-
-### Foreign executable error
-
-Can't run cross-compiled executables. Patch build system or build tools natively.
-
-### Missing shared library on PowerPC
-
-Regenerate configure: `autoreconf -vi` before `./configure`
-
-### Link errors about unrecognized relocations
-
-Increase `preferred_gcc_version` to match dependencies
-
-## File Organization
-
-```text
-PackageName/
-├── build_tarballs.jl
-└── bundled/
-    └── patches/
-        ├── fix1.patch
-        └── fix2.patch
-```
-
-Place in alphabetical directory: `X/XYZ/build_tarballs.jl`
-
-## Commit Messages
-
-Format: `[PackageName] Brief description`
-
-Examples:
-
-- `[Zlib] Update to v1.3.1`
-- `[CMake] Add OpenSSL dependency`
-- `[FFMPEG] Fix build on FreeBSD`
-
-`[skip build]` republishes the JLL without rebuilding (metadata-only changes such as compat bounds). Put it in the body of every commit in the push, never in the header line.
-
-## Pull Requests
-
-- One recipe per PR. Never touch another recipe's files, even whitespace: any change to a `build_tarballs.jl` triggers re-registration.
-- Don't edit `.ci/Manifest.toml`; maintainers do that with the Update Manifest workflow.
-- Don't add non-recipe files (e.g. `.gitattributes`) under a recipe directory.
-- CI only rebuilds a recipe when a file inside its directory changes. To rebuild the same upstream version, bump the `# Build trigger: N` line (see [Rebuilding Without Recipe Changes](#rebuilding-without-recipe-changes)).
-- Don't stack PRs. A PR that depends on another's JLL cannot pass CI until that JLL is registered, so wait for the first to merge.
-- Contributors cannot retry Buildkite jobs; ask a maintainer.
-
-## Testing JLL Packages Before Merging
-
-Before merging a Yggdrasil PR, you should test the generated JLL package locally to ensure it works correctly. This avoids automatic registration of broken packages in the General registry.
-
-### Step 0: Speed Up Testing (Optional)
-
-For faster local testing, build only for your current platform by passing it as an argument to the build script:
-
-```bash
-julia --project=/path/to/Yggdrasil build_tarballs.jl --verbose --debug x86_64-linux-gnu
-# Or for your current platform:
-# x86_64-apple-darwin20 (macOS x86_64)
-# aarch64-apple-darwin20 (macOS ARM64)
-# x86_64-w64-mingw32 (Windows x86_64)
-```
-
-**Important**: Don't commit platform-specific builds - this is for local testing only.
-
-### Step 1: Build the Package Locally
-
-```bash
-cd PackageName
-julia --project=/path/to/Yggdrasil build_tarballs.jl --verbose
-```
-
-This creates tarballs in the `products/` directory.
-
-### Step 2: Generate the JLL Package
-
-Use BinaryBuilder to create a local JLL package from your build:
+`version` names the upstream release: URLs, tags, and versioned library names derive from it. When the JLL needs a different version, keep `version` and add `ygg_version`, which is what `build_tarballs` gets:
 
 ```julia
-using BinaryBuilder
+version = v"1.6.0"
+ygg_version = v"1.6.1"  # Rebuilt against Giflib_jll 6
 
-# Change to your package directory
-cd("E/Electron")
-
-# Run the build script to generate JLLs
-run(`julia --project=/path/to/Yggdrasil build_tarballs.jl --deploy=local`)
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies)
 ```
 
-Or directly from the command line:
+Use this when:
 
-```bash
-julia --project=/path/to/Yggdrasil build_tarballs.jl --deploy=local
-```
+- A rebuild must get a new JLL version rather than a new build number, e.g. because a compat bound changed (see [Dependencies](#dependencies)) or a dependency moved to a new ABI-breaking release. Say why in a comment.
+- Upstream does not use semantic versioning, e.g. `D/DecFP` maps upstream `20U4` to `ygg_version = v"2.0.400"`.
 
-This generates a local JLL package in `~/.julia/dev/PackageName_jll/`.
-
-### Step 3: Test the JLL Package
-
-Create a test script to verify the JLL works:
+Every new `ygg_version` must exceed all registered versions of the JLL, and downstream compat bounds refer to `ygg_version`, not to upstream. Bumping the patch (`1.6.0` → `1.6.1`) collides with upstream's next patch release: when upstream releases `1.6.1`, the JLL needs `ygg_version = v"1.6.2"`. Drop `ygg_version` once `version` is larger than every registered JLL version again. Recipes that rebuild often reserve room instead (`S/SCALAPACK`, `G/Gnuplot`):
 
 ```julia
-using Pkg
-
-# Add the local JLL package
-Pkg.develop(path=expanduser("~/.julia/dev/PackageName_jll"))
-
-# Now test it
-using PackageName_jll
-
-# Test that products are accessible
-@info "Package path:" PackageName_jll.artifact_dir
-
-# JLLs export each ExecutableProduct as a function named after its symbol.
-# E.g. for `ExecutableProduct("zstd", :zstd)` the wrapper is `Zstd_jll.zstd()`,
-# which returns a Cmd usable with `run` or string interpolation.
-# Replace `executable_name` below with your actual product symbol.
-@info "Executable Cmd:" PackageName_jll.executable_name()
-
-# Try running the executable (if applicable)
-run(`$(PackageName_jll.executable_name()) --version`)
+version = v"2.2.3"
+offset = 1  # bump for rebuilds, reset on a new upstream release
+ygg_version = VersionNumber(version.major, version.minor, 100 * version.patch + offset)
 ```
 
-### Step 4: Test with Dependencies
+Keep whatever scheme the recipe already uses; switching back would make the JLL version go down.
 
-If your package will be used by other Julia packages, test the integration:
+When the upstream spelling of a version can't be recovered from a `VersionNumber` (e.g. `"2.8"` prints as `2.8.0`), keep the upstream string and derive `version` from it, so the version literal appears only once:
 
 ```julia
-# Create a temporary test environment
-using Pkg
-Pkg.activate(mktempdir())
+version_string = "2.8"
+version = VersionNumber(version_string)
 
-# Add your local JLL
-Pkg.develop(path=expanduser("~/.julia/dev/PackageName_jll"))
-
-# Add a package that should use your JLL
-Pkg.add("SomePackageThatUsesYourJLL")
-
-# Test that it works
-using SomePackageThatUsesYourJLL
-# ... run tests ...
+sources = [
+    ArchiveSource("https://ftp.gnu.org/gnu/gsl/gsl-$(version_string).tar.gz", "sha256"),
+]
 ```
 
-### Step 5: Clean Up Before Pushing
+Interpolate `version_string` into URLs, tags, and directory names, and `version` everywhere a `VersionNumber` is needed. Existing recipes call it `version_string` or `version_str`; follow the recipe at hand. The two mechanisms combine, e.g. `G/GSL/GSL@2` has `version_string = "2.8"` and `ygg_version = v"2.8.1"`. Upstream versions with four or more components (`"2.1.12.5"`) do not parse as a `VersionNumber`, so set `version` by hand instead.
 
-After testing, clean up the local build artifacts:
+## Troubleshooting
 
-```bash
-# Remove generated products
-rm -rf products/
+### Build Failures
 
-# Remove the local JLL dev package (optional)
-rm -rf ~/.julia/dev/PackageName_jll/
-```
+**Can't find headers/libraries**: set the flags in [Setting Environment Variables](#setting-environment-variables).
 
-### Alternative: Use GitHub Actions Preview
+**Old `config.sub`/`config.guess`**: call `update_configure_scripts` (see [Common Build Systems](#common-build-systems)).
 
-For complex packages, you can also:
+**Foreign executable error**: Can't run cross-compiled executables. Patch build system or build tools natively.
 
-1. Push your branch to GitHub
-2. Wait for the CI to build (creates artifacts)
-3. Download the artifacts from the GitHub Actions run
-4. Test the prebuilt binaries locally
+**Missing shared library on PowerPC**: Regenerate configure: `autoreconf -vi` before `./configure`
 
-### Common Issues When Testing
+**Link errors about unrecognized relocations**: Increase `preferred_gcc_version` to match dependencies
+
+### JLL Testing
 
 **JLL not found after `Pkg.develop`**:
 
@@ -633,20 +626,11 @@ For complex packages, you can also:
 - Use a fresh Julia environment for testing
 - Check that dependencies have correct compat bounds
 
-### What to Test
-
-- [ ] All products are accessible and have correct paths
-- [ ] Executables run without errors (at minimum `--version` or `--help`)
-- [ ] Libraries can be loaded (`dlopen` doesn't fail)
-- [ ] Dependencies are correctly linked
-- [ ] Platform-specific behavior works (if applicable)
-- [ ] Package imports without warnings or errors
-
 ## Reference Examples
 
-- **Simple C library**: `Z/Zstd/build_tarballs.jl`
+- **Autotools with patches**: `S/sshpass/build_tarballs.jl` (`bundled/patches/`)
+- **Meson with patches**: `Z/Zstd/build_tarballs.jl` (`bundled/patches/`)
 - **CMake with dependencies**: `C/CMake/build_tarballs.jl`
-- **Autotools with patches**: `Z/Zstd/build_tarballs.jl` (`bundled/patches/`)
 - **Platform-specific builds**: `G/Git/build_tarballs.jl`
 - **Multiple sources**: `L/libftd2xx/build_tarballs.jl`
 
@@ -658,17 +642,27 @@ This repo ships an MCP server for AI coding agents, configured in `.mcp.json`:
   interactive BinaryBuilder cross-compilation sandbox. Tools: `sandbox_start`,
   `sandbox_exec`, `sandbox_stop`, `sandbox_list`, `sandbox_str_replace_editor`.
 
-The server runs from the `.claude/` Julia environment and shells out to `.ci/`
-for `build_tarballs.jl --debug`. On a fresh checkout instantiate both once,
-otherwise `bb-sandbox` fails to connect with a missing-package error
-(e.g. `ClaudeMCPTools`). From the repo root:
+The server runs from the `.claude/` Julia environment and shells out to the
+repo-root project of the checkout it lives in for `build_tarballs.jl --debug`.
+The server and its subprocesses run on the `julia` found on `PATH`, so it must
+be the version from [Prerequisites](#prerequisites).
+`.claude/Manifest.toml` is not checked in, so it resolves against the latest
+`[sources]` branches. On a fresh checkout or worktree instantiate both once,
+otherwise `bb-sandbox` fails to connect with a missing-package error (e.g.
+`ClaudeMCPTools`). From the checkout root:
 
 ```bash
 julia --project=.claude -e 'using Pkg; Pkg.instantiate()'
-julia --project=.ci -e 'using Pkg; Pkg.instantiate()'
+julia --project -e 'using Pkg; Pkg.instantiate()'
 ```
 
 After that, the agent's MCP status should show `bb-sandbox` connected.
+
+`sandbox_start` takes an absolute `build_tarballs_path`, so a server started in
+the main checkout can build a recipe in any worktree. The recipe then runs
+against the main checkout's root project, so keep that checkout's `master` up to
+date with `git pull`. To use the worktree's own project instead, start the agent
+from the worktree so it launches that worktree's server.
 
 ## Additional Resources
 

@@ -13,3 +13,4 @@ archive/
 
 .DS_Store
 
+.claude/Manifest.toml
