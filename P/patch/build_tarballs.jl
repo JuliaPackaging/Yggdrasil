@@ -6,7 +6,7 @@ version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/patch/patch-$(version_string).tar.xz",
+    ArchiveSource("https://ftpmirror.gnu.org/gnu/patch/patch-$(version_string).tar.xz",
                   "3240c7959c5347c8ed347e3c4201c0337bf4240d5cf09d68889e58eeaba30e17"),
 ]
 
