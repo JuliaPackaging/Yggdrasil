@@ -7,7 +7,8 @@ version = v"1.6.0"
 
 sources = [
     GitSource("https://github.com/dftd3/simple-dftd3.git",
-              "6004cfd62ad2a248ad32167392bd08c674da6161"),
+              "6004cfd62ad2a248ad32167392bd08c674da6161";
+              tag="v$(version)"),
     DirectorySource("./bundled"),
 ]
 
