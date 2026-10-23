@@ -31,10 +31,7 @@ meson install -C build
 install_license LICENSE
 """
 
-platforms = supported_platforms()
-platforms = expand_gfortran_versions(platforms)
-# Downstream packages use the installed .mod files, keep the whole stack on the same GCC
-filter!(p -> libgfortran_version(p) >= v"5", platforms)
+platforms = expand_gfortran_versions(supported_platforms())
 
 products = [
     # Windows DLL names may have the -0 suffix, so list both version
