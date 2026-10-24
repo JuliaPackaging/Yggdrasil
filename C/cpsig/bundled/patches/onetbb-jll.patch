@@ -1,0 +1,46 @@
+diff --git a/siglib/cpsig/CMakeLists.txt b/siglib/cpsig/CMakeLists.txt
+index 66a6204..3304a88 100644
+--- a/siglib/cpsig/CMakeLists.txt
++++ b/siglib/cpsig/CMakeLists.txt
+@@ -27,24 +27,7 @@ add_library(cpsig SHARED
+     cache_lifecycle/log_sig_cache.cpp
+ )
+
+-include(FetchContent)
+-
+-set(TBB_TEST OFF CACHE BOOL "" FORCE)
+-set(TBB_EXAMPLES OFF CACHE BOOL "" FORCE)
+-set(TBB_STRICT OFF CACHE BOOL "" FORCE)
+-set(TBBMALLOC_BUILD OFF CACHE BOOL "" FORCE)
+-set(TBBMALLOC_PROXY_BUILD OFF CACHE BOOL "" FORCE)
+-set(TBB_INSTALL OFF CACHE BOOL "" FORCE)
+-set(_pysiglib_build_shared_libs "${BUILD_SHARED_LIBS}")
+-set(BUILD_SHARED_LIBS ON)
+-FetchContent_Declare(
+-    oneTBB
+-    GIT_REPOSITORY https://github.com/uxlfoundation/oneTBB.git
+-    GIT_TAG 2fea40755cccad7eb8b0ee0c07ed0c4e75bf562c
+-)
+-FetchContent_MakeAvailable(oneTBB)
+-set(BUILD_SHARED_LIBS "${_pysiglib_build_shared_libs}")
+-unset(_pysiglib_build_shared_libs)
++find_package(TBB REQUIRED COMPONENTS tbb)
+
+ set_target_properties(cpsig PROPERTIES
+     CXX_STANDARD 20
+@@ -69,15 +52,7 @@ target_link_libraries(cpsig
+     PUBLIC TBB::tbb
+ )
+
+-if(WIN32)
+-    add_custom_command(TARGET cpsig POST_BUILD
+-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+-            $<TARGET_FILE:tbb>
+-            $<TARGET_FILE_DIR:cpsig>
+-    )
+-endif()
+-
+ if(MSVC)
+     target_compile_options(cpsig PRIVATE /Zi)
+     target_link_options(cpsig PRIVATE /DEBUG /OPT:REF /OPT:ICF)
+ endif()
