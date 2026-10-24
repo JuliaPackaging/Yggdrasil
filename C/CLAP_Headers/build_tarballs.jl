@@ -18,7 +18,8 @@ rm -r artwork
 platforms = [AnyPlatform()]
 
 products = [
-    FileProduct("include/clap/clap.h"),
+    FileProduct("include/clap/clap.h", :clap_h),
+    FileProduct("include/clap/all.h", :all_h),
 ]
 
 dependencies = Dependency[]
