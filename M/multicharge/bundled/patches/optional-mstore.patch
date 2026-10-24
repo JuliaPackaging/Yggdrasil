@@ -1,0 +1,16 @@
+Build without mstore: it is only used by the unit tests and cannot be downloaded in the sandbox.
+Upstream: <add link to issue/PR on grimme-lab/multicharge>
+
+diff --git a/test/unit/meson.build b/test/unit/meson.build
+index 3bc59de..4454138 100644
+--- a/test/unit/meson.build
++++ b/test/unit/meson.build
+@@ -18,7 +18,7 @@ mstore_dep = dependency(
+   'mstore',
+   version: '>=0.3.0',
+   fallback: ['mstore', 'mstore_dep'],
+-  required: not meson.is_subproject(),
++  required: false,
+   default_options: [
+     'default_library=static',
+   ],
