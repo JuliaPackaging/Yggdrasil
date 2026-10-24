@@ -1,0 +1,55 @@
+From fbe30bdf62b88e365406c611568b1d351778f5f4 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Sat, 24 Oct 2026 17:38:14 +0200
+Subject: [PATCH] [DebugInfo] Use the target hook when reinstating a location
+ after line 0
+
+When DwarfDebug::beginInstruction returns to the previous location
+after a line 0 record (or re-emits it to set flags), it emitted the
+.loc through a local lambda that calls recordSourceLine directly,
+bypassing recordTargetSourceLine. The default implementation of that
+hook does exactly what the lambda did, but NVPTX overrides it to add
+the function_name and inlined_at operands, so the reinstated .loc lost
+its inlining context.
+
+Call recordTargetSourceLine instead and drop the lambda. No change for
+targets that do not override the hook.
+
+Assisted-by: Claude Code, Codex
+---
+ lib/CodeGen/AsmPrinter/DwarfDebug.cpp | 12 +-----------
+ 1 file changed, 1 insertion(+), 11 deletions(-)
+
+diff --git a/lib/CodeGen/AsmPrinter/DwarfDebug.cpp b/lib/CodeGen/AsmPrinter/DwarfDebug.cpp
+index cfbb35d..e900496 100644
+--- a/lib/CodeGen/AsmPrinter/DwarfDebug.cpp
++++ b/lib/CodeGen/AsmPrinter/DwarfDebug.cpp
+@@ -2197,16 +2197,6 @@ void DwarfDebug::beginInstruction(const MachineInstr *MI) {
+     }
+   }
+ 
+-  auto RecordSourceLine = [this](auto &DL, auto Flags) {
+-    SmallString<128> LocationString;
+-    if (Asm->OutStreamer->isVerboseAsm()) {
+-      raw_svector_ostream OS(LocationString);
+-      DL.print(OS);
+-    }
+-    recordSourceLine(DL.getLine(), DL.getCol(), DL.getScope(), Flags,
+-                     LocationString);
+-  };
+-
+   // There may be a mixture of scopes using and not using Key Instructions.
+   // Not-Key-Instructions functions inlined into Key Instructions functions
+   // should use not-key is_stmt handling. Key Instructions functions inlined
+@@ -2246,7 +2236,7 @@ void DwarfDebug::beginInstruction(const MachineInstr *MI) {
+       // But we might be coming back to it after a line 0 record.
+       if ((LastAsmLine == 0 && DL.getLine() != 0) || Flags) {
+         // Reinstate the source location but not marked as a statement.
+-        RecordSourceLine(DL, Flags);
++        recordTargetSourceLine(DL, Flags);
+       }
+       return;
+     }
+-- 
+
+
