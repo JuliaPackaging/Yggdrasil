@@ -1,0 +1,14 @@
+diff --git a/src/platform/mem.c b/src/platform/mem.c
+index 87e4ea2..d918b39 100644
+--- a/src/platform/mem.c
++++ b/src/platform/mem.c
+@@ -2,6 +2,9 @@
+ #if !defined(_WIN32)
+ #  define _DEFAULT_SOURCE 1     /* madvise, MAP_ANONYMOUS: glibc hides them under -std=c17 */
+ #  define _DARWIN_C_SOURCE 1
++#  if defined(__linux__)
++#    define _GNU_SOURCE 1
++#  endif
+ #endif
+ #include "core.h"
+ 
