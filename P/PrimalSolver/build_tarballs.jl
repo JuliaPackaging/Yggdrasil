@@ -5,7 +5,7 @@ version = v"0.1.4"
 
 sources = [
     GitSource("https://github.com/c-vision/Primal.git",
-              "bfeaa75225df0468a7e1b01044d459b895749c6a"),
+              "77ea50e2ca82e4623bdb932f6b38c9185f99a93d"),
 ]
 
 # The library is the 11 solver translation units plus every primal_*.c (the
