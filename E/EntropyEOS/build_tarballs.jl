@@ -9,8 +9,11 @@ sources = [
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/EntropyEOS
+# We use `-ffp-contract=off` to forbid re-arranging floating-point
+# expressions. This way we can get bitwise identical results here in
+# C++ and in a Julia code that implements the same algorithm.
 make_options=(
-    CXXFLAGS="-O2 -std=c++17"
+    CXXFLAGS="-O2 -std=c++17 -ffp-contract=off"
     OPENMP=-fopenmp
     HDF5_INC="-I${includedir}"
     HDF5_LIB="-L${libdir} -lhdf5"
