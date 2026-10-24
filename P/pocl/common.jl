@@ -191,6 +191,9 @@ function build_script(standalone=false)
     # - 0041: pass group ids to work-group functions as size_t instead of ulong, which is 32
     #   bits on 64-bit Windows and left the high half of group_z uninitialized (upstream PR
     #   #2410)
+    # - 0042: keep VariableUniformityAnalysis from reusing the cached uniformity of a deleted
+    #   value for a new one allocated at its address, which intermittently miscompiled
+    #   work-item dependent values as uniform (upstream PR #2414)
     for patch in $WORKSPACE/srcdir/patches/pocl/*.patch; do
         atomic_patch -p1 $patch
     done
