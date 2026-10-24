@@ -32,6 +32,14 @@ export CPPFLAGS="-DSQLITE_ENABLE_COLUMN_METADATA=1 \
                  -DSQLITE_ENABLE_MATH_FUNCTIONS \
                  -DSQLITE_USE_URI"
 
+# Keep the library identity of the libtool builds (<= 3.48) that existing dependents link against.
+# On macOS, upstream's configure check for the version flags fails when cross-compiling.
+if [[ ${target} == *-apple-* ]]; then
+    makeflags=(LDFLAGS.libsqlite3.os-specific="-Wl,-compatibility_version,9.0.0 -Wl,-current_version,9.6.0 -Wl,-install_name,@rpath/libsqlite3.0.dylib")
+elif [[ ${target} != *-mingw* ]]; then
+    configureflags=(--soname=legacy)
+fi
+
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=$target \
@@ -39,9 +47,10 @@ export CPPFLAGS="-DSQLITE_ENABLE_COLUMN_METADATA=1 \
     --enable-fts3 \
     --enable-fts4 \
     --enable-fts5 \
-    --enable-rtree
-make -j${nproc}
-make install
+    --enable-rtree \
+    "${configureflags[@]}"
+make -j${nproc} "${makeflags[@]}"
+make install "${makeflags[@]}"
 install_license "${WORKSPACE}/srcdir/LICENSE"
 """
 
