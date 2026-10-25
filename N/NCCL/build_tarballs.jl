@@ -12,7 +12,7 @@ name = "NCCL"
 version = v"2.32.3"
 
 git_sources = [
-    GitSource("https://github.com/NVIDIA/nccl.git", "12df1a11afad322be5a204a2db890161cbf8131d"),
+    GitSource("https://github.com/NVIDIA/nccl.git", "12df1a11afad322be5a204a2db890161cbf8131d"; tag="v$(version)-1"),
     DirectorySource("./bundled/")
 ]
 
@@ -82,7 +82,7 @@ fi
 cd nccl
 make -j ${nproc} src.build CUDA_HOME=${CUDA_HOME} PREFIX=${prefix}
 
-make install PREFIX=${prefix}
+make -j ${nproc} install PREFIX=${prefix}
 
 rm -f ${libdir}/libnccl_static.a
 
