@@ -7,17 +7,11 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "microarchitectures.jl"))
 
 name = "aff3ct"
-# Upstream aff3ct is still 4.2.0; bumping to 4.2.2 to republish with the
-# bundled `share/aff3ct` configuration data stripped (see below). 4.2.1
-# shipped that data, which contains a case-only-differing filename pair that
-# collapses on case-insensitive filesystems (macOS APFS), causing an artifact
-# "Tree Hash Mismatch" on install. BinaryBuilder rejects build-metadata
-# versions, so bump the patch version rather than the build number.
-version = v"4.2.2"
+version = v"4.7.1"
 
 sources = [
     GitSource("https://github.com/aff3ct/aff3ct.git",
-              "bd436ca2d8176983668d3dfbe231d6b52d9b5d06"),
+              "4f5a9f8fc08ba1d4aa9ba458c0a305004b4fc1aa"),
     GitSource("https://github.com/JuliaGNSS/libaff3ct_jl.git",
               "7744526f265b2732d78bb7cd8c5da5b9ae6754f6"),
 ]
@@ -62,7 +56,6 @@ cmake .. \
     -DAFF3CT_COMPILE_EXE=OFF \
     -DAFF3CT_COMPILE_SHARED_LIB=ON \
     -DSPU_STACKTRACE=OFF \
-    -DAFF3CT_OVERRIDE_VERSION="v4.2.0" \
     -DCMAKE_CXX_FLAGS="${SIMD_FLAGS}"
 
 make -j${nproc}
@@ -117,9 +110,9 @@ augment_platform_block = """
 # SIGILL. augment_platform_block ensures users only download a variant
 # matching their CPU, so skip the audit's dlopen check.
 products = [
-    # libaff3ct-4.2.0 is the CMake install name on Linux; macOS strips
-    # the trailing .2.0 as a dylib version suffix, leaving "libaff3ct-4".
-    LibraryProduct(["libaff3ct-4.2.0", "libaff3ct-4"], :libaff3ct; dont_dlopen=true),
+    # libaff3ct-4.7.1 is the CMake install name on Linux; macOS strips
+    # the trailing .7.1 as a dylib version suffix, leaving "libaff3ct-4".
+    LibraryProduct(["libaff3ct-4.7.1", "libaff3ct-4"], :libaff3ct; dont_dlopen=true),
     LibraryProduct("libaff3ct_jl", :libaff3ct_jl; dont_dlopen=true),
 ]
 
