@@ -11,7 +11,8 @@ version = v"4.7.1"
 
 sources = [
     GitSource("https://github.com/aff3ct/aff3ct.git",
-              "4f5a9f8fc08ba1d4aa9ba458c0a305004b4fc1aa"),
+              "4f5a9f8fc08ba1d4aa9ba458c0a305004b4fc1aa";
+              tag="v$(version)"),
     GitSource("https://github.com/JuliaGNSS/libaff3ct_jl.git",
               "7744526f265b2732d78bb7cd8c5da5b9ae6754f6"),
 ]
