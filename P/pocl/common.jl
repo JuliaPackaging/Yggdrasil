@@ -1,6 +1,7 @@
 #=
 
-Shared build logic for the PoCL 7.2 JLLs (`pocl`, `pocl_next` and `pocl_standalone`).
+Shared build logic for the PoCL 7.2 JLLs (`pocl`, `pocl_next`, `pocl_standalone` and
+`pocl_standalone_next`).
 
 This is the 7.2 track of PoCL. The goal is a JLL that needs *no* run-time helper tooling:
 no wrapper scripts, no bundled startup files, no external clang/lld/llvm-spirv. The init
@@ -38,20 +39,37 @@ The `standalone` argument selects between two variants of this same build:
 
 - standalone=false (`pocl`, `pocl_next`): an OpenCL ICD driver (ENABLE_ICD=ON) loaded by an ICD
   loader; the init block registers it with OpenCL_jll.
-- standalone=true (`pocl_standalone`): a directly-linkable library (ENABLE_ICD=OFF) whose
-  OpenCL entrypoints are renamed to `PO<cl_function>` (RENAME_POCL), so it can be used as
-  a CPU back-end (e.g. by KernelAbstractions.jl's nanoOpenCL) without an OpenCL.jl/ICD
-  dependency while coexisting in-process with a real OpenCL ICD targeting other GPUs.
+- standalone=true (`pocl_standalone`, `pocl_standalone_next`): a directly-linkable library
+  (ENABLE_ICD=OFF) whose OpenCL entrypoints are renamed to `PO<cl_function>` (RENAME_POCL),
+  so it can be used as a CPU back-end (e.g. by KernelAbstractions.jl's nanoOpenCL) without
+  an OpenCL.jl/ICD dependency while coexisting in-process with a real OpenCL ICD targeting
+  other GPUs.
 
 The recipes differ in their sources: `pocl` is the release track (upstream v7.2 plus its
-own patch series), while `pocl_next` and `pocl_standalone` follow upstream's 7.2
-maintenance branch with the series in `pocl_next/bundled` (`pocl_standalone/bundled` is a
-symlink to it, so changing that series needs a change to `pocl_standalone`'s recipe to
-trigger its rebuild).
+own patch series), while the others follow upstream's 7.2 maintenance branch with the
+series in `pocl_next/bundled` (`pocl_standalone/bundled` is a symlink to it, and
+`pocl_standalone_next` uses it directly, so changing that series needs a change to their
+recipes to trigger their rebuild).
+
+The `spirv32` keyword additionally applies the experimental series in
+`pocl_next/bundled/patches/pocl-spirv32`, which enables SPIR-V on 32-bit x86 (maleadt/pocl#2).
+`pocl_next` and `pocl_standalone_next` opt in, so that it can be tested before it moves into
+the default series; without it, the build script is the same as before.
 
 =#
 
-function build_script(standalone=false)
+function build_script(standalone=false; spirv32=false)
+    # The patch series to apply (and to hash into the version), in order; see the list in
+    # the script below. `pocl-spirv32` (maleadt/pocl#2) follows the default series: a
+    # generated SPIR wrapper for the i386 ABI, struct types in SPIR modules that keep their
+    # OpenCL C layout instead of the host's (where long and double are less aligned), tests,
+    # and enabling SPIR-V on 32-bit x86 CPU hosts. It's kept out of the script's comments so
+    # that the script doesn't change for the recipes that don't opt in.
+    patches = raw"$WORKSPACE/srcdir/patches/pocl/*.patch"
+    if spirv32
+        patches *= raw" $WORKSPACE/srcdir/patches/pocl-spirv32/*.patch"
+    end
+
     preheader = """
     STANDALONE=$(standalone)
     LLVM_MAJOR_MINOR=$(llvm_version.major).$(llvm_version.minor)
@@ -204,7 +222,7 @@ function build_script(standalone=false)
     # the backports that release_next has, and older revisions of upstream PRs #2281, #2384,
     # #2394 and #2410; 0043-0045 are 0036-0038 above. It doesn't have
     # cl_pocl_host_kernel.
-    for patch in $WORKSPACE/srcdir/patches/pocl/*.patch; do
+    for patch in @PATCHES@; do
         atomic_patch -p1 $patch
     done
 
@@ -255,7 +273,7 @@ function build_script(standalone=false)
     # key, so rebuilds with a different series don't reuse previously cached binaries, and
     # it lets users tell these builds apart from upstream ones that lack our patches.
     # (`\\"`, as `\"` in this raw string would reach the shell as a bare quote.)
-    patches_hash=$(cat $WORKSPACE/srcdir/patches/pocl/*.patch | sha256sum | cut -c1-12)
+    patches_hash=$(cat @PATCHES@ | sha256sum | cut -c1-12)
     sed -i "s/^set(VERSION_SUFFIX_FIXED_TEXT \\"\\")/set(VERSION_SUFFIX_FIXED_TEXT \\"~julia-${patches_hash}\\")/" CMakeLists.txt
     if ! grep -q "^set(VERSION_SUFFIX_FIXED_TEXT \\"~julia-${patches_hash}\\")" CMakeLists.txt; then
         echo "ERROR: failed to tag the PoCL version" >&2
@@ -462,7 +480,7 @@ function build_script(standalone=false)
           ${prefix}/bin/llvm-spirv ${prefix}/bin/llvm-spirv.exe
     """
 
-    return script
+    return replace(script, "@PATCHES@" => patches)
 end
 
 function init_block(standalone=false)

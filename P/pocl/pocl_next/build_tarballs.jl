@@ -10,7 +10,8 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 # `pocl_next` is the 7.2 track of PoCL: an OpenCL ICD driver built with the in-process
 # JIT (no run-time clang/lld/llvm-spirv tooling). The actual build lives in ../common.jl,
 # shared with the `pocl_standalone` (OpenCL-less) variant and selected via its `standalone`
-# argument (false here). See ../common.jl for the full rationale.
+# argument (false here). See ../common.jl for the full rationale. This track also carries
+# the experimental `pocl-spirv32` series (SPIR-V on 32-bit x86, maleadt/pocl#2).
 
 name = "pocl_next"
 # upstream's 7.2 maintenance branch plus our patch series; bumped past 7.2 when the series
@@ -134,7 +135,7 @@ end
 
 for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
-                   name, version, build.sources, macos_sdk_script * build_script(),
+                   name, version, build.sources, macos_sdk_script * build_script(; spirv32=true),
                    [build.platform], products, build.dependencies;
                    build.preferred_gcc_version,
                    preferred_llvm_version=Base.thismajor(llvm_version),
@@ -143,4 +144,4 @@ for (i,build) in enumerate(builds)
                    julia_compat="1.10", init_block=init_block())
 end
 
-# Build trigger: 2
+# Build trigger: 3
