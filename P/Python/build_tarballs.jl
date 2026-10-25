@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Python"
-version = v"3.12.14"
+version = v"3.12.15"
 
 # Collection of sources required to build Python
 sources = [
     ArchiveSource("https://www.python.org/ftp/python/$(version)/$(name)-$(version).tar.xz",
-                  "5c8462af5790baf43a321a1559dbe0db06d1be4300fb85fb53c40060668e548a"),
+                  "c2c4321961fab0fb999d66e0cecf521c2ab3994c7992873ea99e306c1094fd5a"),
     # Deliberately an installer from the same 24.3.0 generation as the py311 one
     # this replaced: Miniconda installers from 24.11 onwards gate on
     # `ldd --version` reporting GLIBC >= 2.28, which fails outright in
@@ -131,7 +131,7 @@ dependencies = [
     Dependency("Expat_jll"; compat="2.6.5"),
     Dependency("Bzip2_jll"; compat="1.0.9"),
     Dependency("Libffi_jll"; compat="~3.4.7"),
-    Dependency("SQLite_jll"),
+    Dependency("SQLite_jll"; compat="3.54.0"),
     Dependency("Zlib_jll"),
     Dependency("XZ_jll"),
     Dependency("OpenSSL_jll"; compat="3.0.16"),
