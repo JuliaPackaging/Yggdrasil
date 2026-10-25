@@ -5,6 +5,7 @@ using BinaryBuilder, Pkg
 name = "util_linux"
 version_string = "2.42.4"
 version = VersionNumber(version_string)
+ygg_version = v"2.42.5"  # Rebuilt against SQLite_jll 3.54.0 with its legacy SONAME restored
 
 # Collection of sources required to complete build
 sources = [
@@ -178,10 +179,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("SQLite_jll"),
+    Dependency("SQLite_jll"; compat="3.54.0"),
     Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"5")
