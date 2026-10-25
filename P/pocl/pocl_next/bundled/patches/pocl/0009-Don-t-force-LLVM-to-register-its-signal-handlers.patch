@@ -1,7 +1,7 @@
-From 339506926c61e7bd4b546aaa5ba0ccb0da7f7686 Mon Sep 17 00:00:00 2001
+From 46058036d57036ff34d3a7224b67a3e507fc1350 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Thu, 24 Sep 2026 09:07:51 +0200
-Subject: [PATCH 9/9] Don't force LLVM to register its signal handlers
+Subject: [PATCH] Don't force LLVM to register its signal handlers
 
 pocl_install_sigfpe_handler registered a dummy file for removal on signal,
 only to make LLVM install its signal handlers before PoCL's SIGFPE handler, as
@@ -150,3 +150,6 @@ index 2b9018e67..c7d12b709 100644
    const char *source = "#define VALUE 42\n"
                         "__kernel void k (__global int *out) {\n"
                         "  *out = VALUE;\n"
+-- 
+2.56.0
+

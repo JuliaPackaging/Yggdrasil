@@ -1,7 +1,7 @@
-From e0de78db03448f841c98ad2ff4a906a17f97b928 Mon Sep 17 00:00:00 2001
+From 0876acfb46d0ff5f94a1f47b2d5006e7b570f889 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Thu, 9 Jul 2026 11:10:30 +0200
-Subject: [PATCH 3/6] Load CPU host kernels in-process via ORC/JITLink
+Subject: [PATCH] Load CPU host kernels in-process via ORC/JITLink
 
 Add an ORC LLJIT loader for CPU work-group objects so supported hosts can link and load kernel objects in-process without writing a shared library, calling dlopen(), or executing an external linker.
 
@@ -50,10 +50,10 @@ Teach the JIT symbol model about libpocl, configured vector math libraries, comp
  create mode 100644 tests/regression/test_large_stack_frame.cpp
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 0e2546862..96f04accc 100644
+index 0c34565d9..bdecbf81f 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -1120,6 +1120,100 @@ if(ENABLE_LLVM AND ENABLE_HOST_CPU_DEVICES AND (NOT ENABLE_CONFORMANCE) AND (LLV
+@@ -1127,6 +1127,100 @@ if(ENABLE_LLVM AND ENABLE_HOST_CPU_DEVICES AND (NOT ENABLE_CONFORMANCE) AND (LLV
    endif()
  endif()
  
@@ -154,7 +154,7 @@ index 0e2546862..96f04accc 100644
  ######################################################################################
  ######################################################################################
  
-@@ -1236,6 +1330,35 @@ if(ENABLE_HOST_CPU_DEVICES AND ENABLE_SPIRV AND (NOT MSVC) AND (HOST_DEVICE_ADDR
+@@ -1243,6 +1337,35 @@ if(ENABLE_HOST_CPU_DEVICES AND ENABLE_SPIRV AND (NOT MSVC) AND (HOST_DEVICE_ADDR
    set(HOST_CPU_ENABLE_SPIRV ON)
  endif()
  
@@ -190,7 +190,7 @@ index 0e2546862..96f04accc 100644
  ######################################################################################
  
  set(HAVE_DLFCN_H OFF CACHE BOOL "dlopen" FORCE)
-@@ -2848,6 +2971,7 @@ if (ENABLE_LLVM)
+@@ -2855,6 +2978,7 @@ if (ENABLE_LLVM)
    MESSAGE(STATUS "ENABLE_HOST_CPU_VECTORIZE_LIBMVEC: ${ENABLE_HOST_CPU_VECTORIZE_LIBMVEC}")
    MESSAGE(STATUS "ENABLE_HOST_CPU_VECTORIZE_SVML: ${ENABLE_HOST_CPU_VECTORIZE_SVML}")
    MESSAGE(STATUS "ENABLE_HOST_CPU_VECTORIZE_BUILTINS: ${ENABLE_HOST_CPU_VECTORIZE_BUILTINS}")
@@ -498,7 +498,7 @@ index 303e4b792..bdc5030cb 100644
  #ifdef __cplusplus
  }
 diff --git a/lib/CL/CMakeLists.txt b/lib/CL/CMakeLists.txt
-index 6e553121b..fc92ca82c 100644
+index 8104e4c23..4f09268c6 100644
 --- a/lib/CL/CMakeLists.txt
 +++ b/lib/CL/CMakeLists.txt
 @@ -277,6 +277,9 @@ if (ENABLE_LLVM)
@@ -512,7 +512,7 @@ index 6e553121b..fc92ca82c 100644
  
    pocl_build_clang_llvm_object(lib_cl_llvm ${LLVM_API_SOURCES})
 diff --git a/lib/CL/devices/common.c b/lib/CL/devices/common.c
-index f41bf4937..75fc5b2d3 100644
+index 309343d2b..44ca163fb 100644
 --- a/lib/CL/devices/common.c
 +++ b/lib/CL/devices/common.c
 @@ -51,6 +51,9 @@
@@ -650,7 +650,7 @@ index f41bf4937..75fc5b2d3 100644
      }
  
  FINISH:
-@@ -978,8 +992,8 @@ pocl_cmd_max_grid_dim_width (_cl_command_run *cmd)
+@@ -965,8 +979,8 @@ pocl_cmd_max_grid_dim_width (_cl_command_run *cmd)
  
  /* CPU driver stuff */
  
@@ -661,7 +661,7 @@ index f41bf4937..75fc5b2d3 100644
  {
    pocl_kernel_hash_t hash;
  
-@@ -993,70 +1007,86 @@ struct pocl_dlhandle_cache_item
+@@ -980,70 +994,86 @@ struct pocl_dlhandle_cache_item
    size_t max_grid_dim_width;
  
    void *wg;
@@ -776,7 +776,7 @@ index f41bf4937..75fc5b2d3 100644
    {
      if (tmp == ci)
        {
-@@ -1068,19 +1098,130 @@ pocl_release_dlhandle_cache (void *dlhandle_cache_item)
+@@ -1055,19 +1085,130 @@ pocl_release_dlhandle_cache (void *dlhandle_cache_item)
    assert (found == CL_TRUE);
    assert (ci->ref_count > 0);
    --ci->ref_count;
@@ -910,7 +910,7 @@ index f41bf4937..75fc5b2d3 100644
   */
  int
  pocl_check_kernel_disk_cache (char *module_fn,
-@@ -1095,9 +1236,7 @@ pocl_check_kernel_disk_cache (char *module_fn,
+@@ -1082,9 +1223,7 @@ pocl_check_kernel_disk_cache (char *module_fn,
    /* First try to find a static WG binary for the local size as they
       are always more efficient than the dynamic ones.  Also, in case
       of reqd_wg_size, there might not be a dynamic sized one at all.  */
@@ -921,7 +921,7 @@ index f41bf4937..75fc5b2d3 100644
      {
        POCL_MSG_PRINT_INFO ("Using a cached WG function: %s\n", module_fn);
        return CL_SUCCESS;
-@@ -1139,14 +1278,11 @@ pocl_check_kernel_disk_cache (char *module_fn,
+@@ -1126,14 +1265,11 @@ pocl_check_kernel_disk_cache (char *module_fn,
      {
        /* First try to find a specialized WG binary, if allowed by the
           command. */
@@ -939,7 +939,7 @@ index f41bf4937..75fc5b2d3 100644
              {
                POCL_MSG_ERR ("Generic WG function binary does not exist.\n");
                return -1;
-@@ -1162,16 +1298,13 @@ pocl_check_kernel_disk_cache (char *module_fn,
+@@ -1149,16 +1285,13 @@ pocl_check_kernel_disk_cache (char *module_fn,
  }
  
  
@@ -961,7 +961,7 @@ index f41bf4937..75fc5b2d3 100644
    {
      if ((memcmp (ci->hash, run_cmd->hash, sizeof (pocl_kernel_hash_t)) == 0)
          && (ci->local_wgs[0] == run_cmd->pc.local_size[0])
-@@ -1184,8 +1317,8 @@ fetch_dlhandle_cache_item (_cl_command_run *run_cmd, int specialize)
+@@ -1171,8 +1304,8 @@ fetch_dlhandle_cache_item (_cl_command_run *run_cmd, int specialize)
                  && run_cmd->pc.global_offset[2] == 0)))
        {
          /* move to the front of the line */
@@ -972,7 +972,7 @@ index f41bf4937..75fc5b2d3 100644
          run_cmd->wg = ci->wg;
          return ci;
        }
-@@ -1206,7 +1339,7 @@ fetch_dlhandle_cache_item (_cl_command_run *run_cmd, int specialize)
+@@ -1193,7 +1326,7 @@ fetch_dlhandle_cache_item (_cl_command_run *run_cmd, int specialize)
   * This can be useful in case we're just pre-compiling kernels
   * (or compiling them for binaries), and not actually need them immediately.
   *
@@ -981,7 +981,7 @@ index f41bf4937..75fc5b2d3 100644
   * to pocl_release_dlhandle_cache(), if it was retained */
  void *
  pocl_check_kernel_dlhandle_cache (_cl_command_node *command,
-@@ -1214,7 +1347,7 @@ pocl_check_kernel_dlhandle_cache (_cl_command_node *command,
+@@ -1201,7 +1334,7 @@ pocl_check_kernel_dlhandle_cache (_cl_command_node *command,
                                    int specialize)
  {
    char *workgroup_string = NULL;
@@ -990,7 +990,7 @@ index f41bf4937..75fc5b2d3 100644
    _cl_command_run *run_cmd = &command->command.run;
  
    /* Brute force mechanism to test relying on generic work-group functions
-@@ -1222,17 +1355,17 @@ pocl_check_kernel_dlhandle_cache (_cl_command_node *command,
+@@ -1209,17 +1342,17 @@ pocl_check_kernel_dlhandle_cache (_cl_command_node *command,
    if (!pocl_get_bool_option("POCL_WORK_GROUP_SPECIALIZATION", 1))
      specialize = 0;
  
@@ -1013,7 +1013,7 @@ index f41bf4937..75fc5b2d3 100644
    memcpy (ci->hash, run_cmd->hash, sizeof (pocl_kernel_hash_t));
    ci->local_wgs[0] = run_cmd->pc.local_size[0];
    ci->local_wgs[1] = run_cmd->pc.local_size[1];
-@@ -1247,22 +1380,47 @@ pocl_check_kernel_dlhandle_cache (_cl_command_node *command,
+@@ -1234,22 +1367,47 @@ pocl_check_kernel_dlhandle_cache (_cl_command_node *command,
    ci->max_grid_dim_width = max_grid_width;
  
    char module_fn[POCL_MAX_PATHNAME_LENGTH];
@@ -1069,7 +1069,7 @@ index f41bf4937..75fc5b2d3 100644
        free (ci);
        return NULL;
      }
-@@ -1272,32 +1430,74 @@ pocl_check_kernel_dlhandle_cache (_cl_command_node *command,
+@@ -1259,32 +1417,74 @@ pocl_check_kernel_dlhandle_cache (_cl_command_node *command,
    snprintf (workgroup_string, workgroup_len, "_pocl_kernel_%s_workgroup",
              run_cmd->kernel->name);
  
@@ -1260,7 +1260,7 @@ index 3d662076a..0a3e605d9 100644
    return CL_SUCCESS;
  }
 diff --git a/lib/CL/devices/common_utils.c b/lib/CL/devices/common_utils.c
-index c5ec6a281..450c4e6da 100644
+index 86e0e2c70..5dc0568cf 100644
 --- a/lib/CL/devices/common_utils.c
 +++ b/lib/CL/devices/common_utils.c
 @@ -36,6 +36,9 @@
@@ -1273,7 +1273,7 @@ index c5ec6a281..450c4e6da 100644
  #include "pocl_mem_management.h"
  #include "pocl_runtime_config.h"
  #include "pocl_tensor_util.h"
-@@ -315,6 +318,18 @@ pocl_cpu_init_common (cl_device_id device, unsigned dev_i)
+@@ -320,6 +323,18 @@ pocl_cpu_init_common (cl_device_id device, unsigned dev_i)
  
    pocl_init_default_device_infos (device, HOST_DEVICE_EXTENSIONS);
  
@@ -1421,7 +1421,7 @@ index 9b9b225ba..1c6f02e0e 100644
  /******************************************************************************/
  
 diff --git a/lib/CL/pocl_cl.h b/lib/CL/pocl_cl.h
-index 21dabd67c..82929136b 100644
+index 944cb4e46..254bf5444 100644
 --- a/lib/CL/pocl_cl.h
 +++ b/lib/CL/pocl_cl.h
 @@ -1198,6 +1198,10 @@ struct _cl_device_id {
@@ -2790,19 +2790,19 @@ index 749bfb322..481203c77 100644
  add_test_pocl(NAME "kernel/test_printf_vectors"
                EXPECTED_OUTPUT "test_printf_vectors_expout.txt"
 diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
-index 16bf3b378..57aa91cd8 100644
+index 9d17693fd..59ef74e67 100644
 --- a/tests/regression/CMakeLists.txt
 +++ b/tests/regression/CMakeLists.txt
-@@ -58,7 +58,7 @@ set(PROGRAMS_TO_BUILD test_barrier_between_for_loops test_early_return
+@@ -64,7 +64,7 @@ set(PROGRAMS_TO_BUILD test_barrier_between_for_loops test_early_return
    test_workitem_func_outside_kernel test_program_scope_vars test_issue_1548
    test_issue_1525 test_issue_1608 test_issue_1826 test_builtin_regression
    test_mem_host_ptr_issue test_issue_1962 test_issue_2005
--  test_global_atomics
-+  test_global_atomics test_large_stack_frame
+-  test_global_atomics  test_linear_filter_border
++  test_global_atomics  test_linear_filter_border test_large_stack_frame
  )
  if(UNIX)
    list(APPEND PROGRAMS_TO_BUILD test_issue_2174)
-@@ -91,6 +91,8 @@ endif()
+@@ -97,6 +97,8 @@ endif()
  add_test_pocl(NAME "regression/test_issue_231" COMMAND "test_issue_231")
  
  add_test_pocl(NAME "regression/test_global_atomics" COMMAND "test_global_atomics")
@@ -2811,7 +2811,7 @@ index 16bf3b378..57aa91cd8 100644
  
  add_test_pocl(NAME "regression/test_issue_445" COMMAND "test_issue_445")
  
-@@ -114,6 +116,7 @@ add_test_pocl(NAME "regression/test_issue_1826" COMMAND "test_issue_1826")
+@@ -122,6 +124,7 @@ add_test_pocl(NAME "regression/test_issue_1826" COMMAND "test_issue_1826")
  
  add_test_pocl(NAME "regression/test_builtin_regression"
    COMMAND "test_builtin_regression")
@@ -2895,3 +2895,6 @@ index 000000000..4d5de6dad
 +  return EXIT_FAILURE;
 +}
 \ No newline at end of file
+-- 
+2.56.0
+

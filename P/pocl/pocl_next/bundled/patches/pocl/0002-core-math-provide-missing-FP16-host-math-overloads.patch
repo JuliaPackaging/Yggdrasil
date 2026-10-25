@@ -1,7 +1,7 @@
-From e5e9c91c707c904f885e7443b86e6325276da52a Mon Sep 17 00:00:00 2001
+From eb359e89a2eae77acf90e1d79c7177c3723596b9 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Tue, 30 Jun 2026 10:17:24 +0200
-Subject: [PATCH 2/6] core-math: provide missing FP16 host math overloads
+Subject: [PATCH] core-math: provide missing FP16 host math overloads
 
 With cl_khr_fp16 enabled, the host CPU kernel library must provide half
 overloads for the OpenCL math builtins exposed through the FP16 wrappers. Some
@@ -531,3 +531,6 @@ index 000000000..32df4f14d
 +  vsink = powr (hvy, hvx);
 +  vsink = nextafter (hvx, hvy);
 +}
+-- 
+2.56.0
+
