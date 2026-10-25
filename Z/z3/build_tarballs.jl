@@ -73,7 +73,7 @@ dependencies = [
     HostBuildDependency("CMake_jll"),
     BuildDependency("libjulia_jll"),
     Dependency("GMP_jll"),
-    Dependency("libcxxwrap_julia_jll"; compat="0.14.9"),
+    Dependency("libcxxwrap_julia_jll"; compat="0.14.12"),
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isapple, platforms)),
 ]
 
