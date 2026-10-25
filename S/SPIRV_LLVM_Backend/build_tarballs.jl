@@ -6,8 +6,8 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "SPIRV_LLVM_Backend"
-version = v"23.1.1"
-llvm_version = v"23.1.1"
+version = v"23.1.4"
+llvm_version = v"23.1.4"
 
 # This JLL ships `libspirv`, a shared library exposing a small, typed C API (see
 # bundled/libspirv.h) over a statically linked, symbol-hidden LLVM SPIR-V
@@ -18,7 +18,7 @@ llvm_version = v"23.1.1"
 # LLVM ships a single monorepo source archive (`llvm-project-X.Y.Z.src.tar.xz`).
 sources = [
     ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-$(llvm_version)/llvm-project-$(llvm_version).src.tar.xz",
-                  "ebe9be46fe8756d58c5b198ffad0fa2a766257add81a4dc52179bfacc7888ee6"),
+                  "819ecf7351f1a66f76b2d701d8942faaf5faeb324cb90c9d5b090de142434bb2"),
     DirectorySource("./bundled")
 ]
 
@@ -89,6 +89,12 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/fp_fast_math_default_type.patch
 # only its SPIR-V part is backported).
 atomic_patch -p1 $WORKSPACE/srcdir/patches/copysign_shader.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/fminimum_fmaximum.patch
+# Fix from https://github.com/maleadt/llvm-project/pull/1 ("[SPIR-V] Declare
+# FloatControls2 for the implicit FPFastMathDefault"; to be submitted upstream),
+# without which every kernel with floating-point types but no fast-math
+# instruction is invalid SPIR-V once SPV_KHR_float_controls2 is enabled. Drop
+# once it is part of the LLVM release this recipe builds.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/implicit_fp_fast_math_default_reqs.patch
 
 install_license LICENSE.TXT
 

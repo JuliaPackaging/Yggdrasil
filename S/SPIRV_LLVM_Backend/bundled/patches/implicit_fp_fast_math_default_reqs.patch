@@ -1,0 +1,245 @@
+From 072f4bb30af45a3be2b63ddc1c7277a1039d7c1a Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Sun, 25 Oct 2026 16:30:44 +0100
+Subject: [PATCH] [SPIR-V] Declare FloatControls2 for the implicit
+ FPFastMathDefault
+
+With SPV_KHR_float_controls2, the ContractionOff execution mode that
+kernels get by default is replaced by an FPFastMathDefault with no flags
+for every fp16, fp32 and fp64 type in the module. Module analysis only
+adds the FloatControls2 capability and the extension for FPFastMathDefault
+coming from "spirv.ExecutionMode" metadata, or for FPFastMathMode
+decorations. A kernel with floating-point types but without fast-math
+instructions was therefore invalid:
+
+  Operand 2 of ExecutionModeId requires one of these capabilities:
+  FloatControls2
+
+Add the requirements before emitting the capabilities and extensions,
+under the same conditions as the emission of the execution modes.
+---
+ lib/Target/SPIRV/SPIRVAsmPrinter.cpp          |  61 +++++++---
+ .../implicit-contraction-off.ll               | 104 ++++++++++++++++++
+ 2 files changed, 150 insertions(+), 15 deletions(-)
+ create mode 100644 llvm/test/CodeGen/SPIRV/extensions/SPV_KHR_float_controls2/implicit-contraction-off.ll
+
+diff --git a/lib/Target/SPIRV/SPIRVAsmPrinter.cpp b/lib/Target/SPIRV/SPIRVAsmPrinter.cpp
+index 6ce8677b32e4..fbe939c93bd4 100644
+--- a/lib/Target/SPIRV/SPIRVAsmPrinter.cpp
++++ b/lib/Target/SPIRV/SPIRVAsmPrinter.cpp
+@@ -110,6 +110,8 @@ public:
+   void emitSimpleExecutionMode(MCRegister Reg,
+                                SPIRV::ExecutionMode::ExecutionMode EM);
+   void outputExecutionMode(const Module &M);
++  bool shouldEmitContractionOff(const Module &M) const;
++  void addImplicitFPFastMathDefaultRequirements(const Module &M);
+   void outputAnnotations(const Module &M);
+   void outputModuleSections();
+   void outputFPFastMathDefaultInfo();
+@@ -511,6 +513,15 @@ static unsigned encodeVecTypeHint(Type *Ty) {
+   llvm_unreachable("invalid type");
+ }
+ 
++// Whether MI is a floating-point type that the implicit FPFastMathDefault
++// replacing ContractionOff applies to.
++static bool isFPFastMathDefaultTarget(const MachineInstr &MI) {
++  if (MI.getOpcode() != SPIRV::OpTypeFloat)
++    return false;
++  int64_t Width = MI.getOperand(1).getImm();
++  return Width == 16 || Width == 32 || Width == 64;
++}
++
+ static void addOpsFromMDNode(MDNode *MDN, MCInst &Inst,
+                              SPIRV::ModuleAnalysisInfo *MAI) {
+   for (const MDOperand &MDOp : MDN->operands()) {
+@@ -671,14 +682,7 @@ void SPIRVAsmPrinter::outputExecutionMode(const Module &M) {
+                            SPIRV::Capability::PoisonFreezeKHR)) {
+       emitSimpleExecutionMode(FReg, SPIRV::ExecutionMode::ArithmeticPoisonKHR);
+     }
+-    // --spirv-fp-contract=off forces to emit ContractionOff for this kernel
+-    // entry point, --spirv-fp-contract=fast suppresses it.
+-    bool EmitContractionOff =
+-        ST->isKernel() && !M.getNamedMetadata("spirv.ExecutionMode") &&
+-        SPIRVFPContract != SPIRVFPContractMode::Fast &&
+-        (SPIRVFPContract == SPIRVFPContractMode::Off ||
+-         !M.getNamedMetadata("opencl.enable.FP_CONTRACT"));
+-    if (EmitContractionOff) {
++    if (shouldEmitContractionOff(M)) {
+       if (ST->canUseExtension(SPIRV::Extension::SPV_KHR_float_controls2)) {
+         // When SPV_KHR_float_controls2 is enabled, ContractionOff is
+         // deprecated. We need to use FPFastMathDefault with the appropriate
+@@ -704,13 +708,8 @@ void SPIRVAsmPrinter::outputExecutionMode(const Module &M) {
+ 
+           // Collect the SPIRV type if it's a float.
+           if (OpCode == SPIRV::OpTypeFloat) {
+-            // Skip if the target type is not fp16, fp32, fp64.
+-            const unsigned OpTypeFloatSize = MI->getOperand(1).getImm();
+-            if (OpTypeFloatSize != 16 && OpTypeFloatSize != 32 &&
+-                OpTypeFloatSize != 64) {
+-              continue;
+-            }
+-            SPIRVFloatTypes.push_back(MI);
++            if (isFPFastMathDefaultTarget(*MI))
++              SPIRVFloatTypes.push_back(MI);
+             continue;
+           }
+ 
+@@ -756,6 +755,36 @@ void SPIRVAsmPrinter::outputExecutionMode(const Module &M) {
+   }
+ }
+ 
++// --spirv-fp-contract=off forces to emit ContractionOff for kernel entry
++// points, --spirv-fp-contract=fast suppresses it.
++bool SPIRVAsmPrinter::shouldEmitContractionOff(const Module &M) const {
++  return ST->isKernel() && !M.getNamedMetadata("spirv.ExecutionMode") &&
++         SPIRVFPContract != SPIRVFPContractMode::Fast &&
++         (SPIRVFPContract == SPIRVFPContractMode::Off ||
++          !M.getNamedMetadata("opencl.enable.FP_CONTRACT"));
++}
++
++// With SPV_KHR_float_controls2, outputExecutionMode replaces the implicit
++// ContractionOff by an FPFastMathDefault for every fp16, fp32 and fp64 type.
++// Module analysis only accounts for FPFastMathDefault coming from
++// "spirv.ExecutionMode" metadata, so declare what it requires here, before the
++// capabilities and extensions are emitted.
++void SPIRVAsmPrinter::addImplicitFPFastMathDefaultRequirements(
++    const Module &M) {
++  if (!ST->canUseExtension(SPIRV::Extension::SPV_KHR_float_controls2) ||
++      !shouldEmitContractionOff(M) ||
++      MAI->getMSInstrs(SPIRV::MB_EntryPoints).empty())
++    return;
++  if (none_of(MAI->getMSInstrs(SPIRV::MB_TypeConstVars),
++              [](const MachineInstr *MI) {
++                return isFPFastMathDefaultTarget(*MI);
++              }))
++    return;
++  MAI->Reqs.getAndAddRequirements(SPIRV::OperandCategory::ExecutionModeOperand,
++                                  SPIRV::ExecutionMode::FPFastMathDefault, *ST);
++  MAI->Reqs.addExtension(SPIRV::Extension::SPV_KHR_float_controls2);
++}
++
+ void SPIRVAsmPrinter::outputAnnotations(const Module &M) {
+   outputModuleSection(SPIRV::MB_Annotations);
+   // Process llvm.global.annotations special global variable.
+@@ -908,6 +937,8 @@ void SPIRVAsmPrinter::outputModuleSections() {
+   if (AuxDataHandler)
+     AuxDataHandler->prepareModuleOutput(*ST, *MAI);
+ 
++  addImplicitFPFastMathDefaultRequirements(*M);
++
+   // Output instructions according to the Logical Layout of a Module:
+   // 1,2. All OpCapability instructions, then optional OpExtension
+   // instructions.
+diff --git a/test/CodeGen/SPIRV/extensions/SPV_KHR_float_controls2/implicit-contraction-off.ll b/test/CodeGen/SPIRV/extensions/SPV_KHR_float_controls2/implicit-contraction-off.ll
+new file mode 100644
+index 000000000000..6b4b9174bda9
+--- /dev/null
++++ b/test/CodeGen/SPIRV/extensions/SPV_KHR_float_controls2/implicit-contraction-off.ll
+@@ -0,0 +1,104 @@
++; With SPV_KHR_float_controls2, the ContractionOff that kernels get by default
++; is replaced by an FPFastMathDefault for every floating-point type, which
++; requires the FloatControls2 capability and the extension even when no
++; instruction is decorated with FPFastMathMode.
++
++; RUN: rm -rf %t && split-file %s %t
++
++; RUN: llc -verify-machineinstrs -O0 -mtriple=spirv64-unknown-unknown --spirv-ext=+SPV_KHR_float_controls2 %t/strict.ll -o - | FileCheck %s --check-prefix=STRICT --implicit-check-not=FPFastMathMode --implicit-check-not=ContractionOff
++; RUN: %if spirv-tools %{ llc -O0 -mtriple=spirv64-unknown-unknown --spirv-ext=+SPV_KHR_float_controls2 %t/strict.ll -o - -filetype=obj | spirv-val %}
++
++; RUN: llc -verify-machineinstrs -O0 -mtriple=spirv64-unknown-unknown --spirv-ext=+SPV_KHR_float_controls2 %t/types.ll -o - | FileCheck %s --check-prefix=TYPES --implicit-check-not=FPFastMathMode
++; RUN: %if spirv-tools %{ llc -O0 -mtriple=spirv64-unknown-unknown --spirv-ext=+SPV_KHR_float_controls2 %t/types.ll -o - -filetype=obj | spirv-val %}
++
++; RUN: llc -verify-machineinstrs -O0 -mtriple=spirv64-unknown-unknown --spirv-ext=+SPV_KHR_float_controls2 %t/contract.ll -o - | FileCheck %s --check-prefix=CONTRACT
++; RUN: %if spirv-tools %{ llc -O0 -mtriple=spirv64-unknown-unknown --spirv-ext=+SPV_KHR_float_controls2 %t/contract.ll -o - -filetype=obj | spirv-val %}
++
++; RUN: llc -verify-machineinstrs -O0 -mtriple=spirv64-unknown-unknown --spirv-ext=+SPV_KHR_float_controls2 %t/integer.ll -o - | FileCheck %s --check-prefix=NONE --implicit-check-not=FloatControls2 --implicit-check-not=FPFastMathDefault --implicit-check-not=ContractionOff
++; RUN: %if spirv-tools %{ llc -O0 -mtriple=spirv64-unknown-unknown --spirv-ext=+SPV_KHR_float_controls2 %t/integer.ll -o - -filetype=obj | spirv-val %}
++
++; RUN: llc -verify-machineinstrs -O0 -mtriple=spirv64-unknown-unknown --spirv-ext=+SPV_KHR_float_controls2 %t/fp-contract.ll -o - | FileCheck %s --check-prefix=NONE --implicit-check-not=FloatControls2 --implicit-check-not=FPFastMathDefault --implicit-check-not=ContractionOff
++; RUN: llc -verify-machineinstrs -O0 -mtriple=spirv64-unknown-unknown --spirv-ext=+SPV_KHR_float_controls2 --spirv-fp-contract=fast %t/strict.ll -o - | FileCheck %s --check-prefix=NONE --implicit-check-not=FloatControls2 --implicit-check-not=FPFastMathDefault --implicit-check-not=ContractionOff
++
++; RUN: llc -verify-machineinstrs -O0 -mtriple=spirv64-unknown-unknown --spirv-ext=+SPV_KHR_float_controls2 %t/no-entry.ll -o - | FileCheck %s --check-prefix=NOENTRY --implicit-check-not=FloatControls2 --implicit-check-not=FPFastMathDefault --implicit-check-not=ContractionOff
++; RUN: %if spirv-tools %{ llc -O0 -mtriple=spirv64-unknown-unknown --spirv-ext=+SPV_KHR_float_controls2 %t/no-entry.ll -o - -filetype=obj | spirv-val %}
++
++; RUN: llc -verify-machineinstrs -O0 -mtriple=spirv64-unknown-unknown %t/strict.ll -o - | FileCheck %s --check-prefix=NOEXT --implicit-check-not=FloatControls2 --implicit-check-not=FPFastMathDefault
++
++; STRICT-DAG: OpCapability FloatControls2
++; STRICT-DAG: OpExtension "SPV_KHR_float_controls2"
++; STRICT-DAG: OpEntryPoint Kernel %[[#ENTRY:]] "k"
++; STRICT-DAG: OpExecutionModeId %[[#ENTRY]] FPFastMathDefault %[[#FLOAT:]] %[[#ZERO:]]
++; STRICT-DAG: %[[#FLOAT]] = OpTypeFloat 32
++; STRICT-DAG: %[[#ZERO]] = OpConstantNull %[[#]]
++
++; TYPES-DAG: OpCapability FloatControls2
++; TYPES-DAG: OpExtension "SPV_KHR_float_controls2"
++; TYPES-DAG: OpExecutionModeId %[[#ENTRY:]] FPFastMathDefault %[[#HALF:]] %[[#ZERO:]]
++; TYPES-DAG: OpExecutionModeId %[[#ENTRY]] FPFastMathDefault %[[#FLOAT:]] %[[#ZERO]]
++; TYPES-DAG: OpExecutionModeId %[[#ENTRY]] FPFastMathDefault %[[#DOUBLE:]] %[[#ZERO]]
++; TYPES-DAG: %[[#HALF]] = OpTypeFloat 16
++; TYPES-DAG: %[[#FLOAT]] = OpTypeFloat 32
++; TYPES-DAG: %[[#DOUBLE]] = OpTypeFloat 64
++
++; CONTRACT-DAG: OpCapability FloatControls2
++; CONTRACT-DAG: OpExtension "SPV_KHR_float_controls2"
++; CONTRACT-DAG: OpExecutionModeId %[[#]] FPFastMathDefault %[[#]] %[[#]]
++; CONTRACT-DAG: OpDecorate %[[#MUL:]] FPFastMathMode AllowContract
++; CONTRACT-DAG: OpDecorate %[[#ADD:]] FPFastMathMode AllowContract
++; CONTRACT-NOT: FPFastMathMode
++; CONTRACT: %[[#MUL]] = OpFMul
++; CONTRACT: %[[#ADD]] = OpFAdd
++; CONTRACT: OpFMul
++
++; NONE: OpEntryPoint Kernel
++
++; NOENTRY: OpFunction
++
++; NOEXT: OpExecutionMode %[[#]] ContractionOff
++
++;--- strict.ll
++define spir_kernel void @k(ptr addrspace(1) %p, float %x) {
++  %y = fmul float %x, 2.0
++  store float %y, ptr addrspace(1) %p
++  ret void
++}
++
++;--- types.ll
++define spir_kernel void @k(ptr addrspace(1) %p, half %h, <4 x float> %v,
++                           double %d) {
++  store i32 1, ptr addrspace(1) %p
++  ret void
++}
++
++;--- contract.ll
++define spir_kernel void @k(ptr addrspace(1) %p, float %x, float %y) {
++  %a = load float, ptr addrspace(1) %p
++  %m = fmul contract float %x, %y
++  %r = fadd contract float %m, %a
++  %s = fmul float %r, %x
++  store float %s, ptr addrspace(1) %p
++  ret void
++}
++
++;--- integer.ll
++define spir_kernel void @k(ptr addrspace(1) %p, i32 %x) {
++  %y = mul i32 %x, 2
++  store i32 %y, ptr addrspace(1) %p
++  ret void
++}
++
++;--- fp-contract.ll
++define spir_kernel void @k(ptr addrspace(1) %p, float %x) {
++  %y = fmul float %x, 2.0
++  store float %y, ptr addrspace(1) %p
++  ret void
++}
++
++!opencl.enable.FP_CONTRACT = !{}
++
++;--- no-entry.ll
++define spir_func float @f(float %x) {
++  %y = fmul float %x, 2.0
++  ret float %y
++}
+-- 
+2.56.0
+
