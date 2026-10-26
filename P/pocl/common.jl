@@ -217,10 +217,19 @@ function build_script(standalone=false; spirv32=false)
     #   kernels on Julia's threads (maleadt/pocl#1; JuliaGPU/KernelAbstractions.jl#906)
     # - 0040: report the stack estimate as CL_KERNEL_PRIVATE_MEM_SIZE on CPUs, so that users of
     #   cl_pocl_host_kernel can tell whether a work-group fits on their stack (maleadt/pocl#1)
+    # - 0041: keep CPU worker threads from joining kernels whose work-groups have all been
+    #   claimed, which cost a lock round-trip per kernel with many small launches
+    #   (JuliaGPU/pocl#7)
+    # - 0042: give each CPU worker thread a static block of work-groups, with work stealing,
+    #   so that repeated launches run the same work-groups on the same threads and NUMA
+    #   first-touch placement works; POCL_PTHREAD_SCHEDULE=guided restores the old schedule
+    #   (JuliaGPU/pocl#7)
+    # - 0043: with POCL_AFFINITY=1, pin the CPU worker threads to the CPUs the process may run
+    #   on, spread over the NUMA nodes, instead of to CPUs 0 and up (JuliaGPU/pocl#8)
     #
     # The `pocl` series on v7.2 is the one this series was rebased from: 0001-0042 also carry
     # the backports that release_next has, and older revisions of upstream PRs #2281, #2384,
-    # #2394 and #2410; 0043-0045 are 0036-0038 above. It doesn't have
+    # #2394 and #2410; 0043-0048 are 0036-0038 and 0041-0043 above. It doesn't have
     # cl_pocl_host_kernel.
     for patch in @PATCHES@; do
         atomic_patch -p1 $patch
