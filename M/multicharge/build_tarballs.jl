@@ -5,11 +5,11 @@ using BinaryBuilder, Pkg
 name = "multicharge"
 version = v"0.5.0"
 
+# The source distribution bundles the test-only subprojects (mstore, test-drive),
+# so meson can configure the test suite without network access.
 sources = [
-    GitSource("https://github.com/grimme-lab/multicharge.git",
-              "6a5d63f9e9e29dcf13cc47cc27f33bf9015681bf";
-              tag="v$(version)"),
-    DirectorySource("./bundled"),
+    ArchiveSource("https://github.com/grimme-lab/multicharge/releases/download/v$(version)/multicharge-$(version)-source.tar.xz",
+                  "fc6dee93fd6957a516137205f5a6754b218904bc38bf60f5a509f2a1b14735be"),
 ]
 
 script = raw"""
@@ -19,8 +19,7 @@ python3 -m pip install --ignore-installed --target=/tmp/meson meson==1.11.2
 export PYTHONPATH="/tmp/meson${PYTHONPATH:+:${PYTHONPATH}}"
 export PATH="/tmp/meson/bin:${PATH}"
 
-cd ${WORKSPACE}/srcdir/multicharge
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/optional-mstore.patch
+cd ${WORKSPACE}/srcdir/multicharge-*
 
 # On FreeBSD, meson-built dependencies ship their pkg-config files in libdata/pkgconfig,
 # which is not on the default search path.
