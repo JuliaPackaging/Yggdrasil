@@ -1,11 +1,12 @@
 using BinaryBuilder
 
 name = "PrimalSolver"
-version = v"0.1.4"
+version = v"0.1.5"
 
 sources = [
     GitSource("https://github.com/c-vision/Primal.git",
-              "fe43d59699a5b5f0d24f2d8634a1eb7ae63730cc"),
+              "bc15e09b42b93e8003b0089c8f2d17b1c6e245c1";
+              tag="v$(version)"),
 ]
 
 # The library is the 12 solver translation units plus every primal_*.c (the
