@@ -1,10 +1,10 @@
 using BinaryBuilder, Pkg
 
 name = "EntropyEOS"
-version = v"1.1.0"
+version = v"1.2.0"
 
 sources = [
-    GitSource("https://github.com/eschnett/EntropyEOS.git", "750fd1a457130131c3502bfaf1b152bcfd71e30a"; tag="v$(version)"),
+    GitSource("https://github.com/eschnett/EntropyEOS.git", "94d09ec6bf04a67aef1cb518cc13967cede6acc6"; tag="v$(version)"),
 ]
 
 script = raw"""
