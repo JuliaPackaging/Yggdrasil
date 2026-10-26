@@ -1,0 +1,1209 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Sun, 25 Oct 2026 09:09:40 +0100
+Subject: [PATCH 43/46] Preserve SPIR struct layouts when retargeting SPIR
+ modules
+
+Before linking a SPIR module with the kernel library, its datalayout is
+replaced by the host's. Struct types from SPIR(-V) aren't padded explicitly,
+because the SPIR datalayout already aligns long and double to 8 bytes as
+OpenCL C requires. Where the host aligns them less (i386), field offsets,
+struct sizes and array strides silently changed, while sizeof and offsetof,
+folded by the SPIR compiler, still reported the SPIR layout.
+
+Before the swap, replace every struct type whose layout differs, wherever it
+describes memory, by a packed struct with explicit padding: GEPs (renumbering
+the field indices), allocas, globals and their initializers, and the
+byval/sret/byref/elementtype attributes. Aggregate SSA values have no
+layout and keep their type; aggregate loads and stores are split into
+per-element accesses at the SPIR offsets. This is what Clang does for
+OpenCL C on i386, and a no-op where the layouts agree (all 64-bit hosts).
+
+The test checks struct buffers, by-value struct arguments, nested structs,
+tail padding, private arrays of structs, constant initializers and aggregate
+loads and stores, from 32-bit and 64-bit SPIR-V.
+
+(cherry picked from commit 3a901f268a3f42a20f6e5374c0e25aa76f1c3ac9)
+---
+ lib/CL/pocl_llvm_build.cc                    |  15 +-
+ lib/llvmopencl/CMakeLists.txt                |   2 +
+ lib/llvmopencl/SPIRStructLayout.cc           | 530 +++++++++++++++++++
+ lib/llvmopencl/SPIRStructLayout.h            |  51 ++
+ poclu/misc.c                                 |  11 +
+ poclu/poclu.h                                |   7 +
+ tests/regression/CMakeLists.txt              |   3 +
+ tests/regression/test_spirv_struct_layout.c  | 315 +++++++++++
+ tests/regression/test_spirv_struct_layout.cl |  71 +++
+ tests/regression/test_spirv_struct_layout.ll |  47 ++
+ 10 files changed, 1049 insertions(+), 3 deletions(-)
+ create mode 100644 lib/llvmopencl/SPIRStructLayout.cc
+ create mode 100644 lib/llvmopencl/SPIRStructLayout.h
+ create mode 100644 tests/regression/test_spirv_struct_layout.c
+ create mode 100644 tests/regression/test_spirv_struct_layout.cl
+ create mode 100644 tests/regression/test_spirv_struct_layout.ll
+
+diff --git a/lib/CL/pocl_llvm_build.cc b/lib/CL/pocl_llvm_build.cc
+index f6da4866b..c052fadcd 100644
+--- a/lib/CL/pocl_llvm_build.cc
++++ b/lib/CL/pocl_llvm_build.cc
+@@ -100,6 +100,7 @@ using namespace llvm;
+ POP_COMPILER_DIAGS
+ 
+ #include "ProgramScopeVariables.h"
++#include "SPIRStructLayout.h"
+ #include "linker.h"
+ 
+ //#define DEBUG_POCL_LLVM_API
+@@ -873,10 +874,12 @@ int pocl_llvm_build_program(cl_program program,
+ }
+ 
+ /* converts a "spir-unknown-unknown" module triple to target (CPU/CUDA etc)
+- * triple, resets the datalayout to the target datalayout */
++ * triple, resets the datalayout to the target datalayout while keeping the
++ * memory layout of the SPIR struct types */
+ static int pocl_convert_spir_bitcode_to_target(llvm::Module *p,
+                                                llvm::Module *libmodule,
+-                                               cl_device_id device) {
++                                               cl_device_id device,
++                                               std::string &Log) {
+ 
+ #if LLVM_MAJOR < 21
+   const std::string &ModTriple = p->getTargetTriple();
+@@ -901,6 +904,9 @@ static int pocl_convert_spir_bitcode_to_target(llvm::Module *p,
+                            device->llvm_target_triplet, ModTriple.c_str());
+     }
+ 
++    if (!pocl::preserveSPIRStructLayouts(*p, libmodule->getDataLayout(), Log))
++      return CL_LINK_PROGRAM_FAILURE;
++
+     /* Note this is a hack to get SPIR working. We'll be linking the
+      * host kernel library (plain LLVM IR) to the SPIR program.bc,
+      * so LLVM complains about incompatible DataLayouts.
+@@ -975,8 +981,11 @@ int pocl_llvm_link_program(cl_program program, unsigned device_i,
+       }
+     }
+ 
++    std::string ConvertLog;
+     error = pocl_convert_spir_bitcode_to_target(TempModule.get(), LibraryModule,
+-                                                device);
++                                                device, ConvertLog);
++    if (!ConvertLog.empty())
++      appendToProgramBuildLog(program, device_i, ConvertLog);
+     POCL_RETURN_ERROR_ON((error != CL_SUCCESS), CL_LINK_PROGRAM_FAILURE,
+                          "could not convert SPIR to Target\n");
+ 
+diff --git a/lib/llvmopencl/CMakeLists.txt b/lib/llvmopencl/CMakeLists.txt
+index 104105d10..ed03274bc 100644
+--- a/lib/llvmopencl/CMakeLists.txt
++++ b/lib/llvmopencl/CMakeLists.txt
+@@ -73,6 +73,8 @@ set(LLVMPASSES_SOURCES "AllocasToEntry.cc"
+                        "RemoveBarrierCalls.h"
+                        "SanitizeUBofDivRem.cc"
+                        "SanitizeUBofDivRem.h"
++                       "SPIRStructLayout.cc"
++                       "SPIRStructLayout.h"
+                        "SubCFGFormation.cc"
+                        "SubCFGFormation.h"
+                        "UnreachablesToReturns.cc"
+diff --git a/lib/llvmopencl/SPIRStructLayout.cc b/lib/llvmopencl/SPIRStructLayout.cc
+new file mode 100644
+index 000000000..a20d6f59f
+--- /dev/null
++++ b/lib/llvmopencl/SPIRStructLayout.cc
+@@ -0,0 +1,530 @@
++// Preserves the memory layout of SPIR struct types when a module is
++// retargeted to the host datalayout.
++//
++// SPIR modules (e.g. from SPIR-V) carry the SPIR datalayout, which follows
++// OpenCL C: long and double are 8-byte aligned. Linking them with the
++// kernel library replaces that datalayout with the host's, where these
++// types can be less aligned (4 bytes on i386). Struct types without explicit
++// padding would then silently change their field offsets, sizes and array
++// strides. Clang avoids this for OpenCL C by emitting explicitly padded
++// structs; this does the same for SPIR modules.
++//
++// Every struct type whose layout differs between the two datalayouts is
++// replaced, wherever it describes memory, by a packed struct with explicit
++// [N x i8] padding that has the SPIR offsets and size under any datalayout.
++// That covers GEPs (with renumbered field indices), allocas, globals and
++// their initializers, and the byval/sret/byref/elementtype attributes.
++// Aggregate SSA values have no layout, so they keep their original type;
++// aggregate loads and stores of such types are split into per-element
++// accesses at the SPIR offsets instead.
++//
++// Copyright (c) 2026 Tim Besard
++//
++// Permission is hereby granted, free of charge, to any person obtaining a copy
++// of this software and associated documentation files (the "Software"), to
++// deal in the Software without restriction, including without limitation the
++// rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
++// sell copies of the Software, and to permit persons to whom the Software is
++// furnished to do so, subject to the following conditions:
++//
++// The above copyright notice and this permission notice shall be included in
++// all copies or substantial portions of the Software.
++//
++// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
++// IN THE SOFTWARE.
++
++#include "config.h"
++
++#include "CompilerWarnings.h"
++IGNORE_COMPILER_WARNING("-Wunused-parameter")
++#include <llvm/ADT/DenseMap.h>
++#include <llvm/ADT/SmallVector.h>
++#include <llvm/IR/Constants.h>
++#include <llvm/IR/IRBuilder.h>
++#include <llvm/IR/Instructions.h>
++#include <llvm/IR/Operator.h>
++POP_COMPILER_DIAGS
++
++#include "SPIRStructLayout.h"
++
++using namespace llvm;
++
++namespace {
++
++class SPIRLayoutPreserver {
++public:
++  SPIRLayoutPreserver(Module &M, const DataLayout &TargetDL)
++      : M(M), Ctx(M.getContext()), SPIRDL(M.getDataLayout()),
++        TargetDL(TargetDL) {}
++
++  bool run(std::string &Log);
++
++private:
++  Module &M;
++  LLVMContext &Ctx;
++  const DataLayout &SPIRDL;
++  const DataLayout &TargetDL;
++
++  // The replacement of every type looked at, or the type itself if its
++  // layout is the same under both datalayouts.
++  DenseMap<Type *, Type *> Replacements;
++  // For each replaced struct, the index of each original field in the
++  // replacement.
++  DenseMap<StructType *, SmallVector<unsigned, 8>> FieldIndices;
++  DenseMap<Constant *, Constant *> MappedConstants;
++  std::string Error;
++
++  Type *replace(Type *T);
++  Type *replaceStruct(StructType *ST);
++  template <typename RangeT>
++  SmallVector<Value *, 8> mapIndices(Type *SrcTy, RangeT Indices);
++  Constant *mapConstant(Constant *C);
++  Constant *mapValueConstant(Constant *C);
++  AttributeList mapTypeAttributes(AttributeList Attrs);
++  void replaceGlobals();
++  void rewriteInstructions(Function &F);
++  Value *splitLoad(IRBuilder<> &B, Type *Ty, Value *Ptr, uint64_t Offset,
++                   Align A);
++  void splitStore(IRBuilder<> &B, Value *V, Value *Ptr, uint64_t Offset,
++                  Align A);
++};
++
++Type *SPIRLayoutPreserver::replace(Type *T) {
++  auto It = Replacements.find(T);
++  if (It != Replacements.end())
++    return It->second;
++
++  Type *R = T;
++  if (auto *AT = dyn_cast<ArrayType>(T)) {
++    Type *Elt = replace(AT->getElementType());
++    if (Elt != AT->getElementType())
++      R = ArrayType::get(Elt, AT->getNumElements());
++  } else if (auto *ST = dyn_cast<StructType>(T)) {
++    if (!ST->isOpaque())
++      R = replaceStruct(ST);
++  }
++  Replacements[T] = R;
++  return R;
++}
++
++Type *SPIRLayoutPreserver::replaceStruct(StructType *ST) {
++  SmallVector<Type *, 8> Elts;
++  bool EltReplaced = false;
++  for (Type *Elt : ST->elements()) {
++    Elts.push_back(replace(Elt));
++    EltReplaced |= Elts.back() != Elt;
++  }
++
++  const StructLayout *SPIRLayout = SPIRDL.getStructLayout(ST);
++  if (!EltReplaced) {
++    const StructLayout *TargetLayout = TargetDL.getStructLayout(ST);
++    bool Same = SPIRLayout->getSizeInBytes() == TargetLayout->getSizeInBytes();
++    for (unsigned I = 0; Same && I < ST->getNumElements(); ++I)
++      Same =
++          SPIRLayout->getElementOffset(I) == TargetLayout->getElementOffset(I);
++    if (Same)
++      return ST;
++  }
++
++  // Packed, so that the padding alone determines the offsets.
++  SmallVector<Type *, 8> Fields;
++  SmallVector<unsigned, 8> Indices;
++  uint64_t Offset = 0;
++  auto padTo = [&](uint64_t To) {
++    if (To > Offset)
++      Fields.push_back(ArrayType::get(Type::getInt8Ty(Ctx), To - Offset));
++    Offset = To;
++  };
++  for (unsigned I = 0; I < Elts.size(); ++I) {
++    padTo(SPIRLayout->getElementOffset(I));
++    Indices.push_back(Fields.size());
++    Fields.push_back(Elts[I]);
++    Offset += TargetDL.getTypeAllocSize(Elts[I]).getFixedValue();
++  }
++  padTo(SPIRLayout->getSizeInBytes());
++
++  StructType *R =
++      ST->hasName()
++          ? StructType::create(Ctx, Fields, (ST->getName() + ".spir").str(),
++                               /*isPacked=*/true)
++          : StructType::get(Ctx, Fields, /*isPacked=*/true);
++
++  // Only fails if an element's size differs between the datalayouts.
++  const StructLayout *NewLayout = TargetDL.getStructLayout(R);
++  bool Same = NewLayout->getSizeInBytes() == SPIRLayout->getSizeInBytes();
++  for (unsigned I = 0; Same && I < Elts.size(); ++I)
++    Same = NewLayout->getElementOffset(Indices[I]) ==
++           SPIRLayout->getElementOffset(I);
++  if (!Same && Error.empty()) {
++    raw_string_ostream OS(Error);
++    OS << "cannot preserve the SPIR layout of " << *ST << "\n";
++  }
++
++  FieldIndices[ST] = std::move(Indices);
++  return R;
++}
++
++// Maps the indices of a GEP over SrcTy to the ones over its replacement.
++template <typename RangeT>
++SmallVector<Value *, 8> SPIRLayoutPreserver::mapIndices(Type *SrcTy,
++                                                        RangeT Indices) {
++  SmallVector<Value *, 8> Result;
++  Type *Ty = nullptr;
++  for (Value *Idx : Indices) {
++    if (Ty == nullptr) {
++      // The first index steps over whole objects, whose size is preserved.
++      Result.push_back(Idx);
++      Ty = SrcTy;
++      continue;
++    }
++    if (auto *ST = dyn_cast<StructType>(Ty)) {
++      auto *C = cast<Constant>(Idx);
++      if (C->getType()->isVectorTy())
++        C = C->getSplatValue();
++      unsigned Field = cast<ConstantInt>(C)->getZExtValue();
++      auto It = FieldIndices.find(ST);
++      Result.push_back(
++          It == FieldIndices.end()
++              ? Idx
++              : ConstantInt::get(Idx->getType(), It->second[Field]));
++      Ty = ST->getElementType(Field);
++    } else {
++      Result.push_back(Idx);
++      Ty = Ty->isArrayTy() ? Ty->getArrayElementType()
++                           : cast<VectorType>(Ty)->getElementType();
++    }
++  }
++  return Result;
++}
++
++Constant *SPIRLayoutPreserver::mapConstant(Constant *C) {
++  auto It = MappedConstants.find(C);
++  if (It != MappedConstants.end())
++    return It->second;
++
++  Constant *R = C;
++  Type *Ty = C->getType();
++  Type *NewTy = replace(Ty);
++  if (NewTy != Ty) {
++    if (isa<PoisonValue>(C))
++      R = PoisonValue::get(NewTy);
++    else if (isa<UndefValue>(C))
++      R = UndefValue::get(NewTy);
++    else if (C->isNullValue())
++      R = Constant::getNullValue(NewTy);
++    else if (auto *ST = dyn_cast<StructType>(Ty)) {
++      auto *NewST = cast<StructType>(NewTy);
++      SmallVector<Constant *, 8> Fields;
++      for (Type *FieldTy : NewST->elements())
++        Fields.push_back(Constant::getNullValue(FieldTy));
++      const auto &Indices = FieldIndices[ST];
++      for (unsigned I = 0; I < ST->getNumElements(); ++I)
++        Fields[Indices[I]] = mapConstant(C->getAggregateElement(I));
++      R = ConstantStruct::get(NewST, Fields);
++    } else {
++      auto *AT = cast<ArrayType>(Ty);
++      SmallVector<Constant *, 8> Elts;
++      for (unsigned I = 0; I < AT->getNumElements(); ++I)
++        Elts.push_back(mapConstant(C->getAggregateElement(I)));
++      R = ConstantArray::get(cast<ArrayType>(NewTy), Elts);
++    }
++  } else if (isa<ConstantExpr>(C) || isa<ConstantAggregate>(C)) {
++    SmallVector<Constant *, 8> Ops;
++    bool Changed = false;
++    for (Value *Op : C->operands()) {
++      Ops.push_back(mapConstant(cast<Constant>(Op)));
++      Changed |= Ops.back() != Op;
++    }
++    Type *NewSrcTy = nullptr;
++    if (auto *GEP = dyn_cast<GEPOperator>(C)) {
++      Type *SrcTy = GEP->getSourceElementType();
++      if (replace(SrcTy) != SrcTy) {
++        NewSrcTy = replace(SrcTy);
++        auto Indices = mapIndices(SrcTy, GEP->indices());
++        for (unsigned I = 0; I < Indices.size(); ++I)
++          Ops[I + 1] = cast<Constant>(Indices[I]);
++      }
++    }
++    if (NewSrcTy) {
++      // getWithOperands would ignore a new source type if nothing else
++      // changed, e.g. for GEPs that only index arrays of a replaced type.
++      auto *GEP = cast<GEPOperator>(C);
++      ArrayRef<Constant *> Indices = ArrayRef(Ops).drop_front();
++#if LLVM_MAJOR < 19
++      R = ConstantExpr::getGetElementPtr(
++          NewSrcTy, Ops[0], Indices, GEP->isInBounds(), GEP->getInRangeIndex());
++#else
++      R = ConstantExpr::getGetElementPtr(
++          NewSrcTy, Ops[0], Indices, GEP->getNoWrapFlags(), GEP->getInRange());
++#endif
++    } else if (Changed) {
++      if (auto *CE = dyn_cast<ConstantExpr>(C))
++        R = CE->getWithOperands(Ops, Ty);
++      else if (auto *ST = dyn_cast<StructType>(Ty))
++        R = ConstantStruct::get(ST, Ops);
++      else if (auto *AT = dyn_cast<ArrayType>(Ty))
++        R = ConstantArray::get(AT, Ops);
++      else
++        R = ConstantVector::get(Ops);
++    }
++  }
++  MappedConstants[C] = R;
++  return R;
++}
++
++// Like mapConstant, but for an SSA operand: aggregates keep their type.
++Constant *SPIRLayoutPreserver::mapValueConstant(Constant *C) {
++  if (replace(C->getType()) == C->getType())
++    return mapConstant(C);
++  if (!isa<ConstantAggregate>(C))
++    return C;
++  SmallVector<Constant *, 8> Ops;
++  bool Changed = false;
++  for (Value *Op : C->operands()) {
++    Ops.push_back(mapValueConstant(cast<Constant>(Op)));
++    Changed |= Ops.back() != Op;
++  }
++  if (!Changed)
++    return C;
++  if (auto *ST = dyn_cast<StructType>(C->getType()))
++    return ConstantStruct::get(ST, Ops);
++  return ConstantArray::get(cast<ArrayType>(C->getType()), Ops);
++}
++
++AttributeList SPIRLayoutPreserver::mapTypeAttributes(AttributeList Attrs) {
++  static const Attribute::AttrKind Kinds[] = {
++      Attribute::ByVal,    Attribute::StructRet,    Attribute::ByRef,
++      Attribute::InAlloca, Attribute::Preallocated, Attribute::ElementType};
++  // Not only parameters: llvm.call.preallocated.arg calls carry
++  // preallocated as a function attribute.
++  AttributeList Orig = Attrs;
++  for (unsigned Index : Orig.indexes()) {
++    for (Attribute::AttrKind Kind : Kinds) {
++      Attribute A = Orig.getAttributeAtIndex(Index, Kind);
++      if (!A.isValid())
++        continue;
++      Type *Ty = A.getValueAsType();
++      Type *NewTy = replace(Ty);
++      if (NewTy != Ty)
++        Attrs = Attrs.replaceAttributeTypeAtIndex(Ctx, Index, Kind, NewTy);
++
++      // Without an explicit alignment, the pointee is aligned like its type,
++      // which the replacement (packed) or the target datalayout may lower.
++      if (Kind != Attribute::ElementType &&
++          Index != AttributeList::FunctionIndex &&
++          Index >= AttributeList::FirstArgIndex) {
++        unsigned ArgNo = Index - AttributeList::FirstArgIndex;
++        Align SPIRAlign = SPIRDL.getABITypeAlign(Ty);
++        if (!Attrs.getParamAlignment(ArgNo) &&
++            TargetDL.getABITypeAlign(NewTy) != SPIRAlign)
++          Attrs = Attrs.addParamAttribute(
++              Ctx, ArgNo, Attribute::getWithAlignment(Ctx, SPIRAlign));
++      }
++    }
++  }
++  return Attrs;
++}
++
++void SPIRLayoutPreserver::replaceGlobals() {
++  SmallVector<std::pair<GlobalVariable *, GlobalVariable *>, 8> Replaced;
++  for (GlobalVariable &GV : M.globals()) {
++    Type *Ty = GV.getValueType();
++    Type *NewTy = replace(Ty);
++    if (NewTy == Ty)
++      continue;
++    auto *NewGV =
++        new GlobalVariable(M, NewTy, GV.isConstant(), GV.getLinkage(), nullptr,
++                           "", &GV, GV.getThreadLocalMode(),
++                           GV.getAddressSpace(), GV.isExternallyInitialized());
++    NewGV->copyAttributesFrom(&GV);
++    NewGV->setComdat(GV.getComdat());
++    NewGV->copyMetadata(&GV, 0);
++    NewGV->setAlignment(GV.getAlign() ? *GV.getAlign()
++                                      : SPIRDL.getPreferredAlign(&GV));
++    Replaced.push_back({&GV, NewGV});
++  }
++
++  // Pointers are opaque, so the replacements can take over every use, also
++  // in the initializers of other globals, before those are mapped below.
++  for (auto [GV, NewGV] : Replaced)
++    GV->replaceAllUsesWith(NewGV);
++  for (auto [GV, NewGV] : Replaced) {
++    if (GV->hasInitializer())
++      NewGV->setInitializer(mapConstant(GV->getInitializer()));
++    NewGV->takeName(GV);
++    GV->eraseFromParent();
++  }
++
++  for (GlobalVariable &GV : M.globals()) {
++    if (!GV.getAlign() &&
++        SPIRDL.getPreferredAlign(&GV) != TargetDL.getPreferredAlign(&GV))
++      GV.setAlignment(SPIRDL.getPreferredAlign(&GV));
++    if (!GV.hasInitializer())
++      continue;
++    Constant *Init = mapConstant(GV.getInitializer());
++    if (Init != GV.getInitializer())
++      GV.setInitializer(Init);
++  }
++  for (GlobalAlias &GA : M.aliases()) {
++    Constant *Aliasee = mapConstant(GA.getAliasee());
++    if (Aliasee != GA.getAliasee())
++      GA.setAliasee(Aliasee);
++  }
++}
++
++Value *SPIRLayoutPreserver::splitLoad(IRBuilder<> &B, Type *Ty, Value *Ptr,
++                                      uint64_t Offset, Align A) {
++  if (auto *ST = dyn_cast<StructType>(Ty)) {
++    const StructLayout *Layout = SPIRDL.getStructLayout(ST);
++    Value *V = PoisonValue::get(ST);
++    for (unsigned I = 0; I < ST->getNumElements(); ++I)
++      V = B.CreateInsertValue(V,
++                              splitLoad(B, ST->getElementType(I), Ptr,
++                                        Offset + Layout->getElementOffset(I),
++                                        A),
++                              I);
++    return V;
++  }
++  if (auto *AT = dyn_cast<ArrayType>(Ty)) {
++    uint64_t Stride =
++        SPIRDL.getTypeAllocSize(AT->getElementType()).getFixedValue();
++    Value *V = PoisonValue::get(AT);
++    for (unsigned I = 0; I < AT->getNumElements(); ++I)
++      V = B.CreateInsertValue(
++          V, splitLoad(B, AT->getElementType(), Ptr, Offset + I * Stride, A),
++          I);
++    return V;
++  }
++  Value *P =
++      Offset ? B.CreateConstInBoundsGEP1_64(B.getInt8Ty(), Ptr, Offset) : Ptr;
++  return B.CreateAlignedLoad(Ty, P, commonAlignment(A, Offset));
++}
++
++void SPIRLayoutPreserver::splitStore(IRBuilder<> &B, Value *V, Value *Ptr,
++                                     uint64_t Offset, Align A) {
++  Type *Ty = V->getType();
++  if (auto *ST = dyn_cast<StructType>(Ty)) {
++    const StructLayout *Layout = SPIRDL.getStructLayout(ST);
++    for (unsigned I = 0; I < ST->getNumElements(); ++I)
++      splitStore(B, B.CreateExtractValue(V, I), Ptr,
++                 Offset + Layout->getElementOffset(I), A);
++    return;
++  }
++  if (auto *AT = dyn_cast<ArrayType>(Ty)) {
++    uint64_t Stride =
++        SPIRDL.getTypeAllocSize(AT->getElementType()).getFixedValue();
++    for (unsigned I = 0; I < AT->getNumElements(); ++I)
++      splitStore(B, B.CreateExtractValue(V, I), Ptr, Offset + I * Stride, A);
++    return;
++  }
++  Value *P =
++      Offset ? B.CreateConstInBoundsGEP1_64(B.getInt8Ty(), Ptr, Offset) : Ptr;
++  B.CreateAlignedStore(V, P, commonAlignment(A, Offset));
++}
++
++void SPIRLayoutPreserver::rewriteInstructions(Function &F) {
++  SmallVector<Instruction *, 8> ToSplit;
++  for (BasicBlock &BB : F) {
++    for (Instruction &I : BB) {
++      for (Use &U : I.operands()) {
++        auto *C = dyn_cast<Constant>(U.get());
++        if (C == nullptr || isa<GlobalValue>(C))
++          continue;
++        Constant *NewC = mapValueConstant(C);
++        if (NewC != C)
++          U.set(NewC);
++      }
++
++      if (auto *GEP = dyn_cast<GetElementPtrInst>(&I)) {
++        Type *SrcTy = GEP->getSourceElementType();
++        Type *NewSrcTy = replace(SrcTy);
++        if (NewSrcTy == SrcTy)
++          continue;
++        auto Indices = mapIndices(SrcTy, GEP->indices());
++        for (unsigned Idx = 0; Idx < Indices.size(); ++Idx)
++          GEP->setOperand(Idx + 1, Indices[Idx]);
++        GEP->setSourceElementType(NewSrcTy);
++        GEP->setResultElementType(replace(GEP->getResultElementType()));
++      } else if (auto *AI = dyn_cast<AllocaInst>(&I)) {
++        AI->setAllocatedType(replace(AI->getAllocatedType()));
++      } else if (auto *CB = dyn_cast<CallBase>(&I)) {
++        CB->setAttributes(mapTypeAttributes(CB->getAttributes()));
++      } else if (auto *LI = dyn_cast<LoadInst>(&I)) {
++        if (replace(LI->getType()) != LI->getType())
++          ToSplit.push_back(LI);
++      } else if (auto *SI = dyn_cast<StoreInst>(&I)) {
++        Type *Ty = SI->getValueOperand()->getType();
++        if (replace(Ty) != Ty)
++          ToSplit.push_back(SI);
++      }
++    }
++  }
++
++  for (Instruction *I : ToSplit) {
++    IRBuilder<> B(I);
++    if (auto *LI = dyn_cast<LoadInst>(I)) {
++      if (LI->isVolatile()) {
++        Error = "volatile aggregate loads are not supported\n";
++        return;
++      }
++      Value *V = splitLoad(B, LI->getType(), LI->getPointerOperand(), 0,
++                           LI->getAlign());
++      V->takeName(LI);
++      LI->replaceAllUsesWith(V);
++    } else {
++      auto *SI = cast<StoreInst>(I);
++      if (SI->isVolatile()) {
++        Error = "volatile aggregate stores are not supported\n";
++        return;
++      }
++      splitStore(B, SI->getValueOperand(), SI->getPointerOperand(), 0,
++                 SI->getAlign());
++    }
++    I->eraseFromParent();
++  }
++}
++
++bool SPIRLayoutPreserver::run(std::string &Log) {
++  // Kernel arguments are passed in memory, which the launcher would read
++  // with the target layout.
++  for (Function &F : M) {
++    if (F.getCallingConv() != CallingConv::SPIR_KERNEL)
++      continue;
++    for (Argument &A : F.args()) {
++      if (!A.hasByValAttr() && replace(A.getType()) != A.getType()) {
++        Log = "kernel " + F.getName().str() +
++              " takes an aggregate argument by value, which is only "
++              "supported through a byval pointer\n";
++        return false;
++      }
++    }
++  }
++
++  replaceGlobals();
++  for (Function &F : M) {
++    F.setAttributes(mapTypeAttributes(F.getAttributes()));
++    rewriteInstructions(F);
++  }
++
++  if (!Error.empty()) {
++    Log = Error;
++    return false;
++  }
++  return true;
++}
++
++} // namespace
++
++namespace pocl {
++
++bool preserveSPIRStructLayouts(Module &M, const DataLayout &TargetDL,
++                               std::string &Log) {
++  return SPIRLayoutPreserver(M, TargetDL).run(Log);
++}
++
++} // namespace pocl
+diff --git a/lib/llvmopencl/SPIRStructLayout.h b/lib/llvmopencl/SPIRStructLayout.h
+new file mode 100644
+index 000000000..a01ac18a9
+--- /dev/null
++++ b/lib/llvmopencl/SPIRStructLayout.h
+@@ -0,0 +1,51 @@
++// Header for preserving SPIR struct layouts across a datalayout change.
++//
++// Copyright (c) 2026 Tim Besard
++//
++// Permission is hereby granted, free of charge, to any person obtaining a copy
++// of this software and associated documentation files (the "Software"), to
++// deal in the Software without restriction, including without limitation the
++// rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
++// sell copies of the Software, and to permit persons to whom the Software is
++// furnished to do so, subject to the following conditions:
++//
++// The above copyright notice and this permission notice shall be included in
++// all copies or substantial portions of the Software.
++//
++// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
++// IN THE SOFTWARE.
++
++#ifndef POCL_SPIR_STRUCT_LAYOUT_H
++#define POCL_SPIR_STRUCT_LAYOUT_H
++
++#include <llvm/IR/DataLayout.h>
++#include <llvm/IR/Module.h>
++
++#include <string>
++
++#ifdef __GNUC__
++#pragma GCC visibility push(hidden)
++#endif
++
++namespace pocl {
++
++// Rewrites the module, which still has the SPIR datalayout, so that its
++// memory layout stays the same once the datalayout is replaced by
++// TargetDL. Returns false and explains why in Log if the module uses a
++// construct that can't be preserved.
++bool preserveSPIRStructLayouts(llvm::Module &M,
++                               const llvm::DataLayout &TargetDL,
++                               std::string &Log);
++
++} // namespace pocl
++
++#ifdef __GNUC__
++#pragma GCC visibility pop
++#endif
++
++#endif
+diff --git a/poclu/misc.c b/poclu/misc.c
+index 62b622f5f..866ef0eef 100644
+--- a/poclu/misc.c
++++ b/poclu/misc.c
+@@ -809,3 +809,14 @@ poclu_device_supports_il (cl_device_id device, const char *il)
+   free (ils);
+   return has_il;
+ }
++
++cl_uint
++poclu_device_address_bits (cl_device_id device)
++{
++  cl_uint address_bits = 0;
++  cl_int err = clGetDeviceInfo (device, CL_DEVICE_ADDRESS_BITS,
++                                sizeof (cl_uint), &address_bits, NULL);
++  if (err != CL_SUCCESS)
++    return 0;
++  return address_bits;
++}
+diff --git a/poclu/poclu.h b/poclu/poclu.h
+index 3faaef6a5..c73c0a899 100644
+--- a/poclu/poclu.h
++++ b/poclu/poclu.h
+@@ -377,6 +377,13 @@ POCLU_API cl_int POCLU_CALL poclu_show_program_build_log (cl_program program);
+ POCLU_API int POCLU_CALL poclu_device_supports_il (cl_device_id device,
+                                                    const char *il);
+ 
++/**
++ * \brief get the address bits of a device, which must match the addressing
++ * model (Physical32 or Physical64) of the SPIR-V modules it runs
++ * \return the address bits, or 0 on error
++ */
++POCLU_API cl_uint POCLU_CALL poclu_device_address_bits (cl_device_id device);
++
+ /**
+  * \brief check a return value of CL function or print the error to stderr.
+  * @param cl_err [in] value to be checked.
+diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
+index db9850a49..a704765b5 100644
+--- a/tests/regression/CMakeLists.txt
++++ b/tests/regression/CMakeLists.txt
+@@ -31,6 +31,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
+      test_issue_1711 test_issue_1794 test_issue_1747 test_issue_1958
+      test_unreachable_kernel
+      test_remat_alloca_without_initializer
++     test_spirv_struct_layout
+      test_unreachable_in_infinite_loop
+      test_rematerialized_alloca_load_with_outside_pr_users
+      test_peeled_wi_global_id
+@@ -194,6 +195,8 @@ add_test_pocl(NAME "regression/test_unreachable_kernel" WORKITEM_HANDLER "loops;
+ 
+ add_test_pocl(NAME "regression/test_remat_alloca_without_initializer" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_remat_alloca_without_initializer" LABELS ${SPIRV_LABELS})
+ 
++add_test_pocl(NAME "regression/test_spirv_struct_layout" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_spirv_struct_layout" LABELS ${SPIRV_LABELS})
++
+ add_test_pocl(NAME "regression/unreachable_in_infinite_loop" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_unreachable_in_infinite_loop")
+ 
+ add_test_pocl(NAME "regression/peeled_wi_global_id" WORKITEM_HANDLER "loopvec;cbs;" COMMAND "test_peeled_wi_global_id" LABELS ${SPIRV_LABELS})
+diff --git a/tests/regression/test_spirv_struct_layout.c b/tests/regression/test_spirv_struct_layout.c
+new file mode 100644
+index 000000000..9f319c1e3
+--- /dev/null
++++ b/tests/regression/test_spirv_struct_layout.c
+@@ -0,0 +1,315 @@
++// Copyright (c) 2026 PoCL developers
++//
++// Permission is hereby granted, free of charge, to any person obtaining a copy
++// of this software and associated documentation files (the "Software"), to deal
++// in the Software without restriction, including without limitation the rights
++// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++// copies of the Software, and to permit persons to whom the Software is
++// furnished to do so, subject to the following conditions:
++//
++// The above copyright notice and this permission notice shall be included in
++// all copies or substantial portions of the Software.
++//
++// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++// THE SOFTWARE.
++
++/*
++  SPIR-V modules use the OpenCL C layout of structs, where long and double
++  are 8-byte aligned, without padding the struct types explicitly. PoCL
++  replaces the SPIR datalayout with the host's, which on i386 aligns long and
++  double to 4 bytes only, so the kernels used to access fields, struct
++  arguments and arrays of structs at the wrong offsets, while sizeof and
++  offsetof (folded by the SPIR compiler) still reported the SPIR layout.
++
++  The kernels are in test_spirv_struct_layout.cl and .ll. The host side
++  writes and reads the structs as bytes at the OpenCL C offsets.
++*/
++
++#include "pocl_opencl.h"
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#ifndef _WIN32
++#include <unistd.h>
++#endif
++
++#define CHECK_ERROR(err)                                                       \
++  if (err != CL_SUCCESS) {                                                     \
++    printf("OpenCL Error %d at %s:%d\n", err, __FILE__, __LINE__);             \
++    return 1;                                                                  \
++  }
++
++#define N 3
++#define S_SIZE 24
++#define U_SIZE 56
++#define P_SIZE 32
++
++static int Failures = 0;
++
++static void put_i32(unsigned char *buf, size_t off, cl_int v) {
++  memcpy(buf + off, &v, sizeof(v));
++}
++static void put_i64(unsigned char *buf, size_t off, cl_long v) {
++  memcpy(buf + off, &v, sizeof(v));
++}
++static void put_f64(unsigned char *buf, size_t off, cl_double v) {
++  memcpy(buf + off, &v, sizeof(v));
++}
++
++static void check_i64(const char *what, int idx, const unsigned char *buf,
++                      size_t off, size_t size, cl_long expected) {
++  cl_long v = 0;
++  if (size == 1)
++    v = (cl_char)buf[off];
++  else if (size == 4) {
++    cl_int i;
++    memcpy(&i, buf + off, sizeof(i));
++    v = i;
++  } else
++    memcpy(&v, buf + off, sizeof(v));
++  if (v != expected) {
++    printf("%s[%d]: got %lld, expected %lld\n", what, idx, (long long)v,
++           (long long)expected);
++    Failures++;
++  }
++}
++
++static void check_f64(const char *what, int idx, const unsigned char *buf,
++                      size_t off, cl_double expected) {
++  cl_double v;
++  memcpy(&v, buf + off, sizeof(v));
++  if (v != expected) {
++    printf("%s[%d]: got %g, expected %g\n", what, idx, v, expected);
++    Failures++;
++  }
++}
++
++/* T: d at 0, i at 8. */
++static void put_t(unsigned char *buf, size_t off, cl_double d, cl_int i) {
++  put_f64(buf, off, d);
++  put_i32(buf, off + 8, i);
++}
++static void check_t(const char *what, int idx, const unsigned char *buf,
++                    size_t off, cl_double d, cl_int i) {
++  check_f64(what, idx, buf, off, d);
++  check_i64(what, idx, buf, off + 8, 4, i);
++}
++
++static int run_layout(cl_context context, cl_command_queue queue,
++                      cl_program program) {
++  cl_int err;
++  cl_kernel kernel = clCreateKernel(program, "layout", &err);
++  CHECK_ERROR(err);
++
++  /* S: c at 0, l at 8, d at 16. */
++  unsigned char sv[S_SIZE] = {0};
++  sv[0] = 3;
++  put_i64(sv, 8, 0x100000000LL);
++  put_f64(sv, 16, 0.5);
++
++  /* U: a at 0, t[2] at 8, c at 40, l at 48. */
++  unsigned char uv[U_SIZE] = {0};
++  put_i32(uv, 0, 100);
++  put_t(uv, 8, 1.25, 7);
++  put_t(uv, 24, 2.25, 8);
++  uv[40] = 9;
++  put_i64(uv, 48, 1000);
++
++  cl_mem s = clCreateBuffer(context, CL_MEM_READ_WRITE, N * S_SIZE, NULL, &err);
++  CHECK_ERROR(err);
++  cl_mem u = clCreateBuffer(context, CL_MEM_READ_WRITE, N * U_SIZE, NULL, &err);
++  CHECK_ERROR(err);
++  cl_mem out =
++      clCreateBuffer(context, CL_MEM_READ_WRITE, 9 * sizeof(cl_long), NULL, &err);
++  CHECK_ERROR(err);
++
++  CHECK_ERROR(clSetKernelArg(kernel, 0, sizeof(cl_mem), &s));
++  CHECK_ERROR(clSetKernelArg(kernel, 1, S_SIZE, sv));
++  CHECK_ERROR(clSetKernelArg(kernel, 2, sizeof(cl_mem), &u));
++  CHECK_ERROR(clSetKernelArg(kernel, 3, U_SIZE, uv));
++  CHECK_ERROR(clSetKernelArg(kernel, 4, sizeof(cl_mem), &out));
++
++  size_t global = N;
++  CHECK_ERROR(clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global, NULL, 0,
++                                     NULL, NULL));
++
++  unsigned char s_res[N * S_SIZE], u_res[N * U_SIZE];
++  cl_long out_res[9];
++  CHECK_ERROR(clEnqueueReadBuffer(queue, s, CL_TRUE, 0, sizeof(s_res), s_res, 0,
++                                  NULL, NULL));
++  CHECK_ERROR(clEnqueueReadBuffer(queue, u, CL_TRUE, 0, sizeof(u_res), u_res, 0,
++                                  NULL, NULL));
++  CHECK_ERROR(clEnqueueReadBuffer(queue, out, CL_TRUE, 0, sizeof(out_res),
++                                  out_res, 0, NULL, NULL));
++
++  /* priv[k] = {t[k % 2].d * (k + 1), t[k % 2].i + k} */
++  const cl_double priv_d[3] = {1.25, 4.5, 3.75};
++  const cl_int priv_i[3] = {7, 9, 9};
++  for (int i = 0; i < N; i++) {
++    const unsigned char *si = s_res + i * S_SIZE;
++    check_i64("s.c", i, si, 0, 1, 3 + i);
++    check_i64("s.l", i, si, 8, 8, 0x100000000LL + i);
++    check_f64("s.d", i, si, 16, 0.5 + i);
++
++    const unsigned char *ui = u_res + i * U_SIZE;
++    check_i64("u.a", i, ui, 0, 4, 100);
++    check_t("u.t[0]", i, ui, 8, 1.25, 7);
++    check_t("u.t[1]", i, ui, 24, priv_d[i % 3], priv_i[i % 3]);
++    check_i64("u.c", i, ui, 40, 1, 9);
++    check_i64("u.l", i, ui, 48, 8, 1007);
++  }
++
++  /* sizeof and offsetof are folded by the SPIR compiler, so these held
++     before too; the last two read a constant initializer. */
++  const cl_long expected_out[9] = {24, 8, 16, 16, 56, 8, 48, 5, 4};
++  for (int i = 0; i < 9; i++)
++    check_i64("out", i, (const unsigned char *)out_res, i * sizeof(cl_long), 8,
++              expected_out[i]);
++
++  clReleaseMemObject(s);
++  clReleaseMemObject(u);
++  clReleaseMemObject(out);
++  clReleaseKernel(kernel);
++  return 0;
++}
++
++static int run_aggregate(cl_context context, cl_command_queue queue,
++                         cl_program program) {
++  cl_int err;
++  cl_kernel kernel = clCreateKernel(program, "aggregate", &err);
++  CHECK_ERROR(err);
++
++  /* P: a at 0, t at 8, l at 24. */
++  unsigned char io[3 * P_SIZE] = {0};
++  put_i32(io, 0, 1);
++  put_t(io, 8, 0.25, 2);
++  put_i64(io, 24, 3);
++
++  cl_mem buf = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
++                              sizeof(io), io, &err);
++  CHECK_ERROR(err);
++  CHECK_ERROR(clSetKernelArg(kernel, 0, sizeof(cl_mem), &buf));
++
++  size_t global = 1;
++  CHECK_ERROR(clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global, NULL, 0,
++                                     NULL, NULL));
++  CHECK_ERROR(clEnqueueReadBuffer(queue, buf, CL_TRUE, 0, sizeof(io), io, 0,
++                                  NULL, NULL));
++
++  check_i64("p.a", 0, io, 0, 4, 2);
++  check_t("p.t", 0, io, 8, 0.5, 2);
++  check_i64("p.l", 0, io, 24, 8, 103);
++  check_i64("p.a", 1, io, P_SIZE + 0, 4, 10);
++  check_t("p.t", 1, io, P_SIZE + 8, 1.5, 11);
++  check_i64("p.l", 1, io, P_SIZE + 24, 8, 12);
++  check_i64("p.a", 2, io, 2 * P_SIZE + 0, 4, 20);
++  check_t("p.t", 2, io, 2 * P_SIZE + 8, 2.5, 21);
++  check_i64("p.l", 2, io, 2 * P_SIZE + 24, 8, 22);
++
++  clReleaseMemObject(buf);
++  clReleaseKernel(kernel);
++  return 0;
++}
++
++static int run_constant_gep(cl_context context, cl_command_queue queue,
++                            cl_program program) {
++  cl_int err;
++  cl_kernel kernel = clCreateKernel(program, "constant_gep", &err);
++  CHECK_ERROR(err);
++  cl_int out = 0;
++  cl_mem buf = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
++                              sizeof(out), &out, &err);
++  CHECK_ERROR(err);
++  CHECK_ERROR(clSetKernelArg(kernel, 0, sizeof(cl_mem), &buf));
++  size_t global = 1;
++  CHECK_ERROR(clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global, NULL, 0,
++                                     NULL, NULL));
++  CHECK_ERROR(clEnqueueReadBuffer(queue, buf, CL_TRUE, 0, sizeof(out), &out, 0,
++                                  NULL, NULL));
++  check_i64("tarr[1].i", 0, (const unsigned char *)&out, 0, 4, 2);
++  clReleaseMemObject(buf);
++  clReleaseKernel(kernel);
++  return 0;
++}
++
++int main(int argc, char **argv) {
++  cl_uint platform_index = argc > 1 ? (cl_uint)atoi(argv[1]) : 0;
++  cl_int err;
++
++#ifndef _WIN32
++  alarm(300);
++#endif
++
++  cl_uint num_platforms;
++  CHECK_ERROR(clGetPlatformIDs(0, NULL, &num_platforms));
++  if (platform_index >= num_platforms) {
++    printf("Platform index %u out of range\n", platform_index);
++    return 1;
++  }
++  cl_platform_id *platforms = malloc(sizeof(cl_platform_id) * num_platforms);
++  CHECK_ERROR(clGetPlatformIDs(num_platforms, platforms, NULL));
++  cl_platform_id platform = platforms[platform_index];
++  free(platforms);
++
++  cl_device_id device;
++  CHECK_ERROR(clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, 1, &device, NULL));
++
++  if (!poclu_device_supports_il(device, "SPIR-V_1.0")) {
++    printf("SKIP: The test requires support for SPIR-V 1.0\n");
++    return 77;
++  }
++  cl_device_fp_config fp64_config = 0;
++  CHECK_ERROR(clGetDeviceInfo(device, CL_DEVICE_DOUBLE_FP_CONFIG,
++                              sizeof(fp64_config), &fp64_config, NULL));
++  if (fp64_config == 0) {
++    printf("SKIP: The test requires double precision support\n");
++    return 77;
++  }
++
++  const char *path = poclu_device_address_bits(device) == 32
++                         ? SRCDIR "/test_spirv_struct_layout32.spv"
++                         : SRCDIR "/test_spirv_struct_layout64.spv";
++  size_t size;
++  char *binary = poclu_read_binfile(path, &size);
++  if (binary == NULL) {
++    printf("Failed to open %s\n", path);
++    return 1;
++  }
++
++  cl_context context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
++  CHECK_ERROR(err);
++  cl_command_queue queue =
++      clCreateCommandQueueWithProperties(context, device, NULL, &err);
++  CHECK_ERROR(err);
++
++  cl_program program = clCreateProgramWithIL(context, binary, size, &err);
++  CHECK_ERROR(err);
++  free(binary);
++  err = clBuildProgram(program, 1, &device, NULL, NULL, NULL);
++  if (err != CL_SUCCESS) {
++    poclu_show_program_build_log(program);
++    CHECK_ERROR(err);
++  }
++
++  if (run_layout(context, queue, program) ||
++      run_aggregate(context, queue, program) ||
++      run_constant_gep(context, queue, program))
++    return 1;
++
++  clReleaseProgram(program);
++  clReleaseCommandQueue(queue);
++  clReleaseContext(context);
++
++  if (Failures) {
++    printf("FAIL: %d mismatches\n", Failures);
++    return 1;
++  }
++  printf("OK\n");
++  return 0;
++}
+diff --git a/tests/regression/test_spirv_struct_layout.cl b/tests/regression/test_spirv_struct_layout.cl
+new file mode 100644
+index 000000000..79a851f33
+--- /dev/null
++++ b/tests/regression/test_spirv_struct_layout.cl
+@@ -0,0 +1,71 @@
++/* Kernels for test_spirv_struct_layout.c. The struct types aren't padded
++   explicitly in SPIR, where long and double are 8-byte aligned. Built to
++   test_spirv_struct_layout{32,64}.spv together with
++   test_spirv_struct_layout.ll, for N in 32 and 64 (with spir64 for 64):
++
++     clang --target=spir -cl-std=CL2.0 -O0 -emit-llvm -c \
++       test_spirv_struct_layout.cl -o cl.bc
++     llvm-as test_spirv_struct_layout.ll -o ll.bc
++     llvm-link --suppress-warnings cl.bc ll.bc -o linked.bc
++     llvm-spirv --spirv-max-version=1.0 linked.bc \
++       -o test_spirv_struct_layoutN.spv
++*/
++
++/* interior padding: c at 0, l at 8, d at 16, size 24 */
++typedef struct
++{
++  char c;
++  long l;
++  double d;
++} S;
++
++/* tail padding: d at 0, i at 8, size 16 */
++typedef struct
++{
++  double d;
++  int i;
++} T;
++
++/* nested: a at 0, t at 8, c at 40, l at 48, size 56 */
++typedef struct
++{
++  int a;
++  T t[2];
++  char c;
++  long l;
++} U;
++
++constant U cu = { 1, { { 2.5, 3 }, { 4.5, 5 } }, 6, 7 };
++constant long *cu_l = &cu.l;
++
++kernel void
++layout (global S *s, S sv, global U *u, U uv, global long *out)
++{
++  int i = get_global_id (0);
++  s[i].c = sv.c + i;
++  s[i].l = sv.l + i;
++  s[i].d = sv.d + i;
++
++  T priv[3];
++  for (int k = 0; k < 3; k++)
++    {
++      priv[k].d = uv.t[k % 2].d * (k + 1);
++      priv[k].i = uv.t[k % 2].i + k;
++    }
++  u[i] = uv;
++  u[i].t[1] = priv[i % 3];
++  u[i].l += *cu_l;
++
++  if (i == 0)
++    {
++      out[0] = sizeof (S);
++      out[1] = __builtin_offsetof (S, l);
++      out[2] = __builtin_offsetof (S, d);
++      out[3] = sizeof (T);
++      out[4] = sizeof (U);
++      out[5] = __builtin_offsetof (U, t);
++      out[6] = __builtin_offsetof (U, l);
++      out[7] = cu.t[1].i;
++      out[8] = (long)cu.t[1].d;
++    }
++}
+diff --git a/tests/regression/test_spirv_struct_layout.ll b/tests/regression/test_spirv_struct_layout.ll
+new file mode 100644
+index 000000000..b14285258
+--- /dev/null
++++ b/tests/regression/test_spirv_struct_layout.ll
+@@ -0,0 +1,47 @@
++; Aggregate SSA values, aggregate loads and stores, and typed constant GEPs,
++; which OpenCL C compilers don't emit but other SPIR-V producers do. Linked into
++; test_spirv_struct_layout{32,64}.spv, see test_spirv_struct_layout.cl.
++;
++; P: a at 0, t at 8, l at 24, size 32
++
++%T = type { double, i32 }
++%P = type { i32, %T, i64 }
++
++@cp = internal addrspace(2) constant %P { i32 10, %T { double 1.5, i32 11 }, i64 12 }, align 8
++
++; a constant GEP that only steps over an array of T, whose stride changes
++@tarr = internal addrspace(2) constant [2 x %T] [%T { double 1.0, i32 1 }, %T { double 2.0, i32 2 }], align 8
++@tp = internal addrspace(2) constant ptr addrspace(2) getelementptr ([2 x %T], ptr addrspace(2) @tarr, i32 0, i32 1), align 4
++
++define internal spir_func %P @bump(%P %v) {
++  %a = extractvalue %P %v, 0
++  %a1 = add i32 %a, 1
++  %v1 = insertvalue %P %v, i32 %a1, 0
++  %d = extractvalue %P %v1, 1, 0
++  %d1 = fmul double %d, 2.0
++  %v2 = insertvalue %P %v1, double %d1, 1, 0
++  %l = extractvalue %P %v2, 2
++  %l1 = add i64 %l, 100
++  %v3 = insertvalue %P %v2, i64 %l1, 2
++  ret %P %v3
++}
++
++define spir_kernel void @aggregate(ptr addrspace(1) align 8 %io) {
++  %v = load %P, ptr addrspace(1) %io, align 8
++  %w = call spir_func %P @bump(%P %v)
++  store %P %w, ptr addrspace(1) %io, align 8
++  %c = load %P, ptr addrspace(2) @cp, align 8
++  %io1 = getelementptr inbounds %P, ptr addrspace(1) %io, i32 1
++  store %P %c, ptr addrspace(1) %io1, align 8
++  %io2 = getelementptr inbounds %P, ptr addrspace(1) %io, i32 2
++  store %P { i32 20, %T { double 2.5, i32 21 }, i64 22 }, ptr addrspace(1) %io2, align 8
++  ret void
++}
++
++define spir_kernel void @constant_gep(ptr addrspace(1) align 4 %out) {
++  %p = load ptr addrspace(2), ptr addrspace(2) @tp, align 4
++  %f = getelementptr inbounds %T, ptr addrspace(2) %p, i32 0, i32 1
++  %v = load i32, ptr addrspace(2) %f, align 8
++  store i32 %v, ptr addrspace(1) %out, align 4
++  ret void
++}

@@ -17,9 +17,10 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 # Like `pocl_next` this is a JIT build, so it needs no run-time clang/lld/llvm-spirv tooling.
 
 name = "pocl_standalone"
-# upstream v7.2 plus our patch series; bumped past 7.2 when the series changes API
-# (7.2.1 added cl_pocl_cpu_compute_units, 7.2.2 removed it again)
-version = v"7.2.2"
+# upstream's 7.2 maintenance branch plus our patch series; bumped past 7.2 when the series
+# changes API (7.2.1 added cl_pocl_cpu_compute_units, 7.2.2 removed it again, 7.2.3 adds
+# cl_pocl_host_kernel)
+version = v"7.2.3"
 llvm_version = v"22.1.1"
 macos_sdk_version = "11.0"
 
@@ -29,7 +30,7 @@ macos_sdk_version = "11.0"
 sources = [
     DirectorySource("./bundled"),
     GitSource("https://github.com/pocl/pocl",
-              "888c9774b94590fff1afef003154ca2c0ea66605"), # tag v7.2
+              "4a2178224f5eea88cc6f170b808803c963ce5176"), # release_next (v7.2 + backports)
     # vendored SPIR-V translator, built as a static library against our LLVM (see
     # common.jl); this is the latest LLVM-22.1 maintenance revision.
     GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git",
@@ -145,4 +146,4 @@ for (i,build) in enumerate(builds)
                    julia_compat="1.10", init_block=init_block(true))
 end
 
-# Build trigger: 17
+# Build trigger: 18

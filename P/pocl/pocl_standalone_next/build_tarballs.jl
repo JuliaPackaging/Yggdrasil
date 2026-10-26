@@ -7,17 +7,26 @@ const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
-# An experimental variant of `pocl_standalone` (see there), for trying out PoCL changes in
-# KernelAbstractions.jl before they reach the release track: the same build of PoCL 7.2 with
-# the `pocl_next` patch series, plus the patches in ./patches. These currently add the draft
-# `cl_pocl_host_kernel` extension, which lets KernelAbstractions.jl run kernels on Julia's
-# threads, and the fixes it relies on (removal of the SIGFPE handler, which only covers
-# PoCL's own threads, and initialization of program-scope variables from any thread).
+# This is the standalone (OpenCL-less) variant of the PoCL 7.2 track: instead of an ICD
+# driver loaded by an OpenCL ICD loader, it builds a directly-linkable library
+# (`libpocl_standalone`) whose OpenCL entrypoints are renamed to `PO<cl_function>`
+# (RENAME_POCL). That lets it be used as a CPU back-end (e.g. by KernelAbstractions.jl's
+# nanoOpenCL) without an OpenCL.jl/ICD dependency, while still coexisting in-process with a
+# real OpenCL ICD targeting other GPUs. The actual build lives in ../common.jl, shared with
+# the `pocl_next` (ICD) variant and selected via its `standalone` argument (true here).
+# Like `pocl_next` this is a JIT build, so it needs no run-time clang/lld/llvm-spirv tooling.
+#
+# This is the experimental counterpart of `pocl_standalone`, for trying out PoCL changes in
+# KernelAbstractions.jl before they move into `pocl_standalone`. It currently adds the
+# `pocl-spirv32` series (SPIR-V on 32-bit x86, maleadt/pocl#2; see ../common.jl), and ships
+# the same library under the same product name, so that pointing pocl_standalone_jll's
+# `libpocl_path` preference at it, or swapping the dependency, is all it takes to use it.
 
 name = "pocl_standalone_next"
-# upstream v7.2 plus our patch series; bumped past 7.2 when the series changes API
-# (7.2.1 added cl_pocl_cpu_compute_units, 7.2.2 removed it again)
-version = v"7.2.2"
+# upstream's 7.2 maintenance branch plus our patch series; bumped past 7.2 when the series
+# changes API (7.2.1 added cl_pocl_cpu_compute_units, 7.2.2 removed it again, 7.2.3 adds
+# cl_pocl_host_kernel)
+version = v"7.2.3"
 llvm_version = v"22.1.1"
 macos_sdk_version = "11.0"
 
@@ -26,10 +35,8 @@ macos_sdk_version = "11.0"
 # Collection of sources required to complete build
 sources = [
     DirectorySource("../pocl_next/bundled"),
-    # applied after the `pocl_next` series (common.jl applies patches/pocl/*.patch in order)
-    DirectorySource("./patches"; target="patches/pocl"),
     GitSource("https://github.com/pocl/pocl",
-              "888c9774b94590fff1afef003154ca2c0ea66605"), # tag v7.2
+              "4a2178224f5eea88cc6f170b808803c963ce5176"), # release_next (v7.2 + backports)
     # vendored SPIR-V translator, built as a static library against our LLVM (see
     # common.jl); this is the latest LLVM-22.1 maintenance revision.
     GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git",
@@ -136,7 +143,7 @@ end
 
 for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
-                   name, version, build.sources, macos_sdk_script * build_script(true),
+                   name, version, build.sources, macos_sdk_script * build_script(true; spirv32=true),
                    [build.platform], products, build.dependencies;
                    build.preferred_gcc_version,
                    preferred_llvm_version=Base.thismajor(llvm_version),
@@ -145,4 +152,4 @@ for (i,build) in enumerate(builds)
                    julia_compat="1.10", init_block=init_block(true))
 end
 
-# Build trigger: 5
+# Build trigger: 7
