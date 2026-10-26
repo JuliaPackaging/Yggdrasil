@@ -5,11 +5,11 @@ using BinaryBuilder, Pkg
 name = "dftd4"
 version = v"4.3.0"
 
+# Use the meson source distribution (note: we need the *.tar.xz, not the *.tar.gz,
+# which is the python sdist)
 sources = [
-    GitSource("https://github.com/dftd4/dftd4.git",
-              "d5f891808c2145becdcce742f67ecc7e711067d7";
-              tag="v$(version)"),
-    DirectorySource("./bundled"),
+    ArchiveSource("https://github.com/dftd4/dftd4/releases/download/v$(version)/dftd4-$(version).tar.xz",
+                  "e94c5d021c0a4b4aa9b5587e36fda2f398271dc2dc1abfbe097fdb04022bef35"),
 ]
 
 script = raw"""
@@ -19,8 +19,7 @@ python3 -m pip install --ignore-installed --target=/tmp/meson meson==1.11.2
 export PYTHONPATH="/tmp/meson${PYTHONPATH:+:${PYTHONPATH}}"
 export PATH="/tmp/meson/bin:${PATH}"
 
-cd ${WORKSPACE}/srcdir/dftd4
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/optional-mstore.patch
+cd ${WORKSPACE}/srcdir/dftd4-*
 
 # On FreeBSD, meson-built dependencies ship their pkg-config files in libdata/pkgconfig,
 # which is not on the default search path.
@@ -49,11 +48,10 @@ install_license COPYING COPYING.LESSER
 platforms = expand_gfortran_versions(supported_platforms())
 
 # dftd4 requires the ieee_arithmetic module, which gfortran does not provide on these targets
-platforms = filter!(platforms) do p
-    libc(p) == "musl" && arch(p) in ("aarch64", "armv6l", "armv7l") && return false
-    Sys.isfreebsd(p) && arch(p) == "aarch64" && return false
-    true
-end
+platforms = filter!(p -> !(libc(p) == "musl" && arch(p) == "aarch64"), platforms)
+platforms = filter!(p -> !(libc(p) == "musl" && arch(p) == "armv6l"),  platforms)
+platforms = filter!(p -> !(libc(p) == "musl" && arch(p) == "armv7l"),  platforms)
+platforms = filter!(p -> !(Sys.isfreebsd(p)  && arch(p) == "aarch64"), platforms)
 
 products = [
     LibraryProduct(["libdftd4", "libdftd4-4"], :libdftd4),
