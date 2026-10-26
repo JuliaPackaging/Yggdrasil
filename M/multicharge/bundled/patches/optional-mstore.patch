@@ -1,4 +1,5 @@
 Build without mstore: it is only used by the unit tests and cannot be downloaded in the sandbox.
+# Upstream: https://github.com/grimme-lab/multicharge/issues/74
 
 diff --git a/test/unit/meson.build b/test/unit/meson.build
 index 3bc59de..4454138 100644
