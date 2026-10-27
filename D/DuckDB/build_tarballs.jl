@@ -5,11 +5,11 @@ using BinaryBuilder, Pkg
 include("../../platforms/macos_sdks.jl")
 
 name = "DuckDB"
-version = v"1.5.6"
+version = v"2.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/duckdb/duckdb.git", "069cc9f9b5be802405797faecc284961b07c70ef"),
+    GitSource("https://github.com/duckdb/duckdb.git", "d54cbbe3df17e8e5ce68312f483b4155836112aa"),
 ]
 
 # Bash recipe for building across all platforms
