@@ -1,0 +1,13 @@
+diff --git a/nccl/src/device/Makefile b/nccl/src/device/Makefile
+index ba07bd91..a9209da1 100644
+--- a/nccl/src/device/Makefile
++++ b/nccl/src/device/Makefile
+@@ -58,7 +58,7 @@ define COMPILE_SYM
+  if [[ -n "$3" ]]; then\
+  $(NVCC) $(NVCUFLAGS_SYM) $3 -dw $2 -o $1;\
+  else\
+- touch $2.empty.cu; $(NVCC) $(NVCUFLAGS_SYM) -dw $2.empty.cu -o $1; rm $2.empty.cu;\
++ touch $1.empty.cu; $(NVCC) $(NVCUFLAGS_SYM) -dw $1.empty.cu -o $1; rm $1.empty.cu;\
+  fi
+ endef
+ 

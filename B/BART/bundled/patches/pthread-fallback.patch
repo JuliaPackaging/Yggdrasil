@@ -1,0 +1,72 @@
+Use BART's pthread implementation when C11 threads.h is unavailable.
+Upstream submission pending:
+https://codeberg.org/mrirecon/bart/src/tag/v1.0.00/src/misc/lock.c
+
+--- a/src/misc/lock.c
++++ b/src/misc/lock.c
+@@ -24,3 +24,7 @@
+ 
+-#ifdef __APPLE__
++#if defined(__APPLE__) || !__has_include(<threads.h>)
++#define BART_USE_PTHREADS
++#endif
++
++#ifdef BART_USE_PTHREADS
+ #	include <pthread.h>
+@@ -37,3 +41,3 @@
+ struct bart_lock {
+-#ifdef __APPLE__
++#ifdef BART_USE_PTHREADS
+ 	pthread_mutex_t mx;
+@@ -46,3 +50,3 @@
+ {
+-#ifdef __APPLE__
++#ifdef BART_USE_PTHREADS
+ 	pthread_mutex_lock(&lock->mx);
+@@ -56,3 +60,3 @@
+ {
+-#ifdef __APPLE__
++#ifdef BART_USE_PTHREADS
+ 	return 0 == pthread_mutex_trylock(&lock->mx);
+@@ -65,3 +69,3 @@
+ {
+-#ifdef __APPLE__
++#ifdef BART_USE_PTHREADS
+ 	pthread_mutex_unlock(&lock->mx);
+@@ -75,4 +79,4 @@
+ 	bart_lock_t* lock = xmalloc(sizeof *lock);
+-#ifdef __APPLE__
+-	pthread_mutex_init(&lock->mx, PTHREAD_MUTEX_DEFAULT);
++#ifdef BART_USE_PTHREADS
++	pthread_mutex_init(&lock->mx, NULL);
+ #else
+@@ -86,3 +90,3 @@
+ {
+-#ifdef __APPLE__
++#ifdef BART_USE_PTHREADS
+ 	pthread_mutex_destroy(&lock->mx);
+@@ -98,3 +102,3 @@
+ 
+-#ifdef __APPLE__
++#ifdef BART_USE_PTHREADS
+ 	long counter;
+@@ -111,3 +115,3 @@
+ 
+-#ifdef __APPLE__
++#ifdef BART_USE_PTHREADS
+ 	pthread_cond_init(&cond->cnd, NULL);
+@@ -126,3 +130,3 @@
+ 
+-#ifdef __APPLE__
++#ifdef BART_USE_PTHREADS
+ 	while (counter == cond->counter)
+@@ -138,3 +142,3 @@
+ 	cond->counter++;
+-#ifdef __APPLE__
++#ifdef BART_USE_PTHREADS
+ 	pthread_cond_broadcast(&cond->cnd);
+@@ -147,3 +151,3 @@
+ {
+-#ifdef __APPLE__
++#ifdef BART_USE_PTHREADS
+ 	pthread_cond_destroy(&cond->cnd);

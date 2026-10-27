@@ -1,0 +1,190 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Sun, 25 Oct 2026 09:01:07 +0100
+Subject: [PATCH 41/46] SPIR wrapper: support 32-bit x86 hosts
+
+Add an --address-bits option. With 32, size_t-typed builtin parameters and
+returns (vloadN/vstoreN, vload_half, async copies, prefetch,
+get_image_array_size) are mangled and typed as uint, and the module uses
+the spir triple. Selecting the 32-bit prefix through sys.argv had been dead
+since the switch to argparse.
+
+For cpu_x86, 32 address bits select the i386 System V ABI. Clang passes and
+returns every OpenCL vector directly there, except that <8 x i8>, <4 x i16>
+and <2 x i32> arguments are coerced to i64. This holds for every i686
+kernel library variant, so the register size doesn't matter. The output for
+64-bit targets is unchanged.
+
+(cherry picked from commit dac1b5daea49b6b97867daf733008e81b687f578)
+---
+ lib/kernel/SPIR/generate_spir_wrapper.py | 63 ++++++++++++++++--------
+ 1 file changed, 42 insertions(+), 21 deletions(-)
+
+diff --git a/lib/kernel/SPIR/generate_spir_wrapper.py b/lib/kernel/SPIR/generate_spir_wrapper.py
+index 0be521c8b..790ebd632 100644
+--- a/lib/kernel/SPIR/generate_spir_wrapper.py
++++ b/lib/kernel/SPIR/generate_spir_wrapper.py
+@@ -10,7 +10,8 @@
+ #
+ # output is LLVM IR text format.
+ #
+-# Usage: python3 generate_spir_wrapper.py [-q] [-g] [-m] [-t <target>] [-r <register_size>] OUTPUT
++# Usage: python3 generate_spir_wrapper.py [-q] [-g] [-m] [-t <target>] [-r <register_size>]
++#                                        [-b <address_bits>] OUTPUT
+ # ... place the file in the target-specific lib/kernel subdirectory.
+ #
+ # Notes for CPU SPIR wrapper:
+@@ -26,6 +27,9 @@
+ # 4) the above applies to the System V and AArch64/RISC-V ABIs. On x86-64 MinGW,
+ #    clang passes and returns all vectors directly (the backend lowers the large
+ #    ones itself), so the wrappers must not do any of this; see --mingw.
++# 5) on 32-bit x86 (i386 System V), clang passes and returns all vectors directly,
++#    except that 64-bit integer vector arguments are coerced to i64. This does not
++#    depend on the available vector registers, so the register size is ignored.
+ #
+ # Notes for CUDA SPIR wrapper:
+ # 1) mangling is not required for CUDA
+@@ -49,6 +53,11 @@ parser.add_argument('-r', '--register-size',
+ 	default=128, type=int, choices=[128,256,512],
+ 	help='largest register size (cpu target only)')
+ 
++parser.add_argument('-b', '--address-bits',
++	dest='address_bits',
++	default=64, type=int, choices=[32,64],
++	help='device address bits, which determine size_t and the SPIR triple')
++
+ parser.add_argument('output',
+ 	type=argparse.FileType('w', encoding='utf-8'),
+ 	help='output file')
+@@ -72,6 +81,8 @@ args = parser.parse_args()
+ 
+ if args.mingw and args.target != 'cpu_x86':
+ 	parser.error('--mingw is only supported for the cpu_x86 target')
++if args.address_bits == 32 and (args.target != 'cpu_x86' or args.mingw):
++	parser.error('32 address bits are only supported for the cpu_x86 target, without --mingw')
+ 
+ # function prefix used by PoCL's kernel library
+ POCL_LIB_PREFIX = "_cl_"
+@@ -86,7 +97,8 @@ AS_CASTS_REQUIRED = args.target.startswith('cpu')
+ # if set to True, does target specific hacks like
+ # argument coercing (2xfloat -> double)
+ # use of byval/sret for args that don't fit into registers
+-X86_CALLING_ABI = (args.target == 'cpu_x86')
++X86_CALLING_ABI = (args.target == 'cpu_x86') and args.address_bits == 64
++I386_CALLING_ABI = (args.target == 'cpu_x86') and args.address_bits == 32
+ ARM_CALLING_ABI = (args.target == 'cpu_arm')
+ RISCV64_CALLING_ABI = (args.target == 'cpu_riscv')
+ SPIR_CALLING_ABI = (args.target == 'cuda')
+@@ -328,6 +340,12 @@ if X86_CALLING_ABI:
+ 
+ 		"<8 x i8>": "double",
+ 	}
++elif I386_CALLING_ABI:
++	COERCE_VECTOR_MAP = {
++		"<8 x i8>": "i64",
++		"<4 x i16>": "i64",
++		"<2 x i32>": "i64",
++	}
+ elif ARM_CALLING_ABI:
+ 	COERCE_VECTOR_MAP = {
+ 		"<2 x half>": "i32",
+@@ -394,7 +412,11 @@ else:
+ 	}
+ 
+ 
+-if CPU_ABI_REG_SIZE == 128:
++if I386_CALLING_ABI:
++	BYVAL_VECTOR_MAP = {}
++	SRET_VECTOR_MAP = {}
++
++elif CPU_ABI_REG_SIZE == 128:
+ 	BYVAL_VECTOR_MAP = {
+ 		"<3 x double>":"ptr noundef byval(<3 x double>) align 32",
+ 		"<3 x i64>":"ptr noundef byval(<3 x i64>) align 32",
+@@ -815,8 +837,8 @@ def generate_function(name, ret_type, ret_type_ext, multiAS, *args):
+ 		# args without qualifiers, saved for mangling name compression
+ 		saved_pure_args = []
+ 
+-		# ARM does not coerce return types, x86-64 & RISC-V does
+-		if ARM_CALLING_ABI:
++		# ARM and i386 do not coerce return types, x86-64 & RISC-V does
++		if ARM_CALLING_ABI or I386_CALLING_ABI:
+ 			coerced_ret_type = ret_type
+ 		else:
+ 			coerced_ret_type = coerce_llvm_vector_type(ret_type)
+@@ -1072,11 +1094,10 @@ target triple = "spir-unknown-unknown"
+ }
+ 
+ 
+-triple = SPIR_MODULE_PREFIX[64]
+-if (len(sys.argv) > 1) and (sys.argv[1] == "32"):
+-	triple = SPIR_MODULE_PREFIX[32]
++print(SPIR_MODULE_PREFIX[args.address_bits])
+ 
+-print(triple)
++# mangled name of size_t
++SIZE_T = 'j' if args.address_bits == 32 else 'm'
+ 
+ MANG_TYPES = {
+ 	"half": {
+@@ -1287,28 +1308,28 @@ for arg_type in FGENTYPES:
+ 			arg = "Dv" + s + "_" + arg_type
+ 
+ 		if vector_size > 1:
+-			generate_function("vload"+str(vector_size), SIG_TO_LLVM_TYPE_MAP[arg], '', True, 'm', PConstArg)
+-			generate_function("vstore"+str(vector_size), SIG_TO_LLVM_TYPE_MAP['v'], '', True, arg, 'm', PArg)
++			generate_function("vload"+str(vector_size), SIG_TO_LLVM_TYPE_MAP[arg], '', True, SIZE_T, PConstArg)
++			generate_function("vstore"+str(vector_size), SIG_TO_LLVM_TYPE_MAP['v'], '', True, arg, SIZE_T, PArg)
+ 
+ 		if vector_size > 1:
+ 			PConstArg = 'PK' + arg
+ 			PArg = 'P' + arg
+ 
+-		generate_function("prefetch", SIG_TO_LLVM_TYPE_MAP['v'], '', True, PConstArg, 'm')
++		generate_function("prefetch", SIG_TO_LLVM_TYPE_MAP['v'], '', True, PConstArg, SIZE_T)
+ 
+ 		generate_function("async_work_group_copy", 'ptr', '',
+ 											("global", "local", "none", "none", "none"),
+-											PArg, PConstArg, 'm', '9ocl_event')
++											PArg, PConstArg, SIZE_T, '9ocl_event')
+ 		generate_function("async_work_group_copy", 'ptr', '',
+ 											("local", "global", "none", "none", "none"),
+-											PArg, PConstArg, 'm', '9ocl_event')
++											PArg, PConstArg, SIZE_T, '9ocl_event')
+ 
+ 		generate_function("async_work_group_strided_copy", 'ptr', '',
+ 											("global", "local", "none", "none", "none"),
+-											PArg, PConstArg, 'm', 'm', '9ocl_event')
++											PArg, PConstArg, SIZE_T, SIZE_T, '9ocl_event')
+ 		generate_function("async_work_group_strided_copy", 'ptr', '',
+ 											("local", "global", "none", "none", "none"),
+-											PArg, PConstArg, 'm', 'm', '9ocl_event')
++											PArg, PConstArg, SIZE_T, SIZE_T, '9ocl_event')
+ 
+ 
+ # vload_half / vstore_half
+@@ -1324,11 +1345,11 @@ for ret_type in ['f','d']:
+ 			suffix = 'half' + s
+ 			ret = "Dv" + s + "_" + ret
+ 		if ret_type == 'f':
+-			generate_function("vload_"+suffix, SIG_TO_LLVM_TYPE_MAP[ret], '', True, 'm', PConstArg)
+-			generate_function("vloada_"+suffix, SIG_TO_LLVM_TYPE_MAP[ret], '', True, 'm', PConstArg)
++			generate_function("vload_"+suffix, SIG_TO_LLVM_TYPE_MAP[ret], '', True, SIZE_T, PConstArg)
++			generate_function("vloada_"+suffix, SIG_TO_LLVM_TYPE_MAP[ret], '', True, SIZE_T, PConstArg)
+ 		for rounding in ['', '_rte', '_rtn', '_rtp', '_rtz']:
+-			generate_function("vstore_"+suffix+rounding, SIG_TO_LLVM_TYPE_MAP['v'], '', True, ret, 'm', PArg)
+-			generate_function("vstorea_"+suffix+rounding, SIG_TO_LLVM_TYPE_MAP['v'], '', True, ret, 'm', PArg)
++			generate_function("vstore_"+suffix+rounding, SIG_TO_LLVM_TYPE_MAP['v'], '', True, ret, SIZE_T, PArg)
++			generate_function("vstorea_"+suffix+rounding, SIG_TO_LLVM_TYPE_MAP['v'], '', True, ret, SIZE_T, PArg)
+ 
+ # Integer
+ for arg_type in IGENTYPES:
+@@ -1460,7 +1481,7 @@ for img_type in ['image1d', 'image2d', 'image3d', 'image1d_array', 'image2d_arra
+ 			generate_function('get_image_depth', 'i32', '', True, img_type_llvm)
+ 			generate_function('get_image_dim', '<4 x i32>', '', True, img_type_llvm)
+ 		if img_type in ['image2d_array', 'image2d_array_depth', 'image1d_array']:
+-			generate_function('get_image_array_size', 'i64', '', True, img_type_llvm)
++			generate_function('get_image_array_size', SIG_TO_LLVM_TYPE_MAP[SIZE_T], '', True, img_type_llvm)
+ 
+ 
+ # Atomics
