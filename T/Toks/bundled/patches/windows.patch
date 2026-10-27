@@ -1,5 +1,5 @@
 diff --git a/Makefile b/Makefile
-index 25762e7..8417977 100644
+index 25762e7..d50ef41 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -62,7 +62,9 @@ else ifeq ($(OS),windows)
@@ -13,6 +13,25 @@ index 25762e7..8417977 100644
    PTHREAD := -pthread
  endif
  $(BUILD_DIR)/obj/src/par/%.o: XFLAGS := $(PTHREAD)
+@@ -87,12 +89,16 @@ endif
+ 
+ LIB       := $(BUILD_DIR)/libtoks.a
+ ifeq ($(OS),macos)
+-  SHLIB   := $(BUILD_DIR)/libtoks.dylib
++  DLEXT := dylib
+   SHFLAGS := -dynamiclib
++else ifeq ($(OS),windows)
++  DLEXT := dll
++  SHFLAGS := -shared
+ else
+-  SHLIB   := $(BUILD_DIR)/libtoks.so
++  DLEXT := so
+   SHFLAGS := -shared
+ endif
++SHLIB     := $(BUILD_DIR)/libtoks.$(DLEXT)
+ 
+ TEST_COMMON := tests/common/guard.c tests/common/abicheck_$(ISA).S
+ TEST_SRCS   := $(wildcard tests/c/*.c)
 diff --git a/src/par/par.c b/src/par/par.c
 index 9af7f5a..859646c 100644
 --- a/src/par/par.c

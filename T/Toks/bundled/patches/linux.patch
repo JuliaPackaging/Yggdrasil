@@ -1,3 +1,21 @@
+diff --git a/src/core/layout.h b/src/core/layout.h
+index aea662e..11486d6 100644
+--- a/src/core/layout.h
++++ b/src/core/layout.h
+@@ -12,8 +12,12 @@
+ 
+ /* ---- class bytes (cls_ascii / cls_stage2), built by src/core/classes.c ---------------------------------- */
+ #define TOKS_C_BASE_MASK       0x07u
+-#define TOKS_C_P               0u    /* not L, not N, not \s (punctuation, symbols, invalid utf-8 bytes, ...); in dsv3
++#if defined(__ASSEMBLER__)
++#  define TOKS_C_P             0     /* Building for Linux AArch64 doesn't like #0u in assembly */
++#else
++#  define TOKS_C_P             0u    /* not L, not N, not \s (punctuation, symbols, invalid utf-8 bytes, ...); in dsv3
+                                         tables only \p{P} | \p{S} and invalid bytes (the rest is TOKS_C_X there) */
++#endif
+ #define TOKS_C_L               1u    /* \p{L}; also \p{M} when the template folds marks into letters (qwen 3.5, dsv3) */
+ #define TOKS_C_N               2u    /* \p{N} */
+ #define TOKS_C_WS              3u    /* \s except CR and LF */
 diff --git a/src/platform/mem.c b/src/platform/mem.c
 index 87e4ea2..d918b39 100644
 --- a/src/platform/mem.c
