@@ -88,5 +88,6 @@ dependencies = [
     RuntimeDependency("OpenBLAS32_jll"; compat="0.3.23"),
 ]
 
+# LLD cannot read the GCC 8 macOS runtime's legacy libgcc_ext.10.5.dylib stub.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat="1.10", preferred_gcc_version=v"8")
+    julia_compat="1.10", preferred_gcc_version=v"8", clang_use_lld=false)
