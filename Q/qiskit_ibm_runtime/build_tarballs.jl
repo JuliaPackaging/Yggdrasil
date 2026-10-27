@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "qiskit_ibm_runtime"
-version = v"0.39.0"
+version = v"0.39.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Qiskit/qiskit-ibm-runtime-c.git", "a390629a7bbd8fec1a43b3fcab5ae3c202f25ced")
+    GitSource("https://github.com/Qiskit/qiskit-ibm-runtime-c.git", "e51b568adc9fcc7f235e789dca635361d61f2aa2")
 ]
 
 # Bash recipe for building across all platforms
