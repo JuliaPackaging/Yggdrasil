@@ -34,7 +34,7 @@ platforms = supported_platforms(; exclude=(p -> libc(p) == "musl" || !(arch(p) i
 
 products = [
     LibraryProduct("libtoks", :libtoks),
-    FileProduct("lib/libtoks.a", :libtoks_a),
+    FileProduct(["lib/libtoks.a", "bin/libtoks.a"], :libtoks_a),
     FileProduct("include/toks.h", :toks_h),
 ]
 
