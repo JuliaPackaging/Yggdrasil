@@ -44,8 +44,6 @@ cmake -B build \
       -DENABLE_SANITIZER=FALSE \
       -DBUILD_EXTENSIONS='parquet;json' \
       -DSKIP_EXTENSIONS=jemalloc \
-      -DENABLE_EXTENSION_AUTOLOADING=1 \
-      -DENABLE_EXTENSION_AUTOINSTALL=1 \
       -DBUILD_UNITTESTS=FALSE \
       -DBUILD_SHELL=TRUE \
       -DDUCKDB_EXPLICIT_PLATFORM=${DUCKDB_TARGET}
@@ -82,4 +80,5 @@ dependencies = Dependency[
 sources, script = require_macos_sdk("14.0", sources, script; deployment_target="11.0")
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"6.1.0", julia_compat="1.6")
+# DuckDB >= 2.0 requires C++17; GCC 8 is the first with complete C++17 library support.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"8", julia_compat="1.6")
