@@ -11,10 +11,12 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/openfast
 
+# ModVar uses the COTAN intrinsic, which older GFortran enables with -fdec-math.
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_Fortran_FLAGS="${FFLAGS} -fdec-math" \
     -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
     -DBUILD_SHARED_LIBS=ON \
     -DBUILD_FASTFARM=OFF \
@@ -50,6 +52,8 @@ platforms = supported_platforms()
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100662
 filter!(p -> !(arch(p) == "aarch64" && Sys.islinux(p) && libc(p) == "musl"), platforms)
 filter!(p -> !(arch(p) == "aarch64" && Sys.isapple(p)), platforms)
+# The aarch64 FreeBSD GFortran toolchain lacks ieee_arithmetic.mod.
+filter!(p -> !(arch(p) == "aarch64" && Sys.isfreebsd(p)), platforms)
 # 32-bit ARM support is unvalidated.
 filter!(p -> arch(p) ∉ ("armv6l", "armv7l"), platforms)
 # MinGW support is unvalidated.
@@ -85,4 +89,4 @@ dependencies = [
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat="1.10", preferred_gcc_version=v"6")
+    julia_compat="1.10", preferred_gcc_version=v"8")
