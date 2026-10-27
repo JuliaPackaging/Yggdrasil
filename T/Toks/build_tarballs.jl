@@ -3,11 +3,11 @@ using BinaryBuilder
 include(joinpath("..", "..", "platforms", "macos_sdks.jl"))
 
 name = "Toks"
-version = v"0.3.2"
+version = v"0.3.3"
 
 sources = [
     GitSource("https://github.com/actual-computer/toks.git",
-              "55a5230b08a75916a2b36f92c320f057376833ea"; tag="v$version"),
+              "f97143b301a248319c62fb460f4914407a5eb41e"; tag="v$version"),
     DirectorySource("./bundled"),
 ]
 
