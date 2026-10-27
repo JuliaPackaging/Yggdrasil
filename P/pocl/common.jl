@@ -52,7 +52,7 @@ series in `pocl_next/bundled` (`pocl_standalone/bundled` is a symlink to it, and
 recipes to trigger their rebuild).
 
 The `spirv32` keyword additionally applies the experimental series in
-`pocl_next/bundled/patches/pocl-spirv32`, which enables SPIR-V on 32-bit x86 (maleadt/pocl#2).
+`pocl_next/bundled/patches/pocl-spirv32`, which enables SPIR-V on 32-bit x86 (JuliaGPU/pocl#3).
 `pocl_next` and `pocl_standalone_next` opt in, so that it can be tested before it moves into
 the default series; without it, the build script is the same as before.
 
@@ -60,7 +60,7 @@ the default series; without it, the build script is the same as before.
 
 function build_script(standalone=false; spirv32=false)
     # The patch series to apply (and to hash into the version), in order; see the list in
-    # the script below. `pocl-spirv32` (maleadt/pocl#2) follows the default series: a
+    # the script below. `pocl-spirv32` (JuliaGPU/pocl#3) follows the default series: a
     # generated SPIR wrapper for the i386 ABI, struct types in SPIR modules that keep their
     # OpenCL C layout instead of the host's (where long and double are less aligned), tests,
     # and enabling SPIR-V on 32-bit x86 CPU hosts. It's kept out of the script's comments so
@@ -214,9 +214,9 @@ function build_script(standalone=false; spirv32=false)
     # - 0038: account for the z extent and the global offset when choosing the small-grid
     #   work-group function (upstream PR #2408)
     # - 0039: the draft cl_pocl_host_kernel extension, which lets KernelAbstractions.jl run
-    #   kernels on Julia's threads (maleadt/pocl#1; JuliaGPU/KernelAbstractions.jl#906)
+    #   kernels on Julia's threads (JuliaGPU/pocl#2; JuliaGPU/KernelAbstractions.jl#906)
     # - 0040: report the stack estimate as CL_KERNEL_PRIVATE_MEM_SIZE on CPUs, so that users of
-    #   cl_pocl_host_kernel can tell whether a work-group fits on their stack (maleadt/pocl#1)
+    #   cl_pocl_host_kernel can tell whether a work-group fits on their stack (JuliaGPU/pocl#2)
     # - 0041: keep CPU worker threads from joining kernels whose work-groups have all been
     #   claimed, which cost a lock round-trip per kernel with many small launches
     #   (JuliaGPU/pocl#7)
@@ -226,6 +226,10 @@ function build_script(standalone=false; spirv32=false)
     #   (JuliaGPU/pocl#7)
     # - 0043: with POCL_AFFINITY=1, pin the CPU worker threads to the CPUs the process may run
     #   on, spread over the NUMA nodes, instead of to CPUs 0 and up (JuliaGPU/pocl#8)
+    # - 0044, 0045: make cl_pocl_host_kernel launches cheaper on x86 by avoiding 64-bit
+    #   divisions for ranges starting in the first row and a second MXCSR read when the
+    #   caller's FP environment already matches the kernel's; flags the kernel raises may now
+    #   stay raised, as with a C function call (JuliaGPU/pocl#9)
     #
     # The `pocl` series on v7.2 is the one this series was rebased from: 0001-0042 also carry
     # the backports that release_next has, and older revisions of upstream PRs #2281, #2384,

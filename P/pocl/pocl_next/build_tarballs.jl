@@ -11,7 +11,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 # JIT (no run-time clang/lld/llvm-spirv tooling). The actual build lives in ../common.jl,
 # shared with the `pocl_standalone` (OpenCL-less) variant and selected via its `standalone`
 # argument (false here). See ../common.jl for the full rationale. This track also carries
-# the experimental `pocl-spirv32` series (SPIR-V on 32-bit x86, maleadt/pocl#2).
+# the experimental `pocl-spirv32` series (SPIR-V on 32-bit x86, JuliaGPU/pocl#3).
 
 name = "pocl_next"
 # upstream's 7.2 maintenance branch plus our patch series; bumped past 7.2 when the series

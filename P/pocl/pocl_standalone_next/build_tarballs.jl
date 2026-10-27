@@ -18,7 +18,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 #
 # This is the experimental counterpart of `pocl_standalone`, for trying out PoCL changes in
 # KernelAbstractions.jl before they move into `pocl_standalone`. It currently adds the
-# `pocl-spirv32` series (SPIR-V on 32-bit x86, maleadt/pocl#2; see ../common.jl), and ships
+# `pocl-spirv32` series (SPIR-V on 32-bit x86, JuliaGPU/pocl#3; see ../common.jl), and ships
 # the same library under the same product name, so that pointing pocl_standalone_jll's
 # `libpocl_path` preference at it, or swapping the dependency, is all it takes to use it.
 
@@ -152,4 +152,4 @@ for (i,build) in enumerate(builds)
                    julia_compat="1.10", init_block=init_block(true))
 end
 
-# Build trigger: 8
+# Build trigger: 9
