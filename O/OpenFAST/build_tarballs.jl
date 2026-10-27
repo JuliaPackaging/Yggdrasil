@@ -5,6 +5,7 @@ version = v"5.0.0"
 
 sources = [
     GitSource("https://github.com/OpenFAST/openfast.git", "2895884d2be01862173c88d70f86b358d2f1a50a"; tag="v$(version)"),
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
@@ -25,11 +26,23 @@ cmake -B build \
 cmake --build build --parallel ${nproc}
 cmake --install build
 
+# Child processes need their own LP64 backend; Julia's LBT forwarding is process-local.
+for exe in hydrodyn_driver inflowwind_driver orca_driver feam_driver unsteadyaero_driver \
+    turbsim openfast aerodyn_driver subdyn_driver moordyn_driver beamdyn_driver servodyn_driver; do
+    install -Dvm 755 "${bindir}/${exe}" "${prefix}/libexec/openfast/${exe}"
+    cat > "${bindir}/${exe}" <<EOF
+#!/bin/sh
+export LBT_DEFAULT_LIBS="\${LBT_DEFAULT_LIBS-libopenblas.${dlext}}"
+exec "\$(dirname "\$0")/../libexec/openfast/${exe}" "\$@"
+EOF
+done
+
 install_license LICENSE \
     modules/map/src/bstring/bstrlib.h \
     modules/map/src/simclist/simclist.h \
     modules/map/src/lapack/lapacke.h \
-    modules/nwtc-library/include/fast_float.h
+    modules/nwtc-library/include/fast_float.h \
+    ${WORKSPACE}/srcdir/licenses/CopyrightMINPACK.txt
 """
 
 platforms = supported_platforms()
@@ -68,6 +81,7 @@ products = [
 dependencies = [
     Dependency("libblastrampoline_jll"; compat="5.4.0"),
     Dependency("CompilerSupportLibraries_jll"; compat="1.0.5"),
+    RuntimeDependency("OpenBLAS32_jll"; compat="0.3.23"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
