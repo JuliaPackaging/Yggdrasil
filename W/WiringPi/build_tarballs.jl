@@ -1,51 +1,68 @@
-# Note that this script can accept some limited command-line arguments, run
-# `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, Pkg
+using BinaryBuilder2
+using Platforms
 
+# 1. Define package metadata and workspace
 name = "WiringPi"
-version = v"3.2"
+version = v"3.2.0"
+workspace = "./build_workspace"
 
-# Collection of sources required to complete build
+# 2. Declare external sources 
 sources = [
     GitSource("https://github.com/WiringPi/WiringPi.git", "31f49ecdf7865c10483a91994aa51f73a7c656aa"),
     DirectorySource("./bundled")
 ]
 
-# Bash recipe for building across all platforms
-script = raw"""
-cd $WORKSPACE/srcdir
-#for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-#    atomic_patch -p1 ${f}
-#done
-
-cd WiringPi/wiringPi
-
-
-make -j${nproc}
-# Override the installation location, and don't let it run ldconfig (it doesn't work for us)
-make DESTDIR=${prefix} PREFIX="" LDCONFIG="" V=1 install
-
-
-install_license COPYING.LESSER
-
-"""
-
-
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = [
+# 3. Explicit target platform(s) definition
+targets = [
     Platform("aarch64", "linux"; libc = "glibc")
 ]
 
-
-# The products that we will ensure are always built
+# 4. Map the expected compilation output artifacts
 products = [
     LibraryProduct("libwiringPi", :wiringPi)
 ]
 
-# Dependencies that must be installed before this package can be built
-dependencies = Dependency[
-]
+# 5. Define package dependencies (none required for this build)
+dependencies = BuildDependency[]
 
-# Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"8.1.0")
+# 6. The sandbox compilation recipe
+script = raw"""
+cd ${WORKSPACE}/srcdir
+
+# Apply patches from bundled directory if any exist
+if [ -d "${WORKSPACE}/srcdir/patches" ]; then
+    for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+        patch -p1 < "${f}"
+    done
+fi
+
+cd WiringPi/wiringPi
+
+# Execute build with cross-compilation environment variables automatically injected
+make -j${nproc}
+
+# Install artifacts directly into the prefix layout
+make DESTDIR=${prefix} PREFIX="" LDCONFIG="" V=1 install
+
+# Safeguard the license allocation
+install_license ../COPYING.LESSER
+"""
+
+# 7. Execute the compilation jobs sequentially across target environments
+for target in targets
+    @info "Starting sandboxed BinaryBuilder2 build job" name version target=triplet(target)
+    
+    job = BuildJob(
+        workspace,
+        target,
+        name,
+        version,
+        sources,
+        script,
+        products;
+        dependencies=dependencies,
+        julia_compat="1.6"
+    )
+    
+    run_job(job)
+end
