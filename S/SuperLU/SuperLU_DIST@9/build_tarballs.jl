@@ -6,12 +6,11 @@ const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "SuperLU_DIST"
-version = v"9.2.1"
-ygg_version = v"9.2.3"
+version = v"9.3.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/xiaoyeli/superlu_dist.git", "39236c165c6887da09b05c0f540478378ad34d38"),
+    GitSource("https://github.com/xiaoyeli/superlu_dist.git", "9f7c8196d8f692cbfc59d81b61a74ceb4b37789b"; tag="v$(version)"),
 ]
 
 # Bash recipe for building across all platforms
@@ -21,9 +20,10 @@ cd $WORKSPACE/srcdir/superlu_dist*
 sed -i -e 's!OUTPUT_NAME superlu_dist!OUTPUT_NAME "${SUPERLU_OUTPUT_NAME}"!g' SRC/CMakeLists.txt
 
 if [[ "${target}" == *-mingw* ]]; then
-    # This is required to ensure that MSMPI can be found by cmake
-    export LDFLAGS="-L${libdir} -lmsmpi"
-    PLATFLAGS="-DTPL_ENABLE_PARMETISLIB:BOOL=FALSE -DMPI_C_ADDITIONAL_INCLUDE_DIRS=${includedir}"
+    PLATFLAGS="-DMPI_HOME=${prefix} -DMPI_GUESS_LIBRARY_NAME=MSMPI"
+    if [[ "${target}" == x86_64-* ]]; then
+        PLATFLAGS+=" -DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64"
+    fi
 fi
 
 # Pick libblastrampoline.so / libblastrampoline-5.dll / libblastrampoline.dylib
@@ -34,15 +34,13 @@ build_superlu_dist()
 {
     if [[ "${1}" == "Int64" ]]; then
         INT=64
-        METIS_PATH="${libdir}/metis/metis_Int64_Real32/lib/libmetis_Int64_Real32.${dlext}"
+        # METIS_jll installs this variant under its own prefix, so the DLL is in bin/ on Windows.
+        METIS_PATH="${libdir}/metis/metis_Int64_Real32/$(basename ${libdir})/libmetis_Int64_Real32.${dlext}"
         PARMETIS_PATH="${libdir}/libparmetis_Int64_Real32.${dlext}"
     else
         INT=32
         METIS_PATH="${libdir}/libmetis.${dlext}"
         PARMETIS_PATH="${libdir}/libparmetis.${dlext}"
-    fi
-    if [[ "${target}" != *-mingw* ]]; then
-        PLATFLAGS="-DTPL_ENABLE_PARMETISLIB:BOOL=TRUE -DTPL_PARMETIS_INCLUDE_DIRS=${includedir} -DTPL_PARMETIS_LIBRARIES=${PARMETIS_PATH};${METIS_PATH}"
     fi
 
     mkdir build-${INT}
@@ -62,6 +60,9 @@ build_superlu_dist()
         -DTPL_BLAS_LIBRARIES="${BLAS_LIB}" \
         -DTPL_ENABLE_LAPACKLIB=ON \
         -DTPL_LAPACK_LIBRARIES="${BLAS_LIB}" \
+        -DTPL_ENABLE_PARMETISLIB=ON \
+        -DTPL_PARMETIS_INCLUDE_DIRS="${includedir}" \
+        -DTPL_PARMETIS_LIBRARIES="${PARMETIS_PATH};${METIS_PATH}" \
         ${PLATFLAGS} \
         -DCMAKE_C_FLAGS="-std=c99 -Wno-implicit-function-declaration -Wno-incompatible-pointer-types" \
         -DXSDK_INDEX_SIZE=${INT} \
@@ -110,10 +111,6 @@ products = [
     ExecutableProduct("pdtest_32", :pdtest_32),
     ExecutableProduct("pdtest_64", :pdtest_64),
 
-    # Both libraries install flat into ${libdir} (Windows: ${bindir}) and are
-    # disambiguated by filename (SUPERLU_OUTPUT_NAME), not by directory, so the
-    # default search dirs suffice. The previous ["superlu_dist/Int32/lib", ...]
-    # search paths pointed at directories this recipe never creates.
     LibraryProduct("libsuperlu_dist_Int32", :libsuperlu_dist_Int32),
     LibraryProduct("libsuperlu_dist_Int64", :libsuperlu_dist_Int64)
 ]
@@ -121,11 +118,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"); compat="5.4.0"),
-    # Cap at 0.3.32: the in-sysimage libblastrampoline_jll (5.4.0, from Julia
-    # 1.12) only supports OpenBLAS32 0.3.9 - 0.3.32, so pinning 0.3.33 makes
-    # dependency resolution unsatisfiable.
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"); compat="0.3.32"),
-    Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa"); platforms=filter(!Sys.iswindows, platforms), compat="4.0.9"),
+    Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa"); compat="4.0.9"),
     Dependency("METIS_jll"; compat="5.1.4"),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
@@ -139,9 +133,6 @@ append!(dependencies, platform_dependencies)
 # automatic initialization.)
 ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
-# Build the tarballs, and possibly a `build.jl` as well.
-# Require GCC 8 to avoid `error: libgfortran.so.4: cannot open shared object file`
-# CI suggests that this generally works on most systems [1.6 - nightly (1.11)], apart
-# from a failure on 1.8 & windows, which is why julia compat is set to 1.9
-build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.9", preferred_gcc_version=v"8")
+# Build the tarballs
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               augment_platform_block, julia_compat="1.11", preferred_gcc_version=v"8")
