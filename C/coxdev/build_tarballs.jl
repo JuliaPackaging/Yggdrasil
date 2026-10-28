@@ -30,7 +30,7 @@ products = [
 ]
 
 dependencies = [
-        BuildDependency(PackageSpec(name="Eigen_jll", uuid="bc6bbf8a-a594-5541-9c57-10b0d0312c70", version=v"3.4.1")),
+        BuildDependency(PackageSpec(name="Eigen_jll", uuid="bc6bbf8a-a594-5541-9c57-10b0d0312c70", version=v"3.4.1+0")),
 ]
 
 # C++17 for coxdev; GCC 8 is the first with full C++17 support
