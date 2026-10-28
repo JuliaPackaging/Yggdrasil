@@ -1,19 +1,20 @@
 using BinaryBuilder, Pkg
+using Base.BinaryPlatforms
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MicrosoftMPI"
 version = v"10.1.3"
-# JLL v10.1.3 holds an earlier MS-MPI release, and v10.1.5 raised julia_compat to 1.6
+# JLL v10.1.3 holds an earlier MS-MPI release, and v10.1.5 changed compat (julia, MPIPreferences)
 ygg_version = v"10.1.5"
 sources = [
     FileSource("https://download.microsoft.com/download/7/2/7/72731ebb-b63c-4170-ade7-836966263a8f/msmpisetup.exe",
                "47443829114d8d8670f77af98939fe876d33eceb35d0ce4e0e85efeec4d87213"),
     FileSource("https://download.microsoft.com/download/7/2/7/72731ebb-b63c-4170-ade7-836966263a8f/msmpisdk.msi",
                "8ccbc77a0cfe1e30f7495a759886b4d99b2c494b9b9ad414dcda1da84c00d3fa"),
-    GitSource("https://github.com/eschnett/MPIconstants", "d2763908c4d69c03f77f5f9ccc546fe635d068cb"),
 ]
 
 script = raw"""
-apk del cmake
 apk add p7zip
 
 cd ${WORKSPACE}/srcdir
@@ -49,47 +50,38 @@ install -Dvm 644 sdk/mpi.f90 -t ${prefix}/src
 cd ${includedir}
 ${FC} -I. ../src/mpi.f90 -fsyntax-only -fno-range-check
 
-################################################################################
-# Install MPIconstants
-################################################################################
-
-cd ${WORKSPACE}/srcdir/MPIconstants*
-cmake -B build \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_FIND_ROOT_PATH=${prefix} \
-    -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DBUILD_SHARED_LIBS=ON \
-    -DMPI_HOME=${prefix} \
-    -DMPI_GUESS_LIBRARY_NAME=MSMPI
-cmake --build build --parallel ${nproc}
-cmake --install build
-
 install_license \
     ${WORKSPACE}/srcdir/runtime/*.rtf \
     ${WORKSPACE}/srcdir/runtime/*.txt \
     ${WORKSPACE}/srcdir/sdk/*.rtf \
-    ${WORKSPACE}/srcdir/sdk/*.txt \
-    ${WORKSPACE}/srcdir/MPIconstants*/LICENSE.md
+    ${WORKSPACE}/srcdir/sdk/*.txt
 """
+
+augment_platform_block = """
+    using Base.BinaryPlatforms
+    $(MPI.augment)
+    augment_platform!(platform::Platform) = augment_mpi!(platform)
+    """
 
 platforms = filter!(Sys.iswindows, supported_platforms())
 platforms = expand_gfortran_versions(platforms)
 
+# Add `mpi+microsoftmpi` platform tag
+for p in platforms
+    p["mpi"] = "MicrosoftMPI"
+end
+
 products = [
-    # MicrosoftMPI
     LibraryProduct("msmpi", :libmpi),
     ExecutableProduct("mpiexec", :mpiexec),
-    # MPIconstants
-    LibraryProduct("libload_time_mpi_constants", :libload_time_mpi_constants),
-    ExecutableProduct("generate_compile_time_mpi_constants", :generate_compile_time_mpi_constants),
 ]
 
 dependencies = [
-    HostBuildDependency("CMake_jll"),
+    RuntimeDependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267");
+                      compat="0.1", top_level=true),
 ]
 
 # Build the tarballs.
 # We use GCC 5 to ensure Fortran module files are readable by all `libgfortran3` architectures. GCC 4 would use an older format.
 build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"5")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"5")
