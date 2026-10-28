@@ -29,8 +29,7 @@ install_license License.txt
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-# libsuperlu inherits the libgfortran ABI of the OpenBLAS32 it links against.
-platforms = expand_gfortran_versions(supported_platforms())
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -41,8 +40,10 @@ products = [
 dependencies = [
     # 0.3.29 is the first version built for riscv64 and FreeBSD aarch64.
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"); compat="0.3.29"),
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); compat="1.1.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.11")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               # GCC 8 makes the build platform libgfortran5, so the audit loads the
+               # libgfortran5 OpenBLAS32 that current CompilerSupportLibraries_jll can satisfy.
+               julia_compat="1.11", preferred_gcc_version=v"8")
