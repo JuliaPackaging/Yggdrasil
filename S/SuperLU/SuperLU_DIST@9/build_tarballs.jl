@@ -20,7 +20,7 @@ cd $WORKSPACE/srcdir/superlu_dist*
 sed -i -e 's!OUTPUT_NAME superlu_dist!OUTPUT_NAME "${SUPERLU_OUTPUT_NAME}"!g' SRC/CMakeLists.txt
 
 if [[ "${target}" == *-mingw* ]]; then
-    PLATFLAGS="-DTPL_ENABLE_PARMETISLIB:BOOL=FALSE -DMPI_HOME=${prefix} -DMPI_GUESS_LIBRARY_NAME=MSMPI"
+    PLATFLAGS="-DMPI_HOME=${prefix} -DMPI_GUESS_LIBRARY_NAME=MSMPI"
     if [[ "${target}" == x86_64-* ]]; then
         PLATFLAGS+=" -DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64"
     fi
@@ -34,15 +34,13 @@ build_superlu_dist()
 {
     if [[ "${1}" == "Int64" ]]; then
         INT=64
-        METIS_PATH="${libdir}/metis/metis_Int64_Real32/lib/libmetis_Int64_Real32.${dlext}"
+        # METIS_jll installs this variant under its own prefix, so the DLL is in bin/ on Windows.
+        METIS_PATH="${libdir}/metis/metis_Int64_Real32/$(basename ${libdir})/libmetis_Int64_Real32.${dlext}"
         PARMETIS_PATH="${libdir}/libparmetis_Int64_Real32.${dlext}"
     else
         INT=32
         METIS_PATH="${libdir}/libmetis.${dlext}"
         PARMETIS_PATH="${libdir}/libparmetis.${dlext}"
-    fi
-    if [[ "${target}" != *-mingw* ]]; then
-        PLATFLAGS="-DTPL_ENABLE_PARMETISLIB:BOOL=TRUE -DTPL_PARMETIS_INCLUDE_DIRS=${includedir} -DTPL_PARMETIS_LIBRARIES=${PARMETIS_PATH};${METIS_PATH}"
     fi
 
     mkdir build-${INT}
@@ -62,6 +60,9 @@ build_superlu_dist()
         -DTPL_BLAS_LIBRARIES="${BLAS_LIB}" \
         -DTPL_ENABLE_LAPACKLIB=ON \
         -DTPL_LAPACK_LIBRARIES="${BLAS_LIB}" \
+        -DTPL_ENABLE_PARMETISLIB=ON \
+        -DTPL_PARMETIS_INCLUDE_DIRS="${includedir}" \
+        -DTPL_PARMETIS_LIBRARIES="${PARMETIS_PATH};${METIS_PATH}" \
         ${PLATFLAGS} \
         -DCMAKE_C_FLAGS="-std=c99 -Wno-implicit-function-declaration -Wno-incompatible-pointer-types" \
         -DXSDK_INDEX_SIZE=${INT} \
@@ -121,7 +122,7 @@ dependencies = [
     # 1.12) only supports OpenBLAS32 0.3.9 - 0.3.32, so pinning 0.3.33 makes
     # dependency resolution unsatisfiable.
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"); compat="0.3.32"),
-    Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa"); platforms=filter(!Sys.iswindows, platforms), compat="4.0.9"),
+    Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa"); compat="4.0.9"),
     Dependency("METIS_jll"; compat="5.1.4"),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
