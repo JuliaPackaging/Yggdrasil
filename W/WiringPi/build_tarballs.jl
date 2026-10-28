@@ -1,5 +1,5 @@
 using BinaryBuilder2
-using Platforms
+
 
 # 1. Define package metadata and workspace
 name = "WiringPi"
