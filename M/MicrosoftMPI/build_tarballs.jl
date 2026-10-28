@@ -16,47 +16,44 @@ script = raw"""
 apk del cmake
 apk add p7zip
 
-cd ${WORKSPACE}/srcdir/
-7z x -t# msmpisetup.exe -otmp
-if [[ ${target} == i686-w64-* ]]; then
-    7z x tmp/2.msi -o${prefix}
+cd ${WORKSPACE}/srcdir
+7z x -t# msmpisetup.exe -osetup
+7z x msmpisdk.msi -osdk
+# The 64-bit MSI and SDK ship both architectures, with the 64-bit files suffixed "64"
+if [[ ${nbits} == 32 ]]; then
+    7z x setup/2.msi -oruntime
+    suffix=""
 else
-    7z x tmp/4.msi -o${prefix}
-    mv -fv ${prefix}/msmpi64.dll ${prefix}/msmpi.dll
-    mv -fv ${prefix}/msmpires64.dll ${prefix}/msmpires.dll
+    7z x setup/4.msi -oruntime
+    suffix="64"
 fi
 
-7z x msmpisdk.msi -o${prefix}
-cd ${prefix}
-chmod +x *.exe
-mkdir -pv bin lib include src share/licenses/MicrosoftMPI
-mv -v *.exe *.dll bin
-mv -v *.lib lib
-# Move to includedir only the mpifptr.h for current architecture
-mv -v "mpifptr${nbits}.h" "include/mpifptr.h"
-rm -v mpifptr*.h
-mv -v *.h *.man include
-mv -v *.f90 src
-mv -v *.txt *.rtf share/licenses/MicrosoftMPI
+install -Dvm 755 runtime/*.exe -t ${bindir}
+install -Dvm 755 runtime/msmpi${suffix}.dll ${libdir}/msmpi.dll
+install -Dvm 755 runtime/msmpires${suffix}.dll ${libdir}/msmpires.dll
+for lib in msmpi msmpifec msmpifmc; do
+    install -Dvm 644 sdk/${lib}${suffix}.lib ${prefix}/lib/${lib}.lib
+done
+if [[ ${nbits} == 32 ]]; then
+    # The stdcall Fortran import libraries only exist for 32-bit
+    install -Dvm 644 sdk/msmpifes.lib sdk/msmpifms.lib -t ${prefix}/lib
+fi
+
+# Replace an unknown character in mpif.h by a space
+sed -i '/Copyright Notice/!b;n;c!    + 2002 University of Chicago' sdk/mpif.h
+install -Dvm 644 sdk/mpi.h sdk/mpio.h sdk/mpif.h sdk/mspms.h sdk/pmidbg.h runtime/mpitrace.man -t ${includedir}
+install -Dvm 644 sdk/mpifptr${nbits}.h ${includedir}/mpifptr.h
+install -Dvm 644 sdk/mpi.f90 -t ${prefix}/src
 
 # Generate "mpi.mod", "mpi_base.mod", "mpi_sizeofs.mod" and "mpi_constants.mod"
 cd ${includedir}
 ${FC} -I. ../src/mpi.f90 -fsyntax-only -fno-range-check
-
-# Replace an unknown character in mpif.h by a space
-sed -i '/Copyright Notice/!b;n;c!    + 2002 University of Chicago' mpif.h
 
 ################################################################################
 # Install MPIconstants
 ################################################################################
 
 cd ${WORKSPACE}/srcdir/MPIconstants*
-
-mpi_args=()
-if [[ ${target} == x86_64-w64-* ]]; then
-    mpi_args+=(-DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64)
-fi
-
 cmake -B build \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -64,22 +61,16 @@ cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DBUILD_SHARED_LIBS=ON \
     -DMPI_HOME=${prefix} \
-    -DMPI_GUESS_LIBRARY_NAME=MSMPI \
-    "${mpi_args[@]}"
+    -DMPI_GUESS_LIBRARY_NAME=MSMPI
 cmake --build build --parallel ${nproc}
 cmake --install build
 
-if [[ ${target} == i686-w64-* ]]; then
-    rm -v ${prefix}/lib/*64.lib
-else
-    # The stdcall Fortran import libraries only exist for 32-bit
-    rm -v ${prefix}/lib/msmpifes.lib ${prefix}/lib/msmpifms.lib
-    mv -fv ${prefix}/lib/msmpifmc64.lib ${prefix}/lib/msmpifmc.lib
-    mv -fv ${prefix}/lib/msmpifec64.lib ${prefix}/lib/msmpifec.lib
-    mv -fv ${prefix}/lib/msmpi64.lib ${prefix}/lib/msmpi.lib
-fi
-
-install_license ${WORKSPACE}/srcdir/MPIconstants*/LICENSE.md
+install_license \
+    ${WORKSPACE}/srcdir/runtime/*.rtf \
+    ${WORKSPACE}/srcdir/runtime/*.txt \
+    ${WORKSPACE}/srcdir/sdk/*.rtf \
+    ${WORKSPACE}/srcdir/sdk/*.txt \
+    ${WORKSPACE}/srcdir/MPIconstants*/LICENSE.md
 """
 
 platforms = filter!(Sys.iswindows, supported_platforms())
