@@ -1,16 +1,19 @@
 using BinaryBuilder, Pkg
 
 name = "EntropyEOS"
-version = v"1.1.0"
+version = v"1.3.0"
 
 sources = [
-    GitSource("https://github.com/eschnett/EntropyEOS.git", "750fd1a457130131c3502bfaf1b152bcfd71e30a"; tag="v$(version)"),
+    GitSource("https://github.com/eschnett/EntropyEOS.git", "db2189cfa5b0e685ddc195efe21a810305091154"; tag="v$(version)"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/EntropyEOS
+# We use `-ffp-contract=off` to forbid re-arranging floating-point
+# expressions. This way we can get bitwise identical results here in
+# C++ and in a Julia code that implements the same algorithm.
 make_options=(
-    CXXFLAGS="-O2 -std=c++17"
+    CXXFLAGS="-O2 -std=c++17 -ffp-contract=off"
     OPENMP=-fopenmp
     HDF5_INC="-I${includedir}"
     HDF5_LIB="-L${libdir} -lhdf5"

@@ -1,0 +1,164 @@
+From ef90d71e35285f142491804f480a42d110bad750 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Tue, 27 Oct 2026 01:49:36 +0100
+Subject: [PATCH 45/45] Skip the second MXCSR read when host kernel FP modes
+ already match
+
+When the caller's floating-point environment already matches the kernel's,
+the kernel can only raise further exception flags, as a function call would.
+Leaving them avoids a second MXCSR read (STMXCSR) and a store-forwarding
+stall: a trivial KernelAbstractions launch on a Xeon E3-1245 v6 takes 498
+instead of 518 cycles in a local build.
+
+The documented contract becomes the C function-call one on x86 and AArch64:
+the caller's control modes and previously raised flags are preserved, and
+which further flags the call raises is unspecified. AArch64 still restores
+FPCR and FPSR.
+---
+ include/CL/cl_ext_pocl.h                 |  6 ++++--
+ lib/CL/devices/common_utils.c            | 26 ++++++++++++++++--------
+ tests/runtime/test_cl_pocl_host_kernel.c | 14 ++++++++++---
+ 3 files changed, 33 insertions(+), 13 deletions(-)
+
+diff --git a/include/CL/cl_ext_pocl.h b/include/CL/cl_ext_pocl.h
+index e10db2605..c27bf656e 100644
+--- a/include/CL/cl_ext_pocl.h
++++ b/include/CL/cl_ext_pocl.h
+@@ -499,8 +499,10 @@ extern CL_API_ENTRY cl_int CL_API_CALL clSetKernelArgDevicePointerEXT (
+  * CL_HOST_KERNEL_SCRATCH_ALIGNMENT_POCL that no concurrent call uses; it
+  * holds the __local memory and the printf buffer. On x86 and AArch64, the
+  * kernel runs in its own floating-point environment (round to nearest,
+- * denormal handling per the build options, all exceptions masked), and the
+- * caller's (including its exception flags) is restored on return.
++ * denormal handling per the build options, all exceptions masked). The
++ * caller's control modes and the exception flags it had raised are preserved;
++ * as with a function call, the call may raise further flags, which ones being
++ * unspecified.
+  *
+  * Work-groups may be run in any order, from any number of threads and
+  * concurrently, so they must not wait on each other. Only kernels without
+diff --git a/lib/CL/devices/common_utils.c b/lib/CL/devices/common_utils.c
+index 8a7ff95e2..3019e2321 100644
+--- a/lib/CL/devices/common_utils.c
++++ b/lib/CL/devices/common_utils.c
+@@ -217,7 +217,8 @@ typedef struct
+ } host_fp_env;
+ #endif
+ 
+-static inline void
++/* Returns whether it changed the caller's environment. */
++static inline int
+ enter_kernel_fp_mode (unsigned ftz, host_fp_env *caller)
+ {
+ #if defined(HOST_KERNEL_FP_X86)
+@@ -227,8 +228,10 @@ enter_kernel_fp_mode (unsigned ftz, host_fp_env *caller)
+        & ~(_MM_FLUSH_ZERO_MASK | _MM_DENORMALS_ZERO_MASK | _MM_ROUND_MASK))
+       | _MM_MASK_MASK | _MM_ROUND_NEAREST
+       | (ftz ? (_MM_FLUSH_ZERO_ON | _MM_DENORMALS_ZERO_ON) : 0);
+-  if (kernel != caller->mxcsr)
+-    _mm_setcsr (kernel);
++  if (kernel == caller->mxcsr)
++    return 0;
++  _mm_setcsr (kernel);
++  return 1;
+ #elif defined(HOST_KERNEL_FP_AARCH64)
+   __asm__ volatile ("mrs %0, fpcr" : "=r"(caller->fpcr));
+   __asm__ volatile ("mrs %0, fpsr" : "=r"(caller->fpsr));
+@@ -238,20 +241,26 @@ enter_kernel_fp_mode (unsigned ftz, host_fp_env *caller)
+       | (ftz ? (FPCR_FZ | FPCR_FZ16) : 0);
+   if (kernel != caller->fpcr)
+     __asm__ volatile ("msr fpcr, %0" : : "r"(kernel));
++  return 1;
+ #else
+   (void)ftz;
+   (void)caller;
++  return 0;
+ #endif
+ }
+ 
+-/* Restores the caller's environment, including its exception flags. */
++/* Restores the caller's environment, including its exception flags, if
++   `enter_kernel_fp_mode` changed it. Otherwise the kernel ran in the caller's
++   environment and can only have raised further flags, which the contract
++   allows: leaving them saves reading MXCSR again (a few nanoseconds). */
+ static inline void
+-leave_kernel_fp_mode (const host_fp_env *caller)
++leave_kernel_fp_mode (const host_fp_env *caller, int changed)
+ {
+ #if defined(HOST_KERNEL_FP_X86)
+-  if (_mm_getcsr () != caller->mxcsr)
++  if (changed)
+     _mm_setcsr (caller->mxcsr);
+ #elif defined(HOST_KERNEL_FP_AARCH64)
++  (void)changed;
+   uint64_t fpcr, fpsr;
+   __asm__ volatile ("mrs %0, fpcr" : "=r"(fpcr));
+   __asm__ volatile ("mrs %0, fpsr" : "=r"(fpsr));
+@@ -261,6 +270,7 @@ leave_kernel_fp_mode (const host_fp_env *caller)
+     __asm__ volatile ("msr fpsr, %0" : : "r"(caller->fpsr));
+ #else
+   (void)caller;
++  (void)changed;
+ #endif
+ }
+ 
+@@ -383,7 +393,7 @@ pocl_cpu_run_host_kernel (cl_host_kernel_pocl hk,
+   pc.printf_buffer_position = &position;
+ 
+   host_fp_env caller_fp_env;
+-  enter_kernel_fp_mode (hk->fp_mode, &caller_fp_env);
++  int fp_changed = enter_kernel_fp_mode (hk->fp_mode, &caller_fp_env);
+ 
+   pocl_workgroup_func wg = (pocl_workgroup_func)hk->wg;
+   /* Without dividing when the range starts in the first row or plane, as
+@@ -422,7 +432,7 @@ pocl_cpu_run_host_kernel (cl_host_kernel_pocl hk,
+         }
+     }
+ 
+-  leave_kernel_fp_mode (&caller_fp_env);
++  leave_kernel_fp_mode (&caller_fp_env, fp_changed);
+ 
+   return pc.execution_failed ? CL_OUT_OF_RESOURCES : CL_SUCCESS;
+ }
+diff --git a/tests/runtime/test_cl_pocl_host_kernel.c b/tests/runtime/test_cl_pocl_host_kernel.c
+index 7859cd60d..72af21911 100644
+--- a/tests/runtime/test_cl_pocl_host_kernel.c
++++ b/tests/runtime/test_cl_pocl_host_kernel.c
+@@ -250,7 +250,7 @@ test_group_sums (cl_kernel kernel, cl_device_id device)
+ }
+ 
+ /* The kernel runs with round-to-nearest, and the caller's rounding mode and
+-   exception flags survive the call. */
++   the exception flags it had raised survive the call. */
+ static int
+ test_fp_env (cl_kernel kernel, cl_device_id device)
+ {
+@@ -272,7 +272,6 @@ test_fp_env (cl_kernel kernel, cl_device_id device)
+   err = run_hk (hk, args, &num_groups, NULL, 0, 1, scratch);
+   int rounding = fegetround ();
+   int divbyzero = fetestexcept (FE_DIVBYZERO);
+-  int inexact = fetestexcept (FE_INEXACT);
+   fesetround (FE_TONEAREST);
+   feclearexcept (FE_ALL_EXCEPT);
+   CHECK_CL_ERROR (err);
+@@ -282,7 +281,16 @@ test_fp_env (cl_kernel kernel, cl_device_id device)
+   TEST_ASSERT (out == nearest);
+   TEST_ASSERT (rounding == FE_UPWARD);
+   TEST_ASSERT (divbyzero);
+-  TEST_ASSERT (!inexact);
++
++  /* Also when the caller's environment is the kernel's. */
++  feraiseexcept (FE_DIVBYZERO);
++  err = run_hk (hk, args, &num_groups, NULL, 0, 1, scratch);
++  rounding = fegetround ();
++  divbyzero = fetestexcept (FE_DIVBYZERO);
++  feclearexcept (FE_ALL_EXCEPT);
++  CHECK_CL_ERROR (err);
++  TEST_ASSERT (rounding == FE_TONEAREST);
++  TEST_ASSERT (divbyzero);
+ 
+ #ifdef __GLIBC__
+   /* Exceptions the caller unmasked don't trap in the kernel. */
+-- 
+2.56.0
+

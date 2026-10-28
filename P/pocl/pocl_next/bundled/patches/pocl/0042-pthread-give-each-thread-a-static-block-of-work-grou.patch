@@ -1,0 +1,300 @@
+From 6f3ddac462e8e73afbe8695cda0fe2ae77acdb43 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Mon, 26 Oct 2026 12:07:37 +0100
+Subject: [PATCH] pthread: give each thread a static block of work-groups
+
+The work-groups of a kernel were dealt out in chunks to whichever thread
+asked first, so the same work-groups ran on different threads at every
+launch. On a NUMA system that rules out the usual way of placing memory:
+initializing it with a kernel, so that each page is first touched by,
+and thus placed near, the thread that later works on it. Pinning the
+threads with POCL_AFFINITY doesn't help. On 2x EPYC 7502 with 64 pinned
+threads, SAXPY over 4 GiB initialized by a kernel ran at 206 GB/s, where
+OpenMP-style static loops get 240.
+
+Split the work-groups into one contiguous block per thread instead, by
+linear index, as OpenMP's static schedule does. A thread claims half of
+what is left of its block at a time. A thread that runs out takes over
+the block of a thread that hasn't started on its own, or the back half of
+another block, runs half of that and makes the rest its block, where it
+can be taken again. Launches with as many work-groups thus mostly run the
+same work-groups on the same threads, while load imbalance is still
+evened out, as with LLVM OpenMP's static_steal schedule. The SAXPY above
+reaches 241 GB/s.
+
+Small launches cost about the same: on a Ryzen 9950X with 8 threads, a
+trivial kernel takes as long or less for 1 to 16384 work-groups (18.1
+instead of 23.2 us for 16384), and with 16 threads at most 7% longer for
+16 to 64 work-groups. A kernel whose work-items have very uneven costs
+runs as fast as before.
+
+POCL_PTHREAD_SCHEDULE=guided restores the previous schedule.
+---
+ doc/sphinx/source/using.rst                |  11 ++
+ lib/CL/devices/common_utils.h              |   7 +
+ lib/CL/devices/pthread/pthread_scheduler.c | 167 ++++++++++++++++++++-
+ 3 files changed, 181 insertions(+), 4 deletions(-)
+
+diff --git a/doc/sphinx/source/using.rst b/doc/sphinx/source/using.rst
+index 87e2ce479..0cfbc2e42 100644
+--- a/doc/sphinx/source/using.rst
++++ b/doc/sphinx/source/using.rst
+@@ -368,6 +368,17 @@ pocl.
+  where the value is recompute in the using parallel region instead of storing
+  it to the work-item context. Enabled by default.
+ 
++- **POCL_PTHREAD_SCHEDULE**
++
++ How the 'cpu' driver distributes the work-groups of a kernel over its
++ threads (not in builds using OpenMP). ``static`` (the default) gives each
++ thread a contiguous block of work-groups, and threads that run out of work
++ take work-groups from the others. Launches with the same number of
++ work-groups thus mostly run the same work-groups on the same threads, so
++ that, with ``POCL_AFFINITY``, memory that a kernel touched first stays
++ local to the threads that work on it later. ``guided`` deals out
++ work-groups in decreasing chunks to whichever thread asks first.
++
+ - **POCL_REMOTE_XXX**
+ 
+  These variables are used to configure different aspects of the remote driver
+diff --git a/lib/CL/devices/common_utils.h b/lib/CL/devices/common_utils.h
+index 463fd53a1..8b9b1faa4 100644
+--- a/lib/CL/devices/common_utils.h
++++ b/lib/CL/devices/common_utils.h
+@@ -67,6 +67,13 @@ struct kernel_run_command
+   /* this is required b/c there's an additional level of indirection */
+   void **arguments2;
+ 
++  /* pthread: the work-groups that haven't been claimed, in one contiguous
++   * block per thread of the device, or NULL for the guided schedule */
++  struct pocl_wg_block *wg_blocks;
++  unsigned num_wg_blocks;
++  /* the thread that owns wg_blocks[0] */
++  unsigned first_wg_thread;
++
+   /* the work-groups that haven't been claimed by a thread; read without
+    * the lock, and written by every thread claiming work-groups, so kept
+    * apart from the fields they only read. 64-bit for the Windows atomics. */
+diff --git a/lib/CL/devices/pthread/pthread_scheduler.c b/lib/CL/devices/pthread/pthread_scheduler.c
+index 8304d885a..a7a209ae8 100644
+--- a/lib/CL/devices/pthread/pthread_scheduler.c
++++ b/lib/CL/devices/pthread/pthread_scheduler.c
+@@ -93,6 +93,9 @@ typedef struct scheduler_data_
+ 
+   int thread_pool_shutdown_requested;
+   int worker_out_of_memory;
++  /* POCL_PTHREAD_SCHEDULE=guided: deal out work-groups to whichever thread
++     asks first instead of in per-thread blocks */
++  int guided_schedule;
+ 
+   struct pool_thread_data *thread_pool;
+ #ifndef ENABLE_HOST_CPU_DEVICES_OPENMP
+@@ -135,6 +138,10 @@ pthread_scheduler_init (cl_device_id device)
+ 
+   scheduler.num_threads = num_worker_threads;
+   assert (num_worker_threads > 0);
++  scheduler.guided_schedule
++      = strcmp (pocl_get_string_option ("POCL_PTHREAD_SCHEDULE", "static"),
++                "guided")
++        == 0;
+   scheduler.printf_buf_size = device->printf_buffer_size;
+   assert (device->printf_buffer_size > 0);
+ 
+@@ -318,6 +325,152 @@ get_wg_index_range (kernel_run_command *k, unsigned *start_index,
+   return 1;
+ }
+ 
++/* By default, the work-groups of a kernel are split into one contiguous
++   block per thread of the device, by linear index, so that launches with
++   as many work-groups run the same ones on the same threads, as with
++   OpenMP's static schedule. This keeps memory that a kernel touched first
++   local to the thread that works on it later. A thread claims half of
++   what is left of its block at a time. When its block is empty, it takes
++   over the block of a thread that hasn't started on it, or else the back
++   half of another block, runs half of that, and makes the rest its block,
++   from which it can be taken again (cf. LLVM OpenMP's static_steal).
++
++   Once a block's non-empty range changes, it can't recur: that would take
++   a work-group that has been claimed since, as a thread claims part of what
++   it takes before making the rest available. CAS on it thus has no ABA
++   problem. */
++struct pocl_wg_block
++{
++  /* the unclaimed work-groups [begin, end), and whether the owner has
++     started on them: started << 63 | begin << 32 | end */
++  POCL_ALIGNAS (HOST_CPU_CACHELINE_SIZE) uint64_t range;
++};
++
++#define WG_STARTED ((uint64_t)1 << 63)
++#define WG_RANGE(begin, end) (((uint64_t)(begin) << 32) | (uint64_t)(end))
++#define WG_BEGIN(range) ((unsigned)(((range) & ~WG_STARTED) >> 32))
++#define WG_END(range) ((unsigned)(range))
++
++/* Sets up the blocks of K, or leaves it to the guided schedule. */
++static void
++setup_wg_blocks (kernel_run_command *k, size_t num_groups)
++{
++  k->wg_blocks = NULL;
++  if (scheduler.guided_schedule || num_groups > INT32_MAX)
++    return;
++
++  unsigned first = 0, num = scheduler.num_threads;
++  if (k->device->parent_device)
++    {
++      first = k->device->core_start;
++      num = k->device->core_count;
++    }
++  k->wg_blocks = pocl_aligned_malloc (HOST_CPU_CACHELINE_SIZE,
++                                      num * sizeof (struct pocl_wg_block));
++  if (k->wg_blocks == NULL)
++    return;
++  k->first_wg_thread = first;
++  k->num_wg_blocks = num;
++  for (unsigned i = 0; i < num; ++i)
++    {
++      /* a balanced contiguous split */
++      uint64_t begin = (uint64_t)num_groups * i / num;
++      uint64_t end = (uint64_t)num_groups * (i + 1) / num;
++      k->wg_blocks[i].range = WG_RANGE (begin, end);
++    }
++}
++
++/* Claims half of the work-groups of the calling thread's BLOCK. */
++static unsigned
++claim_wgs_from_block (struct pocl_wg_block *block, unsigned *start)
++{
++  uint64_t old = POCL_ATOMIC_LOAD (block->range);
++  while (1)
++    {
++      unsigned begin = WG_BEGIN (old), end = WG_END (old);
++      if (begin >= end)
++        return 0;
++      unsigned n = max ((end - begin) / 2, 1);
++      uint64_t seen = POCL_ATOMIC_CAS (&block->range, old,
++                                       WG_STARTED | WG_RANGE (begin + n, end));
++      if (seen == old)
++        {
++          *start = begin;
++          return n;
++        }
++      old = seen;
++    }
++}
++
++/* Takes all work-groups of another thread's BLOCK if it hasn't started on
++   them, or else the back half, and returns them as a range. */
++static uint64_t
++steal_wgs (struct pocl_wg_block *block)
++{
++  uint64_t old = POCL_ATOMIC_LOAD (block->range);
++  while (1)
++    {
++      unsigned begin = WG_BEGIN (old), end = WG_END (old);
++      if (begin >= end)
++        return 0;
++      unsigned mid
++          = (old & WG_STARTED) ? end - (end - begin + 1) / 2 : begin;
++      uint64_t seen = POCL_ATOMIC_CAS (&block->range, old,
++                                       WG_STARTED | WG_RANGE (begin, mid));
++      if (seen == old)
++        return WG_RANGE (mid, end);
++      old = seen;
++    }
++}
++
++static int
++claim_wgs (kernel_run_command *k, struct pool_thread_data *td,
++           unsigned *start_index, unsigned *end_index, int *last_wgs)
++{
++  const unsigned num = k->num_wg_blocks;
++  const unsigned own = td->index - k->first_wg_thread;
++  assert (own < num);
++  struct pocl_wg_block *block = &k->wg_blocks[own];
++  unsigned start;
++  unsigned n = claim_wgs_from_block (block, &start);
++
++  if (n == 0)
++    {
++      /* steal, starting with the next thread's block */
++      uint64_t stolen = 0;
++      for (unsigned d = 1;
++           stolen == 0 && d < num && POCL_ATOMIC_LOAD (k->remaining_wgs) > 0;
++           ++d)
++        stolen = steal_wgs (&k->wg_blocks[(own + d) % num]);
++      if (stolen == 0)
++        return 0;
++      /* Run half of it, and make the rest this thread's block. Claiming
++         part before making the rest available ensures progress. Only this
++         thread makes its empty block non-empty. */
++      start = WG_BEGIN (stolen);
++      n = max ((WG_END (stolen) - start) / 2, 1);
++      POCL_ATOMIC_STORE (block->range,
++                         WG_STARTED | WG_RANGE (start + n, WG_END (stolen)));
++    }
++
++  *start_index = start;
++  *end_index = start + n - 1;
++  if (POCL_ATOMIC_ADD (k->remaining_wgs, (uint64_t)0 - n) == 0)
++    *last_wgs = 1;
++  return 1;
++}
++
++static int
++next_wgs (kernel_run_command *k, struct pool_thread_data *td,
++          unsigned *start_index, unsigned *end_index, int *last_wgs,
++          unsigned num_threads)
++{
++  if (k->wg_blocks)
++    return claim_wgs (k, td, start_index, end_index, last_wgs);
++  return get_wg_index_range (k, start_index, end_index, last_wgs,
++                             num_threads);
++}
++
+ inline static void translate_wg_index_to_3d_index (kernel_run_command *k,
+                                                    unsigned index,
+                                                    size_t *index_3d,
+@@ -347,8 +500,8 @@ work_group_scheduler (kernel_run_command *k,
+   unsigned num_threads = k->device->parent_device ? k->device->core_count
+                                                   : thread_data->num_threads;
+ 
+-  if (!get_wg_index_range (k, &start_index, &end_index, &last_wgs,
+-                           num_threads))
++  if (!next_wgs (k, thread_data, &start_index, &end_index, &last_wgs,
++                 num_threads))
+     return;
+ 
+   assert (end_index >= start_index);
+@@ -395,8 +548,8 @@ work_group_scheduler (kernel_run_command *k,
+           execution_failed |= pc.execution_failed;
+         }
+     }
+-  while (get_wg_index_range (k, &start_index, &end_index, &last_wgs,
+-                             num_threads));
++  while (next_wgs (k, thread_data, &start_index, &end_index, &last_wgs,
++                   num_threads));
+ 
+ #ifndef ENABLE_PRINTF_IMMEDIATE_FLUSH
+   pocl_write_printf_buffer ((char *)pc.printf_buffer, position);
+@@ -491,6 +644,9 @@ finalize_kernel_command (struct pool_thread_data *thread_data,
+                                     "NDRange Kernel        ");
+ 
+   POCL_DESTROY_LOCK (k->lock);
++#ifndef ENABLE_HOST_CPU_DEVICES_OPENMP
++  pocl_aligned_free (k->wg_blocks);
++#endif
+   free_kernel_run_command (k);
+ }
+ 
+@@ -555,6 +711,9 @@ pocl_pthread_prepare_kernel (void *data, _cl_command_node *cmd)
+   run_cmd->next = NULL;
+   run_cmd->ref_count = 0;
+   run_cmd->execution_failed = 0;
++#ifndef ENABLE_HOST_CPU_DEVICES_OPENMP
++  setup_wg_blocks (run_cmd, num_groups);
++#endif
+   POCL_INIT_LOCK (run_cmd->lock);
+ 
+   pocl_setup_kernel_arg_array (run_cmd);
+-- 
+2.56.0
+

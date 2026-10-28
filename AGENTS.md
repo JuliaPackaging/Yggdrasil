@@ -6,6 +6,7 @@ This guide helps AI agents generate correct `build_tarballs.jl` recipes for Bina
 
 - **Julia**: Use the version named by `julia_version` at the top of the repo-root `Manifest.toml`, which is what CI runs.
 - **Project**: Use the repo-root Project.toml.
+- **Build host**: The build images (rootfs and compiler shards) are x86_64 Linux binaries, so builds need an x86_64 host. On other hosts, such as arm64 macOS, they don't work or run very slowly under emulation; let CI build instead.
 - **Supported Platforms**: Linux glibc (x86_64, i686, aarch64, armv7l, armv6l, ppc64le, riscv64), Linux musl (x86_64, i686, aarch64, armv7l, armv6l), Windows (x86_64, i686), macOS (x86_64, aarch64), FreeBSD (x86_64, aarch64)
 - Use `supported_platforms()` to get all available platforms
 
@@ -318,7 +319,7 @@ cd X/PackageName
 julia --project build_tarballs.jl --verbose --deploy=local x86_64-linux-gnu
 ```
 
-This puts tarballs in `products/` and writes a local JLL package to `~/.julia/dev/PackageName_jll/`. The trailing triplet builds only that platform; omit it to build all of them. Use it for local testing only, never narrow `platforms` in the recipe to match. While iterating on a failing build, add `--debug` to drop into the sandbox shell on failure. On macOS, local builds need Docker.
+This puts tarballs in `products/` and writes a local JLL package to `~/.julia/dev/PackageName_jll/`. The trailing triplet builds only that platform; omit it to build all of them. Use it for local testing only, never narrow `platforms` in the recipe to match. While iterating on a failing build, add `--debug` to drop into the sandbox shell on failure. On x86_64 macOS, local builds need Docker; arm64 hosts are not practical (see [Prerequisites](#prerequisites)).
 
 ### Test the JLL Package
 

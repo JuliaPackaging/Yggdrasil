@@ -1,0 +1,695 @@
+Retry incompatible leading coefficient divisors in finite-field factorization.
+Upstream: https://github.com/flintlib/flint/pull/2906
+Backport: https://github.com/flintlib/flint/commit/94c12ff47fa39370bb2ac1c383f3cbea87988bdb
+
+diff --git a/src/fmpz_mod_mpoly_factor/irred_smprime_wang.c b/src/fmpz_mod_mpoly_factor/irred_smprime_wang.c
+index 292f698a71..51bfaf74f9 100644
+--- a/src/fmpz_mod_mpoly_factor/irred_smprime_wang.c
++++ b/src/fmpz_mod_mpoly_factor/irred_smprime_wang.c
+@@ -168,12 +168,15 @@ int fmpz_mod_mpoly_factor_irred_smprime_wang(
+             fmpz_mod_mpoly_one(lc_divs->coeffs + i, ctx);
+     }
+ 
++    /* Unlucky evaluations can give incompatible leading coefficient divisors. */
+     success = fmpz_mod_mpoly_divides(m, lcA, lc_divs->coeffs + 0, ctx);
+-    FLINT_ASSERT(success);
++    if (!success)
++        goto next_alphabetas;
+     for (i = 1; i < r; i++)
+     {
+         success = fmpz_mod_mpoly_divides(m, m, lc_divs->coeffs + i, ctx);
+-        FLINT_ASSERT(success);
++        if (!success)
++            goto next_alphabetas;
+     }
+ 
+     fmpz_mod_mpoly_pow_ui(mpow, m, r - 1, ctx);
+diff --git a/src/fmpz_mod_mpoly_factor/irred_smprime_zippel.c b/src/fmpz_mod_mpoly_factor/irred_smprime_zippel.c
+index b071a7ecbe..cd70825189 100644
+--- a/src/fmpz_mod_mpoly_factor/irred_smprime_zippel.c
++++ b/src/fmpz_mod_mpoly_factor/irred_smprime_zippel.c
+@@ -169,12 +169,15 @@ int fmpz_mod_mpoly_factor_irred_smprime_zippel(
+             fmpz_mod_mpoly_one(lc_divs->coeffs + i, ctx);
+     }
+ 
++    /* Unlucky evaluations can give incompatible leading coefficient divisors. */
+     success = fmpz_mod_mpoly_divides(m, lcA, lc_divs->coeffs + 0, ctx);
+-    FLINT_ASSERT(success);
++    if (!success)
++        goto next_alphabetas;
+     for (i = 1; i < r; i++)
+     {
+         success = fmpz_mod_mpoly_divides(m, m, lc_divs->coeffs + i, ctx);
+-        FLINT_ASSERT(success);
++        if (!success)
++            goto next_alphabetas;
+     }
+ 
+     fmpz_mod_mpoly_pow_ui(mpow, m, r - 1, ctx);
+diff --git a/src/fmpz_mod_mpoly_factor/test/main.c b/src/fmpz_mod_mpoly_factor/test/main.c
+index b2de98e03a..0445447a4f 100644
+--- a/src/fmpz_mod_mpoly_factor/test/main.c
++++ b/src/fmpz_mod_mpoly_factor/test/main.c
+@@ -12,6 +12,7 @@
+ /* Include functions *********************************************************/
+ 
+ #include "t-factor.c"
++#include "t-irred_smprime.c"
+ #include "t-factor_squarefree.c"
+ #include "t-factor_wang.c"
+ #include "t-factor_zassenhaus.c"
+@@ -26,6 +27,7 @@
+ 
+ test_struct tests[] =
+ {
++    TEST_FUNCTION(fmpz_mod_mpoly_factor_irred_smprime),
+     TEST_FUNCTION(fmpz_mod_mpoly_factor),
+     TEST_FUNCTION(fmpz_mod_mpoly_factor_squarefree),
+     TEST_FUNCTION(fmpz_mod_mpoly_factor_wang),
+diff --git a/src/fmpz_mod_mpoly_factor/test/t-irred_smprime.c b/src/fmpz_mod_mpoly_factor/test/t-irred_smprime.c
+new file mode 100644
+index 0000000000..a8230482af
+--- /dev/null
++++ b/src/fmpz_mod_mpoly_factor/test/t-irred_smprime.c
+@@ -0,0 +1,94 @@
++/*
++    Copyright (C) 2026 Tommy Hofmann
++
++    This file is part of FLINT.
++
++    FLINT is free software: you can redistribute it and/or modify it under
++    the terms of the GNU Lesser General Public License (LGPL) as published
++    by the Free Software Foundation; either version 3 of the License, or
++    (at your option) any later version.  See <https://www.gnu.org/licenses/>.
++*/
++
++#include "test_helpers.h"
++#include "fmpz.h"
++#include "fmpz_mod_mpoly_factor.h"
++
++TEST_FUNCTION_START(fmpz_mod_mpoly_factor_irred_smprime, state)
++{
++    const char * vars[] = {"x", "y", "z"};
++    const char * inputs[] = {
++        "x^3*y^3+x^3*y*z+6*x^2*y^2+3*x^2*y+11*x*y+2*x+6",
++        "x^4*y^3+x^4*y*z+x^3*y^2+x^3*y+x^3+2*x^2*y^2+x^2*y+2*x^2+3*x+2"
++    };
++    const ulong primes[] = {7, 11};
++    const ulong seeds[] = {110, 146};
++    slong i;
++    int algo, success;
++    flint_rand_t retry_state;
++
++    /*
++        Along y = z = t the inputs become
++          (t*x+1)*(t*x+2)*((t+1)*x+3) and
++          (t^2*x^2+x+1)*((t+1)*x^2+x+2).
++        Both inputs are primitive and linear in z, hence irreducible.
++        Their leading coefficient is y*(y^2+z), but the specialized
++        factors can assign y too many times. The fixed seeds exercise
++        the subsequent and initial failed divisions, respectively.
++    */
++    flint_rand_init(retry_state);
++    for (i = 0; i < 2; i++)
++    {
++        fmpz_mod_mpoly_ctx_t ctx;
++        fmpz_mod_mpoly_t a, lc;
++        fmpz_mod_mpoly_factor_t lcf;
++        fmpz_mod_mpolyv_t fac;
++        fmpz_t modulus;
++
++        fmpz_init_set_ui(modulus, primes[i]);
++        fmpz_mod_mpoly_ctx_init(ctx, 3, ORD_LEX, modulus);
++        fmpz_mod_mpoly_init(a, ctx);
++        fmpz_mod_mpoly_init(lc, ctx);
++        fmpz_mod_mpoly_factor_init(lcf, ctx);
++        fmpz_mod_mpolyv_init(fac, ctx);
++        FLINT_TEST(fmpz_mod_mpoly_set_str_pretty(
++                                          a, inputs[i], vars, ctx) == 0);
++
++        /* Keep y first in the leading coefficient factorization. */
++        fmpz_mod_mpoly_factor_fit_length(lcf, 2, ctx);
++        fmpz_mod_mpoly_gen(lcf->poly + 0, 1, ctx);
++        fmpz_mod_mpoly_mul(lc, lcf->poly + 0, lcf->poly + 0, ctx);
++        fmpz_mod_mpoly_gen(lcf->poly + 1, 2, ctx);
++        fmpz_mod_mpoly_add(lcf->poly + 1, lcf->poly + 1, lc, ctx);
++        fmpz_mod_mpoly_mul(lc, lcf->poly + 0, lcf->poly + 1, ctx);
++        fmpz_one(lcf->exp + 0);
++        fmpz_one(lcf->exp + 1);
++        lcf->num = 2;
++
++        for (algo = 0; algo < 2; algo++)
++        {
++            flint_rand_set_seed(retry_state, seeds[i], seeds[i] + 1);
++            success = algo == 0 ?
++                fmpz_mod_mpoly_factor_irred_smprime_wang(
++                                        fac, a, lcf, lc, ctx, retry_state) :
++                fmpz_mod_mpoly_factor_irred_smprime_zippel(
++                                        fac, a, lcf, lc, ctx, retry_state);
++            /* The evaluation attempts may be exhausted. */
++            FLINT_TEST(success >= 0);
++            if (success)
++            {
++                FLINT_TEST(fac->length == 1);
++                FLINT_TEST(fmpz_mod_mpoly_equal(fac->coeffs + 0, a, ctx));
++            }
++        }
++
++        fmpz_mod_mpolyv_clear(fac, ctx);
++        fmpz_mod_mpoly_factor_clear(lcf, ctx);
++        fmpz_mod_mpoly_clear(a, ctx);
++        fmpz_mod_mpoly_clear(lc, ctx);
++        fmpz_mod_mpoly_ctx_clear(ctx);
++        fmpz_clear(modulus);
++    }
++    flint_rand_clear(retry_state);
++
++    TEST_FUNCTION_END(state);
++}
+diff --git a/src/fq_nmod_mpoly_factor/irred_smprime_wang.c b/src/fq_nmod_mpoly_factor/irred_smprime_wang.c
+index ccaa1d72a6..1412c98a82 100644
+--- a/src/fq_nmod_mpoly_factor/irred_smprime_wang.c
++++ b/src/fq_nmod_mpoly_factor/irred_smprime_wang.c
+@@ -163,12 +163,15 @@ int fq_nmod_mpoly_factor_irred_smprime_wang(
+             fq_nmod_mpoly_one(lc_divs->coeffs + i, ctx);
+     }
+ 
++    /* Unlucky evaluations can give incompatible leading coefficient divisors. */
+     success = fq_nmod_mpoly_divides(m, lcA, lc_divs->coeffs + 0, ctx);
+-    FLINT_ASSERT(success);
++    if (!success)
++        goto next_alphabetas;
+     for (i = 1; i < r; i++)
+     {
+         success = fq_nmod_mpoly_divides(m, m, lc_divs->coeffs + i, ctx);
+-        FLINT_ASSERT(success);
++        if (!success)
++            goto next_alphabetas;
+     }
+ 
+     fq_nmod_mpoly_pow_ui(mpow, m, r - 1, ctx);
+diff --git a/src/fq_nmod_mpoly_factor/irred_smprime_zippel.c b/src/fq_nmod_mpoly_factor/irred_smprime_zippel.c
+index 5b696402e7..2e5cc5f715 100644
+--- a/src/fq_nmod_mpoly_factor/irred_smprime_zippel.c
++++ b/src/fq_nmod_mpoly_factor/irred_smprime_zippel.c
+@@ -1415,12 +1415,15 @@ int fq_nmod_mpoly_factor_irred_smprime_zippel(
+             fq_nmod_mpoly_one(lc_divs->coeffs + i, ctx);
+     }
+ 
++    /* Unlucky evaluations can give incompatible leading coefficient divisors. */
+     success = fq_nmod_mpoly_divides(m, lcA, lc_divs->coeffs + 0, ctx);
+-    FLINT_ASSERT(success);
++    if (!success)
++        goto next_alphabetas;
+     for (i = 1; i < r; i++)
+     {
+         success = fq_nmod_mpoly_divides(m, m, lc_divs->coeffs + i, ctx);
+-        FLINT_ASSERT(success);
++        if (!success)
++            goto next_alphabetas;
+     }
+ 
+     fq_nmod_mpoly_pow_ui(mpow, m, r - 1, ctx);
+diff --git a/src/fq_nmod_mpoly_factor/test/main.c b/src/fq_nmod_mpoly_factor/test/main.c
+index 3be370e674..be363d4d63 100644
+--- a/src/fq_nmod_mpoly_factor/test/main.c
++++ b/src/fq_nmod_mpoly_factor/test/main.c
+@@ -12,6 +12,7 @@
+ /* Include functions *********************************************************/
+ 
+ #include "t-factor.c"
++#include "t-irred_smprime.c"
+ #include "t-factor_content.c"
+ #include "t-factor_squarefree.c"
+ #include "t-factor_wang.c"
+@@ -23,6 +24,7 @@
+ 
+ test_struct tests[] =
+ {
++    TEST_FUNCTION(fq_nmod_mpoly_factor_irred_smprime),
+     TEST_FUNCTION(fq_nmod_mpoly_factor),
+     TEST_FUNCTION(fq_nmod_mpoly_factor_content),
+     TEST_FUNCTION(fq_nmod_mpoly_factor_squarefree),
+diff --git a/src/fq_nmod_mpoly_factor/test/t-irred_smprime.c b/src/fq_nmod_mpoly_factor/test/t-irred_smprime.c
+new file mode 100644
+index 0000000000..08f0140f3a
+--- /dev/null
++++ b/src/fq_nmod_mpoly_factor/test/t-irred_smprime.c
+@@ -0,0 +1,91 @@
++/*
++    Copyright (C) 2026 Tommy Hofmann
++
++    This file is part of FLINT.
++
++    FLINT is free software: you can redistribute it and/or modify it under
++    the terms of the GNU Lesser General Public License (LGPL) as published
++    by the Free Software Foundation; either version 3 of the License, or
++    (at your option) any later version.  See <https://www.gnu.org/licenses/>.
++*/
++
++#include "test_helpers.h"
++#include "fmpz.h"
++#include "fq_nmod_mpoly_factor.h"
++
++TEST_FUNCTION_START(fq_nmod_mpoly_factor_irred_smprime, state)
++{
++    const char * vars[] = {"x", "y", "z"};
++    const char * inputs[] = {
++        "x^3*y^3+x^3*y*z+6*x^2*y^2+3*x^2*y+11*x*y+2*x+6",
++        "x^4*y^3+x^4*y*z+x^3*y^2+x^3*y+x^3+2*x^2*y^2+x^2*y+2*x^2+3*x+2"
++    };
++    const ulong primes[] = {7, 3};
++    const slong degrees[] = {1, 3};
++    const ulong seeds[] = {110, 390};
++    slong i;
++    int algo, success;
++    flint_rand_t retry_state;
++
++    /*
++        Along y = z = t the inputs become
++          (t*x+1)*(t*x+2)*((t+1)*x+3) and
++          (t^2*x^2+x+1)*((t+1)*x^2+x+2).
++        Both inputs are primitive and linear in z, hence irreducible.
++        Their leading coefficient is y*(y^2+z), but the specialized
++        factors can assign y too many times. The fixed seeds exercise
++        the subsequent and initial failed divisions, respectively.
++    */
++    flint_rand_init(retry_state);
++    for (i = 0; i < 2; i++)
++    {
++        fq_nmod_mpoly_ctx_t ctx;
++        fq_nmod_mpoly_t a, lc;
++        fq_nmod_mpoly_factor_t lcf;
++        fq_nmod_mpolyv_t fac;
++        fq_nmod_mpoly_ctx_init_deg(ctx, 3, ORD_LEX, primes[i], degrees[i]);
++        fq_nmod_mpoly_init(a, ctx);
++        fq_nmod_mpoly_init(lc, ctx);
++        fq_nmod_mpoly_factor_init(lcf, ctx);
++        fq_nmod_mpolyv_init(fac, ctx);
++        FLINT_TEST(fq_nmod_mpoly_set_str_pretty(
++                                          a, inputs[i], vars, ctx) == 0);
++
++        /* Keep y first in the leading coefficient factorization. */
++        fq_nmod_mpoly_factor_fit_length(lcf, 2, ctx);
++        fq_nmod_mpoly_gen(lcf->poly + 0, 1, ctx);
++        fq_nmod_mpoly_mul(lc, lcf->poly + 0, lcf->poly + 0, ctx);
++        fq_nmod_mpoly_gen(lcf->poly + 1, 2, ctx);
++        fq_nmod_mpoly_add(lcf->poly + 1, lcf->poly + 1, lc, ctx);
++        fq_nmod_mpoly_mul(lc, lcf->poly + 0, lcf->poly + 1, ctx);
++        fmpz_one(lcf->exp + 0);
++        fmpz_one(lcf->exp + 1);
++        lcf->num = 2;
++
++        for (algo = 0; algo < 2; algo++)
++        {
++            flint_rand_set_seed(retry_state, seeds[i], seeds[i] + 1);
++            success = algo == 0 ?
++                fq_nmod_mpoly_factor_irred_smprime_wang(
++                                        fac, a, lcf, lc, ctx, retry_state) :
++                fq_nmod_mpoly_factor_irred_smprime_zippel(
++                                        fac, a, lcf, lc, ctx, retry_state);
++            /* The evaluation attempts may be exhausted. */
++            FLINT_TEST(success >= 0);
++            if (success)
++            {
++                FLINT_TEST(fac->length == 1);
++                FLINT_TEST(fq_nmod_mpoly_equal(fac->coeffs + 0, a, ctx));
++            }
++        }
++
++        fq_nmod_mpolyv_clear(fac, ctx);
++        fq_nmod_mpoly_factor_clear(lcf, ctx);
++        fq_nmod_mpoly_clear(a, ctx);
++        fq_nmod_mpoly_clear(lc, ctx);
++        fq_nmod_mpoly_ctx_clear(ctx);
++    }
++    flint_rand_clear(retry_state);
++
++    TEST_FUNCTION_END(state);
++}
+diff --git a/src/fq_zech_mpoly_factor/irred_smprime_wang.c b/src/fq_zech_mpoly_factor/irred_smprime_wang.c
+index 9769470173..35fe1dba92 100644
+--- a/src/fq_zech_mpoly_factor/irred_smprime_wang.c
++++ b/src/fq_zech_mpoly_factor/irred_smprime_wang.c
+@@ -160,12 +160,15 @@ int fq_zech_mpoly_factor_irred_smprime_wang(
+             fq_zech_mpoly_one(lc_divs->coeffs + i, ctx);
+     }
+ 
++    /* Unlucky evaluations can give incompatible leading coefficient divisors. */
+     success = fq_zech_mpoly_divides(m, lcA, lc_divs->coeffs + 0, ctx);
+-    FLINT_ASSERT(success);
++    if (!success)
++        goto next_alphabetas;
+     for (i = 1; i < r; i++)
+     {
+         success = fq_zech_mpoly_divides(m, m, lc_divs->coeffs + i, ctx);
+-        FLINT_ASSERT(success);
++        if (!success)
++            goto next_alphabetas;
+     }
+ 
+     fq_zech_mpoly_pow_ui(mpow, m, r - 1, ctx);
+diff --git a/src/fq_zech_mpoly_factor/irred_smprime_zippel.c b/src/fq_zech_mpoly_factor/irred_smprime_zippel.c
+index ceced2492c..8658dac24f 100644
+--- a/src/fq_zech_mpoly_factor/irred_smprime_zippel.c
++++ b/src/fq_zech_mpoly_factor/irred_smprime_zippel.c
+@@ -1251,12 +1251,15 @@ int fq_zech_mpoly_factor_irred_smprime_zippel(
+             fq_zech_mpoly_one(lc_divs->coeffs + i, ctx);
+     }
+ 
++    /* Unlucky evaluations can give incompatible leading coefficient divisors. */
+     success = fq_zech_mpoly_divides(m, lcA, lc_divs->coeffs + 0, ctx);
+-    FLINT_ASSERT(success);
++    if (!success)
++        goto next_alphabetas;
+     for (i = 1; i < r; i++)
+     {
+         success = fq_zech_mpoly_divides(m, m, lc_divs->coeffs + i, ctx);
+-        FLINT_ASSERT(success);
++        if (!success)
++            goto next_alphabetas;
+     }
+ 
+     fq_zech_mpoly_pow_ui(mpow, m, r - 1, ctx);
+diff --git a/src/fq_zech_mpoly_factor/test/main.c b/src/fq_zech_mpoly_factor/test/main.c
+new file mode 100644
+index 0000000000..7608ae35a9
+--- /dev/null
++++ b/src/fq_zech_mpoly_factor/test/main.c
+@@ -0,0 +1,19 @@
++/*
++    Copyright (C) 2026 Tommy Hofmann
++
++    This file is part of FLINT.
++
++    FLINT is free software: you can redistribute it and/or modify it under
++    the terms of the GNU Lesser General Public License (LGPL) as published
++    by the Free Software Foundation; either version 3 of the License, or
++    (at your option) any later version.  See <https://www.gnu.org/licenses/>.
++*/
++
++#include "t-irred_smprime.c"
++
++test_struct tests[] =
++{
++    TEST_FUNCTION(fq_zech_mpoly_factor_irred_smprime)
++};
++
++TEST_MAIN(tests)
+diff --git a/src/fq_zech_mpoly_factor/test/t-irred_smprime.c b/src/fq_zech_mpoly_factor/test/t-irred_smprime.c
+new file mode 100644
+index 0000000000..5aac6805b2
+--- /dev/null
++++ b/src/fq_zech_mpoly_factor/test/t-irred_smprime.c
+@@ -0,0 +1,99 @@
++/*
++    Copyright (C) 2026 Tommy Hofmann
++
++    This file is part of FLINT.
++
++    FLINT is free software: you can redistribute it and/or modify it under
++    the terms of the GNU Lesser General Public License (LGPL) as published
++    by the Free Software Foundation; either version 3 of the License, or
++    (at your option) any later version.  See <https://www.gnu.org/licenses/>.
++*/
++
++#include "test_helpers.h"
++#include "fmpz.h"
++#include "nmod_mpoly.h"
++#include "fq_zech_mpoly_factor.h"
++
++TEST_FUNCTION_START(fq_zech_mpoly_factor_irred_smprime, state)
++{
++    const char * vars[] = {"x", "y", "z"};
++    const char * inputs[] = {
++        "x^3*y^3+x^3*y*z+6*x^2*y^2+3*x^2*y+11*x*y+2*x+6",
++        "x^4*y^3+x^4*y*z+x^3*y^2+x^3*y+x^3+2*x^2*y^2+x^2*y+2*x^2+3*x+2"
++    };
++    const ulong primes[] = {7, 3};
++    const slong degrees[] = {2, 3};
++    const ulong seeds[] = {655, 110};
++    slong i;
++    int algo, success;
++    flint_rand_t retry_state;
++
++    /*
++        Along y = z = t the inputs become
++          (t*x+1)*(t*x+2)*((t+1)*x+3) and
++          (t^2*x^2+x+1)*((t+1)*x^2+x+2).
++        Both inputs are primitive and linear in z, hence irreducible.
++        Their leading coefficient is y*(y^2+z), but the specialized
++        factors can assign y too many times. The fixed seeds exercise
++        the subsequent and initial failed divisions, respectively.
++    */
++    flint_rand_init(retry_state);
++    for (i = 0; i < 2; i++)
++    {
++        fq_zech_mpoly_ctx_t ctx;
++        fq_zech_mpoly_t a, lc;
++        fq_zech_mpoly_factor_t lcf;
++        fq_zech_mpolyv_t fac;
++        nmod_mpoly_ctx_t nctx;
++        nmod_mpoly_t t;
++
++        fq_zech_mpoly_ctx_init_deg(ctx, 3, ORD_LEX, primes[i], degrees[i]);
++        nmod_mpoly_ctx_init(nctx, 3, ORD_LEX, primes[i]);
++        nmod_mpoly_init(t, nctx);
++        fq_zech_mpoly_init(a, ctx);
++        fq_zech_mpoly_init(lc, ctx);
++        fq_zech_mpoly_factor_init(lcf, ctx);
++        fq_zech_mpolyv_init(fac, ctx);
++        FLINT_TEST(nmod_mpoly_set_str_pretty(t, inputs[i], vars, nctx) == 0);
++        _fq_zech_mpoly_set_nmod_mpoly(a, ctx, t, nctx);
++
++        /* Keep y first in the leading coefficient factorization. */
++        fq_zech_mpoly_factor_fit_length(lcf, 2, ctx);
++        fq_zech_mpoly_gen(lcf->poly + 0, 1, ctx);
++        fq_zech_mpoly_mul(lc, lcf->poly + 0, lcf->poly + 0, ctx);
++        fq_zech_mpoly_gen(lcf->poly + 1, 2, ctx);
++        fq_zech_mpoly_add(lcf->poly + 1, lcf->poly + 1, lc, ctx);
++        fq_zech_mpoly_mul(lc, lcf->poly + 0, lcf->poly + 1, ctx);
++        fmpz_one(lcf->exp + 0);
++        fmpz_one(lcf->exp + 1);
++        lcf->num = 2;
++
++        for (algo = 0; algo < 2; algo++)
++        {
++            flint_rand_set_seed(retry_state, seeds[i], seeds[i] + 1);
++            success = algo == 0 ?
++                fq_zech_mpoly_factor_irred_smprime_wang(
++                                        fac, a, lcf, lc, ctx, retry_state) :
++                fq_zech_mpoly_factor_irred_smprime_zippel(
++                                        fac, a, lcf, lc, ctx, retry_state);
++            /* The evaluation attempts may be exhausted. */
++            FLINT_TEST(success >= 0);
++            if (success)
++            {
++                FLINT_TEST(fac->length == 1);
++                FLINT_TEST(fq_zech_mpoly_equal(fac->coeffs + 0, a, ctx));
++            }
++        }
++
++        fq_zech_mpolyv_clear(fac, ctx);
++        fq_zech_mpoly_factor_clear(lcf, ctx);
++        fq_zech_mpoly_clear(a, ctx);
++        fq_zech_mpoly_clear(lc, ctx);
++        fq_zech_mpoly_ctx_clear(ctx);
++        nmod_mpoly_clear(t, nctx);
++        nmod_mpoly_ctx_clear(nctx);
++    }
++    flint_rand_clear(retry_state);
++
++    TEST_FUNCTION_END(state);
++}
+diff --git a/src/nmod_mpoly_factor/irred_smprime_wang.c b/src/nmod_mpoly_factor/irred_smprime_wang.c
+index 41c8b2795e..25dbdeef2f 100644
+--- a/src/nmod_mpoly_factor/irred_smprime_wang.c
++++ b/src/nmod_mpoly_factor/irred_smprime_wang.c
+@@ -168,12 +168,15 @@ int nmod_mpoly_factor_irred_smprime_wang(
+             nmod_mpoly_one(lc_divs->coeffs + i, ctx);
+     }
+ 
++    /* Unlucky evaluations can give incompatible leading coefficient divisors. */
+     success = nmod_mpoly_divides(m, lcA, lc_divs->coeffs + 0, ctx);
+-    FLINT_ASSERT(success);
++    if (!success)
++        goto next_alphabetas;
+     for (i = 1; i < r; i++)
+     {
+         success = nmod_mpoly_divides(m, m, lc_divs->coeffs + i, ctx);
+-        FLINT_ASSERT(success);
++        if (!success)
++            goto next_alphabetas;
+     }
+ 
+     nmod_mpoly_pow_ui(mpow, m, r - 1, ctx);
+diff --git a/src/nmod_mpoly_factor/irred_smprime_zippel.c b/src/nmod_mpoly_factor/irred_smprime_zippel.c
+index a384e4ddda..56b2a1a1ce 100644
+--- a/src/nmod_mpoly_factor/irred_smprime_zippel.c
++++ b/src/nmod_mpoly_factor/irred_smprime_zippel.c
+@@ -182,12 +182,15 @@ int nmod_mpoly_factor_irred_smprime_zippel(
+             nmod_mpoly_one(lc_divs->coeffs + i, ctx);
+     }
+ 
++    /* Unlucky evaluations can give incompatible leading coefficient divisors. */
+     success = nmod_mpoly_divides(m, lcA, lc_divs->coeffs + 0, ctx);
+-    FLINT_ASSERT(success);
++    if (!success)
++        goto next_alphabetas;
+     for (i = 1; i < r; i++)
+     {
+         success = nmod_mpoly_divides(m, m, lc_divs->coeffs + i, ctx);
+-        FLINT_ASSERT(success);
++        if (!success)
++            goto next_alphabetas;
+     }
+ 
+     nmod_mpoly_pow_ui(mpow, m, r - 1, ctx);
+diff --git a/src/nmod_mpoly_factor/test/main.c b/src/nmod_mpoly_factor/test/main.c
+index b96f615578..8dbf5526b7 100644
+--- a/src/nmod_mpoly_factor/test/main.c
++++ b/src/nmod_mpoly_factor/test/main.c
+@@ -12,6 +12,7 @@
+ /* Include functions *********************************************************/
+ 
+ #include "t-factor.c"
++#include "t-irred_smprime.c"
+ #include "t-factor_content.c"
+ #include "t-factor_squarefree.c"
+ #include "t-factor_wang.c"
+@@ -24,6 +25,7 @@
+ 
+ test_struct tests[] =
+ {
++    TEST_FUNCTION(nmod_mpoly_factor_irred_smprime),
+     TEST_FUNCTION(nmod_mpoly_factor),
+     TEST_FUNCTION(nmod_mpoly_factor_content),
+     TEST_FUNCTION(nmod_mpoly_factor_squarefree),
+diff --git a/src/nmod_mpoly_factor/test/t-factor_wang.c b/src/nmod_mpoly_factor/test/t-factor_wang.c
+index bdf9736a98..1885ece116 100644
+--- a/src/nmod_mpoly_factor/test/t-factor_wang.c
++++ b/src/nmod_mpoly_factor/test/t-factor_wang.c
+@@ -114,6 +114,27 @@ TEST_FUNCTION_START(nmod_mpoly_factor_wang, state)
+ {
+     slong i, j, tmul = 30;
+ 
++    {
++        nmod_mpoly_ctx_t ctx;
++        nmod_mpoly_t a;
++        const char * vars[] = {"a", "b", "c"};
++
++        nmod_mpoly_ctx_init(ctx, 3, ORD_LEX, 5);
++        nmod_mpoly_init(a, ctx);
++        nmod_mpoly_set_str_pretty(a,
++                "a^3*b^4+4*a^3*b^3*c^2+2*a^3*b^3*c+3*a^3*b^2*c^2+4*a^3*b^2*c+a^3*b^2+"
++                "4*a^3*b*c^3+3*a^3*b*c^2+a^3*b*c+2*a^3*b+a^3*c^5+2*a^3*c^3+4*a^3*c^2+"
++                "2*a^3*c+a^3+a^2*b^5*c+a^2*b^4*c^2+a^2*b^4*c+4*a^2*b^4+3*a^2*b^3*c^3+"
++                "4*a^2*b^3*c^2+3*a^2*b^3+a^2*b^2*c^4+2*a^2*b^2*c^3+4*a^2*b^2*c^2+"
++                "3*a^2*b^2*c+4*a^2*b^2+4*a^2*b*c^5+2*a^2*b*c^4+a^2*b*c^3+a^2*b*c^2+"
++                "2*a^2*b*c+4*a^2*b+4*a*b^5*c+4*a*b^5+4*a*b^4*c^2+3*a*b^4*c+2*a*b^4+"
++                "4*a*b^3*c^2+a*b^3+2*a*b^2*c^4+4*a*b^2*c^3+a*b^2*c^2+4*a*b^2*c+3*a*b^2+"
++                "b^5+b^4*c^2+4*b^4*c+4*b^4+4*b^3*c^3+b^3*c^2+4*b^3*c", vars, ctx);
++        check_omega(1, 1, a, ctx, nmod_mpoly_factor_wang);
++        nmod_mpoly_clear(a, ctx);
++        nmod_mpoly_ctx_clear(ctx);
++    }
++
+     for (i = 0; i < tmul * flint_test_multiplier(); i++)
+     {
+         slong lower;
+diff --git a/src/nmod_mpoly_factor/test/t-irred_smprime.c b/src/nmod_mpoly_factor/test/t-irred_smprime.c
+new file mode 100644
+index 0000000000..9f59a9fd6d
+--- /dev/null
++++ b/src/nmod_mpoly_factor/test/t-irred_smprime.c
+@@ -0,0 +1,90 @@
++/*
++    Copyright (C) 2026 Tommy Hofmann
++
++    This file is part of FLINT.
++
++    FLINT is free software: you can redistribute it and/or modify it under
++    the terms of the GNU Lesser General Public License (LGPL) as published
++    by the Free Software Foundation; either version 3 of the License, or
++    (at your option) any later version.  See <https://www.gnu.org/licenses/>.
++*/
++
++#include "test_helpers.h"
++#include "fmpz.h"
++#include "nmod_mpoly_factor.h"
++
++TEST_FUNCTION_START(nmod_mpoly_factor_irred_smprime, state)
++{
++    const char * vars[] = {"x", "y", "z"};
++    const char * inputs[] = {
++        "x^3*y^3+x^3*y*z+6*x^2*y^2+3*x^2*y+11*x*y+2*x+6",
++        "x^4*y^3+x^4*y*z+x^3*y^2+x^3*y+x^3+2*x^2*y^2+x^2*y+2*x^2+3*x+2"
++    };
++    const ulong primes[] = {7, 11};
++    const ulong seeds[] = {74, 146};
++    slong i;
++    int algo, success;
++    flint_rand_t retry_state;
++
++    /*
++        Along y = z = t the inputs become
++          (t*x+1)*(t*x+2)*((t+1)*x+3) and
++          (t^2*x^2+x+1)*((t+1)*x^2+x+2).
++        Both inputs are primitive and linear in z, hence irreducible.
++        Their leading coefficient is y*(y^2+z), but the specialized
++        factors can assign y too many times. The fixed seeds exercise
++        the subsequent and initial failed divisions, respectively.
++    */
++    flint_rand_init(retry_state);
++    for (i = 0; i < 2; i++)
++    {
++        nmod_mpoly_ctx_t ctx;
++        nmod_mpoly_t a, lc;
++        nmod_mpoly_factor_t lcf;
++        nmod_mpolyv_t fac;
++        nmod_mpoly_ctx_init(ctx, 3, ORD_LEX, primes[i]);
++        nmod_mpoly_init(a, ctx);
++        nmod_mpoly_init(lc, ctx);
++        nmod_mpoly_factor_init(lcf, ctx);
++        nmod_mpolyv_init(fac, ctx);
++        FLINT_TEST(nmod_mpoly_set_str_pretty(
++                                          a, inputs[i], vars, ctx) == 0);
++
++        /* Keep y first in the leading coefficient factorization. */
++        nmod_mpoly_factor_fit_length(lcf, 2, ctx);
++        nmod_mpoly_gen(lcf->poly + 0, 1, ctx);
++        nmod_mpoly_mul(lc, lcf->poly + 0, lcf->poly + 0, ctx);
++        nmod_mpoly_gen(lcf->poly + 1, 2, ctx);
++        nmod_mpoly_add(lcf->poly + 1, lcf->poly + 1, lc, ctx);
++        nmod_mpoly_mul(lc, lcf->poly + 0, lcf->poly + 1, ctx);
++        fmpz_one(lcf->exp + 0);
++        fmpz_one(lcf->exp + 1);
++        lcf->num = 2;
++
++        for (algo = 0; algo < 2; algo++)
++        {
++            flint_rand_set_seed(retry_state, seeds[i], seeds[i] + 1);
++            success = algo == 0 ?
++                nmod_mpoly_factor_irred_smprime_wang(
++                                        fac, a, lcf, lc, ctx, retry_state) :
++                nmod_mpoly_factor_irred_smprime_zippel(
++                                        fac, a, lcf, lc, ctx, retry_state);
++            /* The evaluation attempts may be exhausted. */
++            FLINT_TEST(success >= 0);
++            if (success)
++            {
++                FLINT_TEST(fac->length == 1);
++                FLINT_TEST(nmod_mpoly_equal(fac->coeffs + 0, a, ctx));
++            }
++        }
++
++        nmod_mpolyv_clear(fac, ctx);
++        nmod_mpoly_factor_clear(lcf, ctx);
++        nmod_mpoly_clear(a, ctx);
++        nmod_mpoly_clear(lc, ctx);
++        nmod_mpoly_ctx_clear(ctx);
++    }
++    flint_rand_clear(retry_state);
++
++    TEST_FUNCTION_END(state);
++}

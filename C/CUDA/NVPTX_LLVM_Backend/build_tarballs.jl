@@ -56,6 +56,13 @@ LLVM_SRCDIR=$(pwd)
 #   (merged after the 23.x branch) selects `atomicrmw fsub` as an atom.add of the
 #   negated value instead of a compare-and-swap loop.
 # Code changes only; the test updates are left out.
+# Inlined-function line info (JuliaGPU/CUDA.jl#1115), both pending upstream:
+# - emit an inlined_at parent's .loc again when ptxas would otherwise resolve it to
+#   the wrong location, or give an inlined callee the function name of the previous
+#   one (reemit-inlined-at-parents.patch);
+# - keep inlined_at on a location reinstated after a line 0 record
+#   (line0-reinstate-inlined-at.patch).
+# Code changes only; the test updates are left out.
 atomic_patch -p1 $WORKSPACE/srcdir/patches/no-process-wide-handlers.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/lower-allocas-to-local-as.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/escape-debug-str-comments.patch
@@ -63,6 +70,8 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/allow-ftz-atomics-by-default.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/pre-sm70-ordered-atomics.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/pre-sm70-ordered-loads-stores.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/atomic-fsub-to-fadd.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/reemit-inlined-at-parents.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/line0-reinstate-inlined-at.patch
 
 install_license LICENSE.TXT
 
