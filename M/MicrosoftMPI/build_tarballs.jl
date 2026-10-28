@@ -81,7 +81,5 @@ dependencies = [
                       compat="0.1", top_level=true),
 ]
 
-# Build the tarballs.
-# We use GCC 5 to ensure Fortran module files are readable by all `libgfortran3` architectures. GCC 4 would use an older format.
 build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"5")
+               augment_platform_block, julia_compat="1.6")
