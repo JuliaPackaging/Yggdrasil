@@ -15,6 +15,11 @@ apk del cmake
 
 cd $WORKSPACE/srcdir/libxc-*/
 
+# Libxc >= 7.1 needs calls backtrace(), which lives in libexecinfo on FreeBSD
+if [[ "${target}" == *-freebsd* ]]; then
+    export LDFLAGS="${LDFLAGS} -lexecinfo"
+fi
+
 mkdir libxc_build
 cd libxc_build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \

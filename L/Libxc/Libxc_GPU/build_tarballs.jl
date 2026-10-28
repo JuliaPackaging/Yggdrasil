@@ -53,6 +53,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_CUDA_COMPILER=${prefix}/cuda/bin/nvcc \
       -DCMAKE_CUDA_FLAGS="--cudart shared" `#Use shared CUDA runtime` \
+      -DCMAKE_EXE_LINKER_FLAGS="-Wl,-rpath-link,${prefix}/cuda/lib"  \
       -DBUILD_SHARED_LIBS=ON \
       -DBUILD_TESTING=OFF \
       -DENABLE_CUDA=ON \
