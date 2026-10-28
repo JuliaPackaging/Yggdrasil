@@ -44,6 +44,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               # GCC 8 makes the build platform libgfortran5, so the audit loads the
-               # libgfortran5 OpenBLAS32 that current CompilerSupportLibraries_jll can satisfy.
                julia_compat="1.11", preferred_gcc_version=v"8")
