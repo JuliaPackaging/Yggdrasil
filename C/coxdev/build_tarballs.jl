@@ -1,14 +1,7 @@
-# DRAFT BinaryBuilder recipe for coxdev_jll (for JuliaPackaging/Yggdrasil,
-# as C/coxdev/build_tarballs.jl). Not submitted. It builds libcoxdev_c, the C
-# API over coxdev's header-only C++ library, for every platform BinaryBuilder
-# supports; CoxDev.jl would then depend on coxdev_jll instead of COXDEV_C_LIB.
-#
-# Try it locally (needs Docker or BinaryBuilder's sandbox):
-#     julia --project=. build_tarballs.jl --verbose --debug aarch64-apple-darwin
 using BinaryBuilder, Pkg
 
 name = "coxdev"
-version = v"0.4.0"   # the coxdev release with the header-only library and the C API
+version = v"0.4.0"  
 
 sources = [
     # a tagged coxdev release (fill in the commit of the tag)
@@ -38,7 +31,7 @@ products = [
 ]
 
 dependencies = [
-    BuildDependency(PackageSpec(name="Eigen_jll", uuid="bc6bbf8a-a594-5541-9c57-10b0d0312c70")),
+    BuildDependency(PackageSpec(name="Eigen_jll", uuid="bc6bbf8a-a594-5541-9c57-10b0d0312c70", version=v"3.4.0")),
 ]
 
 # C++17 for coxdev; GCC 8 is the first with full C++17 support
