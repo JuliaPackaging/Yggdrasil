@@ -77,5 +77,10 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"; platforms = filter(!Sys.isapple, platforms)),
 ]
 
+# GCC 14: the LO timing gate (LocalOptimizationDoneRight) is pinned on PoseLib's
+# refiners built with it; GCC 8 makes them 64-69 % slower on the same machine.
+# Its libstdc++ (GLIBCXX_3.4.32) is what Julia 1.12 ships, hence julia_compat.
+# No microarchitecture expansion: on that gate the avx/avx512 variants are
+# 4-6 % slower than the generic x86_64 build and avx2 is no faster.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat = "1.6", preferred_gcc_version = v"8")
+               julia_compat = "1.12", preferred_gcc_version = v"14")
