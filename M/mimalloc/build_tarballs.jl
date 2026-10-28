@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "mimalloc"
-version = v"3.3.2"
+version = v"3.5.3"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/microsoft/mimalloc.git",
-              "30b2d9d89099bee08e9f67a1ffb3e12e7ba45227"),
+              "d4881d338125e1cb7c47ba4cfb398d6f7c0c8d45"),
 ]
 
 # Bash recipe for building across all platforms
@@ -19,7 +19,7 @@ if [[ "${target}" == *-linux-musl* ]]; then
 fi
 
 CMAKE_FLAGS+=(-DMI_NO_OPT_ARCH=ON) # who doesn't love a double negative
-CMAKE_FLAGS+=(-DMI_WIN_REDIRECT=OFF) 
+CMAKE_FLAGS+=(-DMI_WIN_REDIRECT=OFF)
 
 cd $WORKSPACE/srcdir/mimalloc
 cmake -B build -G Ninja \
