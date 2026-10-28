@@ -1,16 +1,14 @@
 using BinaryBuilder, Pkg
 
 name = "coxdev"
-version = v"0.4.0"  
+version = v"0.5.0"  
 
 sources = [
-    # a tagged coxdev release (fill in the commit of the tag)
     GitSource("https://github.com/jonathan-taylor/coxdev.git",
-              "6d42811c52466a5604972ff9ff84795591ab0bfa",
-              tag='v0.4.0'),
+              "d10150baa559ffb088aff2ef2e1427ebd697f32c";
+              tag="v$(version)")
 ]
 
-# Eigen comes from Eigen_jll (headers only), not coxdev's eigen submodule
 script = raw"""
 cd ${WORKSPACE}/srcdir/coxdev/cpp/capi
 cmake -B build \
@@ -32,7 +30,7 @@ products = [
 ]
 
 dependencies = [
-    BuildDependency(PackageSpec(name="Eigen_jll", uuid="bc6bbf8a-a594-5541-9c57-10b0d0312c70", compat=v"3.4.0")),
+    BuildDependency(PackageSpec(name="Eigen_jll", uuid="bc6bbf8a-a594-5541-9c57-10b0d0312c70", version=v"3.4.0")),
 ]
 
 # C++17 for coxdev; GCC 8 is the first with full C++17 support
