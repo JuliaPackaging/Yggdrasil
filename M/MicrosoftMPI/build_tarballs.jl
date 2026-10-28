@@ -2,7 +2,7 @@ using BinaryBuilder, Pkg
 
 name = "MicrosoftMPI"
 version = v"10.1.3"
-# JLL v10.1.3 was already taken by an earlier MS-MPI release
+# JLL v10.1.3 holds an earlier MS-MPI release, and v10.1.5 raised julia_compat to 1.6
 ygg_version = v"10.1.5"
 sources = [
     FileSource("https://download.microsoft.com/download/7/2/7/72731ebb-b63c-4170-ade7-836966263a8f/msmpisetup.exe",
@@ -23,23 +23,23 @@ cd ${WORKSPACE}/srcdir
 if [[ ${nbits} == 32 ]]; then
     7z x setup/2.msi -oruntime
     suffix=""
+    # The stdcall Fortran import libraries only exist for 32-bit
+    import_libs="msmpi msmpifec msmpifes msmpifmc msmpifms"
 else
     7z x setup/4.msi -oruntime
     suffix="64"
+    import_libs="msmpi msmpifec msmpifmc"
 fi
 
 install -Dvm 755 runtime/*.exe -t ${bindir}
 install -Dvm 755 runtime/msmpi${suffix}.dll ${libdir}/msmpi.dll
 install -Dvm 755 runtime/msmpires${suffix}.dll ${libdir}/msmpires.dll
-for lib in msmpi msmpifec msmpifmc; do
+for lib in ${import_libs}; do
     install -Dvm 644 sdk/${lib}${suffix}.lib ${prefix}/lib/${lib}.lib
 done
-if [[ ${nbits} == 32 ]]; then
-    # The stdcall Fortran import libraries only exist for 32-bit
-    install -Dvm 644 sdk/msmpifes.lib sdk/msmpifms.lib -t ${prefix}/lib
-fi
 
-# Replace an unknown character in mpif.h by a space
+# Replace a raw Latin-1 byte in mpif.h by a space. Not a patch: the file is CRLF,
+# and .gitattributes would convert a patch's context lines to LF.
 sed -i '/Copyright Notice/!b;n;c!    + 2002 University of Chicago' sdk/mpif.h
 install -Dvm 644 sdk/mpi.h sdk/mpio.h sdk/mpif.h sdk/mspms.h sdk/pmidbg.h runtime/mpitrace.man -t ${includedir}
 install -Dvm 644 sdk/mpifptr${nbits}.h ${includedir}/mpifptr.h
