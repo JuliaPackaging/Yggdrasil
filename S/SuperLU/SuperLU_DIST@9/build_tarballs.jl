@@ -133,9 +133,6 @@ append!(dependencies, platform_dependencies)
 # automatic initialization.)
 ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
-# Build the tarballs, and possibly a `build.jl` as well.
-# OpenBLAS32 has only libgfortran5 builds on some platforms (e.g. powerpc64le),
-# and GCC 8 makes the build platform libgfortran5.
-# OpenBLAS32_jll >= 0.3.25 requires Julia 1.11.
+# Build the tarballs
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, julia_compat="1.11", preferred_gcc_version=v"8")
