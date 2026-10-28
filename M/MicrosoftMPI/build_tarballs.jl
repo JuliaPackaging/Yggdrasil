@@ -37,6 +37,8 @@ install -Dvm 755 runtime/msmpi${suffix}.dll ${libdir}/msmpi.dll
 install -Dvm 755 runtime/msmpires${suffix}.dll ${libdir}/msmpires.dll
 for lib in ${import_libs}; do
     install -Dvm 644 sdk/${lib}${suffix}.lib ${prefix}/lib/${lib}.lib
+    # Also keep the SDK's name, which 64-bit consumers link as e.g. `-lmsmpi64`
+    install -Dvm 644 sdk/${lib}${suffix}.lib -t ${prefix}/lib
 done
 
 # Replace a raw Latin-1 byte in mpif.h by a space. Not a patch: the file is CRLF,
