@@ -13,6 +13,7 @@ sources = [
 ]
 
 script = raw"""
+apk del cmake
 apk add p7zip
 
 cd ${WORKSPACE}/srcdir/
@@ -93,7 +94,8 @@ products = [
     ExecutableProduct("generate_compile_time_mpi_constants", :generate_compile_time_mpi_constants),
 ]
 
-dependencies = Dependency[
+dependencies = [
+    HostBuildDependency("CMake_jll"),
 ]
 
 # Build the tarballs.
