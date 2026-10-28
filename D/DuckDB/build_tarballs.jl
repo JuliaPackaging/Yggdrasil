@@ -82,5 +82,5 @@ dependencies = Dependency[
 sources, script = require_macos_sdk("14.0", sources, script; deployment_target="11.0")
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# DuckDB >= 2.0 requires C++17 and its reference_wrapper set lookups don't compile on GCC <= 8's libstdc++.
+# DuckDB >= 2.0 requires C++17; GCC 8 fails on its reference_wrapper set lookups, and 11 is the oldest toolchain verified to build it (9/10 untested).
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"11", julia_compat="1.6")
