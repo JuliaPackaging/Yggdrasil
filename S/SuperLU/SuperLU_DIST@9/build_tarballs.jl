@@ -138,7 +138,6 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # Require GCC 8 to avoid `error: libgfortran.so.4: cannot open shared object file`
-# CI suggests that this generally works on most systems [1.6 - nightly (1.11)], apart
-# from a failure on 1.8 & windows, which is why julia compat is set to 1.9
+# OpenBLAS32_jll >= 0.3.25 requires Julia 1.11.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.9", preferred_gcc_version=v"8")
+               augment_platform_block, julia_compat="1.11", preferred_gcc_version=v"8")
