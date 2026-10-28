@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "WiringPi"
-version = v"3.16"
+version = v"3.2"
 
 # Collection of sources required to complete build
 sources = [
