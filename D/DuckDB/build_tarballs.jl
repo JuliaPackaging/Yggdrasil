@@ -37,6 +37,7 @@ fi
 
 echo "Compiling for DuckDB Target - $DUCKDB_TARGET"
 
+# OPTIMIZATION_PROFILE=NONE: the default CLI profile forces -march flags, which BinaryBuilder's compiler wrappers reject
 cmake -B build \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -44,6 +45,7 @@ cmake -B build \
       -DENABLE_SANITIZER=FALSE \
       -DBUILD_EXTENSIONS='parquet;json' \
       -DSKIP_EXTENSIONS=jemalloc \
+      -DDUCKDB_OPTIMIZATION_PROFILE=NONE \
       -DBUILD_UNITTESTS=FALSE \
       -DBUILD_SHELL=TRUE \
       -DDUCKDB_EXPLICIT_PLATFORM=${DUCKDB_TARGET}
@@ -80,5 +82,5 @@ dependencies = Dependency[
 sources, script = require_macos_sdk("14.0", sources, script; deployment_target="11.0")
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# DuckDB >= 2.0 requires C++17; GCC 8 is the first with complete C++17 library support.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"8", julia_compat="1.6")
+# DuckDB >= 2.0 requires C++17 and its reference_wrapper set lookups don't compile on GCC <= 8's libstdc++.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"11", julia_compat="1.6")
