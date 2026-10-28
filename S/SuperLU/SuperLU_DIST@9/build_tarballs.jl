@@ -118,9 +118,6 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"); compat="5.4.0"),
-    # Cap at 0.3.32: the in-sysimage libblastrampoline_jll (5.4.0, from Julia
-    # 1.12) only supports OpenBLAS32 0.3.9 - 0.3.32, so pinning 0.3.33 makes
-    # dependency resolution unsatisfiable.
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"); compat="0.3.32"),
     Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa"); compat="4.0.9"),
     Dependency("METIS_jll"; compat="5.1.4"),
@@ -137,7 +134,8 @@ append!(dependencies, platform_dependencies)
 ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# Require GCC 8 to avoid `error: libgfortran.so.4: cannot open shared object file`
+# OpenBLAS32 has only libgfortran5 builds on some platforms (e.g. powerpc64le),
+# and GCC 8 makes the build platform libgfortran5.
 # OpenBLAS32_jll >= 0.3.25 requires Julia 1.11.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, julia_compat="1.11", preferred_gcc_version=v"8")
