@@ -3,7 +3,7 @@
 
 using BinaryBuilder, Pkg
 
-name = "AMDFFTW"
+name = "AMD_FFTW"
 version = v"5.3.0"
 
 sources = [
