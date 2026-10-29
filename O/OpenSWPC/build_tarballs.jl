@@ -4,11 +4,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "OpenSWPC"
-version = v"26.9.1"
+version_string = "26.09.1"
+version = VersionNumber(version_string)
 
 sources = [
     GitSource("https://github.com/OpenSWPC/OpenSWPC.git",
-              "99fa1e5be468f16cc962c60fb3e7f82de45a6273"),
+              "99fa1e5be468f16cc962c60fb3e7f82de45a6273"; tag=version_string),
     DirectorySource("./bundled"),
 ]
 
@@ -33,11 +34,6 @@ elif [[ ${bb_full_target} == *openmpi* ]]; then
     FFLAGS+=" -I${libdir}"
     MPILIB="-lmpi_usempif08 -lmpi_usempi_ignore_tkr -lmpi_mpifh -lmpi"
 elif [[ ${bb_full_target} == *microsoftmpi* ]]; then
-    # MS-MPI ships no mpi.mod for gfortran, only the legacy mpif.h interface
-    for f in $(grep -rli '^[[:space:]]*use[[:space:]]\+mpi' .); do
-        sed -i '/^[[:space:]]*use[[:space:]]\+mpi\b.*/d' "$f"
-        sed -i '/^[[:space:]]*implicit[[:space:]]\+none[[:space:]]*$/a\      include "mpif.h"' "$f"
-    done
     # the executables abort at load time with "32 bit pseudo relocation out of range" otherwise
     FFLAGS+=" -fallow-invalid-boz -fallow-argument-mismatch -Wl,--disable-runtime-pseudo-reloc"
     MPILIB="-lmsmpi"
@@ -78,7 +74,7 @@ products = [
 dependencies = [
     Dependency("NetCDF_jll"; compat="401.1000.101"),
     Dependency("NetCDFF_jll"; compat="4.6.4"),
-    Dependency("CompilerSupportLibraries_jll"),
+    Dependency("CompilerSupportLibraries_jll"; compat="1.0.5"),
 ]
 append!(dependencies, platform_dependencies)
 
