@@ -10,7 +10,7 @@ function petsc_sources(; cuda::Bool=false)
     if cuda
         # header-only NVTX: PETSc includes <nvtx3/nvToolsExt.h>, which no CUDA JLL ships
         push!(sources, GitSource("https://github.com/NVIDIA/NVTX",
-                                 "4f37e799ccc6b70c39979b53a4c24488ee3fe0ae"))
+                                 "4f37e799ccc6b70c39979b53a4c24488ee3fe0ae"; tag="v3.2.2"))
     end
     return sources
 end
@@ -22,8 +22,8 @@ EXTRA_LDFLAGS=""
 
 const cuda_preamble = raw"""
 export TMPDIR=${WORKSPACE}/tmpdir
-mkdir -p ${TMPDIR}
-cp -r ${WORKSPACE}/srcdir/NVTX/c/include/nvtx3 ${includedir}/
+mkdir -pv ${TMPDIR}
+cp -rv ${WORKSPACE}/srcdir/NVTX/c/include/nvtx3 ${includedir}/
 
 install -Dm644 ${WORKSPACE}/srcdir/petsc-*/LICENSE ${prefix}/share/licenses/PETSc_GPU/LICENSE
 install -Dm644 ${WORKSPACE}/srcdir/NVTX/LICENSE.txt ${prefix}/share/licenses/PETSc_GPU/LICENSE.NVTX
@@ -198,10 +198,10 @@ build_petsc()
         MPI_FC=mpifort
         MPI_CXX=mpicxx
         if [[ "${bb_full_target}" == *mpiabi* ]]; then
-            export MPIF_FCLIBS='-lmpif -lmpi_abi'
             # mpif_jll's mpifort wrapper hardcodes the gfortran of the platform it was built
-            # for, which does not exist when an extra tag (cuda) changes ${bb_full_target}
-            mpifort --version >/dev/null 2>&1 || MPI_FC=${FC}
+            # for, which does not exist when an extra tag (cuda) changes ${bb_full_target};
+            # the MPI libraries are passed to configure explicitly instead
+            MPI_FC=${FC}
         elif [[ "${bb_full_target}" == *mpitrampoline* ]]; then
             # MPItrampoline only ships `mpifc`
             MPI_FC=mpifc
@@ -476,10 +476,12 @@ function petsc_dependencies(platforms; superlu_cuda::Bool=false)
 
     BuildDependency("LLVMCompilerRT_jll"; platforms=filter(Sys.isapple, platforms)),
 
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae");
+               compat="1.2.0"),
     # ILP64 BLAS: OpenBLAS_jll on Windows (linked directly), libblastrampoline_jll on
     # everything else (Julia >= 1.7 wires its stdlib OpenBLAS into LBT's ILP64 slots).
     Dependency(PackageSpec(name="OpenBLAS_jll", uuid="4536629a-c528-5b80-bd46-f80d51c5b363");
+               compat="0.3.29",
                platforms=filter(Sys.iswindows, platforms)),
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93");
                compat="5.11.2",
