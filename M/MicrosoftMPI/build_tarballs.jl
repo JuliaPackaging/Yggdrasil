@@ -5,7 +5,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MicrosoftMPI"
 version = v"10.1.3"
-# JLL v10.1.3 holds an earlier MS-MPI release, and v10.1.5 changed compat (julia, MPIPreferences)
+# Must exceed registered JLL v10.1.4, which already holds upstream 10.1.3
 ygg_version = v"10.1.5"
 sources = [
     FileSource("https://download.microsoft.com/download/7/2/7/72731ebb-b63c-4170-ade7-836966263a8f/msmpisetup.exe",
@@ -37,13 +37,15 @@ install -Dvm 755 runtime/msmpi${suffix}.dll ${libdir}/msmpi.dll
 install -Dvm 755 runtime/msmpires${suffix}.dll ${libdir}/msmpires.dll
 for lib in ${import_libs}; do
     install -Dvm 644 sdk/${lib}${suffix}.lib ${prefix}/lib/${lib}.lib
-    # Also keep the SDK's name, which 64-bit consumers link as e.g. `-lmsmpi64`
-    install -Dvm 644 sdk/${lib}${suffix}.lib -t ${prefix}/lib
+    if [[ -n ${suffix} ]]; then
+        # Also keep the SDK's name, which consumers link as e.g. `-lmsmpi64`
+        install -Dvm 644 sdk/${lib}${suffix}.lib -t ${prefix}/lib
+    fi
 done
 
-# Replace a raw Latin-1 byte in mpif.h by a space. Not a patch: the file is CRLF,
-# and .gitattributes would convert a patch's context lines to LF.
-sed -i '/Copyright Notice/!b;n;c!    + 2002 University of Chicago' sdk/mpif.h
+# Replace the one non-ASCII byte in mpif.h (Latin-1 0xA0) by a space. Not a patch:
+# the file is CRLF, and .gitattributes would convert a patch's context lines to LF.
+LC_ALL=C sed -i $'s/\xa0/ /' sdk/mpif.h
 install -Dvm 644 sdk/mpi.h sdk/mpio.h sdk/mpif.h sdk/mspms.h sdk/pmidbg.h runtime/mpitrace.man -t ${includedir}
 install -Dvm 644 sdk/mpifptr${nbits}.h ${includedir}/mpifptr.h
 install -Dvm 644 sdk/mpi.f90 -t ${prefix}/src
