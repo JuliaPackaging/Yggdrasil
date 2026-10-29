@@ -13,7 +13,7 @@ version = v"2.0.6"
 # 2. `julia_wrapper.cpp` (MIT, from PoseLib.jl): the flat C ABI that PoseLib.jl
 #    `ccall`s, compiled into the one shared library this JLL ships.
 #    Until https://github.com/VisualGeometryToolkit/PoseLib.jl is public, the
-#    wrapper and PoseLib.jl's LICENSE travel in `bundled/`, laid out as in
+#    wrapper travels in `bundled/`, laid out as in
 #    that repository (byte-identical copies; PoseLib.jl's test suite checks
 #    it) and unpacked to the same `srcdir/PoseLib.jl`. Once a release is tagged
 #    there, swap the DirectorySource for the commented GitSource (the commit of
@@ -53,10 +53,8 @@ ${CXX} -std=c++17 -O3 -fPIC -shared \
     -o ${libdir}/libposelib_jl.${dlext} \
     -L${WORKSPACE}/poselib/lib -lPoseLib
 
-# Licenses of everything compiled in; both projects name theirs LICENSE.
-cp ${WORKSPACE}/srcdir/PoseLib/LICENSE ${WORKSPACE}/LICENSE.PoseLib           # BSD-3-Clause
-cp ${WORKSPACE}/srcdir/PoseLib.jl/LICENSE ${WORKSPACE}/LICENSE.PoseLib.jl     # MIT, the wrapper
-install_license ${WORKSPACE}/LICENSE.PoseLib ${WORKSPACE}/LICENSE.PoseLib.jl
+# Licenses of everything compiled in: PoseLib's (BSD-3-Clause) and the wrapper's (MIT).
+install_license ${WORKSPACE}/srcdir/PoseLib/LICENSE /usr/share/licenses/MIT
 # Eigen's dense headers: MPL-2.0, with a few files under BSD (Half.h) and
 # Apache-2.0 (BFloat16.h). Its GPL/LGPL/MINPACK texts cover only unsupported/.
 for f in MPL2 BSD APACHE README; do
