@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "gat"
-version = v"0.19.1"
+version = v"0.31.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/koki-develop/gat.git", "173737297556cbcdf6c1e3145ae8baa1c4a68bdf")
+    GitSource("https://github.com/koki-develop/gat.git", "f4ad44169fcf08177edf1eb604eab966b4b61b0a"; tag="v$(version)"),
 ]
 
 # Bash recipe for building across all platforms
