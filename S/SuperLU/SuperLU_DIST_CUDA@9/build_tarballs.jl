@@ -129,10 +129,6 @@ dependencies = AbstractDependency[
 ]
 append!(dependencies, mpi_dependencies)
 
-# Don't look for `mpiwrapper.so` when BinaryBuilder examines and `dlopen`s the
-# shared libraries. (MPItrampoline will skip its automatic initialization.)
-ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
-
 for platform in platforms
     should_build_platform(triplet(platform)) || continue
 
