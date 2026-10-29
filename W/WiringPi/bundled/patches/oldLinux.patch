@@ -2,7 +2,7 @@ diff --git before/WiringPi/wiringPi/wiringPi.h after/WiringPi/wiringPi/wiringPi.
 index 31f49ec..9aa51f7 100644
 --- before/WiringPi/wiringPi/wiringPi.h
 +++ after/WiringPi/wiringPi/wiringPi.h
-@@ -23,6 +23,98 @@
+@@ -23,6 +23,101 @@
  #ifndef __WIRING_PI_H__
  #define __WIRING_PI_H__
  
@@ -58,14 +58,14 @@ index 31f49ec..9aa51f7 100644
 + __u32 seqno;
 + __u32 line_seqno;
 + /* Space reserved for future use. */
-+ __u32 padding;
++ __u32 padding[6];
 +};
 +
 +struct gpio_v2_line_config {
 + __aligned_u64 flags;
 + __u32 num_attrs;
 + /* Pad to fill implicit padding and reserve space for future use. */
-+ __u32 padding;
++ __u32 padding[5];
 + struct gpio_v2_line_config_attribute attrs[GPIO_V2_LINE_NUM_ATTRS_MAX];
 +};
 +#define _BITULL(x) (_AC(1,ULL) << (x))
@@ -92,7 +92,7 @@ index 31f49ec..9aa51f7 100644
 + __u32 num_lines;
 + __u32 event_buffer_size;
 + /* Pad to fill implicit padding and reserve space for future use. */
-+ __u32 padding;
++ __u32 padding[5];
 + __s32 fd;
 +};
 +
