@@ -1,0 +1,18 @@
+--- /dev/null
++++ b/src/FoundationClasses/TKernel/Standard/Standard_Integer.hxx
+@@ -73,13 +73,13 @@
+ }
+
+ //! Returns the minimum value of an integer.
+-[[nodiscard]] constexpr int IntegerFirst()
++[[nodiscard]] constexpr int IntegerFirst() noexcept
+ {
+   return INT_MIN;
+ }
+
+ //! Returns the maximum value of an integer.
+-[[nodiscard]] constexpr int IntegerLast()
++[[nodiscard]] constexpr int IntegerLast() noexcept
+ {
+   return INT_MAX;
+ }
