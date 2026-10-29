@@ -6,20 +6,28 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "libdeflate"
-version = v"1.26"
+version_str = "1.26"
+version = VersionNumber(version_str)
 
 # Collection of sources required to complete build
 sources = [
     GitSource(
         "https://github.com/ebiggers/libdeflate",
-        "92e6a0db9fa848d742f9eb286c92afc60f2c3dda"
+        "92e6a0db9fa848d742f9eb286c92afc60f2c3dda";
+        tag="v$(version_str)"
     ),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libdeflate
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
+cmake_args=(
+    -DCMAKE_INSTALL_PREFIX=${prefix}
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+    -DCMAKE_BUILD_TYPE=Release
+    -DLIBDEFLATE_BUILD_STATIC_LIB=OFF
+)
+cmake "${cmake_args[@]}"
 make -j${nproc}
 make install
 install_license ${WORKSPACE}/srcdir/libdeflate/COPYING
