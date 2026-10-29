@@ -49,7 +49,7 @@ products = [
     LibraryProduct("libpetsc_double_real_Int32", :libpetsc_Float64_Real_Int32, "\$libdir/petsc/double_real_Int32/lib"; dont_dlopen=true),
 ]
 
-dependencies = petsc_dependencies(platforms)
+dependencies = petsc_dependencies(platforms; superlu_cuda=true)
 push!(dependencies, Dependency(PackageSpec(name="NVTX_jll"); compat="3.2.2"))
 append!(dependencies, platform_dependencies)
 

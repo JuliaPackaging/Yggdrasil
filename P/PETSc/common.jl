@@ -1,5 +1,5 @@
-const petsc_version = v"3.25.5"
-const petsc_sha256 = "6d61c472db39006d261542d1a42f1fa6c52d6e89f9e77041386189aa8c24b490"
+const petsc_version = v"3.25.6"
+const petsc_sha256 = "00ac91c7ae96eae6a39d7380c7e869c1c7ddbc0c64a23a0b5fd3442227c7cdb9"
 
 function petsc_sources(; cuda::Bool=false)
     sources = [
@@ -468,7 +468,9 @@ build_petsc()
 petsc_script(preamble::AbstractString, variants::AbstractString) =
     preamble * script_body * variants * "\n"
 
-function petsc_dependencies(platforms)
+function petsc_dependencies(platforms; superlu_cuda::Bool=false)
+    # SuperLU_DIST_CUDA_jll only exists for the MPItrampoline CUDA platforms
+    superlu_cuda_platforms = superlu_cuda ? filter(p -> p["mpi"] == "mpitrampoline", platforms) : Platform[]
     return [
     HostBuildDependency(PackageSpec(; name="CMake_jll")),
 
@@ -491,7 +493,8 @@ function petsc_dependencies(platforms)
     Dependency(PackageSpec(name="HYPRE64_jll"); compat="3.1.0"),
     # Stock (32-bit HYPRE_BigInt) hypre for the Int32 PetscInt variants.
     Dependency(PackageSpec(name="HYPRE_jll"); compat="3.1.2"),
-    Dependency(PackageSpec(name="SuperLU_DIST_jll"); compat="9.2.3"),
+    Dependency(PackageSpec(name="SuperLU_DIST_jll"); compat="9.2.3", platforms=setdiff(platforms, superlu_cuda_platforms)),
+    Dependency(PackageSpec(name="SuperLU_DIST_CUDA_jll"); compat="9.3.1", platforms=superlu_cuda_platforms),
     Dependency(PackageSpec(name="HDF5_jll"); compat="2.2.2"),
     Dependency(PackageSpec(name="TetGen_jll"); compat="1.6.0"),
     Dependency(PackageSpec(name="Triangle_jll"); compat="1.6.3"),
