@@ -22,13 +22,20 @@ cd $WORKSPACE/srcdir/OpenImageIO
 
 apk del cmake
 
-cmake -B build-dir -G Ninja \
-    -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DOIIO_BUILD_TESTS=0 \
-    -DUSE_EXTERNAL_PUGIXML=1 \
+cmake_args=(
+    -DCMAKE_INSTALL_PREFIX=${prefix}
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+    -DCMAKE_BUILD_TYPE=Release
+    -DOIIO_BUILD_TESTS=0
+    -DUSE_EXTERNAL_PUGIXML=1
     -DUSE_PYTHON=0
+)
+if [[ ${target} == i686-linux-musl ]]; then
+    # `__stack_chk_fail_local` is not available
+    cmake_args+=(-DOIIO_HARDENING=0)
+fi
+
+cmake -B build-dir -G Ninja "${cmake_args[@]}"
 cmake --build build-dir --parallel ${nproc}
 cmake --install build-dir
 install_license LICENSE.md RELICENSING.md
