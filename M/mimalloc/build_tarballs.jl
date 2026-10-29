@@ -8,7 +8,8 @@ version = v"3.5.3"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/microsoft/mimalloc.git",
-              "d4881d338125e1cb7c47ba4cfb398d6f7c0c8d45"),
+              "d4881d338125e1cb7c47ba4cfb398d6f7c0c8d45");
+              tag="v$(version)",
 ]
 
 # Bash recipe for building across all platforms
