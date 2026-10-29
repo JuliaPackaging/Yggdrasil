@@ -5,16 +5,22 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "OpenImageIO"
-version = v"3.1.8"              # This is 3.1.8.0
+version_str = "3.2.2.0"
+version = let (a, b, c, d) = parse.(Int, split("3.2.2.0", '.'))
+    VersionNumber(a, b, 100c + d)
+end
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/AcademySoftwareFoundation/OpenImageIO", "63098ef0652e739ff4397df89974f91991d62c19"),
+    GitSource("https://github.com/AcademySoftwareFoundation/OpenImageIO", "96377f681cc9e6650c8534671f4fc36b3c8acbc1";
+              tag="v$(version_str)"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/OpenImageIO
+
+apk del cmake
 
 cmake -B build-dir -G Ninja \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -50,19 +56,20 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("FFMPEG_jll"; compat="8.0.1"),
+    HostBuildDependency("CMake_jll"),
+    Dependency("FFMPEG_jll"; compat="9.0.2"),
     Dependency("FreeType2_jll"; compat="2.13.4"),
-    Dependency("Giflib_jll"; compat="5.2.3"),
-    Dependency("JpegTurbo_jll"; compat="3.1.4"),
-    Dependency("Libtiff_jll"; compat="4.7.2"),
-    Dependency("OpenColorIO_jll"; compat="2.5.0"),
-    Dependency("OpenEXR_jll"; compat="~3.4.4"),
-    Dependency("OpenJpeg_jll"; compat="2.5.4"),
+    Dependency("Giflib_jll"; compat="6.1.3"),
+    Dependency("JpegTurbo_jll"; compat="3.2.0"),
+    Dependency("Libtiff_jll"; compat="4.7.3"),
+    Dependency("OpenColorIO_jll"; compat="~2.6.0"),
+    Dependency("OpenEXR_jll"; compat="~3.5.2"),
+    Dependency("OpenJpeg_jll"; compat="2.5.5"),
     Dependency("Zlib_jll"; compat="1.2.12"),
     Dependency("boost_jll"; compat="=1.87.0"),
-    Dependency("libpng_jll"; compat="1.6.53"),
-    Dependency("libwebp_jll"; compat="1.6.0"),
-    Dependency("pugixml_jll"; compat="1.15.0"),
+    Dependency("libpng_jll"; compat="1.6.59"),
+    Dependency("libwebp_jll"; compat="1.6.1"),
+    Dependency("pugixml_jll"; compat="1.16.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
