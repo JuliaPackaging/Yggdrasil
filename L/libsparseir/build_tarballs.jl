@@ -8,10 +8,10 @@ version = v"0.14.0"
 
 # Collection of sources required to complete build
 sources = [
-    # sparse-ir-rs v0.14.0
     GitSource(
         "https://github.com/SpM-lab/sparse-ir-rs.git",
-        "8cceb23651a45fb6ffe5955946743cf6b7a8eb77",
+        "880323494827503d714e2a9cb7a9e697d0004c8a";
+        tag = "v$(version)",
     ),
 ]
 
