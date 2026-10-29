@@ -1,5 +1,5 @@
-diff --git a/wiringPi/wiringPi.h b/wiringPi/wiringPi.h
-index 1123456..789abcd 100644
+diff --git before/WiringPi/wiringPi/wiringPi.h after/WiringPi/wiringPi/wiringPi.h
+index 31f49ec..9aa51f7 100644
 --- a/wiringPi/wiringPi.h
 +++ b/wiringPi/wiringPi.h
 @@ -23,6 +23,98 @@
