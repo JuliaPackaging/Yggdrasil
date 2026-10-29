@@ -40,10 +40,10 @@ EOF
 done
 
 install_license LICENSE \
-    modules/map/src/bstring/bstrlib.h \
-    modules/map/src/simclist/simclist.h \
-    modules/map/src/lapack/lapacke.h \
-    modules/nwtc-library/include/fast_float.h \
+    ${WORKSPACE}/srcdir/licenses/bstrlib.txt \
+    ${WORKSPACE}/srcdir/licenses/simclist.txt \
+    ${WORKSPACE}/srcdir/licenses/lapacke.txt \
+    ${WORKSPACE}/srcdir/licenses/fast_float.txt \
     ${WORKSPACE}/srcdir/licenses/CopyrightMINPACK.txt
 """
 
