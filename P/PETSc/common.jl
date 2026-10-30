@@ -140,6 +140,10 @@ build_petsc()
     if [[ "${target}" == *-mingw* ]]; then
         # libssp for stack-smashing protection symbols on mingw.
         LDFLAGS="${LDFLAGS} -lssp"
+    elif [[ "${target}" == *-freebsd* ]]; then
+        # libpetsc calls pthread_mutexattr_setpshared, which ld.lld rejects as undefined
+        # unless libpthread is linked
+        LDFLAGS="${LDFLAGS} -lpthread"
     fi
 
     # External SuiteSparse from Julia's stdlib SuiteSparse_jll.
