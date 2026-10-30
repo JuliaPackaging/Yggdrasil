@@ -4,97 +4,21 @@ using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
+include("../common.jl")
 
 name = "SuperLU_DIST"
-version = v"9.3.1"
+version = superlu_dist_version
 
-# Collection of sources required to complete build
-sources = [
-    GitSource("https://github.com/xiaoyeli/superlu_dist.git", "9f7c8196d8f692cbfc59d81b61a74ceb4b37789b"; tag="v$(version)"),
-]
+sources = superlu_dist_sources
 
-# Bash recipe for building across all platforms
-script = raw"""
-cd $WORKSPACE/srcdir/superlu_dist*
-# allow us to set the name of the shared lib.
-sed -i -e 's!OUTPUT_NAME superlu_dist!OUTPUT_NAME "${SUPERLU_OUTPUT_NAME}"!g' SRC/CMakeLists.txt
-
+script = superlu_dist_script(raw"""
 if [[ "${target}" == *-mingw* ]]; then
-    PLATFLAGS="-DMPI_HOME=${prefix} -DMPI_GUESS_LIBRARY_NAME=MSMPI"
+    EXTRA_CMAKE_ARGS+=(-DMPI_HOME=${prefix} -DMPI_GUESS_LIBRARY_NAME=MSMPI)
     if [[ "${target}" == x86_64-* ]]; then
-        PLATFLAGS+=" -DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64"
+        EXTRA_CMAKE_ARGS+=(-DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64)
     fi
 fi
-
-# Pick libblastrampoline.so / libblastrampoline-5.dll / libblastrampoline.dylib
-# without an explicit Windows check.
-BLAS_LIB=$(ls "${libdir}"/libblastrampoline*."${dlext}" 2>/dev/null | head -1)
-
-build_superlu_dist()
-{
-    if [[ "${1}" == "Int64" ]]; then
-        INT=64
-        # METIS_jll installs this variant under its own prefix, so the DLL is in bin/ on Windows.
-        METIS_PATH="${libdir}/metis/metis_Int64_Real32/$(basename ${libdir})/libmetis_Int64_Real32.${dlext}"
-        PARMETIS_PATH="${libdir}/libparmetis_Int64_Real32.${dlext}"
-    else
-        INT=32
-        METIS_PATH="${libdir}/libmetis.${dlext}"
-        PARMETIS_PATH="${libdir}/libparmetis.${dlext}"
-    fi
-
-    mkdir build-${INT}
-    pushd build-${INT}
-    cmake \
-        -DCMAKE_INSTALL_PREFIX=${prefix} \
-        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DBUILD_SHARED_LIBS=ON \
-        -DBUILD_STATIC_LIBS=OFF \
-        -DTPL_ENABLE_INTERNAL_BLASLIB=OFF \
-        -Denable_tests=ON \
-        -Denable_doc=OFF \
-        -Denable_single=ON \
-        -Denable_double=ON \
-        -Denable_complex16=ON \
-        -DTPL_BLAS_LIBRARIES="${BLAS_LIB}" \
-        -DTPL_ENABLE_LAPACKLIB=ON \
-        -DTPL_LAPACK_LIBRARIES="${BLAS_LIB}" \
-        -DTPL_ENABLE_PARMETISLIB=ON \
-        -DTPL_PARMETIS_INCLUDE_DIRS="${includedir}" \
-        -DTPL_PARMETIS_LIBRARIES="${PARMETIS_PATH};${METIS_PATH}" \
-        ${PLATFLAGS} \
-        -DCMAKE_C_FLAGS="-std=c99 -Wno-implicit-function-declaration -Wno-incompatible-pointer-types" \
-        -DXSDK_INDEX_SIZE=${INT} \
-        -DXSDK_ENABLE_Fortran=OFF \
-        -DSUPERLU_OUTPUT_NAME="superlu_dist_Int${INT}" \
-        -Denable_examples=OFF \
-        -Denable_python=OFF \
-        ..
-    make -j${nproc}
-    make install
-    popd
-
-    install -Dvm 755 build-${INT}/TEST/pdtest${exeext} "${bindir}/pdtest_${INT}${exeext}"
-    install -vm 644 EXAMPLE/g20.rua "${includedir}"
-
-    # Both integer-width builds install their headers into ${includedir},
-    # so the second build overwrites the first's superlu_dist_config.h
-    # (XSDK_INDEX_SIZE).  Keep a self-contained per-width copy so
-    # consumers that must match a specific index width (e.g. PETSc) can
-    # point at it instead of the ambiguous top-level headers.
-    #
-    # This copy MUST stay inside build_superlu_dist (i.e. run right after
-    # this width's `make install`, before the next width re-installs and
-    # clobbers the shared superlu_dist_config.h).  Don't hoist it past the
-    # `build_superlu_dist Int64` call below or both per-width copies would
-    # capture the Int64 config.
-    mkdir -p ${includedir}/superlu_dist_Int${INT}
-    cp ${includedir}/superlu*.h* ${includedir}/superlu_dist_Int${INT}/
-}
-build_superlu_dist Int32
-build_superlu_dist Int64
-"""
+""")
 
 augment_platform_block = """
     using Base.BinaryPlatforms
@@ -106,21 +30,10 @@ platforms = supported_platforms()
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
-# The products that we will ensure are always built
-products = [
-    ExecutableProduct("pdtest_32", :pdtest_32),
-    ExecutableProduct("pdtest_64", :pdtest_64),
+products = superlu_dist_products
 
-    LibraryProduct("libsuperlu_dist_Int32", :libsuperlu_dist_Int32),
-    LibraryProduct("libsuperlu_dist_Int64", :libsuperlu_dist_Int64)
-]
-
-# Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"); compat="5.4.0"),
-    Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"); compat="0.3.32"),
-    Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa"); compat="4.0.9"),
-    Dependency("METIS_jll"; compat="5.1.4"),
+    superlu_dist_dependencies...,
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
