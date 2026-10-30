@@ -201,9 +201,9 @@ For these complex dependencies, consult existing recipes in the repository (sear
 
 ### MPI packages
 
-MPI recipes use a platform-tag augmentation scheme so a single set of JLLs can be retargeted at runtime via `MPIPreferences.jl`. Five ABIs are supported (`MPIABI`, `MPICH`, `MPItrampoline`, `OpenMPI`, `MicrosoftMPI`); the orchestration lives in `platforms/mpi.jl`.
+MPI recipes use a platform-tag augmentation scheme so a single set of JLLs can be retargeted at runtime via `MPIPreferences.jl`; without a preference, MPICH is used (MicrosoftMPI on Windows). Five ABIs are supported (`MPIABI`, `MPICH`, `MPItrampoline`, `OpenMPI`, `MicrosoftMPI`); the orchestration lives in `platforms/mpi.jl`.
 
-Standard recipe shape (see `H/HYPRE/common.jl`, `P/PETSc/build_tarballs.jl`, `S/SCALAPACK/common.jl`):
+Standard recipe shape (see `H/HYPRE/HYPRE/build_tarballs.jl`, `P/PETSc/build_tarballs.jl`, `S/SCALAPACK/SCALAPACK/build_tarballs.jl`):
 
 ```julia
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
@@ -224,11 +224,19 @@ build_tarballs(...; augment_platform_block, ...)
 
 Recurring gotchas:
 
-- **MPItrampoline** does not support musl or Windows; **OpenMPI** is unavailable on `armv6l-linux-gnu`. The `mpi_abis` table in `platforms/mpi.jl` already encodes this; don't re-filter in the recipe.
-- **Fortran-bearing libraries** must call `expand_gfortran_versions(platforms)` *before* `MPI.augment_platforms`; C++-heavy packages often also need `expand_cxxstring_abis`.
-- **Per-ABI linking** is selected with `if [[ ${bb_full_target} == *mpiabi* ]]; then …` blocks; each ABI exposes a different set of libraries (`libmpitrampoline`, `libmpi`+`libmpifort`, `libmpi`+`libmpi_mpifh`+`libmpi_usempif08`, `msmpi64`). `P/PETSc/build_tarballs.jl` is the canonical reference.
-- **Windows (MicrosoftMPI)** needs `-DMPI_HOME=${prefix} -DMPI_GUESS_LIBRARY_NAME=MSMPI` and `-DMPI_${lang}_LIBRARIES=msmpi64` for CMake; see `H/HYPRE/common.jl`.
-- MPI-flavored dependencies must use the same compat (including the exact OpenMPI pin) as the JLL they were built against.
+- **Platform availability** per ABI is encoded in the `mpi_abis` table in `platforms/mpi.jl`; don't re-filter in the recipe.
+- **Expand before augmenting**: call `expand_gfortran_versions`, `expand_cxxstring_abis`, etc. *before* `MPI.augment_platforms`. The MPI dependencies are restricted to the platforms that exist at augmentation time, so platforms added later get no MPI dependency. Filtering afterwards is fine.
+- **Per-ABI linking** is selected with `if [[ ${bb_full_target} == *mpiabi* ]]; then …` blocks. Each ABI provides different libraries (C, then Fortran):
+  - `mpiabi`: `libmpi_abi`; `libmpif` (from `mpif_jll`)
+  - `mpich`: `libmpi`; `libmpifort`
+  - `mpitrampoline`: `libmpitrampoline`
+  - `openmpi`: `libmpi`; `libmpi_mpifh`, `libmpi_usempif08`, `libmpi_usempi_ignore_tkr`
+  - `microsoftmpi`: `msmpi64`
+
+  `P/PETSc/build_tarballs.jl` is the canonical reference.
+- **MPItrampoline compiler wrappers** remember the compilers MPItrampoline was built with. Recipes using `mpicc` etc. must `export MPITRAMPOLINE_CC=${CC} MPITRAMPOLINE_CXX=${CXX} MPITRAMPOLINE_FC=${FC}`.
+- **Windows (MicrosoftMPI)** needs `-DMPI_HOME=${prefix} -DMPI_GUESS_LIBRARY_NAME=MSMPI` and `-DMPI_C_LIBRARIES=msmpi64` (likewise `MPI_CXX_LIBRARIES`) for CMake; see `H/HYPRE/HYPRE/build_tarballs.jl`.
+- **MPIABI** provides only the C bindings. Packages that call MPI from Fortran get the Fortran bindings from `mpif_jll`, added for the MPIABI platforms only: `Dependency("mpif_jll"; compat="1.0.1", platforms=filter(p -> p["mpi"] == "mpiabi", platforms))`, where `platforms` is the result of `MPI.augment_platforms`. See `H/HelloWorldMPIFortran/build_tarballs.jl`.
 
 ### CUDA packages
 
