@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "catchaMouse16"
-version = v"0.1.0"
+version = v"0.2.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/DynamicsAndNeuralSystems/catchaMouse16.git",
-              "2a952451acf6114de562da6007e37ff6e013b157")
+              "2ad18283e0f2856e520794602f2f3748857e320d")
 ]
 
 # Bash recipe for building across all platforms
