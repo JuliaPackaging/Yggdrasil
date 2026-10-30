@@ -235,8 +235,9 @@ Recurring gotchas:
 CUDA tooling and platform augmentation live in `platforms/cuda.jl` (with the underlying JLLs under `C/CUDA/`). Depend on the right combination via `CUDA.required_dependencies(platform)` rather than naming the JLLs directly:
 
 - `CUDA_SDK_jll` / `CUDA_SDK_static_jll` — full toolkit (headers + libs), build-only (`BuildDependency`).
-- `CUDA_Runtime_jll` — slim redistributable runtime libs (cudart, cublas, cufft, curand, cusolver, cusparse, nvrtc, nvjitlink); the user-facing artifact.
-- `CUDA_Driver_jll` — wraps the system driver and provides `inspect_driver` for compute-capability detection during platform augmentation.
+- `CUDA_Runtime_jll` — slim redistributable runtime libs (cudart, cupti, cublas, cufft, curand, cusolver, cusparse); the user-facing artifact.
+- `CUDA_Compiler_jll` — the JIT stack (nvrtc, nvJitLink, nvvm, ptxas), with its toolkit selected independently of the runtime.
+- `CUDA_Driver_jll` — picks between the system driver and NVIDIA's forward-compatibility driver.
 
 Standard recipe shape (see `A/AMGX/build_tarballs.jl`, `H/HeFFTe/build_tarballs.jl`):
 
@@ -257,10 +258,12 @@ end
 
 Concrete rules:
 
-- **Platforms:** Linux `x86_64-glibc` and `aarch64-glibc` only (aarch64 split into `cuda_platform=jetson` vs `sbsa` for CUDA <13). Windows, musl, and macOS are unsupported.
+- **Naming:** call a CUDA variant of a package `PackageName_CUDA` (`S/SuperLU/SuperLU_DIST_CUDA@9`), not `_GPU`.
+- **Platforms:** Linux `x86_64-glibc` and `aarch64-glibc` only (aarch64 split into `cuda_platform=jetson` vs `sbsa` for CUDA <13). Consumers can't target Windows (`nvcc` isn't a cross compiler), musl, or macOS, although `CUDA_Runtime_jll` and `CUDA_Compiler_jll` ship x86_64 Windows artifacts.
 - **Supported toolkit versions** are listed in `CUDA.cuda_full_versions` in `platforms/cuda.jl`; pre-release toolkits need `CUDA.supported_platforms(; prereleases=true)`. Build one variant per CUDA minor; the `cuda=$MAJOR.$MINOR` platform tag drives selection.
+- **With MPI:** `MPI.augment` and `CUDA.augment` both define `preferences`, so wrap the latter in `module __CUDA` and call both from `augment_platform!`; see `H/HeFFTe`.
 - **Select platforms by exact triplet** in multi-variant loops. `platforms_match` treats a missing `cuda` tag as a wildcard and will serialise every variant into one job.
-- **`CUDA.augment` block is required** on consumers — it reads `CUDA_Runtime_jll` `Preferences` (`version`, `local`), detects driver capabilities via `CUDA_Driver_jll.inspect_driver`, and picks the highest-compatible toolkit. Consumers of the JIT stack use `CUDA.compiler_augment` instead. Compute-capability support is encoded in `cuda_cap_db` in `C/CUDA/CUDA_Runtime/toolkit_selection.jl`.
+- **`CUDA.augment` block is required** on consumers — it defers to `CUDA_Runtime_jll`, which reads its `Preferences` (`version`, `local`), queries the driver in-process for its capabilities, and picks the highest-compatible toolkit. Consumers of the JIT stack use `CUDA.compiler_augment` instead. Compute-capability support is encoded in `cuda_cap_db` in `C/CUDA/CUDA_Runtime/toolkit_selection.jl`.
 - Use `CUDA.cuda_gpu_archs(platform)` for `-DCMAKE_CUDA_ARCHITECTURES` (see `A/AMGX`).
 - **Build flags:** point CMake at the bundled toolkit with `-DCMAKE_CUDA_COMPILER=$prefix/cuda/bin/nvcc -DCMAKE_CUDA_FLAGS="-L${prefix}/cuda/lib"`. `nvcc` writes scratch to `/tmp` (small tmpfs in the sandbox); redirect with `export TMPDIR=${WORKSPACE}/tmpdir`.
 - Pass **`static_sdk=true`** to `required_dependencies` when linking static CUDA libs (e.g. AMGX); this adds `CUDA_SDK_static_jll` as a `BuildDependency`.
