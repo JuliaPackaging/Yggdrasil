@@ -20,9 +20,16 @@ platforms = CUDA.supported_platforms(; min_version=v"12")
 # aarch64 would need the host x86_64 nvcc swapped in; PETSc's configure cannot do that
 filter!(p -> arch(p) == "x86_64", platforms)
 
+# The toolkits that add GPU architectures (PETSc embeds no PTX for newer GPUs). These are also
+# the ones SuperLU_DIST_CUDA_jll is built for, whose artifacts must match the `cuda` tag exactly.
+filter!(p -> Base.thisminor(VersionNumber(p["cuda"])) in (v"12.0", v"12.8", v"12.9", v"13.0"), platforms)
+
 platforms = expand_gfortran_versions(platforms)
 platforms = expand_cxxstring_abis(platforms)
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
+
+# The MPI ABIs SuperLU_DIST_CUDA_jll is built for
+filter!(p -> p["mpi"] in ("mpiabi", "mpich"), platforms)
 
 augment_platform_block = """
     using Base.BinaryPlatforms
