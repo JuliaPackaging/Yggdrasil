@@ -115,7 +115,7 @@ Every declared product must actually be produced by the build on every supported
 - `compat` and `julia_compat` strings are Pkg [version specifiers](https://pkgdocs.julialang.org/v1/compatibility/#Version-specifier-format), not version numbers. A bare version is a caret range up to the next breaking release: `"1.10"` and `"1.10.0"` both mean `[1.10.0, 2.0.0)`, so `julia_compat="1.10"` already admits Julia 1.11, 1.12, …, and does not pin Julia 1.10. Raising it from `"1.6"` to `"1.10"` narrows the range by dropping 1.6–1.9. Before 1.0 the range is narrower: `"0.3"` means `[0.3.0, 0.4.0)`. Other operators exist (`~`, `=`, `>=`, hyphen ranges); check their meaning at that link before using one.
 - Never remove or loosen an existing bound. Compat strings are set unions, so `"3.0, 3.5"` means the same as `"3.0"`.
 - By default BinaryBuilder builds against the *oldest* version satisfying the bound, so raising the lower bound picks up newer artifacts. A positional pin (`Dependency("X_jll", v"1.2")` or `Dependency(PackageSpec("X_jll", v"1.2"))`) overrides the default: check for one before relying on `compat` alone, and keep it inside the bound or the build errors.
-- Changing any compat bound, including `julia_compat`, requires bumping the JLL version. Pkg cannot re-register an existing version.
+- Changing any compat bound, including `julia_compat`, requires bumping the JLL version. Pkg cannot re-register an existing version. The exception is aligning a recipe with a fix already made in General; see [Changing compat bounds](CONTRIBUTING.md#changing-compat-bounds-of-a-package).
 - Header-only or build-time-only packages are `BuildDependency`, so they are not installed on users' machines.
 - Anything linking `libgfortran` needs `expand_gfortran_versions(platforms)` and `Dependency("CompilerSupportLibraries_jll")`. Don't paper over it with `preferred_gcc_version`.
 - OpenMP: `CompilerSupportLibraries_jll` on non-BSD, `LLVMOpenMP_jll` on FreeBSD and macOS. Never mix headers from one with the runtime of the other.
@@ -142,7 +142,7 @@ Use `preferred_gcc_version=v"X"` for (see [available GCC versions](https://githu
 
 ### Patches
 
-- Use patch files in `bundled/patches/` for source changes, never `sed`/`perl`: sed silently stops matching when upstream changes. The one exception is stripping flags such as `-march` or `-ffast-math` from build files (see [Unsupported Build Flags](#unsupported-build-flags)), where a miss is harmless.
+- Use patch files in `bundled/patches/` for source changes, never `sed`/`perl`: sed silently stops matching when upstream changes. One exception is stripping flags such as `-march` or `-ffast-math` from build files (see [Unsupported Build Flags](#unsupported-build-flags)), where a miss is harmless. The other is CRLF source files: `.gitattributes` converts patches to LF, so their context can't match. Run `dos2unix` on the file first (`G/GMAT`, `E/Exiv2`), or use `sed` if the CRLFs must be kept (`M/MicrosoftMPI`).
 - Each patch starts with a one-line description and a link to the upstream PR or issue. Report fixes upstream.
 - Never use a personal fork or branch as a source. Keep the upstream source and carry a patch.
 - Prefer a compiler flag over a patch when one suffices.
@@ -203,7 +203,7 @@ For these complex dependencies, consult existing recipes in the repository (sear
 
 MPI recipes use a platform-tag augmentation scheme so a single set of JLLs can be retargeted at runtime via `MPIPreferences.jl`. Five ABIs are supported (`MPIABI`, `MPICH`, `MPItrampoline`, `OpenMPI`, `MicrosoftMPI`); the orchestration lives in `platforms/mpi.jl`.
 
-Standard recipe shape (see `H/HYPRE/common.jl`, `P/PETSc/build_tarballs.jl`, `S/SCALAPACK/common.jl`):
+Standard recipe shape (see `H/HYPRE/HYPRE/build_tarballs.jl`, `P/PETSc/build_tarballs.jl`, `S/SCALAPACK/SCALAPACK/build_tarballs.jl`):
 
 ```julia
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
@@ -225,9 +225,10 @@ build_tarballs(...; augment_platform_block, ...)
 Recurring gotchas:
 
 - **MPItrampoline** does not support musl or Windows; **OpenMPI** is unavailable on `armv6l-linux-gnu`. The `mpi_abis` table in `platforms/mpi.jl` already encodes this; don't re-filter in the recipe.
+- **MPItrampoline is being phased out in favor of MPIABI.** `MPI.augment_platforms` still builds both, so leave its defaults alone, but a recipe that picks a single ABI (e.g. a CUDA variant) should pick MPIABI, not MPItrampoline.
 - **Fortran-bearing libraries** must call `expand_gfortran_versions(platforms)` *before* `MPI.augment_platforms`; C++-heavy packages often also need `expand_cxxstring_abis`.
-- **Per-ABI linking** is selected with `if [[ ${bb_full_target} == *mpiabi* ]]; then …` blocks; each ABI exposes a different set of libraries (`libmpitrampoline`, `libmpi`+`libmpifort`, `libmpi`+`libmpi_mpifh`+`libmpi_usempif08`, `msmpi64`). `P/PETSc/build_tarballs.jl` is the canonical reference.
-- **Windows (MicrosoftMPI)** needs `-DMPI_HOME=${prefix} -DMPI_GUESS_LIBRARY_NAME=MSMPI` and `-DMPI_${lang}_LIBRARIES=msmpi64` for CMake; see `H/HYPRE/common.jl`.
+- **Per-ABI linking** is selected with `if [[ ${bb_full_target} == *mpiabi* ]]; then …` blocks; each ABI exposes a different set of libraries (`libmpitrampoline`, `libmpi`+`libmpifort`, `libmpi`+`libmpi_mpifh`+`libmpi_usempif08`, `msmpi`). `P/PETSc/build_tarballs.jl` is the canonical reference.
+- **Windows (MicrosoftMPI)** needs `-DMPI_HOME=${prefix} -DMPI_GUESS_LIBRARY_NAME=MSMPI` for CMake, plus `-DMPI_${lang}_LIBRARIES=msmpi64` on x86_64 only; see `H/HYPRE/HYPRE/build_tarballs.jl`. Import libraries are named `msmpi`, `msmpifec` and `msmpifmc` on both architectures, and x86_64 also has the SDK's `*64` names.
 - MPI-flavored dependencies must use the same compat (including the exact OpenMPI pin) as the JLL they were built against.
 
 ### CUDA packages
@@ -290,7 +291,7 @@ Examples:
 - `[CMake] Add OpenSSL dependency`
 - `[FFMPEG] Fix build on FreeBSD`
 
-`[skip build]` republishes the JLL without rebuilding (metadata-only changes such as compat bounds). Put it in the body of every commit in the push, never in the header line.
+`[skip build]` skips the build, and on merge republishes the JLL with its existing tarballs. CI reads it from the last commit of the push. Put it in the body, never in the header line.
 
 ## Pull Requests
 
@@ -547,7 +548,7 @@ export PKG_CONFIG_PATH="${prefix}/lib/pkgconfig:${PKG_CONFIG_PATH}"
 
 ### Multi-Variant Recipes
 
-Put shared logic in `PackageName/common.jl` and one `build_tarballs.jl` per variant in subdirectories (`S/SCALAPACK/{SCALAPACK,SCALAPACK32,SCALAPACK64}`). Keep an old version alongside a new one in a `PackageName@<version>/` directory, with as many version components as needed to tell them apart (`T/TetGen/TetGen@1.5`, `L/LLVM/Clang@18`).
+Put shared logic in `PackageName/common.jl` and one `build_tarballs.jl` per variant in subdirectories (`L/LAPACK/{LAPACK,LAPACK32}`). Keep an old version alongside a new one in a `PackageName@<version>/` directory, with as many version components as needed to tell them apart (`T/TetGen/TetGen@1.5`, `L/LLVM/Clang@18`).
 
 ### Platform Augmentation Helpers
 
