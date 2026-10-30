@@ -115,7 +115,7 @@ Every declared product must actually be produced by the build on every supported
 - `compat` and `julia_compat` strings are Pkg [version specifiers](https://pkgdocs.julialang.org/v1/compatibility/#Version-specifier-format), not version numbers. A bare version is a caret range up to the next breaking release: `"1.10"` and `"1.10.0"` both mean `[1.10.0, 2.0.0)`, so `julia_compat="1.10"` already admits Julia 1.11, 1.12, …, and does not pin Julia 1.10. Raising it from `"1.6"` to `"1.10"` narrows the range by dropping 1.6–1.9. Before 1.0 the range is narrower: `"0.3"` means `[0.3.0, 0.4.0)`. Other operators exist (`~`, `=`, `>=`, hyphen ranges); check their meaning at that link before using one.
 - Never remove or loosen an existing bound. Compat strings are set unions, so `"3.0, 3.5"` means the same as `"3.0"`.
 - By default BinaryBuilder builds against the *oldest* version satisfying the bound, so raising the lower bound picks up newer artifacts. A positional pin (`Dependency("X_jll", v"1.2")` or `Dependency(PackageSpec("X_jll", v"1.2"))`) overrides the default: check for one before relying on `compat` alone, and keep it inside the bound or the build errors.
-- Changing any compat bound, including `julia_compat`, requires bumping the JLL version. Pkg cannot re-register an existing version.
+- Changing any compat bound, including `julia_compat`, requires bumping the JLL version. Pkg cannot re-register an existing version. The exception is aligning a recipe with a fix already made in General; see [Changing compat bounds](CONTRIBUTING.md#changing-compat-bounds-of-a-package).
 - Header-only or build-time-only packages are `BuildDependency`, so they are not installed on users' machines.
 - Anything linking `libgfortran` needs `expand_gfortran_versions(platforms)` and `Dependency("CompilerSupportLibraries_jll")`. Don't paper over it with `preferred_gcc_version`.
 - OpenMP: `CompilerSupportLibraries_jll` on non-BSD, `LLVMOpenMP_jll` on FreeBSD and macOS. Never mix headers from one with the runtime of the other.
@@ -142,7 +142,7 @@ Use `preferred_gcc_version=v"X"` for (see [available GCC versions](https://githu
 
 ### Patches
 
-- Use patch files in `bundled/patches/` for source changes, never `sed`/`perl`: sed silently stops matching when upstream changes. The one exception is stripping flags such as `-march` or `-ffast-math` from build files (see [Unsupported Build Flags](#unsupported-build-flags)), where a miss is harmless.
+- Use patch files in `bundled/patches/` for source changes, never `sed`/`perl`: sed silently stops matching when upstream changes. One exception is stripping flags such as `-march` or `-ffast-math` from build files (see [Unsupported Build Flags](#unsupported-build-flags)), where a miss is harmless. The other is CRLF source files: `.gitattributes` converts patches to LF, so their context can't match. Run `dos2unix` on the file first (`G/GMAT`, `E/Exiv2`), or use `sed` if the CRLFs must be kept (`M/MicrosoftMPI`).
 - Each patch starts with a one-line description and a link to the upstream PR or issue. Report fixes upstream.
 - Never use a personal fork or branch as a source. Keep the upstream source and carry a patch.
 - Prefer a compiler flag over a patch when one suffices.
@@ -233,7 +233,7 @@ Recurring gotchas:
   - `openmpi`: `libmpi`; `libmpi_mpifh`, `libmpi_usempif08`, `libmpi_usempi_ignore_tkr`
   - `microsoftmpi`: `msmpi64`
 
-  `P/PETSc/build_tarballs.jl` is the canonical reference.
+  `P/PETSc/PETSc/build_tarballs.jl` is the canonical reference.
 - **MPItrampoline compiler wrappers** remember the compilers MPItrampoline was built with. Recipes using `mpicc` etc. must `export MPITRAMPOLINE_CC=${CC} MPITRAMPOLINE_CXX=${CXX} MPITRAMPOLINE_FC=${FC}`.
 - **Windows (MicrosoftMPI)** needs `-DMPI_HOME=${prefix} -DMPI_GUESS_LIBRARY_NAME=MSMPI` and `-DMPI_C_LIBRARIES=msmpi64` (likewise `MPI_CXX_LIBRARIES`) for CMake; see `H/HYPRE/HYPRE/build_tarballs.jl`.
 - **MPIABI** provides only the C bindings. Packages that call MPI from Fortran get the Fortran bindings from `mpif_jll`, added for the MPIABI platforms only: `Dependency("mpif_jll"; compat="1.0.1", platforms=filter(p -> p["mpi"] == "mpiabi", platforms))`, where `platforms` is the result of `MPI.augment_platforms`. See `H/HelloWorldMPIFortran/build_tarballs.jl`.
@@ -298,7 +298,7 @@ Examples:
 - `[CMake] Add OpenSSL dependency`
 - `[FFMPEG] Fix build on FreeBSD`
 
-`[skip build]` republishes the JLL without rebuilding (metadata-only changes such as compat bounds). Put it in the body of every commit in the push, never in the header line.
+`[skip build]` skips the build, and on merge republishes the JLL with its existing tarballs. CI reads it from the last commit of the push. Put it in the body, never in the header line.
 
 ## Pull Requests
 
@@ -555,7 +555,7 @@ export PKG_CONFIG_PATH="${prefix}/lib/pkgconfig:${PKG_CONFIG_PATH}"
 
 ### Multi-Variant Recipes
 
-Put shared logic in `PackageName/common.jl` and one `build_tarballs.jl` per variant in subdirectories (`S/SCALAPACK/{SCALAPACK,SCALAPACK32,SCALAPACK64}`). Keep an old version alongside a new one in a `PackageName@<version>/` directory, with as many version components as needed to tell them apart (`T/TetGen/TetGen@1.5`, `L/LLVM/Clang@18`).
+Put shared logic in `PackageName/common.jl` and one `build_tarballs.jl` per variant in subdirectories (`L/LAPACK/{LAPACK,LAPACK32}`). Keep an old version alongside a new one in a `PackageName@<version>/` directory, with as many version components as needed to tell them apart (`T/TetGen/TetGen@1.5`, `L/LLVM/Clang@18`).
 
 ### Platform Augmentation Helpers
 
