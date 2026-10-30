@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 include(joinpath(@__DIR__, "..", "common.jl"))
 
-name = "PETSc_GPU"
+name = "PETSc_CUDA"
 version = petsc_version
 
 sources = petsc_sources(; cuda=true)

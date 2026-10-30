@@ -25,8 +25,8 @@ export TMPDIR=${WORKSPACE}/tmpdir
 mkdir -pv ${TMPDIR}
 cp -rv ${WORKSPACE}/srcdir/NVTX/c/include/nvtx3 ${includedir}/
 
-install -Dm644 ${WORKSPACE}/srcdir/petsc-*/LICENSE ${prefix}/share/licenses/PETSc_GPU/LICENSE
-install -Dm644 ${WORKSPACE}/srcdir/NVTX/LICENSE.txt ${prefix}/share/licenses/PETSc_GPU/LICENSE.NVTX
+install -Dvm644 ${WORKSPACE}/srcdir/petsc-*/LICENSE ${prefix}/share/licenses/${SRC_NAME}/LICENSE
+install -Dvm644 ${WORKSPACE}/srcdir/NVTX/LICENSE.txt ${prefix}/share/licenses/${SRC_NAME}/LICENSE.NVTX
 
 # CUDA >= 12.8 SDK libraries reference glibc symbols newer than our sysroot
 # (logf@GLIBC_2.27); any host able to run those CUDA versions resolves them.
