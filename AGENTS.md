@@ -112,6 +112,7 @@ Every declared product must actually be produced by the build on every supported
 
 - Always add the `_jll` suffix.
 - Every `Dependency` gets a `compat=` bound: `Dependency("Zlib_jll"; compat="1.2.13")`.
+- `compat` and `julia_compat` strings are Pkg [version specifiers](https://pkgdocs.julialang.org/v1/compatibility/#Version-specifier-format), not version numbers. A bare version is a caret range up to the next breaking release: `"1.10"` and `"1.10.0"` both mean `[1.10.0, 2.0.0)`, so `julia_compat="1.10"` already admits Julia 1.11, 1.12, …, and does not pin Julia 1.10. Raising it from `"1.6"` to `"1.10"` narrows the range by dropping 1.6–1.9. Before 1.0 the range is narrower: `"0.3"` means `[0.3.0, 0.4.0)`. Other operators exist (`~`, `=`, `>=`, hyphen ranges); check their meaning at that link before using one.
 - Never remove or loosen an existing bound. Compat strings are set unions, so `"3.0, 3.5"` means the same as `"3.0"`.
 - By default BinaryBuilder builds against the *oldest* version satisfying the bound, so raising the lower bound picks up newer artifacts. A positional pin (`Dependency("X_jll", v"1.2")` or `Dependency(PackageSpec("X_jll", v"1.2"))`) overrides the default: check for one before relying on `compat` alone, and keep it inside the bound or the build errors.
 - Changing any compat bound, including `julia_compat`, requires bumping the JLL version. Pkg cannot re-register an existing version.
@@ -487,7 +488,7 @@ fi
 
 ```julia
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat="1.10",                   # Minimum Julia version for the JLL
+    julia_compat="1.10",                   # Julia [1.10, 2.0); see Dependencies
     preferred_gcc_version=v"8",            # GCC version
     preferred_llvm_version=v"13",          # LLVM version
     compilers=[:c, :rust],                 # Additional compilers
