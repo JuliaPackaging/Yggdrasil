@@ -48,49 +48,47 @@ export MPITRAMPOLINE_CC="$(which $CC)"
 export MPITRAMPOLINE_CXX="$(which $CXX)"
 export MPITRAMPOLINE_FC="$(which $FC)"
 
+MPI_FFLAGS=""
+MPI_INC=--with-mpi-include=${includedir}
 if [[ "${target}" == *-mingw* ]]; then
     # MS-MPI without PETSc's Fortran bindings: their direct mpi_abort_ call left a 32-bit
     # runtime pseudo-relocation that aborted every process at load.
-    USE_MPI=1
-    MPI_FFLAGS=""
-    MPI_LIBS=--with-mpi-lib="${libdir}/msmpi.${dlext}"
-    MPI_INC=--with-mpi-include=${includedir}
     FORTRAN_BINDINGS=0
+    MPI_LIBS=--with-mpi-lib="${libdir}/msmpi.${dlext}"
+    MPI_CC=${CC}
+    MPI_FC=${FC}
+    MPI_CXX=${CXX}
 else
-    FORTRAN_BINDINGS=1
     # Build against every MPI ABI Yggdrasil offers.  MPIABI alone is not
     # enough in practice: many MPI installations on HPC systems are not
     # (yet) configured to provide the new MPI ABI, so MPICH,
     # MPItrampoline and OpenMPI builds are still needed.
-    USE_MPI=1
+    FORTRAN_BINDINGS=1
+    MPI_CC=mpicc
+    MPI_FC=mpifort
+    MPI_CXX=mpicxx
     if [[ ${bb_full_target} == *mpiabi* ]]; then
-        MPI_FFLAGS=""
         MPI_LIBS=--with-mpi-lib="[${libdir}/libmpif.${dlext},${libdir}/libmpi_abi.${dlext}]"
-        MPI_INC=--with-mpi-include=${includedir}
+        # mpif_jll's mpifort wrapper hardcodes the gfortran of the platform it was built
+        # for, which does not exist when an extra tag (cuda) changes ${bb_full_target};
+        # the MPI libraries are passed to configure explicitly instead
+        MPI_FC=${FC}
     elif [[ ${bb_full_target} == *mpich* ]]; then
-        MPI_FFLAGS=""
         MPI_LIBS=--with-mpi-lib="[${libdir}/libmpifort.${dlext},${libdir}/libmpi.${dlext}]"
-        MPI_INC=--with-mpi-include=${includedir}
     elif [[ ${bb_full_target} == *mpitrampoline* ]]; then
         MPI_FFLAGS="-fcray-pointer"
         MPI_LIBS=--with-mpi-lib="[${libdir}/libmpitrampoline.${dlext}]"
-        MPI_INC=--with-mpi-include=${includedir}
+        # MPItrampoline only ships `mpifc`
+        MPI_FC=mpifc
+        # MPItrampoline's MPI constants are not compile-time constants, so
+        # PETSc's static initializers have to become run-time constructors.
+        atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi-constants.patch
     elif [[ ${bb_full_target} == *openmpi* ]]; then
-        MPI_FFLAGS=""
         MPI_LIBS=--with-mpi-lib="[${libdir}/libmpi_usempif08.${dlext},${libdir}/libmpi_usempi_ignore_tkr.${dlext},${libdir}/libmpi_mpifh.${dlext},${libdir}/libmpi.${dlext}]"
-        MPI_INC=--with-mpi-include=${includedir}
     else
-        USE_MPI=0
-        MPI_FFLAGS=""
-        MPI_LIBS=""
-        MPI_INC=""
+        echo "Unsupported MPI ABI: ${bb_full_target}" >&2
+        exit 1
     fi
-fi
-
-if [[ ${bb_full_target} == *mpitrampoline* ]]; then
-    # MPItrampoline's MPI constants are not compile-time constants, so
-    # PETSc's static initializers have to become run-time constructors.
-    atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi-constants.patch
 fi
 
 if [[ ${target} == *mingw* ]]; then
@@ -187,25 +185,6 @@ build_petsc()
     USE_HYPRE=0
     if [ "${1}" == "double" ] && [ "${2}" == "real" ]; then
         USE_HYPRE=1
-    fi
-
-    if [[ "${target}" == *-mingw* ]]; then
-        MPI_CC=${CC}
-        MPI_FC=${FC}
-        MPI_CXX=${CXX}
-    else
-        MPI_CC=mpicc
-        MPI_FC=mpifort
-        MPI_CXX=mpicxx
-        if [[ "${bb_full_target}" == *mpiabi* ]]; then
-            # mpif_jll's mpifort wrapper hardcodes the gfortran of the platform it was built
-            # for, which does not exist when an extra tag (cuda) changes ${bb_full_target};
-            # the MPI libraries are passed to configure explicitly instead
-            MPI_FC=${FC}
-        elif [[ "${bb_full_target}" == *mpitrampoline* ]]; then
-            # MPItrampoline only ships `mpifc`
-            MPI_FC=mpifc
-        fi
     fi
 
     # triangle, tetgen
@@ -333,7 +312,6 @@ build_petsc()
         --with-64-bit-indices=${USE_INT64} \
         --with-debugging=${DEBUG_FLAG} \
         --with-batch \
-        --with-mpi=${USE_MPI} \
         --with-fortran-bindings=${FORTRAN_BINDINGS} \
         ${MPI_LIBS} \
         ${MPI_INC} \
@@ -476,10 +454,12 @@ function petsc_dependencies(platforms; superlu_cuda::Bool=false)
 
     BuildDependency("LLVMCompilerRT_jll"; platforms=filter(Sys.isapple, platforms)),
 
+    # The stdlib bounds (CSL, OpenBLAS, libblastrampoline, SuiteSparse) are at or below what
+    # Julia 1.12, the julia_compat floor, ships, so they exclude no allowed Julia version.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae");
                compat="1.2.0"),
     # ILP64 BLAS: OpenBLAS_jll on Windows (linked directly), libblastrampoline_jll on
-    # everything else (Julia >= 1.7 wires its stdlib OpenBLAS into LBT's ILP64 slots).
+    # everything else (Julia wires its stdlib OpenBLAS into LBT's ILP64 slots).
     Dependency(PackageSpec(name="OpenBLAS_jll", uuid="4536629a-c528-5b80-bd46-f80d51c5b363");
                compat="0.3.29",
                platforms=filter(Sys.iswindows, platforms)),

@@ -34,6 +34,7 @@ platforms = expand_gfortran_versions(platforms)
 # replace this by calls to `malloc`, `realloc`, and `snprintf`.)
 platforms = expand_cxxstring_abis(platforms)
 
+# PETSc links the ILP64 (`_64_`) BLAS, which OpenBLAS_jll only builds for 64-bit platforms
 filter!(p -> nbits(p) != 32, platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
@@ -64,7 +65,5 @@ products = [
 dependencies = petsc_dependencies(platforms)
 append!(dependencies, platform_dependencies)
 
-# Build the tarballs.
-# NOTE: llvm16 seems to have an issue with PETSc 3.18.x as on apple architectures it doesn't know how to create dynamic libraries
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, clang_use_lld=false, julia_compat="1.12", preferred_gcc_version=v"9")
+               augment_platform_block, julia_compat="1.12", preferred_gcc_version=v"9")
