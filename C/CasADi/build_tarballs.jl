@@ -2,12 +2,12 @@ using BinaryBuilder, Pkg
 
 name = "CasADi"
 
-version = v"3.8.1"
+version = v"3.8.2"
 
 sources = [
     GitSource(
         "https://github.com/casadi/casadi.git",
-        "dafc81035257e0e57db5c65b2ac851a6239fb1c4",
+        "a5852c23b2100296cee23b81227fcaa3bef43f04",
     ),
     DirectorySource("./bundled"),
 ]
@@ -75,6 +75,8 @@ products = [
     LibraryProduct("libcasadi_integrator_cvodes", :libcasadi_integrator_cvodes),
     LibraryProduct("libcasadi_integrator_idas", :libcasadi_integrator_idas),
     LibraryProduct("libcasadi_integrator_rk", :libcasadi_integrator_rk),
+    LibraryProduct("libcasadi_integrator_rosenbrock", :libcasadi_integrator_rosenbrock),
+    LibraryProduct("libcasadi_integrator_erk", :libcasadi_integrator_erk),
     LibraryProduct("libcasadi_interpolant_bspline", :libcasadi_interpolant_bspline),
     LibraryProduct("libcasadi_interpolant_linear", :libcasadi_interpolant_linear),
     LibraryProduct("libcasadi_linsol_csparse", :libcasadi_linsol_csparse),
