@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_auth"
-version = v"1.0.1"
+version = v"1.0.2"
 # The SONAME contains major.minor, and minor releases may break the ABI.
 # Downstream recipes must restrict compat to one minor version, e.g. compat="~1.2.3".
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-auth.git", "81cba5032a414eda20d2610f975c08a03381b751"),
+    GitSource("https://github.com/awslabs/aws-c-auth.git", "d80adb77c071e70ba09fc18f82e8f614f98771e7"),
 ]
 
 # Bash recipe for building
