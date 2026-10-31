@@ -34,8 +34,9 @@ EXTRA_CMAKE_ARGS+=(
 # aarch64 would need the host x86_64 nvcc swapped in, as A/AMGX/AMGX_MPI does.
 platforms = CUDA.supported_platforms(; min_version=v"12")
 filter!(p -> arch(p) == "x86_64", platforms)
-# An artifact also matches newer toolkits of its major. 12.0 relies on PTX for sm_100 and newer.
-filter!(p -> Base.thisminor(VersionNumber(p["cuda"])) in (v"12.0", v"13.0"), platforms)
+# An artifact also matches newer toolkits of its major, but contains no PTX for newer GPUs.
+# 12.8 adds sm_100 and sm_120, and 12.9 adds sm_103 and sm_121.
+filter!(p -> Base.thisminor(VersionNumber(p["cuda"])) in (v"12.0", v"12.8", v"12.9", v"13.0"), platforms)
 
 platforms, mpi_dependencies = MPI.augment_platforms(platforms)
 
