@@ -1,21 +1,43 @@
-using BinaryBuilder, Pkg
-using Base.BinaryPlatforms
-const YGGDRASIL_DIR = "../.."
-include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
+const petsc_version = v"3.25.6"
+const petsc_sha256 = "00ac91c7ae96eae6a39d7380c7e869c1c7ddbc0c64a23a0b5fd3442227c7cdb9"
 
-name = "PETSc"
-version = v"3.25.4"
+function petsc_sources(; cuda::Bool=false)
+    sources = [
+        ArchiveSource("https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-$(petsc_version).tar.gz",
+                      petsc_sha256),
+        DirectorySource("../bundled"),
+    ]
+    if cuda
+        # header-only NVTX: PETSc includes <nvtx3/nvToolsExt.h>, which no CUDA JLL ships
+        push!(sources, GitSource("https://github.com/NVIDIA/NVTX",
+                                 "4f37e799ccc6b70c39979b53a4c24488ee3fe0ae"; tag="v3.2.2"))
+    end
+    return sources
+end
 
-# Collection of sources required to build PETSc.
-sources = [
-    ArchiveSource("https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-$(version).tar.gz",
-                  "12c990fb39a5764ac8311211d09c01ed80fb983136c75bf7b558312b2509dbbd"),
-    DirectorySource("bundled"),
-]
+const cpu_preamble = raw"""
+CUDA_ARGS=""
+EXTRA_LDFLAGS=""
+"""
 
-# Bash recipe for building across all platforms
-script = raw"""
+const cuda_preamble = raw"""
+export TMPDIR=${WORKSPACE}/tmpdir
+mkdir -pv ${TMPDIR}
+cp -rv ${WORKSPACE}/srcdir/NVTX/c/include/nvtx3 ${includedir}/
 
+install -Dvm644 ${WORKSPACE}/srcdir/petsc-*/LICENSE ${prefix}/share/licenses/${SRC_NAME}/LICENSE
+install -Dvm644 ${WORKSPACE}/srcdir/NVTX/LICENSE.txt ${prefix}/share/licenses/${SRC_NAME}/LICENSE.NVTX
+
+# CUDA >= 12.8 SDK libraries reference glibc symbols newer than our sysroot
+# (logf@GLIBC_2.27); any host able to run those CUDA versions resolves them.
+EXTRA_LDFLAGS="-Wl,--allow-shlib-undefined"
+
+CUDA_LIB_DIR=${prefix}/cuda/lib
+CUDA_LIBS="${CUDA_LIB_DIR}/libcudart.so,${libdir}/libnvToolsExt.so,${CUDA_LIB_DIR}/libcufft.so,${CUDA_LIB_DIR}/libcublas.so,${CUDA_LIB_DIR}/libcusparse.so,${CUDA_LIB_DIR}/libcusolver.so,${CUDA_LIB_DIR}/libcurand.so,${CUDA_LIB_DIR}/stubs/libcuda.so,${CUDA_LIB_DIR}/stubs/libnvidia-ml.so"
+CUDA_ARGS="--with-cuda=1 --with-cuda-include=${prefix}/cuda/include --with-cuda-lib=[${CUDA_LIBS}] --with-cudac=${prefix}/cuda/bin/nvcc --with-cuda-arch=${CUDA_ARCHS}"
+"""
+
+const script_body = raw"""
 # so we can use a newer version of cmake
 apk del cmake
 
@@ -26,49 +48,47 @@ export MPITRAMPOLINE_CC="$(which $CC)"
 export MPITRAMPOLINE_CXX="$(which $CXX)"
 export MPITRAMPOLINE_FC="$(which $FC)"
 
+MPI_FFLAGS=""
+MPI_INC=--with-mpi-include=${includedir}
 if [[ "${target}" == *-mingw* ]]; then
     # MS-MPI without PETSc's Fortran bindings: their direct mpi_abort_ call left a 32-bit
     # runtime pseudo-relocation that aborted every process at load.
-    USE_MPI=1
-    MPI_FFLAGS=""
-    MPI_LIBS=--with-mpi-lib="${libdir}/msmpi.${dlext}"
-    MPI_INC=--with-mpi-include=${includedir}
     FORTRAN_BINDINGS=0
+    MPI_LIBS=--with-mpi-lib="${libdir}/msmpi.${dlext}"
+    MPI_CC=${CC}
+    MPI_FC=${FC}
+    MPI_CXX=${CXX}
 else
-    FORTRAN_BINDINGS=1
     # Build against every MPI ABI Yggdrasil offers.  MPIABI alone is not
     # enough in practice: many MPI installations on HPC systems are not
     # (yet) configured to provide the new MPI ABI, so MPICH,
     # MPItrampoline and OpenMPI builds are still needed.
-    USE_MPI=1
+    FORTRAN_BINDINGS=1
+    MPI_CC=mpicc
+    MPI_FC=mpifort
+    MPI_CXX=mpicxx
     if [[ ${bb_full_target} == *mpiabi* ]]; then
-        MPI_FFLAGS=""
         MPI_LIBS=--with-mpi-lib="[${libdir}/libmpif.${dlext},${libdir}/libmpi_abi.${dlext}]"
-        MPI_INC=--with-mpi-include=${includedir}
+        # mpif_jll's mpifort wrapper hardcodes the gfortran of the platform it was built
+        # for, which does not exist when an extra tag (cuda) changes ${bb_full_target};
+        # the MPI libraries are passed to configure explicitly instead
+        MPI_FC=${FC}
     elif [[ ${bb_full_target} == *mpich* ]]; then
-        MPI_FFLAGS=""
         MPI_LIBS=--with-mpi-lib="[${libdir}/libmpifort.${dlext},${libdir}/libmpi.${dlext}]"
-        MPI_INC=--with-mpi-include=${includedir}
     elif [[ ${bb_full_target} == *mpitrampoline* ]]; then
         MPI_FFLAGS="-fcray-pointer"
         MPI_LIBS=--with-mpi-lib="[${libdir}/libmpitrampoline.${dlext}]"
-        MPI_INC=--with-mpi-include=${includedir}
+        # MPItrampoline only ships `mpifc`
+        MPI_FC=mpifc
+        # MPItrampoline's MPI constants are not compile-time constants, so
+        # PETSc's static initializers have to become run-time constructors.
+        atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi-constants.patch
     elif [[ ${bb_full_target} == *openmpi* ]]; then
-        MPI_FFLAGS=""
         MPI_LIBS=--with-mpi-lib="[${libdir}/libmpi_usempif08.${dlext},${libdir}/libmpi_usempi_ignore_tkr.${dlext},${libdir}/libmpi_mpifh.${dlext},${libdir}/libmpi.${dlext}]"
-        MPI_INC=--with-mpi-include=${includedir}
     else
-        USE_MPI=0
-        MPI_FFLAGS=""
-        MPI_LIBS=""
-        MPI_INC=""
+        echo "Unsupported MPI ABI: ${bb_full_target}" >&2
+        exit 1
     fi
-fi
-
-if [[ ${bb_full_target} == *mpitrampoline* ]]; then
-    # MPItrampoline's MPI constants are not compile-time constants, so
-    # PETSc's static initializers have to become run-time constructors.
-    atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi-constants.patch
 fi
 
 if [[ ${target} == *mingw* ]]; then
@@ -116,10 +136,14 @@ build_petsc()
         USE_MUMPS=1
     fi
 
-    LDFLAGS="-L${libdir}"
+    LDFLAGS="-L${libdir} ${EXTRA_LDFLAGS}"
     if [[ "${target}" == *-mingw* ]]; then
         # libssp for stack-smashing protection symbols on mingw.
         LDFLAGS="${LDFLAGS} -lssp"
+    elif [[ "${target}" == *-freebsd* ]]; then
+        # libpetsc calls pthread_mutexattr_setpshared, which ld.lld rejects as undefined
+        # unless libpthread is linked
+        LDFLAGS="${LDFLAGS} -lpthread"
     fi
 
     # External SuiteSparse from Julia's stdlib SuiteSparse_jll.
@@ -165,22 +189,6 @@ build_petsc()
     USE_HYPRE=0
     if [ "${1}" == "double" ] && [ "${2}" == "real" ]; then
         USE_HYPRE=1
-    fi
-
-    if [[ "${target}" == *-mingw* ]]; then
-        MPI_CC=${CC}
-        MPI_FC=${FC}
-        MPI_CXX=${CXX}
-    else
-        MPI_CC=mpicc
-        MPI_FC=mpifort
-        MPI_CXX=mpicxx
-        if [[ "${bb_full_target}" == *mpiabi* ]]; then
-            export MPIF_FCLIBS='-lmpif -lmpi_abi'
-        elif [[ "${bb_full_target}" == *mpitrampoline* ]]; then
-            # MPItrampoline only ships `mpifc`
-            MPI_FC=mpifc
-        fi
     fi
 
     # triangle, tetgen
@@ -308,7 +316,6 @@ build_petsc()
         --with-64-bit-indices=${USE_INT64} \
         --with-debugging=${DEBUG_FLAG} \
         --with-batch \
-        --with-mpi=${USE_MPI} \
         --with-fortran-bindings=${FORTRAN_BINDINGS} \
         ${MPI_LIBS} \
         ${MPI_INC} \
@@ -322,6 +329,7 @@ build_petsc()
         ${HYPRE_ARGS} \
         ${MUMPS_ARGS} \
         ${HDF5_ARGS} \
+        ${CUDA_ARGS} \
         ${TETGEN_ARGS} \
         ${TRIANGLE_ARGS} \
         --with-library-name-suffix=_${PETSC_CONFIG} \
@@ -437,68 +445,27 @@ build_petsc()
     rm -r ${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples
 }
 
-build_petsc double real    Int64 opt
-build_petsc double real    Int64 deb     # compile at least one debug version
-build_petsc double complex Int64 opt
-build_petsc single real    Int64 opt
-build_petsc single complex Int64 opt
-build_petsc double real    Int32 opt
-build_petsc double complex Int32 opt
-build_petsc single real    Int32 opt
-build_petsc single complex Int32 opt
 """
 
-augment_platform_block = """
-    using Base.BinaryPlatforms
-    $(MPI.augment)
-    augment_platform!(platform::Platform) = augment_mpi!(platform)
-"""
+petsc_script(preamble::AbstractString, variants::AbstractString) =
+    preamble * script_body * variants * "\n"
 
-# We attempt to build for all defined platforms
-platforms = supported_platforms()
-platforms = expand_gfortran_versions(platforms)
-
-# PETSc uses C++ internally, in particular `std::to_string`.
-# (This is only used for debugging, and it would be straightforward to
-# replace this by calls to `malloc`, `realloc`, and `snprintf`.)
-platforms = expand_cxxstring_abis(platforms)
-
-filter!(p -> nbits(p) != 32, platforms)
-
-platforms, platform_dependencies = MPI.augment_platforms(platforms)
-
-products = [
-    ExecutableProduct("ex4", :ex4),
-    ExecutableProduct("ex42", :ex42),
-    ExecutableProduct("ex19", :ex19),
-    ExecutableProduct("ex19_int32", :ex19_int32),
-    ExecutableProduct("ex19_int64_deb", :ex19_int64_deb),
-
-    # dont_dlopen: the Int64 and Int32 variants link external packages with identical symbol
-    # names but different integer ABIs, so consumers dlopen only the variant they use.
-    #
-    # Default build, equivalent to Float64_Real_Int64
-    LibraryProduct("libpetsc_double_real_Int64", :libpetsc, "\$libdir/petsc/double_real_Int64/lib"; dont_dlopen=true),
-    LibraryProduct("libpetsc_double_real_Int64", :libpetsc_Float64_Real_Int64, "\$libdir/petsc/double_real_Int64/lib"; dont_dlopen=true),
-    LibraryProduct("libpetsc_double_real_Int64_deb", :libpetsc_Float64_Real_Int64_deb, "\$libdir/petsc/double_real_Int64_deb/lib"; dont_dlopen=true),
-    LibraryProduct("libpetsc_double_complex_Int64", :libpetsc_Float64_Complex_Int64, "\$libdir/petsc/double_complex_Int64/lib"; dont_dlopen=true),
-    LibraryProduct("libpetsc_single_real_Int64", :libpetsc_Float32_Real_Int64, "\$libdir/petsc/single_real_Int64/lib"; dont_dlopen=true),
-    LibraryProduct("libpetsc_single_complex_Int64", :libpetsc_Float32_Complex_Int64, "\$libdir/petsc/single_complex_Int64/lib"; dont_dlopen=true),
-    LibraryProduct("libpetsc_double_real_Int32", :libpetsc_Float64_Real_Int32, "\$libdir/petsc/double_real_Int32/lib"; dont_dlopen=true),
-    LibraryProduct("libpetsc_double_complex_Int32", :libpetsc_Float64_Complex_Int32, "\$libdir/petsc/double_complex_Int32/lib"; dont_dlopen=true),
-    LibraryProduct("libpetsc_single_real_Int32", :libpetsc_Float32_Real_Int32, "\$libdir/petsc/single_real_Int32/lib"; dont_dlopen=true),
-    LibraryProduct("libpetsc_single_complex_Int32", :libpetsc_Float32_Complex_Int32, "\$libdir/petsc/single_complex_Int32/lib"; dont_dlopen=true),
-]
-
-dependencies = [
+function petsc_dependencies(platforms; superlu_cuda::Bool=false)
+    # SuperLU_DIST_CUDA_jll only exists for the MPItrampoline CUDA platforms
+    superlu_cuda_platforms = superlu_cuda ? filter(p -> p["mpi"] == "mpitrampoline", platforms) : Platform[]
+    return [
     HostBuildDependency(PackageSpec(; name="CMake_jll")),
 
     BuildDependency("LLVMCompilerRT_jll"; platforms=filter(Sys.isapple, platforms)),
 
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    # The stdlib bounds (CSL, OpenBLAS, libblastrampoline, SuiteSparse) are at or below what
+    # Julia 1.12, the julia_compat floor, ships, so they exclude no allowed Julia version.
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae");
+               compat="1.2.0"),
     # ILP64 BLAS: OpenBLAS_jll on Windows (linked directly), libblastrampoline_jll on
-    # everything else (Julia >= 1.7 wires its stdlib OpenBLAS into LBT's ILP64 slots).
+    # everything else (Julia wires its stdlib OpenBLAS into LBT's ILP64 slots).
     Dependency(PackageSpec(name="OpenBLAS_jll", uuid="4536629a-c528-5b80-bd46-f80d51c5b363");
+               compat="0.3.29",
                platforms=filter(Sys.iswindows, platforms)),
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93");
                compat="5.11.2",
@@ -512,7 +479,8 @@ dependencies = [
     Dependency(PackageSpec(name="HYPRE64_jll"); compat="3.1.0"),
     # Stock (32-bit HYPRE_BigInt) hypre for the Int32 PetscInt variants.
     Dependency(PackageSpec(name="HYPRE_jll"); compat="3.1.2"),
-    Dependency(PackageSpec(name="SuperLU_DIST_jll"); compat="9.2.3"),
+    Dependency(PackageSpec(name="SuperLU_DIST_jll"); compat="9.2.3", platforms=setdiff(platforms, superlu_cuda_platforms)),
+    Dependency(PackageSpec(name="SuperLU_DIST_CUDA_jll"); compat="9.3.1", platforms=superlu_cuda_platforms),
     Dependency(PackageSpec(name="HDF5_jll"); compat="2.2.2"),
     Dependency(PackageSpec(name="TetGen_jll"); compat="1.6.0"),
     Dependency(PackageSpec(name="Triangle_jll"); compat="1.6.3"),
@@ -525,10 +493,5 @@ dependencies = [
     # once would need julia_version-expanded platforms.)
     Dependency(PackageSpec(name="SuiteSparse_jll", uuid="bea87d4a-7f5b-5778-9afe-8cc45184846c"); compat="7.8.3"),
     Dependency("mpif_jll"; compat="1.0.0", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)), # MPI Fortran bindings
-]
-append!(dependencies, platform_dependencies)
-
-# Build the tarballs.
-# NOTE: llvm16 seems to have an issue with PETSc 3.18.x as on apple architectures it doesn't know how to create dynamic libraries
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, clang_use_lld=false, julia_compat="1.12", preferred_gcc_version=v"9")
+    ]
+end
