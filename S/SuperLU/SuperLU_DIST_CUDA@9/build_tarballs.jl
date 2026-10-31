@@ -9,7 +9,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 include("../common.jl")
 
 name = "SuperLU_DIST_CUDA"
-ygg_version = superlu_dist_ygg_version
+version = superlu_dist_version
 
 sources = superlu_dist_sources
 
@@ -73,7 +73,7 @@ for platform in platforms
     platform_dependencies = [dependencies; CUDA.required_dependencies(platform; static_sdk=true)]
     platform_script = "CUDA_ARCHS=\"$(join(CUDA.cuda_gpu_archs(platform), ";"))\"\n" * script
 
-    build_tarballs(ARGS, name, ygg_version, sources, platform_script, [platform],
+    build_tarballs(ARGS, name, version, sources, platform_script, [platform],
                    products, platform_dependencies; lazy_artifacts=true,
                    augment_platform_block, julia_compat="1.11",
                    dont_dlopen=true, preferred_gcc_version=v"8")

@@ -1,13 +1,11 @@
 # Shared by SuperLU_DIST@9 and SuperLU_DIST_CUDA@9. CI only rebuilds a recipe when a file in
 # its own directory changes, so a change here also needs a `# Build trigger` bump in both.
 
-const superlu_dist_version = v"9.3.1"
-# Rebuilt with a MicrosoftMPI_jll compat bound, which 9.3.1 doesn't have.
-const superlu_dist_ygg_version = v"9.3.2"
+const superlu_dist_version = v"9.3.2"
 
 const superlu_dist_sources = [
-    GitSource("https://github.com/xiaoyeli/superlu_dist.git", "9f7c8196d8f692cbfc59d81b61a74ceb4b37789b";
-              tag="v$(superlu_dist_version)"),
+    # Upstream master after v9.3.1, for bugfixes not yet in a release.
+    GitSource("https://github.com/xiaoyeli/superlu_dist.git", "2551349e109f521f1ed7cda70e3933fb53aff37a"),
     DirectorySource("../bundled"),
 ]
 
