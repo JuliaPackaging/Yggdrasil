@@ -1,0 +1,40 @@
+Free the persistent MPI requests of the ghost clusters before MPI_Finalize: finalize() is never called on them, so MPICH warns "freeing inactive persistent request" at exit.
+https://github.com/SeisSol/SeisSol (upstream PR to be opened)
+
+diff --git a/src/Solver/time_stepping/DirectGhostTimeCluster.cpp b/src/Solver/time_stepping/DirectGhostTimeCluster.cpp
+--- a/src/Solver/time_stepping/DirectGhostTimeCluster.cpp
++++ b/src/Solver/time_stepping/DirectGhostTimeCluster.cpp
+@@ -87,12 +87,20 @@
+     }
+   }
+ 
++  // The persistent requests have to be freed before MPI_Finalize; nobody else calls finalize() on
++  // the ghost clusters.
++  DirectGhostTimeCluster::~DirectGhostTimeCluster() { finalize(); }
++
+   void DirectGhostTimeCluster::finalize() {
+     if (persistent) {
+       for (unsigned int region = 0; region < meshStructure->numberOfRegions; ++region) {
+         if (meshStructure->neighboringClusters[region][1] == static_cast<int>(otherGlobalClusterId)) {
+-          MPI_Request_free(meshStructure->sendRequests + region);
+-          MPI_Request_free(meshStructure->receiveRequests + region);
++          if (meshStructure->sendRequests[region] != MPI_REQUEST_NULL) {
++            MPI_Request_free(meshStructure->sendRequests + region);
++          }
++          if (meshStructure->receiveRequests[region] != MPI_REQUEST_NULL) {
++            MPI_Request_free(meshStructure->receiveRequests + region);
++          }
+         }
+       }
+     }
+diff --git a/src/Solver/time_stepping/DirectGhostTimeCluster.h b/src/Solver/time_stepping/DirectGhostTimeCluster.h
+--- a/src/Solver/time_stepping/DirectGhostTimeCluster.h
++++ b/src/Solver/time_stepping/DirectGhostTimeCluster.h
+@@ -19,6 +19,7 @@
+                            int otherGlobalTimeClusterId,
+                            const MeshStructure* meshStructure,
+                            bool persistent);
++    ~DirectGhostTimeCluster() override;
+     void finalize() override;
+ private:
+   bool persistent;
