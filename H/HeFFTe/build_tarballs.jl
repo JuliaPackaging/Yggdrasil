@@ -75,9 +75,9 @@ augment_platform_block = """
 """
 
 # HeFFTe requires MPI, so all platforms must have MPI.
-# Restrict to HPC-relevant Linux architectures.
+# Linux and macOS, x86_64 and aarch64. CUDA stays on Linux x86_64.
 const hpc_archs = ("x86_64", "aarch64")
-platforms = filter(p -> Sys.islinux(p) && arch(p) in hpc_archs, supported_platforms())
+platforms = filter(p -> (Sys.islinux(p) || Sys.isapple(p)) && arch(p) in hpc_archs, supported_platforms())
 platforms = expand_cxxstring_abis(platforms)
 
 # Use default MPI compat ranges from platforms/mpi.jl
