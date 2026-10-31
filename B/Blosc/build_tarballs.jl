@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "Blosc"
-version = v"1.21.6"
-ygg_version = v"1.21.7"
+version = v"1.21.7"
+ygg_version = v"1.21.8"
 
 # Collection of sources required to build Blosc
 sources = [
-    GitSource("https://github.com/Blosc/c-blosc.git", "616f4b7343a8479f7e71dd3d7025bd92c9a6bbd0"),
+    GitSource("https://github.com/Blosc/c-blosc.git", "34c47e36ac3edcb1954d0eab9c38d7efd8816e7c"; tag="v$(version)"),
     DirectorySource("./bundled"),
 ]
 
