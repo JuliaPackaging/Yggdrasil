@@ -1,0 +1,94 @@
+Portability: thread pinning (pthread_setaffinity_np) and sched_getcpu are Linux-only, execinfo.h (backtrace) is not available on musl, FreeBSD and Windows, and the DLL has to be installed to bindir on Windows.
+https://github.com/TUM-I5/ASAGI (upstream PR to be opened)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -310,6 +310,7 @@
+     install( TARGETS asagi-shared
+         EXPORT asagi-shared-targets 
+         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
++        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} )
+     install(FILES include/asagi.h include/asagi.f90
+         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} )
+@@ -326,6 +327,7 @@
+     install( TARGETS asagi-static
+         EXPORT asagi-static-targets
+         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
++        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} )
+     install(FILES include/asagi.h include/asagi.f90
+         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} )
+diff --git a/mpi/commthread.h b/mpi/commthread.h
+--- a/mpi/commthread.h
++++ b/mpi/commthread.h
+@@ -115,7 +115,7 @@
+     if (pthread_create(&m_thread, 0L, &commThreadHandler, 0L) != 0)
+       return asagi::Grid::THREAD_ERROR;
+ 
+-#ifndef __APPLE__
++#ifdef __linux__
+     // Pin the thread
+     int numCPUs = std::thread::hardware_concurrency();
+     if (schedCPU < numCPUs && -schedCPU <= numCPUs) {
+@@ -132,7 +132,7 @@
+     } else
+       logInfo(m_rank) << "ASAGI: Invalid CPU id" << schedCPU
+                       << "The communication thread will not be pined.";
+-#endif // __APPLE__
++#endif // __linux__
+ 
+     return asagi::Grid::SUCCESS;
+   }
+diff --git a/numa/numa.cpp b/numa/numa.cpp
+--- a/numa/numa.cpp
++++ b/numa/numa.cpp
+@@ -41,14 +41,14 @@
+   }
+ 
+   // Get the NUMA domain
+-#ifndef __APPLE__
++#if !defined(__APPLE__) && !defined(_WIN32)
+   int cpu = sched_getcpu();
+   if (cpu < 0)
+     return asagi::Grid::NUMA_ERROR;
+ #endif
+-#if defined(ASAGI_NONUMA) || defined(__APPLE__)
++#if defined(ASAGI_NONUMA) || defined(__APPLE__) || defined(_WIN32)
+   int domain = 0;
+-#else  // ASAGI_NONUMA || __APPLE__
++#else  // ASAGI_NONUMA || __APPLE__ || _WIN32
+   int domain = numa_node_of_cpu(cpu);
+   if (domain < 0)
+     return asagi::Grid::NUMA_ERROR;
+diff --git a/submodules/utils/logger.h b/submodules/utils/logger.h
+--- a/submodules/utils/logger.h
++++ b/submodules/utils/logger.h
+@@ -42,7 +42,10 @@
+ #include <algorithm>
+ #include <cstdlib>
+ #include <ctime>
++#if defined(__GLIBC__) || defined(__APPLE__)
+ #include <execinfo.h>
++#define UTILS_HAVE_BACKTRACE
++#endif
+ #include <iostream>
+ #include <sstream>
+ #include <vector>
+@@ -169,6 +172,7 @@
+ 								// does not exit the program
+ 
+ 				// Backtrace
++#ifdef UTILS_HAVE_BACKTRACE
+ 				if (BACKTRACE_SIZE > 0) {
+ 					void *buffer[BACKTRACE_SIZE];
+ 					int nptrs = backtrace(buffer, BACKTRACE_SIZE);
+@@ -184,6 +188,7 @@
+ 					// Write backtrace to stderr
+ 					std::cerr << outputBuffer.str() << std::flush;
+ 				}
++#endif
+ 
+ 				LOG_ABORT;
+ 			}
