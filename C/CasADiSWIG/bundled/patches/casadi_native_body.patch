@@ -3,16 +3,16 @@ Context: https://github.com/JuliaPackaging/Yggdrasil/pull/14661
 
 --- a/swig/julia/CasADiNative.jl
 +++ b/swig/julia/CasADiNative.jl
-@@ -1,7 +1,6 @@
- # CasADiNative.jl -- handwritten ergonomics layer over the SWIG-generated module.
- # Prototype of what ships as the package's src/CasADi.jl; the generated
- # casadi.jl stays untouched underneath.
+@@ -4,7 +4,6 @@
+ # Also spliced as a module body (CasADiSWIG_jll's casadi_native_body.jl): top-level
+ # code before the splice must qualify Base calls (Base.get(Base.ENV, ...), Base.read)
+ # or run after it; Julia < 1.12 binds a bare name on first use. __init__ bodies are fine.
 -module CasADiNative
-
+ 
  include(joinpath(@__DIR__, "casadi.jl"))
- using .casadi
-@@ -582,4 +581,3 @@
-     @eval const $_n = casadi.$_n
- end
-
+ using .casadi: SX, MX, DM, Sparsity, Opti, Callback, CodeGenerator, StringSerializer, StringDeserializer
+@@ -781,4 +780,3 @@
+ # a script include runs no __init__; the package's calls _layer_init
+ ccall(:jl_generating_output, Base.Cint, ()) == 0 && _layer_init()
+ 
 -end # module CasADiNative
