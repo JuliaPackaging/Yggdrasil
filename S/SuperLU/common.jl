@@ -2,6 +2,8 @@
 # its own directory changes, so a change here also needs a `# Build trigger` bump in both.
 
 const superlu_dist_version = v"9.3.1"
+# Rebuilt with a MicrosoftMPI_jll compat bound, which 9.3.1 doesn't have.
+const superlu_dist_ygg_version = v"9.3.2"
 
 const superlu_dist_sources = [
     GitSource("https://github.com/xiaoyeli/superlu_dist.git", "9f7c8196d8f692cbfc59d81b61a74ceb4b37789b";

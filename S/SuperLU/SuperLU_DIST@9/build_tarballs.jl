@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 include("../common.jl")
 
 name = "SuperLU_DIST"
-version = superlu_dist_version
+ygg_version = superlu_dist_ygg_version
 
 sources = superlu_dist_sources
 
@@ -47,5 +47,5 @@ append!(dependencies, platform_dependencies)
 ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # Build the tarballs
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                augment_platform_block, julia_compat="1.11", preferred_gcc_version=v"8")

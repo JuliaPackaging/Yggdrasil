@@ -9,7 +9,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 include("../common.jl")
 
 name = "SuperLU_DIST_CUDA"
-version = superlu_dist_version
+ygg_version = superlu_dist_ygg_version
 
 sources = superlu_dist_sources
 
@@ -34,13 +34,15 @@ EXTRA_CMAKE_ARGS+=(
 # aarch64 would need the host x86_64 nvcc swapped in, as A/AMGX/AMGX_MPI does.
 platforms = CUDA.supported_platforms(; min_version=v"12")
 filter!(p -> arch(p) == "x86_64", platforms)
+# An artifact also matches newer toolkits of its major. 12.0 relies on PTX for sm_100 and newer.
+filter!(p -> Base.thisminor(VersionNumber(p["cuda"])) in (v"12.0", v"13.0"), platforms)
 
 platforms, mpi_dependencies = MPI.augment_platforms(platforms)
 
-# Only MPIABI, whose library can be replaced at runtime. Every ABI would multiply
-# the CUDA matrix by four. The default GPU 3D factorization passes device pointers
-# to MPI_Bcast, so multi-rank runs need a CUDA-aware MPI at runtime, or GPU3DVERSION=0.
-filter!(p -> p["mpi"] == "mpiabi", platforms)
+# MPICH is the default without an MPI preference, and MPIABI's library can be replaced at
+# runtime. The default GPU 3D factorization passes device pointers to MPI_Bcast, so multi-rank
+# runs need a CUDA-aware MPI at runtime, or GPU3DVERSION=0.
+filter!(p -> p["mpi"] in ("mpiabi", "mpich"), platforms)
 
 augment_platform_block = """
     using Base.BinaryPlatforms
@@ -71,7 +73,7 @@ for platform in platforms
     platform_dependencies = [dependencies; CUDA.required_dependencies(platform; static_sdk=true)]
     platform_script = "CUDA_ARCHS=\"$(join(CUDA.cuda_gpu_archs(platform), ";"))\"\n" * script
 
-    build_tarballs(ARGS, name, version, sources, platform_script, [platform],
+    build_tarballs(ARGS, name, ygg_version, sources, platform_script, [platform],
                    products, platform_dependencies; lazy_artifacts=true,
                    augment_platform_block, julia_compat="1.11",
                    dont_dlopen=true, preferred_gcc_version=v"8")
