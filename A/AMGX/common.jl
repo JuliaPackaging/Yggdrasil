@@ -5,30 +5,30 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "C/CUDA/common.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
+# Shared by AMGX and AMGX_MPI. CI only rebuilds a recipe when a file in its own directory
+# changes, so a change here or in bundled/ also needs a `# Build trigger` bump in both.
+
 # TODO: Ship nvToolsExt.h with NVTX_jll and use here instead of patching it out.
 #       AMGX includes <nvtx3/nvToolsExt.h>, but CUDA_SDK_jll does not ship the
 #       `cuda_nvtx` redistributable component, so NVTX ranges stay disabled.
 
 version = v"2.5.0"
+# Compat changed (CompilerSupportLibraries_jll, MPI bounds), so a new build number won't do.
+ygg_version = v"2.5.1"
 
-# Collection of sources required to complete build
 base_sources = [
     GitSource("https://github.com/NVIDIA/AMGX.git",
               "cc1cebdbb32b14d33762d4ddabcb2e23c1669f47"; tag="v$(version)"),
     DirectorySource("../bundled")
 ]
 
-# Bash recipe for building across all platforms
 script = raw"""
-# nvcc writes to /tmp, which is a small tmpfs in our sandbox.
-# make it use the workspace instead
+# nvcc writes to /tmp, which is a small tmpfs in the sandbox.
 export TMPDIR=${WORKSPACE}/tmpdir
-mkdir ${TMPDIR}
+mkdir -v ${TMPDIR}
 
-# nvcc is not a cross compiler, but it does run on the build host and can be
-# pointed at a cross C++ compiler. The CUDA SDK we get is the target's, so for
-# aarch64 we swap in the host x86_64 nvcc (and nvvm, split into its own redist
-# from CUDA 13) and tell it to use the cross compiler for host code.
+# BinaryBuilder's x86_64 host needs x86_64 CUDA tools, paired with the target C++ compiler.
+# nvvm is inside the nvcc archive before CUDA 13, and in its own archive after.
 if [[ "${target}" == aarch64-linux-* ]]; then
     export LD_LIBRARY_PATH="/usr/lib/csl-musl-x86_64:/usr/lib/csl-glibc-x86_64:${LD_LIBRARY_PATH}"
     export NVCC_PREPEND_FLAGS="-ccbin=${CXX}"
@@ -39,13 +39,9 @@ fi
 
 cd ${WORKSPACE}/srcdir/AMGX*
 
-# Apply all our patches
-if [ -d $WORKSPACE/srcdir/patches ]; then
-for f in $WORKSPACE/srcdir/patches/*.patch; do
-    echo "Applying patch ${f}"
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
-fi
 
 install_license LICENSES/BSD-3-Clause.txt
 
@@ -58,9 +54,8 @@ if [[ ${bb_full_target} == *mpi* ]]; then
     mpi_args=(-DMPI_C_COMPILER=${bindir}/mpicc -DMPI_CXX_COMPILER=${bindir}/mpicxx)
 fi
 
-mkdir build
-cd build
-cmake -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
+cmake -B build \
+      -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_CUDA_COMPILER=$prefix/cuda/bin/nvcc \
@@ -68,7 +63,7 @@ cmake -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
       -DCMAKE_CUDA_ARCHITECTURES="${CUDA_ARCHS}" \
       "${mpi_args[@]}" \
       -Wno-dev \
-      .. > cmake.log 2>&1 || { cat cmake.log; exit 1; }
+      > cmake.log 2>&1 || { cat cmake.log; exit 1; }
 cat cmake.log
 
 # AMGX prints this once `find_package(MPI)` has succeeded and AMGX_WITH_MPI is
@@ -78,29 +73,26 @@ if [[ ${bb_full_target} == *mpi* ]]; then
       { echo "ERROR: MPI was not detected; refusing to build AMGX_MPI without MPI"; exit 1; }
 fi
 
-make -j${nproc} install
+cmake --build build --parallel ${nproc}
+cmake --install build
 
-# clean-up
-## unneeded static libraries
-rm ${libdir}/*.a
+rm -v ${libdir}/*.a
 
-## the host x86_64 nvcc we swapped in must not end up in an aarch64 artifact
+# Modified SDK files would otherwise be packaged.
 if [[ "${target}" == aarch64-linux-* ]]; then
-    rm -rf ${prefix}/cuda
+    rm -rfv ${prefix}/cuda
 fi
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line.
-#
 # AMGX 2.5 requires CUDA 12.0 or later (`find_package(CUDAToolkit 12.0 REQUIRED)`).
 # An artifact also matches newer toolkits of its major, so build each major's oldest.
+# No Windows: AMGX has no CPU build, nvcc can't use MinGW as its host compiler, and upstream
+# publishes no Windows binaries to repackage.
 platforms = [
     CUDA.supported_platforms(; min_version=v"12", max_version=v"12.0.999");
     CUDA.supported_platforms(; min_version=v"13", max_version=v"13.0.999")
 ]
 
-# The products that we will ensure are always built.
 # libamgxsh links libcuda directly, so the JLL must not load it without a driver.
 products = [
     LibraryProduct("libamgxsh", :libamgxsh; dont_dlopen=true),
@@ -109,14 +101,17 @@ products = [
 # AMGX 2.5 dropped support for everything below Volta, and only knows about the
 # architectures listed in `CUDA_ALLOW_ARCH` in its CMakeLists.txt. Without an
 # explicit list it would only build for `90;100;120`, which excludes Ampere.
+# The CUDA 12.0 artifact relies on PTX for sm_100 and newer.
 const amgx_archs = ["70", "75", "80", "86", "89", "90", "100", "120"]
 
-# Build for all supported CUDA toolkits
-function build_amgx(ARGS, name, platforms, extra_dependencies, augment_platform_block)
+function build_amgx(name, platforms, extra_dependencies, augment_platform_block)
     for platform in platforms
         should_build_platform(triplet(platform)) || continue
 
-        dependencies = AbstractDependency[extra_dependencies...]
+        dependencies = AbstractDependency[
+            Dependency("CompilerSupportLibraries_jll"; compat="1.0.5"),
+            extra_dependencies...,
+        ]
         append!(dependencies, CUDA.required_dependencies(platform; static_sdk=true))
 
         # aarch64 additionally needs the host x86_64 nvcc to actually run the compile
@@ -138,9 +133,9 @@ function build_amgx(ARGS, name, platforms, extra_dependencies, augment_platform_
         # GCC 11 is the first version that defaults to -std=gnu++17. CUDA 13 ships
         # CCCL 3 (Thrust, CUB, libcu++), which refuses to compile as anything older,
         # and AMGX does not set the standard itself.
-        build_tarballs(ARGS, name, version, sources, platform_script, [platform],
+        build_tarballs(ARGS, name, ygg_version, sources, platform_script, [platform],
                        products, dependencies; lazy_artifacts=true,
                        julia_compat="1.10", augment_platform_block,
-                       dont_dlopen=true, preferred_gcc_version=v"12")
+                       dont_dlopen=true, preferred_gcc_version=v"11")
     end
 end

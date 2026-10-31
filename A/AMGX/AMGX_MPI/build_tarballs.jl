@@ -4,8 +4,8 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 # This is the distributed build of AMGX. It is a separate package rather than a
 # variant of AMGX_jll because MPI support changes the ABI: it defines
 # AMGX_WITH_MPI, links MPI::MPI_CXX, and exposes the distributed entry points.
-# Users who do not need MPI should keep using AMGX_jll, which stays a single
-# build per CUDA version instead of one per MPI ABI.
+# Users who do not need MPI should keep using AMGX_jll, which doesn't need one
+# build per MPI ABI.
 
 platforms, mpi_dependencies = MPI.augment_platforms(platforms)
 
@@ -29,4 +29,4 @@ augment_platform_block = """
 # shared libraries. (MPItrampoline will skip its automatic initialization.)
 ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
-build_amgx(ARGS, "AMGX_MPI", platforms, mpi_dependencies, augment_platform_block)
+build_amgx("AMGX_MPI", platforms, mpi_dependencies, augment_platform_block)
