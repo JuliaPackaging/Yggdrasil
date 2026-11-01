@@ -189,10 +189,16 @@ cd build
 # GMSH_LIB/GMSH_INC: GetDP CMakeLists.txt:383-392; the archive is linked before
 # PETSc and its external/system libraries. No gmsh_jll is used.
 # BLAS_LAPACK_LIBRARIES: GetDP CMakeLists.txt:247-251.
+getdp_linker_flags=""
+if [[ "${target}" == aarch64-apple-* ]]; then
+    # PETSc's complex division needs __divdc3 from LLVM compiler-rt.
+    getdp_linker_flags="-L${libdir}/darwin -lclang_rt.osx"
+fi
 cmake .. \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
     -DCMAKE_INSTALL_PREFIX="${prefix}" \
     -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_EXE_LINKER_FLAGS="${getdp_linker_flags}" \
     -DDEFAULT=0 \
     -DENABLE_KERNEL=1 \
     -DENABLE_PETSC=1 \
@@ -235,6 +241,7 @@ dependencies = [
     Dependency("METIS_jll"),
     Dependency("SCOTCH_jll"),
     Dependency("CompilerSupportLibraries_jll"),
+    BuildDependency("LLVMCompilerRT_jll"; platforms=filter(Sys.isapple, platforms)),
 ]
 
 # SCOTCH uses GCC 9.1.0 (S_SCOTCH_build_tarballs.jl:145).
