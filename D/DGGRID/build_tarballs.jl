@@ -32,7 +32,7 @@ install -Dvm 644 src/lib/shapelib/LICENSE "${prefix}/share/licenses/${SRC_NAME}/
 
 platforms = supported_platforms()
 # GDAL_jll can resolve to its OpenMPI build here, and OpenMPI_jll has none
-filter!(p -> !(Sys.islinux(p) && arch(p) in ("i686", "armv7l")), platforms)
+filter!(p -> !(Sys.islinux(p) && (arch(p) in ("i686", "armv7l") || (arch(p) == "armv6l" && libc(p) == "musl"))), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
