@@ -1,0 +1,11 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -854,7 +854,7 @@
+ 
+ # Windows specific linker options
+ if(WIN32 AND NOT MSVC OR CYGWIN)
+-  set(FLAGS "-Wl,--image-base -Wl,0x10000000 -static")
++  set(FLAGS "-Wl,--image-base -Wl,0x10000000")
+   set_target_properties(getdp PROPERTIES LINK_FLAGS "${FLAGS} -municode")
+   if(ENABLE_BUILD_SHARED OR ENABLE_BUILD_DYNAMIC)
+     set_target_properties(shared PROPERTIES LINK_FLAGS "${FLAGS}")
