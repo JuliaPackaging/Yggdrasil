@@ -4,8 +4,7 @@
 const superlu_dist_version = v"9.3.2"
 
 const superlu_dist_sources = [
-    # Upstream master after v9.3.1, for bugfixes not yet in a release.
-    GitSource("https://github.com/xiaoyeli/superlu_dist.git", "2551349e109f521f1ed7cda70e3933fb53aff37a"),
+    GitSource("https://github.com/xiaoyeli/superlu_dist.git", "6a70d6f6abcf1ad945748856c35d5612f20065ba"; tag="v$(superlu_dist_version)"),
     DirectorySource("../bundled"),
 ]
 
