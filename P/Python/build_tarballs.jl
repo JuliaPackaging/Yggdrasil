@@ -2,6 +2,9 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "Python"
 version = v"3.12.15"
 
@@ -110,6 +113,13 @@ make install
 
 install_license ${WORKSPACE}/srcdir/Python-*/LICENSE
 """
+
+# CPython guards newer APIs with `__builtin_available` (up to macOS 10.15, for
+# `posix_spawn` setsid). Below that target clang emits calls to the compiler-rt
+# helper `__isPlatformVersionAtLeast`, which is left unresolved and makes the
+# interpreter segfault at startup.
+# https://github.com/JuliaPackaging/Yggdrasil/issues/14491
+sources, script = require_macos_sdk("10.15", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line

@@ -38,6 +38,7 @@ sed ${prefix}/lib/gmsh.jl.bak \
   -e 's/^\(import Libdl\)/#\1/g' \
   -e 's/^\(const lib.*\)/#\1/g' \
   -e 's/^\(module gmsh\)$/\1\nusing gmsh_jll: libgmsh\nconst lib = libgmsh/g' \
+  -e 's/ierr\[\] != 0 && error("Could not get last error")/ierr[] != 0 \&\& Base.error("Could not get last error")/g' \
   > ${prefix}/lib/gmsh.jl
 install_license ../LICENSE.txt
 """

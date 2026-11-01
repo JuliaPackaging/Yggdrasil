@@ -40,6 +40,12 @@ else
     return
 end
 
+# dependents and our own executables inherit LIBPATH, and child processes would load the
+# compat driver from it by SONAME. so only expose it once we've decided to use it.
+compat_libdir = dirname(libcuda_compat)
+filter!(!=(compat_libdir), LIBPATH_list)
+LIBPATH[] = join(filter(!=(compat_libdir), split(LIBPATH[], JLLWrappers.pathsep)), JLLWrappers.pathsep)
+
 # check the user preference
 if compat_preference !== missing
     if !compat_preference
@@ -125,6 +131,8 @@ end
 # finally, load the forwards-compatible driver
 @debug "Using forwards-compatible CUDA driver."
 global libcuda = libcuda_compat
+pushfirst!(LIBPATH_list, compat_libdir)
+LIBPATH[] = string(compat_libdir, JLLWrappers.pathsep, LIBPATH[])
 
 # load the driver and its dependencies; this should now always succeed
 # as we've already verified that we can load it in a separate process.
