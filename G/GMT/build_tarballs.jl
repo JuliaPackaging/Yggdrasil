@@ -35,7 +35,7 @@ install_license LICENSE.TXT
 """
 
 platforms = supported_platforms()
-# OpenBLAS32_jll and LAPACK32_jll have no riscv64 build that supports Julia 1.10
+# LAPACK32_jll has no riscv64 build that supports Julia 1.10
 filter!(p -> arch(p) != "riscv64", platforms)
 # the musl sysroot has no qsort_r
 filter!(p -> libc(p) != "musl", platforms)
