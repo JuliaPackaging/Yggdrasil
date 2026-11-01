@@ -3,22 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "CRlibm"
-version = v"1.0.2"
+version = v"1.0.3"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/JuliaIntervals/CRlibm.jl/raw/368ccdebd57e7a7cc96d47ab6b08e7a597495ff2/deps/src/crlibm-1.0beta4.tar.gz", "6836b4299f9421c99da2bdcd5e04a8d35577db4eb61161a401aa93751a96375d"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/JuliaIntervals/crlibm.git", "074c45a6103fa79868c8981f28f767f339531184"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/crlibm*/
 
-for p in ../patches/*.patch; do
-    atomic_patch -p1 "${p}"
-done
-
+autoreconf -fi
 update_configure_scripts 
 export CFLAGS="-fPIC -ffp-contract=off"
 # The double-extended `log` sets the x87 control word to 53-bit precision and
