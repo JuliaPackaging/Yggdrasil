@@ -3,18 +3,21 @@
 using BinaryBuilder, Pkg
 
 name = "libva"
-version = v"2.23.0"
+version = v"2.24.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/intel/libva.git", "e85b1569b738fd8866cb9fa2452319f7148d663f"),
+    GitSource("https://github.com/intel/libva.git", "710eb465c6277ee2cac3e6948767b01eebe7e77a"; tag="$(version)"),
 ]
 
 # Bash recipe for building across all platforms
-# Meson options from https://github.com/intel/libva/blob/2.23.0/meson_options.txt
+# Meson options from https://github.com/intel/libva/blob/2.24.1/meson_options.txt
 # with_x11, with_wayland: combo (yes/no/auto), disable_drm: boolean
 script = raw"""
 cd $WORKSPACE/srcdir/libva
+
+# On FreeBSD, libdrm_jll ships its pkg-config files in libdata/pkgconfig
+export PKG_CONFIG_PATH="${PKG_CONFIG_PATH:+${PKG_CONFIG_PATH}:}${prefix}/libdata/pkgconfig"
 
 meson setup builddir \
     --cross-file=${MESON_TARGET_TOOLCHAIN} \

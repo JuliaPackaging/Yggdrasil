@@ -1,0 +1,11 @@
+--- a/gtk/roaring/roaring.h	2026-10-09 20:29:02.482153935 -0400
++++ b/gtk/roaring/roaring.h	2026-10-09 20:29:02.484627052 -0400
+@@ -465,7 +465,7 @@
+ #if defined(__linux__)
+ #define croaring_htobe64(x) bswap_64(x)
+ #elif defined(__FreeBSD__)
+-#define croaring_htobe64(x) bswap64(x)
++#define croaring_htobe64(x) bswap_64(x)
+ #else
+ #warning "Unknown platform, report as an error"
+ #endif

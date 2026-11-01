@@ -5,12 +5,12 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "Glib"
 # Odd minor versions are development versions; skip them
-version = v"2.88.3"
+version = v"2.90.1"
 
 # Collection of sources required to build Glib
 sources = [
     ArchiveSource("https://ftp.gnome.org/pub/gnome/sources/glib/$(version.major).$(version.minor)/glib-$(version).tar.xz",
-                  "ab24d24e698dfa1e408b7bcdb508f4aafc906185a8b8ce72fdf79bbbdc9b383b"),
+                  "93c941aa17d5eb1d53fe838365f29a8b4e539c222a256d974ec8f30fc413e396"),
     DirectorySource("bundled"),
 ]
 
@@ -117,4 +117,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"6")
+               clang_use_lld=false, julia_compat="1.10", preferred_gcc_version=v"6")

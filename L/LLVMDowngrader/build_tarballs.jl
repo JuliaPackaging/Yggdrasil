@@ -6,7 +6,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "LLVMDowngrader"
-version = v"0.11.0"
+version = v"0.12.2"
 
 # Build `libllvm_downgrade`, a shared library with a small C API (see
 # include/llvm-downgrade.h upstream) over the legacy bitcode writers,
@@ -17,14 +17,14 @@ version = v"0.11.0"
 #
 # Because LLVM's bitcode reader is backwards compatible (any bitcode since 3.0,
 # auto-upgraded on load), this single tool ingests bitcode from any LLVM up to
-# its own version and emits the legacy 5.0/7.0/14.0/15.0/18.0 formats. So it is ONE
+# its own version and emits the legacy 5.0/7.0/14.0/18.0/20.0 formats. So it is ONE
 # universal build -- not one per consumer LLVM version, and not augmented by
 # llvm_version. Built against LLVM 23; track the newest LLVM as new ones land.
 llvm_version = v"23.1.1+0"
 
 sources = [
     GitSource("https://github.com/JuliaLLVM/llvm-downgrade",
-              "4244e2a1ec56dd9c714755453ba840a48a0b5ee5"),
+              "8d1b98f89e9a6f7abdb1761d40b1ba7113921b55"),
 ]
 
 # Bash recipe for building across all platforms
@@ -113,5 +113,4 @@ dependencies = [
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products,
-               dependencies; preferred_gcc_version=v"10", julia_compat="1.6",
-               lazy_artifacts=true)
+               dependencies; preferred_gcc_version=v"10", julia_compat="1.6")

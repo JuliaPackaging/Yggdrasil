@@ -14,14 +14,14 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 name = "Enzyme"
 repo = "https://github.com/EnzymeAD/Enzyme.git"
 
-auto_version = "refs/tags/v0.0.300"
+auto_version = "refs/tags/v0.0.303"
 version = VersionNumber(split(auto_version, "/")[end])
 
-llvm_versions = [v"15.0.7", v"16.0.6", v"18.1.7", v"20.1.8"]
+llvm_versions = [v"15.0.7", v"16.0.6", v"18.1.7", v"20.1.8", v"23.1.4"]
 
 # Collection of sources required to build attr
 sources = [
-    GitSource(repo, "abe42215455cd2c28975b74a9f6b06c1c29aeb01"),
+    GitSource(repo, "06da3b77d8ceaa9e260c7147a2e6bedf27b6d377"),
 ]
 
 # These are the platforms we will build for by default, unless further
@@ -151,9 +151,6 @@ augment_platform_block = """
 # determine exactly which tarballs we should build
 builds = []
 for llvm_version in llvm_versions, llvm_assertions in (false, true)
-    if llvm_version == v"11.0.1" && llvm_assertions
-        continue # Does not have Clang available
-    end
     # Dependencies that must be installed before this package can be built
     llvm_name = llvm_assertions ? "LLVM_full_assert_jll" : "LLVM_full_jll"
     dependencies = [

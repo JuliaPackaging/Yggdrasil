@@ -1,0 +1,232 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Sun, 25 Oct 2026 09:11:08 +0100
+Subject: [PATCH 44/46] tests: don't run 64-bit SPIR-V inputs on 32-bit devices
+
+A 32-bit device rightly rejects Physical64 modules, so the regression tests
+with 64-bit SPIR-V inputs now skip there, using the poclu helper for the
+device's address bits, and the compiler unit tests with .spirv inputs are
+only registered on 64-bit hosts. spirv/printf, the test that led to SPIR-V
+being disabled on 32-bit hosts (#1880), and example1 get 32-bit SPIR-V
+twins built from the same sources.
+
+(cherry picked from commit 35779530d0f65fb04055581f76fe0be697938cb6)
+---
+ tests/compiler_unit/CMakeLists.txt                     |  3 ++-
+ tests/regression/test_barrier_divergent_skip.c         |  4 ++++
+ tests/regression/test_issue_1711.c                     |  5 +++++
+ tests/regression/test_issue_1747.c                     |  5 +++++
+ tests/regression/test_issue_1794.c                     |  5 +++++
+ tests/regression/test_issue_1958.c                     |  4 ++++
+ tests/regression/test_peeled_wi_global_id.c            |  4 ++++
+ ..._rematerialized_alloca_load_with_outside_pr_users.c |  5 +++++
+ tests/regression/test_sanitize_divrem.c                |  4 ++++
+ tests/regression/test_spirv_intel_subgroups.c          |  4 ++++
+ tests/regression/test_unreachable_kernel.c             |  4 ++++
+ tests/spirv/printf-kernels.cl                          |  3 +++
+ tests/spirv/printf.cc                                  | 10 +++++++++-
+ 13 files changed, 58 insertions(+), 2 deletions(-)
+
+diff --git a/tests/compiler_unit/CMakeLists.txt b/tests/compiler_unit/CMakeLists.txt
+index 418067ea9..5f6d18ed3 100644
+--- a/tests/compiler_unit/CMakeLists.txt
++++ b/tests/compiler_unit/CMakeLists.txt
+@@ -42,7 +42,8 @@ function(add_llvm_check)
+     set(WORKITEM_HANDLER "loopvec")
+   endif()
+   if (POCL_UTEST_SPIRV_NAME)
+-    if (ENABLE_SPIRV)
++    # the .spirv inputs are 64-bit
++    if (ENABLE_SPIRV AND HOST_DEVICE_ADDRESS_BITS EQUAL 64)
+       add_test_pocl(NAME "kernel_compiler_unit_tests/${POCL_UTEST_SPIRV_NAME}"
+         COMMAND "poclcc" -s -o ${POCL_UTEST_SPIRV_NAME}.out
+         "${CMAKE_CURRENT_SOURCE_DIR}/${POCL_UTEST_SPIRV_NAME}.spirv"
+diff --git a/tests/regression/test_barrier_divergent_skip.c b/tests/regression/test_barrier_divergent_skip.c
+index 69b1b29fd..43f80b006 100644
+--- a/tests/regression/test_barrier_divergent_skip.c
++++ b/tests/regression/test_barrier_divergent_skip.c
+@@ -80,6 +80,10 @@ int main(int argc, char **argv) {
+     printf("SKIP: The test requires support for SPIR-V 1.0\n");
+     return 77;
+   }
++  if (poclu_device_address_bits(device) != 64) {
++    printf("SKIP: The test's SPIR-V module is 64-bit\n");
++    return 77;
++  }
+ 
+   cl_context context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
+   CHECK_ERROR(err);
+diff --git a/tests/regression/test_issue_1711.c b/tests/regression/test_issue_1711.c
+index f73cc9985..4932afffc 100644
+--- a/tests/regression/test_issue_1711.c
++++ b/tests/regression/test_issue_1711.c
+@@ -97,6 +97,11 @@ int main(int argc, char** argv) {
+         printf ("SKIP: The test requires support for SPIR-V 1.0\n");
+         exit (77);
+       }
++    if (poclu_device_address_bits (device) != 64)
++      {
++        printf ("SKIP: The test's SPIR-V module is 64-bit\n");
++        exit (77);
++      }
+ 
+     // Rest of the code remains the same...
+     cl_context context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
+diff --git a/tests/regression/test_issue_1747.c b/tests/regression/test_issue_1747.c
+index e981a5751..167e6082b 100644
+--- a/tests/regression/test_issue_1747.c
++++ b/tests/regression/test_issue_1747.c
+@@ -140,6 +140,11 @@ main (int argc, char **argv)
+       printf ("SKIP: The test requires support for SPIR-V 1.0\n");
+       exit (77);
+     }
++  if (poclu_device_address_bits (device) != 64)
++    {
++      printf ("SKIP: The test's SPIR-V module is 64-bit\n");
++      exit (77);
++    }
+ 
+   // Rest of the code remains the same...
+   cl_context context = clCreateContext (NULL, 1, &device, NULL, NULL, &err);
+diff --git a/tests/regression/test_issue_1794.c b/tests/regression/test_issue_1794.c
+index c7e62c30e..d5daf738a 100644
+--- a/tests/regression/test_issue_1794.c
++++ b/tests/regression/test_issue_1794.c
+@@ -141,6 +141,11 @@ main (int argc, char **argv)
+       printf ("SKIP: The test requires support for SPIR-V 1.1\n");
+       exit (77);
+     }
++  if (poclu_device_address_bits (device) != 64)
++    {
++      printf ("SKIP: The test's SPIR-V module is 64-bit\n");
++      exit (77);
++    }
+ 
+   // Rest of the code remains the same...
+   cl_context context = clCreateContext (NULL, 1, &device, NULL, NULL, &err);
+diff --git a/tests/regression/test_issue_1958.c b/tests/regression/test_issue_1958.c
+index 06646a271..665efaa2e 100644
+--- a/tests/regression/test_issue_1958.c
++++ b/tests/regression/test_issue_1958.c
+@@ -86,6 +86,10 @@ int main(int argc, char **argv) {
+     printf("SKIP: The test requires support for SPIR-V 1.0\n");
+     return 77;
+   }
++  if (poclu_device_address_bits(device) != 64) {
++    printf("SKIP: The test's SPIR-V module is 64-bit\n");
++    return 77;
++  }
+ 
+   cl_context context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
+   CHECK_ERROR(err);
+diff --git a/tests/regression/test_peeled_wi_global_id.c b/tests/regression/test_peeled_wi_global_id.c
+index 733972b44..829b1ca29 100644
+--- a/tests/regression/test_peeled_wi_global_id.c
++++ b/tests/regression/test_peeled_wi_global_id.c
+@@ -74,6 +74,10 @@ int main(int argc, char **argv) {
+     printf("SKIP: The test requires support for SPIR-V 1.0\n");
+     return 77;
+   }
++  if (poclu_device_address_bits(device) != 64) {
++    printf("SKIP: The test's SPIR-V module is 64-bit\n");
++    return 77;
++  }
+ 
+   // The reduced kernel's barrier lowers to a sub_group_barrier, so the program
+   // only links on devices whose builtin library has the subgroup builtins.
+diff --git a/tests/regression/test_rematerialized_alloca_load_with_outside_pr_users.c b/tests/regression/test_rematerialized_alloca_load_with_outside_pr_users.c
+index d7e65afd7..2edd6738b 100644
+--- a/tests/regression/test_rematerialized_alloca_load_with_outside_pr_users.c
++++ b/tests/regression/test_rematerialized_alloca_load_with_outside_pr_users.c
+@@ -128,6 +128,11 @@ main (int argc, char **argv)
+       printf ("SKIP: The test requires support for SPIR-V 1.0\n");
+       exit (77);
+     }
++  if (poclu_device_address_bits (device) != 64)
++    {
++      printf ("SKIP: The test's SPIR-V module is 64-bit\n");
++      exit (77);
++    }
+ 
+   // Get device name
+   char device_name[128];
+diff --git a/tests/regression/test_sanitize_divrem.c b/tests/regression/test_sanitize_divrem.c
+index ecc87c49a..bd2f02fc9 100644
+--- a/tests/regression/test_sanitize_divrem.c
++++ b/tests/regression/test_sanitize_divrem.c
+@@ -70,6 +70,10 @@ int main(int argc, char **argv) {
+     printf("SKIP: The test requires support for SPIR-V 1.0\n");
+     return 77;
+   }
++  if (poclu_device_address_bits(device) != 64) {
++    printf("SKIP: The test's SPIR-V module is 64-bit\n");
++    return 77;
++  }
+ 
+   cl_context context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
+   CHECK_ERROR(err);
+diff --git a/tests/regression/test_spirv_intel_subgroups.c b/tests/regression/test_spirv_intel_subgroups.c
+index 339a7f9c2..a85306578 100644
+--- a/tests/regression/test_spirv_intel_subgroups.c
++++ b/tests/regression/test_spirv_intel_subgroups.c
+@@ -81,6 +81,10 @@ int main(int argc, char **argv) {
+     printf("SKIP: The test requires support for SPIR-V 1.1\n");
+     return 77;
+   }
++  if (poclu_device_address_bits(device) != 64) {
++    printf("SKIP: The test's SPIR-V module is 64-bit\n");
++    return 77;
++  }
+   if (!poclu_supports_extension(device, "cl_intel_subgroups") ||
+       !poclu_supports_extension(device, "cl_intel_required_subgroup_size")) {
+     printf("SKIP: The test requires cl_intel_subgroups and "
+diff --git a/tests/regression/test_unreachable_kernel.c b/tests/regression/test_unreachable_kernel.c
+index dd8efffe4..a9c73cefe 100644
+--- a/tests/regression/test_unreachable_kernel.c
++++ b/tests/regression/test_unreachable_kernel.c
+@@ -102,6 +102,10 @@ int main(int argc, char **argv) {
+     printf("SKIP: The test requires support for SPIR-V 1.0\n");
+     return 77;
+   }
++  if (poclu_device_address_bits(device) != 64) {
++    printf("SKIP: The test's SPIR-V module is 64-bit\n");
++    return 77;
++  }
+ 
+   cl_context context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
+   CHECK_ERROR(err);
+diff --git a/tests/spirv/printf-kernels.cl b/tests/spirv/printf-kernels.cl
+index 2fe094576..d6f6f2ce8 100644
+--- a/tests/spirv/printf-kernels.cl
++++ b/tests/spirv/printf-kernels.cl
+@@ -30,6 +30,9 @@
+ // llvm-spirv printf-kernels.bc
+ //
+ // spirv-val printf-kernels.spv
++//
++// printf-kernels32.spv is built the same way, with -triple=spir-unknown-unknown
++// and llvm-spirv --spirv-max-version=1.0 -o printf-kernels32.spv.
+ 
+ global char hello_g[] = "HELLO GLOBAL\n";
+ global char strings_g[] = "STRiNGS\n";
+diff --git a/tests/spirv/printf.cc b/tests/spirv/printf.cc
+index 538e32995..ed159b62f 100644
+--- a/tests/spirv/printf.cc
++++ b/tests/spirv/printf.cc
+@@ -86,7 +86,15 @@ int main(int, char **) {
+   if (Err != CL_SUCCESS)
+     return EXIT_FAILURE;
+ 
+-  std::ifstream File(SRCDIR "/printf-kernels.spv", std::ios::binary | std::ios::ate);
++  cl_uint AddressBits;
++  Err = clGetDeviceInfo (Device, CL_DEVICE_ADDRESS_BITS, sizeof (AddressBits),
++                         &AddressBits, NULL);
++  if (Err != CL_SUCCESS)
++    return EXIT_FAILURE;
++
++  std::ifstream File(AddressBits == 32 ? SRCDIR "/printf-kernels32.spv"
++                                       : SRCDIR "/printf-kernels.spv",
++                     std::ios::binary | std::ios::ate);
+   std::streamsize Binsize = File.tellg();
+   File.seekg(0, std::ios::beg);
+ 

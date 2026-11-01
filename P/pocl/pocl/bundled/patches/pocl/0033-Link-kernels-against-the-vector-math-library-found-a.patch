@@ -1,0 +1,316 @@
+From 40307604bab5312ab63da4f1d088924bbe34c5a8 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Wed, 7 Oct 2026 10:12:50 +0200
+Subject: [PATCH] Link kernels against the vector-math library found at run
+ time
+
+HOST_LD_FLAGS carried libmvec or SLEEF by its configure-time absolute path,
+and both the in-process lld link and the Clang-driver fallback pass it on.
+In a relocated installation, e.g. a binary package built in a sandbox, that
+path does not exist, so every kernel link fails: poclbinary export ships
+without native code, and with POCL_CPU_JIT=0 no kernel can run.
+
+The JIT already loads the library by its recorded SONAME, falling back to
+the configure-time path. Move that lookup into pocl_host_veclib_path(),
+which also resolves the loaded file's path through dlinfo(), and hand that
+path to the final link instead. The kernel binary records the SONAME as
+DT_NEEDED, which the dynamic loader matches against the copy already loaded.
+Without dlinfo(), HOST_LD_FLAGS keeps the configure-time path.
+
+Co-authored-by: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ CMakeLists.txt            | 22 ++++++++-----
+ config.h.in.cmake         |  2 ++
+ lib/CL/devices/common.c   |  5 +++
+ lib/CL/pocl_llvm.h        | 10 ++++++
+ lib/CL/pocl_llvm_build.cc | 69 ++++++++++++++++++++++++++++++++++++---
+ lib/CL/pocl_llvm_orc.cc   | 48 +++------------------------
+ 6 files changed, 99 insertions(+), 57 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 19e947a71..750454120 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -946,6 +946,10 @@ if(UNIX OR MINGW)
+                       "dlfcn.h"
+                       HAVE_DLADDR)
+ 
++  CHECK_SYMBOL_EXISTS("dlinfo"
++                      "dlfcn.h;link.h"
++                      HAVE_DLINFO)
++
+   unset(CMAKE_REQUIRED_DEFINITIONS)
+   unset(CMAKE_REQUIRED_LIBRARIES)
+ 
+@@ -994,6 +998,7 @@ else()
+   set(HAVE_VFORK 0)
+   set(HAVE_UTIME 0)
+   set(HAVE_DLADDR 0)
++  set(HAVE_DLINFO 0)
+   set(HAVE_VALGRIND 0)
+   unset(HAVE_LINUX_VSOCK_H)
+ endif()
+@@ -1165,7 +1170,7 @@ if(HOST_CPU_ENABLE_JIT)
+   endif()
+ endif()
+ 
+-# Record the SONAME of the SLEEF library for the JIT to link against
++# Record the SONAME of the SLEEF library to load at run time
+ set(HOST_CPU_SLEEF_LIBRARY "")
+ set(HOST_CPU_SLEEF_LIBRARY_FALLBACK "")
+ if(ENABLE_HOST_CPU_VECTORIZE_SLEEF AND LIBSLEEF)
+@@ -1187,9 +1192,9 @@ if(ENABLE_HOST_CPU_VECTORIZE_SLEEF AND LIBSLEEF)
+   endif()
+ endif()
+ 
+-# Record the SONAME of the libmvec library for the JIT to dlopen at run time. LIBMVEC may be
++# Record the SONAME of the libmvec library to load at run time. LIBMVEC may be
+ # the system libmvec (SONAME libmvec.so.1) or a libmvec-ABI-compatible replacement pointed at
+-# via -DLIBMVEC=... (e.g. SLEEF's libsleefgnuabi.so); recording the SONAME lets the JIT resolve
++# via -DLIBMVEC=... (e.g. SLEEF's libsleefgnuabi.so); recording the SONAME lets kernels resolve
+ # the vectorized _ZGV* math symbols without relying on a system libmvec (absent on musl / old
+ # glibc). Mirrors the SLEEF recording above.
+ set(HOST_CPU_LIBMVEC_LIBRARY "")
+@@ -1271,14 +1276,13 @@ if(UNIX)
+     set(DEFAULT_HOST_LD_FLAGS "-L/system/lib/ -shared -ldl -lc /system/lib/crtbegin_so.o /system/lib/crtend_so.o")
+   else()
+     set(DEFAULT_HOST_LD_FLAGS "-shared -nostartfiles")
+-    if(ENABLE_HOST_CPU_VECTORIZE_LIBMVEC)
+-      # Reference libmvec by its resolved absolute path, like SLEEF/SVML below.
+-      # The in-process lld link (CPU_USE_LLD_LINK) carries over only absolute-path
+-      # link inputs, not bare -l flags (it has no library search paths); a dropped
+-      # -lmvec leaves the kernel's vectorized math calls unresolved.
++    # With dlinfo(), libmvec and SLEEF are added at run time instead
++    # (pocl_host_veclib_path), as the configure-time path may not exist in a
++    # relocated install.
++    if(ENABLE_HOST_CPU_VECTORIZE_LIBMVEC AND NOT HAVE_DLINFO)
+       set(DEFAULT_HOST_LD_FLAGS "${DEFAULT_HOST_LD_FLAGS} ${LIBMVEC}")
+     endif()
+-    if(ENABLE_HOST_CPU_VECTORIZE_SLEEF)
++    if(ENABLE_HOST_CPU_VECTORIZE_SLEEF AND NOT HAVE_DLINFO)
+       set(DEFAULT_HOST_LD_FLAGS "${DEFAULT_HOST_LD_FLAGS} ${LIBSLEEF}")
+     endif()
+     if(ENABLE_HOST_CPU_VECTORIZE_SVML)
+diff --git a/config.h.in.cmake b/config.h.in.cmake
+index a221a9b8d..0aca5c170 100644
+--- a/config.h.in.cmake
++++ b/config.h.in.cmake
+@@ -82,6 +82,8 @@
+ 
+ #cmakedefine HAVE_DLFCN_H
+ 
++#cmakedefine HAVE_DLINFO
++
+ #cmakedefine HAVE_FORK
+ 
+ #cmakedefine HAVE_VFORK
+diff --git a/lib/CL/devices/common.c b/lib/CL/devices/common.c
+index 352ee989c..0c3135cf5 100644
+--- a/lib/CL/devices/common.c
++++ b/lib/CL/devices/common.c
+@@ -134,6 +134,11 @@ link_with_clang_driver (cl_device_id device, const char *objfile,
+ #else
+ #error ENABLE_PRINTF_IMMEDIATE_FLUSH requires HAVE_DLFCN_H
+ #endif
++#endif
++#ifdef HAVE_DLINFO
++  const char *veclib = pocl_host_veclib_path ();
++  if (veclib != NULL)
++    cmd_line[last_arg_idx++] = veclib;
+ #endif
+   const char **last_arg = &cmd_line[last_arg_idx];
+   const char **device_ld_arg = device->final_linkage_flags;
+diff --git a/lib/CL/pocl_llvm.h b/lib/CL/pocl_llvm.h
+index d0cc19a9c..a683d55c7 100644
+--- a/lib/CL/pocl_llvm.h
++++ b/lib/CL/pocl_llvm.h
+@@ -244,6 +244,16 @@ extern "C" {
+                             const char *OutFile);
+ #endif
+ 
++  /**
++   * Loads the vector-math library (libmvec or SLEEF) that vectorized math
++   * calls in CPU kernels resolve against, and returns the path it was loaded
++   * from (with HAVE_DLINFO, otherwise the name it was loaded by), or NULL if
++   * none is configured or it cannot be loaded. The library stays loaded, so
++   * kernel binaries linked against it find it by its SONAME.
++   */
++  POCL_EXPORT
++  const char *pocl_host_veclib_path (void);
++
+   /**
+    * \brief converts LLVM IR with "spir64-unknown-unknown" triple to SPIR-V
+    *
+diff --git a/lib/CL/pocl_llvm_build.cc b/lib/CL/pocl_llvm_build.cc
+index 17ca771d0..70df41f52 100644
+--- a/lib/CL/pocl_llvm_build.cc
++++ b/lib/CL/pocl_llvm_build.cc
+@@ -53,6 +53,7 @@ IGNORE_COMPILER_WARNING("-Wcomment")
+ #include <llvm/IR/Verifier.h>
+ #include <llvm/LinkAllPasses.h>
+ #include <llvm/Linker/Linker.h>
++#include <llvm/Support/DynamicLibrary.h>
+ #include <llvm/Support/MemoryBuffer.h>
+ #include <llvm/Support/VirtualFileSystem.h>
+ #include <llvm/TargetParser/Host.h>
+@@ -76,6 +77,10 @@ POP_COMPILER_DIAGS
+ #ifdef HAVE_DLFCN_H
+ #include "pocl_dynlib.h"
+ #endif
++#ifdef HAVE_DLINFO
++#include <dlfcn.h>
++#include <link.h>
++#endif
+ #include "LLVMUtils.h"
+ #include "pocl_util.h"
+ 
+@@ -1172,6 +1177,56 @@ int pocl_invoke_clang(const char* TTriple, const char** Args) {
+ 
+ }
+ 
++/* Load the vector-math library by its configured SONAME first (e.g. SLEEF's
++   libsleefgnuabi.so.3 standing in for libmvec), then by the configure-time
++   path, then by its generic name. Where the loader can tell, return the path
++   of the file it found rather than the name: the configure-time path no longer
++   exists once the install is relocated (e.g. a binary package built in a
++   sandbox), so kernel binaries must link against the copy loaded here. */
++const char *pocl_host_veclib_path() {
++#if defined(ENABLE_HOST_CPU_VECTORIZE_LIBMVEC) ||                              \
++    defined(ENABLE_HOST_CPU_VECTORIZE_SLEEF)
++  static const char *Path = []() -> const char * {
++    const char *Candidates[] = {
++#if defined(ENABLE_HOST_CPU_VECTORIZE_LIBMVEC)
++#ifdef HOST_CPU_LIBMVEC_LIBRARY
++        HOST_CPU_LIBMVEC_LIBRARY,
++#endif
++#ifdef HOST_CPU_LIBMVEC_LIBRARY_FALLBACK
++        HOST_CPU_LIBMVEC_LIBRARY_FALLBACK,
++#endif
++        "libmvec.so.1",
++#else
++#ifdef HOST_CPU_SLEEF_LIBRARY
++        HOST_CPU_SLEEF_LIBRARY,
++#endif
++#ifdef HOST_CPU_SLEEF_LIBRARY_FALLBACK
++        HOST_CPU_SLEEF_LIBRARY_FALLBACK,
++#endif
++        "libsleef.so",
++#endif
++    };
++    for (const char *Name : Candidates) {
++      if (!llvm::sys::DynamicLibrary::getPermanentLibrary(Name).isValid())
++        continue;
++#ifdef HAVE_DLINFO
++      struct link_map *Map;
++      void *Handle = dlopen(Name, RTLD_NOW | RTLD_NOLOAD);
++      if (Handle && dlinfo(Handle, RTLD_DI_LINKMAP, &Map) == 0)
++        return Map->l_name;
++#endif
++      return Name;
++    }
++    POCL_MSG_WARN("could not load the vector-math library; vectorized "
++                  "math kernels may fail to resolve their symbols\n");
++    return nullptr;
++  }();
++  return Path;
++#else
++  return nullptr;
++#endif
++}
++
+ #ifdef CPU_USE_LLD_LINK
+ 
+ #if defined(_WIN32)
+@@ -1252,14 +1307,18 @@ int pocl_invoke_lld_link(cl_device_id Device, const char *InFile,
+ #endif
+ 
+   // Carry over the extra link inputs HOST_LD_FLAGS passes by absolute path
+-  // (the vector-math libraries: libmvec, SLEEF, SVML and its helpers; see the
+-  // DEFAULT_HOST_LD_FLAGS setup in CMakeLists.txt). Driver flags and bare -l
+-  // libraries are dropped -- there are no library search paths here -- so those
+-  // libraries must be referenced by absolute path to survive, or their symbols
+-  // would be left unresolved (a bare -l library has nothing to resolve against).
++  // (SVML and its helpers; see the DEFAULT_HOST_LD_FLAGS setup in
++  // CMakeLists.txt). Driver flags and bare -l libraries are dropped -- there
++  // are no library search paths here -- so those libraries must be referenced
++  // by absolute path to survive, or their symbols would be left unresolved (a
++  // bare -l library has nothing to resolve against).
+   for (const char **Flag = Device->final_linkage_flags; Flag && *Flag; ++Flag)
+     if ((*Flag)[0] == '/')
+       LinkerArgs.push_back(*Flag);
++#ifdef HAVE_DLINFO
++  if (const char *VecLib = pocl_host_veclib_path())
++    LinkerArgs.push_back(VecLib);
++#endif
+ 
+ #if defined(ENABLE_PRINTF_IMMEDIATE_FLUSH) && defined(HAVE_DLFCN_H)
+   // The kernel references pocl_flush_printf_buffer, which only libpocl
+diff --git a/lib/CL/pocl_llvm_orc.cc b/lib/CL/pocl_llvm_orc.cc
+index ad7f3f05f..25e7a113e 100644
+--- a/lib/CL/pocl_llvm_orc.cc
++++ b/lib/CL/pocl_llvm_orc.cc
+@@ -166,8 +166,8 @@ std::string LastLookupError;
+      libm when the ICD loader used RTLD_LOCAL.
+    - Configure-time vector math library: DynamicLibrarySearchGenerator for
+      shared veclibs (libmvec, SLEEF), or a request-driven archive generator for
+-     static SVML/libirc. These are the same absolute link inputs the non-JIT
+-     final link receives.
++     static SVML/libirc. These are the same libraries the non-JIT final link
++     receives.
+    - Compiler runtime helpers: StaticLibraryDefinitionGenerator for the
+      installed compiler-rt/libgcc archive. This replaces the Clang driver's
+      implicit runtime library link.
+@@ -580,47 +580,9 @@ int pocl_jit_initialize(const char *TripleStr, const char *CPU) {
+      library's symbols (e.g. _ZGVdN8v_expf, __svml_expf8). The library is chosen
+      at configure time, matching codegen's veclib selection in pocl_llvm_wg.cc;
+      expose that same one to the JIT so the symbols resolve. */
+-#if defined(ENABLE_HOST_CPU_VECTORIZE_LIBMVEC)
+-  /* The configured SONAME first (e.g. SLEEF's libsleefgnuabi.so.3 when LIBMVEC was pointed
+-     at it, so we don't depend on a system libmvec), then the configure-time path, then the
+-     plain glibc SONAME as a last resort. */
+-  const char *Candidates[] = {
+-#ifdef HOST_CPU_LIBMVEC_LIBRARY
+-      HOST_CPU_LIBMVEC_LIBRARY,
+-#endif
+-#ifdef HOST_CPU_LIBMVEC_LIBRARY_FALLBACK
+-      HOST_CPU_LIBMVEC_LIBRARY_FALLBACK,
+-#endif
+-      "libmvec.so.1",
+-  };
+-  bool VecMathLoaded = false;
+-  for (const char *VecMathLib : Candidates)
+-    if ((VecMathLoaded = addLibrarySearchGenerator(VecMathLib)))
+-      break;
+-  if (!VecMathLoaded)
+-    POCL_MSG_WARN(
+-        "pocl_jit: could not load the libmvec vector-math library; vectorized "
+-        "math kernels may fail to resolve their symbols\n");
+-#elif defined(ENABLE_HOST_CPU_VECTORIZE_SLEEF)
+-  /* The configured SONAME first, then the configure-time path, then the
+-     plain library name as a last resort. */
+-  const char *Candidates[] = {
+-#ifdef HOST_CPU_SLEEF_LIBRARY
+-      HOST_CPU_SLEEF_LIBRARY,
+-#endif
+-#ifdef HOST_CPU_SLEEF_LIBRARY_FALLBACK
+-      HOST_CPU_SLEEF_LIBRARY_FALLBACK,
+-#endif
+-      "libsleef.so",
+-  };
+-  bool VecMathLoaded = false;
+-  for (const char *VecMathLib : Candidates)
+-    if ((VecMathLoaded = addLibrarySearchGenerator(VecMathLib)))
+-      break;
+-  if (!VecMathLoaded)
+-    POCL_MSG_WARN(
+-        "pocl_jit: could not load the SLEEF vector-math library; vectorized "
+-        "math kernels may fail to resolve their symbols\n");
++#if defined(ENABLE_HOST_CPU_VECTORIZE_LIBMVEC) ||                              \
++    defined(ENABLE_HOST_CPU_VECTORIZE_SLEEF)
++  addLibrarySearchGenerator(pocl_host_veclib_path());
+ #elif defined(ENABLE_HOST_CPU_VECTORIZE_SVML)
+   /* Do not index either archive here. Most cached kernels do not need SVML,
+      and the local generator opens both archives only after a __svml_* lookup.
+-- 
+2.56.0
+

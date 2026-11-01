@@ -162,7 +162,7 @@ const cuda_full_versions = [
     v"13.1.1",
     v"13.2.1",
     v"13.3.1",
-    v"13.4.2"
+    v"13.4.3"
 ]
 
 # EA/preview toolkits. We do build JLLs for these, so that they can be used explicitly,

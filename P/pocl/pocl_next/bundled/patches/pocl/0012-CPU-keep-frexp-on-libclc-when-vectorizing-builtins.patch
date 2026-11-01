@@ -1,4 +1,4 @@
-From b5446b6265e4921ac1166e6268052aecde618040 Mon Sep 17 00:00:00 2001
+From 60e92f77edc5a7ea05a7aea9ca792e4149a52106 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Wed, 30 Sep 2026 10:52:14 +0200
 Subject: [PATCH] CPU: keep frexp on libclc when vectorizing builtins
@@ -153,20 +153,20 @@ index e925f1f15..bdffd2905 100644
      isfinite.cl
      isinf.cl
 diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
-index 51dfb490c..259a0a647 100644
+index 676b857e2..bbf461baf 100644
 --- a/tests/regression/CMakeLists.txt
 +++ b/tests/regression/CMakeLists.txt
-@@ -40,6 +40,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
-      test_localmem_load_across_barrier
-      test_indirect_ptrs
+@@ -44,6 +44,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
       test_usm_indirect_ptrs
+      test_usm_free_realloc
+      test_sanitize_divrem
 +     test_frexp_kernellib
  )
  if(UNIX)
    list(APPEND C_PROGRAMS_TO_BUILD test_signal_handlers)
-@@ -191,6 +192,15 @@ add_test_pocl(NAME "regression/test_indirect_ptrs" COMMAND "test_indirect_ptrs")
+@@ -207,6 +208,15 @@ add_test_pocl(NAME "regression/test_usm_free_realloc" COMMAND "test_usm_free_rea
  
- add_test_pocl(NAME "regression/test_usm_indirect_ptrs" COMMAND "test_usm_indirect_ptrs")
+ add_test_pocl(NAME "regression/test_sanitize_divrem" COMMAND "test_sanitize_divrem" LABELS ${SPIRV_LABELS})
  
 +add_test_pocl(NAME "regression/frexp_kernellib" WORKITEM_HANDLER "loopvec" COMMAND "test_frexp_kernellib")
 +# the sub-AVX2 kernel library variants, where llvm.frexp used to be miscompiled
@@ -591,5 +591,5 @@ index 000000000..c638af8c4
 +  return result;
 +}
 -- 
-2.55.0
+2.56.0
 

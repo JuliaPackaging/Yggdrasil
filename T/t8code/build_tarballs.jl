@@ -91,4 +91,4 @@ append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"13.2.0", clang_use_lld=false)
+               augment_platform_block, julia_compat="1.10", preferred_gcc_version = v"13.2.0", clang_use_lld=false)

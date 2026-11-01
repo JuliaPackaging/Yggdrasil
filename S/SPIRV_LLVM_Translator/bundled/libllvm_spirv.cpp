@@ -183,6 +183,10 @@ int LLVMSPIRVTranslate(const char *Bitcode, size_t Length,
       return fail(Error);
   }
   SPIRV::TranslatorOpts Opts(MaxVersion, Extensions);
+  // The translator's default for a module it cannot accept (an unsupported
+  // instruction, a missing extension) is to exit the process, as llvm-spirv
+  // wants. Report it through the return value instead.
+  Opts.setErrorHandlingKind(SPIRV::SPIRVDbgErrorHandlingKinds::Ignore);
   switch (Options->DebugInfoVersion) {
   case LLVMSPIRVDebugInfoSPIRV:
     Opts.setDebugInfoEIS(SPIRV::DebugInfoEIS::SPIRV_Debug);

@@ -6,11 +6,12 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 # ASDF - Advanced Scientific Data Format, a C++ implementation
 
 name = "asdf_cxx"
-version = v"8.0.1"
+version = v"8.0.2"
 
 # Collection of sources required to build asdf-cxx
 sources = [
-    GitSource("https://github.com/eschnett/asdf-cxx", "abaa4a92d41c10e5c16ccbfbd7857a0a8bc19533"),
+    GitSource("https://github.com/eschnett/asdf-cxx", "41b233e6a32cb99d3aba0f6ad641ccfc4f8f5586";
+              tag="version/$(version)"),
 ]
 
 # Bash recipe for building across all platforms

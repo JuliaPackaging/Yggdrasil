@@ -54,9 +54,10 @@ typedef struct {
  * targeting spir64/spir-unknown-unknown as its own triple says) to a SPIR-V
  * binary. Bitcode from any LLVM older than the one embedded is auto-upgraded
  * on load. On success returns 0 and sets `*OutSPIRV`; on failure returns
- * nonzero and sets `*OutMessage`. A fatal LLVM error (`report_fatal_error`)
- * is reported the same way and leaves the library usable, at the cost of
- * leaking that call's state. */
+ * nonzero and sets `*OutMessage`. A module the translator rejects is
+ * reported this way too, without exiting the process. A fatal LLVM error
+ * (`report_fatal_error`) is reported the same way and leaves the library
+ * usable, at the cost of leaking that call's state. */
 LLVMSPIRV_API int LLVMSPIRVTranslate(const char *Bitcode, size_t Length,
                                      const LLVMSPIRVTranslateOptions *Options,
                                      LLVMSPIRVMemoryBufferRef *OutSPIRV,

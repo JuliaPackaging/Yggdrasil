@@ -3,16 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "cimnodes_editor"
-version = v"1"
+version = v"2"
 
 # Sources required to build cimnodes_editor
 sources = [
     GitSource("https://github.com/cimgui/cimnodes_editor.git",
-              "f6fe518957a88ad6cb5929e26f5c09e4e7e0cff3"),
+              "917728f58869efafb67386099a1c77e153284f49"),
 
     # Clone the cimgui version CImGuiPack_jll is built with
     GitSource("https://github.com/cimgui/cimgui.git",
-              "700140771a12e61f4bb851fb4e2d885f04b32dd9"),
+              "5d7cc7e12de9a868bbecc00ce2ed74e58d266f1c"),
 
     # Bundled CMakeLists.txt that links against CImGuiPack_jll's exported
     # cimgui::cimgui target rather than rebuilding imgui sources locally.
@@ -62,7 +62,7 @@ products = [
 ]
 
 dependencies = [
-    Dependency("CImGuiPack_jll"; compat="0.13.1"),
+    Dependency("CImGuiPack_jll"; compat="0.14"),
     HostBuildDependency("LuaJIT_jll"),
 ]
 

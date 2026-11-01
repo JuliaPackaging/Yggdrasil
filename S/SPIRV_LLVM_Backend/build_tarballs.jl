@@ -52,6 +52,43 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/aggregate_extractvalue_return.patch
 # pointee types of pointers extracted from or inserted into aggregates"; still
 # open upstream), for Julia's bits-union return values.
 atomic_patch -p1 $WORKSPACE/srcdir/patches/aggregate_member_pointee_types.patch
+# Backport of https://github.com/llvm/llvm-project/pull/209232 ("[SPIR-V]
+# Preserve signed i1 semantics in sitofp"; merged after the 23.x branch), so
+# that `sitofp i1 true` gives -1.0 instead of 1.0.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/sitofp_signed_i1.patch
+# Backport of https://github.com/llvm/llvm-project/pull/229444 ("[SPIRV] Don't
+# cache SyncScope IDs across LLVMContexts in getMemScope"; still open
+# upstream): with a fresh context per compilation, later modules got wrong
+# atomic scopes (e.g. Subgroup instead of Device).
+atomic_patch -p1 $WORKSPACE/srcdir/patches/getmemscope_per_context.patch
+# Backport of https://github.com/llvm/llvm-project/pull/223023 ("[SPIR-V] Add
+# storage class bits to fence and generic atomic semantics"; merged after the
+# 23.x branch), without which fences order no memory.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/fence_storage_class.patch
+# Backport of https://github.com/llvm/llvm-project/pull/229720 ("[SPIR-V] Type
+# the format string of unmangled printf calls as i8"; approved upstream), without
+# which IGC asserts on kernels with multiple printf format strings.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/printf_unmangled.patch
+# Backport of https://github.com/llvm/llvm-project/pull/231150 ("[SPIR-V]
+# Decompose bool vector bitcasts element-wise"; open upstream), without which
+# bitcasts between vectors and bool vectors of more than 64 lanes fail with
+# "Unsupported Integer width!", e.g. for KernelAbstractions sub-group shuffles of
+# structs with a Bool field.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/bool_vector_bitcast_wide.patch
+# Backport of https://github.com/llvm/llvm-project/pull/231173 ("[SPIR-V] Fix
+# FPFastMathDefault type lookup for calls and post-isel registers"; open
+# upstream), without which kernels with an FPFastMathDefault execution mode
+# segfault when MachineCSE hoists a floating-point instruction at -O2.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/fp_fast_math_default_type.patch
+# Backport of https://github.com/llvm/llvm-project/pull/225667 ("[SPIR-V] Lower
+# llvm.minimum/maximum instead of selecting fmin/fmax"; merged after the 23.x
+# branch), without which `llvm.minimum`/`llvm.maximum` ignore NaNs and don't
+# order signed zeros. 23.x lacks SPV_EXT_long_vector, so its long-vector
+# changes and tests are left out. Shaders need the `copysign` lowering of
+# https://github.com/llvm/llvm-project/pull/217421 (also merged after 23.x;
+# only its SPIR-V part is backported).
+atomic_patch -p1 $WORKSPACE/srcdir/patches/copysign_shader.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/fminimum_fmaximum.patch
 
 install_license LICENSE.TXT
 

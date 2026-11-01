@@ -1,4 +1,4 @@
-From aea882206c575195c367469d7e449d7cb5cbddd8 Mon Sep 17 00:00:00 2001
+From ee402b648212ac7c8b9f374710b6960e273f8a3c Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Sun, 27 Sep 2026 14:55:20 +0200
 Subject: [PATCH] UnreachablesToReturns: don't delete the entry block
@@ -38,7 +38,7 @@ index f7420788c..222075957 100644
        else
          PendingUnreachableInst.push_back(UI);
 diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
-index 36137e9f6..5c50f524d 100644
+index c5c39736b..fd18b5546 100644
 --- a/tests/regression/CMakeLists.txt
 +++ b/tests/regression/CMakeLists.txt
 @@ -29,6 +29,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
@@ -49,7 +49,7 @@ index 36137e9f6..5c50f524d 100644
       test_unreachable_in_infinite_loop
       test_rematerialized_alloca_load_with_outside_pr_users
       test_peeled_wi_global_id
-@@ -169,6 +170,8 @@ add_test_pocl(NAME "regression/test_issue_1747" COMMAND "test_issue_1747" "0" "$
+@@ -175,6 +176,8 @@ add_test_pocl(NAME "regression/test_issue_1747" COMMAND "test_issue_1747" "0" "$
  
  add_test_pocl(NAME "regression/test_issue_1958" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_issue_1958" LABELS ${SPIRV_LABELS})
  
@@ -214,3 +214,6 @@ index 000000000..dd8efffe4
 +  printf("OK\n");
 +  return 0;
 +}
+-- 
+2.56.0
+

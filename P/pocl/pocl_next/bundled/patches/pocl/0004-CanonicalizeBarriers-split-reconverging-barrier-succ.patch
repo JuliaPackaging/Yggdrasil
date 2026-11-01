@@ -1,8 +1,7 @@
-From 33d0aeda4bd53e561d9c12f3b51f93d423cb56fc Mon Sep 17 00:00:00 2001
+From a79659e1e3b86008caf46b40be0cafb4a79185b4 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Mon, 17 Aug 2026 15:57:39 +0200
-Subject: [PATCH 4/6] CanonicalizeBarriers: split reconverging barrier
- successors
+Subject: [PATCH] CanonicalizeBarriers: split reconverging barrier successors
 
 Parallel-region formation treats successors of a barrier block as entries of
 disjoint regions. Bounds-checked Julia kernels can instead branch around a
@@ -18,14 +17,14 @@ loopvec, and CBS handlers.
 
 Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
 ---
- lib/llvmopencl/CanonicalizeBarriers.cc        |  38 +++-
+ lib/llvmopencl/CanonicalizeBarriers.cc        |  46 ++++-
  tests/regression/CMakeLists.txt               |   3 +
  .../regression/test_barrier_divergent_skip.c  | 166 ++++++++++++++++++
- 3 files changed, 204 insertions(+), 3 deletions(-)
+ 3 files changed, 208 insertions(+), 7 deletions(-)
  create mode 100644 tests/regression/test_barrier_divergent_skip.c
 
 diff --git a/lib/llvmopencl/CanonicalizeBarriers.cc b/lib/llvmopencl/CanonicalizeBarriers.cc
-index 9dc1dad19..d30b23a88 100644
+index 9dc1dad19..1cf179c5e 100644
 --- a/lib/llvmopencl/CanonicalizeBarriers.cc
 +++ b/lib/llvmopencl/CanonicalizeBarriers.cc
 @@ -29,6 +29,9 @@ IGNORE_COMPILER_WARNING("-Wmaybe-uninitialized")
@@ -38,13 +37,16 @@ index 9dc1dad19..d30b23a88 100644
  #include <llvm/IR/Dominators.h>
  #include <llvm/IR/Instructions.h>
  #include <llvm/IR/Module.h>
-@@ -60,6 +63,31 @@ static bool processFunction(Function &F, WorkitemHandlerType Handler);
+@@ -60,6 +63,34 @@ static bool processFunction(Function &F, WorkitemHandlerType Handler);
  
  using InstructionSet = std::set<llvm::Instruction *>;
  
-+// Parallel region formation treats successors of a barrier block as entries
-+// of disjoint regions. If the successors reconverge before another barrier,
-+// the branch instead belongs to a single region and needs a common entry.
++// Check whether two successors can reach a common block without crossing a
++// barrier. A shared barrier endpoint counts; other paths may lead elsewhere.
++//
++// Kernel::createParallelRegionBefore can collect both successors in one region
++// but designates only one as its entry. Moving the branch into a common
++// post-barrier block prevents outside edges to non-entry blocks.
 +static bool successorsReconverge(llvm::Instruction *T) {
 +  llvm::SmallPtrSet<llvm::BasicBlock *, 16> Reached;
 +  for (unsigned Succ = 0, Num = T->getNumSuccessors(); Succ < Num; ++Succ) {
@@ -70,13 +72,18 @@ index 9dc1dad19..d30b23a88 100644
  static bool canonicalizeBarriers(Function &F, WorkitemHandlerType Handler) {
    bool changed = false;
  
-@@ -149,11 +177,15 @@ static bool processFunction(Function &F, WorkitemHandlerType Handler) {
-     //     (t->getPrevNode() != *i)) {
-     // Change: barriers with several successors are all right
-     // they just start several parallel regions. Simplifies
+@@ -145,15 +176,16 @@ static bool processFunction(Function &F, WorkitemHandlerType Handler) {
+     // Split post barrier first cause it does not make the barrier
+     // to belong to another basic block.
+     Instruction *t = b->getTerminator();
+-    // if ((t->getNumSuccessors() > 1) ||
+-    //     (t->getPrevNode() != *i)) {
+-    // Change: barriers with several successors are all right
+-    // they just start several parallel regions. Simplifies
 -    // loop handling.
-+    // loop handling. Reconverging successors, however, belong to a single
-+    // region and need a common post-barrier entry.
++    // Keep separate entries for disjoint conditional-barrier regions. If the
++    // successor searches overlap, move the branch into a common entry block.
++    // CBS requires this split for every multi-successor barrier.
 +
 +    const bool MustSplitSuccessors =
 +        t->getNumSuccessors() > 1 &&
@@ -90,7 +97,7 @@ index 9dc1dad19..d30b23a88 100644
      if (HasNonBranchInstructionsAfterBarrier) {
        BasicBlock *new_b = SplitBlock(b, (*i)->getNextNode());
 diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
-index 57aa91cd8..a47eebf39 100644
+index 59ef74e67..8b25a2fb3 100644
 --- a/tests/regression/CMakeLists.txt
 +++ b/tests/regression/CMakeLists.txt
 @@ -31,6 +31,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
@@ -101,7 +108,7 @@ index 57aa91cd8..a47eebf39 100644
       test_divergent_implicit_barrier_entry
       test_uniform_implicit_barrier_entry
       test_localmem_load_across_barrier
-@@ -160,6 +161,8 @@ add_test_pocl(NAME "regression/test_issue_1747" COMMAND "test_issue_1747" "0" "$
+@@ -168,6 +169,8 @@ add_test_pocl(NAME "regression/test_issue_1747" COMMAND "test_issue_1747" "0" "$
  
  add_test_pocl(NAME "regression/peeled_wi_global_id" WORKITEM_HANDLER "loopvec;cbs;" COMMAND "test_peeled_wi_global_id" LABELS ${SPIRV_LABELS})
  
@@ -282,3 +289,6 @@ index 000000000..69b1b29fd
 +  printf("OK\n");
 +  return 0;
 +}
+-- 
+2.56.0
+

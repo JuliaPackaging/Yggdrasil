@@ -1,0 +1,15 @@
+--- a/gdk/loaders/gdkpng.c	2026-10-10 17:53:10.015688037 -0400
++++ b/gdk/loaders/gdkpng.c	2026-10-10 17:53:10.027753618 -0400
+@@ -37,8 +37,10 @@
+ 
+ /* {{{ Callbacks */
+ 
+-/* No sigsetjmp on Windows */
+-#ifndef HAVE_SIGSETJMP
++/* No sigsetjmp on Windows. On FreeBSD, sigjmp_buf and jmp_buf are distinct
++ * types, and png_jmpbuf() yields a jmp_buf that libpng unwinds with longjmp,
++ * so plain setjmp is the matching call. */
++#if !defined(HAVE_SIGSETJMP) || defined(__FreeBSD__)
+ #define sigjmp_buf jmp_buf
+ #define sigsetjmp(jb, x) setjmp(jb)
+ #define siglongjmp longjmp

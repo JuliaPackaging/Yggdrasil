@@ -1,7 +1,7 @@
-From b0d12a8768dadb66f4ea1bb771e8d1006642dae9 Mon Sep 17 00:00:00 2001
+From ae0d05c4ed5c133b1f03fcdd6bebfa28abd1fae1 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Fri, 26 Jun 2026 13:09:13 +0200
-Subject: [PATCH 1/6] MinGW: support building with the Clang/lld toolchain
+Subject: [PATCH] MinGW: support building with the Clang/lld toolchain
 
 GNU ld is pathologically slow at linking the static LLVM/Clang archives
 into a PE/COFF DLL (tens of minutes for libpocl). ld.lld is far faster,
@@ -32,11 +32,11 @@ Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
 ---
  bin/CMakeLists.txt    |  3 ++-
  include/pocl.h        |  2 +-
- lib/CL/CMakeLists.txt | 12 ++++++------
- 3 files changed, 9 insertions(+), 8 deletions(-)
+ lib/CL/CMakeLists.txt | 10 +++++-----
+ 3 files changed, 8 insertions(+), 7 deletions(-)
 
 diff --git a/bin/CMakeLists.txt b/bin/CMakeLists.txt
-index 6f2c8b3f0..6f7286c0e 100644
+index 07b595712..ba73b8060 100644
 --- a/bin/CMakeLists.txt
 +++ b/bin/CMakeLists.txt
 @@ -34,7 +34,8 @@ if(ENABLE_SPIRV)
@@ -63,7 +63,7 @@ index 3269f931b..76dd71333 100644
   * both the declaration and the definition as MSVC requires that both
   * of them have the same attributes.
 diff --git a/lib/CL/CMakeLists.txt b/lib/CL/CMakeLists.txt
-index e18427ccb..6e553121b 100644
+index dd1935afe..8104e4c23 100644
 --- a/lib/CL/CMakeLists.txt
 +++ b/lib/CL/CMakeLists.txt
 @@ -260,7 +260,7 @@ else()
@@ -102,12 +102,7 @@ index e18427ccb..6e553121b 100644
    # Inject __declspec(dllexport).
    target_compile_definitions("${POCL_LIBRARY_NAME}" PRIVATE EXPORT_POCL_LIB)
    target_compile_definitions("${POCL_LIBRARY_NAME}" INTERFACE IMPORT_POCL_LIB)
-@@ -447,11 +447,11 @@ endif()
- 
- harden("${POCL_LIBRARY_NAME}")
- 
--if((UNIX OR MINGW) AND (NOT APPLE))
-+if(UNIX AND (NOT APPLE))
+@@ -458,7 +458,7 @@ if((UNIX AND NOT APPLE) OR (MINGW AND HAVE_LINKER_EXCLUDE_LIBS))
    target_link_options("${POCL_LIBRARY_NAME}" PRIVATE "LINKER:--exclude-libs,ALL")
  endif()
  if(MINGW)
@@ -116,3 +111,6 @@ index e18427ccb..6e553121b 100644
  endif()
  
  set_target_properties("${POCL_LIBRARY_NAME}" PROPERTIES SOVERSION "${LIB_API_VERSION}"
+-- 
+2.56.0
+

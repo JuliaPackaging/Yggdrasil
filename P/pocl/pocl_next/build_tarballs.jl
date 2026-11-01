@@ -10,10 +10,14 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 # `pocl_next` is the 7.2 track of PoCL: an OpenCL ICD driver built with the in-process
 # JIT (no run-time clang/lld/llvm-spirv tooling). The actual build lives in ../common.jl,
 # shared with the `pocl_standalone` (OpenCL-less) variant and selected via its `standalone`
-# argument (false here). See ../common.jl for the full rationale.
+# argument (false here). See ../common.jl for the full rationale. This track also carries
+# the experimental `pocl-spirv32` series (SPIR-V on 32-bit x86, JuliaGPU/pocl#3).
 
 name = "pocl_next"
-version = v"7.2.0"
+# upstream's 7.2 maintenance branch plus our patch series; bumped past 7.2 when the series
+# changes API (7.2.1 added cl_pocl_cpu_compute_units, 7.2.2 removed it again, 7.2.3 adds
+# cl_pocl_host_kernel)
+version = v"7.2.3"
 llvm_version = v"22.1.1"
 macos_sdk_version = "11.0"
 
@@ -23,7 +27,7 @@ macos_sdk_version = "11.0"
 sources = [
     DirectorySource("./bundled"),
     GitSource("https://github.com/pocl/pocl",
-              "888c9774b94590fff1afef003154ca2c0ea66605"), # tag v7.2
+              "4a2178224f5eea88cc6f170b808803c963ce5176"), # release_next (v7.2 + backports)
     # vendored SPIR-V translator, built as a static library against our LLVM (see
     # common.jl); this is the latest LLVM-22.1 maintenance revision.
     GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git",
@@ -82,6 +86,15 @@ dependencies = [
     Dependency("OpenCL_Headers_jll"),
     Dependency("Hwloc_jll"),
     Dependency("Zstd_jll"), # our LLVM 22 build has LLVM_ENABLE_ZSTD=ON
+    # Vectorize OpenCL math builtins via SLEEF's libmvec-ABI library (libsleefgnuabi), which
+    # the in-process JIT dlopens at run time (see common.jl for the matching CMake flags). Only
+    # on x86_64/aarch64 Linux and FreeBSD, the ELF targets where LLVM maps a veclib *and*
+    # SLEEF_jll ships libsleefgnuabi (macOS has no GNUABI variant, Windows has no SLEEF_jll).
+    # This has to be declared here, not per platform in the loop below: the JLL's Project.toml
+    # comes from the last (registering) `build_tarballs` call, which isn't one of these.
+    Dependency("SLEEF_jll"; platforms=filter(platforms) do p
+        (Sys.islinux(p) || Sys.isfreebsd(p)) && arch(p) in ["x86_64", "aarch64"]
+    end),
 ]
 
 builds = []
@@ -90,16 +103,6 @@ for platform in platforms
 
     platform_sources = deepcopy(sources)
     platform_dependencies = deepcopy(dependencies)
-
-    # Vectorize OpenCL math builtins via SLEEF's libmvec-ABI / SLEEF compat library
-    # (libsleefgnuabi), which the in-process JIT dlopens at run time (see common.jl for the
-    # matching CMake flags). Gated to x86_64/aarch64 on the ELF OSes where LLVM maps a veclib
-    # *and* SLEEF_jll ships libsleefgnuabi: Linux and FreeBSD (not macOS -- no GNUABI on
-    # Mach-O -- and not Windows -- no SLEEF_jll). Static linking isn't used: the JIT resolves
-    # _ZGV* symbols by dlopen, so a dynamic dependency is the natural fit.
-    if (Sys.islinux(platform) || Sys.isfreebsd(platform)) && arch(platform) in ["x86_64", "aarch64"]
-        push!(platform_dependencies, Dependency("SLEEF_jll"))
-    end
 
     # On Windows we now link PoCL with the Clang/lld toolchain, but still build against this
     # GCC's MinGW sysroot and libstdc++, so its version must stay compatible with the
@@ -132,9 +135,13 @@ end
 
 for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
-                   name, version, build.sources, macos_sdk_script * build_script(),
+                   name, version, build.sources, macos_sdk_script * build_script(; spirv32=true),
                    [build.platform], products, build.dependencies;
                    build.preferred_gcc_version,
                    preferred_llvm_version=Base.thismajor(llvm_version),
-                   julia_compat="1.6", init_block=init_block())
+                   # libpocl needs the libgcc_s of GCC 12 (for its FP16 helpers), which Julia
+                   # bundles since 1.8; 1.10 is the oldest version the users of these JLLs support
+                   julia_compat="1.10", init_block=init_block())
 end
+
+# Build trigger: 3

@@ -3,8 +3,8 @@
 using BinaryBuilder
 
 name = "AMDGPU_LLVM_Backend"
-version = v"23.1.1"
-llvm_version = v"23.1.1"
+version = v"23.1.3"
+llvm_version = v"23.1.3"
 
 # This JLL ships `libamdgpu`, a shared library exposing a small, typed C API (see
 # bundled/libamdgpu.h) over a statically linked, symbol-hidden LLVM AMDGPU
@@ -16,7 +16,7 @@ llvm_version = v"23.1.1"
 # LLVM ships a single monorepo source archive (`llvm-project-X.Y.Z.src.tar.xz`).
 sources = [
     ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-$(llvm_version)/llvm-project-$(llvm_version).src.tar.xz",
-                  "ebe9be46fe8756d58c5b198ffad0fa2a766257add81a4dc52179bfacc7888ee6"),
+                  "c44186a7762ed28954be72e5ff6df9808e0779d4f1bf014ecc4e7e211d31ee34"),
     # ROCm's fork, for the device libraries (TheRock 10.0).
     GitSource("https://github.com/ROCm/llvm-project",
               "8f497e0992fb7513f7f78a6f6b6f1056c375e961"),
@@ -26,12 +26,25 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 # Apply backported patches to the upstream LLVM sources.
-# LLVM installs process-wide signal handlers (and, on Windows, an unhandled-
-# exception filter) when it registers files to remove on crash, e.g. for lld's
-# output file, and when a CrashRecoveryContext is enabled. Embedded in Julia,
-# which synchronises its threads with SIGSEGV, those handlers are fatal: they
-# intercept the host's signals and re-raise them with a different siginfo.
-# Make every such installation a no-op; the library never wants them.
+# - no-process-wide-handlers: LLVM installs process-wide signal handlers (and,
+#   on Windows, an unhandled-exception filter) when it registers files to
+#   remove on crash, e.g. for lld's output file, and when a CrashRecoveryContext
+#   is enabled. Embedded in Julia, which synchronises its threads with SIGSEGV,
+#   those handlers are fatal: they intercept the host's signals and re-raise
+#   them with a different siginfo. Make every such installation a no-op; the
+#   library never wants them.
+# - 214518-i128-datalayout-default: llvm/llvm-project#214518, align i128 to
+#   128 bits by default like clang's `__int128`, so that `i128` kernel
+#   arguments land at the offsets HIP/clang expect.
+# - 215829-amdgpu-fix-si-pre-emit-peephole-scc: llvm/llvm-project#215829,
+#   miscompile fix in si-pre-emit-peephole.
+# - 229471-amdgpu-fix-usub-sat-lds-flat: llvm/llvm-project#229471 (not merged
+#   yet, backported from its head cef234bcb436), expand `atomicrmw usub_sat`
+#   to a cmpxchg loop on LDS and flat where the target lacks the instruction,
+#   instead of failing to select it (llvm/llvm-project#229442).
+# - amdgpu-i128-abi-name (not upstream): the ABI name "i128:64" selects an
+#   AMDGPU datalayout that aligns i128 to 64 bits, for hosts whose ABI does
+#   (Julia before 1.12); libamdgpu sets it from the module's datalayout.
 pushd llvm-project-*
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}

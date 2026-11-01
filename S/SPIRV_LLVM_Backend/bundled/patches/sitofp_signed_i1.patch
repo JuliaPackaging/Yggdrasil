@@ -1,0 +1,65 @@
+From 0e1b0935ff6f326ba1b9c2d23ba9fa7b41e6941d Mon Sep 17 00:00:00 2001
+From: Arseniy Obolenskiy <arseniy.obolenskiy@amd.com>
+Date: Fri, 17 Jul 2026 11:29:23 +0200
+Subject: [PATCH] [SPIR-V] Preserve signed i1 semantics in sitofp (#209232)
+
+selectIToF hardcoded IsSigned=false when materializing the bool-to-int
+conversion, so sitofp i1 true was miscompiled as 1.0 instead of -1.0
+---
+ llvm/lib/Target/SPIRV/SPIRVInstructionSelector.cpp | 2 +-
+ llvm/test/CodeGen/SPIRV/sitofp-with-bool.ll        | 4 ++--
+ llvm/test/CodeGen/SPIRV/uitofp-with-bool.ll        | 4 ++--
+ 3 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/lib/Target/SPIRV/SPIRVInstructionSelector.cpp b/lib/Target/SPIRV/SPIRVInstructionSelector.cpp
+index 15bb399c2ca09..deaf6add76ed9 100644
+--- a/lib/Target/SPIRV/SPIRVInstructionSelector.cpp
++++ b/lib/Target/SPIRV/SPIRVInstructionSelector.cpp
+@@ -4662,7 +4662,7 @@ bool SPIRVInstructionSelector::selectIToF(Register ResVReg,
+       TmpType = GR.getOrCreateSPIRVVectorType(TmpType, NumElts, I, TII);
+     }
+     SrcReg = createVirtualRegister(TmpType, &GR, MRI, MRI->getMF());
+-    selectBoolToInt(SrcReg, TmpType, I.getOperand(1).getReg(), I, false);
++    selectBoolToInt(SrcReg, TmpType, I.getOperand(1).getReg(), I, IsSigned);
+   }
+   return selectOpWithSrcs(ResVReg, ResType, I, {SrcReg}, Opcode);
+ }
+diff --git a/test/CodeGen/SPIRV/sitofp-with-bool.ll b/test/CodeGen/SPIRV/sitofp-with-bool.ll
+index 22a6c73cc753f..4d39e1adaaea5 100644
+--- a/test/CodeGen/SPIRV/sitofp-with-bool.ll
++++ b/test/CodeGen/SPIRV/sitofp-with-bool.ll
+@@ -5,14 +5,14 @@
+ ; CHECK-DAG: %[[#float:]] = OpTypeFloat 32
+ ; CHECK-DAG: %[[#bool:]] = OpTypeBool
+ ; CHECK-DAG: %[[#zero:]] = OpConstantNull %[[#int_32]]
+-; CHECK-DAG: %[[#one:]] = OpConstant %[[#int_32]] 1
++; CHECK-DAG: %[[#mone:]] = OpConstant %[[#int_32]] 4294967295
+ ; CHECK-DAG: %[[#ptr:]] = OpTypePointer CrossWorkgroup %[[#float]]
+ 
+ ; CHECK: OpFunction
+ ; CHECK: %[[#A:]] = OpFunctionParameter %[[#ptr]]
+ ; CHECK: %[[#B:]] = OpFunctionParameter %[[#]]
+ ; CHECK: %[[#cmp_res:]] = OpSGreaterThan %[[#bool]] %[[#B]] %[[#zero]]
+-; CHECK: %[[#select_res:]] = OpSelect %[[#int_32]] %[[#cmp_res]] %[[#one]] %[[#zero]]
++; CHECK: %[[#select_res:]] = OpSelect %[[#int_32]] %[[#cmp_res]] %[[#mone]] %[[#zero]]
+ ; CHECK: %[[#stof_res:]] = OpConvertSToF %[[#]] %[[#select_res]]
+ ; CHECK: OpStore %[[#A]] %[[#stof_res]]
+ 
+diff --git a/test/CodeGen/SPIRV/uitofp-with-bool.ll b/test/CodeGen/SPIRV/uitofp-with-bool.ll
+index 7a702e54aadf8..e744becf3518f 100644
+--- a/test/CodeGen/SPIRV/uitofp-with-bool.ll
++++ b/test/CodeGen/SPIRV/uitofp-with-bool.ll
+@@ -143,11 +143,11 @@ entry:
+ ; SPV: %[[#ufp2:]] = OpConvertUToF %[[#vec_float]] %[[#ufp2_res]]
+   %ufp2 = uitofp <2 x i1> %i1v to <2 x float>
+   store <2 x float> %ufp2, ptr @G_ufp2
+-; SPV: %[[#sfp1_res:]] = OpSelect %[[#int_32]] %[[#i1s]] %[[#one_32]] %[[#zero_32]]
++; SPV: %[[#sfp1_res:]] = OpSelect %[[#int_32]] %[[#i1s]] %[[#mone_32]] %[[#zero_32]]
+ ; SPV: %[[#sfp1:]] = OpConvertSToF %[[#float]] %[[#sfp1_res]]
+   %sfp1 = sitofp i1 %i1s to float
+   store float %sfp1, ptr @G_sfp1
+-; SPV: %[[#sfp2_res:]] = OpSelect %[[#vec_32]] %[[#i1v]] %[[#ones_32]] %[[#zeros_32]]
++; SPV: %[[#sfp2_res:]] = OpSelect %[[#vec_32]] %[[#i1v]] %[[#mones_32]] %[[#zeros_32]]
+ ; SPV: %[[#sfp2:]] = OpConvertSToF %[[#vec_float]] %[[#sfp2_res]]
+   %sfp2 = sitofp <2 x i1> %i1v to <2 x float>
+   store <2 x float> %sfp2, ptr @G_sfp2

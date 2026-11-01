@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "Binutils"
-version = v"2.46.0"
+version_str = "2.47"
+version = VersionNumber(version_str)
 
 sources = [
-    ArchiveSource("https://ftpmirror.gnu.org/gnu/binutils/binutils-$(version).tar.xz",
-                  "d75a94f4d73e7a4086f7513e67e439e8fcdcbb726ffe63f4661744e6256b2cf2"),
-    DirectorySource("bundled"),
+    ArchiveSource("https://ftpmirror.gnu.org/gnu/binutils/binutils-$(version_str).tar.xz",
+                  "154ab23b60070e8f27013c22977f1129425d67d1e8acd6e13010e617811e4cff"),
 ]
 
 script = raw"""

@@ -9,10 +9,10 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "NCCL"
-version = v"2.30.7"
+version = v"2.32.3"
 
 git_sources = [
-    GitSource("https://github.com/NVIDIA/nccl.git", "73cf112295c33aee2b895f329f592f2a9b4b0f97"),
+    GitSource("https://github.com/NVIDIA/nccl.git", "12df1a11afad322be5a204a2db890161cbf8131d"; tag="v$(version)-1"),
     DirectorySource("./bundled/")
 ]
 
@@ -82,9 +82,9 @@ fi
 cd nccl
 make -j ${nproc} src.build CUDA_HOME=${CUDA_HOME} PREFIX=${prefix}
 
-make install PREFIX=${prefix}
+make -j ${nproc} install PREFIX=${prefix}
 
-rm -f ${WORKSPACE}/srcdir/nccl/build/lib/libnccl_static.a
+rm -f ${libdir}/libnccl_static.a
 
 install_license ${WORKSPACE}/srcdir/nccl/LICENSE.txt
 
@@ -106,19 +106,20 @@ dependencies = [
 builds = []
 
 
-for platform in CUDA.supported_platforms(; min_version=v"12", max_version=v"13.0.999")
+for platform in CUDA.supported_platforms(; min_version=v"12")
     should_build_platform(triplet(platform)) || continue
 
     platform_sources = BinaryBuilder.AbstractSource[git_sources...]
     if arch(platform) == "aarch64"
-        push!(platform_sources, CUDA.cuda_nvcc_redist_source(platform["cuda"], "x86_64"))
+        # cross-compile device code with the host toolchain; nvvm ships separately from 13.0
         cuda_ver = VersionNumber(platform["cuda"])
-        if v"13.0" <= cuda_ver < v"13.1"
-            lib_nvvm_sources = get_sources("cuda", ["libnvvm"]; version=v"13.0", platform=Platform("x86_64", "linux"; cuda="13.0"))
-            push!(platform_sources, lib_nvvm_sources...)
-        elseif cuda_ver > v"13.0"
-            error("Add libnvvm redist source to build NCCL for CUDA $cuda_ver on aarch64")
-        end
+        components = ["cuda_nvcc"]
+        cuda_ver >= v"13" && push!(components, "libnvvm")
+        x86_platform = deepcopy(platform)
+        x86_platform["arch"] = "x86_64"
+        append!(platform_sources, get_sources("cuda", components;
+                                              version=CUDA.full_version(cuda_ver),
+                                              platform=x86_platform))
     end
 
     push!(

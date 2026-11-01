@@ -3,15 +3,12 @@
 using BinaryBuilder
 
 name = "Hwloc"
-version = v"2.14.0"
-# Bump the patch level of the JLL version when the recipe changes without a new upstream release,
-# e.g. to rebuild against a new ABI of a dependency. Reset to `version` on the next upstream release.
-ygg_version = v"2.14.1" # Rebuilt against XML2_jll 2.15
+version = v"2.15.0"
 
 # Collection of sources required to build hwloc
 sources = [
     ArchiveSource("https://download.open-mpi.org/release/hwloc/v$(version.major).$(version.minor)/hwloc-$(version).tar.bz2",
-                  "966b9bb3e9f29f8d65ce8d106779e457f40e246a645e584b100772a42f9ae94b")
+                  "0084b926fff9a960ddbf175654db39054ed60afbb830d2039d8a60686ca06a7f")
 ]
 
 # Bash recipe for building across all platforms
@@ -46,4 +43,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

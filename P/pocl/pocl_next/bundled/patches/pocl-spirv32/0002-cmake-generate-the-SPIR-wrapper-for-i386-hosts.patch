@@ -1,0 +1,49 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Sun, 25 Oct 2026 09:09:12 +0100
+Subject: [PATCH 42/46] cmake: generate the SPIR wrapper for i386 hosts
+
+Use the generated wrapper with --address-bits 32 instead of the checked-in
+spir_wrapper32.ll, which only has scalar builtins. Like on RISC-V, generate
+it once per kernel library variant: the i386 ABI doesn't depend on the
+vector registers, and the variants without SSE2 never reach the generation
+in the SLEEF vector-size loop.
+
+(cherry picked from commit 4ca7a22e790c8aba83fd8a120fa90a8fd5beaa15)
+---
+ cmake/bitcode_rules.cmake      | 3 +++
+ lib/kernel/host/CMakeLists.txt | 7 ++++++-
+ 2 files changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/cmake/bitcode_rules.cmake b/cmake/bitcode_rules.cmake
+index 6f7d2878f..e84fc4ecf 100644
+--- a/cmake/bitcode_rules.cmake
++++ b/cmake/bitcode_rules.cmake
+@@ -281,6 +281,9 @@ function(generate_cpu_spir_wrapper ARCH SUBDIR SIZE OUTPUT)
+   if(ARCH STREQUAL "cpu_x86" AND LLC_TRIPLE MATCHES "-windows-gnu|-mingw32")
+     list(APPEND EXTRA_OPT "--mingw")
+   endif()
++  if(ARCH STREQUAL "cpu_x86")
++    list(APPEND EXTRA_OPT "--address-bits" "${HOST_DEVICE_ADDRESS_BITS}")
++  endif()
+ 
+   add_custom_command( OUTPUT "${FNAME}"
+       DEPENDS "${CMAKE_SOURCE_DIR}/lib/kernel/SPIR/generate_spir_wrapper.py"
+diff --git a/lib/kernel/host/CMakeLists.txt b/lib/kernel/host/CMakeLists.txt
+index 4c62894f4..2cc60a47f 100644
+--- a/lib/kernel/host/CMakeLists.txt
++++ b/lib/kernel/host/CMakeLists.txt
+@@ -583,7 +583,12 @@ function(compile_sleef VARIANT SLEEF_CONFIG SLEEF_CONFIG_NEW SLEEF_BC)
+   # the "runtime/clGetKernelArgInfo" requires working images with spir,
+   # that only works if we're using the new (generated) wrappers
+   set(HAVE_WORKING_IMAGES_WITH_SPIR OFF CACHE BOOL "image functions work with SPIR" FORCE)
+-  if(HOST_DEVICE_ADDRESS_BITS EQUAL 32)
++  if(I386)
++    # the i386 ABI passes vectors the same way regardless of the vector
++    # registers, so the 128bit wrapper works for every variant, including
++    # those without SSE2 that never reach the generation in the loop below
++    generate_cpu_spir_wrapper(cpu_x86 ${VARIANT} 128 SPIR_WRAPPER_FILE)
++  elseif(HOST_DEVICE_ADDRESS_BITS EQUAL 32)
+     set(SPIR_WRAPPER_FILE "host/spir_wrapper32.ll")
+   else()
+     if(RISCV)

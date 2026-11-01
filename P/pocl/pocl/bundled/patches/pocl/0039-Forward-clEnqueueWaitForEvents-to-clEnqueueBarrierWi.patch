@@ -1,0 +1,59 @@
+From e0a0e454a2bb70de9a38dc3a1a2299c030057b2c Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Wed, 7 Oct 2026 14:19:35 +0200
+Subject: [PATCH] Forward clEnqueueWaitForEvents to
+ clEnqueueBarrierWithWaitList
+
+Apart from rejecting an empty wait list, clEnqueueWaitForEvents behaves
+exactly like clEnqueueBarrierWithWaitList without an output event, so
+call it instead of duplicating its validation and command setup.
+
+(cherry picked from commit 743994899763ee0e80b81e3fcb6d9dd1e191b631)
+---
+ lib/CL/clEnqueueWaitForEvents.c | 26 ++------------------------
+ 1 file changed, 2 insertions(+), 24 deletions(-)
+
+diff --git a/lib/CL/clEnqueueWaitForEvents.c b/lib/CL/clEnqueueWaitForEvents.c
+index d517594fd..06ef63078 100644
+--- a/lib/CL/clEnqueueWaitForEvents.c
++++ b/lib/CL/clEnqueueWaitForEvents.c
+@@ -30,34 +30,12 @@ POname(clEnqueueWaitForEvents)(cl_command_queue  command_queue,
+                        const cl_event *  event_list) 
+ CL_API_SUFFIX__VERSION_1_0
+ {
+-  cl_int errcode;
+-  _cl_command_node *cmd;
+-
+-  POCL_RETURN_ERROR_COND ((!IS_CL_OBJECT_VALID (command_queue)),
+-                          CL_INVALID_COMMAND_QUEUE);
+-
+-  POCL_RETURN_ERROR_COND ((*(command_queue->device->available) == CL_FALSE),
+-                          CL_DEVICE_NOT_AVAILABLE);
+-
+   /* Unlike clEnqueueBarrierWithWaitList, an empty list is an error rather
+      than a wait for all previously enqueued commands. */
+   POCL_RETURN_ERROR_COND ((num_events == 0 || event_list == NULL),
+                           CL_INVALID_VALUE);
+ 
+-  errcode = pocl_check_event_wait_list (command_queue, num_events, event_list);
+-  if (errcode != CL_SUCCESS)
+-    return errcode;
+-
+-  /* A barrier with a wait list holds back the commands enqueued after it
+-     until the listed events have completed. */
+-  errcode = pocl_create_command (&cmd, command_queue, CL_COMMAND_BARRIER, NULL,
+-                                 num_events, event_list, NULL);
+-  if (errcode != CL_SUCCESS)
+-    return errcode;
+-
+-  cmd->command.barrier.has_wait_list = num_events;
+-  pocl_command_enqueue (command_queue, cmd);
+-
+-  return CL_SUCCESS;
++  return POname (clEnqueueBarrierWithWaitList) (command_queue, num_events,
++                                                event_list, NULL);
+ }
+ POsym(clEnqueueWaitForEvents)
+-- 
+2.56.0
+

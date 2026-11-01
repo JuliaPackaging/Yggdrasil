@@ -1,0 +1,114 @@
+From a9c78fdd8750b220c22fb8ba9d159a8c3245b73f Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Sat, 24 Oct 2026 14:45:00 +0200
+Subject: [PATCH] VariableUniformityAnalysis: don't reuse the uniformity of
+ deleted values
+
+The analysis caches uniformity by Value pointer and opts out of
+invalidation. Later transformations can delete a value and allocate
+another at the same address, which then inherits the cached uniformity.
+An incorrect "uniform" result makes WorkitemLoops skip saving the value
+separately for each work-item, so later uses can read the last
+work-item's value. Whether this happens depends on the allocator, so a
+kernel can compile correctly or not depending on the process's history.
+
+Store a WeakVH in each cache entry, and reject entries whose handle no
+longer matches the queried value.
+---
+ lib/llvmopencl/VariableUniformityAnalysis.cc  | 31 ++++++++++++-------
+ .../VariableUniformityAnalysisResult.hh       | 13 +++++++-
+ 2 files changed, 31 insertions(+), 13 deletions(-)
+
+diff --git a/lib/llvmopencl/VariableUniformityAnalysis.cc b/lib/llvmopencl/VariableUniformityAnalysis.cc
+index c616fe2f4..5ed45b752 100644
+--- a/lib/llvmopencl/VariableUniformityAnalysis.cc
++++ b/lib/llvmopencl/VariableUniformityAnalysis.cc
+@@ -237,14 +237,24 @@ void VariableUniformityAnalysisResult::analyzeBBDivergence(
+   }
+ }
+ 
++const bool *
++VariableUniformityAnalysisResult::lookupUniformity(llvm::Function *F,
++                                                   llvm::Value *V) const {
++  UniformityIndex &Cache = uniformityCache_[F];
++  UniformityIndex::iterator I = Cache.find(V);
++  if (I == Cache.end())
++    return nullptr;
++  if (I->second.Handle != V) {
++    // the cached value was deleted, and V reuses its address
++    Cache.erase(I);
++    return nullptr;
++  }
++  return &I->second.IsUniform;
++}
++
+ bool VariableUniformityAnalysisResult::isUniformityAnalyzed(
+     llvm::Function *F, llvm::Value *V) const {
+-  UniformityIndex &Cache = uniformityCache_[F];
+-  UniformityIndex::const_iterator I = Cache.find(V);
+-  if (I != Cache.end()) {
+-    return true;
+-  }
+-  return false;
++  return lookupUniformity(F, V) != nullptr;
+ }
+ 
+ /**
+@@ -261,11 +271,8 @@ bool VariableUniformityAnalysisResult::isUniformityAnalyzed(
+ bool VariableUniformityAnalysisResult::isUniform(llvm::Function *F,
+                                                  llvm::Value *V) {
+ 
+-  UniformityIndex &Cache = uniformityCache_[F];
+-  UniformityIndex::const_iterator I = Cache.find(V);
+-  if (I != Cache.end()) {
+-    return (*I).second;
+-  }
++  if (const bool *Cached = lookupUniformity(F, V))
++    return *Cached;
+ 
+   if (llvm::BasicBlock *BB = dyn_cast<llvm::BasicBlock>(V)) {
+     if (BB == &F->getEntryBlock()) {
+@@ -469,7 +476,7 @@ void VariableUniformityAnalysisResult::setUniform(llvm::Function *F,
+                                                   bool isUniform) {
+ 
+   UniformityIndex &Cache = uniformityCache_[F];
+-  Cache[V] = isUniform;
++  Cache[V] = UniformityEntry{llvm::WeakVH(V), isUniform};
+ 
+ #ifdef DEBUG_UNIFORMITY_ANALYSIS
+   std::cerr << "### ";
+diff --git a/lib/llvmopencl/VariableUniformityAnalysisResult.hh b/lib/llvmopencl/VariableUniformityAnalysisResult.hh
+index 5e1a5a4a8..c946b556f 100644
+--- a/lib/llvmopencl/VariableUniformityAnalysisResult.hh
++++ b/lib/llvmopencl/VariableUniformityAnalysisResult.hh
+@@ -35,6 +35,8 @@ template <typename, typename...> class AnalysisManager;
+ 
+ #include <map>
+ 
++#include <llvm/IR/ValueHandle.h>
++
+ namespace pocl {
+ class VariableUniformityAnalysisResult {
+ 
+@@ -58,8 +60,17 @@ public:
+ 
+ private:
+   bool isUniformityAnalyzed(llvm::Function *F, llvm::Value *V) const;
++  const bool *lookupUniformity(llvm::Function *F, llvm::Value *V) const;
+ 
+-  using UniformityIndex = std::map<llvm::Value *, bool>;
++  // The result is not invalidated when later passes transform the function,
++  // so the cache outlives values those passes delete. Each entry keeps a
++  // handle to its value, so that a new value allocated at the address of a
++  // deleted one doesn't inherit its uniformity.
++  struct UniformityEntry {
++    llvm::WeakVH Handle;
++    bool IsUniform;
++  };
++  using UniformityIndex = std::map<llvm::Value *, UniformityEntry>;
+   using UniformityCache = std::map<llvm::Function *, UniformityIndex>;
+   mutable UniformityCache uniformityCache_;
+ };
+-- 
+2.56.0
+

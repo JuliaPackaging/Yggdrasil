@@ -5,7 +5,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MUMPS"
 version = v"5.9.1"
-ygg_version = v"5.9.4"
+ygg_version = v"5.9.6"
 
 sources = [
   ArchiveSource("https://mumps-solver.org/MUMPS_$(version).tar.gz",
@@ -167,4 +167,4 @@ append!(dependencies, platform_dependencies)
 # Build the tarballs
 # We require Julia 1.9 since SCALAPACK32 only supports Julia 1.9
 build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.9", preferred_gcc_version=v"9")
+               augment_platform_block, julia_compat="1.10", preferred_gcc_version=v"9")

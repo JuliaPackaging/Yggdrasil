@@ -1,0 +1,40 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Sun, 25 Oct 2026 09:18:29 +0100
+Subject: [PATCH 46/46] Enable SPIR-V on 32-bit x86 CPU hosts
+
+SPIR-V was disabled on 32-bit hosts in #1883 after spirv/printf crashed on
+Debian's i386, armel and armhf builds (#1880), until the 32-bit support was
+finished. The crash itself (a double free on the error path for 64-bit
+modules) has since been fixed, and with the generated i386 SPIR wrapper and
+the preserved struct layouts, SPIR-V works on i386 System V hosts.
+
+ARM32, RISC-V32 and 32-bit Windows stay disabled: the wrapper generator
+doesn't know their ABIs.
+
+(cherry picked from commit ef51da3f6e909e7d98f84e1412c9770c5cfd4e8b)
+---
+ CMakeLists.txt | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index b008c7a48..03ddd874f 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1322,12 +1322,14 @@ endif()
+ find_package(Python3 3.8 COMPONENTS Interpreter)
+ 
+ # Determine whether we can use SPIRV on the host CPU device
+-# - we don't have a useful SPIRV wrapper for 32bit SPIRV
++# - of the 32bit targets, the SPIRV wrapper generator only knows
++#   the ABI of i386 System V (not ARM32, RISC-V32 or 32bit Windows)
+ # - on Windows/MSVC there's a mangling mismatch between
+ #   Clang (compiling the kernellib with MSVC function names)
+ #   and the SPIRV wrapper (only supporting Itanium mangling)
+ set(HOST_CPU_ENABLE_SPIRV OFF)
+-if(ENABLE_HOST_CPU_DEVICES AND ENABLE_SPIRV AND (NOT MSVC) AND (HOST_DEVICE_ADDRESS_BITS MATCHES "64"))
++if(ENABLE_HOST_CPU_DEVICES AND ENABLE_SPIRV AND (NOT MSVC) AND
++   ((HOST_DEVICE_ADDRESS_BITS MATCHES "64") OR (I386 AND NOT WIN32)))
+   set(HOST_CPU_ENABLE_SPIRV ON)
+ endif()
+ 

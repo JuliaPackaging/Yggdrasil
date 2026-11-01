@@ -4,11 +4,11 @@ using BinaryBuilder
 
 # Collection of sources required to build SymEngine
 name = "SymEngine"
-version = v"0.12.0"
+version = v"0.15.0"
 
 sources = [
     GitSource("https://github.com/symengine/symengine.git",
-              "088aa01bf4ba020e22b7492086abdc08b37a5f7f"),
+              "04d77d48ece96dda1a31ced7e6f24206bdb8f6e9"; tag="v$(version)"),
 ]
 
 # Bash recipe for building across all platforms
@@ -24,7 +24,6 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DBUILD_BENCHMARKS=no \
       -DBUILD_SHARED_LIBS=yes \
       -DWITH_MPC=yes \
-      -DWITH_COTIRE=no \
       -DWITH_SYMENGINE_THREAD_SAFE=yes ..
 make -j${nproc}
 make install
@@ -39,9 +38,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GMP_jll"; compat="6.2.0"),
+    Dependency("GMP_jll"; compat="6.2.1"),
     Dependency("MPFR_jll"; compat="4.1.1"),
-    Dependency("MPC_jll"; compat="1.2.1"),
+    # MPC 1.4.1 provides artifacts for both riscv64 Linux and aarch64 FreeBSD.
+    Dependency("MPC_jll"; compat="1.4.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

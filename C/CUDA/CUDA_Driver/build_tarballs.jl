@@ -28,7 +28,8 @@ driver_version = "610.57.04"
 # artifacts for Windows and non-L4T Tegra generations, which only existed to serve that
 # library, are gone too). 13.3.5: the newer 610.57.04 compat driver, which NVIDIA only
 # publishes as a datacenter driver redist (the CUDA 13.3.x toolkits ship 610.43.02).
-version = v"13.3.5"
+# 13.3.6: don't expose a rejected compat driver to child processes through LIBPATH.
+version = v"13.3.6"
 
 # the Tegra compat drivers to ship, per kernel-mode driver generation (the `tegra`
 # platform tag; see tegra_detection.jl). NVIDIA built L4T compat UMDs against the r35

@@ -3,12 +3,12 @@ using BinaryBuilder, Pkg
 include("../../L/libjulia/common.jl")
 
 name = "CasADiSWIG"
-version = v"3.8.1"
+version = v"3.8.2"
 
 sources = [
     ArchiveSource(
         "https://github.com/casadi/casadi/releases/download/$(version)/casadi-source-v$(version).zip",
-        "ddc1f74971e36c02970c96a13e23b2577ea625823aac7ba8f02a31a5815a2a54",
+        "e06ba23a96c9b2659afd5c2cd16d4f0b6f5971bf1c00386d79350525f1a38b48",
     ),
     DirectorySource("./bundled"),
 ]
@@ -45,7 +45,7 @@ install -Dvm644 swig/julia/CasADiNative.jl "${pkgdir}/casadi_native_body.jl"
 
 # The wrapper uses Julia C API accessors whose inline definitions are tied to
 # the Julia minor ABI. Each build covers every patch release in its minor line.
-filter!(v -> v.minor in (10, 11, 12), julia_versions)
+filter!(v -> v.minor in (10, 11, 12, 13), julia_versions)
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 # Match the platforms available from CasADi_jll.
@@ -68,7 +68,7 @@ products = [
 ]
 
 dependencies = [
-    Dependency("CasADi_jll"; compat="=3.8.1"),
+    Dependency("CasADi_jll"; compat="=3.8.2"),
     BuildDependency("libjulia_jll"),
 ]
 

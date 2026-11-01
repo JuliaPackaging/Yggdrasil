@@ -1,4 +1,4 @@
-From 51086234a863878f0efd833b88e64bdba18bf2c2 Mon Sep 17 00:00:00 2001
+From db7872c9491128bb7fac61bdd1b98ead3182012f Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Sun, 27 Sep 2026 14:53:17 +0200
 Subject: [PATCH] WorkitemLoops: don't rematerialize allocas without an
@@ -18,10 +18,10 @@ such allocas in the context instead.
  create mode 100644 tests/regression/test_remat_alloca_without_initializer.c
 
 diff --git a/lib/llvmopencl/WorkitemLoops.cc b/lib/llvmopencl/WorkitemLoops.cc
-index 447811251..dc42cb6e8 100644
+index 4c3a66a13..8a23b281f 100644
 --- a/lib/llvmopencl/WorkitemLoops.cc
 +++ b/lib/llvmopencl/WorkitemLoops.cc
-@@ -1172,6 +1172,14 @@ void WorkitemLoopsImpl::addContextSaveRestore(llvm::Instruction *Def) {
+@@ -1204,6 +1204,14 @@ void WorkitemLoopsImpl::addContextSaveRestore(llvm::Instruction *Def) {
      Uses.push_back(User);
    }
  
@@ -37,7 +37,7 @@ index 447811251..dc42cb6e8 100644
      bool CanRemat = true;
      int Depth = 0;
 diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
-index 5c50f524d..51dfb490c 100644
+index fd18b5546..676b857e2 100644
 --- a/tests/regression/CMakeLists.txt
 +++ b/tests/regression/CMakeLists.txt
 @@ -30,6 +30,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
@@ -48,7 +48,7 @@ index 5c50f524d..51dfb490c 100644
       test_unreachable_in_infinite_loop
       test_rematerialized_alloca_load_with_outside_pr_users
       test_peeled_wi_global_id
-@@ -172,6 +173,8 @@ add_test_pocl(NAME "regression/test_issue_1958" WORKITEM_HANDLER "loops;loopvec;
+@@ -178,6 +179,8 @@ add_test_pocl(NAME "regression/test_issue_1958" WORKITEM_HANDLER "loops;loopvec;
  
  add_test_pocl(NAME "regression/test_unreachable_kernel" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_unreachable_kernel" LABELS ${SPIRV_LABELS})
  
@@ -288,3 +288,6 @@ index 000000000..bd1da35b4
 +  printf("OK\n");
 +  return 0;
 +}
+-- 
+2.56.0
+

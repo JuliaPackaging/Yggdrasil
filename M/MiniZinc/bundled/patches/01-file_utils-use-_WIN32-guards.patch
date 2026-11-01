@@ -1,0 +1,116 @@
+diff --git a/cmake/targets/libmzn.cmake b/cmake/targets/libmzn.cmake
+index 6181a71e..94fbb3d4 100644
+--- a/cmake/targets/libmzn.cmake
++++ b/cmake/targets/libmzn.cmake
+@@ -131,6 +131,10 @@ if(WIN32)
+ endif()
+ 
+ target_link_libraries(mzn ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
++if(WIN32)
++  # MSVC links these implicitly (default libs and #pragma comment), MinGW does not.
++  target_link_libraries(mzn shlwapi shell32 ole32 uuid)
++endif()
+ 
+ ### Add Solver Interfaces to the MiniZinc library when available
+ include(cmake/targets/libminizinc_atlantis.cmake)
+diff --git a/lib/file_utils.cpp b/lib/file_utils.cpp
+index a8bfadcd..61cf8c1b 100644
+--- a/lib/file_utils.cpp
++++ b/lib/file_utils.cpp
+@@ -39,10 +39,13 @@
+ #include <sys/stat.h>
+ #include <sys/types.h>
+ 
++#ifdef _WIN32
++#include <windows.h>
++#include <shlwapi.h>
+ #ifdef _MSC_VER
+-#include "Shlwapi.h"
+ #pragma comment(lib, "Shlwapi.lib")
+-#include "Shlobj.h"
++#endif
++#include <shlobj.h>
+ 
+ #include <direct.h>
+ #else
+@@ -128,7 +131,7 @@ std::string file_path(const std::string& filename, const std::string& basePath)
+   auto f = !basePath.empty() && !is_absolute(filename) ? basePath + "/" + filename : filename;
+ 
+   // Get real path of absolute path or resolve relative to current directory
+-#ifdef _MSC_VER
++#ifdef _WIN32
+   LPWSTR lpFilePart;
+   DWORD nBufferLength = GetFullPathNameW(utf8_to_wide(f).c_str(), 0, nullptr, &lpFilePart);
+   auto* lpBuffer = static_cast<LPWSTR>(LocalAlloc(LMEM_FIXED, sizeof(WCHAR) * nBufferLength));
+@@ -158,7 +161,7 @@ std::string file_path(const std::string& filename, const std::string& basePath)
+ }
+ 
+ std::string dir_name(const std::string& filename) {
+-#ifdef _MSC_VER
++#ifdef _WIN32
+   size_t pos = filename.find_last_of("\\/");
+   return (pos == std::string::npos) ? "" : filename.substr(0, pos);
+ #else
+@@ -171,7 +174,7 @@ std::string dir_name(const std::string& filename) {
+ }
+ 
+ std::string base_name(const std::string& filename) {
+-#ifdef _MSC_VER
++#ifdef _WIN32
+   size_t pos = filename.find_last_of("\\/");
+   return (pos == std::string::npos) ? filename : filename.substr(pos + 1);
+ #else
+@@ -184,7 +187,7 @@ std::string base_name(const std::string& filename) {
+ }
+ 
+ bool is_absolute(const std::string& path) {
+-#ifdef _MSC_VER
++#ifdef _WIN32
+   if (path.size() > 2 &&
+       ((path[0] == '\\' && path[1] == '\\') || (path[0] == '/' && path[1] == '/'))) {
+     return true;
+@@ -197,7 +200,7 @@ bool is_absolute(const std::string& path) {
+ 
+ std::vector<std::string> get_env_list(const std::string& env) {
+   std::string path;
+-#ifdef _MSC_VER
++#ifdef _WIN32
+   wchar_t* path_c = _wgetenv(utf8_to_wide(env).c_str());
+   char pathsep = ';';
+   if (path_c != nullptr) {
+@@ -223,7 +226,7 @@ std::vector<std::string> get_env_list(const std::string& env) {
+ 
+ std::string find_executable(const std::string& filename, const std::string& basePath,
+                             const std::vector<std::string>& extraSearchDirs) {
+-#ifdef _MSC_VER
++#ifdef _WIN32
+   // On Windows, executables must end with one of these extensions
+   std::vector<std::string> exeSuffixes = get_env_list("PATHEXT");
+   if (std::find_if(exeSuffixes.begin(), exeSuffixes.end(), [&](const auto& suffix) {
+@@ -336,7 +339,7 @@ std::string find_library(const std::string& name, const std::string& basePath) {
+ 
+ std::vector<std::string> directory_list(const std::string& dir, const std::string& ext) {
+   std::vector<std::string> entries;
+-#ifdef _MSC_VER
++#ifdef _WIN32
+   WIN32_FIND_DATAW findData;
+   HANDLE hFind = ::FindFirstFileW(utf8_to_wide(dir + "/*." + ext).c_str(), &findData);
+   if (hFind != INVALID_HANDLE_VALUE) {
+@@ -373,7 +376,7 @@ std::vector<std::string> directory_list(const std::string& dir, const std::strin
+ }
+ 
+ std::string working_directory() {
+-#ifdef _MSC_VER
++#ifdef _WIN32
+   wchar_t wd[FILENAME_MAX];
+   if (_wgetcwd(wd, FILENAME_MAX) == FALSE) {
+     return "";
+@@ -420,7 +423,7 @@ std::string share_directory() {
+ }
+ 
+ std::string user_config_dir() {
+-#ifdef _MSC_VER
++#ifdef _WIN32
+   HRESULT hr;
+   PWSTR pszPath = nullptr;
+ 

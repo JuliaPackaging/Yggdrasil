@@ -3,18 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "s2n_tls"
-version = v"1.7.10"
+version = v"1.7.12"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/aws/s2n-tls.git", "bce022f4195c290175b70e925e08a458221608f0"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/aws/s2n-tls.git", "6459002cd61e4bf3bbc53db23f068b21da9ff6bd"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/s2n-tls
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/remove-unused-main-thread.patch
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_PREFIX_PATH=${prefix} \
