@@ -18,12 +18,13 @@ cmake --install build
 install_license LICENSE
 """
 
-platforms = [
-  Platform("x86_64", "linux"; libc="glibc"),
-  Platform("aarch64", "linux"; libc="glibc"),
-  Platform("x86_64", "macos"),
-  Platform("aarch64", "macos"),
-]
+platforms = supported_platforms()
+
+# Only Linux and macOS are supported.
+filter!(p -> Sys.islinux(p) || Sys.isapple(p), platforms)
+
+# Only 64-bit x86-64 and AArch64 builds are supported.
+filter!(p -> nbits(p) == 64 && arch(p) in ("x86_64", "aarch64"), platforms)
 
 products = [
   LibraryProduct("libvtk_julia", :libvtk_julia; dont_dlopen=true),
