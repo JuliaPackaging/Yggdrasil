@@ -35,7 +35,10 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/TIGRE
 
-# 1. Apply patches from bundled/patches
+# 1. Normalize line endings to LF (upstream CERN/TIGRE has mixed CRLF/LF line endings)
+find Common/CUDA -type f -exec dos2unix {} +
+
+# 2. Apply patches from bundled/patches
 if [ -d "${WORKSPACE}/srcdir/patches" ]; then
     for f in ${WORKSPACE}/srcdir/patches/*.patch; do
         echo "Applying patch ${f}..."
@@ -43,7 +46,7 @@ if [ -d "${WORKSPACE}/srcdir/patches" ]; then
     done
 fi
 
-# 2. Apply overlay files to Common/CUDA
+# 3. Apply overlay files to Common/CUDA
 if [ -d "${WORKSPACE}/srcdir/overlay" ]; then
     echo "Applying overlays to Common/CUDA..."
     cp -fv ${WORKSPACE}/srcdir/overlay/TIGRE_common.hpp Common/CUDA/
@@ -52,7 +55,7 @@ fi
 
 COMMON_DIR="Common/CUDA"
 
-# 3. Collect source files
+# 4. Collect source files
 UPSTREAM_SOURCES=(
     "${COMMON_DIR}/projection.cpp"
     "${COMMON_DIR}/TIGRE_common.cpp"
@@ -76,7 +79,7 @@ WRAPPER_SOURCES=(
     "${WORKSPACE}/srcdir/wrapper/src/tigre_julia_shim.cpp"
 )
 
-# 4. Locate CUDA toolkit and nvcc compiler
+# 5. Locate CUDA toolkit and nvcc compiler
 CUDA_HOME="${prefix}/cuda"
 NVCC="${CUDA_HOME}/bin/nvcc"
 
@@ -108,7 +111,7 @@ LIB_FLAGS=(
 
 mkdir -p "${libdir}"
 
-# 5. Compile shared library libtigre
+# 6. Compile shared library libtigre
 echo "Compiling libtigre..."
 ${NVCC} --shared -O3 --std=c++14 \
     --cudart shared \
@@ -123,7 +126,7 @@ ${NVCC} --shared -O3 --std=c++14 \
     "${LIB_FLAGS[@]}" \
     -o "${libdir}/libtigre.${dlext}"
 
-# 6. Install license files
+# 7. Install license files
 install_license LICENSE.txt
 install_license "${WORKSPACE}/srcdir/LICENSE"
 """
