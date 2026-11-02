@@ -68,7 +68,8 @@ dependencies = [
     ),
     Dependency(
         PackageSpec(name = "LLVMOpenMP_jll", uuid = "1d63c593-3942-5779-bab2-d838dc0a180e");
-        compat = "18.1.8",
+        # Newer Clang emits __kmpc_dispatch_deinit, which libomp 18 lacks.
+        compat = "19.1.7",
         platforms = filter(Sys.isbsd, platforms),
     ),
 ]
