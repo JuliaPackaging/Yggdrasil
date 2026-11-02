@@ -83,10 +83,28 @@ WRAPPER_SOURCES=(
 CUDA_HOME="${prefix}/cuda"
 NVCC="${CUDA_HOME}/bin/nvcc"
 
+# Determine CUDA major version
+cuda_major=12
+if [[ ${bb_full_target} == *-cuda+* ]]; then
+    cuda_ver=${bb_full_target##*-cuda+}
+    cuda_major=${cuda_ver%%.*}
+elif ${NVCC} --version &>/dev/null; then
+    cuda_ver=$(${NVCC} --version | sed -n 's/.*release \([0-9]*\)\..*/\1/p')
+    if [ -n "${cuda_ver}" ]; then
+        cuda_major="${cuda_ver}"
+    fi
+fi
+
 # Compute capability / architecture flags
 # Selected architectures for SASS generation, plus PTX fallback for future GPUs
-ARCH_FLAGS=(
-    "-gencode=arch=compute_70,code=sm_70"
+ARCH_FLAGS=()
+
+# CUDA < 13 supports Volta (sm_70); CUDA 13+ dropped sm_70 support
+if [ "${cuda_major}" -lt 13 ]; then
+    ARCH_FLAGS+=("-gencode=arch=compute_70,code=sm_70")
+fi
+
+ARCH_FLAGS+=(
     "-gencode=arch=compute_75,code=sm_75"
     "-gencode=arch=compute_80,code=sm_80"
     "-gencode=arch=compute_86,code=sm_86"
