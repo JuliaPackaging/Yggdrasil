@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Geant4_julia"
-version = v"0.4.1"
+version = v"0.4.2"
 
 # Collection of sources required to build Geant4_julia
 sources = [
     GitSource("https://github.com/peremato/Geant4_cxxwrap.git",
-              "9ba310a36f7cc13ea562573535946ca909341736"),
+              "484583aa00e45443389a1366ebb12029eb44e164"),
 ]
 
 # Bash recipe for building across all platforms
