@@ -6,10 +6,10 @@ name = "tok"
 version = v"1.0.3"
 
 # tok: a plain-text notation for BPMN process models and DMN decisions. tok_jll ships the
-# C library of the tok engine (crate tok-capi), which the Julia package Tok.jl loads.
+# C library of the tok engine (crate tok-capi), which the Julia package TokLang.jl loads.
 sources = [
     GitSource("https://github.com/tok-lang-bpm/tok.git",
-              "464f1b73b5b2aed5444a93cd26c165752f521a62"), # v1.0.3
+              "464f1b73b5b2aed5444a93cd26c165752f521a62"; tag="v$(version)"),
 ]
 
 script = raw"""
