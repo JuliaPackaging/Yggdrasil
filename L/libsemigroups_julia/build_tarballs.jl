@@ -55,7 +55,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency(PackageSpec(; name="libjulia_jll", version="1.11.4")),
-    Dependency("libcxxwrap_julia_jll", v"0.14.12"; compat="~0.14.12"),
+    Dependency("libcxxwrap_julia_jll"; compat="~0.14.12"),
     Dependency("libsemigroups_jll"; compat="=3.6.1"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
