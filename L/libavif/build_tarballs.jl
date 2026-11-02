@@ -3,11 +3,11 @@
 using BinaryBuilder, BinaryBuilderBase, Pkg
 
 name = "libavif"
-version = v"1.4.1"
+version = v"1.4.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/AOMediaCodec/libavif", "6543b22b5bc706c53f038a16fe515f921556d9b3"),
+    GitSource("https://github.com/AOMediaCodec/libavif", "c5240fc79fe5c2407e10afd35f5505ef6333ea49"; tag="v$(version)"),
 ]
 
 # Bash recipe for building across all platforms
@@ -42,12 +42,12 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     HostBuildDependency("CMake_jll"),
-    Dependency("JpegTurbo_jll"),
+    Dependency("JpegTurbo_jll"; compat="3.2.1"),
     Dependency("XML2_jll"; compat="~2.13.6"),
-    Dependency("Zlib_jll"),
-    Dependency("dav1d_jll"),
-    Dependency("libaom_jll"),
-    Dependency("libpng_jll"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
+    Dependency("dav1d_jll"; compat="1.5.4"),
+    Dependency("libaom_jll"; compat="3.15.3"),
+    Dependency("libpng_jll"; compat="1.6.59"),
     Dependency("libyuv_jll"; compat="0.1.0"),
 ]
 
