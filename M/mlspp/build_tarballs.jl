@@ -51,7 +51,7 @@ products = [
 dependencies = [
     Dependency("OpenSSL_jll";
                compat="3.0.16"),
-    BuildDependency("nlohmann_json_jll"),
+    BuildDependency(PackageSpec(name="nlohmann_json_jll", version=v"3.12.0")),
     Dependency("CompilerSupportLibraries_jll";
                compat="1.1.2",
                platforms=filter(!Sys.isbsd, platforms)),
