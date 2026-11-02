@@ -1,56 +1,56 @@
 # build_tarballs.jl
-# BinaryBuilder.jl recipe for Tigre_jll (libtigre_julia)
+# BinaryBuilder.jl recipe for Tigre_jll (libtigre)
 
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms: arch, os, tags
 
 # Support platforms and helpers from Yggdrasil
-if isfile(joinpath(@__DIR__, "../../platforms/cuda.jl"))
-    include("../../platforms/cuda.jl")
-else
-    include(joinpath(@__DIR__, "platforms/cuda.jl"))
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
+
+# Compatibility shim for older local BinaryBuilderBase where `tag` kwarg is not yet supported
+let BB = parentmodule(GitSource)
+    if !hasmethod(GitSource, Tuple{String, String}, (:tag,))
+        Core.eval(BB, :(GitSource(url::String, hash::String; tag::String = "", unpack_target::String = "") = GitSource(url, hash, unpack_target)))
+    end
 end
 
 name = "Tigre"
-version = v"2.7.0"
+version = v"3.1.3"
 
 # Sources: CERN/TIGRE upstream GitSource and bundled Julia shims/overlays
 # Note: GitHub automatic tarball archives are rejected by BinaryBuilderBase due to unstable checksums.
-# GitSource with a pinned commit hash is the standard, stable source format in Yggdrasil.
+# GitSource with a pinned commit hash and release tag is the standard, stable source format in Yggdrasil.
 sources = [
     GitSource(
         "https://github.com/CERN/TIGRE.git",
-        "81b6be2cc12ee630d36cba941e111ba14ba34c7c",
+        "9aad4fe623e8e0dbc5fed32958973e1173185ea0";
+        tag = "v$(version)",
     ),
     DirectorySource("./bundled"),
 ]
 
 # Bash script executed inside BinaryBuilder sandbox
 script = raw"""
-cd ${WORKSPACE}/srcdir
+cd ${WORKSPACE}/srcdir/TIGRE
 
-# 1. Locate TIGRE source root
-if [ -d "TIGRE" ]; then
-    TIGRE_DIR="TIGRE"
-elif [ -d "Common/CUDA" ]; then
-    TIGRE_DIR="."
-else
-    TIGRE_DIR=$(find . -maxdepth 2 -iname "tigre*" -type d | head -n 1)
+# 1. Apply patches from bundled/patches
+if [ -d "${WORKSPACE}/srcdir/patches" ]; then
+    for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+        echo "Applying patch ${f}..."
+        atomic_patch -p1 ${f}
+    done
 fi
-
-if [ -z "${TIGRE_DIR}" ] || [ ! -d "${TIGRE_DIR}/Common/CUDA" ]; then
-    echo "ERROR: TIGRE source directory not found! Listing srcdir:"
-    ls -la
-    exit 1
-fi
-COMMON_DIR="${TIGRE_DIR}/Common/CUDA"
 
 # 2. Apply overlay files to Common/CUDA
-if [ -d "overlay" ]; then
-    echo "Applying overlays to ${COMMON_DIR}..."
-    cp -fv overlay/TIGRE_common.hpp "${COMMON_DIR}/"
-    cp -fv overlay/TIGRE_common.cpp "${COMMON_DIR}/"
+if [ -d "${WORKSPACE}/srcdir/overlay" ]; then
+    echo "Applying overlays to Common/CUDA..."
+    cp -fv ${WORKSPACE}/srcdir/overlay/TIGRE_common.hpp Common/CUDA/
+    cp -fv ${WORKSPACE}/srcdir/overlay/TIGRE_common.cpp Common/CUDA/
 fi
+
+COMMON_DIR="Common/CUDA"
 
 # 3. Collect source files
 UPSTREAM_SOURCES=(
@@ -72,27 +72,13 @@ UPSTREAM_SOURCES=(
 )
 
 WRAPPER_SOURCES=(
-    "wrapper/src/tigre_julia_runtime.cpp"
-    "wrapper/src/tigre_julia_shim.cpp"
+    "${WORKSPACE}/srcdir/wrapper/src/tigre_julia_runtime.cpp"
+    "${WORKSPACE}/srcdir/wrapper/src/tigre_julia_shim.cpp"
 )
 
 # 4. Locate CUDA toolkit and nvcc compiler
-if [ -d "${prefix}/cuda" ]; then
-    CUDA_HOME="${prefix}/cuda"
-elif [ -d "${WORKSPACE}/destdir/cuda" ]; then
-    CUDA_HOME="${WORKSPACE}/destdir/cuda"
-else
-    CUDA_HOME="/usr/local/cuda"
-fi
-
-NVCC="nvcc"
-if [ -f "${CUDA_HOME}/bin/nvcc" ]; then
-    NVCC="${CUDA_HOME}/bin/nvcc"
-elif command -v nvcc >/dev/null 2>&1; then
-    NVCC="$(command -v nvcc)"
-fi
-echo "Using nvcc at: ${NVCC}"
-${NVCC} --version
+CUDA_HOME="${prefix}/cuda"
+NVCC="${CUDA_HOME}/bin/nvcc"
 
 # Compute capability / architecture flags
 # Selected architectures for SASS generation, plus PTX fallback for future GPUs
@@ -108,7 +94,7 @@ ARCH_FLAGS=(
 
 INCLUDE_FLAGS=(
     "-I${COMMON_DIR}"
-    "-Iwrapper/include"
+    "-I${WORKSPACE}/srcdir/wrapper/include"
     "-I${CUDA_HOME}/include"
     "-I${prefix}/include"
 )
@@ -122,8 +108,8 @@ LIB_FLAGS=(
 
 mkdir -p "${libdir}"
 
-# 5. Compile shared library libtigre_julia
-echo "Compiling libtigre_julia..."
+# 5. Compile shared library libtigre
+echo "Compiling libtigre..."
 ${NVCC} --shared -O3 --std=c++14 \
     --cudart shared \
     --expt-relaxed-constexpr \
@@ -135,52 +121,48 @@ ${NVCC} --shared -O3 --std=c++14 \
     "${UPSTREAM_SOURCES[@]}" \
     "${WRAPPER_SOURCES[@]}" \
     "${LIB_FLAGS[@]}" \
-    -o "${libdir}/libtigre_julia.${dlext}"
+    -o "${libdir}/libtigre.${dlext}"
 
 # 6. Install license files
-install_license "${TIGRE_DIR}/LICENSE.txt"
-if [ -f "LICENSE" ]; then
-    install_license "LICENSE"
-fi
+install_license LICENSE.txt
+install_license "${WORKSPACE}/srcdir/LICENSE"
 """
 
 # Products: exported shared library
 products = [
-    LibraryProduct("libtigre_julia", :libtigre_julia),
+    LibraryProduct("libtigre", :libtigre),
 ]
 
-# Base platform: Linux x86_64 glibc
-base_platforms = [
-    Platform("x86_64", "linux"; libc = "glibc"),
+# Platforms: Start from CUDA-supported platforms and filter as needed
+# TIGRE directly invokes the nvcc compiler without an aarch64 cross-nvcc toolchain
+platforms = CUDA.supported_platforms(; min_version = v"12.0")
+filter!(p -> arch(p) == "x86_64", platforms)
+
+dependencies = [
+    Dependency(PackageSpec(name = "CompilerSupportLibraries_jll")),
 ]
 
-# Targeted CUDA versions for initial recipe: CUDA 12 series (e.g. 12.4)
-cuda_platforms = Platform[]
-for p in base_platforms
-    plat = deepcopy(p)
-    plat["cuda"] = "12.4"
-    push!(cuda_platforms, plat)
-end
+for platform in platforms
+    should_build_platform(triplet(platform)) || continue
 
-# Non-platform arguments passed to build_tarballs
-non_platform_ARGS = filter(arg -> startswith(arg, "--"), ARGS)
-
-for plat in cuda_platforms
     deps = BinaryBuilder.AbstractDependency[
-        CUDA.required_dependencies(plat)...
+        dependencies;
+        CUDA.required_dependencies(platform)...
     ]
 
     build_tarballs(
-        non_platform_ARGS,
+        ARGS,
         name,
         version,
         sources,
         script,
-        [plat],
+        [platform],
         products,
         deps;
+        lazy_artifacts = true,
         julia_compat = "1.10",
         augment_platform_block = CUDA.augment,
+        dont_dlopen = true,
         preferred_gcc_version = v"10",
     )
 end
