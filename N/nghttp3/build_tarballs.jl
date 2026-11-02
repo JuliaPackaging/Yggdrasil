@@ -2,12 +2,13 @@ using BinaryBuilder, Pkg
 using BinaryBuilderBase: sanitize
 
 name = "nghttp3"
-version = v"1.8.0"
+version = v"1.19.0"
 llvm_version = v"13.0.1"
 
 sources = [
     GitSource("https://github.com/ngtcp2/nghttp3.git",
-              "96ad17fd71d599b78a11e0ff635eccb7d2f6d649"),
+              "dc83309ca5fd2beb91cc5c030a2d30525e9f2a00";
+              tag="v$(version)"),
 ]
 
 script = raw"""
@@ -39,4 +40,4 @@ dependencies = [
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_llvm_version=llvm_version)
+               julia_compat="1.6", preferred_gcc_version=v"5", preferred_llvm_version=llvm_version)
