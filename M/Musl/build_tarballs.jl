@@ -1,67 +1,65 @@
-using BinaryBuilder
+using BinaryBuilder2
 
-name = "Musl"
+# Musl is the libc sysroot that BinaryBuilder2's `*-linux-musl*` C toolchains are
+# built against and ship, so we install the full `usr/` tree (headers, CRT objects,
+# static and shared libraries), plus the dynamic loader in `lib/`.
 version = v"1.2.6"
 
-# sources to build, such as mingw32, our patches, etc....
-sources = [
-    ArchiveSource("https://www.musl-libc.org/releases/musl-$(version).tar.gz",
-                  "d585fd3b613c66151fc3249e8ed44f77020cb5e6c1e635a616d3f9f82460512a"),
-]
+build_tarballs(;
+    src_name = "Musl",
+    src_version = version,
+    sources = [
+        ArchiveSource("https://musl.libc.org/releases/musl-$(version).tar.gz",
+                      "d585fd3b613c66151fc3249e8ed44f77020cb5e6c1e635a616d3f9f82460512a"),
+    ],
+    script = raw"""
+    mkdir ${WORKSPACE}/srcdir/musl_build
+    cd ${WORKSPACE}/srcdir/musl_build
 
-# Bash recipe for building across all platforms
-script = raw"""
-cd ${WORKSPACE}/srcdir/musl-*
+    musl_arch()
+    {
+        case "${target}" in
+            i686*)
+                echo i386 ;;
+            arm*)
+                echo armhf ;;
+            *)
+                echo ${target%%-*} ;;
+        esac
+    }
 
-mkdir musl_build && cd musl_build
+    # Force an SONAME with a version number
+    export LDFLAGS="-Wl,-soname,libc.musl-$(musl_arch).so.1"
+    ${WORKSPACE}/srcdir/musl-*/configure --prefix=/usr \
+        --build=${MACHTYPE} \
+        --host=${target} \
+        --disable-multilib \
+        --disable-werror \
+        --enable-optimize \
+        --enable-debug \
+        --disable-gcc-wrapper
 
-musl_arch()
-{
-    case "${target}" in
-        i686*)
-            echo i386 ;;
-        arm*)
-            echo armhf ;;
-        *)
-            echo ${target%%-*} ;;
-    esac
-}
+    make -j${nproc}
+    make install DESTDIR="${prefix}"
 
-export LDFLAGS="${LDFLAGS} -Wl,-soname,libc.musl-$(musl_arch).so.1"
-${WORKSPACE}/srcdir/musl-*/configure --prefix=/usr \
-    --build=${MACHTYPE} \
-    --host=${target} \
-    --disable-multilib \
-    --disable-werror \
-    --enable-optimize \
-    --enable-debug
+    # `make install` points the loader at the absolute path `/usr/lib/libc.so`,
+    # make it relative so it resolves within the prefix.  Also provide the SONAME.
+    ln -sfv ../usr/lib/libc.so ${prefix}/lib/ld-musl-$(musl_arch).so.1
+    ln -sfv libc.so ${prefix}/usr/lib/libc.musl-$(musl_arch).so.1
 
-make -j${nproc}
-
-# Install to fake directory
-make install DESTDIR=${WORKSPACE}/srcdir/musl_deploy
-
-# In reality, all we want is what we need to run Musl programs, so
-# we just copy the dynamic loader directly over.
-mkdir -p ${prefix}/lib
-loader=$(echo ${WORKSPACE}/srcdir/musl_deploy/lib/*.so*)
-mv ${WORKSPACE}/srcdir/musl_deploy/usr/lib/libc.so ${prefix}/lib/$(basename "${loader}")
-
-install_license ${WORKSPACE}/srcdir/musl-*/COPYRIGHT
-"""
-
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = supported_platforms(; exclude=p->libc(p) != "musl")
-
-# The products that we will ensure are always built
-products = [
-    LibraryProduct(["ld-musl-x86_64", "ld-musl-i386", "ld-musl-armhf", "ld-musl-aarch64"], :libc; dont_dlopen=true),
-]
-
-# Dependencies that must be installed before this package can be built
-dependencies = [
-]
-
-# Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", skip_audit=true)
+    install_license ${WORKSPACE}/srcdir/musl-*/COPYRIGHT
+    """,
+    platforms = [
+        Platform("x86_64", "linux"; libc="musl"),
+        Platform("i686", "linux"; libc="musl"),
+        Platform("aarch64", "linux"; libc="musl"),
+        Platform("armv6l", "linux"; libc="musl"),
+        Platform("armv7l", "linux"; libc="musl"),
+    ],
+    products = [
+        LibraryProduct(["usr/lib/libc"], :libc),
+    ],
+    # Use the bootstrap toolchain, since this is part of building the toolchain itself
+    host_toolchains = [CToolchain(;vendor=:bootstrap), HostToolsToolchain()],
+    target_toolchains = [CToolchain(;vendor=:bootstrap)],
+)

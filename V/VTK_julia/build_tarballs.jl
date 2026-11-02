@@ -26,6 +26,7 @@ filter!(p -> Sys.islinux(p) || Sys.isapple(p), platforms)
 # Only 64-bit x86-64 and AArch64 builds are supported.
 filter!(p -> nbits(p) == 64 && arch(p) in ("x86_64", "aarch64"), platforms)
 
+
 products = [
   LibraryProduct("libvtk_julia", :libvtk_julia; dont_dlopen=true),
   FileProduct("VTKGen.jl", :VTKGen_exports)

@@ -239,6 +239,10 @@ components:
   R/ReferenceBLAS/:
     - amontoison
     - imciner2
+  R/ROOT/:
+    - grasph
+  R/ROOT_julia/:
+    - grasph
   S/SCALAPACK/:
     - amontoison
   S/SCALAPACK32/:
@@ -286,5 +290,7 @@ components:
     - amontoison
   V/very_nauty/:
     - Krastanov
+  W/WrapIt/:
+    - grasph
   Z/zrl:
     - StefanKarpinski
