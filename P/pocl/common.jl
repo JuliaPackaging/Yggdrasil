@@ -230,11 +230,17 @@ function build_script(standalone=false; spirv32=false)
     #   divisions for ranges starting in the first row and a second MXCSR read when the
     #   caller's FP environment already matches the kernel's; flags the kernel raises may now
     #   stay raised, as with a C function call (JuliaGPU/pocl#9)
+    # - 0046, 0047: accept SPIR-V using SPV_KHR_bfloat16, which LLVM's SPIR-V back-end emits
+    #   for `bfloat` (Julia's BFloat16), and report it through cl_khr_spirv_queries; the JIT
+    #   provides the float/double to bfloat16 conversion helpers that x86-64 codegen calls
+    #   (JuliaGPU/pocl#10)
+    # - 0048: fix abs() of INT_MIN and LONG_MIN, which relied on signed overflow, so LLVM
+    #   assumed the result's top bit is clear (pocl/pocl#2423, JuliaGPU/pocl#11)
     #
     # The `pocl` series on v7.2 is the one this series was rebased from: 0001-0042 also carry
     # the backports that release_next has, and older revisions of upstream PRs #2281, #2384,
-    # #2394 and #2410; 0043-0048 are 0036-0038 and 0041-0043 above. It doesn't have
-    # cl_pocl_host_kernel.
+    # #2394 and #2410; 0043-0051 are 0036-0038, 0041-0043 and 0046-0048 above. It doesn't
+    # have cl_pocl_host_kernel.
     for patch in @PATCHES@; do
         atomic_patch -p1 $patch
     done
