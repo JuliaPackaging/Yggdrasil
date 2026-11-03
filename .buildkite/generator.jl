@@ -37,6 +37,8 @@ include("utils.jl")
 # Give a warning if the pkgserver is too far behind
 check_pkgserver_latency()
 
+SHOULD_REGISTER && check_register_access()
+
 # Projects whose unchanged platforms reuse the tarballs of the previous release instead of
 # being rebuilt, see `.ci/bb1_project/plan_reuse.jl`.
 const REUSE_TARBALLS = Set{String}([
