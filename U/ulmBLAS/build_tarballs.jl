@@ -23,6 +23,7 @@ cd ${WORKSPACE}/srcdir/ulmBLAS
 flags() {
     case $1 in
     neon)     echo "-DULMBLAS_NO_SME";;
+    sme)      echo "-mcpu=apple-m4";;
     x86_64)   echo "-msse3";;
     haswell)  echo "-mavx -mavx2 -mfma" \
                    "-DULMBLAS_DGEMM_UKERNEL_openblas_haswell_4x8" \
@@ -47,6 +48,10 @@ for v in ${variants}; do
     # The makefile picks these with `uname`, i.e. for the build host.
     if [[ ${target} == *-apple-* ]]; then
         link="-dynamiclib -Wl,-force_load,${build}/liblbtblas.a"
+        if [[ ${v} == sme ]]; then
+            # the SME support routines (`__arm_tpidr2_save`, ...), linked statically
+            link+=" -L${libdir}/darwin -lclang_rt.osx"
+        fi
     else
         link="-shared -Wl,--whole-archive ${build}/liblbtblas.a -Wl,--no-whole-archive"
         link+=" -static-libstdc++ -static-libgcc -Wl,--no-undefined -Wl,--strip-debug"
@@ -76,16 +81,16 @@ filter!(!Sys.iswindows, platforms)
 # Not built or tested yet: FreeBSD and musl.
 filter!(p -> !Sys.isfreebsd(p) && libc(p) != "musl", platforms)
 
-# macOS: NEON for all Apple silicon.  The SME2 kernels of ulmBLAS (M4 and
-# later) need the SME support routines of compiler-rt (LLVMCompilerRT_jll
-# 20, not yet available) and will be added in a later version.
-variants(p) = Sys.isapple(p) ? ["neon"] : ["x86_64", "haswell", "skylakex", "zen4"]
+# macOS: NEON for all Apple silicon, SME2 for Apple M4 and later.
+variants(p) = Sys.isapple(p) ? ["neon", "sme"] : ["x86_64", "haswell", "skylakex", "zen4"]
 
 # Not loaded with the JLL: only some variants run on a given CPU.
 products(p) = [LibraryProduct("libulmblas_$(v)", Symbol("libulmblas_$(v)"); dont_dlopen=true)
                for v in variants(p)]
 
-dependencies = Dependency[]
+# Only needed to link libulmblas_sme: there is no runtime dependency.
+dependencies(p) = Sys.isapple(p) ?
+    [BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", version="20.1.8"))] : Dependency[]
 
 for platform in platforms
     should_build_platform(triplet(platform)) || continue
@@ -96,7 +101,7 @@ for platform in platforms
     compilers = Sys.islinux(platform) ? (; preferred_gcc_version=v"11") : (;)
     build_tarballs(ARGS, name, version, sources,
                    "variants=\"$(join(variants(platform), ' '))\"\n" * script,
-                   [platform], products(platform), dependencies;
+                   [platform], products(platform), dependencies(platform);
                    julia_compat="1.9",
                    # The variants choose their instruction sets.
                    lock_microarchitecture=false,
