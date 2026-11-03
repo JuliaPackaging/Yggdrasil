@@ -1,0 +1,114 @@
+From d8d35e3578aaff31d63c5ae83ef31b7784e42756 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Tue, 3 Nov 2026 14:56:43 +0100
+Subject: [PATCH] Fix abs() of the minimum signed integer
+
+abs() returns ugentype, so abs(INT_MIN) is (uint)2147483648. The int
+overload used __builtin_abs, which is undefined for INT_MIN and becomes
+llvm.abs with int_min_is_poison set, and the long overload negated the
+signed value with an nsw sub. LLVM then assumed that the result's top
+bit is clear, e.g. folding abs(x) >> 31 to 0 or converting abs(x) to
+float as a signed value. Vector overloads were split down to these
+scalar ones, and abs_diff() of operands with different signs uses
+abs().
+
+Negate in the unsigned type instead, for all types at once, which LLVM
+turns into llvm.abs without the poison flag.
+
+Register the existing kernel/test_abs and kernel/test_abs_diff, which
+were never run, and check the top bit of abs() of the minimum value.
+---
+ lib/kernel/abs.cl           | 16 +++++++---------
+ tests/kernel/CMakeLists.txt |  7 +++++++
+ tests/kernel/test_abs.cl    | 26 ++++++++++++++++++++++++++
+ 3 files changed, 40 insertions(+), 9 deletions(-)
+
+diff --git a/lib/kernel/abs.cl b/lib/kernel/abs.cl
+index 22b6e4ff4..14bea59c4 100644
+--- a/lib/kernel/abs.cl
++++ b/lib/kernel/abs.cl
+@@ -24,12 +24,10 @@
+ 
+ #include "templates.h"
+ 
+-#define __builtin_abshh(a)   ((uchar )(a>=(char )0 ? a : (char )-a))
+-#define __builtin_absh(a)    ((ushort)(a>=(short)0 ? a : (short)-a))
+-#define __builtin_absl(a)    ((ulong )(a>=(long )0 ? a : (long )-a))
+-#define __builtin_absuhh(a)  a
+-#define __builtin_absuh(a)   a
+-#define __builtin_absu(a)    a
+-#define __builtin_absul(a)   a
+-
+-DEFINE_BUILTIN_UG_G(abs)
++/* abs(INT_MIN) is 2^31 as uint. Negate in the unsigned type: negating the
++   signed value overflows for the minimum value, and __builtin_abs is
++   undefined for it. */
++DEFINE_EXPR_UG_G (abs, ({
++                    ugtype u = __builtin_astype (a, ugtype);
++                    a < (gtype)0 ? -u : u;
++                  }))
+diff --git a/tests/kernel/CMakeLists.txt b/tests/kernel/CMakeLists.txt
+index 481203c77..e52338b39 100644
+--- a/tests/kernel/CMakeLists.txt
++++ b/tests/kernel/CMakeLists.txt
+@@ -52,6 +52,12 @@ add_test_pocl(NAME "kernel/test_convert_type_8"
+ add_test_pocl(NAME "kernel/test_convert_type_16"
+               COMMAND "kernel" "test_convert_type_16")
+ 
++add_test_pocl(NAME "kernel/test_abs"
++              COMMAND "kernel" "test_abs")
++
++add_test_pocl(NAME "kernel/test_abs_diff"
++              COMMAND "kernel" "test_abs_diff")
++
+ add_test_pocl(NAME "kernel/test_bitselect"
+               COMMAND "kernel" "test_bitselect")
+ 
+@@ -125,6 +131,7 @@ foreach(VARIANT ${VARIANTS})
+     "kernel/test_convert_type_1_${VARIANT}" "kernel/test_convert_type_2_${VARIANT}" "kernel/test_convert_type_4_${VARIANT}"
+     "kernel/test_convert_type_8_${VARIANT}" "kernel/test_convert_type_16_${VARIANT}"
+     "kernel/test_hadd_${VARIANT}" "kernel/test_rotate_${VARIANT}"
++    "kernel/test_abs_${VARIANT}" "kernel/test_abs_diff_${VARIANT}"
+     PROPERTIES
+       COST 40.0
+       PROCESSORS 1
+diff --git a/tests/kernel/test_abs.cl b/tests/kernel/test_abs.cl
+index f41007f20..78c648e5b 100644
+--- a/tests/kernel/test_abs.cl
++++ b/tests/kernel/test_abs.cl
+@@ -19,6 +19,32 @@ DEFINE_BODY_G_HADD (test_abs, ({
+                             }
+                           error = true;
+                         }
++                      // abs of the minimum value is 2^(bits-1), so the top
++                      // bit of the result is set. Computing it as a signed
++                      // negation overflows, after which LLVM may assume that
++                      // the bit is clear.
++                      Tvec m, res_top;
++                      for (int n = 0; n < vecsize; ++n)
++                        {
++                          m.s[n] = x.s[n] & tmin;
++                        }
++                      res_top.u = abs (m.v) >> (sugtype)(bits - 1);
++                      equal = true;
++                      for (int n = 0; n < vecsize; ++n)
++                        {
++                          equal = equal && res_top.s[n] == (m.s[n] != 0);
++                        }
++                      if (!equal)
++                        {
++                          printf ("FAIL: abs top bit type=%s\n", typename);
++                          for (int n = 0; n < vecsize; ++n)
++                            {
++                              printf ("   [%d] a=%s good=%d res=%d\n", n,
++                                      m.s[n] != 0 ? "min" : "0",
++                                      (int)(m.s[n] != 0), (int)res_top.s[n]);
++                            }
++                          error = true;
++                        }
+                     }))
+ 
+ kernel void
+-- 
+2.56.0
+

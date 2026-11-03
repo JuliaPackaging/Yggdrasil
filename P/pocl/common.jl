@@ -234,10 +234,12 @@ function build_script(standalone=false; spirv32=false)
     #   for `bfloat` (Julia's BFloat16), and report it through cl_khr_spirv_queries; the JIT
     #   provides the float/double to bfloat16 conversion helpers that x86-64 codegen calls
     #   (JuliaGPU/pocl#10)
+    # - 0048: fix abs() of INT_MIN and LONG_MIN, which relied on signed overflow, so LLVM
+    #   assumed the result's top bit is clear (pocl/pocl#2423, JuliaGPU/pocl#11)
     #
     # The `pocl` series on v7.2 is the one this series was rebased from: 0001-0042 also carry
     # the backports that release_next has, and older revisions of upstream PRs #2281, #2384,
-    # #2394 and #2410; 0043-0050 are 0036-0038, 0041-0043 and 0046-0047 above. It doesn't
+    # #2394 and #2410; 0043-0051 are 0036-0038, 0041-0043 and 0046-0048 above. It doesn't
     # have cl_pocl_host_kernel.
     for patch in @PATCHES@; do
         atomic_patch -p1 $patch
