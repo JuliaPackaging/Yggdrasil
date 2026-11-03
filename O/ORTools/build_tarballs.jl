@@ -56,7 +56,7 @@ if [[ "$target" == *mingw* ]]; then
     # BUILD_DEPS=ON (it is a CMAKE_DEPENDENT_OPTION), so enable the other
     # bundled dependencies one by one instead.
     CMAKE_DEPS_ARGS=(
-        -DBZIP2_LIBRARY_RELEASE:FILEPATH=${libdir}/libbz2-1.dll
+        -DBZIP2_LIBRARY_RELEASE:FILEPATH=${bindir}/libbz2-1.dll
         -DBUILD_DEPS:BOOL=OFF
         -DBUILD_ZLIB:BOOL=ON
         -DBUILD_absl:BOOL=ON
