@@ -63,3 +63,5 @@ build_tarballs(;
     host_toolchains = [CToolchain(;vendor=:bootstrap), HostToolsToolchain()],
     target_toolchains = [CToolchain(;vendor=:bootstrap)],
 )
+
+# Build trigger: 1
