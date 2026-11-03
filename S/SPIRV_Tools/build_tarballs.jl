@@ -3,21 +3,19 @@
 using BinaryBuilder, Pkg
 
 const YGGDRASIL_DIR = "../.."
-include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 
 name = "SPIRV_Tools"
-version = v"2025.4"
+version = v"2026.4"
 
 # Collection of sources required to build SPIRV-Tools
 sources = [
-    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "7f2d9ee926f98fc77a3ed1e1e0f113b8c9c49458"),
-    # vendored dependencies, see the DEPS file
-    GitSource("https://github.com/google/effcee.git", "514b52ec61609744d7e587d93a7ef9b60407ab45"),
-    GitSource("https://github.com/google/googletest", "50b8600c63c5487e901e2845a0f64d384a65f75d"),
-    GitSource("https://github.com/google/re2.git", "6569a9a3df256f4c0c3813cb8ee2f8eef6e2c1fb"),
-    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "01e0577914a75a2569c846778c2f93aa8e6feddd"),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git",
+              "ef96ed763b43b59b33b31b362f09a02b729fa1c9"; tag="v$(version)"),
+    # the SPIRV-Headers revision from DEPS; its other dependencies are only for the tests
+    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git",
+              "496543121ce6419f23d6fa5d7194ba66c36212d2"),
 ]
 
 # Bash recipe for building across all platforms
@@ -25,10 +23,6 @@ script = raw"""
 # use CMake from JLLs
 apk del cmake
 
-# put vendored dependencies in places they will be picked up by the build system
-mv effcee SPIRV-Tools/external/effcee
-mv re2 SPIRV-Tools/external/re2
-mv googletest SPIRV-Tools/external/googletest
 mv SPIRV-Headers SPIRV-Tools/external/spirv-headers
 
 cd SPIRV-Tools
@@ -79,11 +73,13 @@ products = [
     ExecutableProduct("spirv-lint", :spirv_lint),
     ExecutableProduct("spirv-objdump", :spirv_objdump),
     ExecutableProduct("spirv-reduce", :spirv_reduce),
+    ExecutableProduct("spirv-diff", :spirv_diff),
     LibraryProduct("libSPIRV-Tools", :libSPIRV_Tools),
     LibraryProduct("libSPIRV-Tools-opt", :libSPIRV_Tools_opt),
     LibraryProduct("libSPIRV-Tools-diff", :libSPIRV_Tools_diff),
     LibraryProduct("libSPIRV-Tools-link", :libSPIRV_Tools_link),
     LibraryProduct("libSPIRV-Tools-lint", :libSPIRV_Tools_lint),
+    LibraryProduct("libSPIRV-Tools-reduce", :libSPIRV_Tools_reduce),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -92,23 +88,6 @@ dependencies = [
     HostBuildDependency("CMake_jll")
 ]
 
-builds = []
-for platform in platforms
-    should_build_platform(triplet(platform)) || continue
-    push!(builds, (; platform, sources))
-end
-
-# don't allow `build_tarballs` to override platform selection based on ARGS.
-# we handle that ourselves by calling `should_build_platform`
-non_platform_ARGS = filter(arg -> startswith(arg, "--"), ARGS)
-
-# `--register` should only be passed to the latest `build_tarballs` invocation
-non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
-
-for (i,build) in enumerate(builds)
-    build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
-                   name, version, build.sources, script,
-                   [build.platform], products, dependencies;
-                   preferred_gcc_version=v"10", # requires C++17 + filesystem
-                   julia_compat="1.6")
-end
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version=v"10", # requires C++17 + filesystem
+               julia_compat="1.6")
