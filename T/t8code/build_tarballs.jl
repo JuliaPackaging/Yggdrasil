@@ -17,6 +17,9 @@ sources = [GitSource("https://github.com/DLR-AMR/t8code", commit_hash),
 script = raw"""
 cd $WORKSPACE/srcdir/t8code
 
+# HOTFIX: replace u_int8_t by uint8_t
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/u_int8_t.patch"
+
 # Microsoft MPI is still 2.0 but has the required features; remove the strict 3.0 requirement
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi2.patch"
 
