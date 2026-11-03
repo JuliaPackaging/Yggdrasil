@@ -176,7 +176,7 @@ ninja -C build install
 icd_dir=${prefix}/share/vulkan/icd.d
 mv ${icd_dir}/lvp_icd.*.json ${icd_dir}/lvp_icd.json
 if [[ "${target}" == *-mingw* ]]; then
-    lib_path=../../../bin/vulkan_lvp.dll
+    lib_path='..\..\..\bin\vulkan_lvp.dll'
 else
     lib_path=../../../lib/libvulkan_lvp.${dlext}
 fi
