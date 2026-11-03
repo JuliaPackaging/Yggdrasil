@@ -56,7 +56,7 @@ if [[ "$target" == *mingw* ]]; then
     # BUILD_DEPS=ON (it is a CMAKE_DEPENDENT_OPTION), so enable the other
     # bundled dependencies one by one instead.
     CMAKE_DEPS_ARGS=(
-        -DBZIP2_LIBRARY_RELEASE:FILEPATH=${prefix}/bin/libbz2-1.dll
+        -DBZIP2_LIBRARY_RELEASE:FILEPATH=${libdir}/libbz2-1.dll
         -DBUILD_DEPS:BOOL=OFF
         -DBUILD_ZLIB:BOOL=ON
         -DBUILD_absl:BOOL=ON
@@ -212,7 +212,7 @@ dependencies = [
     # See: https://github.com/google/or-tools/issues/4073
     Dependency("dlfcn_win32_jll"; platforms = filter(Sys.iswindows, platforms)),
     # Provides libbz2-1.dll, which libortools imports on Windows
-    Dependency("Bzip2_jll"; platforms = filter(Sys.iswindows, platforms)),
+    Dependency("Bzip2_jll"; compat="1.0.8", platforms = filter(Sys.iswindows, platforms)),
 ]
 
 # Require macOS SDK 10.15 for complete C++17 filesystem support on x86_64
