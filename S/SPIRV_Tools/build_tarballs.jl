@@ -12,7 +12,7 @@ version = v"2026.4"
 # Collection of sources required to build SPIRV-Tools
 sources = [
     GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git",
-              "ef96ed763b43b59b33b31b362f09a02b729fa1c9"; tag="v$(version)"),
+              "ef96ed763b43b59b33b31b362f09a02b729fa1c9"; tag="v$(version.major).$(version.minor)"),
     # the SPIRV-Headers revision from DEPS; its other dependencies are only for the tests
     GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git",
               "496543121ce6419f23d6fa5d7194ba66c36212d2"),
