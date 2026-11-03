@@ -213,6 +213,7 @@ for platform in platforms
                    augment_platform_block=augment_platform_block,
                    clang_use_lld=false,
                    julia_compat="1.10",
+                   lazy_artifacts=true,
                    preferred_gcc_version=v"12",
                    )
 end
