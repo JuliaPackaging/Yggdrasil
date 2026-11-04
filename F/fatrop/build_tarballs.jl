@@ -15,8 +15,8 @@ name = "fatrop"
 version = v"1.2.0"
 
 sources = [
-    GitSource("https://github.com/meco-group/fatrop.git", "86929bad166f49109133a1bf7a5ae6ecb343b2a3"),   # v1.2.0
-    DirectorySource("./bundled"),
+    # v1.2.0 with https://github.com/meco-group/fatrop/pull/68 fixing the build on macOS
+    GitSource("https://github.com/meco-group/fatrop.git", "8f7dbfc719e350e0b8b99ac58b9bf5ff2aeee9a4"),
 ]
 
 # Fatrop accesses the matrices of BLASFEO with `BLASFEO_DMATEL`, a macro of the headers of BLASFEO which
@@ -26,9 +26,6 @@ sources = [
 # CMake package configuration, so the script writes one for `find_package(blasfeo)` to pick up.
 script = raw"""
 cd ${WORKSPACE}/srcdir/fatrop
-
-# `std::abs(double)` is used without including `<cmath>`, which fails with libc++
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cmath.patch
 
 mkdir -p ${WORKSPACE}/srcdir/blasfeo-cmake
 cat > ${WORKSPACE}/srcdir/blasfeo-cmake/blasfeoConfig.cmake <<EOF
