@@ -1,0 +1,10 @@
+diff --git a/src/ip_algorithm/ip_utils.cpp b/src/ip_algorithm/ip_utils.cpp
+index 30bf4bb..3fb6ecb 100644
+--- a/src/ip_algorithm/ip_utils.cpp
++++ b/src/ip_algorithm/ip_utils.cpp
+@@ -1,4 +1,5 @@
+ #include "fatrop/ip_algorithm/ip_utils.hpp"
++#include <cmath> // for std::abs
+ #include <limits> // for std::numeric_limits<Scalar>::epsilon()
+ 
+ namespace fatrop
