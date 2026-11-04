@@ -12,6 +12,14 @@ script = raw"""
 cd $WORKSPACE/srcdir/git-lfs/
 mkdir -p ${bindir}
 
+# The go.mod `go` directive (1.25.0) otherwise selects a toolchain whose stdlib
+# has known vulnerabilities; pin a patched release instead.
+export GOTOOLCHAIN=go1.26.8
+
+# git-lfs v3.8.1 pins golang.org/x/crypto v0.54.0, affected by CVE-2026-56854.
+go get golang.org/x/crypto@v0.55.0
+go mod tidy
+
 # Install goversioninfo if host is Windows
 case "$MACHTYPE" in
   *mingw*|*cygwin*) go install github.com/josephspurrier/goversioninfo/cmd/goversioninfo ;;
