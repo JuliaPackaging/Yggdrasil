@@ -31,6 +31,9 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     export MACOSX_DEPLOYMENT_TARGET=10.12
     # LTO doesn't work. Somehow we're compiling with LLVM 18, and libLTO is from LLVM 8, and that mismatch causes a linker error.
     options+=(-DLSL_OPTIMIZATIONS=OFF)
+    # liblsl >= 1.17 defaults to building an Apple `lsl.framework` bundle, which BinaryBuilder cannot match against the `liblsl` library product. 
+    # Force the classic `liblsl.dylib` layout instead.
+    options+=(-DLSL_FRAMEWORK=OFF)
 fi
 
 cmake -Bbuild ${options[@]}
@@ -42,9 +45,6 @@ cmake --install build
 # platforms are passed in on the command line
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
-
-# Our musl (1.1.19) does not support `pthread_getname_np`. (musl 1.2.0 would introduce it.)
-filter!(p -> libc(p) != "musl", platforms)
 
 # The products that we will ensure are always built
 products = [
