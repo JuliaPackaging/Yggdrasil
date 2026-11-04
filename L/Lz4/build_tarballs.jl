@@ -14,12 +14,11 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/lz4
 # See <https://github.com/lz4/lz4/issues/1474>
-if [[ "${target}" == *86*linux-gnu ]]; then
-    ldlibs=-lrt
-else
-    ldlibs=
+if [[ "${target}" == *86*-linux-gnu ]]; then
+    # clock_gettime needs librt with the old glibc on x86 linux
+    export LDFLAGS="-lrt"
 fi
-make -j${nproc} CFLAGS="-O3 -fPIC" LDLIBS="${ldlibs}"
+make -j${nproc} CFLAGS="-O3 -fPIC"
 make install
 if [[ "${target}" == *-mingw* ]]; then
     mkdir -p "${prefix}/lib"
