@@ -11,7 +11,8 @@ version = v"0.4.0"
 sources = [
     GitSource(
         "https://github.com/MIT-Lu-Lab/cuPDLPx.git",
-        "d17f53e0c8579dad0de3f8ba964765d3ff027229",
+        "d17f53e0c8579dad0de3f8ba964765d3ff027229";
+        tag = "v$(version)",
     ),
 ]
 
