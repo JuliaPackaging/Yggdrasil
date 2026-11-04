@@ -8,8 +8,8 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "SPIRV_LLVM_Translator"
-version = v"23.1.1"
-llvm_version = v"23.1.1+0"
+version = v"23.1.4"
+llvm_version = v"23.1.4+1"
 
 # This JLL ships `libllvm_spirv`, a shared library exposing a small, typed C API
 # (see bundled/libllvm_spirv.h) over a statically linked, symbol-hidden build of
@@ -21,7 +21,8 @@ llvm_version = v"23.1.1+0"
 sources = [
     GitSource(
         "https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git",
-        "e65dde28ce8f12ef7245914fa2850260328669e4"), # v23.1.2
+        "db5855d76a0ff33228bcf48032b350b25dcdbcf2";
+        tag="v23.1.3"),
     DirectorySource("bundled"),
     # LLVM 22 raised its minimum macOS deployment target to 11.0, and LLVM 23's
     # headers no longer compile against the older SDK's libc++.
@@ -195,7 +196,7 @@ products = Product[
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency(PackageSpec(name="LLVM_full_jll", version=llvm_version)),
-    Dependency("Zstd_jll"), # our LLVM 20 build has LLVM_ENABLE_ZSTD=ON
+    Dependency("Zstd_jll"), # our LLVM build has LLVM_ENABLE_ZSTD=ON
 ]
 
 # Determine the builds
