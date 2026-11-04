@@ -65,6 +65,10 @@ done
 
 # includes the licenses of the micro kernels from BLIS, AOCL-BLAS and OpenBLAS
 install_license LICENSE
+if [[ ${target} == *-apple-* ]]; then
+    # compiler-rt is linked statically into libulmblas_sme
+    install_license ${prefix}/share/licenses/LLVMCompilerRT/LICENSE.TXT
+fi
 """
 
 platforms = supported_platforms()
