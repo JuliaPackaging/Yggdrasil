@@ -66,7 +66,7 @@ dependencies = [
     # libclang_rt.osx.a is required on aarch64-macos to provide `__divdc3`.
     BuildDependency(PackageSpec(name = "LLVMCompilerRT_jll",
                                 uuid = "4e17d02c-6bf5-513e-be62-445f41c75a11",
-                                version = llvm_version);
+                                version = string(llvm_version));
                     platforms = filter(p -> Sys.isapple(p) && arch(p) == "aarch64", platforms))
 ]
 
