@@ -176,7 +176,7 @@ ninja -C build install
 icd_dir=${prefix}/share/vulkan/icd.d
 mv ${icd_dir}/lvp_icd.*.json ${icd_dir}/lvp_icd.json
 if [[ "${target}" == *-mingw* ]]; then
-    lib_path=../../../bin/vulkan_lvp.dll
+    lib_path='..\..\..\bin\vulkan_lvp.dll'
 else
     lib_path=../../../lib/libvulkan_lvp.${dlext}
 fi
@@ -280,9 +280,9 @@ append!(dependencies, [
 # ships in no shard. Hence two builds over disjoint platform sets.
 if any(should_build_platform.(triplet.(windows_platforms)))
     build_tarballs(ARGS, name, version, sources, script, windows_platforms, products, dependencies;
-                   julia_compat="1.6", preferred_gcc_version=v"15", init_block)
+                   julia_compat="1.10", preferred_gcc_version=v"15", init_block)
 end
 if any(should_build_platform.(triplet.(other_platforms)))
     build_tarballs(ARGS, name, version, sources, script, other_platforms, products, dependencies;
-                   julia_compat="1.6", preferred_gcc_version=v"12", init_block)
+                   julia_compat="1.10", preferred_gcc_version=v"12", init_block)
 end
