@@ -26,7 +26,7 @@ options=(
     # Changing to gcc, because for freebsd and macos it failed to find CMAKE_CXX_COMPILER_AR
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake
 )
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
+if [[ "${target}" == *apple-darwin* ]]; then
     # We need at least MacOS 10.12 for `shared_mutex`
     export MACOSX_DEPLOYMENT_TARGET=10.12
     # LTO doesn't work. Somehow we're compiling with LLVM 18, and libLTO is from LLVM 8, and that mismatch causes a linker error.
