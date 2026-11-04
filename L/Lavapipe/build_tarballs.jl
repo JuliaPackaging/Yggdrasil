@@ -9,6 +9,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "Lavapipe"
 version = v"26.2.2"
+ygg_version = v"26.2.3"  # New JLL version for the Julia 1.10 requirement.
 
 # Lavapipe is Mesa's software Vulkan driver: the `swrast` Vulkan driver, i.e. the Vulkan
 # frontend of the llvmpipe gallium driver, which JITs shaders with LLVM. Mesa's meson
@@ -279,10 +280,10 @@ append!(dependencies, [
 # x86_64-apple-darwin cannot have GCC 15: that shard's ld64 needs a libdispatch.so that
 # ships in no shard. Hence two builds over disjoint platform sets.
 if any(should_build_platform.(triplet.(windows_platforms)))
-    build_tarballs(ARGS, name, version, sources, script, windows_platforms, products, dependencies;
+    build_tarballs(ARGS, name, ygg_version, sources, script, windows_platforms, products, dependencies;
                    julia_compat="1.10", preferred_gcc_version=v"15", init_block)
 end
 if any(should_build_platform.(triplet.(other_platforms)))
-    build_tarballs(ARGS, name, version, sources, script, other_platforms, products, dependencies;
+    build_tarballs(ARGS, name, ygg_version, sources, script, other_platforms, products, dependencies;
                    julia_compat="1.10", preferred_gcc_version=v"12", init_block)
 end
