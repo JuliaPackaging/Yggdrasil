@@ -3,11 +3,11 @@
 using BinaryBuilder
 
 name = "Lz4"
-version = v"1.10.1" # Corresponds to upstream v1.10.0, next time can go back to follow upstream version
+version = v"1.11.0"
 
 # Collection of sources required to build Lz4
 sources = [
-    GitSource("https://github.com/lz4/lz4.git", "ebb370ca83af193212df4dcbadcc5d87bc0de2f0")
+    GitSource("https://github.com/lz4/lz4.git", "c72c7c0ec132ad2ce2fe9fad7b0c728d9faee2fc"; tag="v$(version)")
 ]
 
 # Bash recipe for building across all platforms
@@ -47,5 +47,3 @@ dependencies = Dependency[
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
-
-# Build Trigger: 2
