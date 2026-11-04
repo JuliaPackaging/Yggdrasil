@@ -117,9 +117,9 @@ const gcc_version_sources = Dict{VersionNumber,Vector}(
         ArchiveSource("https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.24.tar.bz2",
                         "fcf78dd9656c10eb8cf9fbd5f59a0b6b01386205fe1934b3b287a0a1898145c0"),
     ],
-    v"14.2.0" => [
-        ArchiveSource("https://mirrors.kernel.org/gnu/gcc/gcc-14.2.0/gcc-14.2.0.tar.xz",
-                      "a7b39bc69cbf9e25826c5a60ab26477001f7c08d85cec04bc0e29cabed6f3cc9"),
+    v"14.3.0" => [
+        ArchiveSource("https://mirrors.kernel.org/gnu/gcc/gcc-14.3.0/gcc-14.3.0.tar.xz",
+                      "e0dc77297625631ac8e50fa92fffefe899a4eb702592da5c32ef04e2293aca3a"),
         ArchiveSource("https://mirrors.kernel.org/gnu/gmp/gmp-6.2.1.tar.xz",
                       "fd4829912cddd12f84181c3451cc752be224643e87fac497b69edddadc49b4f2"),
         ArchiveSource("https://mirrors.kernel.org/gnu/mpfr/mpfr-4.1.0.tar.xz",
@@ -226,7 +226,7 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
             v"11.1.0" => v"2.36",
             v"12.1.0" => v"2.38",
             v"13.2.0" => v"2.41",
-            v"14.2.0" => v"2.43.1",
+            v"14.3.0" => v"2.43.1",
             v"15.2.0" => v"2.45.1",
         )
 
@@ -348,8 +348,8 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
         end
     elseif Sys.iswindows(compiler_target)
         libc_sources = [
-            ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v13.0.0.tar.bz2",
-                          "5afe822af5c4edbf67daaf45eec61d538f49eef6b19524de64897c6b95828caf"),
+            ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v11.0.1.tar.bz2",
+                          "3f66bce069ee8bed7439a1a13da7cb91a5e67ea6170f21317ac7f5794625ee10"),
         ]
     else
         error("Unknown libc mapping for platform $(compiler_target)")

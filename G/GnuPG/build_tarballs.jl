@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "GnuPG"
-version = v"2.5.18"
+version = v"2.5.24"
 
 # Collection of sources required to build libgcrypt
 sources = [
     ArchiveSource("https://gnupg.org/ftp/gcrypt/gnupg/gnupg-$(version).tar.bz2",
-                  "0dbd64e0322fe1a4813360d46539d5f8daf4a8fa235cf5fce464e8b0214a7e4f"),
+                  "bf149d01a2b9fcc0e4589b8ae8697d3d5c557ea48ed95a3fa55dd3b1187e6039"),
     DirectorySource("bundled"),
 ]
 
@@ -63,16 +63,16 @@ dependencies = [
     HostBuildDependency("Libgpg_error_jll"),
     # We need this to run a host msgfmt executable
     HostBuildDependency("Gettext_jll"),
-    Dependency("OpenSSL_jll"; compat="3.0.15"),
+    Dependency("OpenSSL_jll"; compat="3.0.16"),
     Dependency("Libksba_jll"; compat="1.6.8"),
-    Dependency("Libgcrypt_jll"; compat="1.11.2"),
+    Dependency("Libgcrypt_jll"; compat="1.12.0"),
     Dependency("Libgpg_error_jll"; compat="1.58"),
     Dependency("nPth_jll"; compat="1.8.1"),
     Dependency("Zlib_jll"),
     Dependency("Libassuan_jll"; compat="3.0.2"),
     Dependency("OpenLDAPClient_jll"),
     Dependency("Bzip2_jll"; compat="1.0.9"),
-    Dependency("SQLite_jll"),
+    Dependency("SQLite_jll"; compat="3.54.0"),
     Dependency("libusb_jll"),
     Dependency("Nettle_jll"; compat="~3.10.1"),
 ]

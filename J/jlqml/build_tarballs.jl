@@ -6,11 +6,11 @@ using BinaryBuilder, Pkg
 include("../../L/libjulia/common.jl")
 
 name = "jlqml"
-version = v"0.10.2"
+version = v"0.10.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/JuliaGraphics/jlqml.git", "c562cef2df378a9fcc8ea64c8ac2f9561f4e4e04"),
+    GitSource("https://github.com/JuliaGraphics/jlqml.git", "a293e9116fb70f505f80dd9c030c88433dfd37b2"),
 ]
 
 # Bash recipe for building across all platforms

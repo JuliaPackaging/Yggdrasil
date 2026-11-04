@@ -6,11 +6,12 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 name = "SCALAPACK32"
 version = v"2.2.3"
 # ygg_version.patch = 100 * version.patch + offset; bump `offset` for rebuilds.
-offset = 0
+offset = 2
 ygg_version = VersionNumber(version.major, version.minor, 100 * version.patch + offset)
 
 sources = [
   GitSource("https://github.com/Reference-ScaLAPACK/scalapack", "3e0da655fb07de5f1d76d6afb43f16ae17ca98c4"),
+  DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -48,14 +49,28 @@ else
   LBT=(-lblastrampoline)
 fi
 
+# CMake cannot detect Microsoft MPI, so on Windows we fall back to the plain
+# Makefile build (as this recipe did before v2.2.3) and link the DLL by hand.
+# The bundled SLmake.inc names the static library `libscalapack32.a`.
+if [[ "${target}" == *mingw* ]]; then
+    cp ${WORKSPACE}/srcdir/files/SLmake.inc SLmake.inc
+
+    make lib CDEFS=-DAdd_ \
+             NOOPT="-O0 -fPIC ${FFLAGS[*]}" \
+             FCFLAGS="-O3 -fPIC ${FFLAGS[*]}" \
+             CCFLAGS="-O3 -fPIC ${CFLAGS[*]}"
+
+    $FC -shared $(flagon -Wl,--whole-archive) libscalapack32.a $(flagon -Wl,--no-whole-archive) \
+        -L${libdir} "${LBT[@]}" -lmsmpi -o ${libdir}/libscalapack32.${dlext}
+
+    exit 0
+fi
+
 # We need to specify the MPI libraries explicitly because the
 # CMakeLists.txt doesn't properly add them when linking
 MPI_SETTINGS=(-DMPI_BASE_DIR="${prefix}")
 MPILIBS=()
-if [[ ${bb_full_target} == *microsoftmpi* ]]; then
-    MPI_SETTINGS+=(-DMPI_GUESS_LIBRARY_NAME=MSMPI)
-    MPILIBS=(-lmsmpifec64 -lmsmpi64)
-elif [[ ${bb_full_target} == *mpiabi* ]]; then
+if [[ ${bb_full_target} == *mpiabi* ]]; then
     MPILIBS=(-lmpif -lmpi_abi)
 elif [[ ${bb_full_target} == *mpich* ]]; then
     MPILIBS=(-lmpifort -lmpi)
@@ -112,8 +127,6 @@ augment_platform_block = """
 """
 
 platforms = expand_gfortran_versions(supported_platforms())
-# Don't know how to configure MPI for Windows
-platforms = filter(p -> !Sys.iswindows(p), platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
@@ -126,7 +139,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
-    Dependency("mpif_jll"; compat="0.1.5", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)), # MPI Fortran bindings
+    Dependency("mpif_jll"; compat="1.0.0", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)), # MPI Fortran bindings
     HostBuildDependency(PackageSpec(; name="CMake_jll")),
 ]
 append!(dependencies, platform_dependencies)

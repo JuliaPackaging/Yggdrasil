@@ -1,0 +1,482 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Sun, 25 Oct 2026 09:14:04 +0100
+Subject: [PATCH 45/46] tests: add a SPIR-V test of the address- and
+ ABI-dependent builtins
+
+Call the builtins whose SPIR wrappers depend on the address bits (size_t
+parameters of vloadN/vstoreN, vload_half/vstore_half, async copies and
+prefetch) or on the calling convention (64-bit vectors that i386 coerces to
+integers, wide vectors that x86-64 passes in memory, vec3), plus scoped
+atomics, work_group_barrier and sub-groups, from 32-bit and 64-bit SPIR-V
+built from the same sources. Double precision and sub-groups are in
+separate modules so that devices without them still run the rest.
+
+(cherry picked from commit 01fd0b4c035cb72d8c39c9a0e9b799a658630a69)
+---
+ tests/regression/CMakeLists.txt               |   3 +
+ tests/regression/test_spirv_builtins.c        | 322 ++++++++++++++++++
+ tests/regression/test_spirv_builtins.cl       |  66 ++++
+ tests/regression/test_spirv_builtins_fp64.cl  |  11 +
+ .../test_spirv_builtins_subgroups.cl          |  11 +
+ 5 files changed, 413 insertions(+)
+ create mode 100644 tests/regression/test_spirv_builtins.c
+ create mode 100644 tests/regression/test_spirv_builtins.cl
+ create mode 100644 tests/regression/test_spirv_builtins_fp64.cl
+ create mode 100644 tests/regression/test_spirv_builtins_subgroups.cl
+
+diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
+index a704765b5..ae4e291d7 100644
+--- a/tests/regression/CMakeLists.txt
++++ b/tests/regression/CMakeLists.txt
+@@ -31,6 +31,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
+      test_issue_1711 test_issue_1794 test_issue_1747 test_issue_1958
+      test_unreachable_kernel
+      test_remat_alloca_without_initializer
++     test_spirv_builtins
+      test_spirv_struct_layout
+      test_unreachable_in_infinite_loop
+      test_rematerialized_alloca_load_with_outside_pr_users
+@@ -195,6 +196,8 @@ add_test_pocl(NAME "regression/test_unreachable_kernel" WORKITEM_HANDLER "loops;
+ 
+ add_test_pocl(NAME "regression/test_remat_alloca_without_initializer" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_remat_alloca_without_initializer" LABELS ${SPIRV_LABELS})
+ 
++add_test_pocl(NAME "regression/test_spirv_builtins" COMMAND "test_spirv_builtins" LABELS ${SPIRV_LABELS})
++
+ add_test_pocl(NAME "regression/test_spirv_struct_layout" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_spirv_struct_layout" LABELS ${SPIRV_LABELS})
+ 
+ add_test_pocl(NAME "regression/unreachable_in_infinite_loop" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_unreachable_in_infinite_loop")
+diff --git a/tests/regression/test_spirv_builtins.c b/tests/regression/test_spirv_builtins.c
+new file mode 100644
+index 000000000..5b34a5960
+--- /dev/null
++++ b/tests/regression/test_spirv_builtins.c
+@@ -0,0 +1,322 @@
++// Copyright (c) 2026 PoCL developers
++//
++// Permission is hereby granted, free of charge, to any person obtaining a copy
++// of this software and associated documentation files (the "Software"), to deal
++// in the Software without restriction, including without limitation the rights
++// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++// copies of the Software, and to permit persons to whom the Software is
++// furnished to do so, subject to the following conditions:
++//
++// The above copyright notice and this permission notice shall be included in
++// all copies or substantial portions of the Software.
++//
++// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++// THE SOFTWARE.
++
++/*
++  Calls builtins from SPIR-V whose SPIR wrappers depend on the device's
++  address bits (size_t parameters) or on the host calling convention (small
++  vectors coerced to integers, wide vectors passed in memory, vec3), plus
++  scoped atomics, work_group_barrier and sub-groups, which the old 32-bit
++  wrapper lacked. The kernels are in test_spirv_builtins*.cl; the SPIR-V
++  modules come in 32-bit and 64-bit variants.
++*/
++
++#include "pocl_opencl.h"
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#ifndef _WIN32
++#include <unistd.h>
++#endif
++
++#define CHECK_ERROR(err)                                                       \
++  if (err != CL_SUCCESS) {                                                     \
++    printf("OpenCL Error %d at %s:%d\n", err, __FILE__, __LINE__);             \
++    return 1;                                                                  \
++  }
++
++static int Failures = 0;
++
++#define EXPECT(what, i, got, expected)                                         \
++  if ((got) != (expected)) {                                                   \
++    printf("%s[%d]: got %g, expected %g\n", what, (int)(i), (double)(got),     \
++           (double)(expected));                                                \
++    Failures++;                                                                \
++  }
++
++static cl_context Context;
++static cl_device_id Device;
++static cl_command_queue Queue;
++
++static cl_program build(const char *name) {
++  char path[1024];
++  snprintf(path, sizeof(path), "%s/%s%u.spv", SRCDIR, name,
++           poclu_device_address_bits(Device));
++  size_t size;
++  char *binary = poclu_read_binfile(path, &size);
++  if (binary == NULL) {
++    printf("Failed to open %s\n", path);
++    return NULL;
++  }
++  cl_int err;
++  cl_program program = clCreateProgramWithIL(Context, binary, size, &err);
++  free(binary);
++  if (err != CL_SUCCESS) {
++    printf("clCreateProgramWithIL(%s) failed: %d\n", path, err);
++    return NULL;
++  }
++  err = clBuildProgram(program, 1, &Device, NULL, NULL, NULL);
++  if (err != CL_SUCCESS) {
++    printf("clBuildProgram(%s) failed: %d\n", path, err);
++    poclu_show_program_build_log(program);
++    return NULL;
++  }
++  return program;
++}
++
++static cl_mem buffer(size_t size, void *data) {
++  cl_int err;
++  cl_mem buf = clCreateBuffer(
++      Context, CL_MEM_READ_WRITE | (data ? CL_MEM_COPY_HOST_PTR : 0), size,
++      data, &err);
++  if (err != CL_SUCCESS)
++    printf("clCreateBuffer failed: %d\n", err);
++  return buf;
++}
++
++/* Sets the arguments (buffers, or a NULL buffer for a local argument of
++   local_size bytes), runs the kernel and reads the buffers back. */
++static int run(cl_program program, const char *name, size_t global,
++               size_t local, size_t local_size, int nargs, cl_mem *args,
++               void **results, size_t *sizes) {
++  cl_int err;
++  cl_kernel kernel = clCreateKernel(program, name, &err);
++  CHECK_ERROR(err);
++  for (int i = 0; i < nargs; i++) {
++    if (args[i])
++      err = clSetKernelArg(kernel, i, sizeof(cl_mem), &args[i]);
++    else
++      err = clSetKernelArg(kernel, i, local_size, NULL);
++    CHECK_ERROR(err);
++  }
++  CHECK_ERROR(clEnqueueNDRangeKernel(Queue, kernel, 1, NULL, &global,
++                                     local ? &local : NULL, 0, NULL, NULL));
++  for (int i = 0; i < nargs; i++)
++    if (args[i] && results[i])
++      CHECK_ERROR(clEnqueueReadBuffer(Queue, args[i], CL_TRUE, 0, sizes[i],
++                                      results[i], 0, NULL, NULL));
++  for (int i = 0; i < nargs; i++)
++    if (args[i])
++      clReleaseMemObject(args[i]);
++  clReleaseKernel(kernel);
++  return 0;
++}
++
++static int test_size_t_args(cl_program program) {
++  cl_float f[16], out[11] = {0};
++  for (int i = 0; i < 16; i++)
++    f[i] = (cl_float)i;
++  cl_half h[4] = {0, 0, 0x3e00 /* 1.5 */, 0}, ho[4] = {0};
++
++  cl_mem args[] = {buffer(sizeof(f), f), buffer(sizeof(h), h),
++                   buffer(sizeof(ho), ho), buffer(sizeof(out), out), NULL};
++  void *results[] = {NULL, NULL, ho, out, NULL};
++  size_t sizes[] = {0, 0, sizeof(ho), sizeof(out), 0};
++  if (run(program, "size_t_args", 1, 1, 8 * sizeof(cl_float), 5, args,
++          results, sizes))
++    return 1;
++
++  for (int i = 4; i < 8; i++)
++    EXPECT("vstore4", i, out[i], 2.0f * i);
++  EXPECT("vload_half", 0, out[8], 1.5f);
++  EXPECT("vstore_half", 0, ho[3], 0x4100 /* 2.5 */);
++  EXPECT("async_work_group_copy", 0, out[9], 7.0f);
++  EXPECT("async_work_group_strided_copy", 0, out[10], 6.0f);
++  return 0;
++}
++
++static int test_small_vectors(cl_program program) {
++  cl_char c[24] = {100, 100, -100, -100, 1, 2, 3, 4,
++                   100, -50, -100, 50,   5, 6, 7, 8};
++  cl_short s[12] = {1, -2, 3, -4, -1, 2, -3, 4};
++  cl_int i[6] = {7, -7, 2, -2};
++
++  cl_mem args[] = {buffer(sizeof(c), c), buffer(sizeof(s), s),
++                   buffer(sizeof(i), i)};
++  void *results[] = {c, s, i};
++  size_t sizes[] = {sizeof(c), sizeof(s), sizeof(i)};
++  if (run(program, "small_vectors", 1, 0, 0, 3, args, results, sizes))
++    return 1;
++
++  const cl_char c_exp[8] = {127, 50, -128, -50, 6, 8, 10, 12};
++  for (int k = 0; k < 8; k++)
++    EXPECT("add_sat(char8)", k, c[16 + k], c_exp[k]);
++  for (int k = 0; k < 4; k++)
++    EXPECT("max(short4)", k, s[8 + k], k + 1);
++  EXPECT("hadd(int2)", 0, i[4], 4);
++  EXPECT("hadd(int2)", 1, i[5], -5);
++  return 0;
++}
++
++static int test_wide_vectors(cl_program program) {
++  cl_float f8[32], f16[48], f3[10] = {1, 2, 3, 4, 5, 6};
++  for (int k = 0; k < 8; k++) {
++    f8[k] = (cl_float)k;
++    f8[8 + k] = 2.0f;
++    f8[16 + k] = 1.0f;
++  }
++  for (int k = 0; k < 16; k++) {
++    f16[k] = (cl_float)k;
++    f16[16 + k] = (cl_float)(15 - k);
++  }
++
++  cl_mem args[] = {buffer(sizeof(f8), f8), buffer(sizeof(f16), f16),
++                   buffer(sizeof(f3), f3)};
++  void *results[] = {f8, f16, f3};
++  size_t sizes[] = {sizeof(f8), sizeof(f16), sizeof(f3)};
++  if (run(program, "wide_vectors", 1, 0, 0, 3, args, results, sizes))
++    return 1;
++
++  for (int k = 0; k < 8; k++)
++    EXPECT("fma(float8)", k, f8[24 + k], 2.0f * k + 1.0f);
++  for (int k = 0; k < 16; k++)
++    EXPECT("fmax(float16)", k, f16[32 + k], k > 7 ? k : 15 - k);
++  const cl_float cross_exp[3] = {-3, 6, -3};
++  for (int k = 0; k < 3; k++)
++    EXPECT("cross(float3)", k, f3[6 + k], cross_exp[k]);
++  EXPECT("dot(float3)", 0, f3[9], 32.0f);
++  return 0;
++}
++
++static int test_sync(cl_program program) {
++  cl_int counter = 0, out[16] = {0};
++  cl_mem args[] = {buffer(sizeof(counter), &counter), NULL,
++                   buffer(sizeof(out), out)};
++  void *results[] = {&counter, NULL, out};
++  size_t sizes[] = {sizeof(counter), 0, sizeof(out)};
++  if (run(program, "sync", 16, 8, 8 * sizeof(cl_int), 3, args, results,
++          sizes))
++    return 1;
++
++  for (int k = 0; k < 16; k++)
++    EXPECT("work_group_barrier", k, out[k], (k % 8 + 1) % 8);
++  EXPECT("atomic_fetch_add_explicit", 0, counter, 16);
++  return 0;
++}
++
++static int test_subgroups(cl_program program) {
++  cl_int out[32];
++  memset(out, 0xff, sizeof(out));
++  cl_mem args[] = {buffer(sizeof(out), out)};
++  void *results[] = {out};
++  size_t sizes[] = {sizeof(out)};
++  if (run(program, "subgroups", 16, 16, 0, 1, args, results, sizes))
++    return 1;
++
++  for (int k = 0; k < 16; k++) {
++    EXPECT("sub_group_reduce_add", k, out[2 * k], 0);
++    EXPECT("sub_group_broadcast", k, out[2 * k + 1], 0);
++  }
++  return 0;
++}
++
++static int test_fp64(cl_program program) {
++  cl_double d4[16], d3[9] = {1, 2, 3, 4, 5, 6};
++  for (int k = 0; k < 4; k++) {
++    d4[k] = k + 1;
++    d4[4 + k] = 2.0;
++    d4[8 + k] = 0.5;
++  }
++
++  cl_mem args[] = {buffer(sizeof(d4), d4), buffer(sizeof(d3), d3)};
++  void *results[] = {d4, d3};
++  size_t sizes[] = {sizeof(d4), sizeof(d3)};
++  if (run(program, "fp64", 1, 0, 0, 2, args, results, sizes))
++    return 1;
++
++  for (int k = 0; k < 4; k++)
++    EXPECT("fma(double4)", k, d4[12 + k], 2.0 * (k + 1) + 0.5);
++  const cl_double cross_exp[3] = {-3, 6, -3};
++  for (int k = 0; k < 3; k++)
++    EXPECT("cross(double3)", k, d3[6 + k], cross_exp[k]);
++  return 0;
++}
++
++int main(int argc, char **argv) {
++  cl_uint platform_index = argc > 1 ? (cl_uint)atoi(argv[1]) : 0;
++  cl_int err;
++
++#ifndef _WIN32
++  alarm(300);
++#endif
++
++  cl_uint num_platforms;
++  CHECK_ERROR(clGetPlatformIDs(0, NULL, &num_platforms));
++  if (platform_index >= num_platforms) {
++    printf("Platform index %u out of range\n", platform_index);
++    return 1;
++  }
++  cl_platform_id *platforms = malloc(sizeof(cl_platform_id) * num_platforms);
++  CHECK_ERROR(clGetPlatformIDs(num_platforms, platforms, NULL));
++  cl_platform_id platform = platforms[platform_index];
++  free(platforms);
++
++  CHECK_ERROR(clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, 1, &Device, NULL));
++
++  if (!poclu_device_supports_il(Device, "SPIR-V_1.0")) {
++    printf("SKIP: The test requires support for SPIR-V 1.0\n");
++    return 77;
++  }
++
++  Context = clCreateContext(NULL, 1, &Device, NULL, NULL, &err);
++  CHECK_ERROR(err);
++  Queue = clCreateCommandQueueWithProperties(Context, Device, NULL, &err);
++  CHECK_ERROR(err);
++
++  cl_program program = build("test_spirv_builtins");
++  if (program == NULL)
++    return 1;
++  if (test_size_t_args(program) || test_small_vectors(program) ||
++      test_wide_vectors(program) || test_sync(program))
++    return 1;
++  clReleaseProgram(program);
++
++  cl_uint max_sub_groups = 0;
++  CHECK_ERROR(clGetDeviceInfo(Device, CL_DEVICE_MAX_NUM_SUB_GROUPS,
++                              sizeof(max_sub_groups), &max_sub_groups, NULL));
++  if (max_sub_groups > 0) {
++    program = build("test_spirv_builtins_subgroups");
++    if (program == NULL || test_subgroups(program))
++      return 1;
++    clReleaseProgram(program);
++  } else
++    printf("The device doesn't support sub-groups, skipping those.\n");
++
++  cl_device_fp_config fp64_config = 0;
++  CHECK_ERROR(clGetDeviceInfo(Device, CL_DEVICE_DOUBLE_FP_CONFIG,
++                              sizeof(fp64_config), &fp64_config, NULL));
++  if (fp64_config != 0) {
++    program = build("test_spirv_builtins_fp64");
++    if (program == NULL || test_fp64(program))
++      return 1;
++    clReleaseProgram(program);
++  } else
++    printf("The device doesn't support doubles, skipping those.\n");
++
++  clReleaseCommandQueue(Queue);
++  clReleaseContext(Context);
++
++  if (Failures) {
++    printf("FAIL: %d mismatches\n", Failures);
++    return 1;
++  }
++  printf("OK\n");
++  return 0;
++}
+diff --git a/tests/regression/test_spirv_builtins.cl b/tests/regression/test_spirv_builtins.cl
+new file mode 100644
+index 000000000..c2e912dd1
+--- /dev/null
++++ b/tests/regression/test_spirv_builtins.cl
+@@ -0,0 +1,66 @@
++/* Kernels for test_spirv_builtins.c, calling builtins whose SPIR wrappers
++   depend on the address bits or the calling convention of the host. Built
++   to test_spirv_builtins{32,64}.spv, with spir and spir64 respectively:
++
++     clang --target=spir -cl-std=CL2.0 -O0 \
++       -Xclang -finclude-default-header -emit-llvm -c \
++       test_spirv_builtins.cl -o builtins.bc
++     llvm-spirv --spirv-max-version=1.0 builtins.bc \
++       -o test_spirv_builtins32.spv
++
++   The double precision and sub-group kernels are in
++   test_spirv_builtins_{fp64,subgroups}.cl, so that devices without these
++   features still run the others.
++*/
++
++/* size_t parameters */
++kernel void
++size_t_args (global const float *f, global const half *h, global half *ho,
++             global float *out, local float *l)
++{
++  float4 v = vload4 (1, f);
++  vstore4 (v * 2.0f, 1, out);
++  out[8] = vload_half (2, h);
++  vstore_half (out[8] + 1.0f, 3, ho);
++
++  prefetch (f, 4);
++  event_t e = async_work_group_copy (l, f, 8, 0);
++  wait_group_events (1, &e);
++  out[9] = l[7];
++  e = async_work_group_strided_copy (l, f, 4, 2, 0);
++  wait_group_events (1, &e);
++  out[10] = l[3];
++}
++
++/* 64-bit vector arguments, coerced to i64 on i386 */
++kernel void
++small_vectors (global char8 *c, global short4 *s, global int2 *i)
++{
++  c[2] = add_sat (c[0], c[1]);
++  s[2] = max (s[0], s[1]);
++  i[2] = hadd (i[0], i[1]);
++}
++
++/* vectors that x86-64 passes in memory, and vec3 */
++kernel void
++wide_vectors (global float8 *f8, global float16 *f16, global float *f3)
++{
++  f8[3] = fma (f8[0], f8[1], f8[2]);
++  f16[2] = fmax (f16[0], f16[1]);
++  float3 a = vload3 (0, f3);
++  float3 b = vload3 (1, f3);
++  vstore3 (cross (a, b), 2, f3);
++  f3[9] = dot (a, b);
++}
++
++/* scoped atomics and barriers */
++kernel void
++sync (global atomic_int *counter, local int *tmp, global int *out)
++{
++  int lid = get_local_id (0);
++  tmp[lid] = lid;
++  work_group_barrier (CLK_LOCAL_MEM_FENCE, memory_scope_work_group);
++  out[get_global_id (0)] = tmp[(lid + 1) % get_local_size (0)];
++  atomic_fetch_add_explicit (counter, 1, memory_order_relaxed,
++                             memory_scope_device);
++}
+diff --git a/tests/regression/test_spirv_builtins_fp64.cl b/tests/regression/test_spirv_builtins_fp64.cl
+new file mode 100644
+index 000000000..ff98c314a
+--- /dev/null
++++ b/tests/regression/test_spirv_builtins_fp64.cl
+@@ -0,0 +1,11 @@
++/* Double precision kernels for test_spirv_builtins.c, built like
++   test_spirv_builtins.cl to test_spirv_builtins_fp64{32,64}.spv. */
++
++kernel void
++fp64 (global double4 *d4, global double *d3)
++{
++  d4[3] = fma (d4[0], d4[1], d4[2]);
++  double3 a = vload3 (0, d3);
++  double3 b = vload3 (1, d3);
++  vstore3 (cross (a, b), 2, d3);
++}
+diff --git a/tests/regression/test_spirv_builtins_subgroups.cl b/tests/regression/test_spirv_builtins_subgroups.cl
+new file mode 100644
+index 000000000..3ec7dfc08
+--- /dev/null
++++ b/tests/regression/test_spirv_builtins_subgroups.cl
+@@ -0,0 +1,11 @@
++/* Sub-group kernels for test_spirv_builtins.c, built like
++   test_spirv_builtins.cl to test_spirv_builtins_subgroups{32,64}.spv. */
++
++kernel void
++subgroups (global int *out)
++{
++  int gid = get_global_id (0);
++  out[2 * gid] = sub_group_reduce_add (1) - (int)get_sub_group_size ();
++  out[2 * gid + 1] = sub_group_broadcast (gid, 0)
++                     - (gid - (int)get_sub_group_local_id ());
++}

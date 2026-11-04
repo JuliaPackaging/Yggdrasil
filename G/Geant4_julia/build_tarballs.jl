@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Geant4_julia"
-version = v"0.4.0"
+version = v"0.4.2"
 
 # Collection of sources required to build Geant4_julia
 sources = [
     GitSource("https://github.com/peremato/Geant4_cxxwrap.git",
-              "660ca242cb8c8d4e978653962e39bdc6ba717e4b"),
+              "484583aa00e45443389a1366ebb12029eb44e164"),
 ]
 
 # Bash recipe for building across all platforms
@@ -33,6 +33,7 @@ include("../../L/libjulia/common.jl")
 # Filter Julia versions:
 # - Remove versions below current LTS (1.10)
 filter!(x -> x >= v"1.10", julia_versions)
+filter!(x -> x < v"1.15", julia_versions) # Until we support 1.15, we don't want to build for it yet.
 
 # platforms supported by libjulia
 platforms = vcat(libjulia_platforms.(julia_versions)...)
@@ -63,4 +64,4 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
                preferred_gcc_version=v"9", 
-               julia_compat="1.6")
+               julia_compat="1.10")

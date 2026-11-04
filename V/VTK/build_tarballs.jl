@@ -6,12 +6,12 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "VTK"
-version = v"9.6.2"
+version = v"9.7.1"
 
 # No sources, we're just building the testsuite
 sources = [
     ArchiveSource("https://vtk.org/files/release/$(version.major).$(version.minor)/VTK-$(version).tar.gz",
-                  "aed12cec12a9609179bf66329070266627ca64244a10856a452b2a17ffb04a1d"),
+                  "cae04fd355004cb916a409db79d53a208f1221e975aeacc7540ee67b148ee91a"),
     DirectorySource("bundled"),
 ]
 
@@ -80,9 +80,11 @@ opts=(
     -DTEST_LFS_WORKS_RUN:STRING=0
     -DHDF5_NO_FIND_PACKAGE_CONFIG_FILE=TRUE
     -DHDF5_PREFER_PARALLEL=TRUE
+    -DVTK_JPEG_ENABLE_SIMD=ON
     -DVTK_MODULE_USE_EXTERNAL_VTK_cgns=ON
     -DVTK_MODULE_USE_EXTERNAL_VTK_expat=ON
     -DVTK_MODULE_USE_EXTERNAL_VTK_exprtk=ON
+    -DVTK_MODULE_USE_EXTERNAL_VTK_ffmpeg=ON
     -DVTK_MODULE_USE_EXTERNAL_VTK_freetype=ON
     -DVTK_MODULE_USE_EXTERNAL_VTK_hdf5=ON
     -DVTK_MODULE_USE_EXTERNAL_VTK_jpeg=ON
@@ -335,14 +337,15 @@ products = [
 dependencies = [
     HostBuildDependency("CMake_jll"),
 
-    Dependency("CGNS_jll"; compat="4.5.1"),           # cgns
+    Dependency("CGNS_jll"; compat="4.5.2"),           # cgns
     Dependency("Expat_jll"; compat="2.7.1"),          # expat
+    Dependency("FFMPEG_nogpl_jll"; compat="9.0.0"),   # ffmpeg
     Dependency("FreeType2_jll"; compat="2.13.4"),     # freetype
-    Dependency("HDF5_jll"; compat="~2.1.2"),          # hdf5
+    Dependency("HDF5_jll"; compat="2.2.2"),           # hdf5
     Dependency("JpegTurbo_jll"; compat="3.1.2"),      # jpeg
     Dependency("Libtiff_jll"; compat="4.7.1"),        # tiff
     Dependency("Lz4_jll"; compat="1.10.1"),           # lz4
-    Dependency("NetCDF_jll"; compat="401.1000.000"),  # netcdf
+    Dependency("NetCDF_jll"; compat="401.1000.101"),  # netcdf
     Dependency("Ogg_jll"; compat="1.3.6"),            # ogg
     Dependency("PROJ_jll"; compat="902.600.200"),     # libproj
     Dependency("SQLite_jll"; compat="3.48.0"),        # sqlite
@@ -415,6 +418,7 @@ dependencies = [
 ]
 append!(dependencies, platform_dependencies)
 
+# We don't support MPItrampoline quite yet:
 # Don't look for `mpiwrapper.so` when BinaryBuilder examines and `dlopen`s the shared libraries.
 # (MPItrampoline will skip its automatic initialization.)
 ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"

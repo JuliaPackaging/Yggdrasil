@@ -1,12 +1,12 @@
 using BinaryBuilder, Pkg
 
 name = "numav_julia"
-version = v"0.1.0"
+version = v"0.3.1"
 
 sources = [ 
     GitSource(
-        "https://github.com/mmfiuza/numav.git", 
-        "bee6a3c00fa959bf1a3766a27d26aec9c2837b43"
+        "https://github.com/mmfiuza/Numav.jl.git", 
+        "42f4f7a3d9ea2f661e09c21447deacfbfd094c3d"
     )
 ]
 
@@ -19,7 +19,7 @@ script = raw"""
         SOLVER=EIGEN
     fi
     
-    cd ${WORKSPACE}/srcdir/numav && mkdir build && cd build
+    cd ${WORKSPACE}/srcdir/Numav.jl/c++ && mkdir build && cd build
     cmake \
         -D CMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
         -D CMAKE_BUILD_TYPE=Release \
@@ -51,8 +51,6 @@ mkl_platforms = filter(p ->
 
 dependencies = [
     Dependency("libcxxwrap_julia_jll", compat="0.14.10"),
-    Dependency("HDF5_jll", compat="2.1"),
-    Dependency("spdlog_jll", compat="1.15.0"),
     BuildDependency(PackageSpec(name="libjulia_jll", version="1.11.0")),
     BuildDependency(PackageSpec(name="Eigen_jll", version="5.0.1")),
 
@@ -63,6 +61,24 @@ dependencies = [
         platforms=mkl_platforms
     ),
 ]
+
+build_from_local_directory = false # for local debugging only
+if build_from_local_directory
+    run(
+        `sh -c "
+            rm -rf build &&
+            rm -rf c++/build &&
+            rm -rf products &&
+            rm -rf /tmp/binary_builder &&
+            mkdir /tmp/binary_builder &&
+            mkdir /tmp/binary_builder/Numav.jl &&
+            cp -r . /tmp/binary_builder/Numav.jl
+        "`
+    )
+    sources = [
+        DirectorySource("/tmp/binary_builder")
+    ]
+end
 
 build_tarballs(
     ARGS, name, version, sources, script, platforms, products, dependencies;

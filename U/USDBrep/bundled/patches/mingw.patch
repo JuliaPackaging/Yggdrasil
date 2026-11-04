@@ -1,0 +1,198 @@
+Use the GCC export and thread_local paths with MinGW: the _WIN32 ones are MSVC-specific (duplicate explicit instantiations, dllimport on inline definitions, ignored __declspec(thread)). Not reported upstream yet.
+
+diff --git a/source/BREP_SM_USD/inc/SmuConfig.h b/source/BREP_SM_USD/inc/SmuConfig.h
+index 146764a..88d8911 100644
+--- a/source/BREP_SM_USD/inc/SmuConfig.h
++++ b/source/BREP_SM_USD/inc/SmuConfig.h
+@@ -9,7 +9,7 @@
+ #ifndef _SMU_CONFIG_H_
+ #define _SMU_CONFIG_H_
+ 
+-#ifdef _WIN32
++#ifdef _MSC_VER
+   #ifdef SMU_ENABLE_EXPORTS
+     #define SMU_EXPORT __declspec( dllexport )
+     #define SMU_THREAD_LOCAL __declspec(thread)  
+diff --git a/source/SMLib/inc/SmConfig.h b/source/SMLib/inc/SmConfig.h
+index fb1a68f..5bc6f63 100644
+--- a/source/SMLib/inc/SmConfig.h
++++ b/source/SMLib/inc/SmConfig.h
+@@ -36,7 +36,7 @@
+ //#define SM_NO_DEBUG_CODE
+ //#define SM_NO_GFX_OUTPUT_CODE
+ 
+-#ifdef _WIN32
++#ifdef _MSC_VER
+ #define SM_THREAD_LOCAL __declspec(thread)
+ #else
+ #define SM_THREAD_LOCAL thread_local
+diff --git a/source/SMLib/inc/SmHealProbArray.h b/source/SMLib/inc/SmHealProbArray.h
+index a36bd7f..c0ab6d3 100644
+--- a/source/SMLib/inc/SmHealProbArray.h
++++ b/source/SMLib/inc/SmHealProbArray.h
+@@ -442,7 +442,7 @@ template<class TYPE> class SmProbArray
+ 
+ } ; // end template<class TYPE> class SmProbArray
+ 
+-#ifdef _WIN32
++#ifdef _MSC_VER
+ #define SM_PROB_ARRAY_TEMPLATE_PREDECLARATION(x) template class SM_EXPORT SmProbArray<x>
+   SM_PROB_ARRAY_TEMPLATE_PREDECLARATION(SmVertexProps) ;
+   SM_PROB_ARRAY_TEMPLATE_PREDECLARATION(SmEdgeProps) ;
+@@ -617,7 +617,7 @@ template<class TYPE> class SmPairProbArray : public SmProbArray<TYPE>
+ 
+ } ; // end template<class TYPE> class SmPairProbArray
+ 
+-#ifdef _WIN32
++#ifdef _MSC_VER
+ #define SM_COIN_PROB_ARRAY_TEMPLATE_PREDECLARATION(x) template class SM_EXPORT SmPairProbArray<x>
+   SM_COIN_PROB_ARRAY_TEMPLATE_PREDECLARATION(SmVertexProps) ;
+   SM_COIN_PROB_ARRAY_TEMPLATE_PREDECLARATION(SmEdgeProps) ;
+@@ -788,7 +788,7 @@ template<class TYPE> class SmMixedProbArray : public SmProbArray<TYPE>
+ 
+ } ; // end template<class TYPE> class SmMixedProbArray
+ 
+-#ifdef _WIN32
++#ifdef _MSC_VER
+ #define SM_MIXED_PROB_ARRAY_TEMPLATE_PREDECLARATION(x) template class SM_EXPORT SmMixedProbArray<x>
+   SM_MIXED_PROB_ARRAY_TEMPLATE_PREDECLARATION(SmVertexProps) ;
+   SM_MIXED_PROB_ARRAY_TEMPLATE_PREDECLARATION(SmEdgeProps) ;
+@@ -947,7 +947,7 @@ template<class TYPE> class SmTriedProbArray : public SmProbArray<TYPE>
+ 
+ } ; // end template<class TYPE> class SmTriedProbArray
+ 
+-#ifdef _WIN32
++#ifdef _MSC_VER
+ #define SM_TRIED_PROB_ARRAY_TEMPLATE_PREDECLARATION(x) template class SM_EXPORT SmTriedProbArray<x>
+   SM_TRIED_PROB_ARRAY_TEMPLATE_PREDECLARATION(SmVertexProps) ;
+   SM_TRIED_PROB_ARRAY_TEMPLATE_PREDECLARATION(SmEdgeProps) ;
+diff --git a/source/SMLib/inc/SmMapTypeToType.h b/source/SMLib/inc/SmMapTypeToType.h
+index 1f3ed23..54efa02 100644
+--- a/source/SMLib/inc/SmMapTypeToType.h
++++ b/source/SMLib/inc/SmMapTypeToType.h
+@@ -21,7 +21,7 @@
+ 
+ #include <sstream>
+ 
+-#ifdef _WIN32
++#ifdef _MSC_VER
+  #define SM_MAPTYPETOTYPE_TEMPLATE_PREDECLARATION(x,y)      \
+          template struct SM_EXPORT SmAssocTypeToType<x,y> ; \
+          template class  SM_EXPORT SmMapTypeToType<x,y>
+diff --git a/source/SMLib/inc/SmRelation.h b/source/SMLib/inc/SmRelation.h
+index 5e255a5..7b79060 100644
+--- a/source/SMLib/inc/SmRelation.h
++++ b/source/SMLib/inc/SmRelation.h
+@@ -21,7 +21,7 @@
+ #include <SmTArray.h>
+ #endif
+ 
+-#ifdef _WIN32
++#ifdef _MSC_VER
+ #define SM_RELATION_TEMPLATE_PREDECLARATION(x,y)  \
+ template class SM_EXPORT SmRelation<x,y>; 
+ #else
+diff --git a/source/SMLib/inc/SmRelationMM.h b/source/SMLib/inc/SmRelationMM.h
+index a8d65c7..559a1fd 100644
+--- a/source/SMLib/inc/SmRelationMM.h
++++ b/source/SMLib/inc/SmRelationMM.h
+@@ -21,7 +21,7 @@
+ #include <SmTArray.h>
+ #endif
+ 
+-#ifdef _WIN32
++#ifdef _MSC_VER
+ #define SM_RELATIONMM_TEMPLATE_PREDECLARATION(x,y)  \
+ template class SM_EXPORT SmRelationMM<x,y>; 
+ #else
+diff --git a/source/SMLib/inc/SmRelationV.h b/source/SMLib/inc/SmRelationV.h
+index 57dbc92..67fcd4c 100644
+--- a/source/SMLib/inc/SmRelationV.h
++++ b/source/SMLib/inc/SmRelationV.h
+@@ -21,7 +21,7 @@
+ #include <SmTArray.h>
+ #endif
+ 
+-#ifdef _WIN32
++#ifdef _MSC_VER
+ #define SM_RELATION_TEMPLATE_PREDECLARATION(x,y)  \
+ template class SM_EXPORT SmRelation<x,y>; 
+ #else
+diff --git a/source/SMLib/inc/SmSArray.h b/source/SMLib/inc/SmSArray.h
+index 0ff3359..a560e57 100644
+--- a/source/SMLib/inc/SmSArray.h
++++ b/source/SMLib/inc/SmSArray.h
+@@ -29,7 +29,7 @@
+ 
+ #include <SmAssertArray.h>
+ 
+-#ifdef _WIN32
++#ifdef _MSC_VER
+ #define SM_SARRAY_TEMPLATE_PREDECLARATION(x)  \
+ template class SM_EXPORT SmSArray<x>;
+ #else
+diff --git a/source/SMLib/inc/SmTArray.h b/source/SMLib/inc/SmTArray.h
+index fd32b8d..4e9856f 100644
+--- a/source/SMLib/inc/SmTArray.h
++++ b/source/SMLib/inc/SmTArray.h
+@@ -28,7 +28,7 @@
+ #include <SmContext.h>
+ #endif
+ 
+-#ifdef _WIN32
++#ifdef _MSC_VER
+ #define SM_TARRAY_TEMPLATE_PREDECLARATION(x) template class SM_EXPORT SmTArray<x>
+ #else
+ #define SM_TARRAY_TEMPLATE_PREDECLARATION(x)
+diff --git a/source/SMLib/inc/SmTList.h b/source/SMLib/inc/SmTList.h
+index 75dde3a..1039296 100644
+--- a/source/SMLib/inc/SmTList.h
++++ b/source/SMLib/inc/SmTList.h
+@@ -18,7 +18,7 @@
+ #include <SmTArray.h>
+ #endif
+ 
+-#ifdef _WIN32
++#ifdef _MSC_VER
+ #define SM_TLIST_TEMPLATE_PREDECLARATION(x)  template class SM_EXPORT SmTList<x>
+ #else
+ #define SM_TLIST_TEMPLATE_PREDECLARATION(x) 
+diff --git a/source/SMLib/inc/SmTypes.h b/source/SMLib/inc/SmTypes.h
+index 9b79c2e..6729ced 100644
+--- a/source/SMLib/inc/SmTypes.h
++++ b/source/SMLib/inc/SmTypes.h
+@@ -38,7 +38,7 @@
+ #include <string.h>
+ #include <stdlib.h>
+ 
+-#if defined(_WIN32)
++#if defined(_MSC_VER)
+ #define SM_EXPORT   __declspec( dllexport )
+ #define SM_EXPORT_TEMPLATE
+ 
+diff --git a/source/SMLib/inc/nurbs.h b/source/SMLib/inc/nurbs.h
+index 661af72..815dfb1 100644
+--- a/source/SMLib/inc/nurbs.h
++++ b/source/SMLib/inc/nurbs.h
+@@ -15,7 +15,7 @@
+ 
+ #include <NL_Nurbsdef.h>
+ 
+-#ifdef _WIN32
++#ifdef _MSC_VER
+  #define GW_EXPORT   __declspec( dllexport )
+ #elif defined(__GNUC__) && __GNUC__ >= 4
+  #define GW_EXPORT __attribute__((visibility("default")))
+diff --git a/source/SMLib/src/SmThreadLocalStorage.cpp b/source/SMLib/src/SmThreadLocalStorage.cpp
+index 83a66f0..e3fa627 100644
+--- a/source/SMLib/src/SmThreadLocalStorage.cpp
++++ b/source/SMLib/src/SmThreadLocalStorage.cpp
+@@ -30,7 +30,7 @@ NOTES:  This number is unique to each thread.
+ 
+ ***********************************************************************/
+ 
+-#ifdef _WIN32
++#ifdef _MSC_VER
+ static __declspec(thread) bool s_sBeenThroughNew;
+ #else
+ static __thread bool s_sBeenThroughNew;

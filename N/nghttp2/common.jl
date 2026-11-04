@@ -16,11 +16,14 @@ function configure_nghttp2_build(version; kwargs...)
         v"1.68.0" => "534b74b72524e962c18c7146470914632ca7eb2d",
         v"1.68.1" => "f769990597670f3ea8d2440d1e18a3f9a0df9bc0",
         v"1.69.0" => "68cb6900fde14c77f0cd7add0e094a862960eb99",
+        v"1.70.0" => "85e300c79fb6dbcfa9c1013215c8710c1c2cd3d2",
+        v"1.71.0" => "80dcb8140af050fac91a7e6af4fc6dd013404bd1",
     )
 
     sources = [
         GitSource("https://github.com/nghttp2/nghttp2.git",
-                  versions_tags[version]),
+                  versions_tags[version];
+                  tag="v$(version)"),
     ]
 
     script = raw"""

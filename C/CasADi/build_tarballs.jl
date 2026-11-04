@@ -2,12 +2,12 @@ using BinaryBuilder, Pkg
 
 name = "CasADi"
 
-version = v"3.7.3" # upstream is 3.7.2; bump Yggdrasil version because we updated compat bounds
+version = v"3.8.2"
 
 sources = [
     GitSource(
         "https://github.com/casadi/casadi.git",
-        "f959d3175a444d763e4eda4aece48f4c5f4a6f90",
+        "a5852c23b2100296cee23b81227fcaa3bef43f04",
     ),
     DirectorySource("./bundled"),
 ]
@@ -75,6 +75,8 @@ products = [
     LibraryProduct("libcasadi_integrator_cvodes", :libcasadi_integrator_cvodes),
     LibraryProduct("libcasadi_integrator_idas", :libcasadi_integrator_idas),
     LibraryProduct("libcasadi_integrator_rk", :libcasadi_integrator_rk),
+    LibraryProduct("libcasadi_integrator_rosenbrock", :libcasadi_integrator_rosenbrock),
+    LibraryProduct("libcasadi_integrator_erk", :libcasadi_integrator_erk),
     LibraryProduct("libcasadi_interpolant_bspline", :libcasadi_interpolant_bspline),
     LibraryProduct("libcasadi_interpolant_linear", :libcasadi_interpolant_linear),
     LibraryProduct("libcasadi_linsol_csparse", :libcasadi_linsol_csparse),
@@ -93,6 +95,7 @@ products = [
     LibraryProduct("libcasadi_rootfinder_fast_newton", :libcasadi_rootfinder_fast_newton),
     LibraryProduct("libcasadi_rootfinder_kinsol", :libcasadi_rootfinder_kinsol),
     LibraryProduct("libcasadi_rootfinder_newton", :libcasadi_rootfinder_newton),
+    LibraryProduct("libcasadi_rootfinder_bisection", :libcasadi_rootfinder_bisection),
     LibraryProduct("libcasadi_rootfinder_nlpsol", :libcasadi_rootfinder_nlpsol),
     LibraryProduct("libcasadi_sundials_common", :libcasadi_sundials_common),
     LibraryProduct("libcasadi_xmlfile_tinyxml", :libcasadi_xmlfile_tinyxml),
@@ -108,5 +111,5 @@ build_tarballs(
     products,
     dependencies;
     preferred_gcc_version = v"8",
-    julia_compat = "1.6",
+    julia_compat = "1.9",
 )

@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "blake3"
-version = v"1.8.5"
+version = v"1.8.6"
 sources = [
     GitSource(
         "https://github.com/BLAKE3-team/BLAKE3/",
-        "93a431c78a52d7ccf0f366f106467f5070e6075e",
+        "77b257eee7da5cd608eaf6be8343d3a4c9776af2",
     ),
 ]
 

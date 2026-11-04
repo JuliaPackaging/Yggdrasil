@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "brotli"
-version = v"1.2.0"
+version = v"1.2.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/google/brotli", "028fb5a23661f123017c060daa546b55cf4bde29"),
+    GitSource("https://github.com/google/brotli", "db24a98aed38a16de78cc05ca15cdd8dc2a0d92d"; tag="v$(version)"),
 ]
 
 # Bash recipe for building across all platforms

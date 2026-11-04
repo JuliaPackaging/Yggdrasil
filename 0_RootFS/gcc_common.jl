@@ -132,6 +132,27 @@ function gcc_script(gcc_version::VersionNumber, compiler_target::Platform)
         # On mingw, we need to explicitly set the windres code page to 1, otherwise windres segfaults
         export CPPFLAGS="${CPPFLAGS} -DCP_ACP=1"
 
+        # TLS on Windows:
+        # - GCC <= 15 has no native TLS codegen; TLS there only means libstdc++ uses
+        #   emutls-based __thread for the std::call_once internals. Keep it disabled:
+        #   the emutls libstdc++ ABI is transitional (msys2 moves to native TLS with
+        #   GCC 16 and will rebuild their world), and it breaks clang-compiled
+        #   downstreams, since clang defaults to native TLS on mingw
+        #   (https://github.com/EnzymeAD/ReactantBuilder/pull/195). See also
+        #   https://github.com/JuliaLang/julia/pull/45582#issuecomment-1295697412
+        # - GCC 16+ has native Windows TLS, opt-in via --enable-tls and requiring
+        #   binutils >= 2.44: https://gcc.gnu.org/gcc-16/changes.html
+        #   Enable it, following msys2's transition plan
+        #   (https://github.com/msys2/MINGW-packages/issues/29272). The bundled
+        #   libstdcpp-tls-abi patch keeps the non-TLS compatibility symbols in
+        #   libstdc++ so existing binaries built against the non-TLS ABI still load;
+        #   it will need to be carried to any future GCC 16 recipe.
+        if [[ "${GCC_VERSION_MAJOR}" -ge 16 ]]; then
+            GCC_CONF_ARGS="${GCC_CONF_ARGS} --enable-tls"
+        else
+            GCC_CONF_ARGS="${GCC_CONF_ARGS} --disable-tls"
+        fi
+
     elif [[ "${COMPILER_TARGET}" == *-darwin* ]]; then
         # Use llvm archive tools to dodge binutils bugs
         export LD_FOR_TARGET=${prefix}/bin/${COMPILER_TARGET}-ld
@@ -159,8 +180,9 @@ function gcc_script(gcc_version::VersionNumber, compiler_target::Platform)
         # Without `-sdk_version`, cctools ld64 stamps LC_BUILD_VERSION.sdk with the Darwin major
         # (e.g. 20.0), which trips macOS 26's stricter dyld LINKEDIT validator and makes the runtime
         # dylibs (-> CompilerSupportLibraries) fail to load.  Pin the (grandfathered) SDK version
-        # explicitly, like conda-forge's clang driver does.
-        if [[ "${GCC_VERSION_MAJOR}" -ge 14 ]]; then
+        # explicitly, like conda-forge's clang driver does.  Applies to GCC 13 too, since its darwin
+        # runtime dylibs feed CompilerSupportLibraries@v1.1 (Julia 1.10).
+        if [[ "${GCC_VERSION_MAJOR}" -ge 13 ]]; then
             export LDFLAGS_FOR_TARGET="${LDFLAGS_FOR_TARGET} -Wl,-sdk_version,11.0"
         fi
 

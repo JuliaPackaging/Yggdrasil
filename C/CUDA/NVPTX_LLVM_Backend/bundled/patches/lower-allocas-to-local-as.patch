@@ -1,0 +1,319 @@
+diff --git a/lib/Target/NVPTX/NVPTXISelLowering.cpp b/lib/Target/NVPTX/NVPTXISelLowering.cpp
+index 59d04dde1eeb..5c842c9a5fc9 100644
+--- a/lib/Target/NVPTX/NVPTXISelLowering.cpp
++++ b/lib/Target/NVPTX/NVPTXISelLowering.cpp
+@@ -29,6 +29,7 @@
+ #include "llvm/ADT/StringRef.h"
+ #include "llvm/CodeGen/Analysis.h"
+ #include "llvm/CodeGen/ISDOpcodes.h"
++#include "llvm/CodeGen/MachineFrameInfo.h"
+ #include "llvm/CodeGen/MachineFunction.h"
+ #include "llvm/CodeGen/MachineJumpTableInfo.h"
+ #include "llvm/CodeGen/MachineMemOperand.h"
+@@ -1230,28 +1231,25 @@ SDValue NVPTXTargetLowering::getSqrtEstimate(SDValue Operand, SelectionDAG &DAG,
+   }
+ }
+ 
+-static MachinePointerInfo refinePtrAS(SDValue &Ptr, SelectionDAG &DAG,
+-                                      const DataLayout &DL,
+-                                      const TargetLowering &TL) {
+-  if (Ptr->getOpcode() == ISD::FrameIndex) {
+-    auto Ty = TL.getPointerTy(DL, ADDRESS_SPACE_LOCAL);
+-    Ptr = DAG.getAddrSpaceCast(SDLoc(), Ty, Ptr, ADDRESS_SPACE_GENERIC,
+-                               ADDRESS_SPACE_LOCAL);
+-
+-    return MachinePointerInfo(ADDRESS_SPACE_LOCAL);
+-  }
+-
+-  // Peel of an addrspacecast to generic and load directly from the specific
+-  // address space.
++static MachinePointerInfo refinePtrAS(SDValue &Ptr, SelectionDAG &DAG) {
++  // Load directly from the source address space of a cast to generic.
++  unsigned SrcAS = ADDRESS_SPACE_GENERIC;
+   if (Ptr->getOpcode() == ISD::ADDRSPACECAST) {
+     const auto *ASC = cast<AddrSpaceCastSDNode>(Ptr);
+     if (ASC->getDestAddressSpace() == ADDRESS_SPACE_GENERIC) {
+       Ptr = ASC->getOperand(0);
+-      return MachinePointerInfo(ASC->getSrcAddressSpace());
++      SrcAS = ASC->getSrcAddressSpace();
+     }
+   }
+ 
+-  return MachinePointerInfo();
++  // Preserve the alloca's address space through frame-index inference.
++  if (const auto *FIN = dyn_cast<FrameIndexSDNode>(Ptr))
++    if (const AllocaInst *AI =
++            DAG.getMachineFunction().getFrameInfo().getObjectAllocation(
++                FIN->getIndex()))
++      return MachinePointerInfo(AI);
++
++  return MachinePointerInfo(SrcAS);
+ }
+ 
+ static ISD::NodeType getExtOpcode(const ISD::ArgFlagsTy &Flags) {
+@@ -1424,7 +1422,7 @@ SDValue NVPTXTargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
+     if (IsByVal) {
+       assert(ArgOutVals.size() == 1 && "We must pass only one value as byval");
+       SDValue SrcPtr = ArgOutVals[0];
+-      const auto PointerInfo = refinePtrAS(SrcPtr, DAG, DL, *this);
++      const MachinePointerInfo SrcPtrInfo = refinePtrAS(SrcPtr, DAG);
+       const Align BaseSrcAlign = ArgOuts[0].Flags.getNonZeroByValAlign();
+ 
+       if (IsVAArg)
+@@ -1441,7 +1439,8 @@ SDValue NVPTXTargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
+         Align SrcAlign = commonAlignment(BaseSrcAlign, Offsets[J]);
+         SDValue SrcAddr = DAG.getObjectPtrOffset(dl, SrcPtr, Offsets[J]);
+         SDValue SrcLoad =
+-            DAG.getLoad(LoadVT, dl, CallChain, SrcAddr, PointerInfo, SrcAlign);
++            DAG.getLoad(LoadVT, dl, CallChain, SrcAddr,
++                        SrcPtrInfo.getWithOffset(Offsets[J]), SrcAlign);
+ 
+         TypeSize ParamOffset = Offsets[J].getWithIncrement(VAOffset);
+         Align ParamAlign = commonAlignment(ArgAlign, ParamOffset);
+@@ -1707,10 +1706,11 @@ SDValue NVPTXTargetLowering::LowerDYNAMIC_STACKALLOC(SDValue Op,
+                   {Chain, DAG.getZExtOrTrunc(Size, DL, LocalVT),
+                    DAG.getTargetConstant(Align, DL, MVT::i32)});
+ 
+-  SDValue ASC = DAG.getAddrSpaceCast(
+-      DL, Op.getValueType(), Alloc, ADDRESS_SPACE_LOCAL, ADDRESS_SPACE_GENERIC);
++  // NVPTXLowerAlloca puts allocas in the local address space, so a local
++  // pointer is requested here; escapes are explicit addrspacecasts in the IR.
++  assert(Op.getValueType() == LocalVT && "Unexpected alloca pointer size");
+ 
+-  return DAG.getMergeValues({ASC, SDValue(Alloc.getNode(), 1)}, DL);
++  return DAG.getMergeValues({Alloc, SDValue(Alloc.getNode(), 1)}, DL);
+ }
+ 
+ SDValue NVPTXTargetLowering::LowerSTACKRESTORE(SDValue Op,
+diff --git a/lib/Target/NVPTX/NVPTXLowerAlloca.cpp b/lib/Target/NVPTX/NVPTXLowerAlloca.cpp
+index ef8df4d70d95..38ac883e4980 100644
+--- a/lib/Target/NVPTX/NVPTXLowerAlloca.cpp
++++ b/lib/Target/NVPTX/NVPTXLowerAlloca.cpp
+@@ -6,28 +6,34 @@
+ //
+ //===----------------------------------------------------------------------===//
+ //
+-// For all alloca instructions, and add a pair of cast to local address for
+-// each of them. For example,
++// Replace each generic alloca with an equivalent alloca in the local address
++// space, followed by an addrspacecast back to generic for its users. For
++// example,
+ //
+ //   %A = alloca i32
+-//   store i32 0, i32* %A ; emits st.u32
++//   store i32 0, ptr %A ; emits st.u32
+ //
+-// will be transformed to
++// is transformed to
+ //
+-//   %A = alloca i32
+-//   %Local = addrspacecast i32* %A to i32 addrspace(5)*
+-//   %Generic = addrspacecast i32 addrspace(5)* %A to i32*
+-//   store i32 0, i32 addrspace(5)* %Generic ; emits st.local.u32
++//   %A = alloca i32, addrspace(5)
++//   %A.generic = addrspacecast ptr addrspace(5) %A to ptr
++//   store i32 0, ptr %A.generic
+ //
+-// And we will rely on NVPTXInferAddressSpaces to combine the last two
+-// instructions.
++// This gives the alloca a local frame index, which stack lowering addresses
++// through the local frame pointer (%SPL). When NVPTXInferAddressSpaces runs
++// after this pass, it propagates the local address space into the users and
++// folds the cast away where possible (so the store above becomes st.local.u32).
+ //
+ //===----------------------------------------------------------------------===//
+ 
+ #include "MCTargetDesc/NVPTXBaseInfo.h"
+ #include "NVPTX.h"
++#include "llvm/ADT/SmallVector.h"
++#include "llvm/IR/DebugInfo.h"
+ #include "llvm/IR/Function.h"
+ #include "llvm/IR/Instructions.h"
++#include "llvm/IR/IntrinsicInst.h"
++#include "llvm/IR/Intrinsics.h"
+ #include "llvm/IR/Type.h"
+ #include "llvm/Pass.h"
+ 
+@@ -55,79 +61,59 @@ INITIALIZE_PASS(NVPTXLowerAlloca, "nvptx-lower-alloca", "Lower Alloca", false,
+ // Main function for this pass.
+ // =============================================================================
+ bool NVPTXLowerAlloca::runOnFunction(Function &F) {
+-  if (skipFunction(F))
+-    return false;
+-
+-  bool Changed = false;
++  // Mandatory lowering: later stack lowering relies on local allocas, so run
++  // even for optnone functions (skipFunction is intentionally not called).
++  SmallVector<AllocaInst *, 8> GenericAllocas;
+   for (auto &BB : F)
+-    for (auto &I : BB) {
+-      if (auto allocaInst = dyn_cast<AllocaInst>(&I)) {
+-        Changed = true;
++    for (auto &I : BB)
++      if (auto *AI = dyn_cast<AllocaInst>(&I);
++          AI && AI->getAddressSpace() == ADDRESS_SPACE_GENERIC)
++        GenericAllocas.push_back(AI);
+ 
+-        unsigned AllocAddrSpace = allocaInst->getAddressSpace();
+-        assert((AllocAddrSpace == ADDRESS_SPACE_GENERIC ||
+-                AllocAddrSpace == ADDRESS_SPACE_LOCAL) &&
+-               "AllocaInst can only be in Generic or Local address space for "
+-               "NVPTX.");
++  for (AllocaInst *AI : GenericAllocas) {
++    // Create an equivalent alloca in the local address space.
++    auto *LocalAlloca = new AllocaInst(AI->getAllocatedType(),
++                                       ADDRESS_SPACE_LOCAL, AI->getArraySize(),
++                                       AI->getAlign(), "", AI->getIterator());
++    LocalAlloca->setDebugLoc(AI->getDebugLoc());
++    LocalAlloca->copyMetadata(*AI);
++    LocalAlloca->setUsedWithInAlloca(AI->isUsedWithInAlloca());
++    LocalAlloca->setSwiftError(AI->isSwiftError());
+ 
+-        Instruction *AllocaInLocalAS = allocaInst;
++    // Debug records and lifetime markers have to reference the alloca itself,
++    // not a cast of it, so retarget them to the local alloca before rewriting
++    // the remaining users through a generic addrspacecast below:
++    //   - the verifier requires an alloca operand for lifetime markers, and
++    //   - pointing debug records at the alloca keeps the variable described by
++    //     its (stable) stack slot rather than the cvta.local result.
++    SmallVector<DbgVariableRecord *, 2> DbgUsers;
++    findDbgUsers(AI, DbgUsers);
++    for (DbgVariableRecord *DVR : DbgUsers)
++      DVR->replaceVariableLocationOp(AI, LocalAlloca);
+ 
+-        // We need to make sure that LLVM has info that alloca needs to go to
+-        // ADDRESS_SPACE_LOCAL for InferAddressSpace pass.
+-        //
+-        // For allocas in ADDRESS_SPACE_GENERIC, we add addrspacecast to
+-        // ADDRESS_SPACE_LOCAL and back to ADDRESS_SPACE_GENERIC, so that
+-        // the alloca's users still use a generic pointer to operate on.
+-        //
+-        // For allocas already in ADDRESS_SPACE_LOCAL, we just need
+-        // addrspacecast to ADDRESS_SPACE_GENERIC.
+-        if (AllocAddrSpace == ADDRESS_SPACE_GENERIC) {
+-          auto ASCastToLocalAS = new AddrSpaceCastInst(
+-              allocaInst,
+-              PointerType::get(allocaInst->getContext(), ADDRESS_SPACE_LOCAL),
+-              "");
+-          ASCastToLocalAS->insertAfter(allocaInst->getIterator());
+-          AllocaInLocalAS = ASCastToLocalAS;
+-        }
+-
+-        auto AllocaInGenericAS = new AddrSpaceCastInst(
+-            AllocaInLocalAS,
+-            PointerType::get(allocaInst->getContext(), ADDRESS_SPACE_GENERIC),
+-            "");
+-        AllocaInGenericAS->insertAfter(AllocaInLocalAS->getIterator());
+-
+-        for (Use &AllocaUse : llvm::make_early_inc_range(allocaInst->uses())) {
+-          // Check Load, Store, GEP, and BitCast Uses on alloca and make them
+-          // use the converted generic address, in order to expose non-generic
+-          // addrspacecast to NVPTXInferAddressSpaces. For other types
+-          // of instructions this is unnecessary and may introduce redundant
+-          // address cast.
+-          auto LI = dyn_cast<LoadInst>(AllocaUse.getUser());
+-          if (LI && LI->getPointerOperand() == allocaInst &&
+-              !LI->isVolatile()) {
+-            LI->setOperand(LI->getPointerOperandIndex(), AllocaInGenericAS);
+-            continue;
+-          }
+-          auto SI = dyn_cast<StoreInst>(AllocaUse.getUser());
+-          if (SI && SI->getPointerOperand() == allocaInst &&
+-              !SI->isVolatile()) {
+-            SI->setOperand(SI->getPointerOperandIndex(), AllocaInGenericAS);
+-            continue;
+-          }
+-          auto GI = dyn_cast<GetElementPtrInst>(AllocaUse.getUser());
+-          if (GI && GI->getPointerOperand() == allocaInst) {
+-            GI->setOperand(GI->getPointerOperandIndex(), AllocaInGenericAS);
+-            continue;
+-          }
+-          auto BI = dyn_cast<BitCastInst>(AllocaUse.getUser());
+-          if (BI && BI->getOperand(0) == allocaInst) {
+-            BI->setOperand(0, AllocaInGenericAS);
+-            continue;
+-          }
+-        }
+-      }
++    for (Use &U : llvm::make_early_inc_range(AI->uses())) {
++      auto *II = dyn_cast<IntrinsicInst>(U.getUser());
++      if (!II || !isLifetimeIntrinsic(II->getIntrinsicID()))
++        continue;
++      U.set(LocalAlloca);
++      Function *Decl = Intrinsic::getOrInsertDeclaration(
++          II->getModule(), II->getIntrinsicID(), {LocalAlloca->getType()});
++      II->setCalledFunction(Decl);
+     }
+-  return Changed;
++
++    // Everything else can go through a single generic addrspacecast.
++    // replaceAllUsesWith leaves the (already retargeted) lifetime markers and
++    // debug records untouched. NVPTXInferAddressSpaces folds the cast into the
++    // users that can operate on local memory directly.
++    auto *GenericPtr = new AddrSpaceCastInst(LocalAlloca, AI->getType(), "",
++                                             AI->getIterator());
++    GenericPtr->setDebugLoc(AI->getDebugLoc());
++    AI->replaceAllUsesWith(GenericPtr);
++    LocalAlloca->takeName(AI);
++    AI->eraseFromParent();
++  }
++
++  return !GenericAllocas.empty();
+ }
+ 
+ FunctionPass *llvm::createNVPTXLowerAllocaPass() {
+diff --git a/lib/Target/NVPTX/NVPTXRegisterInfo.cpp b/lib/Target/NVPTX/NVPTXRegisterInfo.cpp
+index 1186ae872d2c..aba4d35e053f 100644
+--- a/lib/Target/NVPTX/NVPTXRegisterInfo.cpp
++++ b/lib/Target/NVPTX/NVPTXRegisterInfo.cpp
+@@ -11,6 +11,7 @@
+ //===----------------------------------------------------------------------===//
+ 
+ #include "NVPTXRegisterInfo.h"
++#include "MCTargetDesc/NVPTXBaseInfo.h"
+ #include "MCTargetDesc/NVPTXInstPrinter.h"
+ #include "NVPTX.h"
+ #include "NVPTXTargetMachine.h"
+@@ -18,6 +19,7 @@
+ #include "llvm/CodeGen/MachineFrameInfo.h"
+ #include "llvm/CodeGen/MachineFunction.h"
+ #include "llvm/CodeGen/TargetInstrInfo.h"
++#include "llvm/IR/Instructions.h"
+ 
+ using namespace llvm;
+ 
+@@ -113,11 +115,17 @@ bool NVPTXRegisterInfo::eliminateFrameIndex(MachineBasicBlock::iterator II,
+   const int FrameIndex = MI.getOperand(FIOperandNum).getIndex();
+ 
+   const MachineFunction &MF = *MI.getParent()->getParent();
+-  const int Offset = MF.getFrameInfo().getObjectOffset(FrameIndex) +
++  const MachineFrameInfo &MFI = MF.getFrameInfo();
++  const int Offset = MFI.getObjectOffset(FrameIndex) +
+                      MI.getOperand(FIOperandNum + 1).getImm();
+ 
+-  // Using I0 as the frame pointer
+-  MI.getOperand(FIOperandNum).ChangeToRegister(getFrameRegister(MF), false);
++  // Local (addrspace 5) allocas are addressed through the local frame pointer
++  // (%SPL); everything else uses the generic frame pointer (%SP).
++  const AllocaInst *AI = MFI.getObjectAllocation(FrameIndex);
++  const Register FrameReg = AI && AI->getAddressSpace() == ADDRESS_SPACE_LOCAL
++                                ? getFrameLocalRegister(MF)
++                                : getFrameRegister(MF);
++  MI.getOperand(FIOperandNum).ChangeToRegister(FrameReg, false);
+   MI.getOperand(FIOperandNum + 1).ChangeToImmediate(Offset);
+   return false;
+ }
+diff --git a/lib/Target/NVPTX/NVPTXTargetMachine.cpp b/lib/Target/NVPTX/NVPTXTargetMachine.cpp
+index 2bc2158fccae..21d4f7e17881 100644
+--- a/lib/Target/NVPTX/NVPTXTargetMachine.cpp
++++ b/lib/Target/NVPTX/NVPTXTargetMachine.cpp
+@@ -372,6 +372,9 @@ void NVPTXPassConfig::addIRPasses() {
+   if (getOptLevel() != CodeGenOptLevel::None) {
+     addAddressSpaceInferencePasses();
+     addStraightLineScalarOptimizationPasses();
++  } else {
++    // Required for correct stack lowering
++    addPass(createNVPTXLowerAllocaPass());
+   }
+ 
+   addPass(createAtomicExpandLegacyPass());

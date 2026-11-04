@@ -1,27 +1,11 @@
-From 6769dc80f0b2954a80a6ae1b93b3cc621fbd7568 Mon Sep 17 00:00:00 2001
-From: Jacob Quinn <quinn.jacobd@gmail.com>
-Date: Tue, 18 Mar 2025 21:48:25 -0600
-Subject: [PATCH] Add support for server-side websocket upgrade
-
----
- include/aws/http/private/h1_encoder.h     |   1 +
- include/aws/http/private/websocket_impl.h |  11 ++
- include/aws/http/websocket.h              |  85 ++++++++++++++
- source/h1_connection.c                    |   3 +-
- source/h1_encoder.c                       |   2 +
- source/websocket.c                        | 136 ++++++++++++++++++++++
- source/websocket_bootstrap.c              |   8 +-
- tests/test_connection_manager.c           |   6 +-
- 8 files changed, 240 insertions(+), 12 deletions(-)
-
 diff --git a/include/aws/http/private/h1_encoder.h b/include/aws/http/private/h1_encoder.h
-index 8f82b23..cbcc97d 100644
+index f9d1038..f6c2bdf 100644
 --- a/include/aws/http/private/h1_encoder.h
 +++ b/include/aws/http/private/h1_encoder.h
-@@ -48,6 +48,7 @@ struct aws_h1_encoder_message {
-     uint64_t content_length;
+@@ -58,6 +58,7 @@ struct aws_h1_encoder_message {
      bool has_connection_close_header;
      bool has_chunked_encoding_header;
+     bool has_manual_data_writes;
 +    bool is_switching_protocols;
  };
  
@@ -48,19 +32,19 @@ index c807be2..77902af 100644
  AWS_EXTERN_C_END
  #endif /* AWS_HTTP_WEBSOCKET_IMPL_H */
 diff --git a/include/aws/http/websocket.h b/include/aws/http/websocket.h
-index 39703b4..5dc7bed 100644
+index a8690fc..f9573ee 100644
 --- a/include/aws/http/websocket.h
 +++ b/include/aws/http/websocket.h
-@@ -11,6 +11,7 @@ AWS_PUSH_SANE_WARNING_LEVEL
- 
+@@ -12,6 +12,7 @@ AWS_PUSH_SANE_WARNING_LEVEL
  struct aws_http_header;
  struct aws_http_message;
+ struct aws_l4_proxy_config;
 +struct aws_http_stream;
  
- /* TODO: Document lifetime stuff */
- /* TODO: Document CLOSE frame behavior (when auto-sent during close, when auto-closed) */
-@@ -290,6 +291,59 @@ struct aws_websocket_client_connection_options {
-     const struct aws_host_resolution_config *host_resolution_config;
+ /**
+  * Lifetime: the websocket is ref-counted. on_connection_setup hands you one reference; release it with
+@@ -304,6 +305,59 @@ struct aws_websocket_client_connection_options {
+     struct aws_l4_proxy_config *l4_proxy_config;
  };
  
 +struct aws_websocket_server_upgrade_options {
@@ -119,7 +103,7 @@ index 39703b4..5dc7bed 100644
  /**
   * Called repeatedly as the websocket's payload is streamed out.
   * The user should write payload data to out_buf, up to available capacity.
-@@ -486,6 +540,37 @@ struct aws_http_message *aws_http_message_new_websocket_handshake_request(
+@@ -500,6 +554,37 @@ struct aws_http_message *aws_http_message_new_websocket_handshake_request(
      struct aws_byte_cursor path,
      struct aws_byte_cursor host);
  
@@ -158,10 +142,10 @@ index 39703b4..5dc7bed 100644
  AWS_POP_SANE_WARNING_LEVEL
  
 diff --git a/source/h1_connection.c b/source/h1_connection.c
-index 40839d2..6c68c8b 100644
+index 0dd6b3f..02adc72 100644
 --- a/source/h1_connection.c
 +++ b/source/h1_connection.c
-@@ -621,7 +621,8 @@ static void s_stream_complete(struct aws_h1_stream *stream, int error_code) {
+@@ -623,7 +623,8 @@ static void s_stream_complete(struct aws_h1_stream *stream, int error_code) {
       * If this is the end of a successful CONNECT request, mark ourselves as pass-through since the proxy layer
       * will be tacking on a new http handler (and possibly a tls handler in-between).
       */
@@ -172,10 +156,10 @@ index 40839d2..6c68c8b 100644
              error_code = AWS_ERROR_HTTP_PROTOCOL_SWITCH_FAILURE;
              s_shutdown_due_to_error(connection, error_code);
 diff --git a/source/h1_encoder.c b/source/h1_encoder.c
-index aecc019..2d34898 100644
+index ab1309c..6752215 100644
 --- a/source/h1_encoder.c
 +++ b/source/h1_encoder.c
-@@ -363,6 +363,8 @@ int aws_h1_encoder_message_init_from_response(
+@@ -393,6 +393,8 @@ int aws_h1_encoder_message_init_from_response(
  
      struct aws_byte_cursor status_text = aws_byte_cursor_from_c_str(aws_http_status_text(status_int));
  
@@ -339,7 +323,7 @@ index da5aedb..86f350c 100644
 +    return websocket;
 +}
 diff --git a/source/websocket_bootstrap.c b/source/websocket_bootstrap.c
-index 6c66c85..367f5be 100644
+index c4f48aa..c0e1c0d 100644
 --- a/source/websocket_bootstrap.c
 +++ b/source/websocket_bootstrap.c
 @@ -89,10 +89,6 @@ struct aws_websocket_client_bootstrap {
@@ -353,7 +337,7 @@ index 6c66c85..367f5be 100644
  static void s_ws_bootstrap_cancel_setup_due_to_err(
      struct aws_websocket_client_bootstrap *ws_bootstrap,
      struct aws_http_connection *http_connection,
-@@ -181,7 +177,7 @@ int aws_websocket_client_connect(const struct aws_websocket_client_connection_op
+@@ -187,7 +183,7 @@ int aws_websocket_client_connect(const struct aws_websocket_client_connection_op
      ws_bootstrap->response_headers = aws_http_headers_new(ws_bootstrap->alloc);
      aws_byte_buf_init(&ws_bootstrap->response_body, ws_bootstrap->alloc, 0);
  
@@ -362,7 +346,7 @@ index 6c66c85..367f5be 100644
              sec_websocket_key, &ws_bootstrap->expected_sec_websocket_accept, ws_bootstrap->alloc)) {
          goto error;
      }
-@@ -270,7 +266,7 @@ static void s_ws_bootstrap_destroy(struct aws_websocket_client_bootstrap *ws_boo
+@@ -277,7 +273,7 @@ static void s_ws_bootstrap_destroy(struct aws_websocket_client_bootstrap *ws_boo
   *      "258EAFA5-E914-47DA-95CA-C5AB0DC85B11" but ignoring any leading and
   *      trailing whitespace
   */
@@ -371,23 +355,3 @@ index 6c66c85..367f5be 100644
      struct aws_byte_cursor sec_websocket_key,
      struct aws_byte_buf *out_buf,
      struct aws_allocator *alloc) {
-diff --git a/tests/test_connection_manager.c b/tests/test_connection_manager.c
-index 9fe82ae..d4d19a5 100644
---- a/tests/test_connection_manager.c
-+++ b/tests/test_connection_manager.c
-@@ -161,11 +161,7 @@ static int s_cm_tester_init(struct cm_tester_options *options) {
-         clock_fn = options->mock_table->aws_high_res_clock_get_ticks;
-     }
- 
--    struct aws_event_loop_group_options elg_options = {
--        .loop_count = 1,
--        .clock_override = clock_fn,
--    };
--    tester->event_loop_group = aws_event_loop_group_new(tester->allocator, &elg_options);
-+    tester->event_loop_group = aws_event_loop_group_new(tester->allocator, clock_fn, 1, NULL, NULL, NULL);
- 
-     struct aws_host_resolver_default_options resolver_options = {
-         .el_group = tester->event_loop_group,
--- 
-2.39.5 (Apple Git-154)
-

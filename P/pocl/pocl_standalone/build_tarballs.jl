@@ -7,28 +7,34 @@ const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
-name = "pocl_standalone"
-version = v"7.1.3"
+# This is the standalone (OpenCL-less) variant of the PoCL 7.2 track: instead of an ICD
+# driver loaded by an OpenCL ICD loader, it builds a directly-linkable library
+# (`libpocl_standalone`) whose OpenCL entrypoints are renamed to `PO<cl_function>`
+# (RENAME_POCL). That lets it be used as a CPU back-end (e.g. by KernelAbstractions.jl's
+# nanoOpenCL) without an OpenCL.jl/ICD dependency, while still coexisting in-process with a
+# real OpenCL ICD targeting other GPUs. The actual build lives in ../common.jl, shared with
+# the `pocl_next` (ICD) variant and selected via its `standalone` argument (true here).
+# Like `pocl_next` this is a JIT build, so it needs no run-time clang/lld/llvm-spirv tooling.
 
-# This is the standalone (OpenCL-less) variant of PoCL: instead of an ICD driver loaded by
-# an OpenCL ICD loader, it builds a directly-linkable library (`libpocl_standalone`) whose
-# OpenCL entrypoints are renamed to `PO<cl_function>` (RENAME_POCL). That lets it be used as
-# a CPU back-end (e.g. by KernelAbstractions.jl's nanoOpenCL) without an OpenCL.jl/ICD
-# dependency, while still coexisting in-process with a real OpenCL ICD targeting other GPUs.
-# The actual build differences live in ../common.jl, gated on the `standalone` argument.
+name = "pocl_standalone"
+# upstream's 7.2 maintenance branch plus our patch series; bumped past 7.2 when the series
+# changes API (7.2.1 added cl_pocl_cpu_compute_units, 7.2.2 removed it again, 7.2.3 adds
+# cl_pocl_host_kernel)
+version = v"7.2.3"
+llvm_version = v"22.1.1"
+macos_sdk_version = "11.0"
 
 # Build
 
 # Collection of sources required to complete build
 sources = [
     DirectorySource("./bundled"),
-    GitSource("https://github.com/juliagpu/pocl",
-              "9d52d6600b5717f2c20a42d3862754014937f849"),
+    GitSource("https://github.com/pocl/pocl",
+              "4a2178224f5eea88cc6f170b808803c963ce5176"), # release_next (v7.2 + backports)
     # vendored SPIR-V translator, built as a static library against our LLVM (see
-    # common.jl); this commit is the LLVM-20.1-compatible revision (matches
-    # LLVM_full_jll 20.1.2).
+    # common.jl); this is the latest LLVM-22.1 maintenance revision.
     GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git",
-              "dee371987a59ed8654083c09c5f1d5c54f5db318"),
+              "0e67244861402a51b071414d7cb231a052b1ce03"),
 ]
 
 #=
@@ -58,12 +64,9 @@ filter!(p -> !(arch(p) == "i686" && os(p) == "windows"), platforms)
 
 include("../common.jl")
 
-# LLVM 20 was built against the macOS 10.14 SDK, so ship it. We only use the
-# helper for the (centralized) SDK source; the install itself is done
-# non-destructively in common.jl, which extracts the SDK to a scratch dir and
-# redirects the toolchain at it, rather than overwriting the read-only sys-root
-# (whose `System` tree can no longer be `rm`'d on the current rootfs).
-sources = vcat(sources, get_macos_sdk_sources("10.14"))
+# LLVM 22 requires macOS 11.0. The shared helper installs the SDK and redirects
+# the toolchain without modifying the read-only rootfs.
+sources, macos_sdk_script = require_macos_sdk(macos_sdk_version, sources, "")
 
 # The products that we will ensure are always built
 products = [
@@ -72,21 +75,28 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built.
-# Unlike the regular `pocl` build, the standalone variant does not use an OpenCL ICD loader
-# (ENABLE_ICD=OFF) and uses PoCL's vendored OpenCL headers, so OpenCL_jll and
-# OpenCL_Headers_jll are not needed.
+#
+# Unlike the `pocl_next` (ICD) variant, the standalone build does not use an OpenCL ICD
+# loader (ENABLE_ICD=OFF) and uses PoCL's vendored OpenCL headers, so OpenCL_jll and
+# OpenCL_Headers_jll are not needed. As with `pocl_next`, the JIT build no longer shells
+# out to an external linker or clang at run time (no LLD_unified_jll/Clang_unified_jll);
+# with Level Zero disabled there is no spirv-link consumer (no SPIRV_Tools_jll); and the
+# SPIR-V translator is vendored and statically linked (no SPIRV_LLVM_Translator_jll).
+# LLVM_full_jll is only a build dependency because it is linked statically into libpocl.
 dependencies = [
-    HostBuildDependency(PackageSpec(name="LLVM_full_jll", version="20.1.2")),
-    BuildDependency(PackageSpec(name="LLVM_full_jll", version="20.1.2")),
+    HostBuildDependency(PackageSpec(name="LLVM_full_jll", version=string(llvm_version))),
+    BuildDependency(PackageSpec(name="LLVM_full_jll", version=string(llvm_version))),
     Dependency("Hwloc_jll"),
-    Dependency("Zstd_jll"), # our LLVM 20 build has LLVM_ENABLE_ZSTD=ON
-    # the SPIR-V translator is vendored and statically linked (see common.jl), so
-    # SPIRV_LLVM_Translator_jll is no longer needed at run time.
-    # only used at run time, but also detected by the build
-    Dependency("SPIRV_Tools_jll"),
-    # only used at run time
-    RuntimeDependency("Clang_unified_jll"),
-    RuntimeDependency("LLD_unified_jll")
+    Dependency("Zstd_jll"), # our LLVM 22 build has LLVM_ENABLE_ZSTD=ON
+    # Vectorize OpenCL math builtins via SLEEF's libmvec-ABI library (libsleefgnuabi), which
+    # the in-process JIT dlopens at run time (see common.jl for the matching CMake flags). Only
+    # on x86_64/aarch64 Linux and FreeBSD, the ELF targets where LLVM maps a veclib *and*
+    # SLEEF_jll ships libsleefgnuabi (macOS has no GNUABI variant, Windows has no SLEEF_jll).
+    # This has to be declared here, not per platform in the loop below: the JLL's Project.toml
+    # comes from the last (registering) `build_tarballs` call, which isn't one of these.
+    Dependency("SLEEF_jll"; platforms=filter(platforms) do p
+        (Sys.islinux(p) || Sys.isfreebsd(p)) && arch(p) in ["x86_64", "aarch64"]
+    end),
 ]
 
 builds = []
@@ -96,21 +106,18 @@ for platform in platforms
     platform_sources = deepcopy(sources)
     platform_dependencies = deepcopy(dependencies)
 
-    # for fp16, we need a vectorization library
-    if arch(platform) in ["armv6l", "aarch64"]
-        #push!(platform_dependencies, Dependency("SLEEF_jll"))
-        # XXX: PoCL hard-codes the path to libsleef
-        # `no such file or directory: '/opt/aarch64-linux-gnu/aarch64-linux-gnu/sys-root/usr/local/lib/libsleef.so'`
-    end
-    # TODO: libsvml for x86 (part of mkl)
-    # TODO: libmvec as fallback (part of glibc 2.22+)
-
-    # on Windows, we need to use a version of GCC that supports `.drectve -exclude-symbols`
-    # or we run into export ordinal limits
+    # On Windows we now link PoCL with the Clang/lld toolchain, but still build against this
+    # GCC's MinGW sysroot and libstdc++, so its version must stay compatible with the
+    # Clang-built LLVM_full_jll's libstdc++ ABI. (Previously pinned to 13 for GNU ld's
+    # `.drectve -exclude-symbols`, used to dodge the PE export-ordinal limit; lld no longer
+    # needs that -- it exports only the dllexport'd public API instead.)
+    # _Float16 host support (cl_khr_fp16) requires the host C/C++ compiler to know the
+    # `_Float16` type, which GCC only gained in v12 (HOST_COMPILER_SUPPORTS_FLOAT16 fails
+    # on GCC 10/11 -> FP16 silently disabled). Keep >=12 so FP16 is enabled on the builds.
     preferred_gcc_version = if Sys.iswindows(platform)
         v"13"
     else
-        v"10"
+        v"12"
     end
 
     push!(builds, (; platform,
@@ -130,8 +137,13 @@ end
 
 for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
-                   name, version, build.sources, build_script(true),
+                   name, version, build.sources, macos_sdk_script * build_script(true),
                    [build.platform], products, build.dependencies;
-                   build.preferred_gcc_version, preferred_llvm_version=v"20",
-                   julia_compat="1.6", init_block=init_block(true))
+                   build.preferred_gcc_version,
+                   preferred_llvm_version=Base.thismajor(llvm_version),
+                   # libpocl needs the libgcc_s of GCC 12 (for its FP16 helpers), which Julia
+                   # bundles since 1.8; 1.10 is the oldest version the users of these JLLs support
+                   julia_compat="1.10", init_block=init_block(true))
 end
+
+# Build trigger: 21

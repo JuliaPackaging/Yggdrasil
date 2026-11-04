@@ -1,0 +1,10 @@
+Omit emulated PAC builtins with GCC: its bundled GNU assembler rejects PAC instructions.
+https://github.com/JuliaPackaging/Yggdrasil/pull/12953
+
+--- a/lib/builtins/CMakeLists.txt
++++ b/lib/builtins/CMakeLists.txt
+@@ -749,3 +749,3 @@
+ # Append sources specific to AArch64 targets that aren't supported by cl.exe
+-if(CLANG_CL OR NOT MSVC)
++if((CLANG_CL OR NOT MSVC) AND NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+   list(APPEND aarch64_SOURCES

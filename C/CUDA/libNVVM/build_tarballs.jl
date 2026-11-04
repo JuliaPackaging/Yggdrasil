@@ -6,8 +6,8 @@ const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "libNVVM"
-version = v"4.0.7"
-cuda_version = v"13.2"
+version = v"4.0.8"
+cuda_version = v"13.4.2"
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/libnvvm-*

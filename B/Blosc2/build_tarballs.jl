@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 
 name = "Blosc2"
 
-upstream_version = v"3.1.2"
+version = v"3.4.1"
 # We add a version offset because:
 # - Blosc2 2.15 is not ABI-compatible with Blosc2 2.14
 #   (see the release notes <https://github.com/Blosc/c-blosc2/releases/tag/v2.15.0>)
@@ -12,14 +12,17 @@ upstream_version = v"3.1.2"
 #   (the shared library SOVERSION was increased)
 # - Blosc2 2.23.1 is not ABI-compatible with Blosc2 2.23.0
 #   (the shared library SOVERSION was increased)
-version_offset = v"0.0.0"
-version = VersionNumber(upstream_version.major * 100 + version_offset.major,
-                        upstream_version.minor * 100 + version_offset.minor,
-                        upstream_version.patch * 100 + version_offset.patch)
+# - Blosc2 3.2 is not ABI-compatible with Blosc2 3.1
+# - Blosc2 3.3 IS ABI-compatible with Blosc2 3.2
+# - Blosc2 3.4 IS ABI-compatible with Blosc2 3.2
+version_offset = v"1.0.0"
+ygg_version = VersionNumber(version.major * 100 + version_offset.major,
+                            version.minor * 100 + version_offset.minor,
+                            version.patch * 100 + version_offset.patch)
 
 # Collection of sources required to build Blosc2
 sources = [
-    GitSource("https://github.com/Blosc/c-blosc2.git", "fe60da3ddb7260920009d929e8e2ab93719ab6f2"),
+    GitSource("https://github.com/Blosc/c-blosc2.git", "7f57ed4d55a3e5ce2e98832ccb3ef3fcbfffac52"; tag="v$(version)"),
     DirectorySource("bundled"),
 ]
 
@@ -81,5 +84,5 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # We need at least GCC 8 for powerpc.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"8")

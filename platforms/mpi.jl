@@ -48,11 +48,11 @@ using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
 mpi_abis = (
-    ("MPIABI", PackageSpec(name="MPIABI_jll"), "0.1.3", p -> !Sys.iswindows(p)),
-    ("MPICH", PackageSpec(name="MPICH_jll"), "5.0.1", p -> !Sys.iswindows(p)),
-    ("MPItrampoline", PackageSpec(name="MPItrampoline_jll"), "5.5.6", p -> !Sys.iswindows(p) && !(libc(p) == "musl")),
-    ("MicrosoftMPI", PackageSpec(name="MicrosoftMPI_jll"), "", Sys.iswindows),
-    ("OpenMPI", PackageSpec(name="OpenMPI_jll"), "4.1.9, 5.0.11", p -> !Sys.iswindows(p) && !(arch(p) == "armv6l" && libc(p) == "glibc")),
+    ("MPIABI", PackageSpec(name="MPIABI_jll"), "1.0.0", p -> !Sys.iswindows(p)),
+    ("MPICH", PackageSpec(name="MPICH_jll"), "5.0.3", p -> !Sys.iswindows(p)),
+    ("MPItrampoline", PackageSpec(name="MPItrampoline_jll"), "5.5.7", p -> !Sys.iswindows(p) && !(libc(p) == "musl")),
+    ("MicrosoftMPI", PackageSpec(name="MicrosoftMPI_jll"), "10.1.5", Sys.iswindows),
+    ("OpenMPI", PackageSpec(name="OpenMPI_jll"), "4.1.11, 5.0.14", p -> !Sys.iswindows(p) && !(arch(p) == "armv6l" && libc(p) == "glibc")),
 )
 
 """

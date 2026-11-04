@@ -4,14 +4,15 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "libheif"
-version = v"1.22.2"
+version = v"1.23.7"
 ygg_build = 0  # NOTE: increment on rebuild of the same upstream version, reset on new libheifversion
 ygg_version = VersionNumber(version.major, version.minor, 1_000 * version.patch + ygg_build)
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/strukturag/libheif.git",
-              "763bc8bb87788d64d39ece623ceed988de12dc5b"),
+              "12a259a5882dd99d45ec5fc77e296a3b620d1e2e";
+              tag="v$(version)"),
 ]
 
 # Bash recipe for building across all platforms
@@ -63,5 +64,3 @@ build_tarballs(
     ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
     julia_compat="1.6", preferred_gcc_version=v"10"
 )
-
-# build trigger: 1

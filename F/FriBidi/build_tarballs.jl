@@ -3,14 +3,15 @@
 using BinaryBuilder
 
 name = "FriBidi"
-version = v"1.0.16"
-# We bumped the version number because we built for new architectures
-ygg_version = v"1.0.17"
+version = v"1.0.18"
+# FriBidi_jll v1.0.17 was already used for a rebuild of upstream v1.0.16
+ygg_version = v"1.0.19"
 
 # Collection of sources required to build FriBidi
 sources = [
     GitSource("https://github.com/fribidi/fribidi.git",
-              "68162babff4f39c4e2dc164a5e825af93bda9983"),
+              "15393e4937aa95bcf865d92143735746aeb654fa";
+              tag="v$(version)"),
 ]
 
 # Bash recipe for building across all platforms

@@ -7,13 +7,13 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 include("make_script.jl")
 
 name = "cunumeric_jl_wrapper"
-version = v"25.10.3" 
+version = v"26.6.6" 
 sources = [
-    GitSource("https://github.com/JuliaLegate/cuNumeric.jl.git","91b2cc516cbd64da4d058753f5edca36683bb05a"),
+    GitSource("https://github.com/JuliaLegate/cuNumeric.jl.git","dd80d62c0bc52b4e91e119f9a76d491a6ee218cf"),
 ]
 
 MIN_JULIA_VERSION = v"1.10"
-MAX_JULIA_VERSION = v"1.12.999"
+MAX_JULIA_VERSION = v"1.13.999"
 
 # These should match the cupynumeric_jll build_tarballs script
 MIN_CUDA_VERSION = v"13.0"
@@ -52,9 +52,9 @@ products = [
 ] 
 
 dependencies = [
-    Dependency("cupynumeric_jll"; compat = "~25.10.1"), # versioning is Year.Month
-    Dependency("legate_jll"; compat = "~25.10.1"),
-    Dependency("libcxxwrap_julia_jll"; compat="0.14.3"),
+    Dependency("cupynumeric_jll"; compat = "~26.6.1"), # versioning is Year.Month
+    Dependency("legate_jll"; compat = "~26.6"),
+    Dependency("libcxxwrap_julia_jll"; compat="0.14.12"),
     BuildDependency("libjulia_jll"),
     HostBuildDependency(PackageSpec(; name = "CMake_jll", version = "3.31.9")),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")) 

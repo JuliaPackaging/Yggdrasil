@@ -1,0 +1,521 @@
+From 58d4c982e445c5560dad3f6c30564462c1b55dc1 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Mon, 17 Aug 2026 14:11:19 +0200
+Subject: [PATCH 5/6] UnreachablesToReturns: remove regions leading only to
+ unreachable
+
+For the loop handlers, this pass used to detach only blocks ending in
+unreachable. If such a block is the sole exit of a loop, as in the
+string-length loop of an inlined printf-then-abort path, detaching it leaves
+an infinite loop. WorkitemLoops then fails because the parallel region no
+longer reaches its exit (issue #1958).
+
+The loop handlers cannot represent a divergent work-item exit: a return would
+bypass the region exit and terminate the whole work-group function. Keep the
+deletion policy introduced by 89bc42187 to restore the behavior observed with
+PoCL 6.0, but apply it to the complete region that can reach an unreachable
+and cannot reach a return. Retarget incoming branches and switches, then let
+EliminateUnreachableBlocks remove the region. The CBS path remains unchanged.
+
+Add the issue SPIR-V as a regression test, adjusted to valid SPIR-V 1.0.
+Querying CL_PROGRAM_BINARY_SIZES forces construction of the work-group
+function; a non-aborting launch also checks the resulting kernel.
+GPUCompiler.jl#812 now lowers this control flow to returns, but equivalent
+SPIR-V from other producers still needs to compile.
+
+Fixes #1958.
+
+(cherry picked from commit a1b5abfe68fa4afb26b260789808896472a0e6cb)
+---
+ lib/llvmopencl/UnreachablesToReturns.cc | 252 ++++++++++--------------
+ tests/regression/CMakeLists.txt         |   4 +-
+ tests/regression/test_issue_1958.c      | 168 ++++++++++++++++
+ 3 files changed, 279 insertions(+), 145 deletions(-)
+ create mode 100644 tests/regression/test_issue_1958.c
+
+diff --git a/lib/llvmopencl/UnreachablesToReturns.cc b/lib/llvmopencl/UnreachablesToReturns.cc
+index ba3cda03c..a63157e43 100644
+--- a/lib/llvmopencl/UnreachablesToReturns.cc
++++ b/lib/llvmopencl/UnreachablesToReturns.cc
+@@ -9,12 +9,11 @@
+ // to create illegal code (barriers are only partially taken), however the CBS
+ // is able to handle these.
+ //
+-// for LOOPVEC handler, we find all basicblocks which have an unreachable inst,
+-// and "disconnect" them from their predecessor basicblocks. If the predecessor
+-// has an unconditional jump, it is also deleted. If it has a conditional jump,
+-// it's made unconditional (to the other branch). This matches the behavior
+-// of prior versions of PoCL (6.0) where the optimization similarly deleted
+-// these blocks.
++// for LOOPVEC handler, we delete regions which can reach an unreachable inst
++// but cannot reach the function's return. Branches from live blocks into the
++// deleted region are made unconditional (to the live branch), and switch cases
++// leading to it are removed. This preserves the PoCL 6.0 behavior that commit
++// 89bc42187 sought to restore.
+ //
+ // Note that neither handling is recursive. Therefore all non-kernel functions
+ // that have an unreachable inst, must be inlined before this Pass is run.
+@@ -150,164 +149,129 @@ static bool convertUnreachablesToReturns(Function &F) {
+   return true;
+ }
+ 
+-// Fix predecessor BBs of BB which has an unreachable terminator inst
+-// to ignore the BB.
++// Delete regions which lead only to an unreachable instruction.
+ //
+-// If the predecessor has an unconditional branch, replaces the branch with
+-// UnreachableInst and adds the BB to \p NewUnreachableBBs. If the predecessor
+-// has a conditional branch, makes it unconditional. The function should
+-// be called until NewUnreachableBBs is empty.
+-static void detachBBFromPredecessor(BasicBlock &BB,
+-                                    SmallBBSet &NewUnreachableBBs) {
+-  if (BB.hasNPredecessors(0))
+-    return; // Already handled.
+-
+-  LLVM_DEBUG(
+-      dbgs() << "Detaching a BB that has an unreachable or leads to one:\n");
+-  LLVM_DEBUG(BB.dump());
+-
+-  // To avoid invalidating the predecessors iterator,
+-  // store replacement instructions and replace after the loop
+-  SmallMapVector<Instruction *, Instruction *, 8> Replacements;
+-
+-  // If the BB is in a switch case, these are the switch instructions to fix.
+-  std::vector<SwitchInst *> PredSwitches;
+-
+-  for (BasicBlock *Pred : predecessors(&BB)) {
+-    assert(Pred != nullptr);
+-    Instruction *I = Pred->getTerminator();
+-    assert(I != nullptr);
+-    if (BranchInst *BI = dyn_cast<BranchInst>(I)) {
+-      if (BI->isUnconditional()) {
+-        LLVM_DEBUG(dbgs() << "The predecessor " << Pred->getName().str()
+-                          << " is unconditionally branching to it\n");
+-        LLVM_DEBUG(Pred->dump());
+-        // The predecessor has an unconditional branch to the unreachable BB,
+-        // remove that in a next call.
+-        NewUnreachableBBs.insert(Pred);
+-      } else {
+-        LLVM_DEBUG(
+-            dbgs() << "The predecessor is conditionally branching to it\n");
+-        LLVM_DEBUG(Pred->dump());
+-
+-        BasicBlock *Other = nullptr;
+-        if (BI->getSuccessor(0) == &BB)
+-          Other = BI->getSuccessor(1);
+-        else
+-          Other = BI->getSuccessor(0);
+-        BranchInst *NewBI = BranchInst::Create(Other);
+-        Replacements.insert(std::make_pair(BI, NewBI));
+-      }
+-    } else if (SwitchInst *PredSwitch = dyn_cast<SwitchInst>(I)) {
+-      LLVM_DEBUG(dbgs() << "The predecessor is a switch case in "
+-                        << Pred->getName().str() << "\n");
+-      PredSwitches.push_back(PredSwitch);
+-    } else {
+-      LLVM_DEBUG(dbgs() << "Unhandled BB Terminator: \n");
+-      LLVM_DEBUG(I->dump());
+-      assert(0 && "Error: unexpected BB terminator\n");
+-    }
+-  }
+-
+-  for (auto [OldI, NewI] : Replacements) {
+-    ReplaceInstWithInst(OldI, NewI);
+-  }
+-
+-  for (SwitchInst *PredSwitch : PredSwitches) {
+-    // New default BB in case the unreachable block is a default BB.
+-    BasicBlock *NewDefaultBB = nullptr;
+-
+-    // The case value we could convert to a new default if that's the case.
+-    ConstantInt *RobbedCaseValue = nullptr;
+-    for (SwitchInst::CaseIt C = PredSwitch->cases().begin();
+-         C != PredSwitch->cases().end();) {
+-      if (C->getCaseSuccessor() == &BB) {
+-        PredSwitch->removeCase(C++);
+-        // RemoveCase invalidates all iterators and might reorder the cases,
+-        // let's just restart.
+-        C = PredSwitch->cases().begin();
+-        continue;
+-      }
+-      NewDefaultBB = C->getCaseSuccessor();
+-      RobbedCaseValue = C->getCaseValue();
+-      C++;
+-    }
+-    SwitchInst::CaseIt Default = PredSwitch->case_default();
+-    if (Default->getCaseSuccessor() == &BB) {
+-      if (NewDefaultBB != nullptr) {
+-        PredSwitch->setDefaultDest(NewDefaultBB);
+-        // Now we can remove the original case which also branched to this one
+-        // since it will be covered by the default. This will by coincidence
+-        // fix the Phi in a block where the switch...case has multiple branches
+-        // to. If we didn't do this, there would be one too few phi conditions.
+-        PredSwitch->removeCase(PredSwitch->findCaseValue(RobbedCaseValue));
+-      }
+-      if (NewDefaultBB == nullptr || PredSwitch->getNumCases() == 0) {
+-        LLVM_DEBUG(
+-            dbgs()
+-            << "A switch case with only a default which goes to unreachable\n");
+-        NewUnreachableBBs.insert(PredSwitch->getParent());
+-      }
+-    }
+-    LLVM_DEBUG(dbgs() << "switch case modified:\n");
+-    LLVM_DEBUG(PredSwitch->getParent()->dump());
+-  }
+-}
+-
++// These "doomed" blocks either end in an unreachable inst, or can only make
++// progress towards one -- possibly iterating forever in a loop whose sole
++// exit leads to an unreachable, e.g. the string-length loop of an inlined
++// printf-then-abort sequence. Merely detaching the unreachable-terminated
++// blocks would sever such a loop's exit edge and leave behind an infinite
++// loop that never reaches the parallel region exit, breaking WorkitemLoops
++// (issue #1958), so delete the doomed blocks wholesale.
+ static bool deleteBlocksWithUnreachable(Function &F) {
+ 
+   SmallBBSet UnreachableBBs;
+-
+-  for (Function::iterator I = F.begin(), E = F.end(); I != E; ++I) {
+-    BasicBlock &BB = *I;
++  for (BasicBlock &BB : F) {
+     assert(BB.getTerminator());
+-    if (isa<UnreachableInst>(BB.getTerminator())) {
+-      LLVM_DEBUG(dbgs() << "UNREACHABLE found, deleting BB\n");
+-      LLVM_DEBUG(BB.dump());
++    if (isa<UnreachableInst>(BB.getTerminator()))
+       UnreachableBBs.insert(&BB);
+-    }
+   }
+ 
+   if (UnreachableBBs.empty())
+     return false;
+ 
+-  // Check BB predecessors recursively, and disconnect them
+-  // from blocks which contain an unreachable.
+-  SmallBBSet HandledUnreachableBBs;
+-  while (!UnreachableBBs.empty()) {
+-    BasicBlock *BB = *UnreachableBBs.begin();
+-    detachBBFromPredecessor(*BB, UnreachableBBs);
+-    UnreachableBBs.erase(BB);
+-    HandledUnreachableBBs.insert(BB);
++  // Collect the live blocks, i.e. those that can reach a return.
++  SmallBBSet LiveBBs;
++  SmallVector<BasicBlock *, 16> WorkList;
++  for (BasicBlock &BB : F) {
++    if (isa<ReturnInst>(BB.getTerminator())) {
++      LiveBBs.insert(&BB);
++      WorkList.push_back(&BB);
++    }
++  }
++  while (!WorkList.empty()) {
++    BasicBlock *BB = WorkList.pop_back_val();
++    for (BasicBlock *Pred : predecessors(BB))
++      if (LiveBBs.insert(Pred).second)
++        WorkList.push_back(Pred);
+   }
+ 
+-  while (!HandledUnreachableBBs.empty()) {
++  // A non-returning region is not necessarily doomed: an intentional infinite
++  // loop need not lead to an unreachable instruction. Walk backwards from the
++  // unreachables and restrict deletion to the intersection of both sets.
++  SmallBBSet DoomedBBs = UnreachableBBs;
++  WorkList.assign(UnreachableBBs.begin(), UnreachableBBs.end());
++  while (!WorkList.empty()) {
++    BasicBlock *BB = WorkList.pop_back_val();
++    for (BasicBlock *Pred : predecessors(BB))
++      if (!LiveBBs.count(Pred) && DoomedBBs.insert(Pred).second)
++        WorkList.push_back(Pred);
++  }
+ 
+-    auto CandidateBB = HandledUnreachableBBs.begin();
++  // If not even the entry block can reach a return, deleting the doomed
++  // blocks would delete the whole function body. Convert the unreachables
++  // to returns instead.
++  if (DoomedBBs.count(&F.getEntryBlock()))
++    return convertUnreachablesToReturns(F);
+ 
+-    // We have to delete the "chains" bottom up to avoid having basic blocks
+-    // that refer to the values produced by the predecessors in the stem.
+-    while (!isa<UnreachableInst>((*CandidateBB)->getTerminator()))
+-      ++CandidateBB;
+-    assert(CandidateBB != HandledUnreachableBBs.end());
+-    BasicBlock *BB = *CandidateBB;
++  // Retarget terminators of live blocks to only branch to live blocks. Note
++  // that an edge from a doomed block to a live block cannot exist, and that
++  // a live block always has at least one live successor.
++  for (BasicBlock &BB : F) {
++    if (!LiveBBs.count(&BB))
++      continue;
+ 
+-    LLVM_DEBUG(dbgs() << "Deleting BB: \n");
+-    LLVM_DEBUG(BB->dump());
++    Instruction *TI = BB.getTerminator();
++    bool HasDoomedSuccessor = false;
++    for (BasicBlock *Succ : successors(&BB))
++      HasDoomedSuccessor |= DoomedBBs.count(Succ);
++    if (!HasDoomedSuccessor)
++      continue;
+ 
+-    // The deleted BB can have multiple predecessors.
+-    SmallMapVector<Instruction *, Instruction *, 8> Replacements;
+-    for (BasicBlock *Pred : predecessors(BB))
+-      Replacements.insert(std::make_pair(
+-          Pred->getTerminator(), new UnreachableInst(Pred->getContext())));
++    LLVM_DEBUG(dbgs() << "Detaching doomed successors of:\n");
++    LLVM_DEBUG(BB.dump());
+ 
+-    for (auto [OldI, NewI] : Replacements) {
+-      ReplaceInstWithInst(OldI, NewI);
++#if LLVM_MAJOR >= 23
++    if (auto *CBI = dyn_cast<CondBrInst>(TI)) {
++      BasicBlock *Live = !DoomedBBs.count(CBI->getSuccessor(0))
++                             ? CBI->getSuccessor(0)
++                             : CBI->getSuccessor(1);
++      assert(!DoomedBBs.count(Live));
++      ReplaceInstWithInst(TI, UncondBrInst::Create(Live));
++    }
++#else
++    if (BranchInst *BI = dyn_cast<BranchInst>(TI)) {
++      assert(BI->isConditional());
++      BasicBlock *Live = !DoomedBBs.count(BI->getSuccessor(0))
++                             ? BI->getSuccessor(0)
++                             : BI->getSuccessor(1);
++      assert(!DoomedBBs.count(Live));
++      ReplaceInstWithInst(TI, BranchInst::Create(Live));
++    }
++#endif
++    else if (SwitchInst *SI = dyn_cast<SwitchInst>(TI)) {
++      // Remove the cases leading to doomed blocks. RemoveCase invalidates
++      // all iterators and might reorder the cases, so restart after each
++      // removal.
++      bool Removed = true;
++      while (Removed) {
++        Removed = false;
++        for (SwitchInst::CaseIt C = SI->case_begin(); C != SI->case_end();
++             ++C) {
++          if (DoomedBBs.count(C->getCaseSuccessor())) {
++            SI->removeCase(C);
++            Removed = true;
++            break;
++          }
++        }
++      }
++      if (DoomedBBs.count(SI->getDefaultDest())) {
++        // Make one of the remaining cases the new default. Removing the
++        // repurposed case keeps the number of edges to its successor, and
++        // thus the successor's phi incoming counts, unchanged.
++        assert(SI->getNumCases() > 0);
++        SI->setDefaultDest(SI->case_begin()->getCaseSuccessor());
++        SI->removeCase(SI->case_begin());
++      }
++    } else {
++      LLVM_DEBUG(dbgs() << "Unhandled BB Terminator: \n");
++      LLVM_DEBUG(TI->dump());
++      assert(0 && "Error: unexpected BB terminator\n");
+     }
+-
+-    BB->eraseFromParent();
+-    HandledUnreachableBBs.erase(BB);
+   }
++
++  // The doomed blocks are now unreachable from the entry.
++  EliminateUnreachableBlocks(F);
+   return true;
+ }
+ 
+diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
+index a47eebf39..364a27029 100644
+--- a/tests/regression/CMakeLists.txt
++++ b/tests/regression/CMakeLists.txt
+@@ -28,7 +28,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
+      test_program_from_binary_with_local_1_1_1
+      test_assign_loop_variable_to_privvar_makes_it_local_2
+      test_llvm_segfault_issue_889
+-     test_issue_1711 test_issue_1794 test_issue_1747
++     test_issue_1711 test_issue_1794 test_issue_1747 test_issue_1958
+      test_rematerialized_alloca_load_with_outside_pr_users
+      test_peeled_wi_global_id
+      test_barrier_divergent_skip
+@@ -159,6 +159,8 @@ add_test_pocl(NAME "regression/test_issue_1794b" COMMAND "test_issue_1794" "0" "
+ 
+ add_test_pocl(NAME "regression/test_issue_1747" COMMAND "test_issue_1747" "0" "${CMAKE_CURRENT_SOURCE_DIR}/test_issue_1747.spv" LABELS ${SPIRV_LABELS})
+ 
++add_test_pocl(NAME "regression/test_issue_1958" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_issue_1958" LABELS ${SPIRV_LABELS})
++
+ add_test_pocl(NAME "regression/peeled_wi_global_id" WORKITEM_HANDLER "loopvec;cbs;" COMMAND "test_peeled_wi_global_id" LABELS ${SPIRV_LABELS})
+ 
+ add_test_pocl(NAME "regression/barrier_divergent_skip" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_barrier_divergent_skip" LABELS ${SPIRV_LABELS})
+diff --git a/tests/regression/test_issue_1958.c b/tests/regression/test_issue_1958.c
+new file mode 100644
+index 000000000..06646a271
+--- /dev/null
++++ b/tests/regression/test_issue_1958.c
+@@ -0,0 +1,168 @@
++// Copyright (c) 2026 PoCL developers
++//
++// Permission is hereby granted, free of charge, to any person obtaining a copy
++// of this software and associated documentation files (the "Software"), to deal
++// in the Software without restriction, including without limitation the rights
++// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++// copies of the Software, and to permit persons to whom the Software is
++// furnished to do so, subject to the following conditions:
++//
++// The above copyright notice and this permission notice shall be included in
++// all copies or substantial portions of the Software.
++//
++// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++// THE SOFTWARE.
++
++/*
++  Reduced from a Julia (OpenCL.jl) kernel with a printf-then-abort exception
++  path (https://github.com/pocl/pocl/issues/1958). After a barrier, a
++  work-item-varying bounds check conditionally calls a noreturn helper that
++  printfs a diagnostic before ending in OpUnreachable:
++
++      barrier();
++      if (in_bounds(idx)) {         // work-item-varying!
++        if (out_of_bounds(gid)) {
++          printf("...");            // expands to a string-length loop
++          __builtin_unreachable();
++        }
++      }
++      // return
++
++  For the work-item loop handlers, ConvertUnreachablesToReturns removes the
++  blocks leading to the unreachable. Detaching only the unreachable-terminated
++  blocks severed the exit edge of the printf expansion's string-length loop,
++  leaving an infinite loop that never reaches the parallel region exit, which
++  WorkitemLoops cannot handle (it asserted in createLoopAround). Blocks that
++  cannot reach the kernel exit must be deleted wholesale.
++
++  The crash happened when building the work-group function, so completing the
++  build and a (non-aborting) launch is the test.
++*/
++
++#include "pocl_opencl.h"
++
++#include <stdio.h>
++#include <stdlib.h>
++#ifndef _WIN32
++#include <unistd.h>
++#endif
++
++#define CHECK_ERROR(err)                                                       \
++  if (err != CL_SUCCESS) {                                                     \
++    printf("OpenCL Error %d at %s:%d\n", err, __FILE__, __LINE__);             \
++    return 1;                                                                  \
++  }
++
++int main(int argc, char **argv) {
++  cl_uint platform_index = argc > 1 ? (cl_uint)atoi(argv[1]) : 0;
++  cl_int err;
++
++#ifndef _WIN32
++  // Fail quickly instead of tripping the much larger ctest timeout in case
++  // a regressed build hangs.
++  alarm(300);
++#endif
++
++  cl_uint num_platforms;
++  CHECK_ERROR(clGetPlatformIDs(0, NULL, &num_platforms));
++  if (platform_index >= num_platforms) {
++    printf("Platform index %u out of range\n", platform_index);
++    return 1;
++  }
++  cl_platform_id *platforms = malloc(sizeof(cl_platform_id) * num_platforms);
++  CHECK_ERROR(clGetPlatformIDs(num_platforms, platforms, NULL));
++  cl_platform_id platform = platforms[platform_index];
++  free(platforms);
++
++  cl_device_id device;
++  CHECK_ERROR(clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, 1, &device, NULL));
++
++  if (!poclu_device_supports_il(device, "SPIR-V_1.0")) {
++    printf("SKIP: The test requires support for SPIR-V 1.0\n");
++    return 77;
++  }
++
++  cl_context context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
++  CHECK_ERROR(err);
++  cl_queue_properties props[] = {0};
++  cl_command_queue queue =
++      clCreateCommandQueueWithProperties(context, device, props, &err);
++  CHECK_ERROR(err);
++
++  FILE *f = fopen(SRCDIR "/test_issue_1958.spv", "rb");
++  if (!f) {
++    printf("Failed to open test_issue_1958.spv\n");
++    return 1;
++  }
++  fseek(f, 0, SEEK_END);
++  size_t size = ftell(f);
++  fseek(f, 0, SEEK_SET);
++  unsigned char *binary = malloc(size);
++  if (fread(binary, 1, size, f) != size) {
++    printf("Failed to read SPIR-V\n");
++    free(binary);
++    fclose(f);
++    return 1;
++  }
++  fclose(f);
++
++  cl_program program = clCreateProgramWithIL(context, binary, size, &err);
++  CHECK_ERROR(err);
++  err = clBuildProgram(program, 1, &device, NULL, NULL, NULL);
++  if (err != CL_SUCCESS) {
++    size_t log_size;
++    clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, 0, NULL,
++                          &log_size);
++    char *log = malloc(log_size);
++    clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, log_size, log,
++                          NULL);
++    printf("Build error:\n%s\n", log);
++    return 1;
++  }
++
++  // Building the work-group function is what used to crash; force it even
++  // when the driver would otherwise defer compilation to launch time.
++  size_t binary_size;
++  CHECK_ERROR(clGetProgramInfo(program, CL_PROGRAM_BINARY_SIZES,
++                               sizeof(binary_size), &binary_size, NULL));
++
++  char kernel_name[1024];
++  CHECK_ERROR(clGetProgramInfo(program, CL_PROGRAM_KERNEL_NAMES,
++                               sizeof(kernel_name), kernel_name, NULL));
++  cl_kernel kernel = clCreateKernel(program, kernel_name, &err);
++  CHECK_ERROR(err);
++
++  // The kernel arguments are pointers to structs whose first word is a
++  // bounds value the work-item indices are checked against; a large bound
++  // steers all work-items away from the printf-then-abort path. The loaded
++  // values are only compared, never dereferenced.
++  cl_ulong bound[4] = {(cl_ulong)1 << 40, 0, 0, 0};
++  cl_mem buf = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
++                              sizeof(bound), bound, &err);
++  CHECK_ERROR(err);
++  cl_uint num_args;
++  CHECK_ERROR(clGetKernelInfo(kernel, CL_KERNEL_NUM_ARGS, sizeof(num_args),
++                              &num_args, NULL));
++  for (cl_uint i = 0; i < num_args; i++)
++    CHECK_ERROR(clSetKernelArg(kernel, i, sizeof(buf), &buf));
++
++  size_t global_size = 64, local_size = 16;
++  CHECK_ERROR(clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global_size,
++                                     &local_size, 0, NULL, NULL));
++  CHECK_ERROR(clFinish(queue));
++
++  clReleaseMemObject(buf);
++  clReleaseKernel(kernel);
++  clReleaseProgram(program);
++  clReleaseCommandQueue(queue);
++  clReleaseContext(context);
++  free(binary);
++
++  printf("OK\n");
++  return 0;
++}

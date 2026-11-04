@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "nlcglib"
 version = v"1.1.0"
-ygg_version = v"1.1.1"          # we bumped the version to update MPI compat bounds
+ygg_version = v"1.1.2"          # we bumped the version to update MPI compat bounds
 
 sources = [
    GitSource("https://github.com/simonpintarelli/nlcglib/", "674039fd2b131ce12d46d105b437265419999197")

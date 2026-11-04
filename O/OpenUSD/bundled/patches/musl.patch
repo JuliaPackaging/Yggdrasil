@@ -1,0 +1,64 @@
+Fix build with musl libc (XSI strerror_r, no _SC_LEVEL1_DCACHE_LINESIZE, __environ or DEFFILEMODE).
+https://github.com/PixarAnimationStudios/OpenUSD/issues/2939
+Cache-line part: https://github.com/PixarAnimationStudios/OpenUSD/pull/4292
+
+diff --git a/pxr/base/arch/assumptions.cpp b/pxr/base/arch/assumptions.cpp
+index 1029b3285..700705af8 100644
+--- a/pxr/base/arch/assumptions.cpp
++++ b/pxr/base/arch/assumptions.cpp
+@@ -34,7 +34,13 @@ static size_t
+ Arch_ObtainCacheLineSize()
+ {
+ #if defined(ARCH_OS_LINUX)
+-    return sysconf(_SC_LEVEL1_DCACHE_LINESIZE);
++#if defined(_SC_LEVEL1_DCACHE_LINESIZE)
++    const long cacheLineSize = sysconf(_SC_LEVEL1_DCACHE_LINESIZE);
++    if (cacheLineSize > 0) {
++        return static_cast<size_t>(cacheLineSize);
++    }
++#endif
++    return ARCH_CACHE_LINE_SIZE;
+ #elif defined(ARCH_OS_WASM_VM)
+     return 64;
+ #elif defined(ARCH_OS_DARWIN)
+diff --git a/pxr/base/arch/errno.cpp b/pxr/base/arch/errno.cpp
+index 3f87c6f5f..374ab1532 100644
+--- a/pxr/base/arch/errno.cpp
++++ b/pxr/base/arch/errno.cpp
+@@ -40,7 +40,7 @@ ArchStrerror(int errorCode)
+         return "Unknown error code";
+     }
+     return std::string(msg);  
+-#elif defined(_GNU_SOURCE)
++#elif defined(_GNU_SOURCE) && defined(__GLIBC__)
+     // from strerror_r(3):
+     //
+     //   The GNU-specific strerror_r() returns a pointer to a string
+diff --git a/pxr/base/arch/stackTrace.cpp b/pxr/base/arch/stackTrace.cpp
+index c196392fd..b42c3cde0 100644
+--- a/pxr/base/arch/stackTrace.cpp
++++ b/pxr/base/arch/stackTrace.cpp
+@@ -704,7 +704,7 @@ static int
+ nonLockingExecv(const char *path, char *const argv[])
+ {
+ #if defined(ARCH_OS_LINUX)
+-     return nonLockingLinux__execve (path, argv, __environ);
++     return nonLockingLinux__execve (path, argv, environ);
+ #else
+      return execv(path, argv);
+ #endif
+diff --git a/pxr/base/tf/atomicRenameUtil.cpp b/pxr/base/tf/atomicRenameUtil.cpp
+index 5500e524c..4748f9468 100644
+--- a/pxr/base/tf/atomicRenameUtil.cpp
++++ b/pxr/base/tf/atomicRenameUtil.cpp
+@@ -41,6 +41,10 @@ PXR_NAMESPACE_OPEN_SCOPE
+     #define DEFFILEMODE 0666
+ #endif
+ 
++#ifndef DEFFILEMODE
++#define DEFFILEMODE (S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH)
++#endif
++
+ TF_DEFINE_ENV_SETTING(
+     TF_REQUIRE_FILESYSTEM_WRITE_PERMISSION, requireWritePermissionDefault,
+         "If enabled, check for both directory and file write permissions "

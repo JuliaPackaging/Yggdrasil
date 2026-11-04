@@ -8,17 +8,14 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "t8code"
-version = v"4.0.6"
-commit_hash = "4a82a3bf8f7741043478a0cbbdb33561ec50b8f2"
+version = v"4.0.10"
+commit_hash = "bfc4e39f2286248ce0bfbe719b0a2d2c9dcac112"
 
 sources = [GitSource("https://github.com/DLR-AMR/t8code", commit_hash),
            DirectorySource("./bundled")]
 
 script = raw"""
 cd $WORKSPACE/srcdir/t8code
-
-# Fix for https://github.com/DLR-AMR/t8code/pull/2335
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/cmake-rpath.patch"
 
 # Microsoft MPI is still 2.0 but has the required features; remove the strict 3.0 requirement
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi2.patch"
@@ -57,9 +54,11 @@ make -C build -j ${nproc} install
 """
 
 # We need some C++20
-# std::visit introduced in macOS 10.14, 'range' in namespace 'std::ranges' from 14.0 on
+# - std::visit introduced in macOS 10.14
+# - range in namespace 'std::ranges' from 14.0 on
+# - std::filesystem::path introduced in macOS 10.15
 # target chosen as lowest working version
-sources, script = require_macos_sdk("14.0", sources, script; deployment_target="10.14")
+sources, script = require_macos_sdk("14.0", sources, script; deployment_target="10.15")
 
 augment_platform_block = """
     using Base.BinaryPlatforms
@@ -92,4 +91,4 @@ append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"12.1.0", clang_use_lld=false)
+               augment_platform_block, julia_compat="1.10", preferred_gcc_version = v"13.2.0", clang_use_lld=false)

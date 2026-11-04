@@ -1,0 +1,28 @@
+From 198aece41071342c25f27c77fb96b77199e989d8 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Sun, 25 Oct 2026 08:40:07 +0100
+Subject: [PATCH] SPIR wrapper: also match the unnormalized mingw32 triple
+
+Builds that set LLC_TRIPLE to the unnormalized x86_64-w64-mingw32 rather
+than LLVM's normalized x86_64-w64-windows-gnu missed the --mingw wrapper
+flag, leaving vector arguments of the SPIR wrappers mismatched.
+---
+ cmake/bitcode_rules.cmake | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/cmake/bitcode_rules.cmake b/cmake/bitcode_rules.cmake
+index ed339cae9..6f7d2878f 100644
+--- a/cmake/bitcode_rules.cmake
++++ b/cmake/bitcode_rules.cmake
+@@ -278,7 +278,7 @@ function(generate_cpu_spir_wrapper ARCH SUBDIR SIZE OUTPUT)
+   endif()
+ 
+   # clang passes vectors directly on x86-64 MinGW, unlike System V (and MSVC)
+-  if(ARCH STREQUAL "cpu_x86" AND LLC_TRIPLE MATCHES "-windows-gnu")
++  if(ARCH STREQUAL "cpu_x86" AND LLC_TRIPLE MATCHES "-windows-gnu|-mingw32")
+     list(APPEND EXTRA_OPT "--mingw")
+   endif()
+ 
+-- 
+2.56.0
+

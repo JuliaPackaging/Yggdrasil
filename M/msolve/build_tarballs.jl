@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "msolve"
-upstream_version = v"0.10.0"
+upstream_version = v"0.11.0"
 
 version_offset = v"0.0.0"
 version = VersionNumber(upstream_version.major*100+version_offset.major,
@@ -12,7 +12,7 @@ version = VersionNumber(upstream_version.major*100+version_offset.major,
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/algebraic-solving/msolve.git", "0441849e0655a901dcbbae7aa78b714bd7cafbe6")
+    GitSource("https://github.com/algebraic-solving/msolve.git", "cc044551f8e202d00691990fd3fd0b1226a88ea2"; tag="v$(upstream_version)")
 ]
 
 # Bash recipe for building across all platforms
@@ -20,8 +20,14 @@ script = raw"""
 cd $WORKSPACE/srcdir/msolve/
 ./autogen.sh
 
-ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes ./configure --with-gnu-ld --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make -j${nprocs}
+ac_cv_func_malloc_0_nonnull=yes \
+ac_cv_func_realloc_0_nonnull=yes \
+./configure \
+    --with-gnu-ld \
+    --prefix=${prefix} \
+    --build=${MACHTYPE} \
+    --host=${target}
+make -j${nproc}
 make install
 """
 
@@ -41,7 +47,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("GMP_jll", v"6.2.1"),
-    Dependency("FLINT_jll", compat = "~301.500.000"),
+    Dependency("FLINT_jll", compat = "~301.600.000"),
     Dependency("MPFR_jll", v"4.1.1"),
     Dependency("OpenBLAS32_jll", v"0.3.29"),
 

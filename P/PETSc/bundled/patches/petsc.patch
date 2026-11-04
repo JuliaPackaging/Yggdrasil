@@ -1,0 +1,13 @@
+diff --git a/config/BuildSystem/config/package.py b/config/BuildSystem/config/package.py
+index 0c8bcff0592..0908c3d8396 100644
+--- a/config/BuildSystem/config/package.py
++++ b/config/BuildSystem/config/package.py
+@@ -1471,7 +1471,7 @@ const char *ver = "petscpkgver(" PetscXstr_({y}) ")";
+       useShared = self.sharedLibraries.useShared
+     else:
+       useShared = True
+-    if 'download-'+self.package+'-shared' in self.framework.clArgDB and self.argDB['download-'+self.package+'-shared']:
++    if 'download-'+self.package+'-shared=1' in self.framework.clArgDB and self.argDB['download-'+self.package+'-shared']:
+       raise RuntimeError(self.package+' cannot use download-'+self.package+'-shared=1. This flag can only be used to disable '+self.package+' shared libraries')
+     if not useShared or ('download-'+self.package+'-shared' in self.framework.clArgDB and not self.argDB['download-'+self.package+'-shared']):
+       return False

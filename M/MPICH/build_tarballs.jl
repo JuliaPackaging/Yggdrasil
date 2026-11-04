@@ -4,11 +4,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MPICH"
-version = v"5.0.1"
+version = v"5.0.2"
+ygg_version = v"5.0.3"
 
 sources = [
     ArchiveSource("https://www.mpich.org/static/downloads/$(version)/mpich-$(version).tar.gz",
-                  "8c1832a13ddacf071685069f5fadfd1f2877a29e1a628652892c65211b1f3327"),
+                  "928c2f18d350a91443fe8024ad01ce2c6009e9c551e0a73e797fc567f119137d"),
     DirectorySource("bundled"),
 ]
 
@@ -24,6 +25,7 @@ cd ${WORKSPACE}/srcdir/mpich*
 # (The MPICH developers say that this is a bug in MPICH and that
 # `<pthread_np.h>` should not actually be used on FreeBSD.)
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pthread_np.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fortran_sentinels_data.patch
 
 # - Do not install doc and man files which contain files which clashing names on
 #   case-insensitive file systems:
@@ -157,5 +159,5 @@ dependencies = [
 # Build the tarballs.
 # We use GCC 5 to ensure Fortran module files are readable by all `libgfortran3` architectures. GCC 4 would use an older format.
 # We use GCC 12 to ensure support for `_Float16`.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                augment_platform_block, julia_compat="1.10", clang_use_lld=false, preferred_gcc_version=v"12")

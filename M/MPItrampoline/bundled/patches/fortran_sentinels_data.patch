@@ -1,0 +1,53 @@
+Define the Fortran sentinel pointers as initialized data, so that Fortran libraries loaded with RTLD_DEEPBIND share them instead of getting private copies.
+See https://github.com/JuliaPackaging/Yggdrasil/issues/15133
+
+diff --git a/src/mpi.c b/src/mpi.c
+--- a/src/mpi.c
++++ b/src/mpi.c
+@@ -229,21 +229,37 @@ int PMPI_Pcontrol(int level, ...) { return MPI_SUCCESS; }
+ 
+ // Sentinel values
+ 
+-char **mpiabi_argv_null_ptr_ __attribute__((__aligned__(64))) = 0;
+-char ***mpiabi_argvs_null_ptr_ __attribute__((__aligned__(64))) = 0;
++// These must be initialized data, not .bss. Otherwise GNU ld treats
++// them like common symbols when linking a Fortran library that
++// includes mpif.h, and that library gets its own uninitialized copy
++// of the COMMON block when loaded with RTLD_DEEPBIND. The pointers are
++// set in mpitrampoline_init, so the initial value does not matter.
++#define MPIABI_SENTINEL_PTR_INIT ((void *)1)
+ 
+-MPI_Fint *mpiabi_bottom_ptr_ __attribute__((__aligned__(64))) = 0;
++char **mpiabi_argv_null_ptr_ __attribute__((__aligned__(64))) =
++    MPIABI_SENTINEL_PTR_INIT;
++char ***mpiabi_argvs_null_ptr_ __attribute__((__aligned__(64))) =
++    MPIABI_SENTINEL_PTR_INIT;
+ 
+-MPI_Fint *mpiabi_errcodes_ignore_ptr_ __attribute__((__aligned__(64))) = 0;
++MPI_Fint *mpiabi_bottom_ptr_ __attribute__((__aligned__(64))) =
++    MPIABI_SENTINEL_PTR_INIT;
+ 
+-MPI_Fint *mpiabi_in_place_ptr_ __attribute__((__aligned__(64))) = 0;
++MPI_Fint *mpiabi_errcodes_ignore_ptr_ __attribute__((__aligned__(64))) =
++    MPIABI_SENTINEL_PTR_INIT;
+ 
+-MPI_Fint *mpiabi_status_ignore_ptr_ __attribute__((__aligned__(64))) = 0;
+-MPI_Fint *mpiabi_statuses_ignore_ptr_ __attribute__((__aligned__(64))) = 0;
++MPI_Fint *mpiabi_in_place_ptr_ __attribute__((__aligned__(64))) =
++    MPIABI_SENTINEL_PTR_INIT;
+ 
+-MPI_Fint *mpiabi_unweighted_ptr_ __attribute__((__aligned__(64))) = 0;
++MPI_Fint *mpiabi_status_ignore_ptr_ __attribute__((__aligned__(64))) =
++    MPIABI_SENTINEL_PTR_INIT;
++MPI_Fint *mpiabi_statuses_ignore_ptr_ __attribute__((__aligned__(64))) =
++    MPIABI_SENTINEL_PTR_INIT;
+ 
+-MPI_Fint *mpiabi_weights_empty_ptr_ __attribute__((__aligned__(64))) = 0;
++MPI_Fint *mpiabi_unweighted_ptr_ __attribute__((__aligned__(64))) =
++    MPIABI_SENTINEL_PTR_INIT;
++
++MPI_Fint *mpiabi_weights_empty_ptr_ __attribute__((__aligned__(64))) =
++    MPIABI_SENTINEL_PTR_INIT;
+ 
+ #include "mpi_defn_constants_fortran.h"
+ #include "mpi_defn_functions_fortran.h"

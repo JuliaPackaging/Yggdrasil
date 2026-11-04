@@ -3,14 +3,14 @@
 using BinaryBuilder
 
 name = "Xorg_libXi"
-version = v"1.8.2"
+version = v"1.8.4"
 # We bumped the version number to build for riscv64
-ygg_version = v"1.8.3"
+ygg_version = v"1.8.5"
 
 # Collection of sources required to build libXi
 sources = [
-    ArchiveSource("https://www.x.org/archive/individual/lib/libXi-$(version).tar.gz",
-                  "5542daec66febfeb6f51d57abfa915826efe2e3af57534f4105b82240ea3188d"),
+    ArchiveSource("https://www.x.org/archive/individual/lib/libXi-$(version).tar.xz",
+                  "ddd6057b89a91903bc2f884d55c8467440906945e482c36547260dff28661afc"),
 ]
 
 # Bash recipe for building across all platforms

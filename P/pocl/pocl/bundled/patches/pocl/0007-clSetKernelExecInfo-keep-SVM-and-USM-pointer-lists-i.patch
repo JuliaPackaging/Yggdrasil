@@ -1,0 +1,320 @@
+From 260b630d657474d1fc1ba84773b4a3993e6b4c7c Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Fri, 4 Sep 2026 14:43:00 +0200
+Subject: [PATCH 7/7] clSetKernelExecInfo: keep SVM and USM pointer lists
+ independent
+
+CL_KERNEL_EXEC_INFO_SVM_PTRS and CL_KERNEL_EXEC_INFO_USM_PTRS_INTEL both
+populate the kernel indirect pointer list. Clearing the whole list on every
+call made setting either parameter discard the pointers registered by the
+other.
+
+Record the parameter that registered each pointer and only replace matching
+entries. Add a regression test that sets and clears the SVM and USM lists in
+both orders.
+
+(cherry picked from commit 2ed2af2dc0c2faed24072b5dbbd77d9cb1ab2bb7)
+---
+ lib/CL/clSetKernelExecInfo.c          |   6 +-
+ lib/CL/pocl_cl.h                      |   2 +
+ lib/CL/pocl_mem_management.c          |   8 +-
+ lib/CL/pocl_mem_management.h          |  11 +-
+ tests/regression/CMakeLists.txt       |   5 +
+ tests/regression/test_indirect_ptrs.c | 162 ++++++++++++++++++++++++++
+ 6 files changed, 185 insertions(+), 9 deletions(-)
+ create mode 100644 tests/regression/test_indirect_ptrs.c
+
+diff --git a/lib/CL/clSetKernelExecInfo.c b/lib/CL/clSetKernelExecInfo.c
+index 321ead47f..fca868ae8 100644
+--- a/lib/CL/clSetKernelExecInfo.c
++++ b/lib/CL/clSetKernelExecInfo.c
+@@ -76,8 +76,8 @@ POname(clSetKernelExecInfo)(cl_kernel kernel,
+           realdev, program_device_i, kernel, param_name, param_value_size,
+           param_value);
+ 
+-        if (ret_val == CL_SUCCESS)
+-          pocl_reset_indirect_ptrs (kernel, (void **)param_value,
++        if (ret_val == CL_SUCCESS && param_name == CL_KERNEL_EXEC_INFO_SVM_PTRS)
++          pocl_reset_indirect_ptrs (kernel, param_name, (void **)param_value,
+                                     param_value_size / sizeof (void *));
+ 
+         return ret_val;
+@@ -104,7 +104,7 @@ POname(clSetKernelExecInfo)(cl_kernel kernel,
+ 
+         if (param_name == CL_KERNEL_EXEC_INFO_USM_PTRS_INTEL
+             && ret_val == CL_SUCCESS)
+-          pocl_reset_indirect_ptrs (kernel, (void **)param_value,
++          pocl_reset_indirect_ptrs (kernel, param_name, (void **)param_value,
+                                     param_value_size / sizeof (void *));
+         return ret_val;
+       }
+diff --git a/lib/CL/pocl_cl.h b/lib/CL/pocl_cl.h
+index 82929136b..254bf5444 100644
+--- a/lib/CL/pocl_cl.h
++++ b/lib/CL/pocl_cl.h
+@@ -2033,6 +2033,8 @@ typedef struct _pocl_ptr_list_node pocl_ptr_list;
+ struct _pocl_ptr_list_node
+ {
+   void *ptr;
++  /* The clSetKernelExecInfo() parameter that registered this pointer. */
++  cl_kernel_exec_info param_name;
+   struct _pocl_ptr_list_node *prev, *next;
+ };
+ 
+diff --git a/lib/CL/pocl_mem_management.c b/lib/CL/pocl_mem_management.c
+index 3c65cc030..6d697b342 100644
+--- a/lib/CL/pocl_mem_management.c
++++ b/lib/CL/pocl_mem_management.c
+@@ -1118,16 +1118,19 @@ pocl_cpu_get_ptr (struct pocl_argument *arg, unsigned global_mem_id)
+ }
+ 
+ void
+-pocl_reset_indirect_ptrs (cl_kernel kernel, void **ptrs, size_t n)
++pocl_reset_indirect_ptrs (cl_kernel kernel, cl_kernel_exec_info param_name,
++                          void **ptrs, size_t n)
+ {
+   if (kernel->indirect_raw_ptrs != NULL)
+     {
+       struct _pocl_ptr_list_node *n, *tmp;
+       DL_FOREACH_SAFE (kernel->indirect_raw_ptrs, n, tmp)
+         {
++          if (n->param_name != param_name)
++            continue;
++          DL_DELETE (kernel->indirect_raw_ptrs, n);
+           free (n);
+         }
+-      kernel->indirect_raw_ptrs = NULL;
+     }
+ 
+   for (size_t i = 0; i < n; ++i)
+@@ -1149,6 +1152,7 @@ pocl_reset_indirect_ptrs (cl_kernel kernel, void **ptrs, size_t n)
+       struct _pocl_ptr_list_node *node
+         = malloc (sizeof (struct _pocl_ptr_list_node));
+       node->ptr = ptr;
++      node->param_name = param_name;
+ 
+       DL_APPEND (kernel->indirect_raw_ptrs, node);
+       POCL_MSG_PRINT_MEMORY ("Set an indirect SVM/USM ptr %p\n", node->ptr);
+diff --git a/lib/CL/pocl_mem_management.h b/lib/CL/pocl_mem_management.h
+index 0906e2f71..9b43dcc80 100644
+--- a/lib/CL/pocl_mem_management.h
++++ b/lib/CL/pocl_mem_management.h
+@@ -106,13 +106,16 @@ pocl_buffer_migration_info *
+ pocl_convert_to_subbuffer_migrations (pocl_buffer_migration_info *buffer_usage,
+                                       cl_int *err);
+ 
+-/* Sets the indirect_raw_ptrs of the kernel to the given list array
+- * of pointers.
++/* Sets the indirect_raw_ptrs of the kernel for the given
++ * clSetKernelExecInfo() parameter (CL_KERNEL_EXEC_INFO_SVM_PTRS or
++ * CL_KERNEL_EXEC_INFO_USM_PTRS_INTEL) to the given list array of pointers.
+  *
+- * Clears up the possible previously set pointers.
++ * Clears up the pointers previously set with the same parameter; the SVM and
++ * USM pointer lists are independent of each other.
+  */
+ void
+-pocl_reset_indirect_ptrs (cl_kernel kernel, void **ptrs, size_t n);
++pocl_reset_indirect_ptrs (cl_kernel kernel, cl_kernel_exec_info param_name,
++                          void **ptrs, size_t n);
+ 
+ /* Increments a buffer's reference counter. */
+ #define POCL_RETAIN_BUFFER_UNLOCKED(__OBJ__)                                  \
+diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
+index 538e63ac7..2419e4a95 100644
+--- a/tests/regression/CMakeLists.txt
++++ b/tests/regression/CMakeLists.txt
+@@ -36,6 +36,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
+      test_divergent_implicit_barrier_entry
+      test_uniform_implicit_barrier_entry
+      test_localmem_load_across_barrier
++     test_indirect_ptrs
+      test_usm_indirect_ptrs
+ )
+ foreach(PROG ${C_PROGRAMS_TO_BUILD})
+@@ -44,6 +45,8 @@ foreach(PROG ${C_PROGRAMS_TO_BUILD})
+   add_symlink_to_built_opencl_dynlib("${PROG}")
+ endforeach()
+ 
++target_include_directories(test_indirect_ptrs
++  PRIVATE $<TARGET_PROPERTY:${POCL_LIBRARY_NAME},INCLUDE_DIRECTORIES>)
+ 
+ set(PROGRAMS_TO_BUILD test_barrier_between_for_loops test_early_return
+   test_for_with_var_iteration_count test_id_dependent_computation
+@@ -174,6 +177,8 @@ add_test_pocl(NAME "regression/uniform_implicit_barrier_entry" WORKITEM_HANDLER
+ 
+ add_test_pocl(NAME "regression/localmem_load_across_barrier" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_localmem_load_across_barrier")
+ 
++add_test_pocl(NAME "regression/test_indirect_ptrs" COMMAND "test_indirect_ptrs")
++
+ add_test_pocl(NAME "regression/test_usm_indirect_ptrs" COMMAND "test_usm_indirect_ptrs")
+ 
+ add_test_pocl(NAME "regression/test_issue_893" COMMAND "test_issue_893")
+diff --git a/tests/regression/test_indirect_ptrs.c b/tests/regression/test_indirect_ptrs.c
+new file mode 100644
+index 000000000..eca82d487
+--- /dev/null
++++ b/tests/regression/test_indirect_ptrs.c
+@@ -0,0 +1,162 @@
++/* Copyright (c) 2026 PoCL Developers
++
++   Permission is hereby granted, free of charge, to any person obtaining a copy
++   of this software and associated documentation files (the "Software"), to
++   deal in the Software without restriction, including without limitation the
++   rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
++   sell copies of the Software, and to permit persons to whom the Software is
++   furnished to do so, subject to the following conditions:
++
++   The above copyright notice and this permission notice shall be included in
++   all copies or substantial portions of the Software.
++
++   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
++   IN THE SOFTWARE.
++*/
++
++/* The SVM and USM indirect pointer sets must not replace each other. */
++
++#include "pocl_opencl.h"
++
++/* pocl_cl.h includes config.h, which defines its own SRCDIR. */
++#undef SRCDIR
++#include "pocl_cl.h"
++
++#include <CL/cl_ext.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++
++#include "utlist.h"
++
++#define CHECK_ERROR(err)                                                      \
++  if (err != CL_SUCCESS)                                                      \
++    {                                                                         \
++      printf ("OpenCL error %d at %s:%d\n", err, __FILE__, __LINE__);         \
++      return EXIT_FAILURE;                                                    \
++    }
++
++static int
++check_ptrs (cl_kernel kernel, void *svm, void *usm)
++{
++  unsigned expected_svm_count = svm != NULL;
++  unsigned expected_usm_count = usm != NULL;
++  unsigned actual_svm_count = 0;
++  unsigned actual_usm_count = 0;
++  pocl_ptr_list *node;
++  DL_FOREACH (kernel->indirect_raw_ptrs, node)
++    {
++      if (node->ptr == svm)
++        ++actual_svm_count;
++      else if (node->ptr == usm)
++        ++actual_usm_count;
++      else
++        return EXIT_FAILURE;
++    }
++
++  if (actual_svm_count != expected_svm_count
++      || actual_usm_count != expected_usm_count)
++    {
++      printf ("Expected SVM/USM pointer counts %u/%u, got %u/%u\n",
++              expected_svm_count, expected_usm_count, actual_svm_count,
++              actual_usm_count);
++      return EXIT_FAILURE;
++    }
++  return EXIT_SUCCESS;
++}
++
++int
++main (void)
++{
++  cl_context context;
++  cl_device_id device;
++  cl_command_queue queue;
++  cl_platform_id platform;
++
++  cl_int err = poclu_get_any_device2 (&context, &device, &queue, &platform);
++  CHECK_ERROR (err);
++
++  char exts[4096] = { 0 };
++  cl_device_svm_capabilities svm_caps = 0;
++  err = clGetDeviceInfo (device, CL_DEVICE_EXTENSIONS, sizeof (exts), exts,
++                         NULL);
++  CHECK_ERROR (err);
++  err = clGetDeviceInfo (device, CL_DEVICE_SVM_CAPABILITIES, sizeof (svm_caps),
++                         &svm_caps, NULL);
++  CHECK_ERROR (err);
++  if (svm_caps == 0
++      || strstr (exts, "cl_intel_unified_shared_memory") == NULL)
++    {
++      printf ("SKIP: device does not support both SVM and USM\n");
++      return 77;
++    }
++
++  void *(*clDeviceMemAllocINTEL) (cl_context, cl_device_id,
++                                  const cl_mem_properties_intel *, size_t,
++                                  cl_uint, cl_int *)
++    = clGetExtensionFunctionAddressForPlatform (platform,
++                                                "clDeviceMemAllocINTEL");
++  cl_int (*clMemFreeINTEL) (cl_context, void *)
++    = clGetExtensionFunctionAddressForPlatform (platform, "clMemFreeINTEL");
++  if (clDeviceMemAllocINTEL == NULL || clMemFreeINTEL == NULL)
++    {
++      printf ("SKIP: USM allocation entry points not found\n");
++      return 77;
++    }
++
++  static const char *source = "__kernel void foo (void) { }";
++  cl_program program
++    = clCreateProgramWithSource (context, 1, &source, NULL, &err);
++  CHECK_ERROR (err);
++  err = clBuildProgram (program, 1, &device, NULL, NULL, NULL);
++  CHECK_ERROR (err);
++  cl_kernel kernel = clCreateKernel (program, "foo", &err);
++  CHECK_ERROR (err);
++
++  void *svm = clSVMAlloc (context, CL_MEM_READ_WRITE, 64, 0);
++  if (svm == NULL)
++    return EXIT_FAILURE;
++  void *usm = clDeviceMemAllocINTEL (context, device, NULL, 64, 0, &err);
++  CHECK_ERROR (err);
++
++  err = clSetKernelExecInfo (kernel, CL_KERNEL_EXEC_INFO_SVM_PTRS,
++                             sizeof (svm), &svm);
++  CHECK_ERROR (err);
++  err = clSetKernelExecInfo (kernel, CL_KERNEL_EXEC_INFO_USM_PTRS_INTEL,
++                             sizeof (usm), &usm);
++  CHECK_ERROR (err);
++  if (check_ptrs (kernel, svm, usm) != EXIT_SUCCESS)
++    return EXIT_FAILURE;
++
++  err = clSetKernelExecInfo (kernel, CL_KERNEL_EXEC_INFO_SVM_PTRS, 0, NULL);
++  CHECK_ERROR (err);
++  if (check_ptrs (kernel, NULL, usm) != EXIT_SUCCESS)
++    return EXIT_FAILURE;
++
++  err = clSetKernelExecInfo (kernel, CL_KERNEL_EXEC_INFO_SVM_PTRS,
++                             sizeof (svm), &svm);
++  CHECK_ERROR (err);
++  err = clSetKernelExecInfo (kernel, CL_KERNEL_EXEC_INFO_USM_PTRS_INTEL, 0,
++                             NULL);
++  CHECK_ERROR (err);
++  if (check_ptrs (kernel, svm, NULL) != EXIT_SUCCESS)
++    return EXIT_FAILURE;
++
++  err = clSetKernelExecInfo (kernel, CL_KERNEL_EXEC_INFO_SVM_PTRS, 0, NULL);
++  CHECK_ERROR (err);
++  clSVMFree (context, svm);
++  err = clMemFreeINTEL (context, usm);
++  CHECK_ERROR (err);
++  clReleaseKernel (kernel);
++  clReleaseProgram (program);
++  clReleaseCommandQueue (queue);
++  clReleaseContext (context);
++
++  printf ("OK\n");
++  return EXIT_SUCCESS;
++}

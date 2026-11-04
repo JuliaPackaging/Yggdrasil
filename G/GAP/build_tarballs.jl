@@ -20,19 +20,14 @@ using BinaryBuilder, Pkg
 # changes its major version. It simply seemed sensible to apply the same transformation
 # to all components.
 
-# See https://github.com/JuliaLang/Pkg.jl/issues/2942
-# Once this Pkg issue is resolved, this must be removed
-uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
-delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
-
 name = "GAP"
-upstream_version = v"4.16.0"
-version = v"400.1600.0"
+upstream_version = v"4.16.1"
+version = v"400.1600.105"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/gap-$(upstream_version)-core.tar.gz",
-                  "8c35f406046f1172de658375dcd5beaf9644888cd16f8f5e7db163afc9fade1a"),
+                  "b4433a540a2f746d14b1645a0e95b3d499afb180aa421ebfd62b427f2b0cf74f"),
     DirectorySource("./bundled"),
 ]
 
@@ -68,9 +63,9 @@ export CXX=g++
 # configure GAP
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     JULIA_VERSION="$julia_version" \
-    JULIA_CFLAGS="-I/workspace/destdir/include/julia -fPIC" \
-    JULIA_LDFLAGS="-L/workspace/destdir/lib -L/workspace/destdir/lib/julia" \
-    JULIA_LIBS="-Wl,-rpath,/workspace/destdir/lib -Wl,-rpath,/workspace/destdir/lib/julia -ljulia" \
+    JULIA_CFLAGS="-I${includedir}/julia -fPIC" \
+    JULIA_LDFLAGS="-L${libdir} -L${libdir}/julia" \
+    JULIA_LIBS="-Wl,-rpath,${libdir} -Wl,-rpath,${libdir}/julia -ljulia" \
     CPPFLAGS="$CPPFLAGS -DUSE_GAP_INSIDE_JULIA=1" \
     --with-gmp=${prefix} \
     --with-readline=${prefix} \
@@ -133,7 +128,7 @@ dependencies = [
     Dependency("GMP_jll"),
     Dependency("Readline_jll"; compat="8.2.13"),
     Dependency("Zlib_jll"),
-    BuildDependency(PackageSpec(;name="libjulia_jll", version="1.11.0")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version="1.11.4")),
 ]
 
 # we want to get notified of any changes to julia_compat, and adapt `version` accordingly

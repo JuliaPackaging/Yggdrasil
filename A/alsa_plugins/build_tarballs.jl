@@ -4,18 +4,24 @@ using BinaryBuilder, Pkg
 
 name = "alsa_plugins"
 version = v"1.2.12"
-ygg_version = v"1.2.13"
+# We updated FFMPEG_jll to 9.0
+ygg_version = v"1.2.14"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://www.alsa-project.org/files/pub/plugins/alsa-plugins-$(version).tar.bz2",
-                  "7bd8a83d304e8e2d86a25895d8dcb0ef0245a8df32e271959cdbdc6af39b66f2")
+                  "7bd8a83d304e8e2d86a25895d8dcb0ef0245a8df32e271959cdbdc6af39b66f2"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 cd alsa-plugins-*
+# FFmpeg 9.0 removed AVCodec.sample_fmts (deprecated since lavc 61.13.100) in
+# favor of avcodec_get_supported_config(); patch the a52 plugin accordingly.
+# Uptream issue is <https://github.com/alsa-project/alsa-plugins/issues/64>.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/ffmpeg9-sample_fmts.patch
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make
 make install
@@ -51,7 +57,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("FFMPEG_jll"; compat="8")
+    Dependency("FFMPEG_jll"; compat="9.0")
     Dependency("alsa_jll"; compat="1.2.15")
     Dependency("libsamplerate_jll")
     Dependency("PulseAudio_jll")
@@ -62,5 +68,6 @@ ENV["ALSA_PLUGIN_DIR"] = get(ENV, "ALSA_PLUGIN_DIR", joinpath(artifact_dir, "lib
 """
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6", init_block)
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+               init_block, julia_compat="1.6", preferred_gcc_version=v"8")
 

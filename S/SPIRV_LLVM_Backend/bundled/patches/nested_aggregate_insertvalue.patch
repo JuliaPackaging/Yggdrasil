@@ -1,23 +1,11 @@
-From edab30232da40be46a4d66b926c9e1bcc276885e Mon Sep 17 00:00:00 2001
-From: Tim Besard <tim.besard@gmail.com>
-Date: Tue, 16 Jun 2026 22:20:24 +0200
-Subject: [PATCH] [SPIR-V] Lower nested aggregate insertvalue operands
-
-Co-authored-by: Codex <noreply@openai.com>
----
- llvm/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp | 11 ++++++++
- .../insertvalue-nested-extractvalue.ll        | 25 +++++++++++++++++++
- 2 files changed, 36 insertions(+)
- create mode 100644 llvm/test/CodeGen/SPIRV/instructions/insertvalue-nested-extractvalue.ll
-
 diff --git a/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp b/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
-index ce2c86c17c5d..cd63899c8ab1 100644
+index 19e1e71488ee..93724b2b6afb 100644
 --- a/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
 +++ b/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
-@@ -2014,6 +2014,17 @@ Instruction *SPIRVEmitIntrinsics::visitExtractValueInst(ExtractValueInst &I) {
+@@ -2454,6 +2454,17 @@ Instruction *SPIRVEmitIntrinsics::visitExtractValueInst(ExtractValueInst &I) {
      Args.push_back(B.getInt32(Op));
-   auto *NewI =
-       B.CreateIntrinsic(Intrinsic::spv_extractv, {I.getType()}, {Args});
+   Instruction *NewI = B.CreateIntrinsicWithoutFolding(Intrinsic::spv_extractv,
+                                                       {I.getType()}, {Args});
 +  // If this aggregate extract feeds another insertvalue, the extracted
 +  // composite is used as a SPIR-V value-id by llvm.spv.insertv. Keep the real
 +  // aggregate type in metadata, but expose the value itself as i32 so the
@@ -30,8 +18,8 @@ index ce2c86c17c5d..cd63899c8ab1 100644
 +    return NewI;
 +  }
    replaceAllUsesWithAndErase(B, &I, NewI);
-   return NewI;
- }
+   // If the aggregate result feeds a callsite whose aggregate params were
+   // rewritten to i32 value-ids by SPIRVPrepareFunctions, mutate it to match.
 diff --git a/test/CodeGen/SPIRV/instructions/insertvalue-nested-extractvalue.ll b/test/CodeGen/SPIRV/instructions/insertvalue-nested-extractvalue.ll
 new file mode 100644
 index 000000000000..81262cff6924
@@ -63,6 +51,3 @@ index 000000000000..81262cff6924
 +  %r = insertvalue [1 x [1 x i64]] %a, [1 x i64] %i, 0
 +  ret [1 x [1 x i64]] %r
 +}
--- 
-2.47.3
-

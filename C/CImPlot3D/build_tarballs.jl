@@ -3,23 +3,24 @@
 using BinaryBuilder, Pkg
 
 name = "CImPlot3D"
-version = v"0.4.0" # tracking implot3d release tags
+# We try to track implot3d release tags, with the occasional patch bump if a
+# rebuild is needed for e.g. a new CImGuiPack_jll version.
+version = v"0.4.2"
 
 # Sources required to build CImPlot3D
 sources = [
     # cimplot3d ships the C wrapper; implot3d is its git submodule pinned at a
-    # SHA that matches the wrapper's generated bindings (currently v0.4 of
-    # implot3d). A recursive submodule init in the script keeps them locked.
+    # SHA that matches the wrapper's generated bindings (currently v0.4-15 of
+    # implot3d, for Dear ImGui 1.93 support). A recursive submodule init in the
+    # script keeps them locked.
     GitSource("https://github.com/cimgui/cimplot3d.git",
-              "8c1c16e98fdddc4b3ee78bf0f89e0dd708be79e0"),
+              "f8b28155c8f164c947c95b8ce600ea091a5a9008"),
 
     # cimplot3d's generator does `require"cpp2ffi"` and a `dofile` of cimgui's
     # generator output, expecting cimgui as a sibling directory. Pinned to the
-    # SAME cimgui SHA that CImGuiPack_jll 0.12's libcimgui submodule is built
-    # from, so the C struct types referenced by the generated cimplot3d.cpp
-    # match the layout inside libcimgui at runtime.
+    # same cimgui SHA that CImGuiPack_jll's libcimgui submodule is built from.
     GitSource("https://github.com/cimgui/cimgui.git",
-              "1261b231939fc210032f30c4ee8a8f0440372237"),
+              "5d7cc7e12de9a868bbecc00ce2ed74e58d266f1c"),
 
     # Bundled CMakeLists.txt that links against CImGuiPack_jll's exported
     # cimgui::cimgui target rather than rebuilding imgui sources locally —
@@ -81,7 +82,7 @@ products = [
 ]
 
 dependencies = [
-    Dependency("CImGuiPack_jll"; compat="0.12.1"),
+    Dependency("CImGuiPack_jll"; compat="0.14"),
     HostBuildDependency("LuaJIT_jll"),
 ]
 

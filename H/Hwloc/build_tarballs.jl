@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Hwloc"
-version = v"2.14.0"
+version = v"2.15.0"
 
 # Collection of sources required to build hwloc
 sources = [
     ArchiveSource("https://download.open-mpi.org/release/hwloc/v$(version.major).$(version.minor)/hwloc-$(version).tar.bz2",
-                  "966b9bb3e9f29f8d65ce8d106779e457f40e246a645e584b100772a42f9ae94b")
+                  "0084b926fff9a960ddbf175654db39054ed60afbb830d2039d8a60686ca06a7f")
 ]
 
 # Bash recipe for building across all platforms
@@ -38,7 +38,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("XML2_jll"; compat="~2.13.6"),
+    Dependency("XML2_jll"; compat="~2.15.3"),
     Dependency("Xorg_libpciaccess_jll"; platforms=filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
 ]
 

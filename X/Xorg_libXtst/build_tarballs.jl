@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Xorg_libXtst"
-version = v"1.2.5"
+version = v"1.2.6"
 
 # Collection of sources required to build libXtst
 sources = [
     ArchiveSource("https://www.x.org/archive/individual/lib/libXtst-$(version).tar.xz",
-                  "b50d4c25b97009a744706c1039c598f4d8e64910c9fde381994e1cae235d9242"),
+                  "f94f0b37c07d80d877f3eda2c2405cc7e62aa9842f6310354aa349e3d66a4fe5"),
 ]
 
 # Bash recipe for building across all platforms

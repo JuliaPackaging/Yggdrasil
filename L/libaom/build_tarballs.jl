@@ -3,22 +3,17 @@
 using BinaryBuilder, BinaryBuilderBase, Pkg
 
 name = "libaom"
-version = v"3.13.3"
+version = v"3.15.3"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://storage.googleapis.com/aom-releases/libaom-$(version).tar.gz",
-                  "446a4ae9741cb8f3eeb98c949d25f91b48cb2b8569cae975c4b737392e9024fc"),
-    DirectorySource("bundled"),
+                  "12c01dc731ed7b5a999e28120b45bf58a002ba3435a4ba2cfbc1e084a27c9c04"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/libaom-*
-
-# Add missing stdint.h includes
-# Reported upstream as <https://aomedia.issues.chromium.org/u/1/issues/432730317>
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/inttypes.patch
 
 CMAKE_FLAGS=()
 if [[ ${target} = arm-* ]]; then
@@ -53,12 +48,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-#
-# YASM is recommended in the build instructions, but errors on apple platforms.
-# Assembly only exists for x86 targets.
 dependencies = [
-    HostBuildDependency("YASM_jll"; platforms=filter(p->proc_family(p) == "intel" && !Sys.isapple(p), platforms)),
-    HostBuildDependency("NASM_jll"; platforms=filter(p->proc_family(p) == "intel" && Sys.isapple(p), platforms)),
+    HostBuildDependency("NASM_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

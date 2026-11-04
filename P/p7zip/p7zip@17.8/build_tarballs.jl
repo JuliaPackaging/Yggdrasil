@@ -5,14 +5,14 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "p7zip"
 # Upstream uses CalVer
-upstream_version = "26.01"
+upstream_version = "26.05"
 compact_version = replace(upstream_version, "."=>"")
-version = v"17.8.1"
+version = v"17.8.5"
 
 # Collection of sources required to build p7zip
 sources = [
-    ArchiveSource("https://downloads.sourceforge.net/project/sevenzip/7-Zip/$(upstream_version)/7z$(compact_version)-src.tar.xz",
-                  "b2389e0e930b2f9a348cf0fe7d9870a46482a8ec044ee0bdf42e2136db31c3d6";
+    ArchiveSource("https://github.com/ip7z/7zip/releases/download/$(upstream_version)/7z$(compact_version)-src.tar.xz",
+                  "0b6080b8c3e7a579161d2d495224c0e51c467576cb4c7048b0ab485ef44cc22e";
                   unpack_target="7z"),
 ]
 
@@ -62,6 +62,6 @@ dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat="1.6",                    # Minimum Julia version
+    julia_compat="1.10",                   # Minimum Julia version
     preferred_gcc_version=v"8",            # GCC version
 )

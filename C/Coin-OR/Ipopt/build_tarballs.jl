@@ -1,5 +1,5 @@
 # In addition to coin-or-common.jl, we need to modify this file to trigger a rebuild.
-# Last updated: 2026-05-23
+# Last updated: 2026-09-02
 
 include("../coin-or-common.jl")
 
@@ -65,7 +65,6 @@ platforms = expand_gfortran_versions(platforms)
 # Disable aarch64-freebsd until we recompile the dependencies.
 filter!(p -> !(os(p) == "freebsd" && arch(p) == "aarch64"), platforms)
 filter!(p -> !(Sys.islinux(p) && libc(p) == "musl" && libgfortran_version(p) == v"4" && arch(p) == "aarch64"), platforms)
-filter!(p -> arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [
