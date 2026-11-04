@@ -9,8 +9,14 @@ build_tarballs(;
     src_name = "Musl",
     src_version = version,
     sources = [
-        ArchiveSource("https://www.musl-libc.org/releases/musl-$(version).tar.gz",
-                      "d585fd3b613c66151fc3249e8ed44f77020cb5e6c1e635a616d3f9f82460512a"),
+        # Mirrors are tried in order; musl.libc.org is slow and often times out.
+        ArchiveSource([
+                "https://sources.buildroot.net/musl/musl-$(version).tar.gz",
+                "https://sources.openwrt.org/musl-$(version).tar.gz",
+                "https://distfiles.macports.org/musl/musl-$(version).tar.gz",
+                "https://musl.libc.org/releases/musl-$(version).tar.gz",
+            ],
+            "d585fd3b613c66151fc3249e8ed44f77020cb5e6c1e635a616d3f9f82460512a"),
     ],
     script = raw"""
     mkdir ${WORKSPACE}/srcdir/musl_build
@@ -64,4 +70,4 @@ build_tarballs(;
     target_toolchains = [CToolchain(;vendor=:bootstrap)],
 )
 
-# Build trigger: 1
+# Build trigger: 2
