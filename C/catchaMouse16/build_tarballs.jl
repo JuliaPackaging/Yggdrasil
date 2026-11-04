@@ -51,6 +51,8 @@ echo -e '""" * makefile * raw"""' >> Makefile
 # platforms are passed in on the command line
 # platforms = supported_platforms(; exclude=Sys.iswindows)
 platforms = supported_platforms()
+# GSL_jll 2.7.2 (see the compat below) has no builds for riscv64 or aarch64 FreeBSD
+filter!(p -> !(arch(p) == "riscv64" || (Sys.isfreebsd(p) && arch(p) == "aarch64")), platforms)
 
 # The products that we will ensure are always built
 products = [
