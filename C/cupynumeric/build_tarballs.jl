@@ -11,7 +11,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 include("make_script.jl")
 
 name = "cupynumeric"
-version = v"26.6.1"
+version = v"26.6.2"
 sources = [
     GitSource("https://github.com/nv-legate/cupynumeric.git","7d7836ce7bf54b0ed7f422fb62b62de732775e0d"),
     GitSource("https://github.com/MatthewsResearchGroup/tblis.git", "c4f81e08b2827e72335baa7bf91a245f72c43970"),
