@@ -17,11 +17,11 @@ function configure_zlib_build(upstream_version::VersionNumber;
 
     name = "Zlib"
 
-    if version.patch == 0
+    tag = if version.patch == 0
         # Omit patch number if it is zero
-        tag = "v$(version.major).$(version.minor)"
+        "v$(version.major).$(version.minor)"
     else
-        tag = "v$(version)"
+        "v$(version)"
     end
 
     sources = [
