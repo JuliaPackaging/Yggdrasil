@@ -89,6 +89,12 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/fp_fast_math_default_type.patch
 # only its SPIR-V part is backported).
 atomic_patch -p1 $WORKSPACE/srcdir/patches/copysign_shader.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/fminimum_fmaximum.patch
+# Revalidate the operands of a PHI or select whose pointee type is changed
+# after its operands were checked (not yet submitted upstream), without which a
+# null incoming value can keep the old pointer type and spirv-val rejects the
+# OpPhi or OpSelect. LoopSimplify, which runs for OpenCL since LLVM 23, creates
+# the PHI chains that trigger it.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/phi_select_retyped_operands.patch
 
 install_license LICENSE.TXT
 
