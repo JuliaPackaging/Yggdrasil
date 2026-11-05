@@ -1,4 +1,5 @@
 using BinaryBuilder
+include(joinpath(@__DIR__, "..", "..", "platforms", "wasm_platforms.jl"))
 using Pkg
 using BinaryBuilderBase: sanitize
 
@@ -36,14 +37,20 @@ function configure_zlib_build(upstream_version::VersionNumber;
         -DUNIX=true
         -DCMAKE_POSITION_INDEPENDENT_CODE=ON
         -DZLIB_BUILD_TESTING=OFF
-        -DZLIB_BUILD_STATIC=OFF
     )
+    if [[ ${target} == wasm* ]]; then
+        # static only: wasm has no stable dynamic-linking ABI
+        options+=(-DZLIB_BUILD_SHARED=OFF -DZLIB_BUILD_STATIC=ON -DCMAKE_POSITION_INDEPENDENT_CODE=OFF)
+    else
+        options+=(-DZLIB_BUILD_STATIC=OFF)
+    fi
     cmake "${options[@]}" ..
     make install -j${nproc}
     install_license ../README
     """
 
     platforms = supported_platforms()
+    append!(platforms, wasm_platforms())
     push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 
     products = [

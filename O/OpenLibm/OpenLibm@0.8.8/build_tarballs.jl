@@ -1,4 +1,5 @@
 using BinaryBuilder
+include(joinpath(@__DIR__, "..", "..", "..", "platforms", "wasm_platforms.jl"))
 using Pkg
 using BinaryBuilderBase: sanitize
 
@@ -43,6 +44,7 @@ install_license ./LICENSE.md
 
 # We enable experimental platforms as this is a core Julia dependency
 platforms = supported_platforms()
+append!(platforms, wasm_platforms())
 push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 
 products = [
