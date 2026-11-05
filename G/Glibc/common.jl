@@ -1,21 +1,28 @@
-# Shared pieces of the BinaryBuilder2 Glibc recipes.  These produce the glibc sysroots
+# Shared pieces of the Glibc recipes.  These produce the glibc sysroots
 # that BinaryBuilder2's `CToolchain` installs, so the layout (everything in `/lib`,
 # headers in `/usr/include`, relative linker scripts, `crt*.o` alongside) matters.
 
-function glibc_bb2_sources(version)
+function glibc_sources(version)
     hashes = Dict(
         v"2.17" => "6914e337401e0e0ade23694e1b2c52a5f09e4eda3270c67e7c3ba93a89b5b23e",
         v"2.19" => "2d3997f588401ea095a0b27227b1d50cdfdd416236f6567b564549d3b46ea2a2",
         v"2.34" => "44d26a1fe20b8853a48f470ead01e4279e869ac149b195dda4e44a195d981ab2",
     )
+    tarball = "glibc-$(version.major).$(version.minor).tar.xz"
     return [
-        ArchiveSource("https://mirrors.kernel.org/gnu/glibc/glibc-$(version.major).$(version.minor).tar.xz",
-                      hashes[version]),
+        # Mirrors are tried in order
+        ArchiveSource([
+                "https://mirrors.kernel.org/gnu/glibc/$(tarball)",
+                "https://ftpmirror.gnu.org/glibc/$(tarball)",
+                "https://mirrors.ocf.berkeley.edu/gnu/glibc/$(tarball)",
+                "https://ftp.gnu.org/gnu/glibc/$(tarball)",
+            ],
+            hashes[version]),
         DirectorySource("./bundled"; follow_symlinks=true),
     ]
 end
 
-function glibc_bb2_platforms(version)
+function glibc_platforms(version)
     arches = Dict(
         v"2.17" => ["x86_64", "i686", "powerpc64le"],
         v"2.19" => ["x86_64", "i686", "armv7l", "armv6l", "aarch64", "powerpc64le"],
@@ -24,7 +31,7 @@ function glibc_bb2_platforms(version)
     return [Platform(arch, "linux") for arch in arches[version]]
 end
 
-const glibc_bb2_script = raw"""
+const glibc_script = raw"""
 cd ${WORKSPACE}/srcdir/glibc-*/
 install_license COPYING* LICENSES
 
@@ -79,7 +86,7 @@ if [[ -d ${prefix}/${prefix} ]]; then
 fi
 """
 
-function glibc_bb2_products(version)
+function glibc_products(version)
     # The unversioned `.so` files are linker scripts, so point at the real libraries.
     # From v2.34 on, glibc installs those under their sonames instead of `lib*-2.xx.so`.
     if version >= v"2.34"
@@ -109,14 +116,14 @@ function glibc_bb2_products(version)
     ]
 end
 
-function glibc_bb2_build_tarballs(version)
+function glibc_build_tarballs(version)
     return build_tarballs(;
         src_name = "Glibc",
         src_version = version,
-        sources = glibc_bb2_sources(version),
-        script = glibc_bb2_script,
-        platforms = glibc_bb2_platforms(version),
-        products = glibc_bb2_products(version),
+        sources = glibc_sources(version),
+        script = glibc_script,
+        platforms = glibc_platforms(version),
+        products = glibc_products(version),
         host_toolchains = [CToolchain(; vendor=:bootstrap), HostToolsToolchain()],
         target_toolchains = [CToolchain(; vendor=:bootstrap)],
     )

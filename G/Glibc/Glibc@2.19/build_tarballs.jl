@@ -1,5 +1,5 @@
 using BinaryBuilder2
 
-include("../common_bb2.jl")
+include("../common.jl")
 
-glibc_bb2_build_tarballs(v"2.19")
+glibc_build_tarballs(v"2.19")
