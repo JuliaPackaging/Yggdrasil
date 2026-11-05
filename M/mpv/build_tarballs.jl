@@ -65,6 +65,13 @@ if [[ "${target}" == *-mingw* ]]; then
     FLAGS+=(-Dd3d-hwaccel=disabled)
 fi
 
+if [[ "${target}" == i686-*-mingw* ]]; then
+    # The i686 mingw-w64 ole32 import library lacks CoIncrementMTAUsage@4 and
+    # CoDecrementMTAUsage@4, which ao_wasapi.c needs (undefined reference at
+    # link time). Disable WASAPI there; SDL2 audio remains available.
+    FLAGS+=(-Dwasapi=disabled)
+fi
+
 # SDL2 video/audio are disabled by default in mpv 0.41; enable them explicitly
 # Vulkan is disabled: not native on macOS, stdcall ABI issues on 32-bit Windows,
 # and SDL2+OpenGL provide sufficient video output for a JLL package
