@@ -3,48 +3,34 @@
 using BinaryBuilder, Pkg
 
 name = "fmusim"
-version = v"0.0.39001"
+version = v"0.15.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/modelica/Reference-FMUs.git",
-              "c8d4e6d90fa14be49d7622badf30e38eebea5e0a"),
-    # fmusim compiles three minizip sources (ioapi.c, unzip.c, iowin32.c)
-    # directly from a zlib source tree, so we ship one alongside.
-    GitSource("https://github.com/madler/zlib.git",
-              "da607da739fa6047df13e66a2af6b8bec7c2a498"),
+    GitSource("https://github.com/modelica/fmusim.git",
+              "d6f28792ed17ea3398128fbb89b7c43858841052"; tag="v$(version)"),
+    # The fmi-rs crate downloads and builds static Sundials and libxml2 in its
+    # build script, so we build a patched copy that links the JLLs instead.
+    GitSource("https://github.com/CATIA-Systems/fmi-rs.git",
+              "95b7a56653fa3ba299f5bb8f0fb4a03016a923fc"; tag="v0.3.4"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/Reference-FMUs*/
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/use-shared-deps.patch
-# MinGW cross-compilation: Linux is case-sensitive, fix Windows header capitalization
-find . \( -name "*.c" -o -name "*.h" \) -exec sed -i \
-    -e 's/#include <Windows\.h>/#include <windows.h>/g' \
-    -e 's/#include <Shlwapi\.h>/#include <shlwapi.h>/g' \
-    {} \;
+cd ${WORKSPACE}/srcdir/fmi-rs
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fmi-rs-use-shared-deps.patch
 
-mkdir -p build && cd build
-# Configure fmusim's own CMakeLists.txt directly (it has its own project() call)
-# rather than the root, which would otherwise force -DFMI_VERSION=3 just to
-# satisfy the reference-FMU model configure step. fmusim itself always
-# compiles support for FMI 1/2/3.
-cmake \
-    -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_C_STANDARD=99 \
-    -DCMAKE_PREFIX_PATH=${prefix} \
-    -DFMUSIM_VERSION=${version} \
-    -DZLIB_SRC_DIR=${WORKSPACE}/srcdir/zlib \
-    ../fmusim
+cd ${WORKSPACE}/srcdir/fmusim
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/test-fixtures-dev-dependency.patch
 
-cmake --build . --parallel ${nproc}
+export CFLAGS="-I${includedir}/libxml2"
+# On Windows the import libraries are in ${prefix}/lib, not ${libdir}.
+export RUSTFLAGS="-L ${prefix}/lib"
+cargo build --release --config "patch.crates-io.fmi-rs.path='${WORKSPACE}/srcdir/fmi-rs/fmi-rs'"
 
-install -Dvm 755 fmusim${exeext} ${bindir}/fmusim${exeext}
-install_license ../LICENSE.txt
+install -Dvm 755 "target/${rust_target}/release/fmusim${exeext}" "${bindir}/fmusim${exeext}"
+install_license LICENSE
 """
 
 # Upstream supports only x86_64 / aarch64 on linux/macos/windows.
@@ -61,11 +47,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("XML2_jll"),
-    Dependency("Zlib_jll"),
     Dependency("Sundials_jll"; compat="7.4"),
+    Dependency("XML2_jll"; compat="2.15.3"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"9")
+               julia_compat="1.6", compilers=[:c, :rust], preferred_gcc_version=v"9")
