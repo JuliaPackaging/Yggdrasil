@@ -32,13 +32,13 @@ apk del cmake
 
 # FFMPEG_jll installs pkgconfig files in ${libdir}/pkgconfig on Windows
 if [[ "${target}" == *-mingw* ]]; then
-    export PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:${libdir}/pkgconfig"
+    export PKG_CONFIG_PATH="${PKG_CONFIG_PATH:+${PKG_CONFIG_PATH}:}${libdir}/pkgconfig"
 fi
 
 # On FreeBSD, HarfBuzz_jll and FriBidi_jll (needed by libass) ship their
 # pkg-config files in libdata/pkgconfig
 if [[ "${target}" == *-freebsd* ]]; then
-    export PKG_CONFIG_PATH="${PKG_CONFIG_PATH:${prefix}/libdata/pkgconfig"
+    export PKG_CONFIG_PATH="${PKG_CONFIG_PATH:+${PKG_CONFIG_PATH}:}${prefix}/libdata/pkgconfig"
 fi
 
 FLAGS=()
