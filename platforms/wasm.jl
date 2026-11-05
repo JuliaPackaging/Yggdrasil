@@ -87,39 +87,44 @@ function wasm_script_preamble(; native_name::String, native_uuid::String, native
             wasm32-wasip1) abi=wasm32-wasip1-ilp32-v0; target=wasm32-wasip1; libc="wasi-libc from wasi-sdk ${WASI_SDK_VERSION}";;
             wasm64-unknown-unknown) abi=wasm64-lp64-freestanding-v0; target=wasm64-unknown-unknown; libc="none: the consumer supplies needs";;
         esac
-        {
-            echo "format = 1"
-            echo "abi = \"${abi}\""
-            echo
-            echo "[native]"
-            echo "name = \"${WASM_NATIVE_NAME}\""
-            echo "uuid = \"${WASM_NATIVE_UUID}\""
-            echo "version = \"${WASM_NATIVE_VERSION}\""
-            for lib in "$@"; do
-                local a=${d}/lib/${lib}.a
-                ${WASM_NM} --defined-only -g ${a} 2>/dev/null | awk 'NF==3{print $3}' | sort -u > ${WORKSPACE}/def
-                ${WASM_NM} --undefined-only ${a} 2>/dev/null | awk 'NF>=2{print $NF}' | sort -u > ${WORKSPACE}/und
-                # what the archive needs from outside itself, less what wasm-ld synthesizes
-                local needs=$(comm -23 ${WORKSPACE}/und ${WORKSPACE}/def | grep -vxE '__stack_pointer|__indirect_function_table|__memory_base|__table_base|__heap_base|__data_end' | sed 's/.*/"&"/' | paste -sd, -)
-                echo
-                echo "[libraries.${lib}]"
-                echo "archive = \"lib/${lib}.a\""
-                echo "sha256 = \"$(sha256sum ${a} | cut -d' ' -f1)\""
-                echo "deps = []"
-                echo "exports = $(wc -l < ${WORKSPACE}/def)"
-                echo "needs = [${needs}]"
-                echo "libc = \"${libc}\""
-            done
-            echo
-            echo "[build]"
-            echo "source = \"${WASM_SOURCE}\""
-            echo "source_hash = \"${WASM_SOURCE_HASH}\""
-            echo "target = \"${target}\""
-            echo "compiler = \"${WASM_CLANG_VERSION}, BinaryBuilder LLVMBootstrap ${WASM_LLVM_SHARD}\""
-            echo "sysroot = \"wasi-sysroot-${WASI_SDK_VERSION}.tar.gz, sha256 ${WASI_SYSROOT_SHA256}\""
-            echo "builtins = \"libclang_rt-${WASI_SDK_VERSION}.tar.gz, sha256 ${WASI_LIBCLANG_RT_SHA256}\""
-            echo "recipe = \"${WASM_RECIPE}\""
-        } > ${d}/share/wasm-provider.toml
+        # Manifest values are quoted TOML strings; heredocs keep the quotes literal inside this raw string
+        cat > ${d}/share/wasm-provider.toml <<EOF
+format = 1
+abi = "${abi}"
+
+[native]
+name = "${WASM_NATIVE_NAME}"
+uuid = "${WASM_NATIVE_UUID}"
+version = "${WASM_NATIVE_VERSION}"
+EOF
+        for lib in "$@"; do
+            local a=${d}/lib/${lib}.a
+            ${WASM_NM} --defined-only -g ${a} 2>/dev/null | awk 'NF==3{print $3}' | sort -u > ${WORKSPACE}/def
+            ${WASM_NM} --undefined-only ${a} 2>/dev/null | awk 'NF>=2{print $NF}' | sort -u > ${WORKSPACE}/und
+            # what the archive needs from outside itself, less what wasm-ld synthesizes
+            local needs=$(comm -23 ${WORKSPACE}/und ${WORKSPACE}/def | grep -vxE '__stack_pointer|__indirect_function_table|__memory_base|__table_base|__heap_base|__data_end' | sed 's/.*/"&"/' | paste -sd, -)
+            cat >> ${d}/share/wasm-provider.toml <<EOF
+
+[libraries.${lib}]
+archive = "lib/${lib}.a"
+sha256 = "$(sha256sum ${a} | cut -d' ' -f1)"
+deps = []
+exports = $(wc -l < ${WORKSPACE}/def)
+needs = [${needs}]
+libc = "${libc}"
+EOF
+        done
+        cat >> ${d}/share/wasm-provider.toml <<EOF
+
+[build]
+source = "${WASM_SOURCE}"
+source_hash = "${WASM_SOURCE_HASH}"
+target = "${target}"
+compiler = "${WASM_CLANG_VERSION}, BinaryBuilder LLVMBootstrap ${WASM_LLVM_SHARD}"
+sysroot = "wasi-sysroot-${WASI_SDK_VERSION}.tar.gz, sha256 ${WASI_SYSROOT_SHA256}"
+builtins = "libclang_rt-${WASI_SDK_VERSION}.tar.gz, sha256 ${WASI_LIBCLANG_RT_SHA256}"
+recipe = "${WASM_RECIPE}"
+EOF
         cat ${d}/share/wasm-provider.toml
     }
     """
