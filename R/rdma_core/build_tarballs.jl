@@ -37,10 +37,26 @@ platforms = [
 ]
 
 
-# The products that we will ensure are always built
+# The products that we will ensure are always built.
+#
+# Every public library rdma-core installs is a product, so that it is loaded
+# when the JLL is. In particular the provider "direct verbs" libraries
+# (libmlx5, libefa, ...) must be products: dependents load plugins that link
+# against them, e.g. UCX's `ucx/libuct_ib_mlx5.so`, whose RUNPATH only covers
+# UCX_jll's own directory. If they are not already loaded, the dynamic loader
+# picks the system copy (or none), which can need a newer libibverbs ABI than
+# this JLL's, and the plugin fails to load.
 products = [
     LibraryProduct("libibverbs", :libibverbs),
-    LibraryProduct("librdmacm", :lbrdmacm)
+    LibraryProduct("librdmacm", :lbrdmacm),
+    LibraryProduct("libibumad", :libibumad),
+    LibraryProduct("libibmad", :libibmad),
+    LibraryProduct("libibnetdisc", :libibnetdisc),
+    LibraryProduct("libmlx4", :libmlx4),
+    LibraryProduct("libmlx5", :libmlx5),
+    LibraryProduct("libefa", :libefa),
+    LibraryProduct("libhns", :libhns),
+    LibraryProduct("libmana", :libmana),
 ]
 
 # Dependencies that must be installed before this package can be built
