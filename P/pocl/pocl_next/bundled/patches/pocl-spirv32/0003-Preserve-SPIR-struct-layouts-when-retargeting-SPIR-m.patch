@@ -1,4 +1,4 @@
-From 6e90014913e07417ab809269bd797ad60df5f9e0 Mon Sep 17 00:00:00 2001
+From 2cbfe52671072839521e0b1b01c9161041fbb0db Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Sun, 25 Oct 2026 09:09:40 +0100
 Subject: [PATCH] Preserve SPIR struct layouts when retargeting SPIR modules
@@ -735,7 +735,7 @@ index 3faaef6a5..c73c0a899 100644
   * \brief check a return value of CL function or print the error to stderr.
   * @param cl_err [in] value to be checked.
 diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
-index 82ce49164..b104380a4 100644
+index 607fd8c20..aefb9a564 100644
 --- a/tests/regression/CMakeLists.txt
 +++ b/tests/regression/CMakeLists.txt
 @@ -31,6 +31,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
@@ -746,7 +746,7 @@ index 82ce49164..b104380a4 100644
       test_unreachable_in_infinite_loop
       test_rematerialized_alloca_load_with_outside_pr_users
       test_peeled_wi_global_id
-@@ -201,6 +202,8 @@ add_test_pocl(NAME "regression/test_unreachable_kernel" WORKITEM_HANDLER "loops;
+@@ -202,6 +203,8 @@ add_test_pocl(NAME "regression/test_unreachable_kernel" WORKITEM_HANDLER "loops;
  
  add_test_pocl(NAME "regression/test_remat_alloca_without_initializer" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_remat_alloca_without_initializer" LABELS ${SPIRV_LABELS})
  

@@ -1,4 +1,4 @@
-From dd5774659dd1453bb66b63350350a7a58636f418 Mon Sep 17 00:00:00 2001
+From 1cf29b70880ef31d2570b8bcf6ac4afa26fa2f45 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Wed, 7 Oct 2026 14:20:25 +0200
 Subject: [PATCH] Report invalid events in clEnqueueWaitForEvents as

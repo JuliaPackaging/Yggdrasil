@@ -1,4 +1,4 @@
-From b6f1cd26a6656c484e65b01e7c75d10b63ef1fe2 Mon Sep 17 00:00:00 2001
+From d39ef505f30e22a6f0a214f169f12762117661c1 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Sun, 25 Oct 2026 15:05:41 +0100
 Subject: [PATCH] cmake: only look for SVML on x86-64
@@ -13,7 +13,7 @@ builtins.
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index fc79c66f0..462bb17a8 100644
+index f3781a904..96ccd1804 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -1049,7 +1049,8 @@ file(RELATIVE_PATH POCL_INSTALL_FROM_LIB_TO_PRIVATE_LIBDIR

@@ -1,4 +1,4 @@
-From 4857935ef8e837086cbe71e3b1566bd9f8bf703a Mon Sep 17 00:00:00 2001
+From 243902625df347ec7cb0cb75cdec9f21a1edf6db Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Wed, 7 Oct 2026 14:19:35 +0200
 Subject: [PATCH] Forward clEnqueueWaitForEvents to

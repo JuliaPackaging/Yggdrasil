@@ -1,4 +1,4 @@
-From 8684f820834b63a82698fc984bf954f3aa09e1d3 Mon Sep 17 00:00:00 2001
+From ac6442554fa2e9ef2b3109738b412d252b6cf957 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Thu, 5 Nov 2026 12:05:30 +0100
 Subject: [PATCH] WorkitemLoops: fix rematerialized alloca loads used as a
@@ -44,7 +44,7 @@ index 8a23b281f..6921d604c 100644
          } else {
            // We can get rid of the alloca load altogether and use the
 diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
-index f30cb5655..e633aa6e9 100644
+index 0847b847e..e1136729e 100644
 --- a/tests/regression/CMakeLists.txt
 +++ b/tests/regression/CMakeLists.txt
 @@ -39,6 +39,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
@@ -55,7 +55,7 @@ index f30cb5655..e633aa6e9 100644
       test_spirv_intel_subgroups
       test_spirv_bfloat16
       test_indirect_ptrs
-@@ -221,6 +222,8 @@ add_test_pocl(NAME "regression/localmem_load_across_barrier" WORKITEM_HANDLER "l
+@@ -222,6 +223,8 @@ add_test_pocl(NAME "regression/localmem_load_across_barrier" WORKITEM_HANDLER "l
  
  add_test_pocl(NAME "regression/test_indirect_ptrs" COMMAND "test_indirect_ptrs")
  

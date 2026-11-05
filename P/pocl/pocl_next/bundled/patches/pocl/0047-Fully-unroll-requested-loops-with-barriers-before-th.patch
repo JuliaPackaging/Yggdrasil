@@ -1,4 +1,4 @@
-From 604813f8b52d7a0a4a6ee5133e49670be67353f9 Mon Sep 17 00:00:00 2001
+From 368ea814c31b173bc6e5d61a720dfe4f47d53a22 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Tue, 6 Oct 2026 13:58:39 +0200
 Subject: [PATCH] Fully unroll requested loops with barriers before the barrier
@@ -539,7 +539,7 @@ index 000000000..d14d6ba68
 +CHECK: @_pocl_kernel_sub_group_sum_workgroup
 +CHECK-NOT: loopbarrier
 diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
-index e633aa6e9..82ce49164 100644
+index e1136729e..607fd8c20 100644
 --- a/tests/regression/CMakeLists.txt
 +++ b/tests/regression/CMakeLists.txt
 @@ -42,6 +42,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
@@ -550,7 +550,7 @@ index e633aa6e9..82ce49164 100644
       test_indirect_ptrs
       test_replicated_wi_subgroup_alloca
       test_usm_indirect_ptrs
-@@ -228,6 +229,10 @@ add_test_pocl(NAME "regression/replicated_wi_subgroup_alloca" WORKITEM_HANDLER "
+@@ -229,6 +230,10 @@ add_test_pocl(NAME "regression/replicated_wi_subgroup_alloca" WORKITEM_HANDLER "
  set_tests_properties("regression/replicated_wi_subgroup_alloca_loops" PROPERTIES ENVIRONMENT "POCL_WORK_GROUP_METHOD=loops;POCL_WILOOPS_MAX_UNROLL_COUNT=4")
  set_tests_properties("regression/replicated_wi_subgroup_alloca_loopvec" PROPERTIES ENVIRONMENT "POCL_WORK_GROUP_METHOD=loopvec;POCL_WILOOPS_MAX_UNROLL_COUNT=4")
  

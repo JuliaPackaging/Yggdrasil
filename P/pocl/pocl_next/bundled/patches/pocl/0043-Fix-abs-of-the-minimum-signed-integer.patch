@@ -1,4 +1,4 @@
-From 03be06fc5aef06bc2bae3ca0ee47638b949dcfd4 Mon Sep 17 00:00:00 2001
+From 7f9276593856c464dc48ceb975e7bc19d968670a Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Tue, 3 Nov 2026 14:56:43 +0100
 Subject: [PATCH] Fix abs() of the minimum signed integer

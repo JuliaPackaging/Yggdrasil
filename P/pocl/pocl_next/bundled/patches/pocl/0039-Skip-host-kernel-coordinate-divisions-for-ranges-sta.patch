@@ -1,4 +1,4 @@
-From a5f935d6e0bd54a9da8e8a0eff32161ddb6014ec Mon Sep 17 00:00:00 2001
+From ce63fd72c378b2ab64345a338908a00a1c11b03d Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Tue, 27 Oct 2026 01:00:16 +0100
 Subject: [PATCH] Skip host kernel coordinate divisions for ranges starting in
@@ -14,7 +14,7 @@ Xeon E3-1245 v6 takes 518 instead of 566 cycles in a local build.
  1 file changed, 15 insertions(+), 4 deletions(-)
 
 diff --git a/lib/CL/devices/common_utils.c b/lib/CL/devices/common_utils.c
-index 5e745523e..8a7ff95e2 100644
+index a5666bef3..5fb885509 100644
 --- a/lib/CL/devices/common_utils.c
 +++ b/lib/CL/devices/common_utils.c
 @@ -386,10 +386,21 @@ pocl_cpu_run_host_kernel (cl_host_kernel_pocl hk,

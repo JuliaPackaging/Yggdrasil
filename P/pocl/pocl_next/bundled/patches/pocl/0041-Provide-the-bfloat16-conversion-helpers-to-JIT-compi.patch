@@ -1,4 +1,4 @@
-From aef2de8848a6a6ce568d21418afd331a0f2fa3c6 Mon Sep 17 00:00:00 2001
+From f79e489b1730defaaf2afbcbdf374f20a3a196a8 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Tue, 3 Nov 2026 14:26:58 +0100
 Subject: [PATCH] Provide the bfloat16 conversion helpers to JIT-compiled

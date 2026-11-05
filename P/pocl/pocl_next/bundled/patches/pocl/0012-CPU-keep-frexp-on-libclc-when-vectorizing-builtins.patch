@@ -1,4 +1,4 @@
-From e6eca3a131b8405064dd95ddc1d3b014f588a517 Mon Sep 17 00:00:00 2001
+From 0434578e8eef991dcb952b3b3f228c6d36a19fc4 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Wed, 30 Sep 2026 10:52:14 +0200
 Subject: [PATCH] CPU: keep frexp on libclc when vectorizing builtins
@@ -153,20 +153,20 @@ index e925f1f15..bdffd2905 100644
      isfinite.cl
      isinf.cl
 diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
-index 676b857e2..bbf461baf 100644
+index a7a83caab..eca1b6c98 100644
 --- a/tests/regression/CMakeLists.txt
 +++ b/tests/regression/CMakeLists.txt
-@@ -44,6 +44,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
-      test_usm_indirect_ptrs
-      test_usm_free_realloc
+@@ -46,6 +46,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
       test_sanitize_divrem
+      test_tall_grid
+      test_cr_divide_sqrt_option
 +     test_frexp_kernellib
  )
  if(UNIX)
    list(APPEND C_PROGRAMS_TO_BUILD test_signal_handlers)
-@@ -207,6 +208,15 @@ add_test_pocl(NAME "regression/test_usm_free_realloc" COMMAND "test_usm_free_rea
- 
- add_test_pocl(NAME "regression/test_sanitize_divrem" COMMAND "test_sanitize_divrem" LABELS ${SPIRV_LABELS})
+@@ -215,6 +216,15 @@ add_test_pocl(NAME "regression/test_sanitize_divrem" COMMAND "test_sanitize_divr
+ add_test_pocl(NAME "regression/test_cr_divide_sqrt_option" COMMAND "test_cr_divide_sqrt_option"
+   WORKITEM_HANDLER "loopvec" LABELS "cuda;vulkan;level0")
  
 +add_test_pocl(NAME "regression/frexp_kernellib" WORKITEM_HANDLER "loopvec" COMMAND "test_frexp_kernellib")
 +# the sub-AVX2 kernel library variants, where llvm.frexp used to be miscompiled

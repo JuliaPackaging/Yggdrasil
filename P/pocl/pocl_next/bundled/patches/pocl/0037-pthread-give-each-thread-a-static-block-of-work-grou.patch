@@ -1,4 +1,4 @@
-From 362f0d1a4d865f5b40b456421b1d1dcb63bb54e8 Mon Sep 17 00:00:00 2001
+From 4044907ee94d15277dc8de85cdd6cb38db30aa73 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Mon, 26 Oct 2026 12:07:37 +0100
 Subject: [PATCH] pthread: give each thread a static block of work-groups

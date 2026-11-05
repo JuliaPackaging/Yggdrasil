@@ -1,4 +1,4 @@
-From bce4d29b20fee465061190bb3fbcafb2773d1097 Mon Sep 17 00:00:00 2001
+From 7b1f9e0c5e29ae8a95dc7e184c788948509185a2 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Thu, 2 Jul 2026 13:56:01 +0200
 Subject: [PATCH] core-math: handle FP16 powr indeterminate forms

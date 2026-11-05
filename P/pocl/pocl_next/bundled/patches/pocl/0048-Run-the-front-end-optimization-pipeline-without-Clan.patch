@@ -1,4 +1,4 @@
-From 2d2d8b7fa7a864835892bc8aa9687b60bc188cd0 Mon Sep 17 00:00:00 2001
+From 533ec9e2bd608692bee0fb8c1d1c82bd54495e24 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Thu, 5 Nov 2026 13:41:51 +0100
 Subject: [PATCH] Run the front-end optimization pipeline without Clang's

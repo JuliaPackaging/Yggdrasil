@@ -1,4 +1,4 @@
-From 83ad9b1c6383f3c02b8a9e7f7d398223290d33c6 Mon Sep 17 00:00:00 2001
+From f01957d61ef46d067880d0d6130fe0047fe0c65b Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Mon, 19 Oct 2026 17:20:40 +0200
 Subject: [PATCH] Report the stack estimate as CL_KERNEL_PRIVATE_MEM_SIZE on

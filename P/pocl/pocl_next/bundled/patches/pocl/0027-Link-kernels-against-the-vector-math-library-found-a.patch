@@ -1,4 +1,4 @@
-From 0e8ce938a8454f6a451c81dcfaf288c49e347511 Mon Sep 17 00:00:00 2001
+From 7910959131bdcf83e2d9deca8cb7a262bdef20c7 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Wed, 7 Oct 2026 10:12:50 +0200
 Subject: [PATCH] Link kernels against the vector-math library found at run
@@ -28,7 +28,7 @@ Co-authored-by: Claude Opus 5.5 <noreply@anthropic.com>
  6 files changed, 99 insertions(+), 57 deletions(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index e175f191d..07f58e279 100644
+index c0f08c1e9..9a1499e30 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -946,6 +946,10 @@ if(UNIX OR MINGW)
@@ -105,7 +105,7 @@ index a221a9b8d..0aca5c170 100644
  
  #cmakedefine HAVE_VFORK
 diff --git a/lib/CL/devices/common.c b/lib/CL/devices/common.c
-index 8b9d13771..951917050 100644
+index 9d9c7bf25..308e39e38 100644
 --- a/lib/CL/devices/common.c
 +++ b/lib/CL/devices/common.c
 @@ -134,6 +134,11 @@ link_with_clang_driver (cl_device_id device, const char *objfile,

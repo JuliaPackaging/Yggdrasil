@@ -1,4 +1,4 @@
-From 36200b7dd3d94c1d5a4cc5192eb197277318f8db Mon Sep 17 00:00:00 2001
+From 677bc2198ebaa2c75c0f7747a581e56fe936bd7c Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Sun, 25 Oct 2026 09:11:08 +0100
 Subject: [PATCH] tests: don't run 64-bit SPIR-V inputs on 32-bit devices

@@ -1,4 +1,4 @@
-From 99700971ad8e6b78d11fce0872c5e13a59eddd91 Mon Sep 17 00:00:00 2001
+From 69abb5744621c390cbd340fda18feb94d7fe45b9 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Tue, 6 Oct 2026 16:13:26 +0200
 Subject: [PATCH] Fold a zero global offset before the barrier passes

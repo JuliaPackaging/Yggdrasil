@@ -1,4 +1,4 @@
-From c253706eba0d107aba62c237a5c803c65baac3de Mon Sep 17 00:00:00 2001
+From eefbfd0fc64fe05f1b1d6419df0427b5bcca12b4 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Thu, 8 Oct 2026 11:56:09 +0200
 Subject: [PATCH] Estimate kernel stack sizes on SROA'd IR
@@ -172,18 +172,18 @@ index b42cf597f..89df2cec9 100644
                            const llvm::Module *Program,
                            const char **DevAuxFuncs);
 diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
-index dfa5de079..363d36df6 100644
+index 01764c9f3..8c50288e9 100644
 --- a/tests/regression/CMakeLists.txt
 +++ b/tests/regression/CMakeLists.txt
-@@ -46,6 +46,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
-      test_sanitize_divrem
+@@ -48,6 +48,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
+      test_cr_divide_sqrt_option
       test_frexp_kernellib
       test_large_private_workgroup
 +     test_stack_estimate_builtins
  )
  if(UNIX)
    list(APPEND C_PROGRAMS_TO_BUILD test_signal_handlers)
-@@ -221,6 +222,9 @@ endif()
+@@ -229,6 +230,9 @@ endif()
  add_test_pocl(NAME "regression/test_large_private_workgroup"
    COMMAND "test_large_private_workgroup")
  

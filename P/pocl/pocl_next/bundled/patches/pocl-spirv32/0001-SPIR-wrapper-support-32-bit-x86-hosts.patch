@@ -1,4 +1,4 @@
-From c730eeb4ceba13af49a5ef5cd2594842021930f3 Mon Sep 17 00:00:00 2001
+From d258bc4b5563f789cbd7a8a31937e8d0a9b5129e Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Sun, 25 Oct 2026 09:01:07 +0100
 Subject: [PATCH] SPIR wrapper: support 32-bit x86 hosts

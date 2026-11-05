@@ -1,4 +1,4 @@
-From 8dd4917041abd93f6c29db69e91bfa6b68498c84 Mon Sep 17 00:00:00 2001
+From d677c7b8c31af2dc870c8a28690899b65efa04e9 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Mon, 19 Oct 2026 17:18:29 +0200
 Subject: [PATCH] Add cl_pocl_host_kernel: run work-groups on the calling
@@ -39,7 +39,7 @@ a few nanoseconds.
  create mode 100644 tests/runtime/test_cl_pocl_host_kernel.c
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index f12435449..b008c7a48 100644
+index 069bc97ca..7dcff7b5c 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -1837,7 +1837,7 @@ if(NOT ENABLE_CONFORMANCE)
@@ -203,7 +203,7 @@ index 4f09268c6..46541a30b 100644
                     "clGetPipeInfo.c"
                     "clSetProgramReleaseCallback.c"
 diff --git a/lib/CL/clGetExtensionFunctionAddressForPlatform.c b/lib/CL/clGetExtensionFunctionAddressForPlatform.c
-index 7b9d934ba..d544c8b3c 100644
+index f0c6a529d..c8aa8220d 100644
 --- a/lib/CL/clGetExtensionFunctionAddressForPlatform.c
 +++ b/lib/CL/clGetExtensionFunctionAddressForPlatform.c
 @@ -67,6 +67,18 @@ CL_API_SUFFIX__VERSION_1_2
@@ -565,10 +565,10 @@ index 540efc142..d6ecea130 100644
    ops->build_source = pocl_driver_build_source;
    ops->link_program = pocl_driver_link_program;
 diff --git a/lib/CL/devices/common.c b/lib/CL/devices/common.c
-index e27555cb7..7464be71e 100644
+index 035a30a36..1d6a65bbe 100644
 --- a/lib/CL/devices/common.c
 +++ b/lib/CL/devices/common.c
-@@ -2167,6 +2167,7 @@ static const cl_name_version OPENCL_EXTENSIONS[]
+@@ -2142,6 +2142,7 @@ static const cl_name_version OPENCL_EXTENSIONS[]
        { CL_MAKE_VERSION (0, 9, 0), "cl_pocl_command_buffer_svm" },
        { CL_MAKE_VERSION (0, 9, 0), "cl_pocl_command_buffer_host_buffer" },
        { CL_MAKE_VERSION (0, 9, 0), "cl_pocl_command_buffer_host_exec" },
@@ -577,7 +577,7 @@ index e27555cb7..7464be71e 100644
        { CL_MAKE_VERSION (0, 1, 0), "cl_exp_defined_builtin_kernels" } };
  
 diff --git a/lib/CL/devices/common_utils.c b/lib/CL/devices/common_utils.c
-index b4570ed7e..5e745523e 100644
+index 5ba19570d..a5666bef3 100644
 --- a/lib/CL/devices/common_utils.c
 +++ b/lib/CL/devices/common_utils.c
 @@ -30,6 +30,7 @@

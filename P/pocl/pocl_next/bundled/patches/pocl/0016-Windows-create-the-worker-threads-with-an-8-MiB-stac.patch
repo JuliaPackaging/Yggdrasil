@@ -1,4 +1,4 @@
-From 50e3e2335f4bd4a05c15fd390d1fa5e3dc106849 Mon Sep 17 00:00:00 2001
+From 16e514f64aa4dac64450bcabdf4c3901f05f6618 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Thu, 8 Oct 2026 12:20:18 +0200
 Subject: [PATCH] Windows: create the worker threads with an 8 MiB stack too
@@ -233,10 +233,10 @@ index 0ace8b0a3..cb85664d0 100644
  #define POCL_THREAD_SELF() pocl_thread_self()
  
 diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
-index 82deb5236..dfa5de079 100644
+index d65d73563..01764c9f3 100644
 --- a/tests/regression/CMakeLists.txt
 +++ b/tests/regression/CMakeLists.txt
-@@ -218,8 +218,7 @@ if(X86 AND KERNELLIB_HOST_DISTRO_VARIANTS)
+@@ -226,8 +226,7 @@ if(X86 AND KERNELLIB_HOST_DISTRO_VARIANTS)
    endforeach()
  endif()
  

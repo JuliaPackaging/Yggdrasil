@@ -1,4 +1,4 @@
-From 8bd14e6f48bad8e6589bd9139e505b2c42d333a5 Mon Sep 17 00:00:00 2001
+From 31e1251978ce090066d0b388721e12766e1075f9 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Thu, 24 Sep 2026 09:07:51 +0200
 Subject: [PATCH] Don't force LLVM to register its signal handlers

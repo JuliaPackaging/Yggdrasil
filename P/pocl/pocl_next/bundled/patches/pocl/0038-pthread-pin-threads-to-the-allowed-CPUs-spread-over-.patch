@@ -1,4 +1,4 @@
-From de2cce3d9c0d3c035cc865e19ce942d48a2f99e1 Mon Sep 17 00:00:00 2001
+From e71717eb986fec63d22a8a7cc62cf14391c6fb45 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Mon, 26 Oct 2026 12:11:27 +0100
 Subject: [PATCH] pthread: pin threads to the allowed CPUs, spread over NUMA

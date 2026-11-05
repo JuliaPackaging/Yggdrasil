@@ -1,4 +1,4 @@
-From 3effd36b91a5cca30da1be92c4713eb30b2e96e1 Mon Sep 17 00:00:00 2001
+From 4ce7971c779b1e54f77a23480194762bce8d3da0 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Mon, 26 Oct 2026 12:04:46 +0100
 Subject: [PATCH] pthread: don't join kernels whose work-groups have all been

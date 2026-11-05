@@ -1,4 +1,4 @@
-From 55b294a756f973d1ed229e922dfa98008103c7de Mon Sep 17 00:00:00 2001
+From 394099bbae75f3e5abda54c8563f221d3057cc1e Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Tue, 3 Nov 2026 14:26:58 +0100
 Subject: [PATCH] Accept SPV_KHR_bfloat16 SPIR-V on the CPU devices
@@ -27,7 +27,7 @@ CL_DEVICE_SPIRV_EXTENSIONS_KHR and CL_DEVICE_SPIRV_CAPABILITIES_KHR.
  create mode 100644 tests/regression/test_spirv_bfloat16.c
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index b008c7a48..134570b60 100644
+index 7dcff7b5c..3f95d9bdf 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -1926,6 +1926,11 @@ endif()
@@ -114,7 +114,7 @@ index 904fc69af..8765f0dc7 100644
      SpirvExtensions.push_back("SPV_INTEL_subgroups");
      SpirvCapabilities.push_back(
 diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
-index db9850a49..f30cb5655 100644
+index 7ae6a2505..0847b847e 100644
 --- a/tests/regression/CMakeLists.txt
 +++ b/tests/regression/CMakeLists.txt
 @@ -40,6 +40,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
@@ -125,7 +125,7 @@ index db9850a49..f30cb5655 100644
       test_indirect_ptrs
       test_replicated_wi_subgroup_alloca
       test_usm_indirect_ptrs
-@@ -62,6 +63,10 @@ endforeach()
+@@ -63,6 +64,10 @@ endforeach()
  target_include_directories(test_indirect_ptrs
    PRIVATE $<TARGET_PROPERTY:${POCL_LIBRARY_NAME},INCLUDE_DIRECTORIES>)
  
@@ -136,7 +136,7 @@ index db9850a49..f30cb5655 100644
  set(PROGRAMS_TO_BUILD test_barrier_between_for_loops test_early_return
    test_for_with_var_iteration_count test_id_dependent_computation
    test_locals test_multi_level_loops_with_barriers
-@@ -204,6 +209,8 @@ add_test_pocl(NAME "regression/barrier_early_exit" WORKITEM_HANDLER "loops;loopv
+@@ -205,6 +210,8 @@ add_test_pocl(NAME "regression/barrier_early_exit" WORKITEM_HANDLER "loops;loopv
  
  add_test_pocl(NAME "regression/spirv_intel_subgroups" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_spirv_intel_subgroups" LABELS ${SPIRV_LABELS})
  

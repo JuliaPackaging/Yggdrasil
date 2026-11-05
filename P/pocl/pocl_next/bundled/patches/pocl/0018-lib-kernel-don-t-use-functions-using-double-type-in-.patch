@@ -1,4 +1,4 @@
-From dd2c9a97cd2e87e2bebc0a8c5d4cdc8ac091c93b Mon Sep 17 00:00:00 2001
+From 32001840baee1f9ce61ecd78aab5a365ed2a8625 Mon Sep 17 00:00:00 2001
 From: Michal Babej <michal.babej@intel.com>
 Date: Sat, 8 Aug 2026 23:31:28 +0300
 Subject: [PATCH] lib/kernel: don't use functions using double type in fp16

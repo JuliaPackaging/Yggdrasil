@@ -1,4 +1,4 @@
-From dfd012263bfa9b1ffd348d0e965f7e5ffa1f972e Mon Sep 17 00:00:00 2001
+From 0c8ebefcb6407186ebfa9719fdf509669ea2eeca Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Sun, 25 Oct 2026 09:09:12 +0100
 Subject: [PATCH] cmake: generate the SPIR wrapper for i386 hosts

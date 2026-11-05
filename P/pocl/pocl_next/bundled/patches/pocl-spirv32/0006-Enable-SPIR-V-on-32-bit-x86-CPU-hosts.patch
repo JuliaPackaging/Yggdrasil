@@ -1,4 +1,4 @@
-From 02d068be33231ed03c17eaef3f92ee89f1e844d5 Mon Sep 17 00:00:00 2001
+From 443180c8ddb370e8e11db964257e1cab7bf50539 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Sun, 25 Oct 2026 09:18:29 +0100
 Subject: [PATCH] Enable SPIR-V on 32-bit x86 CPU hosts
@@ -18,7 +18,7 @@ doesn't know their ABIs.
  1 file changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 134570b60..fc79c66f0 100644
+index 3f95d9bdf..f3781a904 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -1322,12 +1322,14 @@ endif()

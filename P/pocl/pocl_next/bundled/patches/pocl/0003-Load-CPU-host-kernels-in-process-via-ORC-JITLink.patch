@@ -1,4 +1,4 @@
-From 2705a4888c142b13fe7845c419d11ce85108d7ae Mon Sep 17 00:00:00 2001
+From 964d7336a0be6a238b9fbe843874e21cb479fbd5 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Fri, 10 Jul 2026 11:29:59 +0200
 Subject: [PATCH] Load CPU host kernels in-process via ORC/JITLink
@@ -84,7 +84,7 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
  create mode 100644 tests/regression/test_large_stack_frame.cpp
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 0c34565d9..bdecbf81f 100644
+index c0077d606..31210d756 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -1127,6 +1127,100 @@ if(ENABLE_LLVM AND ENABLE_HOST_CPU_DEVICES AND (NOT ENABLE_CONFORMANCE) AND (LLV
@@ -546,7 +546,7 @@ index 8104e4c23..4f09268c6 100644
  
    pocl_build_clang_llvm_object(lib_cl_llvm ${LLVM_API_SOURCES})
 diff --git a/lib/CL/devices/common.c b/lib/CL/devices/common.c
-index 309343d2b..44ca163fb 100644
+index c916b9ee0..44a287ee4 100644
 --- a/lib/CL/devices/common.c
 +++ b/lib/CL/devices/common.c
 @@ -51,6 +51,9 @@
@@ -684,7 +684,7 @@ index 309343d2b..44ca163fb 100644
      }
  
  FINISH:
-@@ -965,8 +979,8 @@ pocl_cmd_max_grid_dim_width (_cl_command_run *cmd)
+@@ -968,8 +982,8 @@ pocl_cmd_max_grid_dim_width (_cl_command_run *cmd)
  
  /* CPU driver stuff */
  
@@ -695,7 +695,7 @@ index 309343d2b..44ca163fb 100644
  {
    pocl_kernel_hash_t hash;
  
-@@ -980,70 +994,86 @@ struct pocl_dlhandle_cache_item
+@@ -983,70 +997,86 @@ struct pocl_dlhandle_cache_item
    size_t max_grid_dim_width;
  
    void *wg;
@@ -810,7 +810,7 @@ index 309343d2b..44ca163fb 100644
    {
      if (tmp == ci)
        {
-@@ -1055,19 +1085,130 @@ pocl_release_dlhandle_cache (void *dlhandle_cache_item)
+@@ -1058,19 +1088,130 @@ pocl_release_dlhandle_cache (void *dlhandle_cache_item)
    assert (found == CL_TRUE);
    assert (ci->ref_count > 0);
    --ci->ref_count;
@@ -944,7 +944,7 @@ index 309343d2b..44ca163fb 100644
   */
  int
  pocl_check_kernel_disk_cache (char *module_fn,
-@@ -1082,9 +1223,7 @@ pocl_check_kernel_disk_cache (char *module_fn,
+@@ -1085,9 +1226,7 @@ pocl_check_kernel_disk_cache (char *module_fn,
    /* First try to find a static WG binary for the local size as they
       are always more efficient than the dynamic ones.  Also, in case
       of reqd_wg_size, there might not be a dynamic sized one at all.  */
@@ -955,7 +955,7 @@ index 309343d2b..44ca163fb 100644
      {
        POCL_MSG_PRINT_INFO ("Using a cached WG function: %s\n", module_fn);
        return CL_SUCCESS;
-@@ -1126,14 +1265,11 @@ pocl_check_kernel_disk_cache (char *module_fn,
+@@ -1129,14 +1268,11 @@ pocl_check_kernel_disk_cache (char *module_fn,
      {
        /* First try to find a specialized WG binary, if allowed by the
           command. */
@@ -973,7 +973,7 @@ index 309343d2b..44ca163fb 100644
              {
                POCL_MSG_ERR ("Generic WG function binary does not exist.\n");
                return -1;
-@@ -1149,16 +1285,13 @@ pocl_check_kernel_disk_cache (char *module_fn,
+@@ -1152,16 +1288,13 @@ pocl_check_kernel_disk_cache (char *module_fn,
  }
  
  
@@ -995,7 +995,7 @@ index 309343d2b..44ca163fb 100644
    {
      if ((memcmp (ci->hash, run_cmd->hash, sizeof (pocl_kernel_hash_t)) == 0)
          && (ci->local_wgs[0] == run_cmd->pc.local_size[0])
-@@ -1171,8 +1304,8 @@ fetch_dlhandle_cache_item (_cl_command_run *run_cmd, int specialize)
+@@ -1174,8 +1307,8 @@ fetch_dlhandle_cache_item (_cl_command_run *run_cmd, int specialize)
                  && run_cmd->pc.global_offset[2] == 0)))
        {
          /* move to the front of the line */
@@ -1006,7 +1006,7 @@ index 309343d2b..44ca163fb 100644
          run_cmd->wg = ci->wg;
          return ci;
        }
-@@ -1193,7 +1326,7 @@ fetch_dlhandle_cache_item (_cl_command_run *run_cmd, int specialize)
+@@ -1196,7 +1329,7 @@ fetch_dlhandle_cache_item (_cl_command_run *run_cmd, int specialize)
   * This can be useful in case we're just pre-compiling kernels
   * (or compiling them for binaries), and not actually need them immediately.
   *
@@ -1015,7 +1015,7 @@ index 309343d2b..44ca163fb 100644
   * to pocl_release_dlhandle_cache(), if it was retained */
  void *
  pocl_check_kernel_dlhandle_cache (_cl_command_node *command,
-@@ -1201,7 +1334,7 @@ pocl_check_kernel_dlhandle_cache (_cl_command_node *command,
+@@ -1204,7 +1337,7 @@ pocl_check_kernel_dlhandle_cache (_cl_command_node *command,
                                    int specialize)
  {
    char *workgroup_string = NULL;
@@ -1024,7 +1024,7 @@ index 309343d2b..44ca163fb 100644
    _cl_command_run *run_cmd = &command->command.run;
  
    /* Brute force mechanism to test relying on generic work-group functions
-@@ -1209,17 +1342,17 @@ pocl_check_kernel_dlhandle_cache (_cl_command_node *command,
+@@ -1212,17 +1345,17 @@ pocl_check_kernel_dlhandle_cache (_cl_command_node *command,
    if (!pocl_get_bool_option("POCL_WORK_GROUP_SPECIALIZATION", 1))
      specialize = 0;
  
@@ -1047,7 +1047,7 @@ index 309343d2b..44ca163fb 100644
    memcpy (ci->hash, run_cmd->hash, sizeof (pocl_kernel_hash_t));
    ci->local_wgs[0] = run_cmd->pc.local_size[0];
    ci->local_wgs[1] = run_cmd->pc.local_size[1];
-@@ -1234,22 +1367,47 @@ pocl_check_kernel_dlhandle_cache (_cl_command_node *command,
+@@ -1237,22 +1370,47 @@ pocl_check_kernel_dlhandle_cache (_cl_command_node *command,
    ci->max_grid_dim_width = max_grid_width;
  
    char module_fn[POCL_MAX_PATHNAME_LENGTH];
@@ -1103,7 +1103,7 @@ index 309343d2b..44ca163fb 100644
        free (ci);
        return NULL;
      }
-@@ -1259,32 +1417,74 @@ pocl_check_kernel_dlhandle_cache (_cl_command_node *command,
+@@ -1262,32 +1420,74 @@ pocl_check_kernel_dlhandle_cache (_cl_command_node *command,
    snprintf (workgroup_string, workgroup_len, "_pocl_kernel_%s_workgroup",
              run_cmd->kernel->name);
  
@@ -1221,7 +1221,7 @@ index f784cae79..210fcd33e 100644
  POCL_EXPORT
  void pocl_setup_device_for_system_memory(cl_device_id device);
 diff --git a/lib/CL/devices/common_driver.c b/lib/CL/devices/common_driver.c
-index 3d662076a..0a3e605d9 100644
+index d9d2eaedf..1b1f7880b 100644
 --- a/lib/CL/devices/common_driver.c
 +++ b/lib/CL/devices/common_driver.c
 @@ -48,6 +48,7 @@
@@ -1294,7 +1294,7 @@ index 3d662076a..0a3e605d9 100644
    return CL_SUCCESS;
  }
 diff --git a/lib/CL/devices/common_utils.c b/lib/CL/devices/common_utils.c
-index 86e0e2c70..5dc0568cf 100644
+index 8c46a6b8b..cf8b776d7 100644
 --- a/lib/CL/devices/common_utils.c
 +++ b/lib/CL/devices/common_utils.c
 @@ -36,6 +36,9 @@
@@ -3215,10 +3215,10 @@ index 749bfb322..481203c77 100644
  add_test_pocl(NAME "kernel/test_printf_vectors"
                EXPECTED_OUTPUT "test_printf_vectors_expout.txt"
 diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
-index 9d17693fd..59ef74e67 100644
+index f85bf6f47..3e0f12b80 100644
 --- a/tests/regression/CMakeLists.txt
 +++ b/tests/regression/CMakeLists.txt
-@@ -64,7 +64,7 @@ set(PROGRAMS_TO_BUILD test_barrier_between_for_loops test_early_return
+@@ -66,7 +66,7 @@ set(PROGRAMS_TO_BUILD test_barrier_between_for_loops test_early_return
    test_workitem_func_outside_kernel test_program_scope_vars test_issue_1548
    test_issue_1525 test_issue_1608 test_issue_1826 test_builtin_regression
    test_mem_host_ptr_issue test_issue_1962 test_issue_2005
@@ -3227,7 +3227,7 @@ index 9d17693fd..59ef74e67 100644
  )
  if(UNIX)
    list(APPEND PROGRAMS_TO_BUILD test_issue_2174)
-@@ -97,6 +97,8 @@ endif()
+@@ -99,6 +99,8 @@ endif()
  add_test_pocl(NAME "regression/test_issue_231" COMMAND "test_issue_231")
  
  add_test_pocl(NAME "regression/test_global_atomics" COMMAND "test_global_atomics")
@@ -3236,7 +3236,7 @@ index 9d17693fd..59ef74e67 100644
  
  add_test_pocl(NAME "regression/test_issue_445" COMMAND "test_issue_445")
  
-@@ -122,6 +124,7 @@ add_test_pocl(NAME "regression/test_issue_1826" COMMAND "test_issue_1826")
+@@ -124,6 +126,7 @@ add_test_pocl(NAME "regression/test_issue_1826" COMMAND "test_issue_1826")
  
  add_test_pocl(NAME "regression/test_builtin_regression"
    COMMAND "test_builtin_regression")

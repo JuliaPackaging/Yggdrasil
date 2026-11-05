@@ -1,4 +1,4 @@
-From 9ddc3e0656b3e3f455a131c98b17a8e6a1d8031c Mon Sep 17 00:00:00 2001
+From a97dd9d2641c850be66038c9b2aca43e88fa94c8 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Tue, 27 Oct 2026 01:49:36 +0100
 Subject: [PATCH] Skip the second MXCSR read when host kernel FP modes already
@@ -38,7 +38,7 @@ index e10db2605..c27bf656e 100644
   * Work-groups may be run in any order, from any number of threads and
   * concurrently, so they must not wait on each other. Only kernels without
 diff --git a/lib/CL/devices/common_utils.c b/lib/CL/devices/common_utils.c
-index 8a7ff95e2..3019e2321 100644
+index 5fb885509..47cccab0b 100644
 --- a/lib/CL/devices/common_utils.c
 +++ b/lib/CL/devices/common_utils.c
 @@ -217,7 +217,8 @@ typedef struct

@@ -1,4 +1,4 @@
-From 9ad7e3bfdaceb2581af52010d18cb77a6c98f3c4 Mon Sep 17 00:00:00 2001
+From 8ca78c2aad5aa9594376a9474cb2df86e7f13cdf Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Thu, 5 Nov 2026 13:57:28 +0100
 Subject: [PATCH] Fully unroll short loops with barriers by default
