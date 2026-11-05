@@ -1,4 +1,4 @@
-From 83215d91aac059a9b51a245a1c265f143d720b59 Mon Sep 17 00:00:00 2001
+From e383b712dbfc11e4d7055b25b1c33b3180dbc538 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Thu, 8 Oct 2026 11:55:12 +0200
 Subject: [PATCH] pthread: create the worker threads with an 8 MiB stack
@@ -162,18 +162,18 @@ index 505fd79fc..0ace8b0a3 100644
  #define POCL_THREAD_SELF() pocl_thread_self()
  
 diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
-index bbf461baf..82deb5236 100644
+index eca1b6c98..d65d73563 100644
 --- a/tests/regression/CMakeLists.txt
 +++ b/tests/regression/CMakeLists.txt
-@@ -45,6 +45,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
-      test_usm_free_realloc
-      test_sanitize_divrem
+@@ -47,6 +47,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
+      test_tall_grid
+      test_cr_divide_sqrt_option
       test_frexp_kernellib
 +     test_large_private_workgroup
  )
  if(UNIX)
    list(APPEND C_PROGRAMS_TO_BUILD test_signal_handlers)
-@@ -217,6 +218,10 @@ if(X86 AND KERNELLIB_HOST_DISTRO_VARIANTS)
+@@ -225,6 +226,10 @@ if(X86 AND KERNELLIB_HOST_DISTRO_VARIANTS)
    endforeach()
  endif()
  

@@ -1,4 +1,4 @@
-From 0761ba9cd505c88559e5df99525bfdd773a2b956 Mon Sep 17 00:00:00 2001
+From e8df2a926b50936a49e053c09ccdc5081b53cf67 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Tue, 6 Oct 2026 21:38:21 +0200
 Subject: [PATCH] clCreateBuffer: report failures to register a device address

@@ -1,4 +1,4 @@
-From bc9bc7331afe5c52c3bd21d4c3d77ff554426741 Mon Sep 17 00:00:00 2001
+From a38dd35f8351cfc7f26fa4546a0a6fb4d133d9e9 Mon Sep 17 00:00:00 2001
 From: bricevideau-ai <brice.ai.videau@gmail.com>
 Date: Fri, 26 Jun 2026 17:32:38 -0500
 Subject: [PATCH] tests: add test_event_failed_dependency for failed wait-list

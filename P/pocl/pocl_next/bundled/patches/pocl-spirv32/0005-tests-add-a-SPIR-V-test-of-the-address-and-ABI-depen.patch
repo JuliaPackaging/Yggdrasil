@@ -1,8 +1,8 @@
-From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From 886925e099a1967757deddc0294b91840639a6dd Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Sun, 25 Oct 2026 09:14:04 +0100
-Subject: [PATCH 45/46] tests: add a SPIR-V test of the address- and
- ABI-dependent builtins
+Subject: [PATCH] tests: add a SPIR-V test of the address- and ABI-dependent
+ builtins
 
 Call the builtins whose SPIR wrappers depend on the address bits (size_t
 parameters of vloadN/vstoreN, vload_half/vstore_half, async copies and
@@ -26,7 +26,7 @@ separate modules so that devices without them still run the rest.
  create mode 100644 tests/regression/test_spirv_builtins_subgroups.cl
 
 diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
-index a704765b5..ae4e291d7 100644
+index aefb9a564..faaa83b40 100644
 --- a/tests/regression/CMakeLists.txt
 +++ b/tests/regression/CMakeLists.txt
 @@ -31,6 +31,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
@@ -37,7 +37,7 @@ index a704765b5..ae4e291d7 100644
       test_spirv_struct_layout
       test_unreachable_in_infinite_loop
       test_rematerialized_alloca_load_with_outside_pr_users
-@@ -195,6 +196,8 @@ add_test_pocl(NAME "regression/test_unreachable_kernel" WORKITEM_HANDLER "loops;
+@@ -203,6 +204,8 @@ add_test_pocl(NAME "regression/test_unreachable_kernel" WORKITEM_HANDLER "loops;
  
  add_test_pocl(NAME "regression/test_remat_alloca_without_initializer" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_remat_alloca_without_initializer" LABELS ${SPIRV_LABELS})
  
@@ -480,3 +480,6 @@ index 000000000..3ec7dfc08
 +  out[2 * gid + 1] = sub_group_broadcast (gid, 0)
 +                     - (gid - (int)get_sub_group_local_id ());
 +}
+-- 
+2.56.0
+

@@ -1,4 +1,4 @@
-From fbf1c5a14dbebf283e734932dec881e00562d015 Mon Sep 17 00:00:00 2001
+From 2cdcf69b591c71d3445bb8a59fe8db4af7e864af Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Tue, 13 Oct 2026 10:07:35 +0200
 Subject: [PATCH] tests: cover barrier successors reconverging around an early
@@ -27,7 +27,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
  create mode 100644 tests/regression/test_barrier_early_exit.c
 
 diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
-index 8b25a2fb3..fc69a0182 100644
+index 6e27276ea..4372f2949 100644
 --- a/tests/regression/CMakeLists.txt
 +++ b/tests/regression/CMakeLists.txt
 @@ -32,6 +32,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
@@ -38,7 +38,7 @@ index 8b25a2fb3..fc69a0182 100644
       test_divergent_implicit_barrier_entry
       test_uniform_implicit_barrier_entry
       test_localmem_load_across_barrier
-@@ -171,6 +172,8 @@ add_test_pocl(NAME "regression/peeled_wi_global_id" WORKITEM_HANDLER "loopvec;cb
+@@ -173,6 +174,8 @@ add_test_pocl(NAME "regression/peeled_wi_global_id" WORKITEM_HANDLER "loopvec;cb
  
  add_test_pocl(NAME "regression/barrier_divergent_skip" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_barrier_divergent_skip" LABELS ${SPIRV_LABELS})
  
@@ -46,7 +46,7 @@ index 8b25a2fb3..fc69a0182 100644
 +
  add_test_pocl(NAME "regression/divergent_implicit_barrier_entry" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_divergent_implicit_barrier_entry")
  
- add_test_pocl(NAME "regression/uniform_implicit_barrier_entry" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_uniform_implicit_barrier_entry")
+ add_test_pocl(NAME "regression/tall_grid" COMMAND "test_tall_grid")
 diff --git a/tests/regression/test_barrier_early_exit.c b/tests/regression/test_barrier_early_exit.c
 new file mode 100644
 index 000000000..6b46065fb

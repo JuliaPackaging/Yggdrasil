@@ -63,7 +63,8 @@ function build_script(standalone=false; spirv32=false)
     # the script below. `pocl-spirv32` (JuliaGPU/pocl#3) follows the default series: a
     # generated SPIR wrapper for the i386 ABI, struct types in SPIR modules that keep their
     # OpenCL C layout instead of the host's (where long and double are less aligned), tests,
-    # and enabling SPIR-V on 32-bit x86 CPU hosts. It's kept out of the script's comments so
+    # enabling SPIR-V on 32-bit x86 CPU hosts, and looking for Intel's SVML only on x86-64,
+    # as it has no 32-bit libraries. It's kept out of the script's comments so
     # that the script doesn't change for the recipes that don't opt in.
     patches = raw"$WORKSPACE/srcdir/patches/pocl/*.patch"
     if spirv32
@@ -142,7 +143,8 @@ function build_script(standalone=false; spirv32=false)
     # excluded since we don't build the tests). `pocl` applies its series to upstream v7.2;
     # `pocl_next` and `pocl_standalone` apply theirs to upstream's 7.2 maintenance branch
     # (release_next), which already contains the release series' backports of upstream PRs
-    # #2239, #2305, #2322, #2349, #2361, #2381 and #2397.
+    # #2239, #2255, #2305, #2322, #2349, #2361, #2379, #2381, #2387, #2388, #2397, #2405,
+    # #2406, #2407, #2408, #2410, #2412 and #2414, and the cl_half.h fix of #2403.
     #
     # The `pocl_next` series:
     # - 0001: MinGW Clang/lld toolchain support (JuliaGPU-only, not upstreamed)
@@ -174,9 +176,8 @@ function build_script(standalone=false; spirv32=false)
     #   LLC_TRIPLE (on top of upstream PR #2381; JuliaGPU-only)
     # - 0021: convert half printf arguments in software instead of through _Float16, whose
     #   libgcc helpers need libgcc_s >= GCC 12 and kept libpocl from loading next to an older
-    #   system libgcc_s, e.g. under `nsys profile` (upstream PR #2403, whose latest revision
-    #   relies on a rewrite of pocl_half_to_float that 7.2 doesn't have, so with a local
-    #   decoder)
+    #   system libgcc_s, e.g. under `nsys profile` (upstream PR #2403, in `main`, which relies
+    #   on a rewrite of pocl_half_to_float that 7.2 doesn't have, so with a local decoder)
     # - 0022: keep CPU worker threads that are going to sleep from missing their wake-up
     #   signal, which 0014 made possible and which slowly shrank the pool to a few threads
     #   (upstream PR #2386)
@@ -187,63 +188,58 @@ function build_script(standalone=false; spirv32=false)
     # - 0026: fill system SVM pointers (e.g. malloc'd memory) in clEnqueueSVMMemFill and
     #   clEnqueueMemFillINTEL directly instead of crashing on their missing shadow buffer
     #   (upstream PR #2378; JuliaGPU/OpenCL.jl#536)
-    # - 0027: return the binaries of programs that haven't been built from clGetProgramInfo
-    #   (upstream PR #2379, in `main`; JuliaGPU/OpenCL.jl#537)
-    # - 0028: link kernels against the vector-math library loaded at run time rather than its
+    # - 0027: link kernels against the vector-math library loaded at run time rather than its
     #   configure-time path in the build sandbox, which made every kernel link fail without the
     #   JIT and exported binaries lack native code (upstream PR #2380; JuliaGPU/OpenCL.jl#540)
-    # - 0029: return NaN from FP16 powr for 1^inf, 0^0 and inf^0 (upstream commit ed1a18051,
+    # - 0028: return NaN from FP16 powr for 1^inf, 0^0 and inf^0 (upstream commit ed1a18051,
     #   in `main`)
-    # - 0030: use the CORE-math rsqrt for FP16, as 1/sqrt isn't accurate enough (upstream
+    # - 0029: use the CORE-math rsqrt for FP16, as 1/sqrt isn't accurate enough (upstream
     #   commit 154ffcace, in `main`)
-    # - 0031-0033: implement clEnqueueWaitForEvents, a stub returning CL_INVALID_OPERATION, by
+    # - 0030-0032: implement clEnqueueWaitForEvents, a stub returning CL_INVALID_OPERATION, by
     #   forwarding to clEnqueueBarrierWithWaitList (upstream PR #2377, in `main`, without its
     #   remote and CUDA driver commits; JuliaGPU/OpenCL.jl#538)
-    # - 0034: pass group ids to work-group functions as size_t instead of ulong, which is 32
-    #   bits on 64-bit Windows and left the high half of group_z uninitialized (upstream PR
-    #   #2410, in `main`)
-    # - 0035: keep VariableUniformityAnalysis from reusing the cached uniformity of a deleted
-    #   value for a new one allocated at its address, which intermittently miscompiled
-    #   work-item dependent values as uniform (upstream PR #2414)
-    # - 0036: remove the SIGFPE handler, which replaced the host application's handler and only
+    # - 0033: remove the SIGFPE handler, which replaced the host application's handler and only
     #   covered PoCL's own threads; integer division is made safe by SanitizeUBofDivRem
     #   instead (upstream PR #2350, in `main`)
-    # - 0037: initialize program-scope variables once per program and device, also for
-    #   programs whose binaries were queried before a launch or that were rebuilt (upstream
-    #   PR #2407)
-    # - 0038: account for the z extent and the global offset when choosing the small-grid
-    #   work-group function (upstream PR #2408)
-    # - 0039: the draft cl_pocl_host_kernel extension, which lets KernelAbstractions.jl run
+    # - 0034: the draft cl_pocl_host_kernel extension, which lets KernelAbstractions.jl run
     #   kernels on Julia's threads (JuliaGPU/pocl#2; JuliaGPU/KernelAbstractions.jl#906)
-    # - 0040: report the stack estimate as CL_KERNEL_PRIVATE_MEM_SIZE on CPUs, so that users of
+    # - 0035: report the stack estimate as CL_KERNEL_PRIVATE_MEM_SIZE on CPUs, so that users of
     #   cl_pocl_host_kernel can tell whether a work-group fits on their stack (JuliaGPU/pocl#2)
-    # - 0041: keep CPU worker threads from joining kernels whose work-groups have all been
+    # - 0036: keep CPU worker threads from joining kernels whose work-groups have all been
     #   claimed, which cost a lock round-trip per kernel with many small launches
     #   (JuliaGPU/pocl#7)
-    # - 0042: give each CPU worker thread a static block of work-groups, with work stealing,
+    # - 0037: give each CPU worker thread a static block of work-groups, with work stealing,
     #   so that repeated launches run the same work-groups on the same threads and NUMA
     #   first-touch placement works; POCL_PTHREAD_SCHEDULE=guided restores the old schedule
     #   (JuliaGPU/pocl#7)
-    # - 0043: with POCL_AFFINITY=1, pin the CPU worker threads to the CPUs the process may run
+    # - 0038: with POCL_AFFINITY=1, pin the CPU worker threads to the CPUs the process may run
     #   on, spread over the NUMA nodes, instead of to CPUs 0 and up (JuliaGPU/pocl#8)
-    # - 0044, 0045: make cl_pocl_host_kernel launches cheaper on x86 by avoiding 64-bit
+    # - 0039, 0040: make cl_pocl_host_kernel launches cheaper on x86 by avoiding 64-bit
     #   divisions for ranges starting in the first row and a second MXCSR read when the
     #   caller's FP environment already matches the kernel's; flags the kernel raises may now
     #   stay raised, as with a C function call (JuliaGPU/pocl#9)
-    # - 0046, 0047: accept SPIR-V using SPV_KHR_bfloat16, which LLVM's SPIR-V back-end emits
+    # - 0041, 0042: accept SPIR-V using SPV_KHR_bfloat16, which LLVM's SPIR-V back-end emits
     #   for `bfloat` (Julia's BFloat16), and report it through cl_khr_spirv_queries; the JIT
     #   provides the float/double to bfloat16 conversion helpers that x86-64 codegen calls
     #   (JuliaGPU/pocl#10)
-    # - 0048: fix abs() of INT_MIN and LONG_MIN, which relied on signed overflow, so LLVM
-    #   assumed the result's top bit is clear (pocl/pocl#2423, JuliaGPU/pocl#11)
-    # - 0049: when rematerializing a private pointer across a barrier, rewrite a store that
+    # - 0043: fix abs() of INT_MIN and LONG_MIN, which relied on signed overflow, so LLVM
+    #   assumed the result's top bit is clear (upstream PR #2423, in `main`)
+    # - 0044: when rematerializing a private pointer across a barrier, rewrite a store that
     #   uses the loaded pointer as its address instead of storing the pointer itself
-    #   (pocl/pocl#2429)
+    #   (upstream PR #2429)
+    # - 0045-0047: fold the local and sub-group sizes and a zero global offset before the
+    #   barrier passes, and fully unroll loops with barriers that request it (e.g. `#pragma
+    #   unroll` or SPIR-V's `Unroll`) and have a constant trip count, instead of running every
+    #   iteration as a separate set of work-item loops (upstream PR #2375)
+    # - 0048, 0049: also fully unroll such loops without a request when LLVM's static
+    #   full-unroll size check accepts them, e.g. sub-group and work-group reductions and
+    #   scans; this has the front-end run its own -O2 pipeline without Clang's
+    #   -fno-unroll-loops, so that `#pragma nounroll` still works (upstream PR #2430)
     #
-    # The `pocl` series on v7.2 is the one this series was rebased from: 0001-0042 also carry
-    # the backports that release_next has, and older revisions of upstream PRs #2281, #2384,
-    # #2394 and #2410; 0043-0052 are 0036-0038, 0041-0043 and 0046-0049 above. It doesn't
-    # have cl_pocl_host_kernel.
+    # The `pocl` series on v7.2 is this series without cl_pocl_host_kernel (0034, 0035, 0039
+    # and 0040), plus those of release_next's backports that it needs (upstream PRs #2239,
+    # #2305, #2322, #2349, #2361, #2379, #2381, #2397, #2407, #2408, #2410 and #2414) at their
+    # place in the series, so its numbers differ.
     for patch in @PATCHES@; do
         atomic_patch -p1 $patch
     done

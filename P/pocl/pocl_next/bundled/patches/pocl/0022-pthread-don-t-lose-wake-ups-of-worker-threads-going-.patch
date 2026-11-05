@@ -1,4 +1,4 @@
-From bd6bb6327538f4e409cbfbdb44db28a80a90c810 Mon Sep 17 00:00:00 2001
+From 3cbc045d7a691bd3c8098649d0a7c6adbaf71e6d Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Thu, 8 Oct 2026 15:34:47 +0200
 Subject: [PATCH] pthread: don't lose wake-ups of worker threads going to sleep
