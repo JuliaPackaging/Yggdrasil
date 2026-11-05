@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDA_Runtime"
-version = v"0.25.0"
+version = v"0.26.0"
 
 # we ship artifacts for both GA and EA/preview toolkits; the platform augmentation only
 # ever selects the latter when the user asks for it through the "version" preference.
@@ -165,11 +165,11 @@ for version in reverse(toolkit_versions)
             # CUDA_Compiler_jll is only needed at run time (see the init block above), so it
             # is not installed in the build prefix. That also means building does not require
             # a registered CUDA_Compiler_jll compatible with the CUDA_Driver_jll we depend on.
-            # 0.6.3 is the first version that auto-selects the same toolkits we do (13.4 GA);
+            # 0.6.4 is the first version that auto-selects the same toolkits we do (13.5 GA);
             # an older compiler would trigger the "runtime newer than compiler" warning above.
             push!(builds,
                 (; dependencies=[Dependency("CUDA_Driver_jll", v"13.3.4"; compat="13.3.4 - 13"),
-                                 RuntimeDependency("CUDA_Compiler_jll"; compat="0.6.3"),
+                                 RuntimeDependency("CUDA_Compiler_jll"; compat="0.6.4"),
                                  msvc_runtime],
                    script, platforms=[augmented_platform], products=get_products(platform),
                    sources=get_sources("cuda", components; version, platform=augmented_platform),
