@@ -235,6 +235,11 @@ function build_script(standalone=false; spirv32=false)
     #   full-unroll size check accepts them, e.g. sub-group and work-group reductions and
     #   scans; this has the front-end run its own -O2 pipeline without Clang's
     #   -fno-unroll-loops, so that `#pragma nounroll` still works (upstream PR #2430)
+    # - 0050: enable SPV_KHR_float_controls2 for the CPU devices with LLVM 23+ (upstream
+    #   PR #2393)
+    # - 0051: in CBS, give a private variable a copy per work-item when its address is stored,
+    #   e.g. to carry a pointer across a barrier, instead of sharing it between the work-items
+    #   (upstream PR #2433)
     #
     # The `pocl` series on v7.2 is this series without cl_pocl_host_kernel (0034, 0035, 0039
     # and 0040), plus those of release_next's backports that it needs (upstream PRs #2239,

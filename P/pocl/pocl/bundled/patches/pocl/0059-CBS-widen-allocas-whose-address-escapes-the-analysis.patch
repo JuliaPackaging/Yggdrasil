@@ -1,0 +1,384 @@
+From 43aeaa6a6f865fc8ed1bf694e69bc8e3cf91f886 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Thu, 5 Nov 2026 21:19:52 +0100
+Subject: [PATCH] CBS: widen allocas whose address escapes the analysis of
+ their uses
+
+isAllocaSubCfgInternal() keeps a private alloca shared by all work-items
+when all of its uses are in one sub-CFG. fillUserHull() only followed
+users that access memory or produce a pointer, so it lost the address
+when it was stored, e.g. into the context array that carries a pointer
+phi across a barrier, or to local memory. The loads after the barrier
+went unseen, the alloca was not widened, and the work-items overwrote
+each other's value.
+
+Follow the address through stores into other allocas and the loads from
+them, as AdaptiveCpp does since AdaptiveCpp/AdaptiveCpp#1763 (this pass
+was taken from AdaptiveCpp). Unlike that fix, track which values carry
+the address, so that a value loaded from the alloca doesn't widen it
+when passed to a call or stored, and widen the alloca when the address
+reaches a use that isn't followed: a store to other memory, a ptrtoint
+(which the hull used to cover by including every direct user), or a
+call that may read a stored copy. doesNotCapture() also handles LLVM
+21's captures attribute.
+
+Assisted-by: Opus 5.5 and Sol 6.1
+---
+ lib/llvmopencl/SubCFGFormation.cc             |  88 ++++++--
+ tests/regression/CMakeLists.txt               |   3 +
+ .../test_private_address_across_barrier.c     | 209 ++++++++++++++++++
+ 3 files changed, 286 insertions(+), 14 deletions(-)
+ create mode 100644 tests/regression/test_private_address_across_barrier.c
+
+diff --git a/lib/llvmopencl/SubCFGFormation.cc b/lib/llvmopencl/SubCFGFormation.cc
+index e7bb9e80d..53b0dd3ab 100644
+--- a/lib/llvmopencl/SubCFGFormation.cc
++++ b/lib/llvmopencl/SubCFGFormation.cc
+@@ -1110,26 +1110,85 @@ void purgeLifetime(SubCFG &Cfg) {
+     I->eraseFromParent();
+ }
+ 
+-// fills \a Hull with all transitive users of \a Alloca
+-void fillUserHull(llvm::AllocaInst *Alloca,
++// looks through GEPs and bitcasts to find the alloca \a V points into
++static llvm::AllocaInst *getAllocaFromGEP(llvm::Value *V) {
++  if (auto *GEP = llvm::dyn_cast<llvm::GetElementPtrInst>(V))
++    return getAllocaFromGEP(GEP->getPointerOperand());
++  if (auto *BC = llvm::dyn_cast<llvm::BitCastInst>(V))
++    return getAllocaFromGEP(BC->getOperand(0));
++  return llvm::dyn_cast<llvm::AllocaInst>(V);
++}
++
++// fills \a Hull with all transitive users of \a Alloca outside the entry
++// block, following its address when it is stored into another alloca.
++// Returns true if the address escapes where its uses can't be followed, e.g.
++// into an integer, a call that may capture it, or memory that is not an
++// alloca.
++// Based on https://github.com/AdaptiveCpp/AdaptiveCpp/pull/1763.
++bool fillUserHull(llvm::AllocaInst *Alloca,
+                   llvm::SmallVectorImpl<llvm::Instruction *> &Hull) {
++  // What a visited value carries: the address of Alloca, or the address of an
++  // alloca the former is stored in. Other values (e.g. loaded from Alloca)
++  // are only followed to their users.
++  enum : unsigned { Addr = 1, SlotAddr = 2 };
++  llvm::DenseMap<llvm::Instruction *, unsigned> Carries;
+   llvm::SmallVector<llvm::Instruction *, 8> WL;
+-  std::transform(Alloca->user_begin(), Alloca->user_end(),
+-                 std::back_inserter(WL),
+-                 [](auto *U) { return llvm::cast<llvm::Instruction>(U); });
+-  llvm::SmallPtrSet<llvm::Instruction *, 32> AlreadySeen;
++  auto Visit = [&](llvm::Instruction *I, unsigned Kind) {
++    auto [It, New] = Carries.try_emplace(I, Kind);
++    if (New && !I->getParent()->isEntryBlock())
++      Hull.push_back(I);
++    if (New || (It->second | Kind) != It->second) {
++      It->second |= Kind;
++      WL.push_back(I);
++    }
++  };
++  Visit(Alloca, Addr);
+   while (!WL.empty()) {
+     auto *I = WL.pop_back_val();
+-    AlreadySeen.insert(I);
+-    Hull.push_back(I);
+-    for (auto *U : I->users()) {
+-      if (auto *UI = llvm::dyn_cast<llvm::Instruction>(U)) {
+-        if (AlreadySeen.find(UI) == AlreadySeen.end())
+-          if (UI->mayReadOrWriteMemory() || UI->getType()->isPointerTy())
+-            WL.push_back(UI);
++    unsigned Kind = Carries[I];
++    for (auto &U : I->uses()) {
++      auto *UI = llvm::dyn_cast<llvm::Instruction>(U.getUser());
++      if (UI == nullptr)
++        continue;
++      if (Kind != 0) {
++        if (auto *SI = llvm::dyn_cast<llvm::StoreInst>(UI);
++            SI != nullptr && U.getOperandNo() == 0) {
++          // The address is stored, e.g. into the context array that carries
++          // a pointer phi across a barrier: the loads from that alloca, which
++          // may be in other sub-CFGs, yield the address again.
++          auto *StoredTo = getAllocaFromGEP(SI->getPointerOperand());
++          if (StoredTo == nullptr || (Kind & SlotAddr) != 0)
++            return true;
++          Visit(StoredTo, SlotAddr);
++        } else if (auto *CB = llvm::dyn_cast<llvm::CallBase>(UI)) {
++          // A call may read a stored address even if it doesn't capture the
++          // pointer to it.
++          if (Kind != Addr || !CB->isDataOperand(&U) ||
++              !CB->doesNotCapture(U.getOperandNo()))
++            return true;
++        } else {
++          // Other users may only access memory through the address, compare
++          // it or derive another pointer from it: e.g. ptrtoint, insertvalue
++          // or atomics on a stored address lose track of it.
++          bool IsAtomic =
++              llvm::isa<llvm::AtomicRMWInst, llvm::AtomicCmpXchgInst>(UI);
++          bool Followed =
++              llvm::isa<llvm::LoadInst, llvm::StoreInst, llvm::ICmpInst>(UI) ||
++              (IsAtomic && U.getOperandNo() == 0 && Kind == Addr) ||
++              (!IsAtomic && UI->getType()->isPtrOrPtrVectorTy());
++          if (!Followed)
++            return true;
++        }
+       }
++      if (auto *LI = llvm::dyn_cast<llvm::LoadInst>(UI))
++        Visit(LI, (Kind & SlotAddr) != 0 ? Addr : 0);
++      else if (UI->getType()->isPtrOrPtrVectorTy())
++        Visit(UI, llvm::isa<llvm::CallBase>(UI) ? 0 : Kind);
++      else if (UI->mayReadOrWriteMemory())
++        Visit(UI, 0);
+     }
+   }
++  return false;
+ }
+ 
+ template <class PtrSet> struct PtrSetWrapper {
+@@ -1151,7 +1210,8 @@ bool isAllocaSubCfgInternal(llvm::AllocaInst *Alloca,
+   llvm::SmallPtrSet<llvm::BasicBlock *, 16> UserBlocks;
+   {
+     llvm::SmallVector<llvm::Instruction *, 32> Users;
+-    fillUserHull(Alloca, Users);
++    if (fillUserHull(Alloca, Users))
++      return false;
+     PtrSetWrapper<decltype(UserBlocks)> Wrapper{UserBlocks};
+     std::transform(Users.begin(), Users.end(),
+                    std::inserter(Wrapper, UserBlocks.end()),
+diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
+index df376268a..da0f51d6e 100644
+--- a/tests/regression/CMakeLists.txt
++++ b/tests/regression/CMakeLists.txt
+@@ -40,6 +40,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
+      test_uniform_implicit_barrier_entry
+      test_localmem_load_across_barrier
+      test_remat_alloca_store_address
++     test_private_address_across_barrier
+      test_spirv_intel_subgroups
+      test_spirv_bfloat16
+      test_unrolled_barrier_loops
+@@ -231,6 +232,8 @@ add_test_pocl(NAME "regression/unrolled_barrier_loops" WORKITEM_HANDLER "loops;l
+ add_test_pocl(NAME "regression/unrolled_barrier_loops_dynamic" WORKITEM_HANDLER "loopvec" COMMAND "test_unrolled_barrier_loops")
+ set_tests_properties("regression/unrolled_barrier_loops_dynamic" PROPERTIES ENVIRONMENT "POCL_WORK_GROUP_METHOD=loopvec;POCL_WORK_GROUP_SPECIALIZATION=0")
+ 
++add_test_pocl(NAME "regression/private_address_across_barrier" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_private_address_across_barrier")
++
+ add_test_pocl(NAME "regression/test_usm_indirect_ptrs" COMMAND "test_usm_indirect_ptrs")
+ 
+ add_test_pocl(NAME "regression/frexp_kernellib" WORKITEM_HANDLER "loopvec" COMMAND "test_frexp_kernellib")
+diff --git a/tests/regression/test_private_address_across_barrier.c b/tests/regression/test_private_address_across_barrier.c
+new file mode 100644
+index 000000000..62884ba2b
+--- /dev/null
++++ b/tests/regression/test_private_address_across_barrier.c
+@@ -0,0 +1,209 @@
++// Copyright (c) 2026 PoCL developers
++//
++// Permission is hereby granted, free of charge, to any person obtaining a copy
++// of this software and associated documentation files (the "Software"), to deal
++// in the Software without restriction, including without limitation the rights
++// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++// copies of the Software, and to permit persons to whom the Software is
++// furnished to do so, subject to the following conditions:
++//
++// The above copyright notice and this permission notice shall be included in
++// all copies or substantial portions of the Software.
++//
++// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++// THE SOFTWARE.
++
++/*
++  A private variable whose only uses after a barrier go through a copy of its
++  address, which the CBS analysis of the variable's uses must follow or treat
++  as an escape: a pointer phi carried across the barrier in a context array,
++  an address turned into an integer, an address stored to local memory, and
++  one read back by a call. Each work-item must still get its own copy of the
++  variable.
++*/
++
++#include "pocl_opencl.h"
++
++#include <stdio.h>
++#include <stdlib.h>
++
++#define WG_SIZE 16
++
++#define CHECK_ERROR(err)                                                       \
++  do {                                                                         \
++    if ((err) != CL_SUCCESS) {                                                 \
++      fprintf(stderr, "OpenCL error %d at %s:%d\n", (err), __FILE__,           \
++              __LINE__);                                                       \
++      goto error;                                                              \
++    }                                                                          \
++  } while (0)
++
++static const char KernelSource[]
++    = "__kernel void phi(__global int *out, __global const int *in,\n"
++      "                  int n) {\n"
++      "  int lid = get_local_id(0);\n"
++      "  int tmp;\n"
++      "  int *p = 0;\n"
++      "  for (int it = 0; it < n; it++) {\n"
++      "    if (it == 0) {\n"
++      "      tmp = in[lid];\n"
++      "      p = &tmp;\n"
++      "    } else {\n"
++      "      p = 0;\n"
++      "    }\n"
++      "    barrier(CLK_LOCAL_MEM_FENCE);\n"
++      "    if (p)\n"
++      "      out[lid] = *p;\n"
++      "    barrier(CLK_LOCAL_MEM_FENCE);\n"
++      "  }\n"
++      "}\n"
++      "__kernel void ptrtoint(__global int *out, __global const int *in,\n"
++      "                       int n) {\n"
++      "  int lid = get_local_id(0);\n"
++      "  volatile int tmp = in[lid];\n"
++      "  barrier(CLK_LOCAL_MEM_FENCE);\n"
++      "  ulong addr = (ulong)&tmp + (ulong)(n - 2);\n"
++      "  out[lid] = *(__private volatile int *)addr;\n"
++      "}\n"
++      "__kernel void local_slot(__global int *out, __global const int *in,\n"
++      "                         int n) {\n"
++      "  __private volatile int *__local slots[16];\n"
++      "  int lid = get_local_id(0);\n"
++      "  volatile int tmp = in[lid];\n"
++      "  slots[lid] = &tmp;\n"
++      "  barrier(CLK_LOCAL_MEM_FENCE);\n"
++      "  out[lid] = *slots[lid];\n"
++      "}\n"
++      "__attribute__((noinline)) __private volatile int *\n"
++      "read_slot(__private volatile int *__private *slot) {\n"
++      "  return *slot;\n"
++      "}\n"
++      "__kernel void call_slot(__global int *out, __global const int *in,\n"
++      "                        int n) {\n"
++      "  int lid = get_local_id(0);\n"
++      "  volatile int tmp = in[lid];\n"
++      "  __private volatile int *slot = &tmp;\n"
++      "  __private volatile int *p = read_slot(&slot);\n"
++      "  barrier(CLK_LOCAL_MEM_FENCE);\n"
++      "  out[lid] = *p;\n"
++      "}\n";
++
++static const char *const KernelNames[]
++    = { "phi", "ptrtoint", "local_slot", "call_slot" };
++
++int main(void) {
++  cl_int input[WG_SIZE], output[WG_SIZE];
++  const size_t work_size = WG_SIZE;
++  /* the kernels take n = 2: two iterations for phi, a zero offset otherwise */
++  const cl_int n = 2;
++  cl_int err;
++  cl_uint num_platforms;
++  cl_platform_id *platforms = NULL;
++  cl_context context = NULL;
++  cl_command_queue queue = NULL;
++  cl_program program = NULL;
++  cl_kernel kernel = NULL;
++  cl_mem in_buffer = NULL;
++  cl_mem out_buffer = NULL;
++  int mismatch = 0;
++  int result = 1;
++
++  for (int i = 0; i < WG_SIZE; ++i)
++    input[i] = 100 + i;
++
++  err = clGetPlatformIDs(0, NULL, &num_platforms);
++  CHECK_ERROR(err);
++  if (num_platforms == 0) {
++    puts("SKIP: no OpenCL platforms");
++    return 77;
++  }
++  platforms = malloc(num_platforms * sizeof(*platforms));
++  if (platforms == NULL)
++    goto error;
++  err = clGetPlatformIDs(num_platforms, platforms, NULL);
++  CHECK_ERROR(err);
++
++  cl_device_id device;
++  err = clGetDeviceIDs(platforms[0], CL_DEVICE_TYPE_ALL, 1, &device, NULL);
++  CHECK_ERROR(err);
++  context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
++  CHECK_ERROR(err);
++  const cl_queue_properties properties[] = {0};
++  queue = clCreateCommandQueueWithProperties(context, device, properties, &err);
++  CHECK_ERROR(err);
++
++  const char *sources[] = {KernelSource};
++  program = clCreateProgramWithSource(context, 1, sources, NULL, &err);
++  CHECK_ERROR(err);
++  err = clBuildProgram(program, 1, &device, NULL, NULL, NULL);
++  if (err != CL_SUCCESS) {
++    size_t log_size = 0;
++    clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, 0, NULL,
++                          &log_size);
++    char *log = malloc(log_size);
++    if (log != NULL) {
++      clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, log_size,
++                            log, NULL);
++      fprintf(stderr, "Build error:\n%s\n", log);
++      free(log);
++    }
++    goto error;
++  }
++  in_buffer = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
++                             sizeof(input), input, &err);
++  CHECK_ERROR(err);
++  out_buffer = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(output),
++                              NULL, &err);
++  CHECK_ERROR(err);
++
++  for (size_t k = 0; k < sizeof(KernelNames) / sizeof(KernelNames[0]); ++k) {
++    kernel = clCreateKernel(program, KernelNames[k], &err);
++    CHECK_ERROR(err);
++    CHECK_ERROR(clSetKernelArg(kernel, 0, sizeof(out_buffer), &out_buffer));
++    CHECK_ERROR(clSetKernelArg(kernel, 1, sizeof(in_buffer), &in_buffer));
++    CHECK_ERROR(clSetKernelArg(kernel, 2, sizeof(n), &n));
++    const cl_int poison = -1;
++    CHECK_ERROR(clEnqueueFillBuffer(queue, out_buffer, &poison, sizeof(poison),
++                                    0, sizeof(output), 0, NULL, NULL));
++    CHECK_ERROR(clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &work_size,
++                                       &work_size, 0, NULL, NULL));
++    CHECK_ERROR(clEnqueueReadBuffer(queue, out_buffer, CL_TRUE, 0,
++                                    sizeof(output), output, 0, NULL, NULL));
++    CHECK_ERROR(clReleaseKernel(kernel));
++    kernel = NULL;
++
++    for (int i = 0; i < WG_SIZE; ++i) {
++      if (output[i] != input[i]) {
++        fprintf(stderr, "%s: out[%d] = %d, expected %d\n", KernelNames[k], i,
++                (int)output[i], (int)input[i]);
++        mismatch = 1;
++        break;
++      }
++    }
++  }
++  if (mismatch)
++    goto error;
++  puts("OK");
++  result = 0;
++
++error:
++  free(platforms);
++  if (out_buffer != NULL)
++    clReleaseMemObject(out_buffer);
++  if (in_buffer != NULL)
++    clReleaseMemObject(in_buffer);
++  if (kernel != NULL)
++    clReleaseKernel(kernel);
++  if (program != NULL)
++    clReleaseProgram(program);
++  if (queue != NULL)
++    clReleaseCommandQueue(queue);
++  if (context != NULL)
++    clReleaseContext(context);
++  return result;
++}
+-- 
+2.56.0
+
