@@ -3,25 +3,29 @@
 using BinaryBuilder, Pkg
 
 name = "mpv"
-version = v"0.41.0"
+version = v"0.42.0"
 
 # Collection of sources required to complete build #
 sources = [
-    GitSource("https://github.com/mpv-player/mpv.git",
-              "41f6a645068483470267271e1d09966ca3b9f413"),  # v0.41.0
+    GitSource("https://github.com/mpv-player/mpv.git", "b0841e8c4d156b8403dc1876c4cbd9011eb583f3"; tag="v$(version)"),
     # macOS 11.3 SDK for Apple framework headers (CoreAudio, AVFoundation, etc.)
     FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz",
                "cd4f08a75577145b8f05245a2975f7c81401d75e9535dcffbb879ee1deefcbf4"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/mpv
 
+# Some libc headers define `strcspn` as a macro; the comma in the compound
+# literal then splits the macro arguments. Parenthesize the literal.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/screenshot-strcspn-macro.patch
+
 # Clone libplacebo as a meson subproject (needs --recursive for 3rdparty deps)
 mkdir -p subprojects
 git clone https://code.videolan.org/videolan/libplacebo.git \
-    --branch v7.349.0 --depth=1 --recursive subprojects/libplacebo
+    --branch v7.387.0 --depth=1 --recursive subprojects/libplacebo
 
 # Remove host cmake so meson doesn't pick it up for cross-compilation
 apk del cmake
@@ -71,9 +75,9 @@ install_license Copyright LICENSE.GPL
 
 # Filter platforms that don't have full dependency support
 platforms = supported_platforms()
-filter!(p -> arch(p) != "armv6l", platforms)
-filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
-filter!(p -> arch(p) != "riscv64", platforms)
+#TODO filter!(p -> arch(p) != "armv6l", platforms)
+#TODO filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+#TODO filter!(p -> arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [
