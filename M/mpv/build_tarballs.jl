@@ -35,6 +35,12 @@ if [[ "${target}" == *-mingw* ]]; then
     export PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:${libdir}/pkgconfig"
 fi
 
+# On FreeBSD, HarfBuzz_jll and FriBidi_jll (needed by libass) ship their
+# pkg-config files in libdata/pkgconfig
+if [[ "${target}" == *-freebsd* ]]; then
+    export PKG_CONFIG_PATH="${PKG_CONFIG_PATH:${prefix}/libdata/pkgconfig"
+fi
+
 FLAGS=()
 
 if [[ "${target}" == *-apple-* ]]; then
@@ -48,6 +54,15 @@ if [[ "${target}" == *-apple-* ]]; then
         -Dmacos-media-player=disabled
         -Dmacos-touchbar=disabled
     )
+fi
+
+if [[ "${target}" == *-mingw* ]]; then
+    # The d3d11 video output needs spirv-cross, which we don't provide, so
+    # mpv's d3d11_helpers.c is not compiled. But the (auto-enabled) D3D11VA
+    # hwaccel filter vf_d3d11vpp.c still uses it, which fails at link time
+    # (undefined reference to `mp_params_to_dxgi_colorspace`). Disable it;
+    # this also disables the dependent d3d9-hwaccel.
+    FLAGS+=(-Dd3d-hwaccel=disabled)
 fi
 
 # SDL2 video/audio are disabled by default in mpv 0.41; enable them explicitly
@@ -66,9 +81,6 @@ sources, script = require_macos_sdk("11.3", sources, script)
 
 # Filter platforms that don't have full dependency support
 platforms = supported_platforms()
-#TODO filter!(p -> arch(p) != "armv6l", platforms)
-#TODO filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
-#TODO filter!(p -> arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [
