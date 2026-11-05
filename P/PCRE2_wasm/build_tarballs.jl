@@ -9,7 +9,7 @@ name = "PCRE2_wasm"
 version = v"10.46.0"
 url = "https://github.com/PCRE2Project/pcre2/releases/download/pcre2-$(version.major).$(version.minor)/pcre2-$(version.major).$(version.minor).tar.bz2"
 hash = "15fbc5aba6beee0b17aecb04602ae39432393aba1ebd8e39b7cabf7db883299f"
-sources = [ArchiveSource(url, hash)]
+sources = [ArchiveSource(url, hash), DirectorySource("./bundled")]
 
 script = raw"""
 SRC=$(echo ${WORKSPACE}/srcdir/pcre2-*)
@@ -26,6 +26,15 @@ mkdir -p ${prefix}/wasm32-wasip1/lib/pkgconfig ${prefix}/wasm32-wasip1/include
 cp .libs/libpcre2-8.a ${prefix}/wasm32-wasip1/lib/
 cp src/pcre2.h ${prefix}/wasm32-wasip1/include/
 cp libpcre2-8.pc ${prefix}/wasm32-wasip1/lib/pkgconfig/
+
+# wasm32-wasip1/lib/libpcre2-8.wasm: a standalone module, which imports nothing. It exports PCRE2's
+# 8-bit API, its memory, `malloc` and `free`, and loads and stores by address (`mem_load8`, ...),
+# for a caller with no access to the module's memory of its own: another wasm module, through
+# imports wired to these exports, or a host
+exports=$(${WASM_NM} --defined-only -g .libs/libpcre2-8.a | awk 'NF==3 && $3 ~ /^pcre2_.*_8$/ {print "-Wl,--export=" $3}' | sort -u)
+${WASM32_CC} -O2 -mexec-model=reactor -nostartfiles -Wl,--no-entry -Wl,-z,stack-size=1048576 \
+    -Wl,--export=malloc -Wl,--export=free -Wl,--strip-all ${exports} \
+    ${WORKSPACE}/srcdir/pcre2_wasm_memory.c .libs/libpcre2-8.a -o ${prefix}/wasm32-wasip1/lib/libpcre2-8.wasm
 
 # wasm64: the same members, from the same generated config.h, freestanding
 W64=${WORKSPACE}/build-wasm64
@@ -46,5 +55,5 @@ wasm_manifest wasm64-unknown-unknown libpcre2-8
 """
 
 build_wasm_tarballs(ARGS, name, version, sources, script, ["libpcre2-8"];
-                    native_name = "PCRE2_jll", native_uuid = "efcefdf7-47ab-520b-bdef-62a2eaa19f15",
+                    modules = ["libpcre2-8"], native_name = "PCRE2_jll", native_uuid = "efcefdf7-47ab-520b-bdef-62a2eaa19f15",
                     source = url, source_hash = hash)

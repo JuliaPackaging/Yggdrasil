@@ -14,6 +14,10 @@
 # native JLL it corresponds to, the archives with their sha256 and undefined symbols, and the
 # source and toolchain they were built from.
 #
+# A package may also ship standalone wasm32 modules (`wasm32-wasip1/lib/<name>.wasm`): the library
+# linked with wasi-libc into a module that imports nothing, for hosts and programs that call it as a
+# separate instance with its own memory rather than linking the archive.
+#
 # A recipe's script runs after `wasm_script_preamble`, which defines:
 #   $WASM_CLANG $WASM_AR $WASM_RANLIB $WASM_NM   LLVMBootstrap tools
 #   $WASM32_CC   the compiler for wasm32-wasip1, with sysroot and builtins
@@ -130,9 +134,15 @@ EOF
     """
 end
 
-"`FileProduct`s for each flavour's archives and manifest. `libs` are archive names without `.a`."
-function wasm_products(libs::Vector{String})
+"""
+`FileProduct`s for each flavour's archives and manifest, and the standalone wasm32 modules. `libs`
+are archive names without `.a`, `modules` module names without `.wasm` (`wasm32-wasip1/lib/<module>.wasm`).
+"""
+function wasm_products(libs::Vector{String}, modules::Vector{String} = String[])
     products = Product[]
+    for m in modules
+        push!(products, FileProduct("wasm32-wasip1/lib/$(m).wasm", Symbol(replace(m, "-" => "_"), "_wasm32_wasm")))
+    end
     for (f, short) in zip(WASM_FLAVOURS, ("wasm32", "wasm64"))
         for lib in libs
             push!(products, FileProduct("$(f)/lib/$(lib).a", Symbol(replace(lib, "-" => "_"), "_", short, "_a")))
@@ -147,14 +157,15 @@ end
                         source, source_hash, kwargs...)
 
 `build_tarballs` for a `<Name>_wasm` package: `AnyPlatform`, no dependencies, the wasi-sdk sources
-and the preamble added. `version` must equal the native JLL's upstream version.
+and the preamble added. `version` must equal the native JLL's upstream version. `modules` are the
+standalone wasm32 modules the script links (see `wasm_products`).
 """
 function build_wasm_tarballs(ARGS, name, version, sources, script, libs::Vector{String};
                              native_name::String, native_uuid::String, source::String, source_hash::String,
-                             kwargs...)
+                             modules::Vector{String} = String[], kwargs...)
     recipe = joinpath(uppercase(name[1:1]), name, "build_tarballs.jl")
     preamble = wasm_script_preamble(; native_name, native_uuid, native_version = version, source, source_hash, recipe)
     return build_tarballs(ARGS, name, version, [sources; wasm_sources()], preamble * script,
-                          [AnyPlatform()], wasm_products(libs), Dependency[];
+                          [AnyPlatform()], wasm_products(libs, modules), Dependency[];
                           julia_compat = "1.6", preferred_llvm_version = WASM_LLVM_VERSION, kwargs...)
 end
