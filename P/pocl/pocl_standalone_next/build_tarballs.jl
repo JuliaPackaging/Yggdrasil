@@ -27,7 +27,12 @@ name = "pocl_standalone_next"
 # changes API (7.2.1 added cl_pocl_cpu_compute_units, 7.2.2 removed it again, 7.2.3 adds
 # cl_pocl_host_kernel)
 version = v"7.2.3"
-llvm_version = v"22.1.1"
+# Unlike the stable recipes, built with LLVM 23 (which PoCL 7.2 accepts but doesn't
+# officially support), to try it before moving them: its translator reads
+# SPV_KHR_float_controls2, which carries `contract` so that `muladd` can fuse into an FMA,
+# and it fixes LLVM 22 rounding <8 x bfloat> arithmetic wrongly for AArch64 targets without
+# BF16 (JuliaGPU/KernelAbstractions.jl#949).
+llvm_version = v"23.1.4"
 macos_sdk_version = "11.0"
 
 # Build
@@ -38,9 +43,9 @@ sources = [
     GitSource("https://github.com/pocl/pocl",
               "0a8861d1b989a926dcdf506aeed69d0de2394274"), # release_next (v7.2 + backports)
     # vendored SPIR-V translator, built as a static library against our LLVM (see
-    # common.jl); this is the latest LLVM-22.1 maintenance revision.
+    # common.jl); this is the latest LLVM-23.1 maintenance revision.
     GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git",
-              "0e67244861402a51b071414d7cb231a052b1ce03"),
+              "db5855d76a0ff33228bcf48032b350b25dcdbcf2"),
 ]
 
 #=
@@ -70,7 +75,7 @@ filter!(p -> !(arch(p) == "i686" && os(p) == "windows"), platforms)
 
 include("../common.jl")
 
-# LLVM 22 requires macOS 11.0. The shared helper installs the SDK and redirects
+# LLVM 22 and later require macOS 11.0. The shared helper installs the SDK and redirects
 # the toolchain without modifying the read-only rootfs.
 sources, macos_sdk_script = require_macos_sdk(macos_sdk_version, sources, "")
 
@@ -93,7 +98,7 @@ dependencies = [
     HostBuildDependency(PackageSpec(name="LLVM_full_jll", version=string(llvm_version))),
     BuildDependency(PackageSpec(name="LLVM_full_jll", version=string(llvm_version))),
     Dependency("Hwloc_jll"),
-    Dependency("Zstd_jll"), # our LLVM 22 build has LLVM_ENABLE_ZSTD=ON
+    Dependency("Zstd_jll"), # our LLVM builds have LLVM_ENABLE_ZSTD=ON
     # Vectorize OpenCL math builtins via SLEEF's libmvec-ABI library (libsleefgnuabi), which
     # the in-process JIT dlopens at run time (see common.jl for the matching CMake flags). Only
     # on x86_64/aarch64 Linux and FreeBSD, the ELF targets where LLVM maps a veclib *and*
