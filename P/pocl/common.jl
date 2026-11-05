@@ -236,10 +236,13 @@ function build_script(standalone=false; spirv32=false)
     #   (JuliaGPU/pocl#10)
     # - 0048: fix abs() of INT_MIN and LONG_MIN, which relied on signed overflow, so LLVM
     #   assumed the result's top bit is clear (pocl/pocl#2423, JuliaGPU/pocl#11)
+    # - 0049: when rematerializing a private pointer across a barrier, rewrite a store that
+    #   uses the loaded pointer as its address instead of storing the pointer itself
+    #   (pocl/pocl#2429)
     #
     # The `pocl` series on v7.2 is the one this series was rebased from: 0001-0042 also carry
     # the backports that release_next has, and older revisions of upstream PRs #2281, #2384,
-    # #2394 and #2410; 0043-0051 are 0036-0038, 0041-0043 and 0046-0048 above. It doesn't
+    # #2394 and #2410; 0043-0052 are 0036-0038, 0041-0043 and 0046-0049 above. It doesn't
     # have cl_pocl_host_kernel.
     for patch in @PATCHES@; do
         atomic_patch -p1 $patch
