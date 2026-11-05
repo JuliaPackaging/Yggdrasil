@@ -1,4 +1,4 @@
-From 7aa193d3fa1a271f6ded0fa21babe6dec22a2fc7 Mon Sep 17 00:00:00 2001
+From db1dfbb888df58e227764659720cd11fdc016ee9 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Mon, 28 Sep 2026 15:23:44 +0200
 Subject: [PATCH] SanitizeUBofDivRem: fold x / x to 1, not 0
@@ -40,10 +40,10 @@ index 38ed5474e..411da4271 100644
          Changed = true;
          continue;
 diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
-index a46a3d268..f2ce94e75 100644
+index 1acb589b1..87aedd58b 100644
 --- a/tests/regression/CMakeLists.txt
 +++ b/tests/regression/CMakeLists.txt
-@@ -45,6 +45,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
+@@ -47,6 +47,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
       test_usm_free_realloc
       test_large_private_workgroup
       test_stack_estimate_builtins
@@ -51,7 +51,7 @@ index a46a3d268..f2ce94e75 100644
  )
  if(UNIX)
    list(APPEND C_PROGRAMS_TO_BUILD test_signal_handlers)
-@@ -215,6 +216,8 @@ add_test_pocl(NAME "regression/test_large_private_workgroup"
+@@ -223,6 +224,8 @@ add_test_pocl(NAME "regression/test_large_private_workgroup"
  add_test_pocl(NAME "regression/test_stack_estimate_builtins"
    COMMAND "test_stack_estimate_builtins" WORKITEM_HANDLER "loopvec")
  

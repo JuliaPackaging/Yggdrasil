@@ -1,0 +1,909 @@
+From 604813f8b52d7a0a4a6ee5133e49670be67353f9 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Tue, 6 Oct 2026 13:58:39 +0200
+Subject: [PATCH] Fully unroll requested loops with barriers before the barrier
+ passes
+
+The barrier passes turn a loop with a barrier into a b-loop: its body is
+split into parallel regions that run for all work-items in every
+iteration, the values live across the barriers are saved in context
+arrays, and extra barriers isolate the loop control. A request to unroll
+such a loop, with '#pragma unroll', opencl_unroll_hint or SPIR-V's Unroll
+loop control, is ignored: pocl.barrier is noduplicate, so LLVM's unroller
+can't duplicate the body. For the butterflies of sub-group reductions
+written with shuffles, or a tree reduction over the local size, the trip
+count also only becomes a constant once the stage 1 optimizations folded
+the sizes.
+
+Add a pass at the start of stage 2 that fully unrolls innermost loops with
+a barrier, an unroll request and a constant trip count, up to LLVM's
+default pragma unroll threshold. Every work-item still executes the same
+sequence of barriers, so the pass lifts noduplicate from the barrier only
+while unrolling these loops. It forms LCSSA for the enclosing loop nest
+first, as UnrollLoop only redirects the uses after the loop to the last
+iteration through LCSSA phis and expects the parent loops in LCSSA too.
+Partial unroll requests are left alone, as they would keep the b-loop.
+-cl-opt-disable and optnone disable the pass.
+---
+ lib/CL/pocl_llvm_wg.cc                        |  10 +-
+ lib/llvmopencl/CMakeLists.txt                 |   2 +
+ lib/llvmopencl/LLVMUtils.cc                   |   2 +
+ lib/llvmopencl/UnrollBarrierLoops.cc          | 187 ++++++++++
+ lib/llvmopencl/UnrollBarrierLoops.h           |  53 +++
+ tests/compiler_unit/CMakeLists.txt            |   8 +
+ .../unroll-barrier-loop-local-size.cl         |  17 +
+ .../unroll-barrier-loop-local-size.fc         |   3 +
+ .../unroll-barrier-loop-no-request.cl         |  12 +
+ .../unroll-barrier-loop-no-request.fc         |   2 +
+ .../unroll-barrier-loop-partial.cl            |  19 +
+ .../unroll-barrier-loop-partial.fc            |   3 +
+ .../unroll-barrier-loop-runtime.cl            |  11 +
+ .../unroll-barrier-loop-runtime.fc            |   2 +
+ tests/compiler_unit/unroll-barrier-loop.cl    |  13 +
+ tests/compiler_unit/unroll-barrier-loop.fc    |   2 +
+ tests/regression/CMakeLists.txt               |   5 +
+ .../regression/test_unrolled_barrier_loops.c  | 337 ++++++++++++++++++
+ 18 files changed, 686 insertions(+), 2 deletions(-)
+ create mode 100644 lib/llvmopencl/UnrollBarrierLoops.cc
+ create mode 100644 lib/llvmopencl/UnrollBarrierLoops.h
+ create mode 100644 tests/compiler_unit/unroll-barrier-loop-local-size.cl
+ create mode 100644 tests/compiler_unit/unroll-barrier-loop-local-size.fc
+ create mode 100644 tests/compiler_unit/unroll-barrier-loop-no-request.cl
+ create mode 100644 tests/compiler_unit/unroll-barrier-loop-no-request.fc
+ create mode 100644 tests/compiler_unit/unroll-barrier-loop-partial.cl
+ create mode 100644 tests/compiler_unit/unroll-barrier-loop-partial.fc
+ create mode 100644 tests/compiler_unit/unroll-barrier-loop-runtime.cl
+ create mode 100644 tests/compiler_unit/unroll-barrier-loop-runtime.fc
+ create mode 100644 tests/compiler_unit/unroll-barrier-loop.cl
+ create mode 100644 tests/compiler_unit/unroll-barrier-loop.fc
+ create mode 100644 tests/regression/test_unrolled_barrier_loops.c
+
+diff --git a/lib/CL/pocl_llvm_wg.cc b/lib/CL/pocl_llvm_wg.cc
+index e1712c733..0927b8a1e 100644
+--- a/lib/CL/pocl_llvm_wg.cc
++++ b/lib/CL/pocl_llvm_wg.cc
+@@ -542,7 +542,8 @@ static void addStage1PassesToPipeline(cl_device_id Dev,
+ // add the second part of the PoCL passes (after 1st, up to 2nd optimization in old PM)
+ // for old PM, also adds optimizations; for new PM it's handled separately
+ static void addStage2PassesToPipeline(cl_device_id Dev,
+-                                      std::vector<std::string> &Passes) {
++                                      std::vector<std::string> &Passes,
++                                      bool Optimize) {
+ 
+   // NOTE: if you add a new PoCL pass here,
+   // don't forget to register it in registerPassBuilderPasses
+@@ -550,6 +551,11 @@ static void addStage2PassesToPipeline(cl_device_id Dev,
+     addPass(Passes, "simplifycfg");
+     addPass(Passes, "loop-simplify");
+ 
++    // after the stage 1 optimizations folded the trip counts, and before the
++    // barrier passes turn the loops into b-loops
++    if (Optimize)
++      addPass(Passes, "unroll-barrier-loops");
++
+     // ...we have to call UTR again here because some optimizations in LLVM
+     // might generate UIs.
+     if (!Dev->spmd)
+@@ -677,7 +683,7 @@ static bool runKernelCompilerPasses(cl_device_id Device, llvm::Module &Mod,
+   addStage1PassesToPipeline(Device, Passes1);
+   std::string P1 = convertPassesToPipelineString(Passes1);
+   std::vector<std::string> Passes2;
+-  addStage2PassesToPipeline(Device, Passes2);
++  addStage2PassesToPipeline(Device, Passes2, Optimize);
+   std::string P2 = convertPassesToPipelineString(Passes2);
+ 
+   Error E = PM.build(Device, P1, Optimize ? 1 : 0, P2, Optimize ? 3 : 0);
+diff --git a/lib/llvmopencl/CMakeLists.txt b/lib/llvmopencl/CMakeLists.txt
+index 104105d10..d5c8ec810 100644
+--- a/lib/llvmopencl/CMakeLists.txt
++++ b/lib/llvmopencl/CMakeLists.txt
+@@ -76,6 +76,8 @@ set(LLVMPASSES_SOURCES "AllocasToEntry.cc"
+                        "SubCFGFormation.cc"
+                        "SubCFGFormation.h"
+                        "UnreachablesToReturns.cc"
++                       "UnrollBarrierLoops.cc"
++                       "UnrollBarrierLoops.h"
+                        "VariableUniformityAnalysis.cc"
+                        "VariableUniformityAnalysis.h"
+                        "WorkItemAliasAnalysis.cc"
+diff --git a/lib/llvmopencl/LLVMUtils.cc b/lib/llvmopencl/LLVMUtils.cc
+index 23d9da585..ec52bddbc 100644
+--- a/lib/llvmopencl/LLVMUtils.cc
++++ b/lib/llvmopencl/LLVMUtils.cc
+@@ -62,6 +62,7 @@ IGNORE_COMPILER_WARNING("-Wunused-parameter")
+ #include "SanitizeUBofDivRem.h"
+ #include "SubCFGFormation.h"
+ #include "UnreachablesToReturns.h"
++#include "UnrollBarrierLoops.h"
+ #include "VariableUniformityAnalysis.h"
+ #include "WorkItemAliasAnalysis.h"
+ #include "Workgroup.h"
+@@ -706,6 +707,7 @@ void registerPassBuilderPasses(llvm::PassBuilder &PB) {
+   PHIsToAllocas::registerWithPB(PB);
+   RemoveBarrierCalls::registerWithPB(PB);
+   SubCFGFormation::registerWithPB(PB);
++  UnrollBarrierLoops::registerWithPB(PB);
+   Workgroup::registerWithPB(PB);
+   WorkitemLoops::registerWithPB(PB);
+   PoCLCFGPrinter::registerWithPB(PB);
+diff --git a/lib/llvmopencl/UnrollBarrierLoops.cc b/lib/llvmopencl/UnrollBarrierLoops.cc
+new file mode 100644
+index 000000000..55c390668
+--- /dev/null
++++ b/lib/llvmopencl/UnrollBarrierLoops.cc
+@@ -0,0 +1,187 @@
++// UnrollBarrierLoops fully unrolls loops with barriers on request.
++//
++// Copyright (c) 2026 PoCL developers
++//
++// Permission is hereby granted, free of charge, to any person obtaining a copy
++// of this software and associated documentation files (the "Software"), to
++// deal in the Software without restriction, including without limitation the
++// rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
++// sell copies of the Software, and to permit persons to whom the Software is
++// furnished to do so, subject to the following conditions:
++//
++// The above copyright notice and this permission notice shall be included in
++// all copies or substantial portions of the Software.
++//
++// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
++// IN THE SOFTWARE.
++
++#include "CompilerWarnings.h"
++IGNORE_COMPILER_WARNING("-Wmaybe-uninitialized")
++#include <llvm/ADT/Twine.h>
++POP_COMPILER_DIAGS
++IGNORE_COMPILER_WARNING("-Wunused-parameter")
++#include <llvm/Analysis/AssumptionCache.h>
++#include <llvm/Analysis/LoopInfo.h>
++#include <llvm/Analysis/OptimizationRemarkEmitter.h>
++#include <llvm/Analysis/ScalarEvolution.h>
++#include <llvm/Analysis/TargetTransformInfo.h>
++#include <llvm/IR/Dominators.h>
++#include <llvm/IR/Instructions.h>
++#include <llvm/IR/Module.h>
++#include <llvm/Transforms/Utils/LoopUtils.h>
++#include <llvm/Transforms/Utils/UnrollLoop.h>
++
++#include <optional>
++
++#include "Barrier.h"
++#include "LLVMUtils.h"
++#include "UnrollBarrierLoops.h"
++#include "WorkitemHandlerChooser.h"
++POP_COMPILER_DIAGS
++
++#define PASS_NAME "unroll-barrier-loops"
++#define PASS_CLASS pocl::UnrollBarrierLoops
++#define PASS_DESC "Fully unroll loops with barriers on request"
++
++namespace pocl {
++
++using namespace llvm;
++
++// A loop with a barrier (a b-loop) gets its body split into parallel regions
++// that are each executed for all work-items in every iteration, with the
++// values that are live across the barriers saved in per-work-item context
++// arrays, and extra barriers isolating the loop control. A request to unroll
++// such a loop ('#pragma unroll', opencl_unroll_hint, or SPIR-V's Unroll loop
++// control) can't be honored by LLVM's unroller, as pocl.barrier is
++// noduplicate, and often the trip count only became a constant when the
++// stage 1 optimizations folded the local or sub-group size. This pass fully
++// unrolls such loops if their trip count is a constant.
++
++// LLVM's default -pragma-unroll-threshold
++static constexpr unsigned MaxUnrolledSize = 16 * 1024;
++
++static unsigned getUnrollCount(Loop &L, ScalarEvolution &SE) {
++  if (!L.isInnermost() || !L.isLoopSimplifyForm() ||
++      L.getExitingBlock() == nullptr || !Barrier::isLoopWithBarrier(L))
++    return 0;
++
++  if (hasUnrollTransformation(&L) != TM_ForcedByUser)
++    return 0;
++
++  unsigned TripCount = SE.getSmallConstantTripCount(&L);
++  if (TripCount == 0)
++    return 0;
++
++  // a partial unroll would leave a b-loop
++  std::optional<int> Count =
++      getOptionalIntLoopAttribute(&L, "llvm.loop.unroll.count");
++  if (Count && *Count >= 0 && unsigned(*Count) < TripCount)
++    return 0;
++
++  unsigned Size = 0;
++  for (BasicBlock *BB : L.blocks()) {
++    for (Instruction &I : *BB) {
++      // Convergence control tokens can't be cloned freely, and other
++      // noduplicate calls aren't ours to duplicate.
++      if (I.getType()->isTokenTy())
++        return 0;
++      if (auto *Call = dyn_cast<CallBase>(&I))
++        if (Call->cannotDuplicate() && !isa<Barrier>(Call))
++          return 0;
++      if (!I.isDebugOrPseudoInst())
++        ++Size;
++    }
++  }
++  if (uint64_t(Size) * TripCount > MaxUnrolledSize)
++    return 0;
++
++  return TripCount;
++}
++
++static bool unrollBarrierLoops(Function &F, FunctionAnalysisManager &AM) {
++  Function *BarrierF = F.getParent()->getFunction(BARRIER_FUNCTION_NAME);
++  if (BarrierF == nullptr)
++    return false;
++
++  LoopInfo &LI = AM.getResult<LoopAnalysis>(F);
++  ScalarEvolution &SE = AM.getResult<ScalarEvolutionAnalysis>(F);
++
++  SmallVector<std::pair<Loop *, unsigned>, 4> Loops;
++  for (Loop *L : LI.getLoopsInPreorder())
++    if (unsigned Count = getUnrollCount(*L, SE))
++      Loops.push_back({L, Count});
++  if (Loops.empty())
++    return false;
++
++  DominatorTree &DT = AM.getResult<DominatorTreeAnalysis>(F);
++  AssumptionCache &AC = AM.getResult<AssumptionAnalysis>(F);
++  TargetTransformInfo &TTI = AM.getResult<TargetIRAnalysis>(F);
++  OptimizationRemarkEmitter ORE(&F);
++
++  // pocl.barrier is noduplicate so that the optimizations don't create
++  // barriers that only some work-items reach. Fully unrolling a loop with a
++  // constant trip count makes every work-item execute the same sequence of
++  // barriers, as the loop did, so lift the attribute while doing only that.
++  bool DeclNoDup = BarrierF->hasFnAttribute(Attribute::NoDuplicate);
++  BarrierF->removeFnAttr(Attribute::NoDuplicate);
++  bool CallNoDup = false;
++  for (User *U : BarrierF->users()) {
++    auto *Call = dyn_cast<CallInst>(U);
++    if (Call == nullptr || Call->getFunction() != &F ||
++        !Call->hasFnAttr(Attribute::NoDuplicate))
++      continue;
++    CallNoDup = true;
++    Call->removeFnAttr(Attribute::NoDuplicate);
++  }
++
++  bool Changed = false;
++  for (auto [L, Count] : Loops) {
++    // UnrollLoop only redirects the uses outside the loop to the last
++    // iteration through LCSSA phis, and expects the enclosing loops in LCSSA
++    // as well.
++    Changed |= formLCSSARecursively(*L->getOutermostLoop(), DT, &LI, &SE);
++
++    UnrollLoopOptions ULO{};
++    ULO.Count = Count;
++    ULO.Force = false;
++    ULO.Runtime = false;
++    ULO.AllowExpensiveTripCount = false;
++    ULO.UnrollRemainder = false;
++    ULO.ForgetAllSCEV = false;
++    LoopUnrollResult Result = UnrollLoop(L, ULO, &LI, &SE, &DT, &AC, &TTI, &ORE,
++                                         /*PreserveLCSSA=*/true);
++    Changed |= Result != LoopUnrollResult::Unmodified;
++  }
++
++  if (DeclNoDup)
++    BarrierF->addFnAttr(Attribute::NoDuplicate);
++  if (CallNoDup)
++    for (User *U : BarrierF->users())
++      if (auto *Call = dyn_cast<CallInst>(U))
++        if (Call->getFunction() == &F)
++          Call->addFnAttr(Attribute::NoDuplicate);
++
++  return Changed;
++}
++
++llvm::PreservedAnalyses
++UnrollBarrierLoops::run(llvm::Function &F, llvm::FunctionAnalysisManager &AM) {
++  if (!isKernelToProcess(F) || F.hasOptNone())
++    return PreservedAnalyses::all();
++
++  if (!unrollBarrierLoops(F, AM))
++    return PreservedAnalyses::all();
++
++  PreservedAnalyses PAChanged = PreservedAnalyses::none();
++  PAChanged.preserve<WorkitemHandlerChooser>();
++  return PAChanged;
++}
++
++REGISTER_NEW_FPASS(PASS_NAME, PASS_CLASS, PASS_DESC);
++
++} // namespace pocl
+diff --git a/lib/llvmopencl/UnrollBarrierLoops.h b/lib/llvmopencl/UnrollBarrierLoops.h
+new file mode 100644
+index 000000000..bc73b4921
+--- /dev/null
++++ b/lib/llvmopencl/UnrollBarrierLoops.h
+@@ -0,0 +1,53 @@
++// Header for UnrollBarrierLoops.
++//
++// Copyright (c) 2026 PoCL developers
++//
++//
++// Permission is hereby granted, free of charge, to any person obtaining a copy
++// of this software and associated documentation files (the "Software"), to
++// deal in the Software without restriction, including without limitation the
++// rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
++// sell copies of the Software, and to permit persons to whom the Software is
++// furnished to do so, subject to the following conditions:
++//
++// The above copyright notice and this permission notice shall be included in
++// all copies or substantial portions of the Software.
++//
++// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
++// IN THE SOFTWARE.
++
++#ifndef POCL_UNROLL_BARRIER_LOOPS_H
++#define POCL_UNROLL_BARRIER_LOOPS_H
++
++#include "config.h"
++
++#include <llvm/IR/Function.h>
++#include <llvm/IR/PassManager.h>
++#include <llvm/Pass.h>
++#include <llvm/Passes/PassBuilder.h>
++
++namespace pocl {
++
++class UnrollBarrierLoops
++#if LLVM_MAJOR >= 23
++    : public llvm::RequiredPassInfoMixin<UnrollBarrierLoops> {
++#else
++    : public llvm::PassInfoMixin<UnrollBarrierLoops> {
++#endif
++public:
++  static void registerWithPB(llvm::PassBuilder &B);
++  llvm::PreservedAnalyses run(llvm::Function &F,
++                              llvm::FunctionAnalysisManager &AM);
++#if LLVM_MAJOR < 23
++  static bool isRequired() { return true; }
++#endif
++};
++
++} // namespace pocl
++
++#endif
+diff --git a/tests/compiler_unit/CMakeLists.txt b/tests/compiler_unit/CMakeLists.txt
+index 418067ea9..3991a9e4b 100644
+--- a/tests/compiler_unit/CMakeLists.txt
++++ b/tests/compiler_unit/CMakeLists.txt
+@@ -69,3 +69,11 @@ add_llvm_check(SPIRV_NAME issue-1872-switch-to-a-bb-with-unreachable)
+ add_llvm_check(SPIRV_NAME switch-to-unreachable-with-a-phi-in-dest)
+ add_llvm_check(OPENCLC_NAME force-vector-width ENVIRONMENT "POCL_VECTORIZER_FORCE_VECTOR_WIDTH=4")
+ add_llvm_check(OPENCLC_NAME prefer-vector-width ENVIRONMENT "POCL_VECTORIZER_PREFER_VECTOR_WIDTH=512")
++add_llvm_check(OPENCLC_NAME unroll-barrier-loop-local-size ENVIRONMENT "POCL_BINARY_SPECIALIZE_WG=16-1-1")
++add_llvm_check(OPENCLC_NAME unroll-barrier-loop-partial ENVIRONMENT "POCL_BINARY_SPECIALIZE_WG=16-1-1")
++# sub-groups aren't advertised by conformant builds
++if(NOT ENABLE_CONFORMANCE)
++  add_llvm_check(OPENCLC_NAME unroll-barrier-loop)
++  add_llvm_check(OPENCLC_NAME unroll-barrier-loop-runtime)
++  add_llvm_check(OPENCLC_NAME unroll-barrier-loop-no-request)
++endif()
+diff --git a/tests/compiler_unit/unroll-barrier-loop-local-size.cl b/tests/compiler_unit/unroll-barrier-loop-local-size.cl
+new file mode 100644
+index 000000000..b6d20fc26
+--- /dev/null
++++ b/tests/compiler_unit/unroll-barrier-loop-local-size.cl
+@@ -0,0 +1,17 @@
++// A tree reduction over the local size with an unroll request is fully
++// unrolled in a work-group function specialized for the local size, as the
++// size is folded before the barrier passes.
++kernel void tree_sum(global int *out, global const int *in) {
++  local int s[256];
++  size_t l = get_local_id(0);
++  s[l] = in[get_global_id(0)];
++  barrier(CLK_LOCAL_MEM_FENCE);
++  #pragma unroll
++  for (size_t k = get_local_size(0) / 2; k > 0; k >>= 1) {
++    if (l < k)
++      s[l] += s[l + k];
++    barrier(CLK_LOCAL_MEM_FENCE);
++  }
++  if (l == 0)
++    out[get_group_id(0)] = s[0];
++}
+diff --git a/tests/compiler_unit/unroll-barrier-loop-local-size.fc b/tests/compiler_unit/unroll-barrier-loop-local-size.fc
+new file mode 100644
+index 000000000..bcf3da5d4
+--- /dev/null
++++ b/tests/compiler_unit/unroll-barrier-loop-local-size.fc
+@@ -0,0 +1,3 @@
++CHECK-LABEL: 16-1-1/parallel.bc
++CHECK-NOT: {{loopbarrier|latchbarrier}}
++CHECK: !llvm.module.flags
+diff --git a/tests/compiler_unit/unroll-barrier-loop-no-request.cl b/tests/compiler_unit/unroll-barrier-loop-no-request.cl
+new file mode 100644
+index 000000000..a547506e5
+--- /dev/null
++++ b/tests/compiler_unit/unroll-barrier-loop-no-request.cl
+@@ -0,0 +1,12 @@
++// A sub-group butterfly over a sub-group size that is known at compile time
++// stays a b-loop without an unroll request, which LoopBarriers marks with a
++// barrier in the preheader.
++#pragma OPENCL EXTENSION cl_khr_subgroups : enable
++__attribute__((intel_reqd_sub_group_size(8)))
++kernel void sub_group_sum(global int *out, global const int *in) {
++  size_t i = get_global_id(0);
++  int v = in[i];
++  for (uint m = 1; m < get_max_sub_group_size(); m <<= 1)
++    v += sub_group_shuffle_xor(v, m);
++  out[i] = v;
++}
+diff --git a/tests/compiler_unit/unroll-barrier-loop-no-request.fc b/tests/compiler_unit/unroll-barrier-loop-no-request.fc
+new file mode 100644
+index 000000000..3286c5bd2
+--- /dev/null
++++ b/tests/compiler_unit/unroll-barrier-loop-no-request.fc
+@@ -0,0 +1,2 @@
++CHECK: @_pocl_kernel_sub_group_sum_workgroup
++CHECK: loopbarrier
+diff --git a/tests/compiler_unit/unroll-barrier-loop-partial.cl b/tests/compiler_unit/unroll-barrier-loop-partial.cl
+new file mode 100644
+index 000000000..431e1ec71
+--- /dev/null
++++ b/tests/compiler_unit/unroll-barrier-loop-partial.cl
+@@ -0,0 +1,19 @@
++// A partial unroll request on a tree reduction over the local size would
++// leave a b-loop, so the loop isn't unrolled before the barrier passes, even
++// though the trip count is a constant in a work-group function specialized
++// for the size. It stays a b-loop, which keeps its iteration variable per
++// work-item in a context array.
++kernel void tree_sum(global int *out, global const int *in) {
++  local int s[256];
++  size_t l = get_local_id(0);
++  s[l] = in[get_global_id(0)];
++  barrier(CLK_LOCAL_MEM_FENCE);
++  #pragma unroll 2
++  for (size_t k = get_local_size(0) / 2; k > 0; k >>= 1) {
++    if (l < k)
++      s[l] += s[l + k];
++    barrier(CLK_LOCAL_MEM_FENCE);
++  }
++  if (l == 0)
++    out[get_group_id(0)] = s[0];
++}
+diff --git a/tests/compiler_unit/unroll-barrier-loop-partial.fc b/tests/compiler_unit/unroll-barrier-loop-partial.fc
+new file mode 100644
+index 000000000..47bb57d72
+--- /dev/null
++++ b/tests/compiler_unit/unroll-barrier-loop-partial.fc
+@@ -0,0 +1,3 @@
++CHECK-LABEL: 16-1-1/parallel.bc
++CHECK-NOT: {{^; .*/parallel.bc$}}
++CHECK: .ex_phi.pocl_context{{.*}} = alloca
+diff --git a/tests/compiler_unit/unroll-barrier-loop-runtime.cl b/tests/compiler_unit/unroll-barrier-loop-runtime.cl
+new file mode 100644
+index 000000000..7a2a5ec58
+--- /dev/null
++++ b/tests/compiler_unit/unroll-barrier-loop-runtime.cl
+@@ -0,0 +1,11 @@
++// A butterfly bounded by a kernel argument stays a b-loop despite an unroll
++// request, which LoopBarriers marks with a barrier in the preheader.
++#pragma OPENCL EXTENSION cl_khr_subgroups : enable
++kernel void sub_group_sum(global int *out, global const int *in, uint width) {
++  size_t i = get_global_id(0);
++  int v = in[i];
++  #pragma unroll
++  for (uint m = 1; m < width; m <<= 1)
++    v += sub_group_shuffle_xor(v, m);
++  out[i] = v;
++}
+diff --git a/tests/compiler_unit/unroll-barrier-loop-runtime.fc b/tests/compiler_unit/unroll-barrier-loop-runtime.fc
+new file mode 100644
+index 000000000..3286c5bd2
+--- /dev/null
++++ b/tests/compiler_unit/unroll-barrier-loop-runtime.fc
+@@ -0,0 +1,2 @@
++CHECK: @_pocl_kernel_sub_group_sum_workgroup
++CHECK: loopbarrier
+diff --git a/tests/compiler_unit/unroll-barrier-loop.cl b/tests/compiler_unit/unroll-barrier-loop.cl
+new file mode 100644
+index 000000000..81a551b4b
+--- /dev/null
++++ b/tests/compiler_unit/unroll-barrier-loop.cl
+@@ -0,0 +1,13 @@
++// A sub-group butterfly with an unroll request over a sub-group size that is
++// known at compile time is fully unrolled before the barrier passes, so it
++// doesn't become a b-loop.
++#pragma OPENCL EXTENSION cl_khr_subgroups : enable
++__attribute__((intel_reqd_sub_group_size(8)))
++kernel void sub_group_sum(global int *out, global const int *in) {
++  size_t i = get_global_id(0);
++  int v = in[i];
++  #pragma unroll
++  for (uint m = 1; m < get_max_sub_group_size(); m <<= 1)
++    v += sub_group_shuffle_xor(v, m);
++  out[i] = v;
++}
+diff --git a/tests/compiler_unit/unroll-barrier-loop.fc b/tests/compiler_unit/unroll-barrier-loop.fc
+new file mode 100644
+index 000000000..d14d6ba68
+--- /dev/null
++++ b/tests/compiler_unit/unroll-barrier-loop.fc
+@@ -0,0 +1,2 @@
++CHECK: @_pocl_kernel_sub_group_sum_workgroup
++CHECK-NOT: loopbarrier
+diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
+index e633aa6e9..82ce49164 100644
+--- a/tests/regression/CMakeLists.txt
++++ b/tests/regression/CMakeLists.txt
+@@ -42,6 +42,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
+      test_remat_alloca_store_address
+      test_spirv_intel_subgroups
+      test_spirv_bfloat16
++     test_unrolled_barrier_loops
+      test_indirect_ptrs
+      test_replicated_wi_subgroup_alloca
+      test_usm_indirect_ptrs
+@@ -228,6 +229,10 @@ add_test_pocl(NAME "regression/replicated_wi_subgroup_alloca" WORKITEM_HANDLER "
+ set_tests_properties("regression/replicated_wi_subgroup_alloca_loops" PROPERTIES ENVIRONMENT "POCL_WORK_GROUP_METHOD=loops;POCL_WILOOPS_MAX_UNROLL_COUNT=4")
+ set_tests_properties("regression/replicated_wi_subgroup_alloca_loopvec" PROPERTIES ENVIRONMENT "POCL_WORK_GROUP_METHOD=loopvec;POCL_WILOOPS_MAX_UNROLL_COUNT=4")
+ 
++add_test_pocl(NAME "regression/unrolled_barrier_loops" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_unrolled_barrier_loops")
++add_test_pocl(NAME "regression/unrolled_barrier_loops_dynamic" WORKITEM_HANDLER "loopvec" COMMAND "test_unrolled_barrier_loops")
++set_tests_properties("regression/unrolled_barrier_loops_dynamic" PROPERTIES ENVIRONMENT "POCL_WORK_GROUP_METHOD=loopvec;POCL_WORK_GROUP_SPECIALIZATION=0")
++
+ add_test_pocl(NAME "regression/test_usm_indirect_ptrs" COMMAND "test_usm_indirect_ptrs")
+ 
+ add_test_pocl(NAME "regression/test_usm_free_realloc" COMMAND "test_usm_free_realloc" WORKITEM_HANDLER "loopvec")
+diff --git a/tests/regression/test_unrolled_barrier_loops.c b/tests/regression/test_unrolled_barrier_loops.c
+new file mode 100644
+index 000000000..b185f50f9
+--- /dev/null
++++ b/tests/regression/test_unrolled_barrier_loops.c
+@@ -0,0 +1,337 @@
++// Copyright (c) 2026 PoCL developers
++//
++// Permission is hereby granted, free of charge, to any person obtaining a copy
++// of this software and associated documentation files (the "Software"), to deal
++// in the Software without restriction, including without limitation the rights
++// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++// copies of the Software, and to permit persons to whom the Software is
++// furnished to do so, subject to the following conditions:
++//
++// The above copyright notice and this permission notice shall be included in
++// all copies or substantial portions of the Software.
++//
++// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++// THE SOFTWARE.
++
++/*
++  Loops with barriers and an unroll request. Sub-group reductions and scans
++  written as loops of shuffles over the sub-group size are fully unrolled
++  before the barrier passes when the size is known at compile time, from
++  intel_reqd_sub_group_size or from the local size X of a work-group function
++  specialized for it, and so is a tree reduction over the local size. A loop
++  bounded by a kernel argument stays a b-loop despite the request, and so does
++  a rotation by a constant without one. Requested loops next to each other
++  or inside a runtime loop are unrolled as well. All of them must give the
++  same results.
++*/
++
++#include "pocl_opencl.h"
++
++#include <stdio.h>
++#include <stdlib.h>
++
++#define SG_SIZE 8
++#define ROWS 2
++#define WG_SIZE (SG_SIZE * ROWS)
++#define NUM_GROUPS 4
++#define N (WG_SIZE * NUM_GROUPS)
++
++static const char KernelSource[] =
++    "#pragma OPENCL EXTENSION cl_khr_subgroups : enable\n"
++    "__attribute__((intel_reqd_sub_group_size(8)))\n"
++    "__kernel void reduce_required(__global int *out, __global const int *in) "
++    "{\n"
++    "  size_t i = get_global_linear_id();\n"
++    "  int v = in[i];\n"
++    "  #pragma unroll\n"
++    "  for (uint m = 1; m < get_max_sub_group_size(); m <<= 1)\n"
++    "    v += sub_group_shuffle_xor(v, m);\n"
++    "  out[i] = v;\n"
++    "}\n"
++    /* without a required size, the sub-group size is the local size X */
++    "__kernel void scan_local_size(__global int *out, __global const int *in) "
++    "{\n"
++    "  size_t i = get_global_linear_id();\n"
++    "  uint lane = get_sub_group_local_id();\n"
++    "  int v = in[i];\n"
++    "  #pragma unroll\n"
++    "  for (uint d = 1; d < get_max_sub_group_size(); d <<= 1) {\n"
++    "    int other = sub_group_shuffle(v, lane >= d ? lane - d : lane);\n"
++    "    if (lane >= d)\n"
++    "      v += other;\n"
++    "  }\n"
++    "  out[i] = v;\n"
++    "}\n"
++    "__kernel void reduce_runtime(__global int *out, __global const int *in,\n"
++    "                             uint width) {\n"
++    "  size_t i = get_global_linear_id();\n"
++    "  int v = in[i];\n"
++    "  #pragma unroll\n"
++    "  for (uint m = 1; m < width; m <<= 1)\n"
++    "    v += sub_group_shuffle_xor(v, m);\n"
++    "  out[i] = v;\n"
++    "}\n"
++    "size_t group_size(void) {\n"
++    "  return get_local_size(0) * get_local_size(1);\n"
++    "}\n"
++    "__kernel void tree_local_size(__global int *out, __global const int *in) "
++    "{\n"
++    "  __local int s[16];\n"
++    "  size_t lid = get_local_linear_id();\n"
++    "  s[lid] = in[get_global_linear_id()];\n"
++    "  barrier(CLK_LOCAL_MEM_FENCE);\n"
++    "  __attribute__((opencl_unroll_hint))\n"
++    "  for (size_t k = group_size() / 2; k > 0; k >>= 1) {\n"
++    "    if (lid < k)\n"
++    "      s[lid] += s[lid + k];\n"
++    "    barrier(CLK_LOCAL_MEM_FENCE);\n"
++    "  }\n"
++    "  out[get_global_linear_id()] = s[0];\n"
++    "}\n"
++    /* rotates the values of the work-group by 4 work-items */
++    "__kernel void rotate_local(__global int *out, __global const int *in) {\n"
++    "  __local int scratch[16];\n"
++    "  size_t lid = get_local_linear_id();\n"
++    "  int v = in[get_global_linear_id()];\n"
++    "  for (uint k = 0; k < 4; ++k) {\n"
++    "    scratch[lid] = v;\n"
++    "    barrier(CLK_LOCAL_MEM_FENCE);\n"
++    "    v = scratch[(lid + 1) % 16];\n"
++    "    barrier(CLK_LOCAL_MEM_FENCE);\n"
++    "  }\n"
++    "  out[get_global_linear_id()] = v;\n"
++    "}\n"
++    /* a requested loop inside a runtime loop whose value is used after it */
++    "__kernel void outer_runtime(__global int *out, __global const int *in,\n"
++    "                            uint n) {\n"
++    "  size_t gid = get_global_linear_id();\n"
++    "  uint i = 0;\n"
++    "  int v;\n"
++    "  do {\n"
++    "    v = in[gid] + (int)i++;\n"
++    "    #pragma unroll\n"
++    "    for (uint j = 0; j < 4; ++j)\n"
++    "      barrier(CLK_LOCAL_MEM_FENCE);\n"
++    "  } while (i < n);\n"
++    "  out[gid] = v;\n"
++    "}\n"
++    /* two requested loops, each rotating by 2 */
++    "__kernel void rotate_twice(__global int *out, __global const int *in) {\n"
++    "  __local int scratch[16];\n"
++    "  size_t lid = get_local_linear_id();\n"
++    "  int v = in[get_global_linear_id()];\n"
++    "  #pragma unroll\n"
++    "  for (uint k = 0; k < 2; ++k) {\n"
++    "    scratch[lid] = v;\n"
++    "    barrier(CLK_LOCAL_MEM_FENCE);\n"
++    "    v = scratch[(lid + 1) % 16];\n"
++    "    barrier(CLK_LOCAL_MEM_FENCE);\n"
++    "  }\n"
++    "  #pragma unroll\n"
++    "  for (uint k = 0; k < 2; ++k) {\n"
++    "    scratch[lid] = v;\n"
++    "    barrier(CLK_LOCAL_MEM_FENCE);\n"
++    "    v = scratch[(lid + 1) % 16];\n"
++    "    barrier(CLK_LOCAL_MEM_FENCE);\n"
++    "  }\n"
++    "  out[get_global_linear_id()] = v;\n"
++    "}\n"
++    /* a requested loop rotating by 3 in a runtime loop of n iterations, with
++       the value of the inner loop live after both */
++    "__kernel void rotate_nested(__global int *out, __global const int *in,\n"
++    "                            uint n) {\n"
++    "  __local int scratch[16];\n"
++    "  size_t lid = get_local_linear_id();\n"
++    "  int v = in[get_global_linear_id()];\n"
++    "  for (uint i = 0; i < n; ++i) {\n"
++    "    #pragma unroll\n"
++    "    for (uint k = 0; k < 3; ++k) {\n"
++    "      scratch[lid] = v;\n"
++    "      barrier(CLK_LOCAL_MEM_FENCE);\n"
++    "      v = scratch[(lid + 1) % 16];\n"
++    "      barrier(CLK_LOCAL_MEM_FENCE);\n"
++    "    }\n"
++    "  }\n"
++    "  out[get_global_linear_id()] = v;\n"
++    "}\n";
++
++enum Check { REDUCE, SCAN, GROUP_SUM, ROTATE, OFFSET };
++
++/* ROTATE checks a rotation of the work-group by shift work-items, OFFSET an
++   offset of width - 1 */
++static int run(cl_context context, cl_command_queue queue, cl_program program,
++               const char *name, const cl_int *input, enum Check check,
++               size_t rows, size_t shift) {
++  const size_t global[] = {SG_SIZE, ROWS * NUM_GROUPS};
++  const size_t local[] = {SG_SIZE, rows};
++  const size_t wg_size = SG_SIZE * rows;
++  const cl_uint width = SG_SIZE;
++  cl_int output[N];
++  cl_mem in_buf = NULL, out_buf = NULL;
++  cl_kernel kernel = NULL;
++  int result = 1;
++  cl_uint num_args = 0;
++  cl_int err;
++
++  kernel = clCreateKernel(program, name, &err);
++  if (err != CL_SUCCESS)
++    goto cleanup;
++  in_buf = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
++                          sizeof(output), (void *)input, &err);
++  if (err != CL_SUCCESS)
++    goto cleanup;
++  out_buf =
++      clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(output), NULL, &err);
++  if (err != CL_SUCCESS)
++    goto cleanup;
++  err = clSetKernelArg(kernel, 0, sizeof(out_buf), &out_buf);
++  err |= clSetKernelArg(kernel, 1, sizeof(in_buf), &in_buf);
++  err |= clGetKernelInfo(kernel, CL_KERNEL_NUM_ARGS, sizeof(num_args),
++                         &num_args, NULL);
++  if (num_args > 2)
++    err |= clSetKernelArg(kernel, 2, sizeof(width), &width);
++  if (err != CL_SUCCESS)
++    goto cleanup;
++  err = clEnqueueNDRangeKernel(queue, kernel, 2, NULL, global, local, 0, NULL,
++                               NULL);
++  if (err != CL_SUCCESS)
++    goto cleanup;
++  err = clEnqueueReadBuffer(queue, out_buf, CL_TRUE, 0, sizeof(output), output,
++                            0, NULL, NULL);
++  if (err != CL_SUCCESS)
++    goto cleanup;
++
++  if (check == GROUP_SUM || check == ROTATE || check == OFFSET) {
++    for (size_t i = 0; i < N; ++i) {
++      size_t group = i / wg_size * wg_size;
++      cl_int expected = 0;
++      if (check == ROTATE)
++        expected = input[group + (i - group + shift) % wg_size];
++      else if (check == OFFSET)
++        expected = input[i] + (cl_int)width - 1;
++      else
++        for (size_t j = 0; j < wg_size; ++j)
++          expected += input[group + j];
++      if (output[i] != expected) {
++        fprintf(stderr, "%s: output[%zu] = %d, expected %d\n", name, i,
++                output[i], expected);
++        goto cleanup;
++      }
++    }
++    result = 0;
++    goto cleanup;
++  }
++
++  for (size_t sg = 0; sg < N / SG_SIZE; ++sg) {
++    cl_int acc = 0, total = 0;
++    for (size_t lane = 0; lane < SG_SIZE; ++lane)
++      total += input[sg * SG_SIZE + lane];
++    for (size_t lane = 0; lane < SG_SIZE; ++lane) {
++      size_t i = sg * SG_SIZE + lane;
++      acc += input[i];
++      cl_int expected = check == SCAN ? acc : total;
++      if (output[i] != expected) {
++        fprintf(stderr, "%s: output[%zu] = %d, expected %d\n", name, i,
++                output[i], expected);
++        goto cleanup;
++      }
++    }
++  }
++  result = 0;
++
++cleanup:
++  if (err != CL_SUCCESS)
++    fprintf(stderr, "%s: OpenCL error %d\n", name, err);
++  if (out_buf != NULL)
++    clReleaseMemObject(out_buf);
++  if (in_buf != NULL)
++    clReleaseMemObject(in_buf);
++  if (kernel != NULL)
++    clReleaseKernel(kernel);
++  return result;
++}
++
++int main(void) {
++  cl_platform_id platform;
++  cl_device_id device;
++  cl_context context = NULL;
++  cl_command_queue queue = NULL;
++  cl_program program = NULL;
++  cl_int input[N];
++  int result = 1;
++  cl_int err;
++
++  err = clGetPlatformIDs(1, &platform, NULL);
++  if (err != CL_SUCCESS)
++    goto error;
++  err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, 1, &device, NULL);
++  if (err != CL_SUCCESS)
++    goto error;
++  if (!poclu_supports_extension(device, "cl_khr_subgroups") ||
++      !poclu_supports_extension(device, "cl_intel_required_subgroup_size")) {
++    puts("SKIP: The test requires cl_khr_subgroups and "
++         "cl_intel_required_subgroup_size");
++    return 77;
++  }
++  context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
++  if (err != CL_SUCCESS)
++    goto error;
++  queue = clCreateCommandQueueWithProperties(context, device, NULL, &err);
++  if (err != CL_SUCCESS)
++    goto error;
++
++  const char *sources[] = {KernelSource};
++  program = clCreateProgramWithSource(context, 1, sources, NULL, &err);
++  if (err != CL_SUCCESS)
++    goto error;
++  err = clBuildProgram(program, 1, &device, "-cl-std=CL3.0", NULL, NULL);
++  if (err != CL_SUCCESS) {
++    char log[4096];
++    clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, sizeof(log),
++                          log, NULL);
++    fprintf(stderr, "Build error:\n%s\n", log);
++    goto error;
++  }
++
++  for (int i = 0; i < N; ++i)
++    input[i] = (i * 7) % 13 - 6;
++
++  result =
++      run(context, queue, program, "reduce_required", input, REDUCE, ROWS, 0);
++  result |=
++      run(context, queue, program, "scan_local_size", input, SCAN, ROWS, 0);
++  result |=
++      run(context, queue, program, "reduce_runtime", input, REDUCE, ROWS, 0);
++  /* the same kernel with two local sizes, which must not share a fold */
++  result |= run(context, queue, program, "tree_local_size", input, GROUP_SUM,
++                ROWS, 0);
++  result |=
++      run(context, queue, program, "tree_local_size", input, GROUP_SUM, 1, 0);
++  result |=
++      run(context, queue, program, "rotate_local", input, ROTATE, ROWS, 4);
++  result |=
++      run(context, queue, program, "outer_runtime", input, OFFSET, ROWS, 0);
++  result |=
++      run(context, queue, program, "rotate_twice", input, ROTATE, ROWS, 4);
++  /* 3 rotations in each of the SG_SIZE iterations */
++  result |= run(context, queue, program, "rotate_nested", input, ROTATE, ROWS,
++                3 * SG_SIZE);
++  if (result == 0)
++    puts("OK");
++
++error:
++  if (err != CL_SUCCESS)
++    fprintf(stderr, "OpenCL error %d\n", err);
++  if (program != NULL)
++    clReleaseProgram(program);
++  if (queue != NULL)
++    clReleaseCommandQueue(queue);
++  if (context != NULL)
++    clReleaseContext(context);
++  return result;
++}
+-- 
+2.56.0
+

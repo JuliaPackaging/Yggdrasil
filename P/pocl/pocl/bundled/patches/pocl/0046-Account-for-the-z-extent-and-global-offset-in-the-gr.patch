@@ -1,4 +1,4 @@
-From 69a2a1c982fcf5e6b248865dbfa2c5aa5f75f40a Mon Sep 17 00:00:00 2001
+From 144e11a123d38a5fb0da0b0b68c7cde0e2ecb4c4 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Mon, 19 Oct 2026 17:07:11 +0200
 Subject: [PATCH] Account for the z extent and global offset in the grid width
@@ -42,10 +42,10 @@ index 74a697239..627d1abd9 100644
  
  
 diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
-index aca46e0f0..a1130bb41 100644
+index 1c63566e8..e51abeca2 100644
 --- a/tests/regression/CMakeLists.txt
 +++ b/tests/regression/CMakeLists.txt
-@@ -46,6 +46,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
+@@ -48,6 +48,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
       test_large_private_workgroup
       test_stack_estimate_builtins
       test_sanitize_divrem
@@ -53,7 +53,7 @@ index aca46e0f0..a1130bb41 100644
  )
  if(UNIX)
    list(APPEND C_PROGRAMS_TO_BUILD test_signal_handlers)
-@@ -199,6 +200,8 @@ add_test_pocl(NAME "regression/spirv_intel_subgroups" WORKITEM_HANDLER "loops;lo
+@@ -203,6 +204,8 @@ add_test_pocl(NAME "regression/spirv_intel_subgroups" WORKITEM_HANDLER "loops;lo
  
  add_test_pocl(NAME "regression/divergent_implicit_barrier_entry" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_divergent_implicit_barrier_entry")
  

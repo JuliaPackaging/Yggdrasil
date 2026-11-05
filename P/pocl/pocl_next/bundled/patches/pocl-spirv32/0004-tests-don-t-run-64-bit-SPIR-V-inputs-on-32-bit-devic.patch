@@ -1,7 +1,7 @@
-From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From 36200b7dd3d94c1d5a4cc5192eb197277318f8db Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Sun, 25 Oct 2026 09:11:08 +0100
-Subject: [PATCH 44/46] tests: don't run 64-bit SPIR-V inputs on 32-bit devices
+Subject: [PATCH] tests: don't run 64-bit SPIR-V inputs on 32-bit devices
 
 A 32-bit device rightly rejects Physical64 modules, so the regression tests
 with 64-bit SPIR-V inputs now skip there, using the poclu helper for the
@@ -28,7 +28,7 @@ twins built from the same sources.
  13 files changed, 58 insertions(+), 2 deletions(-)
 
 diff --git a/tests/compiler_unit/CMakeLists.txt b/tests/compiler_unit/CMakeLists.txt
-index 418067ea9..5f6d18ed3 100644
+index c61bd6e3f..5efcf5b53 100644
 --- a/tests/compiler_unit/CMakeLists.txt
 +++ b/tests/compiler_unit/CMakeLists.txt
 @@ -42,7 +42,8 @@ function(add_llvm_check)
@@ -230,3 +230,6 @@ index 538e32995..ed159b62f 100644
    std::streamsize Binsize = File.tellg();
    File.seekg(0, std::ios::beg);
  
+-- 
+2.56.0
+

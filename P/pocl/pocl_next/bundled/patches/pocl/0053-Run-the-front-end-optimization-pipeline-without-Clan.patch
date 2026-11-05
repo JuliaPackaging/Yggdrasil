@@ -1,0 +1,293 @@
+From 2d2d8b7fa7a864835892bc8aa9687b60bc188cd0 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Thu, 5 Nov 2026 13:41:51 +0100
+Subject: [PATCH] Run the front-end optimization pipeline without Clang's
+ -fno-unroll-loops
+
+For CPU-like devices, the OpenCL C front-end disabled Clang's loop
+unrolling and vectorization, leaving them to the kernel compiler. Besides
+turning off the unroller in Clang's -O2 pipeline, -fno-unroll-loops makes
+Clang's code generation mark every loop without a pragma with
+llvm.loop.unroll.disable, so the kernel compiler can't tell a plain loop
+from one with '#pragma nounroll'.
+
+Have Clang emit unoptimized IR without that blanket metadata and run the
+same -O2 (or -O1/-O3/-Os/-Oz) module pipeline on it ourselves, with the
+same pipeline tuning options, a target machine for the device, the
+default target library info, which matches Clang's with -fno-builtin and
+no vector library, and Clang's assignment tracking for debug info at the
+start. -cl-opt-disable still uses Clang's O0 pipeline, and SPMD devices
+keep Clang's pipeline with its defaults.
+
+The loop vectorizer also took llvm.loop.unroll.disable to mean that a loop
+must not be interleaved, so plain loops now get llvm.loop.interleave.count
+1 instead. For the 63 OpenCL C kernels of tests/kernel, tests/regression,
+tests/compiler_unit and examples, the final work-group functions are
+unchanged apart from that loop metadata. New compiler unit tests check the
+loop metadata and the assignment tracking.
+---
+ lib/CL/pocl_llvm_api.h                        | 16 +++++-
+ lib/CL/pocl_llvm_build.cc                     | 28 +++++++---
+ lib/CL/pocl_llvm_wg.cc                        | 52 ++++++++++++++++++-
+ tests/compiler_unit/CMakeLists.txt            |  2 +
+ .../frontend-assignment-tracking.cl           | 14 +++++
+ .../frontend-assignment-tracking.fc           |  2 +
+ tests/compiler_unit/frontend-loop-hints.cl    | 16 ++++++
+ tests/compiler_unit/frontend-loop-hints.fc    |  6 +++
+ 8 files changed, 126 insertions(+), 10 deletions(-)
+ create mode 100644 tests/compiler_unit/frontend-assignment-tracking.cl
+ create mode 100644 tests/compiler_unit/frontend-assignment-tracking.fc
+ create mode 100644 tests/compiler_unit/frontend-loop-hints.cl
+ create mode 100644 tests/compiler_unit/frontend-loop-hints.fc
+
+diff --git a/lib/CL/pocl_llvm_api.h b/lib/CL/pocl_llvm_api.h
+index 270773b77..59e85ddef 100644
+--- a/lib/CL/pocl_llvm_api.h
++++ b/lib/CL/pocl_llvm_api.h
+@@ -104,14 +104,26 @@ POCL_EXPORT bool getModuleBoolMetadata (const llvm::Module &mod,
+  * Module - optional. If non-NULL, it must be a pointer to Module.
+  * The constructed PassManager instance will run the passes on the Module.
+  * OptL - optimize for speed (0 to 3 are valid)
+- * SizeL - optimize for size
+  * Vectorize - whether to invoke the vectorizer (only used for legacy PM)
++ * SizeL - optimize for size at OptL 2 (1 is -Os, 2 is -Oz); with LLVM 23+,
++ *   the optsize/minsize function attributes do that instead
+  */
+ POCL_EXPORT void populateModulePM (void *Passes,
+                                    void *Module,
+                                    unsigned OptL,
+                                    bool Vectorize = true,
+-                                   llvm::TargetMachine *TM = nullptr);
++                                   llvm::TargetMachine *TM = nullptr,
++                                   unsigned SizeL = 0);
++
++/**
++ * Runs the -O<OptL> module pipeline (-Os/-Oz with SizeL 1/2) that Clang runs
++ * on the front-end output, without automatic unrolling and vectorization,
++ * using the device's target machine. TrackAssignments runs Clang's
++ * assignment tracking for the debug info first.
++ */
++void optimizeFrontendModule (llvm::Module &Mod, cl_device_id Dev,
++                             unsigned OptL, unsigned SizeL,
++                             bool TrackAssignments);
+ 
+ extern std::string CurrentWgMethod;
+ 
+diff --git a/lib/CL/pocl_llvm_build.cc b/lib/CL/pocl_llvm_build.cc
+index 43e56c17a..ce66a7eb4 100644
+--- a/lib/CL/pocl_llvm_build.cc
++++ b/lib/CL/pocl_llvm_build.cc
+@@ -723,13 +723,15 @@ int pocl_llvm_build_program(cl_program program,
+   CodeGenOptions &cg = pocl_build.getCodeGenOpts();
+   cg.EmitOpenCLArgMetadata = true;
+   cg.StackRealignment = true;
+-  if (!device->spmd) {
+-    // Let the vectorizer or another optimization pass unroll the loops,
+-    // in case it sees beneficial.
+-    cg.UnrollLoops = false;
+-    // Lets leave vectorization to later compilation phase
+-    cg.VectorizeLoop = false;
+-    cg.VectorizeSLP = false;
++  // Unrolling and vectorization are left to the kernel compiler, so for
++  // non-SPMD devices we run Clang's optimization pipeline ourselves with them
++  // disabled. Clang's -fno-unroll-loops would also mark every loop without a
++  // pragma as llvm.loop.unroll.disable, which would make them
++  // indistinguishable from '#pragma nounroll'.
++  bool OptimizeFrontendOutput = !device->spmd && cg.OptimizationLevel > 0;
++  if (OptimizeFrontendOutput) {
++    cg.UnrollLoops = true;
++    cg.DisableLLVMPasses = true;
+   }
+   cg.VerifyModule = true;
+ 
+@@ -826,6 +828,18 @@ int pocl_llvm_build_program(cl_program program,
+   else
+     ++llvm_ctx->number_of_IRs;
+ 
++  if (OptimizeFrontendOutput) {
++    // Clang's conditions for assignment tracking at -O1 and up
++    using ATMode = CodeGenOptions::AssignmentTrackingOpts;
++    bool TrackAssignments =
++        cg.getAssignmentTrackingMode() == ATMode::Forced ||
++        (cg.getAssignmentTrackingMode() == ATMode::Enabled &&
++         !cg.PrepareForThinLTO && !cg.PrepareForLTO &&
++         cg.getDebuggerTuning() != llvm::DebuggerKind::LLDB);
++    optimizeFrontendModule(*mod, device, cg.OptimizationLevel,
++                           cg.OptimizeSize, TrackAssignments);
++  }
++
+   if (mod->getModuleFlag("PIC Level") == nullptr)
+     mod->setPICLevel(PICLevel::BigPIC);
+ 
+diff --git a/lib/CL/pocl_llvm_wg.cc b/lib/CL/pocl_llvm_wg.cc
+index 0927b8a1e..96d0a4a65 100644
+--- a/lib/CL/pocl_llvm_wg.cc
++++ b/lib/CL/pocl_llvm_wg.cc
+@@ -40,6 +40,7 @@ IGNORE_COMPILER_WARNING("-Wunused-parameter")
+ #include <llvm/MC/TargetRegistry.h>
+ #include <llvm/Analysis/TargetLibraryInfo.h>
+ #include <llvm/Analysis/TargetTransformInfo.h>
++#include <llvm/IR/DebugInfo.h>
+ #include <llvm/IR/Function.h>
+ #include <llvm/IR/Module.h>
+ #include <llvm/IR/PassTimingInfo.h>
+@@ -54,10 +55,13 @@ IGNORE_COMPILER_WARNING("-Wunused-parameter")
+ #include <llvm/Target/TargetOptions.h>
+ #include <llvm/Transforms/IPO/Internalize.h>
+ #include <llvm/Transforms/Utils/Cloning.h>
++#include <llvm/Transforms/Utils/LoopUtils.h>
+ // legacy PassManager is needed for CodeGen, even if new PM is used for IR
+ #include <llvm/IR/LegacyPassManager.h>
+ #include <llvm/Analysis/CGSCCPassManager.h>
+ #include <llvm/Analysis/LoopAnalysisManager.h>
++#include <llvm/Analysis/LoopInfo.h>
++#include <llvm/IR/Dominators.h>
+ #include <llvm/Passes/PassBuilder.h>
+ #include <llvm/Passes/StandardInstrumentations.h>
+ #include <llvm/Transforms/Scalar/LoopPassManager.h>
+@@ -1550,7 +1554,7 @@ int pocl_llvm_codegen(cl_device_id Device, cl_program Program,
+ 
+ void populateModulePM([[maybe_unused]] void *Passes, void *Module,
+                       unsigned OptL, bool Vectorize,
+-                      TargetMachine *TM) {
++                      TargetMachine *TM, unsigned SizeL) {
+ 
+   PipelineTuningOptions PTO;
+ 
+@@ -1599,7 +1603,15 @@ void populateModulePM([[maybe_unused]] void *Passes, void *Module,
+       Opt = OptimizationLevel::O1;
+       break;
+     case 2:
++#if LLVM_MAJOR < 23
++      Opt = SizeL == 0   ? OptimizationLevel::O2
++            : SizeL == 1 ? OptimizationLevel::Os
++                         : OptimizationLevel::Oz;
++#else
++      // the size levels are only function attributes since LLVM 23
++      (void)SizeL;
+       Opt = OptimizationLevel::O2;
++#endif
+       break;
+     default:
+     case 3:
+@@ -1617,4 +1629,42 @@ void populateModulePM([[maybe_unused]] void *Passes, void *Module,
+   }
+ }
+ 
++void optimizeFrontendModule(llvm::Module &Mod, cl_device_id Dev,
++                            unsigned OptL, unsigned SizeL,
++                            bool TrackAssignments) {
++  // Clang adds this pass at the start of its pipeline.
++  if (TrackAssignments) {
++    ModuleAnalysisManager MAM;
++    AssignmentTrackingPass().run(Mod, MAM);
++  }
++
++  // Clang creates a target machine for the module's triple and CPU, which
++  // provides the TTI and the target's pipeline callbacks.
++  std::unique_ptr<TargetMachine> TM(
++      GetTargetMachine(Dev->llvm_target_triplet, Dev->llvm_cpu));
++  populateModulePM(nullptr, &Mod, OptL, /*Vectorize=*/false, TM.get(), SizeL);
++
++  // The loop vectorizer only interleaves the kernel's own loops when asked,
++  // as with the llvm.loop.unroll.disable that -fno-unroll-loops put on them.
++  for (Function &F : Mod) {
++    if (F.isDeclaration())
++      continue;
++    DominatorTree DT(F);
++    LoopInfo LI(DT);
++    for (Loop *L : LI.getLoopsInPreorder()) {
++      bool HasHint = false;
++      if (MDNode *LoopID = L->getLoopID())
++        for (const MDOperand &Op : drop_begin(LoopID->operands()))
++          if (auto *Node = dyn_cast<MDNode>(Op))
++            if (auto *Name = dyn_cast_or_null<MDString>(
++                    Node->getNumOperands() ? Node->getOperand(0).get()
++                                           : nullptr))
++              HasHint |= Name->getString().starts_with("llvm.loop.unroll.") ||
++                         Name->getString() == "llvm.loop.interleave.count";
++      if (!HasHint)
++        addStringMetadataToLoop(L, "llvm.loop.interleave.count", 1);
++    }
++  }
++}
++
+ /* vim: set ts=4 expandtab: */
+diff --git a/tests/compiler_unit/CMakeLists.txt b/tests/compiler_unit/CMakeLists.txt
+index 3991a9e4b..6e1d2dccf 100644
+--- a/tests/compiler_unit/CMakeLists.txt
++++ b/tests/compiler_unit/CMakeLists.txt
+@@ -69,6 +69,8 @@ add_llvm_check(SPIRV_NAME issue-1872-switch-to-a-bb-with-unreachable)
+ add_llvm_check(SPIRV_NAME switch-to-unreachable-with-a-phi-in-dest)
+ add_llvm_check(OPENCLC_NAME force-vector-width ENVIRONMENT "POCL_VECTORIZER_FORCE_VECTOR_WIDTH=4")
+ add_llvm_check(OPENCLC_NAME prefer-vector-width ENVIRONMENT "POCL_VECTORIZER_PREFER_VECTOR_WIDTH=512")
++add_llvm_check(OPENCLC_NAME frontend-loop-hints)
++add_llvm_check(OPENCLC_NAME frontend-assignment-tracking ENVIRONMENT "POCL_EXTRA_BUILD_FLAGS=-g")
+ add_llvm_check(OPENCLC_NAME unroll-barrier-loop-local-size ENVIRONMENT "POCL_BINARY_SPECIALIZE_WG=16-1-1")
+ add_llvm_check(OPENCLC_NAME unroll-barrier-loop-partial ENVIRONMENT "POCL_BINARY_SPECIALIZE_WG=16-1-1")
+ # sub-groups aren't advertised by conformant builds
+diff --git a/tests/compiler_unit/frontend-assignment-tracking.cl b/tests/compiler_unit/frontend-assignment-tracking.cl
+new file mode 100644
+index 000000000..cafd91094
+--- /dev/null
++++ b/tests/compiler_unit/frontend-assignment-tracking.cl
+@@ -0,0 +1,14 @@
++// The front-end runs Clang's assignment tracking on optimized builds with
++// debug info, so the values of variables whose address escapes are tracked
++// through the stores to them.
++__attribute__((noinline)) void escape(private int *p) {
++  *(volatile private int *)p += 1;
++}
++
++kernel void track(global int *out, int n) {
++  int x = n;
++  escape(&x);
++  x += 5;
++  escape(&x);
++  out[0] = x;
++}
+diff --git a/tests/compiler_unit/frontend-assignment-tracking.fc b/tests/compiler_unit/frontend-assignment-tracking.fc
+new file mode 100644
+index 000000000..364b5ffad
+--- /dev/null
++++ b/tests/compiler_unit/frontend-assignment-tracking.fc
+@@ -0,0 +1,2 @@
++CHECK: {{#dbg_assign|llvm.dbg.assign}}
++CHECK: !"debug-info-assignment-tracking", i1 true
+diff --git a/tests/compiler_unit/frontend-loop-hints.cl b/tests/compiler_unit/frontend-loop-hints.cl
+new file mode 100644
+index 000000000..59677286e
+--- /dev/null
++++ b/tests/compiler_unit/frontend-loop-hints.cl
+@@ -0,0 +1,16 @@
++// The front-end marks plain loops with interleave count 1, which keeps the
++// loop vectorizer from interleaving them as Clang's -fno-unroll-loops used
++// to, and leaves loops with explicit hints alone.
++kernel void hints(global int *out, global const int *in, int n) {
++  size_t i = get_global_id(0);
++  int a = in[i], b = a, c = a;
++  for (int k = 0; k < n; ++k)
++    a = a * in[k] + 1;
++  #pragma nounroll
++  for (int k = 0; k < n; ++k)
++    b = b * in[k] + 2;
++  #pragma clang loop interleave_count(2)
++  for (int k = 0; k < n; ++k)
++    c = c * in[k] + 3;
++  out[i] = a + b + c;
++}
+diff --git a/tests/compiler_unit/frontend-loop-hints.fc b/tests/compiler_unit/frontend-loop-hints.fc
+new file mode 100644
+index 000000000..ee9128396
+--- /dev/null
++++ b/tests/compiler_unit/frontend-loop-hints.fc
+@@ -0,0 +1,6 @@
++CHECK-DAG: [[IC1:![0-9]+]] = !{!"llvm.loop.interleave.count", i32 1}
++CHECK-DAG: [[IC2:![0-9]+]] = !{!"llvm.loop.interleave.count", i32 2}
++CHECK-DAG: [[NOUNROLL:![0-9]+]] = !{!"llvm.loop.unroll.disable"}
++CHECK-DAG: = distinct !{![[#]], [[IC1]]}
++CHECK-DAG: = distinct !{![[#]], [[IC2]]}
++CHECK-DAG: = distinct !{![[#]], [[NOUNROLL]]}
+-- 
+2.56.0
+

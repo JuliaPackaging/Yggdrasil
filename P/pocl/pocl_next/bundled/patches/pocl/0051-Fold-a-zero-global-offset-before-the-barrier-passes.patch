@@ -1,0 +1,63 @@
+From 99700971ad8e6b78d11fce0872c5e13a59eddd91 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Tue, 6 Oct 2026 16:13:26 +0200
+Subject: [PATCH] Fold a zero global offset before the barrier passes
+
+In a work-group function specialized for a zero global offset, replace
+get_global_offset() with a constant dimension and the _global_offset_*
+loads with 0 in optimize-wi-gvars, rather than only in Workgroup at the
+end of stage 2, so that the stage 1 optimizations can simplify the code
+using them. rusticl folds the offset in its specialized kernel variants
+in the same way.
+---
+ lib/llvmopencl/OptimizeWorkItemGVars.cc | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/lib/llvmopencl/OptimizeWorkItemGVars.cc b/lib/llvmopencl/OptimizeWorkItemGVars.cc
+index 9ca36aff3..b240fb94f 100644
+--- a/lib/llvmopencl/OptimizeWorkItemGVars.cc
++++ b/lib/llvmopencl/OptimizeWorkItemGVars.cc
+@@ -74,6 +74,7 @@ using namespace llvm;
+ // - the local size, if the work-group function is specialized for it. All
+ //   work-groups have that size, as non-uniform work-groups are unsupported.
+ //   A dimension of size 1 also has local id 0.
++// - the global offset, if it is specialized for a zero offset.
+ // - the sub-group size, from intel_reqd_sub_group_size, or else the local
+ //   size X (see Workgroup.cc).
+ static bool foldWorkItemValues(Function &F) {
+@@ -85,9 +86,10 @@ static bool foldWorkItemValues(Function &F) {
+   if (SPMD)
+     return false;
+ 
+-  bool DynamicLocalSize = true;
++  bool DynamicLocalSize = true, ZeroGlobalOffset = false;
+   unsigned long LocalSize[3] = {0, 0, 0};
+   getModuleBoolMetadata(*M, "WGDynamicLocalSize", DynamicLocalSize);
++  getModuleBoolMetadata(*M, "WGAssumeZeroGlobalOffset", ZeroGlobalOffset);
+   getModuleIntMetadata(*M, "WGLocalSizeX", LocalSize[0]);
+   getModuleIntMetadata(*M, "WGLocalSizeY", LocalSize[1]);
+   getModuleIntMetadata(*M, "WGLocalSizeZ", LocalSize[2]);
+@@ -110,6 +112,11 @@ static bool foldWorkItemValues(Function &F) {
+     foldLoads("_local_size_y", LocalSize[1]);
+     foldLoads("_local_size_z", LocalSize[2]);
+   }
++  if (ZeroGlobalOffset) {
++    foldLoads("_global_offset_x", 0);
++    foldLoads("_global_offset_y", 0);
++    foldLoads("_global_offset_z", 0);
++  }
+ 
+   uint64_t SubgroupSize = 0;
+   if (ConstantInt *Required = getRequiredSubgroupSize(F))
+@@ -138,6 +145,8 @@ static bool foldWorkItemValues(Function &F) {
+       else if (StaticLocalSize && Name == LID_BUILTIN_NAME &&
+                (Dim >= 3 || LocalSize[Dim] == 1))
+         Replacements.push_back({Call, 0});
++      else if (ZeroGlobalOffset && Name == GOFF_BUILTIN_NAME)
++        Replacements.push_back({Call, 0});
+     }
+   }
+ 
+-- 
+2.56.0
+

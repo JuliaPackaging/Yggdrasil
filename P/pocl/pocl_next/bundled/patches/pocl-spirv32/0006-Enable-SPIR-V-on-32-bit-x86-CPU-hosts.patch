@@ -1,7 +1,7 @@
-From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From 02d068be33231ed03c17eaef3f92ee89f1e844d5 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Sun, 25 Oct 2026 09:18:29 +0100
-Subject: [PATCH 46/46] Enable SPIR-V on 32-bit x86 CPU hosts
+Subject: [PATCH] Enable SPIR-V on 32-bit x86 CPU hosts
 
 SPIR-V was disabled on 32-bit hosts in #1883 after spirv/printf crashed on
 Debian's i386, armel and armhf builds (#1880), until the 32-bit support was
@@ -18,7 +18,7 @@ doesn't know their ABIs.
  1 file changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index b008c7a48..03ddd874f 100644
+index 134570b60..fc79c66f0 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -1322,12 +1322,14 @@ endif()
@@ -38,3 +38,6 @@ index b008c7a48..03ddd874f 100644
    set(HOST_CPU_ENABLE_SPIRV ON)
  endif()
  
+-- 
+2.56.0
+

@@ -1,4 +1,4 @@
-From 6f3ddac462e8e73afbe8695cda0fe2ae77acdb43 Mon Sep 17 00:00:00 2001
+From 362f0d1a4d865f5b40b456421b1d1dcb63bb54e8 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Mon, 26 Oct 2026 12:07:37 +0100
 Subject: [PATCH] pthread: give each thread a static block of work-groups
@@ -58,7 +58,7 @@ index 87e2ce479..0cfbc2e42 100644
  
   These variables are used to configure different aspects of the remote driver
 diff --git a/lib/CL/devices/common_utils.h b/lib/CL/devices/common_utils.h
-index 463fd53a1..8b9b1faa4 100644
+index e5be71d8f..2e377266c 100644
 --- a/lib/CL/devices/common_utils.h
 +++ b/lib/CL/devices/common_utils.h
 @@ -67,6 +67,13 @@ struct kernel_run_command

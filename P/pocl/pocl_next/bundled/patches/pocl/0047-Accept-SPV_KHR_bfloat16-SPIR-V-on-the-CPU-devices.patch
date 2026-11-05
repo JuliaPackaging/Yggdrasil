@@ -1,7 +1,7 @@
-From 6a62882feb68659af63fd34a4698e598ccf33146 Mon Sep 17 00:00:00 2001
+From 55b294a756f973d1ed229e922dfa98008103c7de Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Tue, 3 Nov 2026 14:26:58 +0100
-Subject: [PATCH 47/47] Accept SPV_KHR_bfloat16 SPIR-V on the CPU devices
+Subject: [PATCH] Accept SPV_KHR_bfloat16 SPIR-V on the CPU devices
 
 SPV_KHR_bfloat16 adds a bfloat16 floating-point type to SPIR-V for loads,
 stores and conversions to and from other floating-point types. LLVM's

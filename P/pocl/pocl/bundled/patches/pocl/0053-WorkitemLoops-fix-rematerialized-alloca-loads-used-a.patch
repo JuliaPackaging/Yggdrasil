@@ -1,4 +1,4 @@
-From 2a891ca40eb4aaff2120fbb526a63a52e3a64266 Mon Sep 17 00:00:00 2001
+From 4c47bdf3cc5f9a18918e62565ae3ca6540074da6 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Thu, 5 Nov 2026 12:05:30 +0100
 Subject: [PATCH] WorkitemLoops: fix rematerialized alloca loads used as a
@@ -44,10 +44,10 @@ index 32f43b655..b35fd4b17 100644
          } else {
            // We can get rid of the alloca load altogether and use the
 diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
-index 07d62e5cc..8580e5e92 100644
+index ea1ba0c19..9c6163985 100644
 --- a/tests/regression/CMakeLists.txt
 +++ b/tests/regression/CMakeLists.txt
-@@ -38,6 +38,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
+@@ -39,6 +39,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
       test_divergent_implicit_barrier_entry
       test_uniform_implicit_barrier_entry
       test_localmem_load_across_barrier
@@ -55,7 +55,7 @@ index 07d62e5cc..8580e5e92 100644
       test_spirv_intel_subgroups
       test_spirv_bfloat16
       test_indirect_ptrs
-@@ -213,6 +214,8 @@ add_test_pocl(NAME "regression/uniform_implicit_barrier_entry" WORKITEM_HANDLER
+@@ -217,6 +218,8 @@ add_test_pocl(NAME "regression/uniform_implicit_barrier_entry" WORKITEM_HANDLER
  
  add_test_pocl(NAME "regression/localmem_load_across_barrier" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_localmem_load_across_barrier")
  
@@ -63,7 +63,7 @@ index 07d62e5cc..8580e5e92 100644
 +
  add_test_pocl(NAME "regression/test_indirect_ptrs" COMMAND "test_indirect_ptrs")
  
- add_test_pocl(NAME "regression/test_usm_indirect_ptrs" COMMAND "test_usm_indirect_ptrs")
+ add_test_pocl(NAME "regression/replicated_wi_subgroup_alloca" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_replicated_wi_subgroup_alloca")
 diff --git a/tests/regression/test_remat_alloca_store_address.c b/tests/regression/test_remat_alloca_store_address.c
 new file mode 100644
 index 000000000..2d1a9132e

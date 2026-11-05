@@ -1,4 +1,4 @@
-From 52ebbdadc6e4f1afc2647eb43bc899fd8fcab7d5 Mon Sep 17 00:00:00 2001
+From 8e76d7ab1022b0295bb3c661adf2988447157b86 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Mon, 28 Sep 2026 15:29:38 +0200
 Subject: [PATCH] Remove the SIGFPE handler
@@ -34,8 +34,8 @@ zero, also with the basic driver.
  lib/CL/pocl_llvm_wg.cc                     |   2 +
  lib/CL/pocl_util.h                         |   6 -
  tests/regression/CMakeLists.txt            |   8 +
- tests/regression/test_signal_handlers.c    |  49 +++++-
- 12 files changed, 60 insertions(+), 201 deletions(-)
+ tests/regression/test_signal_handlers.c    |  48 +++++-
+ 12 files changed, 60 insertions(+), 200 deletions(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
 index 07f58e279..f12435449 100644
@@ -341,7 +341,7 @@ index 0641ae3cf..26c39f3a3 100644
 -#endif
 -}
 diff --git a/lib/CL/pocl_llvm_wg.cc b/lib/CL/pocl_llvm_wg.cc
-index baed8c4a1..b2f54460f 100644
+index aac2f0b4f..e1712c733 100644
 --- a/lib/CL/pocl_llvm_wg.cc
 +++ b/lib/CL/pocl_llvm_wg.cc
 @@ -497,6 +497,8 @@ static void addStage1PassesToPipeline(cl_device_id Dev,
@@ -390,7 +390,7 @@ index 8f47a991e..3fa874fee 100644
  
  add_test_pocl(NAME "regression/test_workitem_func_outside_kernel" COMMAND "test_workitem_func_outside_kernel")
 diff --git a/tests/regression/test_signal_handlers.c b/tests/regression/test_signal_handlers.c
-index c7d12b709..98e793e19 100644
+index 4650a950b..98e793e19 100644
 --- a/tests/regression/test_signal_handlers.c
 +++ b/tests/regression/test_signal_handlers.c
 @@ -20,10 +20,13 @@
@@ -427,13 +427,12 @@ index c7d12b709..98e793e19 100644
    _exit (EXIT_FAILURE);
  }
  
-@@ -93,10 +99,12 @@ main ()
+@@ -93,9 +99,12 @@ main ()
    if (check_host_handlers ("device initialization") != EXIT_SUCCESS)
      return EXIT_FAILURE;
  
--  const char *source = "#define VALUE 42\n"
--                       "__kernel void k (__global int *out) {\n"
--                       "  *out = VALUE;\n"
+-  const char *source = "__kernel void k (__global int *out) {\n"
+-                       "  *out = 42;\n"
 -                       "}\n";
 +  const char *source
 +      = "__kernel void k (__global const int *num, __global const int *den,\n"
@@ -444,7 +443,7 @@ index c7d12b709..98e793e19 100644
    cl_program program
        = clCreateProgramWithSource (context, 1, &source, NULL, &err);
    CHECK_ERROR (err);
-@@ -105,6 +113,35 @@ main ()
+@@ -104,6 +113,35 @@ main ()
    if (check_host_handlers ("building a program") != EXIT_SUCCESS)
      return EXIT_FAILURE;
  

@@ -1,13 +1,46 @@
-From 0876acfb46d0ff5f94a1f47b2d5006e7b570f889 Mon Sep 17 00:00:00 2001
+From 2705a4888c142b13fe7845c419d11ce85108d7ae Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
-Date: Thu, 9 Jul 2026 11:10:30 +0200
+Date: Fri, 10 Jul 2026 11:29:59 +0200
 Subject: [PATCH] Load CPU host kernels in-process via ORC/JITLink
 
-Add an ORC LLJIT loader for CPU work-group objects so supported hosts can link and load kernel objects in-process without writing a shared library, calling dlopen(), or executing an external linker.
+Instead of linking each compiled kernel object into a shared library and
+dlopen()ing it, load the object into the process with LLVM's ORC LLJIT and the
+JITLink object-linking layer. JITLink resolves relocations, maps the code into
+executable memory and registers EH frames, acting as both linker and loader: no
+shared library is written and the OS loader is not involved. The CPU drivers
+then work with the kernel cache on a noexec filesystem and in statically linked
+deployments, and kernels can be unloaded.
 
-Keep the linker path available through POCL_CPU_JIT=0 or unsupported JITLink targets, and use in-process lld where available. Exported program binaries link JIT objects into shared libraries when possible, while the ordinary cache keeps distinct object and shared-library variants.
+The JIT is gated by the new HOST_CPU_ENABLE_JIT CMake option, on by default
+wherever JITLink has a backend: ELF and Mach-O hosts, and Windows x86-64 (MinGW)
+via COFF_x86_64 (which needs the large code model, as that backend synthesizes
+no far-call stubs). POCL_CPU_JIT=0 selects the link path at run time, and a
+failed JIT bring-up falls back to it automatically.
 
-Teach the JIT symbol model about libpocl, configured vector math libraries, compiler-rt/libgcc helpers, kernel-library builtins, printf flush, and MinGW helper symbols. Add focused CPU JIT smoke coverage.
+Each kernel object is linked in isolation, so it must carry every builtin it
+references. After the pocl passes, the JIT path copies the referenced
+kernel-library bodies into the work-group module, internalizes everything but
+the launcher, and re-optimizes -- the IR-time equivalent of the shared-library
+link. Objects that are already self-contained skip this, and the kernel library
+is parsed lazily so cold builds and cache hits do not deserialize every builtin.
+Remaining references resolve at run time from a fixed set of sources: process
+and libpocl symbols, the configure-time vector-math library (libmvec/SLEEF
+dynamically, SVML from static archives), the compiler runtime archive
+(compiler-rt/libgcc), and host ABI callbacks injected as absolute symbols (the
+printf flush callback, and on MinGW the stack probe and the FP16 soft-float
+conversion helpers).
+
+Caches and poclbinaries stay mode-agnostic. The cached artifact is the
+relocatable object itself rather than a shared library, but the loader accepts
+either and links or JIT-loads whatever it finds; poclbinary export links any
+JIT-only objects into shared libraries so consumers without the JIT or without
+LLVM can still use them. Lookup failures surface JITLink's diagnostic through
+pocl_jit_last_error(), a dlerror() analogue.
+
+Squashed with the second commit of upstream PR #2190, 9d8c9f73c
+("cpu: lazily load SVML archives in ORC").
+
+Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
 ---
  CMakeLists.txt                              | 124 ++++
  cmake/SetupLLD.cmake                        |   3 +-
@@ -30,19 +63,20 @@ Teach the JIT symbol model about libpocl, configured vector math libraries, comp
  lib/CL/pocl_cache.c                         |  71 +-
  lib/CL/pocl_cl.h                            |  19 +
  lib/CL/pocl_llvm.h                          |   5 +-
- lib/CL/pocl_llvm_api.h                      |   6 +
- lib/CL/pocl_llvm_build.cc                   |  17 +-
+ lib/CL/pocl_llvm_api.h                      |   9 +
+ lib/CL/pocl_llvm_build.cc                   |  27 +-
  lib/CL/pocl_llvm_orc.cc                     | 719 ++++++++++++++++++++
  lib/CL/pocl_llvm_orc.h                      |  75 ++
  lib/CL/pocl_llvm_spirv.cc                   |   2 +-
- lib/CL/pocl_llvm_wg.cc                      | 144 +++-
- lib/llvmopencl/linker.cpp                   |  69 +-
+ lib/CL/pocl_llvm_utils.cc                   |  28 +
+ lib/CL/pocl_llvm_wg.cc                      | 174 ++++-
+ lib/llvmopencl/linker.cpp                   | 198 ++++--
  lib/llvmopencl/linker.h                     |   8 +-
  tests/CMakeLists.txt                        |  28 +
  tests/kernel/CMakeLists.txt                 |   9 +
  tests/regression/CMakeLists.txt             |   5 +-
  tests/regression/test_large_stack_frame.cpp |  69 ++
- 33 files changed, 1849 insertions(+), 191 deletions(-)
+ 34 files changed, 2019 insertions(+), 221 deletions(-)
  create mode 100644 cmake/test_jit_svml_failure.cmake
  create mode 100644 cmake/test_jit_svml_success.cmake
  create mode 100644 lib/CL/pocl_llvm_orc.cc
@@ -1481,16 +1515,26 @@ index e5343a445..702a5c5cf 100644
     * @param Device the device whose target to link for
     * @param InFile the input object file
 diff --git a/lib/CL/pocl_llvm_api.h b/lib/CL/pocl_llvm_api.h
-index 87c294eb2..afceac2f5 100644
+index 87c294eb2..270773b77 100644
 --- a/lib/CL/pocl_llvm_api.h
 +++ b/lib/CL/pocl_llvm_api.h
-@@ -133,6 +133,12 @@ struct PoclLLVMContextData
+@@ -73,6 +73,7 @@ public:
+ };
+ 
+ llvm::Module *parseModuleIR (const char *path, llvm::LLVMContext *c);
++llvm::Module *parseModuleIRLazy (const char *path, llvm::LLVMContext *c);
+ void parseModuleGVarSize (cl_program program, unsigned device_i,
+                           llvm::Module *ProgramBC);
+ void writeModuleIRtoString(const llvm::Module *mod, std::string& dest);
+@@ -133,6 +134,14 @@ struct PoclLLVMContextData
  #endif
  };
  
 +/* Return the device's OpenCL C built-in function library bitcode, parsed into
-+ * the context's LLVMContext and cached in its kernelLibraryMap. Returns NULL if
-+ * the library cannot be found. */
++ * the context's LLVMContext and cached in its kernelLibraryMap. The returned
++ * module is lazily loaded; materialize functions before inspecting or cloning
++ * their bodies, and only touch the module while holding the context Lock.
++ * Returns NULL if the library cannot be found. */
 +llvm::Module *getKernelLibrary(cl_device_id device,
 +                               PoclLLVMContextData *llvm_ctx);
 +
@@ -1498,7 +1542,7 @@ index 87c294eb2..afceac2f5 100644
  #pragma GCC visibility pop
  #endif
 diff --git a/lib/CL/pocl_llvm_build.cc b/lib/CL/pocl_llvm_build.cc
-index 97b4889d6..80e3e8ef7 100644
+index 97b4889d6..b1ddbfb69 100644
 --- a/lib/CL/pocl_llvm_build.cc
 +++ b/lib/CL/pocl_llvm_build.cc
 @@ -166,9 +166,6 @@ static void get_build_log(cl_program program,
@@ -1521,9 +1565,16 @@ index 97b4889d6..80e3e8ef7 100644
      return true;
  
    raw_string_ostream OS(Log);
-@@ -1046,8 +1044,8 @@ int pocl_llvm_link_program(cl_program program, unsigned device_i,
-  * Return the OpenCL C built-in function library bitcode
-  * for the given device.
+@@ -1043,11 +1041,13 @@ int pocl_llvm_link_program(cl_program program, unsigned device_i,
+ }
+ 
+ /**
+- * Return the OpenCL C built-in function library bitcode
+- * for the given device.
++ * Return the OpenCL C built-in function library bitcode for the given device.
++ * The returned module is lazily loaded; callers must materialize functions
++ * before inspecting or cloning their bodies. Only access the module while
++ * holding the context Lock because materialization mutates it.
   */
 -static llvm::Module *getKernelLibrary(cl_device_id device,
 -                                      PoclLLVMContextData *llvm_ctx) {
@@ -1532,7 +1583,24 @@ index 97b4889d6..80e3e8ef7 100644
    Triple triple(device->llvm_target_triplet);
    llvm::LLVMContext *llvmContext = llvm_ctx->Context;
    kernelLibraryMapTy *kernelLibraryMap = llvm_ctx->kernelLibraryMap;
-@@ -1229,7 +1227,8 @@ int pocl_invoke_lld_link(cl_device_id Device, const char *InFile,
+@@ -1086,14 +1086,14 @@ static llvm::Module *getKernelLibrary(cl_device_id device,
+   if (pocl_exists(BuiltinLibrary.c_str())) {
+     POCL_MSG_PRINT_LLVM("Using %s as the built-in lib.\n",
+                         BuiltinLibrary.c_str());
+-    BuiltinLibModule = parseModuleIR(BuiltinLibrary.c_str(), llvmContext);
++    BuiltinLibModule = parseModuleIRLazy(BuiltinLibrary.c_str(), llvmContext);
+   } else {
+     if (device->kernellib_fallback_name &&
+         pocl_exists(BuiltinLibraryFallback.c_str())) {
+       POCL_MSG_WARN("Using fallback %s as the built-in lib.\n",
+                     BuiltinLibraryFallback.c_str());
+       BuiltinLibModule =
+-          parseModuleIR(BuiltinLibraryFallback.c_str(), llvmContext);
++          parseModuleIRLazy(BuiltinLibraryFallback.c_str(), llvmContext);
+     } else
+       POCL_MSG_ERR("Can't find either kernel library file %s or fallback %s.\n",
+                    BuiltinLibrary.c_str(), BuiltinLibraryFallback.c_str());
+@@ -1229,7 +1229,8 @@ int pocl_invoke_lld_link(cl_device_id Device, const char *InFile,
    // The flags the Clang driver would pass to the linker are HOST_LD_FLAGS
    // (-shared -nostartfiles and friends), expressed here in ld terms.
    // Symbols the kernel binary leaves undefined resolve when it is
@@ -1542,7 +1610,7 @@ index 97b4889d6..80e3e8ef7 100644
  #ifdef __APPLE__
    ArgStorage.push_back(
        llvm::Triple(Device->llvm_target_triplet).getArchName().str());
-@@ -1261,8 +1260,8 @@ int pocl_invoke_lld_link(cl_device_id Device, const char *InFile,
+@@ -1261,8 +1262,8 @@ int pocl_invoke_lld_link(cl_device_id Device, const char *InFile,
  #endif
  #endif
  
@@ -1555,7 +1623,7 @@ index 97b4889d6..80e3e8ef7 100644
  
 diff --git a/lib/CL/pocl_llvm_orc.cc b/lib/CL/pocl_llvm_orc.cc
 new file mode 100644
-index 000000000..ad7f3f05f
+index 000000000..2420c84d1
 --- /dev/null
 +++ b/lib/CL/pocl_llvm_orc.cc
 @@ -0,0 +1,719 @@
@@ -2089,9 +2157,9 @@ index 000000000..ad7f3f05f
 +  Builder.setJITTargetMachineBuilder(std::move(JTMB));
 +
 +  Expected<std::unique_ptr<LLJIT>> JIT = Builder.create();
-+  /* Test hook: simulate an environment where the JIT cannot be brought up
-+     (unsupported triple, executor setup failure) to exercise the linker
-+     fallback; see test_jit_fallback.jl. */
++  /* Test hook: setting POCL_FAULT_INJECT_JIT simulates an environment where
++     the JIT cannot be brought up (unsupported triple, executor setup failure),
++     to exercise the linker fallback. */
 +  if (JIT && getenv("POCL_FAULT_INJECT_JIT"))
 +    JIT = createStringError(inconvertibleErrorCode(),
 +                            "injected failure (POCL_FAULT_INJECT_JIT)");
@@ -2372,8 +2440,54 @@ index eb2cbaf1c..d157a1996 100644
                           Mod, CL_FALSE, CL_TRUE, &Content, &ContentSize) != CL_SUCCESS) {
      BuildLog->append("failed to convert LLVM IR to SPIR-V "
                       "using LLVM SPIRV backend\n");
+diff --git a/lib/CL/pocl_llvm_utils.cc b/lib/CL/pocl_llvm_utils.cc
+index b8cb335f0..ce4b7a306 100644
+--- a/lib/CL/pocl_llvm_utils.cc
++++ b/lib/CL/pocl_llvm_utils.cc
+@@ -32,6 +32,8 @@ POP_COMPILER_DIAGS
+ IGNORE_COMPILER_WARNING("-Wunused-parameter")
+ 
+ #include <llvm/Support/TargetSelect.h>
++#include <llvm/Support/Error.h>
++#include <llvm/Support/MemoryBuffer.h>
+ #include <llvm/Support/SourceMgr.h>
+ #include <llvm/Support/Signals.h>
+ #include <llvm/IR/Constants.h>
+@@ -90,6 +92,32 @@ llvm::Module *parseModuleIR(const char *path, llvm::LLVMContext *c) {
+   return M;
+ }
+ 
++/* Like parseModuleIR, but defers deserialization of function bodies
++ * (LLVM lazy bitcode loading). Only usable for .bc files; falls back
++ * to an eager parse otherwise. Callers must materialize() a function
++ * before inspecting or cloning its body. */
++llvm::Module *parseModuleIRLazy(const char *path, llvm::LLVMContext *c) {
++  auto BufOrErr = MemoryBuffer::getFile(path, /*IsText=*/false,
++                                        /*RequiresNullTerminator=*/false);
++  if (std::error_code EC = BufOrErr.getError()) {
++    POCL_MSG_ERR("parseModuleIRLazy('%s'): cannot read file: %s\n", path,
++                 EC.message().c_str());
++    return nullptr;
++  }
++
++  Expected<std::unique_ptr<llvm::Module>> ModOrErr =
++      getOwningLazyBitcodeModule(std::move(*BufOrErr), *c,
++                                 /*ShouldLazyLoadMetadata=*/false);
++  if (!ModOrErr) {
++    POCL_MSG_WARN("parseModuleIRLazy('%s'): lazy bitcode load failed (%s); "
++                  "falling back to an eager parse\n",
++                  path, toString(ModOrErr.takeError()).c_str());
++    return parseModuleIR(path, c);
++  }
++
++  return ModOrErr->release();
++}
++
+ void parseModuleGVarSize(cl_program program, unsigned device_i,
+                          llvm::Module *ProgramBC) {
+   if (ProgramBC == nullptr)
 diff --git a/lib/CL/pocl_llvm_wg.cc b/lib/CL/pocl_llvm_wg.cc
-index 85e5ca59a..baed8c4a1 100644
+index 85e5ca59a..aac2f0b4f 100644
 --- a/lib/CL/pocl_llvm_wg.cc
 +++ b/lib/CL/pocl_llvm_wg.cc
 @@ -29,7 +29,10 @@
@@ -2461,11 +2575,38 @@ index 85e5ca59a..baed8c4a1 100644
        CodeGenOptLevel::Aggressive);
  
    assert(TM != NULL && "llvm target has no targetMachine constructor");
-@@ -945,6 +976,91 @@ pocl_llvm_run_pocl_passes(llvm::Module *Bitcode,
+@@ -945,6 +976,121 @@ pocl_llvm_run_pocl_passes(llvm::Module *Bitcode,
    return 0;
  }
  
 +#ifdef HOST_CPU_ENABLE_JIT
++/* Whether the work-group module could still need symbols from the kernel
++   library: a referenced declaration the object would leave undefined, or a
++   direct call whose callee Function belongs to another module (the two cases
++   linkKernelLibraryForJIT() exists to fix). Modules without either are
++   already self-contained. Deciding this before touching the kernel library
++   keeps the fast path from loading the shared builtin module, selectively
++   linking it, and re-optimizing the result during the first kernel launch. */
++static bool workGroupModuleIsSelfContained(llvm::Module *ParallelBC) {
++  for (const llvm::GlobalVariable &GV : ParallelBC->globals())
++    if (GV.isDeclaration() && !GV.use_empty())
++      return false;
++  for (llvm::Function &F : *ParallelBC) {
++    if (F.isDeclaration() && !F.isIntrinsic() && !F.use_empty())
++      return false;
++    for (llvm::Instruction &I : llvm::instructions(F)) {
++      auto *CB = llvm::dyn_cast<llvm::CallBase>(&I);
++      if (CB == nullptr)
++        continue;
++      llvm::Function *Callee = CB->getCalledFunction();
++      if (Callee != nullptr && !Callee->isIntrinsic() &&
++          Callee->getParent() != ParallelBC)
++        return false;
++    }
++  }
++  return true;
++}
++
 +/* Make an in-process JIT work-group object self-contained.
 +
 +   The JIT links each kernel object in isolation, so every builtin the kernel
@@ -2487,6 +2628,9 @@ index 85e5ca59a..baed8c4a1 100644
 +static int linkKernelLibraryForJIT(llvm::Module *ParallelBC,
 +                                   cl_device_id Device,
 +                                   PoclLLVMContextData *PoCLLLVMContext) {
++  if (workGroupModuleIsSelfContained(ParallelBC))
++    return 0;
++
 +  llvm::Module *KernelLib = getKernelLibrary(Device, PoCLLLVMContext);
 +  if (KernelLib == nullptr) {
 +    POCL_MSG_ERR("pocl_jit: cannot load the kernel library to finalize the "
@@ -2553,7 +2697,7 @@ index 85e5ca59a..baed8c4a1 100644
  int pocl_llvm_generate_workgroup_function_nowrite(
      unsigned DeviceI, cl_device_id Device, cl_kernel Kernel,
      _cl_command_node *Command, void **Output, int Specialize) {
-@@ -980,6 +1096,14 @@ int pocl_llvm_generate_workgroup_function_nowrite(
+@@ -980,6 +1126,14 @@ int pocl_llvm_generate_workgroup_function_nowrite(
                                        PoCLLLVMContext, Program, Kernel, Device,
                                        Specialize);
  
@@ -2568,7 +2712,7 @@ index 85e5ca59a..baed8c4a1 100644
    std::string FinalizerCommand =
        pocl_get_string_option("POCL_BITCODE_FINALIZER", "");
    if (!FinalizerCommand.empty()) {
-@@ -1226,7 +1350,7 @@ static TargetLibraryInfoImpl *initPassManagerForCodeGen(legacy::PassManager &PM,
+@@ -1226,7 +1380,7 @@ static TargetLibraryInfoImpl *initPassManagerForCodeGen(legacy::PassManager &PM,
   * Output native object file (<kernel>.so.o). */
  int pocl_llvm_codegen2(const char* TTriple, const char* MCPU,
                         const char *Features, cl_device_type DevType,
@@ -2577,7 +2721,7 @@ index 85e5ca59a..baed8c4a1 100644
                         int EmitObj, char **Output, uint64_t *OutputSize) {
  
    PoclCompilerMutexGuard LockHolder(Lock);
-@@ -1251,7 +1375,8 @@ int pocl_llvm_codegen2(const char* TTriple, const char* MCPU,
+@@ -1251,7 +1405,8 @@ int pocl_llvm_codegen2(const char* TTriple, const char* MCPU,
      }
    }
  
@@ -2587,7 +2731,7 @@ index 85e5ca59a..baed8c4a1 100644
    llvm::TargetMachine *Target = TM.get();
  
    // First try direct object code generation from LLVM, if supported by the
-@@ -1380,7 +1505,8 @@ int pocl_llvm_codegen(cl_device_id Device, cl_program Program,
+@@ -1380,7 +1535,8 @@ int pocl_llvm_codegen(cl_device_id Device, cl_program Program,
    PoclLLVMContextData *LLVMCtx = (PoclLLVMContextData *)Ctx->llvm_context_data;
  
    return pocl_llvm_codegen2 (Device->llvm_target_triplet, Device->llvm_cpu,
@@ -2598,10 +2742,228 @@ index 85e5ca59a..baed8c4a1 100644
  }
  
 diff --git a/lib/llvmopencl/linker.cpp b/lib/llvmopencl/linker.cpp
-index 69b395e79..9554e2225 100644
+index 69b395e79..805588eda 100644
 --- a/lib/llvmopencl/linker.cpp
 +++ b/lib/llvmopencl/linker.cpp
-@@ -889,7 +889,7 @@ static void replaceIntrinsics(llvm::Module *Program, const llvm::Module *Lib,
+@@ -53,6 +53,7 @@ IGNORE_COMPILER_WARNING("-Wunused-parameter")
+ #include <llvm/IR/Verifier.h>
+ #include <llvm/PassInfo.h>
+ #include <llvm/PassRegistry.h>
++#include <llvm/Support/Error.h>
+ #include <llvm/Transforms/IPO/AlwaysInliner.h>
+ #include <llvm/Transforms/Utils/AMDGPUEmitPrintf.h>
+ #include <llvm/Transforms/Utils/ValueMapper.h>
+@@ -264,19 +265,36 @@ static void fixCallingConv(llvm::Module *Mod, std::string &Log) {
+ 
+ using SmallFunctionSet = llvm::SmallSet<llvm::Function *, 8>;
+ 
++// The kernel library module is loaded lazily (see parseModuleIRLazy);
++// a function body must be materialized before it can be inspected or
++// cloned. Cheap no-op for eager modules and materialized functions.
++static bool materializeFunction(llvm::Function *F) {
++  if (llvm::Error Err = F->materialize()) {
++    POCL_MSG_ERR("linker: failed to materialize function %s: %s\n",
++                 F->getName().str().c_str(),
++                 llvm::toString(std::move(Err)).c_str());
++    return false;
++  }
++  return true;
++}
++
+ // Find all functions in the calltree of F, including declarations.
+ // Returns the list of Functions called in CalledFuncList,
+ // in depth-first order (to make cloning simpler);
+-// returns pointer to recursive function on error, nullptr on success
+-static llvm::Function *
++// returns 0 on success, -1 on recursion, -2 on materialization failure.
++static int
+ find_called_functions(llvm::Function *F,
+                       llvm::SmallVector<llvm::Function *> &CalledFuncList,
+-                      SmallFunctionSet &CallStack) {
++                      SmallFunctionSet &CallStack,
++                      llvm::Function *&RecursiveFn) {
+   if (F->isDeclaration()) {
+     DB_PRINT("it's a declaration, return\n");
+-    return nullptr;
++    return 0;
+   }
+ 
++  if (!materializeFunction(F))
++    return -2;
++
+   CallStack.insert(F);
+ 
+   assert(F->hasName());
+@@ -300,7 +318,8 @@ find_called_functions(llvm::Function *F,
+ 
+     if (CallStack.contains(Callee)) {
+       DB_PRINT("Recursion detected: %s\n", CName.c_str());
+-      return Callee;
++      RecursiveFn = Callee;
++      return -1;
+     }
+     DB_PRINT("Function %s calls %s\n", FName.c_str(), CName.c_str());
+ 
+@@ -311,8 +330,10 @@ find_called_functions(llvm::Function *F,
+     } else {
+       DB_PRINT("function %s not seen before, recursing into it\n",
+                CName.c_str());
+-      if (auto *R = find_called_functions(Callee, CalledFuncList, CallStack))
+-        return R;
++      int Res =
++          find_called_functions(Callee, CalledFuncList, CallStack, RecursiveFn);
++      if (Res)
++        return Res;
+       DB_PRINT("inserting %s into CalledList\n", CName.c_str());
+       CalledFuncList.push_back(Callee);
+     }
+@@ -320,12 +341,12 @@ find_called_functions(llvm::Function *F,
+ 
+   CallStack.erase(F);
+ 
+-  return nullptr;
++  return 0;
+ }
+ 
+ // Copies one function from one module to another
+ // does not inspect it for callgraphs
+-static void CopyFunc(const llvm::StringRef Name, const llvm::Module *From,
++static bool CopyFunc(const llvm::StringRef Name, const llvm::Module *From,
+                      llvm::Module *To, ValueToValueMapTy &VVMap) {
+ 
+   llvm::Function *SrcFunc = From->getFunction(Name);
+@@ -340,7 +361,7 @@ static void CopyFunc(const llvm::StringRef Name, const llvm::Module *From,
+     DstFunc->copyAttributesFrom(SrcFunc);
+   } else if (DstFunc->size() > 0) {
+     // We have already encountered and copied this function.
+-    return;
++    return true;
+   }
+   VVMap[SrcFunc] = DstFunc;
+ 
+@@ -353,6 +374,10 @@ static void CopyFunc(const llvm::StringRef Name, const llvm::Module *From,
+     ++DstArgI;
+   }
+   if (!SrcFunc->isDeclaration()) {
++    if (!materializeFunction(SrcFunc))
++      return false;
++    assert(!SrcFunc->isMaterializable());
++
+     SmallVector<ReturnInst *, 8> RI; // Ignore returns cloned.
+     DB_PRINT("  cloning %s\n", Name.data());
+ 
+@@ -366,6 +391,7 @@ static void CopyFunc(const llvm::StringRef Name, const llvm::Module *From,
+   } else {
+     DB_PRINT("  found %s, but its a declaration, do nothing\n", Name.data());
+   }
++  return true;
+ }
+ 
+ /* Copy function F and all the functions in its call graph
+@@ -383,16 +409,22 @@ static int CopyFuncCallgraph(const llvm::StringRef FuncName,
+   SmallFunctionSet CallStack;
+   llvm::SmallVector<llvm::Function *> Callees;
+   // error if recursion occurs
+-  if (find_called_functions(RootFunc, Callees, CallStack))
++  llvm::Function *RecursiveFn = nullptr;
++  int Res = find_called_functions(RootFunc, Callees, CallStack, RecursiveFn);
++  if (Res == -1)
+     return -2;
++  if (Res == -2)
++    return -3;
+ 
+   DB_PRINT("copying function %s with callgraph\n", RootFunc->getName().data());
+ 
+   // First copy the callees of func, then the function itself.
+   for (auto F : Callees) {
+-    CopyFunc(F->getName(), From, To, VVMap);
++    if (!CopyFunc(F->getName(), From, To, VVMap))
++      return -3;
+   }
+-  CopyFunc(FuncName, From, To, VVMap);
++  if (!CopyFunc(FuncName, From, To, VVMap))
++    return -3;
+   assert(To->getFunction(FuncName) != nullptr);
+ 
+   return 0;
+@@ -776,7 +808,7 @@ static bool convertSpirvTargetExtTypes(llvm::Module &Mod, std::string &Log) {
+  * to know the promotions used for arguments. This could also be implemented
+  * by storing each argument's size in the printf buffer, but that's TBD
+ */
+-static void handleDeviceSidePrintf(
++static bool handleDeviceSidePrintf(
+     llvm::Module *Program, const llvm::Module *Lib, std::string &Log,
+     ValueToValueMapTy &vvm, cl_device_id ClDev) {
+ 
+@@ -820,10 +852,26 @@ static void handleDeviceSidePrintf(
+ 
+     Function *PrintfAlloc = Lib->getFunction("pocl_printf_alloc_stub");
+     assert(PrintfAlloc != nullptr);
+-    CopyFuncCallgraph("pocl_printf_alloc_stub", Lib, Program, vvm);
+-    CopyFuncCallgraph("pocl_printf_alloc", Lib, Program, vvm);
+-    if (DeviceSupportsImmediateFlush)
+-      CopyFuncCallgraph("pocl_flush_printf_buffer", Lib, Program, vvm);
++    int Res = CopyFuncCallgraph("pocl_printf_alloc_stub", Lib, Program, vvm);
++    if (Res <= -2) {
++      Log.append("Failed to copy device-side printf helper: "
++                 "'pocl_printf_alloc_stub'\n");
++      return false;
++    }
++    Res = CopyFuncCallgraph("pocl_printf_alloc", Lib, Program, vvm);
++    if (Res <= -2) {
++      Log.append("Failed to copy device-side printf helper: "
++                 "'pocl_printf_alloc'\n");
++      return false;
++    }
++    if (DeviceSupportsImmediateFlush) {
++      Res = CopyFuncCallgraph("pocl_flush_printf_buffer", Lib, Program, vvm);
++      if (Res <= -2) {
++        Log.append("Failed to copy device-side printf helper: "
++                   "'pocl_flush_printf_buffer'\n");
++        return false;
++      }
++    }
+ 
+     std::set<CallInst *> Calls;
+     for (auto U : CalledPrintf->users()) {
+@@ -851,13 +899,15 @@ static void handleDeviceSidePrintf(
+     if (CalledPrintf->getNumUses() == 0)
+       CalledPrintf->eraseFromParent();
+   }
++
++  return true;
+ }
+ 
+-static void replaceIntrinsics(llvm::Module *Program, const llvm::Module *Lib,
++static bool replaceIntrinsics(llvm::Module *Program, const llvm::Module *Lib,
+                               ValueToValueMapTy &vvm, cl_device_id ClDev) {
+   llvm_intrin_replace_fn IntrinRepl = ClDev->llvm_intrin_replace;
+   if (IntrinRepl == nullptr)
+-    return;
++    return true;
+   std::map<Function *, Function *> EraseMap;
+   llvm::Module::iterator FI, FE;
+   StringRef LlvmIntrins("llvm.");
+@@ -867,7 +917,9 @@ static void replaceIntrinsics(llvm::Module *Program, const llvm::Module *Lib,
+         const char *ReplacementName =
+             IntrinRepl(FI->getName().data(), FI->getName().size());
+         if (ReplacementName) {
+-          CopyFuncCallgraph(ReplacementName, Lib, Program, vvm);
++          int Res = CopyFuncCallgraph(ReplacementName, Lib, Program, vvm);
++          if (Res <= -2)
++            return false;
+           Function *Repl = Program->getFunction(ReplacementName);
+           assert(Repl);
+           EraseMap[&*FI] = Repl;
+@@ -883,13 +935,15 @@ static void replaceIntrinsics(llvm::Module *Program, const llvm::Module *Lib,
+     Intrin->replaceAllUsesWith(Repl);
+     Intrin->eraseFromParent();
+   }
++
++  return true;
+ }
+ }
+ 
  using namespace pocl;
  
  int link(llvm::Module *Program, const llvm::Module *Lib, std::string &Log,
@@ -2610,7 +2972,49 @@ index 69b395e79..9554e2225 100644
  
    assert(Program);
    assert(Lib);
-@@ -985,45 +985,47 @@ int link(llvm::Module *Program, const llvm::Module *Lib, std::string &Log,
+@@ -935,17 +989,26 @@ int link(llvm::Module *Program, const llvm::Module *Lib, std::string &Log,
+ 
+     SmallFunctionSet CallStack;
+     llvm::SmallVector<llvm::Function *> Callees;
+-    if (auto *R = find_called_functions(&*FI, Callees, CallStack)) {
++    llvm::Function *RecursiveFn = nullptr;
++    int Res = find_called_functions(&*FI, Callees, CallStack, RecursiveFn);
++    if (Res == -1) {
+       Log.append("Recursion detected in function: '");
+       std::string PrettyName = tryDemangleWithoutAddressSpaces(FName);
+       Log.append(PrettyName.c_str());
+       Log.append("'\n");
+       Log.append("-> Infringing function: '");
+-      PrettyName = tryDemangleWithoutAddressSpaces(R->getName().str());
++      PrettyName =
++          tryDemangleWithoutAddressSpaces(RecursiveFn->getName().str());
+       Log.append(PrettyName.c_str());
+       Log.append("'\n");
+       return -1;
+     }
++    if (Res == -2) {
++      Log.append("Failed to materialize functions called from: '");
++      Log.append(FName);
++      Log.append("'\n");
++      return -1;
++    }
+     for (auto F : Callees) {
+       DB_PRINT("Adding function '%s' to list of called funcs\n", FName.c_str());
+       DeclaredFunctions.insert(F->getName());
+@@ -979,51 +1042,60 @@ int link(llvm::Module *Program, const llvm::Module *Lib, std::string &Log,
+       Log.append("'\n");
+       return -1;
+     }
++    if (Res == -3) {
++      Log.append("Failed to materialize kernel library function while "
++                 "copying: '");
++      Log.append(FName.str());
++      Log.append("'\n");
++      return -1;
++    }
+   }
+ 
+   convertAddrSpaceOperator(Program->getFunction("__to_local"), Log);
    convertAddrSpaceOperator(Program->getFunction("__to_private"), Log);
    convertAddrSpaceOperator(Program->getFunction("__to_global"), Log);
  
@@ -2690,7 +3094,28 @@ index 69b395e79..9554e2225 100644
  
    shared_copy(Program, Lib, Log, vvm);
  
-@@ -1279,4 +1281,3 @@ bool moveProgramScopeVarsOutOfProgramBc(llvm::LLVMContext *Context,
+@@ -1034,10 +1106,17 @@ int link(llvm::Module *Program, const llvm::Module *Lib, std::string &Log,
+ 
+   fixCallingConv(Program, Log);
+ 
+-  if (ClDev->device_side_printf)
+-    handleDeviceSidePrintf(Program, Lib, Log, vvm, ClDev);
++  if (ClDev->device_side_printf) {
++    if (!handleDeviceSidePrintf(Program, Lib, Log, vvm, ClDev)) {
++      Log.append("Failed to lower device-side printf\n");
++      return -1;
++    }
++  }
+ 
+-  replaceIntrinsics(Program, Lib, vvm, ClDev);
++  if (!replaceIntrinsics(Program, Lib, vvm, ClDev)) {
++    Log.append("Failed to replace LLVM intrinsics\n");
++    return -1;
++  }
+ 
+   // If we prefer to use compiler expansion of ID functions instead of the
+   // software-defined ones (with switch...cases for dim), replace the functions
+@@ -1279,4 +1358,3 @@ bool moveProgramScopeVarsOutOfProgramBc(llvm::LLVMContext *Context,
  }
  
  /* vim: set expandtab ts=2 : */
@@ -2821,7 +3246,7 @@ index 9d17693fd..59ef74e67 100644
  add_test_pocl(NAME "regression/test_mem_host_ptr_issue"
 diff --git a/tests/regression/test_large_stack_frame.cpp b/tests/regression/test_large_stack_frame.cpp
 new file mode 100644
-index 000000000..4d5de6dad
+index 000000000..074098ba3
 --- /dev/null
 +++ b/tests/regression/test_large_stack_frame.cpp
 @@ -0,0 +1,69 @@
@@ -2894,7 +3319,6 @@ index 000000000..4d5de6dad
 +            << ")\n";
 +  return EXIT_FAILURE;
 +}
-\ No newline at end of file
 -- 
 2.56.0
 

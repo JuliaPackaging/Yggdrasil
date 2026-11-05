@@ -1,8 +1,8 @@
-From a987cabf35aac406f6d653fa116b2bace2d9cabb Mon Sep 17 00:00:00 2001
+From a5f935d6e0bd54a9da8e8a0eff32161ddb6014ec Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Tue, 27 Oct 2026 01:00:16 +0100
-Subject: [PATCH 44/45] Skip host kernel coordinate divisions for ranges
- starting in the first row
+Subject: [PATCH] Skip host kernel coordinate divisions for ranges starting in
+ the first row
 
 clRunHostKernelPOCL used two 64-bit divisions to compute the range's first
 work-group coordinates. Each takes tens of cycles on Intel CPUs before

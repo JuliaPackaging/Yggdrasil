@@ -1,8 +1,8 @@
-From ef90d71e35285f142491804f480a42d110bad750 Mon Sep 17 00:00:00 2001
+From 9ddc3e0656b3e3f455a131c98b17a8e6a1d8031c Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Tue, 27 Oct 2026 01:49:36 +0100
-Subject: [PATCH 45/45] Skip the second MXCSR read when host kernel FP modes
- already match
+Subject: [PATCH] Skip the second MXCSR read when host kernel FP modes already
+ match
 
 When the caller's floating-point environment already matches the kernel's,
 the kernel can only raise further exception flags, as a function call would.

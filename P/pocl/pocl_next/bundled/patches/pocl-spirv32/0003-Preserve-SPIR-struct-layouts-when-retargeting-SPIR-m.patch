@@ -1,8 +1,7 @@
-From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From 6e90014913e07417ab809269bd797ad60df5f9e0 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Sun, 25 Oct 2026 09:09:40 +0100
-Subject: [PATCH 43/46] Preserve SPIR struct layouts when retargeting SPIR
- modules
+Subject: [PATCH] Preserve SPIR struct layouts when retargeting SPIR modules
 
 Before linking a SPIR module with the kernel library, its datalayout is
 replaced by the host's. Struct types from SPIR(-V) aren't padded explicitly,
@@ -43,7 +42,7 @@ loads and stores, from 32-bit and 64-bit SPIR-V.
  create mode 100644 tests/regression/test_spirv_struct_layout.ll
 
 diff --git a/lib/CL/pocl_llvm_build.cc b/lib/CL/pocl_llvm_build.cc
-index f6da4866b..c052fadcd 100644
+index ce66a7eb4..0db3850ee 100644
 --- a/lib/CL/pocl_llvm_build.cc
 +++ b/lib/CL/pocl_llvm_build.cc
 @@ -100,6 +100,7 @@ using namespace llvm;
@@ -54,7 +53,7 @@ index f6da4866b..c052fadcd 100644
  #include "linker.h"
  
  //#define DEBUG_POCL_LLVM_API
-@@ -873,10 +874,12 @@ int pocl_llvm_build_program(cl_program program,
+@@ -887,10 +888,12 @@ int pocl_llvm_build_program(cl_program program,
  }
  
  /* converts a "spir-unknown-unknown" module triple to target (CPU/CUDA etc)
@@ -69,7 +68,7 @@ index f6da4866b..c052fadcd 100644
  
  #if LLVM_MAJOR < 21
    const std::string &ModTriple = p->getTargetTriple();
-@@ -901,6 +904,9 @@ static int pocl_convert_spir_bitcode_to_target(llvm::Module *p,
+@@ -915,6 +918,9 @@ static int pocl_convert_spir_bitcode_to_target(llvm::Module *p,
                             device->llvm_target_triplet, ModTriple.c_str());
      }
  
@@ -79,7 +78,7 @@ index f6da4866b..c052fadcd 100644
      /* Note this is a hack to get SPIR working. We'll be linking the
       * host kernel library (plain LLVM IR) to the SPIR program.bc,
       * so LLVM complains about incompatible DataLayouts.
-@@ -975,8 +981,11 @@ int pocl_llvm_link_program(cl_program program, unsigned device_i,
+@@ -989,8 +995,11 @@ int pocl_llvm_link_program(cl_program program, unsigned device_i,
        }
      }
  
@@ -93,7 +92,7 @@ index f6da4866b..c052fadcd 100644
                           "could not convert SPIR to Target\n");
  
 diff --git a/lib/llvmopencl/CMakeLists.txt b/lib/llvmopencl/CMakeLists.txt
-index 104105d10..ed03274bc 100644
+index d5c8ec810..b3ef7c286 100644
 --- a/lib/llvmopencl/CMakeLists.txt
 +++ b/lib/llvmopencl/CMakeLists.txt
 @@ -73,6 +73,8 @@ set(LLVMPASSES_SOURCES "AllocasToEntry.cc"
@@ -736,7 +735,7 @@ index 3faaef6a5..c73c0a899 100644
   * \brief check a return value of CL function or print the error to stderr.
   * @param cl_err [in] value to be checked.
 diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
-index db9850a49..a704765b5 100644
+index 82ce49164..b104380a4 100644
 --- a/tests/regression/CMakeLists.txt
 +++ b/tests/regression/CMakeLists.txt
 @@ -31,6 +31,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
@@ -747,7 +746,7 @@ index db9850a49..a704765b5 100644
       test_unreachable_in_infinite_loop
       test_rematerialized_alloca_load_with_outside_pr_users
       test_peeled_wi_global_id
-@@ -194,6 +195,8 @@ add_test_pocl(NAME "regression/test_unreachable_kernel" WORKITEM_HANDLER "loops;
+@@ -201,6 +202,8 @@ add_test_pocl(NAME "regression/test_unreachable_kernel" WORKITEM_HANDLER "loops;
  
  add_test_pocl(NAME "regression/test_remat_alloca_without_initializer" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_remat_alloca_without_initializer" LABELS ${SPIRV_LABELS})
  
@@ -1207,3 +1206,6 @@ index 000000000..b14285258
 +  store i32 %v, ptr addrspace(1) %out, align 4
 +  ret void
 +}
+-- 
+2.56.0
+

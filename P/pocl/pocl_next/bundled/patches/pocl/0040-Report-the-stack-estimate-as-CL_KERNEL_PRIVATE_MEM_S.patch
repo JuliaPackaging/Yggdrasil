@@ -1,4 +1,4 @@
-From 1ad236f58eb33b50b63ec1b85ddb087a887527eb Mon Sep 17 00:00:00 2001
+From 83ad9b1c6383f3c02b8a9e7f7d398223290d33c6 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Mon, 19 Oct 2026 17:20:40 +0200
 Subject: [PATCH] Report the stack estimate as CL_KERNEL_PRIVATE_MEM_SIZE on
@@ -35,7 +35,7 @@ index 04f200158..f169c2b98 100644
            POCL_RETURN_GETINFO (cl_ulong, 0);
        }
 diff --git a/lib/CL/pocl_llvm_build.cc b/lib/CL/pocl_llvm_build.cc
-index 70df41f52..f6da4866b 100644
+index 15a393c0c..43e56c17a 100644
 --- a/lib/CL/pocl_llvm_build.cc
 +++ b/lib/CL/pocl_llvm_build.cc
 @@ -231,7 +231,10 @@ static bool generateProgramBC(PoclLLVMContextData *Context, llvm::Module *Mod,

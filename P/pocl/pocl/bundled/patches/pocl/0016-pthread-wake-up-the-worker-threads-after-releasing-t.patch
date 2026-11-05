@@ -1,4 +1,4 @@
-From 81938669e45f905f694b0300882fa88121761e6d Mon Sep 17 00:00:00 2001
+From 7de83452316d310e7c3c1401a51cebec1dc5626e Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Mon, 5 Oct 2026 11:39:57 +0200
 Subject: [PATCH] pthread: wake up the worker threads after releasing the queue
@@ -135,5 +135,5 @@ index 53afaa526..8d854314e 100644
      }
  
 -- 
-2.55.0
+2.56.0
 

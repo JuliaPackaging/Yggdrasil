@@ -1,7 +1,7 @@
-From 260b630d657474d1fc1ba84773b4a3993e6b4c7c Mon Sep 17 00:00:00 2001
+From 73e6b378b26bbe11327caad4772923f8cbf3a521 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Fri, 4 Sep 2026 14:43:00 +0200
-Subject: [PATCH 7/7] clSetKernelExecInfo: keep SVM and USM pointer lists
+Subject: [PATCH] clSetKernelExecInfo: keep SVM and USM pointer lists
  independent
 
 CL_KERNEL_EXEC_INFO_SVM_PTRS and CL_KERNEL_EXEC_INFO_USM_PTRS_INTEL both
@@ -121,10 +121,10 @@ index 0906e2f71..9b43dcc80 100644
  /* Increments a buffer's reference counter. */
  #define POCL_RETAIN_BUFFER_UNLOCKED(__OBJ__)                                  \
 diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
-index 538e63ac7..2419e4a95 100644
+index a80b9937a..453ea6643 100644
 --- a/tests/regression/CMakeLists.txt
 +++ b/tests/regression/CMakeLists.txt
-@@ -36,6 +36,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
+@@ -37,6 +37,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
       test_divergent_implicit_barrier_entry
       test_uniform_implicit_barrier_entry
       test_localmem_load_across_barrier
@@ -132,7 +132,7 @@ index 538e63ac7..2419e4a95 100644
       test_usm_indirect_ptrs
  )
  foreach(PROG ${C_PROGRAMS_TO_BUILD})
-@@ -44,6 +45,8 @@ foreach(PROG ${C_PROGRAMS_TO_BUILD})
+@@ -45,6 +46,8 @@ foreach(PROG ${C_PROGRAMS_TO_BUILD})
    add_symlink_to_built_opencl_dynlib("${PROG}")
  endforeach()
  
@@ -141,7 +141,7 @@ index 538e63ac7..2419e4a95 100644
  
  set(PROGRAMS_TO_BUILD test_barrier_between_for_loops test_early_return
    test_for_with_var_iteration_count test_id_dependent_computation
-@@ -174,6 +177,8 @@ add_test_pocl(NAME "regression/uniform_implicit_barrier_entry" WORKITEM_HANDLER
+@@ -177,6 +180,8 @@ add_test_pocl(NAME "regression/uniform_implicit_barrier_entry" WORKITEM_HANDLER
  
  add_test_pocl(NAME "regression/localmem_load_across_barrier" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_localmem_load_across_barrier")
  
@@ -318,3 +318,6 @@ index 000000000..eca82d487
 +  printf ("OK\n");
 +  return EXIT_SUCCESS;
 +}
+-- 
+2.56.0
+

@@ -1,7 +1,7 @@
-From 7d934cf0ab1356a4d85723adefe2f2964150654c Mon Sep 17 00:00:00 2001
+From aef2de8848a6a6ce568d21418afd331a0f2fa3c6 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Tue, 3 Nov 2026 14:26:58 +0100
-Subject: [PATCH 46/47] Provide the bfloat16 conversion helpers to JIT-compiled
+Subject: [PATCH] Provide the bfloat16 conversion helpers to JIT-compiled
  kernels
 
 On x86-64 CPUs without native bfloat16 conversions, LLVM lowers fptrunc
@@ -19,7 +19,7 @@ rounds only once.
  1 file changed, 49 insertions(+), 2 deletions(-)
 
 diff --git a/lib/CL/pocl_llvm_orc.cc b/lib/CL/pocl_llvm_orc.cc
-index 25e7a113e..44da6cc70 100644
+index 9621f8078..28589ff70 100644
 --- a/lib/CL/pocl_llvm_orc.cc
 +++ b/lib/CL/pocl_llvm_orc.cc
 @@ -129,6 +129,44 @@ static double poclExtendHFDF2(_Float16 A) {

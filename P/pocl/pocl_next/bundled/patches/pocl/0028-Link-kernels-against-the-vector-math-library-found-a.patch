@@ -1,4 +1,4 @@
-From c761c7f2d23147c0919abb173ac42050095e71b4 Mon Sep 17 00:00:00 2001
+From 0e8ce938a8454f6a451c81dcfaf288c49e347511 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Wed, 7 Oct 2026 10:12:50 +0200
 Subject: [PATCH] Link kernels against the vector-math library found at run
@@ -142,7 +142,7 @@ index d0cc19a9c..a683d55c7 100644
     * \brief converts LLVM IR with "spir64-unknown-unknown" triple to SPIR-V
     *
 diff --git a/lib/CL/pocl_llvm_build.cc b/lib/CL/pocl_llvm_build.cc
-index 17ca771d0..70df41f52 100644
+index fc08a1355..15a393c0c 100644
 --- a/lib/CL/pocl_llvm_build.cc
 +++ b/lib/CL/pocl_llvm_build.cc
 @@ -53,6 +53,7 @@ IGNORE_COMPILER_WARNING("-Wcomment")
@@ -164,7 +164,7 @@ index 17ca771d0..70df41f52 100644
  #include "LLVMUtils.h"
  #include "pocl_util.h"
  
-@@ -1172,6 +1177,56 @@ int pocl_invoke_clang(const char* TTriple, const char** Args) {
+@@ -1174,6 +1179,56 @@ int pocl_invoke_clang(const char* TTriple, const char** Args) {
  
  }
  
@@ -221,7 +221,7 @@ index 17ca771d0..70df41f52 100644
  #ifdef CPU_USE_LLD_LINK
  
  #if defined(_WIN32)
-@@ -1252,14 +1307,18 @@ int pocl_invoke_lld_link(cl_device_id Device, const char *InFile,
+@@ -1254,14 +1309,18 @@ int pocl_invoke_lld_link(cl_device_id Device, const char *InFile,
  #endif
  
    // Carry over the extra link inputs HOST_LD_FLAGS passes by absolute path
@@ -246,7 +246,7 @@ index 17ca771d0..70df41f52 100644
  #if defined(ENABLE_PRINTF_IMMEDIATE_FLUSH) && defined(HAVE_DLFCN_H)
    // The kernel references pocl_flush_printf_buffer, which only libpocl
 diff --git a/lib/CL/pocl_llvm_orc.cc b/lib/CL/pocl_llvm_orc.cc
-index ad7f3f05f..25e7a113e 100644
+index 2420c84d1..9621f8078 100644
 --- a/lib/CL/pocl_llvm_orc.cc
 +++ b/lib/CL/pocl_llvm_orc.cc
 @@ -166,8 +166,8 @@ std::string LastLookupError;

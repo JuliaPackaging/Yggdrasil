@@ -1,4 +1,4 @@
-From 4c6143ccaed9ccaf5ab0d12deff7bbbadd68c47a Mon Sep 17 00:00:00 2001
+From a978b1ea22b832779058927ec2cb4c6ac389e856 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Sat, 24 Oct 2026 14:45:00 +0200
 Subject: [PATCH] VariableUniformityAnalysis: don't reuse the uniformity of
@@ -110,5 +110,5 @@ index 5e1a5a4a8..c946b556f 100644
    mutable UniformityCache uniformityCache_;
  };
 -- 
-2.54.0 (Apple Git-157)
+2.56.0
 

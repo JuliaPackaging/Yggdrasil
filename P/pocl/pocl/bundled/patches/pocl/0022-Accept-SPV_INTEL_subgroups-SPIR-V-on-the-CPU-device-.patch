@@ -1,4 +1,4 @@
-From bc806bf415d0900635bd8c345591b39c83100495 Mon Sep 17 00:00:00 2001
+From b0d15ab69db00ff041f059465d3b966c1aeb7662 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Sun, 11 Oct 2026 11:09:23 +0200
 Subject: [PATCH] Accept SPV_INTEL_subgroups SPIR-V on the CPU device again
@@ -17,31 +17,30 @@ kernel library already implements the vector overloads.
 cl_intel_spirv_subgroups stays unadvertised, since it also requires the
 image block reads/writes. Also correct the comment that claimed the buffer
 block reads/writes are unimplemented.
-
-(cherry picked from commit 92f89245e84156e92edfd7b4e22d19bd4171ee6a)
 ---
- CMakeLists.txt                                |  10 +-
+ CMakeLists.txt                                |  11 +-
  tests/regression/CMakeLists.txt               |   3 +
  tests/regression/test_spirv_intel_subgroups.c | 181 ++++++++++++++++++
- 3 files changed, 193 insertions(+), 1 deletion(-)
+ 3 files changed, 194 insertions(+), 1 deletion(-)
  create mode 100644 tests/regression/test_spirv_intel_subgroups.c
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 92c9f55..19e947a 100644
+index 92c9f55bb..63c951c2f 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -1874,7 +1874,9 @@ endif()
+@@ -1874,7 +1874,10 @@ endif()
  # * cl_khr_subgroup_ballot: sub_group_ballot() works for uniform calls, the rest
  #   are unimplemented.
  #
 -# * cl_intel_subgroups: The block reads/writes are unimplemented.
 +# * cl_intel_subgroups: The image block reads/writes are unimplemented. The
-+#   shuffles, like the other sub-group functions, are work-group barriers, so they
-+#   need control flow that is uniform across the work-group.
++#   shuffles are implemented with work-group barriers, so unlike what the spec
++#   requires, they only work in control flow that is uniform across the
++#   work-group.
  #
  # * cl_intel_required_subgroup_size: CL_​KERNEL_​SPILL_​MEM_​SIZE_​INTEL and
  #   CL_​KERNEL_​COMPILE_​SUB_​GROUP_​SIZE_​INTEL are yet to implement.
-@@ -1929,6 +1931,12 @@ endif()
+@@ -1929,6 +1932,12 @@ endif()
  if(HOST_DEVICE_EXTENSIONS MATCHES "cl_khr_extended_bit_ops")
    set(HOST_DEVICE_SPV_EXTENSIONS "${HOST_DEVICE_SPV_EXTENSIONS},+SPV_KHR_bit_instructions")
  endif()
@@ -55,20 +54,20 @@ index 92c9f55..19e947a 100644
  # don't include cl_khr_int64 in HOST_DEVICE_EXTENSIONS list, because
  # such extension doesn't exist in official extension list
 diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
-index abd21e5..a46a3d2 100644
+index a9494a659..1acb589b1 100644
 --- a/tests/regression/CMakeLists.txt
 +++ b/tests/regression/CMakeLists.txt
-@@ -38,6 +38,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
+@@ -39,6 +39,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
       test_divergent_implicit_barrier_entry
       test_uniform_implicit_barrier_entry
       test_localmem_load_across_barrier
 +     test_spirv_intel_subgroups
       test_indirect_ptrs
+      test_replicated_wi_subgroup_alloca
       test_usm_indirect_ptrs
-      test_frexp_kernellib
-@@ -185,6 +186,8 @@ add_test_pocl(NAME "regression/peeled_wi_global_id" WORKITEM_HANDLER "loopvec;cb
+@@ -189,6 +190,8 @@ add_test_pocl(NAME "regression/barrier_divergent_skip" WORKITEM_HANDLER "loops;l
  
- add_test_pocl(NAME "regression/barrier_divergent_skip" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_barrier_divergent_skip" LABELS ${SPIRV_LABELS})
+ add_test_pocl(NAME "regression/barrier_early_exit" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_barrier_early_exit")
  
 +add_test_pocl(NAME "regression/spirv_intel_subgroups" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_spirv_intel_subgroups" LABELS ${SPIRV_LABELS})
 +
@@ -77,7 +76,7 @@ index abd21e5..a46a3d2 100644
  add_test_pocl(NAME "regression/uniform_implicit_barrier_entry" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_uniform_implicit_barrier_entry")
 diff --git a/tests/regression/test_spirv_intel_subgroups.c b/tests/regression/test_spirv_intel_subgroups.c
 new file mode 100644
-index 0000000..339a7f9
+index 000000000..339a7f9c2
 --- /dev/null
 +++ b/tests/regression/test_spirv_intel_subgroups.c
 @@ -0,0 +1,181 @@
