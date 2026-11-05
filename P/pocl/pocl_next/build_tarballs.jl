@@ -23,6 +23,8 @@ version = v"7.2.3"
 # SPV_KHR_float_controls2, which carries `contract` so that `muladd` can fuse into an FMA,
 # and it fixes LLVM 22 rounding <8 x bfloat> arithmetic wrongly for AArch64 targets without
 # BF16 (JuliaGPU/KernelAbstractions.jl#949).
+# On macOS, clang 23 tunes the kernel library for apple-m5 by default, which keeps the
+# inliner from inlining its barrier helpers into kernels; patch 0051 fixes that.
 llvm_version = v"23.1.4"
 macos_sdk_version = "11.0"
 
