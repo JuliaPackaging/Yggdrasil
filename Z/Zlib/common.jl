@@ -12,13 +12,21 @@ function configure_zlib_build(upstream_version::VersionNumber;
         v"1.2.12" => "21767c654d31d2dccdde4330529775c6c5fd5389",
         v"1.3.1" => "51b7f2abdade71cd9bb0e7a373ef2610ec6f9daf",
         v"1.3.2" => "da607da739fa6047df13e66a2af6b8bec7c2a498",
+        v"1.4.0" => "99623ef7097352da7993ba614161fd6a311e046e",
     )
 
     name = "Zlib"
 
+    if version.patch == 0
+        # Omit patch number if it is zero
+        tag = "v$(version.major).$(version.minor)"
+    else
+        tag = "v$(version)"
+    end
+
     sources = [
         # use Git source because zlib has a track record of deleting release tarballs of old versions
-        GitSource("https://github.com/madler/zlib.git", versions_tags[upstream_version]),
+        GitSource("https://github.com/madler/zlib.git", versions_tags[upstream_version]; tag=tag),
     ]
 
     script = raw"""
