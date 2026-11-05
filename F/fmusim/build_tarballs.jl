@@ -27,6 +27,11 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/test-fixtures-dev-dependency.patch
 export CFLAGS="-I${includedir}/libxml2"
 # On Windows the import libraries are in ${prefix}/lib, not ${libdir}.
 export RUSTFLAGS="-L ${prefix}/lib"
+if [[ "${target}" == *-mingw* ]]; then
+    # crash-handler calls _invoke_watson, which mingw-w64 v11 lacks for msvcrt.dll.
+    ${CC} -c ${WORKSPACE}/srcdir/invoke_watson.c -o ${WORKSPACE}/srcdir/invoke_watson.o
+    export RUSTFLAGS="${RUSTFLAGS} -C link-arg=${WORKSPACE}/srcdir/invoke_watson.o"
+fi
 cargo build --release --config "patch.crates-io.fmi-rs.path='${WORKSPACE}/srcdir/fmi-rs/fmi-rs'"
 
 install -Dvm 755 "target/${rust_target}/release/fmusim${exeext}" "${bindir}/fmusim${exeext}"
