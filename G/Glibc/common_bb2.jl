@@ -1,12 +1,12 @@
 # Shared pieces of the BinaryBuilder2 Glibc recipes.  These produce the glibc sysroots
 # that BinaryBuilder2's `CToolchain` installs, so the layout (everything in `/lib`,
 # headers in `/usr/include`, relative linker scripts, `crt*.o` alongside) matters.
-# `common.jl` is still used by the BinaryBuilder1 recipes.
 
 function glibc_bb2_sources(version)
     hashes = Dict(
         v"2.17" => "6914e337401e0e0ade23694e1b2c52a5f09e4eda3270c67e7c3ba93a89b5b23e",
         v"2.19" => "2d3997f588401ea095a0b27227b1d50cdfdd416236f6567b564549d3b46ea2a2",
+        v"2.34" => "44d26a1fe20b8853a48f470ead01e4279e869ac149b195dda4e44a195d981ab2",
     )
     return [
         ArchiveSource("https://mirrors.kernel.org/gnu/glibc/glibc-$(version.major).$(version.minor).tar.xz",
@@ -19,6 +19,7 @@ function glibc_bb2_platforms(version)
     arches = Dict(
         v"2.17" => ["x86_64", "i686", "powerpc64le"],
         v"2.19" => ["x86_64", "i686", "armv7l", "armv6l", "aarch64", "powerpc64le"],
+        v"2.34" => ["x86_64", "i686", "armv7l", "armv6l", "aarch64", "powerpc64le"],
     )
     return [Platform(arch, "linux") for arch in arches[version]]
 end
@@ -65,7 +66,11 @@ make install install_root="${prefix}"
 cp csu/crt1.o csu/crti.o csu/crtn.o ${prefix}/lib/
 
 # Make the linker scripts relative so the sysroot can live anywhere
-sed -i -e "s& /lib/& ./&g" ${prefix}/lib/libc.so ${prefix}/lib/libpthread.so
+for f in ${prefix}/lib/*.so; do
+    if [[ -f ${f} ]] && [[ ! -L ${f} ]] && grep -q "GNU ld script" ${f}; then
+        sed -i -e "s& /lib/& ./&g" ${f}
+    fi
+done
 
 # Some files get installed under `${prefix}/${prefix}`
 if [[ -d ${prefix}/${prefix} ]]; then
@@ -75,7 +80,22 @@ fi
 """
 
 function glibc_bb2_products(version)
-    # The unversioned `.so` files are linker scripts, so point at the real libraries
+    # The unversioned `.so` files are linker scripts, so point at the real libraries.
+    # From v2.34 on, glibc installs those under their sonames instead of `lib*-2.xx.so`.
+    if version >= v"2.34"
+        return [
+            LibraryProduct(["lib/ld-linux-x86-64.so.2", "lib/ld-linux.so.2",
+                            "lib/ld-linux-aarch64.so.1", "lib/ld-linux-armhf.so.3",
+                            "lib/ld64.so.2"], :ld),
+            LibraryProduct("lib/libc.so.6", :libc),
+            LibraryProduct("lib/libdl.so.2", :libdl),
+            LibraryProduct("lib/libm.so.6", :libm),
+            LibraryProduct("lib/libpthread.so.0", :libpthread),
+            LibraryProduct("lib/librt.so.1", :librt),
+            LibraryProduct("lib/libresolv.so.2", :libresolv),
+            LibraryProduct("lib/libutil.so.1", :libutil),
+        ]
+    end
     v = "$(version.major).$(version.minor)"
     return [
         LibraryProduct("lib/ld-$(v)", :ld),
