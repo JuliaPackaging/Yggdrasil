@@ -26,7 +26,7 @@ function configure_zlib_build(upstream_version::VersionNumber;
 
     sources = [
         # use Git source because zlib has a track record of deleting release tarballs of old versions
-        GitSource("https://github.com/madler/zlib.git", versions_tags[upstream_version]; tag=tag),
+        GitSource("https://github.com/madler/zlib.git", versions_tags[upstream_version]; tag),
     ]
 
     script = raw"""
