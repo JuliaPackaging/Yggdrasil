@@ -1,6 +1,9 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using Base.BinaryPlatforms
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "mpv"
 version = v"0.42.0"
@@ -8,9 +11,6 @@ version = v"0.42.0"
 # Collection of sources required to complete build #
 sources = [
     GitSource("https://github.com/mpv-player/mpv.git", "b0841e8c4d156b8403dc1876c4cbd9011eb583f3"; tag="v$(version)"),
-    # macOS 11.3 SDK for Apple framework headers (CoreAudio, AVFoundation, etc.)
-    FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz",
-               "cd4f08a75577145b8f05245a2975f7c81401d75e9535dcffbb879ee1deefcbf4"),
     DirectorySource("./bundled"),
 ]
 
@@ -38,17 +38,6 @@ fi
 FLAGS=()
 
 if [[ "${target}" == *-apple-* ]]; then
-    # x86_64-darwin14 sysroot lacks newer framework headers; overlay macOS 11.3 SDK
-    # aarch64-darwin20 already has them so no SDK needed
-    if [[ "${target}" == x86_64-apple-darwin* ]]; then
-        rm -rf /opt/${target}/${target}/sys-root/System
-        rm -rf /opt/${target}/${target}/sys-root/usr/include/libxml2/libxml
-        tar --extract --file=${WORKSPACE}/srcdir/MacOSX11.3.sdk.tar.xz \
-            --directory="/opt/${target}/${target}/sys-root/." \
-            --strip-components=1 MacOSX11.3.sdk/System MacOSX11.3.sdk/usr
-        export MACOSX_DEPLOYMENT_TARGET=11.0
-    fi
-
     # Cocoa requires Swift (no Swift compiler in BinaryBuilder), so disable it
     # and all features that depend on it. CoreAudio/AVFoundation are independent.
     FLAGS+=(
@@ -73,6 +62,8 @@ meson install -C build
 install_license Copyright LICENSE.GPL
 """
 
+sources, script = require_macos_sdk("11.3", sources, script)
+
 # Filter platforms that don't have full dependency support
 platforms = supported_platforms()
 #TODO filter!(p -> arch(p) != "armv6l", platforms)
@@ -89,17 +80,18 @@ products = [
 dependencies = [
     HostBuildDependency("CMake_jll"),
     BuildDependency("Xorg_xorgproto_jll"),
+    Dependency("FFMPEG_jll"; compat="9.0.0"),
+    Dependency("JpegTurbo_jll"),
+    Dependency("Libglvnd_jll"),
     Dependency("Libiconv_jll"),
+    Dependency("Lua_jll"),
     Dependency("SDL2_jll"),
     Dependency("Shaderc_jll"),
-    Dependency("Zlib_jll"),
-    Dependency("FFMPEG_jll"; compat="7.1"),
-    Dependency("Lua_jll"),
-    Dependency("JpegTurbo_jll"),
-    Dependency("Xorg_libXrandr_jll"),
-    Dependency("Xorg_libXinerama_jll"),
-    Dependency("Libglvnd_jll"),
     Dependency("Xorg_libX11_jll"),
+    Dependency("Xorg_libXinerama_jll"),
+    Dependency("Xorg_libXrandr_jll"),
+    Dependency("Zlib_jll"),
+    Dependency("libass_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
