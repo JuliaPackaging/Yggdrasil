@@ -272,6 +272,9 @@ function build_script(standalone=false; spirv32=false)
     # LLVM 22 split DTLTO out of LLVMLTO. PoCL's static component list predates
     # that split, leaving lld's llvm::lto::DTLTO vtable unresolved at load time.
     sed -i '/  LLVMLTO/a\  LLVMDTLTO' cmake/SetupLLVMviaCMake.cmake
+    # LLVM 23's clangCodeGen uses the new LLVMABI library, also missing from that list
+    # (it exists in LLVM 22 too, where nothing uses it).
+    sed -i '/  LLVMLTO/a\  LLVMABI' cmake/SetupLLVMviaCMake.cmake
 
     CMAKE_FLAGS=()
 
