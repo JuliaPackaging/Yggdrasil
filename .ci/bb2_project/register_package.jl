@@ -2,8 +2,8 @@ using BinaryBuilder2
 using BinaryBuilder2: import_archives
 
 # Registers the projects given in `ARGS`, in order.  They all go through one `BuildMeta`,
-# so their versions stack on top of each other in the JLL repository and land in a single
-# registry pull request.
+# so their versions stack on top of each other in the JLL repository, and each version gets
+# its own registry pull request, based on the pull request of the version before it.
 meta = BuildMeta(;
     universe_name=get(ENV, "BB2_UNIVERSE", nothing),
     deploy_org="JuliaBinaryWrappers",
