@@ -140,36 +140,46 @@ function bb2_build_steps!(group_steps, projects)
     julia(`$(bb2_julia_project)/scheduler.jl $(projects)`; julia_project=bb2_julia_project, stdout=io)
     groups = YAML.load(String(take!(io)))
 
-    # We will create one group per packaging project, and each build will belong to one of those 
+    # We will create one group per project, holding that project's builds
+    build_steps = Dict{String,Vector{BB2BuildStep}}()
     for (group_name, group) in groups
-        builds = []
-        steps = []
+        builds = BB2BuildStep[]
         for build in group["builds"]
-            bs = BB2BuildStep(
+            push!(builds, BB2BuildStep(
                 build["name"],
                 group_name,
                 build["platform"],
                 build["build_hash"],
                 build["dependencies"],
-            )
-            push!(builds, bs)
-            push!(steps, render(bs))
+            ))
         end
+        build_steps[group_name] = builds
+        if !isempty(builds)
+            push!(group_steps, group_step(group_name, render.(builds)))
+        end
+    end
 
-        for packaging in (SHOULD_REGISTER ? group["packagings"] : [])
-            deps = vcat(
-                # Other packages that must be registered
-                packaging["dependencies"],
-                # Our own builds
-                builds,
-            )
-            rs = BB2RegisterStep(packaging["name"], group_name, deps)
-            push!(steps, render(rs))
-        end
-        push!(group_steps, group_step(group_name, steps))
+    SHOULD_REGISTER || return
+
+    # Each package gets a single registration step.  When several projects build the same
+    # package, that step registers them one after another, lowest version first, so that
+    # the versions stack on top of each other in the JLL repository and the registry PR.
+    packagings = Dict{String,Vector{Tuple{VersionNumber,String,Dict}}}()
+    for (group_name, group) in groups, packaging in group["packagings"]
+        push!(get!(packagings, packaging["name"], []), (VersionNumber(packaging["version"]), group_name, packaging))
+    end
+    for name in sort(collect(keys(packagings)))
+        entries = sort(packagings[name]; by = first)
+        projects = [group_name for (_, group_name, _) in entries]
+        deps = vcat(
+            # Other packages that must be registered first
+            unique([bb2_register_key(dep) for (_, _, p) in entries for dep in p["dependencies"]]),
+            # The builds of every project that packages this one
+            [bs for group_name in unique(projects) for bs in build_steps[group_name]],
+        )
+        push!(group_steps, render(BB2RegisterStep(name, projects, deps)))
     end
 end
-
 
 function build_steps!(group_steps, bb1_projects, bb2_projects)
     if !isempty(bb1_projects)

@@ -7,13 +7,15 @@ steps:
           version: "1.13.2"
           artifacts_size_limit: "187904819200" # 175GiB
       - JuliaCI/merge-commit: ~
-      - JuliaCI/forerunner#v1:
+      - JuliaCI/forerunner#v1.1.0:
           watch:
             # Watch only changes within our top-level alphabetical directories
             - "[A-Z]/**"
           path_processor: .buildkite/path_processors/per-project
           target: .buildkite/generator.jl
-          target_type: command
+          # All changed projects go to one `generator.jl` run, so BinaryBuilder2 projects
+          # building the same package share a single registration step.
+          target_type: grouped_command
     artifacts:
       - "*.meta.json"
       - "*.platforms.list"
