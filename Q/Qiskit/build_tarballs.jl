@@ -10,7 +10,7 @@ version = v"2.6.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Qiskit/qiskit.git", "0c26a5a158c4d62b2b303a8c2f3c6eb2b14653b4")
+    GitSource("https://github.com/Qiskit/qiskit.git", "0c26a5a158c4d62b2b303a8c2f3c6eb2b14653b4"; tag=string(version))
 ]
 
 # Bash recipe for building across all platforms
