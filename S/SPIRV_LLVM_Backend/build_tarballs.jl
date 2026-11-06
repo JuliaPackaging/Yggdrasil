@@ -95,6 +95,12 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/fminimum_fmaximum.patch
 # OpPhi or OpSelect. LoopSimplify, which runs for OpenCL since LLVM 23, creates
 # the PHI chains that trigger it.
 atomic_patch -p1 $WORKSPACE/srcdir/patches/phi_select_retyped_operands.patch
+# Backport of https://github.com/llvm/llvm-project/pull/239575 ("[SPIR-V]
+# Switch on an integer when the condition is an i1"; still open upstream): i1
+# is a boolean in SPIR-V, which OpSwitch doesn't take as its selector, so
+# spirv-val rejected it. InstCombine leaves such switches when it narrows their
+# conditions, e.g. in Julia's union splits.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/bool_switch_selector.patch
 
 install_license LICENSE.TXT
 
