@@ -1,0 +1,51 @@
+From da872eb950aef236f02d2e3bc15cf82d64ff4015 Mon Sep 17 00:00:00 2001
+From: Panagiotis Georgakopoulos <8681967+pankgeorg@users.noreply.github.com>
+Date: Thu, 5 Nov 2026 21:38:06 +0000
+Subject: [PATCH 07/10] fs_path: no file ownership on WASI
+
+WASI has no users: no `geteuid`, and `stat` reports no owner. Give WASI its
+own `git_fs_path_owner_is` that treats every existing file as the current
+user's, so the ownership checks of `safe.directory` pass, as they do for a
+single-user system.
+---
+ src/util/fs_path.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+
+diff --git a/src/util/fs_path.c b/src/util/fs_path.c
+index 5b00b1b..93beaeb 100644
+--- a/src/util/fs_path.c
++++ b/src/util/fs_path.c
+@@ -1973,6 +1973,33 @@ done:
+ 	return error;
+ }
+ 
++#elif defined(__wasi__)
++
++/* WASI has no users or file ownership: every file is the current user's */
++int git_fs_path_owner_is(
++	bool *out,
++	const char *path,
++	git_fs_path_owner_t owner_type)
++{
++	struct stat st;
++
++	if (mock_owner) {
++		*out = ((mock_owner & owner_type) != 0);
++		return 0;
++	}
++
++	if (p_lstat(path, &st) != 0) {
++		if (errno == ENOENT)
++			return GIT_ENOTFOUND;
++
++		git_error_set(GIT_ERROR_OS, "could not stat '%s'", path);
++		return -1;
++	}
++
++	*out = (owner_type & GIT_FS_PATH_OWNER_CURRENT_USER) != 0;
++	return 0;
++}
++
+ #else
+ 
+ static int sudo_uid_lookup(uid_t *out)

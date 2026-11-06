@@ -47,7 +47,8 @@ The bash that a `<Name>_wasm` recipe's script runs first. `native_*` name the JL
 is a wasm build of; `source` and `source_hash` the upstream source (URL and sha256, or git URL and commit).
 """
 function wasm_script_preamble(; native_name::String, native_uuid::String, native_version::VersionNumber,
-                              source::String, source_hash::String, recipe::String)
+                              source::String, source_hash::String, recipe::String,
+                              flavours = WASM_FLAVOURS)
     return """
     WASM_NATIVE_NAME=$(native_name)
     WASM_NATIVE_UUID=$(native_uuid)
@@ -59,6 +60,7 @@ function wasm_script_preamble(; native_name::String, native_uuid::String, native
     WASI_SYSROOT_SHA256=$(WASI_SYSROOT_SHA256)
     WASI_LIBCLANG_RT_SHA256=$(WASI_LIBCLANG_RT_SHA256)
     WASM_LLVM_SHARD=$(WASM_LLVM_VERSION)
+    WASM_FLAVOUR_LIST="$(join(flavours, ' '))"
     """ * raw"""
     WASM_CLANG=/opt/${MACHTYPE}/bin/clang
     WASM_AR=/opt/${MACHTYPE}/bin/llvm-ar
@@ -77,7 +79,7 @@ function wasm_script_preamble(; native_name::String, native_uuid::String, native
     WASM64_CC="${WASM_CLANG} --target=wasm64-unknown-unknown -ffreestanding -nostdlib -mbulk-memory -D__wasi__ -resource-dir=${WASM_RD} -isystem ${WASM_SYSROOT}/include/wasm32-wasip1"
 
     wasm_install_license() {
-        for f in wasm32-wasip1 wasm64-unknown-unknown; do
+        for f in ${WASM_FLAVOUR_LIST}; do
             mkdir -p ${prefix}/${f}/share/licenses/${SRC_NAME%_wasm}
             cp "$@" ${prefix}/${f}/share/licenses/${SRC_NAME%_wasm}/
         done
@@ -138,12 +140,13 @@ end
 `FileProduct`s for each flavour's archives and manifest, and the standalone wasm32 modules. `libs`
 are archive names without `.a`, `modules` module names without `.wasm` (`wasm32-wasip1/lib/<module>.wasm`).
 """
-function wasm_products(libs::Vector{String}, modules::Vector{String} = String[])
+function wasm_products(libs::Vector{String}, modules::Vector{String} = String[]; flavours = WASM_FLAVOURS)
     products = Product[]
     for m in modules
         push!(products, FileProduct("wasm32-wasip1/lib/$(m).wasm", Symbol(replace(m, "-" => "_"), "_wasm32_wasm")))
     end
     for (f, short) in zip(WASM_FLAVOURS, ("wasm32", "wasm64"))
+        f in flavours || continue
         for lib in libs
             push!(products, FileProduct("$(f)/lib/$(lib).a", Symbol(replace(lib, "-" => "_"), "_", short, "_a")))
         end
@@ -158,14 +161,15 @@ end
 
 `build_tarballs` for a `<Name>_wasm` package: `AnyPlatform`, no dependencies, the wasi-sdk sources
 and the preamble added. `version` must equal the native JLL's upstream version. `modules` are the
-standalone wasm32 modules the script links (see `wasm_products`).
+standalone wasm32 modules the script links (see `wasm_products`). `flavours` are the flavours the
+script builds (default both; a library that needs a libc or a filesystem has only `wasm32-wasip1`).
 """
 function build_wasm_tarballs(ARGS, name, version, sources, script, libs::Vector{String};
                              native_name::String, native_uuid::String, source::String, source_hash::String,
-                             modules::Vector{String} = String[], kwargs...)
+                             modules::Vector{String} = String[], flavours = WASM_FLAVOURS, kwargs...)
     recipe = joinpath(uppercase(name[1:1]), name, "build_tarballs.jl")
-    preamble = wasm_script_preamble(; native_name, native_uuid, native_version = version, source, source_hash, recipe)
+    preamble = wasm_script_preamble(; native_name, native_uuid, native_version = version, source, source_hash, recipe, flavours)
     return build_tarballs(ARGS, name, version, [sources; wasm_sources()], preamble * script,
-                          [AnyPlatform()], wasm_products(libs, modules), Dependency[];
+                          [AnyPlatform()], wasm_products(libs, modules; flavours), Dependency[];
                           julia_compat = "1.6", preferred_llvm_version = WASM_LLVM_VERSION, kwargs...)
 end

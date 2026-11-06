@@ -1,0 +1,35 @@
+From 201ce63749557474a39d47449227e26303c7eb98 Mon Sep 17 00:00:00 2001
+From: Panagiotis Georgakopoulos <8681967+pankgeorg@users.noreply.github.com>
+Date: Thu, 5 Nov 2026 21:36:01 +0000
+Subject: [PATCH 01/10] integer: use the type-generic overflow builtins on
+ WebAssembly
+
+On wasm32 `size_t` is `unsigned long`, but `SIZE_MAX == UINT_MAX`, so the
+`SIZE_MAX` tests select `__builtin_uadd_overflow`/`__builtin_umul_overflow`,
+whose `unsigned int *` result type does not match a `size_t *`; clang rejects
+every caller with -Wincompatible-pointer-types. Use the type-generic
+`__builtin_add_overflow`/`__builtin_mul_overflow` there, which are correct for
+any width.
+---
+ src/util/integer.h | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/src/util/integer.h b/src/util/integer.h
+index a9e416c..cecc312 100644
+--- a/src/util/integer.h
++++ b/src/util/integer.h
+@@ -53,7 +53,13 @@ GIT_INLINE(int) git__is_int(int64_t p)
+ #if (__has_builtin(__builtin_add_overflow) || \
+      (defined(__GNUC__) && (__GNUC__ >= 5)))
+ 
+-# if (SIZE_MAX == UINT_MAX)
++# if defined(__wasm__)
++/* wasm32: size_t is `unsigned long` although SIZE_MAX == UINT_MAX; use the type-generic builtins */
++#  define git__add_sizet_overflow(out, one, two) \
++     __builtin_add_overflow(one, two, out)
++#  define git__multiply_sizet_overflow(out, one, two) \
++     __builtin_mul_overflow(one, two, out)
++# elif (SIZE_MAX == UINT_MAX)
+ #  define git__add_sizet_overflow(out, one, two) \
+      __builtin_uadd_overflow(one, two, out)
+ #  define git__multiply_sizet_overflow(out, one, two) \
