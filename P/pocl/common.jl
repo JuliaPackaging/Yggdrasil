@@ -58,6 +58,73 @@ the default series; without it, the build script is the same as before.
 
 =#
 
+# LLVM 19-22's AArch64 back-end rounds `<8 x bfloat>` arithmetic wrongly on CPUs without
+# FEAT_BF16 (e.g. Neoverse N1, Apple M1): the instruction patterns that promote it to two
+# `<4 x float>` halves take the round-to-nearest-even bit from an *input* instead of the
+# result, so ties go the wrong way (JuliaGPU/KernelAbstractions.jl#949). LLVM 23 removed
+# those patterns (llvm/llvm-project#190164). While these JLLs use LLVM 22, we fix the
+# pattern and rebuild the one LLVM object that contains the generated instruction
+# selector, AArch64ISelDAGToDAG.cpp, replacing it in LLVM_full_jll's static
+# libLLVMAArch64CodeGen.a before PoCL links against it. That needs the AArch64 target
+# sources, which are the same in upstream 22.1.8 and the Julia fork LLVM_full_jll builds.
+const aarch64_isel_fix_source =
+    FileSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-22.1.8/llvm-project-22.1.8.src.tar.xz",
+               "922f1817a0df7b1489272d18134ee0087a8b068828f87ac63b9861b1a9965888")
+needs_aarch64_isel_fix(platform) = llvm_version.major == 22 && arch(platform) == "aarch64"
+
+const aarch64_isel_fix_script = raw"""
+##########################################################################
+# 0. Fix LLVM 22's AArch64 selection of <8 x bfloat> arithmetic (see common.jl)
+##########################################################################
+# this changes the kernels PoCL generates, so it goes into the version tag (see below),
+# on all platforms to keep that tag the same
+llvm_fixes=$WORKSPACE/srcdir/llvm-fixes.txt
+echo "AArch64 round_v4fp32_to_v4bf16 (JuliaGPU/KernelAbstractions.jl#949)" > $llvm_fixes
+if [[ "${target}" == aarch64-* ]]; then
+    mkdir -p $WORKSPACE/srcdir/llvm-aarch64
+    pushd $WORKSPACE/srcdir/llvm-aarch64
+    tar -xJf $WORKSPACE/srcdir/llvm-project-22.1.8.src.tar.xz --strip-components=4 \
+        llvm-project-22.1.8.src/llvm/lib/Target/AArch64
+
+    # round_v4fp32_to_v4bf16 must shift its own argument, not the `V128:$Rn` operand of
+    # the pattern it is used in
+    sed -i 's/(USHRv4i32_shift V128:\$Rn, (i32 16))/(USHRv4i32_shift $Rn, (i32 16))/' \
+        AArch64/AArch64InstrInfo.td
+    if ! grep -q '(USHRv4i32_shift $Rn, (i32 16))' AArch64/AArch64InstrInfo.td; then
+        echo "ERROR: failed to patch AArch64InstrInfo.td" >&2
+        exit 1
+    fi
+
+    # generate what AArch64ISelDAGToDAG.cpp includes, with the host's llvm-tblgen of the
+    # same LLVM_full_jll, and compile it against the target LLVM's own (installed) headers
+    # and C++ flags, plus the usual flags of an LLVM release build
+    mkdir -p gen
+    tblgen=${host_prefix}/tools/llvm-tblgen
+    for gen in DAGISel:dag-isel InstrInfo:instr-info RegisterInfo:register-info \
+               SubtargetInfo:subtarget SystemOperands:searchable-tables \
+               SDNodeInfo:sd-node-info; do
+        $tblgen -gen-${gen#*:} -I AArch64 -I ${prefix}/include \
+            AArch64/AArch64.td -o gen/AArch64Gen${gen%%:*}.inc
+    done
+    $CXX $(bash $WORKSPACE/srcdir/llvm-config --cxxflags) -O3 -DNDEBUG -fPIC \
+        -fvisibility-inlines-hidden -ffunction-sections -fdata-sections \
+        -Igen -IAArch64 -c AArch64/AArch64ISelDAGToDAG.cpp -o AArch64ISelDAGToDAG.cpp.o
+
+    # BinaryBuilder copies dependency artifacts into the build directory, so we can patch
+    # the archive itself; LLVM's CMake package resolves the symlink in ${prefix} to it
+    lib=$(realpath ${prefix}/lib/libLLVMAArch64CodeGen.a)
+    if ! ar t $lib | grep -qx AArch64ISelDAGToDAG.cpp.o; then
+        echo "ERROR: AArch64ISelDAGToDAG.cpp.o not found in $lib" >&2
+        exit 1
+    fi
+    chmod u+w $lib
+    ar r $lib AArch64ISelDAGToDAG.cpp.o
+    ranlib $lib
+    popd
+fi
+
+"""
+
 function build_script(standalone=false; spirv32=false)
     # The patch series to apply (and to hash into the version), in order; see the list in
     # the script below. `pocl-spirv32` (JuliaGPU/pocl#3) follows the default series: a
@@ -76,7 +143,9 @@ function build_script(standalone=false; spirv32=false)
     LLVM_MAJOR_MINOR=$(llvm_version.major).$(llvm_version.minor)
     """
 
-    script = preheader * raw"""
+    isel_fix = llvm_version.major == 22 ? aarch64_isel_fix_script : ""
+
+    script = preheader * isel_fix * raw"""
     ##########################################################################
     # 1. Build the vendored SPIRV-LLVM-Translator as a static library.
     #
@@ -295,11 +364,13 @@ function build_script(standalone=false; spirv32=false)
     # Enable optional debug messages for debuggability
     CMAKE_FLAGS+=(-DPOCL_DEBUG_MESSAGES:Bool=ON)
 
-    # Tag the version with a hash of our patch series. The version seeds the kernel cache
-    # key, so rebuilds with a different series don't reuse previously cached binaries, and
-    # it lets users tell these builds apart from upstream ones that lack our patches.
+    # Tag the version with a hash of our patch series (and of our LLVM fixes, if any). The
+    # version seeds the kernel cache key, so rebuilds with a different series don't reuse
+    # previously cached binaries (the build timestamp in that key is fixed by
+    # SOURCE_DATE_EPOCH), and it lets users tell these builds apart from upstream ones that
+    # lack our patches.
     # (`\\"`, as `\"` in this raw string would reach the shell as a bare quote.)
-    patches_hash=$(cat @PATCHES@ | sha256sum | cut -c1-12)
+    patches_hash=$(cat @PATCHES@ ${llvm_fixes} | sha256sum | cut -c1-12)
     sed -i "s/^set(VERSION_SUFFIX_FIXED_TEXT \\"\\")/set(VERSION_SUFFIX_FIXED_TEXT \\"~julia-${patches_hash}\\")/" CMakeLists.txt
     if ! grep -q "^set(VERSION_SUFFIX_FIXED_TEXT \\"~julia-${patches_hash}\\")" CMakeLists.txt; then
         echo "ERROR: failed to tag the PoCL version" >&2
