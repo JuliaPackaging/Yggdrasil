@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "WiringPi"
-version = v"3.16"
+version = v"3.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/WiringPi/WiringPi.git", "b2af17eea92238fa99dae5bf174b3cdf81b78656"),
+    GitSource("https://github.com/WiringPi/WiringPi.git", "31f49ecdf7865c10483a91994aa51f73a7c656aa"),
     DirectorySource("./bundled")
 ]
 
