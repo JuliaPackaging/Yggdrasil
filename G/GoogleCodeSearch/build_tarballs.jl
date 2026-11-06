@@ -6,7 +6,7 @@ name = "GoogleCodeSearch"
 # This version is different than the source version as we need to rebuild this with an updated Go version
 # and update compat bounds
 # The original version is v1.2.0 which hasn't been updated since 2020
-version = v"1.2.1"
+version = v"1.2.2"
 
 # Collection of sources required to complete build
 sources = [
@@ -20,7 +20,11 @@ install_license codesearch/LICENSE
 mkdir gsc
 cd gsc
 go mod init github.com/m
-go get -d -v github.com/google/codesearch@v1.2.0
+# BinaryBuilder's newest Go shard (1.23.0) has known stdlib vulnerabilities, and
+# codesearch has no module dependencies, so the toolchain is the only thing to
+# patch. Pin a current release.
+export GOTOOLCHAIN=go1.27.3
+go get -v github.com/google/codesearch@v1.2.0
 mkdir -p "${bindir}"
 go build -o "${bindir}/csearch${exeext}" github.com/google/codesearch/cmd/csearch
 go build -o "${bindir}/cindex${exeext}" github.com/google/codesearch/cmd/cindex
