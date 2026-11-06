@@ -6,15 +6,19 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 include(joinpath(YGGDRASIL_DIR, "C/CUDA", "common.jl"))
 
 name = "Libxc_GPU"
-version = v"7.0.0"
+version = v"7.1.2"
 include("../sources.jl")
 
 # Bash recipe for building GPU version
 # Notes:
 #   - 3rd and 4th derivatives (KXC, LXC) not built since gives a binary size of ~200MB
+#   - Libxc >= 7.1 requires CMake >= 3.21, so CMake_jll is used instead of the base image CMake
 #   - For compilation on aarch64, the official x86_86 CUDA redist is downloaded, in order
 #     to enable cross compilation with NVCC
 script = raw"""
+# Use CMake_jll instead of the base image CMake
+apk del cmake
+
 cd $WORKSPACE/srcdir/libxc-*/
 
 # CMake looks for CUDA libraries in lib64
@@ -49,12 +53,12 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_CUDA_COMPILER=${prefix}/cuda/bin/nvcc \
       -DCMAKE_CUDA_FLAGS="--cudart shared" `#Use shared CUDA runtime` \
+      -DCMAKE_EXE_LINKER_FLAGS="-Wl,-rpath-link,${prefix}/cuda/lib"  \
       -DBUILD_SHARED_LIBS=ON \
       -DBUILD_TESTING=OFF \
       -DENABLE_CUDA=ON \
-      -DENABLE_XHOST=OFF \
       -DENABLE_FORTRAN=ON \
-      -DDISABLE_KXC=ON ..
+      -DMAXORDER=2 ..
 cmake --build . --parallel $nproc
 cmake --install .
 
@@ -82,6 +86,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    HostBuildDependency(PackageSpec(name="CMake_jll", uuid="3f4e10e2-61f2-5801-8945-23b9d642d0e6", version="4.4.1")),
 ]
 
 # Build Libxc for all supported CUDA toolkits
