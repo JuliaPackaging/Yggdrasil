@@ -48,6 +48,12 @@ atomic_patch -p1 ../sitofp-bool.patch
 # ("Translate llvm.minimum/maximum with NaN-propagating semantics"), without
 # which `llvm.minimum`/`llvm.maximum` ignore NaNs and don't order signed zeros.
 atomic_patch -p1 ../minimum-maximum.patch
+# Backport of https://github.com/KhronosGroup/SPIRV-LLVM-Translator/pull/4152
+# ("Convert boolean switch selectors to integers"; still open upstream): i1 is
+# a boolean in SPIR-V, which OpSwitch doesn't take as its selector, so
+# spirv-val rejected it. InstCombine leaves such switches when it narrows their
+# conditions, e.g. in Julia's union splits.
+atomic_patch -p1 ../switch-bool-selector.patch
 install_license LICENSE.TXT
 
 CMAKE_FLAGS=()
