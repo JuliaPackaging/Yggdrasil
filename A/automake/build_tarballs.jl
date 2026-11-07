@@ -7,7 +7,7 @@ version = VersionNumber(version_str)
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://ftpmirror.gnu.org/gnu/automake/automake-$(version_str).tar.xz",
-                  "6f7ae4c90b4e89b5f7f50a9c3bf205a10f18b60c2659d3d6f044351bd8a28d5d")
+                  "f6f34dad4cbe395715762b0710f7c511e39bd5cf777e6b95818ccbecf7714248")
 ]
 
 # Bash recipe for building across all platforms
