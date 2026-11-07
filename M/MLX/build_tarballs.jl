@@ -3,14 +3,15 @@
 using BinaryBuilder, Pkg
 
 name = "MLX"
-version = v"0.25.1"
+version = v"0.32.4"
 
 sources = [
-    GitSource("https://github.com/ml-explore/mlx.git", "eaf709b83e559079e212699bfc9dd2f939d25c9a"),
+    GitSource("https://github.com/ml-explore/mlx.git", "36969c094354086e15d2a327a9c50feb20b9cf11"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
-    # Using the PyPI wheel for aarch64-apple-darwin to get the metal backend, which would otherwise require the `metal` compiler to build (which is practically impossible to use from the BinaryBuilder build env.)
-    FileSource("https://files.pythonhosted.org/packages/02/1b/7da8f1d224a4287cdd5eda77d878a73ff13c22e2c89097bc6effcc5c318a/mlx-$(version)-cp313-cp313-macosx_13_0_arm64.whl", "f2ca5c2f60804bbb3968ee3e087ce4cf5789065f4c927f76b025b3f5f122a63a"; filename = "mlx-aarch64-apple-darwin20.whl"),
+    # Using the PyPI wheel of the Metal backend for aarch64-apple-darwin, which would otherwise require the `metal` compiler to build (which is practically impossible to use from the BinaryBuilder build env.)
+    FileSource("https://files.pythonhosted.org/packages/77/24/7e5b7ed5d28abacab4577c7a8dd1fca6e9058504f5f95ae4333c09420e2e/mlx_metal-$(version)-py3-none-macosx_14_0_arm64.whl", "8019b2db622599267d66cc168b2f0dbf5af929790a6c3b3913e00eabc42a7947"; filename = "mlx-aarch64-apple-darwin20.whl"),
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
@@ -20,20 +21,31 @@ if [[ "$target" == *-apple-darwin* ]]; then
     sdk_root=$WORKSPACE/srcdir/MacOSX14.0.sdk
     sed -i "s#/opt/$bb_target/$bb_target/sys-root#$sdk_root#" $CMAKE_TARGET_TOOLCHAIN
     sed -i "s#/opt/$bb_target/$bb_target/sys-root#$sdk_root#" /opt/bin/$bb_full_target/$target-clang*
+    export SDKROOT=$sdk_root # CMake passes it as -isysroot
 fi
 
 cd $WORKSPACE/srcdir/mlx
 
+# Use the given BLAS vendor (libblastrampoline) on Windows, rather than prebuilt OpenBLAS binaries
+atomic_patch -p1 ../patches/windows-bla-vendor.patch
+# Use the shell of the host, rather than PowerShell, to generate the CPU JIT preamble when cross-compiling for Windows
+atomic_patch -p1 ../patches/mingw-preamble-shell.patch
+# Link psapi by a name that MinGW also finds on a case-sensitive file system
+atomic_patch -p1 ../patches/mingw-psapi.patch
+# Declare IPPROTO_TCP, which is not declared by <netinet/tcp.h> on FreeBSD, cf. https://github.com/ml-explore/mlx/pull/4846
+atomic_patch -p1 ../patches/freebsd-ipproto.patch
+
 CMAKE_EXTRA_OPTIONS=()
 if [[ "$target" == x86_64-apple-darwin* ]]; then
     CMAKE_EXTRA_OPTIONS+=(
-        -DCMAKE_CXX_FLAGS=-Wno-psabi # Disabled psabi warnings, due to a lot being produced for mlx/backend/cpu/simd/accelerate_simd.h
+        "-DCMAKE_CXX_FLAGS=-Wno-psabi -Wno-elaborated-enum-base" # Disabled psabi warnings, due to a lot being produced for mlx/backend/cpu/simd/accelerate_simd.h, and errors for CF_ENUM in the headers of the macOS 14 SDK
         -DMLX_ENABLE_X64_MAC=ON
     )
     export MACOSX_DEPLOYMENT_TARGET=13.3
 elif [[ "$target" == *-w64-mingw32* ]]; then
     CMAKE_EXTRA_OPTIONS+=(
         -DMLX_BUILD_GGUF=OFF # Disabled gguf, due to `gguflib-src/gguflib.c:4:10: fatal error: sys/mman.h: No such file or directory`
+        -DCMAKE_CXX_FLAGS=-fno-extern-tls-init # Disabled calls of TLS init functions, due to `undefined symbol `TLS init function for mlx::core::detail::InTracing::grad_counter'` when linking
     )
 fi
 
@@ -65,10 +77,13 @@ if [[ "$target" != aarch64-apple-darwin* ]]; then
         -DMLX_BUILD_METAL=OFF \
         -DBUILD_SHARED_LIBS=ON \
         -G Ninja \
-        ${CMAKE_EXTRA_OPTIONS[@]}
+        "${CMAKE_EXTRA_OPTIONS[@]}"
     cmake --build build --parallel $nproc
     cmake --install build
     cmake --install build --component headers
+    if [[ "$target" == *-w64-mingw32* ]]; then
+        mv -v $prefix/libmlx.dll $libdir # MLX installs its DLL next to its Python extension on Windows
+    fi
 else
     cd $WORKSPACE/srcdir
     unzip -d mlx-$target mlx-$target.whl
@@ -106,5 +121,5 @@ dependencies = [
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     julia_compat="1.9",
-    preferred_gcc_version = v"10", # v10: C++-17, with std::reduce, required
+    preferred_gcc_version = v"11", # v11: C++20, with `__builtin_cpu_supports("f16c")`, required
 )
