@@ -1,6 +1,7 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+include(joinpath(@__DIR__, "..", "..", "platforms", "wasm_platforms.jl"))
 using BinaryBuilderBase: sanitize
 
 # `version` is the package version; its major and minor components select the upstream release.
@@ -38,9 +39,15 @@ for width in 8 16 32; do
     fi
 done
 
+if [[ ${target} == wasm* ]]; then
+    # static only, and no JIT: sljit has no wasm backend; pcre2grep's callouts need sys/wait.h
+    config_flags+=(--disable-shared --enable-static --disable-jit --disable-pcre2grep-callout)
+else
+    config_flags+=(--enable-jit)
+fi
+
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --disable-symvers \
-    --enable-jit \
     "${config_flags[@]}"
 
 make -j${nproc}
@@ -57,6 +64,8 @@ fi
     # These are the platforms we will build for by default, unless further
     # platforms are passed in on the command line
     platforms = supported_platforms()
+    # WebAssembly: static archives, `LibraryProduct`s resolve to `lib/libpcre2-*.a` there
+    append!(platforms, wasm_platforms())
     push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 
     # The products that we will ensure are always built
