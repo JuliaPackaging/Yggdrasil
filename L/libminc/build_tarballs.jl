@@ -2,12 +2,11 @@ using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
 name = "libminc"
-version = v"2.4.07"
+version = v"2.5.0"
 
 sources = [
-    #ArchiveSource("https://github.com/BIC-MNI/libminc/archive/refs/tags/release-2.4.06.tar.gz", "cd5c6da9cd98be225a4bd3b8d712bd5292fc24f434cae732fa37af866c2db5b3"),
-    GitSource("https://github.com/BIC-MNI/libminc.git","0e8ab9e6198c051547b0fcb592a44661f54f2b3d") # release-2.4.07
-    GitSource("https://github.com/NIST-MNI/minc2-simple.git","eb7e8c4c5ff0316b76455757435281a925fb44f1") # version 2.2.40
+    GitSource("https://github.com/BIC-MNI/libminc.git", "64e883811e12f860e9380a694e3df200e64d44ed") # release-2.5.0
+    GitSource("https://github.com/NIST-MNI/minc2-simple.git", "8f161e041ad968fc7bd71c0fba3fdba7f067b9e7") # v2.21.0
 ]
 
 script = raw"""
@@ -20,12 +19,11 @@ cmake .. \
     -DCMAKE_BUILD_TYPE=Release \
     -DLIBMINC_BUILD_SHARED_LIBS:BOOL=ON \
     -DLIBMINC_MINC1_SUPPORT:BOOL=ON \
-    -DBUILD_TESTING:BOOL=ON \
+    -DBUILD_TESTING:BOOL=OFF \
     -DLIBMINC_USE_NIFTI:BOOL=OFF \
     -DLIBMINC_BUILD_EZMINC=OFF
 make -j${nproc}
 make install
-
 
 cd ../../minc2-simple
 mkdir build
@@ -40,21 +38,14 @@ cmake .. \
 make -j${nproc}
 make install
     
-
 install_license ${WORKSPACE}/srcdir/libminc/COPYING
 """
 
-#platforms = supported_platforms()
-# right now only linux on x86_64 is tested
-platforms = [
+platforms = supported_platforms()
 
-    Platform("x86_64", "Linux"; libc="glibc"),
-]
-
-# should i do this?
-#platforms = expand_cxxstring_abis(platforms)
-#platforms = expand_gfortran_versions(platforms)
-
+# Disable Darwin, FreeBSD, and Windows.
+# Some of these systems could likely be supported with fairly small patches.
+filter!(p -> !((Sys.isapple(p) && arch(p) == "aarch64") || Sys.isfreebsd(p)  || Sys.iswindows(p)), platforms)
 
 products = [
     LibraryProduct("libminc2", :libminc2),
@@ -62,9 +53,10 @@ products = [
 ]
 
 dependencies = [
-   Dependency("HDF5_jll";  compat="~1.14.6"), # should be compatible with NetCDF
-   Dependency("NetCDF_jll";compat="~401.900.300"), 
+   Dependency("HDF5_jll"; compat="2.1.2"),
+   Dependency("NetCDF_jll"; compat="401.1000.0"), 
+   Dependency("Zlib_jll"; compat="1.2.12"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
-    julia_compat="1.6", preferred_gcc_version=v"5")
+               julia_compat="1.6", preferred_gcc_version=v"8")
