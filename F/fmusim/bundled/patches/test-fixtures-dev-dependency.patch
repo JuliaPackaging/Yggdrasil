@@ -1,0 +1,22 @@
+Enable the fmi-rs test-fixtures feature only for tests. It pulls reqwest and
+rustls into the fmusim binary, which does not use them. Not yet reported upstream.
+
+--- a/fmusim/Cargo.toml
++++ b/fmusim/Cargo.toml
+@@ -14,7 +14,7 @@
+ clap-markdown = "0.1.5"
+ csv = "1.4.0"
+ crash-handler = "0.8"
+-fmi-rs = { version = "0.3.4", features = ["schema", "sundials", "wasm", "test-fixtures"] }
++fmi-rs = { version = "0.3.4", features = ["schema", "sundials", "wasm"] }
+ itertools = "0.15.0"
+ libloading = "0.9.0"
+ pathdiff = "0.2"
+@@ -27,6 +27,7 @@
+ zip = "9.1"
+ 
+ [dev-dependencies]
++fmi-rs = { version = "0.3.4", features = ["test-fixtures"] }
+ rstest = "0.28.0"
+ 
+ [lints]
