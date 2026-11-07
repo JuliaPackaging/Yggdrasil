@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "catchaMouse16"
-version = v"0.1.0"
+version = v"0.2.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/DynamicsAndNeuralSystems/catchaMouse16.git",
-              "2a952451acf6114de562da6007e37ff6e013b157")
+              "2ad18283e0f2856e520794602f2f3748857e320d")
 ]
 
 # Bash recipe for building across all platforms
@@ -51,6 +51,8 @@ echo -e '""" * makefile * raw"""' >> Makefile
 # platforms are passed in on the command line
 # platforms = supported_platforms(; exclude=Sys.iswindows)
 platforms = supported_platforms()
+# GSL_jll 2.7.2 (see the compat below) has no builds for riscv64 or aarch64 FreeBSD
+filter!(p -> !(arch(p) == "riscv64" || (Sys.isfreebsd(p) && arch(p) == "aarch64")), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -64,7 +66,7 @@ dependencies = [
     # libclang_rt.osx.a is required on aarch64-macos to provide `__divdc3`.
     BuildDependency(PackageSpec(name = "LLVMCompilerRT_jll",
                                 uuid = "4e17d02c-6bf5-513e-be62-445f41c75a11",
-                                version = llvm_version);
+                                version = string(llvm_version));
                     platforms = filter(p -> Sys.isapple(p) && arch(p) == "aarch64", platforms))
 ]
 
