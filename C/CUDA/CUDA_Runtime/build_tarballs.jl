@@ -83,6 +83,19 @@ fi
 # link the Visual C++ runtime dynamically.
 msvc_runtime = RuntimeDependency("MSVCRuntime_jll"; platforms=[Platform("x86_64", "windows")])
 
+# every build needs the same runtime dependencies: the JLL's Project.toml is written from
+# the last `build_tarballs` call (the CUDA 10.2 one), while the registry gets the union of
+# all calls, so a dependency missing from one build silently disappears from Project.toml.
+#
+# CUDA_Compiler_jll is only needed at run time (see the init block below), so it is not
+# installed in the build prefix. That also means building does not require a registered
+# CUDA_Compiler_jll compatible with the CUDA_Driver_jll we depend on. 0.6.4 is the first
+# version that auto-selects the same toolkits we do (13.5 GA); an older compiler would
+# trigger the "runtime newer than compiler" warning.
+dependencies = [Dependency("CUDA_Driver_jll", v"13.3.4"; compat="13.3.4 - 13"),
+                RuntimeDependency("CUDA_Compiler_jll"; compat="0.6.4"),
+                msvc_runtime]
+
 # determine exactly which tarballs we should build
 builds = []
 for version in reverse(toolkit_versions)
@@ -137,9 +150,8 @@ for version in reverse(toolkit_versions)
 
         if Base.thisminor(version) == v"10.2"
             push!(builds,
-                (; dependencies=[Dependency("CUDA_Driver_jll", v"13.3.4"; compat="13.3.4 - 13"),
-                                 BuildDependency(PackageSpec(name="CUDA_SDK_jll", version="10.2.89")),
-                                 msvc_runtime],
+                (; dependencies=[dependencies;
+                                 BuildDependency(PackageSpec(name="CUDA_SDK_jll", version="10.2.89"))],
                    script=get_script(), platforms=[augmented_platform], products=get_products(platform),
                    sources=[], init_block=""
             ))
@@ -162,16 +174,8 @@ for version in reverse(toolkit_versions)
                         end
                     end
                 end"""
-            # CUDA_Compiler_jll is only needed at run time (see the init block above), so it
-            # is not installed in the build prefix. That also means building does not require
-            # a registered CUDA_Compiler_jll compatible with the CUDA_Driver_jll we depend on.
-            # 0.6.4 is the first version that auto-selects the same toolkits we do (13.5 GA);
-            # an older compiler would trigger the "runtime newer than compiler" warning above.
             push!(builds,
-                (; dependencies=[Dependency("CUDA_Driver_jll", v"13.3.4"; compat="13.3.4 - 13"),
-                                 RuntimeDependency("CUDA_Compiler_jll"; compat="0.6.4"),
-                                 msvc_runtime],
-                   script, platforms=[augmented_platform], products=get_products(platform),
+                (; dependencies, script, platforms=[augmented_platform], products=get_products(platform),
                    sources=get_sources("cuda", components; version, platform=augmented_platform),
                    init_block
             ))
