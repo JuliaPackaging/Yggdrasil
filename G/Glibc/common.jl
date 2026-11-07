@@ -87,32 +87,36 @@ fi
 """
 
 function glibc_products(version)
+    # These libraries make up a C runtime of their own, and loading them into a running
+    # process (which already has its own libc and dynamic loader) crashes it.  Mark them
+    # `dont_dlopen` so that JLL wrappers don't load them eagerly on Julia versions
+    # without `LazyLibrary` support.
     # The unversioned `.so` files are linker scripts, so point at the real libraries.
     # From v2.34 on, glibc installs those under their sonames instead of `lib*-2.xx.so`.
     if version >= v"2.34"
         return [
             LibraryProduct(["lib/ld-linux-x86-64.so.2", "lib/ld-linux.so.2",
                             "lib/ld-linux-aarch64.so.1", "lib/ld-linux-armhf.so.3",
-                            "lib/ld64.so.2"], :ld),
-            LibraryProduct("lib/libc.so.6", :libc),
-            LibraryProduct("lib/libdl.so.2", :libdl),
-            LibraryProduct("lib/libm.so.6", :libm),
-            LibraryProduct("lib/libpthread.so.0", :libpthread),
-            LibraryProduct("lib/librt.so.1", :librt),
-            LibraryProduct("lib/libresolv.so.2", :libresolv),
-            LibraryProduct("lib/libutil.so.1", :libutil),
+                            "lib/ld64.so.2"], :ld; dont_dlopen=true),
+            LibraryProduct("lib/libc.so.6", :libc; dont_dlopen=true),
+            LibraryProduct("lib/libdl.so.2", :libdl; dont_dlopen=true),
+            LibraryProduct("lib/libm.so.6", :libm; dont_dlopen=true),
+            LibraryProduct("lib/libpthread.so.0", :libpthread; dont_dlopen=true),
+            LibraryProduct("lib/librt.so.1", :librt; dont_dlopen=true),
+            LibraryProduct("lib/libresolv.so.2", :libresolv; dont_dlopen=true),
+            LibraryProduct("lib/libutil.so.1", :libutil; dont_dlopen=true),
         ]
     end
     v = "$(version.major).$(version.minor)"
     return [
-        LibraryProduct("lib/ld-$(v)", :ld),
-        LibraryProduct("lib/libc-$(v)", :libc),
-        LibraryProduct("lib/libdl-$(v)", :libdl),
-        LibraryProduct("lib/libm-$(v)", :libm),
-        LibraryProduct("lib/libpthread-$(v)", :libpthread),
-        LibraryProduct("lib/librt-$(v)", :librt),
-        LibraryProduct("lib/libresolv-$(v)", :libresolv),
-        LibraryProduct("lib/libutil-$(v)", :libutil),
+        LibraryProduct("lib/ld-$(v)", :ld; dont_dlopen=true),
+        LibraryProduct("lib/libc-$(v)", :libc; dont_dlopen=true),
+        LibraryProduct("lib/libdl-$(v)", :libdl; dont_dlopen=true),
+        LibraryProduct("lib/libm-$(v)", :libm; dont_dlopen=true),
+        LibraryProduct("lib/libpthread-$(v)", :libpthread; dont_dlopen=true),
+        LibraryProduct("lib/librt-$(v)", :librt; dont_dlopen=true),
+        LibraryProduct("lib/libresolv-$(v)", :libresolv; dont_dlopen=true),
+        LibraryProduct("lib/libutil-$(v)", :libutil; dont_dlopen=true),
     ]
 end
 

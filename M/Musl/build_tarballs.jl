@@ -63,11 +63,12 @@ build_tarballs(;
         Platform("armv7l", "linux"; libc="musl"),
     ],
     products = [
-        LibraryProduct(["usr/lib/libc"], :libc),
+        # musl's `libc.so` is also its dynamic loader; it must not be loaded into a running process.
+        LibraryProduct(["usr/lib/libc"], :libc; dont_dlopen=true),
     ],
     # Use the bootstrap toolchain, since this is part of building the toolchain itself
     host_toolchains = [CToolchain(;vendor=:bootstrap), HostToolsToolchain()],
     target_toolchains = [CToolchain(;vendor=:bootstrap)],
 )
 
-# Build trigger: 2
+# Build trigger: 3
