@@ -73,7 +73,14 @@ function get_script(; debug::Bool)
         # https://github.com/intel/intel-graphics-compiler/issues/456
         atomic_patch -p0 patches/byte-dst-root-align.patch
         # Don't let spill offsets wrap around in HWord scratch messages on Gen12LP
+        # https://github.com/intel/intel-graphics-compiler/issues/469
         atomic_patch -p0 patches/hword-scratch-limit.patch
+        # Don't run the post-RA spill/fill propagation on OWord spills, which it can't tell apart
+        # https://github.com/intel/intel-graphics-compiler/issues/471
+        atomic_patch -p0 patches/oword-spill-propagation.patch
+        # Address OWord spills and fills of indirect operands at the spilled variable's slot
+        # https://github.com/intel/intel-graphics-compiler/issues/472
+        atomic_patch -p0 patches/oword-spill-indirect.patch
         # https://reviews.llvm.org/D64388
         sed -i '/add_subdirectory/i add_definitions(-D__STDC_FORMAT_MACROS)' intel-graphics-compiler/external/llvm/llvm.cmake
 

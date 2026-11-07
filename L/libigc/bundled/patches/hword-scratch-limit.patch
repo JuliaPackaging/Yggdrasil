@@ -18,7 +18,7 @@ index 3119146d4..dcd9363f6 100644
    bool spillFillIntrinUsesLSC(G4_INST *spillFillIntrin);
    void expandFillLSC(G4_BB *bb, INST_LIST_ITER &instIt);
 diff --git intel-graphics-compiler/visa/SpillManagerGMRF.cpp intel-graphics-compiler/visa/SpillManagerGMRF.cpp
-index 4bf8e5e59..38d52527b 100644
+index 4bf8e5e59..8dc6d5862 100644
 --- intel-graphics-compiler/visa/SpillManagerGMRF.cpp
 +++ intel-graphics-compiler/visa/SpillManagerGMRF.cpp
 @@ -1716,6 +1716,21 @@ SpillManagerGRF::createSpillSendMsgDescOWord(const IR_Builder &builder,
@@ -121,21 +121,22 @@ index 4bf8e5e59..38d52527b 100644
      if (filledRangeRegion->crossGRF(*builder_)) {
        segmentByteSize = 2 * builder_->numEltPerGRF<Type_UB>();
      }
-@@ -2883,10 +2898,11 @@ bool SpillManagerGRF::usesOWOrLSC(G4_DstRegRegion *spilledRegion) {
+@@ -2883,10 +2898,12 @@ bool SpillManagerGRF::usesOWOrLSC(G4_DstRegRegion *spilledRegion) {
    // * platform supports LSC and/or OW
    // * but we favor HW scratch, offset permitting
    //
 -  // If offset exceeds encoding limit, we emit OW/LSC instead.
-+  // If offset exceeds encoding limit, we emit LSC instead. Without LSC,
-+  // we keep using HW scratch, see GlobalRA::expandSpillNonStackcall.
++  // If offset exceeds encoding limit, we emit OW/LSC instead, except for HW
++  // scratch without LSC, see GlobalRA::expandSpillNonStackcall.
    int spillOffset = (int)getSegmentDisp(spilledRegion, inst->getExecSize());
    getSpillOffset(spillOffset);
 -  return spillOffset >= SCRATCH_MSG_LIMIT;
-+  return gra.useLscForSpillFill && spillOffset >= SCRATCH_MSG_LIMIT;
++  return spillOffset >= SCRATCH_MSG_LIMIT &&
++         (!useScratchMsg_ || gra.useLscForSpillFill);
  }
  
  // Create the code to create the spill range and save it to spill memory.
-@@ -5295,6 +5311,40 @@ void GlobalRA::insertSlot1HwordR0Reset(G4_BB *bb, INST_LIST_ITER &instIt) {
+@@ -5295,6 +5312,40 @@ void GlobalRA::insertSlot1HwordR0Reset(G4_BB *bb, INST_LIST_ITER &instIt) {
    }
  }
  
@@ -176,7 +177,7 @@ index 4bf8e5e59..38d52527b 100644
  void GlobalRA::expandSpillNonStackcall(uint32_t numRows, uint32_t offset,
                                         short rowOffset, G4_SrcRegRegion *header,
                                         G4_SrcRegRegion *payload, G4_BB *bb,
-@@ -5350,16 +5400,18 @@ void GlobalRA::expandSpillNonStackcall(uint32_t numRows, uint32_t offset,
+@@ -5350,16 +5401,18 @@ void GlobalRA::expandSpillNonStackcall(uint32_t numRows, uint32_t offset,
  
        auto region = builder->getRegionStride1();
  
@@ -200,7 +201,7 @@ index 4bf8e5e59..38d52527b 100644
  
        auto sendInst = builder->createInternalSplitSendInst(
            execSize, inst->getDst(), headerOpnd, payloadToUse, msgDescImm,
-@@ -5377,9 +5429,16 @@ void GlobalRA::expandSpillNonStackcall(uint32_t numRows, uint32_t offset,
+@@ -5377,9 +5430,16 @@ void GlobalRA::expandSpillNonStackcall(uint32_t numRows, uint32_t offset,
          addEUFusionNoMaskWAInst(bb, sendInst);
        }
  
@@ -220,7 +221,7 @@ index 4bf8e5e59..38d52527b 100644
      }
  
      insertSlot1HwordR0Reset(bb, origInstIt);
-@@ -5611,12 +5670,13 @@ void GlobalRA::expandFillNonStackcall(uint32_t numRows, uint32_t offset,
+@@ -5611,12 +5671,13 @@ void GlobalRA::expandFillNonStackcall(uint32_t numRows, uint32_t offset,
        G4_SrcRegRegion *headerOpnd =
            builder->createSrcRegRegion(builder->getBuiltinR0(), region);
  
@@ -237,7 +238,7 @@ index 4bf8e5e59..38d52527b 100644
  
        G4_Imm *msgDescImm = builder->createImm(msgDesc->getDesc(), Type_UD);
  
-@@ -5636,9 +5696,29 @@ void GlobalRA::expandFillNonStackcall(uint32_t numRows, uint32_t offset,
+@@ -5636,9 +5697,29 @@ void GlobalRA::expandFillNonStackcall(uint32_t numRows, uint32_t offset,
          addEUFusionNoMaskWAInst(bb, sendInst);
        }
  
