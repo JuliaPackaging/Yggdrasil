@@ -12,6 +12,12 @@ script = raw"""
 cd $WORKSPACE/srcdir/git-lfs/
 mkdir -p ${bindir}
 
+# Pin a patched toolchain and take the latest golang.org/x releases (x/net
+# pulls x/crypto, x/sys and x/text along); upstream's are vulnerable.
+# Revisit the toolchain pin on every version bump.
+export GOTOOLCHAIN=go1.26.10
+go get -u golang.org/x/net
+
 # Install goversioninfo if host is Windows
 case "$MACHTYPE" in
   *mingw*|*cygwin*) go install github.com/josephspurrier/goversioninfo/cmd/goversioninfo ;;
