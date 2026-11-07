@@ -1,0 +1,69 @@
+From 84873db671ab4a70491cb7a37fabedaee18a10fa Mon Sep 17 00:00:00 2001
+From: Panagiotis Georgakopoulos <8681967+pankgeorg@users.noreply.github.com>
+Date: Fri, 6 Nov 2026 00:07:01 +0000
+Subject: [PATCH 10/10] posix: readlink with room to spare on WASI
+
+Node's WASI (uvwasi) fails readlink() with ENOBUFS when the link's target
+fills the buffer exactly, where POSIX truncates it. libgit2 reads a symbolic
+link into a buffer of its target's length (`st_size`), so on Node every
+symlink in a work tree fails: diffs and status report "failed to read symlink
+data ... No buffer space available".
+
+On WASI, read into a buffer one byte longer and copy the target.
+---
+ src/util/posix.c      | 27 +++++++++++++++++++++++++++
+ src/util/unix/posix.h |  6 +++++-
+ 2 files changed, 32 insertions(+), 1 deletion(-)
+
+diff --git a/src/util/posix.c b/src/util/posix.c
+index cfc0e07..67dbe6d 100644
+--- a/src/util/posix.c
++++ b/src/util/posix.c
+@@ -355,3 +355,30 @@ done:
+ #else
+ # error no poll compatible implementation
+ #endif
++
++#ifdef __wasi__
++/*
++ * Some WASI runtimes (Node's, through uvwasi) fail readlink() with ENOBUFS
++ * when the link's target fills the buffer exactly, where POSIX truncates;
++ * libgit2 passes buffers of the target's length. Read into a buffer one
++ * byte longer.
++ */
++ssize_t p_readlink(const char *path, char *buf, size_t bufsize)
++{
++	char *tmp;
++	ssize_t n;
++
++	if ((tmp = git__malloc(bufsize + 1)) == NULL)
++		return -1;
++
++	n = readlink(path, tmp, bufsize + 1);
++	if (n > 0) {
++		if ((size_t)n > bufsize)
++			n = (ssize_t)bufsize;
++		memcpy(buf, tmp, (size_t)n);
++	}
++
++	git__free(tmp);
++	return n;
++}
++#endif
+diff --git a/src/util/unix/posix.h b/src/util/unix/posix.h
+index 60f27d3..bc5162f 100644
+--- a/src/util/unix/posix.h
++++ b/src/util/unix/posix.h
+@@ -37,7 +37,11 @@ typedef int GIT_SOCKET;
+ 
+ #define p_utimes(f, t) utimes(f, t)
+ 
+-#define p_readlink(a, b, c) readlink(a, b, c)
++#ifdef __wasi__
++extern ssize_t p_readlink(const char *path, char *buf, size_t bufsize);
++#else
++# define p_readlink(a, b, c) readlink(a, b, c)
++#endif
+ #define p_symlink(o,n) symlink(o, n)
+ #define p_link(o,n) link(o, n)
+ #define p_unlink(p) unlink(p)
