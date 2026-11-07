@@ -122,13 +122,15 @@ struct BB1BuildStep <: AbstractBuildStep
     platform::String
 end
 
-function bb1_step_key(project_name::String, platform::String)
-    key = "$(safe_name(project_name))--$(safe_name(platform))"
-    # Buildkite rejects keys longer than 100 characters, which platforms with several
-    # tags (e.g. cross toolchains) can exceed; keep such keys unique with a hash.
+# Buildkite rejects keys longer than 100 characters, which platforms with several
+# tags (e.g. cross toolchains) can exceed; keep such keys unique with a hash.
+function limit_key_length(key::String)
     length(key) <= 100 && return key
     return "$(first(key, 90))-$(bytes2hex(sha256(key))[1:9])"
 end
+
+bb1_step_key(project_name::String, platform::String) =
+    limit_key_length("$(safe_name(project_name))--$(safe_name(platform))")
 step_key(bs::BB1BuildStep) = bb1_step_key(bs.project, bs.platform)
 
 struct BB2BuildStep <: AbstractBuildStep
@@ -207,19 +209,30 @@ end
 
 step_key(rs::BB1RegisterStep) = "register-$(safe_name(rs.project))"
 
+# A BinaryBuilder2 package is registered by a single step, even when several projects
+# build it (e.g. `G/Glibc/Glibc@2.17` and `Glibc@2.19` both build `Glibc`).  That step
+# registers one version per project, in order, so they stack into one registry PR.
 struct BB2RegisterStep <: AbstractRegisterStep
     name::String
-    project::String
+    # Projects to register, in ascending order of the version they build
+    projects::Vector{String}
 
-    dependencies::Vector{AbstractStep}
+    # Build steps, and the step keys of other registrations
+    dependencies::Vector{Union{AbstractStep,String}}
 end
-step_key(rs::BB2RegisterStep) = "register-$(safe_name(rs.name))"
-universe_name(rs::BB2RegisterStep) = "$(safe_name(rs.project))-$(YGGDRASIL_COMMIT)"
+bb2_register_key(name::AbstractString) = limit_key_length("register-bb2-$(safe_name(name))")
+step_key(rs::BB2RegisterStep) = bb2_register_key(rs.name)
+step_key(key::String) = key
+universe_name(rs::BB2RegisterStep) = "$(safe_name(rs.name))-$(YGGDRASIL_COMMIT)"
 
 function render(rs::AbstractRegisterStep)
     register_env = env()
     register_env["NAME"] = rs.name
-    register_env["PROJECT"] = rs.project
+    if isa(rs, BB1RegisterStep)
+        register_env["PROJECT"] = rs.project
+    else
+        register_env["PROJECTS"] = join(rs.projects, " ")
+    end
     register_env["BUILD_ID"] = get(ENV, "BUILDKITE_BUILD_ID", "")
     register_env["JULIA_PROJECT_RELATIVE"] = julia_project_relative(rs)
     if isa(rs, BB1RegisterStep)
