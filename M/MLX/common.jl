@@ -1,17 +1,10 @@
-# Note that this script can accept some limited command-line arguments, run
-# `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, Pkg
-
-name = "MLX"
-version = v"0.32.4"
-
 sources = [
     GitSource("https://github.com/ml-explore/mlx.git", "36969c094354086e15d2a327a9c50feb20b9cf11"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
     # Using the PyPI wheel of the Metal backend for aarch64-apple-darwin, which would otherwise require the `metal` compiler to build (which is practically impossible to use from the BinaryBuilder build env.)
     FileSource("https://files.pythonhosted.org/packages/77/24/7e5b7ed5d28abacab4577c7a8dd1fca6e9058504f5f95ae4333c09420e2e/mlx_metal-$(version)-py3-none-macosx_14_0_arm64.whl", "8019b2db622599267d66cc168b2f0dbf5af929790a6c3b3913e00eabc42a7947"; filename = "mlx-aarch64-apple-darwin20.whl"),
-    DirectorySource("./bundled"),
+    DirectorySource(joinpath(@__DIR__, "bundled")),
 ]
 
 script = raw"""
@@ -63,6 +56,57 @@ if [[ "$target" != *-apple-darwin* &&
     )
 fi
 
+if [[ $bb_full_target == *cuda* ]]; then
+    cuda_version=$(echo $bb_full_target | sed -E 's/.*-cuda\+([0-9]+\.[0-9]+).*/\1/')
+    # Binaries for an arch also run on later GPUs of the same major (e.g. sm_80 on sm_86 and sm_89), except
+    # for arch-specific ("a") ones, and the last arch is also included as PTX for future GPUs; MLX uses half-precision
+    # atomics, which need sm_70
+    if [[ $cuda_version == "12.6" ]]; then
+        cuda_archs="70-real;75-real;80-real;90a-real;90-virtual"
+    elif [[ $cuda_version == "12.8" ]]; then
+        cuda_archs="70-real;75-real;80-real;90a-real;100a-real;120a-real;120-virtual"
+    elif [[ $cuda_version == "12.9" ]]; then
+        cuda_archs="70-real;75-real;80-real;90a-real;100a-real;103a-real;120a-real;121a-real;120-virtual"
+    elif [[ $cuda_version == "13.0" ]]; then
+        # CUDA 13 dropped sm_70
+        cuda_archs="75-real;80-real;90a-real;100a-real;103a-real;120a-real;121a-real;120-virtual"
+    else
+        false # Fail for unexpected CUDA version
+    fi
+    if [[ $bb_full_target == *cuda_platform+jetson* ]]; then
+        cuda_archs="87-real;87-virtual" # Jetson Orin, the only Jetson supported by CUDA 12
+    elif [[ $target == aarch64-* && $cuda_version == 13.* ]]; then
+        cuda_archs="87-real;110a-real;$cuda_archs" # Jetson Orin and Thor, as CUDA 13 has a single aarch64 toolkit
+    fi
+
+    export TMPDIR=${WORKSPACE}/tmpdir # nvcc exhausts /tmp
+    mkdir -pv ${TMPDIR}
+
+    # nvcc searches lib64; the SDK uses lib
+    CMAKE_EXTRA_OPTIONS+=(
+        -DMLX_BUILD_CUDA=ON
+        -DMLX_CUDA_ARCHITECTURES=$cuda_archs
+        -DCMAKE_CUDA_COMPILER=${prefix}/cuda/bin/nvcc
+        -DCMAKE_CUDA_FLAGS=-L${prefix}/cuda/lib
+        -DCUDAToolkit_ROOT=${prefix}/cuda
+    )
+    cudnn_dir=$(echo $WORKSPACE/srcdir/cudnn-*-archive) # cuDNN redist, for building against CUDNN_jll
+    CMAKE_EXTRA_OPTIONS+=(
+        -DCUDNN_INCLUDE_PATH=$cudnn_dir/include
+        -DCUDNN_LIBRARY_PATH=$cudnn_dir/lib
+    )
+fi
+
+# BinaryBuilder's x86_64 host needs x86_64 CUDA tools, paired with the target C++ compiler; CUDA 13 ships nvvm
+# separately from nvcc
+if [[ $bb_full_target == *cuda* && $target == aarch64-* ]]; then
+    export LD_LIBRARY_PATH="/usr/lib/csl-musl-x86_64:/usr/lib/csl-glibc-x86_64:${LD_LIBRARY_PATH}"
+    export NVCC_PREPEND_FLAGS="-ccbin=${CXX}"
+    rm -rfv ${prefix}/cuda/bin ${prefix}/cuda/nvvm/bin ${prefix}/cuda/nvvm/lib64
+    cp -a ${WORKSPACE}/srcdir/cuda_nvcc-linux-x86_64-*-archive/bin ${prefix}/cuda/bin
+    cp -a ${WORKSPACE}/srcdir/*-linux-x86_64-*-archive/nvvm/{bin,lib64} ${prefix}/cuda/nvvm/
+fi
+
 install_license LICENSE
 
 if [[ "$target" != aarch64-apple-darwin* ]]; then
@@ -94,6 +138,11 @@ else
     # MLX includes metal-cpp (in `include/metal-cpp`), which could also be distributed separately, but it is assumed to be present by cmake in MLX_C.
     find {include,share} -type f -exec install -D -m 644 -v {} $prefix/{} \;
 fi
+
+# Modified SDK files would otherwise be packaged
+if [[ $bb_full_target == *cuda* && $target == aarch64-* ]]; then
+    rm -rfv ${prefix}/cuda
+fi
 """
 
 platforms = supported_platforms()
@@ -119,7 +168,6 @@ dependencies = [
     HostBuildDependency(PackageSpec(name="CMake_jll")), # Need CMake >= 3.30 for BLA_VENDOR=libblastrampoline
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat="1.9",
-    preferred_gcc_version = v"11", # v11: C++20, with `__builtin_cpu_supports("f16c")`, required
-)
+julia_compat="1.9"
+
+preferred_gcc_version = v"11" # v11: C++20, with `__builtin_cpu_supports("f16c")`, required
