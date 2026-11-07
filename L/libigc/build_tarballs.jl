@@ -72,6 +72,8 @@ function get_script(; debug::Bool)
         # Don't let RA place a byte destination at byte 3 of a dword on Gen12LP
         # https://github.com/intel/intel-graphics-compiler/issues/456
         atomic_patch -p0 patches/byte-dst-root-align.patch
+        # Don't let spill offsets wrap around in HWord scratch messages on Gen12LP
+        atomic_patch -p0 patches/hword-scratch-limit.patch
         # https://reviews.llvm.org/D64388
         sed -i '/add_subdirectory/i add_definitions(-D__STDC_FORMAT_MACROS)' intel-graphics-compiler/external/llvm/llvm.cmake
 
