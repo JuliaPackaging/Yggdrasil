@@ -66,7 +66,7 @@ dependencies = [
     Dependency("FreeType2_jll"; compat="2.13.4"),
     Dependency("GLU_jll"; platforms=x11_platforms),
     Dependency("GMP_jll"; compat="6.2"),
-    Dependency("HDF5_jll"; compat="~2.1.2"),
+    Dependency("HDF5_jll"; compat="2.2.1"),
     Dependency("JpegTurbo_jll"),
     Dependency("Libglvnd_jll"; platforms=x11_platforms),
     Dependency("libpng_jll"),
