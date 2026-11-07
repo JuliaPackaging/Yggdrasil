@@ -1,0 +1,10 @@
+--- a/build/linux/Makefile.in
++++ b/build/linux/Makefile.in
+@@ -208,6 +208,7 @@
+ 	src/GeometryUtil2D.lo \
+ 	src/GeometryUtil3D.lo \
+ 	src/Globals.lo \
++	src/julia_c_api.lo \
+ 	src/Logging.lo \
+ 	src/ParallelBeamBlobKernelProjector2D.lo \
+ 	src/ParallelBeamDistanceDrivenProjector2D.lo \
