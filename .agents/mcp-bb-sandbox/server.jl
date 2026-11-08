@@ -37,7 +37,7 @@ function make_sandbox_cmd(params::AbstractDict)
 
     local cmd
     if bt_path !== nothing
-        bt_path = abspath(bt_path)
+        bt_path = abspath(PROJECT_ROOT, bt_path)
         isfile(bt_path) || error("build_tarballs.jl not found: $bt_path")
         bt_dir = dirname(bt_path)
         metadata["build_tarballs_path"] = bt_path
