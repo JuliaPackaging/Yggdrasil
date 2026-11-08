@@ -25,7 +25,7 @@ if [[ ${target} == *-mingw* ]]; then
     cmake_args+=(
         -DMPI_GUESS_LIBRARY_NAME=MSMPI
         -DMPI_Fortran_LIBRARIES=${libdir}/msmpi.${dlext}
-        -DMPI_Fortran_INCLUDE_DIRS=${includedir}
+        -DMPI_Fortran_ADDITIONAL_INCLUDE_DIRS=${includedir}
         -DCMAKE_Fortran_FLAGS=-fallow-invalid-boz
     )
 fi
