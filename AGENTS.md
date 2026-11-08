@@ -68,8 +68,8 @@ These are the hard requirements every recipe must satisfy. The sections from
 
 ### Sources
 
-- **ArchiveSource**: For tarballs (`.tar.gz`, `.tar.xz`, `.zip`). Always include SHA256 hash.
 - **GitSource**: For git repos. Use specific commit hash, not branch names. When building a release, also pass its `tag="v$(version)"` so reviewers see which release it is; the build checks that the tag indeed points to the hash.
+- **ArchiveSource**: For tarballs (`.tar.gz`, `.tar.xz`, `.zip`). Always include SHA256 hash.
 - **DirectorySource**: For local patches. Place patches in `bundled/patches/` subdirectory.
 - Build **one package per recipe**. Don't bundle multiple packages—use dependencies instead.
 - **GitHub archives**: Never use GitHub's generated `/archive/refs/tags/` URLs; their [checksums are not stable](https://github.blog/2023-02-21-update-on-the-future-stability-of-source-code-archives-and-hashes/). Use a `GitSource`, or a release asset the maintainers uploaded (`/releases/download/...`).
