@@ -22,14 +22,16 @@ cmake_args=(
 if [[ ${target} == *-mingw* ]]; then
     # As in H/HDF5: gfortran cannot link MS-MPI's Fortran wrapper library, but msmpi.dll
     # exports the gfortran-mangled entry points; mpif.h needs -fallow-invalid-boz.
+    # Setting MPI_Fortran_INCLUDE_DIRS skips FindMPI's failing check but does not reach
+    # the compile line, so mpi.mod needs its own -I.
     cmake_args+=(
         -DMPI_GUESS_LIBRARY_NAME=MSMPI
         -DMPI_Fortran_LIBRARIES=${libdir}/msmpi.${dlext}
-        -DMPI_Fortran_ADDITIONAL_INCLUDE_DIRS=${includedir}
-        -DCMAKE_Fortran_FLAGS=-fallow-invalid-boz
+        -DMPI_Fortran_INCLUDE_DIRS=${includedir}
+        -DCMAKE_Fortran_FLAGS="-fallow-invalid-boz -I${includedir}"
     )
 fi
-cmake -Bbuild ${cmake_args[@]}
+cmake -Bbuild "${cmake_args[@]}"
 cmake --build build --parallel ${nproc}
 cmake --install build
 
