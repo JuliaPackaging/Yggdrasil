@@ -37,6 +37,11 @@ fi
 build_list=core,imgproc,imgcodecs,highgui,videoio,dnn,features2d,objdetect,calib3d,video,gapi,stitching,julia
 cmake_args=()
 
+if [[ "${target}" == *-freebsd* ]]; then
+    # IPP's bundled safestring redeclares memset_s incompatibly with FreeBSD's string.h.
+    cmake_args+=(-DWITH_IPP=OFF)
+fi
+
 if [[ "${bb_full_target}" == *cuda+* ]]; then
     # BinaryBuilder's x86_64 host needs x86_64 CUDA tools, paired with the target C++ compiler.
     if [[ "${target}" == aarch64-* ]]; then
