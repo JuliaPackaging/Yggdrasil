@@ -30,7 +30,7 @@ version = v"X.Y.Z"                # Only major.minor.patch (no prerelease/build 
 
 sources = [
     ArchiveSource("URL", "sha256hash"),
-    # GitSource("URL", "commit_hash"),
+    # GitSource("URL", "commit_hash"; tag="v$(version)"),
     # DirectorySource("./bundled"),  # for patches
 ]
 
