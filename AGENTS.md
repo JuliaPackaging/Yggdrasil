@@ -72,36 +72,8 @@ These are the hard requirements every recipe must satisfy. The sections from
 - **GitSource**: For git repos. Use specific commit hash, not branch names. When building a release, also pass its `tag="v$(version)"` so reviewers see which release it is; the build checks that the tag indeed points to the hash.
 - **DirectorySource**: For local patches. Place patches in `bundled/patches/` subdirectory.
 - Build **one package per recipe**. Don't bundle multiple packages—use dependencies instead.
-
-#### GitHub Archive Sources
-
-**IMPORTANT**: GitHub's automatically generated archive sources (`/archive/refs/tags/` URLs) do **not** have stable checksums and cannot be used. See [GitHub's announcement](https://github.blog/2023-02-21-update-on-the-future-stability-of-source-code-archives-and-hashes/).
-
-Instead:
-
-1. **Use GitSource with commit hash** (preferred):
-
-   ```julia
-   sources = [
-       GitSource("https://github.com/owner/repo.git", "full_commit_hash"; tag="v$(version)"),
-   ]
-   ```
-
-2. **Use official release assets**: If maintainers upload release tarballs (not auto-generated):
-
-   ```julia
-   sources = [
-       ArchiveSource("https://github.com/owner/repo/releases/download/v1.0.0/package-1.0.0.tar.gz", "sha256"),
-   ]
-   ```
-
-To find the commit hash for a tag:
-
-```bash
-git ls-remote https://github.com/owner/repo.git v1.0.0 'v1.0.0^{}'
-```
-
-If this prints two lines, the tag is annotated: use the hash of the `^{}` line. The other is the tag object, not a commit, and fails the `tag` check.
+- **GitHub archives**: Never use GitHub's generated `/archive/refs/tags/` URLs; their [checksums are not stable](https://github.blog/2023-02-21-update-on-the-future-stability-of-source-code-archives-and-hashes/). Use a `GitSource`, or a release asset the maintainers uploaded (`/releases/download/...`).
+- Find a tag's commit with `git ls-remote https://github.com/owner/repo.git v1.0.0 'v1.0.0^{}'`. If this prints two lines, the tag is annotated: use the hash of the `^{}` line. The other is the tag object, not a commit, and fails the `tag` check.
 
 ### Products
 
@@ -151,6 +123,7 @@ Use `preferred_gcc_version=v"X"` for (see [available GCC versions](https://githu
 ### Patches
 
 - Use patch files in `bundled/patches/` for source changes, never `sed`/`perl`: sed silently stops matching when upstream changes. One exception is stripping flags such as `-march` or `-ffast-math` from build files (see [Unsupported Build Flags](#unsupported-build-flags)), where a miss is harmless. The other is CRLF source files: `.gitattributes` converts patches to LF, so their context can't match. Run `dos2unix` on the file first, or use `sed` if the CRLFs must be kept.
+- `DirectorySource("./bundled")` puts patches in `${WORKSPACE}/srcdir/patches/`; apply each with `atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fix.patch`.
 - Each patch starts with a one-line description and a link to the upstream PR or issue. Report fixes upstream.
 - Never use a personal fork or branch as a source. Keep the upstream source and carry a patch.
 - Prefer a compiler flag over a patch when one suffices.
@@ -159,6 +132,7 @@ Use `preferred_gcc_version=v"X"` for (see [available GCC versions](https://githu
 
 - Start from `supported_platforms()` and remove with `filter!`, one comment per exclusion saying what breaks. Never hand-list platforms.
 - Filter by property, e.g. `nbits(p) == 64`, not by enumerating architectures.
+- `expand_cxxstring_abis(platforms)` adds a variant per C++ string ABI. The audit asks for it when a library has `std::string` in its symbols.
 - `Sys.isbsd(p)` also matches macOS. To target FreeBSD alone, use `Sys.isfreebsd(p)`.
 - Newer macOS SDK: `include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))` then `sources, script = require_macos_sdk("11.0", sources, script)`. Never set `MACOSX_DEPLOYMENT_TARGET` by hand or edit the sysroot.
 - Windows x86_64 load-time abort "32 bit pseudo relocation out of range": try `-Wl,--disable-runtime-pseudo-reloc`, else link `-static-libstdc++ -static-libgcc`.
@@ -175,25 +149,10 @@ Use `preferred_gcc_version=v"X"` for (see [available GCC versions](https://githu
 
 ### Unsupported Build Flags
 
-Products should not force using certain CPUs or instruction sets (e.g., the `march` or `mcpu` flags), unless they perform their own selection of the appropriate code for the current processor at runtime.
-They also should not use unsafe math operations or fast-math mode in compilers.
-
-To remove the `march` and `mcpu` flags in a list of files:
+Products must not force CPU features (`-march`, `-mcpu`) unless they select code for the running processor at runtime, and must not use `-ffast-math` or `-funsafe-math-optimizations`. Strip them from the build files:
 
 ```bash
-for i in ${files}; do
-    sed -i "s/-march[^ ]*//g" $i
-    sed -i "s/-mcpu[^ ]*//g" $i
-done
-```
-
-To remove the fast math and unsafe math optimizations in a list of files:
-
-```bash
-for i in ${files}; do
-    sed -i "s/-ffast-math//g" $i
-    sed -i "s/-funsafe-math-optimizations//g" $i
-done
+sed -i -e 's/-march[^ ]*//g' -e 's/-mcpu[^ ]*//g' -e 's/-ffast-math//g' -e 's/-funsafe-math-optimizations//g' ${files}
 ```
 
 ## Versions and Rebuilds
@@ -261,10 +220,6 @@ Test the generated JLL before merging, so a broken package is not automatically 
 
 ## Build Script Reference
 
-Reference material for writing the `script` block — environment variables, common
-build-system invocations, platform branching, and optional `build_tarballs` keyword
-arguments.
-
 ### Environment Variables
 
 The script runs in an `x86_64-linux-musl` environment. Key variables:
@@ -283,72 +238,17 @@ The script runs in an `x86_64-linux-musl` environment. Key variables:
 - `${CMAKE_TARGET_TOOLCHAIN}`, `${MESON_TARGET_TOOLCHAIN}`: Toolchain files for the target
 - `${rust_target}`: Rust target triplet, used in cargo output paths
 
+Branch on `${target}` globs such as `*-mingw*`, `*-apple-*`, `*-freebsd*` and `*-musl*`, and on `${nbits}`.
+
 ### Common Build Systems
 
-**Autotools**:
+Pass the target toolchain and build with `${nproc}` jobs; otherwise use upstream's normal invocation.
 
-```bash
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make -j${nproc}
-make install
-```
-
-Call `update_configure_scripts` before `./configure` if the package's `config.sub`/`config.guess` files don't recognize newer platforms.
-
-**CMake**:
-
-```bash
-cmake -B build \
-    -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release
-cmake --build build --parallel ${nproc}
-cmake --install build
-```
-
-**Meson**:
-
-```bash
-meson setup build --cross-file="${MESON_TARGET_TOOLCHAIN}"
-meson compile -C build -j${nproc}
-meson install -C build
-```
-
-**Make**:
-
-```bash
-make -j${nproc} PREFIX=${prefix}
-make install PREFIX=${prefix}
-```
-
-**Go** (add `compilers=[:c, :go]`):
-
-```bash
-go build -o ${bindir}/executable${exeext}
-```
-
-**Rust** (add `compilers=[:c, :rust]`; toolchain 1.97 supports riscv64 and FreeBSD aarch64):
-
-```bash
-cargo build --release
-install -Dvm 755 target/${rust_target}/release/executable${exeext} -t ${bindir}
-```
-
-### Platform-Specific Logic
-
-```bash
-if [[ "${target}" == *-mingw* ]]; then
-    # Windows-specific
-elif [[ "${target}" == *-apple-* ]]; then
-    # macOS-specific
-elif [[ "${target}" == *-freebsd* ]]; then
-    # FreeBSD-specific
-fi
-
-if [[ ${nbits} == 32 ]]; then
-    # 32-bit specific
-fi
-```
+- **Autotools**: `./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}`. Call `update_configure_scripts` first if `config.sub`/`config.guess` don't recognize newer platforms.
+- **CMake**: `cmake -B build -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release`
+- **Meson**: `meson setup build --cross-file="${MESON_TARGET_TOOLCHAIN}"`
+- **Go**: add `compilers=[:c, :go]`, then `go build -o ${bindir}/executable${exeext}`.
+- **Rust**: add `compilers=[:c, :rust]` (toolchain 1.97 supports riscv64 and FreeBSD aarch64), then `cargo build --release` and `install -Dvm 755 target/${rust_target}/release/executable${exeext} -t ${bindir}`.
 
 ### Optional Arguments to `build_tarballs`
 
@@ -374,35 +274,6 @@ version required to *run* BinaryBuilder.jl itself (see [Prerequisites](#prerequi
 
 ## Common Patterns
 
-### Applying Patches
-
-```julia
-sources = [
-    ArchiveSource("..."),
-    DirectorySource("./bundled"),
-]
-
-script = raw"""
-cd ${WORKSPACE}/srcdir/package-*
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fix.patch
-# ... rest of build
-"""
-```
-
-### Platform Filtering
-
-```julia
-platforms = supported_platforms()
-# Upstream assumes 64-bit pointers
-filter!(p -> nbits(p) == 64, platforms)
-
-# Expand C++ string ABI variants
-platforms = expand_cxxstring_abis(platforms)
-
-# Expand Fortran library versions (only for Fortran codes)
-platforms = expand_gfortran_versions(platforms)
-```
-
 ### Multi-Variant Recipes
 
 Put shared logic in `PackageName/common.jl` and one `build_tarballs.jl` per variant in subdirectories (`PackageName/PackageName`, `PackageName/PackageName32`). Keep an old version alongside a new one in a `PackageName@<version>/` directory, with as many version components as needed to tell them apart (`PackageName@1.5`, `PackageName@18`).
@@ -427,22 +298,7 @@ The `H/HelloWorld*` recipes show the toolchain setup for each language and speci
 
 ## MCP Tooling
 
-`.agents/mcp-bb-sandbox/server.jl` is an MCP server, `bb-sandbox`, that launches and drives an interactive BinaryBuilder cross-compilation sandbox. Tools: `sandbox_start`, `sandbox_exec`, `sandbox_stop`, `sandbox_list`, `sandbox_str_replace_editor`.
-
-Register it in your agent as a stdio server started from the checkout root (`.mcp.json` already does this for agents that read it):
-
-```bash
-julia --project=.agents/mcp-bb-sandbox .agents/mcp-bb-sandbox/server.jl
-```
-
-It runs on the `julia` found on `PATH`, which must be the version from [Prerequisites](#prerequisites), and shells out to the checkout's root project for `build_tarballs.jl --debug`. Its `Manifest.toml` is not checked in, so it resolves against the latest `[sources]` branches. On a fresh checkout or worktree, instantiate both projects once, or the server fails to start with a missing-package error:
-
-```bash
-julia --project=.agents/mcp-bb-sandbox -e 'using Pkg; Pkg.instantiate()'
-julia --project -e 'using Pkg; Pkg.instantiate()'
-```
-
-`sandbox_start` takes an absolute `build_tarballs_path`, so a server started in the main checkout can build a recipe in any worktree. The recipe then runs against the main checkout's root project, so keep that checkout's `master` up to date with `git pull`. To use the worktree's own project instead, start the agent from the worktree.
+`.agents/mcp-bb-sandbox/` holds `bb-sandbox`, an MCP server that drives an interactive BinaryBuilder cross-compilation sandbox. Its [README](.agents/mcp-bb-sandbox/README.md) explains how to register and set it up.
 
 ## Additional Resources
 
