@@ -19,6 +19,16 @@ cmake_args=(
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
     -DMPI_HOME=${prefix}
 )
+if [[ ${target} == *-mingw* ]]; then
+    # As in H/HDF5: gfortran cannot link MS-MPI's Fortran wrapper library, but msmpi.dll
+    # exports the gfortran-mangled entry points; mpif.h needs -fallow-invalid-boz.
+    cmake_args+=(
+        -DMPI_GUESS_LIBRARY_NAME=MSMPI
+        -DMPI_Fortran_LIBRARIES=${libdir}/msmpi.${dlext}
+        -DMPI_Fortran_INCLUDE_DIRS=${includedir}
+        -DCMAKE_Fortran_FLAGS=-fallow-invalid-boz
+    )
+fi
 cmake -Bbuild ${cmake_args[@]}
 cmake --build build --parallel ${nproc}
 cmake --install build
@@ -54,6 +64,6 @@ products = [
     ExecutableProduct("hello_world", :hello_world),
 ]
 
-# The MPICH Fortran bindings require at least GCC 9.
+# -fallow-invalid-boz needs GCC 10; the MPICH Fortran bindings need at least GCC 9.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"9")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"10")
