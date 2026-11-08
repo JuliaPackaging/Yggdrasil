@@ -8,7 +8,7 @@ Register it in your agent as a stdio server started from the checkout root (`.mc
 julia --project=.agents/mcp-bb-sandbox .agents/mcp-bb-sandbox/server.jl
 ```
 
-It runs on the `julia` found on `PATH`, which must be the version from [Prerequisites](../../AGENTS.md#prerequisites), and shells out to the checkout's root project for `build_tarballs.jl --debug`. Its `Manifest.toml` is not checked in, so it resolves against the latest `[sources]` branches. On a fresh checkout or worktree, instantiate both projects once, or the server fails to start with a missing-package error:
+It runs on the `julia` found on `PATH`, which must be the version from [Prerequisites](../../AGENTS.md#prerequisites), and runs every sandbox, with or without a recipe, under the checkout's root project, which CI uses. The server's own `Manifest.toml` is not checked in, so it resolves `ClaudeMCPTools` from its latest `master`. On a fresh checkout or worktree, instantiate both projects once, or the server fails to start with a missing-package error:
 
 ```bash
 julia --project=.agents/mcp-bb-sandbox -e 'using Pkg; Pkg.instantiate()'

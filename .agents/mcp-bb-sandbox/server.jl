@@ -37,14 +37,14 @@ function make_sandbox_cmd(params::AbstractDict)
 
     local cmd
     if bt_path !== nothing
-        bt_path = abspath(bt_path)
+        bt_path = abspath(PROJECT_ROOT, bt_path)
         isfile(bt_path) || error("build_tarballs.jl not found: $bt_path")
         bt_dir = dirname(bt_path)
         metadata["build_tarballs_path"] = bt_path
         cmd = Cmd(`$(JULIA_CMD) --project=$PROJECT_ROOT $bt_path --debug=$debug_mode $platform`; dir=bt_dir)
         log_msg("Using build_tarballs: $bt_path (debug=$debug_mode)")
     else
-        cmd = Cmd(`$(JULIA_CMD) --project=$SERVER_DIR $RUN_SHELL_SCRIPT $platform $PROJECT_ROOT`; dir=PROJECT_ROOT)
+        cmd = Cmd(`$(JULIA_CMD) --project=$PROJECT_ROOT $RUN_SHELL_SCRIPT $platform $PROJECT_ROOT`; dir=PROJECT_ROOT)
     end
 
     return (cmd, metadata)
@@ -103,7 +103,7 @@ Inside the sandbox you have access to cross-compilers (\$CC, \$CXX, \$FC), the t
         ),
         "build_tarballs_path" => Dict{String,Any}(
             "type" => "string",
-            "description" => "Optional absolute or relative path to a build_tarballs.jl file. When specified, the build script runs with the selected debug_mode and then drops into an interactive shell. Sources are downloaded and extracted into the workspace.",
+            "description" => "Optional path to a build_tarballs.jl file; a relative path resolves against the checkout the server was started in. When specified, the build script runs with the selected debug_mode and then drops into an interactive shell. Sources are downloaded and extracted into the workspace.",
         ),
         "debug_mode" => Dict{String,Any}(
             "type" => "string",
