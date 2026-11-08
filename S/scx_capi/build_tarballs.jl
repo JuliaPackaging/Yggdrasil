@@ -24,10 +24,14 @@ install_license LICENSE
 """
 
 platforms = supported_platforms()
-# Rust toolchain for i686 Windows is unusable
-filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms)
 # `cdylib` doesn't support musl
 filter!(p -> libc(p) != "musl", platforms)
+# cc-rs forces `-march` on 32-bit targets, which the BinaryBuilder compiler wrappers reject;
+# nobody streams count matrices on 32-bit anyway.
+filter!(p -> nbits(p) == 64, platforms)
+# Windows: c-blosc (via zarrs) bundles a win32 pthread emulation that collides with the
+# winpthreads the Rust gnu target links. (HDF5 would also need `-lshlwapi` for StrStrIA.)
+filter!(!Sys.iswindows, platforms)
 # No Rust toolchain shard for RISC-V or FreeBSD/aarch64
 filter!(p -> arch(p) != "riscv64", platforms)
 filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
