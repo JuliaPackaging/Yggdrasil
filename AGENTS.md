@@ -29,8 +29,8 @@ name = "PackageName"              # Valid Julia identifier (no spaces/dashes/dot
 version = v"X.Y.Z"                # Only major.minor.patch (no prerelease/build tags)
 
 sources = [
-    ArchiveSource("URL", "sha256hash"),
-    # GitSource("URL", "commit_hash"; tag="v$(version)"),
+    GitSource("URL", "commit_hash"; tag="v$(version)"),
+    # ArchiveSource("URL", "sha256hash"),
     # DirectorySource("./bundled"),  # for patches
 ]
 
