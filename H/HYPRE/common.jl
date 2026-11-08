@@ -72,7 +72,8 @@ function hypre_dependencies(platforms, platform_dependencies)
     return [
         Dependency("libblastrampoline_jll"; compat="5.4.0"),
         Dependency("CompilerSupportLibraries_jll"; compat="1.0.5", platforms=filter(!Sys.isbsd, platforms)),
-        Dependency("LLVMOpenMP_jll"; compat="15.0.7", platforms=filter(Sys.isbsd, platforms)),
+        # Clang emits __kmpc_dispatch_deinit, which libomp provides from 19 on
+        Dependency("LLVMOpenMP_jll"; compat="19.1.7 - 23", platforms=filter(Sys.isbsd, platforms)),
         platform_dependencies...,
     ]
 end
