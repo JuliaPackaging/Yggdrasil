@@ -3,11 +3,12 @@
 using BinaryBuilder
 
 name = "gmsh"
-version = v"4.15.2"
+upstream_version = v"4.15.2"
+version = v"4.15.3" # Different version number because we needed to change compat bound, in the future we can go back to follow upstream
 
 # Collection of sources required to build Gmsh
 sources = [
-    ArchiveSource("https://gmsh.info/src/gmsh-$(version)-source.tgz",
+    ArchiveSource("https://gmsh.info/src/gmsh-$(upstream_version)-source.tgz",
                   "be3f66f225d27ba9fa014f07e83169285da8a051b0e8ab7103d88066b39bdd3e"),
     DirectorySource("./bundled")
     ]
