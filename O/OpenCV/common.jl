@@ -120,6 +120,6 @@ dependencies = [
     HostBuildDependency("CMake_jll"),
     Dependency("Libglvnd_jll"; compat="1.7.0"),
     BuildDependency("libjulia_jll"),
-    Dependency("libcxxwrap_julia_jll"; compat="0.14.7"),
+    Dependency("libcxxwrap_julia_jll"; compat="0.14.12"),
     Dependency("OpenBLAS32_jll"; compat="0.3.24"),
 ]
