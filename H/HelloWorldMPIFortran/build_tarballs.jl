@@ -41,10 +41,7 @@ augment_platform_block = """
     augment_platform!(platform::Platform) = augment_mpi!(platform)
     """
 
-platforms = supported_platforms()
-# MicrosoftMPI_jll has no compiled `mpi` module for `use mpi`
-filter!(!Sys.iswindows, platforms)
-platforms = expand_gfortran_versions(platforms)
+platforms = expand_gfortran_versions(supported_platforms())
 platforms, dependencies = MPI.augment_platforms(platforms)
 
 append!(dependencies, [
