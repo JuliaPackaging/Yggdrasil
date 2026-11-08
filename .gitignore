@@ -13,4 +13,4 @@ archive/
 
 .DS_Store
 
-.claude/Manifest.toml
+.agents/mcp-bb-sandbox/Manifest.toml
