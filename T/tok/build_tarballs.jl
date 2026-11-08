@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "tok"
-version = v"1.0.3"
+version = v"1.0.4"
 
 # tok: a plain-text notation for BPMN process models and DMN decisions. tok_jll ships the
 # C library of the tok engine (crate tok-capi), which the Julia package TokLang.jl loads.
 sources = [
     GitSource("https://github.com/tok-lang-bpm/tok.git",
-              "464f1b73b5b2aed5444a93cd26c165752f521a62"; tag="v$(version)"),
+              "154ad9d2bdeacd6401407ac3291b247c8b801b22"; tag="v$(version)"),
 ]
 
 script = raw"""
