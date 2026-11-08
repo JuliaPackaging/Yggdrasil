@@ -15,6 +15,7 @@ Topic guidance lives in `.agents/skills/`, one `SKILL.md` per topic in the Agent
 
 - [`mpi-recipes`](.agents/skills/mpi-recipes/SKILL.md): the recipe depends on an MPI implementation, includes `platforms/mpi.jl` or calls `MPI.augment_platforms`, links libmpi, msmpi or mpif, or uses the `mpi` platform tag
 - [`cuda-recipes`](.agents/skills/cuda-recipes/SKILL.md): the recipe uses nvcc, includes `platforms/cuda.jl` or `C/CUDA/common.jl`, depends on `CUDA_SDK_jll`, `CUDA_Runtime_jll`, `CUDA_Compiler_jll` or `CUDA_Driver_jll`, or uses the `cuda` platform tag
+- [`blas-recipes`](.agents/skills/blas-recipes/SKILL.md): the recipe depends on `libblastrampoline_jll`, links `-lblastrampoline`, or calls BLAS/LAPACK with 64-bit integers (ILP64, `64_`-suffixed symbols)
 - [`jll-versioning`](.agents/skills/jll-versioning/SKILL.md): the JLL needs a version different from upstream (`ygg_version`), e.g. because a compat bound changed or a dependency moved to an ABI-breaking release, or the upstream version string is not plain `X.Y.Z`
 - [`testing-jll`](.agents/skills/testing-jll/SKILL.md): every recipe, before merging: building it locally or fetching CI tarballs, and testing the generated JLL
 
@@ -167,7 +168,7 @@ Some dependencies require special handling:
 
 - **LLVM packages**: Must use `LLVM_full_jll` and match the version used by the Julia version. Requires careful ABI compatibility.
 - **MPI packages**: Use `MPI.augment_platforms` from `platforms/mpi.jl`, which adds one variant per MPI ABI and the matching dependencies; read [`mpi-recipes`](.agents/skills/mpi-recipes/SKILL.md).
-- **BLAS/LAPACK packages**: Should link against `libblastrampoline_jll` rather than a concrete BLAS implementation, so downstream Julia users can swap implementations at runtime.
+- **BLAS/LAPACK packages**: Should link against `libblastrampoline_jll` rather than a concrete BLAS implementation, so downstream Julia users can swap implementations at runtime; read [`blas-recipes`](.agents/skills/blas-recipes/SKILL.md).
 - **CUDA packages**: Start from `H/HelloWorldCUDA`; read [`cuda-recipes`](.agents/skills/cuda-recipes/SKILL.md).
 
 For these complex dependencies, consult existing recipes in the repository (search for `LLVM_full_jll`, `MPI.augment_platforms`, `libblastrampoline_jll`, or `CUDA.required_dependencies`).
