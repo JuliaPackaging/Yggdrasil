@@ -5,7 +5,7 @@
 # Thin wrapper around ClaudeMCPTools that registers a sessioned bash tool
 # configured to launch BinaryBuilder sandbox sessions.
 #
-# Dependencies: ClaudeMCPTools (from .claude project, activated via --project flag in .mcp.json)
+# Dependencies: ClaudeMCPTools (from this directory's Project.toml, activated via --project)
 
 using ClaudeMCPTools
 
@@ -14,8 +14,7 @@ using ClaudeMCPTools
 # ═══════════════════════════════════════════════════════════════
 
 const SERVER_DIR = @__DIR__
-const PROJECT_ROOT = dirname(dirname(SERVER_DIR))  # .claude/mcp-bb-sandbox -> .claude -> root
-const CLAUDE_PROJECT = joinpath(PROJECT_ROOT, ".claude")
+const PROJECT_ROOT = dirname(dirname(SERVER_DIR))  # .agents/mcp-bb-sandbox -> .agents -> root
 const RUN_SHELL_SCRIPT = joinpath(SERVER_DIR, "run_shell.jl")
 
 const JULIA_CMD = [joinpath(Sys.BINDIR, Base.julia_exename())]  # same Julia as the server
@@ -45,7 +44,7 @@ function make_sandbox_cmd(params::AbstractDict)
         cmd = Cmd(`$(JULIA_CMD) --project=$PROJECT_ROOT $bt_path --debug=$debug_mode $platform`; dir=bt_dir)
         log_msg("Using build_tarballs: $bt_path (debug=$debug_mode)")
     else
-        cmd = Cmd(`$(JULIA_CMD) --project=$CLAUDE_PROJECT $RUN_SHELL_SCRIPT $platform $PROJECT_ROOT`; dir=PROJECT_ROOT)
+        cmd = Cmd(`$(JULIA_CMD) --project=$SERVER_DIR $RUN_SHELL_SCRIPT $platform $PROJECT_ROOT`; dir=PROJECT_ROOT)
     end
 
     return (cmd, metadata)

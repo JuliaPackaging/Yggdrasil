@@ -112,7 +112,7 @@ Instead:
    Use the `[skip build]` keyword in the commit message, as described above.
    A maintainer must then merge this PR with `[skip ci]`, as described below.
 
-If the package needs a new release with different compat bounds anyway, bump its version number instead; see [Upstream and JLL Versions](AGENTS.md#upstream-and-jll-versions).
+If the package needs a new release with different compat bounds anyway, bump its version number instead; see the [`jll-versioning` skill](.agents/skills/jll-versioning/SKILL.md).
 
 ## Information for maintainers
 
