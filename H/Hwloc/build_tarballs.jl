@@ -3,12 +3,15 @@
 using BinaryBuilder
 
 name = "Hwloc"
-version = v"2.15.0"
+# Built at 2.14.0 once, for environments whose XML2_jll is capped at 2.13 (e.g. by Librsvg_jll): they
+# cannot use Hwloc_jll >= 2.14.1 and otherwise get 2.14.0+0, which hangs on Apple chips with three CPU
+# cluster types. Restore 2.15.0 after this build is registered.
+version = v"2.14.0"
 
 # Collection of sources required to build hwloc
 sources = [
     ArchiveSource("https://download.open-mpi.org/release/hwloc/v$(version.major).$(version.minor)/hwloc-$(version).tar.bz2",
-                  "0084b926fff9a960ddbf175654db39054ed60afbb830d2039d8a60686ca06a7f"),
+                  "966b9bb3e9f29f8d65ce8d106779e457f40e246a645e584b100772a42f9ae94b"),
     DirectorySource("./bundled"),
 ]
 
@@ -42,7 +45,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("XML2_jll"; compat="~2.15.3"),
+    Dependency("XML2_jll"; compat="~2.13.6"),
     Dependency("Xorg_libpciaccess_jll"; platforms=filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
 ]
 
