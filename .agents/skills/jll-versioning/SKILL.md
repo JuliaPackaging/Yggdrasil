@@ -9,14 +9,14 @@ description: Yggdrasil rules for JLL version numbers. Use when a recipe needs a 
 
 ```julia
 version = v"1.6.0"
-ygg_version = v"1.6.1"  # Rebuilt against Giflib_jll 6
+ygg_version = v"1.6.1"  # Built against Giflib_jll 6
 
 build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies)
 ```
 
 Use this when:
 
-- A rebuild must get a new JLL version rather than a new build number, e.g. because a compat bound changed (see [Dependencies](../../../AGENTS.md#dependencies)) or a dependency moved to a new ABI-breaking release. Say why in a comment.
+- A rebuild must get a new JLL version rather than a new build number, e.g. because a compat bound changed (see [Dependencies](../../../AGENTS.md#dependencies)) or a dependency moved to a new ABI-breaking release. Comment on why the versions differ.
 - Upstream does not use semantic versioning, e.g. map upstream `20U4` to `ygg_version = v"2.0.400"`.
 
 Every new `ygg_version` must exceed all registered versions of the JLL, and downstream compat bounds refer to `ygg_version`, not to upstream. Bumping the patch (`1.6.0` → `1.6.1`) collides with upstream's next patch release: when upstream releases `1.6.1`, the JLL needs `ygg_version = v"1.6.2"`. Drop `ygg_version` once `version` is larger than every registered JLL version again. Recipes that rebuild often reserve room instead:

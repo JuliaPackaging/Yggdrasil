@@ -11,12 +11,12 @@ This guide helps AI agents generate correct `build_tarballs.jl` recipes for Bina
 
 ## Skills
 
-Guidance that only some recipes need lives in `.agents/skills/`, one `SKILL.md` per topic in the Agent Skills format. Read the matching file before working on such a recipe; when it applies, it is as binding as this guide.
+Topic guidance lives in `.agents/skills/`, one `SKILL.md` per topic in the Agent Skills format. Before working on a recipe, read every skill whose condition below matches it; each is as binding as this guide.
 
-- [`mpi-recipes`](.agents/skills/mpi-recipes/SKILL.md): recipes that use MPI
-- [`cuda-recipes`](.agents/skills/cuda-recipes/SKILL.md): recipes that build CUDA code
-- [`jll-versioning`](.agents/skills/jll-versioning/SKILL.md): the JLL version must differ from upstream (`ygg_version`), or the upstream version string is not plain `X.Y.Z`
-- [`testing-jll`](.agents/skills/testing-jll/SKILL.md): building a recipe locally and testing the generated JLL
+- [`mpi-recipes`](.agents/skills/mpi-recipes/SKILL.md): the recipe depends on an MPI implementation, includes `platforms/mpi.jl` or calls `MPI.augment_platforms`, links libmpi, msmpi or mpif, or uses the `mpi` platform tag
+- [`cuda-recipes`](.agents/skills/cuda-recipes/SKILL.md): the recipe uses nvcc, includes `platforms/cuda.jl` or `C/CUDA/common.jl`, depends on `CUDA_SDK_jll`, `CUDA_Runtime_jll`, `CUDA_Compiler_jll` or `CUDA_Driver_jll`, or uses the `cuda` platform tag
+- [`jll-versioning`](.agents/skills/jll-versioning/SKILL.md): the JLL needs a version different from upstream (`ygg_version`), e.g. because a compat bound changed or a dependency moved to an ABI-breaking release, or the upstream version string is not plain `X.Y.Z`
+- [`testing-jll`](.agents/skills/testing-jll/SKILL.md): every recipe, before merging: building it locally or fetching CI tarballs, and testing the generated JLL
 
 ## Essential Structure
 
@@ -95,7 +95,7 @@ Every declared product must be produced on every platform it is built for: the a
 - `compat` and `julia_compat` strings are Pkg [version specifiers](https://pkgdocs.julialang.org/v1/compatibility/#Version-specifier-format), not version numbers. A bare version is a caret range up to the next breaking release: `"1.10"` and `"1.10.0"` both mean `[1.10.0, 2.0.0)`, so `julia_compat="1.10"` already admits Julia 1.11, 1.12, …, and does not pin Julia 1.10. Raising it from `"1.6"` to `"1.10"` narrows the range by dropping 1.6–1.9. Before 1.0 the range is narrower: `"0.3"` means `[0.3.0, 0.4.0)`. Other operators exist (`~`, `=`, `>=`, hyphen ranges); check their meaning at that link before using one.
 - Never remove or loosen an existing bound. Entries in a compat string form a union, so `"3.0, 3.5"` still admits 3.0: raise a lower bound by replacing the entry, not by appending one.
 - By default BinaryBuilder builds against the *oldest* version satisfying the bound, so raising the lower bound picks up newer artifacts. A positional pin (`Dependency("X_jll", v"1.2")` or `Dependency(PackageSpec("X_jll", v"1.2"))`) overrides the default: check for one before relying on `compat` alone, and keep it inside the bound or the build errors.
-- Changing any compat bound, including `julia_compat`, requires bumping the JLL version. Pkg cannot re-register an existing version. The exception is aligning a recipe with a fix already made in General; see [Changing compat bounds](CONTRIBUTING.md#changing-compat-bounds-of-a-package).
+- Changing any compat bound, including `julia_compat`, requires a new JLL version; read [`jll-versioning`](.agents/skills/jll-versioning/SKILL.md) before changing `version`. Pkg cannot re-register an existing version. The exception is aligning a recipe with a fix already made in General; see [Changing compat bounds](CONTRIBUTING.md#changing-compat-bounds-of-a-package).
 - Header-only or build-time-only packages are `BuildDependency`, so they are not installed on users' machines.
 - Anything linking `libgfortran` needs `expand_gfortran_versions(platforms)` and `Dependency("CompilerSupportLibraries_jll")`. Don't paper over it with `preferred_gcc_version`.
 - OpenMP: `CompilerSupportLibraries_jll` on non-BSD, `LLVMOpenMP_jll` on FreeBSD and macOS. Never mix headers from one with the runtime of the other.
