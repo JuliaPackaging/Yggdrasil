@@ -34,7 +34,6 @@ dependencies = [
     Dependency("libcxxwrap_julia_jll"; compat="0.14.12"),
 ]
 
-# libcxxwrap_julia_jll is built with GCC 10
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     julia_compat=libjulia_julia_compat(julia_versions),
-    preferred_gcc_version=v"10")
+    preferred_gcc_version=v"8")
