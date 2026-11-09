@@ -82,12 +82,12 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
 
     if version == v"1.14.0-DEV"
         sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "08e5253dc0d8af12b2f3071b0e95232e5a2080ec"),
+            GitSource("https://github.com/JuliaLang/julia.git", "48b666a545bc206dd5a3604c4596407b2e6c2b1e"),
             DirectorySource("./bundled"),
         ]
     elseif version == v"1.15.0-DEV"
         sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "eac1f2ee6c5156525a15d163313259c3b75558a3"),
+            GitSource("https://github.com/JuliaLang/julia.git", "9a744b01a46aecbffaa2ab13d41b4c0142ce8b19"),
             DirectorySource("./bundled"),
         ]
     else
@@ -416,11 +416,11 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     elseif version.major == 1 && version.minor == 14
         push!(dependencies, BuildDependency("OpenSSL_jll")),
         push!(dependencies, BuildDependency("Zstd_jll")),
-        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"23.1.4+0")))
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"23.1.4+1")))
     elseif version.major == 1 && version.minor == 15
         push!(dependencies, BuildDependency("OpenSSL_jll")),
         push!(dependencies, BuildDependency("Zstd_jll")),
-        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"23.1.4+0")))
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"23.1.4+1")))
     else
         error("Unsupported Julia version")
     end
