@@ -108,6 +108,11 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/bool_switch_selector.patch
 # rejected the module. Julia emits such headers for `x^n` with an integer `n`
 # in loops that IRCE cloned or `@unroll` annotated (JuliaGPU/KernelAbstractions.jl#959).
 atomic_patch -p1 $WORKSPACE/srcdir/patches/loop_merge_switch_header.patch
+# Backport of https://github.com/llvm/llvm-project/pull/240309 ("[SPIR-V] Fix
+# the overflow flag of llvm.smul.with.overflow"; open upstream): the flag tested
+# the high half of the product against zero, so negative products overflowed
+# (Julia's `checked_mul(-1, 1)` threw) and some overflows went unnoticed.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/smul_overflow_flag.patch
 
 install_license LICENSE.TXT
 
