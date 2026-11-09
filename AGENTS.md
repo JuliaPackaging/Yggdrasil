@@ -171,7 +171,7 @@ Some dependencies require special handling:
 - **MPI packages**: Use `MPI.augment_platforms` from `platforms/mpi.jl`, which adds one variant per MPI ABI and the matching dependencies; read [`mpi-recipes`](.agents/skills/mpi-recipes/SKILL.md).
 - **BLAS/LAPACK packages**: Should link against `libblastrampoline_jll` rather than a concrete BLAS implementation, so downstream Julia users can swap implementations at runtime; read [`blas-recipes`](.agents/skills/blas-recipes/SKILL.md).
 - **CUDA packages**: Start from `H/HelloWorldCUDA`; read [`cuda-recipes`](.agents/skills/cuda-recipes/SKILL.md).
-- **libjulia and CxxWrap packages**: Build one variant per Julia version with `libjulia_platforms` from `L/libjulia/common.jl`; read [`libjulia-recipes`](.agents/skills/libjulia-recipes/SKILL.md).
+- **libjulia and CxxWrap packages**: Start CxxWrap wrappers from `H/HelloWorldCxxWrap`. Build one variant per Julia version with `libjulia_platforms` from `L/libjulia/common.jl`; read [`libjulia-recipes`](.agents/skills/libjulia-recipes/SKILL.md).
 
 For these complex dependencies, consult existing recipes in the repository (search for `LLVM_full_jll`, `MPI.augment_platforms`, `libblastrampoline_jll`, `CUDA.required_dependencies`, or `libjulia_platforms`).
 
@@ -297,7 +297,7 @@ Put shared logic in `PackageName/common.jl` and one `build_tarballs.jl` per vari
 
 ## Reference Examples
 
-The `H/HelloWorld*` recipes show the toolchain setup for each language and special dependency: `HelloWorldC` (C, CMake), `HelloWorldCxx`, `HelloWorldFortran`, `HelloWorldGo`, `HelloWorldRust`, `HelloWorldMPIC`, `HelloWorldMPIFortran` and `HelloWorldCUDA`. They build small test programs instead of an upstream release, so take sources, patches and build system usage from this guide, not from them.
+The `H/HelloWorld*` recipes show the toolchain setup for each language and special dependency: `HelloWorldC` (C, CMake), `HelloWorldCxx`, `HelloWorldFortran`, `HelloWorldGo`, `HelloWorldRust`, `HelloWorldMPIC`, `HelloWorldMPIFortran`, `HelloWorldCUDA` and `HelloWorldCxxWrap`. They build small test programs instead of an upstream release, so take sources, patches and build system usage from this guide, not from them.
 
 ## MCP Tooling
 

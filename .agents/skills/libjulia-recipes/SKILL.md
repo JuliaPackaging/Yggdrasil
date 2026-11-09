@@ -7,7 +7,7 @@ description: Rules for Yggdrasil recipes built against Julia's headers, includin
 
 Anything built against Julia's headers, such as [CxxWrap.jl](https://github.com/JuliaInterop/CxxWrap.jl) wrappers, GAP or jlrs-based crates, is tied to a Julia minor version. `libjulia_platforms(v)` tags each platform with `julia_version=v`. Julia's host platform carries the same tag and matches it on major.minor, so no augmentation block is needed.
 
-For a CxxWrap wrapper, follow `L/libsingular_julia/build_tarballs.jl`:
+For a CxxWrap wrapper, start from `H/HelloWorldCxxWrap`:
 
 ```julia
 include("../../L/libjulia/common.jl")  # also loads macos_sdks.jl
@@ -22,7 +22,8 @@ dependencies = [
 @assert libjulia_min_julia_version <= v"1.10.0"
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat=libjulia_julia_compat(julia_versions))
+    julia_compat=libjulia_julia_compat(julia_versions),
+    preferred_gcc_version=v"8")
 ```
 
 - **`libjulia_jll`** is always a `BuildDependency`: the running Julia supplies `libjulia`. Pin it to `jllversion` from `L/libjulia/build_tarballs.jl`. Older releases lack artifacts for newer Julia versions; the history comment in `common.jl` lists the first release for each.
