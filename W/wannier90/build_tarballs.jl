@@ -8,7 +8,7 @@ version = v"4.0.3"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/wannier-developers/wannier90.git",
-              "971c8b64bfe703c747a52655e1d59936597fe8ea"), # v4.0.3
+              "971c8b64bfe703c747a52655e1d59936597fe8ea", tag="v$(version)"),
 ]
 
 # Bash recipe for building across all platforms
