@@ -1,0 +1,28 @@
+zune-capi: decode QOI images with QoiDecoder, not JpegDecoder
+
+The `ImageFormat::QOI` arm of `imdecode_inner` is a copy of the JPEG arm that
+kept the `JpegDecoder`, so a QOI file can only ever come back as a JPEG parse
+error.  `QoiDecoder` is re-exported as `zune_image::codecs::qoi::QoiDecoder`
+under zune-image's default features, parses headers itself, and its
+`decode_into` error converts into `ImageErrors` through the existing `From`
+impl, so swapping the type is the whole fix.
+
+--- a/crates/zune-capi/src/imread.rs
++++ b/crates/zune-capi/src/imread.rs
+@@ -11,6 +11,7 @@
+ use zune_image::codecs::png::PngDecoder;
+ use zune_image::codecs::ppm::PPMDecoder;
+ use zune_image::codecs::psd::PSDDecoder;
++use zune_image::codecs::qoi::QoiDecoder;
+ use zune_image::codecs::ImageFormat;
+ use zune_image::errors::ImageErrors;
+ 
+@@ -493,7 +494,7 @@
+             }
+             ImageFormat::QOI => {
+                 // just write into buffer
+-                let mut decoder = JpegDecoder::new(data);
++                let mut decoder = QoiDecoder::new(data);
+ 
+                 decoder.decode_into(output)?;
+             }
