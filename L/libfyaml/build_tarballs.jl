@@ -30,7 +30,9 @@ make -j${nproc} install
 """
 
 # These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
+# platforms are passed in on the command line.
+# Rebuild (v0.7.12+1) to add platforms that were not supported when this
+# package was first built, e.g. riscv64-linux-gnu and aarch64-unknown-freebsd.
 platforms = supported_platforms()
 platforms = filter(!Sys.iswindows, platforms)
 
