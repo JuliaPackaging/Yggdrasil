@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDA_Compiler"
-version = v"0.6.4"
+version = v"0.6.5"
 
 const toolkit_versions = [CUDA.cuda_full_versions; CUDA.cuda_prerelease_versions]
 const compiler_versions = filter(v -> v >= v"11.4" || Base.thisminor(v) == v"10.2", toolkit_versions)
@@ -36,6 +36,13 @@ done
 
 # license
 install_license cuda_nvcc/LICENSE
+mv *cccl/LICENSE LICENSE.cccl
+install_license LICENSE.cccl
+
+# NVRTC does not ship the headers that code compiled at run time includes (`cuda_fp16.h`,
+# `cooperative_groups.h`, CCCL), so provide them, laid out as in the toolkit's `include`
+mkdir -p ${includedir}
+cp -r cuda_cudart/include/* *cccl/include/* ${includedir}
 
 # binaries
 mkdir -p ${bindir} ${libdir} ${prefix}/lib ${prefix}/share
@@ -164,6 +171,7 @@ function get_products(version::VersionNumber)
     products = [
         FileProduct(["lib/libcudadevrt.a", "lib/cudadevrt.lib"], :libcudadevrt),
         FileProduct("nvvm/libdevice/libdevice.10.bc", :libdevice),
+        FileProduct("include", :cuda_include_dir),
         LibraryProduct(["libnvvm", "nvvm64_40_0"], :libnvvm,
                        ["nvvm/lib64", "nvvm/bin/x64", "nvvm/bin"]),
         LibraryProduct(["libnvrtc", nvrtc_dll], :libnvrtc),
@@ -192,6 +200,7 @@ for version in compiler_versions
     # CUDA_Compiler uses the following components
     components = [
         "cuda_cudart",
+        version >= v"13.3" ? "cccl" : "cuda_cccl",
         "cuda_nvcc",
         "cuda_nvdisasm",
         "cuda_nvrtc",
