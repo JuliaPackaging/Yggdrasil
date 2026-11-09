@@ -34,7 +34,7 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
 ## CxxWrap
 
 - **CMake**: projects using `find_package(JlCxx)` need `-DJulia_PREFIX=${prefix}` and `-DCMAKE_FIND_ROOT_PATH=${prefix}` on top of the usual CMake flags.
-- **`libcxxwrap_julia_jll` compat**: before 1.0, each minor release (0.13 → 0.14) breaks ABI. Admit the minors that the Julia package's CxxWrap.jl accepts, per the `libcxxwrap_julia_jll` entry in CxxWrap.jl's `Project.toml`. BinaryBuilder builds against the oldest version in the bound, so the lower bound must be a release built for every Julia version in `julia_versions`.
+- **`libcxxwrap_julia_jll` compat**: before 1.0, each minor release (0.13 → 0.14) breaks ABI. Admit exactly one minor, and one that the Julia package's CxxWrap.jl accepts, per the `libcxxwrap_julia_jll` entry in CxxWrap.jl's `Project.toml`. BinaryBuilder builds against the oldest version in the bound, so the lower bound must be a release built for every Julia version in `julia_versions`.
 - **GCC**: the `JlCxx::cxxwrap_julia` CMake target requires C++20, which CMake supports from GCC 8; use the oldest GCC from 8 up that compiles the wrapper (see [GCC Version Selection](../../../AGENTS.md#gcc-version-selection)).
 - `L/libcxxwrap_julia` builds CxxWrap itself; it is not a template for a wrapper.
 
