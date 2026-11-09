@@ -30,9 +30,12 @@ using PackageName_jll
 run(`$(PackageName_jll.executable_name()) --version`)
 ```
 
+Repeat this with the lowest Julia version that `julia_compat` admits, the `julia` entry under `[compat]` in the JLL's `Project.toml`, e.g. `julia +1.6` with juliaup. General's AutoMerge imports the JLL on that version and blocks registration if the import fails. A common cause is a dependency bound whose releases all require a newer Julia or a newer stdlib JLL than that version ships. Then raise `julia_compat` to the oldest Julia on which the JLL loads. juliaup's Julia 1.6 on arm64 macOS is an x86_64 build, so deploy the `x86_64-apple-darwin` tarball for it.
+
 Check that:
 
 - [ ] The JLL imports without warnings or errors; this dlopens its libraries and their dependencies
+- [ ] It also imports on the lowest Julia version that `julia_compat` admits
 - [ ] Executables run (at least `--version` or `--help`)
 - [ ] Platform-specific behavior works, if any
 - [ ] Packages that will use the JLL pass their tests with it (`Pkg.add` them to the same environment)
