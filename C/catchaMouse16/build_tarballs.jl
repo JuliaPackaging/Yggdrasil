@@ -8,7 +8,7 @@ version = v"0.2.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/DynamicsAndNeuralSystems/catchaMouse16.git",
-              "2ad18283e0f2856e520794602f2f3748857e320d")
+              "2ad18283e0f2856e520794602f2f3748857e320d")  # v0.2.0
 ]
 
 # Bash recipe for building across all platforms
