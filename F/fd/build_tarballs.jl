@@ -7,7 +7,7 @@ version = v"10.3.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sharkdp/fd", "d38148f0aabdd073b4080cde770f679f3197b920"),
+    GitSource("https://github.com/sharkdp/fd", "d38148f0aabdd073b4080cde770f679f3197b920"; tag="v$(version)"),
 ]
 
 # Bash recipe for building across all platforms
