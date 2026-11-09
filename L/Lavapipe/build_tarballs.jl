@@ -9,7 +9,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "Lavapipe"
 version = v"26.2.2"
-ygg_version = v"26.2.3"  # New JLL version for the Julia 1.10 requirement.
+ygg_version = v"26.2.4"  # New JLL version: device memory in a memfd on glibc (0006).
 
 # Lavapipe is Mesa's software Vulkan driver: the `swrast` Vulkan driver, i.e. the Vulkan
 # frontend of the llvmpipe gallium driver, which JITs shaders with LLVM. Mesa's meson
@@ -66,7 +66,8 @@ python3 -c "import mako, yaml; from packaging.version import Version; print('mak
 
 cd ${WORKSPACE}/srcdir/mesa-*
 
-for patch in ${WORKSPACE}/srcdir/patches/000[1-4]-*.patch; do
+# 0005 is macOS-only and applied below.
+for patch in ${WORKSPACE}/srcdir/patches/000[1-4]-*.patch ${WORKSPACE}/srcdir/patches/0006-*.patch; do
     atomic_patch -p1 ${patch}
 done
 
