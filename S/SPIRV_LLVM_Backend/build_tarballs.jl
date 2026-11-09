@@ -113,6 +113,12 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/loop_merge_switch_header.patch
 # the high half of the product against zero, so negative products overflowed
 # (Julia's `checked_mul(-1, 1)` threw) and some overflows went unnoticed.
 atomic_patch -p1 $WORKSPACE/srcdir/patches/smul_overflow_flag.patch
+# Backport of https://github.com/llvm/llvm-project/pull/229678 ("[SPIRV] Re-sort
+# basic blocks after LoopSimplify for non-shader targets"; merged after the 23.x
+# branch). Since LLVM 23, LoopSimplify runs for OpenCL after the blocks were
+# sorted, so a dedicated exit or preheader it inserts could precede its
+# dominator, and spirv-val rejected the module (JuliaGPU/KernelAbstractions.jl#894).
+atomic_patch -p1 $WORKSPACE/srcdir/patches/resort_blocks_after_loopsimplify.patch
 
 install_license LICENSE.TXT
 
