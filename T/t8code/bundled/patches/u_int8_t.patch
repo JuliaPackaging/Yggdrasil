@@ -1,0 +1,47 @@
+--- a/src/t8_openfoam/t8_openfoam_reader.cxx
++++ b/src/t8_openfoam/t8_openfoam_reader.cxx
+@@ -478,8 +478,8 @@ t8_openfoam_reader::reconstruct_hex_cell (size_t cell_id, std::vector<size_t> fa
+   faces[0].emplace (face_ids[0]);
+   face_orientations[0] = 0;
+   const std::span<size_t> face_0_points = face_point_ids[0];
+-  for (u_int8_t i_face_point = 0; i_face_point < t8_eclass_num_vertices[T8_ECLASS_QUAD]; ++i_face_point) {
+-    const u_int8_t foam_point_id = t8_face_vertex_to_foam_point (T8_ECLASS_QUAD, orientation, i_face_point);
++  for (uint8_t i_face_point = 0; i_face_point < t8_eclass_num_vertices[T8_ECLASS_QUAD]; ++i_face_point) {
++    const uint8_t foam_point_id = t8_face_vertex_to_foam_point (T8_ECLASS_QUAD, orientation, i_face_point);
+     points[t8_face_vertex_to_tree_vertex[T8_ECLASS_HEX][0][i_face_point]].emplace (face_0_points[foam_point_id]);
+   }
+ 
+@@ -544,8 +544,8 @@ t8_openfoam_reader::reconstruct_hex_cell (size_t cell_id, std::vector<size_t> fa
+ 
+   /* After that we add the remaining four points, completing the vertices of the cell */
+   face_orientations[1] = orientation.first_node;
+-  for (u_int8_t i_face_point = 0; i_face_point < t8_eclass_num_vertices[T8_ECLASS_QUAD]; ++i_face_point) {
+-    const u_int8_t foam_point_id = t8_face_vertex_to_foam_point (T8_ECLASS_QUAD, orientation, i_face_point);
++  for (uint8_t i_face_point = 0; i_face_point < t8_eclass_num_vertices[T8_ECLASS_QUAD]; ++i_face_point) {
++    const uint8_t foam_point_id = t8_face_vertex_to_foam_point (T8_ECLASS_QUAD, orientation, i_face_point);
+     points[t8_face_vertex_to_tree_vertex[T8_ECLASS_HEX][1][i_face_point]].emplace (face_1_points[foam_point_id]);
+   }
+ 
+--- a/src/t8_openfoam/t8_openfoam_reader.hxx
++++ b/src/t8_openfoam/t8_openfoam_reader.hxx
+@@ -48,7 +48,7 @@
+  */
+ struct t8_foam_face_orientation
+ {
+-  u_int8_t first_node;  /**< The foam face-vertex, which corresponds to the t8code face-vertex 0. */
++  uint8_t first_node;   /**< The foam face-vertex, which corresponds to the t8code face-vertex 0. */
+   bool same_normal_dir; /**< True, if the face normals of the foam and the t8code face point in the same direction. */
+ };
+ 
+@@ -179,9 +179,9 @@ struct t8_openfoam_reader
+    * \param [in] t8_face_vertex_id  The t8 face-vertex id to convert
+    * \return                        The converted foam face-vertex id
+    */
+-  constexpr static u_int8_t
++  constexpr static uint8_t
+   t8_face_vertex_to_foam_point (t8_eclass_t face_class, const t8_foam_face_orientation orientation,
+-                                u_int8_t t8_face_vertex_id)
++                                uint8_t t8_face_vertex_id)
+   {
+     /* While t8code uses the z-order for quads, OpenFOAM uses an anti-clockwise numeration.
+      * So if the face is a quad, we have to switch indices in accordance with this LUT.
