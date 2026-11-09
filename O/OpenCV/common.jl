@@ -69,6 +69,9 @@ if [[ "${bb_full_target}" == *cuda+* ]]; then
         -DCMAKE_EXE_LINKER_FLAGS="-Wl,--allow-shlib-undefined"
         -DCUDAToolkit_ROOT=${prefix}/cuda
         -DCMAKE_CUDA_ARCHITECTURES="75-real;80-real;86-real;89-real;90-real;100-real;120"
+        # OpenCV_jll's libraries have the same sonames, so when both JLLs are loaded in one
+        # process the dynamic linker would resolve this build's dependencies to them.
+        -DOPENCV_DLLVERSION=_cuda
     )
 fi
 
@@ -114,10 +117,12 @@ install_license opencv/{LICENSE,COPYRIGHT}
 # Qt6Base_jll's SDK/deployment target so the two link cleanly.
 sources, script = require_macos_sdk("14.0", sources, script; deployment_target="12")
 
+opencv_modules = ("calib3d", "objdetect", "core", "dnn", "imgcodecs", "highgui", "flann", "gapi",
+                  "imgproc", "features2d", "stitching", "video", "videoio")
+
 products = [
     [LibraryProduct(["libopencv_$(m)", "libopencv_$(m)$(version_collapsed_str)"], Symbol("libopencv_$(m)"))
-     for m in ("calib3d", "objdetect", "core", "dnn", "imgcodecs", "highgui", "flann", "gapi",
-               "imgproc", "features2d", "stitching", "video", "videoio")];
+     for m in opencv_modules];
     LibraryProduct("libopencv_julia", :libopencv_julia)
 ]
 
