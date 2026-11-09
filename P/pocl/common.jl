@@ -161,6 +161,12 @@ function build_script(standalone=false; spirv32=false)
     spirv_src=$WORKSPACE/srcdir/SPIRV-LLVM-Translator
     pushd $spirv_src
     install_license LICENSE.TXT
+    # Fixes not in the vendored revision yet, as `git format-patch` exports of lib/:
+    # - KhronosGroup/SPIRV-LLVM-Translator#4153: lower OpSMulExtended/OpUMulExtended
+    #   to mul and mul_hi, as PoCL doesn't implement the __spirv_ builtins
+    for patch in $WORKSPACE/srcdir/patches/translator/*.patch; do
+        atomic_patch -p1 $patch
+    done
     # link statically against LLVM's component libraries rather than the LLVM dylib.
     # Patch both the library and the llvm-spirv tool: otherwise the tool links *both*
     # the LLVM dylib import-lib and the static components, which is fatal on COFF/lld
@@ -364,13 +370,13 @@ function build_script(standalone=false; spirv32=false)
     # Enable optional debug messages for debuggability
     CMAKE_FLAGS+=(-DPOCL_DEBUG_MESSAGES:Bool=ON)
 
-    # Tag the version with a hash of our patch series (and of our LLVM fixes, if any). The
-    # version seeds the kernel cache key, so rebuilds with a different series don't reuse
-    # previously cached binaries (the build timestamp in that key is fixed by
+    # Tag the version with a hash of our patch series (and of our LLVM and translator
+    # fixes). The version seeds the kernel cache key, so rebuilds with a different series
+    # don't reuse previously cached binaries (the build timestamp in that key is fixed by
     # SOURCE_DATE_EPOCH), and it lets users tell these builds apart from upstream ones that
     # lack our patches.
     # (`\\"`, as `\"` in this raw string would reach the shell as a bare quote.)
-    patches_hash=$(cat @PATCHES@ ${llvm_fixes} | sha256sum | cut -c1-12)
+    patches_hash=$(cat @PATCHES@ ${llvm_fixes} $WORKSPACE/srcdir/patches/translator/*.patch | sha256sum | cut -c1-12)
     sed -i "s/^set(VERSION_SUFFIX_FIXED_TEXT \\"\\")/set(VERSION_SUFFIX_FIXED_TEXT \\"~julia-${patches_hash}\\")/" CMakeLists.txt
     if ! grep -q "^set(VERSION_SUFFIX_FIXED_TEXT \\"~julia-${patches_hash}\\")" CMakeLists.txt; then
         echo "ERROR: failed to tag the PoCL version" >&2
