@@ -124,6 +124,8 @@ components:
   L/libblastrampoline/:
     - amontoison
     - imciner2
+  L/libcxxwrap_julia/:
+    - barche
   L/licensecheck/:
     - ericphanson
   L/libigc/:
