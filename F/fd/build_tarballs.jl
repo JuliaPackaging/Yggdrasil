@@ -14,8 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/fd
 cargo build --release --locked
-mkdir -p "${bindir}"
-cp "target/${rust_target}/release/fd${exeext}" "${bindir}/."
+install -Dvm 755 "target/${rust_target}/release/fd${exeext}" -t "${bindir}"
 install_license LICENSE-APACHE LICENSE-MIT
 """
 
