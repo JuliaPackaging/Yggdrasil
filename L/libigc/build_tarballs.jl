@@ -29,7 +29,9 @@ version = v"2.41.5"
 sources = [
     GitSource("https://github.com/intel/intel-graphics-compiler.git", "f05f218e6f0b888823c5678e1f64e91e597ea2dc" #= tag v2.41.5 =#),
     GitSource("https://github.com/intel/opencl-clang.git", "b953eceebb0abc6ea954a14545420e3f97540a77" #= branch ocl-open-220 =#),
-    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "27afcfe385cf542197dfde8c658e1f5ff53fc2fc" #= branch llvm_release_220 =#),
+    # llvm_release_220 with KhronosGroup/SPIRV-LLVM-Translator#3997, so that OpUMulExtended
+    # calls the unsigned overloads IGC defines (intel/intel-graphics-compiler#432)
+    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "c8b2bee8bd90cd2c9045bc140746ffae6a501303" #= branch llvm_release_220 =#),
     GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "f80351511e9c4672e284842c7b124315c511078a" #= main =#),
     GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "575b6512579ebde466ed3dfc04e413439d14d95d"), #= main =#
     GitSource("https://github.com/intel/vc-intrinsics.git", "27f7c4f34738f5eaf7a045b77edf8d9e034443d8" #= tag v0.25.0 =#),
