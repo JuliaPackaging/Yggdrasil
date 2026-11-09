@@ -34,6 +34,8 @@ dependencies = [
     Dependency("libcxxwrap_julia_jll"; compat="0.14.12"),
 ]
 
+@assert libjulia_min_julia_version <= v"1.10.0"
+
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     julia_compat=libjulia_julia_compat(julia_versions),
     preferred_gcc_version=v"8")
