@@ -60,7 +60,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 llvm_version = v"17.0.6"
 dependencies = [
-    Dependency("GSL_jll"; compat = "~2.7.2"),
+    Dependency("GSL_jll"; compat = "~2.7.3"),
     # libclang_rt.osx.a is required on aarch64-macos to provide `__divdc3`.
     BuildDependency(PackageSpec(name = "LLVMCompilerRT_jll",
                                 uuid = "4e17d02c-6bf5-513e-be62-445f41c75a11",
