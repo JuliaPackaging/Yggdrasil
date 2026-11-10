@@ -1,0 +1,17 @@
+util.h: don't rely on st_mtim, which is not visible on every target (e.g. aarch64-linux-gnu with the old glibc)
+Revert to the 1.11.0 behavior of using st_mtime.
+
+--- a/programs/util.h
++++ b/programs/util.h
+@@ -247,9 +247,9 @@
+         res += utime(filename, &timebuf);  /* set access and modification times */
+ #else
+         struct timespec timebuf[2];
+-        timebuf[0].tv_sec  = 0;         /* tv_sec ignored when tv_nsec == UTIME_NOW */
++        memset(timebuf, 0, sizeof(timebuf));
+         timebuf[0].tv_nsec = UTIME_NOW;
+-        timebuf[1]         = statbuf->st_mtim;  /* preserve sub-second precision */
++        timebuf[1].tv_sec = statbuf->st_mtime;
+         res += utimensat(AT_FDCWD, filename, timebuf, 0);  /* set access and modification times */
+ #endif
+     }
