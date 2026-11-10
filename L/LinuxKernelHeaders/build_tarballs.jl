@@ -25,6 +25,8 @@ build_tarballs(;
                 echo "arm64" ;;
             powerpc*)
                 echo "powerpc" ;;
+            riscv*)
+                echo "riscv" ;;
             i686*|x86_64*)
                 echo "x86" ;;
         esac
@@ -58,6 +60,7 @@ build_tarballs(;
         Platform("armv6l", "linux"),
         Platform("aarch64", "linux"),
         Platform("powerpc64le", "linux"),
+        Platform("riscv64", "linux"),
 
         Platform("x86_64", "linux"; libc="musl"),
         Platform("i686", "linux"; libc="musl"),
