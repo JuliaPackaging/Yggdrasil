@@ -3,16 +3,18 @@
 using BinaryBuilder
 
 name = "Lz4"
-version = v"1.11.0"
+version = v"1.11.1"
 
 # Collection of sources required to build Lz4
 sources = [
-    GitSource("https://github.com/lz4/lz4.git", "c72c7c0ec132ad2ce2fe9fad7b0c728d9faee2fc"; tag="v$(version)")
+    GitSource("https://github.com/lz4/lz4.git", "aa4647fad575d01a874aaaadcdbe8e6a40e072f5"; tag="v$(version)"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/lz4
+# old glibc on aarch64 hides st_mtim under _POSIX_C_SOURCE
+export CPPFLAGS="-D_DEFAULT_SOURCE"
 # See <https://github.com/lz4/lz4/issues/1474>
 if [[ "${target}" == *86*-linux-gnu ]]; then
     # clock_gettime needs librt with the old glibc on x86 linux
