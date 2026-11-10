@@ -57,5 +57,6 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
+# Sundials_jll's KLU solver needs libklu 2, which Julia ships from 1.10 on.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", compilers=[:c, :rust], preferred_gcc_version=v"9")
+               julia_compat="1.10", compilers=[:c, :rust], preferred_gcc_version=v"9")
