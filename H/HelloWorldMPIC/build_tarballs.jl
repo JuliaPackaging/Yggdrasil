@@ -48,6 +48,9 @@ products = [
     ExecutableProduct("hello_world", :hello_world),
 ]
 
+# Keep MPItrampoline from loading `mpiwrapper.so` when the audit dlopens the products.
+ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
+
 # The MPI JLLs ship only libgfortran5 builds, which GCC 8 or newer selects.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"8")
