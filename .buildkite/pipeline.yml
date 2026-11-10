@@ -6,7 +6,7 @@ steps:
           persist_depot_dirs: packages,artifacts,compiled
           version: "1.13.2"
           artifacts_size_limit: "187904819200" # 175GiB
-      - JuliaCI/merge-commit: ~
+      - JuliaCI/merge-commit#792c6ed8e8f63e0b3a2c3492a12ceb16df3a0a2e: ~
       - JuliaCI/forerunner#v1.1.0:
           watch:
             # Watch only changes within our top-level alphabetical directories

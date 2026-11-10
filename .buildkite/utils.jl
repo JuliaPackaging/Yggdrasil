@@ -86,7 +86,7 @@ plugins() = Pair{String, Union{Nothing, Dict}}[
         "version" => "1.13.2",
         "artifacts_size_limit" => string(120 << 30), # 120 GiB
     ),
-    "JuliaCI/merge-commit" => nothing
+    "JuliaCI/merge-commit#792c6ed8e8f63e0b3a2c3492a12ceb16df3a0a2e" => nothing
 ]
 
 

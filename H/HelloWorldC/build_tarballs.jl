@@ -1,4 +1,5 @@
 using BinaryBuilder
+# Test of JuliaCI/merge-commit-buildkite-plugin#6; do not merge.
 
 name = "HelloWorldC"
 version = v"1.4.4"
