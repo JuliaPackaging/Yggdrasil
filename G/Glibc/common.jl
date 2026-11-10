@@ -6,7 +6,7 @@ function glibc_sources(version)
     hashes = Dict(
         v"2.17" => "6914e337401e0e0ade23694e1b2c52a5f09e4eda3270c67e7c3ba93a89b5b23e",
         v"2.19" => "2d3997f588401ea095a0b27227b1d50cdfdd416236f6567b564549d3b46ea2a2",
-        v"2.34" => "44d26a1fe20b8853a48f470ead01e4279e869ac149b195dda4e44a195d981ab2",
+        v"2.35" => "5123732f6b67ccd319305efd399971d58592122bcc2a6518a1bd2510dd0cf52e",
     )
     tarball = "glibc-$(version.major).$(version.minor).tar.xz"
     return [
@@ -26,7 +26,7 @@ function glibc_platforms(version)
     arches = Dict(
         v"2.17" => ["x86_64", "i686", "powerpc64le"],
         v"2.19" => ["x86_64", "i686", "armv7l", "armv6l", "aarch64", "powerpc64le"],
-        v"2.34" => ["x86_64", "i686", "armv7l", "armv6l", "aarch64", "powerpc64le"],
+        v"2.35" => ["x86_64", "i686", "armv7l", "armv6l", "aarch64", "powerpc64le", "riscv64"],
     )
     return [Platform(arch, "linux") for arch in arches[version]]
 end
@@ -97,7 +97,7 @@ function glibc_products(version)
         return [
             LibraryProduct(["lib/ld-linux-x86-64.so.2", "lib/ld-linux.so.2",
                             "lib/ld-linux-aarch64.so.1", "lib/ld-linux-armhf.so.3",
-                            "lib/ld64.so.2"], :ld; dont_dlopen=true),
+                            "lib/ld64.so.2", "lib/ld-linux-riscv64-lp64d.so.1"], :ld; dont_dlopen=true),
             LibraryProduct("lib/libc.so.6", :libc; dont_dlopen=true),
             LibraryProduct("lib/libdl.so.2", :libdl; dont_dlopen=true),
             LibraryProduct("lib/libm.so.6", :libm; dont_dlopen=true),
