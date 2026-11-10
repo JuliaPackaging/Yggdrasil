@@ -7,6 +7,13 @@ include(joinpath(@__DIR__, "..", "common.jl"))
 include(joinpath(@__DIR__, "..", "..", "..", "C", "CUDA", "common.jl"))
 include(joinpath(@__DIR__, "..", "..", "..", "platforms", "cuda.jl"))
 
+# The script builds the libraries with a `_cuda` suffix (OPENCV_DLLVERSION); the product
+# symbols stay those of OpenCV_jll so both JLLs expose the same API.
+products = [
+    [LibraryProduct("libopencv_$(m)_cuda", Symbol("libopencv_$(m)")) for m in opencv_modules];
+    LibraryProduct("libopencv_julia", :libopencv_julia)
+]
+
 # CUDA 13.0 artifacts also match newer CUDA 13 toolkits.
 platforms = AbstractPlatform[]
 for p in CUDA.supported_platforms(; min_version=v"13", max_version=v"13.0.999"), v in julia_versions
