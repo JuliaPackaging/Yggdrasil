@@ -60,9 +60,15 @@ in the trusted registration job.
 
 ## `yggdrasil-register` — the register pipeline
 
-* This pipeline is only ever reached on `master`: the main pipeline emits the
-  `trigger_registration_step` exclusively for non-PR builds, so a PR can never
-  cause a registration.
+* This pipeline is only ever reached on `master`. The main pipeline emits the
+  `trigger_registration_step` only for non-PR builds, but PR code controls the
+  steps of its own build, so that is not what enforces it. Buildkite settings do:
+  - a `pipeline.trigger_build.pipeline` rule (yggdrasil → yggdrasil-register)
+    only lets non-PR `master` webhook builds (and rebuilds of them) trigger this
+    pipeline, for branch `master` and the triggering build's own commit;
+  - the secrets' access policy requires this pipeline's id, `build_branch: master`
+    and `build_source: trigger_job`;
+  - `register.sh` refuses a `BUILD_ID` other than the triggering build.
 * **WebUI step:** see
   [`0_webui_yggdrasil_register.yml`](./0_webui_yggdrasil_register.yml). It runs
   `buildkite-agent pipeline upload .buildkite/register_pipeline.yml`.
