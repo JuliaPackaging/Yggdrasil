@@ -42,9 +42,10 @@ for platform in platforms
     # Need the static SDK to let CMake detect the compiler properly
     cuda_deps = CUDA.required_dependencies(platform; static_sdk=true)
 
-    build_tarballs(ARGS, name, version, sources, script, [platform], products,
+    # Julia 1.10 is the first release whose SuiteSparse_jll ships libklu 2 (see common.jl).
+    build_tarballs(ARGS, name, ygg_version, sources, script, [platform], products,
                    [dependencies; cuda_deps];
-                   preferred_gcc_version=v"9", julia_compat="1.6",
+                   preferred_gcc_version=v"9", julia_compat="1.10",
                    augment_platform_block=CUDA.augment)
 
 end

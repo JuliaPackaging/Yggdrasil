@@ -6,6 +6,8 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 const version = v"7.5.0"
+# Diverges from `version` because we needed a patch release to fix a compat bound.
+const ygg_version = v"7.5.1"
 
 # Collection of sources required to build Sundials
 function get_sources()
@@ -28,7 +30,11 @@ function get_dependencies()
         HostBuildDependency("CMake_jll"),
         Dependency("CompilerSupportLibraries_jll"),
         Dependency("OpenBLAS32_jll"),
-        Dependency("SuiteSparse32_jll"),
+        # KLU uses no BLAS, so it comes from Julia's own SuiteSparse, which ships libklu 2 from
+        # Julia 1.10 (SuiteSparse 7.2.1) on. SuiteSparse32_jll 7, the only SuiteSparse32 release
+        # with libklu 2, requires Julia 1.11. 7.2.1 lacks aarch64-freebsd and riscv64, so the
+        # build uses 7.14.0, whose KLU structs match 7.2.1.
+        Dependency("SuiteSparse_jll", v"7.14.0"; compat="7.2.1"),
     ]
     return dependencies
 end
