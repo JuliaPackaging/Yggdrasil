@@ -1,6 +1,10 @@
+Look for KLU shared libraries on Windows, not only import libraries: https://github.com/LLNL/sundials/issues/29
+
+diff --git a/cmake/tpl/FindKLU.cmake b/cmake/tpl/FindKLU.cmake
+index 0b8981daf..1c486c35d 100644
 --- a/cmake/tpl/FindKLU.cmake
 +++ b/cmake/tpl/FindKLU.cmake
-@@ -64,6 +64,10 @@ elseif(APPLE)
+@@ -78,6 +78,10 @@ elseif(APPLE)
    set(CMAKE_FIND_LIBRARY_SUFFIXES d.a ${CMAKE_FIND_LIBRARY_SUFFIXES})
  endif()
  
