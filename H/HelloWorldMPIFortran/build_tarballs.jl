@@ -66,6 +66,9 @@ products = [
     ExecutableProduct("hello_world", :hello_world),
 ]
 
+# Keep MPItrampoline from loading `mpiwrapper.so` when the audit dlopens the products.
+ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
+
 # -fallow-invalid-boz needs GCC 10; the MPICH Fortran bindings need at least GCC 9.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"10")
