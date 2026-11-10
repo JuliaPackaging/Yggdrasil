@@ -41,3 +41,5 @@ dependencies = Dependency[
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", compression_format="xz")
 
 # Build trigger: 3
+
+# CI host failover check (amdci6), do not merge.

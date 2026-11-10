@@ -33,3 +33,5 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
                julia_compat="1.6", preferred_gcc_version=v"6")
 
 # Build trigger: 5
+
+# CI host failover check (amdci6), do not merge.
