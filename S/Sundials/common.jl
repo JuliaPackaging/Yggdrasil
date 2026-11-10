@@ -12,7 +12,6 @@ function get_sources()
     return [
         GitSource("https://github.com/LLNL/sundials.git", "312fc0f3684f27209ca9dc9249d194436eb41a7a";
                   tag="v$(version)"),
-        DirectorySource("./bundled"),
     ]
 end
 
@@ -72,7 +71,6 @@ apk del cmake
 
 cd $WORKSPACE/srcdir/sundials*
 if [[ "${target}" == *-mingw* ]]; then
-    atomic_patch -p1 $WORKSPACE/srcdir/patches/Sundials_findklu_suffixes.patch
     LBT=blastrampoline-5
 else
     LBT=blastrampoline
