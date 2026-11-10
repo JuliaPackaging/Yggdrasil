@@ -6,12 +6,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "z3"
-version = v"5.3.3"
+version = v"5.4.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/Z3Prover/z3/releases/download/z3-$(version)/z3_solver-$(version).0.tar.gz",
-                  "d95af3980d65ccfd60d23124c6769b1f1564c437049502ce70c476e43abb3d42"),
+                  "46b7a3256c275cb041ddece36b20ab1ed28082f3d2b4722d906c8ca68f251f0c"),
     DirectorySource("bundled"),
 ]
 
