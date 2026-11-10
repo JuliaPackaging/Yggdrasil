@@ -5,31 +5,24 @@ using Pkg
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
-const version = v"7.5.0"
-# Diverges from `version` because we needed a patch release to fix a compat bound.
-const ygg_version = v"7.5.1"
+const version = v"7.9.0"
 
 # Collection of sources required to build Sundials
 function get_sources()
     return [
-        GitSource("https://github.com/LLNL/sundials.git", "c8dabcea90ca8bf195474da120e4f3dd39aa711f"),
-        DirectorySource("./bundled"),
+        GitSource("https://github.com/LLNL/sundials.git", "312fc0f3684f27209ca9dc9249d194436eb41a7a";
+                  tag="v$(version)"),
     ]
 end
 
-# supported platforms for system
-function get_platforms()
-    platforms = expand_gfortran_versions(supported_platforms())
-    filter!(p -> !(arch(p) == "powerpc64le" && libgfortran_version(p) < v"5"), platforms)
-
-    return platforms
-end
+get_platforms() = supported_platforms()
 
 function get_dependencies()
     dependencies = [
         HostBuildDependency("CMake_jll"),
-        Dependency("CompilerSupportLibraries_jll"),
-        Dependency("OpenBLAS32_jll"),
+        # 5.8.0 is what Julia 1.10 ships, but it lacks aarch64-freebsd and riscv64; every 5.x
+        # provides the same libblastrampoline.so.5.
+        Dependency("libblastrampoline_jll", v"5.11.2"; compat="5.8.0"),
         # KLU uses no BLAS, so it comes from Julia's own SuiteSparse, which ships libklu 2 from
         # Julia 1.10 (SuiteSparse 7.2.1) on. SuiteSparse32_jll 7, the only SuiteSparse32 release
         # with libklu 2, requires Julia 1.11. 7.2.1 lacks aarch64-freebsd and riscv64, so the
@@ -63,6 +56,7 @@ function get_products()
         LibraryProduct("libsundials_sunmatrixband", :libsundials_sunmatrixband),
         LibraryProduct("libsundials_sunmatrixdense", :libsundials_sunmatrixdense),
         LibraryProduct("libsundials_sunmatrixsparse", :libsundials_sunmatrixsparse),
+        LibraryProduct("libsundials_sunnonlinsolauto", :libsundials_sunnonlinsolauto),
         LibraryProduct("libsundials_sunnonlinsolfixedpoint", :libsundials_sunnonlinsolfixedpoint),
         LibraryProduct("libsundials_sunnonlinsolnewton", :libsundials_sunnonlinsolnewton),
         LibraryProduct("libsundials_core", :libsundials_core),
@@ -75,17 +69,37 @@ end
 const install_script = raw"""
 apk del cmake
 
-cd $WORKSPACE/srcdir/sundials*/cmake/tpl
-if [[ "${target}" == *-mingw* ]]; then
-    # Work around https://github.com/LLNL/sundials/issues/29
-    # When looking for KLU libraries, CMake searches only for import libraries,
-    # this patch ensures we look also for shared libraries.
-    atomic_patch -p3 $WORKSPACE/srcdir/patches/Sundials_findklu_suffixes.patch
-fi
-
-# Build
 cd $WORKSPACE/srcdir/sundials*
+if [[ "${target}" == *-mingw* ]]; then
+    LBT=blastrampoline-5
+else
+    LBT=blastrampoline
+fi
 mkdir build && cd build
 
-CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" -DEXAMPLES_ENABLE_C=OFF -DENABLE_KLU=ON -DKLU_INCLUDE_DIR="${includedir}/suitesparse" -DKLU_LIBRARY_DIR="${libdir}" -DKLU_WORKS=ON -DENABLE_LAPACK=ON -DLAPACK_WORKS=ON -DBLA_VENDOR="OpenBLAS")
+# SUNDIALS passes its 64-bit `sunindextype` to LAPACK, so call LBT's ILP64 interface. Julia's
+# OpenBLAS is LP64 on 32-bit platforms, which keep the unsuffixed names.
+if [[ ${nbits} == 64 ]]; then
+    for f in dgbtrf dgbtrs dgetrf dgetrs dgeev; do
+        LAPACK_DEFINES+=" -D${f}_=${f}_64_"
+    done
+fi
+
+CMAKE_FLAGS=(
+    -DCMAKE_INSTALL_PREFIX=${prefix}
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}"
+    -DCMAKE_C_FLAGS="${LAPACK_DEFINES}"
+    -DSUNDIALS_ENABLE_C_EXAMPLES=OFF
+    -DSUNDIALS_ENABLE_KLU=ON
+    -DKLU_INCLUDE_DIR="${includedir}/suitesparse"
+    -DKLU_LIBRARY_DIR="${libdir}"
+    -DSUNDIALS_ENABLE_KLU_CHECKS=OFF
+    -DSUNDIALS_ENABLE_LAPACK=ON
+    -DSUNDIALS_ENABLE_LAPACK_CHECKS=OFF
+    -DSUNDIALS_LAPACK_CASE=lower
+    -DSUNDIALS_LAPACK_UNDERSCORES=one
+    -DBLAS_LIBRARIES="${libdir}/lib${LBT}.${dlext}"
+    -DLAPACK_LIBRARIES="${libdir}/lib${LBT}.${dlext}"
+)
 """
