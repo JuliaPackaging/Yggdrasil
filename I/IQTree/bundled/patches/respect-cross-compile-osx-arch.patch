@@ -1,0 +1,33 @@
+Use the toolchain's target arch on macOS instead of uname -m.
+
+Upstream runs `uname -m` to set `OSX_NATIVE_ARCHITECTURE`, which returns
+`x86_64` under BB's Linux sandbox even when cross-compiling for
+aarch64-apple-darwin. That forces `--target=x86_64-apple-macos10.12`
+into the compile flags and conflicts with BB's aarch64 clang wrapper.
+The patch reads `CMAKE_OSX_ARCHITECTURES` or `CMAKE_SYSTEM_PROCESSOR`
+first, falling back to `uname -m` only when neither is set.
+
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -218,12 +218,21 @@
+ set (__ARM_NEON "FALSE")
+ set (NEON 0)
+ if (APPLE)
++	if (CMAKE_OSX_ARCHITECTURES)
++		set(OSX_NATIVE_ARCHITECTURE "${CMAKE_OSX_ARCHITECTURES}")
++	elseif (CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64" OR CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64")
++		set(OSX_NATIVE_ARCHITECTURE "arm64")
++	elseif (CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
++		set(OSX_NATIVE_ARCHITECTURE "x86_64")
++	else()
+ 	execute_process(
+       COMMAND uname -m
+       RESULT_VARIABLE result
+       OUTPUT_VARIABLE OSX_NATIVE_ARCHITECTURE
+       OUTPUT_STRIP_TRAILING_WHITESPACE
+ 	)
++	endif()
++	message("Target macOS arch: ${OSX_NATIVE_ARCHITECTURE}")
+ 	if(OSX_NATIVE_ARCHITECTURE STREQUAL "arm64")
+ 		message("APPLE SILICON (M1/M2/M3) DETECTED!")
+         set (__ARM_NEON "TRUE")
