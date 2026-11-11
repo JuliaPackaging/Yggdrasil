@@ -4,17 +4,35 @@ include(joinpath(@__DIR__, "..", "..", "L", "libjulia", "common.jl"))
 # Only released Julia versions.
 filter!(v -> v <= v"1.13", julia_versions)
 
-version = v"4.14.0"
+version = v"5.1.0"
 version_collapsed_str = replace(string(version), "." => "")
 
 sources = [
-    GitSource("https://github.com/opencv/opencv.git", "0654a42e19215ef25b1d367d822f3c630447e7c7"; tag="$(version)"),
-    GitSource("https://github.com/opencv/opencv_contrib.git", "a8e9acd62cabd30419dba83007f2ac0d07de5e2c"; tag="$(version)"),
+    GitSource("https://github.com/opencv/opencv.git", "e4f78fbcf1a773fbed69e14500e8b734963eb585"; tag="$(version)"),
+    GitSource("https://github.com/opencv/opencv_contrib.git", "b67a855188a3d683813731010f6d39ac614733a4"; tag="$(version)"),
     # The Julia binding generator lives in OpenCV.jl (gen/); it is overlaid onto
     # opencv_contrib's julia module. Keep its gen/OPENCV_VERSION in lockstep with the sources above.
-    GitSource("https://github.com/JuliaImages/OpenCV.jl.git", "244e22cb06b1d890ce4beb9fec3a5f7993957fac"),
+    GitSource("https://github.com/JuliaImages/OpenCV.jl.git", "bc4220c09f978865b2ef84f65a653c00cd0f10a1"),
     DirectorySource(joinpath(@__DIR__, "bundled")),
 ]
+
+# xfeatures2d fetches descriptor data at configure time (modules/xfeatures2d/cmake/download_*.cmake).
+# Provide it as sources; the script seeds OpenCV's download cache with it.
+xfeatures2d_data = [
+    ("34e4206aef44d50e6bbcd0ab06354b52e7466d26", "boostdesc_bgm.i", "c441a027f15b9b8ff6c006b0775cd86781169ebd5b6257a94bdce668010d5df5"),
+    ("34e4206aef44d50e6bbcd0ab06354b52e7466d26", "boostdesc_bgm_bi.i", "3d54b2934f0de963abbce985da303254ee78eebd05eb2af517105f9b0e670566"),
+    ("34e4206aef44d50e6bbcd0ab06354b52e7466d26", "boostdesc_bgm_hd.i", "4b068631287f9914c3aa5bbdab76368b01493cea494ab47f7a70d2fa4f1c3e1b"),
+    ("34e4206aef44d50e6bbcd0ab06354b52e7466d26", "boostdesc_binboost_064.i", "090c9cc50663df3a91f2d7c704fa664493c96c39749b4cee9ebc29a20eb680d2"),
+    ("34e4206aef44d50e6bbcd0ab06354b52e7466d26", "boostdesc_binboost_128.i", "8f3622c1f3c0a14b1f1b7b955c518e97f7ccd0e9796e1dd9e7a975aad9bb2a22"),
+    ("34e4206aef44d50e6bbcd0ab06354b52e7466d26", "boostdesc_binboost_256.i", "a1c778059332b4904c9ce30ed888e9dd2e44621579362e6deb20ef4f4b0cf819"),
+    ("34e4206aef44d50e6bbcd0ab06354b52e7466d26", "boostdesc_lbgm.i", "42f6091199242fb6d96aec2f25644cd6f5e5f2fdddd1720f3422282e88cf3cd8"),
+    ("fccf7cd6a4b12079f73bbfb21745f9babcd4eb1d", "vgg_generated_48.i", "71274a67ab0896865e27de830eda0065e387d75fe071dab4a887e2430ccb8a35"),
+    ("fccf7cd6a4b12079f73bbfb21745f9babcd4eb1d", "vgg_generated_64.i", "2746c272af82b9a839a69de151c262be55d9ef8464b268001c33f99f9f5cebbe"),
+    ("fccf7cd6a4b12079f73bbfb21745f9babcd4eb1d", "vgg_generated_80.i", "08fbc8cb1686b6c45032a08c98f3857ead4755116410e16c68713f4dea4cbf5c"),
+    ("fccf7cd6a4b12079f73bbfb21745f9babcd4eb1d", "vgg_generated_120.i", "f05e7eb7183ecbc788bfc26cea9db7dad8585178175411b93e444acdc8fb2048"),
+]
+append!(sources, [FileSource("https://raw.githubusercontent.com/opencv/opencv_3rdparty/$(commit)/$(file)", sha256)
+                  for (commit, file, sha256) in xfeatures2d_data])
 
 script = raw"""
 cd ${WORKSPACE}/srcdir
@@ -22,6 +40,13 @@ cd ${WORKSPACE}/srcdir
 rm -rv opencv_contrib/modules/julia/gen
 cp -rv OpenCV.jl/gen opencv_contrib/modules/julia/gen
 cp -v OpenCV.jl/gen/CMakeLists.txt opencv_contrib/modules/julia/CMakeLists.txt
+
+# Seed OpenCV's download cache (<OPENCV_DOWNLOAD_PATH>/<id>/<md5>-<file>) with xfeatures2d's data.
+for f in boostdesc_*.i vgg_generated_*.i; do
+    d=opencv/.cache/xfeatures2d/${f%%_*}
+    mkdir -p ${d}
+    mv -v ${f} ${d}/$(md5sum ${f} | cut -d' ' -f1)-${f}
+done
 
 # Qt 6.10 requires CMake >= 3.22; use CMake_jll from the host prefix
 apk del cmake
@@ -34,12 +59,20 @@ if [[ "${target}" == *-w64-* ]]; then
     export CXXFLAGS="-Wa,-mbig-obj"
 fi
 
-build_list=core,imgproc,imgcodecs,highgui,videoio,dnn,features2d,objdetect,calib3d,video,gapi,stitching,julia
+build_list=core,imgproc,imgcodecs,highgui,videoio,dnn,features,objdetect,geometry,stereo,calib,video,stitching,photo
+# opencv_contrib modules; tracking requires plot.
+build_list+=,xobjdetect,ml,ximgproc,xphoto,plot,tracking,optflow,xfeatures2d,julia
 cmake_args=()
 
 if [[ "${target}" == *-freebsd* ]]; then
     # IPP's bundled safestring redeclares memset_s incompatibly with FreeBSD's string.h.
     cmake_args+=(-DWITH_IPP=OFF)
+fi
+
+if [[ "${target}" == aarch64-apple-darwin* ]]; then
+    # dnn's vendored MLAS picks its kernels from CMAKE_OSX_ARCHITECTURES, falling back to the
+    # (x86_64) host processor, which would build x86_64 assembly for this target.
+    cmake_args+=(-DCMAKE_OSX_ARCHITECTURES=arm64)
 fi
 
 if [[ "${bb_full_target}" == *cuda+* ]]; then
@@ -91,6 +124,7 @@ cmake -B build \
     -DBUILD_TESTS=OFF \
     -DBUILD_PERF_TESTS=OFF \
     -DBUILD_EXAMPLES=OFF \
+    -DBUILD_opencv_apps=OFF \
     -DHAVE_CXX_FVISIBILITY_HIDDEN=OFF \
     -DHAVE_CXX_FVISIBILITY_INLINES_HIDDEN=OFF \
     -DWITH_KLEIDICV=OFF \
@@ -117,8 +151,11 @@ install_license opencv/{LICENSE,COPYRIGHT}
 # Qt6Base_jll's SDK/deployment target so the two link cleanly.
 sources, script = require_macos_sdk("14.0", sources, script; deployment_target="12")
 
-opencv_modules = ("calib3d", "objdetect", "core", "dnn", "imgcodecs", "highgui", "flann", "gapi",
-                  "imgproc", "features2d", "stitching", "video", "videoio")
+# flann is not in build_list; it is pulled in as a dependency of geometry.
+opencv_modules = ("calib", "geometry", "stereo", "objdetect", "core", "dnn", "imgcodecs", "highgui",
+                  "flann", "imgproc", "features", "stitching", "video", "videoio", "photo",
+                  # opencv_contrib
+                  "xobjdetect", "ml", "ximgproc", "xphoto", "plot", "tracking", "optflow", "xfeatures2d")
 
 products = [
     [LibraryProduct(["libopencv_$(m)", "libopencv_$(m)$(version_collapsed_str)"], Symbol("libopencv_$(m)"))
