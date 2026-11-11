@@ -3,14 +3,14 @@
 using BinaryBuilder
 
 name = "Ghostscript"
-version = v"9.55.0"
-ygg_version = v"9.55.1" # Bump patch level for Yggdrasil since JLLWrappers has upgraded
+version_string = "10.08.0"
+version = VersionNumber(version_string)
 
 # Collection of sources required to build
 sources = [
     ArchiveSource(
-        "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs$(version.major)$(version.minor)$(version.patch)/ghostscript-$(version).tar.gz", # URL
-        "31e2064be67e15b478a8da007d96d6cd4d2bee253e5be220703a225f7f79a70b" # SHA256 hash
+        "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs$(replace(version_string, "." => ""))/ghostscript-$(version_string).tar.gz", # URL
+        "caf199e3f233f1290b27d0972d636f66c303355f2353309b7bfddf1edda06b3d" # SHA256 hash
     ),
     DirectorySource("./bundled"),
 ]
@@ -20,13 +20,10 @@ script = raw"""
 cd $WORKSPACE/srcdir/ghostscript*
 
 if [[ "${target}" == *-mingw* ]]; then
-    # Patches adapted from
-    # https://github.com/msys2/MINGW-packages/tree/d87e68ae356d773901e5c477854312e5de0548cf/mingw-w64-ghostscript
     atomic_patch -p1 ../patches/001-mingw-build.patch
     atomic_patch -p1 ../patches/003-libspectre.patch
-fi
-if [[ "${target}" == *apple* ]]; then                                                                                    
-   atomic_patch -p1 ../patches/libpng-math_h.patch
+    export MINGW_BUILD=1
+    export LDFLAGS="${LDFLAGS} -static-libgcc"
 fi
 autoreconf -v
 
@@ -39,19 +36,15 @@ export CPPFLAGS="$CPPFLAGS -I${includedir}"
 # Add the path for our own zlib
 export LDFLAGS="$LDFLAGS -L${libdir}"
 
-# Use our provided Zlib and not the vendored one
-rm -fr ./zlib
-export SHARE_ZLIB=1
-
-# configure the Makefiles.  Note we disable Tesseract because we don't need it
-# at the moment, it requires a C++17 compiler, and configure for Windows fails
-# because it doesn't find "threading".
+# Tesseract is not needed; iconv is only used by the disabled contributed drivers.
 ./configure \
     --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
     --without-x \
+    --without-local-zlib \
     --disable-contrib \
+    --with-libiconv=no \
     --disable-cups \
     --without-tesseract
 
@@ -63,9 +56,9 @@ make -j${nproc}
 make install
 if [[ "${target}" == *-mingw* ]]; then
     # make soinstall creates broken symlinks for mingw
-    install -Dvm 755 "sobin/libgs-9-55.${dlext}" "${libdir}/libgs-9-55.${dlext}"
-    ln -s "${libdir}/libgs-9-55.${dlext}" "${libdir}/libgs-9.${dlext}"
-    ln -s "${libdir}/libgs-9-55.${dlext}" "${libdir}/libgs.${dlext}"
+    gs_major=$(awk -F= '$1 == "GS_VERSION_MAJOR" {print $2}' base/version.mak)
+    install -Dvm 755 "sobin/libgs-${gs_major}.${dlext}" "${libdir}/libgs-${gs_major}.${dlext}"
+    ln -s "libgs-${gs_major}.${dlext}" "${libdir}/libgs.${dlext}"
 
     install -Dvm 755 "psi/iapi.h" "${includedir}/ghostscript/iapi.h"
     install -Dvm 755 "psi/ierrors.h" "${includedir}/ghostscript/ierrors.h"
@@ -76,6 +69,10 @@ if [[ "${target}" == *-mingw* ]]; then
 else
     make soinstall
 fi
+install_license LICENSE doc/COPYING
+for license in brotli/LICENSE freetype/docs/FTL.TXT jbig2dec/LICENSE jpeg/README lcms2mt/COPYING libpng/LICENSE openjpeg/LICENSE tiff/LICENSE.md extract/COPYING; do
+    install -Dvm 644 "${license}" "${prefix}/share/licenses/Ghostscript/${license}"
+done
 """
 
 # These are the platforms we will build for by default, unless further
@@ -118,11 +115,8 @@ products = [
 ]
 
 dependencies = Dependency[
-    Dependency("JpegTurbo_jll"; compat="3.0.4"),
     Dependency("Zlib_jll"; compat="1.2.12"),
 ]
 
-build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; 
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                preferred_gcc_version=v"7", clang_use_lld=false, julia_compat="1.6")
-
-# build trigger: 1
