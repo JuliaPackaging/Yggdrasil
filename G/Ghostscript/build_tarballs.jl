@@ -36,6 +36,11 @@ export CPPFLAGS="$CPPFLAGS -I${includedir}"
 # Add the path for our own zlib
 export LDFLAGS="$LDFLAGS -L${libdir}"
 
+# Brotli's ARMv7 fast-load macro declares a variable after a statement.
+if [[ "${bb_full_target}" == armv7l-* ]]; then
+    export CFLAGS="${CFLAGS} -Wno-error=declaration-after-statement"
+fi
+
 # Tesseract is not needed; iconv is only used by the disabled contributed drivers.
 ./configure \
     --prefix=${prefix} \
