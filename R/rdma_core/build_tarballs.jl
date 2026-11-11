@@ -4,6 +4,7 @@ using BinaryBuilder, Pkg
 
 name = "rdma_core"
 version = v"58.0.0"
+ygg_version = v"58.0.1"  # New products, so dependents can require this JLL with a compat bound
 
 # Collection of sources required to complete build
 sources = [
@@ -71,4 +72,4 @@ if !haskey(ENV, "JULIA_IBV_CONFIG_DIR")
 """
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"5.2.0", init_block)
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"5.2.0", init_block)
