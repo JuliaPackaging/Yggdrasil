@@ -1,5 +1,11 @@
 Support MinGW target platform modules when cross-compiling from Unix.
-Adapted from https://github.com/msys2/MINGW-packages/tree/d87e68ae356d773901e5c477854312e5de0548cf/mingw-w64-ghostscript
+Derived from MSYS2's 001-mingw-build.patch:
+https://github.com/msys2/MINGW-packages/blob/d87e68ae356d773901e5c477854312e5de0548cf/mingw-w64-ghostscript/001-mingw-build.patch
+
+This is a Yggdrasil-specific derivative, not a verbatim MSYS2 patch.
+The existing Yggdrasil adaptation was further modified by AI for Ghostscript
+10.08.0: obsolete build-system hunks were removed, platform modules and
+compilation rules were updated, and patch context was regenerated.
 
 --- a/base/gp_mswin.c
 +++ b/base/gp_mswin.c

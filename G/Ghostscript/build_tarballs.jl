@@ -20,8 +20,8 @@ script = raw"""
 cd $WORKSPACE/srcdir/ghostscript*
 
 if [[ "${target}" == *-mingw* ]]; then
-    atomic_patch -p1 ../patches/001-mingw-build.patch
-    atomic_patch -p1 ../patches/003-libspectre.patch
+    atomic_patch -p1 ../patches/mingw-cross-build.patch
+    atomic_patch -p1 ../patches/windows-iapi-stddef.patch
     export MINGW_BUILD=1
     export LDFLAGS="${LDFLAGS} -static-libgcc"
 fi
