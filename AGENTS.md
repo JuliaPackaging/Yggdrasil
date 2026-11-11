@@ -297,7 +297,7 @@ Put shared logic in `PackageName/common.jl` and one `build_tarballs.jl` per vari
 
 ## Reference Examples
 
-The `H/HelloWorld*` recipes show the toolchain setup for each language and special dependency: `HelloWorldC` (C, CMake), `HelloWorldCxx`, `HelloWorldFortran`, `HelloWorldGo`, `HelloWorldRust`, `HelloWorldMPIC`, `HelloWorldMPIFortran`, `HelloWorldCUDA` and `HelloWorldCxxWrap`. They build small test programs instead of an upstream release, so take sources, patches and build system usage from this guide, not from them.
+The `H/HelloWorld*` recipes show the toolchain setup for each language and special dependency: `HelloWorldC` (C, CMake), `HelloWorldCxx`, `HelloWorldFortran`, `HelloWorldGo`, `HelloWorldRust`, `HelloWorldMPI` (C and Fortran), `HelloWorldCUDA` and `HelloWorldCxxWrap`. They build small test programs instead of an upstream release, so take sources, patches and build system usage from this guide, not from them.
 
 ## MCP Tooling
 
