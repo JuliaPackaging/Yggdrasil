@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 
 name = "rdma_core"
 version = v"58.0.0"
-ygg_version = v"58.0.1"  # New products, so dependents can require this JLL with a compat bound
+ygg_version = v"58.0.1"  # New and renamed products, so dependents can require this JLL with a compat bound
 
 # Collection of sources required to complete build
 sources = [
@@ -49,7 +49,7 @@ platforms = [
 # this JLL's, and the plugin fails to load.
 products = [
     LibraryProduct("libibverbs", :libibverbs),
-    LibraryProduct("librdmacm", :lbrdmacm),
+    LibraryProduct("librdmacm", :librdmacm),
     LibraryProduct("libibumad", :libibumad),
     LibraryProduct("libibmad", :libibmad),
     LibraryProduct("libibnetdisc", :libibnetdisc),
