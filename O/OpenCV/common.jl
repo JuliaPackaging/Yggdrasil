@@ -12,7 +12,7 @@ sources = [
     GitSource("https://github.com/opencv/opencv_contrib.git", "b67a855188a3d683813731010f6d39ac614733a4"; tag="$(version)"),
     # The Julia binding generator lives in OpenCV.jl (gen/); it is overlaid onto
     # opencv_contrib's julia module. Keep its gen/OPENCV_VERSION in lockstep with the sources above.
-    GitSource("https://github.com/JuliaImages/OpenCV.jl.git", "bc4220c09f978865b2ef84f65a653c00cd0f10a1"),
+    GitSource("https://github.com/JuliaImages/OpenCV.jl.git", "b909949355afc42c8a343237dfface32392007eb"),
     DirectorySource(joinpath(@__DIR__, "bundled")),
 ]
 
