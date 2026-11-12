@@ -7,10 +7,10 @@ description: Rules for Yggdrasil recipes built with Rust. Use when a build_tarba
 
 ```julia
 script = raw"""
-cd ${WORKSPACE}/srcdir/fd
+cd ${WORKSPACE}/srcdir/package-*
 cargo build --release --locked
-install -Dvm 755 "target/${rust_target}/release/fd${exeext}" -t "${bindir}"
-install_license LICENSE-APACHE LICENSE-MIT
+install -Dvm 755 "target/${rust_target}/release/executable${exeext}" -t "${bindir}"
+install_license LICENSE
 """
 
 platforms = supported_platforms()
@@ -18,10 +18,10 @@ platforms = supported_platforms()
 build_tarballs(...; compilers=[:c, :rust])
 ```
 
-- **Platforms**: the Rust 1.97 toolchain builds for every platform in `supported_platforms()`, including riscv64, FreeBSD aarch64 and i686 Windows. Many older recipes exclude these as unsupported or "unusable"; don't copy those exclusions. Exclude a platform only for a failure seen in the build log, and say what fails.
+- **Platforms**: start from `supported_platforms()`. Older recipes exclude platforms the Rust toolchain of their time could not target; don't copy those exclusions. Exclude a platform only for a failure seen in the build log, and say what fails.
 - **Lock file**: when upstream commits `Cargo.lock`, build with `--locked`, so the build uses the dependency versions upstream tested instead of resolving new ones.
 - **Output**: BinaryBuilder sets `CARGO_BUILD_TARGET`, so Cargo writes to `target/${rust_target}/release`.
-- **Build tools**: a binary that must run during the build is built for the host: `env -u CARGO_BUILD_TARGET -u rust_target ${MACHTYPE}-cargo build …` (see `Q/Qiskit`).
+- **Build tools**: a binary that must run during the build is built for the host: `env -u CARGO_BUILD_TARGET -u rust_target ${MACHTYPE}-cargo build …`.
 
 ## Shared libraries
 

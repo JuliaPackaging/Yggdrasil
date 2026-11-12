@@ -1,6 +1,6 @@
 ---
 name: windows-recipes
-description: Rules for the Windows (mingw-w64) parts of Yggdrasil recipes. Use when a build fails or a product is missing only on Windows, or a build_tarballs.jl branches on *-mingw* or Sys.iswindows.
+description: Rules for the Windows (mingw-w64) parts of Yggdrasil recipes. Use when a build fails, a product is missing or a DLL fails to load only on Windows, or a build_tarballs.jl branches on *-mingw* or Sys.iswindows.
 ---
 
 # Windows packages

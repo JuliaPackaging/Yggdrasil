@@ -21,7 +21,7 @@ Topic guidance lives in `.agents/skills/`, one `SKILL.md` per topic in the Agent
 - [`rust-recipes`](.agents/skills/rust-recipes/SKILL.md): the recipe passes `:rust` in `compilers`, or its script runs `cargo` or `rustc`
 - [`openmp-recipes`](.agents/skills/openmp-recipes/SKILL.md): the recipe compiles with `-fopenmp` or enables an OpenMP option, links libgomp or libomp, or depends on `LLVMOpenMP_jll`
 - [`macos-recipes`](.agents/skills/macos-recipes/SKILL.md): the build fails only on macOS, or the recipe calls `require_macos_sdk`, includes `platforms/macos_sdks.jl`, or sets `MACOSX_DEPLOYMENT_TARGET`, `SDKROOT` or `-mmacosx-version-min`
-- [`windows-recipes`](.agents/skills/windows-recipes/SKILL.md): the build fails or a product is missing only on Windows, or the recipe branches on `*-mingw*` or `Sys.iswindows`
+- [`windows-recipes`](.agents/skills/windows-recipes/SKILL.md): the build fails, a product is missing or a DLL fails to load only on Windows, or the recipe branches on `*-mingw*` or `Sys.iswindows`
 - [`jll-versioning`](.agents/skills/jll-versioning/SKILL.md): the JLL needs a version different from upstream (`ygg_version`), e.g. because a compat bound changed or a dependency moved to an ABI-breaking release, or the upstream version string is not plain `X.Y.Z`
 - [`testing-jll`](.agents/skills/testing-jll/SKILL.md): every recipe, before merging: building it locally or fetching CI tarballs, and testing the generated JLL
 

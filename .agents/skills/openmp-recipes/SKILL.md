@@ -9,15 +9,15 @@ The OpenMP runtime follows the compiler. BinaryBuilder compiles C and C++ with C
 
 ```julia
 dependencies = [
-    Dependency("CompilerSupportLibraries_jll"; compat="1.1.1", platforms=filter(!Sys.isbsd, platforms)),
-    Dependency("LLVMOpenMP_jll"; compat="19.1.7", platforms=filter(Sys.isbsd, platforms)),
+    Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
+    Dependency("LLVMOpenMP_jll"; platforms=filter(Sys.isbsd, platforms)),
 ]
-
-build_tarballs(...; julia_compat="1.11")
 ```
+
+Both still need a `compat` bound; see below.
 
 - **Build system**: pass upstream's OpenMP option and let it add `-fopenmp`. CMake's `FindOpenMP` finds both runtimes without `OpenMP_*` variables. A plain Makefile on macOS and FreeBSD needs `-fopenmp -I${includedir}` to compile and `-L${libdir} -lomp` to link.
 - **Never mix runtimes**: compile against the `omp.h` of the runtime you link. Don't copy an `omp.h` from elsewhere, link `-lgomp` with Clang, or use `-fopenmp=libgomp`.
 - **Fortran**: gfortran always uses libgomp, so OpenMP Fortran code needs `CompilerSupportLibraries_jll` on every platform, macOS and FreeBSD included.
-- **`LLVMOpenMP_jll` compat**: BinaryBuilder builds with the newest Clang unless `preferred_llvm_version` says otherwise, and builds against the oldest libomp the bound admits. Clang 19 and later emit `__kmpc_dispatch_deinit`, which libomp before 19 lacks, so use a lower bound of at least 19.1.7. If linking or loading fails on another undefined `__kmpc_*` symbol, raise the bound to the first release whose `openmp/runtime/src/dllexports` lists it.
+- **`LLVMOpenMP_jll` compat**: BinaryBuilder compiles with the newest Clang unless `preferred_llvm_version` says otherwise, but builds against the oldest libomp the bound admits. That libomp must export every `__kmpc_*` entry point the Clang emits; for example, Clang 19 and later emit `__kmpc_dispatch_deinit`, which libomp before 19 lacks. When linking or loading fails on an undefined `__kmpc_*` symbol, raise the lower bound to the first release whose `openmp/runtime/src/dllexports` lists it.
 - **`CompilerSupportLibraries_jll` compat** is limited by `julia_compat`; see [`fortran-recipes`](../fortran-recipes/SKILL.md#compilersupportlibraries_jll-compat).

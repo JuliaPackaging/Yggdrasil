@@ -7,7 +7,7 @@ description: Rules for Yggdrasil recipes that need a newer macOS SDK or deployme
 
 The SDK decides which headers and library symbols the build sees. The deployment target (`MACOSX_DEPLOYMENT_TARGET`) is the oldest macOS the binary loads on; libc++ rejects features introduced after it.
 
-By default, `x86_64-apple-darwin` builds against SDK 10.12 with deployment target 10.10. `aarch64-apple-darwin` builds against SDK 11.1, and arm64 macOS starts at 11.0, so it already has everything up to 11.0.
+The build environment sets the default SDK and deployment target for each macOS target; `platforms/macos_sdks.jl` records the default SDKs. `aarch64-apple-darwin` defaults to a much newer SDK than `x86_64-apple-darwin`, so most SDK failures show up only on x86_64.
 
 ## When
 
@@ -19,7 +19,7 @@ error: 'path' is unavailable: introduced in macOS 10.15
 
 or a declaration or symbol the default SDK lacks, such as `aligned_alloc`. Never add it as a precaution, by analogy with another recipe, or to fix a failure on another OS.
 
-Recipes linking `LLVM_full_jll` need SDK 10.14 for LLVM 15 to 21 and 11.0 for LLVM 22 and later, matching what `L/LLVM/common.jl` builds LLVM with.
+Recipes linking `LLVM_full_jll` need the SDK that `L/LLVM/common.jl` requests for that LLVM version.
 
 ## How
 
@@ -32,7 +32,7 @@ sources, script = require_macos_sdk("10.15", sources, script)
 
 - **Version**: the lowest that fixes the build, i.e. the one the "introduced in macOS X" error names. Say in the comment which feature needs it.
 - **Placement**: after `sources` and `script` are final, before `build_tarballs`. It appends the SDK tarball to `sources` and prepends its setup to `script`.
-- **Scope**: up to 11.1 it changes only `x86_64-apple-darwin`; above 11.1 it changes both macOS targets. Other platforms download the tarball but don't unpack it.
+- **Scope**: it installs the SDK only on macOS targets whose default SDK is older than the one requested (see `get_macos_sdk_script`). Other platforms download the tarball but don't unpack it.
 - **Available versions** are the keys of `macos_sdk_sources` in `platforms/macos_sdks.jl`. To use another, add it there in a separate PR first; don't add entries from a recipe.
 
 ## Deployment target
