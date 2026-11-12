@@ -1,9 +1,9 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index c71a74d4a..29bd1f040 100644
+index 3b412aa..15c2814 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -78,6 +78,9 @@ set(protobuf_DEBUG_POSTFIX "d"
- mark_as_advanced(protobuf_DEBUG_POSTFIX)
+@@ -70,6 +70,9 @@ endif()
+ 
  # User options
  include(${protobuf_SOURCE_DIR}/cmake/protobuf-options.cmake)
 +option(protobuf_INSTALL_PROTOBUF "Install libprotobuf" ON)
@@ -13,37 +13,64 @@ index c71a74d4a..29bd1f040 100644
  if (protobuf_BUILD_SHARED_LIBS)
    # This is necessary for linking in Abseil.
 diff --git a/cmake/install.cmake b/cmake/install.cmake
-index f7a0d9e17..82f3549f9 100644
+index 3e0e165..a889eed 100644
 --- a/cmake/install.cmake
 +++ b/cmake/install.cmake
-@@ -5,7 +5,13 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/protobuf.pc.cmake
- configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/protobuf-lite.pc.cmake
-                ${CMAKE_CURRENT_BINARY_DIR}/protobuf-lite.pc @ONLY)
+@@ -38,11 +38,19 @@ if (TARGET libupb)
+ endif ()
  
--set(_protobuf_libraries libprotobuf-lite libprotobuf)
-+set(_protobuf_libraries)
-+if (protobuf_INSTALL_PROTOBUF OR protobuf_INSTALL_SDK OR protobuf_BUILD_LIBPROTOC)
-+  list(APPEND _protobuf_libraries libprotobuf)
-+endif()
-+if (protobuf_INSTALL_PROTOBUF_LITE OR protobuf_INSTALL_SDK)
+ set(_protobuf_libraries)
+-foreach (_library libprotobuf-lite libprotobuf libprotoc libupb)
+-  if (TARGET ${_library})
+-    list(APPEND _protobuf_libraries ${_library})
+-  endif()
+-endforeach()
++if (TARGET libprotobuf-lite AND (protobuf_INSTALL_PROTOBUF_LITE OR protobuf_INSTALL_SDK))
 +  list(APPEND _protobuf_libraries libprotobuf-lite)
 +endif()
- if (protobuf_BUILD_LIBPROTOC)
-     list(APPEND _protobuf_libraries libprotoc)
- endif (protobuf_BUILD_LIBPROTOC)
-@@ -41,7 +47,9 @@ if (protobuf_BUILD_PROTOC_BINARIES)
-   endif()
- endif (protobuf_BUILD_PROTOC_BINARIES)
- 
--install(FILES ${CMAKE_CURRENT_BINARY_DIR}/protobuf.pc ${CMAKE_CURRENT_BINARY_DIR}/protobuf-lite.pc DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
-+if (protobuf_INSTALL_SDK)
-+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/protobuf.pc ${CMAKE_CURRENT_BINARY_DIR}/protobuf-lite.pc DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
++if (TARGET libprotobuf AND (protobuf_INSTALL_PROTOBUF OR protobuf_INSTALL_SDK OR protobuf_BUILD_LIBPROTOC))
++  list(APPEND _protobuf_libraries libprotobuf)
++endif()
++if (TARGET libprotoc)
++  list(APPEND _protobuf_libraries libprotoc)
++endif()
++# libupb is always a static library (linked into libprotoc and the upb generators)
++if (TARGET libupb AND protobuf_INSTALL_SDK)
++  list(APPEND _protobuf_libraries libupb)
 +endif()
  
- include(${protobuf_SOURCE_DIR}/src/file_lists.cmake)
- set(protobuf_HEADERS
-@@ -56,10 +64,12 @@ foreach(_header ${protobuf_HEADERS})
-   get_filename_component(_extract_from "${protobuf_SOURCE_DIR}/src/${_header}" ABSOLUTE)
+ foreach(_library ${_protobuf_libraries})
+   if (UNIX AND NOT APPLE)
+@@ -82,15 +90,15 @@ if (protobuf_BUILD_PROTOC_BINARIES)
+   endforeach ()
+ endif ()
+ 
+-if (TARGET libprotobuf-lite)
++if (TARGET libprotobuf-lite AND protobuf_INSTALL_SDK)
+   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/protobuf-lite.pc
+     DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+ endif ()
+-if (TARGET libprotobuf)
++if (TARGET libprotobuf AND protobuf_INSTALL_SDK)
+   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/protobuf.pc
+     DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+ endif ()
+-if (TARGET libupb)
++if (TARGET libupb AND protobuf_INSTALL_SDK)
+   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/upb.pc DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+ endif ()
+ 
+@@ -101,7 +109,7 @@ set(protobuf_HEADERS
+   ${plugin_proto_proto_srcs}
+   ${release_all_options_protos_files}
+ )
+-if (protobuf_BUILD_LIBUPB)
++if (protobuf_BUILD_LIBUPB AND protobuf_INSTALL_SDK)
+   list(APPEND protobuf_HEADERS ${libupb_hdrs})
+   # Manually install the bootstrap headers
+   install(
+@@ -139,10 +147,12 @@ foreach(_header ${protobuf_HEADERS})
+   get_filename_component(_extract_from "${_from_dir}/${_header}" ABSOLUTE)
    get_filename_component(_extract_name ${_header} NAME)
    get_filename_component(_extract_to "${CMAKE_INSTALL_INCLUDEDIR}/${_header}" DIRECTORY)
 -  install(FILES "${_extract_from}"
@@ -59,7 +86,7 @@ index f7a0d9e17..82f3549f9 100644
  endforeach()
  
  # Install configuration
-@@ -95,17 +105,19 @@ configure_file(${protobuf_SOURCE_DIR}/cmake/protobuf-generate.cmake
+@@ -172,17 +182,19 @@ configure_file(${protobuf_SOURCE_DIR}/cmake/protobuf-generate.cmake
  
  # Allows the build directory to be used as a find directory.
  
@@ -68,19 +95,18 @@ index f7a0d9e17..82f3549f9 100644
 -  NAMESPACE protobuf::
 -  COMPONENT protobuf-export
 -)
--
--install(DIRECTORY ${CMAKE_BUILD_CMAKEDIR}/
--  DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
--  COMPONENT protobuf-export
--  PATTERN protobuf-targets.cmake EXCLUDE
--)
 +if (protobuf_INSTALL_SDK)
 +  install(EXPORT protobuf-targets
 +    DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
 +    NAMESPACE protobuf::
 +    COMPONENT protobuf-export
 +  )
-+  
+ 
+-install(DIRECTORY ${CMAKE_BUILD_CMAKEDIR}/
+-  DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
+-  COMPONENT protobuf-export
+-  PATTERN protobuf-targets.cmake EXCLUDE
+-)
 +  install(DIRECTORY ${CMAKE_BUILD_CMAKEDIR}/
 +    DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
 +    COMPONENT protobuf-export
