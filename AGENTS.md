@@ -17,6 +17,11 @@ Topic guidance lives in `.agents/skills/`, one `SKILL.md` per topic in the Agent
 - [`cuda-recipes`](.agents/skills/cuda-recipes/SKILL.md): the recipe uses nvcc, includes `platforms/cuda.jl` or `C/CUDA/common.jl`, depends on `CUDA_SDK_jll`, `CUDA_Runtime_jll`, `CUDA_Compiler_jll` or `CUDA_Driver_jll`, or uses the `cuda` platform tag
 - [`blas-recipes`](.agents/skills/blas-recipes/SKILL.md): the recipe depends on `libblastrampoline_jll`, links `-lblastrampoline`, or calls BLAS/LAPACK with 64-bit integers (ILP64, `64_`-suffixed symbols)
 - [`libjulia-recipes`](.agents/skills/libjulia-recipes/SKILL.md): the recipe depends on `libjulia_jll` or `libcxxwrap_julia_jll`, includes `L/libjulia/common.jl` or calls `libjulia_platforms`, uses the `julia_version` platform tag, or is `L/libjulia` itself
+- [`fortran-recipes`](.agents/skills/fortran-recipes/SKILL.md): the recipe uses `${FC}` or gfortran, calls `expand_gfortran_versions`, filters on `libgfortran_version`, or depends on `CompilerSupportLibraries_jll`
+- [`rust-recipes`](.agents/skills/rust-recipes/SKILL.md): the recipe passes `:rust` in `compilers`, or its script runs `cargo` or `rustc`
+- [`openmp-recipes`](.agents/skills/openmp-recipes/SKILL.md): the recipe compiles with `-fopenmp` or enables an OpenMP option, links libgomp or libomp, or depends on `LLVMOpenMP_jll`
+- [`macos-recipes`](.agents/skills/macos-recipes/SKILL.md): the build fails only on macOS, or the recipe calls `require_macos_sdk`, includes `platforms/macos_sdks.jl`, or sets `MACOSX_DEPLOYMENT_TARGET`, `SDKROOT` or `-mmacosx-version-min`
+- [`windows-recipes`](.agents/skills/windows-recipes/SKILL.md): the build fails or a product is missing only on Windows, or the recipe branches on `*-mingw*` or `Sys.iswindows`
 - [`jll-versioning`](.agents/skills/jll-versioning/SKILL.md): the JLL needs a version different from upstream (`ygg_version`), e.g. because a compat bound changed or a dependency moved to an ABI-breaking release, or the upstream version string is not plain `X.Y.Z`
 - [`testing-jll`](.agents/skills/testing-jll/SKILL.md): every recipe, before merging: building it locally or fetching CI tarballs, and testing the generated JLL
 
@@ -99,8 +104,8 @@ Every declared product must be produced on every platform it is built for: the a
 - By default BinaryBuilder builds against the *oldest* version satisfying the bound, so raising the lower bound picks up newer artifacts. A positional pin (`Dependency("X_jll", v"1.2")` or `Dependency(PackageSpec("X_jll", v"1.2"))`) overrides the default: check for one before relying on `compat` alone, and keep it inside the bound or the build errors.
 - Changing any compat bound, including `julia_compat`, requires a new JLL version; read [`jll-versioning`](.agents/skills/jll-versioning/SKILL.md) before changing `version`. Pkg cannot re-register an existing version. The exception is aligning a recipe with a fix already made in General; see [Changing compat bounds](CONTRIBUTING.md#changing-compat-bounds-of-a-package).
 - Header-only or build-time-only packages are `BuildDependency`, so they are not installed on users' machines.
-- Anything linking `libgfortran` needs `expand_gfortran_versions(platforms)` and `Dependency("CompilerSupportLibraries_jll")`. Don't paper over it with `preferred_gcc_version`.
-- OpenMP: `CompilerSupportLibraries_jll` on non-BSD, `LLVMOpenMP_jll` on FreeBSD and macOS. Never mix headers from one with the runtime of the other.
+- Anything linking `libgfortran` needs `expand_gfortran_versions(platforms)` and `Dependency("CompilerSupportLibraries_jll")`. Don't paper over it with `preferred_gcc_version`; read [`fortran-recipes`](.agents/skills/fortran-recipes/SKILL.md).
+- OpenMP: `CompilerSupportLibraries_jll` on non-BSD, `LLVMOpenMP_jll` on FreeBSD and macOS; read [`openmp-recipes`](.agents/skills/openmp-recipes/SKILL.md).
 
 ### GCC Version Selection
 
@@ -136,8 +141,7 @@ Use `preferred_gcc_version=v"X"` for (see [available GCC versions](https://githu
 - Filter by property, e.g. `nbits(p) == 64`, not by enumerating architectures.
 - `expand_cxxstring_abis(platforms)` adds a variant per C++ string ABI. The audit asks for it when a library has `std::string` in its symbols.
 - `Sys.isbsd(p)` also matches macOS. To target FreeBSD alone, use `Sys.isfreebsd(p)`.
-- Newer macOS SDK: `include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))` then `sources, script = require_macos_sdk("11.0", sources, script)`. Never set `MACOSX_DEPLOYMENT_TARGET` by hand or edit the sysroot.
-- Windows x86_64 load-time abort "32 bit pseudo relocation out of range": try `-Wl,--disable-runtime-pseudo-reloc`, else link `-static-libstdc++ -static-libgcc`.
+- Newer macOS SDK or deployment target: use `require_macos_sdk` from `platforms/macos_sdks.jl`, only to fix a macOS build failure; read [`macos-recipes`](.agents/skills/macos-recipes/SKILL.md).
 
 ### Shell Script Conventions
 
@@ -251,7 +255,7 @@ Pass the target toolchain and build with `${nproc}` jobs; otherwise use upstream
 - **CMake**: `cmake -B build -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release`
 - **Meson**: `meson setup build --cross-file="${MESON_TARGET_TOOLCHAIN}"`
 - **Go**: add `compilers=[:c, :go]`, then `go build -o ${bindir}/executable${exeext}`.
-- **Rust**: add `compilers=[:c, :rust]` (toolchain 1.97 supports riscv64 and FreeBSD aarch64), then `cargo build --release` and `install -Dvm 755 target/${rust_target}/release/executable${exeext} -t ${bindir}`.
+- **Rust**: add `compilers=[:c, :rust]`, then `cargo build --release` and `install -Dvm 755 target/${rust_target}/release/executable${exeext} -t ${bindir}`; read [`rust-recipes`](.agents/skills/rust-recipes/SKILL.md).
 
 ### Optional Arguments to `build_tarballs`
 
