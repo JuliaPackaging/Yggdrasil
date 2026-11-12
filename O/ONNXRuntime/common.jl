@@ -14,7 +14,8 @@ sources = AbstractSource[
 # protobuf/ONNX JLLs as dependencies: protobuf requires generated code and runtime to match
 # exactly, and ORT's FetchContent would pick up a system copy if it found one. When
 # cross-compiling (always, in BinaryBuilder), ORT also downloads the matching prebuilt
-# `protoc` for the host.
+# `protoc` for the host (protoc-33.6-linux-x86_64, statically linked, so it runs in the
+# musl build environment).
 script = raw"""
 cd $WORKSPACE/srcdir
 
@@ -26,10 +27,12 @@ if [[ $target == *-w64-mingw32* ]]; then
         srcdir=onnxruntime-$target
     fi
     chmod 755 $srcdir/onnxruntime-*/lib/*
-    mkdir -p $includedir $libdir
-    cp -av $srcdir/onnxruntime-*/include/* $includedir
-    find $srcdir/onnxruntime-*/lib -not -type d | xargs -Isrc cp -av src $libdir
-    install_license $srcdir/onnxruntime-*/LICENSE
+    # Same header layout as `cmake --install` on the other platforms
+    mkdir -p $includedir/onnxruntime $libdir
+    cp -av $srcdir/onnxruntime-*/include/* $includedir/onnxruntime
+    # Skip the debug symbols (`.pdb`, ~430 MB)
+    find $srcdir/onnxruntime-*/lib -not -type d -not -name '*.pdb' | xargs -Isrc cp -av src $libdir
+    install_license $srcdir/onnxruntime-*/{LICENSE,ThirdPartyNotices.txt}
     exit 0
 fi
 
@@ -67,12 +70,24 @@ if [[ $target == aarch64-apple-darwin* ]]; then
     cmake_extra_args+=(-DCMAKE_OSX_ARCHITECTURES=arm64)
 elif [[ $target == x86_64-apple-darwin* ]]; then
     cmake_extra_args+=(-DCMAKE_OSX_ARCHITECTURES=x86_64)
+elif [[ $target == arm-* ]]; then
+    # With `lock_microarchitecture = false` the compiler wrappers no longer pass the armv7l
+    # flags, and the compiler's default architecture lacks `yield` and inline 64-bit atomics.
+    # MLAS requires NEON on 32-bit ARM.
+    export CFLAGS="-march=armv7-a -mtune=generic-armv7-a -mfpu=neon -mfloat-abi=hard"
+    export CXXFLAGS="${CFLAGS}" ASMFLAGS="${CFLAGS}"
+elif [[ $target == powerpc64le-* ]]; then
+    # glibc 2.17 doesn't define these; MLAS uses them to detect POWER9 at runtime
+    export CXXFLAGS="-DAT_HWCAP2=26 -DPPC_FEATURE2_ARCH_3_00=0x00800000"
 fi
 
 cd onnxruntime
+# ORT builds its own targets with COMPILE_WARNING_AS_ERROR, which trips over false positives
+# (e.g. GCC 12's -Wrestrict in libstdc++ headers): `--compile-no-warning-as-error` ignores it.
 cmake \
     -S cmake \
     -B build \
+    --compile-no-warning-as-error \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
@@ -84,7 +99,7 @@ cmake \
     "${cmake_extra_args[@]}"
 cmake --build build --parallel $nproc
 cmake --install build
-install_license LICENSE
+install_license LICENSE ThirdPartyNotices.txt
 
 if [[ $bb_full_target == *-cuda+* ]] && [[ $target == aarch64-* ]]; then
     rm -rf $prefix/cuda
@@ -93,6 +108,7 @@ fi
 
 function platform_exclude_filter(p::Platform)
     libc(p) == "musl" || # onnxruntime/core/platform/posix/stacktrace.cc: execinfo.h: No such file or directory
+    arch(p) == "armv6l" || # MLAS requires NEON on 32-bit ARM
     arch(p) == "riscv64" ||
     arch(p) == "i686" || # No upstream Windows build; Linux source build fails to link libonnxruntime.so
     Sys.isfreebsd(p)
