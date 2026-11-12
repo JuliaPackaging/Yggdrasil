@@ -3,21 +3,18 @@
 using BinaryBuilder
 
 name = "Xorg_libxshmfence"
-version = v"1.3"
+version = v"1.3.3"
 
 # Collection of sources required to build libxshmfence
 sources = [
-    ArchiveSource("https://www.x.org/archive/individual/lib/libxshmfence-$(version.major).$(version.minor).tar.bz2",
-                  "b884300d26a14961a076fbebc762a39831cb75f92bed5ccf9836345b459220c7"),
+    ArchiveSource("https://www.x.org/archive/individual/lib/libxshmfence-$(version).tar.xz",
+                  "d4a4df096aba96fea02c029ee3a44e11a47eb7f7213c1a729be83e85ec3fde10"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libxshmfence-*/
-CPPFLAGS="-I${prefix}/include"
-# When compiling for things like ppc64le, we need newer `config.sub` files
-update_configure_scripts
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=no
+cd $WORKSPACE/srcdir/libxshmfence-*
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=no --enable-static=no
 make -j${nproc}
 make install
 """
@@ -37,4 +34,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

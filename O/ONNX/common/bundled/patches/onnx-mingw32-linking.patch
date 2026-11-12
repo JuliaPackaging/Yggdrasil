@@ -1,0 +1,13 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index d9e4f0e7..e4d86961 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -366,7 +366,7 @@ target_include_directories(onnx_proto PUBLIC
+   $<INSTALL_INTERFACE:include>
+   $<BUILD_INTERFACE:${PROTOBUF_INCLUDE_DIRS}>)
+ 
+-if (MSVC)
++if (WIN32)
+   if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+     set(EXTRA_FLAGS
+           "-Wno-implicit-function-declaration"

@@ -1,0 +1,54 @@
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 6c1542c..f7795c3 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -15,49 +15,6 @@ target_include_directories(amgx_libs PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../inclu
+ 
+ set(AMGX_INCLUDES ../include)
+ 
+-set(tests_all ${tests_all} testframework.cu test_utils.cu unit_test.cu)
+-
+-add_library(amgx_tests_libs OBJECT ${tests_all})
+-
+-target_include_directories(amgx_tests_libs PRIVATE ${AMGX_INCLUDES}) 
+-
+-add_library(amgx_tests_library STATIC $<TARGET_OBJECTS:amgx_tests_libs>)
+-
+-target_link_libraries(amgx_tests_libs Thrust)
+-
+-add_dependencies(amgx_tests_library amgx)
+-
+-target_link_libraries(amgx_tests_library amgx)
+-
+-add_executable(amgx_tests_launcher utest.cu $<TARGET_OBJECTS:amgx_tests_libs>)
+-
+-# CMAKE_CUDA_ARCHITECTURES automatically inherits to all targets
+-# No need to set per-target properties
+-
+-target_compile_options(amgx_tests_launcher PUBLIC $<$<COMPILE_LANGUAGE:CUDA>: ${CUDA_NVCC_FLAGS} >)
+-target_compile_options(amgx_tests_libs PUBLIC $<$<COMPILE_LANGUAGE:CUDA>: ${CUDA_NVCC_FLAGS} >)
+-target_compile_options(amgx_tests_library PUBLIC $<$<COMPILE_LANGUAGE:CUDA>: ${CUDA_NVCC_FLAGS} >)
+-
+-target_include_directories(amgx_tests_launcher PRIVATE ${AMGX_INCLUDES}) 
+-
+-# create executables for host and device, scalar and block version
+-
+-GET_FILENAME_COMPONENT(CMAKE_C_COMPILER_NAME "${CMAKE_C_COMPILER}" NAME)
+-IF(CMAKE_C_COMPILER_NAME MATCHES cl)
+-    set(libs_all CUDA::cusparse CUDA::cublas)
+-ELSE()
+-    set(libs_all CUDA::cusparse CUDA::cublas rt dl)
+-ENDIF()
+-
+-target_link_libraries(amgx_tests_launcher amgx_tests_library amgxsh ${libs_all})
+-
+-if(MPI_FOUND)
+-    target_link_libraries(amgx_tests_launcher MPI::MPI_CXX)
+-endif(MPI_FOUND)
+-
+-if(NOT ${CMAKE_BUILD_TYPE} MATCHES "Release")
+-  install(TARGETS amgx_tests_launcher DESTINATION "lib/tests")
+-endif(NOT ${CMAKE_BUILD_TYPE} MATCHES "Release")
+ 
+ #copy configs to build directory
+ add_custom_target(copy_configs ALL)

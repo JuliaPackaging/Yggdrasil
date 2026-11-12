@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "DASKR"
-version = v"1.0.0"
+version = v"1.0.1"
 
 # Collection of sources required to complete build
 sources = [
@@ -16,7 +16,15 @@ cd $WORKSPACE/srcdir
 cd DASKR
 install_license LICENSE
 mkdir -p "${libdir}"
-gfortran -shared -fPIC -o $libdir/libdaskr.${dlext} solver/d*.f
+
+# GCC 10+ requires -fallow-argument-mismatch for legacy Fortran code with type mismatches
+# Check if the flag is supported (GCC 10+)
+EXTRA_FFLAGS=""
+if gfortran -fallow-argument-mismatch -E - < /dev/null > /dev/null 2>&1; then
+    EXTRA_FFLAGS="-fallow-argument-mismatch"
+fi
+
+gfortran -shared -fPIC ${EXTRA_FFLAGS} -o $libdir/libdaskr.${dlext} solver/d*.f
 """
 
 # These are the platforms we will build for by default, unless further
@@ -35,4 +43,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

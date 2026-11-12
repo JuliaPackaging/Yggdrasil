@@ -1,0 +1,22 @@
+commit ab865ef3ca5be345aba8510ea06736f285ec0c44
+Author: Benjamin Lorenz <lorenz@math.tu-berlin.de>
+Date:   Tue Jan 13 10:12:59 2026 +0100
+
+    sympol: fix lrs memory leak
+    
+    thanks KilliB
+
+diff --git a/bundled/sympol/external/sympol/sympol/raycomputationlrs.cpp b/bundled/sympol/external/sympol/sympol/raycomputationlrs.cpp
+index 819a899279..c9f5a549cb 100644
+--- a/bundled/sympol/external/sympol/sympol/raycomputationlrs.cpp
++++ b/bundled/sympol/external/sympol/sympol/raycomputationlrs.cpp
+@@ -322,6 +322,9 @@ bool RayComputationLRS::getLinearities(const Polyhedron & data, std::list<QArray
+ 	}
+ 
+         if (Lin) lrs_clear_mp_matrix(Lin, Q->nredundcol, Q->n);
++
++	lrs_free_dic (P,Q);           /* deallocate lrs_dic */
++	lrs_free_dat (Q);             /* deallocate lrs_dat */
+ 	return true;
+ }
+ 

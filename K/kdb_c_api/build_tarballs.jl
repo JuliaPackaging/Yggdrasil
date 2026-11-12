@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "kdb_c_api"
-version = v"2022.09.03"
+version = v"2024.10.21"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/KxSystems/kdb.git", "f1b8e5e1dfaf86b1ccd3a2634d10e07718b71ece")
+    GitSource("https://github.com/KxSystems/kdb.git", "28d14cde9840ddb1d98613560cf5e051ae108a4d")
 ]
 
 # Bash recipe for building across all platforms
@@ -15,15 +15,15 @@ script = raw"""
 cd $WORKSPACE/srcdir
 install_license kdb/LICENSE
 mkdir ${libdir}
-if [[ ${target} == aarch64-linux-* ]]; then opath="kdb/l64arm/c.o"; fi
-if [[ ${target} == x86_64-linux-* ]]; then opath="kdb/l64/c.o"; fi
-if [[ ${target} == i686-linux-* ]]; then opath="kdb/l32/c.o"; fi
-if [[ ${target} == aarch64-apple-* ]]; then opath="kdb/m64arm/c.o"; fi
-if [[ ${target} == x86_64-apple-* ]]; then opath="kdb/m64/c.o"; CC="gcc"; fi
-if [[ ${target} == i686-apple-* ]]; then opath="kdb/m32/c.o"; fi
-if [[ ${target} == x86_64-w64-* ]]; then opath="kdb/w64/c.dll"; fi
-if [[ ${target} == i686-w64-* ]]; then opath="kdb/w32/c.dll"; fi
-${CC} -shared -fPIC ${opath} -o ${libdir}/c.${dlext}
+if [[ ${target} == aarch64-linux-* ]]; then opath="kdb/l64arm/c.o"; extraflags=""; fi
+if [[ ${target} == x86_64-linux-* ]]; then opath="kdb/l64/c.o"; extraflags=""; fi
+if [[ ${target} == i686-linux-* ]]; then opath="kdb/l32/c.o"; extraflags=""; fi
+if [[ ${target} == aarch64-apple-* ]]; then opath="kdb/m64/c.o"; CC="clang"; extraflags="-undefined dynamic_lookup"; fi
+if [[ ${target} == x86_64-apple-* ]]; then opath="kdb/m64/c.o"; CC="clang"; extraflags="-undefined dynamic_lookup"; fi
+if [[ ${target} == i686-apple-* ]]; then opath="kdb/m32/c.o"; extraflags=""; fi
+if [[ ${target} == x86_64-w64-* ]]; then opath="kdb/w64/c.dll"; extraflags=""; fi
+if [[ ${target} == i686-w64-* ]]; then opath="kdb/w32/c.dll"; extraflags=""; fi
+${CC} ${extraflags} -shared -fPIC ${opath} -o ${libdir}/c.${dlext}
 """
 
 # These are the platforms we will build for by default, unless further

@@ -1,0 +1,142 @@
+diff -ur libgd/cmake/modules/FindFontConfig.cmake libgd-patched/cmake/modules/FindFontConfig.cmake
+--- libgd/cmake/modules/FindFontConfig.cmake  2025-07-06 13:20:45.358034790 +0200
++++ libgd-patched/cmake/modules/FindFontConfig.cmake  2025-07-06 13:21:19.111383452 +0200
+@@ -37,11 +37,11 @@
+ 
+ # use pkg-config to get the directories and then use these values
+ # in the FIND_PATH() and FIND_LIBRARY() calls
+-if( NOT WIN32 )
++if( NOT MSVC )
+   find_package(PkgConfig)
+ 
+   pkg_check_modules(FONTCONFIG_PKG QUIET fontconfig)
+-endif( NOT WIN32 )
++endif( NOT MSVC )
+ 
+ FIND_PATH(FONTCONFIG_INCLUDE_DIR NAMES fontconfig/fontconfig.h
+   PATHS
+diff -ur libgd/cmake/modules/FindHEIF.cmake libgd-patched/cmake/modules/FindHEIF.cmake
+--- libgd/cmake/modules/FindHEIF.cmake  2025-07-06 13:20:45.358034790 +0200
++++ libgd-patched/cmake/modules/FindHEIF.cmake  2025-07-06 13:21:19.112383432 +0200
+@@ -41,10 +41,10 @@
+ 
+ # use pkg-config to get the directories and then use these values
+ # in the FIND_PATH() and FIND_LIBRARY() calls
+-if( NOT WIN32 )
++if( NOT MSVC )
+   find_package(PkgConfig)
+   pkg_check_modules(HEIF_PKG libheif>=1.7.0 QUIET)
+-endif( NOT WIN32 )
++endif( NOT MSVC )
+ 
+ FIND_PATH(HEIF_INCLUDE_DIR NAMES libheif/heif.h
+   PATHS
+diff -ur libgd/cmake/modules/FindWEBP.cmake libgd-patched/cmake/modules/FindWEBP.cmake
+--- libgd/cmake/modules/FindWEBP.cmake  2025-07-06 13:20:45.358034790 +0200
++++ libgd-patched/cmake/modules/FindWEBP.cmake  2025-07-06 13:21:19.111383452 +0200
+@@ -37,11 +37,10 @@
+ # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ 
+-include(FindZLIB)
+-
+-find_path(WEBP_INCLUDE_DIR decode.h
+-/usr/local/include/webp
+-/usr/include/webp
++find_path(WEBP_INCLUDE_DIR
++  NAMES decode.h
++  PATHS /usr/local/include /usr/include
++  PATH_SUFFIXES webp
+ )
+ 
+ set(WEBP_NAMES ${WEBP_NAMES} webp)
+diff -ur libgd/cmake/modules/FindXPM.cmake libgd-patched/cmake/modules/FindXPM.cmake
+--- libgd/cmake/modules/FindXPM.cmake 2025-07-06 13:20:45.358034790 +0200
++++ libgd-patched/cmake/modules/FindXPM.cmake 2025-07-06 13:21:19.111383452 +0200
+@@ -40,9 +40,10 @@
+ 
+ SET(XPM_FOUND "NO")
+ 
+-FIND_PATH(XPM_XPM_INCLUDE_DIR xpm.h
+-/usr/local/include/X11
+-/usr/include/X11
++FIND_PATH(XPM_XPM_INCLUDE_DIR
++  NAMES xpm.h
++  PATHS /usr/local/include /usr/include
++  PATH_SUFFIXES X11
+ )
+ 
+ SET(XPM_NAMES ${XPM_NAMES} Xpm libXpm)
+diff -ur libgd/CMakeLists.txt libgd-patched/CMakeLists.txt
+--- libgd/CMakeLists.txt  2025-07-06 13:20:45.358034790 +0200
++++ libgd-patched/CMakeLists.txt  2025-07-06 13:21:19.111383452 +0200
+@@ -86,10 +86,10 @@
+ else (USE_EXT_GD)
+ 
+  MACRO(GV VER VAR)
+-   execute_process(
+-     COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/config/getver.sh ${VER}
+-     OUTPUT_VARIABLE ${VAR}
+-   )
++   file (STRINGS "src/gd.h" _VERSION_LINE REGEX "define[ ]+GD_${VER}_VERSION")
++   if ( _VERSION_LINE )
++     string ( REGEX REPLACE ".*define[ ]+GD_${VER}_VERSION[ ]+\"?([^ \"]*)\"?[ ]+.*" "\\1" ${VAR} "${_VERSION_LINE}" )
++   endif ()
+  ENDMACRO(GV)
+ 
+  GV(MAJOR GDLIB_MAJOR)
+Binary files libgd/.git/index and libgd-patched/.git/index differ
+diff -ur libgd/src/CMakeLists.txt libgd-patched/src/CMakeLists.txt
+--- libgd/src/CMakeLists.txt  2025-07-06 13:20:45.359034771 +0200
++++ libgd-patched/src/CMakeLists.txt  2025-07-06 13:21:19.111383452 +0200
+@@ -132,9 +132,9 @@
+ 
+ if (PNG_FOUND)
+  set(GD_PROGRAMS ${GD_PROGRAMS} gdtopng pngtogd)
+- if (NOT WIN32)
++ if (NOT MSVC)
+    set(GD_PROGRAMS ${GD_PROGRAMS} webpng)
+- endif (NOT WIN32)
++ endif (NOT MSVC)
+  if (ZLIB_FOUND)
+    set(GD_PROGRAMS ${GD_PROGRAMS} gdparttopng gd2topng pngtogd2)
+  endif()
+@@ -152,11 +152,6 @@
+ 
+ foreach(program ${GD_PROGRAMS})
+     add_executable(${program} ${program}.c)
+- if (WIN32)
+-   list(REMOVE_ITEM program webpng.c annotate.c)
+-   list(REMOVE_ITEM GD_PROGRAMS webpng)
+-   list(REMOVE_ITEM GD_PROGRAMS annotate)
+- endif (WIN32)
+ 
+     if (BUILD_SHARED_LIBS)
+         target_link_libraries(${program} ${GD_LIB})
+diff -ur libgd/src/gd_topal.c libgd-patched/src/gd_topal.c
+--- libgd/src/gd_topal.c  2025-07-06 13:20:45.361034732 +0200
++++ libgd-patched/src/gd_topal.c  2025-07-06 13:21:19.111383452 +0200
+@@ -1527,8 +1527,12 @@
+ /* liq requires 16 byte aligned heap memory */
+ static void *malloc16(size_t size)
+ {
++#ifndef _WIN32
+  void *p;
+  return posix_memalign(&p, 16, size) == 0 ? p : NULL;
++#else
++ return _aligned_malloc(16, size);
++#endif
+ }
+ #endif
+ 
+diff -ur libgd/tests/gdtest/gdtest.c libgd-patched/tests/gdtest/gdtest.c
+--- libgd/tests/gdtest/gdtest.c 2025-07-06 13:20:45.362034713 +0200
++++ libgd-patched/tests/gdtest/gdtest.c 2025-07-06 13:21:19.111383452 +0200
+@@ -9,6 +9,7 @@
+ #include <math.h>
+ #include <limits.h>
+ #include <time.h>
++#include <errno.h>
+ 
+ #ifdef HAVE_DIRENT_H
+ #include <dirent.h>

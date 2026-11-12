@@ -1,0 +1,78 @@
+diff --git a/src/lib/OpenEXRCore/internal_zstd_delta.c b/src/lib/OpenEXRCore/internal_zstd_delta.c
+index 191d5f4c..19eaf7be 100644
+--- a/src/lib/OpenEXRCore/internal_zstd_delta.c
++++ b/src/lib/OpenEXRCore/internal_zstd_delta.c
+@@ -238,14 +238,6 @@ delta_encode_row_u16 (uint8_t* p, uint64_t n)
+ void
+ delta_decode_row_u16 (uint8_t* p, uint64_t n)
+ {
+-#if defined(__GNUC__) && defined(__x86_64__)
+-    __builtin_cpu_init ();
+-    if (__builtin_cpu_supports ("avx2"))
+-    {
+-        delta_decode_row_u16_avx2 (p, n);
+-        return;
+-    }
+-#endif
+     delta_decode_row_u16_scalar (p, n);
+ }
+ 
+@@ -265,13 +257,5 @@ delta_encode_row_u32 (uint8_t* p, uint64_t n)
+ void
+ delta_decode_row_u32 (uint8_t* p, uint64_t n)
+ {
+-#if defined(__GNUC__) && defined(__x86_64__)
+-    __builtin_cpu_init ();
+-    if (__builtin_cpu_supports ("avx2"))
+-    {
+-        delta_decode_row_u32_avx2 (p, n);
+-        return;
+-    }
+-#endif
+     delta_decode_row_u32_scalar (p, n);
+-}
+\ No newline at end of file
++}
+diff --git a/src/lib/OpenEXRCore/internal_zstd_shuffle.c b/src/lib/OpenEXRCore/internal_zstd_shuffle.c
+index 45450081..cf4acbea 100644
+--- a/src/lib/OpenEXRCore/internal_zstd_shuffle.c
++++ b/src/lib/OpenEXRCore/internal_zstd_shuffle.c
+@@ -276,36 +276,9 @@ void
+ exr_zstd_shuffle_decode_bytes (
+     uint8_t* dst, const uint8_t* shuf, size_t dSize, uint64_t shuffle_el_bytes)
+ {
+-#if defined(__GNUC__) && defined(__x86_64__)
+-    if (shuffle_el_bytes == 4)
+-    {
+-        /* AVX512 BW & DQ are required for the unpack+permutex2var logic */
+-        /*if (__builtin_cpu_supports("avx512bw") && __builtin_cpu_supports("avx512dq")) {
+-            shuffle_decode_4_avx512(shuf, dSize, dst);
+-        } else */
+-        if (__builtin_cpu_supports ("avx2"))
+-        {
+-            shuffle_decode_4_avx2 (shuf, dSize, dst);
+-        }
+-        else { shuffle_decode_4_scalar (shuf, dSize, dst); }
+-    }
+-    else
+-    {
+-        /* AVX512 VBMI is required for the vpermi2b logic */
+-        /*if (__builtin_cpu_supports("avx512vbmi")) {
+-            shuffle_decode_2_avx512(shuf, dSize, dst);
+-        } else */
+-        if (__builtin_cpu_supports ("avx2"))
+-        {
+-            shuffle_decode_2_avx2 (shuf, dSize, dst);
+-        }
+-        else { shuffle_decode_2_scalar (shuf, dSize, dst); }
+-    }
+-#else
+     /* Safe fallback for ARM, Windows/MSVC, or non-x86 compilation */
+     if (shuffle_el_bytes == 4)
+         shuffle_decode_4_scalar (shuf, dSize, dst);
+     else
+         shuffle_decode_2_scalar (shuf, dSize, dst);
+-#endif
+-}
+\ No newline at end of file
++}

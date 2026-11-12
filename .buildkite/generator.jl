@@ -1,101 +1,13 @@
 #!/bin/env julia
-if VERSION < v"1.8.0"
-    Base.ACTIVE_PROJECT[] = @__DIR__
-else
-    Base.set_active_project(@__DIR__)
-end
-
-# Force ourselves to use the shared depot as well, if it exists
-if isdir("/sharedcache/depot")
-    push!(Base.DEPOT_PATH, "/sharedcache/depot")
-end
-
 import Pkg
-Pkg.instantiate()
 
-using Downloads, Dates, SHA
+Base.set_active_project(@__DIR__)
 
-const PROJECT = only(ARGS)
+const PROJECTS = copy(ARGS)
 const DEBUG = !haskey(ENV, "BUILDKITE")
-
-include("utils.jl")
-
-if !isnothing(Pkg.pkg_server())
-    resp = try
-        headers = Pkg.PlatformEngines.get_metadata_headers(Pkg.pkg_server())
-        Downloads.request("$(Pkg.pkg_server())/registries"; headers)
-    catch e
-        # Let us know the download of the registry went wrong, but do not hard fail
-        @error "Could not download the registry" exception=(e, catch_backtrace())
-    end
-    last_mod_idx = findfirst(h -> first(h) == "last-modified", resp.headers)
-    msg = "PkgServer: " * resp.url
-    delay = if !isnothing(last_mod_idx)
-        last_mod = last(resp.headers[last_mod_idx])
-        msg *= " -- last updated: " * last_mod
-        # Manually strip the "GMT" timezone and hope it never changes.
-        # Do not error out if parsing fails.
-        dt = tryparse(DateTime, replace(last_mod, " GMT"=>""), dateformat"e, d u y H:M:S")
-        # If parsing did fail, set the delay to 0.
-        isnothing(dt) ? Second(0) : now(UTC) - dt
-    else
-        Second(0)
-    end
-    delay > Second(0) && (msg *= " (" * string(Dates.canonicalize(round(delay, Second))) * " ago)")
-    @info(msg)
-    annotate(msg, style="info", context="pkg")
-    tolerance = Hour(1)
-    if delay > tolerance
-        @warn "The PkgServer registry is older than $(tolerance)"
-        annotate("The PkgServer registry is older than $(tolerance)", style = "warning", context="pkg")
-    end
-end
-
-# If there are scary projects we need to exclude, we list them here. (Used to contain `LLVM`)
-EXCLUDED_NAMES = Set{String}([])
-
-if PROJECT ∈ EXCLUDED_NAMES
-    @info "Skipping project since it is excluded." PROJECT
-    exit()
-end
-
-# Remove secret from environment
-sanitize(cmd) = addenv(cmd, Dict("BUILDKITE_PLUGIN_CRYPTIC_BASE64_SIGNED_JOB_ID_SECRET" => nothing))
-exec(cmd) = @assert success(pipeline(sanitize(cmd), stderr=stderr, stdout=stdout))
-
-YGGDRASIL_BASE = dirname(@__DIR__)
-julia(args) = `$(Base.julia_cmd()) --project=$(YGGDRASIL_BASE)/.ci $args`
-
-# Next, we're going to ensure that our BB is up to date and precompiled
-julia(`-e "import Pkg; Pkg.instantiate(); Pkg.precompile()"`) |> exec
-
-TEMP = mktempdir()
-
-# determine the name, removing any trailing version number
-# (`L/LLVM/LLVM@14` results in `NAME = "LLVM@14"`)
-const NAME = first(split(basename(PROJECT), "@"))
-
-# We always invoke a `build_tarballs.jl` file from its own directory
-# generate platform list
-cd(PROJECT) do
-    println("Generating meta.json...")
-    JSON_PATH = "$(TEMP)/$(NAME).meta.json"
-    julia(`--compile=min ./build_tarballs.jl --meta-json="$(JSON_PATH)"`) |> exec
-
-    # Generate platforms
-    julia(`$(YGGDRASIL_BASE)/.ci/generate_platforms.jl "$(JSON_PATH)" $(TEMP)/$(NAME).platforms.list`) |> exec
-end
-
-println("Determining builds to queue...")
-
-# Load in the platforms
-PLATFORMS = split(readchomp(joinpath(TEMP, "$(NAME).platforms.list")))
-if isempty(PLATFORMS)
-    @error "Unable to determine the proper platforms" NAME
-end
-
 const IS_PR = get(ENV, "BUILDKITE_PULL_REQUEST", "false") != "false"
 const SKIP_BUILD_COOKIE="[skip build]"
+const SHOULD_REGISTER = !IS_PR
 
 if IS_PR
     # If we're on a PR though, we look at the entire branch at once
@@ -103,32 +15,197 @@ if IS_PR
     @assert !isempty(BASE_BRANCH)
 
     PR_NUMBER = ENV["BUILDKITE_PULL_REQUEST"]
-    exec(`git fetch origin "refs/pull/$(PR_NUMBER)/head:refs/remotes/origin/pr/$(PR_NUMBER)"`)
+    run(ignorestatus(`git fetch origin "refs/pull/$(PR_NUMBER)/head:refs/remotes/origin/pr/$(PR_NUMBER)"`))
 
     COMMIT_MSG = readchomp(`git show -s --format=%B origin/pr/$(PR_NUMBER)`)
 else
     COMMIT_MSG = readchomp(`git show -s --format=%B`)
 end
-# This variable will tell us whether we want to skip the build
-const SKIP_BUILD = contains(COMMIT_MSG, SKIP_BUILD_COOKIE)
 
-STEPS = Any[]
-# Create the BUILD_STEPS
-if SKIP_BUILD
-    println("The commit messages contains $(SKIP_BUILD_COOKIE), skipping build")
-else
-    for PLATFORM in PLATFORMS
-        println("    $(PLATFORM): building")
-        push!(STEPS, build_step(NAME, PLATFORM, PROJECT))
+# Force ourselves to use the shared depot as well, if it exists
+if isdir("/sharedcache/depot")
+    push!(Base.DEPOT_PATH, "/sharedcache/depot")
+end
+
+# Instantiate, to install all necessary packages like YAML (not BinaryBuilder)
+Pkg.instantiate()
+
+using YAML
+
+include("utils.jl")
+
+# Give a warning if the pkgserver is too far behind
+check_pkgserver_latency()
+
+# Projects whose unchanged platforms reuse the tarballs of the previous release instead of
+# being rebuilt, see `.ci/bb1_project/plan_reuse.jl`.
+const REUSE_TARBALLS = Set{String}([
+    "C/CUDA/CUDA_Compiler",
+    "C/CUDA/CUDA_Runtime",
+    "L/LLVM/Clang_unified",
+    "L/LLVM/LLD_unified",
+    "L/LLVM/LLVM_unified",
+    "L/LLVM/LLVM_utils_unified",
+])
+
+# If there are scary projects we need to exclude, we list them here. (Used to contain `LLVM`)
+EXCLUDED_NAMES = Set{String}([])
+
+filter!(PROJECTS) do project
+    if project ∈ EXCLUDED_NAMES
+        @info("Skipping project since it is excluded.", project)
+        return false
+    end
+    return true
+end
+
+# Immediately read in all projects, and ensure that they are either all BB2 projects, or none of them are:
+bb2_projects = String[]
+bb1_projects = String[]
+for project in PROJECTS
+    if uses_bb2(project)
+        push!(bb2_projects, project)
+    else
+        push!(bb1_projects, project)
     end
 end
-if !IS_PR
-    push!(STEPS, wait_step())
-    push!(STEPS, register_step(NAME, PROJECT, SKIP_BUILD, length(PLATFORMS)))
+
+function bb1_build_steps!(group_steps, project)
+    # `L/LLVM/LLVM@14` has basename `LLVM@14`, but its tarballs and JLL are
+    # named `LLVM`, which is what registration needs to find them.
+    project_basename = basename(project)
+    jll_name = first(split(project_basename, "@"))
+    cleanup_metadata!(project_basename)
+
+    # We always invoke a `build_tarballs.jl` file from its own directory to generate the platform list
+    cd(project) do
+        println("[$(project)] Generating meta.json...")
+        json_path = "$(YGGDRASIL_BASE)/$(project_basename).meta.json"
+        julia(`--compile=min ./build_tarballs.jl --meta-json="$(json_path)"`; julia_project = bb1_julia_project)
+
+        # Generate platforms
+        platforms_path = "$(YGGDRASIL_BASE)/$(project_basename).platforms.list"
+        julia(`$(bb1_julia_project)/generate_platforms.jl "$(json_path)" $(platforms_path)`)
+
+        if project in REUSE_TARBALLS && !contains(COMMIT_MSG, SKIP_BUILD_COOKIE)
+            println("[$(project)] Determining which tarballs can be reused...")
+            plan_path = "$(YGGDRASIL_BASE)/$(project_basename).reuse.json"
+            julia(`$(bb1_julia_project)/plan_reuse.jl $(project) $(jll_name) $(json_path) $(platforms_path) $(plan_path)`)
+        end
+    end
+
+    platforms = split(readchomp(joinpath(YGGDRASIL_BASE, "$(project_basename).platforms.list")))
+    all_reused = isempty(platforms) && isfile(joinpath(YGGDRASIL_BASE, "$(project_basename).reuse.json"))
+    if isempty(platforms) && !all_reused
+        @error("Unable to determine the proper platforms", project_basename)
+        exit(1)
+    end
+
+    should_skip_builds = contains(COMMIT_MSG, SKIP_BUILD_COOKIE)
+    steps = []
+    for platform in platforms
+        if !should_skip_builds
+            println("[$(project)] $(platform): building")
+            bs = BB1BuildStep(
+                project_basename,
+                project,
+                platform,
+            )
+            push!(steps, render(bs))
+        end
+    end
+
+    # If this is not a pull request, we're going to register this project
+    if SHOULD_REGISTER
+        push!(steps, wait_step())
+        push!(steps, render(BB1RegisterStep(
+            jll_name,
+            project,
+            should_skip_builds,
+            length(platforms),
+        )))
+        #push!(steps, wait_step())
+        #push!(steps, register_step(project_name, project, should_skip_builds, length(platforms)))
+    end
+
+    # Group this project's full build under `project_name`
+    if !isempty(steps)
+        push!(group_steps, group_step(project_basename, steps))
+    end
 end
-if !isempty(STEPS)
-    definition = Dict(
-        :steps => Any[group_step(NAME, STEPS)]
-    )
-    upload_pipeline(definition)
+
+function bb2_build_steps!(group_steps, projects)
+    # Invoke `scheduler.jl` to build up our list of jobs with their dependencies
+    io = IOBuffer()
+    julia(`$(bb2_julia_project)/scheduler.jl $(projects)`; julia_project=bb2_julia_project, stdout=io)
+    groups = YAML.load(String(take!(io)))
+
+    # We will create one group per project, holding that project's builds
+    build_steps = Dict{String,Vector{BB2BuildStep}}()
+    for (group_name, group) in groups
+        builds = BB2BuildStep[]
+        for build in group["builds"]
+            push!(builds, BB2BuildStep(
+                build["name"],
+                group_name,
+                build["platform"],
+                build["build_hash"],
+                build["dependencies"],
+            ))
+        end
+        build_steps[group_name] = builds
+        if !isempty(builds)
+            push!(group_steps, group_step(group_name, render.(builds)))
+        end
+    end
+
+    SHOULD_REGISTER || return
+
+    # Each package gets a single registration step.  When several projects build the same
+    # package, that step registers them one after another, lowest version first, so that
+    # the versions stack on top of each other in the JLL repository and the registry PR.
+    packagings = Dict{String,Vector{Tuple{VersionNumber,String,Dict}}}()
+    for (group_name, group) in groups, packaging in group["packagings"]
+        push!(get!(packagings, packaging["name"], []), (VersionNumber(packaging["version"]), group_name, packaging))
+    end
+    for name in sort(collect(keys(packagings)))
+        entries = sort(packagings[name]; by = first)
+        projects = [group_name for (_, group_name, _) in entries]
+        deps = vcat(
+            # Other packages that must be registered first
+            unique([bb2_register_key(dep) for (_, _, p) in entries for dep in p["dependencies"]]),
+            # The builds of every project that packages this one
+            [bs for group_name in unique(projects) for bs in build_steps[group_name]],
+        )
+        push!(group_steps, render(BB2RegisterStep(name, projects, deps)))
+    end
+end
+
+function build_steps!(group_steps, bb1_projects, bb2_projects)
+    if !isempty(bb1_projects)
+        # Ensure BB1 is instantiated
+        julia(`-e "import Pkg; Pkg.instantiate(); Pkg.precompile()"`; julia_project=bb1_julia_project)
+
+        # Each project is processed individually, with a group of builds for each platform.
+        for project in bb1_projects
+            bb1_build_steps!(group_steps, project)
+        end
+    end
+
+    if !isempty(bb2_projects)
+        # Ensure BB2 is instantiated
+        julia(`-e "import Pkg; Pkg.instantiate(); Pkg.precompile()"`; julia_project=bb2_julia_project)
+
+        # For BB2, we jointly process all `build_tarballs.jl` files, building a dependency graph:
+        bb2_build_steps!(group_steps, bb2_projects)
+    end
+end
+
+
+group_steps = []
+build_steps!(group_steps, bb1_projects, bb2_projects)
+
+# Only upload the pipieline if we actually have something to upload
+if !isempty(group_steps)
+    upload_pipeline(Dict(:steps => group_steps))
 end

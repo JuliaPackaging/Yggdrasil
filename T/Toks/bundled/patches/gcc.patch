@@ -1,0 +1,26 @@
+diff --git a/src/core/bpe.h b/src/core/bpe.h
+index 00ac2b0..1639b74 100644
+--- a/src/core/bpe.h
++++ b/src/core/bpe.h
+@@ -223,6 +223,11 @@ typedef struct bpe_key {
+     uint64_t lo, hi;
+ } bpe_key;
+ 
++/* In `bpe_key_at`, GCC sees a possible 8-byte read at offset 8 into a 15-byte object despite the surrounding condition */
++#if defined(__GNUC__) && !defined(__clang__)
++#  pragma GCC diagnostic push
++#  pragma GCC diagnostic ignored "-Warray-bounds"
++#endif
+ /* the key of text[s, s + n), 2 <= n <= 15, read in place, never a byte at or past tlen (kernels.md §6 "Key") */
+ static inline bpe_key bpe_key_at(const uint8_t *text, uint64_t tlen, uint64_t s, uint64_t n)
+ {
+@@ -243,6 +248,9 @@ static inline bpe_key bpe_key_at(const uint8_t *text, uint64_t tlen, uint64_t s,
+     k.hi |= (uint64_t)n << 56;                             /* byte 15 = len */
+     return k;
+ }
++#if defined(__GNUC__) && !defined(__clang__)
++#  pragma GCC diagnostic pop
++#endif
+ 
+ /* layout.h's key hash (= toks_key_hash(TOKS_HSEED, key)), once per piece */
+ static inline uint32_t bpe_key_hash(bpe_key k)

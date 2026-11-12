@@ -1,0 +1,10 @@
+--- a/src/bliss/graph.hh
++++ b/src/bliss/graph.hh
+@@ -32,6 +32,7 @@
+ #include <cstdio>
+ #include <vector>
+ #include <limits>
++#include <cstdint>
+ #include "bignum.hh"
+ #include "heap.hh"
+ #include "kqueue.hh"

@@ -2,29 +2,53 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+include("../../platforms/macos_sdks.jl")
+
 name = "DuckDB"
-version = v"1.1.2"
+version = v"2.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/duckdb/duckdb.git", "f680b7d08f56183391b581077d4baf589e1cc8bd"),
+    GitSource("https://github.com/duckdb/duckdb.git", "d54cbbe3df17e8e5ce68312f483b4155836112aa"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/duckdb/
 
+export DUCKDB_TARGET="${target}"
+if [[ "${target}" == "x86_64-linux-gnu" ]]; then
+    export DUCKDB_TARGET="linux_amd64"
+elif [[ "${target}" == aarch64-linux-gnu ]]; then
+    export DUCKDB_TARGET="linux_arm64"
+elif [[ "${target}" == "x86_64-linux-musl" ]]; then
+    export DUCKDB_TARGET="linux_amd64_musl"
+elif [[ "${target}" == "x86_64-w64-mingw32" ]]; then
+    export DUCKDB_TARGET="windows_amd64_mingw"
+elif [[ "${target}" == x86_64-apple-* ]]; then
+    export DUCKDB_TARGET="osx_amd64"
+elif [[ "${target}" == aarch64-apple-* ]]; then
+    export DUCKDB_TARGET="osx_arm64"
+fi
+
+if [[ "${bb_full_target}" == *-cxx03* ]]; then
+    export DUCKDB_TARGET="${DUCKDB_TARGET}_gcc4"
+fi
+
+echo "Compiling for DuckDB Target - $DUCKDB_TARGET"
+
+# OPTIMIZATION_PROFILE=NONE: the default CLI profile forces -march flags, which BinaryBuilder's compiler wrappers reject
 cmake -B build \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_BUILD_TYPE=Release \
       -DENABLE_SANITIZER=FALSE \
-      -DBUILD_EXTENSIONS='autocomplete;icu;parquet;json;fts;tpcds;tpch' \
-      -DENABLE_EXTENSION_AUTOLOADING=1 \
-      -DENABLE_EXTENSION_AUTOINSTALL=1 \
+      -DBUILD_EXTENSIONS='parquet;json' \
+      -DSKIP_EXTENSIONS=jemalloc \
+      -DDUCKDB_OPTIMIZATION_PROFILE=NONE \
       -DBUILD_UNITTESTS=FALSE \
       -DBUILD_SHELL=TRUE \
-      -DDUCKDB_EXPLICIT_PLATFORM="${target}"
+      -DDUCKDB_EXPLICIT_PLATFORM=${DUCKDB_TARGET}
 cmake --build build --parallel ${nproc}
 cmake --install build
 
@@ -52,5 +76,11 @@ products = [
 dependencies = Dependency[
 ]
 
+# The default macOS 10.12 SDK (and even 10.15) has a libc++ that doesn't provide
+# std::hash for enum types (LWG 2148). Use SDK 14.0 which definitely includes it.
+# DuckDB itself targets macOS 11.0, so we set that as the deployment target.
+sources, script = require_macos_sdk("14.0", sources, script; deployment_target="11.0")
+
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"6.1.0", julia_compat="1.6")
+# DuckDB >= 2.0 requires C++17; GCC 8 fails on its reference_wrapper set lookups, and 11 is the oldest toolchain verified to build it (9/10 untested).
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"11", julia_compat="1.6")

@@ -1,0 +1,223 @@
+From c97989508a42aad29426fd5cb5fd9b109522f373 Mon Sep 17 00:00:00 2001
+From: Michal Babej <michal.babej@intel.com>
+Date: Sat, 8 Aug 2026 23:31:28 +0300
+Subject: [PATCH] lib/kernel: don't use functions using double type in fp16
+ library
+
+---
+ lib/kernel/core-math/additionalf16.cl |  1 +
+ lib/kernel/core-math/common_types.h   |  2 +
+ lib/kernel/core-math/powf16.cl        | 14 -----
+ lib/kernel/core-math/promotedf16.cl   | 83 +++++++++++++++++++++++++++
+ lib/kernel/host/CMakeLists.txt        | 24 ++++----
+ 5 files changed, 100 insertions(+), 24 deletions(-)
+
+diff --git a/lib/kernel/core-math/additionalf16.cl b/lib/kernel/core-math/additionalf16.cl
+index df6dcf98e..ffa61ee6e 100644
+--- a/lib/kernel/core-math/additionalf16.cl
++++ b/lib/kernel/core-math/additionalf16.cl
+@@ -35,6 +35,7 @@ DEFINE_FP16_BUILTIN_V_V (trunc, __builtin_elementwise_trunc)
+ DEFINE_FP16_BUILTIN_V_V (rint, __builtin_elementwise_rint)
+ DEFINE_FP16_BUILTIN_V_V (round, __builtin_elementwise_round)
+ DEFINE_FP16_BUILTIN_V_V (fabs, __builtin_elementwise_abs)
++DEFINE_FP16_BUILTIN_V_VV (pow, __builtin_elementwise_pow)
+ 
+ /* __builtin_elementwise_max/min lower to @llvm.maxnum/minnum, matching the
+    OpenCL fmax/fmin NaN-quieting semantics. */
+diff --git a/lib/kernel/core-math/common_types.h b/lib/kernel/core-math/common_types.h
+index 31b66f328..f4d577909 100644
+--- a/lib/kernel/core-math/common_types.h
++++ b/lib/kernel/core-math/common_types.h
+@@ -5,4 +5,6 @@ typedef union {half f; ushort u;} b16u16_u;
+ 
+ typedef union {float f; uint u;} b32u32_u;
+ 
++#if defined(cl_khr_fp64) && defined(__opencl_c_fp64)
+ typedef union {double f; ulong u;} b64u64_u;
++#endif
+diff --git a/lib/kernel/core-math/powf16.cl b/lib/kernel/core-math/powf16.cl
+index 06fad690b..cb6749789 100644
+--- a/lib/kernel/core-math/powf16.cl
++++ b/lib/kernel/core-math/powf16.cl
+@@ -294,20 +294,6 @@ _CL_OVERLOADABLE half pow(half x, half y) {
+ 
+ DEFINE_FP16_EXPR_V_VV(pow)
+ 
+-/*
+-ERROR: pown: inf ulp error at {-0x1.5bcp-9 (0x996f), -1999335705}
+-Expected: -inf (half 0xfc00)
+-Actual: inf (half 0x7c00) at index: 4
+-
+-ERROR: pown: inf ulp error at {-0x1.fbcp+12 (0xefef), 1657969807}
+-Expected: -inf (half 0xfc00)
+-Actual: inf (half 0x7c00) at index: 9
+-
+-ERROR: pown: inf ulp error at {-0x1.f88p+8 (0xdfe2), 958472645}
+-Expected: -inf (half 0xfc00)
+-Actual: inf (half 0x7c00) at index: 9
+-*/
+-
+ /* NOTE: pown(half) and powr(half) live in promotedf16.cl, not here. They have no
+    native FP16 builtin and are not provided by the vectorized generic pow.cl, so
+    they must be compiled in BOTH configurations -- whereas pow(half) above clashes
+diff --git a/lib/kernel/core-math/promotedf16.cl b/lib/kernel/core-math/promotedf16.cl
+index 502b6e909..9a275303e 100644
+--- a/lib/kernel/core-math/promotedf16.cl
++++ b/lib/kernel/core-math/promotedf16.cl
+@@ -30,6 +30,34 @@ float _CL_OVERLOADABLE _cl_frexp (float, private int *);
+ half _CL_OVERLOADABLE logb (half a) { return (half)logb ((float)a); }
+ DEFINE_FP16_EXPR_V_V (logb)
+ 
++/* erf, erfc : half -> half */
++half _CL_OVERLOADABLE
++erf (half a)
++{
++  return (half)erf ((float)a);
++}
++DEFINE_FP16_EXPR_V_V (erf)
++half _CL_OVERLOADABLE
++erfc (half a)
++{
++  return (half)erfc ((float)a);
++}
++DEFINE_FP16_EXPR_V_V (erfc)
++
++/* lgamma, tgamma : half -> half */
++half _CL_OVERLOADABLE
++lgamma (half a)
++{
++  return (half)lgamma ((float)a);
++}
++DEFINE_FP16_EXPR_V_V (lgamma)
++half _CL_OVERLOADABLE
++tgamma (half a)
++{
++  return (half)tgamma ((float)a);
++}
++DEFINE_FP16_EXPR_V_V (tgamma)
++
+ /* ilogb : half -> int (scalar), halfN -> intN (vector) */
+ int _CL_OVERLOADABLE ilogb (half a) { return ilogb ((float)a); }
+ #define IMPLEMENT_FP16_ILOGB(ITYPE, HTYPE, NAMEN)                            \
+@@ -82,6 +110,61 @@ IMPLEMENT_BUILTIN_V_VPJ (frexp, half4, int4, int2, int2, lo, hi)
+ IMPLEMENT_BUILTIN_V_VPJ (frexp, half8, int8, int4, int4, lo, hi)
+ IMPLEMENT_BUILTIN_V_VPJ (frexp, half16, int16, int8, int8, lo, hi)
+ 
++/* atan2pi / atan2 : (half, half) -> half */
++half _CL_OVERLOADABLE
++atan2pi (half a, half b)
++{
++  return (half)atan2pi ((float)a, (float)b);
++}
++DEFINE_FP16_EXPR_V_VV (atan2pi)
++half _CL_OVERLOADABLE
++atan2 (half a, half b)
++{
++  return (half)atan2 ((float)a, (float)b);
++}
++DEFINE_FP16_EXPR_V_VV (atan2)
++
++/*********************************************************************************/
++
++/* lgamma_r : (halfN, address-space intN*) -> halfN */
++#define IMPLEMENT_FP16_LGAMMAR_AS(AS)                                         \
++  half _CL_OVERLOADABLE _cl_lgamma_r (half x, AS int *iptr)                   \
++  {                                                                           \
++    int signp;                                                                \
++    float r = _cl_lgamma_r ((float)convert_float (x), (private int *)&signp); \
++    *iptr = signp;                                                            \
++    return convert_half (r);                                                  \
++  }
++
++IF_GEN_AS (IMPLEMENT_FP16_LGAMMAR_AS (generic))
++// IMPLEMENT_FP16_LGAMMAR_AS (private)
++IMPLEMENT_FP16_LGAMMAR_AS (local)
++IMPLEMENT_FP16_LGAMMAR_AS (global)
++
++#define IMPLEMENT_FP16_LGAMMAR_VECTOR(N, AS)                                  \
++  half##N _CL_OVERLOADABLE lgamma_r (half##N x, AS int##N *iptr)              \
++  {                                                                           \
++    int##N signp;                                                             \
++    float##N fres = _cl_lgamma_r ((float##N)convert_float##N (x), &signp);    \
++    half##N r = convert_half##N (fres);                                       \
++    *iptr = signp;                                                            \
++    return r;                                                                 \
++  }
++
++#define IMPLEMENT_FP16_LGAMMAR_VECTOR_N(N)                                    \
++  IMPLEMENT_FP16_LGAMMAR_VECTOR (N, private)                                  \
++  IMPLEMENT_FP16_LGAMMAR_VECTOR (N, local)                                    \
++  IMPLEMENT_FP16_LGAMMAR_VECTOR (N, global)                                   \
++  IF_GEN_AS (IMPLEMENT_FP16_LGAMMAR_VECTOR (N, generic))
++
++IMPLEMENT_FP16_LGAMMAR_VECTOR_N (2)
++IMPLEMENT_FP16_LGAMMAR_VECTOR_N (3)
++IMPLEMENT_FP16_LGAMMAR_VECTOR_N (4)
++IMPLEMENT_FP16_LGAMMAR_VECTOR_N (8)
++IMPLEMENT_FP16_LGAMMAR_VECTOR_N (16)
++
++/*********************************************************************************/
++
+ /* modf : (halfN, address-space halfN*) -> halfN */
+ half _CL_OVERLOADABLE
+ modf (half x, private half *iptr)
+diff --git a/lib/kernel/host/CMakeLists.txt b/lib/kernel/host/CMakeLists.txt
+index bdffd2905..478ee14ea 100644
+--- a/lib/kernel/host/CMakeLists.txt
++++ b/lib/kernel/host/CMakeLists.txt
+@@ -349,18 +349,16 @@ if(ENABLE_HOST_CPU_VECTORIZE_BUILTINS) # implies CONFORMANCE=OFF
+     )
+ endif()  # ENABLE_HOST_CPU_VECTORIZE_BUILTINS
+ 
+-
+ # add conformant versions of FP16 builtins from CORE-Math library
+ if(HOST_CPU_ENABLE_CL_KHR_FP16)
+   # if VECTORIZE_BUILTINS=ON, add only those FP16 functions for which we don't have LLVM builtins
+   # (= not present in the list above)
+   if(ENABLE_HOST_CPU_VECTORIZE_BUILTINS) # implies CONFORMANCE=OFF
+     foreach(FILE IN ITEMS
+-        acospif16.cl  atan2f16.cl    hypotf16.cl     log2p1f16.cl    tgammaf16.cl
+-        acoshf16.cl   atan2pif16.cl  exp10m1f16.cl   lgammaf16.cl    sinpif16.cl
++        acospif16.cl  hypotf16.cl    log2p1f16.cl    acoshf16.cl     exp10m1f16.cl
+         atanhf16.cl   cospif16.cl    exp2m1f16.cl    log10p1f16.cl   asinhf16.cl
+-        atanpif16.cl  erfcf16.cl     log1pf16.cl     sincosf16.cl    asinpif16.cl
+-        cbrtf16.cl    erff16.cl      expm1f16.cl     tanpif16.cl
++        atanpif16.cl  log1pf16.cl     sincosf16.cl    asinpif16.cl
++        cbrtf16.cl    expm1f16.cl     tanpif16.cl     sinpif16.cl
+         # FP16 ops with no native FP16 builtin and no SLEEF FP16 path: not
+         # covered by the vectorized generic builtins above, so needed here too.
+         promotedf16.cl)
+@@ -369,12 +367,12 @@ if(HOST_CPU_ENABLE_CL_KHR_FP16)
+   else()
+     # VECTORIZE_BUILTINS=OFF, add all available CORE-math functions
+     foreach(FILE IN ITEMS
+-        acosf16.cl    atan2f16.cl    exp10f16.cl     hypotf16.cl    log2p1f16.cl   sinhf16.cl    tgammaf16.cl
+-        acoshf16.cl   atan2pif16.cl  cosf16.cl       exp10m1f16.cl  lgammaf16.cl   logf16.cl     sinpif16.cl
+-        acospif16.cl  atanf16.cl     coshf16.cl      exp2f16.cl     log10f16.cl    powf16.cl
++        acosf16.cl    exp10f16.cl     hypotf16.cl    log2p1f16.cl   sinhf16.cl
++        acoshf16.cl   cosf16.cl       exp10m1f16.cl  logf16.cl      sinpif16.cl
++        acospif16.cl  atanf16.cl     coshf16.cl      exp2f16.cl     log10f16.cl
+         asinf16.cl    atanhf16.cl    cospif16.cl     exp2m1f16.cl   log10p1f16.cl  tanf16.cl
+-        asinhf16.cl   atanpif16.cl   erfcf16.cl      expf16.cl      log1pf16.cl    sincosf16.cl  tanhf16.cl
+-        asinpif16.cl  cbrtf16.cl     erff16.cl       expm1f16.cl    log2f16.cl     sinf16.cl     tanpif16.cl
++        asinhf16.cl   atanpif16.cl   expf16.cl      log1pf16.cl    sincosf16.cl  tanhf16.cl
++        asinpif16.cl  cbrtf16.cl     expm1f16.cl    log2f16.cl     sinf16.cl     tanpif16.cl
+         additionalf16.cl  promotedf16.cl)
+       list(APPEND SOURCES_WITH_SLEEF "core-math/${FILE}")
+     endforeach()
+@@ -452,6 +450,12 @@ set(KERNEL_CL_FLAGS
+       "-DENABLE_SLEEF=1"
+       ${KERNEL_CL_FLAGS})
+ 
++# this is necessary to avoid thousands of warnings printed
++# when compiling CORE-math library without doubles
++if(NOT HOST_CPU_ENABLE_CL_KHR_FP64)
++  list(APPEND KERNEL_CL_FLAGS "-cl-single-precision-constant")
++endif()
++
+ # https://bugzilla.mozilla.org/show_bug.cgi?id=1657502
+ # this *likely* shouldn't be a problem for PoCL, but needs testing
+ list(APPEND KERNEL_CL_FLAGS "-Wno-psabi")
+-- 
+2.56.0
+

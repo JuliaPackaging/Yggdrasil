@@ -1,0 +1,157 @@
+From 666e88ef049279becac49648ac534836bcdfa1f4 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Thu, 15 Oct 2026 18:35:03 +0200
+Subject: [PATCH] printf: widen half arguments in software
+
+The half instance of the printf float formatter used _Float16, which
+GCC lowers to libgcc's __extendhfdf2/__extendhfxf2. On x86, libgcc_s
+only exports those from GCC 12 on (symbol version GCC_12.0.0), so a
+libpocl built with GCC 12 fails to load in any process where an older
+system libgcc_s was loaded first, e.g. under `nsys profile`, whose
+preloaded injection library pulls in the system libgcc_s:
+
+  libgcc_s.so.1: version `GCC_12.0.0' not found
+
+Decode the half bits with a small helper instead. Half -> double is
+exact, so the output is unchanged, and half printf no longer depends
+on HOST_COMPILER_SUPPORTS_FLOAT16: builds without host _Float16 support
+used to print an error and the raw integer bits. pocl_half_to_float
+isn't used: the version in PoCL 7.2 loses the sign of negative halves,
+and the cl_half.h one that replaced it shifts into the sign bit of an
+int.
+
+Extend the halfn printf test with subnormals, the largest finite half,
+-0, -inf and a negative NaN.
+---
+ lib/CL/devices/printf_buffer.c                | 54 +++++++++++--------
+ tests/kernel/test_printf_vectors_halfn.cl     |  6 +++
+ .../test_printf_vectors_halfn_expout.txt      |  2 +
+ 3 files changed, 41 insertions(+), 21 deletions(-)
+
+diff --git a/lib/CL/devices/printf_buffer.c b/lib/CL/devices/printf_buffer.c
+index ba9f269ef..247b1f58c 100644
+--- a/lib/CL/devices/printf_buffer.c
++++ b/lib/CL/devices/printf_buffer.c
+@@ -101,12 +101,13 @@ DEFINE_PRINT_INTS (ulong, int64_t, uint64_t)
+ 
+ /* Note: NANs are printed always positive.
+  * This is required to pass 1.2 conformance test. */
+-#define DEFINE_PRINT_FLOATS(FLOAT_TYPE)                                       \
+-  void __pocl_print_floats_##FLOAT_TYPE (param_t *p, const void *vals, int n) \
++#define DEFINE_PRINT_FLOATS(NAME, STORAGE_TYPE, TO_FLOAT_T)                   \
++  void __pocl_print_floats_##NAME (param_t *p, const void *vals, int n)       \
+   {                                                                           \
+     const char *NANs[2] = { "nan", "NAN" };                                   \
+     const char *INFs[2] = { "inf", "INF" };                                   \
+-    FLOAT_TYPE val;                                                           \
++    STORAGE_TYPE raw;                                                         \
++    FLOAT_T val;                                                              \
+     DEBUG_PRINTF (("[printf:floats:n=%d]\n", n));                             \
+     flags_t saved_user_flags = p->flags;                                      \
+     for (int d = 0; d < n; ++d)                                               \
+@@ -115,8 +116,9 @@ DEFINE_PRINT_INTS (ulong, int64_t, uint64_t)
+         p->flags = saved_user_flags;                                          \
+         if (d != 0)                                                           \
+           __pocl_printf_putcf (p, ',');                                       \
+-        memcpy (&val, vals, sizeof (FLOAT_TYPE));                             \
+-        vals = (char *)vals + sizeof (FLOAT_TYPE);                            \
++        memcpy (&raw, vals, sizeof (STORAGE_TYPE));                           \
++        vals = (char *)vals + sizeof (STORAGE_TYPE);                          \
++        val = TO_FLOAT_T (raw);                                               \
+         const char *other = NULL;                                             \
+         if (isnan (val))                                                      \
+           other = NANs[p->flags.uc];                                          \
+@@ -133,17 +135,35 @@ DEFINE_PRINT_INTS (ulong, int64_t, uint64_t)
+           }                                                                   \
+         else                                                                  \
+           {                                                                   \
+-            __pocl_printf_float (p, (FLOAT_T)val);                            \
++            __pocl_printf_float (p, val);                                     \
+           }                                                                   \
+       }                                                                       \
+     DEBUG_PRINTF (("[printf:floats:done]\n"));                                \
+   }
+ 
+-#ifdef HOST_COMPILER_SUPPORTS_FLOAT16
+-DEFINE_PRINT_FLOATS (_Float16)
+-#endif
+-DEFINE_PRINT_FLOATS (float)
+-DEFINE_PRINT_FLOATS (double)
++/* Half is widened in software rather than through _Float16: GCC lowers
++   _Float16 -> double to libgcc's __extendhfdf2, which x86 libgcc_s only
++   exports from GCC 12 on, so an older libgcc_s already loaded into the process
++   (e.g. by a profiler's preloaded library) kept libpocl from loading. The
++   conversion is exact, so the output is the same. */
++static double
++half_to_double (uint16_t h)
++{
++  unsigned exponent = (h >> 10) & 0x1f;
++  unsigned mantissa = h & 0x3ff;
++  double magnitude;
++  if (exponent == 0x1f)
++    magnitude = mantissa ? NAN : INFINITY;
++  else if (exponent == 0)
++    magnitude = ldexp (mantissa, -24);
++  else
++    magnitude = ldexp (mantissa | 0x400, (int)exponent - 25);
++  return (h & 0x8000) ? -magnitude : magnitude;
++}
++
++DEFINE_PRINT_FLOATS (half, uint16_t, half_to_double)
++DEFINE_PRINT_FLOATS (float, float, )
++DEFINE_PRINT_FLOATS (double, double, )
+ 
+ #undef DEFINE_PRINT_FLOATS
+ 
+@@ -562,16 +582,8 @@ __pocl_printf_format_full (param_t *p, char *buffer, uint32_t buffer_size)
+                           }
+                           else
+                           {
+-#ifdef HOST_COMPILER_SUPPORTS_FLOAT16
+-                            __pocl_print_floats__Float16 (p, buffer,
+-                                                          vector_length);
+-#else
+-                            POCL_MSG_ERR ("printf error: host-side "
+-                                          "support for FP16 missing\n");
+-                            __pocl_print_ints_ushort (p, buffer,
+-                                                      vector_length,
+-                                                      0);
+-#endif
++                            __pocl_print_floats_half (p, buffer,
++                                                      vector_length);
+                             // half2 vectors <64 bits are stored in 64bits
+                             if (alloca_length < pointer_size_bytes)
+                                 alloca_length = pointer_size_bytes;
+diff --git a/tests/kernel/test_printf_vectors_halfn.cl b/tests/kernel/test_printf_vectors_halfn.cl
+index d6f7fc3ad..a8a6c25e3 100644
+--- a/tests/kernel/test_printf_vectors_halfn.cl
++++ b/tests/kernel/test_printf_vectors_halfn.cl
+@@ -30,6 +30,12 @@ kernel void test_printf_vectors_halfn()
+   printf ("\nhalf VECTORS\n\n");
+   ushort2 u2 = (ushort2)(0x7C00, 0x7E00);
+   printf("half2  %v2hf\n", (as_half2(u2)));
++  /* min/max subnormal, min normal, max finite */
++  ushort4 u4 = (ushort4)(0x0001, 0x03FF, 0x0400, 0x7BFF);
++  printf("half4  %v4he\n", (as_half4(u4)));
++  /* -0, -inf, negative NaN, -min subnormal */
++  u4 = (ushort4)(0x8000, 0xFC00, 0xFE00, 0x8001);
++  printf("half4  %v4hg\n", (as_half4(u4)));
+   printf("half2  %v2hf\n", (half2)(10.112, 20.222));
+   printf("half3  %v3hf\n", (half3)(10.113, 20.223, 30.333));
+   printf("half4  %v4hf\n", (half4)(10.114, 20.224, 30.334, 40.444));
+diff --git a/tests/kernel/test_printf_vectors_halfn_expout.txt b/tests/kernel/test_printf_vectors_halfn_expout.txt
+index ea64de26f..2f5154137 100644
+--- a/tests/kernel/test_printf_vectors_halfn_expout.txt
++++ b/tests/kernel/test_printf_vectors_halfn_expout.txt
+@@ -3,6 +3,8 @@ Running test test_printf_vectors_halfn...
+ half VECTORS
+ 
+ half2  inf,nan
++half4  5.960464e-08,6.097555e-05,6.103516e-05,6.550400e+04
++half4  -0,-inf,nan,-5.96046e-08
+ half2  10.109375,20.218750
+ half3  10.109375,20.218750,30.328125
+ half4  10.117188,20.218750,30.328125,40.437500
+-- 
+2.56.0
+

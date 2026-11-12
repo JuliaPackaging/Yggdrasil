@@ -1,0 +1,15 @@
+diff --git before/bacnet-stack/CMakeLists.txt after/bacnet-stack/CMakeLists.txt
+index a46f6c3..db13ae1 100644
+--- before/bacnet-stack/CMakeLists.txt
++++ after/bacnet-stack/CMakeLists.txt
+@@ -741,8 +741,8 @@ elseif(WIN32)
+ 
+   target_link_libraries(${PROJECT_NAME} PRIVATE
+     winmm
+-    $<$<BOOL:${BACDL_BIP} OR BOOL:${BACDL_BIP6}>:ws2_32>
+-    $<$<BOOL:${BACDL_BIP} OR BOOL:${BACDL_BIP6}>:iphlpapi>)
++    $<$<OR:$<BOOL:${BACDL_BIP}>,$<BOOL:${BACDL_BIP6}>>:ws2_32>
++    $<$<OR:$<BOOL:${BACDL_BIP}>,$<BOOL:${BACDL_BIP6}>>:iphlpapi>)
+ 
+   target_sources(${PROJECT_NAME} PRIVATE
+     ports/win32/bacport.h

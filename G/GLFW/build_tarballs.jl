@@ -1,17 +1,18 @@
 using BinaryBuilder
 
 name = "GLFW"
-version = "3.4"
+
+version = v"3.5.1"
 
 # Collection of sources required to build glfw
 sources = [
-    ArchiveSource("https://github.com/glfw/glfw/releases/download/$(version)/glfw-$(version).zip",
-                  "b5ec004b2712fd08e8861dc271428f048775200a2df719ccf575143ba749a3e9")
+    GitSource("https://github.com/glfw/glfw.git",
+              "d9d6f0f1f967807ffade6598ea9a631ebaf37a56")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/glfw-*/
+cd $WORKSPACE/srcdir/glfw*/
 mkdir build && cd build
 
 # Building with Wayland fails on FreeBSD because it's missing some headers (e.g. linux/input.h)
@@ -46,6 +47,7 @@ CFLAGS="-D_POSIX_C_SOURCE='200809L' -D__BSD_VISIBLE=${BSD_VISIBLE}" cmake .. \
 # platform, so we have to explicitly override it to use the binary for the host.
 cmake -DWAYLAND_SCANNER_EXECUTABLE="$host_bindir/wayland-scanner" ..
 
+make update_mappings
 make -j${nproc}
 make install
 """
@@ -76,5 +78,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, VersionNumber(version), sources, script, platforms, products, dependencies; julia_compat="1.6")
-# Build trigger: 1
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
+               julia_compat="1.6")

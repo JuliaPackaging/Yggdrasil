@@ -1,0 +1,22 @@
+commit bb13d39852529bcc78292befdbb8bfbd20299942
+Author: Cody Tapscott <topolarity@tapscott.me>
+Date:   Thu May 8 20:18:35 2025 -0400
+
+    Don't use `clock_gettime_nsec_np` on x86-64 macOS
+    
+    This was not introduced until Darwin 16, which is much newer than what
+    BinaryBuilder runs with by default.
+
+diff --git a/runtime/unix.c b/runtime/unix.c
+index e58c77cf51..7201e037f3 100644
+--- a/runtime/unix.c
++++ b/runtime/unix.c
+@@ -424,7 +424,7 @@ char *caml_secure_getenv (char const *var)
+ 
+ uint64_t caml_time_counter(void)
+ {
+-#if defined(HAS_CLOCK_GETTIME_NSEC_NP)
++#if defined(HAS_CLOCK_GETTIME_NSEC_NP) && !(defined(__APPLE__) && defined(__x86_64__))
+   return (clock_gettime_nsec_np(CLOCK_UPTIME_RAW));
+ #elif defined(HAS_POSIX_MONOTONIC_CLOCK)
+   struct timespec t;

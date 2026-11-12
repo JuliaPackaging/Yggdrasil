@@ -205,7 +205,7 @@ PKG_CONFIG = pkg-config
 # a dependency on it.
 #OpenBSD:
 #CFLAGS = -I/usr/local/include
-CFLAGS = -O3 -fno-common
+CFLAGS = -O3 -fno-common -Wno-error=incompatible-pointer-types
 ifneq ($(findstring darwin,$(target)),)
 # This is necessary for Darwin
 CFLAGS += -D_POSIX_C_SOURCE=900000L

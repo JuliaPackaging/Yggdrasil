@@ -3,20 +3,19 @@
 using BinaryBuilder, Pkg
 
 name = "gperf"
-version = v"3.1.1"
+version_str = "3.3"
+version = VersionNumber(version_str)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://ftp.gnu.org/pub/gnu/gperf/gperf-3.1.tar.gz", "588546b945bba4b70b6a3a616e80b4ab466e3f33024a352fc2198112cdbb3ae2")
+    ArchiveSource("http://ftp.gnu.org/pub/gnu/gperf/gperf-$(version_str).tar.gz",
+                  "fd87e0aba7e43ae054837afd6cd4db03a3f2693deb3619085e6ed9d8d9604ad8")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd gperf-*
-install_license COPYING
-
-# The code is too old for C++17
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} CXXFLAGS=-std=c++11
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 """

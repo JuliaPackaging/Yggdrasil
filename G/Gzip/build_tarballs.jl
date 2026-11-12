@@ -3,21 +3,20 @@
 using BinaryBuilder, Pkg
 
 name = "Gzip"
-version = v"1.13.0"
+version = v"1.15.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://ftp.gnu.org/gnu/gzip/gzip-$(version.major).$(version.minor).tar.xz",
-                  "7454eb6935db17c6655576c2e1b0fabefd38b4d0936e0f87f48cd062ce91a057"),
+                  "9aa0cc780dec156b8282844833b342ab7cb08c25d2cd9a1869cdd0df31deff48"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/gzip-*/
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/aarch64-head-macro.patch
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-if [[ "$target" == *-mingw* ]]; then
-    sed "s/LIBS =/LIBS = -lssp/g" -i Makefile
-fi
 make -j${nproc}
 make install
 install_license COPYING

@@ -1,0 +1,166 @@
+From 648157c34413e7ecbbd9dffe871617042e46e7e9 Mon Sep 17 00:00:00 2001
+From: Keno Fischer <keno@juliahub.com>
+Date: Tue, 15 Jul 2025 02:47:01 +0000
+Subject: [PATCH] libstdc++: Provide ABI compatibility when turning on
+ _GLIBCXX_HAVE_TLS
+
+The _GLIBCXX_HAVE_TLS flag is an ABI-breaking flag - setting it removes the
+definitions for `set_lock_ptr` (as well as the comptability symbols for
+even older ABIs). Try to improve this situation by changing the flag to
+retain the old symbols, falling back to the previous behavior if __once_call
+is not set. These symbols are used to forward closure data for the initialization
+from whichever thread ends up winning the pthread_once. The __once_call
+is set immediately before the pthread_once and unset (in a destructor)
+immediately after. To avoid the case where there may be a nested __once_proxy
+call that uses the old ABI, we also unset __once_call in the success path
+after retrieving the pointer.
+---
+ libstdc++-v3/src/c++11/mutex.cc | 111 +++++++++++++++++---------------
+ 1 file changed, 59 insertions(+), 52 deletions(-)
+
+diff --git a/libstdc++-v3/src/c++11/mutex.cc b/libstdc++-v3/src/c++11/mutex.cc
+index d5da5c66ae9..4be64633315 100644
+--- a/libstdc++-v3/src/c++11/mutex.cc
++++ b/libstdc++-v3/src/c++11/mutex.cc
+@@ -23,6 +23,7 @@
+ // <http://www.gnu.org/licenses/>.
+ 
+ #include <mutex>
++#include <bits/std_function.h>  // std::function
+ 
+ #ifdef _GLIBCXX_HAS_GTHREADS
+ 
+@@ -30,30 +31,17 @@ namespace std _GLIBCXX_VISIBILITY(default)
+ {
+ _GLIBCXX_BEGIN_NAMESPACE_VERSION
+ 
+-#ifdef _GLIBCXX_HAVE_TLS
+-  __thread void* __once_callable;
+-  __thread void (*__once_call)();
++// Explicit instantiation due to -fno-implicit-instantiation.
++template class function<void()>;
+ 
+-  extern "C" void __once_proxy()
+-  {
+-    // The caller stored a function pointer in __once_call. If it requires
+-    // any state, it gets it from __once_callable.
+-    __once_call();
+-  }
++function<void()> __once_functor;
+ 
+-#else // ! TLS
+-
+-  // Explicit instantiation due to -fno-implicit-instantiation.
+-  template class function<void()>;
+-
+-  function<void()> __once_functor;
+-
+-  mutex&
+-  __get_once_mutex()
+-  {
+-    static mutex once_mutex;
+-    return once_mutex;
+-  }
++mutex&
++__get_once_mutex()
++{
++  static mutex once_mutex;
++  return once_mutex;
++}
+ 
+ namespace
+ {
+@@ -66,41 +54,60 @@ namespace
+   }
+ }
+ 
+-  // code linked against ABI 3.4.12 and later uses this
+-  void
+-  __set_once_functor_lock_ptr(unique_lock<mutex>* __ptr)
+-  {
+-    (void) set_lock_ptr(__ptr);
+-  }
++// code linked against ABI 3.4.12 and later uses this
++void
++__set_once_functor_lock_ptr(unique_lock<mutex>* __ptr)
++{
++  (void) set_lock_ptr(__ptr);
++}
+ 
+-  // unsafe - retained for compatibility with ABI 3.4.11
+-  unique_lock<mutex>&
+-  __get_once_functor_lock()
+-  {
+-    static unique_lock<mutex> once_functor_lock(__get_once_mutex(), defer_lock);
+-    return once_functor_lock;
+-  }
++// unsafe - retained for compatibility with ABI 3.4.11
++unique_lock<mutex>&
++__get_once_functor_lock()
++{
++  static unique_lock<mutex> once_functor_lock(__get_once_mutex(), defer_lock);
++  return once_functor_lock;
++}
+ 
+-  // This is called via pthread_once while __get_once_mutex() is locked.
+-  extern "C" void
+-  __once_proxy()
+-  {
+-    // Get the callable out of the global functor.
+-    function<void()> callable = std::move(__once_functor);
+-
+-    // Then unlock the global mutex
+-    if (unique_lock<mutex>* lock = set_lock_ptr(nullptr))
+-    {
+-      // Caller is using the new ABI and provided a pointer to its lock.
+-      lock->unlock();
++#ifdef _GLIBCXX_HAVE_TLS
++  __thread void* __once_callable;
++  __thread void (*__once_call)();
++#endif
++
++extern "C" void
++__once_proxy()
++{
++#ifdef _GLIBCXX_HAVE_TLS
++    if (__once_call) {
++      void (*this_once_call)() = __once_call;
++      // Reset __once_call early in case of a nested call to __once_proxy
++      // with the old ABI.
++      __once_call = NULL;
++      return this_once_call();
+     }
+-    else
+-      __get_once_functor_lock().unlock();  // global lock
+ 
+-    // Finally, invoke the callable.
+-    callable();
++    // For compatibility with callers linked against non-_GLIBCXX_HAVE_TLS ABI,
++    // we fall through here to the old behavior.
++#endif
++
++  // If the caller is not using _GLIBCXX_HAVE_TLS, this was called
++  // via pthread_once while __get_once_mutex() is locked.
++
++  // Get the callable out of the global functor.
++  function<void()> callable = std::move(__once_functor);
++
++  // Then unlock the global mutex
++  if (unique_lock<mutex>* lock = set_lock_ptr(nullptr))
++  {
++    // Caller is using the new ABI and provided a pointer to its lock.
++    lock->unlock();
+   }
+-#endif // ! TLS
++  else
++    __get_once_functor_lock().unlock();  // global lock
++
++  // Finally, invoke the callable.
++  callable();
++}
+ 
+ _GLIBCXX_END_NAMESPACE_VERSION
+ } // namespace std
+-- 
+2.43.0
+

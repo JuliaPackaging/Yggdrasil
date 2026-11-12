@@ -1,17 +1,18 @@
 using BinaryBuilder
 
 name = "unpaper"
-version = v"6.1.100" # <--- This version number is a lie, (it is v6.1) we just need to bump it to build for experimental platforms
+version = v"7.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.flameeyes.com/files/unpaper-6.1.tar.xz",
-                  "237c84f5da544b3f7709827f9f12c37c346cdf029b1128fb4633f9bafa5cb930"),
+    ArchiveSource("https://www.flameeyes.com/files/unpaper-$(version).tar.xz",
+                  "2575fbbf26c22719d1cb882b59602c9900c7f747118ac130883f63419be46a80"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/unpaper-*/
+cd $WORKSPACE/srcdir/unpaper-*
+
 if [[ "${target}" == *-mingw* ]]; then
     # FFMPEG_jll installs the pkgconfig files in the wrong directory for Windows
     export PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:${libdir}/pkgconfig"
@@ -19,15 +20,20 @@ if [[ "${target}" == *-mingw* ]]; then
     export LDFLAGS="-L${libdir}"
     export LIBAV_LIBS="-lavformat -lavutil -lavcodec"
 fi
-update_configure_scripts
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make -j${nproc}
-make install
+
+apk add py3-sphinx
+
+meson setup builddir --cross-file="${MESON_TARGET_TOOLCHAIN}"
+meson compile -C builddir
+meson install -C builddir
+
+cd LICENSES
+install_license 0BSD.txt Apache-2.0.txt GPL-2.0-only.txt MIT.txt
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> arch(p) != "armv6l", supported_platforms(; experimental=true))
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -38,9 +44,10 @@ products = [
 dependencies = [
     # Offer a native xsltproc
     HostBuildDependency("XSLT_jll"),
-    Dependency("FFMPEG_jll"),
+    Dependency("FFMPEG_jll"; compat="8.0.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # FFMPEG uses `preferred_gcc_version=v"8"`.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"8")

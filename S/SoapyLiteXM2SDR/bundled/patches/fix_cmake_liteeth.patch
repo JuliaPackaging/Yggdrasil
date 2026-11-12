@@ -1,0 +1,34 @@
+diff --git a/litex_m2sdr/software/soapysdr/CMakeLists.txt b/litex_m2sdr/software/soapysdr/CMakeLists.txt
+index 9fc8f81..d1aedbe 100644
+--- a/litex_m2sdr/software/soapysdr/CMakeLists.txt
++++ b/litex_m2sdr/software/soapysdr/CMakeLists.txt
+@@ -115,13 +115,18 @@ set(LITEXM2SDR_SOURCE
+     ${CMAKE_CURRENT_SOURCE_DIR}/../../software/user/ad9361/ad9361.c
+     ${CMAKE_CURRENT_SOURCE_DIR}/../../software/user/ad9361/ad9361_conv.c
+     ${CMAKE_CURRENT_SOURCE_DIR}/../../software/user/ad9361/util.c
+-    ${CMAKE_CURRENT_SOURCE_DIR}/../../software/user/libliteeth/etherbone.c
+-    ${CMAKE_CURRENT_SOURCE_DIR}/../../software/user/libliteeth/liteeth_udp.c
+ )
+ 
+ if(USE_LITEETH)
++    list(APPEND LITEXM2SDR_SOURCE
++        ${CMAKE_CURRENT_SOURCE_DIR}/../../software/user/libliteeth/etherbone.c
++        ${CMAKE_CURRENT_SOURCE_DIR}/../../software/user/libliteeth/liteeth_udp.c
++    )
+     add_definitions(-DUSE_LITEPCIE=0 -DUSE_LITEETH=1)
+ else()
++    list(APPEND LITEXM2SDR_SOURCE
++        ${CMAKE_CURRENT_SOURCE_DIR}/../../software/user/libliteeth/etherbone.c
++    )
+     add_definitions(-DUSE_LITEPCIE=1 -DUSE_LITEETH=0)
+ endif()
+ 
+@@ -130,7 +135,7 @@ SOAPY_SDR_MODULE_UTIL(
+     SOURCES LiteXM2SDRDevice.cpp LiteXM2SDRStreaming.cpp
+     LiteXM2SDRRegistration.cpp
+     ${LITEXM2SDR_SOURCE}
+-    LIBRARIES ${LIBM2SDR_LIBRARY} ${LITEPCIE_LIBRARY} m
++    LIBRARIES ${LIBM2SDR_LIBRARY} ${LITEPCIE_LIBRARY} m rt
+ )
+ 
+ # Suppress specific warnings

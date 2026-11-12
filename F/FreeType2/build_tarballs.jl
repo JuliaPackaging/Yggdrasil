@@ -3,18 +3,31 @@
 using BinaryBuilder
 
 name = "FreeType2"
-version = v"2.13.3"
+version = v"2.15.0"
 
 # Collection of sources required to build FreeType2
 sources = [
     ArchiveSource("https://download.savannah.gnu.org/releases/freetype/freetype-$(version).tar.xz",
-                  "0550350666d427c74daeb85d5ac7bb353acba5f76956395995311a9c6f063289")
+                  "93cd47eb719c325107f2d3cf087d06299e944c3b48a40b55537302304dea1dd5")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/freetype-*
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared --disable-static
+flags=(
+    --prefix=${prefix}
+    --build=${MACHTYPE}
+    --host=${target}
+    --enable-shared
+    --disable-static
+    --with-brotli=no
+    --with-bzip2=yes
+    --with-harfbuzz=no   # do not set this to `auto` -- this could load a system library which can be disastrous when the versions don't match
+    --with-librsvg=no
+    --with-png=no
+    --with-zlib=yes
+)
+./configure ${flags[@]}
 make -j${nproc}
 make install
 install_license docs/{FTL,GPLv2}.TXT
@@ -31,11 +44,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Bzip2_jll"; compat="1.0.8"),
-    Dependency("Zlib_jll"),
+    Dependency("Bzip2_jll"; compat="1.0.9"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
-
-# Build trigger: 1

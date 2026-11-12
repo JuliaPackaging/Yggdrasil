@@ -1,0 +1,27 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 0de63cf..52f252a 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -152,11 +152,6 @@ endif (CMAKE_NO_MPI)
+ 
+ message ("This is a MPI build:" ${MPI_FOUND})
+ 
+-# Enable NVTX ranges on Linux
+-if(NOT WIN32)
+-  set(NVTXRANGE_FLAG -DNVTX_RANGES)
+-endif()
+-
+ # Configuration specific nvcc flags
+ GET_FILENAME_COMPONENT(CMAKE_CXX_COMPILER_NAME "${CMAKE_CXX_COMPILER}" NAME)
+ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_NAME MATCHES "clang")
+@@ -181,8 +176,8 @@ set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} ${CUDA_NVCC_FLAGS_${UPP_BUILD_NAME}})
+ # Enable device lambdas
+ set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --extended-lambda)
+ 
+-# Add errors for execution space warnings and enable NVTX ranges
+-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --Werror cross-execution-space-call ${NVTXRANGE_FLAG})
++# Add errors for execution space warnings
++set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --Werror cross-execution-space-call)
+ 
+ # Keep intermediate files
+ if (AMGX_keep_intermediate)

@@ -4,7 +4,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "PARMETIS"
-version = v"4.0.6" # <-- This is a lie, we're bumping to 4.0.6 since we are adding new dependencies and building all library versions.
+version = v"4.0.9" # <-- This is a lie: upstream is 4.0.3, bumped for the per-variant ELF symbol versions
 parmetis_version = v"4.0.3"
 
 # Collection of sources required to build PARMETIS.
@@ -34,10 +34,12 @@ if [ $target = "x86_64-w64-mingw32" ] || [ $target = "i686-w64-mingw32" ]; then
 fi
 popd
 
-grep -iq MPICH $prefix/include/mpi.h && mpi_libraries='mpi'
-grep -iq OMPI $prefix/include/mpi.h && mpi_libraries='mpi'
-grep -iq MSMPI $prefix/include/mpi.h && mpi_libraries='msmpi'
-grep -iq MPItrampoline $prefix/include/mpi.h && mpi_libraries='mpitrampoline'
+grep -iq MPICH $includedir/mpi.h && mpi_libraries='mpi'
+grep -iq OMPI $includedir/mpi.h && mpi_libraries='mpi'
+grep -iq MSMPI $includedir/mpi.h && mpi_libraries='msmpi'
+grep -iq MPItrampoline $includedir/mpi.h && mpi_libraries='mpitrampoline'
+# Keep this last to overwrite the statements above if necessary
+grep -iq MPI_ABI_VERSION $includedir/mpi.h && test -f $libdir/libmpi_abi.$dlext && mpi_libraries='mpi_abi'
 
 cd build
 # {1} is inttype (32 or 64) and {2} is realtype (32 or 64)
@@ -52,6 +54,13 @@ build_parmetis()
         PARMETIS_NAME="par${METIS_NAME}"
         METIS_PATH="${libdir}/metis/${METIS_NAME}"
     fi
+    # one ELF symbol version per variant, as in METIS_jll
+    LINKER_FLAGS=""
+    if [[ "${target}" != *-apple-* && "${target}" != *-mingw* ]]; then
+        VERSION_NODE=$(echo "${PARMETIS_NAME}" | tr '[:lower:]' '[:upper:]')
+        echo "${VERSION_NODE} { global: *; };" > ${WORKSPACE}/srcdir/${PARMETIS_NAME}.map
+        LINKER_FLAGS="-Wl,--version-script=${WORKSPACE}/srcdir/${PARMETIS_NAME}.map"
+    fi
     cmake .. \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -62,6 +71,7 @@ build_parmetis()
     -DMPI_INCLUDE_PATH="${prefix}/include" \
     -DMPI_LIBRARIES="${mpi_libraries}" \
     -DCMAKE_C_FLAGS="-DIDXTYPEWIDTH=${1} -DREALTYPEWIDTH=${2}" \
+    -DCMAKE_SHARED_LINKER_FLAGS="${LINKER_FLAGS}" \
     -DBINARY_NAME="${PARMETIS_NAME}" \
     -DMETIS_LIBRARY="${METIS_NAME}"
     
@@ -84,14 +94,7 @@ augment_platform_block = """
 """
 
 platforms = supported_platforms()
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1", OpenMPI_compat="4.1.6, 5")
-
-# Avoid platforms where the MPI implementation isn't supported
-# OpenMPI
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
-# MPItrampoline
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -103,7 +106,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70"); compat="5.1.2"),
+    Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70"); compat="5.1.4"),
 ]
 append!(dependencies, platform_dependencies)
 

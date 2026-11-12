@@ -1,0 +1,13 @@
+Do not use FreeBSD IEEE interface
+
+--- a/configure   2024-05-25 21:26:49.000000000 +0800
++++ b/configure   2024-11-30 23:33:16.848212900 +0800
+@@ -14753,7 +14753,7 @@
+         ac_cv_c_ieee_interface=openbsd
+         ;;
+     *-*-*bsd*)
+-        ac_cv_c_ieee_interface=freebsd
++        ac_cv_c_ieee_interface=unknown
+         ;;
+     *-*-os2*)
+         ac_cv_c_ieee_interface=os2emx

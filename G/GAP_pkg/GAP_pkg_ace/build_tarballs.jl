@@ -3,17 +3,16 @@
 include("../common.jl")
 
 name = "ace"
-upstream_version = "5.6.2" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version
+upstream_version = "5.7.0" # when you increment this, reset offset to v"0.0.0"
+offset = v"1.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
-# This package only produces an executable and does not need GAP for this at all,
-# hence we don't include common.jl
+# This package only produces an executable and does not need GAP for this at all.
 
 # Collection of sources required to build this JLL
 sources = [
     ArchiveSource("https://github.com/gap-packages/ace/releases/download/v$(upstream_version)/ace-$(upstream_version).tar.gz",
-                  "9cc94cd6327147b8b538341ba7594e4252a80ca7c960ac6749224efa437c9b66"),
+                  "7123e4100f1340a791d20bca1a8d9e6d9f09fe74a1c5fb15f1723899a1bb4553"),
 ]
 
 # Bash recipe for building across all platforms
@@ -39,9 +38,7 @@ rm $prefix/lib/gap/sysinfo.gap
 
 name = gap_pkg_name(name)
 
-platforms = supported_platforms()
-filter!(p -> nbits(p) == 64, platforms) # we only care about 64bit builds
-filter!(!Sys.iswindows, platforms)      # Windows is not supported
+platforms = gap_platforms()
 
 dependencies = Dependency[
 ]
@@ -53,5 +50,5 @@ products = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"7")
+               julia_compat="1.10", preferred_gcc_version=v"7")
 

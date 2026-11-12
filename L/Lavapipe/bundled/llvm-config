@@ -1,0 +1,116 @@
+#!/bin/bash
+
+# we want to use the target's `llvm-config`, but alas that binary is not executable,
+# so we use the one from the HostDependency, patching what it reports where necessary.
+
+host_tool=${host_prefix}/tools/llvm-config
+target_tool=${prefix}/tools/llvm-config
+# On Windows targets the tool carries the .exe suffix; without this `realpath` below fails
+# and every path derived from the target prefix silently points somewhere else.
+if [[ ! -f "${target_tool}" ]]; then
+    target_tool=${target_tool}.exe
+fi
+
+host_prefix=$(dirname $(dirname $(realpath ${host_tool})))
+target_prefix=$(dirname $(dirname $(realpath ${target_tool})))
+
+# figure out the enabled targets
+targets=()
+for line in $(grep -E '^LLVM_TARGET\(' $target_prefix/include/llvm/Config/Targets.def); do
+    llvm_target=$(echo $line | sed -e 's|LLVM_TARGET(\(.*\))|\1|g')
+    targets+=($llvm_target)
+done
+
+# figure out the native target
+native_arch=$(grep -m 1 'LLVM_NATIVE_ARCH' $target_prefix/include/llvm/Config/llvm-config.h | \
+    sed -e 's|.*#define LLVM_NATIVE_ARCH \(.*\)|\1|g')
+
+if [[ "$@" == *--targets-built* ]]; then
+    echo "${targets[@]}"
+    exit 0
+fi
+
+# Correct the list of system libraries. In the pocl recipe this shim comes from, the mingw
+# and darwin cases printed the host tool's output and exited; that cannot work here because
+# meson asks for `--libs --ldflags --system-libs` in a *single* invocation, so an early exit
+# skips the target-library reconstruction and the prefix rewrite below and hands the linker
+# the host LLVM. Same corrections, applied to the output on its way through instead.
+fixup_system_libs() {
+    local out
+    out=$(cat)
+    if [[ "${target}" == *mingw* ]]; then
+        out="-lntdll $(echo "$out" | sed -e 's/-lrt//' -e 's/-ldl//')"
+    elif [[ "${target}" == *darwin* ]]; then
+        out=$(echo "$out" | sed -e 's/-lrt//')
+    elif [[ "${target}" == *freebsd* ]]; then
+        out="-lexecinfo $out"
+    fi
+    printf '%s' "$out"
+}
+
+run_host_tool() {
+    if [[ "$@" == *--system-libs* ]]; then
+        $host_tool "$@" | fixup_system_libs
+    else
+        $host_tool "$@"
+    fi
+}
+
+# when asking for --libs, reconstruct the libraries of supported targets.
+if [[ "$@" == *--libs* ]]; then
+    # Unlike the pocl recipe this shim was copied from, the JIT event listener libraries
+    # are kept: host and target LLVM_full_jll are the same build, so whatever llvm-config
+    # reports exists on both sides, and gallivm calls createIntelJITEventListener() because
+    # LLVM's own llvm-config.h advertises LLVM_USE_INTEL_JITEVENTS.
+    output=$(run_host_tool "$@")
+
+    # temporarily rename the X86 target libraries (we'll use it as the insertion point)
+    output=$(echo $output | sed -e "s/-lLLVMX86[[:alnum:]]*/-lLLVMTargetInsertionPoint/g")
+
+    # strip all host target libraries
+    for target in $($host_tool --targets-built ); do
+        output=$(echo $output | sed -e "s/-lLLVM$target[[:alnum:]]*//g")
+    done
+
+    # determine all target libraries by looking at the filesystem
+    # (the exact set may be different, e.g., X86 has TargetMCA, AArch64 has Utils)
+    libs=()
+    for target in ${targets[@]}; do
+        for lib in $target_prefix/lib/libLLVM$target*.a; do
+            libs+=("-l$(basename $lib | sed 's/^lib//;s/\.a$//')")
+        done
+    done
+    libstr="${libs[@]}"
+
+    output=$(echo $output | sed -e "s|-lLLVMTargetInsertionPoint|$libstr|" \
+                                -e "s/-lLLVMTargetInsertionPoint//g")
+
+    # Meson asks for `--libs --ldflags` in one invocation, so this branch also has to do
+    # the prefix rewrite the fallback below does -- otherwise the -L it hands the linker
+    # points at the *host* LLVM and the target links against musl-built archives.
+    output=$(echo $output | sed -e "s|$host_prefix|$target_prefix|g")
+
+    # Drop LLVM libraries the target build does not have. The host is always x86_64, so
+    # its llvm-config advertises components like inteljitevents that a non-x86 target
+    # LLVM_full_jll never built; Mesa reads the *target's* llvm-config.h and does not
+    # reference them there either.
+    kept=()
+    for arg in $output; do
+        case "$arg" in
+            -lLLVM*)
+                if [[ -f "$target_prefix/lib/lib${arg#-l}.a" ]]; then
+                    kept+=("$arg")
+                fi
+                ;;
+            *)
+                kept+=("$arg")
+                ;;
+        esac
+    done
+
+    echo "${kept[@]}"
+    exit 0
+fi
+
+# simply reuse the host tool for everything else, replacing the host with target prefix
+run_host_tool "$@" | sed -e "s|$host_prefix|$target_prefix|g"

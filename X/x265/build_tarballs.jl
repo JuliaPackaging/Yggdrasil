@@ -3,21 +3,19 @@
 using BinaryBuilder
 
 name = "x265"
-version = v"4.1"
-
-# NOTE: The release notes for version 4.0 do not mention any
-# incompatibility with version 3.6. Packages currently using 3.6 might
-# try building against 4.0.
+# x265 breaks its ABI with every minor release (4.2 has libx265.so.216); dependents need `compat="~4.2"`
+version = v"4.2"
 
 # Collection of sources required to build x265
 sources = [
-    GitSource("https://bitbucket.org/multicoreware/x265_git.git", "32e25ffcf810c5fe284901859b369270824c4596"),
+    GitSource("https://bitbucket.org/multicoreware/x265_git.git", "e444744c03978c1fb4e037168967020cf2648427"; tag="$(version.major).$(version.minor)"),
     DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/x265_git
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/i686-plt-call.patch
 
 # x265 builds for multiple architectures, using `-march` and `-mcpu`
 # options, and then dispatches at run time. To support that, we need to
@@ -32,8 +30,6 @@ sed -i 's/-m\(arch\|cpu\)=[-+.0-9A-Za-z_]*//g' $(dirname $(which gcc))/*
 
 # Remove `-march=native` and `-mcpu=native` flags in x265
 sed -i 's/-m\(arch\|cpu\)=native//g' source/CMakeLists.txt source/dynamicHDR10/CMakeLists.txt
-
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/neon.patch
 
 cmake -S source -B build \
     -DCMAKE_INSTALL_PREFIX="${prefix}" \

@@ -3,17 +3,18 @@
 using BinaryBuilder
 
 name = "OptimPack"
-version = v"3.2.0"
+version = v"3.3.1"
 
-# Collection of sources required to build OptimPAck
+# Collection of sources required to build OptimPack
 sources = [
     ArchiveSource("https://github.com/emmt/OptimPack/releases/download/v$(version)/optimpack-$(version).tar.gz",
-                  "3df032cde5ba6a3ffa04f0b0fd95d0694b75af82c8d2ddff0666c61e86c3ef5a"),
+                  "f59815f6a6dbd9c93caf60f0270781af9b10218772a9d58fa357004c59b9c1d8"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/optimpack-*
+export CFLAGS="-O3 -Wall"
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared=yes --enable-static=no
 FLAGS=()
 if [[ "${target}" == *-mingw* ]]; then

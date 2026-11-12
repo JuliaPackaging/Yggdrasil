@@ -1,0 +1,59 @@
+From 1b4debbf1369d6eaf90396ea67ca79328cc5e119 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Wed, 7 Oct 2026 14:20:25 +0200
+Subject: [PATCH] Report invalid events in clEnqueueWaitForEvents as
+ CL_INVALID_EVENT
+
+The specification lists CL_INVALID_EVENT for invalid events in the list
+passed to clEnqueueWaitForEvents, whereas the shared wait-list check
+returns CL_INVALID_EVENT_WAIT_LIST. With the empty-list case rejected
+beforehand, that code can only stem from an invalid event.
+
+(cherry picked from commit 3ba858aa92e1c1c4025fa0fdd80f61074994eb92)
+---
+ lib/CL/clEnqueueWaitForEvents.c | 6 ++++--
+ tests/runtime/test_user_event.c | 5 ++++-
+ 2 files changed, 8 insertions(+), 3 deletions(-)
+
+diff --git a/lib/CL/clEnqueueWaitForEvents.c b/lib/CL/clEnqueueWaitForEvents.c
+index 06ef63078..200e61f62 100644
+--- a/lib/CL/clEnqueueWaitForEvents.c
++++ b/lib/CL/clEnqueueWaitForEvents.c
+@@ -35,7 +35,9 @@ CL_API_SUFFIX__VERSION_1_0
+   POCL_RETURN_ERROR_COND ((num_events == 0 || event_list == NULL),
+                           CL_INVALID_VALUE);
+ 
+-  return POname (clEnqueueBarrierWithWaitList) (command_queue, num_events,
+-                                                event_list, NULL);
++  cl_int errcode = POname (clEnqueueBarrierWithWaitList) (
++    command_queue, num_events, event_list, NULL);
++  /* This API reports invalid events as CL_INVALID_EVENT. */
++  return errcode == CL_INVALID_EVENT_WAIT_LIST ? CL_INVALID_EVENT : errcode;
+ }
+ POsym(clEnqueueWaitForEvents)
+diff --git a/tests/runtime/test_user_event.c b/tests/runtime/test_user_event.c
+index 4850f47c9..212720319 100644
+--- a/tests/runtime/test_user_event.c
++++ b/tests/runtime/test_user_event.c
+@@ -83,7 +83,7 @@ int main()
+     }
+ 
+   // clEnqueueWaitForEvents must hold back later commands until the user
+-  // event completes, and reject an empty event list
++  // event completes, and reject an empty or invalid event list
+   user_evt = clCreateUserEvent (context, &err);
+   CHECK_OPENCL_ERROR_IN ("clCreateUserEvent");
+ 
+@@ -91,6 +91,9 @@ int main()
+   TEST_ASSERT (err == CL_INVALID_VALUE);
+   err = clEnqueueWaitForEvents (queue, 1, NULL);
+   TEST_ASSERT (err == CL_INVALID_VALUE);
++  cl_event invalid_evt = NULL;
++  err = clEnqueueWaitForEvents (queue, 1, &invalid_evt);
++  TEST_ASSERT (err == CL_INVALID_EVENT);
+ 
+   cl_event marker_evt = NULL;
+   CHECK_CL_ERROR (clEnqueueWaitForEvents (queue, 1, &user_evt));
+-- 
+2.56.0
+

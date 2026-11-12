@@ -2,13 +2,23 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "Python"
-version = v"3.10.14"
+version = v"3.12.15"
 
 # Collection of sources required to build Python
 sources = [
     ArchiveSource("https://www.python.org/ftp/python/$(version)/$(name)-$(version).tar.xz",
-                  "9c50481faa8c2832329ba0fc8868d0a606a680fc4f60ec48d26ce8e076751fda"),
+                  "c2c4321961fab0fb999d66e0cecf521c2ab3994c7992873ea99e306c1094fd5a"),
+    # Deliberately an installer from the same 24.3.0 generation as the py311 one
+    # this replaced: Miniconda installers from 24.11 onwards gate on
+    # `ldd --version` reporting GLIBC >= 2.28, which fails outright in
+    # BinaryBuilder's musl sandbox ("Installer requires GLIBC >=2.28, but system
+    # has ."). Do not casually bump this to the newest available.
+    FileSource("https://repo.anaconda.com/miniconda/Miniconda3-py312_24.3.0-0-Linux-x86_64.sh",
+                "96a44849ff17e960eeb8877ecd9055246381c4d4f2d031263b63fa7e2e930af1", "miniconda.sh"),
     DirectorySource("./bundled"),
 ]
 
@@ -19,6 +29,12 @@ apk add autoconf-archive
 
 # Having a global `python3` screws things up a bit, so get rid of that
 rm -f $(which python3)
+
+# Install miniconda to get the build python necessary for cross-compilation
+# (--with-build-python must be at least the version being built).
+cd ${WORKSPACE}/srcdir
+bash miniconda.sh -b -p ${host_bindir}/miniconda
+
 
 # We need these for the host python build
 apk update
@@ -44,10 +60,6 @@ if [[ "${target}" == *-freebsd* || ${target} == *darwin* ]]; then
     sed -i 's|^MULTIARCH=.*|MULTIARCH=|' configure.ac
 fi
 
-# Don't link against libcrypt, because we provide libcrypt.so.1 while most systems will
-# have libcrypt.so.2 (backported from Python 3.11)
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libcrypt.patch
-
 autoreconf -i
 
 # Next, build host version
@@ -55,7 +67,14 @@ mkdir build_host && cd build_host
 
 # Override `bb_target`, `CC`, etc... to give this `./configure` the impression
 # that we are actually targeting `${MACHTYPE}` and not `${target}`
-bb_target=${MACHTYPE} CC=${HOSTCC} CPPFLAGS=-I/usr/include LDFLAGS="-L/lib -L/usr/lib" ../configure --host="${MACHTYPE}" --build="${MACHTYPE}"
+# Confine pkg-config to the rootfs: ${prefix}/lib/pkgconfig has the *target's*
+# bzip2.pc/liblzma.pc, and PKG_CHECK_MODULES feeds their -L flags to the host
+# compiler ("cannot find -lbz2").  3.11 skipped such modules via setup.py; 3.12
+# builds them from configure-generated Makefile rules, so the build fails.
+bb_target=${MACHTYPE} CC=${HOSTCC} CPPFLAGS=-I/usr/include LDFLAGS="-L/lib -L/usr/lib" \
+    PKG_CONFIG_PATH="" PKG_CONFIG_LIBDIR="/usr/lib/pkgconfig:/usr/share/pkgconfig" \
+    PKG_CONFIG_SYSROOT_DIR="" \
+    ../configure --host="${MACHTYPE}" --build="${MACHTYPE}"
 make -j${nproc} python sharedmods
 
 # Next, build target version
@@ -67,13 +86,21 @@ export LDFLAGS="${LDFLAGS} -L${prefix}/lib -L${prefix}/lib64"
 export PATH=$(echo ${WORKSPACE}/srcdir/Python-*/build_host):$PATH
 
 conf_args=()
+conf_args+=(--with-build-python=${host_bindir}/miniconda/bin/python)
 conf_args+=(--enable-shared)
 conf_args+=(--disable-ipv6)
 conf_args+=(--with-ensurepip=no)
 conf_args+=(--disable-test-modules)
 conf_args+=(--with-system-expat)
 conf_args+=(--with-system-ffi)
-conf_args+=(--with-system-libmpdec)
+# Not --with-system-libmpdec: CPython 3.12 sets libmpdec_machine=universal on
+# Darwin (configure.ac), so LIBMPDEC_CFLAGS gets -DUNIVERSAL instead of
+# -DCONFIG_64, and _decimal.c then fails with "No valid combination of
+# CONFIG_64, CONFIG_32 and _PyHASH_BITS" -- that path only works with the
+# bundled libmpdec.  3.11 hid this by skipping unbuildable modules in setup.py,
+# which is why the registered 3.11.12 ships no _decimal on Darwin or riscv64.
+# Python 3.12 still bundles libmpdec, so use it and drop LibMPDec_jll.
+# NOTE: the bundled copy is gone in 3.13; revisit at the next bump.
 conf_args+=(--enable-optimizations)
 conf_args+=(ac_cv_file__dev_ptmx=no)
 conf_args+=(ac_cv_file__dev_ptc=no)
@@ -83,7 +110,16 @@ conf_args+=(ac_cv_have_chflags=no)
 
 make -j${nproc}
 make install
+
+install_license ${WORKSPACE}/srcdir/Python-*/LICENSE
 """
+
+# CPython guards newer APIs with `__builtin_available` (up to macOS 10.15, for
+# `posix_spawn` setsid). Below that target clang emits calls to the compiler-rt
+# helper `__isPlatformVersionAtLeast`, which is left unresolved and makes the
+# interpreter segfault at startup.
+# https://github.com/JuliaPackaging/Yggdrasil/issues/14491
+sources, script = require_macos_sdk("10.15", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
@@ -102,14 +138,13 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Expat_jll"; compat="2.2.10"),
-    Dependency("Bzip2_jll"; compat="1.0.8"),
-    Dependency("Libffi_jll"; compat="~3.2.2"),
-    Dependency("SQLite_jll"),
-    Dependency("LibMPDec_jll"),
+    Dependency("Expat_jll"; compat="2.6.5"),
+    Dependency("Bzip2_jll"; compat="1.0.9"),
+    Dependency("Libffi_jll"; compat="~3.4.7"),
+    Dependency("SQLite_jll"; compat="3.54.0"),
     Dependency("Zlib_jll"),
     Dependency("XZ_jll"),
-    Dependency("OpenSSL_jll"; compat="3.0.12"),
+    Dependency("OpenSSL_jll"; compat="3.0.16"),
 ]
 
 init_block = raw"""
@@ -117,5 +152,8 @@ ENV["PYTHONHOME"] = artifact_dir
 """
 
 # Build the tarballs, and possibly a `build.jl` as well.
+# Python 3.12 uses C11 thread-local storage (`_Thread_local` in
+# pycore_pystate.h). BinaryBuilder's default GCC 4.8.5 defaults to gnu89 and
+# fails with "unknown type name '_Thread_local'"; GCC >= 5 defaults to gnu11.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               init_block, julia_compat = "1.6")
+               init_block, julia_compat = "1.6", preferred_gcc_version = v"9")

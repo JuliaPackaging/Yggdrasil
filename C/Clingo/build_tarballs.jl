@@ -3,16 +3,21 @@
 using BinaryBuilder, Pkg
 
 name = "Clingo"
-version = v"5.7.1"
+version = v"5.8.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/potassco/clingo.git", "65e056a24ce77caf0d705e7ccd02f04519bcaf48")
+    GitSource("https://github.com/potassco/clingo.git", "a99ffb2a58293c68b28fcc283a1d1c9ccad900fe"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/clingo
+
+# Upstreamed at https://github.com/potassco/clingo/pull/654
+atomic_patch -p1 ../patches/0001-Use-lowercase-windows-h.patch
+
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \

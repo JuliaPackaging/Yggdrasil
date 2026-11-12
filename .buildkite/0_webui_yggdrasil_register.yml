@@ -1,0 +1,17 @@
+# This file represents what is put into the webUI of the `yggdrasil-register` pipeline.
+# It is purely for keeping track of the changes we make to the webUI configuration; modifying this file has no effect.
+#
+# This pipeline is triggered by the main `yggdrasil` pipeline (via the
+# `trigger_registration_step`, only on `master`) and holds the `GITHUB_TOKEN`
+# Buildkite secret used to publish the `*_jll` packages.
+steps:
+  - label: ":buildkite: Pipeline upload"
+    priority: 100
+    command: buildkite-agent pipeline upload
+    branches: "master"
+    agents:
+      queue: "yggdrasil"
+    plugins:
+      - JuliaCI/merge-commit: ~
+    command: |
+      buildkite-agent pipeline upload .buildkite/register_pipeline.yml

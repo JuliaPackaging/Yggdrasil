@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Dex"
-version = v"2.41.1"
+version = v"2.43.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/dexidp/dex.git", "43956db7fd75c488a82c70cf231f44287300a75d"),
+    GitSource("https://github.com/dexidp/dex.git", "6e602d3315ea09d0cdeef6b51e61f2fd4ae52502"),
     DirectorySource("bundled"),
 ]
 

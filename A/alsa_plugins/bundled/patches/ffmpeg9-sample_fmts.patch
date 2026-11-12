@@ -1,0 +1,32 @@
+Fix build against FFmpeg 9.0.
+
+FFmpeg 9.0's major-version API cleanup removed the public `sample_fmts`
+member of `AVCodec` (deprecated since lavc 61.13.100 in favor of
+`avcodec_get_supported_config()`). Use the new query API when it is
+available, falling back to the old field for older FFmpeg releases.
+
+Upstream status: as of alsa-plugins master, this has not yet been fixed
+(see https://github.com/alsa-project/alsa-plugins/issues/22 and
+https://github.com/alsa-project/alsa-plugins/issues/57 for related,
+still-open FFmpeg-API-churn issues against this same plugin).
+
+--- a/a52/pcm_a52.c
++++ b/a52/pcm_a52.c
+@@ -1202,7 +1202,16 @@
+ 	rec->io.flags = SND_PCM_IOPLUG_FLAG_BOUNDARY_WA;
+ #endif
+ #ifdef USE_AVCODEC_FRAME
+-	rec->av_format = rec->codec->sample_fmts[0];
++#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(61, 13, 100)
++	{
++		const enum AVSampleFormat *sample_fmts = NULL;
++		avcodec_get_supported_config(NULL, rec->codec, AV_CODEC_CONFIG_SAMPLE_FORMAT,
++		                              0, (const void **)&sample_fmts, NULL);
++		rec->av_format = sample_fmts[0];
++	}
++#else
++	rec->av_format = rec->codec->sample_fmts[0];
++#endif
+ 	rec->is_planar = av_sample_fmt_is_planar(rec->av_format);
+ #else
+ 	rec->av_format = AV_SAMPLE_FMT_S16;

@@ -8,3 +8,12 @@ overflow in favour of the old mechanism introduced via Julia's
 patches. The main reasons are: (a) this works for Julia right away (no
 changes to Base necessary), and (b) Julia's patches handle more cases,
 i.e. more places where an overflow can occur.
+
+gmp-mpz_realloc.patch (also carried in Julia's deps/patches) reorders
+the reallocation paths in _mpz_realloc and mpz_mul to
+allocate-install-free-last, so an mpz stays structurally valid at
+every interruptible point. Julia's task cancellation can unwind out
+of a GMP call from inside the allocation hooks; with the upstream
+order (free old, raise ALLOC, then allocate) such an unwind leaves
+the mpz pointing at freed memory with an overstated capacity, and a
+later mpz_clear double-frees it, corrupting the heap.

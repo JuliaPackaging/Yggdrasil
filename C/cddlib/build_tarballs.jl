@@ -5,7 +5,7 @@ using BinaryBuilder, Pkg
 name = "cddlib"
 # We're using an upstream commit to get a bug fix that is not part of an
 # official release yet.
-version = v"0.94.14"
+version = v"0.94.15"
 
 # Collection of sources required to build cddlib
 sources = [
@@ -35,7 +35,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GMP_jll", v"6.2.0"),
+    Dependency("GMP_jll", v"6.2.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

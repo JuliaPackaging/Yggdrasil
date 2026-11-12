@@ -1,0 +1,81 @@
+From 745b00267d2cce775c9166fce27a5aa15a2853a3 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Wed, 7 Oct 2026 11:58:38 +0200
+Subject: [PATCH] [SPIR-V] Type the format string of unmangled printf calls as
+ i8
+
+OpenCL.std printf requires its format operand to be a pointer to i8.
+getPointeeTypeByCallInst() enforces that, but only recognized callees
+whose demangled name starts with "printf(" or "__spirv_ocl_printf(",
+i.e. the mangled variants. An unmangled C `printf`, as emitted by Clang
+for OpenCL C, demangles to the bare name and was missed, so the format
+string kept the pointee type of the global it points to (e.g. [6 x i8]).
+
+Consumers that rebuild typed LLVM IR from the SPIR-V then see printf
+called with differently-typed format pointers. Intel's IGC declares
+printf from the first call, so a second format string of another length
+trips the "Calling a function with a bad signature!" assertion in its
+SPIR-V reader.
+
+Match on lookupBuiltinNameHelper() instead, the same normalization that
+lookupBuiltin() uses to lower the call to OpenCL.std printf, so that the
+type rule applies to exactly the calls that are lowered as printf. This
+is the same gap #206998 closed in ExpandVariadics.
+---
+ lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp |  6 +++---
+ test/CodeGen/SPIRV/printf.ll             | 16 ++++++++++++++++
+ 2 files changed, 19 insertions(+), 3 deletions(-)
+
+diff --git a/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp b/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
+index 9d3c31b885bd..06fe185301fb 100644
+--- a/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
++++ b/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
+@@ -755,9 +755,9 @@ Type *SPIRVEmitIntrinsicsImpl::deduceElementTypeByUsersDeep(
+ // specification rules
+ static Type *getPointeeTypeByCallInst(StringRef DemangledName,
+                                       Function *CalledF, unsigned OpIdx) {
+-  if ((DemangledName.starts_with("__spirv_ocl_printf(") ||
+-       DemangledName.starts_with("printf(")) &&
+-      OpIdx == 0)
++  // OpenCL.std printf takes its format string as a pointer to i8. Match the
++  // bare builtin name, as lowering does, to also cover unmangled `printf`.
++  if (OpIdx == 0 && SPIRV::lookupBuiltinNameHelper(DemangledName) == "printf")
+     return IntegerType::getInt8Ty(CalledF->getContext());
+   return nullptr;
+ }
+diff --git a/test/CodeGen/SPIRV/printf.ll b/test/CodeGen/SPIRV/printf.ll
+index 1227b75fca92..b0deb47ad882 100644
+--- a/test/CodeGen/SPIRV/printf.ll
++++ b/test/CodeGen/SPIRV/printf.ll
+@@ -21,6 +21,13 @@
+ ; CHECK-NEXT: OpExtInst %[[#]] %[[#ExtImport]] printf %[[#CastedArg2]] %[[#ArgConst]]
+ ; CHECK: OpFunctionEnd
+ 
++; Unmangled printf, as emitted by Clang for OpenCL C.
++; CHECK: OpFunction
++; CHECK: %[[#CastedGV2:]] = OpBitcast %[[#CharPtr]] %[[#GV]]
++; CHECK-NEXT: OpExtInst %[[#]] %[[#ExtImport]] printf %[[#CastedGV2]] %[[#ArgConst]]
++; CHECK-NEXT: OpExtInst %[[#]] %[[#ExtImport]] printf %[[#CastedGV2]] %[[#ArgConst]]
++; CHECK: OpFunctionEnd
++
+ %struct = type { [6 x i8] }
+ 
+ @FmtStr = internal addrspace(2) constant [6 x i8] c"c=%c\0A\00", align 1
+@@ -36,5 +43,14 @@ entry:
+   ret void
+ }
+ 
++define spir_kernel void @bar() {
++entry:
++  %r1 = tail call spir_func i32 (ptr addrspace(2), ...) @printf(ptr addrspace(2) @FmtStr, i8 signext 97)
++  %r2 = tail call spir_func i32 (ptr addrspace(2), ...) @__spirv_ocl_printf(ptr addrspace(2) @FmtStr, i8 signext 97)
++  ret void
++}
++
+ declare dso_local spir_func i32 @_Z6printfPU3AS2Kcz(ptr addrspace(2), ...)
+ declare dso_local spir_func i32 @_Z18__spirv_ocl_printfPU3AS2Kcz(ptr addrspace(2), ...)
++declare dso_local spir_func i32 @printf(ptr addrspace(2), ...)
++declare dso_local spir_func i32 @__spirv_ocl_printf(ptr addrspace(2), ...)
+-- 
+2.47.3
+

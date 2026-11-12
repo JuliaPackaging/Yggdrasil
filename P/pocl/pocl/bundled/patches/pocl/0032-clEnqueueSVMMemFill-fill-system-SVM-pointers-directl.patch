@@ -1,0 +1,217 @@
+From df2acf7c89756c264dd52e5bf5c235d98187795f Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Wed, 7 Oct 2026 10:12:05 +0200
+Subject: [PATCH] clEnqueueSVMMemFill: fill system SVM pointers directly
+
+Since SVM fills go through the allocation's shadow buffer, a pointer
+that PoCL did not allocate, which pocl_svm_check_pointer accepts on
+devices with fine-grained system SVM, was dereferenced as a NULL
+allocation and crashed clEnqueueSVMMemFill and clEnqueueMemFillINTEL.
+
+Enqueue a CL_COMMAND_SVM_MEMFILL command for such pointers instead, as
+clEnqueueSVMMemcpy does for host-to-host copies. Recording them in a
+command buffer is not implemented yet and returns CL_INVALID_OPERATION,
+also matching the memcpy. A NULL pattern is now rejected explicitly
+rather than relying on clEnqueueFillBuffer to do so.
+---
+ lib/CL/clEnqueueSVMMemFill.c | 66 +++++++++++++++++++++++++--
+ tests/runtime/test_svm.cpp   | 86 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 148 insertions(+), 4 deletions(-)
+
+diff --git a/lib/CL/clEnqueueSVMMemFill.c b/lib/CL/clEnqueueSVMMemFill.c
+index 863d65af4..5064c1ee0 100644
+--- a/lib/CL/clEnqueueSVMMemFill.c
++++ b/lib/CL/clEnqueueSVMMemFill.c
+@@ -65,6 +65,8 @@ pocl_svm_memfill_common (cl_command_buffer_khr command_buffer,
+ 
+   POCL_RETURN_ERROR_COND((svm_ptr == NULL), CL_INVALID_VALUE);
+ 
++  POCL_RETURN_ERROR_COND ((pattern == NULL), CL_INVALID_VALUE);
++
+   POCL_RETURN_ERROR_COND((pattern_size == 0), CL_INVALID_VALUE);
+ 
+   POCL_RETURN_ERROR_COND((pattern_size > 128), CL_INVALID_VALUE);
+@@ -89,6 +91,52 @@ pocl_svm_memfill_common (cl_command_buffer_khr command_buffer,
+ 
+   pocl_raw_ptr *dst_svm_ptr = pocl_find_raw_ptr_with_vm_ptr (context, svm_ptr);
+ 
++  if (dst_svm_ptr == NULL)
++    {
++      /* Not allocated by PoCL, so there is no shadow buffer: the device fills
++         the memory directly. pocl_svm_check_pointer only accepts such
++         pointers on devices with fine-grained system SVM. The spec is
++         ambiguous about other devices, but the reading in
++         https://github.com/KhronosGroup/OpenCL-Docs/issues/1415 is that
++         passing them a system allocation is undefined behavior. */
++      if (command_buffer)
++        {
++          POCL_RETURN_ERROR (CL_INVALID_OPERATION,
++                             "system SVM memfill "
++                             "command buffering unimplemented");
++        }
++
++      errcode = pocl_check_event_wait_list (
++        command_queue, num_items_in_wait_list, event_wait_list);
++      if (errcode != CL_SUCCESS)
++        return errcode;
++
++      void *cmd_pattern = pocl_aligned_malloc (pattern_size, pattern_size);
++      POCL_RETURN_ERROR_COND ((cmd_pattern == NULL), CL_OUT_OF_HOST_MEMORY);
++      memcpy (cmd_pattern, pattern, pattern_size);
++
++      /* The pattern is only freed for CL_COMMAND_SVM_MEMFILL nodes, so use
++         that type for clEnqueueMemFillINTEL too and report the caller's
++         command type through the event. */
++      errcode = pocl_create_command (
++        cmd, command_queue, CL_COMMAND_SVM_MEMFILL, event,
++        num_items_in_wait_list, event_wait_list, NULL);
++      if (errcode != CL_SUCCESS)
++        {
++          pocl_aligned_free (cmd_pattern);
++          return errcode;
++        }
++
++      _cl_command_node *c = *cmd;
++      c->command.svm_fill.svm_ptr = svm_ptr;
++      c->command.svm_fill.size = size;
++      c->command.svm_fill.pattern = cmd_pattern;
++      c->command.svm_fill.pattern_size = pattern_size;
++      c->sync.event.event->command_type = command_type;
++
++      return CL_SUCCESS;
++    }
++
+   size_t offset = (char *)svm_ptr - (char *)dst_svm_ptr->vm_ptr;
+   if (command_buffer)
+     errcode = POname (clCommandFillBufferKHR) (
+@@ -117,9 +165,19 @@ POname (clEnqueueSVMMemFill) (cl_command_queue command_queue, void *svm_ptr,
+                               const cl_event *event_wait_list,
+                               cl_event *event) CL_API_SUFFIX__VERSION_2_0
+ {
+-  return pocl_svm_memfill_common (NULL, command_queue, CL_COMMAND_SVM_MEMFILL,
+-                                  svm_ptr, size, pattern, pattern_size,
+-                                  num_events_in_wait_list, event_wait_list,
+-                                  event, NULL, NULL, NULL);
++  cl_int errcode;
++  _cl_command_node *cmd = NULL;
++
++  errcode = pocl_svm_memfill_common (
++    NULL, command_queue, CL_COMMAND_SVM_MEMFILL, svm_ptr, size, pattern,
++    pattern_size, num_events_in_wait_list, event_wait_list, event, NULL, NULL,
++    &cmd);
++  if (errcode != CL_SUCCESS)
++    return errcode;
++
++  if (cmd != NULL)
++    pocl_command_enqueue (command_queue, cmd);
++
++  return CL_SUCCESS;
+ }
+ POsym(clEnqueueSVMMemFill)
+diff --git a/tests/runtime/test_svm.cpp b/tests/runtime/test_svm.cpp
+index 7198bb72a..0599fc5c4 100644
+--- a/tests/runtime/test_svm.cpp
++++ b/tests/runtime/test_svm.cpp
+@@ -900,6 +900,88 @@ int TestSSVM(cl::Platform Platform) {
+     return EXIT_SUCCESS;
+ }
+ 
++int TestSSVMFill(cl::Platform Platform) {
++
++  bool AllOK = true;
++
++  try {
++    std::vector<cl::Device> Devices;
++    Platform.getDevices(CL_DEVICE_TYPE_ALL, &Devices);
++
++    // A context of only this device: in a mixed context, SVM pointers are
++    // validated against the context's SVM allocation device, which might
++    // not support fine-grained system SVM.
++    cl::Device Device;
++    for (cl::Device &Dev : Devices) {
++      if (Dev.getInfo<CL_DEVICE_SVM_CAPABILITIES>() &
++          CL_DEVICE_SVM_FINE_GRAIN_SYSTEM) {
++        Device = Dev;
++        break;
++      }
++    }
++
++    if (Device() == nullptr) {
++      std::cout << "No devices with fine grain system SVM capabilities found."
++                << std::endl;
++      return 77;
++    }
++
++    cl::Context Context(Device);
++    cl::CommandQueue Queue(Context, Device, 0);
++
++    std::vector<int> SSVMBuf(N_ELEMENTS, -1);
++
++    // Fill all but the first and last elements. The fill waits on a user
++    // event and the pattern is overwritten before it runs, so it must be
++    // copied at enqueue time.
++    int Pattern = 42;
++    cl::UserEvent Gate(Context);
++    cl_event GateEvent = Gate.get();
++    cl_event FillEvent = nullptr;
++    CHECK_CL_ERROR(::clEnqueueSVMMemFill(
++        Queue.get(), &SSVMBuf[1], &Pattern, sizeof(int),
++        (N_ELEMENTS - 2) * sizeof(int), 1, &GateEvent, &FillEvent));
++    Pattern = 0;
++    Gate.setStatus(CL_COMPLETE);
++    CHECK_CL_ERROR(::clWaitForEvents(1, &FillEvent));
++
++    cl_command_type FillType = 0;
++    CHECK_CL_ERROR(::clGetEventInfo(FillEvent, CL_EVENT_COMMAND_TYPE,
++                                    sizeof(FillType), &FillType, nullptr));
++    ::clReleaseEvent(FillEvent);
++    if (FillType != CL_COMMAND_SVM_MEMFILL) {
++      AllOK = false;
++      std::cerr << "SVM fill event has command type " << std::hex << FillType
++                << std::dec << std::endl;
++    }
++
++    for (int i = 0; i < N_ELEMENTS; ++i) {
++      int Expected = (i == 0 || i == N_ELEMENTS - 1) ? -1 : 42;
++      if (SSVMBuf[i] != Expected) {
++        AllOK = false;
++        std::cerr << "SSVMBuf[" << i << "] expected to be " << Expected
++                  << " but got " << SSVMBuf[i] << std::endl;
++      }
++    }
++
++    if (::clEnqueueSVMMemFill(Queue.get(), SSVMBuf.data(), nullptr, sizeof(int),
++                              sizeof(int), 0, nullptr,
++                              nullptr) != CL_INVALID_VALUE) {
++      AllOK = false;
++      std::cerr << "SVM fill with a NULL pattern was not rejected" << std::endl;
++    }
++  } catch (cl::Error &err) {
++    std::cerr << "ERROR: " << err.what() << "(" << err.err() << ")"
++              << std::endl;
++    AllOK = false;
++  }
++
++  if (!AllOK)
++    return EXIT_FAILURE;
++  else
++    return EXIT_SUCCESS;
++}
++
+ int main() {
+ 
+   std::vector<cl::Platform> PlatformList;
+@@ -926,6 +1008,10 @@ int main() {
+   if (TestSSVM(PlatformList[0]) == EXIT_FAILURE)
+     return EXIT_FAILURE;
+ 
++  std::cout << "TestSSVMFill: ";
++  if (TestSSVMFill(PlatformList[0]) == EXIT_FAILURE)
++    return EXIT_FAILURE;
++
+   std::cout << "TestMultiDevice_CGSVM: ";
+   if (TestMultiDevice_CGSVM(PlatformList[0]) == EXIT_FAILURE)
+     return EXIT_FAILURE;
+-- 
+2.56.0
+

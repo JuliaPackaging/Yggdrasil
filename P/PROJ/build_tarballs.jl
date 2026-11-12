@@ -1,9 +1,11 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "PROJ"
-upstream_version = v"9.5.0"
+upstream_version = v"9.9.0"
 version_offset = v"2.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
@@ -12,12 +14,14 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://download.osgeo.org/proj/proj-$upstream_version.tar.gz",
-        "659af0d558f7c5618c322fde2d3392910806faee8684687959339021fa207d99")
+                  "791a0610547eeabb17006cfd49cdbd2034f3240f47ed5e88a1031811f4e2bcf3")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/proj-*
+
+apk del cmake
 
 EXE_SQLITE3=${host_bindir}/sqlite3
 
@@ -58,11 +62,11 @@ make -j${nproc}
 make install
 """
 
+sources, script = require_macos_sdk("10.14", sources, script)
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
-# Disable until the dependencies are available for this platform
-filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -93,15 +97,15 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    # cmake 3.22.1 needed
+    HostBuildDependency("CMake_jll")
     # Host SQLite needed to build proj.db
     HostBuildDependency("SQLite_jll")
-    Dependency("SQLite_jll")
-    Dependency("Libtiff_jll"; compat="4.5.1")
+    Dependency("SQLite_jll"; compat="3.48.0")
+    Dependency("Libtiff_jll"; compat="4.7.3")
     Dependency("LibCURL_jll"; compat="7.73,8")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"8")
-
-# Build trigger: 1
+               julia_compat="1.6", preferred_gcc_version=v"9")

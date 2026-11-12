@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "ASL"
-version = v"0.1.3"
+version = v"0.1.5"
 
 # Collection of sources required to build ThinASLBuilder
 sources = [
     ArchiveSource("http://netlib.org/ampl/solvers.tgz",
-                  "2d599272e22fc66673cb03d2065f53f587140493fb50501adde5acf6be2adc93"),
+                  "92bf92a8db0712c0e42c12f912151128dd192e8409ba1fea6f4b44cd5141a1de"),
     DirectorySource("./bundled")
 ]
 
@@ -41,11 +41,14 @@ elif [[ "${target}" == *-mingw* ]]; then
     makefile="$WORKSPACE/srcdir/asl-extra/makefile.mingw"
 elif [[ "${target}" == *-apple-* ]]; then
     all_load="-all_load"
-    noall_load="-noall_load"
+    # No -noall_load: cctools ld64 applies these positionally, but ld64.lld keeps one
+    # global flag and takes the last occurrence, so a trailing -noall_load turns the
+    # whole-archive load off again. Nothing follows the archive anyway.
+    noall_load=""
 fi
 
 make -f $makefile CC="$CC" CFLAGS="-O -fPIC $cflags"
-c++ -fPIC -shared -I$WORKSPACE/srcdir/asl-extra -I. $WORKSPACE/srcdir/asl-extra/aslinterface.cc -Wl,${all_load} amplsolver.a -Wl,${noall_load} -o libasl.${dlext}
+c++ -fPIC -shared -I$WORKSPACE/srcdir/asl-extra -I. $WORKSPACE/srcdir/asl-extra/aslinterface.cc -Wl,${all_load} amplsolver.a ${noall_load:+-Wl,${noall_load}} -o libasl.${dlext}
 cp libasl.${dlext} ${libdir}
 cp *.h ${includedir}
 cp *.hd ${includedir}

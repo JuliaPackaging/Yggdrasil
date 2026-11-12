@@ -1,0 +1,15 @@
+--- before/cw_modes.f	2025-09-05 02:35:20
++++ after/cw_modes.f	2025-09-05 11:29:28
+@@ -104,6 +104,12 @@
+             do jzs=1,nzs
+                call mode_field(phi,dpsi,exp_gbs,tlc,tli,tl,jzs)
+
++c: HACK: dump mode functions and acoustic pressure to a file
++               open(67,file='modes_tlc.bin',form='unformatted')
++               write(67) nzsr, nmode, nrec, nsrc
++               write(67) ((phi(j,jm), j=1,nzsr), jm=1,nmode)
++               write(67) ((tlc(jrec,jsrc), jrec=1,nrec), jsrc=1,nsrc)
++               close(67)
+ !#<			output TL(coherently add up) to a file  YMJ(Mae)
+ !			OPEN(66,file='orca_TL.asc')
+ !			WRITE(66,*) outroot

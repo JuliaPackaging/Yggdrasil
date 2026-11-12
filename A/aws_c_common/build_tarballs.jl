@@ -3,11 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_common"
-version = v"0.9.28"
+version = v"1.0.3"
+# The SONAME contains major.minor, and minor releases may break the ABI.
+# Downstream recipes must restrict compat to one minor version, e.g. compat="~1.2.3".
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-common.git", "b9959f5922a4b969beab8f0b99aa0b34bc9ee55c"),
+    GitSource("https://github.com/awslabs/aws-c-common.git", "afc53e0eb30b567c12d6ef1bd2ad90afbd51f567"),
 ]
 
 # Bash recipe for building across all platforms

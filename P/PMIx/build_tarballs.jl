@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "PMIx"
-version = v"5.0.3"
+version = v"6.1.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/openpmix/openpmix/releases/download/v$(version)/pmix-$(version).tar.bz2",
-                  "3f779434ed59fc3d63e4f77f170605ac3a80cd40b1f324112214b0efbdc34f13")
+                  "bb9021c8e100a376f5070ecca727f83a29b5f652dfe381793b88daa79a3b98a2")
 ]
 
 # Bash recipe for building across all platforms
@@ -37,9 +37,6 @@ platforms = supported_platforms()
 # PMIx does not support 32-bit builds <https://docs.openpmix.org/en/latest/release-notes/platform.html>
 filter!(p -> nbits(p) != 32, platforms)
 
-# FreeBSD does not provide `pthread_setaffinity_np` which is a GNU extension
-filter!(!Sys.isfreebsd, platforms)
-
 # Configure fails on Windows with:
 # ```
 # checking for library containing event_config_new... no
@@ -50,6 +47,7 @@ filter!(!Sys.isfreebsd, platforms)
 # configure: WARNING: to where we can find one or the other library
 # configure: error: Cannot continue
 # ```
+# Believe this to be because libevent_pthreads is not available on Windows.
 filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
@@ -62,7 +60,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="libevent_jll", uuid="1080aeaf-3a6a-583e-a51c-c537b09f60ec")),
     Dependency(PackageSpec(name="Hwloc_jll", uuid="e33a78d0-f292-5ffc-b300-72abe9b543c8")),
-    Dependency("Zlib_jll"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
 ]
 
 init_block = raw"""
@@ -70,5 +68,6 @@ ENV["PMIX_PREFIX"] = artifact_dir
 """
 
 # Build the tarballs, and possibly a `build.jl` as well.
+# gcc 5+ for C11 atomics
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", init_block=init_block)
+               julia_compat="1.6", preferred_gcc_version=v"5", init_block=init_block)

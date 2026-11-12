@@ -1,0 +1,16 @@
+Use a PLT-relative indirect call only on x86_64: 32-bit ELF (i686) cannot express it, and nasm fails.
+Reported upstream: https://github.com/Multicorewareinc/x265/issues/1004
+
+diff --git a/source/common/x86/cpu-a.asm b/source/common/x86/cpu-a.asm
+index deb3b4ae3..b35acb9ba 100644
+--- a/source/common/x86/cpu-a.asm
++++ b/source/common/x86/cpu-a.asm
+@@ -177,7 +177,7 @@ cglobal safe_intel_cpu_indicator_init
+ %if WIN64
+     lea rax, [intel_cpu_indicator_init]
+     call rax
+-%elif FORMAT_ELF
++%elif FORMAT_ELF && ARCH_X86_64
+     call [rel intel_cpu_indicator_init wrt ..plt]
+ %else
+     call intel_cpu_indicator_init

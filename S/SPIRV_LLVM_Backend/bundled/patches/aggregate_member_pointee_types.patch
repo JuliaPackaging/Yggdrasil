@@ -1,0 +1,149 @@
+From 67a16866c4e29ff5563e8af8d97da11e426eaaed Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Wed, 30 Sep 2026 10:23:23 +0200
+Subject: [PATCH] [SPIR-V] Fix pointee types of pointers extracted from or
+ inserted into aggregates
+
+The pointee type of a pointer extracted from an aggregate was deduced from
+its uses, so it could differ from the type of the aggregate member it came
+from (e.g. `load i32` from the pointer member of a `{ ptr, i8 }`, which is
+lowered as a pointer to i8). OpCompositeExtract and OpCompositeInsert
+require the object type to match the member type exactly, so this produced
+invalid SPIR-V.
+
+Deduce the pointee type of an extracted pointer from the aggregate member,
+like a loaded pointer is typed by the memory it is loaded from, and cast
+an inserted pointer to the member type, like a stored value. Mismatching
+uses then get a regular spv_ptrcast.
+---
+ lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp      | 25 +++++++
+ .../composite-ptr-member-bitcast.ll           | 67 +++++++++++++++++++
+ 2 files changed, 92 insertions(+)
+ create mode 100644 llvm/test/CodeGen/SPIRV/instructions/composite-ptr-member-bitcast.ll
+
+diff --git a/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp b/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
+index a07be05cc651..4232db9cf128 100644
+--- a/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
++++ b/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
+@@ -572,6 +572,15 @@ static inline Type *restoreMutatedType(SPIRVGlobalRegistry *GR, Instruction *I,
+   return Ty;
+ }
+ 
++// Return the pointee type of the pointer member of AggrTy selected by Indices.
++// Untyped pointer members are lowered as pointers to i8.
++static Type *getMemberPointeeType(Type *AggrTy, ArrayRef<unsigned> Indices) {
++  Type *MemberTy = ExtractValueInst::getIndexedType(AggrTy, Indices);
++  if (Type *ElemTy = getPointeeType(MemberTy))
++    return ElemTy;
++  return IntegerType::getInt8Ty(AggrTy->getContext());
++}
++
+ // Reconstruct type with nested element types according to deduced type info.
+ // Return nullptr if no detailed type info is available.
+ Type *SPIRVEmitIntrinsics::reconstructType(Value *Op, bool UnknownElemTypeI8,
+@@ -996,6 +1005,12 @@ Type *SPIRVEmitIntrinsics::deduceElementTypeHelper(
+         isPointerTy(Src) && isPointerTy(Dest))
+       Ty = deduceElementTypeHelper(Ref->getOperand(0), Visited,
+                                    UnknownElemTypeI8);
++  } else if (auto *Ref = dyn_cast<ExtractValueInst>(I)) {
++    // An extracted pointer has the type of its aggregate member.
++    if (isPointerTy(I->getType()))
++      Ty = getMemberPointeeType(
++          reconstructType(Ref->getAggregateOperand(), false, false),
++          Ref->getIndices());
+   } else if (auto *Ref = dyn_cast<AtomicCmpXchgInst>(I)) {
+     Value *Op = Ref->getNewValOperand();
+     if (isPointerTy(Op->getType()))
+@@ -2305,6 +2320,16 @@ void SPIRVEmitIntrinsics::insertPtrCastOrAssignTypeInstr(Instruction *I,
+     return;
+   }
+ 
++  // An inserted pointer must have the type of its aggregate member.
++  if (auto *IVI = dyn_cast<InsertValueInst>(I)) {
++    Value *Op = IVI->getInsertedValueOperand();
++    if (isPointerTy(Op->getType()))
++      replacePointerOperandWithPtrCast(
++          I, Op, getMemberPointeeType(IVI->getType(), IVI->getIndices()),
++          InsertValueInst::getInsertedValueOperandIndex(), B);
++    return;
++  }
++
+   // TODO: review and merge with existing logics:
+   // Handle calls to builtins (non-intrinsics):
+   CallInst *CI = dyn_cast<CallInst>(I);
+diff --git a/test/CodeGen/SPIRV/instructions/composite-ptr-member-bitcast.ll b/test/CodeGen/SPIRV/instructions/composite-ptr-member-bitcast.ll
+new file mode 100644
+index 000000000000..b2589e7eec55
+--- /dev/null
++++ b/test/CodeGen/SPIRV/instructions/composite-ptr-member-bitcast.ll
+@@ -0,0 +1,67 @@
++; RUN: llc -verify-machineinstrs -O0 -mtriple=spirv64-unknown-unknown %s -o - | FileCheck %s
++; RUN: %if spirv-tools %{ llc -O0 -mtriple=spirv64-unknown-unknown %s -o - -filetype=obj | spirv-val %}
++
++; A pointer extracted from, or inserted into, a composite has the type of the
++; composite member, which can differ from the type its uses expect.
++; OpCompositeExtract and OpCompositeInsert require the object type to match the
++; member type exactly, so the pointer is bitcast at the use instead.
++
++; CHECK-DAG: %[[#Char:]] = OpTypeInt 8 0
++; CHECK-DAG: %[[#Int:]] = OpTypeInt 32 0
++; CHECK-DAG: %[[#CharPtr:]] = OpTypePointer Function %[[#Char]]
++; CHECK-DAG: %[[#IntPtr:]] = OpTypePointer Function %[[#Int]]
++; CHECK-DAG: %[[#Struct:]] = OpTypeStruct %[[#CharPtr]] %[[#Char]]
++
++define internal { ptr, i8 } @ret_aggr() {
++  ret { ptr, i8 } { ptr null, i8 1 }
++}
++
++; CHECK: OpFunction
++; CHECK: %[[#Aggr:]] = OpFunctionCall %[[#Struct]]
++; CHECK: %[[#Member:]] = OpCompositeExtract %[[#CharPtr]] %[[#Aggr]] 0
++; CHECK: %[[#Ptr:]] = OpBitcast %[[#IntPtr]] %[[#Member]]
++; CHECK: OpLoad %[[#Int]] %[[#Ptr]]
++define spir_kernel void @extract(ptr addrspace(1) %out) {
++  %r = call { ptr, i8 } @ret_aggr()
++  %p = extractvalue { ptr, i8 } %r, 0
++  %v = load i32, ptr %p
++  store i32 %v, ptr addrspace(1) %out
++  ret void
++}
++
++define internal { i32, { ptr, i8 } } @ret_nested_aggr() {
++  ret { i32, { ptr, i8 } } { i32 0, { ptr, i8 } { ptr null, i8 1 } }
++}
++
++; CHECK: OpFunction
++; CHECK: %[[#Aggr:]] = OpFunctionCall %[[#]]
++; CHECK: %[[#Member:]] = OpCompositeExtract %[[#CharPtr]] %[[#Aggr]] 1 0
++; CHECK: %[[#Ptr:]] = OpBitcast %[[#IntPtr]] %[[#Member]]
++; CHECK: OpLoad %[[#Int]] %[[#Ptr]]
++define spir_kernel void @extract_nested(ptr addrspace(1) %out) {
++  %r = call { i32, { ptr, i8 } } @ret_nested_aggr()
++  %p = extractvalue { i32, { ptr, i8 } } %r, 1, 0
++  %v = load i32, ptr %p
++  store i32 %v, ptr addrspace(1) %out
++  ret void
++}
++
++define internal i8 @take_aggr({ ptr, i8 } %a) {
++  %p = extractvalue { ptr, i8 } %a, 0
++  %v = load i8, ptr %p
++  ret i8 %v
++}
++
++; CHECK: OpFunction
++; CHECK: %[[#Var:]] = OpVariable %[[#IntPtr]] Function
++; CHECK: %[[#Cast:]] = OpBitcast %[[#CharPtr]] %[[#Var]]
++; CHECK: OpCompositeInsert %[[#Struct]] %[[#Cast]] %[[#]] 0
++define spir_kernel void @insert(ptr addrspace(1) %out) {
++  %x = alloca i32
++  store i32 7, ptr %x
++  %a = insertvalue { ptr, i8 } poison, ptr %x, 0
++  %b = insertvalue { ptr, i8 } %a, i8 1, 1
++  %r = call i8 @take_aggr({ ptr, i8 } %b)
++  store i8 %r, ptr addrspace(1) %out
++  ret void
++}
+-- 
+2.55.0
+

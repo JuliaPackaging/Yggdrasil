@@ -1,7 +1,7 @@
 # In addition to coin-or-common.jl, we need to modify this file to trigger a
 # rebuild.
 #
-# Last updated: 2024-07-15
+# Last updated: 2026-09-02
 
 include("../coin-or-common.jl")
 

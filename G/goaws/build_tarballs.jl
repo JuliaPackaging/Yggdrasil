@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "goaws"
-version = v"0.4.5"
+version = v"0.5.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Admiral-Piett/goaws.git", "441c9dc79f38f041a398935b8b53549789fa6100")
+    GitSource("https://github.com/Admiral-Piett/goaws.git", "93f27518638b71095a5b593dbabaebacae124ab1")
 ]
 
 # Bash recipe for building across all platforms

@@ -1,9 +1,9 @@
 using BinaryBuilder
 
-version = v"18.1.4"
-git_sha = "e6c3289804a67ea0bb6a86fadbe454dd93b8d855"
+version = v"23.1.2"
+git_sha = "85ac560262434c9ccfc0c183ec22d4138ed647fb" # llvmorg-23.1.2
 
-const buildscript = raw"""
+script = raw"""
 # We want to exit the program if errors occur.
 set -o errexit
 
@@ -11,19 +11,20 @@ set -o errexit
 fd_lim=$(ulimit -n -H)
 ulimit -n $fd_lim
 
-if [[ ("${target}" == x86_64-apple-darwin*) ]]; then
-    # LLVM 15 requires macOS SDK 10.14, see
-    # <https://github.com/JuliaPackaging/Yggdrasil/pull/5592#issuecomment-1309525112> and
-    # references therein.
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    export MACOSX_DEPLOYMENT_TARGET=10.14
-    popd
-fi
+cd ${WORKSPACE}/srcdir/llvm-project
 
-cd ${WORKSPACE}/srcdir/llvm-project/llvm
+# Backport of https://github.com/llvm/llvm-project/pull/215415:
+# don't relax same-function ADRs in large non-simple AArch64 functions,
+# which made BOLT fail on a ThinLTO libLLVM.
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/bolt-aarch64-adr-relaxation-non-simple.patch
+
+# Backport of https://github.com/llvm/llvm-project/pull/226076:
+# with --update-debug-sections, forward DW_FORM_ref_udata references
+# (e.g. in GNU as units such as libgcc's lse.S) were sized wrongly,
+# corrupting .debug_info.
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/bolt-dwarf-ref-udata-forward-refs.patch
+
+cd llvm
 LLVM_SRCDIR=$(pwd)
 
 # Let's do the actual build within the `build` subdirectory
@@ -103,21 +104,6 @@ CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
 # `ld -v`, which is hilariously wrong.
 CMAKE_FLAGS+=(-DLLVM_HOST_TRIPLE=${target})
 
-# Most targets use the actual target string, but we disagree on `aarch64-darwin` and `arm64-darwin`
-CMAKE_TARGET=${target}
-
-if [[ "${target}" == *apple* ]]; then
-    # On OSX, we need to override LLVM's looking around for our SDK
-    # We need to link against libc++ on OSX
-    CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBCXX=ON)
-
-    # If we're building for Apple, CMake gets confused with `aarch64-apple-darwin` and instead prefers
-    # `arm64-apple-darwin`.  If this issue persists, we may have to change our triplet printing.
-    if [[ "${target}" == aarch64* ]]; then
-        CMAKE_TARGET=arm64-${target#*-}
-    fi
-fi
-
 GCC_VERSION=$(gcc --version | head -1 | awk '{ print $3 }' | cut -d. -f1)
 if [[ $version -le 10 && "${target}" == aarch64-linux* ]]; then
     CMAKE_C_FLAGS+=(-mno-outline-atomics)
@@ -125,9 +111,9 @@ if [[ $version -le 10 && "${target}" == aarch64-linux* ]]; then
 fi
 
 # Tell LLVM which compiler target to use, because it loses track for some reason
-CMAKE_FLAGS+=(-DCMAKE_C_COMPILER_TARGET=${CMAKE_TARGET})
-CMAKE_FLAGS+=(-DCMAKE_CXX_COMPILER_TARGET=${CMAKE_TARGET})
-CMAKE_FLAGS+=(-DCMAKE_ASM_COMPILER_TARGET=${CMAKE_TARGET})
+CMAKE_FLAGS+=(-DCMAKE_C_COMPILER_TARGET=${target})
+CMAKE_FLAGS+=(-DCMAKE_CXX_COMPILER_TARGET=${target})
+CMAKE_FLAGS+=(-DCMAKE_ASM_COMPILER_TARGET=${target})
 
 # Defaults to off when crosscompiling, starting from LLVM 18
 CMAKE_FLAGS+=(-DBOLT_ENABLE_RUNTIME=ON)
@@ -143,19 +129,18 @@ install_license ${WORKSPACE}/srcdir/llvm-project/bolt/LICENSE.TXT
 
 sources = [
     GitSource("https://github.com/llvm/llvm-project.git", git_sha),
-    ArchiveSource(
-        "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-        "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"
-    )
+    DirectorySource("./bundled"),
 ]
 
+# BOLT only optimizes ELF binaries, so we only ship it for Linux.
 platforms = expand_cxxstring_abis(supported_platforms())
-filter!(p -> arch(p) ∈ ("x86_64", "aarch64") && os(p) ∈ ("linux", "macos"), platforms)
+filter!(p -> arch(p) ∈ ("x86_64", "aarch64") && Sys.islinux(p), platforms)
 
 products = [
     ExecutableProduct("llvm-bolt", :llvm_bolt),
     ExecutableProduct("llvm-boltdiff", :llvm_boltdiff),
     ExecutableProduct("llvm-bolt-heatmap", :llvm_bolt_heatmap),
+    ExecutableProduct("llvm-bolt-binary-analysis", :llvm_bolt_binary_analysis),
     ExecutableProduct("merge-fdata", :merge_fdata),
     ExecutableProduct("perf2bolt", :perf2bolt),
 ]
@@ -168,5 +153,5 @@ dependencies = [
     Dependency("Zlib_jll"), # for LLD&LTO
 ]
 
-build_tarballs(ARGS, name, version, sources, buildscript, platforms, products, dependencies;
-               preferred_gcc_version=v"10", preferred_llvm_version=v"16", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version=v"10", preferred_llvm_version=v"18", julia_compat="1.6")

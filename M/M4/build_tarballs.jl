@@ -1,21 +1,21 @@
 using BinaryBuilder
 
 name = "M4"
-version = v"1.4.19"
+version = v"1.4.21"
 
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/m4/m4-$(version).tar.xz",
-                  "63aede5c6d33b6d9b13511cd0be2cac046f2e70fd0a07aa9573a04a82783af96"),
+    ArchiveSource("https://ftpmirror.gnu.org/m4/m4-$(version).tar.xz",
+                  "f25c6ab51548a73a75558742fb031e0625d6485fe5f9155949d6486a2408ab66"),
 ]
 
 script = raw"""
-cd $WORKSPACE/srcdir/m4-*/
+cd $WORKSPACE/srcdir/m4-*
 
 if [[ "${target}" == *mingw* ]]; then
     export CFLAGS="-fstack-protector ${CFLAGS}"
 fi
 
-./configure --prefix=${prefix} --host=${target}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nprocs}
 make install
 """

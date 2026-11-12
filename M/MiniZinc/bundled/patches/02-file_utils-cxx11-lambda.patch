@@ -1,0 +1,11 @@
+diff --git a/lib/file_utils.cpp b/lib/file_utils.cpp
+index 61cf8c1b..0263697b 100644
+--- a/lib/file_utils.cpp
++++ b/lib/file_utils.cpp
+@@ -230,5 +230,5 @@ std::string find_executable(const std::string& filename, const std::string& base
+   // On Windows, executables must end with one of these extensions
+   std::vector<std::string> exeSuffixes = get_env_list("PATHEXT");
+-  if (std::find_if(exeSuffixes.begin(), exeSuffixes.end(), [&](const auto& suffix) {
++  if (std::find_if(exeSuffixes.begin(), exeSuffixes.end(), [&](const std::string& suffix) {
+         if (filename.size() < suffix.size()) {
+           return false;

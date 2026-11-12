@@ -2,6 +2,9 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+
 name = "libad9361_iio"
 version = v"0.2.0"
 
@@ -37,8 +40,6 @@ else
     make install
 fi
 """
-
-include("../../fancy_toys.jl")
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
