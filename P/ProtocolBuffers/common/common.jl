@@ -47,7 +47,7 @@ abseil_cpp_compat = "20250814.1"
 include(joinpath(@__DIR__, "..", "..", "..", "platforms", "macos_sdks.jl"))
 
 sources = [
-    GitSource("https://github.com/protocolbuffers/protobuf.git", "2c74169b34066ceb8ddb6b882fcb3fb32d737a55"),
+    GitSource("https://github.com/protocolbuffers/protobuf.git", "2c74169b34066ceb8ddb6b882fcb3fb32d737a55"; tag="v$(base_version.major).$(base_version.minor)"),
     DirectorySource(joinpath(@__DIR__, "bundled")),
 ]
 

@@ -7,7 +7,7 @@ common_path = normpath(@__DIR__, "..", "common")
 include(joinpath(common_path, "common.jl"))
 
 common_tree_hash = join(string.(Pkg.GitTools.tree_hash(common_path); base=16, pad=2))
-common_tree_hash !== "d28ab84ed17798ce5deae99d6d49db0d831f5c01" && error("Tree hash mismatch for $common_path; got: $common_tree_hash")
+common_tree_hash !== "c45ae5a4ac589f8ca2718fea32e4ff47d437795c" && error("Tree hash mismatch for $common_path; got: $common_tree_hash")
 
 name = "ProtocolBuffersSDK_static"
 version = cpp_library_version
