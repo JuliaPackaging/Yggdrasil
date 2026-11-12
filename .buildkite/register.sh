@@ -15,6 +15,13 @@ if [[ ! -d "${JULIA_PROJECT:-}" ]]; then
     exit 1
 fi
 
+# Only publish the artifacts of the build that triggered this one. The triggering build
+# chooses BUILD_ID, whereas Buildkite sets BUILDKITE_TRIGGERED_FROM_BUILD_ID itself.
+if [[ -z "${BUILD_ID:-}" || "${BUILD_ID}" != "${BUILDKITE_TRIGGERED_FROM_BUILD_ID:-}" ]]; then
+    echo "ERROR: BUILD_ID '${BUILD_ID:-}' is not the triggering build '${BUILDKITE_TRIGGERED_FROM_BUILD_ID:-}'" >&2
+    exit 1
+fi
+
 echo "--- Setup Julia packages"
 GITHUB_TOKEN="" REGISTRY_GITHUB_TOKEN="" julia --color=yes -e 'import Pkg; Pkg.instantiate(); Pkg.precompile()'
 

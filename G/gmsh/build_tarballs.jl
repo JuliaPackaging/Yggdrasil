@@ -3,11 +3,12 @@
 using BinaryBuilder
 
 name = "gmsh"
-version = v"4.15.2"
+upstream_version = v"4.15.2"
+version = v"4.15.3" # Different version number because we needed to change compat bound, in the future we can go back to follow upstream
 
 # Collection of sources required to build Gmsh
 sources = [
-    ArchiveSource("https://gmsh.info/src/gmsh-$(version)-source.tgz",
+    ArchiveSource("https://gmsh.info/src/gmsh-$(upstream_version)-source.tgz",
                   "be3f66f225d27ba9fa014f07e83169285da8a051b0e8ab7103d88066b39bdd3e"),
     DirectorySource("./bundled")
     ]
@@ -66,7 +67,7 @@ dependencies = [
     Dependency("FreeType2_jll"; compat="2.13.4"),
     Dependency("GLU_jll"; platforms=x11_platforms),
     Dependency("GMP_jll"; compat="6.2"),
-    Dependency("HDF5_jll"; compat="~2.1.2"),
+    Dependency("HDF5_jll"; compat="2.2.1"),
     Dependency("JpegTurbo_jll"),
     Dependency("Libglvnd_jll"; platforms=x11_platforms),
     Dependency("libpng_jll"),
@@ -84,4 +85,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"9")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.10", preferred_gcc_version=v"9")

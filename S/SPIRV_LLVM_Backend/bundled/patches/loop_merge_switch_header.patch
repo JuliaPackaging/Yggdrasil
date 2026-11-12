@@ -1,0 +1,78 @@
+From 97c2b129a8247185089c71ed7b767b80c46c2ad5 Mon Sep 17 00:00:00 2001
+From: Alexander Shaposhnikov <ashaposhnikov@google.com>
+Date: Tue, 6 Oct 2026 02:06:49 -0700
+Subject: [PATCH] [SPIRV] Fix invalid SPIR-V for loops with switch headers
+ (#229289)
+
+For non-shader targets without SPV_INTEL_unstructured_loop_controls, the
+backend uses OpLoopMerge to carry loop unroll hints. When the loop
+header ends with a switch, it emits OpLoopMerge after OpSwitch,
+producing invalid SPIR-V.
+
+OpLoopMerge must immediately precede OpBranch or OpBranchConditional.
+Emit it only when the loop header ends with one of these branches.
+Non-shader loops do not require OpLoopMerge, so skipping it drops only
+the unroll hint and preserves the loop's behavior.
+
+Co-authored-by: Arseniy Obolenskiy <gooddoog@student.su>
+---
+ lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp    |  4 ++++
+ test/CodeGen/SPIRV/loop-unroll-nonshader.ll | 30 ++++++++++++++++++++++++
+ 2 files changed, 34 insertions(+)
+
+diff --git a/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp b/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
+index 142e2d2110b8..00808e080307 100644
+--- a/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
++++ b/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
+@@ -3661,6 +3661,10 @@ void SPIRVEmitIntrinsics::emitUnstructuredLoopControls(Function &F,
+       continue;
+ 
+     BasicBlock *Header = L->getHeader();
++    // OpLoopMerge must immediately precede an OpBranch or OpBranchConditional.
++    // Switches are already lowered to spv_switch + indirectbr at this point.
++    if (!isa<UncondBrInst, CondBrInst>(Header->getTerminator()))
++      continue;
+     B.SetInsertPoint(Header->getTerminator());
+     auto *MergeAddress = BlockAddress::get(&F, MergeBlock);
+     auto *ContinueAddress = BlockAddress::get(&F, Latch);
+diff --git a/test/CodeGen/SPIRV/loop-unroll-nonshader.ll b/test/CodeGen/SPIRV/loop-unroll-nonshader.ll
+index 24b8239e3386..996f41392142 100644
+--- a/test/CodeGen/SPIRV/loop-unroll-nonshader.ll
++++ b/test/CodeGen/SPIRV/loop-unroll-nonshader.ll
+@@ -151,6 +151,36 @@ exit:
+   ret void
+ }
+ 
++; Test 7: Loop header ending in a switch.
++; OpLoopMerge must immediately precede OpBranch or OpBranchConditional, so no
++; OpLoopMerge may be emitted when the loop header terminates in OpSwitch.
++; CHECK: OpFunction
++; CHECK-NOT: OpLoopMerge
++; CHECK: OpSwitch
++; CHECK-NOT: OpLoopMerge
++; CHECK: OpFunctionEnd
++
++define spir_kernel void @test_switch_header(ptr addrspace(1) %dst) {
++entry:
++  br label %header
++
++header:
++  %i = phi i32 [ 0, %entry ], [ %inc, %latch ]
++  switch i32 %i, label %exit [
++    i32 0, label %latch
++    i32 1, label %latch
++  ]
++
++latch:
++  %ptr = getelementptr inbounds i32, ptr addrspace(1) %dst, i32 %i
++  store i32 %i, ptr addrspace(1) %ptr, align 4
++  %inc = add nuw nsw i32 %i, 1
++  br label %header, !llvm.loop !0
++
++exit:
++  ret void
++}
++
+ ; Check that no Intel extension is required.
+ ; CHECK-NOT: OpExtension "SPV_INTEL_unstructured_loop_controls"
+ ; CHECK-NOT: OpCapability UnstructuredLoopControlsINTEL

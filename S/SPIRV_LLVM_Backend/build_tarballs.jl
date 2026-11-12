@@ -101,6 +101,24 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/phi_select_retyped_operands.patch
 # spirv-val rejected it. InstCombine leaves such switches when it narrows their
 # conditions, e.g. in Julia's union splits.
 atomic_patch -p1 $WORKSPACE/srcdir/patches/bool_switch_selector.patch
+# Backport of https://github.com/llvm/llvm-project/pull/229289 ("[SPIRV] Fix
+# invalid SPIR-V for loops with switch headers"; merged after the 23.x branch).
+# Since LLVM 23, OpenCL loops with unroll hints get an OpLoopMerge, which was
+# emitted after the OpSwitch of a header ending in a switch, so spirv-val
+# rejected the module. Julia emits such headers for `x^n` with an integer `n`
+# in loops that IRCE cloned or `@unroll` annotated (JuliaGPU/KernelAbstractions.jl#959).
+atomic_patch -p1 $WORKSPACE/srcdir/patches/loop_merge_switch_header.patch
+# Backport of https://github.com/llvm/llvm-project/pull/240309 ("[SPIR-V] Fix
+# the overflow flag of llvm.smul.with.overflow"; open upstream): the flag tested
+# the high half of the product against zero, so negative products overflowed
+# (Julia's `checked_mul(-1, 1)` threw) and some overflows went unnoticed.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/smul_overflow_flag.patch
+# Backport of https://github.com/llvm/llvm-project/pull/229678 ("[SPIRV] Re-sort
+# basic blocks after LoopSimplify for non-shader targets"; merged after the 23.x
+# branch). Since LLVM 23, LoopSimplify runs for OpenCL after the blocks were
+# sorted, so a dedicated exit or preheader it inserts could precede its
+# dominator, and spirv-val rejected the module (JuliaGPU/KernelAbstractions.jl#894).
+atomic_patch -p1 $WORKSPACE/srcdir/patches/resort_blocks_after_loopsimplify.patch
 
 install_license LICENSE.TXT
 
