@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "scx_capi"
-version = v"0.1.0"
+version = v"0.1.3"
 
 # C ABI over scx-core's chunked matrix stream (crates/scx-capi), used by ScxStream.jl.
 sources = [
-    GitSource("https://github.com/btraven00/scx.git", "09b7614bec9d9cb83874f7bab1828eea7491b781"),
+    GitSource("https://github.com/btraven00/scx.git", "1b97f1c8d3328ca44a3079e549351cc0a50dac7f";
+              tag="scx-capi-v$(version)"),
 ]
 
 script = raw"""
@@ -41,7 +42,7 @@ products = [
 ]
 
 dependencies = [
-    HostBuildDependency("CMake_jll"),
+    HostBuildDependency(PackageSpec(; name="CMake_jll", version="3.31.9")),
     # Rust links libgcc_s for unwinding on non-macOS targets.
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isapple, platforms)),
 ]
