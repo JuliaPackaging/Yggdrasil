@@ -6,7 +6,7 @@ using Base.BinaryPlatforms: arch, os, tags
 version = v"1.31.1"
 
 sources = AbstractSource[
-    GitSource("https://github.com/microsoft/onnxruntime.git", "6af1a932e2286d5c58166085d24c68783033edee"),
+    GitSource("https://github.com/microsoft/onnxruntime.git", "6af1a932e2286d5c58166085d24c68783033edee"; tag="v$(version)"),
 ]
 
 # ONNX Runtime pins its third-party dependencies (protobuf, onnx, abseil, eigen, ...) in
