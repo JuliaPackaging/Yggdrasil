@@ -21,7 +21,6 @@ Anything linking libgfortran needs `platforms = expand_gfortran_versions(platfor
 
 ```julia
 platforms = expand_gfortran_versions(supported_platforms())
-# Parameterized derived types need gfortran 8
 filter!(p -> libgfortran_version(p) >= v"5", platforms)
 ```
 
