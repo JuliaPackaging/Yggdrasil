@@ -41,11 +41,26 @@ if [[ $bb_full_target == *-cuda+* ]]; then
     export CUDA_PATH=$prefix/cuda
     if [[ $target == aarch64-* ]]; then
         # nvcc must run on the x86_64 host: use the x86_64 compiler with the target's SDK.
+        # It needs the host's glibc libgcc_s/libstdc++.
+        export LD_LIBRARY_PATH="/usr/lib/csl-musl-x86_64:/usr/lib/csl-glibc-x86_64:${LD_LIBRARY_PATH}"
         rm -rf $CUDA_PATH/bin $CUDA_PATH/nvvm/bin $CUDA_PATH/nvvm/lib64
         cp -a cuda_nvcc-linux-x86_64-*-archive/bin $CUDA_PATH/bin
-        cp -a libnvvm-linux-x86_64-*-archive/nvvm/{bin,lib64} $CUDA_PATH/nvvm/
+        if compgen -G "libnvvm-linux-x86_64-*-archive" > /dev/null; then
+            cp -a libnvvm-linux-x86_64-*-archive/nvvm/{bin,lib64} $CUDA_PATH/nvvm/
+        else
+            # before CUDA 13, libnvvm is part of cuda_nvcc
+            cp -a cuda_nvcc-linux-x86_64-*-archive/nvvm/{bin,lib64} $CUDA_PATH/nvvm/
+        fi
     fi
     [[ -e $CUDA_PATH/lib64 ]] || ln -s lib $CUDA_PATH/lib64
+    if compgen -G "cudnn-*-archive" > /dev/null; then
+        # CUDA 12: cuDNN comes from the redist archive at build time (see ONNXRuntime_CUDA)
+        cp -a cudnn-*-archive/include/* $CUDA_PATH/include/
+        cp -a cudnn-*-archive/lib/* $CUDA_PATH/lib/
+        cudnn_path=$CUDA_PATH
+    else
+        cudnn_path=$prefix # CUDNN_jll
+    fi
 
     # CUDA compilation can run out of space in the default temporary directory
     mkdir -p $WORKSPACE/tmpdir
@@ -58,7 +73,7 @@ if [[ $bb_full_target == *-cuda+* ]]; then
         -DCMAKE_CUDA_ARCHITECTURES="75-real;80-real;86-real;89-real;90-real;100-real;120"
         -Donnxruntime_USE_CUDA=ON
         -Donnxruntime_CUDA_HOME=$CUDA_PATH
-        -Donnxruntime_CUDNN_HOME=$prefix
+        -DCUDNN_PATH=$cudnn_path # cmake/external/cuDNN.cmake
         -Donnxruntime_NVCC_THREADS=1
     )
 fi
@@ -70,9 +85,12 @@ elif [[ $target == x86_64-apple-darwin* ]]; then
 fi
 
 cd onnxruntime
+# ORT builds its own targets with COMPILE_WARNING_AS_ERROR, which trips over false positives
+# (e.g. GCC 12's -Wrestrict in libstdc++ headers): `--compile-no-warning-as-error` ignores it.
 cmake \
     -S cmake \
     -B build \
+    --compile-no-warning-as-error \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
@@ -86,7 +104,8 @@ cmake --build build --parallel $nproc
 cmake --install build
 install_license LICENSE
 
-if [[ $bb_full_target == *-cuda+* ]] && [[ $target == aarch64-* ]]; then
+if [[ $bb_full_target == *-cuda+* ]]; then
+    # Drop the build-only CUDA SDK, which we modified (aarch64 nvcc, CUDA 12 cuDNN)
     rm -rf $prefix/cuda
 fi
 """
