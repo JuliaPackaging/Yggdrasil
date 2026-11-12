@@ -19,6 +19,8 @@ include("build_10.2.jl")
 # LocalPreferences.toml files predating the runtime/compiler split only pin the runtime,
 # and silently combining such a pinned runtime with an auto-selected (newer) compiler
 # would break at load time through major-versioned sonames (e.g. libnvJitLink).
+# before Julia 1.13, changing only the runtime's preference doesn't invalidate our cache,
+# so there the preference must be set on both.
 augment_platform_block = """
     const CUDA_jll_uuids = [Base.UUID("d1e2174e-dfdc-576e-b43e-73b79eb1aca8"),
                             Base.UUID("76a88914-d11a-5bdc-97e0-2f5a05c973a2")]
