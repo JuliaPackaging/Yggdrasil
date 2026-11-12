@@ -39,7 +39,12 @@ const preferences = let
     something(selected, Dict{String,Any}())
 end
 
-const local_preference = if haskey(preferences, "local")
+# `version = "none"` disables CUDA, as on a host without a driver, local toolkits included
+const cuda_disabled = get(preferences, "version", nothing) == "none"
+
+const local_preference = if cuda_disabled
+    false
+elseif haskey(preferences, "local")
     if isa(preferences["local"], Bool)
         preferences["local"]
     elseif isa(preferences["local"], String)
@@ -82,7 +87,9 @@ function parse_version_preference(key)
         missing
     end
 end
-const version_preference = if haskey(preferences, "version") && preferences["version"] == "local"
+const version_preference = if cuda_disabled
+    missing
+elseif haskey(preferences, "version") && preferences["version"] == "local"
     # legacy support for CUDA.jl's old "version" preference format.
     # in this case, an "actual_version" preference is required.
     parse_version_preference("actual_version")
@@ -386,6 +393,11 @@ end
 # returns the value for the "cuda" tag we should use in the platform ("$MAJOR.$MINOR")
 # or nothing if no compatible CUDA toolkit was found.
 function cuda_toolkit_tag()
+    if cuda_disabled
+        @debug "CUDA disabled by preference"
+        return nothing
+    end
+
     # check if the user requested a specific version
     if version_preference !== missing
         @debug "CUDA version override: $version_preference"
