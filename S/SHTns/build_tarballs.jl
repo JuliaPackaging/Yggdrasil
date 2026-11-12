@@ -10,11 +10,12 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 name = "SHTns"
 version_string = "3.7"
 version = VersionNumber(version_string)
+ygg_version = v"3.7.1"  # the rebuild raises the JLLWrappers, CUDA_Runtime_jll and Julia compat bounds
 
-# Collection of sources required to complete build (note to self: use `sha256sum` to generate the checksum from tarball) 
+# Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://gricad-gitlab.univ-grenoble-alpes.fr/schaeffn/shtns/-/archive/v$(version_string)/shtns-v$(version_string).tar.gz",
-                  "6c727ccc4d15d3170c3e20ad2b8a721c8b1fd838b1944c7d7e515a4fce43f75c")
+    GitSource("https://gricad-gitlab.univ-grenoble-alpes.fr/schaeffn/shtns.git",
+              "4e04fba84ea156974df5edaf4ee856c0f4f86e77"; tag="v$(version_string)")
 ]
 
 # Bash recipe for building across all platforms
@@ -55,8 +56,11 @@ install_license LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 
-cpu_platforms = supported_platforms()
-cuda_platforms = CUDA.supported_platforms(; min_version=v"11.5") #v11.4 does not have -arch=all available
+cpu_platforms = CUDA.cpu_platforms(supported_platforms())
+# One build per CUDA major also serves its newer minors. v11.4 does not have -arch=all available.
+cuda_platforms = [CUDA.supported_platforms(; min_version=v"11.5", max_version=v"11.5.999");
+                  CUDA.supported_platforms(; min_version=v"12", max_version=v"12.0.999");
+                  CUDA.supported_platforms(; min_version=v"13", max_version=v"13.0.999")]
 
 filter!(p -> arch(p) != "aarch64", cuda_platforms) #doesn't work
 
@@ -74,18 +78,14 @@ dependencies = [
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll"); platforms=filter(!Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="LLVMOpenMP_jll"); platforms=filter(Sys.isbsd, platforms)),
+    CUDA.required_dependencies(platforms)...
 ]
 
 # Build the tarballs
 for platform in platforms
-    if Sys.islinux(platform) && (arch(platform) == "x86_64") && (libc(platform) == "glibc")
-        if !haskey(platform,"cuda")
-            platform["cuda"] = "none"
-        end
-    end
     should_build_platform(triplet(platform)) || continue
-    build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; CUDA.required_dependencies(platform)];
-                julia_compat = "1.6",
+    build_tarballs(ARGS, name, ygg_version, sources, script, [platform], products, dependencies;
+                julia_compat = "1.10",  # CUDA_Runtime_jll requires Julia 1.10
                 lazy_artifacts=true,
                 preferred_gcc_version = v"10",
                 augment_platform_block = CUDA.augment, dont_dlopen=true, skip_audit=true)
