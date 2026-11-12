@@ -1,10 +1,10 @@
 using BinaryBuilder, Pkg
 
 name = "Notcurses"
-version = v"3.0.16"
+version = v"3.0.17"
 sources = [
     GitSource("https://github.com/dankamongmen/notcurses",
-              "9e555a0151702ca53bd7d4f6f63bfc32b9fac1c5"),
+              "77672788db0765ab868abafebbaadd8cfe133781"),
     DirectorySource("bundled"),
 ]
 
@@ -19,28 +19,26 @@ if [[ $target == *mingw* ]]; then
 fi
 
 multimedia=ffmpeg
-if [[ ${bb_full_target} == armv6l-* ]]; then
-    # FFMpeg is not available on armv6l
-    multimedia=none
-elif [[ ${target} == *mingw* ]]; then
+if [[ ${target} == *mingw* ]]; then
     # FFMpeg is not found (why?)
     # We patch CMakelists.txt for shared libraries in Windows, maybe this goes wrong?
     multimedia=none
 fi
 
-FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
-       -DCMAKE_INSTALL_PREFIX=${prefix}
-       -DCMAKE_BUILD_TYPE=Release
-       -DBUILD_EXECUTABLES=ON
-       -DBUILD_SHARED_LIBS=ON
-       -DUSE_CXX=OFF
-       -DUSE_DOCTEST=OFF
-       -DUSE_MULTIMEDIA=${multimedia}
-       -DUSE_PANDOC=OFF
-       -DUSE_POC=OFF
-       -DUSE_QRCODEGEN=OFF
-       -DUSE_STATIC=OFF
-       )
+FLAGS=(
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+    -DCMAKE_INSTALL_PREFIX=${prefix}
+    -DCMAKE_BUILD_TYPE=Release
+    -DBUILD_EXECUTABLES=ON
+    -DBUILD_SHARED_LIBS=ON
+    -DUSE_CXX=OFF
+    -DUSE_DOCTEST=OFF
+    -DUSE_MULTIMEDIA=${multimedia}
+    -DUSE_PANDOC=OFF
+    -DUSE_POC=OFF
+    -DUSE_QRCODEGEN=OFF
+    -DUSE_STATIC=OFF
+)
 
 if [[ ${target} == x86_64-linux-musl ]]; then
     # Remove some host files that confuse the build system
@@ -51,9 +49,22 @@ fi
 if [[ ${target} == aarch64-apple-* ]]; then
     # Linking FFMPEG requires the function `__divdc3`, which is implemented in
     # `libclang_rt.osx.a` from LLVM compiler-rt.
-    FLAGS+=(-DCMAKE_SHARED_LINKER_FLAGS="-L${libdir}/darwin -lclang_rt.osx"
-            -DCMAKE_EXE_LINKER_FLAGS="-L${libdir}/darwin -lclang_rt.osx"
-            )
+    FLAGS+=(
+        -DCMAKE_SHARED_LINKER_FLAGS="-L${libdir}/darwin -lclang_rt.osx"
+        -DCMAKE_EXE_LINKER_FLAGS="-L${libdir}/darwin -lclang_rt.osx"
+    )
+fi
+
+if [[ ${target} == *mingw* ]]; then
+    # Allow multiple definitions of symbols. This is needed as
+    # band-aid because many our dependencies (at least libexpat,
+    # libharfbuzz, libintl, libunistring) re-export multi-byte string
+    # functions (`mbrtowc` and friends) that are defined in a system
+    # library. We could fix all these libraries (see `Ncurses` for a
+    # fix), but this is easier.
+    FLAGS+=(
+        -DCMAKE_SHARED_LINKER_FLAGS="-Wl,--allow-multiple-definition"
+    )
 fi
 
 cmake -B build "${FLAGS[@]}"
@@ -78,10 +89,10 @@ products = [
 # Dependencies that must be installed before this package can be built.
 llvm_version = v"13.0.1+1"
 dependencies = [
-    Dependency("FFMPEG_jll"; compat="6.1.3"),
-    Dependency("Ncurses_jll"),
-    Dependency("libdeflate_jll"),
-    Dependency("libunistring_jll"),
+    Dependency("FFMPEG_jll"; compat="8.0.1"),
+    Dependency("Ncurses_jll"; compat="6.6"),
+    Dependency("libdeflate_jll"; compat="1.25"),
+    Dependency("libunistring_jll"; compat="1.4.1"),
     # We need libclang_rt.osx.a for linking FFMPEG, because this library provides the
     # implementation of `__divdc3`.
     BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
@@ -90,5 +101,3 @@ dependencies = [
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"7", preferred_llvm_version=llvm_version)
-
-# Build trigger: 1

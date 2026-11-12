@@ -14,14 +14,7 @@ rustc -o ${bindir}/hello_world${exeext} -g /usr/share/testsuite/rust/hello_world
 install_license /usr/share/licenses/MIT
 """
 
-# We build for a restricted set of platforms, because our rust toolchain is a little broken
 platforms = supported_platforms()
-
-# 32-bit Windows seems to be broken
-# https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/499
-filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms)
-# Not yet supported by our Rust toolchain
-filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [

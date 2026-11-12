@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "tree_sitter_c_sharp"
-version = v"0.23.1"
+version = v"0.23.5"
 
 # Collection of sources required to complete build
 sources = [
     GitSource(
         "https://github.com/tree-sitter/tree-sitter-c-sharp.git",
-        "362a8a41b265056592a0c3771664a21d23a71392"
+        "cac6d5fb595f5811a076336682d5d595ac1c9e85"
     ),
     DirectorySource("./bundled")
 ]

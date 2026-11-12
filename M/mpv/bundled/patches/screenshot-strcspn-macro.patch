@@ -1,0 +1,11 @@
+--- a/player/screenshot.c
++++ b/player/screenshot.c
+@@ -233,7 +233,7 @@
+         case 't': {
+             char tfmt = *template;
+             // Translate common extensions to the closest alternative.
+-            size_t i = strcspn("sklPaAbBcCdDeFgGhHIjmMnprRStTuUVwWxXyYzZ%", (char[]){tfmt, '\0'});
++            size_t i = strcspn("sklPaAbBcCdDeFgGhHIjmMnprRStTuUVwWxXyYzZ%", ((char[]){tfmt, '\0'}));
+             tfmt =             "sHIpaAbBcCdDeFgGhHIjmMnprRStTuUVwWxXyYzZ%"[i];
+             if (!tfmt || !local_time)
+                 goto error_exit;

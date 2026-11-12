@@ -3,13 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "util_linux"
-version_string = "2.41.2"
+version_string = "2.42.4"
 version = VersionNumber(version_string)
+ygg_version = v"2.42.5"  # Rebuilt against SQLite_jll 3.54.0 with its legacy SONAME restored
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v$(version.major).$(version.minor)/util-linux-$(version_string).tar.xz",
-                  "6062a1d89b571a61932e6fc0211f36060c4183568b81ee866cf363bce9f6583e"),
+                  "fbd62a100ab7bb8746ba0661255c3c48185b1e9021507c624da01fbc696330ec"),
 ]
 
 # Bash recipe for building across all platforms
@@ -18,9 +19,13 @@ cd $WORKSPACE/srcdir/util-linux-*
 export CPPFLAGS="-I${includedir}"
 
 # This constant is provided by newer Linux kernel headers
-`#define EM_RISCV      243     /* RISC-V */`
-`#define AUDIT_ARCH_RISCV64    (EM_RISCV|__AUDIT_ARCH_64BIT|__AUDIT_ARCH_LE)`
+# `#define EM_RISCV      243     /* RISC-V */`
+# `#define AUDIT_ARCH_RISCV64    (EM_RISCV|__AUDIT_ARCH_64BIT|__AUDIT_ARCH_LE)`
 perl -pi -e 's/AUDIT_ARCH_RISCV64/(243|__AUDIT_ARCH_64BIT|__AUDIT_ARCH_LE)/g' include/audit-arch.h
+
+# This constant is provided by newer glibc headers in `glibc/inet/netinet/in.h`
+# `IPPROTO_MPLS = 137`
+perl -pi -e 's/IPPROTO_MPLS/137/g' lsfd-cmd/sock-xinfo.c
 
 configure_flags=()
 if [[ ${nbits} == 32 ]]; then
@@ -30,6 +35,24 @@ fi
 if [[ ${target} == powerpc64le-linux-gnu* || ${target} == x86_64-linux-gnu* || ${target} == i686-linux-gnu* ]]; then
     # `AF_VSOCK` is not defined. Maybe our glibc is too old?
     configure_flags+=(--disable-lsfd)
+fi
+if [[ ${target} == aarch64-linux-gnu* ||
+      ${target} == arm-linux-gnu* ||
+      ${target} == i686-linux-gnu* ||
+      ${target} == powerpc64le-linux-gnu* ||
+      ${target} == x86_64-linux-gnu* ||
+      ${target} == *-linux-musl* ]]
+then
+    # The function `copy_file_range` is not defined. Maybe our glibc is too old?
+    configure_flags+=(--disable-copyfilerange)
+    # Disabling `copyfilerange` via a configure option does not work. Configure enables it anyway. We disable it manually.
+    perl -pi -e 's/^\s*if test "x\$build_copyfilerange" = xyes; then$/if false; then/' configure
+fi
+if [[ ${target} == arm-linux-gnu* ||
+      ${target} == i686-linux-gnu* ]]
+then
+    # Our <fts.h> is too old for 64-bit LFS on 32-bit systems; disable fts.
+    configure_flags+=(ac_cv_func_fts_open=no)
 fi
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-makeinstall-chown --enable-fdformat ${configure_flags[@]}
@@ -82,7 +105,7 @@ products = [
     ExecutableProduct("fsfreeze", :fsfreeze, "sbin"),
     ExecutableProduct("fstrim", :fstrim, "sbin"),
     ExecutableProduct("getopt", :getopt),
-    ExecutableProduct("hardlink", :hardlink),
+    ExecutableProduct("hardlink", :util_hardlink), # Avoid name conflict with `Base.hardlink`
     ExecutableProduct("hexdump", :hexdump),
     ExecutableProduct("hwclock", :hwclock, "sbin"),
     ExecutableProduct("ionice", :ionice),
@@ -156,10 +179,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("SQLite_jll"),
+    Dependency("SQLite_jll"; compat="3.54.0"),
     Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"5")

@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "LibArchive"
-version = v"3.8.3"
+version = v"3.8.11"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://www.libarchive.org/downloads/libarchive-$(version).tar.xz",
-                  "90e21f2b89f19391ce7b90f6e48ed9fde5394d23ad30ae256fb8236b38b99788"),
+                  "a3dc0872b1b39da34dc18ef1b944f0f11ffd37425d70ae04be679279f1cf43d2"),
 ]
 
 # Bash recipe for building across all platforms
@@ -21,6 +21,7 @@ export CPPFLAGS="-I${includedir}"
     --with-expat \
     --with-openssl \
     --without-xml2 \
+    --without-xmllite \
     --without-nettle \
     --disable-static
 make -j${nproc}
@@ -34,9 +35,10 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libarchive", :libarchive),
+    ExecutableProduct("bsdcat", :bsdcat),
     ExecutableProduct("bsdcpio", :bsdcpio),
     ExecutableProduct("bsdtar", :bsdtar),
-    ExecutableProduct("bsdcat", :bsdcat)
+    ExecutableProduct("bsdunzip", :bsdunzip),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -46,12 +48,14 @@ dependencies = [
     Dependency("Bzip2_jll"; compat="1.0.9"),
     Dependency("Expat_jll"; compat="2.6.5"),
     Dependency("Libiconv_jll"),
-    Dependency("Lz4_jll"),
+    Dependency("Lz4_jll"; compat="1.10.1"),
     Dependency("OpenSSL_jll"; compat="3.0.16"),
-    Dependency("XZ_jll"),
-    Dependency("Zlib_jll"),
-    Dependency("Zstd_jll"),
+    Dependency("XZ_jll"; compat="5.8.4"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
+    Dependency("Zstd_jll"; compat="1.5.7"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+# We need GCC 5 for safe integer intrinsics.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"5")

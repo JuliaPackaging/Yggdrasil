@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "OCCT"
-version = v"7.9.2"
+version = v"7.9.3"
 
 # Collection of sources required to build Open CASCADE Technology (OCCT)
 sources = [
     GitSource("https://github.com/Open-Cascade-SAS/OCCT.git",
-              "c5f20409c52bf8f658314d205a0e5d6f0be0969c"), # V7_9_2 @ Oct 18, 2025
+              "a016080bf6738d6aeae020badee4e888ad1540a5"), # V7_9_3 @ Dec 6, 2025
     DirectorySource("./bundled")
 ]
 

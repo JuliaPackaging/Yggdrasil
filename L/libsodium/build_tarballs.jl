@@ -3,14 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libsodium"
-# Note: upstream stopped giving version numbers to new releases.  "Releases" are
-# commits to the "stable" branch.  Here we just invent new versions numbers
-# because we need having different versions.
-version = v"1.0.21"
+version = v"1.0.22"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/jedisct1/libsodium.git", "d3f4804f4d4e6b5b4610fe377f6ff24e4368ae09"),
+    GitSource("https://github.com/jedisct1/libsodium.git", "77e1ce5d6dee871c49ef211222ba18ef0c486bda"),
 ]
 
 # Bash recipe for building across all platforms

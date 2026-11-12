@@ -2,18 +2,13 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-# See https://github.com/JuliaLang/Pkg.jl/issues/2942
-# Once this Pkg issue is resolved, this must be removed
-uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
-delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
-
 name = "Geant4_julia"
-version = v"0.3.0"
+version = v"0.4.2"
 
 # Collection of sources required to build Geant4_julia
 sources = [
     GitSource("https://github.com/peremato/Geant4_cxxwrap.git",
-              "7e2194e1b214a9af7f85a201c44780bece4720e9"),
+              "484583aa00e45443389a1366ebb12029eb44e164"),
 ]
 
 # Bash recipe for building across all platforms
@@ -38,6 +33,7 @@ include("../../L/libjulia/common.jl")
 # Filter Julia versions:
 # - Remove versions below current LTS (1.10)
 filter!(x -> x >= v"1.10", julia_versions)
+filter!(x -> x < v"1.15", julia_versions) # Until we support 1.15, we don't want to build for it yet.
 
 # platforms supported by libjulia
 platforms = vcat(libjulia_platforms.(julia_versions)...)
@@ -61,11 +57,11 @@ products = [
 dependencies = [
     BuildDependency("libjulia_jll"),
     BuildDependency("Xorg_xorgproto_jll"),
-    Dependency("libcxxwrap_julia_jll"; compat="0.14.4"),
-    Dependency("Geant4_jll"; compat="11.3.2")
+    Dependency("libcxxwrap_julia_jll"; compat="0.14.7"),
+    Dependency("Geant4_jll"; compat="~11.4.1")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
                preferred_gcc_version=v"9", 
-               julia_compat="1.6")
+               julia_compat="1.10")

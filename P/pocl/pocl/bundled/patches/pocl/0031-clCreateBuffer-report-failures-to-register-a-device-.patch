@@ -1,0 +1,103 @@
+From 46455e57e05130954eadf48f539e6fae3443656b Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Tue, 6 Oct 2026 21:38:21 +0200
+Subject: [PATCH] clCreateBuffer: report failures to register a device address
+
+When a CL_MEM_DEVICE_PRIVATE_ADDRESS_EXT buffer's address overlapped
+another allocation, clCreateBuffer returned NULL but left the error
+code at CL_SUCCESS. clSVMAlloc and clMemAllocINTEL, which create their
+shadow buffers this way, only check the error code, so they returned an
+allocation without a shadow buffer, on which every map or copy fails
+with CL_INVALID_MEM_OBJECT. That is how the stale entries fixed by
+#2361 surfaced. Return CL_OUT_OF_RESOURCES instead, and
+CL_OUT_OF_HOST_MEMORY when allocating the entry itself fails, which
+returned without setting the error code and leaked the buffer.
+
+On failure, also drop the addresses already registered for the other
+devices of the context, which pointed to the freed buffer.
+---
+ lib/CL/clCreateBuffer.c               | 13 ++++++++++--
+ tests/runtime/test_device_address.cpp | 29 +++++++++++++++++++++++++++
+ 2 files changed, 40 insertions(+), 2 deletions(-)
+
+diff --git a/lib/CL/clCreateBuffer.c b/lib/CL/clCreateBuffer.c
+index 51fd0daf7..800c886e2 100644
+--- a/lib/CL/clCreateBuffer.c
++++ b/lib/CL/clCreateBuffer.c
+@@ -216,8 +216,8 @@ pocl_create_memobject (cl_context context,
+                                   "Out of device memory?");
+ 
+               pocl_raw_ptr *item = calloc (1, sizeof (pocl_raw_ptr));
+-              POCL_RETURN_ERROR_ON ((item == NULL), NULL,
+-                                    "out of host memory\n");
++              POCL_GOTO_ERROR_ON ((item == NULL), CL_OUT_OF_HOST_MEMORY,
++                                  "out of host memory\n");
+ 
+ 	      size_t mem_size = size;
+ 	      if (strcmp(dev->ops->device_name, "remote") == 0)
+@@ -252,6 +252,7 @@ pocl_create_memobject (cl_context context,
+ 
+               if (!inserted) {
+                   POCL_MEM_FREE (item);
++                  errcode = CL_OUT_OF_RESOURCES;
+                   goto ERROR;
+               }
+ 
+@@ -281,6 +282,14 @@ pocl_create_memobject (cl_context context,
+ ERROR:
+   if (mem)
+   {
++    /* drop the device addresses registered for other devices */
++    if (mem->has_device_address)
++      {
++        POCL_LOCK_OBJ (context);
++        pocl_raw_ptr_set_erase_all_by_shadow_mem (context->raw_ptrs, mem);
++        POCL_UNLOCK_OBJ (context);
++      }
++
+     if (mem->device_ptrs)
+     {
+       for (i = 0; i < context->num_devices; ++i)
+diff --git a/tests/runtime/test_device_address.cpp b/tests/runtime/test_device_address.cpp
+index 86817445e..437f370e5 100644
+--- a/tests/runtime/test_device_address.cpp
++++ b/tests/runtime/test_device_address.cpp
+@@ -328,6 +328,35 @@ int main(void) {
+       return EXIT_FAILURE;
+     }
+ 
++    // Two device-address buffers over the same host memory. Where the device
++    // address is the host pointer, the second one cannot get an address of its
++    // own; creating it must then fail with an error instead of returning NULL
++    // with CL_SUCCESS.
++    cl_int AliasedHost[BUF_SIZE] = {0};
++    cl_int Err = CL_SUCCESS;
++    cl_mem First = clCreateBuffer(
++        Context.get(),
++        CL_MEM_READ_WRITE | CL_MEM_DEVICE_PRIVATE_ADDRESS_EXT |
++            CL_MEM_USE_HOST_PTR,
++        sizeof(AliasedHost), AliasedHost, &Err);
++    if (First == nullptr || Err != CL_SUCCESS) {
++      std::cerr << "Creating a device-address buffer failed: " << Err << "\n";
++      return EXIT_FAILURE;
++    }
++    cl_mem Second = clCreateBuffer(
++        Context.get(),
++        CL_MEM_READ_WRITE | CL_MEM_DEVICE_PRIVATE_ADDRESS_EXT |
++            CL_MEM_USE_HOST_PTR,
++        sizeof(AliasedHost), AliasedHost, &Err);
++    if ((Second == nullptr) != (Err != CL_SUCCESS)) {
++      std::cerr << "clCreateBuffer returned " << Second << " with error "
++                << Err << "\n";
++      return EXIT_FAILURE;
++    }
++    if (Second != nullptr)
++      clReleaseMemObject(Second);
++    clReleaseMemObject(First);
++
+   } catch (cl::Error &err) {
+     std::cerr << "ERROR: " << err.what() << "(" << err.err() << ")"
+               << std::endl;
+-- 
+2.56.0
+

@@ -98,7 +98,7 @@ augment_platform_block = """
     """
 
 # determine exactly which tarballs we should build
-llvm_versions = [v"20.1.8+0"]
+llvm_versions = [v"20.1.8"]
 builds = []
 for llvm_version in llvm_versions, llvm_assertions in (false, true)
     llvm_name = llvm_assertions ? "LLVM_full_assert_jll" : "LLVM_full_jll"
@@ -110,7 +110,7 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
         BuildDependency("Vulkan_Headers_jll"),
         # LLVM jlls are complicated - sigh - don't ask
         RuntimeDependency("Clang_jll"),
-        BuildDependency(PackageSpec(name=llvm_name, version=llvm_version))
+        BuildDependency(PackageSpec(name=llvm_name, version=string(llvm_version)))
     ]
     if !host_build
         push!(dependencies, HostBuildDependency("Qt6LinguistTools_jll"))
@@ -142,6 +142,8 @@ for (i,build) in enumerate(builds)
                    build.platforms, products, build.dependencies;
                    preferred_gcc_version=any(Sys.isapple, build.platforms) ? nothing :
                                          any(Sys.iswindows, build.platforms) ? v"13" : v"10", julia_compat="1.6",
-                   preferred_llvm_version=qt_llvm_version,
+                   preferred_llvm_version=VersionNumber(qt_llvm_version),
                    augment_platform_block)
 end
+
+# rebuild trigger: 1

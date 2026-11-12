@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "CImGuiPack"
-version = v"0.10.0"
+version = v"0.14.0"
 
 # Collection of sources required to build CImGuiPack
 sources = [
     GitSource("https://github.com/JuliaImGui/cimgui-pack.git",
-              "e5ac55e7d02d3a52292c8197de5a049037d5e234")
+              "bd33c9196416b63e216438d611a1ff567cb9f77a")
 ]
 
 # Bash recipe for building across all platforms
@@ -70,7 +70,9 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [Dependency("GLFW_jll")]
+dependencies = [Dependency("GLFW_jll"),
+                Dependency("FreeType2_jll"),
+                BuildDependency("Xorg_xorgproto_jll")]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.9", preferred_gcc_version=v"5")

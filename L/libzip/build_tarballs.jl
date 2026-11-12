@@ -3,19 +3,23 @@
 using BinaryBuilder, Pkg
 
 name = "libzip"
-version = v"1.11.3"
+version = v"1.12.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/nih-at/libzip.git", "f30f5290de485348442d168cd7b2eb714d1f20f9")
+    GitSource("https://github.com/nih-at/libzip.git", "8e037534ccd62f444abbe4ce265443ee74bbfeb3"; tag="v$(version)")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 cd libzip
+if [[ ${target} == *-mingw* ]]; then
+    # Our mingw-w64 `intsafe.h` lacks `DWORD_MAX`
+    export CFLAGS="-DDWORD_MAX=0xffffffffUL"
+fi
 cmake -B build -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
-cmake --build build --parallel ${nprocs}
+cmake --build build --parallel ${nproc}
 cmake --install build
 """
 

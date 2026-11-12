@@ -1,0 +1,64 @@
+Install MinGW DLLs and their plugInfo.json files to bin/, so pxrTargets.cmake points at the installed DLLs. Not reported upstream.
+
+diff --git a/cmake/defaults/ProjectDefaults.cmake b/cmake/defaults/ProjectDefaults.cmake
+index 6147f7b..a33b52c 100644
+--- a/cmake/defaults/ProjectDefaults.cmake
++++ b/cmake/defaults/ProjectDefaults.cmake
+@@ -4,6 +4,13 @@
+ # Licensed under the terms set forth in the LICENSE.txt file available at
+ # https://openusd.org/license.
+ #
++# Windows finds DLLs next to the executable or on PATH, not in lib/
++if(MINGW)
++    set(PXR_LIB_DIR bin)
++else()
++    set(PXR_LIB_DIR lib)
++endif()
++
+ if(APPLE)
+     set(OSX_ARCHITECTURES "x86_64" CACHE STRING "Build architectures for OSX")
+     set(CMAKE_MACOSX_RPATH ON)
+diff --git a/cmake/macros/Private.cmake b/cmake/macros/Private.cmake
+index b90b743..74d4725 100644
+--- a/cmake/macros/Private.cmake
++++ b/cmake/macros/Private.cmake
+@@ -1150,7 +1150,7 @@ function(_pxr_library NAME)
+             _get_install_dir("plugin/usd" pluginInstallPrefix)
+         endif()
+     else()
+-        _get_install_dir("lib/usd" pluginInstallPrefix)
++        _get_install_dir("${PXR_LIB_DIR}/usd" pluginInstallPrefix)
+     endif()
+     if(args_SUBDIR)
+         set(pluginInstallPrefix "${pluginInstallPrefix}/${args_SUBDIR}")
+@@ -1230,7 +1230,7 @@ function(_pxr_library NAME)
+     # Where do we install library to?
+     _get_install_dir("include" headerInstallDir)
+     _get_install_dir("include/${PXR_PREFIX}/${NAME}" headerInstallPrefix)
+-    _get_install_dir("lib" libInstallPrefix)
++    _get_install_dir("${PXR_LIB_DIR}" libInstallPrefix)
+     if(isPlugin)
+         if(NOT isObject)
+             # A plugin embedded in the monolithic library is found in
+diff --git a/cmake/macros/Public.cmake b/cmake/macros/Public.cmake
+index b8e588b..16f7039 100644
+--- a/cmake/macros/Public.cmake
++++ b/cmake/macros/Public.cmake
+@@ -1025,7 +1025,7 @@ function(pxr_setup_plugins)
+     foreach(dirName ${PXR_EXTRA_PLUGINS})
+         file(RELATIVE_PATH
+             relDirName
+-            "${CMAKE_INSTALL_PREFIX}/lib/usd"
++            "${CMAKE_INSTALL_PREFIX}/${PXR_LIB_DIR}/usd"
+             "${CMAKE_INSTALL_PREFIX}/${dirName}"
+         )
+         set(extraIncludes "${extraIncludes},\n        \"${relDirName}/\"")
+@@ -1036,7 +1036,7 @@ function(pxr_setup_plugins)
+          "${plugInfoContents}")
+     install(
+         FILES "${CMAKE_CURRENT_BINARY_DIR}/plugins_plugInfo.json"
+-        DESTINATION lib/usd
++        DESTINATION ${PXR_LIB_DIR}/usd
+         RENAME "plugInfo.json"
+     )
+ 

@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Rclone"
-version = v"1.70.3"
+version = v"1.76.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/rclone/rclone/releases/download/v$(version)/rclone-v$(version).tar.gz",
-                  "e9399f0e940b3f7444a0322f35245c2e021b9e9af0709ba928e82e58f35c00d8"),
+                  "fa2b2e4ae56c4f1b91102285b736596e2a028be77cb2aaa5a0df53f3a7fc5902"),
     DirectorySource("bundled"),
 ]
 
@@ -21,11 +21,15 @@ cd rclone*
 # We are losing "version information and icon resources" in our `rclone` executable.
 atomic_patch -p0 ../patches/make.patch
 
+# Keep Go's scratch dir ($WORK) out of the sandbox's small /tmp: the linker
+# mmaps the full rclone binary there, which can hit ENOSPC on loaded agents.
+export GOTMPDIR=${WORKSPACE}/gotmp
+mkdir -p ${GOTMPDIR}
+
 make
 
 # install manually as `make install` doesn't include $exeext
-install -d ${bindir}
-install -t ${bindir} ${GOPATH}/bin/rclone${exeext}
+install -Dvm 755 "${GOPATH}/bin/rclone${exeext}" -t "${bindir}"
 """
 
 # These are the platforms we will build for by default, unless further

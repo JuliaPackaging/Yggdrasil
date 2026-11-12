@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "libssh"
-version = v"0.11.3"
+version = v"0.12.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.libssh.org/files/$(version.major).$(version.minor)/libssh-$(version).tar.xz", "7d8a1361bb094ec3f511964e78a5a4dba689b5986e112afabe4f4d0d6c6125c3")
+    ArchiveSource("https://www.libssh.org/files/$(version.major).$(version.minor)/libssh-$(version).tar.xz",
+                  "49560f677d96e3706a904ac2de1116e25f3680937d51e5c92198fcba4a1c1e9f")
 ]
 
 # Bash recipe for building across all platforms
@@ -35,6 +36,7 @@ fi
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
                                      -DCMAKE_BUILD_TYPE=Release \
                                      -DWITH_GSSAPI=${GSSAPI_ENABLED} \
+                                     -DDOXYGEN_GENERATE_TAGFILE=tags.xml \
                                      -DWITH_EXAMPLES=OFF ..
 
 make -j${nproc}
@@ -65,4 +67,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8")

@@ -1,0 +1,5 @@
+[deps]
+ClaudeMCPTools = "b9bb1685-6a70-41d7-9793-2f9fb633d966"
+
+[sources]
+ClaudeMCPTools = {url = "https://github.com/JuliaBench/ClaudeMCPTools.jl", rev = "master"}

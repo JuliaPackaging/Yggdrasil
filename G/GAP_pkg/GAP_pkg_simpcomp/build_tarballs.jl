@@ -3,7 +3,7 @@
 include("../common.jl")
 
 name = "simpcomp"
-upstream_version = "2.1.14" # when you increment this, reset offset to v"0.0.0"
+upstream_version = "2.1.15" # when you increment this, reset offset to v"0.0.0"
 offset = v"1.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
@@ -12,7 +12,7 @@ version = offset_version(upstream_version, offset)
 # Collection of sources required to build this JLL
 sources = [
     ArchiveSource("https://github.com/simpcomp-team/simpcomp/releases/download/v$(upstream_version)/simpcomp-$(upstream_version).tar.gz",
-                  "2a1a33068b038776d6932f13b5eb63d32b0799906a2ec190f585b2931d724dcd"),
+                  "7588487ffc818181e9f900438160e555af8f0807c50e003e684754627d53b70b"),
 ]
 
 # Bash recipe for building across all platforms

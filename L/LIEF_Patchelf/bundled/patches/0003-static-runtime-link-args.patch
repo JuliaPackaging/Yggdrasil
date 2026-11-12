@@ -1,0 +1,64 @@
+diff --git a/tools/lief-patchelf/build.rs b/tools/lief-patchelf/build.rs
+new file mode 100644
+--- /dev/null
++++ b/tools/lief-patchelf/build.rs
+@@ -0,0 +1,59 @@
++//! Link the CLI against a static platform runtime.
++//!
++//! LIEF and lief-sys are static archives, so the compiler runtime is all that
++//! would otherwise stay dynamic. Selecting a static CRT is a codegen choice
++//! and has to come from RUSTFLAGS, but everything the linker itself needs is
++//! emitted here.
++
++use std::env;
++use std::path::PathBuf;
++use std::process::Command;
++
++fn link_arg(arg: &str) {
++    println!("cargo::rustc-link-arg-bins={arg}");
++}
++
++/// Ask the C++ driver for the static libstdc++ it would otherwise link.
++fn static_libstdcxx() -> PathBuf {
++    let cxx = env::var("CXX").unwrap_or_else(|_| "c++".into());
++    let out = Command::new(&cxx)
++        .arg("-print-file-name=libstdc++.a")
++        .output()
++        .unwrap_or_else(|e| panic!("could not run {cxx}: {e}"));
++    let path = PathBuf::from(String::from_utf8_lossy(&out.stdout).trim());
++    assert!(path.is_file(), "{cxx} found no libstdc++.a ({})", path.display());
++    path
++}
++
++fn main() {
++    println!("cargo::rerun-if-changed=build.rs");
++    println!("cargo::rerun-if-env-changed=CXX");
++
++    let os = env::var("CARGO_CFG_TARGET_OS").unwrap();
++    let vendor = env::var("CARGO_CFG_TARGET_VENDOR").unwrap_or_default();
++
++    if vendor == "apple" {
++        // Apple ships no static libSystem, and libc++ is an OS component
++        // with a stable ABI, so darwin links both dynamically.
++        return;
++    }
++
++    if os != "windows" {
++        // Linux and FreeBSD.
++        link_arg("-static-libgcc");
++        return;
++    }
++
++    // link-cplusplus emits a bare -lstdc++ that -static-libstdc++ cannot
++    // override. The recipe sets CXXSTDLIB= to silence that detection, so the
++    // archive is named by path here instead.
++    link_arg("-static");
++    link_arg("-static-libgcc");
++    // These land after -lmingwex, so repeat what libstdc++.a needs.
++    link_arg("-Wl,--start-group");
++    link_arg(&static_libstdcxx().to_string_lossy());
++    for lib in ["mingwex", "msvcrt", "kernel32", "user32", "advapi32"] {
++        link_arg(&format!("-l{lib}"));
++    }
++    link_arg("-Wl,--end-group");
++}

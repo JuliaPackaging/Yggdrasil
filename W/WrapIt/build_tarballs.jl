@@ -6,17 +6,17 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "WrapIt"
-version = v"1.7.0"
+version = v"1.8.0"
 
 #Clang_jll version used for the build. Required clang libraries will be shipped with the package.
-clang_vers=v"19.1.7+0"
+clang_vers=v"19.1.7+1"
 clang_vers_maj=string(clang_vers.major)
 clang_vers_min=string(clang_vers.minor)
 clang_patch="$(clang_vers.major).$(clang_vers.minor).$(clang_vers.patch)"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/grasph/wrapit.git", "21062724bdb8590db9cfd9d44c58d0382db6e74f"),
+    GitSource("https://github.com/grasph/wrapit.git", "63c300eab056a0d79dfd2b7d2dc69b6a9a1c7f7a")
 ]
 
 # Bash recipe for building across all platforms

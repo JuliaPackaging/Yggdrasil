@@ -4,13 +4,13 @@ using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
 name = "Netpbm"
-version_string = "10.86.48"
+version_string = "10.86.51"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://sourceforge.net/projects/netpbm/files/super_stable/$(version_string)/netpbm-$(version_string).tgz",
-                  "709a98e871aeae892437274d68833c804dd41a4b8daf8fd978cac2782da4148a"),
+                  "17d41387e7343da10925690b813ba91c6bd901b417e51500ba4272556a4e5302"),
     GitSource("https://github.com/win32ports/sys_wait_h", "229dee8de9cb4c29a3a31115112a4175df84a8eb"),
     DirectorySource("bundled"),
 ]

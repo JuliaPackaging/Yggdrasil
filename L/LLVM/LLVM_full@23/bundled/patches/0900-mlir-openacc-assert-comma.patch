@@ -1,0 +1,23 @@
+Wrap an assert whose expression contains an unparenthesized comma.
+
+ACC_COMPUTE_CONSTRUCT_AND_LOOP_OPS expands to a comma-separated list of op
+types, so the preprocessor sees `assert` (and glibc's `__STRING`) being handed
+four arguments instead of one:
+
+  ACCRecipeMaterialization.cpp:432:56: error: macro "__STRING" passed 4
+      arguments, but takes just 1
+
+That only breaks builds with assertions enabled, which is why LLVM_full_assert
+fails while LLVM_full succeeds. Still unfixed upstream as of llvmorg-23.1.1.
+
+--- a/mlir/lib/Dialect/OpenACC/Transforms/ACCRecipeMaterialization.cpp
++++ b/mlir/lib/Dialect/OpenACC/Transforms/ACCRecipeMaterialization.cpp
+@@ -429,7 +429,7 @@ template <typename OpTy>
+ LogicalResult ACCRecipeMaterialization::materializeForACCOp(
+     OpTy accOp, acc::OpenACCSupport &accSupport,
+     acc::ACCToGPUMappingPolicy &policy) const {
+-  assert(isa<ACC_COMPUTE_CONSTRUCT_AND_LOOP_OPS>(accOp));
++  assert((isa<ACC_COMPUTE_CONSTRUCT_AND_LOOP_OPS>(accOp)));
+ 
+   if (!accOp.getFirstprivateOperands().empty()) {
+     // Clear the firstprivate operands list so there will be no uses after

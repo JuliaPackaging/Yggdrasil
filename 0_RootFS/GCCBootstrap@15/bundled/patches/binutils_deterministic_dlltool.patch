@@ -1,0 +1,22 @@
+diff --git a/binutils/dlltool.c b/binutils/dlltool.c
+index 0da0011..d9ad99b 100644
+--- a/binutils/dlltool.c
++++ b/binutils/dlltool.c
+@@ -2344,6 +2344,8 @@ make_one_lib_file (export_type *exp, int i, int delay)
+     /* xgettext:c-format */
+     fatal (_("bfd_open failed open stub file: %s: %s"),
+ 	   outname, bfd_get_errmsg ());
++
++  abfd->flags |= BFD_DETERMINISTIC_OUTPUT;
+ 
+   /* xgettext:c-format */
+   inform (_("Creating stub file: %s"), outname);
+@@ -2985,6 +2985,8 @@ gen_lib_file (int delay)
+     /* xgettext:c-format */
+     fatal (_("Can't create .lib file: %s: %s"),
+ 	   imp_name, bfd_get_errmsg ());
++
++  outarch->flags |= BFD_DETERMINISTIC_OUTPUT;
+ 
+   /* xgettext:c-format */
+   inform (_("Creating library file: %s"), imp_name);

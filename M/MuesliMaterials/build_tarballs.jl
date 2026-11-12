@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "MuesliMaterials"
-version = v"1.16"
+version = v"2.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://bitbucket.org/ignromero/muesli.git", "27e8204971602cb042d633b8b5f87761272b10df")
+    GitSource("https://gitlab.com/ignacio.romero/muesli.git", "52df6390181aca4b2add1bbc9531c636b8b4160f")
     DirectorySource("bundled")
 ]
 
@@ -22,10 +22,6 @@ cmake -B builddir -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_
 cmake --build builddir --parallel ${nprocs}
 cmake --install builddir
 
-if [[ "${target}" == *-mingw* ]]; then
-    # cmake install only grabs the .dll.a and leaves the actual .dll behind, manually move it 
-    install -Dvm 755 builddir/libmuesli.dll -t "${libdir}"
-fi
 """
 
 platforms = supported_platforms()

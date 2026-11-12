@@ -1,0 +1,19 @@
+Rename external BLAS/LAPACK calls to the _64_-suffixed ILP64 symbols of libblastrampoline. Yggdrasil-specific, not for upstream.
+
+diff --git a/src/utilities/_hypre_fortran.h b/src/utilities/_hypre_fortran.h
+index 5a458bc05..3ec99c9ea 100644
+--- a/src/utilities/_hypre_fortran.h
++++ b/src/utilities/_hypre_fortran.h
+@@ -157,6 +157,12 @@ typedef HYPRE_Int     *hypre_F90_ObjRef;
+ #define hypre_F90_PassObj(obj,arg)          ((obj) *arg)
+ #define hypre_F90_PassObjRef(obj,arg)       ((obj *) arg)
+ 
++/* Call libblastrampoline's ILP64 BLAS/LAPACK interface, whose symbols carry a _64_ suffix */
++#undef hypre_F90_NAME_BLAS
++#undef hypre_F90_NAME_LAPACK
++#define hypre_F90_NAME_BLAS(name,NAME)   name##_64_
++#define hypre_F90_NAME_LAPACK(name,NAME) name##_64_
++
+ #ifdef __cplusplus
+ }
+ #endif

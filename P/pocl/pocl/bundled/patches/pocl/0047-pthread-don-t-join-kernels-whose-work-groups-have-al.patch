@@ -1,0 +1,73 @@
+From 425256ed9fabe1b16a8278ed56b4b465da4a4a47 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Mon, 26 Oct 2026 12:04:46 +0100
+Subject: [PATCH] pthread: don't join kernels whose work-groups have all been
+ claimed
+
+The thread that claims the last work-groups of a kernel unlinks it from
+the kernel queue, which takes wq_lock_fast. Until then, threads looking
+for work kept finding the kernel, took a reference, found no work-groups
+left and dropped the reference again, holding the lock each time. With
+many small launches this repeats for every kernel: launching 64 small
+work-groups back to back on 8 threads, up to 90% of the times a thread
+joined a kernel it found nothing to do. Skipping such kernels cuts those
+fruitless joins by 5x.
+
+remaining_wgs is now read without k->lock, so update it atomically, and
+keep it on its own cache line.
+---
+ lib/CL/devices/common_utils.h              |  5 ++++-
+ lib/CL/devices/pthread/pthread_scheduler.c | 13 +++++++++----
+ 2 files changed, 13 insertions(+), 5 deletions(-)
+
+diff --git a/lib/CL/devices/common_utils.h b/lib/CL/devices/common_utils.h
+index f7669ea78..463fd53a1 100644
+--- a/lib/CL/devices/common_utils.h
++++ b/lib/CL/devices/common_utils.h
+@@ -67,7 +67,10 @@ struct kernel_run_command
+   /* this is required b/c there's an additional level of indirection */
+   void **arguments2;
+ 
+-  size_t remaining_wgs;
++  /* the work-groups that haven't been claimed by a thread; read without
++   * the lock, and written by every thread claiming work-groups, so kept
++   * apart from the fields they only read. 64-bit for the Windows atomics. */
++  POCL_ALIGNAS (HOST_CPU_CACHELINE_SIZE) uint64_t remaining_wgs;
+   size_t wgs_dealt;
+ };
+ 
+diff --git a/lib/CL/devices/pthread/pthread_scheduler.c b/lib/CL/devices/pthread/pthread_scheduler.c
+index 78832add0..8304d885a 100644
+--- a/lib/CL/devices/pthread/pthread_scheduler.c
++++ b/lib/CL/devices/pthread/pthread_scheduler.c
+@@ -309,10 +309,10 @@ get_wg_index_range (kernel_run_command *k, unsigned *start_index,
+ 
+   *start_index = k->wgs_dealt;
+   *end_index = k->wgs_dealt + max_wgs-1;
+-  k->remaining_wgs -= max_wgs;
+-  k->wgs_dealt += max_wgs;
+-  if (k->remaining_wgs == 0)
++  /* atomically, for check_kernel_queue_for_device */
++  if (POCL_ATOMIC_ADD (k->remaining_wgs, (uint64_t)0 - max_wgs) == 0)
+     *last_wgs = 1;
++  k->wgs_dealt += max_wgs;
+   POCL_UNLOCK (k->lock);
+ 
+   return 1;
+@@ -656,7 +656,12 @@ check_kernel_queue_for_device (thread_data *td)
+   DL_FOREACH (scheduler.kernel_queue, cmd)
+   {
+     cl_device_id subd = cmd->device;
+-    if (shall_we_run_this (td, subd))
++    /* Once all work-groups of a kernel have been claimed, the thread that
++       claimed the last ones unlinks it, for which it needs wq_lock_fast.
++       Threads that keep joining it until then only find nothing to do, and
++       hold up that thread. */
++    if (shall_we_run_this (td, subd)
++        && POCL_ATOMIC_LOAD (cmd->remaining_wgs) > 0)
+       return cmd;
+   }
+ 
+-- 
+2.56.0
+

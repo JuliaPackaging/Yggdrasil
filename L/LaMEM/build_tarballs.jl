@@ -6,18 +6,16 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "LaMEM"
-version = v"2.2.0"
+version = v"3.4.0"
 
-PETSc_COMPAT_VERSION = "~3.22.0"    
-MPItrampoline_compat_version=" 5.5.0"
-MicrosoftMPI_compat_version="~10.1.4" 
-MPICH_compat_version="~4.2.3"    
-OpenMPI_compat_version="~5.0.5"
+# PETSc_jll 3.25.4 uses MPI.augment_platforms' default compat bounds; LaMEM must resolve the
+# same MPI per platform because petscsys.h errors out when mpi.h reports a different version.
+PETSc_COMPAT_VERSION = "3.25.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/UniMainzGeo/LaMEM", 
-    "0f6a5a82f32a3db59871d6e254ae570a3100edad")
+    GitSource("https://github.com/UniMainzGeo/LaMEM",
+    "6124aa7d2c6861d379c4b4598a0259b892a12149"),  # v3.4.0
 ]
 
 # Bash recipe for building across all platforms
@@ -40,14 +38,29 @@ mkdir $WORKSPACE/srcdir/LaMEM/lib
 mkdir $WORKSPACE/srcdir/LaMEM/lib/opt
 
 cd $WORKSPACE/srcdir/LaMEM/src
+
 export PETSC_OPT=${libdir}/petsc/double_real_Int32/
-make mode=opt clean_all 
-make mode=opt all -j${nproc}
-#make mode=opt all
+export FASTSCAPE_LIB=${libdir}
+
+# LaMEM >= 3.1.0 picks its extra warning flags from the compiler name behind the MPI wrapper
+# and errors out on anything but g++/clang++/icpx; name the family of our toolchain instead.
+if [[ "${target}" == *-apple-* || "${target}" == *freebsd* ]]; then
+    LAMEM_CXX_COMPILER=clang++
+else
+    LAMEM_CXX_COMPILER=g++
+fi
+MAKE_ARGS=(mode=opt surf=scape CXX_COMPILER=${LAMEM_CXX_COMPILER})
+
+# `uname -m` says ppc64le, which LaMEM's platform check does not recognise
+if [[ "${target}" == powerpc64le-* ]]; then
+    MAKE_ARGS+=(PLATFORM=powerpc64le)
+fi
+
+make "${MAKE_ARGS[@]}" clean_all
+make "${MAKE_ARGS[@]}" all -j${nproc}
 
 # compile dynamic library
-make mode=opt dylib -j${nproc}
-#make mode=opt dylib
+make "${MAKE_ARGS[@]}" dylib -j${nproc}
 
 cd $WORKSPACE/srcdir/LaMEM/bin/opt
 
@@ -86,11 +99,10 @@ platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686
                                                                   Platform("armv7l","linux"; libc="gnu"),
                                                                   Platform("aarch64","linux"; libc="musl")]))
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms; 
-                                        MPItrampoline_compat = MPItrampoline_compat_version,
-                                        MPICH_compat         = MPICH_compat_version,
-                                        MicrosoftMPI_compat  = MicrosoftMPI_compat_version,
-                                        OpenMPI_compat       = OpenMPI_compat_version)
+# PETSc_jll has no 32-bit builds, so LaMEM cannot be built there either
+filter!(p -> nbits(p) != 32, platforms)
+
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # mpitrampoline and libgfortran 3 don't seem to work
 platforms = filter(p -> !(libgfortran_version(p) == v"3" && p.tags["mpi"]=="mpitrampoline"), platforms)
@@ -119,13 +131,25 @@ platforms = filter(p -> !(p["arch"] == "aarch64" && os(p)=="linux" && libgfortra
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("LaMEM", :LaMEM)
-    LibraryProduct("LaMEMLib", :LaMEMLib)
+    # PETSc_jll does not dlopen its per-configuration libraries, so LaMEMLib cannot be
+    # loaded at init; consumers dlopen it after PETSc's double_real_Int32 variant.
+    LibraryProduct("LaMEMLib", :LaMEMLib; dont_dlopen=true)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("PETSc_jll"; compat=PETSc_COMPAT_VERSION),
-    Dependency("CompilerSupportLibraries_jll")
+    # surf=scape links libfastscapelib_fortran (surface processes with FastScape, surf_mode = 2)
+    Dependency("Fastscapelib_jll"; compat="2.8.4"),
+    Dependency("CompilerSupportLibraries_jll"),
+    # PETSc's mpiabi build links libmpif (Fortran MPI bindings); the MPI augmentation
+    # only provides MPIABI_jll (libmpi_abi), so add mpif_jll for mpiabi platforms to
+    # satisfy LaMEM's dlopen audit. Mirrors PETSc_jll's own recipe.
+    Dependency("mpif_jll"; compat="1.0.0", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)),
+    # On Windows, PETSc_jll 3.22.1 links libscalapack32 statically into LaMEM's executable,
+    # so SCALAPACK32_jll must be present in the prefix or the link fails with
+    # `ld: cannot find -lscalapack32`. (On Linux/macOS it's resolved via libpetsc itself.)
+    Dependency("SCALAPACK32_jll"; compat="2.2.302", platforms=filter(p -> Sys.iswindows(p), platforms)),
 ]
 append!(dependencies, platform_dependencies)
 
@@ -136,5 +160,5 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"9")
+               augment_platform_block, julia_compat="1.12", preferred_gcc_version = v"9")
                

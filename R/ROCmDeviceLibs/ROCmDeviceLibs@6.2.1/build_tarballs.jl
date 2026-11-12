@@ -6,10 +6,12 @@ const ROCM_PLATFORMS = [AnyPlatform()]
 # const ROCM_PLATFORMS = [Platform("x86_64", "linux")]
 const PRODUCTS = [FileProduct("amdgcn/bitcode/", :bitcode_path)]
 
-# TODO bundle multiple devlibs & select based on Julia LLVM.
+# Using Fedora community RPMs (compiled with upstream LLVM) rather than AMD's
+# official packages which use an AMD LLVM fork with opaque/untyped pointer issues.
+# Source: Fedora 41 updates archive (stable, versioned URL).
 const URLS = Dict(
     v"6.2.1" => (
-        "https://www.rpmfind.net/linux/fedora/linux/updates/41/Everything/x86_64/Packages/r/rocm-device-libs-18-10.rocm6.2.1.fc41.x86_64.rpm",
+        "https://dl.fedoraproject.org/pub/archive/fedora/linux/updates/41/Everything/x86_64/Packages/r/rocm-device-libs-18-10.rocm6.2.1.fc41.x86_64.rpm",
         "e5d6a983fadb89ab8c76d38485198efdbf031cb138a027247c7785d137c32ec0",
     )
 )
@@ -18,14 +20,10 @@ function configure_build(version)
     buildscript = raw"""
     apk update
     apk add rpm2cpio
-
-    echo ${prefix}
-
     cd ${WORKSPACE}/srcdir/
-
     rpm2cpio rocm-device-libs-18-10.rocm6.2.1.fc41.x86_64.rpm | cpio -idmv
-    mv usr/lib/clang/18/amdgcn ${prefix}
-    mv usr/share/doc/ROCm-Device-Libs/LICENSE.TXT ${prefix}
+    mv usr/lib/clang/18/amdgcn ${prefix}/amdgcn
+    install_license usr/share/doc/ROCm-Device-Libs/LICENSE.TXT
     """
 
     sources = [FileSource(URLS[version]...)]

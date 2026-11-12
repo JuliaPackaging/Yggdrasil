@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "Git"
-upstream_version = v"2.52.0"
+upstream_version = v"2.56.0"
 version = upstream_version
 
 # <https://github.com/git-for-windows/git/releases> says:
@@ -14,12 +14,12 @@ last_windows_32_bit_version = v"2.50.1"
 # Collection of sources required to build Git
 sources = [
     ArchiveSource("https://mirrors.edge.kernel.org/pub/software/scm/git/git-$(upstream_version).tar.xz",
-                  "3cd8fee86f69a949cb610fee8cd9264e6873d07fa58411f6060b3d62729ed7c5"),
+                  "26c56c296b38c0695b26fa95f475f1d01704d2d38e73465ca30b0b2f5dc789d3"),
     # Use FileSources instead of ArchiveSources because unpacking archives takes a long time and is not necessary on most platforms
     FileSource("https://github.com/git-for-windows/git/releases/download/v$(last_windows_32_bit_version).windows.1/Git-$(last_windows_32_bit_version)-32-bit.tar.bz2",
                "796d8f4fdd19c668e348d04390a3528df61cfc9864d1f276d9dc585a8a0ac82c"),
     FileSource("https://github.com/git-for-windows/git/releases/download/v$(upstream_version).windows.1/Git-$(upstream_version)-64-bit.tar.bz2",
-               "4c05716ec90806b29d6392e6190e2277a6687688f889f0039d7ae3ca53ed433f"),
+               "fdf531fb5c003fff0fed1b3ef282134c9186518f284c2e10860214ce127a973b"),
 ]
 
 # Bash recipe for building across all platforms
@@ -56,9 +56,11 @@ else
     sed -i 's/cross_compiling=yes/cross_compiling=no/' configure
 fi
 
+# Not all platforms support Rust. We thus disable Rust and use the C backend instead.
+MAKE_VARIABLES=(NO_RUST=1)
+
 # On Linux, we need at least glibc 2.25 or musl 1.1.20 to get `sys/random.h`.
 # Git does not check whether this file exists. Explicitly disable `getrandom` if this file doesn't exist.
-MAKE_VARIABLES=()
 if [[ "${target}" == *-linux-* ]]; then
     if [ ! -e /opt/${target}/${target}/sys-root/usr/include/sys/random.h ]; then
         MAKE_VARIABLES+=(CSPRNG_METHOD=/dev/urandom)
@@ -124,6 +126,7 @@ fi
 """
 
 platforms = supported_platforms()
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [

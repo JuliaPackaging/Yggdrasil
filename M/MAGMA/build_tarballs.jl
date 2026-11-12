@@ -5,18 +5,18 @@ using BinaryBuilder, Pkg
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
+include(joinpath(YGGDRASIL_DIR, "C/CUDA", "common.jl"))
 
 name = "MAGMA"
-version = v"2.9.0"
+version = v"2.10.0"
 
-# Note: Hopper should still build with CUDA v11.8
-# on x86_64, but aarch64 requires CUDA v12.0
-MIN_CUDA_VERSION = v"12"
+# Note: Blackwell requires CUDA v12.8
+MIN_CUDA_VERSION = v"12.8"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("http://icl.utk.edu/projectsfiles/magma/downloads/magma-$(version).tar.gz",
-                  "ff77fd3726b3dfec3bfb55790b06480aa5cc384396c2db35c56fdae4a82c641c"),
+                  "ea0c57fcb64ac2fd7ffe8f02d8fe18f07055c5b7fba0164f565d1e3a85148fb5"),
     DirectorySource("./bundled")
 ]
 
@@ -39,9 +39,15 @@ if [[ "${target}" == aarch64-linux-* ]]; then
    NVCC_DIR=(/workspace/srcdir/cuda_nvcc-*-archive)
    rm -rf ${prefix}/cuda/bin
    cp -r ${NVCC_DIR}/bin ${prefix}/cuda/bin
-   
+
+   # From CUDA v13 on, nvvm is not distributed in the NVCC redist anymore
+   if [[ "${bb_full_target}" == *cuda+13* ]]; then
+      NVVM_DIR=(/workspace/srcdir/libnvvm-*-archive)
+   else
+      NVVM_DIR=${NVCC_DIR}
+   fi
    rm -rf ${prefix}/cuda/nvvm/bin
-   cp -r ${NVCC_DIR}/nvvm/bin ${prefix}/cuda/nvvm/bin
+   cp -r ${NVVM_DIR}/nvvm/bin ${prefix}/cuda/nvvm/bin
 
    # Workaround failed execution of sizeptr in cross-compile builds
    PTROPT="PTRSIZE=8"
@@ -99,7 +105,15 @@ for platform in platforms
     platform_sources = BinaryBuilder.AbstractSource[sources...]
 
     if arch(platform) == "aarch64"
-        push!(platform_sources, CUDA.cuda_nvcc_redist_source(cuda_ver, "x86_64"))
+        components = ["cuda_nvcc"]
+        # From CUDA v13 on, nvvm is not shipped with nvcc anymore
+        if VersionNumber(cuda_ver) >= v"13.0"
+           push!(components, "libnvvm")
+        end
+        x86_platform = deepcopy(platform)
+        x86_platform["arch"] = "x86_64"
+        append!(platform_sources, get_sources("cuda", components; platform=x86_platform,
+                                              version=CUDA.full_version(VersionNumber(cuda_ver))))
     end
 
     build_tarballs(ARGS, name, version, platform_sources, script, [platform],

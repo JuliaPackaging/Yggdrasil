@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libxlsxwriter"
-version = v"1.2.3"
+version = v"1.2.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/jmcnamara/libxlsxwriter.git", "051a01a2c31eb55fa467964a2c2328cfb8bcbde8")
+    GitSource("https://github.com/jmcnamara/libxlsxwriter.git", "2894634d65cee6021901a165bfc2bb0fad6da193")
 ]
 
 # Bash recipe for building across all platforms

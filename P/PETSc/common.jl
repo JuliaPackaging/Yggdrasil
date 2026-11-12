@@ -1,0 +1,494 @@
+const petsc_version = v"3.25.6"
+const petsc_sha256 = "00ac91c7ae96eae6a39d7380c7e869c1c7ddbc0c64a23a0b5fd3442227c7cdb9"
+
+function petsc_sources(; cuda::Bool=false)
+    sources = [
+        ArchiveSource("https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-$(petsc_version).tar.gz",
+                      petsc_sha256),
+        DirectorySource("../bundled"),
+    ]
+    if cuda
+        # header-only NVTX: PETSc includes <nvtx3/nvToolsExt.h>, which no CUDA JLL ships
+        push!(sources, GitSource("https://github.com/NVIDIA/NVTX",
+                                 "4f37e799ccc6b70c39979b53a4c24488ee3fe0ae"; tag="v3.2.2"))
+    end
+    return sources
+end
+
+const cpu_preamble = raw"""
+CUDA_ARGS=""
+EXTRA_LDFLAGS=""
+"""
+
+const cuda_preamble = raw"""
+export TMPDIR=${WORKSPACE}/tmpdir
+mkdir -pv ${TMPDIR}
+cp -rv ${WORKSPACE}/srcdir/NVTX/c/include/nvtx3 ${includedir}/
+
+install -Dvm644 ${WORKSPACE}/srcdir/petsc-*/LICENSE ${prefix}/share/licenses/${SRC_NAME}/LICENSE
+install -Dvm644 ${WORKSPACE}/srcdir/NVTX/LICENSE.txt ${prefix}/share/licenses/${SRC_NAME}/LICENSE.NVTX
+
+# CUDA >= 12.8 SDK libraries reference glibc symbols newer than our sysroot
+# (logf@GLIBC_2.27); any host able to run those CUDA versions resolves them.
+EXTRA_LDFLAGS="-Wl,--allow-shlib-undefined"
+
+CUDA_LIB_DIR=${prefix}/cuda/lib
+CUDA_LIBS="${CUDA_LIB_DIR}/libcudart.so,${libdir}/libnvToolsExt.so,${CUDA_LIB_DIR}/libcufft.so,${CUDA_LIB_DIR}/libcublas.so,${CUDA_LIB_DIR}/libcusparse.so,${CUDA_LIB_DIR}/libcusolver.so,${CUDA_LIB_DIR}/libcurand.so,${CUDA_LIB_DIR}/stubs/libcuda.so,${CUDA_LIB_DIR}/stubs/libnvidia-ml.so"
+CUDA_ARGS="--with-cuda=1 --with-cuda-include=${prefix}/cuda/include --with-cuda-lib=[${CUDA_LIBS}] --with-cudac=${prefix}/cuda/bin/nvcc --with-cuda-arch=${CUDA_ARCHS}"
+"""
+
+const script_body = raw"""
+# so we can use a newer version of cmake
+apk del cmake
+
+cd $WORKSPACE/srcdir/petsc*
+
+# TODO: MPITrampoline embeds the wrong CC. https://github.com/JuliaPackaging/Yggdrasil/issues/7420
+export MPITRAMPOLINE_CC="$(which $CC)"
+export MPITRAMPOLINE_CXX="$(which $CXX)"
+export MPITRAMPOLINE_FC="$(which $FC)"
+
+MPI_FFLAGS=""
+MPI_INC=--with-mpi-include=${includedir}
+if [[ "${target}" == *-mingw* ]]; then
+    # MS-MPI without PETSc's Fortran bindings: their direct mpi_abort_ call left a 32-bit
+    # runtime pseudo-relocation that aborted every process at load.
+    FORTRAN_BINDINGS=0
+    MPI_LIBS=--with-mpi-lib="${libdir}/msmpi.${dlext}"
+    MPI_CC=${CC}
+    MPI_FC=${FC}
+    MPI_CXX=${CXX}
+else
+    # Build against every MPI ABI Yggdrasil offers.  MPIABI alone is not
+    # enough in practice: many MPI installations on HPC systems are not
+    # (yet) configured to provide the new MPI ABI, so MPICH,
+    # MPItrampoline and OpenMPI builds are still needed.
+    FORTRAN_BINDINGS=1
+    MPI_CC=mpicc
+    MPI_FC=mpifort
+    MPI_CXX=mpicxx
+    if [[ ${bb_full_target} == *mpiabi* ]]; then
+        MPI_LIBS=--with-mpi-lib="[${libdir}/libmpif.${dlext},${libdir}/libmpi_abi.${dlext}]"
+        # mpif_jll's mpifort wrapper hardcodes the gfortran of the platform it was built
+        # for, which does not exist when an extra tag (cuda) changes ${bb_full_target};
+        # the MPI libraries are passed to configure explicitly instead
+        MPI_FC=${FC}
+    elif [[ ${bb_full_target} == *mpich* ]]; then
+        MPI_LIBS=--with-mpi-lib="[${libdir}/libmpifort.${dlext},${libdir}/libmpi.${dlext}]"
+    elif [[ ${bb_full_target} == *mpitrampoline* ]]; then
+        MPI_FFLAGS="-fcray-pointer"
+        MPI_LIBS=--with-mpi-lib="[${libdir}/libmpitrampoline.${dlext}]"
+        # MPItrampoline only ships `mpifc`
+        MPI_FC=mpifc
+        # MPItrampoline's MPI constants are not compile-time constants, so
+        # PETSc's static initializers have to become run-time constructors.
+        atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi-constants.patch
+    elif [[ ${bb_full_target} == *openmpi* ]]; then
+        MPI_LIBS=--with-mpi-lib="[${libdir}/libmpi_usempif08.${dlext},${libdir}/libmpi_usempi_ignore_tkr.${dlext},${libdir}/libmpi_mpifh.${dlext},${libdir}/libmpi.${dlext}]"
+    else
+        echo "Unsupported MPI ABI: ${bb_full_target}" >&2
+        exit 1
+    fi
+fi
+
+if [[ ${target} == *mingw* ]]; then
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/mingw-version.patch
+fi
+
+# Tell PETSc that SuiteSparse_jll works with 64-bit BLAS indices.
+# Otherwise PETSc's per-package `requires32bitintblas` default rejects
+# the combination at configure time.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/suitesparse-64bit-blas.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/external-pkgs-64bit-blas.patch
+
+mkdir $libdir/petsc
+build_petsc()
+{
+    # so we can use a newer version of cmake
+    apk del cmake
+
+    # Compile a debug version?
+    DEBUG_FLAG=0
+    PETSC_CONFIG="${1}_${2}_${3}"
+    if [[ "${4}" == "deb" ]]; then
+        PETSC_CONFIG="${1}_${2}_${3}_deb"
+        DEBUG_FLAG=1
+    fi
+
+    if [[ "${3}" == "Int64" ]]; then
+        USE_INT64=1
+    else
+        USE_INT64=0
+    fi
+
+    USE_SUPERLU_DIST=0
+    if [ "${1}" == "double" ]; then
+        USE_SUPERLU_DIST=1
+    fi
+
+    USE_SUITESPARSE=0
+    if [ "${1}" == "double" ]; then
+        USE_SUITESPARSE=1
+    fi
+
+    USE_MUMPS=0
+    if [ "${1}" == "double" ] && [ "${2}" == "real" ]; then
+        USE_MUMPS=1
+    fi
+
+    LDFLAGS="-L${libdir} ${EXTRA_LDFLAGS}"
+    if [[ "${target}" == *-mingw* ]]; then
+        # libssp for stack-smashing protection symbols on mingw.
+        LDFLAGS="${LDFLAGS} -lssp"
+    elif [[ "${target}" == *-freebsd* ]]; then
+        # libpetsc calls pthread_mutexattr_setpshared, which ld.lld rejects as undefined
+        # unless libpthread is linked
+        LDFLAGS="${LDFLAGS} -lpthread"
+    fi
+
+    # External SuiteSparse from Julia's stdlib SuiteSparse_jll.
+    # SuiteSparse_jll >= 7.8 installs its headers under include/suitesparse.
+    if [ ${USE_SUITESPARSE} == 1 ]; then
+        SUITESPARSE_ARGS="--with-suitesparse=1 --with-suitesparse-include=${includedir}/suitesparse --with-suitesparse-lib=[${libdir}/libspqr.${dlext},${libdir}/libumfpack.${dlext},${libdir}/libklu.${dlext},${libdir}/libcholmod.${dlext},${libdir}/libamd.${dlext},${libdir}/libcamd.${dlext},${libdir}/libcolamd.${dlext},${libdir}/libccolamd.${dlext},${libdir}/libbtf.${dlext},${libdir}/libsuitesparseconfig.${dlext}]"
+    else
+        SUITESPARSE_ARGS="--with-suitesparse=0"
+    fi
+
+    # No --with-scalapack: PETSc's own MatScaLAPACK type is hardwired to
+    # the `_64_` BLAS suffix, while MUMPS uses the LP64 libscalapack32
+    # that MUMPS_jll's shared libraries link privately.  Mixing an ILP64
+    # and an LP64 ScaLAPACK in one process is unsafe (they export ~370
+    # identical BLACS-internal symbols, e.g. BI_* and Cblacs_*, that
+    # would cross-bind with mismatched integer widths), so PETSc links
+    # no ScaLAPACK at all and MatScaLAPACK is disabled.
+
+    # ILP64 BLAS via libblastrampoline (PETSc calls dgemm_64_, etc.).
+    # Julia >= 1.10 wires its stdlib OpenBLAS into LBT's ILP64 slots, so
+    # no `__init__` forwarding is needed in PETSc_jll.  On Windows LBT
+    # has historically been flaky, so link OpenBLAS_jll directly there.
+    BLAS_LAPACK_LIB="${libdir}/libblastrampoline.${dlext}"
+    CLINK_FLAGS=""
+    if [[ "${target}" == aarch64-apple-* ]]; then
+        # Linking requires the function `__divdc3`, which is implemented in
+        # `libclang_rt.osx.a` from LLVM compiler-rt.
+        CLINK_FLAGS="${CLINK_FLAGS} -L${libdir}/darwin -lclang_rt.osx"
+    elif [[ "${target}" == *-mingw* ]]; then
+        BLAS_LAPACK_LIB="${libdir}/libopenblas64_.${dlext}"
+    fi
+
+    if  [ ${DEBUG_FLAG} == 1 ]; then
+        _COPTFLAGS='-O0 -g'
+        _CXXOPTFLAGS='-O0 -g'
+        _FOPTFLAGS='-O0'
+    else
+        _COPTFLAGS='-O3 -g'
+        _CXXOPTFLAGS='-O3 -g'
+        _FOPTFLAGS='-O3'
+    fi
+
+    USE_HYPRE=0
+    if [ "${1}" == "double" ] && [ "${2}" == "real" ]; then
+        USE_HYPRE=1
+    fi
+
+    # triangle, tetgen
+    USE_TRIANGLE=0
+    USE_TETGEN=0
+    if [ "${1}" == "double" ] ; then
+         USE_TRIANGLE=1
+         USE_TETGEN=1
+    fi
+
+    if [ ${USE_HYPRE} == 1 ]; then
+        if [ "${3}" == "Int64" ]; then
+            HYPRE_LIB="libHYPRE64"
+            HYPRE_INC=${includedir}/HYPRE64
+        else
+            HYPRE_LIB="libHYPRE"
+            HYPRE_INC=${includedir}
+        fi
+        HYPRE_ARGS="--with-hypre=1 --with-hypre-include=${HYPRE_INC} --with-hypre-lib=${libdir}/${HYPRE_LIB}.${dlext}"
+    else
+        HYPRE_ARGS="--with-hypre=0"
+    fi
+
+    if [ ${USE_MUMPS} == 1 ]; then
+        MUMPS_ARGS="--with-mumps=1 --with-mumps-include=${includedir} --with-mumps-lib=[${libdir}/libdmumpspar.${dlext},${libdir}/libmumps_commonpar.${dlext},${libdir}/libpordpar.${dlext}]"
+    else
+        MUMPS_ARGS="--with-mumps=0"
+    fi
+
+    if [ ${USE_SUPERLU_DIST} == 1 ]; then
+        SLU_INC=${includedir}/superlu_dist_${3}
+        SUPERLU_DIST_LIBS="${libdir}/libsuperlu_dist_${3}.${dlext}"
+        if [[ "${target}" == *-apple-* ]]; then
+            # ld64 does not resolve libsuperlu_dist's @rpath reference to METIS, so name it explicitly
+            if [ "${3}" == "Int64" ]; then
+                SUPERLU_DIST_LIBS="${SUPERLU_DIST_LIBS},${libdir}/metis/metis_Int64_Real32/lib/libmetis_Int64_Real32.${dlext}"
+            else
+                SUPERLU_DIST_LIBS="${SUPERLU_DIST_LIBS},${libdir}/libmetis.${dlext}"
+            fi
+        fi
+        SUPERLU_DIST_ARGS="--with-superlu_dist=1 --with-superlu_dist-include=${SLU_INC} --with-superlu_dist-lib=[${SUPERLU_DIST_LIBS}]"
+    else
+        SUPERLU_DIST_ARGS="--with-superlu_dist=0"
+    fi
+
+    if [ ${USE_TETGEN} == 1 ]; then
+        TETGEN_ARGS="--with-tetgen=1 --with-tetgen-include=${includedir} --with-tetgen-lib=${libdir}/libtet.${dlext}"
+    else
+        TETGEN_ARGS="--with-tetgen=0"
+    fi
+
+    if [ ${USE_TRIANGLE} == 1 ]; then
+        TRIANGLE_ARGS="--with-triangle=1 --with-triangle-include=${includedir} --with-triangle-lib=${libdir}/libtriangle.${dlext}"
+    else
+        TRIANGLE_ARGS="--with-triangle=0"
+    fi
+
+    HDF5_ARGS="--with-hdf5=1 --with-hdf5-include=${includedir} --with-hdf5-lib=[${libdir}/libhdf5_hl.${dlext},${libdir}/libhdf5.${dlext}]"
+
+    # Define our toolchain for PETSc and all the other packages it configures recursively
+    #
+    # Don't know how to properly pass `CMAKE_INSTALL_PREFIX` to
+    # SuiteSparse. Apparently the definition in our target toolchain
+    # overrides whatever we pass by command line or via environment
+    # variable. So we copy and modify our target toolchain.
+    export CMAKE_INSTALL_PREFIX=${libdir}/petsc/${PETSC_CONFIG}
+    export CMAKE_TOOLCHAIN_FILE=$(pwd)/cmake.toolchain.file
+    sed -e 's+set(CMAKE_INSTALL_PREFIX $ENV{prefix})+set(CMAKE_INSTALL_PREFIX $ENV{CMAKE_INSTALL_PREFIX})+' <${CMAKE_TARGET_TOOLCHAIN} >${CMAKE_TOOLCHAIN_FILE}
+    echo CMAKE_INSTALL_PREFIX:
+    echo ${CMAKE_INSTALL_PREFIX}
+    echo CMAKE_TOOLCHAIN_FILE:
+    echo ${CMAKE_TOOLCHAIN_FILE}
+    echo CMAKE_TOOLCHAIN_FILE:
+    cat ${CMAKE_TOOLCHAIN_FILE}
+
+    echo "USE_SUPERLU_DIST="$USE_SUPERLU_DIST
+    echo "USE_SUITESPARSE="$USE_SUITESPARSE
+    echo "USE_MUMPS="$USE_MUMPS
+    echo "USE_HYPRE="$USE_HYPRE
+    echo "USE_TETGEN="$USE_TETGEN
+    echo "USE_TRIANGLE="$USE_TRIANGLE
+    echo "1="${1}
+    echo "2="${2}
+    echo "3="${3}
+    echo "4="${4}
+    echo "USE_INT64"=$USE_INT64
+    echo "Machine_name="$Machine_name
+    echo "LDFLAGS="$LDFLAGS
+    echo "target="$target
+    echo "DEBUG="${DEBUG_FLAG}
+    echo "COPTFLAGS="${_COPTFLAGS}
+    echo "BLAS_LAPACK_LIB="$BLAS_LAPACK_LIB
+    echo "prefix="${libdir}/petsc/${PETSC_CONFIG}
+    echo "MPI_CC="$MPI_CC
+    echo "MPI_FC="$MPI_FC
+    echo "MPI_CXX="$MPI_CXX
+
+    mkdir ${libdir}/petsc/${PETSC_CONFIG}
+
+    # On AArch64, clang defaults to outline atomics, i.e. it turns atomic
+    # operations into calls to helpers such as `__aarch64_ldadd8_acq_rel`. Those
+    # helpers live in compiler-rt's builtins or in libgcc >= 10, and neither is
+    # on the link line here: the link uses GCC 9.1's libgcc, so the symbols
+    # remain undefined in `libpetsc.so`. Inline the atomics instead.
+    ATOMICS_CFLAGS=""
+    if [[ "${target}" == aarch64-*freebsd* ]]; then
+        ATOMICS_CFLAGS="-mno-outline-atomics"
+    fi
+
+    ./configure --prefix=${libdir}/petsc/${PETSC_CONFIG} \
+        --CC=${MPI_CC} \
+        --FC=${MPI_FC} \
+        --CXX=${MPI_CXX} \
+        --COPTFLAGS=${_COPTFLAGS} \
+        --CXXOPTFLAGS=${_CXXOPTFLAGS} \
+        --FOPTFLAGS=${_FOPTFLAGS} \
+        --with-blaslapack-lib=${BLAS_LAPACK_LIB} \
+        --with-blaslapack-suffix=_64_ \
+        --known-64-bit-blas-indices=1 \
+        --CFLAGS="-fPIC -fno-stack-protector ${ATOMICS_CFLAGS}" \
+        --CXXFLAGS="-fPIC -fno-stack-protector ${ATOMICS_CFLAGS}" \
+        --FFLAGS="${MPI_FFLAGS} -fPIC -ffree-line-length-999" \
+        --LDFLAGS="${LDFLAGS}" \
+        --CC_LINKER_FLAGS="${CLINK_FLAGS}" \
+        --with-64-bit-indices=${USE_INT64} \
+        --with-debugging=${DEBUG_FLAG} \
+        --with-batch \
+        --with-fortran-bindings=${FORTRAN_BINDINGS} \
+        ${MPI_LIBS} \
+        ${MPI_INC} \
+        --with-sowing=0 \
+        --with-precision=${1} \
+        --with-scalar-type=${2} \
+        --with-pthread=0 \
+        --PETSC_ARCH=${target}_${PETSC_CONFIG} \
+        ${SUITESPARSE_ARGS} \
+        ${SUPERLU_DIST_ARGS} \
+        ${HYPRE_ARGS} \
+        ${MUMPS_ARGS} \
+        ${HDF5_ARGS} \
+        ${CUDA_ARGS} \
+        ${TETGEN_ARGS} \
+        ${TRIANGLE_ARGS} \
+        --with-library-name-suffix=_${PETSC_CONFIG} \
+        --with-shared-libraries=1 \
+        --with-clean=1
+
+    # Let the selected width's superlu_dist/HYPRE headers win over the other width's copies
+    # in ${includedir} (after configure: --with-clean recreates the arch include dir).
+    if [ ${USE_SUPERLU_DIST} == 1 ]; then
+        cp ${SLU_INC}/superlu*.h* ${target}_${PETSC_CONFIG}/include/
+    fi
+    if [ ${USE_HYPRE} == 1 ]; then
+        cp ${HYPRE_INC}/HYPRE*.h ${target}_${PETSC_CONFIG}/include/
+    fi
+
+    if [[ "${target}" == *-mingw* ]]; then
+        export CPPFLAGS="-Dpetsc_EXPORTS"
+    else
+        # `make` below overrides the CFLAGS that were determined by
+        # `configure`, so ${ATOMICS_CFLAGS} has to be repeated here
+        export CFLAGS="-fPIC ${ATOMICS_CFLAGS}"
+        export FFLAGS="-fPIC"
+    fi
+
+    make -j${nproc} \
+        CPPFLAGS="${CPPFLAGS}" \
+        CFLAGS="${CFLAGS}" \
+        CXXFLAGS="${CXXFLAGS}" \
+        FFLAGS="${FFLAGS}"
+    make install
+
+    # Remove PETSc.pc because petsc.pc also exists, causing conflicts on case-insensitive file-systems.
+    rm ${libdir}/petsc/${PETSC_CONFIG}/lib/pkgconfig/PETSc.pc
+
+    # Don't ship the staged SuperLU_DIST/hypre headers that `make
+    # install` copied over from the arch include dir.
+    rm -f ${libdir}/petsc/${PETSC_CONFIG}/include/superlu* ${libdir}/petsc/${PETSC_CONFIG}/include/HYPRE*
+    if  [[ "${1}" == "double" && "${2}" == "real" &&  "${3}" == "Int64" && "${4}" == "opt" ]]; then
+
+        # Compile examples (to allow testing the installation).
+        # This can later be run with:
+        # julia> run(`$(PETSc_jll.ex42()) -stokes_ksp_monitor -log_view` )
+        workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/ksp/ksp/tutorials/
+        make --directory=${workdir} PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex42
+        file=${workdir}/ex42
+        if [[ "${target}" == *-mingw* ]]; then
+            if [[ -f "$file" ]]; then
+                mv $file ${file}${exeext}
+            fi
+        fi
+        install -Dvm 755 ${workdir}/ex42${exeext} "${bindir}/ex42${exeext}"
+
+        # This is a staggered grid Stokes example, as discussed in https://joss.theoj.org/papers/10.21105/joss.04531
+        # This can later be run with:
+        # julia> run(`$(PETSc_jll.ex4()) -ksp_monitor -log_view` )
+        workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/dm/impls/stag/tutorials/
+        make --directory=$workdir PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex4
+        file=${workdir}/ex4
+        if [[ "${target}" == *-mingw* ]]; then
+            if [[ -f "$file" ]]; then
+                mv $file ${file}${exeext}
+            fi
+        fi
+        install -Dvm 755 ${workdir}/ex4${exeext} "${bindir}/ex4${exeext}"
+
+        # this is the example that PETSc uses to test the correct installation
+        workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/snes/tutorials/
+        make --directory=$workdir PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex19
+        file=${workdir}/ex19
+        if [[ "${target}" == *-mingw* ]]; then
+            if [[ -f "$file" ]]; then
+                mv $file ${file}${exeext}
+            fi
+        fi
+        install -Dvm 755 ${workdir}/ex19${exeext} "${bindir}/ex19${exeext}"
+
+    fi
+
+    if [[ "${1}" == "double" && "${2}" == "real" && "${3}" == "Int32" && "${4}" == "opt" ]]; then
+
+        # Int32 flavor of the installation-check example
+        workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/snes/tutorials/
+        make --directory=$workdir PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex19
+        file=${workdir}/ex19
+        if [[ "${target}" == *-mingw* ]]; then
+            if [[ -f "$file" ]]; then
+                mv $file ${file}${exeext}
+            fi
+        fi
+        mv ${file}${exeext} ${file}_int32${exeext}
+        install -Dvm 755 ${workdir}/ex19_int32${exeext} "${bindir}/ex19_int32${exeext}"
+
+    fi
+
+    if [[ "${1}" == "double" && "${2}" == "real" && "${3}" == "Int64" && "${4}" == "deb" ]]; then
+
+        # this is the example that PETSc uses to test the correct installation
+        # We compile it with debug flags (helpful to catch issues)
+        workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/snes/tutorials/
+        make --directory=$workdir PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex19
+        file=${workdir}/ex19
+        if [[ "${target}" == *-mingw* ]]; then
+            if [[ -f "$file" ]]; then
+                mv $file ${file}${exeext}
+            fi
+        fi
+        mv ${file}${exeext} ${file}_int64_deb${exeext}
+        install -Dvm 755 ${workdir}/ex19_int64_deb${exeext} "${bindir}/ex19_int64_deb${exeext}"
+
+    fi
+
+    # we don't particularly care about the other examples
+    rm -r ${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples
+}
+
+"""
+
+petsc_script(preamble::AbstractString, variants::AbstractString) =
+    preamble * script_body * variants * "\n"
+
+function petsc_dependencies(platforms; superlu_cuda::Bool=false)
+    return [
+    HostBuildDependency(PackageSpec(; name="CMake_jll")),
+
+    BuildDependency("LLVMCompilerRT_jll"; platforms=filter(Sys.isapple, platforms)),
+
+    # The stdlib bounds (CSL, OpenBLAS, libblastrampoline, SuiteSparse) are at or below what
+    # Julia 1.12, the julia_compat floor, ships, so they exclude no allowed Julia version.
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae");
+               compat="1.2.0"),
+    # ILP64 BLAS: OpenBLAS_jll on Windows (linked directly), libblastrampoline_jll on
+    # everything else (Julia wires its stdlib OpenBLAS into LBT's ILP64 slots).
+    Dependency(PackageSpec(name="OpenBLAS_jll", uuid="4536629a-c528-5b80-bd46-f80d51c5b363");
+               compat="0.3.29",
+               platforms=filter(Sys.iswindows, platforms)),
+    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93");
+               compat="5.11.2",
+               platforms=filter(!Sys.iswindows, platforms)),
+    # >= 5.9.4 and SuperLU_DIST >= 9.2.3: both link the symbol-versioned METIS/ParMETIS.
+    Dependency(PackageSpec(name="MUMPS_jll", uuid="ca64183c-ec4f-5579-95d5-17e128c21291");
+               compat="5.9.4"),
+    Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2");
+               compat="0.3.33"),
+    # >= 3.1.0+3: libHYPRE64.dll carries its own name on Windows
+    Dependency(PackageSpec(name="HYPRE64_jll"); compat="3.1.0"),
+    # Stock (32-bit HYPRE_BigInt) hypre for the Int32 PetscInt variants.
+    Dependency(PackageSpec(name="HYPRE_jll"); compat="3.1.2"),
+    Dependency(PackageSpec(name=superlu_cuda ? "SuperLU_DIST_CUDA_jll" : "SuperLU_DIST_jll"); compat="9.3.2"),
+    Dependency(PackageSpec(name="HDF5_jll"); compat="2.2.2"),
+    Dependency(PackageSpec(name="TetGen_jll"); compat="1.6.0"),
+    Dependency(PackageSpec(name="Triangle_jll"); compat="1.6.3"),
+    # Julia's stdlib SuiteSparse (Int64 / SuiteSparse_long).  PETSc binds
+    # these libraries by soname, so the build must match the SuiteSparse
+    # shipped by the targeted Julia versions: 7.8.x (libcholmod.so.5) is
+    # what Julia 1.12 ships.  Julia 1.10/1.11 ship 7.2.x/7.4.x with
+    # libcholmod.so.4, which is soname-incompatible -- hence the
+    # julia_compat = 1.12 below.  (Supporting several Julia minors at
+    # once would need julia_version-expanded platforms.)
+    Dependency(PackageSpec(name="SuiteSparse_jll", uuid="bea87d4a-7f5b-5778-9afe-8cc45184846c"); compat="7.8.3"),
+    Dependency("mpif_jll"; compat="1.0.0", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)), # MPI Fortran bindings
+    ]
+end
