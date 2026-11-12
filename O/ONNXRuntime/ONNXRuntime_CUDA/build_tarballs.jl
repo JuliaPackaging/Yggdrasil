@@ -1,8 +1,10 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using Base.BinaryPlatforms: tags
 
 name = "ONNXRuntime_CUDA"
+version = v"1.31.1"
 
 include(joinpath(@__DIR__, "..", "common.jl"))
 include(joinpath(@__DIR__, "..", "..", "..", "fancy_toys.jl"))
