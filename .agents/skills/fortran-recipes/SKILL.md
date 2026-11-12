@@ -17,11 +17,11 @@ Anything linking libgfortran needs `platforms = expand_gfortran_versions(platfor
 | 4 | 7 |
 | 5 | 8 and later |
 
-`preferred_gcc_version` selects the closest GCC within a variant's series, so `preferred_gcc_version=v"10"` still builds the libgfortran 3 variants with GCC 6 and the libgfortran 4 variants with GCC 7, without warning. Code that needs a newer compiler fails only on those variants. Drop them after expanding, saying what fails:
+`preferred_gcc_version` selects the closest GCC within a variant's series, so `preferred_gcc_version=v"10"` still builds the libgfortran 3 variants with GCC 6 and the libgfortran 4 variants with GCC 7, without warning. The same GCC also compiles the recipe's C and C++ code, so code in any language that needs a newer compiler fails only on those variants. Drop them after expanding, saying what fails:
 
 ```julia
 platforms = expand_gfortran_versions(supported_platforms())
-# Needs C++17
+# Parameterized derived types need gfortran 8
 filter!(p -> libgfortran_version(p) >= v"5", platforms)
 ```
 
