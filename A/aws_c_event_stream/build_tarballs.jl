@@ -3,11 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_event_stream"
-version = v"0.4.3"
+version = v"1.0.0"
+# The SONAME contains major.minor, and minor releases may break the ABI.
+# Downstream recipes must restrict compat to one minor version, e.g. compat="~1.2.3".
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-event-stream.git", "1b3825fc9cae2e9c7ed7479ee5d354d52ebdf7a0"),
+    GitSource("https://github.com/awslabs/aws-c-event-stream.git", "d32600bfecc6616cab0c478f96ea5a779f03e05e"),
 ]
 
 # Bash recipe for building across all platforms
@@ -36,9 +38,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("aws_c_common_jll"; compat="0.9.14"),
-    Dependency("aws_c_io_jll"; compat="0.14.7"),
-    Dependency("aws_checksums_jll"; compat="0.1.17"),
+    Dependency("aws_c_common_jll"; compat="~1.0.0"),
+    Dependency("aws_c_io_jll"; compat="~1.0.0"),
+    Dependency("aws_checksums_jll"; compat="~1.0.0"),
     BuildDependency("aws_lc_jll"),
 ]
 

@@ -3,45 +3,35 @@
 using BinaryBuilder, Pkg
 
 name = "muparser"
-version = v"2.3.2"
+version = v"2.3.5"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/beltoforion/muparser/archive/refs/tags/v$(version).tar.gz", "b35fc84e3667d432e3414c8667d5764dfa450ed24a99eeef7ee3f6647d44f301")
+    GitSource("https://github.com/beltoforion/muparser", "fbafd7f8774af2b53f4d2de07c57353fcfc09216"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+cd $WORKSPACE/srcdir/muparser
 
-cd $WORKSPACE/srcdir/muparser-*
+CMAKE_FLAGS=(
+    -DCMAKE_INSTALL_PREFIX=${prefix}
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+    -DCMAKE_BUILD_TYPE=Release
+    -DBUILD_SHARED_LIBS=ON
+    -DBUILD_TESTING=OFF
+    -DENABLE_OPENMP=ON
+    -DENABLE_SAMPLES=OFF
+)
 
-CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix
-            -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
-            -DCMAKE_BUILD_TYPE=Release
-            -DENABLE_SAMPLES=OFF
-            -DBUILD_TESTING=OFF
-            -DBUILD_SHARED_LIBS=ON)
-
-# Apple's Clang does not support OpenMP? - taken from AMRex build_tarballs.jl
-if [[ ${target} == *-apple-* ]]; then
-
-    CMAKE_FLAGS+=(-DENABLE_OPENMP=OFF)
-    
-else
-
-    CMAKE_FLAGS+=(-DENABLE_OPENMP=ON)
-
-fi
-
-cmake . ${CMAKE_FLAGS[@]}
-make -j${nproc}
-make install
+cmake -Bbuild ${CMAKE_FLAGS[@]}
+cmake --build build --parallel ${nproc}
+cmake --install build
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
-
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -50,9 +40,16 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
+    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae");
+               platforms=filter(!Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
+               platforms=filter(Sys.isbsd, platforms)),
+
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-#linux-musl variants hav an same issue as https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/387 on gcc 4, so use higher version
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"7")
+# We need C++ 20, and this requires at least GCC 8
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"8")

@@ -3,11 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_auth"
-version = v"0.7.31"
+version = v"1.0.1"
+# The SONAME contains major.minor, and minor releases may break the ABI.
+# Downstream recipes must restrict compat to one minor version, e.g. compat="~1.2.3".
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-auth.git", "48d647bf43f8872e4dc5ec6343b0c5974195fbdd"),
+    GitSource("https://github.com/awslabs/aws-c-auth.git", "81cba5032a414eda20d2610f975c08a03381b751"),
 ]
 
 # Bash recipe for building
@@ -28,7 +30,6 @@ cmake --build . -j${nproc} --target install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms)
-filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -37,9 +38,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("aws_c_cal_jll"; compat="0.7.1"),
-    Dependency("aws_c_http_jll"; compat="0.8.1"),
-    Dependency("aws_c_sdkutils_jll"; compat="0.1.12"),
+    Dependency("aws_c_cal_jll"; compat="~1.0.0"),
+    Dependency("aws_c_http_jll"; compat="~1.0.0"),
+    Dependency("aws_c_sdkutils_jll"; compat="~1.0.0"),
     BuildDependency("aws_lc_jll"),
 ]
 

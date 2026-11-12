@@ -1,0 +1,239 @@
+diff --git a/Makefile b/Makefile
+index c7a2b7f7..a7e04c97 100644
+--- a/Makefile
++++ b/Makefile
+@@ -96,6 +96,8 @@ endif
+ # The shared (dynamic) library file suffix is different for Linux and OS X.
+ ifeq ($(OS_NAME),Darwin)
+ SHLIB_EXT          := dylib
++else ifeq ($(IS_WIN),yes)
++SHLIB_EXT          := dll.a
+ else
+ SHLIB_EXT          := so
+ endif
+@@ -117,6 +119,10 @@ ifeq ($(OS_NAME),Darwin)
+ # OS X shared library extensions.
+ LIBFLAME_SO_MAJ_EXT  := $(SO_MAJOR).$(SHLIB_EXT)
+ LIBFLAME_SO_MMB_EXT  := $(SO_MMB).$(SHLIB_EXT)
++else ifeq ($(IS_WIN),yes)
++# Windows shared library extension.
++LIBFLAME_SO_MAJ_EXT := dll
++LIBFLAME_SO_MMB_EXT :=
+ else
+ # Linux shared library extensions.
+ LIBFLAME_SO_MAJ_EXT  := $(SHLIB_EXT).$(SO_MAJOR)
+@@ -127,7 +133,11 @@ LIBFLAME_SONAME      := $(LIBFLAME).$(LIBFLAME_SO_MAJ_EXT)
+ LIBFLAME_SO_MAJ_PATH := $(BASE_LIB_PATH)/$(LIBFLAME_SONAME)
+ 
+ # Construct the output path when building a shared library.
++ifeq ($(IS_WIN),yes)
++LIBFLAME_SO_OUTPUT_NAME := $(LIBFLAME_SO_MAJ_PATH)
++else
+ LIBFLAME_SO_OUTPUT_NAME := $(LIBFLAME_SO_PATH)
++endif
+ 
+ 
+ 
+@@ -140,13 +150,17 @@ LIBFLAME_SO_OUTPUT_NAME := $(LIBFLAME_SO_PATH)
+ ifeq ($(OS_NAME),Darwin)
+ # OS X shared library link flags.
+ SOFLAGS    := -dynamiclib
+-SOFLAGS    += -Wl,-install_name,$(LIBFLAME_SONAME)
++SOFLAGS    += -Wl,-install_name,@rpath/$(LIBFLAME_SONAME)
+ else
+ SOFLAGS    := -shared
++ifeq ($(IS_WIN),yes)
++# Windows shared library link flags.
++SOFLAGS    += -Wl,--out-implib,$(LIBFLAME_SO_PATH)
++else
+ # Linux shared library link flags.
+ SOFLAGS    += -Wl,-soname,$(LIBFLAME_SONAME)
+ endif
+-
++endif
+ 
+ 
+ #
+@@ -194,7 +208,14 @@ LIBFLAME_A_INST       := $(INSTALL_LIBDIR)/$(LIBFLAME_A)
+ 
+ LIBFLAME_SO_INST      := $(INSTALL_LIBDIR)/$(LIBFLAME_SO)
+ LIBFLAME_SO_MAJ_INST  := $(INSTALL_LIBDIR)/$(LIBFLAME_SONAME)
++
++ifeq ($(IS_WIN),yes)
++# The 'install' target does not create symlinks for Windows builds, so we don't
++# bother defining LIBFLAME_SO_MMB_INST.
++LIBFLAME_SO_MMB_INST       :=
++else
+ LIBFLAME_SO_MMB_INST  := $(INSTALL_LIBDIR)/$(LIBFLAME).$(LIBFLAME_SO_MMB_EXT)
++endif
+ 
+ # --- Determine which libraries to build ---
+ 
+@@ -670,9 +691,11 @@ ifeq ($(FLA_ENABLE_MAX_ARG_LIST_HACK),yes)
+ 	$(SORT) $(AR_OBJ_LIST_FILE) | $(UNIQ) > $(AR_OBJ_LIST_FILE).sotmp
+ 	$(CAT) $(AR_OBJ_LIST_FILE).sotmp | xargs -n$(AR_CHUNK_SIZE) $(AR) $(ARFLAGS) $(LIBFLAME_A)
+ ifeq ($(OS_NAME),Darwin)
+-	$(LINKER) $(SOFLAGS) -o $@ -Wl,-force_load,$(LIBFLAME_A) $(LDFLAGS)
++	$(LINKER) $(SOFLAGS) -o $(LIBFLAME_SO_OUTPUT_NAME) -Wl,-rpath,$(LIBFLAME_A_PATH) $(LDFLAGS)
++else ifeq ($(IS_WIN),yes)
++	@$(LINKER) $(SOFLAGS) -o $(LIBFLAME_SO_OUTPUT_NAME) $(LDFLAGS)
+ else
+-	$(LINKER) $(SOFLAGS) -o $@ -Wl,--whole-archive $(LIBFLAME_A) -Wl,--no-whole-archive $(LDFLAGS)
++	$(LINKER) $(SOFLAGS) -o $(LIBFLAME_SO_OUTPUT_NAME) -Wl,--whole-archive $(LIBFLAME_A) -Wl,--no-whole-archive $(LDFLAGS)
+ endif
+ 	$(RM_F) $(AR_OBJ_LIST_FILE).sotmp
+ else
+@@ -686,9 +709,11 @@ ifeq ($(FLA_ENABLE_MAX_ARG_LIST_HACK),yes)
+ 	@$(SORT) $(AR_OBJ_LIST_FILE) | $(UNIQ) > $(AR_OBJ_LIST_FILE).sotmp
+ 	@$(CAT) $(AR_OBJ_LIST_FILE).sotmp | xargs -n$(AR_CHUNK_SIZE) $(AR) $(ARFLAGS) $(LIBFLAME_A)
+ ifeq ($(OS_NAME),Darwin)
+-	@$(LINKER) $(SOFLAGS) -o $@ -Wl,-force_load,$(LIBFLAME_A) $(LDFLAGS)
++	@$(LINKER) $(SOFLAGS) -o $(LIBFLAME_SO_OUTPUT_NAME) -Wl,-rpath,$(LIBFLAME_A_PATH) $(LDFLAGS)
++else ifeq ($(IS_WIN),yes)
++	@$(LINKER) $(SOFLAGS) -o $(LIBFLAME_SO_OUTPUT_NAME) $(LDFLAGS)
+ else
+-	@$(LINKER) $(SOFLAGS) -o $@ -Wl,--whole-archive $(LIBFLAME_A) -Wl,--no-whole-archive $(LDFLAGS)
++	@$(LINKER) $(SOFLAGS) -o $(LIBFLAME_SO_OUTPUT_NAME) -Wl,--whole-archive $(LIBFLAME_A) -Wl,--no-whole-archive $(LDFLAGS)
+ endif
+ 	@$(RM_F) $(AR_OBJ_LIST_FILE).sotmp
+ else
+@@ -698,11 +723,14 @@ else
+ endif
+ endif
+ 
++
+ # Local symlink for shared library.
+ # NOTE: We use a '.loc' suffix to avoid filename collisions in case this
+ # rule is executed concurrently with the install-lib-symlinks rule, which
+ # also creates symlinks in the current directory (before installing them).
++# NOTE: We don't create any symlinks during Windows builds.
+ $(LIBFLAME_SO_MAJ_PATH): $(LIBFLAME_SO_PATH)
++ifeq ($(IS_WIN),no)
+ ifeq ($(ENABLE_VERBOSE),yes)
+ 	$(SYMLINK) $(<F) $(@F).loc
+ 	$(MV) $(@F).loc $(BASE_LIB_PATH)/$(@F)
+@@ -711,6 +739,7 @@ else # ifeq ($(ENABLE_VERBOSE),no)
+ 	@$(SYMLINK) $(<F) $(@F).loc
+ 	@$(MV) $(@F).loc $(BASE_LIB_PATH)/$(@F)
+ endif
++endif
+ 
+ # Original implementation of the rule above.
+ # FGVZ: This rule has been observed to not work on at least one system, where
+@@ -777,7 +806,12 @@ else
+ 	@$(INSTALL) -m 0644 $< $@
+ endif
+ 
+-# Install shared library.
++# Install shared library containing .so major, minor, and build versions.
++# Note: Installation rules for Windows does not include major, minor, and
++# build version numbers.
++ifeq ($(IS_WIN),no)
++
++# Linux/OSX library (.so OR .dylib) installation rules.
+ $(INSTALL_LIBDIR)/%.$(LIBFLAME_SO_MMB_EXT): $(BASE_LIB_PATH)/%.$(SHLIB_EXT) $(CONFIG_MK_FILE)
+ ifeq ($(ENABLE_VERBOSE),yes)
+ 	$(MKDIR) $(@D)
+@@ -788,11 +822,39 @@ else
+ 	@$(INSTALL) -m 0755 $< $@
+ endif
+ 
++else # ifeq ($(IS_WIN),yes)
++
++# Windows library (.dll and .lib) installation rules.
++$(INSTALL_LIBDIR)/%.$(SHLIB_EXT): $(BASE_LIB_PATH)/%.$(SHLIB_EXT)
++ifeq ($(ENABLE_VERBOSE),yes)
++	@$(MKDIR) $(@D)
++	@$(INSTALL) -m 0644 $(BASE_LIB_PATH)/$(@F) $@
++else
++	@echo "Installing $(@F) into $(INSTALL_LIBDIR)/"
++	@$(MKDIR) $(@D)
++	@$(INSTALL) -m 0644 $(BASE_LIB_PATH)/$(@F) $@
++endif
++
++$(INSTALL_LIBDIR)/%.$(LIBFLAME_SO_MAJ_EXT): $(BASE_LIB_PATH)/%.$(LIBFLAME_SO_MAJ_EXT)
++ifeq ($(ENABLE_VERBOSE),yes)
++	@$(MKDIR) $(@D)
++	@$(INSTALL) -m 0644 $(BASE_LIB_PATH)/$(@F) $@
++else
++	@echo "Installing $(@F) into $(INSTALL_LIBDIR)/"
++	@$(MKDIR) $(@D)
++	@$(INSTALL) -m 0644 $(BASE_LIB_PATH)/$(@F) $@
++endif
++
++endif # ifeq ($(IS_WIN),no)
+ 
+ # --- Install-symlinks rules ---
+ 
+ install-lib-symlinks: check-env $(MK_LIBS_SYML)
+ 
++# Note: Symlinks are not installed on Windows.
++ifeq ($(IS_WIN),no)
++
++# Install generic shared library symlink.
+ $(INSTALL_LIBDIR)/%.$(SHLIB_EXT): $(INSTALL_LIBDIR)/%.$(LIBFLAME_SO_MMB_EXT)
+ ifeq ($(ENABLE_VERBOSE),yes)
+ 	$(SYMLINK) $(<F) $(@F)
+@@ -814,6 +876,8 @@ else
+ 	@$(MV) $(@F) $(INSTALL_LIBDIR)/
+ endif
+ 
++endif # ifeq ($(IS_WIN),no)
++
+ # --- Install-netlibs-test dir ---
+ 
+ install-netlib-tests:
+diff --git a/build/config.mk.in b/build/config.mk.in
+index cf2785fa..57d8fc4a 100644
+--- a/build/config.mk.in
++++ b/build/config.mk.in
+@@ -32,6 +32,9 @@ ARCH                           := @fla_host_cpu@
+ # 'uname -s'.
+ OS_NAME                        := @os_name@
+ 
++# Check for whether the operating system is Windows.
++IS_WIN            := @is_win@
++
+ # We have to set these particular variables because some of the @anchors@
+ # that are substituted in via configure may be defined *in terms of* these
+ # variables. For example, @libdir@ may be replaced with '${exec_prefix}/lib',
+diff --git a/configure b/configure
+index 1ff1bdb1..6b48ef78 100755
+--- a/configure
++++ b/configure
+@@ -715,6 +715,7 @@ CC
+ fla_gnu_make_found
+ os_vers
+ os_name
++is_win
+ fla_host_cpu
+ host_os
+ host_vendor
+@@ -2786,17 +2787,17 @@ case $host_os in *\ *) host_os=`echo "$host_os" | sed 's/ /-/g'`;; esac
+ 
+ 	os_name=$(uname -s)
+ 	os_vers=$(uname -r)
++  # Define a single variable off of which we can branch to tell if we are
++	# building for Windows.
++	is_win=no
++	if [[ $os_name == MSYS* ]] || \
++	   [[ $os_name == MINGW* ]]  || \
++	   [[ $os_name == CYGWIN* ]] ; then
++		is_win=yes
++	fi
+ 
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
++  { $as_echo "$as_me:${as_lineno-$LINENO}: building for windows: $is_win" >&5
++$as_echo "building for windows... $is_win" >&6; }
+ 
+ 
+ 	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for GNU make" >&5

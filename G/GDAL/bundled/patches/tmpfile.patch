@@ -1,0 +1,14 @@
+--- a/port/cpl_vsil_unix_stdio_64.cpp
++++ b/port/cpl_vsil_unix_stdio_64.cpp
+@@ -136,7 +136,11 @@
+               "If you still want to build GDAL without > 4GB file support, "
+               "add the -DBUILD_WITHOUT_64BIT_OFFSET define");
+ #endif
+ 
++#ifndef O_TMPFILE
++#define O_TMPFILE 020200000
++#endif
++
+ /************************************************************************/
+ /* ==================================================================== */
+ /*                       VSIUnixStdioFilesystemHandler                  */

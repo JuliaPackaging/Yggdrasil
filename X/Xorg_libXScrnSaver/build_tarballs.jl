@@ -3,21 +3,18 @@
 using BinaryBuilder
 
 name = "Xorg_libXScrnSaver"
-version = v"1.2.3"
+version = v"1.2.5"
 
 # Collection of sources required to build libXScrnSaver
 sources = [
-    ArchiveSource("https://www.x.org/archive/individual/lib/libXScrnSaver-$(version).tar.bz2",
-                  "f917075a1b7b5a38d67a8b0238eaab14acd2557679835b154cf2bca576e89bf8"),
+    ArchiveSource("https://www.x.org/archive/individual/lib/libXScrnSaver-$(version).tar.xz",
+                  "5057365f847253e0e275871441e10ff7846c8322a5d88e1e187d326de1cd8d00"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libXScrnSaver-*/
-CPPFLAGS="-I${prefix}/include"
-# When compiling for things like ppc64le, we need newer `config.sub` files
-update_configure_scripts
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=no
+cd $WORKSPACE/srcdir/libXScrnSaver-*
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=no --enable-static=no
 make -j${nproc}
 make install
 """
@@ -32,11 +29,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("Xorg_xorgproto_jll"),
     BuildDependency("Xorg_util_macros_jll"),
+    BuildDependency("Xorg_xorgproto_jll"),
     Dependency("Xorg_libXext_jll"),
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

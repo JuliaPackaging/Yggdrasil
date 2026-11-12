@@ -1,0 +1,29 @@
+Name plugins without a double "lib" prefix on MinGW (backport of upstream revert)
+https://github.com/PDAL/PDAL/pull/5050
+
+diff --git a/cmake/macros.cmake b/cmake/macros.cmake
+index 4822ad493..3010c9c0f 100644
+--- a/cmake/macros.cmake
++++ b/cmake/macros.cmake
+@@ -131,7 +131,7 @@ macro(PDAL_ADD_PLUGIN _name _type _shortname)
+     set(multiValueArgs FILES LINK_WITH INCLUDES SYSTEM_INCLUDES)
+     cmake_parse_arguments(PDAL_ADD_PLUGIN "${options}" "${oneValueArgs}"
+         "${multiValueArgs}" ${ARGN})
+-    if(WIN32)
++    if(MSVC)
+         set(${_name} "libpdal_plugin_${_type}_${_shortname}")
+     else()
+         set(${_name} "pdal_plugin_${_type}_${_shortname}")
+diff --git a/cmake/pluginmacros.cmake b/cmake/pluginmacros.cmake
+index 81505361a..daa38f75b 100644
+--- a/cmake/pluginmacros.cmake
++++ b/cmake/pluginmacros.cmake
+@@ -17,7 +17,7 @@ macro(PDAL_CREATE_PLUGIN)
+     endif()
+     set(PROJECT_NAME ${NAME}_${TYPE})
+ 
+-    if(WIN32)
++    if(MSVC)
+         set(TARGET "libpdal_plugin_${TYPE}_${NAME}")
+     else()
+         set(TARGET "pdal_plugin_${TYPE}_${NAME}")

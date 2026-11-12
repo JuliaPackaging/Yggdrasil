@@ -3,18 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "Ninja"
-version = v"1.12.1"
+version = v"1.13.2"
 
 # Collection of sources required to build ninja
 sources = [
-    GitSource("https://github.com/ninja-build/ninja", "2daa09ba270b0a43e1929d29b073348aa985dfaa"),
+    GitSource("https://github.com/ninja-build/ninja", "3441b633c2fe2c494e958780ba0f4227b1327634"; tag="v$(version)"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/ninja
 shorttarget=$(echo $target | grep -o 'linux\|darwin\|mingw\|freebsd')
-env CXXFLAGS=-std=c++11 ./configure.py --host=linux --platform=$shorttarget
+env CXXFLAGS=-std=c++14 ./configure.py --host=linux --platform=$shorttarget
 ninja -j${nproc}
 mkdir -p ${bindir}
 install ninja${exeext} ${bindir}
@@ -33,4 +33,6 @@ products = [
 dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6")
+# Require GCC 5 for C++14
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"5")

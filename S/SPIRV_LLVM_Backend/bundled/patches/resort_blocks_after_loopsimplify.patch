@@ -1,0 +1,86 @@
+From f4b6e8cb75a06814cb8647c8177a4257f772c3cd Mon Sep 17 00:00:00 2001
+From: Alexander Shaposhnikov <ashaposhnikov@google.com>
+Date: Wed, 7 Oct 2026 01:20:04 -0700
+Subject: [PATCH] [SPIRV] Re-sort basic blocks after LoopSimplify for
+ non-shader targets (#229678)
+
+SPIRVPrepareFunctions sorts basic blocks in reverse post-order so that
+dominators appear before all blocks
+they dominate, as required by SPIR-V.
+However, since #187519 (4a773b9f35fc), LoopSimplifyPass runs later in
+addISelPrepare for non-shader
+targets as well. For shader targets, SPIRVStructurizer subsequently
+re-runs sortBlocks(F),
+but for non-shader targets no pass restored the block order, allowing
+dedicated exit or preheader blocks
+inserted by LoopSimplify to appear before their dominators.
+
+Call sortBlocks(Func) for non-shader targets at the start of
+SPIRVEmitIntrinsicsImpl::runOnFunction.
+---
+ lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp |  5 +++++
+ test/CodeGen/SPIRV/dominator-order.ll    | 28 ++++++++++++++++++++++++
+ 2 files changed, 33 insertions(+)
+
+diff --git a/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp b/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
+index e22a1a0948c2..27675e8e6e75 100644
+--- a/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
++++ b/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
+@@ -3751,6 +3751,11 @@ bool SPIRVEmitIntrinsicsImpl::runOnFunction(Function &Func) {
+     return false;
+ 
+   const SPIRVSubtarget &ST = TM.getSubtarget<SPIRVSubtarget>(Func);
++  // LoopSimplify runs after SPIRVPrepareFunctions sorted the blocks, and the
++  // preheaders/dedicated exits it creates can end up before their dominator,
++  // which SPIR-V forbids.
++  if (!ST.isShader())
++    sortBlocks(Func);
+   GR = ST.getSPIRVGlobalRegistry();
+ 
+   if (!CurrF)
+diff --git a/test/CodeGen/SPIRV/dominator-order.ll b/test/CodeGen/SPIRV/dominator-order.ll
+index 2ecdddcd71ff..235b40a85975 100644
+--- a/test/CodeGen/SPIRV/dominator-order.ll
++++ b/test/CodeGen/SPIRV/dominator-order.ll
+@@ -8,6 +8,10 @@
+ ; CHECK-DAG: OpName %[[#ENTRY:]] "entry"
+ ; CHECK-DAG: OpName %[[#FOR_BODY137_LR_PH:]] "for.body137.lr.ph"
+ ; CHECK-DAG: OpName %[[#FOR_BODY:]] "for.body"
++; CHECK-DAG: OpName %[[#OUTER:]] "outer"
++; CHECK-DAG: OpName %[[#INNER_PREHEADER:]] "inner.preheader"
++; CHECK-DAG: OpName %[[#INNER:]] "inner"
++; CHECK-DAG: OpName %[[#OUTER_LOOPEXIT:]] "outer.loopexit"
+ 
+ ; CHECK: %[[#ENTRY]] = OpLabel
+ ; CHECK: %[[#FOR_BODY]] = OpLabel
+@@ -23,3 +27,27 @@ for.body137.lr.ph:                                ; preds = %for.body
+ for.body:                                         ; preds = %for.body, %entry
+   br i1 %cond, label %for.body, label %for.body137.lr.ph
+ }
++
++; Check that blocks inserted by LoopSimplify (such as outer.loopexit, which is
++; inserted before outer but dominated by inner) are re-sorted after their
++; dominators.
++; CHECK: OpFunction
++; CHECK: %[[#OUTER]] = OpLabel
++; CHECK: %[[#INNER_PREHEADER]] = OpLabel
++; CHECK: %[[#INNER]] = OpLabel
++; CHECK: %[[#OUTER_LOOPEXIT]] = OpLabel
++; CHECK: OpFunctionEnd
++
++define spir_kernel void @test_loop_simplify(i1 %c1, i1 %c2) {
++entry:
++  br label %outer
++
++outer:
++  br i1 %c1, label %inner, label %exit
++
++inner:
++  br i1 %c2, label %inner, label %outer
++
++exit:
++  ret void
++}
+-- 
+2.56.0
+

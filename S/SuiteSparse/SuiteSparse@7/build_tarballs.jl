@@ -1,8 +1,8 @@
-# Build counter: 0
+# Build counter: 1
 include("../common.jl")
 
 name = "SuiteSparse"
-version = v"7.8.3"
+version = v"7.14.0"
 
 sources = suitesparse_sources(version)
 
@@ -13,5 +13,3 @@ PROJECTS_TO_BUILD="suitesparse_config;amd;btf;camd;ccolamd;colamd;cholmod;klu;ld
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.11")
-
-# Build trigger: 2

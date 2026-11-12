@@ -1,0 +1,33 @@
+From f1d5f943aac26b89bebc4e9095f17945f6920763 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Fri, 27 Jun 2025 18:08:10 +0200
+Subject: [PATCH 4/6] Avoid using `_Float16` in older GCC
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+This was not introduced until GCC 7, even for AArch64.
+
+🤖 Generated with [Claude Code](https://claude.ai/code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+---
+ runtime/bigarray.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/runtime/bigarray.c b/runtime/bigarray.c
+index 0fa0c808c0..9b9aa1d258 100644
+--- a/runtime/bigarray.c
++++ b/runtime/bigarray.c
+@@ -37,7 +37,7 @@
+ 
+ /* Half-precision floating point numbers */
+ 
+-#if defined(__GNUC__) && defined(__aarch64__)
++#if defined(__GNUC__) && defined(__aarch64__) && (__GNUC__ >= 7)
+ 
+ union float16_bits { uint16_t i; _Float16 f; };
+ 
+-- 
+2.50.0
+

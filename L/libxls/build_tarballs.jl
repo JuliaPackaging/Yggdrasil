@@ -2,16 +2,19 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 name = "libxls"
-version = v"1.6.2"
+version = v"1.6.4"
 
 sources = [
     ArchiveSource("https://github.com/libxls/libxls/releases/download/v$version/libxls-$version.tar.gz",
-                  "5dacc34d94bf2115926c80c6fb69e4e7bd2ed6403d51cff49041a94172f5e371"),
+                  "064ee1da6cf3d481d8af4a936e0e0ce0190114e468fb7dfef5a81610746081e0"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libxls-*/
+# libxls 1.6.3 adds -D_spawnv=spawnv to CFLAGS on mingw, which conflicts with
+# the spawnv declaration in mingw-w64's process.h when compiling xls2csv.
+sed -i 's/-D_spawnv=spawnv//' configure
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     ac_cv_func_malloc_0_nonnull=yes \
     ac_cv_func_realloc_0_nonnull=yes 

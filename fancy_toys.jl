@@ -2,9 +2,6 @@
 # developers.  These utilities can be employed in builder files.
 
 using BinaryBuilder, Pkg, LibGit2
-# Note: if you only need `get_addable_spec`, just add the following line to your recipe
-# instead of including this file.  This is reexported here for backward compatibility.
-using BinaryBuilderBase: get_addable_spec
 
 """
     should_build_platform(platform) -> Bool

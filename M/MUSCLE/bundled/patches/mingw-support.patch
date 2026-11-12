@@ -1,0 +1,79 @@
+diff --git a/src/myutils.cpp b/src/myutils.cpp
+index 2426f9e..29f7721 100644
+--- a/src/myutils.cpp
++++ b/src/myutils.cpp
+@@ -29,7 +29,18 @@
+ #include <io.h>
+ #else
+ #include <sys/time.h>
++#ifdef __MINGW32__
++// mingw-w64 has no <sys/resource.h>. The memory and core-count helpers below
++// use the Win32 APIs instead, so include the Windows headers here, at the same
++// point in the file as the _MSC_VER branch above does.
++#ifndef WIN32_LEAN_AND_MEAN
++#define WIN32_LEAN_AND_MEAN
++#endif
++#include <windows.h>
++#include <psapi.h>
++#else
+ #include <sys/resource.h>
++#endif
+ #include <unistd.h>
+ #include <errno.h>
+ #include <fcntl.h>
+@@ -120,7 +131,7 @@ const char *GetPlatform()
+ 	{
+ #if	BITS==32
+ 	asserta(sizeof(void *) == 4);
+-#ifdef _MSC_VER
++#if defined(_MSC_VER) || defined(__MINGW32__)
+ 	return "win32";
+ #elif defined(__APPLE__)
+ 	return "osx32";
+@@ -131,7 +142,7 @@ const char *GetPlatform()
+ #endif
+ #elif BITS==64
+ 	asserta(sizeof(void *) == 8);
+-#ifdef _MSC_VER
++#if defined(_MSC_VER) || defined(__MINGW32__)
+ 	return "win64";
+ #elif defined(__arm64__)
+ 	return "osxarm64";
+@@ -253,7 +264,8 @@ void ParseFileName(const string &FileName, string &Path, string &Name)
+ 	if (n1 != string::npos)
+ 		n = n1;
+ 
+-#if _MSC_VER
++// Windows path separators and drive letters need splitting on mingw too.
++#if defined(_MSC_VER) || defined(__MINGW32__)
+ 	size_t n2 = FileName.rfind('\\');
+ 	size_t n3 = FileName.rfind(':');
+ 	if (n2 != string::npos && n2 > n)
+@@ -786,7 +798,8 @@ double GetUsableMemBytes()
+ 	{
+ 	double RAM = GetPhysMemBytes();
+ #if	BITS==32
+-#ifdef	_MSC_VER
++// 32-bit Windows caps user address space at 2GB, whatever the compiler.
++#if defined(_MSC_VER) || defined(__MINGW32__)
+ 	if (RAM > 2e9)
+ 		return 2e9;
+ #else
+@@ -977,7 +990,7 @@ void mysleep(unsigned ms)
+ 	}
+ #endif
+ 
+-#ifdef _MSC_VER
++#if defined(_MSC_VER) || defined(__MINGW32__)
+ double GetMemUseBytes()
+ 	{
+ 	HANDLE hProc = GetCurrentProcess();
+@@ -2310,7 +2323,7 @@ void ResetRand(unsigned Seed)
+ 
+ unsigned GetCPUCoreCount()
+ 	{
+-#ifdef _MSC_VER
++#if defined(_MSC_VER) || defined(__MINGW32__)
+ 	SYSTEM_INFO SI;
+ 	GetSystemInfo(&SI);
+ 	unsigned n = SI.dwNumberOfProcessors;

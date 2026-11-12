@@ -3,22 +3,23 @@
 using BinaryBuilder, Pkg
 
 name = "GTPSA"
-version = v"1.5"
+version = v"1.7.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/mattsignorelli/gtpsa.git", "c46ebfcd28e8976f7d02b63a1c73cd685c45d318")
+    GitSource("https://github.com/mattsignorelli/gtpsa.git", "28bd95b43b9db7d09d3e8b8f191d9c411f6ba064")
 ]
 
 # Bash recipe for building across all platforms
 # GCC >=11 is necessary because the source code uses the two-argument version
 # of the attribute malloc, see https://github.com/mattsignorelli/gtpsa/blob/394a20847b869a842c6a89f2af1a889c3a1c2813/code/mad_mem.h#L73-L75 (also unsupported by clang)
+# Furthermore, GCC >= 12.1 is also required because 11.1.0 throws an internal compiler error
+# when trying to compile GTPSA_jll  >= v1.6.1
 script = raw"""
-cd $WORKSPACE/srcdir
-cd gtpsa/
-cmake . -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release
-make -j${nproc}
-make install
+cd $WORKSPACE/srcdir/gtpsa
+cmake -B $WORKSPACE/build -S . -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release
+cmake --build $WORKSPACE/build --parallel ${nproc}
+cmake --install $WORKSPACE/build
 """
 
 # These are the platforms we will build for by default, unless further
@@ -38,4 +39,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"11.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"12.1.0")

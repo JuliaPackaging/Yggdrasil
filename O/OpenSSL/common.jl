@@ -41,6 +41,12 @@ function translate_target()
     fi
 }
 
+if [[ ${target} == *mingw* ]]; then
+   # Our mingw32 headers are too old; we need to define `SIO_UDP_NETRESET` manually
+   # (This constant is `0x80000000 | 0x18000000 | 15`.)
+   export CFLAGS='-DSIO_UDP_NETRESET=2550136847UL'
+fi
+
 ./Configure shared --prefix=$prefix --libdir=${libdir} $(translate_target)
 make -j${nproc}
 make install_sw
@@ -52,7 +58,7 @@ rm -v ${libdir}/lib{crypto,ssl}.a
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[

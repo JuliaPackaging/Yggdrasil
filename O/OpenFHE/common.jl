@@ -1,11 +1,15 @@
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
+include("../../L/libjulia/common.jl")
+
 function prepare_openfhe_build(name::String, git_hash::String)
     # Collection of sources required to complete build
     sources = [
         GitSource("https://github.com/openfheorg/openfhe-development.git",
                   git_hash),
-        DirectorySource("../OpenFHE/bundled")
     ]
 
     # Set native size for bash recipe
@@ -14,11 +18,6 @@ function prepare_openfhe_build(name::String, git_hash::String)
     # Bash recipe for building across all platforms
     script = raw"""
     cd $WORKSPACE/srcdir/openfhe-development/
-
-    # Set proper install directories for libraries on Windows
-    if [[ "${target}" == *-mingw* ]]; then
-      atomic_patch -p1 "${WORKSPACE}/srcdir/patches/windows-fix-cmake-libdir.patch"
-    fi
 
     mkdir build && cd build
 
@@ -30,6 +29,7 @@ function prepare_openfhe_build(name::String, git_hash::String)
       -DWITH_BE4=ON \
       -DBUILD_UNITTESTS=OFF \
       -DBUILD_BENCHMARKS=OFF \
+      -DBUILD_EXAMPLES=OFF \
       -DNATIVE_SIZE=""" * "$native_size" *
     raw"""
     
@@ -37,8 +37,9 @@ function prepare_openfhe_build(name::String, git_hash::String)
     make install
     """
     
-    # These are the platforms we will build for by default, unless further
-    # platforms are passed in on the command line
+    # If necessary, install newer macOS SDK which supports `std::filesystem`
+    sources, script = require_macos_sdk("10.15", sources, script)
+
     platforms = supported_platforms()
 
     # We cannot build with musl since OpenFHE requires the `execinfo.h` header for `backtrace`

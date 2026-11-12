@@ -3,13 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "MLX_C"
-version = v"0.1.0"
+version = v"0.2.0"
 
 sources = [
-    GitSource("https://github.com/ml-explore/mlx-c.git", "e8889ddf56b3bd734eb79d5e5b13586a39c01403"),
+    GitSource("https://github.com/ml-explore/mlx-c.git", "9ebe155864eab06d94ba18e01f9cb2666b2975a7"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
-    DirectorySource("./bundled"),
 ]
 
 script = raw"""
@@ -26,12 +25,6 @@ if [[ "$target" == *-apple-darwin* ]]; then
 fi
 
 cd $WORKSPACE/srcdir/mlx-c
-
-atomic_patch -p1 ../patches/cmake-win32.patch
-
-if [[ "$target" == *-w64-mingw32* ]]; then
-    atomic_patch -p1 ../patches/cmake-win32-io.patch
-fi
 
 cmake \
     -B build \
@@ -56,8 +49,10 @@ products = Product[
 ]
 
 dependencies = [
-    BuildDependency("dlfcn_win32_jll"; platforms = filter(Sys.iswindows, platforms)),
-    Dependency("MLX_jll"; compat = "0.21")
+     # MLX_C 0.2.0 is not completely compatible with MLX 0.24, but MLX_C
+     # skipped releasing a version compatible with 0.24, so adding a
+     # slightly artificial compat for MLX to allow use of 0.24.
+    Dependency("MLX_jll", v"0.25.1"; compat = "0.24, 0.25")
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;

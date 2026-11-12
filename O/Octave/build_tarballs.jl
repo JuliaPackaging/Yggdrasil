@@ -1,18 +1,19 @@
 using BinaryBuilder, Pkg
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "Octave"
-version = v"9.3.0" 
-bb_ver = v"9.3.1" # Bump patch level to have a new version for Ygg compat
+version = v"11.1.0"
 
 # Collection of sources required to build Octave
 sources = [
-   ArchiveSource("https://ftpmirror.gnu.org/octave/octave-$(version).tar.gz",
-                  "809fa39a7acc84815bf4dc4d2d7e6b228ce75a07f3b2413f3313aa8e0aaa3287"),
+    ArchiveSource("https://ftpmirror.gnu.org/octave/octave-$(version).tar.gz",
+                  "c0e7e2c91bc573256431b2cc989290b9bd13851dbadd59d0ac74714f1334b0e6"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/octave*
+cd ${WORKSPACE}/srcdir/octave*
 
 apk add texinfo
 
@@ -28,25 +29,29 @@ fi
 
 # Base configure flags
 FLAGS=(
-    --prefix="$prefix"
+    --prefix="${prefix}"
     --build=${MACHTYPE}
     --host="${target}"
     --enable-shared
     --disable-static
     --with-blas="-L${libdir} -l${LBT}"
     --with-lapack="-L${libdir} -l${LBT}"
+    # Pretend to cross-compile all the time so that `configure` doesn't run programs built against libblastrampoline
+    cross_compiling=yes
 )
 
 ./configure "${FLAGS[@]}"
 make -j${nproc}
 make install
+
+install_license COPYING
 """
 
-# build on all supported platforms
+sources, script = require_macos_sdk("10.14", sources, script)
+
 platforms = supported_platforms()
-filter!(!Sys.isfreebsd, platforms)
-filter!(p -> arch(p) != "riscv64", platforms)
 platforms = expand_cxxstring_abis(platforms)
+platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -58,33 +63,32 @@ products = [
 dependencies = [
     HostBuildDependency("flex_jll"),
     HostBuildDependency("Bison_jll"),
+    HostBuildDependency("gperf_jll"),
+    BuildDependency("fast_float_jll"),
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"),
-               v"5.12.0";  # build version
-               compat="5.8.0"),
+    Dependency("libblastrampoline_jll"; compat="5.11.2"),
     Dependency("OpenBLAS32_jll"),
-    Dependency("SuiteSparse32_jll"),
-    Dependency("Arpack32_jll"),
-    Dependency("Sundials32_jll"),
-    Dependency("QRupdate_ng_jll"),
+    Dependency("SuiteSparse32_jll"; compat="7.8.3"),
+    Dependency("Arpack32_jll"; compat="3.9.1"),
+    Dependency("Sundials32_jll"; compat="5.3.0"),
+    Dependency("QRupdate_ng_jll"; compat="1.1.5"),
     Dependency("CXSparse_jll"; compat="400.400.100"),
     Dependency("PCRE2_jll"),
-    Dependency("Readline_jll"),
+    Dependency("Readline_jll"; compat="8.2.13"),
     Dependency("Libiconv_jll"),
-    Dependency("Zlib_jll"),
-    Dependency("Bzip2_jll"),
-    Dependency("FFTW_jll"),
-    Dependency("GLPK_jll"),
-    Dependency("GMP_jll"; compat="6.2"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
+    Dependency("Bzip2_jll"; compat="1.0.9"),
+    Dependency("FFTW_jll"; compat="3.3.11"),
+    Dependency("GLPK_jll"; compat="5.0.1"),
+    Dependency("GMP_jll"; compat="6.2.1"),
     Dependency("LibCURL_jll"; compat="7.73.0,8"),
-    Dependency("Qhull_jll"),
-    Dependency("HDF5_jll"),
-    Dependency("rapidjson_jll"),
+    Dependency("Qhull_jll"; compat="10008.0.1004"),
+    Dependency("HDF5_jll"; compat="2.0.0"),
+    Dependency("rapidjson_jll"; compat="1.1.1"),
     Dependency("libsndfile_jll"),
-#    Dependency("GraphicsMagick_jll"),
-
+    Dependency("GraphicsMagick_jll"; compat="1.3.46"),
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, bb_ver, sources, script, platforms, products, dependencies;
-               julia_compat="1.8", clang_use_lld=false, preferred_gcc_version=v"10")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               clang_use_lld=false, julia_compat="1.10", preferred_gcc_version=v"10")

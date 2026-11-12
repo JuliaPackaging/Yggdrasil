@@ -3,19 +3,23 @@
 using BinaryBuilder, Pkg
 
 name = "libzip"
-version = v"1.11.2"
+version = v"1.12.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/nih-at/libzip.git", "64b62d6b1a686a1b0bac1b6b9dcb635be0499afb")
+    GitSource("https://github.com/nih-at/libzip.git", "8e037534ccd62f444abbe4ce265443ee74bbfeb3"; tag="v$(version)")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 cd libzip
+if [[ ${target} == *-mingw* ]]; then
+    # Our mingw-w64 `intsafe.h` lacks `DWORD_MAX`
+    export CFLAGS="-DDWORD_MAX=0xffffffffUL"
+fi
 cmake -B build -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
-cmake --build build --parallel ${nprocs}
+cmake --build build --parallel ${nproc}
 cmake --install build
 """
 
@@ -45,5 +49,3 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"6")
-
-# Build trigger: 1

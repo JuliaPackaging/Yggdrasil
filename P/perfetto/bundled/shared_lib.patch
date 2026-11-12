@@ -1,0 +1,17 @@
+diff --git a/meson.build b/meson.build
+index 8fb1e26275..b3dadd6d30 100644
+--- a/meson.build
++++ b/meson.build
+@@ -35,7 +35,11 @@ if host_machine.system() == 'android'
+   deps_perfetto += cpp.find_library('log')
+ endif
+ 
+-lib_perfetto = static_library(
++if target_machine.system() == 'windows'
++  deps_perfetto += cpp.find_library('ws2_32')
++endif
++
++lib_perfetto = shared_library(
+     'perfetto',
+     sources: 'sdk/perfetto.cc',
+     dependencies: deps_perfetto,

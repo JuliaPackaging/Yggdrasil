@@ -1,0 +1,54 @@
+diff --git a/include/world_builder/point.h b/include/world_builder/point.h
+index b962fc3a..0522c515 100644
+--- a/include/world_builder/point.h
++++ b/include/world_builder/point.h
+@@ -65,8 +65,8 @@ namespace WorldBuilder
+      */
+     inline double fast_sin_d(const double angle)
+     {
+-      constexpr double A = 4.0/(Consts::PI * Consts::PI);
+-      constexpr double oneminPmin = 1.-0.1952403377008734-0.01915214119105392;
++      const double A = 4.0/(Consts::PI * Consts::PI);
++      const double oneminPmin = 1.-0.1952403377008734-0.01915214119105392;
+ 
+       const double y = A* angle * ( Consts::PI - angle );
+       return y*( oneminPmin + y*( 0.1952403377008734 + y * 0.01915214119105392 ) ) ;
+diff --git a/source/world_builder/features/continental_plate_models/velocity/euler_pole.cc b/source/world_builder/features/continental_plate_models/velocity/euler_pole.cc
+index e92305d6..5b080d63 100644
+--- a/source/world_builder/features/continental_plate_models/velocity/euler_pole.cc
++++ b/source/world_builder/features/continental_plate_models/velocity/euler_pole.cc
+@@ -86,7 +86,7 @@ namespace WorldBuilder
+         void
+         EulerPole::parse_entries(Parameters &prm, const std::vector<Point<2>> &coordinates)
+         {
+-          constexpr double year_in_seconds = 60*60*24*365.2425;
++          const double year_in_seconds = 60*60*24*365.2425;
+           WBAssertThrow(prm.coordinate_system->natural_coordinate_system() == CoordinateSystem::spherical,
+                         "The Euler pole velocity model can only be used in a spherical coordinate system.");
+           min_depth_surface = Objects::Surface(prm.get("min depth",coordinates));
+diff --git a/source/world_builder/features/mantle_layer_models/velocity/euler_pole.cc b/source/world_builder/features/mantle_layer_models/velocity/euler_pole.cc
+index a4015a16..57584c6d 100644
+--- a/source/world_builder/features/mantle_layer_models/velocity/euler_pole.cc
++++ b/source/world_builder/features/mantle_layer_models/velocity/euler_pole.cc
+@@ -86,7 +86,7 @@ namespace WorldBuilder
+         void
+         EulerPole::parse_entries(Parameters &prm, const std::vector<Point<2>> &coordinates)
+         {
+-          constexpr double year_in_seconds = 60*60*24*365.2425;
++          const double year_in_seconds = 60*60*24*365.2425;
+           WBAssertThrow(prm.coordinate_system->natural_coordinate_system() == CoordinateSystem::spherical,
+                         "The Euler pole velocity model can only be used in a spherical coordinate system.");
+           min_depth_surface = Objects::Surface(prm.get("min depth",coordinates));
+diff --git a/source/world_builder/features/oceanic_plate_models/velocity/euler_pole.cc b/source/world_builder/features/oceanic_plate_models/velocity/euler_pole.cc
+index 2976c517..644c5884 100644
+--- a/source/world_builder/features/oceanic_plate_models/velocity/euler_pole.cc
++++ b/source/world_builder/features/oceanic_plate_models/velocity/euler_pole.cc
+@@ -86,7 +86,7 @@ namespace WorldBuilder
+         void
+         EulerPole::parse_entries(Parameters &prm, const std::vector<Point<2>> &coordinates)
+         {
+-          constexpr double year_in_seconds = 60*60*24*365.2425;
++          const double year_in_seconds = 60*60*24*365.2425;
+           WBAssertThrow(prm.coordinate_system->natural_coordinate_system() == CoordinateSystem::spherical,
+                         "The Euler pole velocity model can only be used in a spherical coordinate system.");
+           min_depth_surface = Objects::Surface(prm.get("min depth",coordinates));

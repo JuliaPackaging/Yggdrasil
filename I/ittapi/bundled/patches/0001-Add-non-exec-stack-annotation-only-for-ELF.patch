@@ -1,0 +1,35 @@
+From 67f2dc87330ba4a3fd16d5f77cdf6f7139ea8a7f Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mos=C3=A8=20Giordano?= <m.giordano@ucl.ac.uk>
+Date: Thu, 27 Feb 2025 15:11:58 +0100
+Subject: [PATCH] Add non-exec stack annotation only for ELF
+
+---
+ src/ittnotify/ittptmark32.S | 2 ++
+ src/ittnotify/ittptmark64.S | 2 ++
+ 2 files changed, 4 insertions(+)
+
+diff --git a/src/ittnotify/ittptmark32.S b/src/ittnotify/ittptmark32.S
+index 2eeb67e..f8ee3c1 100644
+--- a/src/ittnotify/ittptmark32.S
++++ b/src/ittnotify/ittptmark32.S
+@@ -712,4 +712,6 @@ __itt_pt_write:
+         ret
+ 
+ // Ensure the stack is non-executable
++#if defined(__ELF__)
+ .section .note.GNU-stack,"",@progbits
++#endif
+diff --git a/src/ittnotify/ittptmark64.S b/src/ittnotify/ittptmark64.S
+index 4b229e0..c9b2296 100644
+--- a/src/ittnotify/ittptmark64.S
++++ b/src/ittnotify/ittptmark64.S
+@@ -715,4 +715,6 @@ __itt_pt_write:
+         ret
+ 
+ // Ensure the stack is non-executable
++#if defined(__ELF__)
+ .section .note.GNU-stack,"",@progbits
++#endif
+-- 
+2.47.2
+

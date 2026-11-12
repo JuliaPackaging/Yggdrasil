@@ -3,18 +3,18 @@
 using BinaryBuilder
 
 name = "Fontconfig"
-version = v"2.15.0"
+version = v"2.18.3"
 
 # Collection of sources required to build FriBidi
 sources = [
-    ArchiveSource("https://www.freedesktop.org/software/fontconfig/release/fontconfig-$(version).tar.xz",
-                  "63a0658d0e06e0fa886106452b58ef04f21f58202ea02a94c39de0d3335d7c0e"),
-    DirectorySource("./bundled"),
+    ArchiveSource("https://gitlab.freedesktop.org/api/v4/projects/890/packages/generic/fontconfig/$(version)/fontconfig-$(version).tar.xz",
+                  "4f7b554a38cdf78c033f666c8871f3749e14a094f65a07f630c91ed0b43d35e3"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/fontconfig-*/
+cd $WORKSPACE/srcdir/fontconfig-*
 
 FLAGS=()
 if [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
@@ -32,8 +32,22 @@ fi
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0002-fix-mkdir.mingw.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0004-fix-mkdtemp.mingw.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0005-fix-setenv.mingw.patch"
+
+# The Autotools build of 2.18.x was not kept in sync with the Meson build:
+# `configure.ac` is missing the `xlocale.h` check that `src/fcint.h` needs for
+# `locale_t` and the `LC_*_MASK` constants on macOS and FreeBSD, it is missing
+# the `_vsnprintf_l` check that keeps Windows out of the `FcLocaleSetCurrent`
+# code path, and the `Makefile.am`s never picked up `fcconffile.c`/`fc-genconf`.
+# Reported as <https://gitlab.freedesktop.org/fontconfig/fontconfig/-/work_items/561>
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0006-configure-check-xlocale.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0007-configure-check-vsnprintf_l.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0008-build-fcconffile-and-fc-genconf.patch"
+
 autoreconf
-./configure --prefix=$prefix --build=${MACHTYPE} --host=$target --disable-docs "${FLAGS[@]}"
+# The `va_copy` check in `m4/va_copy.m4` uses `AC_RUN_IFELSE` without a
+# cross-compiling fallback, so preseed its cache variable: all our compilers
+# provide the C99 `va_copy` macro.
+./configure --prefix=$prefix --build=${MACHTYPE} --host=$target --disable-docs "${FLAGS[@]}" ac_cv_va_copy=C99
 
 # Disable tests
 sed -i 's,all-am: Makefile $(PROGRAMS),all-am:,' test/Makefile
@@ -52,6 +66,7 @@ products = [
     ExecutableProduct("fc-cache", :fc_cache),
     ExecutableProduct("fc-cat", :fc_cat),
     ExecutableProduct("fc-conflist", :fc_conflist),
+    ExecutableProduct("fc-genconf", :fc_genconf),
     ExecutableProduct("fc-list", :fc_list),
     ExecutableProduct("fc-match", :fc_match),
     ExecutableProduct("fc-pattern", :fc_pattern),
@@ -64,11 +79,11 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     HostBuildDependency("gperf_jll"),
-    Dependency("FreeType2_jll"; compat="2.13.3"),
-    Dependency("Bzip2_jll"; compat="1.0.8"),
-    Dependency("Zlib_jll"),
-    Dependency("Libuuid_jll"),
-    Dependency("Expat_jll"; compat="2.6.4"),
+    Dependency("FreeType2_jll"; compat="2.13.4"),
+    Dependency("Bzip2_jll"; compat="1.0.9"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
+    Dependency("Libuuid_jll"; compat="2.41.0"),
+    Dependency("Expat_jll"; compat="2.6.5"),
 ]
 
 # @giordano: "I know this looks funky, but it makes code in the JLL indented correctly"

@@ -1,0 +1,13 @@
+diff --git a/src/iperf_api.h b/src/iperf_api.h
+index XXXXXXX..YYYYYYY 100644
+--- a/src/iperf_api.h
++++ b/src/iperf_api.h
+@@ -44,8 +44,9 @@
+ #ifdef HAVE_STDATOMIC_H
+ #include <stdatomic.h>
+ #else
+ #warning "No <stdatomic.h> available"
+-typedef u_int64_t atomic_uint_fast64_t;
++#include <stdint.h>
++typedef uint64_t atomic_uint_fast64_t;
+ #endif // HAVE_STDATOMIC_H

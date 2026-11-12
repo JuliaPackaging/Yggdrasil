@@ -3,18 +3,20 @@
 using BinaryBuilder, Pkg
 
 name = "MKL_Headers"
-version = v"2025.0.1"
+version = v"2025.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    FileSource("https://files.pythonhosted.org/packages/cd/b7/092df7c41f57b3a41bb60392081564da0ea64ae300128fa9d44dd7acd84b/mkl_include-2025.0.1-py2.py3-none-win_amd64.whl",
-               "1149c1b34bc41166c0bb09c103e42ae251f0a9d190b886a99124b70632b3bc8d"; filename="mkl_include-x86_64-w64-mingw32.whl"),
-    FileSource("https://files.pythonhosted.org/packages/7b/42/74f3ed839c59e7bf3992804ce172590b4acac01dac4157f81daeb7774202/mkl_include-2025.0.1-py2.py3-none-manylinux_2_28_x86_64.whl",
-               "a70b90ce07f7a970a6fc8b324e416e0e978edec751b2d2e1b52d511f886fe506"; filename="mkl_include-x86_64-linux-gnu.whl"),
-    FileSource("https://files.pythonhosted.org/packages/1f/b1/03a2388889052dd018cebf8b915599015161519c6af89e42e4a31a62e2f0/mkl_devel-2025.0.1-py2.py3-none-win_amd64.whl",
-               "fc62df9c689722dadf282af6380538063dbd4fd3d328aa3c60eb72a521d06789"; filename="mkl_devel-x86_64-w64-mingw32.whl"),
-    FileSource("https://files.pythonhosted.org/packages/fd/e1/b13109f2d31fc6b1e753d0746317a62a119292ec127e196b409ad420587b/mkl_devel-2025.0.1-py2.py3-none-manylinux_2_28_x86_64.whl",
-               "18662a91ce12613622b7e002b7f5dcb790bf22bba83cef80179b9d2d3458ed2d"; filename="mkl_devel-x86_64-linux-gnu.whl"),
+    # Source files from PyPi mkl-include package: https://pypi.org/project/mkl-include/#files
+    FileSource("https://files.pythonhosted.org/packages/06/87/3eee37bf95c6b820b6394ad98e50132798514ecda1b2584c71c2c96b973c/mkl_include-2025.2.0-py2.py3-none-win_amd64.whl",
+               "d20305b4adfa36407a808ec6a16dc5d6da6f8b9cb4a96bdcc0e0ab3239c43816"; filename="mkl_include-x86_64-w64-mingw32.whl"),
+    FileSource("https://files.pythonhosted.org/packages/11/58/6f583b3bac7d3952a89a00ab34e61baa17f6d6de3454a8005958289bef22/mkl_include-2025.2.0-py2.py3-none-manylinux_2_28_x86_64.whl",
+               "691ceaccf6d960e19d47304d24ca2ee4e807810077e93c1c86c2e32cd6223012"; filename="mkl_include-x86_64-linux-gnu.whl"),
+    # Source files from PyPi mkl-devel package: https://pypi.org/project/mkl-devel/#files
+    FileSource("https://files.pythonhosted.org/packages/86/60/f979218ad807331524f3cd88c05b603d9ea5a685cffa513304bee8ae012b/mkl_devel-2025.2.0-py2.py3-none-win_amd64.whl",
+               "305745583d7b08d2f8b8b37d20e6fa4b4325627a5989625c74aaaf651b10e9da"; filename="mkl_devel-x86_64-w64-mingw32.whl"),
+    FileSource("https://files.pythonhosted.org/packages/bf/0c/6f5acc9d11087f4f6c739d019181028910555eb48af353e285ba80cd5d40/mkl_devel-2025.2.0-py2.py3-none-manylinux_2_28_x86_64.whl",
+               "990fb052a566c24042892b5585f32d27b8338ed801c86f7db2d40edc56dc8906"; filename="mkl_devel-x86_64-linux-gnu.whl"),
 ]
 
 # Bash recipe for building across all platforms
@@ -24,18 +26,18 @@ unzip -d mkl_include-$target mkl_include-$target.whl
 unzip -d mkl_devel-$target mkl_devel-$target.whl
 
 if [[ $target == *-mingw* ]]; then
-    rsync -av mkl_include-${target}/mkl_include-2025.0.1.data/data/Library/include/ ${includedir}
+    rsync -av mkl_include-${target}/mkl_include-*.data/data/Library/include/ ${includedir}
 else
-    rsync -av mkl_include-${target}/mkl_include-2025.0.1.data/data/include/ ${includedir}
+    rsync -av mkl_include-${target}/mkl_include-*.data/data/include/ ${includedir}
 fi
-install_license mkl_include-${target}/mkl_include-2025.0.1.dist-info/LICENSE.txt
+install_license mkl_include-${target}/mkl_include-*.dist-info/LICENSE.txt
 
 mkdir -p ${libdir}
 if [[ $target == *-mingw* ]]; then
     # These toolchain files must still go inside the lib folder, not the ${libdir} folder
-    rsync -av mkl_devel-${target}/mkl_devel-2025.0.1.data/data/Library/lib/ $WORKSPACE/destdir/lib
+    rsync -av mkl_devel-${target}/mkl_devel-*.data/data/Library/lib/ ${prefix}/lib
 else
-    rsync -av mkl_devel-${target}/mkl_devel-2025.0.1.data/data/lib/ ${libdir}
+    rsync -av mkl_devel-${target}/mkl_devel-*.data/data/lib/ ${libdir}
 fi
 """
 

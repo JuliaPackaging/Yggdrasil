@@ -1,0 +1,112 @@
+diff --git a/include/blocksqp_general_purpose.hpp b/include/blocksqp_general_purpose.hpp
+index cbe9868..c9fae64 100644
+--- a/include/blocksqp_general_purpose.hpp
++++ b/include/blocksqp_general_purpose.hpp
+@@ -37,10 +37,6 @@ double adotb( const Matrix &a, const Matrix &b );
+ void Atimesb( const Matrix &A, const Matrix &b, Matrix &result );
+ void Atimesb( double *Anz, int *AIndRow, int *AIndCol, const Matrix &b, Matrix &result );
+ 
+-int calcEigenvalues( const Matrix &B, Matrix &ev );
+-double estimateSmallestEigenvalue( const Matrix &B );
+-int inverse( const Matrix &A, Matrix &Ainv );
+-
+ } // namespace blockSQP
+ 
+ #endif
+diff --git a/src/blocksqp_general_purpose.cpp b/src/blocksqp_general_purpose.cpp
+index f3043aa..8812088 100644
+--- a/src/blocksqp_general_purpose.cpp
++++ b/src/blocksqp_general_purpose.cpp
+@@ -19,92 +19,6 @@
+ namespace blockSQP
+ {
+ 
+-/**
+- * Compute the inverse of a matrix
+- * using LU decomposition (DGETRF and DGETRI)
+- */
+-int inverse( const Matrix &A, Matrix &Ainv )
+-{
+-    int i, j;
+-    int n, ldim, lwork, info = 0;
+-    int *ipiv;
+-    double *work;
+-
+-    for( i=0; i<A.N(); i++ )
+-        for( j=0; j<A.M(); j++ )
+-            Ainv( j,i ) = A( j,i );
+-
+-    n = Ainv.N();
+-    ldim = Ainv.LDIM();
+-    ipiv = new int[n];
+-    lwork = n*n;
+-    work = new double[lwork];
+-
+-    // Compute LU factorization
+-    dgetrf_( &n, &n, Ainv.ARRAY(), &ldim, ipiv, &info );
+-    if ( info != 0 )
+-        printf( "WARNING: DGETRF returned info=%i\n", info );
+-    // Compute inverse
+-    dgetri_( &n, Ainv.ARRAY(), &ldim, ipiv, work, &lwork, &info );
+-    if ( info != 0 )
+-        printf( "WARNING: DGETRI returned info=%i\n", info );
+-
+-    return info;
+-}
+-
+-/**
+- * Compute eigenvalues of a symmetric matrix by DSPEV
+- */
+-int calcEigenvalues( const SymMatrix &B, Matrix &ev )
+-{
+-    int n;
+-    SymMatrix temp;
+-    double *work, *dummy = 0;
+-    int info, iDummy = 1;
+-
+-    n = B.M();
+-    ev.Dimension( n ).Initialize( 0.0 );
+-    work = new double[3*n];
+-
+-    // copy Matrix, will be overwritten
+-    temp = SymMatrix( B );
+-
+-    // DSPEV computes all the eigenvalues and, optionally, eigenvectors of a
+-    // real symmetric matrix A in packed storage.
+-    dspev_( "N", "L", &n, temp.ARRAY(), ev.ARRAY(), dummy, &iDummy,
+-            work, &info, strlen("N"), strlen("L") );
+-
+-    delete[] work;
+-
+-    return info;
+-}
+-
+-/**
+- * Estimate the smalles eigenvalue of a sqare matrix
+- * with the help og Gershgorin's circle theorem
+- */
+-double estimateSmallestEigenvalue( const Matrix &B )
+-{
+-    int i, j;
+-    double radius;
+-    int dim = B.M();
+-    double lambdaMin = 0.0;
+-
+-    // For each row, sum up off-diagonal elements
+-    for( i=0; i<dim; i++ )
+-    {
+-        radius = 0.0;
+-        for( j=0; j<dim; j++ )
+-            if( j != i )
+-                radius += fabs( B( i,j ) );
+-
+-        if( B( i,i ) - radius < lambdaMin )
+-            lambdaMin = B( i,i ) - radius;
+-    }
+-
+-    return lambdaMin;
+-}
+-
+ 
+ /**
+  * Compute scalar product aTb

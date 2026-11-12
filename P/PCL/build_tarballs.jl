@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "PCL"
-version = v"1.12.0"
+version = v"1.15.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/PointCloudLibrary/pcl/releases/download/pcl-$version/source.tar.gz",
-                  "606a2d5c7af304791731d6b8ea79365bc8f2cd75908006484d71ecee01d9b51c"),
+                  "fb79d085b08b8335f43ee4cacf4daa2624bb2c411e9243efa6a92c077273840a"),
     DirectorySource("./bundled")
 ]
 
@@ -19,11 +19,17 @@ cd $WORKSPACE/srcdir/pcl*
 # Patch to simplify CMake checks
 atomic_patch -p1 ../patches/0001-Replace-run-checks-with-compile-checks.patch
 
-mkdir build && cd build
-
 #see https://github.com/PointCloudLibrary/pcl/pull/4695 for -DPCL_WARNINGS_ARE_ERRORS flag
 
-cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
+cmake_extra_args=()
+
+if [[ "${target}" == *-mingw* ]]; then
+    cmake_extra_args+=(
+        -DPCL_BUILD_WITH_BOOST_DYNAMIC_LINKING_WIN32=ON
+        -DBoost_DIR=${libdir}/cmake/Boost-1.87.0/)
+fi
+
+cmake -B build -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DWITH_VTK=OFF \
     -DWITH_LIBUSB=OFF \
@@ -33,10 +39,12 @@ cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DWITH_OPENGL=OFF \
     -DWITH_PCAP=OFF \
     -DPCL_WARNINGS_ARE_ERRORS=OFF \
-    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_CXX_STANDARD=14 \
+    "${cmake_extra_args[@]}"
 
-make -j${nproc}
-make install
+cmake --build build -j${nproc}
+cmake --install build
 """
 
 # These are the platforms we will build for by default, unless further
@@ -48,6 +56,7 @@ platforms = expand_cxxstring_abis(supported_platforms())
 products = [
 
     ExecutableProduct("pcl_add_gaussian_noise", :pcl_add_gaussian_noise),
+    ExecutableProduct("pcl_bilateral_upsampling", :pcl_bilateral_upsampling),
     ExecutableProduct("pcl_boundary_estimation", :pcl_boundary_estimation),
     ExecutableProduct("pcl_cluster_extraction", :pcl_cluster_extraction),
     ExecutableProduct("pcl_compute_cloud_error", :pcl_compute_cloud_error),
@@ -127,12 +136,13 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms))
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms))
     Dependency(PackageSpec(name="FLANN_jll", uuid="48b6455b-4cf5-590d-a543-2d733c79e793"))
-    Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"); compat="=1.71.0")
-    Dependency(PackageSpec(name="Eigen_jll", uuid="bc6bbf8a-a594-5541-9c57-10b0d0312c70"))
+    Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"); compat="=1.87.0")
+    BuildDependency(PackageSpec(name="Eigen_jll", uuid="bc6bbf8a-a594-5541-9c57-10b0d0312c70"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-#Unsure of actual lower bound on GCC version, PCL uses C++14 standard and their CI on github uses 7 so I went with that.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"7.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+    julia_compat="1.10", preferred_gcc_version = v"11.1")

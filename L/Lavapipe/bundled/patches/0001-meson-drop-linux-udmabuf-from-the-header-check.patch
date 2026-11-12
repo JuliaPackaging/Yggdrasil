@@ -1,0 +1,18 @@
+llvmpipe: don't take the udmabuf path on old glibc
+
+lp_texture.c calls memfd_create() whenever <linux/udmabuf.h> is present, but the glibc
+BinaryBuilder targets predates the wrapper, so the build fails on an implicit declaration.
+The path only shares llvmpipe memory as a dma-buf, which a software ICD never needs; it is
+already compiled out on macOS and Windows.
+
+--- a/meson.build
++++ b/meson.build
+@@ -1613,7 +1613,7 @@
+ 
+ foreach h : ['xlocale.h', 'linux/futex.h', 'endian.h', 'dlfcn.h', 'sys/shm.h',
+              'cet.h', 'pthread_np.h', 'poll.h', 'sys/inotify.h',
+-             'linux/udmabuf.h']
++             ]
+   if cc.check_header(h)
+     pre_args += '-DHAVE_@0@'.format(h.to_upper().underscorify())
+   endif

@@ -7,7 +7,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "libigc"
-version = v"1.0.17537"#.20
+version = v"2.41.5"
 
 # IGC depends on LLVM, a custom Clang, and a Khronos tool. Instead of building these pieces
 # separately, taking care to match versions and apply Intel-specific patches where needed
@@ -27,13 +27,15 @@ version = v"1.0.17537"#.20
 #       see https://github.com/intel/intel-graphics-compiler/blob/master/.github/workflows/build-IGC.yml
 #
 sources = [
-    GitSource("https://github.com/intel/intel-graphics-compiler.git", "b6be9c780da71d4a6533eb02b54c6121527471c6"),
-    GitSource("https://github.com/intel/opencl-clang.git", "470cf0018e1ef6fc92eda1356f5f31f7da452abc" #= branch ocl-open-140 =#),
-    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "065a94408d01bacf2ee86443f56cfaa64fda1534" #= branch llvm_release_140 =#),
-    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "f0cc85efdbbe3a46eae90e0f915dc1509836d0fc" #= tag v2023.6.rc1 =#),
-    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "1c6bb2743599e6eb6f37b2969acc0aef812e32e3"), #= master =#
-    GitSource("https://github.com/intel/vc-intrinsics.git", "8d2e809368443305155370573f3c6db8279ed87d" #= latest version: v0.19.0 =#),
-    GitSource("https://github.com/llvm/llvm-project.git", "c12386ae247c0d46e1d513942e322e3a0510b126" #= branch llvmorg-14.0.5 =#),
+    GitSource("https://github.com/intel/intel-graphics-compiler.git", "f05f218e6f0b888823c5678e1f64e91e597ea2dc" #= tag v2.41.5 =#),
+    GitSource("https://github.com/intel/opencl-clang.git", "b953eceebb0abc6ea954a14545420e3f97540a77" #= branch ocl-open-220 =#),
+    # llvm_release_220 with KhronosGroup/SPIRV-LLVM-Translator#3997, so that OpUMulExtended
+    # calls the unsigned overloads IGC defines (intel/intel-graphics-compiler#432)
+    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "c8b2bee8bd90cd2c9045bc140746ffae6a501303" #= branch llvm_release_220 =#),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "f80351511e9c4672e284842c7b124315c511078a" #= main =#),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "575b6512579ebde466ed3dfc04e413439d14d95d"), #= main =#
+    GitSource("https://github.com/intel/vc-intrinsics.git", "27f7c4f34738f5eaf7a045b77edf8d9e034443d8" #= tag v0.25.0 =#),
+    GitSource("https://github.com/llvm/llvm-project.git", "ca7933e47d3a3451d81e72ac174dcb5aa28b59d1" #= tag llvmorg-22.1.8 =#),
     # patches
     DirectorySource("./bundled"),
 ]
@@ -42,6 +44,10 @@ sources = [
 function get_script(; debug::Bool)
     script = raw"""
         apk add py3-mako py3-yaml binutils
+        # Need newer CMake (>3.22.1), so use the JLL packaged one
+        apk del cmake
+
+        # Build the IGC
 
         # the build system uses git
         export HOME=$(pwd)
@@ -52,11 +58,38 @@ function get_script(; debug::Bool)
         mv opencl-clang llvm-project/llvm/projects/opencl-clang
         mv SPIRV-LLVM-Translator llvm-project/llvm/projects/llvm-spirv
 
-        # Work around compilation failures
-        # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86678
-        atomic_patch -p0 patches/gcc-constexpr_assert_bug.patch
+        # GCC 11 can't resolve llvm::for_each over unordered_set ranges in C++20 mode
+        atomic_patch -p0 patches/fix-iterator-ambiguity.patch
+        # Don't put overflowing word/byte integer results in the accumulator
+        # https://github.com/JuliaGPU/oneAPI.jl/issues/670
+        atomic_patch -p0 patches/narrow-int-acc-dst.patch
+        # Don't erase PromoteSubByte's replacements of loop-carried i1 values
+        # https://github.com/JuliaGPU/oneAPI.jl/issues/678
+        atomic_patch -p0 patches/promote-sub-byte-visit.patch
+        # Don't leave PHIs of with.overflow results pointing at the erased intrinsic
+        # https://github.com/JuliaGPU/oneAPI.jl/issues/691
+        atomic_patch -p0 patches/legalization-overflow-phi.patch
+        # Don't merge reads of input variables that are redefined in the kernel
+        atomic_patch -p0 patches/merge-scalars-redefined-input.patch
+        # Don't let RA place a byte destination at byte 3 of a dword on Gen12LP
+        # https://github.com/intel/intel-graphics-compiler/issues/456
+        atomic_patch -p0 patches/byte-dst-root-align.patch
+        # Don't let spill offsets wrap around in HWord scratch messages on Gen12LP
+        # https://github.com/intel/intel-graphics-compiler/issues/469
+        atomic_patch -p0 patches/hword-scratch-limit.patch
+        # Don't run the post-RA spill/fill propagation on OWord spills, which it can't tell apart
+        # https://github.com/intel/intel-graphics-compiler/issues/471
+        atomic_patch -p0 patches/oword-spill-propagation.patch
+        # Address OWord spills and fills of indirect operands at the spilled variable's slot
+        # https://github.com/intel/intel-graphics-compiler/issues/472
+        atomic_patch -p0 patches/oword-spill-indirect.patch
         # https://reviews.llvm.org/D64388
         sed -i '/add_subdirectory/i add_definitions(-D__STDC_FORMAT_MACROS)' intel-graphics-compiler/external/llvm/llvm.cmake
+
+        # Avoid "No space left on device"
+        mkdir -p tmpdir
+        export TMPDIR=$(pwd)/tmpdir
+        export CCACHE_TEMPDIR=$(pwd)/tmpdir
 
         cd intel-graphics-compiler
         install_license LICENSE.md
@@ -68,6 +101,10 @@ function get_script(; debug::Bool)
 
         # Install things into $prefix
         CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
+
+        # IGC's CMake still defaults to LLVM 17, but releases are built against the LLVM in
+        # their Dependencies revisions table
+        CMAKE_FLAGS+=(-DIGC_OPTION__LLVM_PREFERRED_VERSION=22.1.8)
 
         # NOTE: igc currently can't cross compile due to a variety of issues:
         # - https://github.com/intel/intel-graphics-compiler/issues/131
@@ -105,7 +142,6 @@ platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("GenX_IR", :GenX_IR),
     ExecutableProduct(["iga32", "iga64"], :iga),
     LibraryProduct(["libiga32", "libiga64"], :libiga),
     LibraryProduct("libigc", :libigc),
@@ -117,7 +153,10 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[]
+dependencies = [
+    # CMake 4 rejects the cmake_minimum_required of the bundled SPIRV-Tools
+    HostBuildDependency(PackageSpec(; name="CMake_jll", version="3.31.9")),
+]
 
 augment_platform_block = raw"""
     using Base.BinaryPlatforms
@@ -162,6 +201,7 @@ for platform in platforms, debug in (false, true)
     # IGC only supports Ubuntu 18.04+, which uses GCC 7.4.
     # GCC <9 triggers: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86678 (for debug)
     build_tarballs(ARGS, name, version, sources, get_script(; debug), [augmented_platform],
-                   products, dependencies; preferred_gcc_version=v"9", augment_platform_block,
-                   julia_compat = "1.6", lock_microarchitecture=false)
+                   products, dependencies; preferred_gcc_version=v"11", augment_platform_block,
+                   julia_compat = "1.10", lock_microarchitecture=false)
 end
+

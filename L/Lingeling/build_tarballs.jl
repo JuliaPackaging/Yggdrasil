@@ -26,7 +26,6 @@ install_license COPYING
 # platforms are passed in on the command line
 platforms = supported_platforms()
 filter!(!Sys.iswindows, platforms)
-filter!(!Sys.isapple, platforms)
 
 # The products that we will ensure are always built
 products = [

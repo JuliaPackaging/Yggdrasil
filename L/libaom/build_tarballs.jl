@@ -3,17 +3,17 @@
 using BinaryBuilder, BinaryBuilderBase, Pkg
 
 name = "libaom"
-version = v"3.11.0"
+version = v"3.15.3"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://storage.googleapis.com/aom-releases/libaom-$(version).tar.gz",
-                  "cf7d103d2798e512aca9c6e7353d7ebf8967ee96fffe9946e015bb9947903e3e")
+                  "12c01dc731ed7b5a999e28120b45bf58a002ba3435a4ba2cfbc1e084a27c9c04"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libaom-*
+cd ${WORKSPACE}/srcdir/libaom-*
 
 CMAKE_FLAGS=()
 if [[ ${target} = arm-* ]]; then
@@ -48,16 +48,12 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-#
-# YASM is recommended in the build instructions, but errors on apple platforms.
-# Assembly only exists for x86 targets.
 dependencies = [
-    HostBuildDependency("YASM_jll"; platforms=filter(p->proc_family(p) == "intel" && !Sys.isapple(p), platforms)),
-    HostBuildDependency("NASM_jll"; platforms=filter(p->proc_family(p) == "intel" && Sys.isapple(p), platforms)),
+    HostBuildDependency("NASM_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # We need at least GCC 9 for proper support of Intel SIMD intrinsics
 # We need at least GCC 10 for proper support of 64-bit ARM SIMD intrinsics
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"10")
+               julia_compat="1.6", lock_microarchitecture=false, preferred_gcc_version=v"10")

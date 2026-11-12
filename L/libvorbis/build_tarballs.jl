@@ -4,6 +4,8 @@ using BinaryBuilder
 
 name = "libvorbis"
 version = v"1.3.7"
+# We bumped the version number because we built for new architectures
+ygg_version = v"1.3.8"
 
 # Collection of sources required to build libvorbis
 sources = [
@@ -48,6 +50,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
-
-# rebuild counter: 1
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6")

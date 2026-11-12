@@ -1,12 +1,11 @@
 using BinaryBuilder
 
 name = "LibUCL"
-version = v"0.8.2"
+version = v"0.9.2"
 
 sources = [
     GitSource("https://github.com/vstakhov/libucl.git",
-              "a615938cec3ae35c70aa2fb9845c9c12e5c7326f"),
-    DirectorySource("./bundled"),
+              "16498fcfb0148963feecf0401dc6d2d5089cebdf")
 ]
 
 script = raw"""
@@ -18,8 +17,6 @@ if [[ "${target}" == *-mingw* ]]; then
     sed -i 's/-lregex/-lpcreposix-0/' configure
     export LIBS="-lpcreposix-0"
     export LDFLAGS="-L${libdir}"
-    # Patch upstreamed: https://github.com/vstakhov/libucl/pull/270
-    atomic_patch -p1 ../patches/win32.patch
     FLAGS+=(LDFLAGS="${LDFLAGS} -no-undefined")
 fi
 ./configure \

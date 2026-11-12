@@ -6,16 +6,17 @@ include("utils.jl")
 # Collection of pre-build pandoc binaries
 name = "pandoc_crossref"
 
-crossref_ver = "0.3.18.0"
-panddoc_jll_version = v"3.4.0"
+crossref_ver = "0.3.25"
+panddoc_jll_version = v"3.10.1"
 version = pandoc_crossref_jll_version(crossref_ver)
 
 url_prefix = "https://github.com/lierdakil/pandoc-crossref/releases/download/v$(crossref_ver)/pandoc-crossref"
 sources = [
-    ArchiveSource("$(url_prefix)-Linux.tar.xz", "c5cfd6f41e66348d7ef850bc05992862b447a82d22509a1c635757419c58db26"; unpack_target = "x86_64-linux-gnu"),
-    ArchiveSource("$(url_prefix)-macOS.tar.xz", "958f36901d0e60154531d5beeb1d640900c698e910180bebe1293dd461b04566"; unpack_target = "x86_64-apple-darwin14"),
-    ArchiveSource("$(url_prefix)-macOS.tar.xz", "958f36901d0e60154531d5beeb1d640900c698e910180bebe1293dd461b04566"; unpack_target = "aarch64-apple-darwin20"),
-    FileSource("$(url_prefix)-Windows.7z", "685e2366e6dda0b7e07ba48cf986716474881a24ae1b60acc39da11dbc0eed1f"; filename = "x86_64-w64-mingw32"),
+    ArchiveSource("$(url_prefix)-Linux-x64.tar.xz", "2319816e3545ee78e44e4a97c2174c72eedf4b51d436b32721b48f43458eb0f6"; unpack_target = "x86_64-linux-gnu"),
+    ArchiveSource("$(url_prefix)-Linux-arm64.tar.xz", "5e4901a0f125145f2b9e1851a6a385ee60c3fd8bd6222115ac7d632a9c8130a2"; unpack_target = "x86_64-linux-gnu"),
+    ArchiveSource("$(url_prefix)-macOS-x64.tar.xz", "8db67222ec4c2b7a591e90d9d2d21ac2ba638b104a7a1f284c6d16623049c1c7"; unpack_target = "x86_64-apple-darwin14"),
+    ArchiveSource("$(url_prefix)-macOS-arm64.tar.xz", "dddc2b730001733ef7c1bb6177639b3bf3ffb773a4385e8a9c402331522a4bb2"; unpack_target = "aarch64-apple-darwin20"),
+    FileSource("$(url_prefix)-Windows-x64.7z", "61ad4ef235bd8b23d2f6ad84bfc74e9bac431de2f86d4b764d3b78dfe08f6cf4"; filename = "x86_64-w64-mingw32"),
     FileSource("https://raw.githubusercontent.com/lierdakil/pandoc-crossref/v$(crossref_ver)/LICENSE", "39db8f9acf036595a2566ea3fe560bc7bd65d8749f088e0f4a4ef2f8a6cb4b34"),
 ]
 
@@ -56,7 +57,7 @@ dependencies = [
     #
     # TODO: Should actually be a `RuntimeDependency`:
     # https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/1330
-    Dependency(PackageSpec(name="pandoc_jll"), compat="=$panddoc_jll_version"),
+    Dependency(PackageSpec(name="pandoc_jll"), compat="$panddoc_jll_version"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

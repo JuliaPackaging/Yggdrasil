@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "Metal_LLVM_Tools"
 repo = "https://github.com/JuliaGPU/llvm-metal"
-version = v"0.5.1"
+version = v"0.5.2"
 
 llvm_versions = [v"13.0.1", v"14.0.6", v"15.0.7"]
 
@@ -97,12 +97,9 @@ products = Product[
 
 augment_platform_block = """
     using Base.BinaryPlatforms
-
     $(LLVM.augment)
-
-    function augment_platform!(platform::Platform)
-        augment_llvm!(platform)
-    end"""
+    augment_platform!(platform::Platform) = augment_llvm!(platform)
+"""
 
 # determine exactly which tarballs we should build
 builds = []
@@ -110,7 +107,7 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
     # Dependencies that must be installed before this package can be built
     llvm_name = llvm_assertions ? "LLVM_full_assert_jll" : "LLVM_full_jll"
     dependencies = [
-        BuildDependency(PackageSpec(name=llvm_name, version=llvm_version)),
+        BuildDependency(PackageSpec(name=llvm_name, version=string(llvm_version))),
         Dependency("Zlib_jll")
     ]
 
@@ -141,3 +138,5 @@ for (i,build) in enumerate(builds)
                    preferred_gcc_version=v"7", julia_compat="1.6",
                    augment_platform_block, lazy_artifacts=true)
 end
+
+# rebuild trigger: 1

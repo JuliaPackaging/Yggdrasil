@@ -4,7 +4,7 @@ using BinaryBuilder
 
 name = "LAME"
 version_string = "3.100"
-version = v"3.100.2"
+version = v"3.100.3"
 
 # Collection of sources required to build liblame
 sources = [

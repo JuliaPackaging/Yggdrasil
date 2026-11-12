@@ -1,0 +1,14 @@
+diff --git a/wrspice/src/misc/vardb.cc b/wrspice/src/misc/vardb.cc
+--- a/wrspice/src/misc/vardb.cc
++++ b/wrspice/src/misc/vardb.cc
+@@ -47,6 +47,10 @@
+ #include "ginterf/graphics.h"
+ 
+ #include <climits>
++// Old glibc (< 2.18) only exposes the PRId64 etc. format macros to C++
++// when __STDC_FORMAT_MACROS is defined before including <inttypes.h>.
++// Needed for the BinaryBuilder cross-compilation sysroot.
++#define __STDC_FORMAT_MACROS
+ #include <inttypes.h>
+ 
+ 

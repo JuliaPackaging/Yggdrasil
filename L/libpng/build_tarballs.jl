@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "libpng"
-version = v"1.6.46"
+version = v"1.6.59"
 
 # Collection of sources required to build libpng
 sources = [
     ArchiveSource("https://sourceforge.net/projects/libpng/files/libpng16/$(version)/libpng-$(version).tar.gz",
-                  "c2b8ffb46f48331416e01f9e5c7169c7a2e08ad766b742742644e5fdf192e4a1"),
+                  "86a3e4b501f7f50e392c4e456ea158893e9a595b1c63eb88c7bb9f6cf8772dad"),
 ]
 
 # Bash recipe for building across all platforms
@@ -25,6 +25,11 @@ if [[ "${target}" == *-darwin* ]]; then
     #    error: cannot open /workspace/destdir/lib/png.framework: Is a directory
     #    error: linker command failed with exit code 1 (use -v to see invocation)
     FLAGS+=(-DPNG_FRAMEWORK=OFF)
+fi
+if [[ "${target}" != *-darwin* ]]; then
+    # The version script probe links an executable with `local: *`, which lld >= 19
+    # rejects on FreeBSD, dropping the `PNG16_0` symbol versions. Skip the probe.
+    FLAGS+=(-DHAVE_LD_VERSION_SCRIPT=ON)
 fi
 if [[ "${target}" == riscv64* ]]; then
     # Need to explicitly add `-lm`

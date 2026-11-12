@@ -55,6 +55,26 @@ function suitesparse_sources(version::VersionNumber; kwargs...)
             GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
                       "d3c4926d2c47fd6ae558e898bfc072ade210a2a1")
         ],
+        v"7.10.1" => [
+            GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
+                      "31572b33461e17eb3836c8cda9b1e5920ab1dfa0")
+        ],
+        v"7.11.0" => [
+            GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
+                      "b35a1f9318f4bd42085f4b5ea56f29c89d342d4d")
+        ],
+        v"7.12.1" => [
+            GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
+                      "901381cd753c004cc2db8e91bdb48f1b51212d3d")
+        ],
+        v"7.12.2" => [
+            GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
+                      "42151688813c45846a597edcb601435a0e38f3dd")
+        ],
+        v"7.14.0" => [
+            GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
+                      "4d40960f58fada6113b3bcf715ae504a43ec4f5f")
+        ]
     )
     return Any[
         suitesparse_version_sources[version]...,
@@ -150,26 +170,6 @@ cmake -DCMAKE_BUILD_TYPE=Release \
 
 cmake --build . --parallel ${nproc}
 cmake --install .
-
-# For now, we'll have to adjust the name of the Lbt library on macOS and FreeBSD.
-# Eventually, this should be fixed upstream
-if [[ ${target} == *-apple-* ]] || [[ ${target} == *freebsd* ]]; then
-    echo "-- Modifying library name for libblastrampoline"
-
-    BLAS_NAME=blastrampoline
-    for nm in libcholmod libspqr libumfpack; do
-        if [[ *"${nm}"* == PROJECTS_TO_BUILD ]]; then
-            # Figure out what version it probably latched on to:
-            if [[ ${target} == *-apple-* ]]; then
-                LBT_LINK=$(otool -L ${libdir}/${nm}.dylib | grep lib${BLAS_NAME} | awk '{ print $1 }')
-                install_name_tool -change ${LBT_LINK} @rpath/lib${BLAS_NAME}.dylib ${libdir}/${nm}.dylib
-            elif [[ ${target} == *freebsd* ]]; then
-                LBT_LINK=$(readelf -d ${libdir}/${nm}.so | grep lib${BLAS_NAME} | sed -e 's/.*\[\(.*\)\].*/\1/')
-                patchelf --replace-needed ${LBT_LINK} lib${BLAS_NAME}.so ${libdir}/${nm}.so
-            fi
-        fi
-    done
-fi
 
 # Delete the extra soversion libraries built. https://github.com/JuliaPackaging/Yggdrasil/issues/7
 if [[ "${target}" == *-mingw* ]]; then

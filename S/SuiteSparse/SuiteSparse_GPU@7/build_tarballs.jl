@@ -3,7 +3,7 @@ include("../common.jl")
 using Base.BinaryPlatforms: arch, os
 
 name = "SuiteSparse_GPU"
-version_str = "7.8.3"
+version_str = "7.14.0"
 version = VersionNumber(version_str)
 
 sources = suitesparse_sources(version)
@@ -15,6 +15,10 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 # Bash recipe for building across all platforms
 script = raw"""
 PROJECTS_TO_BUILD="cholmod;spqr"
+
+# nvcc writes to /tmp, which is a small tmpfs in our sandbox
+export TMPDIR=${WORKSPACE}/tmpdir
+mkdir -p ${TMPDIR}
 
 # Ensure CUDA is on the path
 export CUDA_HOME=${WORKSPACE}/destdir/cuda;
@@ -35,7 +39,7 @@ CMAKE_OPTIONS+=(
         -DSUITESPARSE_USE_SYSTEM_CCOLAMD=ON
         -DCMAKE_RELEASE_POSTFIX="_cuda"
     )
-""" * build_script(use_omp = false, use_cuda = true)
+""" * build_script(use_omp = true, use_cuda = true)
 
 # Products for the GPU builds of SuiteSparse
 gpu_products = [

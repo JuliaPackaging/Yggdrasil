@@ -1,0 +1,229 @@
+From ac6442554fa2e9ef2b3109738b412d252b6cf957 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Thu, 5 Nov 2026 12:05:30 +0100
+Subject: [PATCH] WorkitemLoops: fix rematerialized alloca loads used as a
+ store address
+
+When rematerializing an alloca, the uses to rewrite are those of the
+values loaded from it, not of the alloca itself (since d6ee51ab8). The
+StoreInst special case predates that change and still replaced the
+store's value operand. When the loaded value was a pointer used as the
+store's address, the rematerialized pointer thus became the stored
+value: `*p -= 2` turned into `*p = p`. Replace the loaded value wherever
+it is used instead.
+
+This shows up for a pointer that is assigned on only one path before a
+barrier and dereferenced after it, e.g. in KernelAbstractions.jl's
+localmem tests run through OpenCL.jl on Julia 1.15, which now gives the
+pointer's phi an undef incoming value.
+---
+ lib/llvmopencl/WorkitemLoops.cc               |   9 +-
+ tests/regression/CMakeLists.txt               |   3 +
+ .../test_remat_alloca_store_address.c         | 154 ++++++++++++++++++
+ 3 files changed, 161 insertions(+), 5 deletions(-)
+ create mode 100644 tests/regression/test_remat_alloca_store_address.c
+
+diff --git a/lib/llvmopencl/WorkitemLoops.cc b/lib/llvmopencl/WorkitemLoops.cc
+index 8a23b281f..6921d604c 100644
+--- a/lib/llvmopencl/WorkitemLoops.cc
++++ b/lib/llvmopencl/WorkitemLoops.cc
+@@ -1286,11 +1286,10 @@ void WorkitemLoopsImpl::addContextSaveRestore(llvm::Instruction *Def) {
+       LLVM_DEBUG(RematerializedValue->dump());
+ 
+       if (isa<AllocaInst>(Def)) {
+-        if (StoreInst *Store = dyn_cast<StoreInst>(UserI)) {
+-          // The original store could be left intact, but then we'd need to
+-          // figure out the materialization-ability beforehand.
+-          Store->setOperand(0, RematerializedValue);
+-        } else if (UserI->isLifetimeStartOrEnd()) {
++        // The users are those of values loaded from the alloca, not of the
++        // alloca itself, so a store here may use the loaded value as its
++        // address rather than as the value to store.
++        if (UserI->isLifetimeStartOrEnd()) {
+           // We can leave the original lifetime marker for the alloca as is.
+         } else {
+           // We can get rid of the alloca load altogether and use the
+diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
+index 0847b847e..e1136729e 100644
+--- a/tests/regression/CMakeLists.txt
++++ b/tests/regression/CMakeLists.txt
+@@ -39,6 +39,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
+      test_divergent_implicit_barrier_entry
+      test_uniform_implicit_barrier_entry
+      test_localmem_load_across_barrier
++     test_remat_alloca_store_address
+      test_spirv_intel_subgroups
+      test_spirv_bfloat16
+      test_indirect_ptrs
+@@ -222,6 +223,8 @@ add_test_pocl(NAME "regression/localmem_load_across_barrier" WORKITEM_HANDLER "l
+ 
+ add_test_pocl(NAME "regression/test_indirect_ptrs" COMMAND "test_indirect_ptrs")
+ 
++add_test_pocl(NAME "regression/remat_alloca_store_address" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_remat_alloca_store_address")
++
+ add_test_pocl(NAME "regression/replicated_wi_subgroup_alloca" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_replicated_wi_subgroup_alloca")
+ set_tests_properties("regression/replicated_wi_subgroup_alloca_loops" PROPERTIES ENVIRONMENT "POCL_WORK_GROUP_METHOD=loops;POCL_WILOOPS_MAX_UNROLL_COUNT=4")
+ set_tests_properties("regression/replicated_wi_subgroup_alloca_loopvec" PROPERTIES ENVIRONMENT "POCL_WORK_GROUP_METHOD=loopvec;POCL_WILOOPS_MAX_UNROLL_COUNT=4")
+diff --git a/tests/regression/test_remat_alloca_store_address.c b/tests/regression/test_remat_alloca_store_address.c
+new file mode 100644
+index 000000000..2d1a9132e
+--- /dev/null
++++ b/tests/regression/test_remat_alloca_store_address.c
+@@ -0,0 +1,154 @@
++// Copyright (c) 2026 PoCL developers
++//
++// Permission is hereby granted, free of charge, to any person obtaining a copy
++// of this software and associated documentation files (the "Software"), to deal
++// in the Software without restriction, including without limitation the rights
++// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++// copies of the Software, and to permit persons to whom the Software is
++// furnished to do so, subject to the following conditions:
++//
++// The above copyright notice and this permission notice shall be included in
++// all copies or substantial portions of the Software.
++//
++// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++// THE SOFTWARE.
++
++#include "pocl_opencl.h"
++
++#include <stdio.h>
++#include <stdlib.h>
++
++/* A private pointer that is only assigned on one path (so its PHI node has an
++   undef incoming value) and then used as a store address after a barrier.
++   WorkitemLoops rematerializes such a pointer from its single defined store,
++   and must use the rematerialized pointer as the address of `*p -= 2`, not
++   as the value stored. */
++
++#define WG_SIZE 64
++
++#define CHECK_ERROR(err)                                                       \
++  do {                                                                         \
++    if ((err) != CL_SUCCESS) {                                                 \
++      fprintf(stderr, "OpenCL error %d at %s:%d\n", (err), __FILE__,           \
++              __LINE__);                                                       \
++      goto error;                                                              \
++    }                                                                          \
++  } while (0)
++
++static const char KernelSource[]
++    = "__kernel void test_remat(__global int *out, int n) {\n"
++      "  __local int scratch[64];\n"
++      "  int lid = get_local_id(0);\n"
++      "  __local int *p;\n"
++      "  int active = get_global_id(0) < n;\n"
++      "  if (active) {\n"
++      "    p = &scratch[lid];\n"
++      "    *p = lid + 3;\n"
++      "  }\n"
++      "  barrier(CLK_LOCAL_MEM_FENCE);\n"
++      "  if (active)\n"
++      "    *p -= 2;\n"
++      "  barrier(CLK_LOCAL_MEM_FENCE);\n"
++      "  if (active)\n"
++      "    out[lid] = scratch[63 - lid];\n"
++      "}\n";
++
++int main(void) {
++  cl_int output[WG_SIZE];
++  const size_t work_size = WG_SIZE;
++  cl_int err;
++  cl_uint num_platforms;
++  cl_platform_id *platforms = NULL;
++  cl_context context = NULL;
++  cl_command_queue queue = NULL;
++  cl_program program = NULL;
++  cl_kernel kernel = NULL;
++  cl_mem output_buffer = NULL;
++  int result = 1;
++
++  for (int i = 0; i < WG_SIZE; ++i)
++    output[i] = -1;
++
++  err = clGetPlatformIDs(0, NULL, &num_platforms);
++  CHECK_ERROR(err);
++  if (num_platforms == 0) {
++    puts("SKIP: no OpenCL platforms");
++    return 77;
++  }
++  platforms = malloc(num_platforms * sizeof(*platforms));
++  if (platforms == NULL)
++    goto error;
++  err = clGetPlatformIDs(num_platforms, platforms, NULL);
++  CHECK_ERROR(err);
++
++  cl_device_id device;
++  err = clGetDeviceIDs(platforms[0], CL_DEVICE_TYPE_ALL, 1, &device, NULL);
++  CHECK_ERROR(err);
++  context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
++  CHECK_ERROR(err);
++  const cl_queue_properties properties[] = {0};
++  queue = clCreateCommandQueueWithProperties(context, device, properties, &err);
++  CHECK_ERROR(err);
++
++  const char *sources[] = {KernelSource};
++  program = clCreateProgramWithSource(context, 1, sources, NULL, &err);
++  CHECK_ERROR(err);
++  err = clBuildProgram(program, 1, &device, NULL, NULL, NULL);
++  if (err != CL_SUCCESS) {
++    size_t log_size = 0;
++    clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, 0, NULL,
++                          &log_size);
++    char *log = malloc(log_size);
++    if (log != NULL) {
++      clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, log_size,
++                            log, NULL);
++      fprintf(stderr, "Build error:\n%s\n", log);
++      free(log);
++    }
++    goto error;
++  }
++  kernel = clCreateKernel(program, "test_remat", &err);
++  CHECK_ERROR(err);
++  output_buffer
++      = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
++                       sizeof(output), output, &err);
++  CHECK_ERROR(err);
++
++  const cl_int n = WG_SIZE;
++  CHECK_ERROR(clSetKernelArg(kernel, 0, sizeof(output_buffer), &output_buffer));
++  CHECK_ERROR(clSetKernelArg(kernel, 1, sizeof(n), &n));
++  CHECK_ERROR(clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &work_size,
++                                     &work_size, 0, NULL, NULL));
++  CHECK_ERROR(clEnqueueReadBuffer(queue, output_buffer, CL_TRUE, 0,
++                                  sizeof(output), output, 0, NULL, NULL));
++
++  for (int i = 0; i < WG_SIZE; ++i) {
++    const cl_int expected = WG_SIZE - i;
++    if (output[i] != expected) {
++      fprintf(stderr, "out[%d] = %d, expected %d\n", i, (int)output[i],
++              (int)expected);
++      goto error;
++    }
++  }
++  puts("OK");
++  result = 0;
++
++error:
++  free(platforms);
++  if (output_buffer != NULL)
++    clReleaseMemObject(output_buffer);
++  if (kernel != NULL)
++    clReleaseKernel(kernel);
++  if (program != NULL)
++    clReleaseProgram(program);
++  if (queue != NULL)
++    clReleaseCommandQueue(queue);
++  if (context != NULL)
++    clReleaseContext(context);
++  return result;
++}
+-- 
+2.56.0
+

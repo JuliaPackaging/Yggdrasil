@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "gobject_introspection"
-version = v"1.76.1"
+version = v"1.84"
 
 sources = [
     ArchiveSource("https://ftp.gnome.org/pub/gnome/sources/gobject-introspection/$(version.major).$(version.minor)/gobject-introspection-$(version).tar.xz",
-              "196178bf64345501dcdc4d8469b36aa6fe80489354efe71cb7cb8ab82a3738bf"),
+              "945b57da7ec262e5c266b89e091d14be800cc424277d82a02872b7d794a84779"),
 ]
 
 # Bash recipe for building across all platforms
@@ -41,8 +41,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Glib_jll"; compat="2.74.0")
+    Dependency("Glib_jll"; compat="2.84.0")
     ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"5")

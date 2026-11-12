@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "JSON_C"
-version = v"0.17.0"
+version = v"0.18.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://s3.amazonaws.com/json-c_releases/releases/json-c-0.17.tar.gz", "7550914d58fb63b2c3546f3ccfbe11f1c094147bd31a69dcd23714d7956159e6")
+    ArchiveSource("https://s3.amazonaws.com/json-c_releases/releases/json-c-0.18.tar.gz",
+                  "876ab046479166b869afc6896d288183bbc0e5843f141200c677b3e8dfb11724")
 ]
 
 # Bash recipe for building across all platforms

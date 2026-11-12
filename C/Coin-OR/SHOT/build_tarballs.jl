@@ -1,3 +1,6 @@
+const YGGDRASIL_DIR = "../../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 include("../coin-or-common.jl")
 
 sources = [
@@ -5,8 +8,6 @@ sources = [
         "https://github.com/coin-or/SHOT.git",
         SHOT_gitsha,
     ),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
     DirectorySource("./bundled"),
 ]
 
@@ -15,22 +16,7 @@ cd $WORKSPACE/srcdir/SHOT
 git submodule update --init --recursive
 # Disable run_source_test in CppAD
 atomic_patch -p1 ../patches/CppAD.patch
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    # Work around the issue
-    #     /workspace/srcdir/SHOT/src/Model/../Model/Simplifications.h:1370:26: error: 'value' is unavailable: introduced in macOS 10.14
-    #                     optional.value()->coefficient *= -1.0;
-    #                              ^
-    #     /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/include/c++/v1/optional:947:27: note: 'value' has been explicitly marked unavailable here
-    #         constexpr value_type& value() &
-    #                               ^
-    export MACOSX_DEPLOYMENT_TARGET=10.15
-    # ...and install a newer SDK which supports `std::filesystem`
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    popd
-elif [[ ${target} == *mingw* ]]; then
+if [[ ${target} == *mingw* ]]; then
     export LDFLAGS="-L${libdir}"
 fi
 
@@ -54,6 +40,16 @@ make install
 
 install_license ../LICENSE
 """
+
+# Work around the issue
+#     /workspace/srcdir/SHOT/src/Model/../Model/Simplifications.h:1370:26: error: 'value' is unavailable: introduced in macOS 10.14
+#                     optional.value()->coefficient *= -1.0;
+#                              ^
+#     /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/include/c++/v1/optional:947:27: note: 'value' has been explicitly marked unavailable here
+#         constexpr value_type& value() &
+#                               ^
+# ...and install a newer SDK which supports `std::filesystem`
+sources, script = require_macos_sdk("10.15", sources, script)
 
 products = [
     ExecutableProduct("SHOT", :amplexe),

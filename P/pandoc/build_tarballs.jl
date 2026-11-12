@@ -2,18 +2,18 @@ using BinaryBuilder
 
 # Collection of pre-build pandoc binaries
 name = "pandoc"
-pandoc_ver = "3.4"
+pandoc_ver = "3.13"
 version = VersionNumber(pandoc_ver)
 
 url_prefix = "https://github.com/jgm/pandoc/releases/download/$(pandoc_ver)/pandoc-$(pandoc_ver)"
 sources = [
-    ArchiveSource("$(url_prefix)-linux-amd64.tar.gz", "f6f46cc61abf3bacb0bf612f4d80b586625c10cf64a4b456853fd358cb4c7319"; unpack_target = "x86_64-linux-gnu"),
-    ArchiveSource("$(url_prefix)-x86_64-macOS.zip", "fb342213ce16af4a81565f1f106a808574f993900ac914a5737649ba8cedb2b3"; unpack_target = "x86_64-apple-darwin14"),
-    ArchiveSource("$(url_prefix)-arm64-macOS.zip", "2bc48ef152d5404cc7d5b98ee01f11af8bd91e503a6e888d2537bd261a578d02"; unpack_target = "aarch64-apple-darwin20"),
-    ArchiveSource("$(url_prefix)-windows-x86_64.zip", "26858cf59c057b3d3ca32e9cd2fbd1f50990adc1bfb20a9c8dfb936aacc3610e"; unpack_target = "x86_64-w64-mingw32"),
-    ArchiveSource("$(url_prefix)-linux-arm64.tar.gz", "a66ec01f12487def28eed22acc5a8fe4c7c869325291aa4037b33e1915f2568d"; unpack_target = "aarch64-linux-gnu"),
-    FileSource("https://raw.githubusercontent.com/jgm/pandoc/$(pandoc_ver)/COPYRIGHT", "e9dd2c20808f570f0fe3c06b36246711e253543ba4eda22c8cc934addd007b48"),
-    FileSource("https://raw.githubusercontent.com/jgm/pandoc/$(pandoc_ver)/COPYING.md", "e7ea3adeab955103a837b692ca0017cb3abbed0d3dccbfa499d6b2b825d698c3"),
+    ArchiveSource("$(url_prefix)-linux-amd64.tar.gz", "38aa33b325a2bc96a4c39409631212db55702f564250bcdbead180b3bf646389"; unpack_target = "x86_64-linux-gnu"),
+    ArchiveSource("$(url_prefix)-x86_64-macOS.zip", "1823278715aa405aaf21b59cde5dc789346aa8d4fc307467f9a9ee84162bedc5"; unpack_target = "x86_64-apple-darwin14"),
+    ArchiveSource("$(url_prefix)-arm64-macOS.zip", "f436d18bebbfb3ddd326597686dacab9fac5dc23bd060495020f35a28a43a7c3"; unpack_target = "aarch64-apple-darwin20"),
+    ArchiveSource("$(url_prefix)-windows-x86_64.zip", "23e1f2e978a3df80db8bf65c9c59534f41a23140480cfb4f783a882ab7dc6a4e"; unpack_target = "x86_64-w64-mingw32"),
+    ArchiveSource("$(url_prefix)-linux-arm64.tar.gz", "21e1d4ba09bd0b334590d204580fd4f6629b21be4ab6a32b26cc98982e9e0c68"; unpack_target = "aarch64-linux-gnu"),
+    FileSource("https://raw.githubusercontent.com/jgm/pandoc/$(pandoc_ver)/COPYRIGHT", "842e33ef01625e93f85bebb8bac83aa570186b7aa77a09971257cc29f8f60740"),
+    FileSource("https://raw.githubusercontent.com/jgm/pandoc/$(pandoc_ver)/COPYING.md", "3ebfbf9235b049d384cdba5a66a1a3434bb544391e720b76faa8e1b3ee61a4e5"),
 ]
 
 # Bash recipe for building across all platforms

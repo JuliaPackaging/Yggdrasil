@@ -1,0 +1,32 @@
+From 626d814666c40d9f0699bd54293c3a50f27aa8b2 Mon Sep 17 00:00:00 2001
+From: Arseniy Obolenskiy <arseniy.obolenskiy@amd.com>
+Date: Wed, 29 Jul 2026 16:58:32 +0200
+Subject: [PATCH] Preserve signed i1 semantics in sitofp lowering (#3918)
+
+handleCastInstructions materialized the bool operand as unsigned 0/1 for
+both uitofp and sitofp, so sitofp i1 true was miscompiled as 1.0 instead
+of -1.0
+
+Inspired by https://github.com/llvm/llvm-project/pull/209232
+---
+ lib/SPIRV/SPIRVLowerBool.cpp | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/lib/SPIRV/SPIRVLowerBool.cpp b/lib/SPIRV/SPIRVLowerBool.cpp
+index 85ae0bda..811276a1 100644
+--- a/lib/SPIRV/SPIRVLowerBool.cpp
++++ b/lib/SPIRV/SPIRVLowerBool.cpp
+@@ -99,8 +99,9 @@ void SPIRVLowerBoolBase::handleCastInstructions(Instruction &I) {
+     Type *Ty = Type::getInt32Ty(*Context);
+     if (auto *VT = dyn_cast<FixedVectorType>(OpTy))
+       Ty = llvm::FixedVectorType::get(Ty, VT->getNumElements());
++    bool IsSigned = I.getOpcode() == Instruction::SIToFP;
+     auto *Zero = getScalarOrVectorConstantInt(Ty, 0, false);
+-    auto *One = getScalarOrVectorConstantInt(Ty, 1, false);
++    auto *One = getScalarOrVectorConstantInt(Ty, IsSigned ? ~0 : 1, IsSigned);
+     assert(Zero && One && "Couldn't create constant int");
+     auto *Sel = SelectInst::Create(Op, One, Zero, "", I.getIterator());
+     Sel->setDebugLoc(I.getDebugLoc());
+-- 
+2.56.0
+

@@ -8,19 +8,16 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "DACE"
-version = v"0.6.0"
+version = v"0.7.1"
 
 # Collection of sources required to build DACE
 sources = [
-    GitSource("https://github.com/a-ev/dace.git", "b8518928976a381b982446a1d2caa965ec9a53c9"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/a-ev/dace.git", "bc26842ae5c6936f9e008a2dc0d9227a8d982acc"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/dace
-
-git apply ../patches/no-safe-strings.patch
 
 cmake . -B build \
     -DJulia_PREFIX=${prefix} \
@@ -54,7 +51,7 @@ products = [
 dependencies = [
     BuildDependency(PackageSpec(name="libjulia_jll")),
     BuildDependency("Eigen_jll"),
-    Dependency("libcxxwrap_julia_jll"; compat="~0.14.0"),
+    Dependency("libcxxwrap_julia_jll"; compat="~0.14.2"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

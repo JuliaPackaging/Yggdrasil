@@ -1,0 +1,411 @@
+# CactusBase thorns
+CactusBase/Boundary
+CactusBase/CartGrid3D
+CactusBase/CoordBase
+CactusBase/Fortran
+CactusBase/InitBase
+CactusBase/IOASCII
+CactusBase/IOBasic
+CactusBase/IOUtil
+CactusBase/SymBase
+CactusBase/Time
+
+# CactusConnect thorns
+CactusConnect/HTTPD
+CactusConnect/HTTPDExtra
+CactusConnect/Socket
+
+# CactusElliptic thorns
+CactusElliptic/EllBase
+#DISABLED CactusElliptic/EllPETSc
+CactusElliptic/EllSOR
+CactusElliptic/TATelliptic
+#DISABLED CactusElliptic/TATPETSc
+
+# CactusExamples thorns
+CactusExamples/DemoInterp
+CactusExamples/FleshInfo
+CactusExamples/HelloWorld
+#DISABLED CactusExamples/HelloWorldCUDA
+#DISABLED CactusExamples/HelloWorldOpenCL
+CactusExamples/IDWaveMoL
+CactusExamples/Poisson
+CactusExamples/SampleBoundary
+CactusExamples/SampleIO
+CactusExamples/TimerInfo
+CactusExamples/WaveMoL
+CactusExamples/WaveToy1DF77
+CactusExamples/WaveToy2DF77
+#DISABLED CactusExamples/WaveToyOpenCL
+
+# CactusIO thorns
+CactusIO/IOJpeg
+
+# CactusNumerical thorns
+CactusNumerical/Cartoon2D
+CactusNumerical/Dissipation
+CactusNumerical/InterpToArray
+CactusNumerical/LocalInterp
+CactusNumerical/LocalInterp2
+CactusNumerical/LocalReduce
+CactusNumerical/MoL
+CactusNumerical/Noise
+CactusNumerical/Norms
+CactusNumerical/Periodic
+CactusNumerical/ReflectionSymmetry
+CactusNumerical/RotatingSymmetry180
+CactusNumerical/RotatingSymmetry90
+CactusNumerical/Slab
+CactusNumerical/SlabTest
+CactusNumerical/SpaceMask
+CactusNumerical/SphericalSurface
+CactusNumerical/SummationByParts
+CactusNumerical/TensorTypes
+CactusNumerical/TestLocalInterp2
+CactusNumerical/TestLocalReduce
+
+# CactusPUGH thorns
+CactusPUGH/PUGH
+CactusPUGH/PUGHInterp
+CactusPUGH/PUGHReduce
+CactusPUGH/PUGHSlab
+
+# CactusPUGHIO thorns
+CactusPUGHIO/IOHDF5
+CactusPUGHIO/IOHDF5Util
+
+# CactusTest thorns
+#DISABLED CactusTest/TestAllTypes
+CactusTest/TestArrays
+CactusTest/TestComplex
+CactusTest/TestCoordinates
+CactusTest/TestFortranCrayPointers
+CactusTest/TestFortranDependencies1
+CactusTest/TestFortranDependencies2
+CactusTest/TestFpointerNULL
+CactusTest/TestFreeF90
+CactusTest/TestGlobalReduce
+CactusTest/TestInclude1
+CactusTest/TestInclude2
+CactusTest/TestLoop
+CactusTest/TestMath
+CactusTest/TestMoL
+CactusTest/TestPar
+CactusTest/TestReadWrite
+CactusTest/TestReduce
+CactusTest/TestSchedule
+CactusTest/TestStrings
+CactusTest/TestTable
+CactusTest/TestTimers
+CactusTest/TestTypes
+
+# CactusUtils thorns
+#DISABLED CactusUtils/Accelerator
+CactusUtils/Formaline
+CactusUtils/MemSpeed
+CactusUtils/NaNCatcher
+CactusUtils/NaNChecker
+CactusUtils/Nice
+CactusUtils/NoMPI
+#DISABLED CactusUtils/OpenCLRunTime
+CactusUtils/SystemStatistics
+CactusUtils/SystemTopology
+CactusUtils/TerminationTrigger
+CactusUtils/TimerReport
+CactusUtils/Trigger
+CactusUtils/Vectors
+CactusUtils/WatchDog
+
+# CactusWave thorns
+CactusWave/IDScalarWave
+CactusWave/IDScalarWaveC
+CactusWave/IDScalarWaveCXX
+CactusWave/IDScalarWaveElliptic
+CactusWave/WaveBinarySource
+CactusWave/WaveToyC
+CactusWave/WaveToyCXX
+CactusWave/WaveToyExtra
+CactusWave/WaveToyF77
+CactusWave/WaveToyF90
+CactusWave/WaveToyFreeF90
+
+# Carpet, the AMR driver
+Carpet/Carpet
+Carpet/CarpetEvolutionMask
+Carpet/CarpetIOASCII
+Carpet/CarpetIOBasic
+Carpet/CarpetIOHDF5
+Carpet/CarpetIOScalar
+Carpet/CarpetIntegrateTest
+Carpet/CarpetInterp
+Carpet/CarpetInterp2
+Carpet/CarpetLib
+Carpet/CarpetMask
+Carpet/CarpetProlongateTest
+Carpet/CarpetReduce
+Carpet/CarpetRegrid
+Carpet/CarpetRegrid2
+Carpet/CarpetRegridTest
+Carpet/CarpetSlab
+Carpet/CarpetTracker
+Carpet/CycleClock
+Carpet/HighOrderWaveTest
+Carpet/LoopControl
+Carpet/PeriodicCarpet
+#TODO Carpet/ReductionTest
+Carpet/ReductionTest2
+Carpet/ReductionTest3
+Carpet/RegridSyncTest
+Carpet/TestCarpetGridInfo
+Carpet/TestLoopControl
+Carpet/Timers
+
+#TODO # CarpetX thorns
+#TODO CarpetX/ADMBaseX
+#TODO #DISABLED CarpetX/Algo
+#TODO CarpetX/Arith
+#TODO CarpetX/BoxInBox
+#TODO CarpetX/CarpetX
+#TODO CarpetX/CarpetXRegrid
+#TODO CarpetX/CoordinatesX
+#TODO CarpetX/Derivs
+#TODO CarpetX/ErrorEstimator
+#TODO CarpetX/FluxWaveToyX
+#TODO CarpetX/HydroBaseX
+#TODO CarpetX/Loop
+#TODO CarpetX/ODESolvers
+#TODO #DISABLED CarpetX/PDESolvers
+#TODO #DISABLED CarpetX/PoissonX
+#TODO CarpetX/SIMDWaveToyX
+#TODO CarpetX/SpacetimeWaveToyX
+#TODO CarpetX/StaggeredWaveToyX
+#TODO CarpetX/TestArrayGroup
+#TODO CarpetX/TestBoundaries
+#TODO CarpetX/TestBoxInBox
+#TODO CarpetX/TestDerivs
+#TODO CarpetX/TestInterpolate
+#TODO CarpetX/TestNorms
+#TODO CarpetX/TestODESolvers
+#TODO CarpetX/TestODESolvers2
+#TODO CarpetX/TestOutput
+#TODO CarpetX/TestProlongate
+#TODO CarpetX/TestSymmetries
+#TODO CarpetX/TmunuBaseX
+#TODO CarpetX/WaveToyX
+#TODO 
+#TODO # Thorns developed at the University of Catania
+#TODO CTThorns/CT_Analytic
+#TODO CTThorns/CT_MultiLevel
+
+# EinsteinAnalysis
+EinsteinAnalysis/ADMAnalysis
+EinsteinAnalysis/ADMMass
+EinsteinAnalysis/AHFinder
+EinsteinAnalysis/AHFinderDirect
+EinsteinAnalysis/CalcK
+EinsteinAnalysis/EHFinder
+EinsteinAnalysis/Extract
+EinsteinAnalysis/Hydro_Analysis
+EinsteinAnalysis/Multipole
+EinsteinAnalysis/Outflow
+EinsteinAnalysis/PunctureTracker
+EinsteinAnalysis/QuasiLocalMeasures
+EinsteinAnalysis/WeylScal4
+
+# EinsteinBase
+EinsteinBase/ADMBase
+EinsteinBase/ADMCoupling        # deprecated
+EinsteinBase/ADMMacros          # deprecated
+EinsteinBase/Constants
+EinsteinBase/CoordGauge
+EinsteinBase/EOS_Base
+EinsteinBase/HydroBase
+EinsteinBase/StaticConformal
+EinsteinBase/TmunuBase
+
+# EinsteinEOS
+EinsteinEOS/EOS_Hybrid
+EinsteinEOS/EOS_IdealFluid
+EinsteinEOS/EOS_Omni
+EinsteinEOS/EOS_Polytrope
+
+# EinsteinEvolve
+EinsteinEvolve/GRHydro
+EinsteinEvolve/GRHydro_InitData
+EinsteinEvolve/NewRad
+
+# EinsteinExact
+EinsteinExact/EinsteinExact_Test
+EinsteinExact/GaugeWave
+EinsteinExact/KerrSchild
+EinsteinExact/Minkowski
+EinsteinExact/ModifiedSchwarzschildBL
+EinsteinExact/ShiftedGaugeWave
+EinsteinExact/Vaidya2
+
+# EinsteinInitialData
+EinsteinInitialData/DistortedBHIVP
+EinsteinInitialData/Exact
+EinsteinInitialData/Hydro_InitExcision
+EinsteinInitialData/Hydro_RNSID
+EinsteinInitialData/IDAnalyticBH
+EinsteinInitialData/IDAxiBrillBH
+EinsteinInitialData/IDAxiOddBrillBH
+EinsteinInitialData/IDBrillData
+EinsteinInitialData/IDConstraintViolate
+EinsteinInitialData/IDFileADM
+EinsteinInitialData/IDLinearWaves
+#TODO EinsteinInitialData/Meudon_Bin_BH
+#TODO EinsteinInitialData/Meudon_Bin_NS
+#TODO EinsteinInitialData/Meudon_Mag_NS
+EinsteinInitialData/NoExcision
+EinsteinInitialData/ReadInterpolate
+EinsteinInitialData/RotatingDBHIVP
+EinsteinInitialData/TOVSolver
+EinsteinInitialData/TwoPunctures
+
+#TODO # FLRW cosmological initial data
+#TODO EinsteinInitialData/FLRWSolver
+
+#TODO # NRPyElliptic
+#TODO EinsteinInitialData/NRPyEllipticET
+
+# EinsteinUtils
+EinsteinUtils/SetMask_SphericalSurface
+EinsteinUtils/TGRtensor
+
+# Additional Cactus thorns
+#TODO ExternalLibraries/ADIOS2
+#TODO ExternalLibraries/AMReX
+#DISABLED ExternalLibraries/BLAS
+ExternalLibraries/FFTW3
+ExternalLibraries/GSL
+ExternalLibraries/HDF5
+ExternalLibraries/hwloc
+#DISABLED ExternalLibraries/LAPACK
+ExternalLibraries/libjpeg
+#TODO ExternalLibraries/LORENE
+ExternalLibraries/MPI
+#TODO ExternalLibraries/NSIMD
+ExternalLibraries/OpenBLAS
+#TODO #DISABLED ExternalLibraries/OpenCL
+#TODO ExternalLibraries/openPMD
+#TODO ExternalLibraries/OpenSSL
+#TODO #DISABLED ExternalLibraries/PAPI
+#TODO #DISABLED ExternalLibraries/pciutils
+#TODO #DISABLED ExternalLibraries/PETSc
+ExternalLibraries/pthreads
+#TODO ExternalLibraries/SGRID
+#TODO ExternalLibraries/Silo
+#TODO ExternalLibraries/yaml_cpp
+ExternalLibraries/zlib
+
+#TODO # A newer version of Lorene, by default disabled
+#TODO #DISABLED ExternalLibraries/LORENE2
+#TODO 
+#TODO # RePrimAnd
+#TODO #DISABLED ExternalLibraries/RePrimAnd
+
+# FUKA initial data thorns
+#DISABLED Fuka/KadathImporter
+#DISABLED Fuka/KadathThorn
+
+# GRHayL Library and GRHayL-dependent thorns
+GRHayL/GRHayLib
+
+GRHayLET/GRHayLHD
+#TODO GRHayLET/GRHayLHDX
+GRHayLET/GRHayLID
+#TODO GRHayLET/GRHayLIDX
+GRHayLET/IllinoisGRMHD
+
+GRHayLET/TOVola
+
+# From Kranc (required e.g. by McLachlan)
+KrancNumericalTools/GenericFD
+
+# Kuibit post-processing tools for simulations
+
+# Llama
+Llama/ADMDerivatives
+Llama/Coordinates
+Llama/CoordinatesSymmetry
+Llama/GlobalDerivative
+Llama/Interpolate2
+Llama/LlamaWaveToy
+Llama/WaveExtractL
+
+# McLachlan, the spacetime code
+McLachlan/ML_ADMConstraints
+McLachlan/ML_ADMQuantities
+McLachlan/ML_BSSN
+McLachlan/ML_BSSN_Helper
+McLachlan/ML_BSSN_Test
+McLachlan/ML_CCZ4
+McLachlan/ML_CCZ4_Helper
+McLachlan/ML_CCZ4_Test
+McLachlan/ML_WaveToy
+#DISABLED McLachlan/ML_WaveToy_CL
+McLachlan/ML_WaveToy_Test
+
+# Numerical
+Numerical/AEILocalInterp
+
+# PITTNullCode
+PITTNullCode/NullConstr
+PITTNullCode/NullDecomp
+PITTNullCode/NullEvolve
+PITTNullCode/NullExact
+PITTNullCode/NullGrid
+PITTNullCode/NullInterp
+PITTNullCode/NullNews
+PITTNullCode/NullPsiInt
+PITTNullCode/NullSHRExtract
+PITTNullCode/NullVars
+PITTNullCode/SphericalHarmonicDecomp
+PITTNullCode/SphericalHarmonicRecon
+PITTNullCode/SphericalHarmonicReconGen
+
+# Power -- waveform extrapolation
+
+# Canuda -- Lean
+Lean/LeanBSSNMoL
+Lean/NPScalars
+
+# Canuda -- Proca
+Proca/NPScalars_Proca
+Proca/ProcaBase
+Proca/ProcaEvolve
+Proca/Proca_simpleID
+Proca/TwoPunctures_KerrProca
+
+# Canuda -- Scalar
+Scalar/ScalarBase
+Scalar/ScalarEvolve
+Scalar/ScalarInit
+Scalar/TwoPunctures_BBHSF
+
+#TODO # SGRID data reader
+#TODO CactusSgrid/DNSdata
+
+# Various thorns from WVU: IllinoisGRMHD, GiRaFFE, ShiftedKerrSchild, and FishboneMoncriefID
+WVUThorns/Baikal
+WVUThorns/BaikalVacuum
+WVUThorns/Convert_to_HydroBase
+WVUThorns/FishboneMoncriefID
+WVUThorns/GiRaFFE
+WVUThorns/GiRaFFEfood
+WVUThorns/GiRaFFE_to_HydroBase
+WVUThorns/ID_converter_GiRaFFE
+WVUThorns/ID_converter_ILGRMHD
+WVUThorns/Seed_Magnetic_Fields
+WVUThorns/ShiftedKerrSchild
+
+# Various "diagnostic" thorns from WVU:
+WVUThorns_Diagnostics/particle_tracerET
+WVUThorns_Diagnostics/smallbPoynET
+WVUThorns_Diagnostics/VolumeIntegrals_GRMHD
+WVUThorns_Diagnostics/VolumeIntegrals_vacuum
+
+#TODO # Z4c
+#TODO SpacetimeX/NewRadX

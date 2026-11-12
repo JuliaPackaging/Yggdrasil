@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "oneTBB"
-version = v"2021.12.0"
+version = v"2023.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/oneapi-src/oneTBB.git",
-              "9afd759b72c0c233cd5ea3c3c06b0894c9da9c54"),
+    GitSource("https://github.com/uxlfoundation/oneTBB.git",
+              "3046c8b0c29df995980003ea24f4d78c80ec0c8d"),
     DirectorySource("./bundled"),
 ]
 
@@ -21,13 +21,18 @@ if [[ ${target} == *mingw* ]]; then
 
     # `CreateSemaphoreEx` requires at least Windows Vista/Server 2008:
     # https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-createsemaphoreexa
-    export CXXFLAGS="-D_WIN32_WINNT=0x0600"
+    export CXXFLAGS="-D_WIN32_WINNT=0x0600 -DLOAD_LIBRARY_SAFE_CURRENT_DIRS=LOAD_LIBRARY_SEARCH_DEFAULT_DIRS"
 fi
 
 if [[ ${target} == i686-linux-musl* ]]; then
     # Disable strong stack protection. Our musl version doesn't
     # provide the symbol `__stack_chk_fail_local` in the way GCC expects.
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/i686-musl.patch"
+fi
+
+if [[ "${target}" == *-freebsd* ]]; then
+    # Follow oneTBB makefile fix for missing symbols error: https://cgit.freebsd.org/ports/commit/?id=3677983542cc09a0e5f085e463a895e9e4dce9aa
+    export LDFLAGS="${LDFLAGS} -Wl,--undefined-version"
 fi
 
 cmake -B build -G Ninja \
@@ -41,7 +46,9 @@ cmake --build build --parallel ${nproc}
 cmake --install build
 """
 
-platforms = expand_cxxstring_abis(supported_platforms())
+
+platforms = supported_platforms()
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -56,4 +63,4 @@ dependencies = Dependency[
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"9")
+               julia_compat="1.6", lazy_artifacts=true, preferred_gcc_version=v"9")

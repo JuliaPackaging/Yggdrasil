@@ -1,10 +1,10 @@
 using BinaryBuilder
 
 name = "Wasmtime"
-version = v"24.0.2"
+version = v"46.0.1"
 
 sources = [GitSource("https://github.com/bytecodealliance/wasmtime.git",
-                     "c29a9bb9e23b48a95b0a03f3b90f885ab1252a93")]
+                     "823d1b8f251494a06288194d0df746191f535ff7")]
 
 # Based on `wasmtime/ci/build-release-artifacts.sh
 script = raw"""
@@ -16,10 +16,6 @@ export CARGO_PROFILE_RELEASE_PANIC=abort
 if [[ "${target}" == armv* ]] || [[ "${target}" == aarch64-linux* ]]; then
     # The `ring` crate in the dependency tree requires this be set on ARM targets
     export CFLAGS="-D__ARM_ARCH"
-fi
-
-if [[ "${target}" == *-musl* ]]; then
-    export RUSTFLAGS="-C target-feature=-crt-static"
 fi
 
 cargo build \
@@ -50,6 +46,12 @@ platforms = supported_platforms(; exclude=(p -> !(arch(p) in ("x86_64", "aarch64
 
 # Filter aarch64 FreeBSD because no Rust toolchain is available there yet
 filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+
+# Filter musl because Rust >= 1.84 (Wasmtime 45 requires >= 1.93) assumes musl 1.2.3
+# and emits hard references to `getrandom` and `posix_spawn_file_actions_addchdir_np`,
+# which our musl 1.1.19 does not provide.
+# See https://github.com/rust-lang/rust/issues/141795
+filter!(p -> libc(p) != "musl", platforms)
 
 # NOTE: Headers get installed too but we aren't explicitly listing them as `FileProduct`s
 products = [LibraryProduct("libwasmtime", :libwasmtime),

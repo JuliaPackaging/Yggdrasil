@@ -3,21 +3,20 @@
 using BinaryBuilder, Pkg
 
 name = "LLVMCompilerRT"
-version = v"17.0.6"
+version = v"20.1.8"
 
 sources = [
     ArchiveSource(
         "https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/compiler-rt-$(version).src.tar.xz",
-        "11b8d09dcf92a0f91c5c82defb5ad9ff4acf5cf073a80c317204baa922d136b4"
+        "15277402f6fd63397c0917a5c7171cda82d16d226094b828c1ed0f58f73b9c69"
     ),
     ArchiveSource(
         "https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/cmake-$(version).src.tar.xz",
-        "807f069c54dc20cb47b21c1f6acafdd9c649f3ae015609040d6182cab01140f4"
+        "3319203cfd1172bbac50f06fa68e318af84dcb5d65353310c0586354069d6634"
     ),
     ArchiveSource(
         "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
         "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -27,10 +26,13 @@ cd $WORKSPACE/srcdir/
 mv -v cmake*src cmake
 cd compiler-rt*/
 
-# We'll codesign during audit
-atomic_patch -p1 ../patches/do-not-codesign.patch
-
+# We'll codesign during audit (-DCODESIGN=OFF below)
 FLAGS=()
+if [[ "${target}" == *-musl* ]]; then
+    # sanitizer_common conflicts with the musl and kernel headers
+    FLAGS+=(-DCOMPILER_RT_BUILD_SANITIZERS=OFF -DCOMPILER_RT_BUILD_XRAY=OFF -DCOMPILER_RT_BUILD_LIBFUZZER=OFF
+            -DCOMPILER_RT_BUILD_MEMPROF=OFF -DCOMPILER_RT_BUILD_CTX_PROFILE=OFF -DCOMPILER_RT_BUILD_ORC=OFF)
+fi
 if [[ "${target}" == *-apple-* ]]; then
     # Fake `PlistBuddy` to make detection of aarch64 support work
     mkdir -p /usr/libexec
@@ -75,13 +77,14 @@ fi
 # Quick fix for https://github.com/llvm/llvm-project/pull/102980.
 # TODO: remove it after PR is merged.
 export CXXFLAGS="-D__STDC_FORMAT_MACROS=1"
-cmake -B build \
+cmake -B build -G Ninja \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_MODULE_PATH=$(realpath ../../cmake-*.src/Modules) \
     -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=${target} \
     -DCMAKE_LIBTOOL=$(which libtool) \
+    -DCODESIGN=OFF \
     "${FLAGS[@]}"
 
 cmake --build build --parallel ${nproc}
@@ -105,11 +108,17 @@ products = LibraryProduct[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("XML2_jll"),
+    # We had to restrict compat with XML2 because of ABI breakage:
+    # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
+    # Updating to `compat="~2.14.1"` is likely possible without problems but requires rebuilding this package
+    Dependency("XML2_jll"; compat="~2.13.6"),
     Dependency("Zlib_jll"),
-    BuildDependency(PackageSpec(name="LLVM_full_jll"; version)),
+    BuildDependency(PackageSpec(name="LLVM_full_jll", version=string(version))),
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
+# Build the tarballs, and possibly a `build.jl` as well.  The Darwin SME support
+# routines (lib/builtins/aarch64/arm_apple_sme_abi.s) are assembled with
+# -march=armv8a+sme, hence `lock_microarchitecture=false`.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"8", preferred_llvm_version=version)
+               julia_compat="1.6", preferred_gcc_version=v"8", preferred_llvm_version=version,
+               lock_microarchitecture=false)

@@ -1,0 +1,189 @@
+From ca950fe48d60266b58209d81d5785d94f5b18f40 Mon Sep 17 00:00:00 2001
+From: Kaitlin Peng <kaitlinpeng@microsoft.com>
+Date: Mon, 24 Aug 2026 12:35:09 -0700
+Subject: [PATCH] [DirectX][SPIR-V] Fix `copysign` backend lowering (#217421)
+
+Fixes #216826.
+
+Adds `copysign` DirectX backend lowering and fixes the SPIR-V backend
+lowering. Both lower with the bit manipulation `copysign(magnitude,
+sign) = bitcast((bitcast(magnitude) & ~signBit) | (bitcast(sign) &
+signBit))`, except the OpenCL path, which still emits `OpExtInst ...
+copysign`.
+
+Assisted-by: Claude Opus 4.8
+---
+ lib/Target/SPIRV/SPIRVInstructionSelector.cpp | 53 +++++++++++-
+ .../CodeGen/SPIRV/hlsl-intrinsics/copysign.ll | 82 +++++++++++++++++++
+ 2 files changed, 134 insertions(+), 1 deletion(-)
+ create mode 100644 llvm/test/CodeGen/SPIRV/hlsl-intrinsics/copysign.ll
+
+diff --git a/lib/Target/SPIRV/SPIRVInstructionSelector.cpp b/lib/Target/SPIRV/SPIRVInstructionSelector.cpp
+index 7955036e511d..6a93c9f4c72a 100644
+--- a/lib/Target/SPIRV/SPIRVInstructionSelector.cpp
++++ b/lib/Target/SPIRV/SPIRVInstructionSelector.cpp
+@@ -464,6 +464,8 @@ private:
+                            MachineInstr &I) const;
+   bool selectFrexp(Register ResVReg, SPIRVTypeInst ResType,
+                    MachineInstr &I) const;
++  bool selectCopySign(Register ResVReg, SPIRVTypeInst ResType,
++                      MachineInstr &I) const;
+   bool selectSincos(Register ResVReg, SPIRVTypeInst ResType,
+                     MachineInstr &I) const;
+   bool selectExp10(Register ResVReg, SPIRVTypeInst ResType,
+@@ -1171,7 +1173,7 @@ bool SPIRVInstructionSelector::spvSelect(Register ResVReg,
+     return selectExtInst(ResVReg, ResType, I, CL::fmax, GL::NMax);
+ 
+   case TargetOpcode::G_FCOPYSIGN:
+-    return selectExtInst(ResVReg, ResType, I, CL::copysign);
++    return selectCopySign(ResVReg, ResType, I);
+ 
+   case TargetOpcode::G_FCEIL:
+     return selectExtInst(ResVReg, ResType, I, CL::ceil, GL::Ceil);
+@@ -1506,6 +1508,55 @@ bool SPIRVInstructionSelector::selectExtInst(Register ResVReg,
+   return false;
+ }
+ 
++bool SPIRVInstructionSelector::selectCopySign(Register ResVReg,
++                                              SPIRVTypeInst ResType,
++                                              MachineInstr &I) const {
++  if (STI.canUseExtInstSet(SPIRV::InstructionSet::OpenCL_std))
++    return selectExtInst(ResVReg, ResType, I, CL::copysign);
++
++  // There is no copysign instruction in the GLSL Extended Instruction set, so
++  // it is implemented with bit manipulation:
++  //   bitcast((bitcast(magnitude) & ~signBit) | (bitcast(sign) & signBit))
++  Register MagnitudeReg = I.getOperand(1).getReg();
++  Register SignReg = I.getOperand(2).getReg();
++
++  const unsigned BitWidth = GR.getScalarOrVectorBitWidth(ResType);
++  const unsigned ComponentCount = GR.getScalarOrVectorComponentCount(ResType);
++  SPIRVTypeInst IntType = GR.getOrCreateSPIRVIntegerType(BitWidth, I, TII);
++  const APInt SignMaskVal = APInt::getSignMask(BitWidth);
++
++  Register SignMask, NotSignMask;
++  unsigned AndOpcode, OrOpcode;
++  if (ComponentCount > 1) {
++    IntType = GR.getOrCreateSPIRVVectorType(IntType, ComponentCount, I, TII);
++    SignMask = GR.getOrCreateConstVector(SignMaskVal, I, IntType, TII);
++    NotSignMask = GR.getOrCreateConstVector(~SignMaskVal, I, IntType, TII);
++    AndOpcode = SPIRV::OpBitwiseAndV;
++    OrOpcode = SPIRV::OpBitwiseOrV;
++  } else {
++    SignMask = GR.getOrCreateConstInt(SignMaskVal, I, IntType, TII);
++    NotSignMask = GR.getOrCreateConstInt(~SignMaskVal, I, IntType, TII);
++    AndOpcode = SPIRV::OpBitwiseAndS;
++    OrOpcode = SPIRV::OpBitwiseOrS;
++  }
++
++  auto EmitBitOp = [&](Register &ResReg, ArrayRef<Register> SrcRegs,
++                       unsigned Opcode) {
++    ResReg = MRI->createVirtualRegister(GR.getRegClass(IntType));
++    return selectOpWithSrcs(ResReg, IntType, I, SrcRegs, Opcode);
++  };
++
++  Register MagnitudeInt, SignInt, MagnitudeBits, SignBits, CombinedInt;
++  if (!EmitBitOp(MagnitudeInt, {MagnitudeReg}, SPIRV::OpBitcast) ||
++      !EmitBitOp(SignInt, {SignReg}, SPIRV::OpBitcast) ||
++      !EmitBitOp(MagnitudeBits, {MagnitudeInt, NotSignMask}, AndOpcode) ||
++      !EmitBitOp(SignBits, {SignInt, SignMask}, AndOpcode) ||
++      !EmitBitOp(CombinedInt, {MagnitudeBits, SignBits}, OrOpcode))
++    return false;
++
++  return selectOpWithSrcs(ResVReg, ResType, I, {CombinedInt}, SPIRV::OpBitcast);
++}
++
+ bool SPIRVInstructionSelector::selectFrexp(Register ResVReg,
+                                            SPIRVTypeInst ResType,
+                                            MachineInstr &I) const {
+diff --git a/test/CodeGen/SPIRV/hlsl-intrinsics/copysign.ll b/test/CodeGen/SPIRV/hlsl-intrinsics/copysign.ll
+new file mode 100644
+index 000000000000..f28f1bb9153f
+--- /dev/null
++++ b/test/CodeGen/SPIRV/hlsl-intrinsics/copysign.ll
+@@ -0,0 +1,82 @@
++; RUN: llc -O0 -verify-machineinstrs -mtriple=spirv-unknown-vulkan %s -o - | FileCheck %s
++; RUN: %if spirv-tools %{ llc -O0 -mtriple=spirv-unknown-vulkan %s -o - -filetype=obj | spirv-val %}
++
++; Vulkan SPIR-V has no copysign in GLSL.std.450, so llvm.copysign is lowered with bit manipulation.
++
++; CHECK-DAG: %[[#float_16:]] = OpTypeFloat 16
++; CHECK-DAG: %[[#int_16:]] = OpTypeInt 16 0
++; CHECK-DAG: %[[#sign_16:]] = OpConstant %[[#int_16]] 32768
++; CHECK-DAG: %[[#magn_16:]] = OpConstant %[[#int_16]] 32767
++; CHECK-DAG: %[[#float_32:]] = OpTypeFloat 32
++; CHECK-DAG: %[[#int_32:]] = OpTypeInt 32 0
++; CHECK-DAG: %[[#sign_32:]] = OpConstant %[[#int_32]] 2147483648
++; CHECK-DAG: %[[#magn_32:]] = OpConstant %[[#int_32]] 2147483647
++; CHECK-DAG: %[[#vec4_float_32:]] = OpTypeVector %[[#float_32]] 4
++; CHECK-DAG: %[[#vec4_int_32:]] = OpTypeVector %[[#int_32]] 4
++; CHECK-DAG: %[[#vec4_sign_32:]] = OpConstantComposite %[[#vec4_int_32]] %[[#sign_32]] %[[#sign_32]] %[[#sign_32]] %[[#sign_32]]
++; CHECK-DAG: %[[#vec4_magn_32:]] = OpConstantComposite %[[#vec4_int_32]] %[[#magn_32]] %[[#magn_32]] %[[#magn_32]] %[[#magn_32]]
++; CHECK-DAG: %[[#float_64:]] = OpTypeFloat 64
++; CHECK-DAG: %[[#int_64:]] = OpTypeInt 64 0
++; CHECK-DAG: %[[#sign_64:]] = OpConstant %[[#int_64]] 9223372036854775808
++; CHECK-DAG: %[[#magn_64:]] = OpConstant %[[#int_64]] 9223372036854775807
++
++define noundef half @copysign_half(half noundef %a, half noundef %b) {
++entry:
++  ; CHECK: %[[#arg0:]] = OpFunctionParameter %[[#float_16]]
++  ; CHECK: %[[#arg1:]] = OpFunctionParameter %[[#float_16]]
++  ; CHECK: %[[#arg0_int:]] = OpBitcast %[[#int_16]] %[[#arg0]]
++  ; CHECK: %[[#arg1_int:]] = OpBitcast %[[#int_16]] %[[#arg1]]
++  ; CHECK: %[[#arg0_magn:]] = OpBitwiseAnd %[[#int_16]] %[[#arg0_int]] %[[#magn_16]]
++  ; CHECK: %[[#arg1_sign:]] = OpBitwiseAnd %[[#int_16]] %[[#arg1_int]] %[[#sign_16]]
++  ; CHECK: %[[#combined:]] = OpBitwiseOr %[[#int_16]] %[[#arg0_magn]] %[[#arg1_sign]]
++  ; CHECK: %[[#]] = OpBitcast %[[#float_16]] %[[#combined]]
++  %r = call half @llvm.copysign.f16(half %a, half %b)
++  ret half %r
++}
++
++define noundef float @copysign_float(float noundef %a, float noundef %b) {
++entry:
++  ; CHECK: %[[#arg0:]] = OpFunctionParameter %[[#float_32]]
++  ; CHECK: %[[#arg1:]] = OpFunctionParameter %[[#float_32]]
++  ; CHECK: %[[#arg0_int:]] = OpBitcast %[[#int_32]] %[[#arg0]]
++  ; CHECK: %[[#arg1_int:]] = OpBitcast %[[#int_32]] %[[#arg1]]
++  ; CHECK: %[[#arg0_magn:]] = OpBitwiseAnd %[[#int_32]] %[[#arg0_int]] %[[#magn_32]]
++  ; CHECK: %[[#arg1_sign:]] = OpBitwiseAnd %[[#int_32]] %[[#arg1_int]] %[[#sign_32]]
++  ; CHECK: %[[#combined:]] = OpBitwiseOr %[[#int_32]] %[[#arg0_magn]] %[[#arg1_sign]]
++  ; CHECK: %[[#]] = OpBitcast %[[#float_32]] %[[#combined]]
++  %r = call float @llvm.copysign.f32(float %a, float %b)
++  ret float %r
++}
++
++define noundef double @copysign_double(double noundef %a, double noundef %b) {
++entry:
++  ; CHECK: %[[#arg0:]] = OpFunctionParameter %[[#float_64]]
++  ; CHECK: %[[#arg1:]] = OpFunctionParameter %[[#float_64]]
++  ; CHECK: %[[#arg0_int:]] = OpBitcast %[[#int_64]] %[[#arg0]]
++  ; CHECK: %[[#arg1_int:]] = OpBitcast %[[#int_64]] %[[#arg1]]
++  ; CHECK: %[[#arg0_magn:]] = OpBitwiseAnd %[[#int_64]] %[[#arg0_int]] %[[#magn_64]]
++  ; CHECK: %[[#arg1_sign:]] = OpBitwiseAnd %[[#int_64]] %[[#arg1_int]] %[[#sign_64]]
++  ; CHECK: %[[#combined:]] = OpBitwiseOr %[[#int_64]] %[[#arg0_magn]] %[[#arg1_sign]]
++  ; CHECK: %[[#]] = OpBitcast %[[#float_64]] %[[#combined]]
++  %r = call double @llvm.copysign.f64(double %a, double %b)
++  ret double %r
++}
++
++define noundef <4 x float> @copysign_float4(<4 x float> noundef %a, <4 x float> noundef %b) {
++entry:
++  ; CHECK: %[[#arg0:]] = OpFunctionParameter %[[#vec4_float_32]]
++  ; CHECK: %[[#arg1:]] = OpFunctionParameter %[[#vec4_float_32]]
++  ; CHECK: %[[#arg0_int:]] = OpBitcast %[[#vec4_int_32]] %[[#arg0]]
++  ; CHECK: %[[#arg1_int:]] = OpBitcast %[[#vec4_int_32]] %[[#arg1]]
++  ; CHECK: %[[#arg0_magn:]] = OpBitwiseAnd %[[#vec4_int_32]] %[[#arg0_int]] %[[#vec4_magn_32]]
++  ; CHECK: %[[#arg1_sign:]] = OpBitwiseAnd %[[#vec4_int_32]] %[[#arg1_int]] %[[#vec4_sign_32]]
++  ; CHECK: %[[#combined:]] = OpBitwiseOr %[[#vec4_int_32]] %[[#arg0_magn]] %[[#arg1_sign]]
++  ; CHECK: %[[#]] = OpBitcast %[[#vec4_float_32]] %[[#combined]]
++  %r = call <4 x float> @llvm.copysign.v4f32(<4 x float> %a, <4 x float> %b)
++  ret <4 x float> %r
++}
++
++declare half @llvm.copysign.f16(half, half)
++declare float @llvm.copysign.f32(float, float)
++declare double @llvm.copysign.f64(double, double)
++declare <4 x float> @llvm.copysign.v4f32(<4 x float>, <4 x float>)
+-- 
+2.56.0
+

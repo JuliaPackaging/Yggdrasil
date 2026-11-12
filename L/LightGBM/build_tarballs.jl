@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms: arch, tags
 
-name = "LightGBM"
-version = v"4.3.0"
-
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
+
+name = "LightGBM"
+version = v"4.3.0"
 
 # Collection of sources required to complete build
 sources = [

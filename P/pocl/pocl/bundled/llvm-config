@@ -1,0 +1,75 @@
+#!/bin/bash
+
+# we want to use the target's `llvm-config`, but alas that binary is not executable,
+# so we use the one from the HostDependency, patching what it reports where necessary.
+
+host_tool=${host_prefix}/tools/llvm-config
+target_tool=${prefix}/tools/llvm-config
+
+host_prefix=$(dirname $(dirname $(realpath ${host_tool})))
+target_prefix=$(dirname $(dirname $(realpath ${target_tool})))
+
+# figure out the enabled targets
+targets=()
+for line in $(grep -E '^LLVM_TARGET\(' $target_prefix/include/llvm/Config/Targets.def); do
+    llvm_target=$(echo $line | sed -e 's|LLVM_TARGET(\(.*\))|\1|g')
+    targets+=($llvm_target)
+done
+
+# figure out the native target
+native_arch=$(grep -m 1 'LLVM_NATIVE_ARCH' $target_prefix/include/llvm/Config/llvm-config.h | \
+    sed -e 's|.*#define LLVM_NATIVE_ARCH \(.*\)|\1|g')
+
+if [[ "$@" == *--targets-built* ]]; then
+    echo "${targets[@]}"
+    exit 0
+fi
+
+# correct list of system libraries
+if [[ "${target}" == *mingw*  && "$@" == *--system-libs* ]]; then
+    echo -n "-lntdll "
+    $host_tool "$@" | sed -e 's/-lrt//' -e 's/-ldl//'
+    exit 0
+fi
+if [[ "${target}" == *darwin*  && "$@" == *--system-libs* ]]; then
+    $host_tool "$@" | sed -e 's/-lrt//'
+    exit 0
+fi
+if [[ "${target}" == *freebsd*  && "$@" == *--system-libs* ]]; then
+    echo -n "-lexecinfo "
+fi
+
+# when asking for --libs, filter out host ones that may not be available on the target
+# (e.g. LLVMIntelJITEvents) and reconstruct the libraries of supported targets.
+if [[ "$@" == *--libs* ]]; then
+    # strip libraries that may not be availble
+    output=$($host_tool "$@" | sed -e 's/-lLLVMIntelJIT[[:alnum:]]*//g' \
+                                   -e 's/-lLLVMPerfJITEvents[[:alnum:]]*//g')
+
+    # temporarily rename the X86 target libraries (we'll use it as the insertion point)
+    output=$(echo $output | sed -e "s/-lLLVMX86[[:alnum:]]*/-lLLVMTargetInsertionPoint/g")
+
+    # strip all host target libraries
+    for target in $($host_tool --targets-built ); do
+        output=$(echo $output | sed -e "s/-lLLVM$target[[:alnum:]]*//g")
+    done
+
+    # determine all target libraries by looking at the filesystem
+    # (the exact set may be different, e.g., X86 has TargetMCA, AArch64 has Utils)
+    libs=()
+    for target in ${targets[@]}; do
+        for lib in $target_prefix/lib/libLLVM$target*.a; do
+            libs+=("-l$(basename $lib | sed 's/^lib//;s/\.a$//')")
+        done
+    done
+    libstr="${libs[@]}"
+
+    output=$(echo $output | sed -e "s|-lLLVMTargetInsertionPoint|$libstr|" \
+                                -e "s/-lLLVMTargetInsertionPoint//g")
+
+    echo $output
+    exit 0
+fi
+
+# simply reuse the host tool for everything else, replacing the host with target prefix
+$host_tool "$@" | sed -e "s|$host_prefix|$target_prefix|g"

@@ -3,21 +3,18 @@
 using BinaryBuilder
 
 name = "Xorg_libXfixes"
-version = v"6.0.0"
+version = v"6.0.2"
 
 # Collection of sources required to build libXfixes
 sources = [
-    ArchiveSource("https://www.x.org/archive/individual/lib/libXfixes-$(version).tar.gz",
-                  "82045da5625350838390c9440598b90d69c882c324ca92f73af9f0e992cb57c7"),
+    ArchiveSource("https://www.x.org/archive/individual/lib/libXfixes-$(version).tar.xz",
+                  "39f115d72d9c5f8111e4684164d3d68cc1fd21f9b27ff2401b08fddfc0f409ba"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libXfixes-*/
-CPPFLAGS="-I${prefix}/include"
-# When compiling for things like ppc64le, we need newer `config.sub` files
-update_configure_scripts
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=no
+cd $WORKSPACE/srcdir/libXfixes-*
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-static=no
 make -j${nproc}
 make install
 """

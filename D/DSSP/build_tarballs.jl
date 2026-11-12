@@ -1,6 +1,9 @@
 using BinaryBuilder, Pkg
 using BinaryBuilderBase: default_host_platform
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "DSSP"
 version = v"4.4.0"
 
@@ -12,8 +15,6 @@ sources = [
               "c5ec1f2ddc800e7054d47a952b1ce21449f1d6b8"),
     GitSource("https://github.com/PDB-REDO/libcifpp",
               "836aed6ea9a227b37e5b0d9cbcb1253f545d0778"), # v5.1.0 (git-tag v5.1.0.1)
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
     # Pre-compiled binaries for Windows
     FileSource("https://github.com/PDB-REDO/dssp/releases/download/v$(version)/mkdssp-$(version).exe",
                "fa897e3b23eaebf19878c7ba41180c7ce706d4333a528775e9daa047988b1cfe"),
@@ -77,19 +78,6 @@ if [[ "${target}" == *-w64-mingw* ]]; then
     done
     install_license ../dssp/LICENSE
     exit 0
-fi
-
-# Install a newer MacOS SDK on x86_64-apple-darwin
-# Fixes compilation of libcifpp and dssp
-# - cmake fails on checking for std::filesystem
-# - compile error: 'any_cast<std::basic_string<char>>' is unavailable: introduced in macOS 10.14
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    export MACOSX_DEPLOYMENT_TARGET=10.15
-    popd
 fi
 
 # build the tests if we are building for the build host platform
@@ -173,6 +161,12 @@ fi
 
 install_license ../LICENSE
 """
+
+# Install a newer MacOS SDK on x86_64-apple-darwin
+# Fixes compilation of libcifpp and dssp
+# - cmake fails on checking for std::filesystem
+# - compile error: 'any_cast<std::basic_string<char>>' is unavailable: introduced in macOS 10.14
+sources, script = require_macos_sdk("10.15", sources, script)
 
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)

@@ -123,7 +123,7 @@ namespace TasBLAS{
      */
     inline void gemv(char trans, int64_t M, int64_t N, double alpha, double const A[], int64_t lda, double const x[], int64_t incx,
                      double beta, double y[], int64_t incy){
-        dgemv_64_(&trans, &M, &N, &alpha, A, &lda, x, &incx, &beta, y, &incy);
+      dgemv_64_(&trans, &M, &N, &alpha, A, &lda, x, &incx, &beta, y, &incy);
     }
 
   /*!

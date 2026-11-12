@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libposit"
-version = v"1.0.1"
+version = v"1.0.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/takum-arithmetic/libposit.git", "84f00df366cd73a03696faeb47fbad922440986f")
+    GitSource("https://github.com/takum-arithmetic/libposit.git", "d7ff4bc9c2063b0ad7db079cab4431aeea73cc72")
 ]
 
 # Bash recipe for building across all platforms

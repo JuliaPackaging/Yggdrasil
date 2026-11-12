@@ -5,3 +5,7 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "weekly"
+    # Cooldown applies only to version updates, not security updates.
+    # https://docs.github.com/en/code-security/reference/supply-chain-security/dependabot-options-reference#cooldown-
+    cooldown:
+      default-days: 7
