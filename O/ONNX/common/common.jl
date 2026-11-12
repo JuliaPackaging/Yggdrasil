@@ -3,7 +3,7 @@ include(joinpath(@__DIR__, "..", "..", "..", "platforms", "macos_sdks.jl"))
 version = v"1.23.2"
 
 sources = [
-    GitSource("https://github.com/onnx/onnx.git", "e1ac8e74b620bbdc7ba07f0440806bd93f651a28"),
+    GitSource("https://github.com/onnx/onnx.git", "e1ac8e74b620bbdc7ba07f0440806bd93f651a28"; tag="v$(version)"),
     DirectorySource(joinpath(@__DIR__, "bundled")),
 ]
 
