@@ -41,3 +41,5 @@ dependencies = [Dependency("CompilerSupportLibraries_jll"), Dependency("MPFR_jll
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     preferred_gcc_version = v"12", julia_compat = "1.10")
+
+# Build trigger: 1
