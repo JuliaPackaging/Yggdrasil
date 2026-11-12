@@ -1,0 +1,230 @@
+From e8d531b8456862b3b5bb1c6ccbdd7a511badd1e0 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Sat, 24 Oct 2026 17:37:13 +0200
+Subject: [PATCH] [NVPTX][DebugInfo] Re-emit inlined_at parents that ptxas
+ would misresolve
+
+ptxas resolves the `inlined_at <file> <line> <col>` operand of a .loc
+directive to the most recent .loc with that file, line and column.
+NVPTXDwarfDebug::recordTargetSourceLine skipped every ancestor that
+had been emitted anywhere in the function before, which goes wrong in
+two ways:
+
+- If another .loc with the same file, line and column was emitted in
+  between, e.g. for the same function inlined at two call sites on one
+  line, or by a line 0 record, the inlined_at resolves to that .loc
+  and the inline chain is wrong.
+- If locations of two different functions are inlined at the same
+  call site, e.g. f and g in `f(g(x))`, ptxas (at least up to CUDA
+  13.4) records the function name, and sometimes the file, of g for f
+  as well. nvcc emits the parent .loc again before each inlined callee,
+  which avoids this.
+
+Track the most recent location emitted for each file, line and column,
+and the function of the last location inlined at it. Emit an ancestor
+again if it is not that most recent location, or if a location of
+another function was inlined at it. Forget all of this when a .loc was
+emitted elsewhere in the meantime (line 0 records, the per-line .locs
+of inline assembly).
+
+Assisted-by: Claude Code, Codex
+---
+ lib/Target/NVPTX/NVPTXDwarfDebug.cpp | 106 ++++++++++++++-------------
+ lib/Target/NVPTX/NVPTXDwarfDebug.h   |  20 ++++-
+ 2 files changed, 70 insertions(+), 56 deletions(-)
+
+diff --git a/lib/Target/NVPTX/NVPTXDwarfDebug.cpp b/lib/Target/NVPTX/NVPTXDwarfDebug.cpp
+index 80e3f5692266..7b3be1259f46 100644
+--- a/lib/Target/NVPTX/NVPTXDwarfDebug.cpp
++++ b/lib/Target/NVPTX/NVPTXDwarfDebug.cpp
+@@ -21,6 +21,7 @@
+ #include "llvm/IR/GlobalVariable.h"
+ #include "llvm/MC/MCAsmInfo.h"
+ #include "llvm/MC/MCContext.h"
++#include "llvm/MC/MCDwarf.h"
+ #include "llvm/MC/MCStreamer.h"
+ #include "llvm/Support/CommandLine.h"
+ #include "llvm/Support/NVPTXAddrSpace.h"
+@@ -105,14 +106,8 @@ bool NVPTXDwarfDebug::isEnhancedLineinfo(const MachineFunction &MF) const {
+ ///   https://docs.nvidia.com/cuda/parallel-thread-execution/index.html#debugging-directives-loc
+ void NVPTXDwarfDebug::recordTargetSourceLine(const DebugLoc &DL,
+                                              unsigned Flags) {
+-  // Maintain a work list of .loc to be emitted. If we are emitting the
+-  // inlined_at directive, we might need to emit additional .loc prior
+-  // to it for the location contained in the inlined_at.
+-  SmallVector<const DILocation *, 8> WorkList;
+-  SmallDenseSet<const DILocation *, 8> WorkListSet;
+-  const DILocation *EmitLoc = DL.get();
+-
+-  if (!EmitLoc)
++  const DILocation *Loc = DL.get();
++  if (!Loc)
+     return;
+ 
+   const MachineFunction *MF = Asm->MF;
+@@ -120,43 +115,48 @@ void NVPTXDwarfDebug::recordTargetSourceLine(const DebugLoc &DL,
+     return;
+ 
+   const bool EnhancedLineinfo = isEnhancedLineinfo(*MF);
+-
+-  while (EmitLoc) {
+-    // Get the scope for the current location.
+-    const DIScope *Scope = EmitLoc->getScope();
+-    if (!Scope)
+-      break; // scope is null, we are done.
+-
+-    // Check if this loc is already in work list, if so, we are done.
+-    if (WorkListSet.contains(EmitLoc))
+-      break;
+-
+-    // Add this location to the work list.
+-    WorkList.push_back(EmitLoc);
+-    WorkListSet.insert(EmitLoc);
+-
+-    if (!EnhancedLineinfo) // No enhanced lineinfo, we are done.
+-      break;
+-
+-    const DILocation *IA = EmitLoc->getInlinedAt();
+-    // Check if this has inlined_at information, and if the parent location
+-    // has not yet been emitted. If already emitted, we don't need to
+-    // re-emit the parent chain.
+-    if (IA && !EmittedInlinedAtLocs.contains(IA))
+-      EmitLoc = IA;
+-    else // We are done.
+-      break;
+-  }
+-
+   const unsigned CUID = Asm->OutStreamer->getContext().getDwarfCompileUnitID();
+-  // Traverse the work list, and emit .loc.
+-  while (!WorkList.empty()) {
+-    const DILocation *Current = WorkList.pop_back_val();
++  auto &CU = static_cast<DwarfCompileUnit &>(*getUnits()[CUID]);
++  auto GetLocKey = [&CU](const DILocation *L) {
++    return LocKey(CU.getOrCreateSourceID(L->getFile()), L->getLine(),
++                  L->getColumn());
++  };
++
++  // Emit a .loc for this location, preceded by .locs for those of its
++  // inlined_at ancestors that need one, outermost first.
++  //
++  // ptxas resolves `inlined_at <file> <line> <col>` to the most recent .loc
++  // with that file, line and column, so an ancestor needs a new .loc unless
++  // it is the most recent one with its triple. In addition, ptxas (at least
++  // up to CUDA 13.4) gives a location the function name, and possibly the
++  // file, of the previous one if both are inlined at the same .loc. nvcc
++  // avoids that by emitting the parent again before each inlined callee. We
++  // do so if a location of another function has been inlined at the parent's
++  // .loc, e.g. for two callees inlined back to back at the same call site.
++  // That is conservative: that location need not be the previous one.
++  SmallVector<const DILocation *, 8> WorkList = {Loc};
++  if (EnhancedLineinfo) {
++    // Line 0 records and the per-line .locs of inline assembly are emitted
++    // without going through this function. If any were emitted since the
++    // last .loc emitted here, they may have taken over the triple of a
++    // tracked location.
++    const MCDwarfLoc &Cur = Asm->OutStreamer->getContext().getCurrentDwarfLoc();
++    if (LastKey != LocKey(Cur.getFileNum(), Cur.getLine(), Cur.getColumn()))
++      LastLocs.clear();
++
++    for (const DILocation *IA = Loc->getInlinedAt(); IA;
++         IA = IA->getInlinedAt()) {
++      auto It = LastLocs.find(GetLocKey(IA));
++      if (It != LastLocs.end() && It->second.Loc == IA &&
++          (!It->second.Callee ||
++           It->second.Callee == WorkList.back()->getScope()->getSubprogram()))
++        break;
++      WorkList.push_back(IA);
++    }
++  }
++
++  for (const DILocation *Current : reverse(WorkList)) {
+     const DIScope *Scope = Current->getScope();
+-
+-    if (!Scope)
+-      llvm_unreachable("we shouldn't be here for null scope");
+-
+     const DILocation *InlinedAt = Current->getInlinedAt();
+     StringRef Fn = Scope->getFilename();
+     const unsigned Line = Current->getLine();
+@@ -166,12 +166,10 @@ void NVPTXDwarfDebug::recordTargetSourceLine(const DebugLoc &DL,
+       if (const DILexicalBlockFile *LBF = dyn_cast<DILexicalBlockFile>(Scope))
+         Discriminator = LBF->getDiscriminator();
+ 
+-    const unsigned FileNo = static_cast<DwarfCompileUnit &>(*getUnits()[CUID])
+-                                .getOrCreateSourceID(Scope->getFile());
++    const unsigned FileNo = CU.getOrCreateSourceID(Scope->getFile());
+ 
+     if (EnhancedLineinfo && InlinedAt) {
+-      const unsigned FileIA = static_cast<DwarfCompileUnit &>(*getUnits()[CUID])
+-                                  .getOrCreateSourceID(InlinedAt->getFile());
++      const unsigned FileIA = CU.getOrCreateSourceID(InlinedAt->getFile());
+       const DISubprogram *SubProgram = getDISubprogram(Current->getScope());
+       DwarfStringPoolEntryRef Entry = InfoHolder.getStringPool().getEntry(
+           *Asm, SubProgram->getLinkageName());
+@@ -183,16 +181,20 @@ void NVPTXDwarfDebug::recordTargetSourceLine(const DebugLoc &DL,
+       Asm->OutStreamer->emitDwarfLocDirective(FileNo, Line, Col, Flags, 0,
+                                               Discriminator, Fn);
+     }
+-    // Mark this location as emitted so we don't re-emit the parent chain
+-    // for subsequent instructions that share the same inlined_at parent.
+-    if (EnhancedLineinfo)
+-      EmittedInlinedAtLocs.insert(Current);
++    if (EnhancedLineinfo) {
++      if (InlinedAt)
++        LastLocs[GetLocKey(InlinedAt)].Callee =
++            Current->getScope()->getSubprogram();
++      LastKey = LocKey(FileNo, Line, Col);
++      LastLocs[LastKey] = {Current, nullptr};
++    }
+   }
+ }
+ 
+ /// NVPTX-specific debug info initialization.
+ void NVPTXDwarfDebug::initializeTargetDebugInfo(const MachineFunction &MF) {
+-  EmittedInlinedAtLocs.clear();
++  LastLocs.clear();
++  LastKey = {};
+ }
+ 
+ // PTX does not support subtracting labels from the code section in the
+diff --git a/lib/Target/NVPTX/NVPTXDwarfDebug.h b/lib/Target/NVPTX/NVPTXDwarfDebug.h
+index 46b9a7e7a520..f4b52a37a55c 100644
+--- a/lib/Target/NVPTX/NVPTXDwarfDebug.h
++++ b/lib/Target/NVPTX/NVPTXDwarfDebug.h
+@@ -17,7 +17,8 @@
+ #define LLVM_LIB_TARGET_NVPTX_NVPTXDWARFDEBUG_H
+ 
+ #include "../../CodeGen/AsmPrinter/DwarfCompileUnit.h"
+-#include "llvm/ADT/DenseSet.h"
++#include "llvm/ADT/DenseMap.h"
++#include <tuple>
+ 
+ namespace llvm {
+ 
+@@ -29,9 +30,20 @@ namespace llvm {
+ /// information with inlined_at directives.
+ class NVPTXDwarfDebug : public DwarfDebug {
+ private:
+-  /// Set of inlined_at locations that have already been emitted.
+-  /// Used to avoid redundant emission of parent chain .loc directives.
+-  DenseSet<const DILocation *> EmittedInlinedAtLocs;
++  /// File, line and column of a .loc directive.
++  using LocKey = std::tuple<unsigned, unsigned, unsigned>;
++  struct EmittedLoc {
++    /// The location of the .loc.
++    const DILocation *Loc = nullptr;
++    /// The function of the last location emitted with this .loc as its
++    /// inlined_at, if any.
++    const DISubprogram *Callee = nullptr;
++  };
++  /// The most recent .loc with a given file, line and column, which is what
++  /// ptxas resolves an inlined_at with that triple to.
++  DenseMap<LocKey, EmittedLoc> LastLocs;
++  /// The triple of the last .loc emitted by recordTargetSourceLine.
++  LocKey LastKey;
+ 
+ public:
+   NVPTXDwarfDebug(AsmPrinter *A);
+-- 
+2.56.0
+

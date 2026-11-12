@@ -1,0 +1,20 @@
+diff --git a/src/modem/src/modem_arb.proto.c b/src/modem/src/modem_arb.proto.c
+index 51f13c36d..457726471 100644
+--- a/src/modem/src/modem_arb.proto.c
++++ b/src/modem/src/modem_arb.proto.c
+@@ -40,10 +40,10 @@ MODEM() MODEM(_create_arbitrary)(float complex * _table,
+     MODEM(_arb_init)(q, _table, _M);
+ 
+     // print table
+-    printf("modem arb[%u]\n", q->M);
+-    unsigned int i;
+-    for (i=0; i<q->M; i++)
+-        printf("  %3u: %12.8f %12.8f\n", i, crealf(q->symbol_map[i]), cimagf(q->symbol_map[i]));
++//    printf("modem arb[%u]\n", q->M);
++//    unsigned int i;
++//    for (i=0; i<q->M; i++)
++//        printf("  %3u: %12.8f %12.8f\n", i, crealf(q->symbol_map[i]), cimagf(q->symbol_map[i]));
+ 
+     // return object
+     return q;
+

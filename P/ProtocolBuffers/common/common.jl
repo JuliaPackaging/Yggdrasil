@@ -1,7 +1,7 @@
-version = v"3.16.0"
+version = v"3.16.1"
 
 sources = [
-    GitSource("https://github.com/protocolbuffers/protobuf.git", "2dc747c574b68a808ea4699d26942c8132fe2b09"),
+    GitSource("https://github.com/protocolbuffers/protobuf.git", "791a4355c365bd92720160671a7491be168055cb"),
     DirectorySource(joinpath(@__DIR__, "bundled")),
 ]
 

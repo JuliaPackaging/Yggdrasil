@@ -3,17 +3,20 @@
 using BinaryBuilder, Pkg
 
 name = "Qt65Compat"
-version = v"6.8.2"
+version = v"6.10.2"
 
 # Collection of sources required to build qt6
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qt5compat-everywhere-src-$version.tar.xz",
-                  "b53154bc95ec08e2ddc266bef250fbd684b4eb2df96bc8c27d26b1e953495316"),
+                  "3fa418f0fac02eb9efc5f762fbe25f20647b0ebb7fa92faf07e6de85044161c2"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
 ]
 
 script = raw"""
+# Need newer cmake from JLL
+apk del cmake
+
 cd $WORKSPACE/srcdir
 
 mkdir build
@@ -84,6 +87,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    HostBuildDependency("CMake_jll"),
     HostBuildDependency("Qt6Base_jll"),
     HostBuildDependency("Qt6ShaderTools_jll"),
     HostBuildDependency("Qt6Declarative_jll"),

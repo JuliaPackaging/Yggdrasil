@@ -1,0 +1,30 @@
+From df138bb4eb87e4e6770876f167c427cc9ea205a2 Mon Sep 17 00:00:00 2001
+From: Ian McInerney <i.mcinerney17@imperial.ac.uk>
+Date: Tue, 9 Apr 2024 23:09:09 +0100
+Subject: [PATCH 1/1] Build with proper aarch64 flags on Neoverse Darwin
+
+We aren't affected by the problems in AppleClang that prompted this
+fallback to an older architecture.
+---
+ Makefile.arm64 | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/Makefile.arm64 b/Makefile.arm64
+index 4feb54523..564ca7942 100644
+--- a/Makefile.arm64
++++ b/Makefile.arm64
+@@ -142,11 +142,7 @@ ifeq ($(CORE), NEOVERSEN2)
+ ifeq (1, $(filter 1,$(GCCVERSIONGTEQ7) $(ISCLANG)))
+ ifeq (1, $(filter 1,$(GCCVERSIONGTEQ10) $(ISCLANG)))
+ ifeq (1, $(filter 1,$(GCCMINORVERSIONGTEQ4) $(GCCVERSIONGTEQ11) $(ISCLANG)))
+-ifneq ($(OSNAME), Darwin)
+ CCOMMON_OPT += -march=armv8.5-a+sve+sve2+bf16 -mtune=neoverse-n2
+-else
+-CCOMMON_OPT += -march=armv8.2-a+sve+bf16 -mtune=cortex-a72
+-endif
+ ifneq ($(F_COMPILER), NAG)
+ FCOMMON_OPT += -march=armv8.5-a+sve+sve2+bf16 -mtune=neoverse-n2
+ endif
+-- 
+2.31.0
+

@@ -2,13 +2,13 @@ using BinaryBuilder
 
 name = "FFTW"
 # We bumped the version number because we rebuilt for new architectures
-fftw_version = v"3.3.10"
-version = v"3.3.11"
+fftw_version = v"3.3.11"
+version = v"3.3.12"
 
 # Collection of sources required to build FFTW
 sources = [
    ArchiveSource("http://fftw.org/fftw-$(fftw_version).tar.gz",	
-                  "56c932549852cddcfafdab3820b0200c7742675be92179e59e6215b340e26467"),
+                  "5630c24cdeb33b131612f7eb4b1a9934234754f9f388ff8617458d0be6f239a1"),
 ]
 
 # Bash recipe for building across all platforms
@@ -41,12 +41,21 @@ fi
 # Enable NEON on Aarch64
 if [[ "${target}" == aarch64-* ]]; then FLAGS+=( --enable-neon ); fi
 
+# Julia-Aarch64 platforms (MacOS, Linux, FreeBSD) nowadays give access to
+# CNTVCT_EL0 cycle counter in userspace.  (We need to enable this explicitly
+# on Linux and BSD, as otherwise FFTW will not use a cycle counter and disable
+# timer-based planning.)
+if [[ "${target}" == aarch64-* ]]; then FLAGS+=( --enable-armv8-cntvct-el0 ); fi
+
 # On windows, we use our own malloc
 if [[ "${target}" == *-w64-* ]]; then FLAGS+=( --with-our-malloc ); fi
 if [[ "${target}" == i686-w64-* ]]; then FLAGS+=( --with-incoming-stack-boundary=2 ); fi
 
 # On ppc64le, enable VSX
 if [[ "${target}" == powerpc64le-*  ]]; then FLAGS+=( --enable-vsx ); fi
+
+# work around https://github.com/FFTW/fftw3/issues/403
+perl -pi -e "s/CLOCK_SGI_CYCLE/CLOCK_SGI_CYCLE_NOPE/" ${WORKSPACE}/srcdir/fftw*/kernel/cycle.h
 
 # We need to do this a couple times, so functionalize it
 build_fftw()

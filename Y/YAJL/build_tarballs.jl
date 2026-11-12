@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "YAJL"
-version = v"2.1.1"
+version = v"2.1.2"
 
 # Collection of sources required to build YAJL
 sources = [
@@ -15,6 +15,11 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd yajl
+
+# Security patches from Debian (https://security-tracker.debian.org/tracker/source-package/yajl)
+atomic_patch -p1 "$WORKSPACE/srcdir/patches/CVE-2017-16516.patch"
+atomic_patch -p1 "$WORKSPACE/srcdir/patches/CVE-2022-24795.patch"
+atomic_patch -p1 "$WORKSPACE/srcdir/patches/CVE-2023-33460.patch"
 
 if [[ "$target" == *-w64-* ]]; then
   atomic_patch -p1 "$WORKSPACE/srcdir/patches/01-fix-windows-compiler.patch"

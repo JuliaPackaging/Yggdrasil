@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "libusb"
-version = v"1.0.29"
+version = v"1.0.30"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/libusb/libusb.git",
-              "15a7ebb4d426c5ce196684347d2b7cafad862626"),
+              "87a55632db62c9bdc58cd31d3ccfa673f1bb017f"),
 ]
 
 # Bash recipe for building across all platforms

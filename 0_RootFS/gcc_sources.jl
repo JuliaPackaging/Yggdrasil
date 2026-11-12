@@ -117,14 +117,26 @@ const gcc_version_sources = Dict{VersionNumber,Vector}(
         ArchiveSource("https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.24.tar.bz2",
                         "fcf78dd9656c10eb8cf9fbd5f59a0b6b01386205fe1934b3b287a0a1898145c0"),
     ],
-    v"14.2.0" => [
-        ArchiveSource("https://mirrors.kernel.org/gnu/gcc/gcc-14.2.0/gcc-14.2.0.tar.xz",
-                      "a7b39bc69cbf9e25826c5a60ab26477001f7c08d85cec04bc0e29cabed6f3cc9"),
+    v"14.3.0" => [
+        ArchiveSource("https://mirrors.kernel.org/gnu/gcc/gcc-14.3.0/gcc-14.3.0.tar.xz",
+                      "e0dc77297625631ac8e50fa92fffefe899a4eb702592da5c32ef04e2293aca3a"),
         ArchiveSource("https://mirrors.kernel.org/gnu/gmp/gmp-6.2.1.tar.xz",
                       "fd4829912cddd12f84181c3451cc752be224643e87fac497b69edddadc49b4f2"),
         ArchiveSource("https://mirrors.kernel.org/gnu/mpfr/mpfr-4.1.0.tar.xz",
                       "0c98a3f1732ff6ca4ea690552079da9c597872d30e96ec28414ee23c95558a7f"),
         ArchiveSource("https://mirrors.kernel.org/gnu/mpc/mpc-1.2.1.tar.gz",
+                      "17503d2c395dfcf106b622dc142683c1199431d095367c6aacba6eec30340459"),
+        ArchiveSource("https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.24.tar.bz2",
+                      "fcf78dd9656c10eb8cf9fbd5f59a0b6b01386205fe1934b3b287a0a1898145c0"),
+    ],
+    v"15.2.0" => [
+        ArchiveSource("https://mirrors.kernel.org/gnu/gcc/gcc-15.2.0/gcc-15.2.0.tar.xz",
+                      "438fd996826b0c82485a29da03a72d71d6e3541a83ec702df4271f6fe025d24e"),
+        ArchiveSource("https://mirrors.kernel.org/gnu/gmp/gmp-6.2.1.tar.xz", # 6.3.0?
+                      "fd4829912cddd12f84181c3451cc752be224643e87fac497b69edddadc49b4f2"),
+        ArchiveSource("https://mirrors.kernel.org/gnu/mpfr/mpfr-4.1.0.tar.xz", # 4.2.2?
+                      "0c98a3f1732ff6ca4ea690552079da9c597872d30e96ec28414ee23c95558a7f"),
+        ArchiveSource("https://mirrors.kernel.org/gnu/mpc/mpc-1.2.1.tar.gz", # 1.3.2?
                       "17503d2c395dfcf106b622dc142683c1199431d095367c6aacba6eec30340459"),
         ArchiveSource("https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.24.tar.bz2",
                       "fcf78dd9656c10eb8cf9fbd5f59a0b6b01386205fe1934b3b287a0a1898145c0"),
@@ -166,6 +178,21 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
             ArchiveSource("https://mirrors.kernel.org/gnu/gmp/gmp-6.2.0.tar.xz",
                           "258e6cd51b3fbdfc185c716d55f82c08aff57df0c6fbd143cf6ed561267a1526"),
         ]
+        # Iain Sandoe's GCC 15 Darwin/arm64 release branch (gcc-15-2-darwin-pre-0):
+        # upstream GCC 15.2.0 + Darwin/arm64 patches, same base as Homebrew's `gcc`.
+        # Deps match GCC 15.2's `contrib/download_prerequisites`.
+        gcc_version_sources[v"15.2.0-iains"] = [
+            GitSource("https://github.com/iains/gcc-15-branch.git",
+                      "bf0bb1095eb8440457658fad903cca575dbde3e9"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/gmp/gmp-6.2.1.tar.xz",
+                          "fd4829912cddd12f84181c3451cc752be224643e87fac497b69edddadc49b4f2"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/mpfr/mpfr-4.1.0.tar.xz",
+                          "0c98a3f1732ff6ca4ea690552079da9c597872d30e96ec28414ee23c95558a7f"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/mpc/mpc-1.2.1.tar.gz",
+                          "17503d2c395dfcf106b622dc142683c1199431d095367c6aacba6eec30340459"),
+            ArchiveSource("https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.24.tar.bz2",
+                          "fcf78dd9656c10eb8cf9fbd5f59a0b6b01386205fe1934b3b287a0a1898145c0"),
+        ]
         # MacOS doesn't actually use binutils, it uses cctools
         if gcc_version < v"14"
             binutils_sources = [
@@ -175,11 +202,15 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
                           "634a084377ee2e2932c66459b0396edf76da2e9f"),
             ]
         else
+            # cctools-port pinned to conda-forge's cctools-and-ld64-feedstock commit
+            # (cctools 1030.6.3 / ld64 956.6, branch `1030.6.3-ld64-956.6`) -- a widely
+            # deployed cross-linker.  apple-libtapi 1500.0.12.3 (Xcode 15 era); when bumping
+            # it, also update TAPI_REPOSITORY_STRING/TAPI_FULL_VERSION in gcc_common.jl.
             binutils_sources = [
                 GitSource("https://github.com/tpoechtrager/apple-libtapi.git",
-                          "54c9044082ba35bdb2b0edf282ba1a340096154c"),
+                          "fbe6e2ae9dab1768ffb22a0d64d525fb7bdf9be6"), # 1500.0.12.3
                 GitSource("https://github.com/tpoechtrager/cctools-port.git",
-                          "81f205e8ca6bbf2fdbcb6948132454fd1f97839e"),
+                          "e5dfc5633cb9060a94d16b8d78a01eb0b3620021"), # 1030.6.3-ld64-956.6 (conda-forge pin)
             ]
         end
     else
@@ -195,7 +226,8 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
             v"11.1.0" => v"2.36",
             v"12.1.0" => v"2.38",
             v"13.2.0" => v"2.41",
-            v"14.2.0" => v"2.43.1",
+            v"14.3.0" => v"2.43.1",
+            v"15.2.0" => v"2.45.1",
         )
 
         # Everyone else uses GNU Binutils, but we have to version carefully.
@@ -247,6 +279,10 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
             v"2.43.1" => [
                 ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-2.43.1.tar.xz",
                               "13f74202a3c4c51118b797a39ea4200d3f6cfbe224da6d1d95bb938480132dfd"),
+            ],
+            v"2.45.1" => [
+                ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-2.45.1.tar.xz",
+                              "5fe101e6fe9d18fdec95962d81ed670fdee5f37e3f48f0bef87bddf862513aa5"),
             ],
         )
         binutils_version = binutils_gcc_version_mapping[gcc_version]

@@ -3,7 +3,7 @@
 include("../common.jl")
 
 name = "fplsa"
-upstream_version = "1.2.7" # when you increment this, reset offset to v"0.0.0"
+upstream_version = "1.2.8" # when you increment this, reset offset to v"0.0.0"
 offset = v"1.0.0" # increment this when rebuilding with unchanged upstream_version
 version = offset_version(upstream_version, offset)
 
@@ -12,7 +12,7 @@ version = offset_version(upstream_version, offset)
 # Collection of sources required to build this JLL
 sources = [
     ArchiveSource("https://github.com/gap-packages/FPLSA/releases/download/v$(upstream_version)/FPLSA-$(upstream_version).tar.gz",
-                  "eb3400869479a547c80f7b461ce0dceec5d480fa7042f2abffc2fd8d3df05fc3"),
+                  "cb2fd23861df583259ec6677119080ca958caa13405834365163e7c2b0441952"),
 ]
 
 # Bash recipe for building across all platforms

@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "yaml_cpp"
-version = v"0.8.1" # Corresponds to v0.8.0.  We had to change the version number to bump the compat bound, from next release we can go back to follow upstream version
+version = v"0.9.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/jbeder/yaml-cpp.git", "f7320141120f720aecc4c32be25586e7da9eb978"),
+    GitSource("https://github.com/jbeder/yaml-cpp.git", "56e3bb550c91fd7005566f19c079cb7a503223cf"),
 ]
 
 # Bash recipe for building across all platforms
@@ -27,7 +27,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -39,6 +39,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"6")
-
-# Build trigger: 1
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"7")

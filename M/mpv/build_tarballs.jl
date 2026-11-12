@@ -1,70 +1,118 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using Base.BinaryPlatforms
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "mpv"
-version = v"0.32.0"
+version = v"0.42.0"
 
 # Collection of sources required to complete build #
 sources = [
-    ArchiveSource("https://github.com/mpv-player/mpv/archive/v0.32.0.tar.gz", "9163f64832226d22e24bbc4874ebd6ac02372cd717bef15c28a0aa858c5fe592")
+    GitSource("https://github.com/mpv-player/mpv.git", "b0841e8c4d156b8403dc1876c4cbd9011eb583f3"; tag="v$(version)"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd mpv-*
-ln -s /usr/bin/pkg-config /usr/bin/$target-pkg-config
+cd $WORKSPACE/srcdir/mpv
 
-# libstc++ required for c++ libs when using C compiler
-if [[ "${nbits}" == 32 ]]; then
-    export LDFLAGS="-L${prefix}/lib -liconv -Wl,-rpath-link,/opt/${target}/${target}/lib"
-elif [[ "${target}" != *-apple-* ]]; then 
-    export LDFLAGS="-L${prefix}/lib -liconv -Wl,-rpath-link,/opt/${target}/${target}/lib64"
-else 
-    export LDFLAGS="-L${prefix}/lib -liconv"
-fi
+# Some libc headers define `strcspn` as a macro; the comma in the compound
+# literal then splits the macro arguments. Parenthesize the literal.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/screenshot-strcspn-macro.patch
 
-# pkg-config files for ffmpeg are in $bindir for windows
+# Clone libplacebo as a meson subproject (needs --recursive for 3rdparty deps)
+mkdir -p subprojects
+git clone https://code.videolan.org/videolan/libplacebo.git \
+    --branch v7.387.0 --depth=1 --recursive subprojects/libplacebo
+
+# Remove host cmake so meson doesn't pick it up for cross-compilation
+apk del cmake
+
+# FFMPEG_jll installs pkgconfig files in ${libdir}/pkgconfig on Windows
 if [[ "${target}" == *-mingw* ]]; then
-    cp $bindir/pkgconfig/lib*  /workspace/destdir/lib/pkgconfig/
+    export PKG_CONFIG_PATH="${PKG_CONFIG_PATH:+${PKG_CONFIG_PATH}:}${libdir}/pkgconfig"
 fi
-python3 bootstrap.py
 
-# No opengl on MacOS
-if [[  "${target}" == *-apple-* ]]; then
-    TARGET=$target ./waf --prefix=${prefix} --disable-manpage-build --enable-sdl2 --disable-gl configure
-else 
-    TARGET=$target ./waf --prefix=${prefix} --disable-manpage-build --enable-sdl2 configure
+# On FreeBSD, HarfBuzz_jll and FriBidi_jll (needed by libass) ship their
+# pkg-config files in libdata/pkgconfig
+if [[ "${target}" == *-freebsd* ]]; then
+    export PKG_CONFIG_PATH="${PKG_CONFIG_PATH:+${PKG_CONFIG_PATH}:}${prefix}/libdata/pkgconfig"
 fi
-./waf build -j${nproc}
-./waf install
+
+FLAGS=()
+
+if [[ "${target}" == *-apple-* ]]; then
+    # Cocoa requires Swift (no Swift compiler in BinaryBuilder), so disable it
+    # and all features that depend on it. CoreAudio/AVFoundation are independent.
+    FLAGS+=(
+        -Dcocoa=disabled
+        -Dswift-build=disabled
+        -Dgl-cocoa=disabled
+        -Dmacos-cocoa-cb=disabled
+        -Dmacos-media-player=disabled
+        -Dmacos-touchbar=disabled
+    )
+fi
+
+if [[ "${target}" == *-mingw* ]]; then
+    # The d3d11 video output needs spirv-cross, which we don't provide, so
+    # mpv's d3d11_helpers.c is not compiled. But the (auto-enabled) D3D11VA
+    # hwaccel filter vf_d3d11vpp.c still uses it, which fails at link time
+    # (undefined reference to `mp_params_to_dxgi_colorspace`). Disable it;
+    # this also disables the dependent d3d9-hwaccel.
+    FLAGS+=(-Dd3d-hwaccel=disabled)
+fi
+
+if [[ "${target}" == i686-*-mingw* ]]; then
+    # The i686 mingw-w64 ole32 import library lacks CoIncrementMTAUsage@4 and
+    # CoDecrementMTAUsage@4, which ao_wasapi.c needs (undefined reference at
+    # link time). Disable WASAPI there; SDL2 audio remains available.
+    FLAGS+=(-Dwasapi=disabled)
+fi
+
+# SDL2 video/audio are disabled by default in mpv 0.41; enable them explicitly
+# Vulkan is disabled: not native on macOS, stdcall ABI issues on 32-bit Windows,
+# and SDL2+OpenGL provide sufficient video output for a JLL package
+FLAGS+=(-Dsdl2-video=enabled -Dsdl2-audio=enabled -Dvulkan=disabled)
+
+meson setup build --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release "${FLAGS[@]}"
+meson compile -C build
+meson install -C build
+
+install_license Copyright LICENSE.GPL
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
+sources, script = require_macos_sdk("11.3", sources, script)
+
+# Filter platforms that don't have full dependency support
 platforms = supported_platforms()
-filter!(!Sys.isfreebsd, platforms)
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("mpv", :mpv)
+    ExecutableProduct("mpv", :mpv),
+    LibraryProduct("libmpv", :libmpv),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="Libiconv_jll", uuid="94ce4f54-9a6c-5748-9c1c-f9c7231a4531"))
-    Dependency(PackageSpec(name="SDL2_jll", uuid="ab825dc5-c88e-5901-9575-1e5e20358fcf"))
-    Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
-    Dependency(PackageSpec(name="FFMPEG_jll", uuid="b22a6f82-2f65-5046-a5b2-351ab43fb4e5"))
-    Dependency(PackageSpec(name="Lua_jll", uuid="a4086b1d-a96a-5d6b-8e4f-2030e6f25ba6"); compat="~5.3.6")
-    Dependency(PackageSpec(name="JpegTurbo_jll", uuid="aacddb02-875f-59d6-b918-886e6ef4fbf8"))
-    Dependency(PackageSpec(name="Xorg_libXrandr_jll", uuid="ec84b674-ba8e-5d96-8ba1-2a689ba10484"))
-    Dependency(PackageSpec(name="Xorg_libXinerama_jll", uuid="d1454406-59df-5ea1-beac-c340f2130bc3"))
-    Dependency(PackageSpec(name="Libglvnd_jll", uuid="7e76a0d4-f3c7-5321-8279-8d96eeed0f29"))
-    Dependency(PackageSpec(name="Xorg_libX11_jll", uuid="4f6342f7-b3d2-589e-9d20-edeb45f2b2bc"))
-    BuildDependency(PackageSpec(name="Xorg_xorgproto_jll", uuid="c4d99508-4286-5418-9131-c86396af500b"))
+    HostBuildDependency("CMake_jll"),
+    BuildDependency("Xorg_xorgproto_jll"),
+    Dependency("FFMPEG_jll"; compat="9.0.0"),
+    Dependency("JpegTurbo_jll"),
+    Dependency("Libglvnd_jll"),
+    Dependency("Libiconv_jll"),
+    Dependency("Lua_jll"),
+    Dependency("SDL2_jll"),
+    Dependency("Shaderc_jll"),
+    Dependency("Xorg_libX11_jll"),
+    Dependency("Xorg_libXinerama_jll"),
+    Dependency("Xorg_libXrandr_jll"),
+    Dependency("Zlib_jll"),
+    Dependency("libass_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;preferred_gcc_version=v"7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.10", clang_use_lld=false, preferred_gcc_version=v"8")

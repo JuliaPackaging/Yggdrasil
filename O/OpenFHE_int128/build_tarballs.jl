@@ -5,8 +5,8 @@ include(joinpath(pwd(), "..", "OpenFHE", "common.jl"))
 # If you make changes in this file, e.g., to release a new version,
 # be sure to also release a new version of `OpenFHE` as well (see `../OpenFHE/build_tarballs.jl`)
 name = "OpenFHE_int128"
-version = v"1.4.2"
-git_hash = "aa391988d354d4360f390f223a90e0d1b98839d7"
+version = v"1.6.1"
+git_hash = "b59e1f291965f14fbee5172cd83a20f5b856204f"
 
 sources, script, platforms, products, dependencies = prepare_openfhe_build(name, git_hash)
 

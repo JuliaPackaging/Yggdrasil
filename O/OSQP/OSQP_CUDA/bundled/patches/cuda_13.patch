@@ -1,0 +1,66 @@
+diff --git a/algebra/cuda/src/cuda_lin_alg.cu b/algebra/cuda/src/cuda_lin_alg.cu
+index b25248d3..7949d9aa 100644
+--- a/algebra/cuda/src/cuda_lin_alg.cu
++++ b/algebra/cuda/src/cuda_lin_alg.cu
+@@ -29,8 +29,41 @@
+ #include <thrust/reduce.h>
+ #include <thrust/execution_policy.h>
+
++#if CCCL_VERSION >= 3000000
++#include <cuda/std/functional>
++#include <cuda/std/utility>
++#else
++#include <thrust/pair.h>
++#endif
++
++
+ extern CUDA_Handle_t *CUDA_handle;
+
++namespace CUOSQP {
++  // Handle deprecations in CCL version 2.x->3.x transition
++  // https://nvidia.github.io/cccl/unstable/cccl/3.0_migration_guide.html#removed-functions-and-classes
++#if CCCL_VERSION >= 3000000
++  template <class T>
++  using plus = cuda::std::plus<T>;
++
++  template<class T1, class T2>
++  using pair = cuda::std::pair<T1, T2>;
++
++  template<class T>
++  using equal_to = cuda::std::equal_to<T>;
++#else
++  template <class T>
++  using plus = thrust::plus<T>;
++
++  template<class T1, class T2>
++  using pair = thrust::pair<T1, T2>;
++
++  template<class T>
++  using equal_to = thrust::equal_to<T>;
++#endif
++};
++
++
+
+ /*******************************************************************************
+  *                              GPU Kernels                                    *
+@@ -480,8 +513,8 @@ void Segmented_reduce(const OSQPInt*       key_start,
+   OSQPFloat* intermediate_result = (OSQPFloat*) buffer;
+   OSQPInt*   nnz_rows            = (OSQPInt*) (&intermediate_result[num_segments]);
+
+-  thrust::pair<OSQPInt*,OSQPFloat*> new_end;
+-  thrust::equal_to<OSQPInt> binary_pred;
++  CUOSQP::pair<OSQPInt*,OSQPFloat*> new_end;
++  CUOSQP::equal_to<OSQPInt> binary_pred;
+
+   new_end = thrust::reduce_by_key(thrust::device,
+                                   key_start,
+@@ -986,7 +1019,7 @@ void cuda_vec_segmented_sum(const OSQPFloat* d_values,
+                                   OSQPInt    num_segments,
+                                   OSQPInt    num_elements) {
+
+-  thrust::plus<OSQPFloat> binary_op;
++  CUOSQP::plus<OSQPFloat> binary_op;
+   Segmented_reduce(d_keys, num_elements, num_segments, d_values, d_buffer, d_res, binary_op);
+ }
+

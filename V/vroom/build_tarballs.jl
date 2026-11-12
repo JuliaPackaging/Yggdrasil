@@ -1,0 +1,93 @@
+using BinaryBuilder, Pkg
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
+name = "vroom"
+version = v"1.15.0"
+
+# Collection of sources required to complete build
+sources = [
+    # v1.15.0
+    GitSource("https://github.com/VROOM-Project/vroom.git", "43dd7d0b8b560431eb555bf335cf4797eb7343c4"),
+    DirectorySource("./bundled"),
+]
+
+# Bash recipe for building across all platforms
+script = raw"""
+cd $WORKSPACE/srcdir
+# Windows: no pkg-config for OpenSSL; set include/lib paths
+if [[ ${target} == *-w64-mingw32 ]]; then
+    export CPPFLAGS="-I${includedir} ${CPPFLAGS}"
+    export LDFLAGS="-L${libdir} ${LDFLAGS}"
+fi
+cd vroom
+# https://github.com/VROOM-Project/vroom/pull/1333
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/include-semaphore.patch
+git submodule init
+git submodule update
+if [[ ${target} == *-w64-mingw32 ]]; then
+    # There is no pkg-config info for OpenSSL on Windows. The makefile passes -lssl -lcrypto
+    # but not -L and does not use LDFLAGS. On Windows libdir=${prefix}/bin (where DLLs live).
+    export CPPFLAGS="-I${includedir} ${CPPFLAGS}"
+    for f in $(find . \( -name Makefile -o -name makefile -o -name '*.mk' \) -type f); do
+        if grep -q 'lssl' "$f" 2>/dev/null; then
+            sed -i -e "s| -lssl| -L${libdir} -lssl|g" \
+                   -e "s| -lcrypto| -L${libdir} -lcrypto -lws2_32 -lmswsock|g" "$f"
+        fi
+    done
+fi
+cd src
+# FreeBSD: use GCC since clang setup is incomplete for this target.
+if [[ "${target}" == *-freebsd* ]]; then
+    export CC=gcc
+    export CXX=g++
+fi
+# macOS: use default Apple clang with the macOS 15.0 SDK installed above.
+# libc++ from macOS 15.0 SDK ships `std::format`, required by vroom v1.15.0.
+# Available GCC for aarch64-apple-darwin (GCCBootstrap-12.0.1-iains) lacks
+# `std::format`, so GCC is not an option.
+if [[ "${target}" == *-apple-darwin* ]]; then
+    # That libc++ (LLVM 18) hides `std::jthread` behind the experimental
+    # library, see `__thread/jthread.h`. It is header-only, so enabling it
+    # does not require linking against libc++experimental.
+    #
+    # asio v1.18.1 only detects `std::invoke_result` for MSVC and otherwise
+    # falls back to `std::result_of`, which libc++ removed in C++20 (but
+    # libstdc++ still provides). Force the `std::invoke_result` code path.
+    #
+    # The makefile assigns `CXXFLAGS` unconditionally, so the flags cannot be
+    # passed through the environment and go through `CXX` instead.
+    export CXX="${CXX} -D_LIBCPP_ENABLE_EXPERIMENTAL -DASIO_HAS_STD_INVOKE_RESULT=1"
+fi
+make -j${nproc}
+install -Dvm 755 ../bin/vroom${exeext} -t ${bindir}
+"""
+
+# Install the macOS 15.0 SDK so libc++ has std::format + std::jthread. It also
+# sets MACOSX_DEPLOYMENT_TARGET to 15.0, needed for the floating point
+# `std::to_chars` that `std::format` uses (only available from macOS 13.3).
+sources, script = require_macos_sdk("15.0", sources, script)
+
+# These are the platforms we will build for by default, unless further
+# platforms are passed in on the command line
+platforms = supported_platforms()
+platforms = expand_cxxstring_abis(platforms)
+
+# The products that we will ensure are always built
+products =[
+    ExecutableProduct("vroom", :vroom),
+]
+
+# Dependencies that must be installed before this package can be built
+dependencies = [
+    BuildDependency(PackageSpec(name="asio_jll", uuid="adbc9c39-6bf4-5566-8295-c0623552eeca", version="1.18.1"))
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+    Dependency(PackageSpec(name="GLPK_jll", uuid="e8aa6df9-e6ca-548a-97ff-1f85fc5b8b98"))
+    Dependency(PackageSpec(name="jq_jll", uuid="f8f80db2-c0ba-59e9-a5c3-38d72e3c5ac2"))
+    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="3.0.16")
+]
+
+# Build the tarballs, and possibly a `build.jl` as well.
+# Need GCC 13+ for C++20 <format> and `using enum`
+# With GCC v13, we need at least Julia v1.10 to avoid issues like https://github.com/JuliaPackaging/Yggdrasil/issues/11354
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.10", preferred_gcc_version=v"13")

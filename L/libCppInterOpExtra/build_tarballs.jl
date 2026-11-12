@@ -48,7 +48,7 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
     dependencies = [
         RuntimeDependency("Clang_jll"),
         BuildDependency("libCppInterOp_jll"),
-        BuildDependency(PackageSpec(name=llvm_name, version=llvm_version))
+        BuildDependency(PackageSpec(name=llvm_name, version=string(llvm_version)))
     ]
 
     # The products that we will ensure are always built
@@ -100,3 +100,5 @@ for (i,build) in enumerate(builds)
                    preferred_gcc_version=v"12", julia_compat="1.7",
                    augment_platform_block, lazy_artifacts=true)
 end
+
+# rebuild trigger: 1

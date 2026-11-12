@@ -14,14 +14,14 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 name = "Enzyme"
 repo = "https://github.com/EnzymeAD/Enzyme.git"
 
-auto_version = "refs/tags/v0.0.227"
+auto_version = "refs/tags/v0.0.308"
 version = VersionNumber(split(auto_version, "/")[end])
 
-llvm_versions = [v"15.0.7", v"16.0.6", v"18.1.7", v"20.1.8"]
+llvm_versions = [v"15.0.7", v"16.0.6", v"18.1.7", v"20.1.8", v"23.1.4"]
 
 # Collection of sources required to build attr
 sources = [
-    GitSource(repo, "6c20ffc94c5abff04831f22caf46fe1b25c069be"),
+    GitSource(repo, "562c47b49c7abd52f9256115aa6ebc0d0ef9005f"),
 ]
 
 # These are the platforms we will build for by default, unless further
@@ -47,6 +47,7 @@ install_license LICENSE
 # 1. Build HOST
 NATIVE_CMAKE_FLAGS=()
 NATIVE_CMAKE_FLAGS+=(-DENZYME_CLANG=ON)
+NATIVE_CMAKE_FLAGS+=(-DENZYME_ENABLE_BENCHMARKS=OFF)
 NATIVE_CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=RelWithDebInfo)
 NATIVE_CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=OFF)
 # Install things into $host_prefix
@@ -92,6 +93,8 @@ CMAKE_FLAGS+=(-DBC_LOAD_HEADER=`pwd`/build-native/BCLoad/gsl/blas_headers.h)
 CMAKE_FLAGS+=(-DEnzyme_TABLEGEN=`pwd`/build-native/tools/enzyme-tblgen/enzyme-tblgen)
 CMAKE_FLAGS+=(-DEnzyme_TABLEGEN_EXE=`pwd`/build-native/tools/enzyme-tblgen/enzyme-tblgen)
 CMAKE_FLAGS+=(-DENZYME_CLANG=OFF)
+CMAKE_FLAGS+=(-DENZYME_ENABLE_BENCHMARKS=OFF)
+
 # RelWithDebInfo for decent performance, with debugability
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=RelWithDebInfo)
 # Install things into $prefix
@@ -111,14 +114,18 @@ CMAKE_FLAGS+=(-DLLVM_LINK_LLVM_DYLIB=ON)
 CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
 
 if [[ "${bb_full_target}" == x86_64-apple-darwin* && "${LLVM_MAJ_VER}" -ge "15" ]]; then
-if [[ "${target}" == x86_64-apple* ]]; then
-  CMAKE_FLAGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.14)
-fi
+    if [[ "${target}" == x86_64-apple* ]]; then
+        CMAKE_FLAGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.14)
+        CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-L${libdir}")
+        CMAKE_FLAGS+=(-DCMAKE_SHARED_LINKER_FLAGS="-L${libdir}")
+        CMAKE_FLAGS+=(-DCMAKE_MODULE_LINKER_FLAGS="-L${libdir}")
+    fi
 else
-if [[ "${target}" == x86_64-apple* ]]; then
-  CMAKE_FLAGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.12)
+    if [[ "${target}" == x86_64-apple* ]]; then
+        CMAKE_FLAGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.12)
+    fi
 fi
-fi
+
 if [[ "${target}" == *mingw* ]]; then
     CMAKE_FLAGS+=(-DCMAKE_CPP_FLAGS=-pthread)
     CMAKE_FLAGS+=(-DCMAKE_C_FLAGS=-pthread)
@@ -144,9 +151,6 @@ augment_platform_block = """
 # determine exactly which tarballs we should build
 builds = []
 for llvm_version in llvm_versions, llvm_assertions in (false, true)
-    if llvm_version == v"11.0.1" && llvm_assertions
-        continue # Does not have Clang available
-    end
     # Dependencies that must be installed before this package can be built
     llvm_name = llvm_assertions ? "LLVM_full_assert_jll" : "LLVM_full_jll"
     dependencies = [
@@ -157,6 +161,9 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
     # enzyme-tblgen
     if llvm_version >= v"20"
         push!(dependencies, HostBuildDependency("Zstd_jll")) # for debuginfo
+        # libLLVM is linked against libzstd; make it available on the target too
+        # so the plugins can resolve it at link time.
+        push!(dependencies, BuildDependency("Zstd_jll"))
     end
 
     # The products that we will ensure are always built

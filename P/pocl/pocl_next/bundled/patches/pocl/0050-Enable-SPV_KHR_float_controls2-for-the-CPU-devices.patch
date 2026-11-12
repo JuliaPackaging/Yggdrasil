@@ -1,0 +1,63 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Valentin Churavy <v.churavy@gmail.com>
+Date: Sun, 11 Oct 2026 10:07:45 +0200
+Subject: [PATCH] Enable SPV_KHR_float_controls2 for the CPU devices
+
+SPV_KHR_float_controls2 lets SPIR-V carry per-instruction fast-math flags
+that the base FPFastMathMode cannot express, in particular AllowContract.
+Without it, producers such as LLVM's SPIR-V back-end have to drop the
+`contract` flag (e.g. from Julia's `muladd`), so the CPU devices never
+fuse the multiply and add into an FMA.
+
+The SPIR-V reader rejects modules using extensions that are not enabled
+with --spirv-ext, so enable it for the CPU devices with LLVM 23, whose
+translator reads it (mapping AllowContract to `contract`), and report it
+and the FloatControls2 capability through CL_DEVICE_SPIRV_EXTENSIONS_KHR
+and CL_DEVICE_SPIRV_CAPABILITIES_KHR.
+
+Assisted-by: Claude Code (Opus 5.5)
+(cherry picked from commit 03a6fbccdad077b1ba9e3bacf597b35347e64b86;
+without its regression test, whose SPIR-V input is a binary file)
+---
+ CMakeLists.txt                  | 6 ++++++
+ lib/CL/devices/spirv_queries.cc | 7 +++++++
+ 2 files changed, 13 insertions(+)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 3f95d9bdf..887437a89 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1937,6 +1937,12 @@ endif()
+ if(HOST_DEVICE_EXTENSIONS MATCHES "cl_intel_subgroups")
+   set(HOST_DEVICE_SPV_EXTENSIONS "${HOST_DEVICE_SPV_EXTENSIONS},+SPV_INTEL_subgroups")
+ endif()
++# SPV_KHR_float_controls2 carries per-instruction fast-math flags, such as
++# AllowContract, that the base FPFastMathMode cannot express. The translator
++# reads it since version 23.
++if(LLVM_VERSION_MAJOR GREATER_EQUAL 23)
++  set(HOST_DEVICE_SPV_EXTENSIONS "${HOST_DEVICE_SPV_EXTENSIONS},+SPV_KHR_float_controls2")
++endif()
+ 
+ # don't include cl_khr_int64 in HOST_DEVICE_EXTENSIONS list, because
+ # such extension doesn't exist in official extension list
+diff --git a/lib/CL/devices/spirv_queries.cc b/lib/CL/devices/spirv_queries.cc
+index 8765f0dc7..428d9fedc 100644
+--- a/lib/CL/devices/spirv_queries.cc
++++ b/lib/CL/devices/spirv_queries.cc
+@@ -254,6 +254,13 @@ void pocl_setup_spirv_queries(cl_device_id dev) {
+         static_cast<cl_uint>(spv::Capability::BFloat16TypeKHR));
+   }
+ 
++  if (dev->supported_spirv_extensions &&
++      strstr(dev->supported_spirv_extensions, "SPV_KHR_float_controls2")) {
++    SpirvExtensions.push_back("SPV_KHR_float_controls2");
++    SpirvCapabilities.push_back(
++        static_cast<cl_uint>(spv::Capability::FloatControls2));
++  }
++
+   if (strstr(dev->extensions, "cl_intel_spirv_subgroups")) {
+     SpirvExtensions.push_back("SPV_INTEL_subgroups");
+     SpirvCapabilities.push_back(
+-- 
+2.56.0
+

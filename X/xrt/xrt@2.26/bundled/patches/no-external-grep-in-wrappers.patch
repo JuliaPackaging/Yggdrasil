@@ -1,0 +1,85 @@
+diff -ruN A/src/runtime_src/core/tools/xbmgmt2/xbmgmt B/src/runtime_src/core/tools/xbmgmt2/xbmgmt
+--- A/src/runtime_src/core/tools/xbmgmt2/xbmgmt	2026-07-25 12:37:45.236267218 +0000
++++ B/src/runtime_src/core/tools/xbmgmt2/xbmgmt	2026-07-25 12:37:45.746548546 +0000
+@@ -8,11 +8,13 @@
+ #
+ 
+ # -- Detect a Windows environment and automatically switch to the .bat file
+-if [ "$(uname | grep -E '^(windows32|CYGWIN)')" ]; then
+-    trap "" INT
+-    "$0.bat" "$@"
+-    exit $?
+-fi
++case "$(uname)" in
++    windows32*|CYGWIN*)
++        trap "" INT
++        "$0.bat" "$@"
++        exit $?
++        ;;
++esac
+ 
+ # Working variables
+ XRT_PROG=xbmgmt
+diff -ruN A/src/runtime_src/core/tools/xbutil2/xrt-smi B/src/runtime_src/core/tools/xbutil2/xrt-smi
+--- A/src/runtime_src/core/tools/xbutil2/xrt-smi	2026-07-25 12:37:45.440442327 +0000
++++ B/src/runtime_src/core/tools/xbutil2/xrt-smi	2026-07-25 12:37:45.746670817 +0000
+@@ -7,11 +7,13 @@
+ #
+ 
+ # -- Detect a Windows environment and automatically switch to the .bat file
+-if [ "$(uname | grep -E '^(windows32|CYGWIN)')" ]; then
+-    trap "" INT
+-    "$0.bat" "$@"
+-    exit $?
+-fi
++case "$(uname)" in
++    windows32*|CYGWIN*)
++        trap "" INT
++        "$0.bat" "$@"
++        exit $?
++        ;;
++esac
+ 
+ # Working variables
+ XRT_PROG=xrt-smi
+diff -ruN A/src/runtime_src/tools/scripts/loader B/src/runtime_src/tools/scripts/loader
+--- A/src/runtime_src/tools/scripts/loader	2026-07-25 12:37:45.731944243 +0000
++++ B/src/runtime_src/tools/scripts/loader	2026-07-25 12:37:45.746780152 +0000
+@@ -57,7 +57,14 @@
+ esac
+ 
+ # Reset LD_LIBRARY_PATH to avoid Vitis/Vivado libs
+-LD_LIBRARY_PATH=$XILINX_XRT/lib:$(echo $LD_LIBRARY_PATH | tr ':' '\n' | grep -E -v "/(Vitis|Vivado).*/(lnx|lin)" | tr '\n' ':')
++LD_LIBRARY_PATH=$XILINX_XRT/lib:$(
++    echo $LD_LIBRARY_PATH | tr ':' '\n' | while IFS= read -r d; do
++        case "$d" in
++            */Vitis*/lnx*|*/Vitis*/lin*|*/Vivado*/lnx*|*/Vivado*/lin*) ;;
++            *) printf '%s\n' "$d" ;;
++        esac
++    done | tr '\n' ':'
++)
+ 
+ # -- Execute the wrapped program
+ # Use "eval" since we collected args as a string
+diff -ruN A/src/runtime_src/tools/xclbinutil/xclbinutil B/src/runtime_src/tools/xclbinutil/xclbinutil
+--- A/src/runtime_src/tools/xclbinutil/xclbinutil	2026-07-25 12:37:45.657184711 +0000
++++ B/src/runtime_src/tools/xclbinutil/xclbinutil	2026-07-25 12:37:45.746728094 +0000
+@@ -3,11 +3,13 @@
+ # Copyright (C) 2022-2025 Advanced Micro Devices, Inc. All rights reserved.
+ 
+ # -- Detect a Windows environment and automatically switch to the .bat file
+-if [ "$(uname | grep -E '^(windows32|CYGWIN)')" ]; then
+-  trap "" INT
+-  "$0.bat" "$@"
+-  exit $?
+-fi
++case "$(uname)" in
++  windows32*|CYGWIN*)
++    trap "" INT
++    "$0.bat" "$@"
++    exit $?
++    ;;
++esac
+ 
+ # Working variables
+ XRT_PROG=xclbinutil

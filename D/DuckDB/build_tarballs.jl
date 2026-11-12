@@ -2,12 +2,14 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+include("../../platforms/macos_sdks.jl")
+
 name = "DuckDB"
-version = v"1.4.2"
+version = v"2.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/duckdb/duckdb.git", "68d7555f68bd25c1a251ccca2e6338949c33986a"),
+    GitSource("https://github.com/duckdb/duckdb.git", "d54cbbe3df17e8e5ce68312f483b4155836112aa"),
 ]
 
 # Bash recipe for building across all platforms
@@ -35,6 +37,7 @@ fi
 
 echo "Compiling for DuckDB Target - $DUCKDB_TARGET"
 
+# OPTIMIZATION_PROFILE=NONE: the default CLI profile forces -march flags, which BinaryBuilder's compiler wrappers reject
 cmake -B build \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -42,8 +45,7 @@ cmake -B build \
       -DENABLE_SANITIZER=FALSE \
       -DBUILD_EXTENSIONS='parquet;json' \
       -DSKIP_EXTENSIONS=jemalloc \
-      -DENABLE_EXTENSION_AUTOLOADING=1 \
-      -DENABLE_EXTENSION_AUTOINSTALL=1 \
+      -DDUCKDB_OPTIMIZATION_PROFILE=NONE \
       -DBUILD_UNITTESTS=FALSE \
       -DBUILD_SHELL=TRUE \
       -DDUCKDB_EXPLICIT_PLATFORM=${DUCKDB_TARGET}
@@ -74,5 +76,11 @@ products = [
 dependencies = Dependency[
 ]
 
+# The default macOS 10.12 SDK (and even 10.15) has a libc++ that doesn't provide
+# std::hash for enum types (LWG 2148). Use SDK 14.0 which definitely includes it.
+# DuckDB itself targets macOS 11.0, so we set that as the deployment target.
+sources, script = require_macos_sdk("14.0", sources, script; deployment_target="11.0")
+
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"6.1.0", julia_compat="1.6")
+# DuckDB >= 2.0 requires C++17; GCC 8 fails on its reference_wrapper set lookups, and 11 is the oldest toolchain verified to build it (9/10 untested).
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"11", julia_compat="1.6")

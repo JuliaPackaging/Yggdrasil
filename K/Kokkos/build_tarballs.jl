@@ -6,12 +6,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "Kokkos"
-version_string = "4.3.1"
+version_string = "4.7.4"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/kokkos/kokkos.git", "6ecdf605e0f7639adec599d25cf0e206d7b8f9f5"),
+    GitSource("https://github.com/kokkos/kokkos.git", "82799e4577568f9666bde36265ac15d78da3e6c8"),
 ]
 
 # Bash recipe for building across all platforms
@@ -44,6 +44,7 @@ filter!(p -> nbits(p) != 32, platforms)
 
 # The products that we will ensure are always built
 products = [
+    LibraryProduct("libkokkosalgorithms", :libkokkosalgorithms),
     LibraryProduct("libkokkoscore", :libkokkoscore),
     LibraryProduct("libkokkoscontainers", :libkokkoscontainers),
     LibraryProduct("libkokkossimd", :libkokkossimd)
@@ -58,4 +59,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"9")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"9")

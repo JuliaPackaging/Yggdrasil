@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Fontconfig"
-version = v"2.17.1"
+version = v"2.18.3"
 
 # Collection of sources required to build FriBidi
 sources = [
     ArchiveSource("https://gitlab.freedesktop.org/api/v4/projects/890/packages/generic/fontconfig/$(version)/fontconfig-$(version).tar.xz",
-                  "9f5cae93f4fffc1fbc05ae99cdfc708cd60dfd6612ffc0512827025c026fa541"),
+                  "4f7b554a38cdf78c033f666c8871f3749e14a094f65a07f630c91ed0b43d35e3"),
     DirectorySource("bundled"),
 ]
 
@@ -32,8 +32,22 @@ fi
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0002-fix-mkdir.mingw.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0004-fix-mkdtemp.mingw.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0005-fix-setenv.mingw.patch"
+
+# The Autotools build of 2.18.x was not kept in sync with the Meson build:
+# `configure.ac` is missing the `xlocale.h` check that `src/fcint.h` needs for
+# `locale_t` and the `LC_*_MASK` constants on macOS and FreeBSD, it is missing
+# the `_vsnprintf_l` check that keeps Windows out of the `FcLocaleSetCurrent`
+# code path, and the `Makefile.am`s never picked up `fcconffile.c`/`fc-genconf`.
+# Reported as <https://gitlab.freedesktop.org/fontconfig/fontconfig/-/work_items/561>
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0006-configure-check-xlocale.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0007-configure-check-vsnprintf_l.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0008-build-fcconffile-and-fc-genconf.patch"
+
 autoreconf
-./configure --prefix=$prefix --build=${MACHTYPE} --host=$target --disable-docs "${FLAGS[@]}"
+# The `va_copy` check in `m4/va_copy.m4` uses `AC_RUN_IFELSE` without a
+# cross-compiling fallback, so preseed its cache variable: all our compilers
+# provide the C99 `va_copy` macro.
+./configure --prefix=$prefix --build=${MACHTYPE} --host=$target --disable-docs "${FLAGS[@]}" ac_cv_va_copy=C99
 
 # Disable tests
 sed -i 's,all-am: Makefile $(PROGRAMS),all-am:,' test/Makefile
@@ -52,6 +66,7 @@ products = [
     ExecutableProduct("fc-cache", :fc_cache),
     ExecutableProduct("fc-cat", :fc_cat),
     ExecutableProduct("fc-conflist", :fc_conflist),
+    ExecutableProduct("fc-genconf", :fc_genconf),
     ExecutableProduct("fc-list", :fc_list),
     ExecutableProduct("fc-match", :fc_match),
     ExecutableProduct("fc-pattern", :fc_pattern),

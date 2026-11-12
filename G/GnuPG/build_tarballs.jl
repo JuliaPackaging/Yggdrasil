@@ -3,18 +3,20 @@
 using BinaryBuilder
 
 name = "GnuPG"
-version = v"2.4.8"
+version = v"2.5.24"
 
 # Collection of sources required to build libgcrypt
 sources = [
     ArchiveSource("https://gnupg.org/ftp/gcrypt/gnupg/gnupg-$(version).tar.bz2",
-                  "b58c80d79b04d3243ff49c1c3fc6b5f83138eb3784689563bcdd060595318616"),
+                  "bf149d01a2b9fcc0e4589b8ae8697d3d5c557ea48ed95a3fa55dd3b1187e6039"),
     DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/gnupg-*
+# `time_t` is used without including <time.h>
+atomic_patch -p1 ../patches/time_t.patch
 # Use Windows LDAP
 FLAGS=(LDAPLIBS="-lwldap32")
 if [[ "${target}" == *86*-linux-gnu ]]; then
@@ -36,8 +38,6 @@ make install
 # platforms are passed in on the command line.  We are manually disabling
 # many platforms that do not seem to work.
 platforms = supported_platforms()
-# Missing dependencies
-filter!(p -> arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -63,18 +63,18 @@ dependencies = [
     HostBuildDependency("Libgpg_error_jll"),
     # We need this to run a host msgfmt executable
     HostBuildDependency("Gettext_jll"),
-    Dependency("OpenSSL_jll"; compat="3.0.15"),
-    Dependency("Libksba_jll"),
-    Dependency("Libgcrypt_jll"),
-    Dependency("Libgpg_error_jll"; compat="1.51.0"),
-    Dependency("nPth_jll"),
+    Dependency("OpenSSL_jll"; compat="3.0.16"),
+    Dependency("Libksba_jll"; compat="1.6.8"),
+    Dependency("Libgcrypt_jll"; compat="1.12.0"),
+    Dependency("Libgpg_error_jll"; compat="1.58"),
+    Dependency("nPth_jll"; compat="1.8.1"),
     Dependency("Zlib_jll"),
-    Dependency("Libassuan_jll"),
+    Dependency("Libassuan_jll"; compat="3.0.2"),
     Dependency("OpenLDAPClient_jll"),
-    Dependency("Bzip2_jll"; compat="1.0.8"),
-    Dependency("SQLite_jll"),
+    Dependency("Bzip2_jll"; compat="1.0.9"),
+    Dependency("SQLite_jll"; compat="3.54.0"),
     Dependency("libusb_jll"),
-    Dependency("Nettle_jll"; compat="~3.10.0"),
+    Dependency("Nettle_jll"; compat="~3.10.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

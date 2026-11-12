@@ -55,6 +55,8 @@ components:
   C/cupynumeric/:
     - ejmeitz
     - krasow
+  E/ECOS/:
+    - odow
   E/EinsteinToolkit/:
     - eschnett
   F/f4ncgb/:
@@ -154,6 +156,8 @@ components:
   M/MKL_Headers/:
     - amontoison
     - imciner2
+  M/MPIABI/:
+    - eschnett
   M/MPICH/:
     - eschnett
   M/MPItrampoline/:
@@ -237,6 +241,10 @@ components:
   R/ReferenceBLAS/:
     - amontoison
     - imciner2
+  R/ROOT/:
+    - grasph
+  R/ROOT_julia/:
+    - grasph
   S/SCALAPACK/:
     - amontoison
   S/SCALAPACK32/:
@@ -284,5 +292,7 @@ components:
     - amontoison
   V/very_nauty/:
     - Krastanov
+  W/WrapIt/:
+    - grasph
   Z/zrl:
     - StefanKarpinski

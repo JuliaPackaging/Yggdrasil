@@ -1,8 +1,7 @@
 diff --git a/libmariadb/secure/ma_schannel.h b/libmariadb/secure/ma_schannel.h
-index af7fc60..a477d8c 100644
 --- a/libmariadb/secure/ma_schannel.h
 +++ b/libmariadb/secure/ma_schannel.h
-@@ -46,6 +46,52 @@
+@@ -53,6 +53,56 @@
  
  #include <ma_pthread.h>
  
@@ -19,6 +18,11 @@ index af7fc60..a477d8c 100644
 +#define SP_PROT_TLS1_2_CLIENT 0x00000800
 +#endif
 +
++/* TLS 1.3 support added in MariaDB 3.4.x */
++#ifndef SP_PROT_TLS1_3_CLIENT
++#define SP_PROT_TLS1_3_CLIENT 0x00002000
++#endif
++
 +#ifndef SECBUFFER_ALERT
 +#define SECBUFFER_ALERT 0x11
 +#endif
@@ -29,8 +33,6 @@ index af7fc60..a477d8c 100644
 +
 +#ifndef SECPKG_ATTR_CIPHER_INFO
 +#define SECPKG_ATTR_CIPHER_INFO 0x00000064L
-+#endif
-+
 +#define SZ_ALG_MAX_SIZE 64
 +/* https://docs.microsoft.com/en-us/windows/win32/api/schannel/ns-schannel-secpkgcontext_cipherinfo */
 +typedef struct _SecPkgContext_CipherInfo {
@@ -50,11 +52,9 @@ index af7fc60..a477d8c 100644
 +  WCHAR szCertificate[SZ_ALG_MAX_SIZE];
 +  DWORD dwKeyType;
 +} SecPkgContext_CipherInfo, *PSecPkgContext_CipherInfo;
++#endif
 +/* End of definition of missing macros */
 +
  struct st_DER {
    char* der_buffer;
    DWORD der_length;
--- 
-2.20.2
-

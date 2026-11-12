@@ -1,0 +1,120 @@
+Split PHIs of with.overflow results before erasing the intrinsic (oneAPI.jl#691).
+Not reported upstream yet; see https://github.com/JuliaGPU/oneAPI.jl/issues/691
+
+diff --git intel-graphics-compiler/IGC/Compiler/LegalizationPass.cpp intel-graphics-compiler/IGC/Compiler/LegalizationPass.cpp
+index 1d3e2711f..119a5428b 100644
+--- intel-graphics-compiler/IGC/Compiler/LegalizationPass.cpp
++++ intel-graphics-compiler/IGC/Compiler/LegalizationPass.cpp
+@@ -1677,6 +1677,60 @@ void Legalization::visitAlloca(AllocaInst &I) {
+   }
+ }
+ 
++// Replace a PHI of an aggregate by one PHI per element. The incoming values become extracts
++// at the end of the incoming blocks, and the PHI's extract users are redirected to the element
++// PHIs. Other users (another PHI, a select) get the aggregate rebuilt from the element PHIs.
++void Legalization::splitAggregatePHI(PHINode &phi) {
++  StructType *STy = dyn_cast<StructType>(phi.getType());
++  if (!STy)
++    return;
++  const unsigned numElements = STy->getNumElements();
++  const unsigned numIncoming = phi.getNumIncomingValues();
++
++  SmallVector<PHINode *, 2> elementPHIs;
++  for (unsigned i = 0; i < numElements; ++i) {
++    PHINode *elementPHI = PHINode::Create(STy->getElementType(i), numIncoming, "", IGCLLVM::insertPosition(&phi));
++    elementPHI->setDebugLoc(phi.getDebugLoc());
++    for (unsigned j = 0; j < numIncoming; ++j) {
++      BasicBlock *incomingBB = phi.getIncomingBlock(j);
++      IGCLLVM::IRBuilder<> builder(incomingBB->getTerminator());
++      elementPHI->addIncoming(builder.CreateExtractValue(phi.getIncomingValue(j), i), incomingBB);
++    }
++    elementPHIs.push_back(elementPHI);
++  }
++
++  Value *aggregate = nullptr;
++  SmallVector<User *, 4> users(phi.user_begin(), phi.user_end());
++  for (User *U : users) {
++    if (auto *extract = dyn_cast<ExtractValueInst>(U)) {
++      if (extract->getNumIndices() == 1) {
++        extract->replaceAllUsesWith(elementPHIs[extract->getIndices()[0]]);
++        m_instructionsToRemove.insert(extract);
++        continue;
++      }
++    }
++    if (!aggregate) {
++      Instruction *insertPt = IGCLLVM::getFirstNonPHI(phi.getParent());
++      aggregate = UndefValue::get(STy);
++      for (unsigned i = 0; i < numElements; ++i)
++        aggregate = InsertValueInst::Create(aggregate, elementPHIs[i], {i}, "", IGCLLVM::insertPosition(insertPt));
++    }
++    U->replaceUsesOfWith(&phi, aggregate);
++  }
++
++  // The PHI is erased at the end of the pass together with its extracts, which still refer to
++  // it. Drop its incoming values now so that visiting another of its incoming intrinsics does
++  // not split (and queue for removal) the same PHI again.
++  for (unsigned j = 0; j < numIncoming; ++j)
++    phi.setIncomingValue(j, UndefValue::get(STy));
++  m_instructionsToRemove.insert(&phi);
++
++  // PHIs of i1 are not legal; the visitor will not come back to blocks it has already
++  // passed, so legalize the new element PHIs here.
++  for (PHINode *elementPHI : elementPHIs)
++    visitPHINode(*elementPHI);
++}
++
+ void Legalization::visitIntrinsicInst(llvm::IntrinsicInst &I) {
+   m_ctx->m_instrTypes.numInsts++;
+   IGCLLVM::IRBuilder<> Builder(&I);
+@@ -1898,11 +1952,35 @@ void Legalization::visitIntrinsicInst(llvm::IntrinsicInst &I) {
+ 
+     // llvm.x.with.overflow returns a struct, where the first element is the operation result,
+     // and the second is the overflow flag.
+-    // Replace each extract with the correct instruction.
+-    for (auto U = I.user_begin(), EU = I.user_end(); U != EU; ++U) {
+-      ExtractValueInst *extract = dyn_cast<ExtractValueInst>(*U);
++    //
++    // The users are normally extracts, but InstCombine sinks extracts through PHI nodes
++    // (foldPHIArgExtractValueInstructionIntoPHI), leaving a PHI of the struct whose incoming
++    // values are the intrinsics. Split such PHIs into one PHI per element first; this turns
++    // their uses of the intrinsic into extracts, which are handled below. Extracts this adds
++    // on intrinsics that have not been visited yet are legalized when those are visited.
++    SmallVector<PHINode *, 2> aggregatePHIs;
++    for (auto U : I.users()) {
++      if (auto *phi = dyn_cast<PHINode>(U))
++        aggregatePHIs.push_back(phi);
++    }
++    for (PHINode *phi : aggregatePHIs)
++      splitAggregatePHI(*phi);
++
++    // Replace each extract with the correct instruction. Any other user keeps referencing the
++    // intrinsic, which is erased below, so give it a materialized struct instead.
++    Value *aggregate = nullptr;
++    SmallVector<User *, 4> users(I.user_begin(), I.user_end());
++    for (User *U : users) {
++      ExtractValueInst *extract = dyn_cast<ExtractValueInst>(U);
+       if (!extract) {
+-        IGC_ASSERT_MESSAGE(0, "Did not expect anything but an extract after uadd_with_overflow");
++        if (!aggregate) {
++          res->setDebugLoc(I.getDebugLoc());
++          isOverflow->setDebugLoc(I.getDebugLoc());
++          Instruction *insertPt = I.getNextNode();
++          aggregate = InsertValueInst::Create(UndefValue::get(I.getType()), res, {0}, "", IGCLLVM::insertPosition(insertPt));
++          aggregate = InsertValueInst::Create(aggregate, isOverflow, {1}, "", IGCLLVM::insertPosition(insertPt));
++        }
++        U->replaceUsesOfWith(&I, aggregate);
+         continue;
+       }
+ 
+diff --git intel-graphics-compiler/IGC/Compiler/LegalizationPass.hpp intel-graphics-compiler/IGC/Compiler/LegalizationPass.hpp
+index 3240fea4d..2c4356b16 100644
+--- intel-graphics-compiler/IGC/Compiler/LegalizationPass.hpp
++++ intel-graphics-compiler/IGC/Compiler/LegalizationPass.hpp
+@@ -77,6 +77,7 @@ public:
+   void visitLoadInst(llvm::LoadInst &I);
+   void visitAlloca(llvm::AllocaInst &I);
+   void visitIntrinsicInst(llvm::IntrinsicInst &I);
++  void splitAggregatePHI(llvm::PHINode &phi);
+   void visitBitCastInst(llvm::BitCastInst &I);
+   void visitBasicBlock(llvm::BasicBlock &BB);
+   void visitTruncInst(llvm::TruncInst &);

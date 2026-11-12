@@ -6,20 +6,17 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "XRootD"
-version = v"5.8.4"
+version = v"5.9.1"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/xrootd/xrootd/releases/download/v$(version)/xrootd-$(version).tar.gz", 
-                  "d8716bf764a7e8103aab83fbf4906ea2cc157646b1a633d99f91edbf204ff632"),
-    DirectorySource("./bundled")
+                  "39946509a50e790ab3fcc77ba0f4c9b66abef221262756aa8bb2494f00a0e321"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-
-atomic_patch -p0 patches/compilation-fixes.patch
 
 mkdir build && cd build
 install_license ../xrootd-*/LICENSE
@@ -117,3 +114,4 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                preferred_gcc_version=v"9", julia_compat="1.6")
+

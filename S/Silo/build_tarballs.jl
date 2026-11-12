@@ -6,22 +6,25 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "Silo"
-version = v"4.11.1"
+version = v"4.12.1"
+ygg_version = v"4.12.3"         # we bumped the version to build against the new MPIABI
+
 sources = [
-    # ArchiveSource("https://github.com/LLNL/Silo/releases/download/$(version)/silo-$(version)-bsd-smalltest.tar.xz",
-    #               "be05f205180c62443b6f203a48b4e31ed1a3a856bef7bde8e62beb3b6e31ceea"),
-    # This isn't quite 4.11.1, it's a few commits later so that we can have `CMakeLists.txt`
-    GitSource("https://github.com/LLNL/Silo", "c2414603797c24afb14e9c932707c290003a4bc8"),
+    ArchiveSource("https://github.com/LLNL/Silo/releases/download/$(version)/Silo-$(version).tar.xz",
+                  "9fdf81303b8dc7fab941e365f4156fe48d0bb036cdfdcb59a7c2d218771576b6"),
     DirectorySource("bundled"),
 ]
 
 script = raw"""
-cd ${WORKSPACE}/srcdir/Silo
+cd ${WORKSPACE}/srcdir/Silo*
+
+# Correct Windows support
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/windows.patch
 
 # Do not run target exectutables at build time
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pdb_detect.patch
 
-# We cannot enable hzip nor fpzip because these are not BSD licenced
+# We cannot enable hzip nor fpzip because these are not BSD licensed
 cmake_options=(
     -DCMAKE_INSTALL_PREFIX=${prefix}
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
@@ -30,12 +33,13 @@ cmake_options=(
     -DSILO_ENABLE_BROWSER=OFF
     -DSILO_ENABLE_FORTRAN=OFF
     -DSILO_ENABLE_HDF5=ON
-    -DSILO_ENABLE_JSON=ON
+    -DSILO_ENABLE_JSON=OFF
     -DSILO_ENABLE_PYTHON_MODULE=OFF
     -DSILO_ENABLE_SHARED=ON
     -DSILO_ENABLE_SILEX=OFF
     -DSILO_ENABLE_SILOCK=ON
     -DSILO_ENABLE_TESTS=OFF
+    -DSILO_HDF5_SZIP_DIR=${prefix}
 )
 
 cmake -Bbuild ${cmake_options[@]}
@@ -57,22 +61,18 @@ augment_platform_block = """
     using Base.BinaryPlatforms
     $(MPI.augment)
     augment_platform!(platform::Platform) = augment_mpi!(platform)
-"""
+    """
 
 platforms = expand_cxxstring_abis(supported_platforms())
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
-# szip support is broken for Windows, and we need szip support for HDF5
-filter!(!Sys.iswindows, platforms)
-
 products = [
-    LibraryProduct("libsiloh5", :libsilo),
+    LibraryProduct(["libsiloh5", "libsilo"], :libsilo),
 ]
 
 dependencies = [
-    Dependency("HDF5_jll"; compat="~1.14.6"),
+    Dependency("HDF5_jll"; compat="2.2.1"),
     Dependency("Zlib_jll"; compat="1.2.12"),
-    Dependency("libaec_jll"; compat="1.1.4"), # This is the successor of szlib
 ]
 append!(dependencies, platform_dependencies)
 
@@ -80,5 +80,6 @@ append!(dependencies, platform_dependencies)
 # (MPItrampoline will skip its automatic initialization.)
 ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"5")
+# We need to use at least GCC 8 to ensure that we get at least libgfortran5, which we need for HDF5.
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+               augment_platform_block, julia_compat="1.10", preferred_gcc_version=v"8")

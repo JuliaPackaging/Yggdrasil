@@ -2,19 +2,69 @@
 # Fail on error
 set -e
 
-export JULIA_PROJECT="${BUILDKITE_BUILD_CHECKOUT_PATH}/.ci"
+SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+YGGDRASIL_BASE="$(dirname "${SCRIPT_DIR}")"
+export JULIA_PROJECT="${JULIA_PROJECT:-${YGGDRASIL_BASE}/${JULIA_PROJECT_RELATIVE:-/foo}}"
+
+# Early-exit if someone is blindly running this manually
+if [[ ! -d "${JULIA_PROJECT:-}" ]]; then
+    echo "ERROR: Must set JULIA_PROJECT to one of:" >&2
+    echo "  - ${YGGDRASIL_BASE}/.ci/bb1_project" >&2
+    echo "  - ${YGGDRASIL_BASE}/.ci/bb2_project" >&2
+    echo "Current value: '${JULIA_PROJECT:-}'" >&2
+    exit 1
+fi
+
+# Only publish the artifacts of the build that triggered this one. The triggering build
+# chooses BUILD_ID, whereas Buildkite sets BUILDKITE_TRIGGERED_FROM_BUILD_ID itself.
+if [[ -z "${BUILD_ID:-}" || "${BUILD_ID}" != "${BUILDKITE_TRIGGERED_FROM_BUILD_ID:-}" ]]; then
+    echo "ERROR: BUILD_ID '${BUILD_ID:-}' is not the triggering build '${BUILDKITE_TRIGGERED_FROM_BUILD_ID:-}'" >&2
+    exit 1
+fi
 
 echo "--- Setup Julia packages"
-GITHUB_TOKEN="" julia --color=yes -e 'import Pkg; Pkg.instantiate(); Pkg.precompile()'
+GITHUB_TOKEN="" REGISTRY_GITHUB_TOKEN="" julia --color=yes -e 'import Pkg; Pkg.instantiate(); Pkg.precompile()'
 
-cd "${PROJECT}"
-echo "--- Generating meta.json..."
-GITHUB_TOKEN="" julia --compile=min ./build_tarballs.jl --meta-json=${NAME}.meta.json
+if [[ -z "${PROJECT:-}" ]] && [[ -z "${PROJECTS:-}" ]]; then
+    echo "ERROR: PROJECT (BB1) or PROJECTS (BB2) must be set" >&2
+    exit 1
+fi
 
+# LibGit2 (used by `push_jll_package`) only reads the commit identity from git config, not env vars
 echo "--- Setting up git"
 git config --global user.name "jlbuild"
 git config --global user.email "juliabuildbot@gmail.com"
 
-echo "--- Registering ${NAME}..."
-julia ${BUILDKITE_BUILD_CHECKOUT_PATH}/.ci/register_package.jl "${NAME}.meta.json" --verbose
+if [[ "${JULIA_PROJECT}" == *"/bb2_project"* ]]; then
+    # `PROJECTS` lists every project that builds this package, lowest version first
+    read -r -a PROJECT_LIST <<< "${PROJECTS}"
+    echo "--- [BB2] Downloading artifacts..."
+    for PROJ in "${PROJECT_LIST[@]}"; do
+        buildkite-agent artifact download --build "${BUILD_ID}" "${PROJ}/products/*" "${YGGDRASIL_BASE}"
+    done
 
+    # BB2 takes its tokens from the `access_tokens` preference rather than the environment
+    PREFS_TOML="${JULIA_PROJECT}/LocalPreferences.toml"
+    trap 'rm -f "${PREFS_TOML}"' EXIT
+    (umask 077; cat > "${PREFS_TOML}" <<EOF
+[BinaryBuilder2.access_tokens."github.com"]
+JuliaBinaryWrappers = "${GITHUB_TOKEN}"
+
+[BinaryBuilder2.access_tokens."github.com".JuliaRegistries]
+General = "${REGISTRY_GITHUB_TOKEN}"
+EOF
+    )
+
+    echo "--- [BB2] Registering ${NAME} from ${PROJECTS}..."
+    cd "${YGGDRASIL_BASE}"
+    env -u GITHUB_TOKEN -u REGISTRY_GITHUB_TOKEN julia "${JULIA_PROJECT}/register_package.jl" "${PROJECT_LIST[@]}"
+    exit 0
+fi
+
+echo "--- [BB1] Generating meta.json..."
+cd "${PROJECT}"
+GITHUB_TOKEN="" REGISTRY_GITHUB_TOKEN="" julia --compile=min ./build_tarballs.jl --meta-json="${NAME}.meta.json"
+
+echo "--- [BB1] Registering ${NAME}..."
+# BinaryBuilder bounds concurrent tarball inspection to avoid exhausting TMPDIR.
+julia --threads 8 "${JULIA_PROJECT}/register_package.jl" "${NAME}.meta.json" --verbose

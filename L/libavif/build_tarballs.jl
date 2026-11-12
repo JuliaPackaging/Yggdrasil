@@ -3,16 +3,20 @@
 using BinaryBuilder, BinaryBuilderBase, Pkg
 
 name = "libavif"
-version = v"1.3.0"
+version = v"1.4.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/AOMediaCodec/libavif", "1aadfad932c98c069a1204261b1856f81f3bc199"),
+    GitSource("https://github.com/AOMediaCodec/libavif", "c5240fc79fe5c2407e10afd35f5505ef6333ea49"; tag="v$(version)"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libavif
+
+# We need cmake 3.22
+apk del cmake
+
 cmake -B build -G Ninja \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -37,14 +41,16 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("JpegTurbo_jll"),
+    HostBuildDependency("CMake_jll"),
+    Dependency("JpegTurbo_jll"; compat="3.2.1"),
     Dependency("XML2_jll"; compat="~2.13.6"),
-    Dependency("Zlib_jll"),
-    Dependency("dav1d_jll"),
-    Dependency("libaom_jll"),
-    Dependency("libpng_jll"),
-    Dependency("libyuv_jll"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
+    Dependency("dav1d_jll"; compat="1.5.4"),
+    Dependency("libaom_jll"; compat="3.15.3"),
+    Dependency("libpng_jll"; compat="1.6.59"),
+    Dependency("libyuv_jll"; compat="0.1.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"5")

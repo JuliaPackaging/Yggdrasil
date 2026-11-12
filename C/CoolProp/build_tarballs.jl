@@ -6,12 +6,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "CoolProp"
-version = v"7.2.0"
+version = v"8.0.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://sourceforge.net/projects/coolprop/files/CoolProp/$version/source/CoolProp_sources.zip",
-                  "2bd601b5e06b8765ab77fa121e2b0f4087b249c721ddb8745fd3e65952329689"),
+                  "e9dff309114766ad51bd91122e529d1223967130358744c33e494debe0052df4"),
 ]
 
 # Bash recipe for building across all platforms
@@ -22,6 +22,7 @@ sed -i 's/Windows/windows/' source/dev/Tickets/60.cpp
 sed -i 's/Windows/windows/' source/src/CPfilepaths.cpp
 # Do not add `-m32`/`-m64` flags
 sed -i 's/-m${BITNESS}//' source/CMakeLists.txt
+sed -i 's/.*with MSYS2 UCRT64.*//' source/CMakeLists.txt
 
 mkdir build
 cd build

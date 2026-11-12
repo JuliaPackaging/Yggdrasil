@@ -188,7 +188,7 @@ products = [
 dependencies = [
     Dependency("GMP_jll"; compat="6.2.1"),
     Dependency("MPFR_jll"),
-    Dependency("FLINT_jll"),
+    Dependency("FLINT_jll"; compat="~301.300.101"),
     Dependency("Zlib_jll"),
     Dependency("cereal_jll"),
     Dependency("armadillo_jll"),
