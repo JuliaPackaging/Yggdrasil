@@ -19,7 +19,7 @@ sources, script = require_macos_sdk("15.0", sources, script; deployment_target="
 
 build_tarballs(ARGS, name, version, sources, script,
                platforms, products, dependencies;
-               julia_compat = "1.6",
+               julia_compat = "1.10",
                # MLAS compiles individual kernels with `-march=armv8.2-a+bf16` etc. and selects
                # them at runtime, so the compiler wrappers must not reject `-march`.
                lock_microarchitecture = false,
