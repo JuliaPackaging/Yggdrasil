@@ -1,0 +1,24 @@
+feenableexcept is a glibc extension; do not use it just because the compiler defines __GNUC__ (clang on macOS, mingw).
+https://github.com/SeisSol/SeisSol (upstream PR to be opened)
+
+diff --git a/src/Main.cpp b/src/Main.cpp
+--- a/src/Main.cpp
++++ b/src/Main.cpp
+@@ -69,7 +69,7 @@
+ #include "device.h"
+ #endif
+ 
+-#if defined(__GNUC__) || defined(__linux__)
++#if defined(__GLIBC__)
+ #include <cfenv>
+ #include <fenv.h>
+ #endif
+@@ -151,7 +151,7 @@
+ 
+   if (utils::Env::get<bool>("FLOATING_POINT_EXCEPTION", false)) {
+     // Check if on a GNU system (Linux) or other platform
+-#if defined(__GNUC__) || defined(__linux__)
++#if defined(__GLIBC__)
+     feenableexcept(FE_ALL_EXCEPT & ~FE_INEXACT);
+     logInfo(rank) << "Enabling floating point exception handlers.";
+ #else

@@ -1,0 +1,485 @@
+Port to Windows and musl: skip the Linux-only thread pinning, allocate aligned memory, create directories and open files without the glibc-only *64 calls.
+https://github.com/SeisSol/SeisSol (upstream PR to be opened)
+
+diff --git a/auto_tuning/proxy/src/proxy_seissol_allocator.hpp b/auto_tuning/proxy/src/proxy_seissol_allocator.hpp
+--- a/auto_tuning/proxy/src/proxy_seissol_allocator.hpp
++++ b/auto_tuning/proxy/src/proxy_seissol_allocator.hpp
+@@ -65,6 +65,11 @@
+ #include <unordered_set>
+ #include <Parallel/Runtime/Stream.h>
+ 
++#ifdef _WIN32
++#define srand48 srand
++#define drand48() (rand() / (RAND_MAX + 1.0))
++#endif
++
+ #ifdef ACL_DEVICE
+ #include <device.h>
+ #include <unordered_set>
+diff --git a/src/Initializer/MemoryAllocator.cpp b/src/Initializer/MemoryAllocator.cpp
+--- a/src/Initializer/MemoryAllocator.cpp
++++ b/src/Initializer/MemoryAllocator.cpp
+@@ -101,10 +101,19 @@
+   if (memkind == 0) {
+ #endif
+     if (alignment % (sizeof(void*)) != 0) {
++#ifdef _WIN32
++      ptrBuffer = _aligned_malloc(size, sizeof(void*));
++#else
+       ptrBuffer = malloc(size);
++#endif
+       error = (ptrBuffer == nullptr);
+     } else {
++#ifdef _WIN32
++      ptrBuffer = _aligned_malloc(size, alignment);
++      error = (ptrBuffer == nullptr);
++#else
+       error = (posix_memalign(&ptrBuffer, alignment, size) != 0);
++#endif
+     }
+ #ifdef USE_MEMKIND
+   } else if (memkind == HighBandwidth) {
+@@ -144,7 +153,11 @@
+ #if defined(USE_MEMKIND) || defined(ACL_DEVICE)
+   if (memkind == Standard) {
+ #endif
++#ifdef _WIN32
++    _aligned_free(pointer);
++#else
+     ::free(pointer);
++#endif
+ #ifdef USE_MEMKIND
+   } else if (memkind == HighBandwidth) {
+     hbw_free(pointer);
+diff --git a/src/Initializer/Parameters/ParameterReader.cpp b/src/Initializer/Parameters/ParameterReader.cpp
+--- a/src/Initializer/Parameters/ParameterReader.cpp
++++ b/src/Initializer/Parameters/ParameterReader.cpp
+@@ -27,12 +27,12 @@
+     }();
+     // try to get the full file name (if that works)
+     if (filesystem::exists(loadFileName)) {
+-      return filesystem::canonical(loadFileName);
++      return filesystem::canonical(loadFileName).string();
+     } else if (filesystem::exists(nextPath)) {
+-      return filesystem::canonical(nextPath);
++      return filesystem::canonical(nextPath).string();
+     } else {
+       // otherwise, just return the string (TODO: or should be fail here then?)
+-      return nextPath;
++      return nextPath.string();
+     }
+   } else {
+     return {};
+diff --git a/src/Parallel/MPI.cpp b/src/Parallel/MPI.cpp
+--- a/src/Parallel/MPI.cpp
++++ b/src/Parallel/MPI.cpp
+@@ -45,7 +45,11 @@
+ #include <cstdlib>
+ #include <mpi.h>
+ #include <string>
++#ifdef _WIN32
++#include <winsock2.h>
++#else
+ #include <unistd.h>
++#endif
+ #include <utils/logger.h>
+ 
+ #ifdef ACL_DEVICE
+diff --git a/src/Parallel/Pin.cpp b/src/Parallel/Pin.cpp
+--- a/src/Parallel/Pin.cpp
++++ b/src/Parallel/Pin.cpp
+@@ -57,7 +57,7 @@
+ #include <string>
+ #include <vector>
+ 
+-#ifndef __APPLE__
++#if !defined(__APPLE__) && !defined(_WIN32)
+ #include <sys/sysinfo.h>
+ #ifdef USE_NUMA_AWARE_PINNING
+ #include "numa.h"
+@@ -109,7 +109,7 @@
+ }
+ 
+ CpuMask seissol::parallel::Pinning::computeOnlineCpuMask() {
+-#ifndef __APPLE__
++#if !defined(__APPLE__) && !defined(_WIN32)
+   CPU_ZERO(&onlineMask.set);
+   std::deque<bool> mask;
+ 
+@@ -146,7 +146,7 @@
+ }
+ 
+ void Pinning::checkEnvVariables() {
+-#ifndef __APPLE__
++#if !defined(__APPLE__) && !defined(_WIN32)
+   const auto rank = MPI::mpi.rank();
+   if (const char* envVariable = std::getenv("SEISSOL_FREE_CPUS_MASK")) {
+     auto parsedResult = seissol::IntegerMaskParser::parse(std::string(envVariable));
+@@ -192,7 +192,7 @@
+ }
+ 
+ CpuMask Pinning::getWorkerUnionMask() {
+-#ifndef __APPLE__
++#if !defined(__APPLE__) && !defined(_WIN32)
+   cpu_set_t workerUnion;
+   CPU_ZERO(&workerUnion);
+ #ifdef _OPENMP
+@@ -218,7 +218,7 @@
+ }
+ 
+ CpuMask Pinning::getFreeCPUsMask() const {
+-#ifndef __APPLE__
++#if !defined(__APPLE__) && !defined(_WIN32)
+   const auto nodeOpenMpMask = getNodeMask();
+ 
+   cpu_set_t freeMask{};
+@@ -273,7 +273,7 @@
+ }
+ 
+ bool Pinning::freeCPUsMaskEmpty(const CpuMask& mask) {
+-#ifndef __APPLE__
++#if !defined(__APPLE__) && !defined(_WIN32)
+   return CPU_COUNT(&(mask.set)) == 0;
+ #else
+   return false;
+@@ -283,7 +283,7 @@
+ CpuMask Pinning::getOnlineMask() const { return onlineMask; }
+ 
+ bool Pinning::areAllCpusOnline() {
+-#ifndef __APPLE__
++#if !defined(__APPLE__) && !defined(_WIN32)
+   return get_nprocs_conf() == get_nprocs();
+ #else
+   return true;
+@@ -292,13 +292,13 @@
+ 
+ void Pinning::pinToFreeCPUs() const {
+   auto freeMask = getFreeCPUsMask();
+-#ifndef __APPLE__
++#if !defined(__APPLE__) && !defined(_WIN32)
+   sched_setaffinity(0, sizeof(cpu_set_t), &(freeMask.set));
+ #endif // __APPLE__
+ }
+ 
+ std::string Pinning::maskToString(const CpuMask& mask) {
+-#ifndef __APPLE__
++#if !defined(__APPLE__) && !defined(_WIN32)
+   const auto& set = mask.set;
+   std::stringstream st;
+   for (int cpu = 0; cpu < get_nprocs_conf(); ++cpu) {
+@@ -319,7 +319,7 @@
+ }
+ 
+ CpuMask Pinning::getNodeMask() {
+-#ifndef __APPLE__
++#if !defined(__APPLE__) && !defined(_WIN32)
+   const auto workerMask = getWorkerUnionMask().set;
+ 
+   // We have to use this due to the insanity of std::vector<bool>
+diff --git a/src/ResultWriter/EnergyOutput.cpp b/src/ResultWriter/EnergyOutput.cpp
+--- a/src/ResultWriter/EnergyOutput.cpp
++++ b/src/ResultWriter/EnergyOutput.cpp
+@@ -683,7 +683,7 @@
+   }
+ #ifdef USE_MPI
+   const auto& comm = MPI::mpi.comm();
+-  MPI_Bcast(reinterpret_cast<void*>(&abort), 1, MPI_CXX_BOOL, 0, comm);
++  MPI_Bcast(reinterpret_cast<void*>(&abort), 1, MPI_C_BOOL, 0, comm);
+ #endif
+   if (abort) {
+     seissolInstance.simulator().abort();
+diff --git a/src/ResultWriter/ThreadsPinningWriter.cpp b/src/ResultWriter/ThreadsPinningWriter.cpp
+--- a/src/ResultWriter/ThreadsPinningWriter.cpp
++++ b/src/ResultWriter/ThreadsPinningWriter.cpp
+@@ -9,14 +9,14 @@
+ #include <sstream>
+ #include <string>
+ 
+-#ifndef __APPLE__
++#if !defined(__APPLE__) && !defined(_WIN32)
+ #include <sys/sysinfo.h>
+ #ifdef USE_NUMA_AWARE_PINNING
+ #include <numa.h>
+ #endif // USE_NUMA_AWARE_PINNING
+ #endif // __APPLE__
+ 
+-#ifndef __APPLE__
++#if !defined(__APPLE__) && !defined(_WIN32)
+ namespace {
+ 
+ using namespace seissol::parallel;
+@@ -63,7 +63,7 @@
+ #endif // __APPLE__
+ 
+ void seissol::writer::ThreadsPinningWriter::write(const seissol::parallel::Pinning& pinning) {
+-#ifndef __APPLE__
++#if !defined(__APPLE__) && !defined(_WIN32)
+   auto workerInfo = getPinningInfo(seissol::parallel::Pinning::getWorkerUnionMask().set);
+ 
+   PinningInfo commThreadInfo;
+diff --git a/src/SeisSol.cpp b/src/SeisSol.cpp
+--- a/src/SeisSol.cpp
++++ b/src/SeisSol.cpp
+@@ -44,7 +44,9 @@
+ #include <climits>
+ #include <memory>
+ #include <optional>
++#ifndef _WIN32
+ #include <sys/resource.h>
++#endif
+ #include <utils/logger.h>
+ 
+ #ifdef _OPENMP
+@@ -116,6 +118,7 @@
+   }
+ #endif // _OPENMP
+ 
++#ifndef _WIN32
+   // Check if the ulimit for the stacksize is reasonable.
+   // A low limit can lead to segmentation faults.
+   rlimit rlim{};
+@@ -143,6 +146,8 @@
+     logError() << "Stack size cannot be determined because getrlimit syscall failed!";
+   }
+ 
++#endif
++
+   // Call post MPI initialization hooks
+   seissol::Modules::callHook<ModuleHook::PostMPIInit>();
+ 
+diff --git a/src/Solver/time_stepping/MiniSeisSol.cpp b/src/Solver/time_stepping/MiniSeisSol.cpp
+--- a/src/Solver/time_stepping/MiniSeisSol.cpp
++++ b/src/Solver/time_stepping/MiniSeisSol.cpp
+@@ -48,6 +48,10 @@
+ #include "SeisSol.h"
+ #include "utils/env.h"
+ 
++#ifdef _WIN32
++#define lrand48() rand()
++#endif
++
+ #ifdef ACL_DEVICE
+ #include "Initializer/BatchRecorders/Recorders.h"
+ #include "device.h"
+diff --git a/submodules/async/async/as/Base.h b/submodules/async/async/as/Base.h
+--- a/submodules/async/async/as/Base.h
++++ b/submodules/async/async/as/Base.h
+@@ -38,8 +38,12 @@
+ #define ASYNC_AS_BASE_H
+ 
+ #include <cassert>
++#include <cerrno>
+ #include <cstdlib>
+ #include <stdint.h>
++#ifdef _WIN32
++#include <malloc.h>
++#endif
+ #include <vector>
+ 
+ #include "utils/logger.h"
+@@ -57,6 +61,30 @@
+ 
+ class MPIScheduler;
+ 
++namespace detail
++{
++inline int alignedAlloc(void** ptr, size_t alignment, size_t size)
++{
++#ifdef _WIN32
++	*ptr = _aligned_malloc(size, alignment);
++	return *ptr ? 0 : ENOMEM;
++#else
++	return posix_memalign(ptr, alignment, size);
++#endif
++}
++
++inline void bufferFree(void* ptr, size_t alignment)
++{
++#ifdef _WIN32
++	if (alignment > 0) {
++		_aligned_free(ptr);
++		return;
++	}
++#endif
++	free(ptr);
++}
++} // namespace detail
++
+ 
+ 
+ /**
+@@ -167,7 +195,7 @@
+ 		assert(id < numBuffers());
+ 
+ 		m_buffer[id].origin = 0L;
+-		free(m_buffer[id].buffer);
++		detail::bufferFree(m_buffer[id].buffer, m_alignment);
+ 		m_buffer[id].buffer = 0L;
+ 		async::ExecInfo::_removeBuffer(id);
+ 	}
+@@ -225,7 +253,7 @@
+ 		if (size && allocate) {
+ 			if (m_alignment > 0) {
+ 				const size_t allocBufferSize = allocSize(size);
+-				int ret = posix_memalign(&buffer.buffer, m_alignment, allocBufferSize);
++				int ret = detail::alignedAlloc(&buffer.buffer, m_alignment, allocBufferSize);
+ 				if (ret)
+ 					logError() << "Could not allocate buffer" << ret;
+ 			} else {
+@@ -254,8 +282,8 @@
+ 		if (size && m_buffer[id].buffer) {
+ 			if (m_alignment > 0) {
+ 				const size_t allocBufferSize = allocSize(size);
+-				free(m_buffer[id].buffer);
+-				int ret = posix_memalign(&m_buffer[id].buffer, m_alignment, allocBufferSize);
++				detail::bufferFree(m_buffer[id].buffer, m_alignment);
++				int ret = detail::alignedAlloc(&m_buffer[id].buffer, m_alignment, allocBufferSize);
+ 				if (ret)
+ 					logError() << "Could not allocate buffer" << ret;
+ 			} else {
+@@ -300,7 +328,7 @@
+ 
+ 		for (unsigned int i = 0; i < m_buffer.size(); i++) {
+ 			m_buffer[i].origin = 0L;
+-			free(m_buffer[i].buffer);
++			detail::bufferFree(m_buffer[i].buffer, m_alignment);
+ 			m_buffer[i].buffer = 0L;
+ 			async::ExecInfo::_removeBuffer(i);
+ 		}
+diff --git a/submodules/async/async/as/Pin.h b/submodules/async/async/as/Pin.h
+--- a/submodules/async/async/as/Pin.h
++++ b/submodules/async/async/as/Pin.h
+@@ -5,18 +5,18 @@
+ 
+ namespace async::as {
+ struct CpuMask {
+-#ifndef __APPLE__
++#if !defined(__APPLE__) && !defined(_WIN32)
+   cpu_set_t set;
+ #endif // __APPLE__
+ 
+   inline void getaffinity_np([[maybe_unused]] pthread_t thread) {
+-#ifndef __APPLE__
++#if !defined(__APPLE__) && !defined(_WIN32)
+     pthread_getaffinity_np(thread, sizeof(cpu_set_t), &set);
+ #endif
+   }
+ 
+   inline void setaffinity_np([[maybe_unused]] pthread_t thread) const {
+-#ifndef __APPLE__
++#if !defined(__APPLE__) && !defined(_WIN32)
+     pthread_setaffinity_np(thread, sizeof(cpu_set_t), &set);
+ #endif
+   }
+diff --git a/submodules/async/async/as/ThreadBase.h b/submodules/async/async/as/ThreadBase.h
+--- a/submodules/async/async/as/ThreadBase.h
++++ b/submodules/async/async/as/ThreadBase.h
+@@ -52,7 +52,7 @@
+ namespace as
+ {
+ 
+-#ifndef __APPLE__
++#if !defined(__APPLE__) && !defined(_WIN32)
+ using spinlock_t = pthread_spinlock_t;
+ inline void lock_spinlock(spinlock_t* lock) {
+   pthread_spin_lock(lock);
+@@ -125,7 +125,7 @@
+ 		  m_phase(EXEC_PHASE),
+ 		  m_shutdown(false)
+ 	{
+-#ifndef __APPLE__
++#if !defined(__APPLE__) && !defined(_WIN32)
+                 pthread_spin_init(&m_writerLock, PTHREAD_PROCESS_PRIVATE);
+                 pthread_spin_init(&m_initBufferLock, PTHREAD_PROCESS_PRIVATE);
+ #else
+@@ -144,7 +144,7 @@
+ 	{
+ 		finalize();
+ 
+-#ifndef __APPLE__
++#if !defined(__APPLE__) && !defined(_WIN32)
+                 pthread_spin_destroy(&m_initBufferLock);
+                 pthread_spin_destroy(&m_writerLock);
+ #else
+diff --git a/submodules/async/async/as/Thread.h b/submodules/async/async/as/Thread.h
+--- a/submodules/async/async/as/Thread.h
++++ b/submodules/async/async/as/Thread.h
+@@ -40,7 +40,7 @@
+ #include <cassert>
+ #include <cstring>
+ #include <sched.h>
+-#ifndef __APPLE__
++#if !defined(__APPLE__) && !defined(_WIN32)
+ #include <sys/sysinfo.h>
+ #endif // __APPLE__
+ 
+@@ -88,7 +88,7 @@
+ 	void setExecutor(Executor &executor)
+ 	{
+                 ThreadBase<Executor, InitParameter, Parameter>::setExecutor(executor);
+-#ifndef __APPLE__
++#if !defined(__APPLE__) && !defined(_WIN32)
+ 
+ 		CpuMask oldCpuMask;
+ 		ThreadBase<Executor, InitParameter, Parameter>::getAffinity(oldCpuMask);
+diff --git a/submodules/xdmfwriter/backends/Base.h b/submodules/xdmfwriter/backends/Base.h
+--- a/submodules/xdmfwriter/backends/Base.h
++++ b/submodules/xdmfwriter/backends/Base.h
+@@ -283,7 +283,7 @@
+ 			m_localElems = m_blockBuffer.count();
+ 
+ 			if (alignTotalElements) {
+-				m_totalElems = utils::MathUtils::roundUp(m_totalElems, Base<T>::blockSize() / sizeof(T));
++				m_totalElems = utils::MathUtils::roundUp(m_totalElems, static_cast<unsigned long>(Base<T>::blockSize() / sizeof(T)));
+ 				// This will only change on the last rank
+ 				m_localElems = utils::MathUtils::roundUp(m_localElems, static_cast<unsigned int>(Base<T>::blockSize() / sizeof(T)));
+ 			}
+diff --git a/submodules/xdmfwriter/backends/Posix.h b/submodules/xdmfwriter/backends/Posix.h
+--- a/submodules/xdmfwriter/backends/Posix.h
++++ b/submodules/xdmfwriter/backends/Posix.h
+@@ -41,6 +41,13 @@
+ #include <fcntl.h>
+ #include <unistd.h>
+ 
++#ifdef _WIN32
++#include <direct.h>
++#include <io.h>
++#define mkdir(path, mode) _mkdir(path)
++#define fsync(fd) _commit(fd)
++#endif
++
+ #include "utils/stringutils.h"
+ 
+ #include "Base.h"
+@@ -183,7 +190,9 @@
+ 
+ 	static int open(const char* filename)
+ 	{
+-#ifdef __APPLE__
++#ifdef _WIN32
++		int fh = ::open(filename, O_WRONLY | O_CREAT | O_BINARY, S_IRUSR | S_IWUSR);
++#elif defined(__APPLE__) || !defined(__GLIBC__)
+ 		int fh = ::open(filename, O_WRONLY | O_CREAT,
+ 				S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+ #else
+@@ -196,7 +205,7 @@
+ 
+ 	static void write(int fh, const void* buffer, size_t offset, size_t size)
+ 	{
+-#ifdef __APPLE__
++#if defined(__APPLE__) || defined(_WIN32) || !defined(__GLIBC__)
+                 checkErr(lseek(fh, offset, SEEK_SET));
+ #else
+                 checkErr(lseek64(fh, offset, SEEK_SET));
+diff --git a/submodules/xdmfwriter/XdmfWriter.h b/submodules/xdmfwriter/XdmfWriter.h
+--- a/submodules/xdmfwriter/XdmfWriter.h
++++ b/submodules/xdmfwriter/XdmfWriter.h
+@@ -376,7 +376,7 @@
+ 			m_xdmfFile << std::endl;
+ 			m_xdmfFile << "    <Topology TopologyType=\"" << internal::Topology<Topo>::name() << "\" NumberOfElements=\"" << m_totalSize[0] << "\">" << std::endl
+ 					// This should be UInt but for some reason this does not work with binary data
+-					<< "     <DataItem NumberType=\"Int\" Precision=\"8\" Format=\""
++					<< "     <DataItem NumberType=\"Int\" Precision=\"" << sizeof(unsigned long) << "\" Format=\""
+ 						<< m_backend.format() << "\" Dimensions=\"" << m_totalSize[0] << " " << internal::Topology<Topo>::size() << "\">"
+ 						<< m_backend.cellDataLocation(m_meshId-1, "connect")
+ 						<< "</DataItem>" << std::endl
