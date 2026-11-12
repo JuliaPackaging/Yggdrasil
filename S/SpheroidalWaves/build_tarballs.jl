@@ -25,7 +25,7 @@ install_license LICENSE
 
 platforms = supported_platforms()
 
-# The quad backend requires REAL(16)/__float128, unavailable on 32-bit ARM and PowerPC64LE.
+# The quad backend requires REAL(16)/__float128, unavailable on 32-bit ARM and PowerPC64LE
 filter!(p -> !(arch(p) in ("armv6l", "armv7l", "powerpc64le")), platforms)
 
 platforms = expand_gfortran_versions(platforms)
