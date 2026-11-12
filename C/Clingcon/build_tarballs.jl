@@ -7,7 +7,7 @@ version = v"5.2.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/potassco/clingcon.git", "8c476557facf9fc996ec67053a01b6273fd9baba")
+    GitSource("https://github.com/potassco/clingcon.git", "8c476557facf9fc996ec67053a01b6273fd9baba"; tag="v$(version)")
 ]
 
 # Bash recipe for building across all platforms
