@@ -11,10 +11,15 @@ include("../common.jl")
 
 name = "SuperLU_DIST_CUDA"
 version = superlu_dist_version
+# The renamed libraries and the CUDA_Runtime_jll bound need a new JLL version
+ygg_version = v"9.3.3"
 
 sources = superlu_dist_sources
 
 script = superlu_dist_script(raw"""
+# own SONAMEs, so that dependents don't bind to SuperLU_DIST_jll's when both are loaded
+SUPERLU_SUFFIX=_cuda
+
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/findcudatoolkit.patch
 
 # nvcc writes to /tmp, which is a small tmpfs in the sandbox.
@@ -61,28 +66,22 @@ platforms, mpi_dependencies = MPI.augment_platforms(platforms)
 # runs need a CUDA-aware MPI at runtime, or GPU3DVERSION=0.
 filter!(p -> p["mpi"] in ("mpiabi", "mpich"), platforms)
 
-augment_platform_block = """
-    using Base.BinaryPlatforms
+augment_platform_block = CUDA.augment_with(MPI.augment, "augment_mpi!")
 
-    module __CUDA
-        $(CUDA.augment)
-    end
+products = [
+    ExecutableProduct("pdtest_32", :pdtest_32),
+    ExecutableProduct("pdtest_64", :pdtest_64),
 
-    $(MPI.augment)
-
-    function augment_platform!(platform::Platform)
-        augment_mpi!(platform)
-        __CUDA.augment_platform!(platform)
-    end
-"""
-
-products = superlu_dist_products
+    LibraryProduct("libsuperlu_dist_cuda_Int32", :libsuperlu_dist_Int32),
+    LibraryProduct("libsuperlu_dist_cuda_Int64", :libsuperlu_dist_Int64),
+]
 
 dependencies = AbstractDependency[
     superlu_dist_dependencies...,
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); compat="1.0.5"),
+    mpi_dependencies...,
+    CUDA.required_dependencies(platforms; static_sdk=true)...,
 ]
-append!(dependencies, mpi_dependencies)
 
 for platform in platforms
     should_build_platform(triplet(platform)) || continue
@@ -99,11 +98,10 @@ for platform in platforms
                                               platform=x86_platform))
     end
 
-    platform_dependencies = [dependencies; CUDA.required_dependencies(platform; static_sdk=true)]
     platform_script = "CUDA_ARCHS=\"$(join(CUDA.cuda_gpu_archs(platform), ";"))\"\n" * script
 
-    build_tarballs(ARGS, name, version, platform_sources, platform_script, [platform],
-                   products, platform_dependencies; lazy_artifacts=true,
+    build_tarballs(ARGS, name, ygg_version, platform_sources, platform_script, [platform],
+                   products, dependencies; lazy_artifacts=true,
                    augment_platform_block, julia_compat="1.11",
                    dont_dlopen=true, preferred_gcc_version=v"8")
 end

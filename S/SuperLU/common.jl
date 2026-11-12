@@ -1,5 +1,6 @@
 # Shared by SuperLU_DIST@9 and SuperLU_DIST_CUDA@9. CI only rebuilds a recipe when a file in
-# its own directory changes, so a change here also needs a `# Build trigger` bump in both.
+# its own directory changes, so a change here also needs a `# Build trigger` bump in each
+# recipe it should reach.
 
 const superlu_dist_version = v"9.3.2"
 
@@ -8,12 +9,14 @@ const superlu_dist_sources = [
     DirectorySource("../bundled"),
 ]
 
-# `setup` runs in the source directory and can add to `EXTRA_CMAKE_ARGS`.
+# `setup` runs in the source directory. It can add to `EXTRA_CMAKE_ARGS`, and set
+# `SUPERLU_SUFFIX` to rename the libraries.
 superlu_dist_script(setup::AbstractString) = raw"""
 cd $WORKSPACE/srcdir/superlu_dist*
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/output-name.patch
 
 EXTRA_CMAKE_ARGS=()
+SUPERLU_SUFFIX=
 """ * setup * raw"""
 
 # Pick libblastrampoline.so / libblastrampoline-5.dll / libblastrampoline.dylib
@@ -54,7 +57,7 @@ build_superlu_dist()
         -DCMAKE_C_FLAGS="-std=c99 -Wno-implicit-function-declaration -Wno-incompatible-pointer-types" \
         -DXSDK_INDEX_SIZE=${INT} \
         -DXSDK_ENABLE_Fortran=OFF \
-        -DSUPERLU_OUTPUT_NAME="superlu_dist_Int${INT}" \
+        -DSUPERLU_OUTPUT_NAME="superlu_dist${SUPERLU_SUFFIX}_Int${INT}" \
         -Denable_examples=OFF \
         -Denable_python=OFF \
         "${EXTRA_CMAKE_ARGS[@]}"
