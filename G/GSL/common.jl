@@ -3,7 +3,7 @@ using BinaryBuilder
 name = "GSL"
 
 gsl_sources(version_string, sha256) = [
-    ArchiveSource("https://ftp.gnu.org/gnu/gsl/gsl-$(version_string).tar.gz", sha256),
+    ArchiveSource("https://mirrors.kernel.org/gnu/gsl/gsl-$(version_string).tar.gz", sha256),
     DirectorySource("./bundled"),
 ]
 
