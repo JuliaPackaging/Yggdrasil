@@ -16,7 +16,7 @@ clang_patch="$(clang_vers.major).$(clang_vers.minor).$(clang_vers.patch)"
 
 # Collection of sources required to complete build
 sources = [
-   GitSource("https://github.com/grasph/wrapit.git", "2fea656ee97c8c9b97d81574fb74fedd999941ff")
+   GitSource("https://github.com/grasph/wrapit.git", "2fea656ee97c8c9b97d81574fb74fedd999941ff"; tag="v$(version)")
 ]
 
 # Bash recipe for building across all platforms
