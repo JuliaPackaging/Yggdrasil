@@ -4,7 +4,9 @@ using BinaryBuilder
 
 name = "gmsh"
 upstream_version = v"4.15.2"
-version = v"4.15.3" # Different version number because we needed to change compat bound, in the future we can go back to follow upstream
+# Different version number: 4.15.3 changed a compat bound, and 4.15.4 adds the private API,
+# so dependents (getdp) can require it. In the future we can go back to follow upstream.
+version = v"4.15.4"
 
 # Collection of sources required to build Gmsh
 sources = [
@@ -19,18 +21,25 @@ cd ${WORKSPACE}/srcdir/gmsh-*
 if [[ "${target}" == *linux* ]] || [[ "${target}" == *freebsd* ]]; then
     OPENGL_FLAGS="-DOpenGL_GL_PREFERENCE=LEGACY"
 fi
+if [[ "${target}" == *-mingw* ]]; then
+    # Public dllexport declarations suppress MinGW's automatic private API exports.
+    GMSH_SHARED_FLAGS="-DCMAKE_SHARED_LINKER_FLAGS=-Wl,--export-all-symbols"
+fi
 
 # remove -static linker option from mingw builds, otherwise linker errors with "cannot find -lpng", "cannot find -lfontconfig" 
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/CMakeLists.txt.patch" 
 
 mkdir build
 cd build
+# GetDP needs Gmsh's private headers and symbols.
 cmake .. \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DENABLE_BUILD_DYNAMIC=1 \
+    -DENABLE_PRIVATE_API=1 \
     -DDEFAULT=1 \
+    ${GMSH_SHARED_FLAGS} \
     ${OPENGL_FLAGS}
 make -j${nproc}
 make install
