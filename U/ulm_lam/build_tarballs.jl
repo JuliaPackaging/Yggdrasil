@@ -16,31 +16,15 @@ sources = [
     # UlmLAM 0.1.0
     GitSource("https://github.com/michael-lehn/ulm-lam.git",
               "9ad46d536758385e124fd4d3c8646ce0e91121f3"),
-    # the LLVM sources of LLVM_full_jll 23.1.4 (L/LLVM/common.jl), for
-    # mlir-tblgen on the build machine
-    GitSource("https://github.com/JuliaLang/llvm-project.git",
-              "3d876d0b0d8b4ac77362bd55cd030de355e83a9e"),
 ]
 
 script = raw"""
-# mlir-tblgen runs on the build machine: built for it first, as
-# LLVM_full_jll's recipe does (only llvm-tblgen and mlir-tblgen)
-mkdir ${WORKSPACE}/bootstrap
-pushd ${WORKSPACE}/bootstrap
-cmake -GNinja ${WORKSPACE}/srcdir/llvm-project/llvm \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} \
-    -DCMAKE_CROSSCOMPILING=False \
-    -DLLVM_TARGETS_TO_BUILD=host \
-    -DLLVM_HOST_TRIPLE=${MACHTYPE} \
-    -DLLVM_ENABLE_PROJECTS=mlir \
-    -DLLVM_ENABLE_ZLIB=OFF -DLLVM_ENABLE_ZSTD=OFF -DLLVM_ENABLE_LIBXML2=OFF \
-    -DLLVM_INCLUDE_TESTS=OFF -DLLVM_INCLUDE_BENCHMARKS=OFF -DLLVM_INCLUDE_EXAMPLES=OFF
-ninja -j${nproc} mlir-tblgen
-TBLGEN=${WORKSPACE}/bootstrap/bin/mlir-tblgen
-popd
-
 cd ${WORKSPACE}/srcdir/ulm-lam
+
+# mlir-tblgen runs on the build machine: the host's LLVM_full_jll's
+TBLGEN=${host_prefix}/bin/mlir-tblgen
+[ -x "${TBLGEN}" ] || TBLGEN=${host_prefix}/tools/mlir-tblgen
+
 cmake -B build -S . -GNinja \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -70,7 +54,11 @@ products = [
 dependencies = [
     # headers, static libraries and CMake files of LLVM and MLIR (only at
     # build time: everything is linked statically)
-    BuildDependency(PackageSpec(name="LLVM_full_jll", version=llvm_version)),
+    # (the version as a string, as in P/pocl: a VersionNumber does not
+    # match the registered 23.1.4+1)
+    BuildDependency(PackageSpec(name="LLVM_full_jll", version=string(llvm_version))),
+    # mlir-tblgen for the build machine
+    HostBuildDependency(PackageSpec(name="LLVM_full_jll", version=string(llvm_version))),
     # LLVMSupport compresses with zlib and zstd
     Dependency("Zlib_jll"),
     Dependency("Zstd_jll"),
