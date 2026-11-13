@@ -21,9 +21,9 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/ulm-lam
 
-# mlir-tblgen runs on the build machine: the host's instead of the target's
-rm -f ${prefix}/bin/mlir-tblgen
-ln -s ${host_prefix}/bin/mlir-tblgen ${prefix}/bin/mlir-tblgen
+# mlir-tblgen runs on the build machine: the host's, not the target's
+TBLGEN=${host_prefix}/bin/mlir-tblgen
+[ -x "${TBLGEN}" ] || TBLGEN=${host_prefix}/tools/mlir-tblgen
 
 cmake -B build -S . -GNinja \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -33,7 +33,8 @@ cmake -B build -S . -GNinja \
     -DLLVM_DIR=${prefix}/lib/cmake/llvm \
     -DMLIR_DIR=${prefix}/lib/cmake/mlir \
     -DLLVM_ENABLE_ASSERTIONS=OFF \
-    -DULM_LAM_STATIC_LLVM=ON
+    -DULM_LAM_STATIC_LLVM=ON \
+    -DULM_LAM_TABLEGEN=${TBLGEN}
 ninja -C build -j${nproc}
 ninja -C build install
 install_license LICENSE
@@ -54,8 +55,9 @@ dependencies = [
     # headers, static libraries and CMake files of LLVM and MLIR (only at
     # build time: everything is linked statically)
     BuildDependency(PackageSpec(name="LLVM_full_jll", version=llvm_version)),
-    # mlir-tblgen for the build machine
-    HostBuildDependency(PackageSpec(name="MLIR_jll", version=llvm_version)),
+    # mlir-tblgen for the build machine (LLVM_full_jll ships it; MLIR_jll
+    # cannot be a host dependency: its platforms carry the LLVM version)
+    HostBuildDependency(PackageSpec(name="LLVM_full_jll", version=llvm_version)),
     # LLVMSupport compresses with zlib and zstd
     Dependency("Zlib_jll"),
     Dependency("Zstd_jll"),
