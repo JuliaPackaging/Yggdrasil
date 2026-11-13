@@ -192,7 +192,9 @@ function build_steps!(group_steps, bb1_projects, bb2_projects)
         end
     end
 
-    if !isempty(bb2_projects)
+    if !isempty(bb2_projects) && VERSION != VersionNumber(BB2_JULIA_VERSION)
+        push!(group_steps, bb2_schedule_step(bb2_projects))
+    elseif !isempty(bb2_projects)
         # Ensure BB2 is instantiated
         julia(`-e "import Pkg; Pkg.instantiate(); Pkg.precompile()"`; julia_project=bb2_julia_project)
 
