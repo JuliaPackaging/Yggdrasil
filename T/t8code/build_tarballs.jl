@@ -44,7 +44,9 @@ cmake . \
       -DT8CODE_BUILD_FORTRAN_INTERFACE=OFF \
       -DT8CODE_BUILD_TESTS=OFF \
       -DT8CODE_BUILD_TUTORIALS=OFF \
-      -DT8CODE_ENABLE_MPI=ON
+      -DT8CODE_ENABLE_MPI=ON \
+      -DT8CODE_ENABLE_OCC=ON \
+      -DOpenCASCADE_DIR="${prefix}/lib/cmake/opencascade"
 
 # Fixes for mingw, which is WIN32 for cmake, but uses Linux syntax
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mingw.patch"
@@ -73,6 +75,14 @@ augment_platform_block = """
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=false)
 
+# OCCT_jll is not available for armv6l
+platforms = filter(p -> arch(p) != "armv6l", platforms)
+
+# OpenCASCADE is a C++ library, so we need to distinguish the C++ string ABIs.
+# OCCT_jll is only available for the cxx11 string ABI.
+platforms = expand_cxxstring_abis(platforms)
+platforms = filter(p -> cxxstring_abi(p) != "cxx03", platforms)
+
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
 
 # Avoid platforms where MPItrampoline isn't supported
@@ -89,6 +99,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
+    Dependency(PackageSpec(name="OCCT_jll", uuid="baad4e97-8daa-5946-aac2-2edac59d34e1"); compat="7.9.3"),
 ]
 append!(dependencies, platform_dependencies)
 
