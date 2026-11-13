@@ -1,6 +1,10 @@
-using BinaryBuilder
-using Pkg
-using BinaryBuilderBase: sanitize
+# A version whose `build_tarballs.jl` starts with `using BinaryBuilder2` builds with
+# BinaryBuilder2; the others build with BinaryBuilder.
+if !@isdefined(BinaryBuilder2)
+    using BinaryBuilder
+    using Pkg
+    using BinaryBuilderBase: sanitize
+end
 
 const llvm_version = v"13.0.1"
 
@@ -32,10 +36,6 @@ function configure_zlib_build(upstream_version::VersionNumber;
     script = raw"""
     cd $WORKSPACE/srcdir/zlib*
     mkdir build && cd build
-    if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
-        # Install msan runtime (for clang)
-        cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
-    fi
     # We use `-DUNIX=true` to ensure that it is always named `libz` instead of `libzlib` or something absolutely absurd like that.
     options=(
         -DCMAKE_INSTALL_PREFIX=${prefix}
@@ -58,10 +58,21 @@ function configure_zlib_build(upstream_version::VersionNumber;
         LibraryProduct("libz", :libz),
     ]
 
-    dependencies = [
-        BuildDependency(PackageSpec(; name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=string(llvm_version));
-                        platforms=filter(p -> sanitize(p)=="memory", platforms)),
-    ]
+    if @isdefined(BinaryBuilder2)
+        # BinaryBuilder2's clang comes with the msan runtime
+        dependencies = []
+    else
+        # BinaryBuilder's clang lacks the msan runtime, so install it from LLVMCompilerRT_jll
+        script = raw"""
+        if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
+            cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
+        fi
+        """ * script
+        dependencies = [
+            BuildDependency(PackageSpec(; name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=string(llvm_version));
+                            platforms=filter(p -> sanitize(p)=="memory", platforms)),
+        ]
+    end
 
     return name, version, sources, script, platforms, products, dependencies
 end
