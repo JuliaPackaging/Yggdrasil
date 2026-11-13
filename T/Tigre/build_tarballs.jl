@@ -2,19 +2,10 @@
 # BinaryBuilder.jl recipe for Tigre_jll (libtigre)
 
 using BinaryBuilder, Pkg
-using Base.BinaryPlatforms: arch, os, tags
+using Base.BinaryPlatforms: arch
 
-# Support platforms and helpers from Yggdrasil
-const YGGDRASIL_DIR = "../.."
-include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
-include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
-
-# Compatibility shim for older local BinaryBuilderBase where `tag` kwarg is not yet supported
-let BB = parentmodule(GitSource)
-    if !hasmethod(GitSource, Tuple{String, String}, (:tag,))
-        Core.eval(BB, :(GitSource(url::String, hash::String; tag::String = "", unpack_target::String = "") = GitSource(url, hash, unpack_target)))
-    end
-end
+include("../../fancy_toys.jl")
+include("../../platforms/cuda.jl")
 
 name = "Tigre"
 version = v"3.1.3"
@@ -160,7 +151,7 @@ platforms = CUDA.supported_platforms(; min_version = v"12.0")
 filter!(p -> arch(p) == "x86_64", platforms)
 
 dependencies = [
-    Dependency(PackageSpec(name = "CompilerSupportLibraries_jll")),
+    Dependency("CompilerSupportLibraries_jll"; compat = "1.0.5"),
 ]
 
 for platform in platforms
