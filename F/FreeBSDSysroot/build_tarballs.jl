@@ -48,14 +48,18 @@ build_tarballs(;
         ./usr/lib/libcxxrt.so
         ./lib/libcxxrt.so.1
 
-        # The system libraries needed to bootstrap GCC and Clang
+        # The system libraries needed to bootstrap GCC and Clang, along with their
+        # static archives so that `-static` links work
         ./lib/libc.so.7
         ./usr/lib/libc.so
         ./usr/lib/libc_nonshared.a
+        ./usr/lib/libc.a
         ./usr/lib/libdl.so.1
         ./usr/lib/libdl.so
+        ./usr/lib/libdl.a
         ./lib/libm.so.5
         ./usr/lib/libm.so
+        ./usr/lib/libm.a
         ./lib/libthr.so.3
         ./usr/lib/libthr.so
         ./usr/lib/libpthread.so
