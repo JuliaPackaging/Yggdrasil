@@ -8,6 +8,9 @@
 #   julia --project=@bb build_tarballs.jl --verbose --debug aarch64-apple-darwin
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "ulm_lam"
 version = v"0.1.0"
 llvm_version = v"23.1.4"
@@ -25,6 +28,14 @@ cd ${WORKSPACE}/srcdir/ulm-lam
 TBLGEN=${host_prefix}/bin/mlir-tblgen
 [ -x "${TBLGEN}" ] || TBLGEN=${host_prefix}/tools/mlir-tblgen
 
+FLAGS=()
+if [[ "${target}" == *-mingw* ]]; then
+    # the same template statics of MLIR (TypeID ids) in our objects and in
+    # MLIR's static libraries, in COMDAT sections GNU ld does not merge
+    # (.bss$ vs .data$): identical definitions, one is kept
+    FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS=-Wl,--allow-multiple-definition)
+fi
+
 cmake -B build -S . -GNinja \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -34,11 +45,16 @@ cmake -B build -S . -GNinja \
     -DMLIR_DIR=${prefix}/lib/cmake/mlir \
     -DLLVM_ENABLE_ASSERTIONS=OFF \
     -DULM_LAM_STATIC_LLVM=ON \
-    -DULM_LAM_TABLEGEN=${TBLGEN}
+    -DULM_LAM_TABLEGEN=${TBLGEN} \
+    "${FLAGS[@]}"
 ninja -C build -j${nproc}
 ninja -C build install
 install_license LICENSE
 """
+
+# the static LLVM libraries use aligned operator new/delete (macOS 10.14);
+# the 11.0 SDK as LLVM_full_jll uses on x86_64 macOS
+sources, script = require_macos_sdk("11.0", sources, script; deployment_target="10.14")
 
 # LLVM_full_jll is built for these; 32-bit is not worth it for a compiler
 # whose output calls BLAS (Basic Linear Algebra Subprograms) on large matrices
