@@ -1,0 +1,45 @@
+From 83bc3a5224757ee31425477604c5b6f49dde9b3b Mon Sep 17 00:00:00 2001
+From: Panagiotis Georgakopoulos <8681967+pankgeorg@users.noreply.github.com>
+Date: Thu, 5 Nov 2026 21:36:01 +0000
+Subject: [PATCH 03/10] sysdir: no passwd database on WASI
+
+WASI has no users: no `<pwd.h>`, `getpwuid_r`, `getuid` or `geteuid`. Treat it
+as a single-user system whose home and XDG directories come from `$HOME` and
+`$XDG_CONFIG_HOME` only; the passwd lookup reports not found.
+---
+ src/libgit2/sysdir.c | 15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
+
+diff --git a/src/libgit2/sysdir.c b/src/libgit2/sysdir.c
+index 7838a67..51a3d23 100644
+--- a/src/libgit2/sysdir.c
++++ b/src/libgit2/sysdir.c
+@@ -17,7 +17,9 @@
+ # include "win32/utf-conv.h"
+ #else
+ # include <unistd.h>
+-# include <pwd.h>
++# ifndef __wasi__
++#  include <pwd.h>
++# endif
+ #endif
+ 
+ #ifdef GIT_WIN32
+@@ -283,7 +285,16 @@ static int git_sysdir_guess_system_dirs(git_str *out)
+ #endif
+ }
+ 
+-#ifndef GIT_WIN32
++#ifdef __wasi__
++/* WASI: one user, no passwd database; homes come from $HOME / $XDG_CONFIG_HOME only */
++# define getuid() 0
++# define geteuid() 0
++static int get_passwd_home(git_str *out, int uid)
++{
++	GIT_UNUSED(out); GIT_UNUSED(uid);
++	return GIT_ENOTFOUND;
++}
++#elif !defined(GIT_WIN32)
+ static int get_passwd_home(git_str *out, uid_t uid)
+ {
+ 	struct passwd pwd, *pwdptr;

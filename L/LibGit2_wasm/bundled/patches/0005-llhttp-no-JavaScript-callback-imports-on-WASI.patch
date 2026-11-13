@@ -1,0 +1,26 @@
+From 53b183522b2577714a50efb9d709acd585fa7615 Mon Sep 17 00:00:00 2001
+From: Panagiotis Georgakopoulos <8681967+pankgeorg@users.noreply.github.com>
+Date: Thu, 5 Nov 2026 21:36:01 +0000
+Subject: [PATCH 05/10] llhttp: no JavaScript callback imports on WASI
+
+llhttp's api.c declares `wasm_on_*` functions for its own build, which runs in
+a JavaScript host that implements them. Any other WebAssembly build that links
+llhttp then has eight undefined imports. Exclude them under `__wasi__`, where
+llhttp is used as an ordinary C library.
+---
+ deps/llhttp/api.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/deps/llhttp/api.c b/deps/llhttp/api.c
+index eddb478..4b72810 100644
+--- a/deps/llhttp/api.c
++++ b/deps/llhttp/api.c
+@@ -39,7 +39,7 @@ void llhttp_init(llhttp_t* parser, llhttp_type_t type,
+ }
+ 
+ 
+-#if defined(__wasm__)
++#if defined(__wasm__) && !defined(__wasi__) /* the wasm_on_* hooks are for llhttp's own JS-hosted build */
+ 
+ extern int wasm_on_message_begin(llhttp_t * p);
+ extern int wasm_on_url(llhttp_t* p, const char* at, size_t length);

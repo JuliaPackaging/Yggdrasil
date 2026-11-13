@@ -1,0 +1,27 @@
+From 3a29de1f310f14457ed97f924464f501e013c45c Mon Sep 17 00:00:00 2001
+From: Panagiotis Georgakopoulos <8681967+pankgeorg@users.noreply.github.com>
+Date: Thu, 5 Nov 2026 21:36:01 +0000
+Subject: [PATCH 04/10] process: do not build the unix process API on WASI
+
+WASI has no processes (no fork, exec, pipes or `<sys/wait.h>`). Only the
+`exec` SSH transport uses `git_process`, and SSH is not available on WASI;
+compile the unix implementation out there.
+---
+ src/util/unix/process.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/src/util/unix/process.c b/src/util/unix/process.c
+index 72308b1..3d17905 100644
+--- a/src/util/unix/process.c
++++ b/src/util/unix/process.c
+@@ -1,3 +1,4 @@
++#ifndef __wasi__ /* WASI has no processes (only the ssh exec transport uses this) */
+ /*
+  * Copyright (C) the libgit2 contributors. All rights reserved.
+  *
+@@ -704,3 +705,5 @@ void git_process_free(git_process *process)
+ 	git_strlist_free_with_null(process->env);
+ 	git__free(process);
+ }
++
++#endif /* __wasi__ */
