@@ -1,0 +1,135 @@
+Build shared libbfd, libopcodes, libctf and libsframe DLLs on mingw.
+
+Libtool only builds a Windows DLL for libraries linked with `-no-undefined`, and upstream
+passes that (together with an explicit libiberty) only for Cygwin hosts.
+
+diff --git a/bfd/configure b/bfd/configure
+index 910af3ce..29bba850 100755
+--- a/bfd/configure
++++ b/bfd/configure
+@@ -13720,6 +13720,13 @@ if test "$enable_shared" = "yes"; then
+     SHARED_LDFLAGS="-no-undefined"
+     SHARED_LIBADD="-L`pwd`/../libiberty -liberty $SHARED_LIBADD -lcygwin -lkernel32"
+   ;;
++  *-*-mingw*)
++    # Don't re-export the static libiberty/libintl linked into the DLL; programs link those too.
++    SHARED_LDFLAGS="-no-undefined -Wl,--exclude-libs,ALL"
++    # There is no libc to name in `-Wl,-lc,--as-needed,...` below; link libm directly.
++    bfd_cv_ld_as_needed=no
++    SHARED_LIBADD="-L`pwd`/../libiberty -liberty $SHARED_LIBADD"
++  ;;
+   esac
+ 
+   if test -n "$SHARED_LIBADD"; then
+diff --git a/bfd/configure.ac b/bfd/configure.ac
+index f044616f..bb743446 100644
+--- a/bfd/configure.ac
++++ b/bfd/configure.ac
+@@ -287,6 +287,13 @@ if test "$enable_shared" = "yes"; then
+     SHARED_LDFLAGS="-no-undefined"
+     SHARED_LIBADD="-L`pwd`/../libiberty -liberty $SHARED_LIBADD -lcygwin -lkernel32"
+   ;;
++  *-*-mingw*)
++    # Don't re-export the static libiberty/libintl linked into the DLL; programs link those too.
++    SHARED_LDFLAGS="-no-undefined -Wl,--exclude-libs,ALL"
++    # There is no libc to name in `-Wl,-lc,--as-needed,...` below; link libm directly.
++    bfd_cv_ld_as_needed=no
++    SHARED_LIBADD="-L`pwd`/../libiberty -liberty $SHARED_LIBADD"
++  ;;
+   esac
+ 
+   if test -n "$SHARED_LIBADD"; then
+diff --git a/libctf/configure b/libctf/configure
+index a0e40f49..c548bbe5 100755
+--- a/libctf/configure
++++ b/libctf/configure
+@@ -14916,6 +14916,10 @@ if test "$enable_shared" = "yes"; then
+       SHARED_LDFLAGS="-no-undefined"
+       CTF_LIBADD="$CTF_LIBADD -lcygwin"
+       ;;
++    *-*-mingw*)
++      # Don't re-export the static libiberty/libintl linked into the DLL; programs link those too.
++      SHARED_LDFLAGS="-no-undefined -Wl,--exclude-libs,ALL"
++      ;;
+   esac
+ fi
+ 
+diff --git a/libctf/configure.ac b/libctf/configure.ac
+index 6a5eade1..dcc932fe 100644
+--- a/libctf/configure.ac
++++ b/libctf/configure.ac
+@@ -229,6 +229,10 @@ if test "$enable_shared" = "yes"; then
+       SHARED_LDFLAGS="-no-undefined"
+       CTF_LIBADD="$CTF_LIBADD -lcygwin"
+       ;;
++    *-*-mingw*)
++      # Don't re-export the static libiberty/libintl linked into the DLL; programs link those too.
++      SHARED_LDFLAGS="-no-undefined -Wl,--exclude-libs,ALL"
++      ;;
+   esac
+ fi
+ AC_SUBST(SHARED_LDFLAGS)
+diff --git a/libsframe/Makefile.am b/libsframe/Makefile.am
+index a660e85c..180486c6 100644
+--- a/libsframe/Makefile.am
++++ b/libsframe/Makefile.am
+@@ -51,7 +51,7 @@ endif
+ 
+ libsframe_la_SOURCES = sframe.c sframe-dump.c sframe-error.c
+ libsframe_la_CPPFLAGS = $(AM_CPPFLAGS)
+-libsframe_la_LDFLAGS = $(libsframe_version_info) $(libsframe_version_script)
++libsframe_la_LDFLAGS = $(libsframe_version_info) $(libsframe_version_script) -no-undefined
+ 
+ EXTRA_DIST = libtool-version libsframe.ver
+ diststuff: $(EXTRA_DIST) info
+diff --git a/libsframe/Makefile.in b/libsframe/Makefile.in
+index 08c780ca..9db67052 100644
+--- a/libsframe/Makefile.in
++++ b/libsframe/Makefile.in
+@@ -534,7 +534,7 @@ libsframe_version_info = -version-info `grep -v '^\#' $(srcdir)/libtool-version`
+ @INSTALL_LIBBFD_FALSE@noinst_LTLIBRARIES = libsframe.la
+ libsframe_la_SOURCES = sframe.c sframe-dump.c sframe-error.c
+ libsframe_la_CPPFLAGS = $(AM_CPPFLAGS)
+-libsframe_la_LDFLAGS = $(libsframe_version_info) $(libsframe_version_script)
++libsframe_la_LDFLAGS = $(libsframe_version_info) $(libsframe_version_script) -no-undefined
+ EXTRA_DIST = libtool-version libsframe.ver
+ @BUILD_INFO_TRUE@AM_MAKEINFOFLAGS = --no-split
+ 
+diff --git a/opcodes/configure b/opcodes/configure
+index fa81f1d6..706a3af7 100755
+--- a/opcodes/configure
++++ b/opcodes/configure
+@@ -12447,6 +12447,14 @@ if test "$enable_shared" = "yes"; then
+       SHARED_LDFLAGS="-no-undefined"
+       SHARED_LIBADD="-L`pwd`/../bfd -lbfd -L`pwd`/../libiberty -liberty $SHARED_LIBADD"
+       ;;
++    *-*-mingw*)
++      # Don't re-export the static libiberty/libintl linked into the DLL; programs link those too.
++      SHARED_LDFLAGS="-no-undefined -Wl,--exclude-libs,ALL"
++      # There is no libc to name in `-Wl,-lc,--as-needed,...` below; link libm directly.
++      bfd_cv_ld_as_needed=no
++      SHARED_LIBADD="../bfd/libbfd.la -L`pwd`/../libiberty -liberty ${SHARED_LIBADD}"
++      SHARED_DEPENDENCIES="../bfd/libbfd.la"
++      ;;
+     *)
+       SHARED_LIBADD="../bfd/libbfd.la ${SHARED_LIBADD}"
+       SHARED_DEPENDENCIES="../bfd/libbfd.la"
+diff --git a/opcodes/configure.ac b/opcodes/configure.ac
+index 1beb72e8..f6faa266 100644
+--- a/opcodes/configure.ac
++++ b/opcodes/configure.ac
+@@ -195,6 +195,14 @@ if test "$enable_shared" = "yes"; then
+       SHARED_LDFLAGS="-no-undefined"
+       SHARED_LIBADD="-L`pwd`/../bfd -lbfd -L`pwd`/../libiberty -liberty $SHARED_LIBADD"
+       ;;
++    *-*-mingw*)
++      # Don't re-export the static libiberty/libintl linked into the DLL; programs link those too.
++      SHARED_LDFLAGS="-no-undefined -Wl,--exclude-libs,ALL"
++      # There is no libc to name in `-Wl,-lc,--as-needed,...` below; link libm directly.
++      bfd_cv_ld_as_needed=no
++      SHARED_LIBADD="../bfd/libbfd.la -L`pwd`/../libiberty -liberty ${SHARED_LIBADD}"
++      SHARED_DEPENDENCIES="../bfd/libbfd.la"
++      ;;
+     *)
+       SHARED_LIBADD="../bfd/libbfd.la ${SHARED_LIBADD}"
+       SHARED_DEPENDENCIES="../bfd/libbfd.la"

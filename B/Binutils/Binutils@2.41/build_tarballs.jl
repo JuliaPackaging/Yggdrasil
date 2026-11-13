@@ -15,6 +15,11 @@ for BUILD_ENV in "${BUILD_ENVS[@]}"; do
     export "${ENV}_FOR_BUILD=${!BUILD_ENV}"
 done
 
+# Let libtool link the static `libiberty.a`/`libintl.a` into the shared libraries; this is
+# already the default on ELF hosts, but on Windows libtool otherwise drops them from DLL
+# links and falls back to building static libraries only.
+export lt_cv_deplibs_check_method=pass_all
+
 ./configure --prefix=${host_prefix} \
     --build=${build} \
     --host=${host} \
@@ -25,7 +30,9 @@ done
     --disable-werror \
     --enable-new-dtags \
     --enable-deterministic-archives \
-    --disable-gprofng
+    --disable-gprofng \
+    --enable-shared \
+    --enable-install-libbfd
 
 # Skip building the docs
 MAKEVARS=( MAKEINFO=true )
@@ -51,7 +58,7 @@ platforms = [
     [CrossPlatform(target, target) for target in target_platforms if target ∉ host_platforms]
 ]
 
-products = [
+products = AbstractProduct[
     ExecutableProduct("\${bindir}/\${target}-$(tool)", varname)
     for (tool, varname) in (
         ("ar", :ar),
@@ -66,6 +73,22 @@ products = [
         ("strip", :binutils_strip),
     )
 ]
+# Shared libraries for packages (e.g. Extrae) that link against `libbfd`.  In cross builds,
+# `libbfd` and `libopcodes` are installed in the target-specific `${host}/${target}/lib`; on
+# Windows the libraries are DLLs in `${bindir}`.
+append!(products, [
+    LibraryProduct([
+        "\${libdir}/$(lib)",
+        "\${prefix}/\${host}/\${target}/lib/$(lib)",
+        "\${bindir}/$(dll)",
+    ], Symbol(lib))
+    for (lib, dll) in (
+        ("libbfd", "libbfd-2-41.dll"),
+        ("libctf", "libctf-0.dll"),
+        ("libopcodes", "libopcodes-2-41.dll"),
+        ("libsframe", "libsframe-1.dll"),
+    )
+])
 
 build_tarballs(;
     src_name = "Binutils",
