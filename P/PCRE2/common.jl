@@ -3,23 +3,37 @@
 using BinaryBuilder, Pkg
 using BinaryBuilderBase: sanitize
 
+const pcre2_sha256 = Dict(
+    v"10.42" => "8d36cd8cb6ea2a4c2bb358ff6411b0c788633a2a45dabbf1aeb4b701d1b5e840",
+    v"10.49" => "53c156e1ba416a20da8e65395daa132da0d80e76910424caca3fcdae7831d384",
+)
+
 # `version` is the package version; its major and minor components select the upstream release.
 # `widths` lists the code unit widths (8, 16, 32) whose libraries are built.
 # `julia_compat` is the Julia compat bound of the package.
+# `patches` applies the patches in the recipe's `bundled/patches` directory.
 function build_pcre2(ARGS, name::String, version::VersionNumber, widths::Vector{Int};
-                     julia_compat::String="1.9")
+                     julia_compat::String="1.9", patches::Bool=false)
+    upstream_version = VersionNumber(version.major, version.minor)
 
     # Collection of sources required to complete build
-    sources = [
+    sources = AbstractSource[
         # We use an archive because (a) the archives are signed, hence
         # presumably immutable, and (b) the git source uses submodules.
         ArchiveSource("https://github.com/PCRE2Project/pcre2/releases/download/pcre2-$(version.major).$(version.minor)/pcre2-$(version.major).$(version.minor).tar.bz2",
-                      "53c156e1ba416a20da8e65395daa132da0d80e76910424caca3fcdae7831d384"),
+                      pcre2_sha256[upstream_version]),
     ]
+    patches && push!(sources, DirectorySource("./bundled"))
 
     # Bash recipe for building across all platforms
     script = "WIDTHS=\"$(join(widths, ' '))\"\n" * raw"""
 cd $WORKSPACE/srcdir/pcre2*
+""" * (patches ? raw"""
+
+for patch in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 ${patch}
+done
+""" : "") * raw"""
 
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     # Install msan runtime (for clang)
