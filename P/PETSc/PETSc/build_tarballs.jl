@@ -5,7 +5,8 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 include(joinpath(@__DIR__, "..", "common.jl"))
 
 name = "PETSc"
-version = petsc_version
+# the sources stay at petsc_version; the JLL version moved on for a compat change
+version = v"3.25.7"
 
 sources = petsc_sources()
 

@@ -131,10 +131,12 @@ build_petsc()
         USE_SUITESPARSE=1
     fi
 
-    USE_MUMPS=0
-    if [ "${1}" == "double" ] && [ "${2}" == "real" ]; then
-        USE_MUMPS=1
-    fi
+    case "${1}_${2}" in
+        single_real)    MUMPS_PREC=s ;;
+        double_real)    MUMPS_PREC=d ;;
+        single_complex) MUMPS_PREC=c ;;
+        double_complex) MUMPS_PREC=z ;;
+    esac
 
     LDFLAGS="-L${libdir} ${EXTRA_LDFLAGS}"
     if [[ "${target}" == *-mingw* ]]; then
@@ -212,11 +214,7 @@ build_petsc()
         HYPRE_ARGS="--with-hypre=0"
     fi
 
-    if [ ${USE_MUMPS} == 1 ]; then
-        MUMPS_ARGS="--with-mumps=1 --with-mumps-include=${includedir} --with-mumps-lib=[${libdir}/libdmumpspar.${dlext},${libdir}/libmumps_commonpar.${dlext},${libdir}/libpordpar.${dlext}]"
-    else
-        MUMPS_ARGS="--with-mumps=0"
-    fi
+    MUMPS_ARGS="--with-mumps=1 --with-mumps-include=${includedir} --with-mumps-lib=[${libdir}/lib${MUMPS_PREC}mumpspar.${dlext},${libdir}/libmumps_commonpar.${dlext},${libdir}/libpordpar.${dlext}]"
 
     if [ ${USE_SUPERLU_DIST} == 1 ]; then
         SLU_INC=${includedir}/superlu_dist_${3}
@@ -266,7 +264,6 @@ build_petsc()
 
     echo "USE_SUPERLU_DIST="$USE_SUPERLU_DIST
     echo "USE_SUITESPARSE="$USE_SUITESPARSE
-    echo "USE_MUMPS="$USE_MUMPS
     echo "USE_HYPRE="$USE_HYPRE
     echo "USE_TETGEN="$USE_TETGEN
     echo "USE_TRIANGLE="$USE_TRIANGLE
@@ -473,10 +470,11 @@ function petsc_dependencies(platforms; superlu_cuda::Bool=false)
                compat="5.9.4"),
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2");
                compat="0.3.33"),
+    # hypre bumps its soname with each minor release (.so.301 for 3.1, .so.302 for 3.2), hence ~
     # >= 3.1.0+3: libHYPRE64.dll carries its own name on Windows
-    Dependency(PackageSpec(name="HYPRE64_jll"); compat="3.1.0"),
+    Dependency(PackageSpec(name="HYPRE64_jll"); compat="~3.1.0"),
     # Stock (32-bit HYPRE_BigInt) hypre for the Int32 PetscInt variants.
-    Dependency(PackageSpec(name="HYPRE_jll"); compat="3.1.2"),
+    Dependency(PackageSpec(name="HYPRE_jll"); compat="~3.1.2"),
     Dependency(PackageSpec(name=superlu_cuda ? "SuperLU_DIST_CUDA_jll" : "SuperLU_DIST_jll"); compat="9.3.2"),
     Dependency(PackageSpec(name="HDF5_jll"); compat="2.2.2"),
     Dependency(PackageSpec(name="TetGen_jll"); compat="1.6.0"),
