@@ -1,0 +1,37 @@
+--- a/onnx/defs/printer.cc
++++ b/onnx/defs/printer.cc
+@@ -9,6 +9,9 @@
+ #include <cmath>
+ #include <cstdint>
+ #include <iomanip>
++#include <limits>
++#include <locale>
++#include <sstream>
+ #include <string>
+ #include <type_traits>
+ #include <vector>
+@@ -39,9 +42,21 @@
+       return;
+     }
+   }
+-  std::array<char, 32> buf{};
+-  const auto res = std::to_chars(buf.data(), buf.data() + buf.size(), value);
+-  os.write(buf.data(), res.ptr - buf.data());
++#if !(defined(__cpp_lib_to_chars) && __cpp_lib_to_chars >= 201611L)
++  // No floating-point to_chars (e.g. libc++ before macOS 13.3): fall back to
++  // a locale-independent stream with enough digits to round-trip.
++  if constexpr (std::is_floating_point_v<T>) {
++    std::ostringstream ss;
++    ss.imbue(std::locale::classic());
++    ss << std::setprecision(std::numeric_limits<T>::max_digits10) << value;
++    os << ss.str();
++  } else
++#endif
++  {
++    std::array<char, 32> buf{};
++    const auto res = std::to_chars(buf.data(), buf.data() + buf.size(), value);
++    os.write(buf.data(), res.ptr - buf.data());
++  }
+ }
+ 
+ bool IsValidIdentifier(const std::string& str) {

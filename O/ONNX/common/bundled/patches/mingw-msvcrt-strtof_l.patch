@@ -1,0 +1,18 @@
+--- a/onnx/defs/parser.cc
++++ b/onnx/defs/parser.cc
+@@ -67,7 +67,14 @@
+   }
+   char* end = nullptr;
+   errno = 0;
+-#ifdef _WIN32
++#if defined(__MINGW32__) && !defined(_UCRT)
++  // msvcrt.dll does not export _strtof_l; parse as double and narrow.
++  const double dval = _strtod_l(s.c_str(), &end, cloc.loc);
++  const float val = static_cast<float>(dval);
++  if (std::isinf(val) && !std::isinf(dval)) {
++    errno = ERANGE;
++  }
++#elif defined(_WIN32)
+   const float val = _strtof_l(s.c_str(), &end, cloc.loc);
+ #else
+   const float val = strtof_l(s.c_str(), &end, cloc.loc);
