@@ -1,5 +1,5 @@
 Check for C++14 by compiling instead of running a test program, so the check also passes when cross-compiling (AC_RUN_IFELSE falls back to "no").
-Not yet reported upstream; https://github.com/verilator/verilator/blob/v5.054/configure.ac#L813-L826
+https://github.com/verilator/verilator/issues/9222
 --- a/configure.ac
 +++ b/configure.ac
 @@ -813,7 +813,7 @@
