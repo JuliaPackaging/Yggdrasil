@@ -65,7 +65,7 @@ jq -n --arg sha "$(gh pr view <N> -R JuliaPackaging/Yggdrasil --json headRefOid 
 
 Grouped by where the comment goes. Also apply every topic skill whose condition matches ([Skills](../../../AGENTS.md#skills)).
 
-These are defaults, not absolutes. Sometimes following one takes a little extra effort, which is worth it; sometimes an exception is clearly better. An exception gets a comment in the recipe saying why, and what would let it be removed. Remove an existing exception when you can; agents add a new one only with the user's approval. Reasons for the recipe as it stands go in comments; reasons for a change, such as a removed dependency, go in the PR description.
+These are defaults: an exception is fine with a comment saying why and what would let it be removed ([Critical Rules](../../../AGENTS.md#critical-rules)). Reasons for the recipe as it stands go in comments; reasons for a change, such as a removed dependency, go in the PR description ([Style](../../../AGENTS.md#style)).
 
 ### `version`
 
@@ -76,10 +76,10 @@ These are defaults, not absolutes. Sometimes following one takes a little extra 
 ### `sources`
 
 - Every `GitSource` in a recipe the PR touches has `tag=` and the tagged commit ([Sources](../../../AGENTS.md#sources)). The tag replaces comments such as `# v1.2.3`.
-- The upstream repository, not a personal fork or branch, unless upstream is unmaintained and the fork carries it on. No GitHub `/archive/` URLs.
-- Where a URL, tag or directory name can be computed from `version`, interpolate it instead of repeating the number. Leave literals that can't, such as the version of a separately released Windows binary.
+- The upstream repository, not a personal fork or branch, unless upstream is unmaintained and the fork carries it on ([Patches](../../../AGENTS.md#patches)). No GitHub `/archive/` URLs.
+- Where a URL, tag or directory name can be computed from `version`, interpolate it instead of repeating the number ([Shell Script Conventions](../../../AGENTS.md#shell-script-conventions)). Leave literals that can't, such as the version of a separately released Windows binary.
 - Sources come from `sources`, not from the script. Exceptions, each with a comment: `git clone --recurse-submodules` for many submodules, `apk add` of a build tool, and build systems that download their own dependencies, such as PETSc's.
-- Where the project vendors a library Yggdrasil already builds, consider depending on its JLL instead.
+- Where the project vendors a library Yggdrasil already builds, consider depending on its JLL instead ([Sources](../../../AGENTS.md#sources)).
 - Build from source where possible. Upstream's prebuilt binaries, for some platforms or all, need a comment in `sources` saying why.
 
 ### Patches
@@ -97,7 +97,7 @@ These are defaults, not absolutes. Sometimes following one takes a little extra 
 - `install_license` for the project and every bundled one. When upstream ships no license file, install the standard text from the image, e.g. `install_license /usr/share/licenses/MIT`, instead of adding a copy to `bundled/`.
 - No debugging residue, local-only switches or commented-out code ([Style](../../../AGENTS.md#style)).
 - A workaround for one platform uses the narrowest condition that matches it: `x86_64-linux-musl*`, not `x86_64-*`, when only musl needs it.
-- No soname, install_name or C++ standard flags ([Shell Script Conventions](../../../AGENTS.md#shell-script-conventions)). `-shared` works on macOS too, so no separate `-dynamiclib` branch.
+- No soname or install_name flags, and no C++ standard flag overriding upstream's ([Shell Script Conventions](../../../AGENTS.md#shell-script-conventions)). `-shared` works on macOS too, so no separate `-dynamiclib` branch.
 - The upstream build system where it works. When it doesn't, building by hand in the script, or with our own makefile, is fine with a comment saying why.
 - Every unusual flag has a reason. CMake's warning "Manually-specified variables were not used" names `-D` options that have no effect; remove them.
 - A newer macOS SDK through `require_macos_sdk` ([`macos-recipes`](../macos-recipes/SKILL.md)), not a hand-written `SDKROOT` block.
@@ -119,23 +119,23 @@ These are defaults, not absolutes. Sometimes following one takes a little extra 
 
 ### `dependencies`
 
-- `compat` on every `Dependency`, never removed or loosened ([Dependencies](../../../AGENTS.md#dependencies)). The lower bound is the oldest compatible release that works, and exists for every platform built. A bound that isn't obvious has a comment.
-- Compatible means the same major version only for a dependency that follows semver. Don't assume it does: its recipe should say near the top when its JLL versions don't, and [#3024](https://github.com/JuliaPackaging/Yggdrasil/issues/3024) lists packages that break ABI in minor releases, though it is outdated. Those need a narrower bound, e.g. `~1.2.3`.
-- Stdlib JLLs such as `Zlib_jll`, `OpenBLAS_jll` or `LibCURL_jll` ship with Julia, each Julia version with its own. Their compat and `julia_compat` must agree: requiring a newer stdlib JLL also requires the Julia that ships it.
+- `compat` on every `Dependency`, never removed or loosened, with a comment when it isn't obvious ([Dependencies](../../../AGENTS.md#dependencies)). The lower bound is the oldest compatible release that works, and exists for every platform built.
+- No assumption that a dependency follows semver: check its recipe and #3024 ([Dependencies](../../../AGENTS.md#dependencies)).
+- Stdlib JLL bounds agree with `julia_compat` ([Dependencies](../../../AGENTS.md#dependencies)).
 - A positional version only when needed, equal to the lower bound.
 - `BuildDependency` and `HostBuildDependency` take no `compat`; pin one with `PackageSpec(; name="X_jll", version="1.2.3")` only when the build needs that version.
-- Headers or a static library used only at build time make a `BuildDependency`; ask why a library is linked statically. A JLL built for `AnyPlatform()`, such as a header-only one, usually is one.
+- Headers or a static library used only at build time make a `BuildDependency`; ask why a library is linked statically. A JLL built for `AnyPlatform()` usually is one.
 - The image has CMake: `HostBuildDependency` on `CMake_jll` only when the build needs a newer CMake, pinned to the version it needs, e.g. `HostBuildDependency(PackageSpec(; name="CMake_jll", version="3.31.9"))`.
 - When a dependency is removed, the PR description says why. Check the log that configure doesn't still look for it and silently disable features.
 
 ### `build_tarballs` keywords
 
-- `preferred_gcc_version` only when the default fails, then the oldest that works, with a comment saying why ([GCC Version Selection](../../../AGENTS.md#gcc-version-selection)). Clang is the opposite: the newest is the default, and `preferred_llvm_version` is set only when required.
+- `preferred_gcc_version` and `preferred_llvm_version` only when required, to the oldest version that works, with a comment saying why ([GCC Version Selection](../../../AGENTS.md#gcc-version-selection)).
 - `julia_compat` is the oldest Julia the JLL works on. It must be raised when a dependency or a stdlib JLL needs a newer Julia; any other raise needs a reason, e.g. matching the Julia package that uses the JLL.
 - No unneeded keywords.
 
 ### CI and testing
 
 - Every platform builds, and the log is clean too: no missing license, no "could not be resolved and could not be auto-mapped" ([Information for maintainers](../../../CONTRIBUTING.md#information-for-maintainers)), no dependency configure failed to find, and the installed files show in it.
-- The JLL was tested, also on the oldest Julia that `julia_compat` admits ([`testing-jll`](../testing-jll/SKILL.md)). A successful build is not enough: compat problems often show only in the registration PR in General.
-- After merging, watch that registration PR. When AutoMerge blocks it, fix the recipe, or ask for a manual merge when the failure is spurious.
+- The JLL was tested, also on the oldest Julia that `julia_compat` admits ([`testing-jll`](../testing-jll/SKILL.md)).
+- After merging, the registration PR in General is watched until it merges ([Testing](../../../AGENTS.md#testing)).

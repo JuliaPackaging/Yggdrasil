@@ -64,9 +64,11 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
 
 ## Critical Rules
 
-These are the hard requirements every recipe must satisfy. The sections from
+These are the rules every recipe follows. The sections from
 [Versions and Rebuilds](#versions-and-rebuilds) through [Testing](#testing) are rules too, as are the [Skills](#skills) that apply. Everything from
 [Build Script Reference](#build-script-reference) onward is non-normative reference material.
+
+The rules are defaults, not absolutes. Sometimes following one takes a little extra effort, which is worth it; sometimes an exception is clearly better. An exception gets a comment in the recipe saying why, and what would let it be removed. Remove an existing exception when you can; agents add a new one only with the user's explicit permission. What BinaryBuilder, its audit or General's AutoMerge enforce has no exceptions.
 
 ### Naming
 
@@ -79,7 +81,7 @@ These are the hard requirements every recipe must satisfy. The sections from
 - **GitSource**: For git repos. Use specific commit hash, not branch names. When building a release, also pass its `tag="v$(version)"` so reviewers see which release it is; the build checks that the tag indeed points to the hash.
 - **ArchiveSource**: For tarballs (`.tar.gz`, `.tar.xz`, `.zip`). Always include SHA256 hash.
 - **DirectorySource**: For local patches. Place patches in `bundled/patches/` subdirectory.
-- Build **one package per recipe**. Don't bundle multiple packages—use dependencies instead.
+- Build **one package per recipe**: a separate project gets its own recipe. Where the project vendors a library Yggdrasil already builds, consider depending on that JLL instead, if the project's build allows it.
 - **GitHub archives**: Never use GitHub's generated `/archive/refs/tags/` URLs; their [checksums are not stable](https://github.blog/2023-02-21-update-on-the-future-stability-of-source-code-archives-and-hashes/). Use a `GitSource`, or a release asset the maintainers uploaded (`/releases/download/...`).
 - Find a tag's commit with `git ls-remote https://github.com/owner/repo.git v1.0.0 'v1.0.0^{}'`. If this prints two lines, the tag is annotated: use the hash of the `^{}` line. The other is the tag object, not a commit, and fails the `tag` check.
 
@@ -99,29 +101,31 @@ Every declared product must be produced on every platform it is built for: the a
 - **HostBuildDependency**: Build-time only dependency that needs to run on the build host, not target (not a dependency for the final JLL)
 
 - Always add the `_jll` suffix.
-- Every `Dependency` gets a `compat=` bound: `Dependency("Zlib_jll"; compat="1.2.13")`.
+- Every `Dependency` gets a `compat=` bound: `Dependency("Zlib_jll"; compat="1.2.13")`. Its lower bound is the oldest compatible release that works. A bound that isn't obvious gets a comment.
 - `compat` and `julia_compat` strings are Pkg [version specifiers](https://pkgdocs.julialang.org/v1/compatibility/#Version-specifier-format), not version numbers. A bare version is a caret range up to the next breaking release: `"1.10"` and `"1.10.0"` both mean `[1.10.0, 2.0.0)`, so `julia_compat="1.10"` already admits Julia 1.11, 1.12, …, and does not pin Julia 1.10. Raising it from `"1.6"` to `"1.10"` narrows the range by dropping 1.6–1.9. Before 1.0 the range is narrower: `"0.3"` means `[0.3.0, 0.4.0)`. Other operators exist (`~`, `=`, `>=`, hyphen ranges); check their meaning at that link before using one.
 - Never remove or loosen an existing bound. Entries in a compat string form a union, so `"3.0, 3.5"` still admits 3.0: raise a lower bound by replacing the entry, not by appending one.
 - By default BinaryBuilder builds against the *oldest* version satisfying the bound, so raising the lower bound picks up newer artifacts. A positional pin (`Dependency("X_jll", v"1.2")` or `Dependency(PackageSpec("X_jll", v"1.2"))`) overrides the default: check for one before relying on `compat` alone, and keep it inside the bound or the build errors.
+- Don't assume a dependency's JLL follows semver. Its recipe should say near the top when it doesn't, and [#3024](https://github.com/JuliaPackaging/Yggdrasil/issues/3024) lists packages that break ABI in minor releases, though it is outdated. Such a dependency needs a narrower bound, e.g. `~1.2.3`. A recipe whose JLL versions don't follow semver says so near the top.
+- Stdlib JLLs, such as `Zlib_jll`, `OpenBLAS_jll`, `libblastrampoline_jll` or `CompilerSupportLibraries_jll`, ship with Julia, each Julia version with its own. Their bound must admit the version every Julia in `julia_compat` ships, and needing a newer one means raising `julia_compat` to the Julia that ships it. [`blas-recipes`](.agents/skills/blas-recipes/SKILL.md) and [`fortran-recipes`](.agents/skills/fortran-recipes/SKILL.md) give the versions for two of them.
 - Changing any compat bound, including `julia_compat`, requires a new JLL version; read [`jll-versioning`](.agents/skills/jll-versioning/SKILL.md) before changing `version`. Pkg cannot re-register an existing version. The exception is aligning a recipe with a fix already made in General; see [Changing compat bounds](CONTRIBUTING.md#changing-compat-bounds-of-a-package).
-- Header-only or build-time-only packages are `BuildDependency`, so they are not installed on users' machines.
+- Header-only or build-time-only packages are `BuildDependency`, so they are not installed on users' machines. A JLL built for `AnyPlatform()` usually is one.
 - Anything linking `libgfortran` needs `expand_gfortran_versions(platforms)` and `Dependency("CompilerSupportLibraries_jll")`. Don't paper over it with `preferred_gcc_version`; read [`fortran-recipes`](.agents/skills/fortran-recipes/SKILL.md).
 - OpenMP: `CompilerSupportLibraries_jll` on non-BSD, `LLVMOpenMP_jll` on FreeBSD and macOS; read [`openmp-recipes`](.agents/skills/openmp-recipes/SKILL.md).
 
 ### GCC Version Selection
 
-Use `preferred_gcc_version=v"X"` for (see [available GCC versions](https://github.com/JuliaPackaging/Yggdrasil/blob/master/RootFS.md#compiler-shards)):
+The default is GCC 4.8.5; 15.2 is the newest available (see [available GCC versions](https://github.com/JuliaPackaging/Yggdrasil/blob/master/RootFS.md#compiler-shards)). Set `preferred_gcc_version=v"X"` only when required, to the oldest GCC that works, with a comment saying why. Reviewers reject unexplained high versions. It is required for:
 
-- **C++ code**: Use oldest GCC that compiles (≤10 for Julia v1.6 compatibility). Reviewers reject unexplained high versions; state the reason whenever you raise it.
+- **C++ code** the default GCC can't compile (stay ≤10 for Julia v1.6 compatibility).
 - **Dependencies built with newer GCC**: Match or exceed their GCC version. Keep a library and its CxxWrap wrapper on the same GCC.
 - **Musl bugs**: Use GCC ≥6 to avoid `posix_memalign` issues
-- Default is GCC 4.8.5; 15.2 is the newest available.
-- Clang is the opposite: latest by default. Set `preferred_llvm_version` only when required (e.g. msan).
+
+Clang defaults to its newest version. Set `preferred_llvm_version` likewise: only when required (e.g. msan), to the oldest version that works.
 
 ### Style
 
 - Prefer writing less. Every line in a recipe, script, or patch should earn its place.
-- Keep comments minimal. Only comment code that is genuinely tricky (non-obvious workarounds, platform quirks, ABI hacks) and say *why*, not *what*.
+- Comment anything that isn't trivial: exceptions to these rules, non-obvious compat bounds, workarounds, platform quirks, ABI hacks. Say *why*, not *what*.
 - Do not comment obvious steps (`# configure`, `# build`, `# install`) or restate what the code already says.
 - Comments describe the current state, never the change history. That belongs in the PR text.
 - Do not assert facts about the build environment you have not verified in CI. Reviewers have caught invented justifications.
@@ -149,7 +153,7 @@ Use `preferred_gcc_version=v"X"` for (see [available GCC versions](https://githu
 - Use `install -Dvm 755 src ${bindir}/dst` and `install_license LICENSE` instead of `cp`/`mv`. Add `-v` to `mkdir`, `cp`, `rm`.
 - Never hide errors: no `|| true`, `2>/dev/null`, or `cp A || cp B`. Install declared products unconditionally; the audit fails on missing ones anyway.
 - Use `${includedir}`, `${libdir}`, `${dlext}`, `${CC}`, `${CXX}`, not `${prefix}/include` or hardcoded compiler names.
-- Don't set soname/install_name flags; the auditor does that. Don't set the C++ standard; upstream owns it.
+- Don't set soname/install_name flags; the auditor does that. Don't override the C++ standard upstream's build system sets.
 - Use the upstream build system where it works. Invoke the compiler by hand, or ship a makefile, only when it doesn't, with a comment saying why.
 - Where a URL or directory name follows from the version, interpolate `$(version)` or use a glob like `cd package-*` instead of repeating the version number.
 - The auditor requires a license under `share/licenses/<name>`. Install licenses for every bundled third-party project.
@@ -225,6 +229,8 @@ Examples:
 ## Testing
 
 Test the generated JLL before merging, so a broken package is not automatically registered in General. Load it on the lowest Julia version that `julia_compat` admits as well as a current one: General's AutoMerge imports it on the lowest and refuses to register it if that fails. Read [`testing-jll`](.agents/skills/testing-jll/SKILL.md) for how.
+
+A successful build is not enough: compat problems often show only in the registration PR that merging opens in General. Watch it. When AutoMerge blocks it, fix the recipe, or ask in #pkg-registration on the Julia Slack for a manual merge when the failure is spurious.
 
 ## Build Script Reference
 

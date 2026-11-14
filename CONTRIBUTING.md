@@ -39,7 +39,7 @@ Other changes may be required on a case-by-case basis, depending on the success 
 When building binary packages we have to deal with [several incompatibilities](https://docs.binarybuilder.org/stable/tricksy_gotchas/).
 As a general remark, when using GCC as compiler (which is default when targeting Linux and Windows platforms) try to use the ***oldest*** version that is able to compile your code, which can be selected with the `preferred_gcc_version` keyword argument to the [`build_tarballs`](https://docs.binarybuilder.org/stable/reference/#BinaryBuilder.build_tarballs) function, especially for [C++ code](https://gcc.gnu.org/onlinedocs/libstdc++/manual/abi.html), this is the only way to get maximum compatibility.
 In any case, avoid using GCC 11+ when building C++, as that would be incompatible with Julia v1.6.
-There are currently no such problems with LLVM (the default compiler framework used when targeting macOS and FreeBSD), so that you can generally use the latest version of LLVM available, which is already the default.
+LLVM (the default compiler framework used when targeting macOS and FreeBSD) defaults to its latest version; set `preferred_llvm_version` only when required, and then to the oldest version that works.
 
 ### Recommendations and tips about commit messages
 
