@@ -1,6 +1,6 @@
 ---
 name: mpi-recipes
-description: Rules for Yggdrasil recipes that use MPI. Use when a build_tarballs.jl depends on an MPI implementation, includes platforms/mpi.jl or calls MPI.augment_platforms, links libmpi, msmpi or mpif, or uses the mpi platform tag.
+description: Rules for Yggdrasil recipes that use MPI. Use when a build_tarballs.jl depends on an MPI implementation or on a JLL with MPI variants, includes platforms/mpi.jl or calls MPI.augment_platforms, links libmpi, msmpi or mpif, or uses the mpi platform tag.
 ---
 
 # MPI packages
@@ -21,10 +21,13 @@ augment_platform_block = """
     augment_platform!(platform::Platform) = augment_mpi!(platform)
 """
 append!(dependencies, platform_dependencies)
+ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 build_tarballs(...; augment_platform_block, ...)
 ```
 
 `MPI.augment_platforms` expands each base platform into one variant per allowed ABI, adds an `mpi=<abi>` tag, and returns the matching `Dependency` list (including `MPIPreferences`). Its default compat bounds are good; only pass `MPICH_compat=` etc. when a package genuinely needs it.
+
+Keep every ABI it adds: many HPC systems' MPI installations don't provide the MPI ABI yet. When a recipe must limit them, e.g. to cut the number of CUDA variants, keep MPIABI and MPICH, and MicrosoftMPI for Windows. MPItrampoline is being phased out in favour of MPIABI.
 
 Recurring gotchas:
 
@@ -36,6 +39,9 @@ Recurring gotchas:
   - `mpitrampoline`: `libmpitrampoline`
   - `openmpi`: `libmpi`; `libmpi_mpifh`, `libmpi_usempif08`, `libmpi_usempi_ignore_tkr`
   - `microsoftmpi`: `msmpi64`
+- **Audit**: keep `ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"` before `build_tarballs`, so MPItrampoline doesn't look for `mpiwrapper.so` when the audit dlopens the products.
+- **Windows** has only MicrosoftMPI. Filtering to one ABI, e.g. `filter!(p -> p["mpi"] == "mpiabi", platforms)`, drops Windows; allow `microsoftmpi` too to keep it.
+- **Code that doesn't call MPI**, such as a plugin for a library with MPI variants, gets no MPI variants of its own: don't call `MPI.augment_platforms`. When the dependency's headers include `mpi.h`, add `MPICH_jll`, and `MicrosoftMPI_jll` for Windows, as a `BuildDependency` for the header (see `H/HDF5_plugins/common.jl`).
 - **MPItrampoline compiler wrappers** remember the compilers MPItrampoline was built with. Recipes using `mpicc` etc. must `export MPITRAMPOLINE_CC=${CC} MPITRAMPOLINE_CXX=${CXX} MPITRAMPOLINE_FC=${FC}`.
 - **Windows (MicrosoftMPI)** needs `-DMPI_HOME=${prefix} -DMPI_GUESS_LIBRARY_NAME=MSMPI` and `-DMPI_C_LIBRARIES=msmpi64` (likewise `MPI_CXX_LIBRARIES`) for CMake.
 - **MPIABI** provides only the C bindings. Packages that call MPI from Fortran get the Fortran bindings from `mpif_jll`, added for the MPIABI platforms only: `Dependency("mpif_jll"; compat="1.0.1", platforms=filter(p -> p["mpi"] == "mpiabi", platforms))`, where `platforms` is the result of `MPI.augment_platforms`. See `H/HelloWorldMPI/HelloWorldMPIFortran`.

@@ -19,6 +19,7 @@ build_tarballs(...; compilers=[:c, :rust])
 ```
 
 - **Platforms**: start from `supported_platforms()`. Older recipes exclude platforms the Rust toolchain of their time could not target; don't copy those exclusions. Exclude a platform only for a failure seen in the build log, and say what fails.
+- **Toolchain**: leave `preferred_rust_version` unset to get the newest toolchain. Those before 1.97 have no riscv64 or aarch64 FreeBSD target and fail with `Requested Rust toolchain … not available on platform …`. Set an older one only when the code needs it.
 - **Lock file**: when upstream commits `Cargo.lock`, build with `--locked`, so the build uses the dependency versions upstream tested instead of resolving new ones.
 - **Output**: BinaryBuilder sets `CARGO_BUILD_TARGET`, so Cargo writes to `target/${rust_target}/release`.
 - **Build tools**: a binary that must run during the build is built for the host: `env -u CARGO_BUILD_TARGET -u rust_target ${MACHTYPE}-cargo build …`.
