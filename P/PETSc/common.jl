@@ -453,7 +453,7 @@ function petsc_dependencies(platforms; superlu_cuda::Bool=false)
 
     BuildDependency("LLVMCompilerRT_jll"; platforms=filter(Sys.isapple, platforms)),
 
-    # The stdlib bounds (CSL, OpenBLAS, libblastrampoline, SuiteSparse) are at or below what
+    # The stdlib bounds (CSL, OpenBLAS, libblastrampoline, SuiteSparse, Zlib) are at or below what
     # Julia 1.12, the julia_compat floor, ships, so they exclude no allowed Julia version.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae");
                compat="1.2.0"),
@@ -477,6 +477,9 @@ function petsc_dependencies(platforms; superlu_cuda::Bool=false)
     Dependency(PackageSpec(name="HYPRE_jll"); compat="~3.1.2"),
     Dependency(PackageSpec(name=superlu_cuda ? "SuperLU_DIST_CUDA_jll" : "SuperLU_DIST_jll"); compat="9.3.2"),
     Dependency(PackageSpec(name="HDF5_jll"); compat="2.2.2"),
+    # Zlib_jll 1.4 tags its FreeBSD artifacts os_version 14.1, which the x86_64 FreeBSD 13.4
+    # build environment does not match; MPICH's libpciaccess and libxml2 need libz.
+    Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"); compat="1.3.1"),
     Dependency(PackageSpec(name="TetGen_jll"); compat="1.6.0"),
     Dependency(PackageSpec(name="Triangle_jll"); compat="1.6.3"),
     # Julia's stdlib SuiteSparse (Int64 / SuiteSparse_long).  PETSc binds
