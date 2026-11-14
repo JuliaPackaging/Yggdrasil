@@ -99,11 +99,13 @@ build_tarballs(;
         DirectorySource("./bundled/patches"; target="patches"),
     ],
     target_dependencies = [
+        # Zlib_jll is a stdlib, and JLLPrefixes can't select a stdlib version
+        # registered without a build number, so take v1.4.1 from its repository.
         JLLSource(
             "Zlib_jll";
             repo=Pkg.Types.GitRepo(
-                rev="bb2/GCCBootstrap-x86_64-linux-gnu",
-                source="https://github.com/staticfloat/Zlib_jll.jl",
+                rev="Zlib-v1.4.1",
+                source="https://github.com/JuliaBinaryWrappers/Zlib_jll.jl",
             ),
         ),
     ],
