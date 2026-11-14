@@ -65,7 +65,7 @@ jq -n --arg sha "$(gh pr view <N> -R JuliaPackaging/Yggdrasil --json headRefOid 
 
 Grouped by where the comment goes. Also apply every topic skill whose condition matches ([Skills](../../../AGENTS.md#skills)).
 
-These are defaults: an exception is fine with a comment saying why and what would let it be removed ([Critical Rules](../../../AGENTS.md#critical-rules)). Reasons for the recipe as it stands go in comments; reasons for a change, such as a removed dependency, go in the PR description ([Style](../../../AGENTS.md#style)).
+These are defaults, not absolutes ([Critical Rules](../../../AGENTS.md#critical-rules)). Where following a rule takes only a little extra effort, which an agent can often do, ask for it; where an exception is clearly better, accept it. Either way the exception needs a comment saying why and what would let it be removed, and once that happens, e.g. upstream releases the fix, ask for it to be removed. Reasons for the recipe as it stands go in comments; reasons for a change, such as a removed dependency, go in the PR description ([Style](../../../AGENTS.md#style)).
 
 ### `version`
 
@@ -80,7 +80,7 @@ These are defaults: an exception is fine with a comment saying why and what woul
 - Where a URL, tag or directory name can be computed from `version`, interpolate it instead of repeating the number ([Shell Script Conventions](../../../AGENTS.md#shell-script-conventions)). Leave literals that can't, such as the version of a separately released Windows binary.
 - Sources come from `sources`, not from the script. Exceptions, each with a comment: `git clone --recurse-submodules` for many submodules, `apk add` of a build tool, and build systems that download their own dependencies, such as PETSc's.
 - Where the project vendors a library Yggdrasil already builds, consider depending on its JLL instead ([Sources](../../../AGENTS.md#sources)).
-- Build from source where possible. Upstream's prebuilt binaries, for some platforms or all, need a comment in `sources` saying why.
+- Build from source where possible. Upstream's prebuilt binaries, for some platforms or all, need a comment in `sources` saying why, and what would let the recipe build them from source.
 
 ### Patches
 
