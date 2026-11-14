@@ -20,7 +20,7 @@ PR-level findings go in the review body.
   ```
 
   To find them all, with the dates one year and six months ago: `gh pr list -R JuliaPackaging/Yggdrasil --state open --search "draft:false created:<YYYY-MM-DD updated:<YYYY-MM-DD"`.
-- **Version updates**: a PR that changes only `version` and the sources (URL, hash, `tag=`) gets the `merge me` label, so maintainers can merge it once CI passes: `gh pr edit <N> -R JuliaPackaging/Yggdrasil --add-label "merge me"`.
+- **Version updates**: a PR that changes only `version` and the sources (URL, hash, `tag=`), and whose new release keeps the ABI it should (see [`products`](#products)), gets the `merge me` label, so maintainers can merge it once CI passes: `gh pr edit <N> -R JuliaPackaging/Yggdrasil --add-label "merge me"`.
 - **Scope**: one recipe and one version per PR, since several versions in one PR conflict in the registry. No edits to other recipes, the `.ci/` manifests, or non-recipe files ([Pull Requests](../../../AGENTS.md#pull-requests)).
 - **Title**: `[Name] Brief description`, without noise such as "supersedes #N"; it becomes the squash commit message. The description says what changed and why, and links the upstream issue or General PR involved.
 - **Rebase**: ask for one only for merge conflicts or to pick up a CI change. Rebase-only pushes rebuild for nothing ([Avoiding unnecessary rebuilds](../../../CONTRIBUTING.md#avoiding-unnecessary-rebuilds)).
@@ -75,7 +75,7 @@ These are defaults: an exception is fine with a comment saying why and what woul
 
 ### `sources`
 
-- Every `GitSource` in a recipe the PR touches has `tag=` and the tagged commit ([Sources](../../../AGENTS.md#sources)). The tag replaces comments such as `# v1.2.3`.
+- Every `GitSource` that builds a release, in a recipe the PR touches, has `tag=` and the tagged commit ([Sources](../../../AGENTS.md#sources)). The tag replaces comments such as `# v1.2.3`.
 - The upstream repository, not a personal fork or branch, unless upstream is unmaintained and the fork carries it on ([Patches](../../../AGENTS.md#patches)). No GitHub `/archive/` URLs.
 - Where a URL, tag or directory name can be computed from `version`, interpolate it instead of repeating the number ([Shell Script Conventions](../../../AGENTS.md#shell-script-conventions)). Leave literals that can't, such as the version of a separately released Windows binary.
 - Sources come from `sources`, not from the script. Exceptions, each with a comment: `git clone --recurse-submodules` for many submodules, `apk add` of a build tool, and build systems that download their own dependencies, such as PETSc's.
@@ -115,6 +115,8 @@ These are defaults: an exception is fine with a comment saying why and what woul
 
 - Every product on every platform it builds for ([Products](../../../AGENTS.md#products)).
 - `dont_dlopen` has a comment saying why.
+- When the new version should be ABI compatible with the previous one, e.g. the same major version, its libraries keep their names and sonames. Compare the library files in the previous JLL's tarball with the new build's on each OS, where the soname shows differently: `libfoo.so.1`, `libfoo.1.dylib`, `libfoo-1.dll`. `gh release download -R JuliaBinaryWrappers/Foo_jll.jl -p 'Foo.v*.x86_64-linux-gnu.tar.gz'` fetches the latest release's; [`testing-jll`](../testing-jll/SKILL.md) describes getting the new ones from CI.
+- Read the upstream release notes, and flag an ABI break in a minor or patch release. Leave ambiguous cases to a human reviewer, or the most capable model available.
 - `FileProduct` only for files a Julia package uses.
 
 ### `dependencies`
@@ -125,7 +127,7 @@ These are defaults: an exception is fine with a comment saying why and what woul
 - A positional version only when needed, equal to the lower bound.
 - `BuildDependency` and `HostBuildDependency` take no `compat`; pin one with `PackageSpec(; name="X_jll", version="1.2.3")` only when the build needs that version.
 - Headers or a static library used only at build time make a `BuildDependency`; ask why a library is linked statically. A JLL built for `AnyPlatform()` usually is one.
-- The image has CMake: `HostBuildDependency` on `CMake_jll` only when the build needs a newer CMake, pinned to the version it needs, e.g. `HostBuildDependency(PackageSpec(; name="CMake_jll", version="3.31.9"))`.
+- The image has CMake: `HostBuildDependency` on `CMake_jll` only when the build needs a newer CMake, pinned to the CMake version the build needs, e.g. `HostBuildDependency(PackageSpec(; name="CMake_jll", version="3.31.9"))`.
 - When a dependency is removed, the PR description says why. Check the log that configure doesn't still look for it and silently disable features.
 
 ### `build_tarballs` keywords
@@ -136,6 +138,6 @@ These are defaults: an exception is fine with a comment saying why and what woul
 
 ### CI and testing
 
-- Every platform builds, and the log is clean too: no missing license, no "could not be resolved and could not be auto-mapped" ([Information for maintainers](../../../CONTRIBUTING.md#information-for-maintainers)), no dependency configure failed to find, and the installed files show in it.
+- Every platform builds, and the log is clean too: no missing license, no "could not be resolved and could not be auto-mapped" ([Information for maintainers](../../../CONTRIBUTING.md#information-for-maintainers)), no audit warning about `std::string` values or libgfortran (asking for `expand_cxxstring_abis`, `expand_gfortran_versions` or a `CompilerSupportLibraries_jll` dependency), no dependency configure failed to find, and the installed files show in it.
 - The JLL was tested, also on the oldest Julia that `julia_compat` admits ([`testing-jll`](../testing-jll/SKILL.md)).
 - After merging, the registration PR in General is watched until it merges ([Testing](../../../AGENTS.md#testing)).

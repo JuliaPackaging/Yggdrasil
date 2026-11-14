@@ -68,7 +68,7 @@ These are the rules every recipe follows. The sections from
 [Versions and Rebuilds](#versions-and-rebuilds) through [Testing](#testing) are rules too, as are the [Skills](#skills) that apply. Everything from
 [Build Script Reference](#build-script-reference) onward is non-normative reference material.
 
-The rules are defaults, not absolutes. Sometimes following one takes a little extra effort, which is worth it; sometimes an exception is clearly better. An exception gets a comment in the recipe saying why, and what would let it be removed. Remove an existing exception when you can; agents add a new one only with the user's explicit permission. What BinaryBuilder, its audit or General's AutoMerge enforce has no exceptions.
+The rules are defaults, not absolutes. Sometimes following one takes a little extra effort, which is worth it; sometimes an exception is clearly better. An exception gets a comment in the recipe saying why, and what would let it be removed. Remove an existing exception when you can; agents add a new one only with the user's explicit permission.
 
 ### Naming
 
