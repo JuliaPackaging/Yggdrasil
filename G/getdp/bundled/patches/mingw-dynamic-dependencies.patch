@@ -1,0 +1,14 @@
+Allow the MinGW executable to link shared PETSc, Gmsh and BLAS dependencies.
+https://gitlab.onelab.info/getdp/getdp/-/blob/065ad5d0a5c324d6e1c3517978066a3fa487e0bf/CMakeLists.txt#L911-918
+
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -910,7 +910,7 @@
+ 
+ # OS specific linker options
+ if(WIN32 AND NOT MSVC)
+-  set(FLAGS "-Wl,--image-base -Wl,0x10000000 -static")
++  set(FLAGS "-Wl,--image-base -Wl,0x10000000")
+   set_target_properties(getdp PROPERTIES LINK_FLAGS "${FLAGS} -municode")
+   if(ENABLE_BUILD_SHARED OR ENABLE_BUILD_DYNAMIC)
+     set_target_properties(shared PROPERTIES LINK_FLAGS "${FLAGS}")
