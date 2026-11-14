@@ -5,6 +5,7 @@
 Yggdrasil is a collection of recipes to build binary packages, saved in files called `build_tarballs.jl`.
 
 The rules every recipe must follow, along with a build script reference and common patterns, are in [AGENTS.md](AGENTS.md). It is written for AI coding agents, but applies to human contributors too.
+Before opening a pull request, check it against the [review checklist](.agents/skills/reviewing-prs/SKILL.md) maintainers use.
 
 If you are new to BinaryBuilder, please read [its documentation](https://docs.binarybuilder.org/stable/).
 In particular, the section [Project flow](https://docs.binarybuilder.org/stable/#Project-flow) presents different ways you can use BinaryBuilder to create a new `build_tarballs.jl` script or edit an existing one.
@@ -118,6 +119,8 @@ If the package needs a new release with different compat bounds anyway, bump its
 
 Here are some recommendations for Yggdrasil maintainers:
 
+* review pull requests with the [review checklist](.agents/skills/reviewing-prs/SKILL.md), posting each finding on the line it concerns
+* convert to draft any pull request created more than a year ago with no activity for six months
 * before merging a pull request, make sure the log of the build does not contain important warnings or error messages such as
   * missing license file.  This is reported as an error in CI log during audit but it is not as a fatal error which would prevent successful build
   * "Linked library `<LIBRARY NAME>` could not be resolved and could not be auto-mapped"

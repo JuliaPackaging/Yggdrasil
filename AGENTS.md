@@ -24,6 +24,7 @@ Topic guidance lives in `.agents/skills/`, one `SKILL.md` per topic in the Agent
 - [`windows-recipes`](.agents/skills/windows-recipes/SKILL.md): the build fails, a product is missing or a DLL fails to load only on Windows, or the recipe branches on `*-mingw*` or `Sys.iswindows`
 - [`jll-versioning`](.agents/skills/jll-versioning/SKILL.md): the JLL needs a version different from upstream (`ygg_version`), e.g. because a compat bound changed or a dependency moved to an ABI-breaking release, or the upstream version string is not plain `X.Y.Z`
 - [`testing-jll`](.agents/skills/testing-jll/SKILL.md): every recipe, before merging: building it locally or fetching CI tarballs, and testing the generated JLL
+- [`reviewing-prs`](.agents/skills/reviewing-prs/SKILL.md): every PR, before opening or pushing it, and when reviewing one
 
 ## Essential Structure
 
