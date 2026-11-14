@@ -17,7 +17,8 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/verilator
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/configure-cxx14-cross.patch
 autoconf
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+# configure takes FlexLexer.h from next to `flex`; the rootfs flex comes without it
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} LEX=${host_bindir}/flex
 # `make install` also builds the man pages, which need help2man
 make -j${nproc} verilator_exe
 make installbin installredirect installdata
