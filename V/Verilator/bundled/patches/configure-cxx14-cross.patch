@@ -1,0 +1,21 @@
+Check for C++14 by compiling instead of running a test program, so the check also passes when cross-compiling (AC_RUN_IFELSE falls back to "no").
+https://github.com/verilator/verilator/issues/9222
+--- a/configure.ac
++++ b/configure.ac
+@@ -813,7 +813,7 @@
+ AC_DEFUN([_MY_CXX_CHECK_CXX_VER],
+    [# _MY_CXX_CHECK_CXX_VER(flag) -- Check if compiler runs C++14
+     # Set $_my_result
+-    AC_RUN_IFELSE(
++    AC_COMPILE_IFELSE(
+      [AC_LANG_PROGRAM([#include <thread>
+ #if (__cplusplus < 201402L)
+ # error "Too old"
+@@ -821,7 +821,6 @@
+     ], [[
+      ]])],
+      [_my_result=yes],
+-     [_my_result=no],
+      [_my_result=no])
+    ])
+ 
