@@ -2,6 +2,9 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "Verilator"
 version_string = "5.054"
 version = VersionNumber(version_string)
@@ -29,6 +32,9 @@ rm -rv ${prefix}/share/verilator/examples
 install_license LICENSE
 """
 
+# C++17 aligned operator new/delete (std::align_val_t) are only in libc++ from macOS 10.14
+sources, script = require_macos_sdk("10.14", sources, script)
+
 # Not attempted on Windows
 platforms = supported_platforms(; exclude=Sys.iswindows)
 platforms = expand_cxxstring_abis(platforms)
@@ -43,6 +49,8 @@ products = [
 dependencies = [
     HostBuildDependency("Bison_jll"),
     HostBuildDependency("flex_jll"),
+    # verilator_bin links libatomic
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
 # Verilator needs C++14
