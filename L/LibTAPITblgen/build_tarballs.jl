@@ -14,7 +14,7 @@ script = raw"""
 TAPIDIR="${WORKSPACE}/srcdir/apple-libtapi"
 install_license ${TAPIDIR}/LICENSE.*
 mkcd ${TAPIDIR}/build
-${HOST_CMAKE} ${TAPIDIR}/src/llvm \
+cmake ${TAPIDIR}/src/llvm \
     -G "Ninja" \
     -DLLVM_TARGETS_TO_BUILD:STRING=host \
     -DCMAKE_BUILD_TYPE=RELEASE \
@@ -28,7 +28,7 @@ mkdir -p ${bindir}
 cp bin/*-tblgen ${bindir}/
 """
 
-platforms = [Platform("x86_64", "linux")]
+platforms = [Platform("x86_64", "linux"), Platform("aarch64", "linux")]
 
 products = [
     ExecutableProduct("llvm-tblgen", :llvm_tblgen),
