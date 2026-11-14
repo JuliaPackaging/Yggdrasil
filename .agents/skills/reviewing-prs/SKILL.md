@@ -65,27 +65,30 @@ jq -n --arg sha "$(gh pr view <N> -R JuliaPackaging/Yggdrasil --json headRefOid 
 
 Grouped by where the comment goes. Also apply every topic skill whose condition matches ([Skills](../../../AGENTS.md#skills)).
 
+These are defaults, not absolutes. Sometimes following one takes a little extra effort, which is worth it; sometimes an exception is clearly better. An exception gets a comment in the recipe saying why, and what would let it be removed. Remove an existing exception when you can; agents add a new one only with the user's approval. Reasons for the recipe as it stands go in comments; reasons for a change, such as a removed dependency, go in the PR description.
+
 ### `version`
 
 - Latest upstream release; intermediate releases need not be packaged.
-- Names an upstream release and is written once; URLs and tags interpolate it ([`jll-versioning`](../jll-versioning/SKILL.md)).
-- The JLL version changes whenever the source commit or a compat bound, `julia_compat` included, changes. A renamed or removed product, or a new soname, needs a breaking JLL version.
+- Names an upstream release ([`jll-versioning`](../jll-versioning/SKILL.md)).
+- The JLL version changes whenever the source commit or a compat bound, `julia_compat` included, changes. So does a renamed or removed product, or a new soname: a rebuild is not enough.
 
 ### `sources`
 
-- `GitSource` with the release's commit and `tag=` ([Sources](../../../AGENTS.md#sources)). Expected on every recipe a PR touches; it replaces `# v1.2.3` comments.
-- No personal forks or branches, no GitHub `/archive/` URLs, no version literals in URLs.
-- Nothing cloned or downloaded in the script.
-- No vendored copy of a library Yggdrasil already builds: search for its recipe and depend on the JLL.
-- Upstream's prebuilt binaries only when the source is unavailable; then say so in a comment in `sources`, and limit `platforms` to those upstream ships.
+- Every `GitSource` in a recipe the PR touches has `tag=` and the tagged commit ([Sources](../../../AGENTS.md#sources)). The tag replaces comments such as `# v1.2.3`.
+- The upstream repository, not a personal fork or branch, unless upstream is unmaintained and the fork carries it on. No GitHub `/archive/` URLs.
+- Where a URL, tag or directory name can be computed from `version`, interpolate it instead of repeating the number. Leave literals that can't, such as the version of a separately released Windows binary.
+- Sources come from `sources`, not from the script. Exceptions, each with a comment: `git clone --recurse-submodules` for many submodules, `apk add` of a build tool, and build systems that download their own dependencies, such as PETSc's.
+- Where the project vendors a library Yggdrasil already builds, consider depending on its JLL instead.
+- Build from source where possible. Upstream's prebuilt binaries, for some platforms or all, need a comment in `sources` saying why.
 
 ### Patches
 
 - First line says what the patch does, followed by the upstream PR or issue; no unfilled placeholders ([Patches](../../../AGENTS.md#patches)).
-- Has it been submitted upstream? Prefer waiting for upstream to merge it over carrying a large patch.
+- Has it been submitted upstream? The patch stays until an upstream release includes the fix. Don't hold the PR for upstream, which may release yearly or not care about a platform we support.
 - One patch per independent fix.
 - A compiler flag, not building tests, or disabling `-Werror` beats a patch when it suffices.
-- Workarounds for the toolchain itself, such as editing `${CMAKE_TARGET_TOOLCHAIN}` or `${MESON_TARGET_TOOLCHAIN}`, belong in BinaryBuilderBase, not in a recipe.
+- A workaround for the toolchain itself, such as editing `${CMAKE_TARGET_TOOLCHAIN}` or `${MESON_TARGET_TOOLCHAIN}`, links the BinaryBuilderBase issue that would make it unnecessary.
 
 ### `script`
 
@@ -93,16 +96,17 @@ Grouped by where the comment goes. Also apply every topic skill whose condition 
 - `install -Dvm`, `-v` on file commands, nothing hiding errors ([Shell Script Conventions](../../../AGENTS.md#shell-script-conventions)). No `if [ -f … ]` around installs: a missing file should fail the build.
 - `install_license` for the project and every bundled one. When upstream ships no license file, install the standard text from the image, e.g. `install_license /usr/share/licenses/MIT`, instead of adding a copy to `bundled/`.
 - No debugging residue, local-only switches or commented-out code ([Style](../../../AGENTS.md#style)).
-- A platform-specific branch changes only the platform that needs it.
-- No soname, install_name or C++ standard flags, no hand-invoked compiler ([Shell Script Conventions](../../../AGENTS.md#shell-script-conventions)). No separate `-dynamiclib` branch: `-shared` works on macOS.
-- Every unusual flag has a reason. CMake's "Manually-specified variables were not used" warning lists dead `-D` options.
+- A workaround for one platform uses the narrowest condition that matches it: `x86_64-linux-musl*`, not `x86_64-*`, when only musl needs it.
+- No soname, install_name or C++ standard flags ([Shell Script Conventions](../../../AGENTS.md#shell-script-conventions)). `-shared` works on macOS too, so no separate `-dynamiclib` branch.
+- The upstream build system where it works. When it doesn't, building by hand in the script, or with our own makefile, is fine with a comment saying why.
+- Every unusual flag has a reason. CMake's warning "Manually-specified variables were not used" names `-D` options that have no effect; remove them.
 - A newer macOS SDK through `require_macos_sdk` ([`macos-recipes`](../macos-recipes/SKILL.md)), not a hand-written `SDKROOT` block.
 - Comments say only why: no narration of the code, no change history, no license headers, no references to AGENTS.md.
 
 ### `platforms`
 
 - `supported_platforms()`, then one `filter!` per condition, each with a comment saying what breaks ([Platforms](../../../AGENTS.md#platforms)). Build as many platforms as possible.
-- Never drop a platform the previous version shipped: JLLs depending on it break.
+- Dropping a platform the previous version shipped breaks the JLLs that depend on it there: do it only when it can no longer be built, and say so in the PR description.
 - Exclusions copied from older recipes are often obsolete (riscv64, aarch64 FreeBSD, the Rust ones); try building them.
 - Don't drop a whole OS to avoid one error; post the log and ask for help.
 - Don't hold a PR for a niche platform: filter it with the error in the comment and follow up.
@@ -110,25 +114,28 @@ Grouped by where the comment goes. Also apply every topic skill whose condition 
 ### `products`
 
 - Every product on every platform it builds for ([Products](../../../AGENTS.md#products)).
-- `dont_dlopen` has a reason.
+- `dont_dlopen` has a comment saying why.
 - `FileProduct` only for files a Julia package uses.
 
 ### `dependencies`
 
-- `compat` on every `Dependency`, never removed or loosened ([Dependencies](../../../AGENTS.md#dependencies)). The lower bound is the oldest version that works, and a release that exists for every platform built.
+- `compat` on every `Dependency`, never removed or loosened ([Dependencies](../../../AGENTS.md#dependencies)). The lower bound is the oldest compatible release that works, and exists for every platform built. A bound that isn't obvious has a comment.
+- Compatible means the same major version only for a dependency that follows semver. Don't assume it does: its recipe should say near the top when its JLL versions don't, and [#3024](https://github.com/JuliaPackaging/Yggdrasil/issues/3024) lists packages that break ABI in minor releases, though it is outdated. Those need a narrower bound, e.g. `~1.2.3`.
+- Stdlib JLLs such as `Zlib_jll`, `OpenBLAS_jll` or `LibCURL_jll` ship with Julia, each Julia version with its own. Their compat and `julia_compat` must agree: requiring a newer stdlib JLL also requires the Julia that ships it.
 - A positional version only when needed, equal to the lower bound.
 - `BuildDependency` and `HostBuildDependency` take no `compat`; pin one with `PackageSpec(; name="X_jll", version="1.2.3")` only when the build needs that version.
-- Headers or a static library used only at build time make a `BuildDependency`; ask why a library is linked statically.
-- The image has CMake: `HostBuildDependency` on `CMake_jll` only when the build needs a newer one, pinned to it.
-- A removed dependency has a reason. Check the log that configure doesn't still look for it and silently disable features.
+- Headers or a static library used only at build time make a `BuildDependency`; ask why a library is linked statically. A JLL built for `AnyPlatform()`, such as a header-only one, usually is one.
+- The image has CMake: `HostBuildDependency` on `CMake_jll` only when the build needs a newer CMake, pinned to the version it needs, e.g. `HostBuildDependency(PackageSpec(; name="CMake_jll", version="3.31.9"))`.
+- When a dependency is removed, the PR description says why. Check the log that configure doesn't still look for it and silently disable features.
 
 ### `build_tarballs` keywords
 
-- `preferred_gcc_version` is the oldest that works, with the reason ([GCC Version Selection](../../../AGENTS.md#gcc-version-selection)); `preferred_llvm_version` only when required.
-- `julia_compat` raised only with a reason, e.g. to match the Julia package using the JLL.
+- `preferred_gcc_version` only when the default fails, then the oldest that works, with a comment saying why ([GCC Version Selection](../../../AGENTS.md#gcc-version-selection)). Clang is the opposite: the newest is the default, and `preferred_llvm_version` is set only when required.
+- `julia_compat` is the oldest Julia the JLL works on. It must be raised when a dependency or a stdlib JLL needs a newer Julia; any other raise needs a reason, e.g. matching the Julia package that uses the JLL.
 - No unneeded keywords.
 
 ### CI and testing
 
 - Every platform builds, and the log is clean too: no missing license, no "could not be resolved and could not be auto-mapped" ([Information for maintainers](../../../CONTRIBUTING.md#information-for-maintainers)), no dependency configure failed to find, and the installed files show in it.
-- The JLL was tested ([`testing-jll`](../testing-jll/SKILL.md)).
+- The JLL was tested, also on the oldest Julia that `julia_compat` admits ([`testing-jll`](../testing-jll/SKILL.md)). A successful build is not enough: compat problems often show only in the registration PR in General.
+- After merging, watch that registration PR. When AutoMerge blocks it, fix the recipe, or ask for a manual merge when the failure is spurious.

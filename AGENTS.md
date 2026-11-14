@@ -133,7 +133,7 @@ Use `preferred_gcc_version=v"X"` for (see [available GCC versions](https://githu
 - Use patch files in `bundled/patches/` for source changes, never `sed`/`perl`: sed silently stops matching when upstream changes. One exception is stripping flags such as `-march` or `-ffast-math` from build files (see [Unsupported Build Flags](#unsupported-build-flags)), where a miss is harmless. The other is CRLF source files: `.gitattributes` converts patches to LF, so their context can't match. Run `dos2unix` on the file first, or use `sed` if the CRLFs must be kept.
 - `DirectorySource("./bundled")` puts patches in `${WORKSPACE}/srcdir/patches/`; apply each with `atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fix.patch`.
 - Each patch starts with a one-line description and a link to the upstream PR or issue. Report fixes upstream.
-- Never use a personal fork or branch as a source. Keep the upstream source and carry a patch.
+- Use the upstream source and carry patches, not a personal fork or branch. The exception is an unmaintained project that lives on in a fork; say so in a comment.
 - Prefer a compiler flag over a patch when one suffices.
 
 ### Platforms
@@ -150,8 +150,8 @@ Use `preferred_gcc_version=v"X"` for (see [available GCC versions](https://githu
 - Never hide errors: no `|| true`, `2>/dev/null`, or `cp A || cp B`. Install declared products unconditionally; the audit fails on missing ones anyway.
 - Use `${includedir}`, `${libdir}`, `${dlext}`, `${CC}`, `${CXX}`, not `${prefix}/include` or hardcoded compiler names.
 - Don't set soname/install_name flags; the auditor does that. Don't set the C++ standard; upstream owns it.
-- Use the upstream build system. Don't hand-invoke `${CC}` to bypass a Makefile.
-- Interpolate `$(version)` into URLs and use globs like `cd package-*`; never repeat a version literal.
+- Use the upstream build system where it works. Invoke the compiler by hand, or ship a makefile, only when it doesn't, with a comment saying why.
+- Where a URL or directory name follows from the version, interpolate `$(version)` or use a glob like `cd package-*` instead of repeating the version number.
 - The auditor requires a license under `share/licenses/<name>`. Install licenses for every bundled third-party project.
 
 ### Unsupported Build Flags
