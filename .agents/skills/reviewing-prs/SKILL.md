@@ -20,6 +20,7 @@ PR-level findings go in the review body.
   ```
 
   To find them all, with the dates one year and six months ago: `gh pr list -R JuliaPackaging/Yggdrasil --state open --search "draft:false created:<YYYY-MM-DD updated:<YYYY-MM-DD"`.
+- **Version updates**: a PR that changes only `version` and the sources (URL, hash, `tag=`) gets the `merge me` label, so maintainers can merge it once CI passes: `gh pr edit <N> -R JuliaPackaging/Yggdrasil --add-label "merge me"`.
 - **Scope**: one recipe and one version per PR, since several versions in one PR conflict in the registry. No edits to other recipes, the `.ci/` manifests, or non-recipe files ([Pull Requests](../../../AGENTS.md#pull-requests)).
 - **Title**: `[Name] Brief description`, without noise such as "supersedes #N"; it becomes the squash commit message. The description says what changed and why, and links the upstream issue or General PR involved.
 - **Rebase**: ask for one only for merge conflicts or to pick up a CI change. Rebase-only pushes rebuild for nothing ([Avoiding unnecessary rebuilds](../../../CONTRIBUTING.md#avoiding-unnecessary-rebuilds)).
