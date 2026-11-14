@@ -8,8 +8,8 @@ const superlu_dist_sources = [
     DirectorySource("../bundled"),
 ]
 
-# `setup` runs in the source directory and can add to `EXTRA_CMAKE_ARGS`.
-superlu_dist_script(setup::AbstractString) = raw"""
+# `setup` runs in the source directory and can add to `EXTRA_CMAKE_ARGS`; `teardown` runs last.
+superlu_dist_script(setup::AbstractString, teardown::AbstractString="") = raw"""
 cd $WORKSPACE/srcdir/superlu_dist*
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/output-name.patch
 
@@ -72,7 +72,7 @@ build_superlu_dist()
 }
 build_superlu_dist Int32
 build_superlu_dist Int64
-"""
+""" * teardown
 
 const superlu_dist_products = [
     ExecutableProduct("pdtest_32", :pdtest_32),
