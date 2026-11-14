@@ -43,7 +43,7 @@ Post all findings as one review:
 jq -n --arg sha "$(gh pr view <N> -R JuliaPackaging/Yggdrasil --json headRefOid --jq .headRefOid)" '{
     commit_id: $sha,
     event: "COMMENT",
-    body: "PR-level findings",
+    body: "PR-level findings\n\nThis review was drafted by an AI agent.",
     comments: [
         {path: "X/Foo/build_tarballs.jl", line: 12, side: "RIGHT",
          body: "Please add `tag=\"v$(version)\"`, so the build checks the hash is the release."},
@@ -58,6 +58,7 @@ jq -n --arg sha "$(gh pr view <N> -R JuliaPackaging/Yggdrasil --json headRefOid 
 - Ask why about anything unexplained instead of guessing a reason.
 - Use `COMMENT`: `REQUEST_CHANGES` blocks merging, auto-merge included, until that reviewer approves or the review is dismissed.
 - Start a partial review with "Not a complete review".
+- A review or comment drafted by an agent says so in its body, e.g. "This review was drafted by an AI agent."
 
 ## Checklist
 
