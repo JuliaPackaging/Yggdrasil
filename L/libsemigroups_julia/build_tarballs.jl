@@ -56,7 +56,7 @@ products = [
 dependencies = [
     BuildDependency(PackageSpec(; name="libjulia_jll", version="1.11.4")),
     Dependency("libcxxwrap_julia_jll"; compat="~0.14.12"),
-    Dependency("libsemigroups_jll", v"3.6.2"; compat="=3.6.2"),
+    Dependency("libsemigroups_jll"; compat="=3.6.2"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
