@@ -1,17 +1,18 @@
 using BinaryBuilder
 
 name = "ghr"
-version = v"0.17.0"
+version = v"0.18.6"
 
 # Collection of sources required to build ghr
 sources = [
     GitSource("https://github.com/tcnksm/ghr.git",
-              "f7dfff6686917eaa749c7a01660a82e55528df2f"),
+              "fbaab599cbb6cf964deaa1a635bf4a90760c78fc";
+              tag="v$(version)"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/ghr/
+cd $WORKSPACE/srcdir/ghr
 mkdir -p ${bindir}
 go build -o ${bindir}
 """

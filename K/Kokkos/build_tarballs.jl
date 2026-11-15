@@ -2,30 +2,21 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "Kokkos"
-version_string = "4.3.1"
+version_string = "4.7.4"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/kokkos/kokkos.git", "6ecdf605e0f7639adec599d25cf0e206d7b8f9f5"),
-    # Kokkos requires macOS 10.13 or later
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
-                  "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4"),
+    GitSource("https://github.com/kokkos/kokkos.git", "82799e4577568f9666bde36265ac15d78da3e6c8"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/kokkos
-
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    export MACOSX_DEPLOYMENT_TARGET=10.13
-    pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -a usr/* "/opt/${target}/${target}/sys-root/usr/"
-    cp -a System "/opt/${target}/${target}/sys-root/"
-    popd
-fi
 
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -42,6 +33,9 @@ cmake --install build
 install_license LICENSE
 """
 
+# Kokkos requires macOS 10.13 or later
+sources, script = require_macos_sdk("10.13", sources, script)
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
@@ -50,6 +44,7 @@ filter!(p -> nbits(p) != 32, platforms)
 
 # The products that we will ensure are always built
 products = [
+    LibraryProduct("libkokkosalgorithms", :libkokkosalgorithms),
     LibraryProduct("libkokkoscore", :libkokkoscore),
     LibraryProduct("libkokkoscontainers", :libkokkoscontainers),
     LibraryProduct("libkokkossimd", :libkokkossimd)
@@ -64,4 +59,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"9")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"9")

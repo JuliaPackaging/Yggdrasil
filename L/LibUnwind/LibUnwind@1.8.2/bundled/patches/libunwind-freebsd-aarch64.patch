@@ -1,0 +1,29 @@
+diff --git a/src/ptrace/_UPT_ptrauth_insn_mask.c b/src/ptrace/_UPT_ptrauth_insn_mask.c
+index dcc51237..63e97a54 100644
+--- a/src/ptrace/_UPT_ptrauth_insn_mask.c
++++ b/src/ptrace/_UPT_ptrauth_insn_mask.c
+@@ -24,6 +24,8 @@
+
+ #ifdef UNW_TARGET_AARCH64
+
++#include <sys/uio.h>
++
+ unw_word_t _UPT_ptrauth_insn_mask (UNUSED unw_addr_space_t as, void *arg)
+ {
+   struct UPT_info *ui = arg;
+@@ -35,7 +37,7 @@ unw_word_t _UPT_ptrauth_insn_mask (UNUSED unw_addr_space_t as, void *arg)
+   iovec.iov_base = &regset;
+   iovec.iov_len = sizeof (regset);
+
+-  ret = ptrace (PTRACE_GETREGSET, pid, NT_ARM_PAC_MASK, &iovec);
++  ret = ptrace (PT_GETREGSET, pid, &iovec, NT_ARM_ADDR_MASK);
+   if (ret != 0)
+     {
+       Debug (12, "Failed to fetch ptrauth instruction mask");
+@@ -54,4 +56,4 @@ unw_word_t _UPT_ptrauth_insn_mask (unw_addr_space_t, void *)
+   return 0;
+ }
+
+-#endif
+\ No newline at end of file
++#endif

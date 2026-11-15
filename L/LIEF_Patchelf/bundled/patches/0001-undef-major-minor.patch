@@ -1,0 +1,40 @@
+diff --git a/include/LIEF/runtime/osx/Host.hpp b/include/LIEF/runtime/osx/Host.hpp
+index bc366a5..96f8e4f 100644
+--- a/include/LIEF/runtime/osx/Host.hpp
++++ b/include/LIEF/runtime/osx/Host.hpp
+@@ -20,6 +20,15 @@
+ #include <string>
+ #include <ostream>
+ 
++// glibc defines major()/minor() as function-like macros, which mangle the
++// major(major) and minor(minor) initialisers below.
++#ifdef major
++  #undef major
++#endif
++#ifdef minor
++  #undef minor
++#endif
++
+ namespace LIEF {
+ namespace runtime {
+ namespace osx {
+diff --git a/include/LIEF/runtime/windows/Host.hpp b/include/LIEF/runtime/windows/Host.hpp
+index ba5c869..4ca916d 100644
+--- a/include/LIEF/runtime/windows/Host.hpp
++++ b/include/LIEF/runtime/windows/Host.hpp
+@@ -20,6 +20,15 @@
+ #include <string>
+ #include <ostream>
+ 
++// glibc defines major()/minor() as function-like macros, which mangle the
++// major(major) and minor(minor) initialisers below.
++#ifdef major
++  #undef major
++#endif
++#ifdef minor
++  #undef minor
++#endif
++
+ namespace LIEF {
+ namespace runtime {
+ namespace windows {

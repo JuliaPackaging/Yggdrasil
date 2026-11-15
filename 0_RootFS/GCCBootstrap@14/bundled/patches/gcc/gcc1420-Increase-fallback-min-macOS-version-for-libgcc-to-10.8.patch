@@ -6,6 +6,12 @@ Subject: [PATCH] Increase fallback min macOS version for libgcc to 10.8
 `-mmacosx-version-min=10.5` seems to cause problems with ld64 from cctools
 (https://github.com/JuliaPackaging/Yggdrasil/pull/10132#issuecomment-2569925646),
 and in any case in Julia/BinaryBuilder we support macOS 10.12 at minimum.
+
+Rebased onto gcc-14.3.0, whose libgcc/config.host reworked the Darwin
+`tmake_file` cases (split the old darwin9-17 branch and added
+t-darwin-libgccs1).  Bump the same min-5 -> min-8 in every branch that
+covers a BinaryBuilder host (x86_64-apple-darwin14 lands in the
+darwin1[0-5] case) plus the fallback, keeping the new libgccs1 fragment.
 ---
  libgcc/config.host | 6 +++---
  1 file changed, 3 insertions(+), 3 deletions(-)
@@ -14,26 +20,29 @@ diff --git a/libgcc/config.host b/libgcc/config.host
 index e75a7af64..12aa05581 100644
 --- a/libgcc/config.host
 +++ b/libgcc/config.host
-@@ -240,7 +240,7 @@ case ${host} in
+@@ -243,10 +243,10 @@ case ${host} in
        tmake_file="t-darwin-min-8 $tmake_file"
        ;;
-     *-*-darwin9* | *-*-darwin1[0-7]*)
+     *-*-darwin1[67]]*)
 -      tmake_file="t-darwin-min-5 $tmake_file"
 +      tmake_file="t-darwin-min-8 $tmake_file"
        ;;
+     *-*-darwin9* | *-*-darwin1[0-5]*)
+-      tmake_file="t-darwin-min-5 t-darwin-libgccs1 $tmake_file"
++      tmake_file="t-darwin-min-8 t-darwin-libgccs1 $tmake_file"
+       ;;
      *-*-darwin[4-8]*)
-       tmake_file="t-darwin-min-1 $tmake_file"
-@@ -248,8 +248,8 @@ case ${host} in
+       tmake_file="t-darwin-min-1 t-darwin-libgccs1 $tmake_file"
+@@ -254,8 +254,8 @@ case ${host} in
      *)
        # Fall back to configuring for the oldest system known to work with
        # all archs and the current sources.
--      tmake_file="t-darwin-min-5 $tmake_file"
+-      tmake_file="t-darwin-min-5 t-darwin-libgccs1 $tmake_file"
 -      echo "Warning: libgcc configured to support macOS 10.5" 1>&2
-+      tmake_file="t-darwin-min-8 $tmake_file"
++      tmake_file="t-darwin-min-8 t-darwin-libgccs1 $tmake_file"
 +      echo "Warning: libgcc configured to support macOS 10.8" 1>&2
        ;;
    esac
    # We are not using libtool to build the libs here, so we need to replicate
--- 
+--
 2.31.0
-

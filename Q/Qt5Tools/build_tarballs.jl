@@ -2,6 +2,9 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+
 name = "Qt5Tools"
 version = v"5.15.2"
 
@@ -78,8 +81,6 @@ dependencies = [
     Dependency("Glib_jll", v"2.59.0"; compat="2.59.0"),
     Dependency("Qt5Base_jll"),
 ]
-
-include("../../fancy_toys.jl")
 
 # Must match GCC versions of Qt5Base
 platforms_win = filter(p -> p.tags["os"] == "windows", platforms)

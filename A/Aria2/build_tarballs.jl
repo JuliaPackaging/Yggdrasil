@@ -46,7 +46,10 @@ dependencies = [
     Dependency(PackageSpec(name="Cares_jll")),
     Dependency(PackageSpec(name="LibSSH2_jll")),
     Dependency(PackageSpec(name="OpenSSL_jll"); compat="3.0.8"),
-    Dependency(PackageSpec(name="XML2_jll")),
+    # We had to restrict compat with XML2 because of ABI breakage:
+    # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
+    # Updating to `compat="~2.14.1"` is likely possible without problems but requires rebuilding this package
+    Dependency(PackageSpec(name="XML2_jll"); compat="~2.13.6"),
     Dependency(PackageSpec(name="Zlib_jll")),
 ]
 

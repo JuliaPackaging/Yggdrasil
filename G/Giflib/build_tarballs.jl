@@ -3,26 +3,28 @@
 using BinaryBuilder
 
 name = "Giflib"
-upstream_version = v"5.2.2"
-version = v"5.2.3" # Needed to change version number to bump compat bounds, next time can go back to follow upstream
+version = v"6.1.3"
 
 # Collection of sources required to build Giflib
 sources = [
-    ArchiveSource("https://downloads.sourceforge.net/project/giflib/giflib-$(upstream_version).tar.gz",
-                  "be7ffbd057cadebe2aa144542fd90c6838c6a083b5e8a9048b8ee3b66b29d5fb"),
+    ArchiveSource("https://sourceforge.net/projects/giflib/files/giflib-$(version.major).x/giflib-$(version).tar.gz",
+                  "b65b66b99f0424b93525f987386f22fc5efb9da2bfc92ad4a532249aaffbab0e"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/giflib-*/
+cd $WORKSPACE/srcdir/giflib-*
+
 # Apply patch to make it possible to build for non Linux-like platforms.
 # Adapted from also https://sourceforge.net/p/giflib/bugs/133/
 atomic_patch -p1 ../patches/makefile.patch
+
 # We cannot build in parallel, building `libutil` fails.
 make
 make install
 rm "${libdir}/libgif.a"
+
 install_license COPYING
 """
 
@@ -41,5 +43,3 @@ dependencies = Dependency[
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
-
-# Build trigger: 1

@@ -3,9 +3,10 @@ using BinaryBuilderBase
 using Base.BinaryPlatforms
 using Pkg
 
-include(joinpath(dirname(dirname(@__DIR__)), "fancy_toys.jl"))
-include(joinpath(dirname(dirname(@__DIR__)), "platforms", "cuda.jl"))
-include(joinpath(dirname(dirname(@__DIR__)), "platforms", "mpi.jl"))
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 
 name = "Extrae"
@@ -131,11 +132,14 @@ cudampi_products = [
 dependencies = [
     # `MADV_HUGEPAGE` and `MAP_HUGE_SHIFT` require glibc 2.19, but we only
     # package glibc 2.17 on some architectures.
-    BuildDependency(PackageSpec(name="Glibc_jll", version=v"2.19"); platforms=glibc_platforms),
+    BuildDependency(PackageSpec(name="Glibc_jll", version="2.19"); platforms=glibc_platforms),
     Dependency("Binutils_jll"; compat="~2.41"),
     Dependency("LibUnwind_jll"),
     Dependency("PAPI_jll"; compat="~7.1"),
-    Dependency("XML2_jll"; compat="2.12.0"),
+    # We had to restrict compat with XML2 because of ABI breakage:
+    # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
+    # Updating to `compat="~2.14.1"` is likely possible without problems but requires rebuilding this package
+    Dependency("XML2_jll"; compat="~2.12.0, ~2.13"),
     RuntimeDependency("CUDA_Runtime_jll"; platforms=cuda_platforms),
 ]
 

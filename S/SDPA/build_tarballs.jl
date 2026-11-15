@@ -22,7 +22,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 # map a prerelease of 2.7.0 to 200.690.000.
 
 name = "SDPA"
-upstream_version = v"7.3.18"
+upstream_version = v"7.3.19"
 version_offset = v"0.0.0" # reset to 0.0.0 once the upstream version changes
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
@@ -30,8 +30,8 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 
 # Collection of sources required to build SDPABuilder
 sources = [
-    ArchiveSource("https://sourceforge.net/projects/sdpa/files/sdpa/sdpa_$(upstream_version).tar.gz",
-                  "6fe0cb81ce731345180787c90e3ffdda19184ec67bc7b9d0f80d87c420cb5647")
+    ArchiveSource("https://sourceforge.net/projects/sdpa/files/sdpa/sdpa_$(upstream_version).orig.tar.gz",
+                  "f6ad68f18d1f03bb6e71f8c81d209a0fba99cbb918ceb260a5dc4b9b0f343ee9")
     DirectorySource("./bundled")
 ]
 
@@ -149,10 +149,13 @@ filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 filter!(p -> libgfortran_version(p) >= v"5", platforms)
+# Temporarily disable Julia@1.13 until https://github.com/JuliaPackaging/Yggdrasil/pull/11683
+# is fixed.
+filter!(p -> VersionNumber(p["julia_version"]) < v"1.13", platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("libcxxwrap_julia_jll"; compat="~0.13.2"),
+    Dependency("libcxxwrap_julia_jll"; compat="~0.14"),
     Dependency("OpenBLAS32_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     BuildDependency("libjulia_jll"),

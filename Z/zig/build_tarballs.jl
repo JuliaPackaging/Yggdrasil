@@ -1,25 +1,44 @@
 using BinaryBuilder, Pkg
 
-# Collection of pre-build quarto binaries
 name = "zig"
-version = v"0.11.0"
+version = v"0.17.1"
 
-# TODO: When BinaryBuilder supports LLVM 15, then build from source
+# Upstream pre-built binaries.  All sha256 sums verified against
+# https://ziglang.org/download/index.json.
+# TODO: When BinaryBuilder supports LLVM 20, then build from source (newer zig versions tend to use the most recent LLVM so this may continue to be a problem)
 url_prefix = "https://ziglang.org/download/$(version)/zig"
 sources = [
-    ArchiveSource("$(url_prefix)-linux-x86_64-$(version).tar.xz", "2d00e789fec4f71790a6e7bf83ff91d564943c5ee843c5fd966efc474b423047"; unpack_target = "x86_64-linux-gnu"),
-    ArchiveSource("$(url_prefix)-linux-x86-$(version).tar.xz", "7b0dc3e0e070ae0e0d2240b1892af6a1f9faac3516cae24e57f7a0e7b04662a8"; unpack_target = "i686-linux-gnu"),
-    ArchiveSource("$(url_prefix)-linux-aarch64-$(version).tar.xz", "956eb095d8ba44ac6ebd27f7c9956e47d92937c103bf754745d0a39cdaa5d4c6"; unpack_target = "aarch64-linux-gnu"),
-    ArchiveSource("$(url_prefix)-macos-x86_64-$(version).tar.xz", "1c1c6b9a906b42baae73656e24e108fd8444bb50b6e8fd03e9e7a3f8b5f05686"; unpack_target = "x86_64-apple-darwin14"),
-    ArchiveSource("$(url_prefix)-macos-aarch64-$(version).tar.xz", "c6ebf927bb13a707d74267474a9f553274e64906fd21bf1c75a20bde8cadf7b2"; unpack_target = "aarch64-apple-darwin20"),
-    ArchiveSource("$(url_prefix)-windows-x86_64-$(version).zip", "142caa3b804d86b4752556c9b6b039b7517a08afa3af842645c7e2dcd125f652"; unpack_target = "x86_64-w64-mingw32"),
-    ArchiveSource("$(url_prefix)-windows-x86-$(version).zip", "e72b362897f28c671633e650aa05289f2e62b154efcca977094456c8dac3aefa"; unpack_target = "i686-w64-mingw32"),
-    ArchiveSource("$(url_prefix)-freebsd-x86_64-$(version).tar.xz", "ea430327f9178377b79264a1d492868dcff056cd76d43a6fb00719203749e958"; unpack_target = "x86_64-unknown-freebsd13.2"),
+    ArchiveSource("$(url_prefix)-x86_64-linux-$(version).tar.xz",      "3581863e3cbcfd0fce0efc682ce7e9e93da96668a977791d356a26d2a7e9b17a"),
+    ArchiveSource("$(url_prefix)-x86-linux-$(version).tar.xz",         "0855367e096917bb0b628050d994d1871cc8c1f9192542163f9f93b6a30c9c6c"),
+    ArchiveSource("$(url_prefix)-aarch64-linux-$(version).tar.xz",     "a1546d5646eb184437918d6635ca6b762a0e889eac09cef720ee7a1ed3fe7795"),
+    ArchiveSource("$(url_prefix)-powerpc64le-linux-$(version).tar.xz", "f06911010b44fa4fdd8e8775669acf499310ff18e209bb392f2eb2428dccc05e"),
+    ArchiveSource("$(url_prefix)-riscv64-linux-$(version).tar.xz",     "b31a3fd8b42b614cb68f93f18aab11c1721336654a9c8dd389ff7bab3a6827dc"),
+    ArchiveSource("$(url_prefix)-x86_64-macos-$(version).tar.xz",      "9af07b20319fbd0c92ee46ad23e81d6a782b1aaea2cfb8dcbff35f1d2c7ddbb7"),
+    ArchiveSource("$(url_prefix)-aarch64-macos-$(version).tar.xz",     "75f1bc7a1e9852f17ec9a0c1895f767c4ec56d46bc8a834920eece1d0359dd8d"),
+    ArchiveSource("$(url_prefix)-x86_64-windows-$(version).zip",       "b03f477a1943673e02aca0f570e8030dffd536ce1f45cbc4d3326ec31159562e"),
+    ArchiveSource("$(url_prefix)-x86-windows-$(version).zip",          "a93f48164339ecc3c2d8f470d5b5d8ec54895db3aabdd1737c216ddf9284fd8d"),
+    ArchiveSource("$(url_prefix)-x86_64-freebsd-$(version).tar.xz",    "fd8b9728f05db2a9942fc1f18087c0e0d6dfccb7a51557b06cf026d3e4c78542"),
+    ArchiveSource("$(url_prefix)-aarch64-freebsd-$(version).tar.xz",   "5ebd395db8996df2bfe1c252b5b6848ec8fad886192cbd88358fbcbf91c91703"),
 ]
 
-# Bash recipe for building across all platforms
+# Bash recipe
 script = raw"""
-cd ${WORKSPACE}/srcdir/${target}/zig-*
+case "${target}" in
+    x86_64-linux-*)            zig_arch=x86_64-linux ;;
+    i686-linux-*)              zig_arch=x86-linux ;;
+    aarch64-linux-*)           zig_arch=aarch64-linux ;;
+    powerpc64le-linux-*)       zig_arch=powerpc64le-linux ;;
+    riscv64-linux-*)           zig_arch=riscv64-linux ;;
+    x86_64-apple-darwin*)      zig_arch=x86_64-macos ;;
+    aarch64-apple-darwin*)     zig_arch=aarch64-macos ;;
+    x86_64-w64-mingw32)        zig_arch=x86_64-windows ;;
+    i686-w64-mingw32)          zig_arch=x86-windows ;;
+    x86_64-unknown-freebsd*)   zig_arch=x86_64-freebsd ;;
+    aarch64-unknown-freebsd*)  zig_arch=aarch64-freebsd ;;
+    *) echo "Unsupported target: ${target}" >&2; exit 1 ;;
+esac
+
+cd ${WORKSPACE}/srcdir/zig-${zig_arch}-*
 
 mkdir -p ${bindir}/zig/
 cp -r lib ${bindir}/zig/
@@ -28,17 +47,23 @@ cp zig${exeext} ${bindir}/zig/
 install_license LICENSE
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
+# 32-bit ARM (armv6l/armv7l) is excluded: upstream's arm-linux binary lacks the
+# EF_ARM_ABI_FLOAT_HARD ELF flag, which fails BinaryBuilder's *eabihf audit.
 platforms = [
-    Platform("x86_64", "linux"),
-    Platform("i686", "linux"),
-    Platform("aarch64", "linux"),
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("x86_64", "linux"; libc="musl"),
+    Platform("i686", "linux"; libc="glibc"),
+    Platform("i686", "linux"; libc="musl"),
+    Platform("aarch64", "linux"; libc="glibc"),
+    Platform("aarch64", "linux"; libc="musl"),
+    Platform("powerpc64le", "linux"; libc="glibc"),
+    Platform("riscv64", "linux"; libc="glibc"),
     Platform("x86_64", "macos"),
     Platform("aarch64", "macos"),
     Platform("x86_64", "windows"),
     Platform("i686", "windows"),
-    Platform("x86_64", "freebsd")
+    Platform("x86_64", "freebsd"),
+    Platform("aarch64", "freebsd"),
 ]
 
 # The products that we will ensure are always built

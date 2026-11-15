@@ -1,0 +1,121 @@
+From ec13d44aff435980a66f25561e976aecf368c683 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Fri, 6 Nov 2026 12:50:50 +0100
+Subject: [PATCH] [SPIR-V] Switch on an integer when the condition is an i1
+
+OpSwitch takes an integer selector, while i1 is a boolean in SPIR-V, so a
+switch on an i1 was emitted with an OpTypeBool selector, which spirv-val
+rejects ("Type Id is not a scalar numeric type"). InstCombine leaves such
+switches when it narrows a switch's condition to the bits it can take.
+
+Switch on the zero-extended condition instead, rewriting the switch before
+SPIRVEmitIntrinsics builds its worklist, as for the bitcasts of boolean
+vectors.
+---
+ lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp     | 19 ++++++++
+ test/CodeGen/SPIRV/branching/OpSwitchBool.ll | 49 ++++++++++++++++++++
+ 2 files changed, 68 insertions(+)
+ create mode 100644 llvm/test/CodeGen/SPIRV/branching/OpSwitchBool.ll
+
+diff --git a/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp b/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
+index 6d6c670dd34e..142e2d2110b8 100644
+--- a/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
++++ b/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
+@@ -336,6 +336,7 @@ class SPIRVEmitIntrinsics
+   bool processMaskedMemIntrinsic(IntrinsicInst &I);
+   bool convertMaskedMemIntrinsics(Module &M);
+   void preprocessBoolVectorBitcasts(Function &F);
++  void preprocessBoolSwitches(Function &F);
+ 
+   void emitUnstructuredLoopControls(Function &F, IRBuilder<> &B);
+ 
+@@ -3758,6 +3759,7 @@ bool SPIRVEmitIntrinsics::runOnFunction(Function &Func) {
+   }
+ 
+   preprocessBoolVectorBitcasts(Func);
++  preprocessBoolSwitches(Func);
+   SmallVector<Instruction *> Worklist(
+       llvm::make_pointer_range(instructions(Func)));
+ 
+@@ -3990,6 +3992,23 @@ bool SPIRVEmitIntrinsics::processMaskedMemIntrinsic(IntrinsicInst &I) {
+   return false;
+ }
+ 
++// OpSwitch takes an integer selector, while i1 is a boolean in SPIR-V. Switch
++// on the zero-extended condition instead, before building the instructions
++// worklist, so that the extension is visited like any other instruction.
++void SPIRVEmitIntrinsics::preprocessBoolSwitches(Function &F) {
++  for (BasicBlock &BB : F) {
++    auto *SI = dyn_cast<SwitchInst>(BB.getTerminator());
++    if (!SI || !SI->getCondition()->getType()->isIntegerTy(1))
++      continue;
++    IRBuilder<> B(SI);
++    IntegerType *I32Ty = B.getInt32Ty();
++    SI->setCondition(B.CreateZExt(SI->getCondition(), I32Ty));
++    for (auto Case : SI->cases())
++      Case.setValue(
++          ConstantInt::get(I32Ty, Case.getCaseValue()->getZExtValue()));
++  }
++}
++
+ // SPIR-V doesn't support bitcasts involving vector boolean type. Decompose such
+ // bitcasts into element-wise operations before building instructions
+ // worklist, so new instructions are properly visited and converted to
+diff --git a/test/CodeGen/SPIRV/branching/OpSwitchBool.ll b/test/CodeGen/SPIRV/branching/OpSwitchBool.ll
+new file mode 100644
+index 000000000000..82a1cf8044e4
+--- /dev/null
++++ b/test/CodeGen/SPIRV/branching/OpSwitchBool.ll
+@@ -0,0 +1,49 @@
++; A switch on an i1, which InstCombine can leave behind when it narrows a
++; switch's condition. OpSwitch takes an integer selector, so the condition is
++; zero-extended rather than used as an OpTypeBool.
++
++; RUN: llc -verify-machineinstrs -O0 -mtriple=spirv64-unknown-unknown %s -o - | FileCheck %s --check-prefixes=CHECK,CHECK-O0
++; RUN: llc -verify-machineinstrs -O2 -mtriple=spirv64-unknown-unknown %s -o - | FileCheck %s
++; RUN: %if spirv-tools %{ llc -O0 -mtriple=spirv64-unknown-unknown %s -o - -filetype=obj | spirv-val %}
++; RUN: %if spirv-tools %{ llc -O2 -mtriple=spirv64-unknown-unknown %s -o - -filetype=obj | spirv-val %}
++
++; CHECK-DAG: %[[#BOOL:]] = OpTypeBool
++; CHECK-DAG: %[[#I32:]] = OpTypeInt 32 0
++; CHECK-DAG: %[[#ONE:]] = OpConstant %[[#I32]] 1
++; CHECK-DAG: %[[#ZERO:]] = OpConstantNull %[[#I32]]
++; CHECK: %[[#COND:]] = OpFunctionParameter %[[#BOOL]]
++; CHECK: %[[#SEL:]] = OpSelect %[[#I32]] %[[#COND]] %[[#ONE]] %[[#ZERO]]
++; CHECK: OpSwitch %[[#SEL]] %[[#DEFAULT:]] 0 %[[#FALSE:]] 1 %[[#TRUE:]]
++
++define spir_kernel void @both_cases(ptr addrspace(1) %p, i1 %c) {
++entry:
++  switch i1 %c, label %default [
++    i1 false, label %false
++    i1 true, label %true
++  ]
++false:
++  store i32 1, ptr addrspace(1) %p
++  ret void
++true:
++  store i32 2, ptr addrspace(1) %p
++  ret void
++default:
++  ret void
++}
++
++; (at -O2, a switch with one case becomes a conditional branch first)
++; CHECK-O0: %[[#COND2:]] = OpFunctionParameter %[[#BOOL]]
++; CHECK-O0: %[[#SEL2:]] = OpSelect %[[#I32]] %[[#COND2]] %[[#ONE]] %[[#ZERO]]
++; CHECK-O0: OpSwitch %[[#SEL2]] %[[#]] 1 %[[#]]
++
++define spir_kernel void @one_case(ptr addrspace(1) %p, i1 %c) {
++entry:
++  switch i1 %c, label %default [
++    i1 true, label %true
++  ]
++true:
++  store i32 2, ptr addrspace(1) %p
++  br label %default
++default:
++  ret void
++}
+-- 
+2.56.0
+

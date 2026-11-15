@@ -1,0 +1,98 @@
+From 86615b9d9d6a513ba80b6a1ba2d25b3fd694a95c Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Wed, 7 Oct 2026 10:02:21 +0200
+Subject: [PATCH] Implement clEnqueueWaitForEvents
+
+The deprecated OpenCL 1.0 entry point was a stub that returned
+CL_INVALID_OPERATION after validating its arguments. Enqueue a barrier
+with the given wait list instead, which blocks later commands until the
+listed events complete, and return CL_INVALID_VALUE for an empty list as
+the specification requires.
+
+(cherry picked from commit 33dda90e28ffe0a231a3243b2c267a5ee0d80da8)
+---
+ lib/CL/clEnqueueWaitForEvents.c | 19 +++++++++++++++++--
+ tests/runtime/test_user_event.c | 27 +++++++++++++++++++++++++++
+ 2 files changed, 44 insertions(+), 2 deletions(-)
+
+diff --git a/lib/CL/clEnqueueWaitForEvents.c b/lib/CL/clEnqueueWaitForEvents.c
+index d069ffacb..d517594fd 100644
+--- a/lib/CL/clEnqueueWaitForEvents.c
++++ b/lib/CL/clEnqueueWaitForEvents.c
+@@ -31,6 +31,7 @@ POname(clEnqueueWaitForEvents)(cl_command_queue  command_queue,
+ CL_API_SUFFIX__VERSION_1_0
+ {
+   cl_int errcode;
++  _cl_command_node *cmd;
+ 
+   POCL_RETURN_ERROR_COND ((!IS_CL_OBJECT_VALID (command_queue)),
+                           CL_INVALID_COMMAND_QUEUE);
+@@ -38,11 +39,25 @@ CL_API_SUFFIX__VERSION_1_0
+   POCL_RETURN_ERROR_COND ((*(command_queue->device->available) == CL_FALSE),
+                           CL_DEVICE_NOT_AVAILABLE);
+ 
++  /* Unlike clEnqueueBarrierWithWaitList, an empty list is an error rather
++     than a wait for all previously enqueued commands. */
++  POCL_RETURN_ERROR_COND ((num_events == 0 || event_list == NULL),
++                          CL_INVALID_VALUE);
++
+   errcode = pocl_check_event_wait_list (command_queue, num_events, event_list);
+   if (errcode != CL_SUCCESS)
+     return errcode;
+ 
+-  POCL_RETURN_ERROR (CL_INVALID_OPERATION,
+-                     "clEnqueueWaitForEvents is not implemented\n");
++  /* A barrier with a wait list holds back the commands enqueued after it
++     until the listed events have completed. */
++  errcode = pocl_create_command (&cmd, command_queue, CL_COMMAND_BARRIER, NULL,
++                                 num_events, event_list, NULL);
++  if (errcode != CL_SUCCESS)
++    return errcode;
++
++  cmd->command.barrier.has_wait_list = num_events;
++  pocl_command_enqueue (command_queue, cmd);
++
++  return CL_SUCCESS;
+ }
+ POsym(clEnqueueWaitForEvents)
+diff --git a/tests/runtime/test_user_event.c b/tests/runtime/test_user_event.c
+index 7f37b32ef..4850f47c9 100644
+--- a/tests/runtime/test_user_event.c
++++ b/tests/runtime/test_user_event.c
+@@ -82,6 +82,33 @@ int main()
+       CHECK_CL_ERROR (clReleaseEvent (user_evt));
+     }
+ 
++  // clEnqueueWaitForEvents must hold back later commands until the user
++  // event completes, and reject an empty event list
++  user_evt = clCreateUserEvent (context, &err);
++  CHECK_OPENCL_ERROR_IN ("clCreateUserEvent");
++
++  err = clEnqueueWaitForEvents (queue, 0, &user_evt);
++  TEST_ASSERT (err == CL_INVALID_VALUE);
++  err = clEnqueueWaitForEvents (queue, 1, NULL);
++  TEST_ASSERT (err == CL_INVALID_VALUE);
++
++  cl_event marker_evt = NULL;
++  CHECK_CL_ERROR (clEnqueueWaitForEvents (queue, 1, &user_evt));
++  CHECK_CL_ERROR (clEnqueueMarkerWithWaitList (queue, 0, NULL, &marker_evt));
++  CHECK_CL_ERROR (clFlush (queue));
++
++  cl_int marker_status;
++  CHECK_CL_ERROR (
++    clGetEventInfo (marker_evt, CL_EVENT_COMMAND_EXECUTION_STATUS,
++                    sizeof (marker_status), &marker_status, NULL));
++  TEST_ASSERT (marker_status != CL_COMPLETE);
++
++  CHECK_CL_ERROR (clSetUserEventStatus (user_evt, CL_COMPLETE));
++  CHECK_CL_ERROR (clWaitForEvents (1, &marker_evt));
++
++  CHECK_CL_ERROR (clReleaseEvent (marker_evt));
++  CHECK_CL_ERROR (clReleaseEvent (user_evt));
++
+   CHECK_CL_ERROR (clReleaseCommandQueue (queue));
+   CHECK_CL_ERROR (clReleaseContext (context));
+   CHECK_CL_ERROR (clUnloadPlatformCompiler (platform));
+-- 
+2.56.0
+

@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "libnl"
-version = v"3.5.0"
+version = v"3.11.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/thom311/libnl/releases/download/libnl3_5_0/libnl-3.5.0.tar.gz",
-                  "352133ec9545da76f77e70ccb48c9d7e5324d67f6474744647a7ed382b5e05fa"),
+    ArchiveSource("https://github.com/thom311/libnl/releases/download/libnl$(version.major)_$(version.minor)_$(version.patch)/libnl-$(version).tar.gz",
+                  "2a56e1edefa3e68a7c00879496736fdbf62fc94ed3232c0baba127ecfa76874d"),
 ]
 
 # Bash recipe for building across all platforms

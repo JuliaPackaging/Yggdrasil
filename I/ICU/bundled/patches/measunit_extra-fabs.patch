@@ -1,0 +1,21 @@
+Use std::fabs for a double argument; with only <cstdlib>, abs(double) is ambiguous on macOS libc++
+
+--- a/icu4c/source/i18n/measunit_extra.cpp
++++ b/icu4c/source/i18n/measunit_extra.cpp
+@@ -32,6 +32,7 @@
+ #include "uresimp.h"
+ #include "util.h"
+ #include <limits.h>
++#include <cmath>
+ #include <cstdlib>
+ U_NAMESPACE_BEGIN
+ 
+@@ -686,7 +687,7 @@
+         // Check if the value is integer.
+         uint64_t int_result = static_cast<uint64_t>(double_result);
+         const double kTolerance = 1e-9;
+-        if (abs(double_result - int_result) > kTolerance) {
++        if (std::fabs(double_result - int_result) > kTolerance) {
+             status = kUnitIdentifierSyntaxError;
+             return 0;
+         }

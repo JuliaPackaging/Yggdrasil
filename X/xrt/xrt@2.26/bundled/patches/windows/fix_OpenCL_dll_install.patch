@@ -1,0 +1,22 @@
+diff --git a/src/CMake/cpackWin.cmake b/src/CMake/cpackWin.cmake
+index 9c941f061..2ee15c30a 100644
+--- a/src/CMake/cpackWin.cmake
++++ b/src/CMake/cpackWin.cmake
+@@ -37,9 +37,14 @@ if (NOT XRT_NPU)
+ ################################################################
+ # Khronos ICD loader
+ ################################################################
+-install(FILES ${KHRONOS}/bin/OpenCL.dll
+-   DESTINATION ext/bin
+-   COMPONENT opencl_libraries)
++if(EXISTS "${KHRONOS}/bin/OpenCL.dll")
++  install(FILES "${KHRONOS}/bin/OpenCL.dll"
++          DESTINATION ext/bin)
++elseif(EXISTS "${KHRONOS}/bin/libOpenCL-1.dll")
++  install(FILES "${KHRONOS}/bin/libOpenCL-1.dll"
++          DESTINATION ext/bin
++          RENAME OpenCL.dll)
++endif()
+ 
+ cpack_add_component(opencl_libraries
+   DISPLAY_NAME "OpenCL Libraries"

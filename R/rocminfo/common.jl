@@ -54,7 +54,7 @@ function configure_build(version)
     if version >= v"5.4.4"
         # We seem to need this for linking against libhsa-runtime64
         push!(dependencies,
-              BuildDependency(PackageSpec(name = "Glibc_jll", version = v"2.17");
+              BuildDependency(PackageSpec(name = "Glibc_jll", version = "2.17");
                                           platforms=glibc_platforms))
     end
     NAME, version, sources, BUILDSCRIPT, ROCM_PLATFORMS, PRODUCTS, dependencies

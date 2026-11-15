@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Attr"
-version = v"2.5.2"
+version = v"2.6.0"
 
 # Collection of sources required to build attr
 sources = [
     ArchiveSource("https://download.savannah.gnu.org/releases/attr/attr-$(version).tar.xz",
-                  "f2e97b0ab7ce293681ab701915766190d607a1dba7fae8a718138150b700a70b"),
+                  "6c8a2148a7b85043b68492bce43316b0e2e214fc4e628c7ede078e76e216330b"),
 ]
 
 # Bash recipe for building across all platforms
@@ -21,8 +21,7 @@ install_license doc/COPYING*
 """
 
 # These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line.  We are manually disabling
-# many platforms that do not seem to work.
+# platforms are passed in on the command line
 platforms = supported_platforms()
 filter!(Sys.islinux, platforms)
 
@@ -36,4 +35,5 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"5")

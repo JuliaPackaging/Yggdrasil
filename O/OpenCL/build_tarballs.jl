@@ -43,9 +43,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(; name="OpenCL_Headers_jll", version=v"2024.10.24"))
+    BuildDependency(PackageSpec(; name="OpenCL_Headers_jll", version="2024.10.24"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version = v"6.1.0", init_block)
+
+# bump

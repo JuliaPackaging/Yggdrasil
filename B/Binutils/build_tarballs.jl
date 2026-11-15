@@ -1,16 +1,19 @@
 using BinaryBuilder
 
 name = "Binutils"
-version = v"2.44"
+version_str = "2.47"
+version = VersionNumber(version_str)
 
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-$(version.major).$(version.minor).tar.xz",
-                  "ce2017e059d63e67ddb9240e9d4ec49c2893605035cd60e92ad53177f4377237"),
-    DirectorySource("bundled"),
+    ArchiveSource("https://ftpmirror.gnu.org/gnu/binutils/binutils-$(version_str).tar.xz",
+                  "154ab23b60070e8f27013c22977f1129425d67d1e8acd6e13010e617811e4cff"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/binutils-*
+
+# Don't use `ln` (hard links), use `cp` (copy) to "duplicate" installed files
+sed -i 's/ ln / cp /' binutils/Makefile.am binutils/Makefile.in
 
 ./configure --prefix=${prefix} \
     --target=${target} \
@@ -32,7 +35,9 @@ cd ${WORKSPACE}/srcdir/binutils-*
     --disable-nls \
     --enable-64-bit-bfd \
     --disable-static \
-    --enable-shared
+    --enable-shared \
+    --with-system-zlib=no \
+    --with-zstd=yes
 
 make -j${nproc}
 make install
@@ -75,7 +80,10 @@ products = [
     LibraryProduct("libopcodes", :libopcodes),
 ]
 
-dependencies = Dependency[]
+dependencies = [
+    Dependency("Zlib_jll"; compat="1.2.12"),
+    Dependency("Zstd_jll"; compat="1.5.7"),
+]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"5")

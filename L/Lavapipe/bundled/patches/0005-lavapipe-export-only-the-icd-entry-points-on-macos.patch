@@ -1,0 +1,18 @@
+lavapipe: hide the static LLVM behind an export list on ld64
+
+src/vulkan/vulkan.sym is a version script, so it only demotes the statically linked LLVM on
+ELF. ld64 has no version scripts; without an export list the dylib exports ~29k LLVM
+symbols. The list goes on the driver's own link only: in the global link args it makes
+every meson compile-and-link probe fail.
+
+--- a/src/gallium/targets/lavapipe/meson.build
++++ b/src/gallium/targets/lavapipe/meson.build
+@@ -8,7 +8,7 @@
+   link_whole : [ liblavapipe_st ],
+   link_with : [libpipe_loader_static, libgallium, libwsw, libswdri, libws_null, libswkmsdri ],
+   gnu_symbol_visibility : 'hidden',
+-  link_args : [vulkan_icd_link_args, ld_args_bsymbolic, ld_args_gc_sections],
++  link_args : ['-Wl,-exported_symbols_list,' + (meson.current_source_dir() / 'lvp_exports.sym'), vulkan_icd_link_args, ld_args_bsymbolic, ld_args_gc_sections],
+   # On Apple systems, "weak" is actually "weak_import", which is slightly different.
+   # The linker still expects a definition for weak symbols at build time, just not at runtime.
+   # We have to forcibly ignore undefined symbols, which unfortunately applies to all symbols.

@@ -1,0 +1,15 @@
+Guard call to cairo_win32_dwrite_finalize when DWrite is disabled.
+See https://gitlab.freedesktop.org/cairo/cairo/-/work_items/982
+
+--- a/src/win32/cairo-win32-system.c
++++ b/src/win32/cairo-win32-system.c
+@@ -253,7 +253,9 @@
+ static void
+ cairo_win32_finalize (void)
+ {
++#if CAIRO_HAS_DWRITE_FONT
+     cairo_win32_dwrite_finalize ();
++#endif
+     cairo_win32_thread_data_finalize ();
+     cairo_win32_mta_finalize ();
+     CAIRO_MUTEX_FINALIZE ();

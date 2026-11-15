@@ -1,0 +1,72 @@
+From 4371e60df6a853798e235b2a775fda289621b6d5 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Mon, 9 Nov 2026 09:37:33 +0100
+Subject: [PATCH] Lower extended multiplication to mul and OpenCL mul_hi
+
+OpenCL C 1.2/2.0 output kept calls to __spirv_SMulExtended and
+__spirv_UMulExtended, which OpenCL runtimes like PoCL don't implement.
+Compute the low half with mul and the high half with the signed or
+unsigned mul_hi builtin. SPIR-V friendly IR keeps the builtin calls.
+
+builtin_returns_struct.spvasm used OpUMulExtended to cover
+postProcessBuiltinsReturningStruct with IsCpp=false in OpenCL output.
+It now does so through SPIR-V friendly IR with OpenCL C source metadata.
+
+Related: https://github.com/llvm/llvm-project/issues/240296
+---
+ lib/SPIRV/SPIRVToOCL.cpp | 16 ++++++++++++++++
+ lib/SPIRV/SPIRVToOCL.h   |  4 ++++
+ 2 files changed, 20 insertions(+)
+
+diff --git a/lib/SPIRV/SPIRVToOCL.cpp b/lib/SPIRV/SPIRVToOCL.cpp
+index 7be3c8a2..080f1ab1 100644
+--- a/lib/SPIRV/SPIRVToOCL.cpp
++++ b/lib/SPIRV/SPIRVToOCL.cpp
+@@ -228,6 +228,10 @@ void SPIRVToOCLBase::visitCallInst(CallInst &CI) {
+     visitCallSPIRVDot(&CI, OC, DemangledName);
+     return;
+   }
++  if (OC == OpSMulExtended || OC == OpUMulExtended) {
++    visitCallSPIRVMulExtended(&CI, OC);
++    return;
++  }
+   if (OCLSPIRVBuiltinMap::rfind(OC))
+     visitCallSPIRVBuiltin(&CI, OC);
+ }
+@@ -1019,6 +1023,18 @@ void SPIRVToOCLBase::visitCallSPIRVDot(CallInst *CI, Op OC,
+     Mutator.removeArg(CI->arg_size() - 1);
+ }
+ 
++void SPIRVToOCLBase::visitCallSPIRVMulExtended(CallInst *CI, Op OC) {
++  Type *ResTy = CI->getType();
++  Value *A = CI->getArgOperand(0);
++  Value *B = CI->getArgOperand(1);
++  mutateCallInst(CI, OC == OpUMulExtended ? "u_mul_hi" : "mul_hi")
++      .changeReturnType(A->getType(), [=](IRBuilder<> &Builder, CallInst *Hi) {
++        Value *Lo = Builder.CreateMul(A, B);
++        Value *Res = Builder.CreateInsertValue(PoisonValue::get(ResTy), Lo, 0);
++        return Builder.CreateInsertValue(Res, Hi, 1);
++      });
++}
++
+ void SPIRVToOCLBase::visitCallSPIRVBuiltin(CallInst *CI, Op OC) {
+   mutateCallInst(CI, OCLSPIRVBuiltinMap::rmap(OC));
+ }
+diff --git a/lib/SPIRV/SPIRVToOCL.h b/lib/SPIRV/SPIRVToOCL.h
+index 867eed60..1dfcf6a4 100644
+--- a/lib/SPIRV/SPIRVToOCL.h
++++ b/lib/SPIRV/SPIRVToOCL.h
+@@ -262,6 +262,10 @@ public:
+   /// examples: __spirv_SDotKHR => dot, __spirv_SDotAccSatKHR => dot_acc_sat
+   void visitCallSPIRVDot(CallInst *CI, Op OC, StringRef DemangledName);
+ 
++  /// Lower extended multiplication to mul for the low half and signed or
++  /// unsigned OpenCL mul_hi for the high half.
++  void visitCallSPIRVMulExtended(CallInst *CI, Op OC);
++
+   static std::string translateOpaqueType(StringRef STName);
+ 
+   void translateOpaqueTypes();
+-- 
+2.56.0
+

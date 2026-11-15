@@ -1,0 +1,17 @@
+--- a/gdk/gdkdmabuf.c	2026-10-09 19:49:44.394714055 -0400
++++ b/gdk/gdkdmabuf.c	2026-10-09 19:49:50.646684442 -0400
+@@ -36,6 +36,14 @@
+ #include <epoxy/egl.h>
+ #include <errno.h>
+ 
++/* glibc < 2.27 does not define the memfd sealing constants. */
++#ifndef F_ADD_SEALS
++#define F_ADD_SEALS (1024 + 9)
++#endif
++#ifndef F_SEAL_SHRINK
++#define F_SEAL_SHRINK 0x0002
++#endif
++
+ GdkDmabufFormats *
+ gdk_dmabuf_get_mmap_formats (void)
+ {

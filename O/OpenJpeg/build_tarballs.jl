@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "OpenJpeg"
-ygg_version = v"2.5.4" # Bump version to build for riscv
-version = v"2.5.3"
+ygg_version = v"2.5.5" # Bump version to build for riscv
+version = v"2.5.4"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/uclouvain/openjpeg.git",
-              "210a8a5690d0da66f02d49420d7176a21ef409dc"),
+              "6c4a29b00211eb0430fa0e5e890f1ce5c80f409f"),
     DirectorySource("./bundled")
 ]
 
@@ -50,4 +50,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"6")

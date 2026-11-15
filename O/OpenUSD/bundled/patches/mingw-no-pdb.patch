@@ -1,0 +1,37 @@
+Only install PDB files with MSVC; TARGET_PDB_FILE is an error with MinGW's linker. Not yet reported upstream.
+
+diff --git a/cmake/macros/Private.cmake b/cmake/macros/Private.cmake
+index b90b743..fc0fea2 100644
+--- a/cmake/macros/Private.cmake
++++ b/cmake/macros/Private.cmake
+@@ -1425,7 +1425,7 @@ function(_pxr_library NAME)
+                 ARCHIVE DESTINATION ${libInstallPrefix}
+                 RUNTIME DESTINATION ${libInstallPrefix}
+             )
+-            if(WIN32)
++            if(MSVC)
+                 install(
+                     FILES $<TARGET_PDB_FILE:${NAME}>
+                     DESTINATION ${libInstallPrefix}
+@@ -1440,7 +1440,7 @@ function(_pxr_library NAME)
+                 ARCHIVE DESTINATION ${libInstallPrefix}
+                 RUNTIME DESTINATION ${libInstallPrefix}
+             )
+-            if(WIN32)
++            if(MSVC)
+                 install(
+                     FILES $<TARGET_PDB_FILE:${NAME}>
+                     EXPORT pxrTargets
+diff --git a/cmake/macros/Public.cmake b/cmake/macros/Public.cmake
+index b8e588b..304bd5d 100644
+--- a/cmake/macros/Public.cmake
++++ b/cmake/macros/Public.cmake
+@@ -1161,7 +1161,7 @@ function(pxr_toplevel_prologue)
+                 ARCHIVE DESTINATION ${libInstallPrefix}
+                 RUNTIME DESTINATION ${libInstallPrefix}
+             )
+-            if(WIN32)
++            if(MSVC)
+                 install(
+                     FILES $<TARGET_PDB_FILE:usd_m>
+                     DESTINATION ${libInstallPrefix}

@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "libsndfile"
-version = v"1.1.0"
+version = v"1.2.2"
 
 # Collection of sources required to build
 sources = [
     ArchiveSource("https://github.com/libsndfile/libsndfile/releases/download/$(version)/libsndfile-$(version).tar.xz",
-                  "0f98e101c0f7c850a71225fb5feaf33b106227b3d331333ddc9bacee190bcf41")
+                  "3799ca9924d3125038880367bf1468e53a1b7e3686a934f098b7e1d286cdb80e")
 ]
 
 # Bash recipe for building across all platforms
@@ -47,11 +47,12 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("alsa_jll"; platforms=filter(Sys.islinux, platforms)),
-    Dependency("FLAC_jll"; compat="~1.3.4"),
+    Dependency("FLAC_jll"; compat="~1.4.4"),
     Dependency("libvorbis_jll"),
     Dependency("Ogg_jll"),
     Dependency("Opus_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"5")

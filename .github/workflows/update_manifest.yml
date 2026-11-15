@@ -14,27 +14,27 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: julia-actions/setup-julia@5c9647d97b78a5debe5164e9eec09d653d29bd71 # v2.6.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: julia-actions/setup-julia@da908477b5db94c10ffce8cfea9f2b3b9d5db687 # v3.0.3
         with:
-          version: '1.7.3' # Use the version of Julia used on the build machine
+          version: '1.13.2' # Use the version of Julia used on the build machine
           arch: x64
-      - uses: julia-actions/cache@2b1bf4d8a138668ac719ea7ca149b53ed8d8401e # v2.0.7
+      - uses: julia-actions/cache@9353db09a0f2bbbdec6f41791918c75d37391b36 # v3.5.0
         with:
           cache-registries: "true"
           cache-compiled: "true"
       - name: Instantiate the manifest
-        shell: julia --project=.ci --color=yes {0}
+        shell: julia --project=.ci/bb1_project --color=yes {0}
         run: |
           using Pkg
           Pkg.instantiate()
           Pkg.precompile()
       - name: Generate commit message
-        run: julia --project=.ci --color=yes .ci/update_manifest.jl
+        run: julia --project=.ci/bb1_project --color=yes .ci/bb1_project/update_manifest.jl
         id: commit_message
       - name: Show git status
         run: git status
-      - uses: peter-evans/create-pull-request@67ccf781d68cd99b580ae25a5c18a1cc84ffff1f # v7.0.6
+      - uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           delete-branch: true

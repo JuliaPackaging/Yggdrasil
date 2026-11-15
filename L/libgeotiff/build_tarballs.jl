@@ -1,8 +1,8 @@
 using BinaryBuilder, Pkg
 
 name = "libgeotiff"
-upstream_version = v"1.7.3"
-version_offset = v"0.2.1"
+upstream_version = v"1.7.4"
+version_offset = v"0.2.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -10,7 +10,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/OSGeo/libgeotiff.git",
-        "d2c72dba35ac9d1af2201191064ca4cbe7f57f11"),
+        "96024f677642486f97cac43659bef57f4ed0590b"),
 ]
 
 # Bash recipe for building across all platforms
@@ -57,5 +57,3 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     julia_compat="1.6", preferred_gcc_version=v"8")
-
-# Build trigger: 1

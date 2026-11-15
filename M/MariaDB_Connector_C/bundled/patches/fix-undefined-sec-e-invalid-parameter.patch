@@ -1,6 +1,8 @@
 --- a/libmariadb/secure/schannel_certs.c
 +++ b/libmariadb/secure/schannel_certs.c
-@@ -33,5 +33,24 @@
+@@ -31,6 +31,24 @@
+ #ifdef _WIN32_WINNT
+ #undef _WIN32_WINNT
  #define _WIN32_WINNT 0x0601
  #endif
 +#ifndef SEC_E_INVALID_PARAMETER
@@ -21,7 +23,5 @@
 +#ifndef SEC_E_MUTUAL_AUTH_FAILED
 +#define SEC_E_MUTUAL_AUTH_FAILED _HRESULT_TYPEDEF_(0x80090363)
 +#endif
-+
  #include "schannel_certs.h"
- #include <malloc.h>
- #include <stdio.h>
+ #include "ma_schannel.h"

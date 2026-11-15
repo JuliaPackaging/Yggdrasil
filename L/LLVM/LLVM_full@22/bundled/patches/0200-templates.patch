@@ -1,0 +1,40 @@
+From ad520c15cc2dae3231c38cca916f93c8347c1bd9 Mon Sep 17 00:00:00 2001
+From: Valentin Churavy <v.churavy@gmail.com>
+Date: Tue, 8 Nov 2022 13:18:59 -0500
+Subject: [PATCH] handle template weirdness
+
+---
+ lld/ELF/InputFiles.cpp        |    2 +-
+ lld/ELF/SyntheticSections.cpp |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/lld/ELF/InputFiles.cpp b/lld/ELF/InputFiles.cpp
+index 6c7ef27cbd49..7dcf1cc5b877 100644
+--- a/lld/ELF/InputFiles.cpp
++++ b/lld/ELF/InputFiles.cpp
+@@ -310,7 +310,7 @@ template <class ELFT> static void doParseFile(InputFile *file) {
+     ctx.objectFiles.push_back(cast<ELFFileBase>(file));
+     cast<ObjFile<ELFT>>(file)->parse();
+   } else if (auto *f = dyn_cast<SharedFile>(file)) {
+-    f->parse<ELFT>();
++    f->template parse<ELFT>();
+   } else if (auto *f = dyn_cast<BitcodeFile>(file)) {
+     ctx.bitcodeFiles.push_back(f);
+     f->parse();
+
+diff --git a/lld/ELF/SyntheticSections.cpp b/lld/ELF/SyntheticSections.cpp
+index b359c2e7bcea..812d38ca81de 100644
+--- a/lld/ELF/SyntheticSections.cpp
++++ b/lld/ELF/SyntheticSections.cpp
+@@ -3360,7 +3360,7 @@ template <class ELFT> void elf::splitSections() {
+       if (auto *s = dyn_cast<MergeInputSection>(sec))
+         s->splitIntoPieces();
+       else if (auto *eh = dyn_cast<EhInputSection>(sec))
+-        eh->split<ELFT>();
++        eh->template split<ELFT>();
+     }
+   });
+ }
+--
+2.38.1
+

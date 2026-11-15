@@ -3,20 +3,18 @@
 using BinaryBuilder
 
 name = "Xorg_libICE"
-version = v"1.1.1"
+version = v"1.1.2"
 
 # Collection of sources required to build libICE
 sources = [
     ArchiveSource("https://www.x.org/archive/individual/lib/libICE-$(version).tar.xz",
-                  "03e77afaf72942c7ac02ccebb19034e6e20f456dcf8dddadfeb572aa5ad3e451"),
+                  "974e4ed414225eb3c716985df9709f4da8d22a67a2890066bc6dfc89ad298625"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libICE-*/
-# When compiling for things like ppc64le, we need newer `config.sub` files
-update_configure_scripts
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=no
+cd $WORKSPACE/srcdir/libICE-*
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 """

@@ -1,21 +1,28 @@
 using BinaryBuilder
 
 name = "Zstd"
-upstream_version = v"1.5.6"
-version = v"1.5.7" # need to change version to change compat bounds, but in the future we can go back to follow upstream
+version = v"1.5.7"
 
 sources = [
-    ArchiveSource("https://github.com/facebook/zstd/releases/download/v$(upstream_version)/zstd-$(upstream_version).tar.gz",
-                  "8c29e06cf42aacc1eafc4077ae2ec6c6fcb96a626157e0593d5e82a34fd403c1"),
+    ArchiveSource("https://github.com/facebook/zstd/releases/download/v$(version)/zstd-$(version).tar.gz",
+                  "eb33e51f49a15e023950cd7825ca74a4a2b43db8354825ac24fc1b7ee09e6fa3"),
+    DirectorySource("bundled"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/zstd-*
+
+# zstd uses `qsort_r` which is not available from musl <https://github.com/facebook/zstd/issues/4311>.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/qsort_r.patch
+
 mkdir build-zstd && cd build-zstd
 
 if [[ "${target}" == *86*-linux-gnu ]]; then
     # Using `clock_gettime` on old Glibc requires linking to `librt`.
     sed -ri "s/^c_link_args = \[(.*)\]/c_link_args = [\1, '-lrt']/" ${MESON_TARGET_TOOLCHAIN}
+elif [[ "${target}" == *musl* ]]; then
+    # Define `__MUSL__` for the patch `qsort_r.patch`
+    sed -ri "s/^c_args = \[(.*)\]/c_args = [\1, '-D__MUSL__']/" ${MESON_TARGET_TOOLCHAIN}
 elif [[ "${target}" == i686-*-mingw* ]]; then
     # Using `WakeConditionVariable`/`InitializeConditionVariable`/`SleepConditionVariableCS`
     # require Windows Vista:
@@ -46,5 +53,3 @@ dependencies = Dependency[]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                clang_use_lld=false, julia_compat="1.6")
-
-# Build Trigger: 2

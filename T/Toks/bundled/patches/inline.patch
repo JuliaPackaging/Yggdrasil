@@ -1,0 +1,13 @@
+diff --git a/src/core/spm_c.c b/src/core/spm_c.c
+index 583b32b..ff26ab2 100644
+--- a/src/core/spm_c.c
++++ b/src/core/spm_c.c
+@@ -356,7 +356,7 @@ static __attribute__((noinline)) uint64_t window_batch(const toks_tables *t, con
+ 
+ /* K7's c twin (spm_bpe.md §5.5 "the compiled rule", kernels.md §8): a window's word starts as a bit mask (8 ASCII
+  * bytes per step through cut_ab, any other char by the per-char rule); the unit's first char gets one too */
+-__attribute__((always_inline)) uint64_t toks_k7_spm_c(const toks_spm *s, toks_k7_args *a)
++inline __attribute__((always_inline)) uint64_t toks_k7_spm_c(const toks_spm *s, toks_k7_args *a)
+ {
+     const uint8_t *text = a->text;
+     uint64_t len = a->len, i = a->pos, base = i, m = 0, cuts = a->flags & 1u;

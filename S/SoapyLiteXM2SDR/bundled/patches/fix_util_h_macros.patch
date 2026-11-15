@@ -1,0 +1,15 @@
+diff --git a/litex_m2sdr/software/user/ad9361/util.h b/litex_m2sdr/software/user/ad9361/util.h
+index 5b20764..d0847a1 100644
+--- a/litex_m2sdr/software/user/ad9361/util.h
++++ b/litex_m2sdr/software/user/ad9361/util.h
+@@ -56,9 +56,7 @@
+ /******************************************************************************/
+ #define SUCCESS									0
+ #define ARRAY_SIZE(arr)							(sizeof(arr) / sizeof((arr)[0]))
+-#if (__cplusplus >= 201703L)
+-/* pass */
+-#else
++#ifndef __cplusplus
+ #define min(x, y)								(((x) < (y)) ? (x) : (y))
+ #define min_t(type, x, y)						(type)min((type)(x), (type)(y))
+ #define max(x, y)								(((x) > (y)) ? (x) : (y))

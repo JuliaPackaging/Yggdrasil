@@ -3,11 +3,12 @@
 using BinaryBuilder
 
 name = "Patchelf"
-version = v"0.18.0"
+
+version = v"0.19.3"
 
 sources = [
     ArchiveSource("https://github.com/NixOS/patchelf/releases/download/$(version)/patchelf-$(version).tar.bz2",
-                  "1952b2a782ba576279c211ee942e341748fdb44997f704dd53def46cd055470b"),
+                  "20dbe23e9dbc4ad769078a867ad002c04297a069ff93c95fb72242dd55d4dd6f"),
 ]
 
 # Bash recipe for building across all platforms
@@ -33,4 +34,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"8")

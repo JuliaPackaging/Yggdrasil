@@ -2,36 +2,47 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
+
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "AMReX"
-version_string = "25.02"
+version_string = "26.07"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/AMReX-Codes/amrex/releases/download/$(version_string)/amrex-$(version_string).tar.gz",
-                  "2680a5a9afba04e211cd48d27799c5a25abbb36c6c3d2b6c13cd4757c7176b23"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-                  "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
+                  "d95e355ca7c5653078bd57721c28cbbda4c56b4465636b10ff680cab8ee6e56b"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/amrex
 
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    export MACOSX_DEPLOYMENT_TARGET=10.14
-    popd
-fi
-
 # Correct HDF5 compiler wrappers
 perl -pi -e 's+-I/workspace/srcdir/hdf5-1[.]14[.]./src/H5FDsubfiling++' $(which h5pcc)
+
+if [[ "${target}" == *-apple-* ]]; then
+    # AMReX unconditionally uses `std::ostringstream::view()` (C++20, P2495), which
+    # is not yet available in the libc++/libstdc++ headers shipped with some of
+    # our cross toolchains even though the compiler itself accepts `-std=c++20`.
+    # Replace it with the equivalent (if slightly less efficient) `.str()`, which
+    # has been available since C++98 and works everywhere.
+    for f in Src/Base/AMReX_Print.H Src/Base/AMReX_VisMF.cpp Src/Base/AMReX_VisMF.H \
+             Src/Base/AMReX_FabArrayUtility.H Src/Base/AMReX_ParmParse.cpp \
+             Src/Base/AMReX.cpp Src/Base/AMReX_Utility.cpp; do
+        sed -i 's/\.view()/\.str()/g' "${f}"
+    done
+fi
+
+if [[ "${target}" == *-apple-* ]]; then
+    # Install libdispatch. This is required for the MacOS linker.
+    # It should probably have been put into the root file system.
+    # This requires GCC 14 or later.
+    apk add libdispatch libdispatch-dev --repository=http://dl-cdn.alpinelinux.org/alpine/v3.17/community
+fi
 
 if [[ "${target}" == *-apple-* ]]; then
     if grep -q MPICH_NAME ${prefix}/include/mpi.h; then
@@ -53,12 +64,6 @@ fi
 
 if [[ "${target}" == *-mingw32* ]]; then
     # AMReX requires a parallel HDF5 library
-    hdf5opts="-DAMReX_HDF5=OFF"
-elif [[ "${target}" == aarch64-*-freebsd* ]]; then
-    # HDF5 has not yet been built for these platforms -- update this once HDF5 has been updated
-    hdf5opts="-DAMReX_HDF5=OFF"
-elif [[ "${bb_full_target}" == x86_64-*-freebsd*mpi+mpitrampoline ]]; then
-    # HDF5 has not yet been built for these platforms -- update this once HDF5 has been updated
     hdf5opts="-DAMReX_HDF5=OFF"
 else
     hdf5opts="-DAMReX_HDF5=ON"
@@ -92,11 +97,13 @@ fi
 install_license LICENSE
 """
 
+sources, script = require_macos_sdk("14.0", sources, script)
+
 augment_platform_block = """
     using Base.BinaryPlatforms
     $(MPI.augment)
     augment_platform!(platform::Platform) = augment_mpi!(platform)
-"""
+    """
 
 # The products that we will ensure are always built
 products = [
@@ -115,33 +122,10 @@ platforms = filter(p -> libgfortran_version(p).major ≥ 5, platforms)
 # We cannot build with musl since AMReX requires the `fegetexcept` GNU API
 platforms = filter(p -> libc(p) ≠ "musl", platforms)
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms;
-                                                         MPICH_compat="4.2.3",
-                                                         MPItrampoline_compat="5.5.1",
-                                                         OpenMPI_compat="4.1.6, 5")
-# Avoid platforms where the MPI implementation isn't supported
-filter!(platforms) do p
-    if p["mpi"] == "mpich"
-        arch(p) == "riscv64" && return false # very soon available
-    elseif p["mpi"] == "mpitrampoline"
-        libc(p) == "musl" && return false
-        arch(p) == "riscv64" && return false # we should really build this
-    elseif p["mpi"] == "openmpi"
-        arch(p) == "armv6l" && libc(p) == "glibc" && return false
-        Sys.isfreebsd(p) && arch(p) == "aarch64" && return false # we should build this
-        arch(p) == "riscv64" && return false                     # we should build this at some time
-    end
-    return true
-end
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
-# Windows does not supported parallel HDF5
+# Windows does not support parallel HDF5
 hdf5_platforms = filter(!Sys.iswindows, platforms)
-
-# HDF5 has not yet been built for aarch64-unknown-freebsd. Re-enable once it's available.
-hdf5_platforms = filter(p -> !(arch(p) == "aarch64" && Sys.isfreebsd(p)), hdf5_platforms)
-
-# HDF5 has not yet been built for x86_64-unknown-freebsd with MPItrampoline. Re-enable once it's available.
-hdf5_platforms = filter(p -> !(arch(p) == "x86_64" && Sys.isfreebsd(p) && p["mpi"] == "mpitrampoline"), hdf5_platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
@@ -149,10 +133,7 @@ dependencies = [
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else. 
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae");
                platforms=filter(!Sys.isbsd, platforms)),
-    # We had to restrict compat with HDF5 because of ABI breakage:
-    # https://github.com/JuliaPackaging/Yggdrasil/pull/10347#issuecomment-2662923973
-    # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
-    Dependency(PackageSpec(name="HDF5_jll"); compat="1.14.0 - 1.14.3", platforms=hdf5_platforms),
+    Dependency(PackageSpec(name="HDF5_jll"); compat="2.1.1", platforms=hdf5_platforms),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
                platforms=filter(Sys.isbsd, platforms)),
 ]
@@ -163,5 +144,7 @@ append!(dependencies, platform_dependencies)
 # - GCC 4 is too old: AMReX requires C++14, and thus at least GCC 5
 # - AMReX requires C++17, and at least GCC 8 to provide the <filesystem> header
 # - GCC 8.1.0 suffers from an ICE, so we use GCC 9 instead
+# - AMReX requires GCC 11
+# - We need GCC 14 so that gfortran understands `MACOSX_DEPLOYMENT_TARGET=14.0`
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, clang_use_lld=false, julia_compat="1.6", preferred_gcc_version = v"9")
+               augment_platform_block, julia_compat="1.10", lock_microarchitecture=false, preferred_gcc_version=v"14")

@@ -1,0 +1,10 @@
+--- a/src/runtime_src/core/common/config_reader.h
++++ b/src/runtime_src/core/common/config_reader.h
+@@ -438,7 +438,7 @@
+ get_verbosity()
+ {
+   // NOLINTNEXTLINE
+-  static unsigned int value = detail::get_uint_value("Runtime.verbosity",4);
++  static unsigned int value = detail::get_uint_value("Runtime.verbosity",0);
+   return value;
+ }

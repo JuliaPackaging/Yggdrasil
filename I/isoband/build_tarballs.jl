@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "isoband"
-version = v"0.2.3" # Fake version for building experimental platforms and setting Julia version to 1.6
+version = v"0.2.4" # Fake version (upstream is untagged; first JLL was 0.2.2), bumped to drop the stale `Pkg` dependency
 
 # Collection of sources required to complete build
 sources = [

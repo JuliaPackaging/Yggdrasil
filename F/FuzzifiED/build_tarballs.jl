@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "FuzzifiED"
-version = v"1.0.0"
+version = v"1.3.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/FuzzifiED/FuzzifiED_Fortran.git", "a81b1fa6b1560ab0046ec139dec0d0d355e56b34")
+    GitSource("https://github.com/FuzzifiED/FuzzifiED_Fortran.git", "ad545d26604fa14038683f95479981581d3e70e3")
 ]
 
 # Bash recipe for building across all platforms

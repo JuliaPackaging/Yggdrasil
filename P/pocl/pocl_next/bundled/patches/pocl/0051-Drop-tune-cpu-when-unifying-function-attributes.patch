@@ -1,0 +1,46 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Thu, 5 Nov 2026 22:14:14 +0100
+Subject: [PATCH] Drop tune-cpu when unifying function attributes
+
+Since LLVM 23, clang defaults to -mtune=apple-m5 on macOS (llvm#179136),
+so a kernel library built for Apple silicon carries "tune-cpu"="apple-m5",
+while kernels from SPIR-V or the in-process front-end have no tune-cpu.
+AArch64's areInlineCompatible compares subtarget feature bits, which
+include the tuned processor family (the ARMProcFamily features are not
+InlineIgnore), so the inliner rejects every call between the two kinds of
+functions, even for alwaysinline callees.
+
+The barrier helpers (_cl_work_group_barrier etc.) then stay out-of-line
+calls. The work-group passes do not see a barrier in the kernel, the
+work-item loop spans the whole kernel, and local memory written before the
+barrier is read before the other work-items wrote it.
+
+unifyLLVMFunctionAttributes already unifies target-cpu and target-features
+for this reason; drop tune-cpu as well, so all functions tune for the
+target CPU.
+
+Assisted-by: Claude Code (Opus 5.5)
+---
+ lib/llvmopencl/LLVMUtils.cc | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/lib/llvmopencl/LLVMUtils.cc b/lib/llvmopencl/LLVMUtils.cc
+index ec52bddbc..50b8006e8 100644
+--- a/lib/llvmopencl/LLVMUtils.cc
++++ b/lib/llvmopencl/LLVMUtils.cc
+@@ -933,6 +933,14 @@ void unifyLLVMFunctionAttributes(llvm::Module &M, bool TouchAlwaysInline) {
+       F.addFnAttr("target-cpu", TargetCPU);
+     if (!TargetFeatures.empty())
+       F.addFnAttr("target-features", TargetFeatures);
++    // Tune for the target CPU everywhere. Clang 23 defaults to
++    // -mtune=apple-m5 on macOS, so the kernel library carries a "tune-cpu"
++    // that code from SPIR-V or the in-process front-end lacks. AArch64 counts
++    // the tuned processor family among the subtarget features it compares,
++    // so the inliner rejects such calls even for alwaysinline callees, which
++    // leaves the barrier inside a library call that the work-group passes do
++    // not see.
++    F.removeFnAttr("tune-cpu");
+     // Under -cl-fast-relaxed-math the x86 backend lowers vector float
+     // division to rcpps plus one Newton-Raphson step. With FMA the result
+     // is within 1 ulp; without it (the x86-64 baseline, and every distro

@@ -1,0 +1,17 @@
+Use FindCUDAToolkit instead of the deprecated FindCUDA, which cannot find the toolkit when cross-compiling for x86_64.
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 63252a4d..77600452 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -195,8 +195,8 @@ if (TPL_ENABLE_CUDALIB)   ## want to use cuda
+   if(CMAKE_CUDA_COMPILER)
+     message("-- Enabled support for CUDA.")
+     enable_language(CUDA)
+-    find_package(CUDA REQUIRED)
+-    if (CUDA_FOUND)
++    find_package(CUDAToolkit REQUIRED)
++    if (CUDAToolkit_FOUND)
+       set(CUDA_SEPARABLE_COMPILATION ON)  
+       if(NOT CMAKE_CUDA_ARCHITECTURES)
+         # if(${CMAKE_VERSION} VERSION_LESS_EQUAL "3.13.4")

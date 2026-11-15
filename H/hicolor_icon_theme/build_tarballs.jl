@@ -3,19 +3,19 @@
 using BinaryBuilder
 
 name = "hicolor_icon_theme"
-version = v"0.17"
+version = v"0.18"
 
 # Collection of sources required to build hicolor_icon_theme
 sources = [
     ArchiveSource("https://icon-theme.freedesktop.org/releases/hicolor-icon-theme-$(version.major).$(version.minor).tar.xz",
-                  "317484352271d18cbbcfac3868eab798d67fff1b8402e740baa6ff41d588a9d8"),
+                  "db0e50a80aa3bf64bb45cbca5cf9f75efd9348cf2ac690b907435238c3cf81d7"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/hicolor-icon-theme-*/
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make install
+meson setup build --prefix=${prefix}
+meson install -C build
 """
 
 # These are the platforms we will build for by default, unless further
@@ -33,4 +33,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

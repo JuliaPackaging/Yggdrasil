@@ -2,39 +2,28 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
+
 name = "SPIRV_Tools"
-version = v"2024.4"
+version = v"2026.4"
 
 # Collection of sources required to build SPIRV-Tools
 sources = [
-    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "4d2f0b40bfe290dea6c6904dafdf7fd8328ba346"),
-    # vendored dependencies, see the DEPS file
-    GitSource("https://github.com/google/effcee.git", "2c97e5689ed8d7ab6ae5820f884f03a601ae124b"),
-    GitSource("https://github.com/google/googletest", "35d0c365609296fa4730d62057c487e3cfa030ff"),
-    GitSource("https://github.com/google/re2.git", "6dcd83d60f7944926bfd308cc13979fc53dd69ca"),
-    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "3f17b2af6784bfa2c5aa5dbb8e0e74a607dd8b3b"),
-    # updated macOS SDK
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git",
+              "ef96ed763b43b59b33b31b362f09a02b729fa1c9"; tag="v$(version.major).$(version.minor)"),
+    # the SPIRV-Headers revision from DEPS; its other dependencies are only for the tests
+    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git",
+              "496543121ce6419f23d6fa5d7194ba66c36212d2"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-# put vendored dependencies in places they will be picked up by the build system
-mv effcee SPIRV-Tools/external/effcee
-mv re2 SPIRV-Tools/external/re2
-mv googletest SPIRV-Tools/external/googletest
-mv SPIRV-Headers SPIRV-Tools/external/spirv-headers
+# use CMake from JLLs
+apk del cmake
 
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    # Install a newer SDK which supports `std::filesystem`
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    export MACOSX_DEPLOYMENT_TARGET=10.15
-    popd
-fi
+mv SPIRV-Headers SPIRV-Tools/external/spirv-headers
 
 cd SPIRV-Tools
 install_license LICENSE
@@ -43,6 +32,10 @@ CMAKE_FLAGS=()
 
 # Release build for best performance
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
+
+# Build all shared libraries (downstream projects seem to depend on it)
+CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
+CMAKE_FLAGS+=(-DSPIRV_TOOLS_BUILD_STATIC=OFF)
 
 # Install things into $prefix
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
@@ -58,12 +51,16 @@ CMAKE_FLAGS+=(-DSPIRV_WERROR=OFF)
 
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
 ninja -C build -j ${nproc} install
+
+# Remove unwanted static libraries
+rm -f $prefix/lib/*.a
 """
+
+sources, script = require_macos_sdk("10.15", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
-platforms = expand_cxxstring_abis(platforms)
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -74,12 +71,23 @@ products = [
     ExecutableProduct("spirv-cfg", :spirv_cfg),
     ExecutableProduct("spirv-link", :spirv_link),
     ExecutableProduct("spirv-lint", :spirv_lint),
+    ExecutableProduct("spirv-objdump", :spirv_objdump),
     ExecutableProduct("spirv-reduce", :spirv_reduce),
-    LibraryProduct("libSPIRV-Tools-shared", :libSPIRV_Tools),
+    ExecutableProduct("spirv-diff", :spirv_diff),
+    LibraryProduct("libSPIRV-Tools", :libSPIRV_Tools),
+    LibraryProduct("libSPIRV-Tools-opt", :libSPIRV_Tools_opt),
+    LibraryProduct("libSPIRV-Tools-diff", :libSPIRV_Tools_diff),
+    LibraryProduct("libSPIRV-Tools-link", :libSPIRV_Tools_link),
+    LibraryProduct("libSPIRV-Tools-lint", :libSPIRV_Tools_lint),
+    LibraryProduct("libSPIRV-Tools-reduce", :libSPIRV_Tools_reduce),
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = []
+dependencies = [
+    # CMake 3.22.1 or higher is required
+    HostBuildDependency("CMake_jll")
+]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"10") # requires C++17 + filesystem
+               preferred_gcc_version=v"10", # requires C++17 + filesystem
+               julia_compat="1.6")
