@@ -40,12 +40,13 @@ EXTRA_CMAKE_ARGS+=(
     # only breaks linking the pdtest executables.
     -DCMAKE_EXE_LINKER_FLAGS="-Wl,--allow-shlib-undefined"
 )
-""", raw"""
+""") * raw"""
 # The swapped-in x86_64 tools would otherwise be packaged.
 if [[ "${target}" == aarch64-* ]]; then
-    rm -rf ${prefix}/cuda
+    rm -rfv ${prefix}/cuda
 fi
-""")
+install_license License.txt
+"""
 
 platforms = CUDA.supported_platforms(; min_version=v"12")
 # Jetson boards are left out; sbsa covers aarch64 servers such as Grace Hopper.
