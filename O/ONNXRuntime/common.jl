@@ -11,9 +11,11 @@ apk del cmake # Need CMake >= 3.28
 
 cd $WORKSPACE/srcdir
 
+cuda_version=${bb_full_target##*-cuda+}
 if [[ $target != *-w64-mingw32* ]]; then
     if [[ $bb_full_target == *-cuda+* ]]; then
         export CUDA_PATH=$prefix/cuda
+        ln -s $prefix/cuda/lib $prefix/cuda/lib64
         if [[ $target == aarch64-* ]]; then
             export LD_LIBRARY_PATH="/usr/lib/csl-musl-x86_64:/usr/lib/csl-glibc-x86_64:${LD_LIBRARY_PATH}"
             rm -rf $CUDA_PATH/bin $CUDA_PATH/nvvm/bin $CUDA_PATH/nvvm/lib64
@@ -24,14 +26,6 @@ if [[ $target != *-w64-mingw32* ]]; then
                 cp -a cuda_nvcc-linux-x86_64-*-archive/nvvm/{bin,lib64} $CUDA_PATH/nvvm/
             fi
         fi
-        [[ -e $CUDA_PATH/lib64 ]] || ln -s lib $CUDA_PATH/lib64
-        if compgen -G "cudnn-*-archive" > /dev/null; then
-            cp -a cudnn-*-archive/include/* $CUDA_PATH/include/
-            cp -a cudnn-*-archive/lib/* $CUDA_PATH/lib/
-            cudnn_path=$CUDA_PATH
-        else
-            cudnn_path=$prefix
-        fi
 
         # CUDA compilation can run out of storage
         mkdir $WORKSPACE/tmpdir
@@ -41,11 +35,14 @@ if [[ $target != *-w64-mingw32* ]]; then
             -DCMAKE_CUDA_COMPILER=$CUDA_PATH/bin/nvcc
             -DCMAKE_CUDA_HOST_COMPILER=$(which $CXX)
             -DCUDAToolkit_ROOT=$CUDA_PATH
-            -DCMAKE_CUDA_ARCHITECTURES="75-real;80-real;86-real;89-real;90-real;100-real;120"
-            -DCUDNN_PATH=$cudnn_path
+            -DCMAKE_CUDA_ARCHITECTURES="${CUDA_ARCHS}"
             -Donnxruntime_CUDA_HOME=$CUDA_PATH
+            -Donnxruntime_CUDNN_HOME=$prefix
             -Donnxruntime_NVCC_THREADS=1
+            -Donnxruntime_TENSORRT_HOME=$prefix
             -Donnxruntime_USE_CUDA=ON
+            -Donnxruntime_USE_TENSORRT=ON
+            -Donnxruntime_USE_TENSORRT_BUILTIN_PARSER=ON
         )
     fi
 
@@ -92,7 +89,7 @@ if [[ $target != *-w64-mingw32* ]]; then
     fi
 else
     if [[ $bb_full_target == *-cuda* ]]; then
-        srcdir=onnxruntime-$target-cuda
+        srcdir=onnxruntime-$target-cuda+$cuda_version
     else
         srcdir=onnxruntime-$target
     fi
