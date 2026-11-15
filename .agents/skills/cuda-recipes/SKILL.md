@@ -23,6 +23,7 @@ Recipe rules:
 
 - **Name:** call a CUDA variant `PackageName_CUDA`, not `_GPU`.
 - **Platforms:** use `CUDA.supported_platforms(; min_version, max_version)`, which covers Linux glibc x86_64 and aarch64. Bounds compare full SDK versions, so select one minor with `min_version=v"13.0", max_version=v"13.0.999"`. Before CUDA 13, aarch64 distinguishes Jetson and SBSA. Preview toolkits require `prereleases=true`.
+- **CUDA majors:** build for every major the code supports, CUDA 13 included, and say why when one is left out.
 - **Other OSes:** nvcc builds in BinaryBuilder cannot target Windows, musl or macOS. Windows vendor binaries can be repackaged.
 - **Build loop:** skip with `should_build_platform(triplet(platform))`, then call `build_tarballs` once per platform. Get dependencies inside the loop with `CUDA.required_dependencies(platform; static_sdk=true)`. Omit the static SDK only when the build needs no static CUDA libraries.
 - **Build arguments:** `augment_platform_block=CUDA.augment`, `lazy_artifacts=true`, `dont_dlopen=true`.
