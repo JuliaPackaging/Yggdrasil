@@ -45,12 +45,11 @@ EXTRA_CMAKE_ARGS+=(
 if [[ "${target}" == aarch64-* ]]; then
     rm -rfv ${prefix}/cuda
 fi
+# The x86_64 CUDA archives in srcdir stop auto_install_license from finding it.
 install_license License.txt
 """
 
 platforms = CUDA.supported_platforms(; min_version=v"12")
-# Jetson boards are left out; sbsa covers aarch64 servers such as Grace Hopper.
-filter!(p -> get(tags(p), "cuda_platform", "") != "jetson", platforms)
 # An artifact also matches newer toolkits of its major, but contains no PTX for newer GPUs.
 # 12.8 adds sm_100 and sm_120, and 12.9 adds sm_103 and sm_121.
 filter!(p -> Base.thisminor(VersionNumber(p["cuda"])) in (v"12.0", v"12.8", v"12.9", v"13.0"), platforms)
