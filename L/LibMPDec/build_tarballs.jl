@@ -3,27 +3,21 @@
 using BinaryBuilder, Pkg
 
 name = "LibMPDec"
-version = v"4.0.0"
+version = v"4.0.1"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-$(version).tar.gz",
-                  "942445c3245b22730fd41a67a7c5c231d11cb1b9936b9c0f76334fb7d0b4468c"),
-    DirectorySource("bundled"),
+                  "96d33abb4bb0070c7be0fed4246cd38416188325f820468214471938545b1ac8"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/mpdecimal*
+cd $WORKSPACE/srcdir/mpdecimal-*
 
-#TODO # Give somewhat reasonable names to libraries for Windows
-#TODO atomic_patch -p1 ../patches/01-libname-windows.patch
-# By default use `${CC}` as linker
-atomic_patch -p1 ../patches/02-linker-cc.patch
-
-autoreconf -fiv
-
-#TODO export CFLAGS="-std=gnu99"
+# configure adds -std=c99 only for compilers it knows by name, not for `cc`.
+# GCC 4.8 defaults to gnu90, which rejects declarations in for loops.
+export CFLAGS="-std=gnu99"
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
@@ -32,6 +26,7 @@ autoreconf -fiv
     --disable-static
 make -j${nproc}
 make install
+install_license COPYRIGHT.txt
 """
 
 # These are the platforms we will build for by default, unless further
@@ -40,7 +35,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    # A C++ version is available as well. We don't build it (yet?) because there doesn't seem to be a need (yet?).
+    # libmpdec++ isn't built, since nothing needs it yet.
     LibraryProduct("libmpdec", :libmpdec)
 ]
 
