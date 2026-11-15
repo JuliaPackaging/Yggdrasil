@@ -31,6 +31,7 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
 - **Julia versions**: `julia_versions` comes from `common.jl` with prerelease tags stripped, so `1.15.0-DEV` appears as `v"1.15.0"`. To drop some, filter it right after the include, before computing platforms and `julia_compat`, e.g. `filter!(>=(v"1.11"), julia_versions)`. Filter platforms after `libjulia_platforms`, then call `expand_cxxstring_abis`.
 - **Versioning**: when `common.jl` adds or drops a Julia version that the recipe's filter keeps (any version, for a recipe that is unfiltered or filtered only by a lower bound), its `julia_compat` changes on its next build. That rebuild needs a new JLL version, not a `# Build trigger` bump (see [Dependencies](../../../AGENTS.md#dependencies)). Without a new upstream release, keep `version` and raise `ygg_version` (see [`jll-versioning`](../jll-versioning/SKILL.md)). `@assert libjulia_min_julia_version <= v"1.10.0"` makes dropping the oldest Julia version fail the build instead of silently narrowing `julia_compat`.
 - **Local builds**: the triplet carries the tag, e.g. `x86_64-linux-gnu-cxx11-julia_version+1.12.0`.
+- **Registration**: General's AutoMerge rejects a new package whose name contains "julia", starts with "Ju" or ends in "jl", JLLs included. Such a JLL's first registration needs a manual merge: once its General PR passes every other check, ask in the #pkg-registration channel on the Julia Slack.
 
 ## CxxWrap
 

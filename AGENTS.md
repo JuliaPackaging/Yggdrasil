@@ -13,7 +13,7 @@ This guide helps AI agents generate correct `build_tarballs.jl` recipes for Bina
 
 Topic guidance lives in `.agents/skills/`, one `SKILL.md` per topic in the Agent Skills format. Before working on a recipe, read every skill whose condition below matches it; each is as binding as this guide.
 
-- [`mpi-recipes`](.agents/skills/mpi-recipes/SKILL.md): the recipe depends on an MPI implementation, includes `platforms/mpi.jl` or calls `MPI.augment_platforms`, links libmpi, msmpi or mpif, or uses the `mpi` platform tag
+- [`mpi-recipes`](.agents/skills/mpi-recipes/SKILL.md): the recipe depends on an MPI implementation or on a JLL with MPI variants, includes `platforms/mpi.jl` or calls `MPI.augment_platforms`, links libmpi, msmpi or mpif, or uses the `mpi` platform tag
 - [`cuda-recipes`](.agents/skills/cuda-recipes/SKILL.md): the recipe uses nvcc, includes `platforms/cuda.jl` or `C/CUDA/common.jl`, depends on `CUDA_SDK_jll`, `CUDA_Runtime_jll`, `CUDA_Compiler_jll` or `CUDA_Driver_jll`, or uses the `cuda` platform tag
 - [`blas-recipes`](.agents/skills/blas-recipes/SKILL.md): the recipe depends on `libblastrampoline_jll`, links `-lblastrampoline`, or calls BLAS/LAPACK with 64-bit integers (ILP64, `64_`-suffixed symbols)
 - [`libjulia-recipes`](.agents/skills/libjulia-recipes/SKILL.md): the recipe depends on `libjulia_jll` or `libcxxwrap_julia_jll`, includes `L/libjulia/common.jl` or calls `libjulia_platforms`, uses the `julia_version` platform tag, or is `L/libjulia` itself
