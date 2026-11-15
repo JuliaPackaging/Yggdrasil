@@ -5,6 +5,7 @@
 Yggdrasil is a collection of recipes to build binary packages, saved in files called `build_tarballs.jl`.
 
 The rules every recipe must follow, along with a build script reference and common patterns, are in [AGENTS.md](AGENTS.md). It is written for AI coding agents, but applies to human contributors too.
+Before opening a pull request, check it against the [review checklist](.agents/skills/reviewing-prs/SKILL.md) maintainers use.
 
 If you are new to BinaryBuilder, please read [its documentation](https://docs.binarybuilder.org/stable/).
 In particular, the section [Project flow](https://docs.binarybuilder.org/stable/#Project-flow) presents different ways you can use BinaryBuilder to create a new `build_tarballs.jl` script or edit an existing one.
@@ -38,7 +39,7 @@ Other changes may be required on a case-by-case basis, depending on the success 
 When building binary packages we have to deal with [several incompatibilities](https://docs.binarybuilder.org/stable/tricksy_gotchas/).
 As a general remark, when using GCC as compiler (which is default when targeting Linux and Windows platforms) try to use the ***oldest*** version that is able to compile your code, which can be selected with the `preferred_gcc_version` keyword argument to the [`build_tarballs`](https://docs.binarybuilder.org/stable/reference/#BinaryBuilder.build_tarballs) function, especially for [C++ code](https://gcc.gnu.org/onlinedocs/libstdc++/manual/abi.html), this is the only way to get maximum compatibility.
 In any case, avoid using GCC 11+ when building C++, as that would be incompatible with Julia v1.6.
-There are currently no such problems with LLVM (the default compiler framework used when targeting macOS and FreeBSD), so that you can generally use the latest version of LLVM available, which is already the default.
+LLVM (the default compiler framework used when targeting macOS and FreeBSD) defaults to its latest version; set `preferred_llvm_version` only when required, and then to the oldest version that works.
 
 ### Recommendations and tips about commit messages
 
@@ -118,6 +119,8 @@ If the package needs a new release with different compat bounds anyway, bump its
 
 Here are some recommendations for Yggdrasil maintainers:
 
+* review pull requests with the [review checklist](.agents/skills/reviewing-prs/SKILL.md), posting each finding on the line it concerns
+* convert to draft any pull request created more than a year ago with no activity for six months
 * before merging a pull request, make sure the log of the build does not contain important warnings or error messages such as
   * missing license file.  This is reported as an error in CI log during audit but it is not as a fatal error which would prevent successful build
   * "Linked library `<LIBRARY NAME>` could not be resolved and could not be auto-mapped"

@@ -39,3 +39,4 @@ Check that:
 - [ ] Executables run (at least `--version` or `--help`)
 - [ ] Platform-specific behavior works, if any
 - [ ] Packages that will use the JLL pass their tests with it (`Pkg.add` them to the same environment)
+- [ ] After merging, the registration PR in General passes AutoMerge, or is merged by hand when its failure is spurious
