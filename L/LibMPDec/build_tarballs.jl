@@ -15,9 +15,10 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/mpdecimal-*
 
-# configure adds -std=c99 only for compilers it knows by name, not for `cc`.
-# GCC 4.8 defaults to gnu90, which rejects declarations in for loops.
-export CFLAGS="-std=gnu99"
+# configure adds its release flags, -std=c99 and -DNDEBUG, only for compilers
+# it knows by name, not for `cc`. GCC 4.8 defaults to gnu90, which rejects
+# declarations in for loops.
+export CFLAGS="-std=gnu99 -DNDEBUG"
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
