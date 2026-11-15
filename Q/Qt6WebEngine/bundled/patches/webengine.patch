@@ -1,0 +1,121 @@
+diff --color -ur qtwebengine-everywhere-src-6.5.2/cmake/Functions.cmake qtwebengine-everywhere-src-6.5.2-patched/cmake/Functions.cmake
+--- qtwebengine-everywhere-src-6.5.2/cmake/Functions.cmake	2023-07-07 19:40:32.000000000 +0200
++++ qtwebengine-everywhere-src-6.5.2-patched/cmake/Functions.cmake	2024-03-03 11:09:22.095314343 +0100
+@@ -373,9 +373,7 @@
+             set(sdk_name "macosx")
+         endif()
+         set(xcrun_version_arg "--show-sdk-version")
+-        execute_process(COMMAND /usr/bin/xcrun --sdk ${sdk_name} ${xcrun_version_arg}
+-                        OUTPUT_VARIABLE sdk_version
+-                        ERROR_VARIABLE xcrun_error)
++        set(sdk_version "11.1")
+         if(NOT sdk_version)
+             message(FATAL_ERROR
+                     "Can't determine darwin ${sdk_name} SDK version. Error: ${xcrun_error}")
+diff --color -ur qtwebengine-everywhere-src-6.5.2/src/3rdparty/chromium/build/config/apple/sdk_info.py qtwebengine-everywhere-src-6.5.2-patched/src/3rdparty/chromium/build/config/apple/sdk_info.py
+--- qtwebengine-everywhere-src-6.5.2/src/3rdparty/chromium/build/config/apple/sdk_info.py	2023-07-07 19:40:32.000000000 +0200
++++ qtwebengine-everywhere-src-6.5.2-patched/src/3rdparty/chromium/build/config/apple/sdk_info.py	2024-03-03 13:26:50.348817327 +0100
+@@ -49,14 +49,10 @@
+ def FillXcodeVersion(settings, developer_dir):
+   """Fills the Xcode version and build number into |settings|."""
+   if developer_dir:
+-    xcode_version_plist_path = os.path.join(developer_dir,
+-                                            'Contents/version.plist')
+-    with open(xcode_version_plist_path, 'rb') as f:
+-      version_plist = plistlib.load(f)
+     settings['xcode_version'] = FormatVersion(
+-        version_plist['CFBundleShortVersionString'])
++        '11.1')
+     settings['xcode_version_int'] = int(settings['xcode_version'], 10)
+-    settings['xcode_build'] = version_plist['ProductBuildVersion']
++    settings['xcode_build'] = '1'
+     return
+ 
+   lines = subprocess.check_output(['xcodebuild',
+diff --color -ur qtwebengine-everywhere-src-6.5.2/src/CMakeLists.txt qtwebengine-everywhere-src-6.5.2-patched/src/CMakeLists.txt
+--- qtwebengine-everywhere-src-6.5.2/src/CMakeLists.txt	2023-07-07 19:40:32.000000000 +0200
++++ qtwebengine-everywhere-src-6.5.2-patched/src/CMakeLists.txt	2024-03-03 11:09:22.098647721 +0100
+@@ -122,10 +122,6 @@
+ #  GN PROJECT
+ ##
+ 
+-if(CMAKE_CROSSCOMPILING AND NOT Gn_FOUND)
+-   message(FATAL_ERROR "No gn found for cross-compilation")
+-endif()
+-
+ if(NOT Gn_FOUND)
+     externalproject_add(gn
+         SOURCE_DIR  ${CMAKE_CURRENT_LIST_DIR}/gn
+@@ -135,8 +131,9 @@
+         USES_TERMINAL_BUILD TRUE
+         EXCLUDE_FROM_ALL TRUE
+         CMAKE_ARGS -DCMAKE_BUILD_TYPE=Release
+-                   -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+-                   -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
++                   -DCMAKE_C_COMPILER=$ENV{HOSTCC}
++                   -DCMAKE_CXX_COMPILER=$ENV{HOSTCXX}
++                   -DCMAKE_AR=$ENV{HOSTAR}
+                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                    -DCMAKE_PREFIX_PATH:PATH=<INSTALL_DIR>
+                    -DWEBENGINE_ROOT_BUILD_DIR=${PROJECT_BINARY_DIR}
+diff --color -ur qtwebengine-everywhere-src-6.5.2/src/core/CMakeLists.txt qtwebengine-everywhere-src-6.5.2-patched/src/core/CMakeLists.txt
+--- qtwebengine-everywhere-src-6.5.2/src/core/CMakeLists.txt	2023-07-07 19:40:32.000000000 +0200
++++ qtwebengine-everywhere-src-6.5.2-patched/src/core/CMakeLists.txt	2024-03-03 13:24:31.403885260 +0100
+@@ -341,6 +341,9 @@
+             devtools_fast_bundle=false
+             devtools_skip_typecheck=false
+             enable_jxl_decoder=false # temporarily because libjxl causes internal compiler error on armv7
++            is_cfi=false
++            use_cups=false
++            use_nss_certs=false
+         )
+ 
+         extend_gn_list(gnArgArg
+@@ -411,7 +414,6 @@
+                 use_bluez=false
+                 use_vaapi=false
+                 use_udev=true
+-                is_cfi=false
+                 use_ozone=true
+                 ozone_auto_platforms=false
+                 ozone_platform_headless=false
+@@ -502,6 +504,8 @@
+                 use_external_popup_menu=false
+                 angle_enable_vulkan=false
+                 use_static_angle=true
++                target_os="mac"
++                use_system_xcode=false
+             )
+         endif()
+ 
+diff --color -ur qtwebengine-everywhere-src-6.5.2/src/pdf/CMakeLists.txt qtwebengine-everywhere-src-6.5.2-patched/src/pdf/CMakeLists.txt
+--- qtwebengine-everywhere-src-6.5.2/src/pdf/CMakeLists.txt	2023-07-07 19:40:32.000000000 +0200
++++ qtwebengine-everywhere-src-6.5.2-patched/src/pdf/CMakeLists.txt	2024-03-03 13:24:11.923663917 +0100
+@@ -126,11 +126,13 @@
+           enable_web_speech=false
+           chrome_pgo_phase=0
+           strip_absolute_paths_from_debug_symbols=false
++          is_cfi=false
++          use_cups=false
++          use_nss_certs=false
+         )
+ 
+         if(LINUX OR ANDROID)
+             list(APPEND gnArgArg
+-                is_cfi=false
+                 ozone_auto_platforms=false
+                 use_gnome_keyring=false
+                 enable_vr=false
+@@ -145,7 +147,11 @@
+             )
+         endif()
+         if(MACOS)
+-            list(APPEND gnArgArg angle_enable_vulkan=false)
++            list(APPEND gnArgArg
++                angle_enable_vulkan=false
++                target_os="mac"
++                use_system_xcode=false
++            )
+         endif()
+         if(IOS)
+             extend_gn_list(gnArgArg
