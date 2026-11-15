@@ -38,9 +38,6 @@ CUDA_ARGS="--with-cuda=1 --with-cuda-include=${prefix}/cuda/include --with-cuda-
 """
 
 const script_body = raw"""
-# so we can use a newer version of cmake
-apk del cmake
-
 cd $WORKSPACE/srcdir/petsc*
 
 # TODO: MPITrampoline embeds the wrong CC. https://github.com/JuliaPackaging/Yggdrasil/issues/7420
@@ -95,19 +92,11 @@ if [[ ${target} == *mingw* ]]; then
     atomic_patch -p1 $WORKSPACE/srcdir/patches/mingw-version.patch
 fi
 
-# Tell PETSc that SuiteSparse_jll works with 64-bit BLAS indices.
-# Otherwise PETSc's per-package `requires32bitintblas` default rejects
-# the combination at configure time.
-atomic_patch -p1 $WORKSPACE/srcdir/patches/suitesparse-64bit-blas.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/external-pkgs-64bit-blas.patch
 
-mkdir $libdir/petsc
+mkdir -v $libdir/petsc
 build_petsc()
 {
-    # so we can use a newer version of cmake
-    apk del cmake
-
-    # Compile a debug version?
     DEBUG_FLAG=0
     PETSC_CONFIG="${1}_${2}_${3}"
     if [[ "${4}" == "deb" ]]; then
@@ -193,7 +182,6 @@ build_petsc()
         USE_HYPRE=1
     fi
 
-    # triangle, tetgen
     USE_TRIANGLE=0
     USE_TETGEN=0
     if [ "${1}" == "double" ] ; then
@@ -246,44 +234,7 @@ build_petsc()
 
     HDF5_ARGS="--with-hdf5=1 --with-hdf5-include=${includedir} --with-hdf5-lib=[${libdir}/libhdf5_hl.${dlext},${libdir}/libhdf5.${dlext}]"
 
-    # Define our toolchain for PETSc and all the other packages it configures recursively
-    #
-    # Don't know how to properly pass `CMAKE_INSTALL_PREFIX` to
-    # SuiteSparse. Apparently the definition in our target toolchain
-    # overrides whatever we pass by command line or via environment
-    # variable. So we copy and modify our target toolchain.
-    export CMAKE_INSTALL_PREFIX=${libdir}/petsc/${PETSC_CONFIG}
-    export CMAKE_TOOLCHAIN_FILE=$(pwd)/cmake.toolchain.file
-    sed -e 's+set(CMAKE_INSTALL_PREFIX $ENV{prefix})+set(CMAKE_INSTALL_PREFIX $ENV{CMAKE_INSTALL_PREFIX})+' <${CMAKE_TARGET_TOOLCHAIN} >${CMAKE_TOOLCHAIN_FILE}
-    echo CMAKE_INSTALL_PREFIX:
-    echo ${CMAKE_INSTALL_PREFIX}
-    echo CMAKE_TOOLCHAIN_FILE:
-    echo ${CMAKE_TOOLCHAIN_FILE}
-    echo CMAKE_TOOLCHAIN_FILE:
-    cat ${CMAKE_TOOLCHAIN_FILE}
-
-    echo "USE_SUPERLU_DIST="$USE_SUPERLU_DIST
-    echo "USE_SUITESPARSE="$USE_SUITESPARSE
-    echo "USE_HYPRE="$USE_HYPRE
-    echo "USE_TETGEN="$USE_TETGEN
-    echo "USE_TRIANGLE="$USE_TRIANGLE
-    echo "1="${1}
-    echo "2="${2}
-    echo "3="${3}
-    echo "4="${4}
-    echo "USE_INT64"=$USE_INT64
-    echo "Machine_name="$Machine_name
-    echo "LDFLAGS="$LDFLAGS
-    echo "target="$target
-    echo "DEBUG="${DEBUG_FLAG}
-    echo "COPTFLAGS="${_COPTFLAGS}
-    echo "BLAS_LAPACK_LIB="$BLAS_LAPACK_LIB
-    echo "prefix="${libdir}/petsc/${PETSC_CONFIG}
-    echo "MPI_CC="$MPI_CC
-    echo "MPI_FC="$MPI_FC
-    echo "MPI_CXX="$MPI_CXX
-
-    mkdir ${libdir}/petsc/${PETSC_CONFIG}
+    mkdir -v ${libdir}/petsc/${PETSC_CONFIG}
 
     # On AArch64, clang defaults to outline atomics, i.e. it turns atomic
     # operations into calls to helpers such as `__aarch64_ldadd8_acq_rel`. Those
@@ -336,10 +287,10 @@ build_petsc()
     # Let the selected width's superlu_dist/HYPRE headers win over the other width's copies
     # in ${includedir} (after configure: --with-clean recreates the arch include dir).
     if [ ${USE_SUPERLU_DIST} == 1 ]; then
-        cp ${SLU_INC}/superlu*.h* ${target}_${PETSC_CONFIG}/include/
+        cp -v ${SLU_INC}/superlu*.h* ${target}_${PETSC_CONFIG}/include/
     fi
     if [ ${USE_HYPRE} == 1 ]; then
-        cp ${HYPRE_INC}/HYPRE*.h ${target}_${PETSC_CONFIG}/include/
+        cp -v ${HYPRE_INC}/HYPRE*.h ${target}_${PETSC_CONFIG}/include/
     fi
 
     if [[ "${target}" == *-mingw* ]]; then
@@ -359,11 +310,16 @@ build_petsc()
     make install
 
     # Remove PETSc.pc because petsc.pc also exists, causing conflicts on case-insensitive file-systems.
-    rm ${libdir}/petsc/${PETSC_CONFIG}/lib/pkgconfig/PETSc.pc
+    rm -v ${libdir}/petsc/${PETSC_CONFIG}/lib/pkgconfig/PETSc.pc
 
     # Don't ship the staged SuperLU_DIST/hypre headers that `make
     # install` copied over from the arch include dir.
-    rm -f ${libdir}/petsc/${PETSC_CONFIG}/include/superlu* ${libdir}/petsc/${PETSC_CONFIG}/include/HYPRE*
+    if [ ${USE_SUPERLU_DIST} == 1 ]; then
+        rm -v ${libdir}/petsc/${PETSC_CONFIG}/include/superlu*
+    fi
+    if [ ${USE_HYPRE} == 1 ]; then
+        rm -v ${libdir}/petsc/${PETSC_CONFIG}/include/HYPRE*
+    fi
     if  [[ "${1}" == "double" && "${2}" == "real" &&  "${3}" == "Int64" && "${4}" == "opt" ]]; then
 
         # Compile examples (to allow testing the installation).
@@ -371,12 +327,6 @@ build_petsc()
         # julia> run(`$(PETSc_jll.ex42()) -stokes_ksp_monitor -log_view` )
         workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/ksp/ksp/tutorials/
         make --directory=${workdir} PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex42
-        file=${workdir}/ex42
-        if [[ "${target}" == *-mingw* ]]; then
-            if [[ -f "$file" ]]; then
-                mv $file ${file}${exeext}
-            fi
-        fi
         install -Dvm 755 ${workdir}/ex42${exeext} "${bindir}/ex42${exeext}"
 
         # This is a staggered grid Stokes example, as discussed in https://joss.theoj.org/papers/10.21105/joss.04531
@@ -384,23 +334,11 @@ build_petsc()
         # julia> run(`$(PETSc_jll.ex4()) -ksp_monitor -log_view` )
         workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/dm/impls/stag/tutorials/
         make --directory=$workdir PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex4
-        file=${workdir}/ex4
-        if [[ "${target}" == *-mingw* ]]; then
-            if [[ -f "$file" ]]; then
-                mv $file ${file}${exeext}
-            fi
-        fi
         install -Dvm 755 ${workdir}/ex4${exeext} "${bindir}/ex4${exeext}"
 
         # this is the example that PETSc uses to test the correct installation
         workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/snes/tutorials/
         make --directory=$workdir PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex19
-        file=${workdir}/ex19
-        if [[ "${target}" == *-mingw* ]]; then
-            if [[ -f "$file" ]]; then
-                mv $file ${file}${exeext}
-            fi
-        fi
         install -Dvm 755 ${workdir}/ex19${exeext} "${bindir}/ex19${exeext}"
 
     fi
@@ -410,14 +348,7 @@ build_petsc()
         # Int32 flavor of the installation-check example
         workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/snes/tutorials/
         make --directory=$workdir PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex19
-        file=${workdir}/ex19
-        if [[ "${target}" == *-mingw* ]]; then
-            if [[ -f "$file" ]]; then
-                mv $file ${file}${exeext}
-            fi
-        fi
-        mv ${file}${exeext} ${file}_int32${exeext}
-        install -Dvm 755 ${workdir}/ex19_int32${exeext} "${bindir}/ex19_int32${exeext}"
+        install -Dvm 755 ${workdir}/ex19${exeext} "${bindir}/ex19_int32${exeext}"
 
     fi
 
@@ -427,14 +358,7 @@ build_petsc()
         # We compile it with debug flags (helpful to catch issues)
         workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/snes/tutorials/
         make --directory=$workdir PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex19
-        file=${workdir}/ex19
-        if [[ "${target}" == *-mingw* ]]; then
-            if [[ -f "$file" ]]; then
-                mv $file ${file}${exeext}
-            fi
-        fi
-        mv ${file}${exeext} ${file}_int64_deb${exeext}
-        install -Dvm 755 ${workdir}/ex19_int64_deb${exeext} "${bindir}/ex19_int64_deb${exeext}"
+        install -Dvm 755 ${workdir}/ex19${exeext} "${bindir}/ex19_int64_deb${exeext}"
 
     fi
 
@@ -449,14 +373,13 @@ petsc_script(preamble::AbstractString, variants::AbstractString) =
 
 function petsc_dependencies(platforms; superlu_cuda::Bool=false)
     return [
-    HostBuildDependency(PackageSpec(; name="CMake_jll")),
-
     BuildDependency("LLVMCompilerRT_jll"; platforms=filter(Sys.isapple, platforms)),
 
     # The stdlib bounds (CSL, OpenBLAS, libblastrampoline, SuiteSparse, Zlib) are at or below what
     # Julia 1.12, the julia_compat floor, ships, so they exclude no allowed Julia version.
+    # 1.3.0 is the first with riscv64 builds.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae");
-               compat="1.2.0"),
+               compat="1.3.0"),
     # ILP64 BLAS: OpenBLAS_jll on Windows (linked directly), libblastrampoline_jll on
     # everything else (Julia wires its stdlib OpenBLAS into LBT's ILP64 slots).
     Dependency(PackageSpec(name="OpenBLAS_jll", uuid="4536629a-c528-5b80-bd46-f80d51c5b363");
