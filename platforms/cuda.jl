@@ -362,34 +362,68 @@ function cuda_nvcc_redist_source(cuda_ver, arch)
     end
 end
 
+# GPUs only found in Tegra SoCs (Jetson, DRIVE)
+const tegra_gpu_archs = ["53", "62", "72", "87", "101", "110"]
+
 """
     cuda_gpu_archs(platform::Platform)
 
-Returns a list of the GPU architectures supported by the given CUDA platform.
+Returns a sorted list of the GPU architectures supported by the given CUDA platform:
+x86_64 and SBSA omit the Tegra architectures, Jetson has only those, and aarch64 from CUDA 13
+has both.
 """
 function cuda_gpu_archs(platform::Platform)
     ver = VersionNumber(tags(platform)["cuda"])
-    cuda_gpu_archs(ver)
+    archs = cuda_gpu_archs(ver)
+    cuda_platform = get(tags(platform), "cuda_platform", "")
+    if arch(platform) == "x86_64" && isempty(cuda_platform)
+        return filter!(!in(tegra_gpu_archs), archs)
+    elseif arch(platform) == "aarch64" && cuda_platform == "sbsa"
+        return filter!(!in(tegra_gpu_archs), archs)
+    elseif arch(platform) == "aarch64" && cuda_platform == "jetson"
+        return filter!(in(tegra_gpu_archs), archs)
+    elseif arch(platform) == "aarch64" && isempty(cuda_platform) && ver >= v"13"
+        return archs
+    end
+    error("No GPU architectures known for $(triplet(platform))")
 end
 
 """
     cuda_gpu_archs(cuda_ver)
 
-Returns a list of the GPU architectures supported by the given CUDA version.
+Returns a sorted list of the GPU architectures supported by the given CUDA version.
 """
 function cuda_gpu_archs(cuda_ver)
-    # List roughly based on https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/
+    # Architectures each toolkit supports: `nvcc --list-gpu-arch`, tabulated in
+    # https://gist.github.com/agirault/d0d66c12c85dbc2662c95569ef039a1d
+    # GPUs per architecture: https://developer.nvidia.com/cuda-gpus and
+    # https://developer.nvidia.com/cuda-legacy-gpus
+    # Overview: https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/
 
     # CUDA 10 and later
     supported_archs = [
         "75",       # sm_75 -> Turing (RTX 20xx, T4)
         ]
 
+    if cuda_ver < v"11"
+        # Their last JetPack (4.6) ships CUDA 10.2
+        push!(supported_archs, "53")        # sm_53 -> Maxwell (Jetson Nano, TX1)
+        push!(supported_archs, "62")        # sm_62 -> Pascal (Jetson TX2)
+    end
+
+    if cuda_ver < v"13"
+        push!(supported_archs, "70")        # sm_70 -> Volta (V100)
+        push!(supported_archs, "72")        # sm_72 -> Volta (Jetson AGX Xavier)
+    end
+
     if cuda_ver >= v"11.1"
         push!(supported_archs, "80")        # sm_80 -> Ampere (A100)
         push!(supported_archs, "86")        # sm_86 -> Ampere (A40, RTX 30xx, RTX Ax000 Ada)
     end
 
+    if cuda_ver >= v"11.4"
+        push!(supported_archs, "87")        # sm_87 -> Ampere (Jetson Orin)
+    end
 
     if cuda_ver >= v"11.8"
         push!(supported_archs, "89")        # sm_89 -> Ada lovelace (RTX 4090/4080, L40)
@@ -404,12 +438,21 @@ function cuda_gpu_archs(cuda_ver)
         push!(supported_archs, "120")       # sm_120 -> Blackwell (RTX 50xx, RTX PRO x000 BLACKWELL)
     end
 
+    if v"12.8" <= cuda_ver < v"13"
+        push!(supported_archs, "101")       # sm_101 -> Blackwell (Jetson Thor), renumbered sm_110 in CUDA 13
+    end
+
     if cuda_ver >= v"12.9"
         push!(supported_archs, "103")       # sm_103 -> Blackwell (B300, GB300)
         push!(supported_archs, "121")       # sm_121 -> Blackwell (DGX SPARK, DIGITS)
     end
 
-    supported_archs
+    if cuda_ver >= v"13"
+        push!(supported_archs, "110")       # sm_110 -> Blackwell (Jetson Thor)
+    end
+
+    sort!(supported_archs; by=a -> parse(Int, a))
+    return supported_archs
 end
 
 end
