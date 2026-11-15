@@ -3,7 +3,7 @@ using BinaryBuilderBase
 using Pkg
 
 sources = AbstractSource[
-    GitSource("https://github.com/microsoft/onnxruntime.git", "6af1a932e2286d5c58166085d24c68783033edee"; tag="v$(version)"),
+    GitSource("https://github.com/microsoft/onnxruntime.git", "fab30a46491a40f5e4c968b80e8a59acbbb91b53"; tag="v$(version)"),
 ]
 
 script = raw"""

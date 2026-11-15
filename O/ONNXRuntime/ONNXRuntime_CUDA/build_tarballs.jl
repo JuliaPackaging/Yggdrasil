@@ -10,7 +10,7 @@ include(joinpath(YGGDRASIL_DIR, "C", "CUDA", "common.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "ONNXRuntime_CUDA"
-version = v"1.31.1"
+version = v"1.32.0"
 
 # Cf. https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html#requirements
 # Cf. https://onnxruntime.ai/docs/execution-providers/TensorRT-ExecutionProvider.html#requirements
@@ -35,8 +35,8 @@ include(joinpath(@__DIR__, "..", "common.jl"))
 
 # Override the default sources
 append!(sources, [
-    ArchiveSource("https://github.com/microsoft/onnxruntime/releases/download/v$version/onnxruntime-win-x64-gpu_cuda12-$version.zip", "5cbf65edc93dc7bb3296249b1b6e1b2228e575902af64d6163d0da2103cef9d5"; unpack_target="onnxruntime-x86_64-w64-mingw32-cuda+12.8"),
-    ArchiveSource("https://github.com/microsoft/onnxruntime/releases/download/v$version/onnxruntime-win-x64-gpu_cuda13-$version.zip", "6c64508de9c04f9d938297287e9d81fa47a2fbbb30cc04e6fac0db88f6cb68c1"; unpack_target="onnxruntime-x86_64-w64-mingw32-cuda+13.0"),
+    ArchiveSource("https://github.com/microsoft/onnxruntime/releases/download/v$version/onnxruntime-win-x64-gpu_cuda12-$version.zip", "11b2ee6bc3c25b559503ec52eca14515d6e38dc4c532cc3017644b0f01d83a39"; unpack_target="onnxruntime-x86_64-w64-mingw32-cuda+12.8"),
+    ArchiveSource("https://github.com/microsoft/onnxruntime/releases/download/v$version/onnxruntime-win-x64-gpu_cuda13-$version.zip", "caa79b622b24861cfd8f0ad91d3e17eedad7dfc1bb9b23f6bdff70fa5a0f2351"; unpack_target="onnxruntime-x86_64-w64-mingw32-cuda+13.0"),
 ])
 
 # Override the default platforms

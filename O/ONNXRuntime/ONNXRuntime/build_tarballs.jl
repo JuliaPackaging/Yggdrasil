@@ -6,13 +6,13 @@ const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "ONNXRuntime"
-version = v"1.31.1"
+version = v"1.32.0"
 
 include(joinpath(@__DIR__, "..", "common.jl"))
 
 # Override the default sources
 append!(sources, [
-    ArchiveSource("https://github.com/microsoft/onnxruntime/releases/download/v$version/onnxruntime-win-x64-$version.zip", "5869e26bb25314375f2d5ef1877e3ea06b1543d6c710e6e4a1ec2f7177ab4b2c"; unpack_target="onnxruntime-x86_64-w64-mingw32"),
+    ArchiveSource("https://github.com/microsoft/onnxruntime/releases/download/v$version/onnxruntime-win-x64-$version.zip", "aaa1d04fcf86bd31e84b90bc0cbde80e632bd0720dcc5d8ba05c4fe45c09d127"; unpack_target="onnxruntime-x86_64-w64-mingw32"),
 ])
 
 # The default SDK's libc++ breaks protobuf's constinit empty string
