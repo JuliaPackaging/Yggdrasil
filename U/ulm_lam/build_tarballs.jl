@@ -18,7 +18,7 @@ llvm_version = v"23.1.4"
 sources = [
     # UlmLAM 0.1.0
     GitSource("https://github.com/michael-lehn/ulm-lam.git",
-              "9ad46d536758385e124fd4d3c8646ce0e91121f3"),
+              "e443780bb480095c66fed1612ac9f90b403997f0"),
 ]
 
 script = raw"""
