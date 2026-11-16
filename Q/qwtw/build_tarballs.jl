@@ -2,54 +2,88 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "qwtw"
-version = v"2.13.2"
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
-# Collection of sources required to complete build
+name = "qwtw"
+version = v"3.0.0"
+
 sources = [
-    GitSource("https://github.com/ig-or/qwtw.git", "e4d0d8969b0828f7471fd1a646e0d512190f7497")
+    GitSource("https://github.com/ig-or/qwtw.git",
+              "bb317eda2008643f49d0f98e013f95b39c1c4f55"),
+    GitSource("https://github.com/ig-or/qwt.git",
+              "2dc09fd351ec8c30252913b5eb8af6c46ef4101c"),
 ]
 
-# Bash recipe for building across all platforms
 script = raw"""
-apk add g++
-cd $WORKSPACE/srcdir/qwtw
-mkdir build
-cd build
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ../.
-make -j${nproc}
-make install
+# Qt 6.10 requires CMake >= 3.22; use CMake_jll from the host prefix
+apk del cmake
+
+# Populate vendored Qwt submodule directory (and move out of srcdir root so
+# BinaryBuilder's automatic license check sees a single top-level directory)
+rm -rf ${WORKSPACE}/srcdir/qwtw/extern/qwt
+mv ${WORKSPACE}/srcdir/qwt ${WORKSPACE}/srcdir/qwtw/extern/qwt
+
+cd ${WORKSPACE}/srcdir/qwtw
+
+CMAKE_EXTRA_ARGS=()
+if [[ "${target}" == *apple-darwin* ]]; then
+    CMAKE_EXTRA_ARGS+=(
+        -DQT_HOST_PATH=${host_prefix}
+        -DCMAKE_PREFIX_PATH=${host_prefix}
+        -DQT_NO_APPLE_SDK_AND_XCODE_CHECK=ON
+    )
+else
+    CMAKE_EXTRA_ARGS+=(
+        -DQT_HOST_PATH=${host_prefix}
+    )
+fi
+
+cmake -B build -G Ninja \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_FIND_ROOT_PATH=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DNO_VERSION_INFO=ON \
+    -DWITH_UDP_SYNC=ON \
+    -DUSE_MGL=OFF \
+    "${CMAKE_EXTRA_ARGS[@]}"
+
+cmake --build build --parallel ${nproc}
+cmake --install build
+
+install_license ${WORKSPACE}/srcdir/qwtw/LICENSE
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
+# Install MacOSX14.0 SDK to match Qt6Base_jll 6.10 and provide UniformTypeIdentifiers + C++23 std::filesystem
+sources, script = require_macos_sdk("14.0", sources, script; deployment_target="12")
 
 platforms = [
-    Platform("x86_64", "windows"),
-    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("x86_64",  "linux"; libc="glibc"),
+    Platform("aarch64", "linux"; libc="glibc"),
+    Platform("x86_64",  "macos"),
+    Platform("aarch64", "macos"),
+    Platform("x86_64",  "windows"),
 ]
 platforms = expand_cxxstring_abis(platforms)
 
-# The products that we will ensure are always built
 products = [
     LibraryProduct("libqwtw", :qwtw),
     ExecutableProduct("qwproc", :qwproc),
 ]
 
-# Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="Libglvnd_jll", uuid="7e76a0d4-f3c7-5321-8279-8d96eeed0f29"))
-    Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"); compat="=1.79.0")
-    Dependency(PackageSpec(name="Qt_jll", uuid="ede63266-ebff-546c-83e0-1c6fb6d0efc8"))
-    Dependency(PackageSpec(name="qwt_jll", uuid="ed0789fa-10db-50b3-94da-03266d70be0f"))
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
-    Dependency(PackageSpec(name="FreeType2_jll", uuid="d7e528f0-a631-5988-bf34-fe36492bcfd7"); compat="2.10.4")
-    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="3.0.8")
-    Dependency(PackageSpec(name="marble_jll", uuid="678d7417-9a84-558b-a975-2deb8d71bebc"); compat="23.04.3")
-    Dependency(PackageSpec(name="MathGL_jll", uuid="6834ddeb-87f2-5bbb-bfa4-c37572f854d4"))
+    HostBuildDependency("CMake_jll"),
+    HostBuildDependency("Qt6Base_jll"),
+    Dependency("Qt6Base_jll"; compat="~6.10.2"),
+    Dependency("Libglvnd_jll"; compat="1.7.0"),
+    Dependency("CompilerSupportLibraries_jll"),
+    BuildDependency("Vulkan_Headers_jll"),
 ]
 
-
-# Build the tarballs, and possibly a `build.jl` as well.
+# GCC 13 provides C++23 support and avoids GCC <= 12 ICEs with Qt6 headers on MinGW;
+# LLVM 16 matches Qt6Base_jll's build toolchain.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version = v"9.1.0")
+               julia_compat="1.6",
+               preferred_gcc_version=v"13",
+               preferred_llvm_version=v"16.0.6")
