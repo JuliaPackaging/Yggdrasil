@@ -54,6 +54,11 @@ atomic_patch -p1 ../minimum-maximum.patch
 # spirv-val rejected it. InstCombine leaves such switches when it narrows their
 # conditions, e.g. in Julia's union splits.
 atomic_patch -p1 ../switch-bool-selector.patch
+# Backport of https://github.com/KhronosGroup/SPIRV-LLVM-Translator/pull/NNNN
+# ("Don't emit loop controls for loops whose header ends in a switch"): they
+# were placed after the header's OpSwitch, which spirv-val rejects. LLVM's loop
+# unroller produces such headers, e.g. for `x^n` in a partially unrolled loop.
+atomic_patch -p1 ../loop-merge-switch-header.patch
 install_license LICENSE.TXT
 
 CMAKE_FLAGS=()
