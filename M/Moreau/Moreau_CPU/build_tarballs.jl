@@ -4,10 +4,10 @@
 using BinaryBuilder
 
 name = "Moreau_CPU"
-version = v"0.4.1"
+version = v"0.5.0"
 sources = [
     GitSource("https://github.com/moreau-project/moreau.git",
-        "799c9fdc0d3cb7675e723a3fb9eb413015a64f93"),
+        "6d0c4ff31e763ef29d26bf1dd9076b4d9378bafa"),
 ]
 
 script = raw"""
