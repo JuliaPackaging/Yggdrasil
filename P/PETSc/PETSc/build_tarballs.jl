@@ -6,7 +6,7 @@ include(joinpath(@__DIR__, "..", "common.jl"))
 
 name = "PETSc"
 version = petsc_version
-ygg_version = v"3.25.7"  # compat changes need a new JLL version
+ygg_version = v"3.25.8"  # compat changes need a new JLL version
 
 sources = petsc_sources()
 
