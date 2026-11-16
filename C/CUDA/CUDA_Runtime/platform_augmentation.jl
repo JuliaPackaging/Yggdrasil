@@ -26,6 +26,52 @@ function augment_platform!(platform::Platform)
     return platform
 end
 
+# For JLLs whose builds follow our toolkit selection: the platform augmentation block they
+# embed (`CUDA.augment` in Yggdrasil) calls this, so that a release of this package fixes
+# the selection logic for all of them without rebuilding them. Keep the signature stable.
+#
+# Copies our selection into `platform`. If `artifacts_toml` has no build for it and the
+# platform's other tags, which must be set already, selects the `cuda=none` build instead.
+# A `cuda` tag that is already set is an explicit request, and is kept as is.
+import Artifacts
+
+function augment_dependent!(platform::Platform, artifacts_toml::String)
+    explicit = haskey(platform, "cuda")
+    if !explicit
+        for tag in ("cuda", "cuda_local", "cuda_platform")
+            haskey(host_platform, tag) && (platform[tag] = host_platform[tag])
+        end
+    end
+    BinaryPlatforms.set_compare_strategy!(platform, "cuda", dependent_comparison_strategy)
+    explicit && return platform
+
+    if platform["cuda"] != "none" && isfile(artifacts_toml) &&
+       isempty(Artifacts.select_downloadable_artifacts(artifacts_toml; platform,
+                                                       include_lazy=true))
+        platform["cuda"] = "none"
+    end
+    return platform
+end
+
+# a dependent's `cuda=X.Y` build needs our toolkit X.Y, or, from CUDA 11, a newer minor
+# of the same major
+function dependent_comparison_strategy(a::String, b::String, a_requested::Bool, b_requested::Bool)
+    av = tryparse(VersionNumber, a)
+    bv = tryparse(VersionNumber, b)
+    (av === nothing || bv === nothing) && return a == b
+
+    # CUDA builds need our toolkit, which a local toolkit replaces
+    local_preference === true && return false
+
+    a_requested && b_requested && return thisminor(av) == thisminor(bv)
+    build, host = a_requested ? (bv, av) : (av, bv)
+    if host >= v"11"
+        build.major == host.major && thisminor(build) <= thisminor(host)
+    else
+        thisminor(build) == thisminor(host)
+    end
+end
+
 # The toolkit selection is baked into the precompilation cache, which only depends on the
 # driver if one could be loaded. A cache made without one, e.g. on an HPC login node, thus
 # stays in use on GPU nodes sharing the depot. Recompiling there would make both kinds of
