@@ -84,8 +84,8 @@ augment_platform_block = """
 products = [ExecutableProduct("getdp", :getdp)]
 
 dependencies = [
-    # 3.25.7 is the first PETSc_jll with MUMPS in its complex variants.
-    Dependency("PETSc_jll"; compat="3.25.7"),
+    # PETSc_jll 3.25.6 has MUMPS in its complex variants from its build of #15594 on.
+    Dependency("PETSc_jll"; compat="3.25.6"),
     # 4.15.4 is the first gmsh_jll with the private API that GetDP includes.
     Dependency("gmsh_jll"; compat="4.15.4"),
     Dependency("libblastrampoline_jll"; compat="5.11.2"),
