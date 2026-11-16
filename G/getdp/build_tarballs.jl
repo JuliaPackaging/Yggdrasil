@@ -19,6 +19,8 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/getdp
 mpi_options=(-DMPI_HOME=${prefix})
+# GetDP's PETSc code calls MPI even when FindMPI cannot validate the cross-built libraries.
+mpi_lib=${libdir}/libmpi.${dlext}
 LBT=blastrampoline
 gmsh_lib=${libdir}/libgmsh.${dlext}
 if [[ ${target} == *-mingw* ]]; then
@@ -26,9 +28,13 @@ if [[ ${target} == *-mingw* ]]; then
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-dynamic-dependencies.patch
     LBT=blastrampoline-5
     gmsh_lib=${libdir}/gmsh.${dlext}
-    mpi_options+=(-DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64)
+    mpi_lib=${libdir}/msmpi.${dlext}
+    mpi_options+=(-DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=${mpi_lib} -DMPI_CXX_LIBRARIES=${mpi_lib})
 fi
-if [[ ${bb_full_target} == *mpitrampoline* ]]; then
+if [[ ${bb_full_target} == *mpiabi* ]]; then
+    mpi_lib=${libdir}/libmpi_abi.${dlext}
+elif [[ ${bb_full_target} == *mpitrampoline* ]]; then
+    mpi_lib=${libdir}/libmpitrampoline.${dlext}
     export MPITRAMPOLINE_CC=${CC} MPITRAMPOLINE_CXX=${CXX} MPITRAMPOLINE_FC=${FC}
 fi
 
@@ -44,6 +50,7 @@ cmake -B build \
     -DDEFAULT=0 \
     -DENABLE_KERNEL=1 \
     -DENABLE_PETSC=1 \
+    -DEXTERNAL_LIBRARIES=${mpi_lib} \
     -DPETSC_LIBS=${petsc_prefix}/lib/libpetsc_double_complex_Int32.${dlext} \
     -DPETSC_INC=${petsc_prefix}/include \
     -DENABLE_GMSH=1 \
@@ -88,6 +95,9 @@ dependencies = [
     Dependency("PETSc_jll"; compat="3.25.6"),
     # 4.15.4 is the first gmsh_jll with the private API that GetDP includes.
     Dependency("gmsh_jll"; compat="4.15.4"),
+    # Zlib_jll 1.4 tags its FreeBSD artifacts os_version 14.1, which the x86_64 FreeBSD 13.4
+    # build environment does not match, as in P/PETSc/common.jl.
+    Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"); compat="1.3.1"),
     Dependency("libblastrampoline_jll"; compat="5.11.2"),
     Dependency("CompilerSupportLibraries_jll"; compat="1.2.0"),
 ]
