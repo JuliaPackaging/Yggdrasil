@@ -10,7 +10,7 @@ version = v"3.0.0"
 
 sources = [
     GitSource("https://github.com/ig-or/qwtw.git",
-              "d50bc08a90389bc7ca9185769ff0d7aabffd16c6"),
+              "7e7a6ba3d6cabfb2bc2860b486b310933c4a0c9b"),
     GitSource("https://github.com/ig-or/qwt.git",
               "8a5ec6c5e507047c44860f3e3bdd8b0b1df9f922"),
 ]
