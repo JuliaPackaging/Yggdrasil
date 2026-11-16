@@ -1,3 +1,7 @@
+MPItrampoline: initialize PETSc's MPI keyvals and other MPI constants at run time,
+since MPItrampoline's MPI constants are not compile-time constants.
+Upstream: none found.
+
 diff --git a/src/mat/impls/aij/mpi/superlu_dist/superlu_dist.c b/src/mat/impls/aij/mpi/superlu_dist/superlu_dist.c
 index 7b5e24b..3f0e592 100644
 --- a/src/mat/impls/aij/mpi/superlu_dist/superlu_dist.c

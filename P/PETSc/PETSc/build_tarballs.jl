@@ -6,6 +6,7 @@ include(joinpath(@__DIR__, "..", "common.jl"))
 
 name = "PETSc"
 version = petsc_version
+ygg_version = v"3.25.7"  # compat changes need a new JLL version
 
 sources = petsc_sources()
 
@@ -25,7 +26,6 @@ augment_platform_block = """
     augment_platform!(platform::Platform) = augment_mpi!(platform)
 """
 
-# We attempt to build for all defined platforms
 platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
 
@@ -65,5 +65,6 @@ products = [
 dependencies = petsc_dependencies(platforms)
 append!(dependencies, platform_dependencies)
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+# MUMPS_jll, whose libraries PETSc links, is built with GCC 9.
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                augment_platform_block, julia_compat="1.12", preferred_gcc_version=v"9")
