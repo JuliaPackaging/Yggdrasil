@@ -241,14 +241,8 @@ function get_driver_info()
         end
     end
 
-    # invalidate the precompilation cache when the driver changes.
-    #
-    # NOTE: when CUDA_Driver_jll adopted the bundled forwards-compatible driver, this only
-    # covers that driver; the system driver, on which CUDA_Driver_jll's decision depends,
-    # cannot be located from here (it shares its SONAME with the loaded compat driver, so
-    # dlopen'ing it by name just returns the latter). A system driver upgrade then does
-    # not invalidate the baked selection; the `compat` preference recorded by
-    # CUDA_Driver_jll does at least cover the user changing their mind.
+    # invalidate the precompilation cache when the driver changes. with the compat driver
+    # loaded, CUDA_Driver_jll's `__init__` registers the system driver.
     driver_path = Libdl.dlpath(driver_handle)
     @debug "Adding include dependency on $driver_path"
     Base.include_dependency(driver_path)
