@@ -315,6 +315,11 @@ function build_script(standalone=false; spirv32=false)
     # - 0051: in CBS, give a private variable a copy per work-item when its address is stored,
     #   e.g. to carry a pointer across a barrier, instead of sharing it between the work-items
     #   (upstream PR #2433)
+    # - 0052: give the loop vectorizer the vector-math library that codegen maps vector math
+    #   builtins to, so that it costs their calls as vector calls rather than scalarized ones
+    #   and vectorizes kernels made mostly of math calls; only where the device CPU can call
+    #   every variant the vectorizer may pick: x86 with AVX2 and AArch64 without SVE (upstream
+    #   PR #2438)
     #
     # The `pocl` series on v7.2 is this series without cl_pocl_host_kernel (0034, 0035, 0039
     # and 0040), plus those of release_next's backports that it needs (upstream PRs #2239,
