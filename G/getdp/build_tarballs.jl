@@ -28,6 +28,7 @@ if [[ ${target} == *-mingw* ]]; then
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-dynamic-dependencies.patch
     LBT=blastrampoline-5
     gmsh_lib=${libdir}/gmsh.${dlext}
+    # With the bare name msmpi64, GetDP's own link left MPI_Init unresolved; its path links the DLL.
     mpi_lib=${libdir}/msmpi.${dlext}
     mpi_options+=(-DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=${mpi_lib} -DMPI_CXX_LIBRARIES=${mpi_lib})
 fi
@@ -36,6 +37,9 @@ if [[ ${bb_full_target} == *mpiabi* ]]; then
 elif [[ ${bb_full_target} == *mpitrampoline* ]]; then
     mpi_lib=${libdir}/libmpitrampoline.${dlext}
     export MPITRAMPOLINE_CC=${CC} MPITRAMPOLINE_CXX=${CXX} MPITRAMPOLINE_FC=${FC}
+elif [[ ${target} == x86_64-*-freebsd* && ${bb_full_target} == *mpi+openmpi* ]]; then
+    # FindMPI otherwise selects FreeBSD's base libz.so.6 from OpenMPI's -lz flag.
+    mpi_options+=(-DMPI_z_LIBRARY=${libdir}/libz.${dlext})
 fi
 
 # Explicit installed paths bypass petscvariables, whose flags belong to PETSc's build.
@@ -99,9 +103,16 @@ dependencies = [
     # build environment does not match, as in P/PETSc/common.jl.
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"); compat="1.3.1"),
     Dependency("libblastrampoline_jll"; compat="5.11.2"),
-    Dependency("CompilerSupportLibraries_jll"; compat="1.2.0"),
+    # 1.3.0 provides riscv64 artifacts and is bundled with Julia 1.12.
+    Dependency("CompilerSupportLibraries_jll"; compat="1.3.0"),
 ]
 append!(dependencies, platform_dependencies)
 
+ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
+
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.12", preferred_gcc_version=v"9", clang_use_lld=false)
+    augment_platform_block,
+    # PETSc_jll requires Julia 1.12.
+    julia_compat="1.12",
+    # Gmsh needs GLIBCXX_3.4.26 and MPICH needs GFORTRAN_9, both provided by GCC 9.
+    preferred_gcc_version=v"9")
