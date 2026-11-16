@@ -12,8 +12,7 @@ version = v"0.1.4"
 # Collection of sources required to build libsemigroups_julia
 sources = [
     GitSource("https://github.com/libsemigroups/Semigroups.jl.git",
-              "35190bb767ed06fbeb71ae3fced8ff19d62f448f";
-              tag="libsemigroups_julia-v$(version)"),
+              "35190bb767ed06fbeb71ae3fced8ff19d62f448f"),
 ]
 
 # Bash recipe for building across all platforms
