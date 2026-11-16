@@ -279,6 +279,58 @@ function render(rs::AbstractRegisterStep)
     return out
 end
 
+# Registers the BinaryBuilder2 packages that a build builds (`projects`, in dependency
+# order) into a local universe without deploying them, and uploads their JLLs, with their
+# artifacts and a registry for them, as the depot `jll-depot.tar.gz`.  On pull requests,
+# this runs the pull request's code, but without any secrets.
+struct BB2PackageStep <: AbstractStep
+    projects::Vector{String}
+    dependencies::Vector{AbstractStep}
+end
+step_key(::BB2PackageStep) = "package-bb2-jlls"
+
+function render(ps::BB2PackageStep)
+    return Dict(
+        :key => step_key(ps),
+        :label => ":package: package JLLs locally",
+        :depends_on => step_key.(ps.dependencies),
+        :agents => agent(),
+        :plugins => plugins(BB2_JULIA_VERSION),
+        :timeout_in_minutes => 90,
+        :commands => [".ci/bb2_project/load_check/package_jlls.sh $(join(ps.projects, " "))"],
+        :env => env(),
+        :artifacts => ["jll-depot.tar.gz"],
+    )
+end
+
+# Installs JLLs from the depot that `package_key` uploaded on Julia `julia_version`, next
+# to a fresh `General`, and loads them and their products: with `oldest_only`, only the JLLs whose `julia`
+# compat allows no older Julia (see `oldest_julia()`), otherwise all of them.
+struct BB2LoadCheckStep <: AbstractStep
+    julia_version::String
+    oldest_only::Bool
+    package_key::String
+end
+step_key(ls::BB2LoadCheckStep) = "load-check-bb2-julia-$(safe_name(ls.julia_version))"
+
+function render(ls::BB2LoadCheckStep)
+    return Dict(
+        :key => step_key(ls),
+        :label => ":julia: load JLLs -- Julia $(ls.julia_version)",
+        :depends_on => [ls.package_key],
+        :agents => agent(),
+        :plugins => [
+            "JuliaCI/julia#v1" => Dict("version" => ls.julia_version),
+        ],
+        :timeout_in_minutes => 60,
+        :commands => [
+            "buildkite-agent artifact download jll-depot.tar.gz . --step $(ls.package_key)",
+            ".ci/bb2_project/load_check/load_check.sh jll-depot.tar.gz$(ls.oldest_only ? " --oldest-julia-only" : "")",
+        ],
+        :env => env(),
+    )
+end
+
 exec(cmd; stdout=Base.stdout, stderr=Base.stderr) = @assert success(pipeline(cmd; stderr, stdout))
 
 YGGDRASIL_BASE = dirname(@__DIR__)
