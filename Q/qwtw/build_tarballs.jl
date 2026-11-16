@@ -10,9 +10,9 @@ version = v"3.0.0"
 
 sources = [
     GitSource("https://github.com/ig-or/qwtw.git",
-              "bb317eda2008643f49d0f98e013f95b39c1c4f55"),
+              "d50bc08a90389bc7ca9185769ff0d7aabffd16c6"),
     GitSource("https://github.com/ig-or/qwt.git",
-              "2dc09fd351ec8c30252913b5eb8af6c46ef4101c"),
+              "8a5ec6c5e507047c44860f3e3bdd8b0b1df9f922"),
 ]
 
 script = raw"""
