@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 using BinaryBuilder, Pkg
+using Base.BinaryPlatforms: set_compare_strategy!
 
 # This recipe is laid out for M/Moreau/Moreau_CUDA in Yggdrasil.
 const YGGDRASIL_DIR = "../../.."
@@ -10,9 +11,9 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 include(joinpath(YGGDRASIL_DIR, "C", "CUDA", "common.jl"))
 
 name = "Moreau_CUDA"
-version = v"0.4.1"
+version = v"0.5.0"
 base_sources = [GitSource("https://github.com/moreau-project/moreau.git",
-    "799c9fdc0d3cb7675e723a3fb9eb413015a64f93")]
+    "6d0c4ff31e763ef29d26bf1dd9076b4d9378bafa")]
 script = raw"""
 cd ${WORKSPACE}/srcdir/moreau
 install_license LICENSE NOTICE
@@ -40,6 +41,7 @@ fi
 export PATH=${CUDA_HOME}/bin:${PATH}
 export CUDACXX=${CUDA_HOME}/bin/nvcc
 ln -s lib ${CUDA_HOME}/lib64
+test -f "${prefix}/include/cudss.h" || { echo "Missing CUDSS_jll headers for ${target}" >&2; exit 1; }
 ${host_bindir}/cmake -S packages/moreau-cuda -B build \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
@@ -50,7 +52,7 @@ ${host_bindir}/cmake -S packages/moreau-cuda -B build \
     -DMOREAU_BUILD_PYTHON=OFF \
     -DMOREAU_BUILD_TESTS=OFF \
     -DMOREAU_BUILD_EXAMPLES=OFF \
-    -DMOREAU_VERSION=0.4.1
+    -DMOREAU_VERSION=0.5.0
 ${host_bindir}/cmake --build build --target moreau_cuda_shared -j${nproc}
 mkdir -p ${libdir} ${includedir}
 cp -a build/libmoreau_cuda.so* ${libdir}/
@@ -61,16 +63,16 @@ if [[ ${target} == aarch64-linux-* ]]; then
 fi
 """
 products = [LibraryProduct("libmoreau_cuda", :libmoreau_cuda)]
-# Retain 0.7.1: Moreau reverted cuDSS 0.8 after performance and determinism regressions.
+# Match the cuDSS 1.0 ABI used by the Moreau 0.5.0 CUDA wheels.
 dependencies = [
     HostBuildDependency(PackageSpec(name="CMake_jll", version=v"3.31.9+0")),
-    Dependency("CUDSS_jll", v"0.7.1"; compat="=0.7.1"),
+    Dependency("CUDSS_jll", v"1.0.0"; compat="=1.0.0"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 platforms = CUDA.supported_platforms()
 # Moreau's CUDA 12 release baseline is toolkit 12.2.
 filter!(p -> VersionNumber(p["cuda"]) >= v"12.2", platforms)
-# cuDSS 0.7.1 only provides binaries for the CUDA 12 and 13 runtime ABIs.
+# cuDSS 1.0.0 only provides binaries for the CUDA 12 and 13 runtime ABIs.
 filter!(p -> VersionNumber(p["cuda"]) < v"14", platforms)
 
 filter!(p -> should_build_platform(triplet(p)), platforms)
@@ -79,7 +81,18 @@ filter!(p -> should_build_platform(triplet(p)), platforms)
 build_args = filter(arg -> startswith(arg, "--"), ARGS)
 non_register_args = filter(arg -> arg != "--register", build_args)
 
+# BinaryBuilder selects dependency artifacts before their runtime platform
+# augmentation runs. CUDSS_jll tags builds 12.0 or 13.0, while the SDK
+# is pinned separately to the exact target minor release.
+function cuda_build_compatible(a, b, a_requested, b_requested)
+    a, b = VersionNumber(a), VersionNumber(b)
+    a.major == b.major || return false
+    a_requested == b_requested && return a == b
+    return a_requested ? b <= a : a <= b
+end
+
 for (i, platform) in enumerate(platforms)
+    set_compare_strategy!(platform, "cuda", cuda_build_compatible)
     sources = BinaryBuilder.AbstractSource[base_sources...]
     if arch(platform) == "aarch64"
         cuda_version = VersionNumber(platform["cuda"])
