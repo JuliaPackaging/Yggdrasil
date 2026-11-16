@@ -9,8 +9,14 @@ build_tarballs(;
     src_name = "Musl",
     src_version = version,
     sources = [
-        ArchiveSource("https://musl.libc.org/releases/musl-$(version).tar.gz",
-                      "d585fd3b613c66151fc3249e8ed44f77020cb5e6c1e635a616d3f9f82460512a"),
+        # Mirrors are tried in order; musl.libc.org is slow and often times out.
+        ArchiveSource([
+                "https://sources.buildroot.net/musl/musl-$(version).tar.gz",
+                "https://sources.openwrt.org/musl-$(version).tar.gz",
+                "https://distfiles.macports.org/musl/musl-$(version).tar.gz",
+                "https://musl.libc.org/releases/musl-$(version).tar.gz",
+            ],
+            "d585fd3b613c66151fc3249e8ed44f77020cb5e6c1e635a616d3f9f82460512a"),
     ],
     script = raw"""
     mkdir ${WORKSPACE}/srcdir/musl_build
@@ -57,9 +63,12 @@ build_tarballs(;
         Platform("armv7l", "linux"; libc="musl"),
     ],
     products = [
-        LibraryProduct(["usr/lib/libc"], :libc),
+        # musl's `libc.so` is also its dynamic loader; it must not be loaded into a running process.
+        LibraryProduct(["usr/lib/libc"], :libc; dont_dlopen=true),
     ],
     # Use the bootstrap toolchain, since this is part of building the toolchain itself
     host_toolchains = [CToolchain(;vendor=:bootstrap), HostToolsToolchain()],
     target_toolchains = [CToolchain(;vendor=:bootstrap)],
 )
+
+# Build trigger: 3

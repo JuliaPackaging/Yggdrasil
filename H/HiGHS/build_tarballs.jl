@@ -2,12 +2,12 @@ using BinaryBuilder, Pkg
 
 name = "HiGHS"
 
-version = v"1.15.1"
+version = v"1.16.0"
 
 sources = [
     GitSource(
         "https://github.com/ERGO-Code/HiGHS.git",
-        "04024d701f79feb8e2f18bc3df0dffc04ef05088",
+        "f3f113d230429a8c0014b12ab0dd1a3847e58c55",
     ),
     DirectorySource("./bundled"),
 ]
@@ -23,7 +23,6 @@ script = raw"""
 cd $WORKSPACE/srcdir/HiGHS
 
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fix-cli11.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fix-destroy.patch
 
 # Remove system CMake to use the jll version
 apk del cmake

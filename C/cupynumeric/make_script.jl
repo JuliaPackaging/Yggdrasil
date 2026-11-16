@@ -76,6 +76,10 @@ function get_script(cuda::Val{true})
 
         # Map the FFT output in C order; the GPU kernel asserts a dense row-major instance.
         atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fft-output-c-order.patch
+        # Order the first cuFFT execution after cuFFT's plan initialization copies on the legacy stream.
+        atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cupynumeric-fft-plan-ready.patch
+        # Truncate MRG32k3a subsequences to 51 bits so Realm processor IDs stay in the skip-ahead tables.
+        atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cupynumeric-mrg-subsequence.patch
 
         mkdir build
         cmake -S . -B build \

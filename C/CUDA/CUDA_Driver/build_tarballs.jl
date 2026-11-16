@@ -13,23 +13,13 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDA_Driver"
-cuda_version = v"13.3.0"
-driver_version = "610.57.04"
+cuda_version = v"13.5.0"
+driver_version = "620.70.06"
 
 # the JLL version tracks `cuda_version`, but can diverge in the patch digit when the
 # wrapper code changes in ways consumers need to express compat bounds against (Julia
-# package resolution cannot distinguish build numbers). 13.3.1: introduction of a
-# toolkit selection library in the toplevel block. 13.3.2: detailed driver-inspection
-# failure diagnostics and the `tegra` platform tag with per-KMD-generation artifacts
-# shipping the L4T compatibility drivers. 13.3.3: report the driver we actually load,
-# rather than always the system one, when selecting a CUDA toolkit. 13.3.4: driver
-# decision only; toolkit selection moved to CUDA_Runtime_jll/CUDA_Compiler_jll, so the
-# selection library is gone and `libcuda` is defined on every platform (the helper-only
-# artifacts for Windows and non-L4T Tegra generations, which only existed to serve that
-# library, are gone too). 13.3.5: the newer 610.57.04 compat driver, which NVIDIA only
-# publishes as a datacenter driver redist (the CUDA 13.3.x toolkits ship 610.43.02).
-# 13.3.6: don't expose a rejected compat driver to child processes through LIBPATH.
-version = v"13.3.6"
+# package resolution cannot distinguish build numbers).
+version = v"13.5.0"
 
 # the Tegra compat drivers to ship, per kernel-mode driver generation (the `tegra`
 # platform tag; see tegra_detection.jl). NVIDIA built L4T compat UMDs against the r35

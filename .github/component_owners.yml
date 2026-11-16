@@ -55,6 +55,8 @@ components:
   C/cupynumeric/:
     - ejmeitz
     - krasow
+  E/ECOS/:
+    - odow
   E/EinsteinToolkit/:
     - eschnett
   F/f4ncgb/:

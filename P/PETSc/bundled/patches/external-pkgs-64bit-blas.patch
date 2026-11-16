@@ -1,3 +1,8 @@
+Let PETSc use MUMPS, SuperLU_DIST, hypre and SuiteSparse with 64-bit BLAS indices.
+PETSc's per-package `requires32bitintblas` default makes configure reject them. Their JLLs
+link BLAS themselves, with the integer width each needs, so PETSc's 64-bit indices don't reach them.
+Specific to Yggdrasil's JLLs, so not for upstream.
+
 diff -ru a/config/BuildSystem/config/packages/MUMPS.py b/config/BuildSystem/config/packages/MUMPS.py
 --- a/config/BuildSystem/config/packages/MUMPS.py
 +++ b/config/BuildSystem/config/packages/MUMPS.py
@@ -25,6 +30,17 @@ diff -ru a/config/BuildSystem/config/packages/MUMPS.py b/config/BuildSystem/conf
      liblist_common = [['libmumps_common.a','libpord.a','libpthread.a'],
                        ['libmumps_common.a','libpord.a'],
                        ['libmumps_common.a','libpord.a','libmpiseq.a'],
+diff --git a/config/BuildSystem/config/packages/SuiteSparse.py b/config/BuildSystem/config/packages/SuiteSparse.py
+--- a/config/BuildSystem/config/packages/SuiteSparse.py
++++ b/config/BuildSystem/config/packages/SuiteSparse.py
+@@ -5,6 +5,7 @@
+ class Configure(config.package.CMakePackage):
+   def __init__(self, framework):
+     config.package.CMakePackage.__init__(self, framework)
++    self.requires32bitintblas = 0
+     self.minversion        = '5.6.0'
+     self.version           = '7.12.2'
+     self.versioninclude    = 'SuiteSparse_config.h'
 diff -ru a/config/BuildSystem/config/packages/SuperLU_DIST.py b/config/BuildSystem/config/packages/SuperLU_DIST.py
 --- a/config/BuildSystem/config/packages/SuperLU_DIST.py
 +++ b/config/BuildSystem/config/packages/SuperLU_DIST.py

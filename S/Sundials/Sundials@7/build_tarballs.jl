@@ -15,6 +15,7 @@ script = install_script * raw"""
 
 for platform in platforms
     should_build_platform(triplet(platform)) || continue
+    # Julia 1.10 is the first release whose SuiteSparse_jll ships libklu 2 (see common.jl).
     build_tarballs(ARGS, name, version, sources, script, [platform], products, dependencies;
-                   preferred_gcc_version=v"6", julia_compat="1.6")
+                   preferred_gcc_version=v"6", julia_compat="1.10")
 end

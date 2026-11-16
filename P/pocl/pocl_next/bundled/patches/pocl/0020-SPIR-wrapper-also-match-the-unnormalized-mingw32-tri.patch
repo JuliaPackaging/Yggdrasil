@@ -1,4 +1,4 @@
-From 198aece41071342c25f27c77fb96b77199e989d8 Mon Sep 17 00:00:00 2001
+From b912e7317f3b9629780e70b36d7aac0ec97d9526 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Sun, 25 Oct 2026 08:40:07 +0100
 Subject: [PATCH] SPIR wrapper: also match the unnormalized mingw32 triple

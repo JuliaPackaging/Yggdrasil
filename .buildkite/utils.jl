@@ -80,10 +80,15 @@ agent() = Dict(
     :sandbox_capable => "true"
 )
 
-plugins() = Pair{String, Union{Nothing, Dict}}[
+# BinaryBuilder2 projects are scheduled, built and registered with their own Julia.  It needs
+# strict matching of the `sanitize` platform tag (JuliaLang/julia#63647) to resolve JLLs.
+const BB1_JULIA_VERSION = "1.13.2"
+const BB2_JULIA_VERSION = "1.14.0-alpha2"
+
+plugins(julia_version) = Pair{String, Union{Nothing, Dict}}[
     "JuliaCI/julia#v1" => Dict(
         "persist_depot_dirs" => "packages,artifacts,compiled",
-        "version" => "1.13.2",
+        "version" => julia_version,
         "artifacts_size_limit" => string(120 << 30), # 120 GiB
     ),
     "JuliaCI/merge-commit" => nothing
@@ -122,13 +127,15 @@ struct BB1BuildStep <: AbstractBuildStep
     platform::String
 end
 
-function bb1_step_key(project_name::String, platform::String)
-    key = "$(safe_name(project_name))--$(safe_name(platform))"
-    # Buildkite rejects keys longer than 100 characters, which platforms with several
-    # tags (e.g. cross toolchains) can exceed; keep such keys unique with a hash.
+# Buildkite rejects keys longer than 100 characters, which platforms with several
+# tags (e.g. cross toolchains) can exceed; keep such keys unique with a hash.
+function limit_key_length(key::String)
     length(key) <= 100 && return key
     return "$(first(key, 90))-$(bytes2hex(sha256(key))[1:9])"
 end
+
+bb1_step_key(project_name::String, platform::String) =
+    limit_key_length("$(safe_name(project_name))--$(safe_name(platform))")
 step_key(bs::BB1BuildStep) = bb1_step_key(bs.project, bs.platform)
 
 struct BB2BuildStep <: AbstractBuildStep
@@ -150,7 +157,7 @@ function universe_flag(s)
 end
 
 function render(bs::AbstractBuildStep)
-    build_plugins = plugins()
+    build_plugins = plugins(julia_version(bs))
 
     # On BB1, we pass the platform to build for, on BB2 we identify by build hash
     if isa(bs, BB1BuildStep)
@@ -207,21 +214,33 @@ end
 
 step_key(rs::BB1RegisterStep) = "register-$(safe_name(rs.project))"
 
+# A BinaryBuilder2 package is registered by a single step, even when several projects
+# build it (e.g. `G/Glibc/Glibc@2.17` and `Glibc@2.19` both build `Glibc`).  That step
+# registers one version per project, in order, so they stack into one registry PR.
 struct BB2RegisterStep <: AbstractRegisterStep
     name::String
-    project::String
+    # Projects to register, in ascending order of the version they build
+    projects::Vector{String}
 
-    dependencies::Vector{AbstractStep}
+    # Build steps, and the step keys of other registrations
+    dependencies::Vector{Union{AbstractStep,String}}
 end
-step_key(rs::BB2RegisterStep) = "register-$(safe_name(rs.name))"
-universe_name(rs::BB2RegisterStep) = "$(safe_name(rs.project))-$(YGGDRASIL_COMMIT)"
+bb2_register_key(name::AbstractString) = limit_key_length("register-bb2-$(safe_name(name))")
+step_key(rs::BB2RegisterStep) = bb2_register_key(rs.name)
+step_key(key::String) = key
+universe_name(rs::BB2RegisterStep) = "$(safe_name(rs.name))-$(YGGDRASIL_COMMIT)"
 
 function render(rs::AbstractRegisterStep)
     register_env = env()
     register_env["NAME"] = rs.name
-    register_env["PROJECT"] = rs.project
+    if isa(rs, BB1RegisterStep)
+        register_env["PROJECT"] = rs.project
+    else
+        register_env["PROJECTS"] = join(rs.projects, " ")
+    end
     register_env["BUILD_ID"] = get(ENV, "BUILDKITE_BUILD_ID", "")
     register_env["JULIA_PROJECT_RELATIVE"] = julia_project_relative(rs)
+    register_env["JULIA_VERSION"] = julia_version(rs)
     if isa(rs, BB1RegisterStep)
         if rs.skip_build
             register_env["SKIP_BUILD"] = "true"
@@ -279,6 +298,22 @@ function julia_project_relative(s)
     else
         return ".ci/bb2_project"
     end
+end
+
+julia_version(s) = isa(s, BB1BuildStep) || isa(s, BB1RegisterStep) ? BB1_JULIA_VERSION : BB2_JULIA_VERSION
+
+# Runs `generator.jl` for the BinaryBuilder2 projects on BinaryBuilder2's Julia, since the build
+# hashes that `scheduler.jl` computes depend on the Julia version.
+function bb2_schedule_step(projects)
+    return Dict(
+        :key => "schedule-bb2",
+        :label => ":runner: Schedule BinaryBuilder2 builds",
+        :agents => agent(),
+        :plugins => plugins(BB2_JULIA_VERSION),
+        :timeout_in_minutes => 60,
+        :commands => ["julia .buildkite/generator.jl $(Base.shell_escape(projects...))"],
+        :env => env(),
+    )
 end
 
 # We will use the BinaryBuilder2 environment if there is a `using BinaryBuilder2` in the build_tarballs.jl file

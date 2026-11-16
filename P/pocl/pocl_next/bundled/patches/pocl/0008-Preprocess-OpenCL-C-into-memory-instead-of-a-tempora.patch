@@ -1,4 +1,4 @@
-From 5433e8487a57d409f788f2e4eec37386039f1a32 Mon Sep 17 00:00:00 2001
+From b305aba365366861403f8dda9a40ea18c7adffa4 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Thu, 24 Sep 2026 09:04:50 +0200
 Subject: [PATCH] Preprocess OpenCL C into memory instead of a temporary file
@@ -13,14 +13,14 @@ rely on their own handlers, e.g. Julia, whose GC safepoints fault on purpose.
 Print the preprocessed output into a string instead, and add a regression test
 checking that building a program leaves the host's handlers in place.
 ---
- lib/CL/pocl_llvm_build.cc               |  49 ++++++-----
+ lib/CL/pocl_llvm_build.cc               |  53 ++++++-----
  tests/regression/CMakeLists.txt         |   4 +
- tests/regression/test_signal_handlers.c | 112 ++++++++++++++++++++++++
- 3 files changed, 143 insertions(+), 22 deletions(-)
+ tests/regression/test_signal_handlers.c | 111 ++++++++++++++++++++++++
+ 3 files changed, 144 insertions(+), 24 deletions(-)
  create mode 100644 tests/regression/test_signal_handlers.c
 
 diff --git a/lib/CL/pocl_llvm_build.cc b/lib/CL/pocl_llvm_build.cc
-index 80e3e8ef7..b39fe188d 100644
+index b1ddbfb69..fe3bb733d 100644
 --- a/lib/CL/pocl_llvm_build.cc
 +++ b/lib/CL/pocl_llvm_build.cc
 @@ -40,6 +40,7 @@ IGNORE_COMPILER_WARNING("-Wstrict-aliasing")
@@ -89,7 +89,7 @@ index 80e3e8ef7..b39fe188d 100644
 -  pocl_remove(tempfile);
 +  std::string PreprocessedOut;
 +  PrintPreprocessedToStringAction Preprocess(PreprocessedOut);
-+  bool success = CI.ExecuteAction(Preprocess);
++  bool Success = CI.ExecuteAction(Preprocess);
  
    if (pocl_get_bool_option("POCL_LEAVE_KERNEL_COMPILER_TEMP_FILES", 0) == 0) {
      if (num_input_headers > 0)
@@ -97,7 +97,7 @@ index 80e3e8ef7..b39fe188d 100644
    }
  
 -  if (PreprocessedOut == nullptr) {
-+  if (!success) {
++  if (!Success) {
      pocl_cache_create_program_cachedir(program, device_i, program->source,
                                         strlen(program->source),
                                         program_bc_path);
@@ -114,13 +114,27 @@ index 80e3e8ef7..b39fe188d 100644
  
    unlink_source(fe);
  
+@@ -788,11 +793,11 @@ int pocl_llvm_build_program(cl_program program,
+   // the compilation flags used to compile it and the current translation
+   // unit via the preprocessor options directly.
+   clang::EmitLLVMOnlyAction EmitLLVM(llvm_ctx->Context);
+-  success = CI.ExecuteAction(EmitLLVM);
++  Success = CI.ExecuteAction(EmitLLVM);
+ 
+   get_build_log(program, device_i, ss_build_log, diagsBuffer, &CI.getSourceManager());
+ 
+-  if (!success)
++  if (!Success)
+     return CL_BUILD_PROGRAM_FAILURE;
+ 
+   mod = (llvm::Module *)program->llvm_irs[device_i];
 diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
-index 4fd8f6828..c5c39736b 100644
+index 3755576a0..874644c04 100644
 --- a/tests/regression/CMakeLists.txt
 +++ b/tests/regression/CMakeLists.txt
-@@ -43,6 +43,9 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
-      test_usm_free_realloc
-      test_sanitize_divrem
+@@ -45,6 +45,9 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
+      test_tall_grid
+      test_cr_divide_sqrt_option
  )
 +if(UNIX)
 +  list(APPEND C_PROGRAMS_TO_BUILD test_signal_handlers)
@@ -128,7 +142,7 @@ index 4fd8f6828..c5c39736b 100644
  foreach(PROG ${C_PROGRAMS_TO_BUILD})
    add_executable("${PROG}" "${PROG}.c")
    target_link_libraries("${PROG}" ${POCLU_LINK_OPTIONS})
-@@ -139,6 +142,7 @@ add_test_pocl(NAME "regression/test_issue_2005" COMMAND "test_issue_2005")
+@@ -141,6 +144,7 @@ add_test_pocl(NAME "regression/test_issue_2005" COMMAND "test_issue_2005")
  
  if(UNIX)
    add_test_pocl(NAME "regression/test_issue_2174" COMMAND "test_issue_2174")
@@ -138,10 +152,10 @@ index 4fd8f6828..c5c39736b 100644
  add_test_pocl(NAME "regression/test_workitem_func_outside_kernel" COMMAND "test_workitem_func_outside_kernel")
 diff --git a/tests/regression/test_signal_handlers.c b/tests/regression/test_signal_handlers.c
 new file mode 100644
-index 000000000..2b9018e67
+index 000000000..d88899c55
 --- /dev/null
 +++ b/tests/regression/test_signal_handlers.c
-@@ -0,0 +1,112 @@
+@@ -0,0 +1,111 @@
 +/* Copyright (c) 2026 PoCL Developers
 +
 +   Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -235,9 +249,8 @@ index 000000000..2b9018e67
 +
 +  install_host_handlers ();
 +
-+  const char *source = "#define VALUE 42\n"
-+                       "__kernel void k (__global int *out) {\n"
-+                       "  *out = VALUE;\n"
++  const char *source = "__kernel void k (__global int *out) {\n"
++                       "  *out = 42;\n"
 +                       "}\n";
 +  cl_program program
 +      = clCreateProgramWithSource (context, 1, &source, NULL, &err);

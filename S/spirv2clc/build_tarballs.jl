@@ -6,12 +6,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "spirv2clc"
-version = v"0.2.7"
+version = v"0.2.8"
 
 # Collection of sources required to build spirv2clc
 sources = [
     GitSource("https://github.com/JuliaGPU/spirv2clc",
-              "3b2835e4846b4ec6d9a88676c8010aef5f648402")
+              "4c45134def589b751dc13a49a1c096c42c5ef13e")
 ]
 
 # Bash recipe for building across all platforms

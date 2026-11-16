@@ -1,0 +1,208 @@
+Support MinGW target platform modules when cross-compiling from Unix.
+Derived from MSYS2's 001-mingw-build.patch:
+https://github.com/msys2/MINGW-packages/blob/d87e68ae356d773901e5c477854312e5de0548cf/mingw-w64-ghostscript/001-mingw-build.patch
+
+This is a Yggdrasil-specific derivative, not a verbatim MSYS2 patch.
+The existing Yggdrasil adaptation was further modified by AI for Ghostscript
+10.08.0: obsolete build-system hunks were removed, platform modules and
+compilation rules were updated, and patch context was regenerated.
+
+--- a/base/gp_mswin.c
++++ b/base/gp_mswin.c
+@@ -769,3 +769,3 @@
+ 
+-#if defined(_MSC_VER) && _MSC_VER>=1900 /* VS 2014 and later have (finally) snprintf */
++#if (defined(_MSC_VER) && _MSC_VER>=1900) || defined(__MINGW64_VERSION_MAJOR) /* VS 2014 and later have (finally) snprintf */
+ #  define STDC99
+--- a/base/gp_mswin.h
++++ b/base/gp_mswin.h
+@@ -61,2 +61,11 @@
+ 
++// in gp_mswin.c, mswin_popen is called 
++// before it is implemented, so we must
++// provide a prototype (at least with GCC) to
++// avoid implicit definition with the wrong return type
++
++#ifdef __GNUC__
++FILE *mswin_popen(const char *cmd, const char *mode);
++#endif
++
+ #endif /* gp_mswin_INCLUDED */
+--- /dev/null
++++ b/base/mingw-fs.mak
+@@ -0,0 +1,34 @@
++# MSys/MinGW file- and operating-system section
++# adapted from winplat.mak
++
++# Define the name of this makefile.
++
++MINGW_FS_MAK=$(GLSRC)mingw-fs.mak
++
++# Define generic Windows-specific modules.
++
++mingw-fs_=$(GLOBJ)gp_ntfs.$(OBJ) $(GLOBJ)gp_win32.$(OBJ)
++$(GLD)mingw-fs.dev : $(MINGW_FS_MAK) $(ECHOGS_XE) $(mingw-fs_)
++	$(SETMOD) $(GLD)mingw-fs $(mingw-fs_)
++
++$(GLOBJ)gp_ntfs.$(OBJ): $(GLSRC)gp_ntfs.c $(AK)\
++ $(dos__h) $(memory__h) $(stdio__h) $(string__h) $(windows__h)\
++ $(gp_h) $(gpmisc_h) $(gsmemory_h) $(gsstruct_h) $(gstypes_h) $(gsutil_h)
++	$(GLCC) $(GLO_)gp_ntfs.$(OBJ) $(C_) $(GLSRC)gp_ntfs.c
++
++$(GLOBJ)gp_win32.$(OBJ): $(GLSRC)gp_win32.c $(AK)\
++ $(dos__h) $(malloc__h) $(stdio__h) $(string__h) $(windows__h)\
++ $(gp_h) $(gsmemory_h) $(gstypes_h)
++	$(GLCC) $(GLO_)gp_win32.$(OBJ) $(C_) $(GLSRC)gp_win32.c
++
++# Define the Windows thread / synchronization module.
++
++winsync_=$(GLOBJ)gp_wsync.$(OBJ)
++$(GLD)winsync.dev : $(MINGW_FS_MAK) $(ECHOGS_XE) $(winsync_)
++	$(SETMOD) $(GLD)winsync $(winsync_)
++	$(ADDMOD) $(GLD)winsync -replace $(GLD)nosync
++
++$(GLOBJ)gp_wsync.$(OBJ): $(GLSRC)gp_wsync.c $(AK)\
++ $(dos__h) $(malloc__h) $(stdio__h) $(string__h) $(windows__h)\
++ $(gp_h) $(gsmemory_h) $(gstypes_h)
++	$(GLCC) $(GLO_)gp_wsync.$(OBJ) $(C_) $(GLSRC)gp_wsync.c
+--- /dev/null
++++ b/base/mingwlib.mak
+@@ -0,0 +1,89 @@
++# Common makefile section for MSys/MinGW
++# adapted from winlib.mak
++
++# Define the files to be removed by `make clean'.
++# nmake expands macros when encountered, not when used,
++# so this must precede the !include statements.
++
++BEGINFILES=$(GLGENDIR)\ccf32.tr\
++ $(GLOBJDIR)\*.res $(GLOBJDIR)\*.ico\
++ $(BINDIR)\$(GSDLL).dll $(BINDIR)\$(GSCONSOLE).exe\
++ $(BINDIR)\setupgs.exe $(BINDIR)\uninstgs.exe\
++ $(GLOBJDIR)\cups\*.h\
++ $(BEGINFILES2)
++
++# -------------------------------- Library -------------------------------- #
++
++# The MSys/MinGW Win32 platform
++
++mingw32__=$(GLOBJ)gp_mswin.$(OBJ) $(GLOBJ)gp_wgetv.$(OBJ) $(GLOBJ)gp_wpapr.$(OBJ) \
++ $(GLOBJ)gp_stdia.$(OBJ) $(GLOBJ)gp_utf8.$(OBJ) $(GLOBJ)gp_winfs.$(OBJ)
++mingw32_inc=$(GLD)nosync.dev $(GLD)mingw-fs.dev
++
++$(GLGEN)mingw32_.dev:  $(mingw32__) $(ECHOGS_XE) $(mingw32_inc)
++	$(SETMOD) $(GLGEN)mingw32_ $(mingw32__)
++	$(ADDMOD) $(GLGEN)mingw32_ -include $(mingw32_inc)
++
++$(GLOBJ)gp_mswin.$(OBJ): $(GLSRC)gp_mswin.c $(AK) $(gp_mswin_h) \
++ $(ctype__h) $(dos__h) $(malloc__h) $(memory__h) $(pipe__h) \
++ $(stdio__h) $(string__h) $(windows__h) $(winspool_h)\
++ $(gx_h) $(gp_h) $(gpcheck_h) $(gpmisc_h) $(gserrors_h) $(gsexit_h)
++	$(GLCC) $(GLO_)gp_mswin.$(OBJ) $(C_) $(GLSRC)gp_mswin.c
++
++$(GLOBJ)gp_winfs.$(OBJ): $(GLSRC)gp_winfs.c $(AK) $(gp_mswin_h) \
++ $(memory__h) $(stdio__h) $(windows__h) $(gp_h) $(gserrors_h)
++	$(GLCC) $(GLO_)gp_winfs.$(OBJ) $(C_) $(GLSRC)gp_winfs.c
++
++$(AUX)gp_winfs.$(OBJ): $(GLSRC)gp_winfs.c $(AK) $(gp_mswin_h) \
++ $(memory__h) $(stdio__h) $(windows__h) $(gp_h) $(gserrors_h)
++	$(GLCCAUX) $(AUXO_)gp_winfs.$(OBJ) $(C_) $(GLSRC)gp_winfs.c
++
++$(AUX)gp_winfs2.$(OBJ): $(GLSRC)gp_winfs2.c $(AK) $(gp_mswin_h) \
++ $(memory__h) $(stdio__h) $(windows__h) $(gp_h) $(gserrors_h)
++	$(GLCCAUX) $(AUXO_)gp_winfs2.$(OBJ) $(C_) $(GLSRC)gp_winfs2.c
++
++$(GLOBJ)gp_stdia.$(OBJ): $(GLSRC)gp_stdia.c $(AK)\
++ $(stdio__h) $(time__h) $(unistd__h) $(gx_h) $(gp_h)
++	$(GLCC) $(GLO_)gp_stdia.$(OBJ) $(C_) $(GLSRC)gp_stdia.c
++
++$(GLOBJ)gp_wgetv.$(OBJ): $(GLSRC)gp_wgetv.c $(AK) $(gscdefs_h)
++	$(GLCC) $(GLO_)gp_wgetv.$(OBJ) $(C_) $(GLSRC)gp_wgetv.c
++
++$(GLOBJ)gp_wpapr.$(OBJ): $(GLSRC)gp_wpapr.c $(AK) $(gp_h)
++	$(GLCC) $(GLO_)gp_wpapr.$(OBJ) $(C_) $(GLSRC)gp_wpapr.c
++
++# Define MS-Windows handles (file system) as a separable feature.
++
++mshandle_=$(GLOBJ)gp_mshdl.$(OBJ)
++$(GLD)mshandle.dev: $(ECHOGS_XE) $(mshandle_)
++	$(SETMOD) $(GLD)mshandle $(mshandle_)
++	$(ADDMOD) $(GLD)mshandle -iodev handle
++
++$(GLOBJ)gp_mshdl.$(OBJ): $(GLSRC)gp_mshdl.c $(AK)\
++ $(ctype__h) $(errno__h) $(stdio__h) $(string__h)\
++ $(gsmemory_h) $(gstypes_h) $(gxiodev_h) $(gserrors_h)
++	$(GLCC) $(GLO_)gp_mshdl.$(OBJ) $(C_) $(GLSRC)gp_mshdl.c
++
++# Define MS-Windows printer (file system) as a separable feature.
++
++msprinter_=$(GLOBJ)gp_msprn.$(OBJ)
++$(GLD)msprinter.dev: $(ECHOGS_XE) $(msprinter_)
++	$(SETMOD) $(GLD)msprinter $(msprinter_)
++	$(ADDMOD) $(GLD)msprinter -iodev printer
++
++$(GLOBJ)gp_msprn.$(OBJ): $(GLSRC)gp_msprn.c $(AK)\
++ $(ctype__h) $(errno__h) $(stdio__h) $(string__h)\
++ $(gsmemory_h) $(gstypes_h) $(gxiodev_h)
++	$(GLCC) $(GLO_)gp_msprn.$(OBJ) $(C_) $(GLSRC)gp_msprn.c
++
++# Define MS-Windows polling as a separable feature
++# because it is not needed by the gslib.
++mspoll_=$(GLOBJ)gp_mspol.$(OBJ)
++$(GLD)mspoll.dev: $(ECHOGS_XE) $(mspoll_)
++	$(SETMOD) $(GLD)mspoll $(mspoll_)
++
++$(GLOBJ)gp_mspol.$(OBJ): $(GLSRC)gp_mspol.c $(AK)\
++ $(gx_h) $(gp_h) $(gpcheck_h)
++	$(GLCC) $(GLO_)gp_mspol.$(OBJ) $(C_) $(GLSRC)gp_mspol.c
++
++# end of mingwlib.mak
+--- a/base/time_.h
++++ b/base/time_.h
+@@ -80,3 +80,3 @@
+ /* Some System V environments, and Posix environments, need <sys/times.h>. */
+-#if defined(HAVE_SYS_TIMES_H) && HAVE_SYS_TIMES_H == 1
++#if defined(HAVE_SYS_TIMES_H) && HAVE_SYS_TIMES_H == 1 && !defined(__MINGW32__)
+ #  include <sys/times.h>
+--- a/base/unix-aux.mak
++++ b/base/unix-aux.mak
+@@ -22,2 +22,8 @@
+ # -------------------------------- Library -------------------------------- #
++
++# The MinGW target uses Windows platform modules.
++mswin32__=$(GLOBJ)gp_wgetv.$(OBJ) $(GLOBJ)gp_wpapr.$(OBJ) $(GLOBJ)gp_win32.$(OBJ) $(GLOBJ)gp_mswin.$(OBJ) $(GLOBJ)gp_ntfs.$(OBJ) $(GLOBJ)gp_winfs.$(OBJ) $(GLOBJ)gp_stdia.$(OBJ) $(GLOBJ)gp_utf8.$(OBJ) $(GLOBJ)gp_nxpsprn.$(OBJ)
++$(GLGEN)mswin32_.dev: $(mswin32__) $(GLD)nosync.dev $(GLD)smd5.dev
++	$(SETMOD) $(GLGEN)mswin32_ $(mswin32__) -include $(GLD)nosync
++	$(ADDMOD) $(GLGEN)mswin32_ -include $(GLD)smd5
+ 
+--- a/base/stat_.h
++++ b/base/stat_.h
+@@ -45,3 +45,3 @@
+  */
+-#ifdef _MSC_VER
++#if defined(_MSC_VER) || defined(__MINGW32__)
+ #  define stat __stat64
+--- a/base/unixhead.mak
++++ b/base/unixhead.mak
+@@ -25,2 +25,5 @@
+ GSPLATFORM=unix_
++ifeq ($(MINGW_BUILD),1)
++GSPLATFORM=mswin32_
++endif
+ 
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -820,2 +820,7 @@
+ 
++ifeq ($(MINGW_BUILD),1)
++include $(GLSRCDIR)/mingw-fs.mak
++include $(GLSRCDIR)/mingwlib.mak
++endif
++
+ # Clean up after the autotools scripts
+--- a/configure.ac
++++ b/configure.ac
+@@ -305,2 +305,3 @@
+         *-mingw*|*-msys*)
++        LIBS="$LIBS -lwinspool"
+         if test x"$GCC" = x"yes"; then

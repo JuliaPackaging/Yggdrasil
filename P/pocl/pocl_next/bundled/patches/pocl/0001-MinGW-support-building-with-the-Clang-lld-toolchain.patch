@@ -1,4 +1,4 @@
-From ae0d05c4ed5c133b1f03fcdd6bebfa28abd1fae1 Mon Sep 17 00:00:00 2001
+From f1735d2ca0ce9f93c9d46a5be4f8ad3696a9f28b Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Fri, 26 Jun 2026 13:09:13 +0200
 Subject: [PATCH] MinGW: support building with the Clang/lld toolchain

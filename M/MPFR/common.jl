@@ -42,7 +42,12 @@ function mpfr_script(; kwargs...)
     fi
 
     cd $WORKSPACE/srcdir/mpfr-*
-    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared --disable-static --with-gmp=${prefix} --enable-thread-safe --enable-shared-cache --disable-float128 --disable-decimal-float
+    # No `--enable-shared-cache`: MPFR allocates through GMP's memory functions
+    # while holding the shared cache's lock, and Julia's allocation hooks can
+    # wait for a GC that waits on threads blocked on that lock
+    # (https://github.com/JuliaLang/julia/issues/62753). With
+    # `--enable-thread-safe` alone the caches are thread-local.
+    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared --disable-static --with-gmp=${prefix} --enable-thread-safe --disable-float128 --disable-decimal-float
     make -j${nproc}
     make install
 

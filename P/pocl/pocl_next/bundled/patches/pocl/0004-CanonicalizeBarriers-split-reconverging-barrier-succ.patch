@@ -1,4 +1,4 @@
-From a79659e1e3b86008caf46b40be0cafb4a79185b4 Mon Sep 17 00:00:00 2001
+From 876644b810a5ecbefef2707ea8035cb50507f946 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Mon, 17 Aug 2026 15:57:39 +0200
 Subject: [PATCH] CanonicalizeBarriers: split reconverging barrier successors
@@ -97,7 +97,7 @@ index 9dc1dad19..1cf179c5e 100644
      if (HasNonBranchInstructionsAfterBarrier) {
        BasicBlock *new_b = SplitBlock(b, (*i)->getNextNode());
 diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
-index 59ef74e67..8b25a2fb3 100644
+index 3e0f12b80..6e27276ea 100644
 --- a/tests/regression/CMakeLists.txt
 +++ b/tests/regression/CMakeLists.txt
 @@ -31,6 +31,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
@@ -108,7 +108,7 @@ index 59ef74e67..8b25a2fb3 100644
       test_divergent_implicit_barrier_entry
       test_uniform_implicit_barrier_entry
       test_localmem_load_across_barrier
-@@ -168,6 +169,8 @@ add_test_pocl(NAME "regression/test_issue_1747" COMMAND "test_issue_1747" "0" "$
+@@ -170,6 +171,8 @@ add_test_pocl(NAME "regression/test_issue_1747" COMMAND "test_issue_1747" "0" "$
  
  add_test_pocl(NAME "regression/peeled_wi_global_id" WORKITEM_HANDLER "loopvec;cbs;" COMMAND "test_peeled_wi_global_id" LABELS ${SPIRV_LABELS})
  
@@ -116,7 +116,7 @@ index 59ef74e67..8b25a2fb3 100644
 +
  add_test_pocl(NAME "regression/divergent_implicit_barrier_entry" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_divergent_implicit_barrier_entry")
  
- add_test_pocl(NAME "regression/uniform_implicit_barrier_entry" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_uniform_implicit_barrier_entry")
+ add_test_pocl(NAME "regression/tall_grid" COMMAND "test_tall_grid")
 diff --git a/tests/regression/test_barrier_divergent_skip.c b/tests/regression/test_barrier_divergent_skip.c
 new file mode 100644
 index 000000000..69b1b29fd

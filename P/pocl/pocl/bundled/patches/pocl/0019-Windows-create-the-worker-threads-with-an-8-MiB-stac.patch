@@ -1,4 +1,4 @@
-From 63eebd0da2facd655d2c5799ab154d954c24fe39 Mon Sep 17 00:00:00 2001
+From 4f53da88619128d07d0380bea3c0740153bc1af2 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Thu, 8 Oct 2026 12:20:18 +0200
 Subject: [PATCH] Windows: create the worker threads with an 8 MiB stack too
@@ -233,10 +233,10 @@ index 0ace8b0a3..cb85664d0 100644
  #define POCL_THREAD_SELF() pocl_thread_self()
  
 diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
-index 0f68692f3..2ea3a919c 100644
+index cd9b049bf..7c693cb7c 100644
 --- a/tests/regression/CMakeLists.txt
 +++ b/tests/regression/CMakeLists.txt
-@@ -205,8 +205,7 @@ endif()
+@@ -213,8 +213,7 @@ endif()
  
  add_test_pocl(NAME "regression/test_usm_free_realloc" COMMAND "test_usm_free_realloc" WORKITEM_HANDLER "loopvec")
  

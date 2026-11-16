@@ -1,0 +1,101 @@
+diff --git a/lib/Target/SPIRV/SPIRVInstructionSelector.cpp b/lib/Target/SPIRV/SPIRVInstructionSelector.cpp
+index 11128ea..cf370dd 100644
+--- a/lib/Target/SPIRV/SPIRVInstructionSelector.cpp
++++ b/lib/Target/SPIRV/SPIRVInstructionSelector.cpp
+@@ -2651,7 +2651,6 @@ bool SPIRVInstructionSelector::selectOverflowArith(Register ResVReg,
+   if (N > 1)
+     BoolType = GR.getOrCreateSPIRVVectorType(BoolType, N, I, TII);
+   Register BoolTypeReg = GR.getSPIRVTypeID(BoolType);
+-  Register ZeroReg = buildZerosVal(ResType, I);
+   // A new virtual register to store the result struct.
+   Register StructVReg = MRI->createGenericVirtualRegister(LLT::scalar(64));
+   MRI->setRegClass(StructVReg, &SPIRV::IDRegClass);
+@@ -2680,12 +2679,30 @@ bool SPIRVInstructionSelector::selectOverflowArith(Register ResVReg,
+             .addImm(i);
+     MIB.constrainAllUses(TII, TRI, RBI);
+   }
+-  // Build boolean value from the higher part.
++  // Signed multiplication overflows when the high half differs from the sign
++  // extension of the low half. The other operations overflow when the high
++  // part is nonzero.
++  Register ExtReg;
++  if (Opcode == SPIRV::OpSMulExtended) {
++    bool IsVector = ResType->getOpcode() == SPIRV::OpTypeVector;
++    unsigned SignBit = GR.getScalarOrVectorBitWidth(ResType) - 1;
++    Register ShiftReg =
++        IsVector ? GR.getOrCreateConstVector(SignBit, I, ResType, TII)
++                 : GR.getOrCreateConstInt(SignBit, I, ResType, TII);
++    ExtReg = MRI->createVirtualRegister(GR.getRegClass(ResType));
++    if (!selectOpWithSrcs(ExtReg, ResType, I,
++                          {I.getOperand(0).getReg(), ShiftReg},
++                          IsVector ? SPIRV::OpShiftRightArithmeticV
++                                   : SPIRV::OpShiftRightArithmeticS))
++      return false;
++  } else {
++    ExtReg = buildZerosVal(ResType, I);
++  }
+   BuildMI(BB, I, I.getDebugLoc(), TII.get(SPIRV::OpINotEqual))
+       .addDef(I.getOperand(1).getReg())
+       .addUse(BoolTypeReg)
+       .addUse(HigherVReg)
+-      .addUse(ZeroReg)
++      .addUse(ExtReg)
+       .constrainAllUses(TII, TRI, RBI);
+   return true;
+ }
+diff --git a/test/CodeGen/SPIRV/llvm-intrinsics/smul.with.overflow.ll b/test/CodeGen/SPIRV/llvm-intrinsics/smul.with.overflow.ll
+index 845acdf..684c639 100644
+--- a/test/CodeGen/SPIRV/llvm-intrinsics/smul.with.overflow.ll
++++ b/test/CodeGen/SPIRV/llvm-intrinsics/smul.with.overflow.ll
+@@ -9,10 +9,12 @@
+ ; CHECK-DAG: %[[PtrChar:.*]] = OpTypePointer Function %[[Char]]
+ ; CHECK-DAG: %[[StructChar:.*]] = OpTypeStruct %[[Char]] %[[Char]]
+ ; CHECK-DAG: %[[NullChar:.*]] = OpConstantNull %[[Char]]
++; CHECK-DAG: %[[Char7:.*]] = OpConstant %[[Char]] 7{{$}}
+ ; CHECK-DAG: %[[Int:.*]] = OpTypeInt 32 0
+ ; CHECK-DAG: %[[PtrInt:.*]] = OpTypePointer Function %[[Int]]
+ ; CHECK-DAG: %[[StructInt:.*]] = OpTypeStruct %[[Int]] %[[Int]]
+ ; CHECK-DAG: %[[NullInt:.*]] = OpConstantNull %[[Int]]
++; CHECK-DAG: %[[Int31:.*]] = OpConstant %[[Int]] 31{{$}}
+ ; CHECK-DAG: %[[Bool:.*]] = OpTypeBool
+ ; CHECK-DAG: %[[V2Bool:.*]] = OpTypeVector %[[Bool]] 2
+ ; CHECK-DAG: %[[Long:.*]] = OpTypeInt 64 0
+@@ -20,6 +22,8 @@
+ ; CHECK-DAG: %[[PtrV2Long:.*]] = OpTypePointer Function %[[V2Long]]
+ ; CHECK-DAG: %[[StructV2Long:.*]] = OpTypeStruct %[[V2Long]] %[[V2Long]]
+ ; CHECK-DAG: %[[ZeroV2Long:.*]] = OpConstantNull %[[V2Long]]
++; CHECK-DAG: %[[Long63:.*]] = OpConstant %[[Long]] 63{{$}}
++; CHECK-DAG: %[[V2Long63:.*]] = OpConstantComposite %[[V2Long]] %[[Long63]] %[[Long63]]
+ 
+ ; CHECK: OpFunction
+ ; CHECK: %[[A:.*]] = OpFunctionParameter %[[Char]]
+@@ -28,7 +32,8 @@
+ ; CHECK: %[[Struct:.*]] = OpSMulExtended %[[StructChar]] %[[A]] %[[B]]
+ ; CHECK: %[[Val:.*]] = OpCompositeExtract %[[Char]] %[[Struct]] 0
+ ; CHECK: %[[Over:.*]] = OpCompositeExtract %[[Char]] %[[Struct]] 1
+-; CHECK: %[[IsOver:.*]] = OpINotEqual %[[Bool]] %[[Over]] %[[NullChar]]
++; CHECK: %[[Sign:.*]] = OpShiftRightArithmetic %[[Char]] %[[Val]] %[[Char7]]
++; CHECK: %[[IsOver:.*]] = OpINotEqual %[[Bool]] %[[Over]] %[[Sign]]
+ ; CHECK: %[[Res:.*]] = OpSelect %[[Char]] %[[IsOver]] %[[NullChar]] %[[Val]]
+ ; CHECK: OpStore %[[Ptr]] %[[Res]] Aligned 1
+ ; CHECK: OpReturn
+@@ -49,7 +54,8 @@ entry:
+ ; CHECK: %[[Struct2:.*]] = OpSMulExtended %[[StructInt]] %[[B2]] %[[A2]]
+ ; CHECK: %[[Val2:.*]] = OpCompositeExtract %[[Int]] %[[Struct2]] 0
+ ; CHECK: %[[Over2:.*]] = OpCompositeExtract %[[Int]] %[[Struct2]] 1
+-; CHECK: %[[IsOver2:.*]] = OpINotEqual %[[Bool]] %[[Over2]] %[[NullInt]]
++; CHECK: %[[Sign2:.*]] = OpShiftRightArithmetic %[[Int]] %[[Val2]] %[[Int31]]
++; CHECK: %[[IsOver2:.*]] = OpINotEqual %[[Bool]] %[[Over2]] %[[Sign2]]
+ ; CHECK: %[[Res2:.*]] = OpSelect %[[Int]] %[[IsOver2]] %[[NullInt]] %[[Val2]]
+ ; CHECK: OpStore %[[Ptr2]] %[[Res2]] Aligned 4
+ ; CHECK: OpReturn
+@@ -70,7 +76,8 @@ entry:
+ ; CHECK: %[[Struct3:.*]] = OpSMulExtended %[[StructV2Long]] %[[A3]] %[[B3]]
+ ; CHECK: %[[Val3:.*]] = OpCompositeExtract %[[V2Long]] %[[Struct3]] 0
+ ; CHECK: %[[Over3:.*]] = OpCompositeExtract %[[V2Long]] %[[Struct3]] 1
+-; CHECK: %[[IsOver3:.*]] = OpINotEqual %[[V2Bool]] %[[Over3]] %[[ZeroV2Long]]
++; CHECK: %[[Sign3:.*]] = OpShiftRightArithmetic %[[V2Long]] %[[Val3]] %[[V2Long63]]
++; CHECK: %[[IsOver3:.*]] = OpINotEqual %[[V2Bool]] %[[Over3]] %[[Sign3]]
+ ; CHECK: %[[Res3:.*]] = OpSelect %[[V2Long]] %[[IsOver3]] %[[ZeroV2Long]] %[[Val3]]
+ ; CHECK: OpStore %[[Ptr3]] %[[Res3]] Aligned 16
+ ; CHECK: OpReturn

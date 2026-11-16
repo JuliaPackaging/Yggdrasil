@@ -1,37 +1,36 @@
-From 6d063326334df246bb29ef5b32593510cfdb9acc Mon Sep 17 00:00:00 2001
+From 4341bb48d225660b8b15a10fd1f959e8ec6c9869 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Thu, 8 Oct 2026 11:56:09 +0200
 Subject: [PATCH] Estimate kernel stack sizes on SROA'd IR
 
-With HOST_CPU_ENABLE_STACK_SIZE_CHECK, CL_KERNEL_WORK_GROUP_SIZE is
-limited by an estimate of each kernel's per-work-item stack use, taken
-from the linked program before any optimization. The kernel library is
-built at -O0, so that counted every local variable of every builtin a
-kernel calls: 1.5 KiB for hypot(double), 9 KiB for tgamma(double), all of
-which the kernel compiler's optimizations remove. With the 384 KiB budget
-of a macOS worker thread, a kernel calling hypot was limited to 259
-work-items, while its work-group function for 256 work-items needs about
-2 KiB of stack.
+With HOST_CPU_ENABLE_STACK_SIZE_CHECK, CL_KERNEL_WORK_GROUP_SIZE is capped
+at the stack budget divided by an estimate of each kernel's per-work-item
+stack use. The estimate was taken on the linked program before any
+optimization. Because the kernel library is built at -O0, it included
+builtin allocas that kernel compilation removes: 1.5 KiB for
+hypot(double), 9 KiB for tgamma(double). With the 393 KiB budget of a
+macOS worker thread, a kernel calling hypot was limited to 259
+work-items, although its work-group function for 256 work-items needs
+about 2 KiB of stack.
 
-Estimate on a copy of the program that went through SROA instead.
-Allocas that survive it, like dynamically indexed private arrays, still
-count. With -cl-opt-disable, which turns off the kernel compiler's
-optimizations, the estimate stays on the unoptimized program.
+Estimate on an SROA'd copy of the program instead. Allocas that survive
+SROA, like dynamically indexed private arrays, still count. With
+-cl-opt-disable, the estimate stays on the unoptimized program.
 
 The estimate moves from link(), which the JIT also uses to link
-work-group functions, to the program build, where it is read, and only
-runs for devices that use it.
+work-group functions, to the program build, and only runs for devices
+with a stack budget.
 ---
  lib/CL/pocl_llvm_build.cc                     |   5 +
- lib/llvmopencl/linker.cpp                     |  67 ++++---
+ lib/llvmopencl/linker.cpp                     |  69 +++++---
  lib/llvmopencl/linker.h                       |   9 +
  tests/regression/CMakeLists.txt               |   4 +
- .../regression/test_stack_estimate_builtins.c | 163 ++++++++++++++++++
+ .../regression/test_stack_estimate_builtins.c | 161 ++++++++++++++++++
  5 files changed, 228 insertions(+), 20 deletions(-)
  create mode 100644 tests/regression/test_stack_estimate_builtins.c
 
 diff --git a/lib/CL/pocl_llvm_build.cc b/lib/CL/pocl_llvm_build.cc
-index b39fe188d..17ca771d0 100644
+index fe3bb733d..fc08a1355 100644
 --- a/lib/CL/pocl_llvm_build.cc
 +++ b/lib/CL/pocl_llvm_build.cc
 @@ -226,6 +226,11 @@ static bool generateProgramBC(PoclLLVMContextData *Context, llvm::Module *Mod,
@@ -47,14 +46,15 @@ index b39fe188d..17ca771d0 100644
    bool BrokenDebugInfo = false;
    if (pocl_get_bool_option("POCL_LLVM_VERIFY", LLVM_VERIFY_MODULE_DEFAULT)) {
 diff --git a/lib/llvmopencl/linker.cpp b/lib/llvmopencl/linker.cpp
-index 9554e2225..97f4970ee 100644
+index 805588eda..820d47a61 100644
 --- a/lib/llvmopencl/linker.cpp
 +++ b/lib/llvmopencl/linker.cpp
-@@ -53,8 +53,11 @@ IGNORE_COMPILER_WARNING("-Wunused-parameter")
+@@ -53,9 +53,12 @@ IGNORE_COMPILER_WARNING("-Wunused-parameter")
  #include <llvm/IR/Verifier.h>
  #include <llvm/PassInfo.h>
  #include <llvm/PassRegistry.h>
 +#include <llvm/Passes/PassBuilder.h>
+ #include <llvm/Support/Error.h>
  #include <llvm/Transforms/IPO/AlwaysInliner.h>
 +#include <llvm/Transforms/Scalar/SROA.h>
  #include <llvm/Transforms/Utils/AMDGPUEmitPrintf.h>
@@ -62,7 +62,7 @@ index 9554e2225..97f4970ee 100644
  #include <llvm/Transforms/Utils/ValueMapper.h>
  
  #include "pocl_cl.h"
-@@ -400,9 +403,6 @@ static int CopyFuncCallgraph(const llvm::StringRef FuncName,
+@@ -432,9 +435,6 @@ static int CopyFuncCallgraph(const llvm::StringRef FuncName,
  
  /* Estimates the size of stack frame used by a function and all functions
   * it calls. Since OpenCL forbids recursion, we can error out if it happens.
@@ -72,7 +72,7 @@ index 9554e2225..97f4970ee 100644
   */
  static size_t estimateFunctionStackSize(llvm::Function *Func,
                                          const llvm::Module *Mod,
-@@ -1053,25 +1053,9 @@ int link(llvm::Module *Program, const llvm::Module *Lib, std::string &Log,
+@@ -1130,25 +1130,9 @@ int link(llvm::Module *Program, const llvm::Module *Lib, std::string &Log,
      }
    }
  
@@ -99,17 +99,19 @@ index 9554e2225..97f4970ee 100644
    }
  
    // remove unused globals that were copied
-@@ -1087,6 +1071,49 @@ int link(llvm::Module *Program, const llvm::Module *Lib, std::string &Log,
+@@ -1164,6 +1148,51 @@ int link(llvm::Module *Program, const llvm::Module *Lib, std::string &Log,
    return 0;
  }
  
 +void estimateKernelStackSizes(llvm::Module *Program, bool Optimized) {
-+  // The kernel library is built at -O0, so the linked program carries
-+  // allocas for every local variable of the builtins, which the kernel
-+  // compiler's optimizations remove again. Estimate on a copy that went
-+  // through SROA instead, keeping the allocas that survive optimization
-+  // (e.g. dynamically indexed private arrays). Without optimization
-+  // (-cl-opt-disable), keep counting all of them.
++  // The kernel library is built at -O0, so the linked program has allocas
++  // that kernel compilation removes. Estimate on a copy that went through
++  // SROA; allocas that survive it, like dynamically indexed private arrays,
++  // still count. With -cl-opt-disable, estimate on the program as is.
++  //
++  // SROA only undoes the -O0 build of the kernel library. Don't add passes
++  // to model more of the kernel compilation pipeline: that would duplicate
++  // it and drift from it. A better estimate needs a different estimator.
 +  std::unique_ptr<llvm::Module> Clone;
 +  llvm::Module *Mod = Program;
 +  if (Optimized) {
@@ -170,10 +172,10 @@ index b42cf597f..89df2cec9 100644
                            const llvm::Module *Program,
                            const char **DevAuxFuncs);
 diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
-index 2ea3a919c..abd21e559 100644
+index 7c693cb7c..a9494a659 100644
 --- a/tests/regression/CMakeLists.txt
 +++ b/tests/regression/CMakeLists.txt
-@@ -43,6 +43,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
+@@ -45,6 +45,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
       test_frexp_kernellib
       test_usm_free_realloc
       test_large_private_workgroup
@@ -181,7 +183,7 @@ index 2ea3a919c..abd21e559 100644
  )
  if(UNIX)
    list(APPEND C_PROGRAMS_TO_BUILD test_signal_handlers)
-@@ -208,6 +209,9 @@ add_test_pocl(NAME "regression/test_usm_free_realloc" COMMAND "test_usm_free_rea
+@@ -216,6 +217,9 @@ add_test_pocl(NAME "regression/test_usm_free_realloc" COMMAND "test_usm_free_rea
  add_test_pocl(NAME "regression/test_large_private_workgroup"
    COMMAND "test_large_private_workgroup")
  
@@ -193,17 +195,12 @@ index 2ea3a919c..abd21e559 100644
  add_test_pocl(NAME "regression/test_flatten_barrier_subs" COMMAND "test_flatten_barrier_subs" EXPECTED_OUTPUT "test_flatten_barrier_subs.output")
 diff --git a/tests/regression/test_stack_estimate_builtins.c b/tests/regression/test_stack_estimate_builtins.c
 new file mode 100644
-index 000000000..584bdb25b
+index 000000000..b90faebbc
 --- /dev/null
 +++ b/tests/regression/test_stack_estimate_builtins.c
-@@ -0,0 +1,163 @@
-+/* Regression test for the stack-size based CL_KERNEL_WORK_GROUP_SIZE limit
-+   (HOST_CPU_ENABLE_STACK_SIZE_CHECK) counting the local variables of builtins.
-+
-+   The kernel library is built at -O0, so builtins like hypot carry well over
-+   a kilobyte of allocas into the linked program. The kernel compiler optimizes
-+   them away, but the stack estimate used to count them, limiting kernels that
-+   need almost no stack to a few hundred work-items on macOS.
+@@ -0,0 +1,161 @@
++/* Regression test: with HOST_CPU_ENABLE_STACK_SIZE_CHECK, builtin allocas
++   that SROA removes must not lower CL_KERNEL_WORK_GROUP_SIZE.
 +
 +   Copyright (c) 2026 Tim Besard
 +
@@ -238,11 +235,10 @@ index 000000000..584bdb25b
 +      return EXIT_FAILURE;                                                    \
 +    }
 +
-+/* builtins: calls builtins with large -O0 frames, but has no private array.
-+   private_array: a dynamically indexed array that stays in memory, which the
-+   limit has to keep accounting for.
-+   private_array_builtins: both, which should need as much stack as
-+   private_array alone. */
++/* builtins: only builtin calls, whose allocas SROA removes.
++   private_array: a dynamically indexed 32 KiB array, which SROA keeps.
++   private_array_builtins: both; the builtin calls must not lower the limit
++   of private_array. */
 +static const char *kernel_source
 +  = "#define PRIVATE_ARRAY                       \\\n"
 +    "  size_t gid = get_global_id (0);           \\\n"
@@ -334,23 +330,27 @@ index 000000000..584bdb25b
 +  CHECK_ERROR (clReleaseContext (context));
 +  CHECK_ERROR (clUnloadPlatformCompiler (platform));
 +
-+  /* 32 KiB of private memory per work-item fits no stack budget at the
-+     device maximum, so an unlimited private_array means the device doesn't
-+     limit work-group sizes by stack use. */
++  /* At the default CL_DEVICE_MAX_WORK_GROUP_SIZE of 4096, the 32 KiB array
++     needs 128 MiB of stack. Typical budgets are much smaller: 3/4 of the
++     worker thread's stack for pthread (6 MiB for 8 MiB stacks), half the
++     calling thread's stack for cpu-minimal. Skip if the array doesn't lower
++     the limit: the check is off, or the budget fits a full work-group. */
 +  if (private_wg_size == max_wg_size)
 +    {
 +      printf ("SKIP: no stack-size based work-group size limit\n");
 +      return 77;
 +    }
 +
++  /* Without SROA, these builtins are charged about 4 KiB per work-item,
++     which lowers the limit below 4096 for budgets under about 16 MiB (to
++     1542 with 6 MiB). */
 +  if (builtins_wg_size != max_wg_size)
 +    {
 +      printf ("FAIL: builtins limited to %zu work-items\n", builtins_wg_size);
 +      return EXIT_FAILURE;
 +    }
-+  /* Mostly independent of the stack size: stack charged to the builtins
-+     lowers the limit below that of the array alone, unless it's small enough
-+     to vanish in the rounding of the division. */
++  /* Without SROA, adding the builtins lowers the limit from 191 to 170
++     work-items with a 6 MiB budget. */
 +  if (private_builtins_wg_size != private_wg_size)
 +    {
 +      printf ("FAIL: builtins lower the limit from %zu to %zu work-items\n",

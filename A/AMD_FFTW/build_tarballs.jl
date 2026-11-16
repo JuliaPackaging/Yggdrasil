@@ -52,6 +52,8 @@ platforms = [
 products = [
     LibraryProduct("libfftw3", :libfftw3),
     LibraryProduct("libfftw3f", :libfftw3f),
+    LibraryProduct("libfftw3_omp", :libfftw3_omp),
+    LibraryProduct("libfftw3f_omp", :libfftw3f_omp),
 ]
 
 dependencies = [

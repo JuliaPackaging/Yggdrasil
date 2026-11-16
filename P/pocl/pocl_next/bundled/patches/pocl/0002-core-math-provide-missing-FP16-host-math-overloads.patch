@@ -1,4 +1,4 @@
-From eb359e89a2eae77acf90e1d79c7177c3723596b9 Mon Sep 17 00:00:00 2001
+From ed951e8faeea5d970ab1af9f72dfca9783321c73 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Tue, 30 Jun 2026 10:17:24 +0200
 Subject: [PATCH] core-math: provide missing FP16 host math overloads
