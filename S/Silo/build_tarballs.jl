@@ -6,12 +6,11 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "Silo"
-version = v"4.12.1"
-ygg_version = v"4.12.3"         # we bumped the version to build against the new MPIABI
+version = v"4.12.2"
+ygg_version = v"4.12.4"         # we bumped the version to build against the new MPIABI
 
 sources = [
-    ArchiveSource("https://github.com/LLNL/Silo/releases/download/$(version)/Silo-$(version).tar.xz",
-                  "9fdf81303b8dc7fab941e365f4156fe48d0bb036cdfdcb59a7c2d218771576b6"),
+    GitSource("https://github.com/llnl/Silo", "3285c796318ac7ffc442ec5593abb1159b59e753"; tag="$(version)"),
     DirectorySource("bundled"),
 ]
 
