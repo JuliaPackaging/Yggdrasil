@@ -140,5 +140,5 @@ These are defaults, not absolutes ([Critical Rules](../../../AGENTS.md#critical-
 ### CI and testing
 
 - Every platform builds, and the log is clean too: no missing license, no "could not be resolved and could not be auto-mapped" ([Information for maintainers](../../../CONTRIBUTING.md#information-for-maintainers)), no audit warning about `std::string` values or libgfortran (asking for `expand_cxxstring_abis`, `expand_gfortran_versions` or a `CompilerSupportLibraries_jll` dependency), no dependency configure failed to find, and the installed files show in it.
-- The JLL was tested, also on the oldest Julia that `julia_compat` admits ([`testing-jll`](../testing-jll/SKILL.md)).
+- The JLL was tested with the binaries for the author's native platform, on Linux, macOS and Windows where they had access, and on the oldest Julia that `julia_compat` admits ([`testing-jll`](../testing-jll/SKILL.md)).
 - After merging, the registration PR in General is watched until it merges ([Testing](../../../AGENTS.md#testing)).
