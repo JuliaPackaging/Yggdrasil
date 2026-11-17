@@ -114,7 +114,7 @@ Every declared product must be produced on every platform it is built for: the a
 
 ### GCC Version Selection
 
-The default is GCC 4.8.5; 15.2 is the newest available (see [available GCC versions](https://github.com/JuliaPackaging/Yggdrasil/blob/master/RootFS.md#compiler-shards)). Set `preferred_gcc_version=v"X"` only when required, to the oldest GCC that works, with a comment saying why. Reviewers reject unexplained high versions. It is required for:
+The default is GCC 4.8.5 (see [available GCC versions](https://github.com/JuliaPackaging/Yggdrasil/blob/master/RootFS.md#compiler-shards)). Set `preferred_gcc_version=v"X"` only when required, to the oldest GCC that works, with a comment saying why. Reviewers reject unexplained high versions. It is required for:
 
 - **C++ code** the default GCC can't compile (stay ≤10 for Julia v1.6 compatibility).
 - **Dependencies built with newer GCC**: Match or exceed their GCC version. CxxWrap wrappers are the exception; see [`libjulia-recipes`](.agents/skills/libjulia-recipes/SKILL.md).
@@ -228,7 +228,7 @@ Examples:
 
 ## Testing
 
-Test the generated JLL before merging, so a broken package is not automatically registered in General. Build it for Linux, macOS and Windows, and test it on your own machine with the binaries for its native platform. Load it on the lowest Julia version that `julia_compat` admits as well as a current one: General's AutoMerge imports it on the lowest and refuses to register it if that fails. Read [`testing-jll`](.agents/skills/testing-jll/SKILL.md) for how.
+Test the generated JLL before merging, so a broken package is not automatically registered in General. Build it for each of Linux, macOS and Windows that it supports, and test it on your own machine with the binaries for its native platform. Load it on the lowest Julia version that `julia_compat` admits as well as a current one: General's AutoMerge imports it on the lowest and refuses to register it if that fails. Read [`testing-jll`](.agents/skills/testing-jll/SKILL.md) for how.
 
 A successful build is not enough: compat problems often show only in the registration PR that merging opens in General. Watch it. When AutoMerge blocks it, fix the recipe, or ask in #pkg-registration on the Julia Slack for a manual merge when the failure is spurious.
 

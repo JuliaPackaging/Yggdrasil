@@ -5,9 +5,9 @@ description: How to test every Yggdrasil recipe before merging. Use before mergi
 
 # Testing a JLL
 
-Build the recipe for Linux, macOS and Windows, and test the JLL on your own machine with the binaries built for its native platform, e.g. `aarch64-apple-darwin` on Apple silicon, not `x86_64-apple-darwin` under Rosetta.
+Build the recipe for each of Linux, macOS and Windows that it supports, and test the JLL on your own machine with the binaries built for its native platform, e.g. `aarch64-apple-darwin` on Apple silicon, not `x86_64-apple-darwin` under Rosetta.
 
-On an x86_64 host (x86_64 macOS needs Docker), build one platform of each OS, your machine's among them, and deploy a local JLL, here on x86_64 Linux:
+On an x86_64 host (x86_64 macOS needs Docker), build one platform of each of these OSes, your machine's among them, and deploy a local JLL, here on x86_64 Linux:
 
 ```bash
 cd X/PackageName
@@ -36,7 +36,7 @@ Repeat this with the lowest Julia version that `julia_compat` admits, the `julia
 
 Check that:
 
-- [ ] It builds for Linux, macOS and Windows
+- [ ] It builds for each of Linux, macOS and Windows that it supports
 - [ ] The JLL imports without warnings or errors on your machine, with its native platform's binaries; this dlopens its libraries and their dependencies
 - [ ] It also imports on the lowest Julia version that `julia_compat` admits
 - [ ] Executables run (at least `--version` or `--help`)

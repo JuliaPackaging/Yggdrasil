@@ -9,12 +9,12 @@ The OpenMP runtime follows the compiler. BinaryBuilder compiles C and C++ with C
 
 ```julia
 dependencies = [
-    Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
-    Dependency("LLVMOpenMP_jll"; platforms=filter(Sys.isbsd, platforms)),
+    Dependency("CompilerSupportLibraries_jll"; compat="X.Y.Z", platforms=filter(!Sys.isbsd, platforms)),
+    Dependency("LLVMOpenMP_jll"; compat="X.Y.Z", platforms=filter(Sys.isbsd, platforms)),
 ]
 ```
 
-Both still need a `compat` bound; see below.
+The last two items below say how to choose each bound.
 
 - **Build system**: pass upstream's OpenMP option and let it add `-fopenmp`. CMake's `FindOpenMP` finds both runtimes without `OpenMP_*` variables. A plain Makefile on macOS and FreeBSD needs `-fopenmp -I${includedir}` to compile and `-L${libdir} -lomp` to link.
 - **Never mix runtimes**: compile against the `omp.h` of the runtime you link. Don't copy an `omp.h` from elsewhere, link `-lgomp` with Clang, or use `-fopenmp=libgomp`.
