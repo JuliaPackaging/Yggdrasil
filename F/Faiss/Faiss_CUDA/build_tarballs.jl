@@ -55,3 +55,5 @@ for platform in platforms
                    skip_audit=true,
                    dont_dlopen=true)
 end
+
+# Build trigger: 1
