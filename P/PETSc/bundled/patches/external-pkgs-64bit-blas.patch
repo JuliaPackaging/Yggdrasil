@@ -1,6 +1,7 @@
-Let PETSc use MUMPS, SuperLU_DIST, hypre and SuiteSparse with 64-bit BLAS indices.
+Let PETSc use MUMPS, SuperLU_DIST, hypre, SuiteSparse and p4est with 64-bit BLAS indices.
 PETSc's per-package `requires32bitintblas` default makes configure reject them. Their JLLs
-link BLAS themselves, with the integer width each needs, so PETSc's 64-bit indices don't reach them.
+link BLAS themselves, with the integer width each needs, or not at all (p4est), so PETSc's
+64-bit indices don't reach them.
 Specific to Yggdrasil's JLLs, so not for upstream.
 
 diff -ru a/config/BuildSystem/config/packages/MUMPS.py b/config/BuildSystem/config/packages/MUMPS.py
@@ -63,3 +64,14 @@ diff -ru a/config/BuildSystem/config/packages/hypre.py b/config/BuildSystem/conf
      self.version         = '3.1.0'
      self.minversion      = '2.14'
      self.versionname     = 'HYPRE_RELEASE_VERSION'
+diff -ru a/config/BuildSystem/config/packages/p4est.py b/config/BuildSystem/config/packages/p4est.py
+--- a/config/BuildSystem/config/packages/p4est.py
++++ b/config/BuildSystem/config/packages/p4est.py
+@@ -4,6 +4,7 @@
+ class Configure(config.package.GNUPackage):
+   def __init__(self, framework):
+     config.package.GNUPackage.__init__(self, framework)
++    self.requires32bitintblas = 0
+     self.version           = '2.8.7'
+     self.gitcommit         = 'v'+self.version
+     self.download          = ['git://https://github.com/cburstedde/p4est','https://github.com/cburstedde/p4est/archive/'+self.gitcommit+'.tar.gz']

@@ -234,6 +234,21 @@ build_petsc()
 
     HDF5_ARGS="--with-hdf5=1 --with-hdf5-include=${includedir} --with-hdf5-lib=[${libdir}/libhdf5_hl.${dlext},${libdir}/libhdf5.${dlext}]"
 
+    ZLIB_ARGS="--with-zlib=1 --with-zlib-include=${includedir} --with-zlib-lib=${libdir}/libz.${dlext}"
+
+    if [[ "${target}" == *-mingw* ]]; then
+        # libtool names the DLLs libp4est-4.dll and libsc-4.dll, so link the import libraries
+        P4EST_LIBS="${prefix}/lib/libp4est.dll.a,${prefix}/lib/libsc.dll.a"
+    else
+        P4EST_LIBS="${libdir}/libp4est.${dlext},${libdir}/libsc.${dlext}"
+    fi
+    # P4est_jll has no OpenMPI builds
+    if [[ ${bb_full_target} == *openmpi* ]]; then
+        P4EST_ARGS="--with-p4est=0"
+    else
+        P4EST_ARGS="--with-p4est=1 --with-p4est-include=${includedir} --with-p4est-lib=[${P4EST_LIBS}]"
+    fi
+
     mkdir -v ${libdir}/petsc/${PETSC_CONFIG}
 
     # On AArch64, clang defaults to outline atomics, i.e. it turns atomic
@@ -277,6 +292,8 @@ build_petsc()
         ${HYPRE_ARGS} \
         ${MUMPS_ARGS} \
         ${HDF5_ARGS} \
+        ${ZLIB_ARGS} \
+        ${P4EST_ARGS} \
         ${CUDA_ARGS} \
         ${TETGEN_ARGS} \
         ${TRIANGLE_ARGS} \
@@ -400,8 +417,11 @@ function petsc_dependencies(platforms; superlu_cuda::Bool=false)
     Dependency(PackageSpec(name="HYPRE_jll"); compat="~3.1.2"),
     Dependency(PackageSpec(name=superlu_cuda ? "SuperLU_DIST_CUDA_jll" : "SuperLU_DIST_jll"); compat="9.3.2"),
     Dependency(PackageSpec(name="HDF5_jll"); compat="2.2.2"),
-    # Zlib_jll 1.4 tags its FreeBSD artifacts os_version 14.1, which the x86_64 FreeBSD 13.4
-    # build environment does not match; MPICH's libpciaccess and libxml2 need libz.
+    # P4est_jll's version is not p4est's (2.8.9 builds 2.8.7) and says nothing about its
+    # soname, hence ~ to stay with the libp4est.so.4 linked here
+    Dependency(PackageSpec(name="P4est_jll"); compat="~2.8.9", platforms=filter(p -> p["mpi"] != "openmpi", platforms)),
+    # PETSc's p4est support and MPICH's libpciaccess and libxml2 need libz. Zlib_jll 1.4 tags its
+    # FreeBSD artifacts os_version 14.1, which the x86_64 FreeBSD 13.4 build environment does not match.
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"); compat="1.3.1"),
     Dependency(PackageSpec(name="TetGen_jll"); compat="1.6.0"),
     Dependency(PackageSpec(name="Triangle_jll"); compat="1.6.3"),
