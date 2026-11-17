@@ -14,8 +14,12 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 name = "fatrop"
 version = v"1.2.0"
 
+# Fatrop sets the `VERSION` of the library but no `SOVERSION`, so its soname contains the full version
+# (`libfatrop.so.<version>`) and JLLs linking against libfatrop need an exact compat bound.
+
 sources = [
-    # v1.2.0 with https://github.com/meco-group/fatrop/pull/68 fixing the build on macOS
+    # v1.2.0 with https://github.com/meco-group/fatrop/pull/68 fixing the build on macOS. Between v1.2.0
+    # and this commit, the only other change is the version of `main` set to 1.2.99.
     GitSource("https://github.com/meco-group/fatrop.git", "8f7dbfc719e350e0b8b99ac58b9bf5ff2aeee9a4"),
 ]
 
@@ -27,7 +31,7 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/fatrop
 
-mkdir -p ${WORKSPACE}/srcdir/blasfeo-cmake
+mkdir -pv ${WORKSPACE}/srcdir/blasfeo-cmake
 cat > ${WORKSPACE}/srcdir/blasfeo-cmake/blasfeoConfig.cmake <<EOF
 add_library(blasfeo SHARED IMPORTED GLOBAL)
 set_target_properties(blasfeo PROPERTIES
@@ -61,9 +65,10 @@ platforms = [
     expand_microarchitectures(filter(p -> Sys.isapple(p) && arch(p) == "x86_64", supported_platforms()), ["x86_64", "avx", "avx2"]);
     expand_microarchitectures(filter(p -> Sys.isapple(p) && arch(p) == "aarch64", supported_platforms()), ["apple_m1"]);
 ]
+platforms = expand_cxxstring_abis(platforms)
 
 products = [
-    LibraryProduct(["libfatrop", "fatrop"], :libfatrop),
+    LibraryProduct("libfatrop", :libfatrop),
 ]
 
 # augment_platform so the microarchitecture variant matching the host is selected
@@ -77,13 +82,13 @@ end
 
 dependencies = [
     Dependency("blasfeo_jll"; compat = "0.1.4"),
-    Dependency("CompilerSupportLibraries_jll"; platforms = filter(!Sys.isapple, platforms)),
 ]
 
 for platform in platforms
     should_build_platform(platform) || continue
-    # Fatrop is written in C++17
+    # Fatrop is written in C++17, which requires GCC 7. mingw-gcc before v10 fails to assemble AVX-512
+    # code ("invalid register for .seh_savexmm"), see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=65782.
+    gcc_version = Sys.iswindows(platform) && platform["march"] == "avx512" ? v"10" : v"7"
     build_tarballs(ARGS, name, version, sources, script, [platform], products, dependencies;
-                   julia_compat = "1.6", augment_platform_block, lock_microarchitecture = false,
-                   preferred_gcc_version = v"10")
+                   julia_compat = "1.6", augment_platform_block, preferred_gcc_version = gcc_version)
 end
