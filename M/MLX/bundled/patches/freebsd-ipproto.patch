@@ -1,0 +1,12 @@
+diff --git a/mlx/distributed/ring/ring.cpp b/mlx/distributed/ring/ring.cpp
+index 9a81010..52a48b9 100644
+--- a/mlx/distributed/ring/ring.cpp
++++ b/mlx/distributed/ring/ring.cpp
+@@ -1,6 +1,7 @@
+ // Copyright © 2024 Apple Inc.
+ 
+ #include <fcntl.h>
++#include <netinet/in.h>
+ #include <netinet/tcp.h>
+ #include <sys/socket.h>
+ #include <unistd.h>
