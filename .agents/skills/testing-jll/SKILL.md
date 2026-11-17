@@ -5,16 +5,16 @@ description: How to test every Yggdrasil recipe before merging. Use before mergi
 
 # Testing a JLL
 
-Test the JLL on Linux, macOS and Windows where you have access to them, and at least on your own machine. On each machine, test the binaries built for its native platform, e.g. `aarch64-apple-darwin` on Apple silicon, not `x86_64-apple-darwin` under Rosetta.
+Build the recipe for Linux, macOS and Windows, and test the JLL on your own machine with the binaries built for its native platform, e.g. `aarch64-apple-darwin` on Apple silicon, not `x86_64-apple-darwin` under Rosetta.
 
-On an x86_64 host (x86_64 macOS needs Docker), build your machine's platform and deploy a local JLL, here on x86_64 Linux:
+On an x86_64 host (x86_64 macOS needs Docker), build one platform of each OS, your machine's among them, and deploy a local JLL, here on x86_64 Linux:
 
 ```bash
 cd X/PackageName
-julia --project build_tarballs.jl --verbose --deploy=local x86_64-linux-gnu
+julia --project build_tarballs.jl --verbose --deploy=local x86_64-linux-gnu,aarch64-apple-darwin,x86_64-w64-mingw32
 ```
 
-This puts tarballs in `products/` and writes a local JLL package to `~/.julia/dev/PackageName_jll/`. The trailing triplet builds only that platform; omit it to build all of them. Use it for local testing only, never narrow `platforms` in the recipe to match. While iterating on a failing build, add `--debug` to drop into the sandbox shell on failure.
+This puts tarballs in `products/` and writes a local JLL package to `~/.julia/dev/PackageName_jll/`. The trailing comma-separated triplets build only those platforms; omit them to build all of them. Use it for local testing only, never narrow `platforms` in the recipe to match. While iterating on a failing build, add `--debug` to drop into the sandbox shell on failure.
 
 On other hosts (see [Prerequisites](../../../AGENTS.md#prerequisites)), push the branch and wait for the Buildkite jobs. Download your host platform's tarball from its job's Artifacts tab into the recipe's `products/` directory, then write the local JLL from it without building, here on arm64 macOS:
 
@@ -36,8 +36,8 @@ Repeat this with the lowest Julia version that `julia_compat` admits, the `julia
 
 Check that:
 
+- [ ] It builds for Linux, macOS and Windows
 - [ ] The JLL imports without warnings or errors on your machine, with its native platform's binaries; this dlopens its libraries and their dependencies
-- [ ] It also imports on Linux, macOS and Windows, where you have access to them
 - [ ] It also imports on the lowest Julia version that `julia_compat` admits
 - [ ] Executables run (at least `--version` or `--help`)
 - [ ] Platform-specific behavior works, if any
