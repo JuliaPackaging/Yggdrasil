@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libjwt"
-version = v"3.2.3"
+version = v"3.6.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/benmcollins/libjwt.git", "91fa41ad05e71fd03c3156372cd0ef1bd52b2261")
+    GitSource("https://github.com/benmcollins/libjwt.git", "3a5f02b064f40042c19cc8796f10f2784fd16758")
 ]
 
 # Bash recipe for building across all platforms
@@ -15,8 +15,8 @@ script = raw"""
 cd $WORKSPACE/srcdir/libjwt
 mkdir build
 cd build
-if [[ ${target} == x86_64-*mingw* ]]; then
-    export OPENSSL_ROOT_DIR="${prefix}/lib64"
+if [[ ${target} == *mingw* ]]; then
+    export PKG_CONFIG_PATH="${prefix}/bin/pkgconfig:${PKG_CONFIG_PATH}"
 fi
 cmake .. \
     -DCMAKE_INSTALL_PREFIX="${prefix}" \
