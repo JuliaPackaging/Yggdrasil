@@ -228,7 +228,7 @@ Examples:
 
 ## Testing
 
-Test the generated JLL before merging, so a broken package is not automatically registered in General. Load it on the lowest Julia version that `julia_compat` admits as well as a current one: General's AutoMerge imports it on the lowest and refuses to register it if that fails. Read [`testing-jll`](.agents/skills/testing-jll/SKILL.md) for how.
+Test the generated JLL before merging, so a broken package is not automatically registered in General. Build it for Linux, macOS and Windows, and test it on your own machine with the binaries for its native platform. Load it on the lowest Julia version that `julia_compat` admits as well as a current one: General's AutoMerge imports it on the lowest and refuses to register it if that fails. Read [`testing-jll`](.agents/skills/testing-jll/SKILL.md) for how.
 
 A successful build is not enough: compat problems often show only in the registration PR that merging opens in General. Watch it. When AutoMerge blocks it, fix the recipe, or ask in #pkg-registration on the Julia Slack for a manual merge when the failure is spurious.
 
