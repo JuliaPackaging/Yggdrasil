@@ -80,6 +80,31 @@ agent() = Dict(
     :sandbox_capable => "true"
 )
 
+# The agents' scheduler sizes an untagged job at 4 CPUs and 4 GiB, and kills it beyond 16 GiB.
+# Builds of these projects, or of any project under these directories, need more: most peaked at
+# 19-45 GiB (2026-11), and LLVM links many large binaries in parallel. They declare it: the
+# request is what the scheduler reserves, the limit the job's `memory.max`. A project whose
+# builds get OOM-killed belongs in this list.
+const LARGE_MEMORY_PROJECTS = [
+    "E/Enzyme",
+    "L/LLVM",
+    "L/libcxxwrap_julia",
+    "L/libpolymake_julia",
+    "O/ONNXRuntime/ONNXRuntime_CUDA",
+    "O/OpenCV/OpenCV",
+    "O/OpenCV/OpenCV_CUDA",
+]
+
+is_large_memory(project) =
+    any(p -> project == p || startswith(project, p * "/"), LARGE_MEMORY_PROJECTS)
+
+large_memory_agent() = merge(agent(), Dict(
+    :sched_cpus => "4",
+    :sched_cpus_limit => "16",
+    :sched_mem_gib => "24",
+    :sched_mem_limit_gib => "64",
+))
+
 # BinaryBuilder2 projects are scheduled, built and registered with their own Julia.  It needs
 # strict matching of the `sanitize` platform tag (JuliaLang/julia#63647) to resolve JLLs.
 const BB1_JULIA_VERSION = "1.13.2"
@@ -183,14 +208,10 @@ function render(bs::AbstractBuildStep)
     return Dict(
         :key => step_key(bs),
         :label => "build -- $(bs.name) -- $(bs.platform)",
-        :agents => agent(),
+        :agents => is_large_memory(bs.project) ? large_memory_agent() : agent(),
         :plugins => build_plugins,
         :timeout_in_minutes => 300,
         :priority => IS_PR ? -2 : -1,
-        # Reduce concurrency for Reactant builds, which are extremely intensive and grind
-        # the system to a halt when run with several parallel jobs.
-        :concurrency => 12,
-        :concurrency_group => "yggdrasil/build/$(bs.project)",
         :commands => ["""
         YGGDRASIL_BASE=\$(pwd)
         cd $(bs.project)
