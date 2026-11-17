@@ -9,10 +9,8 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 name = "libseams"
 version = v"2.14.1"
 
-# This is the commit of the release/2.14.1 branch of
-# d-SEAMS/seams-core that carries the chemfiles changes. It is replaced with
-# the commit that is pushed, which differs from the one in a local checkout
-# once the patches went through `git am`.
+# The commit of the release/2.14.1 branch of d-SEAMS/seams-core that carries
+# the chemfiles changes.
 sources = [
     GitSource("https://github.com/d-SEAMS/seams-core.git", "7f65d27f10c5c6e88567ed6c8bcef59fa08e1570"),
 ]
