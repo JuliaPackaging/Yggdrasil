@@ -2,6 +2,7 @@ using BinaryBuilder, Pkg
 
 name = "OpenCV"
 
+# Version, sources, build script and products are shared with the other OpenCV recipe.
 include(joinpath(@__DIR__, "..", "common.jl"))
 
 platforms = vcat(libjulia_platforms.(julia_versions)...)
