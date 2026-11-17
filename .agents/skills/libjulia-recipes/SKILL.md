@@ -15,8 +15,8 @@ platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
 dependencies = [
-    BuildDependency(PackageSpec(; name="libjulia_jll", version="1.11.4")),
-    Dependency("libcxxwrap_julia_jll"; compat="0.14.12"),
+    BuildDependency(PackageSpec(; name="libjulia_jll", version="X.Y.Z")),
+    Dependency("libcxxwrap_julia_jll"; compat="0.X.Y"),
 ]
 
 @assert libjulia_min_julia_version <= v"1.10.0"
@@ -26,23 +26,23 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
     preferred_gcc_version=v"8")
 ```
 
-- **`libjulia_jll`** is always a `BuildDependency`: the running Julia supplies `libjulia`. Pin it to `jllversion` from `L/libjulia/build_tarballs.jl`. Older releases lack artifacts for newer Julia versions; the history comment in `common.jl` lists the first release for each.
+- **`libjulia_jll`** is always a `BuildDependency`: the running Julia supplies `libjulia`. Pin it to `jllversion` from `L/libjulia/build_tarballs.jl` when adding the recipe or updating its version, rather than copying another recipe's pin, which may lag. Between updates, raise it as [Julia updates](#julia-updates) describes. Older releases lack artifacts for newer Julia versions; the history comment in `common.jl` lists the first release for each.
 - **`julia_compat`**: use `libjulia_julia_compat(julia_versions)`, which yields `~1.10, ~1.11, …` and admits only Julia versions that have an artifact. A plain `"1.10"` admits future Julia versions the JLL was not built for.
 - **Julia versions**: `julia_versions` comes from `common.jl` with prerelease tags stripped, so `1.15.0-DEV` appears as `v"1.15.0"`. To drop some, filter it right after the include, before computing platforms and `julia_compat`, e.g. `filter!(>=(v"1.11"), julia_versions)`. Filter platforms after `libjulia_platforms`, then call `expand_cxxstring_abis`.
 - **Versioning**: when `common.jl` adds or drops a Julia version that the recipe's filter keeps (any version, for a recipe that is unfiltered or filtered only by a lower bound), its `julia_compat` changes on its next build. That rebuild needs a new JLL version, not a `# Build trigger` bump (see [Dependencies](../../../AGENTS.md#dependencies)). Without a new upstream release, keep `version` and raise `ygg_version` (see [`jll-versioning`](../jll-versioning/SKILL.md)). `@assert libjulia_min_julia_version <= v"1.10.0"` makes dropping the oldest Julia version fail the build instead of silently narrowing `julia_compat`.
-- **Local builds**: the triplet carries the tag, e.g. `x86_64-linux-gnu-cxx11-julia_version+1.12.0`.
+- **Local builds**: the triplet carries the tag, e.g. `x86_64-linux-gnu-cxx11-julia_version+1.12.0`. Testing on the oldest Julia that `julia_compat` admits ([`testing-jll`](../testing-jll/SKILL.md)) needs that Julia version's variant too.
 - **Registration**: General's AutoMerge rejects a new package whose name contains "julia", starts with "Ju" or ends in "jl", JLLs included. Such a JLL's first registration needs a manual merge: once its General PR passes every other check, ask in the #pkg-registration channel on the Julia Slack.
 
 ## CxxWrap
 
 - **CMake**: projects using `find_package(JlCxx)` need `-DJulia_PREFIX=${prefix}` and `-DCMAKE_FIND_ROOT_PATH=${prefix}` on top of the usual CMake flags.
-- **`libcxxwrap_julia_jll` compat**: before 1.0, each minor release (0.13 → 0.14) breaks ABI. Admit exactly one minor, and one that the Julia package's CxxWrap.jl accepts, per the `libcxxwrap_julia_jll` entry in CxxWrap.jl's `Project.toml`. BinaryBuilder builds against the oldest version in the bound, so the lower bound must be a release built for every Julia version in `julia_versions`.
-- **GCC**: the `JlCxx::cxxwrap_julia` CMake target requires C++20, which CMake supports from GCC 8; use the oldest GCC from 8 up that compiles the wrapper (see [GCC Version Selection](../../../AGENTS.md#gcc-version-selection)).
+- **`libcxxwrap_julia_jll` compat**: before 1.0, each minor release (0.13 → 0.14) breaks ABI. Admit exactly one minor, and one that the Julia package's CxxWrap.jl accepts, per the `libcxxwrap_julia_jll` entry in CxxWrap.jl's `Project.toml`. BinaryBuilder builds against the oldest version in the bound, so the lower bound must be a release built for every Julia version in `julia_versions`. A release's `Artifacts.toml`, in `JuliaBinaryWrappers/libcxxwrap_julia_jll.jl` at its tag, lists the `julia_version` of every artifact.
+- **GCC**: the `JlCxx::cxxwrap_julia` CMake target requires C++20, which CMake supports from GCC 8. Use the oldest GCC from 8 up that builds the wrapper ([GCC Version Selection](../../../AGENTS.md#gcc-version-selection)), even when `libcxxwrap_julia_jll` or the wrapped library was built with a newer one; match a dependency's GCC only when linking against it fails.
 - `L/libcxxwrap_julia` builds CxxWrap itself; it is not a template for a wrapper.
 
 ## Julia updates
 
-**ABI change in an unreleased Julia.** When Julia master or a release branch before its release breaks ABI, `L/libjulia` moves that version's `-DEV` commit and bumps `jllversion`. `julia_compat` is unchanged, so dependents need no new JLL version: once CI against that Julia version reports errors, raise the `libjulia_jll` pin, which rebuilds the recipe.
+**Julia prereleases and releases.** When a Julia version moves on, to a newer `-DEV` commit (e.g. because master breaks ABI), a beta, a release candidate or the release, `L/libjulia` updates its source in `common.jl`: the `GitSource` commit for `-DEV`, otherwise the `julia_full_versions` entry and its `checksums`. It moves `bundled/patches/<VERSION>/` to match Julia's new `VERSION` and bumps `jllversion`. `julia_versions` drops the prerelease tag, so `julia_compat` is unchanged and dependents need no new JLL version. They raise the `libjulia_jll` pin, which rebuilds the recipe, once CI against that Julia version reports errors, and otherwise at their next version update.
 
 **New Julia version.** This takes up to three PRs, each after the previous JLL is registered:
 
