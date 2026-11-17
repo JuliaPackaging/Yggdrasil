@@ -90,5 +90,5 @@ for platform in platforms
     # code ("invalid register for .seh_savexmm"), see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=65782.
     gcc_version = Sys.iswindows(platform) && platform["march"] == "avx512" ? v"10" : v"7"
     build_tarballs(ARGS, name, version, sources, script, [platform], products, dependencies;
-                   julia_compat = "1.6", augment_platform_block, preferred_gcc_version = gcc_version)
+                   julia_compat = "1.10", augment_platform_block, preferred_gcc_version = gcc_version)
 end
