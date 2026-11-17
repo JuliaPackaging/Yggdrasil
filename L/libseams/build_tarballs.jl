@@ -7,28 +7,24 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "libseams"
-version = v"2.14.0"
+version = v"2.14.1"
 
-# Annotated tag v2.14.0 on d-SEAMS/seams-core. The tag object is
-# a54eee70f37da364f7abcbb49842b90b41d6ed07 and it points at this commit.
-# BinaryBuilder refuses GitHub's generated archives (the bytes are not a
-# stable hash), so the tree is pinned by that commit. The tag archive
-# https://github.com/d-SEAMS/seams-core/archive/refs/tags/v2.14.0.tar.gz
-# had sha256
-# fa3e6d8f75e5a06691bd806334f1a89e0998f729d8145a057dc68794a162a551
-# when downloaded on 2026-11-17.
-const v2_14_0_tag_sha = "acc8bbc803f55bac39493c85300f87a8ce302829"
-
+# This is the commit of the release/2.14.1 branch of
+# d-SEAMS/seams-core that carries the chemfiles changes. It is replaced with
+# the commit that is pushed, which differs from the one in a local checkout
+# once the patches went through `git am`.
 sources = [
-    GitSource("https://github.com/d-SEAMS/seams-core.git", v2_14_0_tag_sha),
+    GitSource("https://github.com/d-SEAMS/seams-core.git", "7f65d27f10c5c6e88567ed6c8bcef59fa08e1570"),
 ]
 
-# The engine core, its stable C API (libseams), and the C ABI of the R and
-# Julia packages (libseams_lang). Every optional backend is off: those come
-# from wraps that would be downloaded during the build, or from libraries
-# that have no JLL yet. The LAMMPS dump reader is native and does not need
-# chemfiles. On a fresh tree, `meson setup` with `--wrap-mode=nodownload`
-# skips the vesin wrap and still configures.
+# The engine core, its stable C API (libseams), the C ABI of the R and Julia
+# packages (libseams_lang) and the seams command line tool. The optional
+# backends that need a wrap download or have no JLL yet are off. chemfiles
+# comes from Chemfiles_jll: meson finds it through its chemfiles-config.cmake
+# under the destdir prefix, and use_vendored_chemfiles=disabled means that no
+# chemfiles is ever fetched and built for the build machine. On a fresh tree,
+# `meson setup` with `--wrap-mode=nodownload` skips the vesin wrap and still
+# configures.
 script = raw"""
 cd ${WORKSPACE}/srcdir/seams-core
 
@@ -52,7 +48,8 @@ meson setup build \
     -Dwith_sphericart=disabled \
     -Dwith_nauty=disabled \
     -Dwith_blas=disabled \
-    -Dwith_chemfiles=disabled \
+    -Dwith_chemfiles=enabled \
+    -Duse_vendored_chemfiles=disabled \
     -Dwith_readcon=disabled \
     -Dwith_linkcell=disabled \
     -Dwith_minimage=disabled
@@ -72,9 +69,11 @@ install_license LICENSE
 # macOS SDK.
 sources, script = require_macos_sdk("14.5", sources, script; deployment_target = "11.0")
 
-# __int128 in the CRT accumulator rules out 32-bit targets. The Windows and
-# FreeBSD ports of the engine are not done yet.
-platforms = supported_platforms(; exclude = p -> nbits(p) == 32 || Sys.iswindows(p) || Sys.isfreebsd(p))
+# __int128 in the CRT accumulator rules out 32-bit targets. The FreeBSD,
+# powerpc64le and riscv64 ports of the engine are not done yet. Windows
+# x86_64 builds with mingw and passes the audit.
+platforms = supported_platforms(; exclude = p -> nbits(p) == 32 || Sys.isfreebsd(p) ||
+                                                 arch(p) in ("powerpc64le", "riscv64"))
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
@@ -87,6 +86,7 @@ products = [
 dependencies = [
     BuildDependency(PackageSpec(name = "Eigen_jll", uuid = "bc6bbf8a-a594-5541-9c57-10b0d0312c70",
                                 version = "3.4")),
+    Dependency("Chemfiles_jll"; compat = "0.10.4"),
     Dependency(PackageSpec(name = "CompilerSupportLibraries_jll", uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae");
                platforms = filter(!Sys.isapple, platforms)),
     Dependency(PackageSpec(name = "LLVMOpenMP_jll", uuid = "1d63c593-3942-5779-bab2-d838dc0a180e");
