@@ -3,33 +3,31 @@
 using BinaryBuilder, Pkg
 
 name = "LibMPDec"
-mpdecimal_version = v"2.5.1"
-version = v"2.5.2"
+version = v"4.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-$(mpdecimal_version).tar.gz",
-                  "9f9cd4c041f99b5c49ffb7b59d9f12d95b683d88585608aa56a6307667b2b21f"),
-    DirectorySource("./bundled"),
+    ArchiveSource("https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-$(version).tar.gz",
+                  "96d33abb4bb0070c7be0fed4246cd38416188325f820468214471938545b1ac8"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/mpdecimal*/
+cd $WORKSPACE/srcdir/mpdecimal-*
 
-# Give somewhat reasonable names to libraries for Windows
-atomic_patch -p1 ../patches/01-libname-windows.patch
-# By default use `${CC}` as linker
-atomic_patch -p1 ../patches/02-linker-cc.patch
-autoreconf -fiv
-
-export CFLAGS="-std=gnu99"
+# configure adds its release flags, -std=c99 and -DNDEBUG, only for compilers
+# it knows by name, not for `cc`. GCC 4.8 defaults to gnu90, which rejects
+# declarations in for loops.
+export CFLAGS="-std=gnu99 -DNDEBUG"
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
-    --disable-cxx
+    --disable-cxx \
+    --disable-doc \
+    --disable-static
 make -j${nproc}
 make install
+install_license COPYRIGHT.txt
 """
 
 # These are the platforms we will build for by default, unless further
@@ -38,6 +36,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
+    # libmpdec++ isn't built, since nothing needs it yet.
     LibraryProduct("libmpdec", :libmpdec)
 ]
 
