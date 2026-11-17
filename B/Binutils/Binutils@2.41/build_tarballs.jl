@@ -76,12 +76,15 @@ products = AbstractProduct[
 # Shared libraries for packages (e.g. Extrae) that link against `libbfd`.  In cross builds,
 # `libbfd` and `libopcodes` are installed in the target-specific `${host}/${target}/lib`; on
 # Windows the libraries are DLLs in `${bindir}`.
+# Julia selects among this JLL's artifacts by host platform only, which can give a cross
+# artifact whose libraries are not under `${libdir}`, so they are `dont_dlopen` to keep
+# `import Binutils_jll` from failing.
 append!(products, [
     LibraryProduct([
         "\${libdir}/$(lib)",
         "\${prefix}/\${host}/\${target}/lib/$(lib)",
         "\${bindir}/$(dll)",
-    ], Symbol(lib))
+    ], Symbol(lib); dont_dlopen=true)
     for (lib, dll) in (
         ("libbfd", "libbfd-2-41.dll"),
         ("libctf", "libctf-0.dll"),
@@ -106,4 +109,6 @@ build_tarballs(;
     products,
     host_toolchains = [CToolchain(;vendor=:gcc_bootstrap), HostToolsToolchain()],
     target_toolchains = [CToolchain(;vendor=:gcc_bootstrap)],
+    # Julia 1.11 and later load the libraries lazily, through `LazyLibrary`.
+    julia_compat = "1.11",
 )
