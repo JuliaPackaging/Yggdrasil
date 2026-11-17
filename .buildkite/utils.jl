@@ -212,10 +212,6 @@ function render(bs::AbstractBuildStep)
         :plugins => build_plugins,
         :timeout_in_minutes => 300,
         :priority => IS_PR ? -2 : -1,
-        # Reduce concurrency for Reactant builds, which are extremely intensive and grind
-        # the system to a halt when run with several parallel jobs.
-        :concurrency => 12,
-        :concurrency_group => "yggdrasil/build/$(bs.project)",
         :commands => ["""
         YGGDRASIL_BASE=\$(pwd)
         cd $(bs.project)
