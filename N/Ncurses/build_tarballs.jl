@@ -122,6 +122,19 @@ ln -s ncursesw ${includedir}/ncurses
 
 platforms = supported_platforms()
 
+# Point ncurses at the bundled terminfo database when the JLL is loaded
+init_block = raw"""
+if Sys.isunix()
+    path = joinpath(artifact_dir, "share", "terminfo")
+    old = get(ENV, "TERMINFO_DIRS", nothing)
+    if old === nothing
+        ENV["TERMINFO_DIRS"] = path
+    else
+        ENV["TERMINFO_DIRS"] = old * ":" * path
+    end
+end
+"""
+
 products = [
     LibraryProduct(["libform", "libform6"], :libform),
     LibraryProduct(["libmenu", "libmenu6"], :libmenu),
@@ -137,5 +150,6 @@ build_tarballs(;
     script,
     platforms,
     products,
+    init_block,
     julia_compat = "1.6",
 )
