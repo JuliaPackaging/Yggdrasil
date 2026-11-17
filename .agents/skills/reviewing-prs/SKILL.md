@@ -134,7 +134,7 @@ These are defaults, not absolutes ([Critical Rules](../../../AGENTS.md#critical-
 ### `build_tarballs` keywords
 
 - `preferred_gcc_version` and `preferred_llvm_version` only when required, to the oldest version that works, with a comment saying why ([GCC Version Selection](../../../AGENTS.md#gcc-version-selection)).
-- `julia_compat` is the oldest Julia the JLL works on. It must be raised when a dependency or a stdlib JLL needs a newer Julia; any other raise needs a reason, e.g. matching the Julia package that uses the JLL.
+- `julia_compat` is the oldest Julia the JLL works on. It must be raised when a dependency or a stdlib JLL needs a newer Julia; any other raise needs a reason, e.g. matching the Julia package that uses the JLL. Recipes built with `libjulia_platforms` use `libjulia_julia_compat` instead ([`libjulia-recipes`](../libjulia-recipes/SKILL.md)).
 - No unneeded keywords.
 
 ### CI and testing

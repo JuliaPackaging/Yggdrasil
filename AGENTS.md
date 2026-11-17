@@ -117,7 +117,7 @@ Every declared product must be produced on every platform it is built for: the a
 The default is GCC 4.8.5; 15.2 is the newest available (see [available GCC versions](https://github.com/JuliaPackaging/Yggdrasil/blob/master/RootFS.md#compiler-shards)). Set `preferred_gcc_version=v"X"` only when required, to the oldest GCC that works, with a comment saying why. Reviewers reject unexplained high versions. It is required for:
 
 - **C++ code** the default GCC can't compile (stay ≤10 for Julia v1.6 compatibility).
-- **Dependencies built with newer GCC**: Match or exceed their GCC version. Keep a library and its CxxWrap wrapper on the same GCC.
+- **Dependencies built with newer GCC**: Match or exceed their GCC version, except `libcxxwrap_julia_jll` (see [`libjulia-recipes`](.agents/skills/libjulia-recipes/SKILL.md)). Keep a library and its CxxWrap wrapper on the same GCC.
 - **Musl bugs**: Use GCC ≥6 to avoid `posix_memalign` issues
 
 Clang defaults to its newest version. Set `preferred_llvm_version` likewise: only when required (e.g. msan), to the oldest version that works.
