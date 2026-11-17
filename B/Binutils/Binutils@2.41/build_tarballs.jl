@@ -126,7 +126,7 @@ build_tarballs(;
     products,
     host_toolchains = [CToolchain(;vendor=:gcc_bootstrap), HostToolsToolchain()],
     target_toolchains = [CToolchain(;vendor=:gcc_bootstrap)],
-    # Julia 1.11 and later load the libraries lazily, through `LazyLibrary`.
-    julia_compat = "1.11",
+    # Pkg runs the `augment_platform_block` artifact selection hook from Julia 1.7 on.
+    julia_compat = "1.7",
     augment_platform_block,
 )
