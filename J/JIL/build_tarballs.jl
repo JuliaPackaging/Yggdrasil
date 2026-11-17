@@ -3,24 +3,24 @@
 using BinaryBuilder, Pkg
 
 name = "JIL"
-version = v"0.1.1"
+version = v"0.1.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://git.renater.fr/anonscm/git/jil/jil.git", "ab56a4be6c37fce27b87b7867865f71dba035d55")
+    GitSource("https://git.renater.fr/anonscm/git/jil/jil.git", "9f4f67151891a4bd082b36a73604eb660d83806a"; tag="$(version)")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+apk add doxygen # TODO: Replace by HostBuildDependency("Doxygen_jll") when the version becomes supported.
 cd ${WORKSPACE}/srcdir/jil/
-./bootstrap.sh
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make -j${nproc}
-make install
+cmake -B build -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
+cmake --build build --parallel ${nproc}
+cmake --install build
 cd doc
-apk add doxygen
-make function_docs_csv
-cp build/csv/jil_function_docs.csv ${prefix}/jil_function_docs.csv
+cmake -B build -DCMAKE_INSTALL_PREFIX=${prefix}
+cmake --build build --target function_docs_csv
+cmake --install build
 """
 
 # These are the platforms we will build for by default, unless further
@@ -40,11 +40,13 @@ platforms = [
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libjil", :libjil),
-    FileProduct("jil_function_docs.csv", :jil_function_docs_csv),
+    FileProduct("share/jil/jil_function_docs.csv", :jil_function_docs_csv),
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[]
+dependencies = [
+    Dependency("CompilerSupportLibraries_jll"; platforms=filter(Sys.islinux, platforms)),
+]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script,
