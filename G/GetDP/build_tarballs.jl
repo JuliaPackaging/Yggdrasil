@@ -4,7 +4,7 @@ using Base.BinaryPlatforms
 const YGGDRASIL_DIR = joinpath(@__DIR__, "../..")
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
-name = "getdp"
+name = "GetDP"
 # Upstream GetDP has no release after 3.5.0; the pinned commit below is
 # getdp_4_0_0_rc1-104-g065ad5d0 (its CMakeLists.txt already reads the unreleased 4.0.0).
 # v3.5.1 marks "after 3.5.0, before upstream's next release" and cannot collide with it.
