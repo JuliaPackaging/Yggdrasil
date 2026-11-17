@@ -1,0 +1,42 @@
+commit 55ca7eefe0e0eb3238a6e235109e5055a8b5c5e5
+Author: Elliot Saba <staticfloat@gmail.com>
+Date:   Tue Dec 17 05:34:46 2024 +0000
+
+    strip: respect `-D` for PE IMAGE_FILE_HEADER timestamp fields as well
+
+diff --git a/bfd/coffcode.h b/bfd/coffcode.h
+index 62720255b7f..4bdd4bd7ab0 100644
+--- a/bfd/coffcode.h
++++ b/bfd/coffcode.h
+@@ -5669,7 +5669,12 @@ coff_bigobj_swap_filehdr_out (bfd *abfd, void * in, void * out)
+   memcpy (filehdr_out->ClassID, header_bigobj_classid, 16);
+   H_PUT_16 (abfd, filehdr_in->f_magic, filehdr_out->Machine);
+   H_PUT_32 (abfd, filehdr_in->f_nscns, filehdr_out->NumberOfSections);
+-  H_PUT_32 (abfd, filehdr_in->f_timdat, filehdr_out->TimeDateStamp);
++  int header_timestamp = filehdr_in->f_timdat;
++  if ((abfd->flags & BFD_DETERMINISTIC_OUTPUT) != 0) {
++    header_timestamp = 0;
++  }
++  H_PUT_32 (abfd, header_timestamp, filehdr_out->TimeDateStamp);
++
+   PUT_FILEHDR_SYMPTR (abfd, filehdr_in->f_symptr,
+ 		      filehdr_out->PointerToSymbolTable);
+   H_PUT_32 (abfd, filehdr_in->f_nsyms, filehdr_out->NumberOfSymbols);
+diff --git a/binutils/objcopy.c b/binutils/objcopy.c
+index 3569b890c7d..f532bf8a540 100644
+--- a/binutils/objcopy.c
++++ b/binutils/objcopy.c
+@@ -2835,8 +2835,12 @@ copy_object (bfd *ibfd, bfd *obfd, const bfd_arch_info_type *input_arch)
+ 
+  	  if (preserve_dates)
+ 	    pe->timestamp = pe_data (ibfd)->coff.timestamp;
+-	  else
++	  else {
+ 	    pe->timestamp = -1;
++      if (deterministic) {
++	      pe->timestamp = 0;
++      }
++    }
+ 	}
+ 
+       if (pe_file_alignment != (bfd_vma) -1)
