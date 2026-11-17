@@ -5,14 +5,14 @@ const YGGDRASIL_DIR = joinpath(@__DIR__, "../..")
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "GetDP"
-# Upstream GetDP has no release after 3.5.0; the pinned commit below is
-# getdp_4_0_0_rc1-104-g065ad5d0 (its CMakeLists.txt already reads the unreleased 4.0.0).
+# Upstream GetDP has no release after 3.5.0; the pinned commit below is the release
+# candidate getdp_4_0_0_rc2 (its CMakeLists.txt already reads the unreleased 4.0.0).
 # v3.5.1 marks "after 3.5.0, before upstream's next release" and cannot collide with it.
 version = v"3.5.1"
 
 sources = [
     GitSource("https://gitlab.onelab.info/getdp/getdp.git",
-              "065ad5d0a5c324d6e1c3517978066a3fa487e0bf"),
+              "c6c73876b2746c44176c875b4aca942d614dc8e6"; tag="getdp_4_0_0_rc2"),
     DirectorySource("./bundled"),
 ]
 

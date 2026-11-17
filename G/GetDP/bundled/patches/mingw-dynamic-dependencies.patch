@@ -1,5 +1,5 @@
 Allow the MinGW executable to link shared PETSc, Gmsh and BLAS dependencies.
-https://gitlab.onelab.info/getdp/getdp/-/blob/065ad5d0a5c324d6e1c3517978066a3fa487e0bf/CMakeLists.txt#L911-918
+https://gitlab.onelab.info/getdp/getdp/-/blob/getdp_4_0_0_rc2/CMakeLists.txt#L911-918
 
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
