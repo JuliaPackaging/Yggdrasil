@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_sdkutils"
-version = v"1.0.0"
+version = v"1.0.1"
 # The SONAME contains major.minor, and minor releases may break the ABI.
 # Downstream recipes must restrict compat to one minor version, e.g. compat="~1.2.3".
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-sdkutils.git", "de0fbe807a409158c3fa285bafb88120c8989609"),
+    GitSource("https://github.com/awslabs/aws-c-sdkutils.git", "cbc41ad162f8bc08edc3d345486acc5cfaf68ed3"),
 ]
 
 # Bash recipe for building across all platforms
