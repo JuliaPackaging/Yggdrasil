@@ -9,6 +9,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "HeFFTe"
 version = v"2.4.1"
+ygg_version = v"2.4.2"  # the rebuild raises the CUDA_Runtime_jll and MPI compat bounds
 
 # Collection of sources required to complete build
 sources = [
@@ -59,20 +60,7 @@ if [[ "${bb_full_target}" != *cuda\+none* && "${bb_full_target}" == *cuda* ]]; t
 fi
 """
 
-augment_platform_block = """
-    using Base.BinaryPlatforms
-
-    module __CUDA
-        $(CUDA.augment)
-    end
-
-    $(MPI.augment)
-
-    function augment_platform!(platform::Platform)
-        augment_mpi!(platform)
-        __CUDA.augment_platform!(platform)
-    end
-"""
+augment_platform_block = CUDA.augment_with(MPI.augment, "augment_mpi!")
 
 # HeFFTe requires MPI, so all platforms must have MPI.
 # Restrict to HPC-relevant Linux architectures.
@@ -94,6 +82,7 @@ for platform in all_platforms
         platform["cuda"] = "none"
     end
 end
+cuda_dependencies = CUDA.required_dependencies(all_platforms; static_sdk=true)
 
 
 # The products that we will ensure are always built
@@ -115,18 +104,17 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 # Build the tarballs, and possibly a `build.jl` as well.
 for platform in all_platforms
     should_build_platform(triplet(platform)) || continue
-    _dependencies = copy(dependencies)
+    _dependencies = [dependencies; cuda_dependencies]
     if haskey(platform, "cuda") && platform["cuda"] != "none"
         append!(_dependencies, cudampi_dependencies)
-        append!(_dependencies, CUDA.required_dependencies(platform, static_sdk=true))
         push!(_dependencies, Dependency(PackageSpec(name="CUDA_Driver_jll")))
     else
         append!(_dependencies, mpi_dependencies)
     end
-    build_tarballs(ARGS, name, version, sources, script, [platform],
+    build_tarballs(ARGS, name, ygg_version, sources, script, [platform],
                    products, _dependencies;
                    augment_platform_block,
-                   julia_compat="1.6",
+                   julia_compat="1.10",  # CUDA_Runtime_jll requires it
                    preferred_gcc_version=v"9",
                    lazy_artifacts=true)
 end
