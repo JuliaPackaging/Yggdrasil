@@ -44,6 +44,9 @@ dependencies = [
     Dependency("Clipper2_jll"; compat="2.0.1"),
 ]
 
+# `std::optional::value()` needs macOS 10.14
+sources, script = require_macos_sdk("10.14", sources, script)
+
 # Build the tarballs, and possibly a `build.jl` as well.
 # GCC 10 because Clipper2_jll is built with it.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
