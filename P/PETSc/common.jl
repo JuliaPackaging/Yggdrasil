@@ -18,9 +18,13 @@ end
 const cpu_preamble = raw"""
 CUDA_ARGS=""
 EXTRA_LDFLAGS=""
+SUPERLU_DIST_NAME=superlu_dist
 """
 
 const cuda_preamble = raw"""
+# SuperLU_DIST_CUDA_jll renames its libraries, so that libpetsc can't bind to SuperLU_DIST_jll's
+SUPERLU_DIST_NAME=superlu_dist_cuda
+
 export TMPDIR=${WORKSPACE}/tmpdir
 mkdir -pv ${TMPDIR}
 cp -rv ${WORKSPACE}/srcdir/NVTX/c/include/nvtx3 ${includedir}/
@@ -206,7 +210,7 @@ build_petsc()
 
     if [ ${USE_SUPERLU_DIST} == 1 ]; then
         SLU_INC=${includedir}/superlu_dist_${3}
-        SUPERLU_DIST_LIBS="${libdir}/libsuperlu_dist_${3}.${dlext}"
+        SUPERLU_DIST_LIBS="${libdir}/lib${SUPERLU_DIST_NAME}_${3}.${dlext}"
         if [[ "${target}" == *-apple-* ]]; then
             # ld64 does not resolve libsuperlu_dist's @rpath reference to METIS, so name it explicitly
             if [ "${3}" == "Int64" ]; then
@@ -415,7 +419,9 @@ function petsc_dependencies(platforms; superlu_cuda::Bool=false)
     Dependency(PackageSpec(name="HYPRE64_jll"); compat="~3.1.0"),
     # Stock (32-bit HYPRE_BigInt) hypre for the Int32 PetscInt variants.
     Dependency(PackageSpec(name="HYPRE_jll"); compat="~3.1.2"),
-    Dependency(PackageSpec(name=superlu_cuda ? "SuperLU_DIST_CUDA_jll" : "SuperLU_DIST_jll"); compat="9.3.2"),
+    # SuperLU_DIST_CUDA_jll >= 9.3.3 names its libraries libsuperlu_dist_cuda_*
+    superlu_cuda ? Dependency(PackageSpec(name="SuperLU_DIST_CUDA_jll"); compat="9.3.3") :
+                   Dependency(PackageSpec(name="SuperLU_DIST_jll"); compat="9.3.2"),
     Dependency(PackageSpec(name="HDF5_jll"); compat="2.2.2"),
     # P4est_jll's version is not p4est's (2.8.9 builds 2.8.7) and says nothing about its
     # soname, hence ~ to stay with the libp4est.so.4 linked here

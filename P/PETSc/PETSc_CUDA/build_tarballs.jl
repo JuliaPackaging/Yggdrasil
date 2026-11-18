@@ -9,7 +9,7 @@ include(joinpath(@__DIR__, "..", "common.jl"))
 
 name = "PETSc_CUDA"
 version = petsc_version
-ygg_version = v"3.25.7"  # compat changes need a new JLL version
+ygg_version = v"3.25.8"  # compat changes need a new JLL version
 
 sources = petsc_sources(; cuda=true)
 
@@ -45,20 +45,7 @@ platforms, platform_dependencies = MPI.augment_platforms(platforms)
 # The MPI ABIs SuperLU_DIST_CUDA_jll is built for
 filter!(p -> p["mpi"] in ("mpiabi", "mpich"), platforms)
 
-augment_platform_block = """
-    using Base.BinaryPlatforms
-
-    module __CUDA
-        $(CUDA.augment)
-    end
-
-    $(MPI.augment)
-
-    function augment_platform!(platform::Platform)
-        augment_mpi!(platform)
-        __CUDA.augment_platform!(platform)
-    end
-"""
+augment_platform_block = CUDA.augment_with(MPI.augment, "augment_mpi!")
 
 products = [
     ExecutableProduct("ex4", :ex4),
@@ -73,6 +60,7 @@ products = [
 dependencies = petsc_dependencies(platforms; superlu_cuda=true)
 push!(dependencies, Dependency(PackageSpec(name="NVTX_jll"); compat="3.2.2"))
 append!(dependencies, platform_dependencies)
+append!(dependencies, CUDA.required_dependencies(platforms))
 
 for platform in platforms
     should_build_platform(triplet(platform)) || continue
@@ -87,13 +75,11 @@ for platform in platforms
                                               version=CUDA.full_version(cuda_ver),
                                               platform=x86_platform))
     end
-    deps = AbstractDependency[dependencies...]
-    append!(deps, CUDA.required_dependencies(platform))
     platform_script = "CUDA_ARCHS=\"$(join(CUDA.cuda_gpu_archs(platform), ","))\"\n" * script
     # nvcc rejects a host GCC newer than the toolkit supports: CUDA < 12.4 caps out below
     # Yggdrasil's GCC 13.2, and CUDA 13's CCCL needs the C++17 default of GCC >= 12.
     gcc_version = VersionNumber(platform["cuda"]) < v"12.4" ? v"12" : v"13"
-    build_tarballs(ARGS, name, ygg_version, platform_sources, platform_script, [platform], products, deps;
+    build_tarballs(ARGS, name, ygg_version, platform_sources, platform_script, [platform], products, dependencies;
                    augment_platform_block, julia_compat="1.12", preferred_gcc_version=gcc_version,
                    lazy_artifacts=true, dont_dlopen=true)
 end
