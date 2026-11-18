@@ -109,7 +109,8 @@ dependencies = [
     # FreeBSD 14.1 artifacts, so the x86_64 FreeBSD 13.4 builds would not find libz and linking against libmpi fails.
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"), v"1.4.0";
                compat="1.2.12"),
-    Dependency(PackageSpec(name="OCCT_jll", uuid="baad4e97-8daa-5946-aac2-2edac59d34e1"); compat="7.9.3"),
+    # OCCT sonames carry major.minor (libTKernel.so.7.9): a new minor is ABI-breaking
+    Dependency(PackageSpec(name="OCCT_jll", uuid="baad4e97-8daa-5946-aac2-2edac59d34e1"); compat="~7.9.3"),
 ]
 append!(dependencies, platform_dependencies)
 
