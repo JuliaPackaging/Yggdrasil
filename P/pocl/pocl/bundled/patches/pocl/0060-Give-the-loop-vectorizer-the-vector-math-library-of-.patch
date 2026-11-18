@@ -1,0 +1,297 @@
+From 9ff0bf8361c28b06647c741f6e0b9228c644448a Mon Sep 17 00:00:00 2001
+From: Valentin Churavy <v.churavy@gmail.com>
+Date: Thu, 12 Nov 2026 19:27:07 +0100
+Subject: [PATCH] Give the loop vectorizer the vector math library of CPU
+ codegen
+
+With ENABLE_HOST_CPU_VECTORIZE_{LIBMVEC,SLEEF,SVML}, only codegen's
+TargetLibraryInfo knows about the vector math library: it maps vectorized
+calls to math intrinsics to the library there (ReplaceWithVeclib). The
+optimization pipeline, which runs InjectTLIMappings and LoopVectorize, uses
+the default TargetLibraryInfo without any vector functions. So the loop
+vectorizer's cost model sees every vector math call as scalarized (four
+scalar calls plus inserts and extracts at width 4) and the vector loop costs
+about as much as the scalar one. Whether a kernel vectorizes then depends on
+the arithmetic around the calls: on x86-64 AVX2, log(x)+exp(x)+sin(x)+cos(x)
+stays scalar while log(x)+exp(x)+sin(x)+cos(2x) vectorizes, and kernels with
+several math calls and little other arithmetic fall back to scalar libm.
+
+Build the vector library's TargetLibraryInfoImpl in one place and register
+it for the optimization pipeline too, both in PoCLModulePassManager and in
+the separate pipeline populateModulePM runs. LoopVectorize now costs the
+real vector variants and calls them directly.
+
+LoopVectorize does not check a variant's ISA, or whether the library
+exports it, before calling it. It calls libmvec's AVX2 variants from SSE and
+AVX targets (SIGILL with SLEEF's gnuabi library, which has no dispatch;
+wrong arguments with an SSE caller), SVML's AVX-512 variants from AVX2
+targets, and SVE variants on SVE targets that SLEEF builds without SVE
+lack. So the optimization pipeline only gets the table when the device CPU
+can call every variant the vectorizer may pick: libmvec on x86 with AVX2,
+SVML with AVX-512F, SLEEF on AArch64 without SVE. Other targets keep the
+codegen-only mapping.
+
+Measured on Zen 3 (AVX2, the SLEEF gnuabi build reached through the libmvec
+table), one thread, ns per element:
+
+  kernel                     Float64        Float32
+  log+exp+sin*cos            21.2 ->  7.1   15.6 -> 2.9
+  log+exp+sin*cos+pow        75.9 -> 15.4   66.8 -> 7.1
+  log+exp+sin+cos+tan        32.7 ->  9.2   17.5 -> 4.2
+
+Kernels that already vectorized are unchanged. Loops that newly vectorize
+call the library's vector variants instead of scalar libm, so their results
+can differ by a few ulp, as for kernels that vectorized before.
+
+Assisted-by: Claude Code (Opus 5.5)
+---
+ examples/vecbuiltin/vecbuiltin.fc |  46 +++++++------
+ lib/CL/pocl_llvm_api.h            |   9 ++-
+ lib/CL/pocl_llvm_wg.cc            | 103 ++++++++++++++++++++++--------
+ 3 files changed, 111 insertions(+), 47 deletions(-)
+
+diff --git a/examples/vecbuiltin/vecbuiltin.fc b/examples/vecbuiltin/vecbuiltin.fc
+index 2442fc6f..4204f42c 100644
+--- a/examples/vecbuiltin/vecbuiltin.fc
++++ b/examples/vecbuiltin/vecbuiltin.fc
+@@ -1,22 +1,28 @@
+ # test autovectorization of builtins
++#
++# With a vector math library, the loop vectorizer may call its vector
++# variants (_ZGV* for libmvec and SLEEF, __svml_* for SVML) directly
++# instead of emitting vector intrinsics; a call of either means the builtin
++# was vectorized. (Vector library declarations alone don't: they are added
++# even when the calls stay scalar.)
+ 
+-# CHECK: llvm.sin.v
+-# CHECK: llvm.cos.v
+-# CHECK: llvm.log2.v
+-# CHECK: llvm.pow.v
+-# CHECK: llvm.exp.v
+-# CHECK: llvm.exp2.v
+-# CHECK: llvm.fabs.v
+-# CHECK: llvm.fma.v
+-# CHECK: llvm.maxnum.v
+-# CHECK: llvm.minnum.v
+-# CHECK: llvm.log10.v
+-# CHECK: llvm.log.v
+-# CHECK: llvm.rint.v
+-# CHECK: llvm.round.v
+-# CHECK: llvm.sqrt.v
+-# CHECK: llvm.ceil.v
+-# CHECK: llvm.tan.v
+-# CHECK: llvm.powi.v
+-# CHECK: llvm.floor.v
+-# CHECK: llvm.trunc.v
++# CHECK-DAG: call {{.*}}{{@llvm\.sin\.v|@_ZGV[A-Za-z0-9]+_sinf\(|@__svml_sinf[0-9]+\(}}
++# CHECK-DAG: call {{.*}}{{@llvm\.cos\.v|@_ZGV[A-Za-z0-9]+_cosf\(|@__svml_cosf[0-9]+\(}}
++# CHECK-DAG: call {{.*}}{{@llvm\.log2\.v|@_ZGV[A-Za-z0-9]+_log2f\(|@__svml_log2f[0-9]+\(}}
++# CHECK-DAG: call {{.*}}{{@llvm\.pow\.v|@_ZGV[A-Za-z0-9]+_powf\(|@__svml_powf[0-9]+\(}}
++# CHECK-DAG: call {{.*}}{{@llvm\.exp\.v|@_ZGV[A-Za-z0-9]+_expf\(|@__svml_expf[0-9]+\(}}
++# CHECK-DAG: call {{.*}}{{@llvm\.exp2\.v|@_ZGV[A-Za-z0-9]+_exp2f\(|@__svml_exp2f[0-9]+\(}}
++# CHECK-DAG: llvm.fabs.v
++# CHECK-DAG: llvm.fma.v
++# CHECK-DAG: llvm.maxnum.v
++# CHECK-DAG: llvm.minnum.v
++# CHECK-DAG: call {{.*}}{{@llvm\.log10\.v|@_ZGV[A-Za-z0-9]+_log10f\(|@__svml_log10f[0-9]+\(}}
++# CHECK-DAG: call {{.*}}{{@llvm\.log\.v|@_ZGV[A-Za-z0-9]+_logf\(|@__svml_logf[0-9]+\(}}
++# CHECK-DAG: llvm.rint.v
++# CHECK-DAG: llvm.round.v
++# CHECK-DAG: llvm.sqrt.v
++# CHECK-DAG: llvm.ceil.v
++# CHECK-DAG: call {{.*}}{{@llvm\.tan\.v|@_ZGV[A-Za-z0-9]+_tanf\(|@__svml_tanf[0-9]+\(}}
++# CHECK-DAG: llvm.powi.v
++# CHECK-DAG: llvm.floor.v
++# CHECK-DAG: llvm.trunc.v
+diff --git a/lib/CL/pocl_llvm_api.h b/lib/CL/pocl_llvm_api.h
+index 59e85dde..154b7fe9 100644
+--- a/lib/CL/pocl_llvm_api.h
++++ b/lib/CL/pocl_llvm_api.h
+@@ -32,6 +32,10 @@
+ #include <llvm/Support/raw_os_ostream.h>
+ #include <llvm/Target/TargetMachine.h>
+ 
++namespace llvm {
++class TargetLibraryInfoImpl;
++}
++
+ #ifdef ENABLE_MLIR
+ #include <mlir/IR/MLIRContext.h>
+ #endif
+@@ -107,13 +111,16 @@ POCL_EXPORT bool getModuleBoolMetadata (const llvm::Module &mod,
+  * Vectorize - whether to invoke the vectorizer (only used for legacy PM)
+  * SizeL - optimize for size at OptL 2 (1 is -Os, 2 is -Oz); with LLVM 23+,
+  *   the optsize/minsize function attributes do that instead
++ * TLII - optional library info, e.g. with the vector math library the loop
++ *   vectorizer may use
+  */
+ POCL_EXPORT void populateModulePM (void *Passes,
+                                    void *Module,
+                                    unsigned OptL,
+                                    bool Vectorize = true,
+                                    llvm::TargetMachine *TM = nullptr,
+-                                   unsigned SizeL = 0);
++                                   unsigned SizeL = 0,
++                                   llvm::TargetLibraryInfoImpl *TLII = nullptr);
+ 
+ /**
+  * Runs the -O<OptL> module pipeline (-Os/-Oz with SizeL 1/2) that Clang runs
+diff --git a/lib/CL/pocl_llvm_wg.cc b/lib/CL/pocl_llvm_wg.cc
+index 96d0a4a6..6b3aab2d 100644
+--- a/lib/CL/pocl_llvm_wg.cc
++++ b/lib/CL/pocl_llvm_wg.cc
+@@ -51,6 +51,7 @@ IGNORE_COMPILER_WARNING("-Wunused-parameter")
+ #include <llvm/Support/SourceMgr.h>
+ #include <llvm/Linker/Linker.h>
+ #include <llvm/Support/CodeGen.h>
++#include <llvm/MC/MCSubtargetInfo.h>
+ #include <llvm/Target/TargetMachine.h>
+ #include <llvm/Target/TargetOptions.h>
+ #include <llvm/Transforms/IPO/Internalize.h>
+@@ -183,6 +184,63 @@ static TargetMachine *GetTargetMachine(const char* TripleStr,
+   return TM;
+ }
+ 
++/* The library info for the device, with the vector math library that CPU
++   codegen maps vectorized builtin calls to (if one was configured). Returns
++   nullptr when no vector math library applies. */
++static TargetLibraryInfoImpl *
++createVecLibTLII([[maybe_unused]] llvm::Triple DevTriple,
++                 [[maybe_unused]] cl_device_type DevType) {
++#ifdef ENABLE_HOST_CPU_VECTORIZE_BUILTINS
++  if (DevType == CL_DEVICE_TYPE_CPU)
++    return llvm::driver::createTLII(DevTriple,
++#ifdef ENABLE_HOST_CPU_VECTORIZE_LIBMVEC
++                                    driver::VectorLibrary::LIBMVEC);
++#endif
++#ifdef ENABLE_HOST_CPU_VECTORIZE_SLEEF
++                                    driver::VectorLibrary::SLEEF);
++#endif
++#ifdef ENABLE_HOST_CPU_VECTORIZE_SVML
++                                    driver::VectorLibrary::SVML);
++#endif
++#endif
++  return nullptr;
++}
++
++/* The library info for the optimization pipeline, where the loop vectorizer
++   needs it to cost vector math calls. LoopVectorize trusts LLVM's vector
++   library tables: it checks neither the ISA a variant needs nor whether the
++   library exports it. It calls libmvec's AVX2 variants from SSE and AVX
++   targets, SVML's AVX-512 ones from AVX2 targets, and SVE variants that SLEEF
++   builds without SVE lack. So only hand it the table when the device CPU can
++   call every variant the vectorizer may pick; otherwise only codegen maps
++   vector intrinsics to the library. libmvec is only allowed on x86: LLVM's
++   AArch64 libmvec table has variants (two-lane float) that SLEEF's gnuabi
++   build, a common stand-in, doesn't export. */
++static TargetLibraryInfoImpl *
++createOptVecLibTLII([[maybe_unused]] TargetMachine *TM,
++                    [[maybe_unused]] cl_device_type DevType) {
++#ifdef ENABLE_HOST_CPU_VECTORIZE_BUILTINS
++  if (TM == nullptr)
++    return nullptr;
++#if LLVM_MAJOR >= 23
++  const MCSubtargetInfo &STI = TM->getMCSubtargetInfo();
++#else
++  const MCSubtargetInfo &STI = *TM->getMCSubtargetInfo();
++#endif
++  const llvm::Triple &T = TM->getTargetTriple();
++  bool Callable = false;
++#if defined(ENABLE_HOST_CPU_VECTORIZE_LIBMVEC)
++  Callable = T.isX86() && STI.checkFeatures("+avx2");
++#elif defined(ENABLE_HOST_CPU_VECTORIZE_SLEEF)
++  Callable = T.isAArch64() && !STI.checkFeatures("+sve");
++#elif defined(ENABLE_HOST_CPU_VECTORIZE_SVML)
++  Callable = T.isX86() && STI.checkFeatures("+avx512f");
++#endif
++  if (Callable)
++    return createVecLibTLII(T, DevType);
++#endif
++  return nullptr;
++}
+ 
+ class PoCLModulePassManager {
+   // Create the analysis managers.
+@@ -251,6 +309,12 @@ llvm::Error PoCLModulePassManager::build(std::string PoclPipeline,
+   PassB.reset(new PassBuilder(TM, PTO, std::nullopt, &PIC));
+   PassBuilder &PB = *PassB.get();
+ 
++  // Without this, the loop vectorizer costs vector math builtins as
++  // scalarized calls, and only codegen maps them to the vector library.
++  TLII.reset(createOptVecLibTLII(TM, Dev->type));
++  if (TLII)
++    FAM.registerPass([this] { return TargetLibraryAnalysis(*TLII); });
++
+ #if 0
+   // Add LibraryInfo.
+   TLII.reset(llvm::driver::createTLII(TargetTriple, CodeGenOpts.getVecLib()));
+@@ -323,7 +387,7 @@ void PoCLModulePassManager::run(llvm::Module &Bitcode) {
+   PM.run(Bitcode, MAM);
+ #ifdef SEPARATE_OPTIMIZATION_FROM_POCL_PASSES
+   populateModulePM(nullptr, (void *)&Bitcode, OptimizeLevel,
+-                   Vectorize, Machine.get());
++                   Vectorize, Machine.get(), /*SizeL=*/0, TLII.get());
+ #endif
+ }
+ 
+@@ -1360,30 +1424,11 @@ static TargetLibraryInfoImpl *initPassManagerForCodeGen(legacy::PassManager &PM,
+                                                         cl_device_type DevType) {
+   assert(TTriple);
+   llvm::Triple DevTriple(TTriple);
+-  llvm::TargetLibraryInfoWrapperPass *TLIPass = nullptr;
+-  TargetLibraryInfoImpl *TLII = nullptr;
+-
+-#ifdef ENABLE_HOST_CPU_VECTORIZE_BUILTINS
+-  if (DevType == CL_DEVICE_TYPE_CPU) {
+-    TLII =
+-        llvm::driver::createTLII(DevTriple,
+-#ifdef ENABLE_HOST_CPU_VECTORIZE_LIBMVEC
+-                                 driver::VectorLibrary::LIBMVEC);
+-#endif
+-#ifdef ENABLE_HOST_CPU_VECTORIZE_SLEEF
+-                                 driver::VectorLibrary::SLEEF);
+-#endif
+-#ifdef ENABLE_HOST_CPU_VECTORIZE_SVML
+-                                 driver::VectorLibrary::SVML);
+-#endif
+-    TLIPass = new TargetLibraryInfoWrapperPass(*TLII);
+-  } else
+-#endif
+-  {
+-    TLIPass = new TargetLibraryInfoWrapperPass(DevTriple);
+-  }
+-
+-  PM.add(TLIPass);
++  TargetLibraryInfoImpl *TLII = createVecLibTLII(DevTriple, DevType);
++  if (TLII)
++    PM.add(new TargetLibraryInfoWrapperPass(*TLII));
++  else
++    PM.add(new TargetLibraryInfoWrapperPass(DevTriple));
+   return TLII;
+ }
+ 
+@@ -1554,7 +1599,8 @@ int pocl_llvm_codegen(cl_device_id Device, cl_program Program,
+ 
+ void populateModulePM([[maybe_unused]] void *Passes, void *Module,
+                       unsigned OptL, bool Vectorize,
+-                      TargetMachine *TM, unsigned SizeL) {
++                      TargetMachine *TM, unsigned SizeL,
++                      TargetLibraryInfoImpl *TLII) {
+ 
+   PipelineTuningOptions PTO;
+ 
+@@ -1586,6 +1632,11 @@ void populateModulePM([[maybe_unused]] void *Passes, void *Module,
+ 
+   PassBuilder PB(TM, PTO, std::nullopt, &PIC);
+ 
++  // Registered first, so that registerFunctionAnalyses doesn't add the
++  // default (vector library-less) one.
++  if (TLII)
++    FAM.registerPass([TLII] { return TargetLibraryAnalysis(*TLII); });
++
+   // Register all the basic analyses with the managers.
+   PB.registerModuleAnalyses(MAM);
+   PB.registerCGSCCAnalyses(CGAM);
+-- 
+2.56.0
+
