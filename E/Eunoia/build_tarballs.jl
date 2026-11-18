@@ -28,7 +28,10 @@ filter!(p -> !(Sys.iswindows(p) && nbits(p) == 32), platforms)
 
 products = [LibraryProduct(["libeunoia_capi", "eunoia_capi"], :libeunoia_capi)]
 
-dependencies = [Dependency("CompilerSupportLibraries_jll"; compat = "1.3.1")]
+dependencies = [
+    # Rust uses libgcc_s for unwinding on Linux and FreeBSD.
+    Dependency("CompilerSupportLibraries_jll"; compat = "1.3.1"),
+]
 
 # GCC 8 selects the libgfortran5 artifacts provided by CompilerSupportLibraries.
 build_tarballs(
