@@ -76,12 +76,14 @@ products = AbstractProduct[
 # Shared libraries for packages (e.g. Extrae) that link against `libbfd`.  In cross builds,
 # `libbfd` and `libopcodes` are installed in the target-specific `${host}/${target}/lib`; on
 # Windows the libraries are DLLs in `${bindir}`.
+# A cross artifact (selected when the platform names a target) does not have its libraries
+# under `${libdir}`, so they are `dont_dlopen` to keep `import Binutils_jll` from failing.
 append!(products, [
     LibraryProduct([
         "\${libdir}/$(lib)",
         "\${prefix}/\${host}/\${target}/lib/$(lib)",
         "\${bindir}/$(dll)",
-    ], Symbol(lib))
+    ], Symbol(lib); dont_dlopen=true)
     for (lib, dll) in (
         ("libbfd", "libbfd-2-41.dll"),
         ("libctf", "libctf-0.dll"),
@@ -89,6 +91,24 @@ append!(products, [
         ("libsframe", "libsframe-1.dll"),
     )
 ])
+
+# Every artifact is tagged with its host platform and its `target_*` platform, but Julia's
+# host platform has no `target_*` tags.  Unless the platform names a target, select the native
+# build (target == host).  `target_os_version` is left out: artifacts for FreeBSD carry 14.1.0,
+# which a host's `os_version` would not equal, and each host has a single FreeBSD-target
+# artifact anyway.
+augment_platform_block = raw"""
+function augment_platform!(p::Platform)
+    if !haskey(p, "target_arch")
+        for tag in ("arch", "os", "libc", "call_abi")
+            if haskey(p, tag)
+                p["target_$(tag)"] = p[tag]
+            end
+        end
+    end
+    return p
+end
+"""
 
 build_tarballs(;
     src_name = "Binutils",
@@ -106,4 +126,7 @@ build_tarballs(;
     products,
     host_toolchains = [CToolchain(;vendor=:gcc_bootstrap), HostToolsToolchain()],
     target_toolchains = [CToolchain(;vendor=:gcc_bootstrap)],
+    # Pkg runs the `augment_platform_block` artifact selection hook from Julia 1.7 on.
+    julia_compat = "1.7",
+    augment_platform_block,
 )
