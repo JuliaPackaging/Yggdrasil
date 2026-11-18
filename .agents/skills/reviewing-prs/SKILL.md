@@ -125,7 +125,7 @@ These are defaults, not absolutes ([Critical Rules](../../../AGENTS.md#critical-
 - `compat` on every `Dependency`, never removed or loosened, with a comment when it isn't obvious ([Dependencies](../../../AGENTS.md#dependencies)). The lower bound is the oldest compatible release that works, and exists for every platform built.
 - No assumption that a dependency follows semver: check its recipe and #3024 ([Dependencies](../../../AGENTS.md#dependencies)).
 - Stdlib JLL bounds agree with `julia_compat` ([Dependencies](../../../AGENTS.md#dependencies)).
-- A positional version only when needed, equal to the lower bound.
+- A positional version only when the build needs a version other than the lower bound, which BinaryBuilder already builds against.
 - `BuildDependency` and `HostBuildDependency` take no `compat`; pin one with `PackageSpec(; name="X_jll", version="1.2.3")` only when the build needs that version.
 - Headers or a static library used only at build time make a `BuildDependency`; ask why a library is linked statically. A JLL built for `AnyPlatform()` usually is one.
 - The image has CMake: `HostBuildDependency` on `CMake_jll` only when the build needs a newer CMake, pinned to the CMake version the build needs, e.g. `HostBuildDependency(PackageSpec(; name="CMake_jll", version="3.31.9"))`.
