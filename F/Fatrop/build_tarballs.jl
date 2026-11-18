@@ -11,7 +11,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 # For require_macos_sdk
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
-name = "fatrop"
+name = "Fatrop"
 version = v"1.2.0"
 
 # Fatrop sets the `VERSION` of the library but no `SOVERSION`, so its soname contains the full version
