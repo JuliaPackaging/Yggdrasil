@@ -6,38 +6,41 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "ulmBLAS"
-version = v"0.3.0"
+version = v"0.4.1"
 
 sources = [
     GitSource("https://github.com/michael-lehn/ulmBLAS.git",
-              "58e67dc8a19b385b33935750e58792db3e9de5e5"; tag="v$(version)"),
+              "c30e37a6fefcd84a21db08a919d7b7f44e89a067"; tag="v$(version)"),
 ]
 
 # One library per instruction set, `libulmblas_VARIANT`, with the BLAS
 # interface for libblastrampoline (ILP64, suffix `64_`), GEMM with
 # arbitrary strides (`ulmblas_dgemm_strided`, ...) and the LAPACK functions
-# ?getrf, ?potrf, solves and inverses with OpenMP tasks (number of threads:
-# `ulmblas_set_num_threads_64_`).  UlmBLAS.jl selects the variant for the
-# CPU at run time.
+# ?getrf, ?potrf, solves and inverses with OpenMP tasks (number of threads,
+# also of level 3: `ulmblas_set_num_threads_64_`).  UlmBLAS.jl selects the
+# variant for the CPU at run time.
 script = raw"""
 cd ${WORKSPACE}/srcdir/ulmBLAS
 
+# The flags of the backends of the dispatching library
+# (interfaces/blas/dispatch/Makefile; zen4: avx512 with the DGEMM kernel of
+# BLIS for Zen 4).  The macros choose the default micro kernels; on CPUs
+# with a selection table (ulmblas/level3/gemm/tables/) the table chooses.
 flags() {
     case $1 in
     neon)     echo "-DULMBLAS_NO_SME";;
     sme)      echo "-mcpu=apple-m4";;
     x86_64)   echo "-msse3";;
     haswell)  echo "-mavx -mavx2 -mfma" \
-                   "-DULMBLAS_DGEMM_UKERNEL_openblas_haswell_4x8" \
                    "-DULMBLAS_SGEMM_UKERNEL_openblas_haswell_8x4" \
                    "-DULMBLAS_CGEMM_UKERNEL_openblas_haswell_8x2" \
                    "-DULMBLAS_ZGEMM_UKERNEL_openblas_haswell_4x2";;
-    skylakex) echo "-mavx -mavx2 -mfma -mavx512f -mavx512dq" \
+    skylakex) echo "-mavx -mavx2 -mfma -mavx512f -mavx512dq -mavx512vl" \
                    "-DULMBLAS_DGEMM_UKERNEL_openblas_skylakex_16x12" \
                    "-DULMBLAS_SGEMM_UKERNEL_openblas_skylakex_16x4" \
                    "-DULMBLAS_CGEMM_UKERNEL_openblas_skylakex_8x2" \
                    "-DULMBLAS_ZGEMM_UKERNEL_blis_zen4_12x4";;
-    zen4)     echo "-mavx -mavx2 -mfma -mavx512f -mavx512dq" \
+    zen4)     echo "-mavx -mavx2 -mfma -mavx512f -mavx512dq -mavx512vl" \
                    "-DULMBLAS_DGEMM_UKERNEL_blis_zen4_32x6" \
                    "-DULMBLAS_SGEMM_UKERNEL_openblas_skylakex_16x4" \
                    "-DULMBLAS_CGEMM_UKERNEL_openblas_skylakex_8x2" \
@@ -63,7 +66,8 @@ for v in ${variants}; do
         link+=" -static-libstdc++ -static-libgcc -Wl,--no-undefined -Wl,--strip-debug"
         # don't export the static libstdc++ (MinGW exports all global symbols)
         link+=" -Wl,--exclude-libs,libstdc++.a:libgcc.a:libgcc_eh.a"
-        # libgomp of CompilerSupportLibraries_jll
+        # libgomp of CompilerSupportLibraries_jll; -fopenmp also links
+        # libpthread (thread pool of level 3, glibc before 2.34)
         omp="OMPFLAGS=-fopenmp"
         omplibs="OMPLIBS=-fopenmp"
     fi
