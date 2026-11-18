@@ -138,8 +138,8 @@ end
 products = [
     LibraryProduct(["libform", "libform6"], :libform),
     LibraryProduct(["libmenu", "libmenu6"], :libmenu),
-    LibraryProduct(["libncurses", "libncurses6"], :libncurses),
-    LibraryProduct(["libncursesw", "libncursesw6"], :libncursesw),
+    # `libncurses` is a symlink to `libncursesw`
+    LibraryProduct(["libncursesw", "libncursesw6"], :libncursesw; aliases = [:libncurses]),
     LibraryProduct(["libpanel", "libpanel6"], :libpanel),
 ]
 
