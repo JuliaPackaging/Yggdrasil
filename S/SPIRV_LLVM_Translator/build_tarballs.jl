@@ -54,11 +54,19 @@ atomic_patch -p1 ../minimum-maximum.patch
 # spirv-val rejected it. InstCombine leaves such switches when it narrows their
 # conditions, e.g. in Julia's union splits.
 atomic_patch -p1 ../switch-bool-selector.patch
-# Backport of https://github.com/KhronosGroup/SPIRV-LLVM-Translator/pull/NNNN
+# Backport of https://github.com/KhronosGroup/SPIRV-LLVM-Translator/pull/4172
 # ("Don't emit loop controls for loops whose header ends in a switch"): they
 # were placed after the header's OpSwitch, which spirv-val rejects. LLVM's loop
 # unroller produces such headers, e.g. for `x^n` in a partially unrolled loop.
 atomic_patch -p1 ../loop-merge-switch-header.patch
+# Backport of https://github.com/KhronosGroup/SPIRV-LLVM-Translator/pull/4091
+# ("Translate signed with.overflow intrinsics, including vectors"; still open
+# upstream): llvm.smul.with.overflow and llvm.ssub.with.overflow were rejected
+# as unexpected intrinsics. Julia emits the former for checked `Int`
+# multiplication, e.g. in `Rational` arithmetic. Multiplication becomes
+# OpSMulExtended with a sign check on the high half, as the SPIR-V back-end
+# does since llvm/llvm-project#240309.
+atomic_patch -p1 ../signed-with-overflow.patch
 install_license LICENSE.TXT
 
 CMAKE_FLAGS=()
