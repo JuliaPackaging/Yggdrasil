@@ -5,6 +5,9 @@ using BinaryBuilder, Pkg
 name = "stb_image"
 version = v"2.32.0"
 
+# stb_jll currently provides stb_image.h from v2.27, so use the upstream
+# header directly to build the v2.32.0 library. Upstream has no tags or releases;
+# the version is based on the v2.32 version reported in the header.
 # Collection of sources required to complete build
 sources = [
     FileSource("https://raw.githubusercontent.com/nothings/stb/9f755b604db3492df2cbeb39bf84b81e3e3932e3/stb_image.h", "deb4f18c9ca21b751a1323019031c94c0bf5ca1d2929ef5913cc56f00aab6e91"),
