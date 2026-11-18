@@ -39,7 +39,12 @@ const preferences = let
     something(selected, Dict{String,Any}())
 end
 
-const local_preference = if haskey(preferences, "local")
+# `version = "none"` disables CUDA, as on a host without a driver, local toolkits included
+const cuda_disabled = get(preferences, "version", nothing) == "none"
+
+const local_preference = if cuda_disabled
+    false
+elseif haskey(preferences, "local")
     if isa(preferences["local"], Bool)
         preferences["local"]
     elseif isa(preferences["local"], String)
@@ -82,7 +87,9 @@ function parse_version_preference(key)
         missing
     end
 end
-const version_preference = if haskey(preferences, "version") && preferences["version"] == "local"
+const version_preference = if cuda_disabled
+    missing
+elseif haskey(preferences, "version") && preferences["version"] == "local"
     # legacy support for CUDA.jl's old "version" preference format.
     # in this case, an "actual_version" preference is required.
     parse_version_preference("actual_version")
@@ -146,6 +153,24 @@ function get_runtime_version()
     cudaRuntimeGetVersion(runtime_handle)
 end
 
+# query the version of a loaded CUDA driver, returning `nothing` on failure
+function get_driver_version(driver_handle)
+    version_fn = Libdl.dlsym(driver_handle, "cuDriverGetVersion"; throw_error=false)
+    if version_fn === nothing
+        @debug "Driver library seems invalid (does not contain 'cuDriverGetVersion')"
+        return nothing
+    end
+    version_ref = Ref{Cint}()
+    status = ccall(version_fn, Cint, (Ptr{Cint},), version_ref)
+    if status != 0
+        @debug "Call to 'cuDriverGetVersion' failed with status $status"
+        return nothing
+    end
+    major, ver = divrem(version_ref[], 1000)
+    minor, patch = divrem(ver, 10)
+    return VersionNumber(major, minor, patch)
+end
+
 # query the CUDA driver, returning `nothing` on failure, or a tuple
 # `(driver_version, device_capabilities)`.
 #
@@ -172,6 +197,9 @@ function get_driver_info()
         return nothing
     end
 
+    version = get_driver_version(driver_handle)
+    version === nothing && return nothing
+
     # minimal API call wrappers we need
     function lookup(name)
         function_handle = Libdl.dlsym(driver_handle, name; throw_error=false)
@@ -180,17 +208,6 @@ function get_driver_info()
         end
         return function_handle
     end
-    version_fn = lookup("cuDriverGetVersion")
-    version_fn === nothing && return nothing
-    version_ref = Ref{Cint}()
-    status = ccall(version_fn, Cint, (Ptr{Cint},), version_ref)
-    if status != 0
-        @debug "Call to 'cuDriverGetVersion' failed with status $status"
-        return nothing
-    end
-    major, ver = divrem(version_ref[], 1000)
-    minor, patch = divrem(ver, 10)
-    version = VersionNumber(major, minor, patch)
 
     # the device capabilities let us narrow the selection down to toolkits that support
     # the user's hardware, but they are only a refinement: the driver version alone
@@ -241,14 +258,8 @@ function get_driver_info()
         end
     end
 
-    # invalidate the precompilation cache when the driver changes.
-    #
-    # NOTE: when CUDA_Driver_jll adopted the bundled forwards-compatible driver, this only
-    # covers that driver; the system driver, on which CUDA_Driver_jll's decision depends,
-    # cannot be located from here (it shares its SONAME with the loaded compat driver, so
-    # dlopen'ing it by name just returns the latter). A system driver upgrade then does
-    # not invalidate the baked selection; the `compat` preference recorded by
-    # CUDA_Driver_jll does at least cover the user changing their mind.
+    # invalidate the precompilation cache when the driver changes. with the compat driver
+    # loaded, CUDA_Driver_jll's `__init__` registers the system driver.
     driver_path = Libdl.dlpath(driver_handle)
     @debug "Adding include dependency on $driver_path"
     Base.include_dependency(driver_path)
@@ -313,6 +324,31 @@ const jetson_cap_db = Dict{VersionNumber, NTuple{2, VersionNumber}}(
     v"7.2"   => (v"9.2",   v"12.5"),
 )
 
+# the toolkits from `toolkits` that a driver can run, excluding those in
+# `prerelease_toolkits`, which are never selected automatically.
+function driver_compatible_toolkits(driver_version::VersionNumber,
+                                    toolkits::Vector{VersionNumber},
+                                    prerelease_toolkits::Vector{VersionNumber})
+    # "[...] applications built against any of the older CUDA Toolkits always continued
+    #  to function on newer drivers due to binary backward compatibility"
+    filter(toolkits) do toolkit
+        # never auto-select an EA/preview toolkit; those have to be requested explicitly
+        # through the "version" preference.
+        toolkit in prerelease_toolkits && return false
+
+        # enhanced compatibility
+        #
+        # "From CUDA 11 onwards, applications compiled with a CUDA Toolkit release
+        #  from within a CUDA major release family can run, with limited feature-set,
+        #  on systems having at least the minimum required driver version"
+        if driver_version >= v"11"
+            thismajor(toolkit) <= thismajor(driver_version)
+        else
+            thisminor(toolkit) <= thisminor(driver_version)
+        end
+    end
+end
+
 # select the best CUDA toolkit from `toolkits` (an ascending list of candidate versions)
 # for the driver and its devices, or `nothing` if the driver cannot be queried or no
 # candidate is compatible. Toolkits listed in `prerelease_toolkits` are never selected
@@ -332,24 +368,8 @@ function select_cuda_toolkit(toolkits::Vector{VersionNumber},
         @debug "CUDA device compute capabilities: $(join(device_capabilities, ", "))"
     end
 
-    # "[...] applications built against any of the older CUDA Toolkits always continued
-    #  to function on newer drivers due to binary backward compatibility"
-    compatible_toolkits = filter(toolkits) do toolkit
-        # never auto-select an EA/preview toolkit; those have to be requested explicitly
-        # through the "version" preference.
-        toolkit in prerelease_toolkits && return false
-
-        # enhanced compatibility
-        #
-        # "From CUDA 11 onwards, applications compiled with a CUDA Toolkit release
-        #  from within a CUDA major release family can run, with limited feature-set,
-        #  on systems having at least the minimum required driver version"
-        if cuda_driver_version >= v"11"
-            thismajor(toolkit) <= thismajor(cuda_driver_version)
-        else
-            thisminor(toolkit) <= thisminor(cuda_driver_version)
-        end
-    end
+    compatible_toolkits = driver_compatible_toolkits(cuda_driver_version, toolkits,
+                                                     prerelease_toolkits)
     if isempty(compatible_toolkits)
         @error "CUDA driver $(cuda_driver_version) is not compatible with any supported CUDA toolkit ($(join(toolkits, ", ", " or ")))"
         return nothing
@@ -392,6 +412,11 @@ end
 # returns the value for the "cuda" tag we should use in the platform ("$MAJOR.$MINOR")
 # or nothing if no compatible CUDA toolkit was found.
 function cuda_toolkit_tag()
+    if cuda_disabled
+        @debug "CUDA disabled by preference"
+        return nothing
+    end
+
     # check if the user requested a specific version
     if version_preference !== missing
         @debug "CUDA version override: $version_preference"
