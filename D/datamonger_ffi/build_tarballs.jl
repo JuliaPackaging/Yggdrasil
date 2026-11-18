@@ -45,7 +45,6 @@ build_tarballs(
     products,
     dependencies;
     compilers = [:c, :rust],
-    preferred_rust_version = v"1.97.0",
     preferred_gcc_version = v"8",
     julia_compat = "1.10",
 )
