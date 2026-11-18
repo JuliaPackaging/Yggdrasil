@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "Eunoia"
-version = v"1.10.1"
+version = v"1.10.2"
 
 sources = [GitSource(
     "https://github.com/jolars/eunoia.git",
-    "e818b339bde8a91db656393e09575d5640663447";
+    "4349ad18e1dbd5a9f7c5069feaa0ac35c4b15303";
     tag = "v$(version)",
 )]
 
