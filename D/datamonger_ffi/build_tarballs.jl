@@ -33,6 +33,7 @@ products = [
     LibraryProduct(["libdatamonger_ffi", "datamonger_ffi"], :libdatamonger_ffi),
 ]
 
+# The Rust library links to libgcc_s for unwinding on glibc Linux.
 dependencies = [Dependency("CompilerSupportLibraries_jll"; compat = "1.0.5")]
 
 build_tarballs(
