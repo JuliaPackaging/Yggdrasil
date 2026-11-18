@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "LAMMPS"
-version = v"2.10.0" # Equivalent to stable_22Jul2025_update2
+version = v"2.10.1" # Equivalent to stable_22Jul2025_update2
 
 # Version table
 # 1.0.0 -> https://github.com/lammps/lammps/releases/tag/stable_29Oct2020
@@ -27,6 +27,7 @@ version = v"2.10.0" # Equivalent to stable_22Jul2025_update2
 # 2.8.0 -> https://github.com/lammps/lammps/releases/tag/patch_2Apr2025
 # 2.9.0 -> https://github.com/lammps/lammps/releases/tag/patch_12Jun2025
 # 2.10.0 -> https://github.com/lammps/lammps/releases/tag/stable_22Jul2025_update2
+# 2.10.1 -- Falls back to the CPU build where no CUDA build matches
 
 # https://docs.lammps.org/Manual_version.html
 # We have "stable" releases and we have feature/patch releases
@@ -124,20 +125,7 @@ if [[ "${bb_full_target}" != *cuda\+none* && "${bb_full_target}" == *cuda* ]]; t
 fi
 """
 
-augment_platform_block = """
-    using Base.BinaryPlatforms
-
-    module __CUDA
-        $(CUDA.augment)
-    end
-
-    $(MPI.augment)
-
-    function augment_platform!(platform::Platform)
-        augment_mpi!(platform)
-        __CUDA.augment_platform!(platform)
-    end
-"""
+augment_platform_block = CUDA.augment_with(MPI.augment, "augment_mpi!")
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
@@ -173,6 +161,7 @@ all_platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"),
 all_platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), all_platforms)
 all_platforms = filter(p -> !(Sys.isfreebsd(p) || libc(p) == "musl"), all_platforms)
 all_platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && arch(p) == "riscv64"), all_platforms)
+cuda_dependencies = CUDA.required_dependencies(all_platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -206,14 +195,12 @@ dependencies = AbstractDependency[
 for platform in all_platforms
     should_build_platform(triplet(platform)) || continue
 
-    _dependencies = copy(dependencies)
+    _dependencies = [dependencies; cuda_dependencies]
     _sources = copy(sources)
     if haskey(platform, "cuda") && platform["cuda"] != "none" && platform["mpi"] != "none"
         append!(_dependencies, cudampi_dependencies)
-        append!(_dependencies, CUDA.required_dependencies(platform))
         push!(_dependencies, Dependency(PackageSpec(name="CUDA_Driver_jll")))
     elseif haskey(platform, "cuda") && platform["cuda"] != "none"
-        append!(_dependencies, CUDA.required_dependencies(platform))
         push!(_dependencies, Dependency(PackageSpec(name="CUDA_Driver_jll")))
     elseif platform["mpi"] != "none"
         append!(_dependencies, mpi_dependencies)
@@ -221,7 +208,7 @@ for platform in all_platforms
     build_tarballs(ARGS, name, version, _sources, script, [platform],
                    products, _dependencies;
                    preferred_gcc_version=v"9",
-                   julia_compat="1.7",
+                   julia_compat="1.10",  # CUDA_Runtime_jll requires it
                    augment_platform_block=augment_platform_block,
                    lazy_artifacts=true
                    )
