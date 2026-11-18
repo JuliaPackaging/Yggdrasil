@@ -74,36 +74,6 @@ WRAPPER_SOURCES=(
 CUDA_HOME="${prefix}/cuda"
 NVCC="${CUDA_HOME}/bin/nvcc"
 
-# Determine CUDA major version
-cuda_major=12
-if [[ ${bb_full_target} == *-cuda+* ]]; then
-    cuda_ver=${bb_full_target##*-cuda+}
-    cuda_major=${cuda_ver%%.*}
-elif ${NVCC} --version &>/dev/null; then
-    cuda_ver=$(${NVCC} --version | sed -n 's/.*release \([0-9]*\)\..*/\1/p')
-    if [ -n "${cuda_ver}" ]; then
-        cuda_major="${cuda_ver}"
-    fi
-fi
-
-# Compute capability / architecture flags
-# Selected architectures for SASS generation, plus PTX fallback for future GPUs
-ARCH_FLAGS=()
-
-# CUDA < 13 supports Volta (sm_70); CUDA 13+ dropped sm_70 support
-if [ "${cuda_major}" -lt 13 ]; then
-    ARCH_FLAGS+=("-gencode=arch=compute_70,code=sm_70")
-fi
-
-ARCH_FLAGS+=(
-    "-gencode=arch=compute_75,code=sm_75"
-    "-gencode=arch=compute_80,code=sm_80"
-    "-gencode=arch=compute_86,code=sm_86"
-    "-gencode=arch=compute_89,code=sm_89"
-    "-gencode=arch=compute_90,code=sm_90"
-    "-gencode=arch=compute_86,code=compute_86"
-)
-
 INCLUDE_FLAGS=(
     "-I${COMMON_DIR}"
     "-I${WORKSPACE}/srcdir/wrapper/include"
@@ -157,6 +127,28 @@ dependencies = [
 for platform in platforms
     should_build_platform(triplet(platform)) || continue
 
+    # Generate GPU architectures according to the selected CUDA version.
+    cuda_archs = CUDA.cuda_gpu_archs(platform)
+    cuda_ver = VersionNumber(platform["cuda"])
+
+    # Yggdrasil's helper starts at sm_75, but TIGRE also supports
+    # Volta (sm_70) with CUDA 12.x. CUDA 13 dropped sm_70 support.
+    if cuda_ver < v"13.0" && !("70" in cuda_archs)
+        pushfirst!(cuda_archs, "70")
+    end
+
+    arch_flags = [
+        "-gencode=arch=compute_$(sm),code=sm_$(sm)"
+        for sm in cuda_archs
+    ]
+
+    # Keep forward-compatible PTX for the newest supported architecture.
+    ptx_arch = maximum(parse.(Int, cuda_archs))
+    push!(arch_flags,
+          "-gencode=arch=compute_$(ptx_arch),code=compute_$(ptx_arch)")
+
+    platform_script = "ARCH_FLAGS=($(join(arch_flags, " ")))\n" * script
+
     deps = BinaryBuilder.AbstractDependency[
         dependencies;
         CUDA.required_dependencies(platform)...
@@ -167,7 +159,7 @@ for platform in platforms
         name,
         version,
         sources,
-        script,
+        platform_script,
         [platform],
         products,
         deps;
