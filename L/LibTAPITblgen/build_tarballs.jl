@@ -46,4 +46,7 @@ build_tarballs(;
     target_dependencies = [JLLSource("Zlib_jll"; version=v"1.4.1")],
     host_toolchains = [CToolchain(;vendor=:clang_bootstrap), CMakeToolchain(), HostToolsToolchain()],
     target_toolchains = [CToolchain(;vendor=:clang_bootstrap), CMakeToolchain()],
+    julia_compat = "1.6.3",
 )
+
+# Build trigger: 1

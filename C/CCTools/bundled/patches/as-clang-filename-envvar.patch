@@ -1,0 +1,18 @@
+diff --git a/cctools/as/driver.c b/cctools/as/driver.c
+index 8b642043..2ff04752 100644
+--- a/cctools/as/driver.c
++++ b/cctools/as/driver.c
+@@ -307,10 +307,12 @@ char **envp)
+ 	    as = makestr(prefix, CLANG, NULL);
+ #endif
+ 	    /* cctools-port start */
++		char *clang_exe = getenv("CCTOOLS_CLANG_AS_EXECUTABLE");
++		clang_exe = clang_exe ? clang_exe : "clang";
+ #ifndef __APPLE__
+ 	    char *target_triple = getenv("CCTOOLS_CLANG_AS_TARGET_TRIPLE");
+ #endif /* ! __APPLE__ */
+-	    as = find_executable("clang");
++	    as = find_executable(clang_exe);
+ 	    /* cctools-port end */
+ 	    if(!as || access(as, F_OK) != 0){ /* cctools-port: added  !as || */
+ 		printf("%s: assembler (%s) not installed\n", progname,

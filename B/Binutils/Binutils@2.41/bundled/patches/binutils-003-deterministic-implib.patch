@@ -1,0 +1,14 @@
+diff --git a/ld/pe-dll.c b/ld/pe-dll.c
+--- a/ld/pe-dll.c
++++ b/ld/pe-dll.c
+@@ -2936,6 +2936,10 @@
+       return;
+     }
+ 
++  /* Import libraries are always written without timestamps or uids/gids, so
++     that they are reproducible.  */
++  outarch->flags |= BFD_DETERMINISTIC_OUTPUT;
++
+   if (verbose)
+     /* xgettext:c-format */
+     info_msg (_("Creating library file: %s\n"), impfilename);

@@ -6,7 +6,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "TensorRT"
-version = v"10.7.0"
+version = v"10.13.0"
 
 cuda_versions = [
     v"11",
@@ -72,6 +72,10 @@ end
 
 augment_platform_block = CUDA.augment
 
+# xz ignores cgroup memory limits (until JuliaPackaging/BinaryBuilderBase.jl#510). Leave 4 GiB
+# for the rest of the build, which used up to about 3.8 GiB alongside xz on CI.
+ENV["XZ_DEFAULTS"] = "--memlimit-compress=$(max(Int(Sys.total_memory()) - (4 << 30), 1 << 30))"
+
 # don't allow `build_tarballs` to override platform selection based on ARGS.
 # we handle that ourselves by calling `should_build_platform`
 non_platform_ARGS = filter(arg -> startswith(arg, "--"), ARGS)
@@ -83,5 +87,8 @@ for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    name, version, build.sources, script,
                    build.platforms, products, build.dependencies;
-                   julia_compat="1.6", augment_platform_block, dont_dlopen=true)
+                   augment_platform_block,
+                   compression_format="xz",
+                   dont_dlopen=true,
+                   julia_compat="1.6")
 end

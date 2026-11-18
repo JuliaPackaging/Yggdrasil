@@ -23,27 +23,35 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "SDPA"
 upstream_version = v"7.3.19"
-version_offset = v"0.0.0" # reset to 0.0.0 once the upstream version changes
-version = VersionNumber(upstream_version.major * 100 + version_offset.major,
-                        upstream_version.minor * 100 + version_offset.minor,
-                        upstream_version.patch * 100 + version_offset.patch)
+version_offset = v"0.0.1" # reset to 0.0.0 once the upstream version changes
+version = VersionNumber(
+    upstream_version.major * 100 + version_offset.major,
+    upstream_version.minor * 100 + version_offset.minor,
+    upstream_version.patch * 100 + version_offset.patch,
+)
 
 # Collection of sources required to build SDPABuilder
 sources = [
-    ArchiveSource("https://sourceforge.net/projects/sdpa/files/sdpa/sdpa_$(upstream_version).orig.tar.gz",
-                  "f6ad68f18d1f03bb6e71f8c81d209a0fba99cbb918ceb260a5dc4b9b0f343ee9")
+    ArchiveSource(
+        "https://sourceforge.net/projects/sdpa/files/sdpa/sdpa_$(upstream_version).orig.tar.gz",
+        "f6ad68f18d1f03bb6e71f8c81d209a0fba99cbb918ceb260a5dc4b9b0f343ee9",
+    )
     DirectorySource("./bundled")
 ]
 
-MUMPS_seq_version = v"400.1000.0"
-MUMPS_seq_packagespec = PackageSpec(; name = "MUMPS_seq_jll",
-                                    uuid = "d7ed1dd3-d0ae-5e8e-bfb4-87a502085b8d",
-                                    version = MUMPS_seq_version)
+MUMPS_seq_version = v"400.1000.0+0"
+MUMPS_seq_packagespec = PackageSpec(;
+    name = "MUMPS_seq_jll",
+    uuid = "d7ed1dd3-d0ae-5e8e-bfb4-87a502085b8d",
+    version = MUMPS_seq_version,
+)
 
-METIS_version = v"400.000.300"
-METIS_packagespec = PackageSpec(; name = "METIS4_jll",
-                                uuid = "40b5814e-7855-5c9f-99f7-a735ce3fdf8b",
-                                version = METIS_version)
+METIS_version = v"400.000.300+0"
+METIS_packagespec = PackageSpec(;
+    name = "METIS4_jll",
+    uuid = "40b5814e-7855-5c9f-99f7-a735ce3fdf8b",
+    version = METIS_version,
+)
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -138,7 +146,7 @@ install_license $WORKSPACE/srcdir/sdpa-*/COPYING
 products = [
     ExecutableProduct("sdpa", :sdpa),
     LibraryProduct("libsdpa", :libsdpa),
-    LibraryProduct("libsdpawrap", :libsdpawrap)
+    LibraryProduct("libsdpawrap", :libsdpawrap),
 ]
 
 # These are the platforms we will build for by default, unless further
@@ -146,25 +154,37 @@ products = [
 include("../../L/libjulia/common.jl")
 platforms = reduce(vcat, libjulia_platforms.(julia_versions))
 filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+# The pinned MUMPS_seq and METIS4 releases have no RISC-V binaries.
+filter!(p -> arch(p) != "riscv64", platforms)
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 filter!(p -> libgfortran_version(p) >= v"5", platforms)
-# Temporarily disable Julia@1.13 until https://github.com/JuliaPackaging/Yggdrasil/pull/11683
-# is fixed.
-filter!(p -> VersionNumber(p["julia_version"]) < v"1.13", platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("libcxxwrap_julia_jll"; compat="~0.14"),
+    # Julia 1.13 and newer need the updated CxxWrap binaries.
+    Dependency("libcxxwrap_julia_jll"; compat = "~0.14.13"),
     Dependency("OpenBLAS32_jll"),
     Dependency("CompilerSupportLibraries_jll"),
-    BuildDependency("libjulia_jll"),
+    BuildDependency(PackageSpec(; name = "libjulia_jll", version = "1.11.5")),
     BuildDependency(MUMPS_seq_packagespec),
     BuildDependency(METIS_packagespec),
 ]
 
+@assert libjulia_min_julia_version <= v"1.10.0"
+
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    preferred_gcc_version = v"8",
+build_tarballs(
+    ARGS,
+    name,
+    version,
+    sources,
+    script,
+    platforms,
+    products,
+    dependencies;
+    # Match the GCC used to build libcxxwrap_julia_jll.
+    preferred_gcc_version = v"10",
     clang_use_lld = false,
-    julia_compat = "1.6")
+    julia_compat = libjulia_julia_compat(julia_versions),
+)

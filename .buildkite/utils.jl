@@ -80,6 +80,31 @@ agent() = Dict(
     :sandbox_capable => "true"
 )
 
+# The agents' scheduler sizes an untagged job at 4 CPUs and 4 GiB, and kills it beyond 16 GiB.
+# Builds of these projects, or of any project under these directories, need more: most peaked at
+# 19-45 GiB (2026-11), and LLVM links many large binaries in parallel. They declare it: the
+# request is what the scheduler reserves, the limit the job's `memory.max`. A project whose
+# builds get OOM-killed belongs in this list.
+const LARGE_MEMORY_PROJECTS = [
+    "E/Enzyme",
+    "L/LLVM",
+    "L/libcxxwrap_julia",
+    "L/libpolymake_julia",
+    "O/ONNXRuntime/ONNXRuntime_CUDA",
+    "O/OpenCV/OpenCV",
+    "O/OpenCV/OpenCV_CUDA",
+]
+
+is_large_memory(project) =
+    any(p -> project == p || startswith(project, p * "/"), LARGE_MEMORY_PROJECTS)
+
+large_memory_agent() = merge(agent(), Dict(
+    :sched_cpus => "4",
+    :sched_cpus_limit => "16",
+    :sched_mem_gib => "24",
+    :sched_mem_limit_gib => "64",
+))
+
 # BinaryBuilder2 projects are scheduled, built and registered with their own Julia.  It needs
 # strict matching of the `sanitize` platform tag (JuliaLang/julia#63647) to resolve JLLs.
 const BB1_JULIA_VERSION = "1.13.2"
@@ -183,14 +208,10 @@ function render(bs::AbstractBuildStep)
     return Dict(
         :key => step_key(bs),
         :label => "build -- $(bs.name) -- $(bs.platform)",
-        :agents => agent(),
+        :agents => is_large_memory(bs.project) ? large_memory_agent() : agent(),
         :plugins => build_plugins,
         :timeout_in_minutes => 300,
         :priority => IS_PR ? -2 : -1,
-        # Reduce concurrency for Reactant builds, which are extremely intensive and grind
-        # the system to a halt when run with several parallel jobs.
-        :concurrency => 12,
-        :concurrency_group => "yggdrasil/build/$(bs.project)",
         :commands => ["""
         YGGDRASIL_BASE=\$(pwd)
         cd $(bs.project)
@@ -277,6 +298,58 @@ function render(rs::AbstractRegisterStep)
     end
 
     return out
+end
+
+# Registers the BinaryBuilder2 packages that a build builds (`projects`, in dependency
+# order) into a local universe without deploying them, and uploads their JLLs, with their
+# artifacts and a registry for them, as the depot `jll-depot.tar.gz`.  On pull requests,
+# this runs the pull request's code, but without any secrets.
+struct BB2PackageStep <: AbstractStep
+    projects::Vector{String}
+    dependencies::Vector{AbstractStep}
+end
+step_key(::BB2PackageStep) = "package-bb2-jlls"
+
+function render(ps::BB2PackageStep)
+    return Dict(
+        :key => step_key(ps),
+        :label => ":package: package JLLs locally",
+        :depends_on => step_key.(ps.dependencies),
+        :agents => agent(),
+        :plugins => plugins(BB2_JULIA_VERSION),
+        :timeout_in_minutes => 90,
+        :commands => [".ci/bb2_project/load_check/package_jlls.sh $(join(ps.projects, " "))"],
+        :env => env(),
+        :artifacts => ["jll-depot.tar.gz"],
+    )
+end
+
+# Installs JLLs from the depot that `package_key` uploaded on Julia `julia_version`, next
+# to a fresh `General`, and loads them and their products: with `oldest_only`, only the JLLs whose `julia`
+# compat allows no older Julia (see `oldest_julia()`), otherwise all of them.
+struct BB2LoadCheckStep <: AbstractStep
+    julia_version::String
+    oldest_only::Bool
+    package_key::String
+end
+step_key(ls::BB2LoadCheckStep) = "load-check-bb2-julia-$(safe_name(ls.julia_version))"
+
+function render(ls::BB2LoadCheckStep)
+    return Dict(
+        :key => step_key(ls),
+        :label => ":julia: load JLLs -- Julia $(ls.julia_version)",
+        :depends_on => [ls.package_key],
+        :agents => agent(),
+        :plugins => [
+            "JuliaCI/julia#v1" => Dict("version" => ls.julia_version),
+        ],
+        :timeout_in_minutes => 60,
+        :commands => [
+            "buildkite-agent artifact download jll-depot.tar.gz . --step $(ls.package_key)",
+            ".ci/bb2_project/load_check/load_check.sh jll-depot.tar.gz$(ls.oldest_only ? " --oldest-julia-only" : "")",
+        ],
+        :env => env(),
+    )
 end
 
 exec(cmd; stdout=Base.stdout, stderr=Base.stderr) = @assert success(pipeline(cmd; stderr, stdout))

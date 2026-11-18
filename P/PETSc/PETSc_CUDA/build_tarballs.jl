@@ -9,16 +9,30 @@ include(joinpath(@__DIR__, "..", "common.jl"))
 
 name = "PETSc_CUDA"
 version = petsc_version
+ygg_version = v"3.25.7"  # compat changes need a new JLL version
 
 sources = petsc_sources(; cuda=true)
 
-script = petsc_script(cuda_preamble, raw"""build_petsc double real    Int64 opt
-build_petsc double real    Int32 opt""")
+# BinaryBuilder's x86_64 host needs x86_64 CUDA tools to cross compile for aarch64.
+# nvvm is inside the nvcc archive before CUDA 13, and in its own archive after.
+# PETSc passes its C++ compiler to nvcc as -ccbin itself.
+script = raw"""
+if [[ "${target}" == aarch64-* ]]; then
+    export LD_LIBRARY_PATH="/usr/lib/csl-musl-x86_64:/usr/lib/csl-glibc-x86_64:${LD_LIBRARY_PATH}"
+    rm -rfv ${prefix}/cuda/bin ${prefix}/cuda/nvvm/bin ${prefix}/cuda/nvvm/lib64
+    cp -a ${WORKSPACE}/srcdir/cuda_nvcc-linux-x86_64-*-archive/bin ${prefix}/cuda/bin
+    cp -a ${WORKSPACE}/srcdir/*-linux-x86_64-*-archive/nvvm/{bin,lib64} ${prefix}/cuda/nvvm/
+    atomic_patch -p1 -d ${WORKSPACE}/srcdir/petsc-* ${WORKSPACE}/srcdir/patches/nvcc-fp16.patch
+fi
+""" * petsc_script(cuda_preamble, raw"""build_petsc double real    Int64 opt
+build_petsc double real    Int32 opt
+
+# The swapped-in x86_64 tools would otherwise be packaged.
+if [[ "${target}" == aarch64-* ]]; then
+    rm -r ${prefix}/cuda
+fi""")
 
 platforms = CUDA.supported_platforms(; min_version=v"12")
-
-# aarch64 would need the host x86_64 nvcc swapped in; PETSc's configure cannot do that
-filter!(p -> arch(p) == "x86_64", platforms)
 
 # The toolkits that add GPU architectures (PETSc embeds no PTX for newer GPUs). These are also
 # the ones SuperLU_DIST_CUDA_jll is built for, whose artifacts must match the `cuda` tag exactly.
@@ -62,13 +76,24 @@ append!(dependencies, platform_dependencies)
 
 for platform in platforms
     should_build_platform(triplet(platform)) || continue
+    platform_sources = BinaryBuilder.AbstractSource[sources...]
+    if arch(platform) == "aarch64"
+        cuda_ver = VersionNumber(platform["cuda"])
+        components = ["cuda_nvcc"]
+        cuda_ver >= v"13" && push!(components, "libnvvm")
+        x86_platform = deepcopy(platform)
+        x86_platform["arch"] = "x86_64"
+        append!(platform_sources, get_sources("cuda", components;
+                                              version=CUDA.full_version(cuda_ver),
+                                              platform=x86_platform))
+    end
     deps = AbstractDependency[dependencies...]
     append!(deps, CUDA.required_dependencies(platform))
     platform_script = "CUDA_ARCHS=\"$(join(CUDA.cuda_gpu_archs(platform), ","))\"\n" * script
     # nvcc rejects a host GCC newer than the toolkit supports: CUDA < 12.4 caps out below
     # Yggdrasil's GCC 13.2, and CUDA 13's CCCL needs the C++17 default of GCC >= 12.
     gcc_version = VersionNumber(platform["cuda"]) < v"12.4" ? v"12" : v"13"
-    build_tarballs(ARGS, name, version, sources, platform_script, [platform], products, deps;
+    build_tarballs(ARGS, name, ygg_version, platform_sources, platform_script, [platform], products, deps;
                    augment_platform_block, julia_compat="1.12", preferred_gcc_version=gcc_version,
                    lazy_artifacts=true, dont_dlopen=true)
 end

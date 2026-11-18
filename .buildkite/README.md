@@ -54,6 +54,15 @@ in the trusted registration job.
   emitted for non-PR builds (i.e. on `master`); it is never added on PR
   builds.** PRs therefore build the tarballs to verify they compile, but never
   trigger the `yggdrasil-register` pipeline and never publish anything.
+* **BinaryBuilder2 projects**, on PRs and `master` alike, are additionally
+  load-checked: a step of the build's own pipeline, which has no secrets,
+  registers all their packages into a throwaway local universe, deploying
+  nothing, and passes the resulting JLLs, with their artifacts and a registry
+  for them, as the depot `jll-depot.tar.gz` to the next steps.  These install
+  each JLL from that depot and load it (see `.ci/bb2_project/load_check/`) on
+  the oldest Julia version that its `julia` compat allows (at least v1.3) and
+  on the latest Julia release.  On `master`, the registration doesn't wait for
+  these checks.
 * The `build_step` and `trigger_registration_step` helpers live in
   [`utils.jl`](./utils.jl).
 * Builds upload tarballs and their metadata sidecars as Buildkite artifacts.

@@ -1,0 +1,40 @@
+RISC-V: honor the R_RISCV_SET_ULEB128 addend (PR31179)
+
+Backport of the linker half of upstream binutils commit 73d931e5600
+("RISC-V: PR31179, The SET/ADD/SUB fix breaks ABI compatibility with 2.41
+objects"), released in binutils 2.42.
+
+ld 2.41 resolves a SET_ULEB128/SUB_ULEB128 pair as S(set) - S(sub) + A(sub)
+and drops A(set). gas 2.41 writes the addend on both relocations, but gas
+2.42 and later write it on SET_ULEB128 only, so objects from newer
+assemblers get uleb128 values that are off by their addend. When the wrong
+value needs more bytes than the field holds, ld fails with "final size of
+uleb128 value ... exceeds available space"; otherwise it is silently wrong.
+
+This computes S(set) + A(set) - S(sub) and ignores A(sub), which is correct
+for objects from either assembler.
+
+--- a/bfd/elfnn-riscv.c
++++ b/bfd/elfnn-riscv.c
+@@ -1737,7 +1737,10 @@
+ {
+   if (howto->pc_relative)
+     value -= sec_addr (input_section) + rel->r_offset;
+-  value += rel->r_addend;
++
++  /* PR31179, ignore the non-zero addend of R_RISCV_SUB_ULEB128.  */
++  if (ELFNN_R_TYPE (rel->r_info) != R_RISCV_SUB_ULEB128)
++    value += rel->r_addend;
+ 
+   switch (ELFNN_R_TYPE (rel->r_info))
+     {
+@@ -2523,7 +2526,8 @@
+ 	  if (uleb128_set_rel != NULL
+ 	      && uleb128_set_rel->r_offset == rel->r_offset)
+ 	    {
+-	      relocation = uleb128_set_vma - relocation;
++	      relocation = uleb128_set_vma - relocation
++			   + uleb128_set_rel->r_addend;
+ 	      uleb128_set_vma = 0;
+ 	      uleb128_set_rel = NULL;
+ 	    }
