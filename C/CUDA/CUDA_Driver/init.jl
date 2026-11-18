@@ -130,6 +130,14 @@ end
 
 # finally, load the forwards-compatible driver
 @debug "Using forwards-compatible CUDA driver."
+# CUDA_Runtime_jll's toolkit selection depends on the system driver, which it can't locate
+# once the compat driver is loaded. register it here, so that the caches of the packages
+# being precompiled go stale when it changes. a pinned toolkit doesn't depend on the driver.
+let runtime_prefs = Base.get_preferences(Base.UUID("76a88914-d11a-5bdc-97e0-2f5a05c973a2"))
+    if !haskey(runtime_prefs, "version") && get(runtime_prefs, "local", false) ∉ (true, "true")
+        Base.include_dependency(system_driver_info.path)
+    end
+end
 global libcuda = libcuda_compat
 pushfirst!(LIBPATH_list, compat_libdir)
 LIBPATH[] = string(compat_libdir, JLLWrappers.pathsep, LIBPATH[])
