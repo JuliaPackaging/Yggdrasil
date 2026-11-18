@@ -16,6 +16,8 @@ julia --project build_tarballs.jl --verbose --deploy=local x86_64-linux-gnu,aarc
 
 This puts tarballs in `products/` and writes a local JLL package to `~/.julia/dev/PackageName_jll/`. The trailing comma-separated triplets build only those platforms; omit them to build all of them. Use it for local testing only, never narrow `platforms` in the recipe to match. While iterating on a failing build, add `--debug` to drop into the sandbox shell on failure.
 
+This is for your own recipes; someone else's PR is tested only as [Security](../../../AGENTS.md#security) allows.
+
 On other hosts (see [Prerequisites](../../../AGENTS.md#prerequisites)), push the branch and wait for the Buildkite jobs. Download your host platform's tarball from its job's Artifacts tab into the recipe's `products/` directory, then write the local JLL from it without building, here on arm64 macOS:
 
 ```bash
