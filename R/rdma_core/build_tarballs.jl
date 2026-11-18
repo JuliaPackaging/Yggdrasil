@@ -4,6 +4,7 @@ using BinaryBuilder, Pkg
 
 name = "rdma_core"
 version = v"58.0.0"
+ygg_version = v"58.0.1"  # New and renamed products, so dependents can require this JLL with a compat bound
 
 # Collection of sources required to complete build
 sources = [
@@ -37,10 +38,26 @@ platforms = [
 ]
 
 
-# The products that we will ensure are always built
+# The products that we will ensure are always built.
+#
+# Every public library rdma-core installs is a product, so that it is loaded
+# when the JLL is. In particular the provider "direct verbs" libraries
+# (libmlx5, libefa, ...) must be products: dependents load plugins that link
+# against them, e.g. UCX's `ucx/libuct_ib_mlx5.so`, whose RUNPATH only covers
+# UCX_jll's own directory. If they are not already loaded, the dynamic loader
+# picks the system copy (or none), which can need a newer libibverbs ABI than
+# this JLL's, and the plugin fails to load.
 products = [
     LibraryProduct("libibverbs", :libibverbs),
-    LibraryProduct("librdmacm", :lbrdmacm)
+    LibraryProduct("librdmacm", :librdmacm),
+    LibraryProduct("libibumad", :libibumad),
+    LibraryProduct("libibmad", :libibmad),
+    LibraryProduct("libibnetdisc", :libibnetdisc),
+    LibraryProduct("libmlx4", :libmlx4),
+    LibraryProduct("libmlx5", :libmlx5),
+    LibraryProduct("libefa", :libefa),
+    LibraryProduct("libhns", :libhns),
+    LibraryProduct("libmana", :libmana),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -55,4 +72,4 @@ if !haskey(ENV, "JULIA_IBV_CONFIG_DIR")
 """
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"5.2.0", init_block)
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"5.2.0", init_block)
