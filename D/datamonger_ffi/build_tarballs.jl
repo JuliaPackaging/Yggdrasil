@@ -31,7 +31,6 @@ filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
 products = [
     LibraryProduct(["libdatamonger_ffi", "datamonger_ffi"], :libdatamonger_ffi),
-    FileProduct("include/datamonger.h", :datamonger_h),
 ]
 
 dependencies = [Dependency("CompilerSupportLibraries_jll"; compat = "1.0.5")]
