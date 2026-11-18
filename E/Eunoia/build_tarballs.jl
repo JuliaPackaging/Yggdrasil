@@ -33,7 +33,6 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"; compat = "1.3.0"),
 ]
 
-# GCC 8 selects the libgfortran5 artifacts provided by CompilerSupportLibraries.
 build_tarballs(
     ARGS,
     name,
@@ -44,6 +43,5 @@ build_tarballs(
     products,
     dependencies;
     compilers = [:c, :rust],
-    preferred_gcc_version = v"8",
     julia_compat = "1.12",
 )
