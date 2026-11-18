@@ -4,12 +4,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "OpenSWPC"
-version_string = "26.09.1"
+version_string = "26.09.2"
 version = VersionNumber(version_string)
 
 sources = [
     GitSource("https://github.com/OpenSWPC/OpenSWPC.git",
-              "99fa1e5be468f16cc962c60fb3e7f82de45a6273"; tag=version_string),
+              "2d59272225f4e2c8d164dc65427673a9a75723e6"; tag=version_string),
     DirectorySource("./bundled"),
 ]
 
@@ -75,6 +75,8 @@ dependencies = [
     Dependency("NetCDF_jll"; compat="401.1000.101"),
     Dependency("NetCDFF_jll"; compat="4.6.4"),
     Dependency("CompilerSupportLibraries_jll"; compat="1.0.5"),
+    # MPIABI provides only the C bindings
+    Dependency("mpif_jll"; compat="1.0.1", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)),
 ]
 append!(dependencies, platform_dependencies)
 
@@ -84,5 +86,6 @@ augment_platform_block = """
     augment_platform!(platform::Platform) = augment_mpi!(platform)
 """
 
+# -fallow-argument-mismatch and -fallow-invalid-boz need GCC 10
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, julia_compat="1.10", preferred_gcc_version=v"10")
