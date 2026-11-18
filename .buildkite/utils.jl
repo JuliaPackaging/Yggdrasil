@@ -80,11 +80,15 @@ agent() = Dict(
     :sandbox_capable => "true"
 )
 
-# The agents' scheduler sizes an untagged job at 4 CPUs and 4 GiB, and kills it beyond 16 GiB.
+# The agents' scheduler reserves 4 GiB for an untagged job and kills it beyond 16 GiB.
 # Builds of these projects, or of any project under these directories, need more: most peaked at
 # 19-45 GiB (2026-11), and LLVM links many large binaries in parallel. They declare it: the
 # request is what the scheduler reserves, the limit the job's `memory.max`. A project whose
 # builds get OOM-killed belongs in this list.
+#
+# The request is typical use, not the peak: these builds average 4-8 GiB and 3-10 CPUs, and the
+# peaks of concurrent jobs rarely coincide (host memory stayed near half the sum of their peaks).
+# Reserving the peak kept jobs queued on agents with hundreds of GiB free.
 const LARGE_MEMORY_PROJECTS = [
     "E/Enzyme",
     "L/LLVM",
@@ -101,7 +105,7 @@ is_large_memory(project) =
 large_memory_agent() = merge(agent(), Dict(
     :sched_cpus => "4",
     :sched_cpus_limit => "16",
-    :sched_mem_gib => "24",
+    :sched_mem_gib => "12",
     :sched_mem_limit_gib => "64",
 ))
 
