@@ -77,6 +77,10 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"; compat="1.0.5"),
     # MPIABI provides only the C bindings
     Dependency("mpif_jll"; compat="1.0.1", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)),
+    # NetCDF links libz. Zlib_jll 1.4.1 only has FreeBSD 14.1 artifacts, none for the x86_64 FreeBSD 13.4
+    # target, so pin the previous one until Zlib_jll covers it
+    BuildDependency(BinaryBuilder.BinaryBuilderBase.get_addable_spec("Zlib_jll", v"1.3.1+2");
+                    platforms=filter(p -> Sys.isfreebsd(p) && arch(p) == "x86_64", platforms)),
 ]
 append!(dependencies, platform_dependencies)
 
