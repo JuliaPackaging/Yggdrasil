@@ -9,6 +9,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "LightGBM"
 version = v"4.3.0"
+ygg_version = v"4.3.1"  # the rebuild raises the JLLWrappers, CUDA_Runtime_jll and Julia compat bounds
 
 # Collection of sources required to complete build
 sources = [
@@ -65,8 +66,13 @@ install_license LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
-cuda_platforms = expand_cxxstring_abis(CUDA.supported_platforms(; min_version=v"11"))
+platforms = expand_cxxstring_abis(CUDA.cpu_platforms(supported_platforms()))
+# boost_jll 1.76.0 has no riscv64 build
+filter!(p -> arch(p) != "riscv64", platforms)
+# One build per CUDA major also serves its newer minors. CUDA 13 dropped the GPU
+# architectures below sm_75, which LightGBM's CUDA_ARCHS starts with.
+cuda_platforms = expand_cxxstring_abis([CUDA.supported_platforms(; min_version=v"11", max_version=v"11.4.999");
+                                        CUDA.supported_platforms(; min_version=v"12", max_version=v"12.0.999")])
 
 # CUDA errors for other platforms
 filter!(p -> (Sys.islinux(p) && arch(p) == "x86_64"), cuda_platforms)
@@ -91,18 +97,16 @@ dependencies = [
     BuildDependency(PackageSpec(name="OpenCL_Headers_jll", uuid="a7aa756b-2b7f-562a-9e9d-e94076c5c8ee"); platforms=filter(Sys.islinux, all_platforms)),
 
     Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"); compat="=1.76.0", platforms=filter(Sys.islinux, all_platforms)),
+
+    CUDA.required_dependencies(all_platforms; static_sdk=true)...
 ]
 
 for platform in all_platforms
-    if platform in platforms && CUDA.is_supported(platform)
-        platform["cuda"] = "none"
-    end
-
-    deps = [dependencies; CUDA.required_dependencies(platform; static_sdk=true)]
-
     should_build_platform(triplet(platform)) || continue
 
     # Build the tarballs, and possibly a `build.jl` as well.
-    build_tarballs(ARGS, name, version, sources, script, [platform], products, deps; 
-    julia_compat="1.6", preferred_gcc_version = v"8.1", augment_platform_block=CUDA.augment)
+    # CUDA_Runtime_jll requires Julia 1.10.
+    build_tarballs(ARGS, name, ygg_version, sources, script, [platform], products, dependencies;
+    julia_compat="1.10", preferred_gcc_version = v"8.1", augment_platform_block=CUDA.augment,
+    lazy_artifacts=true)
 end
