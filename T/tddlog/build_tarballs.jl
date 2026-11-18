@@ -45,6 +45,7 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"; compat="1.0.5"),
 ]
 
+const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 # goatd's vendored C++20 code needs std::popcount and std::countr_zero (<bit>),
 # which the default SDKs' libc++ headers lack; its runtime needs stop at 10.14,
