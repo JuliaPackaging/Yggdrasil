@@ -1,0 +1,47 @@
+Add a KIWI_BUILD_STATIC option, so a shared-only build does not compile all sources a second time for the static library.
+
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -14,6 +14,7 @@
+ option(KIWI_BUILD_MODEL_BUILDER  "Build Model Builder" ON)
+ option(KIWI_BUILD_TEST  "Build Test sets" ON)
+ option(KIWI_JAVA_BINDING  "Build Java binding" OFF)
++option(KIWI_BUILD_STATIC  "Build static library" ON)
+ set(KIWI_CPU_ARCH "" CACHE STRING "Set architecture type for macOS")
+ 
+ if (NOT CMAKE_BUILD_TYPE)
+@@ -248,6 +249,7 @@
+   message("Compiling for other")
+ endif()
+ 
++if(KIWI_BUILD_STATIC)
+ add_library( "${PROJECT_NAME}_static" STATIC
+   ${CORE_SRCS}
+   src/capi/kiwi_c.cpp
+@@ -256,6 +258,8 @@
+ )
+ 
+ install(TARGETS ${PROJECT_NAME}_static PUBLIC_HEADER DESTINATION include/kiwi)
++target_compile_options("${PROJECT_NAME}_static" PRIVATE "${ADDITIONAL_FLAGS}")
++endif()
+ 
+ # Install the kiwi library as well as header files to (`include/kiwi` directory)
+ # so that a user can use it in their own projects that are not cmake projects.
+@@ -278,8 +282,6 @@
+   target_compile_options("${PROJECT_NAME}" PRIVATE "${ADDITIONAL_FLAGS}")
+ endif()
+ 
+-target_compile_options("${PROJECT_NAME}_static" PRIVATE "${ADDITIONAL_FLAGS}")
+-
+ #target_link_libraries("${PROJECT_NAME}_static" cpuinfo_internals)
+ #target_link_libraries("${PROJECT_NAME}" cpuinfo)
+ 
+@@ -343,7 +345,7 @@
+   endif()
+ endif()
+ 
+-if(UNIX AND NOT APPLE AND NOT ANDROID)
++if(UNIX AND NOT APPLE AND NOT ANDROID AND KIWI_BUILD_STATIC)
+   target_link_libraries( "${PROJECT_NAME}_static"
+     rt
+   )

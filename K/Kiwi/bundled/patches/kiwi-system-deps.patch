@@ -1,15 +1,16 @@
+Add a KIWI_USE_SYSTEM_DEPS option to build against installed Eigen, nlohmann_json, streamvbyte, cpuinfo and mimalloc instead of the third_party/ submodules.
+
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -14,6 +14,8 @@
- option(KIWI_BUILD_MODEL_BUILDER  "Build Model Builder" ON)
+@@ -15,6 +15,7 @@
  option(KIWI_BUILD_TEST  "Build Test sets" ON)
  option(KIWI_JAVA_BINDING  "Build Java binding" OFF)
-+option(KIWI_BUILD_STATIC  "Build static library" ON)
+ option(KIWI_BUILD_STATIC  "Build static library" ON)
 +option(KIWI_USE_SYSTEM_DEPS  "Use installed eigen, nlohmann_json, streamvbyte, cpuinfo and mimalloc instead of third_party/" OFF)
  set(KIWI_CPU_ARCH "" CACHE STRING "Set architecture type for macOS")
  
  if (NOT CMAKE_BUILD_TYPE)
-@@ -98,10 +100,14 @@
+@@ -99,10 +100,14 @@
  if(KIWI_USE_MIMALLOC)
    message(STATUS "Use mimalloc allocators")
    set ( ADDITIONAL_FLAGS "-DKIWI_USE_MIMALLOC" )
@@ -28,7 +29,7 @@
  endif()
  
  
-@@ -111,6 +117,15 @@
+@@ -112,6 +117,15 @@
  # Eigen: exclude the LGPL-licensed modules so that only MPL2 (and more
  # permissive) Eigen code is compiled in. See NOTICE.
  add_definitions( -DEIGEN_MPL2_ONLY )
@@ -44,7 +45,7 @@
  include_directories( third_party/eigen )
  include_directories( third_party/json/include )
  include_directories( third_party/streamvbyte/include )
-@@ -118,7 +133,15 @@
+@@ -119,7 +133,15 @@
  set ( STREAMVBYTE_OBJECTS 
    $<TARGET_OBJECTS:streamvbyte>
  )
@@ -61,41 +62,11 @@
    message(STATUS "Use cpuinfo")
    include_directories( third_party/cpuinfo/include )
  
-@@ -248,6 +271,7 @@
-   message("Compiling for other")
- endif()
- 
-+if(KIWI_BUILD_STATIC)
- add_library( "${PROJECT_NAME}_static" STATIC
-   ${CORE_SRCS}
-   src/capi/kiwi_c.cpp
-@@ -256,6 +280,8 @@
- )
- 
- install(TARGETS ${PROJECT_NAME}_static PUBLIC_HEADER DESTINATION include/kiwi)
-+target_compile_options("${PROJECT_NAME}_static" PRIVATE "${ADDITIONAL_FLAGS}")
-+endif()
- 
- # Install the kiwi library as well as header files to (`include/kiwi` directory)
- # so that a user can use it in their own projects that are not cmake projects.
-@@ -276,10 +302,9 @@
+@@ -280,6 +302,7 @@
  
    install(TARGETS ${PROJECT_NAME} PUBLIC_HEADER DESTINATION include/kiwi)
    target_compile_options("${PROJECT_NAME}" PRIVATE "${ADDITIONAL_FLAGS}")
 +  target_link_libraries("${PROJECT_NAME}" PRIVATE ${SYSTEM_DEPS_LIBRARIES})
  endif()
  
--target_compile_options("${PROJECT_NAME}_static" PRIVATE "${ADDITIONAL_FLAGS}")
--
  #target_link_libraries("${PROJECT_NAME}_static" cpuinfo_internals)
- #target_link_libraries("${PROJECT_NAME}" cpuinfo)
- 
-@@ -343,7 +368,7 @@
-   endif()
- endif()
- 
--if(UNIX AND NOT APPLE AND NOT ANDROID)
-+if(UNIX AND NOT APPLE AND NOT ANDROID AND KIWI_BUILD_STATIC)
-   target_link_libraries( "${PROJECT_NAME}_static"
-     rt
-   )
