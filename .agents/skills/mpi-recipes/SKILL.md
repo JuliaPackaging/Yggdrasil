@@ -38,10 +38,10 @@ Recurring gotchas:
   - `mpich`: `libmpi`; `libmpifort`
   - `mpitrampoline`: `libmpitrampoline`
   - `openmpi`: `libmpi`; `libmpi_mpifh`, `libmpi_usempif08`, `libmpi_usempi_ignore_tkr`
-  - `microsoftmpi`: `msmpi64`
+  - `microsoftmpi`: `msmpi`, also named `msmpi64` on x86_64
 - **Audit**: when the platforms include MPItrampoline variants, set `ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"` before `build_tarballs`, so MPItrampoline doesn't look for `mpiwrapper.so` when the audit dlopens the products. Without them it isn't needed.
 - **Windows** has only MicrosoftMPI. Filtering to one ABI, e.g. `filter!(p -> p["mpi"] == "mpiabi", platforms)`, drops Windows; allow `microsoftmpi` too to keep it.
 - **Code that doesn't call MPI**, such as a plugin for a library with MPI variants, gets no MPI variants of its own: don't call `MPI.augment_platforms`. When the dependency's headers include `mpi.h`, add `MPICH_jll`, and `MicrosoftMPI_jll` for Windows, as a `BuildDependency` for the header (see `H/HDF5_plugins/common.jl`).
 - **MPItrampoline compiler wrappers** remember the compilers MPItrampoline was built with. Recipes using `mpicc` etc. must `export MPITRAMPOLINE_CC=${CC} MPITRAMPOLINE_CXX=${CXX} MPITRAMPOLINE_FC=${FC}`.
-- **Windows (MicrosoftMPI)** needs `-DMPI_HOME=${prefix} -DMPI_GUESS_LIBRARY_NAME=MSMPI` and `-DMPI_C_LIBRARIES=msmpi64` (likewise `MPI_CXX_LIBRARIES`) for CMake.
+- **Windows (MicrosoftMPI)** needs `-DMPI_HOME=${prefix} -DMPI_GUESS_LIBRARY_NAME=MSMPI` for CMake, plus `-DMPI_C_LIBRARIES=msmpi64` (likewise `MPI_CXX_LIBRARIES`) on x86_64 only: i686 has no `msmpi64`.
 - **MPIABI** provides only the C bindings. Packages that call MPI from Fortran get the Fortran bindings from `mpif_jll`, added for the MPIABI platforms only: `Dependency("mpif_jll"; compat="1.0.1", platforms=filter(p -> p["mpi"] == "mpiabi", platforms))`, where `platforms` is the result of `MPI.augment_platforms`. See `H/HelloWorldMPI/HelloWorldMPIFortran`.

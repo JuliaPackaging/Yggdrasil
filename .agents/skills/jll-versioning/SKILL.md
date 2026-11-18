@@ -29,6 +29,8 @@ ygg_version = VersionNumber(version.major, version.minor, 100 * version.patch + 
 
 Keep whatever scheme the recipe already uses; switching back would make the JLL version go down.
 
+Many recipes instead name the upstream release `upstream_version` and pass `version`, the JLL version, to `build_tarballs`. There `version` does not name the upstream release; follow the recipe at hand and don't rename either variable.
+
 When the upstream spelling of a version can't be recovered from a `VersionNumber` (e.g. `"2.8"` prints as `2.8.0`), keep the upstream string and derive `version` from it, so the version literal appears only once:
 
 ```julia

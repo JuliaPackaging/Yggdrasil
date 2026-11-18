@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDA_Runtime"
-version = v"0.26.0"
+version = v"0.26.1"
 
 # we ship artifacts for both GA and EA/preview toolkits; the platform augmentation only
 # ever selects the latter when the user asks for it through the "version" preference.
