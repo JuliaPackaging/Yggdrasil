@@ -24,15 +24,18 @@ install_license ../../LICENSE
 """
 
 platforms = supported_platforms()
+# CompilerSupportLibraries_jll 1.0.5 has no RISC-V artifacts.
+filter!(p -> arch(p) != "riscv64", platforms)
+# CompilerSupportLibraries_jll 1.0.5 has no aarch64 FreeBSD artifact.
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
 products = [
     LibraryProduct(["libdatamonger_ffi", "datamonger_ffi"], :libdatamonger_ffi),
     FileProduct("include/datamonger.h", :datamonger_h),
 ]
 
-dependencies = [Dependency("CompilerSupportLibraries_jll"; compat = "1.1.2")]
+dependencies = [Dependency("CompilerSupportLibraries_jll"; compat = "1.0.5")]
 
-# CompilerSupportLibraries 1.1.2 artifacts use the libgfortran5 platform tag.
 build_tarballs(
     ARGS,
     name,
