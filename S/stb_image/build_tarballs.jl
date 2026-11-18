@@ -15,8 +15,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 printf '#define STB_IMAGE_IMPLEMENTATION\n#include "stb_image.h"' > stb_image.c
-mkdir -p ${libdir}
+mkdir -vp ${libdir}
 ${CC} -shared -o ${libdir}/stb_image.${dlext} -fPIC stb_image.c
+install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
