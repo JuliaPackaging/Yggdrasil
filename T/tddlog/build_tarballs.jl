@@ -30,7 +30,7 @@ install -Dvm 644 include/tddlog.h -t "${includedir}"
 install_license ../../LICENSE ../../NOTICE ../../THIRD-PARTY.md
 """
 
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = supported_platforms()
 # CompilerSupportLibraries_jll 1.0.5 has no riscv64 build, so the audit cannot resolve libgcc_s.
 filter!(p -> arch(p) != "riscv64", platforms)
 # Nor an aarch64 FreeBSD build.
