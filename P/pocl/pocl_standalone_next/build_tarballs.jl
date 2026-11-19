@@ -117,6 +117,9 @@ for platform in platforms
     should_build_platform(triplet(platform)) || continue
 
     platform_sources = deepcopy(sources)
+    if needs_llvm_vplan_fix(platform)
+        append!(platform_sources, llvm_vplan_fix_sources)
+    end
     platform_dependencies = deepcopy(dependencies)
 
     # On Windows we now link PoCL with the Clang/lld toolchain, but still build against this

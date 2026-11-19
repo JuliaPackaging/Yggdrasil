@@ -1,0 +1,72 @@
+From 4e7e6b8ef5708badbf0bbe8f96a10f0fe8b13891 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Thu, 19 Nov 2026 11:40:34 +0100
+Subject: [PATCH] [VPlan] Decide which predicated phis need packing before
+ narrowing them
+
+When dissolving a replicate region, dissolveReplicateRegion only packs the
+lanes of a predicated phi into a vector if the phi has users needing more than
+the first lane. That query ran after the VPPredInstPHIRecipe had already been
+replaced by a scalar VPPhi. Users such as VPWidenGEPRecipe answer
+usesFirstLaneOnly by checking whether the operand is single-scalar, which a
+scalar VPPhi trivially is, so the phi looked first-lane-only, no BuildVector
+was created, and the other lanes' results were dropped: e.g. a predicated
+sdiv feeding the address of a gather used lane 0's quotient for every lane.
+
+Record which predicated phis have vector users before converting them.
+---
+ llvm/lib/Transforms/Vectorize/VPlanUnroll.cpp | 17 ++++++++++++-----
+ 1 file changed, 12 insertions(+), 5 deletions(-)
+
+diff --git a/llvm/lib/Transforms/Vectorize/VPlanUnroll.cpp b/llvm/lib/Transforms/Vectorize/VPlanUnroll.cpp
+index ba2c9158fa47..aeec142bc9df 100644
+--- a/llvm/lib/Transforms/Vectorize/VPlanUnroll.cpp
++++ b/llvm/lib/Transforms/Vectorize/VPlanUnroll.cpp
+@@ -668,9 +668,9 @@ cloneForLane(VPlan &Plan, VPBuilder &Builder, Type *IdxTy,
+ /// converted into BranchOnCond, PredInstPhi recipes are replaced by scalar phi
+ /// recipes with an additional poison operand, and extracts are created as
+ /// needed.
+-static void convertRecipesInRegionBlocksToSingleScalar(VPlan &Plan, Type *IdxTy,
+-                                                       VPBlockBase *Entry,
+-                                                       ElementCount VF) {
++static void convertRecipesInRegionBlocksToSingleScalar(
++    VPlan &Plan, Type *IdxTy, VPBlockBase *Entry, ElementCount VF,
++    SmallPtrSetImpl<VPPhi *> &PhisWithVectorUses) {
+   VPValue *Idx0 = Plan.getZero(IdxTy);
+   for (VPBlockBase *VPB : vp_depth_first_shallow(Entry)) {
+     for (VPRecipeBase &OldR : make_early_inc_range(cast<VPBasicBlock>(*VPB))) {
+@@ -720,6 +720,11 @@ static void convertRecipesInRegionBlocksToSingleScalar(VPlan &Plan, Type *IdxTy,
+         Type *PredTy = PredOp->getScalarType();
+         VPValue *Poison = Plan.getPoison(PredTy);
+         VPPhi *NewPhi = Builder.createScalarPhi({Poison, PredOp}, OldDL);
++        // Query the users before replacing the predicated phi: users like
++        // VPWidenGEPRecipe treat a single-scalar operand as only having its
++        // first lane used, which the new scalar phi would trivially satisfy.
++        if (!VF.isScalar() && !vputils::onlyFirstLaneUsed(PredPhi))
++          PhisWithVectorUses.insert(NewPhi);
+         PredPhi->replaceAllUsesWith(NewPhi);
+         PredPhi->eraseFromParent();
+       } else {
+@@ -798,7 +803,9 @@ static void dissolveReplicateRegion(VPRegionBlock *Region, ElementCount VF,
+ 
+   // Process the original blocks for lane 0: converting their recipes to
+   // single-scalar.
+-  convertRecipesInRegionBlocksToSingleScalar(Plan, IdxTy, FirstLaneEntry, VF);
++  SmallPtrSet<VPPhi *, 4> PhisWithVectorUses;
++  convertRecipesInRegionBlocksToSingleScalar(Plan, IdxTy, FirstLaneEntry, VF,
++                                             PhisWithVectorUses);
+ 
+   // For scalar VF, just wire the blocks and return; no cloning or packing
+   // needed.
+@@ -818,7 +825,7 @@ static void dissolveReplicateRegion(VPRegionBlock *Region, ElementCount VF,
+   SmallVector<VPInstruction *> BuildVectors;
+   for (auto &R : FirstLaneExiting->phis()) {
+     auto *Phi = cast<VPPhi>(&R);
+-    if (vputils::onlyFirstLaneUsed(Phi))
++    if (!PhisWithVectorUses.contains(Phi))
+       continue;
+ 
+     Type *ScalarTy = Phi->getScalarType();
+-- 
+2.56.0
+
