@@ -1,42 +1,61 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using Base.BinaryPlatforms: arch, set_compare_strategy!, tags
 using BinaryBuilderBase: get_addable_spec
 
 const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+include(joinpath(YGGDRASIL_DIR, "C", "CUDA", "common.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "ONNXRuntime_CUDA"
-version = v"1.10.0"
+version = v"1.32.0"
 
 # Cf. https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html#requirements
 # Cf. https://onnxruntime.ai/docs/execution-providers/TensorRT-ExecutionProvider.html#requirements
+# 12.0 for older drivers, 12.6 for JetPack 6, and the minors that add GPU architectures
 cuda_versions = [
-    v"10.2",
-    v"11.3", # Using 11.3, and not 11.4, to be compatible with CUDNN v8.2.4, and with TensorRT (JLL) v8.0.1 (where the latter includes aarch64 support).
+    v"12.0",
+    v"12.6",
+    v"12.8",
+    v"12.9",
+    v"13.0",
 ]
-cudnn_version = v"8.2.4"
-tensorrt_version = v"8.0.1"
 
-cudnn_compat = string(cudnn_version.major)
-tensorrt_compat = string(tensorrt_version.major)
+jetson_cuda_version = v"12.6"
+
+cudnn_version = v"9.13.0"
+
+tensorrt_version = v"10.4.0"
+
+tensorrt_compat = "$(tensorrt_version.major).$(tensorrt_version.minor)"
 
 include(joinpath(@__DIR__, "..", "common.jl"))
 
 # Override the default sources
 append!(sources, [
-    ArchiveSource("https://github.com/microsoft/onnxruntime/releases/download/v$version/onnxruntime-win-x64-gpu-$version.zip", "0da11b8d953fad4ec75f87bb894f72dea511a3940cff2f4dad37451586d1ebbc"; unpack_target="onnxruntime-x86_64-w64-mingw32-cuda"),
-    # aarch64-linux-gnu binaries for NVIDIA Jetson from NVIDIA-managed Jetson Zoo: https://elinux.org/Jetson_Zoo#ONNX_Runtime
-    FileSource("https://nvidia.box.com/shared/static/jy7nqva7l88mq9i8bw3g3sklzf4kccn2.whl", "a608b7a4a4fc6ad5c90d6005edbfe0851847b991b08aafff4549bbbbdb938bf6"; filename = "onnxruntime-aarch64-linux-gnu-cuda.whl"),
+    ArchiveSource("https://github.com/microsoft/onnxruntime/releases/download/v$version/onnxruntime-win-x64-gpu_cuda12-$version.zip", "11b2ee6bc3c25b559503ec52eca14515d6e38dc4c532cc3017644b0f01d83a39"; unpack_target="onnxruntime-x86_64-w64-mingw32-cuda+12.8"),
+    ArchiveSource("https://github.com/microsoft/onnxruntime/releases/download/v$version/onnxruntime-win-x64-gpu_cuda13-$version.zip", "caa79b622b24861cfd8f0ad91d3e17eedad7dfc1bb9b23f6bdff70fa5a0f2351"; unpack_target="onnxruntime-x86_64-w64-mingw32-cuda+13.0"),
 ])
 
 # Override the default platforms
-platforms = CUDA.supported_platforms(min_version=v"10.2", max_version=v"11")
-filter!(p -> !(arch(p) == "x86_64" && Sys.islinux(p) && p["cuda"] == "10.2"), platforms) # Fails with: nvcc error   : 'ptxas' died due to signal 11 (Invalid memory reference)
-push!(platforms, Platform("x86_64", "Linux"; cuda = "11.3"))
-push!(platforms, Platform("x86_64", "Windows"; cuda = "11.3"))
-platforms = expand_cxxstring_abis(platforms; skip=!Sys.islinux)
+is_jetson(p) = get(tags(p), "cuda_platform", "") == "jetson"
+platforms = [p for v in cuda_versions
+               for p in CUDA.supported_platforms(; min_version=v, max_version=VersionNumber(v.major, v.minor, 999))
+               if is_jetson(p) == (v == jetson_cuda_version)]
+append!(platforms, [Platform("x86_64", "windows"; cuda="12.8"), Platform("x86_64", "windows"; cuda="13.0")])
+
+# CUDNN_jll and TensorRT_jll tag their CUDA 12 artifacts cuda+12.0, which BinaryBuilder only
+# installs for an exact match. Match as `CUDA.augment` does at run time: same major, older minor.
+# `should_build_platform` must then be given triplets, which match exactly.
+function cuda_build_strategy(a::String, b::String, a_requested::Bool, b_requested::Bool)
+    va, vb = tryparse(VersionNumber, a), tryparse(VersionNumber, b)
+    (va === nothing || vb === nothing || a_requested == b_requested) && return a == b
+    artifact, host = a_requested ? (vb, va) : (va, vb)
+    artifact.major == host.major && Base.thisminor(artifact) <= Base.thisminor(host)
+end
+foreach(p -> set_compare_strategy!(p, "cuda", cuda_build_strategy), platforms)
 
 # Override the default products
 append!(products, [
@@ -46,24 +65,31 @@ append!(products, [
 ])
 
 append!(dependencies, [
-    Dependency(get_addable_spec("CUDNN_jll", v"8.2.4+0"); compat = cudnn_compat), # Using v"8.2.4+0" to get support for cuda = "11.3"
+    Dependency("CUDNN_jll", cudnn_version; compat = "$(cudnn_version.major).$(cudnn_version.minor)"),
     Dependency("TensorRT_jll", tensorrt_version; compat = tensorrt_compat),
-    Dependency("Zlib_jll"),
 ])
 
 builds = []
 for platform in platforms
-    should_build_platform(platform) || continue
-    additional_deps = BinaryBuilder.AbstractDependency[]
-    if platform["cuda"] == "11.3"
-        additional_deps = BinaryBuilder.AbstractDependency[
-            BuildDependency(PackageSpec("CUDA_full_jll", v"11.3.1")),
-            Dependency("CUDA_Runtime_jll", v"0.7.0"), # Using v"0.7.0" to get support for cuda = "11.3" - using Dependency rather than RuntimeDependency to be sure to pass audit
-        ]
-    else
-        additional_deps = CUDA.required_dependencies(platform, static_sdk = true)
+    should_build_platform(triplet(platform)) || continue
+    additional_sources = AbstractSource[]
+    if Sys.islinux(platform) && arch(platform) == "aarch64"
+        cuda_version = VersionNumber(platform["cuda"])
+        x86_platform = deepcopy(platform)
+        x86_platform["arch"] = "x86_64"
+        # libnvvm is part of cuda_nvcc before CUDA 13
+        components = cuda_version >= v"13" ? ["cuda_nvcc", "libnvvm"] : ["cuda_nvcc"]
+        append!(additional_sources, get_sources("cuda", components;
+                                                version=CUDA.full_version(cuda_version),
+                                                platform=x86_platform))
     end
-    push!(builds, (; platforms=[platform], dependencies=[dependencies; additional_deps]))
+    additional_deps = CUDA.required_dependencies(platform, static_sdk = true)
+    if Sys.iswindows(platform)
+        filter!(dep -> !isa(dep, BuildDependency), additional_deps)
+    end
+    cuda_archs = CUDA.cuda_gpu_archs_cmake(platform)
+    push!(builds, (; platforms=[platform], sources=[sources; additional_sources],
+                     script="CUDA_ARCHS=\"$cuda_archs\"\n" * script, dependencies=[dependencies; additional_deps]))
 end
 
 # don't allow `build_tarballs` to override platform selection based on ARGS.
@@ -75,12 +101,14 @@ non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
 
 for (i, build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
-                   name, version, sources, script,
+                   name, version, build.sources, build.script,
                    build.platforms, products, build.dependencies;
                    augment_platform_block = CUDA.augment,
-                   julia_compat = "1.6",
+                   dont_dlopen = true,
+                   julia_compat = "1.10",
                    lazy_artifacts = true,
-                   preferred_gcc_version = v"8")
+                   lock_microarchitecture = false, # MLAS selects its -march kernels at run time
+                   preferred_gcc_version)
 end
 
 # trigger 2
