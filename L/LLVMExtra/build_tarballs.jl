@@ -8,12 +8,12 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "LLVMExtra"
 repo = "https://github.com/JuliaLLVM/LLVM.jl.git"
-version = v"0.0.57"
+version = v"0.0.58"
 
 llvm_versions = [v"15.0.7+12", v"16.0.6+6", v"18.1.7+5", v"20.1.8+0", v"21.1.8+0", v"22.1.8+0", v"23.1.4+0"]
 
 sources = [
-    GitSource(repo, "1a5fee7419e6f50879710e3f157f0611989e6f55"),
+    GitSource(repo, "1e428d074ce9a498e5ecc75a7076899156a14d63"),
 ]
 
 # Bash recipe for building across all platforms
