@@ -1,0 +1,54 @@
+Fix the Windows build: convert std::filesystem::path to std::string explicitly (wchar_t paths) and install the DLL to bindir.
+https://github.com/SeisSol/easi (upstream PR to be opened)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index bc52b02..6902e15 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -211,6 +211,7 @@ set(CONFIG_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/easi)
+ 
+ install(TARGETS easi EXPORT easi-targets
+     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
++    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+ )
+ install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+diff --git a/src/YAMLParser.cpp b/src/YAMLParser.cpp
+index 10fbc30..d3825c4 100644
+--- a/src/YAMLParser.cpp
++++ b/src/YAMLParser.cpp
+@@ -105,11 +105,11 @@ Component* YAMLParser::parse(const std::string& fileName) {
+       }
+     }();
+     if (fs::exists(loadFileName)) {
+-      m_currentFileName = fs::canonical(loadFileName);
++      m_currentFileName = fs::canonical(loadFileName).string();
+     } else if (fs::exists(nextPath)) {
+-      m_currentFileName = fs::canonical(nextPath);
++      m_currentFileName = fs::canonical(nextPath).string();
+     } else {
+-      m_currentFileName = nextPath;
++      m_currentFileName = nextPath.string();
+     }
+     m_fileNames.insert(m_currentFileName);
+     YAML::Node config = YAML::LoadFile(m_currentFileName);
+diff --git a/src/parser/YAMLComponentParsers.cpp b/src/parser/YAMLComponentParsers.cpp
+index e52e716..a2e94fc 100644
+--- a/src/parser/YAMLComponentParsers.cpp
++++ b/src/parser/YAMLComponentParsers.cpp
+@@ -29,12 +29,12 @@ static std::string getFileName(const std::string& entry, easi::YAMLAbstractParse
+     const auto filePath = fs::path(parser->currentFileName());
+     const auto newPath = filePath.parent_path() / entryPath;
+     if (fs::exists(newPath)) {
+-      return fs::canonical(newPath);
++      return fs::canonical(newPath).string();
+     } else {
+-      return entryPath;
++      return entryPath.string();
+     }
+   } else {
+-    return entryPath;
++    return entryPath.string();
+   }
+ }
+ } // namespace
