@@ -92,6 +92,7 @@ agent() = Dict(
 const LARGE_MEMORY_PROJECTS = [
     "E/Enzyme",
     "L/LLVM",
+    "L/LLVMGPU",
     "L/libcxxwrap_julia",
     "L/libpolymake_julia",
     "O/ONNXRuntime/ONNXRuntime_CUDA",
