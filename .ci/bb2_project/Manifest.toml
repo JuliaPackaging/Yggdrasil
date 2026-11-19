@@ -25,20 +25,20 @@ version = "1.11.0"
 
 [[deps.BinaryBuilder2]]
 deps = ["Artifacts", "BinaryBuilderAuditor", "BinaryBuilderGitUtils", "BinaryBuilderPlatformExtensions", "BinaryBuilderProducts", "BinaryBuilderSources", "BinaryBuilderToolchains", "Ccache_jll", "ChromeTracing", "Dates", "Downloads", "Git", "HistoricalStdlibVersions", "Infiltrator", "JLLGenerator", "JLLPrefixes", "KeywordArgumentExtraction", "LazyJLLWrappers", "Libdl", "LocalRegistry", "Logging", "LoggingExtras", "MultiHashParsing", "ObjectFile", "OrderedCollections", "OutputCollectors", "Pkg", "PrecompileTools", "Preferences", "Random", "Reexport", "RegistryTools", "SHA", "Sandbox", "Scratch", "ScratchSpaceGarbageCollector", "StructEquality", "StyledStrings", "TOML", "Test", "TimerOutputs", "TreeArchival", "gh_cli_jll"]
-git-tree-sha1 = "3b9dc690fba486b8b6df66ecff886ccdfac025dd"
+git-tree-sha1 = "d0bcc07fe2bc13ff2f8848075916613799db9e25"
 repo-rev = "main"
 repo-url = "https://github.com/JuliaPackaging/BinaryBuilder2.jl.git"
 uuid = "12aac903-9f7c-5d81-afc2-d9565ea332af"
-version = "1.3.1"
+version = "1.4.1"
 
 [[deps.BinaryBuilderAuditor]]
 deps = ["BinaryBuilderPlatformExtensions", "BinaryBuilderProducts", "BinaryBuilderSources", "BinaryBuilderToolchains", "JLLGenerator", "ObjectFile", "Pkg", "StyledStrings"]
-git-tree-sha1 = "089b3d0f0d2ecdd5555180a7687daddcf118e675"
+git-tree-sha1 = "ca35f2940d86a782f0ddac02989fcb3aaa9019ef"
 repo-rev = "main"
 repo-subdir = "BinaryBuilderAuditor.jl"
 repo-url = "https://github.com/JuliaPackaging/BinaryBuilder2.jl.git"
 uuid = "53524979-5234-6e31-4220-6120654b694c"
-version = "0.4.1"
+version = "0.4.4"
 
 [[deps.BinaryBuilderGitUtils]]
 deps = ["Git", "Git_jll", "MultiHashParsing", "Preferences", "gh_cli_jll"]
@@ -51,7 +51,7 @@ version = "0.3.0"
 
 [[deps.BinaryBuilderPlatformExtensions]]
 deps = ["OrderedCollections", "PrecompileTools", "Reexport"]
-git-tree-sha1 = "af0a4c4e700d724537025c564b84f32749a09eb6"
+git-tree-sha1 = "3507583dd704207a2857b0ed539a04603dec119e"
 repo-rev = "main"
 repo-subdir = "BinaryBuilderPlatformExtensions.jl"
 repo-url = "https://github.com/JuliaPackaging/BinaryBuilder2.jl.git"
@@ -60,12 +60,12 @@ version = "0.2.2"
 
 [[deps.BinaryBuilderProducts]]
 deps = ["BinaryBuilderSources", "JLLGenerator", "KeywordArgumentExtraction", "Libdl"]
-git-tree-sha1 = "81b5f7250cb918040e9e83cedc08cbc7050b8d33"
+git-tree-sha1 = "c870f293687ac8d4b4797c85de35e4da6a8c5003"
 repo-rev = "main"
 repo-subdir = "BinaryBuilderProducts.jl"
 repo-url = "https://github.com/JuliaPackaging/BinaryBuilder2.jl.git"
 uuid = "21737265-7a69-6e4f-4974-6375646f7270"
-version = "0.3.2"
+version = "0.3.3"
 
 [[deps.BinaryBuilderSources]]
 deps = ["BinaryBuilderGitUtils", "Downloads", "FileWatching", "Git", "HistoricalStdlibVersions", "JLLPrefixes", "MultiHashParsing", "Pkg", "Random", "SHA", "Scratch", "TOML", "TimerOutputs", "TreeArchival"]
@@ -78,12 +78,12 @@ version = "0.3.3"
 
 [[deps.BinaryBuilderToolchains]]
 deps = ["Artifacts", "BinaryBuilderPlatformExtensions", "BinaryBuilderSources", "HistoricalStdlibVersions", "JLLPrefixes", "LazyJLLWrappers", "NetworkOptions", "Pkg", "PrecompileTools", "Reexport", "SHA", "Scratch", "TreeArchival"]
-git-tree-sha1 = "2ba94e376109ba39c81bd3c22d26fc0c7fd3f800"
+git-tree-sha1 = "03b5e1cf7b0aec0e09863664fc9bd61c1bc24600"
 repo-rev = "main"
 repo-subdir = "BinaryBuilderToolchains.jl"
 repo-url = "https://github.com/JuliaPackaging/BinaryBuilder2.jl.git"
 uuid = "33566f4c-336c-3150-6d30-4374274e6143"
-version = "0.3.7"
+version = "0.4.1"
 
 [[deps.Ccache_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "Zlib_jll", "Zstd_jll"]
@@ -194,12 +194,12 @@ version = "1.11.0"
 
 [[deps.JLLGenerator]]
 deps = ["BinaryBuilderPlatformExtensions", "Dates", "Libdl", "LicenseCheck", "MultiHashParsing", "Pkg", "Reexport", "SHA", "StructEquality", "TOML"]
-git-tree-sha1 = "25296e7b9623465c439118e4dd53525705f0b86e"
+git-tree-sha1 = "ad603e050ec2d0caea60f138ca7d64eb36071ba1"
 repo-rev = "main"
 repo-subdir = "JLLGenerator.jl"
 repo-url = "https://github.com/JuliaPackaging/BinaryBuilder2.jl.git"
 uuid = "73536572-7074-4e69-5270-206c4c6a2061"
-version = "0.5.5"
+version = "0.5.6"
 weakdeps = ["BinaryBuilderSources"]
 
     [deps.JLLGenerator.extensions]
@@ -261,12 +261,12 @@ version = "1.11.0"
 
 [[deps.LazyJLLWrappers]]
 deps = ["Artifacts", "Libdl", "Pkg", "Preferences", "TOML"]
-git-tree-sha1 = "e397f3797e62e191d1339cd2e4bc215cac14914c"
+git-tree-sha1 = "4753919f2a12d14862eab9e4e4cfa2ed08af48d3"
 repo-rev = "main"
 repo-subdir = "LazyJLLWrappers.jl"
 repo-url = "https://github.com/JuliaPackaging/BinaryBuilder2.jl.git"
 uuid = "21706172-204c-4d4f-5420-656854206f44"
-version = "1.2.4"
+version = "1.2.7"
 
 [[deps.LibCURL]]
 deps = ["LibCURL_jll", "MozillaCACerts_jll"]
@@ -340,12 +340,12 @@ version = "2026.8.13"
 
 [[deps.MultiHashParsing]]
 deps = ["SHA"]
-git-tree-sha1 = "5b50aad47daa2f19b61fae3abb3bfe431eff1347"
+git-tree-sha1 = "2f1000cb407226fba51a5caab0469e119f54069f"
 repo-rev = "main"
 repo-subdir = "MultiHashParsing.jl"
 repo-url = "https://github.com/JuliaPackaging/BinaryBuilder2.jl.git"
 uuid = "73786568-6863-756d-6873-6168796e616d"
-version = "0.2.1"
+version = "0.2.2"
 
 [[deps.NetworkOptions]]
 uuid = "ca575930-c2e3-43a9-ace4-1e988b2c1908"

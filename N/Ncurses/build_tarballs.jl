@@ -1,31 +1,59 @@
-# Note that this script can accept some limited command-line arguments, run
-# `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, Pkg
+using BinaryBuilder2
 
 name = "Ncurses"
 version = v"6.6.0"
 
-# Collection of sources required to build Ncurses
 sources = [
-    ArchiveSource("https://ftpmirror.gnu.org/pub/gnu/ncurses/ncurses-$(version.major).$(version.minor).tar.gz",
+    ArchiveSource("https://ftpmirror.gnu.org/ncurses/ncurses-$(version.major).$(version.minor).tar.gz",
                   "355b4cbbed880b0381a04c46617b7656e362585d52e9cf84a67e2009b749ff11"),
 ]
 
-# Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/ncurses-*
+cd ${WORKSPACE}/srcdir/ncurses-*
+
+# The build environment sets `TERMINFO`, which configure would take as the directory
+# to install the terminfo database into, instead of `${prefix}/share/terminfo`.
+unset TERMINFO
+
+# Features that change the format of the compiled terminfo database, shared by
+# the target build and the host `tic` below.
+feature_args=(
+    --enable-colorfgbg
+    --enable-ext-colors
+    --enable-ext-mouse
+    --enable-widec
+)
+
+# `make install` compiles the terminfo database with a `tic` that runs on the build
+# machine.  Build a static one from the same sources and configuration.
+mkdir build-host
+pushd build-host
+CC="${HOST_CC}" CPP="${HOST_CC} -E" CXX="${HOST_CXX}" \
+AR="${HOST_AR}" RANLIB="${HOST_RANLIB}" LD="${HOST_LD}" NM="${HOST_NM}" STRIP="${HOST_STRIP}" \
+../configure --build=${MACHTYPE} --host=${MACHTYPE} \
+    "${feature_args[@]}" \
+    --enable-database \
+    --without-shared \
+    --with-normal \
+    --without-ada \
+    --without-cxx-binding \
+    --without-debug \
+    --without-manpages \
+    --without-tests
+make -j${nproc} -C include
+make -j${nproc} -C ncurses libs
+make -j${nproc} -C progs tic
+export TIC="${PWD}/progs/tic"
+popd
 
 args=(
+    "${feature_args[@]}"
     --disable-rpath
     --disable-static
     --enable-assertions
-    --enable-colorfgbg
     --enable-database
-    --enable-ext-colors
-    --enable-ext-mouse
     --enable-pc-files
     --enable-warnings
-    --enable-widec
     --with-normal
     --with-shared
     --without-ada
@@ -44,26 +72,23 @@ elif [[ "${target}" == *-mingw* ]]; then
         --enable-sp-funcs
         --enable-term-driver
     )
-    # Do not export multi-byte string functions.
-    # These functions are defined in a system library, and if we not re-export them,
-    # there would be duplicate definitions.
+    # Do not export multi-byte string functions.  They are defined in a system
+    # library, and re-exporting them would give duplicate definitions.
     export LDFLAGS="-Wl,--exclude-symbols,mbrtowc:mbrlen:mbsrtowcs:wcsrtombs:mbtowc:wctomb"
 fi
 
-# Ncurses check whether we're building on a "multi-user system". (We're
-# not, since we're building in a container.) If not, it disables access
-# to environment variables when running as root (i.e. usually when
-# running in a container). This breaks our `TERMINFO_DIRS` mechanism
-# below.
+# Ncurses checks whether it is built on a "multi-user system" (a container isn't).
+# If not, it ignores environment variables when running as root, which breaks the
+# `TERMINFO_DIRS` setting done when the JLL is loaded.
 export cf_cv_multiuser=yes
 
-./configure --build=${MACHTYPE} --host=${target} --prefix=${prefix} "${args[@]}"
+./configure --build=${MACHTYPE} --host=${target} --prefix=${prefix} --with-build-cc="${HOST_CC}" "${args[@]}"
 make -j${nproc}
 make install
 
 if [[ "${target}" == *-mingw* ]]; then
     # Ensure we didn't put a copy of `mbrtowc` into our `libncursesw` library
-    ${target}-nm -A /workspace/destdir/lib/libncursesw.dll.a | grep -w 'mbrtowc$' && false
+    nm -A ${prefix}/lib/libncursesw.dll.a | grep -w 'mbrtowc$' && false
 fi
 
 # Remove duplicates that don't work on case-insensitive filesystems
@@ -79,38 +104,25 @@ rm -rf ${prefix}/share/terminfo/p
 rm -rf ${prefix}/share/terminfo/q
 rm -rf ${prefix}/share/terminfo/X
 
-# Install pc files and fool packages looking for non-wide-character ncurses
+# Install pc files and fool packages looking for non-wide-character ncurses.
+# Windows DLLs carry the ABI version in their name and live in `bin`.
+abiver=""
+shlibdir="${libdir}"
+if [[ "${target}" == *-mingw* ]]; then
+    abiver=6
+    shlibdir="${bindir}"
+fi
 for lib in ncurses form panel menu; do
-    if [[ "${target}" == *-mingw* ]]; then
-        # O Windows, Windows, wherefore art thou Windows?
-        abiver=6
-    fi
     install -Dm644 "misc/${lib}w.pc" "${prefix}/lib/pkgconfig/${lib}w.pc"
     ln -s "${lib}w.pc" "${prefix}/lib/pkgconfig/${lib}.pc"
-    ln -s "lib${lib}w${abiver}.${dlext}" "${libdir}/lib${lib}${abiver}.${dlext}"
+    ln -s "lib${lib}w${abiver}.${dlext}" "${shlibdir}/lib${lib}${abiver}.${dlext}"
 done
 ln -s ncursesw ${includedir}/ncurses
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
 platforms = supported_platforms()
 
-# The products that we will ensure are always built
-products = Product[
-    LibraryProduct(["libform", "libform6"], :libform),
-    LibraryProduct(["libmenu", "libmenu6"], :libmenu),
-    LibraryProduct(["libncurses", "libncurses6"], :libncurses),
-    LibraryProduct(["libncursesw", "libncursesw6"], :libncursesw),
-    LibraryProduct(["libpanel", "libpanel6"], :libpanel),
-]
-
-# Dependencies that must be installed before this package can be built
-dependencies = [
-    # We need to run the native "tic" program
-    HostBuildDependency(PackageSpec(; name="Ncurses_jll", version="6.5.1")),
-]
-
+# Point ncurses at the bundled terminfo database when the JLL is loaded
 init_block = raw"""
 if Sys.isunix()
     path = joinpath(artifact_dir, "share", "terminfo")
@@ -123,5 +135,21 @@ if Sys.isunix()
 end
 """
 
-# Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", init_block)
+products = [
+    LibraryProduct(["libform", "libform6"], :libform),
+    LibraryProduct(["libmenu", "libmenu6"], :libmenu),
+    # `libncurses` is a symlink to `libncursesw`
+    LibraryProduct(["libncursesw", "libncursesw6"], :libncursesw; aliases = [:libncurses]),
+    LibraryProduct(["libpanel", "libpanel6"], :libpanel),
+]
+
+build_tarballs(;
+    src_name = name,
+    src_version = version,
+    sources,
+    script,
+    platforms,
+    products,
+    init_block,
+    julia_compat = "1.6",
+)
