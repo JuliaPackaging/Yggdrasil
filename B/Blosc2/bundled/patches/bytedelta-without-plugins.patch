@@ -1,0 +1,20 @@
+Compile bytedelta.c without BUILD_PLUGINS: shuffle.c on ARM64 calls its fused
+SHUFFLE+BYTEDELTA kernels (shuffle_bytedelta_neon_forward/backward).
+Upstream: <https://github.com/Blosc/c-blosc2/issues/883>
+
+diff --git a/blosc/CMakeLists.txt b/blosc/CMakeLists.txt
+index 56af30d..07d5cb5 100644
+--- a/blosc/CMakeLists.txt
++++ b/blosc/CMakeLists.txt
+@@ -232,6 +232,11 @@ if(COMPILER_SUPPORT_ALTIVEC)
+     list(APPEND SOURCES blosc/shuffle-altivec.c blosc/bitshuffle-altivec.c)
+ endif()
+ list(APPEND SOURCES blosc/shuffle.c)
++# shuffle.c calls the fused SHUFFLE+BYTEDELTA kernels in bytedelta.c, which
++# otherwise is only compiled with the plugins.
++if(NOT BUILD_PLUGINS)
++    list(APPEND SOURCES ${PROJECT_SOURCE_DIR}/plugins/filters/bytedelta/bytedelta.c)
++endif()
+ 
+ # Based on the target architecture and hardware features supported
+ # by the C compiler, set hardware architecture optimization flags
