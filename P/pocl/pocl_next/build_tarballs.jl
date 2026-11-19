@@ -110,6 +110,9 @@ for platform in platforms
 
     platform_sources = deepcopy(sources)
     platform_dependencies = deepcopy(dependencies)
+    if needs_llvm_vplan_fix(platform)
+        append!(platform_sources, llvm_vplan_fix_sources)
+    end
 
     # On Windows we now link PoCL with the Clang/lld toolchain, but still build against this
     # GCC's MinGW sysroot and libstdc++, so its version must stay compatible with the

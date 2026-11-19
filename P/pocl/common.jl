@@ -125,6 +125,76 @@ fi
 
 """
 
+# LLVM 23's loop vectorizer keeps only the first lane of a predicated instruction it
+# scalarizes when the result is then used as a vector by a widened GEP, e.g. a predicated
+# `sdiv` computing the index of a gather: dissolveReplicateRegion decides whether the lanes
+# need packing into a vector only after narrowing the predicated phi to a scalar one, which
+# VPWidenGEPRecipe then treats as uniform. On AVX-512 hosts this broke GPUArrays'
+# `repeat(x; inner)` (each 8-lane chunk got lane 0's value). Not fixed in LLVM 23.1.6; LLVM
+# main lowers such divisions to `llvm.masked.sdiv` instead. We rebuild VPlanUnroll.cpp from
+# the Julia fork revision LLVM_full_jll 23.1.4 is built from, with the fix applied, and
+# replace it in LLVM_full_jll's static libLLVMVectorize.a before PoCL links against it.
+const llvm_vplan_fix_commit = "3d876d0b0d8b4ac77362bd55cd030de355e83a9e" # julia-23.1.4-1
+# VPlanUnroll.cpp and the private headers of lib/Transforms/Vectorize it includes
+const llvm_vplan_fix_files = [
+    "VPlanUnroll.cpp" => "66f00c9b3c1f11209416fed71932ee92122d34b4e661047dbe498c2593e4418d",
+    "VPRecipeBuilder.h" => "2a6a8d910edd6ed27e41521140cdb6164700af363b65e9154d914f7d12643d60",
+    "VPlan.h" => "105eae754c79424adac79e78be9c699f42576a88234670373bb499c10b368df9",
+    "VPlanAnalysis.h" => "b790267285d323316878b8ca84ffe5e9080a14254b32f66dfb8e748c60c1accc",
+    "VPlanCFG.h" => "d2ce95b7d66e25ae7321685b151a31594977079fa65ec3b409cb87f12a2d53da",
+    "VPlanHelpers.h" => "3435ef4f67366270e1f6e7ea0d0055ecd4a4f5952248771c304177d42cbf525c",
+    "VPlanPatternMatch.h" => "1d7f05ff6190eb81bb000e69e6eabd68da179ff4c4de70bf4e3af3b6de8cb1c2",
+    "VPlanTransforms.h" => "ff416c485fd59cc32a5dc89b8a2eff43a218c8cdc08fb41dd389b7549169f569",
+    "VPlanUtils.h" => "6f2dbc191f4f7824b2e1973683389108677804a25122fb42d6e21e60ace94822",
+    "LoopVectorizationPlanner.h" => "2ca939ce33688cb0f861e674b254f361feeab61875123235f7239e5ff2fcd3a9",
+    "VPlanValue.h" => "44ed1a5653d770b8ccc1ec4315abe688ad247a3d2c198ec8a4ced4760761b18e",
+    "VPlanDominatorTree.h" => "54a23e12179051e961a26d6c51bcff902f7a62814cdf8418d19509d75e0f6ce7",
+    "VPlanVerifier.h" => "3fa4318c73531fe9cd7a1ddca85e012dc5bdf0ba7e210dbf0e2765306fc14e01",
+]
+const llvm_vplan_fix_sources = [
+    FileSource("https://raw.githubusercontent.com/JuliaLang/llvm-project/$(llvm_vplan_fix_commit)/llvm/lib/Transforms/Vectorize/$(file)",
+               hash; filename="llvm-vplan-$(file)")
+    for (file, hash) in llvm_vplan_fix_files]
+needs_llvm_vplan_fix(platform) = llvm_version == v"23.1.4"
+
+const llvm_vplan_fix_script = raw"""
+##########################################################################
+# 0. Fix LLVM 23's packing of predicated values with vector users (see common.jl)
+##########################################################################
+llvm_fixes=$WORKSPACE/srcdir/llvm-fixes.txt
+echo "VPlan: decide which predicated phis need packing before narrowing them" >> $llvm_fixes
+mkdir -p $WORKSPACE/srcdir/llvm-vplan/llvm/lib/Transforms/Vectorize
+pushd $WORKSPACE/srcdir/llvm-vplan
+for file in $WORKSPACE/srcdir/llvm-vplan-*; do
+    mv $file llvm/lib/Transforms/Vectorize/${file##*/llvm-vplan-}
+done
+atomic_patch -p1 $WORKSPACE/srcdir/patches/llvm/*.patch
+
+# compile it against the target LLVM's own (installed) headers and C++ flags, plus the
+# usual flags of an LLVM release build (with Clang on Windows, like PoCL itself)
+if [[ "${target}" == *mingw* ]]; then
+    vplan_cxx=clang++
+else
+    vplan_cxx=$CXX
+fi
+# (the archive member is named after CMake's object suffix, .obj on Windows)
+lib=$(realpath ${prefix}/lib/libLLVMVectorize.a)
+obj=$(ar t $lib | grep -xE 'VPlanUnroll\.cpp\.o(bj)?' || true)
+if [[ -z "${obj}" ]]; then
+    echo "ERROR: VPlanUnroll.cpp object not found in $lib" >&2
+    exit 1
+fi
+$vplan_cxx $(bash $WORKSPACE/srcdir/llvm-config --cxxflags) -O3 -DNDEBUG -fPIC \
+    -fvisibility-inlines-hidden -ffunction-sections -fdata-sections \
+    -Illvm/lib/Transforms/Vectorize \
+    -c llvm/lib/Transforms/Vectorize/VPlanUnroll.cpp -o ${obj}
+chmod u+w $lib
+ar r $lib ${obj}
+ranlib $lib
+popd
+
+"""
+
 function build_script(standalone=false; spirv32=false)
     # The patch series to apply (and to hash into the version), in order; see the list in
     # the script below. `pocl-spirv32` (JuliaGPU/pocl#3) follows the default series: a
@@ -144,8 +214,9 @@ function build_script(standalone=false; spirv32=false)
     """
 
     isel_fix = llvm_version.major == 22 ? aarch64_isel_fix_script : ""
+    vplan_fix = llvm_version == v"23.1.4" ? llvm_vplan_fix_script : ""
 
-    script = preheader * isel_fix * raw"""
+    script = preheader * isel_fix * vplan_fix * raw"""
     ##########################################################################
     # 1. Build the vendored SPIRV-LLVM-Translator as a static library.
     #
@@ -320,6 +391,10 @@ function build_script(standalone=false; spirv32=false)
     #   and vectorizes kernels made mostly of math calls; only where the device CPU can call
     #   every variant the vectorizer may pick: x86 with AVX2 and AArch64 without SVE (upstream
     #   PR #2438)
+    # - 0053: fix the min-legal-vector-width of every kernel, as Clang 23 no longer gives
+    #   OpenCL C kernels the SPIR_KERNEL calling convention FixMinVecSize looked for; a kernel
+    #   passing a 512-bit vector to a non-inlined builtin then disagreed with it on how the
+    #   vector is passed (wrong pown(half16, int16) on AVX-512 Windows hosts)
     #
     # The `pocl` series on v7.2 is this series without cl_pocl_host_kernel (0034, 0035, 0039
     # and 0040), plus those of release_next's backports that it needs (upstream PRs #2239,
