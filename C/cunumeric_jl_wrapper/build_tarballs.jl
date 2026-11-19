@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 include("make_script.jl")
 
 name = "cunumeric_jl_wrapper"
-version = v"26.6.6" 
+version = v"26.6.7" 
 sources = [
     GitSource("https://github.com/JuliaLegate/cuNumeric.jl.git","dd80d62c0bc52b4e91e119f9a76d491a6ee218cf"),
 ]
@@ -21,7 +21,7 @@ MAX_CUDA_VERSION = v"13.0.999" # none of the dependency JLLs have 13.1 builds rn
 
 
 julia_versions = filter!(v -> v >= MIN_JULIA_VERSION && v <= MAX_JULIA_VERSION , julia_versions)
-cpu_platform = [Platform("x86_64", "linux")]
+cpu_platform = CUDA.cpu_platforms([Platform("x86_64", "linux")])
 cuda_platforms = CUDA.supported_platforms(; min_version = MIN_CUDA_VERSION, max_version = MAX_CUDA_VERSION)
 all_platforms = [cpu_platform; cuda_platforms]
 
@@ -36,12 +36,6 @@ for p in all_platforms
     end
 end
 
-for platform in platforms
-    if CUDA.is_supported(platform) && !haskey(platform, "cuda")
-        platform["cuda"] = "none"
-    end
-end
-
 filter!(p -> arch(p) == "x86_64", platforms)
 platforms = expand_cxxstring_abis(platforms) 
 filter!(p -> cxxstring_abi(p) == "cxx11", platforms)
@@ -52,26 +46,24 @@ products = [
 ] 
 
 dependencies = [
-    Dependency("cupynumeric_jll"; compat = "~26.6.1"), # versioning is Year.Month
-    Dependency("legate_jll"; compat = "~26.6"),
+    Dependency("cupynumeric_jll"; compat = "~26.6.3"), # versioning is Year.Month; 26.6.3 has the CPU fallback
+    Dependency("legate_jll"; compat = "~26.6.1"),
     Dependency("libcxxwrap_julia_jll"; compat="0.14.12"),
     BuildDependency("libjulia_jll"),
     HostBuildDependency(PackageSpec(; name = "CMake_jll", version = "3.31.9")),
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")) 
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    CUDA.required_dependencies(platforms; static_sdk=true)...,
 ]
 
 for platform in platforms
 
     should_build_platform(triplet(platform)) || continue
 
-    _dependencies = copy(dependencies)
     script = get_script(Val{false}())
 
     platform_sources = BinaryBuilder.AbstractSource[sources...]
 
     if haskey(platform, "cuda") && platform["cuda"] != "none" 
-
-        append!(_dependencies, CUDA.required_dependencies(platform, static_sdk=true))
 
         cuda_ver = platform["cuda"]
 
@@ -86,7 +78,7 @@ for platform in platforms
 
     build_tarballs(
         ARGS, name, version, platform_sources, 
-        script, [platform], products, _dependencies;
+        script, [platform], products, dependencies;
         julia_compat = "1.10", 
         preferred_gcc_version = v"11",
         lazy_artifacts = true,
