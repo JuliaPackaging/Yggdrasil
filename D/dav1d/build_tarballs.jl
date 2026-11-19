@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "dav1d"
-version = v"1.5.4"
+version = v"1.5.5"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://code.videolan.org/videolan/dav1d/-/archive/$(version)/dav1d-$(version).tar.bz2",
-                  "2abfb0c89212e6e4733a54e0ae509ec00a5b845a6360946f918806e14aedb011"),
+                  "afc5378daba30eafd11d7b4f0ec863270d7b175f38393a2e1e0ff76f3a45c8b9"),
     DirectorySource("bundled"),
 ]
 
