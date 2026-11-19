@@ -1,0 +1,37 @@
+Release memory from seissol::memory::allocate with seissol::memory::free: a unique_ptr with the default deleter calls delete, which is only valid by accident where aligned memory can be freed with free() (not on Windows).
+https://github.com/SeisSol/SeisSol (upstream PR to be opened)
+
+diff --git a/src/Solver/FreeSurfaceIntegrator.cpp b/src/Solver/FreeSurfaceIntegrator.cpp
+--- a/src/Solver/FreeSurfaceIntegrator.cpp
++++ b/src/Solver/FreeSurfaceIntegrator.cpp
+@@ -176,9 +176,9 @@
+   const auto projectionMatrixFromFaceMemorySize = projectionMatrixFromFaceMemoryNumberOfReals * sizeof(real);
+ 
+   projectionMatrixMemory =
+-      std::unique_ptr<real>(static_cast<real*>(seissol::memory::allocate(projectionMatrixMemorySize, Alignment)));
++      std::unique_ptr<real, AlignedDeleter>(static_cast<real*>(seissol::memory::allocate(projectionMatrixMemorySize, Alignment)));
+   projectionMatrixFromFace =
+-      std::unique_ptr<real>(static_cast<real*>(seissol::memory::allocate(projectionMatrixFromFaceMemorySize, Alignment)));
++      std::unique_ptr<real, AlignedDeleter>(static_cast<real*>(seissol::memory::allocate(projectionMatrixFromFaceMemorySize, Alignment)));
+ 
+   std::fill_n(projectionMatrixMemory.get(), 0, projectionMatrixNumberOfReals);
+   std::fill_n(projectionMatrixFromFace.get(), 0, projectionMatrixFromFaceMemoryNumberOfReals);
+diff --git a/src/Solver/FreeSurfaceIntegrator.h b/src/Solver/FreeSurfaceIntegrator.h
+--- a/src/Solver/FreeSurfaceIntegrator.h
++++ b/src/Solver/FreeSurfaceIntegrator.h
+@@ -73,9 +73,13 @@
+     void addTo(seissol::initializer::LTSTree& surfaceLtsTree);
+   };
+ 
+-  std::unique_ptr<real> projectionMatrixMemory;
++  // The memory comes from seissol::memory::allocate and must be released with seissol::memory::free
++  struct AlignedDeleter {
++    void operator()(real* ptr) const { seissol::memory::free(ptr); }
++  };
++  std::unique_ptr<real, AlignedDeleter> projectionMatrixMemory;
+   real* projectionMatrix[4];
+-  std::unique_ptr<real> projectionMatrixFromFace;
++  std::unique_ptr<real, AlignedDeleter> projectionMatrixFromFace;
+   unsigned numberOfSubTriangles;
+   unsigned numberOfAlignedSubTriangles;
+ 
