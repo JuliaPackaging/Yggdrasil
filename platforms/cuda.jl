@@ -461,4 +461,30 @@ function cuda_gpu_archs(cuda_ver)
     return supported_archs
 end
 
+"""
+    cuda_gpu_archs_cmake(platform::Platform)
+
+Returns `CMAKE_CUDA_ARCHITECTURES` (or `CUDAARCHS`) for `cuda_gpu_archs(platform)`:
+machine code for each architecture, and PTX for the newest, so newer GPUs can run it.
+"""
+function cuda_gpu_archs_cmake(platform::Platform)
+    archs = cuda_gpu_archs(platform)
+    newest = maximum(parse.(Int, archs))
+    return join([parse(Int, a) == newest ? a : "$(a)-real" for a in archs], ";")
+end
+
+"""
+    cuda_gpu_archs_nvcc(platform::Platform)
+
+Returns `nvcc` `-gencode` flags for `cuda_gpu_archs(platform)`:
+machine code for each architecture, and PTX for the newest, so newer GPUs can run it.
+"""
+function cuda_gpu_archs_nvcc(platform::Platform)
+    archs = cuda_gpu_archs(platform)
+    newest = maximum(parse.(Int, archs))
+    flags = ["-gencode=arch=compute_$(sm),code=sm_$(sm)" for sm in archs]
+    push!(flags, "-gencode=arch=compute_$(newest),code=compute_$(newest)")
+    return join(flags, " ")
+end
+
 end
