@@ -4,6 +4,10 @@
 
 include("../osqp_common.jl")
 
+# Compat changed (the CUDA_Runtime_jll bound of `CUDA.augment`, and the Julia it needs), so a new
+# build number won't do.
+version = offset_version(upstream_version, v"0.0.1")
+
 const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
@@ -56,14 +60,13 @@ for platform in platforms
 
     cuda_deps = CUDA.required_dependencies(platform, static_sdk=true)
 
-    cudaarchs = join(CUDA.cuda_gpu_archs(platform), ";")
-
     cudascript = """
-                 export CUDAARCHS=\"$(cudaarchs)\"
+                 export CUDAARCHS=\"$(CUDA.cuda_gpu_archs_cmake(platform))\"
                  """ * script
 
     # OSQP uses CUB, which requires C++14 and GCC 5 (minimum), so for ease of use, just use g++ 9,
     # which has C++14 by default.
     build_tarballs(ARGS, "OSQP_CUDA", version, [sources..., patchsrc...],  cudascript, [platform], products, [common_deps..., cuda_deps...];
-                   julia_compat="1.6", augment_platform_block=CUDA.augment, preferred_gcc_version=v"9")
+                   julia_compat="1.10", augment_platform_block=CUDA.augment, lazy_artifacts=true,
+                   preferred_gcc_version=v"9")
 end
