@@ -66,6 +66,7 @@ platforms = [
     expand_microarchitectures(filter(p -> Sys.isapple(p) && arch(p) == "aarch64", supported_platforms()), ["apple_m1"]);
 ]
 platforms = expand_cxxstring_abis(platforms)
+platforms = expand_cxxstring_abis(platforms)
 
 products = [
     LibraryProduct("libfatrop", :libfatrop),
