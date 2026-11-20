@@ -13,8 +13,8 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 #       `cuda_nvtx` redistributable component, so NVTX ranges stay disabled.
 
 version = v"2.5.0"
-# Compat changed (CompilerSupportLibraries_jll, MPI bounds), so a new build number won't do.
-ygg_version = v"2.5.1"
+# Compat changed (the CUDA_Runtime_jll bound of `CUDA.augment`), so a new build number won't do.
+ygg_version = v"2.5.2"
 
 base_sources = [
     GitSource("https://github.com/NVIDIA/AMGX.git",
@@ -123,7 +123,7 @@ function build_amgx(name, platforms, extra_dependencies, augment_platform_block)
         end
 
         # Without an explicit list AMGX would only build for `90;100;120`, which excludes Ampere.
-        platform_script = "CUDA_ARCHS=\"$(join(CUDA.cuda_gpu_archs(platform), ";"))\"\n" * script
+        platform_script = "CUDA_ARCHS=\"$(CUDA.cuda_gpu_archs_cmake(platform))\"\n" * script
 
         # GCC 11 is the first version that defaults to -std=gnu++17. CUDA 13 ships
         # CCCL 3 (Thrust, CUB, libcu++), which refuses to compile as anything older,
