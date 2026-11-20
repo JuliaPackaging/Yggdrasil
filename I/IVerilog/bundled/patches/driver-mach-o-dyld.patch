@@ -1,0 +1,28 @@
+From f20865a5ea4ea7f5cdcbb6d19b0751a9390a8978 Mon Sep 17 00:00:00 2001
+From: Huang Rui <vowstar@gmail.com>
+Date: Fri, 27 Mar 2026 11:45:32 +0800
+Subject: [PATCH] Include mach-o/dyld.h for _NSGetExecutablePath on macOS
+
+driver/main.c uses _NSGetExecutablePath in the __APPLE__ code path
+but does not include the header that declares it, causing a build
+failure on macOS.
+
+Signed-off-by: Huang Rui <vowstar@gmail.com>
+---
+ driver/main.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/driver/main.c b/driver/main.c
+index a1d22b0eab..0fed62ee76 100644
+--- a/driver/main.c
++++ b/driver/main.c
+@@ -69,6 +69,9 @@ const char HELP[] =
+ # include  <libiberty.h>
+ #endif
+ #endif
++#ifdef __APPLE__
++# include  <mach-o/dyld.h>
++#endif
+ #include  <fcntl.h>
+ 
+ #ifdef HAVE_GETOPT_H
