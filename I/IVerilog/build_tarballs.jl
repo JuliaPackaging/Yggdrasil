@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "IVerilog"
-version = v"12.0.0"
+version = v"13.0.0"
 
 # Collection of sources required to complete build
 sources = [
-   GitSource("https://github.com/steveicarus/iverilog.git", "2693dd32b075243cca20400cf3a808cef119477e")
+   GitSource("https://github.com/steveicarus/iverilog.git", "dfeee909ed9f20b4870dd93423156c0170c0e1ff")
 ]
 
 dependencies = [
@@ -43,4 +43,5 @@ products = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"8")
