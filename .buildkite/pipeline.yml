@@ -33,6 +33,4 @@ steps:
       # Use eager registry to not have to wait for updates of the conservative registry
       JULIA_PKG_SERVER_REGISTRY_PREFERENCE: eager
       JULIA_REGISTRYCI_AUTOMERGE: true
-      # Use this to debug problems in BinaryBuilder2, especially hash selection related issues:
-      JULIA_DEBUG: BinaryBuilder2
     timeout_in_minutes: 60
