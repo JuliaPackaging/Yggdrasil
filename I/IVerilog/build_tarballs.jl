@@ -7,12 +7,15 @@ version = v"13.0.0"
 
 # Collection of sources required to complete build
 sources = [
-   GitSource("https://github.com/steveicarus/iverilog.git", "dfeee909ed9f20b4870dd93423156c0170c0e1ff")
+   GitSource("https://github.com/steveicarus/iverilog.git", "dfeee909ed9f20b4870dd93423156c0170c0e1ff"),
+   DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd iverilog
+# https://github.com/steveicarus/iverilog/commit/f20865a5ea4ea7f5cdcbb6d19b0751a9390a8978
+atomic_patch -p1 ../patches/driver-mach-o-dyld.patch
 # Helper programs run during the build are compiled with the build compiler, so
 # they must not get the target's linker flags (`-Wl,-all_load` on macOS).
 sed -i 's/$(BUILDCC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS)/$(BUILDCC) $(CPPFLAGS) $(CFLAGS)/' Makefile.in vvp/Makefile.in
