@@ -1,0 +1,39 @@
+Use the clz builtins whenever the compiler has them
+
+FIRSTBITNZ counts the leading zeros of a nonzero setword. Two of the three
+implementations of it are guarded by HAVE_HWLZCNT, which configure sets when it
+believes the target CPU has the lzcnt instruction.
+
+That guard is needed for the MSVC branch, which calls _lzcnt_u64 and so really
+does emit lzcnt. Getting it wrong there is silent: lzcnt is encoded as REP BSR,
+so on a CPU without it the prefix is ignored, bsr runs instead and returns a
+different number rather than faulting.
+
+The gcc and clang branch has no such requirement. __builtin_clzll is an
+operation, not an instruction, and the compiler picks an encoding the target
+actually has: bsr on baseline x86, clz on ARM, cntlzd on PowerPC. lzcnt itself
+is only emitted with -mlzcnt, -mabm or -mbmi, none of which nauty ever passes.
+So gate that branch on HAVE_CLZLL and friends, which record whether the compiler
+accepts the builtins, and leave the MSVC branch as it is.
+
+The argument is nonzero at every call site, which is what the NZ in the name
+means, so the builtins are never called with the value they leave undefined.
+
+--- a/nauty-h.in
++++ b/nauty-h.in
+@@ -980,7 +980,6 @@
+ 
+ #else  /* Not MAGMA or WIN */
+ 
+-#if HAVE_HWLZCNT
+ #if defined(SETWORD_LONGLONG) && HAVE_CLZLL
+ #define FIRSTBITNZ(x) __builtin_clzll(x)
+ #elif defined(SETWORD_LONG) && HAVE_CLZL
+@@ -994,7 +993,6 @@
+    __builtin_clzll((unsigned long long)((x)>>64)) : \
+    64 + __builtin_clzll((unsigned long long)((x)&MASK128R)))
+ #endif /* size choice */
+-#endif /* HAVE_HWLZCNT */
+ 
+ #endif /* MAGMA-WIN-OTHER choice */
+ 

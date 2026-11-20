@@ -1,0 +1,20 @@
+Decide whether we are building for Windows from the target, not the build machine
+
+configure looks at the machine doing the compiling rather than the one being
+compiled for, so a Linux-to-Windows build never takes the Windows path and no
+DLL is produced. Look at the host instead, and recognise mingw and msys as well
+as cygwin.
+
+--- a/configure.ac
++++ b/configure.ac
+@@ -165,8 +165,8 @@
+ esac
+ AC_SUBST(is_ARM64)
+ 
+-case "$build" in
+-  *cygwin*)
++case "$host" in
++  *cygwin*|*mingw*|*msys*)
+      is_cygwin=1 ;;
+   *)
+      is_cygwin=0 ;;

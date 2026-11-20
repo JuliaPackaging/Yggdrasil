@@ -1,0 +1,24 @@
+Let the makefile leave the version out of the library name on Windows
+
+Shared libraries are named with the version number in them, which has no Windows
+equivalent. Add a setting so the makefile can leave the version out on Windows
+and keep the existing names everywhere else. The makefile side of this is in
+makefile.patch.
+
+--- a/configure.ac
++++ b/configure.ac
+@@ -534,8 +534,13 @@
+       [ AC_PATH_PROGS(sort_prog,[gsort sort],no_sort_found,
+              [/usr/bin$PATH_SEPARATOR/bin$PATH_SEPARATOR$PATH])],
+       [ AC_CHECK_PROGS(sort_prog,[gsort sort],no_sort_found)])
+-AS_IF([test $is_cygwin -eq 1],[cygnoun="-no-undefined"],[cygnoun=])
++AS_IF([test $is_cygwin -eq 1],
++      [cygnoun="-no-undefined"
++       libversionflag="-avoid-version"],
++      [cygnoun=
++       libversionflag="-release $PACKAGE_VERSION"])
+ AC_SUBST(cygnoun)
++AC_SUBST(libversionflag)
+ 
+ AC_MSG_CHECKING(if sort supports the -k switch)
+ AS_IF([{ $sort_prog -k "2,3" </dev/null >/dev/null 2>&1 ; }],
