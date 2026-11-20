@@ -83,3 +83,5 @@ for platform in platforms
                    augment_platform_block, julia_compat="1.12", preferred_gcc_version=gcc_version,
                    lazy_artifacts=true, dont_dlopen=true)
 end
+
+# Build trigger: 1

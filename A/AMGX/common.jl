@@ -13,8 +13,8 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 #       `cuda_nvtx` redistributable component, so NVTX ranges stay disabled.
 
 version = v"2.5.0"
-# Compat changed (CompilerSupportLibraries_jll, MPI bounds), so a new build number won't do.
-ygg_version = v"2.5.1"
+# Compat changed (the CUDA_Runtime_jll bound of `CUDA.augment`), so a new build number won't do.
+ygg_version = v"2.5.2"
 
 base_sources = [
     GitSource("https://github.com/NVIDIA/AMGX.git",
@@ -86,6 +86,7 @@ fi
 
 # AMGX 2.5 requires CUDA 12.0 or later (`find_package(CUDAToolkit 12.0 REQUIRED)`).
 # An artifact also matches newer toolkits of its major, so build each major's oldest.
+# The CUDA 12.0 artifact relies on PTX for sm_100 and newer.
 # No Windows: AMGX has no CPU build, nvcc can't use MinGW as its host compiler, and upstream
 # publishes no Windows binaries to repackage.
 platforms = [
@@ -97,12 +98,6 @@ platforms = [
 products = [
     LibraryProduct("libamgxsh", :libamgxsh; dont_dlopen=true),
 ]
-
-# AMGX 2.5 dropped support for everything below Volta, and only knows about the
-# architectures listed in `CUDA_ALLOW_ARCH` in its CMakeLists.txt. Without an
-# explicit list it would only build for `90;100;120`, which excludes Ampere.
-# The CUDA 12.0 artifact relies on PTX for sm_100 and newer.
-const amgx_archs = ["70", "75", "80", "86", "89", "90", "100", "120"]
 
 function build_amgx(name, platforms, extra_dependencies, augment_platform_block)
     for platform in platforms
@@ -127,8 +122,8 @@ function build_amgx(name, platforms, extra_dependencies, augment_platform_block)
                                          platform=x86_platform))
         end
 
-        archs = filter(in(amgx_archs), CUDA.cuda_gpu_archs(platform))
-        platform_script = "CUDA_ARCHS=\"$(join(archs, ";"))\"\n" * script
+        # Without an explicit list AMGX would only build for `90;100;120`, which excludes Ampere.
+        platform_script = "CUDA_ARCHS=\"$(CUDA.cuda_gpu_archs_cmake(platform))\"\n" * script
 
         # GCC 11 is the first version that defaults to -std=gnu++17. CUDA 13 ships
         # CCCL 3 (Thrust, CUB, libcu++), which refuses to compile as anything older,

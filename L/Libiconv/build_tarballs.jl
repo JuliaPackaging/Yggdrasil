@@ -1,30 +1,32 @@
-using BinaryBuilder
+using BinaryBuilder2
 
-# Collection of sources required to build Libiconv
 name = "Libiconv"
-version_string = "1.18"
-version = VersionNumber(version_string)
+version = v"1.18.0"
 
+tarball = "libiconv-$(version.major).$(version.minor).tar.gz"
 sources = [
-    ArchiveSource("https://ftp.gnu.org/pub/gnu/libiconv/libiconv-$(version_string).tar.gz",
+    ArchiveSource(["https://ftp.gnu.org/pub/gnu/libiconv/$(tarball)",
+                   "https://ftpmirror.gnu.org/libiconv/$(tarball)",
+                   "https://mirrors.kernel.org/gnu/libiconv/$(tarball)",
+                   "https://ftp.fau.de/gnu/libiconv/$(tarball)"],
                   "3b08f5f4f9b4eb82f151a7040bfd6fe6c6fb922efe4b1659c66ea933276965e8"),
 ]
 
-# Bash recipe for building across all platforms
 script = "VERSION=$(version.major).$(version.minor)\n" * raw"""
-cd $WORKSPACE/srcdir/libiconv-*/
+cd ${WORKSPACE}/srcdir/libiconv-*
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-static --enable-extra-encodings
 make -j${nproc}
 make install
 
-# Add pkg-config file
+# libiconv doesn't install a pkg-config file.  `libdir` is `lib` on Windows too, since
+# that is where the import libraries the linker needs are.
 mkdir -p "${prefix}/lib/pkgconfig"
 cat << EOF > "${prefix}/lib/pkgconfig/iconv.pc"
 prefix=\${pcfiledir}/../..
 exec_prefix=\${prefix}
-libdir=\${exec_prefix}/$(basename ${libdir})
+libdir=\${exec_prefix}/lib
 sharedlibdir=\${libdir}
-includedir=\${includedir}
+includedir=\${prefix}/include
 
 Name: iconv
 Description: libiconv
@@ -37,19 +39,19 @@ Cflags: -I\${includedir}
 EOF
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
 platforms = supported_platforms()
 
-# The products that we will ensure are always built
 products = [
     LibraryProduct("libcharset", :libcharset),
     LibraryProduct("libiconv", :libiconv),
 ]
 
-# Dependencies that must be installed before this package can be built
-dependencies = Dependency[
-]
-
-# Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(;
+    src_name = name,
+    src_version = version,
+    sources,
+    script,
+    platforms,
+    products,
+    julia_compat = "1.6",
+)

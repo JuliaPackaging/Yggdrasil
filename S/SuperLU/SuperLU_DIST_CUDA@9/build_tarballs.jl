@@ -55,8 +55,9 @@ install_license License.txt
 """
 
 platforms = CUDA.supported_platforms(; min_version=v"12")
-# An artifact also matches newer toolkits of its major, but contains no PTX for newer GPUs.
-# 12.8 adds sm_100 and sm_120, and 12.9 adds sm_103 and sm_121.
+# An artifact also matches newer toolkits of its major, whose newer GPUs would have to JIT-compile
+# the PTX of its newest architecture. 12.8 adds sm_100, sm_101 and sm_120, and 12.9 adds sm_103 and
+# sm_121.
 filter!(p -> Base.thisminor(VersionNumber(p["cuda"])) in (v"12.0", v"12.8", v"12.9", v"13.0"), platforms)
 
 platforms, mpi_dependencies = MPI.augment_platforms(platforms)
@@ -98,7 +99,7 @@ for platform in platforms
                                               platform=x86_platform))
     end
 
-    platform_script = "CUDA_ARCHS=\"$(join(CUDA.cuda_gpu_archs(platform), ";"))\"\n" * script
+    platform_script = "CUDA_ARCHS=\"$(CUDA.cuda_gpu_archs_cmake(platform))\"\n" * script
 
     build_tarballs(ARGS, name, ygg_version, platform_sources, platform_script, [platform],
                    products, dependencies; lazy_artifacts=true,

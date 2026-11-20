@@ -38,3 +38,13 @@ echo "--- Cleanup"
 echo "+++ Build"
 # Start Julia with multiple threads to make auditor parallel.
 julia --threads "${BINARYBUILDER_NPROC:-16}" ./build_tarballs.jl --verbose "$@"
+
+# GitHub rejects release assets of 2 GiB or more, which would only fail registration after merge
+too_large=$(find products -name '*.tar.*' -size +2147483647c -printf '  %p: %s bytes\n')
+if [[ -n "${too_large}" ]]; then
+    echo "+++ Tarballs too large for GitHub" >&2
+    echo "ERROR: Too large for a GitHub release asset, which must be under 2 GiB (2147483648 bytes):" >&2
+    echo "${too_large}" >&2
+    echo "Try passing compression_format=\"xz\" to build_tarballs, if the recipe doesn't already." >&2
+    exit 1
+fi
