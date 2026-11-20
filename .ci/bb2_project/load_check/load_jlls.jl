@@ -15,6 +15,8 @@
 #  3. loads it with `using`, which runs its `__init__()` (and so loads its libraries), and
 #  4. `dlopen()`s each of its library products with `RTLD_NOW`, and checks that its
 #     executable and file products exist.
+# JLLs that the running Julia ships as standard libraries are skipped: Pkg installs the
+# bundled version instead of the requested one.
 # Each JLL is checked in its own Julia process, since a process can load only one version
 # of a package.  Every JLL is checked even if an earlier one failed; the exit code is the
 # number of failures.
@@ -220,6 +222,10 @@ end
 
 if single
     (name, version), = jlls
+    if isdir(joinpath(Sys.STDLIB, name))
+        println("+++ [$(VERSION)] $(name) v$(version): SKIPPED (a standard library of this Julia)")
+        exit(0)
+    end
     problems = check_jll(name, version)
     if isempty(problems)
         println("+++ [$(VERSION)] $(name) v$(version): OK")
