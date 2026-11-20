@@ -13,22 +13,10 @@ sources = [
         "c3448c48e7f05f13805616cfd1b9e94972eef58c";
         tag="$(version)",
     ),
-    DirectorySource("./bundled"),
 ]
 
 script = raw"""
 cd $WORKSPACE/srcdir/libminizinc
-
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fixes.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/01-file_utils-use-_WIN32-guards.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/02-file_utils-cxx11-lambda.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/03-process-qualify-std-thread.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/04-FILE_PATH-libstdcxx-wchar.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/05-mingw-municode-wmain.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/06-highs-plugin-libhighs-dll.patch
-
-# Patch for MinGW toolchain
-find .. -type f -exec sed -i 's/Windows.h/windows.h/g' {} +
 
 CMAKE_FLAGS=()
 if [[ "${target}" == *-mingw* ]]; then
