@@ -24,7 +24,7 @@ dependencies = [
     HostBuildDependency("NASM_jll"),
     BuildDependency("nv_codec_headers_jll"),
     Dependency("libass_jll"; compat="0.17.4"),
-    Dependency("libfdk_aac_jll"; compat="2.0.4"),
+    Dependency("libfdk_aac_jll"; compat="2.0.4, 3"),
     Dependency("FriBidi_jll"),
     Dependency("FreeType2_jll"; compat="2.13.4"),
     Dependency("LAME_jll"),
@@ -32,8 +32,8 @@ dependencies = [
     Dependency("libaom_jll"),
     Dependency("Ogg_jll"),
     BuildDependency("LibVPX_jll"), # We use the static archive
-    Dependency("x264_jll"; compat="10164.0.1"),
-    Dependency("x265_jll"; compat="~4.1"),
+    Dependency("x264_jll"; compat="10165.0.0"),
+    Dependency("x265_jll"; compat="~4.2"),
     Dependency("Bzip2_jll"; compat="1.0.9"),
     Dependency("Zlib_jll"),
     Dependency("OpenSSL_jll"; compat="3.5.0"),
@@ -46,4 +46,4 @@ dependencies = [
 build_tarballs(ARGS, name, version, sources, script(; ffplay=false), platforms, products, dependencies;
     julia_compat="1.6", preferred_gcc_version=preferred_gcc_version, clang_use_lld=false)
 
-# Build trigger: 8
+# Build trigger: 9
