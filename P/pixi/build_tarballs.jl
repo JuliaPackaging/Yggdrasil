@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "pixi"
-version = v"0.82.2"
+version = v"0.84.2"
 gitsha = "98cc736a9ba6e7e15f19abd59ff45ba805f712bd"
 
 # Collection of sources required to build pixi
