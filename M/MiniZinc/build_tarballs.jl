@@ -4,8 +4,7 @@ using BinaryBuilder, Pkg
 
 name = "MiniZinc"
 
-version = v"2.10.1"
-ygg_version = v"2.10.2" # A new JLL version is required for the HiGHS compat change.
+version = v"2.11.0"
 
 sources = [
     GitSource(
@@ -77,7 +76,7 @@ dependencies = [
 build_tarballs(
     ARGS,
     name,
-    ygg_version,
+    version,
     sources,
     script,
     platforms,
