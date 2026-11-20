@@ -153,3 +153,5 @@ build_tarballs(;
     init_block,
     julia_compat = "1.6",
 )
+
+# Build trigger: 1

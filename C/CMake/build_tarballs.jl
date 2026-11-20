@@ -3,11 +3,11 @@
 using BinaryBuilder
 
 name = "CMake"
-version = v"4.5.0"
+version = v"4.5.1"
 
 # Collection of sources required to build CMake
 sources = [
-    GitSource("https://github.com/Kitware/CMake", "f3a3cb0c6542ee497d8e9ec85f3603acb64736ca"; tag="v$(version)"),
+    GitSource("https://github.com/Kitware/CMake", "2803b0fd98c2b0e000d36ef834cf5c2d4992e653"; tag="v$(version)"),
     DirectorySource("./bundled"),
 ]
 

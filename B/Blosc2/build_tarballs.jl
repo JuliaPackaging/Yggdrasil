@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 
 name = "Blosc2"
 
-version = v"3.6.2"
+version = v"3.7.0"
 # We add a version offset because:
 # - Blosc2 2.15 is not ABI-compatible with Blosc2 2.14
 #   (see the release notes <https://github.com/Blosc/c-blosc2/releases/tag/v2.15.0>)
@@ -18,6 +18,7 @@ version = v"3.6.2"
 # - Blosc2 3.5 is not ABI-compatible with Blosc2 3.4   (bumping offset ro 2.0.0)
 #   (the shared library SOVERSION was increased)
 # - Blosc2 3.6 is ABI-compatible with Blosc2 3.5
+# - Blosc2 3.7 is ABI-compatible with Blosc2 3.5
 version_offset = v"2.0.0"
 ygg_version = VersionNumber(version.major * 100 + version_offset.major,
                             version.minor * 100 + version_offset.minor,
@@ -25,7 +26,7 @@ ygg_version = VersionNumber(version.major * 100 + version_offset.major,
 
 # Collection of sources required to build Blosc2
 sources = [
-    GitSource("https://github.com/Blosc/c-blosc2.git", "b9cf2730b33aa722ba274920e779b11f6f2bfa6a"; tag="v$(version)"),
+    GitSource("https://github.com/Blosc/c-blosc2.git", "94bf8868a9f2e83ade349a79b9640079bff9b5db"; tag="v$(version)"),
     DirectorySource("bundled"),
 ]
 
@@ -39,13 +40,20 @@ cd $WORKSPACE/srcdir/c-blosc2
 # integers).
 atomic_patch -p1 ../patches/_xsetbv.patch
 
+# On ARM64, `shuffle.c` calls the fused SHUFFLE+BYTEDELTA kernels in
+# `bytedelta.c`, which is only compiled with `BUILD_PLUGINS=ON`.
+atomic_patch -p1 ../patches/bytedelta-without-plugins.patch
+
 # Clang on Apple does not (yet?) properly support `__builtin_cpu_supports`.
 # The symbol `__cpu_model` is not provided by any standard library.
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
     perl -pi -e 's/#define HAVE_CPU_FEAT_INTRIN/#undef HAVE_CPU_FEAT_INTRIN/' blosc/shuffle.c
 fi
 
+# GCC only warns about a missing intrinsic and leaves an undefined symbol, and
+# BinaryBuilder doesn't dlopen the aarch64 libraries to catch it.
 options=(
+    -DCMAKE_C_FLAGS=-Werror=implicit-function-declaration
     -DCMAKE_INSTALL_PREFIX=${prefix}
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
     -DCMAKE_BUILD_TYPE=Release
@@ -62,6 +70,12 @@ options=(
     -DZLIB_NG_DIR=${prefix}
     -DZSTD_DIR=${prefix}
 )
+# The ELF linkers accept undefined symbols in a shared library, and
+# BinaryBuilder dlopens only the x86_64-linux-gnu library. Make the link fail
+# instead, as it does on macOS and Windows.
+if [[ "${target}" == *-linux-* || "${target}" == *-freebsd* ]]; then
+    options+=(-DCMAKE_SHARED_LINKER_FLAGS=-Wl,-z,defs)
+fi
 
 cmake -Bbuild -GNinja "${options[@]}"
 cmake --build build --parallel ${nproc}
@@ -86,6 +100,7 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# We need at least GCC 8 for powerpc.
+# We need at least GCC 8 for powerpc, and GCC 10 for the `vst1q_u8_x4`
+# intrinsic that `shuffle-neon.c` uses on aarch64.
 build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"8")
+               julia_compat="1.6", preferred_gcc_version=v"10")
