@@ -9,7 +9,8 @@ include(joinpath(YGGDRASIL_DIR, "C/CUDA/common.jl"))
 
 name = "MPICH_CUDA"
 version = v"5.0.2"
-ygg_version = v"5.0.3"
+# Compat changed (the CUDA_Runtime_jll bound of `CUDA.augment`), so a new build number won't do.
+ygg_version = v"5.0.4"
 
 sources = [
     ArchiveSource("https://www.mpich.org/static/downloads/$(version)/mpich-$(version).tar.gz",
@@ -192,13 +193,9 @@ for platform in platforms
     end
 
     # Pass the architectures to every nvcc call: MPL compiles its kernels without
-    # any. Yaksa adds the same SASS again, which nvcc ignores. Also embed PTX for
-    # the newest architecture, so that newer GPUs (supported by newer CUDA minor
-    # versions) can JIT-compile it.
+    # any. Yaksa adds the same SASS again, which nvcc ignores.
     cuda_archs = CUDA.cuda_gpu_archs(platform)
-    ptx_arch = maximum(parse.(Int, cuda_archs))
-    nvcc_extra_flags = join(["-gencode=arch=compute_$(sm),code=sm_$(sm)" for sm in cuda_archs], " ") *
-                       " -gencode=arch=compute_$(ptx_arch),code=compute_$(ptx_arch)"
+    nvcc_extra_flags = CUDA.cuda_gpu_archs_nvcc(platform)
     # CUDA 11.8 officially supports only GCC <= 11, but we need GCC 12 for `_Float16`
     if cuda_ver < v"12"
         nvcc_extra_flags *= " -allow-unsupported-compiler"
