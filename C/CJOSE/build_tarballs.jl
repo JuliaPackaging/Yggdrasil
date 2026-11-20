@@ -2,19 +2,22 @@ using BinaryBuilder, Pkg
 
 name = "CJOSE"
 # Upstream uses version numbers with 4 components in some but not all cases and it's not
-# clear what each component means. For example, v0.6.2 precedes v0.6.2.1 through v0.6.2.4,
+# clear what each component means. For example, v0.6.2 precedes v0.6.2.1 through v0.6.2.8,
 # and while some release notes include only security and/or bug fixes, v0.6.2.1 apparently
 # also includes new features. So... who knows what anything means.
-version = v"0.62.4"  # upstream version is 0.6.2.4
+version = v"0.62.8"  # upstream version is 0.6.2.8
 
 sources = [
     # NOTE: This is OpenIDC's maintenance fork, not the original Cisco repository
     GitSource("https://github.com/openidc/cjose.git",
-              "8d94c3ad3237ab6a83d2e92fa541542b1b92c023")
+              "e787ace6a203d483038a793fd58f958a2f9b48c1")
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/cjose
+if [[ ${target} == *mingw* ]]; then
+    export PKG_CONFIG_PATH="${prefix}/bin/pkgconfig:${PKG_CONFIG_PATH}"
+fi
 autoreconf -fiv
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static
 make install
