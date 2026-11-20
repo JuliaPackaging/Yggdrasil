@@ -3,21 +3,24 @@
 using BinaryBuilder, Pkg
 
 name = "libdmg_hfsplus"
-version = v"0.5.0"
+version = v"0.5.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/mozilla/libdmg-hfsplus.git", "d6287b5afc2406b398de42f74eba432f2123b937")
+    GitSource("https://github.com/mozilla/libdmg-hfsplus.git", "ec239599c1f234a4e01ae3fe51214d0c77e5baa3"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
     cd $WORKSPACE/srcdir/libdmg-hfsplus
+    atomic_patch -p1 ../patches/0001-Fix-32-bit-overflow-in-block-to-byte-conversions-for.patch
 
     cmake -B build \
         -DCMAKE_INSTALL_PREFIX=${prefix} \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
         -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_C_STANDARD=99 \
         -DZLIB_INCLUDE_DIR=${includedir} \
         -DZLIB_LIBRARY="${libdir}/libz.${dlext}" \
         -DBZIP2_INCLUDE_DIR=${includedir}  \
