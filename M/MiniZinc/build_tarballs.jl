@@ -2,6 +2,9 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "MiniZinc"
 
 version = v"2.11.0"
@@ -63,6 +66,9 @@ cmake --build build --parallel ${nproc}
 cmake --install build
 install_license LICENSE.txt
 """
+
+# std::filesystem needs the macOS 10.15 SDK on x86_64-apple-darwin.
+sources, script = require_macos_sdk("10.15", sources, script)
 
 products = [
     ExecutableProduct("minizinc", :minizinc),
