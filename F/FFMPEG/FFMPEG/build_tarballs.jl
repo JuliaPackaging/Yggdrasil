@@ -35,7 +35,7 @@ dependencies = [
     Dependency("x264_jll"; compat="10165.0.0"),
     Dependency("x265_jll"; compat="~4.2"),
     Dependency("Bzip2_jll"; compat="1.0.9"),
-    Dependency("Zlib_jll"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
     Dependency("OpenSSL_jll"; compat="3.5.0"),
     Dependency("Opus_jll"),
     Dependency("PCRE2_jll"; compat="10.42.0"),

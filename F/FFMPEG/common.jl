@@ -158,4 +158,5 @@ end
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
+# x265_jll 4.2 is built with GCC 12, and its libx265 needs libstdc++ symbols (GLIBCXX_3.4.29) that GCC 8 lacks
 preferred_gcc_version = v"12"
