@@ -1,0 +1,17 @@
+diff --git a/cmake/utf8_range.cmake b/cmake/utf8_range.cmake
+index f411a8c..bde5789 100644
+--- a/cmake/utf8_range.cmake
++++ b/cmake/utf8_range.cmake
+@@ -8,7 +8,12 @@ if (NOT TARGET utf8_range)
+   endif()
+ 
+   set(utf8_range_ENABLE_INSTALL ${protobuf_INSTALL} CACHE BOOL "Set install")
++  # Always build utf8_range as static (PIC) libraries, so they are embedded in
++  # the shared libprotobuf, libprotobuf-lite, and libprotoc libraries.
++  set(_protobuf_saved_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
++  set(BUILD_SHARED_LIBS OFF)
+   add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/utf8_range third_party/utf8_range)
++  set(BUILD_SHARED_LIBS ${_protobuf_saved_BUILD_SHARED_LIBS})
+   include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third_party/utf8_range)
+ endif ()
+ 
