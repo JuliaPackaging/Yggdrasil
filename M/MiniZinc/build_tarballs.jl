@@ -12,7 +12,8 @@ version = v"2.11.0"
 sources = [
     GitSource(
         "https://github.com/MiniZinc/libminizinc.git",
-        "aac81d56847356090a4d915576e8719d196a1395",
+        "aac81d56847356090a4d915576e8719d196a1395";
+        tag="$(version)",
     ),
     # libminizinc fetches these with CMake FetchContent at configure time. The
     # tags must match the versions in cmake/targets/libminizinc_parser.cmake and
