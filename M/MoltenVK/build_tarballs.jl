@@ -4,6 +4,8 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "MoltenVK"
+# 1.4.2 raised the minimum to macOS 12; the script checks that the deployment target below
+# matches upstream's
 version = v"1.4.1"
 
 # CPM_DOWNLOAD_VERSION in MoltenVK's cmake/recipes/CPM.cmake
@@ -39,6 +41,15 @@ script = "cpm_version=$(cpm_version)\n" * raw"""
 apk del cmake
 
 cd ${WORKSPACE}/srcdir/MoltenVK
+
+# MoltenVK built for an older macOS than its Xcode project targets still compiles, but fails
+# at run time there
+mvk_target=$(grep -m1 -o 'MACOSX_DEPLOYMENT_TARGET = [0-9.]*' MoltenVK/MoltenVK.xcodeproj/project.pbxproj | cut -d' ' -f3)
+if [[ "${mvk_target}" != "${MACOSX_DEPLOYMENT_TARGET}" ]]; then
+    echo "MoltenVK targets macOS ${mvk_target}, but we build for ${MACOSX_DEPLOYMENT_TARGET}" >&2
+    exit 1
+fi
+
 atomic_patch -p1 ../patches/relative-icd-library-path.patch
 
 # MoltenVK's CMake downloads CPM and, through it, the dependencies; give it the sources above
