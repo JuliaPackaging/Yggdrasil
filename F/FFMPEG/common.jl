@@ -158,4 +158,4 @@ end
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-preferred_gcc_version = v"8"
+preferred_gcc_version = v"12"
