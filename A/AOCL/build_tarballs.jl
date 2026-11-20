@@ -7,16 +7,16 @@ name = "AOCL"
 version = v"6.0.0"
 
 sources = [
-    GitSource("https://github.com/amd/aocl.git",             "9f36290abb78846f2697d97c5d3001b52092cdf2"; tag = "6.0.0"),
-    GitSource("https://github.com/amd/aocl-utils.git",       "059f9a41719c6586507ad6f0bd9095565a1bbbf1"; tag = "6.0.0", unpack_target = "aocl-src"),
-    GitSource("https://github.com/amd/blis.git",             "e5f75c24bdb8670ff648da7e483eb7e51b28a1db"; tag = "6.0.0", unpack_target = "aocl-src"),
-    GitSource("https://github.com/amd/libflame.git",         "698c6f8070c5dbf551eb2dc801908db4ac0f5916"; tag = "6.0.0", unpack_target = "aocl-src"),
-    GitSource("https://github.com/amd/aocl-sparse.git",      "47238ec3c4848e8509def31dac3aaec93e84abd5"; tag = "6.0.0", unpack_target = "aocl-src"),
-    GitSource("https://github.com/amd/aocl-libm-ose.git",    "155b5ab00879dd0d4fcf89aa602415ced5546218"; tag = "6.0.0", unpack_target = "aocl-src"),
-    GitSource("https://github.com/amd/aocl-compression.git", "bf3bc76d8cbd63609ca65ebb1427daa28337cd4e"; tag = "6.0.0", unpack_target = "aocl-src"),
-    GitSource("https://github.com/amd/openrng.git",          "5c05f2eeb6effc696b0df6ce8be1fcbe855b631b"; tag = "6.0.0", unpack_target = "aocl-src"),
-    GitSource("https://github.com/amd/aocl-fftz.git",        "88da98aa1f08409df7d6dea62509cc6a550cce6a"; tag = "6.0.0", unpack_target = "aocl-src"),
-    GitSource("https://github.com/amd/aocl-dlp.git",         "57f3dfcd532e3ccd8a51eeaa018625c8fd36d8c5"; tag = "6.0.0", unpack_target = "aocl-src"),
+    GitSource("https://github.com/amd/aocl.git",             "9f36290abb78846f2697d97c5d3001b52092cdf2"; tag = "$(version)"),
+    GitSource("https://github.com/amd/aocl-utils.git",       "059f9a41719c6586507ad6f0bd9095565a1bbbf1"; tag = "$(version)", unpack_target = "aocl-src"),
+    GitSource("https://github.com/amd/blis.git",             "e5f75c24bdb8670ff648da7e483eb7e51b28a1db"; tag = "$(version)", unpack_target = "aocl-src"),
+    GitSource("https://github.com/amd/libflame.git",         "698c6f8070c5dbf551eb2dc801908db4ac0f5916"; tag = "$(version)", unpack_target = "aocl-src"),
+    GitSource("https://github.com/amd/aocl-sparse.git",      "47238ec3c4848e8509def31dac3aaec93e84abd5"; tag = "$(version)", unpack_target = "aocl-src"),
+    GitSource("https://github.com/amd/aocl-libm-ose.git",    "155b5ab00879dd0d4fcf89aa602415ced5546218"; tag = "$(version)", unpack_target = "aocl-src"),
+    GitSource("https://github.com/amd/aocl-compression.git", "bf3bc76d8cbd63609ca65ebb1427daa28337cd4e"; tag = "$(version)", unpack_target = "aocl-src"),
+    GitSource("https://github.com/amd/openrng.git",          "5c05f2eeb6effc696b0df6ce8be1fcbe855b631b"; tag = "$(version)", unpack_target = "aocl-src"),
+    GitSource("https://github.com/amd/aocl-fftz.git",        "88da98aa1f08409df7d6dea62509cc6a550cce6a"; tag = "$(version)", unpack_target = "aocl-src"),
+    GitSource("https://github.com/amd/aocl-dlp.git",         "57f3dfcd532e3ccd8a51eeaa018625c8fd36d8c5"; tag = "$(version)", unpack_target = "aocl-src"),
 ]
 
 script = raw"""
@@ -90,6 +90,7 @@ install_license ${AOCL_BIY}/LICENSE.txt
 platforms = [
     Platform("x86_64", "linux"; libc = "glibc"),
 ]
+platforms = expand_cxxstring_abis(platforms)
 
 products = [
     LibraryProduct("libaocl", :libaocl),
@@ -97,7 +98,7 @@ products = [
 ]
 
 dependencies = [
-    HostBuildDependency(PackageSpec(name="CMake_jll", uuid="3f4e10e2-61f2-5801-8945-23b9d642d0e6")),
+    HostBuildDependency(PackageSpec(name="CMake_jll", uuid="3f4e10e2-61f2-5801-8945-23b9d642d0e6", version=v"3.28.1")),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
@@ -106,4 +107,4 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
     lock_microarchitecture = false,
     julia_compat = "1.10",
 )
- 
+
