@@ -40,6 +40,12 @@ CMAKE_FLAGS=(
     -DFETCHCONTENT_SOURCE_DIR_TREE-SITTER=${WORKSPACE}/srcdir/tree-sitter
     -DFETCHCONTENT_SOURCE_DIR_TREE_FELLER=${WORKSPACE}/srcdir/tree-feller
     -DFETCHCONTENT_SOURCE_DIR_MIMALLOC=${WORKSPACE}/srcdir/mimalloc
+    # mimalloc adds -march=armv8.1-a by default on arm64, which BinaryBuilder forbids.
+    -DMI_OPT_ARCH=OFF
+    # libmzn is dlopen'ed into Julia, so mimalloc must not replace the
+    # process-wide malloc (it segfaults on load). MiniZinc still uses mimalloc
+    # for its own AST allocations.
+    -DMZN_MIMALLOC_OVERRIDE=OFF
 )
 if [[ "${target}" == *-mingw* ]]; then
     # The tree-sitter grammars mark two symbols __declspec(dllexport), which
@@ -55,6 +61,7 @@ cmake -B build \
     "${CMAKE_FLAGS[@]}"
 cmake --build build --parallel ${nproc}
 cmake --install build
+install_license LICENSE.txt
 """
 
 products = [
