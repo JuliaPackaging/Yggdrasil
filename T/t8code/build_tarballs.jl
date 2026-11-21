@@ -28,6 +28,14 @@ if [[ "${target}" == *-mingw* ]]; then
   ln -s $(which mpiexec.exe) /workspace/destdir/bin/mpiexec
 fi
 
+# Hard link OpenCASCADE
+OCC_FLAGS=(
+  -DT8CODE_ENABLE_OCC=ON
+  -DOpenCASCADE_FOUND=TRUE
+  -DOpenCASCADE_INCLUDE_DIR="${includedir}/opencascade"
+  -DOpenCASCADE_LINK_DIRECTORY="${prefix}/lib"
+)
+
 cmake . \
       -B build \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -44,7 +52,8 @@ cmake . \
       -DT8CODE_BUILD_FORTRAN_INTERFACE=OFF \
       -DT8CODE_BUILD_TESTS=OFF \
       -DT8CODE_BUILD_TUTORIALS=OFF \
-      -DT8CODE_ENABLE_MPI=ON
+      -DT8CODE_ENABLE_MPI=ON \
+      "${OCC_FLAGS[@]}"
 
 # Fixes for mingw, which is WIN32 for cmake, but uses Linux syntax
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mingw.patch"
@@ -73,6 +82,14 @@ augment_platform_block = """
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=false)
 
+# OCCT_jll is not available for armv6l
+platforms = filter(p -> arch(p) != "armv6l", platforms)
+
+# OpenCASCADE is a C++ library, so we need to distinguish the C++ string ABIs.
+# OCCT_jll is only available for the cxx11 string ABI.
+platforms = expand_cxxstring_abis(platforms)
+platforms = filter(p -> cxxstring_abi(p) != "cxx03", platforms)
+
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
 
 # Avoid platforms where MPItrampoline isn't supported
@@ -88,7 +105,12 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
+    # Fix Zlib_jll version to v1.4.0 since v1.4.1 from BinaryBuilder2 only provides
+    # FreeBSD 14.1 artifacts, so the x86_64 FreeBSD 13.4 builds would not find libz and linking against libmpi fails.
+    Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"), v"1.4.0";
+               compat="1.2.12"),
+    # OCCT sonames carry major.minor (libTKernel.so.7.9): a new minor is ABI-breaking
+    Dependency(PackageSpec(name="OCCT_jll", uuid="baad4e97-8daa-5946-aac2-2edac59d34e1"); compat="~7.9.3"),
 ]
 append!(dependencies, platform_dependencies)
 
