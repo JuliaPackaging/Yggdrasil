@@ -1,8 +1,8 @@
 using BinaryBuilder
 
 name = "pixi"
-version = v"0.76.2"
-gitsha = "c723070a534d675eb809ea637fb486b847c89a56"
+version = v"0.84.2"
+gitsha = "98cc736a9ba6e7e15f19abd59ff45ba805f712bd"
 
 # Collection of sources required to build pixi
 sources = [
@@ -11,32 +11,32 @@ sources = [
     # pre-build tarballs, which only contain the executable
     FileSource(
         "https://github.com/prefix-dev/pixi/releases/download/v$version/pixi-aarch64-apple-darwin.tar.gz",
-        "621c771029ecc785dcab3acf1db4671b8b2896e87c87d789160f8ed0d871335c",
+        "039d4b48c7e17bc62a36faa2af1b13d0d187f5dd6e8fea17e0587302438df6e6",
         filename="pixi-aarch64-apple-darwin20.tar.gz",
     ),
     FileSource(
         "https://github.com/prefix-dev/pixi/releases/download/v$version/pixi-x86_64-apple-darwin.tar.gz",
-        "e4b33400b8aa86b332e52f8eaa30590a78881998d897973439b382ef57ef0458",
+        "a633a4f8276955b73248397c17ce77380eb7133dc96c54bc271239b7dc9b8837",
         filename="pixi-x86_64-apple-darwin14.tar.gz",
     ),
     FileSource(
         "https://github.com/prefix-dev/pixi/releases/download/v$version/pixi-aarch64-pc-windows-msvc.zip",
-        "cc7b2e50b2a81b6e46e55ee576d6319e03a9111400d4b35462a7088e32733c2e",
+        "2c8d16e4f1a3600e587c0157ddb25f9a046b41da275e2125f0384e94841a45e6",
         filename="pixi-aarch64-w64-mingw32.zip",
     ),
     FileSource(
         "https://github.com/prefix-dev/pixi/releases/download/v$version/pixi-x86_64-pc-windows-msvc.zip",
-        "8e948f6b67104be30509ab7d91ac1878fdb7920e57e8b433dbfb7297468b102d",
+        "aa4f02efac31566176d639007e65a36740aa7b56c22673c44ecfd2611e7a6b2c",
         filename="pixi-x86_64-w64-mingw32.zip",
     ),
     FileSource(
         "https://github.com/prefix-dev/pixi/releases/download/v$version/pixi-aarch64-unknown-linux-musl.tar.gz",
-        "a9e9d021754fc8a849eae10c119ef1a4b51d05f3dc33fbff4fcaec016a8a26dd",
+        "0957b6352d077bb3ffcce913f90b1e6cfbc6b98888a45d59ee2910e8c4811110",
         filename="pixi-aarch64-linux-gnu.tar.gz",
     ),
     FileSource(
         "https://github.com/prefix-dev/pixi/releases/download/v$version/pixi-x86_64-unknown-linux-musl.tar.gz",
-        "255f8930c1d68d7d7914253fa56ed6911229980610cac4b5f55334844f6568f7",
+        "6d2a576bde0a7b26533a068fec0aea6e4ee21c36668efc1dc73fce90110906ae",
         filename="pixi-x86_64-linux-gnu.tar.gz",
     ),
 ]
