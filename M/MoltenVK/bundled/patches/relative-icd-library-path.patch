@@ -1,0 +1,32 @@
+Use a relative library_path in the ICD manifest, so that the installation is relocatable.
+Upstream: not yet submitted
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 20b4bc0f..c32ebd77 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -126,6 +126,11 @@ if(MOLTEN_VK_TOPLEVEL_PROJECT)
+ 	install(FILES ${CMAKE_BINARY_DIR}/MoltenVK.pc
+ 			DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+
++    # The Vulkan loader resolves a relative library_path against the manifest's directory,
++    # which keeps the installation relocatable.
++    file(RELATIVE_PATH MVK_ICD_LIBRARY_PATH
++         "${CMAKE_INSTALL_PREFIX}/etc/vulkan/icd.d"
++         "${CMAKE_INSTALL_FULL_LIBDIR}/libMoltenVK.dylib")
+     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/Templates/cmake/MoltenVK_icd.json.in" MoltenVK_icd.json @ONLY)
+     install(FILES ${CMAKE_BINARY_DIR}/MoltenVK_icd.json
+             DESTINATION ${CMAKE_INSTALL_PREFIX}/etc/vulkan/icd.d)
+diff --git a/Templates/cmake/MoltenVK_icd.json.in b/Templates/cmake/MoltenVK_icd.json.in
+index 48f06e4e..fa9a993c 100644
+--- a/Templates/cmake/MoltenVK_icd.json.in
++++ b/Templates/cmake/MoltenVK_icd.json.in
+@@ -1,7 +1,7 @@
+ {
+     "file_format_version" : "1.0.0",
+     "ICD": {
+-        "library_path": "@CMAKE_INSTALL_FULL_LIBDIR@/libMoltenVK.dylib",
++        "library_path": "@MVK_ICD_LIBRARY_PATH@",
+         "api_version" : "1.4.0",
+         "is_portability_driver" : true
+     }
