@@ -35,7 +35,8 @@ cmake -B build \
     -DINSTALL_PFFFT=ON \
     -DINSTALL_PFDSP=OFF \
     -DINSTALL_PFFASTCONV=OFF
-cmake --build build --parallel ${nproc}
+# Only the FFT library: the DSP library beside it is C++ that musl's older GCC does not compile
+cmake --build build --parallel ${nproc} --target PFFFT
 cmake --install build
 # The install rule has no RUNTIME destination, so on Windows the DLL itself is not installed
 # https://github.com/marton78/pffft/issues/119
